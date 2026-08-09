@@ -669,7 +669,7 @@
       'style="--c:' + (color || '#ef4444') + '">' +
       '<i></i><span>' + ico + ' ' + esc(txt) + '</span></button>';
     return '<div class="pca-heat-sel">' +
-      '<h4 class="pca-h">🔥 Mapa de calor</h4>' +
+      '<h4 class="pca-h pca-h-heat">🔥 Mapa de calor</h4>' +
       '<p class="pca-heat-ayuda">Muestra dónde se concentra lo mapeado. Elige una categoría y el panel se cierra para que lo veas sobre el mapa.</p>' +
       '<div class="pca-heat-chips">' +
         chip('todos', '🔥', 'Todos los usos', '#ef4444') +

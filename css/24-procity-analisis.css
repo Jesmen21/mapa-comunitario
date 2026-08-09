@@ -268,11 +268,19 @@
   font-size:.8rem; font-weight:800; display:grid; place-items:center;
 }
 
-/* Selector de capas dentro del panel */
-.pca-heat-sel{ display:flex; flex-direction:column; gap:7px;
-  border-top:1px solid #e6e9f0; padding-top:10px; }
+/* Selector de calor: fondo propio en vez de un simple separador — pedido
+   explícito, antes se perdía entre los demás subtítulos del panel. */
+.pca-heat-sel{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:4px; padding:12px 12px 13px;
+  background:linear-gradient(155deg,#fff3e9,#ffe8da);
+  border:1.5px solid #f6c9a0; border-radius:14px;
+}
+.pca-h-heat{
+  margin:0; font-size:.88rem; color:#b5460f !important; -webkit-text-fill-color:#b5460f !important;
+}
 .pca-heat-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
-  color:#4b5768 !important; -webkit-text-fill-color:#4b5768 !important; }
+  color:#8a5a3a !important; -webkit-text-fill-color:#8a5a3a !important; }
 .pca-heat-chips{ display:flex; flex-wrap:wrap; gap:5px; }
 .pca-heat-btn{
   display:inline-flex; align-items:center; gap:6px; cursor:pointer;

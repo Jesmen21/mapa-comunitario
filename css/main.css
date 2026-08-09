@@ -1,82 +1,82 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=454-mapas-de-calor");
-@import url("./00-brand-urbis.css?v=454-mapas-de-calor");
+@import url("./00-app-shell.css?v=455-heat-titulo-resaltado");
+@import url("./00-brand-urbis.css?v=455-heat-titulo-resaltado");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=454-mapas-de-calor");
-@import url("./02-map-tools-routing.css?v=454-mapas-de-calor");
-@import url("./03-basemap-and-panels.css?v=454-mapas-de-calor");
-@import url("./04-automap-markers-performance.css?v=454-mapas-de-calor");
-@import url("./05-clusters.css?v=454-mapas-de-calor");
-@import url("./06-landing.css?v=454-mapas-de-calor");
-@import url("./07-mobile-advanced.css?v=454-mapas-de-calor");
+@import url("./01-base-layout.css?v=455-heat-titulo-resaltado");
+@import url("./02-map-tools-routing.css?v=455-heat-titulo-resaltado");
+@import url("./03-basemap-and-panels.css?v=455-heat-titulo-resaltado");
+@import url("./04-automap-markers-performance.css?v=455-heat-titulo-resaltado");
+@import url("./05-clusters.css?v=455-heat-titulo-resaltado");
+@import url("./06-landing.css?v=455-heat-titulo-resaltado");
+@import url("./07-mobile-advanced.css?v=455-heat-titulo-resaltado");
 
-@import url("./08-role-accessibility.css?v=454-mapas-de-calor");
-@import url("./09-achievements.css?v=454-mapas-de-calor");
+@import url("./08-role-accessibility.css?v=455-heat-titulo-resaltado");
+@import url("./09-achievements.css?v=455-heat-titulo-resaltado");
 
-@import url("./10-sport.css?v=454-mapas-de-calor");
+@import url("./10-sport.css?v=455-heat-titulo-resaltado");
 
 /* V36 high-contrast fix */
-@import url("./99-contrast-fix.css?v=454-mapas-de-calor");
+@import url("./99-contrast-fix.css?v=455-heat-titulo-resaltado");
 
-@import url("12-module-access.css?v=454-mapas-de-calor");
+@import url("12-module-access.css?v=455-heat-titulo-resaltado");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=454-mapas-de-calor");
+@import url("./14-mobile-functional-app.css?v=455-heat-titulo-resaltado");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=454-mapas-de-calor");
+@import url("./16-mobility-clean-traffic.css?v=455-heat-titulo-resaltado");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=454-mapas-de-calor');
+@import url('./28-mobile-kawaii-entry.css?v=455-heat-titulo-resaltado');
 
-@import url('./29-mobile-kawaii-platform.css?v=454-mapas-de-calor');
+@import url('./29-mobile-kawaii-platform.css?v=455-heat-titulo-resaltado');
 
-@import url('./30-zoom-marker-optimizer.css?v=454-mapas-de-calor');
+@import url('./30-zoom-marker-optimizer.css?v=455-heat-titulo-resaltado');
 
-@import url('./36-mobility-static-search.css?v=454-mapas-de-calor');
+@import url('./36-mobility-static-search.css?v=455-heat-titulo-resaltado');
 
 
-@import url('./41-email-registration-auth.css?v=454-mapas-de-calor');
+@import url('./41-email-registration-auth.css?v=455-heat-titulo-resaltado');
 
-@import url('./42-turquoise-refresh.css?v=454-mapas-de-calor');
+@import url('./42-turquoise-refresh.css?v=455-heat-titulo-resaltado');
 
-@import url('./43-clean-user-entry.css?v=454-mapas-de-calor');
+@import url('./43-clean-user-entry.css?v=455-heat-titulo-resaltado');
 
-@import url('./44-mobile-auth-onboarding.css?v=454-mapas-de-calor');
+@import url('./44-mobile-auth-onboarding.css?v=455-heat-titulo-resaltado');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=454-mapas-de-calor');
+@import url('./45-mascotas-fundacion.css?v=455-heat-titulo-resaltado');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=454-mapas-de-calor');
+@import url('./46-runner-strava.css?v=455-heat-titulo-resaltado');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=454-mapas-de-calor');
+@import url('./47-aurea-menu.css?v=455-heat-titulo-resaltado');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=454-mapas-de-calor');
+@import url('./48-runner-stats.css?v=455-heat-titulo-resaltado');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=454-mapas-de-calor');
+@import url('./49-urbis-analisis.css?v=455-heat-titulo-resaltado');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=454-mapas-de-calor');
+@import url('./99-mobile-clean-core.css?v=455-heat-titulo-resaltado');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=454-mapas-de-calor');
+@import url('./99-safe-destination-dot.css?v=455-heat-titulo-resaltado');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=454-mapas-de-calor');
+@import url('./51-cute-theme-pc.css?v=455-heat-titulo-resaltado');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=454-mapas-de-calor');
+@import url('./52-urbis-pro-city.css?v=455-heat-titulo-resaltado');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=454-mapas-de-calor');
+@import url('./24-procity-analisis.css?v=455-heat-titulo-resaltado');

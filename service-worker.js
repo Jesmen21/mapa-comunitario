@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v454-mapas-de-calor';
+const URBIS_CACHE = 'urbis-v455-heat-titulo-resaltado';
 const URBIS_ASSETS = [
   './',
   './index.html',
