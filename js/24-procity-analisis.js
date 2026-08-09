@@ -163,7 +163,15 @@
     // que es justo la transición suave que se pidió al cerrar el área.
     // Se respeta a quien tenga reducido el movimiento en su sistema.
     const bounds = L.polygon(S.pts).getBounds();
-    const opts = { padding: [50, 90] };
+    // El relleno se calcula sobre el tamaño REAL del mapa. Con un valor fijo
+    // (antes 50/90) una pantalla baja se quedaba casi sin área útil y Leaflet
+    // se iba al zoom máximo: el área quedaba gigantesca y su centro —y con él
+    // la burbuja— terminaba en una esquina, lejos de lo dibujado.
+    const t = m.getSize();
+    const px = Math.max(12, Math.min(48, Math.round(t.x * 0.12)));
+    const py = Math.max(12, Math.min(70, Math.round(t.y * 0.14)));
+    // maxZoom evita que un área diminuta dispare el mapa al zoom máximo.
+    const opts = { padding: [px, py], maxZoom: 18 };
     const quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try {
       if (quieto || typeof m.flyToBounds !== 'function') m.fitBounds(bounds, opts);
@@ -302,29 +310,58 @@
   }
 
   function cerrarBurbuja(){
-    if (S.burbuja) { try { mapa().closePopup(S.burbuja); } catch(e){} S.burbuja = null; }
+    if (!S.burbuja) return;
+    const m = mapa();
+    if (m) m.off('move zoom moveend zoomend viewreset', colocarBurbuja);
+    try { S.burbuja.remove(); } catch(e){}
+    S.burbuja = null;
   }
 
+  // Coloca la burbuja sobre el centroide, en coordenadas de pantalla, y la
+  // mantiene DENTRO del mapa: si el ancla queda cerca de un borde, se recuesta
+  // contra él en vez de salirse.
+  function colocarBurbuja(){
+    const m = mapa();
+    if (!m || !S.burbuja || S.pts.length < 3) return;
+    const p = m.latLngToContainerPoint(centroide(S.pts));
+    const t = m.getSize();
+    const w = S.burbuja.offsetWidth || 214, h = S.burbuja.offsetHeight || 190;
+    const margen = 8;
+    let x = p.x - w / 2;
+    let y = p.y - h - 14;                     // por encima del punto
+    if (y < margen) y = Math.min(p.y + 16, t.y - h - margen);  // si no cabe arriba, va abajo
+    x = Math.max(margen, Math.min(x, t.x - w - margen));
+    y = Math.max(margen, Math.min(y, t.y - h - margen));
+    S.burbuja.style.transform = 'translate3d(' + Math.round(x) + 'px,' + Math.round(y) + 'px,0)';
+  }
+
+  // Burbuja propia en vez del popup de Leaflet: el popup se cerraba con
+  // cualquier toque del mapa y su posicionamiento interno chocaba con el CSS
+  // (quedaba fuera de pantalla). Este div se coloca a mano y solo se va con
+  // su ✕, así que no se pierde sin querer.
   function burbuja(){
     const m = mapa();
     if (!m || !S.cerrada) return;
     cerrarBurbuja();
-    const c = centroide(S.pts);
-    const html =
-      '<div class="pca-burbuja">' +
-        '<div class="pca-burbuja-cab"><span>✏️</span><b>Área lista</b></div>' +
-        '<div class="pca-burbuja-datos">' + fmtArea(areaM2(S.pts)) +
-          ' · ' + S.pts.length + ' vértices</div>' +
-        '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">📊 Ver el análisis</button>' +
-        '<div class="pca-burbuja-alt">' +
-          '<button type="button" data-u52-call="pca-guardar">💾 Guardar</button>' +
-          '<button type="button" data-u52-call="pca-dibujar">✏️ Rehacer</button>' +
-        '</div>' +
+    const b = document.createElement('div');
+    b.className = 'pca-burbuja';
+    b.innerHTML =
+      '<div class="pca-burbuja-cab"><span>✏️</span><b>Área lista</b>' +
+        '<button type="button" class="pca-burbuja-x" data-u52-call="pca-cerrar-burbuja" aria-label="Cerrar">✕</button></div>' +
+      '<div class="pca-burbuja-datos">' + fmtArea(areaM2(S.pts)) +
+        ' · ' + S.pts.length + ' vértices</div>' +
+      '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">📊 Ver el análisis</button>' +
+      '<div class="pca-burbuja-alt">' +
+        '<button type="button" data-u52-call="pca-guardar">💾 Guardar</button>' +
+        '<button type="button" data-u52-call="pca-dibujar">✏️ Rehacer</button>' +
       '</div>';
-    S.burbuja = L.popup({
-      className: 'pca-popup', closeButton: false, autoClose: false,
-      closeOnClick: false, offset: [0, -6], maxWidth: 230
-    }).setLatLng(c).setContent(html).openOn(m);
+    // Los toques dentro de la burbuja no deben llegar al mapa (arrastrarlo ni
+    // contar como clic en el terreno).
+    if (L && L.DomEvent) { L.DomEvent.disableClickPropagation(b); L.DomEvent.disableScrollPropagation(b); }
+    m.getContainer().appendChild(b);
+    S.burbuja = b;
+    colocarBurbuja();
+    m.on('move zoom moveend zoomend viewreset', colocarBurbuja);
   }
 
   function limpiarArea(){
@@ -591,6 +628,7 @@
   function accion(name, el){
     if (name === 'dibujar')  { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); iniciarDibujo(); return true; }
     if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
+    if (name === 'cerrar-burbuja') { cerrarBurbuja(); return true; }
     if (name === 'deshacer') { deshacer(); return true; }
     if (name === 'cancelar') { cancelar(); return true; }
     if (name === 'cerrar')   { cerrar(); return true; }
@@ -615,6 +653,7 @@
 
   window.URBIS_PC_ANALISIS = {
     estaDibujando: () => S.dibujando,
+    burbujaAbierta: () => !!S.burbuja,
     hayArea: () => S.cerrada && S.pts.length >= 3,
     agregarPunto, iniciarDibujo, cancelar, limpiarArea,
     htmlPanel, montar, accion,

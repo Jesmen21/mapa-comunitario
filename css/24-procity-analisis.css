@@ -174,23 +174,21 @@
   to  { opacity:1; stroke-dasharray:none; }
 }
 
-/* ── Burbuja sobre el mapa al cerrar el área ── */
-/* !important porque el tema oscuro de URBIS ya pinta los popups de Leaflet en
-   verde (#0F1F18) y ganaba sobre estas reglas; la burbuja debe llevar el azul
-   de Pro City, no el verde del mapa ciudadano. */
-.pca-popup .leaflet-popup-content-wrapper{
-  background:#0f2434 !important; color:#eaf4fa !important;
-  border-radius:16px !important; padding:0 !important; overflow:hidden;
-  box-shadow:0 14px 34px rgba(0,0,0,.42), inset 0 0 0 1px #23506b !important;
+/* ── Burbuja sobre el mapa al cerrar el área ──
+   Elemento propio, no un popup de Leaflet: el popup se cerraba con cualquier
+   toque en el mapa y su posicionamiento interno chocaba con este CSS (acababa
+   fuera de pantalla). La posición la fija js/24 por transform, así que la
+   animación de entrada NO puede tocar transform — solo opacidad. */
+.pca-burbuja{
+  position:absolute; left:0; top:0; z-index:900;
+  width:214px; padding:12px 13px;
+  display:flex; flex-direction:column; gap:8px;
+  background:#0f2434; color:#eaf4fa;
+  border:1px solid #23506b; border-radius:16px;
+  box-shadow:0 14px 34px rgba(0,0,0,.45);
+  animation:pca-burbuja-in .28s ease both;
 }
-.pca-popup .leaflet-popup-content{ margin:0 !important; width:auto !important; }
-.pca-popup .leaflet-popup-tip{ background:#0f2434 !important; box-shadow:none !important; }
-.pca-popup{ animation:pca-burbuja-in .32s cubic-bezier(.2,1.2,.4,1) both; }
-@keyframes pca-burbuja-in{
-  from{ opacity:0; transform:translateY(8px) scale(.94); }
-  to  { opacity:1; transform:translateY(0) scale(1); }
-}
-.pca-burbuja{ padding:12px 13px; display:flex; flex-direction:column; gap:8px; min-width:186px; }
+@keyframes pca-burbuja-in{ from{ opacity:0; } to{ opacity:1; } }
 .pca-burbuja-cab{ display:flex; align-items:center; gap:7px; }
 .pca-burbuja-cab span{ font-size:1.05rem; }
 .pca-burbuja-cab b{ font-size:.92rem; font-weight:800;
@@ -224,5 +222,16 @@
 .pca-btn-principal:active, .pca-cabeza-btns button:active, .pca-guardada-abrir:active{ transform:scale(.97); }
 
 @media (prefers-reduced-motion:reduce){
-  .pca-poligono, .pca-popup, .pca-panel, #pca-barra{ animation:none !important; }
+  .pca-poligono, .pca-burbuja, .pca-panel, #pca-barra{ animation:none !important; }
 }
+
+/* ✕ de la burbuja: solo con este botón (o al entrar al análisis) se cierra. */
+.pca-burbuja-cab{ position:relative; padding-right:24px; }
+.pca-burbuja-x{
+  position:absolute; right:-3px; top:-4px;
+  width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#1b3d52; color:#c3d7e4 !important; -webkit-text-fill-color:#c3d7e4 !important;
+  font-size:.82rem; font-weight:800; line-height:1;
+  display:grid; place-items:center;
+}
+.pca-burbuja-x:active{ background:#245068; }

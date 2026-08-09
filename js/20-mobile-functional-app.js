@@ -4828,6 +4828,12 @@
         window.URBIS_PC_ANALISIS.agregarPunto(ev.latlng.lat, ev.latlng.lng);
         return;
       }
+      // Con la burbuja del área abierta, un toque suelto en el mapa no debe
+      // arrancar el flujo de mapear un punto nuevo: el usuario está mirando el
+      // área que acaba de cerrar y perdía la burbuja sin querer.
+      if(window.URBIS_PC_ANALISIS && window.URBIS_PC_ANALISIS.burbujaAbierta && window.URBIS_PC_ANALISIS.burbujaAbierta()){
+        return;
+      }
       if(proCity.pickMode === 'manual'){ pickProCityPoint(ev.latlng.lat, ev.latlng.lng); return; }
       if(communityComposer.pickMode !== 'manual') return;
       pickCommunityPoint(ev.latlng.lat, ev.latlng.lng, 'manual');

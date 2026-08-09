@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v452-burbuja-lapiz-transiciones';
+const URBIS_CACHE = 'urbis-v453-burbuja-fija-y-bien-ubicada';
 const URBIS_ASSETS = [
   './',
   './index.html',
