@@ -27,7 +27,8 @@
     cerrada: false,
     nombre: '',
     capa: null,
-    charts: []
+    charts: [],
+    burbuja: null
   };
 
   function esc(s){
@@ -116,7 +117,10 @@
 
     const color = '#34CCFE';
     if (S.cerrada && S.pts.length >= 3) {
-      L.polygon(S.pts, { color, weight: 2.5, fillColor: color, fillOpacity: .12 }).addTo(c);
+      // className deja engancharle la animación de entrada por CSS (el trazo
+      // se dibuja y el relleno aparece), en vez de dar un salto seco.
+      L.polygon(S.pts, { color, weight: 3, fillColor: color, fillOpacity: .14,
+        className: 'pca-poligono' }).addTo(c);
     } else if (S.pts.length >= 2) {
       L.polyline(S.pts, { color, weight: 2.5, dashArray: '5 6' }).addTo(c);
     }
@@ -153,8 +157,18 @@
   }
 
   function ajustarVista(){
-    if (!mapa() || S.pts.length < 3) return;
-    try { mapa().fitBounds(L.polygon(S.pts).getBounds(), { padding: [40, 40] }); } catch(e){}
+    const m = mapa();
+    if (!m || S.pts.length < 3) return;
+    // flyToBounds en vez de fitBounds: el encuadre se desliza en vez de saltar,
+    // que es justo la transición suave que se pidió al cerrar el área.
+    // Se respeta a quien tenga reducido el movimiento en su sistema.
+    const bounds = L.polygon(S.pts).getBounds();
+    const opts = { padding: [50, 90] };
+    const quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try {
+      if (quieto || typeof m.flyToBounds !== 'function') m.fitBounds(bounds, opts);
+      else m.flyToBounds(bounds, Object.assign({ duration: .8 }, opts));
+    } catch(e){}
   }
 
   // ── Barra flotante de dibujo ────────────────────────────────────────────
@@ -199,6 +213,7 @@
 
   function iniciarDibujo(){
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
+    cerrarBurbuja();
     S.dibujando = true;
     S.cerrada = false;
     S.pts = [];
@@ -235,6 +250,7 @@
   }
 
   function cancelar(){
+    cerrarBurbuja();
     S.dibujando = false;
     S.pts = [];
     S.cerrada = false;
@@ -250,12 +266,69 @@
     repintar();
     pintarBarra();
     try { mapa().getContainer().style.cursor = ''; } catch(e){}
-    // Devolver al usuario a las estadísticas, ya en la pestaña de análisis:
-    // dibujar sin ver el resultado no le sirve de nada.
-    if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
+    // NO se salta directo a las estadísticas: primero se deja ver el área
+    // dibujada sobre el mapa (encuadrándola con una animación suave) y se
+    // ofrece entrar al análisis desde una burbuja. Dibujar y que la pantalla
+    // se te lleve de una no deja apreciar lo que acabas de trazar.
+    ajustarVista();
+    // La burbuja espera a que el encuadre termine: si aparece durante el
+    // vuelo se ve arrastrada por el mapa. `moveend` no siempre dispara (si el
+    // área ya estaba encuadrada el mapa no se mueve), así que hay respaldo.
+    const m = mapa();
+    let abierta = false;
+    const abrir = () => { if (!abierta) { abierta = true; burbuja(); } };
+    if (m) { m.once('moveend', abrir); setTimeout(abrir, 950); }
+    else abrir();
+  }
+
+  // ── Burbuja de confirmación sobre el mapa ───────────────────────────────
+
+  function centroide(pts){
+    // Centroide del polígono (no el promedio de vértices): en formas alargadas
+    // o en L, el promedio se va hacia donde hay más puntos y la burbuja
+    // terminaría fuera de la figura.
+    let a = 0, cx = 0, cy = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      const f = p.lng * q.lat - q.lng * p.lat;
+      a += f; cx += (p.lng + q.lng) * f; cy += (p.lat + q.lat) * f;
+    }
+    if (!a) {
+      return { lat: pts.reduce((s,p)=>s+p.lat,0)/pts.length,
+               lng: pts.reduce((s,p)=>s+p.lng,0)/pts.length };
+    }
+    a *= 0.5;
+    return { lat: cy / (6 * a), lng: cx / (6 * a) };
+  }
+
+  function cerrarBurbuja(){
+    if (S.burbuja) { try { mapa().closePopup(S.burbuja); } catch(e){} S.burbuja = null; }
+  }
+
+  function burbuja(){
+    const m = mapa();
+    if (!m || !S.cerrada) return;
+    cerrarBurbuja();
+    const c = centroide(S.pts);
+    const html =
+      '<div class="pca-burbuja">' +
+        '<div class="pca-burbuja-cab"><span>✏️</span><b>Área lista</b></div>' +
+        '<div class="pca-burbuja-datos">' + fmtArea(areaM2(S.pts)) +
+          ' · ' + S.pts.length + ' vértices</div>' +
+        '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">📊 Ver el análisis</button>' +
+        '<div class="pca-burbuja-alt">' +
+          '<button type="button" data-u52-call="pca-guardar">💾 Guardar</button>' +
+          '<button type="button" data-u52-call="pca-dibujar">✏️ Rehacer</button>' +
+        '</div>' +
+      '</div>';
+    S.burbuja = L.popup({
+      className: 'pca-popup', closeButton: false, autoClose: false,
+      closeOnClick: false, offset: [0, -6], maxWidth: 230
+    }).setLatLng(c).setContent(html).openOn(m);
   }
 
   function limpiarArea(){
+    cerrarBurbuja();
     S.pts = []; S.cerrada = false; S.nombre = ''; S.dibujando = false;
     repintar(); pintarBarra();
   }
@@ -346,6 +419,25 @@
 
   // ── Panel de la pestaña "Análisis" ──────────────────────────────────────
 
+  // Miniatura del área guardada: en vez del 🗺️ genérico se dibuja el contorno
+  // REAL del polígono, normalizado a la casilla. Así cada área guardada se
+  // reconoce por su forma, que es lo que el usuario recuerda de ella.
+  function miniaturaArea(pts){
+    if (!pts || pts.length < 3) return '';
+    const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
+    const y0 = Math.min(...lats), y1 = Math.max(...lats);
+    const x0 = Math.min(...lngs), x1 = Math.max(...lngs);
+    const w = (x1 - x0) || 1e-9, h = (y1 - y0) || 1e-9;
+    const esc2 = Math.min(30 / w, 30 / h);          // cabe en 30×30 sin deformar
+    const dx = (34 - w * esc2) / 2, dy = (34 - h * esc2) / 2;
+    const d = pts.map((p, i) =>
+      (i ? 'L' : 'M') + (dx + (p.lng - x0) * esc2).toFixed(1) + ' ' +
+      (dy + (y1 - p.lat) * esc2).toFixed(1)).join(' ') + ' Z';
+    return '<svg class="pca-mini" viewBox="0 0 34 34" aria-hidden="true">' +
+      '<path d="' + d + '" fill="rgba(52,204,254,.22)" stroke="#0E86BE" stroke-width="2" ' +
+      'stroke-linejoin="round"/></svg>';
+  }
+
   function htmlSinArea(){
     const areas = leerAreas();
     const guardadas = areas.length ? (
@@ -353,7 +445,7 @@
       areas.map(a =>
         '<div class="pca-guardada">' +
           '<button type="button" class="pca-guardada-abrir" data-u52-call="pca-cargar" data-id="' + esc(a.id) + '">' +
-            '<span>🗺️</span><div><b>' + esc(a.nombre) + '</b>' +
+            miniaturaArea(a.pts) + '<div><b>' + esc(a.nombre) + '</b>' +
             '<small>' + fmtArea(a.areaM2 || 0) + ' · ' + a.pts.length + ' vértices</small></div>' +
           '</button>' +
           '<button type="button" class="pca-guardada-borrar" data-u52-call="pca-borrar" data-id="' + esc(a.id) + '" aria-label="Borrar">🗑️</button>' +
@@ -498,6 +590,7 @@
 
   function accion(name, el){
     if (name === 'dibujar')  { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); iniciarDibujo(); return true; }
+    if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
     if (name === 'deshacer') { deshacer(); return true; }
     if (name === 'cancelar') { cancelar(); return true; }
     if (name === 'cerrar')   { cerrar(); return true; }
@@ -508,14 +601,14 @@
     return false;
   }
 
-  // Red de seguridad: si por lo que sea la barra terminara fuera de
-  // #urbis-mobile-app (delegador de js/20), sus botones siguen respondiendo.
-  // Se marca el evento para no ejecutar la acción dos veces.
+  // El delegador de clics de js/20 escucha DENTRO de #urbis-mobile-app, pero
+  // #map es hermano suyo, no hijo: todo lo que Leaflet dibuja (los popups de
+  // la burbuja) queda fuera de su alcance. Este listener atiende justamente
+  // esos casos, y se abstiene cuando el botón sí está dentro de la app para
+  // no ejecutar la acción dos veces.
   document.addEventListener('click', function(ev){
-    const b = ev.target.closest && ev.target.closest('#pca-barra [data-u52-call^="pca-"]');
-    if (!b || ev.__pcaHecho) return;
-    if (b.closest('#urbis-mobile-app')) return;   // ya lo atiende js/20
-    ev.__pcaHecho = true;
+    const b = ev.target.closest && ev.target.closest('[data-u52-call^="pca-"]');
+    if (!b || b.closest('#urbis-mobile-app')) return;
     ev.preventDefault();
     accion(b.getAttribute('data-u52-call').slice(4), b);
   });

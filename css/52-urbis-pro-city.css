@@ -975,3 +975,23 @@
   #urbis-mobile-app .u52-procity-folder-card,
   #urbis-mobile-app .u52-procity-mode .u52-alert-card{ border-radius:14px !important; }
 }
+
+/* ---- Botón flotante: dibujar el área de análisis (js/24) ----
+   Cuarto de la columna, encima de 👁️. Se pinta en celeste de marca para que
+   se lea como una herramienta distinta a los tres filtros de arriba. ---- */
+@media (max-width:1023px){
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn{
+    position:absolute !important; z-index:2147483200 !important;
+    right:16px !important; bottom:calc(280px + env(safe-area-inset-bottom,0px)) !important;
+    width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+    display:grid !important; place-items:center !important; font-size:1.35rem !important;
+    background:linear-gradient(135deg,#34CCFE,#0E86BE) !important;
+    box-shadow:0 12px 24px rgba(14,134,190,.34), inset 0 0 0 1px rgba(255,255,255,.45) !important;
+    pointer-events:auto !important;
+    transition:transform .18s ease, box-shadow .18s ease !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn:active{
+    transform:scale(.92) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn[hidden]{ display:none !important; }
+}

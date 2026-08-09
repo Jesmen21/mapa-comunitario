@@ -410,6 +410,7 @@
       <button class="u52-procity-visual-toggle" data-u52-call="procity-visual-toggle" aria-label="Cambiar entre íconos y colores por categoría" hidden>😀</button>
       <button class="u52-procity-active-folder-btn" data-u52-call="procity-active-folder-open" aria-label="Elegir carpeta cooperativa activa para mapear" hidden>📁</button>
       <button class="u52-procity-view-filter-btn" data-u52-call="procity-view-filter-open" aria-label="Elegir qué se ve en el mapa" hidden>👁️</button>
+      <button class="u52-procity-dibujar-btn" data-u52-call="pca-dibujar" aria-label="Dibujar área de análisis" hidden>✏️</button>
       <div id="u52-map-report-status" class="u52-map-report-status u52-mapcentric-toast" aria-live="polite"></div>
       <div class="u52-mapcentric-actions" aria-label="Acciones rápidas de mapeo comunitario">
         <button data-u52-call="report-gps"><span class="gps">⌖</span><b>Reporte con<br>mi ubicación</b></button>
@@ -2521,6 +2522,10 @@
     // Botoncito flotante para elegir QUÉ se ve en el mapa (pedido explícito):
     // solo yo / mis amigos / una carpeta cooperativa / todo el mundo.
     if(viewFilterBtn){ viewFilterBtn.hidden = !activo; updateProCityViewFilterBtn(); }
+    // Acceso rápido para dibujar el área de análisis (js/24) sin tener que
+    // entrar antes a la pantalla de estadísticas.
+    const dibujarBtn = app.querySelector('.u52-procity-dibujar-btn');
+    if(dibujarBtn) dibujarBtn.hidden = !activo;
     if(mapScreen) mapScreen.classList.toggle('u52-procity-mapscreen', !!activo);
   }
 
