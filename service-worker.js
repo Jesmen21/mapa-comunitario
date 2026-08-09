@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v453-burbuja-fija-y-bien-ubicada';
+const URBIS_CACHE = 'urbis-v454-mapas-de-calor';
 const URBIS_ASSETS = [
   './',
   './index.html',

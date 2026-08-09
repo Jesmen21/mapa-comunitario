@@ -235,3 +235,58 @@
   display:grid; place-items:center;
 }
 .pca-burbuja-x:active{ background:#245068; }
+
+/* ── Mapa de calor (Fase 2) ── */
+/* z-index 405, no menos: .leaflet-map-pane vale 400 y contiene teselas Y
+   marcadores, así que cualquier valor por debajo deja el calor escondido
+   detrás del mapa (pasó: se pintaban 80.000 px y no se veía nada).
+   Nunca intercepta toques: el mapa se sigue arrastrando con normalidad. */
+.pca-heat{
+  position:absolute; left:0; top:0; z-index:405;
+  pointer-events:none;
+  transition:opacity .18s ease;
+}
+
+/* Chip que recuerda qué capa está encendida, sobre el mapa */
+.pca-heat-chip{
+  position:absolute; left:10px; top:10px; z-index:901;
+  display:flex; align-items:center; gap:9px; max-width:min(300px, calc(100% - 20px));
+  background:#0f2434; border:1px solid #23506b; border-radius:13px;
+  padding:8px 8px 8px 10px; box-shadow:0 8px 22px rgba(0,0,0,.4);
+  animation:pca-burbuja-in .25s ease both;
+}
+.pca-heat-chip i{ width:12px; height:12px; border-radius:4px; flex:0 0 auto; }
+.pca-heat-chip div{ min-width:0; }
+.pca-heat-chip b{ display:block; font-size:.8rem; font-weight:800;
+  color:#eaf4fa !important; -webkit-text-fill-color:#eaf4fa !important;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pca-heat-chip small{ display:block; font-size:.7rem;
+  color:#a8c2d4 !important; -webkit-text-fill-color:#a8c2d4 !important; }
+.pca-heat-chip button{
+  flex:0 0 auto; width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#1b3d52; color:#c3d7e4 !important; -webkit-text-fill-color:#c3d7e4 !important;
+  font-size:.8rem; font-weight:800; display:grid; place-items:center;
+}
+
+/* Selector de capas dentro del panel */
+.pca-heat-sel{ display:flex; flex-direction:column; gap:7px;
+  border-top:1px solid #e6e9f0; padding-top:10px; }
+.pca-heat-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
+  color:#4b5768 !important; -webkit-text-fill-color:#4b5768 !important; }
+.pca-heat-chips{ display:flex; flex-wrap:wrap; gap:5px; }
+.pca-heat-btn{
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  background:#fff; border:1.5px solid #e2e6f0; border-radius:999px;
+  padding:6px 11px 6px 8px; font-size:.74rem; font-weight:700;
+  color:#2f3646; transition:border-color .15s ease, background .15s ease;
+}
+.pca-heat-btn i{ width:10px; height:10px; border-radius:50%; background:var(--c); flex:0 0 auto; }
+.pca-heat-btn span{ color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important; }
+.pca-heat-btn.activo{ border-color:var(--c); background:color-mix(in srgb, var(--c) 14%, #fff); }
+.pca-heat-btn:active{ transform:scale(.97); }
+.pca-heat-off{
+  align-self:flex-start; cursor:pointer;
+  background:#fff; border:1.5px solid #f0d0d0; border-radius:10px;
+  padding:8px 12px; font-size:.76rem; font-weight:700;
+  color:#a33 !important; -webkit-text-fill-color:#a33 !important;
+}

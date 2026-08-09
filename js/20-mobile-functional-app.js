@@ -2830,6 +2830,10 @@
       esPropio: esPropioProCity
     };
   }
+  // El mapa de calor se enciende y apaga desde el propio mapa, con el panel
+  // ya cerrado, así que js/24 necesita poder pedir la Matriz en cualquier
+  // momento y no solo mientras se pinta el panel.
+  window.urbisProCityCtxAnalisis = proCityCtxAnalisis;
   // Los usa js/24 para volver al panel tras cerrar o cargar un área.
   window.urbisProCityAbrirAnalisis = function(){
     proCity.statsTab = 'analisis';
