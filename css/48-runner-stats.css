@@ -1,0 +1,155 @@
+/* ============================================================================
+   URBIS · RUSH STATS — estilos de la analítica estilo Strava.
+   · Panel "pro" en Progreso  → fondo CLARO, texto OSCURO (alto contraste).
+   · Splits + gráfica          → viven en contextos OSCUROS (resumen / overlay).
+   · Mapa de calor HUD         → flotante sobre el mapa.
+   ============================================================================ */
+
+/* ---------- Título del historial (separador) ---------- */
+.rush-hist-title{
+  font-weight:900; font-size:1rem; color:#3a2a30; margin:18px 14px 4px; letter-spacing:.2px;
+}
+
+/* ============================================================================
+   PANEL PRO (pantalla Progreso · fondo claro)
+   ============================================================================ */
+.rush-pro-panel{ padding:4px 14px 0; }
+.rush-pro-section{ margin:16px 0 4px; }
+.rush-pro-h{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  font-weight:900; font-size:1rem; color:#3a2a30; margin:0 2px 10px;
+}
+.rush-ach-count{
+  margin-left:auto; font-size:.78rem; font-weight:900; color:#ff4d6a;
+  background:#ffe7ec; border-radius:999px; padding:3px 10px;
+}
+.rush-goal-edit{
+  margin-left:auto; font-size:.74rem; font-weight:800; color:#ff4d6a;
+  background:#ffe7ec; border:none; border-radius:999px; padding:5px 12px; cursor:pointer;
+}
+.rush-goal-edit:active{ transform:scale(.95); }
+
+/* Récords */
+.rush-pro-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rush-rec{
+  background:#fff; border:1px solid #ffe0d4; border-radius:18px; padding:14px 12px;
+  display:flex; flex-direction:column; gap:2px; box-shadow:0 4px 14px rgba(255,94,122,.07);
+}
+.rush-rec-ic{ font-size:22px; }
+.rush-rec b{ font-size:1.32rem; font-weight:900; color:#ff4d6a; line-height:1.1; }
+.rush-rec small{ font-size:.72rem; color:#5a3d46; font-weight:800; text-transform:uppercase; letter-spacing:.4px; }
+
+/* Reto mensual */
+.rush-reto-card{
+  background:#fff; border:1px solid #ffe0d4; border-radius:18px; padding:16px;
+  box-shadow:0 4px 14px rgba(255,94,122,.07);
+}
+.rush-reto-top{ display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+.rush-reto-top b{ font-size:1.5rem; font-weight:900; color:#3a2a30; line-height:1; }
+.rush-reto-top span{ font-size:.84rem; color:#5a3d46; font-weight:700; }
+.rush-reto-bar{ height:12px; border-radius:999px; background:#ffe0d4; overflow:hidden; }
+.rush-reto-bar i{
+  display:block; height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#ff7a3d,#ff5e7a 55%,#a45cff);
+  transition:width .5s cubic-bezier(.2,1,.3,1);
+}
+.rush-reto-foot{ margin-top:9px; font-size:.8rem; color:#5a3d46; font-weight:700; }
+
+/* Racha */
+.rush-streak-card{
+  display:flex; align-items:center; gap:14px;
+  background:linear-gradient(135deg,#fff4ec,#ffe9f0); border:1px solid #ffd9c9;
+  border-radius:18px; padding:14px 16px;
+}
+.rush-streak-fire{ font-size:34px; filter:drop-shadow(0 4px 8px rgba(255,120,40,.35)); }
+.rush-streak-card b{ display:block; font-size:1.12rem; font-weight:900; color:#3a2a30; }
+.rush-streak-card small{ font-size:.8rem; color:#5a3d46; font-weight:700; }
+
+/* Logros */
+.rush-ach-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rush-ach{
+  position:relative; background:#fff; border:1px solid #ffe0d4; border-radius:16px; padding:12px;
+  display:flex; flex-direction:column; gap:3px; box-shadow:0 4px 12px rgba(255,94,122,.06);
+}
+.rush-ach-ic{ font-size:24px; line-height:1; }
+.rush-ach b{ font-size:.86rem; font-weight:900; color:#3a2a30; }
+.rush-ach small{ font-size:.68rem; color:#7a5a64; font-weight:600; line-height:1.25; }
+.rush-ach.locked{ filter:grayscale(.7); opacity:.78; }
+.rush-ach.locked .rush-ach-ic{ filter:grayscale(1) opacity(.6); }
+.rush-ach.got{ border-color:#ff9fb0; background:linear-gradient(160deg,#fff,#fff4f6); }
+.rush-ach.got::after{
+  content:'✓'; position:absolute; top:9px; right:9px;
+  width:20px; height:20px; border-radius:50%; background:#22c55e; color:#fff;
+  font-size:.7rem; font-weight:900; display:flex; align-items:center; justify-content:center;
+}
+.rush-ach-bar{ height:5px; border-radius:999px; background:#f0e2e6; overflow:hidden; margin-top:5px; }
+.rush-ach.got .rush-ach-bar{ background:#bbf7d0; }
+.rush-ach-prog{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#ff7a3d,#ff5e7a); }
+
+/* Botón mapa de calor */
+.rush-heatmap-btn{
+  width:100%; margin:18px 0 6px; border:none; border-radius:16px; padding:15px;
+  font-weight:900; font-size:1rem; color:#fff; cursor:pointer;
+  background:linear-gradient(120deg,#ff5e3a,#ff2d78 55%,#a45cff);
+  box-shadow:0 12px 26px rgba(255,45,120,.32); transition:transform .15s ease;
+}
+.rush-heatmap-btn:active{ transform:scale(.98); }
+
+/* ============================================================================
+   SPLITS + GRÁFICA (contexto OSCURO: tarjeta resumen / overlay detalle)
+   ============================================================================ */
+.rush-pace-chart{
+  width:100%; height:auto; display:block; border-radius:16px;
+  background:#0b0d12; border:1px solid rgba(255,255,255,.1); margin:14px 0 6px;
+}
+.rush-splits-wrap{ margin:8px 0 4px; }
+.rush-splits-title{
+  font-weight:900; font-size:.82rem; color:rgba(255,255,255,.78);
+  text-transform:uppercase; letter-spacing:.8px; margin:6px 2px 10px;
+}
+.rush-split-row{
+  display:flex; align-items:center; gap:10px; padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.rush-split-km{ width:62px; font-size:.78rem; font-weight:800; color:rgba(255,255,255,.85); flex-shrink:0; }
+.rush-split-bar{ flex:1; height:9px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; }
+.rush-split-bar i{
+  display:block; height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#ff5e3a,#ff2d78);
+}
+.rush-split-pace{
+  width:74px; text-align:right; font-size:.84rem; font-weight:900; color:#fff;
+  font-variant-numeric:tabular-nums; flex-shrink:0;
+}
+.rush-split-row.fast .rush-split-bar i{ background:linear-gradient(90deg,#37f0b0,#2dd4bf); }
+.rush-split-row.fast .rush-split-pace{ color:#37f0b0; }
+.rush-split-elev{
+  margin-top:10px; font-size:.82rem; color:rgba(255,255,255,.8); font-weight:700;
+}
+.rush-split-elev b{ color:#fff; }
+
+/* ============================================================================
+   MAPA DE CALOR — HUD flotante
+   ============================================================================ */
+.rush-heat-hud{
+  position:fixed; top:calc(10px + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%);
+  z-index:2147483200; display:flex; flex-direction:column; gap:6px; align-items:center;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; max-width:92vw;
+}
+.rush-heat-top{
+  display:flex; align-items:center; gap:12px; color:#fff;
+  background:rgba(12,14,18,.86); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:9px 10px 9px 16px;
+  box-shadow:0 10px 26px rgba(0,0,0,.4); font-weight:800; font-size:.86rem;
+}
+.rush-heat-top button{
+  width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.14); color:#fff; font-size:.9rem;
+}
+.rush-heat-legend{
+  display:flex; align-items:center; gap:7px; color:#fff; font-size:.72rem; font-weight:700;
+  background:rgba(12,14,18,.7); border-radius:999px; padding:5px 12px;
+}
+.rush-heat-dot{ width:12px; height:12px; border-radius:50%; display:inline-block; }
+.rush-heat-dot.dim{ background:rgba(255,80,20,.45); }
+.rush-heat-dot.hot{ background:rgba(255,225,90,.95); box-shadow:0 0 8px rgba(255,210,70,.9); }

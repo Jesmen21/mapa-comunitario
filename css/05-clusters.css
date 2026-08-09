@@ -1,0 +1,93 @@
+/* ==========================================
+   URBIS V6 ESTABLE: ICONOS COMPACTOS / GRUPO GENERAL
+   No toca el login. Solo actúa después de que el mapa carga datos.
+   - 2 a 3 puntos cercanos: iconos pequeños.
+   - 4 o más puntos cercanos: icono general con contador.
+   ========================================== */
+.urbis-cluster-root,
+.urbis-compact-root {
+    background: transparent !important;
+    border: none !important;
+    overflow: visible !important;
+}
+
+.urbis-cluster-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: #2f2636;
+    font-weight: 1000;
+    font-size: 0.78rem;
+    background:
+        radial-gradient(circle at 34% 28%, rgba(255,255,255,.95), rgba(255,255,255,.15) 24%, transparent 25%),
+        linear-gradient(135deg, #b8ebe6 0%, #f5bfd6 52%, #fff0b8 100%);
+    border: 3px solid rgba(255,255,255,.96);
+    box-shadow: 0 10px 24px rgba(0,0,0,.34), 0 0 0 6px rgba(184,235,230,.20);
+    transform: translate(-50%, -50%);
+}
+
+.urbis-cluster-icon::before {
+    content: "📍";
+    position: absolute;
+    top: -13px;
+    left: -10px;
+    font-size: 1.05rem;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.24));
+}
+
+.urbis-cluster-icon::after {
+    content: attr(data-count);
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    border-radius: 999px;
+    position: absolute;
+    right: -10px;
+    bottom: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #ff4757;
+    border: 2px solid #fff;
+    font-size: .72rem;
+    font-weight: 1000;
+    box-shadow: 0 6px 14px rgba(0,0,0,.28);
+}
+
+.urbis-compact-root {
+    opacity: .78 !important;
+}
+
+.urbis-compact-root .marker-stack,
+.urbis-compact-root .waze-icon,
+.urbis-compact-root .auto-poi-marker {
+    transform: scale(.62) !important;
+    opacity: .78 !important;
+    filter: saturate(.92) contrast(.98) !important;
+    transform-origin: center center !important;
+}
+
+.urbis-compact-root .auto-poi-marker {
+    transform: translate(-50%, -100%) rotate(-45deg) scale(.62) !important;
+}
+
+.urbis-compact-root:hover {
+    opacity: 1 !important;
+    z-index: 9999 !important;
+}
+
+.urbis-compact-root:hover .marker-stack,
+.urbis-compact-root:hover .waze-icon {
+    transform: scale(.84) !important;
+    opacity: 1 !important;
+}
+
+.urbis-compact-root:hover .auto-poi-marker {
+    transform: translate(-50%, -100%) rotate(-45deg) scale(.84) !important;
+    opacity: 1 !important;
+}

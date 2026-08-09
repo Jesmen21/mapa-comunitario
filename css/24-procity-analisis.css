@@ -1,0 +1,165 @@
+/* URBIS Pro City · Análisis de área (js/24)
+   Sigue los tokens visuales de Pro City (--pc-*) para no romper su lenguaje.
+   Regla dura del proyecto: nada de texto claro sobre fondo claro.
+
+   OJO con los !important de este archivo: css/42-turquoise-refresh.css tiene
+   una regla GLOBAL `p, small, span, label { color:rgba(231,255,251,.78)
+   !important }` pensada para el sidebar oscuro. Sin forzar, todo <small> de
+   este panel queda casi blanco sobre fondo claro (contraste medido: 1.05).
+   Es el mismo choque que css/49-urbis-analisis.css ya documentó y resolvió
+   así — se sigue el precedente en vez de tocar la regla global, que afecta
+   a media app. */
+
+/* ── Vértices del polígono mientras se dibuja ── */
+.pca-vertice{
+  width:12px; height:12px; border-radius:50%;
+  background:#fff; border:3px solid #34CCFE;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);
+}
+.pca-vertice.primero{ border-color:#FABD0A; }
+
+/* Con 3+ puntos, el primer vértice se vuelve el botón de cerrar: crece, late
+   y muestra su etiqueta. Es la forma estándar (Google Earth) y no depende de
+   la barra inferior. */
+.pca-vertice.primero.cerrable{
+  width:20px; height:20px; border-width:4px; border-color:#FABD0A;
+  background:#fffdf5; cursor:pointer;
+  box-shadow:0 0 0 3px rgba(250,189,10,.35), 0 2px 6px rgba(0,0,0,.4);
+  animation:pca-latido 1.4s ease-in-out infinite;
+}
+@keyframes pca-latido{
+  0%,100%{ box-shadow:0 0 0 3px rgba(250,189,10,.35), 0 2px 6px rgba(0,0,0,.4); }
+  50%    { box-shadow:0 0 0 8px rgba(250,189,10,.12), 0 2px 6px rgba(0,0,0,.4); }
+}
+/* Leaflet ya pone pointer-events:none en los marcadores no interactivos, así
+   que aquí NO se bloquea de forma global: hacerlo con :has() dependía de un
+   selector reciente y, si el navegador no lo soporta, el toque nunca habría
+   llegado al punto dorado. Solo se asegura que el que sí es botón lo reciba. */
+.pca-vertice.primero.cerrable{ pointer-events:auto; }
+.pca-vertice-tip{
+  position:absolute; left:50%; top:-26px; transform:translateX(-50%);
+  white-space:nowrap; pointer-events:none;
+  background:#1a2b38; color:#FABD0A !important; -webkit-text-fill-color:#FABD0A !important;
+  font-size:11px; font-weight:800; padding:3px 8px; border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+@media (prefers-reduced-motion:reduce){
+  .pca-vertice.primero.cerrable{ animation:none; }
+}
+
+/* ── Barra flotante de dibujo ── */
+#pca-barra{
+  position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  z-index:100000;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background:#0f2434; color:#eaf4fa;
+  border:1px solid #23506b; border-radius:14px;
+  padding:10px 12px; box-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+#pca-barra[hidden]{ display:none; }
+.pca-barra-info{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:130px; }
+.pca-barra-info b{ font-size:.92rem; font-weight:800; color:#34CCFE; }
+.pca-barra-info small{ font-size:.74rem; color:#b7cbd8; line-height:1.3; }
+.pca-barra-btns{ display:flex; gap:6px; align-items:center; }
+.pca-barra-btns button{
+  background:#193a4e; color:#eaf4fa;
+  border:1px solid #2c5f7d; border-radius:10px;
+  padding:8px 11px; font-size:.9rem; font-weight:700; cursor:pointer;
+}
+.pca-barra-btns button[disabled]{ opacity:.4; cursor:default; }
+.pca-barra-btns .pca-ok{ background:#34CCFE; color:#052538; border-color:#34CCFE; font-weight:800; }
+
+/* ── Panel de la pestaña Análisis ── */
+.pca-panel{ display:flex; flex-direction:column; gap:12px; padding:2px 0 6px; }
+
+.pca-intro{ display:flex; gap:10px; align-items:flex-start;
+  background:var(--pc-chip,#f0f2ff); border-radius:12px; padding:12px; }
+.pca-intro-ico{ font-size:1.5rem; line-height:1; }
+.pca-intro b{ display:block; font-size:.95rem; color:var(--pc-lav-deep,#3a3f78); margin-bottom:3px; }
+.pca-intro small{ font-size:.8rem; color:#4a5568; line-height:1.45; }
+
+.pca-btn-principal{
+  width:100%; border:none; border-radius:12px; cursor:pointer;
+  background:linear-gradient(100deg,#075E88,#0E86BE); color:#fff;
+  padding:14px; font-size:.95rem; font-weight:800; letter-spacing:.2px;
+}
+
+.pca-cabeza{ display:flex; align-items:flex-start; gap:8px;
+  background:var(--pc-chip,#f0f2ff); border-radius:12px; padding:11px 12px; }
+.pca-cabeza > div:first-child{ flex:1; min-width:0; }
+.pca-cabeza b{ display:block; font-size:.95rem; color:var(--pc-lav-deep,#3a3f78);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pca-cabeza small{ font-size:.76rem; color:#4a5568; }
+.pca-cabeza-btns{ display:flex; gap:5px; flex:0 0 auto; }
+.pca-cabeza-btns button{
+  background:#fff; border:1px solid #d9deea; border-radius:9px;
+  padding:7px 9px; font-size:.9rem; cursor:pointer;
+}
+
+.pca-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.pca-kpi{ background:#fff; border:1px solid #e2e6f0; border-radius:10px;
+  padding:9px 4px; text-align:center; }
+.pca-kpi b{ display:block; font-size:1.05rem; font-weight:800; color:#0A6F9E; line-height:1.1; }
+.pca-kpi small{ display:block; font-size:.64rem; color:#5a6472; line-height:1.2; margin-top:2px; }
+
+.pca-h{ margin:4px 0 0; font-size:.84rem; font-weight:800; color:var(--pc-lav-deep,#3a3f78); }
+
+.pca-chart-wrap{ position:relative; height:200px; background:#fff;
+  border:1px solid #e2e6f0; border-radius:10px; padding:8px; }
+/* Chart.js en modo responsive controla el tamaño del lienzo, pero necesita
+   que el canvas parta ocupando la caja o queda colapsado a 0. */
+.pca-chart-wrap canvas{ display:block; width:100% !important; height:100% !important; }
+
+.pca-bar-row{ margin-bottom:7px; }
+.pca-bar-label{ display:flex; align-items:baseline; gap:6px; font-size:.78rem; margin-bottom:3px; }
+.pca-bar-label b{ flex:1; font-weight:700; color:#2f3646; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.pca-bar-label small{ color:#5a6472; font-weight:700; }
+.pca-bar-track{ height:7px; background:#eceff5; border-radius:5px; overflow:hidden; }
+.pca-bar-fill{ height:100%; border-radius:5px; }
+
+.pca-tabla{ width:100%; border-collapse:collapse; font-size:.76rem; }
+.pca-tabla th{ text-align:left; color:#5a6472; font-weight:700; font-size:.68rem;
+  text-transform:uppercase; letter-spacing:.3px; padding:5px 6px;
+  border-bottom:1px solid #e2e6f0; }
+.pca-tabla td{ padding:5px 6px; border-bottom:1px solid #f0f2f7; color:#2f3646; }
+.pca-tabla td.n, .pca-tabla th:not(:first-child){ text-align:right; }
+
+.pca-vacio{ background:#fff8e6; border:1px solid #f3dca8; border-radius:10px;
+  padding:11px; font-size:.8rem; color:#6b5518; line-height:1.45; }
+
+.pca-nota{ margin:0; font-size:.72rem; color:#5a6472; line-height:1.45;
+  border-top:1px solid #e6e9f0; padding-top:8px; }
+
+.pca-guardadas{ display:flex; flex-direction:column; gap:6px; }
+.pca-guardadas > b{ font-size:.8rem; color:var(--pc-lav-deep,#3a3f78); }
+.pca-guardada{ display:flex; gap:6px; align-items:stretch; }
+.pca-guardada-abrir{ flex:1; display:flex; align-items:center; gap:9px; text-align:left;
+  background:#fff; border:1px solid #e2e6f0; border-radius:10px; padding:9px 10px; cursor:pointer; }
+.pca-guardada-abrir span{ font-size:1.15rem; }
+.pca-guardada-abrir b{ display:block; font-size:.85rem; color:#2f3646; }
+.pca-guardada-abrir small{ font-size:.72rem; color:#5a6472; }
+.pca-guardada-borrar{ background:#fff; border:1px solid #f0d0d0; border-radius:10px;
+  padding:0 11px; font-size:.9rem; cursor:pointer; }
+
+@media (min-width:560px){
+  .pca-chart-wrap{ height:240px; }
+}
+
+/* ── Anulación del gris-blanco global (ver nota de cabecera) ──
+   Se listan solo los textos del panel; se usa también -webkit-text-fill-color
+   porque varias reglas de URBIS lo fijan y, si no, gana sobre `color`. */
+.pca-panel small, .pca-panel p, .pca-panel span, .pca-panel label,
+#pca-barra small, #pca-barra span{
+  -webkit-text-fill-color:currentColor;
+}
+.pca-intro small{ color:#3f4b5c !important; -webkit-text-fill-color:#3f4b5c !important; }
+.pca-cabeza small{ color:#3f4b5c !important; -webkit-text-fill-color:#3f4b5c !important; }
+.pca-kpi small{ color:#44506b !important; -webkit-text-fill-color:#44506b !important; }
+.pca-bar-label small{ color:#44506b !important; -webkit-text-fill-color:#44506b !important; }
+.pca-nota{ color:#4b5768 !important; -webkit-text-fill-color:#4b5768 !important; }
+.pca-vacio{ color:#6b5518 !important; -webkit-text-fill-color:#6b5518 !important; }
+.pca-guardada-abrir small{ color:#44506b !important; -webkit-text-fill-color:#44506b !important; }
+.pca-tabla td{ color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important; }
+.pca-tabla th{ color:#4b5768 !important; -webkit-text-fill-color:#4b5768 !important; }
+#pca-barra .pca-barra-info small{ color:#c3d7e4 !important; -webkit-text-fill-color:#c3d7e4 !important; }

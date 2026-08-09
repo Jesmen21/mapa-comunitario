@@ -1,0 +1,1141 @@
+/* URBIS V72 · plataforma móvil kawaii pastel */
+@media (max-width:1024px), (pointer:coarse){
+  body,
+  #urbis-mobile-app{
+    background:
+      radial-gradient(circle at 12% 4%, rgba(192,245,236,.58), transparent 20%),
+      radial-gradient(circle at 88% 16%, rgba(248,218,236,.55), transparent 18%),
+      linear-gradient(180deg,#fcfcfd 0%, #f7f8fb 100%) !important;
+    color:#26456d !important;
+  }
+  #urbis-mobile-app .u52-screen{
+    background:transparent !important;
+    color:#26456d !important;
+  }
+  #urbis-mobile-app,
+  #urbis-mobile-app *{
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif !important;
+  }
+  .u52-content{ padding: 0 14px calc(110px + env(safe-area-inset-bottom,0px)); }
+  .u52-k-home-topbar{
+    margin:14px 14px 10px;
+    padding:14px 14px;
+    border-radius:30px;
+    background:rgba(255,255,255,.90);
+    box-shadow:0 16px 38px rgba(30,76,122,.08), inset 0 0 0 1px rgba(98,146,186,.08);
+    display:grid;
+    grid-template-columns:84px minmax(0,1fr) 84px;
+    align-items:center;
+    gap:12px;
+  }
+  .u52-k-home-pill{
+    min-height:78px;
+    border:0;
+    border-radius:24px;
+    background:linear-gradient(180deg,#f4fcfb,#fff9f6);
+    color:#5b7190;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    padding:10px 6px;
+    text-align:center;
+    box-shadow:0 10px 24px rgba(67,97,138,.08), inset 0 0 0 1px rgba(162,197,222,.12);
+  }
+  .u52-k-home-pill.profile{ background:linear-gradient(180deg,#f5fcfd,#fffdf9); }
+  .u52-k-home-pill.notify{ background:linear-gradient(180deg,#fff9ef,#fffdfb); }
+  .u52-k-home-pill small{
+    font-size:.75rem;
+    line-height:1;
+    font-weight:800;
+    color:#90a0b9;
+    letter-spacing:-.01em;
+  }
+  .u52-k-home-emoji{ font-size:1.55rem; line-height:1; }
+  .u52-k-home-brand{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-width:0;
+    min-height:78px;
+    padding:8px 10px;
+    border-radius:24px;
+    background:linear-gradient(180deg,#ffffff,#fbfdff);
+    box-shadow:inset 0 0 0 1px rgba(175,198,227,.14);
+  }
+  .u52-k-home-brand img{ width:58px; height:58px; object-fit:contain; flex:0 0 58px; filter:drop-shadow(0 10px 16px rgba(44,212,182,.18)); }
+  .u52-k-home-brand span{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
+    min-width:0;
+  }
+  .u52-k-home-brand b{ display:block; font-size:1.5rem; line-height:1; color:#1f4a86; font-weight:900; letter-spacing:-.03em; }
+  .u52-k-home-brand small{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    margin-top:5px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:linear-gradient(180deg,#eefaf7,#f8fffd);
+    color:#67cfc3;
+    font-size:.76rem;
+    font-weight:800;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .u52-k-home-content{ position:relative; }
+  /* Nubes eliminadas (pedido explícito): sobraban visualmente. */
+  .u52-k-home-content::before,
+  .u52-k-home-content::after{ content:none !important; display:none !important; }
+  .u52-k-cloud{ display:none !important; }
+
+  /* Hero de inicio REDISEÑADO: banner cute pastel (adiós al "Inicio" gigante).
+     Saludo amable + pregunta, tipografía en la línea que gustó (peso medio,
+     no mayúsculas agresivas), con un destello ✨ decorativo. */
+  .u52-k-home-hero.u52-home-hero-cute{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin:2px 0 4px; padding:15px 18px; border-radius:24px; position:relative; overflow:hidden;
+    background:linear-gradient(135deg, #eafff9 0%, #f3f0ff 52%, #ffeef6 100%);
+    box-shadow:0 12px 28px rgba(120,140,200,.12), inset 0 0 0 1px rgba(255,255,255,.6);
+  }
+  .u52-home-hero-copy{ min-width:0; position:relative; z-index:1; }
+  .u52-home-hero-kicker{
+    display:inline-block; font-size:.72rem; font-weight:800; color:#0e9f8f !important;
+    -webkit-text-fill-color:#0e9f8f !important; background:#d6fbf3; border-radius:999px;
+    padding:3px 11px; margin-bottom:7px; letter-spacing:.01em;
+  }
+  .u52-home-hero-cute h1{
+    margin:0 0 9px; font-size:1.18rem; line-height:1.1; color:#224b86 !important;
+    -webkit-text-fill-color:#224b86 !important; font-weight:800; letter-spacing:-.02em;
+  }
+  /* Carrusel de mensajes de bienvenida — pedido explícito: rotación
+     automática, flechitas sutiles para navegar, transición deslizante y un
+     toque de color pastel distinto por mensaje (variable --u52-hero-accent,
+     asignada por JS desde una paleta cíclica de 8 tonos). El título antes
+     se sentía "pegado" y demasiado grande frente a los mensajes — se achica
+     un poco y se separa con una línea sutil para que se lean como dos
+     bloques distintos (título fijo arriba, mensaje rotando abajo). */
+  .u52-hero-carousel{
+    display:flex; align-items:flex-start; gap:5px; margin-top:9px; padding-top:9px;
+    border-top:1px dashed rgba(120,140,200,.28);
+  }
+  .u52-hero-nav{
+    appearance:none; border:0; background:rgba(255,255,255,.55);
+    width:20px; height:20px; border-radius:50%; flex:0 0 auto;
+    display:grid; place-items:center; font-size:.8rem; line-height:1;
+    color:#8a97b0 !important; -webkit-text-fill-color:#8a97b0 !important;
+    opacity:.65; margin-top:1px; transition:opacity .15s ease, transform .15s ease;
+  }
+  .u52-hero-nav:active{ opacity:1; transform:scale(.9); }
+  .u52-hero-msg{
+    margin:0; flex:1; min-width:0; font-size:.8rem; line-height:1.32; color:#5b6b85 !important;
+    -webkit-text-fill-color:#5b6b85 !important; font-weight:650;
+    padding-left:9px; border-left:3px solid var(--u52-hero-accent, #7ee0cf);
+  }
+  .u52-hero-msg.u52-hero-anim{ animation:u52HeroMsgIn .45s cubic-bezier(.22,.85,.32,1); }
+  @keyframes u52HeroMsgIn{
+    from{ opacity:0; transform:translateX(16px); }
+    to{ opacity:1; transform:translateX(0); }
+  }
+  @media (prefers-reduced-motion:reduce){ .u52-hero-msg.u52-hero-anim{ animation:none; } }
+  .u52-home-hero-cute p{
+    margin:5px 0 0; font-size:.8rem; line-height:1.3; color:#7b8aa4 !important;
+    -webkit-text-fill-color:#7b8aa4 !important; font-weight:600;
+  }
+  .u52-home-hero-spark{
+    flex:0 0 auto; font-size:2.1rem; line-height:1;
+    filter:drop-shadow(0 4px 8px rgba(180,150,240,.35));
+    animation:u52HeroSpark 2.4s ease-in-out infinite;
+  }
+  @keyframes u52HeroSpark{ 0%,100%{ transform:translateY(0) rotate(-6deg); } 50%{ transform:translateY(-4px) rotate(8deg); } }
+
+  .u52-k-section-label, .u52-section-label{ margin:14px 4px 10px; font-size:.9rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+  .u52-k-section-label.mint, .u52-section-label{ color:#34c8b4 !important; }
+  .u52-k-section-label.lilac{ color:#ae8ced !important; }
+  .u52-grid{ gap:12px !important; }
+  .u52-grid-primary{ grid-template-columns:repeat(3, minmax(0,1fr)) !important; }
+  .u52-grid-secondary{ grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
+  .u52-module{
+    min-height:146px; border:0 !important; border-radius:28px !important; padding:18px 14px !important;
+    align-items:flex-start !important; justify-content:flex-start !important; gap:10px !important;
+    background:rgba(255,255,255,.88) !important;
+    box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1px rgba(139,172,209,.10) !important;
+    position:relative; overflow:hidden; text-align:left !important;
+  }
+  .u52-module::after{ content:''; position:absolute; right:12px; top:12px; width:10px; height:10px; border-radius:50%; background:rgba(222,230,247,.9); box-shadow:-18px 12px 0 0 rgba(238,205,255,.95), -6px 36px 0 -2px rgba(193,244,230,.96); }
+  .u52-module span{
+    width:62px; height:62px; border-radius:20px; display:grid !important; place-items:center;
+    font-size:2rem !important; background:#f6fbff; box-shadow:0 10px 20px rgba(67,97,138,.08);
+  }
+  .u52-module b{ color:#24466e !important; font-size:1.05rem !important; font-weight:900 !important; letter-spacing:-.03em; }
+  .u52-module small{ color:#7484a0 !important; font-size:.74rem !important; font-weight:800 !important; }
+  .u52-module.mobility{ background:linear-gradient(180deg, rgba(242,253,251,.95), rgba(249,255,253,.95)) !important; }
+  .u52-module.mobility span{ background:linear-gradient(180deg,#e4fffb,#ffffff); }
+  .u52-module.mobility small{ color:#34c8b4 !important; }
+  .u52-module.sport{ background:linear-gradient(180deg, rgba(255,250,241,.95), rgba(255,255,254,.95)) !important; }
+  .u52-module.sport small{ color:#f0a54d !important; }
+  .u52-module.alerts{ background:linear-gradient(180deg, rgba(250,245,255,.97), rgba(255,255,255,.95)) !important; }
+  .u52-module.alerts small{ color:#b08af0 !important; }
+  .u52-module.map,.u52-module.profile,.u52-module.events,.u52-module.data{ min-height:118px; }
+  .u52-module.map small{ color:#37c5b2 !important; }
+  .u52-module.profile small{ color:#68a2ff !important; }
+  .u52-module.events small{ color:#f48dbf !important; }
+  .u52-module.data small{ color:#b493ef !important; }
+  /* Feedback al seleccionar un módulo: transición base + "pop" cute (con
+     sonidito desde JS). El pop se dispara con la clase .u52-module-tapped
+     que el manejador de clicks añade ~190ms antes de navegar. */
+  .u52-module{ transition:transform .16s ease, box-shadow .2s ease; }
+  .u52-module:active{ transform:scale(.96); }
+  .u52-module.u52-module-tapped{
+    animation:u52ModulePop .34s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 16px 34px rgba(80,150,220,.22), inset 0 0 0 2px rgba(120,200,255,.5) !important;
+  }
+  @keyframes u52ModulePop{
+    0%{ transform:scale(1); } 38%{ transform:scale(.9); }
+    68%{ transform:scale(1.07); } 100%{ transform:scale(1); }
+  }
+  .u52-empty-card, .u52-card, .u52-sheet, .u52-profile-card, .u52-list-card, .u52-stat{
+    background:rgba(255,255,255,.88) !important; color:#26456d !important; border:0 !important;
+    box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1px rgba(139,172,209,.08) !important;
+    border-radius:28px !important;
+  }
+  .u52-k-banner-card{ display:flex !important; align-items:center; gap:14px; padding:16px 18px !important; }
+  .u52-k-banner-card > span{ width:68px; height:68px; border-radius:22px; display:grid; place-items:center; font-size:2rem; background:#fff; box-shadow:0 10px 18px rgba(51,77,119,.08); flex:0 0 auto; }
+  .u52-k-banner-card b{ color:#25476e !important; font-size:1.05rem !important; font-weight:900 !important; }
+  .u52-k-banner-card small{ color:#7988a2 !important; font-size:.78rem !important; font-weight:700 !important; }
+  .u52-k-banner-card button, .u52-empty-card button, .u52-secondary, .u52-primary, .u52-k-admin-submit{
+    border:0 !important; border-radius:18px !important; padding:13px 18px !important; font-weight:900 !important;
+    box-shadow:0 10px 20px rgba(69,112,158,.12) !important;
+  }
+  .u52-k-banner-card.mint button, .u52-empty-card button, .u52-primary.green, .u52-primary.blue, .u52-primary{
+    background:linear-gradient(135deg,#5be3d4,#4ed6c8) !important; color:#fff !important;
+  }
+  .u52-k-banner-card.lilac button, .u52-secondary{
+    background:linear-gradient(135deg,#c8a7ff,#b78af7) !important; color:#fff !important;
+  }
+  /* Animación sutil en "Elegir avatar" (Perfil): invita al toque ahora que
+     ya no hay un ícono duplicado arriba para llegar al mismo lugar. */
+  .u65-avatar-open-pulse{ animation:u65AvatarPulse 2.6s ease-in-out infinite; }
+  @keyframes u65AvatarPulse{
+    0%,100%{ box-shadow:0 6px 16px rgba(183,138,247,.30) !important; transform:scale(1); }
+    50%{ box-shadow:0 8px 22px rgba(183,138,247,.55) !important; transform:scale(1.015); }
+  }
+  .u52-topbar{
+    margin:12px 14px 10px; padding:14px 16px !important; border-radius:24px !important;
+    background:rgba(255,255,255,.88) !important; box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1px rgba(139,172,209,.08) !important;
+    color:#27476f !important;
+  }
+  .u52-title{ color:#25476f !important; font-weight:500 !important; letter-spacing:-.01em; }
+  .u52-icon-btn{
+    background:#fff !important; color:#2f557f !important; border:0 !important; border-radius:18px !important;
+    box-shadow:0 10px 18px rgba(60,91,132,.10) !important;
+  }
+  .u52-sheet-row b, .u52-card b, .u52-list-card b, .u52-stat b, .u52-profile-card h1{ color:#26456d !important; }
+  .u52-sheet span, .u52-card small, .u52-list-card small, .u52-empty-card small, .u52-profile-card p, .u52-muted{ color:#7b8aa4 !important; }
+  .u52-pill-blue{ background:#edf8ff !important; color:#62a0ef !important; border:0 !important; }
+  .u52-map-actions button, .u57-transport-row button{
+    background:rgba(255,255,255,.88) !important; color:#26456d !important; border:0 !important;
+    box-shadow:0 10px 18px rgba(60,91,132,.10) !important;
+  }
+  .u57-transport-row button.active{ background:linear-gradient(135deg,#64e4d5,#57d7cb) !important; color:#fff !important; }
+  .u52-input, input[type='text'], input[type='password'], textarea, select{
+    background:#f8fbfe !important; color:#26456d !important; border:1px solid rgba(139,172,209,.20) !important;
+  }
+  .u52-bottom-nav{
+    left:14px; right:14px; bottom:calc(10px + env(safe-area-inset-bottom,0px)) !important; width:auto !important;
+    border-radius:28px !important; padding:10px 8px !important; background:rgba(255,255,255,.92) !important; border:0 !important;
+    box-shadow:0 18px 40px rgba(39,70,111,.12), inset 0 0 0 1px rgba(139,172,209,.08) !important;
+  }
+  .u52-bottom-nav button{ color:#7a8aa4 !important; font-weight:800 !important; }
+  .u52-bottom-nav button.active{ color:#2fcab7 !important; }
+  .u52-bottom-nav .plus{ background:linear-gradient(135deg,#69e5d8,#58d8cc) !important; color:#fff !important; box-shadow:0 12px 22px rgba(75,214,201,.28) !important; }
+  .u52-chart.real i{ background:linear-gradient(180deg,#7ce5da,#a68ff2) !important; }
+  .u65-avatar-card, .u65-avatar-preview{ background:rgba(255,255,255,.88) !important; border:0 !important; box-shadow:0 14px 32px rgba(35,71,116,.08) !important; }
+  /* Feedback visual claro al ELEGIR un avatar (pedido explícito): anillo de
+     color propio de marca + brillo + "pop" de escala + insignia ✓, para que
+     quede evidente cuál tarjeta quedó seleccionada. */
+  #urbis-mobile-app .u65-avatar-card{ position:relative; transition:transform .18s ease, box-shadow .22s ease; }
+  #urbis-mobile-app .u65-avatar-card.active{
+    background:linear-gradient(145deg,rgba(110,231,183,.22),rgba(24,215,255,.14)) !important;
+    box-shadow:0 0 0 3px #00b89e, 0 10px 26px rgba(0,184,158,.35) !important;
+    transform:scale(1.045);
+    animation:u65AvatarPick .38s cubic-bezier(.34,1.56,.64,1);
+  }
+  #urbis-mobile-app .u65-avatar-card.active::after{
+    content:'✓'; position:absolute; top:8px; right:8px; width:24px; height:24px;
+    border-radius:50%; background:#00b89e; color:#fff; font-size:.78rem; font-weight:900;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,184,158,.4);
+  }
+  @keyframes u65AvatarPick{
+    0%{ transform:scale(1); } 55%{ transform:scale(1.09); } 100%{ transform:scale(1.045); }
+  }
+  /* "Avatar activo" (span dentro de la tarjeta blanca de arriba, pantalla
+     Avatar GPS): css/14 lo pinta casi-blanco (#e9fff0, pensado para fondo
+     oscuro) y css/42 pinta TODO <span> casi-blanco también — sobre este
+     fondo blanco quedaba invisible. Regla de URBIS: texto SIEMPRE oscuro
+     y legible sobre fondos claros. */
+  #urbis-mobile-app .u65-avatar-preview span{
+    color:#244b84 !important; -webkit-text-fill-color:#244b84 !important; opacity:1 !important;
+  }
+}
+
+
+  @media (max-width:420px){
+    .u52-k-home-topbar{ grid-template-columns:78px minmax(0,1fr) 78px; gap:10px; padding:12px; }
+    .u52-k-home-pill{ min-height:74px; border-radius:22px; }
+    .u52-k-home-brand{ min-height:74px; padding:8px; gap:8px; }
+    .u52-k-home-brand img{ width:54px; height:54px; flex-basis:54px; }
+    .u52-k-home-brand b{ font-size:1.42rem; }
+    .u52-k-home-brand small{ font-size:.72rem; padding:4px 9px; }
+    .u52-k-home-pill small{ font-size:.72rem; }
+  }
+
+
+/* URBIS V142 · Botón cerrar sesión al final del perfil móvil */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-profile-logout{
+    width:100%;
+    margin:16px 0 8px;
+    border:0;
+    border-radius:28px;
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    text-align:left;
+    background:linear-gradient(180deg,#fff5f7,#ffffff);
+    box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1px rgba(248,168,184,.22);
+    color:#26456d;
+  }
+  .u52-profile-logout span{
+    width:54px;
+    height:54px;
+    flex:0 0 54px;
+    border-radius:20px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(180deg,#fff,#fff1f4);
+    box-shadow:0 10px 20px rgba(67,97,138,.08);
+    font-size:1.55rem;
+  }
+  .u52-profile-logout b{
+    display:block;
+    color:#d94c66;
+    font-size:1.05rem;
+    line-height:1.1;
+    font-weight:1000;
+  }
+  .u52-profile-logout small{
+    display:block;
+    margin-top:4px;
+    color:#8994a8;
+    font-size:.76rem;
+    font-weight:800;
+  }
+}
+
+
+/* URBIS V147 · Topbar de inicio más alineado y con iconos nuevos */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-k-home-topbar{
+    grid-template-columns:88px minmax(0,1fr) 88px !important;
+    gap:10px !important;
+    padding:12px !important;
+    align-items:stretch !important;
+  }
+  .u52-k-home-pill{
+    min-height:86px !important;
+    border-radius:24px !important;
+    gap:6px !important;
+    padding:10px 6px 8px !important;
+  }
+  .u52-k-home-pill small{
+    color:#8da0ba !important;
+    font-size:.85rem !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    opacity:1 !important;
+  }
+  .u52-k-home-icon-shell{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 44px;
+  }
+  .u52-k-home-icon-img{
+    width:40px;
+    height:40px;
+    object-fit:contain;
+    display:block;
+    filter:drop-shadow(0 6px 10px rgba(45,97,138,.10));
+  }
+  .u52-k-home-icon-bell{
+    width:38px;
+    height:38px;
+  }
+  .u52-k-home-brand{
+    min-height:86px !important;
+    border-radius:26px !important;
+    gap:8px !important;
+    padding:10px 12px !important;
+    justify-content:center !important;
+  }
+  .u52-k-home-brand img{
+    width:52px !important;
+    height:52px !important;
+    flex:0 0 52px !important;
+  }
+  .u52-k-home-brand span{
+    align-items:flex-start !important;
+    justify-content:center !important;
+    min-width:0 !important;
+  }
+  .u52-k-home-brand b{
+    font-size:1.58rem !important;
+    color:#1d4da0 !important;
+    letter-spacing:-.04em !important;
+    white-space:nowrap !important;
+  }
+  .u52-k-home-brand small{
+    margin-top:6px !important;
+    padding:5px 10px !important;
+    background:linear-gradient(180deg,#eefaf7,#fbfffe) !important;
+    color:#9fddcf !important;
+    font-size:.78rem !important;
+    font-weight:900 !important;
+    box-shadow:inset 0 0 0 1px rgba(180,233,223,.46) !important;
+    opacity:1 !important;
+  }
+}
+@media (max-width:420px){
+  .u52-k-home-topbar{
+    grid-template-columns:84px minmax(0,1fr) 84px !important;
+    gap:8px !important;
+    padding:10px !important;
+  }
+  .u52-k-home-pill{
+    min-height:82px !important;
+    padding:9px 5px 8px !important;
+  }
+  .u52-k-home-pill small{
+    font-size:.82rem !important;
+  }
+  .u52-k-home-brand{
+    min-height:82px !important;
+    padding:8px 10px !important;
+    gap:6px !important;
+  }
+  .u52-k-home-brand img{
+    width:48px !important;
+    height:48px !important;
+    flex-basis:48px !important;
+  }
+  .u52-k-home-brand b{
+    font-size:1.46rem !important;
+  }
+  .u52-k-home-brand small{
+    font-size:.74rem !important;
+    padding:4px 8px !important;
+  }
+}
+
+
+/* URBIS V151 · topbar home refinado según referente del usuario */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-k-home-topbar{
+    grid-template-columns:92px minmax(0,1fr) 92px !important;
+    gap:12px !important;
+    padding:12px 14px !important;
+    border-radius:30px !important;
+    background:rgba(255,255,255,.92) !important;
+  }
+  .u52-k-home-pill{
+    min-height:92px !important;
+    padding:10px 6px 10px !important;
+    border-radius:26px !important;
+    justify-content:center !important;
+    background:linear-gradient(180deg,#fafdfd,#fffdfa) !important;
+    box-shadow:0 10px 24px rgba(67,97,138,.07), inset 0 0 0 1px rgba(199,218,238,.26) !important;
+  }
+  .u52-k-home-pill.notify{
+    background:linear-gradient(180deg,#fffaf0,#fffdf8) !important;
+  }
+  .u52-k-home-pill small{
+    font-size:.88rem !important;
+    font-weight:900 !important;
+    color:#738db0 !important;
+    opacity:1 !important;
+  }
+  .u52-k-home-icon-shell{
+    width:50px !important;
+    height:50px !important;
+    flex:0 0 50px !important;
+  }
+  .u52-k-home-icon-img{
+    width:46px !important;
+    height:46px !important;
+    object-fit:contain !important;
+    display:block !important;
+  }
+  .u52-k-home-brand{
+    min-height:92px !important;
+    padding:10px 14px !important;
+    gap:0 !important;
+    border-radius:28px !important;
+    justify-content:center !important;
+    align-items:center !important;
+    text-align:center !important;
+    background:linear-gradient(180deg,#ffffff,#fcfeff) !important;
+    box-shadow:0 10px 24px rgba(67,97,138,.05), inset 0 0 0 1px rgba(196,214,236,.35) !important;
+  }
+  .u52-k-home-brand img{display:none !important;}
+  .u52-k-home-brand span{
+    width:100% !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  .u52-k-home-brand b{
+    font-size:1.95rem !important;
+    line-height:1 !important;
+    color:#1e4daa !important;
+    letter-spacing:-.04em !important;
+    font-weight:1000 !important;
+  }
+  .u52-k-home-brand small{
+    margin-top:10px !important;
+    padding:7px 16px !important;
+    border-radius:999px !important;
+    background:linear-gradient(180deg,#edfdf8,#f9fffd) !important;
+    box-shadow:inset 0 0 0 1px rgba(173,233,221,.9) !important;
+    color:#53cbbd !important;
+    font-size:.9rem !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+  }
+}
+@media (max-width:420px){
+  .u52-k-home-topbar{
+    grid-template-columns:86px minmax(0,1fr) 86px !important;
+    gap:10px !important;
+    padding:11px !important;
+  }
+  .u52-k-home-pill{
+    min-height:88px !important;
+    border-radius:24px !important;
+  }
+  .u52-k-home-pill small{
+    font-size:.84rem !important;
+  }
+  .u52-k-home-icon-shell{ width:46px !important; height:46px !important; flex-basis:46px !important; }
+  .u52-k-home-icon-img{ width:42px !important; height:42px !important; }
+  .u52-k-home-brand{
+    min-height:88px !important;
+    padding:10px 10px !important;
+  }
+  .u52-k-home-brand b{
+    font-size:1.78rem !important;
+  }
+  .u52-k-home-brand small{
+    margin-top:8px !important;
+    padding:6px 14px !important;
+    font-size:.82rem !important;
+  }
+}
+
+
+/* URBIS V161 · módulo Social en Android/iPhone */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-k-home-grid-primary{
+    grid-template-columns:repeat(4, minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+  .u52-k-home-grid-primary .u52-module{
+    min-height:138px !important;
+    padding:15px 10px !important;
+    border-radius:26px !important;
+  }
+  .u52-k-home-grid-primary .u52-module span{
+    width:56px !important;
+    height:56px !important;
+    border-radius:20px !important;
+    font-size:1.75rem !important;
+  }
+  .u52-module span img{
+    width:44px;
+    height:44px;
+    object-fit:contain;
+    display:block;
+  }
+  .u52-k-home-grid-primary .u52-module b{
+    font-size:.94rem !important;
+    line-height:1.05 !important;
+  }
+  .u52-k-home-grid-primary .u52-module small{
+    font-size:.70rem !important;
+    line-height:1.1 !important;
+  }
+  .u52-module.social{
+    background:linear-gradient(180deg, rgba(238,255,252,.97), rgba(255,255,255,.95)) !important;
+  }
+  .u52-module.social span{
+    background:linear-gradient(180deg,#e4fffb,#ffffff) !important;
+  }
+  .u52-module.social small{
+    color:#2fcab7 !important;
+  }
+  .u52-social-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px !important;
+  }
+  .u52-social-card > span{
+    width:78px;
+    height:78px;
+    border-radius:26px;
+    background:linear-gradient(180deg,#e9fffb,#ffffff);
+    display:grid;
+    place-items:center;
+    box-shadow:0 12px 24px rgba(67,97,138,.08);
+    flex:0 0 auto;
+  }
+  .u52-social-card img{
+    width:62px;
+    height:62px;
+    object-fit:contain;
+  }
+  .u52-social-card b{
+    display:block;
+    color:#24466e;
+    font-size:1.15rem;
+    font-weight:1000;
+  }
+  .u52-social-card small{
+    display:block;
+    color:#75859e;
+    font-size:.82rem;
+    line-height:1.35;
+    font-weight:750;
+    margin-top:4px;
+  }
+}
+@media (max-width:420px){
+  .u52-k-home-grid-primary{
+    gap:8px !important;
+  }
+  .u52-k-home-grid-primary .u52-module{
+    min-height:126px !important;
+    padding:13px 8px !important;
+    border-radius:23px !important;
+  }
+  .u52-k-home-grid-primary .u52-module span{
+    width:50px !important;
+    height:50px !important;
+    border-radius:18px !important;
+  }
+  .u52-module span img{
+    width:39px;
+    height:39px;
+  }
+  .u52-k-home-grid-primary .u52-module b{
+    font-size:.84rem !important;
+  }
+  .u52-k-home-grid-primary .u52-module small{
+    font-size:.66rem !important;
+  }
+}
+
+
+/* URBIS V162 · Social: búsqueda de amigos por usuario, cédula o ID URBIS */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-social-search-card{display:grid;gap:12px;padding:18px !important;}
+  .u52-social-search-card label{display:grid;gap:6px;}
+  .u52-social-search-card label b,.u52-social-my-card b{color:#214a82 !important;font-weight:1000 !important;font-size:1.02rem;}
+  .u52-social-search-card label small,.u52-social-my-card small{color:#7a8ba7 !important;font-weight:800 !important;line-height:1.3;}
+  #u52-social-search-input{width:100%;min-height:52px;border:0;border-radius:18px;padding:0 16px;background:#f6fffc;color:#173956;font-size:1rem;font-weight:850;outline:none;box-shadow:inset 0 0 0 1.5px rgba(92,213,198,.32),0 8px 16px rgba(49,111,134,.05);}
+  .u52-social-my-card{align-items:center;}
+  .u52-social-my-card code{display:inline-flex;align-items:center;justify-content:center;width:max-content;margin-top:9px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#effffb,#ffffff);color:#13ad9b;font-weight:1000;letter-spacing:.12em;box-shadow:inset 0 0 0 1px rgba(86,218,202,.5);}
+  .u52-social-my-card > button,.u52-social-found button{border:0;border-radius:16px;padding:12px 14px;background:linear-gradient(135deg,#55decf,#7beada);color:#073a39;font-weight:1000;box-shadow:0 10px 20px rgba(72,211,197,.24);}
+  .u52-social-result{display:grid;gap:10px;}
+  .u52-social-msg{padding:13px 14px;border-radius:18px;background:#f8fbff;color:#637894;font-weight:850;line-height:1.35;}
+  .u52-social-msg.error{background:#fff6f8;color:#c45c78;}
+  .u52-social-found{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:22px;background:linear-gradient(180deg,#f3fffc,#ffffff);box-shadow:inset 0 0 0 1px rgba(92,213,198,.34),0 10px 20px rgba(47,96,132,.06);}
+  .u52-social-found div{min-width:0;display:grid;gap:4px;}
+  .u52-social-found b{color:#214a82;font-size:1rem;font-weight:1000;}
+  .u52-social-found small{color:#6f7f98;font-weight:800;line-height:1.25;}
+  .u52-social-found em{color:#25b8a9;font-style:normal;font-weight:900;font-size:.78rem;}
+}
+
+
+/* URBIS V163 · ID URBIS privado visible en Perfil */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-profile-id-card{
+    display:grid !important;
+    grid-template-columns:54px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:16px !important;
+    background:linear-gradient(180deg,#f2fffb,#ffffff) !important;
+    box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1.5px rgba(86,218,202,.35) !important;
+  }
+  .u52-profile-id-icon{
+    width:54px;
+    height:54px;
+    display:grid;
+    place-items:center;
+    border-radius:20px;
+    background:#ffffff;
+    box-shadow:0 10px 18px rgba(51,77,119,.08);
+    font-size:1.7rem;
+  }
+  .u52-profile-id-card b{
+    display:block;
+    color:#214a82 !important;
+    font-size:1.02rem;
+    font-weight:1000;
+    line-height:1.1;
+  }
+  .u52-profile-id-card small{
+    display:block;
+    margin-top:3px;
+    color:#7587a2 !important;
+    font-size:.76rem;
+    font-weight:800;
+    line-height:1.28;
+  }
+  .u52-profile-id-card code{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:max-content;
+    margin-top:9px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:linear-gradient(180deg,#effffb,#ffffff);
+    color:#13ad9b;
+    font-weight:1000;
+    letter-spacing:.12em;
+    box-shadow:inset 0 0 0 1px rgba(86,218,202,.5);
+  }
+  .u52-profile-copy-id{
+    min-width:62px;
+    min-height:58px;
+    border:0;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    background:linear-gradient(135deg,#55decf,#7beada);
+    color:#073a39;
+    font-weight:1000;
+    box-shadow:0 10px 20px rgba(72,211,197,.24);
+  }
+  .u52-profile-copy-id span{font-size:1.3rem;line-height:1;}
+  .u52-profile-copy-id small{margin:0;color:#073a39 !important;font-size:.68rem;font-weight:1000;}
+}
+
+
+/* URBIS V164 · mejorar legibilidad de textos pálidos en Social */
+@media (max-width:1024px), (pointer:coarse){
+  #u52-social-search-input{
+    color:#173956 !important;
+  }
+  #u52-social-search-input::placeholder{
+    color:#8ca0b2 !important;
+    opacity:1 !important;
+    font-weight:900 !important;
+  }
+  .u52-social-search-card label small,
+  .u52-social-my-card small,
+  .u52-empty-card small{
+    color:#6f809a !important;
+  }
+}
+
+
+/* URBIS V166 · perfil usa avatar seleccionado dinámicamente */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-k-profile-avatar-shell,
+  .u52-module-profile-avatar,
+  .u52-bottom-avatar,
+  .u52-empty-profile-avatar{
+    overflow:visible !important;
+    background:transparent !important;
+  }
+  .u52-k-profile-avatar-shell img{
+    width:46px !important;
+    height:46px !important;
+    object-fit:contain !important;
+    display:block !important;
+    filter:drop-shadow(0 6px 10px rgba(45,97,138,.12));
+  }
+  .u52-k-profile-avatar-shell.has-avatar img{
+    width:52px !important;
+    height:52px !important;
+    transform:translateY(-1px);
+    filter:drop-shadow(0 8px 12px rgba(31,75,134,.14));
+  }
+  .u52-module-profile-avatar img{
+    width:50px !important;
+    height:50px !important;
+    object-fit:contain !important;
+    display:block !important;
+  }
+  .u52-module-profile-avatar.has-avatar img{
+    width:58px !important;
+    height:58px !important;
+  }
+  .u52-empty-profile-avatar{
+    width:54px !important;
+    height:54px !important;
+    display:grid !important;
+    place-items:center !important;
+    flex:0 0 54px !important;
+  }
+  .u52-empty-profile-avatar img{
+    width:46px !important;
+    height:46px !important;
+    object-fit:contain !important;
+  }
+  .u52-empty-profile-avatar.has-avatar img{
+    width:54px !important;
+    height:54px !important;
+  }
+  .u52-bottom-nav .u52-nav-profile-avatar-btn{
+    gap:2px !important;
+  }
+  .u52-bottom-avatar{
+    width:27px !important;
+    height:27px !important;
+    display:grid !important;
+    place-items:center !important;
+  }
+  .u52-bottom-avatar img{
+    width:27px !important;
+    height:27px !important;
+    object-fit:contain !important;
+    display:block !important;
+  }
+  .u52-bottom-avatar.has-avatar img{
+    width:31px !important;
+    height:31px !important;
+  }
+}
+@media (max-width:420px){
+  .u52-k-profile-avatar-shell img{ width:42px !important; height:42px !important; }
+  .u52-k-profile-avatar-shell.has-avatar img{ width:48px !important; height:48px !important; }
+}
+
+
+/* URBIS V168 · Noti + privacidad en resultados Social */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-noti-icon-wrap{position:relative;}
+  .u52-noti-badge{
+    position:absolute;top:-5px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;
+    background:linear-gradient(135deg,#ff4d78,#ff8ba8);color:#fff;border:2px solid #fff;font-size:.64rem;font-weight:1000;
+    line-height:15px;text-align:center;box-shadow:0 8px 14px rgba(255,77,120,.24);font-style:normal;
+  }
+  .u52-noti-list{display:grid;gap:12px;}
+  .u52-noti-card{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;padding:15px;border-radius:24px;background:rgba(255,255,255,.92);box-shadow:0 14px 32px rgba(35,71,116,.08), inset 0 0 0 1px rgba(139,172,209,.10);}
+  .u52-noti-card > span{width:48px;height:48px;border-radius:18px;display:grid;place-items:center;background:#f4fffc;font-size:1.45rem;}
+  .u52-noti-card b{color:#214a82;font-weight:1000;font-size:1.02rem;}
+  .u52-noti-card small{display:block;color:#6f809a;font-weight:800;line-height:1.25;margin-top:3px;}
+  .u52-noti-card em{display:inline-flex;margin-top:7px;color:#22b9aa;font-style:normal;font-weight:900;font-size:.78rem;}
+  .u52-noti-actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+  .u52-noti-actions button{border:0;min-height:44px;border-radius:16px;background:linear-gradient(135deg,#55decf,#7beada);color:#073a39;font-weight:1000;}
+  .u52-noti-actions button.ghost{background:#f2f6fb;color:#65778f;}
+  .u52-social-found small:nth-of-type(n+2){display:none!important;}
+}
+
+/* URBIS V171 · Noti demográfica + modal fecha nacimiento */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-noti-card.demographic > span{
+    background:linear-gradient(180deg,#fff8ec,#ffffff);
+  }
+  .u52-noti-actions.single{
+    grid-template-columns:1fr;
+  }
+  .u52-birthdate-modal{
+    position:fixed;
+    inset:0;
+    z-index:2147483600;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  .u52-birthdate-modal.show{display:flex;}
+  .u52-birthdate-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(19,33,48,.42);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+  .u52-birthdate-sheet{
+    position:relative;
+    width:min(92vw,520px);
+    margin:0 0 calc(16px + env(safe-area-inset-bottom,0px));
+    padding:22px 20px 20px;
+    border-radius:30px;
+    background:linear-gradient(180deg,#ffffff,#f6fffc);
+    box-shadow:0 24px 55px rgba(30,54,86,.22), inset 0 0 0 1px rgba(120,213,204,.22);
+    color:#214a82;
+  }
+  .u52-birthdate-x{
+    position:absolute;
+    right:16px;
+    top:14px;
+    width:40px;
+    height:40px;
+    border:0;
+    border-radius:999px;
+    background:#eef8f8;
+    color:#60758d;
+    font-size:1.4rem;
+    font-weight:900;
+  }
+  .u52-birthdate-icon{
+    width:56px;
+    height:56px;
+    border-radius:20px;
+    display:grid;
+    place-items:center;
+    background:#fff8ed;
+    font-size:1.5rem;
+    box-shadow:0 10px 20px rgba(50,82,112,.08);
+    margin-bottom:12px;
+  }
+  .u52-birthdate-sheet h2{
+    margin:0;
+    color:#1e4daa;
+    font-size:1.35rem;
+    line-height:1.1;
+    font-weight:1000;
+    letter-spacing:-.035em;
+  }
+  .u52-birthdate-sheet p{
+    margin:9px 0 16px;
+    color:#6f809a;
+    font-size:.93rem;
+    line-height:1.35;
+    font-weight:750;
+  }
+  .u52-birthdate-grid{
+    display:grid;
+    grid-template-columns:1fr 1.15fr 1fr;
+    gap:10px;
+  }
+  .u52-birthdate-grid label{display:grid;gap:6px;}
+  .u52-birthdate-grid span{color:#56cfc2;font-size:.8rem;font-weight:1000;}
+  .u52-birthdate-grid select{
+    width:100%;
+    min-height:52px;
+    border:0;
+    border-radius:17px;
+    padding:0 10px;
+    background:#ffffff;
+    color:#173956;
+    font-weight:900;
+    font-size:.95rem;
+    box-shadow:inset 0 0 0 1.5px rgba(92,213,198,.34),0 8px 16px rgba(49,111,134,.05);
+  }
+  .u52-birth-status{
+    margin:13px 0 14px;
+    padding:11px 12px;
+    border-radius:16px;
+    background:#f4f8fb;
+    color:#6f809a;
+    font-weight:850;
+    line-height:1.25;
+    font-size:.88rem;
+  }
+  .u52-birth-status.ok{
+    background:#ecfffb;
+    color:#159b8a;
+  }
+}
+
+
+/* URBIS V172 · regla global de contraste: no usar textos pálidos */
+@media (max-width:1024px), (pointer:coarse){
+  :root{
+    --urbis-text-title:#214a82;
+    --urbis-text-body:#65758f;
+    --urbis-text-soft:#72829a;
+    --urbis-accent-strong:#16b8a8;
+    --urbis-accent-dark:#0d8f86;
+  }
+
+  #urbis-mobile-app .u52-card b,
+  #urbis-mobile-app .u52-empty-card b,
+  #urbis-mobile-app .u52-noti-card b,
+  #urbis-mobile-app .u52-social-search-card label b,
+  #urbis-mobile-app .u52-social-my-card b,
+  #urbis-mobile-app .u52-hero h1,
+  #urbis-mobile-app .u52-title{
+    color:var(--urbis-text-title) !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:var(--urbis-text-title) !important;
+  }
+
+  #urbis-mobile-app .u52-card small,
+  #urbis-mobile-app .u52-card p,
+  #urbis-mobile-app .u52-empty-card small,
+  #urbis-mobile-app .u52-noti-card small,
+  #urbis-mobile-app .u52-social-search-card label small,
+  #urbis-mobile-app .u52-social-my-card small,
+  #urbis-mobile-app .u52-hero p,
+  #urbis-mobile-app .u52-muted,
+  #urbis-mobile-app .u52-profile-id-card small{
+    color:var(--urbis-text-body) !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:var(--urbis-text-body) !important;
+  }
+
+  #urbis-mobile-app .u52-noti-card em,
+  #urbis-mobile-app .u52-social-msg:not(.error),
+  #urbis-mobile-app .u52-social-my-card code,
+  #urbis-mobile-app .u52-profile-id-card code,
+  #urbis-mobile-app .u52-k-home-grid-primary .u52-module small{
+    color:var(--urbis-accent-strong) !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:var(--urbis-accent-strong) !important;
+  }
+
+  #urbis-mobile-app input::placeholder,
+  #urbis-mobile-app textarea::placeholder{
+    color:#8091a8 !important;
+    opacity:1 !important;
+    font-weight:850 !important;
+    -webkit-text-fill-color:#8091a8 !important;
+  }
+
+  .u52-noti-card.demographic small,
+  .u52-noti-card.demographic p,
+  .u52-noti-card.demographic div small{
+    color:#62758f !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#62758f !important;
+  }
+
+  .u52-noti-actions button,
+  .u52-social-my-card > button,
+  .u52-social-found button,
+  #urbis-mobile-app .u52-primary.green{
+    color:#073a39 !important;
+    -webkit-text-fill-color:#073a39 !important;
+  }
+
+  .u52-birthdate-modal p,
+  .u52-birthdate-modal small,
+  .u52-birthdate-modal label,
+  .u52-birthdate-modal option{
+    color:#62758f !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#62758f !important;
+  }
+}
+
+/* URBIS V180 · Topbar de inicio: título "URBIS" más chico, avatar del
+   usuario más PROTAGONISTA (pedido explícito). Bloque cargado al final a
+   propósito: gana por orden de la cascada sobre los V147/V151 anteriores
+   (misma especificidad, todos con !important). */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-k-home-brand b{
+    font-size:1.28rem !important;
+    letter-spacing:-.02em !important;
+  }
+  .u52-k-home-pill.profile{
+    min-height:96px !important;
+  }
+  .u52-k-home-pill.profile .u52-k-home-icon-shell,
+  .u52-k-home-pill.profile .u52-k-profile-avatar-shell{
+    width:64px !important;
+    height:64px !important;
+    flex:0 0 64px !important;
+  }
+  .u52-k-profile-avatar-shell img{
+    width:60px !important;
+    height:60px !important;
+  }
+  .u52-k-profile-avatar-shell.has-avatar img{
+    width:66px !important;
+    height:66px !important;
+  }
+}
+@media (max-width:420px){
+  .u52-k-home-brand b{ font-size:1.16rem !important; }
+  .u52-k-home-pill.profile{ min-height:90px !important; }
+  .u52-k-home-pill.profile .u52-k-home-icon-shell,
+  .u52-k-home-pill.profile .u52-k-profile-avatar-shell{
+    width:58px !important; height:58px !important; flex:0 0 58px !important;
+  }
+  .u52-k-profile-avatar-shell img{ width:54px !important; height:54px !important; }
+  .u52-k-profile-avatar-shell.has-avatar img{ width:60px !important; height:60px !important; }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ARMONÍA TIPOGRÁFICA APP-WIDE (misma "volumetría" que URBIS Pro City /
+     Cooperativo, que al usuario le encantó): un ritmo consistente entre
+     TÍTULO · SUBTÍTULO · DESCRIPCIÓN · ETIQUETA · BOTÓN en todas las
+     superficies del shell móvil. Se ajustan SOLO pesos y tracking (letter-
+     spacing), NUNCA tamaños/paddings → el layout de cada pantalla no se
+     mueve, solo se afina la jerarquía visual. Inter se importó hasta 800, así
+     que todo peso ≥900 ya venía renderizándose como 800; aquí se baja al
+     rango refinado 500–700 para el aire "de herramienta" sin perder jerarquía.
+     ══════════════════════════════════════════════════════════════════════ */
+  :root{
+    --u-fw-title:700;   /* títulos de pantalla / hero */
+    --u-fw-sub:500;     /* subtítulos y descripciones */
+    --u-fw-card:600;    /* títulos de tarjeta / módulo / stat */
+    --u-fw-meta:500;    /* metadatos y textos secundarios de tarjeta */
+    --u-fw-label:700;   /* etiquetas de sección (eyebrow) */
+    --u-fw-btn:600;     /* botones */
+  }
+  /* Títulos de pantalla (topbar) */
+  #urbis-mobile-app .u52-title{
+    font-weight:var(--u-fw-title) !important; letter-spacing:-.012em !important;
+  }
+  /* Hero de inicio: título con presencia, descripción liviana */
+  #urbis-mobile-app .u52-hero h1{ font-weight:800 !important; letter-spacing:-.02em !important; }
+  #urbis-mobile-app .u52-hero p{ font-weight:var(--u-fw-sub) !important; }
+  /* Etiquetas de sección → eyebrow refinado (baja de 900 a 700, tracking suave) */
+  #urbis-mobile-app .u52-k-section-label,
+  #urbis-mobile-app .u52-section-label{
+    font-weight:var(--u-fw-label) !important; letter-spacing:.055em !important;
+  }
+  /* Títulos de tarjeta (módulos de inicio, vacías, contenido, listas, stats) */
+  #urbis-mobile-app .u52-module b,
+  #urbis-mobile-app .u52-empty-card b,
+  #urbis-mobile-app .u52-card b,
+  #urbis-mobile-app .u52-list-card b,
+  #urbis-mobile-app .u52-noti-card b,
+  #urbis-mobile-app .u52-stat b{
+    font-weight:var(--u-fw-card) !important; letter-spacing:-.006em !important;
+  }
+  /* Metadatos / descripciones de tarjeta */
+  #urbis-mobile-app .u52-module small,
+  #urbis-mobile-app .u52-empty-card small,
+  #urbis-mobile-app .u52-card small,
+  #urbis-mobile-app .u52-list-card small,
+  #urbis-mobile-app .u52-noti-card small{
+    font-weight:var(--u-fw-meta) !important;
+  }
+  /* Botones primarios / secundarios: peso refinado (venían en 900–950) */
+  #urbis-mobile-app .u52-primary,
+  #urbis-mobile-app .u52-secondary,
+  #urbis-mobile-app .u52-empty-card button{
+    font-weight:var(--u-fw-btn) !important; letter-spacing:.004em !important;
+  }
+}

@@ -1,0 +1,347 @@
+/* ============================================================================
+   URBIS CUTE · TEMA PASTEL DE ESCRITORIO (Fase 1: shell + Accesos + Alertas)
+   Pedido explícito: eliminar el estilo "verde oscuro dark" del PC y adoptar
+   estética cute/kawaii pastel, consistente por fuera y por dentro de cada
+   módulo. Android/iPhone NO se toca: todo va escopado a
+   html[data-urbis-shell="desktop"], y este archivo se carga al FINAL de la
+   cascada para ganarle a css/99-contrast-fix.css y css/12-module-access.css
+   (el tema oscuro anterior, que queda dormido debajo).
+   Regla URBIS intacta: texto SIEMPRE oscuro y legible sobre fondos claros;
+   cada pastel usa tinta oscura de su misma familia de color.
+   ============================================================================ */
+
+html[data-urbis-shell="desktop"] {
+  --cute-bg: #FFF9F2;
+  --cute-card: #FFFFFF;
+  --cute-line: #F5E3D7;
+  --cute-ink: #4A3350;
+  --cute-muted: #8A7690;
+  --cute-pink: #FFD9E8;  --cute-pink-line: #F5C9DC;  --cute-pink-ink: #8A3B5E;
+  --cute-blue: #D6EBFF;  --cute-blue-line: #C7E2FA;  --cute-blue-ink: #1D5C96;
+  --cute-lav:  #E8DFFF;  --cute-lav-line:  #DCD0F5;  --cute-lav-ink:  #5B3E8F;
+  --cute-mint: #D7F5E9;  --cute-mint-line: #B9E8D4;  --cute-mint-ink: #0E6B4C;
+  --cute-cream:#FFF3D9;  --cute-cream-line:#FFE2AD;  --cute-cream-ink:#8F6212;
+  --cute-peach:#FFE3D9;  --cute-peach-line:#F8CDBB;  --cute-peach-ink:#96421F;
+}
+
+/* ---------- Fondo general y sidebar ---------- */
+html[data-urbis-shell="desktop"],
+html[data-urbis-shell="desktop"] body {
+  background: var(--cute-bg) !important;
+  color: var(--cute-ink) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar {
+  background: var(--cute-bg) !important;
+  color: var(--cute-ink) !important;
+  border-left: 1px solid var(--cute-line) !important;
+  box-shadow: -14px 0 40px rgba(180, 130, 150, .14) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar::-webkit-scrollbar-thumb {
+  background: var(--cute-pink-line) !important;
+  border-radius: 10px;
+}
+
+/* Título URBIS + insignia de rol */
+html[data-urbis-shell="desktop"] #sidebar-title {
+  color: var(--cute-ink) !important;
+  text-shadow: none !important;
+  border-bottom-color: var(--cute-line) !important;
+}
+html[data-urbis-shell="desktop"] .role-badge {
+  background: var(--cute-blue) !important;
+  color: var(--cute-blue-ink) !important;
+  border: 1px solid var(--cute-blue-line) !important;
+  border-radius: 999px !important;
+}
+
+/* Textos genéricos dentro del sidebar: tinta oscura, nada desvaído */
+html[data-urbis-shell="desktop"] #sidebar h3,
+html[data-urbis-shell="desktop"] #sidebar h4,
+html[data-urbis-shell="desktop"] #sidebar b,
+html[data-urbis-shell="desktop"] #sidebar strong,
+html[data-urbis-shell="desktop"] #sidebar label,
+html[data-urbis-shell="desktop"] #sidebar summary {
+  color: var(--cute-ink) !important;
+  text-shadow: none !important;
+}
+html[data-urbis-shell="desktop"] #sidebar p,
+html[data-urbis-shell="desktop"] #sidebar small,
+html[data-urbis-shell="desktop"] #sidebar .text-muted,
+html[data-urbis-shell="desktop"] #sidebar .muted {
+  color: var(--cute-muted) !important;
+}
+
+/* ---------- Accesos: contenedor + islas pastel por módulo ---------- */
+html[data-urbis-shell="desktop"] .sidebar-tabs.module-access-grid,
+html[data-urbis-shell="desktop"] .sidebar-tabs {
+  background: var(--cute-card) !important;
+  border: 1px solid var(--cute-line) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 26px rgba(180, 130, 150, .12) !important;
+  backdrop-filter: none;
+}
+html[data-urbis-shell="desktop"] .sidebar-tabs::before {
+  background: var(--cute-pink) !important;
+  border: 1px solid var(--cute-pink-line) !important;
+  color: var(--cute-pink-ink) !important;
+}
+
+html[data-urbis-shell="desktop"] .sidebar-tab-btn {
+  background: var(--cute-card) !important;
+  border: 1.5px solid var(--cute-line) !important;
+  border-radius: 20px !important;
+  color: var(--cute-ink) !important;
+  box-shadow: 0 6px 16px rgba(180, 130, 150, .10) !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn:hover {
+  transform: translateY(-2px) scale(1.015) !important;
+  box-shadow: 0 12px 24px rgba(180, 130, 150, .18) !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn:active {
+  transform: scale(.97) !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn .tab-icon,
+html[data-urbis-shell="desktop"] .sidebar-tab-btn > span:first-child {
+  background: rgba(255, 255, 255, .65) !important;
+  border: 1px solid rgba(255, 255, 255, .9) !important;
+  border-radius: 14px !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn .tab-copy b {
+  color: inherit !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn .tab-copy small {
+  color: inherit !important;
+  opacity: .78;
+}
+
+/* Isla pastel por módulo (tinta oscura de la misma familia) */
+html[data-urbis-shell="desktop"] #tab-btn-alerts {
+  background: var(--cute-pink) !important; border-color: var(--cute-pink-line) !important; color: var(--cute-pink-ink) !important;
+}
+html[data-urbis-shell="desktop"] #tab-btn-mapeotecnico,
+html[data-urbis-shell="desktop"] #tab-btn-mapping {
+  background: var(--cute-blue) !important; border-color: var(--cute-blue-line) !important; color: var(--cute-blue-ink) !important;
+}
+html[data-urbis-shell="desktop"] #tab-btn-access,
+html[data-urbis-shell="desktop"] #tab-btn-advanced {
+  background: var(--cute-lav) !important; border-color: var(--cute-lav-line) !important; color: var(--cute-lav-ink) !important;
+}
+html[data-urbis-shell="desktop"] #tab-btn-events {
+  background: var(--cute-cream) !important; border-color: var(--cute-cream-line) !important; color: var(--cute-cream-ink) !important;
+}
+html[data-urbis-shell="desktop"] #tab-btn-mascotas {
+  background: var(--cute-peach) !important; border-color: var(--cute-peach-line) !important; color: var(--cute-peach-ink) !important;
+}
+html[data-urbis-shell="desktop"] #tab-btn-stats {
+  background: var(--cute-mint) !important; border-color: var(--cute-mint-line) !important; color: var(--cute-mint-ink) !important;
+}
+html[data-urbis-shell="desktop"] .sidebar-tab-btn.active {
+  border-width: 2px !important;
+  border-color: currentColor !important;
+  box-shadow: 0 12px 26px rgba(180, 130, 150, .20) !important;
+}
+
+/* Envoltorios internos que 42-turquoise-refresh pinta verde-oscuro:
+   dentro del sidebar crema deben ser transparentes, sin marco propio. */
+html[data-urbis-shell="desktop"] .sidebar-page,
+html[data-urbis-shell="desktop"] #module-focus-shell,
+html[data-urbis-shell="desktop"] .module-focus-shell {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 42-turquoise pinta TODOS los span/label casi blancos (pensado para fondo
+   oscuro): dentro del sidebar crema heredan la tinta del padre. */
+html[data-urbis-shell="desktop"] #sidebar span,
+html[data-urbis-shell="desktop"] #sidebar label {
+  color: inherit !important;
+}
+
+/* ---------- Foco de módulo (cabecera "Volver a accesos") ---------- */
+html[data-urbis-shell="desktop"] .module-back-btn {
+  background: var(--cute-pink) !important;
+  border: 1px solid var(--cute-pink-line) !important;
+  border-radius: 999px !important;
+  color: var(--cute-pink-ink) !important;
+  box-shadow: 0 6px 14px rgba(180, 130, 150, .14) !important;
+}
+html[data-urbis-shell="desktop"] .module-focus-head {
+  background: var(--cute-card) !important;
+  border: 1px solid var(--cute-line) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 10px 24px rgba(180, 130, 150, .10) !important;
+}
+html[data-urbis-shell="desktop"] .module-focus-head::after { display: none !important; }
+html[data-urbis-shell="desktop"] .module-focus-kicker { color: var(--cute-pink-ink) !important; }
+html[data-urbis-shell="desktop"] .module-focus-head h3 { color: var(--cute-ink) !important; }
+html[data-urbis-shell="desktop"] .module-focus-head p { color: var(--cute-muted) !important; }
+
+/* ---------- Panel de Alertas (catálogo unificado Android↔PC) ---------- */
+/* Chips de sección: píldora pastel por sección, en orden del catálogo:
+   1 Vial y urbano (azul) · 2 Seguridad (rosa) · 3 Ambiente (menta) · 4 Desastres (lavanda) */
+html[data-urbis-shell="desktop"] .urbis-alert-section-head {
+  background: var(--cute-blue) !important;
+  border: 1px solid var(--cute-blue-line) !important;
+  box-shadow: 0 4px 12px rgba(180, 130, 150, .12) !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section-head b {
+  color: var(--cute-blue-ink) !important;
+  text-shadow: none !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section-head span { filter: none !important; }
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(2) .urbis-alert-section-head {
+  background: var(--cute-pink) !important; border-color: var(--cute-pink-line) !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(2) .urbis-alert-section-head b { color: var(--cute-pink-ink) !important; }
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(3) .urbis-alert-section-head {
+  background: var(--cute-mint) !important; border-color: var(--cute-mint-line) !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(3) .urbis-alert-section-head b { color: var(--cute-mint-ink) !important; }
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(4) .urbis-alert-section-head {
+  background: var(--cute-lav) !important; border-color: var(--cute-lav-line) !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section:nth-of-type(4) .urbis-alert-section-head b { color: var(--cute-lav-ink) !important; }
+
+html[data-urbis-shell="desktop"] .urbis-alert-section + .urbis-alert-section {
+  border-top-color: var(--cute-line) !important;
+}
+html[data-urbis-shell="desktop"] .urbis-alert-section-hint { color: var(--cute-muted) !important; }
+
+/* Nota de privacidad (sección sensible): tarjeta suave, no intimidante */
+html[data-urbis-shell="desktop"] .urbis-alert-privacy {
+  background: var(--cute-lav) !important;
+  border: 1px solid var(--cute-lav-line) !important;
+  border-radius: 14px !important;
+  color: var(--cute-lav-ink) !important;
+}
+
+/* Tarjetas de alerta: blancas, redonditas, sin el borde rojo agresivo */
+html[data-urbis-shell="desktop"] .cat-card {
+  background: var(--cute-card) !important;
+  color: var(--cute-ink) !important;
+  border: 1.5px solid var(--cute-line) !important;
+  border-left: 1.5px solid var(--cute-line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(180, 130, 150, .08) !important;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
+}
+html[data-urbis-shell="desktop"] .cat-card:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+  border-color: var(--cute-pink-line) !important;
+  box-shadow: 0 10px 20px rgba(180, 130, 150, .16) !important;
+}
+html[data-urbis-shell="desktop"] .cat-card .cat-title { color: var(--cute-ink) !important; }
+html[data-urbis-shell="desktop"] .cat-card .cat-desc { color: var(--cute-muted) !important; }
+
+/* Banner "toca el mapa para ubicar" (selección pendiente) */
+html[data-urbis-shell="desktop"] .cats-pending-banner {
+  background: var(--cute-mint) !important;
+  border: 1px solid var(--cute-mint-line) !important;
+  border-radius: 16px !important;
+  color: var(--cute-mint-ink) !important;
+}
+html[data-urbis-shell="desktop"] .cats-pending-cancel {
+  background: var(--cute-card) !important;
+  border: 1px solid var(--cute-mint-line) !important;
+  border-radius: 999px !important;
+  color: var(--cute-mint-ink) !important;
+}
+
+/* ---------- Formularios y controles dentro del sidebar ---------- */
+html[data-urbis-shell="desktop"] #sidebar input,
+html[data-urbis-shell="desktop"] #sidebar select,
+html[data-urbis-shell="desktop"] #sidebar textarea {
+  background: var(--cute-card) !important;
+  color: var(--cute-ink) !important;
+  border: 1.5px solid var(--cute-line) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+html[data-urbis-shell="desktop"] #sidebar input::placeholder,
+html[data-urbis-shell="desktop"] #sidebar textarea::placeholder {
+  color: var(--cute-muted) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar input:focus,
+html[data-urbis-shell="desktop"] #sidebar select:focus,
+html[data-urbis-shell="desktop"] #sidebar textarea:focus {
+  border-color: var(--cute-pink-line) !important;
+  box-shadow: 0 0 0 4px rgba(245, 201, 220, .35) !important;
+}
+
+/* Paneles/tarjetas contenedoras que seguían oscuras dentro del sidebar */
+html[data-urbis-shell="desktop"] #sidebar .form-section,
+html[data-urbis-shell="desktop"] #sidebar .layers-container,
+html[data-urbis-shell="desktop"] #sidebar .chart-box,
+html[data-urbis-shell="desktop"] #sidebar .mobility-extra-panel,
+html[data-urbis-shell="desktop"] #sidebar .sidebar-utility-panel,
+html[data-urbis-shell="desktop"] #sidebar .profile-card,
+html[data-urbis-shell="desktop"] #sidebar .access-card,
+html[data-urbis-shell="desktop"] #sidebar .event-card,
+html[data-urbis-shell="desktop"] #sidebar .dashboard-card,
+html[data-urbis-shell="desktop"] #sidebar .kpi-card,
+html[data-urbis-shell="desktop"] #sidebar .achievement-card,
+html[data-urbis-shell="desktop"] #sidebar .achievement-unlock,
+html[data-urbis-shell="desktop"] #sidebar .quick-route-card,
+html[data-urbis-shell="desktop"] #sidebar .nav-panel,
+html[data-urbis-shell="desktop"] #sidebar .route-real-panel,
+html[data-urbis-shell="desktop"] #sidebar .route-choice-panel,
+html[data-urbis-shell="desktop"] #sidebar .route-focus-panel,
+html[data-urbis-shell="desktop"] #sidebar .route-real-card,
+html[data-urbis-shell="desktop"] #sidebar .zone-card,
+html[data-urbis-shell="desktop"] #sidebar .pending-item {
+  background: var(--cute-card) !important;
+  color: var(--cute-ink) !important;
+  border: 1px solid var(--cute-line) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 20px rgba(180, 130, 150, .10) !important;
+}
+
+/* ---------- Botones ---------- */
+html[data-urbis-shell="desktop"] #sidebar .tool-btn {
+  background: var(--cute-card) !important;
+  color: var(--cute-ink) !important;
+  border: 1.5px solid var(--cute-line) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 10px rgba(180, 130, 150, .08) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar .tool-btn:hover {
+  border-color: var(--cute-pink-line) !important;
+  background: var(--cute-pink) !important;
+  color: var(--cute-pink-ink) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar .btn-save,
+html[data-urbis-shell="desktop"] #sidebar .tool-btn.active {
+  background: var(--cute-pink) !important;
+  color: var(--cute-pink-ink) !important;
+  border: 1.5px solid var(--cute-pink-line) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 18px rgba(245, 201, 220, .5) !important;
+}
+html[data-urbis-shell="desktop"] #sidebar .btn-cancelar {
+  background: var(--cute-cream) !important;
+  color: var(--cute-cream-ink) !important;
+  border: 1.5px solid var(--cute-cream-line) !important;
+  border-radius: 999px !important;
+}
+html[data-urbis-shell="desktop"] #sidebar .btn-edit {
+  background: var(--cute-blue) !important;
+  color: var(--cute-blue-ink) !important;
+  border: 1.5px solid var(--cute-blue-line) !important;
+  border-radius: 999px !important;
+}
+
+/* ---------- Botones flotantes (Análisis y perfil) ---------- */
+html[data-urbis-shell="desktop"] .ua-fab {
+  background: var(--cute-pink) !important;
+  color: var(--cute-pink-ink) !important;
+  border: 1.5px solid var(--cute-pink-line) !important;
+  box-shadow: 0 10px 24px rgba(245, 201, 220, .55) !important;
+}
+html[data-urbis-shell="desktop"] .ua-profile-fab {
+  background: var(--cute-lav) !important;
+  color: var(--cute-lav-ink) !important;
+  border: 1.5px solid var(--cute-lav-line) !important;
+  box-shadow: 0 10px 24px rgba(220, 208, 245, .55) !important;
+}

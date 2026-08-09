@@ -1,0 +1,1599 @@
+/* URBIS v172-clean-core · depuración de capas viejas
+   Objetivo: mantener la app móvil actual y bloquear interfaces antiguas que causaban superposición/iconos gigantes. */
+@media (max-width:1024px), (pointer:coarse){
+  html,body{
+    width:100% !important;
+    max-width:100% !important;
+    overflow:hidden !important;
+    background:#f7f8fb !important;
+  }
+
+  /* Ocultar shell web/legacy cuando la app móvil existe */
+  body > #sidebar,
+  body > aside,
+  body > .sidebar,
+  body > .left-panel,
+  body > .right-panel,
+  body > .basemap-switcher,
+  body > .basemap-backdrop,
+  body > .map-layer-panel,
+  body > .layers-panel,
+  body > .admin-panel,
+  body > .floating-panel,
+  body > .desktop-only,
+  body > #module-focus-panel,
+  body > #module-focus-backdrop,
+  body > #u103-map-picker,
+  body > #u120-mobility-map-picker{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  /* Bloqueo explícito de interfaces móviles antiguas que no pertenecen al diseño actual */
+  [class^="u51-"], [class*=" u51-"],
+  [class^="v81-"], [class*=" v81-"],
+  [id^="u79-"], [id^="u80-"],
+  #u103-map-picker, #u120-mobility-map-picker,
+  .u70-map-picker-backdrop, .u70-map-picker-sheet,
+  .u103-map-grid, .u120-map-options{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  /* Evitar pantallas superpuestas: solo la screen activa de la app u52 queda visible */
+  #urbis-mobile-app .u52-screen:not(.active){
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  #urbis-mobile-app .u52-screen.active{
+    display:block !important;
+    visibility:visible !important;
+    pointer-events:auto;
+  }
+
+  /* El mapa real solo se muestra en modo mapa/movilidad */
+  body:not(.u52-real-map):not(.u88-mobility-mode) > #map,
+  body:not(.u52-real-map):not(.u88-mobility-mode) .leaflet-container{
+    display:none !important;
+  }
+
+  /* Límite global para evitar iconos/avatares gigantes dentro de tarjetas actuales */
+  #urbis-mobile-app .u52-module span,
+  #urbis-mobile-app .u52-module span img,
+  #urbis-mobile-app .u52-k-home-icon-img,
+  #urbis-mobile-app .u65-profile-avatar,
+  #urbis-mobile-app [data-u65-current-avatar],
+  #urbis-mobile-app .u52-profile-card img,
+  #urbis-mobile-app .u52-social-card img{
+    max-width:72px !important;
+    max-height:72px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-k-home-icon-img{max-width:48px !important;max-height:48px !important;}
+  #urbis-mobile-app .u52-module span img{max-width:46px !important;max-height:46px !important;}
+
+  /* Mantener contraste fuerte URBIS */
+  #urbis-mobile-app .u52-card small,
+  #urbis-mobile-app .u52-empty-card small,
+  #urbis-mobile-app .u52-module small{
+    color:#5f718c !important;
+    opacity:1 !important;
+  }
+  #urbis-mobile-app .u52-card b,
+  #urbis-mobile-app .u52-empty-card b,
+  #urbis-mobile-app .u52-module b{
+    color:#1f4b86 !important;
+  }
+}
+
+
+/* URBIS v172-clean-core-fix1 · permitir burbuja de mapas dentro de Movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  body.u120-map-picker-open > #u120-mobility-map-picker,
+  body.u120-map-picker-open #u120-mobility-map-picker{
+    display:block !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+    opacity:1 !important;
+    z-index:2147483600 !important;
+  }
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-backdrop,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-list,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-options,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-option,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-header,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-close,
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-handle{
+    visibility:visible !important;
+    pointer-events:auto !important;
+    opacity:1 !important;
+  }
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-options{
+    display:grid !important;
+  }
+  body.u120-map-picker-open #u120-mobility-map-picker .u120-map-option{
+    display:flex !important;
+  }
+}
+
+/* URBIS v172-clean-core-fix1 · contraste global: eliminar menta pálido en la app */
+@media (max-width:1024px), (pointer:coarse){
+  :root{
+    --urbis-title-strong:#173f75;
+    --urbis-copy-strong:#4f6078;
+    --urbis-accent-strong:#008f82;
+    --urbis-accent-dark:#00796f;
+  }
+
+  #urbis-mobile-app .u52-title,
+  #urbis-mobile-app h1,
+  #urbis-mobile-app h2,
+  #urbis-mobile-app h3,
+  #urbis-mobile-app .u52-card b,
+  #urbis-mobile-app .u52-empty-card b,
+  #urbis-mobile-app .u52-module b,
+  #urbis-mobile-app .u52-k-home-brand b,
+  #urbis-mobile-app .u52-profile-id-card b,
+  #urbis-mobile-app .u52-social-search-card label b,
+  #urbis-mobile-app .u52-social-my-card b{
+    color:var(--urbis-title-strong) !important;
+    opacity:1 !important;
+  }
+
+  #urbis-mobile-app p,
+  #urbis-mobile-app small,
+  #urbis-mobile-app label,
+  #urbis-mobile-app .u52-muted,
+  #urbis-mobile-app .u52-hero p,
+  #urbis-mobile-app .u52-card small,
+  #urbis-mobile-app .u52-empty-card small,
+  #urbis-mobile-app .u52-module small,
+  #urbis-mobile-app .u52-k-home-brand small,
+  #urbis-mobile-app .u52-profile-id-card small,
+  #urbis-mobile-app .u52-social-search-card label small,
+  #urbis-mobile-app .u52-social-my-card small,
+  #urbis-mobile-app .u52-social-msg{
+    color:var(--urbis-copy-strong) !important;
+    opacity:1 !important;
+  }
+
+  #urbis-mobile-app .u52-k-section-label,
+  #urbis-mobile-app .u52-k-section-label.mint,
+  #urbis-mobile-app .u52-section-label,
+  #urbis-mobile-app .u52-module.mobility small,
+  #urbis-mobile-app .u52-module.map small,
+  #urbis-mobile-app .u52-social-my-card code,
+  #urbis-mobile-app .u52-profile-id-card code,
+  #urbis-mobile-app .u52-social-found em,
+  #urbis-mobile-app .u52-bottom-nav button.active,
+  #urbis-mobile-app .u52-auth-phone-note,
+  #urbis-mobile-app .urbis-auth-phone-note,
+  #urbis-mobile-app .urbis-auth-note,
+  #urbis-mobile-app .urbis-legal-title,
+  #urbis-mobile-app .urbis-legal-note b{
+    color:var(--urbis-accent-strong) !important;
+    opacity:1 !important;
+  }
+
+  #urbis-mobile-app input::placeholder,
+  #urbis-mobile-app textarea::placeholder,
+  #urbis-mobile-app select,
+  #urbis-mobile-app option,
+  #urbis-mobile-app #u52-social-search-input::placeholder{
+    color:#607389 !important;
+    opacity:1 !important;
+  }
+
+  #urbis-mobile-app .u52-primary.green,
+  #urbis-mobile-app .u52-social-my-card > button,
+  #urbis-mobile-app .u52-social-found button,
+  #urbis-mobile-app .u52-profile-copy-id,
+  #urbis-mobile-app .u52-bottom-nav .plus{
+    background:linear-gradient(135deg,#00a996,#008f82) !important;
+    color:#ffffff !important;
+  }
+}
+
+
+/* URBIS safe · barra inferior con iconos PNG consistentes */
+@media (max-width:1024px), (pointer:coarse){
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-around !important;
+    gap:4px !important;
+    min-height:74px !important;
+    padding:9px 12px calc(9px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button:not(.plus){
+    width:58px !important;
+    height:54px !important;
+    min-width:58px !important;
+    border:0 !important;
+    background:transparent !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    padding:0 !important;
+    color:#607389 !important;
+    font-weight:900 !important;
+    opacity:1 !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button:not(.plus) span{
+    color:#607389 !important;
+    opacity:1 !important;
+    font-size:.62rem !important;
+    line-height:1 !important;
+    font-weight:900 !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button.active:not(.plus) span{
+    color:#008f82 !important;
+  }
+  #urbis-mobile-app .u52-bottom-icon-img{
+    display:block !important;
+    object-fit:contain !important;
+    width:34px !important;
+    height:34px !important;
+    max-width:34px !important;
+    max-height:34px !important;
+    filter:drop-shadow(0 5px 8px rgba(28,64,101,.10));
+  }
+  #urbis-mobile-app .u52-bottom-icon-home{width:33px !important;height:33px !important;}
+  #urbis-mobile-app .u52-bottom-icon-mobility{width:36px !important;height:36px !important;}
+  #urbis-mobile-app .u52-bottom-icon-runner{width:36px !important;height:36px !important;}
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .u52-bottom-avatar,
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .u52-bottom-avatar img{
+    width:36px !important;
+    height:36px !important;
+    max-width:36px !important;
+    max-height:36px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .plus{
+    width:58px !important;
+    height:58px !important;
+    min-width:58px !important;
+    min-height:58px !important;
+    border-radius:999px !important;
+    font-size:2rem !important;
+    line-height:1 !important;
+    display:grid !important;
+    place-items:center !important;
+    margin-top:-22px !important;
+    padding:0 !important;
+    background:linear-gradient(135deg,#00a996,#008f82) !important;
+    color:#fff !important;
+    box-shadow:0 12px 24px rgba(0,143,130,.25) !important;
+  }
+}
+
+
+/* URBIS safe · barra inferior compacta y homogénea */
+@media (max-width:1024px), (pointer:coarse){
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png{
+    min-height:60px !important;
+    height:60px !important;
+    padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px)) !important;
+    border-radius:28px 28px 0 0 !important;
+    gap:2px !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button:not(.plus){
+    width:46px !important;
+    height:43px !important;
+    min-width:46px !important;
+    min-height:43px !important;
+    gap:2px !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button:not(.plus) span{
+    color:#6f8096 !important;
+    -webkit-text-fill-color:#6f8096 !important;
+    font-size:.54rem !important;
+    font-weight:900 !important;
+    opacity:1 !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png button.active:not(.plus) span{
+    color:#6f8096 !important;
+    -webkit-text-fill-color:#6f8096 !important;
+  }
+  #urbis-mobile-app .u52-bottom-icon-img{
+    width:27px !important;
+    height:27px !important;
+    max-width:27px !important;
+    max-height:27px !important;
+  }
+  #urbis-mobile-app .u52-bottom-icon-home{width:27px !important;height:27px !important;}
+  #urbis-mobile-app .u52-bottom-icon-mobility{width:29px !important;height:29px !important;}
+  #urbis-mobile-app .u52-bottom-icon-runner{width:29px !important;height:29px !important;}
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .u52-bottom-avatar,
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .u52-bottom-avatar img{
+    width:29px !important;
+    height:29px !important;
+    max-width:29px !important;
+    max-height:29px !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png .plus{
+    width:47px !important;
+    height:47px !important;
+    min-width:47px !important;
+    min-height:47px !important;
+    font-size:1.55rem !important;
+    margin-top:-18px !important;
+    box-shadow:0 8px 18px rgba(0,143,130,.22) !important;
+  }
+}
+
+/* URBIS v172 JAC Home · enfoque mapeo comunitario + apps en desarrollo */
+@media (max-width:1024px), (pointer:coarse){
+  #urbis-mobile-app .u52-jac-main-grid{
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:10px !important;
+    align-items:stretch !important;
+  }
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module{
+    min-height:128px !important;
+    padding:13px 8px 12px !important;
+    border-radius:23px !important;
+    background:rgba(255,255,255,.88) !important;
+    box-shadow:0 12px 28px rgba(20,54,94,.08), inset 0 0 0 1px rgba(207,224,236,.58) !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+    gap:6px !important;
+  }
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module span{
+    width:54px !important;
+    height:54px !important;
+    max-width:54px !important;
+    max-height:54px !important;
+    border-radius:20px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:linear-gradient(135deg,rgba(225,251,248,.95),rgba(255,248,238,.9)) !important;
+    box-shadow:inset 0 0 0 1px rgba(185,224,222,.35) !important;
+    font-size:1.8rem !important;
+    margin:0 !important;
+  }
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module span img{
+    width:42px !important;
+    height:42px !important;
+    max-width:42px !important;
+    max-height:42px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module b{
+    color:#173f75 !important;
+    font-size:.78rem !important;
+    line-height:.96 !important;
+    font-weight:950 !important;
+    letter-spacing:-.03em !important;
+    max-width:100% !important;
+  }
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module small{
+    color:#4f6078 !important;
+    font-size:.62rem !important;
+    line-height:1.08 !important;
+    font-weight:850 !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid{
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:9px !important;
+    margin-top:8px !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module{
+    min-height:86px !important;
+    padding:10px 5px 8px !important;
+    border-radius:20px !important;
+    background:rgba(255,255,255,.74) !important;
+    box-shadow:0 10px 22px rgba(20,54,94,.06), inset 0 0 0 1px rgba(208,223,236,.42) !important;
+    filter:saturate(.92) !important;
+    text-align:center !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module span{
+    width:34px !important;
+    height:34px !important;
+    max-width:34px !important;
+    max-height:34px !important;
+    font-size:1.25rem !important;
+    margin:0 !important;
+    display:grid !important;
+    place-items:center !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module span img,
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module .u52-module-profile-avatar img{
+    width:31px !important;
+    height:31px !important;
+    max-width:31px !important;
+    max-height:31px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module b{
+    color:#173f75 !important;
+    font-size:.63rem !important;
+    line-height:1 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module small{
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:18px !important;
+    padding:3px 6px !important;
+    border-radius:999px !important;
+    background:#eef3f8 !important;
+    color:#6f8096 !important;
+    font-size:.48rem !important;
+    line-height:1 !important;
+    font-weight:900 !important;
+    white-space:nowrap !important;
+  }
+  #urbis-mobile-app .u52-jac-banner-card{
+    margin-top:14px !important;
+  }
+  #urbis-mobile-app .u52-jac-bottom-nav .u52-bottom-icon-map,
+  #urbis-mobile-app .u52-jac-bottom-nav .u52-bottom-icon-events{
+    width:28px !important;
+    height:28px !important;
+    max-width:28px !important;
+    max-height:28px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-jac-bottom-nav button:not(.plus) span{
+    color:#6f8096 !important;
+    -webkit-text-fill-color:#6f8096 !important;
+  }
+  #urbis-mobile-app .u52-jac-bottom-nav button.active:not(.plus) span{
+    color:#008f82 !important;
+    -webkit-text-fill-color:#008f82 !important;
+  }
+}
+
+@media (max-width:390px){
+  #urbis-mobile-app .u52-jac-main-grid{gap:7px !important;}
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module{min-height:118px !important;padding:11px 5px 10px !important;}
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module span{width:48px !important;height:48px !important;}
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module span img{width:38px !important;height:38px !important;}
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module b{font-size:.69rem !important;}
+  #urbis-mobile-app .u52-jac-main-grid .u52-jac-module small{font-size:.55rem !important;}
+  #urbis-mobile-app .u52-jac-dev-grid{gap:6px !important;}
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module{min-height:78px !important;}
+  #urbis-mobile-app .u52-jac-dev-grid .u52-dev-module small{font-size:.42rem !important;padding-inline:4px !important;}
+}
+
+
+/* URBIS v172 JAC · pantalla real de Mapeo Comunitario, no movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  body.u52-real-map #urbis-mobile-app .u52-jac-map-screen .u52-title::after{
+    content:' · comunitario' !important;
+    font-size:.58rem !important;
+    color:#008f82 !important;
+    margin-left:6px !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-jac-map-topbar{
+    min-height:86px !important;
+    border-radius:30px !important;
+    padding:13px 20px !important;
+  }
+  #urbis-mobile-app .u52-jac-map-actions{
+    top:138px !important;
+    right:14px !important;
+    gap:10px !important;
+  }
+  #urbis-mobile-app .u52-jac-map-actions button{
+    width:78px !important;
+    min-height:72px !important;
+    border-radius:24px !important;
+    background:rgba(255,255,255,.92) !important;
+    color:#173f75 !important;
+    box-shadow:0 14px 28px rgba(20,54,94,.12), inset 0 0 0 1px rgba(207,224,236,.55) !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-jac-map-actions button small{
+    color:#4f6078 !important;
+    -webkit-text-fill-color:#4f6078 !important;
+    font-size:.62rem !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-mapping-sheet{
+    border-radius:32px 32px 24px 24px !important;
+    padding:22px 18px 88px !important;
+    background:rgba(255,255,255,.94) !important;
+    box-shadow:0 -20px 42px rgba(20,54,94,.12), inset 0 0 0 1px rgba(207,224,236,.55) !important;
+  }
+  #urbis-mobile-app .u52-mapping-head b{
+    color:#173f75 !important;
+    font-size:1.35rem !important;
+    line-height:1.05 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-mapping-head span,
+  #urbis-mobile-app .u52-mapping-head small{
+    color:#607389 !important;
+    font-weight:850 !important;
+  }
+  #urbis-mobile-app .u52-map-report-status{
+    margin:12px 0 14px !important;
+    padding:11px 13px !important;
+    border-radius:18px !important;
+    background:linear-gradient(135deg,rgba(225,251,248,.96),rgba(246,248,255,.96)) !important;
+    color:#38516b !important;
+    font-size:.78rem !important;
+    line-height:1.25 !important;
+    font-weight:850 !important;
+    border:1px solid rgba(0,143,130,.14) !important;
+  }
+  #urbis-mobile-app .u52-mapping-actions-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+  }
+  #urbis-mobile-app .u52-mapping-actions-grid button{
+    min-height:88px !important;
+    border-radius:24px !important;
+    padding:12px 10px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+    text-align:center !important;
+  }
+  #urbis-mobile-app .u52-mapping-actions-grid button span{
+    font-size:1.45rem !important;
+    line-height:1 !important;
+  }
+  #urbis-mobile-app .u52-mapping-actions-grid button b{
+    font-size:.84rem !important;
+    line-height:1.05 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-mapping-actions-grid button small{
+    font-size:.62rem !important;
+    line-height:1.05 !important;
+    font-weight:850 !important;
+    color:#607389 !important;
+  }
+  #urbis-mobile-app .u52-map-manual{
+    background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(246,248,255,.96)) !important;
+    color:#173f75 !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.75),0 10px 20px rgba(20,54,94,.06) !important;
+  }
+  #urbis-mobile-app .u52-map-secondary-row{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+    margin-top:10px !important;
+  }
+  #urbis-mobile-app .u52-map-secondary-row button{
+    min-height:44px !important;
+    border-radius:18px !important;
+    color:#173f75 !important;
+    font-weight:950 !important;
+    background:rgba(246,248,255,.95) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-map-screen .u52-sheet,
+  body.u52-real-map #urbis-mobile-app .u52-jac-map-screen .u52-map-actions,
+  body.u52-real-map #urbis-mobile-app .u52-jac-map-screen .u52-topbar{
+    pointer-events:auto !important;
+  }
+}
+
+
+/* URBIS v172 JAC Map v3 · interfaz de mapeo con más mapa y menos texto */
+@media (max-width:1024px), (pointer:coarse){
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric{
+    background:transparent !important;
+    overflow:hidden !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-topbar{
+    position:absolute !important;
+    z-index:2147483250 !important;
+    top:calc(env(safe-area-inset-top,0px) + 16px) !important;
+    left:16px !important;
+    right:16px !important;
+    min-height:74px !important;
+    display:grid !important;
+    grid-template-columns:58px 1fr 58px !important;
+    align-items:center !important;
+    gap:12px !important;
+    padding:10px 12px !important;
+    border-radius:24px !important;
+    background:rgba(255,255,255,.92) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(1.08) !important;
+    backdrop-filter:blur(16px) saturate(1.08) !important;
+    box-shadow:0 18px 36px rgba(20,54,94,.12), inset 0 0 0 1px rgba(207,224,236,.62) !important;
+    pointer-events:auto !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-round,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-locate{
+    appearance:none !important;
+    border:0 !important;
+    width:54px !important;
+    height:54px !important;
+    border-radius:20px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:rgba(255,255,255,.96) !important;
+    color:#173f75 !important;
+    -webkit-text-fill-color:#173f75 !important;
+    font-size:1.35rem !important;
+    font-weight:950 !important;
+    box-shadow:0 12px 24px rgba(20,54,94,.10), inset 0 0 0 1px rgba(207,224,236,.64) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter{
+    color:#009b89 !important;
+    -webkit-text-fill-color:#009b89 !important;
+    font-size:1.5rem !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title{
+    min-width:0 !important;
+    text-align:left !important;
+    line-height:1.05 !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title b{
+    display:block !important;
+    color:#142f5f !important;
+    -webkit-text-fill-color:#142f5f !important;
+    font-size:1.03rem !important;
+    font-weight:500 !important;
+    letter-spacing:-.01em !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  /* Ícono de mapa 🗺️ quitado del título: con el filtro de reportes/eventos
+     agregado al topbar (4 columnas: back, título, filtro, GPS) ya no sobra
+     ancho — el emoji apretaba el título y desalineaba el botón de
+     ubicación. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title b::after{
+    content:none !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title small{
+    display:block !important;
+    margin-top:7px !important;
+    color:#4f6078 !important;
+    -webkit-text-fill-color:#4f6078 !important;
+    font-size:.72rem !important;
+    font-weight:400 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-locate{
+    display:none !important;
+    position:absolute !important;
+    z-index:2147483240 !important;
+    right:18px !important;
+    bottom:calc(180px + env(safe-area-inset-bottom,0px)) !important;
+    pointer-events:auto !important;
+    color:#243b5a !important;
+    -webkit-text-fill-color:#243b5a !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-toast{
+    position:absolute !important;
+    z-index:2147483245 !important;
+    left:18px !important;
+    bottom:calc(178px + env(safe-area-inset-bottom,0px)) !important;
+    max-width:52vw !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:transparent !important;
+    pointer-events:none !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-toast:not(:empty){
+    padding:9px 12px !important;
+    border-radius:16px !important;
+    background:rgba(255,255,255,.92) !important;
+    color:#31465f !important;
+    -webkit-text-fill-color:#31465f !important;
+    font-size:.72rem !important;
+    line-height:1.1 !important;
+    font-weight:850 !important;
+    box-shadow:0 12px 24px rgba(20,54,94,.10), inset 0 0 0 1px rgba(207,224,236,.62) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions{
+    position:absolute !important;
+    z-index:2147483260 !important;
+    left:16px !important;
+    right:16px !important;
+    bottom:calc(94px + env(safe-area-inset-bottom,0px)) !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:6px !important;
+    padding:8px 8px !important;
+    border-radius:26px !important;
+    background:rgba(255,255,255,.93) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(1.08) !important;
+    backdrop-filter:blur(16px) saturate(1.08) !important;
+    box-shadow:0 18px 38px rgba(20,54,94,.13), inset 0 0 0 1px rgba(207,224,236,.64) !important;
+    pointer-events:auto !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions button{
+    appearance:none !important;
+    border:0 !important;
+    min-height:56px !important;
+    border-radius:16px !important;
+    padding:5px 3px 5px !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:#1d3352 !important;
+    -webkit-text-fill-color:#1d3352 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:7px !important;
+    text-align:center !important;
+    font-weight:950 !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span{
+    width:36px !important;
+    height:36px !important;
+    border-radius:13px !important;
+    display:grid !important;
+    place-items:center !important;
+    font-size:1.45rem !important;
+    line-height:1 !important;
+    color:#0e987f !important;
+    -webkit-text-fill-color:#0e987f !important;
+    background:linear-gradient(135deg,rgba(213,250,239,.98),rgba(239,255,250,.98)) !important;
+    box-shadow:0 10px 20px rgba(20,54,94,.08) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span.manual{
+    color:#1685d9 !important;
+    -webkit-text-fill-color:#1685d9 !important;
+    background:linear-gradient(135deg,rgba(224,242,255,.98),rgba(244,250,255,.98)) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span.event{
+    color:#e6a300 !important;
+    -webkit-text-fill-color:#e6a300 !important;
+    background:linear-gradient(135deg,rgba(255,244,203,.98),rgba(255,251,238,.98)) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span.layers{
+    color:#a956df !important;
+    -webkit-text-fill-color:#a956df !important;
+    background:linear-gradient(135deg,rgba(244,224,255,.98),rgba(253,247,255,.98)) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions b{
+    color:#233957 !important;
+    -webkit-text-fill-color:#233957 !important;
+    font-size:.64rem !important;
+    line-height:1.05 !important;
+    font-weight:950 !important;
+    letter-spacing:-.01em !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-jac-map-topbar,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-jac-map-actions,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapping-sheet,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-sheet{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-bottom-nav{
+    bottom:calc(10px + env(safe-area-inset-bottom,0px)) !important;
+    z-index:2147483270 !important;
+    pointer-events:auto !important;
+  }
+  body.u52-real-map #map,
+  body.u52-real-map #map.leaflet-container{
+    filter:saturate(.94) contrast(.98) brightness(1.04) !important;
+  }
+  body.u52-real-map .leaflet-control-zoom{
+    margin-top:124px !important;
+    margin-left:16px !important;
+    transform:scale(.92) !important;
+    transform-origin:top left !important;
+  }
+  body.u52-real-map .leaflet-control-attribution{
+    opacity:.72 !important;
+    transform:scale(.86) !important;
+    transform-origin:bottom left !important;
+  }
+}
+@media (max-width:380px){
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-topbar{
+    left:12px !important;right:12px !important;grid-template-columns:50px 1fr 50px !important;min-height:66px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-round,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter{
+    width:48px !important;height:48px !important;border-radius:18px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title b{font-size:.92rem !important;}
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title small{font-size:.64rem !important;}
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions{left:12px !important;right:12px !important;gap:5px !important;padding:10px 7px !important;}
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span{width:42px !important;height:42px !important;}
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions b{font-size:.58rem !important;}
+}
+
+
+/* URBIS v172 JAC Map v4 · selector visual de Reporte / Evento */
+@media (max-width:1024px), (pointer:coarse){
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-topbar{
+    top:calc(env(safe-area-inset-top,0px) + 12px) !important;
+    min-height:66px !important;
+    grid-template-columns:52px 1fr 52px !important;
+    gap:10px !important;
+    padding:8px 10px !important;
+    border-radius:22px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-round,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter,
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-locate{
+    width:48px !important;
+    height:48px !important;
+    border-radius:18px !important;
+    font-size:1.2rem !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title b{
+    font-size:.96rem !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title small{
+    margin-top:5px !important;
+    font-size:.66rem !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-locate{
+    bottom:calc(170px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-toast{
+    bottom:calc(168px + env(safe-area-inset-bottom,0px)) !important;
+    max-width:44vw !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions{
+    left:14px !important;
+    right:14px !important;
+    bottom:calc(86px + env(safe-area-inset-bottom,0px)) !important;
+    gap:6px !important;
+    padding:10px 8px !important;
+    border-radius:24px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions button{
+    min-height:66px !important;
+    gap:6px !important;
+    padding:4px 2px 5px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span{
+    width:44px !important;
+    height:44px !important;
+    border-radius:16px !important;
+    font-size:1.3rem !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions b{
+    font-size:.60rem !important;
+    line-height:1.06 !important;
+  }
+
+  #urbis-mobile-app .u52-community-choice{
+    position:absolute !important;
+    z-index:2147483265 !important;
+    width:286px !important;
+    transform:translate(-50%, calc(-100% - 22px)) !important;
+    pointer-events:auto !important;
+  }
+  #urbis-mobile-app .u52-community-choice[hidden]{
+    display:none !important;
+  }
+  #urbis-mobile-app .u52-community-choice-card{
+    position:relative !important;
+    background:rgba(255,255,255,.96) !important;
+    border-radius:24px !important;
+    padding:18px 16px 14px !important;
+    box-shadow:0 22px 42px rgba(20,54,94,.14), inset 0 0 0 1px rgba(207,224,236,.75) !important;
+    -webkit-backdrop-filter:blur(12px) saturate(1.05) !important;
+    backdrop-filter:blur(12px) saturate(1.05) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-card::after{
+    content:'' !important;
+    position:absolute !important;
+    left:50% !important;
+    bottom:-12px !important;
+    width:22px !important;
+    height:22px !important;
+    margin-left:-11px !important;
+    background:rgba(255,255,255,.96) !important;
+    transform:rotate(45deg) !important;
+    border-radius:0 0 7px 0 !important;
+    box-shadow:4px 4px 12px rgba(20,54,94,.05) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-title{
+    color:#173f75 !important;
+    -webkit-text-fill-color:#173f75 !important;
+    text-align:center !important;
+    font-size:1rem !important;
+    line-height:1.15 !important;
+    font-weight:950 !important;
+    margin-bottom:14px !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:0 !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions button{
+    appearance:none !important;
+    border:0 !important;
+    background:transparent !important;
+    min-height:92px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:9px !important;
+    color:#203858 !important;
+    -webkit-text-fill-color:#203858 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions button + button{
+    border-left:1px solid rgba(207,224,236,.9) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions span{
+    width:54px !important;
+    height:54px !important;
+    border-radius:18px !important;
+    display:grid !important;
+    place-items:center !important;
+    font-size:1.55rem !important;
+    line-height:1 !important;
+    box-shadow:0 10px 20px rgba(20,54,94,.08) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions span.report{
+    color:#0e987f !important;
+    -webkit-text-fill-color:#0e987f !important;
+    background:linear-gradient(135deg,rgba(213,250,239,.98),rgba(239,255,250,.98)) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions span.event{
+    color:#e6a300 !important;
+    -webkit-text-fill-color:#e6a300 !important;
+    background:linear-gradient(135deg,rgba(255,244,203,.98),rgba(255,251,238,.98)) !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions b{
+    color:#233957 !important;
+    -webkit-text-fill-color:#233957 !important;
+    font-size:.72rem !important;
+    font-weight:950 !important;
+    line-height:1 !important;
+  }
+
+  .u52-community-pick-pin-wrap{
+    background:transparent !important;
+    border:0 !important;
+  }
+  .u52-community-pick-pin{
+    position:relative !important;
+    width:58px !important;
+    height:58px !important;
+    border-radius:50% !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-shadow:0 0 0 14px rgba(23,195,178,.14) !important;
+  }
+  .u52-community-pick-pin::before,
+  .u52-community-pick-pin::after{
+    content:'' !important;
+    position:absolute !important;
+    background:#0bb29a !important;
+    border-radius:999px !important;
+    opacity:.98 !important;
+  }
+  .u52-community-pick-pin::before{
+    width:40px !important;
+    height:4px !important;
+  }
+  .u52-community-pick-pin::after{
+    width:4px !important;
+    height:40px !important;
+  }
+  .u52-community-pick-core{
+    position:relative !important;
+    z-index:2 !important;
+    width:20px !important;
+    height:20px !important;
+    border-radius:50% !important;
+    background:#10c5ad !important;
+    box-shadow:0 0 0 6px rgba(255,255,255,.96) !important;
+  }
+}
+@media (max-width:380px){
+  #urbis-mobile-app .u52-community-choice{
+    width:262px !important;
+  }
+  #urbis-mobile-app .u52-community-choice-title{
+    font-size:.92rem !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions button{
+    min-height:84px !important;
+  }
+  #urbis-mobile-app .u52-community-choice-actions span{
+    width:50px !important;
+    height:50px !important;
+  }
+}
+
+/* URBIS v172 JAC Map v5 · lista rápida de reportes ciudadanos */
+@media (max-width:1024px), (pointer:coarse){
+  #urbis-mobile-app .u52-quick-report-panel{
+    position:absolute !important;
+    z-index:2147483268 !important;
+    left:14px !important;
+    right:14px !important;
+    bottom:calc(86px + env(safe-area-inset-bottom,0px)) !important;
+    max-height:52vh !important;
+    overflow:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    padding:14px !important;
+    border-radius:28px !important;
+    background:rgba(255,255,255,.96) !important;
+    box-shadow:0 24px 46px rgba(20,54,94,.16), inset 0 0 0 1px rgba(207,224,236,.72) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(1.08) !important;
+    backdrop-filter:blur(16px) saturate(1.08) !important;
+    color:#18365b !important;
+    pointer-events:auto !important;
+  }
+  #urbis-mobile-app .u52-quick-report-panel[hidden]{display:none !important;}
+  /* Misma "repisa" teal que las pestañas de reportes — pedido explícito de
+     aplicar el mismo contraste también en Eventos. */
+  #urbis-mobile-app .u52-quick-event-panel .u52-quick-report-tabs{
+    display:flex !important;flex-wrap:wrap !important;gap:6px !important;
+    padding:9px !important;margin:0 0 4px !important;border-radius:18px !important;
+    background:linear-gradient(135deg,#e9f8f4,#f3fbf9) !important;
+    box-shadow:inset 0 0 0 1px rgba(0,184,158,.16) !important;
+  }
+  #urbis-mobile-app .u52-quick-event-panel .u52-quick-report-tabs button{flex:1 1 calc(33% - 4px) !important;min-width:0 !important;padding:5px 3px !important;font-size:.72rem !important;border-radius:10px !important;border:0 !important;background:#ffffff !important;color:#64748b !important;cursor:pointer !important;transition:all .15s !important;box-shadow:0 2px 6px rgba(20,54,94,.08) !important;}
+  #urbis-mobile-app .u52-quick-event-panel .u52-quick-report-tabs button.active{background:linear-gradient(135deg,#00b89e,#009484) !important;color:#fff !important;font-weight:700 !important;box-shadow:0 6px 14px rgba(0,143,130,.3) !important;}
+  #urbis-mobile-app .u52-quick-event-panel .u52-quick-report-tabs button span{display:block !important;font-size:1rem !important;margin-bottom:2px !important;}
+  #urbis-mobile-app .u52-ev-datetime{display:grid !important;grid-template-columns:1fr 1fr !important;gap:8px !important;margin:4px 0 !important;}
+  #urbis-mobile-app .u52-ev-datetime label{display:flex !important;flex-direction:column !important;gap:3px !important;font-size:.7rem !important;color:#94a3b8 !important;font-weight:600 !important;}
+  #urbis-mobile-app .u52-ev-datetime input{border-radius:10px !important;border:1.5px solid #e2e8f0 !important;padding:7px 10px !important;font-size:.85rem !important;}
+  #urbis-mobile-app .u52-quick-report-head{
+    display:grid !important;
+    grid-template-columns:42px 1fr 42px !important;
+    align-items:center !important;
+    gap:8px !important;
+    margin-bottom:12px !important;
+  }
+  #urbis-mobile-app .u52-quick-report-head button{
+    appearance:none !important;
+    border:0 !important;
+    width:42px !important;
+    height:42px !important;
+    border-radius:16px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:rgba(239,247,253,.96) !important;
+    color:#0c9b8b !important;
+    -webkit-text-fill-color:#0c9b8b !important;
+    font-size:1.35rem !important;
+    font-weight:950 !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.7) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-head b{
+    display:block !important;
+    color:#142f5f !important;
+    -webkit-text-fill-color:#142f5f !important;
+    font-size:1rem !important;
+    line-height:1.08 !important;
+    font-weight:950 !important;
+    text-align:center !important;
+  }
+  #urbis-mobile-app .u52-quick-report-head small{
+    display:block !important;
+    color:#607389 !important;
+    -webkit-text-fill-color:#607389 !important;
+    font-size:.68rem !important;
+    font-weight:850 !important;
+    text-align:center !important;
+    margin-top:4px !important;
+  }
+  /* "Repisa" pastel detrás de las 6 pestañas de categoría: antes las
+     pestañas (#f5f9fd) y las tarjetas de ítems de abajo (blanco→#f6f9fd)
+     eran casi el mismo tono y el ojo no distinguía "esto es un título" de
+     "esto es contenido" — pedido explícito. Ahora las pestañas viven sobre
+     un panel teal suave, y la pestaña INACTIVA pasa a blanco sólido (más
+     contraste que antes) mientras la ACTIVA es teal sólido con texto
+     blanco, bien diferenciada de las tarjetas de ítems que quedan abajo. */
+  #urbis-mobile-app .u52-quick-report-tabs{
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:7px !important;
+    margin-bottom:14px !important;
+    padding:10px !important;
+    border-radius:22px !important;
+    background:linear-gradient(135deg,#e9f8f4,#f3fbf9) !important;
+    box-shadow:inset 0 0 0 1px rgba(0,184,158,.16) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-tabs button{
+    appearance:none !important;
+    border:0 !important;
+    min-height:58px !important;
+    border-radius:16px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+    background:#ffffff !important;
+    color:#425a77 !important;
+    -webkit-text-fill-color:#425a77 !important;
+    font-weight:950 !important;
+    box-shadow:0 3px 8px rgba(20,54,94,.09) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-tabs button.active{
+    background:linear-gradient(135deg,#00b89e,#009484) !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    box-shadow:0 10px 20px rgba(0,143,130,.32) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-tabs span{font-size:1.15rem !important;line-height:1 !important;}
+  #urbis-mobile-app .u52-quick-report-tabs b{font-size:.58rem !important;line-height:1.05 !important;}
+  #urbis-mobile-app .u52-quick-report-safety{
+    margin:6px 0 10px !important;
+    padding:9px 10px !important;
+    border-radius:16px !important;
+    background:rgba(255,246,222,.98) !important;
+    color:#6d4d00 !important;
+    -webkit-text-fill-color:#6d4d00 !important;
+    font-size:.68rem !important;
+    line-height:1.25 !important;
+    font-weight:850 !important;
+    box-shadow:inset 0 0 0 1px rgba(234,179,8,.22) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-grid{
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:8px !important;
+    padding-bottom:4px !important;
+  }
+  #urbis-mobile-app .u52-alert-card{
+    appearance:none !important;
+    border:0 !important;
+    min-height:82px !important;
+    border-radius:20px !important;
+    padding:8px 5px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:7px !important;
+    background:linear-gradient(135deg,#ffffff,#f6f9fd) !important;
+    color:#203858 !important;
+    -webkit-text-fill-color:#203858 !important;
+    box-shadow:0 10px 20px rgba(20,54,94,.07), inset 0 0 0 1px rgba(207,224,236,.66) !important;
+    text-align:center !important;
+  }
+  #urbis-mobile-app .u52-alert-card span{
+    width:38px !important;
+    height:38px !important;
+    border-radius:15px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:rgba(225,251,248,.98) !important;
+    font-size:1.25rem !important;
+    line-height:1 !important;
+  }
+  #urbis-mobile-app .u52-alert-card b{
+    display:block !important;
+    font-size:.62rem !important;
+    line-height:1.08 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-quick-report-selected{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    margin:4px 0 10px !important;
+    padding:12px !important;
+    border-radius:20px !important;
+    background:linear-gradient(135deg,rgba(225,251,248,.98),rgba(246,248,255,.98)) !important;
+    box-shadow:inset 0 0 0 1px rgba(12,155,139,.16) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-selected > span{
+    width:52px !important;
+    height:52px !important;
+    border-radius:18px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:white !important;
+    font-size:1.6rem !important;
+    box-shadow:0 8px 18px rgba(20,54,94,.08) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-selected b{
+    display:block !important;
+    color:#142f5f !important;
+    -webkit-text-fill-color:#142f5f !important;
+    font-size:.95rem !important;
+    line-height:1.08 !important;
+    font-weight:950 !important;
+  }
+  #urbis-mobile-app .u52-quick-report-selected small{
+    display:block !important;
+    margin-top:4px !important;
+    color:#607389 !important;
+    -webkit-text-fill-color:#607389 !important;
+    font-size:.66rem !important;
+    font-weight:850 !important;
+  }
+  #urbis-mobile-app .u52-quick-report-form{
+    display:grid !important;
+    gap:9px !important;
+  }
+  #urbis-mobile-app .u52-quick-report-form textarea,
+  #urbis-mobile-app .u52-quick-report-form input[type="text"]{
+    width:100% !important;
+    border:0 !important;
+    border-radius:18px !important;
+    background:#f6f9fd !important;
+    color:#173f75 !important;
+    -webkit-text-fill-color:#173f75 !important;
+    font-size:.78rem !important;
+    font-weight:850 !important;
+    padding:12px 13px !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.72) !important;
+    resize:none !important;
+    outline:none !important;
+  }
+  #urbis-mobile-app .u52-quick-report-form input[type="text"]:focus{
+    box-shadow:inset 0 0 0 2px rgba(0,184,158,.55) !important;
+  }
+  #urbis-mobile-app .u52-quick-report-form textarea{min-height:74px !important;}
+  #urbis-mobile-app .u52-quick-photo{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:44px !important;
+    border-radius:18px !important;
+    background:rgba(255,250,239,.98) !important;
+    color:#8a5c00 !important;
+    -webkit-text-fill-color:#8a5c00 !important;
+    font-size:.76rem !important;
+    font-weight:950 !important;
+    box-shadow:inset 0 0 0 1px rgba(234,179,8,.18) !important;
+  }
+  #urbis-mobile-app .u52-quick-photo input{display:none !important;}
+  #urbis-mobile-app .u52-quick-photo.required{
+    background:rgba(255,240,240,.98) !important;
+    color:#b91c1c !important;
+    -webkit-text-fill-color:#b91c1c !important;
+    box-shadow:inset 0 0 0 1.5px rgba(185,28,28,.28) !important;
+  }
+  #urbis-mobile-app .u52-quick-photo.required.has-file{
+    background:rgba(240,255,248,.98) !important;
+    color:#166534 !important;
+    -webkit-text-fill-color:#166534 !important;
+    box-shadow:inset 0 0 0 1.5px rgba(22,101,52,.28) !important;
+  }
+  #urbis-mobile-app .u52-quick-publish{
+    appearance:none !important;
+    border:0 !important;
+    min-height:50px !important;
+    border-radius:20px !important;
+    color:white !important;
+    -webkit-text-fill-color:white !important;
+    font-size:.88rem !important;
+    font-weight:950 !important;
+    background:linear-gradient(135deg,#00b89e,#008f82) !important;
+    box-shadow:0 14px 26px rgba(0,143,130,.24) !important;
+  }
+}
+@media (max-width:380px){
+  #urbis-mobile-app .u52-quick-report-panel{left:10px !important;right:10px !important;max-height:54vh !important;padding:12px !important;}
+  #urbis-mobile-app .u52-quick-report-grid{grid-template-columns:repeat(2,1fr) !important;}
+  #urbis-mobile-app .u52-alert-card{min-height:76px !important;}
+}
+
+/* URBIS v5 · validación comunitaria de reportes */
+.u52-report-validate-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0;
+}
+.u52-report-validate-actions button{
+  border:0;
+  border-radius:14px;
+  padding:10px 8px;
+  background:#f4f8fb;
+  color:#173f75;
+  font-size:.76rem;
+  line-height:1.1;
+  font-weight:850;
+  box-shadow:inset 0 0 0 1px rgba(207,224,236,.8);
+}
+.u52-report-validate-actions button:disabled{
+  opacity:.7;
+}
+@media (max-width:420px){
+  .u52-report-validate-actions button{font-size:.70rem;padding:9px 6px;}
+}
+
+/* URBIS v172 · Capas = selector de mapa base (cuadrícula compacta) */
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet{
+  background:rgba(255,255,255,.97) !important;
+  box-shadow:0 24px 54px rgba(20,54,94,.22), inset 0 0 0 1px rgba(207,224,236,.7) !important;
+}
+/* FIX superposición: el selector "Tipo de mapa" (Capas) quedaba TAPADO por la fila de
+   acciones (z 2147483260) y la barra inferior (z 2147483270). Lo subimos POR ENCIMA de todo
+   + un dim de fondo. Y el toast de estado ("Toca un punto…") se centra por encima del menú. */
+body.u52-real-map #urbis-mobile-app .u52-layer-sheet{ z-index:2147483292 !important; }
+body.u52-real-map #urbis-mobile-app .u52-layer-sheet:not([hidden])::before{
+  content:''; position:fixed; inset:0; z-index:-1; background:rgba(8,18,30,.5);
+  -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); pointer-events:none;
+}
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-toast{
+  z-index:2147483266 !important; left:50% !important; right:auto !important;
+  transform:translateX(-50%) !important; max-width:88vw !important; text-align:center !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet h2{
+  color:#173f75 !important;
+  font-size:1.12rem !important;
+  margin:0 0 2px !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet .u52-basemap-hint{
+  margin:0 0 12px !important;
+  color:#6f8096 !important;
+  font-size:.74rem !important;
+  font-weight:700 !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet .u52-layer-close{
+  color:#173f75 !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-grid{
+  display:grid !important;
+  grid-template-columns:repeat(3,1fr) !important;
+  gap:9px !important;
+  max-height:46vh !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card{
+  position:relative !important;
+  appearance:none !important;
+  border:0 !important;
+  border-radius:18px !important;
+  padding:12px 6px 9px !important;
+  background:#f4f8fb !important;
+  box-shadow:inset 0 0 0 1px rgba(207,224,236,.85) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:6px !important;
+  text-align:center !important;
+  cursor:pointer !important;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card:active{ transform:scale(.96) !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active{
+  background:#e7fbf6 !important;
+  box-shadow:inset 0 0 0 2px #14b8a6 !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card-icon{
+  width:38px !important;
+  height:38px !important;
+  border-radius:12px !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#fff !important;
+  box-shadow:0 4px 10px rgba(20,54,94,.1) !important;
+  font-size:1.15rem !important;
+  color:#173f75 !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active .u52-basemap-card-icon{
+  color:#0f766e !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card b{
+  color:#173f75 !important;
+  font-size:.62rem !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card-badge{
+  font-size:.46rem !important;
+  font-weight:900 !important;
+  letter-spacing:.04em !important;
+  color:#6f8096 !important;
+  background:#eef3f8 !important;
+  border-radius:999px !important;
+  padding:2px 6px !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active .u52-basemap-card-badge{
+  color:#0f766e !important;
+  background:#d3f4ec !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-empty{
+  grid-column:1 / -1 !important;
+  text-align:center !important;
+  color:rgba(255,255,255,.92) !important;
+  font-size:.78rem !important;
+  padding:18px 8px !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   "Tipo de mapa" (Capas) — pedido explícito: el fondo azul/teal saturado se
+   sentía "extraño" y era el MISMO sin importar el módulo. Ahora usa el color
+   representativo de cada módulo: teal limpio para Reporte/Evento ciudadano,
+   lavanda (--pc-*) para UrbisProCity — y el ícono del tipo de mapa activo
+   se ve claramente "iluminado" (glow + anillo), no solo un tono distinto.
+   ════════════════════════════════════════════════════════════════════════ */
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet{
+  background:linear-gradient(165deg,#0ea5a0 0%, #0c8f8a 100%) !important;
+  box-shadow:0 26px 60px rgba(6,80,82,.38), inset 0 0 0 1px rgba(255,255,255,.16) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet h2{ color:#fff !important; text-shadow:0 1px 6px rgba(0,0,0,.12) !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet h2::before{ content:'🗺️ '; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet .u52-basemap-hint{ color:rgba(255,255,255,.93) !important; font-weight:800 !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-sheet .u52-layer-close{ color:#fff !important; background:rgba(255,255,255,.2) !important; border-radius:50% !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-card{
+  background:#ffffff !important; border-radius:20px !important; padding:13px 6px 10px !important;
+  box-shadow:0 8px 18px rgba(6,80,80,.18) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active{
+  background:linear-gradient(165deg,#ffffff,#e9fffb) !important;
+  box-shadow:0 0 0 2.5px #07d0bd, 0 10px 22px rgba(7,208,189,.32) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card-icon{
+  width:46px !important; height:46px !important; border-radius:15px !important; font-size:1.3rem !important;
+  background:linear-gradient(135deg,#e8fffb,#ccf6ef) !important; color:#0b8f86 !important;
+  box-shadow:0 4px 10px rgba(7,170,160,.2) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active .u52-basemap-card-icon{
+  background:linear-gradient(135deg,#07d0bd,#0aa39a) !important; color:#fff !important;
+  box-shadow:0 0 0 4px rgba(7,208,189,.28), 0 0 18px rgba(7,208,189,.55) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-basemap-card b{ color:#0c4f4a !important; font-size:.64rem !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-card-badge{ color:#0b8f86 !important; background:#e2fbf6 !important; }
+body.u52-real-map #urbis-mobile-app .u52-basemap-card.active .u52-basemap-card-badge{ color:#fff !important; background:rgba(7,208,189,.9) !important; }
+/* ---- Variante UrbisProCity: misma estructura, paleta lavanda del módulo ---- */
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-sheet{
+  background:linear-gradient(165deg,var(--pc-lav-deep) 0%, var(--pc-lav-deep2) 100%) !important;
+  box-shadow:0 26px 60px rgba(70,60,170,.32), inset 0 0 0 1px rgba(255,255,255,.2) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-sheet h2::before{ content:'🏙️ '; }
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card.active{
+  background:linear-gradient(165deg,#ffffff,var(--pc-sky-1)) !important;
+  box-shadow:0 0 0 2.5px var(--pc-lav-deep), 0 10px 22px rgba(107,112,224,.35) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card-icon{
+  background:linear-gradient(135deg,var(--pc-sky-1),var(--pc-chip)) !important; color:var(--pc-lav-deep) !important;
+  box-shadow:0 4px 10px rgba(107,112,224,.18) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card.active .u52-basemap-card-icon{
+  background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)) !important; color:#fff !important;
+  box-shadow:0 0 0 4px rgba(107,112,224,.3), 0 0 18px rgba(107,112,224,.6) !important;
+}
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card b{ color:var(--pc-ink) !important; }
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card-badge{ color:var(--pc-lav-deep) !important; background:var(--pc-chip) !important; }
+body.u52-real-map #urbis-mobile-app .u52-procity-mapscreen .u52-basemap-card.active .u52-basemap-card-badge{ color:#fff !important; background:rgba(107,112,224,.9) !important; }
+/* Animación de entrada cute: la ventana aparece (fade, sin transform para no romper el dim de fondo)
+   y las tarjetas suben con un rebote suave. */
+body.u52-real-map #urbis-mobile-app .u52-layer-sheet:not([hidden]){ animation:u52SheetFade .26s ease both; }
+body.u52-real-map #urbis-mobile-app .u52-layer-sheet:not([hidden]) .u52-basemap-card{ animation:u52CardIn .34s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes u52SheetFade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes u52CardIn{ from{ opacity:0; transform:translateY(12px) scale(.94); } to{ opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce){ body.u52-real-map #urbis-mobile-app .u52-layer-sheet:not([hidden]), body.u52-real-map #urbis-mobile-app .u52-layer-sheet:not([hidden]) .u52-basemap-card{ animation:none !important; } }
+
+/* URBIS · Filtro de reportes y eventos (módulo ciudadano, NO Pro City) —
+   botón en el topbar del mapa junto al GPS. Paleta teal/cyan cute, igual
+   al resto de la app ciudadana (el celeste-morado queda exclusivo de
+   UrbisProCity). */
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-cfilter-btn{
+  color:#009b89 !important; -webkit-text-fill-color:#009b89 !important; font-size:1.3rem !important;
+}
+/* Misma especificidad que ".u52-mapcentric-filter{ display:grid !important }"
+   (body.u52-real-map + .u52-jac-mapcentric) para que [hidden] SÍ gane —
+   sin esto, al entrar a Pro City este botón seguía ocupando una celda del
+   grid de 4 columnas y desalineaba al de GPS (mismo bug que el de Pro City). */
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-cfilter-btn[hidden]{ display:none !important; }
+
+#urbis-mobile-app .u52-cfilter-sheet{ position:absolute; inset:0; z-index:2147483280; }
+#urbis-mobile-app .u52-cfilter-sheet[hidden]{ display:none !important; }
+#urbis-mobile-app .u52-cfilter-backdrop{ position:absolute; inset:0; background:rgba(10,30,40,.4); }
+#urbis-mobile-app .u52-cfilter-card{
+  position:absolute; left:0; right:0; bottom:0; max-height:72vh; overflow-y:auto;
+  background:linear-gradient(180deg,#ffffff 0%,#f7fffd 100%);
+  border-radius:26px 26px 0 0; border-top:2px solid #bdeee5;
+  padding:18px 16px calc(96px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -14px 40px rgba(10,60,50,.22);
+}
+#urbis-mobile-app .u52-cfilter-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+#urbis-mobile-app .u52-cfilter-head b{ display:block; color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important; font-size:1rem; font-weight:900; }
+#urbis-mobile-app .u52-cfilter-head small{ display:block; color:#009b89 !important; -webkit-text-fill-color:#009b89 !important; font-size:.76rem; margin-top:2px; font-weight:700; }
+#urbis-mobile-app .u52-cfilter-head button{
+  border:0; background:#e6fbf7; color:#009b89; width:34px; height:34px;
+  border-radius:50%; font-size:1.2rem; line-height:1; font-weight:800;
+  box-shadow:inset 0 0 0 1px #bdeee5;
+}
+#urbis-mobile-app .u52-cfilter-tools{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+#urbis-mobile-app .u52-cfilter-tools button{
+  appearance:none; border:0; border-radius:13px; min-height:40px; font-size:.76rem; font-weight:850;
+  background:linear-gradient(135deg,#e6fbf7,#d5f5ef); color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important;
+  box-shadow:inset 0 0 0 1px #bdeee5;
+}
+#urbis-mobile-app .u52-cfilter-list{ display:flex; flex-direction:column; gap:7px; }
+#urbis-mobile-app .u52-cfilter-chip{
+  appearance:none; border:0; width:100%; display:flex; align-items:center; gap:10px;
+  background:linear-gradient(135deg,#ffffff,#f5fffc); border-radius:14px; padding:10px 12px;
+  box-shadow:inset 0 0 0 1px #bdeee5;
+}
+#urbis-mobile-app .u52-cfilter-chip.off{ opacity:.5; }
+#urbis-mobile-app .u52-cfilter-dot{
+  width:26px; height:26px; flex:0 0 26px; border-radius:9px; display:grid; place-items:center;
+  font-size:.95rem; box-shadow:0 1px 3px rgba(10,60,50,.3);
+}
+#urbis-mobile-app .u52-cfilter-chip b{ flex:1; text-align:left; color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important; font-size:.8rem; font-weight:800; }
+#urbis-mobile-app .u52-cfilter-check{ color:#009b89 !important; -webkit-text-fill-color:#009b89 !important; font-size:1rem; }
+
+/* URBIS · Línea de tiempo tipo CALENDARIO ("viajar en el tiempo", como un
+   buscador de vuelos: se toca un día de inicio y otro de fin, navegando
+   entre meses con ◀/▶) — bloque COMPARTIDO por ambas hojas de filtro (Pro
+   City y ciudadana). Solo el LAYOUT vive acá; los colores se pintan por
+   separado según en qué hoja aparece (más abajo la variante teal ciudadana;
+   css/52 trae la variante lavanda de Pro City). */
+#urbis-mobile-app .u52-tf-block{ margin-top:14px; padding-top:14px; border-top:1.5px dashed #dfe3f5; }
+#urbis-mobile-app .u52-tf-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+#urbis-mobile-app .u52-tf-head b{ font-size:.82rem; font-weight:900; }
+#urbis-mobile-app .u52-tf-reset{
+  appearance:none; border:0; border-radius:10px; padding:5px 10px; font-size:.66rem; font-weight:850;
+  background:#ffe3e0; color:#b3261e !important; -webkit-text-fill-color:#b3261e !important;
+}
+#urbis-mobile-app .u52-tf-range-label{ text-align:center; font-size:.8rem; font-weight:900; margin-bottom:10px; }
+#urbis-mobile-app .u52-tf-cal-nav{ display:grid; grid-template-columns:36px 1fr 36px; align-items:center; gap:6px; margin-bottom:8px; }
+#urbis-mobile-app .u52-tf-cal-nav button{ appearance:none; border:0; width:36px; height:32px; border-radius:10px; font-size:.95rem; font-weight:900; }
+#urbis-mobile-app .u52-tf-cal-month{ text-align:center; font-size:.8rem; font-weight:850; text-transform:capitalize; }
+#urbis-mobile-app .u52-tf-cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+#urbis-mobile-app .u52-tf-cal-wd{ text-align:center; font-size:.62rem; font-weight:850; padding-bottom:3px; }
+#urbis-mobile-app .u52-tf-cal-cell{
+  appearance:none; border:0; background:transparent; aspect-ratio:1/1; min-height:30px;
+  border-radius:9px; font-size:.72rem; font-weight:800; display:grid; place-items:center;
+}
+#urbis-mobile-app .u52-tf-cal-cell.empty{ pointer-events:none; }
+/* Día de hoy: relleno sólido + anillo, bien visible a simple vista (antes
+   era solo un borde fino, pedido explícito: "que se muestre iluminado"). */
+#urbis-mobile-app .u52-tf-cal-cell.today{
+  font-weight:950; box-shadow:inset 0 0 0 2px currentColor;
+}
+#urbis-mobile-app .u52-tf-view-btn{
+  appearance:none; border:0; width:100%; margin-top:12px; min-height:44px;
+  border-radius:16px; font-size:.8rem; font-weight:900;
+}
+
+/* Variante TEAL (hoja ciudadana #u52-cfilter-sheet). El !important en los
+   textos es obligatorio: css/42 (tema legacy) pinta TODO span/label casi
+   invisible con !important. */
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-block{ border-top-color:#bdeee5; }
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-head b,
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-range-label{ color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important; }
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-nav button{
+  background:#e6fbf7; color:#009b89 !important; -webkit-text-fill-color:#009b89 !important; box-shadow:inset 0 0 0 1px #bdeee5;
+}
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-month,
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-wd{ color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important; }
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-cell{ color:#0c4a42 !important; -webkit-text-fill-color:#0c4a42 !important; }
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-cell.today{
+  background:rgba(0,155,137,.16); color:#009b89 !important; -webkit-text-fill-color:#009b89 !important;
+}
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-cell.inrange{ background:#d5f5ef; }
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-cal-cell.sel{
+  background:linear-gradient(135deg,#00b89e,#008f82); color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+#urbis-mobile-app #u52-cfilter-sheet .u52-tf-view-btn{
+  background:linear-gradient(135deg,#00b89e,#008f82); color:#fff !important; -webkit-text-fill-color:#fff !important;
+  box-shadow:0 12px 22px rgba(0,143,130,.3);
+}

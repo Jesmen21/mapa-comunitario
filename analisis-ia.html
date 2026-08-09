@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!-- URBIS · Análisis de Implantación IA — módulo standalone.
+     Página independiente del SPA principal: mapa propio, estilos propios,
+     scripts propios. Solo comparte js/00-config.js (solo lectura) y la
+     sesión guardada en localStorage. -->
+<html lang="es">
+<head>
+  <title>Análisis de Implantación IA · URBIS</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+  <script>
+    // GATE de acceso: módulo exclusivo (dueño + admin). Corre antes de pintar
+    // nada; si la sesión no está autorizada, vuelve al inicio de URBIS.
+    (function(){
+      function noAutorizado(){ location.replace('index.html'); }
+      try{
+        var s = JSON.parse(localStorage.getItem('urbis_auth_session_v1') || 'null');
+        var u = String((s && s.usuario) || '').trim().toLowerCase();
+        var rol = String((s && s.rol) || '').trim().toLowerCase();
+        var esAdmin = rol === 'admin' || u === 'urbisadmin' || localStorage.getItem('urbis_admin') === '1';
+        var permitidos = ['jesmen21', 'jesmen21s'];
+        if (!(esAdmin || permitidos.indexOf(u) !== -1)) noAutorizado();
+      }catch(e){ noAutorizado(); }
+    })();
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=451-cerrar-poligono" />
+</head>
+<body>
+
+<div id="aia-app">
+  <header id="aia-topbar">
+    <button id="aia-btn-volver" onclick="location.href='index.html'" title="Volver a URBIS">←</button>
+    <div class="aia-titulo">
+      <b>Análisis de Implantación IA</b>
+      <small>Análisis territorial inteligente para constructoras e inmobiliarias</small>
+    </div>
+    <button id="aia-btn-capas" title="Cambiar mapa base">🗺️</button>
+  </header>
+
+  <div id="aia-map"></div>
+
+  <div id="aia-sheet" data-estado="wizard">
+    <div id="aia-sheet-handle"><span></span></div>
+    <div id="aia-sheet-body">
+
+      <div id="aia-tabs">
+        <button type="button" class="aia-tab activo" data-tab="nuevo">Nuevo análisis</button>
+        <button type="button" class="aia-tab" data-tab="guardados">💾 Mis análisis</button>
+      </div>
+
+      <section id="aia-tab-nuevo">
+      <section id="aia-wizard">
+
+        <div class="aia-paso" id="aia-paso-lote">
+          <h3><span class="aia-num">1</span> Selecciona el lote</h3>
+          <input id="aia-buscar-direccion" type="text" autocomplete="off"
+                 placeholder="Buscar dirección en Cúcuta…" />
+          <ul id="aia-sugerencias" hidden></ul>
+          <div class="aia-lote-alt">
+            <button id="aia-btn-coords" type="button">🔢 Coordenadas</button>
+            <button id="aia-btn-gmaps" type="button">🔗 Enlace Google Maps</button>
+          </div>
+          <div class="aia-mini-form" id="aia-form-coords" hidden>
+            <input id="aia-lat" type="text" inputmode="decimal" placeholder="Latitud (7.8891)" />
+            <input id="aia-lng" type="text" inputmode="decimal" placeholder="Longitud (-72.4967)" />
+            <button id="aia-coords-ok" type="button">OK</button>
+          </div>
+          <div class="aia-mini-form" id="aia-form-gmaps" hidden>
+            <input id="aia-gmaps-url" type="text" placeholder="Pega el enlace de Google Maps" />
+            <button id="aia-gmaps-ok" type="button">OK</button>
+          </div>
+          <p id="aia-lote-estado">Toca el mapa para marcar el lote</p>
+        </div>
+
+        <div class="aia-paso" id="aia-paso-radio">
+          <h3><span class="aia-num">2</span> Radio de análisis</h3>
+          <div class="aia-presets" id="aia-radio-presets">
+            <button type="button" data-radio="100">100 m</button>
+            <button type="button" data-radio="250">250 m</button>
+            <button type="button" data-radio="500" class="activo">500 m</button>
+            <button type="button" data-radio="1000">1 km</button>
+            <button type="button" data-radio="2000">2 km</button>
+            <button type="button" data-radio="custom">Otro</button>
+          </div>
+          <input type="range" id="aia-radio-slider" min="100" max="2000" step="50" value="500" />
+          <output id="aia-radio-valor">500 m</output>
+        </div>
+
+        <div class="aia-paso" id="aia-paso-estudio">
+          <h3><span class="aia-num">3</span> Tipo de estudio</h3>
+          <div class="aia-chips">
+            <button type="button" class="aia-chip" data-estudio="caracterizacion">🏙️ Caracterización Urbana</button>
+            <button type="button" class="aia-chip" data-estudio="comercial">💼 Viabilidad Comercial</button>
+            <button type="button" class="aia-chip" data-estudio="inmobiliaria">🏗️ Viabilidad Inmobiliaria</button>
+            <button type="button" class="aia-chip" data-estudio="equipamientos">🏥 Equipamientos</button>
+            <button type="button" class="aia-chip activo" data-estudio="completo">⭐ Estudio Completo</button>
+          </div>
+        </div>
+
+        <div class="aia-paso" id="aia-paso-proyecto">
+          <h3><span class="aia-num">4</span> Proyecto propuesto</h3>
+          <div class="aia-proyectos" id="aia-proyectos-grid">
+            <button type="button" class="aia-proy" data-proyecto="residencial"><span>🏢</span>Edificio residencial</button>
+            <button type="button" class="aia-proy" data-proyecto="mixto"><span>🧩</span>Edificio mixto</button>
+            <button type="button" class="aia-proy" data-proyecto="oficinas"><span>💼</span>Oficinas</button>
+            <button type="button" class="aia-proy" data-proyecto="consultorios"><span>🩺</span>Consultorios</button>
+            <button type="button" class="aia-proy" data-proyecto="drogueria"><span>💊</span>Droguería</button>
+            <button type="button" class="aia-proy" data-proyecto="supermercado"><span>🛒</span>Supermercado</button>
+            <button type="button" class="aia-proy" data-proyecto="cafeteria"><span>☕</span>Cafetería</button>
+            <button type="button" class="aia-proy" data-proyecto="restaurante"><span>🍽️</span>Restaurante</button>
+            <button type="button" class="aia-proy" data-proyecto="hotel"><span>🏨</span>Hotel</button>
+            <button type="button" class="aia-proy" data-proyecto="coworking"><span>🧑‍💻</span>Coworking</button>
+            <button type="button" class="aia-proy" data-proyecto="gimnasio"><span>🏋️</span>Gimnasio</button>
+            <button type="button" class="aia-proy" data-proyecto="colegio"><span>🏫</span>Colegio</button>
+            <button type="button" class="aia-proy aia-recomendar" data-proyecto="recomendar"><span>✨</span>No sé qué construir — recomiéndame el mejor uso</button>
+          </div>
+          <button id="aia-btn-abrir-constructor" type="button" class="aia-btn-constructor">
+            <span class="aia-btn-constructor-ico">🧩⚡</span>
+            <span class="aia-btn-constructor-txt"><b>Combinar varios usos</b><small>Ej. Hotel + Oficinas, Comercio + Oficinas… sin límite</small></span>
+          </button>
+          <div id="aia-resumen-mixto" hidden>
+            <div id="aia-resumen-chips"></div>
+            <button id="aia-btn-editar-mixto" type="button">✏️ Editar programa</button>
+          </div>
+        </div>
+
+        <button id="aia-btn-analizar" type="button" disabled>⚡ Elige lote, estudio y proyecto</button>
+      </section>
+
+      <section id="aia-cargando" hidden>
+        <div class="aia-spinner"></div>
+        <div id="aia-cargando-msg">Consultando el entorno urbano…</div>
+      </section>
+
+      <section id="aia-resultados" hidden>
+        <div id="aia-res-head">
+          <div id="aia-res-titulo"></div>
+          <button id="aia-btn-reanalizar" type="button">↻ Re-analizar</button>
+          <button id="aia-btn-informe" type="button">📄 Exportar PDF</button>
+          <button id="aia-btn-guardar" type="button">💾 Guardar</button>
+          <button id="aia-btn-nuevo" type="button">✚ Nuevo análisis</button>
+        </div>
+        <div id="aia-usos-chips" hidden></div>
+        <div id="aia-kpis"></div>
+        <div id="aia-aviso-otro" hidden></div>
+        <div id="aia-viabilidad" hidden></div>
+        <div id="aia-ranking" hidden></div>
+        <div id="aia-desglose-usos" hidden></div>
+        <div id="aia-compatibilidad" hidden></div>
+        <div id="aia-indicadores" hidden></div>
+        <div id="aia-recomend-unidades" hidden></div>
+        <div id="aia-recomendaciones" hidden></div>
+        <div id="aia-foda"></div>
+        <div class="aia-chart-card"><canvas id="aia-chart-barras"></canvas></div>
+        <div class="aia-chart-card"><canvas id="aia-chart-donut"></canvas></div>
+        <div class="aia-chart-card"><canvas id="aia-chart-radar"></canvas></div>
+        <div id="aia-tarjetas-categorias"></div>
+        <div id="aia-tabla-puntos"></div>
+        <div id="aia-conclusion"></div>
+      </section>
+      </section>
+
+      <section id="aia-tab-guardados" hidden>
+        <div id="aia-guardados-cabecera">
+          <button id="aia-btn-comparar" type="button" hidden>⚖️ Comparar (<span id="aia-comparar-n">0</span>)</button>
+        </div>
+        <div id="aia-guardados-lista"></div>
+        <div id="aia-comparacion" hidden></div>
+      </section>
+
+    </div>
+  </div>
+
+  <div id="aia-constructor" hidden>
+    <div id="aia-constructor-panel">
+      <header>
+        <b>➕ Diseñar mi proyecto</b>
+        <button id="aia-constructor-cerrar" type="button" title="Cerrar">✕</button>
+      </header>
+      <div id="aia-constructor-body">
+        <h3>Usos del programa</h3>
+        <div class="aia-chips" id="aia-constructor-usos"></div>
+
+        <div id="aia-constructor-personalizado">
+          <input id="aia-uso-personalizado-input" type="text" placeholder="Ej. Centro empresarial, Bodega, Showroom…" />
+          <button id="aia-btn-agregar-personalizado" type="button">➕ Agregar uso personalizado</button>
+        </div>
+        <div class="aia-chips" id="aia-constructor-usos-custom"></div>
+
+        <details id="aia-constructor-config">
+          <summary>Configuración del edificio (opcional)</summary>
+          <div class="aia-config-grid">
+            <label>Pisos <input id="cfg-pisos" type="number" min="0" inputmode="numeric" /></label>
+            <label>Área construida (m²) <input id="cfg-areaConstruidaM2" type="number" min="0" inputmode="numeric" /></label>
+            <label>Apartamentos <input id="cfg-apartamentos" type="number" min="0" inputmode="numeric" /></label>
+            <label>Oficinas <input id="cfg-oficinas" type="number" min="0" inputmode="numeric" /></label>
+            <label>Locales comerciales <input id="cfg-localesComerciales" type="number" min="0" inputmode="numeric" /></label>
+            <label>Habitaciones de hotel <input id="cfg-habitacionesHotel" type="number" min="0" inputmode="numeric" /></label>
+            <label>Consultorios <input id="cfg-consultorios" type="number" min="0" inputmode="numeric" /></label>
+            <label>Parqueaderos <input id="cfg-parqueaderos" type="number" min="0" inputmode="numeric" /></label>
+            <label>Área comercial (m²) <input id="cfg-areaComercialM2" type="number" min="0" inputmode="numeric" /></label>
+            <label>Área residencial (m²) <input id="cfg-areaResidencialM2" type="number" min="0" inputmode="numeric" /></label>
+            <label>Área hotelera (m²) <input id="cfg-areaHotelM2" type="number" min="0" inputmode="numeric" /></label>
+            <label>Área institucional (m²) <input id="cfg-areaInstitucionalM2" type="number" min="0" inputmode="numeric" /></label>
+          </div>
+        </details>
+      </div>
+      <button id="aia-constructor-aplicar" type="button" disabled>Aplicar (0 usos seleccionados)</button>
+    </div>
+  </div>
+
+  <div id="aia-exportar" hidden>
+    <div id="aia-exportar-panel">
+      <header>
+        <b id="aia-exportar-titulo-panel">📄 Exportar PDF</b>
+        <button id="aia-exportar-cerrar" type="button" title="Cerrar">✕</button>
+      </header>
+
+      <div id="aia-exportar-form">
+        <label>Título del informe
+          <input id="aia-exp-titulo" type="text" placeholder="Ej. Análisis de implantación — Av. 4 Norte" />
+        </label>
+        <label>Subtítulo / referencia (opcional)
+          <input id="aia-exp-subtitulo" type="text" placeholder="Ej. Área comercial Av. 4 Norte con Av. Libertadores" />
+        </label>
+        <label>Orientación de la hoja
+          <div class="aia-orient-opts">
+            <button type="button" class="aia-orient-btn activo" data-orientacion="horizontal">🖼️ Horizontal</button>
+            <button type="button" class="aia-orient-btn" data-orientacion="vertical">📄 Vertical</button>
+          </div>
+        </label>
+        <label>Estilo del informe
+          <div class="aia-estilo-opts" id="aia-estilo-opts">
+            <button type="button" class="aia-estilo-btn activo" data-estilo="institucional">
+              <i class="aia-estilo-muestra" style="--c1:#075E88;--c2:#0E86BE;--c3:#FABD0A;--bg:#ffffff"></i>
+              <b>Institucional</b><small>Celeste de marca URBIS. El de siempre.</small>
+            </button>
+            <button type="button" class="aia-estilo-btn" data-estilo="premium">
+              <i class="aia-estilo-muestra" style="--c1:#061722;--c2:#0d3040;--c3:#FABD0A;--bg:#11242f"></i>
+              <b>Premium oscuro</b><small>Fondo profundo y dorado. Para inversionistas.</small>
+            </button>
+            <button type="button" class="aia-estilo-btn" data-estilo="minimalista">
+              <i class="aia-estilo-muestra" style="--c1:#1a1a1a;--c2:#3a3a3a;--c3:#8a8a8a;--bg:#ffffff"></i>
+              <b>Minimalista</b><small>Blanco y negro, sin adornos.</small>
+            </button>
+            <button type="button" class="aia-estilo-btn" data-estilo="arquitectonico">
+              <i class="aia-estilo-muestra" style="--c1:#8c3f22;--c2:#b5502f;--c3:#c98a3c;--bg:#fbf8f3"></i>
+              <b>Arquitectónico</b><small>Papel cálido y terracota, como una lámina.</small>
+            </button>
+          </div>
+        </label>
+        <label>Generado por (opcional)
+          <input id="aia-exp-autor" type="text" placeholder="Tu nombre o el de la constructora" />
+        </label>
+        <button id="aia-exp-previsualizar" type="button">👁️ Previsualizar informe (1 hoja)</button>
+
+        <div class="aia-exp-sep"><span>documento aparte</span></div>
+        <button id="aia-exp-listado" type="button">📋 Listado completo de puntos</button>
+        <p class="aia-exp-nota">Documento de trabajo: todos los usos del radio agrupados por categoría de la Matriz, y los que quedaron sin clasificar con sus etiquetas para poder identificarlos.</p>
+      </div>
+
+      <div id="aia-exportar-preview" hidden>
+        <iframe id="aia-exportar-iframe" title="Previsualización del informe"></iframe>
+        <div id="aia-exportar-preview-botones">
+          <button id="aia-exp-editar" type="button">⬅️ Editar</button>
+          <button id="aia-exp-confirmar" type="button">✅ Exportar PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/00-config.js?v=451-cerrar-poligono"></script>
+<script src="js/60-analisis-ia-motor.js?v=451-cerrar-poligono"></script>
+<script src="js/61-analisis-ia-datos.js?v=451-cerrar-poligono"></script>
+<script src="js/63-analisis-ia-informe.js?v=451-cerrar-poligono"></script>
+<script src="js/62-analisis-ia-app.js?v=451-cerrar-poligono"></script>
+</body>
+</html>

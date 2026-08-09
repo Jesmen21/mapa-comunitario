@@ -1,0 +1,1313 @@
+/* URBIS · Registro/verificación por correo */
+.urbis-auth-consents{
+  margin:12px 0 10px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+}
+.urbis-auth-check{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  margin:0 0 9px;
+  color:#e9fff7;
+  font-size:.78rem;
+  line-height:1.35;
+}
+.urbis-auth-check input{ margin-top:3px; accent-color:#27d39b; }
+.urbis-auth-note{ display:block; color:#9fd9c9; font-size:.72rem; margin-top:3px; }
+.urbis-auth-modal{
+  position:fixed;
+  inset:0;
+  z-index:2147483600;
+  display:none;
+  place-items:center;
+  background:rgba(2,14,18,.58);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  padding:18px;
+}
+.urbis-auth-modal.show{ display:grid; }
+.urbis-auth-card{
+  width:min(380px, 94vw);
+  position:relative;
+  border-radius:28px;
+  padding:24px;
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(237,255,250,.96));
+  box-shadow:0 28px 80px rgba(0,0,0,.32);
+  color:#11352e;
+  text-align:center;
+}
+.urbis-auth-x{
+  position:absolute;
+  right:14px;
+  top:12px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:rgba(15,61,46,.08);
+  color:#11352e;
+  font-size:1.3rem;
+  cursor:pointer;
+}
+.urbis-auth-badge{
+  width:58px;
+  height:58px;
+  margin:0 auto 10px;
+  border-radius:20px;
+  display:grid;
+  place-items:center;
+  font-weight:950;
+  color:#fff;
+  background:linear-gradient(135deg,#18d7ff,#27d39b);
+  box-shadow:0 16px 32px rgba(39,211,155,.25);
+}
+.urbis-auth-card h2{ margin:4px 0 8px; font-size:1.45rem; }
+.urbis-auth-card p{ margin:0 0 14px; color:#42645b; font-size:.92rem; }
+#urbis-verification-code{
+  width:100%;
+  height:54px;
+  border:0;
+  border-radius:18px;
+  margin:6px 0 12px;
+  text-align:center;
+  letter-spacing:.28em;
+  font-size:1.4rem;
+  font-weight:900;
+  color:#11352e;
+  background:#f3fbf8;
+  box-shadow:inset 0 0 0 1px rgba(15,61,46,.12);
+}
+.urbis-auth-primary,.urbis-auth-secondary{
+  width:100%;
+  min-height:44px;
+  border:0;
+  border-radius:16px;
+  font-weight:900;
+  cursor:pointer;
+  margin-top:8px;
+}
+.urbis-auth-primary{ background:linear-gradient(135deg,#27d39b,#18d7ff); color:#06221c; }
+.urbis-auth-secondary{ background:rgba(15,61,46,.08); color:#214d43; }
+.urbis-auth-hint{ font-size:.76rem!important; color:#6f877f!important; margin-top:12px!important; }
+#urbis-auth-toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(28px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(18px);
+  z-index:2147483601;
+  max-width:min(420px, 90vw);
+  padding:12px 16px;
+  border-radius:999px;
+  background:rgba(7,29,24,.94);
+  color:#eafff9;
+  font-weight:800;
+  font-size:.86rem;
+  opacity:0;
+  pointer-events:none;
+  transition:.22s ease;
+  box-shadow:0 18px 40px rgba(0,0,0,.28);
+}
+#urbis-auth-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.urbis-logout-btn{ margin-top:12px!important; width:100%; }
+
+
+/* URBIS · Recuperación de cuenta */
+.urbis-auth-mini-link{
+  border:0;
+  background:transparent;
+  color:#89e9ff;
+  font-weight:900;
+  text-decoration:underline;
+  cursor:pointer;
+  padding:6px 0 0;
+  font-size:.78rem;
+}
+.urbis-auth-phone-note{
+  display:block;
+  color:#b9efe4;
+  font-size:.72rem;
+  margin:2px 0 8px;
+}
+.urbis-auth-card input.urbis-auth-input{
+  width:100%;
+  height:50px;
+  border:0;
+  border-radius:16px;
+  margin:6px 0 10px;
+  padding:0 14px;
+  color:#11352e;
+  background:#f3fbf8;
+  box-shadow:inset 0 0 0 1px rgba(15,61,46,.12);
+  font-weight:800;
+}
+#urbis-recovery-code{
+  letter-spacing:.28em;
+  text-align:center;
+  font-size:1.28rem;
+}
+
+
+/* URBIS · Fix móvil: cuando el usuario toca Ingreso normal sin sesión,
+   se muestra el formulario real y no la portada móvil encima. */
+body.urbis-auth-registering > #login-screen{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483500!important;
+  overflow:auto!important;
+}
+body.urbis-auth-registering > #urbis-mobile-app{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.urbis-auth-registering #normal-access-panel,
+body.urbis-auth-registering #normal-data-panel{
+  display:block!important;
+}
+body.urbis-auth-registering #admin-access-panel{
+  display:none!important;
+}
+
+
+/* URBIS · Registro más claro, kawaii y táctil */
+.urbis-register-head{
+  margin:4px 0 14px;
+}
+.urbis-register-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:linear-gradient(135deg,rgba(118,234,255,.30),rgba(180,255,219,.36));
+  color:#0f5b5d;
+  font-weight:900;
+  font-size:.82rem;
+  box-shadow:0 10px 24px rgba(74,211,220,.14);
+  margin-bottom:8px;
+}
+.urbis-register-copy{
+  margin:0 0 4px !important;
+  color:#4c6f72 !important;
+  font-size:.87rem !important;
+  line-height:1.45 !important;
+}
+.urbis-field{
+  margin:0 0 10px;
+}
+.urbis-field-label{
+  display:block;
+  margin:0 0 6px;
+  font-size:.82rem;
+  font-weight:900;
+  color:#2c6160;
+  letter-spacing:.01em;
+}
+.urbis-field-hint{
+  display:block;
+  margin:-2px 0 8px;
+  color:#6d8b8e;
+  font-size:.72rem;
+}
+body.urbis-auth-registering > #login-screen{
+  background:
+    radial-gradient(circle at 14% 18%, rgba(122,235,255,.32), transparent 28%),
+    radial-gradient(circle at 82% 14%, rgba(255,194,220,.24), transparent 22%),
+    radial-gradient(circle at 76% 82%, rgba(177,255,216,.28), transparent 26%),
+    linear-gradient(160deg,#f2fffb 0%, #f8fffe 36%, #eefcff 100%) !important;
+}
+body.urbis-auth-registering > #login-screen::before{
+  opacity:.55 !important;
+  background-image:
+    linear-gradient(rgba(103,211,203,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(103,211,203,.08) 1px, transparent 1px),
+    radial-gradient(circle at 20% 20%, rgba(255,182,214,.14), transparent 18%),
+    radial-gradient(circle at 82% 32%, rgba(137,229,180,.16), transparent 18%) !important;
+}
+body.urbis-auth-registering > #login-screen::after{
+  border-color:rgba(118,214,213,.18) !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.54),rgba(255,255,255,.28)) !important;
+}
+body.urbis-auth-registering .login-box{
+  background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(246,255,253,.94)) !important;
+  border:1px solid rgba(126,218,217,.26) !important;
+  box-shadow:0 30px 90px rgba(59,150,155,.18), 0 8px 28px rgba(255,182,214,.14) !important;
+}
+body.urbis-auth-registering .login-topbar{
+  border-bottom:1px solid rgba(81,174,171,.12) !important;
+}
+body.urbis-auth-registering .login-brand-title{
+  background:linear-gradient(135deg,#2ea7b7,#38c58d);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+}
+body.urbis-auth-registering .login-brand-subtitle,
+body.urbis-auth-registering .login-helper,
+body.urbis-auth-registering .login-status-pill small{
+  color:#6f8e91 !important;
+}
+body.urbis-auth-registering .login-status-pill{
+  background:rgba(119,223,206,.12) !important;
+  border-color:rgba(119,223,206,.24) !important;
+  color:#265e5a !important;
+}
+body.urbis-auth-registering .login-chip{
+  background:linear-gradient(135deg,rgba(117,235,255,.18),rgba(179,255,221,.22)) !important;
+  border-color:rgba(96,210,206,.24) !important;
+  color:#327a79 !important;
+}
+body.urbis-auth-registering .login-box h1{
+  background:linear-gradient(135deg,#36b2c1,#3dcc9e,#79d0ff) !important;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  color:transparent !important;
+  text-shadow:none !important;
+}
+body.urbis-auth-registering .login-box p.subtitle{
+  color:#648286 !important;
+}
+body.urbis-auth-registering #normal-access-panel{
+  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(244,255,252,.88));
+  border:1px solid rgba(95,203,194,.18);
+  border-radius:26px;
+  padding:18px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 18px 34px rgba(100,199,195,.10);
+}
+body.urbis-auth-registering .btn-google,
+body.urbis-auth-registering .reg-input,
+body.urbis-auth-registering .reg-select,
+body.urbis-auth-registering .login-input,
+body.urbis-auth-registering textarea,
+body.urbis-auth-registering input,
+body.urbis-auth-registering select{
+  background:rgba(255,255,255,.96) !important;
+  color:#23484d !important;
+  border:1px solid rgba(94,201,198,.22) !important;
+  box-shadow:0 8px 18px rgba(83,195,195,.08), inset 0 1px 0 rgba(255,255,255,.85) !important;
+  text-align:left !important;
+  min-height:52px;
+  border-radius:18px !important;
+  position:relative;
+  z-index:2;
+  pointer-events:auto !important;
+  -webkit-user-select:text !important;
+  user-select:text !important;
+}
+body.urbis-auth-registering .reg-input::placeholder,
+body.urbis-auth-registering .login-input::placeholder,
+body.urbis-auth-registering textarea::placeholder{
+  color:rgba(40,90,95,.44) !important;
+}
+body.urbis-auth-registering .reg-input:focus,
+body.urbis-auth-registering .reg-select:focus,
+body.urbis-auth-registering .login-input:focus,
+body.urbis-auth-registering textarea:focus,
+body.urbis-auth-registering input:focus,
+body.urbis-auth-registering select:focus{
+  border-color:#60d2cf !important;
+  box-shadow:0 0 0 4px rgba(116,224,220,.18), 0 12px 24px rgba(116,224,220,.14) !important;
+}
+body.urbis-auth-registering #normal-submit-btn{
+  width:100%;
+  min-height:54px;
+  border:0;
+  border-radius:18px !important;
+  background:linear-gradient(135deg,#7ae6ff,#7df3c3 54%, #96d4ff) !important;
+  color:#12343a !important;
+  font-weight:900;
+  box-shadow:0 18px 38px rgba(82,210,212,.22) !important;
+}
+body.urbis-auth-registering .urbis-auth-consents{
+  background:linear-gradient(180deg,rgba(122,236,255,.10),rgba(184,255,225,.14));
+  border:1px solid rgba(116,224,220,.20);
+}
+body.urbis-auth-registering .urbis-auth-check{ color:#3e6a6a; }
+body.urbis-auth-registering .urbis-auth-check input{ accent-color:#50d7cb; }
+body.urbis-auth-registering .urbis-auth-phone-note,
+body.urbis-auth-registering .urbis-auth-note{ color:#6a9094; }
+body.urbis-auth-registering .urbis-auth-mini-link{ color:#2ea7b7; }
+body.urbis-auth-registering .login-preview-panel{
+  background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(245,255,252,.74));
+  border:1px solid rgba(95,203,194,.18);
+}
+body.urbis-auth-registering .login-map-card{
+  background:#f7fffe;
+  border-color:rgba(95,203,194,.18);
+}
+body.urbis-auth-registering .login-map-view{
+  background:
+    radial-gradient(circle at 70% 70%, rgba(166,244,187,.35), transparent 18%),
+    radial-gradient(circle at 46% 50%, rgba(87,193,255,.20), transparent 12%),
+    linear-gradient(115deg, rgba(110,231,183,.10) 0 1px, transparent 1px 100%),
+    repeating-linear-gradient(8deg, rgba(62,153,138,.05) 0 1px, transparent 1px 34px),
+    linear-gradient(135deg,#eafffb 0%, #f4fffe 100%) !important;
+}
+body.urbis-auth-registering .login-map-head,
+body.urbis-auth-registering .login-layer-item,
+body.urbis-auth-registering .login-map-meta{
+  color:#456d70 !important;
+}
+body.urbis-auth-registering .login-shell,
+body.urbis-auth-registering .login-copy-panel,
+body.urbis-auth-registering #normal-data-panel,
+body.urbis-auth-registering .urbis-field{
+  pointer-events:auto !important;
+}
+@media (max-width: 980px){
+  body.urbis-auth-registering .login-hero-grid{
+    grid-template-columns:1fr !important;
+    gap:20px;
+    padding:18px !important;
+  }
+  body.urbis-auth-registering .login-preview-panel{ display:none !important; }
+  body.urbis-auth-registering .login-topbar{ padding:18px 18px 12px !important; }
+  body.urbis-auth-registering .login-box h1{ font-size:clamp(3rem, 16vw, 4.4rem) !important; }
+  body.urbis-auth-registering #normal-access-panel{ padding:16px !important; border-radius:22px !important; }
+}
+
+
+/* URBIS · Login registrado + registro nuevo */
+.urbis-auth-mode-switch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:6px;
+  margin:4px 0 14px;
+  border-radius:18px;
+  background:rgba(0,182,141,.10);
+  border:1px solid rgba(0,182,141,.18);
+}
+.urbis-auth-tab{
+  min-height:44px;
+  border:0;
+  border-radius:14px;
+  font-weight:950;
+  cursor:pointer;
+  color:#315e5d;
+  background:rgba(255,255,255,.62);
+}
+.urbis-auth-tab.active{
+  color:#062624;
+  background:linear-gradient(135deg,#00B68D,#8BEAD8);
+  box-shadow:0 10px 24px rgba(0,182,141,.20);
+}
+.urbis-login-panel,.urbis-register-fields{
+  animation: urbAuthFade .22s ease both;
+}
+
+.urbis-login-compact{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.urbis-login-compact .urbis-register-head{
+  text-align:center;
+  margin:2px 0 14px;
+}
+.urbis-login-compact .urbis-register-copy{
+  text-align:center;
+}
+.urbis-login-compact .urbis-field{
+  margin-bottom:8px;
+}
+.urbis-login-compact .urbis-field-label{
+  color:#275f61;
+}
+.urbis-login-compact #urbis-login-btn{
+  margin-top:8px !important;
+}
+.urbis-login-panel[hidden],.urbis-register-fields[hidden],#normal-submit-btn[hidden]{
+  display:none!important;
+}
+#urbis-login-btn{
+  width:100%;
+  min-height:54px;
+  border:0;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,#00B68D,#2ED6B3 56%,#8BEAD8)!important;
+  color:#05211f!important;
+  font-weight:950;
+  box-shadow:0 18px 38px rgba(0,182,141,.24)!important;
+}
+@keyframes urbAuthFade{
+  from{opacity:0; transform:translateY(6px);}
+  to{opacity:1; transform:translateY(0);}
+}
+body.urbis-auth-registering .urbis-auth-mode-switch{ background:rgba(0,182,141,.12)!important; }
+body.urbis-auth-registering .urbis-auth-tab{ color:#2c6160!important; }
+body.urbis-auth-registering .urbis-auth-tab.active{ color:#062624!important; }
+
+
+/* URBIS V135 · Verificación de correo antes de entrar */
+.urbis-verification-flow{
+  z-index:2147483640 !important;
+  background:rgba(5,24,30,.48) !important;
+}
+.urbis-verification-card{
+  width:min(430px,94vw) !important;
+  border-radius:32px !important;
+  padding:28px 22px 24px !important;
+  background:linear-gradient(180deg,#ffffff 0%, #f4fffd 100%) !important;
+  border:1px solid rgba(116,224,220,.36);
+  box-shadow:0 28px 80px rgba(30,82,106,.28) !important;
+}
+.urbis-verification-card h2{
+  color:#153b88 !important;
+  font-size:1.7rem !important;
+  font-weight:1000 !important;
+}
+.urbis-verification-card #urbis-auth-modal-text{
+  color:#4f6078 !important;
+  font-weight:700;
+}
+.urbis-verification-card #urbis-verification-code{
+  border:2px solid #73dfde !important;
+  background:#fff !important;
+  color:#4f6078 !important;
+  min-height:62px;
+  font-size:1.6rem;
+}
+.urbis-verification-card .urbis-auth-primary{
+  min-height:56px;
+  border-radius:999px !important;
+  background:linear-gradient(135deg,#16c7c8,#74ebdf 60%, #79dfd7) !important;
+  color:#fff !important;
+  font-size:1rem;
+}
+.urbis-verification-card .urbis-auth-secondary{
+  min-height:50px;
+  border-radius:999px !important;
+  color:#6e6fdc !important;
+  background:#f5f4ff !important;
+}
+.urbis-verification-card .urbis-auth-hint{
+  color:#6d7a90 !important;
+}
+
+
+/* URBIS V136 · Casillas legales visibles para registro móvil */
+.urbis-auth-consents{
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(244,255,252,.98)) !important;
+  border:1.5px solid rgba(115,223,222,.55) !important;
+  box-shadow:0 12px 28px rgba(80,172,190,.10) !important;
+}
+.urbis-legal-title{
+  margin:0 0 10px;
+  color:#255e75;
+  font-weight:1000;
+  font-size:1rem;
+  letter-spacing:-.02em;
+}
+.urbis-auth-check{
+  display:grid !important;
+  grid-template-columns:26px 1fr;
+  gap:12px !important;
+  align-items:start !important;
+  margin:0 0 12px !important;
+  padding:12px !important;
+  border-radius:18px !important;
+  background:#ffffff !important;
+  border:1px solid rgba(178,218,228,.68) !important;
+  color:#435469 !important;
+  font-size:.82rem !important;
+  line-height:1.42 !important;
+  box-shadow:0 8px 18px rgba(122,160,190,.07) !important;
+}
+.urbis-auth-check-required{
+  border-color:rgba(105,219,217,.92) !important;
+}
+.urbis-auth-check input[type="checkbox"]{
+  appearance:auto !important;
+  -webkit-appearance:checkbox !important;
+  width:22px !important;
+  height:22px !important;
+  min-width:22px !important;
+  min-height:22px !important;
+  margin:1px 0 0 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  display:block !important;
+  accent-color:#16c7c8 !important;
+  border-radius:6px !important;
+  pointer-events:auto !important;
+}
+.urbis-auth-check span{display:block !important; color:#435469 !important;}
+.urbis-auth-check span b{color:#1aa9b3 !important; font-weight:1000;}
+.urbis-legal-note{
+  margin:4px 2px 10px;
+  padding:10px 12px;
+  border-radius:16px;
+  background:rgba(232,247,255,.76);
+  color:#526579;
+  font-size:.76rem;
+  line-height:1.38;
+}
+.urbis-auth-phone-note,
+.urbis-auth-note{
+  display:block !important;
+  color:#5f7486 !important;
+  font-size:.74rem !important;
+  line-height:1.35 !important;
+  margin:6px 4px 8px !important;
+}
+
+
+/* URBIS V137 · Casillas legales más legibles en registro móvil */
+.urbis-auth-consents,
+.urbis-auth-consents *{
+  opacity:1 !important;
+}
+.urbis-auth-consents{
+  background:linear-gradient(180deg,#ffffff 0%, #f8fffe 100%) !important;
+  border:1.5px solid rgba(125,229,223,.78) !important;
+  box-shadow:0 14px 30px rgba(88,173,186,.14) !important;
+}
+.urbis-legal-title{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  color:#6dd1c7 !important;
+  font-weight:1000 !important;
+  font-size:1.05rem !important;
+}
+.urbis-legal-title-icon{
+  display:inline-flex !important;
+  width:34px !important;
+  height:34px !important;
+  border-radius:999px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(102,233,220,.14) !important;
+  font-size:1rem !important;
+}
+.urbis-auth-check{
+  grid-template-columns:30px 1fr !important;
+  gap:14px !important;
+  padding:12px 14px !important;
+  border-radius:18px !important;
+  background:#fff !important;
+  border:1.5px solid rgba(196,210,234,.88) !important;
+}
+.urbis-auth-check input[type="checkbox"]{
+  width:24px !important;
+  height:24px !important;
+  min-width:24px !important;
+  min-height:24px !important;
+  margin-top:3px !important;
+  accent-color:#a98df5 !important;
+}
+.urbis-auth-check span{
+  display:block !important;
+  color:#2e3548 !important;
+  font-size:.78rem !important;
+  line-height:1.45 !important;
+}
+.urbis-auth-check span strong{
+  display:block !important;
+  color:#6b63da !important;
+  font-size:.82rem !important;
+  font-weight:1000 !important;
+  margin-bottom:2px !important;
+}
+.urbis-auth-check span small{
+  display:block !important;
+  color:#2f3544 !important;
+  font-size:.78rem !important;
+  line-height:1.46 !important;
+}
+.urbis-auth-check span em{
+  display:block !important;
+  margin-top:3px !important;
+  color:#7b6edf !important;
+  font-style:normal !important;
+  font-weight:900 !important;
+}
+.urbis-auth-check-required{
+  border-color:rgba(182,157,245,.92) !important;
+}
+.urbis-legal-separator{
+  height:1px !important;
+  border-top:1.5px dashed rgba(125,229,223,.78) !important;
+  margin:6px 2px 12px !important;
+}
+.urbis-legal-note{
+  display:flex !important;
+  gap:10px !important;
+  align-items:flex-start !important;
+  background:transparent !important;
+  padding:0 4px !important;
+  margin:0 0 12px !important;
+  color:#414b63 !important;
+  font-size:.8rem !important;
+  line-height:1.44 !important;
+}
+.urbis-legal-note-icon{
+  font-size:1.05rem !important;
+  line-height:1 !important;
+  margin-top:1px !important;
+}
+.urbis-legal-note b{
+  color:#20b7a4 !important;
+}
+.urbis-auth-phone-note,
+.urbis-auth-note{
+  display:block !important;
+  color:#6fd4c7 !important;
+  font-size:.82rem !important;
+  font-weight:800 !important;
+  line-height:1.45 !important;
+  margin:8px 2px !important;
+}
+.urbis-auth-phone-note b{ color:#50cfc0 !important; }
+.urbis-auth-mini-link{
+  display:block !important;
+  width:100% !important;
+  text-align:center !important;
+  margin:12px 0 6px !important;
+  padding:14px 18px !important;
+  border-radius:20px !important;
+  border:1.5px solid rgba(125,229,223,.72) !important;
+  background:linear-gradient(180deg,rgba(245,255,252,.96),rgba(240,254,251,.92)) !important;
+  color:#69d2c8 !important;
+  font-size:.92rem !important;
+  font-weight:1000 !important;
+  line-height:1.2 !important;
+  text-decoration:underline !important;
+  text-decoration-thickness:2px !important;
+  text-underline-offset:3px !important;
+}
+.urbis-auth-mini-link span{
+  display:block !important;
+  margin-top:4px !important;
+  font-size:.98rem !important;
+}
+body.urbis-auth-registering .urbis-register-card .urbis-auth-consents,
+body.urbis-auth-registering .urbis-register-card .urbis-auth-consents *{
+  opacity:1 !important;
+}
+
+
+/* URBIS V138 · Pantalla de carga antes de confirmar código */
+.urbis-register-loading{
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(121,239,226,.34), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(198,177,250,.30), transparent 28%),
+    linear-gradient(180deg, rgba(248,255,254,.94), rgba(246,247,255,.94));
+  backdrop-filter:blur(16px) saturate(1.1);
+  -webkit-backdrop-filter:blur(16px) saturate(1.1);
+}
+.urbis-register-loading.show{
+  display:flex !important;
+}
+.urbis-register-loading-card{
+  width:min(360px, 92vw);
+  border-radius:34px;
+  padding:30px 24px 26px;
+  text-align:center;
+  background:rgba(255,255,255,.96);
+  border:1.5px solid rgba(125,229,223,.68);
+  box-shadow:0 28px 70px rgba(89,147,184,.20);
+}
+.urbis-loading-brand{
+  color:#123fa5;
+  font-size:2.4rem;
+  line-height:1;
+  letter-spacing:-.06em;
+  font-weight:1000;
+  margin-bottom:18px;
+}
+.urbis-loading-spinner{
+  width:76px;
+  height:76px;
+  margin:0 auto 18px;
+  border-radius:50%;
+  border:8px solid rgba(122,231,221,.24);
+  border-top-color:#19c7c8;
+  border-right-color:#a88cf1;
+  animation:urbisLoadingSpin .9s linear infinite;
+  box-shadow:0 12px 24px rgba(75,203,204,.16);
+}
+.urbis-register-loading-card h2{
+  margin:0 0 10px;
+  color:#435064;
+  font-size:1.45rem;
+  font-weight:1000;
+  letter-spacing:-.03em;
+}
+.urbis-register-loading-card p{
+  margin:0 auto 18px;
+  color:#617086;
+  font-size:.95rem;
+  line-height:1.45;
+  font-weight:700;
+}
+.urbis-loading-dots{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+.urbis-loading-dots span{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#74e3d7;
+  animation:urbisLoadingDots 1s ease-in-out infinite;
+}
+.urbis-loading-dots span:nth-child(2){ animation-delay:.15s; background:#a98df5; }
+.urbis-loading-dots span:nth-child(3){ animation-delay:.3s; background:#55d6ca; }
+body.urbis-register-is-loading{
+  overflow:hidden !important;
+}
+@keyframes urbisLoadingSpin{
+  to{ transform:rotate(360deg); }
+}
+@keyframes urbisLoadingDots{
+  0%,100%{ transform:translateY(0); opacity:.55; }
+  50%{ transform:translateY(-6px); opacity:1; }
+}
+
+
+/* URBIS V146 · Mejoras interfaz recuperación de cuenta */
+.urbis-auth-password-wrap{
+  position:relative;
+  margin:6px 0 10px;
+}
+.urbis-auth-card .urbis-auth-password-wrap .urbis-auth-input{
+  margin:0 !important;
+  padding-right:58px !important;
+}
+.urbis-auth-eye{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  box-shadow:inset 0 0 0 1px rgba(137,233,255,.18);
+  color:#d8fff6;
+  font-size:1.05rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.urbis-auth-eye.is-visible{
+  background:rgba(101,241,209,.2);
+}
+.urbis-auth-secondary{
+  width:100%;
+  min-height:46px;
+  border-radius:16px;
+  border:1px solid rgba(134,243,224,.4);
+  background:rgba(255,255,255,.08);
+  color:#dcfff8;
+  font-weight:900;
+  letter-spacing:.01em;
+}
+.urbis-auth-secondary[disabled]{
+  opacity:.72;
+}
+.urbis-recovery-resend-box{
+  margin:4px 0 12px;
+}
+.urbis-recovery-timer{
+  margin:2px 2px 10px !important;
+  color:#bffbf0 !important;
+  font-weight:800;
+  text-align:center;
+}
+#urbis-recovery-pass-wrap[hidden],
+#urbis-recovery-pass-confirm-wrap[hidden],
+#urbis-recovery-resend-box[hidden]{
+  display:none !important;
+}
+
+
+/* URBIS V152 · Campos personalizados para ubicación cuando el usuario elige Otro */
+.urbis-register-other-location{
+  margin-top:8px;
+}
+.urbis-register-other-location[hidden]{
+  display:none !important;
+}
+
+
+/* URBIS V154 · nota visible sobre código de correo y carpeta Spam */
+.urbis-auth-note{
+  color:#4f7186 !important;
+  font-weight:850 !important;
+  line-height:1.45 !important;
+}
+.urbis-verification-card .urbis-auth-hint{
+  color:#5f7186 !important;
+  font-weight:800 !important;
+  line-height:1.45 !important;
+}
+#urbis-auth-modal-text b{
+  color:#16a991 !important;
+}
+
+
+/* URBIS V155 · iPhone/iOS: selector de ubicación tipo bottom sheet y scroll estable */
+body.urbis-ios-picker-open{
+  overflow:hidden !important;
+}
+.urbis-ios-location-picker{
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  display:none;
+  pointer-events:none;
+}
+.urbis-ios-location-picker.show{
+  display:block;
+  pointer-events:auto;
+}
+.urbis-ios-picker-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(18,36,64,.28);
+  backdrop-filter:blur(7px);
+  -webkit-backdrop-filter:blur(7px);
+}
+.urbis-ios-picker-sheet{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  max-height:min(82dvh, 720px);
+  padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));
+  border-radius:30px 30px 0 0;
+  background:linear-gradient(180deg,#ffffff,#f7fffd);
+  box-shadow:0 -24px 60px rgba(31,76,122,.18);
+  display:flex;
+  flex-direction:column;
+  color:#1d3f6f;
+  transform:translateY(105%);
+  transition:transform .22s ease;
+}
+.urbis-ios-location-picker.show .urbis-ios-picker-sheet{
+  transform:translateY(0);
+}
+.urbis-ios-picker-handle{
+  width:54px;
+  height:5px;
+  border-radius:999px;
+  background:#cfe4e8;
+  margin:0 auto 12px;
+}
+.urbis-ios-picker-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.urbis-ios-picker-head small{
+  display:block;
+  color:#60c7bd;
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.urbis-ios-picker-head h3{
+  margin:3px 0 0;
+  color:#1e4daa;
+  font-size:1.35rem;
+  font-weight:1000;
+  letter-spacing:-.04em;
+}
+.urbis-ios-picker-close{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:999px;
+  background:#f1fbfb;
+  color:#517084;
+  font-size:1.5rem;
+  font-weight:900;
+}
+.urbis-ios-picker-search-wrap{
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 14px;
+  border-radius:18px;
+  background:#f3fbf8;
+  box-shadow:inset 0 0 0 1px rgba(74,191,183,.18);
+  margin-bottom:12px;
+}
+.urbis-ios-picker-search-wrap input{
+  flex:1;
+  border:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  min-height:50px;
+  font-size:1rem;
+  color:#1d3f46 !important;
+  box-shadow:none !important;
+}
+.urbis-ios-picker-list{
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:4px 0 8px;
+  display:grid;
+  gap:8px;
+}
+.urbis-ios-picker-option{
+  min-height:50px;
+  border:0;
+  border-radius:17px;
+  padding:12px 14px;
+  background:#ffffff;
+  color:#284967;
+  box-shadow:0 8px 18px rgba(67,97,138,.07), inset 0 0 0 1px rgba(187,213,232,.28);
+  font-weight:850;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.urbis-ios-picker-option.active{
+  background:linear-gradient(180deg,#edfffb,#ffffff);
+  color:#159b8a;
+  box-shadow:0 8px 20px rgba(58,204,188,.12), inset 0 0 0 1px rgba(93,220,205,.55);
+}
+.urbis-ios-picker-option b{
+  color:#16b394;
+  font-size:1.15rem;
+}
+.urbis-ios-picker-empty{
+  padding:18px;
+  border-radius:18px;
+  background:#f5fbff;
+  color:#73859c;
+  font-weight:780;
+  line-height:1.35;
+}
+@supports (height: 100dvh){
+  body.urbis-auth-registering > #login-screen,
+  body.urbis-auth-registering #login-screen{
+    height:100dvh !important;
+    min-height:100dvh !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain !important;
+    touch-action:pan-y !important;
+  }
+  body.urbis-auth-registering #login-screen .login-shell,
+  body.urbis-auth-registering #login-screen .login-box,
+  body.urbis-auth-registering #normal-access-panel,
+  body.urbis-auth-registering #normal-data-panel{
+    max-width:100% !important;
+    overflow-x:hidden !important;
+    touch-action:pan-y !important;
+  }
+}
+@supports (-webkit-touch-callout: none){
+  body.urbis-auth-registering select.reg-select,
+  body.urbis-auth-registering select{
+    font-size:16px !important;
+  }
+}
+
+
+/* URBIS V157 · iPhone/Safari registro con scroll real de página
+   Corrección: no usamos un contenedor fixed como scroll principal en iOS,
+   porque Safari puede bloquear el gesto vertical dentro de formularios largos. */
+@supports (-webkit-touch-callout: none){
+  html,
+  body.urbis-auth-registering{
+    height:auto !important;
+    min-height:100dvh !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    position:relative !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:auto !important;
+  }
+
+  body.urbis-auth-registering{
+    touch-action:pan-y !important;
+    padding:0 !important;
+  }
+
+  body.urbis-auth-registering > #login-screen,
+  body.urbis-auth-registering #login-screen{
+    position:relative !important;
+    inset:auto !important;
+    left:auto !important;
+    top:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    height:auto !important;
+    min-height:100dvh !important;
+    max-height:none !important;
+    overflow:visible !important;
+    overflow-x:hidden !important;
+    overflow-y:visible !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y !important;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(150px + env(safe-area-inset-bottom,0px)) !important;
+    box-sizing:border-box !important;
+  }
+
+  body.urbis-auth-registering #login-screen .login-box,
+  body.urbis-auth-registering #login-screen .login-shell,
+  body.urbis-auth-registering #login-screen .login-hero-grid,
+  body.urbis-auth-registering #login-screen .login-copy-panel,
+  body.urbis-auth-registering #login-screen .clean-user-entry-shell,
+  body.urbis-auth-registering #login-screen .clean-entry-card,
+  body.urbis-auth-registering #normal-access-panel,
+  body.urbis-auth-registering #normal-data-panel,
+  body.urbis-auth-registering #urbis-register-fields,
+  body.urbis-auth-registering .urbis-register-kawaii,
+  body.urbis-auth-registering .urbis-register-card{
+    position:relative !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+    overflow-y:visible !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y !important;
+    transform:none !important;
+    contain:none !important;
+  }
+
+  body.urbis-auth-registering #login-screen .login-box,
+  body.urbis-auth-registering #login-screen .login-shell{
+    display:block !important;
+    width:min(100%, 560px) !important;
+    margin:0 auto !important;
+  }
+
+  body.urbis-auth-registering input,
+  body.urbis-auth-registering textarea,
+  body.urbis-auth-registering select,
+  body.urbis-auth-registering button{
+    -webkit-transform:translateZ(0);
+  }
+
+  body.urbis-auth-registering select.reg-select,
+  body.urbis-auth-registering select{
+    font-size:16px !important;
+  }
+
+  body.urbis-ios-picker-open,
+  body.urbis-ios-picker-open > #login-screen{
+    overflow:hidden !important;
+  }
+}
+
+
+/* URBIS V158 · mejora contraste y legibilidad del selector iPhone */
+.urbis-ios-picker-head small{
+  color:#8ed9d1 !important;
+  opacity:1 !important;
+}
+.urbis-ios-picker-head h3{
+  color:#18489c !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+.urbis-ios-picker-search-wrap{
+  background:#f4fcfb !important;
+  box-shadow:inset 0 0 0 2px rgba(122,225,214,.26) !important;
+}
+.urbis-ios-picker-search-wrap input,
+.urbis-ios-picker-search-wrap input::placeholder{
+  color:#92a3ad !important;
+  opacity:1 !important;
+  font-weight:700 !important;
+}
+.urbis-ios-picker-list{
+  padding:6px 2px 10px !important;
+}
+.urbis-ios-picker-option,
+.urbis-ios-picker-option span{
+  color:#6ccfc4 !important;
+  opacity:1 !important;
+  font-size:1.06rem !important;
+  font-weight:900 !important;
+  letter-spacing:-.015em;
+  line-height:1.2;
+  text-shadow:none !important;
+  -webkit-text-fill-color:#6ccfc4 !important;
+}
+.urbis-ios-picker-option{
+  min-height:58px !important;
+  padding:14px 16px !important;
+  background:#ffffff !important;
+  box-shadow:0 8px 18px rgba(67,97,138,.06), inset 0 0 0 1.5px rgba(205,227,239,.5) !important;
+}
+.urbis-ios-picker-option.active,
+.urbis-ios-picker-option.active span{
+  color:#159b8a !important;
+  -webkit-text-fill-color:#159b8a !important;
+}
+.urbis-ios-picker-option b{
+  color:#16b394 !important;
+}
+.urbis-ios-picker-close{
+  color:#5c7487 !important;
+}
+.urbis-ios-picker-empty{
+  color:#62788e !important;
+}
+
+
+/* URBIS V159 · iPhone: desbloqueo de navegación dentro de la app después de login/registro */
+@supports (-webkit-touch-callout: none){
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode),
+  html:not([data-urbis-shell="desktop"]){
+    overflow:auto !important;
+    position:relative !important;
+    height:auto !important;
+    min-height:100dvh !important;
+    touch-action:pan-y !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) > #urbis-mobile-app{
+    pointer-events:auto !important;
+    touch-action:pan-y !important;
+    overflow:hidden !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:100dvh !important;
+  }
+
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app .u52-screen{
+    touch-action:pan-y !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain !important;
+  }
+
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app .u52-screen.active{
+    pointer-events:auto !important;
+  }
+
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app .u52-content{
+    touch-action:pan-y !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app button,
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app a,
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app [data-u52-go],
+  body:not(.urbis-auth-registering):not(.urbis-ios-picker-open):not(.u52-real-map):not(.u70-mobility-context):not(.u88-mobility-mode) #urbis-mobile-app [data-u52-call]{
+    pointer-events:auto !important;
+    touch-action:manipulation !important;
+  }
+}
+
+
+/* URBIS V160 · iPhone: liberar interacción y scroll dentro de la app tras login */
+@supports (-webkit-touch-callout: none){
+  body[data-urbis-authenticated="1"]{
+    overflow:hidden !important;
+    touch-action:pan-y !important;
+  }
+  body[data-urbis-authenticated="1"] #login-screen{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body[data-urbis-authenticated="1"] #urbis-mobile-app{
+    display:block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+    overflow:hidden !important;
+    touch-action:pan-y !important;
+  }
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-screen{
+    pointer-events:none;
+    overflow-x:hidden !important;
+  }
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-screen.active{
+    pointer-events:auto !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain !important;
+    touch-action:pan-y !important;
+  }
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-screen.active.map-screen,
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-screen[data-u52-screen="runner-live"].active,
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-screen[data-u52-screen="nav"].active{
+    overflow:hidden !important;
+    touch-action:manipulation !important;
+  }
+  body[data-urbis-authenticated="1"] #urbis-mobile-app .u52-content{
+    min-height:calc(100dvh - 160px);
+    touch-action:pan-y !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+}
+
+
+/* URBIS V172 · contraste fijo para formularios de registro/login */
+@media (max-width:1024px), (pointer:coarse){
+  #login-screen,
+  #login-screen *{
+    text-shadow:none;
+  }
+  #login-screen label,
+  #login-screen .auth-label,
+  #login-screen .u52-auth-field-label,
+  #login-screen .u52-auth-register-title,
+  #login-screen b,
+  #login-screen strong{
+    color:#214a82 !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#214a82 !important;
+  }
+  #login-screen small,
+  #login-screen p,
+  #login-screen .hint,
+  #login-screen .u52-auth-hint{
+    color:#62758f !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#62758f !important;
+  }
+  #login-screen input::placeholder,
+  #login-screen select,
+  #login-screen option{
+    color:#8091a8 !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#8091a8 !important;
+  }
+  #login-screen .accent,
+  #login-screen .green,
+  #login-screen .success{
+    color:#16b8a8 !important;
+    opacity:1 !important;
+    -webkit-text-fill-color:#16b8a8 !important;
+  }
+}

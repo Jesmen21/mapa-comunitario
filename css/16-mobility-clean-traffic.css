@@ -1,0 +1,106 @@
+/* URBIS V69 · Movilidad limpia, tráfico solo en ruta activa y PNG alpha correcto */
+
+/* No mostrar controles decorativos o sin función real en el modo Movilidad. */
+body.urbis-mobility-clean-v69 #traffic-control-panel,
+body.urbis-mobility-clean-v69 [data-u52-call="traffic"],
+body.urbis-mobility-clean-v69 [data-u52-call="cameras"],
+body[data-active-module="mobility"] #traffic-control-panel{
+  display:none!important;
+}
+
+/* Mantener movilidad limpia: sin análisis/capas de tráfico global dentro del mapa. */
+body[data-active-module="mobility"] .map-tools button[onclick*="analizarZonasCiudadanas"],
+body.route-focus-active .map-tools button[onclick*="analizarZonasCiudadanas"]{
+  display:none!important;
+}
+
+/* Estilo del tráfico pintado únicamente sobre la ruta activa. */
+.urbis-route-traffic-segment{
+  filter: drop-shadow(0 0 8px rgba(35,234,255,.38));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.urbis-traffic-fluid{ filter: drop-shadow(0 0 7px rgba(19,184,74,.35)); }
+.urbis-traffic-moderate{ filter: drop-shadow(0 0 9px rgba(255,138,0,.45)); }
+.urbis-traffic-congested{ filter: drop-shadow(0 0 10px rgba(255,45,45,.50)); }
+.urbis-route-alternative-smart{
+  filter: drop-shadow(0 0 10px rgba(0,120,255,.24));
+}
+.urbis-traffic-callout{
+  min-width:152px;
+  min-height:36px;
+  padding:9px 12px 9px 28px;
+  border-radius:16px;
+  background:rgba(255,255,255,.96);
+  color:#0f172a;
+  font-size:.78rem;
+  font-weight:950;
+  box-shadow:0 14px 28px rgba(15,23,42,.18), inset 0 0 0 1px rgba(15,23,42,.06);
+  backdrop-filter: blur(10px);
+  position:relative;
+  white-space:nowrap;
+}
+.urbis-traffic-callout span{
+  position:absolute;
+  left:11px;
+  top:50%;
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  transform:translateY(-50%);
+  background:#13b84a;
+  box-shadow:0 0 0 5px rgba(19,184,74,.12);
+}
+.urbis-traffic-callout.moderate span{ background:#ff8a00; box-shadow:0 0 0 5px rgba(255,138,0,.15); }
+.urbis-traffic-callout.congested span{ background:#ff2d2d; box-shadow:0 0 0 5px rgba(255,45,45,.15); }
+
+/* PNG/Avatar: preservar alpha real; nunca rellenar transparencia con negro. */
+.u65-profile-avatar,
+.u65-avatar-preview [data-u65-current-avatar],
+.u65-avatar-card,
+.u65-gps-avatar-marker,
+.u65-gps-avatar-marker img,
+[data-u65-current-avatar],
+[data-u65-current-avatar] img{
+  background:transparent!important;
+  background-color:transparent!important;
+}
+.u65-profile-avatar,
+.u65-avatar-preview [data-u65-current-avatar]{
+  overflow:visible!important;
+}
+.u65-profile-avatar img,
+.u65-avatar-preview img,
+.u65-avatar-card img,
+.u65-gps-avatar-marker img,
+[data-u65-current-avatar] img{
+  object-fit:contain!important;
+  object-position:center center!important;
+  image-rendering:auto;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  mix-blend-mode:normal!important;
+}
+.u65-gps-avatar-marker img{
+  border-radius:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.26)) drop-shadow(0 0 18px rgba(24,215,255,.25));
+}
+.u65-gps-avatar-marker span{
+  bottom:6px;
+  background:rgba(255,255,255,.92)!important;
+}
+
+@media (max-width:760px){
+  .u52-screen[data-u52-screen="mobility"] .u52-map-actions{
+    width:auto;
+    right:14px;
+    left:auto;
+    grid-template-columns:1fr;
+  }
+  .u52-screen[data-u52-screen="mobility"] .u52-map-actions button{
+    min-width:88px;
+  }
+}

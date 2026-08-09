@@ -1,0 +1,977 @@
+/* ============================================================================
+   URBIS PRO CITY — módulo de mapeo urbano profesional (móvil)
+   Identidad visual DELIBERADAMENTE distinta a la app ciudadana cute/pastel:
+   paleta "profesional" (slate/navy oscuro + acento dorado), pensada como
+   semilla del futuro módulo de pago para estudiantes/urbanistas. Reutiliza el
+   mismo panel de reportes rápidos (#u52-quick-report-panel) y el mismo
+   pipeline de guardado — solo cambia la piel visual y las categorías.
+   Regla URBIS intacta: texto siempre oscuro/legible sobre fondos claros,
+   texto siempre claro sobre fondos oscuros.
+   ============================================================================ */
+@media (max-width:1024px), (pointer:coarse){
+  :root{
+    /* ── Identidad ÚNICA de UrbisProCity: celeste-morado pastel (periwinkle /
+       lavanda). Reemplaza por completo el viejo navy+dorado: TODO el módulo
+       (Inicio, hoja de categorías, panel de ítems, formulario, estadísticas)
+       comparte esta misma paleta para que no se sienta disociado. El dorado
+       queda reservado a minijuegos/eventos premium; el navy oscuro se retiró.
+       Regla URBIS: títulos/textos siempre en índigo profundo y legible sobre
+       fondos claros, nunca desvaídos. ── */
+    --pc-ink:#33357a;        /* títulos: índigo profundo (contraste ~9:1) */
+    --pc-sky-ink:#4a5a9e;    /* subtítulos/textos secundarios (contraste ~6.5:1) */
+    --pc-lav-deep:#6b70e0;   /* inicio de gradiente CTA (blanco encima = ~4.2:1) */
+    --pc-lav-deep2:#9187ec;  /* fin de gradiente CTA (lavanda) */
+    --pc-sky-1:#eef1ff; --pc-sky-2:#e2e7ff; --pc-sky-line:#cdd6ff;
+    --pc-chip:#eaecff;       /* fondo de chips/íconos (tinte lavanda) */
+    --pc-line:#dfe3f5;       /* bordes suaves lavanda */
+  }
+
+  /* ---- Título de sección propio "✦ Módulo UrbisProCity" (Inicio) ---- */
+  #urbis-mobile-app .u52-k-section-label.sky{
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  /* Grid del módulo: hoy solo tiene Pro City — se muestra como tarjeta ancha
+     y destacada, no a media cuadrícula como las de "en desarrollo". */
+  #urbis-mobile-app .u52-grid[aria-label="Módulo UrbisProCity"]{
+    grid-template-columns:1fr !important;
+  }
+  #urbis-mobile-app .u52-module.u52-premium-module{
+    min-height:96px !important; flex-direction:row !important; justify-content:flex-start !important;
+    gap:14px !important; text-align:left !important;
+  }
+  #urbis-mobile-app .u52-module.u52-premium-module .u52-procity-home-ico{
+    width:52px !important; height:52px !important; flex:0 0 52px !important; font-size:1.7rem !important;
+  }
+
+  /* ---- Tarjeta del módulo Pro City en el Inicio: pastel índigo/cielo,
+     coherente con la estética cute de la página (el navy oscuro se
+     reserva para DENTRO del módulo, no para esta tarjeta de entrada). ---- */
+  #urbis-mobile-app .u52-module.procity{
+    background:linear-gradient(135deg, var(--pc-sky-1) 0%, var(--pc-sky-2) 100%) !important;
+    border:1.5px solid var(--pc-sky-line) !important;
+  }
+  #urbis-mobile-app .u52-module.procity .u52-procity-home-ico{
+    background:linear-gradient(160deg,#dbe1ff,#c7d1ff) !important;
+    box-shadow:0 6px 14px rgba(120,140,230,.25) !important;
+  }
+  #urbis-mobile-app .u52-module.procity b{
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  #urbis-mobile-app .u52-module.procity small{
+    color:#7986c7 !important; -webkit-text-fill-color:#7986c7 !important;
+  }
+
+  /* ---- Botón flotante: alternar Emojis ↔ Colores/formas por categoría ---- */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-visual-toggle{
+    position:absolute !important; z-index:2147483200 !important;
+    right:16px !important; bottom:calc(100px + env(safe-area-inset-bottom,0px)) !important;
+    width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+    display:grid !important; place-items:center !important; font-size:1.4rem !important;
+    background:rgba(255,255,255,.96) !important;
+    box-shadow:0 12px 24px rgba(51,53,122,.16), inset 0 0 0 1px var(--pc-sky-line) !important;
+    pointer-events:auto !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-visual-toggle[hidden]{ display:none !important; }
+
+  /* ---- Botón flotante: elegir/ver la carpeta cooperativa ACTIVA para mapear ----
+     Pedido explícito: acceso directo desde el mapa, se ilumina en VERDE
+     cuando el mapeo cooperativo está activo en una carpeta. ---- */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-active-folder-btn{
+    position:absolute !important; z-index:2147483200 !important;
+    right:16px !important; bottom:calc(160px + env(safe-area-inset-bottom,0px)) !important;
+    width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+    display:grid !important; place-items:center !important; font-size:1.4rem !important;
+    background:rgba(255,255,255,.96) !important;
+    box-shadow:0 12px 24px rgba(51,53,122,.16), inset 0 0 0 1px var(--pc-sky-line) !important;
+    pointer-events:auto !important; transition:background .2s ease, box-shadow .2s ease !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-active-folder-btn.activa{
+    background:linear-gradient(135deg,#3ecf7c,#2fae66) !important;
+    box-shadow:0 12px 26px rgba(46,174,102,.42), inset 0 0 0 1px rgba(255,255,255,.5) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-active-folder-btn[hidden]{ display:none !important; }
+
+  /* ---- Botón flotante: elegir QUÉ se ve en el mapa (solo yo / amigos /
+     una carpeta / todo el mundo) ---- */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-view-filter-btn{
+    position:absolute !important; z-index:2147483200 !important;
+    right:16px !important; bottom:calc(220px + env(safe-area-inset-bottom,0px)) !important;
+    width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+    display:grid !important; place-items:center !important; font-size:1.4rem !important;
+    background:rgba(255,255,255,.96) !important;
+    box-shadow:0 12px 24px rgba(51,53,122,.16), inset 0 0 0 1px var(--pc-sky-line) !important;
+    pointer-events:auto !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-view-filter-btn[hidden]{ display:none !important; }
+  #urbis-mobile-app .u52-procity-view-filter-options{ display:flex; flex-direction:column; gap:8px; }
+  #urbis-mobile-app .u52-procity-view-filter-opt{
+    appearance:none; border:0; width:100%; text-align:left; display:flex; align-items:center; gap:12px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); border:1.5px solid var(--pc-sky-line);
+    border-radius:16px; padding:12px 14px;
+  }
+  #urbis-mobile-app .u52-procity-view-filter-opt span{ font-size:1.3rem; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-view-filter-opt b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.84rem; font-weight:700; }
+  #urbis-mobile-app .u52-procity-view-filter-opt small{ display:block; margin-top:2px; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.68rem; font-weight:500; }
+  #urbis-mobile-app .u52-procity-view-filter-opt.activa{
+    border-color:var(--pc-lav-deep); box-shadow:0 0 0 2px rgba(107,112,224,.2);
+  }
+  /* Hoja de selección rápida de carpeta activa (abierta desde el botón de arriba) */
+  /* La lista del selector rápido usa <button> (no <div>) para las tarjetas —
+     reset de apariencia nativa de botón. */
+  #urbis-mobile-app .u52-procity-folder-card[data-u52-procity-active-pick],
+  #urbis-mobile-app .u52-procity-folder-card[data-u52-procity-tag-pick],
+  #urbis-mobile-app .u52-procity-folder-card[data-u52-procity-view-folder-pick]{
+    appearance:none; width:100%; text-align:left; font-family:inherit; cursor:pointer;
+  }
+  #urbis-mobile-app .u52-procity-active-folder-off{
+    appearance:none; border:0; width:100%; margin-bottom:12px; padding:11px 13px; border-radius:14px;
+    background:linear-gradient(135deg,#fff1f0,#ffe3e0); color:#c0392b !important; -webkit-text-fill-color:#c0392b !important;
+    font-size:.8rem; font-weight:600; text-align:left;
+  }
+  /* ---- FAB flotante sobre el mapa: reabre la hoja de categorías ---- */
+  /* La fila de acciones rápidas de reporte ciudadano ("Reporte con mi
+     ubicación / En mapa / Capas") se oculta en modo Pro City. Tiene
+     display:grid !important con bastante especificidad (css/99) — se iguala
+     aquí para que [hidden] gane sin depender del orden de carga. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions[hidden]{
+    display:none !important;
+  }
+
+  /* ---- Nav propia de Pro City (reemplaza la general SOLO en el mapa,
+     mientras el modo esté activo): Mi ubicación / En el mapa / 🏙️ Categoría /
+     🛰️ Mapa / 📊 Mapeado — pedido explícito: llevar "Con mi ubicación / En
+     el mapa" a la barra principal en vez de una burbuja aparte. ---- */
+  #urbis-mobile-app .u52-procity-nav[hidden]{ display:none !important; }
+
+  /* ═══ REDISEÑO PROFESIONAL de la barra inferior de Pro City ═══
+     Problema: la regla base `...button:not(.plus) span{ font-size:.62rem
+     !important }` (css/99) encogía TANTO el emoji como el texto a .62rem, así
+     que íconos y labels se veían diminutos y sin jerarquía. Aquí se rediseña
+     la barra con la identidad Inter + pastel: barra clara esmerilada, íconos
+     grandes y nítidos, labels legibles y un botón central protagonista. Todo
+     con mayor especificidad + !important para ganarle a la base. */
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav{
+    background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(246,248,255,.98)) !important;
+    border-top:1px solid var(--pc-sky-line) !important;
+    box-shadow:0 -8px 26px rgba(51,53,122,.10) !important;
+    /* Barra más DELGADA (pedido explícito) conservando el tamaño de los
+       íconos: se recorta el alto y el padding vertical, no el ícono. */
+    min-height:60px !important;
+    padding:5px 8px calc(5px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  /* Botones de acción: touch target cómodo, columna ícono+label centrada.
+     Alto reducido y gap ícono-label ajustado para una barra más fina. */
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus){
+    width:66px !important; height:48px !important; min-width:66px !important;
+    gap:2px !important; border-radius:14px !important; padding:0 !important;
+    color:var(--pc-sky-ink) !important;
+    transition:background .15s ease, transform .12s ease !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus):active{
+    background:var(--pc-sky-1) !important; transform:scale(.95) !important;
+  }
+  /* ÍCONO grande y nítido (antes lo encogía la base a .62rem) */
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico{
+    font-size:1.5rem !important; line-height:1 !important; display:block !important;
+    color:var(--pc-lav-deep) !important; -webkit-text-fill-color:initial !important;
+  }
+  /* LABEL legible con jerarquía (Inter, peso medio, índigo con buen contraste) */
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) span:not(.procity-nav-ico){
+    font-size:.68rem !important; font-weight:600 !important; line-height:1.05 !important;
+    letter-spacing:-.004em !important;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  /* Botón central 🏙️ Categoría: protagonista periwinkle→lavanda, flotante con
+     halo blanco. (El pastel claro anterior se veía débil/plano; este da la
+     jerarquía de un FAB sin caer en el navy oscuro que se descartó.) */
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus{
+    width:62px !important; height:62px !important; min-width:62px !important; min-height:62px !important;
+    font-size:1.7rem !important; margin-top:-24px !important;
+    background:linear-gradient(135deg, var(--pc-lav-deep), var(--pc-lav-deep2)) !important;
+    color:#fff !important; -webkit-text-fill-color:initial !important;
+    box-shadow:0 14px 28px rgba(107,112,224,.42), 0 0 0 5px rgba(255,255,255,.92) !important;
+    transition:transform .12s ease !important;
+  }
+  #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus:active{ transform:scale(.93) !important; }
+
+  /* ---- Panel de estadísticas de mapeo ---- */
+  .u52-procity-stats-list{ display:flex; flex-direction:column; gap:8px; }
+  .u52-procity-stat-row{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:linear-gradient(135deg,#f6f7ff,#eef1ff); border:1px solid var(--pc-sky-line);
+    border-radius:14px; padding:10px 12px;
+  }
+  /* Pedido explícito: los títulos de categoría no son decoración — se
+     tocan para ver el desglose de usos, así que se ven y actúan como
+     botones (cursor, feedback al tocar). */
+  button.u52-procity-stat-row{ appearance:none; cursor:pointer; font-family:inherit; }
+  button.u52-procity-stat-row:active{ opacity:.82; }
+  .u52-procity-stat-ico{ width:34px; height:34px; border-radius:11px; display:grid; place-items:center; font-size:1.05rem; flex:0 0 34px; }
+  .u52-procity-stat-row b{ flex:1; color:var(--pc-ink); font-size:.8rem; font-weight:800; }
+  /* Conteo en pastilla periwinkle sólida con texto blanco. El !important +
+     prefijo id es OBLIGATORIO: css/42 (tema legacy) pinta TODO <span> con
+     rgba(231,255,251,.78)!important y sin esto el número saldría casi
+     invisible sobre la pastilla. */
+  #urbis-mobile-app .u52-procity-stat-n{
+    min-width:30px; text-align:center; color:#fff !important; -webkit-text-fill-color:#fff !important;
+    background:var(--pc-lav-deep); border-radius:9px; padding:2px 7px;
+    font-size:.9rem; font-weight:900;
+  }
+
+  /* ═══ Pestañas Totales / Mis mapeos + lista individual de lo georreferen-
+     ciado por el usuario actual (panel 📊) — pedido explícito: "tener
+     visual de todo lo que hemos georeferenciado". ═══ */
+  #urbis-mobile-app .u52-procity-stats-tabs{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  #urbis-mobile-app .u52-procity-stats-tabs button{
+    appearance:none; border:0; border-radius:12px; min-height:34px; font-size:.7rem; font-weight:600; letter-spacing:-.002em;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-stats-tabs button.active{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+  }
+  #urbis-mobile-app .u52-procity-mine-list{ display:flex; flex-direction:column; gap:8px; }
+  #urbis-mobile-app .u52-procity-mine-card{
+    appearance:none; border:0; width:100%; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); border:1px solid var(--pc-sky-line);
+    border-radius:14px; padding:10px 12px;
+  }
+  #urbis-mobile-app .u52-procity-mine-ico{ width:36px; height:36px; border-radius:12px; display:grid; place-items:center; font-size:1.1rem; flex:0 0 36px; }
+  /* Selección múltiple en "Mis mapeos": botón para entrar/salir del modo,
+     barra de agregar en lote, casilla de marcado y resalte de seleccionado. */
+  #urbis-mobile-app .u52-procity-select-toolbar{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  #urbis-mobile-app .u52-procity-select-toggle{
+    appearance:none; border:0; border-radius:12px; padding:9px 13px; font-size:.76rem; font-weight:600;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-select-toggle.activo{
+    background:linear-gradient(135deg,#fff1f0,#ffe3e0); color:#c0392b !important; -webkit-text-fill-color:#c0392b !important;
+  }
+  #urbis-mobile-app .u52-procity-select-bulk-add{
+    appearance:none; border:0; border-radius:12px; padding:9px 13px; font-size:.76rem; font-weight:600;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 6px 14px rgba(107,112,224,.28); flex:1 1 auto;
+  }
+  #urbis-mobile-app .u52-procity-mine-check{ width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; font-size:1.2rem; }
+  #urbis-mobile-app .u52-procity-mine-card.seleccionado{
+    background:linear-gradient(135deg,var(--pc-sky-1),var(--pc-sky-2)); box-shadow:inset 0 0 0 2px var(--pc-lav-deep);
+  }
+
+  /* ═══ Carpetas compartidas de mapeo (georreferenciación grupal entre amigos) ═══ */
+  #urbis-mobile-app .u52-procity-folder-tools{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  #urbis-mobile-app .u52-procity-folder-tools button{
+    appearance:none; border:0; border-radius:13px; min-height:44px; font-size:.76rem; font-weight:850; padding:6px 8px;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 6px 14px rgba(80,90,180,.16);
+  }
+  #urbis-mobile-app .u52-procity-folder-tools button.u52-procity-folder-join{
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-folder-card{
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); border:1.5px solid var(--pc-sky-line);
+    border-radius:16px; padding:12px; margin-bottom:10px;
+    /* BUG real: .map-screen pone pointer-events:none a TODO y solo los
+       <button> lo recuperan solos (regla global). Este <div> no es un
+       button, así que sin esto el toque nunca lo recibía y pasaba directo
+       al mapa de fondo (mismo motivo para el resto de contenedores de
+       Cooperativo abajo). */
+    pointer-events:auto !important;
+  }
+  #urbis-mobile-app .u52-procity-folder-card.activa{ border-color:#3cbf7a; box-shadow:0 0 0 2px rgba(60,191,122,.18); }
+  #urbis-mobile-app .u52-procity-folder-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  #urbis-mobile-app .u52-procity-folder-head b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.86rem; font-weight:850; }
+  #urbis-mobile-app .u52-procity-folder-head small{ display:block; margin-top:2px; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.68rem; font-weight:700; }
+  #urbis-mobile-app .u52-procity-folder-gear{
+    appearance:none; border:0; flex:0 0 auto; width:32px; height:32px; border-radius:50%;
+    background:var(--pc-sky-1); box-shadow:inset 0 0 0 1px var(--pc-sky-line); font-size:1rem;
+  }
+  #urbis-mobile-app .u52-procity-folder-actions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  #urbis-mobile-app .u52-procity-folder-actions button{
+    appearance:none; border:0; border-radius:11px; padding:8px 10px; font-size:.68rem; font-weight:800;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line); flex:1 1 auto;
+  }
+  /* Selector de amigos al crear una carpeta nueva */
+  #urbis-mobile-app .u52-procity-folder-picklist{ display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; margin:8px 0 12px; }
+  #urbis-mobile-app .u52-procity-folder-pick{
+    display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:12px;
+    background:var(--pc-sky-1); font-size:.78rem; font-weight:750; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-folder-pick input{ width:16px; height:16px; accent-color:var(--pc-lav-deep); }
+  #urbis-mobile-app .u52-procity-folder-create-confirm{
+    width:100%; appearance:none; border:0; border-radius:14px; min-height:46px; font-size:.82rem; font-weight:850;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 8px 18px rgba(80,90,180,.22);
+  }
+  /* Hoja de gestión de miembros (agregar/quitar) de una carpeta ya creada */
+  #urbis-mobile-app .u52-procity-folder-sublabel{
+    display:block; margin:10px 0 6px 2px; font-size:.68rem; font-weight:850;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; letter-spacing:.02em;
+  }
+  /* ═══ Estadísticas EN VIVO dentro de un proyecto cooperativo: barras por
+     uso/categoría (Vivienda, Árboles, Comercio, Deporte…). Se recalculan
+     cada vez que se abre el detalle, así que reflejan cualquier mapeo
+     nuevo sin trabajo extra. ═══ */
+  #urbis-mobile-app .u52-procity-folder-stats{
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); border:1.5px solid var(--pc-sky-line);
+    border-radius:16px; padding:12px 14px 14px; margin-bottom:14px;
+  }
+  #urbis-mobile-app .u52-procity-folder-stats .u52-procity-folder-sublabel{ margin-top:0; }
+  #urbis-mobile-app .u52-procity-stat-bar-row{
+    display:block; width:100%; margin-top:10px; appearance:none; border:0; background:none;
+    padding:0; text-align:left; font-family:inherit;
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-row:first-of-type{ margin-top:2px; }
+  /* Pedido explícito: cada categoría no es decoración — se toca para ver
+     el desglose de usos específicos que la componen. */
+  button.u52-procity-stat-bar-row{ cursor:pointer; }
+  button.u52-procity-stat-bar-row:active{ opacity:.82; }
+  #urbis-mobile-app .u52-procity-stat-bar-label{
+    display:flex; align-items:baseline; gap:6px; margin-bottom:4px;
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-label span{ font-size:.9rem; line-height:1; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-stat-bar-label b{
+    flex:1; min-width:0; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    font-size:.8rem; font-weight:600; letter-spacing:-.006em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-label small{
+    flex:0 0 auto; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+    font-size:.68rem; font-weight:500;
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-arrow{
+    flex:0 0 auto; color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:1rem; font-weight:900; line-height:1;
+  }
+  /* Pedido explícito: debajo de cada uso, los ítems exactos que se están
+     contando (ej. bajo "Residencial": Vivienda 1 piso, Vivienda 2 piso). */
+  #urbis-mobile-app .u52-procity-tipo-list{
+    margin-top:6px; padding-left:22px; display:flex; flex-direction:column; gap:3px;
+  }
+  #urbis-mobile-app .u52-procity-tipo-item{
+    display:flex; align-items:baseline; gap:6px; font-size:.7rem;
+  }
+  #urbis-mobile-app .u52-procity-tipo-item::before{ content:'–'; color:var(--pc-sky-ink); margin-right:-2px; }
+  #urbis-mobile-app .u52-procity-tipo-item span{
+    flex:1; min-width:0; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-weight:500;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  #urbis-mobile-app .u52-procity-tipo-item b{
+    flex:0 0 auto; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-weight:700;
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-track{
+    height:8px; border-radius:999px; background:var(--pc-sky-1); overflow:hidden;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-stat-bar-fill{
+    height:100%; border-radius:999px; min-width:6px;
+    background:linear-gradient(90deg, var(--pc-lav-deep), var(--pc-lav-deep2));
+    transition:width .3s ease;
+  }
+  /* ═══ Totales: alcance geográfico + torta (conic-gradient puro CSS, sin
+     SVG) — pedido explícito de mostrar primero % en barra + torta, y aclarar
+     que el conteo está limitado a un radio alrededor de Cúcuta. ═══ */
+  /* Pedido explícito: el radio (15 km) debe poder ajustarse — el letrero es
+     un botón tocable que abre una hoja de configuración. Pedido explícito
+     (v2): más chico, menos texto, sin negrilla, sin el pin genérico 📍 — se
+     usa el pin kawaii (el mismo rojo que ya se usa para ubicación en toda
+     la app), más elegante y consistente. */
+  #urbis-mobile-app .u52-procity-totales-scope{
+    appearance:none; width:100%; text-align:left; cursor:pointer;
+    background:var(--pc-chip); border:1px solid var(--pc-sky-line); border-radius:12px;
+    padding:6px 10px; margin-bottom:12px; font-size:.66rem; font-weight:500; line-height:1.3;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+    display:flex; align-items:center; gap:6px;
+  }
+  #urbis-mobile-app .u52-procity-totales-scope-pin{ width:14px; height:14px; flex:0 0 auto; object-fit:contain; }
+  #urbis-mobile-app .u52-procity-totales-scope span:not(.u52-procity-totales-scope-edit){
+    flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  #urbis-mobile-app .u52-procity-totales-scope-edit{
+    flex:0 0 auto; padding:2px 8px; border-radius:999px;
+    background:var(--pc-sky-2); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:.6rem; font-weight:600;
+  }
+  #urbis-mobile-app .u52-procity-radio-card{ max-height:80vh; overflow-y:auto; }
+  #urbis-mobile-app .u52-procity-radio-hint{
+    margin:0 0 14px; font-size:.76rem; line-height:1.4; font-weight:500;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-radio-input-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:14px;
+    background:var(--pc-sky-1); border:1.5px solid var(--pc-sky-line); border-radius:14px; padding:6px 14px;
+  }
+  #urbis-mobile-app .u52-procity-radio-input-row input{
+    flex:1; appearance:none; border:0; background:transparent; font-size:1.3rem; font-weight:800;
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; min-width:0;
+  }
+  #urbis-mobile-app .u52-procity-radio-input-row span{
+    font-size:.82rem; font-weight:700; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-radio-presets{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  #urbis-mobile-app .u52-procity-radio-presets button{
+    appearance:none; border:0; border-radius:999px; padding:7px 14px; font-size:.74rem; font-weight:700;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-radio-presets button.active{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+  }
+  #urbis-mobile-app .u52-procity-pie-wrap{ display:flex; justify-content:center; margin-bottom:16px; }
+  #urbis-mobile-app .u52-procity-pie{
+    width:150px; height:150px; border-radius:50%;
+    box-shadow:0 6px 18px rgba(80,90,180,.22), inset 0 0 0 6px #fff;
+  }
+  /* Barra(s) desplegable(s) dentro de "Totales" — <details> nativo, sin JS
+     extra para abrir/cerrar (ni el "resto" de usos ni el detalle completo
+     saturan la vista hasta que se abren). */
+  #urbis-mobile-app .u52-procity-totales-detalle{
+    margin-top:14px; border:1.5px solid var(--pc-sky-line); border-radius:16px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); overflow:hidden;
+  }
+  #urbis-mobile-app .u52-procity-totales-detalle summary{
+    list-style:none; cursor:pointer; padding:13px 14px; font-size:.78rem; font-weight:700;
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    display:flex; align-items:center; gap:8px;
+  }
+  #urbis-mobile-app .u52-procity-totales-detalle summary::-webkit-details-marker{ display:none; }
+  #urbis-mobile-app .u52-procity-totales-detalle summary::after{
+    content:'▾'; margin-left:auto; color:var(--pc-sky-ink); transition:transform .2s ease;
+  }
+  #urbis-mobile-app .u52-procity-totales-detalle[open] summary::after{ transform:rotate(180deg); }
+  #urbis-mobile-app .u52-procity-totales-detalle > .u52-procity-folder-stats,
+  #urbis-mobile-app .u52-procity-totales-detalle > .u52-procity-stats-list,
+  #urbis-mobile-app .u52-procity-totales-detalle > .u52-procity-coop-authors{
+    padding:0 14px 14px !important; margin:0 !important; background:none !important; border:0 !important;
+  }
+  /* Chips de autor dentro del detalle de un proyecto cooperativo — filtro
+     rápido de "quién lo mapeó" (independiente del buscador de texto). */
+  #urbis-mobile-app .u52-procity-coop-authors{
+    display:flex; gap:6px; overflow-x:auto; padding:2px 0 10px; -webkit-overflow-scrolling:touch;
+  }
+  #urbis-mobile-app .u52-procity-coop-author-chip{
+    flex:0 0 auto; appearance:none; border:0; border-radius:999px; padding:7px 13px;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    font-size:.72rem; font-weight:600; white-space:nowrap; box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-coop-author-chip.active{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2));
+    color:#fff !important; -webkit-text-fill-color:#fff !important; box-shadow:0 4px 10px rgba(107,112,224,.28);
+  }
+  #urbis-mobile-app .u52-procity-folder-memberlist{ display:flex; flex-direction:column; gap:6px; }
+  #urbis-mobile-app .u52-procity-folder-member{
+    appearance:none; border:0; display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:9px 11px; border-radius:12px; background:linear-gradient(135deg,#ffffff,#f5f7ff);
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line); font-size:.78rem; font-weight:750;
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-folder-member b{ font-size:.68rem; font-weight:850; color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important; }
+  #urbis-mobile-app .u52-procity-folder-addbyid{ display:flex; gap:8px; margin-bottom:6px; }
+  #urbis-mobile-app .u52-procity-folder-addbyid input{
+    flex:1; min-width:0; border:0; border-radius:12px; background:var(--pc-sky-1);
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.78rem; font-weight:700;
+    padding:10px 12px; box-shadow:inset 0 0 0 1.5px var(--pc-sky-line); outline:none;
+  }
+  #urbis-mobile-app .u52-procity-folder-addbyid input::placeholder{ color:var(--pc-sky-ink); opacity:.85; }
+  #urbis-mobile-app .u52-procity-folder-addbyid button{
+    flex:0 0 auto; appearance:none; border:0; border-radius:12px; padding:0 14px; font-size:.76rem; font-weight:850;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+  }
+  #urbis-mobile-app .u52-procity-mine-info{ flex:1; text-align:left; }
+  #urbis-mobile-app .u52-procity-mine-info b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.8rem; font-weight:850; }
+  #urbis-mobile-app .u52-procity-mine-info small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.68rem; font-weight:700; margin-top:2px; }
+  #urbis-mobile-app .u52-procity-mine-arrow{ color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important; font-size:1.2rem; font-weight:900; }
+  /* Subtítulo pequeño: indica que ese mapeo YA pertenece a una carpeta
+     cooperativa (pedido explícito), distinto del texto de categoría/fecha. */
+  #urbis-mobile-app .u52-procity-mine-info small.u52-procity-mine-folder-tag{
+    display:inline-block !important; margin-top:4px !important; padding:2px 8px !important; border-radius:999px !important;
+    background:var(--pc-sky-1) !important; color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:.62rem !important; font-weight:700 !important;
+  }
+
+  /* ═══ Matriz de Usos: buscador + recientes (panel de ítems de Pro City) ═══ */
+  #urbis-mobile-app .u52-matriz-search{
+    width:100%; margin:2px 0 10px; border:0; border-radius:14px;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    font-size:.82rem; font-weight:700; padding:11px 13px;
+    box-shadow:inset 0 0 0 1.5px var(--pc-sky-line); outline:none;
+  }
+  #urbis-mobile-app .u52-matriz-search:focus{ box-shadow:inset 0 0 0 2px var(--pc-lav-deep); }
+  #urbis-mobile-app .u52-matriz-search::placeholder{ color:var(--pc-sky-ink); opacity:.85; }
+  /* Conteo de tipos/usos dentro de las tarjetas de grupo y de uso de la Matriz. */
+  #urbis-mobile-app .u52-alert-card small{
+    display:block !important; margin-top:1px !important; font-size:.56rem !important;
+    font-weight:750 !important; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+    opacity:.85;
+  }
+  #urbis-mobile-app .u52-matriz-recientes{ margin:0 0 12px; }
+  #urbis-mobile-app .u52-matriz-recientes > small{
+    display:block; margin:0 0 6px 2px; font-size:.68rem; font-weight:850;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; letter-spacing:.02em;
+  }
+  #urbis-mobile-app .u52-matriz-recientes-row{
+    display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;
+  }
+  #urbis-mobile-app .u52-matriz-reciente{
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; max-width:170px;
+    border:0; border-radius:999px; padding:7px 12px 7px 9px; font-size:.72rem; font-weight:800;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2));
+    color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 4px 10px rgba(107,112,224,.28); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #urbis-mobile-app .u52-matriz-reciente span{ font-size:.95rem; flex:0 0 auto; }
+  #urbis-mobile-app .u52-matriz-empty{
+    grid-column:1/-1; text-align:center; padding:22px 10px; font-size:.8rem; font-weight:700;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+
+  /* ---- Hoja de categorías (bottom sheet sobre el mapa satelital) ---- */
+  /* ═══ Pedido explícito: "Mapeado" (Totales/Mis mapeos/Amigos/Cooperativo)
+     deja de ser una hoja flotante sobre el mapa — al bajar dentro de ella se
+     movía el mapa de fondo (mucho contenido: barras, torta, listas). Ahora
+     es una pantalla PROPIA a pantalla completa, igual que Cooperativo. ═══ */
+  #urbis-mobile-app .u52-procity-sheet{
+    position:fixed; inset:0; z-index:2147483250;
+    background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%);
+    pointer-events:auto !important;
+  }
+  #urbis-mobile-app .u52-procity-sheet[hidden]{ display:none !important; }
+  #urbis-mobile-app .u52-procity-sheet-backdrop{ display:none; }
+  #urbis-mobile-app .u52-procity-sheet-card{
+    position:absolute; inset:0; overflow-y:auto;
+    background:transparent; border-radius:0;
+    /* La nav propia (position:fixed) flota ENCIMA de esta hoja y tapaba las
+       últimas tarjetas al hacer scroll — se agrega el alto de esa barra
+       (~96px) como relleno inferior para que todo el contenido pueda
+       despejarla por completo. */
+    padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(96px + env(safe-area-inset-bottom,0px));
+  }
+  /* ═══ Modo Cooperativo: pantalla PROPIA (no flotante) — se apropia de toda
+     la pantalla en vez de vivir como una hoja más dentro de 📊, porque ahí
+     se va a mostrar mucha información (miembros, mapeados en grupo…). ═══ */
+  #urbis-mobile-app .u52-procity-coop-screen{
+    position:absolute; inset:0; z-index:2147483260;
+    background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%);
+    display:flex; flex-direction:column;
+    /* .map-screen pone pointer-events:none a TODO su contenido y solo los
+       <button> lo recuperan solos (regla global de css/14). Sin esto, los
+       <div> de esta pantalla (la tarjeta de cada proyecto, el cuerpo con
+       scroll…) nunca recibían el toque y pasaba directo al mapa satelital
+       de fondo — se veía la pantalla pero "sonaba" como si tocaras el mapa. */
+    pointer-events:auto !important;
+  }
+  #urbis-mobile-app .u52-procity-coop-screen[hidden]{ display:none !important; }
+  #urbis-mobile-app .u52-procity-coop-head{
+    display:flex; align-items:center; gap:10px; padding:16px 16px 12px;
+    border-bottom:1.5px solid var(--pc-sky-line); flex:0 0 auto;
+  }
+  #urbis-mobile-app .u52-procity-coop-head > button[data-u52-call="procity-coop-back"]{
+    appearance:none; border:0; width:36px; height:36px; border-radius:50%; flex:0 0 auto;
+    background:var(--pc-sky-1); font-size:1.3rem; font-weight:900; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-coop-head > div{ flex:1; min-width:0; }
+  #urbis-mobile-app .u52-procity-coop-head b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:1rem; font-weight:900; }
+  #urbis-mobile-app .u52-procity-coop-head small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.74rem; margin-top:2px; font-weight:700; }
+  #urbis-mobile-app .u52-procity-coop-head-spacer{ width:36px; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-coop-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px 16px 0; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-coop-actions button{
+    appearance:none; border:0; border-radius:13px; min-height:44px; font-size:.76rem; font-weight:850; padding:6px 8px;
+    background:var(--pc-sky-1); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-coop-body{
+    flex:1 1 auto; overflow-y:auto; padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px));
+  }
+  #urbis-mobile-app .u52-procity-folder-card[data-u52-procity-folder-open]{ cursor:pointer; }
+  /* La hoja de crear/gestionar miembros y la ficha de un mapeo deben flotar
+     POR ENCIMA del modo Cooperativo (pantalla propia) — antes se dibujaban
+     con menos z-index y quedaban tapadas detrás sin verse (bug real: "toco
+     un mapeo y no pasa nada"). */
+  #urbis-mobile-app #u52-procity-invite-sheet,
+  #urbis-mobile-app #u52-procity-coop-point,
+  #urbis-mobile-app #u52-procity-grupo-detalle{ z-index:2147483270; }
+  #urbis-mobile-app .u52-procity-coop-point-info{ display:flex; flex-direction:column; gap:10px; margin:4px 0 14px; }
+  #urbis-mobile-app .u52-procity-coop-point-row{ display:flex; align-items:flex-start; gap:10px; }
+  #urbis-mobile-app .u52-procity-coop-point-row > span{ font-size:1.1rem; line-height:1.3; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-coop-point-row b{
+    display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-coop-point-row small{
+    display:block; margin-top:2px; font-size:.82rem; font-weight:500; line-height:1.35;
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-coop-point-coords{ font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace !important; letter-spacing:.01em; }
+  #urbis-mobile-app .u52-procity-coop-point-copy{
+    appearance:none; border:0; flex:0 0 auto; width:32px; height:32px; border-radius:10px;
+    background:var(--pc-sky-1); box-shadow:inset 0 0 0 1px var(--pc-sky-line); font-size:.95rem;
+    margin-left:auto; align-self:center;
+  }
+  #urbis-mobile-app .u52-procity-coop-point-map{
+    width:100%; appearance:none; border:0; border-radius:14px; min-height:46px; font-size:.82rem; font-weight:600;
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 8px 18px rgba(107,112,224,.28);
+  }
+  #urbis-mobile-app .u52-procity-sheet-head{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+  }
+  /* !important en los textos por el mismo motivo que el conteo: css/42
+     pinta <small>/<span> casi blancos con !important. */
+  #urbis-mobile-app .u52-procity-sheet-head b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:1rem; font-weight:900; }
+  #urbis-mobile-app .u52-procity-sheet-head small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.76rem; margin-top:2px; font-weight:700; }
+  #urbis-mobile-app .u52-procity-sheet-head button{
+    border:0; background:var(--pc-sky-2); color:var(--pc-sky-ink); width:34px; height:34px;
+    border-radius:50%; font-size:1.2rem; line-height:1; font-weight:800;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  .u52-procity-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .u52-procity-card{
+    display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+    background:linear-gradient(160deg,#ffffff,#f5f7ff); border:1.5px solid var(--pc-sky-line);
+    border-radius:18px; padding:14px 12px;
+    box-shadow:0 6px 16px rgba(80,90,180,.08); transition:transform .15s ease, box-shadow .2s ease;
+  }
+  .u52-procity-card:active{ transform:scale(.96); box-shadow:0 3px 10px rgba(80,90,180,.14); }
+  .u52-procity-card-ico{
+    width:44px; height:44px; border-radius:14px; display:grid; place-items:center;
+    font-size:1.35rem; background:var(--pc-sky-1);
+  }
+  .u52-procity-card b{ color:var(--pc-ink); font-size:.82rem; font-weight:800; line-height:1.2; text-align:left; }
+  .u52-procity-card small{ color:var(--pc-sky-ink); font-size:.66rem; font-weight:700; line-height:1.2; text-align:left; }
+
+  /* ═══ Panel de ítems/formulario (reutiliza #u52-quick-report-panel) ═══
+     El panel recibe la clase .u52-procity-mode al abrirse en Pro City, para
+     re-teñir TODAS las piezas compartidas (que por defecto son teal del flujo
+     ciudadano) a la paleta celeste-morado. Así la estética interna deja de
+     estar disociada, sin alterar en nada el flujo de reportes ciudadanos. */
+
+  /* Cabecera: banner lavanda claro con tinta índigo — antes era un navy
+     oscuro que rompía con el resto blanco/cute del panel. */
+  /* Prefijo #urbis-mobile-app en b/small/button para IGUALAR la especificidad
+     de las reglas base ciudadanas (que sí lo llevan) y poder ganarles. */
+  #urbis-mobile-app .u52-procity-panel-head{
+    background:linear-gradient(135deg, var(--pc-sky-1), var(--pc-sky-2)) !important;
+    border-radius:20px !important; padding:8px !important; margin-bottom:12px !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line) !important;
+  }
+  #urbis-mobile-app .u52-procity-panel-head b{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; }
+  #urbis-mobile-app .u52-procity-panel-head small{ color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; }
+  #urbis-mobile-app .u52-procity-panel-head button{
+    background:#fff !important; color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line) !important;
+  }
+  /* Chip "seleccionado": lavanda claro (antes beige/dorado). */
+  #urbis-mobile-app .u52-procity-selected{
+    background:linear-gradient(135deg,var(--pc-sky-1),var(--pc-sky-2)) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line) !important; border:0 !important;
+  }
+  #urbis-mobile-app .u52-procity-selected b{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; }
+  #urbis-mobile-app .u52-procity-selected small{ color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; }
+  /* Pedido explícito: tocar la tarjeta con lo elegido (tipo/uso) lleva
+     directo al selector de grupo/uso/tipo, sin buscar el botón "‹". */
+  #urbis-mobile-app .u52-procity-selected-tap{ cursor:pointer; }
+  #urbis-mobile-app .u52-procity-selected-tap:active{ opacity:.82; }
+  #urbis-mobile-app .u52-procity-selected-chevron{
+    margin-left:auto; flex:0 0 auto; font-size:.9rem; opacity:.55;
+    width:auto !important; height:auto !important; background:none !important; box-shadow:none !important;
+  }
+  /* Botón guardar: periwinkle→lavanda con texto blanco (antes dorado, que
+     queda reservado a minijuegos/eventos premium). */
+  #urbis-mobile-app .u52-quick-publish.u52-procity-publish{
+    background:linear-gradient(135deg, var(--pc-lav-deep), var(--pc-lav-deep2)) !important;
+    color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 12px 24px rgba(107,112,224,.34) !important;
+  }
+
+  /* Re-tinte de piezas COMPARTIDAS dentro del panel en modo Pro City
+     (íconos de ítems, títulos, foto, foco de inputs) — el flujo ciudadano
+     teal queda intacto porque estas reglas exigen .u52-procity-mode. */
+  #urbis-mobile-app .u52-procity-mode .u52-alert-card{
+    box-shadow:0 10px 20px rgba(80,90,180,.09), inset 0 0 0 1px var(--pc-sky-line) !important;
+  }
+  #urbis-mobile-app .u52-procity-mode .u52-alert-card span{ background:var(--pc-chip) !important; }
+  #urbis-mobile-app .u52-procity-mode .u52-alert-card b{
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  #urbis-mobile-app .u52-procity-mode .u52-quick-report-form input[type="text"]:focus,
+  #urbis-mobile-app .u52-procity-mode .u52-quick-report-form textarea:focus{
+    box-shadow:inset 0 0 0 2px rgba(107,112,224,.55) !important;
+  }
+  #urbis-mobile-app .u52-procity-mode .u52-quick-photo{
+    background:var(--pc-sky-1) !important; color:var(--pc-lav-deep) !important;
+    -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line) !important;
+  }
+
+  /* ═══ Puntos como FORMAS (no íconos) ═══
+     El divIcon lleva SOLO la forma inline; se limpia el fondo/borde blanco que
+     Leaflet pone por defecto en .leaflet-div-icon. NO se scopea a
+     #urbis-mobile-app porque el mapa (#map) vive fuera de ese contenedor. */
+  .u52-procity-shape{
+    background:transparent !important; border:0 !important;
+    display:flex !important; align-items:center !important; justify-content:center !important;
+  }
+  /* Pin con el ícono REAL de cada uso de la Matriz (🏠 Residencial, 🌲
+     Forestal…), en vez de la forma gris genérica que antes se dibujaba
+     igual para los 48 usos. No se scopea a #urbis-mobile-app porque el
+     mapa (#map) vive fuera de ese contenedor, igual que .u52-procity-shape. */
+  .u52-procity-matriz-pin{
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,#ffffff,#eef1ff);
+    box-shadow:0 3px 8px rgba(51,53,122,.35), 0 0 0 2px rgba(255,255,255,.9);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; line-height:1;
+  }
+
+  /* ═══ Panel compacto al seleccionar un punto ═══ */
+  #urbis-mobile-app .u52-procity-selpanel{
+    position:absolute; left:0; right:0;
+    bottom:calc(100px + env(safe-area-inset-bottom,0px));
+    z-index:2147483240; display:flex; justify-content:center; padding:0 14px;
+  }
+  #urbis-mobile-app .u52-procity-selpanel[hidden]{ display:none !important; }
+  #urbis-mobile-app .u52-procity-selpanel-card{
+    position:relative; width:100%; max-width:420px;
+    background:linear-gradient(180deg,#ffffff,#fbfcff);
+    border:1.5px solid var(--pc-sky-line); border-radius:22px;
+    padding:14px 14px 12px; box-shadow:0 18px 40px rgba(51,53,122,.24);
+  }
+  #urbis-mobile-app .u52-procity-selpanel-x{
+    position:absolute; top:8px; right:8px; width:30px; height:30px; border:0;
+    border-radius:50%; background:var(--pc-sky-2); color:var(--pc-sky-ink);
+    -webkit-text-fill-color:var(--pc-sky-ink); font-size:1.1rem; font-weight:800; line-height:1;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-selpanel-head{ display:flex; align-items:center; gap:11px; padding-right:30px; }
+  #urbis-mobile-app .u52-procity-selpanel-shape{
+    width:40px; height:40px; flex:0 0 40px; border-radius:12px;
+    display:grid; place-items:center; background:var(--pc-sky-1);
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  /* Ícono real (emoji) del uso, para puntos de la Matriz de Usos — antes se
+     dibujaba una forma geométrica de un solo color IGUAL para todos. */
+  #urbis-mobile-app .u52-procity-selpanel-emoji{ font-size:1.3rem; line-height:1; }
+  #urbis-mobile-app .u52-procity-selpanel-head b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.92rem; font-weight:900; line-height:1.15; }
+  #urbis-mobile-app .u52-procity-selpanel-head small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.72rem; margin-top:2px; font-weight:700; }
+  /* Jerarquía visual pedida explícitamente para puntos de la Matriz: 1) TIPO
+     exacto (título, ya cubierto por el <b> de arriba), 2) USO como insignia
+     mediana, 3) dirección como texto chico y discreto al final — antes los
+     3 se veían "continuos" sin distinción de tamaño/importancia. */
+  #urbis-mobile-app .u52-procity-selpanel-uso-badge{
+    display:inline-block; margin-top:4px; padding:2px 9px; border-radius:999px;
+    background:var(--pc-chip); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:.68rem; font-weight:700;
+  }
+  #urbis-mobile-app .u52-procity-selpanel-head .u52-procity-selpanel-dir{
+    display:block; margin-top:4px; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+    font-size:.68rem !important; font-weight:500 !important; line-height:1.3 !important;
+  }
+  #urbis-mobile-app .u52-procity-selpanel-autor{
+    margin:11px 0 0; padding:9px 11px; border-radius:13px;
+    background:linear-gradient(135deg,var(--pc-sky-1),var(--pc-sky-2));
+    color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
+    font-size:.76rem; font-weight:700; box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-selpanel-autor b{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-weight:900; }
+  /* Pedido explícito: si el mapeo pertenece a una carpeta cooperativa, un
+     subtítulo elegante y discreto lo indica — mismo estilo pill que ya se
+     usa en "Mis mapeos", para que se vea consistente en toda la app. */
+  #urbis-mobile-app .u52-procity-selpanel-folder-tag{
+    display:inline-block; margin-top:8px; padding:3px 10px; border-radius:999px;
+    background:var(--pc-sky-1); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:.68rem; font-weight:700;
+  }
+  /* Minimalista y proporcional (pedido explícito) — antes era un botón ancho
+     e igual de "pesado" que los de acción (Editar/Mover/Eliminar), y con el
+     nombre repetido en un punto propio se veía largo y desbalanceado. */
+  #urbis-mobile-app .u52-procity-selpanel-vermapeos{
+    appearance:none; border:0; width:auto; margin-top:9px; padding:7px 12px; border-radius:999px;
+    background:var(--pc-chip); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    font-size:.7rem; font-weight:600; text-align:left; display:inline-flex; align-items:center;
+  }
+  #urbis-mobile-app .u52-procity-sel-actions{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:11px; }
+  #urbis-mobile-app .u52-procity-sel-actions button{
+    appearance:none; border:0; border-radius:15px; min-height:52px; padding:8px 6px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); box-shadow:0 6px 14px rgba(80,90,180,.1), inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-sel-actions button span{ font-size:1.15rem; line-height:1; }
+  #urbis-mobile-app .u52-procity-sel-actions button b{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.74rem; font-weight:850; line-height:1.05; text-align:center; }
+  #urbis-mobile-app .u52-procity-sel-actions button b small{ color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.62rem; font-weight:700; }
+  #urbis-mobile-app .u52-procity-sel-actions button.u52-procity-sel-delete{
+    background:linear-gradient(135deg,#fff1f0,#ffe3e0); box-shadow:0 6px 14px rgba(220,60,50,.12), inset 0 0 0 1px rgba(220,60,50,.28);
+  }
+  #urbis-mobile-app .u52-procity-sel-actions button.u52-procity-sel-delete b{ color:#c0392b !important; -webkit-text-fill-color:#c0392b !important; }
+
+  /* ═══ Botón de filtro en el topbar (al lado del GPS) + topbar a 4 columnas ═══
+     El topbar del mapa SIEMPRE tiene 4 columnas ahora: back, título, un botón
+     de filtro (Pro City ⛃ O ciudadano 🎚️, nunca ambos a la vez) y el GPS.
+     Esta regla ya no es exclusiva de Pro City, pero vive aquí porque es el
+     archivo que carga DESPUÉS de css/99 y le gana en especificidad. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-topbar{
+    grid-template-columns:54px 1fr 54px 54px !important; gap:8px !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-filter-btn{
+    color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important; font-size:1.5rem !important;
+  }
+  /* BUG real encontrado: esta regla [hidden] tenía MENOS especificidad que
+     la base ".u52-mapcentric-filter{ display:grid !important }" (que lleva
+     body.u52-real-map + .u52-jac-mapcentric), así que aunque el atributo
+     hidden estaba puesto, el botón seguía en display:grid, ocupaba una
+     celda del grid de 4 columnas y empujaba el botón de ubicación (GPS) a
+     una fila nueva, desalineándolo. Se iguala el contexto para ganar. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-filter-btn[hidden]{ display:none !important; }
+
+  /* ═══ Hoja de filtro de la matriz de usos ═══ */
+  /* Toggle "solo lo mío": por defecto ON (pedido explícito, para no
+     sobrecargar la plataforma con el mapeo masivo de otros). Estado ON =
+     lavanda sólido con texto blanco; OFF = tarjeta clara con texto índigo. */
+  #urbis-mobile-app .u52-procity-filter-mine{
+    appearance:none; border:0; width:100%; display:flex; align-items:center; gap:11px;
+    text-align:left; border-radius:16px; padding:11px 13px; margin-bottom:12px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); box-shadow:inset 0 0 0 1.5px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-filter-mine.on{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); box-shadow:0 10px 20px rgba(107,112,224,.3);
+  }
+  #urbis-mobile-app .u52-procity-filter-mine > span:first-child{ font-size:1.3rem; line-height:1; flex:0 0 auto; }
+  #urbis-mobile-app .u52-procity-filter-mine b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.82rem; font-weight:900; }
+  #urbis-mobile-app .u52-procity-filter-mine small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.68rem; font-weight:700; margin-top:2px; }
+  #urbis-mobile-app .u52-procity-filter-mine.on b,
+  #urbis-mobile-app .u52-procity-filter-mine.on small{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+  #urbis-mobile-app .u52-procity-filter-tools{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  #urbis-mobile-app .u52-procity-filter-tools button{
+    appearance:none; border:0; border-radius:13px; min-height:40px; font-size:.76rem; font-weight:850;
+    background:linear-gradient(135deg,var(--pc-sky-1),var(--pc-sky-2)); color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-filter-list{ display:flex; flex-direction:column; gap:7px; }
+  #urbis-mobile-app .u52-procity-filter-chip{
+    appearance:none; border:0; width:100%; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(135deg,#ffffff,#f5f7ff); border-radius:14px; padding:10px 12px;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-filter-chip.off{ opacity:.5; }
+  #urbis-mobile-app .u52-procity-filter-dot{ width:16px; height:16px; flex:0 0 16px; border-radius:5px; box-shadow:0 1px 3px rgba(30,40,90,.3); }
+  #urbis-mobile-app .u52-procity-filter-chip b{ flex:1; text-align:left; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:.8rem; font-weight:800; }
+  #urbis-mobile-app .u52-procity-filter-check{ color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important; font-size:1rem; }
+
+  /* ═══ Línea de tiempo tipo calendario, variante lavanda (hoja
+     #u52-procity-filter). El layout base (.u52-tf-*) vive en css/99; acá
+     solo se pintan los colores propios del módulo. ═══ */
+  #urbis-mobile-app #u52-procity-filter .u52-tf-block{ border-top-color:var(--pc-sky-line); }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-head b,
+  #urbis-mobile-app #u52-procity-filter .u52-tf-range-label{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-nav button{
+    background:var(--pc-sky-1); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+    box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-month,
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-wd{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-cell{ color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-cell.today{
+    background:rgba(107,112,224,.18); color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important;
+  }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-cell.inrange{ background:var(--pc-sky-2); }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-cal-cell.sel{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+  }
+  #urbis-mobile-app #u52-procity-filter .u52-tf-view-btn{
+    background:linear-gradient(135deg,var(--pc-lav-deep),var(--pc-lav-deep2)); color:#fff !important; -webkit-text-fill-color:#fff !important;
+    box-shadow:0 12px 22px rgba(107,112,224,.34);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     REDISEÑO PROFESIONAL · exclusivo de URBIS Pro City
+     Pedido explícito: Pro City es una herramienta seria para estudiantes de
+     urbanismo, así que ADENTRO se abandona la estética "cute" del resto de la
+     app y se adopta un sistema tipográfico ÚNICO y profesional (Inter), con
+     una escala consistente de título / subtítulo / descripción. Los colores
+     pastel se conservan intactos (gustan y dan calidez): SOLO cambian
+     tipografía, pesos, proporciones y algunos radios.
+     Nota: desde que toda la app adoptó Inter (css/00 + css/29), estas reglas
+     ya NO cambian la familia respecto al resto — pero se conservan porque
+     definen la ESCALA propia de Pro City (título/subtítulo/tarjeta/botón),
+     más fina que la del resto de la app, y ganan por (1,1,0)+!important.
+     ══════════════════════════════════════════════════════════════════════ */
+  :root{
+    --pc-font:'Inter','Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    --pc-fs-title:1rem;      /* títulos de pantalla / hoja / panel */
+    --pc-fs-sub:.78rem;      /* subtítulos y descripciones bajo el título */
+    --pc-fs-card:.82rem;     /* títulos de tarjeta / ítem */
+    --pc-fs-meta:.7rem;      /* metadatos bajo la tarjeta */
+    --pc-fs-btn:.8rem;       /* botones */
+    --pc-fs-label:.68rem;    /* micro-etiquetas de sección (eyebrow) */
+  }
+
+  /* 1) TIPOGRAFÍA ÚNICA en todas las superficies de Pro City. El descendiente
+        universal con (1 id + 1 clase) supera al `#urbis-mobile-app *` de css/29. */
+  #urbis-mobile-app .u52-procity-sheet,        #urbis-mobile-app .u52-procity-sheet *,
+  #urbis-mobile-app .u52-procity-coop-screen,  #urbis-mobile-app .u52-procity-coop-screen *,
+  #urbis-mobile-app .u52-procity-selpanel,     #urbis-mobile-app .u52-procity-selpanel *,
+  #urbis-mobile-app .u52-procity-mode,         #urbis-mobile-app .u52-procity-mode *{
+    font-family:var(--pc-font) !important;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* 2) ESCALA TIPOGRÁFICA COHERENTE (la misma proporción en todas las cabeceras,
+        tarjetas y botones — se acaba el "desorden" de tamaños/pesos sueltos). */
+  /*    TÍTULOS */
+  #urbis-mobile-app .u52-procity-sheet-head b,
+  #urbis-mobile-app .u52-procity-coop-head b,
+  #urbis-mobile-app .u52-procity-panel-head b,
+  #urbis-mobile-app .u52-procity-selpanel-head b{
+    font-size:var(--pc-fs-title) !important; font-weight:700 !important;
+    letter-spacing:-.012em !important; line-height:1.22 !important;
+  }
+  /*    SUBTÍTULOS / descripciones bajo el título */
+  #urbis-mobile-app .u52-procity-sheet-head small,
+  #urbis-mobile-app .u52-procity-coop-head small,
+  #urbis-mobile-app .u52-procity-panel-head small,
+  #urbis-mobile-app .u52-procity-selpanel-head small{
+    font-size:var(--pc-fs-sub) !important; font-weight:500 !important;
+    letter-spacing:0 !important; line-height:1.35 !important;
+  }
+  /*    TÍTULOS de tarjeta / ítem */
+  #urbis-mobile-app .u52-procity-card b,
+  #urbis-mobile-app .u52-procity-mode .u52-alert-card b,
+  #urbis-mobile-app .u52-procity-mine-info b,
+  #urbis-mobile-app .u52-procity-folder-head b,
+  #urbis-mobile-app .u52-procity-filter-mine b,
+  #urbis-mobile-app .u52-procity-filter-chip b{
+    font-size:var(--pc-fs-card) !important; font-weight:600 !important;
+    letter-spacing:-.006em !important; line-height:1.25 !important;
+  }
+  /*    METADATOS bajo la tarjeta */
+  #urbis-mobile-app .u52-procity-card small,
+  #urbis-mobile-app .u52-procity-mine-info small,
+  #urbis-mobile-app .u52-procity-folder-head small,
+  #urbis-mobile-app .u52-procity-filter-mine small,
+  #urbis-mobile-app .u52-procity-selpanel-autor{
+    font-size:var(--pc-fs-meta) !important; font-weight:500 !important; line-height:1.3 !important;
+  }
+  /*    BOTONES — peso profesional (no "chunky") */
+  #urbis-mobile-app .u52-procity-coop-actions button,
+  #urbis-mobile-app .u52-procity-folder-actions button,
+  #urbis-mobile-app .u52-procity-folder-tools button,
+  #urbis-mobile-app .u52-procity-sel-actions button b,
+  #urbis-mobile-app .u52-quick-publish.u52-procity-publish,
+  #urbis-mobile-app .u52-procity-folder-create-confirm,
+  #urbis-mobile-app .u52-procity-folder-join,
+  #urbis-mobile-app .u52-procity-folder-create{
+    font-size:var(--pc-fs-btn) !important; font-weight:600 !important; letter-spacing:.004em !important;
+  }
+  /*    MICRO-ETIQUETAS de sección → "eyebrow" profesional (mayúscula + tracking) */
+  #urbis-mobile-app .u52-procity-folder-sublabel,
+  #urbis-mobile-app .u52-matriz-recientes > small{
+    font-size:var(--pc-fs-label) !important; font-weight:700 !important;
+    text-transform:uppercase !important; letter-spacing:.07em !important; opacity:.92;
+  }
+
+  /* 3) Menos "burbuja", más herramienta: radios un poco más contenidos en los
+        contenedores (siguen suaves, no cuadrados). Los pastel NO se tocan. */
+  #urbis-mobile-app .u52-procity-sheet-card{ border-radius:0 !important; }
+  #urbis-mobile-app .u52-procity-card,
+  #urbis-mobile-app .u52-procity-folder-card,
+  #urbis-mobile-app .u52-procity-mode .u52-alert-card{ border-radius:14px !important; }
+}

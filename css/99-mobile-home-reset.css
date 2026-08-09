@@ -1,0 +1,226 @@
+/* URBIS V176 · Reset visual de Home móvil
+   Recupera la interfaz principal kawaii y evita overlays viejos. */
+@media (max-width:1024px), (pointer:coarse){
+  html.urbis-mobile-runtime,
+  body.urbis-mobile-runtime{
+    overflow:hidden !important;
+    width:100% !important;
+    max-width:100vw !important;
+    background:#f8fbfc !important;
+  }
+
+  /* Ocultar pantallas/capas antiguas que estaban superponiéndose. */
+  body.urbis-mobile-runtime #module-focus-shell,
+  body.urbis-mobile-runtime .module-access-shell,
+  body.urbis-mobile-runtime .module-access-grid,
+  body.urbis-mobile-runtime .sidebar-page,
+  body.urbis-mobile-runtime .sidebar-tabs,
+  body.urbis-mobile-runtime .u70-context-screen,
+  body.urbis-mobile-runtime #urbis-mobile-app [data-u52-screen="mobility-multimaps"],
+  body.urbis-mobile-runtime #urbis-mobile-app [data-u52-screen="mobility-destinations"],
+  body.urbis-mobile-runtime #u70-map-picker-sheet,
+  body.urbis-mobile-runtime #u70-map-picker-backdrop,
+  body.urbis-mobile-runtime #u120-mobility-map-picker,
+  body.urbis-mobile-runtime #u103-map-picker{
+    display:none !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  body.urbis-mobile-runtime:not(.u88-mobility-mode):not(.u52-real-map) #map,
+  body.urbis-mobile-runtime:not(.u88-mobility-mode):not(.u52-real-map) .leaflet-container{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  #urbis-mobile-app{
+    isolation:isolate !important;
+    overflow:hidden !important;
+    background:radial-gradient(circle at 12% 4%, rgba(192,245,236,.58), transparent 20%),radial-gradient(circle at 88% 16%, rgba(248,218,236,.55), transparent 18%),linear-gradient(180deg,#fcfcfd 0%, #f7f8fb 100%) !important;
+  }
+
+  #urbis-mobile-app .u52-screen{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+    position:absolute !important;
+    inset:0 !important;
+    width:100% !important;
+    max-width:100vw !important;
+    overflow-x:hidden !important;
+  }
+  #urbis-mobile-app .u52-screen.active{
+    display:block !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  /* HOME: estructura principal compacta como venía gustando. */
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active{
+    background:transparent !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-topbar{
+    margin:14px 14px 12px !important;
+    padding:10px 12px !important;
+    min-height:96px !important;
+    border-radius:30px !important;
+    display:grid !important;
+    grid-template-columns:86px minmax(0,1fr) 86px !important;
+    align-items:center !important;
+    gap:10px !important;
+    background:rgba(255,255,255,.92) !important;
+    box-shadow:0 16px 38px rgba(30,76,122,.08), inset 0 0 0 1px rgba(98,146,186,.08) !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-pill{
+    min-height:76px !important;
+    max-height:82px !important;
+    border-radius:24px !important;
+    padding:8px 4px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:5px !important;
+    background:linear-gradient(180deg,#f8fdfd,#fffdfa) !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-pill small,
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-brand small{
+    color:#5d708c !important;
+    opacity:1 !important;
+    font-weight:900 !important;
+    -webkit-text-fill-color:#5d708c !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-icon-shell,
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-profile-avatar-shell{
+    width:48px !important;
+    height:48px !important;
+    flex:0 0 48px !important;
+    border-radius:18px !important;
+    overflow:hidden !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-icon-shell img,
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-profile-avatar-shell img{
+    width:42px !important;
+    height:42px !important;
+    object-fit:contain !important;
+    max-width:42px !important;
+    max-height:42px !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-brand{
+    min-height:76px !important;
+    border-radius:25px !important;
+    padding:8px 10px !important;
+    display:grid !important;
+    place-items:center !important;
+    text-align:center !important;
+    background:linear-gradient(180deg,#fff,#fbfeff) !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-brand b{
+    color:#1e4daa !important;
+    font-size:1.76rem !important;
+    line-height:1 !important;
+    font-weight:1000 !important;
+    -webkit-text-fill-color:#1e4daa !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-brand small{
+    margin-top:7px !important;
+    padding:5px 12px !important;
+    border-radius:999px !important;
+    color:#087e75 !important;
+    -webkit-text-fill-color:#087e75 !important;
+    background:#e8fbf7 !important;
+    box-shadow:inset 0 0 0 1px rgba(11,176,158,.22) !important;
+  }
+
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-content{
+    padding:0 14px calc(116px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-hero h1{
+    color:#224b86 !important;
+    -webkit-text-fill-color:#224b86 !important;
+    font-size:3.25rem !important;
+    line-height:.95 !important;
+    margin:0 !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-section-title{
+    color:#087e75 !important;
+    -webkit-text-fill-color:#087e75 !important;
+    font-weight:1000 !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-grid-primary{
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-k-home-grid-secondary{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:12px !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module{
+    min-height:124px !important;
+    max-height:154px !important;
+    padding:14px 8px !important;
+    border-radius:24px !important;
+    overflow:hidden !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module span{
+    width:52px !important;
+    height:52px !important;
+    min-width:52px !important;
+    max-width:52px !important;
+    min-height:52px !important;
+    max-height:52px !important;
+    border-radius:18px !important;
+    display:grid !important;
+    place-items:center !important;
+    font-size:1.58rem !important;
+    overflow:hidden !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module span img,
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module-profile-avatar img{
+    width:40px !important;
+    height:40px !important;
+    max-width:40px !important;
+    max-height:40px !important;
+    object-fit:contain !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module b{
+    color:#24466e !important;
+    font-size:.9rem !important;
+    line-height:1.06 !important;
+    font-weight:1000 !important;
+    -webkit-text-fill-color:#24466e !important;
+  }
+  #urbis-mobile-app .u52-screen[data-u52-screen="home"].active .u52-module small{
+    color:#5f7089 !important;
+    font-size:.68rem !important;
+    line-height:1.1 !important;
+    font-weight:900 !important;
+    -webkit-text-fill-color:#5f7089 !important;
+  }
+
+  /* Avatar: nunca gigante en móvil. */
+  #urbis-mobile-app .u65-avatar-preview,
+  #urbis-mobile-app .u65-avatar-card{
+    overflow:hidden !important;
+  }
+  #urbis-mobile-app .u65-avatar-preview [data-u65-current-avatar],
+  #urbis-mobile-app .u65-profile-avatar{
+    max-width:128px !important;
+    max-height:128px !important;
+  }
+  #urbis-mobile-app .u65-avatar-preview img,
+  #urbis-mobile-app .u65-profile-avatar img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+  }
+}

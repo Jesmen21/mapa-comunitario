@@ -1,0 +1,67 @@
+/* URBIS v172 fix1-safe-dot
+   Objetivo: NO tocar la lógica de navegación.
+   Solo hace invisible/minúsculo el marcador heredado de destino (target/punto extra)
+   para que visualmente queden la gotica roja PNG y la línea celeste. */
+@media (max-width:1024px), (pointer:coarse){
+  /* Marcador heredado creado por crearMarcadorRutaReal('B') */
+  .route-point-badge.route-point-end,
+  .route-point-badge.route-point-b,
+  .route-point-badge.route-point-glow{
+    width:1px !important;
+    min-width:1px !important;
+    height:1px !important;
+    min-height:1px !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+    border-radius:999px !important;
+    background:transparent !important;
+    color:transparent !important;
+    font-size:0 !important;
+    line-height:0 !important;
+    box-shadow:none !important;
+    opacity:0.001 !important;
+    overflow:hidden !important;
+    pointer-events:none !important;
+    transform:scale(.01) !important;
+    filter:none !important;
+    text-shadow:none !important;
+  }
+  .route-point-badge.route-point-end::before,
+  .route-point-badge.route-point-end::after,
+  .route-point-badge.route-point-b::before,
+  .route-point-badge.route-point-b::after,
+  .route-point-badge.route-point-glow::before,
+  .route-point-badge.route-point-glow::after{
+    content:none !important;
+    display:none !important;
+    opacity:0 !important;
+    animation:none !important;
+    box-shadow:none !important;
+    background:transparent !important;
+    border:0 !important;
+  }
+  /* Si el navegador soporta :has, también miniaturiza el contenedor Leaflet, sin borrar el layer. */
+  .leaflet-marker-icon:has(.route-point-badge.route-point-end),
+  .leaflet-marker-icon:has(.route-point-badge.route-point-b),
+  .leaflet-marker-icon:has(.route-point-badge.route-point-glow){
+    width:1px !important;
+    height:1px !important;
+    margin-left:0 !important;
+    margin-top:0 !important;
+    opacity:0.001 !important;
+    pointer-events:none !important;
+    overflow:hidden !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  /* La gotica roja de llegada se conserva visible y por encima. */
+  .u91-map-pin-only,
+  .u91-destination-marker,
+  .u91-destination-img,
+  .u91-destination-leaflet-icon{
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+  }
+}

@@ -1,0 +1,90 @@
+/* URBIS V8 · Accesibilidad por rol y registro de bienestar */
+.wellness-register-card {
+  margin: 10px 0 12px;
+  padding: 13px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(184,235,230,.18);
+}
+.wellness-register-help {
+  color: #aebfc4;
+  font-size: .72rem;
+  line-height: 1.35;
+  margin: 0 0 9px;
+}
+.gov-simple-note {
+  margin: -6px 0 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,240,184,.13), rgba(184,235,230,.08));
+  border: 1px solid rgba(255,240,184,.22);
+  color: #eaf6ff;
+}
+.gov-simple-note b { display:block; color:#fff0b8; font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; }
+.gov-simple-note span { display:block; color:#aeb6c2; font-size:.68rem; line-height:1.3; margin-top:2px; }
+body.role-gov-simple .sidebar-tab-btn span:first-child { display:none; }
+body.role-gov-simple .sidebar-tabs { grid-template-columns: repeat(5, 1fr); }
+body.role-gov-simple #tab-btn-advanced { display:none !important; }
+body.role-gov-simple .map-tools-caption,
+body.role-gov-simple .events-help,
+body.role-gov-simple .automap-help { font-size:.68rem; }
+body.role-gov-simple .cat-icon,
+body.role-gov-simple .mini-icon-badge,
+body.role-gov-simple .layer-symbol { transform: scale(.86); }
+body.role-gov-simple .tool-btn,
+body.role-gov-simple .sidebar-tab-btn { font-size:.70rem; }
+body.role-gov-simple .advanced-only { display:none !important; }
+.layer-quick-actions {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;
+}
+.layer-quick-actions button {
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  padding:8px 10px;
+  background:rgba(255,255,255,.055);
+  color:#eaf6ff;
+  font-weight:900;
+  cursor:pointer;
+  font-size:.68rem;
+}
+.layer-start-note {
+  color:#aeb6c2;
+  font-size:.68rem;
+  line-height:1.35;
+  margin: 0 0 10px;
+}
+
+/* URBIS V9 · portada ciudadana + permisos internos */
+.login-access-switch-clean {
+  grid-template-columns: 1.25fr 1fr !important;
+}
+.direct-test-btn {
+  width: 100% !important;
+  margin: 2px 0 12px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #27d39b, #6ee7b7) !important;
+  color: #07131c !important;
+}
+.profile-access-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(184,235,230,.18);
+}
+.profile-access-card b { color:#eafffb; font-size:.9rem; }
+.profile-access-card span,
+.profile-access-card small { color:#aeb6c2; font-size:.70rem; line-height:1.35; }
+.profile-access-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+body.role-gov-simple #tab-btn-events span:first-child,
+body.role-gov-simple #tab-btn-stats span:first-child,
+body.role-gov-simple #tab-btn-mapping span:first-child,
+body.role-gov-simple #tab-btn-access span:first-child { display:none; }
+@media (max-width: 780px) {
+  .login-access-switch-clean { grid-template-columns: 1fr !important; }
+}

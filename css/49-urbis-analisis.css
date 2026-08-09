@@ -1,0 +1,317 @@
+/* ============================================================================
+   URBIS · ANÁLISIS — estación de trabajo de escritorio (la "cabeza" de URBIS)
+   + capa de ADAPTACIÓN A PC de la app existente (login y pantallas centradas).
+   Regla URBIS: textos SIEMPRE de alto contraste sobre su fondo.
+   ============================================================================ */
+
+/* ---------- Botón de entrada (solo escritorio) ---------- */
+.ua-fab{
+  display:none; position:fixed; right:22px; bottom:24px; z-index:2147483090;
+  border:none; border-radius:999px; padding:14px 22px; cursor:pointer;
+  font:800 1rem 'Inter','Segoe UI',system-ui,sans-serif; color:#fff;
+  background:linear-gradient(120deg,#0ea5a0,#00B68D 55%,#0a85a6);
+  box-shadow:0 14px 34px rgba(0,150,120,.42); transition:transform .15s ease;
+}
+.ua-fab:hover{ transform:translateY(-2px); }
+.ua-fab:active{ transform:scale(.97); }
+@media (min-width:1024px){ .ua-fab{ display:inline-flex; align-items:center; gap:7px; } }
+body.urbis-analisis-on .ua-fab{ display:none !important; }
+
+/* ---------- Contenedor raíz: NO bloquea el mapa ---------- */
+.ua-root{ position:fixed; inset:0; z-index:2147483080; pointer-events:none;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+.ua-root > *{ pointer-events:auto; }
+
+/* ---------- Toolbar lateral izquierda ---------- */
+.ua-toolbar{
+  position:absolute; top:16px; left:16px; display:flex; flex-direction:column; gap:8px;
+  background:rgba(10,20,26,.92); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:12px 10px;
+  box-shadow:0 18px 44px rgba(0,0,0,.45); width:118px;
+}
+.ua-brand{ color:#7ff5d8; font-size:.72rem; font-weight:900; letter-spacing:.6px; text-align:center; margin-bottom:4px; }
+.ua-brand b{ color:#fff; }
+.ua-tool{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  border:1px solid rgba(255,255,255,.1); border-radius:13px; padding:9px 6px; cursor:pointer;
+  background:rgba(255,255,255,.05); color:#fff; font-size:1.15rem; transition:background .15s ease;
+}
+.ua-tool span{ font-size:.66rem; font-weight:800; letter-spacing:.3px; color:rgba(255,255,255,.85); }
+.ua-tool:hover{ background:rgba(255,255,255,.12); }
+.ua-tool.active{ background:linear-gradient(120deg,#0ea5a0,#00B68D); border-color:transparent; box-shadow:0 8px 18px rgba(0,182,141,.4); }
+.ua-tool.ua-x{ background:rgba(225,29,72,.16); border-color:rgba(225,29,72,.35); }
+.ua-tool.ua-x:hover{ background:rgba(225,29,72,.3); }
+
+/* ---------- Chip de estado inferior ---------- */
+.ua-status{
+  position:absolute; left:50%; bottom:20px; transform:translateX(-50%);
+  max-width:min(680px,86vw); background:rgba(10,20,26,.92); color:#fff;
+  border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:11px 22px;
+  font-size:.88rem; font-weight:600; text-align:center;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  box-shadow:0 12px 30px rgba(0,0,0,.4);
+}
+.ua-status b{ color:#7ff5d8; }
+
+/* ---------- Panel de resultados (derecha) ---------- */
+.ua-panel{
+  position:absolute; top:16px; right:16px; bottom:16px; width:min(400px,92vw);
+  display:flex; flex-direction:column; overflow:hidden;
+  background:#fdfefe; border:1px solid #d7e6e2; border-radius:20px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+.ua-panel-head{ padding:16px 18px 10px; background:linear-gradient(140deg,#eafff8,#e2f7ff); border-bottom:1px solid #d7e6e2; }
+.ua-panel-head b{ font-size:1.06rem; color:#0b3b30; font-weight:900; }
+.ua-meta{ display:flex; gap:14px; flex-wrap:wrap; margin-top:7px; }
+.ua-meta span{ font-size:.82rem; font-weight:800; color:#00795e; background:#d9f7ec; border-radius:999px; padding:4px 12px; }
+.ua-tabs{ display:flex; border-bottom:1px solid #e2ece9; background:#f6fbfa; }
+.ua-tab{
+  flex:1; border:none; background:none; padding:11px 4px; cursor:pointer;
+  font-size:.8rem; font-weight:800; color:#4b6a62; border-bottom:3px solid transparent;
+}
+.ua-tab.active{ color:#00795e; border-bottom-color:#00B68D; background:#fff; }
+.ua-body{ flex:1; overflow-y:auto; padding:14px 16px 18px; }
+.ua-foot{ display:flex; gap:10px; padding:12px 14px; border-top:1px solid #e2ece9; background:#f6fbfa; }
+.ua-act{
+  flex:1; border:none; border-radius:12px; padding:12px; cursor:pointer;
+  font-weight:900; font-size:.9rem; color:#fff;
+  background:linear-gradient(120deg,#0ea5a0,#00B68D);
+  box-shadow:0 8px 18px rgba(0,182,141,.3);
+}
+.ua-act:active{ transform:scale(.97); }
+
+/* ---------- Contenido de pestañas ---------- */
+.ua-h{ font-weight:900; font-size:.95rem; color:#12332b; margin:4px 0 12px; }
+.ua-h small{ display:block; font-weight:700; font-size:.74rem; color:#5d7a72; margin-top:2px; }
+.ua-empty{ text-align:center; color:#3f5a53; font-weight:700; padding:30px 12px; line-height:1.5; }
+.ua-empty small{ color:#6b847d; font-weight:600; }
+.ua-spin{ width:30px; height:30px; margin:16px auto 0; border-radius:50%;
+  border:3px solid #cdeee2; border-top-color:#00B68D; animation:uaSpin .9s linear infinite; }
+@keyframes uaSpin{ to{ transform:rotate(360deg); } }
+
+.ua-capa{ border:1px solid #e2ece9; border-radius:14px; margin-bottom:9px; background:#fff; overflow:hidden; }
+.ua-capa summary{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; list-style:none;
+}
+.ua-capa summary::-webkit-details-marker{ display:none; }
+.ua-capa-ic{ width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0; }
+.ua-capa-nom{ flex:0 0 118px; font-size:.8rem; font-weight:900; color:#12332b; line-height:1.15; }
+.ua-capa-nom small{ display:block; font-weight:700; color:#5d7a72; font-size:.68rem; }
+.ua-capa-bar{ flex:1; height:9px; border-radius:999px; background:#eef4f2; overflow:hidden; }
+.ua-capa-bar i{ display:block; height:100%; border-radius:999px; }
+.ua-capa-n{ font-size:1rem; font-weight:900; color:#0b3b30; min-width:30px; text-align:right; }
+.ua-sub{ display:flex; justify-content:space-between; gap:8px; padding:6px 14px; font-size:.8rem; color:#2c4740; border-top:1px dashed #e7efec; }
+.ua-sub b{ color:#00795e; }
+.ua-sub.big{ border:1px solid #e2ece9; border-radius:11px; margin-bottom:7px; padding:9px 13px; font-weight:800; color:#12332b; }
+
+.ua-verde-big{
+  display:flex; align-items:center; gap:14px; padding:15px; margin-bottom:12px;
+  background:linear-gradient(135deg,#ecfdf3,#d9f7e7); border:1px solid #b8ecd0; border-radius:16px;
+}
+.ua-verde-big b{ font-size:2.2rem; font-weight:900; color:#15803d; line-height:1; }
+.ua-verde-big span{ font-size:.82rem; font-weight:800; color:#166534; line-height:1.35; }
+.ua-barrow{ display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+.ua-barrow > span{ flex:0 0 172px; font-size:.76rem; font-weight:800; color:#2c4740; }
+.ua-barbg{ flex:1; height:11px; border-radius:999px; background:#eef4f2; overflow:hidden; }
+.ua-barbg i{ display:block; height:100%; border-radius:999px; }
+.ua-barrow b{ min-width:46px; text-align:right; font-size:.8rem; font-weight:900; color:#0b3b30; }
+.ua-nota{ margin-top:12px; padding:11px 13px; border-radius:12px; background:#f2f8f6; border:1px solid #dfeeea;
+  font-size:.84rem; font-weight:700; color:#1f3d35; line-height:1.45; }
+.ua-nota small{ color:#54756c; font-weight:600; }
+.ua-rep{ display:flex; justify-content:space-between; align-items:center; gap:8px;
+  padding:8px 12px; border:1px solid #f3d9de; background:#fff5f6; border-radius:11px; margin-bottom:6px; }
+.ua-rep b{ font-size:.8rem; color:#9f1239; }
+.ua-rep small{ font-size:.72rem; color:#7d2a3d; font-weight:700; }
+
+.ua-comp-duo{ display:flex; gap:10px; margin-bottom:12px; }
+.ua-comp-box{ flex:1; text-align:center; border-radius:16px; padding:15px 8px; }
+.ua-comp-box b{ display:block; font-size:1.7rem; font-weight:900; }
+.ua-comp-box span{ font-size:.78rem; font-weight:800; }
+.ua-comp-box.verde{ background:#dcfce7; border:1px solid #a7e8c0; }
+.ua-comp-box.verde b, .ua-comp-box.verde span{ color:#15803d; }
+.ua-comp-box.gris{ background:#f1f5f9; border:1px solid #d6dee6; }
+.ua-comp-box.gris b, .ua-comp-box.gris span{ color:#334155; }
+
+/* En móvil pequeño, la estación se apila para no tapar todo el mapa */
+@media (max-width:760px){
+  .ua-toolbar{ flex-direction:row; width:auto; left:10px; right:10px; top:10px; overflow-x:auto; }
+  .ua-tool span{ display:none; }
+  .ua-panel{ top:auto; left:10px; right:10px; bottom:10px; height:52vh; width:auto; }
+  .ua-status{ display:none; }
+}
+
+/* ============================================================================
+   MODO ESCRITORIO REAL (v299) — se abandona el "shell unificado" (v296-298):
+   forzar la app móvil a mostrarse siempre rompía el modo de escritorio nativo
+   (#sidebar + #map), que YA hacía lo que se pide: mapa satelital a pantalla
+   completa con la lista de módulos a mano derecha. js/00-app-shell.js vuelve a
+   detectar el viewport real; aquí solo pulimos ese modo desktop existente.
+   Android/iPhone (#urbis-mobile-app) quedan intactos, sin tocar.
+   ============================================================================ */
+
+/* Por ahora, ocultar en escritorio los módulos que no están listos para PC
+   (pedido explícito): Movilidad y Deporte/Runner. */
+html[data-urbis-shell="desktop"] #tab-btn-mobility,
+html[data-urbis-shell="desktop"] #tab-btn-sport{
+  display:none !important;
+}
+
+/* Botón de perfil flotante (abajo a la derecha) para entrar/cerrar sesión sin
+   tener que ir a buscar la pestaña "Mi perfil". Siempre visible en escritorio,
+   una vez la plataforma ya inició (después del login). */
+.ua-profile-fab{
+  display:none; position:fixed; right:22px; bottom:92px; z-index:2147483095;
+  width:56px; height:56px; border-radius:50%; border:none; cursor:pointer;
+  align-items:center; justify-content:center; font-size:1.4rem; color:#fff;
+  background:linear-gradient(135deg,#0ea5a0,#0a85a6);
+  box-shadow:0 14px 34px rgba(0,120,140,.4); transition:transform .15s ease, bottom .18s ease;
+}
+.ua-profile-fab:hover{ transform:translateY(-2px); }
+.ua-profile-fab:active{ transform:scale(.95); }
+html[data-urbis-shell="desktop"] body:not(.urbis-pre-login) .ua-profile-fab{ display:flex; }
+/* Apilado: el botón de Análisis ocupa el rincón cuando existe (≥1024px); el de
+   perfil va justo encima. Cuando la estación de Análisis está abierta, su FAB
+   se oculta (regla .ua-fab de arriba) y el de perfil baja a esa posición. */
+body.urbis-analisis-on .ua-profile-fab{ bottom:24px; }
+
+.ua-profile-menu{
+  display:none; position:fixed; right:22px; bottom:158px; z-index:2147483096;
+  width:240px; background:#fff; border-radius:18px; overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.3); font-family:'Inter','Segoe UI',system-ui,sans-serif;
+}
+.ua-profile-menu.open{ display:block; }
+body.urbis-analisis-on .ua-profile-menu{ bottom:92px; }
+.ua-profile-menu-head{
+  padding:14px 16px; background:linear-gradient(135deg,#0ea5a0,#0a85a6); color:#fff;
+}
+.ua-profile-menu-head b{ display:block; font-size:.9rem; }
+.ua-profile-menu-head small{ opacity:.85; font-size:.72rem; }
+.ua-profile-menu button{
+  display:block; width:100%; text-align:left; border:none; background:none;
+  padding:13px 16px; font-size:.86rem; font-weight:700; color:#16233e; cursor:pointer;
+  border-top:1px solid #eef2f4;
+}
+.ua-profile-menu button:hover{ background:#f4f8f7; }
+.ua-profile-menu button.danger{ color:#c0392b; }
+
+/* ============================================================================
+   PORTADA DE ENTRADA (#login-screen) — restyle KAWAII, misma familia visual
+   que la entrada de Android/iPhone: fondo claro menta/pastel, mascota URBIS,
+   tarjeta blanca con botones, tarjetas de estadísticas con icono y color.
+   Reemplaza la paleta oscura y el logo gigante heredados; se carga al final
+   de la cascada para ganarle a las reglas viejas dispersas en varios css/*.
+   ============================================================================ */
+#login-screen{
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(120,233,221,.38), transparent 55%),
+    radial-gradient(100% 80% at 92% 100%, rgba(216,207,255,.30), transparent 55%),
+    linear-gradient(160deg, #eafff9 0%, #eef8ff 45%, #f5fffb 100%) !important;
+}
+#login-screen::before,
+#login-screen::after{ display:none !important; content:none !important; }
+#login-screen .login-topbar{ display:none !important; }
+/* RAÍZ del "cuadro oscuro" que reaparecía: css/99-contrast-fix.css fuerza
+   .login-copy-panel (el envoltorio de TODA la tarjeta) a un gradiente verde-
+   negro con !important, pensado para el tema oscuro del sidebar viejo. Nunca
+   había apuntado a este contenedor directamente — solo a sus hijos — por eso
+   el fondo oscuro sobrevivía debajo de todo lo demás. Neutralizado aquí de
+   forma explícita y permanente (misma especificidad + !important, cargado al
+   final de la cascada). Si el fondo oscuro vuelve a aparecer, es este archivo
+   el primer sospechoso. */
+#login-screen .login-copy-panel,
+#login-screen .login-subpanel{
+  background:transparent !important; box-shadow:none !important; border:none !important;
+  color:inherit !important;
+}
+#login-screen .login-box{ background:transparent !important; box-shadow:none !important; border:none !important; padding:24px 14px !important; }
+#login-screen .login-shell{
+  background:transparent !important; border:none !important; box-shadow:none !important;
+  backdrop-filter:none !important; max-width:600px !important; margin:0 auto !important;
+}
+#login-screen .login-hero-grid{
+  display:block !important; grid-template-columns:none !important;
+  padding:2vh 18px 4vh !important; gap:0 !important;
+}
+#login-screen .login-preview-panel{ display:none !important; }
+/* El panel ilustrado de calles/pines se simplifica (la mobile tampoco lo usa). */
+#login-screen .clean-entry-visual{ display:none !important; }
+
+/* Marca: mascota + wordmark, igual que la entrada móvil */
+.clean-entry-brand-wrap{ margin-bottom:16px !important; }
+.clean-entry-mascot{
+  display:block; width:92px; height:92px; margin:0 auto 8px; object-fit:contain;
+  filter:drop-shadow(0 10px 20px rgba(20,140,120,.22));
+}
+.clean-entry-logo{
+  font-size:clamp(34px, 5vw, 46px) !important;
+  color:#153b88 !important; text-shadow:none !important;
+}
+.clean-entry-tagline{ color:#2f8f83 !important; font-size:.76rem !important; letter-spacing:.22em !important; }
+
+/* Tarjeta principal */
+.clean-entry-card{
+  max-width:500px !important; margin:0 auto !important;
+  background:#fff !important; border-radius:30px !important;
+  box-shadow:0 20px 50px rgba(91,150,167,.14) !important;
+}
+.clean-entry-card-icon{ display:none !important; } /* redundante con la mascota de arriba */
+.clean-entry-card h1{ color:#153b88 !important; font-size:1.5rem !important; margin-top:6px !important; }
+.clean-entry-card .subtitle{ color:#5c7897 !important; font-size:.92rem !important; }
+
+/* Estadísticas: tarjetas con icono + color pastel, como el ejemplo móvil */
+#login-screen .clean-entry-matrix-stats{ grid-template-columns:repeat(4, 1fr) !important; gap:9px !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat{
+  position:relative !important; border-radius:18px !important;
+  padding:30px 4px 10px !important; min-height:auto !important;
+  background:#f4f8f7 !important; border:1px solid #e2ece9 !important; box-shadow:none !important;
+}
+#login-screen .clean-entry-matrix-stats .matrix-stat::before{
+  position:absolute; top:8px; left:50%; transform:translateX(-50%); font-size:1.05rem; line-height:1;
+}
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(1){ background:#e8fff9 !important; border-color:#b9f3e4 !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(1)::before{ content:'🏙️'; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(2){ background:#fff6e6 !important; border-color:#ffe2ad !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(2)::before{ content:'⚙️'; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(3){ background:#f4efff !important; border-color:#ddccff !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(3)::before{ content:'🔍'; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(4){ background:#eafff0 !important; border-color:#b7ecc8 !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat:nth-child(4)::before{ content:'✅'; }
+#login-screen .clean-entry-matrix-stats .matrix-stat b{ color:#153b88 !important; font-size:1.05rem !important; }
+#login-screen .clean-entry-matrix-stats .matrix-stat span{ color:#5c7897 !important; font-size:.66rem !important; }
+
+@media (max-width:640px){
+  #login-screen .clean-entry-matrix-stats{ grid-template-columns:repeat(2, 1fr) !important; }
+}
+
+/* BUG DE CONTRASTE DE RAÍZ (no exclusivo de esta portada): css/42-turquoise-
+   refresh.css pinta TODO <span>/<small> casi blanco (rgba(231,255,251,.78)),
+   pensado para el sidebar oscuro. `.clean-entry-action-copy` es un <span>, así
+   que su <b> hijo HEREDA ese casi-blanco. Sobre "Iniciar sesión" (fondo turquesa
+   oscuro) se ve aceptable; sobre "Registrarse" (fondo lila muy claro) el texto
+   queda casi invisible — el mismo patrón "texto desvaído sobre fondo claro"
+   que la regla de URBIS prohíbe. Fix con colores propios de alto contraste. */
+#login-screen .clean-entry-login .clean-entry-action-copy b,
+#login-screen .clean-entry-login .clean-entry-action-copy small,
+#login-screen .clean-entry-login .clean-entry-action-arrow{ color:#04463f !important; }
+#login-screen .clean-entry-register .clean-entry-action-copy b,
+#login-screen .clean-entry-register .clean-entry-action-copy small,
+#login-screen .clean-entry-register .clean-entry-action-arrow{ color:#4a30b8 !important; }
+
+/* "Qué es URBIS" — descripción breve + chips de funciones (pedido explícito:
+   más información en la portada). `.uw-about` es un <p>, y css/99-contrast-fix
+   pinta TODO <p> dentro de .login-copy-panel en gris-verde claro (#c8d8cf,
+   pensado para fondo oscuro) — se sobreescribe aquí con color oscuro legible. */
+#login-screen .uw-about{
+  color:#3d5a68 !important; font-size:.88rem !important; line-height:1.5 !important;
+  max-width:440px; margin:10px auto 16px !important; text-align:center;
+}
+.uw-features{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:0 auto 20px; max-width:460px;
+}
+.uw-feature{
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1px solid #dcebe8; border-radius:999px;
+  padding:7px 14px; font-size:.78rem; font-weight:800; color:#0b5e4a !important;
+  box-shadow:0 4px 12px rgba(91,150,167,.08);
+}
+.uw-feature i{ font-style:normal; font-size:.9rem; }

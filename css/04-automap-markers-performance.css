@@ -1,0 +1,405 @@
+/* AUTOMAPEO CÚCUTA - OSM / OVERPASS */
+    .automap-panel {
+        background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 18px;
+        padding: 12px;
+        box-shadow: 0 12px 26px rgba(0,0,0,.18);
+    }
+    .automap-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+    .automap-title { font-size:.78rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:.08em; }
+    .automap-badge { font-size:.58rem; font-weight:900; color:#3f3a46; background:linear-gradient(135deg, var(--butter), var(--peach)); padding:4px 8px; border-radius:999px; }
+    .automap-help { color:#aeb6c2; font-size:.70rem; line-height:1.38; margin: 6px 0 10px; }
+    .automap-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+    .automap-status { color:#cbd6e2; font-size:.68rem; line-height:1.35; margin:8px 0; }
+    .automap-list { display:flex; flex-direction:column; gap:7px; margin-top:8px; }
+    .automap-item {
+        display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:9px;
+        background: rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:8px;
+    }
+    .automap-item b { color:#fff; font-size:.74rem; display:block; }
+    .automap-item small { color:#9fb1c2; font-size:.62rem; line-height:1.2; display:block; margin-top:2px; }
+    .automap-count { font-size:.62rem; font-weight:900; color:#3f3a46; background:var(--cyan); padding:4px 7px; border-radius:999px; }
+    .auto-poi-marker {
+        width:34px; height:34px; border-radius:18px 18px 18px 7px; display:flex; align-items:center; justify-content:center;
+        background:linear-gradient(135deg, rgba(245,191,214,.96), rgba(184,235,230,.96));
+        border:2px solid rgba(255,255,255,.94); box-shadow:none;
+        font-size:1.05rem; transform: rotate(-45deg) scale(var(--auto-poi-scale)); transform-origin:center center;
+        transition: transform .18s ease, opacity .18s ease, filter .18s ease;
+    }
+    .auto-poi-marker span { transform: rotate(45deg); display:block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.20)); }
+    .auto-cat-gastronomia { background:linear-gradient(135deg,#ffd9c8,#fff0b8); }
+    .auto-cat-droguerias, .auto-cat-salud { background:linear-gradient(135deg,#ffc4c4,#f5bfd6); }
+    .auto-cat-educacion { background:linear-gradient(135deg,#d8cffc,#cfe8ff); }
+    .auto-cat-comercio { background:linear-gradient(135deg,#fff0b8,#f8d7ff); }
+    .auto-cat-bancos { background:linear-gradient(135deg,#b8ebe6,#d4f1ff); }
+    .auto-cat-parques { background:linear-gradient(135deg,#c8f5d2,#b8ebe6); }
+    .auto-cat-deporte { background:linear-gradient(135deg,#cfe8ff,#d8cffc); }
+    .auto-cat-culto { background:linear-gradient(135deg,#f8d7ff,#f5bfd6); }
+    .auto-cat-turismo { background:linear-gradient(135deg,#ffe2b8,#ffd9c8); }
+    .auto-cat-transporte { background:linear-gradient(135deg,#d4f1ff,#b8ebe6); }
+    .auto-cat-edificios_mixtos { background:linear-gradient(135deg,#e4dcff,#fff0b8); }
+    .auto-poi-small { opacity:.72; filter:saturate(.92); }
+    /* Modo rendimiento: iconos se simplifican según zoom, pero los datos siguen existiendo para análisis. */
+    .marker-stack { transform: scale(var(--report-marker-scale)); transform-origin: center center; transition: opacity .12s linear; }
+    .waze-icon { transform: translate(-50%, -50%) scale(var(--report-marker-scale)); transform-origin:center center; transition: opacity .12s linear; box-shadow:none; }
+    .animated-marker { animation:none !important; filter:none !important; }
+    .tab-content, .form-section, .foto-preview { animation:none !important; }
+    .pulse-dot, .route-point-badge, .auto-poi-marker, .map-toggle-btn, .basemap-panel, .tool-btn, .chart-box, .form-section, .layers-container, #sidebar, .login-box, .waze-icon { box-shadow:none !important; }
+    .tool-btn:hover, .map-toggle-btn:hover, .cat-card:hover, .btn-google:hover, .btn-role-citizen:hover, .btn-role-gov:hover, .btn-role-edu:hover { transform:none !important; }
+    body.zoom-overview .marker-stack, body.zoom-overview .waze-icon, body.zoom-overview .auto-poi-marker { display:none !important; }
+    body.zoom-medium .auto-poi-marker { display:none !important; }
+    body.zoom-medium .marker-stack, body.zoom-medium .waze-icon { opacity:.8; }
+    .auto-poi-popup b { color:var(--cyan); }
+    .auto-poi-popup .auto-desc { color:#d8e2eb; font-size:.76rem; line-height:1.35; margin-top:4px; }
+    .auto-poi-title { display:flex; align-items:center; gap:8px; font-weight:900; color:#fff; font-size:.95rem; margin-bottom:4px; }
+    .auto-poi-kind { display:inline-flex; margin:3px 0 6px; padding:4px 8px; border-radius:999px; background:rgba(184,235,230,.16); border:1px solid rgba(184,235,230,.28); color:var(--cyan); font-size:.68rem; font-weight:900; }
+    .auto-poi-meta { margin-top:7px; display:grid; gap:3px; color:#aeb6c2; font-size:.68rem; line-height:1.32; }
+    .auto-poi-source { margin-top:8px; color:#aeb6c2; font-size:.66rem; border-top:1px solid rgba(255,255,255,.10); padding-top:6px; }
+
+    .automap-matrix {
+        margin-top: 12px; padding: 12px; border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+        border: 1px solid rgba(255,255,255,.10);
+    }
+    .automap-matrix-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
+    .automap-matrix-title { color:var(--cyan); font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+    .automap-matrix-summary { color:#aeb6c2; font-size:.64rem; line-height:1.3; margin-bottom:8px; }
+    .matrix-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .matrix-card {
+        background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px;
+        padding:9px; min-height:58px;
+    }
+    .matrix-card b { display:flex; align-items:center; gap:6px; color:#fff; font-size:.70rem; }
+    .matrix-card strong { display:block; color:var(--cyan); font-size:1.15rem; margin-top:5px; }
+    .matrix-card small { display:block; color:#97a9b9; font-size:.60rem; line-height:1.25; }
+    .matrix-chip-row { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+    .matrix-chip {
+        display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:999px;
+        background:rgba(184,235,230,.13); border:1px solid rgba(184,235,230,.24); color:#dff7f5;
+        font-size:.60rem; font-weight:900;
+    }
+    .matrix-note { margin-top:8px; color:#aeb6c2; font-size:.62rem; line-height:1.35; }
+    .auto-use-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+    .auto-use-chip {
+        display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:999px;
+        background:rgba(245,191,214,.14); border:1px solid rgba(245,191,214,.22); color:#ffeef6;
+        font-size:.60rem; font-weight:900;
+    }
+
+    .auto-matrix-exact {
+        margin-top:8px; padding:8px; border-radius:12px; background:rgba(0,0,0,.16);
+        border:1px solid rgba(255,255,255,.08);
+    }
+    .auto-matrix-exact-title { color:#fff; font-size:.64rem; font-weight:900; margin-bottom:5px; }
+    .auto-annex-btn {
+        margin-top:8px; width:100%; border:none; border-radius:12px; padding:9px 10px; cursor:pointer;
+        font-size:.68rem; font-weight:900; color:#3f3a46;
+        background:linear-gradient(135deg, var(--cyan), var(--fuchsia));
+        box-shadow:0 8px 16px rgba(0,0,0,.22);
+    }
+    .auto-annex-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .auto-annex-status {
+        margin-top:6px; color:#aeb6c2; font-size:.62rem; line-height:1.28;
+    }
+
+
+    /* OPTIMIZACIÓN FUERTE PARA MUCHOS DATOS */
+    .urbis-report-marker, .auto-map-marker { will-change: auto !important; }
+    .urbis-report-marker .marker-stack,
+    .urbis-report-marker .waze-icon,
+    .auto-map-marker .auto-poi-marker {
+        filter: none !important;
+        box-shadow: none !important;
+        animation: none !important;
+        transition: none !important;
+    }
+    .marker-stack svg, .waze-icon, .auto-poi-marker { shape-rendering: geometricPrecision; }
+    body.zoom-overview .urbis-report-marker,
+    body.zoom-overview .auto-map-marker,
+    body.zoom-medium .auto-map-marker {
+        display: none !important;
+    }
+    body.zoom-medium .urbis-report-marker { opacity: .82; }
+    .pulse-dot { width:10px !important; height:10px !important; box-shadow:none !important; background:#8fd3bd !important; }
+    .leaflet-marker-icon { filter:none !important; }
+    .auto-poi-marker {
+        width:18px !important; height:18px !important; border-radius:50% !important;
+        border:1px solid rgba(255,255,255,.88) !important;
+        transform: scale(var(--auto-poi-scale)) !important;
+        font-size:.66rem !important;
+        background: rgba(184,235,230,.86) !important;
+    }
+    .auto-poi-marker span { transform:none !important; filter:none !important; }
+    .waze-icon {
+        width: calc(32px * var(--report-marker-scale, 1)) !important;
+        height: calc(32px * var(--report-marker-scale, 1)) !important;
+        font-size: calc(17px * var(--report-marker-scale, 1)) !important;
+        border-width: 2px !important;
+        transform: translate(-50%, -50%) !important;
+    }
+    .marker-stack { transform: scale(var(--report-marker-scale, 1)) !important; transform-origin:center center !important; }
+    .marker-emoji { font-size: calc(11px * var(--report-marker-scale, 1)) !important; text-shadow:none !important; }
+    .zoom-hint-card {
+        margin: 8px 0; padding: 10px 12px; border-radius: 14px;
+        background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08);
+        color:#aeb6c2; font-size:.72rem; line-height:1.35;
+    }
+
+    /* Se conserva el feedback visual al tocar el mapa, pero sin sombras pesadas. */
+    .temp-marker .pulse-ring { display:block !important; animation:pulsate 1.15s ease-out infinite !important; box-shadow:none !important; }
+    .temp-marker .pulse-dot { width:14px !important; height:14px !important; background:var(--cyan) !important; box-shadow:0 0 8px rgba(184,235,230,.55) !important; }
+    .route-point-glow::after { animation: routePulse 1.9s ease-out infinite !important; }
+
+    .mobility-extra-panel {
+        margin-top: 12px; padding: 12px; border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+        border: 1px solid rgba(255,255,255,.10);
+    }
+    .mobility-extra-title { color:var(--cyan); font-size:.74rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+    .mobility-extra-help { color:#aeb6c2; font-size:.68rem; line-height:1.35; margin-bottom:8px; }
+    .traffic-marker {
+        width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+        color:#2f3542; background:#fff0b8; border:1.5px solid rgba(255,255,255,.95);
+        font-size:.72rem; font-weight:900;
+    }
+    .traffic-marker.camera { background:#ffd9c8; }
+    .traffic-marker.reducer { background:#b8ebe6; }
+
+
+    /* ==========================================
+       PARCHE FINAL URBIS: ICONOS GRANDES EN ZOOM CERCANO
+       Este bloque queda al final para ganar la cascada CSS.
+       ========================================== */
+    .waze-icon {
+        width: calc(34px * var(--report-marker-scale, 1)) !important;
+        height: calc(34px * var(--report-marker-scale, 1)) !important;
+        min-width: calc(34px * var(--report-marker-scale, 1)) !important;
+        min-height: calc(34px * var(--report-marker-scale, 1)) !important;
+        font-size: calc(18px * var(--report-marker-scale, 1)) !important;
+        border-width: 2px !important;
+        transform: translate(-50%, -50%) !important;
+        transform-origin: center center !important;
+    }
+    .urbis-report-marker .marker-stack {
+        transform: scale(var(--report-marker-scale, 1)) !important;
+        transform-origin: center center !important;
+    }
+    .urbis-report-marker .marker-emoji {
+        font-size: calc(11px * var(--report-marker-scale, 1)) !important;
+    }
+    body.zoom-overview .urbis-report-marker,
+    body.zoom-overview .waze-icon,
+    body.zoom-overview .marker-stack {
+        display: none !important;
+    }
+    body.zoom-medium .urbis-report-marker,
+    body.zoom-medium .waze-icon,
+    body.zoom-medium .marker-stack {
+        opacity: .86 !important;
+    }
+
+
+    /* ==========================================
+       HOTFIX FINAL: alinear gotas e iconos
+       ========================================== */
+    .urbis-report-root,
+    .urbis-waze-root,
+    .auto-map-root {
+        background: transparent !important;
+        border: none !important;
+        overflow: visible !important;
+    }
+    .urbis-report-root .marker-stack,
+    .urbis-waze-root .waze-icon,
+    .auto-map-root .auto-poi-marker {
+        position: absolute !important;
+        left: 50% !important;
+    }
+    .urbis-report-diamond .marker-stack,
+    .urbis-report-circle .marker-stack,
+    .urbis-waze-root .waze-icon {
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        transform-origin: center center !important;
+    }
+    .urbis-report-pin .marker-stack,
+    .auto-map-root .auto-poi-marker {
+        top: 100% !important;
+        transform-origin: center bottom !important;
+    }
+    .urbis-report-pin .marker-stack {
+        transform: translate(-50%, -100%) !important;
+    }
+    .auto-map-root .auto-poi-marker {
+        transform: translate(-50%, -100%) rotate(-45deg) !important;
+    }
+    .urbis-report-root .marker-stack {
+        width: calc(var(--marker-base-w, 24px) * var(--report-marker-scale, 1)) !important;
+        height: calc(var(--marker-base-h, 24px) * var(--report-marker-scale, 1)) !important;
+        opacity: 1 !important;
+    }
+    .urbis-report-root .marker-stack svg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+    .urbis-report-root .marker-emoji {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: calc(12px * var(--report-marker-scale, 1)) !important;
+        line-height: 1 !important;
+        z-index: 2 !important;
+        pointer-events: none !important;
+        text-shadow: none !important;
+    }
+    .urbis-report-pin .marker-emoji {
+        top: 34% !important;
+    }
+    .urbis-waze-root .waze-icon {
+        width: calc(34px * var(--report-marker-scale, 1)) !important;
+        height: calc(34px * var(--report-marker-scale, 1)) !important;
+        min-width: calc(34px * var(--report-marker-scale, 1)) !important;
+        min-height: calc(34px * var(--report-marker-scale, 1)) !important;
+        font-size: calc(18px * var(--report-marker-scale, 1)) !important;
+        line-height: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-width: 2px !important;
+        margin: 0 !important;
+    }
+    .auto-map-root .auto-poi-marker {
+        width: calc(34px * var(--auto-poi-scale, 1)) !important;
+        height: calc(34px * var(--auto-poi-scale, 1)) !important;
+        min-width: calc(34px * var(--auto-poi-scale, 1)) !important;
+        min-height: calc(34px * var(--auto-poi-scale, 1)) !important;
+        border-radius: 50% 50% 50% 0 !important;
+        display: block !important;
+        box-sizing: border-box !important;
+    }
+    .auto-map-root .auto-poi-marker span {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) rotate(45deg) !important;
+        line-height: 1 !important;
+        font-size: calc(15px * var(--auto-poi-scale, 1)) !important;
+        filter: none !important;
+    }
+    .auto-map-root .auto-poi-marker.auto-poi-small span {
+        font-size: calc(12px * var(--auto-poi-scale, 1)) !important;
+    }
+
+
+/* URBIS V33 · Estabilidad de iconos en móvil
+   Quita ocultamientos, escalas y transiciones por zoom para que los iconos no “vuelen”. */
+body.zoom-overview .marker-stack,
+body.zoom-overview .waze-icon,
+body.zoom-overview .auto-poi-marker,
+body.zoom-overview .urbis-report-marker,
+body.zoom-overview .auto-map-marker,
+body.zoom-medium .marker-stack,
+body.zoom-medium .waze-icon,
+body.zoom-medium .auto-poi-marker,
+body.zoom-medium .urbis-report-marker,
+body.zoom-medium .auto-map-marker {
+  display: block !important;
+  opacity: 1 !important;
+}
+.urbis-report-marker,
+.auto-map-marker,
+.urbis-waze-root,
+.leaflet-marker-icon {
+  transition: none !important;
+  animation: none !important;
+  will-change: auto !important;
+}
+.urbis-report-root .marker-stack,
+.urbis-report-marker .marker-stack {
+  transform: translate(-50%, -50%) !important;
+  transition: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.urbis-report-pin .marker-stack {
+  transform: translate(-50%, -100%) !important;
+}
+.urbis-waze-root .waze-icon,
+.waze-icon {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  font-size: 18px !important;
+  transform: translate(-50%, -50%) !important;
+  transition: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.auto-map-root .auto-poi-marker,
+.auto-poi-marker {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  transform: translate(-50%, -100%) rotate(-45deg) !important;
+  transition: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+.auto-map-root .auto-poi-marker span,
+.auto-poi-marker span {
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+  transition: none !important;
+  animation: none !important;
+}
+.marker-stack svg,
+.marker-emoji,
+.auto-poi-marker span,
+.waze-icon {
+  transition: none !important;
+  animation: none !important;
+}
+
+
+/* =====================================================
+   URBIS V34 · Iconos totalmente estables en móvil
+   ===================================================== */
+.animated-marker,
+.temp-marker,
+.urbis-report-root,
+.urbis-report-marker,
+.urbis-report-root .marker-stack,
+.urbis-report-marker .marker-stack,
+.auto-map-root,
+.auto-map-root .auto-poi-marker,
+.auto-poi-marker,
+.waze-icon,
+.traffic-marker,
+.leaflet-marker-icon {
+    animation: none !important;
+    transition: none !important;
+}
+.urbis-compact-root,
+.urbis-compact-root .marker-stack,
+.urbis-compact-root .auto-poi-marker {
+    transform: none !important;
+}
+.urbis-report-root,
+.urbis-report-marker,
+.auto-map-marker,
+.auto-map-root,
+.leaflet-marker-icon {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.urbis-report-root .marker-stack,
+.urbis-report-marker .marker-stack,
+.auto-map-root .auto-poi-marker,
+.auto-poi-marker {
+    transform-origin: center center !important;
+}

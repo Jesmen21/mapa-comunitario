@@ -1,0 +1,177 @@
+/* ==========================================================================
+   URBIS · MÓDULO Premium del Evento Áurea (pantalla propia, clon premium del
+   módulo de minijuegos). Se entra desde la gota Áurea del mapa → show('aurea').
+   Tema dorado oscuro tipo lujo, ALTO CONTRASTE (texto claro sobre fondos
+   oscuros; texto oscuro sobre tarjetas doradas/plateadas/bronce).
+   ========================================================================== */
+
+/* ── Pantalla / fondo / topbar ── */
+body #urbis-mobile-app .u52-screen.u52-aurea-screen,
+body #urbis-mobile-app .u52-screen.u52-aurea-screen .u52-content,
+#urbis-mobile-app .u52-aurea-screen #u52-aurea-content{ background:linear-gradient(165deg,#1b1305,#2a1d06) !important; }
+#urbis-mobile-app .u52-aurea-screen .u52-content{ padding:14px 16px 96px; }
+#urbis-mobile-app .u52-aurea-screen .u52-topbar{ background:transparent !important; box-shadow:none !important; }
+#urbis-mobile-app .u52-aurea-screen .u52-title{ color:#ffe9b0 !important; -webkit-text-fill-color:#ffe9b0 !important; }
+#urbis-mobile-app .u52-aurea-top{ display:flex !important; align-items:center; justify-content:space-between; }
+#urbis-mobile-app .u52-aurea-back{
+  width:42px; height:42px; flex:0 0 auto; border:none; border-radius:13px;
+  background:rgba(255,200,60,.16); color:#FFD23F; font-size:1.15rem; font-weight:900; cursor:pointer;
+  box-shadow:inset 0 0 0 1.5px rgba(255,200,60,.5), 0 0 14px rgba(255,180,0,.2);
+  display:flex; align-items:center; justify-content:center;
+}
+#urbis-mobile-app .u52-aurea-back:active{ transform:scale(.92); }
+#urbis-mobile-app .u52-aurea-spacer{ width:42px; flex:0 0 auto; }
+
+/* ── Héroe (premio + tu mejor) ── */
+#urbis-mobile-app .u52-aurea-screen .ah-hero{ text-align:center; padding:4px 4px 6px; }
+.u52-aurea-screen .ah-badge{
+  display:inline-block; font-size:.62rem; font-weight:900; letter-spacing:.5px; color:#3a2600;
+  background:linear-gradient(135deg,#ffe27a,#ffb300); padding:5px 14px; border-radius:999px;
+  box-shadow:0 0 16px rgba(255,179,0,.4);
+}
+.u52-aurea-screen .ah-evtitle{ font-size:1.35rem; font-weight:900; color:#fff4d6; margin-top:10px; line-height:1.2; }
+.u52-aurea-screen .ah-prize{
+  margin:10px auto 0; max-width:340px; padding:10px 12px; border-radius:14px;
+  background:rgba(255,210,90,.12); border:1.5px solid rgba(255,200,60,.4); color:#ffe9b0;
+  font-size:.9rem; font-weight:700;
+}
+.u52-aurea-screen .ah-prize b{ color:#FFD23F; }
+.u52-aurea-screen .ah-prize span{
+  display:inline-block; background:#F4A300; color:#3a2600; font-size:.6rem; font-weight:900;
+  padding:2px 7px; border-radius:8px; margin-left:6px; vertical-align:middle; letter-spacing:.3px;
+}
+.u52-aurea-screen .ah-end{ margin-top:8px; font-size:.8rem; color:#e8c98a; font-weight:700; }
+.u52-aurea-screen .ah-end b{ color:#fff4d6; }
+.u52-aurea-screen .ah-record{ margin-top:14px; }
+.u52-aurea-screen .ah-record span{ display:block; font-size:3rem; font-weight:900; color:#FFD23F; line-height:1; text-shadow:0 0 22px rgba(255,200,60,.5); }
+.u52-aurea-screen .ah-record small{ font-size:.66rem; font-weight:800; letter-spacing:1px; color:#cdae6e; }
+
+/* ── Tarjeta del juego ── */
+.u52-aurea-screen .ah-game{
+  display:flex; align-items:center; gap:12px; width:100%; margin:16px 0; padding:14px;
+  border:none; border-radius:18px; background:linear-gradient(135deg,#3a2a08,#241902);
+  box-shadow:0 4px 16px rgba(0,0,0,.4), inset 0 0 0 1.5px rgba(255,200,60,.35);
+  cursor:pointer; text-align:left;
+}
+.u52-aurea-screen .ah-game:active{ transform:scale(.98); }
+.u52-aurea-screen .ah-game-ico{
+  font-size:1.8rem; width:50px; height:50px; flex:0 0 50px; display:flex; align-items:center; justify-content:center;
+  border-radius:14px; background:radial-gradient(circle at 38% 30%, #fff7c2, #ffd166 60%, #ffb300);
+  box-shadow:0 0 18px rgba(255,209,102,.6);
+}
+.u52-aurea-screen .ah-game-txt{ flex:1; min-width:0; }
+.u52-aurea-screen .ah-game-txt b{ display:block; color:#fff4d6; font-size:1rem; font-weight:900; }
+.u52-aurea-screen .ah-game-txt small{ color:#d8be86; font-size:.76rem; }
+.u52-aurea-screen .ah-game-play{
+  font-size:.72rem; font-weight:900; color:#3a2600; background:linear-gradient(135deg,#FFD23F,#F4A300);
+  padding:8px 12px; border-radius:11px; white-space:nowrap;
+}
+
+/* ── Tabla ── */
+.u52-aurea-screen .ah-board{ margin-top:4px; }
+.u52-aurea-screen .ah-board-title{ display:block; font-size:1rem; font-weight:900; color:#ffe9b0; margin:8px 2px 12px; }
+.u52-aurea-screen .ah-empty-board,
+.u52-aurea-screen .ah-empty{ text-align:center; color:#d8be86; padding:24px 12px; font-weight:700; line-height:1.5; }
+.u52-aurea-screen .ah-empty b{ color:#fff4d6; }
+
+/* Podio */
+.u52-aurea-screen .am-podium{ display:flex; align-items:flex-end; justify-content:center; gap:8px; margin:4px 0 16px; }
+.u52-aurea-screen .am-pod{
+  flex:1 1 0; max-width:124px; border-radius:16px; padding:12px 6px 11px; text-align:center;
+  color:#4a2f00; box-shadow:0 4px 14px rgba(0,0,0,.35); min-width:0;
+}
+.u52-aurea-screen .am-pod-medal{ font-size:1.5rem; line-height:1; }
+.u52-aurea-screen .am-pod-user{ font-size:.78rem; font-weight:900; margin-top:4px; color:#3a2600; word-break:break-word; line-height:1.15; }
+.u52-aurea-screen .am-pod-pts{ font-size:1.05rem; font-weight:900; margin-top:3px; color:#2a1c00; }
+.u52-aurea-screen .am-pod-pts small{ font-size:.58rem; font-weight:800; opacity:.7; margin-left:2px; }
+.u52-aurea-screen .am-oro{ background:linear-gradient(160deg,#FFE57A,#FFC21E); transform:translateY(-10px); padding-top:16px; border:2px solid #f0b400; box-shadow:0 6px 20px rgba(255,180,0,.4); }
+.u52-aurea-screen .am-oro .am-pod-medal{ font-size:1.95rem; }
+.u52-aurea-screen .am-plata{ background:linear-gradient(160deg,#eef1f6,#cdd4e0); }
+.u52-aurea-screen .am-bronce{ background:linear-gradient(160deg,#f7d9bf,#e3a877); }
+.u52-aurea-screen .am-pod.me{ outline:3px solid #27e6c4; outline-offset:1px; }
+.u52-aurea-screen .am-pod-empty{ background:rgba(255,235,180,.08); box-shadow:none; border:1px dashed rgba(255,200,60,.3); }
+.u52-aurea-screen .am-pod-empty .am-pod-medal{ filter:grayscale(1); opacity:.4; }
+.u52-aurea-screen .am-pod-empty .am-pod-user{ color:#caa85f; }
+
+/* Lista de posiciones (4+) */
+.u52-aurea-screen .am-list{ display:flex; flex-direction:column; gap:7px; }
+.u52-aurea-screen .am-row{
+  display:flex; align-items:center; gap:10px; padding:11px 13px;
+  background:rgba(255,235,180,.07); border:1px solid rgba(255,200,60,.16); border-radius:12px;
+}
+.u52-aurea-screen .am-row .am-pos{ flex:0 0 26px; text-align:center; font-weight:900; color:#FFD23F; font-size:.92rem; }
+.u52-aurea-screen .am-row .am-user{ flex:1; font-weight:700; color:#f3e6c4; font-size:.9rem; word-break:break-word; min-width:0; }
+.u52-aurea-screen .am-row .am-pts{ font-weight:900; color:#fff; font-size:.95rem; }
+.u52-aurea-screen .am-row.me{ background:rgba(39,230,196,.14); border-color:#27e6c4; }
+.u52-aurea-screen .am-row.me .am-user{ color:#8ff6e4; }
+
+/* ── Pie: tu posición + acción ── */
+.u52-aurea-screen .ah-foot{ margin-top:16px; }
+.u52-aurea-screen .am-me{
+  display:flex; align-items:center; gap:9px; padding:12px 13px; margin-bottom:12px;
+  background:#0f1722; border:1px solid rgba(255,200,60,.25); border-radius:14px;
+}
+.u52-aurea-screen .am-me-lbl{ font-size:.58rem; font-weight:900; letter-spacing:.5px; background:#27e6c4; color:#04201b; padding:3px 7px; border-radius:7px; white-space:nowrap; }
+.u52-aurea-screen .am-me-pos{ font-size:1.15rem; font-weight:900; color:#FFD23F; }
+.u52-aurea-screen .am-me-user{ flex:1; font-weight:800; font-size:.88rem; color:#eaf6ff; word-break:break-word; min-width:0; }
+.u52-aurea-screen .am-me-pts{ font-weight:900; color:#fff; white-space:nowrap; }
+.u52-aurea-screen .am-me-out,
+.u52-aurea-screen .am-me-guest{ justify-content:center; text-align:center; font-size:.84rem; font-weight:800; color:#ffe2a6; }
+.u52-aurea-screen .am-me-out span{ color:#ffe2a6; }
+
+.u52-aurea-screen .am-play{
+  width:100%; border:none; border-radius:15px; padding:16px;
+  background:linear-gradient(135deg,#FFD23F,#F4A300); color:#4a2f00;
+  font-size:1.1rem; font-weight:900; cursor:pointer;
+  box-shadow:0 6px 18px rgba(244,163,0,.5); animation:ahPulse 1.8s ease-in-out infinite;
+}
+.u52-aurea-screen .am-play:active{ transform:scale(.97); }
+.u52-aurea-screen .am-play:disabled{ filter:grayscale(.5); opacity:.55; animation:none; cursor:default; }
+@keyframes ahPulse{ 0%,100%{ box-shadow:0 6px 18px rgba(244,163,0,.5); } 50%{ box-shadow:0 7px 28px rgba(244,163,0,.85); } }
+
+.u52-aurea-screen .am-winner{
+  text-align:center; padding:15px; border-radius:14px; font-size:1rem; font-weight:900;
+  background:linear-gradient(135deg,#FFE57A,#FFC21E); color:#4a2f00;
+}
+.u52-aurea-screen .am-winner b{ color:#7a3d00; }
+
+@media (prefers-reduced-motion:reduce){
+  .u52-aurea-screen .am-play{ animation:none; }
+}
+
+/* ── Tarjeta de EVENTO PREMIUM en la campanita / pantalla "noti" ──
+   (pantalla de fondo claro → texto oscuro, alto contraste). */
+#urbis-mobile-app .u52-noti-card.aurea{
+  background:linear-gradient(135deg,#fff6da,#ffe7a6);
+  box-shadow:0 12px 28px rgba(244,163,0,.22), inset 0 0 0 1.5px #f0c860;
+}
+#urbis-mobile-app .u52-noti-card.aurea > span{ background:linear-gradient(135deg,#ffe27a,#ffb300); }
+#urbis-mobile-app .u52-noti-card.aurea b{ color:#5b3a00 !important; -webkit-text-fill-color:#5b3a00 !important; }
+#urbis-mobile-app .u52-noti-card.aurea small{ color:#8a5a00 !important; -webkit-text-fill-color:#8a5a00 !important; }
+#urbis-mobile-app .u52-noti-card.aurea .u52-noti-actions button.aurea-go{
+  background:linear-gradient(135deg,#FFD23F,#F4A300); color:#4a2f00;
+}
+
+/* ── Aura dorada en la CAMPANITA de Noti SOLO si hay un evento premium en el mapa ──
+   El body recibe .urbis-evento-aurea-activo desde js/47 mientras exista la gota. */
+body.urbis-evento-aurea-activo .u52-k-home-pill.notify{ overflow:visible; }
+body.urbis-evento-aurea-activo .u52-noti-icon-wrap{ position:relative; overflow:visible; }
+body.urbis-evento-aurea-activo .u52-noti-icon-wrap::before{
+  content:''; position:absolute; inset:-5px; border-radius:50%;
+  border:2px solid rgba(255,200,60,.85); pointer-events:none;
+  animation:notiAuraSonar 1.9s ease-out infinite;
+}
+body.urbis-evento-aurea-activo .u52-noti-icon-wrap::after{
+  content:''; position:absolute; inset:-6px; border-radius:50%;
+  box-shadow:0 0 13px 4px rgba(255,180,0,.7); pointer-events:none;
+  animation:notiAuraGlow 1.9s ease-in-out infinite;
+}
+body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
+  filter:drop-shadow(0 0 5px rgba(255,190,0,.95));
+}
+@keyframes notiAuraSonar{ 0%{ transform:scale(.85); opacity:.95; } 100%{ transform:scale(1.45); opacity:0; } }
+@keyframes notiAuraGlow{ 0%,100%{ opacity:.4; } 50%{ opacity:.95; } }
+@media (prefers-reduced-motion:reduce){
+  body.urbis-evento-aurea-activo .u52-noti-icon-wrap::before,
+  body.urbis-evento-aurea-activo .u52-noti-icon-wrap::after{ animation:none; }
+}

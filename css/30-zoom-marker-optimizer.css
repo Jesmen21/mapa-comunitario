@@ -1,0 +1,20 @@
+/* URBIS V78 · rendimiento visual al alejarse */
+body.urbis-zoom-hide-markers .urbis-report-root,
+body.urbis-zoom-hide-markers .urbis-report-marker,
+body.urbis-zoom-hide-markers .urbis-waze-root,
+body.urbis-zoom-hide-markers .waze-icon,
+body.urbis-zoom-hide-markers .auto-poi-marker {
+  display: none !important;
+}
+
+body.urbis-zoom-fade-markers .urbis-report-root,
+body.urbis-zoom-fade-markers .urbis-report-marker,
+body.urbis-zoom-fade-markers .urbis-waze-root,
+body.urbis-zoom-fade-markers .waze-icon {
+  opacity: .48 !important;
+}
+
+body.urbis-zoom-hide-markers .leaflet-popup,
+body.urbis-zoom-hide-markers .leaflet-tooltip {
+  display: none !important;
+}

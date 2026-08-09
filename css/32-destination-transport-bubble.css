@@ -1,0 +1,315 @@
+/* URBIS V83 · buscador + destino limpio + transporte bloqueado */
+@media (max-width:1024px), (pointer:coarse){
+  body.u70-mobility-context #urbis-mobile-app .u52-screen[data-u52-screen="mobility"] .u52-topbar .u52-icon-btn:first-child,
+  body.u52-real-map #urbis-mobile-app .u52-screen[data-u52-screen="mobility"] .u52-topbar .u52-icon-btn:first-child{
+    display:none!important;
+    pointer-events:none!important;
+  }
+
+  body.u83-destination-search-mode #urbis-mobile-app,
+  body.u83-transport-select-mode #urbis-mobile-app,
+  body.u83-ready-start-mode #urbis-mobile-app{
+    background:transparent!important;
+    pointer-events:none!important;
+  }
+
+  body.u83-destination-search-mode #urbis-mobile-app .u52-bottom-nav,
+  body.u83-destination-search-mode #urbis-mobile-app .u52-topbar,
+  body.u83-destination-search-mode #urbis-mobile-app .u70-mobility-panel,
+  body.u83-destination-search-mode #urbis-mobile-app .u52-route-panel,
+  body.u83-destination-search-mode #urbis-mobile-app .u57-route-panel,
+  body.u83-destination-search-mode #urbis-mobile-app .u52-sheet,
+  body.u83-destination-search-mode #urbis-mobile-app .u52-map-actions,
+  body.u83-transport-select-mode #urbis-mobile-app .u52-bottom-nav,
+  body.u83-transport-select-mode #urbis-mobile-app .u52-topbar,
+  body.u83-transport-select-mode #urbis-mobile-app .u70-mobility-panel,
+  body.u83-transport-select-mode #urbis-mobile-app .u52-route-panel,
+  body.u83-transport-select-mode #urbis-mobile-app .u57-route-panel,
+  body.u83-transport-select-mode #urbis-mobile-app .u52-sheet,
+  body.u83-transport-select-mode #urbis-mobile-app .u52-map-actions,
+  body.u83-ready-start-mode #urbis-mobile-app .u52-bottom-nav,
+  body.u83-ready-start-mode #urbis-mobile-app .u52-topbar,
+  body.u83-ready-start-mode #urbis-mobile-app .u70-mobility-panel,
+  body.u83-ready-start-mode #urbis-mobile-app .u52-route-panel,
+  body.u83-ready-start-mode #urbis-mobile-app .u57-route-panel,
+  body.u83-ready-start-mode #urbis-mobile-app .u52-sheet,
+  body.u83-ready-start-mode #urbis-mobile-app .u52-map-actions{
+    display:none!important;
+    pointer-events:none!important;
+  }
+
+  .u83-destination-search{
+    position:fixed;
+    left:12px;
+    right:12px;
+    top:calc(12px + env(safe-area-inset-top,0px));
+    z-index:2147482600;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(-12px);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+
+  .u83-destination-search.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+
+  .u83-search-card{
+    padding:10px;
+    border-radius:25px;
+    background:rgba(255,255,255,.95);
+    box-shadow:0 16px 36px rgba(35,75,116,.16), inset 0 0 0 1px rgba(113,164,208,.12);
+    backdrop-filter:blur(14px);
+  }
+
+  .u83-search-row{
+    display:grid;
+    grid-template-columns:34px 1fr auto;
+    align-items:center;
+    gap:8px;
+  }
+
+  .u83-search-icon{
+    width:34px;
+    height:34px;
+    border-radius:14px;
+    background:#eef9fb;
+    display:grid;
+    place-items:center;
+  }
+
+  .u83-search-input{
+    min-height:44px;
+    border:0!important;
+    background:#f6f9fc!important;
+    border-radius:16px!important;
+    padding:0 12px!important;
+    color:#244a78!important;
+    font-weight:800!important;
+    outline:none!important;
+  }
+
+  .u83-search-input::placeholder{
+    color:#8a9ab1!important;
+  }
+
+  .u83-search-btn{
+    min-height:44px;
+    border:0;
+    border-radius:16px;
+    padding:0 14px;
+    background:linear-gradient(135deg,#6ee5d8,#4fd1c5);
+    color:#fff;
+    font-weight:900;
+  }
+
+  .u83-search-hint{
+    margin:8px 5px 0;
+    color:#76869f;
+    font-size:.76rem;
+    font-weight:800;
+  }
+
+  .u83-destination-search.pulse .u83-search-card{
+    animation:u83Pulse .7s ease;
+  }
+
+  @keyframes u83Pulse{
+    0%,100%{transform:scale(1);}
+    45%{transform:scale(1.015);}
+  }
+
+  .u83-search-results{
+    margin-top:10px;
+    display:grid;
+    gap:8px;
+    max-height:260px;
+    overflow:auto;
+  }
+
+  .u83-result{
+    border:0;
+    border-radius:18px;
+    background:#f7f9fc;
+    padding:10px 12px;
+    text-align:left;
+    color:#244a78;
+    box-shadow:inset 0 0 0 1px rgba(113,164,208,.10);
+  }
+
+  .u83-result b{
+    display:block;
+    font-size:.86rem;
+    font-weight:900;
+    color:#244a78;
+  }
+
+  .u83-result small{
+    display:block;
+    margin-top:3px;
+    font-size:.72rem;
+    color:#7788a1;
+    font-weight:700;
+    line-height:1.25;
+  }
+
+  .u83-result.muted{
+    color:#7788a1;
+    font-weight:800;
+    text-align:center;
+  }
+
+  body.u83-destination-search-mode::after{
+    content:'Busca arriba o toca el mapa para marcar destino';
+    position:fixed;
+    left:50%;
+    bottom:calc(24px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%);
+    z-index:2147482500;
+    padding:12px 16px;
+    border-radius:999px;
+    background:rgba(255,255,255,.92);
+    color:#244a78;
+    font-weight:900;
+    font-size:.82rem;
+    box-shadow:0 14px 32px rgba(35,75,116,.16), inset 0 0 0 1px rgba(113,164,208,.12);
+    backdrop-filter:blur(14px);
+    pointer-events:none;
+  }
+
+  .u83-transport-bubble{
+    position:fixed;
+    left:14px;
+    right:14px;
+    bottom:calc(22px + env(safe-area-inset-bottom,0px));
+    z-index:2147482600;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(18px) scale(.98);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+
+  .u83-transport-bubble.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0) scale(1);
+  }
+
+  .u83-bubble-card{
+    padding:16px;
+    border-radius:28px;
+    background:rgba(255,255,255,.94);
+    box-shadow:0 18px 42px rgba(35,75,116,.18), inset 0 0 0 1px rgba(113,164,208,.12);
+    backdrop-filter:blur(14px);
+  }
+
+  .u83-bubble-head{
+    margin-bottom:12px;
+  }
+
+  .u83-bubble-head b{
+    display:block;
+    color:#244a78;
+    font-size:1.05rem;
+    font-weight:900;
+    letter-spacing:-.02em;
+  }
+
+  .u83-bubble-head small{
+    display:block;
+    color:#7a8aa4;
+    font-size:.76rem;
+    font-weight:700;
+    margin-top:3px;
+  }
+
+  .u83-bubble-options{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .u83-bubble-options button{
+    min-height:62px;
+    border:0;
+    border-radius:19px;
+    background:#f5f9fd;
+    color:#244a78;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    font-weight:900;
+    box-shadow:inset 0 0 0 1px rgba(113,164,208,.12);
+  }
+
+  .u83-bubble-options button span{
+    font-size:1.45rem;
+    line-height:1;
+  }
+
+  .u83-bubble-options button small{
+    font-size:.68rem;
+    color:#62768f;
+    font-weight:900;
+  }
+
+  .u83-bubble-options button.active{
+    background:linear-gradient(135deg,#6ee5d8,#4fd1c5);
+    color:#fff;
+    box-shadow:0 10px 20px rgba(79,209,197,.24);
+  }
+
+  .u83-bubble-options button.active small{
+    color:#fff;
+  }
+
+  .u83-start-panel{
+    position:fixed;
+    left:14px;
+    right:14px;
+    bottom:calc(20px + env(safe-area-inset-bottom,0px));
+    z-index:2147482600;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(18px);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+
+  .u83-start-panel.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+
+  .u83-start-route-btn{
+    width:100%;
+    min-height:64px;
+    border:0;
+    border-radius:24px;
+    background:linear-gradient(135deg,#52dccd,#2dbca9);
+    color:#fff;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    box-shadow:0 18px 36px rgba(45,188,169,.25);
+  }
+
+  .u83-start-route-btn span{
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    background:rgba(255,255,255,.22);
+    display:grid;
+    place-items:center;
+  }
+
+  .u83-start-route-btn b{
+    font-size:1.05rem;
+  }
+}

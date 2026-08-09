@@ -1,0 +1,933 @@
+/* URBIS V98 · Movilidad GPS · mapa base normal URBIS */
+@media (max-width:1024px), (pointer:coarse){
+  body.u88-mobility-mode{
+    overflow:hidden!important;
+    background:#f7fbff!important;
+  }
+
+  body.u88-mobility-mode #urbis-mobile-app .u52-screen[data-u52-screen="mobility"]{
+    background:transparent!important;
+    pointer-events:none!important;
+  }
+
+  body.u88-mobility-mode #urbis-mobile-app .u52-screen[data-u52-screen="mobility"] > *:not(.u52-real-map-mount):not(#map):not(.map):not(.leaflet-container),
+  body.u88-mobility-mode #urbis-mobile-app .u52-topbar,
+  body.u88-mobility-mode #urbis-mobile-app .u52-map-actions,
+  body.u88-mobility-mode #urbis-mobile-app .u52-route-panel,
+  body.u88-mobility-mode #urbis-mobile-app .u52-mobility-sheet,
+  body.u88-mobility-mode #urbis-mobile-app .u52-bottom-nav,
+  body.u88-mobility-mode #urbis-mobile-app .u70-mobility-panel,
+  body.u88-mobility-mode #urbis-mobile-app .u70-floating-nav,
+  body.u88-mobility-mode #u87-static-search,
+  body.u88-mobility-mode #u87-transport-box,
+  body.u88-mobility-mode #u87-start-box,
+  body.u88-mobility-mode .leaflet-control-container{
+    display:none!important;
+  }
+
+  body.u88-mobility-mode #map,
+  body.u88-mobility-mode .leaflet-container{
+    background:#eef5f3!important;
+    filter:none!important;
+    pointer-events:auto!important;
+    touch-action:none!important;
+  }
+
+  /* Mantener el mapa base normal de URBIS: sin efecto pálido/lavado. */
+  body.u88-mobility-mode .leaflet-tile-pane{ opacity:1!important; filter:none!important; }
+  body.u88-mobility-mode .leaflet-marker-pane,
+  body.u88-mobility-mode .leaflet-overlay-pane,
+  body.u88-mobility-mode .leaflet-shadow-pane{ filter:none!important; }
+
+  #u88-mobility-shell{
+    position:fixed;
+    inset:0;
+    z-index:2147483500;
+    pointer-events:none;
+    font-family:Inter, Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color:#26364f;
+  }
+
+  .u88-top-green,
+  .u88-status{ display:none!important; }
+
+  /* Lo primero que se ve al entrar: solo barra de búsqueda minimalista */
+  .u88-search{
+    position:absolute;
+    top:calc(10px + env(safe-area-inset-top,0px));
+    left:4.5vw;
+    right:4.5vw;
+    height:44px;
+    border-radius:999px;
+    background:rgba(255,255,255,.82);
+    box-shadow:0 8px 22px rgba(30,52,80,.08), inset 0 0 0 1px rgba(104,126,156,.10);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 6px 0 12px;
+    pointer-events:auto;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+
+  .u88-search-icon{
+    width:17px;
+    height:17px;
+    color:#6d7f99;
+    flex:0 0 auto;
+    display:grid;
+    place-items:center;
+  }
+  .u88-search-icon svg{ width:17px; height:17px; display:block; }
+
+  .u88-search input{
+    min-width:0;
+    flex:1;
+    border:0!important;
+    outline:0!important;
+    background:transparent!important;
+    color:#526580!important;
+    font-size:13px!important;
+    font-weight:550!important;
+    box-shadow:none!important;
+    padding:0!important;
+    height:auto!important;
+  }
+  .u88-search input::placeholder{ color:#7a8ba6!important; opacity:.94; }
+
+  .u88-gps-btn{
+    width:32px;
+    height:32px;
+    border:0;
+    border-radius:999px;
+    background:rgba(255,255,255,.9);
+    color:#1394ff;
+    display:grid;
+    place-items:center;
+    box-shadow:inset 0 0 0 1px rgba(89,134,190,.14), 0 3px 10px rgba(30,89,160,.07);
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+  .u88-gps-btn svg{ width:17px; height:17px; display:block; }
+  .u88-gps-btn .u88-gps-btn-img{ width:22px; height:22px; display:block; object-fit:contain; }
+
+  #u88-search-results{
+    position:absolute;
+    top:calc(58px + env(safe-area-inset-top,0px));
+    left:4.5vw;
+    right:4.5vw;
+    max-height:220px;
+    overflow:auto;
+    border-radius:16px;
+    background:rgba(255,255,255,.95);
+    box-shadow:0 14px 34px rgba(31,49,76,.13);
+    pointer-events:auto;
+    padding:6px;
+    display:none;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  #u88-search-results.active{ display:block; }
+
+  .u88-result{ width:100%; border:0; background:transparent; padding:10px 11px; border-radius:12px; text-align:left; cursor:pointer; }
+  .u88-result:hover{ background:#f4f8fd; }
+  .u88-result b{ display:block; color:#25364f; font-size:13px; margin-bottom:2px; }
+  .u88-result small{ display:block; color:#6f7f96; font-size:11px; line-height:1.3; }
+  .u88-result.muted{ color:#6f7f96; font-weight:700; text-align:center; padding:15px 10px; }
+
+  #u88-transport-panel{
+    position:absolute;
+    left:4.5vw;
+    right:4.5vw;
+    bottom:calc(82px + env(safe-area-inset-bottom,0px));
+    border-radius:18px;
+    background:rgba(255,255,255,.92);
+    box-shadow:0 16px 38px rgba(27,50,84,.15);
+    padding:13px;
+    pointer-events:auto;
+    transform:translateY(16px);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .22s ease, transform .22s ease, visibility .22s ease;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  #u88-transport-panel.active{ transform:translateY(0); opacity:1; visibility:visible; }
+  .u88-transport-title{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+  .u88-transport-title b{ color:#26364f; font-size:14px; }
+  .u88-transport-title small{ color:#728096; font-size:11px; }
+  .u88-transport-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .u88-transport-grid button{ border:0; border-radius:13px; padding:7px 3px; background:#f5f8fb; color:#596b86; font-weight:700; cursor:pointer; }
+  .u88-transport-grid button.active{ background:linear-gradient(180deg,#edf8ff,#def1ff); color:#078dee; box-shadow:inset 0 0 0 1px rgba(8,145,255,.14); }
+  .u88-transport-grid span{ display:block; font-size:17px; margin-bottom:2px; }
+  .u88-transport-grid small{ display:block; font-size:9px; }
+  .u88-start-route{ margin-top:10px; width:100%; height:40px; border:0; border-radius:13px; background:linear-gradient(135deg,#0ab6ff,#087dff); color:#fff; font-weight:800; font-size:13px; box-shadow:0 10px 22px rgba(0,131,255,.16); cursor:pointer; }
+
+  .u88-bottom-dock{
+    position:absolute;
+    left:6vw;
+    right:6vw;
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    height:50px;
+    border-radius:18px;
+    background:rgba(255,255,255,.78);
+    box-shadow:0 8px 20px rgba(35,54,82,.09), inset 0 0 0 1px rgba(80,100,130,.05);
+    display:grid;
+    grid-template-columns:1fr 1fr 48px 1fr 1fr;
+    align-items:center;
+    pointer-events:auto;
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  .u88-tab{
+    border:0;
+    background:transparent;
+    color:#7d8ca4;
+    font-weight:700;
+    display:grid;
+    place-items:center;
+    height:42px;
+    cursor:pointer;
+    padding:0;
+  }
+  .u88-tab svg,
+  .u88-tab .u88-tab-img{ width:28px; height:28px; display:block; object-fit:contain; }
+  .u88-tab.active{ color:#2b95f4; }
+  .u88-tab.active svg,
+  .u88-tab.active .u88-tab-img{ filter:drop-shadow(0 4px 8px rgba(43,149,244,.14)); }
+
+  .u88-plus{
+    width:48px;
+    height:48px;
+    margin-top:-12px;
+    border-radius:999px;
+    border:0;
+    background:radial-gradient(circle at 30% 18%,#7bdcff,#33b9ff 56%,#1594f4);
+    color:#fff;
+    font-size:24px;
+    line-height:1;
+    font-weight:300;
+    display:grid;
+    place-items:center;
+    box-shadow:0 8px 18px rgba(22,142,244,.18), inset 0 1px 0 rgba(255,255,255,.34);
+    cursor:pointer;
+  }
+
+  #u88-toast{
+    position:absolute;
+    left:50%;
+    bottom:calc(80px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%) translateY(10px);
+    max-width:84vw;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(38,55,78,.86);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:.2s ease;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+  #u88-toast.active{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+
+  .u88-urbis-pin{ width:38px; height:48px; position:relative; transform:translateY(-3px); }
+  .u88-urbis-pin::after{ content:""; position:absolute; left:8px; top:15px; width:23px; height:27px; background:linear-gradient(180deg,#ff4343,#e40014); border-radius:14px 14px 18px 18px; transform:rotate(45deg); box-shadow:0 8px 14px rgba(220,0,20,.22); }
+  .u88-urbis-pin span{ position:absolute; left:4px; top:0; z-index:2; width:30px; height:30px; border-radius:999px; background:#fff; display:grid; place-items:center; font-size:18px; box-shadow:0 5px 12px rgba(20,40,70,.10); }
+
+
+
+  .u88-tab-img-home,
+  .u88-tab-img-car,
+  .u88-tab-img-map{
+    opacity:.96;
+  }
+
+  .u88-tab-img-destination{
+    width:30px!important;
+    height:30px!important;
+  }
+
+  body.u88-mobility-mode .u52-temp-marker,
+  body.u88-mobility-mode .temp-marker,
+  body.u88-mobility-mode .report-marker,
+  body.u88-mobility-mode .alert-marker,
+  body.u88-mobility-mode .sonar-marker,
+  body.u88-mobility-mode .u52-report-marker,
+  body.u88-mobility-mode .leaflet-marker-icon.blue-marker,
+  body.u88-mobility-mode .leaflet-marker-icon:not(:has(.u91-destination-marker)):not(:has(.u91-destination-img)){
+    /* evita que los marcadores globales de reportes dominen visualmente en movilidad */
+  }
+
+  body.u88-mobility-mode .u52-temp-marker,
+  body.u88-mobility-mode .temp-marker,
+  body.u88-mobility-mode .report-marker,
+  body.u88-mobility-mode .alert-marker,
+  body.u88-mobility-mode .sonar-marker,
+  body.u88-mobility-mode .u52-report-marker{
+    display:none!important;
+    pointer-events:none!important;
+  }
+
+  body.u88-mobility-mode .leaflet-container,
+  body.u88-mobility-mode .leaflet-pane,
+  body.u88-mobility-mode #map,
+  body.u88-mobility-mode .u52-real-map-mount{
+    cursor:grab!important;
+    pointer-events:auto!important;
+  }
+
+  body.u88-mobility-mode .u91-destination-marker,
+  body.u88-mobility-mode .u91-destination-marker *{
+    cursor:pointer!important;
+  }
+
+  @media (max-width:390px){
+    .u88-search, #u88-search-results, #u88-transport-panel{ left:4vw; right:4vw; }
+    .u88-bottom-dock{ left:4.5vw; right:4.5vw; height:48px; grid-template-columns:1fr 1fr 46px 1fr 1fr; }
+    .u88-plus{ width:46px; height:46px; font-size:23px; }
+    .u88-tab svg, .u88-tab .u88-tab-img{ width:27px; height:27px; }
+  }
+}
+
+/* URBIS V91 · destino único de movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  body.u88-mobility-mode .u91-hidden-report-marker,
+  body.u88-mobility-mode .report-marker,
+  body.u88-mobility-mode .alert-marker,
+  body.u88-mobility-mode .blue-report-marker,
+  body.u88-mobility-mode .u52-report-marker,
+  body.u88-mobility-mode .u52-temp-marker,
+  body.u88-mobility-mode .incident-marker,
+  body.u88-mobility-mode .leaflet-marker-icon[data-report],
+  body.u88-mobility-mode .leaflet-marker-icon[data-alert]{
+    display:none!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  .u91-destination-leaflet-icon{
+    background:transparent!important;
+    border:0!important;
+    pointer-events:auto!important;
+  }
+
+  .u91-destination-marker{
+    position:relative;
+    width:154px;
+    height:84px;
+    pointer-events:auto;
+    transform:translateY(-1px);
+  }
+
+  .u91-destination-img{
+    position:absolute;
+    left:61px;
+    bottom:0;
+    width:34px;
+    height:34px;
+    object-fit:contain;
+    filter:drop-shadow(0 8px 10px rgba(230,0,20,.12));
+  }
+
+  .u91-destination-bubble{
+    position:absolute;
+    left:50%;
+    top:0;
+    transform:translateX(-50%);
+    height:28px;
+    padding:0 6px 0 10px;
+    border:0;
+    border-radius:999px;
+    background:rgba(255,252,255,.96);
+    color:#5d6d83;
+    box-shadow:0 8px 18px rgba(31,49,76,.10), inset 0 0 0 1px rgba(160,177,201,.16);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    cursor:pointer;
+  }
+
+  .u91-destination-bubble b{
+    display:grid;
+    place-items:center;
+    min-width:22px;
+    height:20px;
+    padding:0 7px;
+    border-radius:999px;
+    background:#dff1ff;
+    color:#4a89c9;
+    font-size:10px;
+    font-weight:900;
+  }
+
+  .u91-destination-close{
+    position:absolute;
+    right:22px;
+    top:-5px;
+    width:18px;
+    height:18px;
+    border:0;
+    border-radius:999px;
+    background:#eff5fb;
+    color:#72839b;
+    font-size:13px;
+    line-height:1;
+    box-shadow:0 4px 10px rgba(31,49,76,.08);
+    z-index:3;
+    cursor:pointer;
+  }
+
+  .u91-destination-marker::after{
+    content:"";
+    position:absolute;
+    left:76px;
+    top:28px;
+    width:1px;
+    height:12px;
+    background:rgba(205,223,239,.95);
+  }
+}
+
+/* URBIS V97 · primera vista movilidad: iconos grandes y mapa navegable */
+@media (max-width:1024px), (pointer:coarse){
+  body.u88-mobility-mode #urbis-mobile-app{
+    pointer-events:none!important;
+  }
+  body.u88-mobility-mode #map,
+  body.u88-mobility-mode .leaflet-container,
+  body.u88-mobility-mode .leaflet-pane,
+  body.u88-mobility-mode .leaflet-map-pane,
+  body.u88-mobility-mode .u52-real-map-mount{
+    pointer-events:auto!important;
+    touch-action:none!important;
+    cursor:grab!important;
+  }
+  body.u88-mobility-mode .leaflet-dragging #map,
+  body.u88-mobility-mode .leaflet-dragging .leaflet-container{
+    cursor:grabbing!important;
+  }
+
+  #u88-map-tap-zone{ display:none!important; pointer-events:none!important; }
+
+  #u88-mobility-shell .u88-search,
+  #u88-mobility-shell #u88-search-results,
+  #u88-mobility-shell #u88-transport-panel,
+  #u88-mobility-shell .u88-bottom-dock,
+  #u88-mobility-shell #u88-toast{
+    z-index:20;
+  }
+
+  #u88-mobility-shell .u88-bottom-dock{
+    height:76px!important;
+    grid-template-columns:1fr 1fr 72px 1fr 1fr!important;
+    border-radius:30px!important;
+    bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #u88-mobility-shell .u88-tab{ height:68px!important; }
+  #u88-mobility-shell .u88-tab svg,
+  #u88-mobility-shell .u88-tab .u88-tab-img,
+  #u88-mobility-shell .u88-tab img,
+  #u88-mobility-shell .u88-tab-img-destination{
+    width:42px!important;
+    height:42px!important;
+    object-fit:contain!important;
+    max-width:none!important;
+  }
+  #u88-mobility-shell .u88-plus{
+    width:70px!important;
+    height:70px!important;
+    font-size:36px!important;
+    margin-top:-20px!important;
+  }
+
+  #u88-floating-destination{
+    position:fixed;
+    z-index:18;
+    pointer-events:auto;
+    transform:translate(-50%,-100%);
+    display:none;
+    width:178px;
+    text-align:center;
+  }
+  #u88-floating-destination.active{ display:block; }
+  .u95-destination-card{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 6px 5px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 10px 22px rgba(44,63,92,.14), inset 0 0 0 1px rgba(150,170,200,.13);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    white-space:nowrap;
+  }
+  .u95-destination-card span{ font-size:11px; font-weight:800; color:#64748b; }
+  .u95-destination-go{
+    border:0; border-radius:999px; background:#dff1ff; color:#4386c6;
+    font-size:10px; font-weight:900; height:22px; padding:0 8px;
+  }
+  .u95-destination-x{
+    border:0; border-radius:999px; width:20px; height:20px;
+    background:#f1f5f9; color:#7c8da5; font-size:14px; line-height:1;
+  }
+  .u95-destination-icon{
+    display:none!important;
+  }
+  .u91-map-pin-only{
+    width:54px; height:54px; object-fit:contain;
+    filter:drop-shadow(0 8px 12px rgba(230,0,20,.15));
+  }
+}
+
+/* URBIS V97 · reportes y marcadores normales visibles en Movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  body.u88-mobility-mode .u91-hidden-report-marker,
+  body.u88-mobility-mode .report-marker,
+  body.u88-mobility-mode .alert-marker,
+  body.u88-mobility-mode .blue-report-marker,
+  body.u88-mobility-mode .u52-report-marker,
+  body.u88-mobility-mode .u52-temp-marker,
+  body.u88-mobility-mode .temp-marker,
+  body.u88-mobility-mode .incident-marker,
+  body.u88-mobility-mode .leaflet-marker-icon[data-report],
+  body.u88-mobility-mode .leaflet-marker-icon[data-alert]{
+    display:block!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  body.u88-mobility-mode .leaflet-marker-icon,
+  body.u88-mobility-mode .leaflet-marker-shadow,
+  body.u88-mobility-mode .leaflet-overlay-pane,
+  body.u88-mobility-mode .leaflet-marker-pane{
+    pointer-events:auto!important;
+  }
+}
+
+
+/* URBIS cleanup · iconos nuevos barra inferior movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  #u88-mobility-shell .u88-tab .u88-tab-img{
+    display:block!important;
+    object-fit:contain!important;
+    image-rendering:auto!important;
+  }
+  #u88-mobility-shell .u88-tab-img-home{ width:44px!important; height:44px!important; }
+  #u88-mobility-shell .u88-tab-img-car{ width:48px!important; height:48px!important; }
+  #u88-mobility-shell .u88-tab-img-destination{ width:50px!important; height:50px!important; }
+  #u88-mobility-shell .u88-tab-img-map{ width:46px!important; height:46px!important; }
+  #u88-mobility-shell .u88-tab.active .u88-tab-img{
+    filter:drop-shadow(0 5px 9px rgba(43,149,244,.16));
+  }
+}
+
+
+/* URBIS fix · barra inferior movilidad 20% más compacta + burbuja no superpuesta */
+@media (max-width:1024px), (pointer:coarse){
+  #u88-mobility-shell .u88-bottom-dock{
+    height:61px!important;
+    grid-template-columns:1fr 1fr 58px 1fr 1fr!important;
+    border-radius:24px!important;
+    left:5vw!important;
+    right:5vw!important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+    padding:0 9px!important;
+  }
+  #u88-mobility-shell .u88-tab{height:54px!important;min-height:54px!important;}
+  #u88-mobility-shell .u88-tab .u88-tab-img,
+  #u88-mobility-shell .u88-tab img{width:34px!important;height:34px!important;}
+  #u88-mobility-shell .u88-tab-img-home{width:35px!important;height:35px!important;}
+  #u88-mobility-shell .u88-tab-img-car{width:38px!important;height:38px!important;}
+  #u88-mobility-shell .u88-tab-img-destination{width:40px!important;height:40px!important;}
+  #u88-mobility-shell .u88-tab-img-map{width:37px!important;height:37px!important;}
+  #u88-mobility-shell .u88-plus{width:56px!important;height:56px!important;font-size:29px!important;margin-top:-16px!important;}
+
+  #u88-floating-destination{
+    width:auto!important;
+    min-width:154px;
+    max-width:min(188px, calc(100vw - 24px));
+    will-change:left, top, transform;
+  }
+  .u95-destination-card{
+    padding:6px 7px 6px 11px!important;
+    box-shadow:0 12px 26px rgba(44,63,92,.16), inset 0 0 0 1px rgba(150,170,200,.15)!important;
+  }
+}
+
+/* URBIS fix · barra inferior movilidad extra compacta */
+@media (max-width:1024px), (pointer:coarse){
+  #u88-mobility-shell .u88-bottom-dock{
+    height:48px!important;
+    min-height:48px!important;
+    grid-template-columns:1fr 1fr 46px 1fr 1fr!important;
+    border-radius:20px!important;
+    left:7vw!important;
+    right:7vw!important;
+    bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;
+    padding:0 7px!important;
+    gap:2px!important;
+  }
+
+  #u88-mobility-shell .u88-tab{
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    gap:0!important;
+  }
+
+  #u88-mobility-shell .u88-tab span,
+  #u88-mobility-shell .u88-tab small,
+  #u88-mobility-shell .u88-tab label{
+    font-size:9px!important;
+    line-height:1!important;
+    margin-top:0!important;
+  }
+
+  #u88-mobility-shell .u88-tab .u88-tab-img,
+  #u88-mobility-shell .u88-tab img{
+    width:27px!important;
+    height:27px!important;
+    max-width:27px!important;
+    max-height:27px!important;
+    object-fit:contain!important;
+  }
+
+  #u88-mobility-shell .u88-tab-img-home{width:27px!important;height:27px!important;}
+  #u88-mobility-shell .u88-tab-img-car{width:30px!important;height:30px!important;}
+  #u88-mobility-shell .u88-tab-img-destination{width:31px!important;height:31px!important;}
+  #u88-mobility-shell .u88-tab-img-map{width:29px!important;height:29px!important;}
+
+  #u88-mobility-shell .u88-plus{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    min-height:46px!important;
+    font-size:24px!important;
+    margin-top:-12px!important;
+    box-shadow:0 10px 22px rgba(11,140,255,.30)!important;
+  }
+
+  #u88-mobility-shell .u88-bottom-dock::before,
+  #u88-mobility-shell .u88-bottom-dock::after{
+    border-radius:20px!important;
+  }
+}
+
+
+/* URBIS U120 · Lista vertical de mapas superpuesta SOLO en Movilidad */
+#u120-mobility-map-picker{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483647!important;
+  display:none!important;
+  pointer-events:none!important;
+  font-family:Inter,Poppins,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+body.u120-map-picker-open #u120-mobility-map-picker{
+  display:block!important;
+  pointer-events:auto!important;
+}
+#u120-mobility-map-picker .u120-map-backdrop{
+  position:absolute!important;
+  inset:0!important;
+  background:rgba(10,25,38,.14)!important;
+  backdrop-filter:blur(2px)!important;
+  -webkit-backdrop-filter:blur(2px)!important;
+}
+#u120-mobility-map-picker .u120-map-list{
+  position:absolute!important;
+  left:14px!important;
+  right:14px!important;
+  bottom:calc(62px + env(safe-area-inset-bottom,0px))!important;
+  max-height:62vh!important;
+  overflow:hidden!important;
+  border-radius:26px!important;
+  padding:10px 12px 12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(243,250,255,.98))!important;
+  border:1px solid rgba(67,155,194,.22)!important;
+  box-shadow:0 24px 70px rgba(9,32,54,.32), inset 0 1px 0 rgba(255,255,255,.95)!important;
+  color:#17395f!important;
+}
+#u120-mobility-map-picker .u120-map-handle{
+  width:42px!important;
+  height:5px!important;
+  border-radius:999px!important;
+  margin:0 auto 10px!important;
+  background:rgba(40,89,129,.20)!important;
+}
+#u120-mobility-map-picker .u120-map-header{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  padding:0 1px 10px!important;
+}
+#u120-mobility-map-picker .u120-map-header b{
+  display:block!important;
+  color:#123c68!important;
+  font-size:1rem!important;
+  font-weight:950!important;
+}
+#u120-mobility-map-picker .u120-map-header small{
+  display:block!important;
+  color:#6d8199!important;
+  font-size:.72rem!important;
+  font-weight:800!important;
+  margin-top:2px!important;
+}
+#u120-mobility-map-picker .u120-map-close{
+  width:34px!important;
+  height:34px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:#e9f5ff!important;
+  color:#143a63!important;
+  font-size:1.3rem!important;
+  font-weight:950!important;
+}
+#u120-mobility-map-picker .u120-map-options{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  max-height:calc(62vh - 82px)!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding:1px 1px 4px!important;
+}
+#u120-mobility-map-picker .u120-map-option{
+  width:100%!important;
+  min-height:58px!important;
+  border:1px solid rgba(88,128,168,.16)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.88)!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:9px 10px!important;
+  text-align:left!important;
+  box-shadow:0 10px 24px rgba(42,72,112,.08)!important;
+  color:#183b67!important;
+}
+#u120-mobility-map-picker .u120-map-option.active{
+  border-color:rgba(35,181,209,.72)!important;
+  background:linear-gradient(135deg,rgba(222,251,255,.98),rgba(242,247,255,.98))!important;
+  box-shadow:0 14px 30px rgba(22,173,203,.14)!important;
+}
+#u120-mobility-map-picker .u120-map-icon{
+  width:36px!important;
+  height:36px!important;
+  flex:0 0 36px!important;
+  border-radius:14px!important;
+  display:grid!important;
+  place-items:center!important;
+  background:#eef8ff!important;
+  font-size:1.15rem!important;
+}
+#u120-mobility-map-picker .u120-map-text{
+  min-width:0!important;
+  flex:1!important;
+}
+#u120-mobility-map-picker .u120-map-text b{
+  display:block!important;
+  font-size:.88rem!important;
+  font-weight:950!important;
+  color:#153b66!important;
+  line-height:1.05!important;
+}
+#u120-mobility-map-picker .u120-map-text small{
+  display:block!important;
+  margin-top:3px!important;
+  font-size:.68rem!important;
+  font-weight:750!important;
+  color:#74859b!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#u120-mobility-map-picker .u120-map-check{
+  width:24px!important;
+  height:24px!important;
+  border-radius:999px!important;
+  display:grid!important;
+  place-items:center!important;
+  color:white!important;
+  background:#20bdd6!important;
+  opacity:0!important;
+  font-size:.82rem!important;
+  font-weight:950!important;
+}
+#u120-mobility-map-picker .u120-map-option.active .u120-map-check{
+  opacity:1!important;
+}
+
+
+/* URBIS · LocationIQ search results */
+#u88-search-results{
+  z-index:2147483501!important;
+  max-height:min(330px, 52vh)!important;
+}
+
+.u88-result.u88-locationiq-result{
+  display:flex!important;
+  align-items:flex-start;
+  gap:10px;
+  padding:11px 12px!important;
+  border-bottom:1px solid rgba(32,65,92,.06);
+}
+
+.u88-locationiq-result:last-child{ border-bottom:0; }
+
+.u88-result-ico{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(0,189,214,.12), rgba(56,211,143,.12));
+  font-size:15px;
+  overflow:hidden;
+}
+
+.u88-cute-pin-icon{
+  width:20px;
+  height:20px;
+  display:block;
+  object-fit:contain;
+}
+
+.u88-result-pin{
+  width:20px;
+  height:20px;
+}
+
+.u88-result-copy{
+  min-width:0;
+  display:block;
+}
+
+.u88-result-copy b{
+  font-size:13.4px!important;
+  line-height:1.18;
+}
+
+.u88-result-copy small{
+  margin-top:3px;
+  font-size:11.2px!important;
+  line-height:1.25!important;
+}
+
+
+/* URBIS V164 · mejorar legibilidad del aviso flotante en Movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  .u95-destination-card{
+    background:rgba(255,255,255,.985) !important;
+    box-shadow:0 12px 26px rgba(44,63,92,.16), inset 0 0 0 1px rgba(136,156,186,.18) !important;
+  }
+  .u95-destination-card span{
+    color:#6d7e96 !important;
+    font-size:12px !important;
+    font-weight:900 !important;
+    letter-spacing:-.01em;
+    opacity:1 !important;
+  }
+  .u95-destination-go{
+    background:#d7ebff !important;
+    color:#3d78b9 !important;
+    font-size:11px !important;
+    font-weight:1000 !important;
+    min-width:38px;
+  }
+  .u95-destination-x{
+    background:#edf3f9 !important;
+    color:#6d7e96 !important;
+    font-weight:900 !important;
+  }
+}
+
+
+/* URBIS V167 · resultados de búsqueda priorizados por cercanía */
+@media (max-width:1024px), (pointer:coarse){
+  .u88-locationiq-result b em{
+    display:inline-flex;
+    align-items:center;
+    margin-left:6px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:#eaf7ff;
+    color:#3477b8;
+    font-style:normal;
+    font-size:10px;
+    font-weight:1000;
+    vertical-align:middle;
+    white-space:nowrap;
+  }
+}
+
+
+/* URBIS V169 · Ruta celeste visible y consumible en Movilidad */
+@media (max-width:1024px), (pointer:coarse){
+  body.u88-mobility-mode .urbis-route-remaining-halo,
+  body.u88-mobility-mode .urbis-route-remaining,
+  body.u88-mobility-mode .urbis-route-remaining-core,
+  body.u52-real-map .urbis-route-remaining-halo,
+  body.u52-real-map .urbis-route-remaining,
+  body.u52-real-map .urbis-route-remaining-core{
+    display:block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:none !important;
+  }
+  body.u88-mobility-mode .urbis-route-remaining-halo,
+  body.u52-real-map .urbis-route-remaining-halo{
+    stroke:#2cecff !important;
+    stroke-opacity:.25 !important;
+    stroke-width:22px !important;
+    filter:drop-shadow(0 0 18px rgba(44,236,255,.38)) !important;
+  }
+  body.u88-mobility-mode .urbis-route-remaining,
+  body.u52-real-map .urbis-route-remaining{
+    stroke:#12dfff !important;
+    stroke-opacity:1 !important;
+    stroke-width:9px !important;
+    filter:drop-shadow(0 0 10px rgba(18,223,255,.55)) !important;
+  }
+  body.u88-mobility-mode .urbis-route-remaining-core,
+  body.u52-real-map .urbis-route-remaining-core{
+    stroke:#f7feff !important;
+    stroke-opacity:.96 !important;
+    stroke-width:3.2px !important;
+  }
+}
+
+
+/* URBIS v172-clean-core-fix1 · Selector de mapas legible */
+@media (max-width:1024px), (pointer:coarse){
+  #u120-mobility-map-picker .u120-map-header b,
+  #u120-mobility-map-picker .u120-map-text b{
+    color:#173f75 !important;
+    opacity:1 !important;
+  }
+  #u120-mobility-map-picker .u120-map-header small,
+  #u120-mobility-map-picker .u120-map-text small{
+    color:#4f6078 !important;
+    opacity:1 !important;
+  }
+  #u120-mobility-map-picker .u120-map-option.active .u120-map-text b,
+  #u120-mobility-map-picker .u120-map-check{
+    color:#008f82 !important;
+  }
+}

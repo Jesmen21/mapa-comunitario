@@ -1,0 +1,40 @@
+/* URBIS V83 · prueba visible de actualización logo kawaii escritorio/móvil */
+#v83-desktop-logo-test{
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:2147483646;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:rgba(3,20,13,.82);
+  color:#effff3;
+  font:800 12px/1.1 system-ui,-apple-system,Segoe UI,sans-serif;
+  box-shadow:0 12px 30px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.10);
+  backdrop-filter:blur(12px);
+}
+#v83-desktop-logo-test img{width:34px;height:34px;object-fit:contain;display:block;}
+.urbis-logo-mark{
+  background-image:url("../assets/brand/urbis-kawaii-logo.png?v=83")!important;
+  background-size:contain!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  border-radius:18px!important;
+}
+.urbis-logo-mark::before,
+.urbis-logo-mark::after{display:none!important;}
+.login-brand-title::after{
+  content:" · V83";
+  color:#27d39b;
+  font-size:.78em;
+}
+.login-logo img,
+.u52-login-logo img,
+.v81-logo{
+  content:url("../assets/brand/urbis-kawaii-logo.png?v=83")!important;
+}
+@media (max-width:760px){
+  #v83-desktop-logo-test{top:calc(8px + env(safe-area-inset-top,0px));right:8px;transform:scale(.86);transform-origin:top right;}
+}

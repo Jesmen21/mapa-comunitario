@@ -1,0 +1,39 @@
+/* URBIS · Separación visual móvil / escritorio */
+html[data-urbis-shell="desktop"] #urbis-mobile-app,
+html[data-urbis-shell="desktop"] #u88-mobility-shell {
+  display: none !important;
+}
+
+html[data-urbis-shell="mobile"] #sidebar,
+html[data-urbis-shell="mobile"] #module-focus-shell,
+html[data-urbis-shell="mobile"] .desktop-only,
+html[data-urbis-shell="mobile"] .sidebar-tabs {
+  display: none !important;
+}
+
+html[data-urbis-shell="mobile"] #map {
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+html[data-urbis-shell="mobile"] #urbis-mobile-app {
+  display: block;
+}
+
+html[data-urbis-shell="desktop"] body.u88-mobility-mode #u88-mobility-shell {
+  display: none !important;
+}
+
+html[data-urbis-shell="desktop"] #sidebar {
+  display: block;
+}
+
+/* Seguridad visual: la UI flotante de Movilidad solo aparece dentro del módulo Movilidad. */
+body.u88-mobility-hidden #u88-mobility-shell,
+body:not(.u88-mobility-mode) #u88-mobility-shell,
+#u88-mobility-shell[aria-hidden="true"] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}

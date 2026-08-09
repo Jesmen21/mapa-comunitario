@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<!-- URBIS V138 · carga antes de confirmar código -->
+<html lang="es">
+<head>
+  <title>URBIS - Ciudad viva</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#00B68D" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="URBIS" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/main.css?v=451-cerrar-poligono"/>
+  <script>
+    window.URBIS_APP_VERSION = '451-cerrar-poligono';
+    // Fuerza a Safari/Brave/Chrome móvil a tomar el service worker nuevo sin mezclar archivos viejos.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations?.().then(regs => regs.forEach(r => r.update?.())).catch(()=>{});
+    }
+  </script>
+<style>
+  /* Splash de apertura: 1) la animación del logo URBIS tiene su momento, 2) luego entra la tarjeta de fase BETA. */
+  #urbis-beta-splash{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;overflow:hidden;background:radial-gradient(130% 130% at 50% 12%,#13d3bd 0%,#0ea5a0 46%,#0a85a6 100%);font-family:'Inter','Segoe UI',system-ui,sans-serif;animation:ubsFadeOut .5s ease 3.05s forwards;}
+  #urbis-beta-splash .ubs-spark{position:absolute;border-radius:50%;background:rgba(255,255,255,.9);opacity:0;animation:ubsTwinkle 2.6s ease-in-out .6s infinite;}
+  #urbis-beta-splash .ubs-spark.s1{width:8px;height:8px;top:22%;left:24%;animation-delay:.7s;}
+  #urbis-beta-splash .ubs-spark.s2{width:5px;height:5px;top:30%;right:22%;animation-delay:1.1s;}
+  #urbis-beta-splash .ubs-spark.s3{width:10px;height:10px;bottom:26%;left:30%;animation-delay:1.4s;}
+  #urbis-beta-splash .ubs-spark.s4{width:6px;height:6px;bottom:32%;right:28%;animation-delay:.9s;}
+  #urbis-beta-splash .ubs-logo-wrap{animation:ubsFloat 2.8s ease-in-out 1.05s infinite;}
+  #urbis-beta-splash .ubs-logo{width:108px;height:108px;border-radius:28px;background:#fff;padding:16px;box-shadow:0 16px 42px rgba(0,0,0,.22);object-fit:contain;animation:ubsLogoPop 1s cubic-bezier(.2,1.5,.4,1) both;}
+  /* La tarjeta beta aparece DESPUÉS de que el logo hizo su animación (delay 1.2s). */
+  #urbis-beta-splash .ubs-card{margin-top:24px;opacity:0;transform:translateY(16px) scale(.92);animation:ubsCardIn .6s cubic-bezier(.2,1.65,.45,1) 1.2s forwards;}
+  #urbis-beta-splash .ubs-badge{display:inline-flex;align-items:center;gap:7px;background:#fff;color:#0a7d72;font-weight:800;font-size:1rem;padding:10px 22px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.18);}
+  #urbis-beta-splash .ubs-title{color:#fff;font-weight:800;font-size:1.28rem;margin-top:14px;letter-spacing:.3px;}
+  #urbis-beta-splash .ubs-sub{color:rgba(255,255,255,.94);font-size:.86rem;margin-top:7px;}
+  @keyframes ubsLogoPop{0%{transform:scale(.3) rotate(-12deg);opacity:0;}60%{transform:scale(1.12) rotate(5deg);opacity:1;}100%{transform:scale(1) rotate(0);opacity:1;}}
+  @keyframes ubsFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @keyframes ubsCardIn{0%{opacity:0;transform:translateY(16px) scale(.92);}60%{opacity:1;transform:translateY(-3px) scale(1.03);}100%{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes ubsTwinkle{0%,100%{opacity:0;transform:scale(.4);}50%{opacity:.95;transform:scale(1);}}
+  @keyframes ubsFadeOut{to{opacity:0;visibility:hidden;pointer-events:none;}}
+  @media (prefers-reduced-motion:reduce){#urbis-beta-splash *{animation-duration:.01ms!important;animation-iteration-count:1!important;}}
+</style>
+</head>
+<body class="urbis-pre-login">
+
+<script>
+/* iOS/Android: distingue SCROLL de TAP. Evita que al deslizar para bajar (con el dedo
+   encima de una opción/input, p. ej. en registrarse) se active esa opción por error.
+   Solo cancela el click si el dedo se MOVIÓ (scroll); los taps reales pasan normal. */
+(function(){
+  var sx=0, sy=0, moved=false, TH=12;
+  document.addEventListener('touchstart', function(e){
+    var t=e.touches&&e.touches[0]; if(!t) return; sx=t.clientX; sy=t.clientY; moved=false;
+  }, {passive:true, capture:true});
+  document.addEventListener('touchmove', function(e){
+    var t=e.touches&&e.touches[0]; if(!t) return;
+    if(Math.abs(t.clientX-sx)>TH || Math.abs(t.clientY-sy)>TH) moved=true;
+  }, {passive:true, capture:true});
+  document.addEventListener('click', function(e){
+    if(!moved) return;
+    var el=e.target;
+    // No interferir con el mapa (Leaflet maneja sus gestos), sliders ni overlays de Rush.
+    if(el && el.closest && (el.closest('#map') || el.closest('.leaflet-container') || el.closest('input[type=range]') || el.closest('.rush-overlay'))){ moved=false; return; }
+    e.stopPropagation(); e.preventDefault(); moved=false;
+  }, true);
+  /* iOS: NO hacemos preventDefault del touchmove sobre el mapa. Leaflet usa pointer events
+     y cancelar el touchmove le aborta el gesto (el mapa quedaba ESTÁTICO). El "rubber-band"
+     de la página se evita con el lock del body en pantallas de mapa (CSS position:fixed) +
+     touch-action:none del contenedor del mapa, que deja a Leaflet manejar pan/zoom. */
+</script>
+
+<div id="urbis-beta-splash" aria-hidden="true">
+  <span class="ubs-spark s1"></span><span class="ubs-spark s2"></span><span class="ubs-spark s3"></span><span class="ubs-spark s4"></span>
+  <div class="ubs-logo-wrap">
+    <img src="assets/brand/urbis-logo.png" alt="URBIS" class="ubs-logo">
+  </div>
+  <div class="ubs-card">
+    <div class="ubs-badge">🧪 Versión BETA</div>
+    <div class="ubs-title">Fase experimental ✨</div>
+    <div class="ubs-sub">Estamos construyendo tu ciudad contigo 💚</div>
+  </div>
+</div>
+<script>setTimeout(function(){var s=document.getElementById('urbis-beta-splash');if(s&&s.parentNode)s.parentNode.removeChild(s);},3600);</script>
+
+<div id="login-screen">
+    <div class="login-box">
+        <div class="login-shell">
+            <div class="login-topbar">
+                <div class="login-brand">
+                    <div class="urbis-logo-mark" aria-hidden="true"></div>
+                    <div>
+                        <div class="login-brand-title">URBIS</div>
+                        <div class="login-brand-subtitle">Ciudad viva</div>
+                    </div>
+                </div>
+                <div class="login-status-pill"><span></span><div><strong>Sistema en vivo</strong><br><small>Datos actualizados</small></div></div>
+            </div>
+
+            <div class="login-hero-grid">
+                <section class="login-copy-panel clean-user-entry-shell">
+                    <div class="clean-entry-backdrop" aria-hidden="true">
+                        <span class="clean-entry-glow glow-a"></span>
+                        <span class="clean-entry-glow glow-b"></span>
+                        <span class="clean-entry-spark spark-a"></span>
+                        <span class="clean-entry-spark spark-b"></span>
+                        <span class="clean-entry-spark spark-c"></span>
+                    </div>
+
+                    <div class="clean-entry-brand-wrap">
+                        <img src="assets/brand/urbis-logo.png" alt="Logo URBIS" class="clean-entry-mascot">
+                        <div class="clean-entry-logo">URBIS</div>
+                        <div class="clean-entry-tagline">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
+                        <p class="uw-about">La plataforma ciudadana que conecta a las personas con su territorio: reporta, explora y ayuda a transformar tu ciudad en tiempo real.</p>
+                        <div class="uw-features" aria-label="Qué puedes hacer en URBIS">
+                            <span class="uw-feature"><i aria-hidden="true">🗺️</i>Mapea tu barrio</span>
+                            <span class="uw-feature"><i aria-hidden="true">🚨</i>Reporta en vivo</span>
+                            <span class="uw-feature"><i aria-hidden="true">📊</i>Analiza tu ciudad</span>
+                        </div>
+                    </div>
+
+                    <div class="clean-entry-visual" aria-hidden="true">
+                        <div class="clean-entry-cityline"></div>
+                        <div class="clean-entry-route"></div>
+                        <div class="clean-entry-pin-main"><span>😊</span></div>
+                        <div class="clean-entry-pin small pin-left">🚌</div>
+                        <div class="clean-entry-pin small pin-right">🚲</div>
+                        <div class="clean-entry-pin small pin-bottom">📍</div>
+                    </div>
+
+                    <div class="clean-entry-card">
+                        <div class="clean-entry-card-icon">🏙️</div>
+                        <h1>Bienvenido a URBIS</h1>
+                        <p class="subtitle">Conecta con tu ciudad de forma inteligente.</p>
+
+                        <div class="clean-entry-actions" role="group" aria-label="Acciones de acceso URBIS">
+                            <button id="btn-acceso-normal" type="button" class="clean-entry-action clean-entry-login" data-urbis-auth-mode="login">
+                                <span class="clean-entry-action-ico">👤</span>
+                                <span class="clean-entry-action-copy"><b>Iniciar sesión</b><small>Entrar con tu usuario y contraseña</small></span>
+                                <span class="clean-entry-action-arrow">›</span>
+                            </button>
+                            <button id="btn-acceso-register" type="button" class="clean-entry-action clean-entry-register" data-urbis-auth-mode="register">
+                                <span class="clean-entry-action-ico">✨</span>
+                                <span class="clean-entry-action-copy"><b>Registrarse</b><small>Crear una cuenta nueva</small></span>
+                                <span class="clean-entry-action-arrow">›</span>
+                            </button>
+                        </div>
+
+                        <div class="clean-entry-matrix-stats" aria-label="Estadísticas rápidas de la matriz de usos">
+                            <div class="matrix-stat"><b data-landing-metric-total>0</b><span>Puntos</span></div>
+                            <div class="matrix-stat"><b data-landing-metric-process>0</b><span>Activos</span></div>
+                            <div class="matrix-stat"><b data-landing-metric-review>0</b><span>Revisión</span></div>
+                            <div class="matrix-stat"><b data-landing-metric-resolved>0</b><span>Resueltos</span></div>
+                        </div>
+
+                        <div id="normal-access-panel" class="login-subpanel clean-auth-panel">
+                            <p class="login-helper">Ingresa como ciudadanía. Los permisos especiales se revisan después dentro de la plataforma.</p>
+                            <div id="normal-data-panel" class="urbis-register-panel clean-register-panel" style="display:block; margin-top:12px;">
+                                <div id="urbis-login-panel" class="urbis-login-panel urbis-login-kawaii">
+                                    <button type="button" id="urbis-login-back" class="urbis-auth-back">← Volver</button>
+                                    <div class="urbis-login-hero">
+                                        <div class="urbis-login-wordmark">URBIS</div>
+                                        <div class="urbis-login-slogan">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
+                                        <p class="urbis-login-welcome">¡Nos alegra tenerte de vuelta!<br>Ingresa para continuar en URBIS 💙</p>
+                                    </div>
+                                    <div class="urbis-kawaii-login-card">
+                                        <div class="urbis-field urbis-login-field">
+                                            <label class="urbis-field-label" for="login-username">Usuario</label>
+                                            <div class="urbis-input-shell user-shell">
+                                                <span class="urbis-input-icon">👤</span>
+                                                <input type="text" id="login-username" class="reg-input" placeholder="Ingresa tu usuario" autocomplete="username" enterkeyhint="next">
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field urbis-login-field">
+                                            <label class="urbis-field-label password-label" for="login-password">Contraseña</label>
+                                            <div class="urbis-input-shell password-shell">
+                                                <span class="urbis-input-icon">🔒</span>
+                                                <input type="password" id="login-password" class="reg-input" placeholder="Ingresa tu contraseña" autocomplete="current-password" enterkeyhint="done">
+                                            </div>
+                                        </div>
+                                        <button type="button" id="urbis-login-btn" class="btn-save clean-auth-submit urbis-kawaii-login-btn">Ingresar</button>
+                                        <button type="button" id="urbis-open-recovery-login" class="urbis-auth-mini-link urbis-login-forgot">¿Olvidaste tu contraseña?</button>
+                                    </div>
+                                </div>
+
+                                <div id="urbis-register-fields" class="urbis-register-fields urbis-register-kawaii" hidden>
+                                    <button type="button" id="urbis-register-back" class="urbis-auth-back">← Volver</button>
+                                    <div class="urbis-register-hero">
+                                        <div class="urbis-register-wordmark">URBIS</div>
+                                        <div class="urbis-register-slogan">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
+                                        <h2 class="urbis-register-title">Crea tu cuenta</h2>
+                                        <p class="urbis-register-copy-main">Completa tus datos para registrarte en URBIS</p>
+                                    </div>
+                                    <div class="urbis-register-card">
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell">
+                                                <span class="urbis-register-icon">👤</span>
+                                                <input type="text" id="reg-name" class="reg-input" placeholder="Nombres completos" autocomplete="given-name" enterkeyhint="next">
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell purple-shell">
+                                                <span class="urbis-register-icon">👤</span>
+                                                <input type="text" id="reg-surname" class="reg-input" placeholder="Apellidos completos" autocomplete="family-name" enterkeyhint="next">
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                <span class="urbis-register-icon">🪪</span>
+                                                <select id="reg-doc-type" class="reg-select" aria-label="Tipo de documento">
+                                                    <option value="CC">Tipo de documento</option>
+                                                    <option value="CC">Cédula (CC)</option>
+                                                    <option value="CE">Extranjería (CE)</option>
+                                                    <option value="TI">Tarjeta de identidad (TI)</option>
+                                                    <option value="PAS">Pasaporte</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell purple-shell">
+                                                <span class="urbis-register-icon">🪪</span>
+                                                <input type="text" id="reg-doc-num" class="reg-input" placeholder="Número de cédula" inputmode="numeric" autocomplete="off" enterkeyhint="next">
+                                            </div>
+                                            <small id="reg-doc-status" class="urbis-field-hint identity-status">La cédula no puede estar registrada en otra cuenta.</small>
+                                        </div>
+                                        <div class="urbis-field urbis-birth-field">
+                                            <label class="urbis-birth-label">Fecha de nacimiento</label>
+                                            <div class="urbis-birth-grid">
+                                                <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                    <span class="urbis-register-icon">📅</span>
+                                                    <select id="reg-birth-day" class="reg-select" aria-label="Día de nacimiento">
+                                                        <option value="">Día</option>
+                                                    </select>
+                                                    <span class="urbis-register-trailing">⌄</span>
+                                                </div>
+                                                <div class="urbis-register-input-shell purple-shell select-shell">
+                                                    <span class="urbis-register-icon">🗓️</span>
+                                                    <select id="reg-birth-month" class="reg-select" aria-label="Mes de nacimiento">
+                                                        <option value="">Mes</option>
+                                                    </select>
+                                                    <span class="urbis-register-trailing">⌄</span>
+                                                </div>
+                                                <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                    <span class="urbis-register-icon">🎂</span>
+                                                    <select id="reg-birth-year" class="reg-select" aria-label="Año de nacimiento">
+                                                        <option value="">Año</option>
+                                                    </select>
+                                                    <span class="urbis-register-trailing">⌄</span>
+                                                </div>
+                                            </div>
+                                            <small id="reg-birth-status" class="urbis-field-hint birth-status">Usaremos esta fecha para identificar si el registro corresponde a una persona mayor o menor de edad.</small>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell">
+                                                <span class="urbis-register-icon">🙂</span>
+                                                <input type="text" id="reg-username" class="reg-input" placeholder="Nombre de usuario" autocomplete="username" enterkeyhint="next">
+                                            </div>
+                                            <small id="reg-username-status" class="urbis-field-hint username-status">Usa mínimo 5 caracteres. Puedes usar letras, números, punto, guion o guion bajo.</small>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell purple-shell">
+                                                <span class="urbis-register-icon">✉️</span>
+                                                <input type="email" id="reg-email" class="reg-input" placeholder="Correo electrónico" autocomplete="email" enterkeyhint="next">
+                                            </div>
+                                            <small id="reg-email-status" class="urbis-field-hint email-status">El correo no puede estar registrado en otra cuenta.</small>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell">
+                                                <span class="urbis-register-icon">📱</span>
+                                                <input type="tel" id="reg-phone" class="reg-input" placeholder="Número de celular" inputmode="tel" autocomplete="tel-national" enterkeyhint="next">
+                                            </div>
+                                            <small id="reg-phone-status" class="urbis-field-hint identity-status">Si seleccionas Colombia, se guardará automáticamente con el prefijo +57.</small>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell purple-shell select-shell">
+                                                <span class="urbis-register-icon">🌎</span>
+                                                <select id="reg-country" class="reg-select" aria-label="País" onchange="window.URBIS_AUTH?.syncLocationSelectors?.(true)">
+                                                    <option value="Colombia">Colombia</option>
+                                                    <option value="Otro país">Otro país</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                            <div id="reg-country-other-wrap" class="urbis-register-other-country" hidden>
+                                                <div class="urbis-register-input-shell aqua-shell">
+                                                    <span class="urbis-register-icon">🌐</span>
+                                                    <input type="text" id="reg-country-other" class="reg-input" placeholder="Escribe tu país" autocomplete="country-name" enterkeyhint="next">
+                                                </div>
+                                                <small class="urbis-field-hint">Por ahora el listado detallado de departamentos, ciudades y barrios está disponible para Colombia.</small>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field" data-colombia-location-field>
+                                            <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                <span class="urbis-register-icon">🗺️</span>
+                                                <select id="reg-department" class="reg-select" aria-label="Departamento" onchange="window.URBIS_AUTH?.syncLocationSelectors?.(true)">
+                                                    <option value="">Departamento</option>
+                                                    <option value="Amazonas">Amazonas</option>
+                                                    <option value="Antioquia">Antioquia</option>
+                                                    <option value="Arauca">Arauca</option>
+                                                    <option value="Atlántico">Atlántico</option>
+                                                    <option value="Bogotá D.C.">Bogotá D.C.</option>
+                                                    <option value="Bolívar">Bolívar</option>
+                                                    <option value="Boyacá">Boyacá</option>
+                                                    <option value="Caldas">Caldas</option>
+                                                    <option value="Caquetá">Caquetá</option>
+                                                    <option value="Casanare">Casanare</option>
+                                                    <option value="Cauca">Cauca</option>
+                                                    <option value="Cesar">Cesar</option>
+                                                    <option value="Chocó">Chocó</option>
+                                                    <option value="Córdoba">Córdoba</option>
+                                                    <option value="Cundinamarca">Cundinamarca</option>
+                                                    <option value="Guainía">Guainía</option>
+                                                    <option value="Guaviare">Guaviare</option>
+                                                    <option value="Huila">Huila</option>
+                                                    <option value="La Guajira">La Guajira</option>
+                                                    <option value="Magdalena">Magdalena</option>
+                                                    <option value="Meta">Meta</option>
+                                                    <option value="Nariño">Nariño</option>
+                                                    <option value="Norte de Santander">Norte de Santander</option>
+                                                    <option value="Putumayo">Putumayo</option>
+                                                    <option value="Quindío">Quindío</option>
+                                                    <option value="Risaralda">Risaralda</option>
+                                                    <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                                    <option value="Santander">Santander</option>
+                                                    <option value="Sucre">Sucre</option>
+                                                    <option value="Tolima">Tolima</option>
+                                                    <option value="Valle del Cauca">Valle del Cauca</option>
+                                                    <option value="Vaupés">Vaupés</option>
+                                                    <option value="Vichada">Vichada</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field" data-colombia-location-field>
+                                            <div class="urbis-register-input-shell purple-shell select-shell">
+                                                <span class="urbis-register-icon">🏙️</span>
+                                                <select id="reg-city" class="reg-select" aria-label="Ciudad o corregimiento" onchange="window.URBIS_AUTH?.syncLocationSelectors?.(true)">
+                                                    <option value="">Ciudad o corregimiento</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field" data-colombia-location-field>
+                                            <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                <span class="urbis-register-icon">🧭</span>
+                                                <select id="reg-comuna" class="reg-select" aria-label="Comuna" onchange="window.URBIS_AUTH?.syncLocationSelectors?.(true)">
+                                                    <option value="">Comuna</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field" data-colombia-location-field>
+                                            <div class="urbis-register-input-shell purple-shell select-shell">
+                                                <span class="urbis-register-icon">📍</span>
+                                                <select id="reg-barrio" class="reg-select" aria-label="Barrio">
+                                                    <option value="">Barrio</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                            <small class="urbis-field-hint">En Soledad y Cúcuta, los barrios se cargan según la comuna seleccionada. Si no aparece, elige Otro y escríbelo.</small>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell select-shell">
+                                                <span class="urbis-register-icon">👥</span>
+                                                <select id="reg-gender" class="reg-select" aria-label="Género">
+                                                    <option value="">Género</option>
+                                                    <option value="femenino">Femenino / mujer</option>
+                                                    <option value="masculino">Masculino / hombre</option>
+                                                </select>
+                                                <span class="urbis-register-trailing">⌄</span>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell purple-shell password-register-shell">
+                                                <span class="urbis-register-icon">🔒</span>
+                                                <input type="password" id="reg-password" class="reg-input" placeholder="Contraseña" autocomplete="new-password" enterkeyhint="next">
+                                                <button type="button" class="urbis-register-trailing urbis-password-toggle" data-urbis-password-toggle="reg-password" aria-label="Mostrar contraseña" aria-pressed="false">👁️</button>
+                                            </div>
+                                        </div>
+                                        <div class="urbis-field">
+                                            <div class="urbis-register-input-shell aqua-shell password-register-shell">
+                                                <span class="urbis-register-icon">🔐</span>
+                                                <input type="password" id="reg-password-confirm" class="reg-input" placeholder="Confirmar contraseña" autocomplete="new-password" enterkeyhint="done">
+                                                <button type="button" class="urbis-register-trailing urbis-password-toggle" data-urbis-password-toggle="reg-password-confirm" aria-label="Mostrar confirmación de contraseña" aria-pressed="false">👁️</button>
+                                            </div>
+                                        </div>
+                                        <button id="normal-submit-btn" class="btn-save clean-auth-submit urbis-register-submit" style="margin-top:5px; padding:12px;" onclick="continuarPerfilNormal()">Crear cuenta</button>
+                                        <button type="button" id="urbis-switch-login-link" class="urbis-register-login-link">¿Ya tienes cuenta? <b>Inicia sesión</b></button>
+                                    </div>
+                                </div>
+
+                                <div id="normal-secret-panel" style="display:none; background:rgba(255,255,255,.06); padding:15px; border-radius:16px; margin-bottom:10px; border:1px solid rgba(255,255,255,.10);">
+                                    <label class="urbis-field-label" for="normal-secret-pass">Clave de acceso</label>
+                                    <input type="password" id="normal-secret-pass" class="login-input" placeholder="Escribe la clave de acceso">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clean-entry-privacy">
+                            <span class="clean-entry-privacy-icon">🛡️</span>
+                            <div>
+                                <b>Tus datos están protegidos.</b><br>
+                                <small>Consulta nuestra Política de Privacidad.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a class="admin-link" onclick="mostrarAccesoNormal()" hidden>← Volver al acceso ciudadano</a>
+                    <div id="admin-access-panel" class="login-subpanel" hidden style="display:none;"></div>
+                </section>
+
+                <aside class="login-preview-panel clean-preview-panel" aria-label="Vista previa territorial">
+                    <div class="login-map-card">
+                        <div class="login-map-view">
+                            <div class="login-map-head"><span class="login-live-icon">)))</span> Vista territorial en vivo</div>
+                            <div class="map-center-dot"></div>
+                            <div class="map-pin pin-green" style="left:18%; top:32%;"><span>♣</span></div>
+                            <div class="map-pin pin-amber" style="left:70%; top:25%;"><span>!</span></div>
+                            <div class="map-pin pin-aqua" style="left:34%; top:54%;"><span>▣</span></div>
+                            <div class="map-pin pin-purple" style="left:25%; top:72%;"><span>▦</span></div>
+                            <div class="map-pin pin-blue" style="left:72%; top:76%;"><span>⌂</span></div>
+                            <div class="login-map-meta"><span>Zona: <b>Centro Urbano</b></span><span>Actualizado: 10:42 a. m.</span><span style="color:#8BEAD8;">Conexión estable</span></div>
+                        </div>
+                        <div class="login-layers">
+                            <h4>Capas activas</h4>
+                            <div class="login-layer-item"><span class="login-layer-dot layer-mov">M</span> Movilidad</div>
+                            <div class="login-layer-item"><span class="login-layer-dot layer-alert">A</span> Alertas</div>
+                            <div class="login-layer-item"><span class="login-layer-dot layer-event">E</span> Eventos</div>
+                            <div class="login-layer-item"><span class="login-layer-dot layer-nature">N</span> Naturaleza</div>
+                            <div class="login-layer-item"><span class="login-layer-dot layer-service">S</span> Servicios</div>
+                            <button class="login-dashboard-btn" type="button">Ver dashboard ›</button>
+                        </div>
+                    </div>
+
+                    <div class="login-info-strip">
+                        <div class="login-feature"><div class="login-feature-icon">⌖</div><b>Mapas inteligentes</b><span>Visualiza tu territorio con datos en tiempo real.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">▤</div><b>Reportes ciudadanos</b><span>Reporta desde cualquier lugar de forma rápida y sencilla.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">▥</div><b>Análisis territorial</b><span>Convierte datos en decisiones con información confiable.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">◎</div><b>Gestión colaborativa</b><span>Trabaja en conjunto por comunidades más seguras.</span></div>
+                        <div class="login-stat stat-green" data-landing-metric="total"><b>Reportes totales</b><strong>0</strong><span>En plataforma</span></div>
+                        <div class="login-stat stat-amber" data-landing-metric="revision"><b>En revisión</b><strong>0</strong><span>Pendientes de validar</span></div>
+                        <div class="login-stat stat-purple" data-landing-metric="proceso"><b>En proceso</b><strong>0</strong><span>Activos visibles</span></div>
+                        <div class="login-stat stat-green" data-landing-metric="resueltos"><b>Resueltos</b><strong>0</strong><span>Cerrados / archivados</span></div>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="login-footer">
+                <div><b>Seguro · Ético · Colaborativo</b><br>Datos protegidos y uso responsable de la información.</div>
+                <div>© URBIS 2026 — Ciudad viva</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="map"></div>
+<div id="urbis-move-banner" hidden>
+  <div class="move-banner-top">
+    <span class="move-drop">💧</span>
+    <div class="move-text"><b>Mueve tu reporte</b><span>Toca en el mapa el punto exacto donde quieres la gota</span></div>
+  </div>
+  <button type="button" id="urbis-move-cancel" onclick="window.urbisCancelarMoverReporte && window.urbisCancelarMoverReporte()">Cancelar</button>
+</div>
+<div id="basemap-backdrop" class="basemap-backdrop" hidden onclick="cerrarBasemapPanel()" aria-hidden="true"></div>
+<div class="basemap-switcher">
+    <button class="map-toggle-btn" onclick="toggleBasemapPanel()" title="Cambiar mapa" aria-controls="basemap-panel" aria-expanded="false">◈</button>
+    <div id="basemap-panel" class="basemap-panel" role="dialog" aria-modal="false" aria-labelledby="basemap-panel-title">
+        <div class="basemap-sheet-handle" aria-hidden="true"></div>
+        <div class="basemap-title">
+            <div class="basemap-title-copy">
+                <span id="basemap-panel-title">Capas base para arquitectura</span>
+                <small>En móvil puedes deslizar hacia abajo para cerrar.</small>
+            </div>
+            <button type="button" class="basemap-close-btn" onclick="cerrarBasemapPanel()" aria-label="Cerrar selector de mapas">✕</button>
+        </div>
+        <div id="basemap-options"></div>
+    </div>
+</div>
+
+<div id="sidebar">
+    <h2 id="sidebar-title" style="color: var(--cyan); text-shadow: 0 0 10px rgba(0,210,211,0.6);">
+        URBIS <span id="role-display" class="role-badge"></span>
+    </h2>
+    <div class="sidebar-tabs module-access-grid" aria-label="Accesos principales de URBIS">
+        <button id="tab-btn-mobility" class="sidebar-tab-btn" onclick="setSidebarTab('mobility')">
+            <span class="tab-icon">🧭</span><span class="tab-copy"><b>Movilidad</b><small>Rutas, GPS y tránsito</small></span>
+        </button>
+        <button id="tab-btn-sport" class="sidebar-tab-btn" onclick="setSidebarTab('sport')">
+            <span class="tab-icon">🏃</span><span class="tab-copy"><b>Deporte</b><small>Actividad, rutinas y progreso</small></span>
+        </button>
+        <button id="tab-btn-alerts" class="sidebar-tab-btn" onclick="setSidebarTab('alerts')">
+            <span class="tab-icon">🚨</span><span class="tab-copy"><b>Alertas</b><small>Reportes ciudadanos</small></span>
+        </button>
+        <button id="tab-btn-mapeotecnico" class="sidebar-tab-btn" onclick="setSidebarTab('mapeotecnico')">
+            <span class="tab-icon">🧩</span><span class="tab-copy"><b>Mapeo técnico</b><small>Matriz de usos completa</small></span>
+        </button>
+        <button id="tab-btn-access" class="sidebar-tab-btn" onclick="setSidebarTab('access')">
+            <span class="tab-icon">👤</span><span class="tab-copy"><b>Mi perfil</b><small>Datos, permisos y logros</small></span>
+        </button>
+        <button id="tab-btn-events" class="sidebar-tab-btn" onclick="setSidebarTab('events')">
+            <span class="tab-icon">🎪</span><span class="tab-copy"><b>Eventos</b><small>Actividades y comunidad</small></span>
+        </button>
+        <button id="tab-btn-mascotas" class="sidebar-tab-btn" onclick="setSidebarTab('mascotas')">
+            <span class="tab-icon">🐾</span><span class="tab-copy"><b>Mascotas</b><small>Perritos y gaticos · donar y ayudar</small></span>
+        </button>
+        <button id="tab-btn-stats" class="sidebar-tab-btn" onclick="setSidebarTab('stats')">
+            <span class="tab-icon">📊</span><span class="tab-copy"><b>Datos</b><small>Indicadores y análisis</small></span>
+        </button>
+        <button id="tab-btn-mapping" class="sidebar-tab-btn" onclick="setSidebarTab('mapping')">
+            <span class="tab-icon">🗺️</span><span class="tab-copy"><b>Capas</b><small>Mapas y visualización</small></span>
+        </button>
+        <button id="tab-btn-advanced" class="sidebar-tab-btn advanced-only" onclick="setSidebarTab('advanced')">
+            <span class="tab-icon">🧪</span><span class="tab-copy"><b>Avanzado</b><small>Raster y modo técnico</small></span>
+        </button>
+    </div>
+    <div id="module-focus-shell" class="module-focus-shell" aria-live="polite" hidden>
+        <button id="module-back-btn" class="module-back-btn" onclick="volverMenuModulos()" aria-label="Volver al menú de accesos">
+            <span>←</span><strong>Volver a accesos</strong>
+        </button>
+        <div class="module-focus-head">
+            <div class="module-focus-kicker" id="module-focus-kicker">Modo activo</div>
+            <h3 id="module-focus-title">Movilidad</h3>
+            <p id="module-focus-subtitle">Rutas, GPS, tránsito y herramientas de desplazamiento en tiempo real.</p>
+        </div>
+    </div>
+
+    <div id="page-mobility" class="sidebar-page">
+    <div class="sidebar-utility-rail">
+        <div class="sidebar-utility-title">Centro de control</div>
+        <div id="timeline-shell" class="timeline-shell"></div>
+        <div id="nav-panel" class="nav-panel" hidden></div>
+        <div id="quick-route-card" class="quick-route-card" hidden>
+            <b>Destino rápido</b><br>
+            <span id="quick-route-text">Toca un punto del mapa para activar “Llegar aquí”.</span>
+        </div>
+        <div class="mobility-extra-panel" id="traffic-control-panel">
+            <div class="mobility-extra-title">📷 Control vial</div>
+            <div class="mobility-extra-help">Capa exclusiva de movilidad para ubicar fotomultas, cámaras de velocidad y reductores registrados en OpenStreetMap. Puede variar según cobertura de datos.</div>
+            <div class="route-real-actions">
+                <button class="tool-btn" onclick="cargarControlVialCucuta()">📷 Cargar control vial</button>
+                <button class="tool-btn" onclick="limpiarControlVialCucuta()">✕ Cancelar ruta</button>
+            </div>
+            <div id="traffic-control-status" class="automap-status">Aún no se ha cargado la capa de fotomultas/reductores.</div>
+        </div>
+        <div id="route-real-panel" class="route-real-panel">
+            <div class="route-real-head">
+                <div class="route-real-title">Guía para llegar</div>
+                <span class="route-real-dev">Ruta en vivo</span>
+            </div>
+            <div class="route-real-help">Elige a dónde vas. URBIS te muestra el camino y solo deja visibles las alertas que pueden afectar tu recorrido.</div>
+            <div class="mobility-grid">
+                <button id="mode-walking" class="mobility-option" onclick="seleccionarModoRutaReal('walking')">🚶<span>A pie</span></button>
+                <button id="mode-bike" class="mobility-option" onclick="seleccionarModoRutaReal('bike')">🚲<span>Bici</span></button>
+                <button id="mode-bus" class="mobility-option" onclick="seleccionarModoRutaReal('bus')">🚌<span>Bus</span></button>
+                <button id="mode-motorcycle" class="mobility-option" onclick="seleccionarModoRutaReal('motorcycle')">🏍️<span>Moto</span></button>
+                <button id="mode-car" class="mobility-option active" onclick="seleccionarModoRutaReal('car')">🚗<span>Carro</span></button>
+            </div>
+            <div class="route-real-grid" style="margin-top:8px;">
+                <div class="route-real-mini"><b>Salida</b><span id="route-point-a">Sin seleccionar</span></div>
+                <div class="route-real-mini"><b>Destino</b><span id="route-point-b">Sin seleccionar</span></div>
+            </div>
+            <div id="route-real-result" class="route-real-result">Pulsa “Elegir destino” y toca en el mapa el lugar al que quieres ir.</div>
+            <div class="route-real-actions">
+                <button id="btn-real-route-capture" class="tool-btn" onclick="prepararDestinoDesdeGPS()">🎯 Elegir destino</button>
+                <button class="tool-btn" onclick="calcularRutaRealActual()">🚀 Iniciar recorrido</button>
+                <button class="tool-btn" onclick="usarGPSComoOrigenRutaReal()">📍 Usar mi ubicación</button>
+                <button class="tool-btn" onclick="limpiarRutaReal()">✕ Cancelar ruta</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div id="page-sport" class="sidebar-page">
+        <div class="sport-shell">
+            <div class="sport-hero-card">
+                <div>
+                    <div class="sport-eyebrow">🏃 Deporte y bienestar activo</div>
+                    <h3>Plan de actividad</h3>
+                    <p>Registra tus datos, elige tu enfoque y URBIS crea una rutina base. Luego ajusta la intensidad según tu progreso, fatiga o constancia.</p>
+                </div>
+                <div class="sport-score-card">
+                    <span>Estado</span>
+                    <strong id="sport-status-pill">Sin perfil</strong>
+                    <small id="sport-status-help">Completa los datos para generar tu plan.</small>
+                </div>
+            </div>
+
+            <div class="sport-runner-cta-card">
+                <div>
+                    <div class="sport-runner-kicker">🔥 Modo runner</div>
+                    <h4>Entrenamiento con GPS y recorrido real</h4>
+                    <p>Activa una experiencia inmersiva para correr, caminar o hacer senderismo. Registra tu ruta, ritmo, distancia, historial, PR y semanas activas al estilo de una app deportiva.</p>
+                </div>
+                <button class="tool-btn sport-runner-btn" onclick="abrirModoRunnerUrbis()">Entrar a modo runner</button>
+            </div>
+
+            <div id="sport-runner-mode" class="sport-runner-mode" hidden>
+                <div class="sport-runner-topbar">
+                    <div class="sport-runner-back-row">
+                        <button class="tool-btn sport-runner-back" onclick="cerrarModoRunnerUrbis()">← Volver a deporte</button>
+                        <button class="tool-btn sport-runner-back soft" onclick="volverMenuModulos()">← Volver a accesos</button>
+                    </div>
+                    <div class="sport-runner-titlebox">
+                        <div class="sport-runner-eyebrow">🔥 Runner · URBIS</div>
+                        <h3>Modo runner</h3>
+                        <p>Una experiencia deportiva enfocada, limpia y fácil de entender.</p>
+                    </div>
+                </div>
+
+                <div id="sport-runner-home" class="sport-runner-home">
+                    <div class="sport-runner-home-kicker">Accesos runner</div>
+                    <div class="sport-runner-home-grid">
+                        <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('user')">
+                            <span class="runner-home-icon">👤</span>
+                            <b>Usuario</b>
+                            <small>Tu perfil deportivo</small>
+                        </button>
+                        <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('map')">
+                            <span class="runner-home-icon">🗺️</span>
+                            <b>Mapa</b>
+                            <small>Estilo visual de ruta</small>
+                        </button>
+                        <button class="sport-runner-home-card sport-runner-home-card-runner" onclick="abrirVistaRunnerUrbis('runner')">
+                            <span class="runner-home-icon">👟</span>
+                            <b>Runner</b>
+                            <small>Iniciar carrera</small>
+                        </button>
+                        <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('live')">
+                            <span class="runner-home-icon">📡</span>
+                            <b>En vivo</b>
+                            <small>Tiempo y ritmo actual</small>
+                        </button>
+                        <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('history')">
+                            <span class="runner-home-icon">🧾</span>
+                            <b>Recorridos</b>
+                            <small>Historial, PR y tarjeta</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sport-runner-view-user" class="sport-runner-view" hidden>
+                    <div class="sport-runner-view-head">
+                        <button class="tool-btn sport-runner-back" onclick="volverInicioRunnerUrbis()">← Volver a runner</button>
+                    </div>
+                    <div class="sport-runner-section-grid">
+                        <div class="sport-runner-card">
+                            <h4>Usuario</h4>
+                            <div id="runner-user-summary">Completa tu perfil deportivo para ver datos útiles aquí.</div>
+                        </div>
+                        <div class="sport-runner-card">
+                            <h4>Racha activa</h4>
+                            <div id="runner-streak-summary">Aún no hay semanas activas registradas.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sport-runner-view-map" class="sport-runner-view" hidden>
+                    <div class="sport-runner-view-head">
+                        <button class="tool-btn sport-runner-back" onclick="volverInicioRunnerUrbis()">← Volver a runner</button>
+                    </div>
+                    <div class="sport-runner-card">
+                        <h4>Mapa</h4>
+                        <div class="sport-runner-map-options">
+                            <button class="tool-btn" onclick="setRunnerMapStyleUrbis('light')">Claro</button>
+                            <button class="tool-btn" onclick="setRunnerMapStyleUrbis('dark')">Oscuro</button>
+                            <button class="tool-btn" onclick="setRunnerMapStyleUrbis('sat')">Satélite</button>
+                            <button class="tool-btn" onclick="toggleRunnerHeatmapUrbis()">Calor runner</button>
+                        </div>
+                        <div id="runner-map-status" class="sport-output">Mapa claro activo. El mapa de calor usa los recorridos guardados en este dispositivo.</div>
+                    </div>
+                </div>
+
+                <div id="sport-runner-view-runner" class="sport-runner-view" hidden>
+                    <div class="sport-runner-view-head">
+                        <button class="tool-btn sport-runner-back" onclick="volverInicioRunnerUrbis()">← Volver a runner</button>
+                    </div>
+                    <div id="runner-start-stage" class="runner-stage">
+                        <div class="sport-runner-start-hero">
+                            <div class="sport-runner-kicker">Modo runner</div>
+                            <h4>Iniciar carrera</h4>
+                            <p>Solo lo esencial para correr, caminar o hacer senderismo sin distracciones.</p>
+                            <button class="tool-btn sport-runner-btn" onclick="mostrarTipoRunnerUrbis()">Iniciar carrera</button>
+                        </div>
+                    </div>
+                    <div id="runner-type-stage" class="runner-stage" hidden>
+                        <div class="sport-runner-card">
+                            <h4>¿Qué vas a hacer?</h4>
+                            <div class="runner-kind-grid">
+                                <button class="runner-kind-card active" data-runner-kind="correr" onclick="selectRunnerKindUrbis('correr')">
+                                    <span>⚡</span><b>Correr</b><small>Ritmo libre</small>
+                                </button>
+                                <button class="runner-kind-card" data-runner-kind="caminar" onclick="selectRunnerKindUrbis('caminar')">
+                                    <span>👣</span><b>Caminar</b><small>Paso cómodo</small>
+                                </button>
+                                <button class="runner-kind-card" data-runner-kind="senderismo" onclick="selectRunnerKindUrbis('senderismo')">
+                                    <span>🌄</span><b>Senderismo</b><small>Ruta natural</small>
+                                </button>
+                            </div>
+                            <div class="sport-actions">
+                                <button class="tool-btn" onclick="volverEtapaInicioRunnerUrbis()">Atrás</button>
+                                <button class="tool-btn sport-runner-btn" onclick="confirmarInicioRunnerUrbis()">Confirmar e iniciar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sport-runner-view-live" class="sport-runner-view" hidden>
+                    <div class="sport-runner-view-head runner-live-head">
+                        <button class="tool-btn sport-runner-back" onclick="volverInicioRunnerUrbis()">← Volver a runner</button>
+                    </div>
+                    <div class="sport-runner-live-card">
+                        <div class="sport-runner-live-kicker">Sesión en vivo</div>
+                        <div class="sport-runner-live-grid">
+                            <div class="sport-runner-live-metric"><span>Tiempo</span><strong id="runner-live-time">00:00</strong></div>
+                            <div class="sport-runner-live-metric"><span>Distancia</span><strong id="runner-live-distance">0.00 km</strong></div>
+                            <div class="sport-runner-live-metric"><span>Ritmo</span><strong id="runner-live-pace">--</strong></div>
+                            <div class="sport-runner-live-metric"><span>Velocidad</span><strong id="runner-live-speed">0.0 km/h</strong></div>
+                        </div>
+                    </div>
+                    <div class="sport-runner-card runner-live-console">
+                        <h4>Servicios en vivo</h4>
+                        <div id="runner-session-status" class="sport-output">Aún no has iniciado una actividad runner.</div>
+                        <div class="sport-runner-controls">
+                            <button id="runner-stop-btn" class="tool-btn sport-runner-btn" onclick="stopRunnerSessionUrbis()" disabled>Detener actividad</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sport-runner-view-history" class="sport-runner-view" hidden>
+                    <div class="sport-runner-view-head">
+                        <button class="tool-btn sport-runner-back" onclick="volverInicioRunnerUrbis()">← Volver a runner</button>
+                    </div>
+                    <div id="runner-save-card" class="sport-runner-card" style="display:none;">
+                        <h4>Guardar recorrido</h4>
+                        <div id="runner-save-summary" class="sport-output">Revisa tu actividad antes de guardarla.</div>
+                        <div class="sport-grid sport-grid-2">
+                            <label class="sport-field">Título del recorrido
+                                <input id="runner-save-title" class="event-input" type="text" placeholder="Ej. Trote al amanecer">
+                            </label>
+                            <label class="sport-field">Foto de portada
+                                <input id="runner-save-photo-file" class="event-input" type="file" accept="image/*" onchange="handleRunnerPhotoFileUrbis(event)">
+                            </label>
+                        </div>
+                        <div id="runner-photo-preview" class="sport-output">Puedes subir una foto desde tu celular o computador.</div>
+                        <textarea id="runner-save-notes" class="event-textarea" placeholder="¿Cómo te sentiste? ¿Fue trote, caminata o senderismo?"></textarea>
+                        <div class="sport-actions">
+                            <button class="tool-btn sport-runner-btn" onclick="saveRunnerSessionUrbis()">Guardar actividad</button>
+                            <button class="tool-btn" onclick="discardRunnerSessionUrbis()">Descartar</button>
+                        </div>
+                    </div>
+
+                    <div class="sport-runner-card">
+                        <h4>PR y resumen</h4>
+                        <div id="runner-pr-output">Aún no hay récords personales guardados.</div>
+                    </div>
+
+                    <div class="sport-runner-card">
+                        <h4>Historial</h4>
+                        <div id="runner-history-output">Aún no hay recorridos guardados.</div>
+                    </div>
+
+                    <div class="sport-runner-card">
+                        <h4>Tarjeta del trayecto</h4>
+                        <div id="runner-share-output">Cuando guardes una actividad, aquí verás una tarjeta visual de tu recorrido.</div>
+                    </div>
+                </div>
+            </div>
+
+            <details class="urbis-accordion sport-accordion" open>
+                <summary>1️⃣ Perfil deportivo</summary>
+                <div class="accordion-body">
+                    <div class="sport-grid sport-grid-2">
+                        <label class="sport-field">Edad
+                            <input id="sport-age" class="event-input" type="number" min="10" max="99" placeholder="Ej. 24">
+                        </label>
+                        <label class="sport-field">Peso kg
+                            <input id="sport-weight" class="event-input" type="number" min="20" max="250" step="0.1" placeholder="Ej. 70">
+                        </label>
+                        <label class="sport-field">Estatura cm
+                            <input id="sport-height" class="event-input" type="number" min="120" max="230" step="1" placeholder="Ej. 170">
+                        </label>
+                        <label class="sport-field">Nivel
+                            <select id="sport-level" class="reg-select">
+                                <option value="principiante">Principiante</option>
+                                <option value="intermedio">Intermedio</option>
+                                <option value="avanzado">Avanzado</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="sport-field">Objetivo principal
+                        <select id="sport-goal" class="reg-select">
+                            <option value="resistencia">Resistencia / cardio</option>
+                            <option value="musculo">Fuerza / músculo</option>
+                            <option value="bajar-grasa">Composición corporal saludable</option>
+                        </select>
+                    </label>
+                    <div class="sport-actions">
+                        <button class="tool-btn sport-primary" onclick="guardarPerfilDeportivoUrbis()">Guardar perfil</button>
+                        <button class="tool-btn" onclick="generarRutinaDeportivaUrbis()">Generar rutina</button>
+                    </div>
+                    <div id="sport-profile-output" class="sport-output">Aún no hay perfil deportivo guardado.</div>
+                </div>
+            </details>
+
+            <details class="urbis-accordion sport-accordion" open>
+                <summary>2️⃣ Rutina sugerida</summary>
+                <div class="accordion-body">
+                    <div id="sport-routine-output" class="sport-routine-grid">
+                        <div class="sport-empty">Genera una rutina para ver actividades sugeridas según objetivo y nivel.</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="urbis-accordion sport-accordion">
+                <summary>3️⃣ Registrar actividad</summary>
+                <div class="accordion-body">
+                    <div class="sport-grid sport-grid-2">
+                        <label class="sport-field">Tipo de actividad
+                            <select id="sport-activity-type" class="reg-select" onchange="actualizarCamposActividadUrbis()">
+                                <option value="correr">Correr / caminar</option>
+                                <option value="gym">Gym / fuerza</option>
+                                <option value="crossfit">Crossfit / funcional</option>
+                            </select>
+                        </label>
+                        <label class="sport-field">Tiempo min
+                            <input id="sport-time" class="event-input" type="number" min="1" step="1" placeholder="Ej. 30">
+                        </label>
+                    </div>
+
+                    <div id="sport-running-fields" class="sport-grid sport-grid-2">
+                        <label class="sport-field">Distancia km
+                            <input id="sport-distance" class="event-input" type="number" min="0" step="0.01" placeholder="Ej. 4.5">
+                        </label>
+                        <label class="sport-field">Ritmo cardiaco opcional
+                            <input id="sport-heart" class="event-input" type="number" min="40" max="230" placeholder="Ej. 145">
+                        </label>
+                    </div>
+
+                    <div id="sport-gym-fields" class="sport-grid sport-grid-2" style="display:none;">
+                        <label class="sport-field">Peso levantado kg
+                            <input id="sport-lift-weight" class="event-input" type="number" min="0" step="0.5" placeholder="Ej. 40">
+                        </label>
+                        <label class="sport-field">Repeticiones totales
+                            <input id="sport-reps" class="event-input" type="number" min="0" step="1" placeholder="Ej. 36">
+                        </label>
+                    </div>
+
+                    <textarea id="sport-notes" class="event-textarea" placeholder="Nota opcional: cómo te sentiste, ruta, ejercicio o energía del día."></textarea>
+                    <div class="sport-actions">
+                        <button class="tool-btn sport-primary" onclick="registrarActividadDeportivaUrbis()">Guardar actividad</button>
+                        <button class="tool-btn" onclick="limpiarRegistroDeportivoUrbis()">Limpiar</button>
+                    </div>
+                    <div id="sport-activity-output" class="sport-output">No hay actividad registrada en esta sesión.</div>
+                </div>
+            </details>
+
+            <details class="urbis-accordion sport-accordion" open>
+                <summary>4️⃣ Progreso, adaptación y motivación</summary>
+                <div class="accordion-body">
+                    <div class="sport-progress-grid">
+                        <div class="sport-metric"><span>Sesiones</span><strong id="sport-metric-sessions">0</strong></div>
+                        <div class="sport-metric"><span>Distancia</span><strong id="sport-metric-distance">0 km</strong></div>
+                        <div class="sport-metric"><span>Volumen</span><strong id="sport-metric-volume">0 kg</strong></div>
+                    </div>
+                    <div id="sport-adaptation-output" class="sport-output">Cuando registres actividad, URBIS evaluará progreso, fatiga o estancamiento.</div>
+                    <div class="sport-achievements">
+                        <div class="sport-achievement locked" id="ach-first-session">🌱 Primera sesión</div>
+                        <div class="sport-achievement locked" id="ach-5k">🏅 5 km acumulados</div>
+                        <div class="sport-achievement locked" id="ach-3sessions">🔥 3 sesiones</div>
+                        <div class="sport-achievement locked" id="ach-strength">💪 Fuerza constante</div>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <div id="page-alerts" class="sidebar-page">
+        <div id="info-content">
+            <p style="color:#aaa; font-size: 1.05rem; animation: fadeIn 0.3s; text-align: center;">👈 Toca el mapa para registrar un reporte o selecciona un hito existente.</p>
+        </div>
+        <div id="dashboard-section">
+            <div id="admin-panel" style="display:none; margin-bottom: 20px;"></div>
+            <div class="layers-container" id="ttl-info-panel"><div class="map-section-chip">⏱️ Reportes temporales</div>
+                <p style="font-size:.75rem;color:#aeb6c2;margin:6px 0 0;">Los ciudadanos ven reportes activos de inundación y tránsito menores a 8 horas. Admin/JAC puede revisar el historial desde la línea de tiempo.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-mapeotecnico" class="sidebar-page">
+        <div id="info-content-tecnico">
+            <p style="color:#aaa; font-size: 1.05rem; animation: fadeIn 0.3s; text-align: center;">Cargando matriz de usos…</p>
+        </div>
+    </div>
+
+
+    <div id="page-access" class="sidebar-page">
+        <details class="urbis-accordion" open>
+            <summary>👤 Mi perfil ciudadano</summary>
+            <div class="accordion-body">
+                <div class="profile-access-card">
+                    <b>Datos básicos</b>
+                    <span id="profile-basic-data">Completa o revisa tus datos desde el ingreso. Género: no registrado.</span>
+                </div>
+                <div class="profile-access-card">
+                    <b id="profile-access-title">Ciudadano activo</b>
+                    <span id="profile-access-description">Estás usando URBIS como ciudadano. Puedes solicitar permisos temporales de JAC o modo educativo sin dejar de ser ciudadano.</span>
+                    <div class="profile-access-row">
+                        <button class="tool-btn" onclick="activarSubmodoCiudadano('gov')">Habilitar JAC / funcionario</button>
+                        <button class="tool-btn" onclick="activarSubmodoCiudadano('edu')">Habilitar modo educativo</button>
+                        <button class="tool-btn" onclick="volverAModoCiudadano()">Volver a ciudadano</button>
+                    </div>
+                    <small>Demo: usa la clave <b>0000</b>. A futuro estos permisos podrán activarse y desactivarse desde administración según si la persona sigue siendo JAC, estudiante o colaborador.</small>
+                </div>
+                <div class="wellness-inside-card">
+                    <div class="wellness-inside-head">
+                        <b>😊 Bienestar diario</b>
+                        <span>Opcional</span>
+                    </div>
+                    <p>Este registro se hace dentro de la plataforma, no antes de entrar. Sirve como seguimiento personal y comunitario agrupado; no es diagnóstico médico.</p>
+                    <select id="profile-wellness" class="reg-select" style="margin-bottom:8px;">
+                        <option value="prefiero-no-decir">Prefiero no decir</option>
+                        <option value="sin-seguimiento">No deseo seguimiento emocional</option>
+                        <option value="estres">Estrés frecuente</option>
+                        <option value="tristeza">Tristeza o bajo ánimo</option>
+                        <option value="acompanamiento">Quiero recordatorios de autocuidado</option>
+                    </select>
+                    <select id="profile-mood" class="reg-select" style="margin-bottom:8px;">
+                        <option value="excelente">😄 Excelente</option>
+                        <option value="bien">🙂 Bien</option>
+                        <option value="normal" selected>😐 Normal</option>
+                        <option value="mal">🙁 Bajo de ánimo</option>
+                        <option value="muy-mal">😣 Muy cargado</option>
+                    </select>
+                    <textarea id="profile-mood-note" class="event-textarea" placeholder="Nota opcional: ¿qué hiciste hoy o qué te gustaría recordar?" style="min-height:64px;margin-bottom:8px;"></textarea>
+                    <button class="tool-btn wellness-save-btn" onclick="registrarCheckinBienestar()">Guardar estado de hoy</button>
+                    <div id="wellness-profile-status" class="wellness-profile-status">Aún no has registrado tu estado de ánimo dentro de la app.</div>
+                </div>
+
+                <div class="achievements-panel">
+                    <div class="achievements-head">
+                        <div class="achievements-title">🏆 Logros URBIS</div>
+                        <span id="achievements-progress-pill" class="achievements-progress-pill">0/0</span>
+                    </div>
+                    <p style="font-size:.70rem;color:#aeb6c2;line-height:1.35;margin:0 0 10px;">Los logros de reportes solo se desbloquean cuando el administrador/JAC valida el reporte. Así evitamos datos falsos y premiamos aportes reales.</p>
+                    <div id="achievements-profile-list" class="achievements-grid"></div>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div id="page-events" class="sidebar-page">
+        <div class="golden-divider"></div><h3 style="margin-top: 10px; color: var(--fuchsia);">🎪 Eventos ciudadanos</h3>
+        <p style="font-size: 0.78rem; color:#aaa; margin-top:-5px;">Registra y consulta actividades en espacios públicos: fútbol, tenis, ajedrez, shows, festivales, clases abiertas y encuentros comunitarios.</p>
+        <div class="events-panel">
+            <div class="events-title">Crear evento</div>
+            <div class="events-help">Toca el mapa para marcar la ubicación o usa el último punto seleccionado. El evento queda como dato URBIS y se puede visualizar en el mapa.</div>
+            <div class="event-location-card" id="event-location-label">📍 Ubicación pendiente. Toca el mapa o pulsa “usar último punto”.</div>
+            <div class="route-real-actions" style="margin-bottom:8px;">
+                <button class="tool-btn" onclick="activarModoUbicacionEvento()">📍 Elegir ubicación</button>
+                <button class="tool-btn" onclick="usarUltimoPuntoParaEvento()">🎯 Usar último punto</button>
+            </div>
+            <div class="events-grid">
+                <select id="event-category" class="event-select" onchange="actualizarSubtipoEvento()">
+                    <option value="Fútbol / microfútbol">⚽ Fútbol / microfútbol</option>
+                    <option value="Tenis / pádel">🎾 Tenis / pádel</option>
+                    <option value="Ajedrez / juegos de mesa">♟️ Ajedrez / juegos</option>
+                    <option value="Atletismo / carrera">🏃 Atletismo / carrera</option>
+                    <option value="Show / concierto comunitario">🎤 Show / concierto</option>
+                    <option value="Festival / feria barrial">🎪 Festival / feria</option>
+                    <option value="Clase abierta / taller">🎨 Taller / clase abierta</option>
+                    <option value="Reunión comunitaria">🤝 Reunión comunitaria</option>
+                </select>
+                <input id="event-title" class="event-input" placeholder="Nombre del evento">
+                <input id="event-date" class="event-input" type="date">
+                <input id="event-time" class="event-input" type="time">
+                <input id="event-place" class="event-input" placeholder="Lugar o cancha/parque">
+                <input id="event-contact" class="event-input" placeholder="Contacto opcional">
+                <select id="event-duration-hours" class="event-select" title="Tiempo que el evento estará publicado en el mapa">
+                    <option value="8" selected>⏱️ Publicar 8 horas</option>
+                    <option value="12">⏱️ Publicar 12 horas</option>
+                    <option value="24">📅 Publicar 1 día</option>
+                    <option value="48">📅 Publicar 2 días</option>
+                    <option value="72">📅 Publicar 3 días</option>
+                    <option value="168">🗓️ Publicar 1 semana</option>
+                    <option value="336">🗓️ Publicar 2 semanas</option>
+                </select>
+                <div class="event-duration-note">Por defecto dura 8 horas en el mapa. Después se archiva para la ciudadanía, pero Admin/JAC podrá verlo en historial.</div>
+                <textarea id="event-description" class="event-textarea" placeholder="Descripción corta: reglas, público, costo, organizador, recomendaciones..."></textarea>
+            </div>
+            <button class="btn-save" style="margin-top:10px;" onclick="guardarEventoUrbis(this)">🎪 PUBLICAR EVENTO</button>
+        </div>
+        <div class="events-panel">
+            <div class="events-title">Agenda urbana</div>
+            <div class="events-help">Eventos registrados por la ciudadanía y la administración.</div>
+            <div id="events-list"><div class="event-empty">Aún no hay eventos cargados.</div></div>
+        </div>
+    </div>
+
+    <div id="page-mascotas" class="sidebar-page">
+        <div id="mascotas-root"></div>
+    </div>
+
+    <div id="page-stats" class="sidebar-page">
+        <div class="golden-divider"></div><h3 style="margin-top: 20px; color: var(--fuchsia);">📊 Dashboard analítico</h3>
+        <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Las estadísticas excluyen reportes pendientes para proteger la data oficial.</p>
+        <div class="dashboard-container">
+            <div class="chart-box"><canvas id="chartGeneral"></canvas></div>
+            <div class="chart-box"><canvas id="chartEdificios"></canvas></div>
+            <div class="chart-box"><canvas id="chartUsos"></canvas></div>
+        </div>
+    </div>
+
+    <div id="page-mapping" class="sidebar-page">
+        <div class="golden-divider"></div><h3 style="margin-top: 10px; color: var(--cyan);">🧩 Capas del mapa</h3>
+        <p style="font-size: 0.8rem; color:#aaa; margin-top:-5px;">Activa o desactiva capas para analizar mejor el entorno.</p>
+        <div class="layers-container" id="layers-toggles"></div>
+
+        <div class="golden-divider"></div><h3 style="margin-top: 20px; color: var(--cyan);">🧭 AutoMapeo Cúcuta</h3>
+        <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Grupo separado: lugares públicos de OpenStreetMap remapeados al lenguaje de URBIS, sin mezclarlos con tus capas manuales/Excel.</p>
+        <div class="automap-panel" id="automap-panel">
+            <div class="automap-head"><div class="automap-title">Cúcuta · OSM</div><span class="automap-badge">Nuevo grupo</span></div>
+            <div class="automap-help">Carga restaurantes, droguerías, parques, canchas, colegios, hospitales y otros usos urbanos detectados en Cúcuta. Cada punto se convierte a la Matriz de Usos Multidimensional y puede anexarse a SheetDB desde su popup.</div>
+            <div class="automap-actions">
+                <button class="tool-btn" onclick="cargarAutoMapeoCucuta()">✨ Recargar lugares</button>
+                <button class="tool-btn" onclick="limpiarAutoMapeoCucuta()">✕ Cancelar ruta</button>
+                <button class="tool-btn" onclick="anexarTodoAutoMapeoAMatriz(this)">📥 Anexar todo clasificado</button>
+                <button class="tool-btn" onclick="setSidebarTab('stats')">📊 Ver datos</button>
+            </div>
+            <div id="automap-status" class="automap-status">El AutoMapeo de Cúcuta se carga automáticamente al entrar. Cada punto se clasifica solo en la Matriz de Usos Multidimensional.</div>
+            <div id="automap-toggles" class="automap-list"></div>
+            <div id="automap-matrix" class="automap-matrix"></div>
+        </div>
+
+        <div class="golden-divider"></div><h3 style="margin-top: 20px; color: var(--cyan);">🌊🕳️ Zonas ciudadanas</h3>
+        <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Detecta zonas de inundación, huecos, retenes y vías cerradas según los reportes.</p>
+        <div id="zona-analysis" class="layers-container">
+            <div class="zone-card">Aún no hay análisis cargado. Activa la plataforma o pulsa <b>Analizar zonas Waze</b>.</div>
+        </div>
+    </div>
+
+
+    <div id="page-advanced" class="sidebar-page">
+        <div class="advanced-hero">
+            <div class="advanced-kicker">Modo técnico · Arquitecto / Educativo</div>
+            <h3>🧪 Creador de mapeos raster</h3>
+            <p>Construye análisis tipo GIS sin saturar la pantalla principal: mapas de calor, llenos y vacíos, área verde, inseguridad, comercio y usos urbanos. Primero delimita un área o aplica el análisis a la vista actual.</p>
+        </div>
+
+        <details class="urbis-accordion advanced-only" open>
+            <summary>⚙️ Configuración del análisis</summary>
+            <div class="accordion-body">
+                <label class="advanced-label">Tipo de raster / capa técnica</label>
+                <select id="advanced-raster-type" class="event-select" onchange="actualizarVistaRasterPreview()">
+                    <option value="comercio">🔥 Mapa de calor comercial</option>
+                    <option value="inseguridad">🚨 Mapa de calor de inseguridad / riesgos</option>
+                    <option value="usos">🧩 Intensidad de usos urbanos</option>
+                    <option value="llenos-vacios">◼ Llenos y vacíos urbanos</option>
+                    <option value="verde">🌳 Área verde / cobertura vegetal</option>
+                    <option value="altura">🏙️ Escala gris de alturas aproximadas</option>
+                </select>
+                <div class="advanced-grid">
+                    <button class="tool-btn" onclick="activarDibujoAreaAnalisis()">✏️ Dibujar área</button>
+                    <button class="tool-btn" onclick="usarVistaActualComoArea()">▣ Usar vista actual</button>
+                    <button class="tool-btn" onclick="limpiarAreaAnalisis()">✕ Cancelar ruta área</button>
+                    <button class="tool-btn" onclick="generarRasterDemo()">🧪 Generar raster</button>
+                </div>
+                <div id="advanced-area-status" class="advanced-status">Área: todavía no seleccionada. Puedes dibujar un polígono con clics en el mapa.</div>
+            </div>
+        </details>
+
+        <details class="urbis-accordion advanced-only" open>
+            <summary>🗺️ Capas raster activables</summary>
+            <div class="accordion-body">
+                <label class="advanced-toggle"><input type="checkbox" id="toggle-raster-heat" onchange="toggleRasterLayer('heat')"> 🔥 Visualizar mapa de calor</label>
+                <label class="advanced-toggle"><input type="checkbox" id="toggle-raster-empty" onchange="toggleRasterLayer('empty')"> ◼ Visualizar llenos y vacíos</label>
+                <label class="advanced-toggle"><input type="checkbox" id="toggle-raster-green" onchange="toggleRasterLayer('green')"> 🌳 Visualizar área verde</label>
+                <label class="advanced-toggle"><input type="checkbox" id="toggle-raster-height" onchange="toggleRasterLayer('height')"> 🏙️ Visualizar escala gris de alturas</label>
+                <div id="advanced-raster-status" class="advanced-status">Los raster se generan como capas visuales preliminares desde los datos disponibles y el área marcada.</div>
+            </div>
+        </details>
+
+        <details class="urbis-accordion advanced-only">
+            <summary>🛰️ Imagen satelital y extracción</summary>
+            <div class="accordion-body">
+                <p class="advanced-help">Para detectar edificios reales desde satélite hace falta visión computacional o una API geoespacial. Este prototipo deja lista la interfaz: carga imagen, delimita zona y luego se conecta un modelo o servicio GIS.</p>
+                <input id="raster-image-input" class="event-input" type="file" accept="image/*" onchange="previsualizarImagenRaster(this)">
+                <div id="raster-image-preview" class="raster-preview">Sin imagen cargada.</div>
+            </div>
+        </details>
+
+        <details class="urbis-accordion advanced-only">
+            <summary>📌 Flujo sugerido</summary>
+            <div class="accordion-body">
+                <div class="advanced-step"><b>1.</b> Selecciona mapa satelital HD.</div>
+                <div class="advanced-step"><b>2.</b> Dibuja el área de intervención.</div>
+                <div class="advanced-step"><b>3.</b> Elige el tipo de raster.</div>
+                <div class="advanced-step"><b>4.</b> Genera la capa y actívala/desactívala.</div>
+            </div>
+        </details>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- URBIS V51 · App móvil propia (no es adaptación web) -->
+<div id="urbis-mobile-app" class="u52-app" aria-label="URBIS aplicación móvil"></div>
+
+<script src="js/00-config.js?v=451-cerrar-poligono"></script>
+<script src="js/00-app-shell.js?v=451-cerrar-poligono"></script>
+<script src="js/27-automapeo-default-off.js?v=451-cerrar-poligono"></script>
+<script src="js/28-zoom-marker-optimizer.js?v=451-cerrar-poligono"></script>
+<script src="js/26-sheetdb-mobile-guard.js?v=451-cerrar-poligono"></script>
+<script src="js/01-audio-feedback.js?v=451-cerrar-poligono"></script>
+<script src="js/02-auth-roles.js?v=451-cerrar-poligono"></script>
+<script src="js/41-email-registration-auth.js?v=451-cerrar-poligono"></script>
+<script src="js/03-map-data-config.js?v=451-cerrar-poligono"></script>
+<script src="js/04-marker-proximity.js?v=451-cerrar-poligono"></script>
+<script src="js/05-helpers-temporal-security.js?v=451-cerrar-poligono"></script>
+<script src="js/06-mobility-traffic.js?v=451-cerrar-poligono"></script>
+<script src="js/07-admin-verification.js?v=451-cerrar-poligono"></script>
+<script src="js/08-charts-dashboard.js?v=451-cerrar-poligono"></script>
+<script src="js/09-events.js?v=451-cerrar-poligono"></script>
+<script src="js/10-visible-markers.js?v=451-cerrar-poligono"></script>
+<script src="js/11-report-form.js?v=451-cerrar-poligono"></script>
+<script src="js/12-spa-ui.js?v=451-cerrar-poligono"></script>
+<script src="js/13-landing-metrics.js?v=451-cerrar-poligono"></script>
+<script src="js/47-aurea-forzado.js?v=451-cerrar-poligono"></script>
+<script src="js/14-advanced-tools.js?v=451-cerrar-poligono"></script>
+<script src="js/15-role-accessibility-layers.js?v=451-cerrar-poligono"></script>
+<script src="js/16-achievements.js?v=451-cerrar-poligono"></script>
+<script src="js/17-sport.js?v=451-cerrar-poligono"></script>
+<script src="js/45-mascotas-fundacion.js?v=451-cerrar-poligono"></script>
+<script src="js/46-runner-strava.js?v=451-cerrar-poligono"></script>
+<script src="js/48-runner-stats.js?v=451-cerrar-poligono"></script>
+<script src="js/49-urbis-analisis.js?v=451-cerrar-poligono"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/18-mobile-first-ux.js?v=451-cerrar-poligono"></script> -->
+
+<script>
+  // Auto-actualización SUAVE: cuando se despliega código nuevo, la app se recarga sola
+  // PERO solo cuando está en segundo plano (no interrumpe mientras la usas; no te tira a Inicio).
+  if ('serviceWorker' in navigator) {
+    let _urbisSWReloaded = false;
+    let _urbisUpdatePend = false;
+    const _urbisDoReload = () => {
+      if (_urbisSWReloaded) return;
+      if (!navigator.serviceWorker.controller) return; // 1ª instalación: no recargar
+      _urbisSWReloaded = true;
+      window.location.reload();
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Si la app está visible (la estás usando), NO recargamos: dejamos pendiente y
+      // recargamos cuando la mandes a segundo plano. Si ya está oculta, recargamos ya.
+      if (document.hidden) _urbisDoReload();
+      else _urbisUpdatePend = true;
+    });
+    document.addEventListener('visibilitychange', () => {
+      // Recarga a la versión nueva TANTO al mandar la app a segundo plano
+      // como al VOLVER a ella — antes solo lo hacía al ocultarse, así que si
+      // reabrías la app de cero la actualización quedaba pendiente sin
+      // aplicarse. Ahora, si hay una versión nueva lista, se aplica en el
+      // primer cambio de visibilidad en cualquier dirección.
+      if (_urbisUpdatePend) _urbisDoReload();
+    });
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').then(reg => {
+        try { reg.update(); } catch(e){}
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) { try { reg.update(); } catch(e){} }
+        });
+        // iOS/Safari en modo PWA instalada a veces NO revisa si hay Service Worker
+        // nuevo al abrir desde el ícono de inicio (solo lo hace si entras por Safari
+        // directamente). Este ping periódico compensa esa limitación: mientras la
+        // app esté abierta, revisa cada 60s si hay versión nueva sin esperar a que
+        // cambie la visibilidad.
+        setInterval(() => { try { reg.update(); } catch(e){} }, 60000);
+      }).catch(() => null);
+    });
+  }
+</script>
+<script src="js/24-procity-analisis.js?v=451-cerrar-poligono"></script>
+<script src="js/20-mobile-functional-app.js?v=451-cerrar-poligono"></script>
+<script src="js/21-mobile-mobility-pro.js?v=451-cerrar-poligono"></script>
+<script src="js/22-mobility-clean-traffic.js?v=451-cerrar-poligono"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/23-contextual-mobility-ui.js?v=451-cerrar-poligono"></script> -->
+<script src="js/36-mobility-static-search.js?v=451-cerrar-poligono"></script>
+<script src="js/37-mobility-state-controller.js?v=451-cerrar-poligono"></script>
+<script src="js/38-mobile-shell-visibility-guard.js?v=451-cerrar-poligono"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/39-mobility-map-picker-hardfix.js?v=451-cerrar-poligono"></script> -->
+</body>
+</html>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Eventos">
+  <defs>
+    <linearGradient id="p" x1="18" y1="24" x2="106" y2="105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#47e3d0"/>
+      <stop offset="1" stop-color="#008f82"/>
+    </linearGradient>
+    <linearGradient id="y" x1="65" y1="28" x2="118" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffd45e"/>
+      <stop offset="1" stop-color="#ff9d00"/>
+    </linearGradient>
+  </defs>
+  <path d="M23 72c0-17 14-31 31-31h11l33-18v82L65 87H54c-17 0-31-14-31-15z" fill="url(#p)"/>
+  <path d="M65 41v46" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".9"/>
+  <path d="M100 47l17-9M103 64h19M100 81l17 9" stroke="url(#y)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M39 88l8 23c2 5 8 7 13 4l5-3-12-28z" fill="#35bdb0"/>
+</svg>

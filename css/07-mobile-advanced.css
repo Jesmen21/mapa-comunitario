@@ -1,0 +1,775 @@
+/* URBIS V46 MOBILE FIX - panel de capas bottom sheet + safe mobile */
+/* ==========================================
+   URBIS V2: móvil, acordeones, modo avanzado y estabilidad visual
+   ========================================== */
+:root {
+  --urbis-panel-soft: rgba(255,255,255,.055);
+  --urbis-border-soft: rgba(255,255,255,.10);
+}
+
+/* Menú más compacto para móvil */
+.sidebar-tabs {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(16px);
+}
+.sidebar-tab-btn {
+  min-width: 0;
+  padding: 7px 4px !important;
+}
+.sidebar-tab-btn span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.advanced-only { display: none; }
+body[data-role="admin"] .advanced-only,
+body[data-role="edu"] .advanced-only { display: flex; }
+#page-advanced.advanced-only,
+body[data-role="admin"] #page-advanced,
+body[data-role="edu"] #page-advanced { display: none; }
+body[data-role="admin"] #page-advanced.active,
+body[data-role="edu"] #page-advanced.active { display: block; }
+
+/* Acordeones: menos información visible por defecto */
+.urbis-accordion {
+  background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+  border: 1px solid var(--urbis-border-soft);
+  border-radius: 18px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.urbis-accordion summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 13px 14px;
+  color: #eef7f6;
+  font-weight: 900;
+  font-size: .82rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.urbis-accordion summary::-webkit-details-marker { display: none; }
+.urbis-accordion summary::after {
+  content: '▾';
+  color: var(--cyan);
+  font-size: .9rem;
+  transition: transform .18s ease;
+}
+.urbis-accordion:not([open]) summary::after { transform: rotate(-90deg); }
+.accordion-body {
+  padding: 0 14px 14px;
+  color: #aeb6c2;
+  font-size: .74rem;
+  line-height: 1.38;
+}
+
+/* Modo avanzado */
+.advanced-hero {
+  border-radius: 20px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(184,235,230,.12), rgba(245,191,214,.08));
+  border: 1px solid rgba(184,235,230,.24);
+}
+.advanced-hero h3 { margin: 6px 0 8px !important; color: var(--cyan) !important; }
+.advanced-hero p { color: #c4d2d9; font-size: .76rem; line-height: 1.42; margin: 0; }
+.advanced-kicker {
+  color: var(--fuchsia);
+  font-size: .64rem;
+  text-transform: uppercase;
+  font-weight: 1000;
+  letter-spacing: .09em;
+}
+.advanced-label {
+  color: #eef7f6;
+  font-weight: 900;
+  font-size: .70rem;
+  display: block;
+  margin-bottom: 5px;
+}
+.advanced-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+.advanced-status,
+.raster-preview {
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #cbd6e2;
+  font-size: .70rem;
+  line-height: 1.35;
+}
+.advanced-help { margin: 0 0 10px; color: #aeb6c2; }
+.advanced-toggle {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 9px;
+  margin-bottom: 7px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #eaf6ff;
+  font-weight: 800;
+}
+.advanced-toggle input { accent-color: var(--cyan); margin-top: 2px; }
+.advanced-step {
+  padding: 9px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.045);
+  margin-bottom: 6px;
+}
+.advanced-step b { color: var(--cyan); }
+.raster-preview img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+/* Capas raster térmicas con relieve visual */
+.raster-cell {
+  border: 0 !important;
+  box-sizing: border-box;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  shape-rendering: auto;
+  transition: fill-opacity .12s linear, fill .12s linear;
+}
+.raster-cell.heat-relief {
+  filter: drop-shadow(0 0 5px rgba(255,255,255,.06));
+}
+.raster-cell.heat-low { background: rgba(56,189,248,.20); }
+.raster-cell.heat-mid { background: rgba(250,204,21,.30); }
+.raster-cell.heat-high { background: rgba(251,146,60,.38); }
+.raster-cell.heat-peak { background: rgba(239,68,68,.48); }
+.raster-cell.empty-built { background: rgba(35,35,43,.48); }
+.raster-cell.empty-void { background: rgba(255,255,255,.10); }
+.raster-cell.green-area { background: rgba(46,213,115,.34); }
+.raster-cell.height-low { background: rgba(220,220,220,.18); }
+.raster-cell.height-mid { background: rgba(160,160,160,.32); }
+.raster-cell.height-high { background: rgba(70,70,70,.48); }
+.draw-area-point {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--cyan); border: 2px solid #fff;
+}
+
+/* Menos parpadeo: marcadores sin transiciones ni animaciones permanentes */
+.leaflet-marker-icon,
+.urbis-report-root,
+.urbis-waze-root,
+.auto-map-root,
+.urbis-cluster-root {
+  will-change: auto !important;
+  backface-visibility: hidden;
+}
+.urbis-report-root .marker-stack,
+.urbis-waze-root .waze-icon,
+.auto-map-root .auto-poi-marker,
+.urbis-cluster-icon {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+.temp-marker .pulse-ring { animation: pulsate 1.15s ease-out infinite !important; }
+
+@media (max-width: 760px) {
+  body { flex-direction: column; overflow: hidden; }
+  #map { height: 58vh; min-height: 380px; width: 100%; }
+  #sidebar {
+    width: 100% !important;
+    height: 42vh !important;
+    min-height: 310px;
+    padding: 12px !important;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,.10);
+  }
+  #sidebar-title { font-size: 1.05rem; margin-bottom: 8px; }
+  .sidebar-tabs { grid-template-columns: repeat(3, 1fr) !important; }
+  .sidebar-tab-btn span:first-child { font-size: .95rem; }
+  .basemap-switcher { right: 12px !important; bottom: calc(42vh + 12px) !important; }
+  .basemap-panel { width: min(310px, calc(100vw - 24px)) !important; }
+  .advanced-grid, .route-real-actions, .automap-actions, .events-grid, .matrix-grid { grid-template-columns: 1fr !important; }
+}
+body[data-role="admin"] .urbis-accordion.advanced-only,
+body[data-role="edu"] .urbis-accordion.advanced-only { display: block; }
+.basemap-panel { max-height: min(72vh, 620px); overflow-y: auto; }
+
+
+/* =====================================================
+   URBIS V13 · Modo recorrido limpio / Guía para llegar
+   ===================================================== */
+body.route-focus-active #sidebar {
+    transition: background .34s ease, box-shadow .34s ease, border-color .34s ease;
+    background: linear-gradient(180deg, rgba(10,16,25,.98), rgba(14,15,22,.99)) !important;
+    border-left-color: rgba(184,235,230,.28) !important;
+}
+body.route-focus-active #sidebar-title,
+body.route-focus-active .sidebar-tabs,
+body.route-focus-active #page-mobility .sidebar-utility-title,
+body.route-focus-active #page-mobility .map-tools,
+body.route-focus-active #timeline-shell,
+body.route-focus-active #traffic-control-panel,
+body.route-focus-active #nav-panel,
+body.route-focus-active #quick-route-card,
+body.route-focus-active #page-mobility > .sidebar-utility-rail > .mobility-extra-panel:not(#route-real-panel),
+body.route-focus-active #page-mobility > .sidebar-utility-rail > .gps-sim-panel {
+    display: none !important;
+}
+body.route-focus-active #page-mobility,
+body.route-focus-active #page-mobility .sidebar-utility-rail {
+    display: block !important;
+}
+body.route-focus-active #route-real-panel {
+    display: block !important;
+    margin-top: 0 !important;
+    border-color: rgba(184,235,230,.42) !important;
+    background: linear-gradient(180deg, rgba(16,24,35,.96), rgba(9,13,20,.96)) !important;
+    box-shadow: 0 22px 48px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08) !important;
+    animation: urbisRouteFocusIn .42s cubic-bezier(.2,.8,.2,1) both;
+}
+body.route-focus-active #route-real-panel .route-real-title,
+body.route-focus-active #route-real-panel .gps-sim-title {
+    color: #b8ebe6 !important;
+    letter-spacing: .12em;
+}
+body.route-focus-active #route-real-panel::before {
+    content: 'Modo recorrido activo';
+    display: inline-flex;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #07131c;
+    background: linear-gradient(135deg, #b8ebe6, #f5bfd6);
+    font-size: .62rem;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+body.route-focus-active .leaflet-marker-icon:not(.route-point-start):not(.route-point-end) {
+    transition: opacity .25s ease, transform .25s ease;
+}
+body.route-focus-active #map {
+    transition: filter .34s ease;
+    filter: saturate(1.05) contrast(1.03);
+}
+body.route-focus-active .route-real-actions .tool-btn:last-child,
+body.route-focus-active .route-real-actions button:last-child {
+    background: rgba(255,255,255,.08) !important;
+    border-color: rgba(255,255,255,.14) !important;
+    color: #ffe5e5 !important;
+}
+@keyframes urbisRouteFocusIn {
+    from { opacity: .25; transform: translateY(18px) scale(.985); filter: blur(5px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@media (max-width: 780px) {
+    body.route-focus-active #sidebar {
+        max-height: 44vh;
+    }
+    body.route-focus-active #route-real-panel {
+        border-radius: 22px !important;
+    }
+}
+
+
+/* ==========================================
+   URBIS V15 · Modo navegación limpia
+   Al iniciar una ruta, la app se comporta como una guía:
+   oculta el panel lateral y deja solo información esencial.
+   ========================================== */
+body.route-focus-active {
+    overflow: hidden;
+}
+body.route-focus-active #sidebar {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    transform: translateX(120%) scale(.98) !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+    transition: width .34s ease, opacity .24s ease, transform .34s cubic-bezier(.2,.7,.2,1) !important;
+}
+body.route-focus-active .basemap-switcher,
+body.route-focus-active .timeline-shell,
+body.route-focus-active .map-tools,
+body.route-focus-active .leaflet-control-attribution {
+    opacity: .22;
+    transition: opacity .28s ease;
+}
+body.route-focus-active #map {
+    flex: 1 1 auto !important;
+    width: 100vw !important;
+}
+.urbis-navigation-overlay {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 1500;
+    width: min(420px, calc(100vw - 28px));
+    opacity: 0;
+    transform: translateY(18px) scale(.98);
+    pointer-events: none;
+    transition: opacity .26s ease, transform .34s cubic-bezier(.2,.7,.2,1);
+}
+.urbis-navigation-overlay.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.nav-live-card {
+    border-radius: 28px;
+    padding: 18px;
+    color: #f7fffb;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(46,213,115,.20), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(184,235,230,.18), transparent 32%),
+        linear-gradient(180deg, rgba(9,18,25,.92), rgba(13,15,21,.96));
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 24px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(22px) saturate(1.12);
+}
+.nav-live-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.nav-live-kicker {
+    display: inline-flex;
+    margin-bottom: 4px;
+    color: #a9e6c5;
+    font-size: .66rem;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+}
+.nav-live-top strong {
+    display: block;
+    color: #fff;
+    font-size: 1.15rem;
+    letter-spacing: -.02em;
+}
+.nav-live-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.06);
+    color: #eaf7f2;
+    cursor: pointer;
+    font-weight: 1000;
+}
+.nav-live-next {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(46,213,115,.16), rgba(184,235,230,.10));
+    border: 1px solid rgba(184,235,230,.20);
+}
+.nav-live-arrow {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #07131c;
+    font-size: 1.45rem;
+    background: linear-gradient(135deg, #a9e6c5, #b8ebe6);
+    box-shadow: 0 10px 28px rgba(184,235,230,.18);
+}
+.nav-live-next b {
+    display: block;
+    color: #fff;
+    font-size: .95rem;
+    line-height: 1.22;
+}
+.nav-live-next span {
+    display: block;
+    margin-top: 4px;
+    color: #aeb6c2;
+    font-size: .72rem;
+    line-height: 1.3;
+}
+.nav-live-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+.nav-live-metrics div {
+    padding: 10px 8px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.08);
+    min-width: 0;
+}
+.nav-live-metrics b {
+    display: block;
+    color: #fff;
+    font-size: .82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nav-live-metrics span {
+    display: block;
+    margin-top: 3px;
+    color: #95a7b5;
+    font-size: .58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.nav-live-alert {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 16px;
+    background: rgba(255,240,184,.08);
+    border: 1px solid rgba(255,240,184,.16);
+}
+.nav-live-alert p {
+    margin: 0;
+    color: #dbe7e3;
+    font-size: .68rem;
+    line-height: 1.32;
+}
+.nav-live-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+.nav-live-actions button {
+    border: 0;
+    border-radius: 18px;
+    padding: 12px 10px;
+    cursor: pointer;
+    font-weight: 1000;
+}
+.nav-live-actions button:first-child {
+    background: rgba(255,255,255,.09);
+    color: #e8f3ef;
+}
+.nav-live-actions button:last-child {
+    background: linear-gradient(135deg, #a9e6c5, #b8ebe6);
+    color: #07131c;
+}
+@media (max-width: 760px) {
+    .urbis-navigation-overlay {
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+        width: auto;
+    }
+    .nav-live-card {
+        border-radius: 24px;
+        padding: 14px;
+    }
+}
+
+
+/* ==========================================
+   URBIS V17 · Pantalla previa al recorrido
+   Al tocar destino, todo se limpia y aparece una invitación clara
+   para iniciar la guía y escoger movilidad.
+   ========================================== */
+body.route-choice-active {
+    overflow: hidden;
+}
+body.route-choice-active #sidebar {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    transform: translateX(120%) scale(.98) !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+    transition: width .34s ease, opacity .24s ease, transform .34s cubic-bezier(.2,.7,.2,1) !important;
+}
+body.route-choice-active #map {
+    flex: 1 1 auto !important;
+    width: 100vw !important;
+    transition: filter .34s ease;
+    filter: saturate(1.04) contrast(1.02);
+}
+body.route-choice-active .basemap-switcher,
+body.route-choice-active .leaflet-control-attribution {
+    opacity: .22;
+    transition: opacity .28s ease;
+}
+.urbis-route-choice-overlay {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 1550;
+    width: min(560px, calc(100vw - 28px));
+    opacity: 0;
+    transform: translate(-50%, 24px) scale(.985);
+    pointer-events: none;
+    transition: opacity .28s ease, transform .42s cubic-bezier(.2,.7,.2,1);
+}
+.urbis-route-choice-overlay.visible {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    pointer-events: auto;
+}
+.route-choice-card {
+    border-radius: 30px;
+    padding: 20px;
+    color: #f6fffb;
+    background:
+        radial-gradient(circle at 16% 12%, rgba(46,213,115,.22), transparent 30%),
+        radial-gradient(circle at 88% 8%, rgba(245,191,214,.20), transparent 34%),
+        linear-gradient(180deg, rgba(8,17,25,.94), rgba(13,15,21,.97));
+    border: 1px solid rgba(255,255,255,.13);
+    box-shadow: 0 26px 80px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(24px) saturate(1.15);
+}
+.route-choice-kicker {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #07131c;
+    background: linear-gradient(135deg, #b8ebe6, #a9e6c5);
+    font-size: .66rem;
+    font-weight: 1000;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.route-choice-card h2 {
+    color: #fff;
+    font-size: 1.55rem;
+    margin: 0 0 7px;
+    letter-spacing: -.035em;
+    border: 0;
+    padding: 0;
+    text-shadow: none;
+}
+.route-choice-card p {
+    margin: 0 0 14px;
+    color: #b9c7c9;
+    line-height: 1.42;
+    font-size: .86rem;
+}
+.route-choice-destination {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 11px;
+    border-radius: 18px;
+    background: rgba(184,235,230,.10);
+    border: 1px solid rgba(184,235,230,.19);
+    margin-bottom: 12px;
+}
+.route-choice-destination span {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f5bfd6, #b8ebe6);
+}
+.route-choice-destination b { display:block; color:#fff; font-size:.78rem; }
+.route-choice-destination small { display:block; color:#aeb6c2; margin-top:2px; }
+.route-choice-start {
+    width: 100%;
+    border: 0;
+    border-radius: 22px;
+    padding: 15px 14px;
+    cursor: pointer;
+    color: #07131c;
+    background: linear-gradient(135deg, #2ed573, #b8ebe6, #f5bfd6);
+    font-weight: 1000;
+    font-size: .98rem;
+    letter-spacing: .03em;
+    box-shadow: 0 14px 32px rgba(46,213,115,.18);
+}
+.route-choice-label {
+    margin: 14px 0 8px;
+    color: #aeb6c2;
+    font-size: .70rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .10em;
+}
+.route-choice-modes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+.route-choice-mode {
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    padding: 11px 6px;
+    color: #eef7f3;
+    background: rgba(255,255,255,.055);
+    cursor: pointer;
+    font-weight: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.route-choice-mode span { font-size: 1.25rem; }
+.route-choice-mode b { font-size: .70rem; }
+.route-choice-mode.active {
+    border-color: #b8ebe6;
+    background: linear-gradient(135deg, rgba(184,235,230,.22), rgba(245,191,214,.18));
+    box-shadow: inset 0 0 0 1px rgba(184,235,230,.22);
+}
+.route-choice-cancel {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    padding: 11px;
+    background: rgba(255,255,255,.05);
+    color: #dce7e4;
+    cursor: pointer;
+    font-weight: 900;
+}
+.route-choice-current {
+    margin-top: 9px;
+    color: #aeb6c2;
+    text-align: center;
+    font-size: .72rem;
+}
+@media (max-width: 760px) {
+    .urbis-route-choice-overlay {
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+        width: auto;
+        transform: translateY(24px) scale(.985);
+    }
+    .urbis-route-choice-overlay.visible {
+        transform: translateY(0) scale(1);
+    }
+    .route-choice-card {
+        border-radius: 24px;
+        padding: 16px;
+    }
+    .route-choice-modes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* URBIS V19 · Voz GPS */
+.nav-voice-btn {
+    background: linear-gradient(135deg, rgba(184,235,230,.20), rgba(245,191,214,.16)) !important;
+    border: 1px solid rgba(184,235,230,.30) !important;
+    color: #eafffb !important;
+}
+.nav-voice-btn.muted {
+    opacity: .72;
+    background: rgba(255,255,255,.08) !important;
+    color: #c8d4d5 !important;
+}
+
+
+/* =====================================================
+   URBIS V45 · Refuerzo móvil integral
+   Evita elementos fuera de pantalla y mejora accesibilidad táctil.
+   ===================================================== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+#sidebar,
+#module-focus-shell,
+.sidebar-page,
+.form-section,
+.layers-container,
+.automap-panel,
+.events-panel,
+.route-real-panel,
+.sport-panel,
+.sport-block,
+.sport-card {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+img, canvas, video {
+  max-width: 100%;
+  height: auto;
+}
+@media (max-width: 760px) {
+  body {
+    min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #map {
+    height: 52dvh;
+    min-height: 300px;
+  }
+  #sidebar {
+    height: 48dvh !important;
+    min-height: 340px;
+    padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  .module-back-btn {
+    top: 6px;
+  }
+  .module-focus-head,
+  .sport-hero-card,
+  .chart-box,
+  .form-section,
+  .layers-container,
+  .automap-panel,
+  .events-panel {
+    border-radius: 18px !important;
+  }
+  .sidebar-tab-btn,
+  .tool-btn,
+  .btn-save,
+  .btn-edit,
+  .btn-like,
+  .btn-borrar,
+  .btn-approve,
+  .btn-cancelar {
+    min-height: 44px;
+  }
+  .sidebar-page h3,
+  .module-focus-head h3,
+  .sport-hero-card h3 {
+    overflow-wrap: anywhere;
+  }
+}

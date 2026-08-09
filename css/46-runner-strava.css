@@ -1,0 +1,438 @@
+/* ============================================================================
+   URBIS · RUSH — estética propia del modo runner (estilo Strava).
+   Identidad: carbón oscuro + gradiente coral→fucsia→violeta (energía).
+   Distinta del teal URBIS y del naranja Strava. Scoped a clases .rush-* y a la
+   pantalla del resumen para no filtrar a otros módulos.
+   ============================================================================ */
+:root{
+  --rush-a:#ff5e3a; --rush-b:#ff2d78; --rush-c:#a45cff;
+  --rush-ink:#0b0d12; --rush-ink-2:#15181f; --rush-line:rgba(255,255,255,.1);
+}
+.rush-grad{ background:linear-gradient(120deg,var(--rush-a),var(--rush-b) 52%,var(--rush-c)); }
+
+/* ---- Resumen runner con identidad Rush ---- */
+.rush-summary{ padding:14px !important; }
+.rush-summary-card{
+  background:radial-gradient(120% 80% at 50% 0%, #1b1f29 0%, var(--rush-ink-2) 45%, var(--rush-ink) 100%);
+  border:1px solid var(--rush-line); border-radius:24px; padding:16px; color:#fff;
+  box-shadow:0 18px 44px rgba(0,0,0,.4); overflow:hidden;
+}
+.rush-route-canvas{ width:100%; height:auto; display:block; border-radius:18px; background:#0b0d12; border:1px solid var(--rush-line); }
+.rush-summary-head{ text-align:center; margin:14px 0 4px; }
+.rush-kicker{
+  display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.5px; text-transform:uppercase;
+  color:#fff; background:linear-gradient(120deg,var(--rush-a),var(--rush-b),var(--rush-c)); padding:5px 14px; border-radius:999px;
+}
+.rush-summary-head h1{ margin:10px 0 0; font-size:1.4rem; font-weight:900; color:#fff; }
+.rush-stat-grid{ display:flex; gap:10px; margin:16px 0; }
+.rush-stat{ flex:1; background:rgba(255,255,255,.05); border:1px solid var(--rush-line); border-radius:16px; padding:14px 6px; text-align:center; }
+.rush-stat b{ display:block; font-size:1.5rem; font-weight:900; color:#fff; line-height:1; }
+.rush-stat span{ display:block; font-size:.66rem; color:rgba(255,255,255,.6); margin-top:6px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+.rush-actions{ display:flex; gap:10px; margin-bottom:12px; }
+
+/* ---- Botones Rush ---- */
+.rush-btn{
+  flex:1; border:none; border-radius:14px; padding:14px 12px; font-weight:800; font-size:.92rem; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px; transition:transform .14s ease, filter .2s ease; color:#fff;
+}
+.rush-btn:active{ transform:scale(.96); }
+.rush-btn.replay{ background:linear-gradient(120deg,var(--rush-a),var(--rush-b)); box-shadow:0 8px 20px rgba(255,45,120,.32); }
+.rush-btn.card{ background:linear-gradient(120deg,var(--rush-b),var(--rush-c)); box-shadow:0 8px 20px rgba(164,92,255,.3); }
+.rush-btn.ghost{ background:rgba(255,255,255,.08); border:1px solid var(--rush-line); }
+.u52-primary.rush-save{ background:linear-gradient(120deg,var(--rush-a),var(--rush-b) 50%,var(--rush-c)) !important; border:none !important; color:#fff !important; box-shadow:0 10px 24px rgba(255,45,120,.3) !important; }
+
+/* ---- Overlay (replay y tarjeta) ---- */
+.rush-overlay{
+  position:fixed; inset:0; z-index:2147483200; display:flex; flex-direction:column;
+  background:radial-gradient(120% 80% at 50% -10%, #1b1f29 0%, #0e1016 50%, #07080c 100%);
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; color:#fff;
+  padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  animation:rushFade .25s ease both;
+}
+.rush-ov-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.rush-ov-kicker{ font-weight:900; letter-spacing:1px; font-size:.95rem; }
+.rush-ov-x{ width:38px; height:38px; border-radius:50%; border:1px solid var(--rush-line); background:rgba(255,255,255,.06); color:#fff; font-size:1rem; cursor:pointer; }
+.rush-ov-actions{ display:flex; gap:10px; margin-top:14px; }
+.rush-ov-actions-wrap{ flex-wrap:wrap; }
+.rush-ov-actions-wrap .rush-btn{ flex:1 1 40%; min-width:130px; }
+.rush-ov-actions-wrap .rush-btn.ghost{ position:relative; overflow:hidden; }
+.rush-ov-actions-wrap label.rush-btn input{ position:absolute; inset:0; opacity:0; }
+
+/* ---- Replay (el "video") ---- */
+.rush-replay-stage{ position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:0; }
+#rush-replay-cv{ width:auto; height:100%; max-width:100%; max-height:66vh; border-radius:20px; background:#0b0d12; border:1px solid var(--rush-line); box-shadow:0 20px 50px rgba(0,0,0,.5); }
+.rush-replay-hud{ position:absolute; top:14px; left:14px; right:14px; display:flex; flex-direction:column; gap:6px; pointer-events:none; }
+.rush-hud-big{ display:flex; align-items:baseline; gap:8px; }
+.rush-hud-big b{ font-size:3rem; font-weight:900; line-height:1; text-shadow:0 3px 14px rgba(0,0,0,.5); }
+.rush-hud-big span{ font-size:1rem; color:rgba(255,255,255,.75); font-weight:700; }
+.rush-hud-row{ display:flex; gap:22px; }
+.rush-hud-row b{ font-size:1.3rem; font-weight:800; }
+.rush-hud-row span{ font-size:.72rem; color:rgba(255,255,255,.6); display:block; text-transform:uppercase; letter-spacing:.5px; }
+.rush-replay-bar{ width:100%; max-width:520px; height:7px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; margin-top:16px; }
+.rush-replay-bar i{ display:block; height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,var(--rush-a),var(--rush-b),var(--rush-c)); transition:width .12s linear; }
+
+/* ---- Tarjeta / foto ---- */
+.rush-card-stage{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+#rush-card-cv{ width:auto; height:100%; max-height:70vh; max-width:100%; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,.55); border:1px solid var(--rush-line); }
+
+@keyframes rushFade{ from{ opacity:0; transform:scale(.98); } to{ opacity:1; transform:scale(1); } }
+@media (prefers-reduced-motion:reduce){ .rush-overlay{ animation:none; } }
+
+/* ============================================================================
+   PANTALLA EN VIVO (runner-live) — minimalista, prioridad al MAPA.
+   Los contenedores NO capturan toque (dejan pasar el gesto al mapa); solo los
+   <button> reciben toque (regla del tema móvil en map-screen).
+   ============================================================================ */
+.rush-live-top{
+  position:absolute; top:calc(10px + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); z-index:42;
+  display:flex; align-items:center; gap:10px; color:#fff;
+  background:rgba(12,14,18,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:6px 14px 6px 6px; box-shadow:0 10px 26px rgba(0,0,0,.38);
+}
+.rush-live-pill{ width:34px; height:34px; border-radius:50%; border:none; background:rgba(255,255,255,.12); color:#fff; font-size:1.05rem; cursor:pointer; }
+.rush-live-clock b{ font-size:1.45rem; font-weight:800; letter-spacing:.5px; font-variant-numeric:tabular-nums; }
+.rush-live-gps{ font-size:.7rem; font-weight:800; color:#37f0b0; white-space:nowrap; }
+
+.rush-live-hud{
+  position:absolute; left:10px; right:10px; bottom:calc(98px + env(safe-area-inset-bottom,0px)); z-index:40;
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap; pointer-events:none;
+}
+.rush-live-metric{
+  min-width:62px; background:rgba(12,14,18,.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:8px 13px; text-align:center;
+}
+.rush-live-metric b{ display:block; font-size:1.1rem; font-weight:800; color:#fff; line-height:1; font-variant-numeric:tabular-nums; }
+.rush-live-metric.main b{ font-size:1.45rem; color:#ff7d8f; }
+.rush-live-metric span{ display:block; font-size:.58rem; color:rgba(255,255,255,.6); margin-top:4px; text-transform:uppercase; letter-spacing:.6px; font-weight:800; }
+
+.rush-live-controls{
+  position:absolute; left:0; right:0; bottom:calc(22px + env(safe-area-inset-bottom,0px)); z-index:42;
+  display:flex; align-items:center; justify-content:center; gap:14px;
+}
+.rush-ctrl{ border:none; cursor:pointer; color:#fff; font-weight:800; }
+.rush-ctrl.pause{
+  width:58px; height:58px; border-radius:50%; font-size:1.15rem; background:rgba(12,14,18,.85);
+  border:1.5px solid rgba(255,255,255,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 8px 22px rgba(0,0,0,.42);
+}
+.rush-ctrl.finish{ height:58px; padding:0 32px; border-radius:999px; font-size:1rem; background:linear-gradient(120deg,var(--rush-a),var(--rush-b) 55%,var(--rush-c)); box-shadow:0 10px 26px rgba(255,45,120,.42); }
+body.rush-paused .rush-ctrl.pause{ background:linear-gradient(120deg,var(--rush-a),var(--rush-b)); border-color:transparent; }
+
+/* Durante la carrera: OCULTA la barra inferior (tapaba el botón Finalizar) y deja los
+   controles de correr por encima de todo (el nav en map-screen usa z-index gigante). */
+/* iOS: el mapa no se arrastraba/zoom (Safari se quedaba el gesto como scroll de la página).
+   Solución contundente: en pantallas de mapa, touch-action:none en TODO el body y en las capas
+   que quedan encima del #map → el navegador deja de reclamar el gesto y Leaflet (con #map en
+   touch-action:none + pointer-events:auto) hace pan/zoom. Los paneles desplazables siguen
+   funcionando porque son sus propios scroll-containers (su touch-action:pan-y gobierna). */
+html, body{ overscroll-behavior:none; }
+body.u52-real-map{ touch-action:none !important; overflow:hidden !important; overscroll-behavior:none !important; }
+body.u52-real-map #urbis-mobile-app,
+body.u52-real-map #urbis-mobile-app .u52-screen.map-screen{ touch-action:none !important; }
+/* Donde SÍ debe haber scroll sobre el mapa (hojas/paneles), se re-permite el desplazamiento. */
+body.u52-real-map .u52-sheet,
+body.u52-real-map .u52-content,
+body.u52-real-map [data-urbis-scroll]{ touch-action:pan-y !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; }
+
+body.rush-running #urbis-mobile-app .u52-bottom-nav{ display:none !important; }
+body.rush-running .rush-live-top{ z-index:2147483280 !important; }
+body.rush-running .rush-live-hud{ z-index:2147483275 !important; }
+body.rush-running .rush-live-controls{ z-index:2147483285 !important; }
+
+/* ---- Nav propia del modo URBIS Rush (Rush · Mis recorridos · + · Social · Perfil) ---- */
+/* BUG (v323-325): esta regla empataba en especificidad con
+   "#urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png{display:flex!important}"
+   (css/99, cargado DESPUÉS de este archivo) — en un empate, gana la regla
+   cargada más tarde, así que la nav del Rush NUNCA llegaba a ocultarse de
+   verdad y quedaba flotando sobre CUALQUIER pantalla (tapando/"reemplazando"
+   la barra general de Inicio/Reportar/Mis reportes). Se sube la especificidad
+   encadenando .u52-bottom-nav además de .u52-rush-nav para ganar siempre. */
+#urbis-mobile-app .u52-bottom-nav.u52-rush-nav[hidden]{ display:none !important; }
+/* Misma protección en la dirección contraria: la barra GENERAL debe poder
+   ocultarse de verdad mientras se está en modo Rush, con la misma garantía
+   de especificidad (nunca dependía de esto antes porque el login usa otra
+   regla más fuerte — pero aquí sí puede empatar). */
+#urbis-mobile-app .u52-bottom-nav.u52-jac-bottom-nav:not(.u52-rush-nav)[hidden]{ display:none !important; }
+#urbis-mobile-app .u52-rush-nav .rush-nav-ico{ font-size:1.2rem; line-height:1; display:block; }
+#urbis-mobile-app .u52-rush-nav button.active{ color:#ff4d6a !important; }
+#urbis-mobile-app .u52-bottom-nav.u52-rush-nav .plus.rush-plus{
+  background:linear-gradient(135deg,#ff7a3d,#ff5e7a) !important;
+  box-shadow:0 10px 22px rgba(255,94,122,.42) !important;
+}
+
+/* Botón "reportar en el camino" dentro del rastreo en vivo (no detiene nada) */
+.rush-ctrl.report{
+  width:58px; height:58px; border-radius:50%; font-size:1.3rem;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+
+/* Chip flotante "volver a tu actividad" (aparece fuera del live con rastreo vivo) */
+#rush-return-chip{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(96px + env(safe-area-inset-bottom,0px)); z-index:2147483300;
+  border:none; cursor:pointer; padding:11px 20px; border-radius:999px;
+  color:#fff; font-weight:800; font-size:.84rem; white-space:nowrap;
+  background:linear-gradient(135deg,#ff7a3d,#ff5e7a);
+  box-shadow:0 12px 28px rgba(255,94,122,.5);
+  animation:rushPulse 1.8s ease-in-out infinite;
+}
+#rush-return-chip b{ font-weight:900; }
+
+/* Botón publicar en Social Rush (resumen de actividad) */
+.rush-btn.social{
+  width:100%; margin-bottom:10px; font-size:.85rem; color:#fff;
+  background:linear-gradient(135deg,#3ddcff,#a45cff);
+  border:none; box-shadow:0 8px 20px rgba(90,120,255,.3);
+}
+.rush-btn.social:disabled{ opacity:.75; }
+
+/* ---- Muro Social Rush (tarjetas cute con mini-mapa de la ruta) ---- */
+#u52-rushsocial-content .rush-social-tabs{ margin:14px 0 12px; }
+.rush-social-list{ display:flex; flex-direction:column; gap:12px; padding-bottom:10px; }
+.rush-social-card{ background:#fff; border:1.5px solid #ffd7e1; border-radius:20px; padding:14px; box-shadow:0 8px 20px rgba(255,94,122,.10); }
+.rush-social-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.rush-social-av{ width:40px; height:40px; flex:0 0 40px; border-radius:50%; background:#ffe9ef; display:grid; place-items:center; font-size:1.15rem; }
+.rush-social-head b{ display:block; color:#3a2a30; font-size:.92rem; }
+.rush-social-head small{ display:block; color:#5a3d46; font-size:.72rem; margin-top:2px; }
+.rush-social-mini{ width:100%; height:90px; display:block; border-radius:14px; background:#fff5f8; border:1px solid #ffe0e9; margin-bottom:10px; }
+.rush-social-stats{ display:flex; gap:8px; }
+.rush-social-stats span{ flex:1; text-align:center; background:#fff5f8; border-radius:12px; padding:8px 4px; font-size:.66rem; color:#5a3d46; font-weight:700; }
+.rush-social-stats b{ display:block; font-size:1rem; color:#ff4d6a; font-weight:900; }
+
+/* ---- Calendario de actividad (mes actual, días iluminados con los km) ---- */
+.rush-calendar-card{
+  background:#fff; border:1.5px solid #ffd7e1; border-radius:20px; padding:14px;
+  margin:14px 0; box-shadow:0 8px 20px rgba(255,94,122,.10);
+}
+.rush-calendar-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+.rush-calendar-head b{ color:#3a2a30; font-size:.92rem; font-weight:800; }
+.rush-calendar-head span{ color:#5a3d46; font-size:.7rem; font-weight:700; }
+.rush-calendar-week{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+.rush-calendar-week span{ text-align:center; font-size:.62rem; font-weight:800; color:#a88b93; }
+.rush-calendar-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.rush-cal-day{
+  aspect-ratio:1; border-radius:9px; background:#fff5f8; border:1px solid #ffe6ee;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1px; position:relative;
+}
+.rush-cal-day.empty{ background:transparent; border-color:transparent; }
+.rush-cal-day b{ font-size:.62rem; font-weight:800; color:#a88b93; line-height:1; }
+.rush-cal-day small{ font-size:.5rem; font-weight:900; line-height:1; }
+.rush-cal-day.today{ box-shadow:0 0 0 2px #ff4d6a; }
+.rush-cal-day.on b, .rush-cal-day.on small{ color:#fff; }
+.rush-cal-day.lvl1{ background:#ffc9d6; border-color:#ffc9d6; }
+.rush-cal-day.lvl2{ background:#ff8fa8; border-color:#ff8fa8; }
+.rush-cal-day.lvl3{ background:#ff5e7a; border-color:#ff5e7a; }
+.rush-cal-day.lvl4{ background:linear-gradient(135deg,#ff7a3d,#ff2d78); border-color:#ff2d78; box-shadow:0 4px 10px rgba(255,45,120,.35); }
+.rush-calendar-legend{ display:flex; align-items:center; gap:5px; margin-top:10px; justify-content:flex-end; }
+.rush-calendar-legend span{ font-size:.6rem; color:#a88b93; font-weight:700; }
+.rush-calendar-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; background:#fff5f8; border:1px solid #ffe6ee; }
+.rush-calendar-legend i.lvl1{ background:#ffc9d6; border-color:#ffc9d6; }
+.rush-calendar-legend i.lvl2{ background:#ff8fa8; border-color:#ff8fa8; }
+.rush-calendar-legend i.lvl3{ background:#ff5e7a; border-color:#ff5e7a; }
+.rush-calendar-legend i.lvl4{ background:linear-gradient(135deg,#ff7a3d,#ff2d78); border-color:#ff2d78; }
+
+/* Vista previa (aún sin recorridos): días de EJEMPLO atenuados (no son datos
+   reales) + botón invitando a iniciar la primera actividad. */
+.rush-calendar-card.preview{ border-style:dashed; }
+.rush-calendar-card.preview .rush-calendar-head span{ color:#ff4d6a; font-weight:800; }
+.rush-cal-day.demo{ opacity:.55; }
+.rush-cal-day.demo b{ color:#fff; }
+.rush-cal-cta{
+  width:100%; margin-top:12px; padding:12px; border:none; border-radius:999px;
+  background:linear-gradient(135deg,#ff7a3d,#ff5e7a); color:#fff; font-weight:800;
+  font-size:.85rem; box-shadow:0 10px 22px rgba(255,94,122,.35); cursor:pointer;
+}
+
+/* ---- Zona de Progreso vacía: tarjetas cute con acento flúor del Rush ----
+   El botón "Iniciar" salía desfasado: css/14 le fija height:40px y css/29 le
+   mete padding vertical 13px !important — el contenido desbordaba la caja.
+   Aquí (cascada posterior + mayor especificidad) se corrige y se re-viste. */
+#u52-progress-content .u52-empty-card.rush-empty{
+  background:#fff !important; border:1.5px solid #ffd7e1 !important; border-radius:20px !important;
+  box-shadow:0 8px 20px rgba(255,94,122,.10) !important; align-items:center !important;
+  margin:0 14px 12px;
+}
+#u52-progress-content .u52-empty-card.rush-empty:first-child{ margin-top:14px; }
+#u52-progress-content .u52-empty-card.rush-empty span:first-child{ background:#ffe9ef !important; }
+#u52-progress-content .u52-empty-card.rush-empty b{ color:#3a2a30 !important; }
+#u52-progress-content .u52-empty-card.rush-empty small{ color:#5a3d46 !important; }
+#u52-progress-content .u52-empty-card.rush-empty button{
+  height:auto !important; flex:0 0 auto !important; align-self:center !important;
+  margin-left:auto !important; padding:10px 16px !important; border-radius:999px !important;
+  background:linear-gradient(135deg,#ff7a3d,#ff5e7a) !important; color:#fff !important;
+  font-weight:800 !important; white-space:nowrap !important;
+  box-shadow:0 8px 18px rgba(255,94,122,.35) !important;
+}
+
+/* Botón recortar dentro del resumen */
+.rush-btn.trim{ width:100%; background:rgba(255,255,255,.06); border:1px solid var(--rush-line); color:#fff; margin-bottom:10px; font-size:.85rem; }
+
+/* ---- Panel de recorte ---- */
+.rush-trim-stage{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+#rush-trim-cv{ width:auto; height:100%; max-height:46vh; max-width:100%; border-radius:16px; background:#0b0d12; border:1px solid rgba(255,255,255,.1); }
+.rush-trim-info{ text-align:center; font-weight:800; margin:12px 0; color:#fff; }
+.rush-trim-sliders{ display:flex; flex-direction:column; gap:12px; margin-bottom:12px; }
+.rush-trim-sliders label{ display:flex; align-items:center; gap:12px; font-size:.8rem; color:rgba(255,255,255,.85); font-weight:800; }
+.rush-trim-sliders label span{ width:46px; }
+.rush-trim-sliders input[type=range]{ flex:1; accent-color:var(--rush-b); height:26px; }
+.rush-trim-auto{ width:100%; margin-bottom:12px; }
+
+/* ---- Calentamiento / estabilización de GPS antes de iniciar ---- */
+.rush-warmup{ position:fixed; inset:0; z-index:2147483250; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(7,8,12,.92); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; animation:rushFade .25s ease both; }
+.rush-warmup-card{ width:100%; max-width:340px; text-align:center; color:#fff; padding:28px 22px; border-radius:24px;
+  background:radial-gradient(120% 80% at 50% 0%, #1b1f29, #0e1016); border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 50px rgba(0,0,0,.5); }
+.rush-warmup-ring{ width:84px; height:84px; margin:0 auto 16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:38px;
+  background:rgba(255,45,120,.12); border:2px solid rgba(255,45,120,.4); animation:rushPulse 1.4s ease-in-out infinite; }
+.rush-warmup-card h3{ margin:0 0 6px; font-size:1.25rem; font-weight:900; color:#fff; }
+.rush-warmup-card p{ margin:0 0 16px; font-size:.86rem; color:rgba(255,255,255,.72); }
+.rush-warmup-bar{ height:8px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; margin-bottom:18px; }
+.rush-warmup-bar i{ display:block; height:100%; width:8%; border-radius:999px; background:linear-gradient(90deg,var(--rush-a),var(--rush-b),var(--rush-c)); transition:width .4s ease; }
+.rush-warmup .rush-btn{ width:100%; margin-bottom:10px; }
+.rush-warmup .rush-btn:disabled{ opacity:.5; }
+.rush-warmup-cancel{ width:100%; background:none; border:none; color:rgba(255,255,255,.55); font-size:.85rem; font-weight:700; cursor:pointer; padding:6px; }
+@keyframes rushPulse{ 0%,100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(255,45,120,.4); } 50%{ transform:scale(1.06); box-shadow:0 0 0 14px rgba(255,45,120,0); } }
+
+/* ============================================================================
+   HOME del módulo Runner (pantalla "sport") — estética cálida y cute en la línea
+   de Patitas URBIS, con textos OSCUROS legibles (antes Ciclismo/Caminar/Senderismo
+   salían en blanco sobre fondo claro = ilegibles). Es el "lobby" cálido; el rastreo
+   en vivo sigue siendo oscuro/inmersivo.
+   ============================================================================ */
+.rush-home{
+  --rh-coral:#ff7a3d; --rh-pink:#ff5e7a; --rh-violet:#a45cff;
+  /* Textos siempre OSCUROS y legibles sobre fondos blancos/claros (regla URBIS). */
+  --rh-ink:#3a2a30; --rh-ink-soft:#5a3d46; --rh-line:#ffe0d4;
+  padding:14px !important;
+}
+.rush-home-top .u52-title{ color:#ff4d6a !important; font-weight:900; }
+/* Hero COMPACTO (pedido explícito: el bloque "¡A moverte!" consumía media
+   pantalla). Mismo look flúor coral→rosa→violeta, pero en formato banner
+   horizontal: emoji a la izquierda, texto a la derecha, ~1/3 de la altura. */
+.rush-home-hero{
+  display:flex; align-items:center; gap:12px; text-align:left;
+  padding:13px 16px; border-radius:20px; color:#fff; position:relative; overflow:hidden;
+  background:linear-gradient(150deg,var(--rh-coral) 0%, var(--rh-pink) 55%, var(--rh-violet) 125%);
+  box-shadow:0 10px 24px rgba(255,94,122,.28);
+}
+.rush-home-hero::after{ content:"🏃"; position:absolute; font-size:64px; right:-8px; bottom:-16px; opacity:.16; transform:rotate(-8deg); }
+.rush-home-emoji{ font-size:30px; flex:0 0 auto; display:inline-block; animation:rushHomePop .9s cubic-bezier(.2,1.6,.4,1) both; }
+.rush-home-hero-copy{ min-width:0; position:relative; z-index:1; }
+.rush-home-hero h1{ margin:0 0 2px; font-size:1.08rem; font-weight:800; color:#fff; }
+.rush-home-hero p{ margin:0; font-size:.75rem; line-height:1.3; color:#fff !important; opacity:.95; }
+.rush-home-stats{ display:flex; gap:8px; margin:10px 0; }
+.rush-home-stat{ flex:1; background:#fff; border:1px solid var(--rh-line); border-radius:16px; padding:10px 6px; text-align:center; box-shadow:0 6px 16px rgba(255,94,122,.08); }
+.rush-home-stat b{ display:block; font-size:1.3rem; font-weight:900; color:var(--rh-pink); line-height:1; }
+.rush-home-stat span{ display:block; font-size:.64rem; color:var(--rh-ink-soft) !important; margin-top:5px; font-weight:900; text-transform:uppercase; letter-spacing:.3px; }
+.rush-home-label{ font-weight:900; font-size:1.02rem; color:var(--rh-ink); margin:8px 2px 12px; }
+.rush-acts{ display:grid !important; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 4px; }
+.rush-act{
+  background:#fff !important; border:1.5px solid var(--rh-line) !important; border-radius:20px !important; padding:18px 10px !important;
+  display:flex !important; flex-direction:column !important; align-items:center !important; gap:9px !important;
+  cursor:pointer; transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow:0 6px 16px rgba(255,94,122,.07) !important; min-height:auto !important;
+}
+.rush-act:active{ transform:scale(.97); }
+.rush-act .rush-act-ic{
+  font-size:30px; width:60px; height:60px; border-radius:18px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,#fff1ea,#ffe0d4); line-height:1;
+}
+.rush-act b{ color:var(--rh-ink) !important; font-weight:800 !important; font-size:.95rem !important; }
+.rush-act.active{ border-color:var(--rh-pink) !important; background:linear-gradient(160deg,#fff,#fff4f1) !important; transform:translateY(-2px); box-shadow:0 12px 26px rgba(255,94,122,.22) !important; }
+.rush-act.active .rush-act-ic{ background:linear-gradient(135deg,var(--rh-coral),var(--rh-pink)); box-shadow:0 8px 18px rgba(255,94,122,.3); }
+.rush-act.active b{ color:#ff4d6a !important; }
+.rush-home-start{
+  width:100%; margin:18px 0 14px; border:none; border-radius:16px; padding:16px; font-weight:900; font-size:1.05rem; color:#fff; cursor:pointer;
+  background:linear-gradient(120deg,var(--rh-coral),var(--rh-pink) 55%,var(--rh-violet));
+  box-shadow:0 12px 28px rgba(255,94,122,.34); transition:transform .15s ease;
+}
+.rush-home-start:active{ transform:scale(.98); }
+.rush-home-last{ display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--rh-line); border-radius:16px; padding:14px; box-shadow:0 6px 16px rgba(255,94,122,.07); }
+.rush-home-last > span{ font-size:26px; }
+.rush-home-last .rush-pin-ico{ width:40px; height:40px; object-fit:contain; flex:0 0 auto; filter:drop-shadow(0 4px 8px rgba(255,77,106,.28)); }
+.rush-home-last b{ color:var(--rh-ink); font-size:.92rem; display:block; }
+.rush-home-last small{ color:var(--rh-ink-soft); font-size:.78rem; }
+.rush-home-last button{ margin-left:auto; background:linear-gradient(120deg,var(--rh-coral),var(--rh-pink)); color:#fff; border:none; border-radius:12px; padding:9px 16px; font-weight:800; font-size:.82rem; cursor:pointer; }
+@keyframes rushHomePop{ 0%{transform:scale(.3) rotate(-12deg);opacity:0;} 60%{transform:scale(1.14) rotate(6deg);opacity:1;} 100%{transform:scale(1) rotate(0);opacity:1;} }
+@media (prefers-reduced-motion:reduce){ .rush-home-emoji{ animation:none; } }
+
+/* ============================================================================
+   HISTORIAL COMPLETO DE RECORRIDOS (pantalla Progreso)
+   ============================================================================ */
+.rush-hist-list{
+  display:flex; flex-direction:column; gap:10px;
+  padding:14px 14px calc(80px + env(safe-area-inset-bottom));
+}
+.rush-hist-item{
+  background:#fff; border:1px solid #ffe0d4; border-radius:18px; padding:13px 12px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 4px 14px rgba(255,94,122,.07);
+}
+.rush-hist-left{ flex:1; min-width:0; }
+.rush-hist-left b{ display:block; color:#3a2a30; font-size:.88rem; font-weight:800; line-height:1.3; }
+.rush-hist-left small{ color:#5a3d46; font-size:.72rem; font-weight:700; }
+.rush-hist-stats{
+  display:flex; flex-direction:column; gap:2px; text-align:right;
+  font-size:.76rem; color:#5a3d46; font-weight:700;
+}
+.rush-hist-stats b{ color:#ff4d6a; }
+.rush-hist-btns{ display:flex; gap:7px; flex-shrink:0; }
+.rush-hist-btn{
+  width:36px; height:36px; border-radius:50%; border:none; font-size:.95rem; cursor:pointer;
+  background:linear-gradient(120deg,#ff5e3a,#ff2d78); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 10px rgba(255,45,120,.28); transition:transform .14s;
+}
+.rush-hist-btn:active{ transform:scale(.93); }
+.rush-hist-btn.ghost{
+  background:rgba(255,45,120,.07); border:1px solid #ffc5c5;
+  color:#ff4d6a; box-shadow:none;
+}
+
+/* ============================================================================
+   REPLAY SATELITAL — HUD flotante sobre el mapa (no oculta el fondo)
+   ============================================================================ */
+.rush-sat-hud{
+  position:fixed; inset:0; z-index:2147483200;
+  display:flex; flex-direction:column;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));
+  pointer-events:none;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+}
+.rush-sat-hud > *{ pointer-events:auto; }
+.rush-sat-top{
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
+  background:rgba(7,8,12,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:10px 14px;
+}
+.rush-sat-top .rush-ov-kicker{ color:#fff; }
+/* Sobreescribir el position:absolute del .rush-replay-hud cuando está dentro del HUD satélite */
+.rush-sat-hud .rush-replay-hud{
+  position:static !important;
+  background:rgba(7,8,12,.78); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:14px 16px; margin-bottom:8px;
+  pointer-events:none;
+}
+.rush-sat-hud .rush-replay-bar{ max-width:none; pointer-events:none; }
+.rush-sat-actions{ display:flex; gap:10px; margin-top:auto; pointer-events:auto; }
+.rush-sat-actions .rush-btn{ flex:1; }
+
+/* ============================================================================
+   DETALLE DE RECORRIDO PASADO
+   ============================================================================ */
+.rush-detail-date{
+  text-align:center; color:rgba(255,255,255,.75); font-size:.84rem; font-weight:700;
+  margin:-4px 0 14px; letter-spacing:.3px;
+}
+.rush-detail-cv{
+  width:100%; height:auto; display:block;
+  border-radius:18px; background:#0b0d12; border:1px solid rgba(255,255,255,.1);
+  margin-bottom:14px;
+}
+.rush-detail-stats{ margin-bottom:14px; }
+.rush-detail-del{
+  width:100%; margin-top:6px; font-size:.82rem;
+  color:rgba(255,255,255,.65) !important; background:rgba(255,255,255,.05) !important;
+}

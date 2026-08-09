@@ -1,0 +1,530 @@
+
+/* =====================================================
+   URBIS V37 · Accesos por módulos y foco de interfaz
+   Convierte las pestañas superiores en ventanas de acceso
+   para que cada modo se entienda como una experiencia propia.
+   ===================================================== */
+
+#sidebar {
+  --module-card-bg: linear-gradient(145deg, rgba(14, 36, 27, .92), rgba(9, 23, 18, .96));
+  --module-card-border: rgba(167, 209, 178, .20);
+  --module-card-border-active: rgba(110, 231, 183, .55);
+}
+
+.sidebar-tabs.module-access-grid,
+.sidebar-tabs {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  position: relative !important;
+  top: auto !important;
+  z-index: 20;
+  padding: 12px !important;
+  margin: 14px 0 18px !important;
+  border-radius: 24px !important;
+  background: linear-gradient(180deg, rgba(8, 20, 15, .86), rgba(5, 13, 10, .94)) !important;
+  border: 1px solid rgba(167, 209, 178, .18) !important;
+  box-shadow: 0 18px 36px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.05) !important;
+  backdrop-filter: blur(18px) saturate(1.1);
+  overflow: visible !important;
+}
+
+.sidebar-tabs::before {
+  content: 'Accesos';
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #0a1712;
+  border: 1px solid rgba(167, 209, 178, .16);
+  color: #a7d1b2;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.sidebar-tab-btn {
+  min-height: 76px !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  text-align: left !important;
+  background: var(--module-card-bg) !important;
+  border: 1px solid var(--module-card-border) !important;
+  color: rgba(246, 255, 248, .86) !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.04) !important;
+  transform: none !important;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease !important;
+}
+
+.sidebar-tab-btn:hover {
+  transform: none !important;
+  border-color: rgba(110,231,183,.36) !important;
+  box-shadow: 0 12px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.sidebar-tab-btn.active {
+  background: linear-gradient(145deg, #1E7A4B, #2FA35A) !important;
+  color: #ffffff !important;
+  border-color: var(--module-card-border-active) !important;
+  box-shadow: 0 16px 32px rgba(30,122,75,.34), inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+
+.sidebar-tab-btn .tab-icon,
+.sidebar-tab-btn > span:first-child {
+  width: 34px !important;
+  height: 34px !important;
+  flex: 0 0 34px !important;
+  border-radius: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 1.05rem !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+.sidebar-tab-btn.active .tab-icon,
+.sidebar-tab-btn.active > span:first-child {
+  background: rgba(255,255,255,.20) !important;
+  border-color: rgba(255,255,255,.24) !important;
+}
+
+.sidebar-tab-btn .tab-copy,
+.sidebar-tab-btn > span:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+}
+
+.sidebar-tab-btn .tab-copy b {
+  font-size: .84rem;
+  line-height: 1.05;
+  letter-spacing: .01em;
+  font-weight: 950;
+}
+
+.sidebar-tab-btn .tab-copy small {
+  display: block;
+  font-size: .64rem;
+  line-height: 1.15;
+  color: rgba(235, 255, 242, .68);
+  font-weight: 700;
+}
+
+.sidebar-tab-btn.active .tab-copy small { color: rgba(255,255,255,.82); }
+
+/* El módulo abierto queda como experiencia exclusiva: solo la página activa vive en pantalla. */
+.sidebar-page { display: none !important; }
+.sidebar-page.active {
+  display: block !important;
+  animation: urbisModuleIn .22s ease-out;
+}
+
+@keyframes urbisModuleIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Evita que el hero de Deporte se rompa en columnas angostas. */
+.sport-hero-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 18px !important;
+}
+.sport-hero-card h3 {
+  font-size: clamp(1.35rem, 3vw, 1.85rem) !important;
+  line-height: 1.05 !important;
+  max-width: 100% !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+.sport-hero-card p {
+  max-width: 100% !important;
+  font-size: .84rem !important;
+  line-height: 1.42 !important;
+}
+.sport-score-card {
+  min-height: auto !important;
+  width: 100% !important;
+}
+
+/* En móvil o sidebar estrecho: accesos como ventanas verticales fáciles de tocar. */
+@media (max-width: 760px) {
+  .sidebar-tabs.module-access-grid,
+  .sidebar-tabs {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    padding: 11px !important;
+  }
+  .sidebar-tab-btn {
+    min-height: 66px !important;
+  }
+  .sidebar-tab-btn .tab-copy b { font-size: .9rem; }
+  .sidebar-tab-btn .tab-copy small { font-size: .68rem; }
+}
+
+/* Si el usuario entra en modo navegación real, se siguen ocultando los accesos para máxima concentración. */
+body.route-focus-active .sidebar-tabs,
+body.route-choice-active .sidebar-tabs {
+  display: none !important;
+}
+
+
+/* =====================================================
+   URBIS V38 · Foco real por módulo
+   Al entrar a un acceso se oculta el menú; al volver se oculta el contenido.
+   ===================================================== */
+body:not(.module-focused) .sidebar-page,
+body:not(.module-focused) .sidebar-page.active {
+  display: none !important;
+}
+body.module-focused .sidebar-tabs.module-access-grid,
+body.module-focused .sidebar-tabs {
+  display: none !important;
+}
+.module-back-btn {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin: 10px 0 16px;
+  padding: 11px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(167, 209, 178, .20);
+  background: linear-gradient(145deg, rgba(8, 20, 15, .92), rgba(5, 13, 10, .96));
+  color: #dff7e6;
+  font-weight: 900;
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.module-back-btn span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(110, 231, 183, .12);
+  border: 1px solid rgba(110, 231, 183, .22);
+  color: #6ee7b7;
+  font-size: 1rem;
+}
+.module-back-btn strong {
+  font-size: .84rem;
+}
+body.module-focused .module-back-btn {
+  display: flex !important;
+  animation: urbisModuleIn .18s ease-out;
+}
+body:not(.module-focused) .module-back-btn {
+  display: none !important;
+}
+body.module-focused .sidebar-page.active {
+  display: block !important;
+}
+body.module-focused #sidebar {
+  scroll-behavior: smooth;
+}
+body.module-focused #sidebar::after {
+  content: '';
+  display: block;
+  height: 16px;
+}
+
+@media (max-width: 760px) {
+  .module-back-btn {
+    position: sticky;
+    top: 8px;
+    z-index: 60;
+    backdrop-filter: blur(16px) saturate(1.05);
+  }
+}
+
+/* =====================================================
+   URBIS V39 · Modos inmersivos por módulo
+   Menú de accesos como home. Al abrir un módulo:
+   - desaparece la parrilla de accesos
+   - aparece header del modo
+   - solo vive el contenido del módulo activo
+   ===================================================== */
+
+#module-focus-shell {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px) scale(.985);
+  pointer-events: none;
+}
+
+.module-focus-head {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 16px 16px 14px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 42%),
+    linear-gradient(145deg, rgba(9, 21, 16, .95), rgba(4, 12, 10, .98));
+  border: 1px solid rgba(167, 209, 178, .18);
+  box-shadow: 0 16px 34px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.module-focus-head::after {
+  content: '';
+  position: absolute;
+  inset: auto -10% -35% auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--module-accent-rgb,110,231,183), .18), transparent 65%);
+  pointer-events: none;
+  filter: blur(8px);
+}
+.module-focus-kicker {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgb(var(--module-accent-rgb,110,231,183));
+  background: rgba(var(--module-accent-rgb,110,231,183), .12);
+  border: 1px solid rgba(var(--module-accent-rgb,110,231,183), .20);
+}
+.module-focus-kicker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--module-accent-rgb,110,231,183));
+  box-shadow: 0 0 14px rgba(var(--module-accent-rgb,110,231,183), .7);
+}
+#module-focus-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: clamp(1.45rem, 4vw, 2rem);
+  line-height: 1.04;
+  font-weight: 950;
+  letter-spacing: .01em;
+  color: #f7fff9;
+}
+#module-focus-subtitle {
+  position: relative;
+  z-index: 1;
+  margin: 9px 0 0;
+  color: rgba(226, 242, 230, .78);
+  font-size: .82rem;
+  line-height: 1.42;
+  max-width: 42ch;
+}
+
+/* Estado home: solo accesos. */
+body:not(.module-focused) #module-focus-shell,
+body:not(.module-focused) .sidebar-page,
+body:not(.module-focused) .sidebar-page.active {
+  display: none !important;
+}
+body:not(.module-focused) .sidebar-tabs.module-access-grid,
+body:not(.module-focused) .sidebar-tabs {
+  display: grid !important;
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: auto !important;
+}
+
+/* Estado modo: solo header + página activa. */
+body.module-focused .sidebar-tabs.module-access-grid,
+body.module-focused .sidebar-tabs {
+  display: none !important;
+  opacity: 0 !important;
+  transform: translateY(-10px) scale(.98) !important;
+  pointer-events: none !important;
+}
+body.module-focused #module-focus-shell {
+  display: block !important;
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: auto !important;
+  animation: urbisFocusShellIn .28s cubic-bezier(.22,.8,.28,1);
+}
+body.module-focused .sidebar-page { display: none !important; }
+body.module-focused .sidebar-page.active {
+  display: block !important;
+  animation: urbisModulePanelIn .34s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes urbisFocusShellIn {
+  from { opacity: 0; transform: translateY(14px) scale(.985); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes urbisModulePanelIn {
+  from { opacity: 0; transform: translateY(18px); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.module-back-btn {
+  width: auto;
+  min-width: 168px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+}
+.module-back-btn strong { font-size: .8rem; }
+
+/* Temas por módulo */
+body[data-active-module="mobility"] {
+  --module-accent-rgb: 64, 224, 255;
+}
+body[data-active-module="sport"] {
+  --module-accent-rgb: 255, 110, 48;
+}
+body[data-active-module="alerts"] {
+  --module-accent-rgb: 255, 196, 64;
+}
+body[data-active-module="access"] {
+  --module-accent-rgb: 167, 121, 255;
+}
+body[data-active-module="events"] {
+  --module-accent-rgb: 255, 105, 180;
+}
+body[data-active-module="stats"] {
+  --module-accent-rgb: 95, 182, 255;
+}
+body[data-active-module="mapping"] {
+  --module-accent-rgb: 142, 214, 106;
+}
+body[data-active-module="advanced"] {
+  --module-accent-rgb: 130, 255, 186;
+}
+
+body[data-active-module="mobility"] .module-focus-head {
+  border-color: rgba(64,224,255,.26);
+  box-shadow: 0 16px 34px rgba(0,0,0,.26), 0 0 0 1px rgba(64,224,255,.09) inset;
+}
+body[data-active-module="sport"] .module-focus-head {
+  background:
+    radial-gradient(circle at top right, rgba(255,140,72,.10), transparent 42%),
+    linear-gradient(145deg, rgba(28, 13, 8, .96), rgba(15, 7, 5, .98));
+  border-color: rgba(255,110,48,.24);
+  box-shadow: 0 16px 34px rgba(0,0,0,.26), 0 0 0 1px rgba(255,110,48,.08) inset;
+}
+body[data-active-module="sport"] .module-back-btn {
+  border-color: rgba(255,110,48,.20);
+  background: linear-gradient(145deg, rgba(27,12,8,.95), rgba(13,7,5,.98));
+}
+body[data-active-module="sport"] .module-back-btn span {
+  color: #ff7e52;
+  background: rgba(255,110,48,.10);
+  border-color: rgba(255,110,48,.22);
+}
+
+@media (max-width: 760px) {
+  .module-focus-head {
+    padding: 14px 14px 13px;
+    border-radius: 20px;
+  }
+  #module-focus-title { font-size: 1.5rem; }
+  #module-focus-subtitle { font-size: .8rem; }
+}
+
+body.module-focused #sidebar-title {
+  display: none !important;
+}
+body:not(.module-focused) #sidebar-title {
+  display: block !important;
+}
+
+/* URBIS V40 · estado inicial limpio: no se entra a ningún modo automáticamente */
+#module-focus-shell[hidden],
+.module-focus-shell[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body:not(.module-focused) #module-focus-shell,
+body:not(.module-focused) .module-focus-shell {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.module-focused #module-focus-shell:not([hidden]) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+body:not(.module-focused) .sidebar-page,
+body:not(.module-focused) .sidebar-page.active {
+  display: none !important;
+}
+body:not(.module-focused) .sidebar-tabs,
+body:not(.module-focused) .sidebar-tabs.module-access-grid {
+  display: grid !important;
+}
+
+
+/* =====================================================
+   URBIS V49 · Fix mobile header overlap
+   Evita que el botón/título del modo queden superpuestos
+   por el contenido del módulo en pantallas pequeñas.
+   ===================================================== */
+@media (max-width: 760px) {
+  body.module-focused #module-focus-shell {
+    position: sticky;
+    top: 0;
+    z-index: 85;
+    margin: 0 0 14px;
+    padding-top: 6px;
+    background: linear-gradient(180deg, rgba(5,15,11,.98) 0%, rgba(5,15,11,.94) 76%, rgba(5,15,11,0) 100%);
+  }
+
+  body.module-focused .module-back-btn {
+    position: relative;
+    top: 0;
+    z-index: 90;
+    margin: 0 0 12px;
+  }
+
+  body.module-focused .module-focus-head {
+    position: relative;
+    z-index: 88;
+    margin-bottom: 14px;
+  }
+
+  body.module-focused .sidebar-page.active {
+    position: relative;
+    z-index: 1;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  body.module-focused .sport-shell,
+  body.module-focused .sidebar-utility-rail,
+  body.module-focused .layers-container,
+  body.module-focused .events-panel,
+  body.module-focused .automap-panel {
+    margin-top: 0 !important;
+  }
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Añadir evento">
+  <defs>
+    <linearGradient id="e" x1="25" y1="20" x2="105" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35e0cd"/>
+      <stop offset="1" stop-color="#008f82"/>
+    </linearGradient>
+    <linearGradient id="s" x1="40" y1="42" x2="86" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe36d"/>
+      <stop offset="1" stop-color="#ffb000"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="28" width="80" height="76" rx="18" fill="#fff"/>
+  <rect x="24" y="28" width="80" height="26" rx="18" fill="url(#e)"/>
+  <path d="M24 44h80v14H24z" fill="url(#e)"/>
+  <rect x="42" y="18" width="8" height="24" rx="4" fill="#74859b"/>
+  <rect x="78" y="18" width="8" height="24" rx="4" fill="#74859b"/>
+  <path d="M64 63l7 14 15 2-11 10 3 15-14-8-13 8 3-15-11-10 15-2 6-14z" fill="url(#s)"/>
+  <circle cx="96" cy="72" r="5" fill="#e5b2f4"/>
+  <circle cx="38" cy="86" r="4" fill="#a7efe6"/>
+</svg>

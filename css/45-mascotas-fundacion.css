@@ -1,0 +1,278 @@
+/* ============================================================================
+   URBIS · Módulo MASCOTAS / Fundación animalista (perritos y gaticos)
+   Estética propia y cálida (experimento visual por módulo): coral + crema +
+   huellitas, distinta del turquesa URBIS pero coherente con su redondez cute.
+   Las variables viven en .mascotas-shell (el contenedor que pinta el JS) para que
+   el módulo sea PORTÁTIL: funciona igual en el sidebar (#mascotas-root) y en la
+   pantalla móvil (#mascotas-root-mobile). Las clases .paw-* son globales pero solo
+   existen dentro de .mascotas-shell, así no filtran a otros módulos.
+   ============================================================================ */
+.mascotas-shell{
+  --paw-coral:#ff7a59;
+  --paw-coral-2:#ff9466;
+  --paw-pink:#ff6f91;
+  --paw-amber:#ffb347;
+  --paw-cream:#fff7f0;
+  --paw-cream-2:#fff1e6;
+  --paw-ink:#5a3a32;
+  --paw-ink-soft:#8a6a60;
+  --paw-line:#ffe0cf;
+  --paw-green:#3fbf8f;
+}
+
+/* ---- Lienzo del módulo con fondo cálido y huellitas suaves ---- */
+.mascotas-shell{
+  position:relative;
+  border-radius:22px;
+  padding:0 0 18px;
+  background:
+    radial-gradient(120% 90% at 50% -8%, #fff5ec 0%, var(--paw-cream) 42%, var(--paw-cream-2) 100%);
+  overflow:hidden;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+  color:var(--paw-ink);
+}
+.mascotas-shell::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,122,89,.10) 0 9px, transparent 10px),
+    radial-gradient(circle at 84% 30%, rgba(255,111,145,.10) 0 7px, transparent 8px),
+    radial-gradient(circle at 26% 72%, rgba(255,179,71,.12) 0 8px, transparent 9px),
+    radial-gradient(circle at 70% 84%, rgba(255,122,89,.08) 0 11px, transparent 12px);
+}
+.mascotas-shell > *{position:relative;z-index:1;}
+
+/* ---- HERO con animación de entrada (eco del splash beta que te gustó) ---- */
+.paw-hero{
+  text-align:center;padding:24px 18px 18px;
+  background:linear-gradient(160deg, var(--paw-coral) 0%, var(--paw-coral-2) 48%, var(--paw-amber) 120%);
+  color:#fff;border-radius:22px 22px 28px 28px;
+  box-shadow:0 14px 30px rgba(255,122,89,.28);
+  position:relative;overflow:hidden;
+}
+.paw-hero::after{
+  content:"🐾";position:absolute;font-size:120px;right:-18px;bottom:-34px;opacity:.16;transform:rotate(-18deg);
+}
+.paw-hero .paw-emoji{
+  font-size:46px;display:inline-block;
+  animation:pawPop .9s cubic-bezier(.2,1.6,.4,1) both, pawFloat 3s ease-in-out 1s infinite;
+}
+.paw-hero h3{margin:8px 0 4px;font-size:1.45rem;font-weight:900;letter-spacing:.3px;
+  animation:pawUp .55s ease .25s both;}
+.paw-hero .paw-tag{
+  display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.35);padding:5px 14px;border-radius:999px;
+  font-size:.78rem;font-weight:700;margin-bottom:8px;animation:pawUp .55s ease .1s both;backdrop-filter:blur(2px);}
+.paw-hero p{margin:2px auto 0;max-width:90%;font-size:.9rem;opacity:.96;line-height:1.4;
+  animation:pawUp .55s ease .4s both;}
+
+/* ---- Contadores vivos ---- */
+.paw-stats{display:flex;gap:10px;margin:16px 14px 0;}
+.paw-stat{
+  flex:1;background:#fff;border:1px solid var(--paw-line);border-radius:16px;padding:12px 8px;text-align:center;
+  box-shadow:0 6px 16px rgba(255,122,89,.08);animation:pawUp .5s ease both;
+}
+.paw-stat b{display:block;font-size:1.35rem;color:var(--paw-coral);font-weight:900;line-height:1;}
+.paw-stat span{display:block;font-size:.68rem;color:var(--paw-ink-soft);margin-top:5px;font-weight:600;}
+
+/* ---- Navegación interna del ecosistema (chips) ---- */
+.paw-nav{display:flex;gap:8px;overflow-x:auto;padding:16px 14px 4px;scrollbar-width:none;}
+.paw-nav::-webkit-scrollbar{display:none;}
+.paw-nav button{
+  flex:0 0 auto;border:1px solid var(--paw-line);background:#fff;color:var(--paw-ink);
+  padding:9px 15px;border-radius:999px;font-weight:800;font-size:.82rem;cursor:pointer;white-space:nowrap;
+  transition:transform .15s ease, background .2s ease, color .2s ease;display:flex;align-items:center;gap:6px;
+}
+.paw-nav button.active{background:linear-gradient(135deg,var(--paw-coral),var(--paw-pink));color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(255,111,145,.3);}
+.paw-nav button:active{transform:scale(.95);}
+
+/* ---- Secciones ---- */
+.paw-section{display:none;padding:14px;animation:pawUp .4s ease both;}
+.paw-section.active{display:block;}
+.paw-section-title{font-size:1.02rem;font-weight:900;margin:2px 0 4px;display:flex;align-items:center;gap:8px;}
+.paw-section-help{font-size:.8rem;color:var(--paw-ink-soft);margin:0 0 14px;line-height:1.45;}
+
+/* ---- Tarjeta de animalito ---- */
+.paw-card{
+  background:#fff;border:1px solid var(--paw-line);border-radius:18px;padding:14px;margin-bottom:14px;
+  box-shadow:0 8px 20px rgba(255,122,89,.10);position:relative;overflow:hidden;
+}
+.paw-card .paw-card-top{display:flex;gap:12px;align-items:flex-start;}
+.paw-avatar{
+  width:58px;height:58px;border-radius:16px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-size:30px;background:linear-gradient(135deg,#fff1e6,#ffe3d2);border:1px solid var(--paw-line);
+}
+.paw-avatar.cat{background:linear-gradient(135deg,#ffe9f0,#ffd6e3);}
+.paw-card h4{margin:0;font-size:1rem;font-weight:900;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.paw-meta{font-size:.74rem;color:var(--paw-ink-soft);margin:3px 0 0;font-weight:600;}
+.paw-story{font-size:.85rem;line-height:1.5;margin:10px 0 0;color:#6b4b42;}
+.paw-badge{font-size:.64rem;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;}
+.paw-badge.urgente{background:#ffe2dd;color:#d6452f;}
+.paw-badge.proceso{background:#fff0d6;color:#b9791a;}
+.paw-badge.hogar{background:#e2f7ee;color:#1f9d6e;}
+.paw-needs{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 0;}
+.paw-need{font-size:.72rem;background:var(--paw-cream-2);border:1px solid var(--paw-line);color:var(--paw-ink);padding:4px 10px;border-radius:999px;font-weight:700;}
+
+/* barra de meta de donación */
+.paw-goal{margin:12px 0 0;}
+.paw-goal-bar{height:9px;background:#ffe6da;border-radius:999px;overflow:hidden;}
+.paw-goal-fill{height:100%;background:linear-gradient(90deg,var(--paw-coral),var(--paw-pink));border-radius:999px;transition:width .8s cubic-bezier(.2,1,.3,1);}
+.paw-goal-text{display:flex;justify-content:space-between;font-size:.72rem;color:var(--paw-ink-soft);margin-top:6px;font-weight:700;}
+
+.paw-card-actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
+.paw-btn{
+  border:none;border-radius:13px;padding:11px 14px;font-weight:800;font-size:.84rem;cursor:pointer;flex:1;min-width:90px;
+  transition:transform .14s ease, box-shadow .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.paw-btn:active{transform:scale(.96);}
+.paw-btn.primary{background:linear-gradient(135deg,var(--paw-coral),var(--paw-pink));color:#fff;box-shadow:0 8px 18px rgba(255,111,145,.28);}
+.paw-btn.soft{background:var(--paw-cream-2);color:var(--paw-ink);border:1px solid var(--paw-line);}
+.paw-btn.ghost{background:#fff;color:var(--paw-coral);border:1.5px solid var(--paw-coral);}
+.paw-btn.block{width:100%;flex:none;}
+
+/* ---- Donaciones ---- */
+.paw-donate-card{background:#fff;border:1px solid var(--paw-line);border-radius:18px;padding:16px;box-shadow:0 8px 20px rgba(255,122,89,.10);}
+.paw-amounts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.paw-amount{
+  flex:1;min-width:64px;border:1.5px solid var(--paw-line);background:var(--paw-cream);border-radius:13px;
+  padding:13px 6px;text-align:center;cursor:pointer;font-weight:900;color:var(--paw-ink);transition:all .18s ease;
+}
+.paw-amount small{display:block;font-size:.62rem;color:var(--paw-ink-soft);font-weight:700;margin-top:3px;}
+.paw-amount.active{border-color:var(--paw-coral);background:linear-gradient(135deg,#fff,#fff1e9);color:var(--paw-coral);box-shadow:0 6px 14px rgba(255,122,89,.18);transform:translateY(-2px);}
+.paw-pay{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.paw-pay-row{
+  display:flex;align-items:center;gap:10px;background:var(--paw-cream-2);border:1px solid var(--paw-line);
+  border-radius:13px;padding:11px 13px;cursor:pointer;transition:transform .14s ease;
+}
+.paw-pay-row:active{transform:scale(.98);}
+.paw-pay-row .paw-pay-ic{font-size:22px;width:34px;text-align:center;}
+.paw-pay-row b{font-size:.86rem;}
+.paw-pay-row span{font-size:.72rem;color:var(--paw-ink-soft);display:block;}
+.paw-pay-row .paw-copy{margin-left:auto;font-size:.7rem;font-weight:800;color:var(--paw-coral);background:#fff;border:1px solid var(--paw-line);border-radius:9px;padding:5px 10px;}
+.paw-transparency{margin-top:14px;background:#f3fbf7;border:1px solid #cdeede;border-radius:14px;padding:12px;}
+.paw-transparency b{font-size:.82rem;color:#1f9d6e;display:flex;align-items:center;gap:6px;}
+.paw-transparency ul{margin:8px 0 0;padding-left:18px;font-size:.78rem;color:#3f7a64;line-height:1.6;}
+
+/* ---- Muro de mensajes / apoyo ---- */
+.paw-msg{
+  background:#fff;border:1px solid var(--paw-line);border-radius:16px;padding:12px 14px;margin-bottom:10px;
+  box-shadow:0 5px 14px rgba(255,122,89,.07);
+}
+.paw-msg-head{display:flex;align-items:center;gap:9px;}
+.paw-msg-ava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--paw-coral),var(--paw-pink));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;}
+.paw-msg-head b{font-size:.84rem;}
+.paw-msg-head small{font-size:.68rem;color:var(--paw-ink-soft);margin-left:auto;}
+.paw-msg p{margin:8px 0 0;font-size:.85rem;line-height:1.5;color:#6b4b42;}
+.paw-msg .paw-msg-react{margin-top:8px;font-size:.74rem;color:var(--paw-pink);font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+
+/* ---- Formularios ---- */
+.paw-form{display:flex;flex-direction:column;gap:11px;}
+.paw-field label{font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;color:var(--paw-ink);}
+.paw-field input,.paw-field textarea,.paw-field select{
+  width:100%;border:1.5px solid var(--paw-line);background:#fff;border-radius:12px;padding:11px 13px;
+  font-size:.88rem;color:var(--paw-ink);font-family:inherit;box-sizing:border-box;
+}
+.paw-field textarea{min-height:78px;resize:vertical;}
+.paw-field input:focus,.paw-field textarea:focus,.paw-field select:focus{outline:none;border-color:var(--paw-coral);box-shadow:0 0 0 3px rgba(255,122,89,.14);}
+.paw-typepick{display:flex;gap:8px;}
+.paw-typepick .paw-type{flex:1;border:1.5px solid var(--paw-line);background:var(--paw-cream);border-radius:13px;padding:12px;text-align:center;cursor:pointer;font-weight:800;font-size:.85rem;transition:all .18s ease;}
+.paw-typepick .paw-type.active{border-color:var(--paw-coral);background:#fff1e9;color:var(--paw-coral);transform:translateY(-2px);}
+
+/* ---- Fundaciones aliadas ---- */
+.paw-found{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--paw-line);border-radius:15px;padding:12px;margin-bottom:10px;box-shadow:0 5px 14px rgba(255,122,89,.07);}
+.paw-found .paw-found-ic{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#fff1e6,#ffe3d2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto;}
+.paw-found b{font-size:.88rem;}
+.paw-found span{font-size:.74rem;color:var(--paw-ink-soft);display:block;margin-top:2px;}
+
+/* ---- Toast / confirmación cute (overlay) ---- */
+#paw-toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);
+  background:#fff;border:1px solid var(--paw-line);border-radius:16px;padding:13px 18px;z-index:2147483000;
+  box-shadow:0 16px 40px rgba(255,122,89,.3);display:flex;align-items:center;gap:10px;max-width:88%;
+  opacity:0;pointer-events:none;transition:opacity .3s ease, transform .3s cubic-bezier(.2,1.6,.4,1);
+}
+#paw-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#paw-toast .paw-toast-ic{font-size:26px;}
+#paw-toast b{font-size:.88rem;color:var(--paw-ink);display:block;}
+#paw-toast span{font-size:.76rem;color:var(--paw-ink-soft);}
+
+/* corazoncitos que suben al donar/ayudar */
+.paw-heart{position:fixed;z-index:2147483001;font-size:24px;pointer-events:none;animation:pawHeartUp 1.1s ease-out forwards;}
+
+/* ---- Botón de la grilla principal (icono mascotas) acento cálido ---- */
+#tab-btn-mascotas .tab-icon{filter:drop-shadow(0 2px 4px rgba(255,122,89,.4));}
+
+/* ---- Botón del módulo Mascotas en el Inicio MÓVIL (huella, tinte cálido) ---- */
+.u52-module.mascotas{background:linear-gradient(180deg, rgba(255,241,233,.97), rgba(255,255,255,.95)) !important;}
+.u52-k-home-grid-primary .u52-module.mascotas span{background:linear-gradient(135deg,#ffe3d2,#ffd0bd) !important;color:#b8492c;}
+.u52-mascotas-ico{display:flex;align-items:center;justify-content:center;}
+
+/* ---- Animaciones ---- */
+@keyframes pawPop{0%{transform:scale(.3) rotate(-14deg);opacity:0;}60%{transform:scale(1.15) rotate(6deg);opacity:1;}100%{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes pawFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+@keyframes pawUp{0%{opacity:0;transform:translateY(12px);}100%{opacity:1;transform:translateY(0);}}
+@keyframes pawHeartUp{0%{opacity:0;transform:translateY(0) scale(.6);}20%{opacity:1;}100%{opacity:0;transform:translateY(-120px) scale(1.2);}}
+@media (prefers-reduced-motion:reduce){.mascotas-shell *{animation-duration:.01ms!important;animation-iteration-count:1!important;}}
+
+/* ---- Estado vacío (sin animalitos / sin mensajes) ---- */
+.paw-empty{text-align:center;padding:30px 18px;background:#fff;border:1.5px dashed var(--paw-line);border-radius:18px;}
+.paw-empty .paw-empty-ic{font-size:42px;line-height:1;}
+.paw-empty b{display:block;margin:12px 0 5px;font-size:1rem;}
+.paw-empty small{display:block;font-size:.84rem;line-height:1.5;max-width:300px;margin:0 auto;}
+
+/* ============================================================================
+   LEGIBILIDAD — regla "nada de texto clarito" dentro del módulo.
+   Forzamos tinta OSCURA explícita en TODO el texto (sin depender de herencia,
+   que en algunos temas dejaba el texto en menta claro ilegible) y re-afirmamos
+   los pocos textos que SÍ van claros sobre fondos de color. !important para
+   ganarle a cualquier tema (móvil/sidebar). Si agregas texto nuevo al módulo,
+   ya queda cubierto por estas reglas.
+   ============================================================================ */
+/* Texto principal — tinta oscura legible */
+.mascotas-shell h3, .mascotas-shell h4,
+.mascotas-shell .paw-section-title,
+.mascotas-shell .paw-card h4,
+.mascotas-shell .paw-pay-row b,
+.mascotas-shell .paw-msg-head b,
+.mascotas-shell .paw-found b,
+.mascotas-shell .paw-amount,
+.mascotas-shell .paw-need,
+.mascotas-shell .paw-type,
+.mascotas-shell .paw-nav button,
+.mascotas-shell .paw-story,
+.mascotas-shell .paw-msg p,
+.mascotas-shell .paw-field label,
+.mascotas-shell .paw-field input,
+.mascotas-shell .paw-field textarea,
+.mascotas-shell .paw-field select,
+.mascotas-shell .paw-btn.soft,
+.mascotas-shell .paw-empty b{ color:var(--paw-ink) !important; }
+
+/* Texto secundario — taupe legible (NUNCA menta claro) */
+.mascotas-shell .paw-section-help,
+.mascotas-shell .paw-meta,
+.mascotas-shell .paw-stat span,
+.mascotas-shell .paw-goal-text,
+.mascotas-shell .paw-goal-text span,
+.mascotas-shell .paw-pay-row span,
+.mascotas-shell .paw-amount small,
+.mascotas-shell .paw-found span,
+.mascotas-shell .paw-msg-head small,
+.mascotas-shell .paw-empty small{ color:var(--paw-ink-soft) !important; }
+
+/* Textos que SÍ van claros / de marca (sobre fondos de color) — re-afirmados */
+.mascotas-shell .paw-hero h3,
+.mascotas-shell .paw-hero p,
+.mascotas-shell .paw-tag,
+.mascotas-shell .paw-btn.primary,
+.mascotas-shell .paw-msg-ava,
+.mascotas-shell .paw-nav button.active{ color:#fff !important; }
+.mascotas-shell .paw-stat b,
+.mascotas-shell .paw-amount.active,
+.mascotas-shell .paw-btn.ghost,
+.mascotas-shell .paw-copy{ color:var(--paw-coral) !important; }
+.mascotas-shell .paw-msg-react{ color:var(--paw-pink) !important; }
+.mascotas-shell .paw-badge.urgente{ color:#d6452f !important; }
+.mascotas-shell .paw-badge.proceso{ color:#b9791a !important; }
+.mascotas-shell .paw-badge.hogar{ color:#1f9d6e !important; }
+.mascotas-shell .paw-transparency b{ color:#1f9d6e !important; }
+.mascotas-shell .paw-transparency li{ color:#3f7a64 !important; }
