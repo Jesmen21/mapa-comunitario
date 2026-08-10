@@ -330,7 +330,11 @@
   const dimensiones = {
     // 🔴 REPORTE RÁPIDO (CIUDADANO Waze-Style)
     "🚨 Alertas y Riesgos Urbanos": { icon: "⚠️", desc: "Huecos, inundaciones, apagones, inseguridad", color: "#ff0000", shape: "diamond", items: ["Hueco / Bache rompe-llantas", "Zona inundada / Mal drenaje", "Apagón / Sector sin luz", "Alcantarilla sin tapa / Fuga", "Invasión de espacio público", "Conflictos de ruido extremo", "Zona abandonada / Insegura", "Zona de basura acumulada", "Árbol en riesgo de caer", "Consumo de drogas", "Presencia de guerrilla", "Área preventiva"] },
-    "🚗 Reportes de Tráfico": { icon: "🚓", desc: "Retenes, choques, congestión, mal parqueo", color: "#e84118", shape: "diamond", items: ["Retén / Presencia policial", "Accidente de tránsito", "Congestión / Tráfico pesado", "Vehículo abandonado / Mal parqueado", "Semáforo dañado", "Peligro vial inminente"] },
+    // "Punto de control policial" separado de "Retén / Presencia policial"
+    // (pedido explícito): un puesto fijo de Policía no es lo mismo que un
+    // retén móvil de tránsito, y varios reportes ciudadanos ya usaban ese
+    // título específico.
+    "🚗 Reportes de Tráfico": { icon: "🚓", desc: "Retenes, choques, congestión, mal parqueo", color: "#e84118", shape: "diamond", items: ["Retén / Presencia policial", "Punto de control policial", "Accidente de tránsito", "Congestión / Tráfico pesado", "Vehículo abandonado / Mal parqueado", "Semáforo dañado", "Peligro vial inminente"] },
     "🎪 Eventos Comunitarios": { icon: "🎪", desc: "Deporte, cultura, recreación y comunidad", color: "#d8cffc", shape: "marker", items: ["Fútbol / microfútbol", "Tenis / pádel", "Ajedrez / juegos de mesa", "Atletismo / carrera", "Show / concierto comunitario", "Festival / feria barrial", "Clase abierta / taller", "Reunión comunitaria"] },
     
     // ⚙️ MAPEO TÉCNICO (ARQUITECTURA)

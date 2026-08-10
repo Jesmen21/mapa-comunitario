@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v456-informe-pdf-del-area';
+const URBIS_CACHE = 'urbis-v457-alerta-punto-control-policial';
 const URBIS_ASSETS = [
   './',
   './index.html',

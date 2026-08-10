@@ -2054,6 +2054,11 @@
         ['preventive-area','🛡️','Área preventiva','🚨 Alertas y Riesgos Urbanos'],
         ['traffic-crash','🚗','Accidente de tránsito','🚗 Reportes de Tráfico'],
         ['traffic-check','🚓','Retén de tránsito','🚗 Reportes de Tráfico'],
+        // Pedido explícito: separado de "Retén de tránsito" porque varios
+        // reportes ciudadanos ya usaban ese título específico ("Punto/Puesto
+        // de control policial") para un puesto fijo de la Policía, distinto
+        // de un retén móvil de tránsito.
+        ['police-checkpoint','🚓','Punto de control policial','🚗 Reportes de Tráfico'],
         ['road-hole','🕳️','Hueco en la vía','🚨 Alertas y Riesgos Urbanos'],
         ['road-closed','⛔','Vía cerrada','🚗 Reportes de Tráfico'],
         ['traffic-light','🚦','Semáforo dañado','🚗 Reportes de Tráfico'],
