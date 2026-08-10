@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v455-heat-titulo-resaltado';
+const URBIS_CACHE = 'urbis-v456-informe-pdf-del-area';
 const URBIS_ASSETS = [
   './',
   './index.html',

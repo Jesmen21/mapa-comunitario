@@ -789,8 +789,258 @@
 
       bloqueHeat(ctx) +
 
+      (r.total > 0 ? bloqueExportar() : '') +
+
       '<p class="pca-nota">Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible hoy.</p>' +
     '</div>';
+  }
+
+  // Exportar el análisis del área a PDF, reutilizando los cuatro estilos de
+  // informe ya construidos en Análisis IA (js/63) en vez de inventar otros.
+  function bloqueExportar(){
+    const E = estilosInforme();
+    const sel = Object.keys(E).map(id =>
+      '<option value="' + esc(id) + '"' + (estiloGuardado() === id ? ' selected' : '') + '>' +
+      esc(E[id].nombre) + '</option>').join('');
+    return '<div class="pca-exportar">' +
+      '<h4 class="pca-h pca-h-pdf">📄 Informe del área</h4>' +
+      '<p class="pca-exportar-ayuda">Una hoja con el mapa, las cifras y las gráficas de esta área, lista para imprimir o guardar como PDF.</p>' +
+      '<label class="pca-exportar-estilo">Estilo' +
+        '<select id="pca-estilo-pdf" data-u52-noclose>' + sel + '</select>' +
+      '</label>' +
+      '<button type="button" class="pca-btn-pdf" data-u52-call="pca-pdf">📄 Generar el informe</button>' +
+    '</div>';
+  }
+
+  // ── Informe PDF del área ────────────────────────────────────────────────
+
+  const LS_ESTILO = 'pca_estilo_informe_v1';
+  function estiloGuardado(){
+    try { return localStorage.getItem(LS_ESTILO) || 'institucional'; } catch(e){ return 'institucional'; }
+  }
+  // Paleta compartida con Análisis IA. Si js/63 no estuviera cargado, se cae a
+  // un tema mínimo propio para que el botón nunca reviente.
+  function estilosInforme(){
+    const E = window.AIA_INFORME && window.AIA_INFORME.ESTILOS;
+    if (E && Object.keys(E).length) return E;
+    return { institucional: { nombre:'Institucional', cab1:'#075E88', cab2:'#0E86BE', acento:'#0A6F9E',
+      oro:'#FABD0A', cabTxt:'#fff', hoja:'#fff', panel:'#fff', tinta:'#12202e', txt2:'#4a5a6a',
+      txt3:'#627285', borde:'#cfe6f5', linea:'#e9f4fb', suave:'#f3fbff' } };
+  }
+
+  // Imagen estática del mapa con el contorno del área dibujado encima. El
+  // polígono va en SVG sobre la foto porque LocationIQ no dibuja polígonos.
+  function mapaDelArea(w, h){
+    const cfg = (window.URBIS_CONFIG && window.URBIS_CONFIG.LOCATIONIQ) || {};
+    const lats = S.pts.map(p => p.lat), lngs = S.pts.map(p => p.lng);
+    const cLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+    const cLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+
+    // Zoom que hace caber el área con margen, con la misma matemática de
+    // Web Mercator que ya usa el informe de Análisis IA.
+    const spanLat = Math.max(1e-6, Math.max(...lats) - Math.min(...lats));
+    const spanLng = Math.max(1e-6, Math.max(...lngs) - Math.min(...lngs));
+    let z = 18;
+    for (; z > 10; z--) {
+      const mpp = 156543.03392 * Math.cos(cLat * Math.PI / 180) / Math.pow(2, z);
+      const altoM = spanLat * 110540, anchoM = spanLng * 111320 * Math.cos(cLat * Math.PI / 180);
+      if (altoM / mpp < h * 0.78 && anchoM / mpp < w * 0.78) break;
+    }
+    const mpp = 156543.03392 * Math.cos(cLat * Math.PI / 180) / Math.pow(2, z);
+
+    const puntos = S.pts.map(p => {
+      const dx = (p.lng - cLng) * 111320 * Math.cos(cLat * Math.PI / 180) / mpp;
+      const dy = -(p.lat - cLat) * 110540 / mpp;
+      return (w / 2 + dx).toFixed(1) + ',' + (h / 2 + dy).toFixed(1);
+    }).join(' ');
+
+    const url = cfg.apiKey
+      ? 'https://maps.locationiq.com/v3/staticmap?key=' + encodeURIComponent(cfg.apiKey) +
+        '&center=' + cLat + ',' + cLng + '&zoom=' + z + '&size=' + w + 'x' + h + '&format=png'
+      : '';
+
+    return '<div class="mapa-wrap" style="width:' + w + 'px;height:' + h + 'px">' +
+      (url ? '<img src="' + url + '" width="' + w + '" height="' + h + '" alt="">' : '<div class="mapa-vacio"></div>') +
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">' +
+        '<polygon points="' + puntos + '" fill="rgba(52,204,254,.22)" stroke="#0E86BE" ' +
+        'stroke-width="3" stroke-linejoin="round"/></svg>' +
+    '</div>';
+  }
+
+  // Gráficas en PNG con los colores del estilo elegido (igual que hace js/62
+  // para el informe de Análisis IA: el canvas no hereda el CSS de la hoja).
+  function graficasPNG(ctx, r, t){
+    if (typeof Chart === 'undefined') return {};
+    const render = (cfg, w, h) => {
+      try {
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ch = new Chart(cv, cfg);
+        const g = cv.getContext('2d');
+        g.save(); g.globalCompositeOperation = 'destination-over';
+        g.fillStyle = t.panel || '#fff'; g.fillRect(0, 0, w, h); g.restore();
+        const url = cv.toDataURL('image/png');
+        ch.destroy();
+        return url;
+      } catch(e){ return ''; }
+    };
+    const filas = ctx.grupos.map(g => ({ g, n: r.porGrupo[g.id] || 0 }))
+      .filter(x => x.n > 0).sort((a, b) => b.n - a.n);
+    const dims = Object.keys(r.porDimension).sort((a, b) => r.porDimension[b] - r.porDimension[a]);
+    const paleta = ['#34CCFE','#FABD0A','#22c55e','#e5484d','#a855f7','#14b8a6','#ff8a4a','#6366f1'];
+    return {
+      barras: filas.length ? render({
+        type: 'bar',
+        data: { labels: filas.map(x => x.g.t), datasets: [{ data: filas.map(x => x.n),
+          backgroundColor: filas.map(x => ctx.colorGrupo[x.g.id] || '#6b70e0'), borderRadius: 3 }] },
+        options: { indexAxis: 'y', responsive: false, animation: false, devicePixelRatio: 2,
+          layout: { padding: 8 }, plugins: { legend: { display: false } },
+          scales: { x: { ticks: { color: t.txt2, font: { size: 15 } }, grid: { color: t.linea } },
+                    y: { ticks: { color: t.tinta, font: { size: 15 } }, grid: { display: false } } } }
+      }, 1000, 420) : '',
+      donut: dims.length ? render({
+        type: 'doughnut',
+        data: { labels: dims.map(d => d.replace(/^[^\w\sáéíóúñ]+\s*/i, '')),
+          datasets: [{ data: dims.map(d => r.porDimension[d]),
+            backgroundColor: dims.map((_, i) => paleta[i % paleta.length]),
+            borderColor: t.panel || '#fff', borderWidth: 2 }] },
+        options: { responsive: false, animation: false, devicePixelRatio: 2, cutout: '55%',
+          layout: { padding: 8 },
+          plugins: { legend: { position: 'right',
+            labels: { color: t.tinta, font: { size: 15 }, boxWidth: 13, padding: 8 } } } }
+      }, 1000, 400) : ''
+    };
+  }
+
+  function construirInforme(ctx, estiloId){
+    const E = estilosInforme();
+    const t = E[estiloId] || E.institucional || E[Object.keys(E)[0]];
+    const r = calcular(ctx);
+    const g = graficasPNG(ctx, r, t);
+    const fecha = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+
+    const filas = ctx.grupos.map(x => ({ x, n: r.porGrupo[x.id] || 0 }))
+      .sort((a, b) => b.n - a.n).filter(f => f.n > 0);
+    const tablaGrupos = filas.length ? filas.map(({ x, n }) => {
+      const pct = r.totalMatriz ? Math.round((n / r.totalMatriz) * 100) : 0;
+      return '<tr><td><i style="background:' + (ctx.colorGrupo[x.id] || '#6b70e0') + '"></i>' +
+        esc(x.i + ' ' + x.t) + '</td><td class="n">' + n + '</td><td class="n">' + pct + '%</td></tr>';
+    }).join('') : '<tr><td colspan="3">Sin elementos de la Matriz en esta área.</td></tr>';
+
+    const dims = Object.keys(r.porDimension).sort((a, b) => r.porDimension[b] - r.porDimension[a]);
+    const tablaDims = dims.map(d => {
+      const n = r.porDimension[d], pct = r.total ? Math.round((n / r.total) * 100) : 0;
+      return '<tr><td>' + esc(d) + '</td><td class="n">' + n + '</td><td class="n">' + pct + '%</td></tr>';
+    }).join('');
+
+    const kpi = (v, t2) => '<div class="kpi"><b>' + v + '</b><small>' + t2 + '</small></div>';
+
+    // El mapa de calor encendido se lleva al informe tal cual se ve en
+    // pantalla: es parte del análisis que el estudiante acaba de hacer.
+    let heatImg = '';
+    if (S.heat.grupo && S.heat.canvas && S.heat.canvas.width) {
+      try {
+        const gr = S.heat.grupo === 'todos' ? null : ctx.grupos.find(x => x.id === S.heat.grupo);
+        heatImg = '<div class="bloque"><h2>Mapa de calor <em>· ' +
+          esc(gr ? gr.t : 'todos los usos') + '</em></h2>' +
+          '<img class="heat" src="' + S.heat.canvas.toDataURL('image/png') + '" alt=""></div>';
+      } catch(e){}
+    }
+
+    return [
+'<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><base href="', location.href, '">',
+'<title>', esc(S.nombre || 'Área de análisis'), ' · URBIS Pro City</title><style>',
+'@page{size:letter portrait;margin:10mm}',
+'*{box-sizing:border-box;margin:0;padding:0}',
+'body{font-family:"Segoe UI",Arial,sans-serif;color:', t.tinta, ';background:', t.hoja, ';',
+'-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:0}',
+'header{display:flex;align-items:center;gap:11px;border-radius:7px;padding:9px 13px;',
+'background:linear-gradient(100deg,', t.cab1, ',', t.cab2, ');color:', t.cabTxt, '}',
+'header img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:7px;padding:1px;flex:0 0 auto}',
+'header h1{font-size:16px;font-weight:800;line-height:1.15}',
+'header p{font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:', t.oro, '}',
+'header .sub{margin-left:auto;text-align:right;font-size:8.5px;opacity:.92;line-height:1.4}',
+'.fila{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;align-items:start}',
+'.bloque{border:1px solid ', t.borde, ';border-radius:7px;padding:8px 10px;background:', t.panel, ';break-inside:avoid}',
+'.bloque h2{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:', t.acento, ';',
+'font-weight:800;padding-bottom:4px;margin-bottom:6px;border-bottom:1.5px solid ', t.oro, '}',
+'.bloque h2 em{font-style:normal;font-weight:600;color:', t.txt3, ';text-transform:none;letter-spacing:0}',
+'.mapa-wrap{position:relative;border-radius:6px;overflow:hidden;background:#dde3e8;max-width:100%}',
+'.mapa-wrap img{display:block;width:100%;height:auto}',
+'.mapa-wrap svg{position:absolute;left:0;top:0;width:100%;height:100%}',
+'.mapa-vacio{width:100%;height:100%;background:repeating-linear-gradient(45deg,#e8edf1,#e8edf1 8px,#dfe6ec 8px,#dfe6ec 16px)}',
+'.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}',
+'.kpi{border:1px solid ', t.borde, ';border-radius:6px;padding:6px 3px;text-align:center;background:', t.suave, '}',
+'.kpi b{display:block;font-size:13px;font-weight:800;color:', t.acento, ';line-height:1.15}',
+'.kpi small{display:block;font-size:7px;color:', t.txt2, ';line-height:1.2;margin-top:2px}',
+'table{width:100%;border-collapse:collapse;font-size:8.5px}',
+'th{background:', t.cab1, ';color:', t.cabTxt, ';font-size:7.6px;text-transform:uppercase;',
+'letter-spacing:.4px;padding:4px 5px;text-align:left;font-weight:700}',
+'td{padding:3px 5px;border-bottom:1px solid ', t.linea, ';color:', t.tinta, ';line-height:1.3}',
+'td.n{text-align:right;font-variant-numeric:tabular-nums}',
+'td i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px;vertical-align:middle}',
+'.chart img,.heat{width:100%;display:block;border-radius:5px}',
+'.datos{font-size:8.5px;color:', t.txt2, ';line-height:1.55}',
+'.datos b{color:', t.tinta, '}',
+'footer{margin-top:9px;border-top:1px solid ', t.borde, ';padding-top:5px;font-size:7.4px;',
+'color:', t.txt3, ';display:flex;justify-content:space-between;gap:12px}',
+'</style></head><body>',
+
+'<header><img src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">',
+'<div><h1>', esc(S.nombre || 'Área de análisis'), '</h1>',
+'<p>URBIS Pro City · Análisis de área</p></div>',
+'<div class="sub">Cúcuta, Norte de Santander<br>', esc(fecha), '</div></header>',
+
+'<div class="fila">',
+  '<div class="bloque"><h2>El área analizada</h2>', mapaDelArea(430, 320), '</div>',
+  '<div class="bloque"><h2>Cifras del área</h2>',
+    '<div class="datos"><b>Superficie:</b> ', fmtArea(r.areaM2), '<br>',
+    '<b>Perímetro:</b> ', fmtDist(r.perimetroM), '<br>',
+    '<b>Vértices:</b> ', S.pts.length, '</div>',
+    '<div class="kpis">',
+      kpi(r.total, 'puntos mapeados'), kpi(r.densidad, 'por hectárea'),
+      kpi(r.mios, 'míos'), kpi(r.deOtros, 'de otros'),
+    '</div>',
+    (g.donut ? '<div class="chart" style="margin-top:7px"><img src="' + g.donut + '" alt=""></div>' : ''),
+  '</div>',
+'</div>',
+
+'<div class="fila">',
+  '<div class="bloque"><h2>Composición por Matriz de Usos</h2>',
+    (g.barras ? '<div class="chart"><img src="' + g.barras + '" alt=""></div>' : ''),
+    '<table style="margin-top:6px"><tr><th>Grupo</th><th>Usos</th><th>%</th></tr>', tablaGrupos, '</table>',
+  '</div>',
+  '<div>',
+    (tablaDims ? '<div class="bloque"><h2>Reparto por dimensión</h2>' +
+      '<table><tr><th>Dimensión</th><th>Puntos</th><th>%</th></tr>' + tablaDims + '</table></div>' : ''),
+    heatImg,
+  '</div>',
+'</div>',
+
+'<footer><span>Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible a la fecha.</span>',
+'<span><b>URBIS</b> Pro City · @urbis_co</span></footer>',
+'</body></html>'
+    ].join('');
+  }
+
+  function exportarPDF(){
+    const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+    if (!ctx) { alert('El análisis no está listo todavía.'); return; }
+    if (!S.cerrada || S.pts.length < 3) { alert('Primero dibuja y cierra un área.'); return; }
+    const sel = document.getElementById('pca-estilo-pdf');
+    const estilo = (sel && sel.value) || estiloGuardado();
+    try { localStorage.setItem(LS_ESTILO, estilo); } catch(e){}
+    try {
+      const html = construirInforme(ctx, estilo);
+      const abrir = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+      if (abrir) { abrir(html); return; }
+      const w = window.open('', '_blank');
+      if (!w) { alert('Permite ventanas emergentes para exportar el PDF.'); return; }
+      w.document.write(html); w.document.close();
+      setTimeout(() => { try { w.focus(); w.print(); } catch(e){} }, 600);
+    } catch(e) {
+      alert('No se pudo generar el informe: ' + (e && e.message || e));
+    }
   }
 
   // Las gráficas se montan DESPUÉS de inyectar el HTML, porque Chart.js
@@ -856,6 +1106,7 @@
     if (name === 'dibujar')  { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); iniciarDibujo(); return true; }
     if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
     if (name === 'cerrar-burbuja') { cerrarBurbuja(); return true; }
+    if (name === 'pdf') { exportarPDF(); return true; }
     // Al elegir una capa de calor se cierra el panel: el mapa está detrás y
     // sin cerrarlo no se vería nada de lo que se acaba de encender.
     if (name === 'heat') {

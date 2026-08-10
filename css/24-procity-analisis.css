@@ -298,3 +298,33 @@
   padding:8px 12px; font-size:.76rem; font-weight:700;
   color:#a33 !important; -webkit-text-fill-color:#a33 !important;
 }
+
+/* ── Exportar informe del área a PDF ── */
+.pca-exportar{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:4px; padding:12px 12px 13px;
+  background:linear-gradient(155deg,#eef6ff,#e2eefc);
+  border:1.5px solid #b9d4f0; border-radius:14px;
+}
+.pca-h-pdf{
+  margin:0; font-size:.88rem;
+  color:#14507f !important; -webkit-text-fill-color:#14507f !important;
+}
+.pca-exportar-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
+  color:#3f5a76 !important; -webkit-text-fill-color:#3f5a76 !important; }
+.pca-exportar-estilo{
+  display:flex; align-items:center; gap:8px; font-size:.76rem; font-weight:700;
+  color:#2f4a63 !important; -webkit-text-fill-color:#2f4a63 !important;
+}
+.pca-exportar-estilo select{
+  flex:1; background:#fff; border:1.5px solid #b9d4f0; border-radius:9px;
+  padding:8px 9px; font-size:.78rem; font-weight:600;
+  color:#22354a !important; -webkit-text-fill-color:#22354a !important;
+}
+.pca-btn-pdf{
+  width:100%; border:0; border-radius:11px; cursor:pointer;
+  background:linear-gradient(135deg,#0E86BE,#075E88); color:#fff;
+  padding:12px; font-size:.86rem; font-weight:800;
+  transition:transform .15s ease;
+}
+.pca-btn-pdf:active{ transform:scale(.97); }
