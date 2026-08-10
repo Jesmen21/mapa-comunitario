@@ -48,6 +48,14 @@
     // caían en "sin definir": Therapy for Kids, Consultorio de la Piel...).
     { sub:'salud_otro',      nombre:'Servicio de salud',    grupo:'salud',        icono:'🩺', m:{ healthcare:/.+/ } },
     // Comercio
+    // Tiendas de descuento (D1, Ara, Justo & Bueno): en OSM suelen venir
+    // etiquetadas como shop=supermarket igual que cualquier supermercado, así
+    // que sin mirar la marca se perdían en la misma categoría. Va ANTES de
+    // 'supermercado' a propósito: si además trae shop=supermarket, esta regla
+    // debe ganar. Pedido explícito: que queden aparte porque para un
+    // constructor/inmobiliaria son una señal de mercado distinta a un
+    // supermercado grande (Éxito, Metro, Merkarico).
+    { sub:'tienda_descuento',nombre:'Tienda de descuento',  grupo:'comercio',     icono:'🏷️', m:{ brand:/^(d1|ara|justo\s*&?\s*y?\s*bueno)$/, name:/^(d1|ara|justo\s*&?\s*y?\s*bueno)(\s|$)/ } },
     { sub:'supermercado',    nombre:'Supermercado',         grupo:'comercio',     icono:'🛒', m:{ shop:/^(supermarket|wholesale)$/ } },
     { sub:'centro_comercial',nombre:'Centro comercial',     grupo:'comercio',     icono:'🏬', m:{ shop:/^(mall|department_store)$/ } },
     { sub:'tienda_barrio',   nombre:'Tienda de barrio',     grupo:'comercio',     icono:'🏪', m:{ shop:/^(convenience|kiosk|general|greengrocer|butcher|dairy)$/ } },
@@ -77,14 +85,20 @@
     { sub:'iglesia',         nombre:'Iglesia / Culto',      grupo:'cultura',      icono:'⛪', m:{ amenity:/^place_of_worship$/, building:/^(church|chapel|mosque|cathedral)$/, landuse:/^religious$/, religion:/.+/ } },
     { sub:'cultural',        nombre:'Equipamiento cultural',grupo:'cultura',      icono:'🎭', m:{ amenity:/^(theatre|cinema|library|arts_centre|community_centre|studio)$/, tourism:/^(museum|gallery|attraction|artwork)$/ } },
     // Institucional
-    { sub:'policia',         nombre:'Policía / CAI',        grupo:'institucional',icono:'🚓', m:{ amenity:/^police$/ } },
+    // amenity=servicio_de_seguridad del estado: variante no estándar que
+    // aparece en CAI de Cúcuta (ej. "Cai Parque Colón") — mismo concepto que
+    // amenity=police, solo con otra etiqueta.
+    { sub:'policia',         nombre:'Policía / CAI',        grupo:'institucional',icono:'🚓', m:{ amenity:/^(police|servicio_de_seguridad del estado)$/ } },
     { sub:'gobierno',        nombre:'Entidad pública',      grupo:'institucional',icono:'🏛️', m:{ amenity:/^(townhall|courthouse|post_office|prison|social_facility)$/, office:/^(government|administrative)$/, building:/^(public|civic|government)$/, landuse:/^military$/ } },
     { sub:'notaria',         nombre:'Notaría / Jurídico',   grupo:'institucional',icono:'⚖️', m:{ office:/^(notary|lawyer)$/, amenity:/^notary$/ } },
     // Servicios e infraestructura (vias/ciclorrutas van a stats.movilidad, no a POIs)
     { sub:'via_arteria',     nombre:'Vía arteria',          grupo:'servicios',    icono:'🛣️', m:{ highway:/^(trunk|primary|secondary|tertiary)$/ } },
     { sub:'ciclorruta',      nombre:'Ciclorruta',           grupo:'servicios',    icono:'🚴', m:{ highway:/^cycleway$/ } },
     { sub:'parada_bus',      nombre:'Parada de transporte', grupo:'servicios',    icono:'🚌', m:{ highway:/^bus_stop$/, amenity:/^bus_station$/, public_transport:/^(platform|stop_position|station)$/ } },
-    { sub:'transporte',      nombre:'Transporte / Parqueo', grupo:'servicios',    icono:'🅿️', m:{ amenity:/^(taxi|parking|car_rental|bicycle_parking|motorcycle_parking|parking_space)$/ } },
+    // car_pooling: en la práctica en Cúcuta aparece mapeado como "Parqueadero"
+    // por el nombre que le puso quien lo mapeó, aunque la etiqueta técnica de
+    // OSM sea para compartir carro, no para dejar el carro.
+    { sub:'transporte',      nombre:'Transporte / Parqueo', grupo:'servicios',    icono:'🅿️', m:{ amenity:/^(taxi|parking|car_rental|car_pooling|bicycle_parking|motorcycle_parking|parking_space)$/ } },
     { sub:'infra_servicios', nombre:'Infraestructura',      grupo:'servicios',    icono:'🗼', m:{ man_made:/^(mast|tower|water_tower|works)$/, power:/^substation$/, amenity:/^(recycling|waste_transfer_station)$/, landuse:/^landfill$/ } },
     // Servientrega / Inter Rapidísimo y demás puntos de envío.
     { sub:'mensajeria',      nombre:'Mensajería / Correo',  grupo:'servicios',    icono:'📮', m:{ amenity:/^(post_box|parcel_locker|post_depot)$/ } },
@@ -332,7 +346,7 @@
   //   interpretacion → lectura cualitativa del cálculo
   //   externo      → no se puede saber con los datos actuales
   // ═══════════════════════════════════════════════════════════════════════
-  const SUBS_COMERCIO = ['supermercado','centro_comercial','tienda_barrio','panaderia','banco','hotel',
+  const SUBS_COMERCIO = ['supermercado','tienda_descuento','centro_comercial','tienda_barrio','panaderia','banco','hotel',
     'gasolinera','restaurante','cafeteria','pagos','internet_cafe','local_comercial','comercio_otro'];
 
   function nivelPorUmbral(v, umbrales){
@@ -602,7 +616,7 @@
     { id:'drogueria',    nombre:'Droguería',            icono:'💊', habXunidad:3500,  competidores:['drogueria'], complementarios:['salud_ips','laboratorio','supermercado','tienda_barrio'] },
     { id:'cafeteria',    nombre:'Cafetería',            icono:'☕', habXunidad:2500,  competidores:['cafeteria','panaderia'], complementarios:['universidad','oficina','colegio','gimnasio','cultural'], pesos:{ demanda:.20, competencia:.25, complementarios:.30, movilidad:.15, entorno:.10 } },
     { id:'restaurante',  nombre:'Restaurante',          icono:'🍽️', habXunidad:3000,  competidores:['restaurante'], complementarios:['oficina','hotel','universidad','cultural','banco'] },
-    { id:'supermercado', nombre:'Supermercado',         icono:'🛒', habXunidad:6000,  competidores:['supermercado','centro_comercial'], complementarios:['residencial','parada_bus'], pesos:{ demanda:.40, competencia:.25, complementarios:.10, movilidad:.15, entorno:.10 } },
+    { id:'supermercado', nombre:'Supermercado',         icono:'🛒', habXunidad:6000,  competidores:['supermercado','tienda_descuento','centro_comercial'], complementarios:['residencial','parada_bus'], pesos:{ demanda:.40, competencia:.25, complementarios:.10, movilidad:.15, entorno:.10 } },
     { id:'residencial',  nombre:'Edificio residencial', icono:'🏢', habXunidad:0,     competidores:['baldio_obra'], complementarios:['colegio','supermercado','parque','salud_ips','parada_bus','tienda_barrio'], pesos:{ demanda:.15, competencia:.10, complementarios:.35, movilidad:.20, entorno:.20 } },
     { id:'mixto',        nombre:'Edificio mixto',       icono:'🧩', habXunidad:0,     competidores:['baldio_obra'], complementarios:['colegio','supermercado','parque','salud_ips','parada_bus','comercio_otro','oficina'], pesos:{ demanda:.20, competencia:.10, complementarios:.30, movilidad:.20, entorno:.20 } },
     { id:'oficinas',     nombre:'Oficinas',             icono:'💼', habXunidad:8000,  competidores:['oficina'], complementarios:['banco','restaurante','cafeteria','gobierno','parada_bus'], pesos:{ demanda:.25, competencia:.20, complementarios:.20, movilidad:.25, entorno:.10 } },
@@ -873,7 +887,7 @@
     // proyecto "Edificio residencial" del modo simple, su competidor real es
     // el suelo baldío/en obra (sobreoferta de inventario), no `residencial`.
     { id:'vivienda',     nombre:'Vivienda',     icono:'🏠', subs:['residencial'], competidores:['baldio_obra'], complementarios:['parque','colegio','supermercado','tienda_barrio','salud_ips','parada_bus'], contable:true, unidad:'viviendas' },
-    { id:'comercio',     nombre:'Comercio',     icono:'🛍️', subs:['supermercado','tienda_barrio','local_comercial','comercio_otro','centro_comercial'], complementarios:['residencial','parada_bus','oficina'], contable:true, unidad:'locales comerciales' },
+    { id:'comercio',     nombre:'Comercio',     icono:'🛍️', subs:['supermercado','tienda_descuento','tienda_barrio','local_comercial','comercio_otro','centro_comercial'], complementarios:['residencial','parada_bus','oficina'], contable:true, unidad:'locales comerciales' },
     { id:'oficinas',     nombre:'Oficinas',     icono:'💼', subs:['oficina'], complementarios:['banco','restaurante','cafeteria','parada_bus'], contable:true, unidad:'oficinas' },
     { id:'hotel',        nombre:'Hotel',        icono:'🏨', subs:['hotel'], complementarios:['restaurante','cultural','gobierno'], contable:true, unidad:'habitaciones' },
     { id:'consultorios', nombre:'Consultorios', icono:'🩺', subs:['salud_ips'], complementarios:['drogueria','laboratorio'], contable:true, unidad:'consultorios' },
@@ -893,7 +907,7 @@
     // existentes es un ATRACTIVO del entorno, no competencia — mismo criterio
     // que se usó para "vivienda". No incluye andenes (no medible por satélite).
     { id:'espacio_publico', nombre:'Espacio Público', icono:'🌳', subs:['parque'], competidores:['baldio_obra'], complementarios:['residencial','comercio_otro'] },
-    { id:'supermercado', nombre:'Supermercado', icono:'🛒', subs:['supermercado','centro_comercial'], complementarios:['residencial'] },
+    { id:'supermercado', nombre:'Supermercado', icono:'🛒', subs:['supermercado','tienda_descuento','centro_comercial'], complementarios:['residencial'] },
     { id:'gimnasio',     nombre:'Gimnasio / Deportivo', icono:'🏋️', subs:['gimnasio','deportivo'], complementarios:['residencial'] },
     { id:'parqueadero',  nombre:'Parqueadero',  icono:'🅿️', subs:['transporte'], complementarios:['comercio_otro','oficina'], contable:true, unidad:'cupos de parqueo' },
     // Cajero bancario: comparte la sub 'banco' de la Matriz (amenity=atm ya
