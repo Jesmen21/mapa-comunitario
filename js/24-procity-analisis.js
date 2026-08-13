@@ -30,7 +30,9 @@
     charts: [],
     burbuja: null,
     // Mapa de calor: `grupo` es un id de la Matriz o 'todos'; null = apagado.
-    heat: { grupo: null, canvas: null, chip: null, pintando: false }
+    heat: { grupo: null, canvas: null, chip: null, pintando: false },
+    // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'; null = apagada.
+    geo: { tipo: null, capa: null }
   };
 
   function esc(s){
@@ -376,8 +378,9 @@
     cerrarBurbuja();
     S.pts = []; S.cerrada = false; S.nombre = ''; S.dibujando = false;
     repintar(); pintarBarra();
-    // El calor se filtra por el area: si el area cambia, hay que repintarlo.
+    // El calor y la geometría se filtran por el área: si el área cambia, se limpian.
     if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
+    if (S.geo.tipo) apagarGeo();
   }
 
   // ── Áreas guardadas ─────────────────────────────────────────────────────
@@ -789,6 +792,8 @@
 
       bloqueHeat(ctx) +
 
+      (r.total >= 2 ? bloqueGeo(ctx) : '') +
+
       (r.total > 0 ? bloqueExportar() : '') +
 
       '<p class="pca-nota">Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible hoy.</p>' +
@@ -1100,6 +1105,133 @@
     }
   }
 
+  // ── Fase 3 · Generador de geometrías ────────────────────────────────────
+  // Se arranca con el subconjunto más simple de calcular del catálogo del
+  // plan (sección 5): red entre vecinos cercanos, envolvente convexa y
+  // círculos de impacto. El resto (Voronoi, Delaunay, ejes, grillas) queda
+  // para sumar después sin tocar lo ya hecho — mismo patrón aditivo que
+  // el mapa de calor.
+
+  function capaGeo(){
+    const m = mapa();
+    if (!m || typeof L === 'undefined') return null;
+    if (!S.geo.capa) S.geo.capa = L.layerGroup().addTo(m);
+    return S.geo.capa;
+  }
+
+  // Puntos de Pro City dentro del área, ya con lat/lng numéricos — insumo
+  // común a las tres geometrías.
+  function puntosGeo(ctx){
+    return datosURBIS().reduce((acc, p) => {
+      if (!p || !ctx.esProCity(p.tipo)) return acc;
+      const lat = parseFloat(String(p.lat || '').replace(',', '.'));
+      const lng = parseFloat(String(p.lng || '').replace(',', '.'));
+      if (isNaN(lat) || isNaN(lng)) return acc;
+      if (!dentroDelPoligono(lat, lng, S.pts)) return acc;
+      acc.push({ lat, lng });
+      return acc;
+    }, []);
+  }
+
+  // Envolvente convexa por el método de la cadena monótona (Andrew). O(n log n),
+  // sin dependencias — el mismo criterio de "no traer una librería para 20 líneas".
+  function envolventeConvexa(pts){
+    const uniq = pts.slice().sort((a, b) => a.lng - b.lng || a.lat - b.lat);
+    if (uniq.length < 3) return uniq;
+    const cruz = (o, a, b) => (a.lng - o.lng) * (b.lat - o.lat) - (a.lat - o.lat) * (b.lng - o.lng);
+    const baja = [];
+    for (const p of uniq) {
+      while (baja.length >= 2 && cruz(baja[baja.length-2], baja[baja.length-1], p) <= 0) baja.pop();
+      baja.push(p);
+    }
+    const alta = [];
+    for (let i = uniq.length - 1; i >= 0; i--) {
+      const p = uniq[i];
+      while (alta.length >= 2 && cruz(alta[alta.length-2], alta[alta.length-1], p) <= 0) alta.pop();
+      alta.push(p);
+    }
+    baja.pop(); alta.pop();
+    return baja.concat(alta);
+  }
+
+  // Red entre vecinos cercanos: cada punto se conecta con sus 2 vecinos más
+  // próximos (evita el enredo visual de conectar todos contra todos), sin
+  // repetir el mismo segmento en ambos sentidos.
+  function redVecinos(pts, k){
+    const lineas = [];
+    const vistos = new Set();
+    pts.forEach((p, i) => {
+      const dists = pts
+        .map((q, j) => ({ j, d: j === i ? Infinity : haversineM(p, q) }))
+        .sort((a, b) => a.d - b.d)
+        .slice(0, k);
+      dists.forEach(({ j }) => {
+        const clave = i < j ? i + '-' + j : j + '-' + i;
+        if (vistos.has(clave)) return;
+        vistos.add(clave);
+        lineas.push([p, pts[j]]);
+      });
+    });
+    return lineas;
+  }
+
+  function pintarGeo(ctx){
+    const c = capaGeo();
+    if (!c) return;
+    c.clearLayers();
+    const tipo = S.geo.tipo;
+    if (!tipo) return;
+    const pts = puntosGeo(ctx);
+    if (pts.length < 2) return;
+
+    if (tipo === 'red') {
+      const k = pts.length > 60 ? 1 : 2;   // con muchos puntos, menos líneas por nodo
+      redVecinos(pts, k).forEach(([a, b]) => {
+        L.polyline([a, b], { color: '#a855f7', weight: 1.6, opacity: .65, className: 'pca-geo-linea' }).addTo(c);
+      });
+      pts.forEach(p => L.circleMarker(p, { radius: 3, color: '#a855f7', weight: 0, fillOpacity: .9 }).addTo(c));
+
+    } else if (tipo === 'hull') {
+      const hull = envolventeConvexa(pts);
+      if (hull.length >= 3) {
+        L.polygon(hull, { color: '#FABD0A', weight: 2.5, fillColor: '#FABD0A', fillOpacity: .1,
+          dashArray: '2 6', className: 'pca-geo-hull' }).addTo(c);
+      }
+      pts.forEach(p => L.circleMarker(p, { radius: 3, color: '#FABD0A', weight: 0, fillOpacity: .9 }).addTo(c));
+
+    } else if (tipo === 'circulos') {
+      // Radio fijo modesto (35 m ≈ una cuadra corta): con relleno translúcido,
+      // los círculos cercanos se funden visualmente en un contorno orgánico
+      // sin necesidad de calcular la unión real de los polígonos.
+      pts.forEach(p => {
+        L.circle(p, { radius: 35, color: '#ef4444', weight: 1, fillColor: '#ef4444', fillOpacity: .16 }).addTo(c);
+      });
+    }
+  }
+
+  function apagarGeo(){
+    S.geo.tipo = null;
+    if (S.geo.capa) { try { S.geo.capa.clearLayers(); } catch(e){} }
+  }
+
+  function bloqueGeo(ctx){
+    const act = S.geo.tipo;
+    const chip = (id, ico, txt) =>
+      '<button type="button" class="pca-heat-btn' + (act === id ? ' activo' : '') + '" ' +
+      'data-u52-call="pca-geo" data-gid="' + esc(id) + '">' +
+      '<i></i><span>' + ico + ' ' + esc(txt) + '</span></button>';
+    return '<div class="pca-heat-sel">' +
+      '<h4 class="pca-h pca-h-heat">🕸️ Geometría del área</h4>' +
+      '<p class="pca-heat-ayuda">Dibuja relaciones espaciales entre lo mapeado: qué tan cerca están unos de otros, qué tanto terreno abarcan y dónde se concentra su radio de influencia.</p>' +
+      '<div class="pca-heat-chips">' +
+        chip('red', '🕸️', 'Red de conexiones') +
+        chip('hull', '⬡', 'Envolvente convexa') +
+        chip('circulos', '⭕', 'Círculos de impacto') +
+      '</div>' +
+      (act ? '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">✕ Quitar la geometría</button>' : '') +
+    '</div>';
+  }
+
   // ── Acciones (las despacha js/20 desde su delegador de clics) ───────────
 
   function accion(name, el){
@@ -1122,6 +1254,20 @@
       // Si el apagado vino del panel, se repinta para quitar el botón.
       const enPanel = el && el.closest('.pca-panel');
       if (enPanel && typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
+      return true;
+    }
+    if (name === 'geo') {
+      const gid = el && el.dataset.gid;
+      const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+      if (!ctx) return true;
+      S.geo.tipo = (S.geo.tipo === gid) ? null : gid;
+      pintarGeo(ctx);
+      if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
+      return true;
+    }
+    if (name === 'geo-off') {
+      apagarGeo();
+      if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
       return true;
     }
     if (name === 'deshacer') { deshacer(); return true; }
@@ -1156,6 +1302,8 @@
     puntosDelArea: () => S.pts.slice(),
     dentroDelPoligono, areaM2, perimetroM,
     // Mapa de calor (Fase 2)
-    heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat
+    heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat,
+    // Geometría (Fase 3)
+    geoActiva: () => S.geo.tipo, apagarGeo
   };
 })();

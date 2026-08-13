@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v458-indicadores-claridad';
+const URBIS_CACHE = 'urbis-v459-procity-fase3-geometrias';
 const URBIS_ASSETS = [
   './',
   './index.html',
