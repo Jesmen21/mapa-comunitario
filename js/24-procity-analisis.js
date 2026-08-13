@@ -803,8 +803,10 @@
 
       (r.total >= 2 ? bloqueGeo(ctx) : '') +
 
-      // La cobertura del suelo no depende de lo mapeado: se mide sobre la
-      // imagen satelital, así que va aunque el área esté vacía de puntos.
+      // Va SIEMPRE dentro de esta rama, que solo se alcanza con un polígono
+      // ya cerrado: la cobertura se mide sobre el área dibujada. Lo que no
+      // necesita es que haya puntos mapeados adentro, porque se calcula sobre
+      // la imagen satelital y no sobre lo que georreferenció la comunidad.
       bloqueRaster() +
 
       (r.total > 0 ? bloqueExportar() : '') +
