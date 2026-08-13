@@ -392,6 +392,7 @@
   function limpiarArea(){
     cerrarBurbuja();
     S.pts = []; S.cerrada = false; S.nombre = ''; S.dibujando = false;
+    window.__pcaNombreArea = '';
     repintar(); pintarBarra();
     // El calor y la geometría se filtran por el área: si el área cambia, se limpian.
     if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
@@ -420,6 +421,7 @@
     escribirAreas(areas);
     reg('area-guardada');
     S.nombre = nombre;
+    window.__pcaNombreArea = nombre;
     if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
   }
   function cargarArea(id){
@@ -427,6 +429,7 @@
     if (!a) return;
     reg('area-cargada');
     S.pts = a.pts.slice(); S.cerrada = true; S.dibujando = false; S.nombre = a.nombre;
+    window.__pcaNombreArea = a.nombre;
     repintar(); pintarBarra(); ajustarVista();
     try { refrescarGeo(); } catch(e){}
     S.raster = null;
@@ -823,6 +826,10 @@
       bloqueRaster() +
 
       (r.total > 0 ? bloqueExportar() : '') +
+
+      // Exportación geográfica (Fase 6): no depende de que haya puntos
+      // mapeados, porque el contorno del área siempre se puede llevar.
+      (window.URBIS_PC_EXPORTAR ? window.URBIS_PC_EXPORTAR.bloque() : '') +
 
       '<p class="pca-nota">Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible hoy.</p>' +
 
@@ -1550,6 +1557,9 @@
     // Acciones del panel de analítica (js/25), que se pinta dentro de este panel.
     if (name.indexOf('an-') === 0 && window.URBIS_PC_ANALITICA) {
       return window.URBIS_PC_ANALITICA.accion(name);
+    }
+    if (name.indexOf('exp-') === 0 && window.URBIS_PC_EXPORTAR) {
+      return window.URBIS_PC_EXPORTAR.accion(name);
     }
     if (name === 'raster') {
       const btn = el;

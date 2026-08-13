@@ -38,6 +38,9 @@
     'raster-ok':           { etq:'Analizó cobertura del suelo',  grupo:'capas' },
     'raster-error':        { etq:'Falló el análisis de cobertura', grupo:'capas', friccion:true },
     'pdf-generado':        { etq:'Generó el informe PDF',        grupo:'salida' },
+    'exportado-kmz':       { etq:'Exportó a KMZ (Google Earth)', grupo:'salida' },
+    'exportado-dxf':       { etq:'Exportó a DXF (AutoCAD)',     grupo:'salida' },
+    'exportado-kml':       { etq:'Exportó a KML',               grupo:'salida' },
     'area-vacia':          { etq:'Analizó un área sin puntos mapeados', grupo:'friccion', friccion:true },
     'geo-sin-puntos':      { etq:'Intentó geometría con menos de 2 puntos', grupo:'friccion', friccion:true }
   };

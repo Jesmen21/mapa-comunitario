@@ -428,6 +428,31 @@
 }
 .pca-raster-aviso small b{ display:inline; color:#8a5a12 !important; -webkit-text-fill-color:#8a5a12 !important; }
 
+/* ── Fase 6 · Exportación geográfica (KMZ / DXF) ── */
+.pca-exp-geo{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:4px; padding:12px 12px 13px;
+  background:linear-gradient(155deg,#eef4ff,#e2ebfd);
+  border:1.5px solid #b8caf0; border-radius:14px;
+}
+.pca-h-geoexp{
+  margin:0; font-size:.88rem; color:#1e40af !important; -webkit-text-fill-color:#1e40af !important;
+}
+.pca-exp-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
+  color:#3d5480 !important; -webkit-text-fill-color:#3d5480 !important; }
+.pca-exp-ayuda b{ color:#1e40af !important; -webkit-text-fill-color:#1e40af !important; }
+.pca-exp-btns{ display:flex; flex-wrap:wrap; gap:6px; }
+.pca-exp-btns button{
+  cursor:pointer; padding:9px 13px; border-radius:11px; font-size:.75rem; font-weight:800;
+  border:1.5px solid #2563eb; background:#fff;
+  color:#1e40af !important; -webkit-text-fill-color:#1e40af !important;
+}
+.pca-exp-btns .pca-exp-sec{
+  border-color:#c3d2ee; font-weight:700;
+  color:#54688f !important; -webkit-text-fill-color:#54688f !important;
+}
+.pca-exp-btns button:active{ transform:scale(.97); }
+
 /* ── Fase 5 · Analítica de uso (solo administrador) ──
    Gris pizarra a propósito: es una herramienta interna, no una función del
    estudiante, y no debe competir visualmente con el análisis. */
