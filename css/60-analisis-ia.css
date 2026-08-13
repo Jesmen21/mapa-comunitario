@@ -584,6 +584,48 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   font-size:.72rem; font-weight:700; cursor:pointer;
 }
 
+/* Estrato socioeconómico (Censo DANE 2018). Va en dorado de marca porque es
+   dato duro, no estimación: es lo que define el producto y el precio. */
+.aia-estrato{
+  margin:0 0 14px; padding:12px 14px; border-radius:14px;
+  background:linear-gradient(150deg,rgba(250,189,10,.12),rgba(250,189,10,.05));
+  border:1px solid rgba(250,189,10,.34);
+}
+.aia-estrato-cab{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.aia-estrato-cab b{
+  font-size:.85rem; color:#FABD0A !important; -webkit-text-fill-color:#FABD0A !important;
+}
+.aia-estrato-fuente{
+  margin-left:auto; font-size:.64rem; font-weight:800; letter-spacing:.03em;
+  padding:2px 8px; border-radius:999px; background:rgba(250,189,10,.18);
+  color:#ffd970 !important; -webkit-text-fill-color:#ffd970 !important;
+}
+.aia-estrato-num{ display:flex; align-items:baseline; gap:8px; margin:7px 0 9px; }
+.aia-estrato-num b{
+  font-size:2.1rem; font-weight:900; line-height:1;
+  color:#ffd970 !important; -webkit-text-fill-color:#ffd970 !important;
+}
+.aia-estrato-num small{
+  font-size:.72rem; color:#d9e6f2 !important; -webkit-text-fill-color:#d9e6f2 !important;
+}
+.aia-estrato-barras{ display:flex; flex-direction:column; gap:4px; }
+.aia-estrato-fila{ display:flex; align-items:center; gap:8px; font-size:.7rem; }
+.aia-estrato-fila span{
+  flex:0 0 66px; color:#cfe3f2 !important; -webkit-text-fill-color:#cfe3f2 !important;
+}
+.aia-estrato-fila i{
+  flex:1; height:8px; border-radius:5px; background:rgba(255,255,255,.09); overflow:hidden;
+}
+.aia-estrato-fila i b{ display:block; height:100%; border-radius:5px; background:#FABD0A; }
+.aia-estrato-fila em{
+  flex:0 0 auto; font-style:normal; font-size:.66rem; min-width:74px; text-align:right;
+  color:#a9c2d6 !important; -webkit-text-fill-color:#a9c2d6 !important;
+}
+.aia-estrato-txt{
+  margin:9px 0 0; font-size:.73rem; line-height:1.5;
+  color:#d9e6f2 !important; -webkit-text-fill-color:#d9e6f2 !important;
+}
+
 /* Bandeja de usos sin categoría: acumulado de TODOS los análisis, no solo del
    radio actual. Se separa visualmente del aviso fucsia (que es de este radio)
    con su propio marco celeste. */

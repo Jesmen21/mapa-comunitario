@@ -199,5 +199,141 @@
     return { lat, lng };
   }
 
-  window.AIA_DATOS = { consultarEntorno, buscarDireccion, parsearEnlaceMaps, ubicacionDe };
+  // ── Censo DANE 2018 (población y estrato reales) ────────────────────────
+  // Reemplaza la estimación heurística de población por el dato censal real.
+  // La heurística multiplicaba área por una densidad fija y se SATURABA: a 1 km
+  // devolvía ~30.800 para cualquier sector residencial, fuera el Centro
+  // (14.119 reales) o Atalaya (39.799 reales).
+  //
+  // Los datos los publica Esri Colombia a partir del CNPV 2018 del DANE, como
+  // servicios REST públicos: sin API key y con CORS abierto, así que la PWA los
+  // consulta directo desde el navegador igual que hace con Overpass.
+  // Licencia: datos abiertos (Ley 1712 de 2014), citando al DANE.
+  const DANE_BASE = 'https://ags.esri.co/arcgis/rest/services/LivingAtlas';
+  const DANE_CAPAS = {
+    // Manzana censal: el detalle más fino, pero SOLO cubre suelo urbano.
+    personasManzana: DANE_BASE + '/Censo_personas_manzana_2018/MapServer/0/query',
+    // Sector censal: menos detalle, pero llega al suelo rural. Es el respaldo
+    // cuando el lote queda fuera del perímetro urbano.
+    personasSector:  DANE_BASE + '/Censo_personas_sectores_2018/MapServer/0/query',
+    viviendasManzana: DANE_BASE + '/Censo_viviendas_manzana_2018/MapServer/0/query',
+    estratoManzana:  DANE_BASE + '/Estrato_predominante_por_manzana_2018/MapServer/0/query'
+  };
+  const ESTRATO_NUM = { 'uno':1, 'dos':2, 'tres':3, 'cuatro':4, 'cinco':5, 'seis':6 };
+
+  function paramsRadio(lat, lng, radioM){
+    const p = new URLSearchParams();
+    p.set('geometry', JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }));
+    p.set('geometryType', 'esriGeometryPoint');
+    p.set('inSR', '4326');
+    p.set('distance', String(radioM));
+    p.set('units', 'esriSRUnit_Meter');
+    p.set('spatialRel', 'esriSpatialRelIntersects');
+    p.set('f', 'json');
+    return p;
+  }
+
+  async function consultaDANE(url, params, timeoutMs){
+    const ctrl = new AbortController();
+    // 20 s: la capa de manzanas agrega cientos de polígonos y en radios de
+    // 1-2 km puede tardar. Con 12 s abortaba y el análisis caía al respaldo
+    // de sector aunque el lote sí estuviera en suelo urbano.
+    const t = setTimeout(() => ctrl.abort(), timeoutMs || 20000);
+    try {
+      const res = await fetch(url + '?' + params.toString(), { signal: ctrl.signal });
+      if (!res.ok) return null;
+      const d = await res.json();
+      // El servicio responde 200 incluso con error lógico: hay que mirar el cuerpo.
+      return (d && !d.error) ? d : null;
+    } catch(e) { return null; }
+    finally { clearTimeout(t); }
+  }
+
+  // `campo` cambia por capa: las de personas usan SEXO_TOTAL y la de vivienda
+  // usa TOTAL_VIVIENDAS (por eso el conteo de viviendas volvía vacío).
+  async function sumaCapa(url, lat, lng, radioM, campo){
+    const p = paramsRadio(lat, lng, radioM);
+    p.set('outStatistics', JSON.stringify([
+      { statisticType:'sum',   onStatisticField: campo,     outStatisticFieldName:'TOTAL' },
+      { statisticType:'count', onStatisticField:'OBJECTID', outStatisticFieldName:'N' }
+    ]));
+    const d = await consultaDANE(url, p);
+    const a = d && d.features && d.features[0] && d.features[0].attributes;
+    if (!a || a.TOTAL == null) return null;
+    return { total: Math.round(a.TOTAL), unidades: a.N || 0 };
+  }
+
+  async function distribucionEstrato(lat, lng, radioM){
+    const p = paramsRadio(lat, lng, radioM);
+    p.set('groupByFieldsForStatistics', 'ESTRATO_PREDOMINANTE');
+    p.set('outStatistics', JSON.stringify([
+      { statisticType:'count', onStatisticField:'OBJECTID', outStatisticFieldName:'N' }
+    ]));
+    const d = await consultaDANE(DANE_CAPAS.estratoManzana, p);
+    if (!d || !d.features) return null;
+    const reparto = [];
+    let manzanasConEstrato = 0, suma = 0, sinEstrato = 0;
+    d.features.forEach(f => {
+      const a = f.attributes || {};
+      const etq = String(a.ESTRATO_PREDOMINANTE || '').trim();
+      const n = a.N || 0;
+      if (!etq || !n) return;
+      const num = ESTRATO_NUM[etq.toLowerCase()];
+      if (num) { reparto.push({ estrato: num, etiqueta: etq, manzanas: n });
+                 manzanasConEstrato += n; suma += num * n; }
+      else sinEstrato += n;              // "Sin Estrato": industrial, lotes, dotacional
+    });
+    if (!reparto.length) return null;
+    reparto.sort((a, b) => a.estrato - b.estrato);
+    const dominante = reparto.slice().sort((a, b) => b.manzanas - a.manzanas)[0];
+    return {
+      reparto, sinEstrato, manzanasConEstrato,
+      promedio: Math.round((suma / manzanasConEstrato) * 10) / 10,
+      predominante: dominante.estrato,
+      // Rango real presente, que para una inmobiliaria dice más que el promedio:
+      // un sector de estrato 3 a 5 no se comercializa igual que uno todo 4.
+      minimo: reparto[0].estrato,
+      maximo: reparto[reparto.length - 1].estrato
+    };
+  }
+
+  // Devuelve población, viviendas y estrato reales del radio.
+  // Encadena manzana urbana → sector (incluye rural) → null (el motor cae
+  // entonces a su estimación heurística de siempre).
+  async function consultarDANE(lat, lng, radioM){
+    let [urbana, viviendas, estrato] = await Promise.all([
+      sumaCapa(DANE_CAPAS.personasManzana, lat, lng, radioM, 'SEXO_TOTAL'),
+      sumaCapa(DANE_CAPAS.viviendasManzana, lat, lng, radioM, 'TOTAL_VIVIENDAS').catch(() => null),
+      distribucionEstrato(lat, lng, radioM).catch(() => null)
+    ]);
+    // Un fallo puntual de red haría creer que el lote está fuera del perímetro
+    // urbano y lo mandaría al respaldo de sector, que es mucho más grueso. Se
+    // reintenta una vez antes de degradar: la diferencia no es menor (en el
+    // Centro, 3.045 hab por manzana contra 10.363 por sector).
+    if (!urbana) urbana = await sumaCapa(DANE_CAPAS.personasManzana, lat, lng, radioM, 'SEXO_TOTAL');
+
+    let poblacion = urbana, fuente = 'manzana';
+    if (!poblacion || !poblacion.unidades) {
+      poblacion = await sumaCapa(DANE_CAPAS.personasSector, lat, lng, radioM, 'SEXO_TOTAL');
+      fuente = 'sector';
+    }
+    if (!poblacion) return null;
+
+    return {
+      poblacion: poblacion.total,
+      unidades: poblacion.unidades,
+      // 'manzana' = urbano con detalle fino; 'sector' = incluye rural, más grueso.
+      nivel: fuente,
+      // Las viviendas son de la capa de MANZANA: si la población terminó
+      // saliendo del sector, dividir una por otra daría un absurdo (6,9
+      // personas por vivienda). Solo se conserva cuando ambas son del mismo nivel.
+      viviendas: (fuente === 'manzana' && viviendas) ? viviendas.total : null,
+      estrato,
+      censo: 2018,
+      etiquetaFuente: 'Censo DANE 2018 · ' + (fuente === 'manzana' ? 'manzana censal' : 'sector censal')
+    };
+  }
+
+  window.AIA_DATOS = { consultarEntorno, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
+                       consultarDANE };
 })();

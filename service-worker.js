@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v461-aia-correcciones-bandeja';
+const URBIS_CACHE = 'urbis-v462-dane-poblacion-estrato';
 const URBIS_ASSETS = [
   './',
   './index.html',

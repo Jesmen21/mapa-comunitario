@@ -436,17 +436,30 @@
       // Ciudad/departamento/país para titular el informe. No bloquea el
       // análisis: si falla, el informe simplemente omite esa línea.
       try { S.ubicacion = await window.AIA_DATOS.ubicacionDe(S.lote.lat, S.lote.lng); } catch(e) { S.ubicacion = null; }
+      // Censo DANE 2018: población y estrato reales. Se consulta el radio
+      // analizado y también los de la comparativa, porque si un anillo cayera
+      // a la estimación heurística la tabla contradiría los KPI del encabezado.
+      // Si el servicio no responde, `dane` queda null y el motor usa su
+      // estimación de siempre: el análisis nunca se bloquea por esto.
+      const radiosDane = window.AIA_MOTOR.RADIOS_COMPARATIVA
+        .filter(r => r < S.radioM).concat([S.radioM])
+        .filter((r, i, a) => a.indexOf(r) === i);
+      const danePorRadio = {};
+      try {
+        const res = await Promise.all(radiosDane.map(r =>
+          window.AIA_DATOS.consultarDANE(S.lote.lat, S.lote.lng, r).catch(() => null)));
+        radiosDane.forEach((r, i) => { if (res[i]) danePorRadio[r] = res[i]; });
+      } catch(e) { /* sin censo: sigue con la heurística */ }
+      S.dane = danePorRadio[S.radioM] || null;
+
+      const comun = { elementos, radioM: S.radioM, centro: S.lote,
+                      tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
+                      dane: S.dane, danePorRadio };
       const resultado = S.modo === 'mixto'
-        ? window.AIA_MOTOR.analizarMixto({
-            elementos, radioM: S.radioM, centro: S.lote,
-            tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
-            usos: S.usosMixto, config: S.config
-          })
-        : await window.AIA_MOTOR.analizar({
-            elementos, radioM: S.radioM, centro: S.lote,
-            proyectoId: S.proyectoId, tipoEstudio: S.tipoEstudio,
-            direccionAprox: S.direccionAprox
-          });
+        ? window.AIA_MOTOR.analizarMixto(Object.assign({}, comun,
+            { usos: S.usosMixto, config: S.config }))
+        : await window.AIA_MOTOR.analizar(Object.assign({}, comun,
+            { proyectoId: S.proyectoId }));
       S.resultado = resultado;
       pintarPOIs(resultado.pois);
       renderResultados(resultado);
@@ -564,7 +577,12 @@
       (r.meta.direccionAprox ? '<br><small>' + escHTML(r.meta.direccionAprox) + '</small>' : '');
 
     $('aia-kpis').innerHTML =
-      kpi(s.poblacionEstimada.toLocaleString('es-CO'), 'Población estimada') +
+      kpi(s.poblacionEstimada.toLocaleString('es-CO'),
+          s.poblacionEsCensal ? 'Habitantes (DANE 2018)' : 'Población estimada') +
+      (s.estrato ? kpi('E' + s.estrato.predominante,
+          s.estrato.minimo === s.estrato.maximo ? 'Estrato' : 'Estrato (' + s.estrato.minimo + '–' + s.estrato.maximo + ')',
+          '#FABD0A') : '') +
+      (s.personasPorVivienda ? kpi(s.personasPorVivienda, 'Personas por vivienda') : '') +
       kpi(s.total, 'Usos identificados') +
       kpi(s.densidadPorHa, 'Usos por hectárea') +
       kpi(s.movilidad.nViasArterias, 'Vías arterias') +
@@ -722,7 +740,28 @@
     const opos = (i.oportunidades.lista || []).slice(0, 4);
     const est = Math.max(1, Math.min(5, Math.round(so.valor / 20)));
 
-    cont.innerHTML =
+    // El estrato encabeza el bloque: es dato duro del censo (no estimación) y
+    // es lo que define a qué precio se puede vender y qué producto construir.
+    const ind = i.estrato;
+    const bloqueEstrato = (ind && ind.disponible)
+      ? '<div class="aia-estrato">' +
+          '<div class="aia-estrato-cab"><b>🏷️ Estrato socioeconómico</b>' +
+            '<span class="aia-estrato-fuente">Censo DANE 2018</span></div>' +
+          '<div class="aia-estrato-num"><b>' + ind.predominante + '</b>' +
+            '<small>predominante' + (ind.homogeneo ? '' : ' · rango ' + ind.minimo + '–' + ind.maximo) + '</small></div>' +
+          '<div class="aia-estrato-barras">' +
+            ind.reparto.map(x => {
+              const pct = Math.round(100 * x.manzanas / Math.max(1, ind.manzanasConEstrato));
+              return '<div class="aia-estrato-fila"><span>Estrato ' + x.estrato + '</span>' +
+                '<i><b style="width:' + pct + '%"></b></i>' +
+                '<em>' + x.manzanas + ' mz · ' + pct + '%</em></div>';
+            }).join('') +
+          '</div>' +
+          '<p class="aia-estrato-txt">' + escHTML(ind.detalle) + '</p>' +
+        '</div>'
+      : '';
+
+    cont.innerHTML = bloqueEstrato +
       // Pedido explícito: "oportunidad urbana" se leía sin saber qué medía.
       // El subtítulo aclara que es una nota del LUGAR (sirva lo que sirva
       // construirse ahí), distinta de Viabilidad, que es la del PROYECTO

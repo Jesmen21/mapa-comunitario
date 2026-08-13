@@ -358,7 +358,10 @@
 
   // ── Estadísticas del entorno ────────────────────────────────────────────
   // elementos: array crudo de Overpass (con .tags y lat/lng o .center).
-  function calcularStats(elementos, radioM, centro){
+  // `dane` (opcional) trae población, viviendas y estrato reales del censo.
+  // Cuando llega, sustituye la estimación heurística de población; cuando no
+  // (sin red, o lote fuera de cobertura), el cálculo de siempre sigue valiendo.
+  function calcularStats(elementos, radioM, centro, dane){
     const areaKm2 = Math.PI * Math.pow(radioM / 1000, 2);
     const areaHa = areaKm2 * 100;
 
@@ -482,15 +485,30 @@
     Object.keys(pesos).forEach(k => { usoPredominante[k] = Math.round(100 * pesos[k] / pesoTotal); });
 
     const shareResidencial = pesos.residencial / pesoTotal;
-    // ~7000 hab/km² es densidad urbana típica de Cúcuta; se modula por cuánto
-    // del entorno es realmente residencial.
-    const poblacionEstimada = Math.round(areaKm2 * 7000 * clamp(0.4, 1.4, 0.4 + shareResidencial));
+    // Estimación heurística: ~7000 hab/km² (densidad urbana típica de Cúcuta)
+    // modulada por cuánto del entorno es residencial. Se conserva SOLO como
+    // respaldo — satura, porque el techo de 1,4 hace que dos sectores muy
+    // residenciales de densidad edificatoria muy distinta den la misma cifra.
+    const poblacionHeuristica = Math.round(areaKm2 * 7000 * clamp(0.4, 1.4, 0.4 + shareResidencial));
+    const hayDane = !!(dane && dane.poblacion != null);
+    const poblacionEstimada = hayDane ? dane.poblacion : poblacionHeuristica;
 
     return {
       total: pois.length, areaHa: Math.round(areaHa * 10) / 10,
       porGrupo, porSub,
       densidadPorHa: Math.round(10 * pois.length / Math.max(areaHa, 0.1)) / 10,
-      poblacionEstimada, usoPredominante,
+      poblacionEstimada, poblacionHeuristica, usoPredominante,
+      // Trazabilidad de la cifra: el informe debe poder decir si el número es
+      // un dato censal o una estimación. Ante un cliente no pesan igual.
+      poblacionFuente: hayDane ? dane.etiquetaFuente : 'Estimación heurística URBIS',
+      poblacionEsCensal: hayDane,
+      viviendasCenso: hayDane ? dane.viviendas : null,
+      // Personas por vivienda: señal REAL de densidad edificatoria, lo que a la
+      // heurística le faltaba para distinguir un sector de otro.
+      personasPorVivienda: (hayDane && dane.viviendas)
+        ? Math.round((dane.poblacion / dane.viviendas) * 10) / 10 : null,
+      estrato: hayDane ? dane.estrato : null,
+      dane: hayDane ? dane : null,
       movilidad, ambiente, topPorGrupo, nombresPorSub, pois
     };
   }
@@ -675,7 +693,46 @@
     return PESOS_OPORTUNIDAD[ids[0]] || PESOS_OPORTUNIDAD._defecto;
   }
 
+  // Estrato socioeconómico predominante (Censo DANE 2018). Para una
+  // constructora es de los datos que más pesan: define el rango de precios al
+  // que se puede vender y el producto que tiene sentido construir. No es un
+  // score de 0 a 100 — es un hecho del sector, así que se presenta tal cual.
+  const ESTRATO_LECTURA = {
+    1: 'Estrato bajo-bajo: producto de interés social (VIS/VIP) y comercio de proximidad.',
+    2: 'Estrato bajo: vivienda VIS, comercio de barrio y servicios básicos.',
+    3: 'Estrato medio-bajo: el mercado más amplio de la ciudad; vivienda no-VIS de entrada y comercio de escala barrial.',
+    4: 'Estrato medio: capacidad de compra estable; vivienda de calidad media-alta, oficinas y comercio especializado.',
+    5: 'Estrato medio-alto: producto de mayor valor por m², vivienda premium y comercio de marca.',
+    6: 'Estrato alto: el segmento de mayor precio por m² de la ciudad.'
+  };
+  function indicadorEstrato(stats){
+    const e = stats.estrato;
+    if (!e) {
+      return { tipo:'interpretacion', disponible:false,
+        detalle:'Sin dato de estrato para este radio: el lote queda fuera de la cobertura urbana del censo, o no hubo conexión al consultarlo.' };
+    }
+    const homogeneo = e.minimo === e.maximo;
+    const detalle = (ESTRATO_LECTURA[e.predominante] || '') +
+      (homogeneo
+        ? ' El sector es homogéneo: todas las manzanas con estrato están en el ' + e.predominante + '.'
+        : ' Convive un rango de estrato ' + e.minimo + ' a ' + e.maximo +
+          ', así que el producto debe definirse por el costado del lote, no por el promedio del sector.') +
+      (e.sinEstrato
+        ? ' Hay ' + e.sinEstrato + ' ' + plural(e.sinEstrato, 'manzana', 'manzanas') +
+          ' sin estrato (suelo dotacional, industrial o sin desarrollar).'
+        : '');
+    return {
+      tipo:'observado', disponible:true, fuente:'Censo DANE 2018',
+      predominante: e.predominante, promedio: e.promedio,
+      minimo: e.minimo, maximo: e.maximo, reparto: e.reparto,
+      sinEstrato: e.sinEstrato, homogeneo,
+      nivel: 'Estrato ' + e.predominante + (homogeneo ? '' : ' (' + e.minimo + '–' + e.maximo + ')'),
+      detalle
+    };
+  }
+
   function calcularIndicadores(stats, usos){
+    const estrato = indicadorEstrato(stats);
     const diversidad = indicadorDiversidad(stats);
     const expansion = indicadorExpansion(stats);
     const transformacion = indicadorTransformacion(stats);
@@ -700,6 +757,7 @@
       p.transformacion * transformacion.valor);
 
     return {
+      estrato,
       diversidad, expansion, transformacion, comercio, estacionalidad, riesgos, oportunidades,
       equipamientos: { valor: sEquip, total: nEquip, tipo: 'indicador' },
       scoreOportunidad: {
@@ -713,12 +771,16 @@
       },
       // Datos que hoy NO se pueden calcular: quedan declarados para no
       // simularlos nunca y para saber qué falta conseguir.
-      requiereFuenteExterna: [
-        'Precios de venta y arriendo', 'Valor y valorización del suelo',
-        'Estratificación e ingresos', 'Densidad poblacional oficial (DANE)',
-        'Conteos de tráfico y flujo peatonal', 'Seguridad y siniestralidad',
-        'Licencias de construcción y proyectos nuevos', 'Información catastral'
-      ]
+      // Población oficial y estratificación salieron de esta lista: ya se
+      // resuelven con el Censo DANE 2018 cuando el lote está en cobertura.
+      requiereFuenteExterna: (stats.poblacionEsCensal ? [] : ['Densidad poblacional oficial (DANE)'])
+        .concat(stats.estrato ? [] : ['Estratificación socioeconómica'])
+        .concat([
+          'Precios de venta y arriendo', 'Valor y valorización del suelo',
+          'Ingresos de los hogares',
+          'Conteos de tráfico y flujo peatonal', 'Seguridad y siniestralidad',
+          'Licencias de construcción y proyectos nuevos', 'Información catastral'
+        ])
     };
   }
 
@@ -749,7 +811,10 @@
     });
   }
 
-  function compararRadios(elementos, radioM, centro){
+  // `danePorRadio` es un mapa { 500: {...}, 1000: {...} }. Sin él, cada anillo
+  // caería a la estimación heurística y la tabla volvería a contradecir los KPI
+  // del encabezado, que es justo el problema que se corrigió.
+  function compararRadios(elementos, radioM, centro, danePorRadio){
     const radios = RADIOS_COMPARATIVA.filter(r => r < radioM).concat([radioM])
       .filter((r, i, a) => a.indexOf(r) === i).sort((a, b) => a - b);
     // Con un solo anillo no hay nada que comparar (ej. un análisis de 100 m).
@@ -762,7 +827,8 @@
     }).filter(Boolean);
 
     const anillos = radios.map(r => {
-      const s = calcularStats(conDist.filter(x => x.d <= r).map(x => x.el), r, centro);
+      const s = calcularStats(conDist.filter(x => x.d <= r).map(x => x.el), r, centro,
+                              danePorRadio ? danePorRadio[r] : null);
       const comercio = SUBS_COMERCIO.reduce((a, k) => a + (s.porSub[k] || 0), 0);
       const equipamientos = (s.porGrupo.salud || 0) + (s.porGrupo.cultura || 0) + (s.porGrupo.institucional || 0);
       const pred = Object.keys(s.usoPredominante).sort((a, b) => s.usoPredominante[b] - s.usoPredominante[a])[0] || '';
@@ -1031,8 +1097,22 @@
     // 1) Qué es el sector.
     frases.push('El entorno analizado (' + ctx.radioM + ' m a la redonda, ~' + s.areaHa + ' ha) es de carácter predominantemente ' +
       (ETIQUETA_USO_PREDOMINANTE[usoTop] || usoTop) + ' (' + s.usoPredominante[usoTop] + '% de los usos), con ' + s.total.toLocaleString('es-CO') +
-      ' usos identificados, una densidad de ' + s.densidadPorHa + ' usos por hectárea y una población estimada de ' +
-      s.poblacionEstimada.toLocaleString('es-CO') + ' habitantes en el área de influencia.');
+      ' usos identificados, una densidad de ' + s.densidadPorHa + ' usos por hectárea y ' +
+      (s.poblacionEsCensal
+        ? 'una población de ' + s.poblacionEstimada.toLocaleString('es-CO') +
+          ' habitantes según el Censo DANE 2018'
+        : 'una población estimada de ' + s.poblacionEstimada.toLocaleString('es-CO') + ' habitantes') +
+      ' en el área de influencia.');
+
+    // El estrato manda sobre el producto que conviene construir, así que va
+    // arriba en la conclusión, no enterrado entre los indicadores.
+    if (s.estrato) {
+      const e = s.estrato;
+      frases.push('El sector es de estrato ' + e.predominante +
+        (e.minimo === e.maximo ? ' de forma homogénea' : ' predominante, con un rango de ' + e.minimo + ' a ' + e.maximo) +
+        ' (Censo DANE 2018)' +
+        (s.personasPorVivienda ? ', con ' + s.personasPorVivienda + ' personas por vivienda' : '') + '.');
+    }
 
     // 2) Por qué el lote está bien ubicado (movilidad y visibilidad).
     if (s.movilidad.viaPrincipal) {
@@ -1074,7 +1154,7 @@
   // entrada = { elementos, radioM, centro:{lat,lng}, proyectoId, tipoEstudio, direccionAprox }
   function analizarHeuristico(entrada){
     const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
-    const stats = calcularStats(elementos, entrada.radioM, entrada.centro);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane);
     const esRanking = !entrada.proyectoId || entrada.proyectoId === 'recomendar';
     const proyecto = esRanking ? null : PROYECTOS.find(p => p.id === entrada.proyectoId) || null;
 
@@ -1113,7 +1193,7 @@
       },
       pois: stats.pois, stats, viabilidad, ranking, foda, conclusion,
       indicadores: calcularIndicadores(stats, proyecto ? [{ id: proyecto.id }] : []),
-      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro)
+      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro, entrada.danePorRadio)
     };
   }
 
@@ -1410,7 +1490,7 @@
   //             usos:[id|string|usoObj,...], config:{...} }
   function analizarMixto(entrada){
     const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
-    const stats = calcularStats(elementos, entrada.radioM, entrada.centro);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane);
     const usos = normalizarUsos(entrada.usos);
     const config = entrada.config || {};
 
@@ -1462,7 +1542,7 @@
       },
       pois: stats.pois, stats, viabilidad, ranking: null, foda, conclusion,
       indicadores: calcularIndicadores(stats, usos),
-      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro),
+      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro, entrada.danePorRadio),
       modo: 'mixto', usos, config, desglosePorUso, compatibilidad, recomendaciones, recomendacionesUnidades,
       // Promedio de la compatibilidad entre todos los pares de usos: es el
       // dato que se muestra en grande (en estrellas) en el informe.

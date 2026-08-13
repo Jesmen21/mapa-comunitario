@@ -153,8 +153,13 @@
   function kpis(r){
     const s = r.stats;
     const item = (ico, val, lbl) => '<div class="kpi"><span>' + ico + '</span><b>' + val + '</b><small>' + lbl + '</small></div>';
-    return '<div class="kpis">' +
-      item('👥', s.poblacionEstimada.toLocaleString('es-CO'), 'Población estimada') +
+    // Con censo se muestran 6 KPI (entra estrato); sin censo, los 5 de siempre.
+    const e = s.estrato;
+    return '<div class="kpis' + (e ? ' kpis-6' : '') + '">' +
+      item('👥', s.poblacionEstimada.toLocaleString('es-CO'),
+           s.poblacionEsCensal ? 'Habitantes · DANE 2018' : 'Población estimada') +
+      (e ? item('🏷️', 'E' + e.predominante,
+           e.minimo === e.maximo ? 'Estrato' : 'Estrato ' + e.minimo + '–' + e.maximo) : '') +
       item('📍', s.total.toLocaleString('es-CO'), 'Usos identificados') +
       item('📐', s.densidadPorHa, 'Usos por hectárea') +
       item('🛣️', s.movilidad.nViasArterias, 'Vías arterias') +
@@ -315,7 +320,16 @@
     const fila = (etq, val, nivel) => '<tr><td class="ind-n">' + etq + '</td>' +
       '<td class="barra"><i style="width:' + val + '%;background:' + colNivel(nivel) + '"></i></td>' +
       '<td class="ind-v" style="color:' + colNivel(nivel) + '">' + esc(nivel) + '</td></tr>';
-    return '<div class="bloque"><h2>Indicadores urbanos</h2><table class="tbl-ind">' +
+    const e = i.estrato;
+    // El estrato va DENTRO del bloque de indicadores, arriba y con su franja
+    // dorada: es dato censal, no estimación, y conviene que se distinga.
+    const franjaEstrato = (e && e.disponible)
+      ? '<div class="estrato-franja"><b>🏷️ Estrato ' + e.predominante +
+        (e.homogeneo ? '' : ' <em>(' + e.minimo + '–' + e.maximo + ')</em>') + '</b>' +
+        '<span>Censo DANE 2018</span></div>'
+      : '';
+    return '<div class="bloque"><h2>Indicadores urbanos</h2>' + franjaEstrato +
+      '<table class="tbl-ind">' +
       fila('Diversidad de usos', i.diversidad.valor, i.diversidad.nivel) +
       fila('Actividad comercial', Math.min(100, i.comercio.total * 2), i.comercio.nivel) +
       fila('Expansión (suelo libre)', i.expansion.valor, i.expansion.nivel) +
@@ -488,6 +502,7 @@
 '.dg p{font-size:8px;font-weight:600;line-height:1.25}',
 /* KPIs */
 '.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}',
+'.kpis-6{grid-template-columns:repeat(3,1fr)}',
 '.kpi{border:1px solid ', T.borde, ';border-radius:5px;padding:4px 2px;text-align:center;background:', T.suave, '}',
 '.kpi span{font-size:10px;display:block;line-height:1}',
 '.kpi b{display:block;font-size:11px;color:', T.acento, ';font-weight:800;line-height:1.2}',
@@ -517,6 +532,12 @@
 '.expo-info b{align-self:flex-start;color:#fff;font-size:7.2px;font-weight:800;border-radius:99px;padding:2.5px 8px;letter-spacing:.4px}',
 '.expo-info span{font-size:7.4px;color:', T.txt2, '}',
 /* Indicadores urbanos */
+'.estrato-franja{display:flex;align-items:center;gap:5px;margin-bottom:4px;padding:3px 6px;',
+'border-radius:4px;background:', T.suave, ';border-left:2.5px solid ', T.oro, '}',
+'.estrato-franja b{font-size:8.4px;color:', T.acento, ';font-weight:900}',
+'.estrato-franja b em{font-style:normal;font-weight:700;color:', T.txt2, '}',
+'.estrato-franja span{margin-left:auto;font-size:6.6px;font-weight:700;color:', T.txt3, ';',
+'text-transform:uppercase;letter-spacing:.3px}',
 '.tbl-ind td{padding:2.2px 3px;border:none;font-size:7.4px}',
 '.tbl-ind .ind-n{white-space:nowrap;color:', T.txt2, '}',
 '.tbl-ind .barra{width:32%}',
@@ -612,7 +633,11 @@ columnas(horizontal, [
 
 '<div class="conclusion">', esc(r.conclusion), '</div>',
 
-'<footer><span>Estimación heurística sobre datos abiertos © OpenStreetMap contributors. No sustituye el concepto de norma urbanística (POT) ni un estudio de mercado formal.</span>',
+'<footer><span>Usos del entorno: datos abiertos © OpenStreetMap contributors.',
+(r.stats.poblacionEsCensal
+  ? ' Población y estrato: Censo Nacional de Población y Vivienda 2018 (DANE).'
+  : ' Población: estimación heurística URBIS.'),
+' Evaluación heurística: no sustituye el concepto de norma urbanística (POT) ni un estudio de mercado formal.</span>',
 '<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
 '<b>URBIS</b> · Análisis de Implantación IA &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
 
