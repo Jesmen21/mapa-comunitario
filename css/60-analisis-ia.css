@@ -430,6 +430,14 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 }
 #aia-indicadores h3{ font-size:.85rem; margin:0 0 8px; color:var(--aia-texto); }
 #aia-indicadores h3:not(:first-child){ margin-top:16px; }
+#aia-indicadores h3 em{ display:block; font-style:normal; font-weight:600; font-size:.68rem;
+  color:#a6b6cc; margin-top:2px; line-height:1.35; }
+/* Nota fija que distingue Oportunidad (del lugar) de Viabilidad (del
+   proyecto) — pedido explícito, la gente confundía los dos indicadores. */
+.aia-ind-nota{ margin:8px 0 0; padding:8px 10px; background:rgba(52,204,254,.1);
+  border:1px solid rgba(52,204,254,.28); border-radius:10px;
+  font-size:.72rem; line-height:1.4; color:#cfe3f2; }
+.aia-ind-nota b{ color:#7fd8ff; }
 .aia-so{ display:flex; align-items:center; gap:12px; margin-bottom:4px; }
 .aia-so-est{ font-size:1.5rem; color:var(--aia-oro); letter-spacing:2px; line-height:1; }
 .aia-so-info{ display:flex; flex-direction:column; gap:4px; }

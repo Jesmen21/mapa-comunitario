@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v457-alerta-punto-control-policial';
+const URBIS_CACHE = 'urbis-v458-indicadores-claridad';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -676,10 +676,16 @@
     const est = Math.max(1, Math.min(5, Math.round(so.valor / 20)));
 
     cont.innerHTML =
-      '<h3>🏆 Oportunidad urbana</h3>' +
+      // Pedido explícito: "oportunidad urbana" se leía sin saber qué medía.
+      // El subtítulo aclara que es una nota del LUGAR (sirva lo que sirva
+      // construirse ahí), distinta de Viabilidad, que es la del PROYECTO
+      // concreto — ese es el indicador que de verdad dice si conviene o no.
+      '<h3>🏆 Oportunidad urbana <em>· qué tan buen sitio es, sin importar qué se construya</em></h3>' +
       '<div class="aia-so"><div class="aia-so-est">' + '★'.repeat(est) + '☆'.repeat(5 - est) + '</div>' +
       '<div class="aia-so-info"><b style="color:' + colSO + '">' + so.valor + '<small>/100</small></b>' +
       '<span style="background:' + colSO + '">Oportunidad ' + escHTML(so.nivel) + '</span></div></div>' +
+      '<p class="aia-ind-nota">👉 El indicador que resume si <b>tu proyecto</b> conviene o no es ' +
+      '<b>Viabilidad</b> (arriba, con las estrellas grandes) — este de aquí solo describe el lugar.</p>' +
 
       '<h3>📐 Indicadores del sector</h3>' +
       fila('Diversidad de usos', i.diversidad.valor, i.diversidad.nivel, i.diversidad.detalle) +

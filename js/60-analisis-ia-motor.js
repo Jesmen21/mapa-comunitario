@@ -356,21 +356,31 @@
 
   // Diversidad de usos (índice de Shannon normalizado). Un sector con muchas
   // categorías repartidas es más diverso que uno dominado por una sola.
+  // Pedido explícito: "diversidad baja" se leía como "lugar malo", cuando en
+  // realidad puede significar justo lo contrario — poca mezcla de usos suele
+  // ser sinónimo de "aquí es casi todo vivienda", y eso es MENOS competencia
+  // para un negocio nuevo, no un mal augurio. El texto se genera distinto
+  // según el nivel para que esa lectura vaya siempre pegada al dato, no en
+  // una nota aparte que el lector se puede saltar.
   function indicadorDiversidad(stats){
     const grupos = Object.keys(GRUPOS).filter(g => g !== 'otro' && (stats.porGrupo[g] || 0) > 0);
     const total = grupos.reduce((a, g) => a + stats.porGrupo[g], 0);
     if (!total || grupos.length < 2) {
       return { valor: 0, nivel: 'Muy baja', tipo: 'indicador',
-               detalle: 'El entorno está dominado por un solo tipo de uso.' };
+               detalle: 'El entorno está dominado por un solo tipo de uso — casi siempre vivienda. ' +
+                 'No es una mala señal por sí sola: significa poca competencia instalada para lo que se proponga aquí.' };
     }
     let H = 0;
     grupos.forEach(g => { const p = stats.porGrupo[g] / total; H -= p * Math.log(p); });
     const norm = Math.round(100 * H / Math.log(grupos.length));
-    return {
-      valor: norm, tipo: 'indicador',
-      nivel: nivelPorUmbral(norm, [[75,'Muy alta'],[60,'Alta'],[45,'Media'],[30,'Baja'],[0,'Muy baja']]),
-      detalle: 'Se identificaron ' + grupos.length + ' grupos de uso distintos conviviendo en el radio.'
-    };
+    const nivel = nivelPorUmbral(norm, [[75,'Muy alta'],[60,'Alta'],[45,'Media'],[30,'Baja'],[0,'Muy baja']]);
+    const base = 'Se identificaron ' + grupos.length + ' grupos de uso distintos conviviendo en el radio.';
+    const detalle = (nivel === 'Baja' || nivel === 'Muy baja')
+      ? base + ' Un valor bajo no es necesariamente negativo: suele indicar un sector predominantemente ' +
+        'residencial con poca oferta ya instalada — menos competencia para un proyecto nuevo. Lo que sí ' +
+        'conviene mirar es el indicador de Viabilidad, que es el que resume si el proyecto conviene.'
+      : base;
+    return { valor: norm, tipo: 'indicador', nivel, detalle };
   }
 
   // Suelo sin desarrollar → cuánto margen de crecimiento físico queda.
