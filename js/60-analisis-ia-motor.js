@@ -508,6 +508,7 @@
       personasPorVivienda: (hayDane && dane.viviendas)
         ? Math.round((dane.poblacion / dane.viviendas) * 10) / 10 : null,
       estrato: hayDane ? dane.estrato : null,
+      demografia: hayDane ? dane.demografia : null,
       dane: hayDane ? dane : null,
       movilidad, ambiente, topPorGrupo, nombresPorSub, pois
     };
@@ -731,7 +732,51 @@
     };
   }
 
+  // Estructura demográfica del censo. OJO: el CNPV 2018 registra SEXO
+  // (hombre/mujer), no identidad de género — el informe debe decirlo así para
+  // no atribuirle al DANE una medición que no hizo.
+  function indicadorDemografia(stats){
+    const d = stats.demografia;
+    if (!d) {
+      return { tipo:'interpretacion', disponible:false,
+        detalle:'Sin estructura demográfica para este radio: el lote queda fuera de la cobertura urbana del censo, o no hubo conexión al consultarlo.' };
+    }
+    // Lectura para decidir producto: qué construir cambia mucho si el sector
+    // está envejecido, si es de familias jóvenes o si es de población flotante.
+    const lect = [];
+    if (d.envejecimiento != null && d.envejecimiento >= 100) {
+      lect.push('Sector envejecido: hay ' + d.envejecimiento + ' personas de 65 años o más por cada 100 menores de 15. ' +
+        'Pesa más la accesibilidad, la cercanía a servicios de salud y la vivienda de un solo nivel que el equipamiento infantil.');
+    } else if (d.pctNinos >= 22) {
+      lect.push('Sector de familias jóvenes (' + d.pctNinos + '% de menores de 15 años): ' +
+        'hay demanda de vivienda familiar, colegios, zonas de juego y comercio de proximidad.');
+    }
+    if (d.tramoDominante === 'jovenes') {
+      lect.push('El grupo más numeroso es el de 15 a 29 años: apartaestudios, arriendo, coworking y comercio de bajo ticket encajan mejor que la vivienda familiar grande.');
+    }
+    if (d.pctMayores >= 15 && d.envejecimiento < 100) {
+      lect.push('Con ' + d.pctMayores + '% de población de 65 años o más, conviene prever consultorios, droguería y recorridos peatonales cómodos.');
+    }
+    const desbalance = Math.abs(d.pctMujeres - 50);
+    if (desbalance >= 4) {
+      lect.push('Predominio de ' + (d.pctMujeres > 50 ? 'mujeres' : 'hombres') + ' (' +
+        (d.pctMujeres > 50 ? d.pctMujeres : d.pctHombres) + '%), por encima del promedio de la ciudad.');
+    }
+    if (!lect.length) lect.push('Estructura demográfica equilibrada, sin un grupo de edad que domine el sector.');
+
+    return {
+      tipo:'observado', disponible:true, fuente:'Censo DANE 2018',
+      mujeres:d.mujeres, hombres:d.hombres,
+      pctMujeres:d.pctMujeres, pctHombres:d.pctHombres,
+      tramos:d.tramos, pctMayores:d.pctMayores, pctNinos:d.pctNinos,
+      envejecimiento:d.envejecimiento,
+      nivel: d.tramoDominanteEtq,
+      detalle: lect.join(' ')
+    };
+  }
+
   function calcularIndicadores(stats, usos){
+    const demografia = indicadorDemografia(stats);
     const estrato = indicadorEstrato(stats);
     const diversidad = indicadorDiversidad(stats);
     const expansion = indicadorExpansion(stats);
@@ -757,7 +802,7 @@
       p.transformacion * transformacion.valor);
 
     return {
-      estrato,
+      estrato, demografia,
       diversidad, expansion, transformacion, comercio, estacionalidad, riesgos, oportunidades,
       equipamientos: { valor: sEquip, total: nEquip, tipo: 'indicador' },
       scoreOportunidad: {
@@ -1112,6 +1157,12 @@
         (e.minimo === e.maximo ? ' de forma homogénea' : ' predominante, con un rango de ' + e.minimo + ' a ' + e.maximo) +
         ' (Censo DANE 2018)' +
         (s.personasPorVivienda ? ', con ' + s.personasPorVivienda + ' personas por vivienda' : '') + '.');
+    }
+    if (s.demografia) {
+      const d = s.demografia;
+      frases.push('Su población es ' + d.pctMujeres + '% mujeres y ' + d.pctHombres + '% hombres, ' +
+        'con el grupo de ' + d.tramoDominanteEtq.toLowerCase() + ' como el más numeroso' +
+        (d.pctMayores >= 15 ? ' y un ' + d.pctMayores + '% de 65 años o más' : '') + '.');
     }
 
     // 2) Por qué el lote está bien ubicado (movilidad y visibilidad).

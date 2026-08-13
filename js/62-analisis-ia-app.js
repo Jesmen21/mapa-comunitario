@@ -761,7 +761,39 @@
         '</div>'
       : '';
 
-    cont.innerHTML = bloqueEstrato +
+    // Estructura demográfica del censo. Se titula "sexo y edad" a propósito:
+    // el CNPV 2018 registra sexo, no identidad de género, y el informe no debe
+    // atribuirle al DANE una medición que no hizo.
+    const dm = i.demografia;
+    const bloqueDemo = (dm && dm.disponible)
+      ? '<div class="aia-demo">' +
+          '<div class="aia-demo-cab"><b>👥 Población por sexo y edad</b>' +
+            '<span class="aia-demo-fuente">Censo DANE 2018</span></div>' +
+          '<div class="aia-demo-sexo">' +
+            '<div class="aia-demo-barra">' +
+              '<i class="muj" style="width:' + dm.pctMujeres + '%"></i>' +
+              '<i class="hom" style="width:' + dm.pctHombres + '%"></i>' +
+            '</div>' +
+            '<div class="aia-demo-leyenda">' +
+              '<span><b class="muj"></b>Mujeres ' + dm.pctMujeres + '% <em>(' + dm.mujeres.toLocaleString('es-CO') + ')</em></span>' +
+              '<span><b class="hom"></b>Hombres ' + dm.pctHombres + '% <em>(' + dm.hombres.toLocaleString('es-CO') + ')</em></span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="aia-demo-edades">' +
+            dm.tramos.map(t =>
+              '<div class="aia-demo-fila"><span>' + t.icono + ' ' + t.etiqueta + '</span>' +
+              '<i><b style="width:' + Math.min(100, t.pct * 2) + '%"></b></i>' +
+              '<em>' + t.pct + '%</em></div>').join('') +
+          '</div>' +
+          (dm.envejecimiento != null
+            ? '<div class="aia-demo-indice"><b>' + dm.envejecimiento + '</b>' +
+              '<small>mayores de 65 por cada 100 menores de 15</small></div>'
+            : '') +
+          '<p class="aia-demo-txt">' + escHTML(dm.detalle) + '</p>' +
+        '</div>'
+      : '';
+
+    cont.innerHTML = bloqueEstrato + bloqueDemo +
       // Pedido explícito: "oportunidad urbana" se leía sin saber qué medía.
       // El subtítulo aclara que es una nota del LUGAR (sirva lo que sirva
       // construirse ahí), distinta de Viabilidad, que es la del PROYECTO

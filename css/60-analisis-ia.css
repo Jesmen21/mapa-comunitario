@@ -626,6 +626,62 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   color:#d9e6f2 !important; -webkit-text-fill-color:#d9e6f2 !important;
 }
 
+/* Población por sexo y edad (Censo DANE 2018). Celeste de marca: es dato duro
+   igual que el estrato, pero se distingue de él por color. */
+.aia-demo{
+  margin:0 0 14px; padding:12px 14px; border-radius:14px;
+  background:rgba(52,204,254,.08); border:1px solid rgba(52,204,254,.28);
+}
+.aia-demo-cab{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; }
+.aia-demo-cab b{ font-size:.85rem; color:#7fd8ff !important; -webkit-text-fill-color:#7fd8ff !important; }
+.aia-demo-fuente{
+  margin-left:auto; font-size:.64rem; font-weight:800; letter-spacing:.03em;
+  padding:2px 8px; border-radius:999px; background:rgba(52,204,254,.16);
+  color:#a8e4ff !important; -webkit-text-fill-color:#a8e4ff !important;
+}
+.aia-demo-barra{ display:flex; height:13px; border-radius:7px; overflow:hidden; background:rgba(255,255,255,.07); }
+.aia-demo-barra i.muj{ background:#f472b6; }
+.aia-demo-barra i.hom{ background:#38bdf8; }
+.aia-demo-leyenda{ display:flex; flex-wrap:wrap; gap:12px; margin-top:6px; }
+.aia-demo-leyenda span{
+  display:inline-flex; align-items:center; gap:5px; font-size:.71rem; font-weight:700;
+  color:#d9e6f2 !important; -webkit-text-fill-color:#d9e6f2 !important;
+}
+.aia-demo-leyenda b{ width:9px; height:9px; border-radius:3px; }
+.aia-demo-leyenda b.muj{ background:#f472b6; }
+.aia-demo-leyenda b.hom{ background:#38bdf8; }
+.aia-demo-leyenda em{
+  font-style:normal; font-weight:500;
+  color:#9db6c8 !important; -webkit-text-fill-color:#9db6c8 !important;
+}
+.aia-demo-edades{ display:flex; flex-direction:column; gap:4px; margin-top:11px; }
+.aia-demo-fila{ display:flex; align-items:center; gap:8px; font-size:.7rem; }
+.aia-demo-fila span{
+  flex:0 0 118px; color:#cfe3f2 !important; -webkit-text-fill-color:#cfe3f2 !important;
+}
+.aia-demo-fila i{ flex:1; height:8px; border-radius:5px; background:rgba(255,255,255,.08); overflow:hidden; }
+.aia-demo-fila i b{ display:block; height:100%; border-radius:5px; background:#34CCFE; }
+.aia-demo-fila em{
+  flex:0 0 34px; text-align:right; font-style:normal; font-size:.68rem; font-weight:700;
+  color:#a8e4ff !important; -webkit-text-fill-color:#a8e4ff !important;
+}
+.aia-demo-indice{
+  display:flex; align-items:center; gap:9px; margin-top:10px;
+  padding:7px 11px; border-radius:10px; background:rgba(255,255,255,.05);
+}
+.aia-demo-indice b{
+  font-size:1.35rem; font-weight:900; line-height:1;
+  color:#7fd8ff !important; -webkit-text-fill-color:#7fd8ff !important;
+}
+.aia-demo-indice small{
+  font-size:.69rem; line-height:1.35;
+  color:#b9cfe0 !important; -webkit-text-fill-color:#b9cfe0 !important;
+}
+.aia-demo-txt{
+  margin:9px 0 0; font-size:.73rem; line-height:1.5;
+  color:#d9e6f2 !important; -webkit-text-fill-color:#d9e6f2 !important;
+}
+
 /* Bandeja de usos sin categoría: acumulado de TODOS los análisis, no solo del
    radio actual. Se separa visualmente del aviso fucsia (que es de este radio)
    con su propio marco celeste. */

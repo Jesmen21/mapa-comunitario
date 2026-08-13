@@ -328,7 +328,18 @@
         (e.homogeneo ? '' : ' <em>(' + e.minimo + '–' + e.maximo + ')</em>') + '</b>' +
         '<span>Censo DANE 2018</span></div>'
       : '';
-    return '<div class="bloque"><h2>Indicadores urbanos</h2>' + franjaEstrato +
+    // Sexo y edad: barra de sexo + los dos tramos que más deciden el producto.
+    const d = i.demografia;
+    const bloqueDemo = (d && d.disponible)
+      ? '<div class="demo-mini">' +
+          '<div class="demo-bar"><i style="width:' + d.pctMujeres + '%;background:#e0559b"></i>' +
+            '<i style="width:' + d.pctHombres + '%;background:#2b8fd6"></i></div>' +
+          '<div class="demo-leg"><span><b style="background:#e0559b"></b>' + d.pctMujeres + '% mujeres</span>' +
+            '<span><b style="background:#2b8fd6"></b>' + d.pctHombres + '% hombres</span>' +
+            '<span class="demo-edad">' + d.pctNinos + '% menores de 15 · ' + d.pctMayores + '% de 65 o más</span></div>' +
+        '</div>'
+      : '';
+    return '<div class="bloque"><h2>Indicadores urbanos</h2>' + franjaEstrato + bloqueDemo +
       '<table class="tbl-ind">' +
       fila('Diversidad de usos', i.diversidad.valor, i.diversidad.nivel) +
       fila('Actividad comercial', Math.min(100, i.comercio.total * 2), i.comercio.nivel) +
@@ -538,6 +549,12 @@
 '.estrato-franja b em{font-style:normal;font-weight:700;color:', T.txt2, '}',
 '.estrato-franja span{margin-left:auto;font-size:6.6px;font-weight:700;color:', T.txt3, ';',
 'text-transform:uppercase;letter-spacing:.3px}',
+'.demo-mini{margin-bottom:4px}',
+'.demo-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:', T.linea, '}',
+'.demo-leg{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:2.5px;font-size:6.8px;color:', T.txt2, '}',
+'.demo-leg span{display:inline-flex;align-items:center;gap:3px;font-weight:700}',
+'.demo-leg b{width:5px;height:5px;border-radius:2px;display:inline-block}',
+'.demo-leg .demo-edad{color:', T.txt3, ';font-weight:600}',
 '.tbl-ind td{padding:2.2px 3px;border:none;font-size:7.4px}',
 '.tbl-ind .ind-n{white-space:nowrap;color:', T.txt2, '}',
 '.tbl-ind .barra{width:32%}',

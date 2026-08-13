@@ -263,6 +263,64 @@
     return { total: Math.round(a.TOTAL), unidades: a.N || 0 };
   }
 
+  // Estructura demográfica: sexo y edad del censo.
+  // OJO con el nombre de los campos: SEXO_M son MUJERES y SEXO_H son HOMBRES
+  // (verificado contra el total municipal: 52,3% M, coherente con la cifra
+  // publicada por el DANE). Invertirlos daría un informe exactamente al revés.
+  const EDADES = ['0_4','5_9','10_14','15_19','20_24','25_29','30_34','35_39','40_44',
+                  '45_49','50_54','55_59','60_64','65_69','70_74','75_79','80_84',
+                  '85_89','90_94','95_99','100_O_MAS'];
+  // Tramos que de verdad cambian una decisión inmobiliaria.
+  const TRAMOS = [
+    { id:'ninos',   etiqueta:'0 a 14 años',   icono:'🧒', campos:['0_4','5_9','10_14'] },
+    { id:'jovenes', etiqueta:'15 a 29 años',  icono:'🧑', campos:['15_19','20_24','25_29'] },
+    { id:'adultosJ',etiqueta:'30 a 44 años',  icono:'👩‍💼', campos:['30_34','35_39','40_44'] },
+    { id:'adultos', etiqueta:'45 a 64 años',  icono:'🧑‍🦱', campos:['45_49','50_54','55_59','60_64'] },
+    { id:'mayores', etiqueta:'65 años o más', icono:'🧓', campos:['65_69','70_74','75_79','80_84','85_89','90_94','95_99','100_O_MAS'] }
+  ];
+
+  async function demografia(lat, lng, radioM){
+    const stats = [
+      { statisticType:'sum', onStatisticField:'SEXO_M', outStatisticFieldName:'MUJ' },
+      { statisticType:'sum', onStatisticField:'SEXO_H', outStatisticFieldName:'HOM' }
+    ].concat(EDADES.map(e => ({
+      statisticType:'sum', onStatisticField:'EDAD_' + e, outStatisticFieldName:'E' + e
+    })));
+    const p = paramsRadio(lat, lng, radioM);
+    p.set('outStatistics', JSON.stringify(stats));
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p);
+    const a = d && d.features && d.features[0] && d.features[0].attributes;
+    if (!a || a.MUJ == null) return null;
+
+    const mujeres = a.MUJ || 0, hombres = a.HOM || 0;
+    const totalSexo = mujeres + hombres;
+    if (!totalSexo) return null;
+
+    const tramos = TRAMOS.map(t => {
+      const n = t.campos.reduce((s, c) => s + (a['E' + c] || 0), 0);
+      return { id:t.id, etiqueta:t.etiqueta, icono:t.icono, personas:n };
+    });
+    const totalEdad = tramos.reduce((s, t) => s + t.personas, 0) || 1;
+    tramos.forEach(t => { t.pct = Math.round(100 * t.personas / totalEdad); });
+
+    const may = tramos.find(t => t.id === 'mayores').personas;
+    const nin = tramos.find(t => t.id === 'ninos').personas;
+    const dominante = tramos.slice().sort((x, y) => y.personas - x.personas)[0];
+
+    return {
+      mujeres, hombres, totalSexo,
+      pctMujeres: Math.round(1000 * mujeres / totalSexo) / 10,
+      pctHombres: Math.round(1000 * hombres / totalSexo) / 10,
+      tramos, totalEdad,
+      pctMayores: Math.round(1000 * may / totalEdad) / 10,
+      pctNinos: Math.round(1000 * nin / totalEdad) / 10,
+      // Índice de envejecimiento: mayores de 65 por cada 100 menores de 15.
+      // Por encima de 100 el sector ya tiene más viejos que niños.
+      envejecimiento: nin ? Math.round(100 * may / nin) : null,
+      tramoDominante: dominante.id, tramoDominanteEtq: dominante.etiqueta
+    };
+  }
+
   async function distribucionEstrato(lat, lng, radioM){
     const p = paramsRadio(lat, lng, radioM);
     p.set('groupByFieldsForStatistics', 'ESTRATO_PREDOMINANTE');
@@ -301,10 +359,11 @@
   // Encadena manzana urbana → sector (incluye rural) → null (el motor cae
   // entonces a su estimación heurística de siempre).
   async function consultarDANE(lat, lng, radioM){
-    let [urbana, viviendas, estrato] = await Promise.all([
+    let [urbana, viviendas, estrato, demo] = await Promise.all([
       sumaCapa(DANE_CAPAS.personasManzana, lat, lng, radioM, 'SEXO_TOTAL'),
       sumaCapa(DANE_CAPAS.viviendasManzana, lat, lng, radioM, 'TOTAL_VIVIENDAS').catch(() => null),
-      distribucionEstrato(lat, lng, radioM).catch(() => null)
+      distribucionEstrato(lat, lng, radioM).catch(() => null),
+      demografia(lat, lng, radioM).catch(() => null)
     ]);
     // Un fallo puntual de red haría creer que el lote está fuera del perímetro
     // urbano y lo mandaría al respaldo de sector, que es mucho más grueso. Se
@@ -329,6 +388,9 @@
       // personas por vivienda). Solo se conserva cuando ambas son del mismo nivel.
       viviendas: (fuente === 'manzana' && viviendas) ? viviendas.total : null,
       estrato,
+      // Igual que las viviendas: la demografía es de la capa de manzana, así
+      // que no se entrega si la población terminó saliendo del sector.
+      demografia: (fuente === 'manzana') ? demo : null,
       censo: 2018,
       etiquetaFuente: 'Censo DANE 2018 · ' + (fuente === 'manzana' ? 'manzana censal' : 'sector censal')
     };
