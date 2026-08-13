@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v464-procity-fase4-raster';
+const URBIS_CACHE = 'urbis-v465-procity-fase5-analitica';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -87,6 +87,7 @@ const URBIS_ASSETS = [
   './css/52-urbis-pro-city.css',
   './css/24-procity-analisis.css',
   './js/24-procity-analisis.js',
+  './js/25-procity-analitica.js',
   './js/20-mobile-functional-app.js',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',

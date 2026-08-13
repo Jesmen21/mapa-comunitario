@@ -428,6 +428,80 @@
 }
 .pca-raster-aviso small b{ display:inline; color:#8a5a12 !important; -webkit-text-fill-color:#8a5a12 !important; }
 
+/* ── Fase 5 · Analítica de uso (solo administrador) ──
+   Gris pizarra a propósito: es una herramienta interna, no una función del
+   estudiante, y no debe competir visualmente con el análisis. */
+.pca-analitica{
+  margin-top:14px; padding:12px 13px; border-radius:14px;
+  background:#eef1f5; border:1.5px solid #cbd5e1;
+}
+.pca-an-cab{ display:flex; align-items:center; gap:8px; }
+.pca-an-cab b{ font-size:.86rem; color:#334155 !important; -webkit-text-fill-color:#334155 !important; }
+.pca-an-cab span{
+  margin-left:auto; font-size:.62rem; font-weight:800; letter-spacing:.04em;
+  text-transform:uppercase; padding:2px 8px; border-radius:999px; background:#dbe3ec;
+  color:#526478 !important; -webkit-text-fill-color:#526478 !important;
+}
+.pca-an-ayuda{
+  margin:6px 0 0; font-size:.71rem; line-height:1.45;
+  color:#556579 !important; -webkit-text-fill-color:#556579 !important;
+}
+.pca-an-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px; }
+.pca-an-kpis div{ background:#fff; border:1px solid #d8e0ea; border-radius:10px; padding:7px 4px; text-align:center; }
+.pca-an-kpis b{
+  display:block; font-size:1.05rem; font-weight:900; line-height:1.2;
+  color:#1e293b !important; -webkit-text-fill-color:#1e293b !important;
+}
+.pca-an-kpis small{
+  display:block; font-size:.63rem;
+  color:#64748b !important; -webkit-text-fill-color:#64748b !important;
+}
+.pca-an-grafico{
+  display:flex; align-items:flex-end; gap:3px; height:56px; margin-top:10px;
+  padding:6px; background:#fff; border:1px solid #d8e0ea; border-radius:10px;
+}
+.pca-an-dia{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+.pca-an-dia i{ width:100%; background:#64748b; border-radius:3px 3px 0 0; min-height:4px; }
+.pca-an-dia span{
+  font-size:.52rem; margin-top:2px;
+  color:#8494a6 !important; -webkit-text-fill-color:#8494a6 !important;
+}
+.pca-an-lista{ display:flex; flex-direction:column; gap:3px; margin-top:10px; }
+.pca-an-fila{ display:flex; align-items:center; gap:7px; font-size:.71rem; }
+.pca-an-fila span{
+  flex:0 0 44%; color:#334155 !important; -webkit-text-fill-color:#334155 !important;
+}
+.pca-an-fila i{ flex:1; height:7px; border-radius:4px; background:#dbe3ec; overflow:hidden; }
+.pca-an-fila i b{ display:block; height:100%; border-radius:4px; background:#64748b; }
+.pca-an-fila em{
+  flex:0 0 26px; text-align:right; font-style:normal; font-weight:800;
+  color:#334155 !important; -webkit-text-fill-color:#334155 !important;
+}
+.pca-an-fila.friccion i b{ background:#c2410c; }
+.pca-an-fila.friccion em{ color:#c2410c !important; -webkit-text-fill-color:#c2410c !important; }
+.pca-an-lectura{
+  margin-top:11px; padding:9px 11px; border-radius:10px;
+  background:#fff; border:1px solid #d8e0ea;
+}
+.pca-an-lectura b{
+  display:block; font-size:.75rem; margin-bottom:5px;
+  color:#334155 !important; -webkit-text-fill-color:#334155 !important;
+}
+.pca-an-lectura p{
+  margin:0 0 5px; font-size:.72rem; line-height:1.5;
+  color:#475569 !important; -webkit-text-fill-color:#475569 !important;
+}
+.pca-an-lectura p:last-child{ margin-bottom:0; }
+.pca-an-btns{ display:flex; gap:6px; margin-top:10px; }
+.pca-an-btns button{
+  padding:7px 12px; border-radius:9px; cursor:pointer; font-size:.72rem; font-weight:700;
+  border:1.5px solid #cbd5e1; background:#fff;
+  color:#334155 !important; -webkit-text-fill-color:#334155 !important;
+}
+.pca-an-btns .pca-an-borrar{
+  border-color:#f0d0d0; color:#a33 !important; -webkit-text-fill-color:#a33 !important;
+}
+
 /* ── Exportar informe del área a PDF ── */
 .pca-exportar{
   display:flex; flex-direction:column; gap:8px;

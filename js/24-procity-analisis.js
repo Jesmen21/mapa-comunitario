@@ -45,6 +45,12 @@
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  // Analitica de uso (Fase 5). Nunca se le pasa contenido del analisis, solo
+  // el nombre del evento y como mucho un conteo.
+  function reg(ev, extra){
+    try { if (window.URBIS_PC_ANALITICA) window.URBIS_PC_ANALITICA.registrar(ev, extra); } catch(e){}
+  }
+
   // ── Geometría ───────────────────────────────────────────────────────────
 
   // Ray casting sobre lat/lng. A escala de ciudad la distorsión de no
@@ -229,6 +235,7 @@
 
   function iniciarDibujo(){
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
+    reg('area-dibujo-inicio');
     cerrarBurbuja();
     S.dibujando = true;
     S.cerrada = false;
@@ -266,6 +273,7 @@
   }
 
   function cancelar(){
+    if (S.dibujando) reg('area-cancelada');
     cerrarBurbuja();
     S.dibujando = false;
     S.pts = [];
@@ -277,6 +285,7 @@
 
   function cerrar(){
     if (S.pts.length < 3) return;
+    reg('area-cerrada', { n: S.pts.length });
     S.dibujando = false;
     S.cerrada = true;
     repintar();
@@ -409,12 +418,14 @@
       fecha: new Date().toISOString(), areaM2: Math.round(areaM2(S.pts))
     });
     escribirAreas(areas);
+    reg('area-guardada');
     S.nombre = nombre;
     if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
   }
   function cargarArea(id){
     const a = leerAreas().find(x => x.id === id);
     if (!a) return;
+    reg('area-cargada');
     S.pts = a.pts.slice(); S.cerrada = true; S.dibujando = false; S.nombre = a.nombre;
     repintar(); pintarBarra(); ajustarVista();
     try { refrescarGeo(); } catch(e){}
@@ -742,6 +753,8 @@
     if (!S.cerrada || S.pts.length < 3) return htmlSinArea(ctx);
 
     const r = calcular(ctx);
+    reg('panel-analisis');
+    if (!r.total) reg('area-vacia');
     window.__pcaUltimo = r;   // lo lee montar() para pintar las gráficas
 
     const filas = ctx.grupos
@@ -812,6 +825,10 @@
       (r.total > 0 ? bloqueExportar() : '') +
 
       '<p class="pca-nota">Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible hoy.</p>' +
+
+      // Analítica de uso (Fase 5): va al final y SOLO la ve el administrador;
+      // para un estudiante devuelve cadena vacía y ni siquiera se dibuja.
+      (window.URBIS_PC_ANALITICA ? window.URBIS_PC_ANALITICA.htmlPanel() : '') +
     '</div>';
   }
 
@@ -1050,6 +1067,7 @@
     const sel = document.getElementById('pca-estilo-pdf');
     const estilo = (sel && sel.value) || estiloGuardado();
     try { localStorage.setItem(LS_ESTILO, estilo); } catch(e){}
+    reg('pdf-generado');
     try {
       const html = construirInforme(ctx, estilo);
       const abrir = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
@@ -1515,6 +1533,7 @@
       if (S.heat.grupo === gid) { apagarHeat(); return true; }
       if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats();
       cerrarBurbuja();
+      reg('heat-on');
       encenderHeat(gid);
       return true;
     }
@@ -1528,6 +1547,10 @@
     // Igual que el calor: al elegir una geometría se CIERRA el panel. Antes se
     // volvía a abrir, y como el panel tapa el mapa el dibujo quedaba detrás —
     // parecía que el botón no hacía nada.
+    // Acciones del panel de analítica (js/25), que se pinta dentro de este panel.
+    if (name.indexOf('an-') === 0 && window.URBIS_PC_ANALITICA) {
+      return window.URBIS_PC_ANALITICA.accion(name);
+    }
     if (name === 'raster') {
       const btn = el;
       const out = document.getElementById('pca-raster-out');
@@ -1535,8 +1558,10 @@
       if (out) out.innerHTML = '<p class="pca-raster-cargando">Descargando y clasificando la imagen satelital…</p>';
       analizarRaster().then(res => {
         pintarRaster(res);
+        reg('raster-ok');
         if (btn) { btn.disabled = false; btn.textContent = '↻ Volver a analizar'; }
       }).catch(err => {
+        reg('raster-error');
         if (out) out.innerHTML = '<p class="pca-raster-error">No se pudo analizar: ' + esc(err.message) + '</p>';
         if (btn) { btn.disabled = false; btn.textContent = '🛰️ Analizar cobertura'; }
       });
@@ -1549,6 +1574,7 @@
       if (S.geo.tipo === gid) { apagarGeo(); return true; }
       S.geo.tipo = gid;
       const n = pintarGeo(ctx);
+      reg(n >= 2 ? 'geo-generada' : 'geo-sin-puntos', { n: n });
       if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats();
       cerrarBurbuja();
       chipGeo(ctx);
@@ -1560,6 +1586,7 @@
     // y lo normal es probar varias categorías seguidas antes de dibujar.
     if (name === 'geo-filtro') {
       S.geo.grupo = (el && el.dataset.gid) || 'todos';
+      reg('geo-filtro');
       refrescarGeo();
       if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
       return true;
