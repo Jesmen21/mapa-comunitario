@@ -500,17 +500,64 @@
     }
   }
 
+  // Respaldo cuando el portapapeles no está disponible (o lo bloquea el
+  // navegador): se muestra el texto para seleccionarlo a mano.
+  function mostrarPendientes(txt){
+    const pre = $('aia-pend-lista');
+    if (!pre) return;
+    pre.textContent = txt;
+    pre.hidden = !pre.hidden;
+    if (!pre.hidden) pre.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
   function renderResultados(r){
     const s = r.stats;
     const G = window.AIA_MOTOR.GRUPOS, C = window.AIA_MOTOR.GRUPO_COLOR;
     const esMixto = r.modo === 'mixto';
     const nOtro = s.porGrupo.otro || 0;
-    $('aia-aviso-otro').hidden = nOtro === 0;
-    if (nOtro > 0) {
+    // El motor ya archivó solo los usos sin categoría de ESTE análisis; aquí
+    // se muestra tanto lo de este radio como el acumulado de todos los
+    // análisis, que es lo que se revisa para decidir categorías nuevas.
+    const band = window.AIA_MOTOR.resumenPendientes();
+    $('aia-aviso-otro').hidden = nOtro === 0 && band.patrones === 0;
+    if (!$('aia-aviso-otro').hidden) {
       $('aia-aviso-otro').innerHTML =
-        '<p>❓ Se encontraron ' + nOtro + ' uso(s) sin clasificar en este radio (aparecen en fucsia en el mapa). ' +
-        '<button type="button" id="aia-btn-nombrar-otro">🏷️ Agregar a la Matriz de Usos</button></p>';
-      $('aia-btn-nombrar-otro').addEventListener('click', () => nombrarUsosSinDefinir(r));
+        (nOtro > 0
+          ? '<p>❓ Se ' + (nOtro === 1 ? 'encontró 1 uso' : 'encontraron ' + nOtro + ' usos') +
+            ' sin clasificar en este radio (aparecen en fucsia en el mapa). ' +
+            '<button type="button" id="aia-btn-nombrar-otro">🏷️ Agregar a la Matriz de Usos</button></p>'
+          : '') +
+        (band.patrones > 0
+          ? '<div class="aia-bandeja">' +
+            '<b>🗂️ Bandeja de usos sin categoría</b>' +
+            '<small>URBIS lleva guardados <b>' + band.patrones + '</b> ' +
+              (band.patrones === 1 ? 'patrón distinto' : 'patrones distintos') +
+              ' (' + band.apariciones + ' apariciones) de todos tus análisis. ' +
+              'Cópialos y pégalos en el chat para decidir a qué categoría va cada uno — ' +
+              'y si alguno no encaja en ninguna, creamos una categoría nueva.</small>' +
+            '<div class="aia-bandeja-btns">' +
+              '<button type="button" id="aia-btn-copiar-pend">📋 Copiar para revisar</button>' +
+              '<button type="button" id="aia-btn-ver-pend">👁️ Ver lista</button>' +
+              '<button type="button" id="aia-btn-limpiar-pend" class="aia-bandeja-borrar">🗑️</button>' +
+            '</div><pre id="aia-pend-lista" hidden></pre></div>'
+          : '');
+      if (nOtro > 0) $('aia-btn-nombrar-otro').addEventListener('click', () => nombrarUsosSinDefinir(r));
+      if (band.patrones > 0) {
+        $('aia-btn-copiar-pend').addEventListener('click', () => {
+          const txt = window.AIA_MOTOR.exportarPendientes();
+          const ok = () => alert('✅ Copiado. Pégalo en el chat con Claude para clasificar estos usos.');
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(ok, () => mostrarPendientes(txt));
+          } else mostrarPendientes(txt);
+        });
+        $('aia-btn-ver-pend').addEventListener('click',
+          () => mostrarPendientes(window.AIA_MOTOR.exportarPendientes()));
+        $('aia-btn-limpiar-pend').addEventListener('click', () => {
+          if (!confirm('¿Vaciar la bandeja de usos sin categoría?\n\nSe perderá el acumulado de todos los análisis.')) return;
+          window.AIA_MOTOR.olvidarPendientes();
+          renderResultados(r);
+        });
+      }
     }
 
     $('aia-res-titulo').innerHTML = '<b>' + escHTML(r.meta.proyectoNombre) + '</b> · ' + r.meta.radioM + ' m' +

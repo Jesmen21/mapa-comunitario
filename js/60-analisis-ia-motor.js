@@ -80,8 +80,17 @@
     { sub:'bienestar_social', nombre:'Bienestar social del Estado', grupo:'institucional', icono:'🏛️', m:{ operator:/^icbf$/, amenity:/^social_facility$/ } },
     // Cultura, educación y culto
     { sub:'colegio',         nombre:'Colegio / Jardín',     grupo:'cultura',      icono:'🏫', m:{ amenity:/^(school|kindergarten|childcare)$/, building:/^(school|kindergarten)$/ } },
-    { sub:'universidad',     nombre:'Universidad / Instituto', grupo:'cultura',   icono:'🎓', m:{ amenity:/^(university|college)$/, office:/^educational_institution$/, building:/^(university|college)$/ } },
-    { sub:'capacitacion',    nombre:'Centro de formación',  grupo:'cultura',      icono:'📚', m:{ amenity:/^(training|language_school|music_school|driving_school|prep_school|dancing_school)$/, education:/.+/ } },
+    // capacitacion va ANTES de universidad a propósito: una autoescuela o un
+    // instituto de idiomas suele traer TAMBIÉN office=educational_institution,
+    // y caía en 'universidad'. Eso hacía que el informe citara "Academia
+    // Automóvil Cúcuta" como equipamiento ancla de educación superior.
+    // office=educational_institution es una señal DÉBIL: la usan por igual una
+    // universidad y una autoescuela. Una universidad de verdad trae
+    // amenity=university, así que esta etiqueta se trata como formación y no
+    // como educación superior — antes hacía que el informe citara "Academia
+    // Automóvil Cúcuta" entre los equipamientos ancla del sector.
+    { sub:'capacitacion',    nombre:'Centro de formación',  grupo:'cultura',      icono:'📚', m:{ amenity:/^(training|language_school|music_school|driving_school|prep_school|dancing_school)$/, education:/.+/, office:/^educational_institution$/ } },
+    { sub:'universidad',     nombre:'Universidad / Instituto', grupo:'cultura',   icono:'🎓', m:{ amenity:/^(university|college)$/, building:/^(university|college)$/ } },
     { sub:'iglesia',         nombre:'Iglesia / Culto',      grupo:'cultura',      icono:'⛪', m:{ amenity:/^place_of_worship$/, building:/^(church|chapel|mosque|cathedral)$/, landuse:/^religious$/, religion:/.+/ } },
     { sub:'cultural',        nombre:'Equipamiento cultural',grupo:'cultura',      icono:'🎭', m:{ amenity:/^(theatre|cinema|library|arts_centre|community_centre|studio)$/, tourism:/^(museum|gallery|attraction|artwork)$/ } },
     // Institucional
@@ -154,6 +163,115 @@
     } catch(e) {}
   }
 
+  // ── Bandeja de usos sin categoría ───────────────────────────────────────
+  // Cada análisis deja usos que no calzan con ninguna regla de la taxonomía.
+  // Antes había que ir a buscarlos a mano en el informe; ahora el módulo los
+  // acumula solo, agrupados por su PATRÓN DE ETIQUETAS (no por nombre): así
+  // se ve de una si "eso que no clasifica" son 40 casos del mismo tipo —que
+  // merecen una regla nueva— o 40 rarezas distintas.
+  const PENDIENTES_KEY = 'aia_usos_sin_categoria_v1';
+  const MAX_PENDIENTES = 400;
+  // Etiquetas que no dicen nada del USO (son metadatos o dirección).
+  const TAGS_IRRELEVANTES = /^(name|name:|addr:|source|check_date|wikidata|wikipedia|note|fixme|created_by|ref|phone|website|opening_hours|operator:|contact:|survey:date|image|description)/;
+
+  function tagsUtiles(tags){
+    return Object.keys(tags || {})
+      .filter(k => !TAGS_IRRELEVANTES.test(k))
+      .sort()
+      .map(k => k + '=' + tags[k]);
+  }
+
+  function leerPendientes(){
+    try { const o = JSON.parse(localStorage.getItem(PENDIENTES_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; }
+    catch(e) { return {}; }
+  }
+  function escribirPendientes(o){
+    try { localStorage.setItem(PENDIENTES_KEY, JSON.stringify(o)); } catch(e) {}
+  }
+
+  // Se llama una vez por análisis, con los POIs que quedaron en grupo 'otro'.
+  function registrarPendientes(pois, meta){
+    const store = leerPendientes();
+    const ahora = new Date().toISOString();
+    let nuevos = 0;
+    (pois || []).forEach(p => {
+      if (!p || p.grupo !== 'otro') return;
+      const pares = tagsUtiles(p.tags);
+      if (!pares.length) return;                 // sin etiquetas no hay nada que clasificar
+      const firma = pares.join(' · ');
+      let e = store[firma];
+      if (!e) {
+        if (Object.keys(store).length >= MAX_PENDIENTES) return;
+        e = store[firma] = { firma, tags: pares, ejemplos: [], veces: 0,
+                             visto: ahora, estado: 'pendiente' };
+        nuevos++;
+      }
+      if (e.estado === 'descartado') return;     // ya se decidió que no aplica
+      e.veces++;
+      e.ultimaVez = ahora;
+      if (meta && meta.zona && e.zona !== meta.zona) e.zona = meta.zona;
+      const nom = normalizarNombre(p.nombre);
+      if (nom && nom !== 'Otro (uso por definir)' && e.ejemplos.length < 5 && e.ejemplos.indexOf(nom) === -1) {
+        e.ejemplos.push(nom);
+      }
+    });
+    escribirPendientes(store);
+    return { nuevos, total: Object.keys(store).filter(k => store[k].estado === 'pendiente').length };
+  }
+
+  // Texto plano listo para pegar en el chat y decidir la categoría de cada
+  // patrón. Se ordena por frecuencia: lo que más se repite es lo que más
+  // rinde clasificar.
+  function exportarPendientes(){
+    const store = leerPendientes();
+    const lista = Object.keys(store).map(k => store[k])
+      .filter(e => e.estado === 'pendiente')
+      .sort((a, b) => b.veces - a.veces);
+    if (!lista.length) return 'No hay usos sin categoría acumulados.';
+    const cab = 'USOS SIN CATEGORÍA ACUMULADOS POR URBIS · ' + lista.length + ' patrones distintos\n' +
+      'Categorías disponibles: ' + Object.keys(GRUPOS).filter(g => g !== 'otro').join(', ') + '\n' +
+      'Para cada patrón: ¿a qué categoría pertenece? Si no encaja en ninguna, dilo y creamos una nueva.\n' +
+      '─'.repeat(60) + '\n';
+    return cab + lista.map((e, i) =>
+      (i + 1) + '. [' + e.veces + ' ' + plural(e.veces, 'vez', 'veces') + '] ' + e.firma +
+      (e.ejemplos.length ? '\n   Ejemplos: ' + e.ejemplos.join(' · ') : '\n   (sin nombre propio)') +
+      (e.zona ? '\n   Visto en: ' + e.zona : '')
+    ).join('\n');
+  }
+
+  function resumenPendientes(){
+    const store = leerPendientes();
+    const claves = Object.keys(store);
+    const pend = claves.filter(k => store[k].estado === 'pendiente');
+    return {
+      patrones: pend.length,
+      apariciones: pend.reduce((a, k) => a + (store[k].veces || 0), 0),
+      resueltos: claves.filter(k => store[k].estado === 'resuelto').length
+    };
+  }
+
+  // Marca un patrón como resuelto y crea la regla para que la próxima vez
+  // clasifique solo. `grupoId` debe existir en GRUPOS.
+  function resolverPendiente(firma, grupoId, nombreUso){
+    const store = leerPendientes();
+    const e = store[firma];
+    if (!e || !GRUPOS[grupoId]) return false;
+    e.estado = 'resuelto'; e.grupo = grupoId; e.nombreUso = nombreUso || '';
+    escribirPendientes(store);
+    // Las reglas personalizadas trabajan por nombre propio, así que se
+    // registran los ejemplos conocidos de ese patrón.
+    (e.ejemplos || []).forEach(n => guardarReglaPersonalizada(n, grupoId));
+    return true;
+  }
+  function descartarPendiente(firma){
+    const store = leerPendientes();
+    if (!store[firma]) return false;
+    store[firma].estado = 'descartado';
+    escribirPendientes(store);
+    return true;
+  }
+  function olvidarPendientes(){ escribirPendientes({}); }
+
   function clasificarPOI(tags){
     tags = tags || {};
     for (let i = 0; i < TAXONOMIA.length; i++) {
@@ -185,14 +303,54 @@
   }
 
   function clamp(min, max, v){ return Math.max(min, Math.min(max, v)); }
-  function nombrePOI(tags){ return (tags && (tags.name || tags['name:es'] || tags.brand || tags.operator)) || ''; }
+  // OpenStreetMap no impone estilo a los nombres: en el mismo informe convivían
+  // "UNIVERSIDAD ANTONIO NARIÑO", "parque del ventura" y "oral x 3D". Se
+  // normaliza SOLO al mostrar (el dato original no se toca): las palabras de
+  // enlace van en minúscula y las siglas conocidas se respetan tal cual.
+  const MINUSCULAS_NOMBRE = new Set(['de','del','la','las','el','los','y','e','a','en','por','para','con','al']);
+  const SIGLAS_NOMBRE = new Set(['IPS','EPS','SENA','ICBF','CAI','SAS','ESE','UIS','UFPS','DIAN','ETB','SA','LTDA','3D','TV','ONG','POT','VIS','VIP']);
+  function normalizarNombre(s){
+    const txt = String(s || '').trim().replace(/\s+/g, ' ');
+    if (!txt) return '';
+    // Un nombre ya escrito con mayúsculas y minúsculas mezcladas suele venir
+    // bien de origen ("Éxito Wow"): solo se reescribe si está todo en un caso.
+    const todoMayus = txt === txt.toUpperCase(), todoMinus = txt === txt.toLowerCase();
+    if (!todoMayus && !todoMinus) return txt;
+    return txt.split(' ').map((w, i) => {
+      const limpio = w.replace(/[^\wÁÉÍÓÚÜÑáéíóúüñ]/g, '');
+      if (SIGLAS_NOMBRE.has(limpio.toUpperCase())) return w.toUpperCase();
+      const bajo = w.toLowerCase();
+      if (i > 0 && MINUSCULAS_NOMBRE.has(bajo)) return bajo;
+      return bajo.charAt(0).toUpperCase() + bajo.slice(1);
+    }).join(' ');
+  }
+
+  function nombrePOI(tags){
+    return normalizarNombre((tags && (tags.name || tags['name:es'] || tags.brand || tags.operator)) || '');
+  }
 
   // Nombres que salen de la taxonomía (no son nombres propios del lugar).
   // Sirven para saber qué puntos tienen nombre real y poder citarlos por su
   // nombre en el FODA ("Parque Colón", "Hospital Erasmo Meoz"...).
   const NOMBRES_GENERICOS = new Set(TAXONOMIA.map(t => t.nombre).concat(['Otro (uso por definir)']));
+  // Clave para comparar nombres ignorando mayúsculas, tildes y puntuación.
+  function claveNombre(s){
+    return String(s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ').trim();
+  }
   function listar(arr, max){
-    const a = (arr || []).slice(0, max || 3);
+    // El mismo lugar suele estar mapeado dos veces en OpenStreetMap con
+    // grafías distintas ("Universidad Antonio Nariño" y "Universidad Antonio
+    // NAriño"), y el informe lo citaba dos veces en la misma frase. Se
+    // deduplica antes de recortar, para no gastar los 3 cupos en repetidos.
+    const vistos = new Set(), unicos = [];
+    (arr || []).forEach(n => {
+      const k = claveNombre(n);
+      if (!k || vistos.has(k)) return;
+      vistos.add(k); unicos.push(n);
+    });
+    const a = unicos.slice(0, max || 3);
     if (!a.length) return '';
     if (a.length === 1) return a[0];
     return a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1];
@@ -392,7 +550,8 @@
       valor, baldios, tipo: 'indicador',
       nivel: nivelPorUmbral(valor, [[60,'Alto potencial'],[35,'Potencial medio'],[15,'Potencial bajo'],[0,'Sector consolidado']]),
       detalle: baldios
-        ? baldios + ' lote(s) sin desarrollar en el radio: queda suelo disponible para crecer.'
+        ? baldios + ' ' + plural(baldios, 'lote sin desarrollar', 'lotes sin desarrollar') +
+          ' en el radio: queda suelo disponible para crecer.'
         : 'No se detectó suelo sin desarrollar: el sector ya está ocupado.'
     };
   }
@@ -405,7 +564,8 @@
       valor, obras, tipo: 'indicador',
       nivel: nivelPorUmbral(valor, [[60,'Fuerte transformación'],[35,'En transformación'],[15,'En transición'],[0,'Sector estable']]),
       detalle: obras
-        ? obras + ' obra(s) en curso: hay inversión activa transformando el sector.'
+        ? obras + ' ' + plural(obras, 'obra en curso', 'obras en curso') +
+          ': hay inversión activa transformando el sector.'
         : 'Sin obras en curso detectadas: el sector no muestra cambios físicos recientes.'
     };
   }
@@ -576,6 +736,19 @@
     return (lat == null || lng == null) ? null : { lat, lng };
   }
 
+  // Overpass devuelve de más: para una vía o un polígono basta con que UN nodo
+  // caiga en el radio, así que su centro puede quedar fuera. El análisis
+  // principal no lo filtraba y la comparativa multi-radio sí, de modo que el
+  // mismo informe mostraba dos totales distintos para el mismo radio (893 vs
+  // 831 usos en Cúcuta: 60 usos estaban hasta a 583 m de un radio de 500 m).
+  // Se filtra UNA vez y todo el análisis parte del mismo conjunto.
+  function filtrarPorRadio(elementos, radioM, centro){
+    return (elementos || []).filter(el => {
+      const c = coordDe(el);
+      return c ? haversineM(centro, c) <= radioM : false;
+    });
+  }
+
   function compararRadios(elementos, radioM, centro){
     const radios = RADIOS_COMPARATIVA.filter(r => r < radioM).concat([radioM])
       .filter((r, i, a) => a.indexOf(r) === i).sort((a, b) => a - b);
@@ -682,19 +855,53 @@
     complementarios:'usos complementarios del entorno', movilidad:'accesibilidad y movilidad',
     entorno:'calidad del entorno'
   };
+  // Varias etiquetas son plurales ("usos complementarios del entorno"), así que
+  // la plantilla fija "es su ___" producía "es su usos complementarios". Se
+  // declara el número de cada una para concordar el verbo y el posesivo.
+  const SUBSCORE_PLURAL = { complementarios: true };
+  function concordarSubscore(k){
+    return SUBSCORE_PLURAL[k] ? 'son sus ' + NOMBRE_SUBSCORE[k] : 'es su ' + NOMBRE_SUBSCORE[k];
+  }
+
+  // Plurales redactados en vez de "competidor(es) directo(s)": el informe se
+  // le entrega a un cliente y ese paréntesis se lee como un formulario.
+  function plural(n, sing, plur){ return n === 1 ? sing : plur; }
+
+  // El uso predominante se guarda con la clave interna, que no siempre
+  // funciona como adjetivo: "de carácter predominantemente servicios" está mal
+  // construido. Cada clave declara cómo se redacta.
+  const ETIQUETA_USO_PREDOMINANTE = {
+    residencial:'residencial', comercial:'comercial', institucional:'institucional',
+    servicios:'de servicios', industrial:'industrial', mixto:'mixto', ambiental:'ambiental'
+  };
 
   function argumentosViabilidad(proyecto, ev, stats){
     const args = [];
     const s = ev.subscores;
     if (ev.nCompetidores === 0) args.push('No se identificó ningún competidor directo (' + proyecto.nombre.toLowerCase() + ') en el radio analizado: demanda sin atender.');
-    else args.push('Se identificaron ' + ev.nCompetidores + ' competidor(es) directo(s) operando en el radio.');
+    else args.push('Se ' + plural(ev.nCompetidores, 'identificó', 'identificaron') + ' ' + ev.nCompetidores + ' ' +
+      plural(ev.nCompetidores, 'competidor directo', 'competidores directos') + ' operando en el radio.');
     args.push('Población estimada en el área de influencia: ~' + stats.poblacionEstimada.toLocaleString('es-CO') + ' habitantes.');
     const mejor = Object.keys(s).reduce((a, b) => s[a] >= s[b] ? a : b);
     const peor = Object.keys(s).reduce((a, b) => s[a] <= s[b] ? a : b);
-    args.push('El punto más fuerte del lote es su ' + NOMBRE_SUBSCORE[mejor] + ' (' + s[mejor] + '/100).');
-    if (s[peor] < 45) args.push('El punto más débil es su ' + NOMBRE_SUBSCORE[peor] + ' (' + s[peor] + '/100).');
-    if (stats.movilidad.nViasArterias > 0) args.push('Acceso por vía(s) arteria(s): ' + stats.movilidad.viasArterias.slice(0,3).map(v => v.nombre).join(', ') + '.');
+    args.push('El punto más fuerte del lote ' + concordarSubscore(mejor) + ' (' + s[mejor] + '/100).');
+    if (s[peor] < 45) args.push('El punto más débil ' + concordarSubscore(peor) + ' (' + s[peor] + '/100).');
+    if (stats.movilidad.nViasArterias > 0) {
+      const vs = stats.movilidad.viasArterias.slice(0, 3).map(v => v.nombre);
+      args.push('Acceso por ' + plural(vs.length, 'vía arteria', 'vías arterias') + ': ' + listar(vs, 3) + '.');
+    }
     return args;
+  }
+
+  // Hay entidades públicas mal etiquetadas en OpenStreetMap: la "Agencia
+  // Pública de Empleo SENA" viene como shop=supermarket, y el informe la citaba
+  // como comercio ancla. No se puede arreglar en la taxonomía sin romper los
+  // supermercados de verdad, así que se filtra al CITAR: un nombre de entidad
+  // pública nunca se presenta como ancla comercial.
+  const ENTIDAD_PUBLICA = /\b(sena|alcald[ií]a|gobernaci[oó]n|registradur[ií]a|fiscal[ií]a|procuradur[ií]a|defensor[ií]a|personer[ií]a|notar[ií]a|juzgado|icbf|dian|comisar[ií]a|inspecci[oó]n de polic[ií]a|agencia p[uú]blica)\b/i;
+  function anclasComerciales(x){
+    return x.n('supermercado').concat(x.n('centro_comercial'))
+      .filter(n => !ENTIDAD_PUBLICA.test(n));
   }
 
   // ── FODA por reglas ─────────────────────────────────────────────────────
@@ -715,8 +922,8 @@
     { t:'F', c: x => (x.stats.porGrupo.cultura || 0) >= 3,
       f: x => { const n = listar(x.n('universidad').concat(x.n('colegio')).concat(x.n('cultural')), 3);
         return 'Presencia educativa y cultural fuerte (' + x.stats.porGrupo.cultura + ' equipamientos' + (n ? ': ' + n : '') + ').'; } },
-    { t:'F', c: x => x.n('supermercado').length || x.n('centro_comercial').length,
-      f: x => 'El sector ya cuenta con comercio ancla (' + listar(x.n('supermercado').concat(x.n('centro_comercial')), 2) + '), que atrae compradores de fuera del barrio.' },
+    { t:'F', c: x => anclasComerciales(x).length,
+      f: x => 'El sector ya cuenta con comercio ancla (' + listar(anclasComerciales(x), 2) + '), que atrae compradores de fuera del barrio.' },
     { t:'F', c: x => x.n('agua').length > 0,
       f: x => 'Frente natural de valor paisajístico: ' + listar(x.n('agua'), 2) + ', un diferenciador para las vistas y el espacio público del proyecto.' },
     { t:'F', c: x => x.stats.densidadPorHa >= 1.5,
@@ -760,8 +967,14 @@
       f: x => x.stats.porGrupo.otro + ' usos sin clasificar en el entorno: oportunidad de levantamiento en campo con URBIS Pro City para completar la matriz.' },
     { t:'O', c: x => (x.stats.porSub.hotel || 0) >= 1 && (x.stats.porGrupo.institucional || 0) >= 1,
       f: () => 'Mezcla hotelera e institucional: población flotante de negocios y trámites.' },
-    { t:'R', c: x => x.ev && x.ev.nCompetidores >= 3,
+    // El umbral estaba en 3 y saltaba "mercado saturado" junto a una viabilidad
+    // ALTA en la misma hoja, que se lee como contradicción. Ahora distingue
+    // competencia presente (informativa) de saturación real (>= 6).
+    { t:'R', c: x => x.ev && x.ev.nCompetidores >= 6,
       f: x => 'Mercado saturado: ' + x.ev.nCompetidores + ' competidores directos operando en el radio analizado.' },
+    { t:'R', c: x => x.ev && x.ev.nCompetidores >= 3 && x.ev.nCompetidores < 6,
+      f: x => 'Competencia instalada: ' + x.ev.nCompetidores + ' competidores directos en el radio. ' +
+        'No bloquea el proyecto, pero obliga a diferenciar la propuesta.' },
     { t:'R', c: x => (x.stats.porSub.baldio_obra || 0) > 5,
       f: x => 'Alta proporción de lotes baldíos u obras (' + x.stats.porSub.baldio_obra + '): sector en transición con incertidumbre normativa.' },
     { t:'R', c: x => x.stats.ambiente.cuerposAgua > 0,
@@ -786,6 +999,26 @@
     REGLAS_FODA.forEach(r => {
       try { if (r.c(ctx)) foda[destino[r.t]].push(r.f(ctx)); } catch(e) {}
     });
+    // Un FODA con un cuadrante vacío se imprimía como "Sin hallazgos
+    // relevantes.", que ante un cliente resta credibilidad al documento
+    // entero. Se rellena con la lectura real de por qué no hubo hallazgos.
+    const s = ctx.stats;
+    if (!foda.debilidades.length) {
+      foda.debilidades.push('No se detectaron carencias graves de equipamiento ni de acceso en el radio analizado. ' +
+        'Conviene igualmente verificar en campo la norma urbanística y el estado real de los predios vecinos.');
+    }
+    if (!foda.fortalezas.length) {
+      foda.fortalezas.push('El sector no muestra atributos destacados en los datos abiertos disponibles: ' +
+        'la ventaja del proyecto tendrá que construirse desde su propia propuesta, no desde el entorno.');
+    }
+    if (!foda.oportunidades.length) {
+      foda.oportunidades.push('No se identificaron vacíos de oferta evidentes con los datos disponibles; ' +
+        'un levantamiento en campo con URBIS Pro City puede revelar oportunidades que OpenStreetMap no registra.');
+    }
+    if (!foda.riesgos.length) {
+      foda.riesgos.push('No se identificaron riesgos urbanos relevantes en el radio. ' +
+        'Queda pendiente validar ronda hídrica, amenaza natural y norma vigente ante la autoridad competente.');
+    }
     return foda;
   }
 
@@ -797,7 +1030,7 @@
 
     // 1) Qué es el sector.
     frases.push('El entorno analizado (' + ctx.radioM + ' m a la redonda, ~' + s.areaHa + ' ha) es de carácter predominantemente ' +
-      usoTop + ' (' + s.usoPredominante[usoTop] + '% de los usos), con ' + s.total.toLocaleString('es-CO') +
+      (ETIQUETA_USO_PREDOMINANTE[usoTop] || usoTop) + ' (' + s.usoPredominante[usoTop] + '% de los usos), con ' + s.total.toLocaleString('es-CO') +
       ' usos identificados, una densidad de ' + s.densidadPorHa + ' usos por hectárea y una población estimada de ' +
       s.poblacionEstimada.toLocaleString('es-CO') + ' habitantes en el área de influencia.');
 
@@ -809,7 +1042,8 @@
     }
 
     // 3) Qué equipamientos sostienen la demanda, con nombre propio.
-    const anclas = n('universidad').concat(n('salud_ips')).concat(n('centro_comercial')).concat(n('supermercado')).slice(0, 3);
+    const anclas = n('universidad').concat(n('salud_ips')).concat(n('centro_comercial')).concat(n('supermercado'))
+      .filter(x => !ENTIDAD_PUBLICA.test(x));
     if (anclas.length) {
       frases.push('La demanda del sector se apoya en equipamientos ancla como ' + listar(anclas, 3) +
         ', que atraen población más allá del vecindario inmediato y sostienen actividad durante buena parte del día.');
@@ -839,7 +1073,8 @@
   // ── Análisis completo (proveedor por defecto) ───────────────────────────
   // entrada = { elementos, radioM, centro:{lat,lng}, proyectoId, tipoEstudio, direccionAprox }
   function analizarHeuristico(entrada){
-    const stats = calcularStats(entrada.elementos, entrada.radioM, entrada.centro);
+    const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro);
     const esRanking = !entrada.proyectoId || entrada.proyectoId === 'recomendar';
     const proyecto = esRanking ? null : PROYECTOS.find(p => p.id === entrada.proyectoId) || null;
 
@@ -853,10 +1088,15 @@
         const e = scoreProyecto(p, stats);
         const razon = e.nCompetidores === 0
           ? 'Sin competencia directa y ' + NOMBRE_SUBSCORE[Object.keys(e.subscores).reduce((a,b)=>e.subscores[a]>=e.subscores[b]?a:b)] + ' favorable.'
-          : e.nCompetidores + ' competidor(es); pesa a favor su ' + NOMBRE_SUBSCORE[Object.keys(e.subscores).reduce((a,b)=>e.subscores[a]>=e.subscores[b]?a:b)] + '.';
+          : e.nCompetidores + ' ' + plural(e.nCompetidores, 'competidor', 'competidores') +
+            '; pesa a favor su ' + NOMBRE_SUBSCORE[Object.keys(e.subscores).reduce((a,b)=>e.subscores[a]>=e.subscores[b]?a:b)] + '.';
         return { proyectoId: p.id, nombre: p.nombre, icono: p.icono, score: e.score, nivel: e.nivel, razon };
       }).sort((a, b) => b.score - a.score).slice(0, 6);
     }
+
+    // Los usos que no calzaron con la taxonomía se archivan solos para poder
+    // revisarlos después y decidir su categoría (o crear una nueva).
+    registrarPendientes(stats.pois, { zona: entrada.direccionAprox || '' });
 
     const ctx = { stats, proyecto, ev, radioM: entrada.radioM };
     const foda = generarFODA(ctx);
@@ -873,7 +1113,7 @@
       },
       pois: stats.pois, stats, viabilidad, ranking, foda, conclusion,
       indicadores: calcularIndicadores(stats, proyecto ? [{ id: proyecto.id }] : []),
-      multiRadio: compararRadios(entrada.elementos, entrada.radioM, entrada.centro)
+      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro)
     };
   }
 
@@ -1141,13 +1381,36 @@
     };
     const out = [];
     REGLAS_RECOMENDACION.forEach(r => { try { if (r.c(ctx)) out.push(r.f(ctx)); } catch(e) {} });
+    // Todas las reglas son del tipo "agregue X si falta" / "quite X si rinde
+    // poco": con un programa mixto bien armado no dispara ninguna y la sección
+    // desaparecía del informe, dejando una columna en blanco. Estas
+    // confirmaciones cierran ese hueco con lectura útil, no con relleno.
+    if (!out.length) {
+      const flojos = desglosePorUso.filter(d => d.score < 50);
+      const fuerte = desglosePorUso.slice().sort((a, b) => b.score - a.score)[0];
+      if (usos.length >= 3) {
+        out.push('El programa está equilibrado: ninguno de los ' + usos.length +
+          ' usos propuestos entra en conflicto con el entorno ni duplica oferta ya saturada.');
+      }
+      if (fuerte) {
+        out.push('Priorice ' + fuerte.nombre.toLowerCase() + ' al definir áreas: es el uso con mejor desempeño del programa (' +
+          fuerte.score + '/100) y conviene darle la mejor fachada y acceso.');
+      }
+      if (flojos.length) {
+        out.push('Vigile ' + listar(flojos.map(d => d.nombre.toLowerCase()), 2) +
+          ': ' + plural(flojos.length, 'se sostiene', 'se sostienen') +
+          ' por debajo de 50/100, así que conviene dimensionar ' + plural(flojos.length, 'ese componente', 'esos componentes') + ' con prudencia.');
+      }
+      out.push('Siguiente paso: contrastar este programa con la norma urbanística (POT) del predio y con un estudio de precios de la zona.');
+    }
     return out;
   }
 
   // entrada = { elementos, radioM, centro, tipoEstudio, direccionAprox,
   //             usos:[id|string|usoObj,...], config:{...} }
   function analizarMixto(entrada){
-    const stats = calcularStats(entrada.elementos, entrada.radioM, entrada.centro);
+    const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro);
     const usos = normalizarUsos(entrada.usos);
     const config = entrada.config || {};
 
@@ -1162,6 +1425,8 @@
       .slice().sort((a, b) => b.score - a.score)
       .map(d => d.icono + ' ' + d.nombre + ': ' + d.score + '/100 (' + d.nivel + ').');
     const viabilidad = { score: scorePromedio, nivel: nivelConjunto, subscores: null, argumentos };
+
+    registrarPendientes(stats.pois, { zona: entrada.direccionAprox || '' });
 
     const compatibilidad = generarCompatibilidad(usos);
     const recomendaciones = generarRecomendaciones(usos, stats, desglosePorUso);
@@ -1197,7 +1462,7 @@
       },
       pois: stats.pois, stats, viabilidad, ranking: null, foda, conclusion,
       indicadores: calcularIndicadores(stats, usos),
-      multiRadio: compararRadios(entrada.elementos, entrada.radioM, entrada.centro),
+      multiRadio: compararRadios(elementos, entrada.radioM, entrada.centro),
       modo: 'mixto', usos, config, desglosePorUso, compatibilidad, recomendaciones, recomendacionesUnidades,
       // Promedio de la compatibilidad entre todos los pares de usos: es el
       // dato que se muestra en grande (en estrellas) en el informe.
@@ -1217,6 +1482,9 @@
     USOS_PROGRAMA, normalizarUsos, scoreUso, calcularCompatibilidad,
     generarCompatibilidad, generarRecomendaciones, analizarMixto, recomendarUnidadesGenericas,
     leerReglasPersonalizadas, guardarReglaPersonalizada, calcularIndicadores,
-    compararRadios, RADIOS_COMPARATIVA
+    compararRadios, RADIOS_COMPARATIVA, filtrarPorRadio, normalizarNombre,
+    // Bandeja de usos sin categoría: se llena sola en cada análisis.
+    leerPendientes, registrarPendientes, exportarPendientes, resumenPendientes,
+    resolverPendiente, descartarPendiente, olvidarPendientes
   };
 })();

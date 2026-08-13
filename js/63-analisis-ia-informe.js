@@ -368,6 +368,19 @@
       r.recomendaciones.slice(0, 4).map(t => '<li>' + esc(t) + '</li>').join('') + '</ul></div>';
   }
 
+  // Arma la fila descartando las columnas cuyos bloques salieron todos vacíos
+  // y fijando la rejilla al número de columnas que de verdad se pintan, para
+  // que las que quedan se repartan el ancho completo.
+  function columnas(horizontal, grupos){
+    const vivas = grupos
+      .map(bloques => bloques.filter(Boolean).join(''))
+      .filter(html => html.trim().length > 0);
+    if (!vivas.length) return '';
+    const n = Math.min(vivas.length, horizontal ? 3 : 2);
+    return '<div class="fila fila-2" style="grid-template-columns:repeat(' + n + ',1fr)">' +
+      vivas.map(h => '<div>' + h + '</div>').join('') + '</div>';
+  }
+
   // ── A) INFORME EJECUTIVO — una sola hoja ────────────────────────────────
   function construirHTMLEjecutivo(r, chartsPNG, opciones){
     chartsPNG = chartsPNG || {};
@@ -518,7 +531,9 @@
 '.tbl-radios .fila-act td{background:', T.suave, ';font-weight:800;color:', T.acento, '}',
 '.radio-lectura{font-size:7.2px;color:', T.txt2, ';line-height:1.4;margin-top:4px}',
 '.tbl-vias td{padding:1.8px 3px;border:none;font-size:7.4px}',
-'.tbl-vias .via-n{white-space:nowrap;max-width:96px;overflow:hidden;text-overflow:ellipsis}',
+// Antes esta celda era nowrap con 96px y puntos suspensivos: "Avenida de La
+// Gran Colombia" salía cortada. Ahora parte en dos líneas en vez de recortar.
+'.tbl-vias .via-n{max-width:110px;line-height:1.2;overflow-wrap:anywhere}',
 '.tbl-vias .via-n em{font-style:normal;color:', T.txt3, ';font-size:7.4px;margin-left:4px;text-transform:capitalize}',
 '.tbl-vias .barra{width:40%}',
 '.expo-arg{font-size:7.2px;color:', T.txt2, ';line-height:1.4;margin-top:3px}',
@@ -582,12 +597,16 @@
   '<div>', bloqueViabilidad(r) || bloqueRanking(r), bloqueOportunidad(r), '</div>',
 '</div>',
 
-'<div class="fila fila-2">',
-  '<div><div class="bloque">', chart(chartsPNG.barras, 'Usos por grupo'), '</div>',
-  '<div class="bloque">', chart(chartsPNG.donut, 'Uso predominante'), '</div></div>',
-  '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), bloqueCompatibilidad(r), '</div>',
-  '<div>', bloqueRecomendaciones(r), bloqueUnidades(r), '</div>',
-'</div>',
+// Las columnas se arman con `columnas()`: una columna cuyos bloques salen
+// todos vacíos NO se emite. Antes se emitía igual y la rejilla le seguía
+// reservando su tercio, dejando un hueco en blanco de casi 300 px en la hoja
+// (pasaba siempre que el motor no generaba recomendaciones).
+columnas(horizontal, [
+  [ chart(chartsPNG.barras, 'Usos por grupo') ? '<div class="bloque">' + chart(chartsPNG.barras, 'Usos por grupo') + '</div>' : '',
+    chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '' ],
+  [ bloqueIndicadores(r), bloqueMultiRadio(r), bloqueCompatibilidad(r) ],
+  [ bloqueRecomendaciones(r), bloqueUnidades(r) ]
+]),
 
 '<div class="fila fila-foda">', bloqueFoda(r), '</div>',
 
@@ -606,9 +625,21 @@
 'if(!h||!c)return;var disp=h.clientHeight,k=1;',
 'for(var i=0;i<18;i++){c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";',
 'var vis=c.scrollHeight*k;if(!vis)break;var nk=k*(disp/vis);',
-'if(nk>1.5)nk=1.5;if(nk<0.35)nk=0.35;if(Math.abs(nk-k)<0.003){k=nk;break;}k=nk;}',
+// Piso 0.62 en vez de 0.35: por debajo la letra queda en ~2,6 px, ilegible, y
+// como la hoja recorta lo que sobra el texto se cortaba a media frase. Con
+// este piso se prefiere avisar antes que entregar una hoja mutilada.
+'if(nk>1.5)nk=1.5;if(nk<0.62)nk=0.62;if(Math.abs(nk-k)<0.003){k=nk;break;}k=nk;}',
 'c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";',
-'for(var g=0;g<10&&c.scrollHeight*k>disp;g++){k*=0.985;c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";}}',
+'for(var g=0;g<10&&c.scrollHeight*k>disp&&k>0.62;g++){k*=0.985;c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";}',
+// Si aun con el piso el contenido no cabe, se deja constancia visible en vez
+// de recortar en silencio: una hoja que corta una frase a la mitad es peor
+// que una hoja que avisa que se quedó contenido por fuera.
+'if(c.scrollHeight*k>disp+2){var av=document.getElementById("aviso-corte");',
+'if(!av){av=document.createElement("div");av.id="aviso-corte";',
+'av.style.cssText="position:absolute;left:0;right:0;bottom:0;background:#b91c1c;color:#fff;'+
+'font-size:7.5px;font-weight:800;text-align:center;padding:2px 4px;letter-spacing:.3px";',
+'av.textContent="Contenido extenso: revise el informe completo en la app.";',
+'h.appendChild(av);}}}',
 'function ajustarPantalla(){var m=document.getElementById("marco"),h=document.getElementById("hoja");',
 'if(!m||!h)return;m.style.transform="none";m.style.marginLeft="0px";',
 'var esc=Math.min(1,(window.innerWidth-16)/h.offsetWidth);',

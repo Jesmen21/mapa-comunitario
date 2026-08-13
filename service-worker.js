@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v460-geometrias-filtro-visible';
+const URBIS_CACHE = 'urbis-v461-aia-correcciones-bandeja';
 const URBIS_ASSETS = [
   './',
   './index.html',

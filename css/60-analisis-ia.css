@@ -584,6 +584,40 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   font-size:.72rem; font-weight:700; cursor:pointer;
 }
 
+/* Bandeja de usos sin categoría: acumulado de TODOS los análisis, no solo del
+   radio actual. Se separa visualmente del aviso fucsia (que es de este radio)
+   con su propio marco celeste. */
+.aia-bandeja{
+  margin-top:10px; padding:11px 13px; border-radius:12px;
+  background:rgba(52,204,254,.09); border:1px solid rgba(52,204,254,.3);
+}
+.aia-bandeja b{
+  display:block; font-size:.8rem; margin-bottom:4px;
+  color:#7fd8ff !important; -webkit-text-fill-color:#7fd8ff !important;
+}
+.aia-bandeja small{
+  display:block; font-size:.73rem; line-height:1.5;
+  color:#cfe3f2 !important; -webkit-text-fill-color:#cfe3f2 !important;
+}
+.aia-bandeja small b{ display:inline; color:#7fd8ff !important; -webkit-text-fill-color:#7fd8ff !important; }
+.aia-bandeja-btns{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.aia-bandeja-btns button{
+  padding:7px 12px; border-radius:9px; cursor:pointer; font-size:.72rem; font-weight:700;
+  border:1px solid rgba(52,204,254,.5); background:rgba(52,204,254,.16);
+  color:#a8e4ff !important; -webkit-text-fill-color:#a8e4ff !important;
+}
+.aia-bandeja-btns .aia-bandeja-borrar{
+  border-color:rgba(248,113,113,.45); background:rgba(248,113,113,.12);
+  color:#fca5a5 !important; -webkit-text-fill-color:#fca5a5 !important;
+}
+#aia-pend-lista{
+  margin-top:9px; max-height:230px; overflow:auto; padding:9px 11px; border-radius:9px;
+  background:#0a1520; border:1px solid rgba(52,204,254,.22);
+  font-family:Consolas,monospace; font-size:.68rem; line-height:1.5;
+  white-space:pre-wrap; word-break:break-word; user-select:all;
+  color:#d3e6f5 !important; -webkit-text-fill-color:#d3e6f5 !important;
+}
+
 /* Overlay Exportar PDF (mismo lenguaje visual del Constructor) */
 #aia-exportar{
   position:fixed; inset:0; z-index:2000; background:rgba(5,9,16,.72);
