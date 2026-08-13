@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v459-procity-fase3-geometrias';
+const URBIS_CACHE = 'urbis-v460-geometrias-filtro-visible';
 const URBIS_ASSETS = [
   './',
   './index.html',

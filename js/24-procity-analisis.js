@@ -31,8 +31,10 @@
     burbuja: null,
     // Mapa de calor: `grupo` es un id de la Matriz o 'todos'; null = apagado.
     heat: { grupo: null, canvas: null, chip: null, pintando: false },
-    // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'; null = apagada.
-    geo: { tipo: null, capa: null }
+    // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'
+    // (null = apagada) y `grupo` filtra QUÉ puntos se conectan ('todos' o
+    // una categoría de la Matriz).
+    geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0 }
   };
 
   function esc(s){
@@ -294,6 +296,7 @@
       burbuja();
       // El calor se filtra por el área: al cerrar una nueva hay que rehacerlo.
       if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
+      try { refrescarGeo(); } catch(e){}
     };
     if (m) { m.once('moveend', abrir); setTimeout(abrir, 950); }
     else abrir();
@@ -410,6 +413,7 @@
     if (!a) return;
     S.pts = a.pts.slice(); S.cerrada = true; S.dibujando = false; S.nombre = a.nombre;
     repintar(); pintarBarra(); ajustarVista();
+    try { refrescarGeo(); } catch(e){}
     if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
   }
   function borrarArea(id){
@@ -1120,17 +1124,42 @@
   }
 
   // Puntos de Pro City dentro del área, ya con lat/lng numéricos — insumo
-  // común a las tres geometrías.
+  // común a las tres geometrías. `S.geo.grupo` decide QUÉ se conecta: 'todos'
+  // (cualquier cosa mapeada) o una categoría de la Matriz, para poder leer
+  // por separado la red del comercio, la de los equipamientos, etc.
   function puntosGeo(ctx){
+    const filtro = S.geo.grupo || 'todos';
     return datosURBIS().reduce((acc, p) => {
       if (!p || !ctx.esProCity(p.tipo)) return acc;
       const lat = parseFloat(String(p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p.lng || '').replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return acc;
       if (!dentroDelPoligono(lat, lng, S.pts)) return acc;
+      if (filtro !== 'todos') {
+        // Solo los elementos de la Matriz tienen categoría; el resto de
+        // dimensiones de Pro City quedan fuera al filtrar por categoría.
+        if (String(p.tipo || '') !== ctx.matrizKey) return acc;
+        const g = ctx.grupos.find(gr => gr.usos.includes(ctx.usoDe(p)));
+        if ((g ? g.id : 'mixtos') !== filtro) return acc;
+      }
       acc.push({ lat, lng });
       return acc;
     }, []);
+  }
+
+  function nombreGeo(tipo){
+    return tipo === 'red' ? '🕸️ Red de conexiones'
+      : tipo === 'hull' ? '⬡ Envolvente convexa'
+      : tipo === 'circulos' ? '⭕ Círculos de impacto' : '';
+  }
+  function colorGeo(tipo){
+    return tipo === 'red' ? '#a855f7' : tipo === 'hull' ? '#FABD0A' : '#ef4444';
+  }
+  function nombreFiltroGeo(ctx){
+    const f = S.geo.grupo || 'todos';
+    if (f === 'todos') return 'todo lo mapeado';
+    const g = ctx && ctx.grupos.find(x => x.id === f);
+    return g ? g.t : 'una categoría';
   }
 
   // Envolvente convexa por el método de la cadena monótona (Andrew). O(n log n),
@@ -1175,14 +1204,17 @@
     return lineas;
   }
 
+  // Devuelve cuántos puntos alimentaron la geometría — lo usa el chip del
+  // mapa para avisar cuando el filtro elegido deja el área casi vacía.
   function pintarGeo(ctx){
     const c = capaGeo();
-    if (!c) return;
+    if (!c) return 0;
     c.clearLayers();
     const tipo = S.geo.tipo;
-    if (!tipo) return;
+    if (!tipo) return 0;
     const pts = puntosGeo(ctx);
-    if (pts.length < 2) return;
+    S.geo.ultimoConteo = pts.length;
+    if (pts.length < 2) return pts.length;
 
     if (tipo === 'red') {
       const k = pts.length > 60 ? 1 : 2;   // con muchos puntos, menos líneas por nodo
@@ -1207,26 +1239,80 @@
         L.circle(p, { radius: 35, color: '#ef4444', weight: 1, fillColor: '#ef4444', fillOpacity: .16 }).addTo(c);
       });
     }
+    return pts.length;
+  }
+
+  // Chip sobre el mapa, gemelo del de calor: la geometría se mira con el panel
+  // CERRADO, así que sin él no habría forma de saber qué está dibujado ni de
+  // cambiar el filtro sin volver a abrir el análisis.
+  function chipGeo(ctx){
+    const m = mapa();
+    if (!m) return;
+    if (!S.geo.chip) {
+      const c = document.createElement('div');
+      c.className = 'pca-geo-chip';
+      if (L && L.DomEvent) L.DomEvent.disableClickPropagation(c);
+      m.getContainer().appendChild(c);
+      S.geo.chip = c;
+    }
+    // Si el mapa de calor también está encendido, este chip baja para no
+    // quedar encima del suyo.
+    S.geo.chip.classList.toggle('abajo', !!S.heat.grupo);
+    const n = S.geo.ultimoConteo || 0;
+    const aviso = n < 2
+      ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' con este filtro — prueba con “Todo lo mapeado”'
+      : n + ' puntos · ' + esc(nombreFiltroGeo(ctx));
+    S.geo.chip.innerHTML =
+      '<i style="background:' + colorGeo(S.geo.tipo) + '"></i>' +
+      '<div><b>' + nombreGeo(S.geo.tipo) + '</b><small>' + aviso + '</small></div>' +
+      '<button type="button" data-u52-call="pca-geo-off" aria-label="Quitar la geometría">✕</button>';
   }
 
   function apagarGeo(){
     S.geo.tipo = null;
+    S.geo.ultimoConteo = 0;
     if (S.geo.capa) { try { S.geo.capa.clearLayers(); } catch(e){} }
+    if (S.geo.chip) { try { S.geo.chip.remove(); } catch(e){} S.geo.chip = null; }
+  }
+
+  // El área cambió (se cerró otra, se cargó una guardada): la geometría se
+  // recalcula sobre el contorno nuevo en vez de quedar colgada del anterior.
+  function refrescarGeo(){
+    if (!S.geo.tipo) return;
+    const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+    if (!ctx) return;
+    pintarGeo(ctx);
+    chipGeo(ctx);
   }
 
   function bloqueGeo(ctx){
     const act = S.geo.tipo;
-    const chip = (id, ico, txt) =>
+    const filtro = S.geo.grupo || 'todos';
+    const chip = (id, ico, txt, color) =>
       '<button type="button" class="pca-heat-btn' + (act === id ? ' activo' : '') + '" ' +
-      'data-u52-call="pca-geo" data-gid="' + esc(id) + '">' +
+      'data-u52-call="pca-geo" data-gid="' + esc(id) + '" style="--c:' + color + '">' +
       '<i></i><span>' + ico + ' ' + esc(txt) + '</span></button>';
-    return '<div class="pca-heat-sel">' +
-      '<h4 class="pca-h pca-h-heat">🕸️ Geometría del área</h4>' +
-      '<p class="pca-heat-ayuda">Dibuja relaciones espaciales entre lo mapeado: qué tan cerca están unos de otros, qué tanto terreno abarcan y dónde se concentra su radio de influencia.</p>' +
+    // Filtro de qué se conecta. Se muestra el conteo real de cada categoría
+    // dentro del área para no ofrecer filtros que dejarían el dibujo vacío.
+    const r = window.__pcaUltimo || { porGrupo: {}, total: 0 };
+    const fchip = (id, ico, txt, n) =>
+      '<button type="button" class="pca-geo-filtro' + (filtro === id ? ' activo' : '') + '" ' +
+      'data-u52-call="pca-geo-filtro" data-gid="' + esc(id) + '">' +
+      ico + ' ' + esc(txt) + '<b>' + n + '</b></button>';
+    const filtros = fchip('todos', '🌐', 'Todo lo mapeado', r.total || 0) +
+      ctx.grupos.filter(g => (r.porGrupo[g.id] || 0) > 0)
+        .map(g => fchip(g.id, g.i, g.t, r.porGrupo[g.id])).join('');
+
+    return '<div class="pca-geo-sel">' +
+      '<h4 class="pca-h pca-h-geo">🕸️ Geometría del área</h4>' +
+      '<p class="pca-geo-ayuda">Dibuja las relaciones espaciales entre lo mapeado: qué tan cerca está unos de otros, cuánto terreno abarcan y dónde se cruzan sus radios de influencia. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
+      '<div class="pca-geo-sub">¿Qué puntos conectar?</div>' +
+      '<div class="pca-geo-filtros">' + filtros + '</div>' +
+      '<div class="pca-geo-sub">¿Cómo dibujarlos?</div>' +
       '<div class="pca-heat-chips">' +
-        chip('red', '🕸️', 'Red de conexiones') +
-        chip('hull', '⬡', 'Envolvente convexa') +
-        chip('circulos', '⭕', 'Círculos de impacto') +
+        chip('red', '🕸️', 'Red de conexiones', '#a855f7') +
+        chip('hull', '⬡', 'Envolvente convexa', '#FABD0A') +
+        chip('circulos', '⭕', 'Círculos de impacto', '#ef4444') +
       '</div>' +
       (act ? '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">✕ Quitar la geometría</button>' : '') +
     '</div>';
@@ -1256,18 +1342,35 @@
       if (enPanel && typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
       return true;
     }
+    // Igual que el calor: al elegir una geometría se CIERRA el panel. Antes se
+    // volvía a abrir, y como el panel tapa el mapa el dibujo quedaba detrás —
+    // parecía que el botón no hacía nada.
     if (name === 'geo') {
       const gid = el && el.dataset.gid;
       const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
       if (!ctx) return true;
-      S.geo.tipo = (S.geo.tipo === gid) ? null : gid;
-      pintarGeo(ctx);
+      if (S.geo.tipo === gid) { apagarGeo(); return true; }
+      S.geo.tipo = gid;
+      const n = pintarGeo(ctx);
+      if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats();
+      cerrarBurbuja();
+      chipGeo(ctx);
+      if (n < 2) alert('Con este filtro solo hay ' + n + ' punto' + (n === 1 ? '' : 's') +
+        ' dentro del área. Elige "Todo lo mapeado" u otra categoría para ver la geometría.');
+      return true;
+    }
+    // Cambiar el filtro no cierra el panel: se está eligiendo qué conectar,
+    // y lo normal es probar varias categorías seguidas antes de dibujar.
+    if (name === 'geo-filtro') {
+      S.geo.grupo = (el && el.dataset.gid) || 'todos';
+      refrescarGeo();
       if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
       return true;
     }
     if (name === 'geo-off') {
       apagarGeo();
-      if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
+      const enPanel = el && el.closest('.pca-panel');
+      if (enPanel && typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
       return true;
     }
     if (name === 'deshacer') { deshacer(); return true; }

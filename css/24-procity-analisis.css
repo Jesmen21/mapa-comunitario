@@ -299,6 +299,64 @@
   color:#a33 !important; -webkit-text-fill-color:#a33 !important;
 }
 
+/* ── Fase 3 · Geometría del área ──
+   Bloque propio (violeta) para no confundirse con el del calor (naranja):
+   son dos capas distintas y pueden estar encendidas a la vez. */
+.pca-geo-sel{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:4px; padding:12px 12px 13px;
+  background:linear-gradient(155deg,#f4eeff,#eae0ff);
+  border:1.5px solid #cdb8f0; border-radius:14px;
+}
+.pca-h-geo{
+  margin:0; font-size:.88rem;
+  color:#5b21b6 !important; -webkit-text-fill-color:#5b21b6 !important;
+}
+.pca-geo-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
+  color:#5f4a86 !important; -webkit-text-fill-color:#5f4a86 !important; }
+.pca-geo-sub{
+  font-size:.72rem; font-weight:800; letter-spacing:.02em;
+  color:#4c3b73 !important; -webkit-text-fill-color:#4c3b73 !important;
+}
+.pca-geo-filtros{ display:flex; flex-wrap:wrap; gap:5px; }
+.pca-geo-filtro{
+  display:inline-flex; align-items:center; gap:5px; cursor:pointer;
+  background:#fff; border:1.5px solid #e0d6f2; border-radius:999px;
+  padding:6px 9px 6px 10px; font-size:.73rem; font-weight:700;
+  color:#3a3050 !important; -webkit-text-fill-color:#3a3050 !important;
+  transition:border-color .15s ease, background .15s ease;
+}
+.pca-geo-filtro b{
+  background:#efe8fb; border-radius:999px; padding:1px 7px; font-size:.68rem;
+  color:#5b21b6 !important; -webkit-text-fill-color:#5b21b6 !important;
+}
+.pca-geo-filtro.activo{ border-color:#8b5cf6; background:#f3ecff; }
+.pca-geo-filtro.activo b{ background:#8b5cf6; color:#fff !important; -webkit-text-fill-color:#fff !important; }
+.pca-geo-filtro:active{ transform:scale(.97); }
+
+/* Chip de la geometría sobre el mapa (gemelo del de calor). `abajo` lo
+   corre cuando el mapa de calor también está encendido. */
+.pca-geo-chip{
+  position:absolute; left:10px; top:10px; z-index:901;
+  display:flex; align-items:center; gap:9px; max-width:min(300px, calc(100% - 20px));
+  background:#1d1330; border:1px solid #4b3172; border-radius:13px;
+  padding:8px 8px 8px 10px; box-shadow:0 8px 22px rgba(0,0,0,.4);
+  animation:pca-burbuja-in .25s ease both;
+}
+.pca-geo-chip.abajo{ top:74px; }
+.pca-geo-chip i{ width:12px; height:12px; border-radius:4px; flex:0 0 auto; }
+.pca-geo-chip div{ min-width:0; }
+.pca-geo-chip b{ display:block; font-size:.8rem; font-weight:800;
+  color:#f2eaff !important; -webkit-text-fill-color:#f2eaff !important;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pca-geo-chip small{ display:block; font-size:.7rem;
+  color:#c0acdd !important; -webkit-text-fill-color:#c0acdd !important; }
+.pca-geo-chip button{
+  flex:0 0 auto; width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#3a2a5c; color:#d5c6ee !important; -webkit-text-fill-color:#d5c6ee !important;
+  font-size:.8rem; font-weight:800; display:grid; place-items:center;
+}
+
 /* ── Exportar informe del área a PDF ── */
 .pca-exportar{
   display:flex; flex-direction:column; gap:8px;
