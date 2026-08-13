@@ -34,7 +34,9 @@
     // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'
     // (null = apagada) y `grupo` filtra QUÉ puntos se conectan ('todos' o
     // una categoría de la Matriz).
-    geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0 }
+    geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0 },
+    // Fase 4 · último análisis de cobertura del suelo del área en curso.
+    raster: null
   };
 
   function esc(s){
@@ -297,6 +299,7 @@
       // El calor se filtra por el área: al cerrar una nueva hay que rehacerlo.
       if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
       try { refrescarGeo(); } catch(e){}
+      S.raster = null;
     };
     if (m) { m.once('moveend', abrir); setTimeout(abrir, 950); }
     else abrir();
@@ -384,6 +387,7 @@
     // El calor y la geometría se filtran por el área: si el área cambia, se limpian.
     if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
     if (S.geo.tipo) apagarGeo();
+    S.raster = null;
   }
 
   // ── Áreas guardadas ─────────────────────────────────────────────────────
@@ -414,6 +418,7 @@
     S.pts = a.pts.slice(); S.cerrada = true; S.dibujando = false; S.nombre = a.nombre;
     repintar(); pintarBarra(); ajustarVista();
     try { refrescarGeo(); } catch(e){}
+    S.raster = null;
     if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
   }
   function borrarArea(id){
@@ -797,6 +802,10 @@
       bloqueHeat(ctx) +
 
       (r.total >= 2 ? bloqueGeo(ctx) : '') +
+
+      // La cobertura del suelo no depende de lo mapeado: se mide sobre la
+      // imagen satelital, así que va aunque el área esté vacía de puntos.
+      bloqueRaster() +
 
       (r.total > 0 ? bloqueExportar() : '') +
 
@@ -1318,6 +1327,178 @@
     '</div>';
   }
 
+  // ── Fase 4 · Análisis ráster ambiental ──────────────────────────────────
+  // Estima cuánto del área es verde, agua o superficie construida clasificando
+  // el COLOR de cada píxel de una imagen satelital.
+  //
+  // Honestidad metodológica (va escrita en pantalla y en el PDF, no solo aquí):
+  // esto NO es NDVI. Un NDVI real necesita banda infrarroja, que no está
+  // disponible gratis con calidad suficiente. Clasificar por RGB confunde un
+  // techo verde con un árbol, una piscina con un lago, y una sombra con agua.
+  // Sirve para dimensionar, no para certificar.
+  //
+  // Se usa Esri World Imagery: sin API key y con CORS abierto (verificado:
+  // Access-Control-Allow-Origin: *), que es lo que permite leer los píxeles
+  // del canvas — sin esa cabecera el navegador bloquea getImageData.
+  const RASTER_URL = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export';
+  const RASTER_LADO = 420;     // suficiente para estimar y liviano de procesar
+
+  function bboxDelArea(pts){
+    const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
+    return { s: Math.min(...lats), n: Math.max(...lats),
+             o: Math.min(...lngs), e: Math.max(...lngs) };
+  }
+
+  // Clasificación por color. Los umbrales salieron de mirar imágenes reales de
+  // Cúcuta: vegetación con verde dominante, agua con azul dominante y poca
+  // luz, y construido como gris de baja saturación.
+  // Clases calibradas contra píxeles reales de Cúcuta, y RECORTADAS a lo que
+  // el color RGB puede sostener de verdad.
+  //
+  // Historia de la calibración, porque explica por qué hay solo cuatro clases:
+  // una primera versión dejaba 34% "sin clasificar"; al muestrear esos píxeles
+  // salieron tonos oliva-caqui (~76,75,58). La tentación era abrir una clase
+  // "vegetación seca", pero al probarla el Centro de Cúcuta —urbano denso—
+  // daba 18% construido y 47% vegetación, que es falso: el concreto beige y
+  // el matorral seco comparten el mismo rango de color y sin banda infrarroja
+  // NO se pueden separar. Antes que publicar un porcentaje bonito y engañoso,
+  // esas superficies van juntas en una clase declarada como ambigua.
+  function clasificarPixel(r, g, b){
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const sat = max === 0 ? 0 : (max - min) / max;
+    const luz = (r + g + b) / 3;
+
+    // Agua: azul dominante sobre superficie oscura. Fiable salvo sombras densas.
+    if (b > r + 8 && b >= g && luz < 145) return 'agua';
+    // Vegetación viva: verde franco por encima de rojo y azul. Es la clase más
+    // fiable del método — el verde vegetal no lo imita casi ningún material.
+    if (g > r + 10 && g > b + 6) return 'verde';
+    // Gris neutro: asfalto, concreto y cubiertas metálicas. Fiable cuando la
+    // saturación es realmente baja.
+    if (sat < .16) return 'construido';
+    // Todo lo demás son tonos cálidos (beige, caqui, terracota, oliva) donde
+    // conviven teja, concreto envejecido, suelo descubierto y matorral seco.
+    // El color no los separa: se declara como tal.
+    return 'mixto';
+  }
+
+  // Convierte píxel → lat/lng. La imagen se pide en EPSG:4326 con el bbox del
+  // área, así que el mapeo es lineal (a escala de barrio la distorsión es
+  // despreciable y evita meter una proyección completa).
+  function latLngDePixel(x, y, w, h, bb){
+    return { lat: bb.n - (y + .5) / h * (bb.n - bb.s),
+             lng: bb.o + (x + .5) / w * (bb.e - bb.o) };
+  }
+
+  function analizarRaster(){
+    return new Promise((resolve, reject) => {
+      if (!S.cerrada || S.pts.length < 3) { reject(new Error('Primero dibuja un área.')); return; }
+      const bb = bboxDelArea(S.pts);
+      // Se pide un poco más ancho que el área para que el borde no quede pegado.
+      const mLat = (bb.n - bb.s) * .04, mLng = (bb.e - bb.o) * .04;
+      const caja = { s: bb.s - mLat, n: bb.n + mLat, o: bb.o - mLng, e: bb.e + mLng };
+      // Se conserva la proporción real del área: pedir siempre un cuadrado
+      // deformaría un área alargada y falsearía los porcentajes.
+      const prop = (caja.n - caja.s) / Math.max(1e-9, (caja.e - caja.o));
+      const w = RASTER_LADO, h = Math.max(60, Math.min(700, Math.round(RASTER_LADO * prop)));
+      const url = RASTER_URL + '?bbox=' + [caja.o, caja.s, caja.e, caja.n].join(',') +
+        '&bboxSR=4326&imageSR=4326&size=' + w + ',' + h + '&format=png&f=image';
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';       // sin esto el canvas queda "tainted"
+      img.onerror = () => reject(new Error('No se pudo descargar la imagen satelital.'));
+      img.onload = () => {
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = h;
+          const cx = cv.getContext('2d');
+          cx.drawImage(img, 0, 0, w, h);
+          const datos = cx.getImageData(0, 0, w, h).data;
+
+          const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
+          let dentro = 0;
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const c = latLngDePixel(x, y, w, h, caja);
+              if (!dentroDelPoligono(c.lat, c.lng, S.pts)) continue;
+              dentro++;
+              const i = (y * w + x) * 4;
+              cuenta[clasificarPixel(datos[i], datos[i+1], datos[i+2])]++;
+            }
+          }
+          if (!dentro) { reject(new Error('El área es demasiado pequeña para analizarla.')); return; }
+
+          const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
+          const m2 = areaM2(S.pts);
+          const sup = k => Math.round(m2 * cuenta[k] / dentro);
+          resolve({
+            pixeles: dentro, imagen: cv.toDataURL('image/png'),
+            clases: [
+              { id:'verde',      etq:'Vegetación viva',      ico:'🌳', color:'#22c55e',
+                pct:pct('verde'), m2:sup('verde'), fiable:true,
+                nota:'Verde franco. Es la clase más fiable: casi ningún material lo imita.' },
+              { id:'construido', etq:'Superficie dura gris', ico:'🏗️', color:'#94a3b8',
+                pct:pct('construido'), m2:sup('construido'), fiable:true,
+                nota:'Asfalto, concreto y cubiertas metálicas de color neutro.' },
+              { id:'agua',       etq:'Agua',                 ico:'💧', color:'#3b82f6',
+                pct:pct('agua'), m2:sup('agua'), fiable:true,
+                nota:'Azul oscuro. Una sombra muy densa puede confundirse con agua.' },
+              { id:'mixto',      etq:'Tonos cálidos (no separables)', ico:'🟫', color:'#c9a26a',
+                pct:pct('mixto'), m2:sup('mixto'), fiable:false,
+                nota:'Teja, concreto envejecido, suelo descubierto y matorral seco comparten este rango de color.' }
+            ],
+            pctAmbiguo: pct('mixto'),
+            areaM2: m2
+          });
+        } catch(e) {
+          // Salta si el navegador considera el canvas contaminado.
+          reject(new Error('El navegador bloqueó la lectura de la imagen (CORS).'));
+        }
+      };
+      img.src = url;
+    });
+  }
+
+  function pintarRaster(res){
+    const cont = document.getElementById('pca-raster-out');
+    if (!cont) return;
+    const orden = res.clases.slice().sort((a, b) => b.pct - a.pct);
+    const dom = orden[0];
+    cont.innerHTML =
+      '<div class="pca-raster-barra">' +
+        orden.filter(c => c.pct > 0).map(c =>
+          '<i style="width:' + c.pct + '%;background:' + c.color + '" title="' + esc(c.etq) + '"></i>').join('') +
+      '</div>' +
+      '<div class="pca-raster-lista">' +
+        orden.map(c =>
+          '<div class="pca-raster-fila' + (c.fiable ? '' : ' ambigua') + '">' +
+          '<span><i style="background:' + c.color + '"></i>' + c.ico + ' ' + esc(c.etq) + '</span>' +
+          '<b>' + c.pct + '%</b><em>' + fmtArea(c.m2) + '</em></div>' +
+          '<div class="pca-raster-nota">' + esc(c.nota) + '</div>').join('') +
+      '</div>' +
+      '<p class="pca-raster-lectura">Cobertura dominante: <b>' + esc(dom.etq.toLowerCase()) +
+        '</b> (' + dom.pct + '%). Estimado sobre ' + res.pixeles.toLocaleString('es-CO') +
+        ' puntos de la imagen dentro del área.</p>' +
+      '<div class="pca-raster-aviso"><b>⚠️ Cómo leer esto</b>' +
+        '<small>Estimación por <b>color</b> de imagen satelital: <b>no es NDVI ni un estudio ' +
+        'ambiental certificado</b>. Un NDVI real necesita banda infrarroja, que no está disponible ' +
+        'gratis. Por eso solo se declaran tres clases fiables — vegetación viva, gris construido y ' +
+        'agua — y todo lo demás queda en <b>tonos cálidos</b> (' + res.pctAmbiguo + '% del área), ' +
+        'donde teja, concreto envejecido, suelo y matorral seco son indistinguibles por color. ' +
+        'Sirve para dimensionar y comparar sectores, no para certificar.</small></div>';
+    S.raster = res;
+  }
+
+  function bloqueRaster(){
+    return '<div class="pca-raster-sel">' +
+      '<h4 class="pca-h pca-h-raster">🛰️ Cobertura del suelo</h4>' +
+      '<p class="pca-raster-ayuda">Estima qué parte del área es vegetación, superficie construida, ' +
+        'suelo desnudo o agua, clasificando el color de una imagen satelital.</p>' +
+      '<button type="button" class="pca-btn-raster" data-u52-call="pca-raster">🛰️ Analizar cobertura</button>' +
+      '<div id="pca-raster-out">' + (S.raster ? '' : '') + '</div>' +
+    '</div>';
+  }
+
   // ── Acciones (las despacha js/20 desde su delegador de clics) ───────────
 
   function accion(name, el){
@@ -1345,6 +1526,20 @@
     // Igual que el calor: al elegir una geometría se CIERRA el panel. Antes se
     // volvía a abrir, y como el panel tapa el mapa el dibujo quedaba detrás —
     // parecía que el botón no hacía nada.
+    if (name === 'raster') {
+      const btn = el;
+      const out = document.getElementById('pca-raster-out');
+      if (btn) { btn.disabled = true; btn.textContent = '🛰️ Analizando imagen…'; }
+      if (out) out.innerHTML = '<p class="pca-raster-cargando">Descargando y clasificando la imagen satelital…</p>';
+      analizarRaster().then(res => {
+        pintarRaster(res);
+        if (btn) { btn.disabled = false; btn.textContent = '↻ Volver a analizar'; }
+      }).catch(err => {
+        if (out) out.innerHTML = '<p class="pca-raster-error">No se pudo analizar: ' + esc(err.message) + '</p>';
+        if (btn) { btn.disabled = false; btn.textContent = '🛰️ Analizar cobertura'; }
+      });
+      return true;
+    }
     if (name === 'geo') {
       const gid = el && el.dataset.gid;
       const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
@@ -1407,6 +1602,8 @@
     // Mapa de calor (Fase 2)
     heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat,
     // Geometría (Fase 3)
-    geoActiva: () => S.geo.tipo, apagarGeo
+    geoActiva: () => S.geo.tipo, apagarGeo,
+    // Cobertura del suelo (Fase 4)
+    analizarRaster, clasificarPixel, ultimoRaster: () => S.raster
   };
 })();

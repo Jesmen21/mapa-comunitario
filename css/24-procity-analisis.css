@@ -357,6 +357,77 @@
   font-size:.8rem; font-weight:800; display:grid; place-items:center;
 }
 
+/* ── Fase 4 · Cobertura del suelo (ráster) ──
+   Verde propio para no confundirlo con el calor (naranja) ni la geometría
+   (violeta): son tres capas distintas del mismo panel. */
+.pca-raster-sel{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:4px; padding:12px 12px 13px;
+  background:linear-gradient(155deg,#eefaf0,#dff4e5);
+  border:1.5px solid #b2e0bf; border-radius:14px;
+}
+.pca-h-raster{
+  margin:0; font-size:.88rem; color:#15803d !important; -webkit-text-fill-color:#15803d !important;
+}
+.pca-raster-ayuda{ margin:0; font-size:.74rem; line-height:1.45;
+  color:#3f6b4c !important; -webkit-text-fill-color:#3f6b4c !important; }
+.pca-btn-raster{
+  align-self:flex-start; cursor:pointer; padding:9px 14px; border-radius:11px;
+  border:1.5px solid #15803d; background:#fff; font-size:.78rem; font-weight:800;
+  color:#15803d !important; -webkit-text-fill-color:#15803d !important;
+}
+.pca-btn-raster:disabled{ opacity:.6; cursor:default; }
+.pca-btn-raster:active{ transform:scale(.97); }
+.pca-raster-cargando, .pca-raster-error{
+  margin:0; font-size:.75rem; line-height:1.45;
+  color:#3f6b4c !important; -webkit-text-fill-color:#3f6b4c !important;
+}
+.pca-raster-error{ color:#a33 !important; -webkit-text-fill-color:#a33 !important; }
+.pca-raster-barra{
+  display:flex; height:16px; border-radius:8px; overflow:hidden;
+  background:#e6efe9; border:1px solid #cbe4d3;
+}
+.pca-raster-lista{ display:flex; flex-direction:column; gap:3px; margin-top:8px; }
+.pca-raster-fila{ display:flex; align-items:center; gap:8px; font-size:.74rem; }
+.pca-raster-fila span{
+  flex:1; display:inline-flex; align-items:center; gap:6px;
+  color:#28402f !important; -webkit-text-fill-color:#28402f !important;
+}
+.pca-raster-fila span i{ width:10px; height:10px; border-radius:3px; flex:0 0 auto; }
+.pca-raster-fila b{
+  min-width:46px; text-align:right; font-weight:800;
+  color:#15803d !important; -webkit-text-fill-color:#15803d !important;
+}
+.pca-raster-fila em{
+  min-width:62px; text-align:right; font-style:normal; font-size:.7rem;
+  color:#5c7a66 !important; -webkit-text-fill-color:#5c7a66 !important;
+}
+.pca-raster-fila.ambigua b{ color:#8a5a12 !important; -webkit-text-fill-color:#8a5a12 !important; }
+.pca-raster-nota{
+  margin:0 0 5px 18px; font-size:.66rem; line-height:1.4;
+  color:#5c7a66 !important; -webkit-text-fill-color:#5c7a66 !important;
+}
+.pca-raster-lectura{
+  margin:9px 0 0; font-size:.74rem; line-height:1.5;
+  color:#28402f !important; -webkit-text-fill-color:#28402f !important;
+}
+.pca-raster-lectura b{ color:#15803d !important; -webkit-text-fill-color:#15803d !important; }
+/* El aviso metodológico NO es decorativo: es la condición para poder mostrar
+   esta estimación sin que se lea como un estudio ambiental. */
+.pca-raster-aviso{
+  margin-top:9px; padding:8px 11px; border-radius:10px;
+  background:#fffaf0; border:1.5px solid #f0d9a8;
+}
+.pca-raster-aviso b{
+  display:block; font-size:.74rem; margin-bottom:3px;
+  color:#8a5a12 !important; -webkit-text-fill-color:#8a5a12 !important;
+}
+.pca-raster-aviso small{
+  display:block; font-size:.71rem; line-height:1.5;
+  color:#6b5326 !important; -webkit-text-fill-color:#6b5326 !important;
+}
+.pca-raster-aviso small b{ display:inline; color:#8a5a12 !important; -webkit-text-fill-color:#8a5a12 !important; }
+
 /* ── Exportar informe del área a PDF ── */
 .pca-exportar{
   display:flex; flex-direction:column; gap:8px;
