@@ -5,7 +5,7 @@
      sesión guardada en localStorage. -->
 <html lang="es">
 <head>
-  <title>Análisis de Implantación IA · URBIS</title>
+  <title>Urbis para Empresas · URBIS</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
@@ -30,7 +30,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=467-informe-empresas-dos-paginas" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=468-urbis-empresas-nombre-proyecto" />
 </head>
 <body>
 
@@ -38,7 +38,7 @@
   <header id="aia-topbar">
     <button id="aia-btn-volver" onclick="location.href='index.html'" title="Volver a URBIS">←</button>
     <div class="aia-titulo">
-      <b>Análisis de Implantación IA</b>
+      <b>Urbis para Empresas</b>
       <small>Análisis territorial inteligente para constructoras e inmobiliarias</small>
     </div>
     <button id="aia-btn-capas" title="Cambiar mapa base">🗺️</button>
@@ -129,6 +129,14 @@
             <div id="aia-resumen-chips"></div>
             <button id="aia-btn-editar-mixto" type="button">✏️ Editar programa</button>
           </div>
+        </div>
+
+        <div class="aia-paso" id="aia-paso-nombre">
+          <h3><span class="aia-num">5</span> Nombre del proyecto <em>(opcional)</em></h3>
+          <input id="aia-nombre-proyecto" type="text" maxlength="80" autocomplete="off"
+                 placeholder="Ej. Libertadores Plaza, Torre Norte, Lote Av. 0…" />
+          <p class="aia-nombre-ayuda">Así lo vas a reconocer luego en "Mis análisis" y en el PDF.
+            Si lo dejas vacío, se usa el nombre del proyecto propuesto.</p>
         </div>
 
         <button id="aia-btn-analizar" type="button" disabled>⚡ Elige lote, estudio y proyecto</button>
@@ -279,10 +287,10 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=467-informe-empresas-dos-paginas"></script>
-<script src="js/60-analisis-ia-motor.js?v=467-informe-empresas-dos-paginas"></script>
-<script src="js/61-analisis-ia-datos.js?v=467-informe-empresas-dos-paginas"></script>
-<script src="js/63-analisis-ia-informe.js?v=467-informe-empresas-dos-paginas"></script>
-<script src="js/62-analisis-ia-app.js?v=467-informe-empresas-dos-paginas"></script>
+<script src="js/00-config.js?v=468-urbis-empresas-nombre-proyecto"></script>
+<script src="js/60-analisis-ia-motor.js?v=468-urbis-empresas-nombre-proyecto"></script>
+<script src="js/61-analisis-ia-datos.js?v=468-urbis-empresas-nombre-proyecto"></script>
+<script src="js/63-analisis-ia-informe.js?v=468-urbis-empresas-nombre-proyecto"></script>
+<script src="js/62-analisis-ia-app.js?v=468-urbis-empresas-nombre-proyecto"></script>
 </body>
 </html>

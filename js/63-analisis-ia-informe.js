@@ -475,7 +475,7 @@
     // El estilo se fija ANTES de armar nada: tanto el CSS como los bloques
     // leen `T`, y se evalúan en orden dentro del mismo arreglo de plantilla.
     fijarEstilo(opciones.estilo);
-    const titulo = opciones.titulo || r.meta.proyectoNombre || 'Análisis de Implantación';
+    const titulo = opciones.titulo || r.meta.proyectoNombre || 'Urbis para Empresas';
     const subtitulo = opciones.subtitulo || r.meta.direccionAprox || '';
     const horizontal = opciones.orientacion !== 'vertical';
     const autor = opciones.autor || '';
@@ -730,7 +730,7 @@
 (r.stats.poblacionEsCensal ? ' Población y estrato: Censo DANE 2018.' : ''),
 '</span>',
 '<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
-'<b>URBIS</b> · Análisis de Implantación IA &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
+'<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
 
 '</div></div>',
 
@@ -767,7 +767,7 @@ columnas(horizontal, [
   : ' Población: estimación heurística URBIS.'),
 ' Evaluación heurística: no sustituye el concepto de norma urbanística (POT) ni un estudio de mercado formal.</span>',
 '<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
-'<b>URBIS</b> · Análisis de Implantación IA &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
+'<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
 
 '</div></div>',
 
@@ -816,7 +816,7 @@ columnas(horizontal, [
   function construirHTMLListado(r, opciones){
     opciones = opciones || {};
     const G = window.AIA_MOTOR.GRUPOS, C = window.AIA_MOTOR.GRUPO_COLOR;
-    const titulo = opciones.titulo || r.meta.proyectoNombre || 'Análisis de Implantación';
+    const titulo = opciones.titulo || r.meta.proyectoNombre || 'Urbis para Empresas';
     const fecha = new Date(r.meta.fechaISO).toLocaleString('es-CO', { dateStyle:'long', timeStyle:'short' });
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
 

@@ -371,7 +371,7 @@
         <div class="u52-k-section-label sky">✦ Módulo UrbisProCity</div>
         <div class="u52-grid u52-grid-secondary u52-k-home-grid-secondary u52-jac-dev-grid" aria-label="Módulo UrbisProCity">
           <button class="u52-module procity u52-premium-module" data-u52-call="procity-open-map"><span class="u52-procity-home-ico">🏙️</span><b>Pro City</b><small>Mapeo profesional</small></button>
-          <button class="u52-module aia u52-premium-module" id="u52-aia-module" hidden onclick="location.href='analisis-ia.html'"><span class="u52-procity-home-ico">🤖</span><b>Análisis IA</b><small>Implantación territorial</small></button>
+          <button class="u52-module aia u52-premium-module" id="u52-aia-module" hidden onclick="location.href='analisis-ia.html'"><span class="u52-procity-home-ico">🤖</span><b>Urbis Empresas</b><small>Análisis de implantación</small></button>
         </div>
 
         <div class="u52-k-section-label lilac">✦ Apps en desarrollo</div>

@@ -260,6 +260,10 @@
     $('aia-btn-nuevo').addEventListener('click', () => {
       S.resultado = null;
       S.capaPOIs.clearLayers();
+      // El nombre es del proyecto anterior: si no se limpia, el siguiente
+      // análisis (de otro lote) hereda por accidente el nombre equivocado.
+      const nombreInput = $('aia-nombre-proyecto');
+      if (nombreInput) nombreInput.value = '';
       setSheetState('wizard');
     });
     $('aia-btn-informe').addEventListener('click', abrirExportar);
@@ -460,6 +464,14 @@
             { usos: S.usosMixto, config: S.config }))
         : await window.AIA_MOTOR.analizar(Object.assign({}, comun,
             { proyectoId: S.proyectoId }));
+      // Nombre propio del proyecto (paso 5, opcional): si el usuario escribió
+      // uno, reemplaza el nombre que el motor arma solo a partir del programa
+      // ("Comercial (por definir) + Oficina...") — así el análisis se
+      // reconoce por el proyecto real ("Libertadores Plaza") y no por su
+      // combinación de usos, tanto al guardarlo como en el título del PDF.
+      const nombreInput = $('aia-nombre-proyecto');
+      const nombrePropio = (nombreInput && nombreInput.value || '').trim();
+      if (nombrePropio) resultado.meta.proyectoNombre = nombrePropio;
       S.resultado = resultado;
       pintarPOIs(resultado.pois);
       renderResultados(resultado);

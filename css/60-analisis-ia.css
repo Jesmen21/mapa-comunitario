@@ -82,6 +82,10 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   background:var(--aia-acento); color:#06222b; font-weight:800; font-size:.72rem;
   margin-right:6px;
 }
+.aia-paso > h3 em{
+  font-style:normal; font-weight:400; text-transform:none; letter-spacing:0;
+  color:var(--aia-texto2) !important; -webkit-text-fill-color:var(--aia-texto2) !important;
+}
 
 #aia-buscar-direccion{
   width:100%; padding:12px 14px; border-radius:12px;
@@ -123,6 +127,18 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 }
 #aia-lote-estado.ok{ border-style:solid; border-color:rgba(34,211,238,.5); color:var(--aia-texto); }
 #aia-lote-estado small{ color:var(--aia-texto2); }
+
+#aia-nombre-proyecto{
+  width:100%; padding:12px 14px; border-radius:12px;
+  border:1px solid var(--aia-borde); background:var(--aia-card);
+  color:var(--aia-texto); font-size:.92rem; outline:none;
+}
+#aia-nombre-proyecto:focus{ border-color:var(--aia-acento); }
+#aia-nombre-proyecto::placeholder{ color:#7d8aa0; }
+.aia-nombre-ayuda{
+  margin:6px 0 0; font-size:.74rem; line-height:1.4;
+  color:var(--aia-texto2) !important; -webkit-text-fill-color:var(--aia-texto2) !important;
+}
 
 .aia-presets{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
 .aia-presets button{
