@@ -407,6 +407,68 @@
   }
 
   // ── A) INFORME EJECUTIVO — una sola hoja ────────────────────────────────
+  // Veredicto de la página 1: el mismo dato de viabilidad que ya calcula el
+  // motor, pero presentado en grande y explicado, para que el cliente entienda
+  // qué está viendo sin que nadie se lo tenga que interpretar al lado.
+  function bloqueVeredicto(r){
+    const v = r.viabilidad;
+    if (!v) return '';
+    const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
+    const est = estrellasDeScore(v.score);
+    const lectura = v.nivel === 'Alta'
+      ? 'El entorno reúne las condiciones para el proyecto propuesto: hay demanda que lo sostiene, ' +
+        'usos complementarios alrededor y accesibilidad que respalda la operación.'
+      : v.nivel === 'Media'
+      ? 'El proyecto es defendible, pero su resultado dependerá de diferenciarse de la oferta ya ' +
+        'instalada y de validar la demanda en campo antes de comprometer inversión.'
+      : 'Las condiciones actuales del entorno no favorecen este uso en particular. Conviene revisar ' +
+        'alternativas mejor calificadas o evaluar otro radio de influencia antes de descartar el lote.';
+    // Aro grande: r=15.9155 hace que la circunferencia mida 100, así el
+    // dasharray se escribe directamente en puntos del score.
+    const gauge =
+      '<svg class="gauge-xl" viewBox="0 0 42 42">' +
+      '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + T.linea + '" stroke-width="4.6"/>' +
+      '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + col + '" stroke-width="4.6" ' +
+        'stroke-linecap="round" stroke-dasharray="' + v.score + ' ' + (100 - v.score) + '" ' +
+        'transform="rotate(-90 21 21)"/>' +
+      '<text x="21" y="20.6" text-anchor="middle" font-size="13" font-weight="900" fill="' + col + '">' + v.score + '</text>' +
+      '<text x="21" y="27" text-anchor="middle" font-size="3.3" font-weight="700" fill="' + T.txt3 + '">DE 100</text>' +
+      '</svg>';
+    return '<div class="veredicto">' +
+      '<div class="ver-h"><b>VIABILIDAD DEL PROYECTO</b>' +
+        '<span>' + esc(r.meta.proyectoNombre) + '</span></div>' +
+      '<div class="ver-b">' + gauge +
+        '<div class="ver-txt">' +
+          '<div class="estrellas-xl">' + estrellasHTML(est) + '</div>' +
+          '<span class="nivel-xl" style="color:' + col + '">Viabilidad ' + esc(v.nivel) + '</span>' +
+          '<span class="frase-xl">' + est + ' de 5 estrellas. ' + lectura + '</span>' +
+        '</div>' +
+      '</div></div>';
+  }
+
+  // Qué significa cada indicador, en una línea. Es lo que convierte la página 1
+  // en algo que el cliente puede leer solo, sin que nadie se lo explique.
+  function bloqueGuia(r){
+    const i = r.indicadores || {};
+    const filas = [
+      ['⭐ Viabilidad', 'Qué tan bien encaja TU proyecto en este lote concreto.'],
+      ['🏆 Oportunidad urbana', 'Qué tan buen sitio es el lote, sin importar qué se construya.'],
+      ['👥 Población', r.stats.poblacionEsCensal
+        ? 'Habitantes reales del área según el Censo DANE, no una estimación.'
+        : 'Habitantes estimados en el área de influencia.'],
+      ['🛣️ Exposición vial', 'Cuánta visibilidad y acceso da la malla vial cercana.']
+    ];
+    if (i.estrato && i.estrato.disponible) {
+      filas.push(['🏷️ Estrato', 'Capacidad de compra del sector: define el producto y el precio.']);
+    }
+    if (i.demografia && i.demografia.disponible) {
+      filas.push(['📊 Edad y sexo', 'Quién vive alrededor: orienta qué tipo de oferta tiene demanda.']);
+    }
+    return '<div class="bloque"><h2>Cómo leer este informe</h2><div class="guia">' +
+      filas.map(f => '<div><b>' + f[0] + '</b><small>' + f[1] + '</small></div>').join('') +
+      '</div></div>';
+  }
+
   function construirHTMLEjecutivo(r, chartsPNG, opciones){
     chartsPNG = chartsPNG || {};
     opciones = opciones || {};
@@ -434,12 +496,36 @@
 'body{font-family:"Segoe UI",Arial,sans-serif;color:', T.tinta, ';background:', T.hoja, ';',
 '-webkit-print-color-adjust:exact;print-color-adjust:exact}',
 '#marco{transform-origin:top left}',
-'#hoja{width:', anchoMM, 'mm;height:', altoMM, 'mm;overflow:hidden;position:relative;background:', T.hoja, '}',
-'#contenido{transform-origin:top left;width:100%}',
+// DOS hojas en vez de una. Al sumar los datos del DANE (población, estrato,
+// sexo y edad) el informe dejó de caber en una sola página y el auto-ajuste
+// tenía que encogerlo hasta recortar. Ahora la página 1 explica el veredicto
+// al cliente y la 2 lleva el detalle: cada una se ajusta por separado.
+'.hoja{width:', anchoMM, 'mm;height:', altoMM, 'mm;overflow:hidden;position:relative;background:', T.hoja, '}',
+'.hoja + .hoja{margin-top:10mm}',
+'.contenido{transform-origin:top left;width:100%}',
+'@media print{.hoja{margin:0 !important}.hoja + .hoja{break-before:page;page-break-before:always}}',
+/* Veredicto grande — el elemento pedagógico de la página 1 */
+'.veredicto{border:2px solid ', T.borde, ';border-radius:10px;overflow:hidden;margin-bottom:6px}',
+'.ver-h{background:linear-gradient(100deg,', T.cab1, ',', T.cab2, ');color:', T.cabTxt, ';',
+'padding:5px 12px;display:flex;align-items:center;gap:8px}',
+'.ver-h b{font-size:9px;font-weight:900;letter-spacing:1.6px}',
+'.ver-h span{margin-left:auto;font-size:7.4px;background:rgba(255,255,255,.2);padding:2px 8px;',
+'border-radius:99px;font-weight:700}',
+'.ver-b{display:flex;align-items:center;gap:14px;padding:11px 14px;background:', T.suave, '}',
+'.ver-b .gauge-xl{width:46mm;height:46mm;flex:0 0 auto}',
+'.ver-txt{flex:1}',
+'.ver-txt .estrellas-xl{font-size:26px;color:', T.oro, ';letter-spacing:3px;line-height:1}',
+'.ver-txt .nivel-xl{display:block;font-size:20px;font-weight:900;line-height:1.1;margin-top:3px}',
+'.ver-txt .frase-xl{display:block;font-size:9px;color:', T.txt2, ';margin-top:5px;line-height:1.45}',
+/* Guía pedagógica: qué significa cada cosa */
+'.guia{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:5px}',
+'.guia div{border:1px solid ', T.borde, ';border-radius:6px;padding:5px 8px;background:', T.panel, '}',
+'.guia b{display:block;font-size:8px;color:', T.acento, ';font-weight:800;margin-bottom:1px}',
+'.guia small{display:block;font-size:7.4px;color:', T.txt2, ';line-height:1.35}',
 // En pantalla (previsualización) la hoja se muestra completa sobre un
 // fondo gris, como un visor de PDF; al imprimir vuelve a tamaño real.
-'@media screen{body{background:#4b5563;padding:8px}#hoja{box-shadow:0 6px 26px rgba(0,0,0,.45)}}',
-'@media print{body{background:', T.hoja, ';padding:0}#marco{transform:none !important;margin:0 !important}#hoja{box-shadow:none}}',
+'@media screen{body{background:#4b5563;padding:8px}.hoja{box-shadow:0 6px 26px rgba(0,0,0,.45)}}',
+'@media print{body{background:', T.hoja, ';padding:0}#marco{transform:none !important;margin:0 !important}.hoja{box-shadow:none}}',
 /* Encabezado */
 'header{display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,', T.cab1, ',', T.cab2, ');',
 'color:', T.cabTxt, ';padding:7px 12px;border-radius:6px}',
@@ -615,7 +701,10 @@
 'padding:5px 8px;font-size:8px;line-height:1.4;color:', T.txt2, '}',
 'footer{margin-top:5px;border-top:1px solid ', T.borde, ';padding-top:4px;font-size:7px;color:', T.txt3, ';',
 'display:flex;justify-content:space-between;gap:10px}',
-'</style></head><body><div id="marco"><div id="hoja"><div id="contenido">',
+'</style></head><body><div id="marco">',
+
+// ══ PÁGINA 1 · pedagógica: el veredicto y lo esencial para el cliente ══
+'<div class="hoja"><div class="contenido">',
 
 '<header>',
 '<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">',
@@ -625,30 +714,52 @@
 '<div class="sub">', (subtitulo ? esc(subtitulo) + '<br>' : ''), esc(fecha), '</div>',
 '</header>',
 
-// Tres columnas en horizontal: la hoja carta apaisada es muy ancha, y
-// repartir el contenido a lo ancho baja la altura total, lo que permite
-// que el auto-ajuste NO tenga que encoger la letra para que quepa.
+// El veredicto ocupa el ancho completo y va primero: es la conclusión, y el
+// cliente debe verla antes que cualquier dato que la sustente.
+'<div class="fila fila-foda">', bloqueVeredicto(r) || bloqueRanking(r), '</div>',
+
 '<div class="fila fila-1">',
-  '<div>', bloqueMapa(r, horizontal), bloqueMovilidad(r), '</div>',
-  '<div><div class="bloque"><h2>Datos generales</h2>', datosGenerales(r), kpis(r), '</div>',
-  tablaComposicion(r), '</div>',
-  '<div>', bloqueViabilidad(r) || bloqueRanking(r), bloqueOportunidad(r), '</div>',
+  '<div>', bloqueMapa(r, horizontal), '</div>',
+  '<div><div class="bloque"><h2>Datos generales</h2>', datosGenerales(r), kpis(r), '</div></div>',
+  '<div>', bloqueOportunidad(r), bloqueGuia(r), '</div>',
+'</div>',
+
+'<div class="conclusion">', esc(r.conclusion), '</div>',
+
+'<footer><span>Página 1 de 2 · Veredicto y lectura general.',
+(r.stats.poblacionEsCensal ? ' Población y estrato: Censo DANE 2018.' : ''),
+'</span>',
+'<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
+'<b>URBIS</b> · Análisis de Implantación IA &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
+
+'</div></div>',
+
+// ══ PÁGINA 2 · el detalle que sustenta el veredicto ══
+'<div class="hoja"><div class="contenido">',
+
+'<header>',
+'<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">',
+'<div class="head-txt"><h1>', esc(titulo), '</h1>',
+'<p>Datos y estadísticas del sector · URBIS</p></div>',
+'<div class="sub">Página 2 de 2<br>', esc(fecha), '</div>',
+'</header>',
+
+'<div class="fila fila-1">',
+  '<div>', bloqueViabilidad(r), bloqueMovilidad(r), '</div>',
+  '<div>', tablaComposicion(r),
+    chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '', '</div>',
+  '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), '</div>',
 '</div>',
 
 // Las columnas se arman con `columnas()`: una columna cuyos bloques salen
-// todos vacíos NO se emite. Antes se emitía igual y la rejilla le seguía
-// reservando su tercio, dejando un hueco en blanco de casi 300 px en la hoja
-// (pasaba siempre que el motor no generaba recomendaciones).
+// todos vacíos NO se emite, para que la rejilla no reserve un tercio en blanco.
 columnas(horizontal, [
-  [ chart(chartsPNG.barras, 'Usos por grupo') ? '<div class="bloque">' + chart(chartsPNG.barras, 'Usos por grupo') + '</div>' : '',
-    chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '' ],
-  [ bloqueIndicadores(r), bloqueMultiRadio(r), bloqueCompatibilidad(r) ],
-  [ bloqueRecomendaciones(r), bloqueUnidades(r) ]
+  [ chart(chartsPNG.barras, 'Usos por grupo') ? '<div class="bloque">' + chart(chartsPNG.barras, 'Usos por grupo') + '</div>' : '' ],
+  [ bloqueCompatibilidad(r), bloqueUnidades(r) ],
+  [ bloqueRecomendaciones(r) ]
 ]),
 
 '<div class="fila fila-foda">', bloqueFoda(r), '</div>',
-
-'<div class="conclusion">', esc(r.conclusion), '</div>',
 
 '<footer><span>Usos del entorno: datos abiertos © OpenStreetMap contributors.',
 (r.stats.poblacionEsCensal
@@ -658,36 +769,39 @@ columnas(horizontal, [
 '<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
 '<b>URBIS</b> · Análisis de Implantación IA &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
 
-'</div></div></div>',
+'</div></div>',
+
+'</div>',
 // Auto-diagramación: ajusta el contenido para LLENAR exactamente una hoja
 // (lo encoge si sobra y lo agranda si falta, así no quedan espacios en
 // blanco), y en pantalla encaja la hoja completa en el ancho disponible.
 '<script>(function(){',
-'function ajustarHoja(){var h=document.getElementById("hoja"),c=document.getElementById("contenido");',
-'if(!h||!c)return;var disp=h.clientHeight,k=1;',
+// Cada hoja se ajusta por separado: la 1 suele sobrar espacio (y se agranda
+// para llenarla) y la 2 suele ir justa (y se encoge lo necesario).
+'function ajustarUna(h){var c=h.querySelector(".contenido");',
+'if(!c)return;var disp=h.clientHeight,k=1;',
 'for(var i=0;i<18;i++){c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";',
 'var vis=c.scrollHeight*k;if(!vis)break;var nk=k*(disp/vis);',
-// Piso 0.62 en vez de 0.35: por debajo la letra queda en ~2,6 px, ilegible, y
-// como la hoja recorta lo que sobra el texto se cortaba a media frase. Con
-// este piso se prefiere avisar antes que entregar una hoja mutilada.
+// Piso 0.62: por debajo la letra queda ilegible y, como la hoja recorta lo que
+// sobra, el texto se cortaba a media frase. Se prefiere avisar antes que
+// entregar una hoja mutilada.
 'if(nk>1.5)nk=1.5;if(nk<0.62)nk=0.62;if(Math.abs(nk-k)<0.003){k=nk;break;}k=nk;}',
 'c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";',
 'for(var g=0;g<10&&c.scrollHeight*k>disp&&k>0.62;g++){k*=0.985;c.style.width=(100/k)+"%";c.style.transform="scale("+k+")";}',
-// Si aun con el piso el contenido no cabe, se deja constancia visible en vez
-// de recortar en silencio: una hoja que corta una frase a la mitad es peor
-// que una hoja que avisa que se quedó contenido por fuera.
-'if(c.scrollHeight*k>disp+2){var av=document.getElementById("aviso-corte");',
-'if(!av){av=document.createElement("div");av.id="aviso-corte";',
+'if(c.scrollHeight*k>disp+2){var av=h.querySelector(".aviso-corte");',
+'if(!av){av=document.createElement("div");av.className="aviso-corte";',
 'av.style.cssText="position:absolute;left:0;right:0;bottom:0;background:#b91c1c;color:#fff;'+
 'font-size:7.5px;font-weight:800;text-align:center;padding:2px 4px;letter-spacing:.3px";',
 'av.textContent="Contenido extenso: revise el informe completo en la app.";',
 'h.appendChild(av);}}}',
-'function ajustarPantalla(){var m=document.getElementById("marco"),h=document.getElementById("hoja");',
+'function ajustarHoja(){var hs=document.querySelectorAll(".hoja");',
+'for(var i=0;i<hs.length;i++)ajustarUna(hs[i]);}',
+'function ajustarPantalla(){var m=document.getElementById("marco"),h=document.querySelector(".hoja");',
 'if(!m||!h)return;m.style.transform="none";m.style.marginLeft="0px";',
 'var esc=Math.min(1,(window.innerWidth-16)/h.offsetWidth);',
 'm.style.transform="scale("+esc+")";',
 'm.style.marginLeft=Math.max(0,(window.innerWidth-16-h.offsetWidth*esc)/2)+"px";',
-'document.body.style.height=(h.offsetHeight*esc+16)+"px";}',
+'document.body.style.height=(m.scrollHeight*esc+16)+"px";}',
 'function todo(){ajustarHoja();ajustarPantalla();}',
 'window.addEventListener("load",function(){todo();setTimeout(todo,350);});',
 'window.addEventListener("resize",ajustarPantalla);',

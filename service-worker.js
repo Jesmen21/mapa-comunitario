@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v466-procity-fase6-kmz-dxf';
+const URBIS_CACHE = 'urbis-v467-informe-empresas-dos-paginas';
 const URBIS_ASSETS = [
   './',
   './index.html',
