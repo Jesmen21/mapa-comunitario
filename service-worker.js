@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v468-urbis-empresas-nombre-proyecto';
+const URBIS_CACHE = 'urbis-v469-procity-raster-mapa-red-visible';
 const URBIS_ASSETS = [
   './',
   './index.html',

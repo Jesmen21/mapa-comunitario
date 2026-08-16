@@ -35,8 +35,10 @@
     // (null = apagada) y `grupo` filtra QUÉ puntos se conectan ('todos' o
     // una categoría de la Matriz).
     geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0 },
-    // Fase 4 · último análisis de cobertura del suelo del área en curso.
-    raster: null
+    // Fase 4 · último análisis de cobertura del suelo del área en curso, y la
+    // capa donde queda pegada la imagen clasificada sobre el mapa.
+    raster: null,
+    rasterCapa: null
   };
 
   function esc(s){
@@ -308,7 +310,7 @@
       // El calor se filtra por el área: al cerrar una nueva hay que rehacerlo.
       if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
       try { refrescarGeo(); } catch(e){}
-      S.raster = null;
+      S.raster = null; apagarRasterMapa();
     };
     if (m) { m.once('moveend', abrir); setTimeout(abrir, 950); }
     else abrir();
@@ -397,7 +399,7 @@
     // El calor y la geometría se filtran por el área: si el área cambia, se limpian.
     if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
     if (S.geo.tipo) apagarGeo();
-    S.raster = null;
+    S.raster = null; apagarRasterMapa();
   }
 
   // ── Áreas guardadas ─────────────────────────────────────────────────────
@@ -432,7 +434,7 @@
     window.__pcaNombreArea = a.nombre;
     repintar(); pintarBarra(); ajustarVista();
     try { refrescarGeo(); } catch(e){}
-    S.raster = null;
+    S.raster = null; apagarRasterMapa();
     if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
   }
   function borrarArea(id){
@@ -1159,6 +1161,31 @@
     return S.geo.capa;
   }
 
+  // Capa aparte para el raster: si compartiera la de la red de conexiones,
+  // cambiar de geometría (o apagarla) borraría también la imagen de cobertura
+  // pegada sobre el polígono, y son dos cosas independientes en el panel.
+  function capaRaster(){
+    const m = mapa();
+    if (!m || typeof L === 'undefined') return null;
+    if (!S.rasterCapa) S.rasterCapa = L.layerGroup().addTo(m);
+    return S.rasterCapa;
+  }
+
+  // Pega la imagen clasificada (colores por clase) sobre el polígono real del
+  // mapa — antes el resultado del raster solo se veía como texto y barras en
+  // el panel, y al volver al mapa no había ni rastro de la cobertura.
+  function pintarRasterMapa(res){
+    const c = capaRaster();
+    if (!c || !res || !res.overlayImagen) return;
+    c.clearLayers();
+    L.imageOverlay(res.overlayImagen, res.overlayLimites, {
+      opacity: .8, interactive: false, className: 'pca-raster-overlay'
+    }).addTo(c);
+  }
+  function apagarRasterMapa(){
+    if (S.rasterCapa) S.rasterCapa.clearLayers();
+  }
+
   // Puntos de Pro City dentro del área, ya con lat/lng numéricos — insumo
   // común a las tres geometrías. `S.geo.grupo` decide QUÉ se conecta: 'todos'
   // (cualquier cosa mapeada) o una categoría de la Matriz, para poder leer
@@ -1254,10 +1281,12 @@
 
     if (tipo === 'red') {
       const k = pts.length > 60 ? 1 : 2;   // con muchos puntos, menos líneas por nodo
+      // Rojo vivo y trazo grueso a propósito: el morado fino de antes casi no
+      // se distinguía del mapa base. Esto se tiene que notar de un vistazo.
       redVecinos(pts, k).forEach(([a, b]) => {
-        L.polyline([a, b], { color: '#a855f7', weight: 1.6, opacity: .65, className: 'pca-geo-linea' }).addTo(c);
+        L.polyline([a, b], { color: '#ff1f3d', weight: 3.5, opacity: .9, className: 'pca-geo-linea' }).addTo(c);
       });
-      pts.forEach(p => L.circleMarker(p, { radius: 3, color: '#a855f7', weight: 0, fillOpacity: .9 }).addTo(c));
+      pts.forEach(p => L.circleMarker(p, { radius: 4.5, color: '#ff1f3d', weight: 0, fillOpacity: .95 }).addTo(c));
 
     } else if (tipo === 'hull') {
       const hull = envolventeConvexa(pts);
@@ -1442,24 +1471,53 @@
           cx.drawImage(img, 0, 0, w, h);
           const datos = cx.getImageData(0, 0, w, h).data;
 
+          // Lienzo gemelo: mismo tamaño, pero en vez de guardar el píxel de la
+          // foto guarda el COLOR DE LA CLASE — esto es lo que luego se pega
+          // sobre el mapa como overlay, para que el raster no se quede solo
+          // en la lista de porcentajes del panel.
+          const cvClas = document.createElement('canvas');
+          cvClas.width = w; cvClas.height = h;
+          const cxClas = cvClas.getContext('2d');
+          const imgClas = cxClas.createImageData(w, h);
+          const RGB = {
+            verde:      [34, 197, 94],
+            construido: [148, 163, 184],
+            agua:       [59, 130, 246],
+            mixto:      [201, 162, 106]
+          };
+          // Opacidad visible pero que deja intuir el satelital de fondo.
+          const ALPHA = 176;
+
           const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
           let dentro = 0;
           for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
               const c = latLngDePixel(x, y, w, h, caja);
-              if (!dentroDelPoligono(c.lat, c.lng, S.pts)) continue;
-              dentro++;
               const i = (y * w + x) * 4;
-              cuenta[clasificarPixel(datos[i], datos[i+1], datos[i+2])]++;
+              if (!dentroDelPoligono(c.lat, c.lng, S.pts)) {
+                imgClas.data[i + 3] = 0;   // fuera del área: transparente del todo
+                continue;
+              }
+              dentro++;
+              const clase = clasificarPixel(datos[i], datos[i+1], datos[i+2]);
+              cuenta[clase]++;
+              const rgb = RGB[clase];
+              imgClas.data[i] = rgb[0]; imgClas.data[i+1] = rgb[1]; imgClas.data[i+2] = rgb[2];
+              imgClas.data[i + 3] = ALPHA;
             }
           }
           if (!dentro) { reject(new Error('El área es demasiado pequeña para analizarla.')); return; }
+          cxClas.putImageData(imgClas, 0, 0);
 
           const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
           const m2 = areaM2(S.pts);
           const sup = k => Math.round(m2 * cuenta[k] / dentro);
           resolve({
             pixeles: dentro, imagen: cv.toDataURL('image/png'),
+            overlayImagen: cvClas.toDataURL('image/png'),
+            // Límites en (sur,oeste)-(norte,este): lo que necesita Leaflet
+            // para clavar la imagen del overlay en su sitio exacto del mapa.
+            overlayLimites: [[caja.s, caja.o], [caja.n, caja.e]],
             clases: [
               { id:'verde',      etq:'Vegetación viva',      ico:'🌳', color:'#22c55e',
                 pct:pct('verde'), m2:sup('verde'), fiable:true,
@@ -1514,6 +1572,7 @@
         'donde teja, concreto envejecido, suelo y matorral seco son indistinguibles por color. ' +
         'Sirve para dimensionar y comparar sectores, no para certificar.</small></div>';
     S.raster = res;
+    pintarRasterMapa(res);
   }
 
   function bloqueRaster(){
