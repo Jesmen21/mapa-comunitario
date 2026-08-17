@@ -341,6 +341,7 @@
     (Array.isArray(data) ? data : []).forEach(p => {
       if(typeof window.esFilaMetaUrbis === 'function' && window.esFilaMetaUrbis(p)) { return; } // nunca pintar ubicacion_/comentario/relacion/etc.
       if(typeof window.urbisEsEventoAurea === 'function' && window.urbisEsEventoAurea(p)) { return; } // la gota Áurea la dibuja el renderizador FORZADO (capa propia siempre visible)
+      if(typeof window.urbisEsAlertaNacional === 'function' && window.urbisEsAlertaNacional(p)) { return; } // ídem: las alertas nacionales van en su capa propia, siempre montada
       if(p && URBIS_TIPOS_AUTOMAPEO.has(String(p.tipo || ''))) { return; } // ocultar usos/auto-mapeo
       // URBIS_TIPOS_AUTOMAPEO (arriba) es una lista más vieja/incompleta —
       // le faltan 4 categorías de Pro City (Áreas Verdes, Salud y Emergencias,

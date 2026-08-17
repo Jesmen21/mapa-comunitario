@@ -742,8 +742,11 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
   display:flex; align-items:flex-start; justify-content:center;
   transform-origin:50% 94%; transition:transform .25s ease;
 }
+/* Tamaño con !important: hay reglas de tema/marcadores más adelante en el
+   bundle que pisaban tanto el width como el transform de este contenedor. */
 .urbis-alerta .al-img{
-  position:relative; z-index:3; width:70px; height:84px; object-fit:contain;
+  position:relative; z-index:3;
+  width:70px !important; height:84px !important; object-fit:contain;
   filter:drop-shadow(0 5px 10px rgba(120,0,10,.55));
   animation:urbisColBob 2.4s ease-in-out infinite;
 }
@@ -765,9 +768,11 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 }
 @media (prefers-reduced-motion:reduce){ .urbis-alerta .al-ring, .urbis-alerta .al-glow, .urbis-alerta .al-img{ animation:none; } }
 /* Al alejar el mapa los marcadores normales se ocultan; la alerta hace lo
-   contrario y CRECE, que es cuando más tiene que verse (país entero a la vista). */
-body.urbis-zoom-fade-markers .urbis-alerta{ transform:scale(1.15); }
-body.urbis-zoom-hide-markers .urbis-alerta{ transform:scale(1.35); }
+   contrario y CRECE, que es cuando más tiene que verse (país entero a la vista).
+   Se agranda la imagen en vez de usar transform: el transform del contenedor
+   lo pisaba otra regla del bundle y además desalineaba la punta de la gota. */
+body.urbis-zoom-fade-markers .urbis-alerta .al-img{ width:84px !important; height:100px !important; }
+body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:96px !important; height:115px !important; }
 
 /* Ficha de la alerta nacional */
 .urbis-alerta-popup .alerta-popup{ text-align:left; }

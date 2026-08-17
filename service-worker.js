@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v474-alerta-sin-mancha-ficha-completa';
+const URBIS_CACHE = 'urbis-v475-alertas-capa-propia-siempre-visible';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -70,6 +70,7 @@ const URBIS_ASSETS = [
   './js/12-spa-ui.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
+  './js/50-alerta-forzado.js',
   './js/14-advanced-tools.js',
   './js/15-role-accessibility-layers.js',
   './js/16-achievements.js',
