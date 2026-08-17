@@ -780,8 +780,13 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
    Además heredaba el tema OSCURO de .urbis-popup mientras el texto se pintaba
    casi negro, así que no se leía nada. Ahora es un panel fijo, con los verdes
    de la marca URBIS y texto claro de alto contraste. */
+/* OJO con el z-index: esta app apila sus paneles cerca del máximo de 32 bits
+   (hoja de capas 2147483292, barra inferior 2147483270, modales de auth
+   2147483600+). Un valor "normal" como 100000 dejaba la ficha DEBAJO del mapa
+   y parecía que el clic no hacía nada. Se elige un valor que gane al mapa y a
+   la navegación, pero que siga por debajo de los modales de autenticación. */
 #urbis-alerta-ficha{
-  position:fixed; z-index:100000; left:50%; top:14vh; transform:translateX(-50%);
+  position:fixed; z-index:2147483400; left:50%; top:14vh; transform:translateX(-50%);
   width:min(92vw, 380px); max-height:72vh; display:flex; flex-direction:column;
   background:var(--brand-forest, #0F3D2E);
   border:2px solid var(--brand-green, #1E7A4B);
