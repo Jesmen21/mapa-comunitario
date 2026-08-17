@@ -16,6 +16,17 @@
   const ITEMS_SEG = ['inseguridad','robo','hurto','pandillas','peligro','zona peligrosa','conflicto','guerrilla','droga','preventiva','sismo','ciclón','ciclon','tsunami','tormenta','geológico','geologico'];
   const ITEMS_AGUA = ['inundación','inundacion','drenaje','fuga','agua','lluvia'];
 
+  // Alertas nacionales (sismo/incendio forestal publicadas por el equipo URBIS):
+  // se dibujan con gota propia grande y NO llevan zona de impacto. El círculo
+  // de impacto es una referencia de barrio (15-100 m); en una catástrofe
+  // regional no significa nada y, al alejar el mapa, quedaba como una "mancha"
+  // roja/naranja translúcida — justo lo que el usuario veía en vez del icono.
+  function esAlertaNacionalItem(item){
+    return /^(sismo|terremoto|incendio forestal)$/i.test(
+      String(item || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim()
+    );
+  }
+
   function clasificarImpacto(tipo, elemento) {
     const el = (elemento || '').toLowerCase();
     if(TIPOS_VIA.has(tipo) || ITEMS_VIA.some(k => el.includes(k))) return 'via';
@@ -77,6 +88,8 @@
 
   function dibujarZonaImpacto(lat, lng, tipo, elemento) {
     if(typeof zonaImpactoLayer === 'undefined') return;
+    // Las alertas nacionales no llevan círculo: su gota ya es la referencia.
+    if(esAlertaNacionalItem(elemento)) return;
     const clase = clasificarImpacto(tipo, elemento);
     const D = 0.000045; // ~5 metros en grados
 
@@ -213,23 +226,21 @@
     // Esta gota usa su propia clase raíz ('urbis-alerta-root'), que esa hoja
     // de estilos no toca, así que queda visible y grande sin importar qué
     // tanto se aleje — igual que ya hace la gota Áurea dorada.
-    const esAlertaNacional = /^(sismo|terremoto|incendio forestal)$/i.test(_quitarAc(d[0]).trim());
+    const esAlertaNacional = esAlertaNacionalItem(d[0]);
     if (esAlertaNacional) {
-      // Iconos propios del usuario (gota temática) en vez del emoji genérico.
-      // El de sismo viene con fondo negro de la generación IA: se le quita
-      // con mix-blend-mode:screen (el negro no aporta luz, así que "desaparece"
-      // contra el mapa) en vez de reprocesar el PNG. El de incendio forestal
-      // ya tiene fondo transparente.
+      // Iconos propios del usuario (gota temática), ya recortados con fondo
+      // transparente. El tamaño real lo maneja el CSS: al alejar el mapa la
+      // gota CRECE en vez de esconderse, porque es noticia de escala nacional
+      // y tiene que llamar la atención justo cuando se ve el país entero.
       const esSismo = /sismo|terremoto/i.test(_quitarAc(d[0]).trim());
       const srcAlerta = esSismo ? 'assets/icons/alerta-sismo.png' : 'assets/icons/alerta-incendio-forestal.png';
-      const claseImg = esSismo ? 'al-img al-img-sismo' : 'al-img';
-      const html = `<div class="urbis-alerta" style="position:relative;width:78px;height:92px;display:flex;align-items:center;justify-content:center;">`+
+      const html = `<div class="urbis-alerta">`+
         `<span class="al-ring"></span><span class="al-ring al-ring2"></span><span class="al-glow"></span>`+
-        `<img src="${srcAlerta}" class="${claseImg}" width="66" height="80" style="position:relative;z-index:3;filter:drop-shadow(0 5px 10px rgba(120,0,10,.55));object-fit:contain;" />`+
+        `<img src="${srcAlerta}" class="al-img" alt="" />`+
         `<span class="al-flag">URBIS · ALERTA</span>`+
       `</div>`;
       marker = L.marker([lat, lng], {
-        icon: L.divIcon({ className: 'urbis-alerta-root', html, iconSize:[78,92], iconAnchor:[39,86], popupAnchor:[0,-78] }),
+        icon: L.divIcon({ className: 'urbis-alerta-root', html, iconSize:[78,96], iconAnchor:[39,90], popupAnchor:[0,-82] }),
         zIndexOffset: 3000
       });
     } else if (esPremium) {
@@ -331,6 +342,25 @@
           ${popupOwnerBtns}
         </div>
       `, { maxWidth: 300, minWidth: 250, className: 'urbis-popup urbis-coliseo-popup' });
+    } else if (esAlertaNacional) {
+      // Ficha de alerta nacional: la nota (d[2]) trae los datos verificados
+      // separados por ';;' (magnitud, profundidad, víctimas, hectáreas…), que
+      // aquí se listan uno por línea. Se muestran las cifras oficiales con su
+      // fecha de corte, para no dar por permanente un balance que aún cambia.
+      const lineas = String(d[2] || '').split(';;').map(s => s.trim()).filter(Boolean);
+      const detalleHTML = lineas.length
+        ? `<ul class="al-datos">${lineas.map(l => `<li>${l}</li>`).join('')}</ul>`
+        : '';
+      marker.bindPopup(`
+        <div class="alerta-popup">
+          <div class="al-badge">🚨 ALERTA NACIONAL · URBIS</div>
+          <div class="al-title">${d[1] || d[0]}</div>
+          ${detalleHTML}
+          <div class="popup-author">👤 <b>${creadorNombre}</b></div>
+          ${popupComentarBtn}
+          ${popupOwnerBtns}
+        </div>
+      `, { maxWidth: 320, minWidth: 260, className: 'urbis-popup urbis-alerta-popup' });
     } else {
       marker.bindPopup(`
         <div class="popup-header" style="color:${markerColor}">${p.tipo}</div>
