@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v469-procity-raster-mapa-red-visible';
+const URBIS_CACHE = 'urbis-v470-alertas-sismo-incendio-forestal';
 const URBIS_ASSETS = [
   './',
   './index.html',

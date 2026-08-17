@@ -2128,6 +2128,10 @@
       items:[
         ['cyclone','🌪️','Ciclón','🌪️ Desastres Naturales y Clima'],
         ['earthquake','🌎','Sismo','🌪️ Desastres Naturales y Clima'],
+        // Distinto del genérico "Incendio o humo visible" (un conato local):
+        // esto es para una emergencia forestal de varias hectáreas, que la
+        // comunidad necesita ver activa por días, no por horas.
+        ['wildfire','🔥🌲','Incendio forestal','🌪️ Desastres Naturales y Clima'],
         ['storm','⛈️','Tormenta','🌪️ Desastres Naturales y Clima'],
         ['tsunami-wave','🌊','Tsunami','🌪️ Desastres Naturales y Clima'],
         ['geological-damage','⛰️','Daño geológico','⛰️ Riesgos del Terreno'],

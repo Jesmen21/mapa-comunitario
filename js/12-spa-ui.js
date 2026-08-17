@@ -247,7 +247,8 @@
     // Pedido explícito: un atentado/artefacto explosivo debe seguir visible
     // más tiempo que un reporte normal (24h en vez de las 8h por defecto) —
     // es información de seguridad que la comunidad necesita ver más tiempo.
-    const horasTTLQuick = /atentado|artefacto explosivo/i.test(String(i||'')) ? 24 : 8;
+    const horasTTLQuick = /atentado|artefacto explosivo/i.test(String(i||'')) ? 24
+      : /sismo|terremoto|incendio forestal/i.test(String(i||'')) ? 168 : 8;
     let descripcionFinal = (ctxForm.quickReport && typeof asegurarCamposTemporalesPersonalizados === 'function')
         ? asegurarCamposTemporalesPersonalizados(arrData.join(' | '), cat, i, fechaCreacion, horasTTLQuick, ctxForm.quickIcon || obtenerIconoReporte(cat, i) || 'Reporte')
         : asegurarCamposTemporales(arrData.join(' | '), cat, i, fechaCreacion);

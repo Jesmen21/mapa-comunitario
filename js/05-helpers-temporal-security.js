@@ -156,7 +156,12 @@
       const creadoISO = d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET] || fechaBase.toISOString();
       // Pedido explícito: atentado/artefacto explosivo dura 24h en vez de
       // las 8h normales — es información de seguridad, debe verse más tiempo.
-      const horasTTL = /atentado|artefacto explosivo/i.test(String(item||'')) ? 24 : TTL_HORAS_REPORTES_TEMPORALES;
+      // Sismo/terremoto e incendio forestal: catástrofes de escala regional
+      // que la comunidad sigue necesitando ver días después, no horas — una
+      // semana (168h), a criterio del equipo, en vez de las 8h normales.
+      const horasTTL = /atentado|artefacto explosivo/i.test(String(item||'')) ? 24
+        : /sismo|terremoto|incendio forestal/i.test(String(item||'')) ? 168
+        : TTL_HORAS_REPORTES_TEMPORALES;
       const expiraISO = d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 1] || (temporal ? new Date(new Date(creadoISO).getTime() + horasTTL * 60 * 60 * 1000).toISOString() : 'N/A');
       d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET] = creadoISO;
       d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 1] = expiraISO;
@@ -417,6 +422,7 @@
       if(texto.includes('hueco') || texto.includes('bache')) return { emoji: '🕳️', clase: 'waze-hole', label: 'Hueco' };
       if(texto.includes('derrumbe') || texto.includes('deslizamiento')) return { emoji: '⛰️', clase: 'waze-landslide', label: 'Derrumbe' };
       if(texto.includes('incendio') || texto.includes('humo') || texto.includes('quema')) return { emoji: '🔥', clase: 'waze-fire', label: 'Incendio' };
+      if(texto.includes('sismo') || texto.includes('terremoto')) return { emoji: '🌎', clase: 'waze-danger', label: 'Sismo', forzarEmoji: true };
       if(texto.includes('árbol') || texto.includes('arbol')) return { emoji: '🌳', clase: 'waze-tree', label: 'Árbol' };
       if(texto.includes('semáforo') || texto.includes('semaforo')) return { emoji: '🚦', clase: 'waze-semaforo', label: 'Semáforo' };
       if(texto.includes('poste') || texto.includes('alumbrado') || texto.includes('luminaria') || texto.includes('luz')) return { emoji: '💡', clase: 'waze-light', label: 'Alumbrado' };
