@@ -19,9 +19,6 @@ body.urbis-zoom-hide-markers .leaflet-tooltip {
   display: none !important;
 }
 
-/* Excepción: las alertas nacionales (sismo/incendio forestal) siguen visibles
-   al alejar el mapa, así que su ficha TAMBIÉN debe poder abrirse ahí. Sin esto
-   el marcador se ve pero al tocarlo no aparece nada. */
-body.urbis-zoom-hide-markers .leaflet-popup.urbis-alerta-popup {
-  display: block !important;
-}
+/* Las alertas nacionales ya no usan popup de Leaflet: abren su propia ventana
+   movible (#urbis-alerta-ficha), que vive fuera del mapa y no le afecta esta
+   regla. */

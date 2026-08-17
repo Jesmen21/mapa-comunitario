@@ -343,24 +343,10 @@
         </div>
       `, { maxWidth: 300, minWidth: 250, className: 'urbis-popup urbis-coliseo-popup' });
     } else if (esAlertaNacional) {
-      // Ficha de alerta nacional: la nota (d[2]) trae los datos verificados
-      // separados por ';;' (magnitud, profundidad, víctimas, hectáreas…), que
-      // aquí se listan uno por línea. Se muestran las cifras oficiales con su
-      // fecha de corte, para no dar por permanente un balance que aún cambia.
-      const lineas = String(d[2] || '').split(';;').map(s => s.trim()).filter(Boolean);
-      const detalleHTML = lineas.length
-        ? `<ul class="al-datos">${lineas.map(l => `<li>${l}</li>`).join('')}</ul>`
-        : '';
-      marker.bindPopup(`
-        <div class="alerta-popup">
-          <div class="al-badge">🚨 ALERTA NACIONAL · URBIS</div>
-          <div class="al-title">${d[1] || d[0]}</div>
-          ${detalleHTML}
-          <div class="popup-author">👤 <b>${creadorNombre}</b></div>
-          ${popupComentarBtn}
-          ${popupOwnerBtns}
-        </div>
-      `, { maxWidth: 320, minWidth: 260, className: 'urbis-popup urbis-alerta-popup' });
+      // Sin bindPopup: la alerta abre su propia ventana movible/cerrable
+      // (window.urbisAbrirFichaAlerta, en js/50-alerta-forzado.js). Un popup de
+      // Leaflet queda anclado al marcador y en móvil se salía de la pantalla
+      // sin forma de cerrarlo.
     } else {
       marker.bindPopup(`
         <div class="popup-header" style="color:${markerColor}">${p.tipo}</div>

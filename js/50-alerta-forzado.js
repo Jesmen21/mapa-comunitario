@@ -62,6 +62,113 @@
     return undefined;
   }
 
+  // ── Ficha movible ─────────────────────────────────────────────────────────
+  // Panel único (se reutiliza) con cabecera arrastrable, botón de cerrar y
+  // cuerpo con scroll propio, para que nunca se salga de la pantalla.
+  var _ficha = null;
+
+  function construirFicha() {
+    if (_ficha) return _ficha;
+    var d = document.createElement('div');
+    d.id = 'urbis-alerta-ficha';
+    d.hidden = true;
+    d.innerHTML =
+      '<div class="af-head">' +
+        '<span class="af-grip">⋮⋮</span>' +
+        '<span class="af-badge">🚨 ALERTA NACIONAL · URBIS</span>' +
+        '<button type="button" class="af-close" aria-label="Cerrar">✕</button>' +
+      '</div>' +
+      '<div class="af-body">' +
+        '<h3 class="af-title"></h3>' +
+        '<ul class="af-datos"></ul>' +
+        '<div class="af-autor"></div>' +
+      '</div>';
+    document.body.appendChild(d);
+
+    d.querySelector('.af-close').addEventListener('click', function (e) {
+      e.stopPropagation();
+      cerrarFicha();
+    });
+
+    // Arrastre con Pointer Events: sirve igual con dedo y con mouse.
+    var head = d.querySelector('.af-head');
+    var arrastrando = false, dx = 0, dy = 0;
+    head.addEventListener('pointerdown', function (ev) {
+      if (ev.target.closest('.af-close')) return;
+      var r = d.getBoundingClientRect();
+      // Al empezar a arrastrar fijamos left/top reales y soltamos el centrado
+      // por transform, si no el panel "saltaría" media pantalla al primer toque.
+      d.style.transform = 'none';
+      d.style.left = r.left + 'px';
+      d.style.top = r.top + 'px';
+      dx = ev.clientX - r.left;
+      dy = ev.clientY - r.top;
+      arrastrando = true;
+      try { head.setPointerCapture(ev.pointerId); } catch (e) {}
+      ev.preventDefault();
+    });
+    head.addEventListener('pointermove', function (ev) {
+      if (!arrastrando) return;
+      var w = d.offsetWidth, h = d.offsetHeight;
+      // Se deja siempre un trozo visible para que no se pueda "perder" fuera.
+      var x = Math.min(Math.max(ev.clientX - dx, 8 - w + 60), window.innerWidth - 60);
+      var y = Math.min(Math.max(ev.clientY - dy, 4), window.innerHeight - 44);
+      d.style.left = x + 'px';
+      d.style.top = y + 'px';
+    });
+    function soltar(ev) {
+      if (!arrastrando) return;
+      arrastrando = false;
+      try { head.releasePointerCapture(ev.pointerId); } catch (e) {}
+    }
+    head.addEventListener('pointerup', soltar);
+    head.addEventListener('pointercancel', soltar);
+
+    // Escape también cierra (escritorio).
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !d.hidden) cerrarFicha();
+    });
+
+    _ficha = d;
+    return d;
+  }
+
+  function cerrarFicha() {
+    if (_ficha) _ficha.hidden = true;
+  }
+  window.urbisCerrarFichaAlerta = cerrarFicha;
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function abrirFicha(p) {
+    var d = construirFicha();
+    var campos = String(p.descripcion || '').split(' | ');
+    var titulo = campos[1] || campos[0] || 'Alerta';
+    // La nota trae los datos verificados separados por ';;' (magnitud,
+    // profundidad, víctimas, hectáreas…): una línea por dato.
+    var lineas = String(campos[2] || '').split(';;')
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    var autor = campos[45] || 'URBIS';
+
+    d.querySelector('.af-title').textContent = titulo;
+    d.querySelector('.af-datos').innerHTML =
+      lineas.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('');
+    d.querySelector('.af-autor').textContent = '👤 ' + autor;
+
+    // Reposicionar al centro cada vez que se abre (por si quedó arrastrada
+    // fuera de vista en una apertura anterior).
+    d.style.left = '50%';
+    d.style.top = '14vh';
+    d.style.transform = 'translateX(-50%)';
+    d.querySelector('.af-body').scrollTop = 0;
+    d.hidden = false;
+  }
+  window.urbisAbrirFichaAlerta = abrirFicha;
+
   function render() {
     var m = getMap();
     if (!m) return;
@@ -92,7 +199,19 @@
       if (_rendered[key]) return;
       try {
         var marker = window.urbisCrearMarcadorUrbano(lat, lng, dimKeyDe(p), p);
-        if (marker) { marker.addTo(layer); _rendered[key] = marker; }
+        if (marker) {
+          // crearMarcadorUrbano deja su propio handler (abre el panel genérico
+          // de detalles). Para las alertas lo reemplazamos por la ficha movible.
+          try { marker.off('click'); } catch (e) {}
+          (function (punto) {
+            marker.on('click', function (ev) {
+              try { L.DomEvent.stopPropagation(ev); } catch (e) {}
+              abrirFicha(punto);
+            });
+          })(p);
+          marker.addTo(layer);
+          _rendered[key] = marker;
+        }
       } catch (e) {}
     });
 

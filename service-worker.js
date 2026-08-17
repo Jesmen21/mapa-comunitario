@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v475-alertas-capa-propia-siempre-visible';
+const URBIS_CACHE = 'urbis-v476-alerta-icono-menor-ficha-movible';
 const URBIS_ASSETS = [
   './',
   './index.html',
