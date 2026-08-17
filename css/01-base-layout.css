@@ -737,8 +737,12 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
    TODO marcador normal al alejar el mapa) no la toca. Se pidió explícitamente
    que sea grande y llamativa: es noticia de impacto, no un reporte de barrio. */
 .urbis-alerta-root{ background:transparent !important; border:none !important; }
-.urbis-alerta{ position:relative; width:74px; height:86px; display:flex; align-items:flex-start; justify-content:center; }
-.urbis-alerta .al-gota{ animation:urbisColBob 2.4s ease-in-out infinite; }
+.urbis-alerta{ position:relative; width:78px; height:92px; display:flex; align-items:flex-start; justify-content:center; }
+.urbis-alerta .al-img{ animation:urbisColBob 2.4s ease-in-out infinite; }
+/* El PNG de sismo trae fondo negro (generado por IA); screen hace que el
+   negro no aporte nada al componer sobre el mapa, quedando "transparente"
+   sin tener que reprocesar el archivo. El de incendio ya es transparente. */
+.urbis-alerta .al-img-sismo{ mix-blend-mode:screen; }
 .urbis-alerta .al-glow{
   position:absolute; left:50%; top:38px; width:64px; height:64px; margin:-32px 0 0 -32px;
   border-radius:50%; background:radial-gradient(circle, rgba(225,29,46,.55), rgba(225,29,46,.22) 60%, transparent 74%);
@@ -755,7 +759,7 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
   background:#7a0f1a; color:#fff; font-size:8.5px; font-weight:900; letter-spacing:.4px;
   padding:2px 7px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.4); z-index:4;
 }
-@media (prefers-reduced-motion:reduce){ .urbis-alerta .al-ring, .urbis-alerta .al-glow, .urbis-alerta .al-gota{ animation:none; } }
+@media (prefers-reduced-motion:reduce){ .urbis-alerta .al-ring, .urbis-alerta .al-glow, .urbis-alerta .al-img{ animation:none; } }
 
 /* ═══ Juego PREMIUM "Evento Áurea" (mismo juego, tema dorado + tabla por evento) ═══ */
 #urbis-game-tap.gt-premium { background:radial-gradient(circle at 50% 0%, #3a2a05, #120c02) !important; }

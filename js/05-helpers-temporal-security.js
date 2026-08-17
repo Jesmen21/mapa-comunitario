@@ -157,10 +157,11 @@
       // Pedido explícito: atentado/artefacto explosivo dura 24h en vez de
       // las 8h normales — es información de seguridad, debe verse más tiempo.
       // Sismo/terremoto e incendio forestal: catástrofes de escala regional
-      // que la comunidad sigue necesitando ver días después, no horas — una
-      // semana (168h), a criterio del equipo, en vez de las 8h normales.
+      // que la comunidad sigue necesitando ver días después, no horas — dos
+      // semanas (336h; ajustado de 168h a pedido explícito), en vez de las
+      // 8h normales.
       const horasTTL = /atentado|artefacto explosivo/i.test(String(item||'')) ? 24
-        : /sismo|terremoto|incendio forestal/i.test(String(item||'')) ? 168
+        : /sismo|terremoto|incendio forestal/i.test(String(item||'')) ? 336
         : TTL_HORAS_REPORTES_TEMPORALES;
       const expiraISO = d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 1] || (temporal ? new Date(new Date(creadoISO).getTime() + horasTTL * 60 * 60 * 1000).toISOString() : 'N/A');
       d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET] = creadoISO;

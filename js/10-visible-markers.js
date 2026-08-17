@@ -215,18 +215,21 @@
     // tanto se aleje — igual que ya hace la gota Áurea dorada.
     const esAlertaNacional = /^(sismo|terremoto|incendio forestal)$/i.test(_quitarAc(d[0]).trim());
     if (esAlertaNacional) {
-      const emojiAlerta = (iconoWaze && iconoWaze.emoji) || '🚨';
-      const html = `<div class="urbis-alerta" style="position:relative;width:74px;height:86px;display:flex;align-items:center;justify-content:center;">`+
+      // Iconos propios del usuario (gota temática) en vez del emoji genérico.
+      // El de sismo viene con fondo negro de la generación IA: se le quita
+      // con mix-blend-mode:screen (el negro no aporta luz, así que "desaparece"
+      // contra el mapa) en vez de reprocesar el PNG. El de incendio forestal
+      // ya tiene fondo transparente.
+      const esSismo = /sismo|terremoto/i.test(_quitarAc(d[0]).trim());
+      const srcAlerta = esSismo ? 'assets/icons/alerta-sismo.png' : 'assets/icons/alerta-incendio-forestal.png';
+      const claseImg = esSismo ? 'al-img al-img-sismo' : 'al-img';
+      const html = `<div class="urbis-alerta" style="position:relative;width:78px;height:92px;display:flex;align-items:center;justify-content:center;">`+
         `<span class="al-ring"></span><span class="al-ring al-ring2"></span><span class="al-glow"></span>`+
-        `<svg class="al-gota" viewBox="0 0 100 136" width="58" height="79" style="position:relative;z-index:3;filter:drop-shadow(0 5px 10px rgba(120,0,10,.55));">`+
-          `<path d="M50 4 C75 4 96 25 96 51 C96 79 68 98 52 130 C51 132 49 132 48 130 C32 98 4 79 4 51 C4 25 25 4 50 4 Z" fill="#e11d2e" stroke="#7a0f1a" stroke-width="4"/>`+
-          `<circle cx="50" cy="50" r="30" fill="#ffffff"/>`+
-          `<text x="50" y="61" text-anchor="middle" font-size="34">${emojiAlerta}</text>`+
-        `</svg>`+
+        `<img src="${srcAlerta}" class="${claseImg}" width="66" height="80" style="position:relative;z-index:3;filter:drop-shadow(0 5px 10px rgba(120,0,10,.55));object-fit:contain;" />`+
         `<span class="al-flag">URBIS · ALERTA</span>`+
       `</div>`;
       marker = L.marker([lat, lng], {
-        icon: L.divIcon({ className: 'urbis-alerta-root', html, iconSize:[74,86], iconAnchor:[37,80], popupAnchor:[0,-72] }),
+        icon: L.divIcon({ className: 'urbis-alerta-root', html, iconSize:[78,92], iconAnchor:[39,86], popupAnchor:[0,-78] }),
         zIndexOffset: 3000
       });
     } else if (esPremium) {

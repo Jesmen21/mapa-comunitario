@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v472-fix-window-map-referencia-real';
+const URBIS_CACHE = 'urbis-v473-iconos-alerta-reales-14dias';
 const URBIS_ASSETS = [
   './',
   './index.html',
