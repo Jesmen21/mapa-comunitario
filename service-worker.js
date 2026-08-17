@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v478-boton-toda-colombia-icono-filtro';
+const URBIS_CACHE = 'urbis-v479-alertas-respetan-el-filtro';
 const URBIS_ASSETS = [
   './',
   './index.html',

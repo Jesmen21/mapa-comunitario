@@ -4387,7 +4387,25 @@
         else{ if(!map.hasLayer(layer)) map.addLayer(layer); }
       });
     }catch(e){}
+    // Las alertas nacionales viven en su PROPIA capa (js/50-alerta-forzado.js),
+    // fuera de `capas`, así que el bucle de arriba no las tocaba y seguían
+    // visibles con "Ocultar todos". Se les avisa para que se repinten según el
+    // filtro; sin esto el filtro parecía roto.
+    try{ if(typeof window.urbisRenderAlertasForzado === 'function') window.urbisRenderAlertasForzado(); }catch(e){}
   }
+
+  // Predicado ÚNICO del filtro ciudadano (categoría + viaje en el tiempo), para
+  // que cualquier capa que dibuje por fuera de pintarPuntos aplique exactamente
+  // las mismas reglas y no se desincronice de los chips.
+  window.urbisPasaFiltroCiudadano = function(p){
+    try{
+      const tipo = String((p && p.tipo) || '');
+      if(window.urbisCitizenFilterHidden && window.urbisCitizenFilterHidden.has(tipo)) return false;
+      const tf = window.urbisCitizenTimeFilter;
+      if(tf && tf.active) return urbisPointInTimeRange(p, urbisTimeRangeFor(tf));
+      return true;
+    }catch(e){ return true; }
+  };
 
   function showCitizenFilterSheet(){
     const mapScreen = app.querySelector('[data-u52-screen="map"]');

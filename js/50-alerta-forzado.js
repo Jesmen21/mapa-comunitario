@@ -2,15 +2,18 @@
 // URBIS · Renderizador FORZADO de las alertas nacionales (sismo / incendio)
 // --------------------------------------------------------------------------
 // Mismo problema que la gota Áurea: pintarPuntos mete cada marcador en la capa
-// de su "dimensión" (capas[dimKey]) y aplicarCapasSegunZoom desmonta esa capa
-// si su casilla está desactivada. Como "🌪️ Desastres Naturales y Clima" no es
-// una dimensión propia, la alerta caía en la capa por defecto y desaparecía
-// con ella — mientras la zona de impacto (otra capa) sí seguía viéndose: de ahí
-// que solo quedara la "mancha" y ningún icono.
+// de su "dimensión" (capas[dimKey]), y esa capa se desmonta del mapa cuando su
+// casilla está apagada o cuando el optimizador de zoom la retira. La alerta
+// desaparecía con ella, mientras la zona de impacto (otra capa) seguía
+// viéndose: de ahí que solo quedara la "mancha" y ningún icono.
 //
 // Estas alertas son noticia de escala nacional: se dibujan en una CAPA PROPIA
 // siempre montada, para que cualquiera las vea desde lejos y pueda abrir su
-// ficha. Reusa el icono + popup de crearMarcadorUrbano.
+// ficha. Reusa el icono de crearMarcadorUrbano.
+//
+// OJO: estar en capa propia NO las exime del filtro ciudadano. El render
+// consulta window.urbisPasaFiltroCiudadano (js/20) para respetar los chips de
+// categoría y el viaje en el tiempo, igual que cualquier otro reporte.
 // ==========================================================================
 (function () {
   'use strict';
@@ -182,6 +185,13 @@
     var vistos = {};
     data.forEach(function (p) {
       if (!esAlertaNacional(p)) return;
+      // Respetar el filtro ciudadano (chips de categoría + viaje en el tiempo).
+      // Estar en capa propia sirve para que el zoom no las esconda, pero NO
+      // debe volverlas inmunes al filtro: si el usuario apaga "Desastres
+      // Naturales y Clima" u "Ocultar todos", tienen que desaparecer.
+      try {
+        if (typeof window.urbisPasaFiltroCiudadano === 'function' && !window.urbisPasaFiltroCiudadano(p)) return;
+      } catch (e) {}
       // Vencida (pasaron sus 14 días) o archivada: deja de dibujarse, pero
       // sigue guardada en la base para el histórico / línea de tiempo.
       try {
@@ -221,6 +231,10 @@
         delete _rendered[key];
       }
     });
+
+    // Si el filtro dejó el mapa sin alertas, la ficha abierta ya no
+    // corresponde a nada visible: se cierra para no dejarla huérfana.
+    if (!Object.keys(_rendered).length) cerrarFicha();
   }
   window.urbisRenderAlertasForzado = render;
 
