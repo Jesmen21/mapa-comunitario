@@ -1586,8 +1586,19 @@
         u.usuario = (typeof normalizeUsername === 'function') ? normalizeUsername(rawLogin) : rawLogin.trim().toLowerCase();
       }
       if(!u.nombre_completo && u.usuario) u.nombre_completo = u.usuario;
+      // El rol de administrador ahora puede venir del BACKEND (cuenta de
+      // sistema creada con docs/apps-script-cuentas-sistema.txt), no solo del
+      // atajo con credenciales incrustadas en js/00-config.js — que son
+      // públicas por estar en un archivo del navegador. Con esto una cuenta
+      // como "urbisnoticia" entra por el login normal y queda como admin.
+      const rolServidor = String(u.rol || u.rol_solicitado || '').toLowerCase();
+      if(rolServidor === 'admin'){
+        u.rol = 'admin';
+        try{ if(typeof window.urbisActivarModoAdmin === 'function') window.urbisActivarModoAdmin(); }catch(e){}
+      }
       saveSession(u);
       startSession(u);
+      if(rolServidor === 'admin') toast('🛡️ Modo administrador URBIS activado.');
       try{ localStorage.removeItem('urbis_usuario_local'); }catch(e){}
       toast('Bienvenida/o de nuevo a URBIS.');
     }catch(err){

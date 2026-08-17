@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v479-alertas-respetan-el-filtro';
+const URBIS_CACHE = 'urbis-v480-cuenta-urbisnoticia-rol-desde-backend';
 const URBIS_ASSETS = [
   './',
   './index.html',
