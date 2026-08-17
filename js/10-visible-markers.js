@@ -206,7 +206,30 @@
       || (_itemLow.indexOf('evento') !== -1 && _descLow.indexOf('premium') !== -1);
     const iconoWaze = obtenerIconoWaze(dimKey, d[0]);
     const emojiReporte = obtenerIconoReporte(dimKey, d[0]);
-    if (esPremium) {
+    // Alerta nacional (sismo, incendio forestal…): pedido explícito — se ve
+    // como una "mancha" sin ícono al alejar el mapa hasta ver todo el país,
+    // porque el optimizador de zoom oculta TODOS los marcadores normales por
+    // rendimiento (css/30-zoom-marker-optimizer.css, por debajo de zoom 14).
+    // Esta gota usa su propia clase raíz ('urbis-alerta-root'), que esa hoja
+    // de estilos no toca, así que queda visible y grande sin importar qué
+    // tanto se aleje — igual que ya hace la gota Áurea dorada.
+    const esAlertaNacional = /^(sismo|terremoto|incendio forestal)$/i.test(_quitarAc(d[0]).trim());
+    if (esAlertaNacional) {
+      const emojiAlerta = (iconoWaze && iconoWaze.emoji) || '🚨';
+      const html = `<div class="urbis-alerta" style="position:relative;width:74px;height:86px;display:flex;align-items:center;justify-content:center;">`+
+        `<span class="al-ring"></span><span class="al-ring al-ring2"></span><span class="al-glow"></span>`+
+        `<svg class="al-gota" viewBox="0 0 100 136" width="58" height="79" style="position:relative;z-index:3;filter:drop-shadow(0 5px 10px rgba(120,0,10,.55));">`+
+          `<path d="M50 4 C75 4 96 25 96 51 C96 79 68 98 52 130 C51 132 49 132 48 130 C32 98 4 79 4 51 C4 25 25 4 50 4 Z" fill="#e11d2e" stroke="#7a0f1a" stroke-width="4"/>`+
+          `<circle cx="50" cy="50" r="30" fill="#ffffff"/>`+
+          `<text x="50" y="61" text-anchor="middle" font-size="34">${emojiAlerta}</text>`+
+        `</svg>`+
+        `<span class="al-flag">URBIS · ALERTA</span>`+
+      `</div>`;
+      marker = L.marker([lat, lng], {
+        icon: L.divIcon({ className: 'urbis-alerta-root', html, iconSize:[74,86], iconAnchor:[37,80], popupAnchor:[0,-72] }),
+        zIndexOffset: 3000
+      });
+    } else if (esPremium) {
       // Evento PREMIUM "Evento Áurea": gota dorada (PNG del usuario) que brilla. Si el PNG
       // falla, queda la gota SVG de respaldo detrás.
       // Icono = la gota dorada que el usuario dejó en assets/brand/aurea.png.
