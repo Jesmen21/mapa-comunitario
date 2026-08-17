@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v471-gota-alerta-nacional-visible-siempre';
+const URBIS_CACHE = 'urbis-v472-fix-window-map-referencia-real';
 const URBIS_ASSETS = [
   './',
   './index.html',
