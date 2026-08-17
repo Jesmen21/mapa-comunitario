@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v477-ficha-alerta-encima-del-mapa';
+const URBIS_CACHE = 'urbis-v478-boton-toda-colombia-icono-filtro';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -19,6 +19,10 @@ const URBIS_ASSETS = [
   './assets/icons/urbis-home.png',
   './assets/icons/urbis-car.png',
   './assets/icons/urbis-map.png',
+  './assets/icons/urbis-colombia.png',
+  './assets/icons/urbis-filtro.png',
+  './assets/icons/alerta-sismo.png',
+  './assets/icons/alerta-incendio-forestal.png',
   './assets/icons/urbis-report.svg',
   './assets/icons/urbis-event.svg',
   './assets/icons/urbis-events.svg',

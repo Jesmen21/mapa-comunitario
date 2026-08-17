@@ -638,6 +638,15 @@
     -webkit-text-fill-color:#009b89 !important;
     font-size:1.5rem !important;
   }
+  /* El filtro usaba el emoji 🎚️ (control deslizante), que no se lee como
+     "filtrar". Ahora lleva el embudo azul, que es el símbolo universal. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter .u52-btn-img{
+    width:25px !important;
+    height:25px !important;
+    object-fit:contain !important;
+    display:block !important;
+    margin:0 auto !important;
+  }
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-title{
     min-width:0 !important;
     text-align:left !important;
@@ -715,9 +724,10 @@
     right:16px !important;
     bottom:calc(94px + env(safe-area-inset-bottom,0px)) !important;
     display:grid !important;
-    grid-template-columns:repeat(3,1fr) !important;
-    gap:6px !important;
-    padding:8px 8px !important;
+    /* 4 columnas: se sumó "Toda Colombia" (vista nacional de desastres). */
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:4px !important;
+    padding:8px 6px !important;
     border-radius:26px !important;
     background:rgba(255,255,255,.93) !important;
     -webkit-backdrop-filter:blur(16px) saturate(1.08) !important;
@@ -742,6 +752,19 @@
     gap:7px !important;
     text-align:center !important;
     font-weight:950 !important;
+  }
+  /* Botones que usan una imagen propia (Colombia) en vez del emoji en <span>:
+     se les da la misma caja de 36px para que la fila quede pareja. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions .u52-col-img{
+    width:36px !important;
+    height:36px !important;
+    object-fit:contain !important;
+    display:block !important;
+    filter:drop-shadow(0 4px 8px rgba(20,54,94,.18)) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions button b{
+    font-size:.66rem !important;
+    line-height:1.12 !important;
   }
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-actions span{
     width:36px !important;

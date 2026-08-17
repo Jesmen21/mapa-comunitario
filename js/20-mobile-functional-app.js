@@ -403,7 +403,7 @@
           <small>Toca el mapa para ubicarlo</small>
         </div>
         <button class="u52-mapcentric-filter u52-procity-filter-btn" data-u52-call="procity-filter-open" aria-label="Filtrar matriz de usos" hidden>🔷</button>
-        <button class="u52-mapcentric-filter u52-cfilter-btn" data-u52-call="cfilter-open" aria-label="Filtrar reportes y eventos">🎚️</button>
+        <button class="u52-mapcentric-filter u52-cfilter-btn" data-u52-call="cfilter-open" aria-label="Filtrar reportes y eventos"><img src="assets/icons/urbis-filtro.png" alt="" class="u52-btn-img"></button>
         <button class="u52-mapcentric-filter" data-u52-call="locate" aria-label="Centrar en mi ubicación GPS">◎</button>
       </header>
       <button class="u52-mapcentric-locate" data-u52-call="locate" aria-label="Centrar mi ubicación">⌖</button>
@@ -415,6 +415,7 @@
       <div class="u52-mapcentric-actions" aria-label="Acciones rápidas de mapeo comunitario">
         <button data-u52-call="report-gps"><span class="gps">⌖</span><b>Reporte con<br>mi ubicación</b></button>
         <button data-u52-call="report-manual"><span class="manual">☝</span><b>En mapa</b></button>
+        <button data-u52-call="ver-colombia"><img src="assets/icons/urbis-colombia.png" alt="" class="u52-btn-img u52-col-img"><b>Toda<br>Colombia</b></button>
         <button data-u52-call="layers"><span class="layers">▰</span><b>Capas</b></button>
       </div>
     </section>
@@ -4993,6 +4994,31 @@
     if(el) el.innerHTML = html;
   }
 
+  // Vista nacional: encuadra el país para ver todas las alertas de desastres
+  // (sismos e incendios forestales del equipo URBIS) de un solo vistazo.
+  // Si hay alertas publicadas ajusta a ellas —así siempre entran todas en
+  // pantalla—; si no hay ninguna, cae a los límites de Colombia continental.
+  function verTodaColombia(){
+    const m = window.urbisMap || window.map;
+    if(!m || typeof m.fitBounds !== 'function') return;
+    let alertas = [];
+    try {
+      const datos = Array.isArray(window.globalData) ? window.globalData : [];
+      alertas = datos.filter(p => typeof window.urbisEsAlertaNacional === 'function' && window.urbisEsAlertaNacional(p))
+        .map(p => [parseFloat(String(p.lat).replace(',','.')), parseFloat(String(p.lng).replace(',','.'))])
+        .filter(c => !isNaN(c[0]) && !isNaN(c[1]));
+    } catch(e){}
+    try {
+      if(alertas.length){
+        m.fitBounds(L.latLngBounds(alertas), { padding:[60,90], maxZoom:9 });
+        setMapReportStatus('🇨🇴 Vista nacional: ' + alertas.length + ' alerta(s) de desastre en el mapa. Toca una gota para ver el detalle.');
+      } else {
+        m.fitBounds(L.latLngBounds([[-4.3, -79.1], [13.5, -66.8]]), { padding:[20,20] });
+        setMapReportStatus('🇨🇴 Vista nacional: no hay alertas de desastre activas ahora mismo.');
+      }
+    } catch(e){}
+  }
+
   function resetMapForCommunityReport(){
     communityComposer.pickMode = '';
     try{ window.urbisMobilityDestinationOnly = false; }catch(e){}
@@ -5127,6 +5153,10 @@
       if(name==='quick-event-close') { hideQuickEventPanel(); return; }
       if(name==='quick-event-back') { renderQuickEventCategories(); return; }
       if(name==='quick-event-publish') { publishQuickEvent(app.querySelector('[data-u52-call="quick-event-publish"]')); return; }
+      // Acceso rápido a la vista nacional: encuadra Colombia entera para ver de
+      // un golpe todas las alertas de desastres (sismos, incendios forestales).
+      // Si hay alertas publicadas, ajusta a ellas; si no, usa los límites del país.
+      if(name==='ver-colombia') { verTodaColombia(); return; }
       if(name==='layers') { renderBasemapPicker(); app.querySelector('#u52-layer-sheet')?.removeAttribute('hidden'); }
       if(name==='layers-close') app.querySelector('#u52-layer-sheet')?.setAttribute('hidden','');
       if(name==='logout-session'){
