@@ -9,11 +9,22 @@
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
     "eeuu": { "nombre": "EE. UU. y acceso militar", "icono": "🎖️", "color": "#b45309" },
-    "emergencia": { "nombre": "Emergencias", "icono": "🚨", "color": "#dc2626" },
+    "corrupcion": { "nombre": "Corrupción y contratación", "icono": "🔎", "color": "#dc2626" },
+    "creditos": { "nombre": "Créditos y deuda", "icono": "💰", "color": "#ca8a04" },
+    "emergencia": { "nombre": "Emergencias", "icono": "🚨", "color": "#e11d48" },
     "economia": { "nombre": "Economía", "icono": "📉", "color": "#7c3aed" },
     "exterior": { "nombre": "Política exterior", "icono": "🌐", "color": "#0891b2" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-17",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "titulo": "Nuevo descuadre por el terremoto: “Nos vamos a endeudar”",
+      "detalle": "El Gobierno confirma que el costo de la emergencia supera lo previsto y que tendrá que gastar más de lo calculado, con más endeudamiento.",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/"
+    },
     {
       "fecha": "2026-08-16",
       "precision": "exacta",
@@ -43,33 +54,22 @@
       "url": "https://cambiocolombia.com/poder/articulo/2026/8/estados-unidos-anuncia-un-paquete-de-seguridad-de-1000-millones-de-dolares-para-colombia"
     },
     {
-      "fecha": "2026-08-15",
-      "precision": "aproximada",
-      "categoria": "eeuu",
-      "titulo": "Colombia entra a la “Coalición de las Américas contra los Carteles”; Medellín será sede regional",
-      "detalle": "Anunciado en la cumbre “Escudo de las Américas” en Ciudad de Panamá. El programa, impulsado por Trump, agrupa a 18 países contra organizaciones clasificadas como terroristas por EE. UU. Medellín queda como sede regional.",
-      "fuente": "Cambio",
-      "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
-    },
-    {
-      "fecha": "2026-08-15",
-      "precision": "aproximada",
-      "categoria": "eeuu",
-      "titulo": "El secretario de Guerra de EE. UU. afirma que Colombia autorizó operaciones militares conjuntas en suelo colombiano",
-      "detalle": "Pete Hegseth sostuvo que el Gobierno de De la Espriella solicitó y autorizó operaciones conjuntas dentro del territorio nacional para combatir el terrorismo.",
-      "contrapunto": "El anuncio generó controversia interna e internacional por sus implicaciones sobre la soberanía colombiana y por el alcance de la participación militar estadounidense en el país.",
-      "fuente": "Cambio",
-      "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+      "fecha": "2026-08-13",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "titulo": "El Banco Mundial desembolsa USD 200 millones para la emergencia",
+      "detalle": "Primer giro de una línea contingente de hasta USD 450 millones. Incluye además asistencia técnica para la respuesta al terremoto.",
+      "fuente": "El Tiempo",
+      "url": "https://www.eltiempo.com/economia/sectores/el-banco-mundial-ya-desembolso-los-us-200-millones-del-credito-al-que-colombia-accedio-para-atender-el-terremoto-3578269"
     },
     {
       "fecha": "2026-08-13",
-      "precision": "exacta",
-      "categoria": "eeuu",
-      "titulo": "Propuesta que abre la puerta a operaciones militares de Estados Unidos en Colombia",
-      "detalle": "La iniciativa habilitaría la actuación de tropas estadounidenses en territorio colombiano dentro de la ofensiva antinarcóticos regional.",
-      "contrapunto": "Sectores políticos y analistas advierten que sería un cambio profundo en la doctrina de soberanía militar del país.",
-      "fuente": "La Nación (Argentina)",
-      "url": "https://www.lanacion.com.ar/el-mundo/la-polemica-propuesta-de-de-la-espriella-que-abre-la-puerta-a-operaciones-militares-de-eeuu-en-nid13082026/"
+      "precision": "aproximada",
+      "categoria": "creditos",
+      "titulo": "El BID activa USD 300 millones adicionales",
+      "detalle": "Junto con la línea del Banco Mundial, la reconstrucción queda apoyada principalmente en fondos multilaterales.",
+      "fuente": "Moncloa",
+      "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
     },
     {
       "fecha": "2026-08-13",
@@ -79,6 +79,34 @@
       "detalle": "Herramienta para acelerar el giro de recursos a la reconstrucción. El Gobierno afirmó que “cada peso girado quedará expuesto” a control público.",
       "fuente": "Infobae",
       "url": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/"
+    },
+    {
+      "fecha": "2026-08-12",
+      "precision": "exacta",
+      "categoria": "eeuu",
+      "titulo": "Hegseth anuncia desde Panamá que Colombia autorizó operaciones militares conjuntas en su territorio",
+      "detalle": "El secretario de Defensa de EE. UU. afirmó que el Gobierno de De la Espriella solicitó acciones militares conjuntas contra el narcoterrorismo. El anuncio se hizo en Ciudad de Panamá, en la cumbre donde Colombia se sumó a la coalición antidrogas impulsada por Trump.",
+      "contrapunto": "Una cooperación a gran escala que implique tropas estadounidenses en suelo colombiano debe pasar por el Congreso, según jurisprudencia constitucional previa. Además, no se han hecho públicas las zonas, bases ni el número de efectivos.",
+      "fuente": "Semana",
+      "url": "https://www.semana.com/mundo/articulo/colombia-permitira-acciones-militares-conjuntas-con-estados-unidos-anuncia-pete-hegseth-secretario-de-defensa/202635/"
+    },
+    {
+      "fecha": "2026-08-12",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "Colombia entra a la coalición contra los carteles; Medellín será sede regional",
+      "detalle": "En la cumbre “Escudo de las Américas” en Ciudad de Panamá, Colombia se suma a la coalición de 18 países impulsada por Trump. Medellín queda designada como sede regional del programa — la única ubicación concreta anunciada hasta ahora.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+    },
+    {
+      "fecha": "2026-08-11",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Decreto 1171: declara desastre nacional en 12 departamentos",
+      "detalle": "Firmado la noche del 11 de agosto tras el terremoto. La medida dura doce meses, prorrogables por un periodo igual.",
+      "fuente": "Moncloa",
+      "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
     },
     {
       "fecha": "2026-08-10",
@@ -106,6 +134,15 @@
       "detalle": "Según The New York Times, el acuerdo con De la Espriella convierte al país en pieza central de la estrategia estadounidense para la región.",
       "fuente": "Infobae",
       "url": "https://www.infobae.com/colombia/2026/08/07/colombia-se-convierte-en-eje-de-ofensiva-militar-de-trump-contra-narcotrafico-en-la-region-tras-acuerdo-con-de-la-espriella-segun-de-new-york-times/"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "aproximada",
+      "categoria": "corrupcion",
+      "titulo": "Ordena congelar la contratación de última hora en el Ministerio de la Igualdad",
+      "detalle": "El equipo anticorrupción pidió suspender contratos de último momento y congelar desembolsos por más de $39.000 millones durante el proceso de liquidación del ministerio.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/pais/articulo/2026/8/empalme-de-abelardo-de-la-espriella-pide-frenar-contratacion-de-ultima-hora-en-el-ministerio-de-la-igualdad"
     },
     {
       "fecha": "2026-08-07",
@@ -143,15 +180,58 @@
       "detalle": "Expedido por el gobierno saliente un día antes de la posesión, para agilizar la conformación del nuevo gabinete.",
       "fuente": "El Heraldo",
       "url": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/"
+    },
+    {
+      "fecha": "2026-08-05",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "Denuncia irregularidades por más de $370.000 millones ante Fiscalía, Contraloría y Procuraduría",
+      "detalle": "El equipo de empalme presentó denuncias por presuntas irregularidades administrativas y posible corrupción en contratos del Ministerio de Defensa, la Unidad Nacional de Protección (UNP) y Cenit, filial de Ecopetrol.",
+      "contrapunto": "Son denuncias del gobierno entrante contra la administración saliente de Gustavo Petro. A esta fecha son señalamientos en investigación, no fallos: ningún organismo de control ha emitido decisión de fondo.",
+      "fuente": "Semana",
+      "url": "https://www.semana.com/politica/articulo/equipo-de-abelardo-de-la-espriella-revela-nuevos-hallazgos-de-corrupcion-en-el-gobierno-petro-por-mas-de-370000-millones/202633/"
+    },
+    {
+      "fecha": "2026-08-05",
+      "precision": "aproximada",
+      "categoria": "corrupcion",
+      "titulo": "Piden investigar un contrato directo de la UNP por $24.800 millones",
+      "detalle": "El contrato habría sido adjudicado pese a una orden judicial que suspendía el proceso de selección.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/poder/articulo/2026/8/defensores-de-la-patria-denuncia-de-nuevo-presuntas-irregularidades-en-contratacion-por-mas-de-370-mil-millones-de-pesos"
+    },
+    {
+      "fecha": "2026-08-04",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "Choque por contratos millonarios del Invías para La Guajira",
+      "detalle": "Enfrentamiento público entre ministras del gobierno saliente y del entrante por la adjudicación de contratos de infraestructura en La Guajira durante el empalme.",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
     }
   ],
   "transversales": [
+    {
+      "categoria": "eeuu",
+      "titulo": "Acceso militar extranjero: qué se sabe y qué NO se ha hecho público",
+      "detalle": "SE SABE: Colombia autorizó operaciones militares conjuntas con EE. UU. contra el narcoterrorismo; entró a la coalición A3C; Medellín será sede regional del programa “Escudo de las Américas”; hay un paquete de USD 1.000 millones. NO SE HA HECHO PÚBLICO: en qué zonas o bases operarán, cuántos efectivos, por cuánto tiempo, ni bajo qué reglas de enfrentamiento. Tampoco hay ubicaciones anunciadas para la cooperación militar con Israel.",
+      "contrapunto": "Mientras no se publiquen esos datos, no es posible mapear con honestidad “dónde” hay acceso militar extranjero. URBIS no publicará ubicaciones deducidas o supuestas: cuando se hagan oficiales, se agregan con su fuente.",
+      "fuente": "El Tiempo",
+      "url": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/operaciones-militares-conjuntas-con-ee-uu-en-colombia-el-debate-que-abre-un-sorpresivo-anuncio-3578027"
+    },
     {
       "categoria": "israel",
       "titulo": "Cooperación militar y tecnológica con Israel",
       "detalle": "El Gobierno defiende públicamente recuperar la cooperación militar y tecnológica con Israel, incluyendo adquisición de armas, drones e inteligencia artificial. Se reactivan canales en seguridad, tecnología agrícola y manejo de recursos hídricos.",
       "fuente": "El Tiempo",
       "url": "https://www.eltiempo.com/mundo/latinoamerica/de-la-espriella-redefine-politica-exterior-priorizando-alianzas-en-seguridad-y-comercio-que-implica-privilegiar-a-israel-y-distanciarse-de-la-onu-3578573"
+    },
+    {
+      "categoria": "creditos",
+      "titulo": "Resumen de créditos activados hasta ahora",
+      "detalle": "Banco Mundial: línea contingente de hasta USD 450 millones, de los cuales USD 200 millones ya fueron desembolsados el 13 de agosto. BID: USD 300 millones activados. La reconstrucción se apoya principalmente en fondos multilaterales, y el Gobierno ya anticipó que tendrá que endeudarse más.",
+      "fuente": "El Tiempo",
+      "url": "https://www.eltiempo.com/amp/economia/sectores/emergencia-economica-plazos-tasas-y-demas-detalles-del-credito-al-que-colombia-accedera-con-el-banco-mundial-para-atender-la-situacion-del-terremoto-3577664"
     },
     {
       "categoria": "exterior",

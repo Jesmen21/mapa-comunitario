@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v481-modulo-seguimiento-presidencial';
+const URBIS_CACHE = 'urbis-v482-seguimiento-corrupcion-creditos';
 const URBIS_ASSETS = [
   './',
   './index.html',
