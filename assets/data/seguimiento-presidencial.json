@@ -258,6 +258,81 @@
       "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
     }
   ],
+  "contradicciones": {
+    "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento.",
+    "casos": [
+      {
+        "estado": "documentada",
+        "tema": "Religión: de ateo declarado a activista religioso",
+        "antes": "Durante años se declaró ateo. En una entrevista de 2017, al preguntarle por qué se casó por la Iglesia siendo ateo, respondió: “Uno hace estupideces y bobadas por amor”. También dijo: “No creía en nada raro ni diferente, no creía en nada que la razón no pudiera explicar”.",
+        "despues": "Hoy se define cristiano católico y activista religioso. Sitúa su conversión hace cinco o seis años, tras la muerte de su prima Beatriz: dice haber sentido en el funeral una paz inexplicable, “un abrazo invisible”.",
+        "matiz": "Un cambio de fe es una transformación personal legítima, y él nunca lo ha ocultado — al contrario, lo cuenta él mismo. Se registra por ser un giro documentado en su discurso público, no como señalamiento de hipocresía.",
+        "fuentes": [
+          { "n": "Infobae · su paso del ateísmo a la fe", "u": "https://www.infobae.com/colombia/2026/02/11/abelardo-de-la-espriella-relato-su-paso-del-ateismo-a-la-fe-cristiana-tras-una-tragedia-familiar-que-parte-de-que-me-converti-no-entendiste/" },
+          { "n": "Infobae · “de ateo a activista religioso”", "u": "https://www.infobae.com/colombia/2026/03/27/abelardo-de-la-espriella-explico-como-paso-de-ateo-a-activista-religioso-tuve-un-proceso-hace-seis-anos/" },
+          { "n": "Radio Nacional · qué religión profesa", "u": "https://www.radionacional.co/actualidad/politica/que-religion-profesa-abelardo-de-la-espriella" }
+        ]
+      },
+      {
+        "estado": "documentada",
+        "tema": "Comunidad LGBTIQ+: de negar la adopción a prometer respaldo",
+        "antes": "El 27 de enero de 2026 advirtió que no permitiría la adopción de parejas del mismo sexo, con el argumento de que “un niño necesita un padre y una madre”. Daniel Quintero le respondió “vuelve a mentir”.",
+        "despues": "El 3 de junio de 2026 negó ser homofóbico y prometió respaldar a la comunidad LGBTI+ en un eventual gobierno suyo. En abril había dicho que acata la sentencia de la Corte Constitucional de 2015 que permite la adopción igualitaria, aunque no la comparte. En su discurso de posesión prometió gobernar para “todos los colombianos”.",
+        "matiz": "La tensión es real: pasó de “no lo permitiría” a “los respaldaré”, sin retirar su posición de fondo. Organizaciones LGBTIQ+ advierten riesgo de retroceso; él sostiene que respetará lo que diga la Corte.",
+        "fuentes": [
+          { "n": "Infobae · no permitiría la adopción igualitaria (27 ene)", "u": "https://www.infobae.com/colombia/2026/01/27/abelardo-de-la-espriella-advirtio-que-no-permitiria-la-adopcion-de-parejas-del-mismo-sexo-y-daniel-quintero-le-contesto-vuelve-a-mentir/" },
+          { "n": "Infobae · “no soy homofóbico” y promete respaldo (3 jun)", "u": "https://www.infobae.com/colombia/2026/06/03/abelardo-de-la-espriella-nego-ser-homofobico-y-prometio-respaldar-a-la-comunidad-lgbti-en-un-eventual-gobierno-suyo/" },
+          { "n": "El Espectador · primeras señales del nuevo gobierno", "u": "https://www.elespectador.com/genero-y-diversidad/la-disidencia/que-pasara-con-los-derechos-lgbtiq-en-el-gobierno-de-abelardo-de-la-espriella-las-primeras-senales/" },
+          { "n": "Cambio · posturas antiderechos y su impacto", "u": "https://cambiocolombia.com/poder/articulo/2026/6/el-debate-sobre-las-posturas-antiderechos-de-abelardo-de-la-espriella" }
+        ]
+      },
+      {
+        "estado": "documentada",
+        "tema": "Decretos: prometió cerca de 90 el primer día, firmó 6",
+        "antes": "Anunció que su gobierno arrancaría con cerca de 90 decretos el mismo día de la posesión.",
+        "despues": "El 7 de agosto expidió 6 decretos (1133 a 1138).",
+        "matiz": "Es la primera promesa suya medible con números, y la distancia es grande. No implica que las medidas no lleguen después, pero el anuncio no se cumplió como fue formulado.",
+        "fuentes": [
+          { "n": "Portafolio · los decretos del primer día", "u": "https://www.portafolio.co/economia/gobierno/estos-fueron-los-decretos-que-expidio-abelardo-de-la-espriella-en-su-primer-dia-como-presidente-499958" },
+          { "n": "Río Grande · los 90 decretos quedaron lejos", "u": "https://www.riogrande.com.co/2026/08/09/los-90-decretos-de-de-la-espriella-quedaron-lejos-del-primer-dia-de-gobierno/" }
+        ]
+      },
+      {
+        "estado": "tension",
+        "tema": "Bajar impuestos y subir el salario mínimo a la vez",
+        "antes": "Sostiene que con un plan económico serio se pueden bajar los impuestos a las empresas e incluso subir el salario mínimo.",
+        "despues": "Al mismo tiempo advierte que aumentos altos del mínimo golpean la inflación y la contratación formal, sobre todo en pequeñas y medianas empresas. Y ya asumió con deuda cercana al 60 % del PIB y una reconstrucción que lo obliga a endeudarse más.",
+        "matiz": "No es una contradicción entre dos frases opuestas, sino una tensión dentro de su propio programa: menos ingresos por impuestos, mismas obligaciones constitucionales en salud, educación y pensiones, y ahora el costo del terremoto. Es un punto a vigilar con cifras, no una mentira comprobada.",
+        "fuentes": [
+          { "n": "Valora Analitik · reducción de impuestos y salario mínimo", "u": "https://www.valoraanalitik.com/abelardo-de-la-espriella-buscara-reduccion-de-impuestos-para-crear-empleos-asi-fijaria-el-salario-minimo/" },
+          { "n": "La Silla Vacía · las propuestas de su programa", "u": "https://www.lasillavacia.com/silla-nacional/las-propuestas-bomba-de-abelardo-de-la-espriella/" },
+          { "n": "Infobae · “el salario mínimo no puede reducirse”", "u": "https://www.infobae.com/colombia/2026/06/04/abelardo-de-la-espriella-aseguro-que-el-salario-minimo-no-puede-reducirse-y-petro-respondio-el-problema-no-es-que-baje/" }
+        ]
+      },
+      {
+        "estado": "desmentida",
+        "tema": "“Propuso bajar el salario mínimo a un millón”",
+        "antes": "Circuló ampliamente, incluida una placa atribuida a El Tiempo.",
+        "despues": "El Detector de Mentiras de La Silla Vacía lo calificó como FALSO. La placa atribuida a El Tiempo también fue desmentida.",
+        "matiz": "URBIS no publica esta acusación como hecho. Si te la comparten, es desinformación verificada.",
+        "fuentes": [
+          { "n": "La Silla Vacía · Detector de Mentiras: FALSO", "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/abelardo-no-propuso-bajar-el-minimo-a-un-millon-ni-quitar-el-bono-pensional/" },
+          { "n": "Verificación de la placa falsa de El Tiempo", "u": "https://es-us.noticias.yahoo.com/falsa-placa-tiempo-propuesta-espriella-200502725.html" }
+        ]
+      },
+      {
+        "estado": "desmentida",
+        "tema": "“Va a quitar el bono pensional”",
+        "antes": "Se difundió durante la campaña que eliminaría el bono pensional.",
+        "despues": "También calificado FALSO por La Silla Vacía. Lo que dijo fue lo contrario: que no lo eliminaría y que podría subirlo a 400.000 pesos, además de proponer un “blindaje constitucional” para que ningún gobierno toque los ahorros pensionales.",
+        "matiz": "Queda pendiente verificar si ese blindaje y el aumento se concretan. Eso sí es seguimiento legítimo; la acusación original no.",
+        "fuentes": [
+          { "n": "La Silla Vacía · Detector de Mentiras: FALSO", "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/abelardo-no-propuso-bajar-el-minimo-a-un-millon-ni-quitar-el-bono-pensional/" },
+          { "n": "Semana · lo que dice sobre subsidios, mínimo y pensiones", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-revelo-cuales-son-las-mentiras-que-han-dicho-de-sus-propuestas-subsidios-salario-minimo-y-pensiones/202619/" }
+        ]
+      }
+    ]
+  },
   "foda": {
     "_nota": "A diferencia de la línea de tiempo (hechos), esto es INTERPRETACIÓN. Cada punto se apoya en un hecho ya documentado arriba, pero la lectura es opinable.",
     "fortalezas": [

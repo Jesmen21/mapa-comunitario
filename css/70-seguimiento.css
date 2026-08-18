@@ -175,3 +175,49 @@ body{
 
 /* Varias fuentes por hecho: se listan todas, una por línea. */
 .sp-fuentes{ display:flex; flex-direction:column; gap:5px; align-items:flex-start; }
+
+/* ── Contradicciones ────────────────────────────────────────────────────────
+   El par ANTES / DESPUÉS es el corazón de la sección: sin las dos columnas
+   no hay contradicción que mostrar, solo una acusación. */
+.sp-contra-sec{ margin-top:30px; }
+.sp-contra-sec h2{ margin:0 0 2px; font-size:1.05rem; font-weight:900; }
+
+.sp-cx{
+  background:var(--sp-panel); border:1px solid var(--sp-borde);
+  border-radius:14px; padding:13px 14px; margin-bottom:10px; border-top:4px solid var(--sp-verde);
+}
+.sp-cx-doc{ border-top-color:#f59e0b; }
+.sp-cx-ten{ border-top-color:#38bdf8; }
+.sp-cx-des{ border-top-color:#ef4444; }
+
+.sp-cx-estado{
+  display:inline-block; font-size:.64rem; font-weight:900; letter-spacing:.2px;
+  padding:3px 9px; border-radius:999px; margin-bottom:7px;
+  background:rgba(255,255,255,.09); color:var(--sp-txt);
+}
+.sp-cx-des .sp-cx-estado{ background:rgba(239,68,68,.18); color:#fca5a5; }
+.sp-cx h3{ margin:0 0 10px; font-size:.95rem; font-weight:900; color:#fff; line-height:1.3; }
+
+.sp-cx-par{ display:grid; gap:8px; margin-bottom:9px; }
+.sp-cx-antes, .sp-cx-desp{ border-radius:10px; padding:9px 11px; }
+.sp-cx-antes{ background:rgba(148,163,184,.12); border-left:3px solid #94a3b8; }
+.sp-cx-desp{ background:rgba(34,197,94,.12);  border-left:3px solid #22c55e; }
+.sp-cx-des .sp-cx-desp{ background:rgba(239,68,68,.12); border-left-color:#ef4444; }
+.sp-cx-antes b, .sp-cx-desp b{
+  display:block; font-size:.62rem; font-weight:900; letter-spacing:.5px; margin-bottom:3px;
+}
+.sp-cx-antes b{ color:#cbd5e1; }
+.sp-cx-desp b{ color:#86efac; }
+.sp-cx-des .sp-cx-desp b{ color:#fca5a5; }
+.sp-cx-antes span, .sp-cx-desp span{ display:block; font-size:.79rem; color:var(--sp-txt); line-height:1.45; }
+
+.sp-cx-matiz{
+  background:rgba(182,147,88,.14); border:1px solid rgba(182,147,88,.34);
+  border-radius:10px; padding:8px 11px; margin-bottom:9px;
+}
+.sp-cx-matiz b{ display:block; font-size:.64rem; font-weight:900; color:#e6cfa1; margin-bottom:2px; letter-spacing:.3px; }
+.sp-cx-matiz span{ font-size:.78rem; color:#efe2c9; line-height:1.45; }
+
+@media (min-width:640px){
+  .sp-cx-par{ grid-template-columns:1fr 1fr; }
+}

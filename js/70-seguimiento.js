@@ -138,6 +138,44 @@
     });
   }
 
+  // Contradicciones. Regla del módulo: sin las DOS declaraciones documentadas
+  // no se publica. Y lo que un verificador desmintió se muestra COMO desmentido,
+  // no se esconde — así el lector aprende qué es desinformación circulante.
+  var ESTADOS = {
+    documentada: { et: '✅ Contradicción documentada', cls: 'doc', ayuda: 'Hay registro de las dos posturas.' },
+    tension:     { et: '⚖️ Tensión, no contradicción', cls: 'ten', ayuda: 'Posturas en tensión, pero defendibles a la vez.' },
+    desmentida:  { et: '❌ Desmentida por verificadores', cls: 'des', ayuda: 'Circula, pero es falsa. No la compartas como cierta.' }
+  };
+
+  function pintarContradicciones() {
+    var cont = $('sp-contradicciones');
+    if (!cont) return;
+    var c = DATOS.contradicciones;
+    var casos = (c && c.casos) || [];
+    if (!casos.length) { cont.innerHTML = ''; return; }
+
+    cont.innerHTML = casos.map(function (x) {
+      var e = ESTADOS[x.estado] || ESTADOS.documentada;
+      var fuentes = (x.fuentes || []).map(function (f) {
+        var u = urlSegura(f.u);
+        return u
+          ? '<a class="sp-fuente" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">🔗 ' + esc(f.n) + '</a>'
+          : '<span class="sp-fuente">' + esc(f.n) + '</span>';
+      }).join('');
+
+      return '<article class="sp-cx sp-cx-' + e.cls + '">' +
+        '<span class="sp-cx-estado">' + esc(e.et) + '</span>' +
+        '<h3>' + esc(x.tema) + '</h3>' +
+        '<div class="sp-cx-par">' +
+          '<div class="sp-cx-antes"><b>ANTES</b><span>' + esc(x.antes) + '</span></div>' +
+          '<div class="sp-cx-desp"><b>DESPUÉS</b><span>' + esc(x.despues) + '</span></div>' +
+        '</div>' +
+        (x.matiz ? '<div class="sp-cx-matiz"><b>Matiz</b><span>' + esc(x.matiz) + '</span></div>' : '') +
+        '<div class="sp-fuentes">' + fuentes + '</div>' +
+      '</article>';
+    }).join('');
+  }
+
   // Balance FODA. Se marca visualmente como INTERPRETACIÓN, distinto de la
   // línea de tiempo que son hechos citados.
   function pintarFoda() {
@@ -216,6 +254,7 @@
       pintarCabecera();
       pintarFiltros();
       pintarTimeline();
+      pintarContradicciones();
       pintarFoda();
       pintarTransversales();
     })
