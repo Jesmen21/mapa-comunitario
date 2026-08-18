@@ -26,13 +26,61 @@
       "url": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/"
     },
     {
+      "fecha": "2026-08-17",
+      "precision": "exacta",
+      "categoria": "israel",
+      "titulo": "La delegación israelí cierra su balance: “ningún sobreviviente”",
+      "detalle": "Tras la primera semana, los rescatistas israelíes informaron que no hallaron sobrevivientes. El general (r) Yossi Pinto destacó la complejidad de la emergencia y la colaboración con autoridades locales.",
+      "tipoFuente": "verificado",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/17/rescatistas-israelies-entregaron-desesperanzador-balance-tras-primera-semana-del-terremoto-de-magnitud-74-en-colombia-ningun-sobreviviente/"
+    },
+    {
       "fecha": "2026-08-16",
       "precision": "exacta",
       "categoria": "israel",
       "titulo": "Netanyahu y De la Espriella hablan por teléfono: Israel celebra un “nuevo capítulo”",
       "detalle": "En la llamada, el presidente colombiano agradeció la ayuda humanitaria israelí y la presencia de rescatistas en territorio colombiano tras el terremoto del 10 de agosto.",
+      "tipoFuente": "verificado",
       "fuente": "teleSUR",
-      "url": "https://www.telesurtv.net/israel-celebra-un-nuevo-capitulo-en-las-relaciones-con-colombia-tras-conversar-con-de-la-espriella/"
+      "url": "https://www.telesurtv.net/israel-celebra-un-nuevo-capitulo-en-las-relaciones-con-colombia-tras-conversar-con-de-la-espriella/",
+      "fuentes": [
+        { "n": "teleSUR", "u": "https://www.telesurtv.net/israel-celebra-un-nuevo-capitulo-en-las-relaciones-con-colombia-tras-conversar-con-de-la-espriella/" },
+        { "n": "La Jornada (México)", "u": "https://www.jornada.com.mx/2026/08/16/mundo/015n1mun" },
+        { "n": "El Imparcial", "u": "https://www.elimparcial.com/mundo/2026/08/15/colombia-agradece-a-israel-por-enviar-rescatistas-tras-terremoto-y-busca-abrir-una-nueva-etapa-diplomatica-con-netanyahu/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-15",
+      "precision": "exacta",
+      "categoria": "israel",
+      "titulo": "Petro cuestiona la misión israelí; el ejército de Israel le responde",
+      "detalle": "El expresidente Gustavo Petro afirmó que el equipo llegó cuatro días después del sismo, no participó en rescates y se retiró sin sacar a nadie de los escombros, pese a que —según él— aún se escuchaban voces y las autoridades locales pidieron que se quedara. Roni Kaplan, portavoz de las Fuerzas de Defensa de Israel, defendió la misión y destacó el profesionalismo de los bomberos colombianos.",
+      "contrapunto": "Las dos versiones están en disputa y ninguna ha sido dirimida por un tercero independiente. URBIS registra ambas: la crítica de Petro y la respuesta oficial israelí.",
+      "tipoFuente": "disputado",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/15/delegacion-humanitaria-israeli-que-viajo-a-colombia-para-apoyar-rescates-tras-el-sismo-desmintio-senalamiento-de-gustavo-petro-con-todo-respeto/",
+      "fuentes": [
+        { "n": "Infobae · la delegación desmiente a Petro", "u": "https://www.infobae.com/colombia/2026/08/15/delegacion-humanitaria-israeli-que-viajo-a-colombia-para-apoyar-rescates-tras-el-sismo-desmintio-senalamiento-de-gustavo-petro-con-todo-respeto/" },
+        { "n": "Semana · respuesta de Roni Kaplan", "u": "https://www.semana.com/mundo/articulo/con-todo-respeto-portavoz-del-ejercito-israeli-le-responde-a-gustavo-petro-las-acusaciones-por-ayuda-tras-terremoto/202641/" },
+        { "n": "Publimetro · “dizque salvando vidas”", "u": "https://www.publimetro.co/noticias/2026/08/16/dizque-salvando-vidas-petro-no-se-guardo-nada-por-lo-que-paso-con-israeli-en-cali/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-14",
+      "precision": "exacta",
+      "categoria": "israel",
+      "titulo": "Llegan a Cali 82 militares israelíes del Comando de Defensa Civil de las FDI",
+      "detalle": "Delegación de 82 personas —rescatistas, ingenieros y tecnólogos— de las Fuerzas de Defensa de Israel, bajo el Comando de Defensa Civil y su Unidad Nacional de Búsqueda y Rescate, encabezada por el general de brigada (r) Yossi Pinto. Aterrizaron en Cali el viernes 14 de agosto, cuatro días después del sismo, y comenzaron en el Hospital Universitario del Valle. ES LA ÚNICA PRESENCIA MILITAR EXTRANJERA CON UBICACIÓN CONFIRMADA EN ESTE PERIODO.",
+      "tipoFuente": "verificado",
+      "fuente": "Semana",
+      "url": "https://www.semana.com/nacion/cali/articulo/delegacion-de-expertos-del-comando-de-defensa-civil-de-israel-aterrizo-en-colombia-para-brindar-ayuda-inmediata-tras-el-terremoto/202620/",
+      "fuentes": [
+        { "n": "Semana · llegada de la delegación", "u": "https://www.semana.com/nacion/cali/articulo/delegacion-de-expertos-del-comando-de-defensa-civil-de-israel-aterrizo-en-colombia-para-brindar-ayuda-inmediata-tras-el-terremoto/202620/" },
+        { "n": "El Heraldo · llegada a Cali", "u": "https://www.elheraldo.co/colombia/2026/08/14/delegacion-de-rescatistas-de-israel-llego-a-cali-para-apoyar-labores-de-emergencia-tras-terremoto/" },
+        { "n": "La FM · 82 especialistas", "u": "https://www.lafm.com.co/actualidad/israel-mision-rescate-colombia-terremoto-2026-ochenta-y-dos-soldados-cali-zonas-afectadas-408050" },
+        { "n": "Infobae · así fue la llegada", "u": "https://www.infobae.com/colombia/2026/08/15/asi-fue-la-llegada-de-la-delegacion-israeli-para-apoyar-el-rescate-de-personas-tras-el-terremoto-israel-con-colombia/" }
+      ]
     },
     {
       "fecha": "2026-08-16",
@@ -241,11 +289,17 @@
   "transversales": [
     {
       "categoria": "eeuu",
-      "titulo": "Acceso militar extranjero: qué se sabe y qué NO se ha hecho público",
-      "detalle": "SE SABE: Colombia autorizó operaciones militares conjuntas con EE. UU. contra el narcoterrorismo; entró a la coalición A3C; Medellín será sede regional del programa “Escudo de las Américas”; hay un paquete de USD 1.000 millones. NO SE HA HECHO PÚBLICO: en qué zonas o bases operarán, cuántos efectivos, por cuánto tiempo, ni bajo qué reglas de enfrentamiento. Tampoco hay ubicaciones anunciadas para la cooperación militar con Israel.",
-      "contrapunto": "Mientras no se publiquen esos datos, no es posible mapear con honestidad “dónde” hay acceso militar extranjero. URBIS no publicará ubicaciones deducidas o supuestas: cuando se hagan oficiales, se agregan con su fuente.",
+      "titulo": "Acceso militar extranjero: qué está confirmado y qué NO se ha hecho público",
+      "detalle": "CONFIRMADO CON UBICACIÓN — ISRAEL: 82 militares de las FDI (Comando de Defensa Civil) en Cali desde el 14 de agosto, misión humanitaria por el terremoto, con salida prevista al cerrar la búsqueda. Es la única presencia militar extranjera con lugar y fecha verificados. ANUNCIADO SIN UBICACIÓN OPERATIVA — EE. UU.: operaciones militares conjuntas autorizadas contra el narcoterrorismo, coalición A3C, paquete de USD 1.000 millones, y Medellín como sede regional del programa “Escudo de las Américas” (sede administrativa, no base). NO SE HA HECHO PÚBLICO: zonas o bases de operación, número de efectivos estadounidenses, duración ni reglas de enfrentamiento.",
+      "contrapunto": "Sin esos datos no es posible mapear con honestidad “dónde” opera el ejército de EE. UU. en Colombia. URBIS no publica ubicaciones deducidas ni supuestas: cuando se oficialicen, se agregan con su fuente. Además, una cooperación a gran escala con tropas estadounidenses debe pasar por el Congreso según jurisprudencia constitucional previa.",
       "fuente": "El Tiempo",
-      "url": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/operaciones-militares-conjuntas-con-ee-uu-en-colombia-el-debate-que-abre-un-sorpresivo-anuncio-3578027"
+      "url": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/operaciones-militares-conjuntas-con-ee-uu-en-colombia-el-debate-que-abre-un-sorpresivo-anuncio-3578027",
+      "fuentes": [
+        { "n": "El Tiempo · debate por las operaciones conjuntas", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/operaciones-militares-conjuntas-con-ee-uu-en-colombia-el-debate-que-abre-un-sorpresivo-anuncio-3578027" },
+        { "n": "Semana · anuncio de Hegseth", "u": "https://www.semana.com/mundo/articulo/colombia-permitira-acciones-militares-conjuntas-con-estados-unidos-anuncia-pete-hegseth-secretario-de-defensa/202635/" },
+        { "n": "France 24 · acciones conjuntas antidrogas", "u": "https://www.france24.com/es/minuto-a-minuto/20260813-eeuu-y-colombia-realizar%C3%A1n-acciones-militares-conjuntas-en-la-lucha-antidrogas" },
+        { "n": "Semana · llegada de los 82 militares israelíes a Cali", "u": "https://www.semana.com/nacion/cali/articulo/delegacion-de-expertos-del-comando-de-defensa-civil-de-israel-aterrizo-en-colombia-para-brindar-ayuda-inmediata-tras-el-terremoto/202620/" }
+      ]
     },
     {
       "categoria": "israel",

@@ -45,20 +45,44 @@
     return (DATOS.categorias && DATOS.categorias[id]) || { nombre: id, icono: '•', color: '#1E7A4B' };
   }
 
+  // Etiqueta de CALIDAD DE LA EVIDENCIA. No todo lo publicado tiene el mismo
+  // respaldo: no es igual un hecho confirmado por varios medios que la versión
+  // de una sola parte o un asunto en disputa. Hacerlo visible es parte del rigor.
+  var TIPOS = {
+    verificado: { t: 'Confirmado por varios medios', cls: 'ok' },
+    disputado:  { t: 'Versiones en disputa',         cls: 'dis' },
+    declaracion:{ t: 'Declaración de una parte',      cls: 'dec' }
+  };
+
   function tarjeta(e) {
     var c = cat(e.categoria);
-    var url = urlSegura(e.url);
     var contra = e.contrapunto
       ? '<div class="sp-contra"><b>⚖️ CONTRAPUNTO</b><span>' + esc(e.contrapunto) + '</span></div>'
       : '';
-    var fuente = url
-      ? '<a class="sp-fuente" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">🔗 ' + esc(e.fuente || 'Fuente') + '</a>'
-      : '<span class="sp-fuente">' + esc(e.fuente || 'Sin fuente') + '</span>';
+
+    // Lista de fuentes: se muestran TODAS, no solo la primera.
+    var lista = [];
+    if (Array.isArray(e.fuentes) && e.fuentes.length) {
+      lista = e.fuentes.map(function (f) { return { n: f.n, u: f.u }; });
+    } else if (e.fuente || e.url) {
+      lista = [{ n: e.fuente, u: e.url }];
+    }
+    var fuentesHtml = lista.map(function (f) {
+      var u = urlSegura(f.u);
+      return u
+        ? '<a class="sp-fuente" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">🔗 ' + esc(f.n || 'Fuente') + '</a>'
+        : '<span class="sp-fuente">' + esc(f.n || 'Sin fuente') + '</span>';
+    }).join('');
+
+    var tipo = TIPOS[e.tipoFuente];
+    var sello = tipo ? '<span class="sp-sello sp-sello-' + tipo.cls + '">' + esc(tipo.t) + '</span>' : '';
+
     return '<article class="sp-item" style="border-left-color:' + esc(c.color) + '">' +
-      '<span class="sp-item-cat">' + esc(c.icono) + ' ' + esc(c.nombre) + '</span>' +
+      '<span class="sp-item-cat">' + esc(c.icono) + ' ' + esc(c.nombre) + '</span>' + sello +
       '<h3>' + esc(e.titulo) + '</h3>' +
       (e.detalle ? '<p>' + esc(e.detalle) + '</p>' : '') +
-      contra + fuente +
+      contra +
+      '<div class="sp-fuentes">' + fuentesHtml + '</div>' +
     '</article>';
   }
 
