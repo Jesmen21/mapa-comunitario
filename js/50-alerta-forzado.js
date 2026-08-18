@@ -172,6 +172,45 @@
   }
   window.urbisAbrirFichaAlerta = abrirFicha;
 
+  // ── Alertas editoriales del repo ──────────────────────────────────────────
+  // Además de las que están en la hoja de cálculo, el equipo URBIS puede
+  // publicar alertas editando assets/data/alertas-urbis.json. Esa vía no
+  // necesita credenciales ni el formato de 56 campos, así que la puede usar
+  // una rutina automática. Se convierten al mismo formato interno y se
+  // deduplican por coordenada contra las de la base.
+  var _editoriales = [];
+
+  function filaDesdeEditorial(a) {
+    var creado = (a.desde || '') + 'T12:00:00.000Z';
+    var expira = (a.expira || '') + 'T12:00:00.000Z';
+    var nota = Array.isArray(a.lineas) ? a.lineas.join(';;') : String(a.lineas || '');
+    var arr = [a.tipo, a.titulo, nota, 'Bueno', 'Activo', 'N/A']
+      .concat(new Array(37).fill('NO'))
+      .concat(['N/A', 'Aprobado', 'UrbisNoticia', 'Equipo URBIS · Alerta verificada',
+               '0', '', '', '', creado, expira, 'Temporal', 'Activo', 'Alerta']);
+    return {
+      tipo: '🌪️ Desastres Naturales y Clima',
+      lat: String(a.lat), lng: String(a.lng),
+      descripcion: arr.join(' | '),
+      fecha: creado
+    };
+  }
+
+  function cargarEditoriales() {
+    try {
+      fetch('assets/data/alertas-urbis.json?v=' + Date.now())
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !Array.isArray(j.alertas)) return;
+          _editoriales = j.alertas
+            .filter(function (a) { return a && a.tipo && a.lat != null && a.lng != null; })
+            .map(filaDesdeEditorial);
+          render();
+        })
+        .catch(function () { /* si falla, el mapa sigue igual con las de la base */ });
+    } catch (e) {}
+  }
+
   function render() {
     var m = getMap();
     if (!m) return;
@@ -181,6 +220,21 @@
 
     var data = Array.isArray(window.globalData) ? window.globalData
              : (typeof globalData !== 'undefined' && Array.isArray(globalData) ? globalData : []);
+    // Dedupe EXPLÍCITO por coordenada: si una alerta editorial repite el punto
+    // de una que ya está en la base, gana la de la base. No se puede dejar al
+    // orden de renderizado, porque el JSON llega por red y el resultado
+    // quedaría a merced de quién cargue primero.
+    var claveBase = {};
+    data.forEach(function (p) {
+      var la = parseFloat(String(p.lat).replace(',', '.'));
+      var ln = parseFloat(String(p.lng).replace(',', '.'));
+      if (!isNaN(la) && !isNaN(ln)) claveBase[la.toFixed(4) + ',' + ln.toFixed(4)] = true;
+    });
+    data = data.concat(_editoriales.filter(function (p) {
+      var la = parseFloat(p.lat), ln = parseFloat(p.lng);
+      if (isNaN(la) || isNaN(ln)) return false;
+      return !claveBase[la.toFixed(4) + ',' + ln.toFixed(4)];
+    }));
 
     var vistos = {};
     data.forEach(function (p) {
@@ -206,7 +260,15 @@
       if (isNaN(lat) || isNaN(lng)) return;
       var key = lat.toFixed(6) + ',' + lng.toFixed(6);
       vistos[key] = true;
-      if (_rendered[key]) return;
+      // Firma del contenido: si el texto de la alerta cambió (se editó en la
+      // hoja o en el JSON editorial), hay que rehacer el marcador. Antes se
+      // conservaba el viejo para siempre por estar cacheado por coordenada.
+      var sig = String(p.descripcion || '').slice(0, 200);
+      if (_rendered[key]) {
+        if (_rendered[key].__urbisSig === sig) return;
+        try { layer.removeLayer(_rendered[key]); } catch (e) {}
+        delete _rendered[key];
+      }
       try {
         var marker = window.urbisCrearMarcadorUrbano(lat, lng, dimKeyDe(p), p);
         if (marker) {
@@ -219,6 +281,7 @@
               abrirFicha(punto);
             });
           })(p);
+          marker.__urbisSig = sig;
           marker.addTo(layer);
           _rendered[key] = marker;
         }
@@ -243,6 +306,7 @@
     if (m) {
       try { m.on('zoomend moveend', function () { setTimeout(render, 60); }); } catch (e) {}
     }
+    cargarEditoriales();
     render();
     if (!_timer) _timer = setInterval(render, 3500);
   }

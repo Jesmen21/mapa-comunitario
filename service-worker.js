@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v485-seguimiento-contradicciones';
+const URBIS_CACHE = 'urbis-v486-alertas-editoriales-repo';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const URBIS_ASSETS = [
   './css/70-seguimiento.css',
   './js/70-seguimiento.js',
   './assets/data/seguimiento-presidencial.json',
+  './assets/data/alertas-urbis.json',
   './css/60-analisis-ia.css',
   './js/60-analisis-ia-motor.js',
   './js/61-analisis-ia-datos.js',
