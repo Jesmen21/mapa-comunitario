@@ -1139,3 +1139,9 @@
     font-weight:var(--u-fw-btn) !important; letter-spacing:.004em !important;
   }
 }
+
+  /* Módulo "Seguimiento" (seguimiento.html): mismo trato visual que el resto
+     de tarjetas del inicio. Su CSS propio NO se importa aquí a propósito:
+     ese archivo pinta body oscuro y oscurecería toda la app. */
+  .u52-module.seguimiento .u52-seguimiento-ico{ color:#1E7A4B !important; }
+  .u52-module.seguimiento small{ color:#1E7A4B !important; }

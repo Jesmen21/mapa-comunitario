@@ -1,0 +1,178 @@
+{
+  "_comentario": "URBIS · Seguimiento Presidencial. Cada entrada DEBE tener fuente verificable. Si un dato es disputado, se incluye la crítica en 'contrapunto'. Actualización semanal: agregar entradas al principio del array y mover 'actualizado'.",
+  "presidente": "Abelardo de la Espriella",
+  "periodo": "2026 – 2030",
+  "posesion": "2026-08-07",
+  "actualizado": "2026-08-17",
+  "proximaActualizacion": "2026-08-24",
+  "categorias": {
+    "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
+    "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
+    "eeuu": { "nombre": "EE. UU. y acceso militar", "icono": "🎖️", "color": "#b45309" },
+    "emergencia": { "nombre": "Emergencias", "icono": "🚨", "color": "#dc2626" },
+    "economia": { "nombre": "Economía", "icono": "📉", "color": "#7c3aed" },
+    "exterior": { "nombre": "Política exterior", "icono": "🌐", "color": "#0891b2" }
+  },
+  "entradas": [
+    {
+      "fecha": "2026-08-16",
+      "precision": "exacta",
+      "categoria": "israel",
+      "titulo": "Netanyahu y De la Espriella hablan por teléfono: Israel celebra un “nuevo capítulo”",
+      "detalle": "En la llamada, el presidente colombiano agradeció la ayuda humanitaria israelí y la presencia de rescatistas en territorio colombiano tras el terremoto del 10 de agosto.",
+      "fuente": "teleSUR",
+      "url": "https://www.telesurtv.net/israel-celebra-un-nuevo-capitulo-en-las-relaciones-con-colombia-tras-conversar-con-de-la-espriella/"
+    },
+    {
+      "fecha": "2026-08-16",
+      "precision": "aproximada",
+      "categoria": "israel",
+      "titulo": "Colombia reconoce la soberanía israelí sobre los Altos del Golán",
+      "detalle": "Revierte la posición histórica del país. El reconocimiento acompaña el giro general hacia Israel, Marruecos y Estados Unidos.",
+      "contrapunto": "Varios medios y analistas lo cuestionan: los Altos del Golán son territorio sirio ocupado según resoluciones de Naciones Unidas, y su anexión no está reconocida por la ONU.",
+      "fuente": "Pulzo",
+      "url": "https://www.pulzo.com/mundo/colombia-restablece-relaciones-con-israel-respaldo-a-netanyahu-y-reconocimiento-sobre-golan-PP5275952A"
+    },
+    {
+      "fecha": "2026-08-15",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "Estados Unidos anuncia un paquete de seguridad de USD 1.000 millones para Colombia",
+      "detalle": "Incluye mayor cooperación militar, lucha antidrogas, erradicación de cultivos de coca y operaciones coordinadas entre las fuerzas de ambos países.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/poder/articulo/2026/8/estados-unidos-anuncia-un-paquete-de-seguridad-de-1000-millones-de-dolares-para-colombia"
+    },
+    {
+      "fecha": "2026-08-15",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "Colombia entra a la “Coalición de las Américas contra los Carteles”; Medellín será sede regional",
+      "detalle": "Anunciado en la cumbre “Escudo de las Américas” en Ciudad de Panamá. El programa, impulsado por Trump, agrupa a 18 países contra organizaciones clasificadas como terroristas por EE. UU. Medellín queda como sede regional.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+    },
+    {
+      "fecha": "2026-08-15",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "El secretario de Guerra de EE. UU. afirma que Colombia autorizó operaciones militares conjuntas en suelo colombiano",
+      "detalle": "Pete Hegseth sostuvo que el Gobierno de De la Espriella solicitó y autorizó operaciones conjuntas dentro del territorio nacional para combatir el terrorismo.",
+      "contrapunto": "El anuncio generó controversia interna e internacional por sus implicaciones sobre la soberanía colombiana y por el alcance de la participación militar estadounidense en el país.",
+      "fuente": "Cambio",
+      "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+    },
+    {
+      "fecha": "2026-08-13",
+      "precision": "exacta",
+      "categoria": "eeuu",
+      "titulo": "Propuesta que abre la puerta a operaciones militares de Estados Unidos en Colombia",
+      "detalle": "La iniciativa habilitaría la actuación de tropas estadounidenses en territorio colombiano dentro de la ofensiva antinarcóticos regional.",
+      "contrapunto": "Sectores políticos y analistas advierten que sería un cambio profundo en la doctrina de soberanía militar del país.",
+      "fuente": "La Nación (Argentina)",
+      "url": "https://www.lanacion.com.ar/el-mundo/la-polemica-propuesta-de-de-la-espriella-que-abre-la-puerta-a-operaciones-militares-de-eeuu-en-nid13082026/"
+    },
+    {
+      "fecha": "2026-08-13",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "Anuncia emergencia económica por el terremoto",
+      "detalle": "Herramienta para acelerar el giro de recursos a la reconstrucción. El Gobierno afirmó que “cada peso girado quedará expuesto” a control público.",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/"
+    },
+    {
+      "fecha": "2026-08-10",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Terremoto de magnitud 7,4 con epicentro en Chocó, a menos de 72 horas de asumir",
+      "detalle": "La mayor emergencia del arranque de gobierno. El detalle completo (víctimas, daños y réplicas) está en la alerta del mapa de URBIS.",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/10/por-que-el-temblor-en-colombia-de-este-lunes-10-de-agosto-duro-una-eternidad-el-servicio-geologico-explico-que-paso/"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "israel",
+      "titulo": "Restablece relaciones con Israel y retira la demanda por genocidio en Gaza",
+      "detalle": "Se normalizan las relaciones institucionales, diplomáticas y económicas rotas por Gustavo Petro en mayo de 2024. Se acuerda eliminar el requisito de visa y avanzar en la apertura de una embajada en Jerusalén.",
+      "fuente": "El País (Cali)",
+      "url": "https://www.elpais.com.co/politica/al-asumir-la-presidencia-de-la-espriella-retirara-la-demanda-de-colombia-contra-israel-por-genocidio-en-gaza-1644.html"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "eeuu",
+      "titulo": "Colombia queda como eje de la ofensiva militar de Trump contra el narcotráfico en la región",
+      "detalle": "Según The New York Times, el acuerdo con De la Espriella convierte al país en pieza central de la estrategia estadounidense para la región.",
+      "fuente": "Infobae",
+      "url": "https://www.infobae.com/colombia/2026/08/07/colombia-se-convierte-en-eje-de-ofensiva-militar-de-trump-contra-narcotrafico-en-la-region-tras-acuerdo-con-de-la-espriella-segun-de-new-york-times/"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Nombra su gabinete: 18 ministros por el Decreto 1136",
+      "detalle": "Primer equipo de gobierno completo, oficializado el mismo día de la posesión.",
+      "fuente": "La República",
+      "url": "https://www.larepublica.co/economia/estos-son-los-18-ministros-con-los-que-abelardo-de-la-espriella-comienza-su-mandato-4453827"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Expide 6 decretos en su primer día (1133 a 1138)",
+      "detalle": "Entre ellos el Decreto 1134, que nombra al abogado Andrés Barreto como secretario jurídico de la Presidencia.",
+      "contrapunto": "Había anunciado cerca de 90 decretos para el primer día; la cifra real quedó muy por debajo de esa promesa.",
+      "fuente": "Portafolio",
+      "url": "https://www.portafolio.co/economia/gobierno/estos-fueron-los-decretos-que-expidio-abelardo-de-la-espriella-en-su-primer-dia-como-presidente-499958"
+    },
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Toma posesión en la Universidad Santiago de Cali",
+      "detalle": "Primera investidura presidencial de Colombia celebrada fuera de Bogotá. En su primer discurso abordó seguridad, salud, educación, economía y justicia.",
+      "fuente": "Semana",
+      "url": "https://www.semana.com/politica/articulo/asi-fue-la-posesion-de-abelardo-de-la-espriella-como-presidente-de-colombia-2026-al-2030-reviva-el-minuto-a-minuto/202630/"
+    },
+    {
+      "fecha": "2026-08-06",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Decreto 1012: suspende por 15 días los requisitos de meritocracia para cargos de libre nombramiento",
+      "detalle": "Expedido por el gobierno saliente un día antes de la posesión, para agilizar la conformación del nuevo gabinete.",
+      "fuente": "El Heraldo",
+      "url": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/"
+    }
+  ],
+  "transversales": [
+    {
+      "categoria": "israel",
+      "titulo": "Cooperación militar y tecnológica con Israel",
+      "detalle": "El Gobierno defiende públicamente recuperar la cooperación militar y tecnológica con Israel, incluyendo adquisición de armas, drones e inteligencia artificial. Se reactivan canales en seguridad, tecnología agrícola y manejo de recursos hídricos.",
+      "fuente": "El Tiempo",
+      "url": "https://www.eltiempo.com/mundo/latinoamerica/de-la-espriella-redefine-politica-exterior-priorizando-alianzas-en-seguridad-y-comercio-que-implica-privilegiar-a-israel-y-distanciarse-de-la-onu-3578573"
+    },
+    {
+      "categoria": "exterior",
+      "titulo": "Reordenamiento general de la política exterior",
+      "detalle": "Prioriza alianzas de seguridad y comercio con Israel, Estados Unidos y Marruecos, y toma distancia de Naciones Unidas. Incluye el reconocimiento de posiciones territoriales disputadas (Golán y Sáhara Occidental).",
+      "fuente": "El Español",
+      "url": "https://www.elespanol.com/mundo/america/20260816/colombia-cambia-aliados-pleno-seismo-espriella-corteja-israel-marruecos-eeuu-golan-sahara/1003744353549_0.html"
+    },
+    {
+      "categoria": "economia",
+      "titulo": "Situación económica heredada",
+      "detalle": "Crecimiento del 2,6 %, inflación que podría llegar al 7 % en el año y deuda pública cercana al 60 % del PIB. La reconstrucción tras el terremoto podría costar unos USD 6.350 millones (cerca del 1 % del PIB), lo que presiona la promesa de reducir el déficit.",
+      "fuente": "CNN en Español",
+      "url": "https://cnnespanol.cnn.com/2026/08/14/colombia/terremoto-impacto-economico-promesa-abelardo-orix"
+    },
+    {
+      "categoria": "gobierno",
+      "titulo": "Panorama de seguridad al asumir",
+      "detalle": "Las estructuras criminales pasaron de 15.120 integrantes en diciembre de 2022 a 28.802 en julio de 2026. El Clan del Golfo pasó de 253 a 392 municipios, el ELN de 189 a 231 y las disidencias de las FARC de 230 a 299.",
+      "fuente": "El Tiempo",
+      "url": "https://www.eltiempo.com/amp/politica/abelardo-de-la-espriella/colombia-cambia-de-rumbo-la-agenda-y-los-retos-del-arranque-del-gobierno-de-abelardo-de-la-espriella-3577057"
+    }
+  ]
+}

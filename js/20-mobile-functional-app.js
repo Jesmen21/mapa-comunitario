@@ -366,6 +366,7 @@
           <button class="u52-module social u52-jac-module" data-u52-go="social"><span><img src="assets/brand/social.png" alt="Social URBIS"></span><b>Social</b><small>Comunidad</small></button>
           <button class="u52-module games u52-jac-module" data-u52-go="games"><span class="u52-games-ico">🎮</span><b>Minijuegos</b><small>Juega y gana</small></button>
           <button class="u52-module sport u52-jac-module" data-u52-go="sport"><span><img src="assets/icons/urbis-runner.png" alt="URBIS Rush"></span><b>URBIS Rush</b><small>Corre y compite</small></button>
+          <button class="u52-module seguimiento u52-jac-module" onclick="location.href='seguimiento.html'"><span class="u52-seguimiento-ico">🏛️</span><b>Seguimiento</b><small>Qué hace el Gobierno</small></button>
         </div>
 
         <div class="u52-k-section-label sky">✦ Módulo UrbisProCity</div>

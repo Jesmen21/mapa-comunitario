@@ -1,8 +1,12 @@
-const URBIS_CACHE = 'urbis-v480-cuenta-urbisnoticia-rol-desde-backend';
+const URBIS_CACHE = 'urbis-v481-modulo-seguimiento-presidencial';
 const URBIS_ASSETS = [
   './',
   './index.html',
   './analisis-ia.html',
+  './seguimiento.html',
+  './css/70-seguimiento.css',
+  './js/70-seguimiento.js',
+  './assets/data/seguimiento-presidencial.json',
   './css/60-analisis-ia.css',
   './js/60-analisis-ia-motor.js',
   './js/61-analisis-ia-datos.js',
