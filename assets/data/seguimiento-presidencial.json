@@ -210,6 +210,34 @@
       "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
     }
   ],
+  "foda": {
+    "_nota": "A diferencia de la línea de tiempo (hechos), esto es INTERPRETACIÓN. Cada punto se apoya en un hecho ya documentado arriba, pero la lectura es opinable.",
+    "fortalezas": [
+      { "t": "Instalación del gobierno sin vacío de poder", "d": "Nombró los 18 ministros el mismo día de la posesión (Decreto 1136) y expidió 6 decretos ese día. El Estado quedó operando desde la hora cero." },
+      { "t": "Reacción rápida ante el terremoto", "d": "El sismo llegó a menos de 72 horas de asumir. Firmó el Decreto 1171 declarando desastre nacional en 12 departamentos la noche siguiente, y anunció emergencia económica en días." },
+      { "t": "Consiguió financiación externa en tiempo récord", "d": "En su primera semana y media: USD 450 millones del Banco Mundial (200 ya desembolsados), USD 300 millones del BID y un paquete de seguridad de USD 1.000 millones de EE. UU." },
+      { "t": "Vigilancia del gasto desde el empalme", "d": "Antes de asumir denunció ante Fiscalía, Contraloría y Procuraduría, y congeló contratación de última hora en MinIgualdad. Al margen de a quién señale, es control sobre el gasto público." }
+    ],
+    "debilidades": [
+      { "t": "Incumplió su primera promesa medible", "d": "Anunció cerca de 90 decretos para el primer día. Expidió 6. Es el primer dato verificable de distancia entre anuncio y ejecución." },
+      { "t": "Opacidad en el acuerdo militar", "d": "No ha publicado zonas, número de efectivos, duración ni reglas de enfrentamiento de las operaciones conjuntas con EE. UU. Sin esos datos no hay control ciudadano posible sobre el acuerdo." },
+      { "t": "La reconstrucción depende casi toda de deuda", "d": "Se apoya en fondos multilaterales y ya admitió “nos vamos a endeudar”, lo que choca de frente con su promesa de reducir el déficit." },
+      { "t": "Gabinete armado con la meritocracia suspendida", "d": "El Decreto 1012 suspendió por 15 días los requisitos de mérito para cargos de libre nombramiento. Agilizó el arranque, pero debilitó el filtro de idoneidad." }
+    ],
+    "oportunidades": [
+      { "t": "Cooperación en seguridad y tecnología", "d": "Frente a estructuras criminales que casi se duplicaron desde 2022, recupera acceso a cooperación militar y tecnológica (drones, IA) y suma USD 1.000 millones de apoyo estadounidense." },
+      { "t": "La reconstrucción como palanca de modernización", "d": "Los fondos multilaterales y la emergencia económica permiten renovar infraestructura del Eje Cafetero, no solo reponer lo caído." },
+      { "t": "Peso regional de Colombia", "d": "Medellín como sede regional del programa hemisférico le da al país un papel central en la arquitectura de seguridad de la región." },
+      { "t": "Cooperación técnica en agua y agro", "d": "Los canales reabiertos con Israel incluyen manejo de recursos hídricos y tecnología agrícola, útiles justo en plena temporada seca y de incendios forestales." }
+    ],
+    "amenazas": [
+      { "t": "Riesgo constitucional del acuerdo militar", "d": "Una cooperación a gran escala con tropas estadounidenses debe pasar por el Congreso según jurisprudencia previa. Si no pasa, el acuerdo puede caerse o quedar en litigio." },
+      { "t": "Que la emergencia repita lo que él denunció", "d": "La contratación acelerada por emergencia es justamente el terreno donde se producen las irregularidades que su propio equipo denunció. Su promesa de que “cada peso quedará expuesto” es la que será medida." },
+      { "t": "Margen fiscal muy estrecho", "d": "Deuda cercana al 60 % del PIB, inflación que podría llegar al 7 % y una reconstrucción de cerca del 1 % del PIB. Poco espacio para maniobrar." },
+      { "t": "Costo diplomático del realineamiento", "d": "Reconocer la soberanía israelí sobre el Golán y distanciarse de la ONU puede aislar a Colombia en foros multilaterales donde antes tenía voz." },
+      { "t": "La seguridad heredada", "d": "28.802 integrantes de estructuras criminales y el Clan del Golfo presente en 392 municipios. Es el problema que definirá su gobierno." }
+    ]
+  },
   "transversales": [
     {
       "categoria": "eeuu",

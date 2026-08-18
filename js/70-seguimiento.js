@@ -114,6 +114,34 @@
     });
   }
 
+  // Balance FODA. Se marca visualmente como INTERPRETACIÓN, distinto de la
+  // línea de tiempo que son hechos citados.
+  function pintarFoda() {
+    var cont = $('sp-foda');
+    var f = DATOS.foda;
+    if (!cont) return;
+    if (!f) { cont.innerHTML = ''; return; }
+
+    var bloques = [
+      { k: 'fortalezas',    t: 'Fortalezas',    ico: '💪', sub: 'Lo que ha hecho bien',        cls: 'ok' },
+      { k: 'debilidades',   t: 'Debilidades',   ico: '⚠️', sub: 'Fallas propias',             cls: 'mal' },
+      { k: 'oportunidades', t: 'Oportunidades', ico: '🚀', sub: 'Lo que puede aprovechar',    cls: 'ok2' },
+      { k: 'amenazas',      t: 'Amenazas',      ico: '🌩️', sub: 'Riesgos que no controla',    cls: 'mal2' }
+    ];
+
+    cont.innerHTML = bloques.map(function (b) {
+      var lista = f[b.k] || [];
+      if (!lista.length) return '';
+      return '<div class="sp-foda-card sp-foda-' + b.cls + '">' +
+        '<div class="sp-foda-head"><span>' + b.ico + '</span><div><b>' + b.t + '</b>' +
+          '<small>' + esc(b.sub) + '</small></div><i>' + lista.length + '</i></div>' +
+        '<ul>' + lista.map(function (x) {
+          return '<li><b>' + esc(x.t) + '</b><span>' + esc(x.d) + '</span></li>';
+        }).join('') + '</ul>' +
+      '</div>';
+    }).join('');
+  }
+
   function pintarTransversales() {
     var cont = $('sp-transversales');
     var lista = DATOS.transversales || [];
@@ -164,6 +192,7 @@
       pintarCabecera();
       pintarFiltros();
       pintarTimeline();
+      pintarFoda();
       pintarTransversales();
     })
     .catch(function (e) {

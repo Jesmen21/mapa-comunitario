@@ -127,3 +127,38 @@ body{
   .sp-item h3{ font-size:1rem; }
 }
 
+
+/* ── Balance FODA ───────────────────────────────────────────────────────────
+   Se separa visualmente de la línea de tiempo con un borde superior de color,
+   porque son cosas distintas: arriba hechos citados, aquí interpretación. */
+.sp-foda-sec{ margin-top:30px; }
+.sp-foda-sec h2{ margin:0 0 2px; font-size:1.05rem; font-weight:900; }
+.sp-foda{ display:grid; gap:10px; margin-top:12px; }
+.sp-foda-card{
+  background:var(--sp-panel); border:1px solid var(--sp-borde);
+  border-radius:14px; padding:13px 14px; border-top:4px solid var(--sp-verde);
+}
+.sp-foda-ok{ border-top-color:#22c55e; }
+.sp-foda-ok2{ border-top-color:#38bdf8; }
+.sp-foda-mal{ border-top-color:#f59e0b; }
+.sp-foda-mal2{ border-top-color:#ef4444; }
+
+.sp-foda-head{ display:flex; align-items:center; gap:9px; margin-bottom:10px; }
+.sp-foda-head > span{ font-size:1.25rem; line-height:1; }
+.sp-foda-head b{ display:block; font-size:.95rem; font-weight:900; color:#fff; }
+.sp-foda-head small{ display:block; font-size:.7rem; color:var(--sp-txt2); }
+.sp-foda-head i{
+  margin-left:auto; font-style:normal; font-size:.72rem; font-weight:900;
+  background:rgba(255,255,255,.1); border-radius:999px; padding:3px 9px; color:var(--sp-txt);
+}
+.sp-foda-card ul{ margin:0; padding:0; list-style:none; }
+.sp-foda-card li{
+  padding:9px 0; border-top:1px solid rgba(167,209,178,.14);
+}
+.sp-foda-card li:first-child{ border-top:none; padding-top:0; }
+.sp-foda-card li b{ display:block; font-size:.83rem; font-weight:800; color:#fff; margin-bottom:2px; }
+.sp-foda-card li span{ display:block; font-size:.79rem; color:var(--sp-txt2); line-height:1.45; }
+
+@media (min-width:700px){
+  .sp-foda{ grid-template-columns:1fr 1fr; }
+}
