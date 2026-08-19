@@ -10,26 +10,46 @@
    algo, y si todo tiene color nada lo significa.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root{
-  --petroleo:#0B3D32;
-  --petroleo-2:#0F4E40;
-  --verde:#18A77A;
-  --verde-hi:#12946B;
-  --verde-suave:#DDF4EC;
+  /* Paleta tomada del LOGO real de URBIS (assets/brand/urbis-logo.png):
+     celeste #34CCFE 77% · blanco 17% · amarillo #FABD0A 1%.
+     Los tokens de css/00-brand-urbis.css dicen verde, pero el logo nunca lo fue.
+     El celeste puro no sirve para texto (1.8:1 sobre blanco), así que se usa
+     como TINTE y relleno, y su versión oscura para lo interactivo. */
+  --celeste:#34CCFE;
+  /* #0E86BC daba 3.76:1 sobre marfil: alcanza para un icono (3:1) pero NO para
+     el texto pequeño que lo usa (antetítulo, número de sección). Se oscurece un
+     paso: 5.22 sobre marfil y 5.65 sobre blanco, holgado en los dos fondos. */
+  --celeste-hi:#0B6E9B;
+  --celeste-mark:#0E86BC;    /* el tono claro sobrevive donde solo hay marcas */
+  --celeste-deep:#06405A;    /* titulares */
+  --celeste-suave:#E2F6FE;
+  --amarillo:#FABD0A;
+  --amarillo-hi:#946A00;     /* la versión legible del amarillo de marca */
+
+  /* Alias heredados: el módulo se construyó sobre estos nombres. Se remapean
+     al celeste en vez de renombrar 300 usos y arriesgar un descuadre. */
+  --petroleo:var(--celeste-deep);
+  --petroleo-2:#0A5678;
+  --verde:var(--celeste);
+  --verde-hi:var(--celeste-hi);
+  --verde-suave:var(--celeste-suave);
+
   --marfil:#F7F6F1;
   --sup:#FFFFFF;
-  --ink:#17201D;
-  /* Pedido: #6B7671. Se oscurece un punto porque sobre el marfil daba 4.36:1 y
-     AA exige 4.5 para texto normal. Mismo tono, ahora 4.72:1. */
-  --ink-2:#646F6A;
+  --ink:#152229;
+  /* Pedido: #6B7671. Se oscureció por contraste (daba 4.36:1) y se enfrió para
+     acompañar al celeste. Ahora 4.9:1 sobre marfil. */
+  --ink-2:#5F6B72;
   --ambar:#D99A32;
   --rojo:#C95A55;
   --azul:#527C91;
+  --indigo:#5D5FA8;
 
-  /* Neutro con sesgo hacia el verde de marca: un gris puro se lee sin criterio */
-  --linea:#E3E4DE;
-  --linea-2:#EDEEE8;
-  --sombra:0 1px 2px rgba(11,61,50,.05), 0 8px 24px -12px rgba(11,61,50,.14);
-  --sombra-hi:0 2px 4px rgba(11,61,50,.06), 0 14px 32px -14px rgba(11,61,50,.2);
+  /* Neutro con sesgo frío hacia el celeste: un gris puro se lee sin criterio */
+  --linea:#E1E5E7;
+  --linea-2:#EDF0F1;
+  --sombra:0 1px 2px rgba(6,64,90,.05), 0 8px 24px -12px rgba(6,64,90,.16);
+  --sombra-hi:0 2px 4px rgba(6,64,90,.07), 0 14px 32px -14px rgba(6,64,90,.22);
 
   --r:14px;
   --r-s:10px;
@@ -77,7 +97,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   border-radius:999px; font:inherit; font-size:.85rem; font-weight:600; cursor:pointer;
   transition:background var(--t), border-color var(--t), transform var(--t);
 }
-.sp-back:hover{ background:var(--verde-suave); border-color:#C6E8DC; }
+.sp-back:hover{ background:var(--verde-suave); border-color:#A8DFF6; }
 .sp-back:active{ transform:scale(.97); }
 .sp-back svg{ width:17px; height:17px; }
 
@@ -104,7 +124,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 }
 .sp-dot{
   width:6px; height:6px; border-radius:50%; background:var(--verde);
-  box-shadow:0 0 0 3px rgba(24,167,122,.16);
+  box-shadow:0 0 0 3px rgba(52,204,254,.28);
 }
 .sp-iconbtn{
   width:34px; height:34px; display:grid; place-items:center;
@@ -164,7 +184,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font:inherit; color:inherit; cursor:pointer;
   transition:border-color var(--t), box-shadow var(--t), transform var(--t);
 }
-.sp-sec:hover{ border-color:#C6E8DC; box-shadow:var(--sombra); }
+.sp-sec:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
 .sp-sec:active{ transform:scale(.995); }
 .sp-sec-n{
   font-size:.78rem; font-weight:700; color:var(--verde-hi);
@@ -208,7 +228,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   border-radius:var(--r-s); font:inherit; color:inherit; cursor:pointer; text-align:left;
   transition:border-color var(--t), box-shadow var(--t), background var(--t);
 }
-.sp-tema:hover{ border-color:#C6E8DC; background:var(--verde-suave); }
+.sp-tema:hover{ border-color:#A8DFF6; background:var(--verde-suave); }
 .sp-tema-n{ font-size:.95rem; font-weight:600; color:var(--petroleo); }
 .sp-tema-c{
   flex:0 0 auto; min-width:26px; height:24px; padding:0 8px;
@@ -217,7 +237,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font-size:.76rem; font-weight:700; color:var(--ink-2);
   font-variant-numeric:tabular-nums;
 }
-.sp-tema:hover .sp-tema-c{ background:var(--sup); border-color:#C6E8DC; color:var(--verde-hi); }
+.sp-tema:hover .sp-tema-c{ background:var(--sup); border-color:#A8DFF6; color:var(--verde-hi); }
 
 /* ── Controles de lista ─────────────────────────────────────────────────── */
 .sp-controls{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -230,7 +250,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font:inherit; font-size:.86rem; font-weight:600; color:var(--petroleo); cursor:pointer;
   transition:border-color var(--t);
 }
-.sp-combo-btn:hover{ border-color:#C6E8DC; }
+.sp-combo-btn:hover{ border-color:#A8DFF6; }
 .sp-combo-btn .sp-combo-lab{ color:var(--ink-2); font-weight:500; }
 .sp-combo-btn svg{ width:15px; height:15px; color:var(--ink-2); transition:transform var(--t); }
 .sp-combo.open .sp-combo-btn svg{ transform:rotate(180deg); }
@@ -258,7 +278,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font:inherit; font-size:.86rem; font-weight:600; color:var(--petroleo); cursor:pointer;
   transition:border-color var(--t), background var(--t);
 }
-.sp-filterbtn:hover{ border-color:#C6E8DC; background:var(--verde-suave); }
+.sp-filterbtn:hover{ border-color:#A8DFF6; background:var(--verde-suave); }
 .sp-filterbtn svg{ width:16px; height:16px; }
 .sp-fcount{
   min-width:19px; height:19px; padding:0 5px; display:grid; place-items:center;
@@ -274,7 +294,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font:inherit; color:inherit; cursor:pointer;
   transition:border-color var(--t), box-shadow var(--t);
 }
-.sp-hecho:hover{ border-color:#C6E8DC; box-shadow:var(--sombra); }
+.sp-hecho:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
 .sp-h-top{ display:flex; align-items:center; gap:10px; margin-bottom:9px; flex-wrap:wrap; }
 .sp-h-fecha{
   font-size:.73rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
@@ -361,7 +381,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   font-size:.84rem; font-weight:500; color:var(--ink); text-decoration:none; line-height:1.35;
   transition:border-color var(--t), background var(--t);
 }
-a.sp-fuente:hover{ border-color:#C6E8DC; background:var(--verde-suave); color:var(--petroleo); }
+a.sp-fuente:hover{ border-color:#A8DFF6; background:var(--verde-suave); color:var(--petroleo); }
 .sp-fuente svg{ width:14px; height:14px; flex:0 0 auto; color:var(--ink-2); }
 a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fuente span{ min-width:0; }
@@ -422,7 +442,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   border-radius:var(--r-s); font:inherit; cursor:pointer; text-align:left;
   transition:border-color var(--t), background var(--t);
 }
-.sp-fodatab:hover{ border-color:#C6E8DC; }
+.sp-fodatab:hover{ border-color:#A8DFF6; }
 .sp-fodatab[aria-selected="true"]{ background:var(--petroleo); border-color:var(--petroleo); }
 .sp-fodatab-t{ font-size:.92rem; font-weight:600; color:var(--petroleo); }
 .sp-fodatab-d{ font-size:.75rem; color:var(--ink-2); margin-top:1px; }
@@ -456,7 +476,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font:inherit; color:inherit; cursor:pointer;
   transition:border-color var(--t), box-shadow var(--t);
 }
-.sp-tf:hover{ border-color:#C6E8DC; box-shadow:var(--sombra); }
+.sp-tf:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
 .sp-tf h3{ font-size:1.02rem; font-weight:600; color:var(--petroleo); line-height:1.32; }
 .sp-tf p{
   margin-top:7px; font-size:.88rem; color:var(--ink-2); line-height:1.5;
@@ -510,7 +530,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   position:relative; z-index:1; margin:auto auto 0; width:100%;
   max-height:86vh; display:flex; flex-direction:column;
   background:var(--sup); border-radius:18px 18px 0 0;
-  box-shadow:0 -12px 44px rgba(11,61,50,.2);
+  box-shadow:0 -12px 44px rgba(6,64,90,.2);
   animation:spUp 240ms cubic-bezier(.32,.72,0,1);
 }
 @keyframes spUp{ from{ transform:translateY(16px); opacity:.6; } to{ transform:none; opacity:1; } }
@@ -566,7 +586,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   .sp-cx-desp::before{ display:none; }
   .sp-sheet-card{
     margin:auto; max-width:540px; border-radius:18px;
-    box-shadow:0 24px 60px rgba(11,61,50,.24);
+    box-shadow:0 24px 60px rgba(6,64,90,.24);
   }
   .sp-sheet-foot{ padding-bottom:18px; }
 }
@@ -598,3 +618,172 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IDENTIDAD POR SECCIÓN Y POR CATEGORÍA
+   Dos sistemas de color que NO se pisan, separados por FORMA:
+     · círculo/disco + riel  = de qué trata (categoría o sección)
+     · píldora con glifo     = qué tan sólido es el dato (evidencia)
+   Así un rojo de "Corrupción" nunca se confunde con un rojo de "Desmentida".
+   El color de categoría sale del JSON, por eso una categoría nueva funciona
+   sola sin tocar código.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* --sc = color de la sección, lo inyecta el JS por elemento */
+.sp-sec{ position:relative; overflow:hidden; }
+.sp-sec::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+  background:var(--sc-mark,var(--celeste-mark));
+}
+.sp-sec{ padding-left:22px; }
+.sp-sec-n{ color:var(--sc,var(--celeste-hi)); font-size:.92rem; }
+.sp-sec-ico{
+  width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+  background:var(--sc-bg,var(--celeste-suave)); color:var(--sc-mark,var(--celeste-mark));
+  flex:0 0 auto; font-size:1.15rem; line-height:1;
+}
+.sp-sec-ico svg{ width:21px; height:21px; }
+
+/* Cabecera de vista con el color de su sección */
+.sp-vhead .sp-vnum{ color:var(--sc,var(--celeste-hi)); }
+.sp-vhead-ico{
+  display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;
+  background:var(--sc-bg,var(--celeste-suave)); color:var(--sc-mark,var(--celeste-mark));
+  margin-bottom:10px;
+}
+.sp-vhead-ico svg{ width:18px; height:18px; }
+
+/* Disco de categoría: el tinte se calcula en JS a partir del color del JSON,
+   así cualquier hex queda armónico sin retocarlo a mano. */
+.sp-disco{
+  width:38px; height:38px; border-radius:50%; display:grid; place-items:center;
+  font-size:1.05rem; line-height:1; flex:0 0 auto;
+  background:var(--cbg,#EEF2F4); box-shadow:inset 0 0 0 1px var(--cbd,#DDE3E6);
+}
+.sp-disco-s{ width:30px; height:30px; font-size:.86rem; }
+
+/* Temas: disco + nombre + rango de fechas + último titular */
+.sp-tema{ align-items:flex-start; gap:13px; }
+.sp-tema-body{ flex:1 1 auto; min-width:0; }
+.sp-tema-meta{
+  display:block; font-size:.74rem; color:var(--ink-2); margin-top:3px;
+  font-variant-numeric:tabular-nums;
+}
+.sp-tema-ult{
+  display:block; font-size:.78rem; color:var(--ink); margin-top:6px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.sp-tema-ult::before{ content:"Último · "; color:var(--ink-2); }
+
+/* Riel de categoría en la tarjeta de hecho */
+.sp-hecho{ position:relative; padding-left:21px; overflow:hidden; }
+.sp-hecho::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--cc,var(--linea));
+}
+
+/* ── Gráficas ─────────────────────────────────────────────────────────────
+   SVG a mano: sin librerías, sin dependencias de red y con control total del
+   contraste. Marcas finas, rejilla discreta, y etiqueta directa en cada dato
+   (el ámbar queda en 2.44:1 sobre blanco, así que la etiqueta no es adorno:
+   es el canal de alivio que exige la norma de contraste). */
+.sp-graficas{ display:grid; gap:14px; }
+.sp-graf{
+  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
+  padding:18px 18px 16px;
+}
+.sp-graf-h{ margin-bottom:3px; font-size:1rem; font-weight:600; color:var(--petroleo); }
+.sp-graf-u{
+  font-size:.72rem; color:var(--ink-2); text-transform:uppercase;
+  letter-spacing:.07em; font-weight:600; margin-bottom:14px;
+}
+.sp-graf svg{ width:100%; height:auto; display:block; stroke:none; }
+.sp-graf-nota{
+  margin-top:13px; padding-top:12px; border-top:1px solid var(--linea-2);
+  font-size:.79rem; color:var(--ink-2); line-height:1.5;
+}
+.sp-graf-src{ margin-top:12px; }
+
+/* Cifra destacada dentro de una gráfica */
+.sp-cifra{ display:flex; align-items:baseline; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+.sp-cifra b{
+  font-size:2rem; font-weight:700; color:var(--petroleo);
+  font-variant-numeric:tabular-nums; letter-spacing:-.03em; line-height:1;
+}
+.sp-delta{
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:.82rem; font-weight:700; padding:3px 9px; border-radius:999px;
+  font-variant-numeric:tabular-nums;
+}
+.sp-delta-baja{ color:#0B6E4F; background:#DFF3EA; border:1px solid #B4E0CE; }
+.sp-delta-sube{ color:#9A3C38; background:#FBEDEC; border:1px solid #EFC7C5; }
+
+/* Leyenda: identidad nunca por color solo — lleva punto Y texto */
+.sp-leg{ display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+.sp-leg span{
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:.78rem; color:var(--ink-2); font-variant-numeric:tabular-nums;
+}
+.sp-leg i{ width:10px; height:10px; border-radius:3px; flex:0 0 auto; }
+
+/* Barras de deuda: medidor comprometido vs desembolsado */
+.sp-medidor{ margin-bottom:16px; }
+.sp-medidor:last-of-type{ margin-bottom:0; }
+.sp-med-top{
+  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  margin-bottom:7px;
+}
+.sp-med-n{ font-size:.88rem; font-weight:600; color:var(--ink); }
+.sp-med-v{ font-size:.82rem; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.sp-med-track{
+  height:26px; border-radius:7px; background:var(--celeste-suave);
+  box-shadow:inset 0 0 0 1px #CDEBFA; overflow:hidden; position:relative;
+}
+.sp-med-fill{
+  height:100%; background:var(--celeste-hi); border-radius:7px 0 0 7px;
+  display:flex; align-items:center; padding:0 9px;
+  font-size:.75rem; font-weight:700; color:#fff; white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.sp-med-e{ margin-top:6px; font-size:.75rem; color:var(--ink-2); }
+.sp-med-aparte{
+  margin-top:18px; padding:13px 15px; background:var(--marfil);
+  border:1px dashed var(--linea); border-radius:var(--r-s);
+}
+.sp-med-aparte b{ display:block; font-size:.85rem; color:var(--ink); margin-bottom:3px; }
+.sp-med-aparte span{ font-size:.78rem; color:var(--ink-2); }
+
+/* Tarjeta de gráfica en la portada, para que no arranque tan plana */
+.sp-hero-graf{
+  margin-top:16px; display:block; width:100%; text-align:left;
+  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
+  padding:16px 18px; font:inherit; color:inherit; cursor:pointer;
+  transition:border-color var(--t), box-shadow var(--t);
+}
+.sp-hero-graf:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
+.sp-hero-graf-top{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  margin-bottom:10px; flex-wrap:wrap;
+}
+.sp-hero-graf-t{ font-size:.82rem; font-weight:600; color:var(--ink); }
+
+/* Iconos en los indicadores de portada */
+.sp-stat{ display:flex; align-items:flex-start; gap:11px; }
+.sp-stat-ico{
+  width:32px; height:32px; border-radius:9px; display:grid; place-items:center;
+  background:var(--celeste-suave); color:var(--celeste-hi); flex:0 0 auto;
+}
+.sp-stat-ico svg{ width:17px; height:17px; }
+.sp-stat-body{ min-width:0; }
+
+/* FODA con icono por cuadrante */
+.sp-fodatab{ gap:11px; }
+.sp-fodatab-ico{
+  width:32px; height:32px; border-radius:9px; display:grid; place-items:center;
+  font-size:1rem; line-height:1; flex:0 0 auto;
+  background:var(--fbg,var(--celeste-suave));
+}
+.sp-fodatab[aria-selected="true"] .sp-fodatab-ico{ background:rgba(255,255,255,.16); }
+
+/* Icono de estado en contradicciones */
+.sp-cx-head-l{ display:flex; align-items:flex-start; gap:11px; min-width:0; }

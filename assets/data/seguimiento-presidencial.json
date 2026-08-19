@@ -258,6 +258,39 @@
       "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
     }
   ],
+  "indicadores": {
+    "_nota": "Series numéricas para las gráficas. Mismas reglas: cada una con fuente. Si un dato no está publicado, se deja null y la gráfica lo dice — no se estima.",
+    "dolar": {
+      "titulo": "El dólar desde la posesión",
+      "unidad": "pesos por dólar (TRM)",
+      "leyenda": "La TRM la mueven muchos factores a la vez —tasas de la Reserva Federal, precio del petróleo, riesgo global—, así que este movimiento acompaña a la gestión pero no se puede atribuir solo a ella.",
+      "puntos": [
+        { "f": "2026-08-05", "v": 3204.51, "e": "Dos días antes de la posesión" },
+        { "f": "2026-08-07", "v": 3157.43, "e": "Posesión", "hito": true },
+        { "f": "2026-08-15", "v": 3128.65, "e": "Mínimo en más de 7 años" },
+        { "f": "2026-08-19", "v": 3098.79, "e": "Último dato" }
+      ],
+      "fuentes": [
+        { "n": "El Tiempo · TRM antes de la posesión", "u": "https://www.eltiempo.com/amp/economia/sector-financiero/dolar-en-colombia-asi-quedo-la-tasa-representativa-del-mercado-antes-de-la-posesion-del-presidente-electo-abelardo-de-la-espriella-3576816" },
+        { "n": "Infobae · cierre del 5 de agosto", "u": "https://www.infobae.com/colombia/2026/08/05/dolar-hoy-en-colombia-cotizacion-de-cierre-del-5-de-agosto/" },
+        { "n": "TRM diaria · 19 de agosto", "u": "https://dolar.wilkinsonpc.com.co/2026-08-19" }
+      ]
+    },
+    "deuda": {
+      "titulo": "Créditos activados para la reconstrucción",
+      "unidad": "millones de dólares",
+      "leyenda": "Son créditos multilaterales: dinero que el país deberá devolver. El paquete de seguridad de Estados Unidos NO se cuenta aquí porque es cooperación, no deuda.",
+      "lineas": [
+        { "n": "Banco Mundial", "comprometido": 450, "desembolsado": 200, "e": "Línea contingente; 200 girados el 13 de agosto" },
+        { "n": "BID", "comprometido": 300, "desembolsado": null, "e": "Activados; desembolso no informado" }
+      ],
+      "aparte": { "n": "EE. UU. · paquete de seguridad", "v": 1000, "e": "Cooperación, no deuda" },
+      "fuentes": [
+        { "n": "El Tiempo · desembolso de USD 200 millones", "u": "https://www.eltiempo.com/economia/sectores/el-banco-mundial-ya-desembolso-los-us-200-millones-del-credito-al-que-colombia-accedio-para-atender-el-terremoto-3578269" },
+        { "n": "Moncloa · línea de 450 y 300 del BID", "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/" }
+      ]
+    }
+  },
   "contradicciones": {
     "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento.",
     "casos": [

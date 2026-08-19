@@ -68,11 +68,73 @@
     desmentida:  { t: 'Desmentida',   cls: 'no' }
   };
   var FODA = [
-    { k: 'fortalezas',    t: 'Fortalezas',    d: 'Lo que ha hecho bien',     c: 'f' },
-    { k: 'debilidades',   t: 'Debilidades',   d: 'Fallas propias',           c: 'd' },
-    { k: 'oportunidades', t: 'Oportunidades', d: 'Lo que puede aprovechar',  c: 'o' },
-    { k: 'amenazas',      t: 'Amenazas',      d: 'Riesgos que no controla',  c: 'a' }
+    { k: 'fortalezas',    t: 'Fortalezas',    d: 'Lo que ha hecho bien',     c: 'f', i: '💪', col: '#0E86BC' },
+    { k: 'debilidades',   t: 'Debilidades',   d: 'Fallas propias',           c: 'd', i: '⚠️', col: '#D99A32' },
+    { k: 'oportunidades', t: 'Oportunidades', d: 'Lo que puede aprovechar',  c: 'o', i: '🚀', col: '#527C91' },
+    { k: 'amenazas',      t: 'Amenazas',      d: 'Riesgos que no controla',  c: 'a', i: '🌩️', col: '#C95A55' }
   ];
+
+  // ── Color ────────────────────────────────────────────────────────────────
+  // El color de cada categoría sale del JSON. Para que cualquier hex quede
+  // armónico sin retocarlo a mano, no se usa a plena saturación: se derivan un
+  // tinte muy claro (fondo del disco) y un borde suave. Así el color identifica
+  // sin gritar, y una categoría nueva funciona sola.
+  function hexRGB(h) {
+    var s = String(h || '').replace('#', '');
+    if (s.length === 3) s = s[0]+s[0]+s[1]+s[1]+s[2]+s[2];
+    var n = parseInt(s, 16);
+    return isNaN(n) ? [110,120,128] : [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  function mezcla(hex, pct, haciaBlanco) {
+    var c = hexRGB(hex), d = haciaBlanco ? 255 : 0;
+    return 'rgb(' + c.map(function (v) {
+      return Math.round(v + (d - v) * pct);
+    }).join(',') + ')';
+  }
+  function pintarColorCategoria(nodo, id) {
+    var c = (cat(id) || {}).color || '#6E7880';
+    nodo.style.setProperty('--cc', c);
+    nodo.style.setProperty('--cbg', mezcla(c, 0.88, true));
+    nodo.style.setProperty('--cbd', mezcla(c, 0.68, true));
+  }
+  function disco(id, pequeno) {
+    var d = el('span', 'sp-disco' + (pequeno ? ' sp-disco-s' : ''), (cat(id) || {}).icono || '•');
+    d.setAttribute('aria-hidden', 'true');
+    pintarColorCategoria(d, id);
+    return d;
+  }
+
+  // Identidad de cada sección. El número 01–05 no es adorno: estas secciones sí
+  // son una progresión (de los hechos al análisis), que es lo que las numera.
+  // Cada sección lleva DOS tonos: `c` va en texto pequeño (el número) y debe
+  // pasar 4.5:1; `m` es la marca —riel e icono— donde basta 3:1 y conviene el
+  // tono vivo. El ámbar es el caso que obliga a separarlos: vivo da 2.44:1.
+  var SECS = {
+    timeline:        { n: '01', c: '#0B6E9B', m: '#0E86BC', t: 'Línea de tiempo',  d: 'Hechos y decisiones documentadas.' },
+    contradicciones: { n: '02', c: '#8A5D12', m: '#D99A32', t: 'Contradicciones',  d: 'Cambios de postura y posiciones en tensión.' },
+    foda:            { n: '03', c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' },
+    temas:           { n: '04', c: '#06405A', m: '#0A5678', t: 'Temas de fondo',   d: 'Contexto que no pertenece a una fecha concreta.' },
+    indicadores:     { n: '05', c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' }
+  };
+  var ICONOS = {
+    timeline:        '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/>',
+    contradicciones: '<path d="M8 4v11"/><path d="M5 12l3 3 3-3"/><path d="M16 20V9"/><path d="M13 12l3-3 3 3"/>',
+    foda:            '<path d="M4 20V10M10 20V4M16 20v-7M22 20h-2"/><path d="M2 20h20"/>',
+    temas:           '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    indicadores:     '<path d="M3 17l5-6 4 4 6-8"/><path d="M15 7h4v4"/>'
+  };
+  function pintarSeccion(nodo, v) {
+    var s = SECS[v]; if (!s) return;
+    nodo.style.setProperty('--sc', s.c);          // texto (accesible)
+    nodo.style.setProperty('--sc-mark', s.m);     // riel e icono (vivo)
+    nodo.style.setProperty('--sc-bg', mezcla(s.m, 0.9, true));
+  }
+  function icoSeccion(v) {
+    var s = el('span', 'sp-sec-ico');
+    s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = '<svg viewBox="0 0 24 24">' + (ICONOS[v] || '') + '</svg>';
+    return s;
+  }
 
   function tag(clase, texto, titulo) {
     var s = el('span', 'sp-tag sp-tag-' + clase, texto);
@@ -112,7 +174,8 @@
   function padreDe(r) {
     switch (r.v) {
       case 'home': return null;
-      case 'timeline': case 'contradicciones': case 'foda': case 'temas': return { v: 'home' };
+      case 'timeline': case 'contradicciones': case 'foda': case 'temas': case 'indicadores':
+        return { v: 'home' };
       case 'lista': return { v: 'timeline' };
       case 'hecho': return r.tema ? { v: 'lista', tema: r.tema } : { v: 'timeline' };
       case 'tema': return { v: 'temas' };
@@ -129,6 +192,7 @@
       case 'contradicciones': return '#/contradicciones';
       case 'foda': return '#/balance-foda';
       case 'temas': return '#/temas-de-fondo';
+      case 'indicadores': return '#/indicadores';
       case 'tema': return '#/tema/' + r.i;
       default: return '#/';
     }
@@ -149,6 +213,7 @@
       case 'contradicciones':return { v: 'contradicciones' };
       case 'balance-foda':   return { v: 'foda' };
       case 'temas-de-fondo': return { v: 'temas' };
+      case 'indicadores':    return { v: 'indicadores' };
       case 'tema':           return { v: 'tema', i: +partes[1] || 0 };
       default:               return { v: 'home' };
     }
@@ -176,6 +241,7 @@
       case 'contradicciones': return 'Contradicciones';
       case 'foda': return 'Balance FODA';
       case 'temas': return 'Temas de fondo';
+      case 'indicadores': return 'Indicadores';
       case 'tema': return (D.transversales[r.i] || {}).titulo || 'Tema';
       default: return '';
     }
@@ -232,6 +298,12 @@
     if (r.v === 'foda') pintarFoda();
     if (r.v === 'temas') pintarTemasFondo();
     if (r.v === 'tema') pintarTemaFondo(r.i);
+    if (r.v === 'indicadores') pintarIndicadores();
+
+    // La cabecera de cada vista toma el color de su sección
+    var vh = document.querySelector('.sp-view.on .sp-vhead');
+    if (vh) pintarSeccion(vh, r.v === 'lista' || r.v === 'hecho' ? 'timeline'
+                            : (r.v === 'tema' ? 'temas' : r.v));
 
     pintarMigas(r);
     pintarAtras(r);
@@ -262,38 +334,49 @@
       });
     });
 
+    var ICO_STAT = {
+      hechos: '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/>',
+      cx: '<path d="M8 4v11"/><path d="M5 12l3 3 3-3"/><path d="M16 20V9"/><path d="M13 12l3-3 3 3"/>',
+      foda: '<path d="M4 20V10M10 20V4M16 20v-7"/><path d="M2 20h20"/>',
+      medios: '<path d="M4 5h13v14H4z"/><path d="M17 9h3v8a2 2 0 0 1-4 0"/><path d="M7 9h7M7 13h7"/>'
+    };
     var stats = [
-      { n: nHechos, t: 'Hechos registrados' },
-      { n: nCx, t: 'Contradicciones documentadas' },
-      { n: nFoda, t: 'Puntos del FODA' },
-      { n: Object.keys(dominios).length, t: 'Medios citados' }
+      { n: nHechos, t: 'Hechos registrados', i: ICO_STAT.hechos },
+      { n: nCx, t: 'Contradicciones documentadas', i: ICO_STAT.cx },
+      { n: nFoda, t: 'Puntos del FODA', i: ICO_STAT.foda },
+      { n: Object.keys(dominios).length, t: 'Medios citados', i: ICO_STAT.medios }
     ];
     var cont = vaciar($('sp-stats'));
     stats.forEach(function (s) {
       var d = el('div', 'sp-stat');
-      d.appendChild(el('dd', null, String(s.n)));
-      d.appendChild(el('dt', null, s.t));
+      var ic = el('span', 'sp-stat-ico');
+      ic.setAttribute('aria-hidden', 'true');
+      ic.innerHTML = '<svg viewBox="0 0 24 24">' + s.i + '</svg>';
+      d.appendChild(ic);
+      var body = el('div', 'sp-stat-body');
+      body.appendChild(el('dd', null, String(s.n)));
+      body.appendChild(el('dt', null, s.t));
+      d.appendChild(body);
       cont.appendChild(d);
     });
 
-    var secs = [
-      { n: '01', v: 'timeline',        t: 'Línea de tiempo', d: 'Hechos y decisiones documentadas.', c: nHechos },
-      { n: '02', v: 'contradicciones', t: 'Contradicciones', d: 'Cambios de postura y posiciones en tensión.', c: nCx },
-      { n: '03', v: 'foda',            t: 'Balance FODA',    d: 'Fortalezas, debilidades, oportunidades y amenazas.', c: nFoda },
-      { n: '04', v: 'temas',           t: 'Temas de fondo',  d: 'Contexto que no pertenece a una fecha concreta.', c: nTemas }
-    ];
+    var cuenta = { timeline: nHechos, contradicciones: nCx, foda: nFoda, temas: nTemas, indicadores: null };
     var nav = vaciar($('sp-secciones'));
-    secs.forEach(function (s) {
+    ['timeline', 'contradicciones', 'foda', 'temas', 'indicadores'].forEach(function (v) {
+      var s = SECS[v];
       var b = el('button', 'sp-sec'); b.type = 'button';
-      b.appendChild(el('span', 'sp-sec-n', s.n));
+      pintarSeccion(b, v);
+      b.appendChild(icoSeccion(v));
       var mid = el('span');
-      mid.appendChild(el('span', 'sp-sec-t', s.t));
-      mid.appendChild(el('span', 'sp-sec-d', s.d));
+      var t = el('span', 'sp-sec-t', s.t);
+      mid.appendChild(el('span', 'sp-sec-n', s.n));
+      mid.appendChild(t);
+      mid.appendChild(el('span', 'sp-sec-d', s.d + (cuenta[v] ? '  ·  ' + cuenta[v] : '')));
       b.appendChild(mid);
       var go = el('span', 'sp-sec-go');
       go.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
       b.appendChild(go);
-      b.addEventListener('click', function () { ir({ v: s.v }); });
+      b.addEventListener('click', function () { ir({ v: v }); });
       nav.appendChild(b);
     });
 
@@ -326,7 +409,24 @@
     Object.keys(D.categorias || {}).forEach(function (id) {
       if (!c[id]) return;                       // sin hechos, no se muestra
       var b = el('button', 'sp-tema'); b.type = 'button';
-      b.appendChild(el('span', 'sp-tema-n', cat(id).nombre));
+      b.appendChild(disco(id));
+
+      // Rango de fechas y último titular: enseña qué hay dentro antes de
+      // entrar, usando datos que ya existen — sin inventar descripciones.
+      var deTema = (D.entradas || []).filter(function (e) { return e.categoria === id; });
+      var fechas = deTema.map(function (e) { return e.fecha; }).filter(Boolean).sort();
+      var body = el('div', 'sp-tema-body');
+      body.appendChild(el('span', 'sp-tema-n', cat(id).nombre));
+      if (fechas.length) {
+        var rango = fechas.length > 1 && fechas[0] !== fechas[fechas.length - 1]
+          ? 'del ' + fechaCorta(fechas[0]).replace(' 2026', '') + ' al ' + fechaCorta(fechas[fechas.length - 1]).replace(' 2026', '')
+          : fechaCorta(fechas[0]);
+        body.appendChild(el('span', 'sp-tema-meta', rango));
+      }
+      if (deTema[0] && deTema[0].titulo) {
+        body.appendChild(el('span', 'sp-tema-ult', deTema[0].titulo));
+      }
+      b.appendChild(body);
       b.appendChild(el('span', 'sp-tema-c', String(c[id])));
       b.addEventListener('click', function () { ir({ v: 'lista', tema: id }); });
       cont.appendChild(b);
@@ -370,8 +470,10 @@
     lista.forEach(function (o) {
       var e = o.e;
       var b = el('button', 'sp-hecho'); b.type = 'button';
+      pintarColorCategoria(b, e.categoria);
 
       var top = el('div', 'sp-h-top');
+      top.appendChild(disco(e.categoria, true));
       var f = el('span', 'sp-h-fecha', fechaCorta(e.fecha));
       if (e.precision === 'aproximada') {
         f.appendChild(el('span', 'sp-h-aprox', ' · aprox.'));
@@ -545,8 +647,17 @@
       var est = ESTADOS[x.estado] || ESTADOS.documentada;
       var art = el('article', 'sp-cx sp-cx-' + (x.estado === 'desmentida' ? 'des' : x.estado));
 
+      var ICO_EST = { documentada: '✅', tension: '⚖️', desmentida: '❌' };
       var head = el('div', 'sp-cx-head');
-      head.appendChild(el('h3', null, x.tema || ''));
+      var izq = el('div', 'sp-cx-head-l');
+      var ic = el('span', 'sp-disco sp-disco-s', ICO_EST[x.estado] || '•');
+      ic.setAttribute('aria-hidden', 'true');
+      var colEst = x.estado === 'desmentida' ? '#C95A55' : (x.estado === 'tension' ? '#D99A32' : '#0E86BC');
+      ic.style.setProperty('--cbg', mezcla(colEst, 0.88, true));
+      ic.style.setProperty('--cbd', mezcla(colEst, 0.68, true));
+      izq.appendChild(ic);
+      izq.appendChild(el('h3', null, x.tema || ''));
+      head.appendChild(izq);
       head.appendChild(tag(est.cls, est.t));
       art.appendChild(head);
 
@@ -589,6 +700,10 @@
       var t = el('button', 'sp-fodatab'); t.type = 'button';
       t.setAttribute('role', 'tab');
       t.setAttribute('aria-selected', b.k === fodaSel ? 'true' : 'false');
+      var ic = el('span', 'sp-fodatab-ico', b.i);
+      ic.setAttribute('aria-hidden', 'true');
+      ic.style.setProperty('--fbg', mezcla(b.col, 0.88, true));
+      t.appendChild(ic);
       var mid = el('span');
       mid.appendChild(el('span', 'sp-fodatab-t', b.t));
       mid.appendChild(el('span', 'sp-fodatab-d', b.d));
@@ -650,6 +765,247 @@
       cc.appendChild(box);
     }
     pintarFuentes($('sp-t-fuentes'), fuentesDe(t));
+  }
+
+  // ══ GRÁFICAS ══════════════════════════════════════════════════════════════
+  // SVG escrito a mano: sin librerías ni dependencias de red, y con control
+  // total del contraste. Marcas finas, rejilla discreta y etiqueta directa en
+  // cada dato — que además es obligatoria: el ámbar de "en tensión" queda en
+  // 2.44:1 sobre blanco, por debajo del mínimo para marcas, y la etiqueta es
+  // el canal que lo compensa.
+  var NS = 'http://www.w3.org/2000/svg';
+  function svgEl(t, attrs) {
+    var n = document.createElementNS(NS, t);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    return n;
+  }
+  function miles(n) {
+    return Number(n).toLocaleString('es-CO', { maximumFractionDigits: 0 });
+  }
+
+  // Línea del dólar. Una sola serie: sin caja de leyenda, el título la nombra.
+  function grafDolar(d, compacta) {
+    var pts = (d.puntos || []).filter(function (p) { return p && p.v != null; });
+    if (pts.length < 2) return null;
+
+    var W = 640, H = compacta ? 120 : 210;
+    var mL = 8, mR = 8, mT = 14, mB = compacta ? 22 : 34;
+    var vs = pts.map(function (p) { return p.v; });
+    var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
+    var pad = (max - min) * 0.25 || 1;
+    min -= pad; max += pad;
+    var X = function (i) { return mL + (W - mL - mR) * (i / (pts.length - 1)); };
+    var Y = function (v) { return mT + (H - mT - mB) * (1 - (v - min) / (max - min)); };
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+      'aria-label': 'El dólar pasó de ' + miles(pts[0].v) + ' a ' + miles(pts[pts.length-1].v) + ' pesos' });
+
+    // Rejilla: solo dos guías, recesivas
+    [0, 1].forEach(function (k) {
+      var y = mT + (H - mT - mB) * k;
+      svg.appendChild(svgEl('line', { x1: mL, x2: W - mR, y1: y, y2: y,
+        stroke: '#E1E5E7', 'stroke-width': 1 }));
+    });
+
+    var dLine = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(i) + ' ' + Y(p.v); }).join(' ');
+    var dArea = dLine + ' L' + X(pts.length - 1) + ' ' + (H - mB) + ' L' + X(0) + ' ' + (H - mB) + ' Z';
+
+    var gid = 'spgrad' + Math.random().toString(36).slice(2, 8);
+    var defs = svgEl('defs');
+    var lg = svgEl('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' });
+    lg.appendChild(svgEl('stop', { offset: '0', 'stop-color': '#34CCFE', 'stop-opacity': '.28' }));
+    lg.appendChild(svgEl('stop', { offset: '1', 'stop-color': '#34CCFE', 'stop-opacity': '0' }));
+    defs.appendChild(lg); svg.appendChild(defs);
+
+    svg.appendChild(svgEl('path', { d: dArea, fill: 'url(#' + gid + ')' }));
+    svg.appendChild(svgEl('path', { d: dLine, fill: 'none', stroke: '#0E86BC', 'stroke-width': 2,
+      'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+
+    pts.forEach(function (p, i) {
+      // La posesión se marca con una guía vertical: es el punto de referencia
+      // de todo el módulo.
+      if (p.hito) {
+        svg.appendChild(svgEl('line', { x1: X(i), x2: X(i), y1: mT - 4, y2: H - mB,
+          stroke: '#946A00', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
+      }
+      var ultimo = i === pts.length - 1;
+      svg.appendChild(svgEl('circle', { cx: X(i), cy: Y(p.v), r: ultimo ? 5 : 3.5,
+        fill: ultimo ? '#0E86BC' : '#FFFFFF', stroke: '#0E86BC', 'stroke-width': 2 }));
+
+      if (compacta) return;
+      var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor':
+        i === 0 ? 'start' : (ultimo ? 'end' : 'middle'),
+        fill: '#5F6B72', 'font-size': '11', 'font-weight': '600' });
+      t.textContent = fechaCorta(p.f).replace(' 2026', '');
+      svg.appendChild(t);
+
+      if (i === 0 || ultimo || p.hito) {
+        var v = svgEl('text', { x: X(i), y: Y(p.v) - 11, 'text-anchor':
+          i === 0 ? 'start' : (ultimo ? 'end' : 'middle'),
+          fill: '#152229', 'font-size': '12', 'font-weight': '700' });
+        v.textContent = miles(p.v);
+        svg.appendChild(v);
+      }
+    });
+    return svg;
+  }
+
+  // Composición de las contradicciones. Los estados son ESTADO, no series
+  // arbitrarias: llevan color reservado y siempre con etiqueta, nunca color solo.
+  function grafContradicciones() {
+    var casos = ((D.contradicciones || {}).casos) || [];
+    if (!casos.length) return null;
+    var orden = [
+      { k: 'documentada', t: 'Documentadas', c: '#0E86BC' },
+      { k: 'tension',     t: 'En tensión',   c: '#D99A32' },
+      { k: 'desmentida',  t: 'Desmentidas',  c: '#C95A55' }
+    ];
+    var total = casos.length;
+    var datos = orden.map(function (o) {
+      return { o: o, n: casos.filter(function (x) { return x.estado === o.k; }).length };
+    }).filter(function (x) { return x.n; });
+
+    var cont = el('div');
+    var W = 640, H = 42, gap = 3;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+      'aria-label': datos.map(function (x) { return x.n + ' ' + x.o.t.toLowerCase(); }).join(', ') });
+    var x = 0;
+    datos.forEach(function (x1, i) {
+      var w = (W - gap * (datos.length - 1)) * (x1.n / total);
+      var r = svgEl('rect', { x: x, y: 0, width: Math.max(0, w), height: H, rx: 5, fill: x1.o.c });
+      svg.appendChild(r);
+      // Etiqueta dentro cuando cabe: es el alivio de contraste exigido
+      if (w > 44) {
+        var t = svgEl('text', { x: x + w / 2, y: H / 2 + 5, 'text-anchor': 'middle',
+          fill: '#FFFFFF', 'font-size': '15', 'font-weight': '700' });
+        t.textContent = x1.n;
+        svg.appendChild(t);
+      }
+      x += w + gap;
+    });
+    cont.appendChild(svg);
+
+    var leg = el('div', 'sp-leg');
+    datos.forEach(function (x1) {
+      var s = el('span');
+      var i = el('i'); i.style.background = x1.o.c; i.setAttribute('aria-hidden', 'true');
+      s.appendChild(i);
+      s.appendChild(el('span', null, x1.o.t + ' · ' + x1.n));
+      leg.appendChild(s);
+    });
+    cont.appendChild(leg);
+    return cont;
+  }
+
+  // Deuda: medidor por entidad. Es una razón contra un techo (desembolsado
+  // sobre comprometido), que es justo lo que un medidor muestra mejor que una barra.
+  function grafDeuda(d) {
+    var cont = el('div');
+    (d.lineas || []).forEach(function (l) {
+      var m = el('div', 'sp-medidor');
+      var top = el('div', 'sp-med-top');
+      top.appendChild(el('span', 'sp-med-n', l.n));
+      top.appendChild(el('span', 'sp-med-v',
+        (l.desembolsado != null ? miles(l.desembolsado) + ' de ' : '') + miles(l.comprometido) + ' M USD'));
+      m.appendChild(top);
+
+      var track = el('div', 'sp-med-track');
+      var pct = l.desembolsado != null && l.comprometido
+        ? Math.max(0, Math.min(100, l.desembolsado * 100 / l.comprometido)) : 0;
+      var fill = el('div', 'sp-med-fill');
+      fill.style.width = pct + '%';
+      if (pct >= 18) fill.textContent = Math.round(pct) + '% girado';
+      track.appendChild(fill);
+      m.appendChild(track);
+      if (l.e) m.appendChild(el('p', 'sp-med-e', l.e));
+      cont.appendChild(m);
+    });
+
+    if (d.aparte) {
+      var ap = el('div', 'sp-med-aparte');
+      ap.appendChild(el('b', null, d.aparte.n + ' · ' + miles(d.aparte.v) + ' M USD'));
+      ap.appendChild(el('span', null, d.aparte.e || ''));
+      cont.appendChild(ap);
+    }
+    return cont;
+  }
+
+  function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra) {
+    var c = el('section', 'sp-graf');
+    c.appendChild(el('h3', 'sp-graf-h', titulo));
+    if (unidad) c.appendChild(el('p', 'sp-graf-u', unidad));
+    if (extra) c.appendChild(extra);
+    if (cuerpo) c.appendChild(cuerpo);
+    if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
+    if (fuentes && fuentes.length) {
+      var w = el('div', 'sp-graf-src');
+      var f = el('div', 'sp-fuentes');
+      pintarFuentes(f, fuentes);
+      w.appendChild(f);
+      c.appendChild(w);
+    }
+    return c;
+  }
+
+  function pintarIndicadores() {
+    var ind = D.indicadores || {};
+    var cont = vaciar($('sp-graficas'));
+
+    // 1 · Dólar
+    if (ind.dolar) {
+      var pts = ind.dolar.puntos || [];
+      var extra = null;
+      if (pts.length >= 2) {
+        var a = pts[0].v, z = pts[pts.length - 1].v, dif = z - a;
+        var pct = (dif / a) * 100;
+        extra = el('div', 'sp-cifra');
+        extra.appendChild(el('b', null, miles(z)));
+        var dl = el('span', 'sp-delta ' + (dif <= 0 ? 'sp-delta-baja' : 'sp-delta-sube'),
+          (dif <= 0 ? '▼ ' : '▲ ') + miles(Math.abs(dif)) + ' (' + Math.abs(pct).toFixed(1) + '%)');
+        extra.appendChild(dl);
+        extra.appendChild(el('span', 'sp-med-v', 'desde el ' + fechaCorta(pts[0].f)));
+      }
+      cont.appendChild(tarjetaGrafica(ind.dolar.titulo, ind.dolar.unidad,
+        grafDolar(ind.dolar, false), ind.dolar.leyenda, ind.dolar.fuentes, extra));
+    }
+
+    // 2 · Deuda
+    if (ind.deuda) {
+      cont.appendChild(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
+        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes));
+    }
+
+    // 3 · Contradicciones (se calcula de los propios casos, sin datos nuevos)
+    var g = grafContradicciones();
+    if (g) {
+      cont.appendChild(tarjetaGrafica('Cómo se reparten las contradicciones',
+        ((D.contradicciones || {}).casos || []).length + ' casos registrados', g,
+        'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican precisamente para señalar que circulan y son falsas.',
+        null));
+    }
+  }
+
+  // Mini gráfica del dólar en la portada, para que la primera pantalla no
+  // arranque plana y se vea de una que hay datos vivos.
+  function pintarHeroGrafica() {
+    var cont = vaciar($('sp-hero-graf'));
+    var d = (D.indicadores || {}).dolar;
+    if (!d || !(d.puntos || []).length) return;
+    var pts = d.puntos, a = pts[0].v, z = pts[pts.length - 1].v, dif = z - a;
+    var pct = (dif / a) * 100;
+
+    var b = el('button', 'sp-hero-graf'); b.type = 'button';
+    var top = el('div', 'sp-hero-graf-top');
+    top.appendChild(el('span', 'sp-hero-graf-t', d.titulo));
+    var dl = el('span', 'sp-delta ' + (dif <= 0 ? 'sp-delta-baja' : 'sp-delta-sube'),
+      (dif <= 0 ? '▼ ' : '▲ ') + miles(Math.abs(dif)) + ' (' + Math.abs(pct).toFixed(1) + '%)');
+    top.appendChild(dl);
+    b.appendChild(top);
+    var g = grafDolar(d, true);
+    if (g) b.appendChild(g);
+    b.appendChild(el('p', 'sp-med-e', miles(z) + ' pesos · ' + fechaLarga(pts[pts.length - 1].f)));
+    b.addEventListener('click', function () { ir({ v: 'indicadores' }); });
+    cont.appendChild(b);
   }
 
   // ── Panel de filtros ──────────────────────────────────────────────────────
@@ -779,6 +1135,7 @@
       D = j;
       $('sp-loading').hidden = true;
       pintarHome();
+      pintarHeroGrafica();
       aplicar(hashARuta(location.hash));
     })
     .catch(function (e) {

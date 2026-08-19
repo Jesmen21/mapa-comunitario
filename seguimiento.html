@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=489-seguimiento-rediseno">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=491-seguimiento-celeste-graficas">
 </head>
 <body>
 
@@ -44,6 +44,8 @@
     </div>
 
     <dl class="sp-stats" id="sp-stats"></dl>
+
+    <div id="sp-hero-graf"></div>
 
     <nav class="sp-secciones" id="sp-secciones" aria-label="Secciones del seguimiento"></nav>
 
@@ -142,6 +144,17 @@
     <div class="sp-tflist" id="sp-tflist"></div>
   </section>
 
+  <!-- ══ 9. INDICADORES (gráficas) ═══════════════════════════════════════ -->
+  <section class="sp-view" data-view="indicadores" aria-labelledby="sp-ind-h">
+    <header class="sp-vhead" id="sp-ind-head">
+      <p class="sp-vnum">05</p>
+      <h2 id="sp-ind-h">Indicadores</h2>
+      <p class="sp-vdek">Las cifras que se pueden medir y seguir en el tiempo. Cada serie lleva su fuente,
+         y donde un dato no está publicado se dice, no se estima.</p>
+    </header>
+    <div class="sp-graficas" id="sp-graficas"></div>
+  </section>
+
   <!-- ══ 8. DETALLE DE UN TEMA DE FONDO ══════════════════════════════════ -->
   <section class="sp-view" data-view="tema" aria-labelledby="sp-t-h">
     <article class="sp-detalle">
@@ -230,6 +243,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=489-seguimiento-rediseno"></script>
+<script src="js/70-seguimiento.js?v=491-seguimiento-celeste-graficas"></script>
 </body>
 </html>
