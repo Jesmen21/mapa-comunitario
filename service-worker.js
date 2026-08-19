@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v486-alertas-editoriales-repo';
+const URBIS_CACHE = 'urbis-v489-seguimiento-rediseno';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -3,74 +3,233 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>URBIS · Seguimiento Presidencial</title>
-<meta name="theme-color" content="#0F3D2E">
+<title>Seguimiento Presidencial</title>
+<meta name="theme-color" content="#0B3D32">
+<meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=481-seguimiento-presidencial">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=489-seguimiento-rediseno">
 </head>
 <body>
 
-<header class="sp-top">
-  <button class="sp-back" onclick="location.href='index.html'" aria-label="Volver a URBIS">←</button>
-  <div class="sp-top-txt">
-    <b>Seguimiento Presidencial</b>
-    <small id="sp-sub">Cargando…</small>
+<a class="sp-skip" href="#sp-main">Saltar al contenido</a>
+
+<!-- Barra compacta: retroceso inteligente + ruta + estado de actualización -->
+<header class="sp-bar">
+  <button type="button" class="sp-back" id="sp-back">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    <span id="sp-back-txt">Volver</span>
+  </button>
+
+  <nav class="sp-crumbs" id="sp-crumbs" aria-label="Ruta de navegación"></nav>
+
+  <div class="sp-bar-end">
+    <span class="sp-upd" id="sp-upd"><span class="sp-dot" aria-hidden="true"></span><span id="sp-upd-txt">—</span></span>
+    <button type="button" class="sp-iconbtn" id="sp-info" aria-label="Cómo leer este seguimiento">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.6" r=".9" fill="currentColor" stroke="none"/></svg>
+    </button>
   </div>
 </header>
 
-<main class="sp-main">
+<main id="sp-main" class="sp-main">
 
-  <section class="sp-hero">
-    <h1 id="sp-nombre">—</h1>
-    <p class="sp-periodo" id="sp-periodo"></p>
-    <div class="sp-metricas">
-      <div class="sp-metrica"><b id="sp-dias">—</b><span>días en el cargo</span></div>
-      <div class="sp-metrica"><b id="sp-total">—</b><span>hechos registrados</span></div>
-      <div class="sp-metrica"><b id="sp-fuentes">—</b><span>fuentes citadas</span></div>
+  <!-- ══ 1. PORTADA ══════════════════════════════════════════════════════ -->
+  <section class="sp-view" data-view="home" aria-labelledby="sp-h1">
+    <div class="sp-lede">
+      <p class="sp-eyebrow">URBIS · Rendición de cuentas</p>
+      <h1 id="sp-h1">Seguimiento Presidencial</h1>
+      <p class="sp-dek">Una línea de tiempo documentada de las principales actuaciones, decisiones y
+         posiciones del gobierno. Cada hecho lleva su fecha real y el enlace a la fuente.</p>
+      <p class="sp-who"><span id="sp-presi">—</span> <em id="sp-periodo"></em></p>
     </div>
+
+    <dl class="sp-stats" id="sp-stats"></dl>
+
+    <nav class="sp-secciones" id="sp-secciones" aria-label="Secciones del seguimiento"></nav>
+
+    <p class="sp-nextup" id="sp-nextup"></p>
   </section>
 
-  <section class="sp-aviso">
-    <b>📋 Cómo leer esto</b>
-    <p>Cada entrada es un <b>hecho público verificable</b>, con su fecha real y el enlace a la fuente. Cuando un hecho es
-       objeto de controversia, se incluye el <b>contrapunto</b> con la crítica correspondiente. URBIS no toma partido:
-       registra y cita para que cada quien saque sus conclusiones.</p>
+  <!-- ══ 2. LÍNEA DE TIEMPO · elegir tema ════════════════════════════════ -->
+  <section class="sp-view" data-view="timeline" aria-labelledby="sp-tl-h">
+    <header class="sp-vhead">
+      <p class="sp-vnum">01</p>
+      <h2 id="sp-tl-h">Línea de tiempo</h2>
+      <p class="sp-vdek">Hechos y decisiones documentadas, agrupados por tema. Elige uno para leerlo.</p>
+    </header>
+    <div class="sp-temas" id="sp-tl-temas"></div>
   </section>
 
-  <nav class="sp-filtros" id="sp-filtros" aria-label="Filtrar por tema"></nav>
-
-  <section class="sp-timeline" id="sp-timeline"></section>
-
-  <section class="sp-contra-sec">
-    <h2>Contradicciones y cambios de postura</h2>
-    <p class="sp-sub2">Cada caso muestra <b>lo que dijo antes y lo que dice ahora</b>, con las dos fuentes.
-       Se incluyen también las acusaciones que circulan pero que los verificadores <b>desmintieron</b>:
-       publicarlas como ciertas sería desinformar.</p>
-    <div id="sp-contradicciones"></div>
+  <!-- ══ 3. LÍNEA DE TIEMPO · lista de hechos ════════════════════════════ -->
+  <section class="sp-view" data-view="lista" aria-labelledby="sp-lista-h">
+    <header class="sp-vhead sp-vhead-row">
+      <div>
+        <p class="sp-vnum" id="sp-lista-cat">Tema</p>
+        <h2 id="sp-lista-h">—</h2>
+      </div>
+      <div class="sp-controls">
+        <div class="sp-combo" id="sp-combo"></div>
+        <button type="button" class="sp-filterbtn" id="sp-filterbtn" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Filtrar<span class="sp-fcount" id="sp-fcount" hidden></span>
+        </button>
+      </div>
+    </header>
+    <p class="sp-count" id="sp-lista-count" aria-live="polite"></p>
+    <div class="sp-hechos" id="sp-hechos"></div>
   </section>
 
-  <section class="sp-foda-sec">
-    <h2>Balance FODA</h2>
-    <p class="sp-sub2">A diferencia de la línea de tiempo, <b>esto es interpretación</b>: cada punto se apoya en un hecho
-       documentado arriba, pero la lectura es opinable. Se incluyen lo bueno y lo malo.</p>
-    <div class="sp-foda" id="sp-foda"></div>
+  <!-- ══ 4. DETALLE DE UN HECHO ══════════════════════════════════════════ -->
+  <section class="sp-view" data-view="hecho" aria-labelledby="sp-d-h">
+    <article class="sp-detalle">
+      <div class="sp-d-main">
+        <p class="sp-d-fecha" id="sp-d-fecha"></p>
+        <h2 id="sp-d-h"></h2>
+        <p class="sp-d-body" id="sp-d-body"></p>
+        <div id="sp-d-contra"></div>
+      </div>
+      <aside class="sp-d-side" aria-label="Procedencia del dato">
+        <div class="sp-d-block">
+          <h3>Naturaleza</h3>
+          <div id="sp-d-sello"></div>
+        </div>
+        <div class="sp-d-block">
+          <h3>Tema</h3>
+          <p id="sp-d-cat" class="sp-d-catname"></p>
+        </div>
+        <div class="sp-d-block">
+          <h3>Fuentes</h3>
+          <div class="sp-fuentes" id="sp-d-fuentes"></div>
+        </div>
+      </aside>
+    </article>
   </section>
 
-  <section class="sp-transversales">
-    <h2>Temas de fondo</h2>
-    <p class="sp-sub2">No son hechos de un día concreto, sino líneas de gobierno y contexto.</p>
-    <div id="sp-transversales"></div>
+  <!-- ══ 5. CONTRADICCIONES ══════════════════════════════════════════════ -->
+  <section class="sp-view" data-view="contradicciones" aria-labelledby="sp-cx-h">
+    <header class="sp-vhead">
+      <p class="sp-vnum">02</p>
+      <h2 id="sp-cx-h">Contradicciones</h2>
+      <p class="sp-vdek">Cambios de postura y posiciones en tensión. Cada caso muestra lo que se dijo
+         antes y lo que se dice ahora, con las dos fuentes. También se incluyen las acusaciones que
+         circulan pero que los verificadores desmintieron.</p>
+    </header>
+    <div class="sp-cxlist" id="sp-cxlist"></div>
   </section>
 
-  <footer class="sp-pie">
-    <p><b>Actualización:</b> <span id="sp-actualizado">—</span> · <b>Próxima:</b> <span id="sp-proxima">—</span></p>
-    <p class="sp-pie-nota">Seguimiento elaborado por el equipo URBIS a partir de medios de comunicación y documentos
-       oficiales. Si encuentras un dato equivocado o una fuente mejor, escríbenos: es un registro público y se corrige.</p>
+  <!-- ══ 6. BALANCE FODA ═════════════════════════════════════════════════ -->
+  <section class="sp-view" data-view="foda" aria-labelledby="sp-foda-h">
+    <header class="sp-vhead">
+      <p class="sp-vnum">03</p>
+      <h2 id="sp-foda-h">Balance FODA</h2>
+      <p class="sp-vdek">
+        <span class="sp-tag sp-tag-interp">Interpretación</span>
+        A diferencia de la línea de tiempo, esto no son hechos: cada punto se apoya en algo
+        documentado, pero la lectura es opinable.
+      </p>
+    </header>
+    <div class="sp-fodatabs" id="sp-fodatabs" role="tablist" aria-label="Cuadrantes del FODA"></div>
+    <div class="sp-fodalist" id="sp-fodalist" role="tabpanel"></div>
+  </section>
+
+  <!-- ══ 7. TEMAS DE FONDO ═══════════════════════════════════════════════ -->
+  <section class="sp-view" data-view="temas" aria-labelledby="sp-tf-h">
+    <header class="sp-vhead">
+      <p class="sp-vnum">04</p>
+      <h2 id="sp-tf-h">Temas de fondo</h2>
+      <p class="sp-vdek">Contexto que ayuda a entender la gestión y que no pertenece a una fecha concreta.</p>
+    </header>
+    <div class="sp-tflist" id="sp-tflist"></div>
+  </section>
+
+  <!-- ══ 8. DETALLE DE UN TEMA DE FONDO ══════════════════════════════════ -->
+  <section class="sp-view" data-view="tema" aria-labelledby="sp-t-h">
+    <article class="sp-detalle">
+      <div class="sp-d-main">
+        <p class="sp-d-fecha" id="sp-t-cat"></p>
+        <h2 id="sp-t-h"></h2>
+        <p class="sp-d-body" id="sp-t-body"></p>
+        <div id="sp-t-contra"></div>
+      </div>
+      <aside class="sp-d-side" aria-label="Procedencia del dato">
+        <div class="sp-d-block">
+          <h3>Fuentes</h3>
+          <div class="sp-fuentes" id="sp-t-fuentes"></div>
+        </div>
+      </aside>
+    </article>
+  </section>
+
+  <div class="sp-loading" id="sp-loading" aria-live="polite">
+    <span class="sp-sk"></span><span class="sp-sk"></span><span class="sp-sk"></span>
+  </div>
+
+  <footer class="sp-foot" id="sp-foot" hidden>
+    <p>Seguimiento elaborado por el equipo URBIS a partir de medios de comunicación y documentos
+       oficiales. Es un registro público: si encuentras un dato equivocado o una fuente mejor, escríbenos y se corrige.</p>
   </footer>
 
 </main>
 
-<script src="js/70-seguimiento.js?v=481-seguimiento-presidencial"></script>
+<!-- Panel de filtros -->
+<div class="sp-sheet" id="sp-sheet" hidden>
+  <div class="sp-sheet-bg" data-close></div>
+  <div class="sp-sheet-card" role="dialog" aria-modal="true" aria-labelledby="sp-sheet-h">
+    <header class="sp-sheet-head">
+      <h2 id="sp-sheet-h">Filtrar</h2>
+      <button type="button" class="sp-iconbtn" data-close aria-label="Cerrar filtros">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="sp-sheet-body">
+      <fieldset class="sp-fset">
+        <legend>Tema</legend>
+        <div class="sp-opts" id="sp-f-tema"></div>
+      </fieldset>
+      <fieldset class="sp-fset">
+        <legend>Naturaleza del dato</legend>
+        <div class="sp-opts" id="sp-f-tipo"></div>
+      </fieldset>
+    </div>
+    <footer class="sp-sheet-foot">
+      <button type="button" class="sp-btn sp-btn-ghost" id="sp-f-clear">Limpiar</button>
+      <button type="button" class="sp-btn sp-btn-solid" id="sp-f-apply">Aplicar filtros</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Nota metodológica -->
+<div class="sp-sheet" id="sp-modal" hidden>
+  <div class="sp-sheet-bg" data-close></div>
+  <div class="sp-sheet-card" role="dialog" aria-modal="true" aria-labelledby="sp-modal-h">
+    <header class="sp-sheet-head">
+      <h2 id="sp-modal-h">Cómo leer este seguimiento</h2>
+      <button type="button" class="sp-iconbtn" data-close aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="sp-sheet-body sp-prose">
+      <p>Cada entrada es un <strong>hecho público verificable</strong>, con su fecha real y el enlace a la
+         fuente. URBIS no toma partido: registra y cita para que cada quien saque sus conclusiones.</p>
+      <h3>Las etiquetas</h3>
+      <ul class="sp-leyenda">
+        <li><span class="sp-tag sp-tag-ok">Verificado</span> Confirmado por varios medios.</li>
+        <li><span class="sp-tag sp-tag-dis">Disputado</span> Hay versiones enfrentadas y ningún tercero las ha dirimido.</li>
+        <li><span class="sp-tag sp-tag-dec">Declaración</span> Lo dijo una sola parte y no está corroborado.</li>
+        <li><span class="sp-tag sp-tag-interp">Interpretación</span> Es lectura, no hecho. Solo en el FODA.</li>
+      </ul>
+      <h3>Las reglas</h3>
+      <ul>
+        <li>Sin fuente no se publica.</li>
+        <li>No se inventa precisión: si no se confirma el día exacto, se marca la fecha como aproximada.</li>
+        <li>Una denuncia no es una condena. Si algo está en investigación, se dice.</li>
+        <li>Antes de publicar un señalamiento se consulta a los verificadores. Lo desmentido se publica
+            <em>como desmentido</em>, no se omite.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="js/70-seguimiento.js?v=489-seguimiento-rediseno"></script>
 </body>
 </html>
