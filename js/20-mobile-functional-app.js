@@ -1296,6 +1296,11 @@
       document.body.classList.remove('urbis-aurea-full');
       try{ document.querySelector('.u52-aurea-screen').classList.remove('aurea-entrando'); }catch(e){}
     }
+    // La gota Áurea vive en su propia capa de Leaflet (js/47) sobre el mapa
+    // COMPARTIDO, así que un cambio de pantalla no la mueve por sí solo: hay
+    // que avisarle para que se retire al salir del módulo de reportes y
+    // eventos y vuelva al entrar, sin esperar su ciclo de refresco.
+    try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
     if(screen === 'home' || screen === 'sport' || screen === 'progress' || screen === 'profile' || screen === 'avatar' || screen === 'social' || screen === 'notifications') { renderRealStates(); refreshAvatarUI(); }
     if(screen === 'notifications'){ try{ _aureaMarkSeen(buildPremiumEventNotifications().map(n => n.id)); }catch(e){} } // al abrir noti, los eventos premium dejan de contar en el badge (pero siguen listados)
     if(screen === 'home' || screen === 'social' || screen === 'notifications') setTimeout(loadNotifications, 120);
@@ -2605,6 +2610,13 @@
     const dibujarBtn = app.querySelector('.u52-procity-dibujar-btn');
     if(dibujarBtn) dibujarBtn.hidden = !activo;
     if(mapScreen) mapScreen.classList.toggle('u52-procity-mapscreen', !!activo);
+    // Bandera global del módulo: Pro City y el mapa ciudadano son módulos
+    // SEPARADOS. Las capas que se dibujan por fuera de pintarPuntos (la gota
+    // Áurea de js/47) no pueden adivinarlo solas, así que se los decimos aquí
+    // — el único punto por el que pasan tanto la entrada como la salida — y se
+    // les pide repintar YA, sin esperar su ciclo de refresco.
+    try{ window.urbisProCityActivo = !!activo; }catch(e){}
+    try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
   }
 
   // BUG real reportado: al ir de Pro City DIRECTO a "Reportar" (o cualquier

@@ -96,9 +96,45 @@
     return undefined;
   }
 
+  // La gota Áurea es del módulo de REPORTES Y EVENTOS y de ningún otro. El
+  // mapa de fondo (#map) es UNO SOLO y lo comparten varias pantallas —
+  // UrbisProCity (mapeo urbano profesional), Movilidad, Navegación, URBIS
+  // Rush —, así que "estar en el mapa" no alcanza para saber en qué módulo
+  // está parado el usuario: hay que mirar qué pantalla tiene el frente.
+  //
+  // A propósito es lista BLANCA y no lista negra: así cualquier módulo nuevo
+  // que se monte sobre este mismo mapa nace SIN la gota, en vez de heredarla
+  // hasta que alguien reporte el bug.
+  function enModuloReportesYEventos() {
+    var pantalla;
+    try { pantalla = document.querySelector('.u52-screen[data-u52-screen="map"]'); } catch (e) { return true; }
+    if (!pantalla) return true; // shell móvil sin montar: mapa clásico, sin módulos que separar
+    if (!pantalla.classList.contains('active')) return false; // Movilidad / Nav / Rush / cualquier otra
+    if (window.urbisProCityActivo) return false;              // bandera de js/20
+    if (pantalla.classList.contains('u52-procity-mapscreen')) return false; // respaldo por clase
+    return true;
+  }
+
+  // Borra la capa entera del mapa (sin destruirla): al volver al módulo
+  // ciudadano, render() la vuelve a poblar desde cero.
+  function limpiar(m) {
+    Object.keys(_rendered).forEach(function (key) {
+      try { if (_layer) _layer.removeLayer(_rendered[key]); } catch (e) {}
+      delete _rendered[key];
+    });
+    try { if (m && _layer && m.hasLayer(_layer)) m.removeLayer(_layer); } catch (e) {}
+    try { document.body.classList.remove('urbis-evento-aurea-activo'); } catch (e) {}
+    _prevCount = 0;
+  }
+
   function render() {
     var m = getMap();
     if (!m) return;
+    // Estar en capa propia hacía a la gota inmune al cambio de módulo: se
+    // quedaba flotando encima de la matriz de usos de Pro City. Fuera del
+    // módulo de reportes y eventos se retira, y al volver se repinta sola
+    // (js/20 avisa en cada cambio de pantalla y de modo).
+    if (!enModuloReportesYEventos()) { limpiar(m); return; }
     var layer = ensureLayer(m);
     if (!layer) return;
     if (typeof window.urbisCrearMarcadorUrbano !== 'function') return;

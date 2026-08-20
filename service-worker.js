@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v500-ficha-encuestadoras';
+const URBIS_CACHE = 'urbis-v502-aurea-solo-en-reportes';
 const URBIS_ASSETS = [
   './',
   './index.html',
