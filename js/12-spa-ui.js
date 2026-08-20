@@ -234,7 +234,13 @@
     }
 
     let estadoValidacionFinal = isEdit ? estadoVal : (userRole === 'admin' || userRole === 'gov' ? "Aprobado" : "Pendiente");
-    let nombreSeguro = creadorNom ? creadorNom.replace(/\|/g, '-') : "Anónimo";
+    // Reportes de conflicto armado: la casilla "publicar sin mi nombre" viene
+    // marcada. Un reporte público de extorsión firmado identifica a quien
+    // denuncia, y eso en zona de frontera tiene consecuencias reales.
+    const _anonChk = document.getElementById('ins-anonimo');
+    const _pidioAnonimo = !!(_anonChk && _anonChk.checked);
+    let nombreSeguro = _pidioAnonimo ? "Anónimo"
+        : (creadorNom ? creadorNom.replace(/\|/g, '-') : "Anónimo");
     let likes = likesActuales || 0;
 
     const puntoOriginal = isEdit ? buscarPuntoPorLat(lat) : null;
@@ -247,8 +253,13 @@
     // Pedido explícito: un atentado/artefacto explosivo debe seguir visible
     // más tiempo que un reporte normal (24h en vez de las 8h por defecto) —
     // es información de seguridad que la comunidad necesita ver más tiempo.
+    // Los hechos del conflicto siguen siendo información útil mucho después de
+    // ocurridos (una mina o un retén no desaparecen en 8 horas).
     const horasTTLQuick = /atentado|artefacto explosivo/i.test(String(i||'')) ? 24
-      : /sismo|terremoto|incendio forestal/i.test(String(i||'')) ? 336 : 8;
+      : /sismo|terremoto|incendio forestal/i.test(String(i||'')) ? 336
+      : /mina antipersona|reten ilegal|retén ilegal|grupo armado|confinamiento|desplazamiento forzado/i.test(String(i||'')) ? 168
+      : /secuestro|extorsion|extorsión|masacre|homicidio|desaparicion|desaparición|amenaza|reclutamiento|ejecucion extrajudicial|ejecución extrajudicial|combate armado|panfleto/i.test(String(i||'')) ? 72
+      : 8;
     let descripcionFinal = (ctxForm.quickReport && typeof asegurarCamposTemporalesPersonalizados === 'function')
         ? asegurarCamposTemporalesPersonalizados(arrData.join(' | '), cat, i, fechaCreacion, horasTTLQuick, ctxForm.quickIcon || obtenerIconoReporte(cat, i) || 'Reporte')
         : asegurarCamposTemporales(arrData.join(' | '), cat, i, fechaCreacion);

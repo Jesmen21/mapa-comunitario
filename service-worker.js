@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v493-mapas-fotos-eventos';
+const URBIS_CACHE = 'urbis-v494-seguridad-nacional';
 const URBIS_ASSETS = [
   './',
   './index.html',

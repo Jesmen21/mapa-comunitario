@@ -2123,18 +2123,10 @@
         ['threat','⚠️','Extorsión o amenaza','🚨 Alertas y Riesgos Urbanos'],
         ['substances','🚫','Consumo de sustancias en espacio público','🚨 Alertas y Riesgos Urbanos'],
         ['property-damage','🏚️','Daño a propiedad','🚨 Alertas y Riesgos Urbanos'],
-        ['guerrilla-presence','⚠️','Presencia de guerrilla','🚨 Alertas y Riesgos Urbanos'],
         ['drug-use','💊','Consumo de drogas','🚨 Alertas y Riesgos Urbanos'],
-        // Conflicto armado — pedido explícito: Colombia es un país en
-        // conflicto y Cúcuta es zona fronteriza afectada. Mismo tratamiento
-        // sensible que el resto de esta sección; SIN foto obligatoria (sería
-        // peligroso e inapropiado pedir evidencia de un atentado o combate).
-        ['attack-explosive','💣','Atentado o artefacto explosivo','🚨 Alertas y Riesgos Urbanos'],
         ['suspicious-package','🧨','Objeto o paquete sospechoso','🚨 Alertas y Riesgos Urbanos'],
-        ['armed-combat','🪖','Combate armado o enfrentamiento','🚨 Alertas y Riesgos Urbanos'],
-        ['illegal-checkpoint','🚷','Retén ilegal o armado','🚨 Alertas y Riesgos Urbanos'],
-        ['forced-displacement','🏃','Desplazamiento forzado','🚨 Alertas y Riesgos Urbanos'],
-        ['armed-threat','🎯','Amenaza armada a la comunidad','🚨 Alertas y Riesgos Urbanos'],
+        // Los hechos del conflicto armado se movieron a su propia sección
+        // ('conflicto'): tienen otra autoridad competente y otra urgencia.
         // Ayuda urgente (antes sección "Emergencias y protección" aparte) —
         // se une acá porque es el mismo tipo de situación: personas en
         // riesgo que necesitan ayuda inmediata.
@@ -2142,6 +2134,33 @@
         ['mental-health-crisis','🧠','Persona en crisis de salud mental','🚨 Alertas y Riesgos Urbanos'],
         ['elder-abandonment','👴','Adulto mayor en abandono o riesgo','🚨 Alertas y Riesgos Urbanos'],
         ['minor-at-risk','🧒','Menor en situación de calle o riesgo','🚨 Alertas y Riesgos Urbanos']
+      ]
+    },
+    {
+      // Pestaña propia para el conflicto armado. Separada de 'security' porque
+      // no es lo mismo un robo que un hecho del conflicto: cambia la autoridad
+      // competente y cambia el riesgo para quien reporta.
+      id:'conflicto', label:'Seguridad nacional', icon:'🛡️',
+      hint:'Hechos del conflicto armado. Si hay vida en riesgo llama al 123 (o al 165, GAULA, si es secuestro o extorsión) ANTES de reportar aquí.',
+      sensitive:true, conflicto:true,
+      items:[
+        ['kidnapping','🆘','Secuestro','🛡️ Seguridad Nacional y Conflicto'],
+        ['extortion','💰','Extorsión o vacuna','🛡️ Seguridad Nacional y Conflicto'],
+        ['homicide','🚨','Homicidio','🛡️ Seguridad Nacional y Conflicto'],
+        ['massacre','🕯️','Masacre','🛡️ Seguridad Nacional y Conflicto'],
+        ['disappearance','❓','Desaparición','🛡️ Seguridad Nacional y Conflicto'],
+        ['attack-explosive','💣','Atentado con explosivos','🛡️ Seguridad Nacional y Conflicto'],
+        ['landmine','⚠️','Mina antipersona (MAP/MUSE)','🛡️ Seguridad Nacional y Conflicto'],
+        ['community-threat','🎯','Amenaza a la comunidad','🛡️ Seguridad Nacional y Conflicto'],
+        ['leader-threat','📢','Amenaza a líder social','🛡️ Seguridad Nacional y Conflicto'],
+        ['pamphlet','📄','Panfleto amenazante','🛡️ Seguridad Nacional y Conflicto'],
+        ['child-recruitment','🧒','Reclutamiento de menores','🛡️ Seguridad Nacional y Conflicto'],
+        ['extrajudicial','⚖️','Ejecución extrajudicial','🛡️ Seguridad Nacional y Conflicto'],
+        ['armed-combat','🪖','Combate armado','🛡️ Seguridad Nacional y Conflicto'],
+        ['illegal-checkpoint','🚷','Retén ilegal armado','🛡️ Seguridad Nacional y Conflicto'],
+        ['armed-group','⚠️','Presencia de grupo armado','🛡️ Seguridad Nacional y Conflicto'],
+        ['forced-displacement','🏃','Desplazamiento forzado','🛡️ Seguridad Nacional y Conflicto'],
+        ['confinement','🚧','Confinamiento de comunidad','🛡️ Seguridad Nacional y Conflicto']
       ]
     },
     {
@@ -2371,6 +2390,24 @@
       photoRequired
     };
     const sensitive = item.sensitive ? '<div class="u52-quick-report-safety">No escribas nombres, acusaciones directas, rostros ni datos personales. Reporta solo la situación.</div>' : '';
+    // En conflicto armado, primero el teléfono: URBIS no es una línea de
+    // emergencia y no puede sustituirla. Y el reporte sale sin firma salvo
+    // que la persona decida lo contrario: en zona de frontera, un reporte de
+    // extorsión con nombre visible identifica a quien denuncia.
+    const esConflicto = item.section === 'conflicto';
+    const conflictoHTML = esConflicto ? `
+      <div class="u52-lineas">
+        <b>Si hay vida en riesgo, llama primero</b>
+        <div class="u52-lineas-row">
+          <a href="tel:123">📞 123 · Emergencias</a>
+          <a href="tel:165">🆘 165 · GAULA</a>
+        </div>
+        <small>Secuestro y extorsión: GAULA 165. Este reporte no reemplaza la denuncia formal ante la Fiscalía.</small>
+      </div>
+      <label class="u52-anon">
+        <input type="checkbox" id="ins-anonimo" checked>
+        <span><b>Publicar sin mi nombre</b><small>Tu reporte aparece en el mapa igual, pero sin tu usuario. Recomendado.</small></span>
+      </label>` : '';
     const photoLabelText = photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional';
     const photoClass = photoRequired ? 'u52-quick-photo required' : 'u52-quick-photo';
     panel.innerHTML = `
@@ -2381,6 +2418,7 @@
       </div>
       <div class="u52-quick-report-selected"><span>${item.icon}</span><div><b>${esc(item.label)}</b><small>${esc(item.dim.replace(/^\S+\s*/, ''))}</small></div></div>
       ${sensitive}
+      ${conflictoHTML}
       <div class="u52-quick-report-form">
         <select id="sel-item" hidden><option value="${esc(item.label)}" selected>${esc(item.label)}</option></select>
         <input id="sel-nombre" type="hidden" value="${esc(nombreLugar)}">

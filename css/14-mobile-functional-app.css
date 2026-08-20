@@ -534,3 +534,31 @@
   background:#fff;
   box-shadow:0 0 10px rgba(255,255,255,.65);
 }
+
+/* ═══ Seguridad nacional · líneas oficiales y anonimato ═══════════════════ */
+#urbis-mobile-app .u52-lineas{
+  margin:10px 0 0; padding:12px 13px;
+  background:#fff4f2; border:1px solid #f3c9c1; border-left:3px solid #c0392b;
+  border-radius:12px;
+}
+#urbis-mobile-app .u52-lineas > b{
+  display:block; font-size:.82rem; color:#8c2a1c; margin-bottom:9px;
+}
+#urbis-mobile-app .u52-lineas-row{ display:flex; gap:8px; flex-wrap:wrap; }
+#urbis-mobile-app .u52-lineas-row a{
+  flex:1 1 auto; text-align:center; padding:11px 10px;
+  background:#c0392b; color:#fff; border-radius:11px;
+  font-size:.86rem; font-weight:800; text-decoration:none;
+}
+#urbis-mobile-app .u52-lineas-row a:active{ transform:scale(.97); }
+#urbis-mobile-app .u52-lineas > small{
+  display:block; margin-top:9px; font-size:.73rem; color:#7a4238; line-height:1.45;
+}
+#urbis-mobile-app .u52-anon{
+  display:flex; align-items:flex-start; gap:10px; margin:10px 0 0;
+  padding:11px 12px; background:#f2f7ff; border:1px solid #cfe0f5;
+  border-radius:12px; cursor:pointer;
+}
+#urbis-mobile-app .u52-anon input{ width:20px; height:20px; flex:0 0 20px; margin-top:1px; accent-color:#1d6fb8; }
+#urbis-mobile-app .u52-anon b{ display:block; font-size:.85rem; color:#17324d; }
+#urbis-mobile-app .u52-anon small{ display:block; font-size:.74rem; color:#4a6480; line-height:1.4; margin-top:2px; }

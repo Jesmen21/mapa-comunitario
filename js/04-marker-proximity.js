@@ -384,6 +384,12 @@
     "Infraestructura Smart": { icon: "🔌", desc: "Wi-Fi, sensores, paneles solares", color: "#00a8ff", shape: "marker", items: ["Zona Wi-Fi", "Antena 5G", "Sensor aire/ruido", "Panel solar público", "Cargador VE / Celulares"] },
     "Oficinas y Co-working": { icon: "🏢", desc: "Negocios, notarías, gubernamental", color: "#3f51b5", shape: "marker", items: ["Centro de negocios", "Espacio Co-working", "Oficina gubernamental", "Notaría / Cámara de Comercio"] },
 
+    // 🛡️ SEGURIDAD NACIONAL Y CONFLICTO ARMADO — agosto 2026.
+    // Va aparte de "Alertas y Riesgos Urbanos" porque no es lo mismo un robo
+    // que un hecho del conflicto: cambia la autoridad competente (GAULA,
+    // Fiscalía, DDHH), cambia la urgencia y cambia el riesgo de quien reporta.
+    "🛡️ Seguridad Nacional y Conflicto": { icon: "🛡️", desc: "Hechos del conflicto armado y delitos de alto impacto", color: "#7f1d1d", shape: "diamond", items: ["Secuestro", "Extorsión / vacuna", "Homicidio", "Masacre", "Desaparición", "Atentado con explosivos", "Mina antipersona / MAP", "Amenaza a la comunidad", "Amenaza a líder social", "Reclutamiento de menores", "Ejecución extrajudicial", "Combate armado", "Retén ilegal armado", "Presencia de grupo armado", "Desplazamiento forzado", "Confinamiento de comunidad", "Panfleto amenazante"] },
+
     // 🌪️ RIESGOS MAYORES (desastres naturales y terreno) — nuevo, julio 2026
     // "Sismo" y "terremoto" son EL MISMO fenómeno: terremoto es solo el nombre
     // coloquial de un sismo fuerte, no hay umbral oficial que los separe. Tener
