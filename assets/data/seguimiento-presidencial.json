@@ -461,12 +461,43 @@
       "color": "#0B6E9B",
       "formato": "pct",
       "sentido": "sube-bueno",
-      "leyenda": "Una sola medición hasta ahora, tomada cuatro días después de la posesión y al día siguiente del terremoto. No alcanza para hablar de tendencia: hará falta una segunda encuesta para saber si sube o baja.",
-      "puntos": [
-        { "f": "2026-08-11", "v": 52.4, "e": "Primera medición · 42,2% desaprueba", "hito": true }
+      "vista": "porFuente",
+      "leyenda": "Cada casa encuestadora mide distinto y pregunta distinto, así que se muestran por separado en vez de promediarlas. Ojo con el bloque de abajo: las encuestas de la segunda vuelta lo daban entre 50 y 54, y terminó ganando con 49,66. Sirve para leer cualquier encuesta con prudencia, incluida la de arriba.",
+      "grupos": [
+        {
+          "titulo": "Aprobación de su gestión",
+          "nota": "Ya como presidente. Es lo comparable con la gestión.",
+          "medidas": [
+            { "n": "CB Global Data", "f": "2026-08-11", "v": 52.4, "e": "42,2% desaprueba", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" }
+          ]
+        },
+        {
+          "titulo": "Con cuánto llegó",
+          "nota": "Intención de voto ANTES de la elección. Mide otra cosa: no es aprobación de gestión, es a quién iba a votar la gente.",
+          "referencia": { "n": "Resultado oficial · 21 de junio", "v": 49.66, "e": "12.959.542 votos · ganó por 0,96 puntos" },
+          "medidas": [
+            { "n": "Guarumo · Ecoanalítica", "f": "2026-06-14", "v": 52.6, "e": "Encuesta final de segunda vuelta", "u": "https://www.eltiempo.com/politica/elecciones-colombia-2026/encuesta-final-de-guarumo-y-ecoanalitica-para-segunda-vuelta-presidencial-abelardo-de-la-espriella-52-6-ivan-cepeda-3564095" },
+            { "n": "Encuesta a una semana", "f": "2026-06-14", "v": 53.6, "e": "Publicada por Portafolio", "u": "https://www.portafolio.co/economia/gobierno/encuesta-presidencial-a-una-semana-de-las-elecciones-abelardo-de-la-espriella-53-6-ivan-cepeda-496117" },
+            { "n": "Encuesta de segunda vuelta", "f": "2026-06-10", "v": 50.3, "e": "Publicada por Cable Noticias", "u": "https://www.cablenoticias.com/noticias/encuesta-segunda-vuelta-2026" }
+          ]
+        }
       ],
       "fuentes": [
-        { "n": "Semana · ranking de favorabilidad (CB Global Data)", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" }
+        { "n": "Semana · aprobación como presidente (CB Global Data)", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" },
+        { "n": "Primicias · resultado oficial de la segunda vuelta", "u": "https://www.primicias.ec/internacional/elecciones-colombia-segunda-vuelta-votaciones-resultados-ivan-cepeda-abelardo-espriella-125869/" },
+        { "n": "Wikipedia · elecciones presidenciales de Colombia de 2026", "u": "https://es.wikipedia.org/wiki/Elecciones_presidenciales_de_Colombia_de_2026" }
+      ]
+    },
+    "consulta": {
+      "titulo": "La consulta de URBIS",
+      "pregunta": "¿Aprueba usted la gestión del presidente Abelardo de la Espriella?",
+      "color": "#7A4A6B",
+      "id": "aprobacion_espriella_2026",
+      "aviso": "Esto NO es una encuesta representativa. Responde quien quiere y quien usa URBIS, así que refleja a esta comunidad —sobre todo de Cúcuta y Norte de Santander—, no al país. Se muestra aparte de las encuestadoras justamente por eso.",
+      "opciones": [
+        { "k": "aprueba",   "t": "Apruebo",        "c": "#1F7A4B" },
+        { "k": "desaprueba","t": "No apruebo",     "c": "#C0392B" },
+        { "k": "nsnr",      "t": "Ni una ni otra", "c": "#5F6B72" }
       ]
     },
     "bombardeos": {

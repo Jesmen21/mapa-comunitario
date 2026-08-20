@@ -1056,10 +1056,79 @@
     return miles(v);
   }
 
+  // ── Comparación por fuente ────────────────────────────────────────────────
+  // Cada encuestadora mide y pregunta distinto, así que NO se promedian: se
+  // ponen una al lado de la otra con su nombre y su fecha. Barras horizontales
+  // porque lo que se compara son magnitudes entre pocas opciones nombradas.
+  function grafPorFuente(d, compacta) {
+    var grupos = d.grupos || [];
+    if (!grupos.length) return null;
+    var cont = el('div', 'sp-fuentes-graf');
+    // En la portada solo cabe lo que el título promete —la aprobación de la
+    // gestión—; el bloque histórico se ve al abrir la gráfica completa.
+    var visibles = compacta ? grupos.slice(0, 1) : grupos;
+
+    visibles.forEach(function (g, gi) {
+      var bloque = el('section', 'sp-fg-grupo');
+      bloque.appendChild(el('h4', null, g.titulo || ''));
+      if (g.nota && !compacta) bloque.appendChild(el('p', 'sp-fg-nota', g.nota));
+
+      // La escala es común a todo el gráfico para que las barras se puedan
+      // comparar entre grupos, no solo dentro de cada uno.
+      var todas = grupos.reduce(function (a, x) {
+        return a.concat((x.medidas || []).map(function (m) { return m.v; }),
+                        x.referencia ? [x.referencia.v] : []);
+      }, []);
+      var max = Math.max.apply(null, todas.concat([1]));
+      var tope = Math.ceil(max / 10) * 10;
+
+      (g.medidas || []).forEach(function (m) {
+        var fila = el('div', 'sp-fg-fila');
+        var cab = el('div', 'sp-fg-cab');
+        cab.appendChild(el('b', null, m.n || 'Fuente'));
+        cab.appendChild(el('span', 'sp-fg-val', String(m.v).replace('.', ',') + '%'));
+        fila.appendChild(cab);
+
+        var riel = el('div', 'sp-fg-riel');
+        var barra = el('i');
+        barra.style.width = (m.v / tope * 100).toFixed(1) + '%';
+        barra.style.background = gi === 0 ? (d.color || '#0B6E9B') : '#8FA6B2';
+        riel.appendChild(barra);
+        fila.appendChild(riel);
+
+        if (!compacta) {
+          var pie = [];
+          if (m.f) pie.push(fechaCorta(m.f));
+          if (m.e) pie.push(m.e);
+          if (pie.length) fila.appendChild(el('small', null, pie.join(' · ')));
+        }
+        bloque.appendChild(fila);
+      });
+
+      // La referencia (el resultado real) va como línea marcada, no como una
+      // barra más: es un hecho, no una estimación.
+      if (g.referencia) {
+        var r = el('div', 'sp-fg-ref');
+        r.appendChild(el('b', null, r0(g.referencia.v) + '%'));
+        var t = el('div');
+        t.appendChild(el('span', null, g.referencia.n || 'Resultado'));
+        if (g.referencia.e) t.appendChild(el('small', null, g.referencia.e));
+        r.appendChild(t);
+        bloque.appendChild(r);
+      }
+      cont.appendChild(bloque);
+    });
+    return cont;
+  }
+  function r0(v) { return String(v).replace('.', ','); }
+
   // Serie temporal genérica. Nació para el dólar y ahora la usan también deuda,
   // aprobación y bombardeos: mismo lenguaje visual para todo lo que se sigue en
   // el tiempo, con el color propio de cada indicador.
   function grafSerie(d, compacta) {
+    // Algunos indicadores no son una línea en el tiempo sino una comparación
+    // entre fuentes; se delega sin que quien llama tenga que saberlo.
+    if (d && d.vista === 'porFuente') return grafPorFuente(d, compacta);
     var pts = (d.puntos || []).filter(function (p) { return p && p.v != null; });
     if (!pts.length) return null;
 
@@ -1237,6 +1306,141 @@
     return c;
   }
 
+  // ══ CONSULTA PROPIA DE URBIS ══════════════════════════════════════════════
+  // Va SEPARADA de las encuestadoras a propósito: responde quien quiere, así
+  // que mide a esta comunidad y no al país. Mezclarla con las casas
+  // encuestadoras sería darle una autoridad que no tiene.
+  var CONSULTA_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw-P002YjsFDWoNguJG10Y5MJVwEenSRaSdqJKe1c31wJ1n2e1_bxMfHTF0XziQbOdioA/exec';
+  var _consultaCache = null;
+
+  // Id estable por dispositivo. No identifica a nadie: es un número aleatorio
+  // guardado en el propio navegador, solo para que el backend pueda descartar
+  // votos repetidos del mismo aparato.
+  function dispositivoId() {
+    var k = 'urbis_consulta_disp';
+    try {
+      var v = localStorage.getItem(k);
+      if (!v) {
+        v = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) { return 'd-sin-storage'; }
+  }
+  function miVoto(id) {
+    try { return localStorage.getItem('urbis_consulta_' + id) || ''; } catch (e) { return ''; }
+  }
+  function guardarMiVoto(id, k) {
+    try { localStorage.setItem('urbis_consulta_' + id, k); } catch (e) {}
+  }
+
+  function consultaAPI(payload) {
+    return fetch(CONSULTA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.text(); }).then(function (t) {
+      try { return JSON.parse(t); } catch (e) { return { ok: false }; }
+    });
+  }
+
+  function pintarConsulta(cont) {
+    var c = (D.indicadores || {}).consulta;
+    if (!c) return;
+    var caja = el('section', 'sp-graf sp-consulta');
+    caja.style.setProperty('--c', c.color || '#7A4A6B');
+
+    caja.appendChild(el('h3', 'sp-graf-h', c.titulo || 'Consulta'));
+    caja.appendChild(el('p', 'sp-consulta-preg', c.pregunta || ''));
+
+    var aviso = el('div', 'sp-consulta-aviso');
+    aviso.appendChild(el('b', null, 'No es una encuesta representativa'));
+    aviso.appendChild(el('p', null, c.aviso || ''));
+    caja.appendChild(aviso);
+
+    var zona = el('div', 'sp-consulta-zona');
+    caja.appendChild(zona);
+    cont.appendChild(caja);
+
+    render();
+
+    function render() {
+      vaciar(zona);
+      var ya = miVoto(c.id);
+      if (ya) { resultados(ya); return; }
+
+      var ops = el('div', 'sp-consulta-ops');
+      (c.opciones || []).forEach(function (o) {
+        var b = el('button', 'sp-consulta-op'); b.type = 'button';
+        b.style.setProperty('--oc', o.c);
+        b.textContent = o.t;
+        b.addEventListener('click', function () { votar(o.k, ops); });
+        ops.appendChild(b);
+      });
+      zona.appendChild(ops);
+    }
+
+    function votar(k, ops) {
+      Array.prototype.forEach.call(ops.children, function (n) { n.disabled = true; });
+      guardarMiVoto(c.id, k);            // el voto local vale aunque falle la red
+      consultaAPI({ action: 'consulta_voto', consulta: c.id, opcion: k, dispositivo: dispositivoId() })
+        .then(function (out) { _consultaCache = (out && out.ok) ? out : null; })
+        .catch(function () { _consultaCache = null; })
+        .then(function () { render(); });
+    }
+
+    function resultados(ya) {
+      var carga = el('p', 'sp-consulta-cargando', 'Contando votos…');
+      zona.appendChild(carga);
+
+      var pinta = function (conteo, total, error) {
+        vaciar(zona);
+        var lista = el('div', 'sp-consulta-res');
+        (c.opciones || []).forEach(function (o) {
+          var n = (conteo && conteo[o.k]) || 0;
+          var pct = total ? (n / total * 100) : 0;
+          var fila = el('div', 'sp-consulta-fila' + (ya === o.k ? ' tuyo' : ''));
+          var cab = el('div', 'sp-consulta-cab');
+          cab.appendChild(el('b', null, o.t + (ya === o.k ? ' · tu voto' : '')));
+          cab.appendChild(el('span', null, total ? pct.toFixed(1).replace('.', ',') + '%' : '—'));
+          fila.appendChild(cab);
+          var riel = el('div', 'sp-consulta-riel');
+          var barra = el('i');
+          barra.style.width = pct.toFixed(1) + '%';
+          barra.style.background = o.c;
+          riel.appendChild(barra);
+          fila.appendChild(riel);
+          fila.appendChild(el('small', null, total ? (n + (n === 1 ? ' voto' : ' votos')) : 'sin datos'));
+          lista.appendChild(fila);
+        });
+        zona.appendChild(lista);
+
+        zona.appendChild(el('p', 'sp-consulta-total',
+          error
+            ? 'Tu voto quedó guardado en este dispositivo, pero aún no se pudo sincronizar el total.'
+            : total + (total === 1 ? ' respuesta' : ' respuestas') + ' hasta ahora'));
+      };
+
+      consultaAPI({ action: 'consulta_resultados', consulta: c.id })
+        .then(function (out) {
+          if (out && out.ok && out.conteo) {
+            var t = 0;
+            Object.keys(out.conteo).forEach(function (k) { t += out.conteo[k] || 0; });
+            pinta(out.conteo, t, false);
+          } else {
+            // Backend aún sin la acción: se muestra el voto propio, sin inventar
+            // un total que no existe.
+            var solo = {}; solo[ya] = 1;
+            pinta(solo, 0, true);
+          }
+        })
+        .catch(function () {
+          var solo = {}; solo[ya] = 1;
+          pinta(solo, 0, true);
+        });
+    }
+  }
+
   function pintarIndicadores() {
     var ind = D.indicadores || {};
     var cont = vaciar($('sp-graficas'));
@@ -1244,7 +1448,16 @@
     // 1 · Las cuatro series temporales, en el mismo orden que la portada
     HERO_SERIES.forEach(function (k) {
       var d = ind[k];
-      if (!d || !(d.puntos || []).length) return;
+      if (!d) return;
+      // Comparación por fuente: no lleva cifra-resumen ni delta, porque el
+      // gráfico entero ES la comparación.
+      if (d.vista === 'porFuente') {
+        if (!(d.grupos || []).length) return;
+        cont.appendChild(tarjetaGrafica(d.titulo, d.unidad,
+          grafSerie(d, false), d.leyenda, d.fuentes, null));
+        return;
+      }
+      if (!(d.puntos || []).length) return;
       var pts = d.puntos;
       var ultimo = pts[pts.length - 1];
       var extra = null;
@@ -1272,6 +1485,10 @@
         grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes));
     }
 
+    // 2b · Consulta propia, justo después de las encuestadoras para que se lea
+    //      el contraste, pero con su propio marco y su advertencia.
+    pintarConsulta(cont);
+
     // 3 · Contradicciones (se calcula de los propios casos, sin datos nuevos)
     var g = grafContradicciones();
     if (g) {
@@ -1293,7 +1510,10 @@
     var cont = vaciar($('sp-hero-graf'));
     var ind = D.indicadores || {};
     var hay = HERO_SERIES.filter(function (k) {
-      return ind[k] && (ind[k].puntos || []).length;
+      var d = ind[k];
+      if (!d) return false;
+      if (d.vista === 'porFuente') return (d.grupos || []).length > 0;
+      return (d.puntos || []).length > 0;
     });
     if (!hay.length) return;
 
@@ -1302,8 +1522,18 @@
 
     hay.forEach(function (k) {
       var d = ind[k];
-      var pts = d.puntos;
-      var ultimo = pts[pts.length - 1];
+      // En una comparación por fuente no hay "último punto": la cifra que
+      // representa al indicador es la primera medida del primer grupo, que es
+      // la que mide lo que dice el título (la gestión, no la elección).
+      var pts, ultimo;
+      if (d.vista === 'porFuente') {
+        var m0 = ((d.grupos[0] || {}).medidas || [])[0] || {};
+        pts = [];
+        ultimo = { v: m0.v, f: m0.f, e: m0.n };
+      } else {
+        pts = d.puntos;
+        ultimo = pts[pts.length - 1];
+      }
 
       var b = el('button', 'sp-hero-graf'); b.type = 'button';
       b.style.setProperty('--c', d.color || '#0E86BC');

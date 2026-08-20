@@ -1041,3 +1041,94 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   display:block; margin-top:9px; font-style:normal;
   font-size:.72rem; font-weight:600; color:#8A5D12;
 }
+
+/* ═══ Comparación por fuente ══════════════════════════════════════════════
+   Barras horizontales: se comparan magnitudes entre pocas opciones con
+   nombre. No se promedian las encuestadoras — cada una pregunta distinto.
+   ═══════════════════════════════════════════════════════════════════════ */
+.sp-fuentes-graf{ display:grid; gap:20px; }
+.sp-fg-grupo h4{
+  margin:0 0 3px; font-size:.9rem; font-weight:650; color:var(--petroleo);
+}
+.sp-fg-nota{
+  margin-bottom:12px; font-size:.78rem; color:var(--ink-2); line-height:1.45;
+}
+.sp-fg-fila{ margin-bottom:12px; }
+.sp-fg-cab{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  margin-bottom:5px;
+}
+.sp-fg-cab b{ font-size:.85rem; font-weight:600; color:var(--ink); min-width:0; }
+.sp-fg-val{
+  font-size:.95rem; font-weight:700; color:var(--petroleo);
+  font-variant-numeric:tabular-nums; flex:0 0 auto;
+}
+.sp-fg-riel{
+  height:9px; background:var(--linea-2); border-radius:99px; overflow:hidden;
+}
+.sp-fg-riel i{ display:block; height:100%; border-radius:99px; }
+.sp-fg-fila small{
+  display:block; margin-top:5px; font-size:.74rem; color:var(--ink-2);
+}
+/* El resultado real no es una barra más: es el hecho contra el que se
+   contrastan las estimaciones. */
+.sp-fg-ref{
+  display:flex; align-items:center; gap:11px; margin-top:14px;
+  padding:11px 13px; border-radius:var(--r-s);
+  background:var(--marfil); border:1px dashed var(--ink-2);
+}
+.sp-fg-ref b{
+  font-size:1.15rem; font-weight:700; color:var(--petroleo);
+  font-variant-numeric:tabular-nums; flex:0 0 auto;
+}
+.sp-fg-ref span{ display:block; font-size:.82rem; font-weight:600; color:var(--ink); }
+.sp-fg-ref small{ display:block; font-size:.74rem; color:var(--ink-2); margin-top:2px; }
+
+/* ═══ Consulta propia de URBIS ════════════════════════════════════════════ */
+.sp-consulta{ border-left:3px solid var(--c, #7A4A6B); }
+.sp-consulta-preg{
+  margin:6px 0 12px; font-size:.98rem; font-weight:600; color:var(--ink);
+  line-height:1.45;
+}
+.sp-consulta-aviso{
+  padding:11px 13px; margin-bottom:15px;
+  background:#FBF3E4; border:1px solid #E8D5AE; border-left:3px solid var(--ambar);
+  border-radius:var(--r-s);
+}
+.sp-consulta-aviso b{ display:block; font-size:.8rem; color:#7A5410; margin-bottom:4px; }
+.sp-consulta-aviso p{ font-size:.8rem; color:#6B5228; line-height:1.5; }
+
+.sp-consulta-ops{ display:grid; gap:9px; }
+.sp-consulta-op{
+  width:100%; padding:14px 16px; cursor:pointer; font:inherit;
+  font-size:.95rem; font-weight:600; text-align:left;
+  color:var(--ink); background:var(--sup);
+  border:1.5px solid var(--linea); border-left:4px solid var(--oc, var(--linea));
+  border-radius:var(--r-s);
+  transition:border-color var(--t), background var(--t), transform var(--t);
+}
+.sp-consulta-op:hover{ border-color:var(--oc); background:var(--marfil); }
+.sp-consulta-op:active{ transform:scale(.99); }
+.sp-consulta-op:disabled{ opacity:.5; cursor:default; }
+
+.sp-consulta-cargando{ font-size:.83rem; color:var(--ink-2); }
+.sp-consulta-res{ display:grid; gap:13px; }
+.sp-consulta-fila.tuyo .sp-consulta-cab b{ color:var(--petroleo); }
+.sp-consulta-cab{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  margin-bottom:5px;
+}
+.sp-consulta-cab b{ font-size:.86rem; font-weight:600; color:var(--ink); }
+.sp-consulta-cab span{
+  font-size:.95rem; font-weight:700; color:var(--petroleo);
+  font-variant-numeric:tabular-nums;
+}
+.sp-consulta-riel{
+  height:11px; background:var(--linea-2); border-radius:99px; overflow:hidden;
+}
+.sp-consulta-riel i{ display:block; height:100%; border-radius:99px; transition:width .5s var(--t); }
+.sp-consulta-fila small{ display:block; margin-top:5px; font-size:.74rem; color:var(--ink-2); }
+.sp-consulta-total{
+  margin-top:14px; padding-top:11px; border-top:1px solid var(--linea-2);
+  font-size:.78rem; color:var(--ink-2);
+}
