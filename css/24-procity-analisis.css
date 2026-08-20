@@ -378,6 +378,45 @@
 }
 .pca-btn-raster:disabled{ opacity:.6; cursor:default; }
 .pca-btn-raster:active{ transform:scale(.97); }
+/* Atajo al mapa desde la ficha de resultados: relleno, no contorno, para que
+   se lea como la acción que continúa el flujo (ya analizaste, ahora míralo). */
+.pca-btn-raster-mapa{
+  align-self:flex-start; cursor:pointer; margin-bottom:10px;
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 15px; border-radius:11px; border:0; background:#15803d;
+  font-size:.78rem; font-weight:800;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+  box-shadow:0 3px 10px rgba(21,128,61,.28);
+}
+.pca-btn-raster-mapa:active{ transform:scale(.97); }
+
+/* Chip de la cobertura sobre el mapa. Se corre hacia abajo cuando el calor
+   y/o la geometría ya ocupan la esquina (mismos saltos que .pca-geo-chip). */
+.pca-raster-chip{
+  position:absolute; left:10px; top:10px; z-index:901;
+  display:flex; align-items:center; gap:9px; max-width:min(300px, calc(100% - 20px));
+  background:#0f2434; border:1px solid #23506b; border-radius:13px;
+  padding:8px 8px 8px 10px; box-shadow:0 8px 22px rgba(0,0,0,.4);
+  animation:pca-burbuja-in .25s ease both;
+}
+.pca-raster-chip.abajo{ top:74px; }
+.pca-raster-chip.mas-abajo{ top:138px; }
+.pca-raster-chip-txt{ min-width:0; flex:1 1 auto; }
+.pca-raster-chip b{ display:block; font-size:.8rem; font-weight:800;
+  color:#eaf4fa !important; -webkit-text-fill-color:#eaf4fa !important;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pca-raster-chip-barra{
+  display:flex; height:8px; margin:5px 0 4px; border-radius:5px; overflow:hidden;
+  background:#1b3d52;
+}
+.pca-raster-chip-barra i{ display:block; height:100%; }
+.pca-raster-chip small{ display:block; font-size:.7rem;
+  color:#a8c2d4 !important; -webkit-text-fill-color:#a8c2d4 !important; }
+.pca-raster-chip button{
+  flex:0 0 auto; width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#1b3d52; color:#c3d7e4 !important; -webkit-text-fill-color:#c3d7e4 !important;
+  font-size:.8rem; font-weight:800; display:grid; place-items:center;
+}
 .pca-raster-cargando, .pca-raster-error{
   margin:0; font-size:.75rem; line-height:1.45;
   color:#3f6b4c !important; -webkit-text-fill-color:#3f6b4c !important;

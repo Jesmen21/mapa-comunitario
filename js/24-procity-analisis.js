@@ -38,7 +38,8 @@
     // Fase 4 · último análisis de cobertura del suelo del área en curso, y la
     // capa donde queda pegada la imagen clasificada sobre el mapa.
     raster: null,
-    rasterCapa: null
+    rasterCapa: null,
+    rasterChip: null
   };
 
   function esc(s){
@@ -1181,9 +1182,48 @@
     L.imageOverlay(res.overlayImagen, res.overlayLimites, {
       opacity: .8, interactive: false, className: 'pca-raster-overlay'
     }).addTo(c);
+    // El chip nace junto con la imagen, no al tocar "Ver en el mapa": si el
+    // usuario cerraba el panel por su cuenta se quedaba con la cobertura
+    // pegada encima del mapa y sin ninguna forma de quitarla.
+    chipRaster();
   }
+
+  // Chip sobre el mapa, mismo papel que el del calor y el de la geometría:
+  // dice qué capa está encendida y la apaga sin tener que reabrir el panel.
+  // Lleva la barra de proporciones porque, ya sobre el mapa, es la única
+  // leyenda que explica de qué es cada color de la imagen clasificada.
+  function chipRaster(){
+    const m = mapa();
+    if (!m || !S.raster) return;
+    if (!S.rasterChip) {
+      const c = document.createElement('div');
+      c.className = 'pca-raster-chip';
+      if (L && L.DomEvent) L.DomEvent.disableClickPropagation(c);
+      m.getContainer().appendChild(c);
+      S.rasterChip = c;
+    }
+    // Si el calor y/o la geometría ya ocupan la esquina, este chip se corre
+    // hacia abajo para no taparlos.
+    const ocupados = (S.heat.grupo ? 1 : 0) + (S.geo.tipo ? 1 : 0);
+    S.rasterChip.classList.toggle('abajo', ocupados === 1);
+    S.rasterChip.classList.toggle('mas-abajo', ocupados === 2);
+    const orden = S.raster.clases.slice().sort((a, b) => b.pct - a.pct);
+    const visibles = orden.filter(c => c.pct > 0);
+    S.rasterChip.innerHTML =
+      '<div class="pca-raster-chip-txt">' +
+        '<b>🛰️ Cobertura del suelo</b>' +
+        '<span class="pca-raster-chip-barra">' +
+          visibles.map(c => '<i style="width:' + c.pct + '%;background:' + c.color + '" ' +
+            'title="' + esc(c.etq) + '"></i>').join('') +
+        '</span>' +
+        '<small>' + visibles.slice(0, 2).map(c => c.ico + ' ' + c.pct + '%').join(' · ') + '</small>' +
+      '</div>' +
+      '<button type="button" data-u52-call="pca-raster-off" aria-label="Quitar la capa de cobertura">✕</button>';
+  }
+
   function apagarRasterMapa(){
     if (S.rasterCapa) S.rasterCapa.clearLayers();
+    if (S.rasterChip) { try { S.rasterChip.remove(); } catch(e){} S.rasterChip = null; }
   }
 
   // Puntos de Pro City dentro del área, ya con lat/lng numéricos — insumo
@@ -1550,6 +1590,10 @@
     const orden = res.clases.slice().sort((a, b) => b.pct - a.pct);
     const dom = orden[0];
     cont.innerHTML =
+      // Atajo pedido: el panel tapa el mapa, así que sin esto había que
+      // cerrarlo a mano y buscar el área para ver la imagen clasificada.
+      '<button type="button" class="pca-btn-raster-mapa" data-u52-call="pca-raster-ver">' +
+        '🗺️ Ver en el mapa</button>' +
       '<div class="pca-raster-barra">' +
         orden.filter(c => c.pct > 0).map(c =>
           '<i style="width:' + c.pct + '%;background:' + c.color + '" title="' + esc(c.etq) + '"></i>').join('') +
@@ -1620,6 +1664,23 @@
     if (name.indexOf('exp-') === 0 && window.URBIS_PC_EXPORTAR) {
       return window.URBIS_PC_EXPORTAR.accion(name);
     }
+    // Ir al mapa a ver la imagen clasificada. Igual que el calor y la
+    // geometría: se cierra el panel, porque está justo encima del mapa y sin
+    // cerrarlo no se vería nada de lo que se acaba de encender.
+    if (name === 'raster-ver') {
+      if (!S.raster) return true;
+      pintarRasterMapa(S.raster);
+      if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats();
+      cerrarBurbuja();
+      const m = mapa();
+      if (m && S.raster.overlayLimites) {
+        try { m.fitBounds(S.raster.overlayLimites, { padding: [28, 28] }); } catch (e) {}
+      }
+      chipRaster();
+      reg('raster-mapa');
+      return true;
+    }
+    if (name === 'raster-off') { apagarRasterMapa(); return true; }
     if (name === 'raster') {
       const btn = el;
       const out = document.getElementById('pca-raster-out');
