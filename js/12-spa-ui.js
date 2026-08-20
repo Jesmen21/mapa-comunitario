@@ -1751,8 +1751,60 @@
   // Entrada al MÓDULO premium (pantalla propia, NO ventana flotante): un clon premium
   // del módulo de minijuegos, pero al que se entra desde la gota Áurea del mapa.
   // Guarda el contexto del evento y navega a la pantalla data-u52-screen="aurea".
+  // ── Apertura inmersiva ───────────────────────────────────────────────────
+  // La pantalla se abre expandiéndose DESDE el punto que se tocó (la gota del
+  // mapa o el botón), no con un fundido genérico: así se entiende que esa gota
+  // se convirtió en la pantalla, y no que apareció una ventana encima.
+  window.__urbisAureaOrigen = null;
+  document.addEventListener('pointerdown', function(ev){
+    var t = ev.target && ev.target.closest && ev.target.closest('.cp-aurea, [data-u52-aurea-go], .urbis-aurea-marker');
+    if(t) window.__urbisAureaOrigen = { x: ev.clientX, y: ev.clientY };
+  }, true);
+
+  window.urbisAnimarEntradaAurea = function(){
+    var pant = document.querySelector('.u52-aurea-screen');
+    if(!pant) return;
+    var reduce = false;
+    try{ reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+    if(reduce){ pant.style.clipPath = ''; return; }
+
+    var o = window.__urbisAureaOrigen;
+    window.__urbisAureaOrigen = null;
+    var x = o ? o.x : window.innerWidth / 2;
+    var y = o ? o.y : window.innerHeight / 2;
+    // Radio necesario para cubrir la esquina más lejana desde el origen.
+    var r = Math.ceil(Math.hypot(Math.max(x, window.innerWidth - x),
+                                 Math.max(y, window.innerHeight - y)) + 40);
+
+    // Web Animations API y NO transición sobre estilos inline: la animación no
+    // deja nada pegado en el elemento, así que si el navegador la interrumpe
+    // (pestaña en segundo plano, rAF pausado) la pantalla queda en su estado
+    // normal. Con transición + clipPath inline, una interrupción dejaba
+    // `circle(0px)` fijo y la pantalla entera invisible.
+    // El JS solo aporta el origen; la animación la declara el CSS
+    // (@keyframes aureaAbrir, SIN fill-mode). Es deliberado: una animación CSS
+    // que no llega a correr deja el elemento en su estado normal, mientras que
+    // un clip-path escrito en el estilo inline se quedaba pegado en
+    // `circle(0px)` —la pantalla entera invisible— si algo interrumpía la
+    // transición. Aquí el peor caso es entrar sin animación.
+    pant.style.setProperty('--ax', x + 'px');
+    pant.style.setProperty('--ay', y + 'px');
+    pant.style.setProperty('--ar', r + 'px');
+
+    // Reinicia la animación en cada entrada (si no, solo se ve la primera vez)
+    pant.classList.remove('aurea-entrando');
+    void pant.offsetWidth;
+    pant.classList.add('aurea-entrando');
+  };
+
   window.urbisAbrirAureaModulo = function(juegoId, titulo, premio, fin, terminado){
     if(!juegoId){ alert('Evento no válido.'); return; }
+    // Se cierra el popup del mapa antes de entrar: si queda abierto, al volver
+    // aparece flotando sobre la interfaz.
+    try{
+      var m = window.urbisMap || window.map;
+      if(m && typeof m.closePopup === 'function') m.closePopup();
+    }catch(e){}
     window.__urbisAureaCtx = {
       juegoId: juegoId,
       titulo: titulo || 'Evento Áurea',

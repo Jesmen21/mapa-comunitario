@@ -40,6 +40,38 @@
   }
   window.urbisEsEventoAurea = esEventoAurea;
 
+  // Misma extracción que hace el popup en js/10-visible-markers.js: el evento
+  // guarda premio, detalle y fin dentro del campo de notas, y el id de juego se
+  // deriva de la latitud para que cada gota tenga su propia tabla.
+  function abrirDesdePunto(p) {
+    if (typeof window.urbisAbrirAureaModulo !== 'function') return;
+    var d = String(p.descripcion || '').split(' | ');
+    var notas = String(d[2] || '');
+    var sacar = function (re, def) { var m = notas.match(re); return m ? m[1].trim() : def; };
+
+    var premio = sacar(/Premio:\s*([^·|]+)/i, 'Premio sorpresa');
+    var fin = sacar(/termina\s*([^·|]+)/i, '');
+    var terminado = false;
+    try {
+      var meta = (typeof obtenerMetaTemporal === 'function') ? obtenerMetaTemporal(p)
+               : (typeof window.obtenerMetaTemporal === 'function' ? window.obtenerMetaTemporal(p) : null);
+      if (meta) {
+        terminado = !!meta.archivado;
+        if (!fin && meta.expira && typeof window.formatearFechaHora === 'function') {
+          fin = window.formatearFechaHora(meta.expira);
+        }
+      }
+    } catch (e) {}
+
+    window.urbisAbrirAureaModulo(
+      'aurea_' + String(p.lat).replace(/[^0-9]/g, ''),
+      String(d[1] || 'Evento Áurea'),
+      String(premio),
+      String(fin || ''),
+      terminado
+    );
+  }
+
   function getMap() {
     try { if (typeof map !== 'undefined' && map && map.addLayer) return map; } catch (e) {}
     if (window.map && window.map.addLayer) return window.map;
@@ -89,7 +121,25 @@
       if (_rendered[key]) return; // ya está dibujada
       try {
         var marker = window.urbisCrearMarcadorUrbano(lat, lng, dimKeyDe(p), p);
-        if (marker) { marker.addTo(layer); _rendered[key] = marker; }
+        if (marker) {
+          marker.addTo(layer);
+          _rendered[key] = marker;
+          // La gota Áurea entra DIRECTO al módulo a pantalla completa. El
+          // popup intermedio solo servía para mostrar un botón "entrar", y
+          // encima quedaba flotando sobre la interfaz.
+          try { marker.off('click'); } catch (e) {}
+          marker.on('click', function (ev) {
+            try {
+              if (ev && ev.originalEvent) {
+                window.__urbisAureaOrigen = {
+                  x: ev.originalEvent.clientX,
+                  y: ev.originalEvent.clientY
+                };
+              }
+            } catch (e2) {}
+            abrirDesdePunto(p);
+          });
+        }
       } catch (e) {}
     });
 

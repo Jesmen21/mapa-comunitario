@@ -267,3 +267,93 @@ body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
 #urbis-mobile-app .u52-aurea-screen .ah-end b{
   color:#FFF4D6 !important; -webkit-text-fill-color:#FFF4D6 !important;
 }
+
+/* ═══ MODO INMERSIVO ══════════════════════════════════════════════════════
+   El Áurea lleva premio, cuenta regresiva, ranking y botón de juego: con la
+   barra inferior y el mapa detrás, todo se pisa. Al entrar, la pantalla se
+   apropia del viewport completo y el resto del chrome desaparece.
+   z-index en la escala de 2³¹ que ya usa el resto de la app.
+   ═══════════════════════════════════════════════════════════════════════ */
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:2147483500 !important;
+  min-height:100dvh !important;
+  max-height:100dvh !important;
+  /* Sin el hueco de 84px que reservaba la barra inferior, que aquí no existe */
+  padding:0 !important;
+  overflow:hidden !important;
+  animation:none !important;
+  background:linear-gradient(165deg,#1b1305,#2a1d06) !important;
+  will-change:clip-path;
+}
+
+/* El contenido scrollea por dentro; la pantalla queda fija */
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-content{
+  height:calc(100dvh - 56px - env(safe-area-inset-top,0px)) !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:14px 16px calc(28px + env(safe-area-inset-bottom,0px)) !important;
+}
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-topbar{
+  padding-top:env(safe-area-inset-top,0px);
+  height:calc(56px + env(safe-area-inset-top,0px));
+}
+
+/* Fuera todo lo que compita por la pantalla */
+body.urbis-aurea-full #urbis-mobile-app .u52-bottom-nav,
+body.urbis-aurea-full .u52-fab,
+body.urbis-aurea-full .basemap-switcher,
+body.urbis-aurea-full .leaflet-popup,
+body.urbis-aurea-full .leaflet-control-container{
+  display:none !important;
+}
+/* El mapa sigue vivo debajo (no se destruye), solo deja de ser alcanzable */
+body.urbis-aurea-full #map{ pointer-events:none !important; }
+
+/* Halo dorado en el borde: refuerza que esto es "otro sitio", no una capa más */
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen::before{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  box-shadow:inset 0 0 90px rgba(255,190,60,.16), inset 0 0 0 1px rgba(255,200,60,.22);
+}
+
+/* Entrada del contenido: escalonada, para que se lea de arriba abajo */
+@media (prefers-reduced-motion: no-preference){
+  body.urbis-aurea-full .u52-aurea-screen .ah-hero,
+  body.urbis-aurea-full .u52-aurea-screen .ah-game,
+  body.urbis-aurea-full .u52-aurea-screen .ah-board{
+    animation:ahSube 520ms cubic-bezier(.22,.9,.24,1) both;
+  }
+  body.urbis-aurea-full .u52-aurea-screen .ah-hero{ animation-delay:180ms; }
+  body.urbis-aurea-full .u52-aurea-screen .ah-game{ animation-delay:290ms; }
+  body.urbis-aurea-full .u52-aurea-screen .ah-board{ animation-delay:380ms; }
+}
+@keyframes ahSube{
+  from{ opacity:0; transform:translateY(18px) scale(.97); }
+  to  { opacity:1; transform:none; }
+}
+
+/* En pantalla ancha no se estira de borde a borde: columna centrada */
+@media (min-width:820px){
+  body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-content{
+    max-width:640px; margin:0 auto;
+  }
+}
+
+/* Entrada: la pantalla se abre desde el punto que se tocó.
+   SIN animation-fill-mode a propósito: al terminar —o si nunca llega a
+   correr— el elemento queda en su estado normal, sin recorte. Un clip-path
+   persistente aquí significaría pantalla en negro. */
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen.aurea-entrando{
+  animation:aureaAbrir 620ms cubic-bezier(.22,.9,.24,1) !important;
+}
+@keyframes aureaAbrir{
+  from{ clip-path:circle(0px at var(--ax,50%) var(--ay,50%)); }
+  to  { clip-path:circle(var(--ar,150%) at var(--ax,50%) var(--ay,50%)); }
+}
+@media (prefers-reduced-motion: reduce){
+  body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen.aurea-entrando{
+    animation:none !important;
+  }
+}

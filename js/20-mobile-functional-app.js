@@ -1285,7 +1285,17 @@
       }catch(e){} }, 90);
     }
     if(screen === 'games') { document.body.classList.add('urbis-gamer'); try{ if(typeof window.urbisRenderGamesHub === 'function') window.urbisRenderGamesHub(); }catch(e){} } else { document.body.classList.remove('urbis-gamer'); }
-    if(screen === 'aurea') { try{ if(typeof window.urbisRenderAureaHub === 'function') window.urbisRenderAureaHub(); }catch(e){} }
+    // El Áurea entra en modo INMERSIVO: se apropia de toda la pantalla (tapa
+    // barra inferior y mapa) porque lleva premio, cuenta regresiva, ranking y
+    // el botón de juego — con el chrome de la app encima se pisan entre sí.
+    if(screen === 'aurea') {
+      document.body.classList.add('urbis-aurea-full');
+      try{ if(typeof window.urbisAnimarEntradaAurea === 'function') window.urbisAnimarEntradaAurea(); }catch(e){}
+      try{ if(typeof window.urbisRenderAureaHub === 'function') window.urbisRenderAureaHub(); }catch(e){}
+    } else if(document.body.classList.contains('urbis-aurea-full')) {
+      document.body.classList.remove('urbis-aurea-full');
+      try{ document.querySelector('.u52-aurea-screen').classList.remove('aurea-entrando'); }catch(e){}
+    }
     if(screen === 'home' || screen === 'sport' || screen === 'progress' || screen === 'profile' || screen === 'avatar' || screen === 'social' || screen === 'notifications') { renderRealStates(); refreshAvatarUI(); }
     if(screen === 'notifications'){ try{ _aureaMarkSeen(buildPremiumEventNotifications().map(n => n.id)); }catch(e){} } // al abrir noti, los eventos premium dejan de contar en el badge (pero siguen listados)
     if(screen === 'home' || screen === 'social' || screen === 'notifications') setTimeout(loadNotifications, 120);
