@@ -1499,10 +1499,19 @@
   // no es ni una cosa ni la otra y se pierde). A 420 cada píxel cubría ~2 m de
   // barrio y los árboles de andén desaparecían; a 640 se sostienen.
   const RASTER_LADO = 640;
-  // Filtro de mayoría: un píxel solo cambia si OTRA clase ocupa 5 de sus 9
-  // vecinos. Quita el granulado sal-y-pimienta sin comerse rasgos finos como
-  // una hilera de árboles sobre la calle.
+  // Filtro de mayoría: quita el granulado sal-y-pimienta. Pide DOS cosas para
+  // cambiar un píxel, y la segunda es la importante:
+  //   · que otra clase ocupe al menos MAYORIA_MIN de sus 9 vecinos, y
+  //   · que el píxel esté SOLO — que su propia clase no pase de MAYORIA_SOLO.
+  //
+  // Sin esa segunda condición el filtro se comía los árboles chicos, que es
+  // justo lo que se veía. Una copa de 3×3 píxeles tiene 4 de los suyos en cada
+  // esquina y 5 ajenos: con la regla vieja las esquinas caían, y a la pasada
+  // siguiente caía lo que quedaba, hasta borrar el árbol entero. Pidiendo
+  // además que esté solo, una copa de 2×2 ya se sostiene (~1,5 m de diámetro)
+  // y solo desaparece el píxel suelto, que sí es ruido.
   const MAYORIA_MIN = 5;
+  const MAYORIA_SOLO = 2;
   // Superficie mínima para que una mancha azul cuente como cuerpo de agua.
   // El techo de zinc azul —abundante en el barrio— tiene EXACTAMENTE el mismo
   // color que el agua somera: (62,82,116) contra (34,54,82) son el mismo azul
@@ -1528,6 +1537,25 @@
   // patio de tierra no lo es.
   const VERDE_FIRME = .07;
   const VERDE_DEBIL = .025;
+  // Piso de saturación, que es lo que separa la hoja del pavimento.
+  //
+  // La calle en sombra bajo una hilera de árboles recibe luz REBOTADA en las
+  // hojas y queda con un tinte verdoso: un asfalto sombreado tipo (55,60,52)
+  // llega a exg .078 y pasaba el umbral firme, así que las vías aparecían
+  // pintadas de verde. Pero el tinte prestado es pálido —la saturación se
+  // queda por 0.13— mientras que la hoja, aun en sombra profunda, conserva
+  // color propio y ronda 0.30 o más. Exigir un mínimo de saturación tira el
+  // asfalto sin tocar la copa.
+  //
+  // Se le pide MENOS al candidato débil que al firme: ahí el piso solo tiene
+  // que frenar al pavimento, porque para entrar además debe estar pegado a
+  // copa confirmada.
+  // Los valores salen de barrer el umbral contra una escena con calle arbolada
+  // y árboles chicos: por debajo de .15 el asfalto sombreado empieza a colarse
+  // (a .14 ya se pinta de verde un tercio de la calle) y por encima de .19 se
+  // pierden los arbolitos apagados. .17 queda con margen a los dos lados.
+  const VERDE_SAT_FIRME = .17;
+  const VERDE_SAT_DEBIL = .145;
   // Cuántos píxeles puede avanzar el contagio desde la copa confirmada. Acota
   // el crecimiento para que no se escape por un degradado hasta teñir media
   // manzana: a ~0.6 m por píxel son unos 4 m, la franja de sombra de un árbol.
@@ -1588,7 +1616,7 @@
 
     // Vegetación viva. Va PRIMERO: la copa en sombra también es azulada y, si
     // el agua se evaluara antes, se la llevaría.
-    if (exg > VERDE_FIRME && g > r) return 'verde';
+    if (exg > VERDE_FIRME && g > r && sat >= VERDE_SAT_FIRME) return 'verde';
     // Agua: azul en proporción y superficie oscura. El umbral de luz baja de
     // 145 a 125 porque los techos de zinc azul del barrio —abundantes— caían
     // dentro; los que aún se cuelen los limpia el filtro de manchas chicas.
@@ -1610,7 +1638,9 @@
   function esVerdeDebil(r, g, b){
     const suma = r + g + b || 1;
     const exg = (2 * g - r - b) / suma;
-    return exg > VERDE_DEBIL && g >= r && g >= b;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const sat = max === 0 ? 0 : (max - min) / max;
+    return exg > VERDE_DEBIL && g >= r && g >= b && sat >= VERDE_SAT_DEBIL;
   }
 
   // Convierte píxel → lat/lng. La imagen se pide en EPSG:4326 con el bbox del
@@ -1727,7 +1757,9 @@
                 const f = p + dy * w;
                 cnt[cls[f - 1]]++; cnt[cls[f]]++; cnt[cls[f + 1]]++;
               }
-              let mejor = cls[p], nMejor = 0;
+              const propio = cls[p];
+              if (cnt[propio] > MAYORIA_SOLO) continue;   // no está solo: es un rasgo, no ruido
+              let mejor = propio, nMejor = 0;
               for (let k = 1; k <= 4; k++) if (cnt[k] > nMejor) { nMejor = cnt[k]; mejor = k; }
               if (nMejor >= MAYORIA_MIN) suave[p] = mejor;
             }

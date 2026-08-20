@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v506-copa-en-sombra';
+const URBIS_CACHE = 'urbis-v507-calle-y-arbol-chico';
 const URBIS_ASSETS = [
   './',
   './index.html',
