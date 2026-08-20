@@ -195,21 +195,38 @@ body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
 }
 .u52-aurea-screen .ah-prize{ font-size:.86rem !important; }
 
-/* La tarjeta del juego ES el botón: se comporta como tal */
-.u52-aurea-screen .ah-game{
-  position:relative; overflow:hidden;
-  transition:transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
-}
-.u52-aurea-screen .ah-game:hover{
-  box-shadow:0 8px 26px rgba(0,0,0,.5), inset 0 0 0 1.5px rgba(255,210,63,.75);
-}
-.u52-aurea-screen .ah-game:active{ transform:scale(.975) !important; }
 
-/* Brillo que recorre la tarjeta: señala "esto se toca" sin añadir texto */
-.u52-aurea-screen .ah-game::after{
-  content:''; position:absolute; top:0; bottom:0; width:42%;
+/* ── El único botón de juego: el grande del pie ──────────────────────────
+   La tarjeta del medio se eliminó (hacía exactamente lo mismo que este y
+   competían por la atención). Todo el peso visual vive aquí ahora. */
+
+/* Descripción del reto, justo encima del botón */
+.u52-aurea-screen .am-reto{
+  text-align:center; margin:0 0 11px;
+}
+.u52-aurea-screen .am-reto b{
+  display:block; font-size:.95rem; font-weight:900;
+  color:#FFF4D6; -webkit-text-fill-color:#FFF4D6;
+}
+.u52-aurea-screen .am-reto small{
+  display:block; margin-top:3px; font-size:.76rem;
+  color:#DCBE86; -webkit-text-fill-color:#DCBE86;
+}
+
+.u52-aurea-screen .am-play{
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  /* Sustituye a ahPulse: además del halo, el botón respira un poco */
+  animation:ahLatido 2.1s ease-in-out infinite !important;
+  transition:transform .16s cubic-bezier(.2,.8,.2,1);
+}
+.u52-aurea-screen .am-play:active{ transform:scale(.97) !important; }
+
+/* Brillo que recorre el botón: señala "esto se toca" sin añadir texto */
+.u52-aurea-screen .am-play::after{
+  content:''; position:absolute; top:0; bottom:0; width:38%;
   left:-60%; pointer-events:none;
-  background:linear-gradient(100deg, transparent, rgba(255,235,170,.16) 45%, transparent);
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.45) 45%, transparent);
   animation:ahBrillo 3.4s ease-in-out infinite;
 }
 @keyframes ahBrillo{
@@ -217,27 +234,19 @@ body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
   55%  { left:120%; }
   100% { left:120%; }
 }
-
-/* "Jugar" con forma de botón real, latido suave y flecha de avance */
-.u52-aurea-screen .ah-game-play{
-  display:inline-flex; align-items:center; gap:6px;
-  font-size:.82rem !important; padding:10px 15px !important;
-  border-radius:999px !important;
-  box-shadow:0 3px 12px rgba(244,163,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
-  animation:ahLatido 2.1s ease-in-out infinite;
-}
-.u52-aurea-screen .ah-game-play::after{
-  content:'▶'; font-size:.62rem; transform:translateY(.5px);
-}
 @keyframes ahLatido{
-  0%,100%{ transform:scale(1);    box-shadow:0 3px 12px rgba(244,163,0,.45), inset 0 1px 0 rgba(255,255,255,.5); }
-  50%    { transform:scale(1.045); box-shadow:0 5px 20px rgba(255,210,63,.72), inset 0 1px 0 rgba(255,255,255,.6); }
+  0%,100%{ transform:scale(1);     box-shadow:0 6px 18px rgba(244,163,0,.5); }
+  50%    { transform:scale(1.022); box-shadow:0 9px 30px rgba(255,210,63,.8); }
 }
+
+/* Deshabilitado: sin latido ni brillo, o parece pulsable y no lo es */
+.u52-aurea-screen .am-play:disabled{ animation:none !important; }
+.u52-aurea-screen .am-play:disabled::after{ display:none; }
 
 /* Nadie debe marearse por una animación decorativa */
 @media (prefers-reduced-motion: reduce){
-  .u52-aurea-screen .ah-game::after,
-  .u52-aurea-screen .ah-game-play{ animation:none !important; }
+  .u52-aurea-screen .am-play,
+  .u52-aurea-screen .am-play::after{ animation:none !important; }
 }
 
 /* Un -webkit-text-fill-color global (usado para títulos con degradado) pisaba

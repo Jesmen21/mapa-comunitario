@@ -1861,9 +1861,15 @@
     if(terminado) accion = lista.length
       ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
       : '<div class="am-winner">Evento finalizado sin participantes.</div>';
-    else accion = '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
-    const gameCard = terminado ? '' :
-      '<button class="ah-game" id="ah-game-card"><span class="ah-game-ico">⚡</span><div class="ah-game-txt"><b>Reto de Reflejos · Áurea</b><small>Toca los rayos lo más rápido · 30s · por dinero real</small></div><span class="ah-game-play">▶ JUGAR</span></button>';
+    // Un solo punto de entrada al juego. Antes había dos botones que hacían lo
+    // mismo —la tarjeta del medio y este— y competían entre sí; queda el de
+    // abajo, que es el que cierra la pantalla, con la descripción del reto
+    // encima para no perder esa información al quitar la tarjeta.
+    else accion =
+      '<div class="am-reto"><b>Reto de Reflejos · Áurea</b>' +
+      '<small>Toca los rayos lo más rápido · 30 s · por dinero real</small></div>' +
+      '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
+    const gameCard = '';
 
     cont.innerHTML =
       '<div class="ah-hero">'+
@@ -1879,7 +1885,6 @@
 
     const jugar = () => { if(window.urbisJugarAurea) window.urbisJugarAurea(juegoId, titulo); };
     const pc = cont.querySelector('#ah-play'); if(pc) pc.onclick = jugar;
-    const gc = cont.querySelector('#ah-game-card'); if(gc) gc.onclick = jugar;
   }
   // Render del MÓDULO premium (lo llama show('aurea') y el juego al salir).
   window.urbisRenderAureaHub = function(){
