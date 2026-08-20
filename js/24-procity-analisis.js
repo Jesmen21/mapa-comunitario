@@ -479,12 +479,33 @@
   }
 
   // Puntos que alimentan el calor: si hay un área cerrada, solo los de dentro.
+  // El filtro de vista (👁️) lo resuelve js/20, que es quien lo tiene. Si por
+  // lo que sea no llegara, se deja pasar todo antes que dejar el mapa en
+  // blanco: perder el filtro es un defecto menor que perder el calor entero.
+  function visibleSegunMapa(ctx){
+    return (ctx && typeof ctx.visible === 'function') ? ctx.visible : () => true;
+  }
+
+  // Cómo está el filtro de vista del mapa, para poder decirlo en pantalla.
+  function vistaDelMapa(ctx){
+    try { if (ctx && typeof ctx.vista === 'function') return ctx.vista(); } catch(e){}
+    return { id:'todos', ico:'🌐', etq:'todo el mundo' };
+  }
+  function vistaTexto(ctx){
+    const v = vistaDelMapa(ctx);
+    return v.ico + ' Se genera sobre lo que estás viendo: <b>' + esc(v.etq) + '</b>' +
+      (v.id === 'todos' ? '' : '. Cambia la vista con el botón 👁️ del mapa.');
+  }
+
   function puntosParaHeat(ctx){
     const gid = S.heat.grupo;
     const hayArea = S.cerrada && S.pts.length >= 3;
+    const seVe = visibleSegunMapa(ctx);
     const out = [];
     datosURBIS().forEach(p => {
       if (!p || !ctx.esProCity(p.tipo)) return;
+      // Mismo criterio que la geometría: el calor mide lo que se está viendo.
+      if (!seVe(p)) return;
       const lat = parseFloat(String(p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p.lng || '').replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return;
@@ -633,7 +654,8 @@
       '<i style="background:' + color + '"></i>' +
       '<div><b>' + (g ? g.i + ' ' + esc(g.t) : '🔥 Todos los usos') + '</b>' +
       '<small>' + n + ' punto' + (n === 1 ? '' : 's') + ' en pantalla' +
-      (S.cerrada && S.pts.length >= 3 ? ' · dentro del área' : '') + '</small></div>' +
+      (S.cerrada && S.pts.length >= 3 ? ' · dentro del área' : '') +
+      ' · ' + vistaDelMapa(ctx).ico + ' ' + esc(vistaDelMapa(ctx).etq) + '</small></div>' +
       '<button type="button" data-u52-call="pca-heat-off" aria-label="Quitar mapa de calor">✕</button>';
   }
 
@@ -652,8 +674,12 @@
     });
 
     // Solo lo que pertenece a Pro City: los reportes ciudadanos y eventos no
-    // son mapeo urbano y falsearían el conteo.
-    const pc = dentro.filter(p => ctx.esProCity(p.tipo));
+    // son mapeo urbano y falsearían el conteo. Y solo lo VISIBLE: los conteos
+    // por categoría de este cálculo son los que se muestran junto a cada chip
+    // de "¿qué puntos conectar?", así que si contaran puntos ocultos el número
+    // prometería una red que después no se dibuja.
+    const seVe = visibleSegunMapa(ctx);
+    const pc = dentro.filter(p => ctx.esProCity(p.tipo) && seVe(p));
 
     const porGrupo = {};
     ctx.grupos.forEach(g => { porGrupo[g.id] = 0; });
@@ -1232,8 +1258,13 @@
   // por separado la red del comercio, la de los equipamientos, etc.
   function puntosGeo(ctx){
     const filtro = S.geo.grupo || 'todos';
+    const seVe = visibleSegunMapa(ctx);
     return datosURBIS().reduce((acc, p) => {
       if (!p || !ctx.esProCity(p.tipo)) return acc;
+      // La geometría se teje sobre lo que está A LA VISTA. Si el mapa está en
+      // "solo lo mío", conectar además los puntos de los demás cambia el
+      // trazado con evidencia que el usuario no está viendo.
+      if (!seVe(p)) return acc;
       const lat = parseFloat(String(p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p.lng || '').replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return acc;
@@ -1364,9 +1395,12 @@
     // quedar encima del suyo.
     S.geo.chip.classList.toggle('abajo', !!S.heat.grupo);
     const n = S.geo.ultimoConteo || 0;
+    // El chip dice también SOBRE QUÉ conjunto se tejió (👤/👥/📁/🌐): es la
+    // única pista en el mapa de por qué la red conecta unos puntos y no otros.
+    const v = vistaDelMapa(ctx);
     const aviso = n < 2
-      ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' con este filtro — prueba con “Todo lo mapeado”'
-      : n + ' puntos · ' + esc(nombreFiltroGeo(ctx));
+      ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' en ' + v.ico + ' ' + esc(v.etq)
+      : n + ' puntos · ' + esc(nombreFiltroGeo(ctx)) + ' · ' + v.ico + ' ' + esc(v.etq);
     S.geo.chip.innerHTML =
       '<i style="background:' + colorGeo(S.geo.tipo) + '"></i>' +
       '<div><b>' + nombreGeo(S.geo.tipo) + '</b><small>' + aviso + '</small></div>' +
@@ -1378,6 +1412,15 @@
     S.geo.ultimoConteo = 0;
     if (S.geo.capa) { try { S.geo.capa.clearLayers(); } catch(e){} }
     if (S.geo.chip) { try { S.geo.chip.remove(); } catch(e){} S.geo.chip = null; }
+  }
+
+  // Cambió QUÉ se ve en el mapa (👁️ la vista, 🔷 la matriz, el viaje en el
+  // tiempo). Lo llama js/20 desde renderProCityPoints, que es por donde pasa
+  // todo cambio de filtro: lo dibujado encima se rehace con el conjunto nuevo
+  // en vez de quedar colgado del anterior.
+  function refrescarPorFiltro(){
+    if (S.geo.tipo) { try { refrescarGeo(); } catch(e){} }
+    if (S.heat.grupo) { try { pintarHeat(); } catch(e){} }
   }
 
   // El área cambió (se cerró otra, se cargó una guardada): la geometría se
@@ -1411,6 +1454,10 @@
     return '<div class="pca-geo-sel">' +
       '<h4 class="pca-h pca-h-geo">🕸️ Geometría del área</h4>' +
       '<p class="pca-geo-ayuda">Dibuja las relaciones espaciales entre lo mapeado: qué tan cerca está unos de otros, cuánto terreno abarcan y dónde se cruzan sus radios de influencia. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
+      // Decir SOBRE QUÉ se va a generar. Sin esto, un usuario con el mapa en
+      // "solo lo mío" no tiene forma de saber si la red que ve sale de sus
+      // puntos o de los de todo el mundo.
+      '<div class="pca-geo-vista">' + vistaTexto(ctx) + '</div>' +
       '<div class="pca-geo-sub">¿Qué puntos conectar?</div>' +
       '<div class="pca-geo-filtros">' + filtros + '</div>' +
       '<div class="pca-geo-sub">¿Cómo dibujarlos?</div>' +
@@ -1920,7 +1967,7 @@
     // Mapa de calor (Fase 2)
     heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat,
     // Geometría (Fase 3)
-    geoActiva: () => S.geo.tipo, apagarGeo,
+    geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro,
     // Cobertura del suelo (Fase 4)
     analizarRaster, clasificarPixel, ultimoRaster: () => S.raster
   };

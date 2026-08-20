@@ -148,6 +148,7 @@
     'Industria y Logística', 'Animal y Bienestar', 'Infraestructura Smart',
     'Oficinas y Co-working', '🗺️ Matriz de Usos'
   ];
+  const PRO_CITY_DIM_SET = new Set(PRO_CITY_DIMS);
   // Lista AUTORITATIVA para que otros módulos (ej. "Mis reportes" en js/12)
   // puedan excluir lo georreferenciado en Pro City sin duplicar la lista a
   // mano. URBIS_TIPOS_AUTOMAPEO (js/12) es una lista MÁS VIEJA/INCOMPLETA
@@ -2917,7 +2918,16 @@
       matrizKey: MATRIZ_USOS_KEY,
       usoDe: _procityPuntoUso,
       esProCity: tipo => PRO_CITY_DIMS.includes(String(tipo || '')),
-      esPropio: esPropioProCity
+      esPropio: esPropioProCity,
+      // Lo que js/24 necesita para no tejer geometría sobre puntos ocultos.
+      visible: proCityPuntoVisible,
+      // Para poder decir en pantalla SOBRE QUÉ se generó (👤 solo lo mío, 👥
+      // mis amigos, 📁 un proyecto, 🌐 todo el mundo).
+      vista: () => proCity.folderFilter
+          ? { id:'carpeta', ico:'📁', etq:'proyecto “' + ((proCity.myFolders.find(f=>f.id===proCity.folderFilter)||{}).nombre || proCity.folderFilter) + '”' }
+        : proCity.onlyFriends ? { id:'amigos', ico:'👥', etq:'mis amigos' }
+        : proCity.onlyMine    ? { id:'mio',    ico:'👤', etq:'solo lo mío' }
+        :                       { id:'todos',  ico:'🌐', etq:'todo el mundo' }
     };
   }
   // El mapa de calor se enciende y apaga desde el propio mapa, con el panel
@@ -4115,6 +4125,38 @@
   // llamadas extra al backend — clave para el escalado masivo). Se invoca al
   // entrar al módulo, tras guardar/mover/editar y en cada recarga de datos
   // (hook desde pintarPuntos en js/12).
+  // Predicado ÚNICO de "este punto se está viendo en el mapa". Reúne los tres
+  // filtros de Pro City: la matriz de usos apagada (🔷), la vista elegida
+  // (👁️ solo lo mío / mis amigos / una carpeta cooperativa / todo el mundo) y
+  // el viaje en el tiempo.
+  //
+  // Vive aquí, en un solo sitio, porque lo consume también js/24: la red de
+  // conexiones, la envolvente, los círculos y el mapa de calor tienen que
+  // generarse sobre EXACTAMENTE lo que está a la vista. Antes cada uno
+  // recorría globalData por su cuenta y solo miraba el área dibujada, así que
+  // con "solo lo mío" activo la geometría se tejía igual sobre los puntos de
+  // los demás — invisibles en el mapa pero presentes en el trazado.
+  function proCityPuntoVisible(p){
+    if(!p) return false;
+    const tipo = String(p.tipo || '');
+    if(!PRO_CITY_DIM_SET.has(tipo)) return false;
+    if(proCity.hidden && proCity.hidden.has(tipo)) return false;
+    // Si hay un proyecto cooperativo filtrado (folderFilter), debe verse TODO
+    // lo mapeado ahí por CUALQUIER miembro: "solo lo mío" (onlyMine, activo
+    // por defecto) no aplica en ese caso, porque si no los puntos de los demás
+    // miembros nunca aparecerían aunque el filtro de carpeta los dejara pasar.
+    if(proCity.folderFilter){
+      if(proCityPointFolderId(p) !== proCity.folderFilter) return false;
+    } else if(proCity.onlyFriends){
+      if(!esDeAmigoProCity(p)) return false;
+    } else if(proCity.onlyMine && !esPropioProCity(p)){
+      return false;
+    }
+    if(proCity.timeFilter && proCity.timeFilter.active && !urbisPointInTimeRange(p, urbisTimeRangeFor(proCity.timeFilter))) return false;
+    return true;
+  }
+  window.urbisProCityPuntoVisible = proCityPuntoVisible;
+
   function renderProCityPoints(){
     const layer = ensureProCityLayer();
     if(!layer) return;
@@ -4122,26 +4164,9 @@
     if(!proCity.active){ try{ if(window.map && map.hasLayer(layer)) map.removeLayer(layer); }catch(e){} return; }
     try{ if(window.map && !map.hasLayer(layer)) layer.addTo(map); }catch(e){}
     const datos = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData : [];
-    const dimSet = new Set(PRO_CITY_DIMS);
     datos.forEach(p=>{
-      if(!p) return;
+      if(!proCityPuntoVisible(p)) return;
       const tipo = String(p.tipo || '');
-      if(!dimSet.has(tipo)) return;
-      if(proCity.hidden && proCity.hidden.has(tipo)) return;
-      // BUG real: si hay un proyecto cooperativo filtrado (folderFilter), debe
-      // verse TODO lo mapeado ahí por CUALQUIER miembro — "solo lo mío"
-      // (onlyMine, activo por defecto) no debe aplicar en ese caso, porque
-      // si no, los puntos de los demás miembros nunca aparecían en el mapa
-      // aunque el filtro de carpeta ya los hubiera dejado pasar.
-      if(proCity.folderFilter){
-        if(proCityPointFolderId(p) !== proCity.folderFilter) return;
-      } else if(proCity.onlyFriends){
-        // Vista "Solo mis amigos" (pedido explícito, botón 👁️ del mapa).
-        if(!esDeAmigoProCity(p)) return;
-      } else if(proCity.onlyMine && !esPropioProCity(p)){
-        return;
-      }
-      if(proCity.timeFilter && proCity.timeFilter.active && !urbisPointInTimeRange(p, urbisTimeRangeFor(proCity.timeFilter))) return;
       const lat = parseFloat(String(p.lat).replace(',','.')), lng = parseFloat(String(p.lng).replace(',','.'));
       if(isNaN(lat) || isNaN(lng)) return;
       // BUG real: los puntos de la Matriz de Usos se dibujaban TODOS con la
@@ -4172,6 +4197,15 @@
       m.on('click', ev=>{ try{ L.DomEvent.stopPropagation(ev); }catch(e){} if(window.__urbisMovingReport) return; showProCitySelectedPanel(p); });
       m.addTo(layer);
     });
+    // Lo que js/24 dibuja sobre el mapa (la geometría y el mapa de calor) sale
+    // del MISMO conjunto de puntos que se acaba de pintar. Se avisa desde aquí
+    // —el punto por el que pasa TODO cambio de filtro— para que se rehaga con
+    // el conjunto nuevo, en vez de tener que acordarse en cada botón.
+    try{
+      if(window.URBIS_PC_ANALISIS && typeof window.URBIS_PC_ANALISIS.refrescarPorFiltro === 'function'){
+        window.URBIS_PC_ANALISIS.refrescarPorFiltro();
+      }
+    }catch(e){}
   }
   window.urbisRenderProCityPoints = renderProCityPoints;
 

@@ -318,6 +318,13 @@
   font-size:.72rem; font-weight:800; letter-spacing:.02em;
   color:#4c3b73 !important; -webkit-text-fill-color:#4c3b73 !important;
 }
+/* Aviso de sobre qué conjunto se genera la geometría (el filtro 👁️ del mapa). */
+.pca-geo-vista{
+  font-size:.72rem; line-height:1.45; padding:7px 9px; border-radius:10px;
+  background:#fff; border:1.5px solid #d9d0f0;
+  color:#4c3b73 !important; -webkit-text-fill-color:#4c3b73 !important;
+}
+.pca-geo-vista b{ color:#3c2b63 !important; -webkit-text-fill-color:#3c2b63 !important; }
 .pca-geo-filtros{ display:flex; flex-wrap:wrap; gap:5px; }
 .pca-geo-filtro{
   display:inline-flex; align-items:center; gap:5px; cursor:pointer;
