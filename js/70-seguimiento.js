@@ -1047,9 +1047,34 @@
   }
 
   // Línea del dólar. Una sola serie: sin caja de leyenda, el título la nombra.
-  function grafDolar(d, compacta) {
+  // Formato del valor según lo que mide la serie. Un 52,4 no se lee igual que
+  // 3.098 ni que "1 operación".
+  function valorSerie(v, d) {
+    var f = d && d.formato;
+    if (f === 'pct') return String(v).replace('.', ',') + '%';
+    if (f === 'entero') return String(Math.round(v));
+    return miles(v);
+  }
+
+  // Serie temporal genérica. Nació para el dólar y ahora la usan también deuda,
+  // aprobación y bombardeos: mismo lenguaje visual para todo lo que se sigue en
+  // el tiempo, con el color propio de cada indicador.
+  function grafSerie(d, compacta) {
     var pts = (d.puntos || []).filter(function (p) { return p && p.v != null; });
-    if (pts.length < 2) return null;
+    if (!pts.length) return null;
+
+    var col = d.color || '#0E86BC';
+    // Una sola medición no es una línea: se dibuja el punto y se dice que aún
+    // no hay serie, en vez de fingir una tendencia con un solo dato.
+    if (pts.length === 1) {
+      var caja = el('div', 'sp-unico');
+      caja.style.setProperty('--c', col);
+      caja.appendChild(el('b', null, valorSerie(pts[0].v, d)));
+      caja.appendChild(el('span', null, fechaCorta(pts[0].f)));
+      if (pts[0].e) caja.appendChild(el('small', null, pts[0].e));
+      caja.appendChild(el('em', null, 'Una sola medición · aún no hay serie'));
+      return caja;
+    }
 
     var W = 640, H = compacta ? 120 : 210;
     var mL = 8, mR = 8, mT = 14, mB = compacta ? 22 : 34;
@@ -1063,7 +1088,7 @@
     // La clase es necesaria: el CSS no puede estirar "cualquier svg dentro de
     // .sp-graf" porque ahí también viven los iconitos de las fuentes.
     var svg = svgEl('svg', { class: 'sp-lienzo', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
-      'aria-label': 'El dólar pasó de ' + miles(pts[0].v) + ' a ' + miles(pts[pts.length-1].v) + ' pesos' });
+      'aria-label': (d.titulo || 'Serie') + ': de ' + valorSerie(pts[0].v, d) + ' a ' + valorSerie(pts[pts.length-1].v, d) });
 
     // Rejilla: solo dos guías, recesivas
     [0, 1].forEach(function (k) {
@@ -1078,12 +1103,12 @@
     var gid = 'spgrad' + Math.random().toString(36).slice(2, 8);
     var defs = svgEl('defs');
     var lg = svgEl('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' });
-    lg.appendChild(svgEl('stop', { offset: '0', 'stop-color': '#34CCFE', 'stop-opacity': '.28' }));
-    lg.appendChild(svgEl('stop', { offset: '1', 'stop-color': '#34CCFE', 'stop-opacity': '0' }));
+    lg.appendChild(svgEl('stop', { offset: '0', 'stop-color': col, 'stop-opacity': '.28' }));
+    lg.appendChild(svgEl('stop', { offset: '1', 'stop-color': col, 'stop-opacity': '0' }));
     defs.appendChild(lg); svg.appendChild(defs);
 
     svg.appendChild(svgEl('path', { d: dArea, fill: 'url(#' + gid + ')' }));
-    svg.appendChild(svgEl('path', { d: dLine, fill: 'none', stroke: '#0E86BC', 'stroke-width': 2,
+    svg.appendChild(svgEl('path', { d: dLine, fill: 'none', stroke: col, 'stroke-width': 2,
       'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
 
     pts.forEach(function (p, i) {
@@ -1095,7 +1120,7 @@
       }
       var ultimo = i === pts.length - 1;
       svg.appendChild(svgEl('circle', { cx: X(i), cy: Y(p.v), r: ultimo ? 5 : 3.5,
-        fill: ultimo ? '#0E86BC' : '#FFFFFF', stroke: '#0E86BC', 'stroke-width': 2 }));
+        fill: ultimo ? col : '#FFFFFF', stroke: col, 'stroke-width': 2 }));
 
       if (compacta) return;
       var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor':
@@ -1108,7 +1133,7 @@
         var v = svgEl('text', { x: X(i), y: Y(p.v) - 11, 'text-anchor':
           i === 0 ? 'start' : (ultimo ? 'end' : 'middle'),
           fill: '#152229', 'font-size': '12', 'font-weight': '700' });
-        v.textContent = miles(p.v);
+        v.textContent = valorSerie(p.v, d);
         svg.appendChild(v);
       }
     });
@@ -1216,23 +1241,30 @@
     var ind = D.indicadores || {};
     var cont = vaciar($('sp-graficas'));
 
-    // 1 · Dólar
-    if (ind.dolar) {
-      var pts = ind.dolar.puntos || [];
+    // 1 · Las cuatro series temporales, en el mismo orden que la portada
+    HERO_SERIES.forEach(function (k) {
+      var d = ind[k];
+      if (!d || !(d.puntos || []).length) return;
+      var pts = d.puntos;
+      var ultimo = pts[pts.length - 1];
       var extra = null;
       if (pts.length >= 2) {
-        var a = pts[0].v, z = pts[pts.length - 1].v, dif = z - a;
-        var pct = (dif / a) * 100;
+        var a = pts[0].v, z = ultimo.v, dif = z - a;
         extra = el('div', 'sp-cifra');
-        extra.appendChild(el('b', null, miles(z)));
-        var dl = el('span', 'sp-delta ' + (dif <= 0 ? 'sp-delta-baja' : 'sp-delta-sube'),
-          (dif <= 0 ? '▼ ' : '▲ ') + miles(Math.abs(dif)) + ' (' + Math.abs(pct).toFixed(1) + '%)');
-        extra.appendChild(dl);
+        extra.appendChild(el('b', null, valorSerie(z, d)));
+        var sube = dif > 0;
+        var clase = 'sp-delta-neutra';
+        if (d.sentido === 'sube-bueno') clase = sube ? 'sp-delta-buena' : 'sp-delta-mala';
+        else if (d.sentido === 'sube-malo') clase = sube ? 'sp-delta-mala' : 'sp-delta-buena';
+        var txt = dif === 0 ? 'sin cambio'
+          : (sube ? '▲ ' : '▼ ') + valorSerie(Math.abs(dif), d) +
+            (a ? ' (' + Math.abs((dif / a) * 100).toFixed(1) + '%)' : '');
+        extra.appendChild(el('span', 'sp-delta ' + clase, txt));
         extra.appendChild(el('span', 'sp-med-v', 'desde el ' + fechaCorta(pts[0].f)));
       }
-      cont.appendChild(tarjetaGrafica(ind.dolar.titulo, ind.dolar.unidad,
-        grafDolar(ind.dolar, false), ind.dolar.leyenda, ind.dolar.fuentes, extra));
-    }
+      cont.appendChild(tarjetaGrafica(d.titulo, d.unidad,
+        grafSerie(d, false), d.leyenda, d.fuentes, extra));
+    });
 
     // 2 · Deuda
     if (ind.deuda) {
@@ -1252,25 +1284,60 @@
 
   // Mini gráfica del dólar en la portada, para que la primera pantalla no
   // arranque plana y se vea de una que hay datos vivos.
+  // Lo primero de la portada: cuatro series con el mismo lenguaje visual.
+  // El orden es deliberado — dólar y deuda son la plata, aprobación es el
+  // respaldo político y bombardeos es la política de seguridad.
+  var HERO_SERIES = ['dolar', 'deudaSerie', 'aprobacion', 'bombardeos'];
+
   function pintarHeroGrafica() {
     var cont = vaciar($('sp-hero-graf'));
-    var d = (D.indicadores || {}).dolar;
-    if (!d || !(d.puntos || []).length) return;
-    var pts = d.puntos, a = pts[0].v, z = pts[pts.length - 1].v, dif = z - a;
-    var pct = (dif / a) * 100;
+    var ind = D.indicadores || {};
+    var hay = HERO_SERIES.filter(function (k) {
+      return ind[k] && (ind[k].puntos || []).length;
+    });
+    if (!hay.length) return;
 
-    var b = el('button', 'sp-hero-graf'); b.type = 'button';
-    var top = el('div', 'sp-hero-graf-top');
-    top.appendChild(el('span', 'sp-hero-graf-t', d.titulo));
-    var dl = el('span', 'sp-delta ' + (dif <= 0 ? 'sp-delta-baja' : 'sp-delta-sube'),
-      (dif <= 0 ? '▼ ' : '▲ ') + miles(Math.abs(dif)) + ' (' + Math.abs(pct).toFixed(1) + '%)');
-    top.appendChild(dl);
-    b.appendChild(top);
-    var g = grafDolar(d, true);
-    if (g) b.appendChild(g);
-    b.appendChild(el('p', 'sp-med-e', miles(z) + ' pesos · ' + fechaLarga(pts[pts.length - 1].f)));
-    b.addEventListener('click', function () { ir({ v: 'indicadores' }); });
-    cont.appendChild(b);
+    cont.appendChild(el('h2', 'sp-hero-h', 'Cómo va el gobierno, en números'));
+    var rejilla = el('div', 'sp-hero-grid');
+
+    hay.forEach(function (k) {
+      var d = ind[k];
+      var pts = d.puntos;
+      var ultimo = pts[pts.length - 1];
+
+      var b = el('button', 'sp-hero-graf'); b.type = 'button';
+      b.style.setProperty('--c', d.color || '#0E86BC');
+
+      var top = el('div', 'sp-hero-graf-top');
+      top.appendChild(el('span', 'sp-hero-graf-t', d.titulo));
+
+      // El delta solo aparece si hay de dónde calcularlo, y su color depende
+      // de lo que signifique subir en ESA serie: más deuda no es lo mismo que
+      // más aprobación. Donde subir no es ni bueno ni malo, va neutro.
+      if (pts.length >= 2) {
+        var a = pts[0].v, z = ultimo.v, dif = z - a;
+        var sube = dif > 0;
+        var clase = 'sp-delta-neutra';
+        if (d.sentido === 'sube-bueno') clase = sube ? 'sp-delta-buena' : 'sp-delta-mala';
+        else if (d.sentido === 'sube-malo') clase = sube ? 'sp-delta-mala' : 'sp-delta-buena';
+        var txt = (sube ? '▲ ' : (dif < 0 ? '▼ ' : '')) +
+          valorSerie(Math.abs(dif), d) + (a ? ' (' + Math.abs((dif / a) * 100).toFixed(1) + '%)' : '');
+        top.appendChild(el('span', 'sp-delta ' + clase, dif === 0 ? 'sin cambio' : txt));
+      }
+      b.appendChild(top);
+
+      var g = grafSerie(d, true);
+      if (g) b.appendChild(g);
+
+      b.appendChild(el('p', 'sp-hero-pie',
+        valorSerie(ultimo.v, d) + ' · ' + fechaCorta(ultimo.f)));
+      b.addEventListener('click', function () { ir({ v: 'indicadores' }); });
+      rejilla.appendChild(b);
+    });
+
+    cont.appendChild(rejilla);
+    cont.appendChild(el('p', 'sp-hero-nota',
+      'Toca cualquiera para ver la gráfica completa, su fuente y qué la explica.'));
   }
 
   // ── Panel de filtros ──────────────────────────────────────────────────────

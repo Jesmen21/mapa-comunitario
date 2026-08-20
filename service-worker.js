@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v497-aurea-un-boton';
+const URBIS_CACHE = 'urbis-v498-portada-indicadores';
 const URBIS_ASSETS = [
   './',
   './index.html',

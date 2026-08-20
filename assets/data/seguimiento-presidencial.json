@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-19",
-  "proximaActualizacion": "2026-08-20",
+  "actualizado": "2026-08-20",
+  "proximaActualizacion": "2026-08-21",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -424,6 +424,9 @@
     "dolar": {
       "titulo": "El dólar desde la posesión",
       "unidad": "pesos por dólar (TRM)",
+      "formato": "miles",
+      "sentido": "neutro",
+      "color": "#0E86BC",
       "leyenda": "La TRM la mueven muchos factores a la vez —tasas de la Reserva Federal, precio del petróleo, riesgo global—, así que este movimiento acompaña a la gestión pero no se puede atribuir solo a ella.",
       "puntos": [
         { "f": "2026-08-05", "v": 3204.51, "e": "Dos días antes de la posesión" },
@@ -435,6 +438,52 @@
         { "n": "El Tiempo · TRM antes de la posesión", "u": "https://www.eltiempo.com/amp/economia/sector-financiero/dolar-en-colombia-asi-quedo-la-tasa-representativa-del-mercado-antes-de-la-posesion-del-presidente-electo-abelardo-de-la-espriella-3576816" },
         { "n": "Infobae · cierre del 5 de agosto", "u": "https://www.infobae.com/colombia/2026/08/05/dolar-hoy-en-colombia-cotizacion-de-cierre-del-5-de-agosto/" },
         { "n": "TRM diaria · 19 de agosto", "u": "https://dolar.wilkinsonpc.com.co/2026-08-19" }
+      ]
+    },
+    "deudaSerie": {
+      "titulo": "Deuda comprometida, acumulada",
+      "unidad": "millones de dólares",
+      "color": "#C0392B",
+      "formato": "miles",
+      "sentido": "sube-malo",
+      "leyenda": "Suma de los créditos multilaterales activados desde la posesión. El paquete de seguridad de Estados Unidos NO se cuenta: es cooperación, no deuda que el país deba devolver.",
+      "puntos": [
+        { "f": "2026-08-07", "v": 0, "e": "Posesión: sin crédito nuevo activado", "hito": true },
+        { "f": "2026-08-13", "v": 750, "e": "Banco Mundial (450) + BID (300) en un mismo día" }
+      ],
+      "fuentes": [
+        { "n": "El Banco Mundial desembolsa 200 millones", "u": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/" }
+      ]
+    },
+    "aprobacion": {
+      "titulo": "Aprobación del presidente",
+      "unidad": "% que aprueba su gestión",
+      "color": "#0B6E9B",
+      "formato": "pct",
+      "sentido": "sube-bueno",
+      "leyenda": "Una sola medición hasta ahora, tomada cuatro días después de la posesión y al día siguiente del terremoto. No alcanza para hablar de tendencia: hará falta una segunda encuesta para saber si sube o baja.",
+      "puntos": [
+        { "f": "2026-08-11", "v": 52.4, "e": "Primera medición · 42,2% desaprueba", "hito": true }
+      ],
+      "fuentes": [
+        { "n": "Semana · ranking de favorabilidad (CB Global Data)", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" }
+      ]
+    },
+    "bombardeos": {
+      "titulo": "Bombardeos aéreos autorizados",
+      "unidad": "operaciones acumuladas",
+      "color": "#8A5D12",
+      "formato": "entero",
+      "sentido": "neutro",
+      "leyenda": "Cuenta solo bombardeos AÉREOS confirmados por fuentes públicas, no operaciones terrestres ni capturas. No existe un conteo oficial publicado, así que esta cifra es un piso verificable: puede haber más sin reportar.",
+      "puntos": [
+        { "f": "2026-08-07", "v": 0, "e": "Posesión", "hito": true },
+        { "f": "2026-08-11", "v": 1, "e": "Operación Beta · Catatumbo, contra el ELN" }
+      ],
+      "fuentes": [
+        { "n": "Cambio · primer bombardeo del nuevo gobierno", "u": "https://cambiocolombia.com/conflicto-armado-en-colombia/articulo/2026/8/primer-bombardeo-del-nuevo-gobierno-del-presidente-abelardo-de-la-espriella" },
+        { "n": "El Colombiano · resultados de la operación", "u": "https://www.elcolombiano.com/colombia/abelardo-de-la-espriella-primer-bombardeo-eln-cuales-son-los-resultados-DB39832010" },
+        { "n": "Infobae · la Defensoría denuncia afectación a civiles", "u": "https://www.infobae.com/colombia/2026/08/12/primer-bombardeo-en-el-catatumbo-bajo-el-mando-de-abelardo-de-la-espriella-la-defensoria-del-pueblo-denuncio-afectacion-a-civiles/" }
       ]
     },
     "deuda": {
