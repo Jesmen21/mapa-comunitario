@@ -602,3 +602,12 @@
   transition:transform .15s ease;
 }
 .pca-btn-pdf:active{ transform:scale(.97); }
+
+/* Botón del chip de cobertura para alternar entre la imagen clasificada y la
+   foto satelital que se analizó (comparación honesta: el mapa de fondo puede
+   ser de otro año que la foto clasificada). */
+.pca-raster-chip-foto{
+  flex:0 0 auto; width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#1b3d52; font-size:.82rem; display:grid; place-items:center; margin-right:4px;
+}
+.pca-raster-chip-foto.activo{ background:#2f6f96; box-shadow:0 0 0 1.5px #7fc4e8 inset; }

@@ -39,7 +39,13 @@
     // capa donde queda pegada la imagen clasificada sobre el mapa.
     raster: null,
     rasterCapa: null,
-    rasterChip: null
+    // 'clases' = la imagen clasificada; 'foto' = la foto satelital TAL CUAL se
+    // analizó. Poder alternar importa: el mapa de fondo es de Google y la foto
+    // que se clasifica es de Esri, y no tienen por qué ser del mismo año. Sin
+    // esta comparación, un árbol que está en el mapa pero no en la foto parece
+    // un fallo del clasificador cuando en realidad no estaba en la imagen.
+    rasterVista: 'clases',
+    rasterChip: null,
   };
 
   function esc(s){
@@ -1205,8 +1211,9 @@
     const c = capaRaster();
     if (!c || !res || !res.overlayImagen) return;
     c.clearLayers();
-    L.imageOverlay(res.overlayImagen, res.overlayLimites, {
-      opacity: .8, interactive: false, className: 'pca-raster-overlay'
+    const foto = S.rasterVista === 'foto' && res.imagen;
+    L.imageOverlay(foto ? res.imagen : res.overlayImagen, res.overlayLimites, {
+      opacity: foto ? 1 : .8, interactive: false, className: 'pca-raster-overlay'
     }).addTo(c);
     // El chip nace junto con la imagen, no al tocar "Ver en el mapa": si el
     // usuario cerraba el panel por su cuenta se quedaba con la cobertura
@@ -1244,10 +1251,14 @@
         '</span>' +
         '<small>' + visibles.slice(0, 2).map(c => c.ico + ' ' + c.pct + '%').join(' · ') + '</small>' +
       '</div>' +
+      '<button type="button" class="pca-raster-chip-foto' + (S.rasterVista === 'foto' ? ' activo' : '') + '" ' +
+        'data-u52-call="pca-raster-foto" title="Comparar con la foto que se analizó" ' +
+        'aria-label="Ver la foto satelital analizada">' + (S.rasterVista === 'foto' ? '🎨' : '🛰️') + '</button>' +
       '<button type="button" data-u52-call="pca-raster-off" aria-label="Quitar la capa de cobertura">✕</button>';
   }
 
   function apagarRasterMapa(){
+    S.rasterVista = 'clases';   // la próxima vez se abre en la clasificación
     if (S.rasterCapa) S.rasterCapa.clearLayers();
     if (S.rasterChip) { try { S.rasterChip.remove(); } catch(e){} S.rasterChip = null; }
   }
@@ -1502,6 +1513,26 @@
   // manzana de techos.
   const AGUA_MIN_M2 = 600;
 
+  // Dos umbrales de verde, no uno. La vegetación no tiene una frontera nítida
+  // en el color: hay copa que grita verde y copa que lo susurra —la que está
+  // en sombra profunda, la velada por neblina o calima, y el borde de copa que
+  // comparte píxel con el suelo—. Un umbral único obliga a elegir entre perder
+  // esa franja (lo que se veía: árboles enteros sin pintar) o dejar entrar el
+  // pasto seco y el caqui, que es peor porque infla la cifra ambiental.
+  //
+  // Así que se separa la decisión de la evidencia:
+  //  · VERDE_FIRME  — evidencia suficiente por sí sola.
+  //  · VERDE_DEBIL  — sospecha; solo cuenta si TOCA vegetación confirmada.
+  // El píxel dudoso se resuelve por contexto, igual que lo resolvería un ojo:
+  // un tono apagado en mitad de una copa es copa; el mismo tono en mitad de un
+  // patio de tierra no lo es.
+  const VERDE_FIRME = .07;
+  const VERDE_DEBIL = .025;
+  // Cuántos píxeles puede avanzar el contagio desde la copa confirmada. Acota
+  // el crecimiento para que no se escape por un degradado hasta teñir media
+  // manzana: a ~0.6 m por píxel son unos 4 m, la franja de sombra de un árbol.
+  const VERDE_CRECE = 6;
+
   function bboxDelArea(pts){
     const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
     return { s: Math.min(...lats), n: Math.max(...lats),
@@ -1557,7 +1588,7 @@
 
     // Vegetación viva. Va PRIMERO: la copa en sombra también es azulada y, si
     // el agua se evaluara antes, se la llevaría.
-    if (exg > .085 && g > r) return 'verde';
+    if (exg > VERDE_FIRME && g > r) return 'verde';
     // Agua: azul en proporción y superficie oscura. El umbral de luz baja de
     // 145 a 125 porque los techos de zinc azul del barrio —abundantes— caían
     // dentro; los que aún se cuelen los limpia el filtro de manchas chicas.
@@ -1569,6 +1600,17 @@
     // conviven teja, concreto envejecido, suelo descubierto y matorral seco.
     // El color no los separa: se declara como tal.
     return 'mixto';
+  }
+
+  // ¿Este píxel es sospechoso de vegetación aunque no alcance para declararlo?
+  // Se le pide un sesgo verde real pero débil, y que el verde no quede por
+  // debajo de ningún otro canal — con eso el gris de cubierta (donde los tres
+  // canales van casi iguales) y todo lo cálido quedan fuera desde el principio,
+  // por más que estén pegados a un árbol.
+  function esVerdeDebil(r, g, b){
+    const suma = r + g + b || 1;
+    const exg = (2 * g - r - b) / suma;
+    return exg > VERDE_DEBIL && g >= r && g >= b;
   }
 
   // Convierte píxel → lat/lng. La imagen se pide en EPSG:4326 con el bbox del
@@ -1633,8 +1675,10 @@
           // las pasadas de vecindad necesitan contexto real en el borde, si no
           // el contorno del área quedaría con un marco de ruido.
           const cls = new Uint8Array(n);
+          const dudoso = new Uint8Array(n);   // sospecha de verde, a resolver por contexto
           for (let p = 0, i = 0; p < n; p++, i += 4) {
             cls[p] = COD[clasificarPixel(datos[i], datos[i+1], datos[i+2])];
+            if (cls[p] !== COD.verde && esVerdeDebil(datos[i], datos[i+1], datos[i+2])) dudoso[p] = 1;
           }
 
           // Máscara del área por BARRIDO DE LÍNEAS. Preguntar píxel por píxel
@@ -1689,7 +1733,37 @@
             }
           }
 
-          // ── Pasada 3 · manchas de agua demasiado chicas ───────────────────
+          // ── Pasada 3 · la copa crece sobre sus propias dudas ──────────────
+          // Crecimiento por regiones desde semilla: la vegetación ya confirmada
+          // contagia a los píxeles dudosos que la tocan, y esos contagian a los
+          // suyos, hasta VERDE_CRECE pasos. Es lo que recupera el borde
+          // sombreado de la copa y el árbol velado por calima, sin abrirle la
+          // puerta al pasto seco: por lejos que crezca, solo avanza sobre
+          // píxeles que ya tenían sesgo verde y solo partiendo de copa real.
+          const cola = new Int32Array(n);
+          const salto = new Int8Array(n);   // 0 = sin visitar; si no, pasos+1
+          let cabeza = 0, cuelo = 0;
+          for (let p = 0; p < n; p++) {
+            if (suave[p] === COD.verde) { cola[cuelo++] = p; salto[p] = 1; }
+          }
+          while (cabeza < cuelo) {
+            const p = cola[cabeza++];
+            const d = salto[p];
+            if (d > VERDE_CRECE) continue;
+            const x = p % w, y = (p - x) / w;
+            for (let k = 0; k < 4; k++) {
+              const q = k === 0 ? (x > 0 ? p - 1 : -1)
+                      : k === 1 ? (x < w - 1 ? p + 1 : -1)
+                      : k === 2 ? (y > 0 ? p - w : -1)
+                      :           (y < h - 1 ? p + w : -1);
+              if (q < 0 || salto[q] || !dudoso[q]) continue;
+              suave[q] = COD.verde;
+              salto[q] = d + 1;
+              cola[cuelo++] = q;
+            }
+          }
+
+          // ── Pasada 4 · manchas de agua demasiado chicas ───────────────────
           // El agua de verdad forma cuerpos continuos; un techo de zinc azul o
           // una sombra densa forman manchitas sueltas. Se recorren las manchas
           // de agua conectadas y las que no alcanzan el tamaño mínimo se pasan
@@ -1738,7 +1812,7 @@
             for (let k = 0; k < blob.length; k++) suave[blob[k]] = rep;
           }
 
-          // ── Pasada 4 · contar dentro del área y pintar el overlay ─────────
+          // ── Pasada 5 · contar dentro del área y pintar el overlay ─────────
           const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
           for (let p = 0; p < n; p++) {
             const i = p * 4;
@@ -1818,7 +1892,10 @@
         'donde teja, concreto envejecido, suelo y matorral seco son indistinguibles por color. ' +
         'Sirve para dimensionar y comparar sectores, no para certificar.<br><br>' +
         'La vegetación se mide por <b>proporción</b> de verde y no por brillo, así que la copa ' +
-        'en sombra también cuenta. Las manchas de agua de menos de 600 m² se toman como techo ' +
+        'en sombra también cuenta, y el borde apagado de una copa se resuelve por lo que tiene ' +
+        'al lado. El botón 🛰️ del recuadro sobre el mapa muestra <b>la foto que se analizó</b>: ' +
+        'no es la misma imagen del mapa de fondo y puede ser de otro año, así que si un árbol ' +
+        'falta, ahí se ve si el problema es la clasificación o la foto. Las manchas de agua de menos de 600 m² se toman como techo ' +
         'o sombra —el zinc azul y el agua somera tienen el mismo color—, de modo que una ' +
         'piscina de patio no aparece.</small></div>';
     S.raster = res;
@@ -1887,6 +1964,18 @@
       return true;
     }
     if (name === 'raster-off') { apagarRasterMapa(); return true; }
+    // Alterna entre la imagen clasificada y la foto satelital que se analizó,
+    // clavadas en el MISMO recuadro: así se ve si un árbol que falta lo perdió
+    // el clasificador o si nunca estuvo en la foto (que puede ser de otro año
+    // que la del mapa de fondo).
+    if (name === 'raster-foto') {
+      if (!S.raster) return true;
+      S.rasterVista = (S.rasterVista === 'foto') ? 'clases' : 'foto';
+      pintarRasterMapa(S.raster);
+      chipRaster();
+      reg('raster-foto');
+      return true;
+    }
     if (name === 'raster') {
       const btn = el;
       const out = document.getElementById('pca-raster-out');
