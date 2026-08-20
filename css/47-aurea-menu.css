@@ -274,10 +274,22 @@ body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
    apropia del viewport completo y el resto del chrome desaparece.
    z-index en la escala de 2³¹ que ya usa el resto de la app.
    ═══════════════════════════════════════════════════════════════════════ */
+/* En modo mapa la app entera lleva pointer-events:none y solo los botones lo
+   recuperan (ver css/14-mobile-functional-app.css). Eso dejaba la pantalla
+   Áurea SIN SCROLL: los botones respondían, pero el gesto de arrastre nunca
+   llegaba al contenedor. Aquí la pantalla tapa todo, así que recupera los
+   eventos completa. */
+body.urbis-aurea-full #urbis-mobile-app,
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen,
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen *{
+  pointer-events:auto !important;
+}
+
 body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen{
   position:fixed !important;
   inset:0 !important;
   z-index:2147483500 !important;
+  height:100dvh !important;
   min-height:100dvh !important;
   max-height:100dvh !important;
   /* Sin el hueco de 84px que reservaba la barra inferior, que aquí no existe */
@@ -285,15 +297,32 @@ body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen{
   overflow:hidden !important;
   animation:none !important;
   background:linear-gradient(165deg,#1b1305,#2a1d06) !important;
-  will-change:clip-path;
+  /* Columna: topbar arriba con su alto natural y el contenido tomando el
+     resto. Es lo que hace que el hijo pueda scrollear de forma fiable, sin
+     depender de un calc() que se descuadra con la safe-area del dispositivo. */
+  display:flex !important;
+  flex-direction:column !important;
 }
 
-/* El contenido scrollea por dentro; la pantalla queda fija */
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-topbar{
+  flex:0 0 auto !important;
+}
+
+/* El contenido scrollea por dentro; la pantalla queda fija.
+   min-height:0 es imprescindible: sin él un hijo flex no se encoge por debajo
+   de su contenido y nunca aparece la barra de scroll. */
 body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-content{
-  height:calc(100dvh - 56px - env(safe-area-inset-top,0px)) !important;
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:none !important;
   overflow-y:auto !important;
+  overflow-x:hidden !important;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
+  /* El mapa de abajo captura gestos: hay que declarar que aquí se hace
+     scroll vertical, o el handler táctil se lo queda. */
+  touch-action:pan-y !important;
   padding:14px 16px calc(28px + env(safe-area-inset-bottom,0px)) !important;
 }
 body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen .u52-topbar{

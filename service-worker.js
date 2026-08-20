@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v495-aurea-inmersivo';
+const URBIS_CACHE = 'urbis-v496-aurea-scroll';
 const URBIS_ASSETS = [
   './',
   './index.html',
