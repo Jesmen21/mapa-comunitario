@@ -167,14 +167,79 @@
       return (globalData || []).filter(p => p.tipo === '🎪 Eventos Comunitarios');
   }
 
+  // Los eventos se guardan en DOS formatos distintos y este lector solo
+  // entendía uno:
+  //   A · legado / Áurea → [tipo, titulo, notas("Detalle: … · Hora: …"), …]
+  //   B · alta rápida desde el mapa → [titulo, direccion, desc, fecha, hora,
+  //                                    creador, foto, seccion, icono]
+  // Un evento creado en el mapa caía en el lector A: tomaba la dirección como
+  // título, no encontraba ninguna etiqueta y mostraba todo "por confirmar",
+  // y la foto no se leía en ningún caso. De ahí que el evento saliera vacío.
+  const _RX_FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+  const _RX_HORA = /^\d{1,2}:\d{2}$/;
+
+  function _esFormatoMapa(d) {
+      return _RX_FECHA_ISO.test(String(d[3] || '').trim()) &&
+             _RX_HORA.test(String(d[4] || '').trim());
+  }
+
+  function _fechaLegible(iso) {
+      const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return iso || '';
+      const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return parseInt(m[3], 10) + ' ' + (meses[+m[2] - 1] || '') + ' ' + m[1];
+  }
+
+  function _esFotoValida(v) {
+      const s = String(v || '').trim();
+      if (!s || s === 'N/A') return '';
+      return (/^data:image\//i.test(s) || /^https?:\/\//i.test(s)) ? s : '';
+  }
+
+  // "Termina en 3 h" dice más que "Disponible": el ciudadano necesita saber
+  // si le da tiempo de llegar.
+  function _restanteTexto(expira) {
+      if (!expira) return '';
+      const ms = new Date(expira).getTime() - Date.now();
+      if (isNaN(ms)) return '';
+      if (ms <= 0) return 'Terminado';
+      const h = Math.floor(ms / 3600000);
+      if (h >= 48) return 'Faltan ' + Math.floor(h / 24) + ' días';
+      if (h >= 1) return 'Termina en ' + h + ' h';
+      return 'Termina en ' + Math.max(1, Math.round(ms / 60000)) + ' min';
+  }
+
   function parseEvento(p) {
       const d = String(p.descripcion || '').split(' | ');
+      const meta = obtenerMetaTemporal(p);
+
+      if (_esFormatoMapa(d)) {
+          const detalle = (d[2] || '').trim();
+          return {
+              tipo: (d[7] || 'Evento comunitario').trim(),
+              titulo: (d[0] || 'Evento ciudadano').trim(),
+              fecha: _fechaLegible(d[3]),
+              hora: (d[4] || '').trim(),
+              lugar: (d[1] || 'Espacio público').trim(),
+              contacto: '',
+              creador: (d[5] || '').trim(),
+              publicado: '',
+              detalle: (detalle && detalle !== 'Sin descripción') ? detalle : '',
+              foto: _esFotoValida(d[6]),
+              icono: (d[8] || '').trim(),
+              estado: 'Publicado',
+              expira: meta.expira,
+              archivado: meta.archivado
+          };
+      }
+
+      // Formato A. El regex iba en una cadena literal, así que '\s' perdía la
+      // barra y buscaba la letra "s": ninguna etiqueta hacía match nunca.
       const notas = d[2] || '';
       const buscar = (label) => {
-          const match = notas.match(new RegExp(label + ':\s*([^·|]+)', 'i'));
+          const match = notas.match(new RegExp(label + ':\\s*([^·|]+)', 'i'));
           return match ? match[1].trim() : '';
       };
-      const meta = obtenerMetaTemporal(p);
       return {
           tipo: d[0] || 'Evento',
           titulo: d[1] || d[0] || 'Evento ciudadano',
@@ -182,8 +247,11 @@
           hora: buscar('Hora') || 'Hora por confirmar',
           lugar: buscar('Lugar') || 'Espacio público',
           contacto: buscar('Contacto') || '',
-          publicado: buscar('Publicado') || '8 horas',
+          creador: '',
+          publicado: buscar('Publicado') || '',
           detalle: buscar('Detalle') || notas,
+          foto: _esFotoValida(d[5]),
+          icono: '',
           estado: d[BASE_OFFSET + 1] || buscar('Estado') || 'Pendiente',
           expira: meta.expira,
           archivado: meta.archivado
@@ -239,6 +307,14 @@
           const ev = parseEvento(p);
           const icon = iconoEvento(ev.tipo);
           const lat = String(p.lat);
+          // La foto va completa (object-fit:contain en el CSS): una foto de
+          // evento suele ser vertical y recortarla escondía justo el cartel.
+          const fotoHTML = ev.foto
+            ? `<img class="ev-movil-foto" src="${escaparHTML(ev.foto)}" alt="Foto de ${escaparHTML(ev.titulo)}" loading="lazy" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">`
+            : '';
+          const descHTML = ev.detalle
+            ? `<p class="ev-movil-desc">${escaparHTML(ev.detalle)}</p>` : '';
+          const restante = _restanteTexto(ev.expira);
           return `<div class="ev-movil-card ev-act">
               <div class="ev-movil-top">
                 <span class="ev-movil-icon">${escaparHTML(icon)}</span>
@@ -247,9 +323,12 @@
                   <small>${escaparHTML(ev.tipo)}</small>
                   <small>📅 ${escaparHTML(ev.fecha)} · 🕒 ${escaparHTML(ev.hora)}</small>
                   <small>📍 ${escaparHTML(ev.lugar)}</small>
-                  <span class="ev-movil-badge ev-act">🟢 Disponible</span>
+                  ${ev.creador ? `<small>👤 ${escaparHTML(ev.creador)}</small>` : ''}
+                  <span class="ev-movil-badge ev-act">🟢 ${escaparHTML(restante || 'Disponible')}</span>
                 </div>
               </div>
+              ${fotoHTML}
+              ${descHTML}
               <button class="ev-movil-vermapa" onclick="window.urbisVerEnMapa && window.urbisVerEnMapa('${lat}')">🗺️ Ver en el mapa</button>
           </div>`;
       }).join('') + '</div>';

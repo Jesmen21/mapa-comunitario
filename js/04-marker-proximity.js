@@ -205,13 +205,45 @@
       }));
   };
 
+  // ── Miniatura real de cada mapa ──────────────────────────────────────────
+  // Un símbolo (□ ◇ ▣) no dice cómo se ve el mapa; hay que probarlos uno por
+  // uno para saber cuál se quiere. En vez de dibujar iconos, se pide UN tile
+  // real de la propia capa sobre Cúcuta: la miniatura ES el mapa.
+  function _tileMiniatura(layer, lat, lng, z) {
+      // Fórmula estándar de Slippy Map (la misma que usa Leaflet internamente).
+      const n = Math.pow(2, z);
+      const x = Math.floor((lng + 180) / 360 * n);
+      const latRad = lat * Math.PI / 180;
+      const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+      let url = '';
+      try { url = layer._url || ''; } catch (e) { return ''; }
+      if (!url) return '';
+      return url
+        .replace('{s}', 'a')            // subdominio cualquiera de los válidos
+        .replace('{z}', z)
+        .replace('{x}', x)
+        .replace('{y}', y)
+        .replace('{r}', '');            // sin @2x: la miniatura es pequeña
+  }
+
   function renderBasemapOptions() {
       const cont = document.getElementById('basemap-options');
       if(!cont) return;
+      const c = (window.URBIS_CONFIG && window.URBIS_CONFIG.DEFAULT_CENTER) || [7.8939, -72.5078];
       cont.innerHTML = Object.keys(mapasBase).map(key => {
           const m = mapasBase[key];
+          const src = _tileMiniatura(m.layer, c[0], c[1], 14);
+          // El símbolo queda de respaldo: si el tile no carga (sin red, o una
+          // capa con URL no estándar), el botón sigue siendo reconocible.
+          const mini = src
+            // Sin loading="lazy" a propósito: el panel puede estar colapsado
+            // (0x0) cuando se renderiza, y en ese estado el navegador nunca
+            // llega a pedir una imagen diferida. Son 12 tiles de ~15 KB y solo
+            // se piden al abrir el panel.
+            ? `<span class="basemap-mini" data-fallback="${m.icon}"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('sin-tile')"></span>`
+            : `<span class="basemap-mini sin-tile" data-fallback="${m.icon}"></span>`;
           return `<button class="basemap-option ${key === mapaBaseActual ? 'active' : ''}" onclick="cambiarMapaBase('${key}')">
-              <span class="basemap-icon">${m.icon}</span>
+              ${mini}
               <span><span class="basemap-name">${m.nombre}</span><span class="basemap-desc">${m.desc}</span></span>
               <span class="basemap-badge">${m.badge}</span>
           </button>`;
@@ -334,7 +366,7 @@
     // (pedido explícito): un puesto fijo de Policía no es lo mismo que un
     // retén móvil de tránsito, y varios reportes ciudadanos ya usaban ese
     // título específico.
-    "🚗 Reportes de Tráfico": { icon: "🚓", desc: "Retenes, choques, congestión, mal parqueo", color: "#e84118", shape: "diamond", items: ["Retén / Presencia policial", "Punto de control policial", "Accidente de tránsito", "Congestión / Tráfico pesado", "Vehículo abandonado / Mal parqueado", "Semáforo dañado", "Peligro vial inminente"] },
+    "🚗 Reportes de Tráfico": { icon: "🚓", desc: "Retenes, choques, congestión, mal parqueo", color: "#e84118", shape: "diamond", items: ["Retén / Presencia policial", "Punto de control policial", "Retén de tránsito ilegal", "Accidente de tránsito", "Congestión / Tráfico pesado", "Vehículo abandonado / Mal parqueado", "Semáforo dañado", "Peligro vial inminente"] },
     "🎪 Eventos Comunitarios": { icon: "🎪", desc: "Deporte, cultura, recreación y comunidad", color: "#d8cffc", shape: "marker", items: ["Fútbol / microfútbol", "Tenis / pádel", "Ajedrez / juegos de mesa", "Atletismo / carrera", "Show / concierto comunitario", "Festival / feria barrial", "Clase abierta / taller", "Reunión comunitaria"] },
     
     // ⚙️ MAPEO TÉCNICO (ARQUITECTURA)
@@ -353,7 +385,11 @@
     "Oficinas y Co-working": { icon: "🏢", desc: "Negocios, notarías, gubernamental", color: "#3f51b5", shape: "marker", items: ["Centro de negocios", "Espacio Co-working", "Oficina gubernamental", "Notaría / Cámara de Comercio"] },
 
     // 🌪️ RIESGOS MAYORES (desastres naturales y terreno) — nuevo, julio 2026
-    "🌪️ Desastres Naturales y Clima": { icon: "🌪️", desc: "Ciclones, sismos, tormentas, tsunamis, derrumbes", color: "#5b21b6", shape: "diamond", items: ["Ciclón", "Sismo", "Tormenta", "Tsunami", "Derrumbe"] },
+    // "Sismo" y "terremoto" son EL MISMO fenómeno: terremoto es solo el nombre
+    // coloquial de un sismo fuerte, no hay umbral oficial que los separe. Tener
+    // los dos como opciones distintas obligaba al ciudadano a elegir entre
+    // sinónimos, así que van en un único ítem y la magnitud la aporta el dato.
+    "🌪️ Desastres Naturales y Clima": { icon: "🌪️", desc: "Sismos, ciclones, tormentas, tsunamis, derrumbes", color: "#5b21b6", shape: "diamond", items: ["Sismo / Terremoto", "Ciclón", "Tormenta", "Tsunami", "Derrumbe"] },
     "⛰️ Riesgos del Terreno": { icon: "⛰️", desc: "Inestabilidad del suelo y daño geológico", color: "#78350f", shape: "diamond", items: ["Daño geológico"] }
   };
 

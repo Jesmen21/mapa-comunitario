@@ -624,3 +624,19 @@ body.urbis-dots-mode .urbis-alerta-dot { width: 12px; height: 12px; }
   padding: 10px; font-size: .8rem; font-weight: 800; cursor: pointer;
   background: #e7f0ff; color: #1d4ed8;
 }
+
+/* ═══ Fotos de reporte SIN recorte ════════════════════════════════════════
+   Antes: object-fit:cover + altura fija. Una foto vertical (lo normal con un
+   celular) perdía la mitad, y justo lo que documenta el reporte suele estar
+   arriba o abajo del encuadre. Ahora se ve ENTERA: contain respeta la
+   proporción y el fondo hace de marco cuando la foto no llena el ancho.
+   ═══════════════════════════════════════════════════════════════════════ */
+.popup-foto-mini,
+.popup-foto-big{
+  height:auto !important;
+  min-height:0 !important;
+  object-fit:contain !important;
+  background:#0e1620;
+}
+.popup-foto-mini{ max-height:min(38vh, 260px) !important; }
+.popup-foto-big{ max-height:min(58vh, 460px) !important; }

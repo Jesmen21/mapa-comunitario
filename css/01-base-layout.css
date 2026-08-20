@@ -925,3 +925,34 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
   input, textarea, select { font-size: 16px !important; }
 }
 #urbis-mobile-app .u52-profile-username.is-empty { color:#fff; background:#00b89e; display:inline-block; padding:5px 12px; border-radius:20px; font-size:.78rem; }
+
+/* Foto de evidencia sin recorte: la proporción original manda (ver nota en
+   css/02-map-tools-routing.css). Aplica al detalle y a la edición. */
+.foto-preview-big,
+#urbis-edit-sheet2 .ued-foto-actual{
+  height:auto !important;
+  min-height:0 !important;
+  object-fit:contain !important;
+  background:#0e1620;
+  max-height:min(62vh, 520px) !important;
+}
+
+/* Foto y descripción del evento en la tarjeta de la lista */
+#urbis-mobile-app .ev-movil-foto{
+  display:block; width:100%; height:auto; max-height:min(52vh, 400px);
+  object-fit:contain; background:#0e1620;
+  border-radius:12px; margin:10px 0 0; cursor:zoom-in;
+}
+#urbis-mobile-app .ev-movil-desc{
+  margin:9px 0 0; font-size:.82rem; line-height:1.5; color:#4a5666;
+}
+#urbis-mobile-app .u52-ev-dura{
+  display:block; margin-top:10px;
+}
+#urbis-mobile-app .u52-ev-dura > span{
+  display:block; font-size:.72rem; font-weight:700; color:#6b7789; margin-bottom:5px;
+}
+#urbis-mobile-app .u52-ev-dura select{
+  width:100%; padding:11px 12px; font:inherit; font-size:.9rem;
+  border:1px solid #d8e0ea; border-radius:12px; background:#fff; color:#1e2836;
+}

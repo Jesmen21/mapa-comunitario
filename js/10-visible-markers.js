@@ -21,8 +21,10 @@
   // de impacto es una referencia de barrio (15-100 m); en una catástrofe
   // regional no significa nada y, al alejar el mapa, quedaba como una "mancha"
   // roja/naranja translúcida — justo lo que el usuario veía en vez del icono.
+  // Acepta también "Sismo / Terremoto", que es como quedó el ítem del selector
+  // al unificar los dos sinónimos. Los reportes viejos dicen solo "Sismo".
   function esAlertaNacionalItem(item){
-    return /^(sismo|terremoto|incendio forestal)$/i.test(
+    return /^(sismo|terremoto|sismo\s*\/\s*terremoto|incendio forestal)$/i.test(
       String(item || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim()
     );
   }

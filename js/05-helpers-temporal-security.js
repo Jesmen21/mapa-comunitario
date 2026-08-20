@@ -365,36 +365,71 @@
       });
   }
 
-  function imagenADataURLComprimida(img, maxLado, calidad) {
+  // WebP pesa ~30% menos que JPEG a calidad percibida igual. Como el techo real
+  // es el tamaño del data URL (una celda de Sheets), cada byte ahorrado se
+  // convierte en resolución: con WebP cabe una foto de 900 px donde antes
+  // apenas entraba una de 360. Se comprueba una vez si el navegador lo soporta.
+  const _SOPORTA_WEBP = (function () {
+      try {
+          const c = document.createElement('canvas');
+          c.width = c.height = 1;
+          return c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+      } catch (e) { return false; }
+  })();
+  const URBIS_FOTO_FORMATO = _SOPORTA_WEBP ? 'image/webp' : 'image/jpeg';
+
+  function imagenADataURLComprimida(img, maxLado, calidad, formato) {
       const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.round(img.width * escala));
       canvas.height = Math.max(1, Math.round(img.height * escala));
       const ctx = canvas.getContext('2d', { alpha: false });
+      // Suavizado alto: al reducir una foto de 4000 px a 900 sin él aparecen
+      // dientes de sierra que se confunden con "mala cámara".
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', calidad);
+      return canvas.toDataURL(formato || URBIS_FOTO_FORMATO, calidad);
+  }
+
+  // Busca la MEJOR foto que quepa en el presupuesto, en vez de bajar por una
+  // escalera fija y quedarse en el primer escalón que entra. Para cada tamaño
+  // hace una búsqueda binaria de la calidad máxima que cabe; si a ese tamaño
+  // no entra ni con calidad mínima, baja de tamaño. Así una foto de retrato
+  // termina en 900 px con q≈0.7 en vez de 360 px con q=0.42.
+  // `pisoQ` evita el caso "enorme pero pastosa": si a ese tamaño no se alcanza
+  // una calidad mínima digna, se prefiere bajar de tamaño y ganar nitidez.
+  function _mejorCalidadQueQuepa(img, lado, techo, pisoQ) {
+      const piso = pisoQ == null ? 0.45 : pisoQ;
+      let bajo = piso, alto = 0.92, mejor = '';
+      // Si ni con la calidad mínima cabe, este tamaño no sirve.
+      const base = imagenADataURLComprimida(img, lado, piso);
+      if (base.length > techo) return '';
+      mejor = base;
+      for (let i = 0; i < 6; i++) {
+          const q = (bajo + alto) / 2;
+          const d = imagenADataURLComprimida(img, lado, q);
+          if (d.length <= techo) { mejor = d; bajo = q; } else { alto = q; }
+      }
+      return mejor;
   }
 
   async function procesarImagenSeleccionada(file) {
       if(!file) return '';
       const img = await cargarImagenDesdeArchivo(file);
-      const intentos = [
-          { lado: 720, calidad: 0.62 },
-          { lado: 560, calidad: 0.55 },
-          { lado: 440, calidad: 0.48 },
-          { lado: 360, calidad: 0.42 },
-          { lado: 300, calidad: 0.36 },
-          { lado: 240, calidad: 0.32 }
-      ];
-      let mejor = '';
-      for(const opt of intentos) {
-          const dataUrl = imagenADataURLComprimida(img, opt.lado, opt.calidad);
-          mejor = dataUrl;
-          if(dataUrl.length <= URBIS_MAX_FOTO_DATAURL) return dataUrl;
+      // De mayor a menor: el primero que quepa gana, y ya viene con la mejor
+      // calidad posible para ese tamaño.
+      const lados = [1280, 1080, 900, 760, 640, 520, 420, 320];
+      for(const lado of lados) {
+          const d = _mejorCalidadQueQuepa(img, lado, URBIS_MAX_FOTO_DATAURL);
+          if(d) return d;
       }
-      if(mejor && mejor.length <= 49000) return mejor;
+      // Último recurso: se baja el piso de calidad y se usa todo el margen que
+      // aún deja la celda. Peor una foto pobre que ninguna evidencia.
+      const ultimo = _mejorCalidadQueQuepa(img, 320, 49000, 0.3);
+      if(ultimo) return ultimo;
       throw new Error('La foto sigue siendo demasiado pesada para guardarse en SheetDB/Google Sheets. Usa una foto más pequeña o pega un link de imagen.');
   }
 

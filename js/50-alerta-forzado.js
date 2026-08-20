@@ -36,7 +36,11 @@
         tipoLow.indexOf('permiso') !== -1 || tipoLow.indexOf('avatar') !== -1 ||
         tipoLow.indexOf('chat') !== -1) return false;
     var item = _quitarAc(String(p.descripcion || '').split(' | ')[0]).trim();
-    return item === 'sismo' || item === 'terremoto' || item === 'incendio forestal';
+    // "sismo / terremoto" es como quedó el ítem del selector tras unificar los
+    // dos sinónimos; los reportes ya publicados dicen solo "sismo".
+    return item === 'sismo' || item === 'terremoto' ||
+           item.replace(/\s+/g, '') === 'sismo/terremoto' ||
+           item === 'incendio forestal';
   }
   window.urbisEsAlertaNacional = esAlertaNacional;
 

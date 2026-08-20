@@ -175,3 +175,95 @@ body.urbis-evento-aurea-activo .u52-noti-icon-wrap .u52-k-home-icon-img{
   body.urbis-evento-aurea-activo .u52-noti-icon-wrap::before,
   body.urbis-evento-aurea-activo .u52-noti-icon-wrap::after{ animation:none; }
 }
+
+/* ═══ Ajuste estético · jerarquía y llamada a la acción ═══════════════════
+   Problemas que corrige:
+   · el récord a 3rem competía con el título y aplastaba todo lo demás;
+   · "Jugar" era un <span> plano que no se leía como algo tocable, así que
+     no quedaba claro que HAY que pulsarlo para entrar al reto.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Jerarquía: el premio manda, el récord acompaña */
+.u52-aurea-screen .ah-evtitle{ font-size:1.18rem !important; line-height:1.28 !important; }
+.u52-aurea-screen .ah-record{ margin-top:16px !important; }
+.u52-aurea-screen .ah-record span{
+  font-size:2.1rem !important;
+  text-shadow:0 0 18px rgba(255,200,60,.42) !important;
+}
+.u52-aurea-screen .ah-record small{
+  display:block; margin-top:4px; font-size:.63rem !important; opacity:.9;
+}
+.u52-aurea-screen .ah-prize{ font-size:.86rem !important; }
+
+/* La tarjeta del juego ES el botón: se comporta como tal */
+.u52-aurea-screen .ah-game{
+  position:relative; overflow:hidden;
+  transition:transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
+}
+.u52-aurea-screen .ah-game:hover{
+  box-shadow:0 8px 26px rgba(0,0,0,.5), inset 0 0 0 1.5px rgba(255,210,63,.75);
+}
+.u52-aurea-screen .ah-game:active{ transform:scale(.975) !important; }
+
+/* Brillo que recorre la tarjeta: señala "esto se toca" sin añadir texto */
+.u52-aurea-screen .ah-game::after{
+  content:''; position:absolute; top:0; bottom:0; width:42%;
+  left:-60%; pointer-events:none;
+  background:linear-gradient(100deg, transparent, rgba(255,235,170,.16) 45%, transparent);
+  animation:ahBrillo 3.4s ease-in-out infinite;
+}
+@keyframes ahBrillo{
+  0%   { left:-60%; }
+  55%  { left:120%; }
+  100% { left:120%; }
+}
+
+/* "Jugar" con forma de botón real, latido suave y flecha de avance */
+.u52-aurea-screen .ah-game-play{
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:.82rem !important; padding:10px 15px !important;
+  border-radius:999px !important;
+  box-shadow:0 3px 12px rgba(244,163,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
+  animation:ahLatido 2.1s ease-in-out infinite;
+}
+.u52-aurea-screen .ah-game-play::after{
+  content:'▶'; font-size:.62rem; transform:translateY(.5px);
+}
+@keyframes ahLatido{
+  0%,100%{ transform:scale(1);    box-shadow:0 3px 12px rgba(244,163,0,.45), inset 0 1px 0 rgba(255,255,255,.5); }
+  50%    { transform:scale(1.045); box-shadow:0 5px 20px rgba(255,210,63,.72), inset 0 1px 0 rgba(255,255,255,.6); }
+}
+
+/* Nadie debe marearse por una animación decorativa */
+@media (prefers-reduced-motion: reduce){
+  .u52-aurea-screen .ah-game::after,
+  .u52-aurea-screen .ah-game-play{ animation:none !important; }
+}
+
+/* Un -webkit-text-fill-color global (usado para títulos con degradado) pisaba
+   el color de estos textos y los dejaba gris azulado sobre fondo café: casi
+   ilegibles. Hay que fijar color Y fill, o el fill gana siempre. */
+#urbis-mobile-app .u52-aurea-screen .ah-record span{
+  color:#FFD23F !important; -webkit-text-fill-color:#FFD23F !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-record small{
+  color:#E0C489 !important; -webkit-text-fill-color:#E0C489 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-game-txt b{
+  color:#FFF4D6 !important; -webkit-text-fill-color:#FFF4D6 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-game-txt small{
+  color:#DCBE86 !important; -webkit-text-fill-color:#DCBE86 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-board-title{
+  color:#FFE9B0 !important; -webkit-text-fill-color:#FFE9B0 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-evtitle{
+  color:#FFF4D6 !important; -webkit-text-fill-color:#FFF4D6 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-end{
+  color:#E8C98A !important; -webkit-text-fill-color:#E8C98A !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-end b{
+  color:#FFF4D6 !important; -webkit-text-fill-color:#FFF4D6 !important;
+}

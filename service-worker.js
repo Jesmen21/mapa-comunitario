@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v492-seguimiento-muro-al-dia';
+const URBIS_CACHE = 'urbis-v493-mapas-fotos-eventos';
 const URBIS_ASSETS = [
   './',
   './index.html',

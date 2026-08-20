@@ -363,3 +363,85 @@ body.basemap-panel-open .basemap-backdrop {
     .basemap-desc { font-size: .72rem; line-height: 1.28; }
     .basemap-badge { font-size: .64rem; padding: 6px 8px; }
 }
+
+/* ═══ Panel "Mapas" · miniaturas reales y color de marca ═══════════════════
+   Antes: símbolos (□ ◇ ▣) sobre verde/magenta, que no dicen cómo se ve el
+   mapa ni son el color de URBIS. Ahora la miniatura es un tile real de la
+   propia capa, y el acento es el celeste del logo (#34CCFE).
+   ═══════════════════════════════════════════════════════════════════════ */
+.basemap-panel{
+  --bm-celeste:#34CCFE;
+  --bm-celeste-hi:#0E86BC;
+  border-color:rgba(52,204,254,.34) !important;
+}
+.basemap-title-copy span{ color:var(--bm-celeste) !important; letter-spacing:.06rem; }
+
+/* Miniatura: cuadro con el tile real dentro */
+.basemap-mini{
+  position:relative; width:52px; height:52px; flex:0 0 52px;
+  border-radius:12px; overflow:hidden;
+  border:1px solid rgba(255,255,255,.14);
+  background:#0f1a20;
+  display:block;
+}
+.basemap-mini img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+/* Respaldo cuando el tile no carga: vuelve el símbolo, nunca un hueco negro */
+.basemap-mini.sin-tile::after{
+  content:attr(data-fallback);
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-size:1.1rem; color:var(--bm-celeste);
+  background:rgba(52,204,254,.12);
+}
+.basemap-mini.sin-tile img{ display:none; }
+
+.basemap-option{
+  grid-template-columns:52px 1fr auto !important;
+  gap:11px !important;
+  align-items:center !important;
+}
+.basemap-option:hover{
+  border-color:rgba(52,204,254,.65) !important;
+  background:rgba(52,204,254,.10) !important;
+  transform:none !important;
+}
+.basemap-option.active{
+  border-color:var(--bm-celeste) !important;
+  box-shadow:inset 0 0 0 1px rgba(52,204,254,.45), 0 0 18px rgba(52,204,254,.22) !important;
+}
+/* La capa activa se marca también en la miniatura: el borde de color solo
+   no basta para distinguirla de un simple hover. */
+.basemap-option.active .basemap-mini{
+  border-color:var(--bm-celeste);
+  box-shadow:0 0 0 2px rgba(52,204,254,.55);
+}
+.basemap-option.active .basemap-name::after{
+  content:' ✓'; color:var(--bm-celeste); font-weight:900;
+}
+.basemap-badge{
+  color:#04212e !important;
+  background:var(--bm-celeste) !important;
+}
+.basemap-close-btn:hover{
+  border-color:rgba(52,204,254,.5);
+  background:rgba(52,204,254,.12);
+}
+
+@media (max-width:760px){
+  .basemap-option{ grid-template-columns:56px 1fr auto !important; align-items:center !important; }
+  .basemap-mini{ width:56px; height:56px; flex:0 0 56px; }
+}
+
+/* name y desc son <span>: sin display:block quedan pegados en una sola línea */
+.basemap-option > span:nth-child(2){ min-width:0; display:block; }
+.basemap-name{
+  display:block; font-size:.88rem !important; font-weight:800; line-height:1.25;
+  color:#f4f7fb;
+}
+.basemap-desc{
+  display:block; font-size:.71rem !important; line-height:1.35 !important;
+  color:#9fb3c0 !important; margin-top:3px;
+}
+.basemap-option.active .basemap-name{ color:#fff; }
+.basemap-option.active .basemap-name::after{ margin-left:5px; }

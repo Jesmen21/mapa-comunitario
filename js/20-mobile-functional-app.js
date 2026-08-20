@@ -1965,6 +1965,16 @@
           <label><span>Fecha</span><input id="ev-fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
           <label><span>Hora inicio</span><input id="ev-hora" type="time" value="08:00"></label>
         </div>
+        <label class="u52-ev-dura"><span>¿Cuánto dura?</span>
+          <select id="ev-duracion">
+            <option value="2">2 horas</option>
+            <option value="4">4 horas</option>
+            <option value="8" selected>8 horas (media jornada)</option>
+            <option value="24">Todo el día</option>
+            <option value="72">3 días</option>
+            <option value="168">Una semana</option>
+          </select>
+        </label>
         <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto del evento (opcional)</span><input type="file" id="ev-foto-file" accept="image/*" capture="environment"></label>
         <button type="button" class="u52-quick-publish" data-u52-call="quick-event-publish">Publicar evento</button>
       </div>`;
@@ -2034,8 +2044,17 @@
         btn.innerText = '📷 Procesando...';
         try{ if(typeof window.urbanProcesarImagen === 'function') fotoData = await window.urbanProcesarImagen(file); }catch(e){}
       }
-      const descripcionEvento = [titulo, direccion, desc || 'Sin descripción', fecha, hora, creador, fotoData, evType.sectionLabel, evType.icon].join(' | ');
-      const res = await window.urbisGuardarFila({ tipo:'📅 Eventos', lat:String(point.lat), lng:String(point.lng), descripcion:descripcionEvento, fecha: new Date().toISOString() });
+      const horasDura = Math.max(1, parseInt(panel?.querySelector('#ev-duracion')?.value, 10) || 8);
+      let descripcionEvento = [titulo, direccion, desc || 'Sin descripción', fecha, hora, creador, fotoData, evType.sectionLabel, evType.icon].join(' | ');
+      // Sin esto el evento nace sin campos temporales: no sabe cuándo expira,
+      // así que ni caduca solo ni puede decir cuánto le queda.
+      if(typeof asegurarCamposTemporalesPersonalizados === 'function'){
+        descripcionEvento = asegurarCamposTemporalesPersonalizados(
+          descripcionEvento, '🎪 Eventos Comunitarios', titulo, new Date(), horasDura, evType.icon);
+      }
+      // El tipo debe ser el mismo con el que se leen los eventos
+      // ('🎪 Eventos Comunitarios'); '📅 Eventos' no lo recogía ningún filtro.
+      const res = await window.urbisGuardarFila({ tipo:'🎪 Eventos Comunitarios', lat:String(point.lat), lng:String(point.lng), descripcion:descripcionEvento, fecha: new Date().toISOString() });
       if(res && res.ok === false && res.status) throw new Error(`HTTP ${res.status}`);
       if(typeof playSuccessSound === 'function') playSuccessSound();
       try{ if(typeof showAchievementToast === 'function') showAchievementToast('Evento publicado', titulo); }catch(e){}
