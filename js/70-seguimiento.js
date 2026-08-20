@@ -1085,7 +1085,14 @@
       (g.medidas || []).forEach(function (m) {
         var fila = el('div', 'sp-fg-fila');
         var cab = el('div', 'sp-fg-cab');
-        cab.appendChild(el('b', null, m.n || 'Fuente'));
+        var nom = el('b', null, m.n || 'Fuente');
+        // Un número sin saber quién lo midió no vale: el sello va pegado al
+        // nombre, no escondido en una nota al pie.
+        if (m.calidad === 'cuestionada') {
+          nom.appendChild(tag('dis', 'metodología cuestionada',
+            'Esta consultora no publica su metodología completa.'));
+        }
+        cab.appendChild(nom);
         cab.appendChild(el('span', 'sp-fg-val', String(m.v).replace('.', ',') + '%'));
         fila.appendChild(cab);
 
@@ -1093,6 +1100,9 @@
         var barra = el('i');
         barra.style.width = (m.v / tope * 100).toFixed(1) + '%';
         barra.style.background = gi === 0 ? (d.color || '#0B6E9B') : '#8FA6B2';
+        // La barra de una fuente cuestionada va rayada: se ve distinta aunque
+        // no se lea la etiqueta, y sin depender solo del color.
+        if (m.calidad === 'cuestionada') fila.classList.add('dudosa');
         riel.appendChild(barra);
         fila.appendChild(riel);
 
@@ -1101,6 +1111,21 @@
           if (m.f) pie.push(fechaCorta(m.f));
           if (m.e) pie.push(m.e);
           if (pie.length) fila.appendChild(el('small', null, pie.join(' · ')));
+
+          // Ficha de la fuente: quién es, cómo mide y qué se le reprocha.
+          if (m.quien || m.como || m.reparos) {
+            var det = el('details', 'sp-fg-ficha');
+            det.appendChild(el('summary', null, '¿Quién lo mide y cómo?'));
+            var cuerpo = el('div');
+            if (m.quien) { cuerpo.appendChild(el('b', null, 'Quién')); cuerpo.appendChild(el('p', null, m.quien)); }
+            if (m.como) { cuerpo.appendChild(el('b', null, 'Cómo')); cuerpo.appendChild(el('p', null, m.como)); }
+            if (m.reparos) {
+              cuerpo.appendChild(el('b', 'rep', 'Qué se le reprocha'));
+              cuerpo.appendChild(el('p', 'rep', m.reparos));
+            }
+            det.appendChild(cuerpo);
+            fila.appendChild(det);
+          }
         }
         bloque.appendChild(fila);
       });

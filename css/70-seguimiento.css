@@ -1132,3 +1132,31 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin-top:14px; padding-top:11px; border-top:1px solid var(--linea-2);
   font-size:.78rem; color:var(--ink-2);
 }
+
+/* Sello y ficha de cada casa encuestadora */
+.sp-fg-cab b{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+/* La barra de una fuente cuestionada se raya: no depende solo del color ni
+   de que se lea la etiqueta. */
+.sp-fg-fila.dudosa .sp-fg-riel i{
+  background-image:repeating-linear-gradient(115deg,
+    rgba(255,255,255,.55) 0 5px, transparent 5px 11px);
+}
+.sp-fg-ficha{
+  margin-top:8px; border:1px solid var(--linea); border-radius:var(--r-s);
+  background:var(--marfil);
+}
+.sp-fg-ficha summary{
+  padding:8px 11px; cursor:pointer; list-style:none;
+  font-size:.78rem; font-weight:600; color:var(--celeste-hi);
+}
+.sp-fg-ficha summary::-webkit-details-marker{ display:none; }
+.sp-fg-ficha summary::after{ content:'  ▾'; color:var(--ink-2); font-size:.65rem; }
+.sp-fg-ficha[open] summary::after{ content:'  ▴'; }
+.sp-fg-ficha > div{ padding:0 11px 11px; border-top:1px solid var(--linea-2); }
+.sp-fg-ficha b{
+  display:block; margin-top:9px; font-size:.7rem; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2);
+}
+.sp-fg-ficha p{ margin-top:3px; font-size:.8rem; color:var(--ink); line-height:1.5; }
+.sp-fg-ficha b.rep{ color:#8A5D12; }
+.sp-fg-ficha p.rep{ color:#6B5228; }

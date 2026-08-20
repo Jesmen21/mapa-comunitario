@@ -462,28 +462,54 @@
       "formato": "pct",
       "sentido": "sube-bueno",
       "vista": "porFuente",
-      "leyenda": "Cada casa encuestadora mide distinto y pregunta distinto, así que se muestran por separado en vez de promediarlas. Ojo con el bloque de abajo: las encuestas de la segunda vuelta lo daban entre 50 y 54, y terminó ganando con 49,66. Sirve para leer cualquier encuesta con prudencia, incluida la de arriba.",
+      "leyenda": "Hoy existe UNA sola medición de aprobación de su gestión, y la hace una consultora con metodología cuestionada: por eso se muestra con su ficha y no como una verdad. Abajo, las encuestas de la segunda vuelta lo daban entre 50 y 54, y terminó ganando con 49,66 — todas lo sobreestimaron. Esa es la mejor razón para leer la cifra de arriba con prudencia.",
       "grupos": [
         {
           "titulo": "Aprobación de su gestión",
-          "nota": "Ya como presidente. Es lo comparable con la gestión.",
+          "nota": "Ya como presidente. Es lo único comparable con la gestión, y por ahora solo lo mide una consultora.",
           "medidas": [
-            { "n": "CB Global Data", "f": "2026-08-11", "v": 52.4, "e": "42,2% desaprueba", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" }
+            {
+              "n": "CB Global Data",
+              "f": "2026-08-11", "v": 52.4, "e": "42,2% desaprueba",
+              "calidad": "cuestionada",
+              "quien": "Consultora argentina (antes CB Consultora Opinión Pública). No es un promedio de varias encuestadoras: es una sola empresa que publica un ranking mensual de presidentes de 18 países.",
+              "como": "Encuestas por internet en 18 países a la vez, con cuotas por población. Declara unos 40.000 casos en total para los 18 países y un margen de 1,9% a 2,2%.",
+              "reparos": "Medios de la región le señalan que no publica la metodología país por país: no aclara si el sondeo es telefónico o presencial, cuántas personas responde cada país, ni si tiene equipo propio en el terreno. Una encuesta suya sobre Uruguay fue señalada por errores de metodología.",
+              "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/"
+            }
           ]
         },
         {
           "titulo": "Con cuánto llegó",
-          "nota": "Intención de voto ANTES de la elección. Mide otra cosa: no es aprobación de gestión, es a quién iba a votar la gente.",
+          "nota": "Intención de voto ANTES de la elección. Mide otra cosa: no es aprobación de gestión, es a quién iba a votar la gente. Se incluye porque permite comprobar cuánto se equivocaron.",
           "referencia": { "n": "Resultado oficial · 21 de junio", "v": 49.66, "e": "12.959.542 votos · ganó por 0,96 puntos" },
           "medidas": [
-            { "n": "Guarumo · Ecoanalítica", "f": "2026-06-14", "v": 52.6, "e": "Encuesta final de segunda vuelta", "u": "https://www.eltiempo.com/politica/elecciones-colombia-2026/encuesta-final-de-guarumo-y-ecoanalitica-para-segunda-vuelta-presidencial-abelardo-de-la-espriella-52-6-ivan-cepeda-3564095" },
-            { "n": "Encuesta a una semana", "f": "2026-06-14", "v": 53.6, "e": "Publicada por Portafolio", "u": "https://www.portafolio.co/economia/gobierno/encuesta-presidencial-a-una-semana-de-las-elecciones-abelardo-de-la-espriella-53-6-ivan-cepeda-496117" },
-            { "n": "Encuesta de segunda vuelta", "f": "2026-06-10", "v": 50.3, "e": "Publicada por Cable Noticias", "u": "https://www.cablenoticias.com/noticias/encuesta-segunda-vuelta-2026" }
+            {
+              "n": "Guarumo · Ecoanalítica", "f": "2026-06-14", "v": 52.6, "e": "Encuesta final de segunda vuelta · se pasó 2,9 puntos",
+              "calidad": "contrastable",
+              "quien": "Encuestadora colombiana, de las que publican ficha técnica y son citadas por los grandes medios del país.",
+              "como": "Encuesta preelectoral de segunda vuelta.",
+              "u": "https://www.eltiempo.com/politica/elecciones-colombia-2026/encuesta-final-de-guarumo-y-ecoanalitica-para-segunda-vuelta-presidencial-abelardo-de-la-espriella-52-6-ivan-cepeda-3564095"
+            },
+            {
+              "n": "Encuesta a una semana", "f": "2026-06-14", "v": 53.6, "e": "Publicada por Portafolio · se pasó 3,9 puntos",
+              "calidad": "contrastable",
+              "quien": "Publicada por Portafolio; la nota no identifica con claridad a la casa encuestadora.",
+              "u": "https://www.portafolio.co/economia/gobierno/encuesta-presidencial-a-una-semana-de-las-elecciones-abelardo-de-la-espriella-53-6-ivan-cepeda-496117"
+            },
+            {
+              "n": "Encuesta de segunda vuelta", "f": "2026-06-10", "v": 50.3, "e": "Publicada por Cable Noticias · la más cercana, se pasó 0,6",
+              "calidad": "contrastable",
+              "quien": "Publicada por Cable Noticias; la nota no identifica con claridad a la casa encuestadora.",
+              "u": "https://www.cablenoticias.com/noticias/encuesta-segunda-vuelta-2026"
+            }
           ]
         }
       ],
       "fuentes": [
         { "n": "Semana · aprobación como presidente (CB Global Data)", "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/" },
+        { "n": "ICNDiario · reparos a la metodología de CB", "u": "https://www.icndiario.com/2025/04/encuestadora-argentina-cb-da-conocer-ranking-de-presidentes-y-senadores-mejor-valorados-de-sudamerica-y-deja-dudas/" },
+        { "n": "ICNDiario · errores en su encuesta sobre Uruguay", "u": "https://www.icndiario.com/2025/03/consultora-cb-de-argentina-y-una-encuesta-sobre-uruguay-con-enormes-errores-de-metodologia/" },
         { "n": "Primicias · resultado oficial de la segunda vuelta", "u": "https://www.primicias.ec/internacional/elecciones-colombia-segunda-vuelta-votaciones-resultados-ivan-cepeda-abelardo-espriella-125869/" },
         { "n": "Wikipedia · elecciones presidenciales de Colombia de 2026", "u": "https://es.wikipedia.org/wiki/Elecciones_presidenciales_de_Colombia_de_2026" }
       ]

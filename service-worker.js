@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v499-aprobacion-multifuente';
+const URBIS_CACHE = 'urbis-v500-ficha-encuestadoras';
 const URBIS_ASSETS = [
   './',
   './index.html',
