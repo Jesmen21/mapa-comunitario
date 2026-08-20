@@ -110,6 +110,8 @@
   // pasar 4.5:1; `m` es la marca —riel e icono— donde basta 3:1 y conviene el
   // tono vivo. El ámbar es el caso que obliga a separarlos: vivo da 2.44:1.
   var SECS = {
+    hoy:             { n: '00', c: '#0B6E9B', m: '#34CCFE', t: 'Al día',           d: 'Lo último publicado, como un muro.' },
+    balance:         { n: '06', c: '#7A4A6B', m: '#A96A94', t: 'Balance del periodo', d: 'El patrón que dejan todos los hechos juntos.' },
     timeline:        { n: '01', c: '#0B6E9B', m: '#0E86BC', t: 'Línea de tiempo',  d: 'Hechos y decisiones documentadas.' },
     contradicciones: { n: '02', c: '#8A5D12', m: '#D99A32', t: 'Contradicciones',  d: 'Cambios de postura y posiciones en tensión.' },
     foda:            { n: '03', c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' },
@@ -174,10 +176,15 @@
   function padreDe(r) {
     switch (r.v) {
       case 'home': return null;
+      case 'hoy': case 'balance':
       case 'timeline': case 'contradicciones': case 'foda': case 'temas': case 'indicadores':
         return { v: 'home' };
       case 'lista': return { v: 'timeline' };
-      case 'hecho': return r.tema ? { v: 'lista', tema: r.tema } : { v: 'timeline' };
+      // Desde el muro se entra a un hecho sin pasar por la lista de temas: el
+      // atrás tiene que devolver al muro, no a un sitio donde nunca estuvo.
+      case 'hecho':
+        if (r.desde === 'hoy') return { v: 'hoy' };
+        return r.tema ? { v: 'lista', tema: r.tema } : { v: 'timeline' };
       case 'tema': return { v: 'temas' };
       default: return { v: 'home' };
     }
@@ -186,9 +193,12 @@
   function rutaAHash(r) {
     switch (r.v) {
       case 'home': return '#/';
+      case 'hoy': return '#/al-dia';
+      case 'balance': return '#/balance';
       case 'timeline': return '#/linea-de-tiempo';
       case 'lista': return '#/linea-de-tiempo/' + encodeURIComponent(r.tema || 'todos');
-      case 'hecho': return '#/hecho/' + r.i + (r.tema ? '?t=' + encodeURIComponent(r.tema) : '');
+      case 'hecho': return '#/hecho/' + r.i +
+        (r.desde === 'hoy' ? '?d=hoy' : (r.tema ? '?t=' + encodeURIComponent(r.tema) : ''));
       case 'contradicciones': return '#/contradicciones';
       case 'foda': return '#/balance-foda';
       case 'temas': return '#/temas-de-fondo';
@@ -207,9 +217,12 @@
       var p = kv.split('='); extra[p[0]] = decodeURIComponent(p[1] || '');
     });
     switch (partes[0]) {
+      case 'al-dia':         return { v: 'hoy' };
+      case 'balance':        return { v: 'balance' };
       case 'linea-de-tiempo':
         return partes[1] ? { v: 'lista', tema: decodeURIComponent(partes[1]) } : { v: 'timeline' };
-      case 'hecho':          return { v: 'hecho', i: +partes[1] || 0, tema: extra.t || '' };
+      case 'hecho':          return { v: 'hecho', i: +partes[1] || 0, tema: extra.t || '',
+                                      desde: extra.d || '' };
       case 'contradicciones':return { v: 'contradicciones' };
       case 'balance-foda':   return { v: 'foda' };
       case 'temas-de-fondo': return { v: 'temas' };
@@ -235,6 +248,8 @@
   function tituloDe(r) {
     switch (r.v) {
       case 'home': return 'Resumen';
+      case 'hoy': return 'Al día';
+      case 'balance': return 'Balance del periodo';
       case 'timeline': return 'Línea de tiempo';
       case 'lista': return r.tema === 'todos' ? 'Todos los temas' : cat(r.tema).nombre;
       case 'hecho': return (D.entradas[r.i] || {}).titulo || 'Hecho';
@@ -291,6 +306,8 @@
       v.classList.toggle('on', v.getAttribute('data-view') === r.v);
     });
 
+    if (r.v === 'hoy') pintarMuro();
+    if (r.v === 'balance') pintarBalance();
     if (r.v === 'timeline') pintarTemas();
     if (r.v === 'lista') pintarLista(r.tema);
     if (r.v === 'hecho') pintarHecho(r.i);
@@ -360,9 +377,12 @@
       cont.appendChild(d);
     });
 
-    var cuenta = { timeline: nHechos, contradicciones: nCx, foda: nFoda, temas: nTemas, indicadores: null };
+    pintarAccesoMuro();
+
+    var cuenta = { timeline: nHechos, contradicciones: nCx, foda: nFoda, temas: nTemas,
+                   indicadores: null, balance: null };
     var nav = vaciar($('sp-secciones'));
-    ['timeline', 'contradicciones', 'foda', 'temas', 'indicadores'].forEach(function (v) {
+    ['timeline', 'contradicciones', 'foda', 'temas', 'indicadores', 'balance'].forEach(function (v) {
       var s = SECS[v];
       var b = el('button', 'sp-sec'); b.type = 'button';
       pintarSeccion(b, v);
@@ -450,6 +470,249 @@
         if (tema && tema !== 'todos' && o.e.categoria !== tema) return false;
         return coincideTipo(o.e, tipo);
       });
+  }
+
+  // Acceso destacado al muro desde la portada: enseña de una lo más reciente,
+  // que es lo que la mayoría viene a ver, sin obligar a elegir categoría.
+  function pintarAccesoMuro() {
+    var cont = vaciar($('sp-acceso-muro'));
+    var recientes = (D.entradas || []).slice()
+      .sort(function (a, b) { return a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0; })
+      .slice(0, 3);
+    if (!recientes.length) return;
+
+    var b = el('button', 'sp-nuevo'); b.type = 'button';
+    var top = el('div', 'sp-nuevo-top');
+    top.appendChild(el('span', 'sp-nuevo-vivo', 'AL DÍA'));
+    top.appendChild(el('span', 'sp-nuevo-f', 'Última publicación: ' +
+      diaEtiqueta(recientes[0].fecha).toLowerCase()));
+    b.appendChild(top);
+
+    var ul = el('ul', 'sp-nuevo-list');
+    recientes.forEach(function (e) {
+      var li = el('li');
+      li.appendChild(disco(e.categoria, true));
+      li.appendChild(el('span', null, e.titulo || ''));
+      ul.appendChild(li);
+    });
+    b.appendChild(ul);
+
+    var go = el('span', 'sp-nuevo-go', 'Ver el muro completo →');
+    b.appendChild(go);
+    b.addEventListener('click', function () { ir({ v: 'hoy' }); });
+    cont.appendChild(b);
+  }
+
+  // ══ MURO "AL DÍA" ═════════════════════════════════════════════════════════
+  // Entra por fecha, no por tema: es para quien solo quiere saber qué pasó
+  // hoy. Se agrupa por día y se ordena de lo más nuevo a lo más viejo — el
+  // array del JSON no viene ordenado y no se puede confiar en su orden.
+  var muroTema = 'todos';
+
+  function diaEtiqueta(iso) {
+    var d = diasDesde(iso);
+    if (d === 0) return 'Hoy';
+    if (d === 1) return 'Ayer';
+    if (d < 7) return 'Hace ' + d + ' días';
+    return fechaLarga(iso);
+  }
+
+  function pintarMuro() {
+    var todas = (D.entradas || []).map(function (e, i) { return { e: e, i: i }; })
+      .filter(function (o) { return muroTema === 'todos' || o.e.categoria === muroTema; })
+      .sort(function (a, b) { return a.e.fecha < b.e.fecha ? 1 : a.e.fecha > b.e.fecha ? -1 : 0; });
+
+    pintarLeyenda();
+    pintarChipsMuro();
+    $('sp-hoy-count').textContent = todas.length === 1
+      ? '1 publicación' : todas.length + ' publicaciones';
+
+    var cont = vaciar($('sp-muro'));
+    if (!todas.length) { cont.appendChild(vacio()); return; }
+
+    var diaActual = null;
+    todas.forEach(function (o) {
+      if (o.e.fecha !== diaActual) {
+        diaActual = o.e.fecha;
+        var sep = el('div', 'sp-dia');
+        sep.appendChild(el('span', 'sp-dia-t', diaEtiqueta(o.e.fecha)));
+        sep.appendChild(el('span', 'sp-dia-f', fechaCorta(o.e.fecha)));
+        cont.appendChild(sep);
+      }
+      cont.appendChild(tarjetaMuro(o));
+    });
+  }
+
+  // Leyenda de los sellos, plegada. Va aquí y no solo en el modal de ayuda
+  // porque es donde se ven los sellos: explicar lejos de lo explicado no
+  // enseña a nadie. Se pinta una sola vez.
+  function pintarLeyenda() {
+    var cont = $('sp-hoy-leyenda');
+    if (!cont || cont.firstChild) return;
+
+    var d = el('details', 'sp-leyenda');
+    var s = el('summary', null, '¿Qué significan los sellos de cada tarjeta?');
+    d.appendChild(s);
+
+    var caja = el('div', 'sp-leyenda-caja');
+    ['verificado', 'disputado', 'declaracion'].forEach(function (k) {
+      var t = TIPOS[k];
+      var fila = el('div', 'sp-leyenda-fila');
+      fila.appendChild(tag(t.cls, t.t));
+      fila.appendChild(el('span', null, t.ayuda));
+      caja.appendChild(fila);
+    });
+    var extra = el('div', 'sp-leyenda-fila');
+    extra.appendChild(el('b', null, 'La otra versión'));
+    extra.appendChild(el('span', null,
+      'Cuando el Gobierno o la parte señalada respondió, su respuesta va dentro ' +
+      'de la misma tarjeta. No se publica una acusación sin su descargo.'));
+    caja.appendChild(extra);
+
+    var pie = el('p', 'sp-leyenda-pie',
+      'Ningún hecho entra aquí sin enlace a la fuente. Si un dato no está publicado, ' +
+      'se dice que falta en vez de estimarlo.');
+    caja.appendChild(pie);
+
+    d.appendChild(caja);
+    cont.appendChild(d);
+  }
+
+  function pintarChipsMuro() {
+    var cont = vaciar($('sp-hoy-chips'));
+    // Solo se ofrecen los temas que existen: un filtro que devuelve cero
+    // resultados es una promesa incumplida.
+    var cuenta = {};
+    (D.entradas || []).forEach(function (e) {
+      cuenta[e.categoria] = (cuenta[e.categoria] || 0) + 1;
+    });
+    var lista = [{ id: 'todos', n: 'Todo', ico: '📋', c: (D.entradas || []).length }];
+    Object.keys(cuenta).sort(function (a, b) { return cuenta[b] - cuenta[a]; })
+      .forEach(function (id) {
+        lista.push({ id: id, n: cat(id).nombre, ico: cat(id).icono, c: cuenta[id] });
+      });
+
+    lista.forEach(function (x) {
+      var b = el('button', 'sp-chip' + (muroTema === x.id ? ' on' : '')); b.type = 'button';
+      b.setAttribute('aria-pressed', muroTema === x.id ? 'true' : 'false');
+      if (x.id !== 'todos') pintarColorCategoria(b, x.id);
+      b.appendChild(el('span', 'sp-chip-i', x.ico || '•'));
+      b.appendChild(el('span', 'sp-chip-n', x.n));
+      b.appendChild(el('span', 'sp-chip-c', String(x.c)));
+      b.addEventListener('click', function () { muroTema = x.id; pintarMuro(); });
+      cont.appendChild(b);
+    });
+  }
+
+  function tarjetaMuro(o) {
+    var e = o.e;
+    var art = el('article', 'sp-post');
+    pintarColorCategoria(art, e.categoria);
+
+    // Cabecera tipo publicación: quién (el tema) y cuándo.
+    var top = el('div', 'sp-post-top');
+    top.appendChild(disco(e.categoria));
+    var quien = el('div', 'sp-post-quien');
+    quien.appendChild(el('b', null, cat(e.categoria).nombre));
+    var cuando = el('span', null, fechaCorta(e.fecha) +
+      (e.precision === 'aproximada' ? ' · fecha aproximada' : ''));
+    quien.appendChild(cuando);
+    top.appendChild(quien);
+    var ti = TIPOS[e.tipoFuente];
+    if (ti) top.appendChild(tag(ti.cls, ti.t, ti.ayuda));
+    art.appendChild(top);
+
+    // Imagen opcional: el JSON puede traer `imagen` y `alt` el día que haya
+    // material propio. Sin `alt` no se pinta: una foto sin descripción no informa.
+    if (e.imagen && e.alt) {
+      var fig = el('figure', 'sp-post-img');
+      var img = document.createElement('img');
+      img.src = e.imagen; img.alt = e.alt; img.loading = 'lazy';
+      fig.appendChild(img);
+      if (e.credito) fig.appendChild(el('figcaption', null, e.credito));
+      art.appendChild(fig);
+    }
+
+    var cuerpo = el('div', 'sp-post-cuerpo');
+    cuerpo.appendChild(el('h3', null, e.titulo || ''));
+    if (e.detalle) cuerpo.appendChild(el('p', null, e.detalle));
+    art.appendChild(cuerpo);
+
+    if (e.contrapunto) {
+      var cp = el('div', 'sp-post-cp');
+      cp.appendChild(el('b', null, 'La otra versión'));
+      cp.appendChild(el('p', null, e.contrapunto));
+      art.appendChild(cp);
+    }
+
+    var pie = el('div', 'sp-post-pie');
+    var nf = fuentesDe(e).length;
+    pie.appendChild(el('span', 'sp-post-src', nf + (nf === 1 ? ' fuente' : ' fuentes')));
+    var ver = el('button', 'sp-post-ver'); ver.type = 'button';
+    ver.textContent = 'Abrir y ver fuentes →';
+    ver.addEventListener('click', function () { ir({ v: 'hecho', i: o.i, desde: 'hoy' }); });
+    pie.appendChild(ver);
+    art.appendChild(pie);
+    return art;
+  }
+
+  // ══ BALANCE DEL PERIODO ═══════════════════════════════════════════════════
+  var SIGNOS = {
+    riesgo: { t: 'Señal de alerta', c: '#C95A55', i: '▲' },
+    logro:  { t: 'A favor',         c: '#1F7A4B', i: '●' },
+    neutro: { t: 'Todavía sin leer', c: '#527C91', i: '■' }
+  };
+
+  function pintarBalance() {
+    var cont = vaciar($('sp-balance'));
+    var b = (D.balances || [])[0];
+    if (!b) { cont.appendChild(vacio()); return; }
+
+    // Aviso primero: quien llega aquí tiene que saber que esto NO es un hecho.
+    var av = el('div', 'sp-interp');
+    av.appendChild(el('b', null, 'Esto es interpretación, no un hecho'));
+    av.appendChild(el('p', null, b.entradilla || ''));
+    cont.appendChild(av);
+
+    var cab = el('div', 'sp-bal-cab');
+    cab.appendChild(el('h3', null, b.titulo || ''));
+    cab.appendChild(el('p', 'sp-bal-rango',
+      'Del ' + fechaCorta(b.desde) + ' al ' + fechaCorta(b.corte) +
+      ' · ' + diasDesde(b.desde) + ' días de gobierno'));
+    cont.appendChild(cab);
+
+    if (b.resumen) cont.appendChild(el('p', 'sp-bal-resumen', b.resumen));
+
+    // Las señales llevan icono + color + etiqueta escrita: el color solo
+    // nunca puede ser el único canal que distingue riesgo de logro.
+    (b.señales || []).forEach(function (s) {
+      var g = SIGNOS[s.signo] || SIGNOS.neutro;
+      var n = el('div', 'sp-senal');
+      n.style.setProperty('--sg', g.c);
+      var h = el('div', 'sp-senal-top');
+      h.appendChild(el('span', 'sp-senal-i', g.i));
+      h.appendChild(el('span', 'sp-senal-k', g.t));
+      n.appendChild(h);
+      n.appendChild(el('h4', null, s.t || ''));
+      n.appendChild(el('p', null, s.d || ''));
+      cont.appendChild(n);
+    });
+
+    if ((b.loQueFalta || []).length) {
+      var f = el('section', 'sp-falta');
+      f.appendChild(el('h4', null, 'Lo que falta por verse'));
+      var ul = el('ul');
+      b.loQueFalta.forEach(function (x) { ul.appendChild(el('li', null, x)); });
+      f.appendChild(ul);
+      cont.appendChild(f);
+    }
+
+    if (b.metodo) {
+      var m = el('section', 'sp-metodo');
+      m.appendChild(el('h4', null, 'Cómo se hizo este balance'));
+      m.appendChild(el('p', null, b.metodo));
+      cont.appendChild(m);
+    }
   }
 
   function pintarLista(tema) {
@@ -797,7 +1060,9 @@
     var X = function (i) { return mL + (W - mL - mR) * (i / (pts.length - 1)); };
     var Y = function (v) { return mT + (H - mT - mB) * (1 - (v - min) / (max - min)); };
 
-    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+    // La clase es necesaria: el CSS no puede estirar "cualquier svg dentro de
+    // .sp-graf" porque ahí también viven los iconitos de las fuentes.
+    var svg = svgEl('svg', { class: 'sp-lienzo', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
       'aria-label': 'El dólar pasó de ' + miles(pts[0].v) + ' a ' + miles(pts[pts.length-1].v) + ' pesos' });
 
     // Rejilla: solo dos guías, recesivas
@@ -867,7 +1132,7 @@
 
     var cont = el('div');
     var W = 640, H = 42, gap = 3;
-    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+    var svg = svgEl('svg', { class: 'sp-lienzo', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
       'aria-label': datos.map(function (x) { return x.n + ' ' + x.o.t.toLowerCase(); }).join(', ') });
     var x = 0;
     datos.forEach(function (x1, i) {

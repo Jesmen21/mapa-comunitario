@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v491-seguimiento-celeste-graficas';
+const URBIS_CACHE = 'urbis-v492-seguimiento-muro-al-dia';
 const URBIS_ASSETS = [
   './',
   './index.html',

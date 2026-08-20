@@ -1,10 +1,10 @@
 {
-  "_comentario": "URBIS · Seguimiento Presidencial. Cada entrada DEBE tener fuente verificable. Si un dato es disputado, se incluye la crítica en 'contrapunto'. Actualización semanal: agregar entradas al principio del array y mover 'actualizado'.",
+  "_comentario": "URBIS · Seguimiento Presidencial. Cada entrada DEBE tener fuente verificable. Si un dato es disputado, se incluye la crítica en 'contrapunto'. Actualización DIARIA: agregar entradas al principio del array y mover 'actualizado'. El muro las reordena por fecha, así que el orden del array no importa.",
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-17",
-  "proximaActualizacion": "2026-08-24",
+  "actualizado": "2026-08-19",
+  "proximaActualizacion": "2026-08-20",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -13,9 +13,120 @@
     "creditos": { "nombre": "Créditos y deuda", "icono": "💰", "color": "#ca8a04" },
     "emergencia": { "nombre": "Emergencias", "icono": "🚨", "color": "#e11d48" },
     "economia": { "nombre": "Economía", "icono": "📉", "color": "#7c3aed" },
-    "exterior": { "nombre": "Política exterior", "icono": "🌐", "color": "#0891b2" }
+    "exterior": { "nombre": "Política exterior", "icono": "🌐", "color": "#0891b2" },
+    "ambiente": { "nombre": "Ambiente y páramos", "icono": "🌿", "color": "#15803d" },
+    "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-19",
+      "precision": "exacta",
+      "categoria": "educacion",
+      "titulo": "Shakira financia diez escuelas y una universidad en el Chocó",
+      "detalle": "La cantante viajó a Quibdó junto al filántropo Howard Buffett y anunció una inversión de un millón de dólares para reconstruir diez escuelas y una universidad afectadas por el terremoto. Al recorrer la zona afirmó que “el Chocó ha estado abandonado”, en referencia a un rezago anterior al sismo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "BBC Mundo (vía Acento)", "u": "https://acento.com.do/bbc-news-mundo/el-choco-ha-estado-abandonado-shakira-se-compromete-a-reconstruir-escuelas-tras-viajar-a-una-de-las-zonas-mas-pobres-de-colombia-despues-del-terremoto-9738842.html" },
+        { "n": "El Heraldo", "u": "https://www.elheraldo.co/editoriales/2026/08/19/shakira-propone-reconstruir-a-choco-desde-las-aulas/" },
+        { "n": "Publinews", "u": "https://www.publinews.gt/espectaculos/2026/08/19/shakira-se-une-a-la-reconstruccion-de-escuelas-y-universidad-afectadas-por-terremoto-en-colombia/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-18",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance sube a 312 muertos y las pérdidas se estiman en $30 billones",
+      "detalle": "Ocho días después del sismo, la cifra oficial llega a 312 fallecidos, 4.611 heridos y 290 desaparecidos. La estimación preliminar de daños es de $30 billones: $24,5 billones en edificaciones y $5,5 billones en infraestructura.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · balance del 18 de agosto", "u": "https://www.infobae.com/colombia/2026/08/18/terremoto-en-colombia-perdidas-por-danos-llegarian-a-30-billones-segun-estimacion-preliminar/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-17",
+      "precision": "aproximada",
+      "categoria": "educacion",
+      "titulo": "Anuncia clases virtuales para los colegios destruidos, “como en la pandemia”",
+      "detalle": "El Gobierno anunció un plan de choque con el Ministerio de Educación para que los colegios afectados sigan con clases virtuales, tomando como modelo la pandemia. La propia nota que recoge el anuncio precisa que el plan sigue “en etapa de estructuración”, sin fecha de inicio ni condiciones definidas.",
+      "contrapunto": "La medida choca con la conectividad real de la zona. Un líder comunitario del Chocó lo resumió así ante la BBC: “en nuestro contexto es verdaderamente muy difícil, por la cobertura de señal, porque vivimos en una zona rural y de muy difícil acceso”. La objeción no proviene de Shakira, como circuló en redes, sino de líderes locales.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "RCN Radio · el anuncio", "u": "https://newsroom.rcnradio.com/colombia/abelardo-de-la-espriella-anuncia-clases-virtuales-para-colegios-afectados-por-el-terremoto-como-funcionara-la-medida" },
+        { "n": "BBC Mundo (vía Acento) · la objeción de conectividad", "u": "https://acento.com.do/bbc-news-mundo/el-choco-ha-estado-abandonado-shakira-se-compromete-a-reconstruir-escuelas-tras-viajar-a-una-de-las-zonas-mas-pobres-de-colombia-despues-del-terremoto-9738842.html" }
+      ]
+    },
+    {
+      "fecha": "2026-08-16",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Reparte balones con el logo de su movimiento entre damnificados en Buenaventura",
+      "detalle": "Durante su recorrido por Buenaventura y Quibdó, el presidente entregó balones de fútbol marcados con “Defensores de la Patria”, el nombre de su movimiento político. Una persona afectada preguntó ante las cámaras “¿cuántos millones se gastaron en poner un logo a ese balón?”. La escena se difundió mientras seguía la búsqueda de cerca de 200 desaparecidos.",
+      "contrapunto": "El Gobierno defendió la entrega: sostuvo que los balones son un acompañamiento recreativo para los niños en albergues y que los camiones que llegaron a la zona no llevaban solo elementos deportivos, sino también alimentos y productos básicos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Colombiano", "u": "https://www.elcolombiano.com/colombia/abelardo-espriella-entrega-balones-terremoto-buenaventura-colombia-LE40009233" },
+        { "n": "El Informador (México)", "u": "https://www.informador.mx/internacional/de-la-espriella-reparte-balones-de-su-partido-a-las-victimas-del-terremoto-en-colombia-20260817-0097.html" },
+        { "n": "El Imparcial", "u": "https://www.elimparcial.com/mundo/2026/08/17/abelardo-de-la-espriella-reparte-balones-en-buenaventura-tras-el-terremoto-y-desata-criticas-mientras-colombia-busca-a-casi-200-desaparecidos/" },
+        { "n": "Ámbito (Argentina)", "u": "https://www.ambito.com/mundo/abelardo-la-espriella-desata-polemica-al-regalar-pelotas-futbol-los-damnificados-del-terremoto-n6311647" }
+      ]
+    },
+    {
+      "fecha": "2026-08-16",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Anuncia la reactivación del buque hospital Benkos Biohó, seis días después del sismo",
+      "detalle": "Desde Buenaventura, el presidente anunció la reactivación del buque hospital Benkos Biohó para atender la emergencia sanitaria. El buque, construido durante el gobierno anterior, estaba fuera de operación y reanudó actividades el 14 de agosto con apoyo del Ministerio de Salud y del Hospital Universitario del Valle.",
+      "contrapunto": "El 11 de agosto —un día después del terremoto— el expresidente Gustavo Petro preguntó públicamente “¿dónde está el buque hospital Benkos Biohó?”, señalando que el barco había sido anunciado en marzo de 2026 y no estaba operando. URBIS registra la secuencia sin atribuirle intención: entre el sismo y la reanudación pasaron cuatro días.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · el anuncio desde Buenaventura", "u": "https://www.infobae.com/colombia/2026/08/16/de-la-espriella-anuncio-desde-buenaventura-la-reactivacion-del-buque-hospital-benkos-bioho/" },
+        { "n": "Infobae · la pregunta de Petro del 11 de agosto", "u": "https://www.infobae.com/colombia/2026/08/11/expresidente-petro-cuestiono-al-gobierno-de-abelardo-de-la-espriella-por-la-atencion-a-la-emergencia-por-el-terremoto-donde-esta-el-buque-hospital-benkos-bioho/" },
+        { "n": "HSB Noticias · reanudación de operaciones", "u": "https://www.hsbnoticias.com/despliegue-en-el-pacifico-operacion-del-buque-hospital-benkos-bioho-se-reactiva-para-atender-la-emergencia-sismica/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-13",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "Revoca la reserva que protegía 1.499 hectáreas del páramo de Santurbán",
+      "detalle": "La Resolución 1037 del 13 de agosto de 2026 del Ministerio de Ambiente revocó la resolución que había declarado Reserva Natural Protegida la zona ‘La Baja’ del páramo de Santurbán —1.499,23 hectáreas— y que prohibía allí la explotación minera. Esa protección la había adoptado el gobierno saliente por Resolución 0992 del 6 de agosto, un día antes del cambio de mando.",
+      "contrapunto": "El Ministerio sostiene que la revocatoria corrige irregularidades del trámite y cumple una orden del Juzgado Octavo Administrativo de Bucaramanga, que mandó reiniciar el proceso para garantizar su validez, transparencia y participación ciudadana. No es, en la versión oficial, una autorización de minería sino la reapertura del procedimiento. Los críticos responden que el efecto práctico inmediato es que la prohibición deja de existir.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Espectador", "u": "https://www.elespectador.com/ambiente/blog-el-rio/minambiente-tumba-una-de-las-resoluciones-que-protegia-fuentes-hidricas-de-santurban/" },
+        { "n": "Vanguardia", "u": "https://www.vanguardia.com/area-metropolitana/bucaramanga/2026/08/19/revocan-reserva-temporal-ambiental-en-zona-la-baja-del-paramo-de-santurban-en-santander/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-12",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El Gobierno acepta rescatistas de EE. UU., Israel, Ecuador y El Salvador, y no de México ni China",
+      "detalle": "La Unidad Nacional para la Gestión del Riesgo formalizó la solicitud de equipos de búsqueda y rescate a Estados Unidos, Israel, Ecuador y El Salvador. México, China, El Salvador y la ONU habían ofrecido ayuda antes; los equipos mexicanos no recibieron la misma autorización de despliegue. El embajador chino en Bogotá señaló que el Gobierno no había informado quién lideraría los contactos para recibir ayuda internacional. La brigada mexicana Topos llegó después, de forma autónoma, hasta Cali.",
+      "contrapunto": "El Gobierno negó haber rechazado ayuda y descartó razones ideológicas: afirmó que a El Salvador se le informó que sus equipos ya estaban desplegados y que no se requería más personal. La lectura opuesta —que hubo un filtro ideológico— la sostienen dirigentes de oposición y medios internacionales. Ningún tercero independiente ha dirimido cuál versión explica la selección.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Emol · el Gobierno descarta razones ideológicas", "u": "https://www.emol.com/noticias/Internacional/2026/08/12/1208328/colombia-apoyos-terremoto.html" },
+        { "n": "La FM · el Gobierno niega el rechazo", "u": "https://www.lafm.com.co/politica/gobienro-nacional-abelardo-de-la-espriella-niega-rachara-ayuda-internacional-terremoto-colombia-407670" },
+        { "n": "El Colombiano · por qué no se aceptó la ayuda ofrecida", "u": "https://www.elcolombiano.com/colombia/por-que-el-gobierno-de-la-espriella-no-ha-aceptado-la-ayuda-humana-ofrecida-por-mexico-china-el-salvador-y-hasta-la-onu-AG39841010" },
+        { "n": "France 24 · verificación", "u": "https://www.france24.com/es/am%C3%A9rica-latina/20260815-terremoto-en-colombia-limit%C3%B3-el-nuevo-gobierno-la-ayuda-internacional" },
+        { "n": "elDiario.es · la tesis del filtro ideológico", "u": "https://www.eldiario.es/internacional/espriella-impone-filtro-ideologico-entrada-ayuda-terremoto-veta-rescatistas-mexico_1_13447649.html" }
+      ]
+    },
+    {
+      "fecha": "2026-08-10",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Sonríe y lanza besos a las cámaras minutos antes de dar el balance de muertos",
+      "detalle": "En la sede de la UNGRD, donde funcionaba el Puesto de Mando Unificado, el presidente fue grabado sonriendo, posando y lanzando besos a las cámaras momentos antes de anunciar el balance oficial, que ese día ya superaba los 100 fallecidos. El video circuló ampliamente y generó reproches de dirigentes políticos, periodistas y ciudadanos.",
+      "contrapunto": "URBIS registra el hecho y la reacción pública que produjo, no una interpretación del estado de ánimo o del carácter del presidente: eso no es verificable y no le corresponde a este módulo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Publimetro Colombia", "u": "https://www.publimetro.co/noticias/2026/08/10/reproches-a-de-la-espriella-por-lanzar-besos-y-saludos-antes-de-entregar-el-balance-de-la-emergencia-del-terremoto/" },
+        { "n": "HSB Noticias", "u": "https://www.hsbnoticias.com/abelardo-de-la-espriella-terremoto-choco-video-lanza-besos/" },
+        { "n": "Milenio (México)", "u": "https://www.milenio.com/internacional/abelardo-espriella-indigna-actuacion-terremotos-colombia" }
+      ]
+    },
     {
       "fecha": "2026-08-17",
       "precision": "exacta",
@@ -256,6 +367,56 @@
       "detalle": "Enfrentamiento público entre ministras del gobierno saliente y del entrante por la adjudicación de contratos de infraestructura en La Guajira durante el empalme.",
       "fuente": "Infobae",
       "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
+    }
+  ],
+  "balances": [
+    {
+      "periodo": "2026-08",
+      "desde": "2026-08-07",
+      "corte": "2026-08-19",
+      "titulo": "Los primeros doce días",
+      "naturaleza": "interpretacion",
+      "entradilla": "Este balance es INTERPRETACIÓN, no un hecho. Se construye contando lo que está en la línea de tiempo —que sí es verificable— y señalando el patrón que se repite. El lector puede abrir cada hecho y comprobar si la lectura le convence.",
+      "resumen": "El mandato arrancó con una catástrofe a las 72 horas, y esa emergencia se convirtió en el marco de casi todo lo demás. Doce días después, lo que más se repite en el registro no son decisiones de reconstrucción sino tres cosas: endeudamiento externo, alineamiento con un bloque concreto de países y episodios de comunicación que desplazaron el foco de la propia emergencia.",
+      "señales": [
+        {
+          "signo": "riesgo",
+          "t": "Tres operaciones de deuda o cooperación en once días",
+          "d": "Banco Mundial (200 de 450 M USD) y BID (300 M USD) el 13 de agosto, más el paquete de seguridad estadounidense de 1.000 M USD el 15. El Gobierno ya anticipó que “nos vamos a endeudar” más. Que un desastre obligue a endeudarse no es en sí un error; lo que el registro no muestra todavía es un plan de reconstrucción publicado al que esa deuda esté amarrada."
+        },
+        {
+          "signo": "riesgo",
+          "t": "El eje exterior se estrechó, y coincidió con el filtro de la ayuda",
+          "d": "Reconocimiento de la soberanía israelí sobre el Golán, operaciones militares conjuntas con EE. UU., sede regional antinarcóticos en Medellín, y aceptación de rescatistas de EE. UU., Israel, Ecuador y El Salvador mientras México y China quedaban fuera. El Gobierno niega que haya criterio ideológico. URBIS no puede afirmar la intención, pero sí constata que el patrón es consistente: la política exterior y la gestión del desastre apuntaron al mismo grupo de países."
+        },
+        {
+          "signo": "riesgo",
+          "t": "La velocidad de reacción fue el reclamo más constante",
+          "d": "Cuatro días entre el sismo y la reanudación del buque hospital; los rescatistas israelíes llegaron el día 14 y cerraron sin hallar sobrevivientes. Es el punto donde más coinciden críticas de origen político distinto."
+        },
+        {
+          "signo": "riesgo",
+          "t": "Dos episodios de comunicación desplazaron el foco",
+          "d": "Los besos a las cámaras antes del balance de muertos (10 de agosto) y los balones con el logo del movimiento en Buenaventura (16 de agosto). En ambos casos el Gobierno dio explicación, y en ambos la conversación pública terminó girando sobre el gesto y no sobre la emergencia."
+        },
+        {
+          "signo": "riesgo",
+          "t": "Dos medidas anunciadas chocan con la realidad material del territorio",
+          "d": "Clases virtuales en una región donde líderes locales advierten que no hay cobertura de señal, y revocatoria de la protección de 1.499 hectáreas de Santurbán en plena emergencia. La segunda tiene sustento judicial invocado por el Ministerio; la primera no tiene todavía fecha ni condiciones publicadas."
+        },
+        {
+          "signo": "neutro",
+          "t": "Lo que aún no se puede evaluar",
+          "d": "El dólar se movió poco y a la baja, pero doce días no permiten atribuirle ese movimiento a la gestión: pesan la Reserva Federal, el petróleo y el riesgo global. Tampoco hay todavía ejecución medible de los créditos ni un censo final de damnificados."
+        }
+      ],
+      "loQueFalta": [
+        "Un plan de reconstrucción publicado con metas, plazos y responsables.",
+        "Ejecución verificable de los 500 M USD ya comprometidos con Banco Mundial y BID.",
+        "Condiciones y fecha del plan de clases virtuales, y qué pasa donde no hay señal.",
+        "El resultado del trámite reabierto en Santurbán."
+      ],
+      "metodo": "Se cuentan las entradas de la línea de tiempo por categoría y se comparan fechas de hecho contra fechas de respuesta. No se puntúa al presidente ni se le atribuyen intenciones, motivaciones o rasgos personales: eso no es verificable. Cuando el Gobierno dio su versión, está incluida en el contrapunto de cada hecho."
     }
   ],
   "indicadores": {

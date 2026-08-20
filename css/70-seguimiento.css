@@ -374,9 +374,12 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 .sp-d-catname{ font-size:.9rem; font-weight:600; color:var(--petroleo); }
 
 /* ── Fuentes ────────────────────────────────────────────────────────────── */
-.sp-fuentes{ display:grid; gap:7px; }
+/* minmax(0,1fr) y min-width:0 no son decorativos: sin ellos el item de grid
+   se dimensiona por su contenido máximo, el título de fuente más largo no
+   envuelve y estira TODA la página hacia la derecha. */
+.sp-fuentes{ display:grid; grid-template-columns:minmax(0,1fr); gap:7px; }
 .sp-fuente{
-  display:flex; align-items:center; gap:9px; padding:10px 12px;
+  display:flex; align-items:center; gap:9px; padding:10px 12px; min-width:0;
   background:var(--sup); border:1px solid var(--linea); border-radius:var(--r-s);
   font-size:.84rem; font-weight:500; color:var(--ink); text-decoration:none; line-height:1.35;
   transition:border-color var(--t), background var(--t);
@@ -384,7 +387,8 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 a.sp-fuente:hover{ border-color:#A8DFF6; background:var(--verde-suave); color:var(--petroleo); }
 .sp-fuente svg{ width:14px; height:14px; flex:0 0 auto; color:var(--ink-2); }
 a.sp-fuente:hover svg{ color:var(--verde-hi); }
-.sp-fuente span{ min-width:0; }
+/* overflow-wrap:anywhere para las URLs y nombres largos sin espacios */
+.sp-fuente span{ min-width:0; overflow-wrap:anywhere; }
 
 /* ── Contradicciones ────────────────────────────────────────────────────── */
 .sp-cxlist{ display:grid; gap:16px; }
@@ -435,13 +439,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 
 /* ── FODA ───────────────────────────────────────────────────────────────── */
-.sp-fodatabs{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:20px; }
+.sp-fodatabs{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:20px; }
 .sp-fodatab{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
   padding:14px 15px; background:var(--sup); border:1px solid var(--linea);
   border-radius:var(--r-s); font:inherit; cursor:pointer; text-align:left;
   transition:border-color var(--t), background var(--t);
+  /* sin min-width:0 el botón se dimensiona por su texto más largo y estira
+     la rejilla fuera de la pantalla */
+  min-width:0;
 }
+.sp-fodatab > span{ min-width:0; }
+.sp-fodatab-t, .sp-fodatab-d{ overflow-wrap:anywhere; }
 .sp-fodatab:hover{ border-color:#A8DFF6; }
 .sp-fodatab[aria-selected="true"]{ background:var(--petroleo); border-color:var(--petroleo); }
 .sp-fodatab-t{ font-size:.92rem; font-weight:600; color:var(--petroleo); }
@@ -577,7 +586,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 @media (min-width:640px){
   .sp-main{ padding:44px 28px 80px; }
   .sp-stats{ grid-template-columns:repeat(4,1fr); }
-  .sp-fodatabs{ grid-template-columns:repeat(4,1fr); }
+  .sp-fodatabs{ grid-template-columns:repeat(4,minmax(0,1fr)); }
   .sp-cx-par{ grid-template-columns:1fr 1fr; gap:24px; }
   .sp-cx-antes{ padding-bottom:0; }
   /* En dos columnas la linea vertical no conecta: se pasa a horizontal */
@@ -697,7 +706,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:.72rem; color:var(--ink-2); text-transform:uppercase;
   letter-spacing:.07em; font-weight:600; margin-bottom:14px;
 }
-.sp-graf svg{ width:100%; height:auto; display:block; stroke:none; }
+.sp-graf .sp-lienzo{ width:100%; height:auto; display:block; stroke:none; }
 .sp-graf-nota{
   margin-top:13px; padding-top:12px; border-top:1px solid var(--linea-2);
   font-size:.79rem; color:var(--ink-2); line-height:1.5;
@@ -787,3 +796,197 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 
 /* Icono de estado en contradicciones */
 .sp-cx-head-l{ display:flex; align-items:flex-start; gap:11px; min-width:0; }
+
+/* ═══ AL DÍA · muro cronológico ═══════════════════════════════════════════
+   Formato de publicación, no de expediente: la gente ya sabe leer un muro.
+   El color de cada tarjeta viene del tema (--cc/--cbg/--cbd), y nunca es el
+   único canal: al lado siempre va el nombre del tema escrito.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Acceso desde la portada */
+.sp-nuevo{
+  display:block; width:100%; text-align:left; margin:26px 0 0;
+  padding:18px 18px 16px; cursor:pointer; font:inherit;
+  background:linear-gradient(180deg,#fff, var(--celeste-suave));
+  border:1px solid #A8DFF6; border-radius:var(--r);
+  box-shadow:var(--sombra); transition:box-shadow var(--t), transform var(--t);
+}
+.sp-nuevo:hover{ box-shadow:var(--sombra-hi); transform:translateY(-1px); }
+.sp-nuevo-top{ display:flex; align-items:center; gap:10px; margin-bottom:13px; flex-wrap:wrap; }
+.sp-nuevo-vivo{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:3px 10px; border-radius:999px;
+  background:var(--celeste-hi); color:#fff;
+  font-size:.68rem; font-weight:700; letter-spacing:.1em;
+}
+.sp-nuevo-vivo::before{
+  content:''; width:6px; height:6px; border-radius:50%; background:#fff;
+  animation:spLatir 1.9s ease-in-out infinite;
+}
+@keyframes spLatir{ 0%,100%{ opacity:1 } 50%{ opacity:.25 } }
+.sp-nuevo-f{ font-size:.76rem; color:var(--ink-2); }
+.sp-nuevo-list{ margin:0; padding:0; list-style:none; display:grid; gap:9px; }
+.sp-nuevo-list li{
+  display:flex; align-items:center; gap:10px; min-width:0;
+  font-size:.9rem; font-weight:500; color:var(--ink); line-height:1.35;
+}
+.sp-nuevo-go{
+  display:block; margin-top:14px; padding-top:12px;
+  border-top:1px solid rgba(11,110,155,.18);
+  font-size:.83rem; font-weight:600; color:var(--celeste-hi);
+}
+
+/* Chips de tema */
+.sp-chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
+.sp-chip{
+  display:inline-flex; align-items:center; gap:7px; padding:7px 12px;
+  border:1px solid var(--linea); background:var(--sup); color:var(--ink);
+  border-radius:999px; font:inherit; font-size:.82rem; font-weight:500; cursor:pointer;
+  transition:border-color var(--t), background var(--t);
+}
+.sp-chip:hover{ border-color:var(--cbd, #A8DFF6); background:var(--cbg, var(--celeste-suave)); }
+.sp-chip.on{
+  background:var(--cbg, var(--celeste-suave)); border-color:var(--cc, var(--celeste-hi));
+  font-weight:600;
+}
+.sp-chip-i{ font-size:.95rem; line-height:1; }
+.sp-chip-c{
+  font-size:.72rem; font-weight:700; color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.sp-chip.on .sp-chip-c{ color:var(--cc, var(--celeste-hi)); }
+
+/* Separador de día */
+.sp-dia{
+  display:flex; align-items:baseline; gap:10px; margin:26px 0 12px;
+}
+.sp-dia:first-child{ margin-top:0; }
+.sp-dia-t{
+  font-size:.78rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--petroleo); flex:0 0 auto;
+}
+.sp-dia-f{ font-size:.74rem; color:var(--ink-2); }
+.sp-dia::after{
+  content:''; flex:1 1 auto; height:1px; background:var(--linea);
+}
+
+/* Tarjeta de publicación */
+.sp-muro{ display:grid; gap:14px; }
+.sp-post{
+  background:var(--sup); border:1px solid var(--linea);
+  border-radius:var(--r); overflow:hidden;
+  border-left:3px solid var(--cc, var(--celeste));
+  box-shadow:var(--sombra);
+}
+.sp-post-top{
+  display:flex; align-items:center; gap:11px; padding:14px 16px 0; flex-wrap:wrap;
+}
+.sp-post-quien{ flex:1 1 auto; min-width:0; display:grid; }
+.sp-post-quien b{ font-size:.87rem; font-weight:600; color:var(--ink); }
+.sp-post-quien span{ font-size:.75rem; color:var(--ink-2); }
+.sp-post-img{ margin:14px 0 0; }
+.sp-post-img img{ width:100%; height:auto; display:block; }
+.sp-post-img figcaption{
+  padding:6px 16px; font-size:.72rem; color:var(--ink-2); background:var(--marfil);
+}
+.sp-post-cuerpo{ padding:13px 16px 0; }
+.sp-post-cuerpo h3{
+  font-size:1.04rem; font-weight:650; line-height:1.32; color:var(--petroleo);
+}
+.sp-post-cuerpo p{ margin-top:8px; font-size:.9rem; color:var(--ink-2); line-height:1.55; }
+.sp-post-cp{
+  margin:13px 16px 0; padding:11px 13px;
+  background:var(--marfil); border:1px solid var(--linea);
+  border-left:3px solid var(--azul); border-radius:0 var(--r-s) var(--r-s) 0;
+}
+.sp-post-cp b{
+  display:block; font-size:.72rem; font-weight:700; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--azul); margin-bottom:5px;
+}
+.sp-post-cp p{ font-size:.85rem; color:var(--ink-2); line-height:1.5; }
+.sp-post-pie{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-top:14px; padding:11px 16px; border-top:1px solid var(--linea-2);
+  background:var(--marfil);
+}
+.sp-post-src{ font-size:.76rem; color:var(--ink-2); font-weight:500; }
+.sp-post-ver{
+  border:0; background:none; padding:0; cursor:pointer; font:inherit;
+  font-size:.83rem; font-weight:600; color:var(--celeste-hi); border-radius:4px;
+}
+.sp-post-ver:hover{ text-decoration:underline; }
+
+/* ═══ Balance del periodo ════════════════════════════════════════════════ */
+.sp-interp{
+  padding:14px 16px; margin-bottom:22px;
+  background:#FBF3E4; border:1px solid #E8D5AE; border-radius:var(--r);
+  border-left:3px solid var(--ambar);
+}
+.sp-interp b{ display:block; font-size:.87rem; color:#7A5410; margin-bottom:5px; }
+.sp-interp p{ font-size:.85rem; color:#6B5228; line-height:1.55; }
+
+.sp-bal-cab h3{ font-size:1.3rem; font-weight:650; color:var(--petroleo); }
+.sp-bal-rango{ margin-top:5px; font-size:.8rem; color:var(--ink-2); }
+.sp-bal-resumen{
+  margin:16px 0 24px; font-size:1rem; color:var(--ink); line-height:1.6;
+  max-width:62ch;
+}
+.sp-senal{
+  padding:15px 16px; margin-bottom:11px;
+  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
+  border-left:3px solid var(--sg, var(--ink-2));
+}
+.sp-senal-top{ display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.sp-senal-i{ color:var(--sg); font-size:.7rem; line-height:1; }
+.sp-senal-k{
+  font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--sg);
+}
+.sp-senal h4{ margin:0 0 6px; font-size:.97rem; font-weight:600; color:var(--petroleo); }
+.sp-senal p{ font-size:.88rem; color:var(--ink-2); line-height:1.55; }
+
+.sp-falta, .sp-metodo{
+  margin-top:22px; padding:15px 16px;
+  background:var(--marfil); border:1px solid var(--linea); border-radius:var(--r);
+}
+.sp-falta h4, .sp-metodo h4{
+  margin:0 0 9px; font-size:.86rem; font-weight:650; color:var(--petroleo);
+}
+.sp-falta ul{ margin:0; padding-left:19px; display:grid; gap:6px; }
+.sp-falta li{ font-size:.87rem; color:var(--ink-2); line-height:1.5; }
+.sp-metodo p{ font-size:.85rem; color:var(--ink-2); line-height:1.55; }
+
+@media (min-width:720px){
+  .sp-muro{ gap:16px; }
+  .sp-post-cuerpo h3{ font-size:1.1rem; }
+}
+
+/* Leyenda de sellos, plegada, junto a donde se usan */
+.sp-leyenda{
+  margin-bottom:14px; border:1px solid var(--linea); border-radius:var(--r-s);
+  background:var(--sup);
+}
+.sp-leyenda summary{
+  padding:11px 14px; cursor:pointer; list-style:none;
+  font-size:.84rem; font-weight:600; color:var(--celeste-hi);
+}
+.sp-leyenda summary::-webkit-details-marker{ display:none; }
+.sp-leyenda summary::after{ content:'  ▾'; color:var(--ink-2); font-size:.7rem; }
+.sp-leyenda[open] summary::after{ content:'  ▴'; }
+.sp-leyenda-caja{
+  padding:2px 14px 14px; display:grid; gap:11px;
+  border-top:1px solid var(--linea-2);
+}
+.sp-leyenda-fila{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:start;
+  padding-top:11px;
+}
+.sp-leyenda-fila b{
+  font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--azul); padding-top:2px;
+}
+.sp-leyenda-fila span{ font-size:.83rem; color:var(--ink-2); line-height:1.5; }
+.sp-leyenda-pie{
+  margin-top:4px; padding-top:11px; border-top:1px solid var(--linea-2);
+  font-size:.79rem; color:var(--ink-2); line-height:1.5;
+}

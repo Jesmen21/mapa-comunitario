@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=491-seguimiento-celeste-graficas">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=492-seguimiento-muro-al-dia">
 </head>
 <body>
 
@@ -43,6 +43,8 @@
       <p class="sp-who"><span id="sp-presi">—</span> <em id="sp-periodo"></em></p>
     </div>
 
+    <div id="sp-acceso-muro"></div>
+
     <dl class="sp-stats" id="sp-stats"></dl>
 
     <div id="sp-hero-graf"></div>
@@ -50,6 +52,33 @@
     <nav class="sp-secciones" id="sp-secciones" aria-label="Secciones del seguimiento"></nav>
 
     <p class="sp-nextup" id="sp-nextup"></p>
+  </section>
+
+  <!-- ══ 1b. AL DÍA · muro cronológico ═══════════════════════════════════
+       Entra por fecha de publicación, no por tema: es la vista para el que
+       solo quiere saber qué pasó hoy sin tener que elegir una categoría. -->
+  <section class="sp-view" data-view="hoy" aria-labelledby="sp-hoy-h">
+    <header class="sp-vhead" id="sp-hoy-head">
+      <p class="sp-vnum">00</p>
+      <h2 id="sp-hoy-h">Al día</h2>
+      <p class="sp-vdek">Todo lo registrado, del más reciente al más antiguo.
+         Cada tarjeta lleva su color de tema y su fuente.</p>
+    </header>
+
+    <div id="sp-hoy-leyenda"></div>
+    <div class="sp-chips" id="sp-hoy-chips" role="group" aria-label="Filtrar el muro por tema"></div>
+    <p class="sp-count" id="sp-hoy-count" aria-live="polite"></p>
+    <div class="sp-muro" id="sp-muro"></div>
+  </section>
+
+  <!-- ══ 1c. BALANCE DEL PERIODO ═════════════════════════════════════════ -->
+  <section class="sp-view" data-view="balance" aria-labelledby="sp-bal-h">
+    <header class="sp-vhead" id="sp-bal-head">
+      <p class="sp-vnum">06</p>
+      <h2 id="sp-bal-h">Balance del periodo</h2>
+      <p class="sp-vdek">Qué patrón se repite cuando se miran todos los hechos juntos.</p>
+    </header>
+    <div id="sp-balance"></div>
   </section>
 
   <!-- ══ 2. LÍNEA DE TIEMPO · elegir tema ════════════════════════════════ -->
@@ -243,6 +272,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=491-seguimiento-celeste-graficas"></script>
+<script src="js/70-seguimiento.js?v=492-seguimiento-muro-al-dia"></script>
 </body>
 </html>
