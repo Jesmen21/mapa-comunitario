@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v503-cobertura-ver-en-mapa';
+const URBIS_CACHE = 'urbis-v504-cobertura-precision';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -1437,7 +1437,23 @@
   // Access-Control-Allow-Origin: *), que es lo que permite leer los píxeles
   // del canvas — sin esa cabecera el navegador bloquea getImageData.
   const RASTER_URL = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export';
-  const RASTER_LADO = 420;     // suficiente para estimar y liviano de procesar
+  // Más resolución = menos píxeles mezclados (un píxel mitad árbol mitad techo
+  // no es ni una cosa ni la otra y se pierde). A 420 cada píxel cubría ~2 m de
+  // barrio y los árboles de andén desaparecían; a 640 se sostienen.
+  const RASTER_LADO = 640;
+  // Filtro de mayoría: un píxel solo cambia si OTRA clase ocupa 5 de sus 9
+  // vecinos. Quita el granulado sal-y-pimienta sin comerse rasgos finos como
+  // una hilera de árboles sobre la calle.
+  const MAYORIA_MIN = 5;
+  // Superficie mínima para que una mancha azul cuente como cuerpo de agua.
+  // El techo de zinc azul —abundante en el barrio— tiene EXACTAMENTE el mismo
+  // color que el agua somera: (62,82,116) contra (34,54,82) son el mismo azul
+  // acero, y sin banda infrarroja el RGB no los separa. Lo que sí los separa es
+  // el tamaño y la continuidad: una quebrada o un jagüey pasan holgado de
+  // 600 m², un techo no. El costo declarado es que una piscina de patio se
+  // cuenta como superficie dura, y se prefiere eso a pintar de agua media
+  // manzana de techos.
+  const AGUA_MIN_M2 = 600;
 
   function bboxDelArea(pts){
     const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
@@ -1459,16 +1475,46 @@
   // el matorral seco comparten el mismo rango de color y sin banda infrarroja
   // NO se pueden separar. Antes que publicar un porcentaje bonito y engañoso,
   // esas superficies van juntas en una clase declarada como ambigua.
+  //
+  // Segunda calibración (bug reportado: "a simple vista veo más área verde que
+  // no me está rasterizando"). La causa era comparar canales en ABSOLUTO:
+  //
+  //     g > r + 10 && g > b + 6
+  //
+  // Esa distancia fija se sostiene en copa iluminada, pero se desvanece en
+  // sombra, donde los tres canales bajan juntos: una copa a plena luz (60,72,45)
+  // pasaba, y la misma copa sombreada (40,47,32) —igual de verde a la vista—
+  // se caía por 3 unidades y terminaba en "tonos cálidos". En un barrio con
+  // arborización densa, media copa está sombreada por la otra media, así que
+  // se perdía justo lo que el usuario ve como verde.
+  //
+  // La corrección es medir el color en PROPORCIÓN y no en distancia: se pasa a
+  // coordenadas cromáticas (cada canal dividido por la suma) y se usa el
+  // Excess Green, ExG = 2G − R − B, el índice estándar para vegetación cuando
+  // no hay banda infrarroja. Al normalizar, la sombra deja de importar: lo que
+  // se mide es la proporción de verde, que se conserva al oscurecerse.
+  //
+  // El ExG solo NO alcanza: un caqui seco (140,135,95) da ExG .095 y se colaría
+  // como vegetación viva, que es justo el error contra el que advierte el
+  // párrafo de arriba. Por eso se le exige además que el verde sea el canal
+  // dominante (g > r): la vegetación viva lo cumple hasta en sombra profunda,
+  // el pasto seco y el suelo caqui no lo cumplen nunca.
   function clasificarPixel(r, g, b){
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const sat = max === 0 ? 0 : (max - min) / max;
-    const luz = (r + g + b) / 3;
+    const suma = r + g + b || 1;
+    const R = r / suma, G = g / suma, B = b / suma;   // coordenadas cromáticas
+    const luz = suma / 3;
+    const exg = 2 * G - R - B;   // Excess Green: vegetación
+    const exb = 2 * B - R - G;   // Excess Blue: agua y azules
 
-    // Agua: azul dominante sobre superficie oscura. Fiable salvo sombras densas.
-    if (b > r + 8 && b >= g && luz < 145) return 'agua';
-    // Vegetación viva: verde franco por encima de rojo y azul. Es la clase más
-    // fiable del método — el verde vegetal no lo imita casi ningún material.
-    if (g > r + 10 && g > b + 6) return 'verde';
+    // Vegetación viva. Va PRIMERO: la copa en sombra también es azulada y, si
+    // el agua se evaluara antes, se la llevaría.
+    if (exg > .085 && g > r) return 'verde';
+    // Agua: azul en proporción y superficie oscura. El umbral de luz baja de
+    // 145 a 125 porque los techos de zinc azul del barrio —abundantes— caían
+    // dentro; los que aún se cuelen los limpia el filtro de manchas chicas.
+    if (exb > .09 && luz < 125) return 'agua';
     // Gris neutro: asfalto, concreto y cubiertas metálicas. Fiable cuando la
     // saturación es realmente baja.
     if (sat < .16) return 'construido';
@@ -1496,7 +1542,7 @@
       // Se conserva la proporción real del área: pedir siempre un cuadrado
       // deformaría un área alargada y falsearía los porcentajes.
       const prop = (caja.n - caja.s) / Math.max(1e-9, (caja.e - caja.o));
-      const w = RASTER_LADO, h = Math.max(60, Math.min(700, Math.round(RASTER_LADO * prop)));
+      const w = RASTER_LADO, h = Math.max(60, Math.min(1000, Math.round(RASTER_LADO * prop)));
       const url = RASTER_URL + '?bbox=' + [caja.o, caja.s, caja.e, caja.n].join(',') +
         '&bboxSR=4326&imageSR=4326&size=' + w + ',' + h + '&format=png&f=image';
 
@@ -1528,29 +1574,138 @@
           // Opacidad visible pero que deja intuir el satelital de fondo.
           const ALPHA = 176;
 
-          const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
+          // Códigos numéricos para poder trabajar sobre arreglos tipados: las
+          // pasadas de vecindad recorren la imagen varias veces y con cadenas
+          // de texto serían mucho más lentas en un teléfono.
+          const COD = { verde:1, construido:2, agua:3, mixto:4 };
+          const NOM = [null, 'verde', 'construido', 'agua', 'mixto'];
+          const n = w * h;
+
+          // ── Pasada 1 · clasificar y marcar qué cae dentro del área ────────
+          // Se clasifica la imagen ENTERA, también lo de afuera del polígono:
+          // las pasadas de vecindad necesitan contexto real en el borde, si no
+          // el contorno del área quedaría con un marco de ruido.
+          const cls = new Uint8Array(n);
+          for (let p = 0, i = 0; p < n; p++, i += 4) {
+            cls[p] = COD[clasificarPixel(datos[i], datos[i+1], datos[i+2])];
+          }
+
+          // Máscara del área por BARRIDO DE LÍNEAS. Preguntar píxel por píxel
+          // "¿caigo dentro del polígono?" cuesta un recorrido de los vértices
+          // cada vez; a 640×640 son cientos de miles de recorridos y en el
+          // teléfono se notaba. Como cada fila de la imagen tiene una latitud
+          // constante, basta cruzar el polígono UNA vez por fila y rellenar
+          // los tramos entre cortes. Mismo criterio par-impar que
+          // dentroDelPoligono(), solo que calculado de otra forma.
+          const dentroMask = new Uint8Array(n);
+          const vert = S.pts, V = vert.length;
+          const cortes = [];
           let dentro = 0;
           for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-              const c = latLngDePixel(x, y, w, h, caja);
-              const i = (y * w + x) * 4;
-              if (!dentroDelPoligono(c.lat, c.lng, S.pts)) {
-                imgClas.data[i + 3] = 0;   // fuera del área: transparente del todo
-                continue;
+            const lat = caja.n - (y + .5) / h * (caja.n - caja.s);
+            cortes.length = 0;
+            for (let k = 0, j = V - 1; k < V; j = k++) {
+              const a = vert[j], c2 = vert[k];
+              if ((a.lat > lat) !== (c2.lat > lat)) {
+                const lng = a.lng + (lat - a.lat) / (c2.lat - a.lat) * (c2.lng - a.lng);
+                cortes.push((lng - caja.o) / (caja.e - caja.o) * w - .5);
               }
-              dentro++;
-              const clase = clasificarPixel(datos[i], datos[i+1], datos[i+2]);
-              cuenta[clase]++;
-              const rgb = RGB[clase];
-              imgClas.data[i] = rgb[0]; imgClas.data[i+1] = rgb[1]; imgClas.data[i+2] = rgb[2];
-              imgClas.data[i + 3] = ALPHA;
+            }
+            if (cortes.length < 2) continue;
+            cortes.sort((p, q) => p - q);
+            const fila = y * w;
+            for (let k = 0; k + 1 < cortes.length; k += 2) {
+              const x0 = Math.max(0, Math.ceil(cortes[k]));
+              const x1 = Math.min(w - 1, Math.floor(cortes[k + 1]));
+              for (let x = x0; x <= x1; x++) { dentroMask[fila + x] = 1; dentro++; }
             }
           }
           if (!dentro) { reject(new Error('El área es demasiado pequeña para analizarla.')); return; }
+
+          // ── Pasada 2 · filtro de mayoría 3×3 ──────────────────────────────
+          // Suavizado posterior a la clasificación, práctica estándar en
+          // teledetección: un píxel suelto de otra clase en medio de una copa
+          // es ruido del sensor o del JPEG, no un cambio de cobertura.
+          const suave = new Uint8Array(cls);
+          const cnt = new Uint8Array(5);
+          for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+              const p = y * w + x;
+              cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
+              for (let dy = -1; dy <= 1; dy++) {
+                const f = p + dy * w;
+                cnt[cls[f - 1]]++; cnt[cls[f]]++; cnt[cls[f + 1]]++;
+              }
+              let mejor = cls[p], nMejor = 0;
+              for (let k = 1; k <= 4; k++) if (cnt[k] > nMejor) { nMejor = cnt[k]; mejor = k; }
+              if (nMejor >= MAYORIA_MIN) suave[p] = mejor;
+            }
+          }
+
+          // ── Pasada 3 · manchas de agua demasiado chicas ───────────────────
+          // El agua de verdad forma cuerpos continuos; un techo de zinc azul o
+          // una sombra densa forman manchitas sueltas. Se recorren las manchas
+          // de agua conectadas y las que no alcanzan el tamaño mínimo se pasan
+          // a la clase que domina en su propio contorno — así un techo azul
+          // rodeado de techos grises termina en construido, y una sombra dentro
+          // de una copa termina en vegetación.
+          // El mínimo se fija en METROS CUADRADOS reales, no en píxeles: el
+          // mismo número de píxeles significa 20 m² en un lote y media hectárea
+          // en un barrio, así que un umbral en píxeles daría un criterio
+          // distinto según el tamaño del área dibujada.
+          const m2Total = areaM2(S.pts);
+          const m2PorPixel = m2Total / dentro;
+          const MIN_AGUA = Math.min(
+            Math.round(dentro * .06),                                  // en un lote chico, nada puede pedir 600 m²
+            Math.max(25, Math.round(AGUA_MIN_M2 / Math.max(1e-6, m2PorPixel)))
+          );
+          const visto = new Uint8Array(n);
+          const pila = [];
+          const blob = [];
+          const borde = new Int32Array(5);
+          for (let p0 = 0; p0 < n; p0++) {
+            if (suave[p0] !== COD.agua || visto[p0]) continue;
+            pila.length = 0; blob.length = 0;
+            borde[1] = borde[2] = borde[3] = borde[4] = 0;
+            pila.push(p0); visto[p0] = 1;
+            while (pila.length) {
+              const p = pila.pop();
+              blob.push(p);
+              const x = p % w, y = (p - x) / w;
+              for (let k = 0; k < 4; k++) {
+                const q = k === 0 ? (x > 0 ? p - 1 : -1)
+                        : k === 1 ? (x < w - 1 ? p + 1 : -1)
+                        : k === 2 ? (y > 0 ? p - w : -1)
+                        :           (y < h - 1 ? p + w : -1);
+                if (q < 0) continue;
+                if (suave[q] === COD.agua) {
+                  if (!visto[q]) { visto[q] = 1; pila.push(q); }
+                } else borde[suave[q]]++;
+              }
+            }
+            if (blob.length >= MIN_AGUA) continue;
+            let rep = COD.construido, nRep = -1;
+            for (let k = 1; k <= 4; k++) {
+              if (k !== COD.agua && borde[k] > nRep) { nRep = borde[k]; rep = k; }
+            }
+            for (let k = 0; k < blob.length; k++) suave[blob[k]] = rep;
+          }
+
+          // ── Pasada 4 · contar dentro del área y pintar el overlay ─────────
+          const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
+          for (let p = 0; p < n; p++) {
+            const i = p * 4;
+            if (!dentroMask[p]) { imgClas.data[i + 3] = 0; continue; }
+            const clase = NOM[suave[p]];
+            cuenta[clase]++;
+            const rgb = RGB[clase];
+            imgClas.data[i] = rgb[0]; imgClas.data[i+1] = rgb[1]; imgClas.data[i+2] = rgb[2];
+            imgClas.data[i + 3] = ALPHA;
+          }
           cxClas.putImageData(imgClas, 0, 0);
 
           const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
-          const m2 = areaM2(S.pts);
+          const m2 = m2Total;   // ya calculada arriba para el umbral de agua
           const sup = k => Math.round(m2 * cuenta[k] / dentro);
           resolve({
             pixeles: dentro, imagen: cv.toDataURL('image/png'),
@@ -1561,13 +1716,13 @@
             clases: [
               { id:'verde',      etq:'Vegetación viva',      ico:'🌳', color:'#22c55e',
                 pct:pct('verde'), m2:sup('verde'), fiable:true,
-                nota:'Verde franco. Es la clase más fiable: casi ningún material lo imita.' },
+                nota:'Verde franco, incluida la copa en sombra. Es la clase más fiable: casi ningún material lo imita.' },
               { id:'construido', etq:'Superficie dura gris', ico:'🏗️', color:'#94a3b8',
                 pct:pct('construido'), m2:sup('construido'), fiable:true,
                 nota:'Asfalto, concreto y cubiertas metálicas de color neutro.' },
               { id:'agua',       etq:'Agua',                 ico:'💧', color:'#3b82f6',
                 pct:pct('agua'), m2:sup('agua'), fiable:true,
-                nota:'Azul oscuro. Una sombra muy densa puede confundirse con agua.' },
+                nota:'Azul oscuro y continuo. Las manchas sueltas —techo de zinc azul, sombra densa— se descartan por tamaño.' },
               { id:'mixto',      etq:'Tonos cálidos (no separables)', ico:'🟫', color:'#c9a26a',
                 pct:pct('mixto'), m2:sup('mixto'), fiable:false,
                 nota:'Teja, concreto envejecido, suelo descubierto y matorral seco comparten este rango de color.' }
@@ -1614,7 +1769,11 @@
         'gratis. Por eso solo se declaran tres clases fiables — vegetación viva, gris construido y ' +
         'agua — y todo lo demás queda en <b>tonos cálidos</b> (' + res.pctAmbiguo + '% del área), ' +
         'donde teja, concreto envejecido, suelo y matorral seco son indistinguibles por color. ' +
-        'Sirve para dimensionar y comparar sectores, no para certificar.</small></div>';
+        'Sirve para dimensionar y comparar sectores, no para certificar.<br><br>' +
+        'La vegetación se mide por <b>proporción</b> de verde y no por brillo, así que la copa ' +
+        'en sombra también cuenta. Las manchas de agua de menos de 600 m² se toman como techo ' +
+        'o sombra —el zinc azul y el agua somera tienen el mismo color—, de modo que una ' +
+        'piscina de patio no aparece.</small></div>';
     S.raster = res;
     pintarRasterMapa(res);
   }
