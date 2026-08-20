@@ -2605,6 +2605,13 @@
     const dibujarBtn = app.querySelector('.u52-procity-dibujar-btn');
     if(dibujarBtn) dibujarBtn.hidden = !activo;
     if(mapScreen) mapScreen.classList.toggle('u52-procity-mapscreen', !!activo);
+    // Bandera global del módulo: Pro City y el mapa ciudadano son módulos
+    // SEPARADOS. Las capas que se dibujan por fuera de pintarPuntos (la gota
+    // Áurea de js/47) no pueden adivinarlo solas, así que se los decimos aquí
+    // — el único punto por el que pasan tanto la entrada como la salida — y se
+    // les pide repintar YA, sin esperar su ciclo de refresco.
+    try{ window.urbisProCityActivo = !!activo; }catch(e){}
+    try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
   }
 
   // BUG real reportado: al ir de Pro City DIRECTO a "Reportar" (o cualquier

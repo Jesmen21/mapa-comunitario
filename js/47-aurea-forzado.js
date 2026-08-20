@@ -96,9 +96,35 @@
     return undefined;
   }
 
+  // ¿Estamos dentro de UrbisProCity? La bandera de js/20 es la fuente
+  // principal; la clase de la pantalla del mapa es el respaldo, por si este
+  // render corre antes de que Pro City haya publicado su estado.
+  function enProCity() {
+    if (window.urbisProCityActivo) return true;
+    try { return !!document.querySelector('.u52-procity-mapscreen'); } catch (e) { return false; }
+  }
+
+  // Borra la capa entera del mapa (sin destruirla): al volver al módulo
+  // ciudadano, render() la vuelve a poblar desde cero.
+  function limpiar(m) {
+    Object.keys(_rendered).forEach(function (key) {
+      try { if (_layer) _layer.removeLayer(_rendered[key]); } catch (e) {}
+      delete _rendered[key];
+    });
+    try { if (m && _layer && m.hasLayer(_layer)) m.removeLayer(_layer); } catch (e) {}
+    try { document.body.classList.remove('urbis-evento-aurea-activo'); } catch (e) {}
+    _prevCount = 0;
+  }
+
   function render() {
     var m = getMap();
     if (!m) return;
+    // UrbisProCity es un módulo SEPARADO (mapeo urbano profesional): el evento
+    // premium es del mapa ciudadano y no tiene nada que hacer ahí. Estar en
+    // capa propia la hacía inmune al cambio de módulo, así que la gota se
+    // quedaba flotando encima de la matriz de usos. Se retira mientras Pro
+    // City esté activo y se repinta al salir (js/20 avisa en cada cambio).
+    if (enProCity()) { limpiar(m); return; }
     var layer = ensureLayer(m);
     if (!layer) return;
     if (typeof window.urbisCrearMarcadorUrbano !== 'function') return;
