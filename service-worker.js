@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v501-aurea-fuera-de-procity';
+const URBIS_CACHE = 'urbis-v502-aurea-solo-en-reportes';
 const URBIS_ASSETS = [
   './',
   './index.html',
