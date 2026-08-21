@@ -706,3 +706,21 @@
 .pcd-tabla td b{ color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important; }
 .pcd-nota, .pcd-vacio{ margin:0; font-size:.7rem; line-height:1.45;
   color:#5a4b7d !important; -webkit-text-fill-color:#5a4b7d !important; }
+
+/* ── Población estimada y reparto de usos (diagnóstico educativo) ── */
+.pcd-pob{ display:flex; flex-direction:column; gap:7px; }
+.pcd-cifras{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+.pcd-cifras > div{ background:#fff; border:1px solid #e2e6f0; border-radius:10px;
+  padding:9px 6px; text-align:center; }
+.pcd-cifras b{ display:block; font-size:1.05rem; font-weight:800; line-height:1.1;
+  color:#4c3b73 !important; -webkit-text-fill-color:#4c3b73 !important; }
+.pcd-cifras small{ display:block; font-size:.64rem; line-height:1.25; margin-top:3px;
+  color:#5a6472 !important; -webkit-text-fill-color:#5a6472 !important; }
+.pcd-barra{ display:flex; height:16px; border-radius:8px; overflow:hidden;
+  background:#eceff5; border:1px solid #ddd6f3; }
+.pcd-barra i{ display:block; }
+.pcd-leyenda{ display:flex; flex-wrap:wrap; gap:4px 10px; }
+.pcd-leyenda span{ display:flex; align-items:center; gap:4px; font-size:.68rem;
+  color:#4a5568 !important; -webkit-text-fill-color:#4a5568 !important; }
+.pcd-leyenda i{ width:9px; height:9px; border-radius:3px; display:block; }
+@media (min-width:420px){ .pcd-cifras{ grid-template-columns:repeat(4,1fr); } }

@@ -42,8 +42,109 @@
     dominanciaAlta: 55,                          // % de una sola categoría
     muestraMinima: 15,                           // menos de esto es una muestra corta
     riesgoAlto: 8,                               // % de lo mapeado en riesgo o deterioro
-    riesgoPorHa: 1.5                             // …o esta densidad, que pesa aunque el % sea bajo
+    riesgoPorHa: 1.5,                            // …o esta densidad, que pesa aunque el % sea bajo
+    verdePorHabBueno: 9, verdePorHabMinimo: 3,   // m² de verde por habitante estimado
+    densidadPobAlta: 250, densidadPobBaja: 40    // habitantes por hectárea
   };
+
+  // ── Población ───────────────────────────────────────────────────────────
+  //
+  // No se estima por densidad de manzana, sino contando VIVIENDAS a partir de
+  // lo que el estudiante mapeó tipo por tipo. Esa diferencia es el contenido
+  // educativo: enseña que la población de un sector no la decide su tamaño
+  // sino QUÉ se construyó en él. Dos manzanas iguales, una de casas de un piso
+  // y otra de torres, no albergan a la misma gente ni de lejos — y aquí el
+  // número se mueve cuando el estudiante corrige el tipo de un edificio.
+  //
+  // Cada tipo aporta las viviendas que suele tener. Son valores de referencia
+  // de URBIS: un rango es siempre más honesto que un dato exacto inventado,
+  // así que el informe muestra la cifra como estimación y explica de qué
+  // conteo sale.
+  const VIVIENDAS = {
+    'casa de un piso':1, 'casa de dos pisos':1, 'casa de tres o mas pisos':2,
+    'casa con antejardin':1, 'casa con garaje':1, 'casa patio / casalote':1,
+    'casa esquinera':1, 'casa campestre / quinta':1,
+    'edificio de apartamentos (1-3 pisos)':6,
+    'torre residencial (4-10 pisos)':24, 'torre alta (10+ pisos)':60,
+    'conjunto cerrado / urbanizacion':40, 'vivienda multifamiliar':3,
+    'inquilinato / pieza en arriendo':6,
+    'vis unifamiliar':1, 'vis multifamiliar':8, 'proyecto vip':30,
+    'vivienda rural vis':1, 'mejoramiento de vivienda':1,
+    'vivienda por autoconstruccion':1, 'reubicacion por riesgo':1,
+    'proyecto de vivienda gratuita':30, 'legalizacion / titulacion de barrio':1,
+    'mixto (residencial-comercial)':2, 'mixto (residencial-industrial)':2,
+    'uso multiple / mixto general':3, 'torre de usos combinados':30,
+    'residencial + comercial + oficinas':20
+  };
+  const VIVIENDA_POR_DEFECTO = 1;    // un elemento residencial sin tipo reconocido
+  const PERSONAS_POR_VIVIENDA = 3.1; // tamaño medio de hogar usado por URBIS
+
+  function quitarAcentos(s){
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[–—]/g, '-').trim();
+  }
+
+  // El tipo exacto viaja dentro de la descripción, en la forma "Uso · Tipo".
+  function tipoExacto(p){
+    const primero = String(p && p.descripcion || '').split(' | ')[0] || '';
+    const partes = primero.split(' · ');
+    return partes.length > 1 ? partes.slice(1).join(' · ') : '';
+  }
+
+  function estimarPoblacion(r, ctx){
+    const puntos = (r && r.puntos) || [];
+    let viviendas = 0, elementosResid = 0, reconocidos = 0;
+    const porTipo = {};
+    puntos.forEach(function (p) {
+      const t = quitarAcentos(tipoExacto(p));
+      const uso = quitarAcentos(ctx.usoDe ? ctx.usoDe(p) : '');
+      const esResidencial = VIVIENDAS[t] !== undefined ||
+        uso.indexOf('residencial') !== -1 || uso.indexOf('vivienda') !== -1 ||
+        uso.indexOf('mixto') !== -1;
+      if (!esResidencial) return;
+      elementosResid++;
+      const v = VIVIENDAS[t];
+      if (v !== undefined) reconocidos++;
+      const n = (v !== undefined) ? v : VIVIENDA_POR_DEFECTO;
+      viviendas += n;
+      const etq = tipoExacto(p) || 'Sin tipo definido';
+      if (!porTipo[etq]) porTipo[etq] = { n:0, viviendas:0 };
+      porTipo[etq].n++; porTipo[etq].viviendas += n;
+    });
+    const lista = Object.keys(porTipo).map(k => ({ tipo:k, n:porTipo[k].n, viviendas:porTipo[k].viviendas }))
+      .sort((a, b) => b.viviendas - a.viviendas);
+    return {
+      elementos: elementosResid,
+      viviendas: viviendas,
+      // Se redondea a la decena: dar "1.247 habitantes" a partir de un conteo
+      // de tipos sería fingir una precisión que la estimación no tiene.
+      habitantes: Math.round(viviendas * PERSONAS_POR_VIVIENDA / 10) * 10,
+      porTipo: lista,
+      // Qué parte del residencial traía tipo reconocible. Si es baja, la cifra
+      // se apoya casi toda en el valor por defecto y hay que decirlo.
+      precision: elementosResid ? Math.round(100 * reconocidos / elementosResid) : 0
+    };
+  }
+
+  // Reparto de usos con las mismas familias que usa el módulo empresarial, para
+  // que un estudiante que vea los dos informes lea la misma barra.
+  const FAMILIAS = [
+    { id:'residencial',   etq:'Residencial',    color:'#f59e0b', de:['vivienda'] },
+    { id:'comercial',     etq:'Comercio',       color:'#ef4444', de:['comercio'] },
+    { id:'institucional', etq:'Institucional',  color:'#3b82f6', de:['institucional','salud','cultura'] },
+    { id:'servicios',     etq:'Servicios',      color:'#8b5cf6', de:['servicios'] },
+    { id:'industrial',    etq:'Industria',      color:'#78716c', de:['industria'] },
+    { id:'mixto',         etq:'Mixto',          color:'#14b8a6', de:['mixtos'] },
+    { id:'ambiental',     etq:'Ambiental',      color:'#22c55e', de:['ambiente'] },
+    { id:'sinDefinir',    etq:'Sin definir',    color:'#a8a29e', de:['riesgo'] }
+  ];
+  function repartoUsos(porGrupo){
+    const pesos = FAMILIAS.map(f => ({ f:f, n:f.de.reduce((a, g) => a + (porGrupo[g] || 0), 0) }));
+    const total = pesos.reduce((a, x) => a + x.n, 0) || 1;
+    return pesos.map(x => ({ id:x.f.id, etq:x.f.etq, color:x.f.color, n:x.n,
+                             pct: Math.round(100 * x.n / total) }))
+                .filter(x => x.n > 0);
+  }
 
   // Categorías que se consideran servicios básicos de proximidad: si el
   // estudiante no mapeó ninguno, el barrio depende de otro sector para eso.
@@ -90,9 +191,15 @@
       return c || null;
     };
     const verde = clase('verde'), duro = clase('construido'), agua = clase('agua');
+    // A qué detalle se leyó el terreno. Importa decirlo: en un área extensa
+    // cada píxel cubre metros y la lectura pasa a ser de masas, no de
+    // elementos — un patio con dos árboles ya no se distingue.
+    const grueso = !!(raster && raster.grueso);
 
     const ind = {
       hayCobertura: !!raster,
+      coberturaGruesa: grueso,
+      mPorPx: raster ? raster.mPorPx : null,
       total: r.total || 0,
       totalMatriz: r.totalMatriz || 0,
       areaHa: Math.round(areaHa * 100) / 100,
@@ -110,11 +217,19 @@
       verdeM2: verde ? verde.m2 : null,
       duroPct: duro ? duro.pct : null,
       aguaPct: agua ? agua.pct : null,
-      muestraCorta: (r.total || 0) < U.muestraMinima
+      muestraCorta: (r.total || 0) < U.muestraMinima,
+      pob: estimarPoblacion(r, ctx),
+      reparto: repartoUsos(porGrupo)
     };
     // Verde por elemento mapeado: aterriza el porcentaje en algo comparable
     // entre sectores de distinto tamaño.
     ind.verdePorElemento = (ind.verdeM2 && ind.total) ? Math.round(ind.verdeM2 / ind.total) : null;
+    ind.habPorHa = areaHa > 0 ? Math.round(ind.pob.habitantes / areaHa) : 0;
+    // Metros cuadrados de verde por habitante: es el indicador que de verdad
+    // dice si el verde alcanza, porque un mismo porcentaje reparte muy distinto
+    // según cuánta gente viva ahí.
+    ind.verdePorHab = (ind.verdeM2 && ind.pob.habitantes)
+      ? Math.round(ind.verdeM2 / ind.pob.habitantes * 10) / 10 : null;
     return ind;
   }
 
@@ -159,6 +274,17 @@
     // solo entre las categorías PRESENTES, así que un sector con cinco
     // categorías y el 80% en una daba 47/100 y se leía como "intermedio".
     const mono = i.mezcla < U.mezclaMedia || i.pctDominante >= U.dominanciaAlta;
+    if (i.coberturaGruesa) {
+      v.push({
+        id: 'escala', titulo: 'Escala de la lectura', nivel: 'medio',
+        dato: i.mPorPx + ' m por punto',
+        texto: 'El área es extensa, así que la cobertura se leyó a ' + i.mPorPx +
+               ' m por punto: sirve para ver masas —dónde hay monte y dónde ciudad— pero ' +
+               'no distingue un patio arbolado de un techo. Para leer detalle, dibuja un ' +
+               'área más pequeña.'
+      });
+    }
+
     v.push({
       id: 'mezcla',
       titulo: 'Mezcla de usos',
@@ -176,6 +302,42 @@
           (i.dominante ? ', con ' + i.dominante.g.t.toLowerCase() + ' por delante (' + i.pctDominante + '%)' : '') +
           '. Hay base para diversificar sin partir de cero.'
     });
+
+    if (i.pob.habitantes > 0) {
+      v.push({
+        id: 'poblacion',
+        titulo: 'Población estimada',
+        nivel: i.habPorHa >= U.densidadPobAlta ? 'bien' : i.habPorHa >= U.densidadPobBaja ? 'medio' : 'mal',
+        dato: num(i.pob.habitantes) + ' hab · ' + i.habPorHa + '/ha',
+        texto: 'Del levantamiento salen ' + num(i.pob.viviendas) + ' viviendas en ' +
+               num(i.pob.elementos) + ' elementos residenciales, unos ' + num(i.pob.habitantes) +
+               ' habitantes en ' + i.areaHa + ' ha (' + i.habPorHa + ' por hectárea). ' +
+               (i.habPorHa >= U.densidadPobAlta
+                 ? 'Es densidad alta: hay masa crítica para sostener comercio y transporte de barrio.'
+                 : i.habPorHa >= U.densidadPobBaja
+                   ? 'Densidad media: suficiente para servicios de proximidad, con margen para crecer.'
+                   : 'Densidad baja: a esta escala cuesta sostener comercio y transporte cerca.')
+      });
+    }
+
+    // El verde no se juzga solo en porcentaje del suelo: lo que importa es
+    // cuánto le toca a cada quien.
+    if (i.verdePorHab !== null) {
+      v.push({
+        id: 'verdePorHab',
+        titulo: 'Verde por habitante',
+        nivel: i.verdePorHab >= U.verdePorHabBueno ? 'bien'
+             : i.verdePorHab >= U.verdePorHabMinimo ? 'medio' : 'mal',
+        dato: i.verdePorHab + ' m²/hab',
+        texto: 'A los ' + num(i.pob.habitantes) + ' habitantes estimados les corresponden ' +
+               i.verdePorHab + ' m² de vegetación cada uno. ' +
+               (i.verdePorHab >= U.verdePorHabBueno
+                 ? 'Es una dotación holgada para un sector urbano.'
+                 : i.verdePorHab >= U.verdePorHabMinimo
+                   ? 'Alcanza, pero sin margen: cualquier densificación lo vuelve escaso.'
+                   : 'Es muy poco: el verde que hay no da abasto para la gente que vive aquí.')
+      });
+    }
 
     v.push({
       id: 'densidad',
@@ -238,7 +400,18 @@
     { t:'D', c:i => i.mezcla < U.mezclaMedia && i.dominante,
       f:i => 'Monofuncionalidad: ' + i.pctDominante + '% de lo mapeado es ' + i.dominante.g.t.toLowerCase() + '.' },
     { t:'D', c:i => !i.porGrupo.salud,
-      f:() => 'Sin servicios de salud registrados dentro del área.' },
+      f:i => 'Sin servicios de salud registrados dentro del área' +
+             (i.pob.habitantes ? ', para unos ' + num(i.pob.habitantes) + ' habitantes estimados.' : '.') },
+    { t:'D', c:i => i.verdePorHab !== null && i.verdePorHab < U.verdePorHabMinimo,
+      f:i => 'Apenas ' + i.verdePorHab + ' m² de verde por habitante: el arbolado no da abasto para la gente que vive aquí.' },
+    { t:'F', c:i => i.verdePorHab !== null && i.verdePorHab >= U.verdePorHabBueno,
+      f:i => 'Dotación verde holgada: ' + i.verdePorHab + ' m² por habitante estimado.' },
+    { t:'O', c:i => i.habPorHa >= U.densidadPobAlta && (i.porGrupo.comercio || 0) <= 3,
+      f:i => num(i.pob.habitantes) + ' habitantes estimados a ' + i.habPorHa +
+             ' por hectárea con poco comercio: demanda concentrada sin atender.' },
+    { t:'R', c:i => i.pob.elementos >= 10 && i.pob.precision < 40,
+      f:i => 'Solo ' + i.pob.precision + '% de lo residencial trae tipo de edificación definido: ' +
+             'la población estimada es de piso mínimo y probablemente se queda corta.' },
     { t:'D', c:i => !i.porGrupo.cultura,
       f:() => 'Sin equipamiento educativo ni cultural registrado dentro del área.' },
     { t:'D', c:i => i.pctRiesgo >= U.riesgoAlto || i.riesgoPorHa >= U.riesgoPorHa,
@@ -267,6 +440,8 @@
       f:() => 'El suelo en deterioro tiende a extenderse si no se interviene: un lote abandonado arrastra a los vecinos.' },
     { t:'R', c:i => i.muestraCorta,
       f:i => 'La muestra es corta (' + i.total + ' elementos): las conclusiones son preliminares hasta ampliar el mapeo.' },
+    { t:'R', c:i => i.coberturaGruesa,
+      f:i => 'La cobertura se midió a ' + i.mPorPx + ' m por punto: a esa escala la lectura ambiental es de masas, no de detalle.' },
     { t:'R', c:i => !i.hayCobertura,
       f:() => 'Sin análisis de cobertura del suelo, la lectura ambiental de este informe queda incompleta.' }
   ];
@@ -291,9 +466,12 @@
   // sugerida sale del tamaño del área, no de un número inventado.
   const CATALOGO = [
     { id:'parque', ico:'🌳', uso:'Parque de bolsillo / zona verde',
-      c:i => i.hayCobertura && i.verdePct < U.verdeAceptable,
+      c:i => i.hayCobertura && (i.verdePct < U.verdeAceptable ||
+             (i.verdePorHab !== null && i.verdePorHab < U.verdePorHabMinimo)),
       cuantos:i => Math.max(1, Math.round(i.areaHa / 3)),
-      porque:i => 'la vegetación cubre solo ' + i.verdePct + '% del área',
+      porque:i => i.verdePorHab !== null
+        ? 'a cada habitante estimado le tocan ' + i.verdePorHab + ' m² de verde'
+        : 'la vegetación cubre solo ' + i.verdePct + '% del área',
       beneficio:'Da sombra, baja la temperatura de la calle y crea un lugar de encuentro a pie.' },
     { id:'arbolado', ico:'🌲', uso:'Arbolado de andén',
       c:i => i.hayCobertura && i.verdePct < U.verdeBueno,
@@ -307,8 +485,12 @@
       beneficio:'Deja que la lluvia se infiltre en vez de correr hacia la calle: menos encharcamiento.' },
     { id:'salud', ico:'🚑', uso:'Puesto de salud de proximidad',
       c:i => !i.porGrupo.salud,
-      cuantos:() => 1,
-      porque:() => 'no hay ningún servicio de salud dentro del área',
+      // Un puesto de proximidad por cada ~5.000 habitantes: la cantidad sale
+      // de la gente estimada, no de un número fijo, para que el ejercicio
+      // muestre que dimensionar depende de a cuántos hay que atender.
+      cuantos:i => Math.max(1, Math.round(i.pob.habitantes / 5000)),
+      porque:i => 'no hay ningún servicio de salud dentro del área' +
+                  (i.pob.habitantes ? ' y viven aquí unos ' + num(i.pob.habitantes) + ' habitantes estimados' : ''),
       beneficio:'Resuelve la atención básica sin salir del barrio, que es lo que más pesa en urgencias y control.' },
     { id:'educativo', ico:'📚', uso:'Equipamiento educativo o biblioteca de barrio',
       c:i => !i.porGrupo.cultura,
@@ -373,6 +555,43 @@
 
   // ── Piezas visuales, compartidas por el panel y el informe ──────────────
 
+  // Barra de reparto de usos y ficha de población. La barra es la misma pieza
+  // que usa el informe empresarial: quien vea los dos lee lo mismo.
+  function htmlPoblacion(d){
+    const i = d.ind;
+    const barra = i.reparto.map(x =>
+      '<i style="width:' + x.pct + '%;background:' + x.color + '" title="' + esc(x.etq) + '"></i>').join('');
+    const leyenda = i.reparto.map(x =>
+      '<span><i style="background:' + x.color + '"></i>' + esc(x.etq) + ' ' + x.pct + '%</span>').join('');
+
+    if (!i.pob.habitantes) {
+      return '<div class="pcd-pob"><div class="pcd-barra">' + barra + '</div>' +
+             '<div class="pcd-leyenda">' + leyenda + '</div>' +
+             '<p class="pcd-nota">Sin elementos residenciales mapeados no se puede estimar población.</p></div>';
+    }
+    const top = i.pob.porTipo.slice(0, 4);
+    return '<div class="pcd-pob">' +
+      '<div class="pcd-cifras">' +
+        '<div><b>' + num(i.pob.habitantes) + '</b><small>habitantes estimados</small></div>' +
+        '<div><b>' + num(i.pob.viviendas) + '</b><small>viviendas contadas</small></div>' +
+        '<div><b>' + i.habPorHa + '</b><small>hab. por hectárea</small></div>' +
+        (i.verdePorHab !== null
+          ? '<div><b>' + i.verdePorHab + '</b><small>m² verdes por hab.</small></div>' : '') +
+      '</div>' +
+      '<div class="pcd-barra">' + barra + '</div>' +
+      '<div class="pcd-leyenda">' + leyenda + '</div>' +
+      '<table class="pcd-tabla pcd-tabla-viv"><tr><th>Tipo de vivienda mapeado</th><th>Elem.</th><th>Viviendas</th></tr>' +
+        top.map(t => '<tr><td>' + esc(t.tipo) + '</td><td class="n">' + t.n + '</td>' +
+                     '<td class="n">' + num(t.viviendas) + '</td></tr>').join('') +
+      '</table>' +
+      '<p class="pcd-nota">La población sale de contar viviendas por tipo de edificación, no del ' +
+        'tamaño del área: una torre y una casa ocupan lo mismo en el mapa y no albergan a la misma gente. ' +
+        (i.pob.precision < 60
+          ? 'Ojo: solo ' + i.pob.precision + '% de lo residencial trae tipo definido, así que la cifra es un piso mínimo.'
+          : 'Es una estimación, no un censo.') + '</p>' +
+    '</div>';
+  }
+
   function htmlVeredictos(d){
     return d.veredictos.map(function (v) {
       return '<div class="pcd-ver pcd-' + v.nivel + '">' +
@@ -408,7 +627,7 @@
   }
 
   window.URBIS_PC_DIAGNOSTICO = {
-    diagnosticar, htmlVeredictos, htmlFoda, htmlImplantacion,
+    diagnosticar, htmlVeredictos, htmlFoda, htmlImplantacion, htmlPoblacion,
     UMBRALES: U
   };
 })();

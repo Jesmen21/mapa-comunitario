@@ -1113,6 +1113,8 @@
       const dg = D && D.diagnosticar(ctx);
       if (dg) {
         bloquesDiag =
+          '<div class="bloque ancho"><h2>Población y reparto de usos <em>· estimado del levantamiento</em></h2>' +
+            (typeof D.htmlPoblacion === 'function' ? D.htmlPoblacion(dg) : '') + '</div>' +
           '<div class="bloque ancho"><h2>Conclusiones del área</h2>' +
             '<div class="ver-grid">' + D.htmlVeredictos(dg) + '</div></div>' +
           '<div class="bloque ancho"><h2>FODA de usos <em>· a partir de ' + dg.ind.total +
@@ -1155,6 +1157,17 @@
 'font-weight:800;padding-bottom:4px;margin-bottom:6px;border-bottom:1.5px solid ', t.oro, '}',
 '.bloque h2 em{font-style:normal;font-weight:600;color:', t.txt3, ';text-transform:none;letter-spacing:0}',
 '.bloque.ancho{margin-top:7px}',
+'.pcd-cifras{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:7px}',
+'.pcd-cifras>div{background:', t.suave, ';border:1px solid ', t.borde, ';border-radius:5px;padding:6px 4px;text-align:center}',
+'.pcd-cifras b{display:block;font-size:13px;font-weight:800;color:', t.acento, ';line-height:1.1}',
+'.pcd-cifras small{display:block;font-size:7px;color:', t.txt3, ';line-height:1.2;margin-top:2px}',
+'.pcd-barra{display:flex;height:13px;border-radius:7px;overflow:hidden;border:1px solid ', t.borde, '}',
+'.pcd-barra i{display:block}',
+'.pcd-leyenda{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px}',
+'.pcd-leyenda span{font-size:7.5px;color:', t.txt2, ';display:flex;align-items:center;gap:3px}',
+'.pcd-leyenda i{width:7px;height:7px;border-radius:2px;display:block}',
+'.pcd-tabla-viv{margin-top:6px}',
+'.pcd-nota{font-size:7.5px;line-height:1.45;color:', t.txt3, ';margin-top:5px}',
 '.ver-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}',
 '.pcd-ver{border-left:3px solid ', t.borde, ';background:', t.suave, ';border-radius:5px;padding:6px 8px;break-inside:avoid}',
 '.pcd-ver-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:2px}',
@@ -1613,6 +1626,9 @@ bloquesDiag,
       '<h4 class="pca-h pca-h-diag">🎓 Qué dice esta área</h4>' +
       '<p class="pcd-ayuda">Lectura del sector a partir de tus ' + d.ind.total +
         ' elementos mapeados' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
+      '<div class="pcd-sub">Población y reparto de usos</div>' +
+      (typeof D.htmlPoblacion === 'function' ? D.htmlPoblacion(d) : '') +
+      '<div class="pcd-sub">Conclusiones</div>' +
       D.htmlVeredictos(d) +
       '<div class="pcd-sub">FODA de usos</div>' +
       D.htmlFoda(d, 3) +
@@ -1769,8 +1785,28 @@ bloquesDiag,
   // eso, la misma cifra significa cuatro metros a 640 px y menos de dos a 1440:
   // al subir la resolución el contagio se quedaba corto justo donde más
   // detalle había, y el borde apagado de la copa volvía a perderse.
-  const VERDE_CRECE = 6;      // calibrado sobre una malla de 640 px de ancho
-  const VERDE_CRECE_BASE = 640;
+  // OJO: va en METROS, no en píxeles. Estaba en píxeles reescalados por el
+  // ancho de la malla, y eso funcionaba mientras el área fuera un barrio. En
+  // un área grande la malla sigue teniendo el mismo ancho pero cada píxel pasa
+  // a cubrir varios metros, así que los mismos 13 píxeles de contagio dejaban
+  // de ser 4 m y pasaban a ser 45: la copa se tragaba manzanas enteras de
+  // vivienda. Es exactamente lo que se veía al alejarse.
+  const VERDE_CRECE_M = 4;
+  // Por encima de esta resolución de suelo el contagio se apaga del todo. A
+  // esa escala ya no existe "borde sombreado de copa" que rescatar: un píxel
+  // apenas verdoso es un píxel MEZCLADO —mitad techo, mitad árbol— y
+  // extenderlo solo propaga el error.
+  const GRUESO_M_POR_PX = 1.6;
+  // Resolución de suelo a la que se apunta en la pasada fina. En un barrio ya
+  // se cumple de sobra; en un área grande obliga a pedir la foto más grande.
+  const META_M_POR_PX = 1.0;
+  const LADO_MAX = 2048;      // techo de la petición, por memoria del teléfono
+  // Cuánto se endurece el umbral de verde por cada metro de resolución de más.
+  // Barrido contra una escena definida en metros —manzanas de 40 m con casas
+  // de 22×16 y árboles de 3 m de radio— leída a 0,33 y a 2,6 m por píxel. Con
+  // 1,0 el área grande pasa de declarar 18,6% de verde a 12,1% (lo real es
+  // 10,6%) sin perder copa; subiendo a 1,3 la copa se desploma a la mitad.
+  const DUREZA_POR_M = 1.0, DUREZA_MAX = 2.0;
 
   function bboxDelArea(pts){
     const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
@@ -2068,13 +2104,16 @@ bloquesDiag,
     // semilla, hasta VERDE_CRECE pasos. Recupera el borde sombreado y el árbol
     // velado sin abrirle la puerta al pasto seco, porque solo avanza sobre
     // píxeles que ya tenían sesgo verde y solo partiendo de copa confirmada.
-    // Alcance en metros, no en píxeles: se reescala con el ancho de ESTA malla
-    // para que las tres pasadas contagien la misma distancia sobre el suelo.
-    const crece = Math.max(3, Math.round(VERDE_CRECE * w / VERDE_CRECE_BASE));
+    // Alcance real sobre el suelo: se traduce a píxeles con la resolución de
+    // ESTA malla, así las tres pasadas contagian la misma distancia y un área
+    // grande no recibe un contagio desproporcionado.
+    const mpp = (U && U.mPorPx) || 0.3;
+    const crece = (mpp >= GRUESO_M_POR_PX) ? 0
+                : Math.max(1, Math.round(VERDE_CRECE_M / mpp));
     const cola = new Int32Array(n);
     const salto = new Int16Array(n);
     let cabeza = 0, cuelo = 0;
-    for (let p = 0; p < n; p++) if (suave[p] === COD.verde) { cola[cuelo++] = p; salto[p] = 1; }
+    if (crece > 0) for (let p = 0; p < n; p++) if (suave[p] === COD.verde) { cola[cuelo++] = p; salto[p] = 1; }
     while (cabeza < cuelo) {
       const p = cola[cabeza++];
       const d = salto[p];
@@ -2125,9 +2164,25 @@ bloquesDiag,
         return { w: lado, h: Math.max(60, Math.min(Math.round(lado * 1.6), Math.round(lado * prop))) };
       };
 
+      // Cuántos metros mide el recuadro de lado a lado. De aquí sale TODO lo
+      // que depende de la escala: cuánta foto pedir y cuánto puede crecer la
+      // copa. Sin esto, una manzana y un corregimiento se analizaban con la
+      // misma malla, y en el segundo cada píxel cubría varios metros.
+      const latMedia = (caja.n + caja.s) / 2;
+      const anchoM = (caja.e - caja.o) * 111320 * Math.cos(latMedia * Math.PI / 180);
+
+      // Se pide más foto cuando el área es grande, para no bajar de la
+      // resolución de suelo objetivo. En un barrio esto no cambia nada —1440
+      // px ya dan 0,3 m por píxel—; en un área extensa es la diferencia entre
+      // distinguir un techo de un árbol o mezclarlos en el mismo píxel.
+      const ladoDeseado = Math.ceil(anchoM / META_M_POR_PX);
+      const escalaFina = Math.max(ESCALAS[ESCALAS.length - 1], Math.min(LADO_MAX, ladoDeseado));
+      const factor = escalaFina / ESCALAS[ESCALAS.length - 1];
+      const LADOS = ESCALAS.map(l => Math.round(l * factor));
+
       // La rejilla final es la de la pasada más fina; las otras se llevan a
       // ella para poder votar celda por celda.
-      const FINA = tam(ESCALAS[ESCALAS.length - 1]);
+      const FINA = tam(LADOS[LADOS.length - 1]);
       const W = FINA.w, H = FINA.h, N = W * H;
 
       const votos = [];
@@ -2136,22 +2191,32 @@ bloquesDiag,
       // Las pasadas van EN SERIE, no en paralelo: cada una son varios millones
       // de píxeles y un teléfono con tres a la vez se queda sin memoria.
       let cadena = Promise.resolve();
-      ESCALAS.forEach(function (lado, idx) {
+      LADOS.forEach(function (lado, idx) {
         cadena = cadena.then(function () {
-          avisar('Pasada ' + (idx + 1) + ' de ' + ESCALAS.length + ' · leyendo a ' + lado + ' px…');
+          avisar('Pasada ' + (idx + 1) + ' de ' + LADOS.length + ' · leyendo a ' + lado + ' px…');
           const t = tam(lado);
           return pedirImagenSatelital(caja, t.w, t.h).then(function (im) {
             veloMedio += quitarVelo(im.datos, t.w * t.h);
             const uFirme = umbralVerdeDeLaFoto(im.datos, t.w * t.h);
             umbralMedio += uFirme;
-            const U = { firme: uFirme, debil: uFirme * (VERDE_DEBIL / VERDE_FIRME) };
-            avisar('Pasada ' + (idx + 1) + ' de ' + ESCALAS.length + ' · clasificando ' +
+            // A resolución gruesa se le exige MÁS verde para declarar
+            // vegetación. Un píxel de 2,6 m no contiene "un árbol": contiene
+            // medio árbol y medio patio, y su índice queda a mitad de camino.
+            // Con el umbral de barrio, esa mitad pasa y la mancha verde se
+            // come el suelo de alrededor — es el segundo error del área
+            // grande, el que quedaba después de arreglar el contagio.
+            const mppPasada = anchoM / t.w;
+            const dureza = 1 + Math.max(0, Math.min(DUREZA_MAX, (mppPasada - 0.6) * DUREZA_POR_M));
+            const U = { firme: uFirme * dureza,
+                        debil: uFirme * dureza * (VERDE_DEBIL / VERDE_FIRME),
+                        mPorPx: mppPasada };
+            avisar('Pasada ' + (idx + 1) + ' de ' + LADOS.length + ' · clasificando ' +
                    (t.w * t.h / 1e6).toFixed(1) + ' M de píxeles…');
             const cls = clasificarMalla(im.datos, t.w, t.h, U);
             votos.push(remuestrear(cls, t.w, t.h, W, H));
             // La foto que se guarda para comparar es la de la pasada más fina,
             // y va YA corregida: es la que de verdad se clasificó.
-            if (lado === ESCALAS[ESCALAS.length - 1]) {
+            if (lado === LADOS[LADOS.length - 1]) {
               const cxi = im.lienzo.getContext('2d');
               const idata = cxi.createImageData(t.w, t.h);
               idata.data.set(im.datos);
@@ -2163,7 +2228,7 @@ bloquesDiag,
       });
 
       cadena.then(function () {
-        avisar('Cruzando las ' + ESCALAS.length + ' pasadas…');
+        avisar('Cruzando las ' + LADOS.length + ' pasadas…');
 
         // ── Voto entre pasadas ────────────────────────────────────────────
         // Cada resolución ve cosas distintas: la fina distingue el arbolito de
@@ -2320,9 +2385,14 @@ bloquesDiag,
             areaM2: m2,
             // Diagnóstico de la corrida, para poder explicar en pantalla qué
             // tanto velo traía la foto y con qué umbral se acabó decidiendo.
-            velo: Math.round(veloMedio / ESCALAS.length),
-            umbral: Math.round(umbralMedio / ESCALAS.length * 1000) / 1000,
-            pasadas: ESCALAS.length,
+            velo: Math.round(veloMedio / LADOS.length),
+            umbral: Math.round(umbralMedio / LADOS.length * 1000) / 1000,
+            pasadas: LADOS.length,
+            // Resolución de suelo de la pasada fina y si quedó gruesa: el
+            // informe lo dice, porque a esa escala la lectura es de masas y no
+            // de elementos, y el estudiante tiene que saberlo.
+            mPorPx: Math.round(anchoM / W * 100) / 100,
+            grueso: (anchoM / W) >= GRUESO_M_POR_PX,
             malla: W + '×' + H,
             // La rejilla de clases en crudo. La exportación (js/26) la convierte
             // en polígonos de verdad; sin ella solo se podría exportar la imagen,
