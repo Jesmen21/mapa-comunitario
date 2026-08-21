@@ -45,6 +45,7 @@
     // esta comparación, un árbol que está en el mapa pero no en la foto parece
     // un fallo del clasificador cuando en realidad no estaba en la imagen.
     rasterVista: 'clases',
+    rasterEnVectores: false,
     // Diagnóstico educativo en curso y si la propuesta de implantación está
     // desplegada. Se guarda para que el informe use exactamente lo que se vio.
     diag: null,
@@ -1357,14 +1358,57 @@ bloquesDiag,
   // Pega la imagen clasificada (colores por clase) sobre el polígono real del
   // mapa — antes el resultado del raster solo se veía como texto y barras en
   // el panel, y al volver al mapa no había ni rastro de la cobertura.
+  // Tope de polígonos que se dibujan en el mapa. Por encima de esto conviene
+  // la imagen: mil formas vectoriales en un móvil arrastran el desplazamiento,
+  // y a esa densidad la diferencia visual ya no se nota.
+  const RASTER_VECT_MAX = 1500;
+
   function pintarRasterMapa(res){
     const c = capaRaster();
     if (!c || !res || !res.overlayImagen) return;
     c.clearLayers();
     const foto = S.rasterVista === 'foto' && res.imagen;
-    L.imageOverlay(foto ? res.imagen : res.overlayImagen, res.overlayLimites, {
-      opacity: foto ? 1 : .8, interactive: false, className: 'pca-raster-overlay'
-    }).addTo(c);
+    if (foto) {
+      L.imageOverlay(res.imagen, res.overlayLimites, {
+        opacity: 1, interactive: false, className: 'pca-raster-overlay'
+      }).addTo(c);
+      S.rasterEnVectores = false;
+      return;
+    }
+
+    // La cobertura se dibuja con los MISMOS polígonos que se exportan, no con
+    // la imagen clasificada. Antes en pantalla se veía un mosaico de píxeles y
+    // en el DXF salían vectores: la vista previa no se parecía al archivo, y
+    // costaba creer que el resultado fuera editable. Ahora lo que se ve es lo
+    // que se llevan, y de paso se aprecia a cualquier acercamiento.
+    let polis = null;
+    try {
+      const EXP = window.URBIS_PC_EXPORTAR;
+      if (EXP && typeof EXP.vectorizarCobertura === 'function' && res.rejilla) {
+        polis = EXP.vectorizarCobertura(res);
+      }
+    } catch (e) { polis = null; }
+
+    if (polis && polis.length && polis.length <= RASTER_VECT_MAX) {
+      polis.forEach(function (pl) {
+        // Leaflet quiere lat,lng y el vectorizador entrega lng,lat; los huecos
+        // van como anillos siguientes del mismo polígono.
+        const anillos = [pl.contorno.map(q => [q[1], q[0]])]
+          .concat((pl.huecos || []).map(h => h.map(q => [q[1], q[0]])));
+        L.polygon(anillos, {
+          color: pl.color, weight: 1, opacity: .85,
+          fillColor: pl.color, fillOpacity: .55,
+          interactive: false, className: 'pca-raster-vector'
+        }).addTo(c);
+      });
+      S.rasterEnVectores = true;
+    } else {
+      // Demasiadas formas (o no se pudo vectorizar): se cae a la imagen.
+      L.imageOverlay(res.overlayImagen, res.overlayLimites, {
+        opacity: .8, interactive: false, className: 'pca-raster-overlay'
+      }).addTo(c);
+      S.rasterEnVectores = false;
+    }
     // El chip nace junto con la imagen, no al tocar "Ver en el mapa": si el
     // usuario cerraba el panel por su cuenta se quedaba con la cobertura
     // pegada encima del mapa y sin ninguna forma de quitarla.
@@ -1399,7 +1443,9 @@ bloquesDiag,
           visibles.map(c => '<i style="width:' + c.pct + '%;background:' + c.color + '" ' +
             'title="' + esc(c.etq) + '"></i>').join('') +
         '</span>' +
-        '<small>' + visibles.slice(0, 2).map(c => c.ico + ' ' + c.pct + '%').join(' · ') + '</small>' +
+        '<small>' + visibles.slice(0, 2).map(c => c.ico + ' ' + c.pct + '%').join(' · ') +
+          (S.rasterVista === 'foto' ? ' · foto analizada'
+                                    : (S.rasterEnVectores ? ' · vectores' : ' · imagen')) + '</small>' +
       '</div>' +
       '<button type="button" class="pca-raster-chip-foto' + (S.rasterVista === 'foto' ? ' activo' : '') + '" ' +
         'data-u52-call="pca-raster-foto" title="Comparar con la foto que se analizó" ' +

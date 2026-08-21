@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v512-escala-y-poblacion';
+const URBIS_CACHE = 'urbis-v513-vectores-en-pantalla';
 const URBIS_ASSETS = [
   './',
   './index.html',

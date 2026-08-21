@@ -753,6 +753,92 @@
   // Archivo de mundo (.pgw): las seis líneas que le dicen a CAD o GIS dónde va
   // y cuánto mide cada píxel de la imagen que lo acompaña. Sin él, el PNG es
   // solo un dibujo; con él, se pega georreferenciado.
+  // ── SVG ─────────────────────────────────────────────────────────────────
+  //
+  // Para CorelDRAW, Illustrator, Inkscape o Figma. El DXF también lo abren
+  // varios de ellos, pero mal: pierden el relleno, no entienden las capas y
+  // dejan las polilíneas sueltas. SVG es su idioma, así que ahí sí llega todo
+  // —relleno translúcido, huecos y agrupación por capa— listo para editar.
+  //
+  // El dibujo va en METROS a escala 1:1000 (1 mm de lámina = 1 m de terreno),
+  // con el eje Y invertido porque en SVG crece hacia abajo y en el terreno
+  // hacia arriba. Así una medición sobre el archivo sigue significando algo.
+  const SVG_ESCALA = 1000;   // 1 unidad SVG (mm) = 1 m / 1000
+  function construirSVG(d){
+    const proj = proyectorUTM(d.pts);
+    const q = d.pts.map(proj);
+    const minX = Math.min.apply(null, q.map(p => p.x)), maxX = Math.max.apply(null, q.map(p => p.x));
+    const minY = Math.min.apply(null, q.map(p => p.y)), maxY = Math.max.apply(null, q.map(p => p.y));
+    const margen = 8;
+    const W = (maxX - minX) + margen * 2, H = (maxY - minY) + margen * 2;
+    // Terreno → lámina: se traslada al origen y se voltea la Y.
+    const X = p => (proj(p).x - minX + margen).toFixed(2);
+    const Y = p => (maxY - proj(p).y + margen).toFixed(2);
+    const camino = (anillo, esLatLng) => anillo.map(function (pt, k) {
+      const p = esLatLng ? pt : { lat: pt[1], lng: pt[0] };
+      return (k ? 'L' : 'M') + X(p) + ' ' + Y(p);
+    }).join('') + 'Z';
+
+    let capas = '';
+
+    if (d.cobertura.length) {
+      const porClase = {};
+      d.cobertura.forEach(c => { (porClase[c.clase] = porClase[c.clase] || []).push(c); });
+      capas += Object.keys(porClase).map(function (cl) {
+        const lista = porClase[cl];
+        const col = lista[0].color;
+        // fill-rule evenodd es lo que hace que los huecos se vean como huecos
+        // y no como manchas encima.
+        return '<g id="cobertura-' + esc(cl) + '" inkscape:label="Cobertura · ' + esc(ETQ_CLASE[cl] || cl) +
+          '" inkscape:groupmode="layer" fill="' + col + '" fill-opacity="0.45" fill-rule="evenodd" ' +
+          'stroke="' + col + '" stroke-width="0.4">' +
+          lista.map(function (c) {
+            return '<path d="' + camino(c.contorno, false) +
+              (c.huecos || []).map(h => camino(h, false)).join('') + '"/>';
+          }).join('') + '</g>';
+      }).join('');
+    }
+
+    if (d.geo && d.geo.puntos.length) {
+      const g = d.geo;
+      let cuerpo = '';
+      if (g.tipo === 'red' && g.lineas) {
+        cuerpo = g.lineas.map(par2 => '<line x1="' + X(par2[0]) + '" y1="' + Y(par2[0]) +
+          '" x2="' + X(par2[1]) + '" y2="' + Y(par2[1]) + '"/>').join('');
+      } else if (g.tipo === 'hull' && g.anillo && g.anillo.length >= 3) {
+        cuerpo = '<path d="' + camino(g.anillo, true) + '" fill="' + g.color + '" fill-opacity="0.12"/>';
+      } else if (g.tipo === 'circulos') {
+        cuerpo = g.puntos.map(p => '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="' +
+          g.radioM.toFixed(1) + '" fill="' + g.color + '" fill-opacity="0.12"/>').join('');
+      }
+      capas += '<g id="geometria" inkscape:label="' + esc(g.nombre) + '" inkscape:groupmode="layer" ' +
+        'stroke="' + g.color + '" stroke-width="0.9" fill="none">' + cuerpo + '</g>';
+    }
+
+    if (d.puntos.length) {
+      const ctx = ctxPC();
+      capas += '<g id="puntos" inkscape:label="Puntos mapeados" inkscape:groupmode="layer">' +
+        d.puntos.map(function (p) {
+          const col = (ctx && ctx.colorGrupo && ctx.colorGrupo[p.gid]) || '#6b70e0';
+          return '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="1.6" fill="' + col + '">' +
+                 '<title>' + esc(p.nombre + ' · ' + p.grupo) + '</title></circle>';
+        }).join('') + '</g>';
+    }
+
+    const contorno = '<g id="area" inkscape:label="Área analizada" inkscape:groupmode="layer">' +
+      '<path d="' + camino(d.pts, true) + '" fill="none" stroke="#0E86BE" stroke-width="1.2"/></g>';
+
+    const ha = Math.round(d.areaM2 / 100) / 100;
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" ' +
+      'width="' + (W / SVG_ESCALA * 1000).toFixed(1) + 'mm" height="' + (H / SVG_ESCALA * 1000).toFixed(1) + 'mm" ' +
+      'viewBox="0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1) + '">' +
+      '<title>' + esc(window.__pcaNombreArea || 'Área de análisis URBIS') + '</title>' +
+      '<desc>' + esc('URBIS Pro City · ' + ha + ' ha · escala 1:' + SVG_ESCALA +
+        ' (1 unidad = 1 m) · UTM zona ' + proj.zona + proj.hemisferio + ' WGS84, EPSG:' + proj.epsg) + '</desc>' +
+      capas + contorno + '</svg>';
+  }
+
   // Archivo de mundo en METROS UTM, para insertar la imagen en CAD junto al
   // DXF. No basta con convertir el tamaño de píxel: la imagen está alineada al
   // norte GEOGRÁFICO y el plano UTM está alineado a su meridiano central, y
@@ -836,6 +922,10 @@
       '                oficial sin moverlo. Los círculos de impacto van como',
       '                entidad CIRCLE, acotable como tal.',
       '',
+      'area.svg        CorelDRAW, Illustrator, Inkscape, Figma. Vectores por capas,',
+      '                con relleno y huecos, a escala 1:1000 (1 mm = 1 m). Es el',
+      '                formato para MAQUETAR el plano; para medir y acotar, el DXF.',
+      '',
       'area.geojson    QGIS, ArcGIS, Python, web. WGS84 (CRS84). Cada elemento',
       '                lleva sus atributos: clase de cobertura, área en m²,',
       '                categoría del punto, filtro con que se generó la geometría.',
@@ -874,6 +964,7 @@
     const entradas = [
       { nombre:'LEEME.txt',     datos: leeme(d) },
       { nombre:'area.geojson',  datos: construirGeoJSON(d) },
+      { nombre:'area.svg',      datos: construirSVG(d) },
       { nombre:'cad/area.dxf',  datos: construirDXF(d) }
     ];
     // El KMZ entra como archivo dentro del paquete: así se abre en Google Earth
@@ -922,6 +1013,8 @@
       } else if (formato === 'dxf') {
         descargar(new Blob([construirDXF(d)], { type:'application/dxf' }),
                   nombreArchivo('area', 'dxf'));
+      } else if (formato === 'svg') {
+        descargar(new Blob([construirSVG(d)], { type:'image/svg+xml' }), nombreArchivo('area', 'svg'));
       } else if (formato === 'geojson') {
         descargar(new Blob([construirGeoJSON(d)], { type:'application/geo+json' }),
                   nombreArchivo('area', 'geojson'));
@@ -976,6 +1069,7 @@
         '<button type="button" data-u52-call="pca-exp-kmz">🌍 KMZ · Google Earth</button>' +
         '<button type="button" data-u52-call="pca-exp-dxf">📐 DXF · AutoCAD</button>' +
         '<button type="button" data-u52-call="pca-exp-geojson">🗺️ GeoJSON · QGIS</button>' +
+        '<button type="button" data-u52-call="pca-exp-svg">🎨 SVG · Corel / Illustrator</button>' +
         '<button type="button" data-u52-call="pca-exp-kml" class="pca-exp-sec">KML suelto</button>' +
       '</div></div>';
   }
@@ -986,10 +1080,11 @@
     if (name === 'exp-dxf') { exportar('dxf'); return true; }
     if (name === 'exp-kml') { exportar('kml'); return true; }
     if (name === 'exp-geojson') { exportar('geojson'); return true; }
+    if (name === 'exp-svg') { exportar('svg'); return true; }
     return false;
   }
 
   window.URBIS_PC_EXPORTAR = { exportar, bloque, accion, inventario, recolectar,
-                               construirKML, construirDXF, construirGeoJSON,
+                               construirKML, construirDXF, construirGeoJSON, construirSVG,
                                vectorizarCobertura, aUTM, zip, paqueteCompleto };
 })();
