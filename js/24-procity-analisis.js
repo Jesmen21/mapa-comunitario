@@ -45,6 +45,10 @@
     // esta comparación, un árbol que está en el mapa pero no en la foto parece
     // un fallo del clasificador cuando en realidad no estaba en la imagen.
     rasterVista: 'clases',
+    // Diagnóstico educativo en curso y si la propuesta de implantación está
+    // desplegada. Se guarda para que el informe use exactamente lo que se vio.
+    diag: null,
+    verImplantacion: false,
     rasterChip: null,
   };
 
@@ -860,6 +864,11 @@
       // la imagen satelital y no sobre lo que georreferenció la comunidad.
       bloqueRaster() +
 
+      // El diagnóstico va DESPUÉS de la cobertura: si el estudiante acaba de
+      // analizarla, la lectura ambiental ya entra en las conclusiones. Y antes
+      // de exportar, porque lo que se lleva al PDF es justamente esto.
+      (r.total > 0 ? bloqueDiagnostico(ctx) : '') +
+
       (r.total > 0 ? bloqueExportar() : '') +
 
       // Exportación geográfica (Fase 6): no depende de que haya puntos
@@ -1095,6 +1104,26 @@
 
     const kpi = (v, t2) => '<div class="kpi"><b>' + v + '</b><small>' + t2 + '</small></div>';
 
+    // ── Conclusiones, FODA e implantación ────────────────────────────────
+    // Lo mismo que se ve en el panel, con el mismo motor: el informe no puede
+    // decir una cosa y la pantalla otra.
+    let bloquesDiag = '';
+    try {
+      const D = window.URBIS_PC_DIAGNOSTICO;
+      const dg = D && D.diagnosticar(ctx);
+      if (dg) {
+        bloquesDiag =
+          '<div class="bloque ancho"><h2>Conclusiones del área</h2>' +
+            '<div class="ver-grid">' + D.htmlVeredictos(dg) + '</div></div>' +
+          '<div class="bloque ancho"><h2>FODA de usos <em>· a partir de ' + dg.ind.total +
+            ' elementos mapeados</em></h2>' + D.htmlFoda(dg, 4) + '</div>' +
+          '<div class="bloque ancho"><h2>Propuesta de implantación</h2>' +
+            D.htmlImplantacion(dg) +
+            '<p class="pie-nota">Ejercicio académico. Las cantidades son una referencia de ' +
+            'partida para formular el proyecto, no un dimensionamiento de diseño.</p></div>';
+      }
+    } catch(e) {}
+
     // El mapa de calor encendido se lleva al informe tal cual se ve en
     // pantalla: es parte del análisis que el estudiante acaba de hacer.
     let heatImg = '';
@@ -1125,6 +1154,31 @@
 '.bloque h2{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:', t.acento, ';',
 'font-weight:800;padding-bottom:4px;margin-bottom:6px;border-bottom:1.5px solid ', t.oro, '}',
 '.bloque h2 em{font-style:normal;font-weight:600;color:', t.txt3, ';text-transform:none;letter-spacing:0}',
+'.bloque.ancho{margin-top:7px}',
+'.ver-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}',
+'.pcd-ver{border-left:3px solid ', t.borde, ';background:', t.suave, ';border-radius:5px;padding:6px 8px;break-inside:avoid}',
+'.pcd-ver-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:2px}',
+'.pcd-ver-cab b{font-size:9.5px;font-weight:800;color:', t.tinta, '}',
+'.pcd-ver-cab span{margin-left:auto;font-size:8.5px;font-weight:800;color:', t.txt3, '}',
+'.pcd-ver p{font-size:8.5px;line-height:1.45;color:', t.txt2, '}',
+'.pcd-bien{border-left-color:#1f9d55}', '.pcd-medio{border-left-color:#d99a12}', '.pcd-mal{border-left-color:#c0392b}',
+'.pcd-foda-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}',
+'.pcd-foda{border:1px solid ', t.borde, ';border-radius:5px;padding:6px 7px;break-inside:avoid}',
+'.pcd-foda h5{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;color:', t.acento, '}',
+'.pcd-foda ul{list-style:none}',
+'.pcd-foda li{font-size:8px;line-height:1.4;color:', t.txt2, ';padding-left:7px;position:relative;margin-bottom:3px}',
+'.pcd-foda li:before{content:"·";position:absolute;left:0;font-weight:800;color:', t.oro, '}',
+'.pcd-foda-f{background:#f2fbf5}', '.pcd-foda-d{background:#fff8ef}',
+'.pcd-foda-o{background:#f1f8ff}', '.pcd-foda-r{background:#fff4f4}',
+'.pcd-resumen{font-size:8.5px;line-height:1.5;color:', t.txt2, ';margin-bottom:6px}',
+'.pcd-tabla{width:100%;border-collapse:collapse;font-size:8px}',
+'.pcd-tabla th{text-align:left;font-size:7.5px;text-transform:uppercase;letter-spacing:.3px;color:', t.txt3, ';',
+'padding:4px 5px;border-bottom:1px solid ', t.borde, '}',
+'.pcd-tabla td{padding:4px 5px;border-bottom:1px solid ', t.linea, ';color:', t.txt2, ';vertical-align:top;line-height:1.4}',
+'.pcd-tabla td.n{text-align:center;font-weight:800;color:', t.acento, '}',
+'.pcd-tabla td b{color:', t.tinta, '}',
+'.pcd-vacio{font-size:8.5px;line-height:1.5;color:', t.txt2, '}',
+'.pie-nota{font-size:7.5px;line-height:1.4;color:', t.txt3, ';margin-top:5px;font-style:italic}',
 '.mapa-wrap{position:relative;border-radius:6px;overflow:hidden;background:#dde3e8;max-width:100%}',
 '.mapa-wrap img{display:block;width:100%;height:auto}',
 '.mapa-wrap svg{position:absolute;left:0;top:0;width:100%;height:100%}',
@@ -1176,6 +1230,8 @@
     heatImg,
   '</div>',
 '</div>',
+
+bloquesDiag,
 
 '<footer><span>Cuenta lo que los usuarios de URBIS georreferenciaron a mano dentro del contorno. No es un censo: refleja el mapeo disponible a la fecha.</span>',
 '<span><b>URBIS</b> Pro City · @urbis_co</span></footer>',
@@ -1542,6 +1598,34 @@
     if (!ctx) return;
     pintarGeo(ctx);
     chipGeo(ctx);
+  }
+
+  // Diagnóstico educativo (js/26-procity-diagnostico): conclusiones, FODA y
+  // propuesta de implantación, todo derivado de lo que el estudiante mapeó.
+  function bloqueDiagnostico(ctx){
+    const D = window.URBIS_PC_DIAGNOSTICO;
+    if (!D) return '';
+    const d = D.diagnosticar(ctx);
+    if (!d) return '';
+    S.diag = d;
+    const verImp = S.verImplantacion;
+    return '<div class="pcd-sel">' +
+      '<h4 class="pca-h pca-h-diag">🎓 Qué dice esta área</h4>' +
+      '<p class="pcd-ayuda">Lectura del sector a partir de tus ' + d.ind.total +
+        ' elementos mapeados' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
+      D.htmlVeredictos(d) +
+      '<div class="pcd-sub">FODA de usos</div>' +
+      D.htmlFoda(d, 3) +
+      // La implantación va detrás de un botón: primero se lee el diagnóstico y
+      // después se propone. Ese orden es el del ejercicio académico.
+      '<button type="button" class="pcd-btn-imp" data-u52-call="pca-implantacion">' +
+        (verImp ? '▾ Ocultar la propuesta de implantación'
+                : '🏗️ Proponer una implantación para esta área') + '</button>' +
+      (verImp ? '<div class="pcd-imp"><div class="pcd-sub">Propuesta de implantación</div>' +
+                D.htmlImplantacion(d) +
+                '<p class="pcd-nota">Ejercicio académico: son líneas de partida para formular un ' +
+                'proyecto, no un dimensionamiento de diseño.</p></div>' : '') +
+    '</div>';
   }
 
   function bloqueGeo(ctx){
@@ -2200,6 +2284,13 @@
         }
         cxClas.putImageData(imgClas, 0, 0);
 
+        // Recortar la rejilla al polígono ANTES de entregarla. La imagen ya
+        // salía recortada (los píxeles de afuera van transparentes), pero la
+        // rejilla no, y de ella salen los vectores: por eso la cobertura se
+        // exportaba como un rectángulo en vez de seguir el contorno dibujado.
+        // Se veía en el PDF y se colaba igual al KMZ, al DXF y al GeoJSON.
+        for (let p = 0; p < N; p++) if (!dentroMask[p]) final[p] = 0;
+
         const cv = lienzoFino || cvClas;
         const w = W, h = H;
         const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
@@ -2311,6 +2402,12 @@
     if (name === 'dibujar')  { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); iniciarDibujo(); return true; }
     if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
     if (name === 'cerrar-burbuja') { cerrarBurbuja(); return true; }
+    if (name === 'implantacion') {
+      S.verImplantacion = !S.verImplantacion;
+      reg(S.verImplantacion ? 'implantacion-abierta' : 'implantacion-cerrada');
+      if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis();
+      return true;
+    }
     if (name === 'pdf') { exportarPDF(); return true; }
     if (name === 'pdf-todo') {
       exportarPDF();

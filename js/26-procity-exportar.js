@@ -101,13 +101,16 @@
     const cnt = new Uint16Array(5);
     for (let y = 0; y < h2; y++) {
       for (let x = 0; x < w2; x++) {
-        cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
+        cnt[0] = cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
         for (let dy = 0; dy < f; dy++) {
           const fila = (y * f + dy) * W + x * f;
           for (let dx = 0; dx < f; dx++) cnt[cls[fila + dx]]++;
         }
-        let mejor = 4, n = -1;
-        for (let k = 1; k <= 4; k++) if (cnt[k] > n) { n = cnt[k]; mejor = k; }
+        // El 0 entra en la votación: es "fuera del área". Si no compitiera, un
+        // bloque del borde que cae casi todo afuera se rellenaría igual con la
+        // clase que más asome, y la cobertura volvería a desbordar el polígono.
+        let mejor = 0, n = -1;
+        for (let k = 0; k <= 4; k++) if (cnt[k] > n) { n = cnt[k]; mejor = k; }
         out[y * w2 + x] = mejor;
       }
     }

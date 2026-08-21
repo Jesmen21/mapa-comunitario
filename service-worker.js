@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v509-exportacion-vectorial';
+const URBIS_CACHE = 'urbis-v510-diagnostico-educativo';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -99,6 +99,7 @@ const URBIS_ASSETS = [
   './js/24-procity-analisis.js',
   './js/25-procity-analitica.js',
   './js/26-procity-exportar.js',
+  './js/26-procity-diagnostico.js',
   './js/20-mobile-functional-app.js',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',
