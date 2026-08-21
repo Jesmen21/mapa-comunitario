@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-20",
-  "proximaActualizacion": "2026-08-21",
+  "actualizado": "2026-08-21",
+  "proximaActualizacion": "2026-08-22",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -18,6 +18,48 @@
     "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-21",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "Colombia y EE. UU. avanzan en un acuerdo comercial recíproco con miras a arancel cero",
+      "detalle": "Tras una reunión el 19 de agosto en Washington entre el ministro de Comercio, Mauricio Gómez Amín, y el representante comercial de EE. UU., Jamieson Greer, ambos gobiernos anunciaron avances en la negociación de un Acuerdo de Comercio Recíproco que buscaría llevar a cero el arancel del 12,5% que EE. UU. aplica hoy a los productos colombianos. La oficina de Greer dijo que varios puntos pendientes ya se resolvieron, en medio de la reconstrucción tras el terremoto del 10 de agosto.",
+      "contrapunto": "Al cierre de esta entrada el arancel cero es objeto de negociación, no un hecho consumado: ninguna fuente reporta todavía fecha de entrada en vigencia ni texto firmado del acuerdo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · avances hacia el acuerdo comercial", "u": "https://www.infobae.com/colombia/2026/08/21/colombia-y-ee-uu-negocian-y-avanzan-en-un-nuevo-acuerdo-comercial-luego-del-terremoto-del-10-de-agosto-que-pasara-con-los-aranceles/" },
+        { "n": "El Tiempo · negociación de arancel cero", "u": "https://www.eltiempo.com/politica/gobierno/estados-unidos-va-a-negociar-con-colombia-un-arancel-cero-para-los-productos-colombianos-en-medio-de-la-emergencia-por-el-terremoto-3579723" },
+        { "n": "El Nuevo Siglo · EE. UU. aceptaría arancel cero", "u": "https://www.elnuevosiglo.com.co/economia/ee-uu-aceptara-aranceles-cero-para-productos-colombianos-por-sismo" }
+      ]
+    },
+    {
+      "fecha": "2026-08-20",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia nueva cúpula militar: salen 25 generales y almirantes, regresa un general retirado por el gobierno Petro",
+      "detalle": "Desde Barranquilla, el presidente presentó la nueva cúpula de las Fuerzas Militares. El general Erick Rodríguez Aparicio, apartado del servicio activo durante el gobierno de Gustavo Petro tras declaraciones sobre el control social que ejercían estructuras armadas en zonas rurales del Meta, vuelve como comandante general de las Fuerzas Militares. El general Carlos Carrasquilla Gómez asume como jefe del Estado Mayor Conjunto. La reorganización implica la salida de 25 generales y almirantes.",
+      "contrapunto": "Medios como Las2orillas y Mundiario describieron el relevo como una \"purga\" de la era Petro; gobernadores y sectores políticos, agrupados en la Federación Nacional de Departamentos, respaldaron públicamente el regreso de Rodríguez Aparicio. El propio gobierno de Petro había ordenado su salida por presunta intervención en política, un señalamiento que no fue objeto de una decisión judicial o disciplinaria en firme conocida públicamente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · salen 25 generales y almirantes", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/salen-25-almirantes-y-generales-de-la-era-petro-abelardo-de-la-espriella-anuncio-la-nueva-cupula-militar-3579836" },
+        { "n": "Infobae · anuncio oficial de la cúpula militar", "u": "https://www.infobae.com/colombia/2026/08/20/abelardo-de-la-espriella-anuncio-oficialmente-la-cupula-militar-durante-su-gobierno-el-general-erick-rodriguez-es-el-nuevo-comandante-de-las-ffmm/" },
+        { "n": "El Tiempo · regreso de un general apartado por el gobierno Petro", "u": "https://www.eltiempo.com/amp/justicia/conflicto-y-narcotrafico/abelardo-de-la-espriella-anuncia-la-nueva-cupula-militar-con-el-regreso-de-un-general-que-el-gobierno-petro-saco-por-incomodo-3579739" },
+        { "n": "El Tiempo · gobernadores respaldan los nombramientos", "u": "https://www.eltiempo.com/politica/gobierno/gobernadores-y-sectores-politicos-respaldan-los-nuevos-nombramientos-de-la-cupula-militar-del-gobierno-de-abelardo-de-la-espriella-3579846" }
+      ]
+    },
+    {
+      "fecha": "2026-08-20",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto sube a 319 muertos y baja a 260 los desaparecidos",
+      "detalle": "Con corte a las 6:30 a.m. del 20 de agosto, la UNGRD reportó 319 personas fallecidas, entre 4.469 y 4.506 heridas según el medio, 260 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 18 de agosto (312 muertos, 4.611 heridos, 290 desaparecidos), sube la cifra de fallecidos y bajan las de heridos y desaparecidos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · balance del 20 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-jueves-20-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3579582" },
+        { "n": "Semana · sube a 319 la cifra de muertos", "u": "https://www.semana.com/nacion/articulo/ultimo-balance-de-la-ungrd-sube-a-319-la-cifra-de-muertos-por-el-terremoto-de-74-en-colombia/202613/" },
+        { "n": "El Heraldo · balance UNGRD", "u": "https://www.elheraldo.co/colombia/2026/08/20/aumenta-a-319-la-cifra-de-muertos-y-a-4469-la-de-heridos-por-terremoto-en-colombia-segun-reporte-de-la-ungrd/?outputType=amp-type" }
+      ]
+    },
     {
       "fecha": "2026-08-19",
       "precision": "exacta",
