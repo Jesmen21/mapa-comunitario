@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v509-exportacion-vectorial';
+const URBIS_CACHE = 'urbis-v510-seguimiento-20-21ago';
 const URBIS_ASSETS = [
   './',
   './index.html',
