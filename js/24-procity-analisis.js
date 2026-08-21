@@ -888,6 +888,14 @@
         '<select id="pca-estilo-pdf" data-u52-noclose>' + sel + '</select>' +
       '</label>' +
       '<button type="button" class="pca-btn-pdf" data-u52-call="pca-pdf">📄 Generar el informe</button>' +
+      // Pedido explícito: que al sacar el PDF salgan también los archivos
+      // geográficos. Van en un botón aparte y no automáticos, porque son dos
+      // descargas y el navegador pide permiso para la segunda: encadenarlas a
+      // escondidas haría que la mitad de las veces no llegara nada.
+      '<button type="button" class="pca-btn-pdf-todo" data-u52-call="pca-pdf-todo">' +
+        '📄 + 📦 Informe y paquete geográfico</button>' +
+      '<p class="pca-exportar-nota">El informe lleva de fondo la foto satelital analizada con la ' +
+        'cobertura en vectores encima. El paquete trae KMZ, DXF y GeoJSON georreferenciados.</p>' +
     '</div>';
   }
 
@@ -909,7 +917,80 @@
 
   // Imagen estática del mapa con el contorno del área dibujado encima. El
   // polígono va en SVG sobre la foto porque LocationIQ no dibuja polígonos.
+  // Cuando ya se analizó la cobertura tenemos algo mejor que un mapa estático
+  // pedido a la red: la PROPIA foto satelital del análisis, ya descargada, ya
+  // sin velo y con un encuadre que sabemos exacto. Encima van los vectores
+  // —cobertura, geometría, puntos y contorno— en SVG translúcido. Así el
+  // informe muestra lo mismo que la pantalla, no una aproximación, y funciona
+  // sin conexión y sin clave de API.
+  function mapaDesdeRaster(w, h){
+    const r = S.raster;
+    if (!r || !r.imagen || !r.overlayLimites) return '';
+    const L = r.overlayLimites;
+    const s = L[0][0], o = L[0][1], n = L[1][0], e = L[1][1];
+    const alto = n - s, ancho = e - o;
+    if (!(alto > 0 && ancho > 0)) return '';
+    // El recuadro de la foto y el del informe rara vez tienen la misma forma:
+    // se encaja la foto entera dentro y se centra, sin deformarla.
+    const escala = Math.min(w / ancho, h / alto);
+    const iw = ancho * escala, ih = alto * escala;
+    const ox = (w - iw) / 2, oy = (h - ih) / 2;
+    const X = lng => ox + (lng - o) / ancho * iw;
+    const Y = lat => oy + (n - lat) / alto * ih;
+    const anillo = a => a.map(pt => {
+      const lng = pt.lng !== undefined ? pt.lng : pt[0];
+      const lat = pt.lat !== undefined ? pt.lat : pt[1];
+      return X(lng).toFixed(1) + ',' + Y(lat).toFixed(1);
+    }).join(' ');
+
+    let capas = '';
+    // Cobertura vectorizada, translúcida: debajo se sigue viendo la foto, que
+    // es lo que permite juzgar si la clasificación acertó.
+    const EXP = window.URBIS_PC_EXPORTAR;
+    if (EXP && typeof EXP.vectorizarCobertura === 'function' && r.rejilla) {
+      try {
+        const polis = EXP.vectorizarCobertura(r);
+        capas += polis.map(function (c) {
+          const huecos = (c.huecos || []).map(hh => 'M' + anillo(hh).replace(/ /g, 'L') + 'Z').join('');
+          const d2 = 'M' + anillo(c.contorno).replace(/ /g, 'L') + 'Z' + huecos;
+          return '<path d="' + d2 + '" fill="' + c.color + '" fill-opacity=".42" fill-rule="evenodd" ' +
+                 'stroke="' + c.color + '" stroke-width=".7" stroke-opacity=".75"/>';
+        }).join('');
+      } catch (err) {}
+    }
+    // La geometría generada, con el mismo criterio de color que en pantalla.
+    const g = geometriaActual();
+    if (g) {
+      if (g.tipo === 'red' && g.lineas) {
+        capas += g.lineas.map(par2 =>
+          '<line x1="' + X(par2[0].lng).toFixed(1) + '" y1="' + Y(par2[0].lat).toFixed(1) +
+          '" x2="' + X(par2[1].lng).toFixed(1) + '" y2="' + Y(par2[1].lat).toFixed(1) +
+          '" stroke="' + g.color + '" stroke-width="1.6" stroke-opacity=".95"/>').join('');
+      } else if (g.tipo === 'hull' && g.anillo && g.anillo.length >= 3) {
+        capas += '<polygon points="' + anillo(g.anillo) + '" fill="' + g.color +
+                 '" fill-opacity=".12" stroke="' + g.color + '" stroke-width="1.8"/>';
+      } else if (g.tipo === 'circulos') {
+        const rpx = g.radioM / 111320 * escala;
+        capas += g.puntos.map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' + Y(pt.lat).toFixed(1) +
+                 '" r="' + rpx.toFixed(1) + '" fill="' + g.color + '" fill-opacity=".14" stroke="' +
+                 g.color + '" stroke-width="1"/>').join('');
+      }
+      capas += (g.puntos || []).map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' +
+               Y(pt.lat).toFixed(1) + '" r="2.2" fill="' + g.color + '"/>').join('');
+    }
+
+    return '<div class="mapa-wrap" style="width:' + w + 'px;height:' + h + 'px">' +
+      '<img src="' + r.imagen + '" width="' + w + '" height="' + h + '" alt="" ' +
+        'style="object-fit:contain;background:#0b1a24">' +
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">' +
+      capas +
+      '<polygon points="' + anillo(S.pts) + '" fill="none" stroke="#0E86BE" stroke-width="3" ' +
+      'stroke-linejoin="round"/></svg></div>';
+  }
+
   function mapaDelArea(w, h){
+    const conRaster = mapaDesdeRaster(w, h);
+    if (conRaster) return conRaster;
     const cfg = (window.URBIS_CONFIG && window.URBIS_CONFIG.LOCATIONIQ) || {};
     const lats = S.pts.map(p => p.lat), lngs = S.pts.map(p => p.lng);
     const cLat = (Math.min(...lats) + Math.max(...lats)) / 2;
@@ -1383,10 +1464,29 @@
       // los círculos cercanos se funden visualmente en un contorno orgánico
       // sin necesidad de calcular la unión real de los polígonos.
       pts.forEach(p => {
-        L.circle(p, { radius: 35, color: '#ef4444', weight: 1, fillColor: '#ef4444', fillOpacity: .16 }).addTo(c);
+        L.circle(p, { radius: GEO_RADIO_M, color: '#ef4444', weight: 1, fillColor: '#ef4444', fillOpacity: .16 }).addTo(c);
       });
     }
     return pts.length;
+  }
+
+  // Los mismos números con los que se dibuja la geometría, pero como DATOS,
+  // para que la exportación saque vectores reales en vez de volver a inventarlos.
+  // Comparte puntosGeo() con el pintado, así que lo exportado es exactamente lo
+  // que se está viendo, filtro de vista incluido.
+  const GEO_RADIO_M = 35;
+  function geometriaActual(ctx){
+    const tipo = S.geo.tipo;
+    if (!tipo) return null;
+    const c = ctx || (typeof window.urbisProCityCtxAnalisis === 'function' ? window.urbisProCityCtxAnalisis() : null);
+    if (!c) return null;
+    const pts = puntosGeo(c);
+    const out = { tipo: tipo, nombre: nombreGeo(tipo), color: colorGeo(tipo),
+                  filtro: nombreFiltroGeo(c), puntos: pts };
+    if (tipo === 'red')      out.lineas = pts.length >= 2 ? redVecinos(pts, pts.length > 60 ? 1 : 2) : [];
+    if (tipo === 'hull')     out.anillo = pts.length >= 3 ? envolventeConvexa(pts) : [];
+    if (tipo === 'circulos') out.radioM = GEO_RADIO_M;
+    return out;
   }
 
   // Chip sobre el mapa, gemelo del de calor: la geometría se mira con el panel
@@ -2132,7 +2232,12 @@
             velo: Math.round(veloMedio / ESCALAS.length),
             umbral: Math.round(umbralMedio / ESCALAS.length * 1000) / 1000,
             pasadas: ESCALAS.length,
-            malla: W + '×' + H
+            malla: W + '×' + H,
+            // La rejilla de clases en crudo. La exportación (js/26) la convierte
+            // en polígonos de verdad; sin ella solo se podría exportar la imagen,
+            // y una imagen no se puede acotar ni editar en CAD.
+            rejilla: { cls: final, W: W, H: H, caja: caja, m2PorPixel: m2PorPixel },
+            COD: COD, NOM: NOM, RGB: RGB
           });
       }).catch(function (e) {
         reject(e instanceof Error ? e : new Error('No se pudo analizar la imagen satelital.'));
@@ -2207,6 +2312,15 @@
     if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
     if (name === 'cerrar-burbuja') { cerrarBurbuja(); return true; }
     if (name === 'pdf') { exportarPDF(); return true; }
+    if (name === 'pdf-todo') {
+      exportarPDF();
+      // El paquete va detrás del informe: la ventana de impresión se abre de
+      // inmediato y la descarga del ZIP llegaría pisada si salen a la vez.
+      setTimeout(function () {
+        try { if (window.URBIS_PC_EXPORTAR) window.URBIS_PC_EXPORTAR.exportar('paquete'); } catch(e){}
+      }, 1200);
+      return true;
+    }
     // Al elegir una capa de calor se cierra el panel: el mapa está detrás y
     // sin cerrarlo no se vería nada de lo que se acaba de encender.
     if (name === 'heat') {
@@ -2349,7 +2463,8 @@
     // Mapa de calor (Fase 2)
     heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat,
     // Geometría (Fase 3)
-    geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro,
+    geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro, geometriaActual,
+    areaNombre: () => S.nombre,
     // Cobertura del suelo (Fase 4)
     analizarRaster, clasificarPixel, ultimoRaster: () => S.raster
   };

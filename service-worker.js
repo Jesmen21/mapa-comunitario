@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v508-raster-sin-bruma';
+const URBIS_CACHE = 'urbis-v509-exportacion-vectorial';
 const URBIS_ASSETS = [
   './',
   './index.html',

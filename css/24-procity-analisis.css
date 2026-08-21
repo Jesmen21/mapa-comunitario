@@ -617,3 +617,32 @@
   margin:6px 0 0; font-size:.68rem; line-height:1.4;
   color:#6b8a76 !important; -webkit-text-fill-color:#6b8a76 !important;
 }
+
+/* ── Exportación geográfica: paquete completo y avisos ── */
+.pca-exp-trae{ margin:0; font-size:.73rem; line-height:1.45;
+  color:#2f6f5a !important; -webkit-text-fill-color:#2f6f5a !important; }
+.pca-exp-trae b{ color:#1d5a46 !important; -webkit-text-fill-color:#1d5a46 !important; }
+.pca-exp-falta{
+  margin:0; font-size:.72rem; line-height:1.45; padding:7px 9px; border-radius:9px;
+  background:#fff8e6; border:1px solid #f3dca8;
+  color:#6b5518 !important; -webkit-text-fill-color:#6b5518 !important;
+}
+/* El paquete completo es la salida recomendada: ocupa la fila entera para que
+   se lea como la opción principal y no como una más de la lista. */
+.pca-exp-btns .pca-exp-todo{
+  flex:1 0 100%; justify-content:center;
+  background:linear-gradient(100deg,#075E88,#0E86BE);
+  border-color:#075E88;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+  font-weight:800;
+}
+.pca-btn-pdf-todo{
+  width:100%; margin-top:6px; cursor:pointer; padding:11px 14px; border-radius:11px;
+  border:1.5px solid #075E88; background:#fff; font-size:.8rem; font-weight:800;
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pca-btn-pdf-todo:active{ transform:scale(.98); }
+.pca-exportar-nota{
+  margin:6px 0 0; font-size:.7rem; line-height:1.45;
+  color:#5a6472 !important; -webkit-text-fill-color:#5a6472 !important;
+}
