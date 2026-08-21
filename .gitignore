@@ -1,0 +1,4 @@
+# Imágenes y archivos sueltos de pruebas: se generan al medir el clasificador
+# de cobertura y no son parte de la app. Ya se colaron una vez al repositorio.
+.*.png
+*.tmp

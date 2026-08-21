@@ -1498,7 +1498,28 @@
   // Más resolución = menos píxeles mezclados (un píxel mitad árbol mitad techo
   // no es ni una cosa ni la otra y se pierde). A 420 cada píxel cubría ~2 m de
   // barrio y los árboles de andén desaparecían; a 640 se sostienen.
-  const RASTER_LADO = 640;
+  // Tres lecturas del MISMO recuadro a distinta resolución, y después votan.
+  // No es repetir por repetir: al pedirle a Esri un tamaño mayor para el mismo
+  // recuadro, sirve un nivel más profundo de su pirámide, o sea una foto de
+  // verdad más detallada. La fina distingue el arbolito de andén; la gruesa
+  // es más estable frente al ruido de compresión, que a máxima resolución
+  // inventa píxeles de colores que no existen en el suelo. Donde las tres
+  // coinciden, la respuesta es sólida; donde discrepan, gana la mayoría.
+  const ESCALAS = [720, 1080, 1440];
+
+  // Colores y códigos de las clases. Códigos numéricos porque las pasadas de
+  // vecindad recorren millones de píxeles y con cadenas de texto el teléfono
+  // se arrastra.
+  const COD = { verde: 1, construido: 2, agua: 3, mixto: 4 };
+  const NOM = [null, 'verde', 'construido', 'agua', 'mixto'];
+  const RGB = {
+    verde:      [34, 197, 94],
+    construido: [148, 163, 184],
+    agua:       [59, 130, 246],
+    mixto:      [201, 162, 106]
+  };
+  // Opacidad visible pero que deja intuir el satelital de fondo.
+  const ALPHA = 176;
   // Filtro de mayoría: quita el granulado sal-y-pimienta. Pide DOS cosas para
   // cambiar un píxel, y la segunda es la importante:
   //   · que otra clase ocupe al menos MAYORIA_MIN de sus 9 vecinos, y
@@ -1559,7 +1580,13 @@
   // Cuántos píxeles puede avanzar el contagio desde la copa confirmada. Acota
   // el crecimiento para que no se escape por un degradado hasta teñir media
   // manzana: a ~0.6 m por píxel son unos 4 m, la franja de sombra de un árbol.
-  const VERDE_CRECE = 6;
+  // Ojo: va en PÍXELES, y las pasadas corren a resoluciones distintas, así que
+  // el alcance se reescala en cada una (ver `crece` en clasificarMalla). Sin
+  // eso, la misma cifra significa cuatro metros a 640 px y menos de dos a 1440:
+  // al subir la resolución el contagio se quedaba corto justo donde más
+  // detalle había, y el borde apagado de la copa volvía a perderse.
+  const VERDE_CRECE = 6;      // calibrado sobre una malla de 640 px de ancho
+  const VERDE_CRECE_BASE = 640;
 
   function bboxDelArea(pts){
     const lats = pts.map(p => p.lat), lngs = pts.map(p => p.lng);
@@ -1605,7 +1632,9 @@
   // párrafo de arriba. Por eso se le exige además que el verde sea el canal
   // dominante (g > r): la vegetación viva lo cumple hasta en sombra profunda,
   // el pasto seco y el suelo caqui no lo cumplen nunca.
-  function clasificarPixel(r, g, b){
+  // `U` trae los umbrales calculados para la foto en curso; si no llega, manda
+  // el criterio fijo de siempre (así la función sigue sirviendo suelta).
+  function clasificarPixel(r, g, b, U){
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const sat = max === 0 ? 0 : (max - min) / max;
     const suma = r + g + b || 1;
@@ -1616,7 +1645,7 @@
 
     // Vegetación viva. Va PRIMERO: la copa en sombra también es azulada y, si
     // el agua se evaluara antes, se la llevaría.
-    if (exg > VERDE_FIRME && g > r && sat >= VERDE_SAT_FIRME) return 'verde';
+    if (exg > (U && U.firme || VERDE_FIRME) && g > r && sat >= VERDE_SAT_FIRME) return 'verde';
     // Agua: azul en proporción y superficie oscura. El umbral de luz baja de
     // 145 a 125 porque los techos de zinc azul del barrio —abundantes— caían
     // dentro; los que aún se cuelen los limpia el filtro de manchas chicas.
@@ -1635,12 +1664,12 @@
   // debajo de ningún otro canal — con eso el gris de cubierta (donde los tres
   // canales van casi iguales) y todo lo cálido quedan fuera desde el principio,
   // por más que estén pegados a un árbol.
-  function esVerdeDebil(r, g, b){
+  function esVerdeDebil(r, g, b, U){
     const suma = r + g + b || 1;
     const exg = (2 * g - r - b) / suma;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const sat = max === 0 ? 0 : (max - min) / max;
-    return exg > VERDE_DEBIL && g >= r && g >= b && sat >= VERDE_SAT_DEBIL;
+    return exg > (U && U.debil || VERDE_DEBIL) && g >= r && g >= b && sat >= VERDE_SAT_DEBIL;
   }
 
   // Convierte píxel → lat/lng. La imagen se pide en EPSG:4326 con el bbox del
@@ -1651,8 +1680,255 @@
              lng: bb.o + (x + .5) / w * (bb.e - bb.o) };
   }
 
-  function analizarRaster(){
-    return new Promise((resolve, reject) => {
+  // Descarga UNA imagen del recuadro al tamaño pedido y devuelve sus píxeles.
+  function pedirImagenSatelital(caja, w, h){
+    return new Promise(function (resolve, reject) {
+      const url = RASTER_URL + '?bbox=' + [caja.o, caja.s, caja.e, caja.n].join(',') +
+        '&bboxSR=4326&imageSR=4326&size=' + w + ',' + h + '&format=png&f=image';
+      const img = new Image();
+      img.crossOrigin = 'anonymous';       // sin esto el canvas queda "tainted"
+      img.onerror = function () { reject(new Error('No se pudo descargar la imagen satelital.')); };
+      img.onload = function () {
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = h;
+          const cx = cv.getContext('2d');
+          cx.drawImage(img, 0, 0, w, h);
+          resolve({ datos: cx.getImageData(0, 0, w, h).data, w: w, h: h, lienzo: cv });
+        } catch (e) {
+          reject(new Error('El navegador bloqueó la lectura de la imagen (CORS).'));
+        }
+      };
+      img.src = url;
+    });
+  }
+
+  // ── Corrección del velo atmosférico ──────────────────────────────────────
+  // Esta es la pieza que faltaba. Comparando la foto de Esri contra el mapa de
+  // fondo se ve que llega LAVADA: bruma y calima le suman a los tres canales
+  // una capa de luz difusa que no viene del suelo, y esa capa aplana el color.
+  // Un árbol que en la foto limpia satura .35 puede quedar en .16 bajo velo, y
+  // ahí ya no pasa ningún umbral fijo — por eso quedaban árboles sin pintar
+  // aunque a la vista fueran obviamente verdes.
+  //
+  // Se corrige con sustracción de objeto oscuro, el método clásico de
+  // teledetección: en una escena cualquiera SIEMPRE hay algo casi negro (una
+  // sombra profunda), así que lo que ese píxel marca por encima de cero es
+  // velo, no suelo. Se le resta a cada canal su propio piso y se reestira el
+  // rango. Por canal y no en conjunto, porque el velo es azulado y castiga
+  // desigual: el azul se lleva la peor parte.
+  //
+  // Y no se aplica siempre igual: se DOSIFICA según cuánta bruma haya de
+  // verdad, medida con el canal oscuro (el mínimo de los tres canales de cada
+  // píxel). En una foto sin bruma siempre hay algún punto donde ese mínimo cae
+  // casi a cero —una sombra bajo un alero—; cuando la bruma cubre la escena
+  // ese piso se levanta, porque es luz que no viene del suelo. Hizo falta:
+  // corrigiendo a ciegas, una escena cuyo punto más oscuro ES vegetación
+  // terminaba desverdecida, que es el error opuesto al que se quería arreglar.
+  function quitarVelo(datos, n){
+    const hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
+    const oscuro = new Uint32Array(256);
+    for (let p = 0, i = 0; p < n; p++, i += 4) {
+      hist[0][datos[i]]++; hist[1][datos[i + 1]]++; hist[2][datos[i + 2]]++;
+      const mn = datos[i] < datos[i + 1] ? (datos[i] < datos[i + 2] ? datos[i] : datos[i + 2])
+                                         : (datos[i + 1] < datos[i + 2] ? datos[i + 1] : datos[i + 2]);
+      oscuro[mn]++;
+    }
+    // Percentiles y no mínimo/máximo absolutos: un solo píxel quemado o muerto
+    // —y en una foto satelital siempre hay— arruinaría el estiramiento.
+    const corte = function (h, frac) {
+      let acc = 0; const meta = n * frac;
+      for (let v = 0; v < 256; v++) { acc += h[v]; if (acc >= meta) return v; }
+      return 255;
+    };
+    // El QUITAR va por canal; el AMPLIFICAR, no. Es una distinción que costó
+    // una medición entender: restar el piso de cada canal por separado es lo
+    // correcto, porque el velo azulea y castiga distinto a cada uno. Pero
+    // estirar después cada canal a su propio rango es maquillaje de contraste,
+    // y al aplicar tres ganancias distintas TUERCE el tono: en la prueba, los
+    // arbolitos apagados pasaron de recuperarse casi todos a perderse casi
+    // todos. Con una ganancia común, las proporciones de color ya corregidas
+    // se mantienen, que es de lo que vive todo el clasificador.
+    // El velo se quita COMPLETO, sin dejar margen de cortesía. Se probó dejar
+    // un resto (por aquello de que una foto sana ya tiene píxeles casi negros)
+    // y salió peor en los dos escenarios: el término que suma la bruma es
+    // aditivo, y cualquier resto que quede sigue diluyendo el color: los
+    // arbolitos apagados se perdieron de nuevo. O se quita entero o no sirve.
+    // Cuánta bruma hay: 0 si el canal oscuro llega casi a negro (foto limpia),
+    // 1 cuando el piso está claramente levantado.
+    const SIN_BRUMA = 18, TODA_BRUMA = 78;
+    const a0 = corte(oscuro, .005);
+    const fuerza = Math.max(0, Math.min(1, (a0 - SIN_BRUMA) / (TODA_BRUMA - SIN_BRUMA)));
+
+    let rangoMax = 24;
+    const crudo = [0, 0, 0];
+    for (let c = 0; c < 3; c++) {
+      const lo = corte(hist[c], .005), hi = corte(hist[c], .995);
+      crudo[c] = lo;
+      rangoMax = Math.max(rangoMax, hi - lo);
+    }
+    // Guarda física: la luz de bruma NUNCA es verde-dominante. El cielo dispersa
+    // hacia el azul, así que el velo va de gris a celeste, jamás con el verde
+    // por encima de los otros dos. Cuando el piso sale verde-dominante no es
+    // velo: es que lo más oscuro de la foto ES vegetación, y restarlo
+    // desverdecería justo lo que se quiere encontrar. Ahí el verde se recorta
+    // al mayor de los otros dos canales y el resto de la corrección sigue.
+    crudo[1] = Math.min(crudo[1], Math.max(crudo[0], crudo[2]));
+
+    let velo = 0;
+    const piso = [0, 0, 0];
+    for (let c = 0; c < 3; c++) { piso[c] = crudo[c] * fuerza; velo += piso[c]; }
+    // La ganancia se dosifica igual: en una foto sana no se toca el contraste.
+    const gan = 1 + (255 / rangoMax - 1) * fuerza;
+    const lut = [];
+    for (let c = 0; c < 3; c++) {
+      const t = new Uint8Array(256);
+      for (let v = 0; v < 256; v++) {
+        t[v] = Math.max(0, Math.min(255, Math.round((v - piso[c]) * gan)));
+      }
+      lut.push(t);
+    }
+    for (let p = 0, i = 0; p < n; p++, i += 4) {
+      datos[i] = lut[0][datos[i]]; datos[i + 1] = lut[1][datos[i + 1]]; datos[i + 2] = lut[2][datos[i + 2]];
+    }
+    return Math.round(velo / 3);
+  }
+
+  // ── Umbral de verde adaptado a ESTA foto ─────────────────────────────────
+  // Aun corregido el velo, dos fotos del mismo barrio en distinta estación o
+  // con distinto procesado no comparten el mismo punto de corte. En vez de
+  // clavar un número, se busca dónde se parte el histograma del índice de
+  // verde con el método de Otsu: el umbral que deja los dos grupos —lo que es
+  // vegetación y lo que no— lo más apretados posible cada uno por dentro.
+  //
+  // Va acotado entre VERDE_MIN y VERDE_MAX. Otsu supone que hay dos grupos, y
+  // en un área que sea toda techo o toda monte no los hay: sin tope, inventaría
+  // una frontera en medio del único grupo que existe y partiría en dos algo
+  // homogéneo. El tope hace que en ese caso mande el criterio fijo de siempre.
+  // El piso baja a .035 porque ahora el umbral se decide sobre una foto ya
+  // sin velo, donde el verde real destaca más y no hace falta ser tan estricto.
+  // Los pisos de saturación, en cambio, se quedan donde estaban: la escena de
+  // prueba dejó de poder calibrarlos —al quitar el velo, el asfalto sombreado
+  // resulta ser el objeto oscuro de esa escena y se neutraliza solo, cosa que
+  // en una foto real no pasa—, así que se conserva el valor medido antes, que
+  // además cae justo entre el pavimento (~.13) y la hoja (~.30) medidos sobre
+  // color ya corregido, que es el régimen en el que ahora trabaja todo.
+  const VERDE_MIN = .035, VERDE_MAX = .105;
+  function umbralVerdeDeLaFoto(datos, n){
+    const B = 256, LO = -.4, HI = .4;
+    const hist = new Uint32Array(B);
+    for (let p = 0, i = 0; p < n; p++, i += 4) {
+      const suma = datos[i] + datos[i + 1] + datos[i + 2] || 1;
+      const exg = (2 * datos[i + 1] - datos[i] - datos[i + 2]) / suma;
+      let b = Math.round((exg - LO) / (HI - LO) * (B - 1));
+      if (b < 0) b = 0; else if (b >= B) b = B - 1;
+      hist[b]++;
+    }
+    let total = 0, suma = 0;
+    for (let b = 0; b < B; b++) { total += hist[b]; suma += b * hist[b]; }
+    let sumaB = 0, pesoB = 0, mejorVar = -1, mejorB = 0;
+    for (let b = 0; b < B; b++) {
+      pesoB += hist[b];
+      if (!pesoB) continue;
+      const pesoF = total - pesoB;
+      if (!pesoF) break;
+      sumaB += b * hist[b];
+      const mediaB = sumaB / pesoB, mediaF = (suma - sumaB) / pesoF;
+      const entre = pesoB * pesoF * (mediaB - mediaF) * (mediaB - mediaF);
+      if (entre > mejorVar) { mejorVar = entre; mejorB = b; }
+    }
+    const bruto = LO + (mejorB + .5) / (B - 1) * (HI - LO);
+    // La foto solo puede pedir MÁS permisividad, nunca menos: el umbral fijo
+    // hace de techo. Otsu busca el corte que más separa dos grupos, y en un
+    // área con mucha vegetación y un fondo claro ese corte se le va hacia
+    // arriba y deja fuera la cola de copa apagada — justo lo que se quería
+    // rescatar. Dejándolo solo bajar, la parte adaptativa ayuda donde hace
+    // falta (foto lavada) y no puede estropear lo ya calibrado.
+    return Math.max(VERDE_MIN, Math.min(VERDE_FIRME, bruto));
+  }
+
+  // Clasifica una malla completa: umbral por píxel, filtro de mayoría y
+  // crecimiento de la copa sobre sus dudas. El agua y la máscara del área NO
+  // se resuelven aquí: eso se hace UNA vez, después de que las pasadas voten.
+  function clasificarMalla(datos, w, h, U){
+    const n = w * h;
+    const cls = new Uint8Array(n);
+    const dudoso = new Uint8Array(n);
+    for (let p = 0, i = 0; p < n; p++, i += 4) {
+      cls[p] = COD[clasificarPixel(datos[i], datos[i + 1], datos[i + 2], U)];
+      if (cls[p] !== COD.verde && esVerdeDebil(datos[i], datos[i + 1], datos[i + 2], U)) dudoso[p] = 1;
+    }
+
+    // Filtro de mayoría 3×3. Suavizado posterior a la clasificación, práctica
+    // estándar en teledetección: un píxel suelto de otra clase en medio de una
+    // copa es ruido del sensor o del JPEG, no un cambio de cobertura.
+    const suave = new Uint8Array(cls);
+    const cnt = new Uint8Array(5);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const p = y * w + x;
+        cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const f = p + dy * w;
+          cnt[cls[f - 1]]++; cnt[cls[f]]++; cnt[cls[f + 1]]++;
+        }
+        const propio = cls[p];
+        if (cnt[propio] > MAYORIA_SOLO) continue;   // no está solo: es un rasgo, no ruido
+        let mejor = propio, nMejor = 0;
+        for (let k = 1; k <= 4; k++) if (cnt[k] > nMejor) { nMejor = cnt[k]; mejor = k; }
+        if (nMejor >= MAYORIA_MIN) suave[p] = mejor;
+      }
+    }
+
+    // La copa crece sobre sus propias dudas: crecimiento por regiones desde
+    // semilla, hasta VERDE_CRECE pasos. Recupera el borde sombreado y el árbol
+    // velado sin abrirle la puerta al pasto seco, porque solo avanza sobre
+    // píxeles que ya tenían sesgo verde y solo partiendo de copa confirmada.
+    // Alcance en metros, no en píxeles: se reescala con el ancho de ESTA malla
+    // para que las tres pasadas contagien la misma distancia sobre el suelo.
+    const crece = Math.max(3, Math.round(VERDE_CRECE * w / VERDE_CRECE_BASE));
+    const cola = new Int32Array(n);
+    const salto = new Int16Array(n);
+    let cabeza = 0, cuelo = 0;
+    for (let p = 0; p < n; p++) if (suave[p] === COD.verde) { cola[cuelo++] = p; salto[p] = 1; }
+    while (cabeza < cuelo) {
+      const p = cola[cabeza++];
+      const d = salto[p];
+      if (d > crece) continue;
+      const x = p % w, y = (p - x) / w;
+      for (let k = 0; k < 4; k++) {
+        const q = k === 0 ? (x > 0 ? p - 1 : -1)
+                : k === 1 ? (x < w - 1 ? p + 1 : -1)
+                : k === 2 ? (y > 0 ? p - w : -1)
+                :           (y < h - 1 ? p + w : -1);
+        if (q < 0 || salto[q] || !dudoso[q]) continue;
+        suave[q] = COD.verde;
+        salto[q] = d + 1;
+        cola[cuelo++] = q;
+      }
+    }
+    return suave;
+  }
+
+  // Lleva una malla de clases a la rejilla final por vecino más cercano. No se
+  // interpola a propósito: entre "vegetación" y "construido" no hay término
+  // medio, un promedio inventaría una clase que no existe.
+  function remuestrear(cls, w, h, W, H){
+    if (w === W && h === H) return cls;
+    const out = new Uint8Array(W * H);
+    for (let Y = 0; Y < H; Y++) {
+      const y = Math.min(h - 1, Math.floor((Y + .5) * h / H));
+      for (let X = 0; X < W; X++) {
+        const x = Math.min(w - 1, Math.floor((X + .5) * w / W));
+        out[Y * W + X] = cls[y * w + x];
+      }
+    }
+    return out;
+  }
+
+  function analizarRaster(progreso){
+    const avisar = typeof progreso === 'function' ? progreso : function(){};
+    return new Promise(function (resolve, reject) {
       if (!S.cerrada || S.pts.length < 3) { reject(new Error('Primero dibuja un área.')); return; }
       const bb = bboxDelArea(S.pts);
       // Se pide un poco más ancho que el área para que el borde no quede pegado.
@@ -1661,206 +1937,175 @@
       // Se conserva la proporción real del área: pedir siempre un cuadrado
       // deformaría un área alargada y falsearía los porcentajes.
       const prop = (caja.n - caja.s) / Math.max(1e-9, (caja.e - caja.o));
-      const w = RASTER_LADO, h = Math.max(60, Math.min(1000, Math.round(RASTER_LADO * prop)));
-      const url = RASTER_URL + '?bbox=' + [caja.o, caja.s, caja.e, caja.n].join(',') +
-        '&bboxSR=4326&imageSR=4326&size=' + w + ',' + h + '&format=png&f=image';
+      const tam = function (lado) {
+        return { w: lado, h: Math.max(60, Math.min(Math.round(lado * 1.6), Math.round(lado * prop))) };
+      };
 
-      const img = new Image();
-      img.crossOrigin = 'anonymous';       // sin esto el canvas queda "tainted"
-      img.onerror = () => reject(new Error('No se pudo descargar la imagen satelital.'));
-      img.onload = () => {
-        try {
-          const cv = document.createElement('canvas');
-          cv.width = w; cv.height = h;
-          const cx = cv.getContext('2d');
-          cx.drawImage(img, 0, 0, w, h);
-          const datos = cx.getImageData(0, 0, w, h).data;
+      // La rejilla final es la de la pasada más fina; las otras se llevan a
+      // ella para poder votar celda por celda.
+      const FINA = tam(ESCALAS[ESCALAS.length - 1]);
+      const W = FINA.w, H = FINA.h, N = W * H;
 
-          // Lienzo gemelo: mismo tamaño, pero en vez de guardar el píxel de la
-          // foto guarda el COLOR DE LA CLASE — esto es lo que luego se pega
-          // sobre el mapa como overlay, para que el raster no se quede solo
-          // en la lista de porcentajes del panel.
-          const cvClas = document.createElement('canvas');
-          cvClas.width = w; cvClas.height = h;
-          const cxClas = cvClas.getContext('2d');
-          const imgClas = cxClas.createImageData(w, h);
-          const RGB = {
-            verde:      [34, 197, 94],
-            construido: [148, 163, 184],
-            agua:       [59, 130, 246],
-            mixto:      [201, 162, 106]
-          };
-          // Opacidad visible pero que deja intuir el satelital de fondo.
-          const ALPHA = 176;
+      const votos = [];
+      let lienzoFino = null, veloMedio = 0, umbralMedio = 0;
 
-          // Códigos numéricos para poder trabajar sobre arreglos tipados: las
-          // pasadas de vecindad recorren la imagen varias veces y con cadenas
-          // de texto serían mucho más lentas en un teléfono.
-          const COD = { verde:1, construido:2, agua:3, mixto:4 };
-          const NOM = [null, 'verde', 'construido', 'agua', 'mixto'];
-          const n = w * h;
-
-          // ── Pasada 1 · clasificar y marcar qué cae dentro del área ────────
-          // Se clasifica la imagen ENTERA, también lo de afuera del polígono:
-          // las pasadas de vecindad necesitan contexto real en el borde, si no
-          // el contorno del área quedaría con un marco de ruido.
-          const cls = new Uint8Array(n);
-          const dudoso = new Uint8Array(n);   // sospecha de verde, a resolver por contexto
-          for (let p = 0, i = 0; p < n; p++, i += 4) {
-            cls[p] = COD[clasificarPixel(datos[i], datos[i+1], datos[i+2])];
-            if (cls[p] !== COD.verde && esVerdeDebil(datos[i], datos[i+1], datos[i+2])) dudoso[p] = 1;
-          }
-
-          // Máscara del área por BARRIDO DE LÍNEAS. Preguntar píxel por píxel
-          // "¿caigo dentro del polígono?" cuesta un recorrido de los vértices
-          // cada vez; a 640×640 son cientos de miles de recorridos y en el
-          // teléfono se notaba. Como cada fila de la imagen tiene una latitud
-          // constante, basta cruzar el polígono UNA vez por fila y rellenar
-          // los tramos entre cortes. Mismo criterio par-impar que
-          // dentroDelPoligono(), solo que calculado de otra forma.
-          const dentroMask = new Uint8Array(n);
-          const vert = S.pts, V = vert.length;
-          const cortes = [];
-          let dentro = 0;
-          for (let y = 0; y < h; y++) {
-            const lat = caja.n - (y + .5) / h * (caja.n - caja.s);
-            cortes.length = 0;
-            for (let k = 0, j = V - 1; k < V; j = k++) {
-              const a = vert[j], c2 = vert[k];
-              if ((a.lat > lat) !== (c2.lat > lat)) {
-                const lng = a.lng + (lat - a.lat) / (c2.lat - a.lat) * (c2.lng - a.lng);
-                cortes.push((lng - caja.o) / (caja.e - caja.o) * w - .5);
-              }
+      // Las pasadas van EN SERIE, no en paralelo: cada una son varios millones
+      // de píxeles y un teléfono con tres a la vez se queda sin memoria.
+      let cadena = Promise.resolve();
+      ESCALAS.forEach(function (lado, idx) {
+        cadena = cadena.then(function () {
+          avisar('Pasada ' + (idx + 1) + ' de ' + ESCALAS.length + ' · leyendo a ' + lado + ' px…');
+          const t = tam(lado);
+          return pedirImagenSatelital(caja, t.w, t.h).then(function (im) {
+            veloMedio += quitarVelo(im.datos, t.w * t.h);
+            const uFirme = umbralVerdeDeLaFoto(im.datos, t.w * t.h);
+            umbralMedio += uFirme;
+            const U = { firme: uFirme, debil: uFirme * (VERDE_DEBIL / VERDE_FIRME) };
+            avisar('Pasada ' + (idx + 1) + ' de ' + ESCALAS.length + ' · clasificando ' +
+                   (t.w * t.h / 1e6).toFixed(1) + ' M de píxeles…');
+            const cls = clasificarMalla(im.datos, t.w, t.h, U);
+            votos.push(remuestrear(cls, t.w, t.h, W, H));
+            // La foto que se guarda para comparar es la de la pasada más fina,
+            // y va YA corregida: es la que de verdad se clasificó.
+            if (lado === ESCALAS[ESCALAS.length - 1]) {
+              const cxi = im.lienzo.getContext('2d');
+              const idata = cxi.createImageData(t.w, t.h);
+              idata.data.set(im.datos);
+              cxi.putImageData(idata, 0, 0);
+              lienzoFino = im.lienzo;
             }
-            if (cortes.length < 2) continue;
-            cortes.sort((p, q) => p - q);
-            const fila = y * w;
-            for (let k = 0; k + 1 < cortes.length; k += 2) {
-              const x0 = Math.max(0, Math.ceil(cortes[k]));
-              const x1 = Math.min(w - 1, Math.floor(cortes[k + 1]));
-              for (let x = x0; x <= x1; x++) { dentroMask[fila + x] = 1; dentro++; }
-            }
-          }
-          if (!dentro) { reject(new Error('El área es demasiado pequeña para analizarla.')); return; }
+          });
+        });
+      });
 
-          // ── Pasada 2 · filtro de mayoría 3×3 ──────────────────────────────
-          // Suavizado posterior a la clasificación, práctica estándar en
-          // teledetección: un píxel suelto de otra clase en medio de una copa
-          // es ruido del sensor o del JPEG, no un cambio de cobertura.
-          const suave = new Uint8Array(cls);
-          const cnt = new Uint8Array(5);
-          for (let y = 1; y < h - 1; y++) {
-            for (let x = 1; x < w - 1; x++) {
-              const p = y * w + x;
-              cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
-              for (let dy = -1; dy <= 1; dy++) {
-                const f = p + dy * w;
-                cnt[cls[f - 1]]++; cnt[cls[f]]++; cnt[cls[f + 1]]++;
-              }
-              const propio = cls[p];
-              if (cnt[propio] > MAYORIA_SOLO) continue;   // no está solo: es un rasgo, no ruido
-              let mejor = propio, nMejor = 0;
-              for (let k = 1; k <= 4; k++) if (cnt[k] > nMejor) { nMejor = cnt[k]; mejor = k; }
-              if (nMejor >= MAYORIA_MIN) suave[p] = mejor;
+      cadena.then(function () {
+        avisar('Cruzando las ' + ESCALAS.length + ' pasadas…');
+
+        // ── Voto entre pasadas ────────────────────────────────────────────
+        // Cada resolución ve cosas distintas: la fina distingue el arbolito de
+        // andén, la gruesa es más estable frente al ruido de compresión.
+        //
+        // La vegetación se cuenta por UNIÓN y el resto por mayoría, y no es
+        // capricho: cada pasada es un detector, y un árbol reconocido a
+        // cualquier resolución es un árbol —el que solo se ve en la fina es
+        // justamente el chiquito, y el que solo se ve en la gruesa es el que a
+        // máximo detalle se deshace en píxeles sueltos—. Exigirle mayoría a la
+        // copa la castiga dos veces. Medido contra mayoría, la unión sube la
+        // copa apagada de 75% a 95% SIN mover el falso positivo de la calle,
+        // que se queda en 0%: cada pasada ya trae su propia prudencia (piso de
+        // saturación, verde dominante, filtro de mayoría interno), así que
+        // sumarlas recupera árboles sin dejar entrar pavimento.
+        const final = new Uint8Array(N);
+        const cnt = new Uint8Array(5);
+        for (let p = 0; p < N; p++) {
+          cnt[1] = cnt[2] = cnt[3] = cnt[4] = 0;
+          for (let v = 0; v < votos.length; v++) cnt[votos[v][p]]++;
+          if (cnt[COD.verde]) { final[p] = COD.verde; continue; }
+          let mejor = votos[votos.length - 1][p], nMejor = cnt[mejor];
+          for (let k = 1; k <= 4; k++) if (cnt[k] > nMejor) { nMejor = cnt[k]; mejor = k; }
+          final[p] = mejor;
+        }
+
+        // ── Máscara del área, por barrido de líneas ────────────────────────
+        // Cada fila de la imagen tiene latitud constante, así que basta cruzar
+        // el polígono una vez por fila y rellenar los tramos entre cortes.
+        // Mismo criterio par-impar que dentroDelPoligono(), sin preguntarlo
+        // millones de veces.
+        const dentroMask = new Uint8Array(N);
+        const vert = S.pts, V = vert.length;
+        const cortes = [];
+        let dentro = 0;
+        for (let y = 0; y < H; y++) {
+          const lat = caja.n - (y + .5) / H * (caja.n - caja.s);
+          cortes.length = 0;
+          for (let k = 0, j = V - 1; k < V; j = k++) {
+            const a = vert[j], c2 = vert[k];
+            if ((a.lat > lat) !== (c2.lat > lat)) {
+              const lng = a.lng + (lat - a.lat) / (c2.lat - a.lat) * (c2.lng - a.lng);
+              cortes.push((lng - caja.o) / (caja.e - caja.o) * W - .5);
             }
           }
-
-          // ── Pasada 3 · la copa crece sobre sus propias dudas ──────────────
-          // Crecimiento por regiones desde semilla: la vegetación ya confirmada
-          // contagia a los píxeles dudosos que la tocan, y esos contagian a los
-          // suyos, hasta VERDE_CRECE pasos. Es lo que recupera el borde
-          // sombreado de la copa y el árbol velado por calima, sin abrirle la
-          // puerta al pasto seco: por lejos que crezca, solo avanza sobre
-          // píxeles que ya tenían sesgo verde y solo partiendo de copa real.
-          const cola = new Int32Array(n);
-          const salto = new Int8Array(n);   // 0 = sin visitar; si no, pasos+1
-          let cabeza = 0, cuelo = 0;
-          for (let p = 0; p < n; p++) {
-            if (suave[p] === COD.verde) { cola[cuelo++] = p; salto[p] = 1; }
+          if (cortes.length < 2) continue;
+          cortes.sort(function (p, q) { return p - q; });
+          const fila = y * W;
+          for (let k = 0; k + 1 < cortes.length; k += 2) {
+            const x0 = Math.max(0, Math.ceil(cortes[k]));
+            const x1 = Math.min(W - 1, Math.floor(cortes[k + 1]));
+            for (let x = x0; x <= x1; x++) { dentroMask[fila + x] = 1; dentro++; }
           }
-          while (cabeza < cuelo) {
-            const p = cola[cabeza++];
-            const d = salto[p];
-            if (d > VERDE_CRECE) continue;
-            const x = p % w, y = (p - x) / w;
+        }
+        if (!dentro) { reject(new Error('El área es demasiado pequeña para analizarla.')); return; }
+
+        // ── Manchas de agua demasiado chicas ──────────────────────────────
+        // El agua de verdad forma cuerpos continuos; un techo de zinc azul o
+        // una sombra densa forman manchitas sueltas. Cada mancha que no llega
+        // al mínimo se pasa a la clase que domina en su propio contorno: un
+        // techo azul rodeado de techos grises termina en construido, y una
+        // sombra dentro de una copa termina en vegetación.
+        //
+        // El mínimo va en METROS CUADRADOS reales y no en píxeles: el mismo
+        // número de píxeles son 20 m² en un lote y media hectárea en un barrio.
+        const m2Total = areaM2(S.pts);
+        const m2PorPixel = m2Total / dentro;
+        const MIN_AGUA = Math.min(
+          Math.round(dentro * .06),
+          Math.max(25, Math.round(AGUA_MIN_M2 / Math.max(1e-6, m2PorPixel)))
+        );
+        const visto = new Uint8Array(N);
+        const pila = [];
+        const blob = [];
+        const borde = new Int32Array(5);
+        for (let p0 = 0; p0 < N; p0++) {
+          if (final[p0] !== COD.agua || visto[p0]) continue;
+          pila.length = 0; blob.length = 0;
+          borde[1] = borde[2] = borde[3] = borde[4] = 0;
+          pila.push(p0); visto[p0] = 1;
+          while (pila.length) {
+            const p = pila.pop();
+            blob.push(p);
+            const x = p % W, y = (p - x) / W;
             for (let k = 0; k < 4; k++) {
               const q = k === 0 ? (x > 0 ? p - 1 : -1)
-                      : k === 1 ? (x < w - 1 ? p + 1 : -1)
-                      : k === 2 ? (y > 0 ? p - w : -1)
-                      :           (y < h - 1 ? p + w : -1);
-              if (q < 0 || salto[q] || !dudoso[q]) continue;
-              suave[q] = COD.verde;
-              salto[q] = d + 1;
-              cola[cuelo++] = q;
+                      : k === 1 ? (x < W - 1 ? p + 1 : -1)
+                      : k === 2 ? (y > 0 ? p - W : -1)
+                      :           (y < H - 1 ? p + W : -1);
+              if (q < 0) continue;
+              if (final[q] === COD.agua) {
+                if (!visto[q]) { visto[q] = 1; pila.push(q); }
+              } else borde[final[q]]++;
             }
           }
-
-          // ── Pasada 4 · manchas de agua demasiado chicas ───────────────────
-          // El agua de verdad forma cuerpos continuos; un techo de zinc azul o
-          // una sombra densa forman manchitas sueltas. Se recorren las manchas
-          // de agua conectadas y las que no alcanzan el tamaño mínimo se pasan
-          // a la clase que domina en su propio contorno — así un techo azul
-          // rodeado de techos grises termina en construido, y una sombra dentro
-          // de una copa termina en vegetación.
-          // El mínimo se fija en METROS CUADRADOS reales, no en píxeles: el
-          // mismo número de píxeles significa 20 m² en un lote y media hectárea
-          // en un barrio, así que un umbral en píxeles daría un criterio
-          // distinto según el tamaño del área dibujada.
-          const m2Total = areaM2(S.pts);
-          const m2PorPixel = m2Total / dentro;
-          const MIN_AGUA = Math.min(
-            Math.round(dentro * .06),                                  // en un lote chico, nada puede pedir 600 m²
-            Math.max(25, Math.round(AGUA_MIN_M2 / Math.max(1e-6, m2PorPixel)))
-          );
-          const visto = new Uint8Array(n);
-          const pila = [];
-          const blob = [];
-          const borde = new Int32Array(5);
-          for (let p0 = 0; p0 < n; p0++) {
-            if (suave[p0] !== COD.agua || visto[p0]) continue;
-            pila.length = 0; blob.length = 0;
-            borde[1] = borde[2] = borde[3] = borde[4] = 0;
-            pila.push(p0); visto[p0] = 1;
-            while (pila.length) {
-              const p = pila.pop();
-              blob.push(p);
-              const x = p % w, y = (p - x) / w;
-              for (let k = 0; k < 4; k++) {
-                const q = k === 0 ? (x > 0 ? p - 1 : -1)
-                        : k === 1 ? (x < w - 1 ? p + 1 : -1)
-                        : k === 2 ? (y > 0 ? p - w : -1)
-                        :           (y < h - 1 ? p + w : -1);
-                if (q < 0) continue;
-                if (suave[q] === COD.agua) {
-                  if (!visto[q]) { visto[q] = 1; pila.push(q); }
-                } else borde[suave[q]]++;
-              }
-            }
-            if (blob.length >= MIN_AGUA) continue;
-            let rep = COD.construido, nRep = -1;
-            for (let k = 1; k <= 4; k++) {
-              if (k !== COD.agua && borde[k] > nRep) { nRep = borde[k]; rep = k; }
-            }
-            for (let k = 0; k < blob.length; k++) suave[blob[k]] = rep;
+          if (blob.length >= MIN_AGUA) continue;
+          let rep = COD.construido, nRep = -1;
+          for (let k = 1; k <= 4; k++) {
+            if (k !== COD.agua && borde[k] > nRep) { nRep = borde[k]; rep = k; }
           }
+          for (let k = 0; k < blob.length; k++) final[blob[k]] = rep;
+        }
 
-          // ── Pasada 5 · contar dentro del área y pintar el overlay ─────────
-          const cuenta = { verde:0, agua:0, construido:0, mixto:0 };
-          for (let p = 0; p < n; p++) {
-            const i = p * 4;
-            if (!dentroMask[p]) { imgClas.data[i + 3] = 0; continue; }
-            const clase = NOM[suave[p]];
-            cuenta[clase]++;
-            const rgb = RGB[clase];
-            imgClas.data[i] = rgb[0]; imgClas.data[i+1] = rgb[1]; imgClas.data[i+2] = rgb[2];
-            imgClas.data[i + 3] = ALPHA;
-          }
-          cxClas.putImageData(imgClas, 0, 0);
+        // ── Contar dentro del área y pintar el overlay ─────────────────────
+        const cvClas = document.createElement('canvas');
+        cvClas.width = W; cvClas.height = H;
+        const cxClas = cvClas.getContext('2d');
+        const imgClas = cxClas.createImageData(W, H);
+        const cuenta = { verde: 0, agua: 0, construido: 0, mixto: 0 };
+        for (let p = 0; p < N; p++) {
+          const i = p * 4;
+          if (!dentroMask[p]) { imgClas.data[i + 3] = 0; continue; }
+          const clase = NOM[final[p]];
+          cuenta[clase]++;
+          const rgb = RGB[clase];
+          imgClas.data[i] = rgb[0]; imgClas.data[i + 1] = rgb[1]; imgClas.data[i + 2] = rgb[2];
+          imgClas.data[i + 3] = ALPHA;
+        }
+        cxClas.putImageData(imgClas, 0, 0);
 
-          const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
-          const m2 = m2Total;   // ya calculada arriba para el umbral de agua
-          const sup = k => Math.round(m2 * cuenta[k] / dentro);
-          resolve({
+        const cv = lienzoFino || cvClas;
+        const w = W, h = H;
+        const pct = k => Math.round(1000 * cuenta[k] / dentro) / 10;
+        const m2 = m2Total;
+        const sup = k => Math.round(m2 * cuenta[k] / dentro);
+        resolve({
             pixeles: dentro, imagen: cv.toDataURL('image/png'),
             overlayImagen: cvClas.toDataURL('image/png'),
             // Límites en (sur,oeste)-(norte,este): lo que necesita Leaflet
@@ -1881,14 +2126,17 @@
                 nota:'Teja, concreto envejecido, suelo descubierto y matorral seco comparten este rango de color.' }
             ],
             pctAmbiguo: pct('mixto'),
-            areaM2: m2
+            areaM2: m2,
+            // Diagnóstico de la corrida, para poder explicar en pantalla qué
+            // tanto velo traía la foto y con qué umbral se acabó decidiendo.
+            velo: Math.round(veloMedio / ESCALAS.length),
+            umbral: Math.round(umbralMedio / ESCALAS.length * 1000) / 1000,
+            pasadas: ESCALAS.length,
+            malla: W + '×' + H
           });
-        } catch(e) {
-          // Salta si el navegador considera el canvas contaminado.
-          reject(new Error('El navegador bloqueó la lectura de la imagen (CORS).'));
-        }
-      };
-      img.src = url;
+      }).catch(function (e) {
+        reject(e instanceof Error ? e : new Error('No se pudo analizar la imagen satelital.'));
+      });
     });
   }
 
@@ -1916,6 +2164,12 @@
       '<p class="pca-raster-lectura">Cobertura dominante: <b>' + esc(dom.etq.toLowerCase()) +
         '</b> (' + dom.pct + '%). Estimado sobre ' + res.pixeles.toLocaleString('es-CO') +
         ' puntos de la imagen dentro del área.</p>' +
+      // Ficha técnica de ESTA corrida. Va a la vista porque el resultado ya no
+      // sale de una regla fija: depende de cuánto velo traía la foto y de qué
+      // umbral pidió. Sin esto, dos análisis distintos del mismo sitio serían
+      // inexplicables.
+      '<p class="pca-raster-ficha">' + res.pasadas + ' lecturas cruzadas · malla ' + esc(res.malla) +
+        ' · velo retirado ' + res.velo + ' de 255 · umbral de verde ' + res.umbral + '</p>' +
       '<div class="pca-raster-aviso"><b>⚠️ Cómo leer esto</b>' +
         '<small>Estimación por <b>color</b> de imagen satelital: <b>no es NDVI ni un estudio ' +
         'ambiental certificado</b>. Un NDVI real necesita banda infrarroja, que no está disponible ' +
@@ -1923,9 +2177,11 @@
         'agua — y todo lo demás queda en <b>tonos cálidos</b> (' + res.pctAmbiguo + '% del área), ' +
         'donde teja, concreto envejecido, suelo y matorral seco son indistinguibles por color. ' +
         'Sirve para dimensionar y comparar sectores, no para certificar.<br><br>' +
-        'La vegetación se mide por <b>proporción</b> de verde y no por brillo, así que la copa ' +
-        'en sombra también cuenta, y el borde apagado de una copa se resuelve por lo que tiene ' +
-        'al lado. El botón 🛰️ del recuadro sobre el mapa muestra <b>la foto que se analizó</b>: ' +
+        'La foto se lee <b>tres veces</b> a distinta resolución y las lecturas se cruzan; antes ' +
+        'de clasificar se le retira el velo de bruma, que es lo que aplana el color y hacía ' +
+        'desaparecer árboles enteros. La vegetación se mide por <b>proporción</b> de verde y no ' +
+        'por brillo, así que la copa en sombra también cuenta, y el borde apagado de una copa se ' +
+        'resuelve por lo que tiene al lado. El botón 🛰️ del recuadro sobre el mapa muestra <b>la foto que se analizó</b>: ' +
         'no es la misma imagen del mapa de fondo y puede ser de otro año, así que si un árbol ' +
         'falta, ahí se ve si el problema es la clasificación o la foto. Las manchas de agua de menos de 600 m² se toman como techo ' +
         'o sombra —el zinc azul y el agua somera tienen el mismo color—, de modo que una ' +
@@ -2011,9 +2267,14 @@
     if (name === 'raster') {
       const btn = el;
       const out = document.getElementById('pca-raster-out');
-      if (btn) { btn.disabled = true; btn.textContent = '🛰️ Analizando imagen…'; }
-      if (out) out.innerHTML = '<p class="pca-raster-cargando">Descargando y clasificando la imagen satelital…</p>';
-      analizarRaster().then(res => {
+      if (btn) { btn.disabled = true; btn.textContent = '🛰️ Analizando…'; }
+      // El análisis pasa de una lectura a tres, y a mucha más resolución: puede
+      // tardar. Callado se siente colgado, así que va contando en qué anda.
+      const avisar = function (txt) {
+        if (out) out.innerHTML = '<p class="pca-raster-cargando">' + esc(txt) + '</p>';
+      };
+      avisar('Preparando el análisis…');
+      analizarRaster(avisar).then(res => {
         pintarRaster(res);
         reg('raster-ok');
         if (btn) { btn.disabled = false; btn.textContent = '↻ Volver a analizar'; }

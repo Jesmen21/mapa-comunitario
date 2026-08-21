@@ -611,3 +611,9 @@
   background:#1b3d52; font-size:.82rem; display:grid; place-items:center; margin-right:4px;
 }
 .pca-raster-chip-foto.activo{ background:#2f6f96; box-shadow:0 0 0 1.5px #7fc4e8 inset; }
+
+/* Ficha técnica de la corrida del raster (lecturas, velo retirado, umbral). */
+.pca-raster-ficha{
+  margin:6px 0 0; font-size:.68rem; line-height:1.4;
+  color:#6b8a76 !important; -webkit-text-fill-color:#6b8a76 !important;
+}

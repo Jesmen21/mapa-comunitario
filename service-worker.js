@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v507-calle-y-arbol-chico';
+const URBIS_CACHE = 'urbis-v508-raster-sin-bruma';
 const URBIS_ASSETS = [
   './',
   './index.html',
