@@ -257,6 +257,17 @@
 
     $('aia-btn-analizar').addEventListener('click', ejecutarAnalisis);
     $('aia-btn-reanalizar').addEventListener('click', ejecutarAnalisis);
+    // Re-analizar reusa lo que se descargó hoy; esto en cambio tira esa copia
+    // y vuelve a preguntar. Es la salida para el caso "abrieron un local nuevo
+    // (o alguien acaba de mapearlo) y el análisis sigue sin verlo".
+    // `forzarDatos` basta: la consulta forzada reescribe la entrada guardada
+    // de este lote. No se borra la caché entera para no castigar a los demás
+    // análisis del día, que siguen siendo válidos.
+    const btnRefrescar = $('aia-btn-refrescar');
+    if (btnRefrescar) btnRefrescar.addEventListener('click', () => {
+      S.forzarDatos = true;
+      ejecutarAnalisis();
+    });
     $('aia-btn-nuevo').addEventListener('click', () => {
       S.resultado = null;
       S.capaPOIs.clearLayers();
@@ -435,7 +446,12 @@
     }, 1600);
 
     try {
-      const elementos = await window.AIA_DATOS.consultarEntorno(S.lote.lat, S.lote.lng, S.radioM);
+      // `S.forzarDatos` lo enciende el botón de recargar: salta la caché de 24 h
+      // y vuelve a pedir el entorno. Sin esto, un local abierto o mapeado hoy
+      // no aparecía hasta el día siguiente y parecía un fallo del análisis.
+      const elementos = await window.AIA_DATOS.consultarEntorno(
+        S.lote.lat, S.lote.lng, S.radioM, S.forzarDatos);
+      S.forzarDatos = false;
       S.ultimosElementos = elementos;
       // Ciudad/departamento/país para titular el informe. No bloquea el
       // análisis: si falla, el informe simplemente omite esa línea.
@@ -691,6 +707,7 @@
       cajaFoda('Oportunidades', '🚀', f.oportunidades, 'o') +
       cajaFoda('Riesgos', '🛑', f.riesgos, 'r');
 
+    renderFlujo(r);
     renderIndicadores(r);
     renderCharts(r);
 
@@ -705,6 +722,56 @@
     renderTablaPuntos(r);
 
     $('aia-conclusion').innerHTML = '<h3>📋 Conclusión técnica</h3><p>' + escHTML(r.conclusion) + '</p>';
+  }
+
+  // ── Flujo peatonal y vehicular ───────────────────────────────────────────
+  // El informe en PDF ya traía este bloque, pero quien decide dónde poner una
+  // cafetería lo hace mirando la pantalla, no exportando un PDF. Va en la app
+  // con la misma lectura para que no haya que interpretar dos cosas distintas.
+  function renderFlujo(r){
+    const cont = $('aia-flujo');
+    if (!cont) return;
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    cont.hidden = !f;
+    if (!f) return;
+
+    const col = v => v >= 70 ? '#4ade80' : v >= 50 ? '#22d3ee' : v >= 30 ? '#f5b942' : '#f87171';
+    const medidor = (etq, ico, v, nivel) =>
+      '<div class="aia-flujo-med"><div class="aia-flujo-cab"><span>' + ico + ' ' + etq + '</span>' +
+      '<b style="color:' + col(v) + '">' + v + '/100 · ' + escHTML(nivel) + '</b></div>' +
+      '<div class="aia-barra"><i style="width:' + v + '%;background:' + col(v) + '"></i></div></div>';
+
+    const franja = (etq, v) =>
+      '<div class="aia-flujo-hora"><small>' + etq + '</small>' +
+      '<div class="aia-barra"><i style="width:' + v + '%;background:#22d3ee"></i></div>' +
+      '<b>' + v + '</b></div>';
+
+    const lectura = f.dominante === 'peatonal'
+      ? 'El entorno mueve más gente a pie que en carro: favorece formatos de paso, vitrina a la calle y estancia corta.'
+      : f.dominante === 'vehicular'
+        ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
+        : 'El entorno reparte parejo entre peatón y carro: conviene resolver los dos accesos y no apostar a uno solo.';
+
+    const gen = (f.generadores || []).slice(0, 6);
+    const listaGen = gen.length
+      ? '<ul class="aia-flujo-gen">' + gen.map(g =>
+          '<li><span>' + escHTML(g.nombre) + '</span><small>×' + g.n + '</small><b>' + g.aporte + '</b></li>'
+        ).join('') + '</ul>'
+      : '<p class="aia-flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
+
+    cont.innerHTML =
+      '<h3>🚶🚗 Flujo peatonal y vehicular</h3>' +
+      medidor('Flujo peatonal', '🚶', f.peatonal, f.nivelPeatonal) +
+      medidor('Flujo vehicular', '🚗', f.vehicular, f.nivelVehicular) +
+      '<p class="aia-flujo-lectura">' + escHTML(lectura) + '</p>' +
+      '<p class="aia-flujo-lectura"><b>Hora fuerte: ' + escHTML(f.franjaFuerte) + '.</b> ' +
+        (f.parqueaderos ? f.parqueaderos + ' parqueadero' + (f.parqueaderos === 1 ? '' : 's') + ' en el radio.'
+                        : 'Sin parqueaderos identificados en el radio.') + '</p>' +
+      '<div class="aia-flujo-horas">' + franja('Mañana', f.franjas.manana) +
+        franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) + '</div>' +
+      '<h4 class="aia-flujo-sub">Qué trae gente a pie</h4>' + listaGen +
+      '<p class="aia-flujo-nota">Potencial estimado a partir de los usos del entorno y la malla vial. ' +
+        'No es un aforo: sirve para comparar ubicaciones y dimensionar el formato, no para proyectar ventas.</p>';
   }
 
   // ── Tabla completa de puntos ─────────────────────────────────────────────

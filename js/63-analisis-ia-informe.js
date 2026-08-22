@@ -289,6 +289,60 @@
   // Movilidad y exposición vial. Se apoya solo en la jerarquía de la malla
   // vial de OpenStreetMap: mide visibilidad y acceso, NO conteos de tráfico
   // (esos requieren una fuente externa que hoy no tenemos).
+  // ── Flujo peatonal y vehicular ──────────────────────────────────────────
+  // El bloque que pide un café: cuánta gente pasa por la puerta, cómo llega y
+  // a qué hora. Se declara sin rodeos que es potencial estimado de la
+  // estructura urbana, no un aforo — quien lo lea tiene que saber qué compra.
+  function bloqueFlujo(r){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    if (!f) return '';
+    const col = v => v >= 70 ? T.ok : v >= 50 ? T.acento : v >= 30 ? T.warn : T.bad;
+    const medidor = (etq, ico, v, nivel) =>
+      '<div class="flujo-med"><div class="flujo-cab"><b>' + ico + ' ' + etq + '</b>' +
+      '<span style="color:' + col(v) + '">' + v + '/100 · ' + esc(nivel) + '</span></div>' +
+      '<div class="flujo-barra"><i style="width:' + v + '%;background:' + col(v) + '"></i></div></div>';
+
+    const franja = (etq, v) =>
+      '<div class="flujo-hora"><small>' + etq + '</small>' +
+      '<div class="flujo-barra alta"><i style="width:' + v + '%;background:' + T.acento + '"></i></div>' +
+      '<b>' + v + '</b></div>';
+
+    const gen = (f.generadores || []).slice(0, 6);
+    const tablaGen = gen.length
+      ? '<table class="flujo-tabla"><tr><th>Qué trae gente a pie</th><th>Cant.</th><th>Aporte</th></tr>' +
+        gen.map(g => '<tr><td>' + esc(g.nombre) + '</td><td class="n">' + g.n + '</td>' +
+                     '<td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
+      : '<p class="flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
+
+    const lectura = f.dominante === 'peatonal'
+      ? 'El entorno mueve más gente a pie que en carro: favorece formatos de paso, vitrina a la calle y estancia corta.'
+      : f.dominante === 'vehicular'
+        ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
+        : 'El entorno reparte parejo entre peatón y carro: conviene resolver los dos accesos y no apostar a uno solo.';
+
+    return '<div class="bloque ancho"><h2>Flujo peatonal y vehicular <em>· potencial estimado</em></h2>' +
+      '<div class="flujo-grid">' +
+        '<div>' +
+          medidor('Flujo peatonal', '🚶', f.peatonal, f.nivelPeatonal) +
+          medidor('Flujo vehicular', '🚗', f.vehicular, f.nivelVehicular) +
+          '<p class="flujo-lectura">' + esc(lectura) + '</p>' +
+          '<p class="flujo-lectura"><b>Hora fuerte: ' + esc(f.franjaFuerte) + '.</b> ' +
+            (f.parqueaderos ? f.parqueaderos + ' parqueadero' + (f.parqueaderos === 1 ? '' : 's') + ' en el radio.'
+                            : 'Sin parqueaderos identificados en el radio.') + '</p>' +
+        '</div>' +
+        '<div>' + tablaGen +
+          '<div class="flujo-horas">' +
+            franja('Mañana', f.franjas.manana) +
+            franja('Mediodía', f.franjas.mediodia) +
+            franja('Tarde', f.franjas.tarde) +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="pie-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. ' +
+        'No es un aforo: no hay conteo de personas ni de vehículos. Sirve para comparar ubicaciones ' +
+        'entre sí y para dimensionar el formato, no para proyectar ventas.</p></div>';
+  }
+
   function bloqueMovilidad(r){
     const m = r.stats.movilidad;
     const col = m.exposicion >= 70 ? T.ok : m.exposicion >= 50 ? T.acento : m.exposicion >= 30 ? T.warn : T.bad;
@@ -682,6 +736,24 @@
 '.args li{padding-left:7px;position:relative;margin-bottom:1.5px}',
 '.args li:before{content:"";position:absolute;left:0;top:4px;width:3px;height:3px;border-radius:50%;background:', T.oro, '}',
 /* FODA */
+'.flujo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}',
+'.flujo-med{margin-bottom:7px}',
+'.flujo-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}',
+'.flujo-cab b{font-size:9.5px;font-weight:800}',
+'.flujo-cab span{margin-left:auto;font-size:8.5px;font-weight:800}',
+'.flujo-barra{height:9px;border-radius:5px;background:#e9edf2;overflow:hidden}',
+'.flujo-barra.alta{height:7px;flex:1}',
+'.flujo-barra i{display:block;height:100%;border-radius:5px}',
+'.flujo-lectura{font-size:8.5px;line-height:1.5;margin-top:5px}',
+'.flujo-tabla{width:100%;border-collapse:collapse;font-size:8px}',
+'.flujo-tabla th{text-align:left;font-size:7.5px;text-transform:uppercase;letter-spacing:.3px;padding:3px 5px;border-bottom:1px solid #d9e2ea}',
+'.flujo-tabla td{padding:3px 5px;border-bottom:1px solid #eef2f6}',
+'.flujo-tabla td.n{text-align:right;font-weight:700}',
+'.flujo-horas{margin-top:6px;display:flex;flex-direction:column;gap:4px}',
+'.flujo-hora{display:flex;align-items:center;gap:6px}',
+'.flujo-hora small{font-size:7.5px;width:44px;flex:0 0 auto}',
+'.flujo-hora b{font-size:8px;width:22px;text-align:right;flex:0 0 auto}',
+'.flujo-vacio{font-size:8.5px;line-height:1.5}',
 '.foda-grid4{display:grid;grid-template-columns:repeat(', (horizontal ? '4' : '2'), ',1fr);gap:5px}',
 '.foda{border:1px solid;border-radius:5px;padding:4px 6px}',
 '.foda h3{font-size:7px;margin-bottom:2px;font-weight:800}',
@@ -746,6 +818,9 @@
 
 '<div class="fila fila-1">',
   '<div>', bloqueViabilidad(r), bloqueMovilidad(r), '</div>',
+
+bloqueFlujo(r),
+
   '<div>', tablaComposicion(r),
     chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '', '</div>',
   '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), '</div>',

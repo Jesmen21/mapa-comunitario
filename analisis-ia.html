@@ -30,7 +30,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=514-atras-y-geometrias" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=515-cafe-y-flujo" />
 </head>
 <body>
 
@@ -114,6 +114,8 @@
             <button type="button" class="aia-proy" data-proyecto="drogueria"><span>💊</span>Droguería</button>
             <button type="button" class="aia-proy" data-proyecto="supermercado"><span>🛒</span>Supermercado</button>
             <button type="button" class="aia-proy" data-proyecto="cafeteria"><span>☕</span>Cafetería</button>
+            <button type="button" class="aia-proy" data-proyecto="cafe_paso"><span>🥤</span>Café de paso<small>Formato rápido, para llevar</small></button>
+            <button type="button" class="aia-proy" data-proyecto="cafe_estancia"><span>🫖</span>Café de estancia<small>Formato premium, mesa larga</small></button>
             <button type="button" class="aia-proy" data-proyecto="restaurante"><span>🍽️</span>Restaurante</button>
             <button type="button" class="aia-proy" data-proyecto="hotel"><span>🏨</span>Hotel</button>
             <button type="button" class="aia-proy" data-proyecto="coworking"><span>🧑‍💻</span>Coworking</button>
@@ -151,6 +153,7 @@
         <div id="aia-res-head">
           <div id="aia-res-titulo"></div>
           <button id="aia-btn-reanalizar" type="button">↻ Re-analizar</button>
+          <button id="aia-btn-refrescar" type="button" title="Vuelve a pedir el entorno ignorando lo guardado hoy">🔄 Datos frescos</button>
           <button id="aia-btn-informe" type="button">📄 Exportar PDF</button>
           <button id="aia-btn-guardar" type="button">💾 Guardar</button>
           <button id="aia-btn-nuevo" type="button">✚ Nuevo análisis</button>
@@ -162,6 +165,7 @@
         <div id="aia-ranking" hidden></div>
         <div id="aia-desglose-usos" hidden></div>
         <div id="aia-compatibilidad" hidden></div>
+        <div id="aia-flujo" hidden></div>
         <div id="aia-indicadores" hidden></div>
         <div id="aia-recomend-unidades" hidden></div>
         <div id="aia-recomendaciones" hidden></div>
@@ -287,10 +291,10 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=514-atras-y-geometrias"></script>
-<script src="js/60-analisis-ia-motor.js?v=514-atras-y-geometrias"></script>
-<script src="js/61-analisis-ia-datos.js?v=514-atras-y-geometrias"></script>
-<script src="js/63-analisis-ia-informe.js?v=514-atras-y-geometrias"></script>
-<script src="js/62-analisis-ia-app.js?v=514-atras-y-geometrias"></script>
+<script src="js/00-config.js?v=515-cafe-y-flujo"></script>
+<script src="js/60-analisis-ia-motor.js?v=515-cafe-y-flujo"></script>
+<script src="js/61-analisis-ia-datos.js?v=515-cafe-y-flujo"></script>
+<script src="js/63-analisis-ia-informe.js?v=515-cafe-y-flujo"></script>
+<script src="js/62-analisis-ia-app.js?v=515-cafe-y-flujo"></script>
 </body>
 </html>

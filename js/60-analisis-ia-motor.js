@@ -71,7 +71,11 @@
     { sub:'cafeteria',       nombre:'Cafetería',            grupo:'comercio',     icono:'☕', m:{ amenity:/^cafe$/, shop:/^(coffee|tea)$/ } },
     // Vivienda y ocio
     { sub:'bar_ocio',        nombre:'Bar / Ocio nocturno',  grupo:'vivienda',     icono:'🍻', m:{ amenity:/^(bar|pub|nightclub|casino)$/, leisure:/^amusement_arcade$/ } },
-    { sub:'gimnasio',        nombre:'Gimnasio',             grupo:'vivienda',     icono:'🏋️', m:{ leisure:/^(fitness_centre|fitness_station)$/, sport:/^fitness$/ } },
+    // Reportado: un gimnasio nuevo no aparecía en el análisis. Solo se
+    // reconocían dos etiquetas, y en la práctica se mapean de varias formas:
+    // amenity=gym es la vieja (obsoleta pero muy usada) y el deporte concreto
+    // —crossfit, halterofilia— suele venir en `sport` sin ningún `leisure`.
+    { sub:'gimnasio',        nombre:'Gimnasio',             grupo:'vivienda',     icono:'🏋️', m:{ leisure:/^(fitness_centre|fitness_station)$/, sport:/^(fitness|gym|crossfit|weightlifting|bodybuilding)$/, amenity:/^gym$/ } },
     { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽', m:{ leisure:/^(pitch|sports_centre|stadium|swimming_pool|track)$/ } },
     { sub:'parque',          nombre:'Parque / Zona verde',  grupo:'vivienda',     icono:'🌳', m:{ leisure:/^(park|garden|playground|dog_park)$/, landuse:/^(recreation_ground|village_green|grass)$/ } },
     { sub:'residencial',     nombre:'Vivienda',             grupo:'vivienda',     icono:'🏠', m:{ building:/^(residential|house|apartments|detached|terrace|semidetached_house|hut|bungalow)$/, landuse:/^residential$/ } },
@@ -272,6 +276,53 @@
   }
   function olvidarPendientes(){ escribirPendientes({}); }
 
+  // ── Reconocimiento por MARCA ────────────────────────────────────────────
+  //
+  // Reportado: "hay un Smart Fit y no sale", "hay varias marcas como Cruz
+  // Verde y tampoco". La causa de fondo es que el mapa colaborativo del que
+  // sale el entorno no siempre trae la etiqueta correcta: muchos locales
+  // llegan con el nombre puesto pero con `shop=yes` o sin categoría útil, y
+  // ahí caían en "otro" y desaparecían del análisis.
+  //
+  // El nombre, en cambio, casi siempre está. Una cadena reconocible dice qué
+  // es sin necesidad de etiqueta: si se llama Cruz Verde es una droguería,
+  // aunque nadie haya puesto amenity=pharmacy. Esto NO inventa locales que no
+  // existan en el mapa —eso es imposible—, pero rescata los que sí están y se
+  // estaban perdiendo por venir mal clasificados.
+  const MARCAS = [
+    { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24)\b/ },
+    { sub:'drogueria',       re:/\b(cruz\s*verde|la\s*rebaja|farmatodo|drogas?\s*la\s*econom|copservir|audifarma|locatel|farmacia\s*pasteur|drogueria)\b/ },
+    { sub:'cafeteria',       re:/\b(tosta[o0]|juan\s*valdez|starbucks|oma\b|dunkin|cafe\s*quindio)\b/ },
+    { sub:'supermercado',    re:/\b(exito|olimpica|ara\b|d1\b|justo\s*&?\s*bueno|jumbo|metro\b|carulla|makro|pricesmart|surtimax|consumo)\b/ },
+    { sub:'banco',           re:/\b(bancolombia|davivienda|banco\s*de\s*bogota|bbva|banco\s*popular|colpatria|scotiabank|av\s*villas|bancoomeva|banagrario|banco\s*agrario|efecty|baloto)\b/ },
+    { sub:'restaurante',     re:/\b(mcdonald|burger\s*king|kfc|frisby|el\s*corral|presto|dominos|papa\s*john|subway|sandwich\s*qbano|archies)\b/ },
+    { sub:'gasolinera',      re:/\b(terpel|biomax|texaco|mobil|esso|primax|petrobras|zeuss)\b/ },
+    { sub:'centro_comercial',re:/\b(centro\s*comercial|c\.?c\.?\s|unicentro|ventura|jardin\s*plaza|mayorca|viva\b|plaza\s*del\s*este)\b/ },
+    { sub:'hotel',           re:/\b(hotel|hostal|hospedaje|aparta\s*hotel|holiday\s*inn|ibis\b)\b/ },
+    { sub:'universidad',     re:/\b(universidad|unipamplona|ufps|udes|uniminuto|politecnico|sena\b|instituto\s*tecnico)\b/ },
+    { sub:'colegio',         re:/\b(colegio|liceo|gimnasio\s+(campestre|moderno)|institucion\s*educativa|jardin\s*infantil)\b/ },
+    { sub:'hospital',        re:/\b(clinica|hospital|ips\b|eps\b|centro\s*medico|sanitas|sura\b|compensar)\b/ },
+    { sub:'panaderia',       re:/\b(panaderia|pasteleria|reposteria|kokoriko|bimbo)\b/ }
+  ];
+
+  function marcaDe(nombre){
+    const n = normalizarNombrePOI(nombre);
+    if (!n) return null;
+    for (let i = 0; i < MARCAS.length; i++) {
+      if (MARCAS[i].re.test(n)) {
+        const r = TAXONOMIA.find(t => t.sub === MARCAS[i].sub);
+        if (r) return { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono, porMarca: true };
+      }
+    }
+    return null;
+  }
+
+  // Categorías "cajón de sastre": un local con shop=yes cae aquí y la etiqueta
+  // no dice nada útil. En estos casos el NOMBRE sabe más que la etiqueta, y por
+  // eso la marca puede ganarle. Con una etiqueta específica (amenity=pharmacy)
+  // no se discute: manda la etiqueta.
+  const GENERICAS = ['comercio_otro', 'local_comercial', 'otro', 'edificio_otro'];
+
   function clasificarPOI(tags){
     tags = tags || {};
     for (let i = 0; i < TAXONOMIA.length; i++) {
@@ -279,12 +330,22 @@
       for (const clave in r.m) {
         const v = tags[clave];
         if (v != null && r.m[clave].test(String(v).toLowerCase())) {
+          if (GENERICAS.indexOf(r.sub) !== -1 && tags.name) {
+            const porMarca = marcaDe(tags.name);
+            if (porMarca) return porMarca;
+          }
           return { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono };
         }
       }
     }
-    // Antes de rendirse a "otro": ¿el usuario ya clasificó manualmente un
-    // punto con este mismo nombre en un análisis anterior?
+    // Antes de rendirse a "otro": ¿el nombre delata una cadena conocida? Va
+    // DESPUÉS de las etiquetas a propósito — una etiqueta explícita siempre
+    // gana sobre deducir por el nombre.
+    if (tags.name) {
+      const porMarca = marcaDe(tags.name);
+      if (porMarca) return porMarca;
+    }
+    // ¿O el usuario ya clasificó manualmente un punto con este mismo nombre?
     if (tags.name) {
       const reglas = leerReglasPersonalizadas();
       const grupoAsignado = reglas[normalizarNombrePOI(tags.name)];
@@ -436,6 +497,93 @@
     movilidad.nivelExposicion = movilidad.exposicion >= 70 ? 'Muy alta'
       : movilidad.exposicion >= 50 ? 'Alta'
       : movilidad.exposicion >= 30 ? 'Media' : 'Baja';
+    // ══ FLUJO PEATONAL Y VEHICULAR ═══════════════════════════════════════
+    //
+    // Lo que de verdad decide un café: cuánta gente pasa por la puerta, a pie
+    // o en carro, y a qué hora. Aquí se estima el POTENCIAL de flujo a partir
+    // de la estructura urbana del entorno, no un conteo: nadie está contando
+    // personas en la esquina. La diferencia importa y el informe la declara.
+    //
+    // El razonamiento es que cada uso genera viajes a pie de forma muy
+    // distinta. Una parada de transporte descarga gente que camina sí o sí; un
+    // colegio concentra dos picos brutales al día; una bodega no genera casi
+    // nada. Cada generador aporta según cuánto peatón produce y se descuenta
+    // por distancia, porque a 600 m ya nadie va caminando por un café.
+    const GENERA_PEATON = {
+      parada_bus:       { peso: 18, alcance: 250, franja:'todo' },
+      universidad:      { peso: 16, alcance: 500, franja:'dia' },
+      colegio:          { peso: 12, alcance: 400, franja:'picos' },
+      oficina:          { peso: 11, alcance: 400, franja:'laboral' },
+      centro_comercial: { peso: 14, alcance: 500, franja:'tarde' },
+      supermercado:     { peso:  9, alcance: 400, franja:'tarde' },
+      banco:            { peso:  7, alcance: 300, franja:'laboral' },
+      hospital:         { peso: 10, alcance: 400, franja:'todo' },
+      parque:           { peso:  6, alcance: 400, franja:'tarde' },
+      restaurante:      { peso:  5, alcance: 300, franja:'mediodia' },
+      gimnasio:         { peso:  5, alcance: 300, franja:'picos' },
+      hotel:            { peso:  6, alcance: 350, franja:'todo' },
+      cultural:         { peso:  5, alcance: 400, franja:'tarde' },
+      gobierno:         { peso:  7, alcance: 350, franja:'laboral' }
+    };
+
+    const flujo = { generadores: [], peatonal: 0, vehicular: 0, franjas: {} };
+    const aporteFranja = { manana: 0, mediodia: 0, tarde: 0 };
+    let sumaPeaton = 0;
+
+    Object.keys(GENERA_PEATON).forEach(function (sub) {
+      const lista = pois.filter(p => p.sub === sub);
+      if (!lista.length) return;
+      let aporte = 0;
+      lista.forEach(function (p) {
+        const g = GENERA_PEATON[sub];
+        // Decaimiento lineal hasta el alcance: más allá, ese generador ya no
+        // manda peatones a esta esquina.
+        const cerca = Math.max(0, 1 - p.distM / g.alcance);
+        aporte += g.peso * cerca;
+      });
+      if (aporte <= 0) return;
+      sumaPeaton += aporte;
+      flujo.generadores.push({ sub, nombre: lista[0].nombre, n: lista.length,
+                               aporte: Math.round(aporte), franja: GENERA_PEATON[sub].franja });
+      const f = GENERA_PEATON[sub].franja;
+      if (f === 'todo')      { aporteFranja.manana += aporte; aporteFranja.mediodia += aporte; aporteFranja.tarde += aporte; }
+      else if (f === 'dia')  { aporteFranja.manana += aporte; aporteFranja.mediodia += aporte; aporteFranja.tarde += aporte * .5; }
+      else if (f === 'laboral'){ aporteFranja.manana += aporte; aporteFranja.mediodia += aporte * .8; aporteFranja.tarde += aporte * .3; }
+      else if (f === 'picos'){ aporteFranja.manana += aporte * 1.2; aporteFranja.mediodia += aporte * .3; aporteFranja.tarde += aporte * 1.1; }
+      else if (f === 'mediodia'){ aporteFranja.manana += aporte * .2; aporteFranja.mediodia += aporte * 1.3; aporteFranja.tarde += aporte * .6; }
+      else if (f === 'tarde'){ aporteFranja.manana += aporte * .3; aporteFranja.mediodia += aporte * .7; aporteFranja.tarde += aporte * 1.3; }
+    });
+
+    flujo.generadores.sort((a, b) => b.aporte - a.aporte);
+    // La escala se calibra para que ~120 puntos de aporte sean el techo: es lo
+    // que produce una esquina con transporte, oficinas y comercio encima.
+    flujo.peatonal = Math.round(clamp(0, 100, sumaPeaton / 120 * 100));
+    flujo.nivelPeatonal = flujo.peatonal >= 70 ? 'Muy alto' : flujo.peatonal >= 50 ? 'Alto'
+      : flujo.peatonal >= 30 ? 'Medio' : 'Bajo';
+
+    // Vehicular: la exposición vial ya mide la jerarquía de la malla; se le
+    // suma que haya dónde parar, porque un corredor rápido SIN parqueo no
+    // produce clientes, solo carros que pasan de largo.
+    const parqueo = (porSub.parqueadero || 0) + (porSub.gasolinera || 0);
+    flujo.vehicular = Math.round(clamp(0, 100,
+      movilidad.exposicion * 0.8 + Math.min(20, parqueo * 7)));
+    flujo.nivelVehicular = flujo.vehicular >= 70 ? 'Muy alto' : flujo.vehicular >= 50 ? 'Alto'
+      : flujo.vehicular >= 30 ? 'Medio' : 'Bajo';
+    flujo.parqueaderos = porSub.parqueadero || 0;
+
+    const maxF = Math.max(aporteFranja.manana, aporteFranja.mediodia, aporteFranja.tarde) || 1;
+    flujo.franjas = {
+      manana:   Math.round(aporteFranja.manana / maxF * 100),
+      mediodia: Math.round(aporteFranja.mediodia / maxF * 100),
+      tarde:    Math.round(aporteFranja.tarde / maxF * 100)
+    };
+    flujo.franjaFuerte = flujo.franjas.manana >= flujo.franjas.mediodia && flujo.franjas.manana >= flujo.franjas.tarde
+      ? 'la mañana' : (flujo.franjas.tarde >= flujo.franjas.mediodia ? 'la tarde' : 'el mediodía');
+    // Qué predomina: caminar o conducir. Es la pregunta que decide el formato.
+    flujo.dominante = flujo.peatonal >= flujo.vehicular + 12 ? 'peatonal'
+      : flujo.vehicular >= flujo.peatonal + 12 ? 'vehicular' : 'equilibrado';
+    movilidad.flujo = flujo;
+
     movilidad.argumento = principal
       ? 'El lote está a ' + principal.distM + ' m de ' + principal.nombre + ' (vía ' + principal.jerarquia +
         ') y cuenta con ' + movilidad.nViasArterias + ' corredor' + (movilidad.nViasArterias === 1 ? '' : 'es') +
@@ -909,6 +1057,26 @@
   const PROYECTOS = [
     { id:'drogueria',    nombre:'Droguería',            icono:'💊', habXunidad:3500,  competidores:['drogueria'], complementarios:['salud_ips','laboratorio','supermercado','tienda_barrio'] },
     { id:'cafeteria',    nombre:'Cafetería',            icono:'☕', habXunidad:2500,  competidores:['cafeteria','panaderia'], complementarios:['universidad','oficina','colegio','gimnasio','cultural'], pesos:{ demanda:.20, competencia:.25, complementarios:.30, movilidad:.15, entorno:.10 } },
+    // Dos formatos de café que se implantan con lógicas OPUESTAS, y por eso
+    // pesan distinto. El de paso vive de que MUCHA gente pase por la puerta:
+    // ticket bajo, alta rotación, estancia corta, así que la movilidad manda y
+    // la competencia estorba poco (dos cafés de paso en la misma cuadra pueden
+    // convivir si el flujo alcanza). El de estancia vive de que la gente se
+    // QUEDE: ticket alto, permanencia larga, así que pesa el entorno —oficinas,
+    // hoteles, centros comerciales— y la competencia duele mucho más, porque
+    // se disputa al mismo cliente que elige dónde sentarse una hora.
+    { id:'cafe_paso',    nombre:'Café de paso',         icono:'🥤', habXunidad:1800,
+      competidores:['cafeteria','panaderia'],
+      complementarios:['parada_bus','oficina','universidad','colegio','banco','gimnasio','supermercado'],
+      pesos:{ demanda:.20, competencia:.10, complementarios:.25, movilidad:.35, entorno:.10 },
+      flujo:'peatonal',
+      nota:'Formato de alta rotación y estancia corta: se implanta donde el flujo peatonal es constante.' },
+    { id:'cafe_estancia',nombre:'Café de estancia',     icono:'🫖', habXunidad:6000,
+      competidores:['cafeteria'],
+      complementarios:['centro_comercial','oficina','hotel','universidad','cultural','banco'],
+      pesos:{ demanda:.15, competencia:.30, complementarios:.25, movilidad:.15, entorno:.15 },
+      flujo:'mixto',
+      nota:'Formato de permanencia larga y ticket alto: pesa más el entorno y la exclusividad de la zona.' },
     { id:'restaurante',  nombre:'Restaurante',          icono:'🍽️', habXunidad:3000,  competidores:['restaurante'], complementarios:['oficina','hotel','universidad','cultural','banco'] },
     { id:'supermercado', nombre:'Supermercado',         icono:'🛒', habXunidad:6000,  competidores:['supermercado','tienda_descuento','centro_comercial'], complementarios:['residencial','parada_bus'], pesos:{ demanda:.40, competencia:.25, complementarios:.10, movilidad:.15, entorno:.10 } },
     { id:'residencial',  nombre:'Edificio residencial', icono:'🏢', habXunidad:0,     competidores:['baldio_obra'], complementarios:['colegio','supermercado','parque','salud_ips','parada_bus','tienda_barrio'], pesos:{ demanda:.15, competencia:.10, complementarios:.35, movilidad:.20, entorno:.20 } },
@@ -1041,6 +1209,26 @@
       f: x => 'Alta densidad de actividad urbana (' + x.stats.densidadPorHa + ' usos/ha): sector consolidado.' },
     { t:'F', c: x => (x.stats.porSub.banco || 0) >= 2,
       f: x => 'Presencia bancaria (' + x.stats.porSub.banco + ' puntos): indicador de dinamismo comercial.' },
+    // ── Flujo: lo que decide un café ────────────────────────────────────
+    { t:'F', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.peatonal >= 60,
+      f: x => { const f = x.stats.movilidad.flujo;
+        return 'Flujo peatonal alto (' + f.peatonal + '/100), con pico en ' + f.franjaFuerte +
+          ': el formato de paso encuentra aquí su clientela sin tener que atraerla.'; } },
+    { t:'F', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.dominante === 'peatonal' && (x.stats.porSub.parada_bus || 0) >= 2,
+      f: x => 'El entorno se camina y hay ' + x.stats.porSub.parada_bus + ' paradas de transporte cerca: ' +
+              'la gente llega a pie por su cuenta, sin depender de que decida conducir hasta acá.' },
+    { t:'D', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.peatonal < 30,
+      f: x => 'Flujo peatonal bajo (' + x.stats.movilidad.flujo.peatonal + '/100): casi nadie pasa por la puerta, ' +
+              'así que el local tendría que ser destino y no hallazgo.' },
+    { t:'D', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.dominante === 'vehicular' && !x.stats.movilidad.flujo.parqueaderos,
+      f: () => 'El entorno se mueve en carro pero no se identificó parqueadero: el flujo pasa de largo sin poder detenerse.' },
+    { t:'O', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.franjas &&
+                     x.stats.movilidad.flujo.franjas.manana >= 85 && x.proyecto && /caf/i.test(x.proyecto.nombre),
+      f: () => 'El pico de flujo es matutino, que es exactamente la hora del café: la demanda coincide con la oferta.' },
+    { t:'R', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.franjas &&
+                     x.stats.movilidad.flujo.franjas.tarde < 40 && x.stats.movilidad.flujo.franjas.manana > 80,
+      f: () => 'El flujo se desploma en la tarde: media jornada con costos fijos y poca venta.' },
+
     { t:'D', c: x => (x.stats.porGrupo.salud || 0) === 0 && x.radioM >= 500,
       f: x => 'No se identificaron servicios de salud en ' + x.radioM + ' m: el sector depende de equipamientos externos.' },
     { t:'D', c: x => x.stats.ambiente.scoreVerde < 20,

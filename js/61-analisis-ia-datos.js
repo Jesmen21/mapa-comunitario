@@ -25,6 +25,10 @@
       'nwr["amenity"]' + a + ';' +
       'nwr["shop"]' + a + ';' +
       'nwr["leisure"]' + a + ';' +
+      // Reportado: un gimnasio nuevo no aparecía. Un box de crossfit o un
+      // gimnasio de barrio a veces vienen SOLO con `sport`, sin amenity ni
+      // leisure, y así ni siquiera llegaban a clasificarse: no se pedían.
+      'nwr["sport"]' + a + ';' +
       'nwr["tourism"]' + a + ';' +
       'nwr["healthcare"]' + a + ';' +
       'nwr["office"]' + a + ';' +
@@ -83,9 +87,13 @@
   }
 
   // consultarEntorno(lat, lng, radioM) → Promise<elements[]>
-  async function consultarEntorno(lat, lng, radioM){
+  // `forzar` salta la caché de 24 h. Hace falta de verdad: si el sitio se
+  // analizó hoy y desde entonces alguien agregó el local al mapa, la app
+  // seguía mostrando la foto vieja hasta el día siguiente, sin manera de
+  // pedirle que volviera a mirar.
+  async function consultarEntorno(lat, lng, radioM, forzar){
     const clave = claveCache(lat, lng, radioM);
-    const cacheado = leerCache(clave);
+    const cacheado = forzar ? null : leerCache(clave);
     if (cacheado) return cacheado;
 
     if (enVuelo) throw new Error('Ya hay una consulta en curso. Espera a que termine.');
@@ -396,6 +404,10 @@
     };
   }
 
-  window.AIA_DATOS = { consultarEntorno, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
+  function limpiarCache(){
+    try { localStorage.removeItem(CACHE_KEY); return true; } catch(e) { return false; }
+  }
+
+  window.AIA_DATOS = { consultarEntorno, limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarDANE };
 })();
