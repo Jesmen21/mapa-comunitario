@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v515-cafe-y-flujo';
+const URBIS_CACHE = 'urbis-v516-cafe-y-flujo';
 const URBIS_ASSETS = [
   './',
   './index.html',

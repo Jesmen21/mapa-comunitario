@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-21",
-  "proximaActualizacion": "2026-08-22",
+  "actualizado": "2026-08-22",
+  "proximaActualizacion": "2026-08-23",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -18,6 +18,31 @@
     "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-22",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto sube a 329 muertos y baja a 247 los desaparecidos",
+      "detalle": "Con corte a las 6:30 p.m. del 21 de agosto, la UNGRD reportó 329 personas fallecidas, cerca de 4.600 heridas, 247 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 20 de agosto (319 muertos, 260 desaparecidos), sube la cifra de fallecidos y baja la de desaparecidos. El reporte suma 553 edificaciones colapsadas, 31.183 viviendas destruidas y 171.273 viviendas averiadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · balance del 22 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-sabado-22-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3580221" },
+        { "n": "Colombia.com · nuevo balance", "u": "https://www.colombia.com/actualidad/nacionales/terremoto-en-colombia-deja-nuevo-balance-estas-son-las-cifras-597181" }
+      ]
+    },
+    {
+      "fecha": "2026-08-21",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Firma 11 decretos de nombramientos en el DNP, Función Pública, Ideam, Uspec, Inpec y otras entidades",
+      "detalle": "El presidente oficializó 11 nombramientos en entidades del Ejecutivo: entre ellos Andrés Herkrath como director del Ideam, Myryam Carolina Martínez como directora de la Unidad de Restitución de Tierras y Daniella Restrepo Duarte como viceministra de Asuntos Multilaterales, además de secretarios generales en el DPS y el Ministerio del Trabajo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · nombramientos en el DNP, Ideam y otras entidades", "u": "https://www.eltiempo.com/amp/politica/abelardo-de-la-espriella/abelardo-de-la-espriella-oficializa-nombramientos-en-el-dnp-funcion-publica-ideam-uspec-inpec-y-otras-entidades-3579819" },
+        { "n": "El Espectador · 11 decretos para la conformación de su gobierno", "u": "https://www.elespectador.com/politica/presidente-de-la-espriella-firmo-11-decretos-claves-para-la-conformacion-de-su-gobierno-noticias-hoy/" },
+        { "n": "Pulzo · nuevos nombramientos tras el terremoto", "u": "https://www.pulzo.com/nacion/nuevos-nombramientos-en-el-gabinete-de-abelardo-de-la-espriella-tras-terremoto-en-colombia-PP5280417A" }
+      ]
+    },
     {
       "fecha": "2026-08-21",
       "precision": "aproximada",
