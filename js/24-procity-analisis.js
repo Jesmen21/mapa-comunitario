@@ -34,7 +34,10 @@
     // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'
     // (null = apagada) y `grupo` filtra QUÉ puntos se conectan ('todos' o
     // una categoría de la Matriz).
-    geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0 },
+    // `tipo` es la forma; `par` son sus parámetros, que el botón de variación
+    // mueve para generar composiciones distintas del mismo levantamiento.
+    geo: { tipo: null, grupo: 'todos', capa: null, chip: null, ultimoConteo: 0,
+           par: { k: 2, radio: 60, alpha: 90, impacto: 35 }, variante: 0 },
     // Fase 4 · último análisis de cobertura del suelo del área en curso, y la
     // capa donde queda pegada la imagen clasificada sobre el mapa.
     raster: null,
@@ -1488,14 +1491,43 @@ bloquesDiag,
     }, []);
   }
 
+  // Catálogo de formas. Cada una responde una pregunta distinta sobre los
+  // mismos puntos, y esa pregunta se muestra en pantalla: sin ella, elegir
+  // entre siete botones sería adivinar.
+  const FORMAS = [
+    { id:'red',       ico:'🕸️', nom:'Red de vecinos',      color:'#ff1f3d',
+      pregunta:'¿Quién está cerca de quién?' },
+    { id:'malla',     ico:'🪢', nom:'Telaraña',            color:'#a855f7',
+      pregunta:'Todos con todos los que tengan cerca: qué tan tupido es el tejido.' },
+    { id:'delaunay',  ico:'📐', nom:'Malla triangular',    color:'#0ea5e9',
+      pregunta:'La retícula que reparte el territorio entre los puntos.' },
+    { id:'mst',       ico:'🌿', nom:'Recorrido mínimo',    color:'#16a34a',
+      pregunta:'El trazado más corto que los toca todos.' },
+    { id:'concava',   ico:'🫧', nom:'Envolvente cóncava',  color:'#f97316',
+      pregunta:'La forma real de la mancha, con sus entrantes.' },
+    { id:'hull',      ico:'⬡',  nom:'Envolvente convexa',  color:'#FABD0A',
+      pregunta:'Cuánto terreno abarca todo lo mapeado.' },
+    { id:'circulos',  ico:'⭕', nom:'Radios de impacto',   color:'#ef4444',
+      pregunta:'Hasta dónde llega la influencia de cada punto.' }
+  ];
+  const formaDe = id => FORMAS.find(f => f.id === id) || null;
+
   function nombreGeo(tipo){
-    return tipo === 'red' ? '🕸️ Red de conexiones'
-      : tipo === 'hull' ? '⬡ Envolvente convexa'
-      : tipo === 'circulos' ? '⭕ Círculos de impacto' : '';
+    const f = formaDe(tipo);
+    return f ? f.ico + ' ' + f.nom : '';
   }
   function colorGeo(tipo){
-    return tipo === 'red' ? '#a855f7' : tipo === 'hull' ? '#FABD0A' : '#ef4444';
+    const f = formaDe(tipo);
+    return f ? f.color : '#a855f7';
   }
+  // Qué parámetro admite cada forma, con su rango. De aquí sale tanto el texto
+  // que se muestra como el sorteo del botón de variación.
+  const PARAMETROS = {
+    red:      { clave:'k',       min:1,  max:5,   paso:1,  etq: v => v + ' vecino' + (v === 1 ? '' : 's') + ' por punto' },
+    malla:    { clave:'radio',   min:25, max:180, paso:5,  etq: v => 'une lo que esté a menos de ' + v + ' m' },
+    concava:  { clave:'alpha',   min:40, max:260, paso:10, etq: v => 'detalle del contorno: ' + v + ' m' },
+    circulos: { clave:'impacto', min:15, max:120, paso:5,  etq: v => 'radio de ' + v + ' m' }
+  };
   function nombreFiltroGeo(ctx){
     const f = S.geo.grupo || 'todos';
     if (f === 'todos') return 'todo lo mapeado';
@@ -1545,6 +1577,178 @@ bloquesDiag,
     return lineas;
   }
 
+  // ══ MÁS FORMAS DE LEER LOS MISMOS PUNTOS ═════════════════════════════════
+  //
+  // Un conjunto de puntos no tiene UNA geometría: tiene muchas, y cada una
+  // responde una pregunta distinta. La red de vecinos dice quién está cerca de
+  // quién; la envolvente, cuánto terreno abarca todo; la malla, qué tan tupido
+  // es el tejido; el árbol mínimo, cuál es el recorrido más corto que los toca
+  // todos; la envolvente cóncava, qué forma tiene REALMENTE la mancha. Para un
+  // ejercicio de proyecto, comparar varias lecturas del mismo levantamiento
+  // enseña más que quedarse con una.
+  //
+  // Casi todas salen de una sola pieza: la triangulación de Delaunay. Se
+  // calcula una vez y de ahí se derivan la malla triangular, el árbol mínimo y
+  // la envolvente cóncava. Por eso no hace falta traer una librería de
+  // geometría: es un algoritmo y tres lecturas suyas.
+
+  // Los puntos pasan a metros locales antes de triangular. En grados, un grado
+  // de longitud y uno de latitud no miden lo mismo y los triángulos saldrían
+  // estirados — la geometría diría cosas falsas sobre quién está cerca.
+  function aPlanoLocal(pts){
+    const lat0 = pts.reduce((a, p) => a + p.lat, 0) / pts.length;
+    const rad = Math.PI / 180;
+    const mx = 6378137 * Math.cos(lat0 * rad) * rad, my = 6378137 * rad;
+    return pts.map(p => ({ x: p.lng * mx, y: p.lat * my }));
+  }
+
+  // Bowyer–Watson: se parte de un supertriángulo que envuelve todo y se van
+  // insertando los puntos; cada uno borra los triángulos cuyo circuncírculo lo
+  // contiene y se retriangula el hueco. Al final se descartan los triángulos
+  // que aún tocan el supertriángulo.
+  function triangularDelaunay(P){
+    const n = P.length;
+    if (n < 3) return [];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    P.forEach(p => { if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; });
+    const dx = maxX - minX || 1, dy = maxY - minY || 1;
+    const D = Math.max(dx, dy) * 20;
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    // Los tres vértices del supertriángulo van al final del arreglo.
+    const V = P.concat([{ x: cx - D, y: cy - D }, { x: cx + D, y: cy - D }, { x: cx, y: cy + D }]);
+    const s0 = n, s1 = n + 1, s2 = n + 2;
+
+    const circun = function (a, b, c) {
+      const A = V[a], B = V[b], C = V[c];
+      const d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+      if (Math.abs(d) < 1e-12) return null;
+      const ux = ((A.x*A.x + A.y*A.y) * (B.y - C.y) + (B.x*B.x + B.y*B.y) * (C.y - A.y) +
+                  (C.x*C.x + C.y*C.y) * (A.y - B.y)) / d;
+      const uy = ((A.x*A.x + A.y*A.y) * (C.x - B.x) + (B.x*B.x + B.y*B.y) * (A.x - C.x) +
+                  (C.x*C.x + C.y*C.y) * (B.x - A.x)) / d;
+      return { x: ux, y: uy, r2: (A.x-ux)*(A.x-ux) + (A.y-uy)*(A.y-uy) };
+    };
+
+    let tris = [{ v:[s0, s1, s2], c: circun(s0, s1, s2) }];
+    for (let i = 0; i < n; i++) {
+      const p = V[i];
+      const malos = [], buenos = [];
+      tris.forEach(function (t) {
+        if (t.c && ((p.x - t.c.x)*(p.x - t.c.x) + (p.y - t.c.y)*(p.y - t.c.y)) <= t.c.r2) malos.push(t);
+        else buenos.push(t);
+      });
+      // Borde del hueco: las aristas que aparecen UNA sola vez entre los malos.
+      const cuenta = new Map();
+      malos.forEach(function (t) {
+        const v = t.v;
+        [[v[0],v[1]],[v[1],v[2]],[v[2],v[0]]].forEach(function (e) {
+          const k = Math.min(e[0],e[1]) + ':' + Math.max(e[0],e[1]);
+          cuenta.set(k, (cuenta.get(k) || 0) + 1);
+        });
+      });
+      tris = buenos;
+      cuenta.forEach(function (veces, k) {
+        if (veces !== 1) return;
+        const ab = k.split(':').map(Number);
+        const c = circun(ab[0], ab[1], i);
+        if (c) tris.push({ v:[ab[0], ab[1], i], c: c });
+      });
+    }
+    // Fuera los que se apoyan en el supertriángulo.
+    return tris.filter(t => t.v.every(v => v < n)).map(t => t.v);
+  }
+
+  const claveArista = (a, b) => (a < b ? a + ':' + b : b + ':' + a);
+
+  function aristasDeTriangulos(tris){
+    const set = new Set();
+    tris.forEach(function (t) {
+      set.add(claveArista(t[0], t[1]));
+      set.add(claveArista(t[1], t[2]));
+      set.add(claveArista(t[2], t[0]));
+    });
+    return [...set].map(k => k.split(':').map(Number));
+  }
+
+  // Árbol de expansión mínima sobre las aristas de Delaunay (Kruskal). Es el
+  // recorrido más corto que toca todos los puntos sin cerrar ciclos: la lectura
+  // de "cuál sería la red mínima que los conecta a todos".
+  function arbolMinimo(P, aristas){
+    const largo = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+    const orden = aristas.slice().sort((e, f) => largo(e[0],e[1]) - largo(f[0],f[1]));
+    const padre = P.map((_, i) => i);
+    const raiz = function (i) { while (padre[i] !== i) { padre[i] = padre[padre[i]]; i = padre[i]; } return i; };
+    const out = [];
+    orden.forEach(function (e) {
+      const a = raiz(e[0]), b = raiz(e[1]);
+      if (a === b) return;
+      padre[a] = b;
+      out.push(e);
+    });
+    return out;
+  }
+
+  // Envolvente cóncava (alpha shape): se quedan los triángulos cuyo lado más
+  // largo no pasa de `alpha`, y el contorno son las aristas que solo pertenecen
+  // a uno de ellos. A diferencia de la envolvente convexa, esta SÍ se mete en
+  // los entrantes y da la forma real de la mancha, con su perímetro.
+  function envolventeConcava(P, tris, alpha){
+    const largo = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+    const cuenta = new Map();
+    tris.forEach(function (t) {
+      const l = Math.max(largo(t[0],t[1]), largo(t[1],t[2]), largo(t[2],t[0]));
+      if (l > alpha) return;
+      [[t[0],t[1]],[t[1],t[2]],[t[2],t[0]]].forEach(function (e) {
+        const k = claveArista(e[0], e[1]);
+        cuenta.set(k, (cuenta.get(k) || 0) + 1);
+      });
+    });
+    const borde = [];
+    cuenta.forEach(function (veces, k) { if (veces === 1) borde.push(k.split(':').map(Number)); });
+    if (!borde.length) return [];
+    // Se encadenan las aristas del borde en anillos cerrados.
+    const porVertice = new Map();
+    borde.forEach(function (e) {
+      [[e[0],e[1]],[e[1],e[0]]].forEach(function (d) {
+        if (!porVertice.has(d[0])) porVertice.set(d[0], []);
+        porVertice.get(d[0]).push(d[1]);
+      });
+    });
+    const usada = new Set();
+    const anillos = [];
+    borde.forEach(function (e) {
+      if (usada.has(claveArista(e[0], e[1]))) return;
+      const anillo = [e[0]];
+      let actual = e[1], previo = e[0];
+      usada.add(claveArista(e[0], e[1]));
+      let vueltas = 0;
+      while (actual !== e[0] && vueltas++ < borde.length * 3) {
+        anillo.push(actual);
+        const vecinos = (porVertice.get(actual) || []).filter(v => v !== previo && !usada.has(claveArista(actual, v)));
+        if (!vecinos.length) break;
+        usada.add(claveArista(actual, vecinos[0]));
+        previo = actual; actual = vecinos[0];
+      }
+      if (anillo.length >= 3) anillos.push(anillo);
+    });
+    // Se devuelve el anillo más grande: es el perímetro de la mancha.
+    anillos.sort((a, b) => b.length - a.length);
+    return anillos[0] || [];
+  }
+
+  // Telaraña por proximidad: cada punto se une a TODOS los que tenga dentro del
+  // radio, sin orden ni jerarquía. Es la lectura más orgánica —y la que el
+  // usuario pidió— porque el tejido emerge solo de quién está junto a quién.
+  function mallaProximidad(pts, radioM){
+    const lineas = [];
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        if (haversineM(pts[i], pts[j]) <= radioM) lineas.push([pts[i], pts[j]]);
+      }
+    }
+    return lineas;
+  }
+
   // Devuelve cuántos puntos alimentaron la geometría — lo usa el chip del
   // mapa para avisar cuando el filtro elegido deja el área casi vacía.
   function pintarGeo(ctx){
@@ -1556,35 +1760,135 @@ bloquesDiag,
     const pts = puntosGeo(ctx);
     S.geo.ultimoConteo = pts.length;
     if (pts.length < 2) return pts.length;
+    const col = colorGeo(tipo);
+    const par = S.geo.par;
+
+    const linea = (a, b, ancho, op) => L.polyline([a, b], {
+      color: col, weight: ancho, opacity: op, className: 'pca-geo-linea' }).addTo(c);
+    const nodo = (p, r) => L.circleMarker(p, {
+      radius: r, color: col, weight: 0, fillOpacity: .95 }).addTo(c);
+
+    // Las formas que salen de la triangulación comparten el cálculo: se hace
+    // una sola vez y las tres la leen distinto.
+    let plano = null, tris = null;
+    const triangular = function () {
+      if (tris) return;
+      plano = aPlanoLocal(pts);
+      tris = triangularDelaunay(plano);
+    };
 
     if (tipo === 'red') {
-      const k = pts.length > 60 ? 1 : 2;   // con muchos puntos, menos líneas por nodo
-      // Rojo vivo y trazo grueso a propósito: el morado fino de antes casi no
-      // se distinguía del mapa base. Esto se tiene que notar de un vistazo.
-      redVecinos(pts, k).forEach(([a, b]) => {
-        L.polyline([a, b], { color: '#ff1f3d', weight: 3.5, opacity: .9, className: 'pca-geo-linea' }).addTo(c);
+      redVecinos(pts, Math.max(1, par.k)).forEach(([a, b]) => linea(a, b, 3.5, .9));
+      pts.forEach(p => nodo(p, 4.5));
+
+    } else if (tipo === 'malla') {
+      // Telaraña: trazo fino y translúcido a propósito. Con radio amplio salen
+      // cientos de hilos y, con el grosor de la red de vecinos, el mapa se
+      // volvía una mancha sólida en vez de un tejido.
+      const hilos = mallaProximidad(pts, par.radio);
+      hilos.forEach(([a, b]) => linea(a, b, 1.4, .55));
+      pts.forEach(p => nodo(p, 3.5));
+      S.geo.ultimoDato = hilos.length + ' hilos';
+
+    } else if (tipo === 'delaunay') {
+      triangular();
+      aristasDeTriangulos(tris).forEach(e => linea(pts[e[0]], pts[e[1]], 1.6, .75));
+      pts.forEach(p => nodo(p, 3));
+      S.geo.ultimoDato = tris.length + ' triángulos';
+
+    } else if (tipo === 'mst') {
+      triangular();
+      const arbol = arbolMinimo(plano, aristasDeTriangulos(tris));
+      let metros = 0;
+      arbol.forEach(function (e) {
+        linea(pts[e[0]], pts[e[1]], 3, .92);
+        metros += haversineM(pts[e[0]], pts[e[1]]);
       });
-      pts.forEach(p => L.circleMarker(p, { radius: 4.5, color: '#ff1f3d', weight: 0, fillOpacity: .95 }).addTo(c));
+      pts.forEach(p => nodo(p, 3.5));
+      S.geo.ultimoDato = Math.round(metros) + ' m de recorrido';
+
+    } else if (tipo === 'concava') {
+      triangular();
+      const anillo = envolventeConcava(plano, tris, par.alpha);
+      if (anillo.length >= 3) {
+        const latlngs = anillo.map(i => pts[i]);
+        L.polygon(latlngs, { color: col, weight: 2.5, fillColor: col, fillOpacity: .12,
+          className: 'pca-geo-hull' }).addTo(c);
+        let per = 0;
+        for (let i = 0; i < latlngs.length; i++) {
+          per += haversineM(latlngs[i], latlngs[(i + 1) % latlngs.length]);
+        }
+        S.geo.ultimoDato = Math.round(per) + ' m de perímetro';
+      } else {
+        // Con un alpha muy corto no queda ningún triángulo y no hay contorno:
+        // se dice, en vez de dejar el mapa vacío sin explicación.
+        S.geo.ultimoDato = 'sube el detalle: no cierra';
+      }
+      pts.forEach(p => nodo(p, 3));
 
     } else if (tipo === 'hull') {
       const hull = envolventeConvexa(pts);
       if (hull.length >= 3) {
-        L.polygon(hull, { color: '#FABD0A', weight: 2.5, fillColor: '#FABD0A', fillOpacity: .1,
+        L.polygon(hull, { color: col, weight: 2.5, fillColor: col, fillOpacity: .1,
           dashArray: '2 6', className: 'pca-geo-hull' }).addTo(c);
       }
-      pts.forEach(p => L.circleMarker(p, { radius: 3, color: '#FABD0A', weight: 0, fillOpacity: .9 }).addTo(c));
+      pts.forEach(p => nodo(p, 3));
 
     } else if (tipo === 'circulos') {
-      // Radio fijo modesto (35 m ≈ una cuadra corta): con relleno translúcido,
-      // los círculos cercanos se funden visualmente en un contorno orgánico
-      // sin necesidad de calcular la unión real de los polígonos.
       pts.forEach(p => {
-        L.circle(p, { radius: GEO_RADIO_M, color: '#ef4444', weight: 1, fillColor: '#ef4444', fillOpacity: .16 }).addTo(c);
+        L.circle(p, { radius: par.impacto, color: col, weight: 1,
+          fillColor: col, fillOpacity: .16 }).addTo(c);
       });
+      S.geo.ultimoDato = par.impacto + ' m de radio';
     }
     return pts.length;
   }
 
+  // Puente del deslizador: repinta en vivo mientras se arrastra, sin cerrar el
+  // panel, para poder ver cómo responde la forma al parámetro.
+  window.urbisProCityGeoAjuste = function (valor){
+    const par = PARAMETROS[S.geo.tipo];
+    if (!par) return;
+    S.geo.par[par.clave] = Number(valor);
+    const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+    if (!ctx) return;
+    S.geo.ultimoDato = '';
+    pintarGeo(ctx);
+    chipGeo(ctx);
+    // Solo se refresca la etiqueta del deslizador: repintar el panel entero
+    // mataría el arrastre en curso.
+    try {
+      const et = document.querySelector('.pca-geo-ajuste span');
+      if (et) et.textContent = par.etq(S.geo.par[par.clave]);
+    } catch(e){}
+  };
+
+  // ── Variación ───────────────────────────────────────────────────────────
+  // Un levantamiento admite muchas composiciones y ninguna es "la" correcta.
+  // Este botón sortea otra: cambia el parámetro de la forma actual y, cada
+  // tantas veces, salta a otra forma. Así el ejercicio deja de ser "elegir un
+  // botón" y pasa a ser comparar alternativas, que es lo que se hace al
+  // proyectar.
+  function variarGeo(ctx){
+    const par = PARAMETROS[S.geo.tipo];
+    const saltarDeForma = !par || (S.geo.variante % 3 === 2);
+    if (saltarDeForma) {
+      const otras = FORMAS.filter(f => f.id !== S.geo.tipo);
+      S.geo.tipo = otras[Math.floor(Math.random() * otras.length)].id;
+    }
+    const p2 = PARAMETROS[S.geo.tipo];
+    if (p2) {
+      const pasos = Math.floor((p2.max - p2.min) / p2.paso) + 1;
+      S.geo.par[p2.clave] = p2.min + Math.floor(Math.random() * pasos) * p2.paso;
+    }
+    S.geo.variante++;
+    S.geo.ultimoDato = '';
+    const n = pintarGeo(ctx);
+    chipGeo(ctx);
+    return n;
+  }
+
+  // Los mismos números con los que se dibuja la geometría, pero como DATOS,
   // Los mismos números con los que se dibuja la geometría, pero como DATOS,
   // para que la exportación saque vectores reales en vez de volver a inventarlos.
   // Comparte puntosGeo() con el pintado, así que lo exportado es exactamente lo
@@ -1596,11 +1900,31 @@ bloquesDiag,
     const c = ctx || (typeof window.urbisProCityCtxAnalisis === 'function' ? window.urbisProCityCtxAnalisis() : null);
     if (!c) return null;
     const pts = puntosGeo(c);
+    const par = S.geo.par;
     const out = { tipo: tipo, nombre: nombreGeo(tipo), color: colorGeo(tipo),
                   filtro: nombreFiltroGeo(c), puntos: pts };
-    if (tipo === 'red')      out.lineas = pts.length >= 2 ? redVecinos(pts, pts.length > 60 ? 1 : 2) : [];
-    if (tipo === 'hull')     out.anillo = pts.length >= 3 ? envolventeConvexa(pts) : [];
-    if (tipo === 'circulos') out.radioM = GEO_RADIO_M;
+    // Las formas de línea entregan `lineas`; las de superficie, `anillo`; los
+    // radios, `radioM`. Así el exportador no necesita saber de cada forma: le
+    // basta preguntar qué trae, y una forma nueva se exporta sola.
+    if (tipo === 'red') {
+      out.lineas = redVecinos(pts, Math.max(1, par.k));
+    } else if (tipo === 'malla') {
+      out.lineas = mallaProximidad(pts, par.radio);
+    } else if (tipo === 'delaunay' || tipo === 'mst') {
+      const plano = aPlanoLocal(pts);
+      const tris = triangularDelaunay(plano);
+      const aristas = tipo === 'mst' ? arbolMinimo(plano, aristasDeTriangulos(tris))
+                                     : aristasDeTriangulos(tris);
+      out.lineas = aristas.map(e => [pts[e[0]], pts[e[1]]]);
+    } else if (tipo === 'concava') {
+      const plano = aPlanoLocal(pts);
+      const anillo = envolventeConcava(plano, triangularDelaunay(plano), par.alpha);
+      out.anillo = anillo.map(i => pts[i]);
+    } else if (tipo === 'hull') {
+      out.anillo = pts.length >= 3 ? envolventeConvexa(pts) : [];
+    } else if (tipo === 'circulos') {
+      out.radioM = par.impacto;
+    }
     return out;
   }
 
@@ -1624,12 +1948,19 @@ bloquesDiag,
     // El chip dice también SOBRE QUÉ conjunto se tejió (👤/👥/📁/🌐): es la
     // única pista en el mapa de por qué la red conecta unos puntos y no otros.
     const v = vistaDelMapa(ctx);
+    const par = PARAMETROS[S.geo.tipo];
+    const ajuste = par ? par.etq(S.geo.par[par.clave]) : '';
     const aviso = n < 2
       ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' en ' + v.ico + ' ' + esc(v.etq)
-      : n + ' puntos · ' + esc(nombreFiltroGeo(ctx)) + ' · ' + v.ico + ' ' + esc(v.etq);
+      : n + ' puntos · ' + (ajuste ? esc(ajuste) : esc(nombreFiltroGeo(ctx))) +
+        (S.geo.ultimoDato ? ' · ' + esc(S.geo.ultimoDato) : '');
     S.geo.chip.innerHTML =
       '<i style="background:' + colorGeo(S.geo.tipo) + '"></i>' +
       '<div><b>' + nombreGeo(S.geo.tipo) + '</b><small>' + aviso + '</small></div>' +
+      // El dado vive también en el chip: las variaciones se miran con el panel
+      // cerrado, y volver a abrirlo para cada tirada rompía el ritmo de probar.
+      '<button type="button" class="pca-geo-dado" data-u52-call="pca-geo-variar" ' +
+        'aria-label="Generar otra variación">🎲</button>' +
       '<button type="button" data-u52-call="pca-geo-off" aria-label="Quitar la geometría">✕</button>';
   }
 
@@ -1693,10 +2024,10 @@ bloquesDiag,
   function bloqueGeo(ctx){
     const act = S.geo.tipo;
     const filtro = S.geo.grupo || 'todos';
-    const chip = (id, ico, txt, color) =>
-      '<button type="button" class="pca-heat-btn' + (act === id ? ' activo' : '') + '" ' +
-      'data-u52-call="pca-geo" data-gid="' + esc(id) + '" style="--c:' + color + '">' +
-      '<i></i><span>' + ico + ' ' + esc(txt) + '</span></button>';
+    const chip = f =>
+      '<button type="button" class="pca-forma' + (act === f.id ? ' activo' : '') + '" ' +
+      'data-u52-call="pca-geo" data-gid="' + esc(f.id) + '" style="--c:' + f.color + '">' +
+      '<i></i><span>' + f.ico + ' ' + esc(f.nom) + '</span></button>';
     // Filtro de qué se conecta. Se muestra el conteo real de cada categoría
     // dentro del área para no ofrecer filtros que dejarían el dibujo vacío.
     const r = window.__pcaUltimo || { porGrupo: {}, total: 0 };
@@ -1708,24 +2039,38 @@ bloquesDiag,
       ctx.grupos.filter(g => (r.porGrupo[g.id] || 0) > 0)
         .map(g => fchip(g.id, g.i, g.t, r.porGrupo[g.id])).join('');
 
+    const forma = formaDe(act);
+    const par = act ? PARAMETROS[act] : null;
+    // Deslizador del parámetro: la variación al azar sirve para descubrir, y
+    // este para afinar lo que se descubrió.
+    const ajuste = par ? (
+      '<label class="pca-geo-ajuste">' +
+        '<span>' + esc(par.etq(S.geo.par[par.clave])) + '</span>' +
+        '<input type="range" min="' + par.min + '" max="' + par.max + '" step="' + par.paso + '" ' +
+          'value="' + S.geo.par[par.clave] + '" data-u52-noclose ' +
+          'oninput="window.urbisProCityGeoAjuste && window.urbisProCityGeoAjuste(this.value)">' +
+      '</label>') : '';
+
     return '<div class="pca-geo-sel">' +
       '<h4 class="pca-h pca-h-geo">🕸️ Geometría del área</h4>' +
-      '<p class="pca-geo-ayuda">Dibuja las relaciones espaciales entre lo mapeado: qué tan cerca está unos de otros, cuánto terreno abarcan y dónde se cruzan sus radios de influencia. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
-      // Decir SOBRE QUÉ se va a generar. Sin esto, un usuario con el mapa en
-      // "solo lo mío" no tiene forma de saber si la red que ve sale de sus
-      // puntos o de los de todo el mundo.
-      '<div class="pca-geo-vista">' + vistaTexto(ctx) + '</div>' +
+      '<p class="pca-geo-ayuda">Un mismo levantamiento admite muchas lecturas, y cada forma ' +
+        'responde una pregunta distinta. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
+      '<div class="pcd-vista">' + vistaTexto(ctx) + '</div>' +
       '<div class="pca-geo-sub">¿Qué puntos conectar?</div>' +
       '<div class="pca-geo-filtros">' + filtros + '</div>' +
       '<div class="pca-geo-sub">¿Cómo dibujarlos?</div>' +
-      '<div class="pca-heat-chips">' +
-        chip('red', '🕸️', 'Red de conexiones', '#a855f7') +
-        chip('hull', '⬡', 'Envolvente convexa', '#FABD0A') +
-        chip('circulos', '⭕', 'Círculos de impacto', '#ef4444') +
-      '</div>' +
-      (act ? '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">✕ Quitar la geometría</button>' : '') +
+      '<div class="pca-formas">' + FORMAS.map(chip).join('') + '</div>' +
+      (forma ? '<p class="pca-forma-que">' + forma.ico + ' <b>' + esc(forma.nom) + '</b> · ' +
+               esc(forma.pregunta) + '</p>' : '') +
+      ajuste +
+      (act ? '<div class="pca-geo-acciones">' +
+        '<button type="button" class="pca-geo-variar" data-u52-call="pca-geo-variar">' +
+          '🎲 Generar otra variación</button>' +
+        '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">✕ Quitar</button>' +
+      '</div>' : '') +
     '</div>';
   }
+
 
   // ── Fase 4 · Análisis ráster ambiental ──────────────────────────────────
   // Estima cuánto del área es verde, agua o superficie construida clasificando
@@ -2629,6 +2974,23 @@ bloquesDiag,
     }
     // Cambiar el filtro no cierra el panel: se está eligiendo qué conectar,
     // y lo normal es probar varias categorías seguidas antes de dibujar.
+    if (name === 'geo-variar') {
+      const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+      if (!ctx) return true;
+      if (!S.geo.tipo) S.geo.tipo = FORMAS[0].id;
+      // Si se tira el dado desde el panel, se cierra para poder ver el
+      // resultado; desde el chip del mapa ya está cerrado y no hay nada que hacer.
+      const desdePanel = !!(el && el.closest && el.closest('.pca-geo-sel'));
+      const n = variarGeo(ctx);
+      reg('geo-variacion');
+      if (desdePanel && typeof window.urbisProCityCerrarStats === 'function') {
+        window.urbisProCityCerrarStats();
+        cerrarBurbuja();
+      }
+      if (n < 2) alert('Con este filtro solo hay ' + n + ' punto' + (n === 1 ? '' : 's') +
+        ' dentro del área. Elige "Todo lo mapeado" u otra categoría para ver la geometría.');
+      return true;
+    }
     if (name === 'geo-filtro') {
       S.geo.grupo = (el && el.dataset.gid) || 'todos';
       reg('geo-filtro');

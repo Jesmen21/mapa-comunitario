@@ -1312,6 +1312,113 @@
     if(screen === 'login') setTimeout(resetInitialAuthViewport, 30);
   }
   function back(){ if(stack.length>1) stack.pop(); show(stack[stack.length-1] || 'home', false); }
+
+  // ── El botón físico de atrás de Android ─────────────────────────────────
+  //
+  // La app tenía su flecha ← y funcionaba, pero el botón del teléfono no sabe
+  // nada de nuestras pantallas: al pulsarlo, el navegador salía del index.html
+  // y la PWA se recargaba entera. Eso es lo que se sentía como "se reinicia la
+  // app" — y es de lo más frustrante, porque uno solo quería volver un paso y
+  // termina perdiendo el área dibujada, el análisis y la sesión de trabajo.
+  //
+  // La solución es el patrón de la entrada de repuesto: se deja SIEMPRE una
+  // entrada de historial de sobra. Cada atrás del teléfono la consume, nosotros
+  // retrocedemos una pantalla por dentro y reponemos la entrada, así que nunca
+  // se llega al borde del historial y nunca se sale de la página.
+  let ignorandoPop = false;
+  let avisoSalida = 0;
+
+  // Aviso propio y no dependiente de otros módulos: si el toast de logros no
+  // estuviera cargado, el usuario saldría de la app sin advertencia ninguna.
+  function avisarSalida(){
+    let t = document.getElementById('u52-salir-aviso');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'u52-salir-aviso';
+      t.className = 'u52-salir-aviso';
+      t.textContent = 'Pulsa atrás otra vez para salir de URBIS';
+      document.body.appendChild(t);
+    }
+    t.classList.add('visible');
+    clearTimeout(avisarSalida._t);
+    avisarSalida._t = setTimeout(() => { try{ t.classList.remove('visible'); }catch(e){} }, 2400);
+  }
+
+  function reponerRepuesto(){
+    try { history.pushState({ urbisRepuesto: true }, ''); } catch(e){}
+  }
+
+  let historialListo = false;
+  function iniciarHistorial(){
+    // Idempotente: se llama tanto al entrar con sesión nueva como al arrancar
+    // con sesión ya guardada, y enganchar dos veces duplicaría el retroceso.
+    if (historialListo) return;
+    historialListo = true;
+    try {
+      history.replaceState({ urbisRaiz: true }, '');
+      reponerRepuesto();
+    } catch(e){}
+    window.addEventListener('popstate', function(){
+      if (ignorandoPop) { ignorandoPop = false; return; }
+
+      // Cosas que se cierran ANTES de cambiar de pantalla: si hay una hoja o
+      // un panel abierto, el atrás debe cerrarlo, no navegar. Es lo que espera
+      // cualquiera que venga de usar Android.
+      if (cerrarLoAbierto()) { reponerRepuesto(); return; }
+
+      if (stack.length > 1) {
+        back();
+        reponerRepuesto();
+        return;
+      }
+
+      // Ya en la raíz. Antes de dejar salir se avisa una vez: perder toda la
+      // sesión por un toque de más es exactamente el problema que se venía a
+      // resolver.
+      const ahora = Date.now();
+      if (ahora - avisoSalida > 2500) {
+        avisoSalida = ahora;
+        avisarSalida();
+        reponerRepuesto();
+        return;
+      }
+      // Segundo toque seguido: se deja ir de verdad.
+      ignorandoPop = true;
+      try { history.back(); } catch(e){}
+    });
+  }
+
+  // Devuelve true si había algo abierto y lo cerró, en orden de "lo más
+  // encima primero". OJO: estas hojas no se eliminan del DOM, se marcan con
+  // `hidden`. Preguntar solo si el elemento EXISTE daría siempre que sí y el
+  // atrás se quedaría trabado cerrando algo ya cerrado, sin volver nunca.
+  const CAPAS_CERRABLES = [
+    { id:'u52-procity-sheet',           cerrar: () => hideProCityCategorySheet() },
+    { id:'u52-procity-stats',           cerrar: () => hideProCityStats() },
+    { id:'u52-procity-filter',          cerrar: () => hideProCityFilterSheet() },
+    { id:'u52-procity-selected-panel',  cerrar: () => hideProCitySelectedPanel() },
+    { id:'u52-cfilter-sheet',           cerrar: () => hideCitizenFilterSheet() },
+    { id:'urbis-alerta-ficha',          cerrar: () => { const f = document.getElementById('urbis-alerta-ficha'); if(f) f.hidden = true; } }
+  ];
+
+  function cerrarLoAbierto(){
+    // Mover un reporte es lo más "modal" de todo: primero se cancela eso.
+    if(document.body.classList.contains('urbis-moving-mode')){
+      try{ if(window.urbisCancelarMoverReporte){ window.urbisCancelarMoverReporte(); return true; } }catch(e){}
+    }
+    for(let i = 0; i < CAPAS_CERRABLES.length; i++){
+      const c = CAPAS_CERRABLES[i];
+      const el = document.getElementById(c.id);
+      if(el && !el.hidden){ try{ c.cerrar(); return true; }catch(e){} }
+    }
+    // La burbuja del área de análisis vive en su propio módulo.
+    try{
+      const PCA = window.URBIS_PC_ANALISIS;
+      if(PCA && PCA.burbujaAbierta && PCA.burbujaAbierta()){ PCA.accion('cerrar-burbuja'); return true; }
+    }catch(e){}
+    return false;
+  }
+
   function setRole(role){
     mobileRole = role; document.body.dataset.role = role;
     const lbl = app.querySelector('#u52-role-label'); if(lbl) lbl.textContent = role === 'admin' ? 'Administrador' : 'Ciudadano';
@@ -5428,6 +5535,7 @@
       setRole(role);
       callNativeLogin(role);
       show('home');
+      iniciarHistorial();
       setTimeout(()=>ensureMobileGps(true),250);
       return;
     }
@@ -5648,6 +5756,15 @@
     var b = document.getElementById('u52-aia-module');
     if(b) b.hidden = !u52AiaAutorizado();
   }
+  // El enganche del atrás va desde el arranque, no solo al iniciar sesión:
+  // quien vuelve con la sesión ya guardada no pasa por el login y se quedaría
+  // sin protección — que es justo el caso de todos los días.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarHistorial);
+  } else {
+    iniciarHistorial();
+  }
+
   document.addEventListener('DOMContentLoaded', u52RefreshAiaModule);
   setTimeout(u52RefreshAiaModule, 1500); // la sesión/roles pueden cargar tarde
   window.addEventListener('storage', u52RefreshAiaModule);

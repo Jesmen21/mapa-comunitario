@@ -724,3 +724,46 @@
   color:#4a5568 !important; -webkit-text-fill-color:#4a5568 !important; }
 .pcd-leyenda i{ width:9px; height:9px; border-radius:3px; display:block; }
 @media (min-width:420px){ .pcd-cifras{ grid-template-columns:repeat(4,1fr); } }
+
+/* ── Catálogo de formas geométricas ── */
+.pca-formas{ display:flex; flex-wrap:wrap; gap:5px; }
+.pca-forma{
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  background:#fff; border:1.5px solid #e2e6f0; border-radius:999px;
+  padding:7px 12px 7px 9px; font-size:.74rem; font-weight:700;
+  color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important;
+  transition:border-color .15s ease, background .15s ease;
+}
+.pca-forma i{ width:10px; height:10px; border-radius:50%; background:var(--c); flex:0 0 auto; }
+.pca-forma span{ color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important; }
+.pca-forma.activo{ border-color:var(--c); background:color-mix(in srgb, var(--c) 14%, #fff); }
+.pca-forma:active{ transform:scale(.97); }
+
+/* Qué pregunta responde la forma elegida: sin esto, siete botones son adivinar. */
+.pca-forma-que{
+  margin:0; font-size:.73rem; line-height:1.45; padding:7px 9px; border-radius:9px;
+  background:#fff; border:1px solid #e2e6f0;
+  color:#4a5568 !important; -webkit-text-fill-color:#4a5568 !important;
+}
+.pca-forma-que b{ color:#2f3646 !important; -webkit-text-fill-color:#2f3646 !important; }
+
+.pca-geo-ajuste{ display:flex; flex-direction:column; gap:5px; }
+.pca-geo-ajuste span{ font-size:.72rem; font-weight:700;
+  color:#4c3b73 !important; -webkit-text-fill-color:#4c3b73 !important; }
+.pca-geo-ajuste input[type=range]{ width:100%; accent-color:#6b4fb8; }
+
+.pca-geo-acciones{ display:flex; gap:6px; flex-wrap:wrap; }
+.pca-geo-variar{
+  flex:1 1 auto; cursor:pointer; padding:10px 14px; border-radius:11px;
+  border:1.5px solid #6b4fb8; background:linear-gradient(100deg,#6b4fb8,#8b5cf6);
+  font-size:.78rem; font-weight:800;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+.pca-geo-variar:active{ transform:scale(.98); }
+
+/* El dado también en el chip del mapa: las variaciones se miran con el panel
+   cerrado y reabrirlo en cada tirada rompía el ritmo de probar. */
+.pca-geo-chip .pca-geo-dado{
+  flex:0 0 auto; width:26px; height:26px; border:0; border-radius:9px; cursor:pointer;
+  background:#2f2352; font-size:.8rem; display:grid; place-items:center; margin-right:4px;
+}

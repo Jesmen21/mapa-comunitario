@@ -411,7 +411,7 @@
     if (d.geo && d.geo.puntos && d.geo.puntos.length) {
       const g = d.geo;
       let cuerpo = '';
-      if (g.tipo === 'red' && g.lineas) {
+      if (g.lineas && g.lineas.length) {
         cuerpo = g.lineas.map(function (par, i) {
           return '<Placemark><name>' + esc('Conexión ' + (i + 1)) + '</name>' +
             '<styleUrl>#geoLinea</styleUrl><LineString><tessellate>1</tessellate><coordinates>' +
@@ -419,10 +419,10 @@
             par[1].lng.toFixed(7) + ',' + par[1].lat.toFixed(7) + ',0' +
             '</coordinates></LineString></Placemark>';
         }).join('');
-      } else if (g.tipo === 'hull' && g.anillo && g.anillo.length >= 3) {
-        cuerpo = '<Placemark><name>Envolvente convexa</name><styleUrl>#geoArea</styleUrl>' +
+      } else if (g.anillo && g.anillo.length >= 3) {
+        cuerpo = '<Placemark><name>' + esc(g.nombre) + '</name><styleUrl>#geoArea</styleUrl>' +
           poligonoKML(g.anillo, [], true) + '</Placemark>';
-      } else if (g.tipo === 'circulos') {
+      } else if (g.radioM) {
         cuerpo = g.puntos.map(function (p, i) {
           return '<Placemark><name>' + esc('Radio de impacto ' + (i + 1)) + '</name>' +
             '<description>' + esc('Radio ' + g.radioM + ' m') + '</description>' +
@@ -669,11 +669,11 @@
     // La geometría generada.
     if (d.geo) {
       const capa = 'GEOMETRIA_' + d.geo.tipo.toUpperCase();
-      if (d.geo.tipo === 'red' && d.geo.lineas) {
+      if (d.geo.lineas && d.geo.lineas.length) {
         d.geo.lineas.forEach(par2 => { s += polilineaDXF(capa, par2, proj, false); });
-      } else if (d.geo.tipo === 'hull' && d.geo.anillo && d.geo.anillo.length >= 3) {
+      } else if (d.geo.anillo && d.geo.anillo.length >= 3) {
         s += polilineaDXF(capa, d.geo.anillo, proj, true);
-      } else if (d.geo.tipo === 'circulos') {
+      } else if (d.geo.radioM) {
         // Aquí sí va CIRCLE de verdad, no un polígono: en CAD un círculo es
         // una entidad con centro y radio, editable y acotable como tal.
         d.geo.puntos.forEach(function (p) {
@@ -723,17 +723,18 @@
     });
 
     if (d.geo && d.geo.puntos.length) {
-      if (d.geo.tipo === 'red' && d.geo.lineas) {
+      if (d.geo.lineas && d.geo.lineas.length) {
         f.push({ type:'Feature',
-          properties:{ capa:'geometria', tipo:'red', filtro:d.geo.filtro, conexiones:d.geo.lineas.length },
+          properties:{ capa:'geometria', tipo:d.geo.tipo, nombre:d.geo.nombre,
+                       filtro:d.geo.filtro, conexiones:d.geo.lineas.length },
           geometry:{ type:'MultiLineString',
             coordinates: d.geo.lineas.map(par2 => par2.map(p => [+p.lng.toFixed(7), +p.lat.toFixed(7)])) } });
-      } else if (d.geo.tipo === 'hull' && d.geo.anillo && d.geo.anillo.length >= 3) {
-        f.push({ type:'Feature', properties:{ capa:'geometria', tipo:'hull', filtro:d.geo.filtro },
+      } else if (d.geo.anillo && d.geo.anillo.length >= 3) {
+        f.push({ type:'Feature', properties:{ capa:'geometria', tipo:d.geo.tipo, nombre:d.geo.nombre, filtro:d.geo.filtro },
           geometry:{ type:'Polygon', coordinates:[ anilloCerrado(d.geo.anillo, true).map(p => [+p.lng.toFixed(7), +p.lat.toFixed(7)]) ] } });
-      } else if (d.geo.tipo === 'circulos') {
+      } else if (d.geo.radioM) {
         f.push({ type:'Feature',
-          properties:{ capa:'geometria', tipo:'circulos', radio_m:d.geo.radioM, filtro:d.geo.filtro },
+          properties:{ capa:'geometria', tipo:d.geo.tipo, nombre:d.geo.nombre, radio_m:d.geo.radioM, filtro:d.geo.filtro },
           geometry:{ type:'MultiPolygon',
             coordinates: d.geo.puntos.map(p => [circuloComoPoligono(p, d.geo.radioM)]) } });
       }
@@ -802,7 +803,7 @@
     if (d.geo && d.geo.puntos.length) {
       const g = d.geo;
       let cuerpo = '';
-      if (g.tipo === 'red' && g.lineas) {
+      if (g.lineas && g.lineas.length) {
         cuerpo = g.lineas.map(par2 => '<line x1="' + X(par2[0]) + '" y1="' + Y(par2[0]) +
           '" x2="' + X(par2[1]) + '" y2="' + Y(par2[1]) + '"/>').join('');
       } else if (g.tipo === 'hull' && g.anillo && g.anillo.length >= 3) {
