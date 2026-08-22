@@ -340,7 +340,7 @@
   // no se discute: manda la etiqueta.
   const GENERICAS = ['comercio_otro', 'local_comercial', 'otro', 'edificio_otro'];
 
-  function porSub(sub, extra){
+  function subDeTaxonomia(sub, extra){
     const r = TAXONOMIA.find(t => t.sub === sub);
     if (!r) return null;
     const o = { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono };
@@ -387,7 +387,7 @@
     const n = normalizarNombrePOI(nombre);
     if (!n) return null;
     for (let i = 0; i < NOMBRE_USO.length; i++) {
-      if (NOMBRE_USO[i].re.test(n)) return porSub(NOMBRE_USO[i].sub, { porNombre: true });
+      if (NOMBRE_USO[i].re.test(n)) return subDeTaxonomia(NOMBRE_USO[i].sub, { porNombre: true });
     }
     return null;
   }
@@ -404,7 +404,7 @@
       const rc = REGLAS_COMPUESTAS[i];
       let aplica = false;
       try { aplica = !!rc.cuando(tags); } catch(e) { aplica = false; }
-      if (aplica) { const r = porSub(rc.sub); if (r) return r; }
+      if (aplica) { const r = subDeTaxonomia(rc.sub); if (r) return r; }
     }
     for (let i = 0; i < TAXONOMIA.length; i++) {
       const r = TAXONOMIA[i];
@@ -811,6 +811,46 @@
     flujo.nivelVehicular = flujo.vehicular >= 70 ? 'Muy alto' : flujo.vehicular >= 50 ? 'Alto'
       : flujo.vehicular >= 30 ? 'Medio' : 'Bajo';
     flujo.parqueaderos = porSub.parqueadero || 0;
+
+    // ── Tránsito vehicular y combustible ─────────────────────────────────
+    //
+    // Dos cifras que se piden mucho para leer el movimiento de una esquina:
+    // cuántos carros pasan y cuánto combustible mueve la zona. Ninguna se
+    // puede saber sin aforo ni sin datos de ventas, así que se entregan como
+    // RANGOS de orden de magnitud y el informe lo dice con todas las letras.
+    //
+    // El tránsito promedio diario es una propiedad de la vía, no del lote: lo
+    // que se reporta es el rango típico del corredor de mayor jerarquía que
+    // pasa cerca, con su distancia, para que se entienda de qué vía se habla.
+    const TPD = {
+      troncal:    { min: 20000, max: 45000 },
+      principal:  { min: 10000, max: 25000 },
+      secundaria: { min:  4000, max: 12000 },
+      colectora:  { min:  1500, max:  5000 }
+    };
+    const corredor = (movilidad.viasArterias || []).slice()
+      .sort((a, b) => {
+        const jer = { troncal: 4, principal: 3, secundaria: 2, colectora: 1 };
+        return (jer[b.jerarquia] || 0) - (jer[a.jerarquia] || 0) || a.distM - b.distM;
+      })[0];
+    const rango = corredor ? TPD[corredor.jerarquia] : null;
+    // Una estación de servicio urbana de tamaño medio en Colombia mueve del
+    // orden de 60.000 a 150.000 litros al mes. Multiplicado por las estaciones
+    // del radio da una magnitud del consumo de la zona — no una cifra de
+    // ventas, que solo conoce cada estación.
+    const LITROS_POR_ESTACION = { min: 60000, max: 150000 };
+    const nEstaciones = porSub.gasolinera || 0;
+    flujo.trafico = {
+      corredor: corredor ? { nombre: corredor.nombre, jerarquia: corredor.jerarquia,
+                             distM: corredor.distM } : null,
+      carrosDiaMin: rango ? rango.min : 0,
+      carrosDiaMax: rango ? rango.max : 0,
+      estaciones: nEstaciones,
+      litrosMesMin: nEstaciones * LITROS_POR_ESTACION.min,
+      litrosMesMax: nEstaciones * LITROS_POR_ESTACION.max,
+      // Sin corredor arterial no hay de dónde estimar: se dice, no se inventa.
+      estimable: !!rango
+    };
 
     const maxF = Math.max(aporteFranja.manana, aporteFranja.mediodia, aporteFranja.tarde) || 1;
     flujo.franjas = {

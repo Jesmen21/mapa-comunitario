@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v520-estabilidad-reforzada';
+const URBIS_CACHE = 'urbis-v521-pdf-transito';
 const URBIS_ASSETS = [
   './',
   './index.html',

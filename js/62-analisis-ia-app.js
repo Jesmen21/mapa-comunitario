@@ -771,13 +771,32 @@
                         : 'Sin parqueaderos identificados en el radio.') + '</p>' +
       '<div class="aia-flujo-horas">' + franja('Mañana', f.franjas.manana) +
         franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) + '</div>' +
+      // Tránsito y combustible: rangos de orden de magnitud, no aforos.
+      (function(){
+        const t = f.trafico;
+        if (!t) return '';
+        const miles = n => n.toLocaleString('es-CO');
+        const fila = (ico, etq, val, pie) =>
+          '<div class="aia-traf-fila"><span>' + ico + ' ' + etq + '</span><b>' + val + '</b></div>' +
+          '<p class="aia-traf-pie">' + escHTML(pie) + '</p>';
+        return '<h4 class="aia-flujo-sub">Tránsito y combustible</h4>' +
+          fila('🚗', 'Carros por día',
+               t.estimable ? miles(t.carrosDiaMin) + '–' + miles(t.carrosDiaMax) : '—',
+               t.estimable
+                 ? 'Por ' + t.corredor.nombre + ', vía ' + t.corredor.jerarquia + ' a ' + t.corredor.distM + ' m.'
+                 : 'Sin vía arteria en el radio: no hay corredor del que estimarlo.') +
+          fila('⛽', 'Litros al mes',
+               t.estaciones ? miles(t.litrosMesMin) + '–' + miles(t.litrosMesMax) : '—',
+               t.estaciones
+                 ? t.estaciones + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio.'
+                 : 'Sin estaciones de servicio en el radio.');
+      })() +
       '<h4 class="aia-flujo-sub">Qué trae gente a pie</h4>' + listaGen +
       // Un flujo bajo por calle vacía y uno bajo por zona sin mapear se ven
       // idénticos en el número. Distinguirlos evita descartar una ubicación
       // buena por un hueco de datos.
       (f.avisoDatos ? '<p class="aia-flujo-aviso">⚠️ ' + escHTML(f.avisoDatos) + '</p>' : '') +
-      '<p class="aia-flujo-nota">Potencial estimado a partir de los usos del entorno y la malla vial. ' +
-        'No es un aforo: sirve para comparar ubicaciones y dimensionar el formato, no para proyectar ventas.</p>';
+      '<p class="aia-flujo-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. No es un aforo: no hay conteo de personas ni de vehículos. Los carros por día y los litros al mes son rangos de orden de magnitud según la jerarquía de la vía y el número de estaciones — no son mediciones ni cifras de ventas. Sirve para comparar ubicaciones entre sí y para dimensionar el formato, no para proyectar ventas.</p>';
   }
 
   // ── Tabla completa de puntos ─────────────────────────────────────────────

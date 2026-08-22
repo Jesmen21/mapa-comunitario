@@ -281,6 +281,13 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-flujo-gen li b{ flex:0 0 32px; text-align:right; color:var(--aia-acento); }
 .aia-flujo-vacio,
 .aia-flujo-nota{ font-size:.66rem; color:var(--aia-texto2); opacity:.75; line-height:1.4; margin:10px 0 0; }
+.aia-traf-fila{
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+  padding:6px 9px; border-radius:9px; background:var(--aia-card);
+  border:1px solid var(--aia-borde); font-size:.73rem;
+}
+.aia-traf-fila b{ font-size:.82rem; color:var(--aia-acento); }
+.aia-traf-pie{ font-size:.64rem; color:var(--aia-texto2); opacity:.75; line-height:1.35; margin:3px 0 8px; }
 .aia-flujo-aviso{
   font-size:.68rem; line-height:1.4; margin:10px 0 0; padding:8px 10px; border-radius:10px;
   background:rgba(245,185,66,.12); border:1px solid rgba(245,185,66,.4); color:var(--aia-texto2);

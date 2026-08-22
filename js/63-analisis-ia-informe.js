@@ -367,6 +367,36 @@
   // El bloque que pide un café: cuánta gente pasa por la puerta, cómo llega y
   // a qué hora. Se declara sin rodeos que es potencial estimado de la
   // estructura urbana, no un aforo — quien lo lea tiene que saber qué compra.
+  // Tránsito vehicular y combustible: dos magnitudes que se piden mucho para
+  // leer el movimiento de una esquina. Se muestran como RANGOS porque no hay
+  // aforo ni datos de ventas detrás, y el pie del bloque lo declara.
+  function miles(n){ return n.toLocaleString('es-CO'); }
+  function bloqueTrafico(f){
+    const t = f.trafico;
+    if (!t) return '';
+    const filas = [];
+    if (t.estimable) {
+      filas.push('<div class="traf-fila"><span>🚗 Carros por día</span>' +
+        '<b>' + miles(t.carrosDiaMin) + '–' + miles(t.carrosDiaMax) + '</b></div>' +
+        '<p class="traf-pie">Por ' + esc(t.corredor.nombre) + ', vía ' + esc(t.corredor.jerarquia) +
+        ' a ' + t.corredor.distM + ' m.</p>');
+    } else {
+      filas.push('<div class="traf-fila"><span>🚗 Carros por día</span><b>—</b></div>' +
+        '<p class="traf-pie">Sin vía arteria en el radio: no hay corredor del que estimarlo.</p>');
+    }
+    if (t.estaciones > 0) {
+      filas.push('<div class="traf-fila"><span>⛽ Litros al mes</span>' +
+        '<b>' + miles(t.litrosMesMin) + '–' + miles(t.litrosMesMax) + '</b></div>' +
+        '<p class="traf-pie">' + t.estaciones +
+        (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio.</p>');
+    } else {
+      filas.push('<div class="traf-fila"><span>⛽ Litros al mes</span><b>—</b></div>' +
+        '<p class="traf-pie">Sin estaciones de servicio en el radio.</p>');
+    }
+    return '<h3 class="flujo-h3">Tránsito y combustible</h3>' +
+           '<div class="traf">' + filas.join('') + '</div>';
+  }
+
   function bloqueFlujo(r){
     const f = r.stats.movilidad && r.stats.movilidad.flujo;
     if (!f) return '';
@@ -436,12 +466,11 @@
             franja('Tarde', f.franjas.tarde) +
           '</div>' +
         '</div>' +
-        (bloqueHitos ? '<div><h3 class="flujo-h3">Hitos que mueven la acera</h3>' + bloqueHitos + '</div>' : '') +
+        (bloqueHitos ? '<div><h3 class="flujo-h3">Hitos que mueven la acera</h3>' + bloqueHitos +
+                       bloqueTrafico(f) + '</div>' : '<div>' + bloqueTrafico(f) + '</div>') +
       '</div>' +
       (f.avisoDatos ? '<p class="flujo-aviso">⚠️ ' + esc(f.avisoDatos) + '</p>' : '') +
-      '<p class="pie-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. ' +
-        'No es un aforo: no hay conteo de personas ni de vehículos. Sirve para comparar ubicaciones ' +
-        'entre sí y para dimensionar el formato, no para proyectar ventas.</p></div>';
+      '<p class="pie-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. No es un aforo: no hay conteo de personas ni de vehículos. Los carros por día y los litros al mes son rangos de orden de magnitud según la jerarquía de la vía y el número de estaciones — no son mediciones ni cifras de ventas. Sirve para comparar ubicaciones entre sí y para dimensionar el formato, no para proyectar ventas.</p></div>';
   }
 
   function bloqueMovilidad(r){
@@ -714,7 +743,11 @@
 // Las listas y la rejilla de KPIs no estiran solas: se les reparte el aire
 // entre renglones en vez de acumularlo al final del marco.
 '.bloque>ul{flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-around}',
-'.bloque>.kpis{flex:1 1 auto;align-items:stretch}',
+// Los KPI NO se estiran. Con `flex:1 1 auto` absorbían todo el sobrante de la
+// hoja: medían 190 px con 145 de aire vacío cada uno, cinco veces. El sobrante
+// queda ahora disponible para contenido de verdad.
+'.bloque>.kpis{flex:0 0 auto;align-content:start}',
+'.kpi{align-self:start}',
 '.mapa-wrap{flex:0 0 auto}',
 // En vertical la fila-2 tiene 3 columnas en una rejilla de 2: la tercera
 // quedaría sola dejando media hoja en blanco, así que ocupa el ancho
@@ -881,6 +914,12 @@
 // El gimnasio se resalta: es el hito que más cambia el tránsito de la acera.
 '.hito-chip.fuerte{background:rgba(245,185,66,.14);border-color:', T.oro, '}',
 '.hitos-nota{font-size:7.4px;line-height:1.45;color:', T.txt2, ';margin-top:5px}',
+'.traf{margin-top:2px}',
+'.traf-fila{display:flex;align-items:baseline;justify-content:space-between;gap:6px;',
+'padding:3px 5px;border-radius:4px;background:', T.suave, ';border:1px solid ', T.borde, '}',
+'.traf-fila span{font-size:7.6px;font-weight:700}',
+'.traf-fila b{font-size:8.6px;font-weight:800;color:', T.acento, '}',
+'.traf-pie{font-size:6.8px;line-height:1.35;color:', T.txt3, ';margin:2px 0 5px}',
 '.gen-ej{display:block;font-style:normal;font-size:7px;color:', T.txt3, ';font-weight:600;line-height:1.25}',
 '.flujo-med{margin-bottom:7px}',
 '.flujo-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}',
@@ -947,9 +986,13 @@
   '<div>', bloqueOportunidad(r), bloqueGuia(r), '</div>',
 '</div>',
 
+// El flujo sube a la hoja 1: es lo que decide una implantación comercial y en
+// la hoja 2 competía con todo el detalle estadístico. Aquí hay sitio real.
+'<div class="fila fila-foda">', bloqueFlujo(r), '</div>',
+
 '<div class="conclusion">', esc(r.conclusion), '</div>',
 
-'<footer><span>Página 1 de 2 · Veredicto y lectura general.',
+'<footer><span>Página 1 de 2 · Veredicto, flujo y lectura general.',
 (r.stats.poblacionEsCensal ? ' Población y estrato: Censo DANE 2018.' : ''),
 '</span>',
 '<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
@@ -973,11 +1016,6 @@
     chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '', '</div>',
   '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), '</div>',
 '</div>',
-
-// El flujo va en su propia franja a todo el ancho. Estaba metido dentro de la
-// rejilla de tres columnas, así que entraba como una cuarta celda y le rompía
-// el reparto a la fila entera.
-'<div class="fila fila-foda">', bloqueFlujo(r), '</div>',
 
 // Las columnas se arman con `columnas()`: una columna cuyos bloques salen
 // todos vacíos NO se emite, para que la rejilla no reserve un tercio en blanco.
