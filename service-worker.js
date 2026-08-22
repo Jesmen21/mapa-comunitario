@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v522-fundacion-primera-dama';
+const URBIS_CACHE = 'urbis-v523-bloque-seguridad-urbana';
 const URBIS_ASSETS = [
   './',
   './index.html',

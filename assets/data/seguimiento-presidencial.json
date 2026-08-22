@@ -19,6 +19,24 @@
   },
   "entradas": [
     {
+      "fecha": "2026-07-05",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia un \"Bloque de Defensa para la Seguridad Urbana\" y desata el debate sobre si abre la puerta al paramilitarismo",
+      "detalle": "El 5 de julio de 2026, ya como presidente electo, De la Espriella anunció que crearía por decreto un “Bloque de Defensa para la Seguridad Urbana”: una estrategia coordinada entre el Gobierno nacional y las alcaldías de Bogotá, Medellín, Cali, Barranquilla y Bucaramanga —Cartagena pidió sumarse después— contra la extorsión, el hurto y el homicidio, inspirada en elementos de la “Seguridad Democrática” del gobierno Uribe. Se comprometió a firmar el decreto el 7 de agosto, el mismo día de su posesión. No hay confirmación pública de que el decreto se haya publicado con un articulado definido desde entonces: el terremoto del 10 de agosto desplazó la agenda noticiosa y URBIS no encontró un texto oficial ni un anuncio posterior sobre su firma. El entonces ministro de Defensa designado, Jorge Mora, aclaró en julio que el bloque no incluiría participación de civiles en esa etapa.",
+      "contrapunto": "La alarma no es solo retórica de oposición: el artículo 22A de la Constitución prohíbe expresamente crear, promover, apoyar, tolerar o financiar grupos civiles armados, de autodefensa o estructuras equivalentes bajo cualquier denominación, y el paralelo histórico lo trazan congresistas colombianos concretos —Iván Cepeda habló de que se estaba “configurando un gobierno paramilitar”, y otros citaron las antiguas Convivir, cooperativas de seguridad legales de los años 90 que derivaron en estructuras paramilitares— no solo comentaristas. Petro calificó la propuesta de “fascismo criollo ignorante”. En el otro lado, varios alcaldes —entre ellos Alejandro Char, en Barranquilla— respaldaron la iniciativa como una respuesta necesaria a la inseguridad, y el propio Gobierno negó de entrada que fuera a armar civiles. El programa “La Base América Latina”, de Canal Red —el canal de Pablo Iglesias, que llamó “fascista” a De la Espriella durante toda la campaña y perdió sus acuerdos comerciales con la televisión pública colombiana al cambiar el Gobierno—, cubrió el bloque bajo la tesis de “paramilitarismo 2.0”; esa lectura coincide con la de sectores de oposición colombianos, pero conviene leerla sabiendo la línea editorial del medio que la difunde. Nadie ha demostrado que el bloque vaya a armar civiles: la formulación oficial lo niega. La discusión real, y sigue abierta, es si el patrón histórico de nombres similares justifica exigir garantías y controles ahora, antes de que el decreto tenga un contenido conocido.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Infobae · el anuncio y la división nacional que provocó", "u": "https://www.infobae.com/colombia/2026/07/05/abelardo-de-la-espriella-anuncio-el-bloque-de-defensa-para-la-seguridad-urbana-y-provoco-tormenta-politica-tendremos-paramilitarismo-20/" },
+        { "n": "El Nuevo Siglo · qué propone el bloque", "u": "https://www.elnuevosiglo.com.co/nacion/de-la-espriella-creara-bloque-de-defensa-para-la-seguridad-urbana" },
+        { "n": "Cambio · Iván Cepeda habla de \"gobierno paramilitar\"", "u": "https://cambiocolombia.com/poder/articulo/2026/7/ivan-cepeda-rechaza-los-bloques-de-seguridad-de-de-la-espriella-se-esta-configurando-un-gobierno-paramilitar" },
+        { "n": "Infobae · Petro lo llama \"fascismo criollo ignorante\"", "u": "https://www.infobae.com/colombia/2026/07/06/petro-critico-el-bloque-de-defensa-para-la-seguridad-urbana-anunciado-por-abelardo-de-la-espriella-puro-fascismo-criollo-ignorante/" },
+        { "n": "El Heraldo · los alcaldes respaldan la propuesta", "u": "https://www.elheraldo.co/colombia/2026/07/06/alcaldes-respaldan-los-bloques-de-seguridad-urbana-propuestos-por-abelardo-de-la-espriella/" },
+        { "n": "Diario Red · el análisis bajo la tesis de riesgo paramilitar", "u": "https://www.diario-red.com/articulo/colombia/colombia-convivir/20260707034152072546.html" },
+        { "n": "Publimetro · el compromiso de firmarlo el día de la posesión", "u": "https://www.publimetro.co/noticias/2026/07/06/el-7-de-agosto-firmare-el-decreto-creando-el-bloque-de-defensa-para-la-seguridad-urbana-abelardo-de-la-espriella-genero-ola-de-reacciones-con-el-anuncio/" }
+      ]
+    },
+    {
       "fecha": "2026-08-20",
       "precision": "exacta",
       "categoria": "corrupcion",
