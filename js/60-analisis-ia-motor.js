@@ -59,13 +59,15 @@
     { sub:'supermercado',    nombre:'Supermercado',         grupo:'comercio',     icono:'🛒', m:{ shop:/^(supermarket|wholesale)$/ } },
     { sub:'centro_comercial',nombre:'Centro comercial',     grupo:'comercio',     icono:'🏬', m:{ shop:/^(mall|department_store)$/ } },
     { sub:'tienda_barrio',   nombre:'Tienda de barrio',     grupo:'comercio',     icono:'🏪', m:{ shop:/^(convenience|kiosk|general|greengrocer|butcher|dairy)$/ } },
-    { sub:'panaderia',       nombre:'Panadería',            grupo:'comercio',     icono:'🥖', m:{ shop:/^(bakery|pastry|confectionery)$/ } },
+    { sub:'panaderia',       nombre:'Panadería',            grupo:'comercio',     icono:'🥖', m:{ shop:/^(bakery|pastry|confectionery)$/, building:/^bakehouse$/ } },
     { sub:'banco',           nombre:'Banco / Cajero',       grupo:'comercio',     icono:'🏦', m:{ amenity:/^(bank|atm|bureau_de_change|money_transfer)$/ } },
     // Muy común en Colombia: corresponsales bancarios y puntos de pago
     // (Efecty, SuperGiros) y cafés internet.
     { sub:'pagos',           nombre:'Corresponsal / Pagos', grupo:'comercio',     icono:'💳', m:{ amenity:/^(payment_centre|payment_terminal)$/ } },
     { sub:'internet_cafe',   nombre:'Café internet',        grupo:'comercio',     icono:'🖥️', m:{ amenity:/^internet_cafe$/ } },
     { sub:'hotel',           nombre:'Hotel / Hospedaje',    grupo:'comercio',     icono:'🏨', m:{ tourism:/^(hotel|hostel|guest_house|motel|apartment)$/, building:/^hotel$/ } },
+    { sub:'camping',         nombre:'Camping / zona de acampada', grupo:'comercio', icono:'⛺', m:{ tourism:/^(camp_site|caravan_site)$/ } },
+    { sub:'salon_eventos',   nombre:'Salón de eventos',     grupo:'comercio',     icono:'🎪', m:{ amenity:/^events_venue$/ } },
     { sub:'gasolinera',      nombre:'Estación de servicio', grupo:'comercio',     icono:'⛽', m:{ amenity:/^(fuel|charging_station)$/ } },
     { sub:'restaurante',     nombre:'Restaurante',          grupo:'comercio',     icono:'🍽️', m:{ amenity:/^(restaurant|fast_food|food_court|ice_cream)$/ } },
     { sub:'cafeteria',       nombre:'Cafetería',            grupo:'comercio',     icono:'☕', m:{ amenity:/^cafe$/, shop:/^(coffee|tea)$/ } },
@@ -78,10 +80,18 @@
     { sub:'gimnasio',        nombre:'Gimnasio',             grupo:'vivienda',     icono:'🏋️', m:{ leisure:/^(fitness_centre|fitness_station)$/, sport:/^(fitness|gym|crossfit|weightlifting|bodybuilding)$/, amenity:/^gym$/ } },
     { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽', m:{ leisure:/^(pitch|sports_centre|stadium|swimming_pool|track)$/ } },
     { sub:'parque',          nombre:'Parque / Zona verde',  grupo:'vivienda',     icono:'🌳', m:{ leisure:/^(park|garden|playground|dog_park)$/, landuse:/^(recreation_ground|village_green|grass)$/ } },
-    { sub:'residencial',     nombre:'Vivienda',             grupo:'vivienda',     icono:'🏠', m:{ building:/^(residential|house|apartments|detached|terrace|semidetached_house|hut|bungalow)$/, landuse:/^residential$/ } },
+    { sub:'residencial',     nombre:'Vivienda',             grupo:'vivienda',     icono:'🏠', m:{ building:/^(residential|house|apartments|detached|terrace|semidetached_house|hut|bungalow|cabin)$/, landuse:/^residential$/ } },
+    // Poblados donde vive gente pero que no se mapean como barrio: asentamientos
+    // informales, resguardos y comunidades indígenas. Se mapean con etiquetas
+    // prestadas —muchas veces `tourism=camp_site`— porque no hay una mejor.
+    { sub:'asentamiento',    nombre:'Asentamiento / poblado', grupo:'vivienda',   icono:'🏕️', m:{ place:/^(hamlet|isolated_dwelling|village|neighbourhood|quarter)$/, landuse:/^(squatter|informal_settlement)$/ } },
     // Va ANTES de educación a propósito: el ICBF opera jardines infantiles,
     // pero es una entidad de bienestar del Estado (pedido explícito).
     { sub:'bienestar_social', nombre:'Bienestar social del Estado', grupo:'institucional', icono:'🏛️', m:{ operator:/^icbf$/, amenity:/^social_facility$/ } },
+    // `building=multiusos` no es una etiqueta estándar de OpenStreetMap: la
+    // escriben los mapeadores locales para el salón multiusos del barrio, que
+    // en Colombia es equipamiento de la Junta de Acción Comunal.
+    { sub:'salon_comunal',   nombre:'Salón comunal / multiusos', grupo:'institucional', icono:'🏘️', m:{ building:/^(multiusos|multiuso|salon_comunal)$/ } },
     // Cultura, educación y culto
     { sub:'colegio',         nombre:'Colegio / Jardín',     grupo:'cultura',      icono:'🏫', m:{ amenity:/^(school|kindergarten|childcare)$/, building:/^(school|kindergarten)$/ } },
     // capacitacion va ANTES de universidad a propósito: una autoescuela o un
@@ -107,12 +117,16 @@
     // Servicios e infraestructura (vias/ciclorrutas van a stats.movilidad, no a POIs)
     { sub:'via_arteria',     nombre:'Vía arteria',          grupo:'servicios',    icono:'🛣️', m:{ highway:/^(trunk|primary|secondary|tertiary)$/ } },
     { sub:'ciclorruta',      nombre:'Ciclorruta',           grupo:'servicios',    icono:'🚴', m:{ highway:/^cycleway$/ } },
+    // Estación de bicicleta pública. No es lo mismo que un cicloparqueadero
+    // (`bicycle_parking`, en Transporte): allí la gente deja su bici, aquí la
+    // toma y la devuelve, así que genera viajes a pie de ida y de vuelta.
+    { sub:'bici_publica',    nombre:'Bicicleta pública',    grupo:'servicios',    icono:'🚲', m:{ amenity:/^bicycle_rental$/ } },
     { sub:'parada_bus',      nombre:'Parada de transporte', grupo:'servicios',    icono:'🚌', m:{ highway:/^bus_stop$/, amenity:/^bus_station$/, public_transport:/^(platform|stop_position|station)$/ } },
     // car_pooling: en la práctica en Cúcuta aparece mapeado como "Parqueadero"
     // por el nombre que le puso quien lo mapeó, aunque la etiqueta técnica de
     // OSM sea para compartir carro, no para dejar el carro.
     { sub:'transporte',      nombre:'Transporte / Parqueo', grupo:'servicios',    icono:'🅿️', m:{ amenity:/^(taxi|parking|car_rental|car_pooling|bicycle_parking|motorcycle_parking|parking_space)$/ } },
-    { sub:'infra_servicios', nombre:'Infraestructura',      grupo:'servicios',    icono:'🗼', m:{ man_made:/^(mast|tower|water_tower|works)$/, power:/^substation$/, amenity:/^(recycling|waste_transfer_station)$/, landuse:/^landfill$/ } },
+    { sub:'infra_servicios', nombre:'Infraestructura',      grupo:'servicios',    icono:'🗼', m:{ man_made:/^(mast|tower|water_tower|works)$/, power:/^substation$/, amenity:/^(recycling|waste_transfer_station|waste_disposal)$/, landuse:/^landfill$/ } },
     // Servientrega / Inter Rapidísimo y demás puntos de envío.
     { sub:'mensajeria',      nombre:'Mensajería / Correo',  grupo:'servicios',    icono:'📮', m:{ amenity:/^(post_box|parcel_locker|post_depot)$/ } },
     { sub:'mobiliario',      nombre:'Mobiliario urbano',    grupo:'servicios',    icono:'🪑', m:{ amenity:/^(bench|drinking_water|shelter|toilets|waste_basket|fountain|clock|vending_machine|parking_entrance)$/, tourism:/^information$/ } },
@@ -326,8 +340,72 @@
   // no se discute: manda la etiqueta.
   const GENERICAS = ['comercio_otro', 'local_comercial', 'otro', 'edificio_otro'];
 
+  function porSub(sub, extra){
+    const r = TAXONOMIA.find(t => t.sub === sub);
+    if (!r) return null;
+    const o = { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono };
+    if (extra) for (const k in extra) o[k] = extra[k];
+    return o;
+  }
+
+  // ── Reglas compuestas ───────────────────────────────────────────────────
+  //
+  // La taxonomía mira UNA etiqueta a la vez, y eso falla cuando la etiqueta
+  // suelta miente. El caso que lo destapó: un asentamiento indígena mapeado
+  // como `tourism=camp_site` porque en OpenStreetMap no hay una etiqueta mejor
+  // para un poblado. Leída sola, esa etiqueta dice "camping"; leída junto a
+  // `population=300` dice claramente que ahí VIVE gente.
+  //
+  // Estas reglas se evalúan ANTES que la taxonomía y miran el conjunto.
+  const REGLAS_COMPUESTAS = [
+    {
+      // Un camping no tiene censo. Si trae población, es un poblado.
+      porque: 'camp_site con población es un poblado, no un camping',
+      cuando: t => /^(camp_site|caravan_site)$/.test(String(t.tourism || '')) &&
+                   (parseInt(t.population, 10) > 0 ||
+                    /asentamiento|resguardo|comunidad|cabildo|ind[ií]gena|vereda|caser[ií]o/i.test(t.name || '')),
+      sub: 'asentamiento'
+    }
+  ];
+
+  // ── El nombre por encima de la etiqueta de construcción ─────────────────
+  //
+  // `building=*` describe CÓMO está construido el inmueble, no para qué se usa.
+  // Un "Comercial La Ceiba" mapeado como `building=cabin` no es una cabaña, y
+  // una "Distribuidora … SAS" en un `building=bakehouse` no es una panadería:
+  // son el local y la bodega que alguien montó en esa construcción. Cuando lo
+  // único que emparejó fue una etiqueta de construcción, el nombre manda.
+  const NOMBRE_USO = [
+    { sub:'bodega',        re:/\b(distribuidora|distribuciones|dep[oó]sito|bodega|log[ií]stica|mayorista)\b/ },
+    { sub:'cultural',      re:/\b(centro\s*cultural|casa\s*de\s*la\s*cultura|biblioteca|teatro|museo|ludoteca)\b/ },
+    { sub:'salon_comunal', re:/\b(sal[oó]n\s*comunal|junta\s*de\s*acci[oó]n\s*comunal|jac\b|caseta\s*comunal)\b/ },
+    { sub:'asentamiento',  re:/\b(asentamiento|resguardo|cabildo|comunidad\s*ind[ií]gena)\b/ },
+    { sub:'comercio_local',re:/\b(comercial|almac[eé]n|ferreter[ií]a|surtido|variedades|mini\s*mercado)\b/ }
+  ];
+
+  function usoPorNombre(nombre){
+    const n = normalizarNombrePOI(nombre);
+    if (!n) return null;
+    for (let i = 0; i < NOMBRE_USO.length; i++) {
+      if (NOMBRE_USO[i].re.test(n)) return porSub(NOMBRE_USO[i].sub, { porNombre: true });
+    }
+    return null;
+  }
+
+  // Etiquetas que describen la construcción, no el uso. Solo sobre estas puede
+  // ganar el nombre; frente a un `amenity=pharmacy` no se discute.
+  const CLAVES_ESTRUCTURALES = ['building', 'building:levels', 'height'];
+  // Contenedores genéricos: dicen que pasa algo dentro, no qué pasa.
+  const CONTENEDORES = ['salon_eventos', 'edificacion_menor', 'mixto'];
+
   function clasificarPOI(tags){
     tags = tags || {};
+    for (let i = 0; i < REGLAS_COMPUESTAS.length; i++) {
+      const rc = REGLAS_COMPUESTAS[i];
+      let aplica = false;
+      try { aplica = !!rc.cuando(tags); } catch(e) { aplica = false; }
+      if (aplica) { const r = porSub(rc.sub); if (r) return r; }
+    }
     for (let i = 0; i < TAXONOMIA.length; i++) {
       const r = TAXONOMIA[i];
       for (const clave in r.m) {
@@ -337,16 +415,29 @@
             const porMarca = marcaDe(tags.name);
             if (porMarca) return porMarca;
           }
+          // El nombre gana solo cuando la etiqueta que emparejó es estructural
+          // o un contenedor genérico. Una marca conocida pesa más que un nombre
+          // descriptivo, así que se prueba primero.
+          const debil = CLAVES_ESTRUCTURALES.indexOf(clave) !== -1 ||
+                        CONTENEDORES.indexOf(r.sub) !== -1;
+          if (debil && tags.name) {
+            const porMarca = marcaDe(tags.name);
+            if (porMarca) return porMarca;
+            const porNombre = usoPorNombre(tags.name);
+            if (porNombre && porNombre.sub !== r.sub) return porNombre;
+          }
           return { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono };
         }
       }
     }
-    // Antes de rendirse a "otro": ¿el nombre delata una cadena conocida? Va
-    // DESPUÉS de las etiquetas a propósito — una etiqueta explícita siempre
-    // gana sobre deducir por el nombre.
+    // Antes de rendirse a "otro": ¿el nombre dice el uso? Va DESPUÉS de las
+    // etiquetas a propósito — una etiqueta explícita siempre gana sobre deducir
+    // por el nombre. Aquí ya no queda ninguna etiqueta que respetar.
     if (tags.name) {
       const porMarca = marcaDe(tags.name);
       if (porMarca) return porMarca;
+      const porNombre = usoPorNombre(tags.name);
+      if (porNombre) return porNombre;
     }
     // ¿O el usuario ya clasificó manualmente un punto con este mismo nombre?
     if (tags.name) {
@@ -537,6 +628,10 @@
     const GENERA_PEATON = {
       // Transporte y educación: los que más caminata producen por unidad.
       parada_bus:       { peso: 18, media: 200, franja:'todo' },
+      // A una estación de bici pública se llega y se sale a pie, siempre. Pesa
+      // menos que una parada de bus porque mueve menos gente, no porque genere
+      // menos caminata por usuario.
+      bici_publica:     { peso:  8, media: 200, franja:'todo' },
       universidad:      { peso: 20, media: 400, franja:'dia' },
       colegio:          { peso: 14, media: 300, franja:'picos' },
       capacitacion:     { peso:  7, media: 300, franja:'dia' },
