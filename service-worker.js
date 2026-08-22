@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v517-flujo-peatonal';
+const URBIS_CACHE = 'urbis-v518-pdf-flujo';
 const URBIS_ASSETS = [
   './',
   './index.html',

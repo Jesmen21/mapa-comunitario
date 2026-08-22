@@ -129,24 +129,98 @@
     return html;
   }
 
+  // Hitos peatonales sobre el mapa: los establecimientos que de verdad mueven
+  // gente a pie, señalados con su nombre. Se reparten las etiquetas a los lados
+  // según de qué lado del lote caiga cada uno, para que no se pisen con el
+  // marcador del centro.
+  function hitosSobreMapa(r, mpp, w, h){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    if (!f || !f.hitos || !f.hitos.length) return '';
+    const lat0 = r.meta.lat, lng0 = r.meta.lng, mx = w / 2, my = h / 2;
+    const puestas = [];   // etiquetas ya colocadas, para no encimarlas
+    let html = '';
+    // El gimnasio se coloca primero: como el sitio del mapa es limitado, el que
+    // se ubica antes es el que sobrevive, y este es el hito que más cambia el
+    // tránsito de la acera. Los demás se reparten el espacio que quede.
+    const orden = f.hitos.filter(h2 => h2.sub === 'gimnasio')
+                    .concat(f.hitos.filter(h2 => h2.sub !== 'gimnasio'));
+    orden.forEach(function (hi) {
+      if (puestas.length >= 4) return;
+      const dx = (hi.lng - lng0) * 111320 * Math.cos(lat0 * Math.PI / 180) / mpp;
+      const dy = -(hi.lat - lat0) * 110540 / mpp;
+      if (Math.abs(dx) > mx - 10 || Math.abs(dy) > my - 10) return;
+      const x = (mx + dx) / w * 100, y = (my + dy) / h * 100;
+      // Nombre recortado: en el mapa manda que se lea, y el nombre completo
+      // queda igual en la lista de hitos del bloque de flujo.
+      const etq = hi.nombre.length > 18 ? hi.nombre.slice(0, 17).trim() + '…' : hi.nombre;
+      // Ancho aproximado del rótulo como % del recuadro. Medido sobre el
+      // informe ya maquetado: con letra de 6,4 px son ~3,5 px por carácter más
+      // ~27 px fijos de relleno y borde; se redondea hacia arriba y se cuentan
+      // TAMBIÉN los caracteres de la distancia, que van dentro del mismo
+      // rótulo. El recuadro del mapa mide ~266 px de ancho en esta maqueta.
+      const nChars = etq.length + String(hi.distM).length + 2;
+      const anchoPct = (nChars * 3.6 + 34) / 266 * 100;
+      // Sale HACIA AFUERA, alejándose del centro: hacia adentro se amontonaban
+      // unas sobre otras y encima del rótulo del lote. Si por fuera no cabe,
+      // se voltea; si no cabe por ninguno de los dos lados, se descarta.
+      // Se prueba primero hacia afuera —alejándose del centro, que es donde hay
+      // sitio— y si ahí no cabe o choca, hacia adentro. Comparar rectángulos
+      // completos, y no solo alturas, deja pasar bastantes más rótulos sin que
+      // ninguno quede encima de otro.
+      // Medidas reales sobre la maqueta: el rótulo mide ~12 px de alto (7% del
+      // recuadro) y el letrero PROYECTO sale a la derecha de la cruz, no
+      // centrado en ella. Reservar de más dejaba fuera hitos que sí cabían.
+      const ALTO = 7;
+      const BADGE = { x0: 48, x1: 74, y0: 46.5, y1: 54.5 };
+      const rectDe = l => l === 'der'
+        ? { x0: x + 2, x1: x + 2 + anchoPct, y0: y - ALTO / 2, y1: y + ALTO / 2 }
+        : { x0: x - 2 - anchoPct, x1: x - 2, y0: y - ALTO / 2, y1: y + ALTO / 2 };
+      const solapa = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+      const sirve = rc => rc.x0 >= 1 && rc.x1 <= 99 &&
+                          !solapa(rc, BADGE) && !puestas.some(p => solapa(rc, p));
+
+      const fuera = dx >= 0 ? 'der' : 'izq';
+      const dentro = fuera === 'der' ? 'izq' : 'der';
+      let lado = null, rc = rectDe(fuera);
+      if (sirve(rc)) lado = fuera;
+      else { rc = rectDe(dentro); if (sirve(rc)) lado = dentro; }
+      if (!lado) return;   // no cabe en ningún lado: mejor no dibujarlo
+
+      puestas.push(rc);
+      html += '<div class="hito ' + lado + '" style="left:' + x.toFixed(2) + '%;top:' + y.toFixed(2) + '%">' +
+        '<i></i><b>' + esc(etq) + '<em>' + hi.distM + ' m</em></b></div>';
+    });
+    return html;
+  }
+
   function bloqueMapa(r, horizontal){
     // Apaisado 4:3 en vez de cuadrado: el mapa va en su propia columna y así
     // se come bastante menos alto de la hoja, que es lo que obliga al
     // auto-ajuste a encoger la letra. El círculo de radio se dimensiona con
     // el lado menor, así que se sigue viendo completo.
+    //
+    // El marco exterior existe para que la rejilla pueda estirarlo sin tocar
+    // la caja de adentro. Todo lo que se dibuja encima del mapa se posiciona
+    // en porcentaje del recuadro, así que si el recuadro cambiara de
+    // proporción, el punto analizado y los POIs caerían corridos: era
+    // exactamente lo que pasaba.
     const W = 800, H = 600;
     const z = calcZoom(r.meta.lat, r.meta.radioM, Math.min(W, H));
     const url = urlMapaEstatico(r.meta, W, H, z.z);
     const pctW = (z.radioPx / W * 200).toFixed(2), pctH = (z.radioPx / H * 200).toFixed(2);
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
-    return '<div class="mapa-wrap">' +
+    return '<div class="mapa-marco"><div class="mapa-wrap">' +
       (url ? '<img class="mapa-img" src="' + url + '" alt="Mapa del entorno">' : '<div class="mapa-img mapa-vacio"></div>') +
       '<div class="mapa-radio" style="width:' + pctW + '%;height:' + pctH + '%"></div>' +
       puntosSobreMapa(r, z.mpp, W, H, 150) +
-      '<div class="mapa-pin"><span></span><b>PROYECTO</b></div>' +
+      hitosSobreMapa(r, z.mpp, W, H) +
+      // Cruz + punto en el centro exacto: señala el lote sin que el rótulo
+      // desplace la marca, que era el desfase que se veía en el PDF.
+      '<div class="mapa-pin"><i class="cruz-h"></i><i class="cruz-v"></i>' +
+        '<i class="punto"></i><b>PROYECTO</b></div>' +
       '<div class="mapa-tag">MAPA DEL ENTORNO</div>' +
       '<div class="mapa-escala">Radio · <b>' + radioTxt + '</b></div>' +
-      '</div>';
+      '</div></div>';
   }
 
   // ── Bloques de contenido ────────────────────────────────────────────────
@@ -310,9 +384,32 @@
     const gen = (f.generadores || []).slice(0, 6);
     const tablaGen = gen.length
       ? '<table class="flujo-tabla"><tr><th>Qué trae gente a pie</th><th>Cant.</th><th>Aporte</th></tr>' +
-        gen.map(g => '<tr><td>' + esc(g.nombre) + '</td><td class="n">' + g.n + '</td>' +
+        gen.map(g => '<tr><td>' + esc(g.nombre) +
+                     // El nombre propio es lo que hace verificable el análisis:
+                     // el lector puede ir a la esquina y comprobarlo.
+                     ((g.ejemplos && g.ejemplos.length)
+                        ? '<em class="gen-ej">' + esc(g.ejemplos.join(' · ')) + '</em>' : '') +
+                     '</td><td class="n">' + g.n + '</td>' +
                      '<td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
       : '<p class="flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
+
+    // Hitos con nombre y distancia. El gimnasio va primero cuando existe: es
+    // el que más cambia una acera —entra y sale gente a horas fijas, todos los
+    // días— y por eso pesa tanto en la lectura del flujo.
+    const hitos = (f.hitos || []).slice();
+    const gimnasios = hitos.filter(h => h.sub === 'gimnasio');
+    const ordenados = gimnasios.concat(hitos.filter(h => h.sub !== 'gimnasio')).slice(0, 5);
+    const bloqueHitos = ordenados.length
+      ? '<div class="hitos-lista">' + ordenados.map(h =>
+          '<span class="hito-chip' + (h.sub === 'gimnasio' ? ' fuerte' : '') + '">' +
+          (h.icono || '📍') + ' <b>' + esc(h.nombre) + '</b><em>' + h.distM + ' m</em></span>').join('') +
+        (gimnasios.length
+          ? '<p class="hitos-nota"><b>' + esc(gimnasios[0].nombre) + '</b> a ' + gimnasios[0].distM +
+            ' m concentra entradas y salidas a pie en horario fijo, mañana y final de la tarde: ' +
+            'sube el tránsito de la acera justo en las franjas que un café de paso aprovecha.</p>'
+          : '') +
+        '</div>'
+      : '';
 
     const lectura = f.dominante === 'ninguno'
       ? 'No pasa casi nadie, ni a pie ni en carro: aquí el negocio tendría que traer su propia clientela, no capturarla del flujo.'
@@ -339,6 +436,7 @@
             franja('Tarde', f.franjas.tarde) +
           '</div>' +
         '</div>' +
+        (bloqueHitos ? '<div><h3 class="flujo-h3">Hitos que mueven la acera</h3>' + bloqueHitos + '</div>' : '') +
       '</div>' +
       (f.avisoDatos ? '<p class="flujo-aviso">⚠️ ' + esc(f.avisoDatos) + '</p>' : '') +
       '<p class="pie-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. ' +
@@ -604,6 +702,9 @@
 // solo al último dejaba un marco enorme medio vacío (el hueco que se veía en
 // el PDF): el problema nunca estuvo entre los bloques, sino dentro de uno.
 '.fila>div>*{flex:1 1 auto}',
+// El mapa es la excepción: su alto lo manda su proporción. Si la columna se
+// lo estirara, quedaría un borde con aire vacío debajo de la foto.
+'.fila>div>.mapa-marco{flex:0 0 auto}',
 // Y para que ese alto de más se use de verdad y no vuelva a ser vacío: la
 // tabla del bloque estira sus filas, y las imágenes se centran.
 '.bloque{display:flex;flex-direction:column}',
@@ -630,17 +731,45 @@
 'font-weight:800;padding-bottom:3px;margin-bottom:5px;border-bottom:1.5px solid ', T.oro, '}',
 '.bloque h2 em{font-style:normal;font-weight:600;color:', T.txt3, ';text-transform:none;letter-spacing:0}',
 /* Mapa */
-'.mapa-wrap{position:relative;width:100%;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:#dde3e8;border:1px solid #cfd8e0}',
-'.mapa-img{width:100%;height:100%;object-fit:cover;display:block}',
+// La proporción se fija con `padding-top`, no con `aspect-ratio`: como el
+// recuadro es un bloque dentro del marco (no un elemento flexible), ni la
+// rejilla ni un `flex-grow` heredado pueden estirarlo. Antes sí lo estiraban,
+// el recuadro dejaba de ser 4:3, `object-fit:cover` recortaba los lados y todo
+// lo dibujado encima —el lote incluido— quedaba corrido.
+// El borde va en el marco, no en el recuadro: sumado al ancho le robaba a la
+// proporción un 1% y volvía a descuadrar —poco, pero descuadrar— lo dibujado.
+'.mapa-marco{position:relative;width:100%;flex:0 0 auto;border:1px solid #cfd8e0;border-radius:6px;overflow:hidden}',
+'.mapa-wrap{position:relative;width:100%;height:0;padding-top:75%;overflow:hidden;background:#dde3e8}',
+// `fill` y no `cover`: con el recuadro y la imagen en la misma proporción son
+// idénticos, pero `fill` garantiza que las esquinas del recuadro sean las
+// esquinas del mapa, que es de lo que depende toda la georreferenciación.
+'.mapa-img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}',
 '.mapa-vacio{background:repeating-linear-gradient(45deg,#e8edf1,#e8edf1 8px,#dfe6ec 8px,#dfe6ec 16px)}',
 '.mapa-radio{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px dashed rgba(255,255,255,.95);',
 'border-radius:50%;box-shadow:0 0 0 9999px rgba(10,25,20,.16) inset}',
 '.mapa-wrap .pt{position:absolute;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);',
 'box-shadow:0 0 0 .8px rgba(255,255,255,.9)}',
-'.mapa-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px}',
-'.mapa-pin span{width:13px;height:13px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#fff;',
-'border:2.5px solid ', T.cab1, ';box-shadow:0 1px 3px rgba(0,0,0,.4)}',
-'.mapa-pin b{background:', T.cab1, ';color:', T.cabTxt, ';font-size:7.6px;padding:2px 5px;border-radius:3px;letter-spacing:.5px}',
+// Punto de tamaño cero en el centro exacto: los hijos se cuelgan de él sin
+// moverlo, así el rótulo puede crecer sin arrastrar la marca del lote.
+'.mapa-pin{position:absolute;left:50%;top:50%;width:0;height:0}',
+'.mapa-pin .cruz-h{position:absolute;left:-11px;top:-.75px;width:22px;height:1.5px;background:', T.cab1, ';',
+'box-shadow:0 0 0 .6px rgba(255,255,255,.85)}',
+'.mapa-pin .cruz-v{position:absolute;left:-.75px;top:-11px;width:1.5px;height:22px;background:', T.cab1, ';',
+'box-shadow:0 0 0 .6px rgba(255,255,255,.85)}',
+'.mapa-pin .punto{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:#fff;',
+'border:2px solid ', T.cab1, ';box-shadow:0 1px 3px rgba(0,0,0,.45)}',
+'.mapa-pin b{position:absolute;left:14px;top:-6px;white-space:nowrap;background:', T.cab1, ';color:', T.cabTxt, ';',
+'font-size:7.6px;padding:2px 5px;border-radius:3px;letter-spacing:.5px}',
+// Hitos peatonales: el gimnasio, la parada, el colegio… con nombre y distancia.
+'.hito{position:absolute;width:0;height:0}',
+'.hito i{position:absolute;left:-4.5px;top:-4.5px;width:9px;height:9px;border-radius:50%;background:', T.oro, ';',
+'border:1.6px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}',
+'.hito b{position:absolute;top:-7px;white-space:nowrap;background:rgba(255,255,255,.95);color:#12202e;',
+'font-size:6.4px;font-weight:800;padding:1.5px 4px;border-radius:3px;border:1px solid ', T.oro, ';',
+'display:flex;gap:3px;align-items:baseline}',
+'.hito b em{font-style:normal;font-weight:700;color:', T.txt3, '}',
+'.hito.izq b{right:9px}',
+'.hito.der b{left:9px}',
 '.mapa-tag{position:absolute;top:6px;left:6px;background:', T.cab1, ';color:', T.cabTxt, ';font-size:7.6px;',
 'font-weight:800;letter-spacing:.8px;padding:3px 7px;border-radius:4px}',
 // La escala va sobre la foto del mapa, que siempre es clara: se deja en
@@ -739,7 +868,20 @@
 '.args li{padding-left:7px;position:relative;margin-bottom:1.5px}',
 '.args li:before{content:"";position:absolute;left:0;top:4px;width:3px;height:3px;border-radius:50%;background:', T.oro, '}',
 /* FODA */
-'.flujo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}',
+// Tres columnas cuando hay hitos que mostrar; si no, la tercera se colapsa
+// sola y las dos primeras se reparten el ancho.
+'.flujo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}',
+'.flujo-h3{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:', T.txt2, ';',
+'font-weight:800;margin-bottom:4px}',
+'.hitos-lista{display:flex;flex-direction:column;gap:3px}',
+'.hito-chip{display:flex;align-items:baseline;gap:4px;font-size:7.6px;padding:2.5px 5px;border-radius:4px;',
+'background:', T.suave, ';border:1px solid ', T.borde, '}',
+'.hito-chip b{font-weight:800;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+'.hito-chip em{font-style:normal;font-weight:700;color:', T.txt3, '}',
+// El gimnasio se resalta: es el hito que más cambia el tránsito de la acera.
+'.hito-chip.fuerte{background:rgba(245,185,66,.14);border-color:', T.oro, '}',
+'.hitos-nota{font-size:7.4px;line-height:1.45;color:', T.txt2, ';margin-top:5px}',
+'.gen-ej{display:block;font-style:normal;font-size:7px;color:', T.txt3, ';font-weight:600;line-height:1.25}',
 '.flujo-med{margin-bottom:7px}',
 '.flujo-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}',
 '.flujo-cab b{font-size:9.5px;font-weight:800}',
@@ -757,6 +899,10 @@
 '.flujo-hora small{font-size:7.5px;width:44px;flex:0 0 auto}',
 '.flujo-hora b{font-size:8px;width:22px;text-align:right;flex:0 0 auto}',
 '.flujo-vacio{font-size:8.5px;line-height:1.5}',
+// La advertencia de que esto es un potencial y no un aforo nunca tuvo estilo
+// propio: salía con la letra por defecto del navegador, enorme, y se comía la
+// hoja obligando al auto-ajuste a encoger todo lo demás.
+'.pie-nota{font-size:7.2px;line-height:1.45;color:', T.txt3, ';margin-top:6px;font-style:italic}',
 '.flujo-aviso{font-size:8.5px;line-height:1.5;margin-top:6px;padding:5px 7px;border-radius:4px;',
   'background:rgba(245,185,66,.12);border:1px solid rgba(245,185,66,.45)}',
 '.foda-grid4{display:grid;grid-template-columns:repeat(', (horizontal ? '4' : '2'), ',1fr);gap:5px}',
@@ -823,13 +969,15 @@
 
 '<div class="fila fila-1">',
   '<div>', bloqueViabilidad(r), bloqueMovilidad(r), '</div>',
-
-bloqueFlujo(r),
-
   '<div>', tablaComposicion(r),
     chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '', '</div>',
   '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), '</div>',
 '</div>',
+
+// El flujo va en su propia franja a todo el ancho. Estaba metido dentro de la
+// rejilla de tres columnas, así que entraba como una cuarta celda y le rompía
+// el reparto a la fila entera.
+'<div class="fila fila-foda">', bloqueFlujo(r), '</div>',
 
 // Las columnas se arman con `columnas()`: una columna cuyos bloques salen
 // todos vacíos NO se emite, para que la rejilla no reserve un tercio en blanco.

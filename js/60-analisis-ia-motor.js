@@ -397,6 +397,11 @@
   // Sirven para saber qué puntos tienen nombre real y poder citarlos por su
   // nombre en el FODA ("Parque Colón", "Hospital Erasmo Meoz"...).
   const NOMBRES_GENERICOS = new Set(TAXONOMIA.map(t => t.nombre).concat(['Otro (uso por definir)']));
+  // Nombres de relleno que a veces trae OpenStreetMap ("Lote Baldío", "nn",
+  // "sin nombre"): citarlos en un informe para un cliente se vería mal. Vive
+  // aquí arriba porque lo usan tanto el flujo como los nombres por categoría.
+  const RUIDO_NOMBRE = /^\s*(nn+|n\/?a|s\/?n|sin\s*nombre|lote|lote\s*bald|bald[ií]o|desconocid|prueba|test|xxx)\b/i;
+  function nombrePropio(n){ return !!n && !NOMBRES_GENERICOS.has(n) && !RUIDO_NOMBRE.test(n); }
   // Clave para comparar nombres ignorando mayúsculas, tildes y puntuación.
   function claveNombre(s){
     return String(s || '').toLowerCase()
@@ -611,8 +616,20 @@
       });
       if (aporte <= 0) return;
       sumaPeaton += aporte;
-      flujo.generadores.push({ sub, nombre: lista[0].nombre, n: lista.length,
-                               aporte: Math.round(aporte), franja: g.franja });
+      // Se guardan los nombres reales, no solo la categoría: en un informe
+      // "Smart Fit Prados del Este a 130 m" dice muchísimo más que "Gimnasio",
+      // y es lo que permite comprobar el análisis contra la calle.
+      // La fila lleva el nombre de la CATEGORÍA y los ejemplos los nombres
+      // propios: si la fila tomara el nombre del primer local, diría "D1" y
+      // luego repetiría "D1" como ejemplo suyo.
+      const cat = TAXONOMIA.find(t => t.sub === sub);
+      const etiqueta = (cat && cat.nombre) || lista[0].nombre;
+      const ejemplos = lista.slice().sort((a, b) => a.distM - b.distM)
+        .map(p => p.nombre)
+        .filter(nombrePropio)
+        .filter((n, i, a) => a.indexOf(n) === i).slice(0, 2);
+      flujo.generadores.push({ sub, nombre: etiqueta, n: lista.length,
+                               aporte: Math.round(aporte), franja: g.franja, ejemplos });
       repartirFranja(g.franja, aporte);
     });
 
@@ -638,6 +655,30 @@
                                n: nVivienda, aporte: Math.round(aporte), franja:'picos' });
       repartirFranja('picos', aporte);
     }
+
+    // ── Hitos peatonales ─────────────────────────────────────────────────
+    // Los establecimientos concretos que más caminata generan, uno por uno y
+    // con su ubicación, para poder señalarlos en el mapa del informe. Un
+    // gimnasio de cadena al lado cambia por completo el tránsito de una acera
+    // —entra y sale gente a horas fijas, todos los días— y merece verse en el
+    // plano, no quedar escondido en una suma.
+    const PESO_HITO = 7;   // de aquí para arriba, el uso ancla por sí solo
+    flujo.hitos = pois
+      .filter(p => GENERA_PEATON[p.sub] && GENERA_PEATON[p.sub].peso >= PESO_HITO)
+      .map(p => {
+        const g = GENERA_PEATON[p.sub];
+        const cat = TAXONOMIA.find(t => t.sub === p.sub);
+        return { nombre: nombrePropio(p.nombre) ? p.nombre : ((cat && cat.nombre) || p.nombre),
+                 // Un hito sin nombre propio se puede señalar igual ("Colegio"),
+                 // pero no debe desplazar a uno que sí se puede nombrar.
+                 anonimo: !nombrePropio(p.nombre),
+                 sub: p.sub, icono: p.icono, distM: p.distM,
+                 lat: p.lat, lng: p.lng, franja: g.franja,
+                 fuerza: g.peso / (1 + Math.pow(p.distM / g.media, 2)) };
+      })
+      .sort((a, b) => (a.anonimo - b.anonimo) || (b.fuerza - a.fuerza))
+      .slice(0, 6)
+      .map(h => { h.fuerza = Math.round(h.fuerza * 10) / 10; return h; });
 
     flujo.generadores.sort((a, b) => b.aporte - a.aporte);
     // Escala saturante en vez de un tope duro: el potencial peatonal se satura
@@ -706,13 +747,9 @@
 
     // Nombres propios por subcategoría (los más cercanos primero) para que el
     // FODA pueda citar los lugares concretos del entorno en vez de contarlos.
-    // Se descartan los nombres de relleno que a veces trae OpenStreetMap
-    // ("Lote Baldío", "nn", "sin nombre"): citarlos en un informe para un
-    // cliente se vería mal.
-    const RUIDO_NOMBRE = /^\s*(nn+|n\/?a|s\/?n|sin\s*nombre|lote|lote\s*bald|bald[ií]o|desconocid|prueba|test|xxx)\b/i;
     const nombresPorSub = {};
     pois.forEach(p => {
-      if (NOMBRES_GENERICOS.has(p.nombre) || RUIDO_NOMBRE.test(p.nombre)) return;
+      if (!nombrePropio(p.nombre)) return;
       const lista = nombresPorSub[p.sub] = nombresPorSub[p.sub] || [];
       if (lista.length < 6 && lista.indexOf(p.nombre) === -1) lista.push(p.nombre);
     });
