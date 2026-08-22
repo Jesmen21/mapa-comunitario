@@ -199,6 +199,51 @@
       .map(k => k + '=' + tags[k]);
   }
 
+  // ── Depuración de la bandeja ────────────────────────────────────────────
+  //
+  // Los patrones se guardan cuando NADIE supo clasificarlos. Pero el
+  // clasificador va aprendiendo: cada vez que se agrega una regla, los
+  // patrones que esa regla ya resuelve siguen guardados como pendientes y la
+  // bandeja los vuelve a listar. El resultado es que se pide clasificar una y
+  // otra vez algo que ya está clasificado — trabajo hecho que parece pendiente.
+  //
+  // Esto los reevalúa contra el clasificador ACTUAL y cierra solo los que ya
+  // tienen respuesta. Se ejecuta antes de listar, así la bandeja siempre
+  // muestra lo que de verdad falta decidir.
+  function tagsDesdeFirma(e){
+    const tags = {};
+    (e.tags || []).forEach(par => {
+      const i = String(par).indexOf('=');
+      if (i > 0) tags[par.slice(0, i)] = par.slice(i + 1);
+    });
+    // El nombre no se guarda entre las etiquetas, pero varias reglas dependen
+    // de él (una "Distribuidora SAS" es bodega por el nombre, no por el
+    // `building`). Se reinyecta el primer ejemplo visto.
+    if (e.ejemplos && e.ejemplos.length) tags.name = e.ejemplos[0];
+    return tags;
+  }
+
+  function depurarPendientes(){
+    const store = leerPendientes();
+    let cerrados = 0;
+    Object.keys(store).forEach(k => {
+      const e = store[k];
+      if (!e || e.estado !== 'pendiente') return;
+      let c = null;
+      try { c = clasificarPOI(tagsDesdeFirma(e)); } catch(err) { c = null; }
+      if (c && c.grupo && c.grupo !== 'otro') {
+        e.estado = 'resuelto';
+        e.grupo = c.grupo;
+        e.nombreUso = c.nombre || '';
+        e.resueltoPor = 'taxonomia';   // lo cerró una regla, no una persona
+        e.resueltoEn = new Date().toISOString();
+        cerrados++;
+      }
+    });
+    if (cerrados) escribirPendientes(store);
+    return cerrados;
+  }
+
   function leerPendientes(){
     try { const o = JSON.parse(localStorage.getItem(PENDIENTES_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; }
     catch(e) { return {}; }
@@ -209,6 +254,7 @@
 
   // Se llama una vez por análisis, con los POIs que quedaron en grupo 'otro'.
   function registrarPendientes(pois, meta){
+    depurarPendientes();
     const store = leerPendientes();
     const ahora = new Date().toISOString();
     let nuevos = 0;
@@ -241,6 +287,7 @@
   // patrón. Se ordena por frecuencia: lo que más se repite es lo que más
   // rinde clasificar.
   function exportarPendientes(){
+    depurarPendientes();
     const store = leerPendientes();
     const lista = Object.keys(store).map(k => store[k])
       .filter(e => e.estado === 'pendiente')
@@ -258,6 +305,7 @@
   }
 
   function resumenPendientes(){
+    depurarPendientes();
     const store = leerPendientes();
     const claves = Object.keys(store);
     const pend = claves.filter(k => store[k].estado === 'pendiente');
@@ -1155,6 +1203,11 @@
   }
 
   // Categorías con actividad suficiente alrededor pero poca oferta propia.
+  // Un "hoy no se identifica ninguno" es una afirmación fuerte, y en una zona
+  // poco mapeada suele ser falsa: el gimnasio existe, pero nadie lo dibujó.
+  // Peor aún, esa ausencia INFLA la oportunidad, porque el hueco de oferta se
+  // calcula restando lo que se ve. Cuando el entorno viene pobre de datos se
+  // dice "en el mapa abierto" y se avisa que conviene verificar en campo.
   function indicadorOportunidades(stats){
     const candidatos = ['drogueria','cafeteria','restaurante','supermercado','gimnasio','panaderia','banco'];
     const nombre = { drogueria:'Droguería', cafeteria:'Cafetería', restaurante:'Restaurante',
@@ -1162,6 +1215,10 @@
     const umbral = { drogueria:3500, cafeteria:2500, restaurante:3000, supermercado:6000,
       gimnasio:4000, panaderia:3000, banco:6000 };
     const out = [];
+    // La misma señal que ya usa el flujo para avisar que el entorno viene
+    // pobre de datos: si el radio tiene pocos puntos, una ausencia no prueba
+    // que el uso no exista.
+    const escaso = !!(stats.movilidad && stats.movilidad.flujo && stats.movilidad.flujo.datosEscasos);
     candidatos.forEach(s => {
       const existentes = stats.porSub[s] || 0;
       const soportadas = Math.floor(stats.poblacionEstimada / umbral[s]);
@@ -1171,8 +1228,14 @@
           // que aquí no se repite: evita plurales forzados tipo "servicios
           // financieros(s)", que en un informe para cliente se leen mal.
           texto: 'El sector podría sostener cerca de ' + soportadas +
-            (existentes ? ' y hoy se identifican ' + existentes : ' y hoy no se identifica ninguno') +
-            ', para ~' + stats.poblacionEstimada.toLocaleString('es-CO') + ' habitantes estimados.' });
+            (existentes
+              ? ' y hoy se identifican ' + existentes
+              : (escaso ? ' y hoy no se identifica ninguno en el mapa abierto'
+                        : ' y hoy no se identifica ninguno')) +
+            ', para ~' + stats.poblacionEstimada.toLocaleString('es-CO') + ' habitantes estimados.' +
+            (escaso && !existentes
+              ? ' La zona está poco mapeada: verificar en campo antes de darlo por vacío.'
+              : '') });
       }
     });
     return { lista: out.sort((a, b) => b.potencial - a.potencial).slice(0, 4), tipo: 'interpretacion' };
@@ -2182,6 +2245,6 @@
     compararRadios, RADIOS_COMPARATIVA, filtrarPorRadio, normalizarNombre,
     // Bandeja de usos sin categoría: se llena sola en cada análisis.
     leerPendientes, registrarPendientes, exportarPendientes, resumenPendientes,
-    resolverPendiente, descartarPendiente, olvidarPendientes
+    resolverPendiente, descartarPendiente, olvidarPendientes, depurarPendientes
   };
 })();

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v525-parqueo-y-ubicacion';
+const URBIS_CACHE = 'urbis-v526-bandeja-se-depura-sola';
 const URBIS_ASSETS = [
   './',
   './index.html',
