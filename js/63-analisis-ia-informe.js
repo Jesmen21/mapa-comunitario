@@ -653,6 +653,350 @@
       '</div></div>';
   }
 
+
+  // ══ DIAGRAMACIÓN EN TRES HOJAS ══════════════════════════════════════════
+  //
+  // El informe pasó de dos hojas apretadas a tres con hilo narrativo. Cada
+  // sección va numerada y con un subtítulo que dice PARA QUÉ sirve, de modo
+  // que el documento se lea solo, sin que nadie tenga que interpretarlo al
+  // lado del cliente. El orden es el de una conversación: primero la
+  // conclusión, después los datos que la sostienen, y al final el FODA con el
+  // siguiente paso.
+
+  function seccion(n, titulo, sub){
+    return '<div class="sec"><b>' + n + '. ' + esc(titulo) + '</b>' +
+           (sub ? '<em>' + esc(sub) + '</em>' : '') + '</div>';
+  }
+
+  // Aro de progreso grande. Va en su propia caja de tamaño fijo: si se dejara
+  // fluir, cualquier elemento vecino de ancho completo —una barra, por
+  // ejemplo— le pasaba por encima.
+  function aroXL(score, color, etq){
+    return '<div class="aro-caja"><svg class="aro" viewBox="0 0 42 42">' +
+      '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + T.linea + '" stroke-width="4.6"/>' +
+      '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + color + '" stroke-width="4.6" ' +
+        'stroke-linecap="round" stroke-dasharray="' + score + ' ' + (100 - score) + '" ' +
+        'transform="rotate(-90 21 21)"/>' +
+      '<text x="21" y="20.4" text-anchor="middle" font-size="12.5" font-weight="900" fill="' + color + '">' + score + '</text>' +
+      '<text x="21" y="27" text-anchor="middle" font-size="3.2" font-weight="700" fill="' + T.txt3 + '">' +
+        (etq || 'DE 100') + '</text></svg></div>';
+  }
+
+  function colFlujo(v){ return v >= 70 ? T.ok : v >= 50 ? T.acento : v >= 30 ? T.warn : T.bad; }
+
+  // ── 1. Lectura ejecutiva ────────────────────────────────────────────────
+  function bloqueEjecutivo(r){
+    const v = r.viabilidad;
+    if (!v) return bloqueRanking(r);
+    const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
+    const est = estrellasDeScore(v.score);
+    const lectura = v.nivel === 'Alta'
+      ? 'El entorno reúne condiciones favorables para el proyecto: existe demanda poblacional, usos ' +
+        'complementarios y accesibilidad que respalda la operación.'
+      : v.nivel === 'Media'
+      ? 'El proyecto es defendible, pero su resultado dependerá de diferenciarse de la oferta ya ' +
+        'instalada y de validar la demanda en campo antes de comprometer inversión.'
+      : 'Las condiciones actuales del entorno no favorecen este uso en particular. Conviene revisar ' +
+        'alternativas mejor calificadas o evaluar otro radio antes de descartar el lote.';
+    return '<div class="ejec">' + aroXL(v.score, col) +
+      '<div class="ejec-txt">' +
+        '<b class="ejec-rot">VIABILIDAD DEL PROYECTO</b>' +
+        '<span class="ejec-nivel" style="color:' + col + '">' + esc(v.nivel) + '</span>' +
+        '<div class="ejec-est">' + estrellasHTML(est) + '</div>' +
+        '<p class="ejec-frase">' + esc(lectura) + '</p>' +
+      '</div>' +
+      '<div class="ejec-chips">' +
+        '<span class="chip" style="background:' + col + '">' + v.score + ' / 100</span>' +
+        '<span class="chip chip-oro">' + est + ' de 5 &#9733;</span>' +
+      '</div></div>';
+  }
+
+  // ── 2. Los seis datos que explican el sitio ─────────────────────────────
+  function seisDatos(r){
+    const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
+    const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
+    const cajas = [
+      { n: s.poblacionEstimada.toLocaleString('es-CO'), t: 'Habitantes',
+        s: s.poblacionEsCensal ? 'DANE 2018' : 'estimación URBIS', c: T.acento },
+      { n: (f.peatonal || 0) + ' / 100', t: 'Flujo peatonal',
+        s: f.nivelPeatonal || '—', c: colFlujo(f.peatonal || 0) },
+      { n: (f.vehicular || 0) + ' / 100', t: 'Flujo vehicular',
+        s: f.nivelVehicular || '—', c: colFlujo(f.vehicular || 0) },
+      { n: s.total.toLocaleString('es-CO'), t: 'Usos identificados',
+        s: 'en ' + radioTxt, c: T.acento },
+      { n: s.movilidad.nViasArterias, t: 'Vías arterias',
+        s: 'en el radio', c: s.movilidad.nViasArterias > 0 ? T.acento : T.bad },
+      // Cero paradas es un hallazgo, no un hueco: se pinta en rojo a propósito.
+      { n: s.movilidad.paradasBus, t: 'Paradas de transporte',
+        s: 'identificadas', c: s.movilidad.paradasBus > 0 ? T.acento : T.bad }
+    ];
+    return '<div class="seis">' + cajas.map(c =>
+      '<div class="dato"><b style="color:' + c.c + '">' + c.n + '</b>' +
+      '<span>' + esc(c.t) + '</span><small>' + esc(c.s) + '</small></div>').join('') + '</div>';
+  }
+
+  // ── 3. Oportunidad urbana ───────────────────────────────────────────────
+  // El aro y la lista van en filas SEPARADAS. Antes compartían caja con un
+  // elemento de ancho completo y la barra terminaba cruzando el aro por la
+  // mitad: es exactamente el defecto que hay que no repetir.
+  function bloqueOportunidad(r){
+    const i = r.indicadores;
+    if (!i) return '';
+    const so = i.scoreOportunidad;
+    const col = so.valor >= 75 ? T.ok : so.valor >= 60 ? T.acento : so.valor >= 45 ? T.warn : T.bad;
+    const est = estrellasDeScore(so.valor);
+    const opos = (i.oportunidades.lista || []).slice(0, 3);
+    return '<div class="tarjeta"><h2>Oportunidad urbana</h2>' +
+      '<div class="oport-cab">' + aroXL(so.valor, col, '/100') +
+        '<div><span class="oport-nivel" style="color:' + col + '">' + esc(so.nivel) + '</span>' +
+        '<div class="oport-est">' + estrellasHTML(est) + '</div></div>' +
+      '</div>' +
+      (opos.length ? '<table class="tbl-oport">' + opos.map(o =>
+        '<tr><td class="pos">+' + o.potencial + '</td><td>' + esc(o.nombre) + '</td>' +
+        '<td class="razon">hoy hay ' + o.existentes + '</td></tr>').join('') + '</table>' : '') +
+      '<p class="nota-pie">La oportunidad mide la calidad del sitio, independientemente del proyecto que se construya.</p>' +
+      '</div>';
+  }
+
+  // ── 3. Cómo leer el informe ─────────────────────────────────────────────
+  function bloqueComoLeer(r){
+    const i = r.indicadores || {};
+    const filas = [
+      ['Viabilidad', 'qué tan bien encaja TU proyecto en este lote.'],
+      ['Exposición vial', 'visibilidad y acceso que aporta la malla vial cercana.'],
+      ['Oportunidad urbana', 'qué tan buen sitio es el lote, sin importar qué se construya.'],
+      ['Estrato', 'capacidad de compra del sector; orienta producto y precio.'],
+      ['Población', r.stats.poblacionEsCensal
+        ? 'habitantes reales del área según DANE, no una estimación.'
+        : 'habitantes estimados en el área de influencia.'],
+      ['Edad y sexo', 'quién vive alrededor; orienta la demanda.']
+    ];
+    if (!(i.estrato && i.estrato.disponible)) filas.splice(3, 1);
+    if (!(i.demografia && i.demografia.disponible)) {
+      const k = filas.findIndex(f => f[0] === 'Edad y sexo');
+      if (k >= 0) filas.splice(k, 1);
+    }
+    return '<div class="tarjeta"><h2>Cómo leer el informe</h2><div class="leer">' +
+      filas.map(f => '<div><b>' + esc(f[0]) + '</b><small>' + esc(f[1]) + '</small></div>').join('') +
+      '</div></div>';
+  }
+
+  // ── 4. Lo más importante para el cliente ────────────────────────────────
+  function bloqueClave(r){
+    const s = r.stats, m = s.movilidad, f = m.flujo || {};
+    const barra = (etq, val, nivel) =>
+      '<div class="cl-flujo"><div class="cl-cab"><b>' + etq + '</b>' +
+      '<span style="color:' + colFlujo(val) + '">' + val + ' / 100 · ' + esc(nivel || '—') + '</span></div>' +
+      '<div class="cl-barra"><i style="width:' + val + '%;background:' + colFlujo(val) + '"></i></div></div>';
+    const lectura = f.dominante === 'ninguno'
+      ? 'No pasa casi nadie, ni a pie ni en carro. El negocio tendría que traer su propia clientela, no capturarla del flujo.'
+      : f.dominante === 'peatonal'
+      ? 'El entorno mueve más gente a pie que en carro. Favorece formatos de paso, vitrina a la calle y estancia corta.'
+      : f.dominante === 'vehicular'
+      ? 'El entorno mueve más carro que peatón. Sin parqueo resuelto, el flujo puede pasar de largo sin convertirse en cliente.'
+      : 'El entorno reparte parejo entre peatón y carro. Conviene resolver los dos accesos y no apostar a uno solo.';
+    const via = (m.viasArterias || [])[0];
+    const reto = m.paradasBus === 0 && !f.parqueaderos
+      ? 'No se identificaron paradas de transporte ni parqueaderos en el radio.'
+      : f.avisoDatos
+      ? 'La zona está poco mapeada: el flujo real puede ser mayor que el estimado.'
+      : 'Diferenciarse de la competencia ya instalada en el radio.';
+    return '<div class="clave">' +
+      '<div class="cl-col">' + barra('FLUJO PEATONAL', f.peatonal || 0, f.nivelPeatonal) +
+        barra('FLUJO VEHICULAR', f.vehicular || 0, f.nivelVehicular) + '</div>' +
+      '<div class="cl-lectura"><b>LECTURA CLAVE</b><p>' + esc(lectura) + '</p></div>' +
+      '<div class="cl-minis">' +
+        '<div><b>DEMANDA</b><small>' + s.poblacionEstimada.toLocaleString('es-CO') +
+          ' habitantes en el área de influencia.</small></div>' +
+        '<div><b>VISIBILIDAD</b><small>Exposición vial ' + esc((m.nivelExposicion || '').toLowerCase()) +
+          (via ? '; ' + esc(via.nombre) + ' a ' + via.distM + ' m.' : '.') + '</small></div>' +
+        '<div><b>RETO</b><small>' + esc(reto) + '</small></div>' +
+      '</div></div>';
+  }
+
+  // ── 5. Viabilidad en detalle ────────────────────────────────────────────
+  function bloqueViabilidadDetalle(r){
+    const v = r.viabilidad;
+    if (!v) return '';
+    const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
+    const est = estrellasDeScore(v.score);
+    const N = { demanda:'Demanda', competencia:'Competencia', complementarios:'Complementarios',
+                movilidad:'Movilidad', entorno:'Entorno' };
+    let filas = '', mejor = null, peor = null;
+    if (v.subscores) {
+      const claves = Object.keys(v.subscores);
+      claves.forEach(k => {
+        const val = v.subscores[k];
+        if (!mejor || val > v.subscores[mejor]) mejor = k;
+        if (!peor || val < v.subscores[peor]) peor = k;
+      });
+      // El número va FUERA de la barra, en su propia columna: dentro se lo
+      // comía el relleno cuando la barra llegaba al 100 %.
+      filas = claves.map(k =>
+        '<div class="sub-fila"><span>' + N[k] + '</span>' +
+        '<div class="sub-barra"><i style="width:' + v.subscores[k] + '%;background:' +
+          (v.subscores[k] >= 60 ? T.ok : v.subscores[k] >= 40 ? T.warn : T.bad) + '"></i></div>' +
+        '<b>' + v.subscores[k] + '</b></div>').join('');
+    }
+    const caja = (mejor && peor && mejor !== peor)
+      ? '<div class="sub-resumen">' +
+          '<div><b class="et-ok">FORTALEZA</b><span>' + N[mejor] + ' ' + v.subscores[mejor] + '/100</span></div>' +
+          '<div><b class="et-bad">RETO</b><span>' + N[peor] + ' ' + v.subscores[peor] + '/100</span></div>' +
+        '</div>'
+      : '';
+    return '<div class="tarjeta"><h2>Viabilidad &middot; ' + v.score + ' / 100</h2>' +
+      '<p class="sub-nivel" style="color:' + col + '">' + est + ' de 5 &#9733; &middot; Viabilidad ' + esc(v.nivel) + '</p>' +
+      '<p class="nota-pie">La puntuación se construye con cinco dimensiones del entorno.</p>' +
+      filas + caja + '</div>';
+  }
+
+  // ── 6. Qué trae gente a pie ─────────────────────────────────────────────
+  function bloqueTraeGente(r){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    if (!f) return '';
+    const gen = (f.generadores || []).slice(0, 6);
+    const filas = gen.length
+      ? '<table class="tbl-gente"><tr><th>Uso / ejemplos</th><th class="n">Cant.</th><th class="n">Aporte</th></tr>' +
+        gen.map(g => '<tr><td>' + esc(g.nombre) +
+          ((g.ejemplos && g.ejemplos.length) ? '<em>' + esc(g.ejemplos.join(' &middot; ')) + '</em>' : '') +
+          '</td><td class="n">' + g.n + '</td><td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
+      : '<p class="nota-pie">No se identificaron generadores de peatones en el radio.</p>';
+    const hora = (etq, val) =>
+      '<div class="hf"><span>' + etq + '</span><div class="cl-barra"><i style="width:' + val +
+      '%;background:' + T.acento + '"></i></div><b>' + val + '</b></div>';
+    // El gimnasio va primero y resaltado: es el hito que más cambia el tránsito
+    // de una acera —entra y sale gente a horas fijas, todos los días— y por eso
+    // se pidió expresamente que no quedara escondido en la lista.
+    const todos = (f.hitos || []);
+    const orden = todos.filter(h => h.sub === 'gimnasio')
+                       .concat(todos.filter(h => h.sub !== 'gimnasio'));
+    const hitos = orden.slice(0, 3);
+    const resto = orden.slice(3, 4)[0];
+    return '<div class="gente">' +
+      '<div class="tarjeta">' + filas + '</div>' +
+      '<div class="tarjeta"><h2>Hora fuerte</h2>' +
+        hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) + hora('Tarde', f.franjas.tarde) +
+        (hitos.length
+          ? '<h2 class="h2-sep">Hitos que mueven la acera</h2>' +
+            hitos.map(h => '<div class="hito-fila' + (h.sub === 'gimnasio' ? ' fuerte' : '') + '">' +
+              '<span>' + esc(h.nombre) + '</span><b>' + h.distM + ' m</b></div>').join('') +
+            (resto ? '<p class="nota-pie">+ ' + esc(resto.nombre) + ' &middot; ' + resto.distM + ' m</p>' : '')
+          : '') +
+      '</div></div>';
+  }
+
+  // Franja de tránsito y combustible: dos magnitudes en una línea ancha.
+  function franjaTransito(r){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    const t = f && f.trafico;
+    if (!t) return '';
+    const cifra = (v, etq) => '<div class="tr-par"><b>' + v + '</b><span>' + etq + '</span></div>';
+    return '<div class="transito">' +
+      '<div class="tr-rot">Tránsito y combustible</div>' +
+      cifra(t.estimable ? miles(t.carrosDiaMin) + '&ndash;' + miles(t.carrosDiaMax) : '&mdash;', 'carros por día') +
+      cifra(t.estaciones ? miles(t.litrosMesMin) + '&ndash;' + miles(t.litrosMesMax) : '&mdash;', 'litros / mes') +
+      '<div class="tr-notas">' +
+        '<small>' + (t.estaciones
+            ? t.estaciones + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio'
+            : 'Sin estaciones de servicio en el radio') +
+          ' &middot; rangos de orden de magnitud, no mediciones ni cifras de ventas.</small>' +
+        '<small>Nota: el flujo es potencial estimado a partir de usos y malla vial; no es un aforo.</small>' +
+      '</div></div>';
+  }
+
+  // ── 7. Composición del entorno ──────────────────────────────────────────
+  function bloqueComposicion(r){
+    const G = window.AIA_MOTOR.GRUPOS, C = window.AIA_MOTOR.GRUPO_COLOR, s = r.stats;
+    const grupos = Object.keys(G).filter(g => (s.porGrupo[g] || 0) > 0)
+      .sort((a, b) => s.porGrupo[b] - s.porGrupo[a]);
+    const max = grupos.length ? s.porGrupo[grupos[0]] : 1;
+    const filas = grupos.map(g => {
+      const n = s.porGrupo[g], pct = (100 * n / Math.max(s.total, 1));
+      return '<div class="comp-fila"><span>' + esc(G[g].t) + '</span>' +
+        '<div class="comp-barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></div>' +
+        '<b>' + n.toLocaleString('es-CO') + '</b><em>' + pct.toFixed(1) + '%</em></div>';
+    }).join('');
+    return '<div class="tarjeta"><h2>Composición del entorno</h2>' +
+      '<p class="sub-nivel" style="color:' + T.ok + '">' + s.total.toLocaleString('es-CO') + ' usos identificados</p>' +
+      filas + '</div>';
+  }
+
+  // ── 7. Indicadores urbanos, como filas etiqueta / valor ─────────────────
+  function bloqueIndicadoresFilas(r){
+    const i = r.indicadores;
+    if (!i) return '';
+    const colNivel = t => /muy alta|alto potencial|fuerte transformaci|riesgo bajo|alta actividad/i.test(t) ? T.ok
+      : /(^|\s)alta|en transformaci|potencial medio|moderada|riesgo medio/i.test(t) ? T.acento
+      : /media|en transici|riesgo alto|especializado/i.test(t) ? T.warn : T.bad;
+    const fila = (etq, val, nota, color) =>
+      '<div class="ind-fila"><span>' + esc(etq) + '</span>' +
+      '<b style="color:' + (color || colNivel(val)) + '">' + val + '</b>' +
+      (nota ? '<em>' + nota + '</em>' : '') + '</div>';
+    let out = '';
+    const e = i.estrato;
+    if (e && e.disponible) {
+      out += fila('Estrato', e.predominante + (e.homogeneo ? '' : ' (rango ' + e.minimo + '&ndash;' + e.maximo + ')'),
+                  'Censo DANE 2018', T.ok);
+    }
+    const d = i.demografia;
+    if (d && d.disponible) {
+      out += fila('Sexo', d.pctMujeres + '% mujeres &middot; ' + d.pctHombres + '% hombres',
+                  d.pctNinos + '% menores de 15 &middot; ' + d.pctMayores + '% de 65 o más', T.acento);
+    }
+    out += fila('Diversidad de usos', esc(i.diversidad.nivel));
+    out += fila('Actividad comercial', esc(i.comercio.nivel));
+    out += fila('Expansión (suelo libre)', esc(i.expansion.nivel));
+    out += fila('Transformación (obras)', esc(i.transformacion.nivel));
+    out += fila('Riesgo urbano', esc(i.riesgos.nivel));
+    return '<div class="tarjeta"><h2>Indicadores urbanos</h2>' + out + '</div>';
+  }
+
+  // ── 8. El entorno según la distancia ────────────────────────────────────
+  function bloqueRadios(r){
+    const m = r.multiRadio;
+    if (!m || !m.anillos || m.anillos.length < 2) return '';
+    const etq = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
+    const filas = m.anillos.map(a =>
+      '<tr' + (a.esAnalizado ? ' class="fila-act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
+      '<td>' + a.total + '</td><td>' + a.densidadPorHa + '</td><td>' + a.comercio + '</td>' +
+      '<td>' + a.equipamientos + '</td><td>' + a.poblacionEstimada.toLocaleString('es-CO') + '</td></tr>').join('');
+    return '<div class="tarjeta"><table class="tbl-radios2">' +
+      '<tr class="cab"><th>Radio</th><th>Usos</th><th>Usos/ha</th><th>Comercio</th>' +
+      '<th>Equipam.</th><th>Hab. est.</th></tr>' + filas + '</table>' +
+      '<p class="nota-pie">' + esc(m.lectura) + '</p></div>';
+  }
+
+  // ── 9. FODA + siguiente paso ────────────────────────────────────────────
+  function bloqueFodaAncho(r){
+    const f = r.foda;
+    const caja = (t, cls, items) => '<div class="foda ' + cls + '"><h3>' + t + '</h3><ul>' +
+      (items && items.length ? items.slice(0, 3).map(x => '<li>' + esc(x) + '</li>').join('')
+                             : '<li class="vacio">Sin hallazgos relevantes.</li>') + '</ul></div>';
+    return '<div class="foda-grid4">' +
+      caja('FORTALEZAS', 'f', f.fortalezas) + caja('DEBILIDADES', 'd', f.debilidades) +
+      caja('OPORTUNIDADES', 'o', f.oportunidades) + caja('RIESGOS', 'r', f.riesgos) +
+      '</div>';
+  }
+
+  // Cabecera y pie iguales en las tres hojas: la numeración "n/3" es lo único
+  // que cambia, y es lo que permite reconocer una hoja suelta si se imprime.
+  function cabecera(titulo, rotulo, sub, fecha, n){
+    return '<header>' +
+      '<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">' +
+      '<div class="head-txt"><h1>' + esc(titulo) + '</h1>' +
+      '<p>' + esc(rotulo) + '</p>' +
+      (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>' +
+      '<div class="sub">' + esc(fecha) + '<b>' + n + '/3</b></div>' +
+      '</header>';
+  }
+
+  function pie(n, r, autor){
+    return '<footer><span>Página ' + n + ' de 3 · ' + (autor ? esc(autor) + ' · ' : '') +
+      '<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span>' +
+      '<span>Fuentes: ' + (r.stats.poblacionEsCensal ? 'Censo DANE 2018 · ' : '') +
+      'OpenStreetMap · evaluación heurística URBIS</span></footer>';
+  }
+
   function construirHTMLEjecutivo(r, chartsPNG, opciones){
     chartsPNG = chartsPNG || {};
     opciones = opciones || {};
@@ -667,6 +1011,7 @@
     const fecha = new Date(r.meta.fechaISO).toLocaleString('es-CO', { dateStyle:'long', timeStyle:'short' });
 
     const anchoMM = horizontal ? 263 : 200, altoMM = horizontal ? 200 : 263;
+    const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const chart = (src, t) => src ? '<div class="chart"><h3>' + t + '</h3><img src="' + src + '"></div>' : '';
 
     return [
@@ -720,7 +1065,9 @@
 'header p{font-size:8.5px;color:', T.oro, ';font-weight:700;letter-spacing:1.2px;text-transform:uppercase}',
 'header .head-ubi{display:inline-block;margin-top:2px;font-size:8px;color:', T.cabTxt, ';font-weight:600;',
 'background:rgba(255,255,255,.16);border-radius:99px;padding:1.5px 8px}',
+'header .head-txt small{display:block;font-size:7.4px;color:', T.cabTxt, ';opacity:.85;margin-top:1px}',
 'header .sub{margin-left:auto;text-align:right;font-size:8px;color:', T.cabTxt, ';opacity:.9;line-height:1.35}',
+'header .sub b{display:block;font-size:8px;font-weight:700;opacity:.8;margin-top:3px}',
 /* Rejilla principal */
 '.fila{display:grid;gap:5px;margin-top:5px}',
 // Cada columna es un flex vertical y su ÚLTIMO bloque crece. Sin esto, la
@@ -961,80 +1308,205 @@
 /* Conclusión + pie */
 '.conclusion{margin-top:6px;background:', T.suave, ';border-left:2.5px solid ', T.acento, ';border-radius:4px;',
 'padding:5px 8px;font-size:8px;line-height:1.4;color:', T.txt2, '}',
-'footer{margin-top:5px;border-top:1px solid ', T.borde, ';padding-top:4px;font-size:7px;color:', T.txt3, ';',
-'display:flex;justify-content:space-between;gap:10px}',
+'footer{margin-top:7px;padding-top:5px;border-top:1px solid ', T.borde, ';font-size:6.8px;',
+'color:', T.txt3, ';display:flex;justify-content:space-between;gap:10px}',
+/* ══ Diagramación en tres hojas ══════════════════════════════════════ */
+/* Cabecera de sección numerada: es lo que le da hilo narrativo al informe. */
+'.sec{display:flex;align-items:baseline;gap:7px;margin:9px 0 5px;padding-bottom:3px;',
+'border-bottom:1.6px solid ', T.oro, '}',
+'.sec b{font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;color:', T.cab1, '}',
+'.sec em{font-style:normal;font-size:7.6px;color:', T.txt3, ';font-weight:600}',
+'.sec:first-of-type{margin-top:7px}',
+/* Tarjeta genérica: una sola definición para todo el informe. */
+'.tarjeta{border:1px solid ', T.borde, ';border-radius:7px;padding:7px 9px;background:', T.panel, ';',
+'display:flex;flex-direction:column;min-width:0}',
+'.tarjeta h2{font-size:8.6px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;',
+'color:', T.cab1, ';margin-bottom:5px}',
+'.tarjeta .h2-sep{margin-top:8px}',
+'.nota-pie{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin-top:5px}',
+/* El aro vive en una caja de tamaño fijo que nada puede invadir: ese es el
+   defecto que se venía repitiendo —una barra de ancho completo cruzándolo—. */
+'.aro-caja{flex:0 0 auto;line-height:0}',
+'.aro{display:block}',
+/* 1 · Lectura ejecutiva */
+'.ejec{display:flex;align-items:center;gap:14px;border:1px solid ', T.borde, ';border-radius:9px;',
+'padding:10px 14px;background:', T.suave, '}',
+'.ejec .aro-caja .aro{width:38mm;height:38mm}',
+'.ejec-txt{flex:1;min-width:0}',
+'.ejec-rot{display:block;font-size:9.5px;font-weight:900;letter-spacing:.8px;color:', T.cab1, '}',
+'.ejec-nivel{display:block;font-size:19px;font-weight:900;line-height:1.15;margin-top:1px}',
+'.ejec-est{font-size:15px;color:', T.oro, ';letter-spacing:2px;line-height:1.2}',
+'.ejec-frase{font-size:8.4px;line-height:1.5;color:', T.txt2, ';margin-top:4px}',
+'.ejec-chips{flex:0 0 auto;display:flex;flex-direction:column;gap:6px}',
+'.chip{display:block;text-align:center;color:#fff;font-size:8.4px;font-weight:800;',
+'padding:4px 14px;border-radius:5px;white-space:nowrap}',
+'.chip-oro{background:', T.oro, ';color:#3a2c05}',
+/* 2 · Los seis datos */
+'.seis{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}',
+'.dato{border:1px solid ', T.borde, ';border-radius:7px;background:', T.suave, ';',
+'padding:7px 4px;text-align:center}',
+'.dato b{display:block;font-size:15px;font-weight:900;line-height:1.1}',
+'.dato span{display:block;font-size:7.6px;font-weight:700;color:', T.tinta, ';margin-top:3px}',
+'.dato small{display:block;font-size:6.8px;color:', T.txt3, ';margin-top:1px}',
+/* 3 · Oportunidad urbana — aro arriba, lista debajo, nunca superpuestos */
+'.oport-cab{display:flex;align-items:center;gap:10px;margin-bottom:6px}',
+'.oport-cab .aro{width:19mm;height:19mm}',
+'.oport-nivel{display:block;font-size:14px;font-weight:900;line-height:1.1}',
+'.oport-est{font-size:11px;color:', T.oro, ';letter-spacing:1.5px}',
+'.tbl-oport{width:100%;border-collapse:collapse;font-size:8px}',
+'.tbl-oport td{padding:2.5px 0;border-bottom:1px solid ', T.linea, '}',
+'.tbl-oport td.pos{width:22px;font-weight:900;color:', T.ok, '}',
+'.tbl-oport td.razon{text-align:right;color:', T.txt3, ';font-size:7.4px}',
+/* 3 · Cómo leer el informe */
+'.leer{display:grid;grid-template-columns:1fr 1fr;gap:4px}',
+'.leer div{border:1px solid ', T.borde, ';border-radius:5px;padding:4px 6px;background:', T.suave, '}',
+'.leer b{display:block;font-size:7.4px;color:', T.acento, ';font-weight:800}',
+'.leer small{display:block;font-size:6.8px;color:', T.txt2, ';line-height:1.3;margin-top:1px}',
+/* 4 · Lo más importante */
+'.clave{display:grid;grid-template-columns:1.1fr 1.3fr 1.6fr;gap:7px;align-items:stretch;',
+'border:1px solid ', T.borde, ';border-radius:7px;padding:8px 10px;background:', T.panel, '}',
+'.cl-flujo{margin-bottom:6px}',
+'.cl-cab{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:2px}',
+'.cl-cab b{font-size:8px;font-weight:900;letter-spacing:.4px;color:', T.cab1, '}',
+'.cl-cab span{font-size:7.6px;font-weight:800}',
+'.cl-barra{height:7px;border-radius:4px;background:', T.linea, ';overflow:hidden}',
+'.cl-barra i{display:block;height:100%;border-radius:4px}',
+'.cl-lectura{border-left:2.5px solid ', T.acento, ';background:', T.suave, ';border-radius:4px;padding:6px 8px}',
+'.cl-lectura b{display:block;font-size:7.6px;font-weight:900;color:', T.acento, ';letter-spacing:.5px}',
+'.cl-lectura p{font-size:8.2px;line-height:1.45;font-weight:700;margin-top:3px}',
+'.cl-minis{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}',
+'.cl-minis div{border:1px solid ', T.borde, ';border-radius:5px;padding:5px 6px;background:', T.suave, '}',
+'.cl-minis b{display:block;font-size:7.2px;font-weight:900;color:', T.cab1, ';letter-spacing:.4px}',
+'.cl-minis small{display:block;font-size:6.9px;color:', T.txt2, ';line-height:1.35;margin-top:2px}',
+/* 5 · Viabilidad en detalle */
+'.sub-nivel{font-size:9px;font-weight:800;margin-bottom:2px}',
+'.sub-fila{display:flex;align-items:center;gap:7px;margin-top:4px}',
+'.sub-fila span{flex:0 0 68px;font-size:7.8px;font-weight:700}',
+'.sub-barra{flex:1;height:7px;border-radius:4px;background:', T.linea, ';overflow:hidden}',
+'.sub-barra i{display:block;height:100%;border-radius:4px}',
+/* El número va en su propia columna: dentro de la barra desaparecía al 100 %. */
+'.sub-fila b{flex:0 0 22px;text-align:right;font-size:7.8px;font-weight:800}',
+'.sub-resumen{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}',
+'.sub-resumen div{border:1px solid ', T.borde, ';border-radius:5px;padding:4px 6px;background:', T.suave, '}',
+'.sub-resumen b{display:block;font-size:7px;font-weight:900;letter-spacing:.4px}',
+'.sub-resumen span{display:block;font-size:7.4px;color:', T.txt2, ';margin-top:1px}',
+'.et-ok{color:', T.ok, '}.et-bad{color:', T.bad, '}',
+/* 6 · Qué trae gente a pie */
+'.gente{display:grid;grid-template-columns:1.6fr 1fr;gap:6px;align-items:start}',
+'.tbl-gente{width:100%;border-collapse:collapse;font-size:8px}',
+'.tbl-gente th{background:none;text-align:left;font-size:7.2px;text-transform:uppercase;letter-spacing:.4px;',
+'color:', T.cab1, ';padding:3px 4px;border-bottom:1px solid ', T.borde, '}',
+'.tbl-gente td{padding:3.5px 4px;border-bottom:1px solid ', T.linea, ';font-weight:700}',
+'.tbl-gente td em{display:block;font-style:normal;font-size:6.9px;color:', T.txt3, ';font-weight:600}',
+'.tbl-gente th.n,.tbl-gente td.n{text-align:right;width:44px}',
+'.hf{display:flex;align-items:center;gap:6px;margin-top:4px}',
+'.hf span{flex:0 0 48px;font-size:7.8px;font-weight:700}',
+'.hf b{flex:0 0 20px;text-align:right;font-size:7.8px;font-weight:800;color:', T.acento, '}',
+'.hito-fila{display:flex;align-items:baseline;justify-content:space-between;gap:6px;',
+'padding:2.5px 0;border-bottom:1px solid ', T.linea, ';font-size:7.6px}',
+'.hito-fila span{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+'.hito-fila b{flex:0 0 auto;color:', T.acento, ';font-weight:800}',
+'.hito-fila.fuerte{background:rgba(245,185,66,.16);border-radius:4px;padding-left:4px;padding-right:4px;',
+'border-bottom-color:', T.oro, '}',
+/* Franja de tránsito */
+'.transito{display:flex;align-items:center;gap:16px;margin-top:6px;border:1px solid ', T.borde, ';',
+'border-radius:7px;padding:7px 12px;background:', T.suave, '}',
+'.tr-rot{font-size:8.4px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;color:', T.cab1, ';flex:0 0 auto}',
+'.tr-par{flex:0 0 auto;display:flex;align-items:baseline;gap:6px}',
+'.tr-par b{font-size:13px;font-weight:900;color:', T.acento, '}',
+'.tr-par span{font-size:7.4px;color:', T.txt3, '}',
+'.tr-notas{flex:1;min-width:0;text-align:right}',
+'.tr-notas small{display:block;font-size:6.6px;color:', T.txt3, ';line-height:1.35}',
+/* 7 · Composición */
+'.comp-fila{display:flex;align-items:center;gap:7px;margin-top:3.5px}',
+'.comp-fila span{flex:0 0 108px;font-size:7.6px;font-weight:700}',
+'.comp-barra{flex:1;height:7px;border-radius:4px;background:', T.linea, ';overflow:hidden}',
+'.comp-barra i{display:block;height:100%;border-radius:4px}',
+'.comp-fila b{flex:0 0 30px;text-align:right;font-size:7.8px;font-weight:800}',
+'.comp-fila em{flex:0 0 34px;text-align:right;font-style:normal;font-size:7.2px;color:', T.txt3, '}',
+/* 7 · Indicadores */
+'.ind-fila{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid ', T.linea, '}',
+'.ind-fila span{flex:0 0 120px;font-size:7.8px;font-weight:700}',
+'.ind-fila b{font-size:8px;font-weight:800}',
+'.ind-fila em{margin-left:auto;font-style:normal;font-size:6.8px;color:', T.txt3, ';text-align:right}',
+/* 8 · Radios */
+'.tbl-radios2{width:100%;border-collapse:collapse;font-size:8.2px}',
+'.tbl-radios2 th{background:none;text-align:left;font-size:7.2px;text-transform:uppercase;letter-spacing:.4px;',
+'color:', T.cab1, ';padding:4px 6px;border-bottom:1px solid ', T.borde, '}',
+'.tbl-radios2 td{padding:5px 6px;border-bottom:1px solid ', T.linea, '}',
+'.tbl-radios2 tr.fila-act td{font-weight:900;background:', T.suave, '}',
+'.tbl-radios2 td:first-child{font-weight:800}',
+/* 9 · Siguiente paso */
+'.paso{margin-top:6px;background:', T.cab1, ';color:', T.cabTxt, ';border-radius:5px;',
+'padding:6px 10px;text-align:center;font-size:8px;font-weight:800;letter-spacing:.3px}',
+/* Rejillas de las tres hojas */
+'.fila.tres{grid-template-columns:1fr 1fr 1fr}',
+'.fila.dos{grid-template-columns:1fr 1fr}',
+'.fila.dos-13{grid-template-columns:1fr 1.3fr}',
 '</style></head><body><div id="marco">',
 
-// ══ PÁGINA 1 · pedagógica: el veredicto y lo esencial para el cliente ══
+// ══ HOJA 1 · la conclusión y lo que el cliente necesita para decidir ══
 '<div class="hoja"><div class="contenido">',
 
-'<header>',
-'<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">',
-'<div class="head-txt"><h1>', esc(titulo), '</h1>',
-'<p>Análisis del entorno · URBIS</p>',
-(ubicacionTxt ? '<span class="head-ubi">📍 ' + esc(ubicacionTxt) + '</span>' : ''), '</div>',
-'<div class="sub">', (subtitulo ? esc(subtitulo) + '<br>' : ''), esc(fecha), '</div>',
-'</header>',
+cabecera(titulo, 'Análisis del entorno · URBIS', ubicacionTxt, fecha, 1),
 
-// El veredicto ocupa el ancho completo y va primero: es la conclusión, y el
-// cliente debe verla antes que cualquier dato que la sustente.
-'<div class="fila fila-foda">', bloqueVeredicto(r) || bloqueRanking(r), '</div>',
+seccion(1, 'Lectura ejecutiva', 'la historia que conviene contar al cliente'),
+bloqueEjecutivo(r),
 
-'<div class="fila fila-1">',
+seccion(2, 'Los 6 datos que explican el sitio', ''),
+seisDatos(r),
+
+seccion(3, 'Qué está pasando alrededor', 'entorno inmediato y oportunidad'),
+'<div class="fila tres">',
   '<div>', bloqueMapa(r, horizontal), '</div>',
-  '<div><div class="bloque"><h2>Datos generales</h2>', datosGenerales(r), kpis(r), '</div></div>',
-  '<div>', bloqueOportunidad(r), bloqueGuia(r), '</div>',
+  '<div>', bloqueOportunidad(r), '</div>',
+  '<div>', bloqueComoLeer(r), '</div>',
 '</div>',
 
-// El flujo sube a la hoja 1: es lo que decide una implantación comercial y en
-// la hoja 2 competía con todo el detalle estadístico. Aquí hay sitio real.
-'<div class="fila fila-foda">', bloqueFlujo(r), '</div>',
+seccion(4, 'Lo más importante para el cliente', 'flujo + implicación comercial'),
+bloqueClave(r),
 
-'<div class="conclusion">', esc(r.conclusion), '</div>',
-
-'<footer><span>Página 1 de 2 · Veredicto, flujo y lectura general.',
-(r.stats.poblacionEsCensal ? ' Población y estrato: Censo DANE 2018.' : ''),
-'</span>',
-'<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
-'<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
-
+pie(1, r, autor),
 '</div></div>',
 
-// ══ PÁGINA 2 · el detalle que sustenta el veredicto ══
+// ══ HOJA 2 · cómo se mueve el entorno y qué lo activa ══
 '<div class="hoja"><div class="contenido">',
 
-'<header>',
-'<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">',
-'<div class="head-txt"><h1>', esc(titulo), '</h1>',
-'<p>Datos y estadísticas del sector · URBIS</p></div>',
-'<div class="sub">Página 2 de 2<br>', esc(fecha), '</div>',
-'</header>',
+cabecera(titulo, 'Datos y estadísticas del sector', 'movilidad, actividad y alcance', fecha, 2),
 
-'<div class="fila fila-1">',
-  '<div>', bloqueViabilidad(r), bloqueMovilidad(r), '</div>',
-  '<div>', tablaComposicion(r),
-    chart(chartsPNG.donut, 'Uso predominante') ? '<div class="bloque">' + chart(chartsPNG.donut, 'Uso predominante') + '</div>' : '', '</div>',
-  '<div>', bloqueIndicadores(r), bloqueMultiRadio(r), '</div>',
+seccion(5, 'Cómo se mueve el entorno', 'del tránsito a la oportunidad'),
+'<div class="fila dos-13">',
+  '<div>', bloqueViabilidadDetalle(r), '</div>',
+  '<div>', bloqueMovilidad(r), '</div>',
 '</div>',
 
-// Las columnas se arman con `columnas()`: una columna cuyos bloques salen
-// todos vacíos NO se emite, para que la rejilla no reserve un tercio en blanco.
-columnas(horizontal, [
-  [ chart(chartsPNG.barras, 'Usos por grupo') ? '<div class="bloque">' + chart(chartsPNG.barras, 'Usos por grupo') + '</div>' : '' ],
-  [ bloqueCompatibilidad(r), bloqueUnidades(r) ],
-  [ bloqueRecomendaciones(r) ]
-]),
+seccion(6, 'Qué trae gente a pie', 'usos que ayudan a activar la zona'),
+bloqueTraeGente(r),
+franjaTransito(r),
 
-'<div class="fila fila-foda">', bloqueFoda(r), '</div>',
+pie(2, r, autor),
+'</div></div>',
 
-'<footer><span>Usos del entorno: datos abiertos © OpenStreetMap contributors.',
-(r.stats.poblacionEsCensal
-  ? ' Población y estrato: Censo Nacional de Población y Vivienda 2018 (DANE).'
-  : ' Población: estimación heurística URBIS.'),
-' Evaluación heurística: no sustituye el concepto de norma urbanística (POT) ni un estudio de mercado formal.</span>',
-'<span class="pie-urbis">', (autor ? esc(autor) + ' · ' : ''),
-'<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span></footer>',
+// ══ HOJA 3 · composición, población y la lectura FODA ══
+'<div class="hoja"><div class="contenido">',
 
+cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y lectura FODA', fecha, 3),
+
+seccion(7, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
+'<div class="fila dos">',
+  '<div>', bloqueComposicion(r), '</div>',
+  '<div>', bloqueIndicadoresFilas(r), '</div>',
+'</div>',
+
+seccion(8, 'El entorno según la distancia', 'mismo dato, varios radios'),
+bloqueRadios(r),
+
+seccion(9, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
+bloqueFodaAncho(r),
+'<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
+  'prefactibilidad financiera antes de avanzar a diseño.</div>',
+
+pie(3, r, autor),
 '</div></div>',
 
 '</div>',

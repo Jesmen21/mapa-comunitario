@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v523-bloque-seguridad-urbana';
+const URBIS_CACHE = 'urbis-v524-informe-tres-hojas';
 const URBIS_ASSETS = [
   './',
   './index.html',
