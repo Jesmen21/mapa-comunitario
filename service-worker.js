@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v514-atras-y-geometrias';
+const URBIS_CACHE = 'urbis-v515-seguimiento-22ago';
 const URBIS_ASSETS = [
   './',
   './index.html',
