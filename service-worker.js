@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v524-informe-tres-hojas';
+const URBIS_CACHE = 'urbis-v525-parqueo-y-ubicacion';
 const URBIS_ASSETS = [
   './',
   './index.html',

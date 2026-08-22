@@ -398,6 +398,48 @@
   // Contenedores genéricos: dicen que pasa algo dentro, no qué pasa.
   const CONTENEDORES = ['salon_eventos', 'edificacion_menor', 'mixto'];
 
+  // ── Dónde pararse DENTRO del radio ──────────────────────────────────────
+  //
+  // El análisis dice si la zona sirve; esto dice en qué parte de la zona. Un
+  // radio no es homogéneo: pegado a un ancla que descarga gente a pie hay
+  // mucho más tránsito de acera que 300 m más allá, dentro del mismo radio.
+  //
+  // Y no gana el ancla más fuerte, sino la más fuerte QUE ADEMÁS sea
+  // complementaria del proyecto. La diferencia importa: junto a un D1 pasa
+  // más gente, pero quien sale del gimnasio es cliente de un café —mismo
+  // horario, misma necesidad—, mientras que quien sale del D1 lleva mercado y
+  // va de salida. Sin proyecto definido se cae al ancla más fuerte a secas.
+  const PORQUE_ANCLA = {
+    gimnasio:         'entra y sale gente a pie en horario fijo, mañana y final de la tarde',
+    parada_bus:       'descarga peatones de forma continua durante todo el día',
+    tienda_descuento: 'concentra compra diaria a pie, con visitas cortas y repetidas',
+    supermercado:     'concentra visitas frecuentes y estancias cortas',
+    colegio:          'genera dos picos peatonales muy marcados al día',
+    universidad:      'sostiene tránsito peatonal durante toda la jornada',
+    oficina:          'sostiene demanda en horario laboral, con pausas cortas',
+    centro_comercial: 'ya reúne el tránsito peatonal del sector',
+    salud_ips:        'mueve pacientes y acompañantes durante todo el día',
+    banco:            'genera filas y esperas en la puerta',
+    iglesia:          'concentra picos peatonales muy marcados'
+  };
+
+  function fijarConsejoUbicacion(flujo, proyecto){
+    const cerca = (flujo.hitos || []).filter(h => h.distM <= 300);
+    if (!cerca.length) { flujo.consejoUbicacion = ''; flujo.ancla = null; return; }
+    const comple = (proyecto && proyecto.complementarios) || [];
+    const elegida = cerca.find(h => comple.indexOf(h.sub) !== -1) || cerca[0];
+    const porQue = PORQUE_ANCLA[elegida.sub] || 'concentra tránsito peatonal en su frente';
+    const esComple = comple.indexOf(elegida.sub) !== -1;
+    flujo.ancla = elegida;
+    flujo.consejoUbicacion = 'Dentro del radio, el mejor frente está pegado a ' +
+      elegida.nombre + ' (a ' + elegida.distM + ' m): ' + porQue +
+      (esComple && proyecto
+        ? ', y es un uso complementario de ' + proyecto.nombre.toLowerCase() +
+          ', así que ese tránsito llega con la necesidad puesta.'
+        : '.') +
+      ' Un local de paso capta mucho más ahí que en un punto equivalente del mismo radio.';
+  }
+
   function clasificarPOI(tags){
     tags = tags || {};
     for (let i = 0; i < REGLAS_COMPUESTAS.length; i++) {
@@ -775,6 +817,13 @@
       .slice(0, 6)
       .map(h => { h.fuerza = Math.round(h.fuerza * 10) / 10; return h; });
 
+    // ── Dónde pararse dentro del radio ───────────────────────────────────
+    // El análisis dice si la zona sirve; esto dice DÓNDE de la zona. Un radio
+    // no es homogéneo: pegado a un ancla que descarga gente a pie hay mucho
+    // más tránsito de acera que en el mismo radio 300 m más allá. Para un
+    // formato de paso eso decide más que el promedio del sector.
+    fijarConsejoUbicacion(flujo, null);
+
     flujo.generadores.sort((a, b) => b.aporte - a.aporte);
     // Escala saturante en vez de un tope duro: el potencial peatonal se satura
     // de verdad —duplicar los locales de un centro ya consolidado no duplica la
@@ -805,12 +854,40 @@
     // Vehicular: la exposición vial ya mide la jerarquía de la malla; se le
     // suma que haya dónde parar, porque un corredor rápido SIN parqueo no
     // produce clientes, solo carros que pasan de largo.
-    const parqueo = (porSub.parqueadero || 0) + (porSub.gasolinera || 0);
+    //
+    // El parqueo NO se puede leer solo de `amenity=parking`: en el mapa abierto
+    // casi nadie dibuja el patio de un D1, de un gimnasio de cadena o de una
+    // estación de servicio, aunque en la calle estén ahí. Un formato de borde
+    // de vía arteria trae su propio parqueo casi por definición: es parte del
+    // modelo de negocio. Se cuentan las dos cosas por separado y el informe
+    // dice cuál es cuál — inferir no es lo mismo que ver.
+    const PARQUEO_IMPLICITO = {
+      gasolinera:       1.0,   // patio de maniobra, siempre
+      centro_comercial: 1.0,
+      supermercado:     0.9,
+      tienda_descuento: 0.7,   // el D1 de borde de vía suele tener su bahía
+      gimnasio:         0.7,
+      salud_ips:        0.7,
+      hotel:            0.6
+    };
+    flujo.parqueaderos = porSub.parqueadero || 0;
+    flujo.parqueoProbable = Object.keys(PARQUEO_IMPLICITO)
+      .filter(sub => (porSub[sub] || 0) > 0)
+      .map(sub => {
+        const cat = TAXONOMIA.find(t => t.sub === sub);
+        return { sub, nombre: (cat && cat.nombre) || sub, n: porSub[sub] };
+      });
+    // Equivalente en "plazas de parqueo" para el puntaje: lo mapeado cuenta
+    // entero y lo inferido según cuán fiable sea el formato.
+    const parqueo = flujo.parqueaderos + flujo.parqueoProbable
+      .reduce((a, p) => a + p.n * PARQUEO_IMPLICITO[p.sub], 0);
     flujo.vehicular = Math.round(clamp(0, 100,
       movilidad.exposicion * 0.8 + Math.min(20, parqueo * 7)));
     flujo.nivelVehicular = flujo.vehicular >= 70 ? 'Muy alto' : flujo.vehicular >= 50 ? 'Alto'
       : flujo.vehicular >= 30 ? 'Medio' : 'Bajo';
-    flujo.parqueaderos = porSub.parqueadero || 0;
+    // Hay dónde parar si se mapeó un parqueadero o si el entorno tiene formatos
+    // que traen el suyo. Es lo que responde "¿el que pasa se puede detener?".
+    flujo.hayDondeParar = flujo.parqueaderos > 0 || flujo.parqueoProbable.length > 0;
 
     // ── Tránsito vehicular y combustible ─────────────────────────────────
     //
@@ -1501,8 +1578,22 @@
     { t:'D', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.peatonal < 30,
       f: x => 'Flujo peatonal bajo (' + x.stats.movilidad.flujo.peatonal + '/100): casi nadie pasa por la puerta, ' +
               'así que el local tendría que ser destino y no hallazgo.' },
-    { t:'D', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.dominante === 'vehicular' && !x.stats.movilidad.flujo.parqueaderos,
-      f: () => 'El entorno se mueve en carro pero no se identificó parqueadero: el flujo pasa de largo sin poder detenerse.' },
+    { t:'D', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.dominante === 'vehicular' &&
+                     !x.stats.movilidad.flujo.hayDondeParar,
+      f: () => 'El entorno se mueve en carro y no hay parqueadero mapeado ni formatos que suelan traer el suyo: ' +
+               'el flujo pasa de largo sin poder detenerse.' },
+    // Tener dónde parar en un corredor vehicular es una oportunidad, no un
+    // dato neutro: es lo que convierte tránsito en cliente.
+    { t:'O', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.dominante === 'vehicular' &&
+                     x.stats.movilidad.flujo.hayDondeParar,
+      f: x => { const f2 = x.stats.movilidad.flujo;
+                return 'El corredor tiene dónde detenerse (' +
+                  (f2.parqueaderos ? f2.parqueaderos + ' parqueadero' + (f2.parqueaderos === 1 ? '' : 's') + ' mapeado' + (f2.parqueaderos === 1 ? '' : 's')
+                                   : f2.parqueoProbable.map(q => q.nombre.toLowerCase()).slice(0, 3).join(', ')) +
+                  '): el tránsito vehicular puede convertirse en visita.'; } },
+    // La ubicación dentro del radio es una decisión aparte de si la zona sirve.
+    { t:'O', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.consejoUbicacion,
+      f: x => x.stats.movilidad.flujo.consejoUbicacion },
     { t:'O', c: x => x.stats.movilidad.flujo && x.stats.movilidad.flujo.franjas &&
                      x.stats.movilidad.flujo.franjas.manana >= 85 && x.proyecto && /caf/i.test(x.proyecto.nombre),
       f: () => 'El pico de flujo es matutino, que es exactamente la hora del café: la demanda coincide con la oferta.' },
@@ -1677,6 +1768,12 @@
     const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane);
     const esRanking = !entrada.proyectoId || entrada.proyectoId === 'recomendar';
     const proyecto = esRanking ? null : PROYECTOS.find(p => p.id === entrada.proyectoId) || null;
+
+    // Con el proyecto ya elegido, el consejo de ubicación se recalcula: puede
+    // cambiar de ancla si hay una complementaria del uso propuesto.
+    if (stats.movilidad && stats.movilidad.flujo) {
+      fijarConsejoUbicacion(stats.movilidad.flujo, proyecto);
+    }
 
     let viabilidad = null, ranking = null, ev = null;
     if (proyecto) {

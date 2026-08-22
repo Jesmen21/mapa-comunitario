@@ -767,8 +767,17 @@
       medidor('Flujo vehicular', '🚗', f.vehicular, f.nivelVehicular) +
       '<p class="aia-flujo-lectura">' + escHTML(lectura) + '</p>' +
       '<p class="aia-flujo-lectura"><b>Hora fuerte: ' + escHTML(f.franjaFuerte) + '.</b> ' +
-        (f.parqueaderos ? f.parqueaderos + ' parqueadero' + (f.parqueaderos === 1 ? '' : 's') + ' en el radio.'
-                        : 'Sin parqueaderos identificados en el radio.') + '</p>' +
+        // Se distingue el parqueadero que está mapeado del que el formato
+        // implica: en el mapa abierto casi nadie dibuja el patio de un D1.
+        escHTML(f.parqueaderos > 0
+          ? f.parqueaderos + (f.parqueaderos === 1 ? ' parqueadero mapeado' : ' parqueaderos mapeados') + ' en el radio.'
+          : (f.parqueoProbable && f.parqueoProbable.length)
+            ? 'Sin parqueadero mapeado, pero hay ' +
+              f.parqueoProbable.slice(0, 3).map(q => q.nombre.toLowerCase()).join(', ') +
+              ': formatos que normalmente traen el suyo.'
+            : 'Sin parqueadero mapeado ni formatos que suelan traer el suyo.') + '</p>' +
+      (f.consejoUbicacion
+        ? '<p class="aia-flujo-donde"><b>📍 Dónde ubicarse</b>' + escHTML(f.consejoUbicacion) + '</p>' : '') +
       '<div class="aia-flujo-horas">' + franja('Mañana', f.franjas.manana) +
         franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) + '</div>' +
       // Tránsito y combustible: rangos de orden de magnitud, no aforos.

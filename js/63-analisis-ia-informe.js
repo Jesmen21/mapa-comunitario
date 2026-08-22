@@ -682,6 +682,24 @@
         (etq || 'DE 100') + '</text></svg></div>';
   }
 
+  // Distingue lo que se VIO en el mapa de lo que el formato IMPLICA. En el
+  // mapa abierto casi nadie dibuja el patio de un D1 o de una estación de
+  // servicio, así que decir "no hay parqueadero" era falso en la calle.
+  function textoParqueo(f){
+    if (!f) return '';
+    if (f.parqueaderos > 0) {
+      return f.parqueaderos + (f.parqueaderos === 1 ? ' parqueadero mapeado' : ' parqueaderos mapeados') +
+        ' en el radio' + (f.parqueoProbable && f.parqueoProbable.length
+          ? ', más formatos que suelen traer el suyo.' : '.');
+    }
+    if (f.parqueoProbable && f.parqueoProbable.length) {
+      return 'Sin parqueadero mapeado, pero hay ' +
+        f.parqueoProbable.slice(0, 3).map(q => q.nombre.toLowerCase()).join(', ') +
+        ': formatos que normalmente traen el suyo.';
+    }
+    return 'Sin parqueadero mapeado ni formatos que suelan traer el suyo.';
+  }
+
   function colFlujo(v){ return v >= 70 ? T.ok : v >= 50 ? T.acento : v >= 30 ? T.warn : T.bad; }
 
   // ── 1. Lectura ejecutiva ────────────────────────────────────────────────
@@ -796,20 +814,25 @@
       ? 'El entorno mueve más carro que peatón. Sin parqueo resuelto, el flujo puede pasar de largo sin convertirse en cliente.'
       : 'El entorno reparte parejo entre peatón y carro. Conviene resolver los dos accesos y no apostar a uno solo.';
     const via = (m.viasArterias || [])[0];
-    const reto = m.paradasBus === 0 && !f.parqueaderos
-      ? 'No se identificaron paradas de transporte ni parqueaderos en el radio.'
+    const reto = !f.hayDondeParar
+      ? 'No hay parqueadero mapeado ni formatos que suelan traer el suyo: el flujo pasa de largo.'
       : f.avisoDatos
       ? 'La zona está poco mapeada: el flujo real puede ser mayor que el estimado.'
       : 'Diferenciarse de la competencia ya instalada en el radio.';
+    // Dónde pararse dentro del radio: es una decisión distinta de si la zona
+    // sirve, y para un formato de paso pesa más que el promedio del sector.
+    const consejo = f.consejoUbicacion
+      ? '<div class="cl-donde"><b>DÓNDE UBICARSE</b><p>' + esc(f.consejoUbicacion) + '</p></div>' : '';
     return '<div class="clave">' +
       '<div class="cl-col">' + barra('FLUJO PEATONAL', f.peatonal || 0, f.nivelPeatonal) +
         barra('FLUJO VEHICULAR', f.vehicular || 0, f.nivelVehicular) + '</div>' +
-      '<div class="cl-lectura"><b>LECTURA CLAVE</b><p>' + esc(lectura) + '</p></div>' +
+      '<div class="cl-lectura"><b>LECTURA CLAVE</b><p>' + esc(lectura) + '</p>' + consejo + '</div>' +
       '<div class="cl-minis">' +
         '<div><b>DEMANDA</b><small>' + s.poblacionEstimada.toLocaleString('es-CO') +
           ' habitantes en el área de influencia.</small></div>' +
         '<div><b>VISIBILIDAD</b><small>Exposición vial ' + esc((m.nivelExposicion || '').toLowerCase()) +
           (via ? '; ' + esc(via.nombre) + ' a ' + via.distM + ' m.' : '.') + '</small></div>' +
+        '<div><b>DÓNDE PARAR</b><small>' + esc(textoParqueo(f)) + '</small></div>' +
         '<div><b>RETO</b><small>' + esc(reto) + '</small></div>' +
       '</div></div>';
   }
@@ -1374,7 +1397,10 @@
 '.cl-lectura{border-left:2.5px solid ', T.acento, ';background:', T.suave, ';border-radius:4px;padding:6px 8px}',
 '.cl-lectura b{display:block;font-size:7.6px;font-weight:900;color:', T.acento, ';letter-spacing:.5px}',
 '.cl-lectura p{font-size:8.2px;line-height:1.45;font-weight:700;margin-top:3px}',
-'.cl-minis{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}',
+'.cl-donde{margin-top:5px;padding-top:4px;border-top:1px solid ', T.borde, '}',
+'.cl-donde b{display:block;font-size:7.2px;font-weight:900;color:', T.oro, ';letter-spacing:.4px}',
+'.cl-donde p{font-size:7.4px;line-height:1.4;font-weight:600;color:', T.txt2, ';margin-top:2px}',
+'.cl-minis{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}',
 '.cl-minis div{border:1px solid ', T.borde, ';border-radius:5px;padding:5px 6px;background:', T.suave, '}',
 '.cl-minis b{display:block;font-size:7.2px;font-weight:900;color:', T.cab1, ';letter-spacing:.4px}',
 '.cl-minis small{display:block;font-size:6.9px;color:', T.txt2, ';line-height:1.35;margin-top:2px}',
