@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v518-pdf-flujo';
+const URBIS_CACHE = 'urbis-v519-circulares-laborales';
 const URBIS_ASSETS = [
   './',
   './index.html',

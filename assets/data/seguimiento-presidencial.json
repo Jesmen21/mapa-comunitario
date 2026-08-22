@@ -19,6 +19,23 @@
   },
   "entradas": [
     {
+      "fecha": "2026-08-20",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Deroga 11 circulares laborales del gobierno anterior, entre ellas la de la jornada de los vigilantes",
+      "detalle": "El Ministerio del Trabajo expidió la Resolución 2708 de 2026, que deja sin efecto once circulares emitidas entre septiembre de 2025 y julio de 2026. Tocan libertad y permisos sindicales, jornada laboral, horas extras, estabilidad laboral reforzada, trabajo doméstico, plataformas digitales, negociación colectiva y reforma laboral. El argumento del Ministerio es que una circular no puede servir de fuente jurídica autónoma para imponer requisitos, cargas probatorias o sanciones que no estén en una norma superior. Entre las derogadas está la Circular 0040 del 16 de abril de 2026, que fijaba los lineamientos de jornada y trabajo suplementario en vigilancia y seguridad privada: permitía pactar por escrito turnos de hasta 12 horas —8 ordinarias y hasta 4 suplementarias—, con tope de 60 horas semanales incluidas las extras y reconocimiento de los recargos de ley. El Ministerio la retiró porque daba a entender que el sector estaba exento del régimen general de trabajo suplementario, y sostiene que la excepción legal se refiere solo al límite máximo de horas extras, no a las reglas de remuneración, registro y descanso.",
+      "contrapunto": "Circula en redes que con esto “les tumbaron las extras” a los vigilantes. Eso no es lo que dice la resolución. Una circular es una instrucción interpretativa de la administración: no crea ni elimina derechos que nacen de la ley. El pago del trabajo suplementario sigue estando en el Código Sustantivo del Trabajo, en la Ley 2101 de 2021 y en la reforma laboral (Ley 2466 de 2025), que no fueron tocadas; un vigilante que trabaje más allá de su jornada conserva el derecho a que se lo reconozcan y se lo paguen con recargos. Lo que desaparece es la interpretación específica que traía la circular, y con ella la guía operativa sobre cómo aplicar los turnos de 12 horas y llevar el registro de extras en ese sector. La crítica con sustento es otra: centrales sindicales y sectores de oposición señalan que el paquete completo de once derogatorias inicia “el desmonte de los derechos laborales”, mientras el Ministerio responde que busca seguridad jurídica y que no afecta derechos ni procesos en curso. Ese punto sigue abierto.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Colombiano · MinTrabajo tumba 11 circulares del gobierno Petro", "u": "https://www.elcolombiano.com/negocios/mintrabajo-deroga-11-circulares-laborales-gobierno-petro-HD40168348" },
+        { "n": "El País · qué cambia con la derogatoria", "u": "https://www.elpais.com.co/politica/gobierno-de-de-la-espriella-derogo-11-circulares-del-ministerio-del-trabajo-hechas-por-petro-conozca-los-cambios-2159.html" },
+        { "n": "La FM · el Ministerio alega extralimitación y problemas de legalidad", "u": "https://www.lafm.com.co/sociedad/colombia-ministra-trabajo-resoluciones-circulares-deroga-extralimitacion-legalidad-408480" },
+        { "n": "Infobae · las quejas por “el desmonte de los derechos laborales”", "u": "https://www.infobae.com/colombia/2026/08/21/gobierno-de-la-espriella-elimino-medidas-que-dejo-petro-para-los-trabajadores-hay-quejas-porque-empezo-el-desmonte-de-los-derechos-laborales/" },
+        { "n": "teleSUR · el rechazo de las centrales sindicales", "u": "https://www.telesurtv.net/sindicatos-derogatoria-derechos-colombianos/" },
+        { "n": "vLex · texto de la Circular 0040 del 16 de abril de 2026", "u": "https://vlex.com.co/vid/circular-0040-ministerio-trabajo-1118090215" }
+      ]
+    },
+    {
       "fecha": "2026-08-22",
       "precision": "exacta",
       "categoria": "emergencia",
