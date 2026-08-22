@@ -281,6 +281,10 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-flujo-gen li b{ flex:0 0 32px; text-align:right; color:var(--aia-acento); }
 .aia-flujo-vacio,
 .aia-flujo-nota{ font-size:.66rem; color:var(--aia-texto2); opacity:.75; line-height:1.4; margin:10px 0 0; }
+.aia-flujo-aviso{
+  font-size:.68rem; line-height:1.4; margin:10px 0 0; padding:8px 10px; border-radius:10px;
+  background:rgba(245,185,66,.12); border:1px solid rgba(245,185,66,.4); color:var(--aia-texto2);
+}
 
 /* Ranking */
 #aia-ranking h3{ font-size:.9rem; margin:0 0 10px; }

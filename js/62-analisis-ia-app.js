@@ -746,7 +746,9 @@
       '<div class="aia-barra"><i style="width:' + v + '%;background:#22d3ee"></i></div>' +
       '<b>' + v + '</b></div>';
 
-    const lectura = f.dominante === 'peatonal'
+    const lectura = f.dominante === 'ninguno'
+      ? 'No pasa casi nadie, ni a pie ni en carro: aquí el negocio tendría que traer su propia clientela, no capturarla del flujo.'
+      : f.dominante === 'peatonal'
       ? 'El entorno mueve más gente a pie que en carro: favorece formatos de paso, vitrina a la calle y estancia corta.'
       : f.dominante === 'vehicular'
         ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
@@ -770,6 +772,10 @@
       '<div class="aia-flujo-horas">' + franja('Mañana', f.franjas.manana) +
         franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) + '</div>' +
       '<h4 class="aia-flujo-sub">Qué trae gente a pie</h4>' + listaGen +
+      // Un flujo bajo por calle vacía y uno bajo por zona sin mapear se ven
+      // idénticos en el número. Distinguirlos evita descartar una ubicación
+      // buena por un hueco de datos.
+      (f.avisoDatos ? '<p class="aia-flujo-aviso">⚠️ ' + escHTML(f.avisoDatos) + '</p>' : '') +
       '<p class="aia-flujo-nota">Potencial estimado a partir de los usos del entorno y la malla vial. ' +
         'No es un aforo: sirve para comparar ubicaciones y dimensionar el formato, no para proyectar ventas.</p>';
   }

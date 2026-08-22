@@ -314,7 +314,9 @@
                      '<td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
       : '<p class="flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
 
-    const lectura = f.dominante === 'peatonal'
+    const lectura = f.dominante === 'ninguno'
+      ? 'No pasa casi nadie, ni a pie ni en carro: aquí el negocio tendría que traer su propia clientela, no capturarla del flujo.'
+      : f.dominante === 'peatonal'
       ? 'El entorno mueve más gente a pie que en carro: favorece formatos de paso, vitrina a la calle y estancia corta.'
       : f.dominante === 'vehicular'
         ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
@@ -338,6 +340,7 @@
           '</div>' +
         '</div>' +
       '</div>' +
+      (f.avisoDatos ? '<p class="flujo-aviso">⚠️ ' + esc(f.avisoDatos) + '</p>' : '') +
       '<p class="pie-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. ' +
         'No es un aforo: no hay conteo de personas ni de vehículos. Sirve para comparar ubicaciones ' +
         'entre sí y para dimensionar el formato, no para proyectar ventas.</p></div>';
@@ -754,6 +757,8 @@
 '.flujo-hora small{font-size:7.5px;width:44px;flex:0 0 auto}',
 '.flujo-hora b{font-size:8px;width:22px;text-align:right;flex:0 0 auto}',
 '.flujo-vacio{font-size:8.5px;line-height:1.5}',
+'.flujo-aviso{font-size:8.5px;line-height:1.5;margin-top:6px;padding:5px 7px;border-radius:4px;',
+  'background:rgba(245,185,66,.12);border:1px solid rgba(245,185,66,.45)}',
 '.foda-grid4{display:grid;grid-template-columns:repeat(', (horizontal ? '4' : '2'), ',1fr);gap:5px}',
 '.foda{border:1px solid;border-radius:5px;padding:4px 6px}',
 '.foda h3{font-size:7px;margin-bottom:2px;font-weight:800}',

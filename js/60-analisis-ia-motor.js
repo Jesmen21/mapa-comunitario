@@ -293,7 +293,10 @@
     { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24)\b/ },
     { sub:'drogueria',       re:/\b(cruz\s*verde|la\s*rebaja|farmatodo|drogas?\s*la\s*econom|copservir|audifarma|locatel|farmacia\s*pasteur|drogueria)\b/ },
     { sub:'cafeteria',       re:/\b(tosta[o0]|juan\s*valdez|starbucks|oma\b|dunkin|cafe\s*quindio)\b/ },
-    { sub:'supermercado',    re:/\b(exito|olimpica|ara\b|d1\b|justo\s*&?\s*bueno|jumbo|metro\b|carulla|makro|pricesmart|surtimax|consumo)\b/ },
+    // El formato de descuento tiene sub propio: no es lo mismo un D1 de
+    // esquina que un Éxito con parqueadero, ni para el flujo ni para el FODA.
+    { sub:'tienda_descuento',re:/\b(d1\b|ara\b|justo\s*&?\s*bueno|dollarcity|surtimax)\b/ },
+    { sub:'supermercado',    re:/\b(exito|olimpica|jumbo|metro\b|carulla|makro|pricesmart|consumo|la\s*14)\b/ },
     { sub:'banco',           re:/\b(bancolombia|davivienda|banco\s*de\s*bogota|bbva|banco\s*popular|colpatria|scotiabank|av\s*villas|bancoomeva|banagrario|banco\s*agrario|efecty|baloto)\b/ },
     { sub:'restaurante',     re:/\b(mcdonald|burger\s*king|kfc|frisby|el\s*corral|presto|dominos|papa\s*john|subway|sandwich\s*qbano|archies)\b/ },
     { sub:'gasolinera',      re:/\b(terpel|biomax|texaco|mobil|esso|primax|petrobras|zeuss)\b/ },
@@ -301,7 +304,7 @@
     { sub:'hotel',           re:/\b(hotel|hostal|hospedaje|aparta\s*hotel|holiday\s*inn|ibis\b)\b/ },
     { sub:'universidad',     re:/\b(universidad|unipamplona|ufps|udes|uniminuto|politecnico|sena\b|instituto\s*tecnico)\b/ },
     { sub:'colegio',         re:/\b(colegio|liceo|gimnasio\s+(campestre|moderno)|institucion\s*educativa|jardin\s*infantil)\b/ },
-    { sub:'hospital',        re:/\b(clinica|hospital|ips\b|eps\b|centro\s*medico|sanitas|sura\b|compensar)\b/ },
+    { sub:'salud_ips',       re:/\b(clinica|hospital|ips\b|eps\b|centro\s*medico|sanitas|sura\b|compensar)\b/ },
     { sub:'panaderia',       re:/\b(panaderia|pasteleria|reposteria|kokoriko|bimbo)\b/ }
   ];
 
@@ -509,57 +512,159 @@
     // colegio concentra dos picos brutales al día; una bodega no genera casi
     // nada. Cada generador aporta según cuánto peatón produce y se descuenta
     // por distancia, porque a 600 m ya nadie va caminando por un café.
+    //
+    // El flujo peatonal se arma con TRES sumandos, porque un solo catálogo de
+    // "generadores" no explica por qué se camina en un barrio colombiano:
+    //
+    //   1. ANCLAS      — usos que atraen viajes por sí mismos (una parada, un
+    //                    colegio, un gimnasio de cadena, un D1).
+    //   2. AGLOMERACIÓN— la continuidad comercial. Una calle con treinta
+    //                    locales a pie de andén tiene peatones POR los locales,
+    //                    y ese efecto de conjunto no lo captura ningún peso
+    //                    individual: es la vitrina continua la que hace caminar.
+    //   3. RESIDENTES  — quien vive ahí también camina a la esquina. Un barrio
+    //                    denso genera sus propios viajes cortos.
+    //
+    // Antes solo existía el primero, y con un catálogo tan corto que en un
+    // barrio real quedaban fuera las tiendas, las droguerías, las panaderías,
+    // la iglesia y las viviendas: el resultado daba casi cero donde a simple
+    // vista hay gente caminando.
     const GENERA_PEATON = {
-      parada_bus:       { peso: 18, alcance: 250, franja:'todo' },
-      universidad:      { peso: 16, alcance: 500, franja:'dia' },
-      colegio:          { peso: 12, alcance: 400, franja:'picos' },
-      oficina:          { peso: 11, alcance: 400, franja:'laboral' },
-      centro_comercial: { peso: 14, alcance: 500, franja:'tarde' },
-      supermercado:     { peso:  9, alcance: 400, franja:'tarde' },
-      banco:            { peso:  7, alcance: 300, franja:'laboral' },
-      hospital:         { peso: 10, alcance: 400, franja:'todo' },
-      parque:           { peso:  6, alcance: 400, franja:'tarde' },
-      restaurante:      { peso:  5, alcance: 300, franja:'mediodia' },
-      gimnasio:         { peso:  5, alcance: 300, franja:'picos' },
-      hotel:            { peso:  6, alcance: 350, franja:'todo' },
-      cultural:         { peso:  5, alcance: 400, franja:'tarde' },
-      gobierno:         { peso:  7, alcance: 350, franja:'laboral' }
+      // Transporte y educación: los que más caminata producen por unidad.
+      parada_bus:       { peso: 18, media: 200, franja:'todo' },
+      universidad:      { peso: 20, media: 400, franja:'dia' },
+      colegio:          { peso: 14, media: 300, franja:'picos' },
+      capacitacion:     { peso:  7, media: 300, franja:'dia' },
+      // Anclas comerciales: destino de viaje propio, con horario marcado.
+      centro_comercial: { peso: 16, media: 400, franja:'tarde' },
+      supermercado:     { peso: 10, media: 350, franja:'tarde' },
+      // El formato de descuento (D1, Ara, Justo & Bueno) es compra diaria y a
+      // pie: en el barrio colombiano genera más caminata que un supermercado
+      // grande, al que se suele ir en carro una vez por semana.
+      tienda_descuento: { peso:  9, media: 300, franja:'tarde' },
+      // La panadería es destino diario de madrugada; la tienda de barrio, de
+      // todo el día. Pesan poco de a una porque su fuerza es el conjunto, que
+      // se cuenta aparte en la aglomeración.
+      panaderia:        { peso:  6, media: 250, franja:'picos' },
+      tienda_barrio:    { peso:  3, media: 200, franja:'todo' },
+      drogueria:        { peso:  5, media: 250, franja:'todo' },
+      // Servicios con fila en la calle.
+      banco:            { peso:  7, media: 250, franja:'laboral' },
+      pagos:            { peso:  6, media: 200, franja:'laboral' },
+      gobierno:         { peso:  8, media: 300, franja:'laboral' },
+      notaria:          { peso:  5, media: 250, franja:'laboral' },
+      // Salud: el sub real de la taxonomía es `salud_ips` — antes decía
+      // `hospital`, que no existe, y por eso nunca sumaba nada.
+      salud_ips:        { peso: 10, media: 350, franja:'todo' },
+      salud_otro:       { peso:  5, media: 250, franja:'laboral' },
+      // Trabajo.
+      oficina:          { peso:  9, media: 350, franja:'laboral' },
+      // Un gimnasio de cadena es un ancla con horario fijo: descarga y recoge
+      // gente en dos picos, temprano y al final de la tarde.
+      gimnasio:         { peso:  9, media: 300, franja:'picos' },
+      deportivo:        { peso:  6, media: 350, franja:'tarde' },
+      parque:           { peso:  7, media: 350, franja:'tarde' },
+      // La iglesia concentra picos fuertes y muy peatonales.
+      iglesia:          { peso:  7, media: 350, franja:'picos' },
+      cultural:         { peso:  5, media: 350, franja:'tarde' },
+      restaurante:      { peso:  5, media: 250, franja:'mediodia' },
+      cafeteria:        { peso:  4, media: 200, franja:'manana' },
+      bar_ocio:         { peso:  4, media: 250, franja:'tarde' },
+      hotel:            { peso:  5, media: 300, franja:'todo' }
     };
+
+    // Comercio a pie de andén: lo que forma "calle comercial". Se cuenta como
+    // conjunto, no de a uno.
+    const COMERCIO_ANDEN = ['tienda_barrio', 'comercio_otro', 'comercio_local', 'local_comercial',
+                            'panaderia', 'drogueria', 'restaurante', 'cafeteria', 'tienda_descuento',
+                            'supermercado', 'pagos', 'internet_cafe', 'bar_ocio'];
 
     const flujo = { generadores: [], peatonal: 0, vehicular: 0, franjas: {} };
     const aporteFranja = { manana: 0, mediodia: 0, tarde: 0 };
     let sumaPeaton = 0;
 
+    // Reparte un aporte entre las tres franjas del día según cómo se comporte
+    // ese uso. Se usa tanto para las anclas como para los otros dos sumandos.
+    function repartirFranja(f, aporte){
+      if (f === 'todo')         { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte;      aporteFranja.tarde += aporte; }
+      else if (f === 'dia')     { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte;      aporteFranja.tarde += aporte * .5; }
+      else if (f === 'laboral') { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte * .8; aporteFranja.tarde += aporte * .3; }
+      else if (f === 'picos')   { aporteFranja.manana += aporte * 1.2; aporteFranja.mediodia += aporte * .3; aporteFranja.tarde += aporte * 1.1; }
+      else if (f === 'manana')  { aporteFranja.manana += aporte * 1.4; aporteFranja.mediodia += aporte * .6; aporteFranja.tarde += aporte * .4; }
+      else if (f === 'mediodia'){ aporteFranja.manana += aporte * .2; aporteFranja.mediodia += aporte * 1.3; aporteFranja.tarde += aporte * .6; }
+      else if (f === 'tarde')   { aporteFranja.manana += aporte * .3; aporteFranja.mediodia += aporte * .7; aporteFranja.tarde += aporte * 1.3; }
+    }
+
+    // ── 1. Anclas ────────────────────────────────────────────────────────
     Object.keys(GENERA_PEATON).forEach(function (sub) {
       const lista = pois.filter(p => p.sub === sub);
       if (!lista.length) return;
+      const g = GENERA_PEATON[sub];
       let aporte = 0;
       lista.forEach(function (p) {
-        const g = GENERA_PEATON[sub];
-        // Decaimiento lineal hasta el alcance: más allá, ese generador ya no
-        // manda peatones a esta esquina.
-        const cerca = Math.max(0, 1 - p.distM / g.alcance);
+        // Decaimiento suave: `media` es la distancia a la que el generador
+        // aporta la mitad. Antes el decaimiento era lineal y cortaba en seco,
+        // así que un gimnasio a 320 m con alcance 300 valía exactamente cero
+        // — y a 320 m la gente sí camina. Esta curva baja pero nunca corta.
+        const cerca = 1 / (1 + Math.pow(p.distM / g.media, 2));
         aporte += g.peso * cerca;
       });
       if (aporte <= 0) return;
       sumaPeaton += aporte;
       flujo.generadores.push({ sub, nombre: lista[0].nombre, n: lista.length,
-                               aporte: Math.round(aporte), franja: GENERA_PEATON[sub].franja });
-      const f = GENERA_PEATON[sub].franja;
-      if (f === 'todo')      { aporteFranja.manana += aporte; aporteFranja.mediodia += aporte; aporteFranja.tarde += aporte; }
-      else if (f === 'dia')  { aporteFranja.manana += aporte; aporteFranja.mediodia += aporte; aporteFranja.tarde += aporte * .5; }
-      else if (f === 'laboral'){ aporteFranja.manana += aporte; aporteFranja.mediodia += aporte * .8; aporteFranja.tarde += aporte * .3; }
-      else if (f === 'picos'){ aporteFranja.manana += aporte * 1.2; aporteFranja.mediodia += aporte * .3; aporteFranja.tarde += aporte * 1.1; }
-      else if (f === 'mediodia'){ aporteFranja.manana += aporte * .2; aporteFranja.mediodia += aporte * 1.3; aporteFranja.tarde += aporte * .6; }
-      else if (f === 'tarde'){ aporteFranja.manana += aporte * .3; aporteFranja.mediodia += aporte * .7; aporteFranja.tarde += aporte * 1.3; }
+                               aporte: Math.round(aporte), franja: g.franja });
+      repartirFranja(g.franja, aporte);
     });
 
+    // ── 2. Aglomeración comercial ────────────────────────────────────────
+    // Satura a propósito: pasar de 5 a 15 locales cambia mucho la calle; de 40
+    // a 50, casi nada. Ya no es continuidad, ya era una calle comercial.
+    const nComercio = pois.filter(p => COMERCIO_ANDEN.indexOf(p.sub) !== -1 && p.distM <= 400).length;
+    if (nComercio > 0) {
+      const aporte = 26 * (1 - Math.exp(-nComercio / 10));
+      sumaPeaton += aporte;
+      flujo.generadores.push({ sub:'aglomeracion', nombre:'Continuidad comercial (calle con vitrinas)',
+                               n: nComercio, aporte: Math.round(aporte), franja:'todo' });
+      repartirFranja('todo', aporte);
+    }
+    flujo.comerciosAnden = nComercio;
+
+    // ── 3. Residentes ────────────────────────────────────────────────────
+    const nVivienda = pois.filter(p => p.sub === 'residencial' && p.distM <= 400).length;
+    if (nVivienda > 0) {
+      const aporte = 14 * (1 - Math.exp(-nVivienda / 25));
+      sumaPeaton += aporte;
+      flujo.generadores.push({ sub:'residentes', nombre:'Vivienda en radio caminable',
+                               n: nVivienda, aporte: Math.round(aporte), franja:'picos' });
+      repartirFranja('picos', aporte);
+    }
+
     flujo.generadores.sort((a, b) => b.aporte - a.aporte);
-    // La escala se calibra para que ~120 puntos de aporte sean el techo: es lo
-    // que produce una esquina con transporte, oficinas y comercio encima.
-    flujo.peatonal = Math.round(clamp(0, 100, sumaPeaton / 120 * 100));
+    // Escala saturante en vez de un tope duro: el potencial peatonal se satura
+    // de verdad —duplicar los locales de un centro ya consolidado no duplica la
+    // gente que cabe en el andén— y así ninguna ubicación choca contra un techo
+    // artificial que las volvería indistinguibles. Calibrada contra escenarios
+    // de referencia; ver la prueba `tflujo`.
+    flujo.peatonal = Math.round(100 * (1 - Math.exp(-sumaPeaton / 100)));
     flujo.nivelPeatonal = flujo.peatonal >= 70 ? 'Muy alto' : flujo.peatonal >= 50 ? 'Alto'
       : flujo.peatonal >= 30 ? 'Medio' : 'Bajo';
+
+    // ── Honestidad sobre los datos ───────────────────────────────────────
+    // Un flujo bajo puede significar dos cosas MUY distintas: que la calle
+    // está vacía, o que nadie ha mapeado esa zona todavía. Confundirlas lleva
+    // a descartar una buena ubicación por un vacío de datos, así que cuando el
+    // entorno viene pobremente mapeado se dice y no se disimula.
+    const densidad = pois.length / Math.max(0.01, areaKm2);
+    flujo.poisMapeados = pois.length;
+    flujo.densidadPorKm2 = Math.round(densidad);
+    // Se exigen las dos cosas: poca densidad Y pocos puntos. Un barrio de casas
+    // bien mapeado tiene densidad baja y aun así su lectura es confiable — ahí
+    // el flujo bajo es real, no un vacío de datos.
+    flujo.datosEscasos = densidad < 60 && pois.length < 40;
+    flujo.avisoDatos = flujo.datosEscasos
+      ? 'La zona está poco mapeada (' + pois.length + ' puntos en el radio): el flujo real puede ser mayor que el estimado. ' +
+        'Si conoces locales que no aparecen, vuelve a consultar con "Datos frescos" o agrégalos al mapa.'
+      : '';
 
     // Vehicular: la exposición vial ya mide la jerarquía de la malla; se le
     // suma que haya dónde parar, porque un corredor rápido SIN parqueo no
@@ -580,7 +685,11 @@
     flujo.franjaFuerte = flujo.franjas.manana >= flujo.franjas.mediodia && flujo.franjas.manana >= flujo.franjas.tarde
       ? 'la mañana' : (flujo.franjas.tarde >= flujo.franjas.mediodia ? 'la tarde' : 'el mediodía');
     // Qué predomina: caminar o conducir. Es la pregunta que decide el formato.
-    flujo.dominante = flujo.peatonal >= flujo.vehicular + 12 ? 'peatonal'
+    // Cuando los dos están por el piso no hay empate que resolver: no pasa
+    // nadie, ni a pie ni en carro, y decir "equilibrado" ahí haría creer que
+    // basta con atender bien los dos accesos.
+    flujo.dominante = (flujo.peatonal < 25 && flujo.vehicular < 25) ? 'ninguno'
+      : flujo.peatonal >= flujo.vehicular + 12 ? 'peatonal'
       : flujo.vehicular >= flujo.peatonal + 12 ? 'vehicular' : 'equilibrado';
     movilidad.flujo = flujo;
 
