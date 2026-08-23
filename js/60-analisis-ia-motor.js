@@ -795,6 +795,52 @@
     return a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1];
   }
 
+  // ── Proyección de población ─────────────────────────────────────────────
+  //
+  // El censo es de 2018 y ya tiene ocho años. Leerlo como si fuera hoy
+  // subestima la demanda de cualquier proyecto, y en un informe para un
+  // cliente eso se traduce en dimensionar de menos. El DANE publica la serie
+  // de proyecciones municipales; aquí se usa la TASA que sale de esa serie
+  // para traer el conteo censal del sector hasta el año en curso.
+  //
+  // Dos reglas que no se pueden romper:
+  //  1. La tasa se calcula entre dos años de la MISMA serie de proyección.
+  //     Entre el conteo crudo de 2018 y una proyección hay, además de
+  //     crecimiento, la corrección de omisión censal: mezclarlas inflaría el
+  //     crecimiento con algo que no es crecimiento.
+  //  2. El dato censal nunca se borra. La proyección se muestra al lado, no
+  //     encima: son un dato observado y una estimación, y no valen igual.
+  function tasaAnualDe(anclas){
+    if (!anclas || anclas.length < 2) return null;
+    const orden = anclas.slice().sort((x, y) => x.anio - y.anio);
+    const a0 = orden[0], a1 = orden[orden.length - 1];
+    const anios = a1.anio - a0.anio;
+    if (anios <= 0 || !a0.poblacion || !a1.poblacion) return null;
+    return Math.pow(a1.poblacion / a0.poblacion, 1 / anios) - 1;
+  }
+
+  // Crecimiento compuesto, que es como se comporta una población: aplicar la
+  // tasa una vez por año, no multiplicarla por el número de años.
+  function proyectarPoblacion(base, anioBase, anioObjetivo, tasaAnual){
+    if (!base || tasaAnual == null) return null;
+    const anios = anioObjetivo - anioBase;
+    return Math.round(base * Math.pow(1 + tasaAnual, anios));
+  }
+
+  // La curva año a año, para poder dibujarla. Se marca cuál es el dato
+  // observado y cuáles son estimación: en una gráfica esa diferencia se
+  // pierde si no se dice.
+  function serieProyeccion(base, anioBase, anioObjetivo, tasaAnual, aniosExtra){
+    if (!base || tasaAnual == null) return [];
+    const fin = anioObjetivo + (aniosExtra || 0);
+    const out = [];
+    for (let a = anioBase; a <= fin; a++) {
+      out.push({ anio: a, poblacion: proyectarPoblacion(base, anioBase, a, tasaAnual),
+                 observado: a === anioBase, futuro: a > anioObjetivo });
+    }
+    return out;
+  }
+
   // ── Estadísticas del entorno ────────────────────────────────────────────
   // elementos: array crudo de Overpass (con .tags y lat/lng o .center).
   // `dane` (opcional) trae población, viviendas y estrato reales del censo.
@@ -1481,7 +1527,16 @@
     // residenciales de densidad edificatoria muy distinta den la misma cifra.
     const poblacionHeuristica = Math.round(areaKm2 * 7000 * clamp(0.4, 1.4, 0.4 + shareResidencial));
     const hayDane = !!(dane && dane.poblacion != null);
-    const poblacionEstimada = hayDane ? dane.poblacion : poblacionHeuristica;
+    const censoAnio = (dane && dane.censo) || 2018;
+    // Si llega la tasa del DANE, el análisis trabaja con la población de HOY
+    // y no con la de hace ocho años: es lo que decide si un formato cabe. El
+    // conteo censal se conserva aparte para poder mostrar los dos.
+    const tasaAnual = (dane && dane.tasaAnual != null) ? dane.tasaAnual : null;
+    const anioHoy = (dane && dane.anioProyeccion) || new Date().getFullYear();
+    const poblacionProyectada = hayDane
+      ? proyectarPoblacion(dane.poblacion, censoAnio, anioHoy, tasaAnual) : null;
+    const poblacionEstimada = hayDane
+      ? (poblacionProyectada || dane.poblacion) : poblacionHeuristica;
 
     // ── Desglose por rubro ────────────────────────────────────────────────
     // El mismo entorno contado por lo que es cada cosa, no solo por su grupo.
@@ -1505,9 +1560,24 @@
       manuales,
       densidadPorHa: Math.round(10 * pois.length / Math.max(areaHa, 0.1)) / 10,
       poblacionEstimada, poblacionHeuristica, usoPredominante,
+      // Población: lo contado en 2018 y lo proyectado a hoy, siempre por
+      // separado. `poblacionEstimada` es la que usan los cálculos.
+      poblacionCenso: hayDane ? dane.poblacion : null,
+      poblacionProyectada,
+      censoAnio, anioProyeccion: anioHoy, tasaAnualDane: tasaAnual,
+      crecimientoPct: (hayDane && poblacionProyectada)
+        ? Math.round(1000 * (poblacionProyectada / dane.poblacion - 1)) / 10 : null,
+      fuenteProyeccion: (dane && dane.fuenteProyeccion) || '',
+      advertenciaProyeccion: (dane && dane.advertenciaProyeccion) || '',
+      serieProyeccion: hayDane
+        ? serieProyeccion(dane.poblacion, censoAnio, anioHoy, tasaAnual, 4) : [],
       // Trazabilidad de la cifra: el informe debe poder decir si el número es
       // un dato censal o una estimación. Ante un cliente no pesan igual.
-      poblacionFuente: hayDane ? dane.etiquetaFuente : 'Estimación heurística URBIS',
+      poblacionFuente: hayDane
+        ? (poblacionProyectada
+            ? dane.etiquetaFuente + ' · proyectado a ' + anioHoy
+            : dane.etiquetaFuente)
+        : 'Estimación heurística URBIS',
       poblacionEsCensal: hayDane,
       viviendasCenso: hayDane ? dane.viviendas : null,
       // Personas por vivienda: señal REAL de densidad edificatoria, lo que a la
@@ -2796,6 +2866,7 @@
     // MARCAS se expone para poder auditar la matriz completa desde fuera
     // (etiquetas + marcas), que es lo que alimenta assets/data/matriz-usos-osm.csv.
     TAXONOMIA, MARCAS, NOMBRE_USO, PROYECTOS, GRUPOS, GRUPO_COLOR,
+    tasaAnualDe, proyectarPoblacion, serieProyeccion,
     // Modo mixto (aditivo, no afecta lo anterior)
     USOS_PROGRAMA, normalizarUsos, scoreUso, calcularCompatibilidad,
     generarCompatibilidad, generarRecomendaciones, analizarMixto, recomendarUnidadesGenericas,

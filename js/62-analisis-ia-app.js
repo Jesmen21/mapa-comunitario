@@ -654,8 +654,13 @@
         .filter((r, i, a) => a.indexOf(r) === i);
       const danePorRadio = {};
       try {
+        // El municipio decide qué tasa de crecimiento del DANE se aplica para
+        // traer el censo de 2018 hasta hoy. Va después de `ubicacionDe`, que
+        // ya se resolvió arriba; si falló, la proyección simplemente no se
+        // aplica y el análisis trabaja con el censo tal cual.
+        const municipio = (S.ubicacion && S.ubicacion.ciudad) || '';
         const res = await Promise.all(radiosDane.map(r =>
-          window.AIA_DATOS.consultarDANE(S.lote.lat, S.lote.lng, r).catch(() => null)));
+          window.AIA_DATOS.consultarDANE(S.lote.lat, S.lote.lng, r, municipio).catch(() => null)));
         radiosDane.forEach((r, i) => { if (res[i]) danePorRadio[r] = res[i]; });
       } catch(e) { /* sin censo: sigue con la heurística */ }
       S.dane = danePorRadio[S.radioM] || null;
@@ -806,7 +811,9 @@
 
     $('aia-kpis').innerHTML =
       kpi(s.poblacionEstimada.toLocaleString('es-CO'),
-          s.poblacionEsCensal ? 'Habitantes (DANE 2018)' : 'Población estimada') +
+          s.poblacionProyectada
+            ? 'Habitantes (' + s.anioProyeccion + ', proyectado)'
+            : (s.poblacionEsCensal ? 'Habitantes (DANE ' + s.censoAnio + ')' : 'Población estimada')) +
       (s.estrato ? kpi('E' + s.estrato.predominante,
           s.estrato.minimo === s.estrato.maximo ? 'Estrato' : 'Estrato (' + s.estrato.minimo + '–' + s.estrato.maximo + ')',
           '#FABD0A') : '') +
@@ -1175,6 +1182,66 @@
         '</div>'
       : '';
 
+    // ── Crecimiento de la población ───────────────────────────────────────
+    // El censo tiene ocho años y leerlo como si fuera hoy subestima la
+    // demanda. Se dibujan las dos cifras juntas —lo contado y lo proyectado—
+    // porque no valen igual: una se observó y la otra se estima.
+    const st = r.stats || {};
+    const bloqueCrecimiento = (st.poblacionProyectada && (st.serieProyeccion || []).length)
+      ? (function(){
+          const s = st;
+          const serie = s.serieProyeccion;
+          const min = Math.min.apply(null, serie.map(x => x.poblacion));
+          const max = Math.max.apply(null, serie.map(x => x.poblacion));
+          const rango = Math.max(1, max - min);
+          const W = 100, H = 34;   // en unidades del viewBox, se estira solo
+          const px = i2 => (i2 / (serie.length - 1)) * W;
+          const py = v => H - ((v - min) / rango) * (H - 4) - 2;
+          const linea = serie.map((x, i2) => (i2 ? 'L' : 'M') + px(i2).toFixed(2) + ' ' + py(x.poblacion).toFixed(2)).join(' ');
+          // Lo que va después del año en curso se dibuja punteado: es
+          // proyección hacia adelante y no debe leerse igual que el tramo
+          // que llega hasta hoy.
+          const iHoy = serie.findIndex(x => x.futuro);
+          const corte = iHoy > 0 ? iHoy - 1 : serie.length - 1;
+          const solido = serie.slice(0, corte + 1)
+            .map((x, i2) => (i2 ? 'L' : 'M') + px(i2).toFixed(2) + ' ' + py(x.poblacion).toFixed(2)).join(' ');
+          const area = solido + ' L' + px(corte).toFixed(2) + ' ' + H + ' L0 ' + H + ' Z';
+          const hoy = serie[corte];
+          return '<div class="aia-crece">' +
+            '<div class="aia-demo-cab"><b>📈 Cómo ha crecido la población</b>' +
+              '<span class="aia-demo-fuente">DANE · proyecciones ' + s.censoAnio + '–' +
+                serie[serie.length - 1].anio + '</span></div>' +
+            '<div class="aia-crece-cifras">' +
+              '<div><small>Censo ' + s.censoAnio + '</small><b>' +
+                s.poblacionCenso.toLocaleString('es-CO') + '</b><em>contado</em></div>' +
+              '<div class="flecha">→</div>' +
+              '<div class="hoy"><small>' + s.anioProyeccion + '</small><b>' +
+                s.poblacionProyectada.toLocaleString('es-CO') + '</b><em>proyectado</em></div>' +
+              '<div class="delta">+' + s.crecimientoPct + '%</div>' +
+            '</div>' +
+            '<svg class="aia-crece-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+              '<path d="' + area + '" fill="rgba(34,211,238,.16)"/>' +
+              '<path d="' + solido + '" fill="none" stroke="#22d3ee" stroke-width="1.1" ' +
+                'vector-effect="non-scaling-stroke"/>' +
+              '<path d="' + linea + '" fill="none" stroke="#22d3ee" stroke-width="1.1" ' +
+                'stroke-dasharray="3 2" opacity=".55" vector-effect="non-scaling-stroke"/>' +
+              '<circle cx="0" cy="' + py(serie[0].poblacion).toFixed(2) + '" r="1.6" fill="#22d3ee"/>' +
+              '<circle cx="' + px(corte).toFixed(2) + '" cy="' + py(hoy.poblacion).toFixed(2) +
+                '" r="1.6" fill="#fff" stroke="#22d3ee" stroke-width=".8"/>' +
+            '</svg>' +
+            '<div class="aia-crece-eje"><span>' + serie[0].anio + '</span>' +
+              '<span>' + hoy.anio + '</span>' +
+              '<span>' + serie[serie.length - 1].anio + '</span></div>' +
+            '<p class="aia-demo-txt">Crece ' + (s.tasaAnualDane * 100).toFixed(2) +
+              '% al año. El tramo punteado es proyección hacia adelante. ' +
+              escHTML(s.advertenciaProyeccion || '') + '</p>' +
+          '</div>';
+        })()
+      : (st.poblacionEsCensal
+          ? '<p class="aia-demo-txt">Sin proyección de población para este municipio: ' +
+            'el análisis trabaja con el conteo del censo de ' + st.censoAnio + ' tal cual.</p>'
+          : '');
+
     // Estructura demográfica del censo. Se titula "sexo y edad" a propósito:
     // el CNPV 2018 registra sexo, no identidad de género, y el informe no debe
     // atribuirle al DANE una medición que no hizo.
@@ -1207,7 +1274,7 @@
         '</div>'
       : '';
 
-    cont.innerHTML = bloqueEstrato + bloqueDemo +
+    cont.innerHTML = bloqueEstrato + bloqueCrecimiento + bloqueDemo +
       // Pedido explícito: "oportunidad urbana" se leía sin saber qué medía.
       // El subtítulo aclara que es una nota del LUGAR (sirva lo que sirva
       // construirse ahí), distinta de Viabilidad, que es la del PROYECTO

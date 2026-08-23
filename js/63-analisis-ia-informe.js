@@ -879,13 +879,66 @@
       '</div></div>';
   }
 
+  // ── Crecimiento de la población ─────────────────────────────────────────
+  // El censo es de 2018 y el informe lo presentaba como si fuera de hoy. Aquí
+  // se muestran las dos cifras juntas —lo contado y lo proyectado— y la curva
+  // entre ambas. Se dibuja en SVG y no como imagen: el PDF lo imprime nítido
+  // a cualquier tamaño y no depende de que un lienzo se haya renderizado.
+  function bloquePoblacion(r){
+    const s = r.stats;
+    if (!s.poblacionProyectada || !(s.serieProyeccion || []).length) return '';
+    const serie = s.serieProyeccion;
+    const min = Math.min.apply(null, serie.map(x => x.poblacion));
+    const max = Math.max.apply(null, serie.map(x => x.poblacion));
+    const rango = Math.max(1, max - min);
+    const W = 100, H = 30;
+    const px = i => (i / (serie.length - 1)) * W;
+    const py = v => H - ((v - min) / rango) * (H - 4) - 2;
+    const iFut = serie.findIndex(x => x.futuro);
+    const corte = iFut > 0 ? iFut - 1 : serie.length - 1;
+    const hasta = serie.slice(0, corte + 1)
+      .map((x, i) => (i ? 'L' : 'M') + px(i).toFixed(2) + ' ' + py(x.poblacion).toFixed(2)).join(' ');
+    const todo = serie
+      .map((x, i) => (i ? 'L' : 'M') + px(i).toFixed(2) + ' ' + py(x.poblacion).toFixed(2)).join(' ');
+    const area = hasta + ' L' + px(corte).toFixed(2) + ' ' + H + ' L0 ' + H + ' Z';
+    const hoy = serie[corte];
+    return '<div class="tarjeta pobl">' +
+      '<h2>Cómo ha crecido la población</h2>' +
+      '<div class="pobl-cifras">' +
+        '<div><small>Censo ' + s.censoAnio + '</small><b>' +
+          s.poblacionCenso.toLocaleString('es-CO') + '</b><em>contado</em></div>' +
+        '<div class="fl">&rarr;</div>' +
+        '<div><small>' + s.anioProyeccion + '</small><b style="color:' + T.acento + '">' +
+          s.poblacionProyectada.toLocaleString('es-CO') + '</b><em>proyectado</em></div>' +
+        '<div class="delta">+' + s.crecimientoPct + '%</div>' +
+      '</div>' +
+      '<svg class="pobl-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+        '<path d="' + area + '" fill="' + T.acento + '22"/>' +
+        '<path d="' + todo + '" fill="none" stroke="' + T.acento + '" stroke-width="1" ' +
+          'stroke-dasharray="3 2" opacity=".5" vector-effect="non-scaling-stroke"/>' +
+        '<path d="' + hasta + '" fill="none" stroke="' + T.acento + '" stroke-width="1.2" ' +
+          'vector-effect="non-scaling-stroke"/>' +
+      '</svg>' +
+      '<div class="pobl-eje"><span>' + serie[0].anio + '</span><span>' + hoy.anio +
+        '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
+      '<p class="pie-nota">Crece ' + (s.tasaAnualDane * 100).toFixed(2) +
+        '% al año según la serie de proyecciones municipales del DANE; el tramo punteado va ' +
+        'hacia adelante. ' + esc(s.advertenciaProyeccion || '') + '</p>' +
+      '</div>';
+  }
+
   // ── 2. Los seis datos que explican el sitio ─────────────────────────────
   function seisDatos(r){
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const cajas = [
       { n: s.poblacionEstimada.toLocaleString('es-CO'), t: 'Habitantes',
-        s: s.poblacionEsCensal ? 'DANE 2018' : 'estimación URBIS', c: T.acento },
+        // Con proyección, la cifra es la de HOY y hay que decirlo: presentar
+        // un dato de 2018 como si fuera actual subestima la demanda.
+        s: s.poblacionProyectada
+             ? 'DANE ' + s.censoAnio + ' proyectado a ' + s.anioProyeccion
+             : (s.poblacionEsCensal ? 'DANE ' + s.censoAnio : 'estimación URBIS'),
+        c: T.acento },
       { n: (f.peatonal || 0) + ' / 100', t: 'Flujo peatonal',
         s: f.nivelPeatonal || '—', c: colFlujo(f.peatonal || 0) },
       { n: (f.vehicular || 0) + ' / 100', t: 'Flujo vehicular',
@@ -934,9 +987,12 @@
       ['Exposición vial', 'visibilidad y acceso que aporta la malla vial cercana.'],
       ['Oportunidad urbana', 'qué tan buen sitio es el lote, sin importar qué se construya.'],
       ['Estrato', 'capacidad de compra del sector; orienta producto y precio.'],
-      ['Población', r.stats.poblacionEsCensal
-        ? 'habitantes reales del área según DANE, no una estimación.'
-        : 'habitantes estimados en el área de influencia.'],
+      ['Población', r.stats.poblacionProyectada
+        ? 'lo que contó el DANE en ' + r.stats.censoAnio + ', traído a ' +
+          r.stats.anioProyeccion + ' con la tasa de crecimiento del municipio.'
+        : (r.stats.poblacionEsCensal
+            ? 'habitantes reales del área según DANE, no una estimación.'
+            : 'habitantes estimados en el área de influencia.')],
       ['Edad y sexo', 'quién vive alrededor; orienta la demanda.']
     ];
     if (!(i.estrato && i.estrato.disponible)) filas.splice(3, 1);
@@ -1203,7 +1259,9 @@
   function pie(n, r, autor){
     return '<footer><span>Página ' + n + ' de ' + N_HOJAS + ' · ' + (autor ? esc(autor) + ' · ' : '') +
       '<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span>' +
-      '<span>Fuentes: ' + (r.stats.poblacionEsCensal ? 'Censo DANE 2018 · ' : '') +
+      '<span>Fuentes: ' +
+      (r.stats.poblacionEsCensal ? 'Censo DANE ' + r.stats.censoAnio + ' · ' : '') +
+      (r.stats.poblacionProyectada ? 'Proyecciones de población DANE · ' : '') +
       'OpenStreetMap · evaluación heurística URBIS</span></footer>';
   }
 
@@ -1516,6 +1574,20 @@
 '.calor-foco-txt{margin:4px 0 0;font-size:7.4px;line-height:1.4;color:', T.txt2, '}',
 '.calor-pie{margin-top:6px}',
 '.voc-titulo{margin:0 0 3px;font-size:9.4px;font-weight:700;color:', T.acento, '}',
+/* ── Crecimiento de la población ─────────────────────────────────── */
+'.pobl{margin-top:6px}',
+'.pobl-cifras{display:flex;align-items:center;gap:8px;margin:5px 0 4px}',
+'.pobl-cifras>div{display:flex;flex-direction:column;line-height:1.15}',
+'.pobl-cifras small{font-size:6.8px;color:', T.txt3, '}',
+'.pobl-cifras b{font-size:13px;color:', T.tinta, '}',
+'.pobl-cifras em{font-size:6.4px;font-style:normal;color:', T.txt3, '}',
+'.pobl-cifras .fl{color:', T.txt3, ';font-size:11px}',
+'.pobl-cifras .delta{margin-left:auto;align-self:center;font-size:9px;font-weight:700;',
+  'color:#fff;background:', T.acento, ';padding:2px 7px;border-radius:999px}',
+// `preserveAspectRatio=none` estira el trazo a lo ancho de la tarjeta;
+// `vector-effect` evita que al estirarse la línea engorde con él.
+'.pobl-svg{display:block;width:100%;height:40px}',
+'.pobl-eje{display:flex;justify-content:space-between;font-size:6.4px;color:', T.txt3, ';margin-top:2px}',
 '.voc-titulo em{font-style:normal;font-weight:400;font-size:7.6px;color:', T.txt3, '}',
 '.voc-lectura{margin:0 0 6px;font-size:8px;line-height:1.45;color:', T.txt2, '}',
 '.calor-leyenda{display:inline-flex;align-items:center;gap:5px;font-size:7px;color:', T.txt3, ';margin-right:14px}',
@@ -1758,7 +1830,7 @@ cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y
 
 seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
 '<div class="fila dos">',
-  '<div>', bloqueComposicion(r), '</div>',
+  '<div>', bloqueComposicion(r), bloquePoblacion(r), '</div>',
   '<div>', bloqueIndicadoresFilas(r), '</div>',
 '</div>',
 

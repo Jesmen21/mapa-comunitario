@@ -366,7 +366,42 @@
   // Devuelve población, viviendas y estrato reales del radio.
   // Encadena manzana urbana → sector (incluye rural) → null (el motor cae
   // entonces a su estimación heurística de siempre).
-  async function consultarDANE(lat, lng, radioM){
+  // ── Proyecciones de población del DANE ──────────────────────────────────
+  // El censo es de 2018. La tabla del repo guarda las anclas de la serie
+  // municipal del DANE y de ahí sale la tasa con la que el motor trae ese
+  // conteo hasta hoy. Se lee una sola vez por sesión: es un archivo estático
+  // y volver a pedirlo en cada análisis no aporta nada.
+  let proyeccionesCache;
+  async function leerProyecciones(){
+    if (proyeccionesCache !== undefined) return proyeccionesCache;
+    try {
+      const r = await fetch('assets/data/dane-proyecciones.json', { cache: 'no-cache' });
+      proyeccionesCache = r.ok ? await r.json() : null;
+    } catch(e) { proyeccionesCache = null; }
+    return proyeccionesCache;
+  }
+  function claveMunicipio(nombre){
+    return String(nombre || '').trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  // Tasa anual de crecimiento para un municipio. Devuelve null si no está en
+  // la tabla: es preferible mostrar el censo tal cual y decir que no hay
+  // proyección para ese municipio, antes que aplicarle la tasa de otro.
+  async function proyeccionDe(nombreMunicipio){
+    const tabla = await leerProyecciones();
+    if (!tabla) return null;
+    const k = claveMunicipio(nombreMunicipio);
+    const id = (tabla.alias && tabla.alias[k]) || k;
+    const m = tabla.municipios && tabla.municipios[id];
+    if (!m) return null;
+    const tasa = window.AIA_MOTOR.tasaAnualDe(m.anclas);
+    if (tasa == null) return null;
+    return { tasaAnual: tasa, municipio: m.nombre,
+             fuente: tabla.fuente, url: tabla.url, advertencia: tabla.advertencia };
+  }
+
+  async function consultarDANE(lat, lng, radioM, municipio){
     let [urbana, viviendas, estrato, demo] = await Promise.all([
       sumaCapa(DANE_CAPAS.personasManzana, lat, lng, radioM, 'SEXO_TOTAL'),
       sumaCapa(DANE_CAPAS.viviendasManzana, lat, lng, radioM, 'TOTAL_VIVIENDAS').catch(() => null),
@@ -386,6 +421,10 @@
     }
     if (!poblacion) return null;
 
+    // No bloquea nada: sin tabla o sin municipio, el análisis usa el censo.
+    let proy = null;
+    try { proy = await proyeccionDe(municipio); } catch(e) { proy = null; }
+
     return {
       poblacion: poblacion.total,
       unidades: poblacion.unidades,
@@ -400,7 +439,15 @@
       // que no se entrega si la población terminó saliendo del sector.
       demografia: (fuente === 'manzana') ? demo : null,
       censo: 2018,
-      etiquetaFuente: 'Censo DANE 2018 · ' + (fuente === 'manzana' ? 'manzana censal' : 'sector censal')
+      etiquetaFuente: 'Censo DANE 2018 · ' + (fuente === 'manzana' ? 'manzana censal' : 'sector censal'),
+      // Con esto el motor puede traer el conteo de 2018 hasta el año en curso.
+      // Si el municipio no está en la tabla, van en null y el análisis sigue
+      // trabajando con el censo tal cual, diciéndolo.
+      tasaAnual: proy ? proy.tasaAnual : null,
+      anioProyeccion: new Date().getFullYear(),
+      fuenteProyeccion: proy ? proy.fuente : '',
+      urlProyeccion: proy ? proy.url : '',
+      advertenciaProyeccion: proy ? proy.advertencia : ''
     };
   }
 
@@ -409,5 +456,5 @@
   }
 
   window.AIA_DATOS = { consultarEntorno, limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
-                       consultarDANE };
+                       consultarDANE, proyeccionDe };
 })();

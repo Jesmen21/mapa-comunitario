@@ -947,3 +947,32 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-aviso-manual{
   font-size:.72rem; color:var(--aia-texto2); line-height:1.45; margin:0 0 8px;
 }
+
+/* ── Crecimiento de la población ─────────────────────────────────────────
+   El censo tiene ocho años. Se muestran las dos cifras juntas —lo contado y
+   lo proyectado— porque no valen igual, y la curva deja ver el salto. */
+.aia-crece{
+  margin:10px 0; padding:11px 12px; border-radius:12px;
+  background:var(--aia-card); border:1px solid var(--aia-borde);
+}
+.aia-crece-cifras{
+  display:flex; align-items:center; gap:9px; margin:9px 0 6px; flex-wrap:wrap;
+}
+.aia-crece-cifras>div{ display:flex; flex-direction:column; }
+.aia-crece-cifras small{ font-size:.6rem; color:var(--aia-texto2); opacity:.8; }
+.aia-crece-cifras b{ font-size:1.02rem; color:var(--aia-texto); line-height:1.15; }
+.aia-crece-cifras em{ font-size:.58rem; font-style:normal; color:var(--aia-texto2); opacity:.75; }
+.aia-crece-cifras .hoy b{ color:var(--aia-acento); }
+.aia-crece-cifras .flecha{ color:var(--aia-texto2); opacity:.6; font-size:1rem; }
+.aia-crece-cifras .delta{
+  margin-left:auto; align-self:center; font-size:.76rem; font-weight:700;
+  color:#04202a; background:var(--aia-acento);
+  padding:3px 8px; border-radius:999px;
+}
+/* `preserveAspectRatio="none"` estira el trazo; `vector-effect` mantiene la
+   línea del mismo grosor pase lo que pase con el ancho. */
+.aia-crece-svg{ display:block; width:100%; height:64px; overflow:visible; }
+.aia-crece-eje{
+  display:flex; justify-content:space-between;
+  font-size:.58rem; color:var(--aia-texto2); opacity:.75; margin-top:3px;
+}

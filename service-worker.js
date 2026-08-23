@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v533-agregar-uso-a-mano';
+const URBIS_CACHE = 'urbis-v534-poblacion-proyectada';
 const URBIS_ASSETS = [
   './',
   './index.html',

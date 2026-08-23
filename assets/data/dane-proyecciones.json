@@ -1,0 +1,24 @@
+{
+  "_comentario": "Proyecciones de población del DANE para llevar el censo de 2018 al año en curso. El censo tiene ya ocho años: usarlo como si fuera hoy subestima la demanda de cualquier proyecto. El DANE publica la serie municipal completa en un archivo aparte (ver `url`); aquí se guardan los ANCLAS verificadas de esa serie y URBIS interpola entre ellas y extrapola hacia adelante con la tasa que resulta. Cuando se pueda descargar el archivo completo, este archivo se reemplaza por la serie año a año y nada más cambia: el motor solo pide una tasa y un año base.",
+  "fuente": "DANE · Proyecciones de población municipal 2020-2035 (base CNPV 2018, actualización post-COVID-19)",
+  "url": "https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/DCD-area-proypoblacion-Mun-2020-2035-ActPostCOVID-19.xlsx",
+  "actualizado": "2026-08-23",
+  "notaMetodo": "La tasa se calcula ENTRE DOS AÑOS DE LA MISMA SERIE de proyección, nunca entre el conteo censal crudo y una proyección. Son dos cosas distintas: el conteo por manzana de 2018 es el dato observado, y la serie de proyección parte de una población ajustada por cobertura que es mayor. Mezclarlas haría pasar por crecimiento lo que en realidad es la corrección de omisión censal.",
+  "advertencia": "La tasa es MUNICIPAL. Aplicarla a una manzana supone que ese sector creció como el promedio del municipio, y casi nunca es así: un barrio con proyectos nuevos crece mucho más rápido, y un centro consolidado puede estar perdiendo población. Sirve para no leer 2018 como si fuera hoy, no para reemplazar un estudio de campo.",
+  "municipios": {
+    "san jose de cucuta": {
+      "nombre": "San José de Cúcuta",
+      "divipola": "54001",
+      "censoCrudo2018": 711715,
+      "anclas": [
+        { "anio": 2020, "poblacion": 777106 },
+        { "anio": 2024, "poblacion": 790984 }
+      ]
+    }
+  },
+  "alias": {
+    "cucuta": "san jose de cucuta",
+    "san jose de cucuta": "san jose de cucuta",
+    "municipio de san jose de cucuta": "san jose de cucuta"
+  }
+}
