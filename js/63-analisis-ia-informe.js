@@ -927,6 +927,55 @@
       '</div>';
   }
 
+  // ── El radio de importancia y quién compite ─────────────────────────────
+  // Un radio de 1 km no es una bolsa donde todo pesa igual, y "3 competidores"
+  // obliga a salir a buscarlos. Las dos cosas van juntas porque responden la
+  // misma pregunta del cliente: ¿con qué me estoy midiendo, y a qué distancia?
+  function bloqueAnillosComp(r){
+    const s = r.stats, v = r.viabilidad;
+    const an = s.anillos || [];
+    if (!an.length && !(v && v.nCompetidores != null)) return '';
+    const max = Math.max.apply(null, an.map(x => x.peso).concat([1]));
+    const filas = an.map(x =>
+      '<div class="anillo"><span>' + x.etiqueta + '</span>' +
+      '<div class="comp-barra"><i style="width:' + Math.round(100 * x.peso / max) +
+        '%;background:' + T.acento + '"></i></div>' +
+      '<b>' + x.peso + '%</b></div>' +
+      '<p class="anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio' +
+      (x.ejemplos.length ? ' — ' + esc(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) : '') +
+      '</p>').join('');
+    const nuc = (s.nucleos || [])[0];
+    const lista = (v && v.competidores) || [];
+    const anon = (v && v.competidoresSinNombre) || 0;
+    return '<div class="fila dos">' +
+      '<div class="tarjeta"><h2>Radio de importancia</h2>' +
+        '<p class="pie-nota">Cuánto de la influencia sobre el lote viene de cada distancia. ' +
+        'Lo de cerca pesa más: no es lo mismo un supermercado a 100 m que a 900 m.</p>' +
+        filas +
+        (nuc ? '<p class="nucleo">La concentración comercial que más interviene: <b>' + nuc.n +
+               ' locales a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+               esc(nuc.rubroDominante.toLowerCase()) + '.' +
+               (nuc.nombres.length ? ' Por ejemplo: ' + esc(nuc.nombres.join(', ')) + '.' : '') + '</p>'
+             : '') +
+      '</div>' +
+      '<div class="tarjeta"><h2>Competencia directa' +
+        (v && v.nCompetidores != null ? ' (' + v.nCompetidores + ')' : '') + '</h2>' +
+        (v && v.nCompetidores === 0
+          ? '<p class="pie-nota">No se identificó competencia directa en el radio. El mapa abierto ' +
+            'no lo ve todo: conviene confirmarlo en campo antes de darlo por bueno.</p>'
+          : (lista.length
+              ? '<table class="tbl-gente"><tr><th>Establecimiento</th><th class="n">Dist.</th></tr>' +
+                lista.map(c => '<tr><td>' + esc(c.nombre) + '<em>' + esc(c.rubro) + '</em></td>' +
+                  '<td class="n">' + c.distM + ' m</td></tr>').join('') + '</table>'
+              : '') +
+            (anon ? '<p class="pie-nota">' + anon +
+                    (anon === 1 ? ' competidor más figura en el mapa sin nombre'
+                                : ' competidores más figuran en el mapa sin nombre') +
+                    ': cuentan igual en el puntaje, pero no se pueden citar.</p>' : '')) +
+      '</div>' +
+      '</div>';
+  }
+
   // ── 2. Los seis datos que explican el sitio ─────────────────────────────
   function seisDatos(r){
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
@@ -1573,6 +1622,12 @@
   'border-radius:50%;background:transparent;box-shadow:0 0 0 1.4px rgba(0,0,0,.55)}',
 '.calor-foco-txt{margin:4px 0 0;font-size:7.4px;line-height:1.4;color:', T.txt2, '}',
 '.calor-pie{margin-top:6px}',
+'.anillo{display:flex;align-items:center;gap:6px;font-size:8px;margin-top:4px}',
+'.anillo>span{flex:0 0 58px;color:', T.txt2, '}',
+'.anillo>b{flex:0 0 26px;text-align:right;color:', T.acento, '}',
+'.anillo-ej{margin:1px 0 0 64px;font-size:6.8px;line-height:1.35;color:', T.txt3, '}',
+'.nucleo{margin:6px 0 0;padding:5px 7px;border-radius:5px;font-size:7.6px;line-height:1.45;',
+  'background:', T.acento, '14;border:1px solid ', T.acento, '40}',
 '.voc-titulo{margin:0 0 3px;font-size:9.4px;font-weight:700;color:', T.acento, '}',
 /* ── Crecimiento de la población ─────────────────────────────────── */
 '.pobl{margin-top:6px}',
@@ -1801,6 +1856,7 @@ seccion(5, 'Cómo se mueve el entorno', 'del tránsito a la oportunidad'),
 seccion(6, 'Qué trae gente a pie y qué se lo lleva', 'lo que suma y lo que resta en el andén'),
 bloqueTraeGente(r),
 franjaTransito(r),
+bloqueAnillosComp(r),
 
 pie(2, r, autor),
 '</div></div>',

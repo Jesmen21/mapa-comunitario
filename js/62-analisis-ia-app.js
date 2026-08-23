@@ -227,16 +227,89 @@
     refrescarBotonAnalizar();
   }
 
+  // ── El radio de importancia ─────────────────────────────────────────────
+  //
+  // Un círculo de 1 km sugiere que todo lo de adentro pesa igual, y no es
+  // así: la panadería de la esquina interviene en el lote mucho más que un
+  // supermercado a 900 m. En vez de un aro, se dibujan anillos que se van
+  // desvaneciendo hacia afuera — la misma curva de decaimiento que usa el
+  // análisis. Así, desde que se pone el punto, se ve de qué está hablando el
+  // número antes de leer una sola cifra.
+  const ANILLOS_CORTE = [200, 400, 700];
   function actualizarCirculo(){
     if (!S.lote) return;
+    const centro = [S.lote.lat, S.lote.lng];
+    if (!S.capaAnillos) S.capaAnillos = L.layerGroup().addTo(S.map);
+    S.capaAnillos.clearLayers();
+    // De fuera hacia adentro, para que el más cercano quede encima.
+    ANILLOS_CORTE.concat([S.radioM]).filter(r => r <= S.radioM)
+      .slice().reverse().forEach(function (r, i) {
+        L.circle(centro, {
+          radius: r, color: '#22d3ee', weight: 1, opacity: .35,
+          // Cada anillo hacia adentro pinta un poco más: el acumulado hace
+          // que el centro se vea claramente más "cargado" que el borde.
+          fillColor: '#22d3ee', fillOpacity: .05 + i * .045, interactive: false
+        }).addTo(S.capaAnillos);
+      });
     if (!S.circuloRadio) {
-      S.circuloRadio = L.circle([S.lote.lat, S.lote.lng], {
-        radius: S.radioM, color: '#22d3ee', weight: 2, fillColor: '#22d3ee', fillOpacity: .08
+      S.circuloRadio = L.circle(centro, {
+        radius: S.radioM, color: '#22d3ee', weight: 2, fill: false
       }).addTo(S.map);
     } else {
-      S.circuloRadio.setLatLng([S.lote.lat, S.lote.lng]);
+      S.circuloRadio.setLatLng(centro);
       S.circuloRadio.setRadius(S.radioM);
     }
+  }
+
+  // ── Capa de estratificación ─────────────────────────────────────────────
+  // El análisis decía "estrato predominante 3", que es un promedio y esconde
+  // justo lo que importa: por dónde pasa el borde entre el 2 y el 4.
+  async function alternarEstratos(){
+    const btn = $('aia-btn-estratos');
+    if (S.capaEstratos) {
+      S.map.removeLayer(S.capaEstratos);
+      S.capaEstratos = null;
+      if (btn) btn.classList.remove('activo');
+      const ley = $('aia-estrato-leyenda'); if (ley) ley.hidden = true;
+      return;
+    }
+    if (!S.lote) return;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    try {
+      const d = await window.AIA_DATOS.manzanasEstrato(S.lote.lat, S.lote.lng, S.radioM);
+      if (!d) { alert('El DANE no devolvió manzanas con estrato para este radio.'); return; }
+      S.capaEstratos = L.layerGroup();
+      d.manzanas.forEach(m => {
+        L.polygon(m.anillos, { color: m.color, weight: .8, opacity: .9,
+                               fillColor: m.color, fillOpacity: .45 })
+          .bindPopup('<b>' + escHTML(m.etiqueta) + '</b>')
+          .addTo(S.capaEstratos);
+      });
+      S.capaEstratos.addTo(S.map);
+      // Debajo de los puntos: la capa es de fondo, no puede taparlos.
+      try { S.capaEstratos.eachLayer(l => l.bringToBack && l.bringToBack()); } catch(e) {}
+      if (btn) btn.classList.add('activo');
+      pintarLeyendaEstratos(d);
+    } catch(e) {
+      alert('No se pudo cargar la estratificación: ' + (e && e.message || e));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🎨 Estratos'; }
+    }
+  }
+
+  function pintarLeyendaEstratos(d){
+    const ley = $('aia-estrato-leyenda');
+    if (!ley) return;
+    const presentes = [];
+    d.manzanas.forEach(m => { if (presentes.indexOf(m.estrato) === -1) presentes.push(m.estrato); });
+    // "Sin estrato" va al final: es la excepción del mapa (industrial,
+    // dotacional, lotes), no el escalón anterior al 1.
+    presentes.sort((a, b) => (a === 0) - (b === 0) || a - b);
+    ley.innerHTML = '<b>Estratificación DANE</b>' +
+      presentes.map(n => '<span><i style="background:' + (d.colores[n] || d.colores[0]) + '"></i>' +
+        (n ? n : 'S/E') + '</span>').join('') +
+      '<em>S/E = sin estrato (industrial, dotacional o lotes)</em>';
+    ley.hidden = false;
   }
 
   function pintarPOIs(pois){
@@ -464,6 +537,8 @@
 
     $('aia-btn-informe').addEventListener('click', abrirExportar);
     $('aia-btn-capas').addEventListener('click', alternarBase);
+    const btnEstr = $('aia-btn-estratos');
+    if (btnEstr) btnEstr.addEventListener('click', alternarEstratos);
     $('aia-btn-guardar').addEventListener('click', guardarAnalisisActual);
 
     // Tabs "Nuevo análisis" / "Mis análisis"
@@ -838,7 +913,8 @@
         (v.subscores ? '<div class="aia-subscores">' + Object.entries(v.subscores).map(([k, val]) =>
           '<div class="aia-subscore"><label>' + etiquetaSub(k) + '</label>' +
           '<div class="aia-barra"><i style="width:' + val + '%;background:' + color + '"></i></div><b>' + val + '</b></div>'
-        ).join('') + '</div>' : '');
+        ).join('') + '</div>' : '') +
+        bloqueCompetencia(v);
     } else if (r.ranking) {
       $('aia-viabilidad').hidden = true;
       $('aia-ranking').hidden = false;
@@ -975,6 +1051,64 @@
     } catch (e) { return ''; }
   }
 
+  // ── Quiénes son los competidores ────────────────────────────────────────
+  // "3 competidores" obliga a salir a buscarlos. Con nombre y distancia se
+  // puede ir a verlos el mismo día, que es lo que hace cualquiera antes de
+  // firmar un arriendo.
+  function bloqueCompetencia(v){
+    if (!v || v.nCompetidores == null) return '';
+    const lista = v.competidores || [];
+    const anon = v.competidoresSinNombre || 0;
+    if (!v.nCompetidores) {
+      return '<div class="aia-nucleo">✅ <b>Sin competencia directa</b> identificada en el radio. ' +
+        'Ojo: el mapa abierto no lo ve todo — si conoces un competidor que no aparece, ' +
+        'agrégalo con “Agregar uso” y vuelve a analizar.</div>';
+    }
+    return '<h4 class="aia-flujo-sub">Competencia directa (' + v.nCompetidores + ')</h4>' +
+      (lista.length
+        ? '<ul class="aia-comp">' + lista.map(c =>
+            '<li><span>' + escHTML(c.icono + ' ' + c.nombre) +
+            '<small>' + escHTML(c.rubro) + '</small></span>' +
+            '<b>' + c.distM + ' m</b></li>').join('') + '</ul>'
+        : '') +
+      (anon
+        ? '<p class="aia-flujo-nota">' + anon +
+          (anon === 1 ? ' competidor más está en el mapa sin nombre'
+                      : ' competidores más están en el mapa sin nombre') +
+          ': cuentan igual en el puntaje, solo que no se pueden citar.</p>'
+        : '');
+  }
+
+  // ── El radio de importancia, en cifras ──────────────────────────────────
+  // El mapa ya muestra los anillos; aquí se dice cuánto pesa cada uno y qué
+  // hay dentro. Un radio de 1 km no es una bolsa donde todo cuenta igual.
+  function bloqueAnillos(s){
+    const an = s.anillos || [];
+    if (!an.length) return '';
+    const max = Math.max.apply(null, an.map(x => x.peso)) || 1;
+    const filas = an.map(x =>
+      '<li><span>' + x.etiqueta + '</span>' +
+      '<i><b style="width:' + Math.round(100 * x.peso / max) + '%"></b></i>' +
+      '<b>' + x.peso + '%</b></li>' +
+      (x.ejemplos.length
+        ? '<p class="aia-anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio — ' +
+          escHTML(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) + '</p>'
+        : '<p class="aia-anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio</p>')
+    ).join('');
+    const nuc = (s.nucleos || [])[0];
+    return '<h4 class="aia-flujo-sub">Radio de importancia</h4>' +
+      '<p class="aia-flujo-nota">Cuánto de la influencia sobre el lote viene de cada distancia. ' +
+      'Lo de cerca pesa más: no es lo mismo un supermercado a 100 m que a 900 m.</p>' +
+      '<ul class="aia-anillos">' + filas + '</ul>' +
+      (nuc
+        ? '<div class="aia-nucleo">🏬 La concentración comercial que más interviene: ' +
+          '<b>' + nuc.n + ' locales a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+          escHTML(nuc.rubroDominante.toLowerCase()) + '.' +
+          (nuc.nombres.length ? ' Por ejemplo: ' + escHTML(nuc.nombres.join(', ')) + '.' : '') +
+          '</div>'
+        : '');
+  }
+
   function renderFlujo(r){
     const cont = $('aia-flujo');
     if (!cont) return;
@@ -1107,6 +1241,7 @@
                  ? t.estaciones + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio.'
                  : 'Sin estaciones de servicio en el radio.');
       })() +
+      bloqueAnillos(r.stats || {}) +
       '<h4 class="aia-flujo-sub">Qué trae gente a pie</h4>' + listaGen +
       listaResta + listaVeh +
       // Un flujo bajo por calle vacía y uno bajo por zona sin mapear se ven

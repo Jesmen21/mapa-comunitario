@@ -976,3 +976,56 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   display:flex; justify-content:space-between;
   font-size:.58rem; color:var(--aia-texto2); opacity:.75; margin-top:3px;
 }
+
+/* ── Estratificación sobre el mapa ───────────────────────────────────────
+   "Estrato predominante 3" es un promedio, y un promedio esconde por dónde
+   pasa el borde entre el 2 y el 4. La leyenda va SOBRE el mapa porque se lee
+   mirando los colores del plano, no leyendo el informe. */
+#aia-btn-estratos{
+  flex:none; padding:7px 10px; border-radius:10px; cursor:pointer;
+  font-size:.7rem; white-space:nowrap;
+  background:var(--aia-card); color:var(--aia-texto);
+  border:1px solid var(--aia-borde);
+}
+#aia-btn-estratos.activo{
+  background:var(--aia-acento); color:#04202a; border-color:var(--aia-acento); font-weight:700;
+}
+#aia-estrato-leyenda{
+  position:absolute; left:10px; top:64px; z-index:600;
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  max-width:calc(100% - 20px);
+  padding:7px 9px; border-radius:10px; font-size:.62rem;
+  background:rgba(11,18,32,.88); color:var(--aia-texto);
+  border:1px solid var(--aia-borde); backdrop-filter:blur(4px);
+}
+#aia-estrato-leyenda b{ flex:0 0 100%; font-size:.66rem; margin-bottom:2px; }
+#aia-estrato-leyenda span{ display:inline-flex; align-items:center; gap:4px; }
+#aia-estrato-leyenda i{ width:11px; height:11px; border-radius:3px; display:block; }
+#aia-estrato-leyenda em{ flex:0 0 100%; font-style:normal; opacity:.7; font-size:.56rem; margin-top:2px; }
+
+/* ── Anillos de influencia y competencia con nombre ──────────────────── */
+.aia-anillos{ list-style:none; margin:8px 0 0; padding:0; }
+.aia-anillos li{
+  display:flex; align-items:center; gap:8px; padding:5px 0; font-size:.72rem;
+  border-bottom:1px solid var(--aia-borde);
+}
+.aia-anillos li:last-child{ border-bottom:none; }
+.aia-anillos li>span{ flex:0 0 76px; color:var(--aia-texto2); }
+.aia-anillos li i{ flex:1; height:8px; border-radius:4px; background:rgba(255,255,255,.10); overflow:hidden; }
+.aia-anillos li i b{ display:block; height:100%; background:var(--aia-acento); }
+.aia-anillos li>b{ flex:0 0 34px; text-align:right; color:var(--aia-acento); }
+.aia-anillo-ej{ font-size:.63rem; color:var(--aia-texto2); opacity:.8; margin:0 0 6px 84px; line-height:1.35; }
+.aia-nucleo{
+  margin-top:8px; padding:8px 10px; border-radius:10px; font-size:.72rem; line-height:1.45;
+  background:rgba(34,211,238,.08); border:1px solid rgba(34,211,238,.30);
+}
+.aia-nucleo b{ color:var(--aia-acento); }
+.aia-comp{ list-style:none; margin:6px 0 0; padding:0; }
+.aia-comp li{
+  display:flex; align-items:center; gap:8px; padding:5px 0; font-size:.73rem;
+  border-bottom:1px solid var(--aia-borde);
+}
+.aia-comp li:last-child{ border-bottom:none; }
+.aia-comp li span{ flex:1; }
+.aia-comp li small{ display:block; font-size:.62rem; color:var(--aia-texto2); opacity:.8; }
+.aia-comp li b{ flex:none; color:#f87171; white-space:nowrap; }

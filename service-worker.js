@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v536-analisis-modo-educativo';
+const URBIS_CACHE = 'urbis-v537-radio-competencia-estratos';
 const URBIS_ASSETS = [
   './',
   './index.html',

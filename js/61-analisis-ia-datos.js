@@ -401,6 +401,50 @@
              fuente: tabla.fuente, url: tabla.url, advertencia: tabla.advertencia };
   }
 
+  // ── Manzanas con su estrato, para pintar el mapa ────────────────────────
+  //
+  // El análisis ya decía "estrato predominante 3". Eso es un promedio, y un
+  // promedio esconde justo lo que importa: por dónde pasa el borde entre el
+  // estrato 2 y el 4. Con los polígonos en el mapa esa frontera se ve, y para
+  // decidir producto y precio vale más que la cifra.
+  //
+  // Se piden en WGS84 (`outSR=4326`) para poder dibujarlos con Leaflet sin
+  // reproyectar, y generalizados (`maxAllowableOffset`) porque en un radio de
+  // 1 km son cientos de polígonos y el detalle fino no se distingue: sin eso,
+  // el móvil se arrastra al pintarlos.
+  const ESTRATO_COLOR = {
+    1: '#b91c1c', 2: '#ea580c', 3: '#eab308',
+    4: '#22c55e', 5: '#0ea5e9', 6: '#7c3aed', 0: '#6b7280'
+  };
+  async function manzanasEstrato(lat, lng, radioM){
+    const p = paramsRadio(lat, lng, radioM);
+    p.set('outFields', 'ESTRATO_PREDOMINANTE');
+    p.set('returnGeometry', 'true');
+    p.set('outSR', '4326');
+    // ~4 m por vértice: suficiente para leer la forma de una manzana.
+    p.set('maxAllowableOffset', String(0.00004));
+    const d = await consultaDANE(DANE_CAPAS.estratoManzana, p, 25000);
+    if (!d || !d.features || !d.features.length) return null;
+    const manzanas = [];
+    d.features.forEach(f => {
+      const anillos = f.geometry && f.geometry.rings;
+      if (!anillos || !anillos.length) return;
+      const etq = String((f.attributes || {}).ESTRATO_PREDOMINANTE || '').trim();
+      const num = ESTRATO_NUM[etq.toLowerCase()] || 0;
+      manzanas.push({
+        estrato: num,
+        // "Sin Estrato" no es un hueco de datos: es suelo industrial,
+        // dotacional o lotes. Se pinta en gris y se dice, porque en el mapa
+        // un vacío se lee como "no hay información".
+        etiqueta: num ? ('Estrato ' + num) : (etq || 'Sin estrato'),
+        color: ESTRATO_COLOR[num] || ESTRATO_COLOR[0],
+        // Leaflet toma [lat, lng]; ArcGIS entrega [x, y] = [lng, lat].
+        anillos: anillos.map(r => r.map(pt => [pt[1], pt[0]]))
+      });
+    });
+    return manzanas.length ? { manzanas: manzanas, colores: ESTRATO_COLOR } : null;
+  }
+
   async function consultarDANE(lat, lng, radioM, municipio){
     let [urbana, viviendas, estrato, demo] = await Promise.all([
       sumaCapa(DANE_CAPAS.personasManzana, lat, lng, radioM, 'SEXO_TOTAL'),
@@ -456,5 +500,5 @@
   }
 
   window.AIA_DATOS = { consultarEntorno, limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
-                       consultarDANE, proyeccionDe };
+                       consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

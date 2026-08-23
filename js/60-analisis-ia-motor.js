@@ -1556,9 +1556,90 @@
       })
       .sort((a, b) => b.n - a.n || a.nombre.localeCompare(b.nombre, 'es'));
 
+    // ── Anillos de influencia ─────────────────────────────────────────────
+    //
+    // Un radio de 1 km no es una bolsa donde todo pesa igual. La panadería de
+    // la esquina interviene en el lote mucho más que un supermercado a 900 m,
+    // y presentarlos en la misma lista los iguala. Aquí el radio se parte en
+    // anillos y cada uno lleva su PESO: cuánto de la influencia total del
+    // entorno viene de esa distancia.
+    //
+    // El peso usa la misma curva de decaimiento que el flujo peatonal —a
+    // `media` metros, la mitad— para que el mapa de anillos y la cifra de
+    // flujo cuenten la misma historia. La media son 250 m: la distancia a la
+    // que la gente deja de considerar algo "aquí al lado".
+    const MEDIA_INFLUENCIA = 250;
+    const CORTES = [0, 200, 400, 700, Math.max(701, radioM)];
+    const influenciaDe = d => 1 / (1 + Math.pow(d / MEDIA_INFLUENCIA, 2));
+    const anillos = [];
+    for (let i = 0; i < CORTES.length - 1 && CORTES[i] < radioM; i++) {
+      const desde = CORTES[i], hasta = Math.min(CORTES[i + 1], radioM);
+      const dentro = pois.filter(p => p.distM >= desde && p.distM < hasta);
+      const comercio = dentro.filter(p => SUBS_COMERCIO.indexOf(p.sub) !== -1);
+      anillos.push({
+        desde: desde, hasta: hasta,
+        etiqueta: desde === 0 ? 'hasta ' + hasta + ' m' : desde + '–' + hasta + ' m',
+        n: dentro.length, comercios: comercio.length,
+        influencia: dentro.reduce((a2, p) => a2 + influenciaDe(p.distM), 0),
+        // Los nombres propios más cercanos del anillo: es lo que permite
+        // decir "a 130 m está el Smart Fit" en vez de "hay 12 usos cerca".
+        // Deduplicado por nombre: tres locales que se llaman igual llenaban
+        // los tres cupos y el anillo parecía tener un solo negocio repetido.
+        ejemplos: dentro.slice().sort((a2, b2) => a2.distM - b2.distM)
+          .filter(p => nombrePropio(p.nombre))
+          .filter((p, k, arr) => arr.findIndex(q => q.nombre === p.nombre) === k)
+          .map(p => ({ nombre: p.nombre, sub: p.sub, distM: p.distM })).slice(0, 3)
+      });
+    }
+    const influenciaTotal = anillos.reduce((a2, x) => a2 + x.influencia, 0) || 1;
+    anillos.forEach(x => { x.peso = Math.round(100 * x.influencia / influenciaTotal); });
+
+    // ── Dónde está la concentración comercial que de verdad interviene ────
+    // No basta con contar comercios: importa si están JUNTOS y a qué
+    // distancia. Se agrupan por cercanía entre sí y se ordena por influencia,
+    // no por tamaño: doce locales a 800 m pesan menos que cinco a 150 m.
+    const RADIO_NUCLEO = 180;   // dos locales a menos de esto son la misma calle
+    const comercios = pois.filter(p => SUBS_COMERCIO.indexOf(p.sub) !== -1)
+      .slice().sort((a2, b2) => a2.distM - b2.distM);
+    const nucleos = [];
+    const usados = new Set();
+    comercios.forEach((semilla, i) => {
+      if (usados.has(i)) return;
+      // Crecimiento por cercanía a CUALQUIER miembro, no solo a la semilla:
+      // midiendo solo contra la semilla, una calle comercial larga salía
+      // partida en dos núcleos idénticos —misma distancia, mismo rubro— y el
+      // informe parecía estar contando dos veces el mismo corredor.
+      const grupo = [semilla]; usados.add(i);
+      let crecio = true;
+      while (crecio) {
+        crecio = false;
+        comercios.forEach((otro, j) => {
+          if (usados.has(j)) return;
+          if (grupo.some(m => haversineM(m, otro) <= RADIO_NUCLEO)) {
+            grupo.push(otro); usados.add(j); crecio = true;
+          }
+        });
+      }
+      if (grupo.length < 3) return;      // dos locales sueltos no son un núcleo
+      const distM = Math.round(grupo.reduce((a2, p) => a2 + p.distM, 0) / grupo.length);
+      const porRubro = {};
+      grupo.forEach(p => { porRubro[p.sub] = (porRubro[p.sub] || 0) + 1; });
+      const dominante = Object.keys(porRubro).sort((a2, b2) => porRubro[b2] - porRubro[a2])[0];
+      const cat = TAXONOMIA.find(t => t.sub === dominante);
+      nucleos.push({
+        n: grupo.length, distM: distM,
+        influencia: Math.round(grupo.reduce((a2, p) => a2 + influenciaDe(p.distM), 0) * 10) / 10,
+        rubroDominante: (cat && cat.nombre) || dominante,
+        nombres: grupo.filter(p => nombrePropio(p.nombre))
+          .sort((a2, b2) => a2.distM - b2.distM)
+          .map(p => p.nombre).filter((x, k, arr) => arr.indexOf(x) === k).slice(0, 4)
+      });
+    });
+    nucleos.sort((a2, b2) => b2.influencia - a2.influencia);
+
     return {
       total: pois.length, areaHa: Math.round(areaHa * 10) / 10,
-      porGrupo, porSub, rubros,
+      porGrupo, porSub, rubros, anillos, nucleos: nucleos.slice(0, 4),
       // Cuántos de esos puntos los puso el usuario, para poder declararlo.
       manuales,
       densidadPorHa: Math.round(10 * pois.length / Math.max(areaHa, 0.1)) / 10,
@@ -2176,7 +2257,27 @@
       pesos.complementarios * complementarios + pesos.movilidad * movilidad +
       pesos.entorno * entorno);
     const nivel = score >= 70 ? 'Alta' : (score >= 45 ? 'Media' : 'Baja');
-    return { score, nivel, subscores, nCompetidores: nComp, complementariosDistintos: compDistintos };
+    // ── Quiénes son los competidores ──────────────────────────────────────
+    // Decir "hay 3 competidores" obliga a salir a buscarlos. Con el nombre y
+    // la distancia se puede ir a verlos el mismo día, que es lo que hace
+    // cualquiera antes de firmar un arriendo. Los que están en el mapa sin
+    // nombre propio se cuentan aparte en vez de inventarles uno.
+    const listaComp = (stats.pois || [])
+      .filter(p => (proyecto.competidores || []).indexOf(p.sub) !== -1)
+      .sort((a, b) => a.distM - b.distM);
+    const conNombre = listaComp.filter(p => nombrePropio(p.nombre));
+    const competidores = conNombre.slice(0, 8).map(p => {
+      const cat = TAXONOMIA.find(t => t.sub === p.sub);
+      return { nombre: p.nombre, sub: p.sub, distM: p.distM,
+               rubro: (cat && cat.nombre) || p.sub, icono: (cat && cat.icono) || '' };
+    });
+    return { score, nivel, subscores, nCompetidores: nComp,
+             complementariosDistintos: compDistintos,
+             competidores: competidores,
+             // Cuántos hay en el mapa sin nombre: no son menos competencia,
+             // solo están peor mapeados, y ocultarlos daría una lista corta
+             // que parecería completa.
+             competidoresSinNombre: listaComp.length - conNombre.length };
   }
 
   const NOMBRE_SUBSCORE = {
@@ -2471,6 +2572,9 @@
     if (proyecto) {
       ev = scoreProyecto(proyecto, stats);
       viabilidad = { score: ev.score, nivel: ev.nivel, subscores: ev.subscores,
+                     nCompetidores: ev.nCompetidores,
+                     competidores: ev.competidores,
+                     competidoresSinNombre: ev.competidoresSinNombre,
                      argumentos: argumentosViabilidad(proyecto, ev, stats) };
     } else {
       ranking = PROYECTOS.map(p => {
