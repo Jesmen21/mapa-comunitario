@@ -40,13 +40,19 @@
   const TAXONOMIA = [
     // Salud
     { sub:'drogueria',       nombre:'Droguería',            grupo:'salud',        icono:'💊', m:{ amenity:/^pharmacy$/, shop:/^chemist$/, healthcare:/^pharmacy$/ } },
-    { sub:'laboratorio',     nombre:'Laboratorio',          grupo:'salud',        icono:'🧪', m:{ healthcare:/^(laboratory|blood_donation)$/ } },
-    { sub:'salud_ips',       nombre:'IPS / Clínica',        grupo:'salud',        icono:'🏥', m:{ amenity:/^(hospital|clinic|doctors|dentist)$/, healthcare:/^(hospital|clinic|doctor|dentist|centre|midwife|physiotherapist)$/, building:/^(hospital|clinic)$/ } },
-    { sub:'veterinaria',     nombre:'Veterinaria',          grupo:'salud',        icono:'🐾', m:{ amenity:/^veterinary$/, shop:/^pet$/ } },
-    { sub:'bomberos',        nombre:'Bomberos / Rescate',   grupo:'salud',        icono:'🚒', m:{ amenity:/^(fire_station|ambulance_station)$/ } },
+    { sub:'laboratorio',     nombre:'Laboratorio',          grupo:'salud',        icono:'🧪', m:{ healthcare:/^(laboratory|blood_donation|sample_collection)$/, amenity:/^blood_donation$/ } },
+    { sub:'salud_ips',       nombre:'IPS / Clínica',        grupo:'salud',        icono:'🏥', m:{ amenity:/^(hospital|clinic|doctors|dentist|health_post)$/, healthcare:/^(hospital|clinic|doctor|dentist|centre|midwife|physiotherapist)$/, building:/^(hospital|clinic)$/ } },
+    // Hogar geriátrico / casa de cuidado: no es una IPS (no atiende urgencias
+    // ni consulta externa) pero sí concentra población dependiente y visitas
+    // diarias. Separarlo cambia la lectura del entorno: demanda de droguería,
+    // de transporte especial y de comercio de proximidad, no de comercio de paso.
+    { sub:'hogar_cuidado',   nombre:'Hogar geriátrico / cuidado', grupo:'salud',  icono:'🧓', m:{ amenity:/^nursing_home$/, healthcare:/^rehabilitation$/ } },
+    { sub:'veterinaria',     nombre:'Veterinaria',          grupo:'salud',        icono:'🐾', m:{ amenity:/^(veterinary|veterinary_pharmacy|animal_shelter|animal_boarding)$/, shop:/^(pet|pet_grooming|veterinary)$/ } },
+    { sub:'bomberos',        nombre:'Bomberos / Rescate',   grupo:'salud',        icono:'🚒', m:{ amenity:/^(fire_station|ambulance_station)$/, building:/^fire_station$/ } },
     // Comodín de salud: terapias, especialidades y healthcare=yes (antes
     // caían en "sin definir": Therapy for Kids, Consultorio de la Piel...).
-    { sub:'salud_otro',      nombre:'Servicio de salud',    grupo:'salud',        icono:'🩺', m:{ healthcare:/.+/ } },
+    { sub:'optica',          nombre:'Óptica / Audiología',  grupo:'salud',        icono:'👓', m:{ shop:/^(optician|hearing_aids)$/, healthcare:/^(optometrist|audiologist)$/ } },
+    { sub:'salud_otro',      nombre:'Servicio de salud',    grupo:'salud',        icono:'🩺', m:{ healthcare:/.+/, amenity:/^first_aid$/, shop:/^(medical_supply|herbalist|nutrition_supplements)$/ } },
     // Comercio
     // Tiendas de descuento (D1, Ara, Justo & Bueno): en OSM suelen venir
     // etiquetadas como shop=supermarket igual que cualquier supermercado, así
@@ -56,44 +62,79 @@
     // constructor/inmobiliaria son una señal de mercado distinta a un
     // supermercado grande (Éxito, Metro, Merkarico).
     { sub:'tienda_descuento',nombre:'Tienda de descuento',  grupo:'comercio',     icono:'🏷️', m:{ brand:/^(d1|ara|justo\s*&?\s*y?\s*bueno)$/, name:/^(d1|ara|justo\s*&?\s*y?\s*bueno)(\s|$)/ } },
-    { sub:'supermercado',    nombre:'Supermercado',         grupo:'comercio',     icono:'🛒', m:{ shop:/^(supermarket|wholesale)$/ } },
+    { sub:'supermercado',    nombre:'Supermercado',         grupo:'comercio',     icono:'🛒', m:{ shop:/^(supermarket|wholesale)$/, building:/^supermarket$/ } },
     { sub:'centro_comercial',nombre:'Centro comercial',     grupo:'comercio',     icono:'🏬', m:{ shop:/^(mall|department_store)$/ } },
-    { sub:'tienda_barrio',   nombre:'Tienda de barrio',     grupo:'comercio',     icono:'🏪', m:{ shop:/^(convenience|kiosk|general|greengrocer|butcher|dairy)$/ } },
+    { sub:'tienda_barrio',   nombre:'Tienda de barrio',     grupo:'comercio',     icono:'🏪', m:{ shop:/^(convenience|kiosk|general|greengrocer|butcher|dairy|grocery|deli|seafood|cheese|chocolate|farm|spices|health_food|nuts|frozen_food|food)$/ } },
     { sub:'panaderia',       nombre:'Panadería',            grupo:'comercio',     icono:'🥖', m:{ shop:/^(bakery|pastry|confectionery)$/, building:/^bakehouse$/ } },
     { sub:'banco',           nombre:'Banco / Cajero',       grupo:'comercio',     icono:'🏦', m:{ amenity:/^(bank|atm|bureau_de_change|money_transfer)$/ } },
     // Muy común en Colombia: corresponsales bancarios y puntos de pago
     // (Efecty, SuperGiros) y cafés internet.
-    { sub:'pagos',           nombre:'Corresponsal / Pagos', grupo:'comercio',     icono:'💳', m:{ amenity:/^(payment_centre|payment_terminal)$/ } },
+    { sub:'pagos',           nombre:'Corresponsal / Pagos', grupo:'comercio',     icono:'💳', m:{ amenity:/^(payment_centre|payment_terminal|mobile_money_agent)$/, shop:/^(money_lender|pawnbroker|lottery|bookmaker)$/ } },
     { sub:'internet_cafe',   nombre:'Café internet',        grupo:'comercio',     icono:'🖥️', m:{ amenity:/^internet_cafe$/ } },
-    { sub:'hotel',           nombre:'Hotel / Hospedaje',    grupo:'comercio',     icono:'🏨', m:{ tourism:/^(hotel|hostel|guest_house|motel|apartment)$/, building:/^hotel$/ } },
+    { sub:'hotel',           nombre:'Hotel / Hospedaje',    grupo:'comercio',     icono:'🏨', m:{ tourism:/^(hotel|hostel|guest_house|motel|apartment|chalet|alpine_hut|wilderness_hut)$/, amenity:/^love_hotel$/, building:/^hotel$/ } },
     { sub:'camping',         nombre:'Camping / zona de acampada', grupo:'comercio', icono:'⛺', m:{ tourism:/^(camp_site|caravan_site)$/ } },
-    { sub:'salon_eventos',   nombre:'Salón de eventos',     grupo:'comercio',     icono:'🎪', m:{ amenity:/^events_venue$/ } },
-    { sub:'gasolinera',      nombre:'Estación de servicio', grupo:'comercio',     icono:'⛽', m:{ amenity:/^(fuel|charging_station)$/ } },
+    { sub:'salon_eventos',   nombre:'Salón de eventos',     grupo:'comercio',     icono:'🎪', m:{ amenity:/^(events_venue|exhibition_centre|conference_centre)$/ } },
+    { sub:'gasolinera',      nombre:'Estación de servicio', grupo:'comercio',     icono:'⛽', m:{ amenity:/^(fuel|charging_station)$/, shop:/^fuel$/ } },
     { sub:'restaurante',     nombre:'Restaurante',          grupo:'comercio',     icono:'🍽️', m:{ amenity:/^(restaurant|fast_food|food_court|ice_cream)$/ } },
-    { sub:'cafeteria',       nombre:'Cafetería',            grupo:'comercio',     icono:'☕', m:{ amenity:/^cafe$/, shop:/^(coffee|tea)$/ } },
+    { sub:'cafeteria',       nombre:'Cafetería',            grupo:'comercio',     icono:'☕', m:{ amenity:/^(cafe|juice_bar)$/, shop:/^(coffee|tea)$/ } },
+    // ── Comercio minorista por rubro ──────────────────────────────────────
+    // Antes TODO shop=* que no fuera mercado o panadería caía en el comodín
+    // "Comercio general": un centro comercial de 60 locales aparecía como 60
+    // puntos idénticos. Para decidir qué poner en un local, no es lo mismo
+    // tener al lado 12 almacenes de ropa que 12 ferreterías: el primero es un
+    // corredor de compra por antojo (paseo, permanencia, consumo de café), el
+    // segundo es de compra por encargo (llegar, comprar, irse). Cada rubro se
+    // separa solo cuando cambia esa lectura; los demás siguen en el comodín.
+    { sub:'ropa',            nombre:'Ropa y calzado',       grupo:'comercio',     icono:'👗', m:{ shop:/^(clothes|shoes|boutique|bag|fashion_accessories|leather|tailor|fabric|sewing|second_hand|baby_goods|jewelry|watches)$/ } },
+    { sub:'belleza',         nombre:'Peluquería / Belleza', grupo:'comercio',     icono:'💇', m:{ shop:/^(hairdresser|beauty|cosmetics|perfumery|massage|tattoo|nails)$/ } },
+    { sub:'lavanderia',      nombre:'Lavandería',           grupo:'comercio',     icono:'🧺', m:{ shop:/^(laundry|dry_cleaning)$/ } },
+    { sub:'ferreteria',      nombre:'Ferretería / Materiales', grupo:'comercio',  icono:'🔩', m:{ shop:/^(hardware|hardware_store|doityourself|trade|paint|tiles|flooring|glaziery|locksmith|electrical|plumbing|bathroom_furnishing|building_materials|fireplace|swimming_pool|window_blind|appliance|lighting)$/ } },
+    { sub:'muebles_hogar',   nombre:'Muebles y hogar',      grupo:'comercio',     icono:'🛋️', m:{ shop:/^(furniture|interior_decoration|kitchen|bed|curtain|carpet|houseware|pottery|frame)$/ } },
+    { sub:'tecnologia',      nombre:'Tecnología / Electrónica', grupo:'comercio', icono:'📱', m:{ shop:/^(electronics|computer|mobile_phone|telecommunication|hifi|video_games|camera|photo|printer_ink)$/ } },
+    { sub:'papeleria',       nombre:'Papelería / Librería', grupo:'comercio',     icono:'📒', m:{ shop:/^(stationery|books|newsagent|copyshop|office_supplies)$/ } },
+    // El taller y el repuesto son de los usos que más marcan el carácter de
+    // una vía: piden acera ocupada, ruido y parqueo en calzada. Un local de
+    // paso —café, droguería— rinde distinto en una cuadra así.
+    { sub:'automotriz',      nombre:'Automotriz / Taller',  grupo:'comercio',     icono:'🚗', m:{ shop:/^(car|car_repair|car_parts|motorcycle|motorcycle_repair|motorcycle_parts|tyres|truck|truck_repair|caravan|atv|boat)$/, amenity:/^(car_wash|vehicle_inspection)$/ } },
+    { sub:'licorera',        nombre:'Licorera / Estanco',   grupo:'comercio',     icono:'🍾', m:{ shop:/^(alcohol|beverages|wine|water|tobacco|e-cigarette)$/ } },
+    { sub:'tienda_deportes', nombre:'Tienda deportiva',     grupo:'comercio',     icono:'🏀', m:{ shop:/^(sports|outdoor|hunting|fishing|bicycle)$/ } },
+    { sub:'vivero',          nombre:'Vivero / Floristería', grupo:'comercio',     icono:'🪴', m:{ shop:/^(florist|garden_centre|houseplant|agrarian)$/ } },
+    { sub:'variedades',      nombre:'Variedades / Regalos', grupo:'comercio',     icono:'🎁', m:{ shop:/^(variety_store|gift|party|toys|games|craft|art|musical_instrument|music|video|charity|collector|religion|erotic|ticket)$/ } },
     // Vivienda y ocio
-    { sub:'bar_ocio',        nombre:'Bar / Ocio nocturno',  grupo:'vivienda',     icono:'🍻', m:{ amenity:/^(bar|pub|nightclub|casino)$/, leisure:/^amusement_arcade$/ } },
+    { sub:'bar_ocio',        nombre:'Bar / Ocio nocturno',  grupo:'vivienda',     icono:'🍻', m:{ amenity:/^(bar|pub|nightclub|casino|biergarten|gambling|stripclub|brothel)$/, leisure:/^(amusement_arcade|adult_gaming_centre)$/ } },
     // Reportado: un gimnasio nuevo no aparecía en el análisis. Solo se
     // reconocían dos etiquetas, y en la práctica se mapean de varias formas:
     // amenity=gym es la vieja (obsoleta pero muy usada) y el deporte concreto
     // —crossfit, halterofilia— suele venir en `sport` sin ningún `leisure`.
-    { sub:'gimnasio',        nombre:'Gimnasio',             grupo:'vivienda',     icono:'🏋️', m:{ leisure:/^(fitness_centre|fitness_station)$/, sport:/^(fitness|gym|crossfit|weightlifting|bodybuilding)$/, amenity:/^gym$/ } },
-    { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽', m:{ leisure:/^(pitch|sports_centre|stadium|swimming_pool|track)$/ } },
-    { sub:'parque',          nombre:'Parque / Zona verde',  grupo:'vivienda',     icono:'🌳', m:{ leisure:/^(park|garden|playground|dog_park)$/, landuse:/^(recreation_ground|village_green|grass)$/ } },
-    { sub:'residencial',     nombre:'Vivienda',             grupo:'vivienda',     icono:'🏠', m:{ building:/^(residential|house|apartments|detached|terrace|semidetached_house|hut|bungalow|cabin)$/, landuse:/^residential$/ } },
+    // Al gimnasio de pesas se suman los estudios de una sola disciplina —yoga,
+    // pilates, box, artes marciales—: ocupan un local de barrio, funcionan por
+    // tandas de clase y sueltan a la calle un grupo entero a la misma hora.
+    // Para el flujo peatonal se comportan igual que un gimnasio, no como un
+    // estadio, y en OSM suelen venir solo con `sport=*`, sin `leisure`.
+    { sub:'gimnasio',        nombre:'Gimnasio',             grupo:'vivienda',     icono:'🏋️', m:{ leisure:/^(fitness_centre|fitness_station)$/, sport:/^(fitness|gym|crossfit|weightlifting|bodybuilding|yoga|pilates|aerobics|zumba|boxing|martial_arts|judo|karate|taekwondo|kickboxing|muay_thai|calisthenics)$/, amenity:/^(gym|dojo)$/ } },
+    { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽', m:{ leisure:/^(pitch|sports_centre|sports_hall|stadium|swimming_pool|swimming_area|track|golf_course|horse_riding)$/, building:/^(stadium|sports_hall|sports_centre|pavilion|riding_hall)$/, amenity:/^(sports_centre|driving_range)$/ } },
+    { sub:'parque',          nombre:'Parque / Zona verde',  grupo:'vivienda',     icono:'🌳', m:{ leisure:/^(park|garden|playground|dog_park)$/, landuse:/^(recreation_ground|village_green|grass)$/, tourism:/^(viewpoint|picnic_site)$/ } },
+    // Espacio público duro: la plaza, el atrio, la zona peatonal. No es un
+    // parque —no tiene verde que medir— pero es donde la gente se queda, y
+    // eso sostiene el comercio de la cuadra igual o más que un parque.
+    { sub:'plaza',           nombre:'Plaza / Espacio público', grupo:'vivienda',  icono:'⛲', m:{ place:/^square$/, amenity:/^square$/, leisure:/^common$/ } },
+    { sub:'residencial',     nombre:'Vivienda',             grupo:'vivienda',     icono:'🏠', m:{ building:/^(residential|house|apartments|detached|terrace|semidetached_house|hut|bungalow|cabin|dormitory|static_caravan)$/, landuse:/^residential$/ } },
     // Poblados donde vive gente pero que no se mapean como barrio: asentamientos
     // informales, resguardos y comunidades indígenas. Se mapean con etiquetas
     // prestadas —muchas veces `tourism=camp_site`— porque no hay una mejor.
-    { sub:'asentamiento',    nombre:'Asentamiento / poblado', grupo:'vivienda',   icono:'🏕️', m:{ place:/^(hamlet|isolated_dwelling|village|neighbourhood|quarter)$/, landuse:/^(squatter|informal_settlement)$/ } },
+    { sub:'asentamiento',    nombre:'Asentamiento / poblado', grupo:'vivienda',   icono:'🏕️', m:{ place:/^(hamlet|isolated_dwelling|village|neighbourhood|quarter)$/, landuse:/^(squatter|informal_settlement)$/, amenity:/^refugee_site$/ } },
     // Va ANTES de educación a propósito: el ICBF opera jardines infantiles,
     // pero es una entidad de bienestar del Estado (pedido explícito).
-    { sub:'bienestar_social', nombre:'Bienestar social del Estado', grupo:'institucional', icono:'🏛️', m:{ operator:/^icbf$/, amenity:/^social_facility$/ } },
+    { sub:'bienestar_social', nombre:'Bienestar social del Estado', grupo:'institucional', icono:'🏛️', m:{ operator:/^icbf$/, amenity:/^(social_facility|baby_hatch)$/ } },
     // `building=multiusos` no es una etiqueta estándar de OpenStreetMap: la
     // escriben los mapeadores locales para el salón multiusos del barrio, que
     // en Colombia es equipamiento de la Junta de Acción Comunal.
     { sub:'salon_comunal',   nombre:'Salón comunal / multiusos', grupo:'institucional', icono:'🏘️', m:{ building:/^(multiusos|multiuso|salon_comunal)$/ } },
     // Cultura, educación y culto
-    { sub:'colegio',         nombre:'Colegio / Jardín',     grupo:'cultura',      icono:'🏫', m:{ amenity:/^(school|kindergarten|childcare)$/, building:/^(school|kindergarten)$/ } },
+    // landuse=education marca el LOTE educativo sin decir de qué nivel. En una
+    // ciudad como Cúcuta la inmensa mayoría son colegios, no campus, así que
+    // se lee como colegio antes que dejarlo sin categoría.
+    { sub:'colegio',         nombre:'Colegio / Jardín',     grupo:'cultura',      icono:'🏫', m:{ amenity:/^(school|kindergarten|childcare)$/, building:/^(school|kindergarten)$/, landuse:/^education$/ } },
     // capacitacion va ANTES de universidad a propósito: una autoescuela o un
     // instituto de idiomas suele traer TAMBIÉN office=educational_institution,
     // y caía en 'universidad'. Eso hacía que el informe citara "Academia
@@ -104,15 +145,15 @@
     // como educación superior — antes hacía que el informe citara "Academia
     // Automóvil Cúcuta" entre los equipamientos ancla del sector.
     { sub:'capacitacion',    nombre:'Centro de formación',  grupo:'cultura',      icono:'📚', m:{ amenity:/^(training|language_school|music_school|driving_school|prep_school|dancing_school)$/, education:/.+/, office:/^educational_institution$/ } },
-    { sub:'universidad',     nombre:'Universidad / Instituto', grupo:'cultura',   icono:'🎓', m:{ amenity:/^(university|college)$/, building:/^(university|college)$/ } },
-    { sub:'iglesia',         nombre:'Iglesia / Culto',      grupo:'cultura',      icono:'⛪', m:{ amenity:/^place_of_worship$/, building:/^(church|chapel|mosque|cathedral)$/, landuse:/^religious$/, religion:/.+/ } },
-    { sub:'cultural',        nombre:'Equipamiento cultural',grupo:'cultura',      icono:'🎭', m:{ amenity:/^(theatre|cinema|library|arts_centre|community_centre|studio)$/, tourism:/^(museum|gallery|attraction|artwork)$/ } },
+    { sub:'universidad',     nombre:'Universidad / Instituto', grupo:'cultura',   icono:'🎓', m:{ amenity:/^(university|college|research_institute)$/, building:/^(university|college)$/, office:/^research$/ } },
+    { sub:'iglesia',         nombre:'Iglesia / Culto',      grupo:'cultura',      icono:'⛪', m:{ amenity:/^(place_of_worship|monastery)$/, building:/^(church|chapel|mosque|cathedral|temple|synagogue)$/, landuse:/^religious$/, religion:/.+/ } },
+    { sub:'cultural',        nombre:'Equipamiento cultural',grupo:'cultura',      icono:'🎭', m:{ amenity:/^(theatre|cinema|library|arts_centre|community_centre|social_centre|studio|music_venue|planetarium)$/, tourism:/^(museum|gallery|attraction|artwork)$/ } },
     // Institucional
     // amenity=servicio_de_seguridad del estado: variante no estándar que
     // aparece en CAI de Cúcuta (ej. "Cai Parque Colón") — mismo concepto que
     // amenity=police, solo con otra etiqueta.
     { sub:'policia',         nombre:'Policía / CAI',        grupo:'institucional',icono:'🚓', m:{ amenity:/^(police|servicio_de_seguridad del estado)$/ } },
-    { sub:'gobierno',        nombre:'Entidad pública',      grupo:'institucional',icono:'🏛️', m:{ amenity:/^(townhall|courthouse|post_office|prison|social_facility)$/, office:/^(government|administrative)$/, building:/^(public|civic|government)$/, landuse:/^military$/ } },
+    { sub:'gobierno',        nombre:'Entidad pública',      grupo:'institucional',icono:'🏛️', m:{ amenity:/^(townhall|courthouse|post_office|prison|social_facility|embassy|public_building|register_office|customs|ranger_station)$/, office:/^(government|administrative|diplomatic)$/, building:/^(public|civic|government)$/, landuse:/^(military|institutional)$/ } },
     { sub:'notaria',         nombre:'Notaría / Jurídico',   grupo:'institucional',icono:'⚖️', m:{ office:/^(notary|lawyer)$/, amenity:/^notary$/ } },
     // Servicios e infraestructura (vias/ciclorrutas van a stats.movilidad, no a POIs)
     { sub:'via_arteria',     nombre:'Vía arteria',          grupo:'servicios',    icono:'🛣️', m:{ highway:/^(trunk|primary|secondary|tertiary)$/ } },
@@ -121,23 +162,25 @@
     // (`bicycle_parking`, en Transporte): allí la gente deja su bici, aquí la
     // toma y la devuelve, así que genera viajes a pie de ida y de vuelta.
     { sub:'bici_publica',    nombre:'Bicicleta pública',    grupo:'servicios',    icono:'🚲', m:{ amenity:/^bicycle_rental$/ } },
-    { sub:'parada_bus',      nombre:'Parada de transporte', grupo:'servicios',    icono:'🚌', m:{ highway:/^bus_stop$/, amenity:/^bus_station$/, public_transport:/^(platform|stop_position|station)$/ } },
+    { sub:'parada_bus',      nombre:'Parada de transporte', grupo:'servicios',    icono:'🚌', m:{ highway:/^bus_stop$/, amenity:/^(bus_station|ferry_terminal)$/, public_transport:/^(platform|stop_position|station)$/, building:/^(train_station|transportation)$/ } },
     // car_pooling: en la práctica en Cúcuta aparece mapeado como "Parqueadero"
     // por el nombre que le puso quien lo mapeó, aunque la etiqueta técnica de
     // OSM sea para compartir carro, no para dejar el carro.
-    { sub:'transporte',      nombre:'Transporte / Parqueo', grupo:'servicios',    icono:'🅿️', m:{ amenity:/^(taxi|parking|car_rental|car_pooling|bicycle_parking|motorcycle_parking|parking_space)$/ } },
-    { sub:'infra_servicios', nombre:'Infraestructura',      grupo:'servicios',    icono:'🗼', m:{ man_made:/^(mast|tower|water_tower|works)$/, power:/^substation$/, amenity:/^(recycling|waste_transfer_station|waste_disposal)$/, landuse:/^landfill$/ } },
+    { sub:'transporte',      nombre:'Transporte / Parqueo', grupo:'servicios',    icono:'🅿️', m:{ amenity:/^(taxi|parking|car_rental|car_pooling|car_sharing|motorcycle_rental|bicycle_parking|motorcycle_parking|parking_space)$/ } },
+    { sub:'infra_servicios', nombre:'Infraestructura',      grupo:'servicios',    icono:'🗼', m:{ man_made:/^(mast|tower|water_tower|works)$/, power:/^substation$/, amenity:/^(recycling|waste_transfer_station|waste_disposal)$/, landuse:/^(landfill|railway|port)$/, building:/^(storage_tank|silo|bunker)$/ } },
     // Servientrega / Inter Rapidísimo y demás puntos de envío.
-    { sub:'mensajeria',      nombre:'Mensajería / Correo',  grupo:'servicios',    icono:'📮', m:{ amenity:/^(post_box|parcel_locker|post_depot)$/ } },
-    { sub:'mobiliario',      nombre:'Mobiliario urbano',    grupo:'servicios',    icono:'🪑', m:{ amenity:/^(bench|drinking_water|shelter|toilets|waste_basket|fountain|clock|vending_machine|parking_entrance)$/, tourism:/^information$/ } },
-    { sub:'edificacion_menor', nombre:'Edificación de servicio', grupo:'servicios', icono:'🧱', m:{ building:/^(garage|garages|service|shed|roof|carport)$/ } },
-    { sub:'funerario',       nombre:'Servicio funerario',   grupo:'servicios',    icono:'🕊️', m:{ shop:/^funeral_directors$/, amenity:/^(grave_yard|crematorium)$/, landuse:/^cemetery$/ } },
+    { sub:'mensajeria',      nombre:'Mensajería / Correo',  grupo:'servicios',    icono:'📮', m:{ amenity:/^(post_box|parcel_locker|post_depot)$/, office:/^courier$/ } },
+    { sub:'mobiliario',      nombre:'Mobiliario urbano',    grupo:'servicios',    icono:'🪑', m:{ amenity:/^(bench|drinking_water|shelter|toilets|waste_basket|fountain|clock|vending_machine|parking_entrance|water_point|watering_place|sanitary_dump_station|shower|telephone|photo_booth|luggage_locker|lounger|give_box|smoking_area|trolley_bay|vacuum_cleaner|compressed_air|device_charging_station|bicycle_repair_station|public_bookcase|bbq|kitchen|stage|hunting_stand)$/, tourism:/^information$/, building:/^(toilets|tent)$/ } },
+    { sub:'edificacion_menor', nombre:'Edificación de servicio', grupo:'servicios', icono:'🧱', m:{ building:/^(garage|garages|service|shed|roof|carport|container)$/, landuse:/^garages$/ } },
+    { sub:'funerario',       nombre:'Servicio funerario',   grupo:'servicios',    icono:'🕊️', m:{ shop:/^funeral_directors$/, amenity:/^(grave_yard|crematorium|funeral_hall)$/, landuse:/^cemetery$/ } },
     // Industria
-    { sub:'industria',       nombre:'Industria',            grupo:'industria',    icono:'🏭', m:{ landuse:/^industrial$/, building:/^industrial$/ } },
-    { sub:'bodega',          nombre:'Bodega / Logística',   grupo:'industria',    icono:'📦', m:{ building:/^warehouse$|bodega|dep[oó]sito|almac[eé]n/, landuse:/^depot$/ } },
+    { sub:'industria',       nombre:'Industria',            grupo:'industria',    icono:'🏭', m:{ landuse:/^(industrial|quarry)$/, building:/^industrial$/ } },
+    { sub:'bodega',          nombre:'Bodega / Logística',   grupo:'industria',    icono:'📦', m:{ building:/^(warehouse|hangar)$|bodega|dep[oó]sito|almac[eé]n/, landuse:/^depot$/, amenity:/^loading_dock$/, office:/^logistics$/, shop:/^storage_rental$/ } },
     // Ambiente
-    { sub:'agua',            nombre:'Cuerpo de agua',       grupo:'ambiente',     icono:'💧', m:{ natural:/^(water|wetland)$/, waterway:/^(river|stream|canal)$/ } },
-    { sub:'verde_natural',   nombre:'Verde natural',        grupo:'ambiente',     icono:'🌿', m:{ natural:/^(wood|scrub|grassland|tree_row)$/, landuse:/^(forest|meadow|farmland|orchard|allotments)$/ } },
+    { sub:'agua',            nombre:'Cuerpo de agua',       grupo:'ambiente',     icono:'💧', m:{ natural:/^(water|wetland)$/, waterway:/^(river|stream|canal)$/, landuse:/^(basin|salt_pond|aquaculture)$/ } },
+    // Suelo rural productivo y sus construcciones auxiliares: en el borde de
+    // Cúcuta marcan dónde termina la ciudad y empieza el campo.
+    { sub:'verde_natural',   nombre:'Verde natural',        grupo:'ambiente',     icono:'🌿', m:{ natural:/^(wood|scrub|grassland|tree_row)$/, landuse:/^(forest|meadow|farmland|orchard|allotments|farmyard|vineyard|plant_nursery|greenhouse_horticulture)$/, leisure:/^nature_reserve$/, building:/^(farm|farm_auxiliary|barn|cowshed|greenhouse|stable|sty)$/ } },
     // Riesgo / transición
     // Separados a propósito: una obra en curso indica TRANSFORMACIÓN del
     // sector, mientras un lote sin desarrollar indica EXPANSIÓN. Son señales
@@ -145,19 +188,30 @@
     // de ambos para no romper las reglas que ya lo usaban.
     { sub:'en_obra',         nombre:'En obra / Construcción', grupo:'riesgo',     icono:'🏗️', m:{ landuse:/^construction$/, building:/^construction$/ } },
     { sub:'baldio',          nombre:'Lote sin desarrollar', grupo:'riesgo',       icono:'🚧', m:{ landuse:/^(brownfield|greenfield)$/ } },
+    // Un local desocupado no es comercio: es la señal de que la cuadra no
+    // está reteniendo negocios. Contarlo como comercio inflaba la oferta.
+    { sub:'local_vacio',     nombre:'Local desocupado',     grupo:'riesgo',       icono:'🔒', m:{ shop:/^vacant$/, disused:/.+/ } },
+    // Distinto de un lote vacío: aquí hubo algo y se cayó. Es la señal más
+    // dura de deterioro de una cuadra, y pesa en la lectura de riesgo.
+    { sub:'ruina',           nombre:'Edificación en ruina', grupo:'riesgo',       icono:'🏚️', m:{ building:/^ruins$/, historic:/^ruins$/, ruins:/^yes$/ } },
     // En Colombia muchos mapeadores escriben el uso real en español dentro de
     // building=* (ej. building=taller_mecanico, building=charcuteria_mechis).
     // Se reconocen por palabra clave para no perderlos como "sin definir".
     { sub:'comercio_local',  nombre:'Comercio / Servicio local', grupo:'comercio', icono:'🏪', m:{ building:/taller|lavadero|charcuter|tienda|panader|restaurante|cafeter|helader|licor|papeler|ferreter|peluquer|barber|farmacia|droguer|supermercado|miscelanea|variedades|comercio|local/ } },
-    { sub:'ocio_generico',   nombre:'Ocio / Recreación',    grupo:'vivienda',     icono:'🎡', m:{ leisure:/.+/ } },
+    { sub:'ocio_generico',   nombre:'Ocio / Recreación',    grupo:'vivienda',     icono:'🎡', m:{ leisure:/.+/, tourism:/.+/, amenity:/^(public_bath|sauna)$/ } },
     // Mixtos y oficinas (van casi al final: office=* es comodín).
     // building con ";" o "," es multi-uso declarado (ej. residential;commercial).
     { sub:'mixto',           nombre:'Uso mixto',            grupo:'mixtos',       icono:'🧩', m:{ building:/^mixed$|[;,]/ } },
-    { sub:'oficina',         nombre:'Oficina',              grupo:'mixtos',       icono:'💼', m:{ office:/.+/, building:/^office$/ } },
+    { sub:'oficina',         nombre:'Oficina',              grupo:'mixtos',       icono:'💼', m:{ office:/.+/, building:/^office$/, amenity:/^coworking_space$/, shop:/^(insurance|estate_agent|travel_agency)$/ } },
     // Comodines finales: comercio declarado por edificio/suelo aunque no
     // tenga tag de negocio específico, y cualquier shop con valor.
-    { sub:'local_comercial', nombre:'Local comercial',      grupo:'comercio',     icono:'🏬', m:{ building:/^(commercial|retail|kiosk|shop)$/, landuse:/^(commercial|retail)$/, amenity:/^(car_wash|marketplace)$/ } },
-    { sub:'comercio_otro',   nombre:'Comercio general',     grupo:'comercio',     icono:'🛍️', m:{ shop:/.+/ } }
+    { sub:'local_comercial', nombre:'Local comercial',      grupo:'comercio',     icono:'🏬', m:{ building:/^(commercial|retail|kiosk|shop)$/, landuse:/^(commercial|retail)$/, amenity:/^marketplace$/, shop:/^trade_centre$/ } },
+    { sub:'comercio_otro',   nombre:'Comercio general',     grupo:'comercio',     icono:'🛍️', m:{ shop:/.+/ } },
+    // Último recurso, DESPUÉS del comodín de comercio: una cancha o un club
+    // que solo trae `sport=*` es un escenario deportivo, pero un almacén de
+    // deportes trae `shop=sports` + `sport=soccer` y debe quedar en comercio.
+    // Por eso esta regla va de última: deja que la etiqueta de negocio mande.
+    { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽', m:{ sport:/.+/ } }
   ];
 
   // ── Reglas de clasificación personalizadas (persistentes, sin deploy) ───
@@ -352,7 +406,7 @@
   // existan en el mapa —eso es imposible—, pero rescata los que sí están y se
   // estaban perdiendo por venir mal clasificados.
   const MARCAS = [
-    { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24|stark\s*gym|athletic|world\s*gym|energy\s*fitness|gimnasio)\b/ },
+    { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24|stark\s*gym|athletic|world\s*gym|energy\s*fitness|gimnasio(?!\s*(moderno|campestre|femenino|los\s|del\s|de\s)))\b/ },
     { sub:'drogueria',       re:/\b(cruz\s*verde|la\s*rebaja|farmatodo|drogas?\s*la\s*econom|copservir|audifarma|locatel|farmacia\s*pasteur|drogueria|farmacia|drogas\s*ol[ií]mpica|colsubsidio\s*drog)\b/ },
     { sub:'cafeteria',       re:/\b(tosta[o0]|juan\s*valdez|starbucks|oma\b|dunkin|cafe\s*quindio|cafeter[ií]a|caf[eé]\s+de|mimo'?s|crepes\s*&?\s*waffles)\b/ },
     // El formato de descuento tiene sub propio: no es lo mismo un D1 de
@@ -387,6 +441,12 @@
   // eso la marca puede ganarle. Con una etiqueta específica (amenity=pharmacy)
   // no se discute: manda la etiqueta.
   const GENERICAS = ['comercio_otro', 'local_comercial', 'otro', 'edificio_otro'];
+
+  // Los rubros de comercio minorista que antes vivían todos dentro de
+  // `comercio_otro`. Se listan aparte para que abrir la taxonomía en rubros no
+  // vacíe el conteo de oferta comercial de los programas que la usan.
+  const SUBS_COMERCIO_DETAL = ['ropa','belleza','lavanderia','ferreteria','muebles_hogar',
+    'tecnologia','papeleria','automotriz','licorera','tienda_deportes','vivero','variedades'];
 
   // ── Cuando la etiqueta acierta la familia pero no el uso ─────────────────
   //
@@ -468,7 +528,35 @@
     { sub:'cultural',      re:/\b(centro\s*cultural|casa\s*de\s*la\s*cultura|biblioteca|teatro|museo|ludoteca)\b/ },
     { sub:'salon_comunal', re:/\b(sal[oó]n\s*comunal|junta\s*de\s*acci[oó]n\s*comunal|jac\b|caseta\s*comunal)\b/ },
     { sub:'asentamiento',  re:/\b(asentamiento|resguardo|cabildo|comunidad\s*ind[ií]gena)\b/ },
-    { sub:'comercio_local',re:/\b(comercial|almac[eé]n|ferreter[ií]a|surtido|variedades|mini\s*mercado)\b/ }
+    { sub:'comercio_local',re:/\b(comercial|almac[eé]n|surtido|mini\s*mercado)\b/ },
+    // El resto del vocabulario con que se rotula un negocio en Cúcuta. Solo
+    // entra en juego cuando la etiqueta OSM es estructural (`building=yes`) o
+    // un contenedor genérico: frente a un `amenity=pharmacy` no se discute.
+    // Antes, un punto rotulado "Panadería La Espiga" con `building=yes` se
+    // contaba como una casa más.
+    { sub:'ferreteria',    re:/\b(ferreter[ií]a|materiales\s*de\s*construc|dep[oó]sito\s*de\s*materiales|cacharrer[ií]a\s*el[eé]ctrica)\b/ },
+    { sub:'panaderia',     re:/\b(panader[ií]a|pasteler[ií]a|reposter[ií]a|bizcocher[ií]a)\b/ },
+    { sub:'restaurante',   re:/\b(restaurante|asadero|comidas\s*r[aá]pidas|pizzer[ií]a|marisquer[ií]a|piquetead|fritanguer[ií]a|helader[ií]a)\b/ },
+    { sub:'automotriz',    re:/\b(taller\s*(mec[aá]nico|de\s*motos)?|montallantas|serviteca|lavadero\s*de\s*(carros|autos|motos)|repuestos|tecnimec)\b/ },
+    { sub:'belleza',       re:/\b(peluquer[ií]a|barber[ií]a|sal[oó]n\s*de\s*belleza|est[eé]tica|spa\b|u[nñ]as)\b/ },
+    { sub:'papeleria',     re:/\b(papeler[ií]a|librer[ií]a|fotocopias|miscel[aá]nea)\b/ },
+    { sub:'licorera',      re:/\b(licorer[ií]a|estanco|distribuidora\s*de\s*licores|cigarrer[ií]a)\b/ },
+    { sub:'variedades',    re:/\b(variedades|cacharrer[ií]a|bazar|todo\s*a\s*mil|regalos)\b/ },
+    { sub:'transporte',    re:/\b(parqueadero|estacionamiento|parqueo)\b/ },
+    { sub:'lavanderia',    re:/\b(lavander[ií]a|lavaseco)\b/ },
+    { sub:'funerario',     re:/\b(funeraria|funerales|jardines?\s*del?\s*(recuerdo|paz)|capilla\s*de\s*velaci)\b/ },
+    { sub:'optica',        re:/\b([oó]ptica|optometr)\b/ },
+    { sub:'veterinaria',   re:/\b(veterinaria|agroveterinaria|pet\s*shop)\b/ },
+    { sub:'salud_ips',     re:/\b(ips\b|eps\b|cl[ií]nica|centro\s*m[eé]dico|puesto\s*de\s*salud|unidad\s*b[aá]sica)\b/ },
+    { sub:'laboratorio',   re:/\b(laboratorio\s*cl[ií]nico|laboratorio\s*m[eé]dico)\b/ },
+    { sub:'colegio',       re:/\b(colegio|instituci[oó]n\s*educativa|escuela|jard[ií]n\s*infantil|preescolar|liceo|gimnasio\s*(moderno|campestre))\b/ },
+    { sub:'iglesia',       re:/\b(iglesia|parroquia|capilla|templo|centro\s*cristiano|congregaci[oó]n)\b/ },
+    { sub:'policia',       re:/\b(cai\b|estaci[oó]n\s*de\s*polic[ií]a|comando\s*de\s*polic[ií]a)\b/ },
+    { sub:'hotel',         re:/\b(hotel|hostal|hospedaje|residencias?\b|posada)\b/ },
+    { sub:'muebles_hogar', re:/\b(mueble[sr]|colchones|carpinter[ií]a|tapicer[ií]a)\b/ },
+    { sub:'ropa',          re:/\b(boutique|modas|confecciones|calzado|zapater[ií]a|sastrer[ií]a|lencer[ií]a)\b/ },
+    { sub:'tecnologia',    re:/\b(celulares|tecnolog[ií]a|sistemas|computadores|electr[oó]nica)\b/ },
+    { sub:'vivero',        re:/\b(vivero|florister[ií]a|agropecuaria|agroinsumos)\b/ }
   ];
 
   function usoPorNombre(nombre){
@@ -798,6 +886,9 @@
       gimnasio:         { peso:  9, media: 300, franja:'picos' },
       deportivo:        { peso:  6, media: 350, franja:'tarde' },
       parque:           { peso:  7, media: 350, franja:'tarde' },
+      // La plaza pesa más que el parque para el comercio de la cuadra: es
+      // punto de encuentro y de paso a toda hora, no destino de fin de tarde.
+      plaza:            { peso:  9, media: 300, franja:'todo' },
       // La iglesia concentra picos fuertes y muy peatonales.
       iglesia:          { peso:  7, media: 350, franja:'picos' },
       cultural:         { peso:  5, media: 350, franja:'tarde' },
@@ -809,9 +900,16 @@
 
     // Comercio a pie de andén: lo que forma "calle comercial". Se cuenta como
     // conjunto, no de a uno.
+    // Vitrina a la calle: lo que hace que alguien camine la cuadra en vez de
+    // ir directo a un destino. Se suman los rubros de comercio minorista —al
+    // abrirlos en categorías propias dejaron de contarse dentro de
+    // `comercio_otro`, y una calle de almacenes de ropa habría quedado medida
+    // como si estuviera vacía. Queda FUERA el taller/repuesto: ocupa el andén
+    // con carros y no invita a caminar, que es justo lo que mide este término.
     const COMERCIO_ANDEN = ['tienda_barrio', 'comercio_otro', 'comercio_local', 'local_comercial',
                             'panaderia', 'drogueria', 'restaurante', 'cafeteria', 'tienda_descuento',
-                            'supermercado', 'pagos', 'internet_cafe', 'bar_ocio'];
+                            'supermercado', 'pagos', 'internet_cafe', 'bar_ocio', 'optica']
+      .concat(SUBS_COMERCIO_DETAL.filter(s => s !== 'automotriz'));
 
     const flujo = { generadores: [], peatonal: 0, vehicular: 0, franjas: {} };
     const aporteFranja = { manana: 0, mediodia: 0, tarde: 0 };
@@ -960,7 +1058,12 @@
       tienda_descuento: 0.7,   // el D1 de borde de vía suele tener su bahía
       gimnasio:         0.7,
       salud_ips:        0.7,
-      hotel:            0.6
+      hotel:            0.6,
+      // El cliente llega en carro y se va cargado: mueble, cemento, repuesto.
+      // Un negocio así no sobrevive sin dónde arrimar el vehículo.
+      muebles_hogar:    0.6,
+      ferreteria:       0.5,
+      automotriz:       0.6
     };
     flujo.parqueaderos = porSub.parqueadero || 0;
     flujo.parqueoProbable = Object.keys(PARQUEO_IMPLICITO)
@@ -1122,7 +1225,8 @@
   //   externo      → no se puede saber con los datos actuales
   // ═══════════════════════════════════════════════════════════════════════
   const SUBS_COMERCIO = ['supermercado','tienda_descuento','centro_comercial','tienda_barrio','panaderia','banco','hotel',
-    'gasolinera','restaurante','cafeteria','pagos','internet_cafe','local_comercial','comercio_otro'];
+    'gasolinera','restaurante','cafeteria','pagos','internet_cafe','local_comercial','comercio_otro']
+    .concat(SUBS_COMERCIO_DETAL);
 
   function nivelPorUmbral(v, umbrales){
     for (let i = 0; i < umbrales.length; i++) if (v >= umbrales[i][0]) return umbrales[i][1];
@@ -1941,7 +2045,7 @@
     // proyecto "Edificio residencial" del modo simple, su competidor real es
     // el suelo baldío/en obra (sobreoferta de inventario), no `residencial`.
     { id:'vivienda',     nombre:'Vivienda',     icono:'🏠', subs:['residencial'], competidores:['baldio_obra'], complementarios:['parque','colegio','supermercado','tienda_barrio','salud_ips','parada_bus'], contable:true, unidad:'viviendas' },
-    { id:'comercio',     nombre:'Comercio',     icono:'🛍️', subs:['supermercado','tienda_descuento','tienda_barrio','local_comercial','comercio_otro','centro_comercial'], complementarios:['residencial','parada_bus','oficina'], contable:true, unidad:'locales comerciales' },
+    { id:'comercio',     nombre:'Comercio',     icono:'🛍️', subs:['supermercado','tienda_descuento','tienda_barrio','local_comercial','comercio_otro','centro_comercial'].concat(SUBS_COMERCIO_DETAL), complementarios:['residencial','parada_bus','oficina'], contable:true, unidad:'locales comerciales' },
     { id:'oficinas',     nombre:'Oficinas',     icono:'💼', subs:['oficina'], complementarios:['banco','restaurante','cafeteria','parada_bus'], contable:true, unidad:'oficinas' },
     { id:'hotel',        nombre:'Hotel',        icono:'🏨', subs:['hotel'], complementarios:['restaurante','cultural','gobierno'], contable:true, unidad:'habitaciones' },
     { id:'consultorios', nombre:'Consultorios', icono:'🩺', subs:['salud_ips'], complementarios:['drogueria','laboratorio'], contable:true, unidad:'consultorios' },
@@ -1960,7 +2064,7 @@
     // Espacio Público: a diferencia de un negocio, más parques/plazas
     // existentes es un ATRACTIVO del entorno, no competencia — mismo criterio
     // que se usó para "vivienda". No incluye andenes (no medible por satélite).
-    { id:'espacio_publico', nombre:'Espacio Público', icono:'🌳', subs:['parque'], competidores:['baldio_obra'], complementarios:['residencial','comercio_otro'] },
+    { id:'espacio_publico', nombre:'Espacio Público', icono:'🌳', subs:['parque','plaza'], competidores:['baldio_obra'], complementarios:['residencial','comercio_otro'] },
     { id:'supermercado', nombre:'Supermercado', icono:'🛒', subs:['supermercado','tienda_descuento','centro_comercial'], complementarios:['residencial'] },
     { id:'gimnasio',     nombre:'Gimnasio / Deportivo', icono:'🏋️', subs:['gimnasio','deportivo'], complementarios:['residencial'] },
     { id:'parqueadero',  nombre:'Parqueadero',  icono:'🅿️', subs:['transporte'], complementarios:['comercio_otro','oficina'], contable:true, unidad:'cupos de parqueo' },
@@ -1969,7 +2073,7 @@
     { id:'cajero',       nombre:'Cajero bancario', icono:'🏧', subs:['banco'], complementarios:['supermercado','centro_comercial','oficina','residencial','universidad'], contable:true, unidad:'cajeros' },
     { id:'industria',    nombre:'Industria / Bodega', icono:'🏭', subs:['industria','bodega'], complementarios:['transporte'] },
     { id:'cultural',     nombre:'Cultural',     icono:'🎭', subs:['cultural'], complementarios:['universidad','restaurante'] },
-    { id:'cuidado',      nombre:'Centro de Cuidado', icono:'🧓', subs:[], complementarios:['residencial','salud_ips'] },
+    { id:'cuidado',      nombre:'Centro de Cuidado', icono:'🧓', subs:['hogar_cuidado'], complementarios:['residencial','salud_ips'] },
     { id:'religioso',    nombre:'Religioso / Culto', icono:'⛪', subs:['iglesia'], complementarios:['residencial'] },
     { id:'gubernamental',nombre:'Gubernamental', icono:'🏛️', subs:['gobierno'], complementarios:['notaria','banco'] },
     { id:'militar',      nombre:'Militar / Policial', icono:'🚓', subs:['policia'], complementarios:[] },
@@ -1979,7 +2083,7 @@
     // específico irá en cada una. El score general usa la misma lógica
     // amplia de comercio/oficina; además disparan una recomendación
     // específica por unidad (ver recomendarUnidadesGenericas más abajo).
-    { id:'comercial_indefinido', nombre:'Comercial (por definir)', icono:'🔍🛍️', generico:true, familia:'comercial', subs:['comercio_otro','local_comercial'], complementarios:['residencial','oficina'] },
+    { id:'comercial_indefinido', nombre:'Comercial (por definir)', icono:'🔍🛍️', generico:true, familia:'comercial', subs:['comercio_otro','local_comercial'].concat(SUBS_COMERCIO_DETAL), complementarios:['residencial','oficina'] },
     { id:'oficina_indefinida',   nombre:'Oficina (por definir)',   icono:'🔍💼', generico:true, familia:'oficina',   subs:['oficina'], complementarios:['banco','restaurante'] }
   ];
 
@@ -2281,7 +2385,9 @@
     analizar: entrada => proveedor.analizar(entrada),
     analizarHeuristico,
     setProveedor: p => { if (p && typeof p.analizar === 'function') proveedor = p; },
-    TAXONOMIA, PROYECTOS, GRUPOS, GRUPO_COLOR,
+    // MARCAS se expone para poder auditar la matriz completa desde fuera
+    // (etiquetas + marcas), que es lo que alimenta assets/data/matriz-usos-osm.csv.
+    TAXONOMIA, MARCAS, NOMBRE_USO, PROYECTOS, GRUPOS, GRUPO_COLOR,
     // Modo mixto (aditivo, no afecta lo anterior)
     USOS_PROGRAMA, normalizarUsos, scoreUso, calcularCompatibilidad,
     generarCompatibilidad, generarRecomendaciones, analizarMixto, recomendarUnidadesGenericas,

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v527-marca-afina-subcategoria';
+const URBIS_CACHE = 'urbis-v528-matriz-usos-completa';
 const URBIS_ASSETS = [
   './',
   './index.html',
