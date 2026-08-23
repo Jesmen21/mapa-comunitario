@@ -1109,9 +1109,21 @@
         '<div class="comp-barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></div>' +
         '<b>' + n.toLocaleString('es-CO') + '</b><em>' + pct.toFixed(1) + '%</em></div>';
     }).join('');
+    // Se declara cuántos usos no vienen del mapa abierto sino de un
+    // levantamiento del propio analista. Callarlo haría el informe
+    // inauditable: quien lo lee tiene derecho a saber qué parte se observó y
+    // qué parte se añadió, aunque las dos pesen igual en el cálculo.
+    const nMan = s.manuales || 0;
+    const nota = nMan
+      ? '<p class="pie-nota">De ellos, ' + nMan +
+        (nMan === 1 ? ' fue agregado' : ' fueron agregados') +
+        ' en campo por quien hizo el análisis y no proviene' + (nMan === 1 ? '' : 'n') +
+        ' del mapa abierto. Cuenta' + (nMan === 1 ? '' : 'n') +
+        ' igual en todos los cálculos de este informe.</p>'
+      : '';
     return '<div class="tarjeta"><h2>Composición del entorno</h2>' +
       '<p class="sub-nivel" style="color:' + T.ok + '">' + s.total.toLocaleString('es-CO') + ' usos identificados</p>' +
-      filas + '</div>';
+      filas + nota + '</div>';
   }
 
   // ── 7. Indicadores urbanos, como filas etiqueta / valor ─────────────────

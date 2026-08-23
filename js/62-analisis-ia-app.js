@@ -30,6 +30,156 @@
 
   const $ = id => document.getElementById(id);
 
+  // ── Usos agregados a mano ───────────────────────────────────────────────
+  //
+  // El análisis solo puede ver lo que está mapeado, y en Cúcuta falta mucho
+  // por mapear: un gimnasio de cadena a media cuadra del lote puede no existir
+  // en OpenStreetMap y el informe lo lee como un vacío de mercado. Esto deja
+  // señalarlo a mano, con su categoría exacta de la Matriz, y que cuente en
+  // todo lo que sigue: flujo, mapas de calor, oportunidades, FODA y PDF.
+  //
+  // Se guardan por coordenada y no por lote: un local existe donde existe, así
+  // que sirve para cualquier análisis futuro que lo alcance en su radio. Y se
+  // guardan aparte de la caché del entorno, que se borra sola cada 24 h.
+  const USOS_MANUALES_KEY = 'aia_usos_manuales_v1';
+
+  function leerUsosManuales(){
+    try {
+      const v = JSON.parse(localStorage.getItem(USOS_MANUALES_KEY) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch(e) { return []; }
+  }
+  function escribirUsosManuales(lista){
+    try { localStorage.setItem(USOS_MANUALES_KEY, JSON.stringify(lista)); } catch(e) {}
+  }
+  function agregarUsoManual(uso){
+    const lista = leerUsosManuales();
+    lista.push(Object.assign({ id: 'm' + Date.now(), creado: new Date().toISOString() }, uso));
+    escribirUsosManuales(lista);
+    return lista;
+  }
+  function borrarUsoManual(id){
+    const lista = leerUsosManuales().filter(u => u.id !== id);
+    escribirUsosManuales(lista);
+    return lista;
+  }
+  // Los que caen dentro del radio analizado, con la forma de un elemento de
+  // Overpass para que el motor no tenga que saber de dónde vienen.
+  function elementosManuales(centro, radioM){
+    return leerUsosManuales()
+      .filter(u => window.AIA_MOTOR.haversineM(centro, { lat: u.lat, lng: u.lng }) <= radioM)
+      .map(u => {
+        const tags = { 'urbis:sub': u.sub, 'urbis:manual': 'si' };
+        if (u.nombre) tags.name = u.nombre;
+        return { type: 'node', id: u.id, lat: u.lat, lon: u.lng, tags };
+      });
+  }
+
+  // ── Panel "Agregar uso" ─────────────────────────────────────────────────
+  let usoPendiente = null;   // { lat, lng } señalado y todavía sin guardar
+
+  // El desplegable se arma desde la Matriz, agrupado por grupo: así ofrece
+  // exactamente las mismas categorías con las que cuenta el análisis, y no
+  // hace falta mantener una segunda lista que se desincronice.
+  function llenarSelectUsos(){
+    const sel = $('aia-uso-sub');
+    if (!sel || sel.options.length) return;
+    const M = window.AIA_MOTOR;
+    const porGrupo = {};
+    M.TAXONOMIA.forEach(t => {
+      // Las vías y ciclorrutas no son puntos que alguien vaya a señalar, y
+      // 'personalizado' no es una categoría real de la Matriz.
+      if (t.sub === 'via_arteria' || t.sub === 'ciclorruta') return;
+      (porGrupo[t.grupo] = porGrupo[t.grupo] || []).push(t);
+    });
+    sel.innerHTML = '<option value="">Elige una categoría…</option>';
+    Object.keys(M.GRUPOS).forEach(g => {
+      const lista = porGrupo[g];
+      if (!lista || !lista.length) return;
+      const og = document.createElement('optgroup');
+      og.label = M.GRUPOS[g].i + ' ' + M.GRUPOS[g].t;
+      // Una misma subcategoría puede aparecer dos veces en la Matriz (misma
+      // categoría alcanzada por etiquetas distintas): en el desplegable no.
+      const vistos = {};
+      lista.forEach(t => {
+        if (vistos[t.sub]) return;
+        vistos[t.sub] = 1;
+        const o = document.createElement('option');
+        o.value = t.sub;
+        o.textContent = t.icono + ' ' + t.nombre;
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    });
+  }
+
+  function refrescarBotonUso(){
+    const b = $('aia-uso-guardar');
+    if (b) b.disabled = !(usoPendiente && $('aia-uso-sub').value);
+  }
+
+  function ubicarUsoManual(lat, lng){
+    usoPendiente = { lat, lng };
+    S.ubicandoUso = false;
+    const btn = $('aia-uso-tocar');
+    if (btn) { btn.classList.remove('activo'); btn.textContent = '📍 Tocar en el mapa'; }
+    $('aia-uso-donde').innerHTML = '📍 Ubicación: <b>' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</b>';
+    // Marca provisional: se ve dónde va a quedar antes de confirmarlo.
+    if (S.marcaUso) S.map.removeLayer(S.marcaUso);
+    S.marcaUso = L.circleMarker([lat, lng], { radius: 9, color: '#ffffff', weight: 2.4,
+      dashArray: '3 2', fillColor: '#22d3ee', fillOpacity: .85 }).addTo(S.map);
+    refrescarBotonUso();
+  }
+
+  function pintarListaUsosManuales(){
+    const cont = $('aia-uso-lista');
+    if (!cont) return;
+    const lista = leerUsosManuales();
+    if (!lista.length) { cont.innerHTML = ''; return; }
+    const M = window.AIA_MOTOR;
+    const nombreDe = sub => {
+      const t = M.TAXONOMIA.find(x => x.sub === sub);
+      return t ? t.icono + ' ' + t.nombre : sub;
+    };
+    const dentro = S.lote
+      ? lista.filter(u => M.haversineM(S.lote, { lat: u.lat, lng: u.lng }) <= S.radioM).length
+      : 0;
+    cont.innerHTML = '<h4>Usos que has agregado (' + lista.length +
+      (S.lote ? ' · ' + dentro + ' dentro de este radio' : '') + ')</h4>' +
+      lista.map(u => '<div class="aia-uso-item"><span>' + escHTML(nombreDe(u.sub)) +
+        (u.nombre ? ' · <b>' + escHTML(u.nombre) + '</b>' : '') + '</span>' +
+        '<button type="button" data-borrar="' + u.id + '" title="Quitar">✕</button></div>').join('');
+    cont.querySelectorAll('[data-borrar]').forEach(b => {
+      b.addEventListener('click', () => {
+        borrarUsoManual(b.dataset.borrar);
+        pintarListaUsosManuales();
+        if (S.resultado) ejecutarAnalisis();
+      });
+    });
+  }
+
+  function abrirAgregarUso(){
+    llenarSelectUsos();
+    pintarListaUsosManuales();
+    const p = $('aia-agregar-uso');
+    if (p) p.hidden = false;
+    refrescarBotonUso();
+    if (p && p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function cerrarAgregarUso(){
+    const p = $('aia-agregar-uso');
+    if (p) p.hidden = true;
+    S.ubicandoUso = false;
+    usoPendiente = null;
+    if (S.marcaUso) { S.map.removeLayer(S.marcaUso); S.marcaUso = null; }
+    const btn = $('aia-uso-tocar');
+    if (btn) { btn.classList.remove('activo'); btn.textContent = '📍 Tocar en el mapa'; }
+    $('aia-uso-donde').innerHTML = '📍 Ubicación: <b>sin definir</b>';
+    $('aia-uso-nombre').value = '';
+    $('aia-uso-sub').value = '';
+  }
+
   // ── Mapa ────────────────────────────────────────────────────────────────
   const TILE_SAT = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
   const TILE_CLARO = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
@@ -38,7 +188,13 @@
     S.map = L.map('aia-map', { zoomControl: false, maxZoom: 21 }).setView(CENTRO_CUCUTA, 15);
     S.capaBase = L.tileLayer(TILE_SAT, { maxNativeZoom: 21, maxZoom: 21, attribution: '&copy; Google' }).addTo(S.map);
     S.capaPOIs = L.layerGroup().addTo(S.map);
-    S.map.on('click', e => setLote(e.latlng.lat, e.latlng.lng));
+    S.map.on('click', e => {
+      // Con el modo de agregar uso encendido, el toque ubica el uso; si no,
+      // mueve el lote como siempre. Sin esta bifurcación, señalar el gimnasio
+      // movería el punto de análisis y habría que empezar de nuevo.
+      if (S.ubicandoUso) { ubicarUsoManual(e.latlng.lat, e.latlng.lng); return; }
+      setLote(e.latlng.lat, e.latlng.lng);
+    });
   }
 
   function alternarBase(){
@@ -86,12 +242,16 @@
   function pintarPOIs(pois){
     S.capaPOIs.clearLayers();
     (pois || []).forEach(p => {
+      // El que se puso a mano se dibuja con aro blanco y más grande: hay que
+      // poder distinguir de un vistazo lo observado de lo añadido.
       L.circleMarker([p.lat, p.lng], {
-        radius: p.grupo === 'otro' ? 7 : 5,
-        color: '#0b1220', weight: 1.2,
+        radius: p.manual ? 8 : (p.grupo === 'otro' ? 7 : 5),
+        color: p.manual ? '#ffffff' : '#0b1220', weight: p.manual ? 2.4 : 1.2,
+        dashArray: p.manual ? '3 2' : null,
         fillColor: p.color, fillOpacity: p.grupo === 'otro' ? .95 : .85
       }).bindPopup('<b>' + p.icono + ' ' + escHTML(p.nombre) + '</b><br>' +
-        escHTML(window.AIA_MOTOR.GRUPOS[p.grupo].t) + ' · ' + p.distM + ' m')
+        escHTML(window.AIA_MOTOR.GRUPOS[p.grupo].t) + ' · ' + p.distM + ' m' +
+        (p.manual ? '<br><em>Agregado por ti</em>' : ''))
         .addTo(S.capaPOIs);
     });
   }
@@ -277,6 +437,31 @@
       if (nombreInput) nombreInput.value = '';
       setSheetState('wizard');
     });
+    const btnAgregar = $('aia-btn-agregar-uso');
+    if (btnAgregar) btnAgregar.addEventListener('click', () => {
+      const p = $('aia-agregar-uso');
+      if (p && p.hidden) abrirAgregarUso(); else cerrarAgregarUso();
+    });
+    const btnTocar = $('aia-uso-tocar');
+    if (btnTocar) btnTocar.addEventListener('click', () => {
+      S.ubicandoUso = !S.ubicandoUso;
+      btnTocar.classList.toggle('activo', S.ubicandoUso);
+      btnTocar.textContent = S.ubicandoUso ? '👆 Toca el sitio en el mapa' : '📍 Tocar en el mapa';
+    });
+    const selUso = $('aia-uso-sub');
+    if (selUso) selUso.addEventListener('change', refrescarBotonUso);
+    const btnGuardarUso = $('aia-uso-guardar');
+    if (btnGuardarUso) btnGuardarUso.addEventListener('click', () => {
+      const sub = $('aia-uso-sub').value;
+      if (!sub || !usoPendiente) return;
+      agregarUsoManual({ lat: usoPendiente.lat, lng: usoPendiente.lng, sub: sub,
+                         nombre: ($('aia-uso-nombre').value || '').trim() });
+      cerrarAgregarUso();
+      ejecutarAnalisis();
+    });
+    const btnCancelarUso = $('aia-uso-cancelar');
+    if (btnCancelarUso) btnCancelarUso.addEventListener('click', cerrarAgregarUso);
+
     $('aia-btn-informe').addEventListener('click', abrirExportar);
     $('aia-btn-capas').addEventListener('click', alternarBase);
     $('aia-btn-guardar').addEventListener('click', guardarAnalisisActual);
@@ -449,9 +634,12 @@
       // `S.forzarDatos` lo enciende el botón de recargar: salta la caché de 24 h
       // y vuelve a pedir el entorno. Sin esto, un local abierto o mapeado hoy
       // no aparecía hasta el día siguiente y parecía un fallo del análisis.
-      const elementos = await window.AIA_DATOS.consultarEntorno(
+      const descargados = await window.AIA_DATOS.consultarEntorno(
         S.lote.lat, S.lote.lng, S.radioM, S.forzarDatos);
       S.forzarDatos = false;
+      // Los usos que el usuario señaló a mano entran aquí, con la misma forma
+      // que los descargados: de ahí en adelante el motor los trata igual.
+      const elementos = descargados.concat(elementosManuales(S.lote, S.radioM));
       S.ultimosElementos = elementos;
       // Ciudad/departamento/país para titular el informe. No bloquea el
       // análisis: si falla, el informe simplemente omite esa línea.
@@ -560,9 +748,21 @@
     // se muestra tanto lo de este radio como el acumulado de todos los
     // análisis, que es lo que se revisa para decidir categorías nuevas.
     const band = window.AIA_MOTOR.resumenPendientes();
-    $('aia-aviso-otro').hidden = nOtro === 0 && band.patrones === 0;
+    // Cuántos de los puntos los puso el usuario. Declararlo no es un detalle:
+    // un informe que no distinga lo observado de lo añadido por el propio
+    // interesado no se puede auditar, y ante un cliente esa diferencia pesa.
+    const nMan = s.manuales || 0;
+    $('aia-aviso-otro').hidden = nOtro === 0 && band.patrones === 0 && nMan === 0;
     if (!$('aia-aviso-otro').hidden) {
       $('aia-aviso-otro').innerHTML =
+        (nMan > 0
+          ? '<p class="aia-aviso-manual">✍️ ' +
+            (nMan === 1 ? 'Un uso de este análisis lo agregaste tú'
+                        : nMan + ' usos de este análisis los agregaste tú') +
+            ' y no viene' + (nMan === 1 ? '' : 'n') + ' del mapa abierto. ' +
+            'Cuenta' + (nMan === 1 ? '' : 'n') + ' igual que los demás y sale' +
+            (nMan === 1 ? '' : 'n') + ' con aro blanco en el mapa.</p>'
+          : '') +
         (nOtro > 0
           ? '<p>❓ Se ' + (nOtro === 1 ? 'encontró 1 uso' : 'encontraron ' + nOtro + ' usos') +
             ' sin clasificar en este radio (aparecen en fucsia en el mapa). ' +
@@ -1385,6 +1585,15 @@
     $('aia-exportar-preview').hidden = true;
     $('aia-exportar').hidden = false;
   }
+
+  // Superficie mínima de lectura para poder inspeccionar y probar el estado
+  // desde fuera. Solo getters: nada de aquí modifica el análisis.
+  window.AIA_APP = {
+    get lote(){ return S.lote; },
+    get resultado(){ return S.resultado; },
+    get ultimoResultado(){ return S.resultado && S.resultado.stats; },
+    get usosManuales(){ return leerUsosManuales(); }
+  };
 
   // ── Arranque ────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {

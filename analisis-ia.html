@@ -30,7 +30,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=532-marca-en-brand-y-rubros" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=533-agregar-uso-a-mano" />
 </head>
 <body>
 
@@ -154,11 +154,30 @@
           <div id="aia-res-titulo"></div>
           <button id="aia-btn-reanalizar" type="button">↻ Re-analizar</button>
           <button id="aia-btn-refrescar" type="button" title="Vuelve a pedir el entorno ignorando lo guardado hoy">🔄 Datos frescos</button>
+          <button id="aia-btn-agregar-uso" type="button" title="Señala en el mapa un local que existe pero que no está mapeado">➕ Agregar uso</button>
           <button id="aia-btn-informe" type="button">📄 Exportar PDF</button>
           <button id="aia-btn-guardar" type="button">💾 Guardar</button>
           <button id="aia-btn-nuevo" type="button">✚ Nuevo análisis</button>
         </div>
         <div id="aia-usos-chips" hidden></div>
+        <!-- Panel para añadir a mano un uso que existe en la calle pero que
+             nadie ha dibujado en OpenStreetMap. Suma al análisis igual que
+             cualquier punto descargado, y queda marcado como añadido. -->
+        <section id="aia-agregar-uso" hidden>
+          <h3>➕ Agregar un uso al análisis</h3>
+          <p class="aia-agregar-ayuda">Para los locales que existen en la calle pero que todavía no están en el mapa abierto. Suman al análisis igual que los descargados y quedan señalados como añadidos por ti.</p>
+          <label for="aia-uso-sub">Qué es</label>
+          <select id="aia-uso-sub"></select>
+          <label for="aia-uso-nombre">Cómo se llama <small>(opcional)</small></label>
+          <input id="aia-uso-nombre" type="text" placeholder="Smart Fit, Ventura Plaza…" autocomplete="off">
+          <div id="aia-uso-donde">📍 Ubicación: <b>sin definir</b></div>
+          <div class="aia-uso-botones">
+            <button id="aia-uso-tocar" type="button">📍 Tocar en el mapa</button>
+            <button id="aia-uso-guardar" type="button" disabled>Agregar y re-analizar</button>
+            <button id="aia-uso-cancelar" type="button">Cancelar</button>
+          </div>
+          <div id="aia-uso-lista"></div>
+        </section>
         <div id="aia-kpis"></div>
         <div id="aia-aviso-otro" hidden></div>
         <div id="aia-viabilidad" hidden></div>
@@ -291,10 +310,10 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=532-marca-en-brand-y-rubros"></script>
-<script src="js/60-analisis-ia-motor.js?v=532-marca-en-brand-y-rubros"></script>
-<script src="js/61-analisis-ia-datos.js?v=532-marca-en-brand-y-rubros"></script>
-<script src="js/63-analisis-ia-informe.js?v=532-marca-en-brand-y-rubros"></script>
-<script src="js/62-analisis-ia-app.js?v=532-marca-en-brand-y-rubros"></script>
+<script src="js/00-config.js?v=533-agregar-uso-a-mano"></script>
+<script src="js/60-analisis-ia-motor.js?v=533-agregar-uso-a-mano"></script>
+<script src="js/61-analisis-ia-datos.js?v=533-agregar-uso-a-mano"></script>
+<script src="js/63-analisis-ia-informe.js?v=533-agregar-uso-a-mano"></script>
+<script src="js/62-analisis-ia-app.js?v=533-agregar-uso-a-mano"></script>
 </body>
 </html>

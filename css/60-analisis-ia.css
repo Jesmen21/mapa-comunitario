@@ -889,3 +889,61 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
   #aia-exportar-panel{ max-width:680px; }
   #aia-exportar-iframe{ min-height:70vh; }
 }
+
+/* ── Agregar un uso a mano ───────────────────────────────────────────────
+   Para los locales que existen en la calle pero que nadie ha dibujado en
+   OpenStreetMap. El panel vive dentro de los resultados porque es ahí donde
+   uno se da cuenta de que falta algo. */
+#aia-agregar-uso{
+  margin:10px 0; padding:12px; border-radius:12px;
+  background:var(--aia-card); border:1px solid var(--aia-borde);
+}
+#aia-agregar-uso h3{ margin:0 0 4px; font-size:.86rem; color:var(--aia-texto); }
+.aia-agregar-ayuda{ font-size:.68rem; color:var(--aia-texto2); line-height:1.4; margin:0 0 10px; }
+#aia-agregar-uso label{
+  display:block; font-size:.68rem; color:var(--aia-texto2); margin:8px 0 3px;
+}
+#aia-agregar-uso label small{ opacity:.7; }
+#aia-uso-sub, #aia-uso-nombre{
+  width:100%; padding:9px 10px; border-radius:9px; font-size:.8rem;
+  background:var(--aia-bg); color:var(--aia-texto);
+  border:1px solid var(--aia-borde);
+}
+#aia-uso-donde{
+  margin:10px 0 8px; font-size:.72rem; color:var(--aia-texto2);
+  padding:7px 9px; border-radius:9px; background:var(--aia-bg);
+  border:1px dashed var(--aia-borde);
+}
+#aia-uso-donde b{ color:var(--aia-texto); }
+.aia-uso-botones{ display:flex; flex-wrap:wrap; gap:7px; }
+.aia-uso-botones button{
+  flex:1 1 auto; min-width:110px; padding:9px 11px; border-radius:9px;
+  font-size:.74rem; cursor:pointer;
+  background:var(--aia-bg); color:var(--aia-texto);
+  border:1px solid var(--aia-borde);
+}
+/* Encendido mientras se espera el toque en el mapa: sin esta señal no se
+   sabe si el siguiente toque ubica el uso o mueve el lote. */
+#aia-uso-tocar.activo{
+  background:var(--aia-acento); color:#04202a; border-color:var(--aia-acento); font-weight:700;
+}
+#aia-uso-guardar:not(:disabled){
+  background:var(--aia-acento); color:#04202a; border-color:var(--aia-acento); font-weight:700;
+}
+#aia-uso-guardar:disabled{ opacity:.45; cursor:not-allowed; }
+#aia-uso-lista h4{ margin:12px 0 5px; font-size:.72rem; color:var(--aia-texto2); }
+.aia-uso-item{
+  display:flex; align-items:center; gap:8px; padding:5px 0;
+  border-bottom:1px solid var(--aia-borde); font-size:.73rem; color:var(--aia-texto2);
+}
+.aia-uso-item:last-child{ border-bottom:none; }
+.aia-uso-item span{ flex:1; }
+.aia-uso-item b{ color:var(--aia-texto); }
+.aia-uso-item button{
+  flex:none; width:26px; height:26px; border-radius:7px; cursor:pointer;
+  background:transparent; color:var(--aia-texto2);
+  border:1px solid var(--aia-borde);
+}
+.aia-aviso-manual{
+  font-size:.72rem; color:var(--aia-texto2); line-height:1.45; margin:0 0 8px;
+}

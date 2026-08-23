@@ -661,8 +661,25 @@
       ' Un local de paso capta mucho más ahí que en un punto equivalente del mismo radio.';
   }
 
+  // Etiqueta propia de URBIS para los usos que el usuario agrega a mano desde
+  // el análisis. Va ANTES que todo: si alguien señaló en el mapa "aquí hay un
+  // gimnasio", no hay nada que deducir. Es lo que permite corregir el análisis
+  // cuando el local existe en la calle pero nadie lo ha dibujado en
+  // OpenStreetMap, sin tener que esperar a que alguien lo mapee.
+  const TAG_SUB_MANUAL = 'urbis:sub';
+  const TAG_MANUAL = 'urbis:manual';
+
   function clasificarPOI(tags){
     tags = tags || {};
+    const forzada = tags[TAG_SUB_MANUAL];
+    if (forzada) {
+      const r = subDeTaxonomia(String(forzada));
+      // Si la subcategoría no existe (dato viejo, o alguien editó a mano el
+      // almacenamiento), se ignora la orden y se clasifica como cualquier otro
+      // punto: mejor deducir mal que inventar una categoría que no está en la
+      // Matriz y romper todo lo que cuenta por subcategoría.
+      if (r) return r;
+    }
     for (let i = 0; i < REGLAS_COMPUESTAS.length; i++) {
       const rc = REGLAS_COMPUESTAS[i];
       let aplica = false;
@@ -791,6 +808,7 @@
     Object.keys(GRUPOS).forEach(g => { porGrupo[g] = 0; topPorGrupo[g] = []; });
 
     const pois = [];
+    let manuales = 0;
     const movilidad = { viasArterias: [], tramosVia: [], nViasArterias: 0, paradasBus: 0, ciclorrutas: 0, scoreAcceso: 0 };
 
     (elementos || []).forEach(el => {
@@ -822,6 +840,11 @@
       porSub[c.sub] = (porSub[c.sub] || 0) + 1;
       const poi = { lat, lng, nombre: nombrePOI(tags) || c.nombre, sub: c.sub, grupo: c.grupo,
                     color: GRUPO_COLOR[c.grupo], icono: c.icono, distM };
+      // Un uso puesto a mano vale para el cálculo exactamente igual que uno
+      // mapeado —para eso se agrega—, pero queda marcado: un informe que no
+      // distinga lo observado de lo añadido por el propio interesado no se
+      // puede auditar, y ante un cliente esa diferencia importa.
+      if (tags[TAG_MANUAL] === 'si') { poi.manual = true; manuales++; }
       // Solo los que quedan sin clasificar guardan sus etiquetas OSM: son los
       // únicos que hay que investigar para asignarles categoría, y así no se
       // infla la memoria ni el almacenamiento con miles de puntos ya resueltos.
@@ -1478,6 +1501,8 @@
     return {
       total: pois.length, areaHa: Math.round(areaHa * 10) / 10,
       porGrupo, porSub, rubros,
+      // Cuántos de esos puntos los puso el usuario, para poder declararlo.
+      manuales,
       densidadPorHa: Math.round(10 * pois.length / Math.max(areaHa, 0.1)) / 10,
       poblacionEstimada, poblacionHeuristica, usoPredominante,
       // Trazabilidad de la cifra: el informe debe poder decir si el número es

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v532-marca-en-brand-y-rubros';
+const URBIS_CACHE = 'urbis-v533-agregar-uso-a-mano';
 const URBIS_ASSETS = [
   './',
   './index.html',
