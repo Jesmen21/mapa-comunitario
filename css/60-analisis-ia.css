@@ -281,6 +281,44 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-flujo-gen li b{ flex:0 0 32px; text-align:right; color:var(--aia-acento); }
 .aia-flujo-vacio,
 .aia-flujo-nota{ font-size:.66rem; color:var(--aia-texto2); opacity:.75; line-height:1.4; margin:10px 0 0; }
+/* Lo que RESTA va en rojo y con el signo menos: tiene que leerse de un
+   vistazo como lo contrario de la lista de arriba, no como más de lo mismo. */
+.aia-flujo-resta li b{ color:#f87171; }
+/* ── Mapas de calor ──────────────────────────────────────────────────────
+   Tres paneles cuadrados. En móvil no caben tres en fila sin volverse
+   ilegibles, así que se deja que bajen a dos y luego a uno. */
+.aia-calor{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+  gap:10px; margin-top:8px;
+}
+.aia-calor-panel{ margin:0; position:relative; min-width:0; }
+.aia-calor-panel figcaption{
+  font-size:.68rem; font-weight:600; color:var(--aia-texto); margin-bottom:4px; line-height:1.25;
+}
+.aia-calor-panel figcaption em{
+  display:block; font-style:normal; font-weight:400; font-size:.6rem;
+  color:var(--aia-texto2); opacity:.8;
+}
+.aia-calor-lienzo{ position:relative; }
+.aia-calor-panel img,
+.aia-calor-vacio{
+  display:block; width:100%; aspect-ratio:1/1; border-radius:10px;
+  background:var(--aia-card); border:1px solid var(--aia-borde);
+}
+/* La cruz marca el lote: el centro exacto de la malla, que es donde se hizo
+   el análisis. Sin ella el mapa es una mancha sin punto de referencia. Se
+   ancla al lienzo y no a la figura, que lleva el título encima. */
+.aia-calor-centro{
+  position:absolute; left:50%; top:50%; width:13px; height:13px;
+  margin:-6.5px 0 0 -6.5px; pointer-events:none;
+  background:
+    linear-gradient(to right, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
+    linear-gradient(to bottom, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.9));
+}
+.aia-calor-panel small{
+  display:block; font-size:.6rem; color:var(--aia-texto2); line-height:1.35; margin-top:4px;
+}
 .aia-traf-fila{
   display:flex; align-items:baseline; justify-content:space-between; gap:8px;
   padding:6px 9px; border-radius:9px; background:var(--aia-card);

@@ -193,6 +193,156 @@
     return html;
   }
 
+  // ── Mapas de calor ──────────────────────────────────────────────────────
+  //
+  // El flujo es un número para todo el radio, y eso promedia lo que más
+  // importa: pegado al gimnasio pasa gente que 300 m más allá no pasa. Estas
+  // tres capas reparten el MISMO cálculo sobre la malla del motor y lo pintan
+  // encima del mapa, para poder señalar la esquina en vez de describirla.
+  //
+  // Se dibuja en un lienzo de 26×26 —el tamaño real del dato— y se reescala
+  // con suavizado. Pintar 676 divs por capa haría el PDF tres veces más
+  // pesado y no añadiría ni un dato: la malla no tiene más resolución.
+  const RAMPAS = {
+    // A pie: de verde (poco) a rojo (mucho). Vehicular en azul-morado para
+    // que las dos capas no se confundan al verlas una al lado de la otra.
+    peaton:  [[0,[ 32,140, 90, 0]], [.25,[120,190, 60,110]], [.5,[245,205, 60,165]],
+              [.75,[240,140, 40,200]], [1,[214, 40, 40,225]]],
+    vehiculo:[[0,[ 30, 90,170, 0]], [.25,[ 70,130,220,110]], [.5,[110,110,225,165]],
+              [.75,[150, 70,205,200]], [1,[120, 20,150,225]]]
+  };
+  function colorRampa(ramp, t){
+    for (let i = 1; i < ramp.length; i++) {
+      if (t <= ramp[i][0]) {
+        const a = ramp[i-1], b = ramp[i];
+        const k = (t - a[0]) / (b[0] - a[0] || 1);
+        return [0,1,2,3].map(c => Math.round(a[1][c] + (b[1][c] - a[1][c]) * k));
+      }
+    }
+    return ramp[ramp.length-1][1];
+  }
+  function pngCalor(capa, n, tipo){
+    try {
+      const c = document.createElement('canvas'); c.width = n; c.height = n;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(n, n);
+      const ramp = RAMPAS[tipo] || RAMPAS.peaton;
+      for (let k = 0; k < n * n; k++) {
+        const v = capa[k], px = k * 4;
+        if (v == null || v < 0) { img.data[px + 3] = 0; continue; }
+        const col = colorRampa(ramp, Math.max(0, Math.min(1, v / 100)));
+        img.data[px] = col[0]; img.data[px+1] = col[1]; img.data[px+2] = col[2]; img.data[px+3] = col[3];
+      }
+      ctx.putImageData(img, 0, 0);
+      const g = document.createElement('canvas'); g.width = g.height = 260;
+      const gx = g.getContext('2d');
+      gx.imageSmoothingEnabled = true; gx.imageSmoothingQuality = 'high';
+      gx.drawImage(c, 0, 0, 260, 260);
+      return g.toDataURL('image/png');
+    } catch (e) { return ''; }
+  }
+
+  function panelCalor(r, capa, foco, titulo, sub, tipo){
+    const W = 400, H = 300;
+    const z = calcZoom(r.meta.lat, r.meta.radioM, Math.min(W, H));
+    const url = urlMapaEstatico(r.meta, W, H, z.z);
+    const pctW = (z.radioPx / W * 200).toFixed(2), pctH = (z.radioPx / H * 200).toFixed(2);
+    const png = pngCalor(capa, (r.stats.movilidad.flujo.mapaCalor || {}).n || 26, tipo);
+    // El foco se marca sobre el mapa con la misma cuenta que usa el motor,
+    // para que el punto del plano y la frase de abajo hablen del mismo sitio.
+    let marcaFoco = '';
+    if (foco) {
+      const dx = (foco.lng - r.meta.lng) * 111320 * Math.cos(r.meta.lat * Math.PI / 180) / z.mpp;
+      const dy = -(foco.lat - r.meta.lat) * 110540 / z.mpp;
+      marcaFoco = '<i class="calor-foco" style="left:' + ((W/2 + dx) / W * 100).toFixed(2) +
+                  '%;top:' + ((H/2 + dy) / H * 100).toFixed(2) + '%"></i>';
+    }
+    return '<div class="calor-panel">' +
+      '<h3>' + esc(titulo) + '<em>' + esc(sub) + '</em></h3>' +
+      '<div class="mapa-marco"><div class="mapa-wrap">' +
+        (url ? '<img class="mapa-img" src="' + url + '" alt="' + esc(titulo) + '">'
+             : '<div class="mapa-img mapa-vacio"></div>') +
+        (png ? '<img class="calor-capa" src="' + png + '" style="width:' + pctW +
+               '%;height:' + pctH + '%" alt="">' : '') +
+        marcaFoco +
+        '<div class="mapa-pin"><i class="cruz-h"></i><i class="cruz-v"></i><i class="punto"></i></div>' +
+      '</div></div>' +
+      '<p class="calor-foco-txt">' +
+        (foco ? 'Punto más activo: <b>' + esc(foco.texto) + '</b> del lote.'
+              : 'Sin actividad suficiente para señalar un punto.') + '</p>' +
+      '</div>';
+  }
+
+  function bloqueMapaCalor(r){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    const mc = f && f.mapaCalor;
+    if (!mc) return '';
+    const leyenda = tipo =>
+      '<div class="calor-leyenda ' + tipo + '"><span>menos</span><i></i><span>más</span></div>';
+    return '<div class="calor-fila">' +
+        panelCalor(r, mc.peatonalDia, mc.focoDia, 'A pie · de día',
+                   'mañana a tarde', 'peaton') +
+        panelCalor(r, mc.peatonalNoche, mc.focoNoche, 'A pie · de noche',
+                   'después de las 7 p.m.', 'peaton') +
+        panelCalor(r, mc.vehicular, mc.focoVehicular, 'En vehículo',
+                   'corredores y atractores', 'vehiculo') +
+      '</div>' +
+      '<div class="calor-pie">' + leyenda('peaton') + leyenda('vehiculo') +
+        '<p class="pie-nota">' +
+          'Cada capa se colorea contra su propio máximo: responde <b>dónde</b> se concentra el ' +
+          'movimiento dentro del radio, no cuánto — para el cuánto están las cifras de flujo. ' +
+          'El cálculo suma los usos que atraen gente y <b>resta</b> los que rompen el recorrido ' +
+          '(bodegas, lotes, locales cerrados).' +
+          (mc.fiable ? '' : ' Atención: con pocos puntos mapeados en el radio, este mapa es indicativo ' +
+                            'y conviene contrastarlo en campo.') +
+        '</p>' +
+      '</div>';
+  }
+
+  // Qué atrae VEHÍCULOS, que no es lo mismo que qué atrae peatones: a una
+  // ferretería o a una bodega no se llega a pie con la compra al hombro. Sin
+  // esta lista, dos esquinas de la misma avenida se leían idénticas aunque
+  // una tuviera un centro comercial al lado y la otra casas.
+  function bloqueAtraeVehiculo(r){
+    const f = r.stats.movilidad && r.stats.movilidad.flujo;
+    const gen = (f && f.generadoresVehiculo || []).slice(0, 6);
+    const filas = gen.length
+      ? '<table class="tbl-gente"><tr><th>Uso</th><th class="n">Cant.</th><th class="n">Aporte</th></tr>' +
+        gen.map(g => '<tr><td>' + esc(g.nombre) + '</td><td class="n">' + g.n +
+          '</td><td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
+      : '<p class="nota-pie">No se identificaron usos que atraigan viajes en vehículo en el radio.</p>';
+    return '<div class="tarjeta"><h2>Qué atrae vehículos</h2>' + filas +
+      '<p class="pie-nota">' + textoParqueo(f) + '</p></div>';
+  }
+
+  // De qué vive la cuadra. Contar comercios no dice nada por sí solo: 20
+  // almacenes de ropa y 20 ferreterías dan el mismo número y son sectores
+  // opuestos para quien va a poner un local.
+  function bloqueVocacion(r){
+    const c = (r.indicadores && r.indicadores.comercio) || {};
+    const v = c.vocacion || {};
+    const rep = (v.reparto || []).filter(x => x.n > 0).slice(0, 5);
+    const maxN = rep.length ? rep[0].n : 1;
+    // Clase propia y no `.hf`: comparten aspecto, pero son cosas distintas —
+    // una son horas del día y la otra rubros— y mezclarlas hacía imposible
+    // comprobar cualquiera de las dos por separado.
+    const barras = rep.map(x =>
+      '<div class="hf voc-fila"><span>' + esc(x.nombre) + '</span><div class="cl-barra"><i style="width:' +
+      Math.round(100 * x.n / maxN) + '%;background:' + T.acento + '"></i></div><b>' + x.n + '</b></div>').join('');
+    return '<div class="tarjeta"><h2>De qué vive la cuadra</h2>' +
+      (v.nombre
+        ? '<p class="voc-titulo">' + esc(v.nombre) + ' <em>· ' + v.share + '% de la oferta</em></p>' +
+          '<p class="voc-lectura">' + esc(v.lectura || '') + '</p>'
+        : '<p class="voc-lectura">Sin masa comercial suficiente para asignarle una vocación al sector: ' +
+          'la oferta instalada es demasiado escasa o demasiado repartida.</p>') +
+      barras +
+      ((c.top && c.top.length)
+        ? '<p class="pie-nota">Los rubros que más pesan: ' +
+          c.top.map(t => t.n + ' &times; ' + esc(t.nombre.toLowerCase())).join(', ') + '.</p>'
+        : '') +
+      '</div>';
+  }
+
   function bloqueMapa(r, horizontal){
     // Apaisado 4:3 en vez de cuadrado: el mapa va en su propia columna y así
     // se come bastante menos alto de la hoja, que es lo que obliga al
@@ -877,13 +1027,31 @@
   function bloqueTraeGente(r){
     const f = r.stats.movilidad && r.stats.movilidad.flujo;
     if (!f) return '';
-    const gen = (f.generadores || []).slice(0, 6);
+    // Ocho filas y no seis: al abrir la matriz en rubros aparecieron más tipos
+    // de generador, y con seis se quedaba fuera justamente el gimnasio —el
+    // hito que se pidió resaltar—. La tabla cabe: el aro de más se compensa
+    // recortando el aire, no la información.
+    const gen = (f.generadores || []).slice(0, 8);
     const filas = gen.length
       ? '<table class="tbl-gente"><tr><th>Uso / ejemplos</th><th class="n">Cant.</th><th class="n">Aporte</th></tr>' +
         gen.map(g => '<tr><td>' + esc(g.nombre) +
           ((g.ejemplos && g.ejemplos.length) ? '<em>' + esc(g.ejemplos.join(' &middot; ')) + '</em>' : '') +
           '</td><td class="n">' + g.n + '</td><td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
       : '<p class="nota-pie">No se identificaron generadores de peatones en el radio.</p>';
+    // Lo que RESTA. Un informe que solo suma miente por omisión: el tramo de
+    // bodegas o los tres locales cerrados con reja son lo que corta el
+    // recorrido a pie, y quien va a poner un local necesita verlo.
+    const pen = (f.penalizadores || []).slice(0, 4);
+    const resta = pen.length
+      ? '<div class="resta"><h3>Lo que rompe el recorrido a pie</h3>' +
+        pen.map(pp => '<div class="resta-fila"><span>' + esc(pp.nombre) +
+          ' <em>&middot; ' + esc(pp.motivo) + '</em></span><b>&minus;' + pp.resta +
+          ' (' + pp.n + ')</b></div>').join('') +
+        '<p class="pie-nota">Descuenta ' + (f.restaPeaton || 0) + ' de ' + (f.sumaBruta || 0) +
+        ' puntos brutos de atracción peatonal.</p></div>'
+      : '<div class="resta"><h3>Lo que rompe el recorrido a pie</h3>' +
+        '<p class="pie-nota">No se detectaron frentes muertos (bodegas, lotes encerrados, ' +
+        'locales desocupados o ruinas) en el radio: la continuidad del andén no tiene cortes visibles.</p></div>';
     const hora = (etq, val) =>
       '<div class="hf"><span>' + etq + '</span><div class="cl-barra"><i style="width:' + val +
       '%;background:' + T.acento + '"></i></div><b>' + val + '</b></div>';
@@ -898,14 +1066,16 @@
     return '<div class="gente">' +
       '<div class="tarjeta">' + filas + '</div>' +
       '<div class="tarjeta"><h2>Hora fuerte</h2>' +
-        hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) + hora('Tarde', f.franjas.tarde) +
+        hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) +
+        hora('Tarde', f.franjas.tarde) + hora('Noche', f.franjas.noche || 0) +
         (hitos.length
           ? '<h2 class="h2-sep">Hitos que mueven la acera</h2>' +
             hitos.map(h => '<div class="hito-fila' + (h.sub === 'gimnasio' ? ' fuerte' : '') + '">' +
               '<span>' + esc(h.nombre) + '</span><b>' + h.distM + ' m</b></div>').join('') +
             (resto ? '<p class="nota-pie">+ ' + esc(resto.nombre) + ' &middot; ' + resto.distM + ' m</p>' : '')
           : '') +
-      '</div></div>';
+      '</div>' +
+      '<div>' + resta + '</div></div>';
   }
 
   // Franja de tránsito y combustible: dos magnitudes en una línea ancha.
@@ -1001,7 +1171,12 @@
       '</div>';
   }
 
-  // Cabecera y pie iguales en las tres hojas: la numeración "n/3" es lo único
+  // Cuántas hojas tiene el informe. Vive en una constante porque la
+  // numeración del pie y la del encabezado tienen que decir lo mismo, y
+  // antes había que acordarse de cambiar los dos sitios a mano.
+  const N_HOJAS = 4;
+
+  // Cabecera y pie iguales en todas las hojas: la numeración "n/N" es lo único
   // que cambia, y es lo que permite reconocer una hoja suelta si se imprime.
   function cabecera(titulo, rotulo, sub, fecha, n){
     return '<header>' +
@@ -1009,12 +1184,12 @@
       '<div class="head-txt"><h1>' + esc(titulo) + '</h1>' +
       '<p>' + esc(rotulo) + '</p>' +
       (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>' +
-      '<div class="sub">' + esc(fecha) + '<b>' + n + '/3</b></div>' +
+      '<div class="sub">' + esc(fecha) + '<b>' + n + '/' + N_HOJAS + '</b></div>' +
       '</header>';
   }
 
   function pie(n, r, autor){
-    return '<footer><span>Página ' + n + ' de 3 · ' + (autor ? esc(autor) + ' · ' : '') +
+    return '<footer><span>Página ' + n + ' de ' + N_HOJAS + ' · ' + (autor ? esc(autor) + ' · ' : '') +
       '<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span>' +
       '<span>Fuentes: ' + (r.stats.poblacionEsCensal ? 'Censo DANE 2018 · ' : '') +
       'OpenStreetMap · evaluación heurística URBIS</span></footer>';
@@ -1312,6 +1487,36 @@
 // propio: salía con la letra por defecto del navegador, enorme, y se comía la
 // hoja obligando al auto-ajuste a encoger todo lo demás.
 '.pie-nota{font-size:7.2px;line-height:1.45;color:', T.txt3, ';margin-top:6px;font-style:italic}',
+
+/* ── Mapas de calor ──────────────────────────────────────────────── */
+// Los tres paneles comparten fila y ancho. `min-width:0` es obligatorio en
+// una rejilla: sin él, el panel se niega a encoger por debajo de su
+// contenido y el tercero se sale de la hoja.
+'.calor-fila{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;align-items:start}',
+'.calor-panel{min-width:0}',
+'.calor-panel h3{margin:0 0 4px;font-size:8.6px;font-weight:700;color:', T.tinta, ';letter-spacing:.2px}',
+'.calor-panel h3 em{display:block;font-style:normal;font-weight:400;font-size:7.2px;color:', T.txt3, '}',
+// La capa se centra sobre el mismo círculo que dibuja `.mapa-radio`: si se
+// estirara al recuadro entero, el calor quedaría corrido respecto al lote.
+'.calor-capa{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:.72;pointer-events:none}',
+'.calor-foco{position:absolute;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border:1.6px solid #fff;',
+  'border-radius:50%;background:transparent;box-shadow:0 0 0 1.4px rgba(0,0,0,.55)}',
+'.calor-foco-txt{margin:4px 0 0;font-size:7.4px;line-height:1.4;color:', T.txt2, '}',
+'.calor-pie{margin-top:6px}',
+'.voc-titulo{margin:0 0 3px;font-size:9.4px;font-weight:700;color:', T.acento, '}',
+'.voc-titulo em{font-style:normal;font-weight:400;font-size:7.6px;color:', T.txt3, '}',
+'.voc-lectura{margin:0 0 6px;font-size:8px;line-height:1.45;color:', T.txt2, '}',
+'.calor-leyenda{display:inline-flex;align-items:center;gap:5px;font-size:7px;color:', T.txt3, ';margin-right:14px}',
+'.calor-leyenda i{display:block;width:78px;height:7px;border-radius:3px}',
+'.calor-leyenda.peaton i{background:linear-gradient(90deg,rgba(120,190,60,.45),rgba(245,205,60,.75),rgba(214,40,40,.9))}',
+'.calor-leyenda.vehiculo i{background:linear-gradient(90deg,rgba(70,130,220,.45),rgba(110,110,225,.75),rgba(120,20,150,.9))}',
+'.resta{border:1px solid ', T.bad, '33;border-radius:6px;padding:6px 8px;background:', T.bad, '0d}',
+'.resta h3{margin:0 0 4px;font-size:8.4px;font-weight:700;color:', T.bad, '}',
+'.resta-fila{display:flex;justify-content:space-between;gap:6px;font-size:7.6px;',
+  'padding:2px 0;border-bottom:1px solid ', T.bad, '22}',
+'.resta-fila:last-child{border-bottom:none}',
+'.resta-fila em{font-style:normal;color:', T.txt3, '}',
+'.resta-fila b{color:', T.bad, ';white-space:nowrap}',
 '.flujo-aviso{font-size:8.5px;line-height:1.5;margin-top:6px;padding:5px 7px;border-radius:4px;',
   'background:rgba(245,185,66,.12);border:1px solid rgba(245,185,66,.45)}',
 '.foda-grid4{display:grid;grid-template-columns:repeat(', (horizontal ? '4' : '2'), ',1fr);gap:5px}',
@@ -1418,7 +1623,10 @@
 '.sub-resumen span{display:block;font-size:7.4px;color:', T.txt2, ';margin-top:1px}',
 '.et-ok{color:', T.ok, '}.et-bad{color:', T.bad, '}',
 /* 6 · Qué trae gente a pie */
-'.gente{display:grid;grid-template-columns:1.6fr 1fr;gap:6px;align-items:start}',
+// Tres columnas: la tabla de lo que suma, las horas con sus hitos, y lo que
+// resta. `min-width:0` para que ninguna se niegue a encoger y desborde.
+'.gente{display:grid;grid-template-columns:1.5fr 1fr .9fr;gap:6px;align-items:start}',
+'.gente>*{min-width:0}',
 '.tbl-gente{width:100%;border-collapse:collapse;font-size:8px}',
 '.tbl-gente th{background:none;text-align:left;font-size:7.2px;text-transform:uppercase;letter-spacing:.4px;',
 'color:', T.cab1, ';padding:3px 4px;border-bottom:1px solid ', T.borde, '}',
@@ -1506,33 +1714,51 @@ seccion(5, 'Cómo se mueve el entorno', 'del tránsito a la oportunidad'),
   '<div>', bloqueMovilidad(r), '</div>',
 '</div>',
 
-seccion(6, 'Qué trae gente a pie', 'usos que ayudan a activar la zona'),
+seccion(6, 'Qué trae gente a pie y qué se lo lleva', 'lo que suma y lo que resta en el andén'),
 bloqueTraeGente(r),
 franjaTransito(r),
 
 pie(2, r, autor),
 '</div></div>',
 
-// ══ HOJA 3 · composición, población y la lectura FODA ══
+// ══ HOJA 3 · dónde está el movimiento, no cuánto ══
+// Hoja propia porque los tres mapas necesitan tamaño para leerse: metidos en
+// una columna de otra hoja se convierten en tres estampillas de colores.
 '<div class="hoja"><div class="contenido">',
 
-cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y lectura FODA', fecha, 3),
+cabecera(titulo, 'Mapas de calor de movilidad', 'dónde se concentra el tránsito dentro del radio', fecha, 3),
 
-seccion(7, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
+seccion(7, 'Dónde está el movimiento', 'el mismo cálculo, repartido sobre el terreno'),
+bloqueMapaCalor(r),
+
+'<div class="fila dos" style="margin-top:8px">',
+  '<div>', bloqueAtraeVehiculo(r), '</div>',
+  '<div>', bloqueVocacion(r), '</div>',
+'</div>',
+
+pie(3, r, autor),
+'</div></div>',
+
+// ══ HOJA 4 · composición, población y la lectura FODA ══
+'<div class="hoja"><div class="contenido">',
+
+cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y lectura FODA', fecha, 4),
+
+seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
 '<div class="fila dos">',
   '<div>', bloqueComposicion(r), '</div>',
   '<div>', bloqueIndicadoresFilas(r), '</div>',
 '</div>',
 
-seccion(8, 'El entorno según la distancia', 'mismo dato, varios radios'),
+seccion(9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 
-seccion(9, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
+seccion(10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),
 '<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
   'prefactibilidad financiera antes de avanzar a diseño.</div>',
 
-pie(3, r, autor),
+pie(4, r, autor),
 '</div></div>',
 
 '</div>',

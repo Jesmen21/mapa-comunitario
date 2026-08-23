@@ -728,6 +728,46 @@
   // El informe en PDF ya traía este bloque, pero quien decide dónde poner una
   // cafetería lo hace mirando la pantalla, no exportando un PDF. Va en la app
   // con la misma lectura para que no haya que interpretar dos cosas distintas.
+  // ── Mapa de calor: la malla del motor pintada como imagen ──────────────
+  // Se dibuja en un lienzo del tamaño REAL del dato (26×26) y se reescala con
+  // suavizado. Pintar 676 divs por capa recargaría el móvil sin añadir ni un
+  // dato: la malla no tiene más resolución de la que tiene.
+  const RAMPAS_CALOR = {
+    peaton:  [[0,[ 32,140, 90, 0]], [.25,[120,190, 60,110]], [.5,[245,205, 60,170]],
+              [.75,[240,140, 40,205]], [1,[214, 40, 40,230]]],
+    vehiculo:[[0,[ 30, 90,170, 0]], [.25,[ 70,130,220,110]], [.5,[110,110,225,170]],
+              [.75,[150, 70,205,205]], [1,[120, 20,150,230]]]
+  };
+  function pngCalorApp(capa, n, tipo){
+    try {
+      const ramp = RAMPAS_CALOR[tipo] || RAMPAS_CALOR.peaton;
+      const mezcla = t => {
+        for (let i = 1; i < ramp.length; i++) {
+          if (t <= ramp[i][0]) {
+            const a = ramp[i-1], b = ramp[i], k = (t - a[0]) / (b[0] - a[0] || 1);
+            return [0,1,2,3].map(c => Math.round(a[1][c] + (b[1][c] - a[1][c]) * k));
+          }
+        }
+        return ramp[ramp.length-1][1];
+      };
+      const c = document.createElement('canvas'); c.width = c.height = n;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(n, n);
+      for (let k = 0; k < n * n; k++) {
+        const v = capa[k], px = k * 4;
+        if (v == null || v < 0) { img.data[px + 3] = 0; continue; }
+        const col = mezcla(Math.max(0, Math.min(1, v / 100)));
+        img.data[px] = col[0]; img.data[px+1] = col[1]; img.data[px+2] = col[2]; img.data[px+3] = col[3];
+      }
+      ctx.putImageData(img, 0, 0);
+      const g = document.createElement('canvas'); g.width = g.height = 240;
+      const gx = g.getContext('2d');
+      gx.imageSmoothingEnabled = true; gx.imageSmoothingQuality = 'high';
+      gx.drawImage(c, 0, 0, 240, 240);
+      return g.toDataURL('image/png');
+    } catch (e) { return ''; }
+  }
+
   function renderFlujo(r){
     const cont = $('aia-flujo');
     if (!cont) return;
@@ -754,12 +794,66 @@
         ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
         : 'El entorno reparte parejo entre peatón y carro: conviene resolver los dos accesos y no apostar a uno solo.';
 
-    const gen = (f.generadores || []).slice(0, 6);
+    const gen = (f.generadores || []).slice(0, 8);
     const listaGen = gen.length
       ? '<ul class="aia-flujo-gen">' + gen.map(g =>
           '<li><span>' + escHTML(g.nombre) + '</span><small>×' + g.n + '</small><b>' + g.aporte + '</b></li>'
         ).join('') + '</ul>'
       : '<p class="aia-flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
+
+    // Lo que RESTA. Un análisis que solo suma miente por omisión: el tramo de
+    // bodegas o los locales cerrados con reja son lo que corta el recorrido a
+    // pie, y quien va a poner un local necesita verlo tanto como lo que suma.
+    const pen = (f.penalizadores || []).slice(0, 4);
+    const listaResta = pen.length
+      ? '<h4 class="aia-flujo-sub">Qué rompe el recorrido a pie</h4>' +
+        '<ul class="aia-flujo-gen aia-flujo-resta">' + pen.map(pp =>
+          '<li><span>' + escHTML(pp.nombre) + ' · ' + escHTML(pp.motivo) + '</span>' +
+          '<small>×' + pp.n + '</small><b>−' + pp.resta + '</b></li>').join('') + '</ul>' +
+        '<p class="aia-flujo-nota">Descuenta ' + (f.restaPeaton || 0) + ' de ' + (f.sumaBruta || 0) +
+        ' puntos brutos de atracción peatonal.</p>'
+      : '';
+
+    // Qué atrae VEHÍCULOS, que no es lo mismo que qué atrae peatones: a una
+    // ferretería o a una bodega no se llega a pie con la compra al hombro.
+    const genV = (f.generadoresVehiculo || []).slice(0, 5);
+    const listaVeh = genV.length
+      ? '<h4 class="aia-flujo-sub">Qué atrae vehículos</h4>' +
+        '<ul class="aia-flujo-gen">' + genV.map(g =>
+          '<li><span>' + escHTML(g.nombre) + '</span><small>×' + g.n + '</small><b>' + g.aporte + '</b></li>'
+        ).join('') + '</ul>'
+      : '';
+
+    // ── Mapas de calor ────────────────────────────────────────────────────
+    // El flujo es UN número para todo el radio y eso promedia lo que más
+    // importa: pegado al gimnasio pasa gente que 300 m más allá no pasa.
+    // Estas tres capas reparten el mismo cálculo sobre la malla del motor.
+    const mapasCalor = (function(){
+      const mc = f.mapaCalor;
+      if (!mc) return '';
+      const panel = (capa, foco, titulo, sub, tipo) => {
+        const png = pngCalorApp(capa, mc.n, tipo);
+        return '<figure class="aia-calor-panel">' +
+          '<figcaption>' + escHTML(titulo) + '<em>' + escHTML(sub) + '</em></figcaption>' +
+          '<div class="aia-calor-lienzo">' +
+            (png ? '<img src="' + png + '" alt="' + escHTML(titulo) + '">'
+                 : '<div class="aia-calor-vacio"></div>') +
+            '<i class="aia-calor-centro"></i>' +
+          '</div>' +
+          '<small>' + (foco ? escHTML(foco.texto) : 'sin actividad suficiente') + '</small>' +
+          '</figure>';
+      };
+      return '<h4 class="aia-flujo-sub">Dónde está el movimiento</h4>' +
+        '<div class="aia-calor">' +
+          panel(mc.peatonalDia, mc.focoDia, 'A pie · día', 'mañana a tarde', 'peaton') +
+          panel(mc.peatonalNoche, mc.focoNoche, 'A pie · noche', 'después de las 7 p.m.', 'peaton') +
+          panel(mc.vehicular, mc.focoVehicular, 'En vehículo', 'vías y atractores', 'vehiculo') +
+        '</div>' +
+        '<p class="aia-flujo-nota">La cruz es el lote. Cada capa se colorea contra su propio ' +
+          'máximo: dice DÓNDE se concentra el movimiento dentro del radio, no cuánto.' +
+          (mc.fiable ? '' : ' Con pocos puntos mapeados es indicativo: conviene contrastarlo en campo.') +
+        '</p>';
+    })();
 
     cont.innerHTML =
       '<h3>🚶🚗 Flujo peatonal y vehicular</h3>' +
@@ -779,7 +873,13 @@
       (f.consejoUbicacion
         ? '<p class="aia-flujo-donde"><b>📍 Dónde ubicarse</b>' + escHTML(f.consejoUbicacion) + '</p>' : '') +
       '<div class="aia-flujo-horas">' + franja('Mañana', f.franjas.manana) +
-        franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) + '</div>' +
+        franja('Mediodía', f.franjas.mediodia) + franja('Tarde', f.franjas.tarde) +
+        franja('Noche', f.franjas.noche || 0) + '</div>' +
+      (f.vidaNocturna
+        ? '<p class="aia-flujo-lectura">🌙 <b>La zona sigue viva de noche.</b> Es un dato de negocio, ' +
+          'no un detalle: cambia el horario de apertura y hasta el formato del local.</p>'
+        : '') +
+      mapasCalor +
       // Tránsito y combustible: rangos de orden de magnitud, no aforos.
       (function(){
         const t = f.trafico;
@@ -801,6 +901,7 @@
                  : 'Sin estaciones de servicio en el radio.');
       })() +
       '<h4 class="aia-flujo-sub">Qué trae gente a pie</h4>' + listaGen +
+      listaResta + listaVeh +
       // Un flujo bajo por calle vacía y uno bajo por zona sin mapear se ven
       // idénticos en el número. Distinguirlos evita descartar una ubicación
       // buena por un hueco de datos.

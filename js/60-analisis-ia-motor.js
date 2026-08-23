@@ -751,7 +751,7 @@
     Object.keys(GRUPOS).forEach(g => { porGrupo[g] = 0; topPorGrupo[g] = []; });
 
     const pois = [];
-    const movilidad = { viasArterias: [], nViasArterias: 0, paradasBus: 0, ciclorrutas: 0, scoreAcceso: 0 };
+    const movilidad = { viasArterias: [], tramosVia: [], nViasArterias: 0, paradasBus: 0, ciclorrutas: 0, scoreAcceso: 0 };
 
     (elementos || []).forEach(el => {
       const tags = el.tags || {};
@@ -765,6 +765,10 @@
       // Vías y ciclorrutas alimentan movilidad, no la lista de POIs.
       if (c.sub === 'via_arteria') {
         const nombreVia = nombrePOI(tags) || ('Vía ' + (tags.highway || ''));
+        // Cada tramo se guarda con su posición, aparte del conteo por corredor:
+        // el mapa de calor vehicular necesita saber POR DÓNDE pasa la vía, no
+        // solo que existe. Sin esto el calor se pintaría en el centro del radio.
+        movilidad.tramosVia.push({ lat, lng, tipo: tags.highway || '', distM });
         // Un mismo corredor viene partido en varios tramos: se conserva el
         // tramo más cercano al lote, que es el que da la exposición real.
         const ya = movilidad.viasArterias.find(v => v.nombre === nombreVia);
@@ -891,11 +895,16 @@
       plaza:            { peso:  9, media: 300, franja:'todo' },
       // La iglesia concentra picos fuertes y muy peatonales.
       iglesia:          { peso:  7, media: 350, franja:'picos' },
-      cultural:         { peso:  5, media: 350, franja:'tarde' },
-      restaurante:      { peso:  5, media: 250, franja:'mediodia' },
+      cultural:         { peso:  6, media: 350, franja:'tarde' },
+      // Comida y ocio: son los que sostienen la calle DESPUÉS de que cierran
+      // el comercio y las oficinas. Mientras el modelo no tuvo franja
+      // nocturna, un restaurante se archivaba como "mediodía" y un bar como
+      // "tarde": una zona de rumba se leía igual que una de oficinas.
+      restaurante:      { peso:  6, media: 280, franja:'comida' },
       cafeteria:        { peso:  4, media: 200, franja:'manana' },
-      bar_ocio:         { peso:  4, media: 250, franja:'tarde' },
-      hotel:            { peso:  5, media: 300, franja:'todo' }
+      bar_ocio:         { peso:  8, media: 280, franja:'noche' },
+      hotel:            { peso:  6, media: 320, franja:'noche' },
+      salon_eventos:    { peso:  5, media: 350, franja:'noche' }
     };
 
     // Comercio a pie de andén: lo que forma "calle comercial". Se cuenta como
@@ -911,20 +920,33 @@
                             'supermercado', 'pagos', 'internet_cafe', 'bar_ocio', 'optica']
       .concat(SUBS_COMERCIO_DETAL.filter(s => s !== 'automotriz'));
 
-    const flujo = { generadores: [], peatonal: 0, vehicular: 0, franjas: {} };
-    const aporteFranja = { manana: 0, mediodia: 0, tarde: 0 };
-    let sumaPeaton = 0;
+    const flujo = { generadores: [], penalizadores: [], peatonal: 0, vehicular: 0, franjas: {} };
+    const aporteFranja = { manana: 0, mediodia: 0, tarde: 0, noche: 0 };
+    let sumaPeaton = 0, restaPeaton = 0;
 
-    // Reparte un aporte entre las tres franjas del día según cómo se comporte
-    // ese uso. Se usa tanto para las anclas como para los otros dos sumandos.
+    // Cómo se reparte a lo largo del día lo que aporta cada uso. Vive en una
+    // tabla y no en una cadena de `if` porque el mapa de calor necesita los
+    // MISMOS pesos para pintar la noche aparte: si se calcularan en dos sitios,
+    // el mapa y la gráfica de horas acabarían contando cosas distintas.
+    const FRANJA_PESO = {
+      todo:     { manana:1,   mediodia:1,   tarde:1,   noche:.5 },
+      dia:      { manana:1,   mediodia:1,   tarde:.5,  noche:.15 },
+      laboral:  { manana:1,   mediodia:.8,  tarde:.3,  noche:.1 },
+      picos:    { manana:1.2, mediodia:.3,  tarde:1.1, noche:.5 },
+      manana:   { manana:1.4, mediodia:.6,  tarde:.4,  noche:.15 },
+      mediodia: { manana:.2,  mediodia:1.3, tarde:.6,  noche:.4 },
+      tarde:    { manana:.3,  mediodia:.7,  tarde:1.3, noche:.8 },
+      // Franjas nuevas: hasta ahora el modelo se apagaba a las 6 de la tarde y
+      // un sector de bares o de restaurantes se leía igual que uno de oficinas.
+      noche:    { manana:.1,  mediodia:.3,  tarde:.9,  noche:1.4 },
+      comida:   { manana:.3,  mediodia:1.3, tarde:.6,  noche:1 }
+    };
     function repartirFranja(f, aporte){
-      if (f === 'todo')         { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte;      aporteFranja.tarde += aporte; }
-      else if (f === 'dia')     { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte;      aporteFranja.tarde += aporte * .5; }
-      else if (f === 'laboral') { aporteFranja.manana += aporte;      aporteFranja.mediodia += aporte * .8; aporteFranja.tarde += aporte * .3; }
-      else if (f === 'picos')   { aporteFranja.manana += aporte * 1.2; aporteFranja.mediodia += aporte * .3; aporteFranja.tarde += aporte * 1.1; }
-      else if (f === 'manana')  { aporteFranja.manana += aporte * 1.4; aporteFranja.mediodia += aporte * .6; aporteFranja.tarde += aporte * .4; }
-      else if (f === 'mediodia'){ aporteFranja.manana += aporte * .2; aporteFranja.mediodia += aporte * 1.3; aporteFranja.tarde += aporte * .6; }
-      else if (f === 'tarde')   { aporteFranja.manana += aporte * .3; aporteFranja.mediodia += aporte * .7; aporteFranja.tarde += aporte * 1.3; }
+      const w = FRANJA_PESO[f] || FRANJA_PESO.todo;
+      aporteFranja.manana   += aporte * w.manana;
+      aporteFranja.mediodia += aporte * w.mediodia;
+      aporteFranja.tarde    += aporte * w.tarde;
+      aporteFranja.noche    += aporte * w.noche;
     }
 
     // ── 1. Anclas ────────────────────────────────────────────────────────
@@ -959,6 +981,37 @@
                                aporte: Math.round(aporte), franja: g.franja, ejemplos });
       repartirFranja(g.franja, aporte);
     });
+
+    // ── 1b. Lo que RESTA ─────────────────────────────────────────────────
+    // Hasta aquí el modelo solo sumaba, y eso no es como funciona una calle.
+    // Un tramo de bodegas, un lote encerrado o tres locales cerrados con reja
+    // rompen el recorrido a pie: la gente que venía caminando se devuelve o
+    // cruza. Es la "fachada muerta" de la que vive o muere un local de paso, y
+    // es justo lo que la matriz abierta permite medir ahora — antes el local
+    // desocupado se contaba como comercio y la ruina no se clasificaba.
+    const RESTA_PEATON = {
+      local_vacio:     { peso: 5, media: 200, motivo:'locales cerrados' },
+      ruina:           { peso: 5, media: 200, motivo:'edificación en ruina' },
+      baldio:          { peso: 4, media: 220, motivo:'lote sin desarrollar' },
+      bodega:          { peso: 5, media: 280, motivo:'frente de bodega' },
+      industria:       { peso: 6, media: 300, motivo:'frente industrial' },
+      automotriz:      { peso: 3, media: 200, motivo:'taller sobre el andén' },
+      infra_servicios: { peso: 3, media: 250, motivo:'infraestructura sin frente activo' },
+      funerario:       { peso: 2, media: 250, motivo:'uso sin vitrina' }
+    };
+    Object.keys(RESTA_PEATON).forEach(function (sub) {
+      const lista = pois.filter(p => p.sub === sub);
+      if (!lista.length) return;
+      const g = RESTA_PEATON[sub];
+      let resta = 0;
+      lista.forEach(function (p) { resta += g.peso / (1 + Math.pow(p.distM / g.media, 2)); });
+      if (resta <= 0) return;
+      restaPeaton += resta;
+      const cat = TAXONOMIA.find(t => t.sub === sub);
+      flujo.penalizadores.push({ sub, nombre: (cat && cat.nombre) || sub, n: lista.length,
+                                 resta: Math.round(resta), motivo: g.motivo });
+    });
+    flujo.penalizadores.sort((a, b) => b.resta - a.resta);
 
     // ── 2. Aglomeración comercial ────────────────────────────────────────
     // Satura a propósito: pasar de 5 a 15 locales cambia mucho la calle; de 40
@@ -1020,7 +1073,22 @@
     // gente que cabe en el andén— y así ninguna ubicación choca contra un techo
     // artificial que las volvería indistinguibles. Calibrada contra escenarios
     // de referencia; ver la prueba `tflujo`.
-    flujo.peatonal = Math.round(100 * (1 - Math.exp(-sumaPeaton / 100)));
+    // Lo que resta se aplica ANTES de la escala saturante, y con tope: una
+    // cuadra con vitrinas continuas no se borra porque haya dos bodegas, pero
+    // sí se descuenta. El tope es del 45% para que el término no pueda dar
+    // vuelta al resultado por sí solo, que sería tan falso como ignorarlo.
+    const restaAplicada = Math.min(restaPeaton, sumaPeaton * 0.45);
+    flujo.restaPeaton = Math.round(restaAplicada);
+    flujo.sumaBruta = Math.round(sumaPeaton);
+    const sumaNeta = Math.max(0, sumaPeaton - restaAplicada);
+    // El descuento se aplica también al reparto por horas, para que la gráfica
+    // de franjas y el total hablen del mismo sitio.
+    if (sumaPeaton > 0 && restaAplicada > 0) {
+      const factor = sumaNeta / sumaPeaton;
+      aporteFranja.manana *= factor; aporteFranja.mediodia *= factor;
+      aporteFranja.tarde *= factor;  aporteFranja.noche *= factor;
+    }
+    flujo.peatonal = Math.round(100 * (1 - Math.exp(-sumaNeta / 100)));
     flujo.nivelPeatonal = flujo.peatonal >= 70 ? 'Muy alto' : flujo.peatonal >= 50 ? 'Alto'
       : flujo.peatonal >= 30 ? 'Medio' : 'Bajo';
 
@@ -1076,13 +1144,164 @@
     // entero y lo inferido según cuán fiable sea el formato.
     const parqueo = flujo.parqueaderos + flujo.parqueoProbable
       .reduce((a, p) => a + p.n * PARQUEO_IMPLICITO[p.sub], 0);
+    // Además de la vía y del parqueo, hay usos que GENERAN viajes en vehículo
+    // por sí mismos: a una ferretería o a una bodega no se llega a pie con la
+    // compra al hombro. Sin este término, dos esquinas sobre la misma avenida
+    // daban idéntico aunque una tuviera un centro comercial y la otra casas.
+    const GENERA_VEHICULO = {
+      centro_comercial: 10, gasolinera: 8, industria: 7, bodega: 6, supermercado: 6,
+      ferreteria: 5, automotriz: 5, muebles_hogar: 4, salud_ips: 5, universidad: 5,
+      hotel: 4, colegio: 4, tienda_descuento: 3, salon_eventos: 3, transporte: 3
+    };
+    let sumaVeh = 0;
+    flujo.generadoresVehiculo = Object.keys(GENERA_VEHICULO)
+      .map(sub => {
+        const lista = pois.filter(p => p.sub === sub);
+        if (!lista.length) return null;
+        let aporte = 0;
+        lista.forEach(p => { aporte += GENERA_VEHICULO[sub] / (1 + Math.pow(p.distM / 400, 2)); });
+        sumaVeh += aporte;
+        const cat = TAXONOMIA.find(t => t.sub === sub);
+        return { sub, nombre: (cat && cat.nombre) || sub, n: lista.length, aporte: Math.round(aporte) };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.aporte - a.aporte);
     flujo.vehicular = Math.round(clamp(0, 100,
-      movilidad.exposicion * 0.8 + Math.min(20, parqueo * 7)));
+      movilidad.exposicion * 0.7 + Math.min(18, parqueo * 6) +
+      22 * (1 - Math.exp(-sumaVeh / 25))));
     flujo.nivelVehicular = flujo.vehicular >= 70 ? 'Muy alto' : flujo.vehicular >= 50 ? 'Alto'
       : flujo.vehicular >= 30 ? 'Medio' : 'Bajo';
     // Hay dónde parar si se mapeó un parqueadero o si el entorno tiene formatos
     // que traen el suyo. Es lo que responde "¿el que pasa se puede detener?".
     flujo.hayDondeParar = flujo.parqueaderos > 0 || flujo.parqueoProbable.length > 0;
+
+    // ── Mapa de calor ────────────────────────────────────────────────────
+    //
+    // El flujo peatonal es UN número para todo el radio, y un radio nunca es
+    // homogéneo: pegado al gimnasio pasa gente que 300 m más allá no pasa.
+    // Aquí se reparte ese mismo cálculo sobre una malla, sumando y restando
+    // punto por punto, para poder ver DÓNDE está el tránsito en vez de
+    // promediarlo. Se pintan tres capas porque responden preguntas distintas:
+    // a pie de día, a pie de noche —una calle de bares y una de oficinas se
+    // ven idénticas de día y opuestas a las 9 p.m.— y en vehículo.
+    //
+    // Se usan las MISMAS tablas de peso que el total (GENERA_PEATON,
+    // RESTA_PEATON, FRANJA_PESO, GENERA_VEHICULO): si el mapa tuviera pesos
+    // propios acabaría contando otra cosa que la cifra de al lado.
+    const N_CELDA = 26;
+    const mLat = 110540, mLng = 111320 * Math.cos(centro.lat * Math.PI / 180);
+    const enMetros = o => ({ x: (o.lng - centro.lng) * mLng, y: (o.lat - centro.lat) * mLat });
+
+    const focos = [];      // lo que calienta o enfría el andén
+    const focosVeh = [];   // lo que atrae vehículos
+    pois.forEach(function (p) {
+      const q = enMetros(p);
+      const g = GENERA_PEATON[p.sub];
+      if (g) focos.push({ x:q.x, y:q.y, peso:g.peso, media:g.media,
+                          w: FRANJA_PESO[g.franja] || FRANJA_PESO.todo, signo: 1 });
+      const r = RESTA_PEATON[p.sub];
+      if (r) focos.push({ x:q.x, y:q.y, peso:r.peso, media:r.media,
+                          w: FRANJA_PESO.todo, signo: -1 });
+      // La vitrina y la vivienda no son anclas —no son destino de viaje— pero
+      // sostienen el andén de a poquito, y son las que dan continuidad al
+      // recorrido entre un ancla y la siguiente.
+      if (COMERCIO_ANDEN.indexOf(p.sub) !== -1)
+        focos.push({ x:q.x, y:q.y, peso:2.2, media:180, w: FRANJA_PESO.todo, signo: 1 });
+      if (p.sub === 'residencial')
+        focos.push({ x:q.x, y:q.y, peso:1.1, media:200, w: FRANJA_PESO.picos, signo: 1 });
+      const v = GENERA_VEHICULO[p.sub];
+      if (v) focosVeh.push({ x:q.x, y:q.y, peso:v, media:400 });
+    });
+    // La vía es la fuente principal del calor vehicular, y por eso se guardó
+    // cada tramo con su posición: el tránsito está SOBRE el corredor.
+    const PESO_VIA = { trunk: 22, primary: 18, secondary: 12, tertiary: 8 };
+    movilidad.tramosVia.forEach(function (t) {
+      const q = enMetros(t);
+      focosVeh.push({ x:q.x, y:q.y, peso: PESO_VIA[t.tipo] || 8, media: 160 });
+    });
+
+    const capaDia = new Array(N_CELDA * N_CELDA).fill(-1);
+    const capaNoche = new Array(N_CELDA * N_CELDA).fill(-1);
+    const capaVeh = new Array(N_CELDA * N_CELDA).fill(-1);
+    const paso = (2 * radioM) / N_CELDA;
+    let maxDia = 0, maxNoche = 0, maxVeh = 0;
+    const crudo = { dia: [], noche: [], veh: [] };
+
+    for (let j = 0; j < N_CELDA; j++) {
+      for (let i = 0; i < N_CELDA; i++) {
+        const idx = j * N_CELDA + i;
+        // Centro de la celda en metros respecto al lote (y hacia el norte).
+        const cx = -radioM + (i + 0.5) * paso;
+        const cy = radioM - (j + 0.5) * paso;
+        crudo.dia[idx] = crudo.noche[idx] = crudo.veh[idx] = null;
+        if (Math.sqrt(cx * cx + cy * cy) > radioM) continue;   // fuera del círculo
+        let dia = 0, noche = 0, veh = 0;
+        for (let k = 0; k < focos.length; k++) {
+          const f = focos[k];
+          const dx = cx - f.x, dy = cy - f.y;
+          const cerca = 1 / (1 + (dx * dx + dy * dy) / (f.media * f.media));
+          const base = f.signo * f.peso * cerca;
+          dia   += base * (f.w.manana + f.w.mediodia + f.w.tarde) / 3;
+          noche += base * f.w.noche;
+        }
+        for (let k = 0; k < focosVeh.length; k++) {
+          const f = focosVeh[k];
+          const dx = cx - f.x, dy = cy - f.y;
+          veh += f.peso / (1 + (dx * dx + dy * dy) / (f.media * f.media));
+        }
+        dia = Math.max(0, dia); noche = Math.max(0, noche);
+        crudo.dia[idx] = dia; crudo.noche[idx] = noche; crudo.veh[idx] = veh;
+        if (dia > maxDia) maxDia = dia;
+        if (noche > maxNoche) maxNoche = noche;
+        if (veh > maxVeh) maxVeh = veh;
+      }
+    }
+
+    // Se normaliza cada capa contra su propio máximo: el mapa responde "dónde
+    // más", no "cuánto" — para el cuánto está la cifra de flujo, que sí es
+    // absoluta. Mezclarlas haría que un sector tranquilo se viera vacío.
+    function normalizar(origen, destino, max){
+      if (max <= 0) return;
+      for (let k = 0; k < origen.length; k++) {
+        if (origen[k] == null) continue;
+        destino[k] = Math.round(100 * origen[k] / max);
+      }
+    }
+    normalizar(crudo.dia, capaDia, maxDia);
+    normalizar(crudo.noche, capaNoche, maxNoche);
+    normalizar(crudo.veh, capaVeh, maxVeh);
+
+    // Dónde está el punto más caliente, dicho en calle: "a 180 m hacia el
+    // nororiente". Es el dato que convierte el mapa en una instrucción.
+    const RUMBOS = ['el norte','el nororiente','el oriente','el suroriente',
+                    'el sur','el suroccidente','el occidente','el noroccidente'];
+    function foco(capa){
+      let mejor = -1, idx = -1;
+      for (let k = 0; k < capa.length; k++) if (capa[k] > mejor) { mejor = capa[k]; idx = k; }
+      if (idx < 0 || mejor <= 0) return null;
+      const i = idx % N_CELDA, j = Math.floor(idx / N_CELDA);
+      const cx = -radioM + (i + 0.5) * paso, cy = radioM - (j + 0.5) * paso;
+      const distM = Math.round(Math.sqrt(cx * cx + cy * cy));
+      return {
+        i, j, valor: mejor, distM,
+        lat: centro.lat + cy / mLat, lng: centro.lng + cx / mLng,
+        // A menos de media celda del lote, hablar de rumbo es inventar precisión.
+        rumbo: distM < paso / 2 ? '' : RUMBOS[Math.round(((Math.atan2(cx, cy) * 180 / Math.PI + 360) % 360) / 45) % 8],
+        texto: distM < paso / 2
+          ? 'sobre el lote mismo'
+          : 'a unos ' + distM + ' m hacia ' +
+            RUMBOS[Math.round(((Math.atan2(cx, cy) * 180 / Math.PI + 360) % 360) / 45) % 8]
+      };
+    }
+    flujo.mapaCalor = {
+      n: N_CELDA, radioM, paso: Math.round(paso),
+      centro: { lat: centro.lat, lng: centro.lng },
+      peatonalDia: capaDia, peatonalNoche: capaNoche, vehicular: capaVeh,
+      focoDia: foco(capaDia), focoNoche: foco(capaNoche), focoVehicular: foco(capaVeh),
+      // Sin datos suficientes un mapa de calor es una mancha bonita que no
+      // dice nada, y se ve igual de convincente. Se marca para poder avisarlo.
+      fiable: pois.length >= 25
+    };
 
     // ── Tránsito vehicular y combustible ─────────────────────────────────
     //
@@ -1124,14 +1343,21 @@
       estimable: !!rango
     };
 
-    const maxF = Math.max(aporteFranja.manana, aporteFranja.mediodia, aporteFranja.tarde) || 1;
+    const maxF = Math.max(aporteFranja.manana, aporteFranja.mediodia,
+                          aporteFranja.tarde, aporteFranja.noche) || 1;
     flujo.franjas = {
       manana:   Math.round(aporteFranja.manana / maxF * 100),
       mediodia: Math.round(aporteFranja.mediodia / maxF * 100),
-      tarde:    Math.round(aporteFranja.tarde / maxF * 100)
+      tarde:    Math.round(aporteFranja.tarde / maxF * 100),
+      noche:    Math.round(aporteFranja.noche / maxF * 100)
     };
-    flujo.franjaFuerte = flujo.franjas.manana >= flujo.franjas.mediodia && flujo.franjas.manana >= flujo.franjas.tarde
-      ? 'la mañana' : (flujo.franjas.tarde >= flujo.franjas.mediodia ? 'la tarde' : 'el mediodía');
+    const NOMBRE_FRANJA = { manana:'la mañana', mediodia:'el mediodía', tarde:'la tarde', noche:'la noche' };
+    flujo.franjaFuerte = NOMBRE_FRANJA[
+      ['manana','mediodia','tarde','noche'].reduce((mejor, k) =>
+        flujo.franjas[k] > flujo.franjas[mejor] ? k : mejor, 'manana')];
+    // Si la calle sigue viva de noche es un dato de negocio, no un detalle:
+    // cambia el horario de apertura y hasta el formato del local.
+    flujo.vidaNocturna = flujo.franjas.noche >= 60;
     // Qué predomina: caminar o conducir. Es la pregunta que decide el formato.
     // Cuando los dos están por el piso no hay empate que resolver: no pasa
     // nadie, ni a pie ni en carro, y decir "equilibrado" ahí haría creer que
@@ -1194,9 +1420,24 @@
     const hayDane = !!(dane && dane.poblacion != null);
     const poblacionEstimada = hayDane ? dane.poblacion : poblacionHeuristica;
 
+    // ── Desglose por rubro ────────────────────────────────────────────────
+    // El mismo entorno contado por lo que es cada cosa, no solo por su grupo.
+    // Es la diferencia entre decir "20 comercios" y decir "12 almacenes de
+    // ropa, 3 peluquerías y 2 ferreterías": lo primero no ayuda a decidir qué
+    // poner en un local; lo segundo sí.
+    const rubros = Object.keys(porSub)
+      .filter(s => porSub[s] > 0 && s !== 'otro')
+      .map(s => {
+        const c = TAXONOMIA.find(t => t.sub === s);
+        return { sub: s, nombre: (c && c.nombre) || s, grupo: (c && c.grupo) || 'otro',
+                 icono: (c && c.icono) || '', n: porSub[s],
+                 ejemplos: (nombresPorSub[s] || []).slice(0, 3) };
+      })
+      .sort((a, b) => b.n - a.n || a.nombre.localeCompare(b.nombre, 'es'));
+
     return {
       total: pois.length, areaHa: Math.round(areaHa * 10) / 10,
-      porGrupo, porSub,
+      porGrupo, porSub, rubros,
       densidadPorHa: Math.round(10 * pois.length / Math.max(areaHa, 0.1)) / 10,
       poblacionEstimada, poblacionHeuristica, usoPredominante,
       // Trazabilidad de la cifra: el informe debe poder decir si el número es
@@ -1291,6 +1532,54 @@
     };
   }
 
+  // ── De qué vive la cuadra ───────────────────────────────────────────────
+  // Contar comercios no dice nada por sí solo: 20 almacenes de ropa y 20
+  // ferreterías dan el mismo número y son sectores opuestos. En el primero la
+  // gente pasea, compara y consume de paso —ahí un café rinde—; en el segundo
+  // llega, compra y se va, y ese mismo café se muere. Esto es lo que los
+  // rubros abiertos permiten decir y antes no.
+  const VOCACION_COMERCIAL = [
+    { id:'abasto', nombre:'Abastecimiento diario',
+      subs:['tienda_barrio','panaderia','supermercado','tienda_descuento','drogueria','licorera','veterinaria'],
+      lectura:'La gente viene a resolver el día: visitas cortas, repetidas y casi siempre a pie. ' +
+              'Favorece el formato pequeño y de alta rotación.' },
+    { id:'antojo', nombre:'Compra por comparación',
+      subs:['ropa','belleza','variedades','tienda_deportes','tecnologia','vivero','optica','muebles_hogar','centro_comercial'],
+      lectura:'La gente recorre y compara antes de comprar: permanencia larga y consumo de paso. ' +
+              'Es el entorno donde mejor rinde una cafetería o una comida rápida.' },
+    { id:'encargo', nombre:'Compra por encargo',
+      subs:['ferreteria','automotriz','papeleria','lavanderia','bodega'],
+      lectura:'La gente llega con un mandado concreto y se va: mucho vehículo y poca caminata de vitrina. ' +
+              'Un negocio que dependa del paseo tiene poco de dónde agarrarse.' },
+    { id:'comida', nombre:'Comida y ocio',
+      subs:['restaurante','cafeteria','bar_ocio','hotel','salon_eventos'],
+      lectura:'El sector se activa por horarios de comida y de noche, no por horario de oficina.' },
+    { id:'tramite', nombre:'Trámite y servicio',
+      subs:['banco','pagos','notaria','internet_cafe','mensajeria','oficina','gobierno'],
+      lectura:'Movimiento concentrado de lunes a viernes en horario hábil, y muy plano el fin de semana.' }
+  ];
+
+  function vocacionComercial(stats){
+    const conteo = VOCACION_COMERCIAL.map(v => ({
+      id: v.id, nombre: v.nombre, lectura: v.lectura,
+      n: v.subs.reduce((a, s) => a + (stats.porSub[s] || 0), 0)
+    })).sort((a, b) => b.n - a.n);
+    const total = conteo.reduce((a, c) => a + c.n, 0);
+    const top = conteo[0];
+    // Se exige masa mínima y ventaja clara: con 3 negocios sueltos no se le
+    // pone carácter a un sector, y si dos vocaciones empatan, el sector es
+    // mixto y decirlo así es más honesto que forzar una etiqueta.
+    if (!top || top.n < 5 || total < 8) return { id:'', nombre:'', reparto: conteo, share: 0 };
+    const share = Math.round(100 * top.n / total);
+    const segunda = conteo[1] || { n: 0 };
+    if (top.n - segunda.n < 2) {
+      return { id:'mixta', nombre:'Comercio mixto', share, reparto: conteo,
+               lectura: 'Ninguna vocación domina: conviven ' + top.nombre.toLowerCase() + ' y ' +
+                        segunda.nombre.toLowerCase() + '. El sector no tiene un solo público.' };
+    }
+    return { id: top.id, nombre: top.nombre, share, reparto: conteo, lectura: top.lectura };
+  }
+
   // Cuánta y qué tan variada es la actividad comercial.
   function indicadorComercio(stats){
     const n = stats.porGrupo.comercio || 0;
@@ -1298,14 +1587,25 @@
     const densidad = stats.areaHa ? +(n / stats.areaHa).toFixed(2) : 0;
     const dominante = categorias.slice().sort((a, b) => stats.porSub[b] - stats.porSub[a])[0] || '';
     const ausentes = ['supermercado','drogueria','cafeteria','restaurante','banco'].filter(s => !(stats.porSub[s] || 0));
+    // Los tres rubros que más pesan, con nombre y cifra: es lo que se cita en
+    // el informe para que la lectura del sector se pueda verificar en la calle.
+    const top = (stats.rubros || [])
+      .filter(r => SUBS_COMERCIO.indexOf(r.sub) !== -1)
+      .slice(0, 3)
+      .map(r => ({ sub: r.sub, nombre: r.nombre, n: r.n, ejemplos: r.ejemplos }));
+    const vocacion = vocacionComercial(stats);
     let nivel;
     if (n >= 60 && categorias.length >= 6) nivel = 'Alta actividad comercial';
     else if (n >= 20) nivel = 'Actividad comercial moderada';
     else if (categorias.length <= 2 && n > 0) nivel = 'Sector especializado';
     else nivel = 'Predominantemente residencial';
     return {
-      total: n, categorias: categorias.length, densidad, dominante, ausentes, nivel, tipo: 'indicador',
-      detalle: n + ' establecimientos en ' + categorias.length + ' categorías distintas (' + densidad + ' por hectárea).'
+      total: n, categorias: categorias.length, densidad, dominante, ausentes, nivel,
+      top, vocacion, tipo: 'indicador',
+      detalle: n + ' establecimientos en ' + categorias.length + ' categorías distintas (' + densidad + ' por hectárea)' +
+        (top.length ? '. Pesan sobre todo ' + top.map(t => t.n + ' ' + t.nombre.toLowerCase()).join(', ') : '') + '.' +
+        (vocacion.nombre ? ' Vocación dominante: ' + vocacion.nombre.toLowerCase() +
+                           ' (' + vocacion.share + '% de la oferta). ' + vocacion.lectura : '')
     };
   }
 
@@ -1340,6 +1640,23 @@
     if (stats.movilidad.nViasArterias === 0) { puntos += 20; señales.push('Sin vías arterias cercanas: baja visibilidad.'); }
     if (diversidad.valor < 40) { puntos += 18; señales.push('Poca diversidad de usos: el sector depende de una sola actividad.'); }
     if ((stats.porSub.baldio_obra || 0) > 8) { puntos += 15; señales.push('Alta proporción de suelo sin consolidar.'); }
+    // Deterioro comercial y físico. Es la señal más dura de todas y hasta
+    // ahora no se veía: el local desocupado se contaba como comercio y la
+    // ruina no se clasificaba. Un local vacío no es oferta, es la prueba de
+    // que la cuadra no está reteniendo negocios.
+    const vacios = stats.porSub.local_vacio || 0;
+    const ruinas = stats.porSub.ruina || 0;
+    if (vacios >= 3) {
+      puntos += 16;
+      señales.push(vacios + ' locales desocupados en el radio: la cuadra no está reteniendo negocios.');
+    } else if (vacios > 0) {
+      puntos += 6;
+      señales.push(vacios + ' ' + plural(vacios, 'local desocupado', 'locales desocupados') + ' en el radio.');
+    }
+    if (ruinas >= 2) {
+      puntos += 12;
+      señales.push(ruinas + ' edificaciones en ruina: deterioro físico visible en el frente de calle.');
+    }
     if (stats.ambiente.scoreVerde < 20) { puntos += 8; señales.push('Déficit de espacio público verde.'); }
     if ((stats.porGrupo.salud || 0) === 0) { puntos += 8; señales.push('Sin servicios de salud en el radio.'); }
     const valor = Math.round(clamp(0, 100, puntos));
@@ -1357,11 +1674,27 @@
   // calcula restando lo que se ve. Cuando el entorno viene pobre de datos se
   // dice "en el mapa abierto" y se avisa que conviene verificar en campo.
   function indicadorOportunidades(stats){
-    const candidatos = ['drogueria','cafeteria','restaurante','supermercado','gimnasio','panaderia','banco'];
-    const nombre = { drogueria:'Droguería', cafeteria:'Cafetería', restaurante:'Restaurante',
-      supermercado:'Supermercado', gimnasio:'Gimnasio', panaderia:'Panadería', banco:'Servicios financieros' };
-    const umbral = { drogueria:3500, cafeteria:2500, restaurante:3000, supermercado:6000,
-      gimnasio:4000, panaderia:3000, banco:6000 };
+    // Cuántos habitantes sostienen un negocio de cada tipo. Antes solo se
+    // miraban siete categorías, así que el informe decía "aquí falta una
+    // droguería" y se callaba que no había ni una papelería ni una
+    // lavandería en el radio. Los umbrales son órdenes de magnitud de
+    // comercio de barrio colombiano, no cifras de mercado: sirven para
+    // ordenar huecos entre sí, no para proyectar ventas.
+    const UMBRAL_HAB = {
+      belleza: 1800, cafeteria: 2500, panaderia: 3000, restaurante: 3000, ropa: 3000,
+      drogueria: 3500, gimnasio: 4000, licorera: 4000, papeleria: 5000, variedades: 5000,
+      salud_ips: 5000, banco: 6000, supermercado: 6000, automotriz: 6000, ferreteria: 7000,
+      tecnologia: 8000, lavanderia: 9000, veterinaria: 12000, muebles_hogar: 12000,
+      optica: 15000, tienda_deportes: 20000, vivero: 20000
+    };
+    const candidatos = Object.keys(UMBRAL_HAB);
+    const nombre = {};
+    candidatos.forEach(sub => {
+      const cat = TAXONOMIA.find(t => t.sub === sub);
+      nombre[sub] = (cat && cat.nombre) || sub;
+    });
+    nombre.banco = 'Servicios financieros';
+    const umbral = UMBRAL_HAB;
     const out = [];
     // La misma señal que ya usa el flujo para avisar que el entorno viene
     // pobre de datos: si el radio tiene pocos puntos, una ausencia no prueba
@@ -1386,7 +1719,12 @@
               : '') });
       }
     });
-    return { lista: out.sort((a, b) => b.potencial - a.potencial).slice(0, 4), tipo: 'interpretacion' };
+    // Se ordena por tamaño del hueco PONDERADO por lo vacío que esté: si se
+    // ordenara solo por cantidad ganarían siempre los rubros de umbral bajo
+    // —peluquerías, cafeterías— y una categoría sin un solo local en el radio
+    // no llegaría nunca a la lista, que es justo la que hay que mirar.
+    const peso = o => o.potencial * (0.5 + 0.5 * (o.potencial / (o.potencial + o.existentes)));
+    return { lista: out.sort((a, b) => peso(b) - peso(a)).slice(0, 5), tipo: 'interpretacion' };
   }
 
   // Score de Oportunidad Urbana: integra los indicadores anteriores con pesos
