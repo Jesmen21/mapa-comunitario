@@ -2203,6 +2203,13 @@
         // de control policial") para un puesto fijo de la Policía, distinto
         // de un retén móvil de tránsito.
         ['police-checkpoint','🚓','Punto de control policial','🚗 Reportes de Tráfico'],
+        // Los tres retenes van juntos y separados a propósito: para quien va
+        // en la vía no son la misma noticia. Uno de tránsito revisa papeles,
+        // uno militar puede implicar cierre y demora larga, y uno ILEGAL no
+        // es una autoridad — es un riesgo, y saber cuál es cambia si uno pasa,
+        // se devuelve o llama.
+        ['military-checkpoint','🪖','Retén militar','🚗 Reportes de Tráfico'],
+        ['fake-traffic-checkpoint','🛑','Retén ilegal de tránsito','🚨 Alertas y Riesgos Urbanos'],
         ['road-hole','🕳️','Hueco en la vía','🚨 Alertas y Riesgos Urbanos'],
         ['road-closed','⛔','Vía cerrada','🚗 Reportes de Tráfico'],
         ['traffic-light','🚦','Semáforo dañado','🚗 Reportes de Tráfico'],
@@ -2391,7 +2398,15 @@
   ]);
 
   const URBIS_QUICK_REPORTS = URBIS_QUICK_REPORT_SECTIONS.reduce((acc, section)=>{
-    section.items.forEach(([id, icon, label, dim])=>{ acc[id] = {id, icon, label, dim, section:section.id, sensitive:!!section.sensitive}; });
+    section.items.forEach(([id, icon, label, dim])=>{
+      // Dos tuplas con el mismo id se pisaban sin avisar: el botón de arriba
+      // quedaba publicando el reporte de abajo, y en el mapa salía la
+      // categoría equivocada. Con 125 tipos, la colisión es cuestión de
+      // tiempo y a simple vista no se ve.
+      if(acc[id]) console.warn('URBIS: id de reporte repetido "' + id + '" — "' +
+        acc[id].label + '" queda pisado por "' + label + '"');
+      acc[id] = {id, icon, label, dim, section:section.id, sensitive:!!section.sensitive};
+    });
     return acc;
   }, {});
 
