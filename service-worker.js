@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v530-calor-movilidad-noche';
+const URBIS_CACHE = 'urbis-v531-firmas-legitimidad';
 const URBIS_ASSETS = [
   './',
   './index.html',

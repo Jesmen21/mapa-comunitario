@@ -15,7 +15,8 @@
     "economia": { "nombre": "Economía", "icono": "📉", "color": "#7c3aed" },
     "exterior": { "nombre": "Política exterior", "icono": "🌐", "color": "#0891b2" },
     "ambiente": { "nombre": "Ambiente y páramos", "icono": "🌿", "color": "#15803d" },
-    "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" }
+    "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" },
+    "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
     {
@@ -522,11 +523,44 @@
     {
       "fecha": "2026-08-04",
       "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "El Consejo de Estado admite una demanda de nulidad contra su elección; el CNE indaga las firmas con que inscribió la candidatura",
+      "detalle": "La Sección Quinta del Consejo de Estado admitió el 4 de agosto la demanda de nulidad electoral de David Fernando Cano Mazuera contra la elección de Abelardo de la Espriella y del vicepresidente José Manuel Restrepo para 2026-2030. No fue la primera: una demanda anterior fue inadmitida por no cumplir requisitos de forma, con tres días para corregirla, y en julio se admitió la del exmagistrado del CNE Luis Guillermo Pérez Casas. Dos semanas después, el entonces presidente Gustavo Petro anunció una segunda acción de 61 páginas presentada por seis ciudadanos de su movimiento. En paralelo, el CNE asumió el estudio de una solicitud de revocatoria de la inscripción por presuntas firmas falsas y ordenó apertura y práctica de pruebas el 16 de abril de 2026.",
+      "contrapunto": "Ninguno de esos procesos ha prosperado hasta ahora: el CNE no revocó la candidatura, la inadmisión de una demanda es un reparo de forma y no una decisión de fondo, y las acciones admitidas están apenas en trámite ante la Sección Quinta, que las resuelve en única instancia según el artículo 139 de la Ley 1437 de 2011. De la Espriella ganó la segunda vuelta del 21 de junio de 2026 con 12,9 millones de votos y se posesionó el 7 de agosto en Cali. ColombiaCheck y MalaEspina calificaron de falsa la afirmación viral de que no podía posesionarse, y El Colombiano señaló que la demanda divulgada por Petro no acusa fraude en el conteo de votos.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Portafolio · el Consejo de Estado admite nueva demanda de nulidad electoral", "u": "https://www.portafolio.co/economia/gobierno/consejo-de-estado-admite-nueva-demanda-de-nulidad-electoral-contra-la-eleccion-de-abelardo-de-la-espriella-499800" },
+        { "n": "El Tiempo · las razones por las que el Consejo de Estado inadmitió la primera demanda", "u": "https://www.eltiempo.com/justicia/cortes/las-razones-por-las-que-el-consejo-de-estado-inadmitio-la-demanda-contra-la-eleccion-de-abelardo-de-la-espriella-como-presidente-3570699" },
+        { "n": "El Espectador · el CNE estudia la solicitud de revocar la candidatura por presuntas firmas falsas", "u": "https://www.elespectador.com/politica/elecciones-colombia-2026/cne-estudia-solicitud-de-revocar-la-candidatura-de-abelardo-de-la-espriella-por-presuntas-firmas-falsas-noticias-hoy/" },
+        { "n": "Asuntos Legales · el CNE no revocó la candidatura por presunta falsedad de firmas", "u": "https://www.asuntoslegales.com.co/actualidad/cne-no-revoco-candidatura-de-abelardo-de-la-espriella-por-presunta-falsedad-de-firmas-4397525" },
+        { "n": "ColombiaCheck · es falso que no pueda posesionarse el 7 de agosto", "u": "https://colombiacheck.com/chequeos/es-falso-que-abelardo-de-la-espriella-no-pueda-posesionarse-el-7-de-agosto" },
+        { "n": "El Colombiano · Petro publicó la demanda de nulidad, pero sin acusación de fraude", "u": "https://www.elcolombiano.com/colombia/petro-demanda-nulidad-electoral-abelardo-de-la-espriella-ML39019014" }
+      ]
+    },
+    {
+      "fecha": "2026-08-04",
+      "precision": "exacta",
       "categoria": "corrupcion",
       "titulo": "Choque por contratos millonarios del Invías para La Guajira",
       "detalle": "Enfrentamiento público entre ministras del gobierno saliente y del entrante por la adjudicación de contratos de infraestructura en La Guajira durante el empalme.",
       "fuente": "Infobae",
       "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
+    },
+    {
+      "fecha": "2026-02-11",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "La Registraduría invalidó el 61% de los 5,08 millones de apoyos con que inscribió su candidatura, pero descartó fraude en ellos",
+      "detalle": "El comité inscriptor de Abelardo de la Espriella entregó 5.079.000 registros de firmas y la Registraduría validó 1.978.108, el 38,95%: 3.100.892 quedaron por fuera. El desglose oficial de las causas: 1.437.677 con datos que no coinciden, 1.025.633 cédulas que no aparecen en el Archivo Nacional de Identificación, 273.211 registros duplicados y 152.028 con datos ilegibles. La cifra la destapó la columnista Cecilia Orozco Tascón en El Espectador; Juan Fernando Cristo habló de que se \"acude a la trampa\" y Gustavo Bolívar lo llamó \"tigre de papel\".",
+      "contrapunto": "Invalidada no es lo mismo que falsa, y la propia Registraduría separó las dos cosas: dijo que los indicios de posible fraude los halló en los apoyos de los comités de Henry Humberto Martínez y Alexander Francisco Henao \u2014no en los de De la Espriella\u2014 y confirmó haberlos denunciado ante la Fiscalía. El umbral legal para inscribirse era de 635.216 firmas (el 3% de la votación válida de la primera vuelta de 2022, según el artículo 7 de la Ley 996 de 2005), así que los 1.978.108 apoyos válidos lo superaban más de tres veces. De la Espriella sostuvo que las firmas fueron verificadas y validadas por la Registraduría y que la inscripción quedó en firme: \"esto no tiene ni pies ni cabeza\".",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "El Espectador · columna de Cecilia Orozco: el 62% de sus cinco millones de firmas no fue avalado", "u": "https://www.elespectador.com/opinion/columnistas/cecilia-orozco-tascon/de-la-espriella-62-de-sus-cinco-millones-de-firmas-no-fue-avalado/" },
+        { "n": "El Colombiano · la Registraduría descarta fraude en las firmas de De la Espriella", "u": "https://www.elcolombiano.com/especiales/elecciones-2026/polemica-firmas-abelardo-de-la-espriella-responde-registraduria-AD33477412" },
+        { "n": "Semana · la Registraduría responde por las firmas no avaladas", "u": "https://www.semana.com/politica/articulo/registraduria-responde-a-polemica-sobre-posibles-firmas-no-avaladas-de-abelardo-de-la-espriella/202649/" },
+        { "n": "Infobae · la Registraduría confirmó denuncia ante la Fiscalía por hallazgos en firmas de otros comités", "u": "https://www.infobae.com/colombia/2026/02/11/registraduria-se-pronuncio-sobre-hallazgos-en-las-firmas-de-abelardo-de-la-espriella-y-otros-candidatos-confirmo-denuncia-ante-la-fiscalia/" },
+        { "n": "El Colombiano · De la Espriella se defiende de la indagación del CNE", "u": "https://www.elcolombiano.com/especiales/elecciones-2026/habla-abelardo-de-la-espriella-cne-revocar-candidatura-firmas-falsas-DN36083303" }
+      ]
     }
   ],
   "balances": [
