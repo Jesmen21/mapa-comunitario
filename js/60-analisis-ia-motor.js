@@ -424,6 +424,37 @@
     { sub:'panaderia',       re:/\b(panaderia|pasteleria|reposteria|kokoriko|bimbo)\b/ }
   ];
 
+  // Cómo se llama el sitio, mirando TODAS las etiquetas donde OpenStreetMap
+  // guarda su identidad. Antes solo se leía `name`, y un local de cadena
+  // mapeado con `brand=Smart Fit` sin `name` —o con el nombre solo en
+  // `name:es`— se quedaba sin reconocer: el gimnasio estaba en el mapa y el
+  // informe seguía diciendo que en el sector no había ninguno.
+  const CLAVES_NOMBRE = ['name', 'name:es', 'brand', 'operator', 'official_name', 'alt_name', 'short_name'];
+  function nombresDe(tags){
+    const out = [];
+    CLAVES_NOMBRE.forEach(k => {
+      const v = tags && tags[k];
+      if (v && out.indexOf(v) === -1) out.push(v);
+    });
+    return out;
+  }
+  // Primera de esas etiquetas que corresponda a una marca conocida.
+  function marcaEnTags(tags){
+    const ns = nombresDe(tags);
+    for (let i = 0; i < ns.length; i++) {
+      const m = marcaDe(ns[i]);
+      if (m) return m;
+    }
+    return null;
+  }
+  function usoPorNombreEnTags(tags){
+    const ns = nombresDe(tags);
+    for (let i = 0; i < ns.length; i++) {
+      const u = usoPorNombre(ns[i]);
+      if (u) return u;
+    }
+    return null;
+  }
   function marcaDe(nombre){
     const n = normalizarNombrePOI(nombre);
     if (!n) return null;
@@ -468,6 +499,20 @@
   const REFINA = {
     deportivo:      ['gimnasio'],
     ocio_generico:  ['gimnasio', 'deportivo', 'bar_ocio', 'cultural'],
+    // Rubros de comercio minorista. Antes todos vivían dentro de
+    // `comercio_otro`, que es genérico y por tanto siempre cedía ante la
+    // marca; al darles categoría propia dejaron de ceder, y un gimnasio de
+    // cadena mapeado como almacén deportivo volvió a perderse.
+    tienda_deportes:['gimnasio', 'deportivo'],
+    ropa:           ['tienda_descuento', 'centro_comercial', 'variedades'],
+    variedades:     ['tienda_descuento', 'papeleria', 'tecnologia'],
+    tecnologia:     ['banco', 'pagos'],
+    papeleria:      ['pagos', 'internet_cafe'],
+    belleza:        ['gimnasio', 'drogueria'],
+    ferreteria:     ['muebles_hogar'],
+    muebles_hogar:  ['ferreteria', 'centro_comercial'],
+    automotriz:     ['gasolinera'],
+    licorera:       ['tienda_descuento', 'tienda_barrio'],
     // Un D1 mapeado como supermercado o tienda de barrio es, con más
     // precisión, tienda de descuento: compra diaria, formato pequeño.
     supermercado:   ['tienda_descuento'],
@@ -629,23 +674,20 @@
       for (const clave in r.m) {
         const v = tags[clave];
         if (v != null && r.m[clave].test(String(v).toLowerCase())) {
-          if (tags.name) {
-            const porMarca = marcaDe(tags.name);
-            // Cajón de sastre: la marca manda. Familia correcta pero categoría
-            // más amplia: la marca afina hacia la subcategoría precisa.
-            if (porMarca && (GENERICAS.indexOf(r.sub) !== -1 || marcaRefina(r.sub, porMarca.sub))) {
-              return porMarca;
-            }
+          const porMarca = marcaEnTags(tags);
+          // Cajón de sastre: la marca manda. Familia correcta pero categoría
+          // más amplia: la marca afina hacia la subcategoría precisa.
+          if (porMarca && (GENERICAS.indexOf(r.sub) !== -1 || marcaRefina(r.sub, porMarca.sub))) {
+            return porMarca;
           }
           // El nombre gana solo cuando la etiqueta que emparejó es estructural
           // o un contenedor genérico. Una marca conocida pesa más que un nombre
           // descriptivo, así que se prueba primero.
           const debil = CLAVES_ESTRUCTURALES.indexOf(clave) !== -1 ||
                         CONTENEDORES.indexOf(r.sub) !== -1;
-          if (debil && tags.name) {
-            const porMarca = marcaDe(tags.name);
+          if (debil) {
             if (porMarca) return porMarca;
-            const porNombre = usoPorNombre(tags.name);
+            const porNombre = usoPorNombreEnTags(tags);
             if (porNombre && porNombre.sub !== r.sub) return porNombre;
           }
           return { sub: r.sub, nombre: r.nombre, grupo: r.grupo, icono: r.icono };
@@ -655,12 +697,10 @@
     // Antes de rendirse a "otro": ¿el nombre dice el uso? Va DESPUÉS de las
     // etiquetas a propósito — una etiqueta explícita siempre gana sobre deducir
     // por el nombre. Aquí ya no queda ninguna etiqueta que respetar.
-    if (tags.name) {
-      const porMarca = marcaDe(tags.name);
-      if (porMarca) return porMarca;
-      const porNombre = usoPorNombre(tags.name);
-      if (porNombre) return porNombre;
-    }
+    const porMarcaFinal = marcaEnTags(tags);
+    if (porMarcaFinal) return porMarcaFinal;
+    const porNombreFinal = usoPorNombreEnTags(tags);
+    if (porNombreFinal) return porNombreFinal;
     // ¿O el usuario ya clasificó manualmente un punto con este mismo nombre?
     if (tags.name) {
       const reglas = leerReglasPersonalizadas();
@@ -1711,11 +1751,16 @@
           texto: 'El sector podría sostener cerca de ' + soportadas +
             (existentes
               ? ' y hoy se identifican ' + existentes
-              : (escaso ? ' y hoy no se identifica ninguno en el mapa abierto'
-                        : ' y hoy no se identifica ninguno')) +
+              // Nunca se afirma una ausencia a secas. El análisis solo puede
+              // ver lo que está mapeado, y un local que existe en la calle
+              // pero que nadie dibujó se leía como un vacío de mercado: es la
+              // diferencia entre "no hay" y "no lo veo".
+              : ' y hoy no se identifica ninguno en el mapa abierto') +
             ', para ~' + stats.poblacionEstimada.toLocaleString('es-CO') + ' habitantes estimados.' +
-            (escaso && !existentes
-              ? ' La zona está poco mapeada: verificar en campo antes de darlo por vacío.'
+            (!existentes
+              ? (escaso
+                  ? ' La zona está poco mapeada: verificar en campo antes de darlo por vacío.'
+                  : ' Si conoces uno que no aparece, agrégalo al mapa y vuelve a consultar con "Datos frescos".')
               : '') });
       }
     });
