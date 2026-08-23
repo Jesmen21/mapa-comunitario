@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-22",
-  "proximaActualizacion": "2026-08-23",
+  "actualizado": "2026-08-23",
+  "proximaActualizacion": "2026-08-24",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -18,6 +18,44 @@
     "educacion": { "nombre": "Educación", "icono": "📚", "color": "#c2410c" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno reporta 12.296 kilos de cocaína incautados y 162 estructuras de producción de droga destruidas desde el 7 de agosto",
+      "detalle": "El presidente presentó un balance acumulado de la ofensiva antidrogas desde su posesión: 12.296 kilos de cocaína, 11.232 kilos de marihuana y 114 kilos de base de coca incautados, junto con la destrucción o inhabilitación de 162 infraestructuras de producción y la incautación de 30.010 kilos de insumos sólidos y 47.465 galones de insumos líquidos.",
+      "contrapunto": "La cifra es un reporte oficial difundido por la Presidencia y replicado por varios medios; a la fecha no se ha publicado un balance equivalente e independiente de la Fiscalía o la ONUDC para el mismo periodo con el que contrastarlo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · más de 12.000 kilos de cocaína incautados desde el 7 de agosto", "u": "https://www.infobae.com/colombia/2026/08/23/abelardo-de-la-espriella-reporta-mas-de-12000-kilos-de-cocaina-incautados-desde-el-7-de-agosto/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-22",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Reporta cuatro operativos en un día: dos muertos del Clan del Golfo, 11 capturados de \"La Terraza\" y el rescate de dos secuestrados en Barranquilla",
+      "detalle": "El presidente divulgó en sus redes cuatro operativos de la Fuerza Pública realizados el mismo día. En Salgar (Antioquia), el Ejército dio de baja en combate a dos integrantes del Clan del Golfo —entre ellos alias \"Momo\"— y capturó a otros dos, con incautación de armas y material de guerra. En El Peñol y Medellín fueron capturados 11 presuntos integrantes de la estructura \"La Terraza\", señalados de crimen organizado, narcotráfico y porte ilegal de armas. En Barranquilla, la Policía rescató con vida a dos personas secuestradas, cuyos captores exigían 500 millones de pesos por su liberación. Y en Roldanillo (Valle del Cauca) se incautaron más de 2,1 toneladas de marihuana que eran transportadas en un camión.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · operativos contra el Clan del Golfo y \"La Terraza\", rescate de secuestrados e incautación de marihuana", "u": "https://www.eltiempo.com/politica/gobierno/presidente-abelardo-de-la-espriella-reporto-operativos-contra-el-clan-del-golfo-y-la-terraza-rescate-de-secuestrados-e-incautacion-de-marihuana-3580228" },
+        { "n": "Infobae · cuatro \"golpes contundentes\" contra el crimen organizado", "u": "https://www.infobae.com/colombia/2026/08/22/abelardo-de-la-espriella-anuncio-cuatro-golpes-contundentes-contra-el-crimen-organizado-se-castiga-con-todas-las-de-la-ley/" },
+        { "n": "Semana · golpes de la Fuerza Pública contra el crimen organizado", "u": "https://www.semana.com/nacion/articulo/abelardo-de-la-espriella-reporta-golpes-de-la-fuerza-publica-contra-el-crimen-organizado-no-mas-delincuencia/202618/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-22",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Las donaciones para la reconstrucción superan los $2 billones; la banca suma $1,1 billones en alivios crediticios",
+      "detalle": "El presidente anunció una alianza con empresarios para financiar la reconstrucción tras el terremoto del 10 de agosto. Las donaciones acumuladas superan los $2 billones de pesos, de los cuales $1,1 billones corresponden a alivios crediticios anunciados por Asobancaria: periodos de gracia de hasta 12 meses con condonación de intereses, suspensión de cobros jurídicos y protección del historial crediticio para los damnificados. Entre los mayores donantes está Jaime Gilinski —presidente de Nutresa— y su esposa Raquel Kardonski, quienes destinarán $150.000 millones a la reconstrucción de hospitales, centros de salud y establecimientos educativos en Cali.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · empresarios suman donaciones y alivios financieros para la reconstrucción", "u": "https://www.infobae.com/colombia/2026/08/22/terremoto-en-colombia-empresarios-suman-donaciones-y-alivios-financieros-para-la-reconstruccion/" },
+        { "n": "El Colombiano · donaciones de empresas superan el billón de pesos", "u": "https://www.elcolombiano.com/negocios/terremoto-colombia-donaciones-empresas-reconstruccion-GH40032664" },
+        { "n": "Semana · aumentan las donaciones empresariales", "u": "https://www.semana.com/economia/empresas/articulo/aumentan-las-donaciones-empresariales-para-atender-la-emergencia-tras-el-terremoto/202622/" }
+      ]
+    },
     {
       "fecha": "2026-07-05",
       "precision": "exacta",
