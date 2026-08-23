@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v526-bandeja-se-depura-sola';
+const URBIS_CACHE = 'urbis-v527-marca-afina-subcategoria';
 const URBIS_ASSETS = [
   './',
   './index.html',

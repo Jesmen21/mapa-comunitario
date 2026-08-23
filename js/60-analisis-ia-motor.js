@@ -352,21 +352,21 @@
   // existan en el mapa —eso es imposible—, pero rescata los que sí están y se
   // estaban perdiendo por venir mal clasificados.
   const MARCAS = [
-    { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24)\b/ },
-    { sub:'drogueria',       re:/\b(cruz\s*verde|la\s*rebaja|farmatodo|drogas?\s*la\s*econom|copservir|audifarma|locatel|farmacia\s*pasteur|drogueria)\b/ },
-    { sub:'cafeteria',       re:/\b(tosta[o0]|juan\s*valdez|starbucks|oma\b|dunkin|cafe\s*quindio)\b/ },
+    { sub:'gimnasio',        re:/\b(smart\s*fit|smartfit|bodytech|spinning\s*center|hard\s*body|crossfit|gold'?s\s*gym|fitness\s*24|stark\s*gym|athletic|world\s*gym|energy\s*fitness|gimnasio)\b/ },
+    { sub:'drogueria',       re:/\b(cruz\s*verde|la\s*rebaja|farmatodo|drogas?\s*la\s*econom|copservir|audifarma|locatel|farmacia\s*pasteur|drogueria|farmacia|drogas\s*ol[ií]mpica|colsubsidio\s*drog)\b/ },
+    { sub:'cafeteria',       re:/\b(tosta[o0]|juan\s*valdez|starbucks|oma\b|dunkin|cafe\s*quindio|cafeter[ií]a|caf[eé]\s+de|mimo'?s|crepes\s*&?\s*waffles)\b/ },
     // El formato de descuento tiene sub propio: no es lo mismo un D1 de
     // esquina que un Éxito con parqueadero, ni para el flujo ni para el FODA.
     { sub:'tienda_descuento',re:/\b(d1\b|ara\b|justo\s*&?\s*bueno|dollarcity|surtimax)\b/ },
     { sub:'supermercado',    re:/\b(exito|olimpica|jumbo|metro\b|carulla|makro|pricesmart|consumo|la\s*14)\b/ },
-    { sub:'banco',           re:/\b(bancolombia|davivienda|banco\s*de\s*bogota|bbva|banco\s*popular|colpatria|scotiabank|av\s*villas|bancoomeva|banagrario|banco\s*agrario|efecty|baloto)\b/ },
-    { sub:'restaurante',     re:/\b(mcdonald|burger\s*king|kfc|frisby|el\s*corral|presto|dominos|papa\s*john|subway|sandwich\s*qbano|archies)\b/ },
-    { sub:'gasolinera',      re:/\b(terpel|biomax|texaco|mobil|esso|primax|petrobras|zeuss)\b/ },
+    { sub:'banco',           re:/\b(bancolombia|davivienda|banco\s*de\s*bogota|bbva|banco\s*popular|colpatria|scotiabank|av\s*villas|bancoomeva|banagrario|banco\s*agrario|efecty|baloto|nequi|daviplata|banco\s*caja\s*social|itau|cajero\s*autom)\b/ },
+    { sub:'restaurante',     re:/\b(mcdonald|burger\s*king|kfc|frisby|el\s*corral|presto|dominos|papa\s*john|subway|sandwich\s*qbano|archies|restaurante|asadero|pizzer[ií]a|sushi|wok\b|corral\s*gourmet)\b/ },
+    { sub:'gasolinera',      re:/\b(terpel|biomax|texaco|mobil|esso|primax|petrobras|zeuss|estaci[oó]n\s*de\s*servicio|eds\b|puma\s*energy|gazel)\b/ },
     { sub:'centro_comercial',re:/\b(centro\s*comercial|c\.?c\.?\s|unicentro|ventura|jardin\s*plaza|mayorca|viva\b|plaza\s*del\s*este)\b/ },
     { sub:'hotel',           re:/\b(hotel|hostal|hospedaje|aparta\s*hotel|holiday\s*inn|ibis\b)\b/ },
     { sub:'universidad',     re:/\b(universidad|unipamplona|ufps|udes|uniminuto|politecnico|sena\b|instituto\s*tecnico)\b/ },
     { sub:'colegio',         re:/\b(colegio|liceo|gimnasio\s+(campestre|moderno)|institucion\s*educativa|jardin\s*infantil)\b/ },
-    { sub:'salud_ips',       re:/\b(clinica|hospital|ips\b|eps\b|centro\s*medico|sanitas|sura\b|compensar)\b/ },
+    { sub:'salud_ips',       re:/\b(clinica|hospital|ips\b|eps\b|centro\s*medico|sanitas|sura\b|compensar|nueva\s*eps|salud\s*total|famisanar|coomeva|medimas|colsanitas)\b/ },
     { sub:'panaderia',       re:/\b(panaderia|pasteleria|reposteria|kokoriko|bimbo)\b/ }
   ];
 
@@ -387,6 +387,46 @@
   // eso la marca puede ganarle. Con una etiqueta específica (amenity=pharmacy)
   // no se discute: manda la etiqueta.
   const GENERICAS = ['comercio_otro', 'local_comercial', 'otro', 'edificio_otro'];
+
+  // ── Cuando la etiqueta acierta la familia pero no el uso ─────────────────
+  //
+  // Reportado: un Smart Fit no salía en las oportunidades de gimnasio. No era
+  // que faltara el dato —estaba en el mapa, se pintaba— sino que venía como
+  // `leisure=sports_centre`, de las formas más comunes de mapear un gimnasio
+  // de cadena. La etiqueta lo mandaba a "Escenario deportivo", categoría
+  // CORRECTA pero más amplia, y como no es un cajón de sastre el diccionario
+  // de marcas no la podía corregir. El gimnasio existía y el informe seguía
+  // diciendo que no había ninguno.
+  //
+  // Esto es distinto de un uso sin categoría: ese va a la bandeja de
+  // pendientes y se revisa. Un uso mal clasificado en una subcategoría que SÍ
+  // existe no cae en 'otro', así que nunca llega a la bandeja: es un punto
+  // ciego. Se resuelve dejando que la marca afine hacia lo más específico.
+  //
+  // La regla es estrecha a propósito: la marca solo afina DENTRO de la familia
+  // que la etiqueta ya reconoció. Nunca convierte una droguería en gimnasio.
+  const REFINA = {
+    deportivo:      ['gimnasio'],
+    ocio_generico:  ['gimnasio', 'deportivo', 'bar_ocio', 'cultural'],
+    // Un D1 mapeado como supermercado o tienda de barrio es, con más
+    // precisión, tienda de descuento: compra diaria, formato pequeño.
+    supermercado:   ['tienda_descuento'],
+    tienda_barrio:  ['tienda_descuento', 'panaderia', 'drogueria', 'pagos'],
+    comercio_local: ['gimnasio', 'drogueria', 'cafeteria', 'panaderia', 'restaurante',
+                     'banco', 'supermercado', 'tienda_descuento', 'gasolinera'],
+    salud_otro:     ['drogueria', 'salud_ips', 'laboratorio', 'veterinaria'],
+    // Un Juan Valdez o un Tostao mapeados como restaurante son cafeterías.
+    restaurante:    ['cafeteria'],
+    mixto:          ['centro_comercial'],
+    transporte:     ['gasolinera'],
+    cultural:       ['universidad', 'colegio'],
+    gobierno:       ['salud_ips', 'universidad', 'colegio']
+  };
+
+  function marcaRefina(subEtiqueta, subMarca){
+    const lista = REFINA[subEtiqueta];
+    return !!lista && lista.indexOf(subMarca) !== -1;
+  }
 
   function subDeTaxonomia(sub, extra){
     const r = TAXONOMIA.find(t => t.sub === sub);
@@ -501,9 +541,13 @@
       for (const clave in r.m) {
         const v = tags[clave];
         if (v != null && r.m[clave].test(String(v).toLowerCase())) {
-          if (GENERICAS.indexOf(r.sub) !== -1 && tags.name) {
+          if (tags.name) {
             const porMarca = marcaDe(tags.name);
-            if (porMarca) return porMarca;
+            // Cajón de sastre: la marca manda. Familia correcta pero categoría
+            // más amplia: la marca afina hacia la subcategoría precisa.
+            if (porMarca && (GENERICAS.indexOf(r.sub) !== -1 || marcaRefina(r.sub, porMarca.sub))) {
+              return porMarca;
+            }
           }
           // El nombre gana solo cuando la etiqueta que emparejó es estructural
           // o un contenedor genérico. Una marca conocida pesa más que un nombre
