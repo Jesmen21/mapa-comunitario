@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v529-calor-movilidad-noche';
+const URBIS_CACHE = 'urbis-v530-calor-movilidad-noche';
 const URBIS_ASSETS = [
   './',
   './index.html',
