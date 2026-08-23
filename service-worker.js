@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v535-reten-militar-e-ilegal';
+const URBIS_CACHE = 'urbis-v536-analisis-modo-educativo';
 const URBIS_ASSETS = [
   './',
   './index.html',

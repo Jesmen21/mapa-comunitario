@@ -94,3 +94,119 @@
   opacity:0; transition:opacity .18s ease, transform .18s ease;
 }
 .u52-salir-aviso.visible{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ══ Análisis del sector en modo educativo (js/64-65) ═══════════════════
+   El mismo análisis que reciben las empresas, con los puntos del curso.
+   Vive dentro del panel avanzado, así que hereda su ancho: todo se mide en
+   relativo para que entre igual en el sidebar y en el bottom sheet. */
+.edu-salida{ margin-top:10px; }
+.edu-base{
+  padding:10px 11px; border-radius:10px; font-size:.74rem; line-height:1.45;
+  background:rgba(34,211,238,.08); border:1px solid rgba(34,211,238,.35);
+}
+/* Pocos puntos = advertencia, no error. El color lo dice antes de leer. */
+.edu-base.flojo{ background:rgba(245,185,66,.10); border-color:rgba(245,185,66,.45); }
+.edu-base b{ display:block; margin-bottom:4px; }
+.edu-base p{ margin:0 0 6px; }
+.edu-faltan{ margin:6px 0; font-size:.7rem; }
+.edu-faltan summary{ cursor:pointer; }
+.edu-faltan ul{ margin:5px 0 0; padding-left:16px; }
+.edu-faltan em{ opacity:.65; font-style:normal; }
+.edu-nota{ font-size:.66rem; opacity:.78; line-height:1.4; margin:6px 0 0; }
+
+.edu-kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:7px; margin:10px 0; }
+.edu-kpi{
+  padding:8px 9px; border-radius:10px; text-align:center;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+}
+.edu-kpi b{ display:block; font-size:.95rem; line-height:1.15; }
+.edu-kpi span{ display:block; font-size:.62rem; opacity:.85; margin-top:2px; }
+.edu-kpi em{ display:block; font-size:.56rem; opacity:.6; font-style:normal; }
+
+.edu-caja{
+  margin:10px 0; padding:10px 11px; border-radius:10px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12);
+}
+.edu-caja h4{ margin:0 0 7px; font-size:.78rem; }
+.edu-caja h4.sep{ margin-top:11px; }
+
+.edu-pobl{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+.edu-pobl>div{ display:flex; flex-direction:column; line-height:1.15; }
+.edu-pobl small{ font-size:.58rem; opacity:.7; }
+.edu-pobl b{ font-size:.95rem; }
+.edu-pobl b.ac{ color:#22d3ee; }
+.edu-pobl em{ font-size:.55rem; opacity:.65; font-style:normal; }
+.edu-pobl .fl{ opacity:.5; }
+.edu-pobl .delta{
+  margin-left:auto; align-self:center; font-size:.72rem; font-weight:700;
+  color:#04202a; background:#22d3ee; padding:2px 8px; border-radius:999px;
+}
+/* `preserveAspectRatio=none` estira el trazo a lo ancho; `vector-effect`
+   evita que la línea engorde con él. */
+.edu-svg{ display:block; width:100%; height:56px; overflow:visible; }
+.edu-eje{ display:flex; justify-content:space-between; font-size:.56rem; opacity:.7; margin-top:2px; }
+
+.edu-lista{ list-style:none; margin:0; padding:0; }
+.edu-lista li{
+  display:flex; align-items:center; gap:7px; padding:4px 0; font-size:.71rem;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.edu-lista li:last-child{ border-bottom:none; }
+.edu-lista li span{ flex:1; }
+.edu-lista li small{ opacity:.6; }
+.edu-lista li b{ color:#22d3ee; }
+.edu-lista.resta li b{ color:#f87171; }
+
+.edu-horas{ display:flex; gap:7px; }
+.edu-hora{ flex:1; text-align:center; }
+.edu-hora small{ display:block; font-size:.58rem; opacity:.75; margin-bottom:3px; }
+.edu-hora i{ display:block; height:7px; border-radius:4px; background:rgba(255,255,255,.12); overflow:hidden; }
+.edu-hora i b{ display:block; height:100%; background:#22d3ee; }
+.edu-hora span{ display:block; font-size:.62rem; margin-top:2px; }
+
+.edu-calores{ display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:8px; }
+.edu-calor{ margin:0; min-width:0; }
+.edu-calor figcaption{ font-size:.62rem; font-weight:600; margin-bottom:3px; }
+.edu-calor-lienzo{ position:relative; }
+.edu-calor img, .edu-calor .vacio{
+  display:block; width:100%; aspect-ratio:1/1; border-radius:9px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+}
+/* La cruz marca el punto analizado: sin ella el mapa es una mancha sin
+   referencia. Se ancla al lienzo, no a la figura, que lleva título encima. */
+.edu-calor .cruz{
+  position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px;
+  pointer-events:none;
+  background:
+    linear-gradient(to right, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
+    linear-gradient(to bottom, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.9));
+}
+.edu-calor small{ display:block; font-size:.57rem; opacity:.75; line-height:1.3; margin-top:3px; }
+
+.edu-barras{ list-style:none; margin:0; padding:0; }
+.edu-barras li{ display:flex; align-items:center; gap:7px; padding:3px 0; font-size:.7rem; }
+.edu-barras li span{ flex:0 0 42%; }
+.edu-barras li i{ flex:1; height:7px; border-radius:4px; background:rgba(255,255,255,.12); overflow:hidden; }
+.edu-barras li i b{ display:block; height:100%; background:#22d3ee; }
+.edu-barras li em{ flex:0 0 24px; text-align:right; font-style:normal; opacity:.8; }
+.edu-voc{ margin:8px 0 0; font-size:.71rem; line-height:1.45; }
+.edu-voc b{ color:#22d3ee; }
+.edu-voc span{ opacity:.85; }
+
+.edu-opor{ list-style:none; margin:0; padding:0; }
+.edu-opor li{ padding:5px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:.71rem; line-height:1.4; }
+.edu-opor li:last-child{ border-bottom:none; }
+.edu-opor li b{ display:block; }
+.edu-opor li span{ opacity:.82; }
+
+.edu-foda{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; }
+.edu-foda-col h5{ margin:0 0 4px; font-size:.68rem; }
+.edu-foda-col ul{ margin:0; padding-left:15px; font-size:.66rem; line-height:1.4; opacity:.88; }
+.edu-foda-col li{ margin-bottom:3px; }
+
+.edu-acciones{ margin-top:10px; }
+.edu-acciones button{
+  width:100%; padding:10px; border-radius:10px; cursor:pointer; font-size:.76rem; font-weight:600;
+  background:#22d3ee; color:#04202a; border:none;
+}

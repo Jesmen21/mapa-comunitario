@@ -231,6 +231,11 @@
       const corte = timelineLiveMode ? null : timelineSelectedTime;
       return globalData.filter(p => !esFilaMetaUrbis(p) && visibleParaRol(p, corte));
   }
+  // El análisis del modo educativo (js/64) corre sobre EXACTAMENTE los mismos
+  // puntos que el estudiante está viendo en el mapa —con su filtro de rol y su
+  // línea de tiempo—, no sobre el crudo. Si analizara otra cosa, el número no
+  // cuadraría con lo que tiene delante y no habría forma de comprobarlo.
+  window.urbisDatosVisibles = datosVisiblesActuales;
 
   function formatearFechaHora(fecha) {
       if(!fecha || isNaN(fecha.getTime())) return 'Sin fecha';

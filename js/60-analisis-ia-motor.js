@@ -1544,7 +1544,10 @@
     // ropa, 3 peluquerías y 2 ferreterías": lo primero no ayuda a decidir qué
     // poner en un local; lo segundo sí.
     const rubros = Object.keys(porSub)
-      .filter(s => porSub[s] > 0 && s !== 'otro')
+      // `baldio_obra` no es una subcategoría: es el alias que suma baldíos y
+      // obras para las reglas que ya lo usaban. Listarlo como rubro mostraba
+      // una fila sin nombre y contaba dos veces el mismo suelo.
+      .filter(s => porSub[s] > 0 && s !== 'otro' && s !== 'baldio_obra')
       .map(s => {
         const c = TAXONOMIA.find(t => t.sub === s);
         return { sub: s, nombre: (c && c.nombre) || s, grupo: (c && c.grupo) || 'otro',
