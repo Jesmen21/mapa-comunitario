@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-23",
-  "proximaActualizacion": "2026-08-24",
+  "actualizado": "2026-08-24",
+  "proximaActualizacion": "2026-08-25",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,107 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Human Rights Watch alerta un fuerte aumento del reclutamiento de menores por grupos armados y pide medidas urgentes al Gobierno",
+      "detalle": "Human Rights Watch publicó el informe \"Pensé que nunca volvería a ver a mi madre\", que documenta cerca de 1.500 niños y niñas reclutados por grupos armados en Colombia desde 2021 —con un aumento reciente marcado, sobre todo por disidencias de las FARC— y que afecta de forma desproporcionada a menores indígenas y niñas. La organización pidió al presidente Abelardo de la Espriella adoptar medidas urgentes de seguridad y justicia frente al fenómeno.",
+      "contrapunto": "Es un llamado de una organización no gubernamental al Gobierno, no una medida ya adoptada ni una decisión judicial: HRW pide una respuesta, no describe una que ya exista.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Human Rights Watch · informe original", "u": "https://www.hrw.org/es/news/2026/08/24/colombia-crece-el-reclutamiento-de-ninos-y-ninas-por-grupos-armados" },
+        { "n": "Infobae · HRW pide fortalecer medidas contra el reclutamiento de menores", "u": "https://www.infobae.com/colombia/2026/08/24/human-rights-watch-pide-a-abelardo-de-la-espriella-fortalecer-medidas-contra-el-reclutamiento-de-menores-en-colombia/" },
+        { "n": "El Tiempo · alerta sobre el reclutamiento a través de redes sociales", "u": "https://www.eltiempo.com/justicia/investigacion/human-rights-watch-alerta-sobre-aumento-del-reclutamiento-de-menores-en-colombia-a-traves-de-redes-sociales-3580468" },
+        { "n": "Radio Santa Fe · cerca de 1.500 niños reclutados", "u": "https://www.radiosantafe.com/2026/08/24/colombia-aumenta-drasticamente-el-reclutamiento-de-menores-por-grupos-armados-ilegales-a-traves-de-redes-sociales-human-rights-watch/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "aproximada",
+      "categoria": "corrupcion",
+      "titulo": "El vicepresidente Restrepo dice que los cerca de 80 casos de corrupción ya denunciados contra el gobierno anterior son \"la punta del iceberg\"",
+      "detalle": "El vicepresidente José Manuel Restrepo afirmó que los cerca de 80 casos de presunta corrupción ya reportados en el llamado \"Libro de la Verdad\" contra la administración de Gustavo Petro son apenas \"la punta del iceberg\": dijo que hay cerca de 350 alertas internas en revisión y estimó pérdidas potenciales cercanas al 7% del PIB, entre 140 y 150 billones de pesos.",
+      "contrapunto": "Son señalamientos del actual Gobierno contra la administración anterior; a la fecha ningún organismo de control o la justicia ha fallado sobre ellos, y son denuncias, no condenas. Gustavo Petro ha cuestionado públicamente el enfoque del \"Libro de la Verdad\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · \"solamente la punta del iceberg\"", "u": "https://www.eltiempo.com/politica/gobierno/vicepresidente-jose-manuel-restrepo-anuncia-mas-denuncias-de-presunta-corrupcion-en-administracion-de-gustavo-petro-solamente-la-punta-del-iceberg-3580498" },
+        { "n": "El País · más hallazgos de corrupción del gobierno Petro", "u": "https://www.elpais.com.co/politica/jose-manuel-restrepo-anuncia-mas-hallazgos-de-corrupcion-del-gobierno-petro-es-la-punta-del-iceberg-1931.html" },
+        { "n": "El Espectador · continuarán con denuncias de presunta corrupción", "u": "https://www.elespectador.com/politica/restrepo-anuncio-que-continuaran-con-denuncias-de-presunta-corrupcion-de-gobierno-petro-es-el-primer-tomo-noticias-hoy/" },
+        { "n": "Pulzo · detalles del Libro de la Verdad", "u": "https://www.pulzo.com/nacion/detalles-libro-verdad-hallazgos-espriella-sobre-petro-PP5278303" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Entrega la primera casa modelo de reconstrucción en Buenaventura y visita centros de atención en Quibdó",
+      "detalle": "El presidente visitó Quibdó (Chocó) y Buenaventura (Valle del Cauca) para revisar la respuesta a la emergencia por el terremoto del 10 de agosto y entregó la primera vivienda modelo de reconstrucción para familias afectadas en Buenaventura. El Gobierno citó cifras acumuladas de 26.945 viviendas destruidas y 127.557 averiadas.",
+      "contrapunto": "La visita se da después de las críticas que recibió en Buenaventura el 16 y 17 de agosto, cuando repartió balones con el logo de su movimiento político y una persona afectada le reclamó públicamente \"necesitamos techo, no balones\".",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Portafolio · De la Espriella en Quibdó y Buenaventura", "u": "https://www.portafolio.co/economia/gobierno/presidente-de-la-espriella-estara-este-lunes-en-quibdo-y-buenaventura-tras-terremoto-501022" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "aproximada",
+      "categoria": "emergencia",
+      "titulo": "Colombia declara calamidad pública en el Tolima por incendios forestales que ya superan 20.000 hectáreas",
+      "detalle": "Los incendios forestales en el Tolima, concentrados en Coello y Gualanday y con riesgo para un gasoducto, consumieron más de 20.000 hectáreas. El 23 de agosto el Ideam emitió una alerta nacional por amenaza de incendios y la UNGRD reportó 10 incendios activos en tres departamentos (Tolima, Nariño y Caldas); el 24 de agosto el Ejército desplegó helicópteros y drones para apoyar el control de la emergencia. Las autoridades investigan si algunos de los incendios fueron provocados intencionalmente.",
+      "contrapunto": "La Defensoría del Pueblo había pedido al Gobierno nacional más apoyo para atender la emergencia. La fecha exacta de la declaratoria formal de calamidad pública por parte de la Gobernación del Tolima varía según el medio consultado (13 o 14 de agosto); URBIS no pudo confirmarla con precisión, por lo que esta entrada se registra como aproximada.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · control de la emergencia en cuatro municipios del Tolima", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-rodrigo-lara-ministro-del-interior-reporta-control-de-la-emergencia-en-cuatro-municipios-del-tolima-3580499" },
+        { "n": "Infobae · alerta nacional del Ideam por incendios forestales", "u": "https://www.infobae.com/colombia/2026/08/23/pronostico-de-amenaza-por-incendios-forestales-ideam-emite-alerta-nacional/" },
+        { "n": "La República (Perú) · calamidad pública por incendios que superan 20.000 hectáreas", "u": "https://larepublica.pe/mundo/2026/08/24/colombia-declara-calamidad-publica-en-el-tolima-por-incendios-que-ya-superan-las-20000-hectareas-consumidas-1417766" },
+        { "n": "El Tiempo · confirma control de incendio en Gualanday que amenazaba gasoducto", "u": "https://www.eltiempo.com/amp/colombia/otras-ciudades/presidente-abelardo-de-la-espriella-confirmo-control-de-incendio-forestal-en-gualanday-que-amenazaba-gasoducto-en-tolima-3580393" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto se mantiene en 329 muertos y baja a 234 los desaparecidos",
+      "detalle": "Con corte al 23 de agosto, la UNGRD reportó 329 personas fallecidas, 4.592 heridas, 234 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 22 de agosto (329 muertos, 247 desaparecidos), la cifra de fallecidos se mantiene y baja la de desaparecidos. El reporte suma 178.236 viviendas averiadas y 31.519 destruidas en 16 departamentos y 494 municipios, con 317.137 personas afectadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · balance del 23 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-23-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3580375" },
+        { "n": "Semana · sube a 329 la cifra de muertos y hay 234 desaparecidos", "u": "https://www.semana.com/nacion/articulo/tragedia-por-terremoto-en-colombia-sube-a-329-la-cifra-de-muertos-y-hay-234-desaparecidos/202658/" },
+        { "n": "Forbes Colombia · balance de víctimas y afectados", "u": "https://forbes.co/actualidad/terremoto-colombia-ungrd-muertos-afectados" },
+        { "n": "Pulzo · nuevo balance de la UNGRD", "u": "https://www.pulzo.com/nacion/nuevo-balance-ungrd-sobre-victimas-danos-PP5277423" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Lidera un consejo de seguridad extraordinario en Barranquilla tras una ola de homicidios y anuncia que tratará la extorsión y el contrabando como terrorismo",
+      "detalle": "Tras una serie de homicidios en Barranquilla —entre ellos un triple homicidio con dos menores de edad en el barrio Las Nieves el 20 de agosto—, el presidente lideró un consejo de seguridad extraordinario en la base naval de Barranquilla junto al ministro de Defensa, Jorge Mora; el gobernador del Atlántico, Eduardo Verano; y el alcalde Alejandro Char. Anunció que el narcotráfico, la extorsión y el contrabando serán tratados como terrorismo, y la identificación de dos rutas de narcotráfico desde el Caribe hacia Estados Unidos.",
+      "contrapunto": "Medios como Las2orillas describieron el consejo como una respuesta de urgencia forzada por la \"ola de masacres\", un marco más crítico que el de \"reafirmación de compromiso\" que usó el propio Gobierno.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · ratifica su respaldo a la Fuerza Pública", "u": "https://www.infobae.com/colombia/2026/08/23/de-la-espriella-ratifico-su-respaldo-a-la-fuerza-publica-tras-consejo-de-seguridad-en-barranquilla-nunca-mas-seran-arrodillados/" },
+        { "n": "El Tiempo · dos rutas de narcotráfico desde el Caribe hacia EE. UU.", "u": "https://www.eltiempo.com/politica/gobierno/de-la-espriella-lidera-consejo-de-seguridad-en-barranquilla-tras-la-identificacion-de-dos-grandes-rutas-de-narcotrafico-desde-el-caribe-hacia-ee-uu-3580415" },
+        { "n": "El Espectador · estrategia contra narcos y terroristas", "u": "https://www.elespectador.com/politica/de-la-espriella-trazo-estrategia-contra-narcos-y-terroristas-en-consejo-de-seguridad-en-barranquilla-noticias-hoy/" },
+        { "n": "Las2orillas · la ola de masacres que obligó el consejo de seguridad", "u": "https://www.las2orillas.co/la-ola-de-masacres-en-barranquilla-que-obligo-a-de-la-espriella-a-hacer-de-urgencia-un-consejo-de-seguridad/" },
+        { "n": "El Heraldo · la seguridad como prioridad ante la ola criminal en el Atlántico", "u": "https://www.elheraldo.co/judicial/2026/08/24/seguridad-la-prioridad-de-de-la-espriella-ante-la-ola-criminal-en-el-atlantico/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "aproximada",
+      "categoria": "ambiente",
+      "titulo": "Un juzgado de Bucaramanga admite una tutela que busca frenar el proceso de delimitación del páramo de Santurbán",
+      "detalle": "El Juzgado Cuarto Penal del Circuito de Bucaramanga admitió una tutela presentada por líderes comunitarios de Vetas (Santander) contra la Resolución 863 de 2026 del Ministerio de Ambiente, que según los accionantes creó una figura de \"delimitación progresiva\" del páramo de Santurbán no contemplada en la Ley 1930 de 2018 ni en la sentencia T-361 de 2017 de la Corte Constitucional. Piden que se impida al Ministerio expedir nuevas resoluciones de delimitación mientras se resuelve el caso.",
+      "contrapunto": "El ministro de Ambiente, Fabio Arjona, sostiene que el área revocada por la Resolución 1037 del 13 de agosto (zona La Baja) estaba fuera de los límites del páramo. El Comité en Defensa de Santurbán y el expresidente Gustavo Petro rechazan esa lectura y acusan al Gobierno de desmontar la protección en favor del proyecto minero Soto Norte, de Aris Mining. URBIS no pudo confirmar con precisión la fecha exacta de admisión de la tutela; se registra con base en la cobertura periodística disponible al 23 de agosto.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Semana · juzgado de Bucaramanga admite tutela contra la delimitación de Santurbán", "u": "https://www.semana.com/nacion/regionales/articulo/juzgado-de-bucaramanga-admite-tutela-contra-proceso-de-delimitacion-del-paramo-de-santurban-accionantes-piden-frenar-cualquier-resolucion-mientras-se-resuelve-el-caso/202656/" },
+        { "n": "Vanguardia · editorial, el debate debe ser técnico", "u": "https://www.vanguardia.com/opinion/editorial/2026/08/23/santurban-el-debate-debe-ser-tecnico/" },
+        { "n": "Noticaribe · el comité de Santurbán va a los tribunales", "u": "https://noticaribe.co/comite-santurban-va-a-los-tribunales-y-anuncia-gran-movilizacion-contra-decisiones-del-gobierno-de-la-espriella/" }
+      ]
+    },
     {
       "fecha": "2026-08-23",
       "precision": "exacta",
