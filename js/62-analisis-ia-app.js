@@ -63,6 +63,17 @@
     escribirUsosManuales(lista);
     return lista;
   }
+  // Editar en vez de borrar y volver a crear: así el uso conserva su id y su
+  // fecha de creación, y quien revise después ve que es el mismo punto
+  // corregido y no uno nuevo que apareció de la nada.
+  function editarUsoManual(id, cambios){
+    const lista = leerUsosManuales();
+    const i = lista.findIndex(u => u.id === id);
+    if (i < 0) return lista;
+    lista[i] = Object.assign({}, lista[i], cambios, { editado: new Date().toISOString() });
+    escribirUsosManuales(lista);
+    return lista;
+  }
   // Los que caen dentro del radio analizado, con la forma de un elemento de
   // Overpass para que el motor no tenga que saber de dónde vienen.
   function elementosManuales(centro, radioM){
@@ -77,6 +88,7 @@
 
   // ── Panel "Agregar uso" ─────────────────────────────────────────────────
   let usoPendiente = null;   // { lat, lng } señalado y todavía sin guardar
+  let editandoId = null;     // id del uso que se está corrigiendo, o null
 
   // El desplegable se arma desde la Matriz, agrupado por grupo: así ofrece
   // exactamente las mismas categorías con las que cuenta el análisis, y no
@@ -131,31 +143,120 @@
     refrescarBotonUso();
   }
 
+  function nombreDeSub(sub){
+    const t = window.AIA_MOTOR.TAXONOMIA.find(x => x.sub === sub);
+    return t ? t.icono + ' ' + t.nombre : sub;
+  }
+
   function pintarListaUsosManuales(){
     const cont = $('aia-uso-lista');
+    const cuenta = $('aia-uso-cuenta');
     if (!cont) return;
-    const lista = leerUsosManuales();
-    if (!lista.length) { cont.innerHTML = ''; return; }
     const M = window.AIA_MOTOR;
-    const nombreDe = sub => {
-      const t = M.TAXONOMIA.find(x => x.sub === sub);
-      return t ? t.icono + ' ' + t.nombre : sub;
-    };
-    const dentro = S.lote
-      ? lista.filter(u => M.haversineM(S.lote, { lat: u.lat, lng: u.lng }) <= S.radioM).length
-      : 0;
-    cont.innerHTML = '<h4>Usos que has agregado (' + lista.length +
-      (S.lote ? ' · ' + dentro + ' dentro de este radio' : '') + ')</h4>' +
-      lista.map(u => '<div class="aia-uso-item"><span>' + escHTML(nombreDe(u.sub)) +
-        (u.nombre ? ' · <b>' + escHTML(u.nombre) + '</b>' : '') + '</span>' +
-        '<button type="button" data-borrar="' + u.id + '" title="Quitar">✕</button></div>').join('');
+    const lista = leerUsosManuales();
+    if (cuenta) cuenta.textContent = lista.length;
+    if (!lista.length) {
+      cont.innerHTML = '<p class="aia-uso-vacio">Todavía no has agregado ningún uso. ' +
+        'Usa la pestaña “Agregar” para señalar los locales que existen en la calle ' +
+        'pero que no están en el mapa abierto.</p>';
+      return;
+    }
+    // Cada uno con su distancia al lote y si entra o no en el radio: un uso
+    // fuera del radio no cuenta en el análisis, y sin decirlo parecería que
+    // el motor lo está ignorando por error.
+    const filas = lista.map(u => {
+      const d = S.lote ? Math.round(M.haversineM(S.lote, { lat: u.lat, lng: u.lng })) : null;
+      const fuera = d != null && d > S.radioM;
+      return { u: u, d: d, fuera: fuera };
+    }).sort((a, b) => (a.d == null ? 1e9 : a.d) - (b.d == null ? 1e9 : b.d));
+    const dentro = filas.filter(f => f.d != null && !f.fuera).length;
+
+    cont.innerHTML =
+      '<p class="aia-uso-resumen">' + lista.length +
+        (lista.length === 1 ? ' uso agregado' : ' usos agregados') +
+        (S.lote ? ' · <b>' + dentro + '</b> dentro del radio de este análisis' : '') + '</p>' +
+      filas.map(f =>
+        '<div class="aia-uso-item' + (f.fuera ? ' fuera' : '') + '" data-ver="' + f.u.id + '">' +
+          '<span>' + escHTML(nombreDeSub(f.u.sub)) +
+            (f.u.nombre ? '<b>' + escHTML(f.u.nombre) + '</b>' : '') +
+            '<em>' + (f.d == null ? 'sin lote fijado'
+                      : (f.fuera ? 'a ' + f.d + ' m · fuera del radio, no cuenta'
+                                 : 'a ' + f.d + ' m')) + '</em>' +
+          '</span>' +
+          '<button type="button" class="ed" data-editar="' + f.u.id + '" title="Editar">✏️</button>' +
+          '<button type="button" class="bo" data-borrar="' + f.u.id + '" title="Eliminar">🗑️</button>' +
+        '</div>').join('');
+
+    // Tocar la fila centra el mapa en ese uso: con cientos de puntos, es la
+    // única forma de saber cuál es el que se está por corregir.
+    cont.querySelectorAll('[data-ver]').forEach(fila => {
+      fila.addEventListener('click', ev => {
+        if (ev.target.closest('button')) return;
+        const u = leerUsosManuales().find(x => x.id === fila.dataset.ver);
+        if (!u) return;
+        S.map.panTo([u.lat, u.lng]);
+        resaltarUso(u);
+      });
+    });
+    cont.querySelectorAll('[data-editar]').forEach(b => {
+      b.addEventListener('click', () => empezarEdicion(b.dataset.editar));
+    });
     cont.querySelectorAll('[data-borrar]').forEach(b => {
       b.addEventListener('click', () => {
-        borrarUsoManual(b.dataset.borrar);
+        const u = leerUsosManuales().find(x => x.id === b.dataset.borrar);
+        if (!u) return;
+        // Borrar cambia el análisis, así que se confirma nombrando cuál es:
+        // en una lista de varios, un toque equivocado se lleva el que no era.
+        const etq = nombreDeSub(u.sub) + (u.nombre ? ' · ' + u.nombre : '');
+        if (!confirm('¿Eliminar este uso del análisis?\n\n' + etq)) return;
+        borrarUsoManual(u.id);
+        if (editandoId === u.id) cancelarEdicion();
         pintarListaUsosManuales();
         if (S.resultado) ejecutarAnalisis();
       });
     });
+  }
+
+  // Marca temporal para señalar cuál es el uso que se está mirando.
+  function resaltarUso(u){
+    if (S.marcaUso) S.map.removeLayer(S.marcaUso);
+    S.marcaUso = L.circleMarker([u.lat, u.lng], { radius: 11, color: '#ffffff', weight: 2.6,
+      dashArray: '3 2', fillColor: '#22d3ee', fillOpacity: .8 }).addTo(S.map);
+  }
+
+  // ── Editar un uso ya puesto ─────────────────────────────────────────────
+  function empezarEdicion(id){
+    const u = leerUsosManuales().find(x => x.id === id);
+    if (!u) return;
+    editandoId = id;
+    usoPendiente = { lat: u.lat, lng: u.lng };
+    llenarSelectUsos();
+    verPestanaUso('agregar');
+    $('aia-uso-titulo').textContent = '✏️ Corregir este uso';
+    $('aia-uso-sub').value = u.sub;
+    $('aia-uso-nombre').value = u.nombre || '';
+    $('aia-uso-donde').innerHTML = '📍 Ubicación: <b>' + Number(u.lat).toFixed(6) + ', ' +
+      Number(u.lng).toFixed(6) + '</b><small>Toca el mapa si quieres moverlo.</small>';
+    $('aia-uso-guardar').textContent = 'Guardar cambios y re-analizar';
+    S.map.panTo([u.lat, u.lng]);
+    resaltarUso(u);
+    refrescarBotonUso();
+  }
+
+  function cancelarEdicion(){
+    editandoId = null;
+    $('aia-uso-titulo').textContent = '➕ Agregar un uso al análisis';
+    $('aia-uso-guardar').textContent = 'Agregar y re-analizar';
+  }
+
+  function verPestanaUso(cual){
+    const p = $('aia-agregar-uso');
+    if (!p) return;
+    p.querySelectorAll('[data-uso-tab]').forEach(b =>
+      b.classList.toggle('activo', b.dataset.usoTab === cual));
+    $('aia-uso-panel-agregar').hidden = cual !== 'agregar';
+    $('aia-uso-panel-mios').hidden = cual !== 'mios';
+    if (cual === 'mios') pintarListaUsosManuales();
   }
 
   function abrirAgregarUso(){
@@ -163,6 +264,9 @@
     pintarListaUsosManuales();
     const p = $('aia-agregar-uso');
     if (p) p.hidden = false;
+    // Con usos ya puestos, lo más probable es que se venga a revisarlos o a
+    // corregir uno; en la primera vez, a agregar el primero.
+    verPestanaUso(leerUsosManuales().length ? 'mios' : 'agregar');
     refrescarBotonUso();
     if (p && p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -172,12 +276,14 @@
     if (p) p.hidden = true;
     S.ubicandoUso = false;
     usoPendiente = null;
+    cancelarEdicion();
     if (S.marcaUso) { S.map.removeLayer(S.marcaUso); S.marcaUso = null; }
     const btn = $('aia-uso-tocar');
     if (btn) { btn.classList.remove('activo'); btn.textContent = '📍 Tocar en el mapa'; }
     $('aia-uso-donde').innerHTML = '📍 Ubicación: <b>sin definir</b>';
     $('aia-uso-nombre').value = '';
     $('aia-uso-sub').value = '';
+    verPestanaUso('agregar');
   }
 
   // ── Mapa ────────────────────────────────────────────────────────────────
@@ -527,13 +633,30 @@
     if (btnGuardarUso) btnGuardarUso.addEventListener('click', () => {
       const sub = $('aia-uso-sub').value;
       if (!sub || !usoPendiente) return;
-      agregarUsoManual({ lat: usoPendiente.lat, lng: usoPendiente.lng, sub: sub,
-                         nombre: ($('aia-uso-nombre').value || '').trim() });
+      const datos = { lat: usoPendiente.lat, lng: usoPendiente.lng, sub: sub,
+                      nombre: ($('aia-uso-nombre').value || '').trim() };
+      // El mismo botón guarda uno nuevo o corrige el que se estaba editando:
+      // dos botones distintos para la misma acción confunden más de lo que
+      // aclaran, y el título del panel ya dice en cuál de las dos se está.
+      if (editandoId) editarUsoManual(editandoId, datos);
+      else agregarUsoManual(datos);
       cerrarAgregarUso();
       ejecutarAnalisis();
     });
     const btnCancelarUso = $('aia-uso-cancelar');
     if (btnCancelarUso) btnCancelarUso.addEventListener('click', cerrarAgregarUso);
+    const btnVolver = $('aia-uso-volver');
+    if (btnVolver) btnVolver.addEventListener('click', cerrarAgregarUso);
+    const panelUsos = $('aia-agregar-uso');
+    if (panelUsos) panelUsos.querySelectorAll('[data-uso-tab]').forEach(b => {
+      b.addEventListener('click', () => {
+        // Cambiar de pestaña cancela una edición a medias: quedarse con el
+        // formulario cargado invitaría a guardar cambios sobre un uso que ya
+        // no se está viendo.
+        if (b.dataset.usoTab === 'mios' && editandoId) cancelarEdicion();
+        verPestanaUso(b.dataset.usoTab);
+      });
+    });
 
     $('aia-btn-informe').addEventListener('click', abrirExportar);
     $('aia-btn-capas').addEventListener('click', alternarBase);

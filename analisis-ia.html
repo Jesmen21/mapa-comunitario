@@ -30,7 +30,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=537-radio-competencia-estratos" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=538-gestionar-mis-usos" />
 </head>
 <body>
 
@@ -168,19 +168,37 @@
              nadie ha dibujado en OpenStreetMap. Suma al análisis igual que
              cualquier punto descargado, y queda marcado como añadido. -->
         <section id="aia-agregar-uso" hidden>
-          <h3>➕ Agregar un uso al análisis</h3>
-          <p class="aia-agregar-ayuda">Para los locales que existen en la calle pero que todavía no están en el mapa abierto. Suman al análisis igual que los descargados y quedan señalados como añadidos por ti.</p>
-          <label for="aia-uso-sub">Qué es</label>
-          <select id="aia-uso-sub"></select>
-          <label for="aia-uso-nombre">Cómo se llama <small>(opcional)</small></label>
-          <input id="aia-uso-nombre" type="text" placeholder="Smart Fit, Ventura Plaza…" autocomplete="off">
-          <div id="aia-uso-donde">📍 Ubicación: <b>sin definir</b></div>
-          <div class="aia-uso-botones">
-            <button id="aia-uso-tocar" type="button">📍 Tocar en el mapa</button>
-            <button id="aia-uso-guardar" type="button" disabled>Agregar y re-analizar</button>
-            <button id="aia-uso-cancelar" type="button">Cancelar</button>
+          <!-- Dos pestañas: poner uno nuevo, y gestionar los que ya puse.
+               Con mil puntos en el mapa, encontrar el que uno mismo agregó
+               mal es imposible sin una vista que muestre SOLO los propios. -->
+          <div class="aia-uso-tabs">
+            <button type="button" class="activo" data-uso-tab="agregar">➕ Agregar</button>
+            <button type="button" data-uso-tab="mios">✏️ Mis usos <b id="aia-uso-cuenta">0</b></button>
           </div>
-          <div id="aia-uso-lista"></div>
+
+          <div id="aia-uso-panel-agregar">
+            <h3 id="aia-uso-titulo">➕ Agregar un uso al análisis</h3>
+            <p class="aia-agregar-ayuda">Para los locales que existen en la calle pero que todavía no están en el mapa abierto. Suman al análisis igual que los descargados y quedan señalados como añadidos por ti.</p>
+            <label for="aia-uso-sub">Qué es</label>
+            <select id="aia-uso-sub"></select>
+            <label for="aia-uso-nombre">Cómo se llama <small>(opcional)</small></label>
+            <input id="aia-uso-nombre" type="text" placeholder="Smart Fit, Ventura Plaza…" autocomplete="off">
+            <div id="aia-uso-donde">📍 Ubicación: <b>sin definir</b></div>
+            <div class="aia-uso-botones">
+              <button id="aia-uso-tocar" type="button">📍 Tocar en el mapa</button>
+              <button id="aia-uso-guardar" type="button" disabled>Agregar y re-analizar</button>
+              <button id="aia-uso-cancelar" type="button">Cancelar</button>
+            </div>
+          </div>
+
+          <div id="aia-uso-panel-mios" hidden>
+            <h3>✏️ Los usos que yo agregué</h3>
+            <p class="aia-agregar-ayuda">Solo los tuyos, sin los cientos de puntos descargados. Toca uno para verlo en el mapa.</p>
+            <div id="aia-uso-lista"></div>
+            <div class="aia-uso-botones">
+              <button id="aia-uso-volver" type="button">← Volver al análisis</button>
+            </div>
+          </div>
         </section>
         <div id="aia-kpis"></div>
         <div id="aia-aviso-otro" hidden></div>
@@ -314,10 +332,10 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=537-radio-competencia-estratos"></script>
-<script src="js/60-analisis-ia-motor.js?v=537-radio-competencia-estratos"></script>
-<script src="js/61-analisis-ia-datos.js?v=537-radio-competencia-estratos"></script>
-<script src="js/63-analisis-ia-informe.js?v=537-radio-competencia-estratos"></script>
-<script src="js/62-analisis-ia-app.js?v=537-radio-competencia-estratos"></script>
+<script src="js/00-config.js?v=538-gestionar-mis-usos"></script>
+<script src="js/60-analisis-ia-motor.js?v=538-gestionar-mis-usos"></script>
+<script src="js/61-analisis-ia-datos.js?v=538-gestionar-mis-usos"></script>
+<script src="js/63-analisis-ia-informe.js?v=538-gestionar-mis-usos"></script>
+<script src="js/62-analisis-ia-app.js?v=538-gestionar-mis-usos"></script>
 </body>
 </html>
