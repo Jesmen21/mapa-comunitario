@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-24",
-  "proximaActualizacion": "2026-08-25",
+  "actualizado": "2026-08-25",
+  "proximaActualizacion": "2026-08-26",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,81 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-25",
+      "precision": "aproximada",
+      "categoria": "emergencia",
+      "titulo": "El presidente denuncia \"manos criminales\" detrás de los incendios en el Tolima y pide apoyo a Chile y Estados Unidos",
+      "detalle": "Los incendios forestales en el Tolima ya afectan 22.319 hectáreas en 28 municipios. El presidente señaló que hay indicios técnicos compatibles con el uso de acelerantes y reportes de autoridades locales sobre hombres en motocicleta prendiendo fuego deliberadamente en los municipios de Suárez, Coello y San Luis; el alcalde de Coello denunció que \"apagamos uno y nos prenden otro\". De la Espriella ordenó al director de la UNGRD, David Santiago Tamayo, solicitar de inmediato apoyo internacional a Chile y a Estados Unidos para combatir los incendios.",
+      "contrapunto": "Las autoridades investigan si los incendios buscan distraer a la Fuerza Pública para facilitar otras acciones criminales, pero al cierre de esta entrada no hay una atribución judicial confirmada de intencionalidad ni de responsables identificados: la denuncia de \"manos criminales\" es, por ahora, una declaración del Gobierno y de autoridades locales, no un hallazgo judicial.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "El Tiempo · pide ayuda a Chile y Estados Unidos por los fuegos", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-martes-25-de-agosto-abelardo-de-la-espriella-denuncia-manos-criminales-y-pide-ayuda-a-chile-y-estados-unidos-por-fuegos-3580783" },
+        { "n": "El Tiempo · incendios estarían siendo provocados deliberadamente", "u": "https://www.eltiempo.com/colombia/otras-ciudades/presidente-abelardo-de-la-espriella-advierte-que-incendios-forestales-en-tolima-estarian-siendo-provocados-deliberadamente-he-ordenado-contundencia-3580695" },
+        { "n": "Infobae · incendios en Tolima son \"gravísimos\"", "u": "https://www.infobae.com/colombia/2026/08/24/abelardo-de-la-espriella-denuncia-que-los-incendios-en-tolima-son-gravisimos-estan-siendo-provocados-deliberadamente/" },
+        { "n": "Infobae · alcalde de Coello denuncia reactivación de incendios", "u": "https://www.infobae.com/colombia/2026/08/24/alcalde-de-coello-tolima-denuncio-que-manos-criminales-estarian-reactivando-los-incendios-forestales-apagamos-uno-y-nos-prenden-otro/" },
+        { "n": "La República · algunos incendios habrían sido provocados", "u": "https://www.larepublica.co/economia/de-la-espriella-afirmo-que-algunos-incendios-forestales-en-tolima-fueron-provocados-4465850" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "De la Espriella presenta su primera declaración de renta como presidente y no registra cónyuge ni propiedades en su declaración de conflicto de intereses",
+      "detalle": "El presidente presentó el 24 de agosto su primera declaración de renta y su declaración de bienes y de posible conflicto de intereses como jefe de Estado. Declaró un patrimonio de $10.493 millones de pesos y pasivos por $102,7 millones. Según Cambio y BluRadio, en la declaración de conflicto de intereses no registró la existencia de cónyuge ni propiedades patrimoniales, y negó tener actividades económicas privadas, participación societaria o vínculos empresariales.",
+      "contrapunto": "Ana Lucía Pineda, la primera dama, es identificada por El Tiempo, Semana y El País como esposa del presidente desde 2008, con quien tiene cuatro hijos; la ausencia de un cónyuge registrado en la declaración de conflicto de intereses contrasta con esa cobertura pública. El Espectador señaló además que tampoco aparecen en el documento empresas vinculadas a su actividad privada anterior, como De la Espriella Abogados, Ron Defensor o el restaurante Místico en Miami. URBIS no encontró un pronunciamiento oficial de la Presidencia explicando estas omisiones, ni una denuncia formal ante un organismo de control por este hallazgo.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "El Tiempo · desglose de la primera declaración de renta", "u": "https://www.eltiempo.com/datos/esta-es-la-primera-declaracion-de-renta-de-abelardo-de-la-espriella-como-presidente-de-colombia-desglose-del-documento-3580741" },
+        { "n": "Cambio · negó estar casado y declaró cero propiedades", "u": "https://cambiocolombia.com/poder/articulo/2026/8/primicia-la-primera-declaracion-de-renta-de-de-la-espriella-como-presidente-nego-estar-casado-declaro-cero-propiedades-y-un-patrimonio-millonario" },
+        { "n": "El Espectador · propiedades, deudas y patrimonio reportado", "u": "https://www.elespectador.com/politica/estas-son-las-propiedades-deudas-y-patrimonio-que-reporto-de-la-espriella-como-presidente-noticias-hoy/" },
+        { "n": "Infobae · movimientos reportados al asumir el cargo", "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-presento-su-primera-declaracion-de-renta-como-presidente-estos-fueron-los-movimientos-que-reporto-al-asumir-el-cargo/" },
+        { "n": "BluRadio · no reporta cónyuge en su declaración de renta", "u": "https://www.bluradio.com/nacion/de-la-espriella-no-reporta-conyuge-en-su-declaracion-de-renta-tiene-patrimonio-de-10-272-millones-rg10" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia que todos los grupos armados ilegales serán tratados como \"terroristas\" y ordena un Bloque Nacional de Búsqueda contra la Extorsión",
+      "detalle": "El presidente presentó los lineamientos de la estrategia integral de seguridad y orden público de su Gobierno: todos los grupos armados ilegales serán tratados como terroristas, sin distinción por la denominación con la que sean identificados. Ordenó la conformación inmediata de un Bloque Nacional de Búsqueda contra la Extorsión, integrado por el Ejército, la Policía, la Armada y la Fuerza Aeroespacial, con articulación de la Fiscalía y la Judicatura. La estrategia también contempla la reactivación del sistema de recompensas, una red de cooperantes, traslados carcelarios urgentes, cuerpos élite de fiscales y jueces especializados por ciudad, y acciones contra el llamado \"cártel de tierras\" y el préstamo informal \"gota a gota\".",
+      "contrapunto": "Según el análisis de El Tiempo sobre las implicaciones de la medida, catalogar a todos los grupos como terroristas intensifica las operaciones militares —incluidos bombardeos— y cierra la puerta a negociaciones políticas o de paz con esas estructuras, además de activar sanciones penales e internacionales por financiación del terrorismo. El anuncio se da en el marco del fortalecimiento de la cooperación con Estados Unidos y la incorporación de Colombia al \"Escudo de las Américas\" promovido por la administración Trump.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · \"se acabó esa división\"", "u": "https://www.infobae.com/colombia/2026/08/24/como-terroristas-asi-seran-catalogados-todos-los-grupos-criminales-del-pais-anuncio-el-presidente-abelardo-de-la-espriella-se-acabo-esa-division/" },
+        { "n": "El Tiempo · una sola línea contra el crimen, ¿esto qué implica?", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/presidente-de-la-espriella-ordena-una-sola-linea-contra-el-crimen-y-dice-que-todos-los-grupos-son-terroristas-esto-que-implica-3580616" },
+        { "n": "CNN en Español · todos serán tratados como \"terroristas\"", "u": "https://cnnespanol.cnn.com/2026/08/24/colombia/de-la-espriella-grupos-criminales-terroristas-orix" },
+        { "n": "LaRazón.co · Bloque Nacional de Búsqueda contra la Extorsión", "u": "https://larazon.co/gobierno-ordena-tratar-como-terroristas-a-todos-los-grupos-armados-ilegales-mediante-nueva-estrategia-de-seguridad/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Ordena redadas y deportaciones masivas de migrantes en situación irregular, con cerca de 850.000 venezolanos afectados",
+      "detalle": "Desde Barranquilla, el presidente anunció que ordenará a Migración Colombia realizar redadas conjuntas con la Policía, a partir de esa misma semana, para deportar a migrantes en situación irregular, con prioridad en quienes hayan cometido delitos. Según cifras oficiales de migración citadas por los medios, cerca de 850.000 venezolanos se encuentran en situación irregular en el país.",
+      "contrapunto": "Organizaciones de derechos humanos y expertos citados por El Tiempo advirtieron que el discurso institucional que califica a los migrantes de \"ilegales\" puede legitimar comportamientos xenófobos, y señalaron que la medida marca un giro frente a más de una década de política migratoria colombiana —bajo gobiernos tanto de derecha como de izquierda— que había hecho de la regularización de la diáspora venezolana un caso reconocido internacionalmente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · abre el debate sobre el manejo del fenómeno migratorio", "u": "https://www.eltiempo.com/justicia/paz-y-derechos-humanos/presidente-abelardo-de-la-espriella-ordena-operativos-contra-migrantes-y-abre-el-debate-sobre-el-manejo-del-fenomeno-en-colombia-3580573" },
+        { "n": "El Colombiano · operativos y deportaciones en Barranquilla", "u": "https://www.elcolombiano.com/colombia/abelardo-espriella-operativos-deportaciones-barranquilla-migracion-PE40227778" },
+        { "n": "Proceso (México) · redadas migratorias y deportaciones", "u": "https://www.proceso.com.mx/internacional/2026/8/24/de-la-espriella-ordena-redadas-migratorias-y-deportaciones-de-migrantes-indocumentados-en-colombia-378655.html" },
+        { "n": "El Diario (España) · expulsión inmediata de migrantes sin papeles", "u": "https://www.eldiario.es/desalambre/espriella-anuncia-operacion-masiva-expulsar-colombia-migrantes-papeles_1_13465304.html" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto sube a 331 muertos y 240 desaparecidos",
+      "detalle": "Con corte al 24 de agosto, la UNGRD reportó 331 personas fallecidas, 4.439 heridas, 240 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 23 de agosto (329 muertos, 234 desaparecidos), suben las cifras de fallecidos y desaparecidos. El reporte suma 31.540 viviendas destruidas y 178.555 averiadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Vanguardia · 331 muertos y 240 desaparecidos", "u": "https://www.vanguardia.com/colombia/2026/08/24/terremoto-en-colombia-ya-deja-331-muertos-y-240-desaparecidos-nuevo-balance-de-la-ungrd/" },
+        { "n": "El Tiempo · balance del 25 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-martes-25-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3580782" },
+        { "n": "Infobae · 331 fallecidos y 4.439 heridos", "u": "https://www.infobae.com/colombia/2026/08/25/terremoto-en-colombia-ya-deja-331-personas-fallecidas-y-4439-personas-heridas-segun-confirmo-la-ungrd/" }
+      ]
+    },
     {
       "fecha": "2026-08-24",
       "precision": "exacta",
