@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-25",
-  "proximaActualizacion": "2026-08-26",
+  "actualizado": "2026-08-26",
+  "proximaActualizacion": "2026-08-27",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,96 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia un plan de navegabilidad del río Magdalena entre Barranquilla y Barrancabermeja",
+      "detalle": "El presidente reafirmó su intención de convertir el río Magdalena en un corredor fluvial navegable en el tramo de 631 kilómetros entre Bocas de Ceniza (Barranquilla) y Barrancabermeja. Según el Gobierno, las operaciones de mantenimiento y dragado en curso están financiadas hasta diciembre de 2026 con cerca de $46.000 millones de pesos, y se espera iniciar procesos de contratación en octubre con la meta de tener la ruta navegable en enero de 2027. Cormagdalena prevé además solicitar al Gobierno una partida adicional cercana a $1,96 billones para ejecutar el plan durante el resto del cuatrienio.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · plan para mantener navegable la ruta entre Barranquilla y Barrancabermeja", "u": "https://www.infobae.com/colombia/2026/08/26/rio-magdalena-de-la-espriella-anuncio-un-plan-para-mantener-navegable-la-ruta-entre-barranquilla-y-barrancabermeja/" },
+        { "n": "El Tiempo · navegar el río, prioridad del gobierno De la Espriella", "u": "https://www.eltiempo.com/colombia/barranquilla/navegar-el-rio-desde-barranquilla-hasta-barrancabermeja-prioridad-del-gobierno-de-la-espriella-estos-estudios-avalarian-la-realidad-del-proyecto-3581050" },
+        { "n": "Portafolio · inversión para la navegabilidad del Magdalena en 2026", "u": "https://www.portafolio.co/economia/infraestructura/inversion-historica-para-la-navegabilidad-del-rio-magdalena-en-2026-643082" }
+      ]
+    },
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance de los incendios forestales en el Tolima sube a más de 27.000 hectáreas en 22 municipios; UNGRD, Fuerza Aeroespacial y bomberos hacen sobrevuelo",
+      "detalle": "El balance acumulado de los incendios forestales en el Tolima subió a más de 27.000 hectáreas afectadas en 22 municipios, frente a las 22.319 hectáreas en 28 municipios reportadas el 25 de agosto (la diferencia en el número de municipios entre ambos reportes no fue explicada por las autoridades). Al 26 de agosto había nueve incendios activos en el departamento, atendidos desde un Puesto de Mando Unificado con 182 bomberos, Defensa Civil, Cruz Roja y unidades aéreas de la Fuerza Aeroespacial, la Policía y el Ejército, que han sumado 25 horas de apoyo aéreo —11 de ellas nocturnas— con descargas de agua. La UNGRD, la Fuerza Aérea y los bomberos realizaron un sobrevuelo para verificar los focos reportados y priorizar zonas de atención. Cerca de 8.000 de las hectáreas afectadas corresponden a áreas agropecuarias; el precio de la hoja de plátano usada para envolver tamales subió un 70 % por la afectación al suministro proveniente del Tolima.",
+      "contrapunto": "Las autoridades investigan si algunos de los incendios fueron provocados intencionalmente, como afirmó el presidente el 24 y el 25 de agosto, pero hasta esta actualización no hay una atribución judicial confirmada de responsables.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · UNGRD, Fuerza Aérea y Bomberos realizan sobrevuelo en Tolima", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-miercoles-26-de-agosto-ungrd-fuerza-aerea-y-bomberos-realizan-sobrevuelo-en-tolima-3581087" },
+        { "n": "El Heraldo · más de 27.000 hectáreas arrasadas y 22 municipios afectados", "u": "https://www.elheraldo.co/colombia/2026/08/25/incendios-forestales-en-tolima-mas-de-27000-hectareas-fueron-arrasadas-y-22-municipios-resultaron-afectados/" },
+        { "n": "HSB Noticias · más de 300 soldados combaten los incendios en el Tolima", "u": "https://www.hsbnoticias.com/asi-mas-de-300-soldados-trabajan-para-combatir-los-incendios-forestales-en-el-tolima/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Nombra a D'Mar Córdoba, crítico del Acuerdo de Paz que niega la existencia del conflicto armado, como director del Centro Nacional de Memoria Histórica",
+      "detalle": "Mediante el Decreto 1309 del 25 de agosto, el Gobierno dejó sin efecto la designación de Carlos Mario López Rojas como director general del Centro Nacional de Memoria Histórica (CNMH) y nombró en su reemplazo a D'Mar Córdoba Salamanca, abogado, periodista y profesor con trayectoria en medios —fue productor en RCN Radio y en el programa \"La Hora de la Verdad\" del exministro uribista Fernando Londoño— y en el Congreso.",
+      "contrapunto": "El Espectador, Cambio y La Silla Vacía señalaron que Córdoba ha sostenido en redes sociales una postura negacionista sobre la existencia del conflicto armado colombiano; según Cambio y El Espectador, ha escrito que \"la narrativa del conflicto armado sirvió para presentar a esas guerrillas como fuerzas beligerantes, cuando en realidad operaban como grupos criminales con una agenda ideológica\". El CNMH es la entidad encargada de investigar el conflicto armado y de recoger testimonios de víctimas, lo que llevó a distintos sectores políticos y sociales a cuestionar si su postura genera confianza entre las víctimas y las organizaciones de memoria.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · dos nuevas designaciones: Córdoba en Memoria Histórica y Reyes en la UIAF", "u": "https://www.infobae.com/colombia/2026/08/26/de-la-espriella-firmo-dos-nuevas-designaciones-dmar-cordoba-en-memoria-historica-y-martha-luz-reyes-en-la-uiaf/" },
+        { "n": "El Espectador · quién es D'Mar Córdoba, negacionista del conflicto", "u": "https://www.elespectador.com/politica/quien-es-dmar-cordoba-negacionista-del-conflicto-que-sera-director-del-centro-nacional-de-memoria-historica-noticias-hoy/" },
+        { "n": "Cambio · un negacionista del conflicto dirigirá el Centro de Memoria", "u": "https://cambiocolombia.com/poder/articulo/2026/8/un-negacionista-del-conflicto-dirigira-el-centro-de-memoria" },
+        { "n": "La Silla Vacía · un negacionista del conflicto dirigirá el Centro de Memoria", "u": "https://www.lasillavacia.com/en-vivo/un-negacionista-del-conflicto-dirigira-el-centro-de-memoria/" },
+        { "n": "Pulzo · perfil y polémicas de D'Mar Córdoba", "u": "https://www.pulzo.com/nacion/dmar-cordoba-asume-direccion-del-centro-nacional-de-memoria-historica-en-colombia-perfil-y-polemicas-PP5281600A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Declara insubsistente al director de la UIAF señalado por presuntos vínculos con alias Calarcá y nombra a Martha Luz Reyes Ferro en su reemplazo",
+      "detalle": "Mediante el Decreto 1290 del 25 de agosto, el Gobierno declaró insubsistente a Wilmar Mejía como director general de la Unidad de Información y Análisis Financiero (UIAF) —la entidad que centraliza y analiza información financiera sobre posibles operaciones de lavado de activos y financiación del terrorismo— y nombró en su reemplazo a Martha Luz Reyes Ferro. Mejía, de formación en Educación Física, había sido nombrado en abril de 2026 y desde su llegada generó cuestionamientos por su perfil profesional y por señalamientos en el caso conocido como \"Calarcá\": según una investigación periodística, chats, cartas y otros documentos sugieren que, cuando era funcionario de la Dirección Nacional de Inteligencia junto al general (r) Juan Miguel Huertas, propuso a las disidencias crear una empresa de seguridad de fachada legal para que el grupo armado pudiera movilizarse en vehículos blindados.",
+      "contrapunto": "Mejía ha negado tener vínculos con alias Calarcá y ha dicho que no lo conoce personalmente. No hay a la fecha un fallo judicial sobre estos señalamientos: son denuncias periodísticas y políticas, no una condena.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · declaran insubsistente a Wilmar Mejía, señalado de presuntos vínculos con alias Calarcá", "u": "https://www.infobae.com/colombia/2026/08/25/declaran-insubsistente-a-wilmar-mejia-el-polemico-director-de-la-uiaf-senalado-de-presuntos-vinculos-con-alias-calarca/" },
+        { "n": "El Espectador · De la Espriella retira a Wilmar Mejía de la dirección de la UIAF", "u": "https://www.elespectador.com/judicial/abelardo-de-la-espriella-retira-a-wilmar-mejia-de-la-direccion-de-la-uiaf/" },
+        { "n": "LaFM · declaran insubsistente a Wilmar Mejía, cuestionado por el caso Calarcá", "u": "https://www.lafm.com.co/politica/declaran-insubsistente-a-wilmar-mejia-408914" },
+        { "n": "La Silla Vacía · Abelardo declaró insubsistente a Wilmar Mejía en la UIAF", "u": "https://www.lasillavacia.com/en-vivo/abelardo-declaro-insubsistente-a-wilmar-mejia-en-direccion-de-la-uiaf/" },
+        { "n": "Pulzo · Wilmar Mejía sale tras controversia y denuncias; Martha Luz Reyes nueva directora", "u": "https://www.pulzo.com/nacion/uiaf-colombia-wilmar-mejia-sale-tras-controversia-y-denuncias-martha-luz-reyes-nueva-directora-PP5284492A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Designa a la exconcejal Clara Lucía Sandoval como gerente del Gobierno Nacional para Bogotá",
+      "detalle": "Tras una reunión con el alcalde Carlos Fernando Galán en el Palacio de San Carlos, el presidente designó a la exconcejal Clara Lucía Sandoval, del Partido Liberal, como gerente para Bogotá del Gobierno Nacional, un cargo nuevo dentro de esta administración. Sandoval fue concejal de Bogotá en tres periodos (2008-2011, 2012-2015 y 2024-2027, este último inconcluso) y participó en debates de gobierno, hacienda y planeación de la ciudad. Su función será servir de puente entre el Gobierno Nacional y la Alcaldía en proyectos como las líneas del Metro, el RegioTram y el pie de fuerza policial en la capital.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · oficializó a la exconcejal Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-oficializo-a-la-exconcejal-clara-lucia-sandoval-como-la-nueva-gerente-para-bogota-asi-trabajara-con-el-alcalde-galan/" },
+        { "n": "El Tiempo · designó a Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-designo-a-la-exconcejal-clara-lucia-sandoval-como-gerente-para-bogota-3581033" },
+        { "n": "El Espectador · Clara Lucía Sandoval será la gerente del Gobierno en Bogotá", "u": "https://www.elespectador.com/bogota/clara-lucia-sandoval-sera-la-gerente-del-gobierno-de-abelardo-la-espriella-en-bogota/" },
+        { "n": "El País · designa a Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.elpais.com.co/politica/presidente-abelardo-de-la-espriella-designa-a-exconcejal-clara-lucia-sandoval-como-gerente-para-bogota-del-gobierno-nacional-2517.html" },
+        { "n": "La Silla Vacía · De la Espriella presenta a su nueva gerente para Bogotá junto a Galán", "u": "https://www.lasillavacia.com/en-vivo/junto-a-galan-de-la-espriella-presenta-su-nueva-gerente-para-bogota/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "En la posesión del nuevo contralor Jorge Laverde, afirma haber \"verificado\" redes de corrupción cercanas a la Casa de Nariño y al Congreso durante el gobierno anterior",
+      "detalle": "El presidente posesionó en La Dorada (Caldas) a Jorge Eliécer Laverde Vargas como nuevo contralor general de la República. En su discurso, De la Espriella afirmó que se han \"verificado\" el desvío de recursos destinados a emergencias, contratos amañados, manejos irregulares en entidades públicas y \"redes de corrupción organizadas cercanas a la Casa de Nariño y al legislativo\" que, según dijo, se aprovecharon del poder para llenar sus arcas durante el gobierno de Gustavo Petro. Prometió que cualquier funcionario de su Gobierno que se vea envuelto en un escándalo será retirado del cargo. Laverde, por su parte, advirtió que Colombia no puede seguir perdiendo cerca de 50 billones de pesos al año por corrupción e ineficiencia.",
+      "contrapunto": "Las afirmaciones del presidente sobre redes de corrupción \"cercanas a la Casa de Nariño y al legislativo\" son señalamientos de su Gobierno contra la administración anterior, en la misma línea del \"Libro de la Verdad\" presentado días antes; a la fecha no hay fallos judiciales ni de organismos de control sobre esas redes específicas, por lo que se trata de denuncias, no de condenas.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Semana · De La Espriella posesionó a Jorge Laverde como contralor general", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-posesiono-a-jorge-laverde-como-contralor-general/202611/" },
+        { "n": "El Tiempo · Laverde se posesiona: \"Colombia no puede seguir perdiendo 50 billones en corrupción\"", "u": "https://www.eltiempo.com/justicia/investigacion/jorge-eliecer-laverde-se-posesiona-como-contralor-general-colombia-no-puede-seguir-perdiendo-50-billones-en-corrupcion-3580874" },
+        { "n": "Portafolio · De la Espriella le pidió cuidar el erario a Laverde", "u": "https://www.portafolio.co/economia/gobierno/jorge-eliecer-laverde-se-posesiono-como-nuevo-contralor-de-la-espriella-le-pidio-cuidar-el-erario-501142" },
+        { "n": "Infobae · Laverde promete control fiscal en tiempo real con IA", "u": "https://www.infobae.com/colombia/2026/08/25/jorge-eliecer-laverde-asumio-como-contralor-general-y-prometio-control-fiscal-en-tiempo-real-con-ia-para-frenar-desvios-por-50-billones-al-ano/" },
+        { "n": "Radio Santa Fe · pidió crear cuerpo élite contra el \"latrocinio\" del gobierno de Petro", "u": "https://www.radiosantafe.com/2026/08/25/de-la-espriella-posesiono-al-nuevo-contralor-jorge-laverde-y-le-pidio-crear-cuerpo-elite-para-identificar-los-autores-del-latrocinio-del-gobierno-de-gustavo-petro/" }
+      ]
+    },
     {
       "fecha": "2026-08-25",
       "precision": "aproximada",
