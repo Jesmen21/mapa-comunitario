@@ -34,6 +34,15 @@
                'julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var MESES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
+  // El módulo se revisa cada 6 horas (10:00, 16:00, 22:00 y 04:00, hora de
+  // Colombia). Antes se anunciaba "próxima revisión el <fecha>": con una sola
+  // pasada al día esa fecha era exacta, pero con cuatro se queda corta — promete
+  // mañana cuando la siguiente pasada es en seis horas, y anunciar de menos es
+  // justo lo que resta credibilidad al módulo. Se anuncia la cadencia, que sí es
+  // cierta siempre; `actualizado` sigue siendo el sello real de frescura. El
+  // campo `proximaActualizacion` del JSON se conserva como dato.
+  var CADENCIA_REVISION = 'se revisa cada 6 horas';
+
   function fechaLarga(iso) {
     var p = String(iso || '').split('-');
     if (p.length !== 3) return String(iso || '');
@@ -401,12 +410,12 @@
     });
 
     $('sp-nextup').textContent =
-      'Actualizado el ' + fechaLarga(D.actualizado) + ' · próxima revisión el ' + fechaLarga(D.proximaActualizacion) +
+      'Actualizado el ' + fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION +
       ' · ' + diasDesde(D.posesion) + ' días de gobierno.';
 
     $('sp-upd-txt').textContent = fechaCorta(D.actualizado);
     $('sp-upd').title = 'Actualizado el ' + fechaLarga(D.actualizado) +
-                        '. Próxima revisión el ' + fechaLarga(D.proximaActualizacion) + '.';
+                        '. El seguimiento ' + CADENCIA_REVISION + '.';
   }
 
   // ── Línea de tiempo · temas ───────────────────────────────────────────────
