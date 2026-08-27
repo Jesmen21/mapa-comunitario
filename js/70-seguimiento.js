@@ -476,31 +476,88 @@
   // que es lo que la mayoría viene a ver, sin obligar a elegir categoría.
   function pintarAccesoMuro() {
     var cont = vaciar($('sp-acceso-muro'));
-    var recientes = (D.entradas || []).slice()
-      .sort(function (a, b) { return a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0; })
-      .slice(0, 3);
+    // Con índice, para poder abrir el hecho completo desde aquí.
+    var recientes = (D.entradas || []).map(function (e, i) { return { e: e, i: i }; })
+      .sort(function (a, b) { return a.e.fecha < b.e.fecha ? 1 : a.e.fecha > b.e.fecha ? -1 : 0; })
+      .slice(0, 4);
     if (!recientes.length) return;
 
-    var b = el('button', 'sp-nuevo'); b.type = 'button';
+    var caja = el('section', 'sp-nuevo');
+    caja.setAttribute('aria-label', 'Lo último publicado');
+
     var top = el('div', 'sp-nuevo-top');
     top.appendChild(el('span', 'sp-nuevo-vivo', 'AL DÍA'));
     top.appendChild(el('span', 'sp-nuevo-f', 'Última publicación: ' +
-      diaEtiqueta(recientes[0].fecha).toLowerCase()));
-    b.appendChild(top);
+      diaEtiqueta(recientes[0].e.fecha).toLowerCase()));
+    // Cuántas van en los últimos siete días: dice de un vistazo si el
+    // seguimiento está al día o si lleva tiempo quieto.
+    var semana = (D.entradas || []).filter(function (x) { return diasDesde(x.fecha) <= 7; }).length;
+    if (semana > 0) {
+      top.appendChild(el('span', 'sp-nuevo-semana', semana +
+        (semana === 1 ? ' registro esta semana' : ' registros esta semana')));
+    }
+    caja.appendChild(top);
 
-    var ul = el('ul', 'sp-nuevo-list');
-    recientes.forEach(function (e) {
-      var li = el('li');
-      li.appendChild(disco(e.categoria, true));
-      li.appendChild(el('span', null, e.titulo || ''));
-      ul.appendChild(li);
-    });
-    b.appendChild(ul);
+    // ── La última publicación, desplegada ─────────────────────────────────
+    // Antes solo se veía su título dentro de una lista de tres. Un titular
+    // suelto no dice nada: obliga a entrar para saber de qué se trata, y ese
+    // toque de más es justo el que la gente no da. Aquí va con su fecha, su
+    // tema, el detalle y la fuente, para poder enterarse sin salir de la
+    // portada.
+    var p0 = recientes[0];
+    var dest = el('article', 'sp-nuevo-dest');
+    pintarColorCategoria(dest, p0.e.categoria);
 
-    var go = el('span', 'sp-nuevo-go', 'Ver el muro completo →');
-    b.appendChild(go);
-    b.addEventListener('click', function () { ir({ v: 'hoy' }); });
-    cont.appendChild(b);
+    var meta = el('div', 'sp-nuevo-meta');
+    meta.appendChild(disco(p0.e.categoria, true));
+    meta.appendChild(el('span', 'sp-nuevo-tema', (cat(p0.e.categoria) || {}).nombre || ''));
+    meta.appendChild(el('span', 'sp-nuevo-fecha', fechaLarga(p0.e.fecha)));
+    var ti = TIPOS[p0.e.tipoFuente];
+    if (ti) {
+      var tag = el('span', 'sp-tag sp-tag-' + ti.cls, ti.t);
+      tag.title = ti.ayuda;
+      meta.appendChild(tag);
+    }
+    dest.appendChild(meta);
+
+    dest.appendChild(el('h3', 'sp-nuevo-tit', p0.e.titulo || ''));
+    if (p0.e.detalle) dest.appendChild(el('p', 'sp-nuevo-det', p0.e.detalle));
+    // El contrapunto se anuncia pero no se despliega: en la portada cabe el
+    // hecho, y la otra versión es justamente la razón para entrar a leerlo.
+    if (p0.e.contrapunto) {
+      dest.appendChild(el('p', 'sp-nuevo-cp', '⚖️ Tiene contrapunto: hay una versión que matiza o contradice esto.'));
+    }
+    var abrir = el('button', 'sp-nuevo-abrir', 'Leer el hecho completo y sus fuentes →');
+    abrir.type = 'button';
+    abrir.addEventListener('click', function () { ir({ v: 'hecho', i: p0.i, desde: 'hoy' }); });
+    dest.appendChild(abrir);
+    caja.appendChild(dest);
+
+    // ── Y lo que vino antes ───────────────────────────────────────────────
+    var resto = recientes.slice(1);
+    if (resto.length) {
+      caja.appendChild(el('p', 'sp-nuevo-antes', 'Antes de eso'));
+      var ul = el('ul', 'sp-nuevo-list');
+      resto.forEach(function (o) {
+        var li = el('li');
+        var bt = el('button', 'sp-nuevo-item'); bt.type = 'button';
+        bt.appendChild(disco(o.e.categoria, true));
+        var tx = el('span', 'sp-nuevo-item-tx');
+        tx.appendChild(el('b', null, o.e.titulo || ''));
+        tx.appendChild(el('em', null, diaEtiqueta(o.e.fecha)));
+        bt.appendChild(tx);
+        bt.addEventListener('click', function () { ir({ v: 'hecho', i: o.i, desde: 'hoy' }); });
+        li.appendChild(bt);
+        ul.appendChild(li);
+      });
+      caja.appendChild(ul);
+    }
+
+    var go = el('button', 'sp-nuevo-go', 'Ver el muro completo →');
+    go.type = 'button';
+    go.addEventListener('click', function () { ir({ v: 'hoy' }); });
+    caja.appendChild(go);
+    cont.appendChild(caja);
   }
 
   // ══ MURO "AL DÍA" ═════════════════════════════════════════════════════════

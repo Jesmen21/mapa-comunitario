@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=538-gestionar-mis-usos">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=539-al-dia-protagonista">
 </head>
 <body>
 
@@ -35,6 +35,11 @@
 
   <!-- ══ 1. PORTADA ══════════════════════════════════════════════════════ -->
   <section class="sp-view" data-view="home" aria-labelledby="sp-h1">
+    <!-- Lo último publicado va PRIMERO, antes del título y de las gráficas.
+         Quien abre el módulo viene a saber qué pasó, no a leer de qué se
+         trata el módulo: eso ya lo sabe, y si no, sigue estando justo debajo. -->
+    <div id="sp-acceso-muro"></div>
+
     <div class="sp-lede">
       <p class="sp-eyebrow">URBIS · Rendición de cuentas</p>
       <h1 id="sp-h1">Seguimiento Presidencial</h1>
@@ -46,8 +51,6 @@
     <!-- Las gráficas van primero: es lo que la gente viene a mirar, y se leen
          de un vistazo sin tener que entrar a ninguna sección. -->
     <div id="sp-hero-graf"></div>
-
-    <div id="sp-acceso-muro"></div>
 
     <dl class="sp-stats" id="sp-stats"></dl>
 
@@ -274,6 +277,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=538-gestionar-mis-usos"></script>
+<script src="js/70-seguimiento.js?v=539-al-dia-protagonista"></script>
 </body>
 </html>
