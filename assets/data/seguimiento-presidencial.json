@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-26",
-  "proximaActualizacion": "2026-08-27",
+  "actualizado": "2026-08-27",
+  "proximaActualizacion": "2026-08-28",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,77 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-27",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto sube a 33.395 viviendas destruidas y baja a 219 los desaparecidos",
+      "detalle": "Con corte a las 6:30 a.m. del 27 de agosto, la UNGRD reportó 331 personas fallecidas, 4.449 heridas, 219 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 24 de agosto (331 muertos, 240 desaparecidos), la cifra de fallecidos se mantiene y baja la de desaparecidos. El reporte suma 33.395 viviendas destruidas y 187.839 averiadas, con 655 edificaciones colapsadas y 6.372 averiadas, en 16 departamentos y 496 municipios, con 193.011 familias y 406.113 personas afectadas. Medicina Legal confirmó que completó la recepción, identificación y entrega a sus familias de los 331 cuerpos provenientes de la zona de desastre, la misma cifra de fallecidos que reporta la UNGRD.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · balance de la UNGRD del 27 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-martes-25-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3581395" },
+        { "n": "Semana · más de 400.000 afectados, nuevo balance de daños", "u": "https://www.semana.com/nacion/articulo/mas-de-400000-afectados-nuevo-balance-de-danos-tras-el-terremoto-en-colombia/202627/" },
+        { "n": "Radio Santa Fe · Medicina Legal confirma los 331 cuerpos identificados y entregados", "u": "https://www.radiosantafe.com/2026/08/26/medicina-legal-confirma-que-ha-completado-331-cuerpos-recibidos-de-zona-de-desastre-del-terremoto-y-todos-fueron-identificados-y-entregados-a-sus-familias-la-misma-cifra-de-fallecidos-reporta-la-ungr/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-27",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El presidente viaja a Ibagué a coordinar la respuesta a los incendios del Tolima; la Fuerza Pública reporta 782 uniformados y cinco aeronaves desplegadas",
+      "detalle": "El presidente viajó el 27 de agosto a Ibagué (Tolima) junto a parte de su gabinete para \"coordinar las operaciones y verificar en terreno el despliegue de todas las capacidades necesarias\" frente a los incendios forestales, que completan más de dos semanas activos y ya suman más de 27.000 hectáreas afectadas en 22 municipios del departamento. De 21 conflagraciones activas en el país, 11 se concentran en el Tolima. La Fuerza Pública mantiene desplegados 782 hombres y mujeres, dos helicópteros Black Hawk, dos aviones AT-802 y apoyo de un MI-17, con 1.084 descargas aéreas y más de 452.000 galones de agua utilizados; otros 33 integrantes de la Brigada de Atención a Desastres se trasladaron a Ibagué con 4.000 kilos de equipos.",
+      "contrapunto": "Las autoridades continúan investigando si algunos de los incendios fueron provocados intencionalmente, como ha señalado el Gobierno desde el 24 de agosto, pero hasta esta actualización no hay una atribución judicial confirmada de responsables.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Semana · viajará a Ibagué para atender la emergencia por incendios", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-viajara-a-ibague-para-atender-la-emergencia-por-incendios-no-vamos-a-bajar-la-guardia/202636/" },
+        { "n": "El Espectador · viaja al Tolima en medio de los incendios forestales", "u": "https://www.elespectador.com/politica/presidente-de-la-espriella-viaja-al-tolima-en-medio-de-los-incendios-forestales-noticias-hoy/" },
+        { "n": "LaFM · viaja al Tolima para coordinar operaciones contra incendios forestales", "u": "https://www.lafm.com.co/politica/presidente-abelardo-de-la-espriella-viaja-tolima-por-incendios-forestales-409017" },
+        { "n": "Pulzo · viaja al Tolima con ministros para coordinar respuesta ante la emergencia", "u": "https://www.pulzo.com/nacion/presidente-abelardo-de-la-espriella-visita-tolima-tras-incendios-forestales-respaldo-y-ayudas-PP5285372A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno evalúa una estrategia de \"buques cárcel\" en altamar (REMAS) para aislar a cabecillas de extorsión y otros criminales de alta peligrosidad",
+      "detalle": "El Gobierno adelanta la evaluación de la estrategia REMAS (Reclusión Especial Marítima de Alta Seguridad), que combinaría las capacidades del Inpec con las de la Armada Nacional para habilitar buques oficiales como centros de reclusión temporal de máxima seguridad en altamar, con el objetivo declarado de aislar de sus redes de apoyo a cabecillas criminales de alta peligrosidad —no solo de extorsión— e impedir que sigan ordenando extorsiones, homicidios y narcotráfico desde la cárcel. El plan busca aislar hasta 40 reclusos de alto perfil en camarotes adaptados como celdas de unos cuatro por cuatro metros, sin televisión, radio ni equipos de comunicación, con visitas restringidas. Los buques se ubicarían cerca de Cartagena y del puerto de Buenaventura. Fuentes consultadas por El Tiempo mencionaron a Digno Palomino y a alias \"Negro Ober\" entre los primeros perfiles considerados, aunque el Gobierno no ha confirmado nombres.",
+      "contrapunto": "Se trata de un plan en evaluación, aún no implementado ni con un decreto o marco legal formalizado conocido. El Tiempo reportó que ya se anticipa una cascada de recursos legales de los abogados de los cabecillas alegando derechos como el vínculo familiar, la resocialización y las visitas; según fuentes del propio Gobierno consultadas por ese medio, la administración está dispuesta a dar esa batalla jurídica.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · exclusivo, la estrategia para aislar en altamar a los grandes capos de la extorsión", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/exclusivo-esta-es-la-estrategia-de-abelardo-de-la-espriella-para-aislar-en-altamar-a-los-grandes-capos-de-la-extorsion-3580952" },
+        { "n": "Infobae · así serían los buques prisión que propone el Gobierno", "u": "https://www.infobae.com/colombia/2026/08/26/asi-serian-los-buques-prision-que-propone-el-gobierno-de-abelardo-de-la-espriella-30-minutos-diarios-al-sol-y-visitas-solo-una-vez-al-mes/" },
+        { "n": "El Espectador · Gobierno alista estrategia para reactivar fragatas como cárcel", "u": "https://www.elespectador.com/judicial/buques-carcel-gobierno-alista-estrategia-para-reactivar-fragatas-como-carcel-para-presos-de-alta-peligrosidad/" },
+        { "n": "Pulzo · gobierno planea cárceles flotantes para aislar líderes criminales", "u": "https://www.pulzo.com/nacion/remas-en-colombia-gobierno-planea-carceles-flotantes-para-aislar-lideres-criminales-PP5284529A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Decreto 1281 revoca a los representantes de la Presidencia en las juntas directivas de las 26 CAR y las cuatro Corporaciones de Desarrollo Sostenible nombrados por Petro",
+      "detalle": "Mediante el Decreto 1281 del 25 de agosto, el Gobierno dejó sin efecto treinta decretos expedidos entre 2023 y 2026 que designaban a los representantes de la Presidencia de la República ante los consejos directivos de las 26 Corporaciones Autónomas Regionales (CAR) y las cuatro Corporaciones para el Desarrollo Sostenible (CDA, Coralina, Cormacarena y Corpourabá) del país. El decreto no nombra directamente a los nuevos representantes, sino que revoca las designaciones previas; según el Ministerio de Ambiente, la medida busca que las nuevas delegaciones respondan a la línea técnica y las prioridades de la agenda ABC del Gobierno y fortalezcan la coordinación con las autoridades ambientales regionales. La medida hizo parte de un paquete de 24 decretos firmado el 25 de agosto que formalizó nombramientos en 15 entidades del Estado y encargados interinos en otras seis, con salida de funcionarios del gobierno de Gustavo Petro en sectores como finanzas, salud, migración, comercio, agricultura y pensiones.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Espectador · De la Espriella renueva representantes de Presidencia ante las CAR", "u": "https://www.elespectador.com/ambiente/de-la-espriella-renueva-representantes-de-presidencia-ante-consejos-directivos-de-las-car/" },
+        { "n": "Portafolio · así será el relevo de los representantes de Petro en las CAR", "u": "https://www.portafolio.co/economia/gobierno/el-gobierno-de-de-la-espriella-mueve-sus-fichas-en-las-car-asi-sera-el-relevo-de-los-representantes-de-petro-501239" },
+        { "n": "Ministerio de Ambiente · comunicado oficial sobre la derogatoria de representantes ante las CAR", "u": "https://www.minambiente.gov.co/presidente-de-la-espriella-deroga-a-representantes-ante-las-car-para-acelerar-la-agenda-abc/" },
+        { "n": "El Heraldo · Gobierno ADLE formaliza nombramientos en 15 entidades del Estado", "u": "https://www.elheraldo.co/colombia/2026/08/26/gobierno-adle-formaliza-nombramientos-en-15-entidades-del-estado-decretos-legalizan-tambien-la-salida-de-funcionarios-de-petro/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "El \"Libro de la Verdad\" reporta irregularidades por $47.000 millones en contratos del gobierno Petro en Antioquia, concentradas en la Universidad de Antioquia",
+      "detalle": "Según el desglose regional del \"Libro de la Verdad\" —el informe de 135 páginas con 82 casos de presunta corrupción del gobierno Petro que la administración De la Espriella presentó el 18 de agosto y entregó a la Fiscalía, la Contraloría y la Procuraduría—, los hallazgos correspondientes a Antioquia suman más de $47.000 millones de pesos. Entre 2024 y 2025 se suscribieron a nivel nacional 107 contratos con universidades públicas por $353.878 millones, de los cuales, según la investigación forense del Gobierno, el 94,4 % se adjudicó sin surtir una fase de comparación de ofertas; el informe destaca dos contratos de la Universidad de Antioquia, suscritos en el marco de un programa de formación artística y musical en territorios ZOMAC y PDET, uno de 2024 y otro de 2025, que estuvieron bajo la supervisión de la misma persona. Adicionalmente, de los más de $612.000 millones del programa \"Caminos Comunitarios para la Paz\", en Antioquia seis convenios con Juntas de Acción Comunal por $2.289 millones registraron el 100 % de ejecución presupuestal pese a que las obras quedaron suspendidas con 0 % de avance físico. El nuevo Gobierno solicitó verificar los soportes de entrega y realizar supervisión detallada de esos registros, principalmente en torno a la Universidad de Antioquia.",
+      "contrapunto": "Se trata de hallazgos y denuncias del actual Gobierno contra la administración anterior, entregados a los organismos de control y a la Fiscalía; a la fecha de esta entrada no hay un fallo judicial ni disciplinario sobre estos casos específicos, por lo que se trata de denuncias, no de condenas. URBIS no encontró, al cierre de esta entrada, una respuesta pública de la Universidad de Antioquia o de las Juntas de Acción Comunal mencionadas.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "El Tiempo · los hallazgos sobre Antioquia en el \"Libro de la Verdad\" suman $47.000 millones", "u": "https://www.eltiempo.com/colombia/medellin/los-hallazgos-de-irregularidades-presentados-por-el-gobierno-de-la-espriella-en-el-libro-de-la-verdad-sobre-antioquia-suman-47-000-millones-de-pesos-3580544" },
+        { "n": "El Colombiano · los 10 peores casos de corrupción del gobierno Petro según el \"Libro de la Verdad\"", "u": "https://www.elcolombiano.com/colombia/casos-corrupcion-gobierno-petro-libro-verdad-de-la-espriella-BM40082773" },
+        { "n": "El Espectador · los detalles del \"Libro de la Verdad\", 82 casos de presunta corrupción", "u": "https://www.elespectador.com/politica/estos-son-los-detalles-del-libro-de-la-verdad-revelando-82-casos-de-presunta-corrupcion-noticias-hoy/" }
+      ]
+    },
     {
       "fecha": "2026-08-26",
       "precision": "exacta",
