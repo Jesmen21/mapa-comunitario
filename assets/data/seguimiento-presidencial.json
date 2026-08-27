@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-23",
-  "proximaActualizacion": "2026-08-24",
+  "actualizado": "2026-08-26",
+  "proximaActualizacion": "2026-08-27",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,272 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia un plan de navegabilidad del río Magdalena entre Barranquilla y Barrancabermeja",
+      "detalle": "El presidente reafirmó su intención de convertir el río Magdalena en un corredor fluvial navegable en el tramo de 631 kilómetros entre Bocas de Ceniza (Barranquilla) y Barrancabermeja. Según el Gobierno, las operaciones de mantenimiento y dragado en curso están financiadas hasta diciembre de 2026 con cerca de $46.000 millones de pesos, y se espera iniciar procesos de contratación en octubre con la meta de tener la ruta navegable en enero de 2027. Cormagdalena prevé además solicitar al Gobierno una partida adicional cercana a $1,96 billones para ejecutar el plan durante el resto del cuatrienio.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · plan para mantener navegable la ruta entre Barranquilla y Barrancabermeja", "u": "https://www.infobae.com/colombia/2026/08/26/rio-magdalena-de-la-espriella-anuncio-un-plan-para-mantener-navegable-la-ruta-entre-barranquilla-y-barrancabermeja/" },
+        { "n": "El Tiempo · navegar el río, prioridad del gobierno De la Espriella", "u": "https://www.eltiempo.com/colombia/barranquilla/navegar-el-rio-desde-barranquilla-hasta-barrancabermeja-prioridad-del-gobierno-de-la-espriella-estos-estudios-avalarian-la-realidad-del-proyecto-3581050" },
+        { "n": "Portafolio · inversión para la navegabilidad del Magdalena en 2026", "u": "https://www.portafolio.co/economia/infraestructura/inversion-historica-para-la-navegabilidad-del-rio-magdalena-en-2026-643082" }
+      ]
+    },
+    {
+      "fecha": "2026-08-26",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance de los incendios forestales en el Tolima sube a más de 27.000 hectáreas en 22 municipios; UNGRD, Fuerza Aeroespacial y bomberos hacen sobrevuelo",
+      "detalle": "El balance acumulado de los incendios forestales en el Tolima subió a más de 27.000 hectáreas afectadas en 22 municipios, frente a las 22.319 hectáreas en 28 municipios reportadas el 25 de agosto (la diferencia en el número de municipios entre ambos reportes no fue explicada por las autoridades). Al 26 de agosto había nueve incendios activos en el departamento, atendidos desde un Puesto de Mando Unificado con 182 bomberos, Defensa Civil, Cruz Roja y unidades aéreas de la Fuerza Aeroespacial, la Policía y el Ejército, que han sumado 25 horas de apoyo aéreo —11 de ellas nocturnas— con descargas de agua. La UNGRD, la Fuerza Aérea y los bomberos realizaron un sobrevuelo para verificar los focos reportados y priorizar zonas de atención. Cerca de 8.000 de las hectáreas afectadas corresponden a áreas agropecuarias; el precio de la hoja de plátano usada para envolver tamales subió un 70 % por la afectación al suministro proveniente del Tolima.",
+      "contrapunto": "Las autoridades investigan si algunos de los incendios fueron provocados intencionalmente, como afirmó el presidente el 24 y el 25 de agosto, pero hasta esta actualización no hay una atribución judicial confirmada de responsables.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · UNGRD, Fuerza Aérea y Bomberos realizan sobrevuelo en Tolima", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-miercoles-26-de-agosto-ungrd-fuerza-aerea-y-bomberos-realizan-sobrevuelo-en-tolima-3581087" },
+        { "n": "El Heraldo · más de 27.000 hectáreas arrasadas y 22 municipios afectados", "u": "https://www.elheraldo.co/colombia/2026/08/25/incendios-forestales-en-tolima-mas-de-27000-hectareas-fueron-arrasadas-y-22-municipios-resultaron-afectados/" },
+        { "n": "HSB Noticias · más de 300 soldados combaten los incendios en el Tolima", "u": "https://www.hsbnoticias.com/asi-mas-de-300-soldados-trabajan-para-combatir-los-incendios-forestales-en-el-tolima/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Nombra a D'Mar Córdoba, crítico del Acuerdo de Paz que niega la existencia del conflicto armado, como director del Centro Nacional de Memoria Histórica",
+      "detalle": "Mediante el Decreto 1309 del 25 de agosto, el Gobierno dejó sin efecto la designación de Carlos Mario López Rojas como director general del Centro Nacional de Memoria Histórica (CNMH) y nombró en su reemplazo a D'Mar Córdoba Salamanca, abogado, periodista y profesor con trayectoria en medios —fue productor en RCN Radio y en el programa \"La Hora de la Verdad\" del exministro uribista Fernando Londoño— y en el Congreso.",
+      "contrapunto": "El Espectador, Cambio y La Silla Vacía señalaron que Córdoba ha sostenido en redes sociales una postura negacionista sobre la existencia del conflicto armado colombiano; según Cambio y El Espectador, ha escrito que \"la narrativa del conflicto armado sirvió para presentar a esas guerrillas como fuerzas beligerantes, cuando en realidad operaban como grupos criminales con una agenda ideológica\". El CNMH es la entidad encargada de investigar el conflicto armado y de recoger testimonios de víctimas, lo que llevó a distintos sectores políticos y sociales a cuestionar si su postura genera confianza entre las víctimas y las organizaciones de memoria.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · dos nuevas designaciones: Córdoba en Memoria Histórica y Reyes en la UIAF", "u": "https://www.infobae.com/colombia/2026/08/26/de-la-espriella-firmo-dos-nuevas-designaciones-dmar-cordoba-en-memoria-historica-y-martha-luz-reyes-en-la-uiaf/" },
+        { "n": "El Espectador · quién es D'Mar Córdoba, negacionista del conflicto", "u": "https://www.elespectador.com/politica/quien-es-dmar-cordoba-negacionista-del-conflicto-que-sera-director-del-centro-nacional-de-memoria-historica-noticias-hoy/" },
+        { "n": "Cambio · un negacionista del conflicto dirigirá el Centro de Memoria", "u": "https://cambiocolombia.com/poder/articulo/2026/8/un-negacionista-del-conflicto-dirigira-el-centro-de-memoria" },
+        { "n": "La Silla Vacía · un negacionista del conflicto dirigirá el Centro de Memoria", "u": "https://www.lasillavacia.com/en-vivo/un-negacionista-del-conflicto-dirigira-el-centro-de-memoria/" },
+        { "n": "Pulzo · perfil y polémicas de D'Mar Córdoba", "u": "https://www.pulzo.com/nacion/dmar-cordoba-asume-direccion-del-centro-nacional-de-memoria-historica-en-colombia-perfil-y-polemicas-PP5281600A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Declara insubsistente al director de la UIAF señalado por presuntos vínculos con alias Calarcá y nombra a Martha Luz Reyes Ferro en su reemplazo",
+      "detalle": "Mediante el Decreto 1290 del 25 de agosto, el Gobierno declaró insubsistente a Wilmar Mejía como director general de la Unidad de Información y Análisis Financiero (UIAF) —la entidad que centraliza y analiza información financiera sobre posibles operaciones de lavado de activos y financiación del terrorismo— y nombró en su reemplazo a Martha Luz Reyes Ferro. Mejía, de formación en Educación Física, había sido nombrado en abril de 2026 y desde su llegada generó cuestionamientos por su perfil profesional y por señalamientos en el caso conocido como \"Calarcá\": según una investigación periodística, chats, cartas y otros documentos sugieren que, cuando era funcionario de la Dirección Nacional de Inteligencia junto al general (r) Juan Miguel Huertas, propuso a las disidencias crear una empresa de seguridad de fachada legal para que el grupo armado pudiera movilizarse en vehículos blindados.",
+      "contrapunto": "Mejía ha negado tener vínculos con alias Calarcá y ha dicho que no lo conoce personalmente. No hay a la fecha un fallo judicial sobre estos señalamientos: son denuncias periodísticas y políticas, no una condena.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · declaran insubsistente a Wilmar Mejía, señalado de presuntos vínculos con alias Calarcá", "u": "https://www.infobae.com/colombia/2026/08/25/declaran-insubsistente-a-wilmar-mejia-el-polemico-director-de-la-uiaf-senalado-de-presuntos-vinculos-con-alias-calarca/" },
+        { "n": "El Espectador · De la Espriella retira a Wilmar Mejía de la dirección de la UIAF", "u": "https://www.elespectador.com/judicial/abelardo-de-la-espriella-retira-a-wilmar-mejia-de-la-direccion-de-la-uiaf/" },
+        { "n": "LaFM · declaran insubsistente a Wilmar Mejía, cuestionado por el caso Calarcá", "u": "https://www.lafm.com.co/politica/declaran-insubsistente-a-wilmar-mejia-408914" },
+        { "n": "La Silla Vacía · Abelardo declaró insubsistente a Wilmar Mejía en la UIAF", "u": "https://www.lasillavacia.com/en-vivo/abelardo-declaro-insubsistente-a-wilmar-mejia-en-direccion-de-la-uiaf/" },
+        { "n": "Pulzo · Wilmar Mejía sale tras controversia y denuncias; Martha Luz Reyes nueva directora", "u": "https://www.pulzo.com/nacion/uiaf-colombia-wilmar-mejia-sale-tras-controversia-y-denuncias-martha-luz-reyes-nueva-directora-PP5284492A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Designa a la exconcejal Clara Lucía Sandoval como gerente del Gobierno Nacional para Bogotá",
+      "detalle": "Tras una reunión con el alcalde Carlos Fernando Galán en el Palacio de San Carlos, el presidente designó a la exconcejal Clara Lucía Sandoval, del Partido Liberal, como gerente para Bogotá del Gobierno Nacional, un cargo nuevo dentro de esta administración. Sandoval fue concejal de Bogotá en tres periodos (2008-2011, 2012-2015 y 2024-2027, este último inconcluso) y participó en debates de gobierno, hacienda y planeación de la ciudad. Su función será servir de puente entre el Gobierno Nacional y la Alcaldía en proyectos como las líneas del Metro, el RegioTram y el pie de fuerza policial en la capital.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · oficializó a la exconcejal Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-oficializo-a-la-exconcejal-clara-lucia-sandoval-como-la-nueva-gerente-para-bogota-asi-trabajara-con-el-alcalde-galan/" },
+        { "n": "El Tiempo · designó a Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-designo-a-la-exconcejal-clara-lucia-sandoval-como-gerente-para-bogota-3581033" },
+        { "n": "El Espectador · Clara Lucía Sandoval será la gerente del Gobierno en Bogotá", "u": "https://www.elespectador.com/bogota/clara-lucia-sandoval-sera-la-gerente-del-gobierno-de-abelardo-la-espriella-en-bogota/" },
+        { "n": "El País · designa a Clara Lucía Sandoval como gerente para Bogotá", "u": "https://www.elpais.com.co/politica/presidente-abelardo-de-la-espriella-designa-a-exconcejal-clara-lucia-sandoval-como-gerente-para-bogota-del-gobierno-nacional-2517.html" },
+        { "n": "La Silla Vacía · De la Espriella presenta a su nueva gerente para Bogotá junto a Galán", "u": "https://www.lasillavacia.com/en-vivo/junto-a-galan-de-la-espriella-presenta-su-nueva-gerente-para-bogota/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "En la posesión del nuevo contralor Jorge Laverde, afirma haber \"verificado\" redes de corrupción cercanas a la Casa de Nariño y al Congreso durante el gobierno anterior",
+      "detalle": "El presidente posesionó en La Dorada (Caldas) a Jorge Eliécer Laverde Vargas como nuevo contralor general de la República. En su discurso, De la Espriella afirmó que se han \"verificado\" el desvío de recursos destinados a emergencias, contratos amañados, manejos irregulares en entidades públicas y \"redes de corrupción organizadas cercanas a la Casa de Nariño y al legislativo\" que, según dijo, se aprovecharon del poder para llenar sus arcas durante el gobierno de Gustavo Petro. Prometió que cualquier funcionario de su Gobierno que se vea envuelto en un escándalo será retirado del cargo. Laverde, por su parte, advirtió que Colombia no puede seguir perdiendo cerca de 50 billones de pesos al año por corrupción e ineficiencia.",
+      "contrapunto": "Las afirmaciones del presidente sobre redes de corrupción \"cercanas a la Casa de Nariño y al legislativo\" son señalamientos de su Gobierno contra la administración anterior, en la misma línea del \"Libro de la Verdad\" presentado días antes; a la fecha no hay fallos judiciales ni de organismos de control sobre esas redes específicas, por lo que se trata de denuncias, no de condenas.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Semana · De La Espriella posesionó a Jorge Laverde como contralor general", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-posesiono-a-jorge-laverde-como-contralor-general/202611/" },
+        { "n": "El Tiempo · Laverde se posesiona: \"Colombia no puede seguir perdiendo 50 billones en corrupción\"", "u": "https://www.eltiempo.com/justicia/investigacion/jorge-eliecer-laverde-se-posesiona-como-contralor-general-colombia-no-puede-seguir-perdiendo-50-billones-en-corrupcion-3580874" },
+        { "n": "Portafolio · De la Espriella le pidió cuidar el erario a Laverde", "u": "https://www.portafolio.co/economia/gobierno/jorge-eliecer-laverde-se-posesiono-como-nuevo-contralor-de-la-espriella-le-pidio-cuidar-el-erario-501142" },
+        { "n": "Infobae · Laverde promete control fiscal en tiempo real con IA", "u": "https://www.infobae.com/colombia/2026/08/25/jorge-eliecer-laverde-asumio-como-contralor-general-y-prometio-control-fiscal-en-tiempo-real-con-ia-para-frenar-desvios-por-50-billones-al-ano/" },
+        { "n": "Radio Santa Fe · pidió crear cuerpo élite contra el \"latrocinio\" del gobierno de Petro", "u": "https://www.radiosantafe.com/2026/08/25/de-la-espriella-posesiono-al-nuevo-contralor-jorge-laverde-y-le-pidio-crear-cuerpo-elite-para-identificar-los-autores-del-latrocinio-del-gobierno-de-gustavo-petro/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-25",
+      "precision": "aproximada",
+      "categoria": "emergencia",
+      "titulo": "El presidente denuncia \"manos criminales\" detrás de los incendios en el Tolima y pide apoyo a Chile y Estados Unidos",
+      "detalle": "Los incendios forestales en el Tolima ya afectan 22.319 hectáreas en 28 municipios. El presidente señaló que hay indicios técnicos compatibles con el uso de acelerantes y reportes de autoridades locales sobre hombres en motocicleta prendiendo fuego deliberadamente en los municipios de Suárez, Coello y San Luis; el alcalde de Coello denunció que \"apagamos uno y nos prenden otro\". De la Espriella ordenó al director de la UNGRD, David Santiago Tamayo, solicitar de inmediato apoyo internacional a Chile y a Estados Unidos para combatir los incendios.",
+      "contrapunto": "Las autoridades investigan si los incendios buscan distraer a la Fuerza Pública para facilitar otras acciones criminales, pero al cierre de esta entrada no hay una atribución judicial confirmada de intencionalidad ni de responsables identificados: la denuncia de \"manos criminales\" es, por ahora, una declaración del Gobierno y de autoridades locales, no un hallazgo judicial.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "El Tiempo · pide ayuda a Chile y Estados Unidos por los fuegos", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-martes-25-de-agosto-abelardo-de-la-espriella-denuncia-manos-criminales-y-pide-ayuda-a-chile-y-estados-unidos-por-fuegos-3580783" },
+        { "n": "El Tiempo · incendios estarían siendo provocados deliberadamente", "u": "https://www.eltiempo.com/colombia/otras-ciudades/presidente-abelardo-de-la-espriella-advierte-que-incendios-forestales-en-tolima-estarian-siendo-provocados-deliberadamente-he-ordenado-contundencia-3580695" },
+        { "n": "Infobae · incendios en Tolima son \"gravísimos\"", "u": "https://www.infobae.com/colombia/2026/08/24/abelardo-de-la-espriella-denuncia-que-los-incendios-en-tolima-son-gravisimos-estan-siendo-provocados-deliberadamente/" },
+        { "n": "Infobae · alcalde de Coello denuncia reactivación de incendios", "u": "https://www.infobae.com/colombia/2026/08/24/alcalde-de-coello-tolima-denuncio-que-manos-criminales-estarian-reactivando-los-incendios-forestales-apagamos-uno-y-nos-prenden-otro/" },
+        { "n": "La República · algunos incendios habrían sido provocados", "u": "https://www.larepublica.co/economia/de-la-espriella-afirmo-que-algunos-incendios-forestales-en-tolima-fueron-provocados-4465850" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "De la Espriella presenta su primera declaración de renta como presidente y no registra cónyuge ni propiedades en su declaración de conflicto de intereses",
+      "detalle": "El presidente presentó el 24 de agosto su primera declaración de renta y su declaración de bienes y de posible conflicto de intereses como jefe de Estado. Declaró un patrimonio de $10.493 millones de pesos y pasivos por $102,7 millones. Según Cambio y BluRadio, en la declaración de conflicto de intereses no registró la existencia de cónyuge ni propiedades patrimoniales, y negó tener actividades económicas privadas, participación societaria o vínculos empresariales.",
+      "contrapunto": "Ana Lucía Pineda, la primera dama, es identificada por El Tiempo, Semana y El País como esposa del presidente desde 2008, con quien tiene cuatro hijos; la ausencia de un cónyuge registrado en la declaración de conflicto de intereses contrasta con esa cobertura pública. El Espectador señaló además que tampoco aparecen en el documento empresas vinculadas a su actividad privada anterior, como De la Espriella Abogados, Ron Defensor o el restaurante Místico en Miami. URBIS no encontró un pronunciamiento oficial de la Presidencia explicando estas omisiones, ni una denuncia formal ante un organismo de control por este hallazgo.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "El Tiempo · desglose de la primera declaración de renta", "u": "https://www.eltiempo.com/datos/esta-es-la-primera-declaracion-de-renta-de-abelardo-de-la-espriella-como-presidente-de-colombia-desglose-del-documento-3580741" },
+        { "n": "Cambio · negó estar casado y declaró cero propiedades", "u": "https://cambiocolombia.com/poder/articulo/2026/8/primicia-la-primera-declaracion-de-renta-de-de-la-espriella-como-presidente-nego-estar-casado-declaro-cero-propiedades-y-un-patrimonio-millonario" },
+        { "n": "El Espectador · propiedades, deudas y patrimonio reportado", "u": "https://www.elespectador.com/politica/estas-son-las-propiedades-deudas-y-patrimonio-que-reporto-de-la-espriella-como-presidente-noticias-hoy/" },
+        { "n": "Infobae · movimientos reportados al asumir el cargo", "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-presento-su-primera-declaracion-de-renta-como-presidente-estos-fueron-los-movimientos-que-reporto-al-asumir-el-cargo/" },
+        { "n": "BluRadio · no reporta cónyuge en su declaración de renta", "u": "https://www.bluradio.com/nacion/de-la-espriella-no-reporta-conyuge-en-su-declaracion-de-renta-tiene-patrimonio-de-10-272-millones-rg10" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Anuncia que todos los grupos armados ilegales serán tratados como \"terroristas\" y ordena un Bloque Nacional de Búsqueda contra la Extorsión",
+      "detalle": "El presidente presentó los lineamientos de la estrategia integral de seguridad y orden público de su Gobierno: todos los grupos armados ilegales serán tratados como terroristas, sin distinción por la denominación con la que sean identificados. Ordenó la conformación inmediata de un Bloque Nacional de Búsqueda contra la Extorsión, integrado por el Ejército, la Policía, la Armada y la Fuerza Aeroespacial, con articulación de la Fiscalía y la Judicatura. La estrategia también contempla la reactivación del sistema de recompensas, una red de cooperantes, traslados carcelarios urgentes, cuerpos élite de fiscales y jueces especializados por ciudad, y acciones contra el llamado \"cártel de tierras\" y el préstamo informal \"gota a gota\".",
+      "contrapunto": "Según el análisis de El Tiempo sobre las implicaciones de la medida, catalogar a todos los grupos como terroristas intensifica las operaciones militares —incluidos bombardeos— y cierra la puerta a negociaciones políticas o de paz con esas estructuras, además de activar sanciones penales e internacionales por financiación del terrorismo. El anuncio se da en el marco del fortalecimiento de la cooperación con Estados Unidos y la incorporación de Colombia al \"Escudo de las Américas\" promovido por la administración Trump.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · \"se acabó esa división\"", "u": "https://www.infobae.com/colombia/2026/08/24/como-terroristas-asi-seran-catalogados-todos-los-grupos-criminales-del-pais-anuncio-el-presidente-abelardo-de-la-espriella-se-acabo-esa-division/" },
+        { "n": "El Tiempo · una sola línea contra el crimen, ¿esto qué implica?", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/presidente-de-la-espriella-ordena-una-sola-linea-contra-el-crimen-y-dice-que-todos-los-grupos-son-terroristas-esto-que-implica-3580616" },
+        { "n": "CNN en Español · todos serán tratados como \"terroristas\"", "u": "https://cnnespanol.cnn.com/2026/08/24/colombia/de-la-espriella-grupos-criminales-terroristas-orix" },
+        { "n": "LaRazón.co · Bloque Nacional de Búsqueda contra la Extorsión", "u": "https://larazon.co/gobierno-ordena-tratar-como-terroristas-a-todos-los-grupos-armados-ilegales-mediante-nueva-estrategia-de-seguridad/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Ordena redadas y deportaciones masivas de migrantes en situación irregular, con cerca de 850.000 venezolanos afectados",
+      "detalle": "Desde Barranquilla, el presidente anunció que ordenará a Migración Colombia realizar redadas conjuntas con la Policía, a partir de esa misma semana, para deportar a migrantes en situación irregular, con prioridad en quienes hayan cometido delitos. Según cifras oficiales de migración citadas por los medios, cerca de 850.000 venezolanos se encuentran en situación irregular en el país.",
+      "contrapunto": "Organizaciones de derechos humanos y expertos citados por El Tiempo advirtieron que el discurso institucional que califica a los migrantes de \"ilegales\" puede legitimar comportamientos xenófobos, y señalaron que la medida marca un giro frente a más de una década de política migratoria colombiana —bajo gobiernos tanto de derecha como de izquierda— que había hecho de la regularización de la diáspora venezolana un caso reconocido internacionalmente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · abre el debate sobre el manejo del fenómeno migratorio", "u": "https://www.eltiempo.com/justicia/paz-y-derechos-humanos/presidente-abelardo-de-la-espriella-ordena-operativos-contra-migrantes-y-abre-el-debate-sobre-el-manejo-del-fenomeno-en-colombia-3580573" },
+        { "n": "El Colombiano · operativos y deportaciones en Barranquilla", "u": "https://www.elcolombiano.com/colombia/abelardo-espriella-operativos-deportaciones-barranquilla-migracion-PE40227778" },
+        { "n": "Proceso (México) · redadas migratorias y deportaciones", "u": "https://www.proceso.com.mx/internacional/2026/8/24/de-la-espriella-ordena-redadas-migratorias-y-deportaciones-de-migrantes-indocumentados-en-colombia-378655.html" },
+        { "n": "El Diario (España) · expulsión inmediata de migrantes sin papeles", "u": "https://www.eldiario.es/desalambre/espriella-anuncia-operacion-masiva-expulsar-colombia-migrantes-papeles_1_13465304.html" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto sube a 331 muertos y 240 desaparecidos",
+      "detalle": "Con corte al 24 de agosto, la UNGRD reportó 331 personas fallecidas, 4.439 heridas, 240 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 23 de agosto (329 muertos, 234 desaparecidos), suben las cifras de fallecidos y desaparecidos. El reporte suma 31.540 viviendas destruidas y 178.555 averiadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Vanguardia · 331 muertos y 240 desaparecidos", "u": "https://www.vanguardia.com/colombia/2026/08/24/terremoto-en-colombia-ya-deja-331-muertos-y-240-desaparecidos-nuevo-balance-de-la-ungrd/" },
+        { "n": "El Tiempo · balance del 25 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-martes-25-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3580782" },
+        { "n": "Infobae · 331 fallecidos y 4.439 heridos", "u": "https://www.infobae.com/colombia/2026/08/25/terremoto-en-colombia-ya-deja-331-personas-fallecidas-y-4439-personas-heridas-segun-confirmo-la-ungrd/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Human Rights Watch alerta un fuerte aumento del reclutamiento de menores por grupos armados y pide medidas urgentes al Gobierno",
+      "detalle": "Human Rights Watch publicó el informe \"Pensé que nunca volvería a ver a mi madre\", que documenta cerca de 1.500 niños y niñas reclutados por grupos armados en Colombia desde 2021 —con un aumento reciente marcado, sobre todo por disidencias de las FARC— y que afecta de forma desproporcionada a menores indígenas y niñas. La organización pidió al presidente Abelardo de la Espriella adoptar medidas urgentes de seguridad y justicia frente al fenómeno.",
+      "contrapunto": "Es un llamado de una organización no gubernamental al Gobierno, no una medida ya adoptada ni una decisión judicial: HRW pide una respuesta, no describe una que ya exista.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Human Rights Watch · informe original", "u": "https://www.hrw.org/es/news/2026/08/24/colombia-crece-el-reclutamiento-de-ninos-y-ninas-por-grupos-armados" },
+        { "n": "Infobae · HRW pide fortalecer medidas contra el reclutamiento de menores", "u": "https://www.infobae.com/colombia/2026/08/24/human-rights-watch-pide-a-abelardo-de-la-espriella-fortalecer-medidas-contra-el-reclutamiento-de-menores-en-colombia/" },
+        { "n": "El Tiempo · alerta sobre el reclutamiento a través de redes sociales", "u": "https://www.eltiempo.com/justicia/investigacion/human-rights-watch-alerta-sobre-aumento-del-reclutamiento-de-menores-en-colombia-a-traves-de-redes-sociales-3580468" },
+        { "n": "Radio Santa Fe · cerca de 1.500 niños reclutados", "u": "https://www.radiosantafe.com/2026/08/24/colombia-aumenta-drasticamente-el-reclutamiento-de-menores-por-grupos-armados-ilegales-a-traves-de-redes-sociales-human-rights-watch/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "aproximada",
+      "categoria": "corrupcion",
+      "titulo": "El vicepresidente Restrepo dice que los cerca de 80 casos de corrupción ya denunciados contra el gobierno anterior son \"la punta del iceberg\"",
+      "detalle": "El vicepresidente José Manuel Restrepo afirmó que los cerca de 80 casos de presunta corrupción ya reportados en el llamado \"Libro de la Verdad\" contra la administración de Gustavo Petro son apenas \"la punta del iceberg\": dijo que hay cerca de 350 alertas internas en revisión y estimó pérdidas potenciales cercanas al 7% del PIB, entre 140 y 150 billones de pesos.",
+      "contrapunto": "Son señalamientos del actual Gobierno contra la administración anterior; a la fecha ningún organismo de control o la justicia ha fallado sobre ellos, y son denuncias, no condenas. Gustavo Petro ha cuestionado públicamente el enfoque del \"Libro de la Verdad\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · \"solamente la punta del iceberg\"", "u": "https://www.eltiempo.com/politica/gobierno/vicepresidente-jose-manuel-restrepo-anuncia-mas-denuncias-de-presunta-corrupcion-en-administracion-de-gustavo-petro-solamente-la-punta-del-iceberg-3580498" },
+        { "n": "El País · más hallazgos de corrupción del gobierno Petro", "u": "https://www.elpais.com.co/politica/jose-manuel-restrepo-anuncia-mas-hallazgos-de-corrupcion-del-gobierno-petro-es-la-punta-del-iceberg-1931.html" },
+        { "n": "El Espectador · continuarán con denuncias de presunta corrupción", "u": "https://www.elespectador.com/politica/restrepo-anuncio-que-continuaran-con-denuncias-de-presunta-corrupcion-de-gobierno-petro-es-el-primer-tomo-noticias-hoy/" },
+        { "n": "Pulzo · detalles del Libro de la Verdad", "u": "https://www.pulzo.com/nacion/detalles-libro-verdad-hallazgos-espriella-sobre-petro-PP5278303" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Entrega la primera casa modelo de reconstrucción en Buenaventura y visita centros de atención en Quibdó",
+      "detalle": "El presidente visitó Quibdó (Chocó) y Buenaventura (Valle del Cauca) para revisar la respuesta a la emergencia por el terremoto del 10 de agosto y entregó la primera vivienda modelo de reconstrucción para familias afectadas en Buenaventura. El Gobierno citó cifras acumuladas de 26.945 viviendas destruidas y 127.557 averiadas.",
+      "contrapunto": "La visita se da después de las críticas que recibió en Buenaventura el 16 y 17 de agosto, cuando repartió balones con el logo de su movimiento político y una persona afectada le reclamó públicamente \"necesitamos techo, no balones\".",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Portafolio · De la Espriella en Quibdó y Buenaventura", "u": "https://www.portafolio.co/economia/gobierno/presidente-de-la-espriella-estara-este-lunes-en-quibdo-y-buenaventura-tras-terremoto-501022" }
+      ]
+    },
+    {
+      "fecha": "2026-08-24",
+      "precision": "aproximada",
+      "categoria": "emergencia",
+      "titulo": "Colombia declara calamidad pública en el Tolima por incendios forestales que ya superan 20.000 hectáreas",
+      "detalle": "Los incendios forestales en el Tolima, concentrados en Coello y Gualanday y con riesgo para un gasoducto, consumieron más de 20.000 hectáreas. El 23 de agosto el Ideam emitió una alerta nacional por amenaza de incendios y la UNGRD reportó 10 incendios activos en tres departamentos (Tolima, Nariño y Caldas); el 24 de agosto el Ejército desplegó helicópteros y drones para apoyar el control de la emergencia. Las autoridades investigan si algunos de los incendios fueron provocados intencionalmente.",
+      "contrapunto": "La Defensoría del Pueblo había pedido al Gobierno nacional más apoyo para atender la emergencia. La fecha exacta de la declaratoria formal de calamidad pública por parte de la Gobernación del Tolima varía según el medio consultado (13 o 14 de agosto); URBIS no pudo confirmarla con precisión, por lo que esta entrada se registra como aproximada.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · control de la emergencia en cuatro municipios del Tolima", "u": "https://www.eltiempo.com/colombia/otras-ciudades/incendios-en-colombia-hoy-rodrigo-lara-ministro-del-interior-reporta-control-de-la-emergencia-en-cuatro-municipios-del-tolima-3580499" },
+        { "n": "Infobae · alerta nacional del Ideam por incendios forestales", "u": "https://www.infobae.com/colombia/2026/08/23/pronostico-de-amenaza-por-incendios-forestales-ideam-emite-alerta-nacional/" },
+        { "n": "La República (Perú) · calamidad pública por incendios que superan 20.000 hectáreas", "u": "https://larepublica.pe/mundo/2026/08/24/colombia-declara-calamidad-publica-en-el-tolima-por-incendios-que-ya-superan-las-20000-hectareas-consumidas-1417766" },
+        { "n": "El Tiempo · confirma control de incendio en Gualanday que amenazaba gasoducto", "u": "https://www.eltiempo.com/amp/colombia/otras-ciudades/presidente-abelardo-de-la-espriella-confirmo-control-de-incendio-forestal-en-gualanday-que-amenazaba-gasoducto-en-tolima-3580393" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance del terremoto se mantiene en 329 muertos y baja a 234 los desaparecidos",
+      "detalle": "Con corte al 23 de agosto, la UNGRD reportó 329 personas fallecidas, 4.592 heridas, 234 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 22 de agosto (329 muertos, 247 desaparecidos), la cifra de fallecidos se mantiene y baja la de desaparecidos. El reporte suma 178.236 viviendas averiadas y 31.519 destruidas en 16 departamentos y 494 municipios, con 317.137 personas afectadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · balance del 23 de agosto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/terremoto-en-colombia-hoy-23-de-agosto-ultimas-noticias-balance-de-la-emergencia-y-nuevos-temblores-en-el-pais-3580375" },
+        { "n": "Semana · sube a 329 la cifra de muertos y hay 234 desaparecidos", "u": "https://www.semana.com/nacion/articulo/tragedia-por-terremoto-en-colombia-sube-a-329-la-cifra-de-muertos-y-hay-234-desaparecidos/202658/" },
+        { "n": "Forbes Colombia · balance de víctimas y afectados", "u": "https://forbes.co/actualidad/terremoto-colombia-ungrd-muertos-afectados" },
+        { "n": "Pulzo · nuevo balance de la UNGRD", "u": "https://www.pulzo.com/nacion/nuevo-balance-ungrd-sobre-victimas-danos-PP5277423" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Lidera un consejo de seguridad extraordinario en Barranquilla tras una ola de homicidios y anuncia que tratará la extorsión y el contrabando como terrorismo",
+      "detalle": "Tras una serie de homicidios en Barranquilla —entre ellos un triple homicidio con dos menores de edad en el barrio Las Nieves el 20 de agosto—, el presidente lideró un consejo de seguridad extraordinario en la base naval de Barranquilla junto al ministro de Defensa, Jorge Mora; el gobernador del Atlántico, Eduardo Verano; y el alcalde Alejandro Char. Anunció que el narcotráfico, la extorsión y el contrabando serán tratados como terrorismo, y la identificación de dos rutas de narcotráfico desde el Caribe hacia Estados Unidos.",
+      "contrapunto": "Medios como Las2orillas describieron el consejo como una respuesta de urgencia forzada por la \"ola de masacres\", un marco más crítico que el de \"reafirmación de compromiso\" que usó el propio Gobierno.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · ratifica su respaldo a la Fuerza Pública", "u": "https://www.infobae.com/colombia/2026/08/23/de-la-espriella-ratifico-su-respaldo-a-la-fuerza-publica-tras-consejo-de-seguridad-en-barranquilla-nunca-mas-seran-arrodillados/" },
+        { "n": "El Tiempo · dos rutas de narcotráfico desde el Caribe hacia EE. UU.", "u": "https://www.eltiempo.com/politica/gobierno/de-la-espriella-lidera-consejo-de-seguridad-en-barranquilla-tras-la-identificacion-de-dos-grandes-rutas-de-narcotrafico-desde-el-caribe-hacia-ee-uu-3580415" },
+        { "n": "El Espectador · estrategia contra narcos y terroristas", "u": "https://www.elespectador.com/politica/de-la-espriella-trazo-estrategia-contra-narcos-y-terroristas-en-consejo-de-seguridad-en-barranquilla-noticias-hoy/" },
+        { "n": "Las2orillas · la ola de masacres que obligó el consejo de seguridad", "u": "https://www.las2orillas.co/la-ola-de-masacres-en-barranquilla-que-obligo-a-de-la-espriella-a-hacer-de-urgencia-un-consejo-de-seguridad/" },
+        { "n": "El Heraldo · la seguridad como prioridad ante la ola criminal en el Atlántico", "u": "https://www.elheraldo.co/judicial/2026/08/24/seguridad-la-prioridad-de-de-la-espriella-ante-la-ola-criminal-en-el-atlantico/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "aproximada",
+      "categoria": "ambiente",
+      "titulo": "Un juzgado de Bucaramanga admite una tutela que busca frenar el proceso de delimitación del páramo de Santurbán",
+      "detalle": "El Juzgado Cuarto Penal del Circuito de Bucaramanga admitió una tutela presentada por líderes comunitarios de Vetas (Santander) contra la Resolución 863 de 2026 del Ministerio de Ambiente, que según los accionantes creó una figura de \"delimitación progresiva\" del páramo de Santurbán no contemplada en la Ley 1930 de 2018 ni en la sentencia T-361 de 2017 de la Corte Constitucional. Piden que se impida al Ministerio expedir nuevas resoluciones de delimitación mientras se resuelve el caso.",
+      "contrapunto": "El ministro de Ambiente, Fabio Arjona, sostiene que el área revocada por la Resolución 1037 del 13 de agosto (zona La Baja) estaba fuera de los límites del páramo. El Comité en Defensa de Santurbán y el expresidente Gustavo Petro rechazan esa lectura y acusan al Gobierno de desmontar la protección en favor del proyecto minero Soto Norte, de Aris Mining. URBIS no pudo confirmar con precisión la fecha exacta de admisión de la tutela; se registra con base en la cobertura periodística disponible al 23 de agosto.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Semana · juzgado de Bucaramanga admite tutela contra la delimitación de Santurbán", "u": "https://www.semana.com/nacion/regionales/articulo/juzgado-de-bucaramanga-admite-tutela-contra-proceso-de-delimitacion-del-paramo-de-santurban-accionantes-piden-frenar-cualquier-resolucion-mientras-se-resuelve-el-caso/202656/" },
+        { "n": "Vanguardia · editorial, el debate debe ser técnico", "u": "https://www.vanguardia.com/opinion/editorial/2026/08/23/santurban-el-debate-debe-ser-tecnico/" },
+        { "n": "Noticaribe · el comité de Santurbán va a los tribunales", "u": "https://noticaribe.co/comite-santurban-va-a-los-tribunales-y-anuncia-gran-movilizacion-contra-decisiones-del-gobierno-de-la-espriella/" }
+      ]
+    },
     {
       "fecha": "2026-08-23",
       "precision": "exacta",
