@@ -1,5 +1,20 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-08-17",
-  "alertas": []
+  "actualizado": "2026-08-28",
+  "alertas": [
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 5,1 — 26 de agosto de 2026, Los Santos, Santander",
+      "lat": 6.82, "lng": -73.11,
+      "desde": "2026-08-26", "expira": "2026-09-09",
+      "lineas": [
+        "📅 Ocurrió el 26 de agosto de 2026 a las 11:45 a. m. (hora de Colombia).",
+        "📊 Magnitud 5,1 · profundidad 149 km · epicentro a 7 km del casco urbano de Los Santos, Santander.",
+        "📢 Sismo sentido ampliamente: la Red Sismológica Nacional recibió más de 2.000 reportes desde más de 100 municipios, principalmente en Santander, Boyacá y Antioquia.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el SGC. No es un reporte ciudadano."
+      ],
+      "fuente": "SGC / prensa nacional (El Espectador, Noticias Caracol, Vanguardia)",
+      "url": "https://www.elespectador.com/ciencia/temblor-hoy-sismo-de-51-con-epicentro-en-santander-sacude-varias-regiones-de-colombia/"
+    }
+  ]
 }
