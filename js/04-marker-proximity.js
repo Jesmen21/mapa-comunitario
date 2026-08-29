@@ -162,6 +162,31 @@
     'Mixto (varios sistemas en el mismo edificio)'
   ];
 
+  // Qué hay a nivel de calle. Es UNA pregunta y no "en qué piso está cada uso"
+  // porque lo que decide el comportamiento urbano no es el inventario por
+  // planta, es si la fachada que se pasa caminando está viva o muerta. Un
+  // centro comercial con las tiendas en el tercer piso y un vestíbulo ciego
+  // abajo atrae gente igual, pero no hace calle: son dos hechos distintos y
+  // hasta ahora el análisis los contaba como uno.
+  const PLANTA_BAJA = [
+    'Sin registrar',
+    'Comercio o local con vitrina',
+    'Otro uso con puerta a la calle',
+    'Acceso a vivienda (vestíbulo o portería)',
+    'Parqueadero o garaje',
+    'Muro ciego o reja',
+    'Local vacío o cerrado'
+  ];
+  // Las que NO hacen calle: se puede pasar por delante media cuadra sin que
+  // ocurra nada. El vestíbulo entra aquí sin ser un defecto — una portería es
+  // necesaria y correcta, simplemente no genera vida de acera.
+  const PLANTA_BAJA_MUERTA = new Set([
+    'Acceso a vivienda (vestíbulo o portería)',
+    'Parqueadero o garaje',
+    'Muro ciego o reja',
+    'Local vacío o cerrado'
+  ]);
+
   // Dónde tiene sentido preguntar por materialidad y pisos. En un hueco de la
   // vía o una alerta de tráfico no hay edificio que describir, y preguntarlo
   // solo estorba a quien reporta.
@@ -183,12 +208,19 @@
     // registraron", no "no tiene". Se devuelve 1 para que el análisis no
     // castigue a lo que se mapeó antes de que este campo existiera.
     const pisos = isFinite(pisosCrudo) && pisosCrudo > 0 ? Math.min(pisosCrudo, 60) : 1;
+    const pb = (d[base + 2] || '').trim();
+    const plantaBaja = pb && pb !== 'undefined' && pb !== 'Sin registrar' ? pb : '';
     return {
       materialidad: mat && mat !== 'undefined' ? mat : MATERIALIDAD_NA,
       pisos: pisos,
       pisosRegistrados: isFinite(pisosCrudo) && pisosCrudo > 0,
+      plantaBaja: plantaBaja,
+      // null = no se registró, y entonces el análisis se comporta como siempre.
+      // Distinguirlo de `false` importa: "no lo miramos" no es "no hay frente".
+      frenteActivo: plantaBaja ? !PLANTA_BAJA_MUERTA.has(plantaBaja) : null,
       idxMaterialidad: base,
-      idxPisos: base + 1
+      idxPisos: base + 1,
+      idxPlantaBaja: base + 2
     };
   }
 
@@ -768,6 +800,7 @@
   // que las posiciones del registro no se calculen en tres sitios distintos.
   window.URBIS_EDIFICIO = {
     MATERIALIDAD: MATERIALIDAD_EDIFICIO,
+    PLANTA_BAJA: PLANTA_BAJA,
     SIN_REGISTRAR: MATERIALIDAD_NA,
     esCategoriaEdificio: esCategoriaEdificio,
     leer: leerEdificio,

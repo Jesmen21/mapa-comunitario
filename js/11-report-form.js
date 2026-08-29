@@ -36,6 +36,9 @@
         const optsMat = EDIF.MATERIALIDAD.map(m =>
             `<option value="${m}" ${m === fichaEdif.materialidad ? 'selected' : ''}>${m}</option>`).join('');
         const pisosVal = fichaEdif.pisosRegistrados ? fichaEdif.pisos : '';
+        const pbActual = fichaEdif.plantaBaja || 'Sin registrar';
+        const optsPB = (EDIF.PLANTA_BAJA || []).map(v =>
+            `<option value="${v}" ${v === pbActual ? 'selected' : ''}>${v}</option>`).join('');
         htmlEdificio = `
         <div class="form-section-edificio">
           <label style="font-size:0.7rem; color:var(--cyan); display:block;">1 · ¿DE QUÉ ESTÁ HECHO? (MATERIALIDAD)</label>
@@ -43,6 +46,9 @@
           <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">2 · ¿CUÁNTOS PISOS TIENE?</label>
           <input type="number" id="ins-pisos" min="1" max="60" step="1" value="${pisosVal}" placeholder="Ej: 1 para una casa, 12 para una torre">
           <div class="edificio-hint">La altura cambia el peso del edificio en el análisis: una torre de 12 pisos aloja y mueve mucha más gente que una casa de uno, aunque el uso sea el mismo.</div>
+          <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:12px;">3 · ¿QUÉ HAY A NIVEL DE CALLE?</label>
+          <select id="sel-planta-baja">${optsPB}</select>
+          <div class="edificio-hint">Lo que se ve al pasar caminando por el frente. Un edificio con las tiendas en el tercer piso y un portón abajo atrae gente igual, pero no hace calle.</div>
         </div>`;
     }
     
@@ -75,7 +81,7 @@
         <b style="color:${_dimCfg.color}; font-size: 1.2rem;">${_dimCfg.icon} ${dim.toUpperCase()}</b>
         
         ${htmlEdificio}
-        <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">${esEdificio ? '3 · SUB-CLASIFICACIÓN TÉCNICA:' : 'SUB-CLASIFICACIÓN TÉCNICA:'}</label>
+        <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">${esEdificio ? '4 · SUB-CLASIFICACIÓN TÉCNICA:' : 'SUB-CLASIFICACIÓN TÉCNICA:'}</label>
         <select id="sel-item">${opciones}</select>
         <input type="text" id="sel-nombre" value="${n}" placeholder="Nombre/Identificador del lugar (Ej: Av 3 con Calle 5)">
         <textarea id="ins-nota" placeholder="Describe el problema, emergencia o situación aquí...">${nt}</textarea>
@@ -107,7 +113,7 @@
         </div>
         
         <div style="display: ${esEdificio ? 'block' : displayTecnico};">
-            <label style="font-size:0.7rem; color:var(--fuchsia); display:block; margin-top:15px; border-top:1px solid #444; padding-top:10px;">${esEdificio ? '4 · ¿QUÉ PASA ADENTRO? MARCA TODOS LOS USOS:' : 'MATRIZ DE USOS MULTIDIMENSIONAL:'}</label>
+            <label style="font-size:0.7rem; color:var(--fuchsia); display:block; margin-top:15px; border-top:1px solid #444; padding-top:10px;">${esEdificio ? '5 · ¿QUÉ PASA ADENTRO? MARCA TODOS LOS USOS:' : 'MATRIZ DE USOS MULTIDIMENSIONAL:'}</label>
             ${esEdificio ? '<div class="edificio-hint">Un mismo edificio puede tener varios usos a la vez: un colegio con cancha y tienda son tres. Márcalos todos — el análisis los reparte entre los pisos que registraste.</div>' : ''}
             <div class="usos-container"><div class="usage-grid">${htmlCheckboxes}</div></div>
         </div>

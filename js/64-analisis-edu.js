@@ -256,12 +256,23 @@
     return subs.map(function (sub, k) {
       return {
         type: 'node', id: 'edu' + i + '_' + k, lat: lat, lon: lng,
-        tags: {
-          'urbis:sub': sub,
-          'urbis:intensidad': String(intensidad),
-          'building:levels': String(ficha.pisos),
-          name: et.cabeza
-        }
+        tags: (function(){
+          const t = {
+            'urbis:sub': sub,
+            'urbis:intensidad': String(intensidad),
+            'building:levels': String(ficha.pisos),
+            name: et.cabeza
+          };
+          // Solo se marca cuando el estudiante lo registró. Si no lo miró, el
+          // análisis se comporta como siempre: "no lo sabemos" no es "no hay
+          // frente activo", y dar por muerta una fachada no observada sería
+          // inventar un dato en contra.
+          if (ficha.frenteActivo !== null && ficha.frenteActivo !== undefined) {
+            t['urbis:frente'] = ficha.frenteActivo ? 'activo' : 'muerto';
+            if (ficha.plantaBaja) t['urbis:planta_baja'] = ficha.plantaBaja;
+          }
+          return t;
+        })()
       };
     });
   }

@@ -190,6 +190,13 @@
           '<ul class="edu-lista resta">' + pen.map(p => '<li><span>' + esc(p.nombre) +
             ' · ' + esc(p.motivo) + '</span><b>−' + p.resta + '</b></li>').join('') + '</ul>'
         : '') +
+      (f.comercioSinFrente
+        ? '<p class="edu-nota">🏢 ' + f.comercioSinFrente + ' comercio' +
+          (f.comercioSinFrente === 1 ? '' : 's') + ' con la planta baja cerrada: ' +
+          (f.comercioSinFrente === 1 ? 'atrae' : 'atraen') + ' gente, pero no ' +
+          (f.comercioSinFrente === 1 ? 'hace' : 'hacen') + ' calle. No ' +
+          (f.comercioSinFrente === 1 ? 'cuenta' : 'cuentan') + ' como vitrina.</p>'
+        : '') +
       bloqueAnden(f) +
       '<h4 class="sep">🕐 A qué horas</h4>' +
       '<div class="edu-horas">' + hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) +

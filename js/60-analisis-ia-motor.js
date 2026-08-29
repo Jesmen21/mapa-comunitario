@@ -671,6 +671,9 @@
   // Cuánto "pesa" un uso dentro de su edificio: pisos repartidos entre los usos
   // que el edificio alberga. Lo calcula el modo educativo al leer la ficha.
   const TAG_INTENSIDAD = 'urbis:intensidad';
+  // Si lo que da a la calle en la planta baja está vivo (vitrina, puerta) o
+  // muerto (portón, muro ciego, vestíbulo, local cerrado).
+  const TAG_FRENTE = 'urbis:frente';
 
   function clasificarPOI(tags){
     tags = tags || {};
@@ -904,6 +907,13 @@
       poi.intensidad = (isFinite(intens) && intens > 0) ? Math.min(intens, 30) : 1;
       const niveles = parseInt(tags['building:levels'], 10);
       if (isFinite(niveles) && niveles > 0) poi.pisos = Math.min(niveles, 60);
+      // Frente a la calle. `undefined` significa que nadie lo miró y el
+      // cálculo sigue como siempre; solo un 'muerto' explícito descuenta.
+      const frente = tags[TAG_FRENTE];
+      if (frente === 'activo' || frente === 'muerto') {
+        poi.frenteActivo = frente === 'activo';
+        poi.plantaBaja = tags['urbis:planta_baja'] || '';
+      }
       // Solo los que quedan sin clasificar guardan sus etiquetas OSM: son los
       // únicos que hay que investigar para asignarles categoría, y así no se
       // infla la memoria ni el almacenamiento con miles de puntos ya resueltos.
@@ -1136,6 +1146,20 @@
       flujo.penalizadores.push({ sub, nombre: (cat && cat.nombre) || sub, n: lista.length,
                                  resta: Math.round(resta), motivo: g.motivo });
     });
+    // Planta baja muerta: media cuadra por la que se pasa sin que ocurra nada.
+    // Pesa poco por unidad a propósito —una portería no arruina una calle— pero
+    // varias seguidas sí explican por qué una cuadra nueva se siente vacía.
+    const frentesMuertos = pois.filter(p => p.frenteActivo === false && p.distM <= 400);
+    if (frentesMuertos.length) {
+      let resta = 0;
+      frentesMuertos.forEach(function (p) { resta += 4 / (1 + Math.pow(p.distM / 220, 2)); });
+      if (resta > 0) {
+        restaPeaton += resta;
+        flujo.penalizadores.push({ sub:'frente_muerto', nombre:'Planta baja sin frente activo',
+                                   n: frentesMuertos.length, resta: Math.round(resta),
+                                   motivo:'portón, muro ciego o vestíbulo sobre el andén' });
+      }
+    }
     flujo.penalizadores.sort((a, b) => b.resta - a.resta);
 
     // ── 2. Aglomeración comercial ────────────────────────────────────────
@@ -1145,12 +1169,29 @@
     // alguien por una acera son las vitrinas que pasa, y una torre de 12 pisos
     // tiene el mismo frente de calle que una de dos. La altura suma gente
     // (residentes, anclas), no fachada comercial.
-    const nComercio = pois.filter(p => COMERCIO_ANDEN.indexOf(p.sub) !== -1 && p.distM <= 400).length;
-    if (nComercio > 0) {
-      const aporte = 26 * (1 - Math.exp(-nComercio / 10));
+    // Un comercio con la planta baja muerta —las tiendas arriba y un portón
+    // abajo— atrae gente igual (cuenta como ancla y como rubro), pero NO hace
+    // acera: no se pasa por delante de una vitrina. Se excluye solo cuando se
+    // registró que el frente está muerto; si nadie lo miró, cuenta como antes.
+    const comerciosAnden = pois.filter(p => COMERCIO_ANDEN.indexOf(p.sub) !== -1 && p.distM <= 400);
+    const conFrente = comerciosAnden.filter(p => p.frenteActivo !== false);
+    const sinFrente = comerciosAnden.filter(p => p.frenteActivo === false);
+    // Peso reducido, NO exclusión. Excluirlo del todo decía que un local al que
+    // no se le ve la vitrina no aporta nada a la acera, y eso es falso: la
+    // puerta sigue ahí y la gente que va entra y sale por ella. Lo que se
+    // pierde es el escaparate continuo, no el destino — de hecho la primera
+    // versión de esto dejaba una hilera de doce locales en flujo CERO, que es
+    // justo el tipo de resultado que haría desconfiar del análisis entero.
+    const PESO_SIN_FRENTE = 0.35;
+    const nComercio = conFrente.length;
+    const pesoComercio = conFrente.length + sinFrente.length * PESO_SIN_FRENTE;
+    flujo.comercioSinFrente = sinFrente.length;
+    if (pesoComercio > 0) {
+      const aporte = 26 * (1 - Math.exp(-pesoComercio / 10));
       sumaPeaton += aporte;
       flujo.generadores.push({ sub:'aglomeracion', nombre:'Continuidad comercial (calle con vitrinas)',
-                               n: nComercio, aporte: Math.round(aporte), franja:'todo' });
+                               n: nComercio, nSinFrente: sinFrente.length,
+                               aporte: Math.round(aporte), franja:'todo' });
       repartirFranja('todo', aporte);
     }
     flujo.comerciosAnden = nComercio;

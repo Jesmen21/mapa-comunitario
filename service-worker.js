@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v549-anden-caminabilidad';
+const URBIS_CACHE = 'urbis-v550-planta-baja';
 const URBIS_ASSETS = [
   './',
   './index.html',
