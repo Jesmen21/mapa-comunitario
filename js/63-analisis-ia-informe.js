@@ -1231,6 +1231,83 @@
       filas + nota + '</div>';
   }
 
+  // ── Levantamiento en campo (solo modo educativo) ────────────────────────
+  // Estos bloques SOLO salen si el análisis trae `r.edu`, que es lo que adjunta
+  // el modo educativo. Un informe de empresas armado sobre el mapa abierto no
+  // tiene ficha de edificio ni andenes observados, y fingir la sección con
+  // ceros diría que se miró y no había nada, en vez de que nadie fue a mirar.
+  function filaBarra(etq, n, tot, color){
+    const pct = tot ? (100 * n / tot) : 0;
+    return '<div class="comp-fila"><span>' + esc(etq) + '</span>' +
+      '<div class="comp-barra"><i style="width:' + pct.toFixed(1) + '%;background:' +
+      (color || T.acento) + '"></i></div>' +
+      '<b>' + n + '</b><em>' + pct.toFixed(0) + '%</em></div>';
+  }
+
+  function bloqueEdificacionEdu(r){
+    const e = ((r.edu || {}).edificacion) || null;
+    if (!e || !e.total) return '';
+    const epocas = Object.keys(e.porEpoca).sort((a, b) => e.porEpoca[b] - e.porEpoca[a]);
+    const mats = Object.keys(e.porMaterial).sort((a, b) => e.porMaterial[b] - e.porMaterial[a]);
+    return '<div class="tarjeta"><h2>El tejido construido</h2>' +
+      '<p class="sub-nivel" style="color:' + T.ok + '">' + e.total +
+      ' edificación' + (e.total === 1 ? '' : 'es') + ' con ficha levantada en campo</p>' +
+      (epocas.length
+        ? '<h3 class="mini">Época de construcción</h3>' +
+          epocas.map(k => filaBarra(k, e.porEpoca[k], e.conEpoca)).join('')
+        : '') +
+      (mats.length
+        ? '<h3 class="mini">Material predominante</h3>' +
+          mats.slice(0, 5).map(k => filaBarra(k, e.porMaterial[k], e.conMaterial)).join('')
+        : '') +
+      (e.evaluables
+        ? '<h3 class="mini">Vulnerabilidad potencial</h3>' +
+          filaBarra('Alta', e.alta, e.evaluables, T.bad) +
+          filaBarra('Media', e.media, e.evaluables, T.warn) +
+          filaBarra('Baja', e.baja, e.evaluables, T.ok) +
+          '<p class="pie-nota"><b>No es un diagnóstico estructural.</b> Es el cruce de ' +
+          'material y época sobre las ' + e.evaluables + ' edificaciones que traen los dos ' +
+          'datos, y solo señala cuáles ameritan que las revise un ingeniero. El primer ' +
+          'código sismo resistente colombiano es el Decreto 1400 de 1984: aquí hay ' +
+          e.anteriores1984 + ' construcción' + (e.anteriores1984 === 1 ? '' : 'es') +
+          ' anterior' + (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha' +
+          (e.patrimonio ? ', y ' + e.patrimonio + ' previa' + (e.patrimonio === 1 ? '' : 's') +
+            ' a 1950 que podrían ser patrimonio' : '') + '.</p>'
+        : '<p class="pie-nota">Para estimar vulnerabilidad hace falta material Y época en el ' +
+          'mismo edificio; con uno solo no se puede afirmar nada.</p>') +
+      (e.noSeSabe || e.otros
+        ? '<p class="pie-nota">' + (e.noSeSabe ? e.noSeSabe + ' dato(s) marcados «no se sabe»' : '') +
+          (e.noSeSabe && e.otros ? ' y ' : '') + (e.otros ? e.otros + ' como «otro»' : '') +
+          ': no cuentan como observación en ningún cálculo de este informe.</p>'
+        : '') +
+      '</div>';
+  }
+
+  function bloqueCaminabilidadEdu(r){
+    if (!r.edu) return '';
+    const c = ((r.stats.movilidad || {}).flujo || {}).caminabilidad;
+    if (!c) return '';
+    if (!c.muestras) {
+      return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
+        '<p class="pie-nota">No se registró el estado del andén en este radio, así que el ' +
+        'flujo peatonal se calculó sin ajustarlo. Un vacío de datos no es un andén bueno.</p></div>';
+    }
+    const pct = Math.round((c.factor - 1) * 100);
+    return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
+      '<p class="sub-nivel" style="color:' +
+      (c.nivel === 'Buena' ? T.ok : c.nivel === 'Irregular' ? T.warn : T.bad) + '">' +
+      esc(c.nivel) + ' · ajusta el flujo peatonal en ' + (pct > 0 ? '+' + pct : pct) + '%</p>' +
+      filaBarra('Andén continuo', c.continuo, c.muestras, T.ok) +
+      filaBarra('Andén interrumpido', c.interrumpido, c.muestras, T.warn) +
+      filaBarra('Sin andén / bordillo', c.sinAnden, c.muestras, T.bad) +
+      '<p class="pie-nota">Sobre ' + c.muestras + ' observación' +
+      (c.muestras === 1 ? '' : 'es') + ' de andén' +
+      (c.rampas ? ' y ' + c.rampas + ' rampa(s) de acceso' : '') + '. ' +
+      (c.fiable ? 'El andén no genera peatones: deja caminar a los que ya hay, por eso ajusta y no suma.'
+                : 'Son pocas observaciones para el radio; conviene mapear más antes de concluir.') +
+      '</p></div>';
+  }
+
   // ── 7. Indicadores urbanos, como filas etiqueta / valor ─────────────────
   function bloqueIndicadoresFilas(r){
     const i = r.indicadores;
@@ -1792,6 +1869,9 @@
 '.tr-notas small{display:block;font-size:6.6px;color:', T.txt3, ';line-height:1.35}',
 /* 7 · Composición */
 '.comp-fila{display:flex;align-items:center;gap:7px;margin-top:3.5px}',
+// Subtítulo dentro de una tarjeta: separa época, material y vulnerabilidad
+// sin gastar una tarjeta entera en cada uno.
+'.mini{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;margin:7px 0 2px;color:', T.txt3, ';font-weight:700}',
 '.comp-fila span{flex:0 0 108px;font-size:7.6px;font-weight:700}',
 '.comp-barra{flex:1;height:7px;border-radius:4px;background:', T.linea, ';overflow:hidden}',
 '.comp-barra i{display:block;height:100%;border-radius:4px}',
@@ -1890,10 +1970,14 @@ seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt)
   '<div>', bloqueIndicadoresFilas(r), '</div>',
 '</div>',
 
-seccion(9, 'El entorno según la distancia', 'mismo dato, varios radios'),
+(r.edu ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
+(r.edu ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
+         '<div>' + bloqueCaminabilidadEdu(r) + '</div></div>' : ''),
+
+seccion(r.edu ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 
-seccion(10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
+seccion(r.edu ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),
 '<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
   'prefactibilidad financiera antes de avanzar a diseño.</div>',

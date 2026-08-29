@@ -50,12 +50,38 @@
         if (!pc.dentroDelPoligono(lat, lng, pts)) return;
         const uso = String(p.tipo || '') === ctx.matrizKey ? ctx.usoDe(p) : '';
         const g = uso ? ctx.grupos.find(x => x.usos.indexOf(uso) !== -1) : null;
-        dentro.push({
-          lat, lng,
+        // La ficha del edificio viaja con el punto. Sin esto, quien abre el
+        // GeoJSON en QGIS recibe un punto con nombre y categoría, y todo lo
+        // levantado en campo —material, altura, frente a la calle, época— se
+        // queda dentro de la app: justo el trabajo que costó ir a hacer.
+        // Solo se escriben los campos que el estudiante registró de verdad;
+        // una propiedad vacía en cada punto es ruido en la tabla de atributos.
+        const reg = { lat, lng,
           nombre: (String(p.descripcion || '').split(' | ')[0] || '').trim() || 'Punto',
           grupo: g ? g.t : (String(p.tipo || '').replace(/^[^\wáéíóúñÁÉÍÓÚÑ]+\s*/, '') || 'Sin categoría'),
           gid: g ? g.id : 'otros'
-        });
+        };
+        const EDIF = window.URBIS_EDIFICIO;
+        if (EDIF) {
+          const fi = EDIF.leer(p.descripcion);
+          if (fi.materialidadUtil) reg.materialidad = fi.materialidadUtil;
+          if (fi.pisosRegistrados) reg.pisos = fi.pisos;
+          if (fi.plantaBaja) {
+            reg.planta_baja = fi.plantaBaja;
+            reg.frente_activo = fi.frenteActivo ? 'si' : 'no';
+          }
+          if (fi.epoca) reg.epoca = fi.epoca;
+          if (fi.vulnerabilidad) reg.vulnerabilidad = fi.vulnerabilidad.nivel;
+          const marcados = EDIF.usosMarcados(p.descripcion);
+          if (marcados.length) {
+            // Como texto separado por ';' y no como lista: el DBF de un
+            // shapefile y la tabla de Google Earth no admiten arrays, y quien
+            // exporta suele terminar en uno de los dos.
+            reg.usos = marcados.join('; ');
+            reg.n_usos = marcados.length;
+          }
+        }
+        dentro.push(reg);
       });
     }
     // La geometría en curso (red / envolvente / círculos) y la cobertura ya
@@ -372,12 +398,33 @@
 
     const anillo = coordsKML(anilloCerrado(d.pts, true), true);
 
-    const marcas = d.puntos.map(p =>
-      '<Placemark><name>' + esc(p.nombre) + '</name>' +
-      '<description>' + esc(p.grupo) + '</description>' +
-      '<styleUrl>#g_' + esc(p.gid) + '</styleUrl>' +
-      '<Point><coordinates>' + p.lng.toFixed(7) + ',' + p.lat.toFixed(7) + ',0</coordinates></Point>' +
-      '</Placemark>').join('');
+    // La ficha va en la descripción del Placemark, que es lo que Google Earth
+    // muestra al pinchar el punto, y además como ExtendedData, que es de donde
+    // la leen las herramientas que importan el KML como tabla.
+    const FICHA_KML = [
+      ['materialidad',   'Material'],
+      ['pisos',          'Pisos'],
+      ['planta_baja',    'A nivel de calle'],
+      ['epoca',          'Época'],
+      ['vulnerabilidad', 'Vulnerabilidad potencial'],
+      ['usos',           'Usos']
+    ];
+    const marcas = d.puntos.map(function (p) {
+      const filas = FICHA_KML.filter(par => p[par[0]] !== undefined && p[par[0]] !== '');
+      const desc = esc(p.grupo) +
+        (filas.length ? '&lt;br/&gt;' + filas.map(par =>
+          esc(par[1] + ': ' + p[par[0]])).join('&lt;br/&gt;') : '');
+      const datos = filas.length
+        ? '<ExtendedData>' + filas.map(par =>
+            '<Data name="' + esc(par[0]) + '"><value>' + esc(p[par[0]]) + '</value></Data>'
+          ).join('') + '</ExtendedData>'
+        : '';
+      return '<Placemark><name>' + esc(p.nombre) + '</name>' +
+        '<description>' + desc + '</description>' + datos +
+        '<styleUrl>#g_' + esc(p.gid) + '</styleUrl>' +
+        '<Point><coordinates>' + p.lng.toFixed(7) + ',' + p.lat.toFixed(7) + ',0</coordinates></Point>' +
+        '</Placemark>';
+    }).join('');
 
     // ── Cobertura vectorizada, agrupada por clase ─────────────────────────
     let carpetaCobertura = '';
@@ -741,8 +788,12 @@
     }
 
     d.puntos.forEach(function (p) {
-      f.push({ type:'Feature',
-        properties:{ capa:'puntos', nombre:p.nombre, categoria:p.grupo, gid:p.gid },
+      const props = { capa:'puntos', nombre:p.nombre, categoria:p.grupo, gid:p.gid };
+      ['materialidad','pisos','planta_baja','frente_activo','epoca','vulnerabilidad',
+       'usos','n_usos'].forEach(function (k) {
+        if (p[k] !== undefined && p[k] !== '') props[k] = p[k];
+      });
+      f.push({ type:'Feature', properties: props,
         geometry:{ type:'Point', coordinates:[+p.lng.toFixed(7), +p.lat.toFixed(7)] } });
     });
 
