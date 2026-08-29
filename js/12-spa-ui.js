@@ -276,17 +276,19 @@
         const selMat = document.getElementById('sel-materialidad');
         const insPisos = document.getElementById('ins-pisos');
         const selPB = document.getElementById('sel-planta-baja');
-        if (!selMat && !insPisos && !selPB) return;
+        const selEp = document.getElementById('sel-epoca');
+        if (!selMat && !insPisos && !selPB && !selEp) return;
         const d = String(descripcionFinal).split(' | ');
         const ref = EDIF.leer(descripcionFinal);
         const matSel = selMat ? String(selMat.value || '').replace(/\|/g, '-') : '';
         const pisosSel = insPisos ? parseInt(insPisos.value, 10) : NaN;
         // Se rellena todo hueco intermedio: si el registro venía corto, un
         // índice suelto dejaría "undefined" en medio de la cadena.
-        for (let k = 0; k < ref.idxPlantaBaja; k++) if (d[k] === undefined) d[k] = '';
+        for (let k = 0; k < ref.idxEpoca; k++) if (d[k] === undefined) d[k] = '';
         d[ref.idxMaterialidad] = matSel || EDIF.SIN_REGISTRAR;
         d[ref.idxPisos] = (isFinite(pisosSel) && pisosSel > 0) ? String(Math.min(pisosSel, 60)) : '';
         d[ref.idxPlantaBaja] = selPB ? String(selPB.value || '').replace(/\|/g, '-') : '';
+        d[ref.idxEpoca] = selEp ? String(selEp.value || '').replace(/\|/g, '-') : '';
         descripcionFinal = d.join(' | ');
     })();
     if(descripcionFinal.length > 49000) {

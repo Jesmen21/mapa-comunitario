@@ -288,6 +288,12 @@
     // Observaciones del andén: no son elementos, son la condición de la
     // superficie por la que se camina. Se acumulan aparte.
     const anden = { continuo: 0, interrumpido: 0, sinAnden: 0, rampas: 0, suma: 0, muestras: 0 };
+    // Antigüedad y vulnerabilidad potencial del tejido construido. Se cuenta
+    // por edificio (no por uso), así que va aquí y no en el abanico de usos:
+    // una torre con ocho usos es UN edificio con una época y un material.
+    const edif = { total: 0, conEpoca: 0, conMaterial: 0, evaluables: 0,
+                   porEpoca: {}, porMaterial: {}, alta: 0, media: 0, baja: 0,
+                   anteriores1984: 0, patrimonio: 0, enObra: 0 };
     (datos || []).forEach(function (p, i) {
       const lat = parseFloat(String(p && p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p && p.lng || '').replace(',', '.'));
@@ -306,6 +312,34 @@
         else if (nota === 0) anden.sinAnden++;
         else anden.interrumpido++;
         return;
+      }
+
+      // La ficha del edificio se contabiliza una vez por punto, antes de que el
+      // abanico lo convierta en varios elementos.
+      const EDIF = window.URBIS_EDIFICIO;
+      if (EDIF) {
+        const ficha = EDIF.leer(p.descripcion);
+        const tieneAlgo = ficha.epoca || ficha.pisosRegistrados ||
+                          ficha.materialidad !== EDIF.SIN_REGISTRAR;
+        if (tieneAlgo) {
+          edif.total++;
+          if (ficha.enObra) edif.enObra++;
+          if (ficha.epoca) {
+            edif.conEpoca++;
+            edif.porEpoca[ficha.epoca] = (edif.porEpoca[ficha.epoca] || 0) + 1;
+            if (ficha.epoca === 'Anterior a 1950') edif.patrimonio++;
+            if (/Anterior a 1950|1950 – 1983/.test(ficha.epoca)) edif.anteriores1984++;
+          }
+          if (ficha.materialidad && ficha.materialidad !== EDIF.SIN_REGISTRAR) {
+            edif.conMaterial++;
+            edif.porMaterial[ficha.materialidad] = (edif.porMaterial[ficha.materialidad] || 0) + 1;
+          }
+          if (ficha.vulnerabilidad) {
+            edif.evaluables++;
+            const n = ficha.vulnerabilidad.nivel;
+            if (n === 'Alta') edif.alta++; else if (n === 'Media') edif.media++; else edif.baja++;
+          }
+        }
       }
 
       const els = puntoAElemento(p, i);
@@ -328,7 +362,7 @@
         : indice >= 0.8 ? 'Buena' : indice >= 0.5 ? 'Irregular' : 'Mala'
     };
     return { elementos: elementos, dentro: dentro, sinTraducir: sinTraducir,
-             caminabilidad: caminabilidad };
+             caminabilidad: caminabilidad, edificacion: edif };
   }
 
   // ── El análisis ─────────────────────────────────────────────────────────
@@ -363,6 +397,7 @@
       leidos: reunido.elementos.length,
       sinTraducir: reunido.sinTraducir,
       caminabilidad: reunido.caminabilidad,
+      edificacion: reunido.edificacion,
       ciudad: (ubicacion && ubicacion.ciudad) || ''
     };
     return resultado;

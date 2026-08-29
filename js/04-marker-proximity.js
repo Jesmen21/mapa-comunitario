@@ -187,6 +187,57 @@
     'Local vacío o cerrado'
   ]);
 
+  // Época de construcción. Los cortes NO son décadas redondas: son los umbrales
+  // de la norma sismo resistente colombiana, que es lo que de verdad separa un
+  // edificio de otro en una zona de amenaza alta como Cúcuta. El primer código
+  // nacional es el Decreto 1400 de 1984, expedido tras el terremoto de Popayán
+  // de 1983; lo reemplaza la NSR-98 (Ley 400 de 1997, Decreto 33 de 1998) y
+  // luego la NSR-10 (Decreto 926 de 2010). Antes de 1984 no había norma que
+  // cumplir, y eso importa más que si la casa es de los sesenta o los setenta.
+  const EPOCA_EDIFICIO = [
+    'Sin registrar',
+    'Anterior a 1950',
+    '1950 – 1983 (sin norma sismo resistente)',
+    '1984 – 1997 (Decreto 1400 de 1984)',
+    '1998 – 2009 (NSR-98)',
+    '2010 o posterior (NSR-10)',
+    'En construcción'
+  ];
+
+  // Vulnerabilidad POTENCIAL, no un diagnóstico estructural. Un curso contando
+  // fachadas desde la acera no puede evaluar una estructura, y presentarlo como
+  // si pudiera sería el peor error que este módulo podría enseñar. Lo que sí
+  // dice, y es útil, es qué combinaciones merecen que alguien vaya a mirar en
+  // serio: un muro de ladrillo sin confinar levantado antes de que existiera
+  // norma no es lo mismo que un pórtico de concreto de 2015.
+  const RIESGO_EPOCA = {
+    'Anterior a 1950': 3,
+    '1950 – 1983 (sin norma sismo resistente)': 3,
+    '1984 – 1997 (Decreto 1400 de 1984)': 2,
+    '1998 – 2009 (NSR-98)': 1,
+    '2010 o posterior (NSR-10)': 0
+  };
+  const RIESGO_MATERIAL = {
+    'Mampostería sin confinar (ladrillo o bloque solo)': 2,
+    'Bahareque o tapia pisada': 2,
+    'Lámina, zinc o material reciclado': 2,
+    'Madera': 1,
+    'Prefabricado': 1,
+    'Mixto (varios sistemas en el mismo edificio)': 1,
+    'Mampostería confinada (ladrillo con vigas y columnas)': 0,
+    'Concreto reforzado (pórticos o muros)': 0
+  };
+
+  // Devuelve null cuando falta cualquiera de los dos datos: media evaluación no
+  // es media verdad, es una cifra que parece saber algo y no sabe.
+  function vulnerabilidadDe(materialidad, epoca){
+    const re = RIESGO_EPOCA[epoca], rm = RIESGO_MATERIAL[materialidad];
+    if (re === undefined || rm === undefined) return null;
+    const total = re + rm;
+    return { puntos: total,
+             nivel: total >= 4 ? 'Alta' : total >= 2 ? 'Media' : 'Baja' };
+  }
+
   // Dónde tiene sentido preguntar por materialidad y pisos. En un hueco de la
   // vía o una alerta de tráfico no hay edificio que describir, y preguntarlo
   // solo estorba a quien reporta.
@@ -208,6 +259,8 @@
     // registraron", no "no tiene". Se devuelve 1 para que el análisis no
     // castigue a lo que se mapeó antes de que este campo existiera.
     const pisos = isFinite(pisosCrudo) && pisosCrudo > 0 ? Math.min(pisosCrudo, 60) : 1;
+    const ep = (d[base + 3] || '').trim();
+    const epoca = ep && ep !== 'undefined' && ep !== 'Sin registrar' ? ep : '';
     const pb = (d[base + 2] || '').trim();
     const plantaBaja = pb && pb !== 'undefined' && pb !== 'Sin registrar' ? pb : '';
     return {
@@ -218,9 +271,14 @@
       // null = no se registró, y entonces el análisis se comporta como siempre.
       // Distinguirlo de `false` importa: "no lo miramos" no es "no hay frente".
       frenteActivo: plantaBaja ? !PLANTA_BAJA_MUERTA.has(plantaBaja) : null,
+      epoca: epoca,
+      enObra: epoca === 'En construcción',
+      vulnerabilidad: vulnerabilidadDe(
+        mat && mat !== 'undefined' ? mat : '', epoca),
       idxMaterialidad: base,
       idxPisos: base + 1,
-      idxPlantaBaja: base + 2
+      idxPlantaBaja: base + 2,
+      idxEpoca: base + 3
     };
   }
 
@@ -801,6 +859,8 @@
   window.URBIS_EDIFICIO = {
     MATERIALIDAD: MATERIALIDAD_EDIFICIO,
     PLANTA_BAJA: PLANTA_BAJA,
+    EPOCA: EPOCA_EDIFICIO,
+    vulnerabilidadDe: vulnerabilidadDe,
     SIN_REGISTRAR: MATERIALIDAD_NA,
     esCategoriaEdificio: esCategoriaEdificio,
     leer: leerEdificio,

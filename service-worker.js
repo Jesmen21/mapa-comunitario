@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v551-frente-observado';
+const URBIS_CACHE = 'urbis-v552-epoca-construccion';
 const URBIS_ASSETS = [
   './',
   './index.html',

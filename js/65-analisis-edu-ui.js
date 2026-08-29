@@ -236,6 +236,50 @@
       '</div>';
   }
 
+  // ── Antigüedad del tejido construido ──────────────────────────────────
+  // Esto NO es un diagnóstico estructural y el bloque lo dice con todas las
+  // letras. Un curso contando fachadas desde la acera no puede evaluar una
+  // estructura, y dejar creer que sí sería el peor error que este módulo podría
+  // enseñar. Lo que sí hace, y es útil, es señalar qué construcciones merecen
+  // que alguien vaya a mirarlas en serio.
+  function bloqueEdificacion(r){
+    const e = (r.edu || {}).edificacion;
+    if (!e || !e.total) return '';
+    const fila = (etq, n, tot) => '<li><span>' + esc(etq) + '</span>' +
+      '<i><b style="width:' + (tot ? Math.round(100 * n / tot) : 0) + '%"></b></i>' +
+      '<em>' + n + '</em></li>';
+    const epocas = Object.keys(e.porEpoca).sort((a, b) => e.porEpoca[b] - e.porEpoca[a]);
+    return '<div class="edu-caja">' +
+      '<h4>🏚️ De cuándo es lo construido</h4>' +
+      (epocas.length
+        ? '<ul class="edu-barras">' +
+          epocas.map(k => fila(k, e.porEpoca[k], e.conEpoca)).join('') + '</ul>'
+        : '<p class="edu-nota">Nadie registró la época de los edificios que mapearon.</p>') +
+      (e.patrimonio
+        ? '<p class="edu-nota">🏛️ ' + e.patrimonio + ' edificación' +
+          (e.patrimonio === 1 ? '' : 'es') + ' anterior' + (e.patrimonio === 1 ? '' : 'es') +
+          ' a 1950: posible patrimonio, conviene mirarlo antes de que se pierda.</p>'
+        : '') +
+      (e.evaluables
+        ? '<h4 class="sep">⚠️ Cuáles merecen una revisión</h4>' +
+          '<ul class="edu-barras">' +
+            fila('Vulnerabilidad potencial alta', e.alta, e.evaluables) +
+            fila('Media', e.media, e.evaluables) +
+            fila('Baja', e.baja, e.evaluables) +
+          '</ul>' +
+          '<p class="edu-nota"><b>Esto no es un diagnóstico estructural.</b> Es el cruce ' +
+          'de material y época sobre ' + e.evaluables + ' edificación' +
+          (e.evaluables === 1 ? '' : 'es') + ' con los dos datos completos: solo dice ' +
+          'cuáles ameritan que las mire un ingeniero. El primer código sismo resistente ' +
+          'colombiano es de 1984, y aquí hay ' + e.anteriores1984 + ' construcción' +
+          (e.anteriores1984 === 1 ? '' : 'es') + ' anterior' +
+          (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha.</p>'
+        : '<p class="edu-nota">Para estimar vulnerabilidad hacen falta material Y época ' +
+          'en el mismo edificio. Con uno solo no se puede decir nada, y media evaluación ' +
+          'sería una cifra que parece saber algo sin saberlo.</p>') +
+      '</div>';
+  }
+
   function bloqueComposicion(r){
     const s = r.stats;
     const rub = (s.rubros || []).slice(0, 8);
@@ -305,7 +349,7 @@
       const r = await window.URBIS_EDU.analizar(centro, radioM, null);
       ultimo = r;
       cont.innerHTML = bloqueBase(r) + kpis(r) + bloquePoblacion(r) + bloqueFlujo(r) +
-                       bloqueCalor(r) + bloqueComposicion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
+                       bloqueCalor(r) + bloqueComposicion(r) + bloqueEdificacion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
                        '</div>';
