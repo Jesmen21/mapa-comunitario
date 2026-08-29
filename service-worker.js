@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v546-cadencia-6h';
+const URBIS_CACHE = 'urbis-v547-cadencia-6h';
 const URBIS_ASSETS = [
   './',
   './index.html',

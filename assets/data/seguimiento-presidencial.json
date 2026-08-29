@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-28",
-  "proximaActualizacion": "2026-08-29",
+  "actualizado": "2026-08-29",
+  "proximaActualizacion": "2026-08-30",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,61 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El nombramiento de un sacerdote como delegado presidencial en los consejos superiores de cinco universidades públicas desata denuncias de nepotismo por su parentesco con el presidente; la Presidencia lo niega",
+      "detalle": "Mediante el Decreto 1310 del 25 de agosto, el Gobierno designó al padre Rodolfo Andrés Londoño de la Espriella, capellán de la Presidencia, como representante del jefe de Estado ante los consejos superiores de la Universidad Nacional, la Universidad de Antioquia, la Universidad Pedagógica Nacional, la Universidad del Valle y la Universidad del Atlántico. La representante a la Cámara Jennifer Pedraza anunció una demanda de nulidad contra el decreto por considerarlo un caso de nepotismo, y la representante Isabel Vera (Pacto Histórico) también cuestionó el nombramiento como un posible conflicto de interés.",
+      "contrapunto": "La Presidencia emitió un comunicado negando que el padre Londoño sea familiar del presidente y calificó de \"falsas\" las versiones que presentan el nombramiento como el de un pariente del jefe de Estado; varios medios, entre ellos El Colombiano, Semana y Cambio, se habían referido a él como primo del presidente antes de esa aclaración oficial. URBIS no pudo verificar de forma independiente el árbol genealógico de ambos.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Infobae · Jennifer Pedraza demandó el nombramiento del primo de Abelardo de la Espriella", "u": "https://www.infobae.com/colombia/2026/08/28/jennifer-pedraza-demando-el-nombramiento-del-primo-de-abelardo-de-la-espriella-como-representante-en-consejos-superiores-universitarios-respete/" },
+        { "n": "El Espectador · anuncian demanda contra designación del primo del presidente en cinco universidades", "u": "https://www.elespectador.com/politica/anuncian-demanda-contra-designacion-del-primo-del-presidente-en-cinco-universidades/" },
+        { "n": "Semana · el presidente confirma que no tiene parentesco con el padre Rodolfo Londoño", "u": "https://www.semana.com/politica/articulo/el-presidente-abelardo-de-la-espriella-confirma-que-no-tiene-parentesco-con-el-padre-rodolfo-londono/202646/" },
+        { "n": "Infobae · Gobierno aclaró que Rodolfo Londoño de la Espriella no tiene ningún parentesco con el presidente", "u": "https://www.infobae.com/colombia/2026/08/28/tras-recibir-acusaciones-de-nepotismo-y-hasta-amenazas-de-demandas-gobierno-nacional-aclaro-que-rodolfo-londono-de-la-espriella-no-tiene-ningun-parentesco-con-el-presidente/" },
+        { "n": "Pulzo · nombramiento del primo del presidente genera controversia por posible nepotismo", "u": "https://www.pulzo.com/nacion/nombramiento-de-rodrigo-londono-de-la-espriella-genera-polemica-por-posible-nepotismo-en-colombia-PP5286538A" }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El presidente reporta 41 extradiciones firmadas en sus primeros 19 días de gobierno y anuncia que seguirá firmando más",
+      "detalle": "El presidente Abelardo de la Espriella afirmó el 28 de agosto que ha firmado 41 resoluciones de extradición en 19 días de gobierno: \"Vamos a seguir firmando más, porque la lucha contra el crimen organizado, contra el terrorismo, el narcotráfico va a continuar todos los días; los vamos a derrotar\". La cifra se suma al reporte de más de 30 extradiciones firmadas hasta el 26 de agosto, que había incluido la de cinco excabecillas que participaron como negociadores de paz durante el gobierno de Gustavo Petro.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Semana · en tiempo récord, ya firmó 41 extradiciones", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-en-tiempo-record-ya-firmo-41-extradiciones-el-presidente-lanzo-advertencia-a-criminales/202610/" },
+        { "n": "El País · extradiciones masivas y golpes al Clan del Golfo tras los primeros días del gobierno", "u": "https://www.elpais.com.co/judicial/extradiciones-masivas-y-golpes-al-clan-del-golfo-tras-los-primeros-dias-del-gobierno-de-la-espriella-los-vamos-a-perseguir-2834.html" }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Entrega las primeras viviendas para damnificados del terremoto en Cali y anuncia subsidios de arriendo; dice que la reconstrucción podría tomar dos años",
+      "detalle": "El presidente, junto al alcalde de Cali y la constructora Marval, hizo la entrega simbólica de cuatro apartamentos completamente dotados a familias que perdieron su vivienda en el terremoto del 10 de agosto, entre ellas la de la niña Ana María Saavedra, una de las trillizas que sobrevivió al sismo. El Gobierno anunció además un subsidio de arriendo de $1.050.000 mensuales por tres meses, prorrogable por tres más, y 20 bonos de construcción para otras familias afectadas. De la Espriella dijo que la reconstrucción de Cali podría reducirse a dos años y cuestionó la gestión de la administración anterior: \"lo que había era vagos, un poco de flojos\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El País · autoridades entregaron cuatro viviendas a familias sobrevivientes del terremoto en Cali", "u": "https://www.elpais.com.co/cali/autoridades-entregaron-cuatro-viviendas-a-familias-sobrevivientes-del-terremoto-en-cali-2829.html" },
+        { "n": "Infobae · gobierno entregó viviendas \"con todo\" a cuatro familias afectadas por el terremoto en Cali", "u": "https://www.infobae.com/colombia/2026/08/28/gobierno-entrego-viviendas-con-todo-a-cuatro-familias-afectadas-por-el-terremoto-en-cali-un-apartamento-es-para-la-trilliza-ana-maria-saavedra/" },
+        { "n": "Infobae · la reconstrucción de Cali podría reducirse a dos años y lanzó pulla al gobierno Petro", "u": "https://www.infobae.com/colombia/2026/08/29/de-la-espriella-aseguro-que-la-reconstruccion-de-cali-podria-reducirse-a-dos-anos-y-lanzo-pulla-al-gobierno-petro-lo-que-habia-era-vagos-un-poco-de-flojos/" },
+        { "n": "Semana · anunció cuatro viviendas para víctimas del terremoto", "u": "https://www.semana.com/nacion/cali/articulo/abelardo-de-la-espriella-anuncio-cuatro-viviendas-para-victimas-del-terremoto-ana-maria-saavedra-sera-una-de-las-beneficiadas/202617/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "aproximada",
+      "categoria": "emergencia",
+      "titulo": "El balance de los incendios forestales en el Tolima sube a más de 30.000 hectáreas afectadas tras 26 días de emergencia",
+      "detalle": "Autoridades regionales reportaron que los incendios forestales en el Tolima completaron 26 días activos y ya afectan más de 30.000 hectáreas, con pérdidas en el sector agropecuario superiores a $50.000 millones de pesos. Según El Tiempo, al cierre de esta actualización había 12 incendios activos en ocho municipios del departamento, cinco de ellos catalogados como prioritarios por requerir apoyo aéreo, logística y personal especializado.",
+      "contrapunto": "El número de incendios activos y de municipios afectados varía según la fuente y el momento del reporte (otros balances de la misma semana hablan de más frentes activos o de hasta 28-30 municipios afectados desde el inicio de la emergencia); URBIS no encontró un balance único y consolidado de la UNGRD para esta fecha que concilie las distintas cifras.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · Tolima registra 30 mil hectáreas quemadas y 12 incendios activos luego de tres semanas de emergencia", "u": "https://www.eltiempo.com/justicia/investigacion/tolima-registra-30-mil-hectareas-quemadas-y-12-incendios-activos-luego-de-tres-semanas-de-emergencia-asi-esta-el-departamento-3581661" },
+        { "n": "El Colombiano · incendios en el Tolima han consumido más de 30.000 hectáreas, ¿los están provocando?", "u": "https://www.elcolombiano.com/colombia/incendios-forestales-tolima-30-mil-hectareas-provocados-HA40157198" }
+      ]
+    },
     {
       "fecha": "2026-08-28",
       "precision": "exacta",
