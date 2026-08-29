@@ -263,6 +263,30 @@
     let descripcionFinal = (ctxForm.quickReport && typeof asegurarCamposTemporalesPersonalizados === 'function')
         ? asegurarCamposTemporalesPersonalizados(arrData.join(' | '), cat, i, fechaCreacion, horasTTLQuick, ctxForm.quickIcon || obtenerIconoReporte(cat, i) || 'Reporte')
         : asegurarCamposTemporales(arrData.join(' | '), cat, i, fechaCreacion);
+
+    // ── Ficha del edificio ────────────────────────────────────────────────
+    // Materialidad y pisos van DESPUÉS del bloque temporal, en las dos últimas
+    // posiciones. Es el único sitio donde caben: la descripción es una cadena
+    // con posiciones fijas y meterlas en medio correría los índices de todo lo
+    // ya mapeado. En un registro viejo estas casillas no existen y se leen como
+    // "sin registrar", que es la verdad.
+    (function guardarFichaEdificio(){
+        const EDIF = window.URBIS_EDIFICIO;
+        if (!EDIF || !EDIF.esCategoriaEdificio(cat)) return;
+        const selMat = document.getElementById('sel-materialidad');
+        const insPisos = document.getElementById('ins-pisos');
+        if (!selMat && !insPisos) return;
+        const d = String(descripcionFinal).split(' | ');
+        const ref = EDIF.leer(descripcionFinal);
+        const matSel = selMat ? String(selMat.value || '').replace(/\|/g, '-') : '';
+        const pisosSel = insPisos ? parseInt(insPisos.value, 10) : NaN;
+        // Se rellena todo hueco intermedio: si el registro venía corto, un
+        // índice suelto dejaría "undefined" en medio de la cadena.
+        for (let k = 0; k < ref.idxPisos; k++) if (d[k] === undefined) d[k] = '';
+        d[ref.idxMaterialidad] = matSel || EDIF.SIN_REGISTRAR;
+        d[ref.idxPisos] = (isFinite(pisosSel) && pisosSel > 0) ? String(Math.min(pisosSel, 60)) : '';
+        descripcionFinal = d.join(' | ');
+    })();
     if(descripcionFinal.length > 49000) {
         alert('El reporte quedó demasiado pesado para SheetDB/Google Sheets. Usa un link de foto o una imagen más pequeña.');
         if(btn) { btn.innerText = btn.dataset.originalText || 'GUARDAR REPORTE'; btn.disabled = false; }

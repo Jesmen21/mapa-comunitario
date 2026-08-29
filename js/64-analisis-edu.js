@@ -182,17 +182,55 @@
     if (!isFinite(lat) || !isFinite(lng)) return null;
     const et = partirEtiqueta(p.descripcion);
     const via = TIPO_A_VIA[et.tipo];
-    const tags = {};
+
+    // Una vía es una vía: no tiene pisos ni usos que repartir.
     if (via) {
-      tags.highway = via;
-      tags.name = et.cabeza;
-    } else {
+      return [{ type: 'node', id: 'edu' + i, lat: lat, lon: lng,
+                tags: { highway: via, name: et.cabeza } }];
+    }
+
+    const EDIF = window.URBIS_EDIFICIO || null;
+    const ficha = EDIF ? EDIF.leer(p.descripcion) : { pisos: 1, materialidad: '' };
+    const marcados = EDIF ? EDIF.usosMarcados(p.descripcion) : [];
+
+    // Los usos que el estudiante marcó en la matriz, traducidos y sin repetir:
+    // dos usos distintos pueden caer en la misma subcategoría (Forestal y
+    // Protección Ambiental son ambos verde_natural) y contarlos dos veces
+    // inflaría el edificio sin que haya nada más en la calle.
+    const subs = [];
+    marcados.forEach(function (u) {
+      const sub = USO_A_SUB[u];
+      if (sub && subs.indexOf(sub) === -1) subs.push(sub);
+    });
+
+    // Si no marcó nada en la matriz, se cae al uso de la cabecera: es como
+    // funcionaba antes de que existiera la ficha, y así lo ya mapeado sigue
+    // entrando al análisis.
+    if (!subs.length) {
       const sub = TIPO_A_SUB[et.tipo] || USO_A_SUB[et.uso];
       if (!sub) return null;
-      tags['urbis:sub'] = sub;
-      tags.name = et.cabeza;
+      subs.push(sub);
     }
-    return { type: 'node', id: 'edu' + i, lat: lat, lon: lng, tags: tags };
+
+    // Verticalidad repartida entre los usos. Un edificio de 8 pisos con 8 usos
+    // da intensidad 1 a cada uno — que es justo lo que es: ocho
+    // establecimientos reales, uno por planta. Un local de 1 piso con 8 usos da
+    // 1/8 a cada uno, porque es un solo sitio pequeño haciendo varias cosas. Y
+    // una torre de 12 pisos con un solo uso da 12, que es la diferencia entre
+    // una casa y una torre que el análisis antes no veía.
+    const intensidad = ficha.pisos / subs.length;
+
+    return subs.map(function (sub, k) {
+      return {
+        type: 'node', id: 'edu' + i + '_' + k, lat: lat, lon: lng,
+        tags: {
+          'urbis:sub': sub,
+          'urbis:intensidad': String(intensidad),
+          'building:levels': String(ficha.pisos),
+          name: et.cabeza
+        }
+      };
+    });
   }
 
   // ── Qué mapeó el curso, y qué de eso el análisis puede leer ──────────────
@@ -209,8 +247,8 @@
       if (!isFinite(lat) || !isFinite(lng)) return;
       if (M.haversineM(centro, { lat: lat, lng: lng }) > radioM) return;
       dentro++;
-      const el = puntoAElemento(p, i);
-      if (el) { elementos.push(el); return; }
+      const els = puntoAElemento(p, i);
+      if (els && els.length) { els.forEach(function (e) { elementos.push(e); }); return; }
       // Lo que no se pudo traducir se cuenta y se muestra: es la lista de lo
       // que le falta a la traducción, y sirve para mejorarla con el curso.
       const et = partirEtiqueta(p.descripcion);

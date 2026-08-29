@@ -668,6 +668,9 @@
   // OpenStreetMap, sin tener que esperar a que alguien lo mapee.
   const TAG_SUB_MANUAL = 'urbis:sub';
   const TAG_MANUAL = 'urbis:manual';
+  // Cuánto "pesa" un uso dentro de su edificio: pisos repartidos entre los usos
+  // que el edificio alberga. Lo calcula el modo educativo al leer la ficha.
+  const TAG_INTENSIDAD = 'urbis:intensidad';
 
   function clasificarPOI(tags){
     tags = tags || {};
@@ -891,6 +894,16 @@
       // distinga lo observado de lo añadido por el propio interesado no se
       // puede auditar, y ante un cliente esa diferencia importa.
       if (tags[TAG_MANUAL] === 'si') { poi.manual = true; manuales++; }
+      // Verticalidad. Un edificio mapeado con sus pisos entra al cálculo con el
+      // peso que le corresponde: una torre de 12 pisos aloja y mueve mucha más
+      // gente que una casa de uno, aunque las dos digan "Residencial". Sin
+      // pisos registrados vale 1 —lo mapeado antes de que existiera la ficha no
+      // se castiga— y se limita a 30 para que un dato mal tecleado (120 pisos)
+      // no arrastre el análisis entero.
+      const intens = parseFloat(tags[TAG_INTENSIDAD]);
+      poi.intensidad = (isFinite(intens) && intens > 0) ? Math.min(intens, 30) : 1;
+      const niveles = parseInt(tags['building:levels'], 10);
+      if (isFinite(niveles) && niveles > 0) poi.pisos = Math.min(niveles, 60);
       // Solo los que quedan sin clasificar guardan sus etiquetas OSM: son los
       // únicos que hay que investigar para asignarles categoría, y así no se
       // infla la memoria ni el almacenamiento con miles de puntos ya resueltos.
@@ -1070,7 +1083,10 @@
         // así que un gimnasio a 320 m con alcance 300 valía exactamente cero
         // — y a 320 m la gente sí camina. Esta curva baja pero nunca corta.
         const cerca = 1 / (1 + Math.pow(p.distM / g.media, 2));
-        aporte += g.peso * cerca;
+        // La intensidad es la verticalidad del edificio repartida entre sus
+        // usos: una clínica que ocupa seis plantas atiende y mueve más gente
+        // que una de consultorio único. Vale 1 en todo lo que no traiga ficha.
+        aporte += g.peso * cerca * (p.intensidad || 1);
       });
       if (aporte <= 0) return;
       sumaPeaton += aporte;
@@ -1125,6 +1141,10 @@
     // ── 2. Aglomeración comercial ────────────────────────────────────────
     // Satura a propósito: pasar de 5 a 15 locales cambia mucho la calle; de 40
     // a 50, casi nada. Ya no es continuidad, ya era una calle comercial.
+    // Deliberadamente por conteo y NO por intensidad: lo que hace caminar a
+    // alguien por una acera son las vitrinas que pasa, y una torre de 12 pisos
+    // tiene el mismo frente de calle que una de dos. La altura suma gente
+    // (residentes, anclas), no fachada comercial.
     const nComercio = pois.filter(p => COMERCIO_ANDEN.indexOf(p.sub) !== -1 && p.distM <= 400).length;
     if (nComercio > 0) {
       const aporte = 26 * (1 - Math.exp(-nComercio / 10));
@@ -1136,12 +1156,22 @@
     flujo.comerciosAnden = nComercio;
 
     // ── 3. Residentes ────────────────────────────────────────────────────
-    const nVivienda = pois.filter(p => p.sub === 'residencial' && p.distM <= 400).length;
-    if (nVivienda > 0) {
-      const aporte = 14 * (1 - Math.exp(-nVivienda / 25));
+    // Aquí la verticalidad es el dato: un punto en el mapa no es una vivienda,
+    // es un edificio de viviendas. Contar puntos daba lo mismo por una casa que
+    // por una torre de 12 pisos, y en el tejido urbano esa es justo la
+    // diferencia que decide si una calle tiene gente. Se suman plantas de
+    // vivienda, no marcadores.
+    const viviendas = pois.filter(p => p.sub === 'residencial' && p.distM <= 400);
+    const nVivienda = viviendas.length;
+    const plantasVivienda = viviendas.reduce((a, p) => a + (p.intensidad || 1), 0);
+    if (plantasVivienda > 0) {
+      const aporte = 14 * (1 - Math.exp(-plantasVivienda / 25));
       sumaPeaton += aporte;
+      // `n` sigue siendo el número de edificios: es lo que una persona puede ir
+      // a contar en la calle para comprobar el informe. Las plantas van aparte.
       flujo.generadores.push({ sub:'residentes', nombre:'Vivienda en radio caminable',
-                               n: nVivienda, aporte: Math.round(aporte), franja:'picos' });
+                               n: nVivienda, plantas: Math.round(plantasVivienda),
+                               aporte: Math.round(aporte), franja:'picos' });
       repartirFranja('picos', aporte);
     }
 

@@ -20,6 +20,31 @@
     let barrioActual = d[BASE_OFFSET + 7] || userBarrioGlobal;
     
     let opciones = (_dimCfg.items || []).map(i => `<option value="${i}" ${i===item?'selected':''}>${obtenerIconoReporte(dim, i)} ${i}</option>`).join('');
+
+    // ── Ficha del edificio ────────────────────────────────────────────────
+    // Va ANTES de la sub-clasificación a propósito: en un recorrido urbano lo
+    // primero que se reconoce de un edificio es de qué está hecho y cuánto
+    // levanta. La verticalidad es la que sitúa la pieza en el tejido — una
+    // torre de 12 pisos y una casa de uno no son el mismo hecho urbano aunque
+    // ambas digan "Residencial" — y de ella depende cuánta gente y cuánto
+    // movimiento genera. El uso viene después, y pueden ser varios.
+    const EDIF = window.URBIS_EDIFICIO || null;
+    const esEdificio = !!(EDIF && EDIF.esCategoriaEdificio(dim));
+    const fichaEdif = EDIF ? EDIF.leer(desc) : { materialidad: '', pisos: 1, pisosRegistrados: false };
+    let htmlEdificio = '';
+    if (esEdificio && EDIF) {
+        const optsMat = EDIF.MATERIALIDAD.map(m =>
+            `<option value="${m}" ${m === fichaEdif.materialidad ? 'selected' : ''}>${m}</option>`).join('');
+        const pisosVal = fichaEdif.pisosRegistrados ? fichaEdif.pisos : '';
+        htmlEdificio = `
+        <div class="form-section-edificio">
+          <label style="font-size:0.7rem; color:var(--cyan); display:block;">1 · ¿DE QUÉ ESTÁ HECHO? (MATERIALIDAD)</label>
+          <select id="sel-materialidad">${optsMat}</select>
+          <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">2 · ¿CUÁNTOS PISOS TIENE?</label>
+          <input type="number" id="ins-pisos" min="1" max="60" step="1" value="${pisosVal}" placeholder="Ej: 1 para una casa, 12 para una torre">
+          <div class="edificio-hint">La altura cambia el peso del edificio en el análisis: una torre de 12 pisos aloja y mueve mucha más gente que una casa de uno, aunque el uso sea el mismo.</div>
+        </div>`;
+    }
     
     let htmlCheckboxes = '';
     for(let j=0; j<todosLosUsos.length; j++) {
@@ -49,7 +74,8 @@
       <div class="form-section">
         <b style="color:${_dimCfg.color}; font-size: 1.2rem;">${_dimCfg.icon} ${dim.toUpperCase()}</b>
         
-        <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">SUB-CLASIFICACIÓN TÉCNICA:</label>
+        ${htmlEdificio}
+        <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">${esEdificio ? '3 · SUB-CLASIFICACIÓN TÉCNICA:' : 'SUB-CLASIFICACIÓN TÉCNICA:'}</label>
         <select id="sel-item">${opciones}</select>
         <input type="text" id="sel-nombre" value="${n}" placeholder="Nombre/Identificador del lugar (Ej: Av 3 con Calle 5)">
         <textarea id="ins-nota" placeholder="Describe el problema, emergencia o situación aquí...">${nt}</textarea>
@@ -80,8 +106,9 @@
             </div>
         </div>
         
-        <div style="display: ${displayTecnico};">
-            <label style="font-size:0.7rem; color:var(--fuchsia); display:block; margin-top:15px; border-top:1px solid #444; padding-top:10px;">MATRIZ DE USOS MULTIDIMENSIONAL:</label>
+        <div style="display: ${esEdificio ? 'block' : displayTecnico};">
+            <label style="font-size:0.7rem; color:var(--fuchsia); display:block; margin-top:15px; border-top:1px solid #444; padding-top:10px;">${esEdificio ? '4 · ¿QUÉ PASA ADENTRO? MARCA TODOS LOS USOS:' : 'MATRIZ DE USOS MULTIDIMENSIONAL:'}</label>
+            ${esEdificio ? '<div class="edificio-hint">Un mismo edificio puede tener varios usos a la vez: un colegio con cancha y tienda son tres. Márcalos todos — el análisis los reparte entre los pisos que registraste.</div>' : ''}
             <div class="usos-container"><div class="usage-grid">${htmlCheckboxes}</div></div>
         </div>
         

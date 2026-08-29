@@ -136,6 +136,72 @@
   const TTL_HORAS_REPORTES_TEMPORALES = window.URBIS_CONFIG.TEMP_REPORT_TTL_HOURS;
   const TIMELINE_EXTRA_OFFSET = 8; 
 
+  // ── Ficha del edificio: materialidad y pisos ──────────────────────────────
+  // La descripción es una cadena separada por " | " con posiciones fijas, así
+  // que un campo nuevo SOLO puede ir al final: meterlo en medio corre todos los
+  // índices y rompe cuanto se haya mapeado. Estos dos van después del bloque
+  // temporal; en un registro viejo salen vacíos y toman su valor por defecto.
+  // Se calculan, no se escriben a mano, porque BASE_OFFSET depende de cuántos
+  // usos tenga la matriz y esa lista crece.
+  // No se guarda el índice en una constante: depende de cuántos usos tenga la
+  // matriz, y esa lista crece. `leerEdificio` lo calcula en cada llamada.
+  const MATERIALIDAD_NA = 'Sin registrar';
+
+  // Materialidad del contexto colombiano, en el orden en que se reconoce a
+  // simple vista desde la acera. No es una ficha catastral: es lo que un
+  // estudiante puede determinar mirando la fachada sin entrar.
+  const MATERIALIDAD_EDIFICIO = [
+    MATERIALIDAD_NA,
+    'Mampostería confinada (ladrillo con vigas y columnas)',
+    'Mampostería sin confinar (ladrillo o bloque solo)',
+    'Concreto reforzado (pórticos o muros)',
+    'Bahareque o tapia pisada',
+    'Madera',
+    'Prefabricado',
+    'Lámina, zinc o material reciclado',
+    'Mixto (varios sistemas en el mismo edificio)'
+  ];
+
+  // Dónde tiene sentido preguntar por materialidad y pisos. En un hueco de la
+  // vía o una alerta de tráfico no hay edificio que describir, y preguntarlo
+  // solo estorba a quien reporta.
+  const CATEGORIAS_EDIFICIO = new Set([
+    'Vivienda y Residencial', 'Comercio y Servicios', 'Grandes Equipamientos',
+    'Áreas Deportivas', 'Salud y Emergencias', 'Patrimonio y Turismo',
+    'Industria y Logística', 'Oficinas y Co-working', 'Servicios Ocultos',
+    'Animal y Bienestar'
+  ]);
+  function esCategoriaEdificio(cat){ return CATEGORIAS_EDIFICIO.has(String(cat || '')); }
+
+  // Lee la ficha del edificio de una descripción ya guardada.
+  function leerEdificio(descripcion){
+    const d = String(descripcion || '').split(' | ');
+    const base = 6 + todosLosUsos.length + TIMELINE_EXTRA_OFFSET + 5;
+    const mat = (d[base] || '').trim();
+    const pisosCrudo = parseInt(d[base + 1], 10);
+    // Un edificio siempre tiene al menos un piso: 0 o vacío significa "no lo
+    // registraron", no "no tiene". Se devuelve 1 para que el análisis no
+    // castigue a lo que se mapeó antes de que este campo existiera.
+    const pisos = isFinite(pisosCrudo) && pisosCrudo > 0 ? Math.min(pisosCrudo, 60) : 1;
+    return {
+      materialidad: mat && mat !== 'undefined' ? mat : MATERIALIDAD_NA,
+      pisos: pisos,
+      pisosRegistrados: isFinite(pisosCrudo) && pisosCrudo > 0,
+      idxMaterialidad: base,
+      idxPisos: base + 1
+    };
+  }
+
+  // Los usos que el estudiante marcó en la matriz, por nombre.
+  function leerUsosMarcados(descripcion){
+    const d = String(descripcion || '').split(' | ');
+    const out = [];
+    for (let j = 0; j < todosLosUsos.length; j++) {
+      if ((d[6 + j] || '').toUpperCase() === 'SI') out.push(todosLosUsos[j]);
+    }
+    return out;
+  }
+
   const mapasBase = {
     actual: {
       nombre: 'Mapa actual urbano', desc: 'Base limpia por defecto para edición y reportes.', icon: '□', badge: 'DEF',
@@ -696,6 +762,18 @@
   ];
   const todosLosUsos = usosBase.concat(usosExtra);
   const BASE_OFFSET = 6 + todosLosUsos.length; 
+
+  // La ficha del edificio la leen el formulario, el guardado y el análisis
+  // educativo, cada uno en su archivo: se expone una sola implementación para
+  // que las posiciones del registro no se calculen en tres sitios distintos.
+  window.URBIS_EDIFICIO = {
+    MATERIALIDAD: MATERIALIDAD_EDIFICIO,
+    SIN_REGISTRAR: MATERIALIDAD_NA,
+    esCategoriaEdificio: esCategoriaEdificio,
+    leer: leerEdificio,
+    usosMarcados: leerUsosMarcados,
+    todosLosUsos: function(){ return todosLosUsos.slice(); }
+  };
 
   const categoriasRapidas = ["🚗 Reportes de Tráfico", "🚨 Alertas y Riesgos Urbanos", "Áreas Verdes y Ambiental", "Salud y Emergencias"];
 

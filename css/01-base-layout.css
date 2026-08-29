@@ -226,6 +226,18 @@
     .usos-container::-webkit-scrollbar { width: 6px; }
     .usos-container::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
 
+    /* FICHA DEL EDIFICIO (materialidad y pisos, antes del uso) ------------
+       Va enmarcada porque es el primer paso del levantamiento y conviene que
+       se lea como un bloque aparte: de qué está hecho y cuánto levanta, antes
+       de entrar en qué pasa adentro. */
+    .form-section-edificio { background: var(--bg-dark); border: 1px solid #555;
+        border-left: 3px solid var(--cyan); border-radius: 6px;
+        padding: 12px; margin-top: 10px; margin-bottom: 4px; }
+    .form-section-edificio select,
+    .form-section-edificio input[type="number"] { width: 100%; box-sizing: border-box; }
+    .edificio-hint { font-size: 0.68rem; line-height: 1.35; color: #9fb3c8;
+        margin-top: 8px; }
+
     /* CAPAS PEDAGÓGICAS (SWITCHES) */
     .layers-container { background: #222; border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid #444; }
     .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
