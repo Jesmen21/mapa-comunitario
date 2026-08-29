@@ -143,6 +143,35 @@
       '</div>';
   }
 
+  // El estado del andén no suma ni resta peatones: multiplica. Se muestra
+  // aparte de los generadores por eso mismo — mezclarlo en la lista de "qué
+  // mueve gente" haría creer que construir acera crea tránsito. Y si el curso
+  // no lo mapeó, se dice: un vacío de datos no es un andén bueno.
+  function bloqueAnden(f){
+    const c = f.caminabilidad;
+    if (!c) return '';
+    if (!c.muestras) {
+      return '<h4 class="sep">🦶 Se puede caminar?</h4>' +
+        '<p class="edu-nota">Nadie mapeó el estado del andén en este radio, así que el ' +
+        'cálculo lo dio por neutro. Mapear andenes (continuo, interrumpido, sin andén) ' +
+        'es de lo que más cambia este número.</p>';
+    }
+    const pct = Math.round((c.factor - 1) * 100);
+    const signo = pct > 0 ? '+' + pct : String(pct);
+    return '<h4 class="sep">🦶 Se puede caminar?</h4>' +
+      '<ul class="edu-lista">' +
+        '<li><span>Andén continuo</span><small>×' + c.continuo + '</small></li>' +
+        '<li><span>Andén interrumpido</span><small>×' + c.interrumpido + '</small></li>' +
+        '<li><span>Sin andén / bordillo</span><small>×' + c.sinAnden + '</small></li>' +
+        (c.rampas ? '<li><span>Rampas de acceso</span><small>×' + c.rampas + '</small></li>' : '') +
+      '</ul>' +
+      '<p class="edu-nota">Caminabilidad <b>' + esc(c.nivel) + '</b> sobre ' + c.muestras +
+      ' observación' + (c.muestras === 1 ? '' : 'es') + ': ajusta el flujo peatonal en <b>' +
+      signo + '%</b>.' +
+      (c.fiable ? '' : ' Son pocas observaciones para el radio — conviene mapear más andén ' +
+        'antes de sacar conclusiones.') + '</p>';
+  }
+
   function bloqueFlujo(r){
     const f = (r.stats.movilidad && r.stats.movilidad.flujo) || {};
     if (!f.franjas) return '';
@@ -161,6 +190,7 @@
           '<ul class="edu-lista resta">' + pen.map(p => '<li><span>' + esc(p.nombre) +
             ' · ' + esc(p.motivo) + '</span><b>−' + p.resta + '</b></li>').join('') + '</ul>'
         : '') +
+      bloqueAnden(f) +
       '<h4 class="sep">🕐 A qué horas</h4>' +
       '<div class="edu-horas">' + hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) +
         hora('Tarde', f.franjas.tarde) + hora('Noche', f.franjas.noche) + '</div>' +

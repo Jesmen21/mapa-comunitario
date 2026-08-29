@@ -849,7 +849,7 @@
   // `dane` (opcional) trae población, viviendas y estrato reales del censo.
   // Cuando llega, sustituye la estimación heurística de población; cuando no
   // (sin red, o lote fuera de cobertura), el cálculo de siempre sigue valiendo.
-  function calcularStats(elementos, radioM, centro, dane){
+  function calcularStats(elementos, radioM, centro, dane, caminabilidad){
     const areaKm2 = Math.PI * Math.pow(radioM / 1000, 2);
     const areaHa = areaKm2 * 100;
 
@@ -1220,14 +1220,32 @@
     flujo.restaPeaton = Math.round(restaAplicada);
     flujo.sumaBruta = Math.round(sumaPeaton);
     const sumaNeta = Math.max(0, sumaPeaton - restaAplicada);
-    // El descuento se aplica también al reparto por horas, para que la gráfica
-    // de franjas y el total hablen del mismo sitio.
-    if (sumaPeaton > 0 && restaAplicada > 0) {
-      const factor = sumaNeta / sumaPeaton;
+
+    // ── Caminabilidad observada ──────────────────────────────────────────
+    // Un andén no genera peatones ni los ahuyenta: deja o no deja caminar a
+    // los que los generadores ya producen. Por eso entra como FACTOR y no
+    // como un generador más — sumarlo diría que construir acera crea gente.
+    // El rango está acotado a propósito (0,75 a 1,10): un andén roto suprime
+    // caminata pero no vacía una calle con vida, y uno impecable no inventa
+    // tránsito donde no hay a qué ir. Sin observaciones vale 1: neutral, y el
+    // informe lo declara en vez de disimularlo.
+    const cam = caminabilidad && caminabilidad.muestras > 0 ? caminabilidad : null;
+    const fCam = cam ? cam.factor : 1;
+    flujo.caminabilidad = cam
+      ? { muestras: cam.muestras, indice: cam.indice, factor: cam.factor,
+          continuo: cam.continuo, interrumpido: cam.interrumpido, sinAnden: cam.sinAnden,
+          rampas: cam.rampas, nivel: cam.nivel, fiable: cam.muestras >= 5 }
+      : { muestras: 0, factor: 1, fiable: false };
+
+    const sumaFinal = sumaNeta * fCam;
+    // El mismo ajuste va al reparto por horas, para que la gráfica de franjas y
+    // el total hablen del mismo sitio.
+    if (sumaPeaton > 0 && (restaAplicada > 0 || fCam !== 1)) {
+      const factor = sumaPeaton > 0 ? sumaFinal / sumaPeaton : 1;
       aporteFranja.manana *= factor; aporteFranja.mediodia *= factor;
       aporteFranja.tarde *= factor;  aporteFranja.noche *= factor;
     }
-    flujo.peatonal = Math.round(100 * (1 - Math.exp(-sumaNeta / 100)));
+    flujo.peatonal = Math.round(100 * (1 - Math.exp(-sumaFinal / 100)));
     flujo.nivelPeatonal = flujo.peatonal >= 70 ? 'Muy alto' : flujo.peatonal >= 50 ? 'Alto'
       : flujo.peatonal >= 30 ? 'Medio' : 'Bajo';
 
@@ -2588,7 +2606,7 @@
   // entrada = { elementos, radioM, centro:{lat,lng}, proyectoId, tipoEstudio, direccionAprox }
   function analizarHeuristico(entrada){
     const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
-    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane, entrada.caminabilidad);
     const esRanking = !entrada.proyectoId || entrada.proyectoId === 'recomendar';
     const proyecto = esRanking ? null : PROYECTOS.find(p => p.id === entrada.proyectoId) || null;
 
@@ -2933,7 +2951,7 @@
   //             usos:[id|string|usoObj,...], config:{...} }
   function analizarMixto(entrada){
     const elementos = filtrarPorRadio(entrada.elementos, entrada.radioM, entrada.centro);
-    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane);
+    const stats = calcularStats(elementos, entrada.radioM, entrada.centro, entrada.dane, entrada.caminabilidad);
     const usos = normalizarUsos(entrada.usos);
     const config = entrada.config || {};
 

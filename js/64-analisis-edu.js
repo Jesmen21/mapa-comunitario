@@ -156,6 +156,35 @@
   // Las vías no son puntos: alimentan la malla vial, y su jerarquía decide la
   // exposición del sector. Se traduce al valor de `highway` que el motor
   // entiende, porque de ahí sale el tránsito estimado.
+  // ── Infraestructura peatonal ──────────────────────────────────────────
+  // Trece de los catorce elementos de "Infraestructura y Peatonal" se estaban
+  // descartando: el módulo calculaba flujo peatonal tirando a la basura
+  // justamente lo que dice si se puede caminar por ahí. El paradero era el más
+  // caro de perder — es el generador de caminata más pesado que tiene el motor.
+  const TIPO_INFRA_A_SUB = {
+    'Paradero de bus': 'parada_bus',
+    'Semáforo vehicular / peatonal': 'mobiliario',
+    'Banca de parque': 'mobiliario',
+    'Caneca de basura': 'mobiliario',
+    'Luminaria LED/Sodio': 'mobiliario',
+    'Poste concreto / madera': 'mobiliario',
+    // Cableado expuesto es infraestructura sin frente activo: el motor ya la
+    // penaliza como fachada muerta, que es exactamente lo que es en la acera.
+    'Cableado expuesto': 'infra_servicios'
+  };
+
+  // El estado del andén NO es un punto de interés: es la condición de la
+  // superficie por la que se camina. Un "andén continuo" no genera peatones,
+  // permite que caminen los que ya hay. Por eso no se traduce a un elemento
+  // —contarlo como POI inflaría la densidad con algo que no es un destino—
+  // sino que alimenta el factor de caminabilidad del motor.
+  const TIPO_A_ANDEN = {
+    'Andén continuo': 1,
+    'Andén interrumpido': 0.5,
+    'Sin andén / Bordillo': 0
+  };
+  const TIPO_RAMPA = 'Rampa de acceso';
+
   const TIPO_A_VIA = {
     'Vía principal / arteria': 'primary',
     'Vía secundaria / local': 'secondary',
@@ -163,7 +192,11 @@
     'Puente vehicular': 'secondary',
     'Intercambiador (glorieta, deprimido)': 'primary',
     'Túnel': 'secondary',
-    'Peaje': 'trunk'
+    'Peaje': 'trunk',
+    // Se mapeaban y no llegaban al análisis. La calle de tierra entra como
+    // vía menor: sigue siendo por donde se pasa, aunque no esté pavimentada.
+    'Calle asfaltada / adoquinada': 'residential',
+    'Calle de tierra': 'unclassified'
   };
 
   function partirEtiqueta(descripcion){
@@ -207,7 +240,7 @@
     // funcionaba antes de que existiera la ficha, y así lo ya mapeado sigue
     // entrando al análisis.
     if (!subs.length) {
-      const sub = TIPO_A_SUB[et.tipo] || USO_A_SUB[et.uso];
+      const sub = TIPO_A_SUB[et.tipo] || TIPO_INFRA_A_SUB[et.tipo] || USO_A_SUB[et.uso];
       if (!sub) return null;
       subs.push(sub);
     }
@@ -241,21 +274,50 @@
     const M = window.AIA_MOTOR;
     const elementos = [], sinTraducir = {};
     let dentro = 0;
+    // Observaciones del andén: no son elementos, son la condición de la
+    // superficie por la que se camina. Se acumulan aparte.
+    const anden = { continuo: 0, interrumpido: 0, sinAnden: 0, rampas: 0, suma: 0, muestras: 0 };
     (datos || []).forEach(function (p, i) {
       const lat = parseFloat(String(p && p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p && p.lng || '').replace(',', '.'));
       if (!isFinite(lat) || !isFinite(lng)) return;
       if (M.haversineM(centro, { lat: lat, lng: lng }) > radioM) return;
       dentro++;
+
+      const et = partirEtiqueta(p.descripcion);
+      // Una rampa no puntúa la calidad del andén, pero sí es un dato de
+      // accesibilidad que el informe debe poder nombrar.
+      if (et.tipo === TIPO_RAMPA) { anden.rampas++; return; }
+      const nota = TIPO_A_ANDEN[et.tipo];
+      if (nota !== undefined) {
+        anden.suma += nota; anden.muestras++;
+        if (nota === 1) anden.continuo++;
+        else if (nota === 0) anden.sinAnden++;
+        else anden.interrumpido++;
+        return;
+      }
+
       const els = puntoAElemento(p, i);
       if (els && els.length) { els.forEach(function (e) { elementos.push(e); }); return; }
       // Lo que no se pudo traducir se cuenta y se muestra: es la lista de lo
       // que le falta a la traducción, y sirve para mejorarla con el curso.
-      const et = partirEtiqueta(p.descripcion);
       const clave = et.cabeza || '(sin descripción)';
       sinTraducir[clave] = (sinTraducir[clave] || 0) + 1;
     });
-    return { elementos: elementos, dentro: dentro, sinTraducir: sinTraducir };
+
+    // Índice 0..1 y su factor acotado. Ver el motor para por qué es un factor
+    // y no un generador, y por qué el rango no puede vaciar una calle.
+    const indice = anden.muestras ? anden.suma / anden.muestras : null;
+    const caminabilidad = {
+      muestras: anden.muestras, continuo: anden.continuo,
+      interrumpido: anden.interrumpido, sinAnden: anden.sinAnden, rampas: anden.rampas,
+      indice: indice === null ? null : Math.round(indice * 100) / 100,
+      factor: indice === null ? 1 : Math.round((0.75 + 0.35 * indice) * 100) / 100,
+      nivel: indice === null ? 'sin datos'
+        : indice >= 0.8 ? 'Buena' : indice >= 0.5 ? 'Irregular' : 'Mala'
+    };
+    return { elementos: elementos, dentro: dentro, sinTraducir: sinTraducir,
+             caminabilidad: caminabilidad };
   }
 
   // ── El análisis ─────────────────────────────────────────────────────────
@@ -282,12 +344,14 @@
     const resultado = await window.AIA_MOTOR.analizar({
       elementos: reunido.elementos, radioM: radioM, centro: centro,
       tipoEstudio: 'completo', proyectoId: proyectoId || null,
-      direccionAprox: (ubicacion && ubicacion.ciudad) || '', dane: dane
+      direccionAprox: (ubicacion && ubicacion.ciudad) || '', dane: dane,
+      caminabilidad: reunido.caminabilidad
     });
     resultado.edu = {
       puntosDelCurso: reunido.dentro,
       leidos: reunido.elementos.length,
       sinTraducir: reunido.sinTraducir,
+      caminabilidad: reunido.caminabilidad,
       ciudad: (ubicacion && ubicacion.ciudad) || ''
     };
     return resultado;
@@ -296,7 +360,11 @@
   window.URBIS_EDU = {
     analizar: analizar,
     puntoAElemento: puntoAElemento,
+    // Es donde el estado del andén se separa de los elementos y se convierte
+    // en caminabilidad: se expone para poder comprobarlo sin montar la app.
+    reunirElementos: reunirElementos,
     partirEtiqueta: partirEtiqueta,
-    USO_A_SUB: USO_A_SUB, TIPO_A_SUB: TIPO_A_SUB, TIPO_A_VIA: TIPO_A_VIA
+    USO_A_SUB: USO_A_SUB, TIPO_A_SUB: TIPO_A_SUB, TIPO_A_VIA: TIPO_A_VIA,
+    TIPO_INFRA_A_SUB: TIPO_INFRA_A_SUB, TIPO_A_ANDEN: TIPO_A_ANDEN
   };
 })();
