@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v545-ficha-edificio';
+const URBIS_CACHE = 'urbis-v548-ficha-edificio';
 const URBIS_ASSETS = [
   './',
   './index.html',
