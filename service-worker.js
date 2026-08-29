@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v554-salida-campo';
+const URBIS_CACHE = 'urbis-v555-ficha-empresas';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -68,6 +68,7 @@ const URBIS_ASSETS = [
   './js/01-audio-feedback.js',
   './js/02-auth-roles.js',
   './js/03-map-data-config.js',
+  './js/03b-edificio-vocabulario.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',
   './js/06-mobility-traffic.js',

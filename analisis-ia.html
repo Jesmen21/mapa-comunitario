@@ -30,7 +30,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=554-salida-campo" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=555-ficha-empresas" />
 </head>
 <body>
 
@@ -183,6 +183,20 @@
             <select id="aia-uso-sub"></select>
             <label for="aia-uso-nombre">Cómo se llama <small>(opcional)</small></label>
             <input id="aia-uso-nombre" type="text" placeholder="Smart Fit, Ventura Plaza…" autocomplete="off">
+            <details class="aia-uso-ficha">
+              <summary>Ficha del edificio <small>(opcional)</small></summary>
+              <p class="aia-uso-ficha-ayuda">Si estás parado frente al inmueble, esto entra en el
+                análisis: los pisos pesan en el flujo peatonal y lo que hay a nivel de calle decide
+                si hace acera o no. Lo que no puedas determinar, déjalo sin registrar.</p>
+              <label for="aia-uso-material">De qué está hecho</label>
+              <select id="aia-uso-material"></select>
+              <label for="aia-uso-pisos">Cuántos pisos</label>
+              <input id="aia-uso-pisos" type="number" min="1" max="60" step="1" placeholder="1 para un local, 12 para una torre">
+              <label for="aia-uso-planta">Qué hay a nivel de calle</label>
+              <select id="aia-uso-planta"></select>
+              <label for="aia-uso-epoca">De qué época es</label>
+              <select id="aia-uso-epoca"></select>
+            </details>
             <div id="aia-uso-donde">📍 Ubicación: <b>sin definir</b></div>
             <div class="aia-uso-botones">
               <button id="aia-uso-tocar" type="button">📍 Tocar en el mapa</button>
@@ -332,10 +346,11 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=554-salida-campo"></script>
-<script src="js/60-analisis-ia-motor.js?v=554-salida-campo"></script>
-<script src="js/61-analisis-ia-datos.js?v=554-salida-campo"></script>
-<script src="js/63-analisis-ia-informe.js?v=554-salida-campo"></script>
-<script src="js/62-analisis-ia-app.js?v=554-salida-campo"></script>
+<script src="js/00-config.js?v=555-ficha-empresas"></script>
+<script src="js/03b-edificio-vocabulario.js?v=555-ficha-empresas"></script>
+<script src="js/60-analisis-ia-motor.js?v=555-ficha-empresas"></script>
+<script src="js/61-analisis-ia-datos.js?v=555-ficha-empresas"></script>
+<script src="js/63-analisis-ia-informe.js?v=555-ficha-empresas"></script>
+<script src="js/62-analisis-ia-app.js?v=555-ficha-empresas"></script>
 </body>
 </html>

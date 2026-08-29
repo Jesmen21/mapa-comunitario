@@ -82,8 +82,104 @@
       .map(u => {
         const tags = { 'urbis:sub': u.sub, 'urbis:manual': 'si' };
         if (u.nombre) tags.name = u.nombre;
+        // Mismas etiquetas que usa el modo educativo: la altura pesa en el
+        // flujo peatonal y el frente decide si el local hace acera. Un uso
+        // agregado desde la calle merece contar con el mismo detalle que uno
+        // levantado por un curso — es el mismo trabajo de campo.
+        if (u.pisos > 0) {
+          tags['building:levels'] = String(u.pisos);
+          tags['urbis:intensidad'] = String(u.pisos);
+        }
+        // `frenteActivo` se resuelve al guardar, no aquí: es una propiedad del
+        // dato, no de cómo se lea. Solo se etiqueta si de verdad se registró —
+        // un `undefined` no puede convertirse en 'muerto'.
+        if (u.plantaBaja && (u.frenteActivo === true || u.frenteActivo === false)) {
+          tags['urbis:planta_baja'] = u.plantaBaja;
+          tags['urbis:frente'] = u.frenteActivo ? 'activo' : 'muerto';
+        }
         return { type: 'node', id: u.id, lat: u.lat, lon: u.lng, tags };
       });
+  }
+
+  // Los desplegables de la ficha se arman desde window.URBIS_EDIFICIO, que es
+  // la misma fuente que usa el formulario de mapeo. Mantener una segunda lista
+  // aquí garantizaría que un día digan cosas distintas.
+  function llenarSelectsFicha(){
+    const EDIF = window.URBIS_EDIFICIO;
+    if (!EDIF) return;
+    [['aia-uso-material', EDIF.MATERIALIDAD],
+     ['aia-uso-planta',   EDIF.PLANTA_BAJA],
+     ['aia-uso-epoca',    EDIF.EPOCA]].forEach(function (par) {
+      const sel = $(par[0]);
+      if (!sel || sel.options.length) return;
+      sel.innerHTML = (par[1] || []).map(v =>
+        '<option value="' + v + '">' + v + '</option>').join('');
+    });
+  }
+
+  // Lo que el analista dejó en la ficha, ya normalizado. Devuelve solo lo
+  // registrado de verdad: "sin registrar", "no se sabe" y "otro" no son
+  // observaciones y no pueden entrar al cálculo como si lo fueran.
+  function leerFichaFormulario(){
+    const EDIF = window.URBIS_EDIFICIO;
+    const out = {};
+    if (!EDIF) return out;
+    const util = v => {
+      const t = String(v || '').trim();
+      return (!t || t === EDIF.SIN_REGISTRAR || t === EDIF.NO_SE_SABE || t === EDIF.OTRO)
+        ? '' : t;
+    };
+    const mat = util($('aia-uso-material') && $('aia-uso-material').value);
+    const pb  = util($('aia-uso-planta') && $('aia-uso-planta').value);
+    const ep  = util($('aia-uso-epoca') && $('aia-uso-epoca').value);
+    const pisos = parseInt($('aia-uso-pisos') && $('aia-uso-pisos').value, 10);
+    if (mat) out.materialidad = mat;
+    if (ep) out.epoca = ep;
+    if (isFinite(pisos) && pisos > 0) out.pisos = Math.min(pisos, 60);
+    if (pb) {
+      out.plantaBaja = pb;
+      out.frenteActivo = !EDIF.esFrenteMuerto(pb);
+    }
+    if (mat || ep) {
+      const v = EDIF.vulnerabilidadDe(mat, ep);
+      if (v) out.vulnerabilidad = v.nivel;
+    }
+    return out;
+  }
+
+  // Agrega las fichas de los usos manuales dentro del radio, con la misma
+  // forma que produce el modo educativo, para que el informe tenga una sola
+  // manera de leerlas venga de donde venga el levantamiento.
+  function edificacionDeManuales(centro, radioM){
+    const EDIF = window.URBIS_EDIFICIO;
+    if (!EDIF) return null;
+    const e = { total:0, conEpoca:0, conMaterial:0, evaluables:0,
+                porEpoca:{}, porMaterial:{}, alta:0, media:0, baja:0,
+                anteriores1984:0, patrimonio:0, enObra:0,
+                noSeSabe:0, otros:0, textosOtro:[] };
+    leerUsosManuales()
+      .filter(u => window.AIA_MOTOR.haversineM(centro, { lat:u.lat, lng:u.lng }) <= radioM)
+      .forEach(function (u) {
+        if (!u.materialidad && !u.epoca && !(u.pisos > 0) && !u.plantaBaja) return;
+        e.total++;
+        if (u.epoca) {
+          e.conEpoca++;
+          e.porEpoca[u.epoca] = (e.porEpoca[u.epoca] || 0) + 1;
+          if (u.epoca === 'Anterior a 1950') e.patrimonio++;
+          if (/Anterior a 1950|1950 – 1983/.test(u.epoca)) e.anteriores1984++;
+          if (u.epoca === 'En construcción') e.enObra++;
+        }
+        if (u.materialidad) {
+          e.conMaterial++;
+          e.porMaterial[u.materialidad] = (e.porMaterial[u.materialidad] || 0) + 1;
+        }
+        const v = EDIF.vulnerabilidadDe(u.materialidad || '', u.epoca || '');
+        if (v) {
+          e.evaluables++;
+          if (v.nivel === 'Alta') e.alta++; else if (v.nivel === 'Media') e.media++; else e.baja++;
+        }
+      });
+    return e.total ? e : null;
   }
 
   // ── Panel "Agregar uso" ─────────────────────────────────────────────────
@@ -231,6 +327,7 @@
     editandoId = id;
     usoPendiente = { lat: u.lat, lng: u.lng };
     llenarSelectUsos();
+    llenarSelectsFicha();
     verPestanaUso('agregar');
     $('aia-uso-titulo').textContent = '✏️ Corregir este uso';
     $('aia-uso-sub').value = u.sub;
@@ -261,6 +358,7 @@
 
   function abrirAgregarUso(){
     llenarSelectUsos();
+    llenarSelectsFicha();
     pintarListaUsosManuales();
     const p = $('aia-agregar-uso');
     if (p) p.hidden = false;
@@ -633,8 +731,10 @@
     if (btnGuardarUso) btnGuardarUso.addEventListener('click', () => {
       const sub = $('aia-uso-sub').value;
       if (!sub || !usoPendiente) return;
-      const datos = { lat: usoPendiente.lat, lng: usoPendiente.lng, sub: sub,
-                      nombre: ($('aia-uso-nombre').value || '').trim() };
+      const datos = Object.assign(
+        { lat: usoPendiente.lat, lng: usoPendiente.lng, sub: sub,
+          nombre: ($('aia-uso-nombre').value || '').trim() },
+        leerFichaFormulario());
       // El mismo botón guarda uno nuevo o corrige el que se estaba editando:
       // dos botones distintos para la misma acción confunden más de lo que
       // aclaran, y el título del panel ya dice en cuál de las dos se está.
@@ -783,6 +883,11 @@
       tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
       usos: S.usosMixto, config: S.config
     });
+    // La ficha de los usos levantados en campo va al resultado con la misma
+    // forma que en el modo educativo, para que el informe la lea igual venga
+    // de un curso o de un analista parado frente al inmueble.
+    const edif = edificacionDeManuales(S.lote, S.radioM);
+    if (edif) resultado.campo = { edificacion: edif };
     S.resultado = resultado;
     pintarPOIs(resultado.pois);
     renderResultados(resultado);
@@ -879,6 +984,9 @@
       const nombreInput = $('aia-nombre-proyecto');
       const nombrePropio = (nombreInput && nombreInput.value || '').trim();
       if (nombrePropio) resultado.meta.proyectoNombre = nombrePropio;
+      // La ficha de los usos levantados en campo, igual que arriba.
+      const edifRe = edificacionDeManuales(S.lote, S.radioM);
+      if (edifRe) resultado.campo = { edificacion: edifRe };
       S.resultado = resultado;
       pintarPOIs(resultado.pois);
       renderResultados(resultado);

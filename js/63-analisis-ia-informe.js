@@ -1244,8 +1244,16 @@
       '<b>' + n + '</b><em>' + pct.toFixed(0) + '%</em></div>';
   }
 
+  // La ficha puede venir de un curso (`r.edu`) o de un analista que la levantó
+  // desde la calle en el modo empresas (`r.campo`). El informe no pregunta de
+  // qué modo viene: pregunta si HAY ficha. Condicionar por modo dejaría fuera
+  // exactamente el caso de alguien que fue a mirar y anotó lo que vio.
+  function fichaCampo(r){
+    return ((r.campo || {}).edificacion) || ((r.edu || {}).edificacion) || null;
+  }
+
   function bloqueEdificacionEdu(r){
-    const e = ((r.edu || {}).edificacion) || null;
+    const e = fichaCampo(r);
     if (!e || !e.total) return '';
     const epocas = Object.keys(e.porEpoca).sort((a, b) => e.porEpoca[b] - e.porEpoca[a]);
     const mats = Object.keys(e.porMaterial).sort((a, b) => e.porMaterial[b] - e.porMaterial[a]);
@@ -1284,9 +1292,11 @@
   }
 
   function bloqueCaminabilidadEdu(r){
-    if (!r.edu) return '';
+    // El andén solo se observa mapeándolo, cosa que hoy hace el modo
+    // educativo: si no hay observaciones, el bloque no sale en vez de salir
+    // vacío diciendo que se miró.
     const c = ((r.stats.movilidad || {}).flujo || {}).caminabilidad;
-    if (!c) return '';
+    if (!c || !c.muestras) return '';
     if (!c.muestras) {
       return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
         '<p class="pie-nota">No se registró el estado del andén en este radio, así que el ' +
@@ -1970,14 +1980,14 @@ seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt)
   '<div>', bloqueIndicadoresFilas(r), '</div>',
 '</div>',
 
-(r.edu ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
-(r.edu ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
+(fichaCampo(r) ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
+(fichaCampo(r) ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
          '<div>' + bloqueCaminabilidadEdu(r) + '</div></div>' : ''),
 
-seccion(r.edu ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
+seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 
-seccion(r.edu ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
+seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),
 '<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
   'prefactibilidad financiera antes de avanzar a diseño.</div>',
