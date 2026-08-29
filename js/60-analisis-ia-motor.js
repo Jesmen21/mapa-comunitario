@@ -1134,22 +1134,44 @@
       infra_servicios: { peso: 3, media: 250, motivo:'infraestructura sin frente activo' },
       funerario:       { peso: 2, media: 250, motivo:'uso sin vitrina' }
     };
+    // Lo que estas penalizaciones hacen es SUPONER la fachada a partir del uso:
+    // "una bodega no suele tener vitrina". Es una suposición razonable que falla
+    // todo el tiempo — hay bodegas con tienda al frente y talleres con local.
+    // Cuando alguien fue hasta allí y MIRÓ la fachada, esa observación manda
+    // sobre la suposición: no se elimina el descuento (una bodega con una
+    // tiendita sigue teniendo mucho paramento ciego) pero se reduce a un tercio.
+    const PESO_FRENTE_VISTO = 0.3;
+    let corregidosPorObservacion = 0;
     Object.keys(RESTA_PEATON).forEach(function (sub) {
       const lista = pois.filter(p => p.sub === sub);
       if (!lista.length) return;
       const g = RESTA_PEATON[sub];
-      let resta = 0;
-      lista.forEach(function (p) { resta += g.peso / (1 + Math.pow(p.distM / g.media, 2)); });
+      let resta = 0, corregidos = 0;
+      lista.forEach(function (p) {
+        const visto = p.frenteActivo === true;
+        if (visto) { corregidos++; corregidosPorObservacion++; }
+        const peso = visto ? g.peso * PESO_FRENTE_VISTO : g.peso;
+        resta += peso / (1 + Math.pow(p.distM / g.media, 2));
+      });
       if (resta <= 0) return;
       restaPeaton += resta;
       const cat = TAXONOMIA.find(t => t.sub === sub);
       flujo.penalizadores.push({ sub, nombre: (cat && cat.nombre) || sub, n: lista.length,
-                                 resta: Math.round(resta), motivo: g.motivo });
+                                 resta: Math.round(resta), motivo: g.motivo,
+                                 // Para poder decir en el informe que la visita
+                                 // corrigió lo que la categoría daba por hecho.
+                                 corregidos: corregidos });
     });
+    flujo.frentesCorregidos = corregidosPorObservacion;
+
     // Planta baja muerta: media cuadra por la que se pasa sin que ocurra nada.
     // Pesa poco por unidad a propósito —una portería no arruina una calle— pero
     // varias seguidas sí explican por qué una cuadra nueva se siente vacía.
-    const frentesMuertos = pois.filter(p => p.frenteActivo === false && p.distM <= 400);
+    // Se excluye lo que YA descuenta por su categoría: para una bodega con muro
+    // ciego, la observación confirma la suposición, no añade un hecho nuevo, y
+    // cobrarle las dos cosas sería castigar dos veces lo mismo.
+    const frentesMuertos = pois.filter(p => p.frenteActivo === false && p.distM <= 400 &&
+                                            !RESTA_PEATON[p.sub]);
     if (frentesMuertos.length) {
       let resta = 0;
       frentesMuertos.forEach(function (p) { resta += 4 / (1 + Math.pow(p.distM / 220, 2)); });

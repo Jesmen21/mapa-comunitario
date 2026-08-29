@@ -190,6 +190,13 @@
           '<ul class="edu-lista resta">' + pen.map(p => '<li><span>' + esc(p.nombre) +
             ' · ' + esc(p.motivo) + '</span><b>−' + p.resta + '</b></li>').join('') + '</ul>'
         : '') +
+      // Ir a mirar cambió el resultado: eso es exactamente lo que el ejercicio
+      // debe enseñar, así que se dice en vez de aplicarlo en silencio.
+      (f.frentesCorregidos
+        ? '<p class="edu-nota">👀 En ' + f.frentesCorregidos + ' caso' +
+          (f.frentesCorregidos === 1 ? '' : 's') + ' la categoría suponía fachada ciega y ' +
+          'ustedes vieron vitrina: el descuento se redujo con lo que observaron en campo.</p>'
+        : '') +
       (f.comercioSinFrente
         ? '<p class="edu-nota">🏢 ' + f.comercioSinFrente + ' comercio' +
           (f.comercioSinFrente === 1 ? '' : 's') + ' con la planta baja cerrada: ' +
