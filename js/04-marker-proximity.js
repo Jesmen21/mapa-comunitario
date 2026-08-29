@@ -147,6 +147,27 @@
   // matriz, y esa lista crece. `leerEdificio` lo calcula en cada llamada.
   const MATERIALIDAD_NA = 'Sin registrar';
 
+  // Toda lista cerrada miente un poco: siempre hay un edificio que no encaja y
+  // siempre hay un dato que desde la acera no se puede determinar. Sin una
+  // salida, quien está mapeando elige la opción "más parecida" para poder
+  // seguir, y eso mete un dato falso que después nadie distingue de uno bueno.
+  // Son DOS salidas y no una porque no significan lo mismo:
+  //   · NO_SE_SABE  → se miró y no se pudo determinar. Es un límite del método.
+  //   · OTRO        → sí hay un valor, pero nuestro vocabulario no lo tiene.
+  //                   Es un límite de la LISTA, y por eso se pide describirlo:
+  //                   son las candidatas a entrar en la próxima versión.
+  // Las dos valen como "desconocido" para cualquier cálculo. Ninguna se puede
+  // confundir con haber observado algo.
+  const NO_SE_SABE = 'No se sabe';
+  const OTRO_VALOR = 'Otro (no está en la lista)';
+  const SALIDAS = [NO_SE_SABE, OTRO_VALOR];
+  const SIN_DATO = new Set([MATERIALIDAD_NA, NO_SE_SABE, OTRO_VALOR, '', 'undefined']);
+  // Normaliza a '' lo que no es una observación utilizable.
+  function valorUtil(v){
+    const t = String(v || '').trim();
+    return SIN_DATO.has(t) ? '' : t;
+  }
+
   // Materialidad del contexto colombiano, en el orden en que se reconoce a
   // simple vista desde la acera. No es una ficha catastral: es lo que un
   // estudiante puede determinar mirando la fachada sin entrar.
@@ -160,7 +181,7 @@
     'Prefabricado',
     'Lámina, zinc o material reciclado',
     'Mixto (varios sistemas en el mismo edificio)'
-  ];
+  ].concat(SALIDAS);
 
   // Qué hay a nivel de calle. Es UNA pregunta y no "en qué piso está cada uso"
   // porque lo que decide el comportamiento urbano no es el inventario por
@@ -176,7 +197,7 @@
     'Parqueadero o garaje',
     'Muro ciego o reja',
     'Local vacío o cerrado'
-  ];
+  ].concat(SALIDAS);
   // Las que NO hacen calle: se puede pasar por delante media cuadra sin que
   // ocurra nada. El vestíbulo entra aquí sin ser un defecto — una portería es
   // necesaria y correcta, simplemente no genera vida de acera.
@@ -202,7 +223,7 @@
     '1998 – 2009 (NSR-98)',
     '2010 o posterior (NSR-10)',
     'En construcción'
-  ];
+  ].concat(SALIDAS);
 
   // Vulnerabilidad POTENCIAL, no un diagnóstico estructural. Un curso contando
   // fachadas desde la acera no puede evaluar una estructura, y presentarlo como
@@ -259,12 +280,20 @@
     // registraron", no "no tiene". Se devuelve 1 para que el análisis no
     // castigue a lo que se mapeó antes de que este campo existiera.
     const pisos = isFinite(pisosCrudo) && pisosCrudo > 0 ? Math.min(pisosCrudo, 60) : 1;
-    const ep = (d[base + 3] || '').trim();
-    const epoca = ep && ep !== 'undefined' && ep !== 'Sin registrar' ? ep : '';
-    const pb = (d[base + 2] || '').trim();
-    const plantaBaja = pb && pb !== 'undefined' && pb !== 'Sin registrar' ? pb : '';
+    const epocaCruda = (d[base + 3] || '').trim();
+    const epoca = valorUtil(epocaCruda);
+    const pbCruda = (d[base + 2] || '').trim();
+    const plantaBaja = valorUtil(pbCruda);
+    const otroTexto = (d[base + 4] || '').trim();
+    const crudos = [mat, pbCruda, epocaCruda];
     return {
       materialidad: mat && mat !== 'undefined' ? mat : MATERIALIDAD_NA,
+      // Utilizable para cálculo: '' en cuanto sea "sin registrar", "no se sabe"
+      // u "otro". El valor crudo se conserva para poder informarlo.
+      materialidadUtil: valorUtil(mat),
+      noSeSabe: crudos.filter(v => v === NO_SE_SABE).length,
+      otros: crudos.filter(v => v === OTRO_VALOR).length,
+      otroTexto: otroTexto && otroTexto !== 'undefined' ? otroTexto : '',
       pisos: pisos,
       pisosRegistrados: isFinite(pisosCrudo) && pisosCrudo > 0,
       plantaBaja: plantaBaja,
@@ -273,12 +302,12 @@
       frenteActivo: plantaBaja ? !PLANTA_BAJA_MUERTA.has(plantaBaja) : null,
       epoca: epoca,
       enObra: epoca === 'En construcción',
-      vulnerabilidad: vulnerabilidadDe(
-        mat && mat !== 'undefined' ? mat : '', epoca),
+      vulnerabilidad: vulnerabilidadDe(valorUtil(mat), epoca),
       idxMaterialidad: base,
       idxPisos: base + 1,
       idxPlantaBaja: base + 2,
-      idxEpoca: base + 3
+      idxEpoca: base + 3,
+      idxOtroTexto: base + 4
     };
   }
 
@@ -860,6 +889,7 @@
     MATERIALIDAD: MATERIALIDAD_EDIFICIO,
     PLANTA_BAJA: PLANTA_BAJA,
     EPOCA: EPOCA_EDIFICIO,
+    NO_SE_SABE: NO_SE_SABE, OTRO: OTRO_VALOR,
     vulnerabilidadDe: vulnerabilidadDe,
     SIN_REGISTRAR: MATERIALIDAD_NA,
     esCategoriaEdificio: esCategoriaEdificio,

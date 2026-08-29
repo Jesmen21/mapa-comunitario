@@ -293,7 +293,12 @@
     // una torre con ocho usos es UN edificio con una época y un material.
     const edif = { total: 0, conEpoca: 0, conMaterial: 0, evaluables: 0,
                    porEpoca: {}, porMaterial: {}, alta: 0, media: 0, baja: 0,
-                   anteriores1984: 0, patrimonio: 0, enObra: 0 };
+                   anteriores1984: 0, patrimonio: 0, enObra: 0,
+                   // Los límites declarados: cuántas veces el curso dijo "no se
+                   // sabe" y cuántas dijo "otro". Lo segundo es una lista de
+                   // trabajo, no un fallo: son los valores que el vocabulario
+                   // todavía no tiene.
+                   noSeSabe: 0, otros: 0, textosOtro: [] };
     (datos || []).forEach(function (p, i) {
       const lat = parseFloat(String(p && p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p && p.lng || '').replace(',', '.'));
@@ -321,8 +326,13 @@
         const ficha = EDIF.leer(p.descripcion);
         const tieneAlgo = ficha.epoca || ficha.pisosRegistrados ||
                           ficha.materialidad !== EDIF.SIN_REGISTRAR;
-        if (tieneAlgo) {
+        if (tieneAlgo || ficha.noSeSabe || ficha.otros) {
           edif.total++;
+          edif.noSeSabe += ficha.noSeSabe;
+          edif.otros += ficha.otros;
+          if (ficha.otroTexto && edif.textosOtro.indexOf(ficha.otroTexto) === -1) {
+            edif.textosOtro.push(ficha.otroTexto);
+          }
           if (ficha.enObra) edif.enObra++;
           if (ficha.epoca) {
             edif.conEpoca++;
@@ -330,9 +340,13 @@
             if (ficha.epoca === 'Anterior a 1950') edif.patrimonio++;
             if (/Anterior a 1950|1950 – 1983/.test(ficha.epoca)) edif.anteriores1984++;
           }
-          if (ficha.materialidad && ficha.materialidad !== EDIF.SIN_REGISTRAR) {
+          // materialidadUtil ya viene en blanco si fue "sin registrar",
+          // "no se sabe" u "otro": ninguna de las tres es una observación con
+          // la que se pueda calcular nada.
+          if (ficha.materialidadUtil) {
             edif.conMaterial++;
-            edif.porMaterial[ficha.materialidad] = (edif.porMaterial[ficha.materialidad] || 0) + 1;
+            edif.porMaterial[ficha.materialidadUtil] =
+              (edif.porMaterial[ficha.materialidadUtil] || 0) + 1;
           }
           if (ficha.vulnerabilidad) {
             edif.evaluables++;

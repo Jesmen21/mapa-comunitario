@@ -277,6 +277,24 @@
         : '<p class="edu-nota">Para estimar vulnerabilidad hacen falta material Y época ' +
           'en el mismo edificio. Con uno solo no se puede decir nada, y media evaluación ' +
           'sería una cifra que parece saber algo sin saberlo.</p>') +
+      // Los límites que el propio curso declaró. Se muestran porque un "no se
+      // sabe" honesto vale más que una casilla rellenada a ojo, y porque los
+      // "otro" son la lista de lo que falta en el vocabulario.
+      (e.noSeSabe || e.otros
+        ? '<p class="edu-nota">📋 ' +
+          (e.noSeSabe ? e.noSeSabe + ' dato' + (e.noSeSabe === 1 ? '' : 's') +
+            ' marcado' + (e.noSeSabe === 1 ? '' : 's') + ' como «no se sabe»' : '') +
+          (e.noSeSabe && e.otros ? ' y ' : '') +
+          (e.otros ? e.otros + ' como «otro»' : '') +
+          '. No cuentan como observación en ningún cálculo — es lo correcto: ' +
+          'marcar «lo más parecido» para salir del paso habría metido un dato ' +
+          'falso indistinguible de uno bueno.' +
+          (e.textosOtro && e.textosOtro.length
+            ? ' Lo que no cabía en la lista: ' +
+              e.textosOtro.slice(0, 6).map(esc).join(' · ') + '.'
+            : '') +
+          '</p>'
+        : '') +
       '</div>';
   }
 

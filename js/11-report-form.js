@@ -54,7 +54,9 @@
           <div class="edificio-hint">Lo que se ve al pasar caminando por el frente. Un edificio con las tiendas en el tercer piso y un portón abajo atrae gente igual, pero no hace calle.</div>
           <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:12px;">4 · ¿DE QUÉ ÉPOCA ES?</label>
           <select id="sel-epoca">${optsEp}</select>
-          <div class="edificio-hint">Los cortes son los de la norma sismo resistente: el primer código colombiano es de 1984, después de Popayán. Junto con el material, dice qué construcciones merecen que alguien vaya a mirarlas en serio. Si no lo sabes, déjalo sin registrar.</div>
+          <div class="edificio-hint">Los cortes son los de la norma sismo resistente: el primer código colombiano es de 1984, después de Popayán. Junto con el material, dice qué construcciones merecen que alguien vaya a mirarlas en serio.</div>
+          <input type="text" id="ins-otro-edificio" value="${(fichaEdif.otroTexto || '').replace(/"/g, '&quot;')}" placeholder="Si marcaste «Otro», descríbelo aquí">
+          <div class="edificio-hint">Ninguna de estas preguntas es obligatoria. Si el dato no se puede determinar desde la calle marca <b>No se sabe</b>, y si existe pero no está en la lista marca <b>Otro</b> y descríbelo: así entra en la próxima versión de la lista. Elegir «lo más parecido» para salir del paso mete un dato falso que después nadie distingue de uno bueno.</div>
         </div>`;
     }
     
