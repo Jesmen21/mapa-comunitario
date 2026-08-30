@@ -1588,15 +1588,11 @@
     const password = clean($('mobile-login-password')?.value || $('login-password')?.value || '');
     if(!identifier){ toast('Escribe tu usuario, correo, celular o cédula.'); alert('Escribe tu usuario, correo, celular o cédula.'); return; }
     if(!password){ toast('Escribe tu contraseña.'); alert('Escribe tu contraseña.'); return; }
-    // Atajo: cuenta de administrador URBIS (no pasa por el Apps Script).
-    if(typeof window.urbisEsCredsAdmin === 'function' && window.urbisEsCredsAdmin(rawLogin, password)){
-      const adminUser = { usuario:'urbisdueno', nombre_completo:'Administrador URBIS', nombres:'Administrador', apellidos:'URBIS', correo:'admin@urbis.com', rol:'admin', rol_solicitado:'admin' };
-      try{ saveSession(adminUser); }catch(e){}
-      try{ if(typeof window.urbisActivarModoAdmin === 'function') window.urbisActivarModoAdmin(); }catch(e){}
-      try{ startSession(adminUser); }catch(e){}
-      toast('🛡️ Modo administrador URBIS activado.');
-      return;
-    }
+    // El atajo de administrador se retiró en la v574: comparaba la contraseña
+    // contra un valor escrito en js/00-config.js, que se sirve tal cual desde
+    // urbispro.city. La cuenta de administrador entra ahora por este mismo
+    // camino que todas las demás, y es el servidor quien verifica su
+    // contraseña contra el hash guardado en la hoja de usuarios.
     if(!authReady()){ alert('Falta configurar el endpoint de Google Apps Script.'); return; }
     const btn = $('mobile-urbis-login-btn') || $('urbis-login-btn');
     const payload = {

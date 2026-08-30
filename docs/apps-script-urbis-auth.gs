@@ -1322,6 +1322,40 @@ function dbWrite_(body) {
   return { ok: true, row: row };
 }
 // Lee TODAS las filas de reportes (reemplaza el GET de SheetDB). Devuelve objetos por encabezado.
+/* Posiciones del correo y la cédula del autor dentro del campo `descripcion`,
+   que es una cadena separada por " | ". Se calculan como BASE_OFFSET+5 y +6,
+   donde BASE_OFFSET = 6 + 37 usos = 43 (ver URBIS_SLOTS en js/04). Si algún día
+   cambia el número de usos, hay que cambiarlos aquí también — por eso, además
+   de estas dos posiciones, se limpia por patrón cualquier cosa con forma de
+   correo, que es la fuga que más duele si el número se desalinea. */
+var DESC_IDX_CORREO_AUTOR = 48;
+var DESC_IDX_CEDULA_AUTOR = 49;
+
+/* La hoja de reportes se lee en abierto: el mapa tiene que poder cargarse sin
+   sesión, y eso es correcto — los reportes SON públicos. Lo que no puede salir
+   de aquí son los datos personales de quien reporta.
+
+   Hasta la v574 cada fila llevaba el correo y la cédula del autor, así que
+   cualquiera con la URL del script podía descargarse el padrón entero con una
+   sola petición. La aplicación los escondía en pantalla ("Solo Admin"), pero
+   eso es la interfaz: el dato viajaba igual.
+
+   Se limpian aquí, en el servidor, y no solo en el cliente que dejó de
+   escribirlos: los reportes ya publicados siguen teniendo el dato en la hoja, y
+   la hoja no se toca (queda el histórico para el dueño, que sí puede abrirla).
+   Quien pregunta por la API recibe la fila sin esos campos. */
+function _limpiarDatosPersonales_(desc) {
+  var texto = String(desc == null ? '' : desc);
+  if (!texto) return texto;
+  var partes = texto.split(' | ');
+  if (partes.length > DESC_IDX_CORREO_AUTOR) partes[DESC_IDX_CORREO_AUTOR] = '';
+  if (partes.length > DESC_IDX_CEDULA_AUTOR) partes[DESC_IDX_CEDULA_AUTOR] = '';
+  texto = partes.join(' | ');
+  // Red de seguridad: un correo escrito en cualquier otro sitio (una nota, un
+  // campo desalineado) tampoco debe salir.
+  return texto.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '');
+}
+
 function dbRead_(body) {
   var sh = reportesSheet_();
   var last = sh.getLastRow();
@@ -1335,7 +1369,9 @@ function dbRead_(body) {
     for (var c = 0; c < headers.length; c++) {
       if (!headers[c]) continue;
       var v = values[i][c];
-      obj[headers[c]] = (v instanceof Date) ? v.toISOString() : v;
+      v = (v instanceof Date) ? v.toISOString() : v;
+      if (headers[c].toLowerCase() === 'descripcion') v = _limpiarDatosPersonales_(v);
+      obj[headers[c]] = v;
     }
     out.push(obj);
   }

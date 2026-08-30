@@ -542,10 +542,18 @@
     
     let datosPrivadosHTML = ``;
     if (_rolEf === 'admin' || _rolEf === 'gov') {
+        // El correo y la cédula del autor YA NO viajan con el reporte (v574):
+        // la tabla de reportes se lee en abierto y publicarlos ahí era regalar
+        // el padrón. Para un caso que lo exija de verdad, están en la cuenta
+        // del usuario, dentro de la hoja de cálculo, que solo abre el dueño.
+        const _identidadVieja = (correoVal && correoVal !== 'No registrado') || (cedulaVal && cedulaVal !== 'No registrada');
         datosPrivadosHTML = `
         <div class="private-data">
-            🔒 Datos de Registro (Solo Admin):<br>
-            Cédula: ${cedulaVal} | Correo: ${correoVal}
+            🔒 Autor: <b>${creadorNombre}</b><br>
+            ${_identidadVieja
+              ? `<span style="opacity:.85">Reporte antiguo · Cédula: ${cedulaVal} | Correo: ${correoVal}</span><br>`
+              : ''}
+            <span style="font-size:.68rem; opacity:.8;">Los datos de identidad no se guardan en el reporte. Están en la cuenta del usuario, dentro de la hoja de URBIS.</span>
         </div>`;
         
         if(estadoValidacion === "Pendiente") {

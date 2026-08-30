@@ -8,11 +8,19 @@ window.URBIS_CONFIG = {
   // Apps Script sobre el mismo Google Sheet. Se conserva esta clave solo por compatibilidad
   // con referencias inertes; ningún flujo activo la llama.
   SHEETDB_ENDPOINT: 'https://sheetdb.io/api/v1/vypsmcicsw2q6',
-  // Cuenta exclusiva de administrador (dueño URBIS). Con estas credenciales se activa el
-  // "Modo administrador" (control total + crear el Evento Áurea premium + dar permisos).
-  // ADMIN NUEVO (v281): se reemplazó el viejo 'urbisdueno' por estas credenciales simples.
-  // El login admin tolera mayúsculas/minúsculas en usuario y contraseña (ver urbisEsCredsAdmin).
-  ADMIN: { USER: 'urbisadmin', PASS: 'urbis2026' },
+  // ⛔ AQUÍ YA NO VA NINGUNA CONTRASEÑA.
+  // Este archivo se sirve tal cual desde urbispro.city: cualquiera puede abrir
+  // urbispro.city/js/00-config.js en su navegador y leerlo entero. No es un
+  // fallo, es cómo funciona la web — el navegador tiene que descargar el
+  // JavaScript para poder ejecutarlo. Hasta la v573 aquí estuvo escrita la
+  // contraseña del administrador, es decir, publicada en internet.
+  //
+  // El administrador entra ahora por el MISMO login que todos: su cuenta vive
+  // en la hoja de usuarios con la contraseña cifrada, y es el servidor quien la
+  // verifica. Se crea con la función crearCuentasSistemaUrbis del Apps Script
+  // (ver docs/apps-script-urbis-auth.gs). El nombre de usuario sí puede estar
+  // aquí: un usuario no es un secreto.
+  ADMIN_USER: 'urbisadmin',
   DEFAULT_CENTER: [7.8891, -72.4967],
   DEFAULT_ZOOM: 15,
   TEMP_REPORT_TTL_HOURS: 8,
@@ -21,6 +29,11 @@ window.URBIS_CONFIG = {
   // 1) Crea una key gratis en LocationIQ.
   // 2) Reemplaza el texto de apiKey por tu token real.
   // 3) Mientras esté vacío o con el placeholder, la barra mostrará un aviso.
+  // ⚠️ Esta clave es visible en urbispro.city/js/00-config.js, como todo lo que
+  // vive en un archivo del navegador. No hay forma de esconderla aquí. Lo que
+  // sí se puede —y hay que hacer— es limitarla en el panel de LocationIQ para
+  // que solo funcione desde urbispro.city: así, aunque alguien la copie, no
+  // podrá gastar la cuota de URBIS desde otro sitio.
   LOCATIONIQ: {
     apiKey: 'pk.4606fcd69a7cfe0142b8e664962123eb',
     countrycodes: 'co',

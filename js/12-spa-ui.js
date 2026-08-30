@@ -488,8 +488,18 @@
     const puntoOriginal = isEdit ? buscarPuntoPorLat(lat) : null;
     const dOriginal = puntoOriginal && puntoOriginal.descripcion ? String(puntoOriginal.descripcion).split(' | ') : [];
     const fechaCreacion = isEdit ? parseFechaReporte({ descripcion: puntoOriginal?.descripcion || '' }) : new Date();
+    // ── Datos personales FUERA de la tabla de reportes ────────────────────
+    // La hoja de reportes se lee en abierto: la acción db_read del Apps Script
+    // devuelve todas las filas a quien la llame, sin sesión, porque el mapa
+    // tiene que poder cargarse. Guardar ahí el correo y la cédula de quien
+    // reporta significaba publicarlos. Ya están en la cuenta del usuario, que
+    // sí es privada; en el reporte basta con su nombre de usuario.
+    //
+    // Al editar un reporte viejo tampoco se vuelven a escribir: la casilla
+    // queda vacía y el dato desaparece de la tabla pública.
+    const correoPublico = '', cedulaPublica = '';
     let arrData = [
-        i, n, nt, est, isEdit ? (dOriginal[4] || "Activo") : "Activo", mat, ...usosGuardar, foto, estadoValidacionFinal, nombreSeguro, creadorRolStr, likes, correoReq, cedulaReq, barrioReq
+        i, n, nt, est, isEdit ? (dOriginal[4] || "Activo") : "Activo", mat, ...usosGuardar, foto, estadoValidacionFinal, nombreSeguro, creadorRolStr, likes, correoPublico, cedulaPublica, barrioReq
     ];
     const ctxForm = window.__urbisCurrentFormContext || {};
     // Pedido explícito: un atentado/artefacto explosivo debe seguir visible
@@ -2460,17 +2470,18 @@
   // ADMIN URBIS (cuenta exclusiva del dueño) + EVENTO ESPECIAL "SOL SOLIDARIO"
   // ════════════════════════════════════════════════════════════════════════
   window.urbisPermisos = window.urbisPermisos || [];
-  function _adminUser(){ return ((window.URBIS_CONFIG && window.URBIS_CONFIG.ADMIN && window.URBIS_CONFIG.ADMIN.USER) || 'urbisdueno').toLowerCase(); }
-  function _adminPass(){ return (window.URBIS_CONFIG && window.URBIS_CONFIG.ADMIN && window.URBIS_CONFIG.ADMIN.PASS) || 'UrbisDueno2026'; }
-  // El flag local de admin SOLO vale si la sesión activa es la cuenta admin (o no hay sesión).
-  // Evita que un flag colgado de una prueba previa convierta a un usuario normal en admin.
+  function _adminUser(){ return String((window.URBIS_CONFIG && window.URBIS_CONFIG.ADMIN_USER) || 'urbisadmin').toLowerCase(); }
+  // Ser admin depende de la SESIÓN que devolvió el servidor, no de una marca
+  // local. Antes, sin sesión, se respetaba el flag de localStorage: bastaba
+  // abrir la consola del navegador, escribir la marca y quedar de
+  // administrador sin saber ninguna contraseña. Ahora sin sesión no hay admin.
   function _sesionEsCuentaAdmin(){
     try{
       var s = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? (window.URBIS_AUTH.readSession() || {}) : {};
       var u = String(s.usuario || '').toLowerCase();
-      if(!u) return true; // sin sesión: respetar el flag (modo admin local)
+      if(!u) return false;
       return u === _adminUser() || String(s.rol || '').toLowerCase() === 'admin';
-    }catch(e){ return true; }
+    }catch(e){ return false; }
   }
   try{
     if(localStorage.getItem('urbis_admin') === '1'){
@@ -2549,15 +2560,12 @@
     alert(`Migración completa: ${ok} reporte(s) actualizado(s) a "Área preventiva"${fail ? `, ${fail} con error` : ''}.`);
     try{ cargarPuntos(); }catch(e){}
   };
-  // ¿Las credenciales corresponden al admin URBIS? (usado por el login y el botón)
-  // TOLERANTE: usuario por alias y contraseña SIN distinguir mayúsculas/minúsculas ni espacios,
-  // para que el dueño SIEMPRE pueda entrar (el viejo admin 'urbisdueno' ya NO es válido).
-  window.urbisEsCredsAdmin = function(u, p){
-    var user = String(u||'').trim().toLowerCase();
-    var pass = String(p||'').trim().toLowerCase();
-    var alias = [_adminUser(), 'urbisadmin', 'adminurbis', 'admin', 'urbisjefe', 'dueno', 'dueño'];
-    return alias.indexOf(user) !== -1 && pass === String(_adminPass()).toLowerCase();
-  };
+  // El atajo de admin en el navegador se retiró en la v574. Comparaba la
+  // contraseña contra un valor escrito en js/00-config.js, es decir, publicado
+  // en urbispro.city para quien quisiera leerlo. Se conserva la función porque
+  // otros archivos la llaman, pero ya no autoriza a nadie: el administrador
+  // entra por el login normal y es el servidor quien verifica su contraseña.
+  window.urbisEsCredsAdmin = function(){ return false; };
   // Activa el modo admin sin pedir nada (lo llaman el login y urbisAdminUnlock).
   window.urbisActivarModoAdmin = function(){
     try{ localStorage.setItem('urbis_admin','1'); }catch(e){}
@@ -2572,12 +2580,10 @@
     try{ cargarPuntos(); }catch(e){}
   };
   window.urbisAdminUnlock = function(){
-    const u = prompt('Usuario administrador URBIS:'); if(u === null) return;
-    const p = prompt('Contraseña administrador:'); if(p === null) return;
-    if(window.urbisEsCredsAdmin(u, p)){
-      window.urbisActivarModoAdmin();
-      alert('🛡️ Modo administrador URBIS ACTIVADO. Tienes control total.');
-    } else { alert('Usuario o contraseña incorrectos.'); }
+    alert('El modo administrador ya no se activa desde aquí.\n\n' +
+          'Cierra sesión y entra con la cuenta de administrador (usuario ' + _adminUser() + ') ' +
+          'como entra cualquier usuario. Su contraseña la verifica el servidor de URBIS, ' +
+          'no la aplicación: así no puede quedar escrita en un archivo público.');
   };
   window.urbisAdminLogout = function(){
     try{ localStorage.removeItem('urbis_admin'); }catch(e){}
