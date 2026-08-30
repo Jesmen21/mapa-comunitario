@@ -133,31 +133,72 @@
   };
 
   // ── El bloque del formulario ─────────────────────────────────────────────
-  function opciones(nombre) {
+  function opciones(seleccionado) {
+    const sel = valido(seleccionado) || NO_SE_SABE;
     return ESCALA.map(function (e) {
-      return '<option value="' + e.v + '"' + (e.v === NO_SE_SABE ? ' selected' : '') + '>' +
+      return '<option value="' + e.v + '"' + (e.v === sel ? ' selected' : '') + '>' +
              e.etiqueta + '</option>';
     }).join('');
   }
 
-  /* HTML para insertar en el panel de reporte rápido. Arranca cerrado con una
-     sola pregunta: la mayoría de los reportes no tienen víctimas y no hay por
-     qué hacerles llenar dos selectores para decir que no. */
-  window.urbisBloqueVictimas = function () {
+  /* Qué botón corresponde a lo ya guardado, para volver a abrir el reporte
+     donde quedó. */
+  function respuestaDe(v) {
+    if (!v || !v.registrado) return '';
+    const ambosCero = v.heridos === '0' && v.fallecidos === '0';
+    if (ambosCero) return 'no';
+    const ambosNoSe = v.heridos === NO_SE_SABE && v.fallecidos === NO_SE_SABE;
+    if (ambosNoSe) return 'nose';
+    return 'si';
+  }
+
+  /* HTML para insertar en el formulario. Arranca cerrado con una sola
+     pregunta: la mayoría de los reportes no tienen víctimas y no hay por qué
+     hacerles llenar dos selectores para decir que no.
+
+     `actual` es lo que ya está guardado (de urbisLeerVictimas). Al EDITAR un
+     reporte ya publicado el bloque vuelve exactamente al estado en que quedó:
+     un accidente se publica en caliente, sin saber todavía si alguien murió, y
+     la noticia llega horas después. Si al editar apareciera en blanco, guardar
+     cualquier otra corrección borraría el conteo sin avisar. */
+  window.urbisBloqueVictimas = function (actual) {
+    const v = actual || null;
+    const r = respuestaDe(v);
+    const marcado = function (id) { return r === id ? ' on' : ''; };
+    const abierto = r === 'si';
+    const aviso = (v && v.registrado)
+      ? '<small class="uv2-guardado">Ya registrado: ' + window.urbisResumenVictimas(v) +
+        '. Cámbialo si tienes información nueva.</small>'
+      : '';
     return '' +
-      '<div class="urbis-victimas" id="urbis-victimas">' +
+      '<div class="urbis-victimas" id="urbis-victimas"' + (r ? ' data-uv2-respuesta="' + r + '"' : '') + '>' +
         '<b class="uv2-pregunta">¿Hay personas heridas o fallecidas?</b>' +
+        aviso +
         '<div class="uv2-opciones">' +
-          '<button type="button" class="uv2-op" data-uv2="no">No, nadie</button>' +
-          '<button type="button" class="uv2-op" data-uv2="si">Sí, hay</button>' +
-          '<button type="button" class="uv2-op" data-uv2="nose">No lo sé</button>' +
+          '<button type="button" class="uv2-op' + marcado('no') + '" data-uv2="no">No, nadie</button>' +
+          '<button type="button" class="uv2-op' + marcado('si') + '" data-uv2="si">Sí, hay</button>' +
+          '<button type="button" class="uv2-op' + marcado('nose') + '" data-uv2="nose">No lo sé</button>' +
         '</div>' +
-        '<div class="uv2-detalle" hidden>' +
-          '<label>Heridos<select id="uv2-heridos">' + opciones() + '</select></label>' +
-          '<label>Fallecidos<select id="uv2-fallecidos">' + opciones() + '</select></label>' +
+        '<div class="uv2-detalle"' + (abierto ? '' : ' hidden') + '>' +
+          '<label>Heridos<select id="uv2-heridos">' + opciones(v && v.heridos) + '</select></label>' +
+          '<label>Fallecidos<select id="uv2-fallecidos">' + opciones(v && v.fallecidos) + '</select></label>' +
           '<small>Cuenta cuántas personas, sin nombres, placas ni fotos de nadie.</small>' +
         '</div>' +
       '</div>';
+  };
+
+  /* ¿El formulario abierto está preguntando de verdad por víctimas? No basta
+     con que el bloque exista: en el formulario clásico se monta siempre y se
+     esconde cuando la sub-clasificación elegida no lo necesita. Si se
+     escribiera estando escondido, cambiar un accidente a "congestión" dejaría
+     colgado un conteo de muertos que ya no corresponde a nada. */
+  window.urbisFormularioVictimasActivo = function (raiz) {
+    const doc = raiz || document;
+    const bloque = doc.getElementById ? doc.getElementById('urbis-victimas')
+                                      : doc.querySelector('#urbis-victimas');
+    if (!bloque) return false;
+    const envoltorio = bloque.closest ? bloque.closest('#urbis-victimas-wrap') : null;
+    return !(envoltorio && envoltorio.hidden);
   };
 
   /* Conecta los botones del bloque. Guarda la elección en el propio elemento

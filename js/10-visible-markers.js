@@ -310,7 +310,12 @@
     // el mapa aunque compartan el icono.
     let victimasHTML = '';
     try {
-      if(typeof window.urbisLeerVictimas === 'function') {
+      // Se pinta solo si el reporte SIGUE siendo de los que preguntan por
+      // víctimas: si alguien reclasificó un accidente como "congestión", el
+      // conteo se conserva en el registro pero deja de anunciarse, porque ya
+      // no corresponde a lo que el punto dice ser.
+      if(typeof window.urbisLeerVictimas === 'function' &&
+         (typeof window.urbisPreguntaPorVictimas !== 'function' || window.urbisPreguntaPorVictimas(d[0]))) {
         const _vic = window.urbisLeerVictimas(p.descripcion);
         if(_vic.registrado && _vic.resumen) {
           const _grave = _vic.fallecidosSabidos && _vic.fallecidos !== '0';
@@ -551,7 +556,8 @@
     // y presentarlos igual convertiría un vacío en una afirmación.
     let victimasDetalleHTML = '';
     try {
-      if(typeof window.urbisLeerVictimas === 'function') {
+      if(typeof window.urbisLeerVictimas === 'function' &&
+         (typeof window.urbisPreguntaPorVictimas !== 'function' || window.urbisPreguntaPorVictimas(d[0]))) {
         const _vd = window.urbisLeerVictimas(p.descripcion);
         if(_vd.registrado && _vd.resumen) {
           const _grave = _vd.fallecidosSabidos && _vd.fallecidos !== '0';

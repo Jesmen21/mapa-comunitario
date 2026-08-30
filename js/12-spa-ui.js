@@ -544,7 +544,8 @@
     // quedar vacío y no "cero víctimas".
     try {
         if(typeof window.urbisLeerFormularioVictimas === 'function' &&
-           document.getElementById('urbis-victimas')) {
+           typeof window.urbisFormularioVictimasActivo === 'function' &&
+           window.urbisFormularioVictimasActivo(document)) {
             const _v = window.urbisLeerFormularioVictimas(document);
             descripcionFinal = window.urbisGuardarVictimas(descripcionFinal, _v.heridos, _v.fallecidos);
         }
@@ -573,9 +574,11 @@
         conservar.push(S.validaciones != null ? S.validaciones : base + 10);
         conservar.push(S.carpetaProCity != null ? S.carpetaProCity : base + 11);
         conservar.push(S.denuncias != null ? S.denuncias : base + 12);
-        // Las víctimas solo se conservan si esta edición NO trae la pregunta;
-        // si la trae, manda lo que acaba de responder el usuario.
-        if(!document.getElementById('urbis-victimas')) {
+        // Las víctimas solo se conservan si esta edición NO trae la pregunta
+        // activa; si la trae, manda lo que acaba de responder el usuario.
+        const _vicActivo = (typeof window.urbisFormularioVictimasActivo === 'function')
+            && window.urbisFormularioVictimasActivo(document);
+        if(!_vicActivo) {
             conservar.push(S.victimas != null ? S.victimas : base + 13);
         }
         // La ficha del edificio solo se conserva si esta edición NO la escribió;
@@ -2670,6 +2673,20 @@
     let tipoSeleccionado = tipoActualId ? Object.assign({ id: tipoActualId }, catalogoTipos[tipoActualId]) : null;
     const iconoActual = tipoSeleccionado ? tipoSeleccionado.icon : (typeof obtenerIconoReporte === 'function' ? obtenerIconoReporte(p.tipo, p) : '📍');
 
+    // ¿Hubo gente herida? Un accidente se publica en caliente, sin saber
+    // todavía si alguien murió; la noticia llega horas después y es aquí,
+    // editando, donde se corrige. El bloque vuelve con lo que ya estaba
+    // guardado: si apareciera en blanco, cambiar el título borraría el conteo.
+    let bloqueVictimasEdicion = '';
+    try {
+      if(typeof window.urbisBloqueVictimas === 'function' && typeof window.urbisPreguntaPorVictimas === 'function') {
+        const _vicAct = (typeof window.urbisLeerVictimas === 'function') ? window.urbisLeerVictimas(p.descripcion) : null;
+        const _pregunta = window.urbisPreguntaPorVictimas(tipoActualId || d[0]);
+        bloqueVictimasEdicion = '<div id="urbis-victimas-wrap"' + (_pregunta ? '' : ' hidden') + '>' +
+                                window.urbisBloqueVictimas(_vicAct) + '</div>';
+      }
+    } catch(e){}
+
     let sheet = document.getElementById('urbis-edit-sheet2');
     if(sheet) sheet.remove();
     sheet = document.createElement('div');
@@ -2688,6 +2705,7 @@
         <input id="ued-titulo" type="text" value="${escAttr(tituloAct)}" placeholder="Ej: Calle 5 con Av. 2 — Hueco grande">
         <label>Descripción</label>
         <textarea id="ued-nota" rows="4" placeholder="Describe la situación...">${escHtml(notaAct)}</textarea>
+        ${bloqueVictimasEdicion}
         <label>Foto (opcional · si no eliges nada, se conserva la actual)</label>
         ${tieneFoto ? `<img class="ued-foto-actual" src="${fotoAct}" alt="Foto actual">` : '<div class="ued-sinfoto">Sin foto actual</div>'}
         <input id="ued-foto" type="file" accept="image/*">
@@ -2700,6 +2718,7 @@
     const cerrar = () => { try{ sheet.remove(); }catch(e){} };
     sheet.querySelector('.ued-close').onclick = cerrar;
     sheet.querySelector('.ued-cancel').onclick = cerrar;
+    try{ if(typeof window.urbisActivarBloqueVictimas === 'function') window.urbisActivarBloqueVictimas(sheet); }catch(e){}
 
     sheet.querySelector('#ued-tipo-btn').onclick = function(){
       const secciones = window.URBIS_QUICK_REPORT_SECTIONS || [];
@@ -2731,6 +2750,12 @@
           tipoSeleccionado = Object.assign({ id }, info);
           document.getElementById('ued-tipo-icon').textContent = info.icon;
           document.getElementById('ued-tipo-label').textContent = info.label;
+          // Si el reporte deja de ser un accidente, la pregunta sobra; si pasa
+          // a serlo, aparece.
+          try{
+            const w = sheet.querySelector('#urbis-victimas-wrap');
+            if(w && typeof window.urbisPreguntaPorVictimas === 'function') w.hidden = !window.urbisPreguntaPorVictimas(id);
+          }catch(e){}
           cerrarPicker();
         };
       });
@@ -2754,7 +2779,17 @@
           const s = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? window.URBIS_AUTH.readSession() : null;
           if(s && s.usuario) d[BASE_OFFSET + 2] = String(s.usuario).replace(/\|/g, '-');
         }catch(e){}
-        const descripcionFinal = d.join(' | ');
+        let descripcionFinal = d.join(' | ');
+        // El conteo se escribe solo si la pregunta está a la vista: si el
+        // reporte dejó de ser un accidente, no se arrastra un dato que ya no
+        // corresponde a nada.
+        try{
+          if(typeof window.urbisFormularioVictimasActivo === 'function' &&
+             window.urbisFormularioVictimasActivo(sheet)) {
+            const _v = window.urbisLeerFormularioVictimas(sheet);
+            descripcionFinal = window.urbisGuardarVictimas(descripcionFinal, _v.heridos, _v.fallecidos);
+          }
+        }catch(e){}
         const camposActualizar = { descripcion: descripcionFinal };
         if(tipoSeleccionado && tipoSeleccionado.dim) camposActualizar.tipo = tipoSeleccionado.dim;
         await window.urbisDBUpdate('lat', lat, camposActualizar);

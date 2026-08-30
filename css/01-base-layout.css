@@ -1240,3 +1240,33 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
 .detalle-victimas b{ display:block; font-size:.9rem; margin-bottom:3px; }
 .detalle-victimas span{ display:block; font-size:.82rem; font-weight:750; }
 .detalle-victimas small{ display:block; margin-top:6px; font-size:.7rem; opacity:.8; }
+
+/* Al editar, el bloque recuerda lo que ya se había respondido: sin esta línea
+   la persona no sabe si está confirmando o escribiendo de cero. */
+.urbis-victimas .uv2-guardado{
+  display:block; margin-top:5px; font-size:.72rem; font-weight:750; color:#8a4a3a;
+}
+
+/* El editor móvil es oscuro; el bloque de víctimas nace claro porque vive
+   dentro del panel de reporte, que es blanco. Aquí se adapta al fondo del
+   editor en vez de abrir un parche luminoso en medio de la ficha. */
+#urbis-edit-sheet2 .urbis-victimas{
+  margin-top:14px; background:#241a1c; box-shadow:inset 0 0 0 1px rgba(190,110,100,.5);
+}
+#urbis-edit-sheet2 .urbis-victimas .uv2-pregunta{ color:#ffb0a2; }
+#urbis-edit-sheet2 .urbis-victimas .uv2-guardado{ color:#e2a294; }
+#urbis-edit-sheet2 .urbis-victimas .uv2-op{
+  background:#171f30; color:#e7d6d2; box-shadow:inset 0 0 0 1px rgba(120,90,90,.6);
+}
+#urbis-edit-sheet2 .urbis-victimas .uv2-op.on{
+  background:#5e2a22; color:#ffe4dd; box-shadow:inset 0 0 0 2px #c96a55;
+}
+#urbis-edit-sheet2 .urbis-victimas .uv2-detalle label{
+  display:flex; flex-direction:column; gap:4px; margin:0;
+  font-size:.72rem; font-weight:800; color:#ffb0a2;
+}
+#urbis-edit-sheet2 .urbis-victimas .uv2-detalle select{
+  width:100%; box-sizing:border-box; background:#0d1422; border:1px solid #4a2f2c;
+  border-radius:10px; color:#fff; padding:11px 10px; font-size:.88rem;
+}
+#urbis-edit-sheet2 .urbis-victimas .uv2-detalle small{ color:#c9a79f; }

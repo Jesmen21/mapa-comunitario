@@ -60,6 +60,24 @@
         </div>`;
     }
     
+    // ── ¿Hubo gente herida? ───────────────────────────────────────────────
+    // También al EDITAR: un accidente se publica en caliente y la noticia de
+    // que alguien murió llega horas después. El bloque vuelve con lo que ya
+    // estaba guardado, así corregir la foto no borra el conteo.
+    //
+    // La sub-clasificación se puede cambiar dentro del propio formulario, así
+    // que el bloque se monta siempre y se muestra u oculta según lo que quede
+    // elegido en el desplegable.
+    let htmlVictimas = '';
+    try {
+        if (typeof window.urbisBloqueVictimas === 'function' && typeof window.urbisPreguntaPorVictimas === 'function') {
+            const vicActual = (typeof window.urbisLeerVictimas === 'function') ? window.urbisLeerVictimas(desc) : null;
+            const visible = window.urbisPreguntaPorVictimas(item);
+            htmlVictimas = '<div id="urbis-victimas-wrap"' + (visible ? '' : ' hidden') + '>' +
+                           window.urbisBloqueVictimas(vicActual) + '</div>';
+        }
+    } catch(e) {}
+
     let htmlCheckboxes = '';
     for(let j=0; j<todosLosUsos.length; j++) {
         let isChecked = d[6+j] === "SI" ? "checked" : "";
@@ -84,7 +102,8 @@
         barrioReq: barrioActual
     };
 
-    document.getElementById('info-content').innerHTML = `
+    const _contenedorForm = document.getElementById('info-content');
+    _contenedorForm.innerHTML = `
       <div class="form-section">
         <b style="color:${_dimCfg.color}; font-size: 1.2rem;">${_dimCfg.icon} ${dim.toUpperCase()}</b>
         
@@ -93,6 +112,7 @@
         <select id="sel-item">${opciones}</select>
         <input type="text" id="sel-nombre" value="${n}" placeholder="Nombre/Identificador del lugar (Ej: Av 3 con Calle 5)">
         <textarea id="ins-nota" placeholder="Describe el problema, emergencia o situación aquí...">${nt}</textarea>
+        ${htmlVictimas}
         
         <div style="display: ${displayTecnico}; margin-top: 10px;">
             <div class="form-row">
@@ -129,6 +149,22 @@
         <button class="btn-save" onclick="enviarDatosDesdeFormulario(this)">GUARDAR REPORTE</button>
         <button class="btn-cancelar" onclick="cancelarRegistro()">❌ CANCELAR</button>
       </div>`;
+
+    // Conectar el bloque de víctimas y seguir el desplegable: si se cambia
+    // "Accidente de tránsito" por "Congestión", la pregunta sobra y se
+    // esconde; si se vuelve, reaparece con lo que hubiera respondido.
+    try {
+        if (typeof window.urbisActivarBloqueVictimas === 'function') {
+            window.urbisActivarBloqueVictimas(_contenedorForm);
+        }
+        const _selItem = _contenedorForm.querySelector('#sel-item');
+        const _wrapVic = _contenedorForm.querySelector('#urbis-victimas-wrap');
+        if (_selItem && _wrapVic && typeof window.urbisPreguntaPorVictimas === 'function') {
+            _selItem.addEventListener('change', function () {
+                _wrapVic.hidden = !window.urbisPreguntaPorVictimas(_selItem.value);
+            });
+        }
+    } catch(e) {}
   };
 
   window.prepararEdicion = function(lat) {
