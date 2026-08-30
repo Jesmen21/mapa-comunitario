@@ -305,6 +305,23 @@
       }
     } catch(e){}
 
+    // Antigüedad en la ficha corta: un reporte de hace ocho meses y uno de hoy
+    // se ven idénticos en el mapa, y esa es justo la razón por la que la gente
+    // deja de creerle. Aquí solo se informa; preguntar se pregunta en el
+    // detalle, que es donde están los botones.
+    let frescuraPopup = '';
+    try {
+      if(typeof window.urbisVigenciaReporte === 'function') {
+        const _vg = window.urbisVigenciaReporte(p);
+        if(_vg.dias != null) {
+          const _cu = window.urbisHaceCuanto(_vg.dias);
+          frescuraPopup = _vg.hayQuePreguntar
+            ? `<span class="popup-vigencia popup-vigencia-vieja">🕗 Sin noticias desde ${_cu} · toca para decir si sigue ahí</span>`
+            : `<span class="popup-vigencia">🕗 Última noticia ${_cu}</span>`;
+        }
+      }
+    } catch(e){}
+
     // Botón de comentarios (para TODOS: comentar reportes/eventos de otros).
     let nComent = 0;
     try { nComent = (typeof window.urbisContarComentarios === 'function') ? window.urbisContarComentarios(p.lat) : 0; } catch(e){}
@@ -363,6 +380,7 @@
         ${fotoMiniPopup}
         ${descPopup}
         ${tagValidacion ? `<span class="popup-state">${tagValidacion}</span>` : ''}
+        ${frescuraPopup}
         <div class="popup-author">👤 <b>${creadorNombre}</b></div>
         ${popupComentarBtn}
         ${popupOwnerBtns}
@@ -425,14 +443,15 @@
         
     let likeButtonText = likes > 0 ? `👍 APOYAR ESTE REPORTE (${likes})` : `👍 APOYAR ESTE REPORTE`;
 
+    // Bloque de vigencia: las cuatro respuestas de antes, pero diciendo qué se
+    // está preguntando, desde cuándo nadie da noticias y qué ha respondido la
+    // gente. Cuatro botones sueltos sin contexto nadie los tocaba.
+    let vigenciaHTML = '';
+    try { vigenciaHTML = (typeof window.urbisBloqueVigencia === 'function') ? window.urbisBloqueVigencia(p) : ''; } catch(e){}
+
     let botonesHTML = `
         <button class="btn-edit" style="background:#b8ebe6;color:#000;" onclick="iniciarRutaHacia('${p.lat}', '${p.lng}')">🧭 IR A ESTE PUNTO</button>
-        <div class="u52-report-validate-actions">
-          <button onclick="validarReporteCiudadano('${p.lat}', 'confirm', this)">✅ Confirmar</button>
-          <button onclick="validarReporteCiudadano('${p.lat}', 'ongoing', this)">🔄 Sigue ocurriendo</button>
-          <button onclick="validarReporteCiudadano('${p.lat}', 'gone', this)">👌 Ya no está</button>
-          <button onclick="validarReporteCiudadano('${p.lat}', 'wrong', this)">🚩 Información incorrecta</button>
-        </div>
+        ${vigenciaHTML}
         <button class="btn-like" onclick="darLike('${p.lat}', this)">${likeButtonText}</button>
         <button class="btn-cancelar" onclick="cancelarRegistro()">VOLVER AL MAPA</button>
     `;

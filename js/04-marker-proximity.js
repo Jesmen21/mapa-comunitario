@@ -190,23 +190,36 @@
   ]);
   function esCategoriaEdificio(cat){ return CATEGORIAS_EDIFICIO.has(String(cat || '')); }
 
+  // ¿El texto guardado es de verdad un valor del vocabulario del edificio?
+  // La casilla de la materialidad se compartió durante un tiempo con las
+  // validaciones ciudadanas y con la carpeta de Pro City (ver URBIS_SLOTS), así
+  // que ahí puede haber un blob "VALIDACIONES_URBIS:…" o un código de carpeta
+  // de seis caracteres. Nada de eso es una observación de campo: si no está en
+  // la lista, el dato NO se registró, y decirlo así es lo único honesto.
+  function delVocabulario(valor, lista){
+    const t = String(valor || '').trim();
+    if (!t) return '';
+    return (lista || []).indexOf(t) !== -1 ? t : '';
+  }
+
   // Lee la ficha del edificio de una descripción ya guardada.
   function leerEdificio(descripcion){
     const d = String(descripcion || '').split(' | ');
-    const base = 6 + todosLosUsos.length + TIMELINE_EXTRA_OFFSET + 5;
-    const mat = (d[base] || '').trim();
+    const V0 = VOC();
+    const base = URBIS_SLOTS.edificioMaterialidad;
+    const mat = delVocabulario(d[base], V0 && V0.MATERIALIDAD);
     const pisosCrudo = parseInt(d[base + 1], 10);
     // Un edificio siempre tiene al menos un piso: 0 o vacío significa "no lo
     // registraron", no "no tiene". Se devuelve 1 para que el análisis no
     // castigue a lo que se mapeó antes de que este campo existiera.
     const pisos = isFinite(pisosCrudo) && pisosCrudo > 0 ? Math.min(pisosCrudo, 60) : 1;
-    const epocaCruda = (d[base + 3] || '').trim();
+    const epocaCruda = delVocabulario(d[base + 3], V0 && V0.EPOCA);
     const epoca = valorUtil(epocaCruda);
-    const pbCruda = (d[base + 2] || '').trim();
+    const pbCruda = delVocabulario(d[base + 2], V0 && V0.PLANTA_BAJA);
     const plantaBaja = valorUtil(pbCruda);
     const otroTexto = (d[base + 4] || '').trim();
     const crudos = [mat, pbCruda, epocaCruda];
-    const V = VOC();
+    const V = V0;
     return {
       materialidad: mat && mat !== 'undefined' ? mat : MATERIALIDAD_NA,
       // Utilizable para cálculo: '' en cuanto sea "sin registrar", "no se sabe"
@@ -224,11 +237,11 @@
       epoca: epoca,
       enObra: epoca === 'En construcción',
       vulnerabilidad: vulnerabilidadDe(valorUtil(mat), epoca),
-      idxMaterialidad: base,
-      idxPisos: base + 1,
-      idxPlantaBaja: base + 2,
-      idxEpoca: base + 3,
-      idxOtroTexto: base + 4
+      idxMaterialidad: URBIS_SLOTS.edificioMaterialidad,
+      idxPisos: URBIS_SLOTS.edificioPisos,
+      idxPlantaBaja: URBIS_SLOTS.edificioPlantaBaja,
+      idxEpoca: URBIS_SLOTS.edificioEpoca,
+      idxOtroTexto: URBIS_SLOTS.edificioOtroTexto
     };
   }
 
@@ -802,6 +815,34 @@
   ];
   const todosLosUsos = usosBase.concat(usosExtra);
   const BASE_OFFSET = 6 + todosLosUsos.length; 
+
+  // ═══ MAPA ÚNICO DE POSICIONES LIBRES DEL REGISTRO ═══════════════════════
+  // La descripción es un string separado por " | " y cada función lo corta por
+  // posición. Durante un tiempo TRES funciones distintas calcularon por su
+  // cuenta "la primera casilla libre" y las tres llegaron al mismo número
+  // (BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5): la ficha del edificio, las
+  // validaciones ciudadanas y la carpeta de Pro City se estaban pisando entre
+  // ellas. Un punto de Pro City publicado dentro de una carpeta borraba la
+  // materialidad del edificio; confirmar un reporte la borraba también.
+  //
+  // Desde aquí las casillas se reparten UNA sola vez. Quien necesite una nueva
+  // la añade al final de esta tabla y nunca vuelve a calcularla por su lado.
+  // Las posiciones NO se pueden reordenar: hay datos guardados en ellas.
+  const URBIS_SLOTS = {
+    edificioMaterialidad: BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5,  // ficha: 5 casillas
+    edificioPisos:        BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 6,
+    edificioPlantaBaja:   BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 7,
+    edificioEpoca:        BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 8,
+    edificioOtroTexto:    BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 9,
+    validaciones:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 10, // ¿sigue vigente?
+    carpetaProCity:       BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 11
+  };
+  // La casilla que las tres funciones se disputaban. Se conserva con nombre
+  // propio porque hay registros viejos con validaciones o con código de carpeta
+  // guardados ahí, y hay que seguir sabiendo leerlos.
+  const URBIS_SLOT_DISPUTADO = URBIS_SLOTS.edificioMaterialidad;
+  window.URBIS_SLOTS = URBIS_SLOTS;
+  window.URBIS_SLOT_DISPUTADO = URBIS_SLOT_DISPUTADO;
 
   // La ficha del edificio la leen el formulario, el guardado y el análisis
   // educativo, cada uno en su archivo: se expone una sola implementación para

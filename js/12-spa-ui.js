@@ -30,57 +30,256 @@
       });
   };
 
+  // ══════════════════════════════════════════════════════════════════════
+  // ¿ESTE REPORTE SIGUE VIGENTE?
+  // ----------------------------------------------------------------------
+  // Un mapa de reportes ciudadanos se muere por lo mismo siempre: el hueco que
+  // alguien tapó en marzo sigue pintado en agosto. Nadie borra su propio
+  // reporte cuando el problema se resuelve —ni se entera—, así que la única
+  // fuente posible es quien pasa hoy por ahí. De eso va esto.
+  //
+  // Dos cosas que antes no estaban y sin las cuales el mecanismo miente:
+  //  1) UN voto por persona. Antes cada toque sumaba, y como el reporte se
+  //     archiva solo con 3 "ya no está", UNA persona podía tocar tres veces y
+  //     borrar del mapa de TODOS un reporte real.
+  //  2) Solo cuentan para archivar los votos de usuarios identificados. Quien
+  //     no ha iniciado sesión puede opinar y su voto se ve, pero retirar algo
+  //     del mapa no puede depender de alguien a quien no se puede pedir
+  //     cuentas: si no, basta abrir varias ventanas anónimas.
+  // ══════════════════════════════════════════════════════════════════════
+
+  const VALIDACION_PREFIJO = 'VALIDACIONES_URBIS:';
+  const VALIDACION_ACCIONES = ['confirm','gone','ongoing','wrong'];
+  // Cuántas personas distintas hacen falta para retirar del mapa un reporte.
+  const VOTOS_PARA_ARCHIVAR = 3;
+  // A partir de cuándo un reporte se considera viejo y se pregunta activamente
+  // si sigue ahí. 30 días: menos es hostigar, más es tener el mapa desactualizado.
+  const DIAS_PARA_PREGUNTAR = 30;
+
   function urbisValidationIndex(){
-      return BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5;
+      // Casilla propia repartida en js/04. Antes se calculaba aquí como
+      // BASE_OFFSET+TIMELINE_EXTRA_OFFSET+5, la misma que se calcularon por su
+      // cuenta la ficha del edificio y la carpeta de Pro City: confirmar un
+      // reporte borraba la materialidad de ese edificio.
+      if(window.URBIS_SLOTS && window.URBIS_SLOTS.validaciones != null) return window.URBIS_SLOTS.validaciones;
+      return BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 10;
+  }
+  function urbisValidationLegacyIndex(){
+      return (window.URBIS_SLOT_DISPUTADO != null) ? window.URBIS_SLOT_DISPUTADO
+                                                   : (BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5);
+  }
+
+  // Quién está votando. El usuario registrado es la llave buena; sin sesión se
+  // usa una marca local del navegador, que sirve para no votar dos veces desde
+  // el mismo aparato pero NO cuenta para archivar.
+  function urbisVotanteActual(){
+      let usuario = '';
+      try {
+          const yo = (typeof urbisIdentidadActual === 'function') ? urbisIdentidadActual() : {};
+          usuario = String(yo.usuario || yo.correo || '').trim().toLowerCase();
+      } catch(e){}
+      if(usuario) return { clave: usuario, identificado: true };
+      let dev = '';
+      try {
+          dev = localStorage.getItem('urbis_device_id') || '';
+          if(!dev){ dev = 'd' + Math.random().toString(36).slice(2,10); localStorage.setItem('urbis_device_id', dev); }
+      } catch(e){ dev = 'anon'; }
+      return { clave: 'anon:' + dev, identificado: false };
   }
 
   function leerValidacionesReporte(d) {
-      const idx = urbisValidationIndex();
-      const raw = d[idx] || '';
-      const empty = { confirm:0, gone:0, ongoing:0, wrong:0 };
-      if(!String(raw).startsWith('VALIDACIONES_URBIS:')) return empty;
+      const vacio = { confirm:0, gone:0, ongoing:0, wrong:0, votos:{}, ultima:'' };
+      // Casilla nueva primero; si está vacía se mira la vieja, y solo se acepta
+      // si de verdad trae un blob de validaciones (el prefijo lo delata). Así
+      // los reportes validados antes del reparto de casillas no pierden nada.
+      let raw = String(d[urbisValidationIndex()] || '');
+      if(!raw.startsWith(VALIDACION_PREFIJO)) {
+          const viejo = String(d[urbisValidationLegacyIndex()] || '');
+          raw = viejo.startsWith(VALIDACION_PREFIJO) ? viejo : '';
+      }
+      if(!raw.startsWith(VALIDACION_PREFIJO)) return vacio;
       try {
-          return Object.assign(empty, JSON.parse(decodeURIComponent(String(raw).replace('VALIDACIONES_URBIS:', ''))));
-      } catch(e) { return empty; }
+          const obj = JSON.parse(decodeURIComponent(raw.replace(VALIDACION_PREFIJO, '')));
+          return {
+              confirm: Number(obj.confirm) || 0,
+              gone:    Number(obj.gone)    || 0,
+              ongoing: Number(obj.ongoing) || 0,
+              wrong:   Number(obj.wrong)   || 0,
+              // Los blobs viejos no traen quién votó: se conservan los totales
+              // y desde el próximo voto ya se sabe quién es quién.
+              votos:   (obj.votos && typeof obj.votos === 'object') ? obj.votos : {},
+              ultima:  String(obj.ultima || '')
+          };
+      } catch(e) { return vacio; }
   }
 
   function guardarValidacionesReporte(d, data) {
-      d[urbisValidationIndex()] = 'VALIDACIONES_URBIS:' + encodeURIComponent(JSON.stringify({
+      d[urbisValidationIndex()] = VALIDACION_PREFIJO + encodeURIComponent(JSON.stringify({
           confirm:Number(data.confirm)||0,
           gone:Number(data.gone)||0,
           ongoing:Number(data.ongoing)||0,
-          wrong:Number(data.wrong)||0
+          wrong:Number(data.wrong)||0,
+          votos:(data.votos && typeof data.votos === 'object') ? data.votos : {},
+          ultima:String(data.ultima || '')
       }));
+      // Si el blob estaba en la casilla compartida, se libera: ahí es donde va
+      // la materialidad del edificio, y dejarlo puesto la mantiene ilegible.
+      const vi = urbisValidationLegacyIndex();
+      if(vi !== urbisValidationIndex() && String(d[vi] || '').startsWith(VALIDACION_PREFIJO)) d[vi] = '';
   }
+
+  // Cuántas PERSONAS DISTINTAS e identificadas votaron cada cosa. Es lo único
+  // que puede retirar un reporte del mapa.
+  function urbisVotosIdentificados(v, accion){
+      const votos = (v && v.votos) || {};
+      return Object.keys(votos).filter(function(k){
+          return votos[k] === accion && k.indexOf('anon:') !== 0;
+      }).length;
+  }
+
+  // Hace cuánto que nadie dice nada de este reporte: desde la última
+  // validación, y si nunca hubo ninguna, desde que se creó.
+  function urbisDiasSinNoticias(p){
+      try {
+          const d = String(p.descripcion || '').split(' | ');
+          const v = leerValidacionesReporte(d);
+          let ref = v.ultima ? new Date(v.ultima) : null;
+          if(!ref || isNaN(ref.getTime())) {
+              const meta = (typeof obtenerMetaTemporal === 'function') ? obtenerMetaTemporal(p) : null;
+              ref = (meta && meta.creado) ? new Date(meta.creado) : null;
+          }
+          if(!ref || isNaN(ref.getTime())) return null;
+          return Math.floor((Date.now() - ref.getTime()) / 86400000);
+      } catch(e){ return null; }
+  }
+
+  // Estado de vigencia listo para pintar, sin que la vista tenga que saber nada
+  // del formato del registro.
+  window.urbisVigenciaReporte = function(p){
+      const d = String((p && p.descripcion) || '').split(' | ');
+      const v = leerValidacionesReporte(d);
+      const yo = urbisVotanteActual();
+      const dias = urbisDiasSinNoticias(p);
+      return {
+          confirm: v.confirm, gone: v.gone, ongoing: v.ongoing, wrong: v.wrong,
+          miVoto: (v.votos && v.votos[yo.clave]) || '',
+          identificado: yo.identificado,
+          personasQueDicenQueNoEsta: urbisVotosIdentificados(v, 'gone'),
+          faltanParaRetirar: Math.max(0, VOTOS_PARA_ARCHIVAR - urbisVotosIdentificados(v, 'gone')),
+          dias: dias,
+          // "Viejo" no es un defecto del reporte: es que nadie ha vuelto a
+          // decir nada de él. Por eso se mide desde la última noticia.
+          hayQuePreguntar: dias != null && dias >= DIAS_PARA_PREGUNTAR
+      };
+  };
+
+  // Texto humano del tiempo transcurrido. Nadie piensa en "hace 137 días".
+  window.urbisHaceCuanto = function(dias){
+      if(dias == null) return '';
+      if(dias <= 0) return 'hoy';
+      if(dias === 1) return 'ayer';
+      if(dias < 30) return 'hace ' + dias + ' días';
+      const meses = Math.round(dias / 30);
+      if(meses < 12) return 'hace ' + meses + (meses === 1 ? ' mes' : ' meses');
+      const anios = Math.floor(dias / 365);
+      return 'hace ' + anios + (anios === 1 ? ' año' : ' años');
+  };
+
+  // Bloque de vigencia listo para insertar en cualquier vista. Vive aquí, junto
+  // a los datos, para que la ficha del mapa y el panel de detalle muestren
+  // exactamente lo mismo y no se desincronicen con el tiempo.
+  window.urbisBloqueVigencia = function(p){
+      if(!p || !p.lat) return '';
+      const v = window.urbisVigenciaReporte(p);
+      const lat = String(p.lat);
+      const cuando = window.urbisHaceCuanto(v.dias);
+      const esc = t => String(t).replace(/"/g, '&quot;');
+
+      const partes = [];
+      if(v.confirm) partes.push(v.confirm + (v.confirm === 1 ? ' confirma' : ' confirman') + ' que sigue');
+      if(v.ongoing) partes.push(v.ongoing + (v.ongoing === 1 ? ' dice' : ' dicen') + ' que sigue ocurriendo');
+      if(v.gone)    partes.push(v.gone + (v.gone === 1 ? ' dice' : ' dicen') + ' que ya no está');
+      if(v.wrong)   partes.push(v.wrong + (v.wrong === 1 ? ' marca' : ' marcan') + ' el dato como incorrecto');
+      const conteo = partes.length ? '<div class="uv-conteo">' + partes.join(' · ') + '</div>' : '';
+
+      const etiquetaVoto = { confirm:'✅ sigue ahí', ongoing:'🔄 sigue ocurriendo',
+                             gone:'👌 ya no está', wrong:'🚩 dato incorrecto' };
+      const mio = v.miVoto
+        ? '<div class="uv-mio">Tu respuesta: <b>' + etiquetaVoto[v.miVoto] + '</b> · puedes cambiarla tocando otra</div>'
+        : '';
+
+      // Solo se avisa cuando alguien ya empezó a decir que no está: antes de eso
+      // es ruido, y anunciar "faltan 3" en cada reporte parece una invitación.
+      const falta = (v.personasQueDicenQueNoEsta > 0 && v.faltanParaRetirar > 0)
+        ? '<div class="uv-falta">Falta' + (v.faltanParaRetirar === 1 ? '' : 'n') + ' ' + v.faltanParaRetirar +
+          (v.faltanParaRetirar === 1 ? ' persona' : ' personas') + ' más para retirarlo del mapa</div>'
+        : '';
+
+      const sub = v.dias == null ? ''
+        : (v.hayQuePreguntar
+            ? '<div class="uv-sub uv-viejo">Nadie da noticias de este reporte desde ' + cuando + '. Si pasas por ahí, cuéntanos.</div>'
+            : '<div class="uv-sub">Última noticia ' + cuando + '</div>');
+
+      const b = (accion, clase, texto) =>
+        '<button type="button" class="' + clase + (v.miVoto === accion ? ' uv-elegido' : '') +
+        '" onclick="validarReporteCiudadano(\'' + esc(lat) + '\', \'' + accion + '\', this)">' + texto + '</button>';
+
+      return '<div class="urbis-vigencia' + (v.hayQuePreguntar ? ' uv-preguntando' : '') + '">' +
+        '<div class="uv-head">¿Este reporte sigue vigente?</div>' + sub +
+        '<div class="uv-main">' + b('confirm','uv-si','✅ Sí, sigue ahí') + b('gone','uv-no','👌 Ya no está') + '</div>' +
+        '<div class="uv-mas">' + b('ongoing','','🔄 Sigue ocurriendo') + b('wrong','','🚩 Información incorrecta') + '</div>' +
+        conteo + mio + falta +
+      '</div>';
+  };
 
   window.validarReporteCiudadano = function(lat, accion, btn) {
       const punto = buscarPuntoPorLat(lat);
       if(!punto) { alert('No se encontró el reporte para validar.'); return; }
       let d = String(punto.descripcion || '').split(' | ');
       const v = leerValidacionesReporte(d);
-      const accionSegura = ['confirm','gone','ongoing','wrong'].includes(accion) ? accion : 'confirm';
+      const accionSegura = VALIDACION_ACCIONES.includes(accion) ? accion : 'confirm';
+      const yo = urbisVotanteActual();
+      const votoPrevio = v.votos[yo.clave] || '';
+
+      if(votoPrevio === accionSegura) {
+          alert('Ya diste esta respuesta sobre este reporte. Puedes cambiarla eligiendo otra.');
+          return;
+      }
+      // Cambiar de opinión no suma: mueve el voto de una casilla a la otra.
+      if(votoPrevio) v[votoPrevio] = Math.max(0, (Number(v[votoPrevio]) || 0) - 1);
       v[accionSegura] = (Number(v[accionSegura]) || 0) + 1;
+      v.votos[yo.clave] = accionSegura;
+      v.ultima = new Date().toISOString();
 
       let likes = parseInt(d[BASE_OFFSET + 4]) || 0;
-      if(accionSegura === 'confirm' || accionSegura === 'ongoing') {
-          likes += 1;
-          d[BASE_OFFSET + 4] = likes;
-      }
+      // El apoyo solo se mueve cuando el voto ENTRA en confirmar/sigue; si el
+      // usuario venía de la otra casilla, se le devuelve el que había sumado.
+      const sumaApoyo = a => a === 'confirm' || a === 'ongoing';
+      if(sumaApoyo(accionSegura) && !sumaApoyo(votoPrevio)) likes += 1;
+      else if(!sumaApoyo(accionSegura) && sumaApoyo(votoPrevio)) likes = Math.max(0, likes - 1);
+      d[BASE_OFFSET + 4] = likes;
 
-      if((Number(v.gone) || 0) >= 3 || (Number(v.wrong) || 0) >= 3) {
+      // Retirar algo del mapa es destructivo y afecta a todos: exige TRES
+      // personas distintas e identificadas, no tres toques.
+      if(urbisVotosIdentificados(v, 'gone') >= VOTOS_PARA_ARCHIVAR ||
+         urbisVotosIdentificados(v, 'wrong') >= VOTOS_PARA_ARCHIVAR) {
           d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 3] = 'Archivado';
       }
 
       guardarValidacionesReporte(d, v);
       const descripcionFinal = d.join(' | ');
       const labels = { confirm:'Confirmando...', gone:'Marcando...', ongoing:'Actualizando...', wrong:'Reportando...' };
-      const done = { confirm:'Confirmado', gone:'Aviso guardado', ongoing:'Sigue activo', wrong:'Revisión enviada' };
+      const done = { confirm:'✅ Confirmado', gone:'👌 Aviso guardado', ongoing:'🔄 Sigue activo', wrong:'🚩 Revisión enviada' };
       if(btn) { btn.disabled = true; btn.dataset.originalText = btn.innerText; btn.innerText = labels[accionSegura]; }
 
       window.urbisDBUpdate('lat', lat, { descripcion: descripcionFinal })
       .then(() => {
           playSuccessSound();
+          punto.descripcion = descripcionFinal; // la vista abierta ya refleja el voto
           if(btn) btn.innerText = done[accionSegura];
+          if(accionSegura === 'gone' && !yo.identificado) {
+              alert('Gracias. Tu respuesta quedó registrada y se ve en el reporte.\n\nPara que cuente a la hora de retirarlo del mapa hay que iniciar sesión: así nadie puede borrar reportes reales abriendo ventanas nuevas.');
+          }
           cargarPuntos();
       })
       .catch(error => {

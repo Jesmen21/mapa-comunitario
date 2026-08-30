@@ -1346,6 +1346,62 @@
   .u52-report-validate-actions button{font-size:.70rem;padding:9px 6px;}
 }
 
+/* ═══ ¿Sigue vigente? ══════════════════════════════════════════════════════
+   Los cuatro botones de validación existían sueltos, sin decir qué se estaba
+   preguntando ni qué había respondido nadie, y por eso no los tocaba casi
+   nadie. Aquí la pregunta va delante y las dos respuestas frecuentes —sigue /
+   ya no está— son las grandes; las otras dos quedan a mano pero sin competir. */
+.urbis-vigencia{
+  margin:12px 0;
+  padding:12px;
+  border-radius:16px;
+  background:#f7fbfe;
+  box-shadow:inset 0 0 0 1px rgba(207,224,236,.9);
+}
+/* Un reporte del que nadie da noticias hace meses pide la respuesta con más
+   fuerza: es el caso que decide si el mapa sigue siendo creíble. */
+.urbis-vigencia.uv-preguntando{
+  background:linear-gradient(180deg,#fffaf0,#fff6e6);
+  box-shadow:inset 0 0 0 1px rgba(240,190,110,.85);
+}
+.urbis-vigencia .uv-head{ font-size:.86rem; font-weight:900; color:#123a6b; }
+.urbis-vigencia .uv-sub{ margin-top:3px; font-size:.72rem; line-height:1.3; color:#5c7086; }
+.urbis-vigencia .uv-sub.uv-viejo{ color:#8a5a10; font-weight:750; }
+.urbis-vigencia .uv-main{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.urbis-vigencia .uv-main button{
+  /* 48 px de alto: es un botón que se toca en la calle, con una mano y a veces
+     de afán. Por debajo de eso se falla el toque y se responde otra cosa. */
+  border:0; border-radius:14px; padding:14px 8px; min-height:48px;
+  font-size:.82rem; font-weight:900; line-height:1.1; color:#0b3b2e;
+  background:#d8f5e6; box-shadow:inset 0 0 0 1px rgba(120,200,165,.7);
+}
+.urbis-vigencia .uv-main .uv-no{ color:#4a3410; background:#fdeccd; box-shadow:inset 0 0 0 1px rgba(224,180,110,.7); }
+.urbis-vigencia .uv-mas{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.urbis-vigencia .uv-mas button{
+  border:0; border-radius:13px; padding:10px 7px; min-height:40px;
+  font-size:.71rem; font-weight:800; line-height:1.1;
+  color:#3c5a7a; background:#eef4f9; box-shadow:inset 0 0 0 1px rgba(207,224,236,.9);
+}
+/* La respuesta que ya diste se ve marcada: es un voto por persona, y hay que
+   poder ver el propio para saber que se puede cambiar. */
+.urbis-vigencia button.uv-elegido{
+  outline:2px solid #38BDF8; outline-offset:-2px;
+}
+.urbis-vigencia button:disabled{ opacity:.7; }
+.urbis-vigencia .uv-conteo{ margin-top:10px; font-size:.73rem; font-weight:750; color:#2c4d72; }
+.urbis-vigencia .uv-mio{ margin-top:4px; font-size:.71rem; color:#5c7086; }
+.urbis-vigencia .uv-falta{ margin-top:4px; font-size:.71rem; font-weight:800; color:#8a5a10; }
+@media (max-width:420px){
+  .urbis-vigencia .uv-main button{font-size:.76rem;padding:13px 6px;}
+  .urbis-vigencia .uv-mas button{font-size:.67rem;padding:9px 5px;}
+}
+
+/* Antigüedad en la ficha corta del mapa. */
+.popup-vigencia{
+  display:block; margin:6px 0 2px; font-size:.68rem; font-weight:750; color:#5c7086;
+}
+.popup-vigencia.popup-vigencia-vieja{ color:#8a5a10; }
+
 /* URBIS v172 · Capas = selector de mapa base (cuadrícula compacta) */
 body.u52-real-map #urbis-mobile-app .u52-basemap-sheet{
   background:rgba(255,255,255,.97) !important;

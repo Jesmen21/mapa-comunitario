@@ -3209,15 +3209,32 @@
   proCity.foldersLoaded = false;
   proCity.activeFolder = '';    // si hay una activa, lo que se georreferencie se etiqueta con su código
   proCity.folderFilter = '';    // si está puesto, el mapa solo muestra puntos de ESA carpeta
-  // Campo extra al FINAL del array de descripcion (nunca leído por nada más:
-  // reportes ciudadanos usan hasta BASE_OFFSET+TIMELINE_EXTRA_OFFSET+4). Solo
-  // los puntos de Pro City lo usan, para no arriesgar el offset de reportes.
-  const PROCITY_FOLDER_FIELD_OFFSET = BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5;
+  // Casilla propia de la carpeta, repartida desde js/04 (window.URBIS_SLOTS).
+  // Estuvo en BASE_OFFSET+TIMELINE_EXTRA_OFFSET+5 dando por hecho que nadie más
+  // la usaba; después la ficha del edificio y las validaciones ciudadanas
+  // aterrizaron en esa misma posición, así que publicar un punto dentro de una
+  // carpeta borraba la materialidad del edificio.
+  const PROCITY_FOLDER_FIELD_OFFSET = (window.URBIS_SLOTS && window.URBIS_SLOTS.carpetaProCity)
+                                    || (BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 11);
+  // Casilla vieja: los puntos etiquetados antes del reparto tienen ahí su
+  // código. Se sigue leyendo, pero solo si lo que hay tiene forma de código de
+  // carpeta (6 caracteres A-Z/0-9, como los genera el backend) — así no se
+  // confunde con una materialidad ni con un blob de validaciones.
+  const PROCITY_FOLDER_LEGACY_OFFSET = (window.URBIS_SLOT_DISPUTADO != null)
+                                     ? window.URBIS_SLOT_DISPUTADO
+                                     : (BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 5);
+  function esCodigoCarpeta(v){ return /^[0-9A-Z]{6}$/.test(String(v || '').trim()); }
   function proCityCurrentUsername(){
     try{ return (typeof urbisIdentidadActual === 'function' ? urbisIdentidadActual().usuario : '') || window.userUsernameGlobal || ''; }catch(e){ return ''; }
   }
   function proCityPointFolderId(p){
-    try{ return String(p.descripcion || '').split(' | ')[PROCITY_FOLDER_FIELD_OFFSET] || ''; }catch(e){ return ''; }
+    try{
+      const d = String(p.descripcion || '').split(' | ');
+      const nuevo = String(d[PROCITY_FOLDER_FIELD_OFFSET] || '').trim();
+      if(nuevo) return nuevo;
+      const viejo = String(d[PROCITY_FOLDER_LEGACY_OFFSET] || '').trim();
+      return esCodigoCarpeta(viejo) ? viejo : '';
+    }catch(e){ return ''; }
   }
   function proCityFriendsUsernames(){
     try{ if(Array.isArray(window.urbisAmigosFromServer)) return window.urbisAmigosFromServer.map(f=>String(f.usuario||'').toLowerCase()).filter(Boolean); }catch(e){}
