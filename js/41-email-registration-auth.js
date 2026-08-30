@@ -1344,6 +1344,14 @@
     if(clean(data.cedula_numero || '').length < 5) return 'Escribe tu número de documento.';
     if(data.pais === 'Colombia'){
       if(phoneDigitsForValidation(data.telefono).length !== 12) return 'Escribe un celular colombiano válido con 10 dígitos. Se guardará como +57.';
+      // Comuna y barrio también viven en el nivel 2. Son dos desplegables en
+      // cascada —hay que elegir departamento, luego ciudad, luego comuna, luego
+      // barrio— y en un teléfono eso es una eternidad para alguien que solo
+      // quiere avisar de un hueco. Aquí sí se exigen porque es justo lo que
+      // pide el servidor cuando rechaza un registro incompleto: revelar los
+      // campos sin exigirlos dejaría al usuario reenviando vacío en bucle.
+      if(!data.comuna) return 'Selecciona tu comuna.';
+      if(!data.barrio) return 'Selecciona tu barrio.';
     }else if(onlyDigits(data.telefono || '').length < 7){
       return 'Escribe un número de celular válido.';
     }

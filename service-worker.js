@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v563-adapta-servidor';
+const URBIS_CACHE = 'urbis-v564-sin-barrio';
 const URBIS_ASSETS = [
   './',
   './index.html',
