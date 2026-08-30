@@ -175,6 +175,7 @@ function doPost(e) {
     if (action === 'chat_fetch') return json_(chatFetch_(body));
     if (action === 'chat_inbox') return json_(chatInbox_(body));
 
+    if (action === 'verify_identity') return json_(verifyIdentity_(body));
     if (action === 'set_avatar' || action === 'avatar_set') return json_(setAvatar_(body));
     if (action === 'get_avatars') return json_(getAvatars_(body));
 
@@ -1194,6 +1195,52 @@ function setAvatar_(body) {
   var usersSh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
   setCellByHeader_(usersSh, user._row, 'avatar', avatar);
   return { ok: true, avatar: avatar, usuario: user.usuario || '' };
+}
+
+/* Verificación de identidad de una cuenta que ya existe (nivel 1 -> nivel 2).
+   El registro pide lo mínimo; los nombres, el documento y el celular llegan
+   después, cuando la persona va a subir una foto o a publicar un hecho del
+   conflicto armado. Escribe SOLO en la hoja de usuarios: estos datos no pueden
+   acabar en la hoja de reportes, que se lee en abierto desde la aplicación. */
+function verifyIdentity_(body) {
+  var ident = normText_(body.usuario || body.username || body.user_id ||
+    body.identifier || body.correo || body.email || '');
+  if (!ident) return { ok: false, message: 'Falta identificar al usuario.' };
+
+  var nombres = normText_(body.nombres || '');
+  var apellidos = normText_(body.apellidos || '');
+  var cedula = String(body.cedula_numero || body.cedula || '').replace(/\D/g, '');
+  var telefono = String(body.telefono || body.celular || '').replace(/\D/g, '');
+  if (nombres.length < 2) return { ok: false, message: 'Faltan los nombres.' };
+  if (apellidos.length < 2) return { ok: false, message: 'Faltan los apellidos.' };
+  if (cedula.length < 5) return { ok: false, message: 'Falta el número de documento.' };
+  if (telefono.length < 7) return { ok: false, message: 'Falta el número de celular.' };
+
+  var user = findSocialUser_(ident);
+  if (!user) user = pickBestUser_(findUsersByIdentifier_(ident));
+  if (!user) return { ok: false, message: 'Usuario no encontrado.' };
+
+  // Un documento ya usado por OTRA cuenta se rechaza: si dos cuentas comparten
+  // cédula, la verificación deja de significar nada.
+  var usersSh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
+  var duplicado = false;
+  getRows_(usersSh).forEach(function (r) {
+    if (isDeletedUser_(r)) return;
+    if (String(r._row) === String(user._row)) return;
+    var c = String(r.cedula_numero || r.cedula || '').replace(/\D/g, '');
+    if (c && c === cedula) duplicado = true;
+  });
+  if (duplicado) return { ok: false, message: 'Ese número de documento ya está registrado en otra cuenta de URBIS.' };
+
+  setCellByHeader_(usersSh, user._row, 'nombres', nombres);
+  setCellByHeader_(usersSh, user._row, 'apellidos', apellidos);
+  setCellByHeader_(usersSh, user._row, 'nombre_completo', (nombres + ' ' + apellidos).trim());
+  setCellByHeader_(usersSh, user._row, 'cedula', cedula);
+  setCellByHeader_(usersSh, user._row, 'cedula_numero', cedula);
+  setCellByHeader_(usersSh, user._row, 'telefono', telefono);
+  setCellByHeader_(usersSh, user._row, 'nivel_cuenta', 'verificado');
+  setCellByHeader_(usersSh, user._row, 'fecha_verificacion_identidad', new Date().toISOString());
+  return { ok: true, nivel_cuenta: 'verificado', usuario: user.usuario || '' };
 }
 
 function getAvatars_(body) {

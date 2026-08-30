@@ -1133,3 +1133,66 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
 .admin-alert-denuncias{ border-color:#ff6b6b !important; }
 .admin-alert-denuncias .mod-oculto{ color:#ff6b6b; font-weight:900; }
 .admin-alert-denuncias .mod-visible{ color:#ffb84d; font-weight:900; }
+
+/* ── Verificar la cuenta cuando hace falta ─────────────────────────────────
+   La hoja explica ANTES de pedir: por qué se piden estos datos y qué se ve en
+   el mapa. Sin esa explicación, pedir la cédula a mitad de un reporte parece
+   arbitrario y la gente cierra. Y en el conflicto armado la explicación ES la
+   función: si no queda clarísimo que el nombre no sale publicado, nadie se
+   atreve a reportar. */
+.urbis-n2-overlay{
+  position:fixed; inset:0; z-index:2147483645;
+  display:flex; align-items:flex-end; justify-content:center;
+  background:rgba(16,28,42,.6); backdrop-filter:blur(2px);
+}
+.urbis-n2{
+  width:100%; max-width:520px; max-height:90vh; overflow-y:auto;
+  background:#fff; border-radius:22px 22px 0 0;
+  padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 40px rgba(10,25,45,.3);
+  animation:urbisDupSube .22s cubic-bezier(.2,.8,.3,1);
+}
+@media (min-width:600px){
+  .urbis-n2-overlay{ align-items:center; padding:20px; }
+  .urbis-n2{ border-radius:22px; }
+}
+.urbis-n2 h3{ margin:0 0 8px; font-size:1.05rem; font-weight:900; color:#123a6b; line-height:1.25; }
+.urbis-n2 .n2-porque{ margin:0 0 12px; font-size:.82rem; line-height:1.5; color:#5c7086; }
+/* Qué se ve y qué no: es la duda real de quien está a punto de escribir su
+   cédula en un teléfono, y por eso va destacado y no en letra pequeña. */
+.urbis-n2 .n2-publico{
+  margin-bottom:14px; padding:12px 13px; border-radius:14px;
+  background:#e8f4fd; box-shadow:inset 0 0 0 1px rgba(140,190,230,.7);
+  font-size:.8rem; line-height:1.45; color:#123a6b;
+}
+.urbis-n2 .n2-campos{ display:flex; flex-direction:column; gap:9px; }
+.urbis-n2 .n2-campos input{
+  width:100%; padding:13px 12px; min-height:48px; font:inherit; font-size:.9rem;
+  border:1px solid #d8e0ea; border-radius:14px; background:#fff; color:#1e2836;
+}
+.urbis-n2 .n2-error{
+  margin-top:10px; padding:10px 12px; border-radius:12px;
+  background:#fdecec; color:#7a1d1d; font-size:.79rem; font-weight:750;
+}
+.urbis-n2 .n2-enviar{
+  display:block; width:100%; margin-top:14px; border:0; border-radius:16px; cursor:pointer;
+  padding:15px 12px; min-height:52px; font-size:.92rem; font-weight:900;
+  color:#073a39; background:linear-gradient(135deg,#55decf,#7beada);
+}
+.urbis-n2 .n2-enviar:disabled{ opacity:.6; }
+.urbis-n2 .n2-cancelar{
+  display:block; width:100%; margin-top:8px; border:0; background:none; cursor:pointer;
+  padding:12px; font-size:.82rem; font-weight:750; color:#8296aa;
+}
+
+/* Garantía de anonimato en los reportes del conflicto armado. Reemplaza a la
+   casilla "publicar sin mi nombre": ya no es una opción que se pueda
+   desmarcar por descuido, es cómo funciona. */
+.u52-anon-garantia{
+  margin:10px 0; padding:12px 13px; border-radius:14px;
+  background:#eef2f7; box-shadow:inset 0 0 0 1px rgba(150,170,195,.6);
+  font-size:.78rem; line-height:1.45; color:#2c3e55;
+}
+.u52-anon-garantia b{ color:#123a6b; }
+.u52-anon-garantia > b{ display:block; font-size:.88rem; margin-bottom:4px; }
+.u52-anon-garantia span{ display:block; }

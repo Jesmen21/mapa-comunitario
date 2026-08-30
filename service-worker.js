@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v569-mi-reporte';
+const URBIS_CACHE = 'urbis-v570-nivel2';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -82,6 +82,7 @@ const URBIS_ASSETS = [
   './js/13b-duplicados.js',
   './js/13c-denuncias.js',
   './js/13d-mis-reportes-noti.js',
+  './js/13e-nivel2.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
   './js/50-alerta-forzado.js',

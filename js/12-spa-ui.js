@@ -407,6 +407,22 @@
         creadorNom = ''; creadorRolStr = ''; correoReq = ''; cedulaReq = ''; barrioReq = '';
     }
 
+    // ── Identidad verificada, si el reporte lo pide ────────────────────────
+    // Antes que nada: si hay que verificar la cuenta, mejor descubrirlo ahora
+    // que después de llenar el formulario entero. Solo aplica a reportes
+    // nuevos; al editar no se vuelve a pedir.
+    if(!isEdit && typeof window.urbisPermitirPublicar === 'function') {
+        const _fi = document.getElementById('ins-foto-file');
+        const _llevaFoto = !!(_fi && _fi.files && _fi.files[0]);
+        let _permitido = true;
+        try { _permitido = await window.urbisPermitirPublicar(cat, i, _llevaFoto); }
+        catch(e) { _permitido = true; } // un fallo de la puerta no puede dejar a nadie sin publicar
+        if(!_permitido) {
+            if(btn) { btn.innerText = btn.dataset.originalText || 'GUARDAR REPORTE'; btn.disabled = false; }
+            return;
+        }
+    }
+
     // ── ¿Esto ya está reportado aquí? ──────────────────────────────────────
     // Se pregunta ANTES de procesar la foto: comprimir una imagen para después
     // descubrir que el reporte era repetido es tiempo y batería de alguien que
@@ -457,7 +473,14 @@
     // marcada. Un reporte público de extorsión firmado identifica a quien
     // denuncia, y eso en zona de frontera tiene consecuencias reales.
     const _anonChk = document.getElementById('ins-anonimo');
-    const _pidioAnonimo = !!(_anonChk && _anonChk.checked);
+    // En el conflicto armado el anonimato NO es una preferencia: quien publica
+    // tiene que ser una cuenta verificada (arriba), y su nombre no puede salir
+    // en el mapa aunque la casilla se desmarque por descuido. Es la única
+    // combinación que hace el reporte responsable y a la vez seguro para quien
+    // lo hace.
+    const _esConflicto = (typeof window.urbisEsReporteDeConflicto === 'function')
+        && window.urbisEsReporteDeConflicto(cat, i);
+    const _pidioAnonimo = _esConflicto || !!(_anonChk && _anonChk.checked);
     let nombreSeguro = _pidioAnonimo ? "Anónimo"
         : (creadorNom ? creadorNom.replace(/\|/g, '-') : "Anónimo");
     let likes = likesActuales || 0;

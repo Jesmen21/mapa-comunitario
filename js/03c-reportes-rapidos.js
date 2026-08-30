@@ -229,7 +229,11 @@
       // tiempo y a simple vista no se ve.
       if(acc[id]) console.warn('URBIS: id de reporte repetido "' + id + '" — "' +
         acc[id].label + '" queda pisado por "' + label + '"');
-      acc[id] = {id, icon, label, dim, section:section.id, sensitive:!!section.sensitive};
+      // `conflicto` se arrastra igual que `sensitive`: quien publica un hecho
+      // del conflicto armado necesita cuenta verificada y firma anónima, y sin
+      // esta bandera el guardado no puede distinguirlo de una alerta normal.
+      acc[id] = {id, icon, label, dim, section:section.id,
+                 sensitive:!!section.sensitive, conflicto:!!section.conflicto};
     });
     return acc;
   }, {});

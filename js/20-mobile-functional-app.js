@@ -2350,10 +2350,11 @@
         </div>
         <small>Secuestro y extorsión: GAULA 165. Este reporte no reemplaza la denuncia formal ante la Fiscalía.</small>
       </div>
-      <label class="u52-anon">
-        <input type="checkbox" id="ins-anonimo" checked>
-        <span><b>Publicar sin mi nombre</b><small>Tu reporte aparece en el mapa igual, pero sin tu usuario. Recomendado.</small></span>
-      </label>` : '';
+      <div class="u52-anon-garantia">
+        <b>🕶️ Tu nombre no va a aparecer</b>
+        <span>Este reporte sale como <b>anónimo</b> en el mapa. URBIS sabe quién lo publicó —por eso se pide cuenta verificada, para que nadie invente hechos del conflicto—, pero nadie más lo ve. Puedes reportar con tranquilidad.</span>
+      </div>
+      <input type="checkbox" id="ins-anonimo" checked hidden>` : '';
     const photoLabelText = photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional';
     const photoClass = photoRequired ? 'u52-quick-photo required' : 'u52-quick-photo';
     panel.innerHTML = `
@@ -2380,6 +2381,15 @@
     panel.hidden = false;
     const fileInput = panel.querySelector('#ins-foto-file');
     if(fileInput){
+      // La verificación se pide ANTES de abrir la cámara, no al publicar:
+      // descubrir que hace falta el documento después de tomar la foto y
+      // llenar el formulario es el momento exacto en que la gente abandona.
+      fileInput.addEventListener('click', function(ev){
+        if(typeof window.urbisNivelCuenta !== 'function') return;
+        if(window.urbisNivelCuenta() === 2) return;
+        ev.preventDefault();
+        window.urbisExigirNivel2('foto').then(function(ok){ if(ok) fileInput.click(); });
+      });
       fileInput.addEventListener('change', function(){
         const label = panel.querySelector('.u52-quick-photo');
         const txt = label && label.querySelector('.u52-photo-label-text');
