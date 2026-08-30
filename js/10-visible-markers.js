@@ -216,8 +216,13 @@
     const _quitarAc = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
     const _itemLow = _quitarAc(d[0]);
     const _descLow = _quitarAc(p.descripcion);
+    // "Áurea" se sigue reconociendo aunque el evento ahora se llame Juegos
+    // URBIS: el nombre viejo quedó ESCRITO dentro de los eventos ya creados, y
+    // el mapa los identifica por ese texto. Quitarlo haría desaparecer del mapa
+    // todo lo publicado antes del cambio de nombre.
     const esPremium = _itemLow.indexOf('coliseo dorado') !== -1 || _itemLow.indexOf('sol solidario') !== -1
       || _itemLow.indexOf('aurea') !== -1
+      || _itemLow.indexOf('juegos urbis') !== -1
       || (_itemLow.indexOf('evento') !== -1 && _descLow.indexOf('premium') !== -1);
     const iconoWaze = obtenerIconoWaze(dimKey, d[0]);
     const emojiReporte = obtenerIconoReporte(dimKey, d[0]);
@@ -227,7 +232,7 @@
     // rendimiento (css/30-zoom-marker-optimizer.css, por debajo de zoom 14).
     // Esta gota usa su propia clase raíz ('urbis-alerta-root'), que esa hoja
     // de estilos no toca, así que queda visible y grande sin importar qué
-    // tanto se aleje — igual que ya hace la gota Áurea dorada.
+    // tanto se aleje — igual que ya hace la gota de los Juegos URBIS.
     const esAlertaNacional = esAlertaNacionalItem(d[0]);
     if (esAlertaNacional) {
       // Iconos propios del usuario (gota temática), ya recortados con fondo
@@ -246,23 +251,25 @@
         zIndexOffset: 3000
       });
     } else if (esPremium) {
-      // Evento PREMIUM "Evento Áurea": gota dorada (PNG del usuario) que brilla. Si el PNG
-      // falla, queda la gota SVG de respaldo detrás.
-      // Icono = la gota dorada que el usuario dejó en assets/brand/aurea.png.
-      // Si la imagen fallara al cargar, queda como respaldo la gota SVG kawaii (rellenos sólidos)
-      // para que NUNCA se vea solo el aura sin icono.
+      // Evento PREMIUM "Juegos URBIS": el logo de URBIS brillando sobre el mapa.
+      // Si la imagen fallara al cargar, queda como respaldo la gota SVG kawaii
+      // (rellenos sólidos) para que NUNCA se vea solo el aura sin icono.
+      // Gota de respaldo en celeste de marca, por si el logo no cargara. Antes
+      // era dorada; el dorado se reservaba a un evento con premio en dinero, y
+      // ahora que son los Juegos URBIS el marcador lleva la identidad de la
+      // aplicación y no el color del premio.
       const _aureaSVG = '<svg viewBox="0 0 48 60" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">'+
-        '<path d="M24 3 C40 22 40 39 24 57 C8 39 8 22 24 3 Z" fill="#F4A300" stroke="#8a5600" stroke-width="1.6"/>'+
-        '<path d="M24 7 C33 20 35 33 27 47 C30 36 26 24 22 16 C22.6 12.5 23.2 9.5 24 7 Z" fill="#FFD23F"/>'+
+        '<path d="M24 3 C40 22 40 39 24 57 C8 39 8 22 24 3 Z" fill="#38BDF8" stroke="#0369A1" stroke-width="1.6"/>'+
+        '<path d="M24 7 C33 20 35 33 27 47 C30 36 26 24 22 16 C22.6 12.5 23.2 9.5 24 7 Z" fill="#7DD3FC"/>'+
         '<ellipse cx="17.5" cy="22" rx="3.4" ry="8" fill="#ffffff" opacity=".55"/>'+
-        '<circle cx="19" cy="36" r="2.2" fill="#7a4d00"/><circle cx="29" cy="36" r="2.2" fill="#7a4d00"/>'+
-        '<path d="M19.5 42 Q24 46 28.5 42" stroke="#7a4d00" stroke-width="1.9" fill="none" stroke-linecap="round"/>'+
+        '<circle cx="19" cy="36" r="2.2" fill="#0C4A6E"/><circle cx="29" cy="36" r="2.2" fill="#0C4A6E"/>'+
+        '<path d="M19.5 42 Q24 46 28.5 42" stroke="#0C4A6E" stroke-width="1.9" fill="none" stroke-linecap="round"/>'+
         '<circle cx="14.5" cy="41" r="2" fill="#ff9bb0" opacity=".5"/><circle cx="33.5" cy="41" r="2" fill="#ff9bb0" opacity=".5"/>'+
       '</svg>';
       const html = `<div class="urbis-aurea" style="position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;">`+
         `<span class="au-ring"></span><span class="au-ring au-ring2"></span><span class="au-glow"></span>`+
-        `<img class="au-img" src="assets/brand/aurea.png?v=288" alt="Gota Áurea" style="position:relative;z-index:3;width:56px;height:56px;display:block;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(150,100,0,.5));" onerror="this.onerror=null;this.style.display='none';var s=this.parentNode.querySelector('.au-svg');if(s){s.style.display='block';}">`+
-        `<span class="au-svg" style="position:relative;z-index:3;width:50px;height:58px;display:none;filter:drop-shadow(0 5px 9px rgba(150,100,0,.5));">${_aureaSVG}</span>`+
+        `<img class="au-img" src="assets/brand/urbis-logo.png" alt="Juegos URBIS" style="position:relative;z-index:3;width:56px;height:56px;display:block;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(3,105,161,.5));" onerror="this.onerror=null;this.style.display='none';var s=this.parentNode.querySelector('.au-svg');if(s){s.style.display='block';}">`+
+        `<span class="au-svg" style="position:relative;z-index:3;width:50px;height:58px;display:none;filter:drop-shadow(0 5px 9px rgba(3,105,161,.5));">${_aureaSVG}</span>`+
       `</div>`;
       marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,68], iconAnchor:[34,34], popupAnchor:[0,-34] }), zIndexOffset: 2000 });
     } else if (iconoWaze) {
@@ -311,10 +318,10 @@
       const detalleP = sacar(/Detalle:\s*([^·|]+)/i, 'Reto de habilidad. El que más puntos haga, gana.');
       let finP = sacar(/termina\s*([^·|]+)/i, '');
       if(!finP){ try{ finP = formatearFechaHora(metaTemporalPopup.expira); }catch(e){} }
-      // Cada Evento Áurea tiene su PROPIA tabla de juego (id derivado de su ubicación),
+      // Cada Juegos URBIS tiene su PROPIA tabla de juego (id derivado de su ubicación),
       // separada del minijuego libre. Solo se entra a jugar premium desde esta gota.
       const aureaJuegoId = 'aurea_' + String(p.lat).replace(/[^0-9]/g,'');
-      const tituloEsc = String(d[1] || 'Evento Áurea').replace(/'/g, '’').replace(/"/g, '');
+      const tituloEsc = String(d[1] || 'Juegos URBIS').replace(/'/g, '’').replace(/"/g, '');
       const terminado = !!(metaTemporalPopup && metaTemporalPopup.archivado);
       const premioEsc = String(premio).replace(/'/g, '’').replace(/"/g, '');
       const finEsc = String(finP || '').replace(/'/g, '’').replace(/"/g, '');
@@ -331,8 +338,8 @@
       } catch(e){}
       marker.bindPopup(`
         <div class="coliseo-popup">
-          <div class="cp-badge">✨ EVENTO ÁUREA · PREMIUM</div>
-          <div class="cp-title">${d[1] || 'Evento Áurea'}</div>
+          <div class="cp-badge">✨ JUEGOS URBIS · PREMIUM</div>
+          <div class="cp-title">${d[1] || 'Juegos URBIS'}</div>
           <div class="cp-prize">🏆 El #1 se lleva <b>${premio}</b> <small>(dinero real)</small></div>
           <div class="cp-desc">📜 ${detalleP}</div>
           ${finP ? `<div class="cp-end">${terminado ? '🏁 Evento finalizado' : '⏳ Termina'}: <b>${finP}</b></div>` : ''}

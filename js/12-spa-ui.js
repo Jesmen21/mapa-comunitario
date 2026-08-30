@@ -635,7 +635,7 @@
   };
 
   // ── Mis eventos: mismo patrón que Mis reportes, pero solo eventos propios,
-  // incluidos los ya finalizados/archivados (ej. Evento Áurea vencido) — la
+  // incluidos los ya finalizados/archivados (ej. Juegos URBIS vencido) — la
   // pestaña "Eventos" en vivo ya NO los muestra (ver js/09-events.js). ──
   let _misEventosFiltro = 'todos';
   let _misEventosBusqueda = '';
@@ -769,7 +769,7 @@
       .catch(err => { alert('No se pudo actualizar el reporte: ' + (err && err.message || err)); if(btn){ btn.disabled = false; btn.textContent = activar ? '⤴ Reactivar' : '⏸ Desactivar'; } });
   };
 
-  // Archivar un Evento Áurea premium: desaparece del mapa para TODOS (la gota
+  // Archivar un evento de Juegos URBIS premium: desaparece del mapa para TODOS (la gota
   // dorada usa un renderizador forzado propio, js/47-aurea-forzado.js, que la
   // dibuja saltándose los filtros normales — por eso NO basta con eliminarlo,
   // hay que marcarlo Archivado; el render forzado ya respeta ese estado y lo
@@ -778,7 +778,7 @@
   window.urbisArchivarEventoAurea = function(lat){
     const p = buscarPuntoPorLat(lat);
     if(!p) { alert('No se encontró el evento para archivar.'); return; }
-    if(!confirm('¿Archivar este Evento Áurea? Desaparecerá del mapa para todos los usuarios y quedará guardado en el histórico/línea de tiempo.')) return;
+    if(!confirm('¿Archivar este evento de Juegos URBIS? Desaparecerá del mapa para todos los usuarios y quedará guardado en el histórico/línea de tiempo.')) return;
     const d = String(p.descripcion || '').split(' | ');
     const idxEstado = BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 3;
     d[idxEstado] = 'Archivado';
@@ -1651,12 +1651,12 @@
   window.urbisJuegoTap = function(juegoId, opts){
     opts = opts || {};
     const premium = !!opts.premium;
-    const titulo = opts.titulo || 'Evento Áurea';
+    const titulo = opts.titulo || 'Juegos URBIS';
     let score = 0, tiempo = 30, intervalo = null, jugando = true;
     const ov = document.createElement('div');
     ov.id = 'urbis-game-tap'; ov.className = 'gt-enter' + (premium ? ' gt-premium' : '');
     ov.innerHTML = `
-      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ ÁUREA · POR DINERO</span>' : ''}<span class="gt-score">⚡ 0</span><span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
+      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ JUEGOS URBIS · POR DINERO</span>' : ''}<span class="gt-score">⚡ 0</span><span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
       <div class="gt-arena"></div>
       <div class="gt-msg">${premium ? '🏆 <b>'+_escJuego(titulo)+'</b> · ¡toca los rayos, el #1 gana el premio!' : '¡Toca los rayos lo más rápido que puedas! ⚡'}</div>`;
     document.body.appendChild(ov);
@@ -1732,7 +1732,7 @@
   };
 
   // ════════════════════════════════════════════════════════════════════════
-  // JUEGO PREMIUM "Evento Áurea": MISMO juego, pero TABLA SEPARADA por evento (no toca
+  // JUEGO PREMIUM "Juegos URBIS": MISMO juego, pero TABLA SEPARADA por evento (no toca
   // la del juego libre). Solo se entra desde la gota de agua del mapa. El #1 gana dinero.
   // ════════════════════════════════════════════════════════════════════════
   function _aureaBoardHTML(tabla){
@@ -1743,17 +1743,17 @@
       return '<div class="gt-aurea-row'+(i===0?' top1':'')+(mio?' me':'')+'"><span class="gt-aurea-pos">'+(i+1)+'</span><span class="gt-aurea-user">@'+_escJuego(r.usuario)+'</span><span class="gt-aurea-pts">'+(parseInt(r.puntos,10)||0)+'</span></div>';
     }).join('');
   }
-  // Entrar a JUGAR el Evento Áurea (premium). Solo se llama desde la gota de agua del mapa.
+  // Entrar a JUGAR el evento de Juegos URBIS (premium). Solo se llama desde la gota de agua del mapa.
   window.urbisJugarAurea = function(juegoId, titulo){
     if(!juegoId){ alert('Evento no válido.'); return; }
-    if(!(window.urbisUsuarioActual && window.urbisUsuarioActual())){ alert('Inicia sesión para competir por el premio del Evento Áurea.'); return; }
-    window.urbisJuegoTap(juegoId, { premium:true, titulo: titulo || 'Evento Áurea' });
+    if(!(window.urbisUsuarioActual && window.urbisUsuarioActual())){ alert('Inicia sesión para competir por el premio del evento de Juegos URBIS.'); return; }
+    window.urbisJuegoTap(juegoId, { premium:true, titulo: titulo || 'Juegos URBIS' });
   };
-  // Ver el GANADOR / tabla del Evento Áurea (cuando ya terminó, o en cualquier momento).
+  // Ver el GANADOR / tabla del evento de Juegos URBIS (cuando ya terminó, o en cualquier momento).
   window.urbisVerGanadorAurea = function(juegoId, titulo){
     if(!juegoId) return;
     const ov = document.createElement('div'); ov.id = 'urbis-game-tap'; ov.className = 'gt-premium';
-    ov.innerHTML = `<div class="gt-top"><span class="gt-premium-tag">✨ ${_escJuego(titulo||'Evento Áurea')}</span><button class="gt-close" aria-label="Salir">×</button></div><div class="gt-arena"><div class="gt-result"><div class="gt-premium-badge">🏆 Resultado del evento</div><div class="gt-aurea-board" id="gt-aurea-board2">⏳ Cargando…</div></div></div>`;
+    ov.innerHTML = `<div class="gt-top"><span class="gt-premium-tag">✨ ${_escJuego(titulo||'Juegos URBIS')}</span><button class="gt-close" aria-label="Salir">×</button></div><div class="gt-arena"><div class="gt-result"><div class="gt-premium-badge">🏆 Resultado del evento</div><div class="gt-aurea-board" id="gt-aurea-board2">⏳ Cargando…</div></div></div>`;
     document.body.appendChild(ov);
     ov.querySelector('.gt-close').onclick = () => { try{ ov.remove(); }catch(e){} };
     _juegoAPI({ action:'leaderboard', juego:juegoId, limit:20 })
@@ -1761,7 +1761,7 @@
       .catch(()=>{ const el = ov.querySelector('#gt-aurea-board2'); if(el) el.textContent = 'No se pudo cargar la tabla.'; });
   };
 
-  // ── MENÚ PREMIUM (tabla clasificatoria del Evento Áurea) ──────────────────
+  // ── MENÚ PREMIUM (tabla clasificatoria del evento de Juegos URBIS) ──────────────────
   // Pantalla intermedia entre la gota del mapa y el juego: podio top-3 (oro/plata/
   // bronce), lista de posiciones, fila fija con TU posición y botón "¡Jugar ahora!".
   // Incluye mi mejor local aunque la nube aún no lo tenga (para verme siempre).
@@ -1837,7 +1837,7 @@
     }catch(e){}
     window.__urbisAureaCtx = {
       juegoId: juegoId,
-      titulo: titulo || 'Evento Áurea',
+      titulo: titulo || 'Juegos URBIS',
       premio: premio || 'Premio sorpresa',
       fin: fin || '',
       terminado: !!terminado
@@ -1896,14 +1896,14 @@
     // abajo, que es el que cierra la pantalla, con la descripción del reto
     // encima para no perder esa información al quitar la tarjeta.
     else accion =
-      '<div class="am-reto"><b>Reto de Reflejos · Áurea</b>' +
+      '<div class="am-reto"><b>Reto de Reflejos · Juegos URBIS</b>' +
       '<small>Toca los rayos lo más rápido · 30 s · por dinero real</small></div>' +
       '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
     const gameCard = '';
 
     cont.innerHTML =
       '<div class="ah-hero">'+
-        '<div class="ah-badge">✨ EVENTO ÁUREA · PREMIUM</div>'+
+        '<div class="ah-badge">✨ JUEGOS URBIS · PREMIUM</div>'+
         '<div class="ah-evtitle">'+_escJuego(titulo)+'</div>'+
         '<div class="ah-prize">🥇 El <b>#1</b> se lleva <b>'+_escJuego(premio)+'</b><span>dinero real</span></div>'+
         (fin ? '<div class="ah-end">'+(terminado?'🏁 Evento finalizado':'⏳ Termina')+': <b>'+_escJuego(fin)+'</b></div>' : '')+
@@ -1922,7 +1922,7 @@
     if(!cont) return;
     const ctx = window.__urbisAureaCtx || {};
     if(!ctx.juegoId){
-      cont.innerHTML = '<div class="ah-empty">✨ Abre un <b>Evento Áurea</b> tocando la gota dorada en el mapa para competir aquí.</div>';
+      cont.innerHTML = '<div class="ah-empty">✨ Abre un <b>Juegos URBIS</b> tocando el logo de URBIS en el mapa para competir aquí.</div>';
       return;
     }
     _pintarAureaHub(cont, ctx, window.__urbisAureaTabla || []); // pinta YA con lo que haya
@@ -2286,7 +2286,7 @@
       return (parts[0]||'').trim().toLowerCase() === u && (parts[1]||'').toLowerCase().indexOf('especial') !== -1;
     });
   }
-  // Usuarios con permiso DIRECTO para crear el Evento Áurea (no admin completo, solo ese evento).
+  // Usuarios con permiso DIRECTO para crear el evento de Juegos URBIS (no admin completo, solo ese evento).
   var _permisoAureaDirecto = ['jesmen21','jesmen21s'];
   window.urbisPuedeCrearEspecial = function(){
     if(window.urbisEsAdmin()) return true;
@@ -2310,34 +2310,34 @@
       .catch(err=> alert('No se pudo dar permiso: ' + (err && err.message || err)));
   };
 
-  // Crear el evento PREMIUM "Evento Áurea": competencia real con premio en dinero.
+  // Crear el evento PREMIUM "Juegos URBIS": competencia real con premio en dinero.
   window.urbisCrearEventoPremium = function(){
-    if(!window.urbisPuedeCrearEspecial()){ alert('Solo el administrador o usuarios autorizados pueden crear un Evento Áurea.'); return; }
-    const titulo = prompt('✨ Nombre del Evento Áurea (evento premium):', 'Evento Áurea'); if(titulo === null) return;
+    if(!window.urbisPuedeCrearEspecial()){ alert('Solo el administrador o usuarios autorizados pueden crear un evento de Juegos URBIS.'); return; }
+    const titulo = prompt('✨ Nombre del evento de Juegos URBIS (evento premium):', 'Juegos URBIS'); if(titulo === null) return;
     const premio = prompt('💰 Premio REAL para el ganador (ej: 100.000 COP):', ''); if(premio === null) return;
     const detalle = prompt('📜 ¿En qué consiste el juego? (descripción para los jugadores)', 'Reto de reflejos: el que más puntos haga gana el premio.'); if(detalle === null) return;
     const horas = prompt('⏳ ¿En cuántas HORAS termina la competencia? (ej: 24)', '24'); if(horas === null) return;
     const h = Math.max(1, parseInt(horas, 10) || 24);
-    if(!navigator.geolocation){ alert('Necesitas activar el GPS para ubicar el Evento Áurea.'); return; }
+    if(!navigator.geolocation){ alert('Necesitas activar el GPS para ubicar el evento de Juegos URBIS.'); return; }
     navigator.geolocation.getCurrentPosition(function(pos){
       window.urbisCrearEventoPremiumEn(pos.coords.latitude.toFixed(7), pos.coords.longitude.toFixed(7), titulo, premio, detalle, h)
-        .then(()=>{ alert('✨ ¡Evento Áurea creado! Brillará en el mapa. El ganador recibirá el premio real.'); })
-        .catch(err=> alert('No se pudo crear el Evento Áurea: ' + (err && err.message || err)));
+        .then(()=>{ alert('✨ ¡Evento de Juegos URBIS creado! Brillará en el mapa. El ganador recibirá el premio real.'); })
+        .catch(err=> alert('No se pudo crear el evento de Juegos URBIS: ' + (err && err.message || err)));
     }, function(){ alert('No se pudo obtener tu ubicación GPS.'); }, { enableHighAccuracy:true, timeout:9000 });
   };
-  // Crea el Evento Áurea en un punto específico (usado por el compositor de eventos del mapa).
+  // Crea el evento de Juegos URBIS en un punto específico (usado por el compositor de eventos del mapa).
   window.urbisCrearEventoPremiumEn = function(lat, lng, titulo, premio, detalle, horas){
     const h = Math.max(1, parseInt(horas, 10) || 24);
     const usuario = (window.urbisUsuarioActual && window.urbisUsuarioActual()) || 'urbis';
     const fin = new Date(Date.now() + h * 3600000);
     const finTxt = fin.toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     const clean = s => String(s||'').replace(/[|·]/g, '-');
-    const notas = `EVENTO_URBIS · PREMIUM · Premio: ${clean(premio) || 'a definir'} · Detalle: ${clean(detalle)} · Hora: termina ${finTxt} · Lugar: Evento Áurea URBIS`;
+    const notas = `EVENTO_URBIS · PREMIUM · Premio: ${clean(premio) || 'a definir'} · Detalle: ${clean(detalle)} · Hora: termina ${finTxt} · Lugar: Juegos URBIS URBIS`;
     const usos = []; for(var i=0;i<todosLosUsos.length;i++) usos.push('NO');
-    const arr = ['✨ Evento Áurea', clean(titulo) || 'Evento Áurea', notas, 'Bueno', 'Activo', 'N/A']
+    const arr = ['✨ Juegos URBIS', clean(titulo) || 'Juegos URBIS', notas, 'Bueno', 'Activo', 'N/A']
       .concat(usos)
       .concat(['N/A', 'Aprobado', usuario, 'admin', 0, (window.userEmailGlobal || 'admin@urbis.com'), 'ADMIN', 'Comunidad']);
-    const descripcion = asegurarCamposTemporalesPersonalizados(arr.join(' | '), '🎪 Eventos Comunitarios', '✨ Evento Áurea', new Date(), h, '✨');
+    const descripcion = asegurarCamposTemporalesPersonalizados(arr.join(' | '), '🎪 Eventos Comunitarios', '✨ Juegos URBIS', new Date(), h, '✨');
     return window.urbisGuardarFila({ tipo:'🎪 Eventos Comunitarios', lat:String(lat), lng:String(lng), descripcion:descripcion, fecha:new Date().toISOString() })
       .then(res => { if(res && res.ok === false && res.status) throw new Error('HTTP ' + res.status); if(typeof playSuccessSound === 'function') playSuccessSound(); setTimeout(()=>{ try{ cargarPuntos(); }catch(e){} }, 700); return res; });
   };

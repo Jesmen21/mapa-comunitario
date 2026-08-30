@@ -1,7 +1,7 @@
 // ==========================================================================
-// URBIS · Renderizador FORZADO de la gota Áurea (Evento Premium)
+// URBIS · Renderizador FORZADO de la gota de Juegos URBIS (Evento Premium)
 // --------------------------------------------------------------------------
-// La gota dorada del Evento Áurea NO pasa por el pipeline normal de marcadores
+// La gota del evento de Juegos URBIS NO pasa por el pipeline normal de marcadores
 // (pintarPuntos), que la filtra por zoom (puedeMostrarMarcadorPorZoom),
 // por capa activa, o por validez temporal (datosVisiblesActuales).
 // Aquí la dibujamos en una CAPA PROPIA, siempre visible para TODOS, directo
@@ -20,7 +20,10 @@
     return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   }
 
-  // ¿Es el Evento Áurea premium? Detección robusta (sin depender del acento de "Áurea").
+  // ¿Es el evento de Juegos URBIS premium? Detección robusta (sin depender del
+  // acento de "Áurea"). Se sigue reconociendo el nombre viejo a propósito: quedó
+  // ESCRITO dentro de los eventos publicados antes del cambio de nombre, y este
+  // detector es lo único que los hace aparecer en el mapa.
   function esEventoAurea(p) {
     if (!p) return false;
     var tipoLow = _quitarAc(p.tipo);
@@ -33,6 +36,7 @@
     var itemLow = _quitarAc(d[0]);
     var descLow = _quitarAc(p.descripcion);
     return itemLow.indexOf('aurea') !== -1
+      || itemLow.indexOf('juegos urbis') !== -1
       || itemLow.indexOf('coliseo dorado') !== -1
       || itemLow.indexOf('sol solidario') !== -1
       || (descLow.indexOf('premium') !== -1 &&
@@ -65,7 +69,7 @@
 
     window.urbisAbrirAureaModulo(
       'aurea_' + String(p.lat).replace(/[^0-9]/g, ''),
-      String(d[1] || 'Evento Áurea'),
+      String(d[1] || 'Juegos URBIS'),
       String(premio),
       String(fin || ''),
       terminado
@@ -96,7 +100,7 @@
     return undefined;
   }
 
-  // La gota Áurea es del módulo de REPORTES Y EVENTOS y de ningún otro. El
+  // La gota de Juegos URBIS es del módulo de REPORTES Y EVENTOS y de ningún otro. El
   // mapa de fondo (#map) es UNO SOLO y lo comparten varias pantallas —
   // UrbisProCity (mapeo urbano profesional), Movilidad, Navegación, URBIS
   // Rush —, así que "estar en el mapa" no alcanza para saber en qué módulo
@@ -160,7 +164,7 @@
         if (marker) {
           marker.addTo(layer);
           _rendered[key] = marker;
-          // La gota Áurea entra DIRECTO al módulo a pantalla completa. El
+          // La gota de Juegos URBIS entra DIRECTO al módulo a pantalla completa. El
           // popup intermedio solo servía para mostrar un botón "entrar", y
           // encima quedaba flotando sobre la interfaz.
           try { marker.off('click'); } catch (e) {}

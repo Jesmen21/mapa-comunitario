@@ -734,13 +734,15 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 .urbis-coliseo .col-lion { position:relative; font-size:34px; filter:drop-shadow(0 0 8px rgba(255,140,0,.95)); animation:urbisColBob 2.4s ease-in-out infinite; }
 @keyframes urbisColPulse { 0%,100%{ transform:scale(1); opacity:.95; } 50%{ transform:scale(1.22); opacity:1; } }
 @keyframes urbisColBob { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
-/* ═══ Gota ÁUREA premium: icono SIEMPRE visible (arriba) + aura sensorial detrás ═══ */
+/* ═══ Gota JUEGOS URBIS (antes "Áurea"): icono SIEMPRE visible (arriba) + aura
+   sensorial detrás. Las clases siguen llamándose .urbis-aurea / .au-* a propósito:
+   los marcadores ya publicados en el mapa se pintan con esos nombres. ═══ */
 .urbis-aurea-root, .urbis-coliseo-root{ background:transparent !important; border:none !important; }
 .urbis-aurea{ position:relative; width:68px; height:68px; display:flex; align-items:center; justify-content:center; }
-.urbis-aurea .au-img, .urbis-aurea .au-svg{ position:relative; z-index:3; width:52px; height:56px; object-fit:contain; display:block; filter:drop-shadow(0 5px 9px rgba(150,100,0,.55)); animation:urbisColBob 2.4s ease-in-out infinite; }
-.urbis-aurea .au-glow{ position:absolute; left:50%; top:50%; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%; background:radial-gradient(circle, rgba(255,215,0,.5), rgba(255,150,0,.22) 60%, transparent 72%); filter:blur(2px); pointer-events:none; z-index:1; animation:urbisColPulse 1.6s ease-in-out infinite; }
-.urbis-aurea .au-ring{ position:absolute; left:50%; top:50%; width:40px; height:40px; margin:-20px 0 0 -20px; border-radius:50%; border:3px solid rgba(255,200,0,.78); pointer-events:none; z-index:2; animation:aureaSonar 1.9s ease-out infinite; }
-.urbis-aurea .au-ring.au-ring2{ animation-delay:.95s; border-color:rgba(255,232,130,.62); }
+.urbis-aurea .au-img, .urbis-aurea .au-svg{ position:relative; z-index:3; width:52px; height:56px; object-fit:contain; display:block; filter:drop-shadow(0 5px 9px rgba(3,105,161,.55)); animation:urbisColBob 2.4s ease-in-out infinite; }
+.urbis-aurea .au-glow{ position:absolute; left:50%; top:50%; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%; background:radial-gradient(circle, rgba(56,189,248,.52), rgba(14,165,233,.24) 60%, transparent 72%); filter:blur(2px); pointer-events:none; z-index:1; animation:urbisColPulse 1.6s ease-in-out infinite; }
+.urbis-aurea .au-ring{ position:absolute; left:50%; top:50%; width:40px; height:40px; margin:-20px 0 0 -20px; border-radius:50%; border:3px solid rgba(56,189,248,.82); pointer-events:none; z-index:2; animation:aureaSonar 1.9s ease-out infinite; }
+.urbis-aurea .au-ring.au-ring2{ animation-delay:.95s; border-color:rgba(125,211,252,.66); }
 @keyframes aureaSonar { 0%{ transform:scale(.45); opacity:.9; } 100%{ transform:scale(2.5); opacity:0; } }
 @media (prefers-reduced-motion:reduce){ .urbis-aurea .au-ring, .urbis-aurea .au-glow, .urbis-aurea .au-img, .urbis-aurea .au-svg{ animation:none; } }
 

@@ -265,8 +265,8 @@
       let html = '';
       if(puedeEspecial){
           html += `<div class="ev-premium-card">
-            <div class="ev-premium-head"><span class="ev-premium-ico"><svg viewBox="0 0 40 52" width="26" height="32" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="aureaGradA" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#FFF6C2"/><stop offset=".35" stop-color="#FFD23F"/><stop offset=".7" stop-color="#F4A300"/><stop offset="1" stop-color="#9C6206"/></linearGradient></defs><path d="M20 2 C32 16 32 30 20 50 C8 30 8 16 20 2 Z" fill="url(#aureaGradA)" stroke="#7a4d00" stroke-width="1.2"/><ellipse cx="14.5" cy="20" rx="3" ry="8" fill="#fff" opacity=".55"/></svg></span><div><b>Evento Áurea</b><small>Evento PREMIUM · competencia con premio en dinero real</small></div></div>
-            <button type="button" class="ev-sol-btn" onclick="window.urbisCrearEventoPremium && window.urbisCrearEventoPremium()">✨ Crear Evento Áurea</button>
+            <div class="ev-premium-head"><span class="ev-premium-ico"><img src="assets/brand/urbis-logo.png" alt="Juegos URBIS" width="26" height="32" style="object-fit:contain;display:block"></span><div><b>Juegos URBIS</b><small>Evento PREMIUM · competencia con premio en dinero real</small></div></div>
+            <button type="button" class="ev-sol-btn" onclick="window.urbisCrearEventoPremium && window.urbisCrearEventoPremium()">✨ Crear Juegos URBIS</button>
           </div>`;
       }
       if(esAdmin){
@@ -274,7 +274,7 @@
           const lista = permitidos.length ? permitidos.map(u => '@' + escaparHTML(u)).join(', ') : 'nadie aún';
           html += `<div class="ev-admin-box">
             <b>🛡️ Administrador URBIS</b>
-            <small>Da permiso a un usuario para crear el Evento Áurea:</small>
+            <small>Da permiso a un usuario para crear el evento de Juegos URBIS:</small>
             <div class="ev-admin-row"><input id="ev-permiso-input" type="text" placeholder="usuario (ej: carolandreaa)" autocomplete="off"><button type="button" onclick="(function(){var i=document.getElementById('ev-permiso-input');var v=(i&&i.value||'').trim();if(window.urbisOtorgarPermiso)window.urbisOtorgarPermiso(v,function(){if(i)i.value='';if(window.urbisRenderEventosMovil)window.urbisRenderEventosMovil();});})()">Dar permiso</button></div>
             <small class="ev-admin-perms">Con permiso: ${lista}</small>
             <button type="button" class="ev-admin-exit" onclick="window.urbisAdminLogout && window.urbisAdminLogout()">Salir de admin</button>
@@ -287,7 +287,7 @@
 
   // Render para la pestaña de Eventos en móvil (#u52-eventos-content).
   // Muestra SOLO eventos EN VIVO/actuales (míos y de otros). Los ya
-  // finalizados/archivados (ej. un Evento Áurea vencido) ya no aparecen
+  // finalizados/archivados (ej. un evento de Juegos URBIS vencido) ya no aparecen
   // aquí — quedan disponibles, para quien los creó, en "Mis eventos".
   const _misEventosLinkHTML = '<button type="button" class="ev-miseventos-link" data-u52-go="mis-eventos">🎪 Mis eventos<span>›</span></button>';
   window.urbisRenderEventosMovil = function(){

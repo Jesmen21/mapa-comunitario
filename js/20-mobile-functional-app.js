@@ -513,7 +513,7 @@
 
     <section class="u52-screen u52-games-screen" data-u52-screen="games"><header class="u52-topbar u52-games-top"><button class="u52-games-back" data-u52-back aria-label="Volver">◄</button><h2 class="u52-title">🎮 URBIS Arcade</h2><span class="u52-games-spacer"></span></header><main class="u52-content" id="u52-games-content"><div class="ug-empty">Cargando arcade…</div></main></section>
 
-    <section class="u52-screen u52-aurea-screen" data-u52-screen="aurea"><header class="u52-topbar u52-aurea-top"><button class="u52-aurea-back" data-u52-back aria-label="Volver">◄</button><h2 class="u52-title">✨ Áurea Premium</h2><span class="u52-aurea-spacer"></span></header><main class="u52-content" id="u52-aurea-content"><div class="ah-empty">Cargando evento premium…</div></main></section>
+    <section class="u52-screen u52-aurea-screen" data-u52-screen="aurea"><header class="u52-topbar u52-aurea-top"><button class="u52-aurea-back" data-u52-back aria-label="Volver">◄</button><h2 class="u52-title">✨ Juegos URBIS</h2><span class="u52-aurea-spacer"></span></header><main class="u52-content" id="u52-aurea-content"><div class="ah-empty">Cargando evento premium…</div></main></section>
 
     <section class="u52-screen" data-u52-screen="timeline"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis reportes</h2><button class="u52-icon-btn" data-u52-call="timeline-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-timeline-content"><div class="u52-empty-card"><span>🕒</span><div><b>Cargando tus reportes…</b><small>Aquí verás todo lo que has reportado.</small></div></div></main></section>
 
@@ -1079,7 +1079,7 @@
         </div>`;
       }
       if(n.type === 'evento_premium'){
-        return `<div class="u52-noti-card aurea"><span>✨</span><div><b>${esc(n.title || '¡Evento Áurea Premium!')}</b><small>${esc(n.message || 'Hay un evento premium activo. ¡Toca para competir!')}</small></div><div class="u52-noti-actions single"><button type="button" class="aurea-go" data-u52-aurea-go data-aurea-juego="${esc(n.juegoId||'')}" data-aurea-titulo="${esc(n.titulo||'Evento Áurea')}" data-aurea-premio="${esc(n.premio||'')}" data-aurea-fin="${esc(n.fin||'')}">🎮 Jugar</button></div></div>`;
+        return `<div class="u52-noti-card aurea"><span>✨</span><div><b>${esc(n.title || '¡Juegos URBIS Premium!')}</b><small>${esc(n.message || 'Hay un evento premium activo. ¡Toca para competir!')}</small></div><div class="u52-noti-actions single"><button type="button" class="aurea-go" data-u52-aurea-go data-aurea-juego="${esc(n.juegoId||'')}" data-aurea-titulo="${esc(n.titulo||'Juegos URBIS')}" data-aurea-premio="${esc(n.premio||'')}" data-aurea-fin="${esc(n.fin||'')}">🎮 Jugar</button></div></div>`;
       }
       if(n.type === 'complete_birthdate'){
         return `<div class="u52-noti-card demographic"><span>🎂</span><div><b>${esc(n.title || 'Completa tu fecha de nacimiento')}</b><small>${esc(n.message || 'Agrega tu fecha para análisis demográfico y validación de edad.')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-birthdate-open>Agregar fecha</button></div></div>`;
@@ -1110,7 +1110,7 @@
         try{ if(typeof obtenerMetaTemporal === 'function'){ const mt = obtenerMetaTemporal(p); archivado = !!(mt && mt.archivado); expira = (mt && mt.expira) || ''; } }catch(e){}
         if(archivado) return; // evento terminado: ya no es "nuevo"
         const d = String(p.descripcion||'').split(' | ');
-        const titulo = (d[1] && d[1].trim()) ? d[1].trim() : 'Evento Áurea';
+        const titulo = (d[1] && d[1].trim()) ? d[1].trim() : 'Juegos URBIS';
         const notas = String(d[2]||'');
         const mPremio = notas.match(/Premio:\s*([^·|]+)/i);
         const premio = mPremio ? mPremio[1].trim() : 'un premio en dinero real';
@@ -1119,7 +1119,7 @@
         const mFin = notas.match(/termina\s*([^·|]+)/i);
         if(mFin) fin = mFin[1].trim();
         else if(expira){ try{ if(typeof formatearFechaHora === 'function') fin = formatearFechaHora(expira); }catch(e){} }
-        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Evento Áurea Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+' (dinero real). ¡Toca para jugar!', juegoId:'aurea_'+latDigits, titulo:titulo, premio:premio, fin:fin });
+        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Juegos URBIS Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+' (dinero real). ¡Toca para jugar!', juegoId:'aurea_'+latDigits, titulo:titulo, premio:premio, fin:fin });
       }catch(e){}
     });
     return out;
@@ -2000,9 +2000,9 @@
 
   const URBIS_EVENTS_MAP = URBIS_EVENT_SECTIONS.reduce((acc, s)=>{ s.items.forEach(([id,icon,label])=>{ acc[id]={id,icon,label,section:s.id,sectionLabel:s.label}; }); return acc; }, {});
 
-  // Pestaña PREMIUM (Evento Áurea) — solo visible para admin / usuarios autorizados.
-  const URBIS_EVENT_PREMIUM_SECTION = { id:'premium', label:'Premium', icon:'✨', items:[ ['ev-coliseo','✨','Evento Áurea'] ] };
-  URBIS_EVENTS_MAP['ev-coliseo'] = { id:'ev-coliseo', icon:'✨', label:'Evento Áurea', section:'premium', sectionLabel:'Evento Premium' };
+  // Pestaña PREMIUM (Juegos URBIS) — solo visible para admin / usuarios autorizados.
+  const URBIS_EVENT_PREMIUM_SECTION = { id:'premium', label:'Premium', icon:'✨', items:[ ['ev-coliseo','✨','Juegos URBIS'] ] };
+  URBIS_EVENTS_MAP['ev-coliseo'] = { id:'ev-coliseo', icon:'✨', label:'Juegos URBIS', section:'premium', sectionLabel:'Evento Premium' };
   function eventSectionsVisibles(){
     const base = URBIS_EVENT_SECTIONS.slice();
     try{ if(window.urbisPuedeCrearEspecial && window.urbisPuedeCrearEspecial()) base.push(URBIS_EVENT_PREMIUM_SECTION); }catch(e){}
@@ -2058,16 +2058,16 @@
       panel.innerHTML = `
         <div class="u52-quick-report-head">
           <button type="button" data-u52-call="quick-event-back" aria-label="Volver">‹</button>
-          <div><b>✨ Evento Áurea</b><small>Evento premium · premio en dinero real</small></div>
+          <div><b>✨ Juegos URBIS</b><small>Evento premium · premio en dinero real</small></div>
           <button type="button" data-u52-call="quick-event-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-quick-report-selected u52-coliseo-selected"><span>✨</span><div><b>Competencia premium</b><small>El #1 se lleva el premio</small></div></div>
         <div class="u52-quick-report-form">
-          <input id="ev-titulo-custom" type="text" maxlength="80" placeholder="Nombre del Evento Áurea *" value="Evento Áurea">
+          <input id="ev-titulo-custom" type="text" maxlength="80" placeholder="Nombre del evento de Juegos URBIS *" value="Juegos URBIS">
           <input id="ev-premio" type="text" maxlength="60" placeholder="💰 Premio real (ej: 100.000 COP) *">
           <textarea id="ev-descripcion" maxlength="220" placeholder="📜 ¿En qué consiste el juego?">Reto de reflejos: el que más puntos haga, gana.</textarea>
           <label class="u52-ev-horas"><span>⏳ Termina en (horas)</span><input id="ev-horas" type="number" min="1" max="720" value="24"></label>
-          <button type="button" class="u52-quick-publish u52-coliseo-publish" data-u52-call="quick-event-publish">✨ Publicar Evento Áurea</button>
+          <button type="button" class="u52-quick-publish u52-coliseo-publish" data-u52-call="quick-event-publish">✨ Publicar Juegos URBIS</button>
         </div>`;
       panel.hidden = false;
       return;
@@ -2122,10 +2122,10 @@
     if(!point || !evType) return;
     const panel = communityEventComposer.panel;
 
-    // Evento Áurea (premium): se crea en el punto tocado, no por GPS.
+    // Juegos URBIS (premium): se crea en el punto tocado, no por GPS.
     if(communityEventComposer.selectedTypeId === 'ev-coliseo'){
-      if(!(window.urbisPuedeCrearEspecial && window.urbisPuedeCrearEspecial())){ alert('Solo el administrador o usuarios autorizados pueden crear el Evento Áurea.'); return; }
-      const titulo = (panel?.querySelector('#ev-titulo-custom')?.value || 'Evento Áurea').trim();
+      if(!(window.urbisPuedeCrearEspecial && window.urbisPuedeCrearEspecial())){ alert('Solo el administrador o usuarios autorizados pueden crear el evento de Juegos URBIS.'); return; }
+      const titulo = (panel?.querySelector('#ev-titulo-custom')?.value || 'Juegos URBIS').trim();
       const premio = (panel?.querySelector('#ev-premio')?.value || '').trim();
       const detalle = (panel?.querySelector('#ev-descripcion')?.value || '').trim();
       const horas = Math.max(1, parseInt(panel?.querySelector('#ev-horas')?.value, 10) || 24);
@@ -2137,8 +2137,8 @@
         }
         if(typeof hideQuickEventPanel === 'function') hideQuickEventPanel();
         if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos();
-      }catch(e){ alert('No se pudo crear el Evento Áurea: ' + (e && e.message || e)); }
-      finally{ if(btn){ btn.disabled = false; btn.innerText = '✨ Publicar Evento Áurea'; } }
+      }catch(e){ alert('No se pudo crear el evento de Juegos URBIS: ' + (e && e.message || e)); }
+      finally{ if(btn){ btn.disabled = false; btn.innerText = '✨ Publicar Juegos URBIS'; } }
       return;
     }
 
@@ -5278,7 +5278,7 @@
     const birthdateOpen = ev.target.closest('[data-u52-birthdate-open]');
     if(birthdateOpen){ ev.preventDefault(); ev.stopPropagation(); openBirthdateModal(); return; }
     const aureaGo = ev.target.closest('[data-u52-aurea-go]');
-    if(aureaGo){ ev.preventDefault(); ev.stopPropagation(); const j=aureaGo.dataset.aureaJuego||'', t=aureaGo.dataset.aureaTitulo||'Evento Áurea', pr=aureaGo.dataset.aureaPremio||'', f=aureaGo.dataset.aureaFin||''; try{ if(typeof window.urbisAbrirAureaModulo==='function') window.urbisAbrirAureaModulo(j,t,pr,f,false); }catch(e){} return; }
+    if(aureaGo){ ev.preventDefault(); ev.stopPropagation(); const j=aureaGo.dataset.aureaJuego||'', t=aureaGo.dataset.aureaTitulo||'Juegos URBIS', pr=aureaGo.dataset.aureaPremio||'', f=aureaGo.dataset.aureaFin||''; try{ if(typeof window.urbisAbrirAureaModulo==='function') window.urbisAbrirAureaModulo(j,t,pr,f,false); }catch(e){} return; }
     const notiRefresh = ev.target.closest('[data-u52-noti-refresh]');
     if(notiRefresh){ ev.preventDefault(); ev.stopPropagation(); loadNotifications(); return; }
     const notiAccept = ev.target.closest('[data-u52-noti-accept]');
