@@ -984,3 +984,14 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
    lea se rompe por encontrarlos ausentes. */
 .urbis-nivel2{ display:none !important; }
 .urbis-verificando .urbis-nivel2{ display:block !important; }
+
+/* Cuando el servidor todavía exige la identidad completa, los campos ocultos
+   se revelan sobre la marcha con una explicación. Es lo que permite que la app
+   funcione con el Apps Script viejo y con el nuevo sin coordinar despliegues. */
+.urbis-nivel2.urbis-nivel2-visible{ display:block !important; }
+.urbis-nivel2-aviso{ background:#fff8e6; border:1px solid #f5d78e; border-radius:12px;
+    padding:12px 14px; margin-bottom:14px; font-size:.84rem; color:#5a4508; }
+.urbis-nivel2-aviso b{ display:block; font-size:.95rem; margin-bottom:4px; color:#7a5c00; }
+.urbis-nivel2-aviso span{ display:block; line-height:1.4; }
+.urbis-nivel2-aviso em{ display:block; margin-top:7px; font-style:normal; font-size:.76rem;
+    color:#8a6d1a; opacity:.85; }

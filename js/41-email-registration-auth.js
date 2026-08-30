@@ -1325,6 +1325,13 @@
       if(!data.ciudad) return 'Selecciona tu ciudad o corregimiento.';
     }
     if(!data.termsAccepted) return 'Debes aceptar el tratamiento de datos personales y los términos para crear la cuenta.';
+    // Si los campos de identidad se revelaron porque el servidor los pidió,
+    // aquí sí se exigen. Sin esto el formulario los mandaría vacíos otra vez y
+    // el usuario quedaría dando vueltas en el mismo rechazo.
+    if(document.body.classList.contains('urbis-verificando')){
+      const falta = validateVerificacionNivel2(data);
+      if(falta) return falta;
+    }
     return '';
   }
 
@@ -1653,6 +1660,17 @@
       toast(resend ? 'Código reenviado.' : 'Cuenta pendiente. Revisa tu correo.');
     }catch(err){
       hideRegisterLoading();
+      // El servidor puede ir por detrás del navegador. Mientras el Apps Script
+      // no se actualice al registro por niveles, seguirá exigiendo identidad
+      // legal que este formulario ya no pide — y el usuario vería un mensaje
+      // imposible de resolver, porque el campo ni siquiera está en pantalla.
+      // En vez de dejarlo atascado, se revelan esos campos y se le explica.
+      // Así la app funciona con el servidor viejo Y con el nuevo, sin que
+      // nadie tenga que coordinar el momento exacto del despliegue.
+      if(servidorPideIdentidad(err && err.message)){
+        mostrarCamposNivel2(err.message);
+        return;
+      }
       toast(err.message || 'Error registrando cuenta.');
       alert(err.message || 'Error registrando cuenta.');
     }finally{
@@ -1660,6 +1678,48 @@
       if(btn){ btn.disabled = false; btn.textContent = 'Crear cuenta'; }
     }
   }
+
+  // ── Adaptación al servidor ──────────────────────────────────────────────
+  // Se reconoce por el mensaje porque el Apps Script no devuelve un código de
+  // error: es lo único con lo que se cuenta. La lista cubre exactamente los
+  // campos que el registro por niveles dejó de pedir.
+  function servidorPideIdentidad(mensaje){
+    const m = String(mensaje || '').toLowerCase();
+    if(!m) return false;
+    return /nombres y apellidos|n[úu]mero de documento|c[ée]dula|celular|comuna|barrio|g[ée]nero/.test(m);
+  }
+
+  let nivel2Revelado = false;
+  function mostrarCamposNivel2(mensaje){
+    document.body.classList.add('urbis-verificando');
+    document.querySelectorAll('.urbis-nivel2').forEach(function(el){
+      el.classList.add('urbis-nivel2-visible');
+    });
+    // Comuna, barrio y género no llevan la marca de nivel 2 —son de nivel 1
+    // pero opcionales—, así que se señalan aparte si el servidor los pide.
+    const aviso = $('urbis-nivel2-aviso') || (function(){
+      const d = document.createElement('div');
+      d.id = 'urbis-nivel2-aviso';
+      d.className = 'urbis-nivel2-aviso';
+      const card = document.querySelector('.urbis-register-card');
+      if(card) card.insertBefore(d, card.firstChild);
+      return d;
+    })();
+    aviso.innerHTML = '<b>Faltan unos datos más</b><span>El servidor todavía pide ' +
+      'la información completa. Complétala aquí abajo y crea tu cuenta; ' +
+      'cuando el servidor se actualice ya no se pedirá.</span>' +
+      '<em>' + esc(String(mensaje || '')) + '</em>';
+    if(!nivel2Revelado){
+      nivel2Revelado = true;
+      const primero = document.querySelector('.urbis-nivel2 input, .urbis-nivel2 select');
+      if(primero && primero.scrollIntoView) primero.scrollIntoView({ behavior:'smooth', block:'center' });
+      try{ primero && primero.focus({ preventScroll:true }); }catch(e){}
+    }
+    toast('Completa los datos que faltan para crear la cuenta.');
+  }
+  // Se expone para poder comprobar la adaptación sin tener que montar un
+  // servidor viejo de mentira.
+  window.__urbisMostrarNivel2 = mostrarCamposNivel2;
 
   async function registerCitizen(ev){
     ev?.preventDefault?.();
