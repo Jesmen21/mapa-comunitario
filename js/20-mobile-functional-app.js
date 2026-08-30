@@ -1084,6 +1084,12 @@
       if(n.type === 'complete_birthdate'){
         return `<div class="u52-noti-card demographic"><span>🎂</span><div><b>${esc(n.title || 'Completa tu fecha de nacimiento')}</b><small>${esc(n.message || 'Agrega tu fecha para análisis demográfico y validación de edad.')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-birthdate-open>Agregar fecha</button></div></div>`;
       }
+      if(n.type === 'mi_reporte'){
+        // Qué pasó con algo que publicó esta persona (js/13d). Lleva botón para
+        // ir al reporte: un aviso que cuenta algo y no lleva a ninguna parte
+        // obliga a buscarlo a mano en el mapa.
+        return `<div class="u52-noti-card mireporte"><span>${esc(n.icono || '🔔')}</span><div><b>${esc(n.title || 'Tu reporte')}</b><small>${esc(n.message || '')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-abrir-reporte data-lat="${esc(n.lat || '')}">Ver en el mapa</button></div></div>`;
+      }
       return `<div class="u52-noti-card"><span>🔔</span><div><b>${esc(n.title || 'Notificación')}</b><small>${esc(n.message || 'Nuevo aviso de URBIS.')}</small></div></div>`;
     }).join('');
   }
@@ -1136,6 +1142,22 @@
     const seen = _aureaSeenSet();
     return premiumNotis.filter(n => !seen.has(n.id)).length;
   }
+  // Avisos sobre los reportes del propio usuario (js/13d). Se calculan una sola
+  // vez por carga: la función guarda la foto del estado y llamarla dos veces
+  // haría que el segundo cálculo no encontrara ningún cambio.
+  const _misReportesToasted = new Set();
+  function buildMisReportesNotifications(){
+    try{ return (typeof window.urbisNotificacionesMisReportes === 'function')
+      ? window.urbisNotificacionesMisReportes() : []; }catch(e){ return []; }
+  }
+  function _misReportesToast(avisos){
+    avisos.forEach(n => {
+      if(_misReportesToasted.has(n.id)) return;
+      _misReportesToasted.add(n.id);
+      try{ if(typeof showAchievementToast === 'function') showAchievementToast(n.title, n.message); }catch(e){}
+    });
+  }
+
   async function loadNotifications(){
     const s = socialSession() || {};
     const identifier = s.user_id || s.friend_code || s.usuario || s.cedula_numero || s.cedula || s.correo || '';
@@ -1143,8 +1165,10 @@
       const birthNoti = buildLocalBirthdateNotification();
       const premiumNotis = buildPremiumEventNotifications();
       _aureaToastNuevos(premiumNotis);
-      const arr = premiumNotis.concat(birthNoti ? [birthNoti] : []);
-      setNotiBadge(_aureaBadgeNuevos(premiumNotis) + (birthNoti ? 1 : 0));
+      const mios = buildMisReportesNotifications();
+      _misReportesToast(mios);
+      const arr = mios.concat(premiumNotis, birthNoti ? [birthNoti] : []);
+      setNotiBadge(mios.length + _aureaBadgeNuevos(premiumNotis) + (birthNoti ? 1 : 0));
       renderNotifications(arr);
       return;
     }
@@ -1156,8 +1180,12 @@
         if(birthNoti && !notifications.some(n => n.type === 'complete_birthdate')) notifications.unshift(birthNoti);
         const premiumNotis = buildPremiumEventNotifications();
         _aureaToastNuevos(premiumNotis);
-        const all = premiumNotis.concat(notifications); // los eventos premium van ARRIBA
-        setNotiBadge(notifications.length + _aureaBadgeNuevos(premiumNotis));
+        // Lo que pasó con MIS reportes va primero: es lo que esta persona
+        // estaba esperando saber.
+        const mios = buildMisReportesNotifications();
+        _misReportesToast(mios);
+        const all = mios.concat(premiumNotis, notifications);
+        setNotiBadge(mios.length + notifications.length + _aureaBadgeNuevos(premiumNotis));
         renderNotifications(all);
       }
     }catch(e){
@@ -5307,6 +5335,13 @@
     if(birthdateOpen){ ev.preventDefault(); ev.stopPropagation(); openBirthdateModal(); return; }
     const aureaGo = ev.target.closest('[data-u52-aurea-go]');
     if(aureaGo){ ev.preventDefault(); ev.stopPropagation(); const j=aureaGo.dataset.aureaJuego||'', t=aureaGo.dataset.aureaTitulo||'Juegos URBIS', pr=aureaGo.dataset.aureaPremio||'', f=aureaGo.dataset.aureaFin||''; try{ if(typeof window.urbisAbrirAureaModulo==='function') window.urbisAbrirAureaModulo(j,t,pr,f,false); }catch(e){} return; }
+    const abrirReporte = ev.target.closest('[data-u52-abrir-reporte]');
+    if(abrirReporte){
+      ev.preventDefault(); ev.stopPropagation();
+      const lat = abrirReporte.dataset.lat || '';
+      try{ if(typeof window.urbisAbrirReportePorLat === 'function') window.urbisAbrirReportePorLat(lat); }catch(e){}
+      return;
+    }
     const notiRefresh = ev.target.closest('[data-u52-noti-refresh]');
     if(notiRefresh){ ev.preventDefault(); ev.stopPropagation(); loadNotifications(); return; }
     const notiAccept = ev.target.closest('[data-u52-noti-accept]');

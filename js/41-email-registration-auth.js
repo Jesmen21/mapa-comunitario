@@ -2163,7 +2163,14 @@
     verifyRecoveryCode,
     showCitizenRegistrationForm,
     socialAPI: callAuthAPI,
-    logout(){ localStorage.removeItem(SESSION_KEY()); location.reload(); }
+    logout(){
+      localStorage.removeItem(SESSION_KEY());
+      // La foto local de "mis reportes" (js/13d) es de la cuenta que se va: si
+      // se queda, la siguiente sesión compara sus reportes contra los de otra
+      // persona y recibe avisos de cosas que nunca pasaron.
+      try{ if(typeof window.urbisOlvidarFotoMisReportes === 'function') window.urbisOlvidarFotoMisReportes(); }catch(e){}
+      location.reload();
+    }
   };
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

@@ -18,6 +18,7 @@ const ASSETS = [
   './js/12-spa-ui.js',
   './js/13b-duplicados.js',
   './js/13c-denuncias.js',
+  './js/13d-mis-reportes-noti.js',
   './js/80-reportes-shell.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'

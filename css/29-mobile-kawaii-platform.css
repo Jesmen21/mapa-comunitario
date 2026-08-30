@@ -858,6 +858,18 @@
   .u52-social-found small:nth-of-type(n+2){display:none!important;}
 }
 
+/* URBIS · Avisos sobre los reportes propios (js/13d). Verde de URBIS: son
+   buenas noticias sobre algo que esta persona publicó, no una solicitud
+   pendiente ni un evento ajeno. */
+@media (max-width:1024px), (pointer:coarse){
+  .u52-noti-card.mireporte > span{
+    background:linear-gradient(180deg,#e9fbf3,#ffffff);
+  }
+  .u52-noti-card.mireporte .u52-noti-actions button{
+    background:linear-gradient(135deg,#38BDF8,#7DD3FC); color:#0b3550;
+  }
+}
+
 /* URBIS V171 · Noti demográfica + modal fecha nacimiento */
 @media (max-width:1024px), (pointer:coarse){
   .u52-noti-card.demographic > span{
