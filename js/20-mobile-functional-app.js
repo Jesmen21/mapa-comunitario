@@ -2355,6 +2355,11 @@
         <span>Este reporte sale como <b>anónimo</b> en el mapa. URBIS sabe quién lo publicó —por eso se pide cuenta verificada, para que nadie invente hechos del conflicto—, pero nadie más lo ve. Puedes reportar con tranquilidad.</span>
       </div>
       <input type="checkbox" id="ins-anonimo" checked hidden>` : '';
+    // ¿Hubo gente herida? Solo en los reportes donde puede haberla (js/03c).
+    const victimasHTML = (typeof window.urbisPreguntaPorVictimas === 'function'
+                          && window.urbisPreguntaPorVictimas(item.id)
+                          && typeof window.urbisBloqueVictimas === 'function')
+      ? window.urbisBloqueVictimas() : '';
     const photoLabelText = photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional';
     const photoClass = photoRequired ? 'u52-quick-photo required' : 'u52-quick-photo';
     panel.innerHTML = `
@@ -2374,11 +2379,13 @@
         <input id="ins-foto" type="hidden" value="">
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción corta opcional"></textarea>
+        ${victimasHTML}
         <label class="${photoClass}"><span class="u52-photo-label-text">${photoLabelText}</span><input type="file" id="ins-foto-file" accept="image/*" capture="environment"></label>
         <button type="button" class="u52-quick-publish" data-u52-call="quick-report-publish">Publicar reporte</button>
       </div>`;
     panel.classList.remove('u52-procity-mode');
     panel.hidden = false;
+    try { if(typeof window.urbisActivarBloqueVictimas === 'function') window.urbisActivarBloqueVictimas(panel); }catch(e){}
     const fileInput = panel.querySelector('#ins-foto-file');
     if(fileInput){
       // La verificación se pide ANTES de abrir la cámara, no al publicar:

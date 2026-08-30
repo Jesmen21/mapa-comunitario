@@ -1196,3 +1196,47 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
 .u52-anon-garantia b{ color:#123a6b; }
 .u52-anon-garantia > b{ display:block; font-size:.88rem; margin-bottom:4px; }
 .u52-anon-garantia span{ display:block; }
+
+/* ── ¿Hubo gente herida? ───────────────────────────────────────────────────
+   Arranca con UNA pregunta y tres botones: la mayoría de los reportes no
+   tienen víctimas y no hay por qué hacerle llenar dos selectores a alguien
+   para decir que no. El detalle solo aparece si la respuesta es "sí". */
+.urbis-victimas{
+  margin:2px 0 4px; padding:12px; border-radius:16px;
+  background:#fff7f5; box-shadow:inset 0 0 0 1px rgba(226,170,160,.7);
+}
+.urbis-victimas .uv2-pregunta{ display:block; font-size:.82rem; font-weight:900; color:#7a2d1d; }
+.urbis-victimas .uv2-opciones{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+.urbis-victimas .uv2-op{
+  border:0; border-radius:13px; padding:12px 6px; min-height:46px; cursor:pointer;
+  font-size:.76rem; font-weight:850; line-height:1.15; color:#5c3a33; background:#fff;
+  box-shadow:inset 0 0 0 1px rgba(226,190,180,.9);
+}
+.urbis-victimas .uv2-op.on{ background:#f6d9d2; color:#7a2d1d; box-shadow:inset 0 0 0 2px #c96a55; }
+.urbis-victimas .uv2-detalle{ margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.urbis-victimas .uv2-detalle label{
+  display:flex; flex-direction:column; gap:4px; font-size:.72rem; font-weight:800; color:#7a2d1d;
+}
+.urbis-victimas .uv2-detalle select{
+  padding:11px 9px; min-height:44px; font:inherit; font-size:.84rem;
+  border:1px solid #e0c4bc; border-radius:12px; background:#fff; color:#3a2420;
+}
+.urbis-victimas .uv2-detalle small{
+  grid-column:1 / -1; font-size:.7rem; line-height:1.35; color:#8a6a62;
+}
+
+/* Cómo se cuenta en el mapa. El luto tiene su propio tratamiento: un accidente
+   con un fallecido y un roce de latas no pueden verse igual. */
+.popup-victimas{
+  display:block; margin:6px 0 2px; padding:5px 8px; border-radius:9px;
+  font-size:.72rem; font-weight:850; color:#7a2d1d; background:#fbe6e1;
+}
+.popup-victimas.popup-victimas-grave{ color:#fff; background:#8c2b1c; }
+.detalle-victimas{
+  margin:10px 0; padding:12px 13px; border-radius:14px;
+  background:#fbe6e1; box-shadow:inset 0 0 0 1px rgba(200,120,100,.6); color:#7a2d1d;
+}
+.detalle-victimas.detalle-victimas-grave{ background:#8c2b1c; color:#ffe9e4; box-shadow:none; }
+.detalle-victimas b{ display:block; font-size:.9rem; margin-bottom:3px; }
+.detalle-victimas span{ display:block; font-size:.82rem; font-weight:750; }
+.detalle-victimas small{ display:block; margin-top:6px; font-size:.7rem; opacity:.8; }

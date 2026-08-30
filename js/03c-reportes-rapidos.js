@@ -202,6 +202,29 @@
     }
   ];
 
+  // ── Reportes donde puede haber gente herida ──────────────────────────────
+  // En estos se pregunta por víctimas. Es la diferencia entre un mapa que dice
+  // "aquí hubo choques" y uno que dice dónde se está matando gente, que es lo
+  // que de verdad mueve a una secretaría de tránsito o de gestión del riesgo.
+  //
+  // Se deja FUERA el conflicto armado a propósito. Un conteo de muertos de una
+  // masacre o un atentado es una cifra política, la publican autoridades y
+  // organismos con verificación, y equivocarla —o acertarla demasiado pronto—
+  // tiene consecuencias para la comunidad y para quien reporta. Ahí el reporte
+  // sigue siendo del hecho, no de las víctimas.
+  const VICTIMAS_IDS = new Set([
+    'traffic-crash',        // accidente de tránsito
+    'serious-security',     // emergencia grave de seguridad
+    'fire-smoke',           // incendio o humo visible
+    'wildfire',             // incendio forestal
+    'landslide',            // derrumbe o deslizamiento
+    'geological-damage',    // daño geológico
+    'flood-road',           // inundación en vía
+    'overflow',             // desbordamiento
+    'storm',                // tormenta
+    'earthquake'            // sismo
+  ]);
+
   const MANDATORY_PHOTO_IDS = new Set([
     'road-hole','road-closed','traffic-light','road-work','fallen-tree','landslide',
     'stalled-car','open-drain','water-leak','street-light','trash','blocked-sidewalk',
@@ -249,4 +272,5 @@
   // MANDATORY_PHOTO_IDS también se publica: js/20 lo usaba como local y la
   // carcasa ligera necesita saber en qué reportes la foto es obligatoria.
   window.URBIS_MANDATORY_PHOTO_IDS = MANDATORY_PHOTO_IDS;
+  window.URBIS_VICTIMAS_IDS = VICTIMAS_IDS;
 })();

@@ -305,6 +305,20 @@
       }
     } catch(e){}
 
+    // Víctimas: si el reporte las trae, es lo primero que hay que ver. Un
+    // accidente con un fallecido y un roce de latas no son el mismo punto en
+    // el mapa aunque compartan el icono.
+    let victimasHTML = '';
+    try {
+      if(typeof window.urbisLeerVictimas === 'function') {
+        const _vic = window.urbisLeerVictimas(p.descripcion);
+        if(_vic.registrado && _vic.resumen) {
+          const _grave = _vic.fallecidosSabidos && _vic.fallecidos !== '0';
+          victimasHTML = `<span class="popup-victimas${_grave ? ' popup-victimas-grave' : ''}">${_grave ? '🕯️' : '🚑'} ${_vic.resumen}</span>`;
+        }
+      }
+    } catch(e){}
+
     // Antigüedad en la ficha corta: un reporte de hace ocho meses y uno de hoy
     // se ven idénticos en el mapa, y esa es justo la razón por la que la gente
     // deja de creerle. Aquí solo se informa; preguntar se pregunta en el
@@ -390,6 +404,7 @@
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${d[1] || d[0]} ${likeBadge}</span>
         ${fotoMiniPopup}
         ${descPopup}
+        ${victimasHTML}
         ${tagValidacion ? `<span class="popup-state">${tagValidacion}</span>` : ''}
         ${frescuraPopup}
         <div class="popup-author">👤 <b>${creadorNombre}</b></div>
@@ -531,6 +546,23 @@
         ` + botonesHTML;
     }
 
+    // Víctimas en el detalle. Se distingue lo que se observó de lo que nadie
+    // pudo saber: "sin heridos" y "no se sabe si hay heridos" no son lo mismo
+    // y presentarlos igual convertiría un vacío en una afirmación.
+    let victimasDetalleHTML = '';
+    try {
+      if(typeof window.urbisLeerVictimas === 'function') {
+        const _vd = window.urbisLeerVictimas(p.descripcion);
+        if(_vd.registrado && _vd.resumen) {
+          const _grave = _vd.fallecidosSabidos && _vd.fallecidos !== '0';
+          victimasDetalleHTML = `<div class="detalle-victimas${_grave ? ' detalle-victimas-grave' : ''}">` +
+            `<b>${_grave ? '🕯️ Hubo víctimas mortales' : '🚑 Personas afectadas'}</b>` +
+            `<span>${_vd.resumen}</span>` +
+            `<small>Dato reportado por la comunidad, sin verificación oficial.</small></div>`;
+        }
+      }
+    } catch(e){}
+
     let tituloEstado = estadoValidacion === "Pendiente" ? `<span class="status-tag st-pendiente">EN REVISIÓN</span>` : (mostrarEstadoDet ? `<span class="status-tag ${stClass}">${d[3] || 'N/A'}</span>` : '');
     let popularBadge = likes >= 5 ? `<span class="badge-like" style="background:var(--fuchsia); color:white; box-shadow:0 0 8px var(--fuchsia);">🔥 Reporte Comunitario Popular</span>` : '';
     let ownerBadge = etiquetaPropietarioReporte(p);
@@ -546,6 +578,7 @@
       <div class="form-section">
         
         ${alertaValidacionHTML}
+        ${victimasDetalleHTML}
         
         <div class="alert-autor">
             <span style="font-size:0.7rem; color:#aaa;">👤 AUTOR DEL REPORTE:</span><br>

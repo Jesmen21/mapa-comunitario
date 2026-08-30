@@ -20,6 +20,7 @@ const ASSETS = [
   './js/13c-denuncias.js',
   './js/13d-mis-reportes-noti.js',
   './js/13e-nivel2.js',
+  './js/13f-victimas.js',
   './js/80-reportes-shell.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'

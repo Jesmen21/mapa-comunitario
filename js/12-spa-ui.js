@@ -537,6 +537,19 @@
         descripcionFinal = d.join(' | ');
         fichaEscritaEnEsteGuardado = true;
     })();
+    // ── ¿Hubo gente herida? ───────────────────────────────────────────────
+    // Se guarda DESPUÉS del bloque temporal y de la ficha del edificio, en su
+    // propia casilla (URBIS_SLOTS.victimas). Solo se escribe si el formulario
+    // traía la pregunta: en un reporte que no la hace, el campo tiene que
+    // quedar vacío y no "cero víctimas".
+    try {
+        if(typeof window.urbisLeerFormularioVictimas === 'function' &&
+           document.getElementById('urbis-victimas')) {
+            const _v = window.urbisLeerFormularioVictimas(document);
+            descripcionFinal = window.urbisGuardarVictimas(descripcionFinal, _v.heridos, _v.fallecidos);
+        }
+    } catch(e){}
+
     if(descripcionFinal.length > 49000) {
         alert('El reporte quedó demasiado pesado para SheetDB/Google Sheets. Usa un link de foto o una imagen más pequeña.');
         if(btn) { btn.innerText = btn.dataset.originalText || 'GUARDAR REPORTE'; btn.disabled = false; }
@@ -559,6 +572,12 @@
         const conservar = [base, base+1, base+2, base+3, base+4];
         conservar.push(S.validaciones != null ? S.validaciones : base + 10);
         conservar.push(S.carpetaProCity != null ? S.carpetaProCity : base + 11);
+        conservar.push(S.denuncias != null ? S.denuncias : base + 12);
+        // Las víctimas solo se conservan si esta edición NO trae la pregunta;
+        // si la trae, manda lo que acaba de responder el usuario.
+        if(!document.getElementById('urbis-victimas')) {
+            conservar.push(S.victimas != null ? S.victimas : base + 13);
+        }
         // La ficha del edificio solo se conserva si esta edición NO la escribió;
         // si el formulario la traía, lo que puso el usuario manda.
         if(!fichaEscritaEnEsteGuardado) {

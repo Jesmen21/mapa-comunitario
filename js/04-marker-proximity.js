@@ -836,7 +836,8 @@
     edificioOtroTexto:    BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 9,
     validaciones:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 10, // ¿sigue vigente?
     carpetaProCity:       BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 11,
-    denuncias:            BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 12  // moderación
+    denuncias:            BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 12, // moderación
+    victimas:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 13  // heridos/fallecidos
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
