@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v566-sigue-vigente';
+const URBIS_CACHE = 'urbis-v567-duplicados';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -79,6 +79,7 @@ const URBIS_ASSETS = [
   './js/10-visible-markers.js',
   './js/11-report-form.js',
   './js/12-spa-ui.js',
+  './js/13b-duplicados.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
   './js/50-alerta-forzado.js',

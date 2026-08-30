@@ -2410,12 +2410,23 @@
       btn.disabled = true;
       btn.dataset.originalText = btn.dataset.originalText || btn.innerText || 'Publicar reporte';
       btn.innerText = 'Publicando...';
-      if(typeof window.enviarDatosDesdeFormulario === 'function') window.enviarDatosDesdeFormulario(btn);
+      // Se ESPERA al guardado en vez de cerrar el panel a los 1,4 s por reloj.
+      // El aviso de "esto ya está reportado aquí" abre una pregunta y el
+      // formulario tiene que seguir en pie mientras la persona decide: si el
+      // panel se desmonta debajo, los campos que aún no se han leído (la foto,
+      // sobre todo) desaparecen a mitad de la publicación.
+      let publicacion = Promise.resolve();
+      if(typeof window.enviarDatosDesdeFormulario === 'function'){
+        try{ publicacion = Promise.resolve(window.enviarDatosDesdeFormulario(btn)); }
+        catch(e){ publicacion = Promise.reject(e); }
+      }
       if(typeof window.urbisEsCategoriaProCity === 'function' && window.urbisEsCategoriaProCity(ctx.cat)){
         try{ tagProCityFolderIfNeeded(ctx.lat); }catch(e){}
       }
-      setTimeout(()=>{ hideQuickReportPanel(); hideCommunityChooser(false); }, 1400);
-      setTimeout(()=>{ try{ if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos(); }catch(e){} }, 3500);
+      publicacion.catch(function(){}).then(function(){
+        hideQuickReportPanel(); hideCommunityChooser(false);
+        setTimeout(()=>{ try{ if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos(); }catch(e){} }, 2000);
+      });
     }catch(e){
       btn.disabled = false;
       btn.innerText = btn.dataset.originalText || 'Publicar reporte';

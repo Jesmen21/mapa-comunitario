@@ -407,6 +407,26 @@
         creadorNom = ''; creadorRolStr = ''; correoReq = ''; cedulaReq = ''; barrioReq = '';
     }
 
+    // ── ¿Esto ya está reportado aquí? ──────────────────────────────────────
+    // Se pregunta ANTES de procesar la foto: comprimir una imagen para después
+    // descubrir que el reporte era repetido es tiempo y batería de alguien que
+    // está parado en la calle. Solo aplica a reportes nuevos; al editar no hay
+    // nada que duplicar.
+    if(!isEdit && typeof window.urbisRevisarDuplicadoAntesDePublicar === 'function') {
+        let decision = 'publicar';
+        try { decision = await window.urbisRevisarDuplicadoAntesDePublicar(cat, i, lat, lng); }
+        catch(e) { decision = 'publicar'; } // ante la duda, se publica
+        if(decision !== 'publicar') {
+            if(btn) { btn.innerText = btn.dataset.originalText || 'GUARDAR REPORTE'; btn.disabled = false; }
+            // Sumarse ya dejó registrado que el problema sigue ocurriendo; el
+            // formulario se cierra porque no hay nada más que llenar.
+            if(decision === 'sumarse' && typeof cancelarRegistro === 'function') {
+                try { cancelarRegistro(); } catch(e2) {}
+            }
+            return;
+        }
+    }
+
     // Recoger valores aunque estén ocultos
     let est = document.getElementById('sel-estado') ? document.getElementById('sel-estado').value : "Bueno";
     let mat = document.getElementById('sel-mat') ? document.getElementById('sel-mat').value : "N/A";
@@ -469,6 +489,7 @@
     // con posiciones fijas y meterlas en medio correría los índices de todo lo
     // ya mapeado. En un registro viejo estas casillas no existen y se leen como
     // "sin registrar", que es la verdad.
+    let fichaEscritaEnEsteGuardado = false;
     (function guardarFichaEdificio(){
         const EDIF = window.URBIS_EDIFICIO;
         if (!EDIF || !EDIF.esCategoriaEdificio(cat)) return;
@@ -491,6 +512,7 @@
         d[ref.idxEpoca] = selEp ? String(selEp.value || '').replace(/\|/g, '-') : '';
         d[ref.idxOtroTexto] = insOtro ? String(insOtro.value || '').replace(/\|/g, '-').slice(0, 120) : '';
         descripcionFinal = d.join(' | ');
+        fichaEscritaEnEsteGuardado = true;
     })();
     if(descripcionFinal.length > 49000) {
         alert('El reporte quedó demasiado pesado para SheetDB/Google Sheets. Usa un link de foto o una imagen más pequeña.');
@@ -498,18 +520,31 @@
         return;
     }
 
-    // Al editar, se conservan los metadatos temporales originales: creado, expira, tipo temporal/permanente, historial e icono.
-    // Así el conteo de 8 horas NO se reinicia aunque el ciudadano corrija la descripción o la foto.
-    // k=5 es el campo EXTRA de Pro City (carpeta cooperativa vinculada, ver
-    // PROCITY_FOLDER_FIELD_OFFSET en js/20) — BUG real: al no preservarlo
-    // aquí, cada edición de un mapeo lo desvinculaba silenciosamente de su
-    // carpeta cooperativa aunque el usuario no tocara nada de eso.
+    // Al editar, se conservan los metadatos originales que el formulario NO
+    // toca: creado, expira, temporal/permanente, historial, icono, y todo lo
+    // que se guarda después del bloque temporal. Es un bug clásico de esta
+    // pantalla: cada campo nuevo que alguien añade al final del registro se
+    // pierde silenciosamente en la primera edición si no se lo nombra aquí.
+    // Ya pasó con la carpeta cooperativa de Pro City, que se desvinculaba sola
+    // al corregir una foto.
     if(isEdit && dOriginal.length) {
         let dFinal = descripcionFinal.split(' | ');
-        for(let k = 0; k <= 5; k++) {
-            const idx = BASE_OFFSET + TIMELINE_EXTRA_OFFSET + k;
-            if(dOriginal[idx]) dFinal[idx] = dOriginal[idx];
+        const base = BASE_OFFSET + TIMELINE_EXTRA_OFFSET;
+        const S = window.URBIS_SLOTS || {};
+        // Bloque temporal (0-4) + validaciones y carpeta: nunca vienen del
+        // formulario, así que siempre se conservan.
+        const conservar = [base, base+1, base+2, base+3, base+4];
+        conservar.push(S.validaciones != null ? S.validaciones : base + 10);
+        conservar.push(S.carpetaProCity != null ? S.carpetaProCity : base + 11);
+        // La ficha del edificio solo se conserva si esta edición NO la escribió;
+        // si el formulario la traía, lo que puso el usuario manda.
+        if(!fichaEscritaEnEsteGuardado) {
+            [S.edificioMaterialidad, S.edificioPisos, S.edificioPlantaBaja,
+             S.edificioEpoca, S.edificioOtroTexto].forEach(function(idx, k){
+                conservar.push(idx != null ? idx : base + 5 + k);
+            });
         }
+        conservar.forEach(function(idx){ if(dOriginal[idx]) dFinal[idx] = dOriginal[idx]; });
         descripcionFinal = dFinal.join(' | ');
     }
     
