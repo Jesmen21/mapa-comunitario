@@ -968,3 +968,19 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
   width:100%; padding:11px 12px; font:inherit; font-size:.9rem;
   border:1px solid #d8e0ea; border-radius:12px; background:#fff; color:#1e2836;
 }
+
+
+/* ── Registro por niveles ──────────────────────────────────────────────────
+   Pedir 15 campos antes de dejar entrar a nadie espanta justo a quien más
+   queremos que reporte: el señor o la señora que vio algo y quiere avisar. El
+   registro básico pide lo mínimo para tener una cuenta real —correo, usuario,
+   nacimiento, dónde vive y contraseña— y la identidad legal (nombres, cédula,
+   celular) se pide DESPUÉS, solo cuando va a subir una foto o a publicar algo
+   delicado. La fricción llega en el momento en que se justifica, no en la
+   puerta.
+
+   Los campos no se borran del formulario: se ocultan. Así conservan su sitio y
+   su orden cuando toque mostrarlos en la verificación, y ningún código que los
+   lea se rompe por encontrarlos ausentes. */
+.urbis-nivel2{ display:none !important; }
+.urbis-verificando .urbis-nivel2{ display:block !important; }

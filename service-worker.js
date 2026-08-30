@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v560-app-reportes';
+const URBIS_CACHE = 'urbis-v561-registro-niveles';
 const URBIS_ASSETS = [
   './',
   './index.html',

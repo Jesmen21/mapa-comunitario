@@ -1287,6 +1287,10 @@
       barrio: isColombia ? readLocationSelectOrOther('reg-barrio','reg-barrio-other') : '',
       genero: $('reg-gender')?.value || 'no_registrado',
       rol_solicitado: 'citizen',
+      // Nivel de la cuenta. 'basico' entra con correo, usuario, nacimiento y
+      // ciudad; 'verificado' es quien además entregó su identidad legal para
+      // poder subir fotos y publicar en categorías sensibles.
+      nivel_cuenta: 'basico',
       termsAccepted: !!$('urbis-terms-accepted')?.checked,
       mobilityAnalyticsAccepted: !!$('urbis-mobility-consent')?.checked,
       admin_email_reference: CONFIG().ADMIN_EMAIL || ''
@@ -1294,27 +1298,48 @@
     return data;
   }
 
+  // ── Registro NIVEL 1 (cuenta básica) ────────────────────────────────────
+  // Lo mínimo para que la cuenta sea real y se pueda responder por ella:
+  // correo verificable, un usuario, cuándo nació y dónde vive. Nada más.
+  //
+  // La identidad legal —nombres, cédula, celular— NO se pide aquí. Se pide en
+  // la verificación, cuando el usuario va a subir una foto o a publicar algo
+  // delicado. Ese es el momento en que la fricción se justifica: sin cuenta
+  // verificada detrás, una foto anónima en un mapa público es una puerta
+  // abierta a que alguien suba cualquier cosa en cualquier lugar.
+  //
+  // La ubicación se mantiene obligatoria pero solo hasta ciudad: comuna y
+  // barrio quedan opcionales. Son dos desplegables en cascada que en un
+  // teléfono se hacen eternos, y para saber de qué ciudad reporta alguien no
+  // hacen falta.
   function validateCitizenForm(data){
-    if(clean(data.nombres || '').length < 2) return 'Escribe tus nombres.';
-    if(clean(data.apellidos || '').length < 2) return 'Escribe tus apellidos.';
     if(!/^[a-z0-9._-]{5,30}$/.test(data.usuario || '')) return 'Escribe un usuario válido de 5 a 30 caracteres. Usa letras, números, punto, guion o guion bajo.';
     if(!/^\S+@\S+\.\S+$/.test(data.correo)) return 'Escribe un correo válido.';
     if(!passwordStrong(data.password)) return 'La contraseña debe tener mínimo 8 caracteres.';
     if(data.password !== data.passwordConfirm) return 'Las contraseñas no coinciden.';
-    if(data.cedula_numero.length < 5) return 'Escribe tu número de documento.';
     const birth = readBirthDate();
     if(!birth.valid) return birth.message;
     if(!data.pais) return 'Selecciona Colombia o escribe tu país.';
     if(data.pais === 'Colombia'){
-      if(phoneDigitsForValidation(data.telefono).length !== 12) return 'Escribe un celular colombiano válido con 10 dígitos. Se guardará como +57.';
       if(!data.departamento) return 'Selecciona tu departamento.';
       if(!data.ciudad) return 'Selecciona tu ciudad o corregimiento.';
-      if(!data.comuna) return 'Selecciona tu comuna.';
-      if(!data.barrio) return 'Selecciona tu barrio.';
-    }else{
-      if(onlyDigits(data.telefono).length < 7) return 'Escribe un número de celular válido.';
     }
     if(!data.termsAccepted) return 'Debes aceptar el tratamiento de datos personales y los términos para crear la cuenta.';
+    return '';
+  }
+
+  // ── Verificación NIVEL 2 ────────────────────────────────────────────────
+  // Se llama cuando el usuario intenta subir una foto o publicar en una
+  // categoría sensible. Aquí sí se exige la identidad legal completa.
+  function validateVerificacionNivel2(data){
+    if(clean(data.nombres || '').length < 2) return 'Escribe tus nombres.';
+    if(clean(data.apellidos || '').length < 2) return 'Escribe tus apellidos.';
+    if(clean(data.cedula_numero || '').length < 5) return 'Escribe tu número de documento.';
+    if(data.pais === 'Colombia'){
+      if(phoneDigitsForValidation(data.telefono).length !== 12) return 'Escribe un celular colombiano válido con 10 dígitos. Se guardará como +57.';
+    }else if(onlyDigits(data.telefono || '').length < 7){
+      return 'Escribe un número de celular válido.';
+    }
     return '';
   }
 
