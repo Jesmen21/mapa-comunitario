@@ -207,7 +207,8 @@ function baseHeaders_() {
       'user_id','friend_code','nombres','apellidos','nombre_completo','usuario','correo','telefono','tipo_documento','cedula','cedula_numero',
       'pais','otro_pais','departamento','ciudad','ciudad_corregimiento','comuna','barrio','ubicacion_completa','genero','genero_normalizado',
       'rol_solicitado','estado_cuenta','email_verificado','password_hash','password_salt','codigo_verificacion','codigo_expira_en',
-      'fecha_registro','fecha_verificacion','ultimo_login','acepta_terminos','acepta_movilidad_anonima','observaciones_admin','ubicacion_validada','avatar'
+      'fecha_registro','fecha_verificacion','ultimo_login','acepta_terminos','acepta_movilidad_anonima','observaciones_admin','ubicacion_validada','avatar',
+      'nivel_cuenta','fecha_verificacion_identidad'
     ],
     verify: ['verification_id','user_id','correo','codigo_verificacion','codigo_expira_en','estado','fecha_creacion','fecha_verificacion','intentos'],
     logs: ['log_id','identificador','correo','usuario','cedula','telefono','accion','resultado','fecha','motivo'],
@@ -617,24 +618,32 @@ function registerUser_(data) {
   const termsAccepted = !!data.termsAccepted || data.acepta_terminos === 'si' || data.terminos === true;
   const mobilityAccepted = !!data.mobilityAnalyticsAccepted || data.acepta_movilidad_anonima === 'si';
 
-  if (!nombres || !apellidos || !nombreCompleto) return { ok:false, message:'Completa nombres y apellidos.' };
-  // Limpia registros pendientes SIN verificar que coincidan, para no bloquear.
+  // ── VALIDACIÓN NIVEL 1 (cuenta básica) ──────────────────────────────────
+  // Solo lo mínimo para que la cuenta sea real y se pueda responder por ella:
+  // usuario, correo verificable, contraseña y dónde vive. La identidad legal
+  // —nombres, apellidos, cédula, celular— NO se pide aquí: se pide después,
+  // cuando el usuario vaya a subir una foto o a publicar algo delicado.
+  //
+  // Esta validación TIENE que ir de la mano con la del navegador
+  // (validateCitizenForm en js/41). Si el servidor exige algo que el
+  // formulario ya no pide, el registro falla con un mensaje que el usuario no
+  // puede resolver porque el campo ni siquiera está en pantalla.
   purgeStalePending_(usersSh, usuario, correo, cedulaNumero, telefonoCmp);
   const usernameCheck = checkUsername_(usuario); if (!usernameCheck.ok || !usernameCheck.available) return usernameCheck;
   const emailCheck = checkEmail_(correo); if (!emailCheck.ok || !emailCheck.available) return emailCheck;
   if (!validPassword_(password)) return { ok:false, message:'La contraseña debe tener mínimo 8 caracteres.' };
-  if (!cedulaNumero || docComparable_(cedulaNumero).length < 5) return { ok:false, message:'Escribe tu número de documento.' };
-  if (!telefonoCmp || (isColombia && (telefonoCmp.length !== 12 || telefonoCmp.indexOf('57') !== 0))) return { ok:false, message: isColombia ? 'Escribe un celular colombiano válido con 10 dígitos.' : 'Escribe un número de celular válido.' };
   if (!pais) return { ok:false, message:'Selecciona o escribe tu país.' };
   if (isColombia && !departamento) return { ok:false, message:'Selecciona tu departamento.' };
   if (isColombia && !ciudadCorregimiento) return { ok:false, message:'Selecciona tu ciudad o corregimiento.' };
-  if (isColombia && isCucuta_(ciudadCorregimiento) && !comuna) return { ok:false, message:'Selecciona tu comuna.' };
-  if (isColombia && !barrio) return { ok:false, message:'Selecciona tu barrio.' };
-  if (!generoNormalizado) return { ok:false, message:'Selecciona tu género.' };
   if (!termsAccepted) return { ok:false, message:'Debes aceptar términos y condiciones.' };
 
   const rows = getRows_(usersSh).filter(r => !isDeletedUser_(r));
-  if (rows.find(r => userDocKey_(r) === docComparable_(cedulaNumero))) return { ok:false, message:'Esta cédula ya está registrada. Usa recuperar acceso con tu cédula.' };
+  // La cédula solo se comprueba SI la entregó. En el nivel 1 llega vacía, y
+  // comparar vacíos haría que la segunda cuenta chocara con la primera.
+  if (cedulaNumero && docComparable_(cedulaNumero).length >= 5 &&
+      rows.find(r => userDocKey_(r) === docComparable_(cedulaNumero))) {
+    return { ok:false, message:'Esta cédula ya está registrada. Usa recuperar acceso con tu cédula.' };
+  }
   // Verificación por celular DESACTIVADA (no bloquea registros con celular repetido).
   // Para reactivarla, descomenta la línea siguiente:
   // if (rows.find(r => userPhoneKey_(r) === telefonoCmp)) return { ok:false, message:'Este celular ya está registrado. Usa recuperar acceso con tu celular.' };
@@ -653,7 +662,12 @@ function registerUser_(data) {
     ubicacion_completa:buildLocationText_({pais,otro_pais:isColombia ? '' : pais,departamento,ciudad_corregimiento:ciudadCorregimiento,comuna,barrio}),
     genero,genero_normalizado:generoNormalizado,rol_solicitado:role,estado_cuenta:'pendiente',email_verificado:'no',password_hash:passwordHash,password_salt:salt,
     codigo_verificacion:verificationCode,codigo_expira_en:expires,fecha_registro:nowIso_(),fecha_verificacion:'',ultimo_login:'',
-    acepta_terminos:termsAccepted ? 'si' : 'no',acepta_movilidad_anonima:mobilityAccepted ? 'si' : 'no',observaciones_admin:'',ubicacion_validada:isColombia ? 'si' : 'pais_externo'
+    acepta_terminos:termsAccepted ? 'si' : 'no',acepta_movilidad_anonima:mobilityAccepted ? 'si' : 'no',observaciones_admin:'',ubicacion_validada:isColombia ? 'si' : 'pais_externo',
+    // Nivel de la cuenta. Se calcula del dato, no de lo que diga el cliente:
+    // un navegador puede mandar 'verificado' y aquí no hay forma de creerle.
+    // Verificada = entregó identidad legal y celular; básica = todo lo demás.
+    nivel_cuenta:(nombres && apellidos && cedulaNumero && telefonoCmp) ? 'verificado' : 'basico',
+    fecha_verificacion_identidad:(nombres && apellidos && cedulaNumero && telefonoCmp) ? nowIso_() : ''
   };
 
   appendObject_(usersSh, userObj, headers.users);
