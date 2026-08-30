@@ -1270,3 +1270,52 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
   border-radius:10px; color:#fff; padding:11px 10px; font-size:.88rem;
 }
 #urbis-edit-sheet2 .urbis-victimas .uv2-detalle small{ color:#c9a79f; }
+
+/* ── Marcador con fallecidos ───────────────────────────────────────────────
+   Un accidente que mató a alguien tiene que verse ANTES de abrirlo. En un mapa
+   con veinte marcadores de choque, si hay que tocarlos uno a uno para saber
+   cuál fue mortal, el dato no sirve de nada.
+
+   Late en rojo y no para: el pulso llama la atención de lejos sin tapar el
+   icono, que sigue siendo el de su categoría — un accidente sigue pareciendo
+   un accidente, solo que este pesa más.
+
+   Solo se enciende con fallecidos CONFIRMADOS (js/10, marcarLuto). "No se
+   sabe" nunca prende una alarma: sería afirmar en rojo algo que nadie vio. */
+.leaflet-marker-icon.urbis-luto{ overflow: visible; }
+.urbis-luto::before,
+.urbis-luto::after{
+  content: ''; position: absolute; left: 50%; top: 50%;
+  border-radius: 50%; pointer-events: none; z-index: 0;
+}
+/* Halo que respira: siempre hay algo de rojo, aunque el pulso esté en su
+   punto más tenue. Un parpadeo que se apaga del todo se pierde de vista. */
+.urbis-luto::before{
+  width: 66px; height: 66px; margin: -33px 0 0 -33px;
+  background: radial-gradient(circle, rgba(214,20,10,.85) 38%, rgba(214,20,10,.45) 62%, transparent 76%);
+  animation: urbisLutoHalo 1.9s ease-in-out infinite;
+}
+/* Onda que se expande, como un sonar. */
+.urbis-luto::after{
+  width: 48px; height: 48px; margin: -24px 0 0 -24px;
+  border: 3px solid rgba(200,15,5,.9);
+  animation: urbisLutoOnda 1.9s cubic-bezier(.2,.7,.3,1) infinite;
+}
+/* El propio icono recoge algo del rojo: sin esto la gota blanca parte el halo
+   por la mitad y de lejos parece un marcador normal con una sombra rara. */
+.urbis-luto > *{ filter: drop-shadow(0 0 6px rgba(200,15,5,.9)); }
+@keyframes urbisLutoHalo{
+  0%, 100% { transform: scale(.86); opacity: .55; }
+  50%      { transform: scale(1.08); opacity: .95; }
+}
+@keyframes urbisLutoOnda{
+  0%   { transform: scale(.6); opacity: .85; }
+  75%  { transform: scale(1.75); opacity: 0; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+/* Quien pide menos movimiento en su teléfono no debería recibir un latido
+   permanente: se queda el halo rojo fijo, que es lo que de verdad informa. */
+@media (prefers-reduced-motion: reduce){
+  .urbis-luto::before{ animation: none; opacity: .8; }
+  .urbis-luto::after{ animation: none; opacity: .55; }
+}

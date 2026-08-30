@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v572-editar-victimas';
+const URBIS_CACHE = 'urbis-v573-marcador-luto';
 const URBIS_ASSETS = [
   './',
   './index.html',

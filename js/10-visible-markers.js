@@ -273,10 +273,22 @@
       `</div>`;
       marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,68], iconAnchor:[34,34], popupAnchor:[0,-34] }), zIndexOffset: 2000 });
     } else if (iconoWaze) {
-      marker = L.marker([lat, lng], { icon: crearIconoWaze(iconoWaze, dimKey, d[0]) });
+      marker = L.marker([lat, lng], { icon: marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d) });
     } else {
-      marker = L.marker([lat, lng], { icon: crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]) });
+      marker = L.marker([lat, lng], { icon: marcarLuto(crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]), p, d) });
     }
+    // Un reporte con fallecidos tiene que verse ANTES de abrirlo: el marcador
+    // late en rojo. Si hay que tocarlo para enterarse, en un mapa con veinte
+    // accidentes el que mató a alguien se pierde entre los demás.
+    try {
+      if(marker && marker.options && marker.options.icon &&
+         (marker.options.icon.options || {}).className &&
+         marker.options.icon.options.className.indexOf('urbis-luto') !== -1) {
+        // Encima del resto: si dos marcadores se solapan, el que tiene un
+        // muerto no puede quedar debajo.
+        marker.setZIndexOffset(1500);
+      }
+    } catch(e){}
     
     let creadorNombre = (d[BASE_OFFSET + 2] || 'Anónimo').split(/\s+/)[0];
     let rolRaw = d[BASE_OFFSET + 3] || "Sistema";
@@ -431,6 +443,23 @@
   }
   // Exponer para el renderizador FORZADO de la gota Áurea (capa propia siempre visible).
   window.urbisCrearMarcadorUrbano = crearMarcadorUrbano;
+
+  // Añade la marca de luto al icono ya construido, sin tocar los constructores
+  // (que los comparten mapa, movilidad y Pro City). Solo cuando los fallecidos
+  // están CONFIRMADOS: "no se sabe" no puede encender una alarma que afirma
+  // algo que nadie observó.
+  function marcarLuto(icono, p, d) {
+    try {
+      if(typeof window.urbisLeerVictimas !== 'function') return icono;
+      if(typeof window.urbisPreguntaPorVictimas === 'function' && !window.urbisPreguntaPorVictimas(d[0])) return icono;
+      const v = window.urbisLeerVictimas(p.descripcion);
+      if(!(v.registrado && v.fallecidosSabidos && v.fallecidos !== '0')) return icono;
+      const o = icono && icono.options;
+      if(!o) return icono;
+      o.className = (o.className || '') + ' urbis-luto';
+    } catch(e){}
+    return icono;
+  }
 
   function mostrarDetalles(p) {
     if(typeof setSidebarTab === 'function') setSidebarTab('alerts');
