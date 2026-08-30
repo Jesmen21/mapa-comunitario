@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v559-dominio-propio';
+const URBIS_CACHE = 'urbis-v560-app-reportes';
 const URBIS_ASSETS = [
   './',
   './index.html',

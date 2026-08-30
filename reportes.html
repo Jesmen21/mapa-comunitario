@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>URBIS Reportes</title>
+<meta name="theme-color" content="#1E7A4B">
+<link rel="manifest" href="manifest-reportes.json?v=560-app-reportes">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+
+<!-- Solo el CSS que el mapa y el formulario necesitan. La app completa importa
+     34 hojas; aquí entran tres. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/00-brand-urbis.css?v=560-app-reportes">
+<link rel="stylesheet" href="css/01-base-layout.css?v=560-app-reportes">
+
+<style>
+/* ── Carcasa de URBIS Reportes ────────────────────────────────────────────
+   Pensada para quien se pierde en la app completa: el mapa ocupa todo, hay
+   UN botón grande y nada más compitiendo por la atención. Sin menús, sin
+   pestañas ocultas, sin gestos que haya que descubrir. */
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; height:100%; overflow:hidden;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+#map{ position:fixed; inset:0 0 92px 0; width:100%; }
+
+/* Barra inferior: tres destinos y ya. Los rótulos van escritos, no solo el
+   icono — un icono suelto obliga a adivinar, y aquí adivinar es la falla. */
+#rp-nav{ position:fixed; left:0; right:0; bottom:0; height:92px; display:flex;
+  background:#fff; border-top:1px solid #dfe7ee; z-index:1200;
+  padding-bottom:env(safe-area-inset-bottom); }
+#rp-nav button{ flex:1; border:0; background:none; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:5px; font-size:.82rem;
+  color:#4a5a6a; font-weight:600; cursor:pointer; }
+#rp-nav button b{ font-size:1.6rem; font-weight:400; line-height:1; }
+#rp-nav button.on{ color:#1E7A4B; }
+
+/* El botón de reportar: flotante, grande y siempre visible. Es la única
+   acción de esta app, así que no comparte espacio con nada. */
+#rp-reportar{ position:fixed; left:50%; transform:translateX(-50%); bottom:108px;
+  z-index:1250; border:0; border-radius:999px; padding:18px 34px;
+  background:#1E7A4B; color:#fff; font-size:1.15rem; font-weight:800;
+  box-shadow:0 8px 24px rgba(30,122,75,.42); cursor:pointer; }
+#rp-reportar:active{ transform:translateX(-50%) scale(.97); }
+
+/* Hoja donde se abre el formulario. Reutiliza #info-content, que es el
+   contenedor que ya esperan js/11 y js/12: así el formulario de reportes es
+   literalmente el mismo, sin una segunda copia que se desincronice. */
+#sidebar{ position:fixed; inset:0; z-index:1400; background:#0f1720;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; display:none; }
+#sidebar.abierto{ display:block; }
+#rp-cerrar{ position:sticky; top:0; width:100%; border:0; background:#0f1720;
+  color:#fff; font-size:1rem; padding:14px; text-align:left; cursor:pointer; }
+
+#rp-aviso{ position:fixed; left:12px; right:12px; bottom:210px; z-index:1300;
+  background:#fff; border-radius:14px; padding:14px 16px; font-size:.9rem;
+  color:#31404f; box-shadow:0 6px 20px rgba(0,0,0,.18); display:none; }
+#rp-aviso.ver{ display:block; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<button id="rp-reportar" type="button">📍 Reportar algo</button>
+<div id="rp-aviso"></div>
+
+<nav id="rp-nav">
+  <button type="button" class="on" data-rp="mapa"><b>🗺️</b>Mapa</button>
+  <button type="button" data-rp="eventos"><b>🎪</b>Eventos</button>
+  <button type="button" data-rp="aldia"><b>📰</b>Al día</button>
+</nav>
+
+<!-- El formulario de reporte se pinta aquí. Mismos ids que la app completa. -->
+<div id="sidebar">
+  <button id="rp-cerrar" type="button">✕ Cerrar</button>
+  <div id="info-content"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/00-config.js?v=560-app-reportes"></script>
+<script src="js/02-auth-roles.js?v=560-app-reportes"></script>
+<script src="js/03-map-data-config.js?v=560-app-reportes"></script>
+<script src="js/03b-edificio-vocabulario.js?v=560-app-reportes"></script>
+<script src="js/03c-reportes-rapidos.js?v=560-app-reportes"></script>
+<script src="js/04-marker-proximity.js?v=560-app-reportes"></script>
+<script src="js/05-helpers-temporal-security.js?v=560-app-reportes"></script>
+<script src="js/11-report-form.js?v=560-app-reportes"></script>
+<script src="js/12-spa-ui.js?v=560-app-reportes"></script>
+<script src="js/80-reportes-shell.js?v=560-app-reportes"></script>
+</body>
+</html>

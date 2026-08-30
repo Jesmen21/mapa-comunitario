@@ -1,0 +1,18 @@
+{
+  "name": "URBIS Reportes",
+  "short_name": "Reportes",
+  "description": "Reporta huecos, alertas y emergencias de tu ciudad. Rápido y sin complicaciones.",
+  "lang": "es-CO",
+  "start_url": "/reportes.html",
+  "scope": "/reportes.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1E7A4B",
+  "categories": ["utilities", "lifestyle"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
