@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v558-catalogo-aparte';
+const URBIS_CACHE = 'urbis-v559-dominio-propio';
 const URBIS_ASSETS = [
   './',
   './index.html',
