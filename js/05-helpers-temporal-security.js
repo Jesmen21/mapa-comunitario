@@ -195,6 +195,17 @@
       const esAdmin = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin()) || urbisIdentidadActual().rol === 'gov';
       const tiempoCorte = corte ? corte.getTime() : Date.now();
 
+      // Contenido denunciado: sale del mapa mientras un moderador lo revisa
+      // (js/13c). NO se borra. Siguen viéndolo el moderador, porque tiene que
+      // poder mirarlo para decidir, y su propio autor, porque algo que
+      // desaparece sin explicación parece un fallo de la aplicación y encima
+      // impide corregirlo.
+      if(typeof window.urbisContenidoOculto === 'function' && window.urbisContenidoOculto(p)) {
+          if(esAdmin) return true;
+          try { if(typeof esAutorDelReporte === 'function' && esAutorDelReporte(p)) return true; } catch(e){}
+          return false;
+      }
+
       // Admin/JAC: en modo HISTÓRICO (línea temporal) ve todo por fecha de creación.
       // En modo EN VIVO mantiene el mapa LIMPIO: oculta los reportes temporales VENCIDOS
       // (igual que el ciudadano), pero sí ve todos los permanentes incl. pendientes por aprobar.

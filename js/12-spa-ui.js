@@ -1066,15 +1066,44 @@
     sheet.querySelector('.uc-close').onclick = cerrar;
     const render = () => {
       const lista = comentariosDe();
-      const html = lista.length ? lista.map(c => {
+      const soyModerador = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
+                        || (typeof urbisIdentidadActual === 'function' && urbisIdentidadActual().rol === 'gov');
+      const visibles = lista.filter(c => {
+        // Un comentario denunciado sale de la conversación mientras se revisa.
+        // El moderador lo sigue viendo: tiene que poder leerlo para decidir.
+        if(typeof window.urbisContenidoOculto !== 'function') return true;
+        return soyModerador || !window.urbisContenidoOculto(c);
+      });
+      const html = visibles.length ? visibles.map((c, i) => {
         const parts = String(c.descripcion || '').split(/Â?§|~~~/);
         const usuario = parts[0] || 'Ciudadano';
-        const texto = parts.slice(1).join(' ') || '';
+        // Solo el SEGUNDO campo es lo que la persona escribió. El tercero, si
+        // existe, son las denuncias (js/13c) y nunca debe salir en pantalla.
+        const texto = parts[1] || '';
         const fecha = c.fecha ? new Date(c.fecha).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-        return `<div class="uc-item"><div class="uc-item-top"><b>@${esc(usuario)}</b><span class="uc-fecha">${esc(fecha)}</span></div><p>${esc(texto)}</p></div>`;
+        let escondido = '', accion = '';
+        try {
+          if(typeof window.urbisContenidoOculto === 'function' && window.urbisContenidoOculto(c)) {
+            escondido = '<span class="uc-oculto">🚩 Denunciado · escondido mientras se revisa</span>';
+          }
+          if(typeof window.urbisAbrirDenuncia === 'function') {
+            accion = `<button type="button" class="uc-denunciar" data-uc-i="${i}" aria-label="Denunciar comentario">🚩</button>`;
+          }
+        } catch(e){}
+        return `<div class="uc-item"><div class="uc-item-top"><b>@${esc(usuario)}</b><span class="uc-fecha">${esc(fecha)}</span>${accion}</div><p>${esc(texto)}</p>${escondido}</div>`;
       }).join('') : '<div class="uc-empty">Aún no hay comentarios. Sé el primero.</div>';
       sheet.querySelector('.uc-list').innerHTML = html;
+      sheet.querySelectorAll('.uc-denunciar').forEach(function(b){
+        b.addEventListener('click', function(){
+          const c = visibles[parseInt(b.dataset.ucI, 10)];
+          if(c) window.urbisAbrirDenuncia(c, 'Comentario de @' + (String(c.descripcion||'').split(/Â?§|~~~/)[0] || 'ciudadano'));
+        });
+      });
     };
+    // La hoja se repinta sola cuando alguien denuncia un comentario desde aquí
+    // (js/13c la llama al terminar): si no, el comentario denunciado seguiría
+    // en pantalla y parecería que no pasó nada.
+    sheet.__urbisRender = render;
     render();
     sheet.querySelector('.uc-send').onclick = async function(){
       const ta = sheet.querySelector('.uc-input');

@@ -328,6 +328,15 @@
     const tituloComent = String(d[1] || d[0] || 'Reporte').replace(/'/g, '’').replace(/"/g, '');
     const popupComentarBtn = `<button class="po-coment" onclick="window.urbisAbrirComentarios && window.urbisAbrirComentarios('${p.lat}', '${tituloComent}')">💬 Comentar${nComent ? ' (' + nComent + ')' : ''}</button>`;
 
+    // Denunciar y el aviso de moderación. Van en el popup y en el detalle: el
+    // popup es lo primero (y a veces lo único) que abre quien pasa por encima
+    // de algo indebido.
+    let popupDenunciarBtn = '', avisoModeracion = '';
+    try {
+      if(typeof window.urbisBotonDenunciar === 'function') popupDenunciarBtn = window.urbisBotonDenunciar(p, tituloComent);
+      if(typeof window.urbisAvisoModeracion === 'function') avisoModeracion = window.urbisAvisoModeracion(p);
+    } catch(e){}
+
     if (esPremium) {
       const notasP = String(d[2] || '');
       const sacar = (re, def) => { const m = notasP.match(re); return m ? m[1].trim() : def; };
@@ -364,6 +373,7 @@
           ${botonPremium}
           <button class="cp-play cp-practica" onclick="window.UrbisMobileAppV58 && window.UrbisMobileAppV58.show('games')">🕹️ Practicar gratis en el arcade</button>
           ${popupComentarBtn}
+          ${popupDenunciarBtn}
           ${archivarAureaBtn}
           ${popupOwnerBtns}
         </div>
@@ -376,6 +386,7 @@
     } else {
       marker.bindPopup(`
         <div class="popup-header" style="color:${markerColor}">${p.tipo}</div>
+        ${avisoModeracion}
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${d[1] || d[0]} ${likeBadge}</span>
         ${fotoMiniPopup}
         ${descPopup}
@@ -383,6 +394,7 @@
         ${frescuraPopup}
         <div class="popup-author">👤 <b>${creadorNombre}</b></div>
         ${popupComentarBtn}
+        ${popupDenunciarBtn}
         ${popupOwnerBtns}
     `, { maxWidth: 280, minWidth: 230, className: 'urbis-popup' });
     }
@@ -449,9 +461,18 @@
     let vigenciaHTML = '';
     try { vigenciaHTML = (typeof window.urbisBloqueVigencia === 'function') ? window.urbisBloqueVigencia(p) : ''; } catch(e){}
 
+    // Moderación en el detalle: el aviso si está escondido, y la denuncia.
+    let avisoModDetalle = '', botonDenunciarDetalle = '';
+    try {
+      if(typeof window.urbisAvisoModeracion === 'function') avisoModDetalle = window.urbisAvisoModeracion(p);
+      if(typeof window.urbisBotonDenunciar === 'function') botonDenunciarDetalle = window.urbisBotonDenunciar(p, d[1] || d[0] || 'Reporte');
+    } catch(e){}
+
     let botonesHTML = `
+        ${avisoModDetalle}
         <button class="btn-edit" style="background:#b8ebe6;color:#000;" onclick="iniciarRutaHacia('${p.lat}', '${p.lng}')">🧭 IR A ESTE PUNTO</button>
         ${vigenciaHTML}
+        ${botonDenunciarDetalle}
         <button class="btn-like" onclick="darLike('${p.lat}', this)">${likeButtonText}</button>
         <button class="btn-cancelar" onclick="cancelarRegistro()">VOLVER AL MAPA</button>
     `;
@@ -481,6 +502,26 @@
         if(estadoValidacion === "Pendiente") {
             botonesHTML = `<button class="btn-approve" onclick="aprobarPunto('${p.lat}', this)">✅ APROBAR REPORTE</button>` + botonesHTML;
         }
+        // Moderación: el moderador ve el contenido denunciado (por eso
+        // visibleParaRol no se lo esconde) y decide aquí mismo. Devolverlo al
+        // mapa deja constancia de la revisión, así las mismas denuncias no
+        // vuelven a esconderlo.
+        try {
+            const _md = (typeof window.urbisEstadoDenuncia === 'function') ? window.urbisEstadoDenuncia(p) : null;
+            if(_md && _md.total > 0) {
+                const _lista = _md.denuncias.map(m =>
+                    `<li>${window.urbisMotivoDenuncia(m.motivo)}${m.identificado ? '' : ' <em>(sin sesión: no esconde)</em>'}</li>`).join('');
+                botonesHTML = `
+                  <div class="urbis-mod-admin">
+                    <b>🚩 ${_md.total} denuncia${_md.total === 1 ? '' : 's'}${_md.oculto ? ' · escondido del mapa' : ''}</b>
+                    <ul>${_lista}</ul>
+                    <div class="um-btns">
+                      <button class="um-restaurar" onclick="window.urbisModerarDesdeDetalle('${p.lat}','restaurar', this)">✅ Devolver al mapa</button>
+                      <button class="um-ocultar" onclick="window.urbisModerarDesdeDetalle('${p.lat}','ocultar', this)">🚫 Mantener escondido</button>
+                    </div>
+                  </div>` + botonesHTML;
+            }
+        } catch(e){}
         botonesHTML = `
             <div class="owner-actions-btns" style="margin-bottom:6px;">
               <button class="btn-owner-edit" onclick="prepararEdicion('${p.lat}')">✏️ Editar</button>
