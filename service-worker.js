@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v555-ficha-empresas';
+const URBIS_CACHE = 'urbis-v557-catalogo-aparte';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -69,6 +69,7 @@ const URBIS_ASSETS = [
   './js/02-auth-roles.js',
   './js/03-map-data-config.js',
   './js/03b-edificio-vocabulario.js',
+  './js/03c-reportes-rapidos.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',
   './js/06-mobility-traffic.js',
