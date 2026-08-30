@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v555-ficha-empresas';
+const URBIS_CACHE = 'urbis-v556-seguimiento-0830';
 const URBIS_ASSETS = [
   './',
   './index.html',
