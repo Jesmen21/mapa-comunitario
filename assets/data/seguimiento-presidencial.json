@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-29",
-  "proximaActualizacion": "2026-08-30",
+  "actualizado": "2026-08-30",
+  "proximaActualizacion": "2026-08-31",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,34 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno firma nueve resoluciones que cierran oficialmente las mesas de diálogo de la \"paz total\" con disidencias de alias Calarcá, los Comandos de la Frontera y las Autodefensas Conquistadoras de la Sierra Nevada",
+      "detalle": "Mediante nueve resoluciones —tres por cada mesa—, firmadas el 28 de agosto, el Gobierno puso fin a los procesos de diálogo que la administración de Gustavo Petro había abierto con estas tres estructuras armadas bajo la política de \"paz total\". La Resolución 342 de 2026 cierra la mesa con las disidencias de alias Calarcá al concluir que hubo incumplimiento de los acuerdos pactados; el Gobierno revocó también el reconocimiento de vocería a los integrantes de los Comandos de la Frontera, liderados por Geovanny Andrés Rojas, alias \"Araña\", tras concluir que usaban la mesa como fachada operativa para sostener el narcotráfico; y la Resolución 348 del 28 de agosto cierra el proceso con las Autodefensas Conquistadoras de la Sierra Nevada por no demostrar voluntad real de paz ni disposición a un sometimiento judicial, con la reactivación de las órdenes de captura contra sus cabecillas. El paquete incluyó además resoluciones que autorizan la extradición a Estados Unidos de varios cabecillas, entre ellos el propio alias \"Araña\", quien había actuado como gestor de paz durante el gobierno de Petro.",
+      "contrapunto": "El expresidente Gustavo Petro defendió su política de \"paz total\" tras el desmonte de las mesas y afirmó que los diálogos dejaron más paz en Medellín, redujeron a la mitad las tasas de homicidio en Nariño y Putumayo —donde dijo que \"se salvaron miles de vidas\"— y permitieron la erradicación voluntaria de cerca de 25.000 hectáreas de coca mediante sustitución de cultivos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · Gobierno De La Espriella acaba oficialmente con la \"paz total\": firma nueve resoluciones para cerrar las principales mesas de diálogo", "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/gobierno-de-la-espriella-acaba-oficialmente-con-la-paz-total-firma-nueve-resoluciones-para-cerrar-las-principales-mesas-de-dialogo-3582089" },
+        { "n": "El Espectador · Gobierno De la Espriella canceló mesas de diálogo con disidencias de Calarcá y otros dos grupos: esta es la orden", "u": "https://www.elespectador.com/politica/gobierno-de-la-espriella-cancelo-mesas-de-dialogo-con-disidencias-de-calarca-y-otros-dos-grupos-esta-es-la-orden/" },
+        { "n": "Infobae · De la Espriella pone fin oficialmente a los procesos de diálogo abiertos por Petro con grupos armados", "u": "https://www.infobae.com/america/agencias/2026/08/29/de-la-espriella-pone-fin-oficialmente-a-los-procesos-de-dialogo-abiertos-por-petro-con-grupos-armados/" },
+        { "n": "Infobae · Petro defendió su Paz Total tras el desmonte de las mesas de diálogo por parte de Abelardo de la Espriella: \"Se salvaron miles de vidas\"", "u": "https://www.infobae.com/colombia/2026/08/30/petro-defendio-su-paz-total-tras-el-desmonte-de-las-mesas-de-dialogo-por-parte-de-abelardo-de-la-espriella-se-salvaron-miles-de-vidas/" },
+        { "n": "RT · De la Espriella cierra las tres mesas de diálogo de la \"paz total\" de Petro", "u": "https://actualidad.rt.com/actualidad/624897-espriella-cierra-mesas-dialogo-paz-total-petro" }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "Anuncia $30.000 millones de pesos para mejoramientos de vivienda en Risaralda y confirma que los subsidios de arriendo por el terremoto empiezan a pagarse el 31 de agosto",
+      "detalle": "Desde Pereira, el presidente anunció $30.000 millones de pesos pendientes de ejecución para financiar 909 mejoramientos de vivienda en Risaralda por daños del terremoto del 10 de agosto, de los cuales 261 corresponden a la capital del departamento. Confirmó que Pereira operará como centro regional de coordinación de la reconstrucción, articulado con la Gobernación, las alcaldías, constructoras, aseguradoras, entidades financieras y el Fondo Milagro, y que desde el 31 de agosto empezarán a girarse a las familias con vivienda destruida o declarada inhabitable los subsidios de arriendo de $1.050.000 mensuales ya anunciados días antes.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "El Heraldo · De la Espriella anuncia $30.000 millones para mejoramientos de viviendas afectadas por el terremoto en Risaralda", "u": "https://www.elheraldo.co/colombia/2026/08/29/de-la-espriella-anuncia-30000-millones-para-mejoramientos-de-viviendas-afectadas-por-el-terremoto-en-risaralda/" },
+        { "n": "Radio Santa Fe · Gobierno anuncia $30 mil millones para mejoramientos de viviendas afectadas por el terremoto", "u": "https://www.radiosantafe.com/2026/08/28/gobierno-anuncia-30-mil-millones-para-mejoramientos-de-viviendas-afectadas-por-el-terremoto/" }
+      ]
+    },
     {
       "fecha": "2026-08-28",
       "precision": "exacta",
