@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-30",
-  "proximaActualizacion": "2026-08-31",
+  "actualizado": "2026-08-31",
+  "proximaActualizacion": "2026-09-01",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,50 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-30",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "En su segunda alocución presidencial declara iniciada la reconstrucción del país tras el terremoto y actualiza el balance a 452.782 afectados y 331 fallecidos",
+      "detalle": "El presidente se dirigió al país el domingo 30 de agosto a las 7:00 p. m. en una alocución centrada en defensa y seguridad nacional y en la reconstrucción de las zonas afectadas por el terremoto del 10 de agosto. A veinte días del sismo, anunció que el país entra oficialmente en la etapa de reconstrucción, y aclaró que esto no implica el cierre de las operaciones de emergencia ni el fin de la búsqueda de desaparecidos. Presentó un balance actualizado de 452.782 personas afectadas, 331 fallecidas, 4.497 heridas y 152 desaparecidas, con 35.987 viviendas destruidas y otras 198.601 averiadas. Dijo: \"Tendremos que empezar a levantar las viviendas, recuperar las escuelas, hospitales, reconstruir las vías, reactivar el campo y devolverle a cientos de miles de familias la posibilidad de comenzar de nuevo\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Semana · \"Hoy comienza la reconstrucción de la patria\": anuncios tras 20 días del terremoto", "u": "https://www.semana.com/nacion/articulo/hoy-comienza-la-reconstruccion-de-la-patria-presidente-abelardo-de-la-espriella-hace-importantes-anuncios-tras-20-dias-del-terremoto/202604/" },
+        { "n": "Semana · los seis anuncios más importantes de la alocución presidencial", "u": "https://www.semana.com/nacion/articulo/los-seis-anuncios-mas-importantes-de-la-alocucion-presidencial-de-abelardo-de-la-espriella-reconstruccion-seguridad-y-subsidios/202605/" },
+        { "n": "El Espectador · Gobierno anuncia el inicio de la reconstrucción tras el terremoto en Colombia", "u": "https://www.elespectador.com/politica/gobierno-anuncia-el-inicio-de-la-reconstruccion-tras-el-terremoto-en-colombia/" },
+        { "n": "El Tiempo · entrega balance actualizado de afectaciones por el terremoto", "u": "https://www.eltiempo.com/colombia/otras-ciudades/abelardo-de-la-espriella-entrega-balance-actualizado-de-afectaciones-por-terremoto-en-colombia-cifras-de-casas-colegios-e-infraestructuras-afectadas-3582262" },
+        { "n": "Infobae · se dirigió al país para hablar de la reconstrucción de la nación ante las diferentes crisis", "u": "https://www.infobae.com/colombia/2026/08/31/abelardo-de-la-espriella-se-dirigio-al-pais-para-hablar-de-la-reconstruccion-de-la-nacion-ante-las-diferentes-crisis-han-sido-dias-de-profundo-dolor/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-30",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Durante la alocución ordena la creación inmediata de un bloque de búsqueda contra la corrupción que le reportará directamente, junto al bloque ya anunciado contra la extorsión",
+      "detalle": "En la misma alocución del 30 de agosto, el presidente reiteró la orden de conformar el Bloque Nacional de Búsqueda contra la Extorsión —anunciado el 24 de agosto en Barranquilla, con el Ejército, la Policía, la Armada y la Fuerza Aeroespacial articulados con la Fiscalía y la Judicatura— y ordenó además la creación de un nuevo bloque de búsqueda contra la corrupción que reportará directamente a la Presidencia. Sobre este último dijo: \"Yo personalmente les voy a caer\", y anunció \"una cruzada como nunca se ha hecho\" contra la corrupción, con la consigna de que \"caiga quien caiga\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · ordenó la creación de dos bloques de búsqueda contra la extorsión y la corrupción", "u": "https://www.infobae.com/colombia/2026/08/31/de-la-espriella-ordeno-la-creacion-de-dos-bloques-de-busqueda-contra-la-extorsion-y-corrupcion-yo-personalmente-les-voy-a-caer/" },
+        { "n": "El País · anuncia ofensiva nacional contra la extorsión y ordena crear un Bloque de Búsqueda", "u": "https://www.elpais.com.co/politica/presidente-abelardo-de-la-espriella-anuncia-ofensiva-nacional-contra-la-extorsion-y-ordena-crear-un-bloque-de-busqueda-3018.html" },
+        { "n": "Semana · le declara la guerra a la corrupción y a la extorsión", "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-le-declara-la-guerra-a-la-corrupcion-y-a-la-extorsion-anuncia-creacion-del-bloque-de-busqueda/202602/" },
+        { "n": "Prensa Latina · presidente de Colombia anunció creación de grupo contra la extorsión", "u": "https://www.prensa-latina.cu/2026/08/31/presidente-de-colombia-anuncio-creacion-de-grupo-contra-la-extorsion/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-30",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "El balance de los incendios forestales del Tolima sube a más de 50.000 hectáreas, 2.660 productores y $134.000 millones en pérdidas agropecuarias",
+      "detalle": "El balance acumulado de los incendios forestales en el Tolima subió a más de 50.000 hectáreas afectadas, cerca de 28.000 de ellas agropecuarias, en 23 municipios y 507 veredas. Las autoridades reportaron 2.660 productores afectados, pérdidas agropecuarias superiores a $134.000 millones de pesos y cerca de 163.000 animales en riesgo. El reporte oficial de la tarde del 30 de agosto, del Ministerio del Interior, registró 43 focos atendidos en 11 municipios, de los cuales 20 estaban controlados, 16 liquidados y 7 activos, frente al balance del 29 de agosto de 18 focos controlados y 17 activos en 12 municipios. El presidente presentó estas cifras durante su alocución del 30 de agosto y reiteró que parte de los incendios pudo haber sido provocada.",
+      "contrapunto": "Las autoridades continúan investigando el origen de buena parte de los incendios, como ha señalado el Gobierno desde el 24 de agosto; hasta esta actualización no hay una atribución judicial confirmada de responsables más allá del caso puntual de Dolores. La gobernadora del Tolima ha declarado que existen \"indicios serios y graves\" de un posible plan detrás de una parte de los incendios, una denuncia que la propia gobernación llevó a la Fiscalía y que sigue en investigación, no una conclusión judicial.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Tiempo · incendios forestales en Tolima dejan pérdidas por $50.000 millones en el sector agropecuario", "u": "https://www.eltiempo.com/economia/sectores/incendios-forestales-en-tolima-dejan-perdidas-por-50-000-millones-de-pesos-en-el-sector-agropecuario-3582037" },
+        { "n": "El Heraldo · 18 incendios controlados y 17 activos en el Tolima, según el balance de Mininterior", "u": "https://www.elheraldo.co/colombia/2026/08/29/18-incendios-controlados-y-17-activos-en-el-tolima-segun-el-balance-de-mininterior/" },
+        { "n": "Infobae · gobernadora del Tolima alerta por posible plan detrás de los incendios: \"hay indicios serios y graves\"", "u": "https://www.infobae.com/colombia/2026/08/30/gobernadora-del-tolima-alerta-por-posible-plan-detras-de-los-incendios-hay-indicios-serios-y-graves/" },
+        { "n": "Orfetv · más de $9.000 millones y ayudas para el campo: así será la recuperación del Tolima", "u": "https://www.orfetv.com/2026/08/31/mas-de-9-000-millones-y-ayudas-para-el-campo-asi-sera-la-recuperacion-del-tolima-tras-los-incendios-forestales/" }
+      ]
+    },
     {
       "fecha": "2026-08-28",
       "precision": "exacta",

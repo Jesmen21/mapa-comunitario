@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v578-config-admin';
+const URBIS_CACHE = 'urbis-v579-seguimiento-0831';
 const URBIS_ASSETS = [
   './',
   './index.html',
