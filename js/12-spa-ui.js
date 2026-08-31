@@ -122,10 +122,12 @@
           votos:(data.votos && typeof data.votos === 'object') ? data.votos : {},
           ultima:String(data.ultima || '')
       }));
-      // Si el blob estaba en la casilla compartida, se libera: ahí es donde va
-      // la materialidad del edificio, y dejarlo puesto la mantiene ilegible.
-      const vi = urbisValidationLegacyIndex();
-      if(vi !== urbisValidationIndex() && String(d[vi] || '').startsWith(VALIDACION_PREFIJO)) d[vi] = '';
+      // La casilla vieja se deja como está, aunque tenga un blob de validaciones
+      // de antes del reparto. Limpiarla parecía prolijo, pero ahora el servidor
+      // solo deja que un vecino sin cuenta toque las casillas comunitarias
+      // (v575): borrar esa otra casilla convertía cada confirmación ajena en un
+      // cambio prohibido, y la confirmación entera se rechazaba. No cuesta
+      // nada dejarla: leerEdificio ya ignora lo que no es de su vocabulario.
   }
 
   // Cuántas PERSONAS DISTINTAS e identificadas votaron cada cosa. Es lo único
@@ -349,6 +351,15 @@
   // borra sobre el mismo Google Sheet: gratis, sin límite mensual y sin el corrimiento
   // de columnas que dañaba los reportes. Sin respaldo a SheetDB.
   function _dbAPIok(){ return window.URBIS_AUTH && typeof window.URBIS_AUTH.socialAPI === 'function'; }
+  // Token de la sesión, para que el servidor sepa quién escribe. Va en cada
+  // edición y en cada borrado; leerlo (db_read) sigue siendo abierto, porque el
+  // mapa tiene que poder cargarse sin cuenta.
+  function _dbToken(){
+    try{
+      const s = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? window.URBIS_AUTH.readSession() : null;
+      return (s && s.session_token) || '';
+    }catch(e){ return ''; }
+  }
   function _dbSinBackend(){ return Promise.reject(new Error('Backend URBIS (Apps Script) no disponible')); }
   window.urbisGuardarFila = function(fila){
     if(!_dbAPIok()) return _dbSinBackend();
@@ -364,12 +375,23 @@
   // ACTUALIZA filas (col=value) con los campos dados.
   window.urbisDBUpdate = function(col, value, fields){
     if(!_dbAPIok()) return _dbSinBackend();
-    return window.URBIS_AUTH.socialAPI({ action:'db_update', col:col, value:String(value), set:fields });
+    return window.URBIS_AUTH.socialAPI({ action:'db_update', col:col, value:String(value), set:fields, session_token:_dbToken() })
+      .then(function(out){
+        // El servidor puede negarse: editar un reporte ajeno, o una sesión
+        // vieja sin token. Se convierte en error para que el llamador lo
+        // muestre en vez de creer que se guardó.
+        if(out && out.ok === false && out.message) throw new Error(out.message);
+        return out;
+      });
   };
   // BORRA filas (col=value).
   window.urbisDBDelete = function(col, value){
     if(!_dbAPIok()) return _dbSinBackend();
-    return window.URBIS_AUTH.socialAPI({ action:'db_delete', col:col, value:String(value) });
+    return window.URBIS_AUTH.socialAPI({ action:'db_delete', col:col, value:String(value), session_token:_dbToken() })
+      .then(function(out){
+        if(out && out.ok === false && out.message) throw new Error(out.message);
+        return out;
+      });
   };
 
   window.enviarDatosDesdeFormulario = function(btn) {

@@ -1849,7 +1849,12 @@
       genero: user.genero || pendingRegistration?.genero || 'no_registrado',
       rol: user.rol_solicitado || user.rol || pendingRegistration?.rol_solicitado || 'citizen',
       termsAccepted: true,
-      mobilityAnalyticsAccepted: !!(user.mobilityAnalyticsAccepted ?? pendingRegistration?.mobilityAnalyticsAccepted)
+      mobilityAnalyticsAccepted: !!(user.mobilityAnalyticsAccepted ?? pendingRegistration?.mobilityAnalyticsAccepted),
+      // Token de sesión: la prueba de que quien escribe en la base es de verdad
+      // esta cuenta. No es la contraseña y no sirve para entrar en ningún sitio;
+      // el servidor lo compara con el que guardó al iniciar sesión. Sin él, el
+      // servidor solo puede creerse lo que le diga el navegador.
+      session_token: user.session_token || ''
     };
     localStorage.setItem(SESSION_KEY(), JSON.stringify(session));
     try { localStorage.setItem('urbis_last_active_session', JSON.stringify(session)); } catch(e) {}

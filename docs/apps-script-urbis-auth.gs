@@ -209,7 +209,8 @@ function baseHeaders_() {
       'pais','otro_pais','departamento','ciudad','ciudad_corregimiento','comuna','barrio','ubicacion_completa','genero','genero_normalizado',
       'rol_solicitado','estado_cuenta','email_verificado','password_hash','password_salt','codigo_verificacion','codigo_expira_en',
       'fecha_registro','fecha_verificacion','ultimo_login','acepta_terminos','acepta_movilidad_anonima','observaciones_admin','ubicacion_validada','avatar',
-      'nivel_cuenta','fecha_verificacion_identidad'
+      'nivel_cuenta','fecha_verificacion_identidad',
+      'session_token','session_expira'
     ],
     verify: ['verification_id','user_id','correo','codigo_verificacion','codigo_expira_en','estado','fecha_creacion','fecha_verificacion','intentos'],
     logs: ['log_id','identificador','correo','usuario','cedula','telefono','accion','resultado','fecha','motivo'],
@@ -757,7 +758,12 @@ function loginUser_(emailRaw, passwordRaw, usuarioRaw, identifierRaw) {
       setCellByHeader_(usersSh, user._row, 'ultimo_login', nowIso_());
       ensureFriendCodeForRow_(usersSh, user);
       log_({ identificador:user.usuario || ref, correo:user.correo || correo, usuario:user.usuario || usuario, cedula:user.cedula_numero || user.cedula || '', telefono:user.telefono || '', accion:'login', resultado:'success', motivo:'login correcto' });
-      return { ok:true, message:'Login correcto.', user:userPayload_(user) };
+      // Prueba de que quien escriba después es de verdad esta cuenta. Sin esto,
+      // el servidor solo puede creerse lo que le diga el navegador.
+      var token = _crearTokenSesion_(usersSh, user);
+      var payload = userPayload_(user);
+      payload.session_token = token;
+      return { ok:true, message:'Login correcto.', user:payload, session_token:token };
     }
   }
 
@@ -801,6 +807,109 @@ function verifyRecovery_(identifierRaw, codeRaw, newPasswordRaw) {
   user.password_salt = salt; user.password_hash = hashPassword_(newPassword, salt); user.email_verificado = 'si'; user.estado_cuenta = 'activo'; user.ultimo_login = nowIso_();
   log_({ identificador:identifier, correo:user.correo || '', usuario:user.usuario || '', cedula:user.cedula_numero || user.cedula || '', telefono:user.telefono || '', accion:'recover_verify', resultado:'success', motivo:'password actualizado' });
   return { ok:true, message:'Contraseña actualizada.', user:userPayload_(user) };
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   QUIÉN PUEDE ESCRIBIR EN LA BASE
+   ────────────────────────────────────────────────────────────────────────────
+   Hasta la v575, borrar o editar un reporte se autorizaba SOLO en el navegador:
+   el servidor aceptaba cualquier db_update y cualquier db_delete que le
+   llegara. La comprobación "¿eres el dueño de este reporte?" vivía en un
+   archivo JavaScript que el propio usuario puede editar. Alguien con
+   conocimientos podía borrar el mapa entero sin saber ninguna contraseña.
+
+   Ahora el servidor decide, y para decidir necesita saber quién pregunta. Al
+   iniciar sesión se entrega un token: una cadena aleatoria guardada en la
+   cuenta, con caducidad, que el cliente manda en cada escritura. No es la
+   contraseña —no se puede reusar para entrar en ningún sitio— y se puede
+   revocar cambiando la celda.
+
+   Lo que NO cubre, dicho claramente: los contadores comunitarios (apoyos,
+   validaciones, denuncias) siguen siendo escribibles por cualquiera, porque
+   confirmar un reporte o denunciarlo tiene que funcionar sin cuenta. Alguien
+   podría falsificar SUS propios contadores. Cerrarlo pide acciones propias que
+   solo sepan sumar, no reescribir; es el siguiente paso natural.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+var TOKEN_TTL_DIAS = 60;
+
+function _crearTokenSesion_(usersSh, user) {
+  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+  var expira = new Date(Date.now() + TOKEN_TTL_DIAS * 86400000).toISOString();
+  try {
+    setCellByHeader_(usersSh, user._row, 'session_token', token);
+    setCellByHeader_(usersSh, user._row, 'session_expira', expira);
+  } catch (e) { return ''; }
+  return token;
+}
+
+/* Devuelve quién hace la petición según el token, o null si no hay token
+   válido. Nunca se fía del `usuario` que venga en el cuerpo: eso lo escribe el
+   navegador y es justo lo que no se puede creer. */
+function _quienEscribe_(body) {
+  var token = String((body && (body.session_token || body.token)) || '').trim();
+  if (!token) return null;
+  var sh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
+  var filas = getRows_(sh);
+  for (var i = 0; i < filas.length; i++) {
+    var r = filas[i];
+    if (isDeletedUser_(r)) continue;
+    if (String(r.session_token || '').trim() !== token) continue;
+    var exp = String(r.session_expira || '').trim();
+    if (exp && new Date(exp).getTime() < Date.now()) return null;   // caducado
+    return {
+      usuario: normUser_(r.usuario || ''),
+      correo: normEmail_(r.correo || ''),
+      esAdmin: normLower_(r.rol_solicitado) === 'admin'
+    };
+  }
+  return null;
+}
+
+// Posiciones dentro de `descripcion` que necesita la autorización.
+var DESC_IDX_AUTOR = 45;   // BASE_OFFSET+2 · nombre de usuario de quien publicó
+// Casillas que la COMUNIDAD puede tocar en un reporte ajeno. Todo lo demás
+// —texto, foto, ubicación, víctimas, ficha del edificio— es del autor.
+var DESC_IDX_COMUNITARIAS = [
+  47,   // apoyos (👍)
+  54,   // estado del historial: así 3 vecinos pueden archivar lo que ya no está
+  61,   // validaciones ciudadanas (¿sigue vigente?)
+  63    // denuncias (moderación)
+];
+
+/* Filas que NO son reportes: ubicación GPS, comentarios, relaciones de
+   amistad, puntajes, permisos, avatares, chat. Son la fontanería de la
+   aplicación, no contenido del mapa, y su `descripcion` tiene otro formato —
+   ni siquiera se puede leer un autor de ella. Se dejan como estaban: cerrarlas
+   con la misma regla rompería los amigos, el chat y la ubicación compartida sin
+   proteger nada que esté a la vista en el mapa. */
+function _esFilaMeta_(tipo) {
+  var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return t.indexOf('ubicacion') !== -1 || t.indexOf('comentario') !== -1 ||
+         t.indexOf('relacion') !== -1 || t.indexOf('puntaje') !== -1 ||
+         t.indexOf('permiso') !== -1 || t.indexOf('avatar') !== -1 ||
+         t.indexOf('chat') !== -1;
+}
+
+function _esAutorDelReporte_(descripcion, quien) {
+  if (!quien) return false;
+  if (quien.esAdmin) return true;
+  var autor = normUser_(String(descripcion || '').split(' | ')[DESC_IDX_AUTOR] || '');
+  return !!autor && autor === quien.usuario;
+}
+
+/* ¿El cambio se limita a las casillas comunitarias? Se compara casilla por
+   casilla: si algo cambió fuera de la lista blanca, no es una confirmación ni
+   una denuncia, es una edición del reporte ajeno. */
+function _soloCambiosComunitarios_(descVieja, descNueva) {
+  var a = String(descVieja || '').split(' | ');
+  var b = String(descNueva || '').split(' | ');
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) {
+    if (String(a[i] == null ? '' : a[i]) === String(b[i] == null ? '' : b[i])) continue;
+    if (DESC_IDX_COMUNITARIAS.indexOf(i) === -1) return false;
+  }
+  return true;
 }
 
 function userPayload_(user) {
@@ -1396,33 +1505,77 @@ function dbUpdate_(body) {
   var colIdx = _dbColIdx_(headers, col);
   if (colIdx < 0) return { ok: false, message: 'Columna no existe: ' + col };
   var data = sh.getRange(2, 1, last - 1, lastCol).getValues();
-  var updated = 0;
+  var descIdx = _dbColIdx_(headers, 'descripcion');
+  var tipoIdx = _dbColIdx_(headers, 'tipo');
+  var quien = _quienEscribe_(body);
+  var updated = 0, negados = 0;
   for (var i = 0; i < data.length; i++) {
-    if (_dbMatch_(data[i][colIdx], value, col)) {
+    if (!_dbMatch_(data[i][colIdx], value, col)) continue;
+    if (tipoIdx >= 0 && _esFilaMeta_(data[i][tipoIdx])) {
       Object.keys(set).forEach(function(k){
         var ci = _dbColIdx_(headers, k);
-        if (ci >= 0) { var cell = sh.getRange(i + 2, ci + 1); cell.setNumberFormat('@'); cell.setValue(String(set[k])); }
+        if (ci >= 0) { var c2 = sh.getRange(i + 2, ci + 1); c2.setNumberFormat('@'); c2.setValue(String(set[k])); }
       });
       updated++;
+      continue;
     }
+
+    // ¿Puede esta petición cambiar ESTA fila? El dueño y el administrador,
+    // todo; cualquier otro, solo las casillas comunitarias (confirmar que el
+    // reporte sigue vigente, apoyarlo, denunciarlo). Nadie puede reescribir el
+    // texto, la foto o la ubicación de un reporte ajeno.
+    var descVieja = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
+    var puede = _esAutorDelReporte_(descVieja, quien);
+    if (!puede && set.descripcion != null) {
+      puede = _soloCambiosComunitarios_(descVieja, String(set.descripcion));
+    }
+    // Sin descripción en el cambio, quien no es dueño no toca nada: podría
+    // estar moviendo el punto (lat/lng) o cambiando su categoría.
+    if (!puede) { negados++; continue; }
+
+    Object.keys(set).forEach(function(k){
+      var ci = _dbColIdx_(headers, k);
+      if (ci >= 0) { var cell = sh.getRange(i + 2, ci + 1); cell.setNumberFormat('@'); cell.setValue(String(set[k])); }
+    });
+    updated++;
+  }
+  if (!updated && negados) {
+    return { ok: false, message: 'No puedes editar un reporte que no es tuyo. Si es tuyo, vuelve a iniciar sesión.' };
   }
   return { ok: true, updated: updated };
 }
 // Borra filas que coincidan (col=value).
+/* Borrar es lo único que no tiene vuelta atrás, así que aquí no hay excepción
+   comunitaria: o eres el autor del reporte, o eres el administrador. Y hay que
+   demostrarlo con un token, no diciéndolo. */
 function dbDelete_(body) {
   var col = String(body.col || body.columna || 'lat');
   var value = (body.value != null) ? body.value : body.valor;
   if (value == null || value === '') return { ok: false, message: 'Falta value' };
+  var quien = _quienEscribe_(body);
   var sh = reportesSheet_();
   var last = sh.getLastRow(); var lastCol = sh.getLastColumn();
   if (last < 2) return { ok: true, deleted: 0 };
   var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h){ return String(h || '').trim(); });
   var colIdx = _dbColIdx_(headers, col);
   if (colIdx < 0) return { ok: false, message: 'Columna no existe: ' + col };
+  var descIdx = _dbColIdx_(headers, 'descripcion');
+  var tipoIdx = _dbColIdx_(headers, 'tipo');
   var data = sh.getRange(2, 1, last - 1, lastCol).getValues();
-  var deleted = 0;
+  var deleted = 0, negados = 0, sinSesion = false;
   for (var i = data.length - 1; i >= 0; i--) {
-    if (_dbMatch_(data[i][colIdx], value, col)) { sh.deleteRow(i + 2); deleted++; }
+    if (!_dbMatch_(data[i][colIdx], value, col)) continue;
+    // Filas de fontanería (amistades, GPS, avatares): como estaban.
+    if (tipoIdx >= 0 && _esFilaMeta_(data[i][tipoIdx])) { sh.deleteRow(i + 2); deleted++; continue; }
+    if (!quien) { sinSesion = true; negados++; continue; }
+    var desc = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
+    if (!_esAutorDelReporte_(desc, quien)) { negados++; continue; }
+    sh.deleteRow(i + 2); deleted++;
+  }
+  if (!deleted && negados) {
+    return { ok: false, message: sinSesion
+      ? 'Vuelve a iniciar sesión para poder borrar tus reportes.'
+      : 'Solo puedes borrar tus propios reportes.' };
   }
   return { ok: true, deleted: deleted };
 }
@@ -1578,14 +1731,23 @@ function leaderboard_(body) {
 // que isVerified_() exige. Entra por el MISMO loginUser_() que todos: no se
 // añade ningún atajo ni excepción al camino de autenticación.
 //
-// NOTA DE SEGURIDAD (importante)
-// ------------------------------
-// Esto elimina la PUBLICACIÓN de las contraseñas, que es el agujero más grave.
-// Pero las acciones de administrador (borrar reportes, dar permisos) todavía se
-// autorizan en el navegador, no aquí. Alguien con conocimientos puede saltárselas
-// editando el JavaScript en SU propio navegador, aunque no sepa la contraseña.
-// Cerrar eso requiere exigir un token de sesión en cada escritura (dbWrite_,
-// dbUpdate_, dbDelete_). Queda pendiente y conviene hacerlo.
+// NOTA DE SEGURIDAD (actualizada en la v575)
+// ------------------------------------------
+// Esto elimina la PUBLICACIÓN de las contraseñas, que era el agujero más grave.
+// Lo segundo —que borrar y editar se autorizaran solo en el navegador— ya está
+// cerrado: el login entrega un token de sesión y dbUpdate_/dbDelete_ comprueban
+// aquí quién pide el cambio y si es suyo (ver "QUIÉN PUEDE ESCRIBIR EN LA BASE").
+//
+// LO QUE SIGUE ABIERTO, dicho sin adornos:
+//  · Los contadores comunitarios (apoyos, validaciones, denuncias) los puede
+//    escribir cualquiera, porque confirmar o denunciar tiene que funcionar sin
+//    cuenta. Alguien podría inflar los suyos o borrarse denuncias. Se cierra con
+//    acciones propias que solo sepan SUMAR, no reescribir.
+//  · Crear reportes (dbWrite_) sigue abierto: es lo que hace la aplicación. El
+//    freno contra el abuso es la moderación, no la autenticación.
+//  · Las filas de fontanería (amistades, GPS, avatares, chat) se quedaron como
+//    estaban; cerrarlas con la misma regla rompería lo social sin proteger nada
+//    que se vea en el mapa.
 // ════════════════════════════════════════════════════════════════════════════
 
 function crearCuentasSistemaUrbis() {
