@@ -272,5 +272,72 @@
   // MANDATORY_PHOTO_IDS también se publica: js/20 lo usaba como local y la
   // carcasa ligera necesita saber en qué reportes la foto es obligatoria.
   window.URBIS_MANDATORY_PHOTO_IDS = MANDATORY_PHOTO_IDS;
+
+  // ── ALERTAS DE ESCALA NACIONAL ───────────────────────────────────────────
+  // Un hueco se ve acercándose a la cuadra; una inundación o un derrumbe hay
+  // que verlos con el país entero en pantalla, porque quien decide si sale un
+  // camión o se cierra una vía está mirando el mapa desde arriba. Estos
+  // marcadores tienen clase raíz propia (urbis-alerta-root) y por eso el
+  // optimizador de zoom —que esconde TODO marcador normal al alejarse— no los
+  // toca: en vez de desaparecer, crecen un poco.
+  //
+  // Vive aquí, en el catálogo, porque hasta la v576 el mismo predicado estaba
+  // escrito DOS veces —en js/10 (el marcador) y en js/50 (la capa forzada)— y
+  // con listas distintas. Añadir un tipo en una y olvidarlo en la otra daba un
+  // marcador que se dibujaba pero no sobrevivía al alejar, o al revés.
+  //
+  // El icono: hay PNG propio para sismo e incendio forestal; el resto usa su
+  // emoji, que se lee igual de bien a este tamaño y no obliga a inventar
+  // ilustraciones para cada fenómeno.
+  //
+  // Las horas son las que el reporte sigue activo. Un sismo o un incendio
+  // forestal son noticia durante semanas; una creciente o un derrumbe, días.
+  // "Riesgo por lluvia" es un aviso de hoy y por eso dura menos: si durara lo
+  // mismo, después de un invierno el mapa sería una cortina de gotas.
+  const ALERTAS_NACIONALES = {
+    'sismo':                                        { png:'assets/icons/alerta-sismo.png', horas:336 },
+    'terremoto':                                    { png:'assets/icons/alerta-sismo.png', horas:336 },
+    'sismo / terremoto':                            { png:'assets/icons/alerta-sismo.png', horas:336 },
+    'incendio forestal':                            { png:'assets/icons/alerta-incendio-forestal.png', horas:336 },
+    'tsunami':                                      { emoji:'🌊', horas:168 },
+    'ciclon':                                       { emoji:'🌀', horas:168 },
+    'tormenta':                                     { emoji:'⛈️', horas:48 },
+    'inundacion en via':                            { emoji:'🌊', horas:72 },
+    'zona de inundacion activa':                    { emoji:'🌊', horas:72 },
+    'desbordamiento de arroyo o canal':             { emoji:'🌊', horas:72 },
+    'nivel de rio en aumento / riesgo de creciente':{ emoji:'🌊', horas:72 },
+    'derrumbe o deslizamiento':                     { emoji:'⛰️', horas:120 },
+    'dano geologico':                               { emoji:'⛰️', horas:120 },
+    'riesgo por lluvia':                            { emoji:'🌧️', horas:24 }
+  };
+
+  function normAlerta(v){
+    return String(v || '').toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  /* Ficha de la alerta, o null si el reporte no es de escala nacional. Acepta
+     el texto tal cual está guardado: los reportes viejos dicen solo "sismo" y
+     el selector actual dice "Sismo / Terremoto". */
+  window.urbisFichaAlertaNacional = function (item) {
+    const n = normAlerta(item);
+    if (ALERTAS_NACIONALES[n]) return ALERTAS_NACIONALES[n];
+    const sinEspacios = n.replace(/ /g, '');
+    let hallada = null;
+    Object.keys(ALERTAS_NACIONALES).forEach(function (k) {
+      if (!hallada && k.replace(/ /g, '') === sinEspacios) hallada = ALERTAS_NACIONALES[k];
+    });
+    return hallada;
+  };
+  window.urbisEsAlertaNacionalItem = function (item) {
+    return !!window.urbisFichaAlertaNacional(item);
+  };
+  // Cuántas horas sigue activo el reporte. 0 = no es alerta nacional; que
+  // decida quien llame.
+  window.urbisHorasAlertaNacional = function (item) {
+    const f = window.urbisFichaAlertaNacional(item);
+    return f ? f.horas : 0;
+  };
+  window.URBIS_ALERTAS_NACIONALES = ALERTAS_NACIONALES;
   window.URBIS_VICTIMAS_IDS = VICTIMAS_IDS;
 })();

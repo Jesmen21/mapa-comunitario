@@ -782,6 +782,15 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
   background:#7a0f1a; color:#fff; font-size:6.5px; font-weight:900; letter-spacing:.3px;
   padding:1px 5px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 5px rgba(0,0,0,.4); z-index:4;
 }
+/* Fenómenos sin ilustración propia (inundación, derrumbe, ciclón…): el emoji
+   ocupa el mismo sitio y el mismo tamaño que el PNG, así el marcador es
+   idéntico se pinte con dibujo o con emoji. */
+.urbis-alerta .al-img.al-emoji{
+  display:flex; align-items:center; justify-content:center;
+  font-size:30px; line-height:1; filter:drop-shadow(0 3px 6px rgba(120,0,10,.55));
+}
+body.urbis-zoom-fade-markers .urbis-alerta .al-img.al-emoji{ font-size:33px; }
+body.urbis-zoom-hide-markers .urbis-alerta .al-img.al-emoji{ font-size:38px; }
 @media (prefers-reduced-motion:reduce){ .urbis-alerta .al-ring, .urbis-alerta .al-glow, .urbis-alerta .al-img{ animation:none; } }
 /* Al alejar, los marcadores normales se ocultan y la alerta se queda — crece
    apenas lo justo para seguir leyéndose desde lejos, sin invadir la pantalla. */

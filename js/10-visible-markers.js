@@ -23,7 +23,13 @@
   // roja/naranja translúcida — justo lo que el usuario veía en vez del icono.
   // Acepta también "Sismo / Terremoto", que es como quedó el ítem del selector
   // al unificar los dos sinónimos. Los reportes viejos dicen solo "Sismo".
+  // La lista vive en el catálogo (js/03c): antes estaba escrita aquí y otra vez
+  // en js/50, con contenidos distintos. Si el catálogo no cargó, se responde
+  // con los dos casos históricos para no dejar el mapa sin alertas.
   function esAlertaNacionalItem(item){
+    if (typeof window.urbisEsAlertaNacionalItem === 'function') {
+      return window.urbisEsAlertaNacionalItem(item);
+    }
     return /^(sismo|terremoto|sismo\s*\/\s*terremoto|incendio forestal)$/i.test(
       String(item || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim()
     );
@@ -239,11 +245,17 @@
       // transparente. El tamaño real lo maneja el CSS: al alejar el mapa la
       // gota CRECE en vez de esconderse, porque es noticia de escala nacional
       // y tiene que llamar la atención justo cuando se ve el país entero.
-      const esSismo = /sismo|terremoto/i.test(_quitarAc(d[0]).trim());
-      const srcAlerta = esSismo ? 'assets/icons/alerta-sismo.png' : 'assets/icons/alerta-incendio-forestal.png';
+      // Sismo e incendio forestal tienen ilustración propia; el resto de
+      // fenómenos usan su emoji. A este tamaño se leen igual de bien, y no
+      // obliga a inventar un dibujo para cada cosa antes de poder mostrarla.
+      const _fichaAl = (typeof window.urbisFichaAlertaNacional === 'function')
+        ? window.urbisFichaAlertaNacional(d[0]) : null;
+      const _cuerpoAl = (_fichaAl && _fichaAl.png)
+        ? `<img src="${_fichaAl.png}" class="al-img" alt="" />`
+        : `<span class="al-img al-emoji">${(_fichaAl && _fichaAl.emoji) || '⚠️'}</span>`;
       const html = `<div class="urbis-alerta">`+
         `<span class="al-ring"></span><span class="al-ring al-ring2"></span><span class="al-glow"></span>`+
-        `<img src="${srcAlerta}" class="al-img" alt="" />`+
+        _cuerpoAl+
         `<span class="al-flag">URBIS · ALERTA</span>`+
       `</div>`;
       marker = L.marker([lat, lng], {

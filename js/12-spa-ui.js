@@ -529,8 +529,15 @@
     // es información de seguridad que la comunidad necesita ver más tiempo.
     // Los hechos del conflicto siguen siendo información útil mucho después de
     // ocurridos (una mina o un retén no desaparecen en 8 horas).
+    // Las alertas de escala nacional (sismo, incendio forestal, inundación,
+    // derrumbe, creciente…) traen sus propias horas desde el catálogo. Antes
+    // solo el sismo y el incendio duraban más de 8 horas: una inundación se
+    // borraba del mapa la misma tarde en que se reportó, cuando la emergencia
+    // apenas estaba empezando.
+    const _horasAlerta = (typeof window.urbisHorasAlertaNacional === 'function')
+      ? window.urbisHorasAlertaNacional(i) : 0;
     const horasTTLQuick = /atentado|artefacto explosivo/i.test(String(i||'')) ? 24
-      : /sismo|terremoto|incendio forestal/i.test(String(i||'')) ? 336
+      : _horasAlerta ? _horasAlerta
       : /mina antipersona|reten ilegal|retén ilegal|grupo armado|confinamiento|desplazamiento forzado/i.test(String(i||'')) ? 168
       : /secuestro|extorsion|extorsión|masacre|homicidio|desaparicion|desaparición|amenaza|reclutamiento|ejecucion extrajudicial|ejecución extrajudicial|combate armado|panfleto/i.test(String(i||'')) ? 72
       : 8;

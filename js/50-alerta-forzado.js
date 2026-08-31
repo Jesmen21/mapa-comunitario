@@ -35,12 +35,18 @@
         tipoLow.indexOf('relacion') !== -1 || tipoLow.indexOf('puntaje') !== -1 ||
         tipoLow.indexOf('permiso') !== -1 || tipoLow.indexOf('avatar') !== -1 ||
         tipoLow.indexOf('chat') !== -1) return false;
-    var item = _quitarAc(String(p.descripcion || '').split(' | ')[0]).trim();
-    // "sismo / terremoto" es como quedó el ítem del selector tras unificar los
-    // dos sinónimos; los reportes ya publicados dicen solo "sismo".
-    return item === 'sismo' || item === 'terremoto' ||
-           item.replace(/\s+/g, '') === 'sismo/terremoto' ||
-           item === 'incendio forestal';
+    var item = String(p.descripcion || '').split(' | ')[0];
+    // La lista de qué cuenta como alerta nacional vive en el catálogo (js/03c).
+    // Estaba escrita aquí Y en js/10, con contenidos distintos: añadir un tipo
+    // en una y olvidarlo en la otra daba un marcador que se dibujaba pero se
+    // perdía al alejar el mapa, que es exactamente lo que hay que evitar.
+    if (typeof window.urbisEsAlertaNacionalItem === 'function') {
+      return window.urbisEsAlertaNacionalItem(item);
+    }
+    var it = _quitarAc(item).trim();
+    return it === 'sismo' || it === 'terremoto' ||
+           it.replace(/\s+/g, '') === 'sismo/terremoto' ||
+           it === 'incendio forestal';
   }
   window.urbisEsAlertaNacional = esAlertaNacional;
 
