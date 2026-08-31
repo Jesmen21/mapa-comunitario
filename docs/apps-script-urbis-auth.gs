@@ -1750,6 +1750,44 @@ function leaderboard_(body) {
 //    que se vea en el mapa.
 // ════════════════════════════════════════════════════════════════════════════
 
+/**
+ * Nombra ADMINISTRADOR a una cuenta que YA existe, sin tocar su contraseña.
+ *
+ * `crearCuentasSistemaUrbis` sirve para crear cuentas nuevas, pero le cambia la
+ * contraseña a la cuenta si ya existía. Para ascender a alguien que se registró
+ * normalmente —con su correo, su código de verificación y su clave— hace falta
+ * esto: cambia el rol y nada más.
+ *
+ * CÓMO SE USA
+ *   1. Escribe abajo el usuario (o el correo) de la cuenta.
+ *   2. Arriba, en el selector de funciones, elige  hacerAdminUrbis
+ *   3. Pulsa Ejecutar y mira Ver > Registro de ejecución.
+ *   4. Esa persona debe CERRAR SESIÓN y volver a entrar: el rol viaja en la
+ *      sesión, y la que tiene abierta se emitió cuando todavía era ciudadana.
+ *
+ * Para quitarle el permiso a alguien, cambia 'admin' por 'citizen'.
+ */
+function hacerAdminUrbis() {
+  // ── EDITA AQUÍ ────────────────────────────────────────────────────────────
+  var CUENTA = 'urbisprocity';   // usuario o correo
+  var ROL    = 'admin';          // 'admin' para dar, 'citizen' para quitar
+  // ──────────────────────────────────────────────────────────────────────────
+
+  var ident = normText_(CUENTA);
+  if (!ident) { Logger.log('Falta escribir la cuenta.'); return; }
+  var user = findSocialUser_(ident) || pickBestUser_(findUsersByIdentifier_(ident));
+  if (!user) { Logger.log('No se encontró la cuenta "' + CUENTA + '".'); return; }
+
+  var sh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
+  setCellByHeader_(sh, user._row, 'rol_solicitado', ROL);
+  // Se revoca la sesión abierta: si no, el navegador seguiría usando el token
+  // viejo y el permiso nuevo no se notaría hasta que caducara.
+  setCellByHeader_(sh, user._row, 'session_token', '');
+  setCellByHeader_(sh, user._row, 'session_expira', '');
+  Logger.log('"' + (user.usuario || CUENTA) + '" (fila ' + user._row + ') ahora tiene rol: ' + ROL +
+             '. Debe cerrar sesión y volver a entrar.');
+}
+
 function crearCuentasSistemaUrbis() {
   // ── EDITA AQUÍ ────────────────────────────────────────────────────────────
   // Usa contraseñas largas (12+ caracteres). No reutilices las de otros sitios.

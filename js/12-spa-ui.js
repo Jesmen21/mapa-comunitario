@@ -2507,22 +2507,24 @@
   function _sesionEsCuentaAdmin(){
     try{
       var s = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? (window.URBIS_AUTH.readSession() || {}) : {};
-      var u = String(s.usuario || '').toLowerCase();
-      if(!u) return false;
-      return u === _adminUser() || String(s.rol || '').toLowerCase() === 'admin';
+      if(!String(s.usuario || '')) return false;
+      // SOLO el rol que devolvió el servidor. Antes valía además llamarse como
+      // la cuenta de administrador, y eso es un nombre, no una credencial: el
+      // servidor es quien sabe quién manda. Los administradores se marcan en la
+      // hoja de usuarios (rol_solicitado = admin).
+      return String(s.rol || '').toLowerCase() === 'admin';
     }catch(e){ return false; }
   }
-  try{
-    if(localStorage.getItem('urbis_admin') === '1'){
-      if(_sesionEsCuentaAdmin()){ window.userRole = 'admin'; window.userBaseRoleGlobal = 'admin'; }
-      else { localStorage.removeItem('urbis_admin'); } // flag colgado de una prueba: limpiar
-    }
-  }catch(e){}
-  window.urbisEsAdmin = function(){
-    if(!_sesionEsCuentaAdmin()) return false; // sesión de usuario normal: nunca es admin
-    try{ if(localStorage.getItem('urbis_admin') === '1') return true; }catch(e){}
-    return (window.userRole === 'admin');
-  };
+  // La marca local ya no concede nada; se limpia para que no quede rondando en
+  // teléfonos donde se puso en su día.
+  try{ localStorage.removeItem('urbis_admin'); }catch(e){}
+  try{ if(_sesionEsCuentaAdmin()){ window.userRole = 'admin'; window.userBaseRoleGlobal = 'admin'; } }catch(e){}
+  // Una sola respuesta y una sola fuente: el rol que el servidor puso en la
+  // sesión. Antes hacían falta ADEMÁS una marca de localStorage o la variable
+  // global userRole, y eso daba dos problemas a la vez: quien entraba como
+  // administrador podía no serlo hasta que la variable se sincronizara, y quien
+  // no lo era podía escribir la marca a mano en la consola.
+  window.urbisEsAdmin = function(){ return _sesionEsCuentaAdmin(); };
 
   // ── Limpieza puntual de datos: unificar "policía militar" bajo "Área preventiva" ──
   // Pedido explícito: hay reportes antiguos con "policía militar" en la NOTA
@@ -2595,9 +2597,11 @@
   // otros archivos la llaman, pero ya no autoriza a nadie: el administrador
   // entra por el login normal y es el servidor quien verifica su contraseña.
   window.urbisEsCredsAdmin = function(){ return false; };
-  // Activa el modo admin sin pedir nada (lo llaman el login y urbisAdminUnlock).
+  // Refresca la interfaz para el administrador. La llama el login DESPUÉS de que
+  // el servidor haya dicho que el rol es admin; no concede el permiso, solo pone
+  // la pantalla acorde. Ya no escribe ninguna marca en el navegador: era
+  // precisamente lo que se podía falsificar desde la consola.
   window.urbisActivarModoAdmin = function(){
-    try{ localStorage.setItem('urbis_admin','1'); }catch(e){}
     window.userRole = 'admin'; window.userBaseRoleGlobal = 'admin';
     if(!window.userUsernameGlobal) window.userUsernameGlobal = _adminUser();
     if(!window.userNameGlobal) window.userNameGlobal = 'Administrador URBIS';
@@ -2615,7 +2619,6 @@
           'no la aplicación: así no puede quedar escrita en un archivo público.');
   };
   window.urbisAdminLogout = function(){
-    try{ localStorage.removeItem('urbis_admin'); }catch(e){}
     window.userRole = 'citizen'; window.userBaseRoleGlobal = 'citizen';
     try{ document.body.dataset.role = 'citizen'; }catch(e){}
     alert('Saliste del modo administrador.');

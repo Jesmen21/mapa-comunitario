@@ -1,0 +1,182 @@
+/* URBIS · CREAR CUENTA Y CONFIRMAR CORREO, EN CELESTE (css/53)
+   ═══════════════════════════════════════════════════════════════════════════
+   Las dos pantallas del registro se habían quedado en la estética vieja: verde
+   oscuro, con el texto casi ilegible. No era descuido de quien las escribió —
+   css/41 ya las pinta claras—, sino dos reglas GLOBALES del tema original que
+   se cuelan y ganan por llegar después:
+
+     · css/42-turquoise-refresh.css → `p, small, span, label { color:
+       rgba(231,255,251,.78) !important }`. Pinta CUALQUIER párrafo de blanco
+       verdoso. Sobre una tarjeta blanca desaparece: es la letra pálida de
+       "Espera un momento mientras validamos tus datos".
+
+     · css/42 también → `.urbis-auth-card { background: verde muy oscuro }`,
+       que gana a `.urbis-verification-card` de css/41 porque las dos son
+       !important, tienen la misma especificidad y esta va después. De ahí el
+       recuadro verde botella de "Confirma tu correo".
+
+     · css/01-base-layout.css → `h2, h3 { color: fucsia; border-bottom: 1px
+       solid #444; text-shadow: 0 2px 4px rgba(0,0,0,.5) }`. De ahí la sombra
+       negra bajo los títulos y la raya horizontal que los cruza.
+
+   Aquí NO se tocan esas reglas globales: cambiarlas movería el color de media
+   aplicación de golpe. Se neutralizan solo DENTRO de estas dos pantallas, que
+   es donde estorban, y encima se rediseñan con el celeste de URBIS.
+
+   Sobre el fondo: no es blanco puro ni verde oscuro. Es un celeste muy claro
+   con un velo cálido arriba, para que la tarjeta se despegue del fondo sin
+   parecer una hoja de papel.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --urbis-cel-fuerte:#0EA5E9;
+  --urbis-cel:#38BDF8;
+  --urbis-cel-claro:#7DD3FC;
+  --urbis-cel-papel:#F2FAFF;
+  --urbis-cel-papel2:#E6F4FE;
+  --urbis-cel-borde:rgba(56,189,248,.38);
+  --urbis-cel-tinta:#0C3B5E;
+  --urbis-cel-tinta-suave:#456B87;
+}
+
+/* ── Neutralizar la herencia del tema oscuro, SOLO aquí ───────────────────── */
+.urbis-register-loading h2,
+.urbis-register-loading h3,
+.urbis-verification-flow h2,
+.urbis-verification-flow h3{
+  text-shadow:none !important;
+  border-bottom:0 !important;
+  padding-bottom:0 !important;
+}
+.urbis-register-loading p,
+.urbis-register-loading small,
+.urbis-register-loading span,
+.urbis-verification-flow p,
+.urbis-verification-flow small,
+.urbis-verification-flow span,
+.urbis-verification-flow label{
+  color:var(--urbis-cel-tinta-suave) !important;
+}
+
+/* ── "Creando tu cuenta" ──────────────────────────────────────────────────── */
+.urbis-register-loading{
+  background:
+    radial-gradient(circle at 20% 12%, rgba(125,211,252,.42), transparent 34%),
+    radial-gradient(circle at 84% 20%, rgba(14,165,233,.24), transparent 32%),
+    linear-gradient(180deg, rgba(232,246,255,.96), rgba(240,249,255,.97)) !important;
+}
+.urbis-register-loading-card{
+  /* El color propio de la tarjeta también, no solo el del h2 y el párrafo:
+     cualquier texto que se añada aquí mañana heredaría el casi-blanco del tema
+     viejo y volvería a desaparecer sobre el fondo claro. */
+  color:var(--urbis-cel-tinta) !important;
+  background:linear-gradient(180deg, var(--urbis-cel-papel) 0%, var(--urbis-cel-papel2) 100%) !important;
+  border:1.5px solid var(--urbis-cel-borde) !important;
+  box-shadow:0 26px 60px rgba(12,74,110,.18) !important;
+}
+.urbis-loading-brand{ color:var(--urbis-cel-fuerte) !important; }
+.urbis-register-loading-card h2{
+  color:var(--urbis-cel-tinta) !important;
+  font-size:1.4rem !important;
+}
+/* El texto que no se leía. Va oscuro y con cuerpo: es el que explica que hay
+   que mirar el correo, y si no se lee la persona se queda esperando. */
+.urbis-register-loading-card p,
+#urbis-loading-text{
+  color:var(--urbis-cel-tinta-suave) !important;
+  font-size:.93rem !important;
+  line-height:1.5 !important;
+  font-weight:650 !important;
+  opacity:1 !important;
+}
+.urbis-loading-spinner{
+  border-color:rgba(56,189,248,.22) !important;
+  border-top-color:var(--urbis-cel-fuerte) !important;
+  border-right-color:var(--urbis-cel-claro) !important;
+  box-shadow:0 12px 24px rgba(14,165,233,.18) !important;
+}
+.urbis-loading-dots span{ background:var(--urbis-cel-claro) !important; }
+.urbis-loading-dots span:nth-child(2){ background:var(--urbis-cel) !important; }
+.urbis-loading-dots span:nth-child(3){ background:var(--urbis-cel-fuerte) !important; }
+
+/* ── "Confirma tu correo" ─────────────────────────────────────────────────── */
+.urbis-verification-flow{
+  background:rgba(8,47,73,.42) !important;
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+}
+/* Doble clase para ganarle a `.urbis-auth-card` de css/42 sin depender del
+   orden de los archivos: dos clases pesan más que una, pase lo que pase. */
+.urbis-auth-card.urbis-verification-card{
+  background:linear-gradient(180deg, var(--urbis-cel-papel) 0%, var(--urbis-cel-papel2) 100%) !important;
+  color:var(--urbis-cel-tinta) !important;
+  border:1.5px solid var(--urbis-cel-borde) !important;
+  box-shadow:0 28px 70px rgba(12,74,110,.28) !important;
+}
+.urbis-verification-card .urbis-auth-badge{
+  background:linear-gradient(135deg, var(--urbis-cel), var(--urbis-cel-claro)) !important;
+  color:#04293F !important;
+  border-color:rgba(14,165,233,.35) !important;
+  box-shadow:0 8px 20px rgba(14,165,233,.28) !important;
+}
+.urbis-verification-card h2{ color:var(--urbis-cel-tinta) !important; }
+.urbis-verification-card #urbis-auth-modal-text,
+.urbis-verification-card .urbis-auth-hint{
+  color:var(--urbis-cel-tinta-suave) !important;
+}
+/* El correo al que se envió el código: es el dato que la persona necesita
+   comprobar de un vistazo, así que va en celeste fuerte y no en el gris del
+   resto del párrafo. */
+.urbis-verification-card #urbis-auth-modal-text b{ color:var(--urbis-cel-fuerte) !important; }
+.urbis-verification-card #urbis-verification-code{
+  background:#fff !important;
+  border:2px solid var(--urbis-cel) !important;
+  color:var(--urbis-cel-tinta) !important;
+  letter-spacing:.35em;
+  text-align:center;
+  font-weight:900 !important;
+  box-shadow:inset 0 0 0 1px rgba(56,189,248,.18), 0 6px 16px rgba(14,165,233,.10) !important;
+}
+.urbis-verification-card #urbis-verification-code::placeholder{
+  color:rgba(69,107,135,.38) !important; letter-spacing:.35em; font-weight:800;
+}
+.urbis-verification-card .urbis-auth-primary{
+  background:linear-gradient(135deg, var(--urbis-cel-fuerte), var(--urbis-cel-claro)) !important;
+  color:#03293F !important;
+  font-weight:900 !important;
+  box-shadow:0 10px 24px rgba(14,165,233,.32) !important;
+}
+.urbis-verification-card .urbis-auth-secondary{
+  background:rgba(56,189,248,.12) !important;
+  color:var(--urbis-cel-fuerte) !important;
+  box-shadow:inset 0 0 0 1.5px rgba(56,189,248,.42) !important;
+  font-weight:850 !important;
+}
+.urbis-verification-card .urbis-auth-x{
+  background:rgba(56,189,248,.14) !important;
+  color:var(--urbis-cel-fuerte) !important;
+}
+
+/* ── La tarjeta se salía de la pantalla ───────────────────────────────────
+   No era el color: el modal es una rejilla (`display:grid`) y una casilla de
+   rejilla trae de fábrica `min-width:auto`, que significa "al menos tan ancha
+   como su contenido más largo sin partir". El correo —urbisprocity@gmail.com—
+   no tiene por dónde partirse, así que estiraba la tarjeta a 413 px dentro de
+   una pantalla de 390 y el texto quedaba cortado por la derecha. Se veía en el
+   teléfono como si el diseño estuviera desfasado.
+
+   `min-width:0` devuelve el mando al ancho declarado, y el corte de palabra
+   hace que el correo se parta en vez de empujar. Se aplica a TODAS las
+   tarjetas de autenticación: cualquier correo largo haría lo mismo en el
+   modal de recuperar contraseña o en el de aviso. */
+.urbis-auth-modal > .urbis-auth-card{
+  min-width:0 !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+.urbis-auth-card #urbis-auth-modal-text,
+.urbis-auth-card p,
+.urbis-auth-card h2{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}

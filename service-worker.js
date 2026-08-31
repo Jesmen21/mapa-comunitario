@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v576-alertas-naturales';
+const URBIS_CACHE = 'urbis-v577-registro-celeste';
 const URBIS_ASSETS = [
   './',
   './index.html',
