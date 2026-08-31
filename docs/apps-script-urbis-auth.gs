@@ -888,7 +888,43 @@ function _esFilaMeta_(tipo) {
   return t.indexOf('ubicacion') !== -1 || t.indexOf('comentario') !== -1 ||
          t.indexOf('relacion') !== -1 || t.indexOf('puntaje') !== -1 ||
          t.indexOf('permiso') !== -1 || t.indexOf('avatar') !== -1 ||
-         t.indexOf('chat') !== -1;
+         t.indexOf('chat') !== -1 || t.indexOf('peticion') !== -1;
+}
+
+/* Comentarios y peticiones NO son fontanería aunque compartan el filtro de
+   filas meta (ahí están para que no se pinten en el mapa). Son texto escrito
+   por una persona, con su nombre encima y a la vista de los demás. Hasta ahora
+   caían en la rama de "filas meta" de dbUpdate_/dbDelete_, que no comprueba
+   nada: cualquiera con la descripción exacta podía borrar el comentario de
+   otro. Se separan aquí y se les aplica su propia regla de autoría.
+
+   El autor no está en la casilla 45 —eso es formato de reporte— sino en el
+   primer campo del formato usuario~~~texto~~~extra. */
+function _esFilaTextoDeAlguien_(tipo) {
+  var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return t.indexOf('comentario') !== -1 || t.indexOf('peticion') !== -1;
+}
+function _esAutorDelTexto_(descripcion, quien) {
+  if (!quien) return false;
+  if (quien.esAdmin) return true;
+  var autor = normUser_(String(descripcion || '').split('~~~')[0] || '');
+  return !!autor && autor === quien.usuario;
+}
+/* Denunciar un comentario ajeno sí lo puede hacer cualquiera: escribe SOLO el
+   tercer campo (las denuncias). Si cambió cualquier otra cosa, es una edición
+   del comentario de otro y no pasa. Se limita a comentarios a propósito: en
+   una petición el tercer campo es la captura adjunta, no una denuncia. */
+function _soloDenunciasEnTexto_(tipo, vieja, nueva) {
+  var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (t.indexOf('comentario') === -1) return false;
+  var a = String(vieja || '').split('~~~');
+  var b = String(nueva || '').split('~~~');
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) {
+    if (String(a[i] == null ? '' : a[i]) === String(b[i] == null ? '' : b[i])) continue;
+    if (i !== 2) return false;
+  }
+  return true;
 }
 
 function _esAutorDelReporte_(descripcion, quien) {
@@ -1511,6 +1547,20 @@ function dbUpdate_(body) {
   var updated = 0, negados = 0;
   for (var i = 0; i < data.length; i++) {
     if (!_dbMatch_(data[i][colIdx], value, col)) continue;
+    if (tipoIdx >= 0 && _esFilaTextoDeAlguien_(data[i][tipoIdx])) {
+      var descTexto = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
+      var puedeTexto = _esAutorDelTexto_(descTexto, quien);
+      if (!puedeTexto && set.descripcion != null) {
+        puedeTexto = _soloDenunciasEnTexto_(data[i][tipoIdx], descTexto, String(set.descripcion));
+      }
+      if (!puedeTexto) { negados++; continue; }
+      Object.keys(set).forEach(function(k){
+        var ci = _dbColIdx_(headers, k);
+        if (ci >= 0) { var c3 = sh.getRange(i + 2, ci + 1); c3.setNumberFormat('@'); c3.setValue(String(set[k])); }
+      });
+      updated++;
+      continue;
+    }
     if (tipoIdx >= 0 && _esFilaMeta_(data[i][tipoIdx])) {
       Object.keys(set).forEach(function(k){
         var ci = _dbColIdx_(headers, k);
@@ -1565,6 +1615,15 @@ function dbDelete_(body) {
   var deleted = 0, negados = 0, sinSesion = false;
   for (var i = data.length - 1; i >= 0; i--) {
     if (!_dbMatch_(data[i][colIdx], value, col)) continue;
+    // Un comentario o una petición los borra quien los escribió, o el
+    // administrador. Antes entraban por la rama de abajo y los borraba
+    // cualquiera.
+    if (tipoIdx >= 0 && _esFilaTextoDeAlguien_(data[i][tipoIdx])) {
+      if (!quien) { sinSesion = true; negados++; continue; }
+      var descT = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
+      if (!_esAutorDelTexto_(descT, quien)) { negados++; continue; }
+      sh.deleteRow(i + 2); deleted++; continue;
+    }
     // Filas de fontanería (amistades, GPS, avatares): como estaban.
     if (tipoIdx >= 0 && _esFilaMeta_(data[i][tipoIdx])) { sh.deleteRow(i + 2); deleted++; continue; }
     if (!quien) { sinSesion = true; negados++; continue; }
@@ -1574,8 +1633,8 @@ function dbDelete_(body) {
   }
   if (!deleted && negados) {
     return { ok: false, message: sinSesion
-      ? 'Vuelve a iniciar sesión para poder borrar tus reportes.'
-      : 'Solo puedes borrar tus propios reportes.' };
+      ? 'Vuelve a iniciar sesión para poder borrar lo que publicaste.'
+      : 'Solo puedes borrar lo que publicaste tú.' };
   }
   return { ok: true, deleted: deleted };
 }

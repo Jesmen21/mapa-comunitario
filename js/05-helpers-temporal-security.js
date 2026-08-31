@@ -234,7 +234,8 @@
   function esFilaMetaUrbis(p){
       const t = String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
       return t.indexOf('ubicacion')!==-1 || t.indexOf('comentario')!==-1 || t.indexOf('relacion')!==-1 ||
-             t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1;
+             t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 ||
+             t.indexOf('peticion')!==-1;
   }
   window.esFilaMetaUrbis = esFilaMetaUrbis;
 

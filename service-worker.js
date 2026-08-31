@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v577-registro-celeste';
+const URBIS_CACHE = 'urbis-v578-config-admin';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -84,6 +84,7 @@ const URBIS_ASSETS = [
   './js/13d-mis-reportes-noti.js',
   './js/13e-nivel2.js',
   './js/13f-victimas.js',
+  './js/13g-config-admin.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
   './js/50-alerta-forzado.js',

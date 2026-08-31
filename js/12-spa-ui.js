@@ -750,9 +750,13 @@
       // Filas especiales (no son reportes): se identifican por el TEXTO del tipo
       // (no por el emoji, que se corrompe a mojibake al guardarse en el Sheet).
       const tipoTxt = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('social rush')!==-1; };
+      const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('social rush')!==-1; };
       window.urbisRushSocial  = raw.filter(p => tipoTxt(p).indexOf('social rush') !== -1);
       window.urbisComentarios = raw.filter(p => tipoTxt(p).indexOf('comentario') !== -1);
+      // Las peticiones al administrador salen de globalData (no son reportes y
+      // no se pintan), así que necesitan su propio cajón: si no, el buzón del
+      // panel de administración se vería siempre vacío.
+      window.urbisPeticiones  = raw.filter(p => tipoTxt(p).indexOf('peticion') !== -1);
       window.urbisUbicaciones  = raw.filter(p => tipoTxt(p).indexOf('ubicacion') !== -1);
       window.urbisRelaciones   = raw.filter(p => tipoTxt(p).indexOf('relacion') !== -1);
       window.urbisPuntajes     = raw.filter(p => tipoTxt(p).indexOf('puntaje') !== -1);
@@ -792,9 +796,10 @@
         const cacheArr = Array.isArray(cache) ? cache : [];
         cacheArr.forEach(p => { if(p){ if(p.lat!=null) p.lat = String(p.lat).replace(',', '.'); if(p.lng!=null) p.lng = String(p.lng).replace(',', '.'); } });
         const tipoTxtC = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        const esMetaC = p => { const t = tipoTxtC(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('social rush')!==-1; };
+        const esMetaC = p => { const t = tipoTxtC(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('social rush')!==-1; };
         window.urbisRushSocial  = cacheArr.filter(p => tipoTxtC(p).indexOf('social rush') !== -1);
         window.urbisComentarios = cacheArr.filter(p => tipoTxtC(p).indexOf('comentario') !== -1);
+        window.urbisPeticiones  = cacheArr.filter(p => tipoTxtC(p).indexOf('peticion') !== -1);
         window.urbisUbicaciones  = cacheArr.filter(p => tipoTxtC(p).indexOf('ubicacion') !== -1);
         window.urbisRelaciones   = cacheArr.filter(p => tipoTxtC(p).indexOf('relacion') !== -1);
         window.urbisPuntajes     = cacheArr.filter(p => tipoTxtC(p).indexOf('puntaje') !== -1);
@@ -1173,10 +1178,36 @@
           if(typeof window.urbisAbrirDenuncia === 'function') {
             accion = `<button type="button" class="uc-denunciar" data-uc-i="${i}" aria-label="Denunciar comentario">🚩</button>`;
           }
+          // Borrar el comentario: su autor, y el administrador cualquiera.
+          // Quien manda de verdad es el servidor (v575); esto solo decide a
+          // quién se le enseña el botón, para no ofrecer lo que va a fallar.
+          const miUsuario = (typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || '';
+          const esMio = miUsuario && String(usuario).trim().toLowerCase() === String(miUsuario).trim().toLowerCase();
+          if((soyModerador || esMio) && typeof window.urbisBorrarPublicacion === 'function') {
+            accion += `<button type="button" class="uc-borrar" data-uc-i="${i}" aria-label="Eliminar comentario">🗑️</button>`;
+          }
         } catch(e){}
         return `<div class="uc-item"><div class="uc-item-top"><b>@${esc(usuario)}</b><span class="uc-fecha">${esc(fecha)}</span>${accion}</div><p>${esc(texto)}</p>${escondido}</div>`;
       }).join('') : '<div class="uc-empty">Aún no hay comentarios. Sé el primero.</div>';
       sheet.querySelector('.uc-list').innerHTML = html;
+      sheet.querySelectorAll('.uc-borrar').forEach(function(b){
+        b.addEventListener('click', async function(){
+          const c = visibles[parseInt(b.dataset.ucI, 10)];
+          if(!c) return;
+          if(!confirm('¿Eliminar este comentario?\n\nNo se puede deshacer.')) return;
+          b.disabled = true; b.textContent = '…';
+          try{
+            await window.urbisBorrarPublicacion(c);
+            // El comentario vive en dos sitios: la tabla general y la lista en
+            // memoria que pinta esta hoja. Si solo se borra de una, reaparece.
+            window.urbisComentarios = (window.urbisComentarios || []).filter(x => x !== c);
+            render();
+          }catch(err){
+            b.disabled = false; b.textContent = '🗑️';
+            alert('No se pudo eliminar: ' + (err && err.message || err));
+          }
+        });
+      });
       sheet.querySelectorAll('.uc-denunciar').forEach(function(b){
         b.addEventListener('click', function(){
           const c = visibles[parseInt(b.dataset.ucI, 10)];

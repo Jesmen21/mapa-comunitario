@@ -34,7 +34,7 @@
     if (tipoLow.indexOf('ubicacion') !== -1 || tipoLow.indexOf('comentario') !== -1 ||
         tipoLow.indexOf('relacion') !== -1 || tipoLow.indexOf('puntaje') !== -1 ||
         tipoLow.indexOf('permiso') !== -1 || tipoLow.indexOf('avatar') !== -1 ||
-        tipoLow.indexOf('chat') !== -1) return false;
+        tipoLow.indexOf('chat') !== -1 || tipoLow.indexOf('peticion') !== -1) return false;
     var item = String(p.descripcion || '').split(' | ')[0];
     // La lista de qué cuenta como alerta nacional vive en el catálogo (js/03c).
     // Estaba escrita aquí Y en js/10, con contenidos distintos: añadir un tipo
