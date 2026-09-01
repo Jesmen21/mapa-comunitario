@@ -1495,8 +1495,8 @@ function crearCuentasSistemaUrbis() {
   // ── EDITA AQUÍ ────────────────────────────────────────────────────────────
   // Usa contraseñas largas (12+ caracteres). No reutilices las de otros sitios.
   var CUENTAS = [
-    { usuario: 'urbisnoticia', nombre: 'URBIS Noticias',      password: 'CAMBIA_ESTO_1' },
-    { usuario: 'urbisadmin',   nombre: 'Administrador URBIS', password: 'CAMBIA_ESTO_2' }
+    { usuario: 'urbisnoticia', nombre: 'URBIS Noticias',      password: 'CAMBIA_ESTO_urbisnoticia' },
+    { usuario: 'urbisadmin',   nombre: 'Administrador URBIS', password: 'CAMBIA_ESTO_urbisadmin' }
   ];
   // ──────────────────────────────────────────────────────────────────────────
 

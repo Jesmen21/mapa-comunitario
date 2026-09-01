@@ -2102,9 +2102,18 @@ function hacerAdminUrbis() {
 function crearCuentasSistemaUrbis() {
   // ── EDITA AQUÍ ────────────────────────────────────────────────────────────
   // Usa contraseñas largas (12+ caracteres). No reutilices las de otros sitios.
+  //
+  // NO GUARDES LA CONTRASEÑA REAL EN ESTE ARCHIVO. Este repositorio es público:
+  // todo lo que escribas acá queda visible para cualquiera, y el historial de git
+  // lo conserva aunque después lo borres. Escribí la contraseña directamente en el
+  // editor de Apps Script, ejecutá la función una vez, y volvé a dejar el
+  // marcador CAMBIA_ESTO antes de copiar el archivo de vuelta al repositorio.
+  //
+  // Mientras el valor empiece por CAMBIA_ESTO la función salta esa cuenta sin
+  // tocar nada, así que este archivo es inofensivo tal como está.
   var CUENTAS = [
-    { usuario: 'urbisnoticia', nombre: 'URBIS Noticias',      password: 'CAMBIA_ESTO_1' },
-    { usuario: 'urbisadmin',   nombre: 'Administrador URBIS', password: 'CAMBIA_ESTO_2' }
+    { usuario: 'urbisnoticia', nombre: 'URBIS Noticias',      password: 'CAMBIA_ESTO_urbisnoticia' },
+    { usuario: 'urbisadmin',   nombre: 'Administrador URBIS', password: 'CAMBIA_ESTO_urbisadmin' }
   ];
   // ──────────────────────────────────────────────────────────────────────────
 
