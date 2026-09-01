@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v584-mostrador-propio';
+const URBIS_CACHE = 'urbis-v585-vitrina-personalizable';
 const URBIS_ASSETS = [
   './',
   './index.html',

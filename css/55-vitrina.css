@@ -16,7 +16,10 @@
   position:relative; width:44px; height:44px;
   border-radius:50% 50% 50% 0;
   transform:rotate(-45deg);
-  background:linear-gradient(135deg,#38BDF8,#FBBF24);
+  /* El segundo color lo pone cada negocio (--uvit-color, en el propio
+     marcador). El celeste de la izquierda no se mueve: es lo que dice que
+     esta gota pertenece a URBIS por mucho que su dueño elija rosa. */
+  background:linear-gradient(135deg,#38BDF8,var(--uvit-color,#FBBF24));
   padding:3px; box-sizing:border-box;
   box-shadow:0 6px 14px rgba(12,74,110,.35), 0 2px 4px rgba(0,0,0,.2);
   animation:uvitPosarse .4s ease;
@@ -43,11 +46,11 @@ body.urbis-zoom-hide-markers .urbis-vitrina-root{ display:none !important; }
 body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
 
 /* ── La ficha pública ─────────────────────────────────────────────────────── */
-.uvit-ficha{ border-top:4px solid #FBBF24 !important; }
+.uvit-ficha{ border-top:4px solid var(--uvit-color,#FBBF24) !important; }
 .uvit-sello{
   display:inline-block; margin-bottom:10px; padding:5px 12px; border-radius:999px;
   background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(56,189,248,.14));
-  border:1px solid rgba(251,191,36,.5);
+  border:1px solid var(--uvit-color,#FBBF24);
   font-size:.72rem; font-weight:850;
   color:#92600A !important; -webkit-text-fill-color:#92600A;
 }
@@ -184,7 +187,8 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
 .uvit-dir-card{
   display:flex; align-items:center; gap:12px; margin-bottom:10px; padding:13px 14px;
   border-radius:16px; cursor:pointer;
-  background:#fff; border:1.5px solid rgba(251,191,36,.4);
+  background:#fff; border:1.5px solid var(--uvit-color,#FBBF24);
+  border-left-width:5px;
   box-shadow:0 6px 16px rgba(146,96,10,.08);
   transition:transform .12s ease;
 }
@@ -231,3 +235,66 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
    general de moderación. */
 .uvit-mostrador{ border-top:4px solid #FBBF24 !important; }
 .uvit-mostrador .uvit-nuevo{ margin-top:4px; }
+
+
+/* ── Selector de emoji y de color ─────────────────────────────────────────
+   El emoji es la cara del negocio en el mapa: merece elegirse mirándolo
+   grande, no acertando en una cuadrícula de iconos diminutos. */
+.uvit-elegido{
+  display:flex; align-items:center; gap:12px; margin-bottom:8px; padding:11px 13px;
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(230,244,254,.9));
+  border:1.5px solid var(--uvit-color,#FBBF24);
+}
+.uvit-elegido span{
+  flex:0 0 auto; width:52px; height:52px; display:flex; align-items:center; justify-content:center;
+  font-size:1.9rem; border-radius:15px; -webkit-text-fill-color:initial;
+  background:#fff; box-shadow:inset 0 0 0 2px var(--uvit-color,#FBBF24);
+}
+.uvit-elegido small{ flex:1; min-width:0; font-size:.72rem; line-height:1.4; }
+
+#uvit-buscar-e{ margin-bottom:8px; }
+.uvit-emojis{
+  display:flex; flex-wrap:wrap; gap:6px;
+  max-height:210px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:9px; border-radius:14px;
+  background:rgba(56,189,248,.06); border:1px solid rgba(56,189,248,.22);
+}
+/* El nombre de la categoría ocupa la fila entera: es un rótulo, no un botón
+   más de la cuadrícula. */
+.uvit-e-grupo{
+  flex:0 0 100%; margin:6px 0 1px; font-size:.68rem; font-weight:850;
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+  text-transform:uppercase; letter-spacing:.04em;
+}
+.uvit-e-grupo:first-child{ margin-top:0; }
+.uvit-e{
+  width:42px; height:42px; border-radius:12px; cursor:pointer; font-size:1.25rem;
+  background:#fff; border:1.5px solid rgba(56,189,248,.28);
+  -webkit-text-fill-color:initial;
+  transition:transform .1s ease;
+}
+.uvit-e:active{ transform:scale(.9); }
+.uvit-e.on{
+  border-color:var(--uvit-color,#FBBF24); background:#FFF7E0;
+  box-shadow:0 0 0 2px var(--uvit-color,#FBBF24);
+}
+.uvit-e-nada{
+  flex:1; padding:14px 8px; text-align:center; font-size:.75rem; line-height:1.45;
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+
+.uvit-colores{ display:flex; flex-wrap:wrap; gap:9px; }
+.uvit-c{
+  width:38px; height:38px; border-radius:50%; cursor:pointer; padding:0;
+  border:2px solid #fff !important;
+  box-shadow:0 0 0 1.5px rgba(56,189,248,.3), 0 3px 8px rgba(12,74,110,.14);
+  transition:transform .1s ease;
+}
+.uvit-c:active{ transform:scale(.9); }
+/* El elegido crece y se rodea de un aro oscuro: en una fila de círculos de
+   colores, un borde del mismo tono no se vería. */
+.uvit-c.on{
+  transform:scale(1.12);
+  box-shadow:0 0 0 2.5px #0C3B5E, 0 4px 10px rgba(12,74,110,.25);
+}

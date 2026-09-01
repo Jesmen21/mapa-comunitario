@@ -44,7 +44,113 @@
   const TIPO_ITEM = '🛍️ Portafolio URBIS';
   const PREFIJO = 'VITRINA_URBIS:';
   const MAX_CELDA = 45000;
-  const EMOJIS = ['🛍️','💈','📱','🦷','🍰','👗','🍕','🌸','🔧','📚'];
+  /* El emoji es la CARA del negocio en el mapa: es lo primero que se ve y lo
+     único que distingue una gota de otra desde lejos. Con diez opciones media
+     ciudad se quedaba sin la suya —no había ni ferretería, ni papelería, ni
+     panadería—, así que aquí va un catálogo de verdad, por oficios y con
+     buscador. Cada emoji lleva las palabras con que la gente lo buscaría,
+     no solo su nombre técnico: quien tiene una peluquería escribe
+     "peluquería", no "poste de barbero". */
+  const CATALOGO = [
+    ['Comida y bebida', [
+      ['🍕','pizza pizzeria italiana'], ['🍔','hamburguesa comidas rapidas burger'],
+      ['🌭','perro caliente hotdog salchipapa'], ['🍟','papas fritas comidas rapidas'],
+      ['🌮','tacos mexicana'], ['🍗','pollo asadero broaster'],
+      ['🥩','carne asados parrilla res'], ['🍖','costilla asado parrilla'],
+      ['🍚','arroz chino comida corriente'], ['🍜','sopa caldo ramen'],
+      ['🥘','almuerzo corrientazo restaurante'], ['🍳','desayunos huevos'],
+      ['🥐','panaderia pan croissant'], ['🍞','panaderia pan'],
+      ['🎂','tortas pasteleria reposteria cumpleanos'], ['🧁','cupcakes postres reposteria'],
+      ['🍰','postres tortas pasteleria'], ['🍩','donas postres'],
+      ['🍪','galletas reposteria'], ['🍫','chocolates dulces'],
+      ['🍬','dulces confiteria golosinas'], ['🍦','helados heladeria'],
+      ['🧃','jugos naturales bebidas'], ['🥤','gaseosas bebidas refrescos'],
+      ['☕','cafe cafeteria tinto'], ['🍵','te aromatica infusiones'],
+      ['🍺','cerveza bar cerveceria'], ['🍹','coctel bar licores'],
+      ['🍇','frutas fruteria verduras'], ['🥬','verduras legumbres hortalizas'],
+      ['🐟','pescaderia pescado mariscos'], ['🥚','huevos granja'],
+      ['🧀','quesos lacteos'], ['🍯','miel natural apicultura']
+    ]],
+    ['Belleza y cuidado', [
+      ['💈','barberia barbero cortes caballeros'], ['💇','peluqueria salon cortes'],
+      ['💅','manicure unas pedicure spa'], ['💄','maquillaje cosmeticos belleza'],
+      ['🧴','productos cuidado piel cremas'], ['🧼','jabones aseo artesanal'],
+      ['🪒','afeitado barberia navaja'], ['🧖','spa masajes relajacion'],
+      ['💆','masajes terapia relajacion'], ['🌸','estetica belleza flores'],
+      ['✂️','corte tijeras peluqueria sastreria'], ['🪮','peinados trenzas cabello']
+    ]],
+    ['Salud', [
+      ['🦷','odontologia dentista dientes ortodoncia'], ['🩺','medicina consultorio doctor'],
+      ['💊','farmacia droguería medicamentos'], ['🏥','clinica centro medico'],
+      ['👁️','optica lentes gafas optometria'], ['🦴','fisioterapia ortopedia huesos'],
+      ['🧠','psicologia terapia mental'], ['🩹','enfermeria curaciones primeros auxilios'],
+      ['💉','laboratorio examenes vacunas'], ['🫀','cardiologia salud corazon'],
+      ['🧘','yoga bienestar meditacion'], ['🏋️','gimnasio gym entrenamiento pesas']
+    ]],
+    ['Tecnología', [
+      ['📱','celulares telefonos moviles smartphone'], ['💻','computadores portatiles laptop'],
+      ['🖥️','computadores escritorio pc monitores'], ['⌨️','teclados accesorios computo'],
+      ['🖨️','impresoras tintas fotocopias'], ['🎮','videojuegos consolas gamer'],
+      ['🎧','audifonos audio sonido'], ['🔌','electronica cargadores accesorios'],
+      ['🔋','baterias pilas energia'], ['📷','camaras fotografia foto'],
+      ['📹','video filmacion produccion'], ['🛰️','internet redes wifi antenas'],
+      ['💾','datos respaldo software'], ['⚙️','reparacion tecnica servicio']
+    ]],
+    ['Ropa y accesorios', [
+      ['👗','ropa mujer vestidos boutique'], ['👕','ropa camisetas camisas hombre'],
+      ['👖','jeans pantalones ropa'], ['👟','calzado tenis zapatos deportivos'],
+      ['👠','calzado mujer tacones zapatos'], ['👞','calzado hombre zapatos'],
+      ['👜','bolsos carteras marroquineria'], ['🎒','morrales maletas mochilas'],
+      ['🧢','gorras sombreros accesorios'], ['👶','ropa bebe infantil ninos'],
+      ['💍','joyeria anillos accesorios oro'], ['⌚','relojes relojeria accesorios'],
+      ['🕶️','gafas sol accesorios'], ['🧵','sastreria costura arreglos modisteria'],
+      ['🧶','tejidos lanas crochet artesanal']
+    ]],
+    ['Hogar y oficios', [
+      ['🔧','ferreteria herramientas reparaciones'], ['🔨','carpinteria construccion obra'],
+      ['🪛','reparaciones tecnico mantenimiento'], ['🧰','servicios tecnicos domicilio'],
+      ['🪑','muebles carpinteria hogar'], ['🛋️','muebles sala tapiceria hogar'],
+      ['🛏️','colchones camas hogar'], ['🧹','aseo limpieza servicios'],
+      ['🧺','lavanderia ropa planchado'], ['🪟','vidrios ventanas aluminio'],
+      ['🚪','puertas cerrajeria carpinteria'], ['🔑','cerrajeria llaves seguridad'],
+      ['💡','electricidad iluminacion electricista'], ['🚿','plomeria gasfiteria agua'],
+      ['🧯','seguridad extintores prevencion'], ['🪴','plantas vivero jardineria'],
+      ['🏠','inmobiliaria arriendos fincaraiz'], ['🎨','pintura decoracion acabados']
+    ]],
+    ['Mascotas y animales', [
+      ['🐕','perros veterinaria mascotas'], ['🐈','gatos veterinaria mascotas'],
+      ['🐾','veterinaria mascotas peluqueria canina'], ['🦜','aves mascotas pajaros'],
+      ['🐠','peces acuarios mascotas'], ['🌾','agro campo insumos veterinaria']
+    ]],
+    ['Educación y arte', [
+      ['📚','libreria libros papeleria'], ['✏️','papeleria utiles escolares'],
+      ['🖌️','arte pintura manualidades'], ['🎨','arte diseno pintura'],
+      ['🎵','musica instrumentos clases'], ['🎸','instrumentos musica guitarras'],
+      ['🎤','eventos animacion sonido karaoke'], ['🎬','audiovisual video produccion'],
+      ['🎓','educacion cursos academia clases'], ['🧮','contabilidad asesoria impuestos'],
+      ['⚖️','abogados juridico asesoria legal'], ['🖋️','diseno grafico publicidad'],
+      ['🎁','regalos detalles sorpresas'], ['🎈','fiestas decoracion eventos'],
+      ['💐','floristeria flores arreglos'], ['📸','fotografia estudio fotos']
+    ]],
+    ['Transporte y otros', [
+      ['🏍️','motos taller motorepuestos'], ['🚗','carros taller automotriz mecanica'],
+      ['🛺','transporte mototaxi domicilios'], ['🚚','transporte mudanzas acarreos carga'],
+      ['🚲','bicicletas bicicleteria taller'], ['⛽','combustible gasolina servitecas'],
+      ['🛞','llantas montallantas serviteca'], ['🧽','lavadero carwash autolavado'],
+      ['📦','domicilios mensajeria envios paqueteria'], ['🏪','tienda miscelanea granero'],
+      ['🛒','supermercado minimercado mercado'], ['💰','prestamos financiera cambio'],
+      ['🖥','internet cafe navegacion papeleria'], ['🛍️','tienda comercio general']
+    ]]
+  ];
+
+  // Colores con que un negocio puede firmar su gota y su ficha. Nombres en
+  // castellano porque quien elige no está leyendo código.
+  const COLORES = [
+    ['#FBBF24','Dorado'], ['#38BDF8','Celeste'], ['#F472B6','Rosa'],
+    ['#34D399','Verde'],  ['#A78BFA','Morado'],  ['#FB923C','Naranja'],
+    ['#F87171','Rojo'],   ['#22D3EE','Turquesa']
+  ];
+  const COLOR_POR_DEFECTO = '#FBBF24';
 
   function esc(t) {
     return String(t == null ? '' : t)
@@ -73,6 +179,9 @@
       lema: String(o.lema || ''), descripcion: String(o.descripcion || ''),
       telefono: String(o.telefono || ''), whatsapp: String(o.whatsapp || ''),
       direccion: String(o.direccion || ''), horario: String(o.horario || ''),
+      // Los negocios creados antes de que existieran los colores no tienen
+      // ninguno guardado: heredan el dorado de siempre en vez de salir grises.
+      color: String(o.color || COLOR_POR_DEFECTO),
       estado: String(o.estado || 'borrador'), fila: p
     };
   }
@@ -80,7 +189,7 @@
     return PREFIJO + encodeURIComponent(JSON.stringify({
       id: n.id, nombre: n.nombre, emoji: n.emoji, lema: n.lema, descripcion: n.descripcion,
       telefono: n.telefono, whatsapp: n.whatsapp, direccion: n.direccion,
-      horario: n.horario, estado: n.estado
+      horario: n.horario, color: n.color || COLOR_POR_DEFECTO, estado: n.estado
     }));
   }
   function leerItem(p) {
@@ -127,10 +236,15 @@
     return _capa;
   }
 
+  /* El color va como variable CSS en el propio marcador, no como clase: son
+     ocho colores y cada negocio elige el suyo, así que la hoja de estilos no
+     tiene por qué conocerlos. */
   function iconoDe(n) {
+    const c = /^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO;
     return L.divIcon({
       className: 'urbis-vitrina-root',
-      html: '<div class="uvit-pin"><span class="uvit-cara">' + esc(n.emoji || '🛍️') + '</span>' +
+      html: '<div class="uvit-pin" style="--uvit-color:' + c + '">' +
+            '<span class="uvit-cara">' + esc(n.emoji || '🛍️') + '</span>' +
             '<i class="uvit-brillo">✨</i></div>',
       iconSize: [44, 52], iconAnchor: [22, 50]
     });
@@ -145,7 +259,7 @@
       const lat = parseFloat(String(n.fila.lat).replace(',', '.'));
       const lng = parseFloat(String(n.fila.lng).replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return;
-      const clave = n.id + '@' + lat + ',' + lng + '#' + n.emoji + n.nombre;
+      const clave = n.id + '@' + lat + ',' + lng + '#' + n.emoji + n.color + n.nombre;
       vivos[clave] = true;
       if (_pintados[clave]) return;
       try {
@@ -179,7 +293,8 @@
     ov.id = 'urbis-vitrina-ficha';
     ov.className = 'urbis-cfg-overlay';
     ov.innerHTML =
-      '<div class="urbis-cfg urbis-cfg-largo uvit-ficha" role="dialog" aria-modal="true">' +
+      '<div class="urbis-cfg urbis-cfg-largo uvit-ficha" role="dialog" aria-modal="true"' +
+        ' style="--uvit-color:' + (/^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO) + '">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
         '<div class="uvit-sello">✨ Emprendimiento URBIS · verificado</div>' +
         '<div class="uvit-cabecera"><span class="uvit-emoji">' + esc(n.emoji) + '</span>' +
@@ -289,8 +404,15 @@
         '<button type="button" class="uvit-volver">← Volver a la lista</button>' +
         '<div class="uvit-form">' +
           '<label>¿Qué emoji lo representa?</label>' +
-          '<div class="uvit-emojis">' + EMOJIS.map(function (e) {
-            return '<button type="button" class="uvit-e' + (e === v.emoji ? ' on' : '') + '" data-e="' + e + '">' + e + '</button>';
+          '<div class="uvit-elegido"><span id="uvit-muestra">' + esc(v.emoji) + '</span>' +
+            '<small>El que se verá en el mapa. Busca tu oficio o elige de la lista.</small></div>' +
+          '<input type="text" id="uvit-buscar-e" placeholder="Buscar: barbería, pizza, celulares…" autocomplete="off">' +
+          '<div class="uvit-emojis"></div>' +
+          '<label>Color del negocio</label>' +
+          '<div class="uvit-colores">' + COLORES.map(function (c) {
+            return '<button type="button" class="uvit-c' + (c[0] === (v.color || COLOR_POR_DEFECTO) ? ' on' : '') +
+                   '" data-c="' + c[0] + '" title="' + c[1] + '" aria-label="' + c[1] + '"' +
+                   ' style="background:' + c[0] + '"></button>';
           }).join('') + '</div>' +
           '<label>Nombre del emprendimiento</label>' +
           '<input id="uvit-nombre" maxlength="60" value="' + esc(v.nombre) + '" placeholder="Barbería Don Luis">' +
@@ -325,13 +447,54 @@
         '</div>';
 
       cont.querySelector('.uvit-volver').addEventListener('click', listado);
+
+      // ── Selector de emoji ─────────────────────────────────────────────
       let emoji = v.emoji;
-      cont.querySelectorAll('.uvit-e').forEach(function (b) {
+      let color = v.color || COLOR_POR_DEFECTO;
+      const zonaE = cont.querySelector('.uvit-emojis');
+      const muestra = cont.querySelector('#uvit-muestra');
+
+      function pintarEmojis(filtro) {
+        const q = sinAcentos(filtro || '').trim();
+        let html = '';
+        CATALOGO.forEach(function (grupo) {
+          const hallados = grupo[1].filter(function (e) {
+            return !q || sinAcentos(e[1]).indexOf(q) !== -1;
+          });
+          if (!hallados.length) return;
+          // Buscando no se agrupa: quien escribe "pizza" quiere el resultado,
+          // no un índice de categorías con una sola cosa dentro.
+          if (!q) html += '<div class="uvit-e-grupo">' + esc(grupo[0]) + '</div>';
+          html += hallados.map(function (e) {
+            return '<button type="button" class="uvit-e' + (e[0] === emoji ? ' on' : '') +
+                   '" data-e="' + e[0] + '" title="' + esc(e[1].split(' ')[0]) + '">' + e[0] + '</button>';
+          }).join('');
+        });
+        zonaE.innerHTML = html ||
+          '<div class="uvit-e-nada">Sin resultados. Prueba con el oficio: “panadería”, “taller”, “ropa”…</div>';
+        zonaE.querySelectorAll('.uvit-e').forEach(function (b) {
+          b.addEventListener('click', function () {
+            zonaE.querySelectorAll('.uvit-e').forEach(function (x) { x.classList.remove('on'); });
+            b.classList.add('on');
+            emoji = b.getAttribute('data-e');
+            muestra.textContent = emoji;
+          });
+        });
+      }
+      pintarEmojis('');
+      cont.querySelector('#uvit-buscar-e').addEventListener('input', function () {
+        pintarEmojis(this.value);
+      });
+
+      cont.querySelectorAll('.uvit-c').forEach(function (b) {
         b.addEventListener('click', function () {
-          cont.querySelectorAll('.uvit-e').forEach(function (x) { x.classList.remove('on'); });
-          b.classList.add('on'); emoji = b.getAttribute('data-e');
+          cont.querySelectorAll('.uvit-c').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on');
+          color = b.getAttribute('data-c');
+          cont.querySelector('.uvit-elegido').style.setProperty('--uvit-color', color);
         });
       });
+      cont.querySelector('.uvit-elegido').style.setProperty('--uvit-color', color);
 
       let lat = editando ? v.fila.lat : '', lng = editando ? v.fila.lng : '';
       const coordTxt = cont.querySelector('#uvit-coord');
@@ -365,7 +528,7 @@
 
       function leerCampos() {
         return {
-          id: v.id, emoji: emoji,
+          id: v.id, emoji: emoji, color: color,
           nombre: cont.querySelector('#uvit-nombre').value.trim(),
           lema: cont.querySelector('#uvit-lema').value.trim(),
           descripcion: cont.querySelector('#uvit-desc').value.trim(),
@@ -536,7 +699,8 @@
         : '') +
       (arr.length ? arr.map(function (n, i) {
         const wa = linkWhatsApp(n.whatsapp || n.telefono, n.nombre);
-        return '<div class="uvit-dir-card" data-id="' + esc(n.id) + '">' +
+        const c = /^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO;
+        return '<div class="uvit-dir-card" data-id="' + esc(n.id) + '" style="--uvit-color:' + c + '">' +
           '<span class="uvit-dir-emoji">' + esc(n.emoji) + '</span>' +
           '<div class="uvit-dir-txt"><b>' + esc(n.nombre) + '</b>' +
           (n.lema ? '<small>' + esc(n.lema) + '</small>' : '') +
