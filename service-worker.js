@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v578-config-admin';
+const URBIS_CACHE = 'urbis-v579-permisos';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -85,6 +85,7 @@ const URBIS_ASSETS = [
   './js/13e-nivel2.js',
   './js/13f-victimas.js',
   './js/13g-config-admin.js',
+  './js/13h-permisos.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
   './js/50-alerta-forzado.js',

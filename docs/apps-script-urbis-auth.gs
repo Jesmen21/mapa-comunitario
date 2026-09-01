@@ -187,6 +187,11 @@ function doPost(e) {
     if (action === 'db_update') return json_(dbUpdate_(body));
     if (action === 'db_delete') return json_(dbDelete_(body));
 
+    if (action === 'perm_list') return json_(permList_(body));
+    if (action === 'perm_find') return json_(permFind_(body));
+    if (action === 'perm_set') return json_(permSet_(body));
+    if (action === 'perm_mine') return json_(permMine_(body));
+
     // URBIS Pro City · Carpetas compartidas de mapeo (georreferenciación grupal
     // entre amigos): crear carpeta, unirse/invitar (misma acción sirve para
     // ambos casos) y listar las carpetas donde el usuario es miembro.
@@ -210,7 +215,9 @@ function baseHeaders_() {
       'rol_solicitado','estado_cuenta','email_verificado','password_hash','password_salt','codigo_verificacion','codigo_expira_en',
       'fecha_registro','fecha_verificacion','ultimo_login','acepta_terminos','acepta_movilidad_anonima','observaciones_admin','ubicacion_validada','avatar',
       'nivel_cuenta','fecha_verificacion_identidad',
-      'session_token','session_expira'
+      'session_token','session_expira',
+      // Permisos delegados (moderación). Vacío = ciudadana normal.
+      'permisos'
     ],
     verify: ['verification_id','user_id','correo','codigo_verificacion','codigo_expira_en','estado','fecha_creacion','fecha_verificacion','intentos'],
     logs: ['log_id','identificador','correo','usuario','cedula','telefono','accion','resultado','fecha','motivo'],
@@ -846,6 +853,37 @@ function _crearTokenSesion_(usersSh, user) {
 /* Devuelve quién hace la petición según el token, o null si no hay token
    válido. Nunca se fía del `usuario` que venga en el cuerpo: eso lo escribe el
    navegador y es justo lo que no se puede creer. */
+/* ═══════════════════════════════════════════════════════════════════════
+   PERMISOS DELEGADOS
+   El dueño de URBIS puede repartir tareas de moderación SIN repartir la
+   cuenta. Cada permiso es una tarea concreta, no un rango: así se le puede
+   dar a alguien la capacidad de retirar contenido inapropiado sin darle la
+   de aprobar reportes ni la de leer el buzón.
+
+   Se guardan en la columna `permisos` de la hoja de usuarios, separados por
+   comas. Quien los reparte es SOLO el dueño (el correo de URBIS_AUTH.ADMIN_EMAIL):
+   si una moderadora pudiera repartirlos, podría ascenderse sola y el reparto
+   no valdría nada.
+
+   Lo que decide de verdad es esta lectura, hecha en cada escritura contra la
+   hoja. El botón que se ve o se esconde en el teléfono es solo cortesía.
+   ═══════════════════════════════════════════════════════════════════════ */
+var URBIS_PERMISOS = ['eliminar', 'moderar', 'aprobar', 'peticiones'];
+
+function _leerPermisos_(valor) {
+  var s = String(valor == null ? '' : valor).toLowerCase();
+  var out = [];
+  for (var i = 0; i < URBIS_PERMISOS.length; i++) {
+    if (s.indexOf(URBIS_PERMISOS[i]) !== -1) out.push(URBIS_PERMISOS[i]);
+  }
+  return out;
+}
+function _puede_(quien, permiso) {
+  if (!quien) return false;
+  if (quien.esAdmin) return true;              // dueño y cuentas de sistema
+  return (quien.permisos || []).indexOf(permiso) !== -1;
+}
+
 function _quienEscribe_(body) {
   var token = String((body && (body.session_token || body.token)) || '').trim();
   if (!token) return null;
@@ -860,7 +898,12 @@ function _quienEscribe_(body) {
     return {
       usuario: normUser_(r.usuario || ''),
       correo: normEmail_(r.correo || ''),
-      esAdmin: normLower_(r.rol_solicitado) === 'admin'
+      esAdmin: normLower_(r.rol_solicitado) === 'admin',
+      // Dueño: la cuenta del correo de URBIS. Es la única que puede repartir
+      // permisos, y ninguna otra puede quitárselos.
+      esDueno: !!normEmail_(r.correo || '') &&
+               normEmail_(r.correo || '') === normEmail_(URBIS_AUTH.ADMIN_EMAIL),
+      permisos: _leerPermisos_(r.permisos)
     };
   }
   return null;
@@ -934,9 +977,57 @@ function _esAutorDelReporte_(descripcion, quien) {
   return !!autor && autor === quien.usuario;
 }
 
-/* ¿El cambio se limita a las casillas comunitarias? Se compara casilla por
-   casilla: si algo cambió fuera de la lista blanca, no es una confirmación ni
-   una denuncia, es una edición del reporte ajeno. */
+var DESC_IDX_APROBACION = 44;   // BASE_OFFSET+1 · "Pendiente" / "Aprobado"
+var DESC_IDX_DENUNCIAS  = 63;   // el sobre DENUNCIAS_URBIS
+
+/* El sobre de denuncias guarda dos cosas distintas en la misma casilla: QUIÉN
+   denunció (lo pone cualquiera) y QUÉ decidió el moderador (esconder, devolver,
+   la nota). Sin abrirlo no se pueden separar, así que se abre. */
+function _leerSobreDenuncias_(campo) {
+  var s = String(campo == null ? '' : campo);
+  var P = 'DENUNCIAS_URBIS:';
+  if (s.indexOf(P) !== 0) return { oculto:'', revisado:'', nota:'' };
+  try {
+    var o = JSON.parse(decodeURIComponent(s.slice(P.length)));
+    return { oculto:String(o.oculto || ''), revisado:String(o.revisado || ''), nota:String(o.nota || '') };
+  } catch (e) { return { oculto:'', revisado:'', nota:'' }; }
+}
+/* Denunciar de nuevo algo ya revisado deja `oculto` en blanco para reabrir el
+   caso: eso lo hace cualquier vecina y NO es moderar. Moderar es lo contrario:
+   poner "oculto" o "restaurado", firmar la revisión o dejar nota. */
+function _esDecisionDeModerador_(viejo, nuevo) {
+  var a = _leerSobreDenuncias_(viejo), b = _leerSobreDenuncias_(nuevo);
+  if (b.oculto !== a.oculto && (b.oculto === 'oculto' || b.oculto === 'restaurado')) return true;
+  if (b.revisado !== a.revisado && b.revisado) return true;
+  if (b.nota !== a.nota) return true;
+  return false;
+}
+
+/* ¿Puede esta petición cambiar ESTE reporte? Se compara casilla por casilla:
+   el autor y el dueño pueden todo; cualquier otra persona, solo las casillas
+   comunitarias, y dentro de ellas ni esconde contenido ni aprueba reportes sin
+   el permiso correspondiente. */
+function _autorizaCambioReporte_(descVieja, descNueva, quien) {
+  if (_esAutorDelReporte_(descVieja, quien)) return true;
+  if (descNueva == null) return false;   // sin descripción no se sabe qué cambia
+  var a = String(descVieja || '').split(' | ');
+  var b = String(descNueva).split(' | ');
+  var n = Math.max(a.length, b.length);
+  var tocaAprobacion = false;
+  for (var i = 0; i < n; i++) {
+    var va = String(a[i] == null ? '' : a[i]);
+    var vb = String(b[i] == null ? '' : b[i]);
+    if (va === vb) continue;
+    if (i === DESC_IDX_APROBACION) { tocaAprobacion = true; continue; }
+    if (DESC_IDX_COMUNITARIAS.indexOf(i) === -1) return false;
+    if (i === DESC_IDX_DENUNCIAS && _esDecisionDeModerador_(va, vb) && !_puede_(quien, 'moderar')) return false;
+  }
+  if (tocaAprobacion && !_puede_(quien, 'aprobar')) return false;
+  return true;
+}
+
+/* Se conserva por compatibilidad: la usan las pruebas y deja claro, leída
+   sola, cuál es la lista blanca. */
 function _soloCambiosComunitarios_(descVieja, descNueva) {
   var a = String(descVieja || '').split(' | ');
   var b = String(descNueva || '').split(' | ');
@@ -960,7 +1051,12 @@ function userPayload_(user) {
     cedula:user.cedula || '', cedula_numero:user.cedula_numero || '', pais:user.pais || '', otro_pais:user.otro_pais || '', departamento:user.departamento || '',
     ciudad:user.ciudad || user.ciudad_corregimiento || '', ciudad_corregimiento:user.ciudad_corregimiento || user.ciudad || '', comuna:user.comuna || '', barrio:user.barrio || '',
     ubicacion_completa:user.ubicacion_completa || '', genero:user.genero || '', genero_normalizado:user.genero_normalizado || '', rol_solicitado:user.rol_solicitado || 'citizen',
-    estado_cuenta:user.estado_cuenta || '', email_verificado:user.email_verificado || '', avatar:String(user.avatar || '').trim()
+    estado_cuenta:user.estado_cuenta || '', email_verificado:user.email_verificado || '', avatar:String(user.avatar || '').trim(),
+    // Permisos delegados, para que la aplicación pinte los botones correctos
+    // desde el primer segundo. Quien decide de verdad sigue siendo el servidor.
+    permisos:_leerPermisos_(user.permisos),
+    es_dueno: !!normEmail_(user.correo || '') &&
+              normEmail_(user.correo || '') === normEmail_(URBIS_AUTH.ADMIN_EMAIL)
   };
 }
 
@@ -1501,6 +1597,19 @@ function _limpiarDatosPersonales_(desc) {
   return texto.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '');
 }
 
+/* Las peticiones al administrador son correo interno: van en la misma tabla
+   que todo lo demás, así que sin esto cualquiera que leyera la respuesta en
+   crudo vería lo que escribieron los demás. Se tapa el texto y la captura para
+   quien no sea su autor ni tenga el permiso de leer el buzón; el nombre y el
+   estado quedan, que es lo que necesita el contador.
+
+   Quién pregunta se resuelve PEREZOSAMENTE, al toparse con la primera
+   petición: db_read es la llamada más caliente de la aplicación y no merece
+   una lectura extra de la hoja de usuarios cuando no hay nada que tapar. */
+function _taparPeticion_(desc) {
+  var p = String(desc || '').split('~~~');
+  return [p[0] || '', '', '', p[3] || 'nueva'].join('~~~');
+}
 function dbRead_(body) {
   var sh = reportesSheet_();
   var last = sh.getLastRow();
@@ -1508,6 +1617,7 @@ function dbRead_(body) {
   if (last < 2 || lastCol < 1) return { ok: true, data: [] };
   var values = sh.getRange(1, 1, last, lastCol).getValues();
   var headers = values[0].map(function(h){ return String(h || '').trim(); });
+  var quien, resuelto = false;
   var out = [];
   for (var i = 1; i < values.length; i++) {
     var obj = {};
@@ -1517,6 +1627,13 @@ function dbRead_(body) {
       v = (v instanceof Date) ? v.toISOString() : v;
       if (headers[c].toLowerCase() === 'descripcion') v = _limpiarDatosPersonales_(v);
       obj[headers[c]] = v;
+    }
+    var t = String(obj.tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (t.indexOf('peticion') !== -1) {
+      if (!resuelto) { quien = _quienEscribe_(body || {}); resuelto = true; }
+      var autor = normUser_(String(obj.descripcion || '').split('~~~')[0] || '');
+      var mia = quien && autor && autor === quien.usuario;
+      if (!mia && !_puede_(quien, 'peticiones')) obj.descripcion = _taparPeticion_(obj.descripcion);
     }
     out.push(obj);
   }
@@ -1552,6 +1669,12 @@ function dbUpdate_(body) {
       var puedeTexto = _esAutorDelTexto_(descTexto, quien);
       if (!puedeTexto && set.descripcion != null) {
         puedeTexto = _soloDenunciasEnTexto_(data[i][tipoIdx], descTexto, String(set.descripcion));
+        // Denunciar el comentario de otro, sí. Decidir si se esconde o vuelve,
+        // solo con el permiso de moderar.
+        if (puedeTexto &&
+            _esDecisionDeModerador_(String(descTexto).split('~~~')[2] || '',
+                                    String(set.descripcion).split('~~~')[2] || '') &&
+            !_puede_(quien, 'moderar')) puedeTexto = false;
       }
       if (!puedeTexto) { negados++; continue; }
       Object.keys(set).forEach(function(k){
@@ -1575,13 +1698,11 @@ function dbUpdate_(body) {
     // reporte sigue vigente, apoyarlo, denunciarlo). Nadie puede reescribir el
     // texto, la foto o la ubicación de un reporte ajeno.
     var descVieja = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
-    var puede = _esAutorDelReporte_(descVieja, quien);
-    if (!puede && set.descripcion != null) {
-      puede = _soloCambiosComunitarios_(descVieja, String(set.descripcion));
-    }
-    // Sin descripción en el cambio, quien no es dueño no toca nada: podría
+    // Sin descripción en el cambio, quien no es el autor no toca nada: podría
     // estar moviendo el punto (lat/lng) o cambiando su categoría.
-    if (!puede) { negados++; continue; }
+    if (!_autorizaCambioReporte_(descVieja, set.descripcion != null ? String(set.descripcion) : null, quien)) {
+      negados++; continue;
+    }
 
     Object.keys(set).forEach(function(k){
       var ci = _dbColIdx_(headers, k);
@@ -1621,14 +1742,17 @@ function dbDelete_(body) {
     if (tipoIdx >= 0 && _esFilaTextoDeAlguien_(data[i][tipoIdx])) {
       if (!quien) { sinSesion = true; negados++; continue; }
       var descT = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
-      if (!_esAutorDelTexto_(descT, quien)) { negados++; continue; }
+      // Su autor, el dueño, o quien tenga delegado el permiso de retirar
+      // contenido. Retirar NO es editar: con este permiso se puede quitar un
+      // comentario inapropiado, no reescribirlo.
+      if (!_esAutorDelTexto_(descT, quien) && !_puede_(quien, 'eliminar')) { negados++; continue; }
       sh.deleteRow(i + 2); deleted++; continue;
     }
     // Filas de fontanería (amistades, GPS, avatares): como estaban.
     if (tipoIdx >= 0 && _esFilaMeta_(data[i][tipoIdx])) { sh.deleteRow(i + 2); deleted++; continue; }
     if (!quien) { sinSesion = true; negados++; continue; }
     var desc = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
-    if (!_esAutorDelReporte_(desc, quien)) { negados++; continue; }
+    if (!_esAutorDelReporte_(desc, quien) && !_puede_(quien, 'eliminar')) { negados++; continue; }
     sh.deleteRow(i + 2); deleted++;
   }
   if (!deleted && negados) {
@@ -1637,6 +1761,102 @@ function dbDelete_(body) {
       : 'Solo puedes borrar lo que publicaste tú.' };
   }
   return { ok: true, deleted: deleted };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// REPARTO DE PERMISOS · solo el dueño de URBIS
+// El dueño no entrega su cuenta: entrega tareas. Cada llamada aquí exige que
+// quien la hace sea el dueño, y ninguna puede tocar la fila del dueño — ni
+// siquiera la suya propia —, para que un permiso mal dado no pueda dejar a
+// URBIS sin quien lo administre.
+// ═══════════════════════════════════════════════════════════════════════
+function _duenoOnada_(body) {
+  var quien = _quienEscribe_(body);
+  if (!quien) return { error: { ok:false, message:'Vuelve a iniciar sesión.' } };
+  if (!quien.esDueno) return { error: { ok:false, message:'Solo el dueño de URBIS puede repartir permisos.' } };
+  return { quien: quien };
+}
+function _esFilaDelDueno_(user) {
+  return normEmail_(user.correo || '') === normEmail_(URBIS_AUTH.ADMIN_EMAIL);
+}
+/* Lo que se devuelve de otra persona: su nombre público y sus permisos. Nunca
+   su cédula, su teléfono ni su correo completo — repartir permisos no es
+   motivo para abrir la ficha de nadie. */
+function _fichaPermisos_(user) {
+  var correo = String(user.correo || '');
+  var tapado = correo ? correo.charAt(0) + '•••@' + (correo.split('@')[1] || '') : '';
+  return {
+    usuario: user.usuario || '',
+    nombre: user.nombre_completo || ((user.nombres || '') + ' ' + (user.apellidos || '')).trim(),
+    correo_tapado: tapado,
+    friend_code: normalizeFriendCode_(user.friend_code) || '',
+    es_dueno: _esFilaDelDueno_(user),
+    permisos: _leerPermisos_(user.permisos)
+  };
+}
+
+// Quién tiene algo delegado ahora mismo.
+function permList_(body) {
+  var g = _duenoOnada_(body); if (g.error) return g.error;
+  var sh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
+  var out = [];
+  getRows_(sh).forEach(function (r) {
+    if (isDeletedUser_(r)) return;
+    if (!_leerPermisos_(r.permisos).length) return;
+    out.push(_fichaPermisos_(r));
+  });
+  return { ok:true, catalogo: URBIS_PERMISOS.slice(), equipo: out };
+}
+
+// Buscar a alguien por @usuario, correo o ID URBIS antes de darle permisos.
+function permFind_(body) {
+  var g = _duenoOnada_(body); if (g.error) return g.error;
+  var ident = normText_(body.identificador || body.usuario || body.correo || body.q || '');
+  if (!ident) return { ok:false, message:'Escribe el usuario, el correo o el ID URBIS.' };
+  var user = findSocialUser_(ident) || pickBestUser_(findUsersByIdentifier_(ident));
+  if (!user) return { ok:false, message:'No encontré esa cuenta. Revisa que esté escrita igual que al registrarse.' };
+  if (!isVerified_(user)) return { ok:false, message:'Esa cuenta todavía no confirmó su correo.' };
+  return { ok:true, catalogo: URBIS_PERMISOS.slice(), persona: _fichaPermisos_(user) };
+}
+
+// Dar o quitar. Llega la lista COMPLETA de lo que esa persona debe tener:
+// así quitar es tan simple como volver a mandar la lista sin ese permiso.
+function permSet_(body) {
+  var g = _duenoOnada_(body); if (g.error) return g.error;
+  var ident = normText_(body.identificador || body.usuario || body.correo || '');
+  if (!ident) return { ok:false, message:'Falta decir a quién.' };
+  var user = findSocialUser_(ident) || pickBestUser_(findUsersByIdentifier_(ident));
+  if (!user) return { ok:false, message:'No encontré esa cuenta.' };
+  if (_esFilaDelDueno_(user)) {
+    return { ok:false, message:'La cuenta dueña de URBIS ya tiene todo y no se puede cambiar desde aquí.' };
+  }
+  var pedidos = body.permisos;
+  if (typeof pedidos === 'string') pedidos = pedidos.split(',');
+  if (!pedidos) pedidos = [];
+  var limpios = [];
+  for (var i = 0; i < URBIS_PERMISOS.length; i++) {
+    for (var j = 0; j < pedidos.length; j++) {
+      if (normLower_(pedidos[j]) === URBIS_PERMISOS[i]) { limpios.push(URBIS_PERMISOS[i]); break; }
+    }
+  }
+  var sh = sheet_(URBIS_AUTH.SHEET_USERS, baseHeaders_().users);
+  setCellByHeader_(sh, user._row, 'permisos', limpios.join(','));
+  // No se le cierra la sesión: el permiso se comprueba contra la hoja en cada
+  // escritura, así que empieza a valer ya. Su teléfono se entera en cuanto
+  // vuelva a abrir la aplicación (perm_mine).
+  log_({ identificador: user.usuario || ident, correo: user.correo || '', usuario: user.usuario || '',
+              accion: 'permisos', resultado: 'ok', motivo: limpios.join(',') || '(sin permisos)' });
+  return { ok:true, persona: _fichaPermisos_(findSocialUser_(ident) || user), permisos: limpios };
+}
+
+/* Lo que YO tengo. La aplicación la llama al abrirse para no depender de lo
+   que quedó guardado en el teléfono cuando se inició sesión: si el dueño da o
+   quita un permiso hoy, se nota sin tener que volver a entrar. */
+function permMine_(body) {
+  var quien = _quienEscribe_(body);
+  if (!quien) return { ok:true, permisos: [], es_dueno:false, es_admin:false };
+  return { ok:true, permisos: quien.permisos || [], es_dueno: !!quien.esDueno, es_admin: !!quien.esAdmin,
+           catalogo: URBIS_PERMISOS.slice() };
 }
 
 // ═══════════════════════════════════════════════════════════════════════

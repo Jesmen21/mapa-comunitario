@@ -368,7 +368,10 @@
   // LECTURA de todos los reportes vía Apps Script. Si falla, devuelve [] (no rompe la app).
   window.urbisDBRead = function(){
     if(!_dbAPIok()) return Promise.resolve([]);
-    return window.URBIS_AUTH.socialAPI({ action:'db_read' })
+    // El token viaja también al LEER: no para poder leer —el mapa es abierto—
+    // sino para que el servidor sepa a quién destapar el buzón de peticiones,
+    // que es lo único que va tapado en la respuesta.
+    return window.URBIS_AUTH.socialAPI({ action:'db_read', session_token:_dbToken() })
       .then(function(out){ return (out && out.ok && Array.isArray(out.data)) ? out.data : []; })
       .catch(function(){ return []; });
   };
@@ -1155,7 +1158,15 @@
     sheet.querySelector('.uc-close').onclick = cerrar;
     const render = () => {
       const lista = comentariosDe();
+      // Ver lo denunciado es cosa de quien decide sobre ello; retirarlo, de
+      // quien tiene ese permiso. Son dos cosas distintas y se preguntan
+      // aparte: una moderadora puede tener una y no la otra.
+      const puedeMod = p => { try { return typeof window.urbisPuede === 'function' && window.urbisPuede(p); } catch(e){ return false; } };
+      // Quien puede retirar también tiene que poder LEER lo que retira: si no,
+      // el comentario denunciado —justo el que hay que quitar— le queda
+      // invisible y el permiso no sirve de nada.
       const soyModerador = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
+                        || puedeMod('moderar') || puedeMod('eliminar')
                         || (typeof urbisIdentidadActual === 'function' && urbisIdentidadActual().rol === 'gov');
       const visibles = lista.filter(c => {
         // Un comentario denunciado sale de la conversación mientras se revisa.
@@ -1183,7 +1194,7 @@
           // quién se le enseña el botón, para no ofrecer lo que va a fallar.
           const miUsuario = (typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || '';
           const esMio = miUsuario && String(usuario).trim().toLowerCase() === String(miUsuario).trim().toLowerCase();
-          if((soyModerador || esMio) && typeof window.urbisBorrarPublicacion === 'function') {
+          if((soyModerador || esMio || puedeMod('eliminar')) && typeof window.urbisBorrarPublicacion === 'function') {
             accion += `<button type="button" class="uc-borrar" data-uc-i="${i}" aria-label="Eliminar comentario">🗑️</button>`;
           }
         } catch(e){}

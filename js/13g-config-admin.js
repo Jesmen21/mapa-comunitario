@@ -49,6 +49,23 @@
     try { return typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin(); }
     catch (e) { return false; }
   }
+  /* El panel dejó de ser cosa de una sola persona: entra quien tenga algo
+     delegado (js/13h), y dentro solo ve las bandejas de lo suyo. */
+  function puedo(permiso) {
+    try { if (typeof window.urbisPuede === 'function') return window.urbisPuede(permiso); }
+    catch (e) {}
+    return soyAdmin();
+  }
+  function tengoPanel() {
+    try { if (typeof window.urbisTieneAlgunPermiso === 'function') return window.urbisTieneAlgunPermiso(); }
+    catch (e) {}
+    return soyAdmin();
+  }
+  function soyDueno() {
+    try { if (typeof window.urbisEsDuenoUrbis === 'function') return window.urbisEsDuenoUrbis(); }
+    catch (e) {}
+    return soyAdmin();
+  }
   function datos() {
     try {
       if (typeof globalData !== 'undefined' && Array.isArray(globalData)) return globalData;
@@ -57,6 +74,15 @@
     return [];
   }
   function cerrarHoja(id) { const e = document.getElementById(id); if (e) e.remove(); }
+  /* BASE_OFFSET es una `const` global de js/04. Con `const` no basta `typeof`:
+     si js/04 se cortó antes de esa línea, la casilla existe pero sin valor y
+     hasta preguntar por ella lanza. Un panel entero no se puede caer por eso,
+     así que se pregunta dentro de un try y, si no hay respuesta, se usa el 43
+     de siempre. */
+  function baseOffset() {
+    try { if (typeof BASE_OFFSET !== 'undefined') return BASE_OFFSET; } catch (e) {}
+    return 43;
+  }
   /* La compresión de fotos vive en js/05 y se expone con dos nombres distintos
      según la versión. Se buscan los dos antes de rendirse: si no se encuentra,
      la petición se manda sin captura en vez de fallar. */
@@ -224,14 +250,14 @@
   // ── Configuración ────────────────────────────────────────────────────────
   window.urbisAbrirConfiguracion = function () {
     cerrarHoja('urbis-config-overlay');
-    const admin = soyAdmin();
+    const admin = tengoPanel();
     let pendientes = 0, denunciados = 0, sinLeer = 0;
+    // Cada cifra solo cuenta si esa persona puede hacer algo con ella: un
+    // número que avisa de trabajo que no se puede tocar es ruido.
     try {
-      if (admin) {
-        pendientes = window.urbisReportesPorAprobar().length;
-        denunciados = window.urbisContenidoDenunciado().length;
-        sinLeer = window.urbisPeticionesSinLeer();
-      }
+      if (puedo('aprobar')) pendientes = window.urbisReportesPorAprobar().length;
+      if (puedo('moderar')) denunciados = window.urbisContenidoDenunciado().length;
+      if (puedo('peticiones')) sinLeer = window.urbisPeticionesSinLeer();
     } catch (e) {}
     const total = pendientes + denunciados + sinLeer;
 
@@ -244,8 +270,8 @@
         '<h3>⚙️ Configuración</h3>' +
         (admin
           ? '<button type="button" class="ucfg-fila ucfg-fila-admin" data-ucfg="admin">' +
-            '<span class="ucfg-ico">🛡️</span><div><b>Panel de administración</b>' +
-            '<small>Aprobar reportes, revisar denuncias y leer peticiones.</small></div>' +
+            '<span class="ucfg-ico">🛡️</span><div><b>' + (soyDueno() ? 'Panel de administración' : 'Panel de moderación') + '</b>' +
+            '<small>' + esc(resumenDeLoMio()) + '</small></div>' +
             (total ? '<span class="ucfg-badge">' + total + '</span>' : '') + '</button>'
           : '') +
         '<button type="button" class="ucfg-fila" data-ucfg="peticion">' +
@@ -273,9 +299,24 @@
     });
   };
 
+  /* Lo que dice el botón tiene que ser lo que la persona va a encontrar
+     dentro. A una moderadora con un solo permiso no se le anuncia un panel
+     con tres cosas que no puede tocar. */
+  function resumenDeLoMio() {
+    const partes = [];
+    if (puedo('aprobar')) partes.push('aprobar reportes');
+    if (puedo('moderar')) partes.push('revisar denuncias');
+    if (puedo('eliminar')) partes.push('retirar publicaciones');
+    if (puedo('peticiones')) partes.push('leer peticiones');
+    if (soyDueno()) partes.push('repartir permisos');
+    if (!partes.length) return 'Tu panel de moderación.';
+    const t = partes.join(', ');
+    return t.charAt(0).toUpperCase() + t.slice(1) + '.';
+  }
+
   // ── Qué tiene que mirar el administrador ─────────────────────────────────
   window.urbisReportesPorAprobar = function () {
-    const base = (typeof BASE_OFFSET !== 'undefined') ? BASE_OFFSET : 43;
+    const base = baseOffset();
     return datos().filter(function (p) {
       try {
         if (typeof esFilaMetaUrbis === 'function' && esFilaMetaUrbis(p)) return false;
@@ -303,19 +344,32 @@
   }
 
   window.urbisAbrirPanelAdmin = function () {
-    if (!soyAdmin()) { alert('Esta sección es solo para el administrador de URBIS.'); return; }
+    if (!tengoPanel()) { alert('Esta sección es solo para quien modera URBIS.'); return; }
     cerrarHoja('urbis-admin-overlay');
+
+    // Solo las bandejas de lo que esta persona puede hacer. Enseñar una
+    // pestaña que al pulsar dice "no puedes" es peor que no enseñarla.
+    const bandejas = [];
+    if (puedo('aprobar'))    bandejas.push({ id:'aprobar',    nombre:'Por aprobar' });
+    if (puedo('moderar'))    bandejas.push({ id:'denuncias',  nombre:'Denuncias' });
+    if (puedo('peticiones')) bandejas.push({ id:'peticiones', nombre:'Peticiones' });
+    if (soyDueno())          bandejas.push({ id:'equipo',     nombre:'Equipo' });
+    // Con el permiso de retirar y nada más, la bandeja útil es la de
+    // denuncias: es donde aparece lo que hay que quitar.
+    if (!bandejas.length && puedo('eliminar')) bandejas.push({ id:'denuncias', nombre:'Denuncias' });
+
     const ov = document.createElement('div');
     ov.id = 'urbis-admin-overlay';
     ov.className = 'urbis-cfg-overlay';
     ov.innerHTML =
       '<div class="urbis-cfg urbis-cfg-largo urbis-admin" role="dialog" aria-modal="true">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
-        '<h3>🛡️ Panel de administración</h3>' +
+        '<h3>🛡️ ' + (soyDueno() ? 'Panel de administración' : 'Panel de moderación') + '</h3>' +
         '<div class="uadm-tabs">' +
-          '<button type="button" class="uadm-tab on" data-uadm="aprobar">Por aprobar</button>' +
-          '<button type="button" class="uadm-tab" data-uadm="denuncias">Denuncias</button>' +
-          '<button type="button" class="uadm-tab" data-uadm="peticiones">Peticiones</button>' +
+          bandejas.map(function (b, i) {
+            return '<button type="button" class="uadm-tab' + (i ? '' : ' on') + '" data-uadm="' + b.id + '">' +
+                   esc(b.nombre) + '</button>';
+          }).join('') +
         '</div>' +
         '<div class="uadm-lista"></div>' +
       '</div>';
@@ -324,23 +378,27 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
 
     const lista = ov.querySelector('.uadm-lista');
-    let pestana = 'aprobar';
+    let pestana = (bandejas[0] && bandejas[0].id) || 'aprobar';
 
     function vacio(txt) { return '<div class="uadm-vacio">✅ ' + txt + '</div>'; }
+    // El botón de eliminar solo se dibuja si esa persona lo tiene: el
+    // servidor lo rechazaría igual, pero ofrecerlo y que falle es peor.
+    const btnBorrar = puedo('eliminar')
+      ? '<button type="button" class="uadm-del" data-acc="borrar">Eliminar</button>' : '';
 
     function pintar() {
       if (pestana === 'aprobar') {
         const arr = window.urbisReportesPorAprobar();
         lista.innerHTML = arr.length ? arr.map(function (p) {
           const d = String(p.descripcion || '').split(' | ');
-          const base = (typeof BASE_OFFSET !== 'undefined') ? BASE_OFFSET : 43;
+          const base = baseOffset();
           return '<div class="uadm-item" data-lat="' + esc(p.lat) + '">' +
             '<div class="uadm-txt"><b>' + esc(tituloDe(p)) + '</b>' +
             '<small>' + esc(p.tipo) + ' · @' + esc(d[base + 2] || 'anónimo') + '</small></div>' +
             '<div class="uadm-btns">' +
               '<button type="button" class="uadm-ver" data-acc="ver">Ver</button>' +
               '<button type="button" class="uadm-ok" data-acc="aprobar">Aprobar</button>' +
-              '<button type="button" class="uadm-del" data-acc="borrar">Eliminar</button>' +
+              btnBorrar +
             '</div></div>';
         }).join('') : vacio('No hay reportes esperando aprobación.');
 
@@ -353,10 +411,16 @@
             '<div class="uadm-txt"><b>' + esc(tituloDe(p)) + '</b>' +
             '<small>' + (e.oculto ? '<b class="uadm-oculto">ESCONDIDO</b> · ' : '') + esc(motivos) + '</small></div>' +
             '<div class="uadm-btns">' +
-              '<button type="button" class="uadm-ok" data-acc="restaurar">Devolver</button>' +
-              '<button type="button" class="uadm-del" data-acc="borrar">Eliminar</button>' +
+              (puedo('moderar') ? '<button type="button" class="uadm-ok" data-acc="restaurar">Devolver</button>' : '') +
+              btnBorrar +
             '</div></div>';
         }).join('') : vacio('No hay contenido denunciado sin revisar.');
+
+      } else if (pestana === 'equipo') {
+        // El reparto de permisos vive en js/13h: es su propia máquina y no
+        // tiene por qué mezclarse con las bandejas de contenido.
+        if (typeof window.urbisPintarEquipo === 'function') window.urbisPintarEquipo(lista);
+        else lista.innerHTML = vacio('No se pudo cargar el reparto de permisos.');
 
       } else {
         const arr = peticiones();
@@ -368,7 +432,7 @@
             '<small>' + esc(new Date(x.fecha || Date.now()).toLocaleString('es-CO', { dateStyle:'medium', timeStyle:'short' })) + '</small></div>' +
             '<div class="uadm-btns">' +
               (x.estado === 'leida' ? '' : '<button type="button" class="uadm-ok" data-acc="leida">Marcar leída</button>') +
-              '<button type="button" class="uadm-del" data-acc="borrar-peticion">Eliminar</button>' +
+              (puedo('eliminar') ? '<button type="button" class="uadm-del" data-acc="borrar-peticion">Eliminar</button>' : '') +
             '</div></div>';
         }).join('') : vacio('No hay peticiones.');
       }
@@ -399,7 +463,7 @@
            el guardado fallara— y además cierra el panel de registro clásico,
            que aquí no está abierto. Se hace el cambio directo. */
         if (!p) { alert('No se encontró el reporte.'); return; }
-        const base = (typeof BASE_OFFSET !== 'undefined') ? BASE_OFFSET : 43;
+        const base = baseOffset();
         const d = String(p.descripcion || '').split(' | ');
         d[base + 1] = 'Aprobado';
         const nueva = d.join(' | ');
@@ -428,6 +492,7 @@
           ? (peticiones()[parseInt(item.getAttribute('data-i'), 10)] || {}).fila
           : p;
         if (!objetivo) { alert('No se encontró la publicación.'); return; }
+        if (!puedo('eliminar')) { alert('No tienes el permiso de retirar publicaciones.'); return; }
         if (!confirm('¿Eliminar esto de forma permanente?\n\nNo se puede deshacer.')) return;
         btn.disabled = true; btn.textContent = '…';
         /* En peticiones se repinta entero: la lista se indexa por posición y

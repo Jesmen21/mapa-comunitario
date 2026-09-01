@@ -1854,7 +1854,11 @@
       // esta cuenta. No es la contraseña y no sirve para entrar en ningún sitio;
       // el servidor lo compara con el que guardó al iniciar sesión. Sin él, el
       // servidor solo puede creerse lo que le diga el navegador.
-      session_token: user.session_token || ''
+      session_token: user.session_token || '',
+      // Permisos delegados de moderación (js/13h). Se refrescan al abrir la
+      // aplicación: darlos o quitarlos no obliga a cerrar sesión.
+      permisos: Array.isArray(user.permisos) ? user.permisos : [],
+      es_dueno: !!user.es_dueno
     };
     localStorage.setItem(SESSION_KEY(), JSON.stringify(session));
     try { localStorage.setItem('urbis_last_active_session', JSON.stringify(session)); } catch(e) {}
@@ -2158,6 +2162,9 @@
     updateBirthStatus,
     populateBirthDateSelectors,
     readSession,
+    // El nombre de la casilla donde vive la sesión. Lo necesita js/13h para
+    // guardar los permisos refrescados sin adivinar la clave.
+    sessionKey: SESSION_KEY,
     hasVerifiedSession,
     openRecoveryModal,
     requestRecoveryCode,
