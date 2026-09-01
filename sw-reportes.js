@@ -23,6 +23,7 @@ const ASSETS = [
   './js/13f-victimas.js',
   './js/13g-config-admin.js',
   './js/13h-permisos.js',
+  './js/13i-vitrina.js',
   './js/80-reportes-shell.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'

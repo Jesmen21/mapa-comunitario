@@ -363,7 +363,14 @@
   function _dbSinBackend(){ return Promise.reject(new Error('Backend URBIS (Apps Script) no disponible')); }
   window.urbisGuardarFila = function(fila){
     if(!_dbAPIok()) return _dbSinBackend();
-    return window.URBIS_AUTH.socialAPI({ action:'db_write', fila: fila });
+    // El token viaja también al CREAR. A casi todo le da igual, pero la
+    // vitrina exige permiso para escribirse: sin firma, cualquiera podría
+    // inventarse un "emprendimiento verificado por URBIS".
+    return window.URBIS_AUTH.socialAPI({ action:'db_write', fila: fila, session_token:_dbToken() })
+      .then(function(out){
+        if(out && out.ok === false && out.message) throw new Error(out.message);
+        return out;
+      });
   };
   // LECTURA de todos los reportes vía Apps Script. Si falla, devuelve [] (no rompe la app).
   window.urbisDBRead = function(){
@@ -753,13 +760,19 @@
       // Filas especiales (no son reportes): se identifican por el TEXTO del tipo
       // (no por el emoji, que se corrompe a mojibake al guardarse en el Sheet).
       const tipoTxt = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('social rush')!==-1; };
+      const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('social rush')!==-1; };
       window.urbisRushSocial  = raw.filter(p => tipoTxt(p).indexOf('social rush') !== -1);
       window.urbisComentarios = raw.filter(p => tipoTxt(p).indexOf('comentario') !== -1);
       // Las peticiones al administrador salen de globalData (no son reportes y
       // no se pintan), así que necesitan su propio cajón: si no, el buzón del
       // panel de administración se vería siempre vacío.
       window.urbisPeticiones  = raw.filter(p => tipoTxt(p).indexOf('peticion') !== -1);
+      // La vitrina se aparta por la razón CONTRARIA a las demás filas meta: sí
+      // se pinta, pero la pinta su propio módulo (js/13i). Si pasara por
+      // pintarPuntos, el motor de vigencia trataría el negocio como un reporte
+      // y lo archivaría a los días.
+      window.urbisVitrina      = raw.filter(p => tipoTxt(p).indexOf('emprendimiento') !== -1);
+      window.urbisVitrinaItems = raw.filter(p => tipoTxt(p).indexOf('portafolio') !== -1);
       window.urbisUbicaciones  = raw.filter(p => tipoTxt(p).indexOf('ubicacion') !== -1);
       window.urbisRelaciones   = raw.filter(p => tipoTxt(p).indexOf('relacion') !== -1);
       window.urbisPuntajes     = raw.filter(p => tipoTxt(p).indexOf('puntaje') !== -1);
@@ -799,10 +812,12 @@
         const cacheArr = Array.isArray(cache) ? cache : [];
         cacheArr.forEach(p => { if(p){ if(p.lat!=null) p.lat = String(p.lat).replace(',', '.'); if(p.lng!=null) p.lng = String(p.lng).replace(',', '.'); } });
         const tipoTxtC = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        const esMetaC = p => { const t = tipoTxtC(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('social rush')!==-1; };
+        const esMetaC = p => { const t = tipoTxtC(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('social rush')!==-1; };
         window.urbisRushSocial  = cacheArr.filter(p => tipoTxtC(p).indexOf('social rush') !== -1);
         window.urbisComentarios = cacheArr.filter(p => tipoTxtC(p).indexOf('comentario') !== -1);
         window.urbisPeticiones  = cacheArr.filter(p => tipoTxtC(p).indexOf('peticion') !== -1);
+        window.urbisVitrina      = cacheArr.filter(p => tipoTxtC(p).indexOf('emprendimiento') !== -1);
+        window.urbisVitrinaItems = cacheArr.filter(p => tipoTxtC(p).indexOf('portafolio') !== -1);
         window.urbisUbicaciones  = cacheArr.filter(p => tipoTxtC(p).indexOf('ubicacion') !== -1);
         window.urbisRelaciones   = cacheArr.filter(p => tipoTxtC(p).indexOf('relacion') !== -1);
         window.urbisPuntajes     = cacheArr.filter(p => tipoTxtC(p).indexOf('puntaje') !== -1);

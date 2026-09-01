@@ -31,9 +31,11 @@
     aprobar:    { icono:'✅', titulo:'Aprobar reportes',
                   texto:'Da el visto bueno a los reportes que esperan revisión.' },
     peticiones: { icono:'📩', titulo:'Leer el buzón',
-                  texto:'Ve las peticiones que la gente escribe al administrador.' }
+                  texto:'Ve las peticiones que la gente escribe al administrador.' },
+    vitrina:    { icono:'🛍️', titulo:'Administrar la vitrina',
+                  texto:'Crea y edita los emprendimientos y decide cuáles se ven en el mapa.' }
   };
-  const ORDEN = ['eliminar', 'moderar', 'aprobar', 'peticiones'];
+  const ORDEN = ['eliminar', 'moderar', 'aprobar', 'peticiones', 'vitrina'];
 
   function esc(t) {
     return String(t == null ? '' : t)

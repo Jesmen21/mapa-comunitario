@@ -868,7 +868,7 @@ function _crearTokenSesion_(usersSh, user) {
    Lo que decide de verdad es esta lectura, hecha en cada escritura contra la
    hoja. El botón que se ve o se esconde en el teléfono es solo cortesía.
    ═══════════════════════════════════════════════════════════════════════ */
-var URBIS_PERMISOS = ['eliminar', 'moderar', 'aprobar', 'peticiones'];
+var URBIS_PERMISOS = ['eliminar', 'moderar', 'aprobar', 'peticiones', 'vitrina'];
 
 function _leerPermisos_(valor) {
   var s = String(valor == null ? '' : valor).toLowerCase();
@@ -943,6 +943,15 @@ function _esFilaMeta_(tipo) {
 
    El autor no está en la casilla 45 —eso es formato de reporte— sino en el
    primer campo del formato usuario~~~texto~~~extra. */
+/* La vitrina de emprendimientos (js/13i). Sus filas dicen "verificado por
+   URBIS", así que escribirlas es un privilegio, no un derecho: solo el dueño
+   y quien tenga delegada la vitrina. Sin este candado, db_write —que es
+   abierto— dejaría a cualquiera inventarse un negocio con el aval de URBIS. */
+function _esFilaVitrina_(tipo) {
+  var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return t.indexOf('emprendimiento') !== -1 || t.indexOf('portafolio') !== -1;
+}
+
 function _esFilaTextoDeAlguien_(tipo) {
   var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return t.indexOf('comentario') !== -1 || t.indexOf('peticion') !== -1;
@@ -1552,6 +1561,12 @@ function dbWrite_(body) {
   var fila = body.fila || body.data || body;
   if (Array.isArray(fila)) fila = fila[0] || {};
   var tipo = (fila.tipo != null) ? String(fila.tipo) : '';
+  if (_esFilaVitrina_(tipo)) {
+    var quienV = _quienEscribe_(body);
+    if (!_puede_(quienV, 'vitrina')) {
+      return { ok: false, message: 'La vitrina de emprendimientos la publica el equipo URBIS.' };
+    }
+  }
   var lat = (fila.lat != null) ? String(fila.lat) : '';
   var lng = (fila.lng != null) ? String(fila.lng) : '';
   var descripcion = (fila.descripcion != null) ? String(fila.descripcion) : '';
@@ -1664,6 +1679,15 @@ function dbUpdate_(body) {
   var updated = 0, negados = 0;
   for (var i = 0; i < data.length; i++) {
     if (!_dbMatch_(data[i][colIdx], value, col)) continue;
+    if (tipoIdx >= 0 && _esFilaVitrina_(data[i][tipoIdx])) {
+      if (!_puede_(quien, 'vitrina')) { negados++; continue; }
+      Object.keys(set).forEach(function(k){
+        var ciV = _dbColIdx_(headers, k);
+        if (ciV >= 0) { var cV = sh.getRange(i + 2, ciV + 1); cV.setNumberFormat('@'); cV.setValue(String(set[k])); }
+      });
+      updated++;
+      continue;
+    }
     if (tipoIdx >= 0 && _esFilaTextoDeAlguien_(data[i][tipoIdx])) {
       var descTexto = descIdx >= 0 ? String(data[i][descIdx] || '') : '';
       var puedeTexto = _esAutorDelTexto_(descTexto, quien);
@@ -1739,6 +1763,11 @@ function dbDelete_(body) {
     // Un comentario o una petición los borra quien los escribió, o el
     // administrador. Antes entraban por la rama de abajo y los borraba
     // cualquiera.
+    if (tipoIdx >= 0 && _esFilaVitrina_(data[i][tipoIdx])) {
+      if (!quien) { sinSesion = true; negados++; continue; }
+      if (!_puede_(quien, 'vitrina')) { negados++; continue; }
+      sh.deleteRow(i + 2); deleted++; continue;
+    }
     if (tipoIdx >= 0 && _esFilaTextoDeAlguien_(data[i][tipoIdx])) {
       if (!quien) { sinSesion = true; negados++; continue; }
       var descT = descIdx >= 0 ? String(data[i][descIdx] || '') : '';

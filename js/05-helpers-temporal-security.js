@@ -235,7 +235,10 @@
       const t = String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
       return t.indexOf('ubicacion')!==-1 || t.indexOf('comentario')!==-1 || t.indexOf('relacion')!==-1 ||
              t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 ||
-             t.indexOf('peticion')!==-1;
+             t.indexOf('peticion')!==-1 ||
+             // La vitrina (js/13i) se pinta sola, en su capa: para el resto
+             // de la maquinaria de reportes es una fila interna.
+             t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1;
   }
   window.esFilaMetaUrbis = esFilaMetaUrbis;
 

@@ -308,6 +308,7 @@
     if (puedo('moderar')) partes.push('revisar denuncias');
     if (puedo('eliminar')) partes.push('retirar publicaciones');
     if (puedo('peticiones')) partes.push('leer peticiones');
+    if (puedo('vitrina')) partes.push('cuidar la vitrina');
     if (soyDueno()) partes.push('repartir permisos');
     if (!partes.length) return 'Tu panel de moderación.';
     const t = partes.join(', ');
@@ -353,6 +354,7 @@
     if (puedo('aprobar'))    bandejas.push({ id:'aprobar',    nombre:'Por aprobar' });
     if (puedo('moderar'))    bandejas.push({ id:'denuncias',  nombre:'Denuncias' });
     if (puedo('peticiones')) bandejas.push({ id:'peticiones', nombre:'Peticiones' });
+    if (puedo('vitrina'))    bandejas.push({ id:'vitrina',    nombre:'Vitrina' });
     if (soyDueno())          bandejas.push({ id:'equipo',     nombre:'Equipo' });
     // Con el permiso de retirar y nada más, la bandeja útil es la de
     // denuncias: es donde aparece lo que hay que quitar.
@@ -415,6 +417,12 @@
               btnBorrar +
             '</div></div>';
         }).join('') : vacio('No hay contenido denunciado sin revisar.');
+
+      } else if (pestana === 'vitrina') {
+        // Los emprendimientos del barrio: crear, editar y decidir cuáles se
+        // ven junto a los reportes. Vive en js/13i, que es su casa.
+        if (typeof window.urbisPintarVitrinaAdmin === 'function') window.urbisPintarVitrinaAdmin(lista);
+        else lista.innerHTML = vacio('No se pudo cargar la vitrina.');
 
       } else if (pestana === 'equipo') {
         // El reparto de permisos vive en js/13h: es su propia máquina y no
