@@ -346,7 +346,11 @@
         cont.querySelector('#uvit-toque').addEventListener('click', function () {
           // Se cierra el panel, se toca el sitio y el formulario vuelve con la
           // ubicación puesta. El mapa es global; un toque de una sola vez.
-          const panel = document.getElementById('urbis-admin-overlay');
+          // La que esté alojando el formulario: su ventana propia o, si un
+          // día vuelve a colgar del panel general, la de aquel. Buscarla por
+          // el árbol en vez de por un id fijo evita que "tocar el mapa" se
+          // rompa la próxima vez que el mostrador cambie de casa.
+          const panel = cont.closest('.urbis-cfg-overlay');
           if (panel) panel.style.display = 'none';
           alert('Toca en el mapa el punto exacto donde queda el negocio.');
           const m = getMap();
@@ -453,6 +457,32 @@
     listado();
   };
 
+  /* Ventana PROPIA del mostrador. Antes se pedía prestado el panel general,
+     y eso traía detrás las bandejas de aprobar, denuncias, peticiones y
+     equipo: entrar a administrar emprendimientos no tiene por qué poner a
+     la vista todo lo demás. La Vitrina es su propio módulo y se administra
+     en su propia casa. */
+  window.urbisAbrirVitrinaAdmin = function () {
+    if (!puedo()) { alert('La vitrina la administra el equipo URBIS.'); return; }
+    const previo = document.getElementById('urbis-vitrina-admin');
+    if (previo) previo.remove();
+    const ov = document.createElement('div');
+    ov.id = 'urbis-vitrina-admin';
+    ov.className = 'urbis-cfg-overlay';
+    ov.innerHTML =
+      '<div class="urbis-cfg urbis-cfg-largo uvit-mostrador" role="dialog" aria-modal="true">' +
+        '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
+        '<h3>🛍️ Emprendimientos URBIS</h3>' +
+        '<p class="ucfg-sub">Tu mostrador: crea la ficha de cada negocio, arma su ' +
+        'portafolio y decide cuáles se ven en el mapa.</p>' +
+        '<div class="uvit-mostrador-cuerpo"></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
+    ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+    window.urbisPintarVitrinaAdmin(ov.querySelector('.uvit-mostrador-cuerpo'));
+  };
+
   // ── El módulo del inicio: la puerta grande de la vitrina ─────────────────
   /* La gota del mapa es el descubrimiento casual; esta tarjeta es la entrada
      a propósito. Sale en "Módulos principales" PARA TODO EL MUNDO — esconderla
@@ -522,7 +552,7 @@
       'Escríbenos desde Perfil → Configuración.</small>';
 
     const admin = cont.querySelector('.uvit-dir-admin');
-    if (admin) admin.addEventListener('click', function () { window.urbisAbrirPanelAdmin('vitrina'); });
+    if (admin) admin.addEventListener('click', function () { window.urbisAbrirVitrinaAdmin(); });
     cont.querySelectorAll('.uvit-dir-card').forEach(function (c) {
       c.addEventListener('click', function (e) {
         if (e.target.closest('.uvit-dir-wa')) return;   // el WhatsApp navega solo

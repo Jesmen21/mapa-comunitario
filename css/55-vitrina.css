@@ -225,3 +225,9 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
   font-size:.62rem !important;
   line-height:1.25;
 }
+
+/* El mostrador en su ventana propia: acento dorado arriba, como la ficha
+   pública, para que se note de una que esto es la Vitrina y no el panel
+   general de moderación. */
+.uvit-mostrador{ border-top:4px solid #FBBF24 !important; }
+.uvit-mostrador .uvit-nuevo{ margin-top:4px; }

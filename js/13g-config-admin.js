@@ -344,9 +344,7 @@
     return (d[1] && d[1] !== 'N/A' ? d[1] : d[0]) || 'Publicación';
   }
 
-  /* `bandejaPreferida` permite llegar directo a una pestaña (el módulo
-     Vitrina del inicio abre el panel ya parado en la suya). */
-  window.urbisAbrirPanelAdmin = function (bandejaPreferida) {
+  window.urbisAbrirPanelAdmin = function () {
     if (!tengoPanel()) { alert('Esta sección es solo para quien modera URBIS.'); return; }
     cerrarHoja('urbis-admin-overlay');
 
@@ -550,12 +548,9 @@
       }
     });
 
-    /* Se abre en el MENÚ, salvo que quien llame pida una bandeja concreta
-       (el módulo Vitrina del inicio) o solo haya una: con una sola bandeja,
-       obligar a elegir entre una opción es una pantalla de más. */
-    if (bandejaPreferida && bandejas.some(function (b) { return b.id === bandejaPreferida; })) {
-      abrirBandeja(bandejaPreferida);
-    } else if (bandejas.length === 1) {
+    /* Se abre en el MENÚ, salvo que solo haya una bandeja: obligar a elegir
+       entre una sola opción es una pantalla de más. */
+    if (bandejas.length === 1) {
       abrirBandeja(bandejas[0].id);
       ov.querySelector('.uadm-volver').hidden = true;
     }

@@ -69,6 +69,49 @@
   background:rgba(56,189,248,.16); color:#0EA5E9 !important; font-weight:800;
 }
 
+/* ── Los campos de texto, en papel y no en pizarra ─────────────────────────
+   css/99-contrast-fix.css lleva una regla GLOBAL:
+
+     textarea, input, select { background: rgba(7,17,13,.84) !important;
+                               color:#f6fff8 !important }
+
+   Es del tema oscuro original y pinta de casi negro CUALQUIER campo de la
+   aplicación. Sobre estas tarjetas claras el resultado es una caja negra con
+   la letra apenas visible — y no bastaba con poner `background:#fff` en la
+   regla propia: sin `!important` pierde, por muy específica que sea.
+
+   Se arregla aquí, para el contenedor `.urbis-cfg`, y no en css/99: cambiar
+   la global movería todos los formularios de la aplicación, incluidos los del
+   tema oscuro donde esa regla sí es la correcta. Cubre de una vez la petición,
+   el buscador de permisos y las fichas de la vitrina, presentes y futuros. */
+.urbis-cfg input,
+.urbis-cfg textarea,
+.urbis-cfg select{
+  background:#fff !important;
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E !important;
+  border:1.5px solid rgba(56,189,248,.42) !important;
+  box-shadow:none !important;
+}
+.urbis-cfg input:focus,
+.urbis-cfg textarea:focus,
+.urbis-cfg select:focus{
+  border-color:#0EA5E9 !important;
+  box-shadow:0 0 0 3px rgba(14,165,233,.18) !important;
+  outline:none !important;
+}
+.urbis-cfg input::placeholder,
+.urbis-cfg textarea::placeholder{
+  color:rgba(69,107,135,.5) !important; -webkit-text-fill-color:rgba(69,107,135,.5) !important;
+}
+/* Las casillas de permiso son cuadritos, no campos de texto: se les devuelve
+   su forma después de la regla de arriba. */
+.urbis-cfg input[type="checkbox"]{
+  border:0 !important; box-shadow:none !important; background:initial !important;
+  accent-color:#0EA5E9;
+}
+/* El selector de archivo va escondido: la etiqueta es el botón visible. */
+.urbis-cfg input[type="file"]{ display:none !important; }
+
 /* ── Filas de la configuración ───────────────────────────────────────────── */
 .ucfg-fila{
   display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box;
