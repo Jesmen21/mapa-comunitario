@@ -388,3 +388,55 @@
 .urbis-n2 .n2-cancelar{
   color:#456B87 !important; -webkit-text-fill-color:#456B87 !important;
 }
+
+/* ══ EL FANTASMA DE LAS LETRAS PÁLIDAS ═════════════════════════════════════
+   css/42-turquoise-refresh.css, línea 91:
+
+     p, small, span, label, … { color:rgba(231,255,251,.78) !important; }
+
+   Un selector de ELEMENTO con `!important` que pinta de blanco verdoso cada
+   párrafo, cada `small` y cada `span` de la aplicación. Se escribió para el
+   tema oscuro original y era correcto entonces. Hoy, sobre cualquier tarjeta
+   clara, borra el texto — y ya ha aparecido cinco veces: en el registro, en
+   la configuración, en la vitrina, en la verificación de identidad y ahora en
+   la garantía de anonimato.
+
+   No se cambia la regla de css/42: sigue siendo la correcta para las
+   pantallas oscuras que quedan, y tocarla movería media aplicación de golpe.
+   Lo que se hace es dar una CURA de una línea para las claras.
+
+   ── Cómo usarla en una pantalla nueva ────────────────────────────────────
+   Ponle la clase `urbis-claro` al contenedor. Con eso su texto vuelve a la
+   tinta de URBIS y deja de heredar el blanco. Si necesitas otro tono para un
+   título o un dato, decláralo después con su propia regla.            */
+.urbis-claro,
+.urbis-claro p, .urbis-claro small, .urbis-claro span, .urbis-claro label,
+.urbis-claro li, .urbis-claro td, .urbis-claro th{
+  color:#456B87 !important; -webkit-text-fill-color:#456B87 !important;
+}
+.urbis-claro b, .urbis-claro strong,
+.urbis-claro h1, .urbis-claro h2, .urbis-claro h3, .urbis-claro h4{
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E !important;
+}
+
+/* ── Los paneles claros que ya existen dentro del formulario de reporte ────
+   Se curan aquí, con su propia tinta y no con la genérica, porque cada uno
+   tiene su color: la garantía de anonimato es azul y el bloque de víctimas
+   es cálido. Lo único que cambia respecto a css/01 es el `!important` que
+   hace falta para ganarle a la regla global. */
+.u52-anon-garantia,
+.u52-anon-garantia span, .u52-anon-garantia p, .u52-anon-garantia small{
+  color:#2C3E55 !important; -webkit-text-fill-color:#2C3E55 !important;
+}
+.u52-anon-garantia b{ color:#123A6B !important; -webkit-text-fill-color:#123A6B !important; }
+
+.urbis-victimas .uv2-pregunta,
+.urbis-victimas .uv2-pregunta span{ color:#7A2D1D !important; -webkit-text-fill-color:#7A2D1D !important; }
+.urbis-victimas label, .urbis-victimas small, .urbis-victimas span{
+  color:#5C3A33 !important; -webkit-text-fill-color:#5C3A33 !important;
+}
+
+.urbis-dup .ud-head h3{ color:#123A6B !important; -webkit-text-fill-color:#123A6B !important; }
+.urbis-dup p, .urbis-dup small, .urbis-dup span{
+  color:#5C7086 !important; -webkit-text-fill-color:#5C7086 !important;
+}

@@ -2126,7 +2126,12 @@
             <option value="168">Una semana</option>
           </select>
         </label>
-        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto del evento (opcional)</span><input type="file" id="ev-foto-file" accept="image/*" capture="environment"></label>
+        <!-- Sin el atributo capture: ese atributo abre la camara
+             directamente y, en Android, ESCONDE la galeria. Quien ya tenia la
+             foto tomada -lo normal cuando se reporta algo que paso hace un
+             rato- se quedaba sin poder subirla. Sin el, el telefono ofrece
+             las dos cosas. -->
+        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto del evento (opcional)</span><input type="file" id="ev-foto-file" accept="image/*"></label>
         <button type="button" class="u52-quick-publish" data-u52-call="quick-event-publish">Publicar evento</button>
       </div>`;
     panel.hidden = false;
@@ -2380,7 +2385,7 @@
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción corta opcional"></textarea>
         ${victimasHTML}
-        <label class="${photoClass}"><span class="u52-photo-label-text">${photoLabelText}</span><input type="file" id="ins-foto-file" accept="image/*" capture="environment"></label>
+        <label class="${photoClass}"><span class="u52-photo-label-text">${photoLabelText}</span><input type="file" id="ins-foto-file" accept="image/*"></label>
         <button type="button" class="u52-quick-publish" data-u52-call="quick-report-publish">Publicar reporte</button>
       </div>`;
     panel.classList.remove('u52-procity-mode');
@@ -4906,7 +4911,7 @@
         <input id="ins-foto" type="hidden" value="">
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
-        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto de referencia (opcional)</span><input type="file" id="ins-foto-file" accept="image/*" capture="environment"></label>
+        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto de referencia (opcional)</span><input type="file" id="ins-foto-file" accept="image/*"></label>
         <button type="button" class="u52-quick-publish u52-procity-publish" data-u52-call="procity-publish">${editando ? 'Actualizar en Pro City' : 'Guardar en Pro City'}</button>
       </div>`;
     panel.classList.add('u52-procity-mode');

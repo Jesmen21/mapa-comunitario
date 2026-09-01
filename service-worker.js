@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v590-admin-sin-cedula';
+const URBIS_CACHE = 'urbis-v591-letras-y-galeria';
 const URBIS_ASSETS = [
   './',
   './index.html',
