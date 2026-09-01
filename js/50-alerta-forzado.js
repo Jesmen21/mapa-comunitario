@@ -198,7 +198,12 @@
     var nota = Array.isArray(a.lineas) ? a.lineas.join(';;') : String(a.lineas || '');
     var arr = [a.tipo, a.titulo, nota, 'Bueno', 'Activo', 'N/A']
       .concat(new Array(37).fill('NO'))
-      .concat(['N/A', 'Aprobado', 'UrbisNoticia', 'Equipo URBIS · Alerta verificada',
+      // Firmadas por la cuenta del administrador de URBIS, no por un nombre
+      // suelto. Importa por algo más que el crédito: el servidor autoriza las
+      // ediciones y los borrados comparando el AUTOR con quien escribe, así
+      // que con "UrbisNoticia" —una cuenta que ya no se usa— estas alertas
+      // quedaban sin dueño real que pudiera corregirlas.
+      .concat(['N/A', 'Aprobado', 'urbisprocity', 'admin',
                '0', '', '', '', creado, expira, 'Temporal', 'Activo', 'Alerta']);
     return {
       tipo: '🌪️ Desastres Naturales y Clima',
@@ -207,6 +212,11 @@
       fecha: creado
     };
   }
+
+  // Expuesta para poder comprobar la conversión desde fuera: lo que importa no
+  // es que el código diga "urbisprocity", sino que ese nombre caiga en la
+  // casilla exacta que el servidor mira para autorizar ediciones y borrados.
+  window.urbisFilaAlertaEditorial = filaDesdeEditorial;
 
   function cargarEditoriales() {
     try {

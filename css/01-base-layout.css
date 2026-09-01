@@ -1349,13 +1349,24 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
    un emoji suelto sobre una foto satelital de tejados naranjas desaparece. */
 .urbis-conf .cf-disco{
   position:absolute; left:50%; top:6px; width:52px; height:52px; margin-left:-26px;
+  /* `border-box` no es un detalle: sin él, el borde de 3 px se SUMA al ancho
+     y el disco pasa a medir 58, con su centro 3 px más abajo y a la derecha
+     que el del emoji. Justo el descuadre que se veía. */
+  box-sizing:border-box;
   border-radius:50%; background:#fff;
   border:3px solid #DC2626;
   box-shadow:0 6px 16px rgba(0,0,0,.45);
 }
+/* El emoji ocupa EXACTAMENTE la misma caja que el disco y se centra dentro
+   con flex. Antes iba con un `margin-top` calculado a ojo, y los emojis se
+   apoyan bajos dentro de su línea de texto, así que quedaba descentrado.
+   Nada de `transform` para centrarlo: el latido usa `transform:scale` y
+   borraría el desplazamiento. Compartiendo caja no hace falta. */
 .urbis-conf .cf-emoji{
-  position:relative; z-index:3; margin-top:12px;
-  font-size:30px; line-height:1;
+  position:absolute; left:50%; top:6px; margin-left:-26px;
+  width:52px; height:52px; box-sizing:border-box; z-index:3;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; line-height:1;
   filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
 }
 /* Dos anillos que se expanden: se ven desde lejos aunque el emoji ya no se
