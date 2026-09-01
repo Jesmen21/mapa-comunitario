@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v597-terremoto-registro';
+const URBIS_CACHE = 'urbis-v598-taxonomia-privada';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -122,7 +122,6 @@ const URBIS_ASSETS = [
   './css/36-mobility-static-search.css',
   './css/43-clean-user-entry.css',
   './css/44-mobile-auth-onboarding.css',
-  './assets/data/future-uses-taxonomy.json',
 ];
 
 self.addEventListener('install', event => {
