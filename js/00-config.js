@@ -5,9 +5,9 @@ window.URBIS_CONFIG = {
   DEMO_ACCESS_CODE: null,
   // ⛔ SheetDB RETIRADO (2026-06-25): URBIS ya NO usa SheetDB. Todo el backend de datos
   // (reportes, eventos, comentarios, relaciones, GPS, avatares, puntajes) vive en Google
-  // Apps Script sobre el mismo Google Sheet. Se conserva esta clave solo por compatibilidad
-  // con referencias inertes; ningún flujo activo la llama.
-  SHEETDB_ENDPOINT: 'https://sheetdb.io/api/v1/vypsmcicsw2q6',
+  // Apps Script sobre el mismo Google Sheet. La clave SHEETDB_ENDPOINT y los dos parches
+  // de window.fetch que la acompañaban salieron en la v601: interceptaban un servicio
+  // que ya nadie llama, y su caché nunca se escribía.
   // ⛔ AQUÍ YA NO VA NINGUNA CONTRASEÑA.
   // Este archivo se sirve tal cual desde urbispro.city: cualquiera puede abrir
   // urbispro.city/js/00-config.js en su navegador y leerlo entero. No es un

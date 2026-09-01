@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v600-cache-lectura';
+const URBIS_CACHE = 'urbis-v601-sin-sheetdb';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -65,7 +65,6 @@ const URBIS_ASSETS = [
   './css/17-contextual-mobility-ui.css',
   './css/13-mobile-app-own.css',
   './js/00-config.js',
-  './js/26-sheetdb-mobile-guard.js',
   './js/01-audio-feedback.js',
   './js/02-auth-roles.js',
   './js/03-map-data-config.js',

@@ -390,6 +390,22 @@
   window.urbisDBInvalidarCache = function(){
     try{ localStorage.removeItem(DB_CACHE_KEY); }catch(e){}
   };
+
+  // Barrido único de la era SheetDB. Esas claves quedaron huérfanas al migrar
+  // a Apps Script y siguen ocupando espacio en el teléfono de cada usuario:
+  // la de móvil guardaba hasta 1500 filas. Con el almacenamiento lleno, la
+  // caché nueva no puede escribir, así que esto no es prolijidad sino sitio.
+  (function limpiarRestosSheetDB(){
+    try{
+      if(localStorage.getItem('urbis_limpieza_sheetdb_v1')) return;
+      ['urbis_sheetdb_cache_v70_mobile','urbis_sheetdb_cache_v77',
+       'urbis_sheetdb_pending_queue_v77','urbis_sheetdb_cooldown_until_v77',
+       'urbis_sheetdb_mobile_cooldown_until'].forEach(function(k){
+        try{ localStorage.removeItem(k); }catch(e){}
+      });
+      localStorage.setItem('urbis_limpieza_sheetdb_v1','1');
+    }catch(e){}
+  })();
   function _dbTrasEscribir(out){ window.urbisDBInvalidarCache(); return out; }
 
   // Estado de la última lectura, para que la interfaz pueda distinguir "no hay
@@ -911,39 +927,12 @@
       if(typeof urbisEvaluateAchievements === 'function') urbisEvaluateAchievements('cargar-puntos');
     })
     .catch(error => {
-      console.warn('[URBIS] No se pudo cargar SheetDB. Continuando con caché/vacío en móvil.', error);
-      try {
-        const cache = JSON.parse(localStorage.getItem('urbis_sheetdb_cache_v70_mobile') || '[]');
-        const cacheArr = Array.isArray(cache) ? cache : [];
-        cacheArr.forEach(p => { if(p){ if(p.lat!=null) p.lat = String(p.lat).replace(',', '.'); if(p.lng!=null) p.lng = String(p.lng).replace(',', '.'); } });
-        const tipoTxtC = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        const esMetaC = p => { const t = tipoTxtC(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('logo urbis')!==-1 || t.indexOf('social rush')!==-1; };
-        window.urbisRushSocial  = cacheArr.filter(p => tipoTxtC(p).indexOf('social rush') !== -1);
-        window.urbisComentarios = cacheArr.filter(p => tipoTxtC(p).indexOf('comentario') !== -1);
-        window.urbisPeticiones  = cacheArr.filter(p => tipoTxtC(p).indexOf('peticion') !== -1);
-        window.urbisVitrina      = cacheArr.filter(p => tipoTxtC(p).indexOf('emprendimiento') !== -1);
-        window.urbisVitrinaItems = cacheArr.filter(p => tipoTxtC(p).indexOf('portafolio') !== -1);
-        window.urbisVitrinaLogos = cacheArr.filter(p => tipoTxtC(p).indexOf('logo urbis') !== -1);
-        window.urbisUbicaciones  = cacheArr.filter(p => tipoTxtC(p).indexOf('ubicacion') !== -1);
-        window.urbisRelaciones   = cacheArr.filter(p => tipoTxtC(p).indexOf('relacion') !== -1);
-        window.urbisPuntajes     = cacheArr.filter(p => tipoTxtC(p).indexOf('puntaje') !== -1);
-        window.urbisAvatares = cacheArr.map(p => {
-          if(!p) return null;
-          if(tipoTxtC(p).indexOf('avatar') !== -1) return { lng:String(p.lng||''), descripcion:String(p.descripcion||'') };
-          if(String(p.lat||'').toLowerCase().indexOf('avatar') === 0) return { lng:String(p.descripcion||''), descripcion:String(p.fecha||'') };
-          return null;
-        }).filter(Boolean);
-        globalData = cacheArr.filter(p => !esMetaC(p));
-        const visibles = datosVisiblesActuales();
-        pintarPuntos(visibles);
-        actualizarGraficos(visibles);
-        actualizarPanelAdmin();
-        if(typeof renderEventosUrbis === 'function') renderEventosUrbis();
-        analizarZonasCiudadanas(visibles, false);
-        renderTimeline();
-      } catch(_e) {
-        manejarError("cargar puntos", error);
-      }
+      // urbisDBRead ya no rechaza nunca: resuelve con la caché o con [] y avisa
+      // en pantalla si la lectura falló. Así que llegar acá significa que algo
+      // reventó AL PINTAR, no al traer los datos. Antes este bloque intentaba
+      // releer una caché que ya nadie escribía y se tragaba el error de pintado
+      // en silencio.
+      manejarError('cargar puntos', error);
     });
   }
   window.urbisCargarPuntos = function(){ try{ cargarPuntos(); }catch(e){} };

@@ -1,7 +1,6 @@
 // ==========================================
   // CLASIFICACIONES INTACTAS Y EXPANDIDAS (15 DIMENSIONES)
   // ==========================================
-  const miLinkSheetDB = window.URBIS_CONFIG.SHEETDB_ENDPOINT;
   const map = L.map('map', { maxZoom: 22 }).setView(window.URBIS_CONFIG.DEFAULT_CENTER, window.URBIS_CONFIG.DEFAULT_ZOOM);
   // window.map queda apuntando al <div id="map"> por auto-globals del navegador
   // (no a esta instancia de Leaflet), lo que rompe cualquier código que use
