@@ -453,10 +453,110 @@
     listado();
   };
 
+  // ── El módulo del inicio: la puerta grande de la vitrina ─────────────────
+  /* La gota del mapa es el descubrimiento casual; esta tarjeta es la entrada
+     a propósito. Sale en "Módulos principales" PARA TODO EL MUNDO — esconderla
+     dejaría la promoción de los negocios sin público, que es su razón de ser.
+     Lo que sí es solo del equipo es el botón de administrar, adentro.
+
+     Se inyecta en vez de escribirse en el HTML de js/20 por la misma razón
+     que el botón de Configuración: esa pantalla se repinta sola y lo escrito
+     a mano desaparecería. */
+  function montarModuloInicio() {
+    const grid = document.querySelector('.u52-grid-primary');
+    if (!grid || grid.querySelector('[data-u52-go="vitrina"]')) return;
+    const b = document.createElement('button');
+    b.className = 'u52-module vitrina u52-jac-module';
+    b.setAttribute('data-u52-go', 'vitrina');
+    // "Emprendimientos" no cabe en la tarjeta sin cortarse: es una sola
+    // palabra más ancha que la casilla. "Negocios del barrio" dice lo mismo
+    // y parte en dos líneas limpias.
+    b.innerHTML = '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Negocios del barrio</small>';
+    const eventos = grid.querySelector('[data-u52-go="events"]');
+    if (eventos && eventos.nextSibling) grid.insertBefore(b, eventos.nextSibling);
+    else grid.appendChild(b);
+  }
+
+  function montarPantalla() {
+    if (document.querySelector('[data-u52-screen="vitrina"]')) return;
+    const hermana = document.querySelector('.u52-screen[data-u52-screen="events"]');
+    if (!hermana || !hermana.parentElement) return;
+    const sec = document.createElement('section');
+    sec.className = 'u52-screen';
+    sec.setAttribute('data-u52-screen', 'vitrina');
+    sec.innerHTML =
+      '<header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button>' +
+      '<h2 class="u52-title">🛍️ Vitrina</h2>' +
+      '<span class="u52-icon-btn" style="visibility:hidden">·</span></header>' +
+      '<main class="u52-content uvit-dir"></main>';
+    hermana.parentElement.appendChild(sec);
+    pintarDirectorio();
+  }
+
+  function pintarDirectorio() {
+    const cont = document.querySelector('[data-u52-screen="vitrina"] .uvit-dir');
+    if (!cont) return;
+    const arr = negocios().filter(function (n) { return n.estado === 'visible'; });
+    cont.innerHTML =
+      '<p class="uvit-dir-intro">Negocios del barrio que URBIS conoce y recomienda. ' +
+      'Tócalos para ver qué ofrecen y escribirles directo.</p>' +
+      (puedo()
+        ? '<button type="button" class="uvit-dir-admin">🛠️ Administrar la vitrina</button>'
+        : '') +
+      (arr.length ? arr.map(function (n, i) {
+        const wa = linkWhatsApp(n.whatsapp || n.telefono, n.nombre);
+        return '<div class="uvit-dir-card" data-id="' + esc(n.id) + '">' +
+          '<span class="uvit-dir-emoji">' + esc(n.emoji) + '</span>' +
+          '<div class="uvit-dir-txt"><b>' + esc(n.nombre) + '</b>' +
+          (n.lema ? '<small>' + esc(n.lema) + '</small>' : '') +
+          (n.direccion ? '<small class="uvit-dir-lugar">📍 ' + esc(n.direccion) + '</small>' : '') + '</div>' +
+          '<div class="uvit-dir-acc">' +
+            (wa ? '<a class="uvit-dir-wa" target="_blank" rel="noopener" href="' + esc(wa) + '" aria-label="WhatsApp">💬</a>' : '') +
+          '</div></div>';
+      }).join('')
+      : '<div class="uvit-dir-pronto"><span>✨</span><b>Muy pronto</b>' +
+        '<small>Estamos preparando los primeros emprendimientos del barrio: ' +
+        'una barbería, un taller tecnológico y una odontología. Vuelve a asomarte.</small></div>') +
+      '<small class="ucfg-nota">¿Tienes un emprendimiento y quieres salir aquí? ' +
+      'Escríbenos desde Perfil → Configuración.</small>';
+
+    const admin = cont.querySelector('.uvit-dir-admin');
+    if (admin) admin.addEventListener('click', function () { window.urbisAbrirPanelAdmin('vitrina'); });
+    cont.querySelectorAll('.uvit-dir-card').forEach(function (c) {
+      c.addEventListener('click', function (e) {
+        if (e.target.closest('.uvit-dir-wa')) return;   // el WhatsApp navega solo
+        window.urbisAbrirVitrina(c.getAttribute('data-id'));
+      });
+    });
+  }
+  window.urbisPintarDirectorioVitrina = pintarDirectorio;
+
+  // Al entrar al módulo se repinta: los datos pueden haber llegado después
+  // de que la pantalla se montara.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-u52-go="vitrina"]')) {
+      setTimeout(pintarDirectorio, 260);
+    }
+  });
+
   // ── Arranque: pintar y repintar sin acoplarse a nadie ────────────────────
+  let pendienteMontar = false;
+  function montarTodo() { montarModuloInicio(); montarPantalla(); }
   function arrancar() {
     render();
+    montarTodo();
     if (!_timer) _timer = setInterval(render, 4000);
+    // El inicio se repinta solo (cambio de sesión, avatar): el mismo vigía
+    // con freno que usa el botón de Configuración, para que la tarjeta
+    // reaparezca sin costar nada mientras el mapa se mueve.
+    try {
+      const obs = new MutationObserver(function () {
+        if (pendienteMontar) return;
+        pendienteMontar = true;
+        setTimeout(function () { pendienteMontar = false; montarTodo(); }, 700);
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    } catch (e) { setInterval(montarTodo, 3000); }
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(arrancar, 2000);
   else window.addEventListener('load', function () { setTimeout(arrancar, 2000); });

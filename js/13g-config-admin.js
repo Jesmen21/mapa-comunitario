@@ -344,7 +344,9 @@
     return (d[1] && d[1] !== 'N/A' ? d[1] : d[0]) || 'Publicación';
   }
 
-  window.urbisAbrirPanelAdmin = function () {
+  /* `bandejaPreferida` permite llegar directo a una pestaña (el módulo
+     Vitrina del inicio abre el panel ya parado en la suya). */
+  window.urbisAbrirPanelAdmin = function (bandejaPreferida) {
     if (!tengoPanel()) { alert('Esta sección es solo para quien modera URBIS.'); return; }
     cerrarHoja('urbis-admin-overlay');
 
@@ -381,6 +383,12 @@
 
     const lista = ov.querySelector('.uadm-lista');
     let pestana = (bandejas[0] && bandejas[0].id) || 'aprobar';
+    if (bandejaPreferida && bandejas.some(function (b) { return b.id === bandejaPreferida; })) {
+      pestana = bandejaPreferida;
+      ov.querySelectorAll('.uadm-tab').forEach(function (t) {
+        t.classList.toggle('on', t.getAttribute('data-uadm') === pestana);
+      });
+    }
 
     function vacio(txt) { return '<div class="uadm-vacio">✅ ' + txt + '</div>'; }
     // El botón de eliminar solo se dibuja si esa persona lo tiene: el

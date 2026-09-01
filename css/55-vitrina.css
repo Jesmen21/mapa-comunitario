@@ -154,3 +154,63 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
 .uvit-iborrar{ width:30px; height:30px; border-radius:9px; padding:0 !important; }
 .uvit-item-nuevo input{ margin-bottom:7px; }
 .uvit-vacio-p{ display:block; padding:8px 0; font-size:.74rem; }
+
+/* ── El módulo del inicio y el directorio ─────────────────────────────────
+   La tarjeta hereda la forma de los demás módulos (.u52-module); solo el
+   icono lleva el fondo dorado de la vitrina, para reconocerla de un vistazo
+   entre las tarjetas verdes y celestes del inicio. */
+.u52-module.vitrina .uvit-mod-ico,
+.u52-module.vitrina > span{
+  background:linear-gradient(135deg,#FFF3D6,#FFE29A) !important;
+}
+.uvit-mod-ico{ font-size:1.6rem; }
+
+/* Como en css/53-54: el tema viejo (css/42) pinta p/small/span de blanco
+   verdoso con !important y sobre papel claro desaparecen. Aquí se declara el
+   color de TODO texto del directorio, no solo de los que existen hoy. */
+.uvit-dir p, .uvit-dir small, .uvit-dir span, .uvit-dir label{
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+.uvit-dir-intro{
+  margin:2px 0 14px; font-size:.82rem; line-height:1.5;
+}
+.uvit-dir-admin{
+  display:block; width:100%; box-sizing:border-box; margin-bottom:12px;
+  padding:11px 12px; border:1.5px dashed rgba(251,191,36,.6); border-radius:13px;
+  cursor:pointer; background:rgba(251,191,36,.1);
+  color:#92600A !important; -webkit-text-fill-color:#92600A;
+  font-size:.8rem; font-weight:850;
+}
+.uvit-dir-card{
+  display:flex; align-items:center; gap:12px; margin-bottom:10px; padding:13px 14px;
+  border-radius:16px; cursor:pointer;
+  background:#fff; border:1.5px solid rgba(251,191,36,.4);
+  box-shadow:0 6px 16px rgba(146,96,10,.08);
+  transition:transform .12s ease;
+}
+.uvit-dir-card:active{ transform:scale(.985); }
+.uvit-dir-emoji{
+  -webkit-text-fill-color:initial;
+  flex:0 0 auto; width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+  font-size:1.55rem; border-radius:14px;
+  background:linear-gradient(135deg,#FFF7E0,#E6F4FE); border:1px solid rgba(251,191,36,.35);
+}
+.uvit-dir-txt{ flex:1; min-width:0; }
+.uvit-dir-txt b{ display:block; font-size:.9rem; font-weight:850; color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E; }
+.uvit-dir-txt small{ display:block; margin-top:2px; font-size:.72rem; line-height:1.35; overflow-wrap:anywhere; }
+.uvit-dir-lugar{ opacity:.85; }
+.uvit-dir-wa{
+  -webkit-text-fill-color:initial;
+  display:flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:13px; text-decoration:none; font-size:1.25rem;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  box-shadow:0 6px 14px rgba(18,140,126,.3);
+}
+.uvit-dir-pronto{
+  padding:26px 18px; text-align:center; border-radius:16px;
+  background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(56,189,248,.08));
+  border:1.5px dashed rgba(251,191,36,.5);
+}
+.uvit-dir-pronto span{ display:block; font-size:1.8rem; margin-bottom:6px; -webkit-text-fill-color:initial; }
+.uvit-dir-pronto b{ display:block; font-size:.92rem; color:#92600A !important; -webkit-text-fill-color:#92600A; }
+.uvit-dir-pronto small{ display:block; margin-top:5px; font-size:.76rem; line-height:1.5; }
