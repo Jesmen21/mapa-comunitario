@@ -361,6 +361,83 @@
     }catch(e){ return ''; }
   }
   function _dbSinBackend(){ return Promise.reject(new Error('Backend URBIS (Apps Script) no disponible')); }
+
+  // ── Caché de lectura ──────────────────────────────────────────────────────
+  // Antes, CADA visita al mapa ejecutaba un db_read contra Apps Script, que
+  // tiene un tope de tiempo de ejecución diario. Con tráfico real se agotaba
+  // la cuota y el mapa dejaba de cargar reportes hasta el día siguiente.
+  //
+  // Ahora, si lo guardado tiene menos de tres minutos se sirve sin llamar a
+  // nadie. Tres minutos es corto a propósito: en un mapa de seguridad, un
+  // reporte nuevo no puede tardar en aparecer. Y cualquier escritura —crear,
+  // editar, borrar— tira la caché al instante, para que quien publica vea lo
+  // suyo enseguida.
+  const DB_CACHE_KEY = 'urbis_db_cache_v1';
+  const DB_CACHE_TTL = 3 * 60 * 1000;
+
+  function _dbCacheLeer(){
+    try{
+      const c = JSON.parse(localStorage.getItem(DB_CACHE_KEY) || 'null');
+      if(!c || !Array.isArray(c.d) || typeof c.t !== 'number') return null;
+      return c;
+    }catch(e){ return null; }
+  }
+  function _dbCacheGuardar(data){
+    try{
+      if(Array.isArray(data)) localStorage.setItem(DB_CACHE_KEY, JSON.stringify({ t: Date.now(), d: data }));
+    }catch(e){}   // cuota de almacenamiento llena: se sigue sin caché
+  }
+  window.urbisDBInvalidarCache = function(){
+    try{ localStorage.removeItem(DB_CACHE_KEY); }catch(e){}
+  };
+  function _dbTrasEscribir(out){ window.urbisDBInvalidarCache(); return out; }
+
+  // Estado de la última lectura, para que la interfaz pueda distinguir "no hay
+  // reportes" de "no los pude traer". Es la diferencia entre un mapa tranquilo
+  // y un mapa roto, y hasta ahora se veían igual.
+  window.urbisDBEstadoLectura = { ok: true, desdeCache: false, edadMs: 0 };
+
+  // Barra de aviso cuando la lectura falló. Sin esto, el mapa se dibuja vacío
+  // o con datos viejos y nada lo dice: el usuario cree que su barrio está
+  // tranquilo cuando en realidad no se pudo cargar nada.
+  function _dbEdadLegible(ms){
+    const min = Math.round(ms / 60000);
+    if(min < 1) return 'hace menos de un minuto';
+    if(min < 60) return 'de hace ' + min + (min === 1 ? ' minuto' : ' minutos');
+    const h = Math.round(min / 60);
+    if(h < 24) return 'de hace ' + h + (h === 1 ? ' hora' : ' horas');
+    const d = Math.round(h / 24);
+    return 'de hace ' + d + (d === 1 ? ' día' : ' días');
+  }
+  function _dbOcultarAviso(){
+    const el = document.getElementById('urbis-aviso-lectura');
+    if(el) el.remove();
+  }
+  function _dbMostrarAviso(edadMs){
+    try{
+      _dbOcultarAviso();
+      const hayViejos = edadMs !== null && edadMs !== undefined;
+      const el = document.createElement('div');
+      el.id = 'urbis-aviso-lectura';
+      el.setAttribute('role', 'status');
+      el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:100000;' +
+        'background:#7C2D12;color:#FFF7ED;font:600 13px/1.35 system-ui,-apple-system,sans-serif;' +
+        'padding:9px 44px 9px 14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+      el.textContent = hayViejos
+        ? 'Sin conexión con el servidor. Estás viendo reportes guardados ' + _dbEdadLegible(edadMs) + '; puede faltar lo más reciente.'
+        : 'No se pudieron cargar los reportes. El mapa está incompleto — esto NO significa que no haya avisos en tu zona.';
+      const cerrar = document.createElement('button');
+      cerrar.type = 'button';
+      cerrar.setAttribute('aria-label', 'Cerrar aviso');
+      cerrar.textContent = '\u00d7';
+      cerrar.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);' +
+        'background:none;border:0;color:inherit;font-size:20px;line-height:1;cursor:pointer;padding:2px 8px';
+      cerrar.onclick = _dbOcultarAviso;
+      el.appendChild(cerrar);
+      (document.body || document.documentElement).appendChild(el);
+    }catch(e){}
+  }
+
   window.urbisGuardarFila = function(fila){
     if(!_dbAPIok()) return _dbSinBackend();
     // El token viaja también al CREAR. A casi todo le da igual, pero la
@@ -369,18 +446,43 @@
     return window.URBIS_AUTH.socialAPI({ action:'db_write', fila: fila, session_token:_dbToken() })
       .then(function(out){
         if(out && out.ok === false && out.message) throw new Error(out.message);
-        return out;
+        return _dbTrasEscribir(out);
       });
   };
-  // LECTURA de todos los reportes vía Apps Script. Si falla, devuelve [] (no rompe la app).
-  window.urbisDBRead = function(){
+  // LECTURA de todos los reportes vía Apps Script.
+  // Nunca rechaza: seis módulos la llaman y varios no manejan el fallo. Pero
+  // tampoco finge: si no pudo traer nada, deja el motivo en
+  // urbisDBEstadoLectura y avisa en pantalla, porque un mapa vacío por error
+  // se ve idéntico a un barrio sin reportes.
+  window.urbisDBRead = function(opciones){
     if(!_dbAPIok()) return Promise.resolve([]);
+
+    if(!(opciones && opciones.forzar)){
+      const c = _dbCacheLeer();
+      if(c && (Date.now() - c.t) < DB_CACHE_TTL){
+        window.urbisDBEstadoLectura = { ok:true, desdeCache:true, edadMs: Date.now() - c.t };
+        return Promise.resolve(c.d);
+      }
+    }
+
     // El token viaja también al LEER: no para poder leer —el mapa es abierto—
     // sino para que el servidor sepa a quién destapar el buzón de peticiones,
     // que es lo único que va tapado en la respuesta.
     return window.URBIS_AUTH.socialAPI({ action:'db_read', session_token:_dbToken() })
-      .then(function(out){ return (out && out.ok && Array.isArray(out.data)) ? out.data : []; })
-      .catch(function(){ return []; });
+      .then(function(out){
+        if(!(out && out.ok && Array.isArray(out.data))) throw new Error('respuesta sin datos');
+        _dbCacheGuardar(out.data);
+        window.urbisDBEstadoLectura = { ok:true, desdeCache:false, edadMs:0 };
+        _dbOcultarAviso();
+        return out.data;
+      })
+      .catch(function(err){
+        const c = _dbCacheLeer();
+        const edad = c ? (Date.now() - c.t) : 0;
+        window.urbisDBEstadoLectura = { ok:false, desdeCache: !!c, edadMs: edad, motivo: String(err && err.message || err) };
+        _dbMostrarAviso(c ? edad : null);
+        return c ? c.d : [];   // datos viejos antes que ninguno
+      });
   };
   // ACTUALIZA filas (col=value) con los campos dados.
   window.urbisDBUpdate = function(col, value, fields){
@@ -391,7 +493,7 @@
         // vieja sin token. Se convierte en error para que el llamador lo
         // muestre en vez de creer que se guardó.
         if(out && out.ok === false && out.message) throw new Error(out.message);
-        return out;
+        return _dbTrasEscribir(out);
       });
   };
   // BORRA filas (col=value).
@@ -400,7 +502,7 @@
     return window.URBIS_AUTH.socialAPI({ action:'db_delete', col:col, value:String(value), session_token:_dbToken() })
       .then(function(out){
         if(out && out.ok === false && out.message) throw new Error(out.message);
-        return out;
+        return _dbTrasEscribir(out);
       });
   };
 

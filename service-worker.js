@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v599-motor-partido';
+const URBIS_CACHE = 'urbis-v600-cache-lectura';
 const URBIS_ASSETS = [
   './',
   './index.html',
