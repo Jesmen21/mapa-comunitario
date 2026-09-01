@@ -2,3 +2,9 @@
 # de cobertura y no son parte de la app. Ya se colaron una vez al repositorio.
 .*.png
 *.tmp
+
+# Documentación interna y código del servidor. NO va al repositorio: es
+# público y sirve el sitio por GitHub Pages, así que todo lo que esté acá
+# queda a la vista. El backend de Apps Script, la metodología de las
+# rutinas y las notas de diseño se guardan por fuera.
+docs/
