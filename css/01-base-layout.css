@@ -1360,6 +1360,21 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
   outline-offset:1px;
   border-radius:inherit;
 }
+/* Tamaño: el marcador genérico mide 24 px con un emoji de 12. Para un hueco
+   está bien; para un atentado es tan discreto que se pierde entre los POI de
+   Google. Aquí crece —sin tocar `transform`, que es donde Leaflet guarda la
+   POSICIÓN del marcador y moverlo lo mandaría a otra cuadra— agrandando lo
+   que va dentro, que es lo que se ve. */
+.leaflet-marker-icon.urbis-conflicto .marker-stack{
+  width:calc(38px * var(--report-marker-scale,1)) !important;
+  height:calc(38px * var(--report-marker-scale,1)) !important;
+}
+.leaflet-marker-icon.urbis-conflicto .marker-emoji{
+  font-size:calc(20px * var(--report-marker-scale,1)) !important;
+}
+/* El aro se separa un poco más para no cortar el icono ya crecido. */
+.urbis-conflicto > *{ outline-offset:3px; }
+
 .leaflet-marker-icon.urbis-conflicto-pasado{ animation:none !important; opacity:.82; }
 .urbis-conflicto-pasado > *{ outline-color:rgba(220,38,38,.5); }
 

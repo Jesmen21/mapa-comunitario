@@ -2126,19 +2126,15 @@
             <option value="168">Una semana</option>
           </select>
         </label>
-        <!-- Sin el atributo capture: ese atributo abre la camara
-             directamente y, en Android, ESCONDE la galeria. Quien ya tenia la
-             foto tomada -lo normal cuando se reporta algo que paso hace un
-             rato- se quedaba sin poder subirla. Sin el, el telefono ofrece
-             las dos cosas. -->
-        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto del evento (opcional)</span><input type="file" id="ev-foto-file" accept="image/*"></label>
+        ${bloqueFotoHTML('ev-foto-file', '📷 Foto del evento (opcional)')}
         <button type="button" class="u52-quick-publish" data-u52-call="quick-event-publish">Publicar evento</button>
       </div>`;
     panel.hidden = false;
-    const fileInput = panel.querySelector('#ev-foto-file');
-    if(fileInput) fileInput.addEventListener('change', function(){
-      const lbl = panel.querySelector('.u52-photo-label-text');
-      if(lbl) lbl.textContent = this.files && this.files[0] ? '✓ Foto lista' : '📷 Foto del evento (opcional)';
+    conectarBloqueFoto(panel, 'ev-foto-file', function(f){
+      const caja = panel.querySelector('.u52-foto-doble');
+      const lbl = caja && caja.querySelector('.u52-photo-label-text');
+      if(caja) caja.classList.toggle('has-file', !!f);
+      if(lbl) lbl.textContent = f ? '✓ Foto lista' : '📷 Foto del evento (opcional)';
     });
   }
 
@@ -2385,36 +2381,77 @@
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción corta opcional"></textarea>
         ${victimasHTML}
-        <label class="${photoClass}"><span class="u52-photo-label-text">${photoLabelText}</span><input type="file" id="ins-foto-file" accept="image/*"></label>
+        ${bloqueFotoHTML('ins-foto-file', photoLabelText).replace('u52-quick-photo', photoClass)}
         <button type="button" class="u52-quick-publish" data-u52-call="quick-report-publish">Publicar reporte</button>
       </div>`;
     panel.classList.remove('u52-procity-mode');
     panel.hidden = false;
     try { if(typeof window.urbisActivarBloqueVictimas === 'function') window.urbisActivarBloqueVictimas(panel); }catch(e){}
-    const fileInput = panel.querySelector('#ins-foto-file');
-    if(fileInput){
+    conectarBloqueFoto(panel, 'ins-foto-file', function(f){
+      const caja = panel.querySelector('.u52-foto-doble');
+      const txt = caja && caja.querySelector('.u52-photo-label-text');
+      if(!caja || !txt) return;
+      caja.classList.toggle('has-file', !!f);
+      txt.textContent = f ? '✓ Foto lista'
+        : (photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional');
+    }, function(ev, inp){
       // La verificación se pide ANTES de abrir la cámara, no al publicar:
       // descubrir que hace falta el documento después de tomar la foto y
       // llenar el formulario es el momento exacto en que la gente abandona.
-      fileInput.addEventListener('click', function(ev){
-        if(typeof window.urbisNivelCuenta !== 'function') return;
-        if(window.urbisNivelCuenta() === 2) return;
-        ev.preventDefault();
-        window.urbisExigirNivel2('foto').then(function(ok){ if(ok) fileInput.click(); });
-      });
-      fileInput.addEventListener('change', function(){
-        const label = panel.querySelector('.u52-quick-photo');
-        const txt = label && label.querySelector('.u52-photo-label-text');
-        if(!label || !txt) return;
-        if(this.files && this.files[0]){
-          label.classList.add('has-file');
-          txt.textContent = '✓ Foto lista';
-        } else {
-          label.classList.remove('has-file');
-          txt.textContent = photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional';
+      if(typeof window.urbisNivelCuenta !== 'function') return;
+      if(window.urbisNivelCuenta() === 2) return;
+      ev.preventDefault();
+      window.urbisExigirNivel2('foto').then(function(ok){ if(ok) inp.click(); });
+    });
+  }
+
+  /* ── Foto: TOMARLA o ELEGIRLA, dicho con todas las letras ────────────────
+     Antes había un solo campo. Con `capture` abría la cámara y escondía la
+     galería; sin `capture` cada teléfono decide qué ofrece, y en varios
+     Android va directo al explorador de archivos sin opción de cámara. En los
+     dos casos alguien se queda sin la mitad de lo que necesita.
+
+     Con dos botones no hay que adivinar lo que hará el teléfono: se ve qué
+     pasa antes de tocar. El campo de la galería conserva el id de siempre
+     porque el publicado lo lee por ahí; lo que se tome con la cámara se copia
+     a ese mismo campo, así que el resto del formulario no se entera. */
+  function bloqueFotoHTML(idFile, texto){
+    return `<div class="u52-quick-photo u52-foto-doble">
+        <span class="u52-photo-label-text">${texto}</span>
+        <div class="u52-foto-ops">
+          <label class="u52-foto-op"><span>📷 Tomar foto</span>
+            <input type="file" id="${idFile}-cam" accept="image/*" capture="environment"></label>
+          <label class="u52-foto-op"><span>🖼️ Elegir de la galería</span>
+            <input type="file" id="${idFile}" accept="image/*"></label>
+        </div>
+      </div>`;
+  }
+
+  /* Conecta los dos campos a un solo sitio. `alElegir` recibe el archivo (o
+     null si se quitó) para que cada pantalla actualice su propio rótulo. */
+  function conectarBloqueFoto(raiz, idFile, alElegir, antesDeAbrir){
+    const galeria = raiz.querySelector('#' + idFile);
+    const camara = raiz.querySelector('#' + idFile + '-cam');
+    if(!galeria) return;
+    [galeria, camara].forEach(function(inp){
+      if(!inp) return;
+      if(typeof antesDeAbrir === 'function'){
+        inp.addEventListener('click', function(ev){ antesDeAbrir(ev, inp); });
+      }
+      inp.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        // Lo tomado con la cámara se copia al campo de siempre: el publicado
+        // lee ese id y no tiene por qué saber de dónde salió la foto.
+        if(f && inp === camara){
+          try{
+            const dt = new DataTransfer();
+            dt.items.add(f);
+            galeria.files = dt.files;
+          }catch(e){ /* si el navegador no deja, se lee del propio campo */ }
         }
+        if(typeof alElegir === 'function') alElegir(f || null);
       });
-    }
+    });
   }
 
   function switchQuickReportSection(sectionId){
@@ -4911,7 +4948,7 @@
         <input id="ins-foto" type="hidden" value="">
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
-        <label class="u52-quick-photo"><span class="u52-photo-label-text">📷 Foto de referencia (opcional)</span><input type="file" id="ins-foto-file" accept="image/*"></label>
+        ${bloqueFotoHTML('ins-foto-file', '📷 Foto de referencia (opcional)')}
         <button type="button" class="u52-quick-publish u52-procity-publish" data-u52-call="procity-publish">${editando ? 'Actualizar en Pro City' : 'Guardar en Pro City'}</button>
       </div>`;
     panel.classList.add('u52-procity-mode');

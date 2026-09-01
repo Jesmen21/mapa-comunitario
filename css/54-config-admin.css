@@ -440,3 +440,33 @@
 .urbis-dup p, .urbis-dup small, .urbis-dup span{
   color:#5C7086 !important; -webkit-text-fill-color:#5C7086 !important;
 }
+
+/* ── Tomar foto o elegirla: dos botones, no una adivinanza ─────────────────
+   Un solo campo dejaba la decisión al teléfono, y cada teléfono hace algo
+   distinto: unos abren la cámara, otros el explorador de archivos, y en cada
+   caso alguien se queda sin la mitad de lo que necesita. Con los dos a la
+   vista se sabe qué va a pasar antes de tocar. */
+.u52-foto-doble{ display:block; }
+.u52-foto-doble .u52-photo-label-text{ display:block; margin-bottom:7px; }
+.u52-foto-ops{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.u52-foto-op{
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  min-height:46px; padding:10px 8px; text-align:center; cursor:pointer;
+  border:1.5px dashed rgba(56,189,248,.55); border-radius:13px;
+  background:rgba(56,189,248,.08);
+}
+.u52-foto-op span{
+  font-size:.76rem; font-weight:800; line-height:1.25;
+  color:#0369A1 !important; -webkit-text-fill-color:#0369A1 !important;
+}
+.u52-foto-op input[type="file"]{ display:none !important; }
+.u52-foto-op:active{ background:rgba(56,189,248,.18); }
+/* Con foto puesta, los dos botones pasan a segundo plano: lo que importa ya
+   no es cómo conseguirla, sino que el rótulo diga que está lista. */
+.u52-foto-doble.has-file .u52-foto-ops{ opacity:.72; }
+.u52-foto-doble.has-file .u52-photo-label-text{
+  color:#065F46 !important; -webkit-text-fill-color:#065F46 !important; font-weight:850;
+}
+@media (max-width:340px){
+  .u52-foto-ops{ grid-template-columns:1fr; }
+}
