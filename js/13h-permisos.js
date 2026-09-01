@@ -106,6 +106,13 @@
            botones a quien sí los tenía. */
         if (Array.isArray(out.permisos)) guardada.permisos = out.permisos;
         if (typeof out.es_dueno === 'boolean') guardada.es_dueno = out.es_dueno;
+        /* El rol también se refresca. Sin esto, a quien se le da admin después
+           de haber iniciado sesión le sigue diciendo "citizen" el teléfono, y
+           la aplicación le pide la cédula al propio administrador. */
+        if (typeof out.es_admin === 'boolean') {
+          guardada.es_admin = out.es_admin;
+          if (out.es_admin) guardada.rol = 'admin';
+        }
         localStorage.setItem(key, JSON.stringify(guardada));
       } catch (e) {}
       return Array.isArray(out.permisos) ? out.permisos : window.urbisPermisos();

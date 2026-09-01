@@ -2569,11 +2569,18 @@
     try{
       var s = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? (window.URBIS_AUTH.readSession() || {}) : {};
       if(!String(s.usuario || '')) return false;
-      // SOLO el rol que devolvió el servidor. Antes valía además llamarse como
-      // la cuenta de administrador, y eso es un nombre, no una credencial: el
-      // servidor es quien sabe quién manda. Los administradores se marcan en la
-      // hoja de usuarios (rol_solicitado = admin).
-      return String(s.rol || '').toLowerCase() === 'admin';
+      // SOLO lo que dijo el SERVIDOR. Antes valía además llamarse como la
+      // cuenta de administrador, y eso es un nombre, no una credencial.
+      //
+      // Se miran dos casillas, y las dos vienen del servidor:
+      //   · `rol`, que se guarda al iniciar sesión.
+      //   · `es_admin`, que refresca `perm_mine` cada vez que se abre la app.
+      // La segunda existe porque la primera se congela: si a una cuenta se le
+      // da el rol de administrador DESPUÉS de haber iniciado sesión, su
+      // teléfono sigue diciendo "citizen" hasta que cierre sesión y vuelva a
+      // entrar — y mientras tanto la aplicación le pide la cédula al
+      // administrador. Con el refresco, el permiso se nota sin salir.
+      return String(s.rol || '').toLowerCase() === 'admin' || s.es_admin === true;
     }catch(e){ return false; }
   }
   // La marca local ya no concede nada; se limpia para que no quede rondando en

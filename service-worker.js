@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v589-capas-y-conflicto';
+const URBIS_CACHE = 'urbis-v590-admin-sin-cedula';
 const URBIS_ASSETS = [
   './',
   './index.html',
