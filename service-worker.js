@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v594-conflicto-grande';
+const URBIS_CACHE = 'urbis-v595-conflicto-grande';
 const URBIS_ASSETS = [
   './',
   './index.html',
