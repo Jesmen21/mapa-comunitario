@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-08-31",
-  "proximaActualizacion": "2026-09-01",
+  "actualizado": "2026-09-01",
+  "proximaActualizacion": "2026-09-02",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,63 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-08-31",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La periodista Carolina Gómez declina la vocería oficial del Gobierno; el abogado Miller Soto Solano asume el cargo en solitario desde el 1 de septiembre",
+      "detalle": "Carolina Gómez Sánchez y Miller Soto Solano habían sido designados desde julio como los dos voceros oficiales del gobierno electo. Durante el fin de semana del 29 y 30 de agosto, el entorno presidencial reconsideró la designación de Gómez tras tensiones generadas por la forma en que la periodista comunicó su nombramiento a gremios del sector privado. Gómez confirmó a la revista Semana que decidió declinar el cargo después de que el presidente le ofreciera otra posición dentro del Gobierno, que ella calificó de más atractiva. Miller Soto Solano, abogado, profesor y doctor en Derecho y Economía de Empresas, asumió en solitario la vocería oficial a partir del 1 de septiembre.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "El Heraldo · Carolina Gómez ya no será vocera del Gobierno: Miller Soto asumirá el cargo", "u": "https://www.elheraldo.co/colombia/2026/08/31/carolina-gomez-ya-no-sera-vocera-del-gobierno-miller-soto-asumira-el-cargo/" },
+        { "n": "Infobae · el gobierno de Abelardo de la Espriella descartó nombramiento de Carolina Gómez, la periodista ya no será vocera oficial", "u": "https://www.infobae.com/colombia/2026/08/31/el-gobierno-de-abelardo-de-la-espriella-descarto-nombramiento-de-carolina-gomez-la-periodista-ya-no-sera-vocera-oficial/" },
+        { "n": "El Tiempo · Carolina Gómez confirma que ya no será vocera e iría a otro cargo en el gobierno", "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/carolina-gomez-confirma-que-ya-no-sera-vocera-e-iria-a-otro-cargo-en-el-gobierno-de-abelardo-de-la-espriella-3582433" },
+        { "n": "El Espectador · Carolina Gómez no será vocera del gobierno De la Espriella: \"yo decliné\"", "u": "https://www.elespectador.com/politica/carolina-gomez-no-sera-vocera-del-gobierno-de-la-espriella-yo-decline/" },
+        { "n": "Semana · su designación se cayó este fin de semana", "u": "https://www.semana.com/confidenciales/articulo/carolina-gomez-no-sera-vocera-en-el-gobierno-de-abelardo-de-la-espriella-su-designacion-se-cayo-este-fin-de-semana/202600/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-31",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Anuncia un plan de inversión de Coca-Cola en Colombia para el próximo cuatrienio, con detalles previstos para diciembre en Barranquilla",
+      "detalle": "Tras una reunión con ejecutivos de Coca-Cola y de Femsa, con la participación del ministro de Comercio, Industria y Turismo, Mauricio Gómez Amín, el presidente anunció en redes sociales un plan de inversión y crecimiento de la marca en el país para los próximos cuatro años. El Gobierno no reveló el monto de los recursos ni los proyectos específicos que recibirán la inversión; De la Espriella dijo que los detalles se darán a conocer en diciembre desde Barranquilla, en el marco de la celebración de los 100 años de Femsa.",
+      "contrapunto": "El Gobierno no ha publicado cifras, contratos ni cronograma verificables del anuncio; hasta esta actualización se trata de una declaración de intención sin monto de inversión confirmado.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Semana · anuncia inversiones de Coca-Cola en Colombia y señala detalles para diciembre", "u": "https://www.semana.com/economia/inversionistas/articulo/de-la-espriella-anuncia-inversiones-de-coca-cola-en-colombia-y-senala-detalles-para-diciembre/202659/" },
+        { "n": "Infobae · Gobierno De la Espriella abriría la puerta a millonarias inversiones de reconocida marca de gaseosas en el país: así fue el anuncio", "u": "https://www.infobae.com/colombia/2026/09/01/gobierno-de-la-espriella-abriria-la-puerta-a-millonarias-inversiones-de-reconocida-marca-de-gaseosas-en-el-pais-asi-fue-el-anuncio/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-31",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El plan de abastecimiento de combustibles eleva 57,8% la llegada de hidrocarburos al puerto de Tumaco frente a todo 2025",
+      "detalle": "Según cifras del Gobierno, el puerto de Tumaco (Nariño) recibió más de 762.000 barriles de hidrocarburos durante 2026 hasta el 31 de agosto, un 57,8% más que los 483.000 barriles movilizados durante todo 2025. El resultado corresponde al plan de abastecimiento de combustibles para el suroccidente del país, liderado por el Ministerio de Minas y Energía —con el ministro Edwin Palma y el director de Hidrocarburos, Julián Flores—, que busca reducir la dependencia de las rutas terrestres hacia Nariño, afectadas históricamente por bloqueos, protestas y problemas de seguridad.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · el plan de abastecimiento del Gobierno De la Espriella elevó 57,8% la llegada de combustibles a Tumaco", "u": "https://www.infobae.com/colombia/2026/09/01/el-plan-de-abastecimiento-del-gobierno-de-la-espriella-elevo-578-la-llegada-de-combustibles-a-tumaco/" },
+        { "n": "Semana · Tumaco recibirá 7,4 millones de galones de combustible para fortalecer el abastecimiento en Nariño", "u": "https://www.semana.com/nacion/regionales/articulo/tumaco-recibira-74-millones-de-galones-de-combustible-para-fortalecer-el-abastecimiento-en-narino/202659/" }
+      ]
+    },
+    {
+      "fecha": "2026-08-30",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "Cumple el fallo que le ordenó disculparse por el acto religioso de su posesión, pero cierra la alocución con \"Viva Cristo Rey\" y desata una nueva tutela",
+      "detalle": "El 27 de agosto, el Juzgado Quinto Laboral del Circuito de Bogotá, al resolver una tutela presentada por el ciudadano Omar Alberto Franco Becerra, concluyó que el acto de invocación y alabanza realizado durante la posesión presidencial del 7 de agosto —con la presencia de una imagen de la Virgen de Fátima, un rabino, un sacerdote y un pastor que oraron, y una canción de contenido religioso— vulneró la neutralidad religiosa del Estado. El fallo ordenó al presidente ofrecer disculpas públicas al pueblo colombiano en una alocución de radio y televisión el domingo 30 de agosto a las 7:00 p.m., y al presidente del Congreso, Honorio Miguel Henríquez, hacerlo en una sesión plenaria de la última semana de septiembre. En esa misma alocución del 30 de agosto —dedicada principalmente al balance de la reconstrucción tras el terremoto—, De la Espriella ofreció las disculpas ordenadas, pero cerró su intervención con la frase \"Viva Cristo Rey\". El Gobierno anunció que impugnará el fallo original.",
+      "contrapunto": "La representante a la Cámara Laura Daniela Beltrán, conocida como \"Lalis\" (Pacto Histórico), anunció una nueva tutela por considerar que cerrar la alocución con \"Viva Cristo Rey\" contradice el espíritu del fallo que ordenaba neutralidad religiosa. El Gobierno, por su parte, sostiene que la frase formó parte de una alocución centrada en otros temas y no la ha retirado; la nueva tutela está en curso y no hay, a la fecha de esta entrada, una decisión judicial sobre ella.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Semana · \"Viva Cristo Rey\": impugnará fallo de un juez que le ordenó ofrecer disculpas", "u": "https://www.semana.com/politica/articulo/viva-cristo-rey-abelardo-de-la-espriella-impugnara-fallo-de-un-juez-que-le-ordeno-ofrecer-disculpas-por-supuestamente-vulnerar-la-neutralidad-religiosa/202634/" },
+        { "n": "El Espectador · presidente De la Espriella se disculpó por acto religioso durante su posesión", "u": "https://www.elespectador.com/judicial/presidente-de-la-espriella-se-disculpo-por-acto-religioso-durante-su-posesion/" },
+        { "n": "Infobae · pide perdón a quienes se sintieron ofendidos por el acto religioso del día de su investidura", "u": "https://www.infobae.com/america/agencias/2026/08/31/de-la-espriella-pide-perdon-a-quienes-se-sintieron-ofendidos-por-el-acto-religioso-del-dia-de-su-investidura/" },
+        { "n": "Infobae · \"Lalis\" anunció tutela contra Abelardo de la Espriella por decir \"Viva Cristo Rey\" en alocución presidencial", "u": "https://www.infobae.com/colombia/2026/08/31/lalis-anuncio-tutela-contra-abelardo-de-la-espriella-por-decir-viva-cristo-rey-en-alocucion-presidencial-no-sea-irrespetuoso/" },
+        { "n": "El País · responde tras fallo que cuestionó la neutralidad religiosa de su posesión: \"ofrezco excusas por ello\"", "u": "https://www.elpais.com.co/politica/abelardo-de-la-espriella-responde-tras-fallo-que-cuestiono-la-neutralidad-religiosa-de-su-posesion-ofrezco-excusas-por-ello-3046.html" },
+        { "n": "Semana · juez ordena al presidente ofrecer disculpas por haber vulnerado la neutralidad religiosa del Estado", "u": "https://www.semana.com/nacion/articulo/juez-ordena-al-presidente-abelardo-de-la-espriella-ofrecer-disculpas-por-haber-vulnerado-la-neutralidad-religiosa-del-estado/202631/" }
+      ]
+    },
     {
       "fecha": "2026-08-30",
       "precision": "exacta",
