@@ -240,7 +240,35 @@
     // de estilos no toca, así que queda visible y grande sin importar qué
     // tanto se aleje — igual que ya hace la gota de los Juegos URBIS.
     const esAlertaNacional = esAlertaNacionalItem(d[0]);
-    if (esAlertaNacional) {
+    /* Hechos del conflicto armado: marcador PROPIO, del tamaño de una alerta.
+       Antes usaban el marcador genérico y se veían dos cosas superpuestas: el
+       rombo esquemático del auto-mapeo y, en una esquina, el emoji diminuto.
+       Un atentado no puede verse así.
+
+       Lleva la clase `urbis-alerta-root` y NO `urbis-report-root`, a
+       propósito: el optimizador de zoom (css/30) esconde los marcadores
+       normales al alejarse y esa es la única clase raíz que no toca. Así el
+       hecho se sigue viendo con media ciudad en pantalla, que es justo cuando
+       más falta hace saber por dónde no pasar. */
+    const esConflictoArmado = (typeof window.urbisEsReporteDeConflicto === 'function')
+      && window.urbisEsReporteDeConflicto(p.tipo, d[0]);
+    if (esConflictoArmado) {
+      let pasadoConf = false;
+      try { pasadoConf = !!(typeof obtenerMetaTemporal === 'function' && obtenerMetaTemporal(p).archivado); } catch(e){}
+      const htmlConf = `<div class="urbis-conf">`+
+        `<span class="cf-ring"></span><span class="cf-ring cf-ring2"></span>`+
+        `<span class="cf-disco"></span>`+
+        `<span class="cf-emoji">${emojiReporte || '⚠️'}</span>`+
+        `<span class="cf-flag">URBIS · CONFLICTO</span>`+
+      `</div>`;
+      marker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: 'urbis-alerta-root urbis-conflicto' + (pasadoConf ? ' urbis-conflicto-pasado' : ''),
+          html: htmlConf, iconSize:[74,88], iconAnchor:[37,80], popupAnchor:[0,-72]
+        }),
+        zIndexOffset: 2500
+      });
+    } else if (esAlertaNacional) {
       // Iconos propios del usuario (gota temática), ya recortados con fondo
       // transparente. El tamaño real lo maneja el CSS: al alejar el mapa la
       // gota CRECE en vez de esconderse, porque es noticia de escala nacional

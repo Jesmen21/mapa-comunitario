@@ -1331,55 +1331,81 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
 
 /* ══ HECHOS DEL CONFLICTO ARMADO ═══════════════════════════════════════════
    Un atentado, un combate, un retén ilegal: no es un reporte más. Es lo que
-   hace que alguien decida no salir de casa hoy, y en un mapa lleno de huecos
-   y luminarias tiene que verse ANTES que lo demás, sin abrirlo.
+   hace que alguien decida no salir de casa hoy, y tiene que verse ANTES que
+   lo demás y sin abrirlo.
 
-   Late en rojo mientras la alerta esté vigente. Al caducar deja de latir pero
+   Marcador propio, del tamaño de una alerta nacional. Antes usaba el genérico
+   y se veían dos cosas encima de la otra: el rombo esquemático del auto-mapeo
+   y, en una esquina, un emoji de 12 px.
+
+   Late mientras la alerta esté vigente. Al caducar deja de latir pero
    conserva el aro: el hecho ocurrió aunque ya no aplique — borrarlo del todo
    borraría la memoria del barrio, que es lo que URBIS guarda. */
-@keyframes urbisConflictoLatido{
-  0%, 100%{ box-shadow:0 0 0 0 rgba(220,38,38,.62), 0 4px 12px rgba(0,0,0,.45); }
-  55%{ box-shadow:0 0 0 13px rgba(220,38,38,0), 0 4px 12px rgba(0,0,0,.45); }
+.urbis-conf{
+  position:relative; width:74px; height:80px;
+  display:flex; align-items:flex-start; justify-content:center;
 }
-/* Dos clases y no una: los marcadores traen `animated-marker`, que declara su
-   propia animación en una hoja posterior a esta. Con una sola clase ganaba
-   aquella por llegar después y el latido no se veía nunca. */
-.leaflet-marker-icon.urbis-conflicto{
-  /* `!important` porque css/04 apaga TODA animación de marcador con
-     `.animated-marker{animation:none !important}` por rendimiento. Aquí se
-     hace la excepción a mano: son unos pocos puntos en el mapa, y son
-     justo los que no pueden pasar desapercibidos. */
-  animation:urbisConflictoLatido 1.7s ease-out infinite !important;
-  border-radius:50%;
-  z-index:800 !important;   /* por encima de los reportes corrientes */
+/* El disco blanco va DEBAJO del emoji para que se lea sobre cualquier mapa:
+   un emoji suelto sobre una foto satelital de tejados naranjas desaparece. */
+.urbis-conf .cf-disco{
+  position:absolute; left:50%; top:6px; width:52px; height:52px; margin-left:-26px;
+  border-radius:50%; background:#fff;
+  border:3px solid #DC2626;
+  box-shadow:0 6px 16px rgba(0,0,0,.45);
 }
-/* El aro va en el hijo pintado y no en el contenedor, para no deformar el
-   icono que ya trae cada categoría. */
-.urbis-conflicto > *{
-  outline:2.5px solid #DC2626;
-  outline-offset:1px;
-  border-radius:inherit;
+.urbis-conf .cf-emoji{
+  position:relative; z-index:3; margin-top:12px;
+  font-size:30px; line-height:1;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
 }
-/* Tamaño: el marcador genérico mide 24 px con un emoji de 12. Para un hueco
-   está bien; para un atentado es tan discreto que se pierde entre los POI de
-   Google. Aquí crece —sin tocar `transform`, que es donde Leaflet guarda la
-   POSICIÓN del marcador y moverlo lo mandaría a otra cuadra— agrandando lo
-   que va dentro, que es lo que se ve. */
-.leaflet-marker-icon.urbis-conflicto .marker-stack{
-  width:calc(38px * var(--report-marker-scale,1)) !important;
-  height:calc(38px * var(--report-marker-scale,1)) !important;
+/* Dos anillos que se expanden: se ven desde lejos aunque el emoji ya no se
+   distinga, que es lo que se pidió al alejar el mapa. */
+.urbis-conf .cf-ring{
+  position:absolute; left:50%; top:32px; width:52px; height:52px; margin:-26px 0 0 -26px;
+  border-radius:50%; border:2.5px solid rgba(220,38,38,.85);
+  animation:urbisConfOnda 1.9s ease-out infinite;
 }
-.leaflet-marker-icon.urbis-conflicto .marker-emoji{
-  font-size:calc(20px * var(--report-marker-scale,1)) !important;
+.urbis-conf .cf-ring2{ animation-delay:.95s; }
+@keyframes urbisConfOnda{
+  0%{ transform:scale(.62); opacity:.95; }
+  100%{ transform:scale(1.75); opacity:0; }
 }
-/* El aro se separa un poco más para no cortar el icono ya crecido. */
-.urbis-conflicto > *{ outline-offset:3px; }
+.urbis-conf .cf-flag{
+  position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+  padding:2px 7px; border-radius:999px; white-space:nowrap;
+  background:#7A0F1A; color:#fff !important; -webkit-text-fill-color:#fff;
+  font-size:7px; font-weight:900; letter-spacing:.3px;
+  box-shadow:0 2px 5px rgba(0,0,0,.4);
+}
 
-.leaflet-marker-icon.urbis-conflicto-pasado{ animation:none !important; opacity:.82; }
-.urbis-conflicto-pasado > *{ outline-color:rgba(220,38,38,.5); }
+/* El disco entero late. `!important` porque css/04 apaga TODA animación de
+   marcador con `.animated-marker{animation:none !important}` por rendimiento;
+   aquí se hace la excepción a mano, y son unos pocos puntos en el mapa. */
+@keyframes urbisConflictoLatido{
+  0%, 62%, 100%{ transform:scale(1); }
+  70%{ transform:scale(1.1); }
+  80%{ transform:scale(1.01); }
+  88%{ transform:scale(1.06); }
+}
+.leaflet-marker-icon.urbis-conflicto .cf-disco,
+.leaflet-marker-icon.urbis-conflicto .cf-emoji{
+  animation:urbisConflictoLatido 1.7s ease-out infinite !important;
+}
+.leaflet-marker-icon.urbis-conflicto{ z-index:900 !important; }
+
+/* Ya pasó: se apaga el movimiento y se baja el tono, pero el aro se queda. */
+.leaflet-marker-icon.urbis-conflicto-pasado .cf-ring{ display:none; }
+.leaflet-marker-icon.urbis-conflicto-pasado .cf-disco,
+.leaflet-marker-icon.urbis-conflicto-pasado .cf-emoji{ animation:none !important; }
+.leaflet-marker-icon.urbis-conflicto-pasado{ opacity:.75; }
+.leaflet-marker-icon.urbis-conflicto-pasado .cf-disco{ border-color:rgba(220,38,38,.55); }
+.leaflet-marker-icon.urbis-conflicto-pasado .cf-flag{ background:#5a3a3f; }
 
 /* Quien pidió menos movimiento conserva el aro rojo, que es lo que informa;
    lo que se va es el brinco. */
 @media (prefers-reduced-motion: reduce){
-  .leaflet-marker-icon.urbis-conflicto{ animation:none !important; }
+  .leaflet-marker-icon.urbis-conflicto .cf-disco,
+  .leaflet-marker-icon.urbis-conflicto .cf-emoji{ animation:none !important; }
+  .urbis-conf .cf-ring{ display:none; }
+}
 }
