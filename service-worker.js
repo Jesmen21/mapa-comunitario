@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v596-alertas-urbisprocity';
+const URBIS_CACHE = 'urbis-v597-terremoto-registro';
 const URBIS_ASSETS = [
   './',
   './index.html',

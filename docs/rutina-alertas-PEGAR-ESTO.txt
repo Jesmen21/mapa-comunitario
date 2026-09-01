@@ -1,38 +1,3 @@
-INSTRUCTIVO CORREGIDO · Rutina "URBIS · Alertas de desastres (diaria)"
-======================================================================
-
-QUÉ CAMBIA Y POR QUÉ
---------------------
-El instructivo anterior decía:
-
-  «`tipo` debe ser EXACTAMENTE "Sismo" o "Incendio forestal"… Si el desastre
-   no encaja en ninguno de los dos, NO lo publiques.»
-
-Esa línea se escribió cuando la aplicación solo tenía esos dos iconos. Hoy
-tiene CATORCE —inundación, creciente, derrumbe, tormenta, lluvia, ciclón,
-tsunami— y ninguno se estaba usando: la rutina descartaba cada inundación y
-cada deslizamiento del país por su propia instrucción.
-
-Se comprobó que el canal funciona: publicando esos tipos, el mapa los dibuja
-con su icono, sobreviven al alejar el mapa y quedan firmados por urbisprocity.
-Lo único que faltaba era permitirlos aquí.
-
-OJO: ESTE ARCHIVO NO SE PEGA
-----------------------------
-Este documento explica el cambio. Lo que se pega en la rutina está en el
-archivo de al lado:  docs/rutina-alertas-PEGAR-ESTO.txt
-
-Pegar ESTE archivo completo mete en la rutina un encabezado que le dice
-"abre la lista de Rutinas y reemplaza el texto", y la rutina lo leería como
-su tarea: intentaría editarse a sí misma en vez de buscar desastres. Por eso
-el texto que se pega vive aparte, sin una sola línea de explicación.
-
-Pasos: abrir la rutina "URBIS · Alertas de desastres (diaria)", reemplazar
-TODA la instrucción por el contenido de rutina-alertas-PEGAR-ESTO.txt, y
-guardar.
-
-──────────────────────────────────────────────────────────────────────────────
-
 Barrido de alertas de desastres para URBIS (mapa cívico de Colombia), en el repositorio https://github.com/Jesmen21/mapa-comunitario. Corrés UNA VEZ AL DÍA (7:00 hora de Colombia). Trabajás sin contexto previo: leé esto completo antes de actuar.
 
 ## PUNTO DE PARTIDA — CONFIRMÁ QUE TENÉS EL REPOSITORIO

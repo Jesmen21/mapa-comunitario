@@ -1,12 +1,32 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-08-28",
+  "actualizado": "2026-09-01",
   "alertas": [
     {
       "tipo": "Sismo",
+      "titulo": "Terremoto de magnitud 7,4 — 10 de agosto de 2026, San José del Palmar, Chocó",
+      "lat": 4.99,
+      "lng": -76.29,
+      "desde": "2026-08-10",
+      "expira": "2026-12-31",
+      "lineas": [
+        "📅 Ocurrió el lunes 10 de agosto de 2026 a las 7:34 a. m. (hora de Colombia). Este marcador queda como REGISTRO del hecho; la emergencia ya no está en su fase inicial.",
+        "📊 Magnitud 7,4 · profundidad 103 km · epicentro a unos 12 km de San José del Palmar, Chocó (4,99° N / 76,29° O, Servicio Geológico Colombiano). Es el sismo de mayor magnitud registrado en Colombia en el siglo XXI.",
+        "🕯️ Balance de la UNGRD al 24 de agosto de 2026: 331 personas fallecidas, 4.439 heridas y 240 desaparecidas. Más de 185.000 familias afectadas en 16 departamentos y 494 municipios; 31.540 viviendas destruidas y 178.555 averiadas.",
+        "🌧️ Una semana después, las lluvias causaron inundaciones y deslizamientos sobre la infraestructura ya dañada, agravando la emergencia.",
+        "🌎 Réplicas destacadas: magnitud 6,1 el 14 de agosto y magnitud 4,2 el 13 de agosto, con el mismo epicentro.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y la UNGRD. No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / UNGRD",
+      "url": "https://www.sgc.gov.co/detallesismo/SGC2026pxhbxc/resumen"
+    },
+    {
+      "tipo": "Sismo",
       "titulo": "Sismo de magnitud 5,1 — 26 de agosto de 2026, Los Santos, Santander",
-      "lat": 6.82, "lng": -73.11,
-      "desde": "2026-08-26", "expira": "2026-09-09",
+      "lat": 6.82,
+      "lng": -73.11,
+      "desde": "2026-08-26",
+      "expira": "2026-09-09",
       "lineas": [
         "📅 Ocurrió el 26 de agosto de 2026 a las 11:45 a. m. (hora de Colombia).",
         "📊 Magnitud 5,1 · profundidad 149 km · epicentro a 7 km del casco urbano de Los Santos, Santander.",
