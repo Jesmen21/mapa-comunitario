@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v587-logo-negocio';
+const URBIS_CACHE = 'urbis-v588-ofertas-circulo';
 const URBIS_ASSETS = [
   './',
   './index.html',

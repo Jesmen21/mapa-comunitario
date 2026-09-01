@@ -11,34 +11,34 @@
    Gota clásica de ubicación: un círculo con una esquina en punta, girado.
    La cara va DESGIRADA para que el emoji quede derecho. El borde degrada de
    celeste a dorado: pertenece a URBIS, pero anuncia comercio. */
+/* CÍRCULO, no gota. Un círculo enmarca un logo cuadrado sin comerle las
+   esquinas, y va centrado justo encima del local en vez de apuntarlo desde
+   arriba con una punta. */
 .urbis-vitrina-root{ background:none; border:none; }
 .uvit-pin{
-  position:relative; width:44px; height:44px;
-  border-radius:50% 50% 50% 0;
-  transform:rotate(-45deg);
+  position:relative; width:46px; height:46px; border-radius:50%;
   /* El segundo color lo pone cada negocio (--uvit-color, en el propio
      marcador). El celeste de la izquierda no se mueve: es lo que dice que
-     esta gota pertenece a URBIS por mucho que su dueño elija rosa. */
+     este punto pertenece a URBIS por mucho que su dueño elija rosa. */
   background:linear-gradient(135deg,#38BDF8,var(--uvit-color,#FBBF24));
   padding:3px; box-sizing:border-box;
-  box-shadow:0 6px 14px rgba(12,74,110,.35), 0 2px 4px rgba(0,0,0,.2);
+  box-shadow:0 5px 14px rgba(12,74,110,.4), 0 2px 4px rgba(0,0,0,.22);
   animation:uvitPosarse .4s ease;
 }
 .uvit-pin::before{
-  content:''; position:absolute; inset:3px; border-radius:50% 50% 50% 0;
+  content:''; position:absolute; inset:3px; border-radius:50%;
   background:#FFFDF6;
 }
 .uvit-cara{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  transform:rotate(45deg); font-size:1.35rem; line-height:1;
+  font-size:1.4rem; line-height:1;
 }
 .uvit-brillo{
-  position:absolute; top:-7px; right:-7px; font-size:.8rem; font-style:normal;
-  transform:rotate(45deg);
+  position:absolute; top:-6px; right:-6px; font-size:.78rem; font-style:normal;
   animation:uvitBrillar 2.4s ease-in-out infinite;
 }
-@keyframes uvitPosarse{ from{ transform:rotate(-45deg) translateY(-12px); opacity:0 } to{ transform:rotate(-45deg) translateY(0); opacity:1 } }
-@keyframes uvitBrillar{ 0%,100%{ opacity:.35; transform:rotate(45deg) scale(.9) } 50%{ opacity:1; transform:rotate(45deg) scale(1.15) } }
+@keyframes uvitPosarse{ from{ transform:scale(.6); opacity:0 } to{ transform:scale(1); opacity:1 } }
+@keyframes uvitBrillar{ 0%,100%{ opacity:.35; transform:scale(.9) } 50%{ opacity:1; transform:scale(1.15) } }
 
 /* Al alejar el mapa, las gotas se van con los reportes: tres negocios a
    escala de país serían ruido, y este módulo vive de la escala de barrio. */
@@ -328,9 +328,10 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
    directorio. La forma no cambia: el aro de color y la gota siguen siendo
    los mismos, que es lo que dice "esto es la Vitrina de URBIS" por mucho que
    el logo sea de quien sea. */
+/* El logo llena el círculo hasta el aro: es la marca del negocio, no una
+   miniatura dentro de un marco. */
 .uvit-cara-logo{
-  position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px);
-  transform:rotate(45deg);           /* desgira, como la cara del emoji */
+  position:absolute; inset:3px; width:calc(100% - 6px); height:calc(100% - 6px);
   border-radius:50%; object-fit:cover;
   background:#fff;
 }
@@ -367,3 +368,77 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
   display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr));
   gap:8px; justify-items:center;
 }
+
+/* ── Ofertas ──────────────────────────────────────────────────────────────
+   El mapa de URBIS está casi quieto: los reportes no se mueven. Por eso una
+   gota que LATE se ve desde el otro lado de la pantalla aunque uno venga
+   mirando otra cosa — y por eso late solo la que tiene algo que ofrecer. Si
+   latieran todas, no latiría ninguna. */
+@keyframes uvitLatir{
+  0%, 62%, 100%{ transform:scale(1); }
+  70%{ transform:scale(1.14); }
+  80%{ transform:scale(1.02); }
+  88%{ transform:scale(1.09); }
+}
+@keyframes uvitTag{
+  0%, 100%{ transform:scale(1); box-shadow:0 3px 8px rgba(220,38,38,.45); }
+  50%{ transform:scale(1.16); box-shadow:0 5px 14px rgba(220,38,38,.7); }
+}
+.urbis-vitrina-oferta .uvit-pin{
+  animation:uvitPosarse .4s ease, uvitLatir 2.6s ease-in-out .4s infinite;
+}
+.uvit-tag{
+  position:absolute; top:-8px; left:-8px;
+  min-width:21px; height:21px; padding:0 5px; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:999px; background:#DC2626; color:#fff;
+  font-size:.72rem; font-weight:900; font-style:normal; line-height:1;
+  border:2px solid #fff;
+  animation:uvitTag 1.5s ease-in-out infinite;
+}
+/* Quien pidió menos movimiento en su teléfono no debería recibir una gota
+   saltando: la etiqueta se queda, la animación se va. */
+@media (prefers-reduced-motion: reduce){
+  .urbis-vitrina-oferta .uvit-pin{ animation:uvitPosarse .4s ease; }
+  .uvit-tag{ animation:none; }
+}
+
+.uvit-hay-ofertas{
+  margin:10px 0; padding:10px 12px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(220,38,38,.1),rgba(251,191,36,.14));
+  border:1px solid rgba(220,38,38,.35);
+  color:#B91C1C !important; -webkit-text-fill-color:#B91C1C;
+  font-size:.8rem; font-weight:850;
+}
+.uvit-prod-img{ position:relative; }
+.uvit-prod-oferta{ border-color:#DC2626; box-shadow:0 4px 14px rgba(220,38,38,.18); }
+.uvit-promo{
+  position:absolute; top:6px; left:6px; max-width:calc(100% - 12px);
+  padding:3px 8px; border-radius:999px;
+  background:#DC2626; color:#fff !important; -webkit-text-fill-color:#fff;
+  font-size:.66rem; font-weight:900; line-height:1.2;
+  box-shadow:0 3px 8px rgba(0,0,0,.25);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* El precio viejo tachado va apagado y pequeño: está ahí para que se note la
+   rebaja, no para competir con el precio que sí se paga. */
+.uvit-prod figcaption s{
+  display:block; margin-top:2px; font-size:.68rem; opacity:.6;
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+.uvit-dir-of{
+  display:inline-block; padding:1px 7px; border-radius:999px; vertical-align:middle;
+  background:#DC2626; color:#fff !important; -webkit-text-fill-color:#fff;
+  font-size:.6rem; font-weight:900;
+}
+.uvit-item-promo{
+  display:inline-block; margin-top:3px; padding:1px 7px; border-radius:999px;
+  background:rgba(220,38,38,.12); color:#B91C1C !important; -webkit-text-fill-color:#B91C1C;
+  font-size:.65rem; font-weight:850;
+}
+.uvit-item small s{ opacity:.55; }
+.uvit-promo-nota{
+  display:block; margin:4px 0 2px; font-size:.7rem; line-height:1.4;
+}
+.uvit-item-nuevo textarea{ margin-bottom:7px; }
+.uvit-item-nuevo label{ margin:6px 0 3px; }

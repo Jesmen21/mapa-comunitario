@@ -286,11 +286,23 @@
       horario: n.horario, color: n.color || COLOR_POR_DEFECTO, estado: n.estado
     }));
   }
+  /* Producto del portafolio. La promoción y el precio anterior se AÑADEN al
+     final del formato, nunca en medio: los productos guardados antes de que
+     existieran las ofertas siguen leyéndose igual, solo que sin promoción. */
   function leerItem(p) {
     const partes = String((p && p.descripcion) || '').split('~~~');
     return { uid: partes[0] || '', nombre: partes[1] || '', precio: partes[2] || '',
-             foto: partes[3] || '', negocio: String((p && p.lat) || ''), fila: p };
+             foto: partes[3] || '', promo: partes[4] || '', antes: partes[5] || '',
+             negocio: String((p && p.lat) || ''), fila: p };
   }
+  function escribirItem(x) {
+    return [x.uid, x.nombre, x.precio, x.foto, x.promo || '', x.antes || ''].join('~~~');
+  }
+  // ¿Este negocio tiene algo en oferta ahora mismo?
+  function tieneOfertas(id) {
+    return itemsDe(id).some(function (x) { return !!String(x.promo || '').trim(); });
+  }
+  window.urbisVitrinaTieneOfertas = tieneOfertas;
 
   /* Logo: se busca por el id del negocio, que viaja en `lat`. Si no hay,
      devuelve vacío y manda el emoji — nunca una gota en blanco. */
@@ -395,11 +407,20 @@
     const cara = n.logo
       ? '<img class="uvit-cara uvit-cara-logo" src="' + esc(n.logo) + '" alt="">'
       : '<span class="uvit-cara">' + esc(n.emoji || '🛍️') + '</span>';
+    /* Con ofertas, la gota deja de estar quieta: late y saca una etiqueta.
+       Es lo único del mapa que se mueve por voluntad propia, así que se nota
+       aunque uno venga mirando otra cosa — que es justo lo que se busca. */
+    const ofertas = tieneOfertas(n.id);
     return L.divIcon({
-      className: 'urbis-vitrina-root',
+      className: 'urbis-vitrina-root' + (ofertas ? ' urbis-vitrina-oferta' : ''),
       html: '<div class="uvit-pin" style="--uvit-color:' + c + '">' + cara +
-            '<i class="uvit-brillo">✨</i></div>',
-      iconSize: [44, 52], iconAnchor: [22, 50]
+            '<i class="uvit-brillo">✨</i>' +
+            (ofertas ? '<b class="uvit-tag">%</b>' : '') + '</div>',
+      /* Círculo CENTRADO en el local, no una gota apuntando hacia abajo.
+         Un círculo enmarca un logo sin recortarle esquinas, y su centro cae
+         justo encima del sitio: la punta de una gota obligaba a desplazar el
+         icono medio alto para que apuntara bien. */
+      iconSize: [46, 46], iconAnchor: [23, 23]
     });
   }
 
@@ -413,7 +434,7 @@
       const lng = parseFloat(String(n.fila.lng).replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return;
       const clave = n.id + '@' + lat + ',' + lng + '#' + n.emoji + n.color + n.nombre +
-                    '#' + (n.logo ? n.logo.length : 0);
+                    '#' + (n.logo ? n.logo.length : 0) + '#' + (tieneOfertas(n.id) ? 'of' : '');
       vivos[clave] = true;
       if (_pintados[clave]) return;
       try {
@@ -466,12 +487,20 @@
           (wa ? '<a class="uvit-wa" target="_blank" rel="noopener" href="' + esc(wa) + '">💬 Escribir por WhatsApp</a>' : '') +
           (tel ? '<a class="uvit-tel" href="tel:' + esc(tel) + '">📞 Llamar</a>' : '') +
         '</div>' +
+        (prods.some(function (x) { return x.promo; })
+          ? '<div class="uvit-hay-ofertas">🏷️ Este negocio tiene promociones activas</div>' : '') +
         (prods.length
           ? '<div class="uvit-porta"><b>Lo que encuentras aquí</b><div class="uvit-grid">' +
-            prods.map(function (x) {
-              return '<figure class="uvit-prod">' +
+            // Lo que está en oferta va primero: es lo que trajo a la persona.
+            prods.slice().sort(function (a, b) {
+              return (b.promo ? 1 : 0) - (a.promo ? 1 : 0);
+            }).map(function (x) {
+              return '<figure class="uvit-prod' + (x.promo ? ' uvit-prod-oferta' : '') + '">' +
+                '<div class="uvit-prod-img">' +
                 (x.foto ? '<img src="' + esc(x.foto) + '" alt="' + esc(x.nombre) + '" loading="lazy">' : '<div class="uvit-sinfoto">' + esc(n.emoji) + '</div>') +
+                (x.promo ? '<b class="uvit-promo">' + esc(x.promo) + '</b>' : '') + '</div>' +
                 '<figcaption><span>' + esc(x.nombre) + '</span>' +
+                (x.antes ? '<s>' + esc(x.antes) + '</s>' : '') +
                 (x.precio ? '<b>' + esc(x.precio) + '</b>' : '') + '</figcaption></figure>';
             }).join('') + '</div></div>'
           : '') +
@@ -614,7 +643,16 @@
             '<div class="uvit-item-nuevo">' +
               '<label class="ucfg-foto"><span id="uvit-if-txt">📷 Foto del producto</span><input type="file" id="uvit-ifoto" accept="image/*"></label>' +
               '<input id="uvit-inombre" maxlength="60" placeholder="Nombre (ej: Corte + barba)">' +
-              '<input id="uvit-iprecio" maxlength="20" placeholder="Precio (ej: $25.000)">' +
+              '<textarea id="uvit-idesc" rows="2" maxlength="200" placeholder="Descripción: qué incluye, qué lo hace bueno…"></textarea>' +
+              '<div class="uvit-dos">' +
+                '<div><label>Precio</label><input id="uvit-iprecio" maxlength="20" placeholder="$25.000"></div>' +
+                '<div><label>Antes costaba</label><input id="uvit-iantes" maxlength="20" placeholder="$35.000"></div>' +
+              '</div>' +
+              '<label>Promoción</label>' +
+              '<input id="uvit-ipromo" maxlength="28" placeholder="2x1, −30%, Martes de descuento…">' +
+              '<small class="uvit-promo-nota">Si escribes una promoción, la gota del negocio se ' +
+              'pondrá a latir en el mapa con una etiqueta 🏷️ para que la gente la vea de lejos. ' +
+              'Déjala vacía si es un producto normal.</small>' +
               '<button type="button" class="ucfg-primario" id="uvit-iadd">Agregar al portafolio</button>' +
             '</div></div>' : '') +
         '</div>';
@@ -829,7 +867,9 @@
           zona.innerHTML = arr.length ? arr.map(function (x, i) {
             return '<div class="uvit-item" data-i="' + i + '">' +
               (x.foto ? '<img src="' + esc(x.foto) + '" alt="">' : '<span class="uvit-sinfoto">' + esc(v.emoji) + '</span>') +
-              '<div><b>' + esc(x.nombre) + '</b>' + (x.precio ? '<small>' + esc(x.precio) + '</small>' : '') + '</div>' +
+              '<div><b>' + esc(x.nombre) + '</b>' +
+              (x.precio ? '<small>' + (x.antes ? '<s>' + esc(x.antes) + '</s> ' : '') + esc(x.precio) + '</small>' : '') +
+              (x.promo ? '<span class="uvit-item-promo">🏷️ ' + esc(x.promo) + '</span>' : '') + '</div>' +
               '<button type="button" class="uadm-del uvit-iborrar">×</button></div>';
           }).join('') : '<small class="uvit-vacio-p">Sin productos todavía. La ficha se ve mejor con dos o tres.</small>';
           zona.querySelectorAll('.uvit-iborrar').forEach(function (b) {
@@ -841,6 +881,8 @@
                 await window.urbisDBDelete('descripcion', x.fila.descripcion);
                 window.urbisVitrinaItems = (window.urbisVitrinaItems || []).filter(function (f) { return f !== x.fila; });
                 pintarItems();
+                // Si era el último en oferta, la gota debe dejar de latir.
+                render();
               } catch (e) { b.disabled = false; alert('No se pudo: ' + (e.message || e)); }
             });
           });
@@ -853,9 +895,17 @@
         });
         cont.querySelector('#uvit-iadd').addEventListener('click', async function () {
           const btn = this, err = cont.querySelector('.ucfg-error');
-          const nombre = cont.querySelector('#uvit-inombre').value.trim().replace(/~~~/g, ' ');
-          const precio = cont.querySelector('#uvit-iprecio').value.trim().replace(/~~~/g, ' ');
+          const limpio = sel => cont.querySelector(sel).value.trim().replace(/~~~/g, ' ');
+          const nombre = limpio('#uvit-inombre');
+          const desc2 = limpio('#uvit-idesc');
+          const precio = limpio('#uvit-iprecio');
+          const antes = limpio('#uvit-iantes');
+          const promo = limpio('#uvit-ipromo');
           if (!nombre) { err.textContent = 'Ponle nombre al producto.'; err.hidden = false; return; }
+          if (antes && !promo) {
+            err.textContent = 'Pusiste un precio anterior pero ninguna promoción. Escribe cuál es (por ejemplo “−30%”) o borra el precio anterior.';
+            err.hidden = false; return;
+          }
           btn.disabled = true; btn.textContent = 'Agregando…';
           let foto = '';
           const f = inputFoto.files && inputFoto.files[0];
@@ -863,14 +913,27 @@
           if (f && typeof comprimir === 'function') {
             try { foto = await comprimir(f); } catch (e) { foto = ''; }
           }
-          let desc = [nuevoId(), nombre, precio, foto].join('~~~');
-          if (desc.length > MAX_CELDA) desc = [nuevoId(), nombre, precio, ''].join('~~~');
+          // La descripción viaja pegada al nombre con un guion: el formato de
+          // la fila ya tiene sus casillas repartidas y meterle una nueva en
+          // medio rompería lo guardado antes.
+          const titulo = desc2 ? (nombre + ' — ' + desc2) : nombre;
+          const uid = nuevoId();
+          let desc = escribirItem({ uid: uid, nombre: titulo, precio: precio, foto: foto,
+                                    promo: promo, antes: antes });
+          if (desc.length > MAX_CELDA) {
+            desc = escribirItem({ uid: uid, nombre: titulo, precio: precio, foto: '',
+                                  promo: promo, antes: antes });
+          }
           try {
             await window.urbisGuardarFila({ tipo: TIPO_ITEM, lat: v.id, lng: '0', descripcion: desc, fecha: new Date().toISOString() });
             (window.urbisVitrinaItems = window.urbisVitrinaItems || []).push({ tipo: TIPO_ITEM, lat: v.id, lng: '0', descripcion: desc });
-            cont.querySelector('#uvit-inombre').value = ''; cont.querySelector('#uvit-iprecio').value = '';
+            ['#uvit-inombre','#uvit-idesc','#uvit-iprecio','#uvit-iantes','#uvit-ipromo']
+              .forEach(function (sel) { cont.querySelector(sel).value = ''; });
             inputFoto.value = ''; cont.querySelector('#uvit-if-txt').textContent = '📷 Foto del producto';
             err.hidden = true; pintarItems();
+            // La gota tiene que empezar a latir en cuanto exista la promoción,
+            // no en la siguiente recarga.
+            render();
           } catch (e) { err.textContent = 'No se pudo agregar: ' + (e.message || e); err.hidden = false; }
           btn.disabled = false; btn.textContent = 'Agregar al portafolio';
         });
@@ -963,7 +1026,8 @@
         return '<div class="uvit-dir-card" data-id="' + esc(n.id) + '" style="--uvit-color:' + c + '">' +
           (n.logo ? '<img class="uvit-dir-emoji uvit-dir-logo" src="' + esc(n.logo) + '" alt="">'
                   : '<span class="uvit-dir-emoji">' + esc(n.emoji) + '</span>') +
-          '<div class="uvit-dir-txt"><b>' + esc(n.nombre) + '</b>' +
+          '<div class="uvit-dir-txt"><b>' + esc(n.nombre) +
+          (tieneOfertas(n.id) ? ' <span class="uvit-dir-of">🏷️ ofertas</span>' : '') + '</b>' +
           (n.lema ? '<small>' + esc(n.lema) + '</small>' : '') +
           (n.direccion ? '<small class="uvit-dir-lugar">📍 ' + esc(n.direccion) + '</small>' : '') + '</div>' +
           '<div class="uvit-dir-acc">' +
