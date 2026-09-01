@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v579-permisos';
+const URBIS_CACHE = 'urbis-v580-permisos';
 const URBIS_ASSETS = [
   './',
   './index.html',
