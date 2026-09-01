@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v582-vitrina-inicio';
+const URBIS_CACHE = 'urbis-v583-panel-vertical';
 const URBIS_ASSETS = [
   './',
   './index.html',

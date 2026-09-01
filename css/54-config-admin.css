@@ -41,6 +41,16 @@
 }
 .urbis-cfg-largo{ max-height:90vh; }
 
+/* El desborde que se vio en el panel no fue un descuido de una regla, sino la
+   regla de fábrica de las cajas flexibles: un hijo de flex o de rejilla trae
+   `min-width:auto`, o sea "al menos tan ancho como su contenido sin partir".
+   Basta una palabra larga o una fila de botones para empujar la tarjeta más
+   allá de la pantalla, y como el fondo la centra, se corta por los DOS lados.
+   Esto se lo prohíbe a la tarjeta y a todo lo que lleve dentro. */
+.urbis-cfg{ overflow-x:hidden; }
+.urbis-cfg *{ min-width:0; max-width:100%; }
+.urbis-cfg h3, .urbis-cfg h4{ overflow-wrap:anywhere; }
+
 .urbis-cfg h3{
   margin:0 0 4px; font-size:1.12rem; font-weight:900;
   color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E;
@@ -121,17 +131,38 @@
 .ucfg-term b{ display:block; margin-bottom:4px; font-size:.86rem; font-weight:850; color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E; }
 .ucfg-term span{ display:block; font-size:.78rem; line-height:1.55; }
 
-/* ── Panel del administrador ─────────────────────────────────────────────── */
-.uadm-tabs{ display:flex; gap:6px; margin:12px 0 12px; }
-.uadm-tab{
-  flex:1; padding:9px 6px; border:1.5px solid rgba(56,189,248,.30); border-radius:12px;
-  background:#fff; cursor:pointer; font-size:.76rem; font-weight:800;
-  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+/* ── Panel del administrador ───────────────────────────────────────────────
+   Las bandejas van en MENÚ VERTICAL, no en una fila de pestañas. Con cinco
+   bandejas la fila no cabía en un teléfono: cada pestaña tiene un ancho
+   mínimo que no se puede encoger ("Por aprobar" no se parte), así que la
+   fila empujaba la tarjeta más ancha que la pantalla y se cortaban el
+   título por la izquierda y "Equipo" por la derecha. En vertical cabe
+   cualquier número de bandejas y cada una puede explicarse. */
+.uadm-menu{ margin:12px 0 4px; }
+.uadm-bandeja{
+  display:flex; align-items:center; gap:11px; width:100%; box-sizing:border-box;
+  margin-bottom:8px; padding:13px 14px; text-align:left; cursor:pointer;
+  background:#fff; border:1.5px solid rgba(56,189,248,.28); border-radius:15px;
+  box-shadow:0 6px 16px rgba(12,74,110,.07);
+  transition:transform .12s ease;
 }
-.uadm-tab.on{
-  background:linear-gradient(135deg,#0EA5E9,#7DD3FC); border-color:transparent;
-  color:#03293F !important; -webkit-text-fill-color:#03293F;
-  box-shadow:0 6px 16px rgba(14,165,233,.28);
+.uadm-bandeja:active{ transform:scale(.985); }
+.uadm-bandeja>div{ flex:1; min-width:0; }
+.uadm-bandeja b{ display:block; font-size:.9rem; font-weight:850; color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E; }
+.uadm-bandeja small{ display:block; margin-top:2px; font-size:.72rem; line-height:1.35; }
+.uadm-b-ico{ flex:0 0 auto; font-size:1.3rem; -webkit-text-fill-color:initial; }
+.uadm-b-flecha{
+  flex:0 0 auto; font-size:1.35rem; font-weight:700;
+  color:#7DD3FC !important; -webkit-text-fill-color:#7DD3FC;
+}
+.uadm-volver{
+  margin-bottom:10px; padding:8px 13px; border:0; border-radius:10px; cursor:pointer;
+  background:rgba(56,189,248,.14); color:#0369A1 !important; -webkit-text-fill-color:#0369A1;
+  font-size:.78rem; font-weight:800;
+}
+.uadm-detalle-titulo{
+  margin:0 0 11px; font-size:.95rem; font-weight:900;
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E;
 }
 .uadm-lista{ display:block; }
 .uadm-vacio{

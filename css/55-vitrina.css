@@ -214,3 +214,14 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
 .uvit-dir-pronto span{ display:block; font-size:1.8rem; margin-bottom:6px; -webkit-text-fill-color:initial; }
 .uvit-dir-pronto b{ display:block; font-size:.92rem; color:#92600A !important; -webkit-text-fill-color:#92600A; }
 .uvit-dir-pronto small{ display:block; margin-top:5px; font-size:.76rem; line-height:1.5; }
+
+/* "Emprendimientos" es más ancha que la casilla del módulo. En vez de
+   acortar el nombre —que es el que se pidió— se le deja partirse con guion,
+   que es lo que hace un tipógrafo con una palabra larga en una columna
+   estrecha. La casilla no crece y la palabra se lee entera. */
+.u52-module.vitrina small{
+  overflow-wrap:anywhere;
+  hyphens:auto; -webkit-hyphens:auto;
+  font-size:.62rem !important;
+  line-height:1.25;
+}

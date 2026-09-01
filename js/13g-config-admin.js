@@ -353,14 +353,14 @@
     // Solo las bandejas de lo que esta persona puede hacer. Enseñar una
     // pestaña que al pulsar dice "no puedes" es peor que no enseñarla.
     const bandejas = [];
-    if (puedo('aprobar'))    bandejas.push({ id:'aprobar',    nombre:'Por aprobar' });
-    if (puedo('moderar'))    bandejas.push({ id:'denuncias',  nombre:'Denuncias' });
-    if (puedo('peticiones')) bandejas.push({ id:'peticiones', nombre:'Peticiones' });
-    if (puedo('vitrina'))    bandejas.push({ id:'vitrina',    nombre:'Vitrina' });
-    if (soyDueno())          bandejas.push({ id:'equipo',     nombre:'Equipo' });
+    if (puedo('aprobar'))    bandejas.push({ id:'aprobar',    nombre:'Por aprobar', ico:'📋', pie:'Reportes esperando el visto bueno' });
+    if (puedo('moderar'))    bandejas.push({ id:'denuncias',  nombre:'Denuncias',   ico:'🚩', pie:'Contenido denunciado sin revisar' });
+    if (puedo('peticiones')) bandejas.push({ id:'peticiones', nombre:'Peticiones',  ico:'📩', pie:'Lo que la gente escribe al administrador' });
+    if (puedo('vitrina'))    bandejas.push({ id:'vitrina',    nombre:'Vitrina',     ico:'🛍️', pie:'Emprendimientos y su portafolio' });
+    if (soyDueno())          bandejas.push({ id:'equipo',     nombre:'Equipo',      ico:'👥', pie:'Repartir permisos de moderación' });
     // Con el permiso de retirar y nada más, la bandeja útil es la de
     // denuncias: es donde aparece lo que hay que quitar.
-    if (!bandejas.length && puedo('eliminar')) bandejas.push({ id:'denuncias', nombre:'Denuncias' });
+    if (!bandejas.length && puedo('eliminar')) bandejas.push({ id:'denuncias', nombre:'Denuncias', ico:'🚩', pie:'Contenido denunciado' });
 
     const ov = document.createElement('div');
     ov.id = 'urbis-admin-overlay';
@@ -369,26 +369,46 @@
       '<div class="urbis-cfg urbis-cfg-largo urbis-admin" role="dialog" aria-modal="true">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
         '<h3>🛡️ ' + (soyDueno() ? 'Panel de administración' : 'Panel de moderación') + '</h3>' +
-        '<div class="uadm-tabs">' +
-          bandejas.map(function (b, i) {
-            return '<button type="button" class="uadm-tab' + (i ? '' : ' on') + '" data-uadm="' + b.id + '">' +
-                   esc(b.nombre) + '</button>';
+        /* Menú VERTICAL, no una fila de pestañas. Con cinco bandejas la fila
+           ya no cabía en un teléfono: el título salía cortado y "Equipo"
+           quedaba fuera de la pantalla. En vertical cabe cualquier número,
+           cada bandeja puede explicarse en una línea y se lee de un vistazo. */
+        '<div class="uadm-menu">' +
+          bandejas.map(function (b) {
+            return '<button type="button" class="uadm-bandeja" data-uadm="' + b.id + '">' +
+                   '<span class="uadm-b-ico">' + b.ico + '</span>' +
+                   '<div><b>' + esc(b.nombre) + '</b><small>' + esc(b.pie) + '</small></div>' +
+                   '<span class="uadm-b-flecha">›</span></button>';
           }).join('') +
         '</div>' +
-        '<div class="uadm-lista"></div>' +
+        '<div class="uadm-detalle" hidden>' +
+          '<button type="button" class="uadm-volver">← Bandejas</button>' +
+          '<h4 class="uadm-detalle-titulo"></h4>' +
+          '<div class="uadm-lista"></div>' +
+        '</div>' +
       '</div>';
     document.body.appendChild(ov);
     ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
     ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
 
     const lista = ov.querySelector('.uadm-lista');
+    const menu = ov.querySelector('.uadm-menu');
+    const detalle = ov.querySelector('.uadm-detalle');
     let pestana = (bandejas[0] && bandejas[0].id) || 'aprobar';
-    if (bandejaPreferida && bandejas.some(function (b) { return b.id === bandejaPreferida; })) {
-      pestana = bandejaPreferida;
-      ov.querySelectorAll('.uadm-tab').forEach(function (t) {
-        t.classList.toggle('on', t.getAttribute('data-uadm') === pestana);
-      });
+
+    function abrirBandeja(id) {
+      const b = bandejas.find(function (x) { return x.id === id; });
+      if (!b) return;
+      pestana = id;
+      ov.querySelector('.uadm-detalle-titulo').textContent = b.ico + ' ' + b.nombre;
+      menu.hidden = true; detalle.hidden = false;
+      pintar();
     }
+    function volverAlMenu() {
+      detalle.hidden = true; menu.hidden = false;
+      lista.innerHTML = '';
+    }
+    ov.querySelector('.uadm-volver').addEventListener('click', volverAlMenu);
 
     function vacio(txt) { return '<div class="uadm-vacio">✅ ' + txt + '</div>'; }
     // El botón de eliminar solo se dibuja si esa persona lo tiene: el
@@ -454,13 +474,8 @@
       }
     }
 
-    ov.querySelectorAll('.uadm-tab').forEach(function (t) {
-      t.addEventListener('click', function () {
-        ov.querySelectorAll('.uadm-tab').forEach(function (x) { x.classList.remove('on'); });
-        t.classList.add('on');
-        pestana = t.getAttribute('data-uadm');
-        pintar();
-      });
+    ov.querySelectorAll('.uadm-bandeja').forEach(function (t) {
+      t.addEventListener('click', function () { abrirBandeja(t.getAttribute('data-uadm')); });
     });
 
     lista.addEventListener('click', async function (ev) {
@@ -535,7 +550,15 @@
       }
     });
 
-    pintar();
+    /* Se abre en el MENÚ, salvo que quien llame pida una bandeja concreta
+       (el módulo Vitrina del inicio) o solo haya una: con una sola bandeja,
+       obligar a elegir entre una opción es una pantalla de más. */
+    if (bandejaPreferida && bandejas.some(function (b) { return b.id === bandejaPreferida; })) {
+      abrirBandeja(bandejaPreferida);
+    } else if (bandejas.length === 1) {
+      abrirBandeja(bandejas[0].id);
+      ov.querySelector('.uadm-volver').hidden = true;
+    }
   };
 
   /* Borrar CUALQUIER publicación (pedido explícito). Los reportes se localizan

@@ -468,10 +468,11 @@
     const b = document.createElement('button');
     b.className = 'u52-module vitrina u52-jac-module';
     b.setAttribute('data-u52-go', 'vitrina');
-    // "Emprendimientos" no cabe en la tarjeta sin cortarse: es una sola
-    // palabra más ancha que la casilla. "Negocios del barrio" dice lo mismo
-    // y parte en dos líneas limpias.
-    b.innerHTML = '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Negocios del barrio</small>';
+    /* "Emprendimientos URBIS" es el nombre bueno: "del barrio" sonaba a
+       clasificado de esquina, y lo que aquí se publica lleva el respaldo de
+       URBIS encima. Como "Emprendimientos" es una palabra más ancha que la
+       casilla, css/55 le deja partirse con guion en vez de desbordar. */
+    b.innerHTML = '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Emprendimientos URBIS</small>';
     const eventos = grid.querySelector('[data-u52-go="events"]');
     if (eventos && eventos.nextSibling) grid.insertBefore(b, eventos.nextSibling);
     else grid.appendChild(b);
@@ -486,7 +487,7 @@
     sec.setAttribute('data-u52-screen', 'vitrina');
     sec.innerHTML =
       '<header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button>' +
-      '<h2 class="u52-title">🛍️ Vitrina</h2>' +
+      '<h2 class="u52-title">🛍️ Vitrina URBIS</h2>' +
       '<span class="u52-icon-btn" style="visibility:hidden">·</span></header>' +
       '<main class="u52-content uvit-dir"></main>';
     hermana.parentElement.appendChild(sec);
@@ -498,8 +499,8 @@
     if (!cont) return;
     const arr = negocios().filter(function (n) { return n.estado === 'visible'; });
     cont.innerHTML =
-      '<p class="uvit-dir-intro">Negocios del barrio que URBIS conoce y recomienda. ' +
-      'Tócalos para ver qué ofrecen y escribirles directo.</p>' +
+      '<p class="uvit-dir-intro">Emprendimientos que URBIS conoce y respalda. ' +
+      'Toca uno para ver qué ofrece y escribirle directo.</p>' +
       (puedo()
         ? '<button type="button" class="uvit-dir-admin">🛠️ Administrar la vitrina</button>'
         : '') +
@@ -515,9 +516,9 @@
           '</div></div>';
       }).join('')
       : '<div class="uvit-dir-pronto"><span>✨</span><b>Muy pronto</b>' +
-        '<small>Estamos preparando los primeros emprendimientos del barrio: ' +
+        '<small>Estamos preparando los primeros Emprendimientos URBIS: ' +
         'una barbería, un taller tecnológico y una odontología. Vuelve a asomarte.</small></div>') +
-      '<small class="ucfg-nota">¿Tienes un emprendimiento y quieres salir aquí? ' +
+      '<small class="ucfg-nota">¿Tienes un emprendimiento y quieres ser parte? ' +
       'Escríbenos desde Perfil → Configuración.</small>';
 
     const admin = cont.querySelector('.uvit-dir-admin');
