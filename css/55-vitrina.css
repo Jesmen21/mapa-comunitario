@@ -298,3 +298,27 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
   transform:scale(1.12);
   box-shadow:0 0 0 2.5px #0C3B5E, 0 4px 10px rgba(12,74,110,.25);
 }
+
+/* Chips de categoría: una fila que se desliza a lo ancho. Aquí el
+   desplazamiento horizontal SÍ es correcto —es una tira de opciones, no el
+   contenido de la tarjeta— así que se le permite en su propia caja, sin que
+   la tarjeta crezca. */
+.uvit-e-chips{
+  display:flex; gap:6px; margin-bottom:8px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:3px; scrollbar-width:none;
+}
+.uvit-e-chips::-webkit-scrollbar{ display:none; }
+.uvit-chip{
+  flex:0 0 auto; padding:8px 13px; border-radius:999px; cursor:pointer;
+  white-space:nowrap; font-size:.73rem; font-weight:800;
+  background:#fff; border:1.5px solid rgba(56,189,248,.3);
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+.uvit-chip.on{
+  background:linear-gradient(135deg,#0EA5E9,#7DD3FC); border-color:transparent;
+  color:#03293F !important; -webkit-text-fill-color:#03293F;
+  box-shadow:0 4px 12px rgba(14,165,233,.28);
+}
+/* Con dieciséis categorías la lista respira un poco más de alto. */
+.uvit-emojis{ max-height:240px; }

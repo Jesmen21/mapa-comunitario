@@ -55,91 +55,171 @@
     ['Comida y bebida', [
       ['🍕','pizza pizzeria italiana'], ['🍔','hamburguesa comidas rapidas burger'],
       ['🌭','perro caliente hotdog salchipapa'], ['🍟','papas fritas comidas rapidas'],
-      ['🌮','tacos mexicana'], ['🍗','pollo asadero broaster'],
-      ['🥩','carne asados parrilla res'], ['🍖','costilla asado parrilla'],
-      ['🍚','arroz chino comida corriente'], ['🍜','sopa caldo ramen'],
-      ['🥘','almuerzo corrientazo restaurante'], ['🍳','desayunos huevos'],
-      ['🥐','panaderia pan croissant'], ['🍞','panaderia pan'],
-      ['🎂','tortas pasteleria reposteria cumpleanos'], ['🧁','cupcakes postres reposteria'],
-      ['🍰','postres tortas pasteleria'], ['🍩','donas postres'],
-      ['🍪','galletas reposteria'], ['🍫','chocolates dulces'],
-      ['🍬','dulces confiteria golosinas'], ['🍦','helados heladeria'],
-      ['🧃','jugos naturales bebidas'], ['🥤','gaseosas bebidas refrescos'],
-      ['☕','cafe cafeteria tinto'], ['🍵','te aromatica infusiones'],
-      ['🍺','cerveza bar cerveceria'], ['🍹','coctel bar licores'],
+      ['🌮','tacos mexicana'], ['🌯','burrito wrap shawarma'],
+      ['🍗','pollo asadero broaster'], ['🥩','carne asados parrilla res'],
+      ['🍖','costilla asado parrilla chuzo'], ['🥓','desayunos tocineta'],
+      ['🍚','arroz chino comida corriente'], ['🍜','sopa caldo ramen mote'],
+      ['🥘','almuerzo corrientazo restaurante sancocho'], ['🍲','sopas cocina casera'],
+      ['🥗','ensaladas comida saludable vegetariana'], ['🍳','desayunos huevos calentado'],
+      ['🫓','arepas empanadas asadero'], ['🥟','empanadas pasteles fritos'],
+      ['🌽','mazorca maiz asados'], ['🍤','fritos mariscos camarones'],
+      ['🐟','pescaderia pescado mariscos'], ['🧀','quesos lacteos cuajada'],
+      ['🥚','huevos granja'], ['🍯','miel natural apicultura'],
       ['🍇','frutas fruteria verduras'], ['🥬','verduras legumbres hortalizas'],
-      ['🐟','pescaderia pescado mariscos'], ['🥚','huevos granja'],
-      ['🧀','quesos lacteos'], ['🍯','miel natural apicultura']
+      ['🥑','fruver saludable organicos'], ['🧃','jugos naturales bebidas batidos'],
+      ['🥤','gaseosas bebidas refrescos'], ['☕','cafe cafeteria tinto'],
+      ['🍵','te aromatica infusiones'], ['🧋','bebidas malteadas'],
+      ['🍺','cerveza bar cerveceria'], ['🍹','coctel bar licores'],
+      ['🍷','vinos licorera vinoteca'], ['🥃','licorera aguardiente estanco']
+    ]],
+    ['Panadería y repostería', [
+      ['🥐','panaderia pan croissant'], ['🍞','panaderia pan integral'],
+      ['🥖','panaderia baguette pan frances'], ['🥯','panaderia rosquillas'],
+      ['🎂','tortas pasteleria cumpleanos'], ['🧁','cupcakes ponques reposteria'],
+      ['🍰','postres tortas pasteleria'], ['🥧','pasteles tartas horneados'],
+      ['🍩','donas postres'], ['🍪','galletas reposteria'],
+      ['🍫','chocolates bombones dulces'], ['🍬','dulces confiteria golosinas'],
+      ['🍦','helados heladeria'], ['🍮','postres flan natilla']
     ]],
     ['Belleza y cuidado', [
       ['💈','barberia barbero cortes caballeros'], ['💇','peluqueria salon cortes'],
-      ['💅','manicure unas pedicure spa'], ['💄','maquillaje cosmeticos belleza'],
-      ['🧴','productos cuidado piel cremas'], ['🧼','jabones aseo artesanal'],
-      ['🪒','afeitado barberia navaja'], ['🧖','spa masajes relajacion'],
-      ['💆','masajes terapia relajacion'], ['🌸','estetica belleza flores'],
-      ['✂️','corte tijeras peluqueria sastreria'], ['🪮','peinados trenzas cabello']
+      ['🪮','peinados trenzas cabello alisado'], ['💅','manicure unas pedicure'],
+      ['💄','maquillaje cosmeticos belleza'], ['🧴','cremas cuidado piel productos'],
+      ['🧼','jabones aseo artesanal'], ['🪒','afeitado barberia navaja depilacion'],
+      ['🧖','spa masajes relajacion sauna'], ['💆','masajes terapia relajacion'],
+      ['🌸','estetica belleza spa'], ['✂️','corte tijeras peluqueria'],
+      ['🫧','spa limpieza facial burbujas'], ['👁️','pestanas cejas lashes microblading']
     ]],
     ['Salud', [
       ['🦷','odontologia dentista dientes ortodoncia'], ['🩺','medicina consultorio doctor'],
-      ['💊','farmacia droguería medicamentos'], ['🏥','clinica centro medico'],
-      ['👁️','optica lentes gafas optometria'], ['🦴','fisioterapia ortopedia huesos'],
-      ['🧠','psicologia terapia mental'], ['🩹','enfermeria curaciones primeros auxilios'],
-      ['💉','laboratorio examenes vacunas'], ['🫀','cardiologia salud corazon'],
-      ['🧘','yoga bienestar meditacion'], ['🏋️','gimnasio gym entrenamiento pesas']
+      ['💊','farmacia drogueria medicamentos'], ['🏥','clinica centro medico ips'],
+      ['👓','optica lentes gafas optometria'], ['🦴','fisioterapia ortopedia huesos'],
+      ['🧠','psicologia terapia salud mental'], ['🩹','enfermeria curaciones inyectologia'],
+      ['💉','laboratorio examenes vacunas'], ['🫀','cardiologia corazon'],
+      ['🩻','radiologia imagenes diagnostico'], ['🦻','audiologia audifonos oidos'],
+      ['🧘','yoga bienestar meditacion pilates'], ['🥗','nutricion dietas alimentacion'],
+      ['🌿','naturista hierbas medicina alternativa'], ['♿','ortopedia movilidad sillas ruedas']
     ]],
     ['Tecnología', [
       ['📱','celulares telefonos moviles smartphone'], ['💻','computadores portatiles laptop'],
       ['🖥️','computadores escritorio pc monitores'], ['⌨️','teclados accesorios computo'],
-      ['🖨️','impresoras tintas fotocopias'], ['🎮','videojuegos consolas gamer'],
-      ['🎧','audifonos audio sonido'], ['🔌','electronica cargadores accesorios'],
+      ['🖱️','accesorios computo mouse'], ['🖨️','impresoras tintas fotocopias'],
+      ['🎮','videojuegos consolas gamer'], ['🎧','audifonos audio sonido'],
+      ['🔊','parlantes sonido amplificacion'], ['🔌','electronica cargadores accesorios'],
       ['🔋','baterias pilas energia'], ['📷','camaras fotografia foto'],
       ['📹','video filmacion produccion'], ['🛰️','internet redes wifi antenas'],
-      ['💾','datos respaldo software'], ['⚙️','reparacion tecnica servicio']
+      ['💾','datos respaldo software sistemas'], ['🧑‍💻','desarrollo web programacion soporte'],
+      ['📡','television satelital senal antenas'], ['⚙️','reparacion tecnica servicio']
     ]],
-    ['Ropa y accesorios', [
+    ['Ropa y calzado', [
       ['👗','ropa mujer vestidos boutique'], ['👕','ropa camisetas camisas hombre'],
-      ['👖','jeans pantalones ropa'], ['👟','calzado tenis zapatos deportivos'],
+      ['👖','jeans pantalones ropa'], ['🧥','chaquetas abrigos ropa'],
+      ['🩱','vestidos bano ropa interior lenceria'], ['👟','calzado tenis zapatos deportivos'],
       ['👠','calzado mujer tacones zapatos'], ['👞','calzado hombre zapatos'],
+      ['🥿','calzado sandalias baletas'], ['🧦','medias calcetines ropa'],
       ['👜','bolsos carteras marroquineria'], ['🎒','morrales maletas mochilas'],
       ['🧢','gorras sombreros accesorios'], ['👶','ropa bebe infantil ninos'],
-      ['💍','joyeria anillos accesorios oro'], ['⌚','relojes relojeria accesorios'],
+      ['💍','joyeria anillos oro plata'], ['⌚','relojes relojeria accesorios'],
       ['🕶️','gafas sol accesorios'], ['🧵','sastreria costura arreglos modisteria'],
-      ['🧶','tejidos lanas crochet artesanal']
+      ['🧶','tejidos lanas crochet artesanal'], ['👔','ropa formal trajes uniformes'],
+      ['🥋','uniformes deportivos dotacion']
     ]],
-    ['Hogar y oficios', [
-      ['🔧','ferreteria herramientas reparaciones'], ['🔨','carpinteria construccion obra'],
-      ['🪛','reparaciones tecnico mantenimiento'], ['🧰','servicios tecnicos domicilio'],
-      ['🪑','muebles carpinteria hogar'], ['🛋️','muebles sala tapiceria hogar'],
-      ['🛏️','colchones camas hogar'], ['🧹','aseo limpieza servicios'],
-      ['🧺','lavanderia ropa planchado'], ['🪟','vidrios ventanas aluminio'],
-      ['🚪','puertas cerrajeria carpinteria'], ['🔑','cerrajeria llaves seguridad'],
-      ['💡','electricidad iluminacion electricista'], ['🚿','plomeria gasfiteria agua'],
-      ['🧯','seguridad extintores prevencion'], ['🪴','plantas vivero jardineria'],
-      ['🏠','inmobiliaria arriendos fincaraiz'], ['🎨','pintura decoracion acabados']
+    ['Ferretería y construcción', [
+      ['🔧','ferreteria herramientas llaves'], ['🔨','ferreteria martillo construccion'],
+      ['🪛','destornilladores herramientas ferreteria'], ['🔩','tornillos tuercas ferreteria'],
+      ['🧰','caja herramientas ferreteria servicios'], ['⚒️','herramientas obra construccion'],
+      ['🪚','carpinteria madera serrucho'], ['🪵','maderas deposito carpinteria'],
+      ['🧱','ladrillos materiales construccion deposito'], ['🏗️','construccion obra ingenieria'],
+      ['🪜','escaleras ferreteria alturas'], ['🔗','cadenas guayas ferreteria'],
+      ['⛓️','cadenas candados ferreteria'], ['🧲','herrajes metales ferreteria'],
+      ['🪣','pinturas baldes ferreteria'], ['🖌️','pintura brochas acabados'],
+      ['🎨','pintura decoracion acabados'], ['🚿','plomeria gasfiteria agua tuberia'],
+      ['💡','electricidad iluminacion electricista'], ['🔦','linternas electricos ferreteria'],
+      ['🧯','extintores seguridad industrial'], ['🪟','vidrios ventanas aluminio'],
+      ['🚪','puertas cerrajeria carpinteria'], ['🔑','cerrajeria llaves duplicado'],
+      ['🔒','candados seguridad cerraduras']
     ]],
-    ['Mascotas y animales', [
+    ['Papelería y oficina', [
+      ['📚','libreria libros papeleria'], ['📖','libreria libros lectura'],
+      ['✏️','papeleria utiles escolares lapices'], ['🖊️','papeleria esferos boligrafos'],
+      ['🖍️','papeleria colores crayones arte'], ['📝','papeleria cuadernos block'],
+      ['📄','fotocopias impresiones papeleria'], ['📋','papeleria formatos oficina'],
+      ['📎','papeleria clips insumos oficina'], ['📐','papeleria geometria dibujo tecnico'],
+      ['✂️','papeleria tijeras manualidades'], ['🗂️','archivadores carpetas oficina'],
+      ['📬','correspondencia mensajeria papeleria'], ['🏷️','etiquetas stickers impresion'],
+      ['🖼️','enmarcado cuadros marcos impresion'], ['📊','publicidad pendones avisos impresion'],
+      ['🎓','papeleria escolar colegio universidad'], ['💼','insumos oficina empresarial']
+    ]],
+    ['Hogar y muebles', [
+      ['🪑','muebles sillas carpinteria hogar'], ['🛋️','muebles sala tapiceria hogar'],
+      ['🛏️','colchones camas lenceria hogar'], ['🚽','sanitarios bano acabados'],
+      ['🍽️','vajilla cocina menaje hogar'], ['🍴','cubiertos menaje cocina'],
+      ['🫖','ollas cocina menaje'], ['🧺','lavanderia ropa planchado canastas'],
+      ['🧹','aseo limpieza escobas servicios'], ['🧽','aseo productos limpieza'],
+      ['🪞','espejos decoracion hogar'], ['🕯️','velas aromas decoracion'],
+      ['🖼️','cuadros decoracion hogar'], ['🪴','plantas vivero jardineria matas'],
+      ['🌱','vivero jardineria semillas'], ['🏠','inmobiliaria arriendos fincaraiz'],
+      ['❄️','aires acondicionados refrigeracion neveras'], ['🔥','gas estufas calentadores']
+    ]],
+    ['Mascotas y agro', [
       ['🐕','perros veterinaria mascotas'], ['🐈','gatos veterinaria mascotas'],
-      ['🐾','veterinaria mascotas peluqueria canina'], ['🦜','aves mascotas pajaros'],
-      ['🐠','peces acuarios mascotas'], ['🌾','agro campo insumos veterinaria']
+      ['🐾','veterinaria mascotas peluqueria canina guarderia'],
+      ['🦜','aves mascotas pajaros'], ['🐠','peces acuarios mascotas'],
+      ['🐹','mascotas pequenas hamsters roedores'], ['🦴','alimentos concentrado mascotas'],
+      ['🌾','agro campo insumos agricolas'], ['🐄','ganaderia agropecuaria veterinaria'],
+      ['🐓','avicola granja huevos pollos'], ['🚜','maquinaria agricola agro'],
+      ['🌻','agro semillas cultivo flores']
     ]],
-    ['Educación y arte', [
-      ['📚','libreria libros papeleria'], ['✏️','papeleria utiles escolares'],
-      ['🖌️','arte pintura manualidades'], ['🎨','arte diseno pintura'],
-      ['🎵','musica instrumentos clases'], ['🎸','instrumentos musica guitarras'],
-      ['🎤','eventos animacion sonido karaoke'], ['🎬','audiovisual video produccion'],
-      ['🎓','educacion cursos academia clases'], ['🧮','contabilidad asesoria impuestos'],
-      ['⚖️','abogados juridico asesoria legal'], ['🖋️','diseno grafico publicidad'],
-      ['🎁','regalos detalles sorpresas'], ['🎈','fiestas decoracion eventos'],
-      ['💐','floristeria flores arreglos'], ['📸','fotografia estudio fotos']
+    ['Educación y clases', [
+      ['🎓','educacion cursos academia clases'], ['🏫','colegio jardin preescolar'],
+      ['📐','refuerzo matematicas clases particulares'], ['🌐','idiomas ingles clases'],
+      ['🧮','contabilidad clases refuerzo'], ['🧑‍🏫','tutorias profesores clases'],
+      ['💻','cursos sistemas computacion clases'], ['🎹','clases musica piano'],
+      ['🩰','danza ballet academia baile'], ['🥋','artes marciales academia karate']
     ]],
-    ['Transporte y otros', [
+    ['Arte, música y eventos', [
+      ['🎨','arte diseno pintura'], ['🖌️','arte manualidades pintura'],
+      ['🎵','musica instrumentos'], ['🎸','instrumentos guitarras musica'],
+      ['🥁','instrumentos bateria percusion'], ['🎤','eventos animacion sonido karaoke'],
+      ['🎬','audiovisual video produccion'], ['📸','fotografia estudio fotos'],
+      ['🎈','fiestas decoracion globos eventos'], ['🎉','eventos organizacion fiestas'],
+      ['🎁','regalos detalles sorpresas'], ['💐','floristeria flores arreglos'],
+      ['🕺','shows animacion hora loca'], ['🎪','alquiler carpas eventos'],
+      ['🍽','banquetes catering eventos'], ['🎭','teatro cultura arte']
+    ]],
+    ['Servicios profesionales', [
+      ['⚖️','abogados juridico asesoria legal'], ['🧾','contabilidad impuestos tributaria'],
+      ['💼','asesorias consultoria empresas'], ['🖋️','diseno grafico publicidad'],
+      ['📢','publicidad marketing redes sociales'], ['🏦','financiera creditos prestamos'],
+      ['💰','prestamos cambio divisas'], ['📈','inversiones asesoria financiera'],
+      ['🔏','notaria tramites documentos'], ['🏢','oficinas coworking arriendo'],
+      ['🧑‍⚖️','tramites juridicos asesoria'], ['📑','tramites gestion documentos']
+    ]],
+    ['Transporte y vehículos', [
       ['🏍️','motos taller motorepuestos'], ['🚗','carros taller automotriz mecanica'],
-      ['🛺','transporte mototaxi domicilios'], ['🚚','transporte mudanzas acarreos carga'],
-      ['🚲','bicicletas bicicleteria taller'], ['⛽','combustible gasolina servitecas'],
-      ['🛞','llantas montallantas serviteca'], ['🧽','lavadero carwash autolavado'],
-      ['📦','domicilios mensajeria envios paqueteria'], ['🏪','tienda miscelanea granero'],
-      ['🛒','supermercado minimercado mercado'], ['💰','prestamos financiera cambio'],
-      ['🖥','internet cafe navegacion papeleria'], ['🛍️','tienda comercio general']
+      ['🔧','mecanica taller reparacion'], ['🛞','llantas montallantas serviteca'],
+      ['🧽','lavadero carwash autolavado'], ['⛽','combustible gasolina estacion'],
+      ['🔋','baterias carros electricos automotriz'], ['🚙','venta carros concesionario'],
+      ['🛺','mototaxi transporte domicilios'], ['🚚','transporte mudanzas acarreos carga'],
+      ['🚐','transporte pasajeros buses turismo'], ['🚲','bicicletas bicicleteria taller'],
+      ['🛵','domicilios motos mensajeria'], ['📦','domicilios mensajeria envios paqueteria'],
+      ['✈️','viajes agencia turismo tiquetes']
+    ]],
+    ['Deporte y aire libre', [
+      ['🏋️','gimnasio gym entrenamiento pesas'], ['⚽','deportes futbol implementos'],
+      ['🏀','deportes baloncesto implementos'], ['🏐','deportes voleibol implementos'],
+      ['🎾','deportes tenis raquetas'], ['🏊','natacion piscina clases'],
+      ['🚴','ciclismo bicicletas deporte'], ['🥊','boxeo gimnasio artes marciales'],
+      ['⛺','camping aire libre outdoor'], ['🎣','pesca deportiva implementos'],
+      ['🏆','trofeos premios grabados deportes'], ['🧗','escalada aventura deporte']
+    ]],
+    ['Tienda y mercado', [
+      ['🏪','tienda miscelanea granero'], ['🛒','supermercado minimercado mercado'],
+      ['🛍️','tienda comercio general'], ['🧺','plaza mercado abarrotes'],
+      ['🥫','abarrotes viveres granero'], ['🧊','cigarreria licores 24 horas'],
+      ['💊','drogueria farmacia tienda'], ['🖥','internet cafe navegacion papeleria'],
+      ['📱','recargas minutos celulares'], ['💵','giros pagos corresponsal bancario'],
+      ['♻️','reciclaje chatarreria compraventa'], ['🎰','apuestas chance loteria']
     ]]
   ];
 
@@ -406,7 +486,8 @@
           '<label>¿Qué emoji lo representa?</label>' +
           '<div class="uvit-elegido"><span id="uvit-muestra">' + esc(v.emoji) + '</span>' +
             '<small>El que se verá en el mapa. Busca tu oficio o elige de la lista.</small></div>' +
-          '<input type="text" id="uvit-buscar-e" placeholder="Buscar: barbería, pizza, celulares…" autocomplete="off">' +
+          '<input type="text" id="uvit-buscar-e" placeholder="Buscar: ferretería, papelería, pizza…" autocomplete="off">' +
+          '<div class="uvit-e-chips"></div>' +
           '<div class="uvit-emojis"></div>' +
           '<label>Color del negocio</label>' +
           '<div class="uvit-colores">' + COLORES.map(function (c) {
@@ -452,19 +533,45 @@
       let emoji = v.emoji;
       let color = v.color || COLOR_POR_DEFECTO;
       const zonaE = cont.querySelector('.uvit-emojis');
+      const zonaChips = cont.querySelector('.uvit-e-chips');
       const muestra = cont.querySelector('#uvit-muestra');
+      let categoria = -1;   // -1 = todas
+
+      /* Con casi trescientos emojis, una sola lista es un pajar. Los chips
+         llevan de un salto al oficio —ferretería, papelería, panadería— sin
+         obligar a escribir nada, y el buscador sigue ahí para quien prefiera
+         teclear. Buscar manda sobre el chip: si escribes, se busca en TODO. */
+      zonaChips.innerHTML =
+        '<button type="button" class="uvit-chip on" data-cat="-1">Todas</button>' +
+        CATALOGO.map(function (g, i) {
+          return '<button type="button" class="uvit-chip" data-cat="' + i + '">' + esc(g[0]) + '</button>';
+        }).join('');
+      zonaChips.querySelectorAll('.uvit-chip').forEach(function (c) {
+        c.addEventListener('click', function () {
+          zonaChips.querySelectorAll('.uvit-chip').forEach(function (x) { x.classList.remove('on'); });
+          c.classList.add('on');
+          categoria = parseInt(c.getAttribute('data-cat'), 10);
+          cont.querySelector('#uvit-buscar-e').value = '';
+          pintarEmojis('');
+          zonaE.scrollTop = 0;
+        });
+      });
 
       function pintarEmojis(filtro) {
         const q = sinAcentos(filtro || '').trim();
         let html = '';
-        CATALOGO.forEach(function (grupo) {
+        CATALOGO.forEach(function (grupo, i) {
+          // El chip solo manda cuando no se está buscando: quien escribe
+          // "llave" la quiere aunque esté mirando la categoría de comida.
+          if (!q && categoria !== -1 && i !== categoria) return;
           const hallados = grupo[1].filter(function (e) {
             return !q || sinAcentos(e[1]).indexOf(q) !== -1;
           });
           if (!hallados.length) return;
           // Buscando no se agrupa: quien escribe "pizza" quiere el resultado,
-          // no un índice de categorías con una sola cosa dentro.
-          if (!q) html += '<div class="uvit-e-grupo">' + esc(grupo[0]) + '</div>';
+          // no un índice de categorías con una sola cosa dentro. Con una
+          // categoría elegida tampoco: el chip ya dice cuál es.
+          if (!q && categoria === -1) html += '<div class="uvit-e-grupo">' + esc(grupo[0]) + '</div>';
           html += hallados.map(function (e) {
             return '<button type="button" class="uvit-e' + (e[0] === emoji ? ' on' : '') +
                    '" data-e="' + e[0] + '" title="' + esc(e[1].split(' ')[0]) + '">' + e[0] + '</button>';
