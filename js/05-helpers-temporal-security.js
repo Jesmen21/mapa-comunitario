@@ -238,7 +238,8 @@
              t.indexOf('peticion')!==-1 ||
              // La vitrina (js/13i) se pinta sola, en su capa: para el resto
              // de la maquinaria de reportes es una fila interna.
-             t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1;
+             t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 ||
+             t.indexOf('logo urbis')!==-1;
   }
   window.esFilaMetaUrbis = esFilaMetaUrbis;
 

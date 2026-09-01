@@ -322,3 +322,48 @@ body.urbis-zoom-fade-markers .urbis-vitrina-root{ opacity:.48 !important; }
 }
 /* Con dieciséis categorías la lista respira un poco más de alto. */
 .uvit-emojis{ max-height:240px; }
+
+/* ── Logo del negocio ─────────────────────────────────────────────────────
+   Cuando hay logo, sustituye al emoji en la gota, en la ficha y en el
+   directorio. La forma no cambia: el aro de color y la gota siguen siendo
+   los mismos, que es lo que dice "esto es la Vitrina de URBIS" por mucho que
+   el logo sea de quien sea. */
+.uvit-cara-logo{
+  position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px);
+  transform:rotate(45deg);           /* desgira, como la cara del emoji */
+  border-radius:50%; object-fit:cover;
+  background:#fff;
+}
+.uvit-emoji-logo{ object-fit:cover; padding:0; background:#fff; }
+.uvit-dir-logo{ object-fit:cover; padding:0; background:#fff; }
+
+.uvit-logo-caja{
+  display:flex; align-items:flex-start; gap:12px; margin-bottom:4px; padding:11px;
+  border-radius:14px;
+  background:rgba(56,189,248,.06); border:1px solid rgba(56,189,248,.22);
+}
+.uvit-logo-vista{
+  flex:0 0 auto; width:66px; height:66px; border-radius:18px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background:#fff; border:2px dashed rgba(56,189,248,.45);
+  font-size:2rem; -webkit-text-fill-color:initial;
+}
+/* Con logo puesto, el borde deja de ser punteado: ya no invita a subir nada,
+   informa de lo que hay. */
+.uvit-logo-vista.uvit-logo-hay{ border-style:solid; border-color:var(--uvit-color,#FBBF24); }
+.uvit-logo-vista img{ width:100%; height:100%; object-fit:cover; }
+.uvit-logo-acc{ flex:1; min-width:0; }
+.uvit-logo-acc .ucfg-foto{ margin:0 0 6px; padding:9px 10px; font-size:.76rem; }
+.uvit-logo-acc small{ display:block; font-size:.7rem; line-height:1.4; }
+#uvit-logo-quitar{
+  margin-bottom:6px; padding:7px 12px; border:0; border-radius:10px; cursor:pointer;
+  background:rgba(239,68,68,.12); color:#B91C1C !important; -webkit-text-fill-color:#B91C1C;
+  font-size:.73rem; font-weight:800;
+}
+
+/* Veinticuatro colores ya no son una fila: se guardan en una cuadrícula que
+   crece sola y no obliga a contar cuántos caben. */
+.uvit-colores{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr));
+  gap:8px; justify-items:center;
+}

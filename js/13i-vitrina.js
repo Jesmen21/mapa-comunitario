@@ -226,11 +226,24 @@
   // Colores con que un negocio puede firmar su gota y su ficha. Nombres en
   // castellano porque quien elige no está leyendo código.
   const COLORES = [
-    ['#FBBF24','Dorado'], ['#38BDF8','Celeste'], ['#F472B6','Rosa'],
-    ['#34D399','Verde'],  ['#A78BFA','Morado'],  ['#FB923C','Naranja'],
-    ['#F87171','Rojo'],   ['#22D3EE','Turquesa']
+    ['#FBBF24','Dorado'],    ['#F59E0B','Ámbar'],     ['#FB923C','Naranja'],
+    ['#F87171','Rojo'],      ['#DC2626','Rojo intenso'], ['#E11D48','Carmesí'],
+    ['#F472B6','Rosa'],      ['#EC4899','Fucsia'],    ['#A78BFA','Morado'],
+    ['#7C3AED','Violeta'],   ['#6366F1','Índigo'],    ['#3B82F6','Azul'],
+    ['#38BDF8','Celeste'],   ['#0EA5E9','Celeste fuerte'], ['#22D3EE','Turquesa'],
+    ['#14B8A6','Verde azulado'], ['#34D399','Verde'], ['#16A34A','Verde bosque'],
+    ['#84CC16','Lima'],      ['#A16207','Café'],      ['#78716C','Piedra'],
+    ['#475569','Pizarra'],   ['#0F172A','Noche'],     ['#B91C1C','Vino']
   ];
   const COLOR_POR_DEFECTO = '#FBBF24';
+
+  /* El logo del negocio. Va en SU PROPIA fila, no en el sobre del negocio:
+     una imagen ocupa casi una celda entera del Sheet y ahogaría la ficha —
+     el mismo motivo por el que cada producto del portafolio tiene la suya.
+     El tipo dice "Logo URBIS" completo y no solo "logo" a propósito: buscar
+     "logo" a secas también encontraría un futuro "Diálogo ciudadano". */
+  const TIPO_LOGO = '🛍️ Logo URBIS';
+  const LADO_LOGO = 160;   // píxeles: la gota mide 44, esto sobra hasta en pantallas densas
 
   function esc(t) {
     return String(t == null ? '' : t)
@@ -262,7 +275,8 @@
       // Los negocios creados antes de que existieran los colores no tienen
       // ninguno guardado: heredan el dorado de siempre en vez de salir grises.
       color: String(o.color || COLOR_POR_DEFECTO),
-      estado: String(o.estado || 'borrador'), fila: p
+      estado: String(o.estado || 'borrador'), fila: p,
+      logo: (function () { const l = logoDe(String(o.id || '')); return l ? l.url : ''; })()
     };
   }
   function sobreDe(n) {
@@ -276,6 +290,60 @@
     const partes = String((p && p.descripcion) || '').split('~~~');
     return { uid: partes[0] || '', nombre: partes[1] || '', precio: partes[2] || '',
              foto: partes[3] || '', negocio: String((p && p.lat) || ''), fila: p };
+  }
+
+  /* Logo: se busca por el id del negocio, que viaja en `lat`. Si no hay,
+     devuelve vacío y manda el emoji — nunca una gota en blanco. */
+  function logoDe(id) {
+    const bolsa = Array.isArray(window.urbisVitrinaLogos) ? window.urbisVitrinaLogos : [];
+    const fila = bolsa.filter(function (p) { return String(p.lat) === id; }).pop();
+    return fila ? { url: String(fila.descripcion || ''), fila: fila } : null;
+  }
+  window.urbisLogoVitrina = function (id) { const l = logoDe(id); return l ? l.url : ''; };
+
+  /* Compresor propio, no el de las evidencias: un logo tiene otras reglas.
+     Va CUADRADO, recortado por el centro, porque la gota es redonda y una
+     imagen alargada se vería mutilada. Se guarda en PNG para conservar el
+     fondo transparente —la mitad de los logos lo tienen— y solo si el PNG
+     sale demasiado pesado se pasa a JPEG sobre blanco, que pesa mucho menos
+     pero pierde la transparencia. */
+  function comprimirLogo(archivo) {
+    return new Promise(function (resolve, reject) {
+      const lector = new FileReader();
+      lector.onerror = function () { reject(new Error('No se pudo leer la imagen.')); };
+      lector.onload = function () {
+        const img = new Image();
+        img.onerror = function () { reject(new Error('Ese archivo no parece una imagen.')); };
+        img.onload = function () {
+          try {
+            const lienzo = document.createElement('canvas');
+            lienzo.width = lienzo.height = LADO_LOGO;
+            const g = lienzo.getContext('2d');
+            const lado = Math.min(img.width, img.height);
+            g.drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado,
+                        0, 0, LADO_LOGO, LADO_LOGO);
+            let url = lienzo.toDataURL('image/png');
+            if (url.length > MAX_CELDA) {
+              const g2 = lienzo.getContext('2d');
+              const guardado = g2.getImageData(0, 0, LADO_LOGO, LADO_LOGO);
+              g2.globalCompositeOperation = 'destination-over';
+              g2.fillStyle = '#ffffff';
+              g2.fillRect(0, 0, LADO_LOGO, LADO_LOGO);
+              g2.globalCompositeOperation = 'source-over';
+              url = lienzo.toDataURL('image/jpeg', 0.82);
+              try { g2.putImageData(guardado, 0, 0); } catch (e) {}
+            }
+            if (url.length > MAX_CELDA) {
+              reject(new Error('El logo pesa demasiado. Prueba con una imagen más sencilla.'));
+              return;
+            }
+            resolve(url);
+          } catch (e) { reject(new Error('No se pudo procesar la imagen.')); }
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(archivo);
+    });
   }
 
   function negocios() {
@@ -321,10 +389,15 @@
      tiene por qué conocerlos. */
   function iconoDe(n) {
     const c = /^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO;
+    // Con logo, la gota lleva la marca del negocio; sin logo, su emoji. El
+    // aro de color y la forma no cambian: es lo que la hace reconocible como
+    // una gota de la Vitrina y no otro pin cualquiera del mapa.
+    const cara = n.logo
+      ? '<img class="uvit-cara uvit-cara-logo" src="' + esc(n.logo) + '" alt="">'
+      : '<span class="uvit-cara">' + esc(n.emoji || '🛍️') + '</span>';
     return L.divIcon({
       className: 'urbis-vitrina-root',
-      html: '<div class="uvit-pin" style="--uvit-color:' + c + '">' +
-            '<span class="uvit-cara">' + esc(n.emoji || '🛍️') + '</span>' +
+      html: '<div class="uvit-pin" style="--uvit-color:' + c + '">' + cara +
             '<i class="uvit-brillo">✨</i></div>',
       iconSize: [44, 52], iconAnchor: [22, 50]
     });
@@ -339,7 +412,8 @@
       const lat = parseFloat(String(n.fila.lat).replace(',', '.'));
       const lng = parseFloat(String(n.fila.lng).replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return;
-      const clave = n.id + '@' + lat + ',' + lng + '#' + n.emoji + n.color + n.nombre;
+      const clave = n.id + '@' + lat + ',' + lng + '#' + n.emoji + n.color + n.nombre +
+                    '#' + (n.logo ? n.logo.length : 0);
       vivos[clave] = true;
       if (_pintados[clave]) return;
       try {
@@ -377,7 +451,9 @@
         ' style="--uvit-color:' + (/^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO) + '">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
         '<div class="uvit-sello">✨ Emprendimiento URBIS · verificado</div>' +
-        '<div class="uvit-cabecera"><span class="uvit-emoji">' + esc(n.emoji) + '</span>' +
+        '<div class="uvit-cabecera">' +
+          (n.logo ? '<img class="uvit-emoji uvit-emoji-logo" src="' + esc(n.logo) + '" alt="Logo de ' + esc(n.nombre) + '">'
+                  : '<span class="uvit-emoji">' + esc(n.emoji) + '</span>') +
           '<div><h3>' + esc(n.nombre) + '</h3>' +
           (n.lema ? '<p class="uvit-lema">' + esc(n.lema) + '</p>' : '') + '</div></div>' +
         (n.descripcion ? '<p class="uvit-desc">' + esc(n.descripcion) + '</p>' : '') +
@@ -458,9 +534,12 @@
               await window.urbisDBDelete('descripcion', n.fila.descripcion);
               // El portafolio cuelga del id del negocio: se va con él, para no
               // dejar fotos huérfanas ocupando hoja.
+              // Portafolio Y logo cuelgan del id del negocio: un solo borrado
+              // por `lat` se lleva los dos y no deja imágenes huérfanas.
               try { await window.urbisDBDelete('lat', n.id); } catch (e) {}
               window.urbisVitrina = (window.urbisVitrina || []).filter(function (x) { return x !== n.fila; });
               window.urbisVitrinaItems = (window.urbisVitrinaItems || []).filter(function (x) { return String(x.lat) !== n.id; });
+              window.urbisVitrinaLogos = (window.urbisVitrinaLogos || []).filter(function (x) { return String(x.lat) !== n.id; });
               render(); listado();
             } catch (e) { b.disabled = false; b.textContent = 'Eliminar'; alert('No se pudo: ' + (e.message || e)); }
             return;
@@ -489,6 +568,19 @@
           '<input type="text" id="uvit-buscar-e" placeholder="Buscar: ferretería, papelería, pizza…" autocomplete="off">' +
           '<div class="uvit-e-chips"></div>' +
           '<div class="uvit-emojis"></div>' +
+          (editando
+            ? '<label>Logo del negocio</label>' +
+              '<div class="uvit-logo-caja">' +
+                '<div class="uvit-logo-vista" id="uvit-logo-vista"></div>' +
+                '<div class="uvit-logo-acc">' +
+                  '<label class="ucfg-foto"><span id="uvit-logo-txt">🖼️ Subir logo (PNG o JPG)</span>' +
+                  '<input type="file" id="uvit-logo-file" accept="image/png,image/jpeg,image/webp"></label>' +
+                  '<button type="button" id="uvit-logo-quitar" hidden>Quitar logo</button>' +
+                  '<small>Si subes un logo, será la cara del negocio en el mapa. ' +
+                  'Sin logo se usa el emoji. Se recorta cuadrado, así que céntralo.</small>' +
+                '</div>' +
+              '</div>'
+            : '') +
           '<label>Color del negocio</label>' +
           '<div class="uvit-colores">' + COLORES.map(function (c) {
             return '<button type="button" class="uvit-c' + (c[0] === (v.color || COLOR_POR_DEFECTO) ? ' on' : '') +
@@ -668,6 +760,67 @@
         }
       });
 
+      // ── Logo (solo al editar: la fila del logo cuelga del negocio) ─────
+      if (editando) {
+        const vista = cont.querySelector('#uvit-logo-vista');
+        const quitar = cont.querySelector('#uvit-logo-quitar');
+        function pintarLogo() {
+          const l = logoDe(v.id);
+          vista.innerHTML = l
+            ? '<img src="' + esc(l.url) + '" alt="Logo actual">'
+            : '<span>' + esc(emoji) + '</span>';
+          vista.classList.toggle('uvit-logo-hay', !!l);
+          quitar.hidden = !l;
+        }
+        pintarLogo();
+        const fileLogo = cont.querySelector('#uvit-logo-file');
+        fileLogo.addEventListener('change', async function () {
+          const f = this.files && this.files[0];
+          if (!f) return;
+          const err = cont.querySelector('.ucfg-error');
+          const txt = cont.querySelector('#uvit-logo-txt');
+          txt.textContent = 'Procesando…';
+          try {
+            const url = await comprimirLogo(f);
+            // Un negocio tiene UN logo: si ya había, se reemplaza en vez de
+            // acumular filas que nadie volvería a mirar.
+            const previo = logoDe(v.id);
+            if (previo) {
+              await window.urbisDBUpdate('descripcion', previo.fila.descripcion, { descripcion: url });
+              previo.fila.descripcion = url;
+            } else {
+              await window.urbisGuardarFila({ tipo: TIPO_LOGO, lat: v.id, lng: '0',
+                                              descripcion: url, fecha: new Date().toISOString() });
+              (window.urbisVitrinaLogos = window.urbisVitrinaLogos || [])
+                .push({ tipo: TIPO_LOGO, lat: v.id, lng: '0', descripcion: url });
+            }
+            err.hidden = true;
+            txt.textContent = '🖼️ Cambiar logo';
+            pintarLogo();
+            render();
+          } catch (e) {
+            txt.textContent = '🖼️ Subir logo (PNG o JPG)';
+            err.textContent = (e && e.message) || 'No se pudo subir el logo.';
+            err.hidden = false;
+          }
+          this.value = '';
+        });
+        quitar.addEventListener('click', async function () {
+          const l = logoDe(v.id);
+          if (!l || !confirm('¿Quitar el logo? La gota volverá a mostrar el emoji.')) return;
+          quitar.disabled = true;
+          try {
+            await window.urbisDBDelete('descripcion', l.fila.descripcion);
+            window.urbisVitrinaLogos = (window.urbisVitrinaLogos || [])
+              .filter(function (x) { return x !== l.fila; });
+            cont.querySelector('#uvit-logo-txt').textContent = '🖼️ Subir logo (PNG o JPG)';
+            pintarLogo();
+            render();
+          } catch (e) { alert('No se pudo quitar: ' + (e.message || e)); }
+          quitar.disabled = false;
+        });
+      }
+
       // ── Portafolio (solo al editar: primero existe el negocio) ─────────
       if (editando) {
         const zona = cont.querySelector('#uvit-items');
@@ -808,7 +961,8 @@
         const wa = linkWhatsApp(n.whatsapp || n.telefono, n.nombre);
         const c = /^#[0-9A-Fa-f]{6}$/.test(n.color) ? n.color : COLOR_POR_DEFECTO;
         return '<div class="uvit-dir-card" data-id="' + esc(n.id) + '" style="--uvit-color:' + c + '">' +
-          '<span class="uvit-dir-emoji">' + esc(n.emoji) + '</span>' +
+          (n.logo ? '<img class="uvit-dir-emoji uvit-dir-logo" src="' + esc(n.logo) + '" alt="">'
+                  : '<span class="uvit-dir-emoji">' + esc(n.emoji) + '</span>') +
           '<div class="uvit-dir-txt"><b>' + esc(n.nombre) + '</b>' +
           (n.lema ? '<small>' + esc(n.lema) + '</small>' : '') +
           (n.direccion ? '<small class="uvit-dir-lugar">📍 ' + esc(n.direccion) + '</small>' : '') + '</div>' +

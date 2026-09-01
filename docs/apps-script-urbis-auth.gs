@@ -949,7 +949,10 @@ function _esFilaMeta_(tipo) {
    abierto— dejaría a cualquiera inventarse un negocio con el aval de URBIS. */
 function _esFilaVitrina_(tipo) {
   var t = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return t.indexOf('emprendimiento') !== -1 || t.indexOf('portafolio') !== -1;
+  // "logo urbis" entero: "logo" a secas también casaría con un futuro
+  // "Diálogo ciudadano" y le pondría candado a algo que no es de la vitrina.
+  return t.indexOf('emprendimiento') !== -1 || t.indexOf('portafolio') !== -1 ||
+         t.indexOf('logo urbis') !== -1;
 }
 
 function _esFilaTextoDeAlguien_(tipo) {
