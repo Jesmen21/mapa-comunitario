@@ -892,7 +892,10 @@
     const mios = (Array.isArray(globalData) ? globalData : []).filter(p => {
       try{
         if(!esAutorDelReporte(p)) return false;
-        if(p.tipo === '🎪 Eventos Comunitarios') return false;
+        // Por TEXTO, no por la cadena con emoji: ver js/09 esEventoComunitario.
+        if(typeof window.urbisEsEventoComunitario === 'function'
+             ? window.urbisEsEventoComunitario(p)
+             : p.tipo === '🎪 Eventos Comunitarios') return false;
         // urbisEsCategoriaProCity (js/20) es la lista COMPLETA y autoritativa
         // de las 14 dimensiones de Pro City; urbisEsCategoriaAutomapeo (línea
         // arriba, más vieja) le faltan 4 categorías — se consultan ambas por
@@ -992,7 +995,12 @@
     if(!Array.isArray(globalData) || !globalData.length){ try{ cargarPuntos(); }catch(e){} }
 
     const mios = (Array.isArray(globalData) ? globalData : []).filter(p => {
-      try{ return p.tipo === '🎪 Eventos Comunitarios' && esAutorDelReporte(p); }catch(e){ return false; }
+      try{
+        const esEvento = (typeof window.urbisEsEventoComunitario === 'function')
+          ? window.urbisEsEventoComunitario(p)
+          : p.tipo === '🎪 Eventos Comunitarios';
+        return esEvento && esAutorDelReporte(p);
+      }catch(e){ return false; }
     });
     mios.sort((a,b) => obtenerMetaTemporal(b).creado.getTime() - obtenerMetaTemporal(a).creado.getTime());
 

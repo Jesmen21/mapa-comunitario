@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v592-foto-doble';
+const URBIS_CACHE = 'urbis-v593-eventos-robustos';
 const URBIS_ASSETS = [
   './',
   './index.html',

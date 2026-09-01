@@ -105,9 +105,26 @@
           .replace(/'/g, '&#39;');
   }
 
-  window.abrirEventoDesdeCard = function(data) {
+  /* La tarjeta de la agenda llevaba el evento ENTERO metido en su `onclick`,
+     como JSON codificado. Dos problemas, y el primero rompía de verdad:
+
+     · `encodeURIComponent` NO escapa el apóstrofe. El atributo va entre
+       comillas dobles y la cadena de JavaScript entre simples, así que un
+       evento en "La Casa'e Toño" cerraba la cadena antes de tiempo y dejaba
+       la tarjeta muerta — sin ningún error visible, solo un clic que no hace
+       nada. En español el apóstrofe está por todas partes en los nombres de
+       negocios.
+     · Un evento con foto arrastraba su base64 entero dentro de un atributo
+       HTML, decenas de miles de caracteres por tarjeta.
+
+     Ahora la tarjeta lleva solo su POSICIÓN en la lista que se acaba de
+     pintar. Nada que escapar y nada que pese. */
+  let _eventosPintados = [];
+
+  window.abrirEventoDesdeCard = function(indice) {
       try {
-          const p = JSON.parse(decodeURIComponent(data));
+          const p = _eventosPintados[Number(indice)];
+          if(!p) return;
           map.setView([Number(p.lat), Number(p.lng)], 17);
           setSidebarTab('alerts');
           mostrarDetalles(p);
@@ -163,8 +180,22 @@
       }
   };
 
+  /* ¿Es un evento comunitario? Se compara el TEXTO sin emoji ni tildes, no la
+     cadena entera. El emoji del tipo viaja hasta una hoja de cálculo y vuelve;
+     el resto de la aplicación ya aprendió a no fiarse de él (js/12 lo dice con
+     todas las letras: "el emoji se corrompe a mojibake al guardarse"), pero
+     estas tres comparaciones se quedaron con el `===`. Si un solo evento
+     volviera con el emoji roto, desaparecía de la agenda, de "Mis eventos" y
+     del contador, sin ningún error a la vista. */
+  function esEventoComunitario(p) {
+      const t = String((p && p.tipo) || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return t.indexOf('eventos comunitarios') !== -1;
+  }
+  window.urbisEsEventoComunitario = esEventoComunitario;
+
   function datosEventosUrbis() {
-      return (globalData || []).filter(p => p.tipo === '🎪 Eventos Comunitarios');
+      return (globalData || []).filter(esEventoComunitario);
   }
 
   // Los eventos se guardan en DOS formatos distintos y este lector solo
@@ -343,13 +374,13 @@
           cont.innerHTML = '<div class="event-empty">Aún no hay eventos registrados. Crea el primero tocando una cancha, parque, plaza o espacio público del mapa.</div>';
           return;
       }
-      cont.innerHTML = eventos.slice(0, 30).map(p => {
+      _eventosPintados = eventos.slice(0, 30);
+      cont.innerHTML = _eventosPintados.map((p, i) => {
           const ev = parseEvento(p);
           const icon = iconoEvento(ev.tipo);
-          const payload = encodeURIComponent(JSON.stringify(p));
           const lat = Number(p.lat);
           const lng = Number(p.lng);
-          return `<div class="event-card" role="button" tabindex="0" onclick="abrirEventoDesdeCard('${payload}')">
+          return `<div class="event-card" role="button" tabindex="0" onclick="abrirEventoDesdeCard(${i})">
               <b>${escaparHTML(icon)} ${escaparHTML(ev.titulo)}</b>
               <small>${escaparHTML(ev.tipo)} · ${escaparHTML(ev.fecha)} ${escaparHTML(ev.hora)} · ${escaparHTML(ev.lugar)}</small>
               <span class="event-chip">${escaparHTML(ev.estado)}</span><span class="event-chip">⏱️ ${escaparHTML(ev.publicado)}</span><span class="event-chip">${ev.archivado ? '📦 Archivado' : '🟢 Visible hasta ' + escaparHTML(formatearFechaHora(ev.expira))}</span><span class="event-chip">📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}</span>
