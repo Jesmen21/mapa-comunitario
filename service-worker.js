@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v588-ofertas-circulo';
+const URBIS_CACHE = 'urbis-v589-capas-y-conflicto';
 const URBIS_ASSETS = [
   './',
   './index.html',

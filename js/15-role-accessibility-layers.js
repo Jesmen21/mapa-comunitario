@@ -1,10 +1,32 @@
 // ==========================================
 // URBIS V8 · Capas por rol + modo funcionario simple + bienestar opcional
 // ==========================================
+/* Capas que un ciudadano ve al ENTRAR, sin tocar nada.
+   ─────────────────────────────────────────────────────────────────────────
+   Esta lista se quedó corta y el efecto era grave: quien publicaba un evento
+   comunitario NO lo veía aparecer en el mapa. Salía en la pestaña de Eventos
+   —que lee los datos directamente— pero su capa nunca se montaba, así que en
+   el mapa no había ningún pin. Lo mismo con los hechos del conflicto armado,
+   los desastres y los riesgos del terreno: cuatro categorías que se fueron
+   agregando después de que esta lista se escribiera, y que nadie añadió aquí.
+
+   Se nota de dónde venía el problema: los renderizadores FORZADOS de los
+   Juegos URBIS (js/47) y de las alertas nacionales (js/50) existen justamente
+   porque sus marcadores desaparecían — se rodeó el síntoma con una capa
+   propia siempre montada, sin ver que la causa era esta lista.
+
+   Regla para mantenerla: aquí va todo lo que un VECINO reporta y otro vecino
+   necesita ver. Fuera quedan las capas de análisis territorial (Vivienda,
+   Comercio, Matriz de Usos…), que son de Pro City y sí deben empezar
+   apagadas para no tapar el mapa ciudadano. */
 const URBIS_ALERT_LAYER_KEYS = [
   '🚨 Alertas y Riesgos Urbanos',
   '🚗 Reportes de Tráfico',
-  'Salud y Emergencias'
+  'Salud y Emergencias',
+  '🎪 Eventos Comunitarios',
+  '🛡️ Seguridad Nacional y Conflicto',
+  '🌪️ Desastres Naturales y Clima',
+  '⛰️ Riesgos del Terreno'
 ];
 
 function esCapaAlertaUrbis(nombre) {

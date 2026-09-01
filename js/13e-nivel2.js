@@ -59,6 +59,14 @@
   window.urbisNivelCuenta = function () {
     const s = sesion();
     if (!s || !s.active) return 0;
+    /* El administrador y quien tenga permisos delegados no se verifican ante
+       sí mismos: son precisamente quienes responden por lo que se publica.
+       Pedirle la cédula a la cuenta que modera el mapa no protege a nadie —
+       solo le estorba para hacer su trabajo. */
+    try {
+      if (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin()) return 2;
+      if (typeof window.urbisTieneAlgunPermiso === 'function' && window.urbisTieneAlgunPermiso()) return 2;
+    } catch (e) {}
     if (String(s.nivel_cuenta || '').toLowerCase() === 'verificado') return 2;
     const tieneNombre = limpio(s.nombres).length >= 2 && limpio(s.apellidos).length >= 2;
     const tieneDoc = soloDigitos(s.cedula_numero || s.cedula).length >= 5;

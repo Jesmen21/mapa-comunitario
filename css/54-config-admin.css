@@ -23,6 +23,7 @@
 @keyframes ucfgSube{ from{ transform:translateY(26px); opacity:.4 } to{ transform:translateY(0); opacity:1 } }
 
 .urbis-cfg{
+  background-color:#F2FAFF;   /* base sólida bajo el degradado (ver .urbis-n2) */
   position:relative;
   width:100%; max-width:520px; box-sizing:border-box;
   max-height:88vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
@@ -332,4 +333,58 @@
   padding:16px 12px; text-align:center; font-size:.78rem; line-height:1.45;
   background:rgba(56,189,248,.07); border-radius:12px;
   color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+
+/* ── Verificar la cuenta para subir una foto (js/13e) ──────────────────────
+   Misma fuga que arriba, en la pantalla peor posible para tenerla: la que
+   pide nombres, cédula y celular. Los dos campos de documento salían en
+   pizarra negra y el párrafo que explica POR QUÉ se pide todo eso era casi
+   invisible — justo el texto que decide si alguien confía o cierra.
+
+   Se recoloca además en celeste: era la última pantalla que quedaba con el
+   verde menta del tema viejo. */
+.urbis-n2{
+  /* Color sólido DEBAJO del degradado: un degradado no aporta
+     `background-color`, así que sin esto la tarjeta es transparente para
+     cualquiera que mire su color de fondo — y lo que hay detrás es el velo
+     oscuro del overlay. */
+  background-color:#F2FAFF !important;
+  background:linear-gradient(180deg,#F2FAFF 0%,#E6F4FE 100%) !important;
+  border:1.5px solid rgba(56,189,248,.38) !important; border-bottom:0 !important;
+}
+.urbis-n2 h3{
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E !important;
+  text-shadow:none !important; border-bottom:0 !important; padding-bottom:0 !important;
+}
+.urbis-n2 p, .urbis-n2 small, .urbis-n2 span, .urbis-n2 label{
+  color:#456B87 !important; -webkit-text-fill-color:#456B87 !important;
+}
+.urbis-n2 .n2-porque{ font-weight:600; }
+.urbis-n2 .n2-publico{
+  background:rgba(56,189,248,.12) !important;
+  box-shadow:inset 0 0 0 1px rgba(56,189,248,.45) !important;
+}
+.urbis-n2 .n2-publico, .urbis-n2 .n2-publico b{
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E !important;
+}
+.urbis-n2 input, .urbis-n2 select, .urbis-n2 textarea{
+  background:#fff !important;
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E !important;
+  border:1.5px solid rgba(56,189,248,.42) !important;
+  box-shadow:none !important;
+}
+.urbis-n2 input::placeholder{
+  color:rgba(69,107,135,.5) !important; -webkit-text-fill-color:rgba(69,107,135,.5) !important;
+}
+.urbis-n2 input:focus, .urbis-n2 select:focus{
+  border-color:#0EA5E9 !important;
+  box-shadow:0 0 0 3px rgba(14,165,233,.18) !important; outline:none !important;
+}
+.urbis-n2 .n2-enviar{
+  background:linear-gradient(135deg,#0EA5E9,#7DD3FC) !important;
+  color:#03293F !important; -webkit-text-fill-color:#03293F !important;
+  box-shadow:0 10px 24px rgba(14,165,233,.3) !important;
+}
+.urbis-n2 .n2-cancelar{
+  color:#456B87 !important; -webkit-text-fill-color:#456B87 !important;
 }

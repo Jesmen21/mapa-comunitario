@@ -285,9 +285,9 @@
       `</div>`;
       marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,68], iconAnchor:[34,34], popupAnchor:[0,-34] }), zIndexOffset: 2000 });
     } else if (iconoWaze) {
-      marker = L.marker([lat, lng], { icon: marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d) });
+      marker = L.marker([lat, lng], { icon: marcarConflicto(marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d), p, d) });
     } else {
-      marker = L.marker([lat, lng], { icon: marcarLuto(crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]), p, d) });
+      marker = L.marker([lat, lng], { icon: marcarConflicto(marcarLuto(crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]), p, d), p, d) });
     }
     // Un reporte con fallecidos tiene que verse ANTES de abrirlo: el marcador
     // late en rojo. Si hay que tocarlo para enterarse, en un mapa con veinte
@@ -469,6 +469,30 @@
       const o = icono && icono.options;
       if(!o) return icono;
       o.className = (o.className || '') + ' urbis-luto';
+    } catch(e){}
+    return icono;
+  }
+
+  /* Un hecho del conflicto armado no es un reporte más: es lo que hace que
+     alguien decida no salir de casa hoy. En un mapa lleno de huecos y
+     luminarias tiene que verse ANTES que lo demás, y sin tener que abrirlo.
+
+     Late en rojo mientras esté vigente. Cuando caduca deja de latir pero
+     sigue marcado: el hecho ocurrió aunque la alerta ya no aplique — apagarlo
+     del todo borraría la memoria del barrio, que es justo lo que URBIS
+     guarda. */
+  function marcarConflicto(icono, p, d) {
+    try {
+      if(typeof window.urbisEsReporteDeConflicto !== 'function') return icono;
+      if(!window.urbisEsReporteDeConflicto(p.tipo, d[0])) return icono;
+      const o = icono && icono.options;
+      if(!o) return icono;
+      let clase = ' urbis-conflicto';
+      try {
+        const meta = (typeof obtenerMetaTemporal === 'function') ? obtenerMetaTemporal(p) : null;
+        if(meta && meta.archivado) clase += ' urbis-conflicto-pasado';
+      } catch(e){}
+      o.className = (o.className || '') + clase;
     } catch(e){}
     return icono;
   }

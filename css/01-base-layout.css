@@ -1328,3 +1328,43 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
   .urbis-luto::before{ animation: none; opacity: .8; }
   .urbis-luto::after{ animation: none; opacity: .55; }
 }
+
+/* ══ HECHOS DEL CONFLICTO ARMADO ═══════════════════════════════════════════
+   Un atentado, un combate, un retén ilegal: no es un reporte más. Es lo que
+   hace que alguien decida no salir de casa hoy, y en un mapa lleno de huecos
+   y luminarias tiene que verse ANTES que lo demás, sin abrirlo.
+
+   Late en rojo mientras la alerta esté vigente. Al caducar deja de latir pero
+   conserva el aro: el hecho ocurrió aunque ya no aplique — borrarlo del todo
+   borraría la memoria del barrio, que es lo que URBIS guarda. */
+@keyframes urbisConflictoLatido{
+  0%, 100%{ box-shadow:0 0 0 0 rgba(220,38,38,.62), 0 4px 12px rgba(0,0,0,.45); }
+  55%{ box-shadow:0 0 0 13px rgba(220,38,38,0), 0 4px 12px rgba(0,0,0,.45); }
+}
+/* Dos clases y no una: los marcadores traen `animated-marker`, que declara su
+   propia animación en una hoja posterior a esta. Con una sola clase ganaba
+   aquella por llegar después y el latido no se veía nunca. */
+.leaflet-marker-icon.urbis-conflicto{
+  /* `!important` porque css/04 apaga TODA animación de marcador con
+     `.animated-marker{animation:none !important}` por rendimiento. Aquí se
+     hace la excepción a mano: son unos pocos puntos en el mapa, y son
+     justo los que no pueden pasar desapercibidos. */
+  animation:urbisConflictoLatido 1.7s ease-out infinite !important;
+  border-radius:50%;
+  z-index:800 !important;   /* por encima de los reportes corrientes */
+}
+/* El aro va en el hijo pintado y no en el contenedor, para no deformar el
+   icono que ya trae cada categoría. */
+.urbis-conflicto > *{
+  outline:2.5px solid #DC2626;
+  outline-offset:1px;
+  border-radius:inherit;
+}
+.leaflet-marker-icon.urbis-conflicto-pasado{ animation:none !important; opacity:.82; }
+.urbis-conflicto-pasado > *{ outline-color:rgba(220,38,38,.5); }
+
+/* Quien pidió menos movimiento conserva el aro rojo, que es lo que informa;
+   lo que se va es el brinco. */
+@media (prefers-reduced-motion: reduce){
+  .leaflet-marker-icon.urbis-conflicto{ animation:none !important; }
+}
