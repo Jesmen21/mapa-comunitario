@@ -125,9 +125,11 @@
     contradicciones: { n: '02', c: '#8A5D12', m: '#D99A32', t: 'Contradicciones',  d: 'Cambios de postura y posiciones en tensión.' },
     foda:            { n: '03', c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' },
     temas:           { n: '04', c: '#06405A', m: '#0A5678', t: 'Temas de fondo',   d: 'Contexto que no pertenece a una fecha concreta.' },
-    indicadores:     { n: '05', c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' }
+    indicadores:     { n: '05', c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' },
+    extranjera:      { n: '07', c: '#0F6E62', m: '#2AA391', t: 'Participación extranjera', d: 'Hechos documentados donde interviene un actor de fuera.' }
   };
   var ICONOS = {
+    extranjera:      '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>',
     timeline:        '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/>',
     contradicciones: '<path d="M8 4v11"/><path d="M5 12l3 3 3-3"/><path d="M16 20V9"/><path d="M13 12l3-3 3 3"/>',
     foda:            '<path d="M4 20V10M10 20V4M16 20v-7M22 20h-2"/><path d="M2 20h20"/>',
@@ -187,6 +189,7 @@
       case 'home': return null;
       case 'hoy': case 'balance':
       case 'timeline': case 'contradicciones': case 'foda': case 'temas': case 'indicadores':
+      case 'extranjera':
         return { v: 'home' };
       case 'lista': return { v: 'timeline' };
       // Desde el muro se entra a un hecho sin pasar por la lista de temas: el
@@ -212,6 +215,7 @@
       case 'foda': return '#/balance-foda';
       case 'temas': return '#/temas-de-fondo';
       case 'indicadores': return '#/indicadores';
+      case 'extranjera': return '#/participacion-extranjera';
       case 'tema': return '#/tema/' + r.i;
       default: return '#/';
     }
@@ -236,6 +240,7 @@
       case 'balance-foda':   return { v: 'foda' };
       case 'temas-de-fondo': return { v: 'temas' };
       case 'indicadores':    return { v: 'indicadores' };
+      case 'participacion-extranjera': return { v: 'extranjera' };
       case 'tema':           return { v: 'tema', i: +partes[1] || 0 };
       default:               return { v: 'home' };
     }
@@ -266,6 +271,7 @@
       case 'foda': return 'Balance FODA';
       case 'temas': return 'Temas de fondo';
       case 'indicadores': return 'Indicadores';
+      case 'extranjera': return 'Participación extranjera';
       case 'tema': return (D.transversales[r.i] || {}).titulo || 'Tema';
       default: return '';
     }
@@ -325,6 +331,7 @@
     if (r.v === 'temas') pintarTemasFondo();
     if (r.v === 'tema') pintarTemaFondo(r.i);
     if (r.v === 'indicadores') pintarIndicadores();
+    if (r.v === 'extranjera') pintarExtranjera();
 
     // La cabecera de cada vista toma el color de su sección
     var vh = document.querySelector('.sp-view.on .sp-vhead');
@@ -388,10 +395,11 @@
 
     pintarAccesoMuro();
 
-    var cuenta = { timeline: nHechos, contradicciones: nCx, foda: nFoda, temas: nTemas,
+    var cuenta = { timeline: nHechos, extranjera: hechosExtranjeros().length,
+                   contradicciones: nCx, foda: nFoda, temas: nTemas,
                    indicadores: null, balance: null };
     var nav = vaciar($('sp-secciones'));
-    ['timeline', 'contradicciones', 'foda', 'temas', 'indicadores', 'balance'].forEach(function (v) {
+    ['timeline', 'extranjera', 'contradicciones', 'foda', 'temas', 'indicadores', 'balance'].forEach(function (v) {
       var s = SECS[v];
       var b = el('button', 'sp-sec'); b.type = 'button';
       pintarSeccion(b, v);
@@ -967,6 +975,110 @@
   }
 
   // ── Contradicciones ───────────────────────────────────────────────────────
+  // ══ PARTICIPACIÓN EXTRANJERA ══════════════════════════════════════════════
+  // Cuenta hechos documentados en los que interviene un actor de fuera del
+  // país. NO calcula un "porcentaje de injerencia": ese número no existe.
+  // Ninguna institución lo publica, no hay metodología aceptada y no hay
+  // denominador posible —¿el total de qué?—. Ponerlo sería inventarlo, y
+  // saldría con el sello de URBIS pareciendo un dato. La regla del módulo ya
+  // lo dice para las gráficas: si un dato no está publicado, se deja en nulo
+  // y se dice, no se estima. Acá se aplica igual.
+  //
+  // Lo que sí se puede hacer, y es lo que hace esta sección: contar hechos
+  // que ya están registrados con su fuente, y dejar que cada quien los lea.
+  var CATS_EXTRANJERAS = ['eeuu', 'israel', 'exterior'];
+
+  function hechosExtranjeros() {
+    return (D.entradas || []).map(function (e, i) { return { e: e, i: i }; })
+      .filter(function (x) { return CATS_EXTRANJERAS.indexOf(x.e.categoria) !== -1; })
+      .sort(function (a, b) { return String(b.e.fecha || '').localeCompare(String(a.e.fecha || '')); });
+  }
+
+  function pintarExtranjera() {
+    var lista = hechosExtranjeros();
+    var total = (D.entradas || []).length;
+    var cont = vaciar($('sp-extlist'));
+
+    // Recuento por actor, calculado de los datos y no escrito a mano: si
+    // mañana la rutina agrega una entrada, el número se mueve solo.
+    var porCat = {};
+    lista.forEach(function (x) { porCat[x.e.categoria] = (porCat[x.e.categoria] || 0) + 1; });
+
+    var resumen = el('div', 'sp-ext-resumen');
+    var enc = el('p', 'sp-ext-cifra');
+    enc.appendChild(el('b', null, String(lista.length)));
+    enc.appendChild(document.createTextNode(
+      ' hecho' + (lista.length === 1 ? '' : 's') + ' documentado' + (lista.length === 1 ? '' : 's') +
+      ', de ' + total + ' registrados en total'));
+    resumen.appendChild(enc);
+
+    var chips = el('div', 'sp-ext-chips');
+    CATS_EXTRANJERAS.forEach(function (k) {
+      if (!porCat[k]) return;
+      var c = cat(k);
+      var ch = el('span', 'sp-ext-chip');
+      ch.style.setProperty('--cc', c.color || '#0F6E62');
+      ch.textContent = (c.icono || '') + ' ' + c.nombre + ' · ' + porCat[k];
+      chips.appendChild(ch);
+    });
+    resumen.appendChild(chips);
+    cont.appendChild(resumen);
+
+    // El aviso NO es decorativo: es lo que impide que este recuento se lea
+    // como una medición de influencia, que es justo lo que no es.
+    var nota = el('div', 'sp-ext-nota');
+    nota.appendChild(el('b', null, 'Qué es y qué no es este número'));
+    var ul = el('ul');
+    [
+      'Es un recuento de hechos que URBIS ya registró CON FUENTE. Cada uno se puede abrir y comprobar.',
+      'NO es un porcentaje de injerencia extranjera. Ese dato no existe: nadie lo publica y no hay forma honesta de calcularlo. Si algún día ves una cifra así en cualquier lado, preguntá de dónde salió el denominador.',
+      'Una denuncia no cuenta acá. Si alguien acusa a un operador extranjero de ofrecerle algo a un político, eso entra a la línea de tiempo como denuncia, con su fuente y su contrapunto, pero no suma a este recuento hasta que esté documentado.',
+      'Que un hecho aparezca no significa que sea indebido. Un tratado, una visita oficial y una presión encubierta son cosas distintas: acá se listan, no se juzgan.'
+    ].forEach(function (t) { ul.appendChild(el('li', null, t)); });
+    nota.appendChild(ul);
+    cont.appendChild(nota);
+
+    if (!lista.length) {
+      cont.appendChild(el('p', 'sp-h-meta', 'Todavía no hay hechos registrados en estas categorías.'));
+      return;
+    }
+
+    lista.forEach(function (x) {
+      var c = cat(x.e.categoria);
+      var b = el('button', 'sp-ext-item'); b.type = 'button';
+      b.style.setProperty('--cc', c.color || '#0F6E62');
+      var head = el('div', 'sp-ext-item-head');
+      head.appendChild(el('span', 'sp-ext-item-cat', (c.icono || '') + ' ' + c.nombre));
+      head.appendChild(el('span', 'sp-ext-item-fecha', fechaCorta ? fechaCorta(x.e.fecha) : (x.e.fecha || '')));
+      b.appendChild(head);
+      b.appendChild(el('h3', null, x.e.titulo || ''));
+      // El campo del nombre es `n`, no `t`. Sin esto la ficha mostraba la URL
+      // entera y la lista se volvía ilegible.
+      var f = fuentesDe(x.e);
+      if (f.length) {
+        var nombres = f.map(function (y) {
+          if (y.n) return String(y.n).split(' · ')[0];
+          try { return new URL(y.u).hostname.replace(/^www\./, ''); } catch (er) { return ''; }
+        }).filter(Boolean);
+        // sin repetir: varias fuentes del mismo medio se ven como una
+        nombres = nombres.filter(function (v, i, a) { return a.indexOf(v) === i; });
+        if (nombres.length) {
+          b.appendChild(el('p', 'sp-ext-item-fuente',
+            (nombres.length === 1 ? 'Fuente: ' : 'Fuentes: ') + nombres.join(' · ')));
+        }
+      }
+      // Un hecho disputado no puede verse igual que uno verificado: es
+      // exactamente la diferencia que este recuento pide no confundir.
+      if (x.e.tipoFuente === 'disputado') {
+        b.appendChild(el('p', 'sp-ext-item-contra', '⚖️ Dato disputado entre fuentes'));
+      } else if (x.e.contrapunto) {
+        b.appendChild(el('p', 'sp-ext-item-contra', '⚖️ Tiene contrapunto registrado'));
+      }
+      b.addEventListener('click', function () { ir({ v: 'hecho', i: x.i }); });
+      cont.appendChild(b);
+    });
+  }
+
   function pintarContradicciones() {
     var casos = ((D.contradicciones || {}).casos) || [];
     var cont = vaciar($('sp-cxlist'));

@@ -1219,3 +1219,45 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fg-ficha p{ margin-top:3px; font-size:.8rem; color:var(--ink); line-height:1.5; }
 .sp-fg-ficha b.rep{ color:#8A5D12; }
 .sp-fg-ficha p.rep{ color:#6B5228; }
+
+/* ══ 7. PARTICIPACIÓN EXTRANJERA ═══════════════════════════════════════════
+   Recuento de hechos documentados con actores de fuera. El aviso de qué NO
+   mide va antes de la lista y con peso visual propio: si se leyera como una
+   cifra de influencia, el número haría más daño que bien. */
+.sp-extlist{ display:flex; flex-direction:column; gap:14px }
+
+.sp-ext-resumen{
+  background:var(--sp-tarjeta,#fff); border:1px solid var(--sp-borde,#dbe6ee);
+  border-radius:10px; padding:18px 20px;
+}
+.sp-ext-cifra{ margin:0; font-size:16px; line-height:1.45; color:var(--sp-tinta,#0C3B5E) }
+.sp-ext-cifra b{ font-size:34px; line-height:1; margin-right:8px; font-variant-numeric:tabular-nums }
+.sp-ext-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px }
+.sp-ext-chip{
+  font-size:12.5px; font-weight:600; padding:4px 10px; border-radius:999px;
+  color:var(--cc,#0F6E62); border:1px solid var(--cc,#0F6E62);
+  background:color-mix(in srgb, var(--cc,#0F6E62) 8%, transparent);
+}
+
+.sp-ext-nota{
+  border:1px solid var(--sp-borde,#dbe6ee); border-left:4px solid #0F6E62;
+  border-radius:8px; padding:16px 20px; background:var(--sp-tarjeta,#fff);
+}
+.sp-ext-nota b{ display:block; margin-bottom:8px; color:var(--sp-tinta,#0C3B5E) }
+.sp-ext-nota ul{ margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px }
+.sp-ext-nota li{ font-size:14.5px; line-height:1.5; color:var(--sp-tinta-suave,#456B87) }
+
+.sp-ext-item{
+  display:block; width:100%; text-align:left; cursor:pointer;
+  background:var(--sp-tarjeta,#fff); border:1px solid var(--sp-borde,#dbe6ee);
+  border-left:4px solid var(--cc,#0F6E62); border-radius:8px; padding:14px 18px;
+  font:inherit; color:inherit;
+}
+.sp-ext-item:hover{ border-color:var(--cc,#0F6E62) }
+.sp-ext-item:focus-visible{ outline:2px solid var(--cc,#0F6E62); outline-offset:2px }
+.sp-ext-item-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:6px }
+.sp-ext-item-cat{ font-size:12.5px; font-weight:600; color:var(--cc,#0F6E62) }
+.sp-ext-item-fecha{ font-size:12.5px; color:var(--sp-tinta-suave,#456B87); font-variant-numeric:tabular-nums; white-space:nowrap }
+.sp-ext-item h3{ margin:0 0 6px; font-size:16px; line-height:1.35; color:var(--sp-tinta,#0C3B5E) }
+.sp-ext-item-fuente{ margin:0; font-size:13px; color:var(--sp-tinta-suave,#456B87) }
+.sp-ext-item-contra{ margin:6px 0 0; font-size:13px; color:#8A5D12 }

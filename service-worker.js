@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v603-admin-por-sesion';
+const URBIS_CACHE = 'urbis-v604-participacion-extranjera';
 const URBIS_ASSETS = [
   './',
   './index.html',
