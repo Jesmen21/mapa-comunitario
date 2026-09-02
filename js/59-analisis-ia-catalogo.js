@@ -214,5 +214,46 @@
       { sub:'deportivo',       nombre:'Escenario deportivo',  grupo:'vivienda',     icono:'⚽' },
     ];
 
-  window.AIA_CATALOGO = { TAXONOMIA, GRUPOS, GRUPO_COLOR };
+
+  // ── Catálogo de usos del constructor ────────────────────────────────────
+  // Los 27 usos que la pantalla ofrece para armar un proyecto, con lo que
+  // hace falta para pintarlos y para saber si hay que pedirle una cantidad
+  // al usuario (`contable`, `generico`, `unidad`).
+  //
+  // Lo que NO está acá: `subs`, `competidores`, `complementarios` y
+  // `familia`. Esos cuatro campos son las reglas de puntaje —dicen contra
+  // qué compite cada uso y qué lo acompaña— y viven en el servidor. El
+  // navegador manda el id; el servidor resuelve el resto contra su propia
+  // tabla y no acepta lo que el cliente le diga al respecto.
+  const USOS_PROGRAMA = [
+    { id:'vivienda', nombre:'Vivienda', icono:'🏠', contable:true, unidad:'viviendas' },
+    { id:'comercio', nombre:'Comercio', icono:'🛍️', contable:true, unidad:'locales comerciales' },
+    { id:'oficinas', nombre:'Oficinas', icono:'💼', contable:true, unidad:'oficinas' },
+    { id:'hotel', nombre:'Hotel', icono:'🏨', contable:true, unidad:'habitaciones' },
+    { id:'consultorios', nombre:'Consultorios', icono:'🩺', contable:true, unidad:'consultorios' },
+    { id:'coworking', nombre:'Coworking', icono:'🧑‍💻' },
+    { id:'educacion', nombre:'Educación', icono:'🎓' },
+    { id:'salud', nombre:'Salud', icono:'🚑' },
+    { id:'turismo', nombre:'Turismo', icono:'🧳' },
+    { id:'servicios', nombre:'Servicios', icono:'🚛' },
+    { id:'bar', nombre:'Bar', icono:'🍻' },
+    { id:'cafeteria', nombre:'Cafetería', icono:'☕' },
+    { id:'restaurante', nombre:'Restaurante', icono:'🍽️' },
+    { id:'espacio_publico', nombre:'Espacio Público', icono:'🌳' },
+    { id:'supermercado', nombre:'Supermercado', icono:'🛒' },
+    { id:'gimnasio', nombre:'Gimnasio / Deportivo', icono:'🏋️' },
+    { id:'parqueadero', nombre:'Parqueadero', icono:'🅿️', contable:true, unidad:'cupos de parqueo' },
+    { id:'cajero', nombre:'Cajero bancario', icono:'🏧', contable:true, unidad:'cajeros' },
+    { id:'industria', nombre:'Industria / Bodega', icono:'🏭' },
+    { id:'cultural', nombre:'Cultural', icono:'🎭' },
+    { id:'cuidado', nombre:'Centro de Cuidado', icono:'🧓' },
+    { id:'religioso', nombre:'Religioso / Culto', icono:'⛪' },
+    { id:'gubernamental', nombre:'Gubernamental', icono:'🏛️' },
+    { id:'militar', nombre:'Militar / Policial', icono:'🚓' },
+    { id:'judicial', nombre:'Judicial', icono:'⚖️' },
+    { id:'comercial_indefinido', nombre:'Comercial (por definir)', icono:'🔍🛍️', generico:true },
+    { id:'oficina_indefinida', nombre:'Oficina (por definir)', icono:'🔍💼', generico:true }
+  ];
+
+  window.AIA_CATALOGO = { TAXONOMIA, GRUPOS, GRUPO_COLOR, USOS_PROGRAMA };
 })();

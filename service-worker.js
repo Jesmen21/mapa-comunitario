@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v606-usos-por-id';
+const URBIS_CACHE = 'urbis-v607-motor-fuera-del-navegador';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const URBIS_ASSETS = [
   './assets/data/alertas-urbis.json',
   './css/60-analisis-ia.css',
   './js/59-analisis-ia-catalogo.js',
-  './js/60-analisis-ia-motor.js',
+  './js/67-analisis-cliente.js',
   './js/61-analisis-ia-datos.js',
   './js/62-analisis-ia-app.js',
   './js/63-analisis-ia-informe.js',
