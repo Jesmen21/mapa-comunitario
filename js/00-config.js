@@ -21,6 +21,19 @@ window.URBIS_CONFIG = {
   // (ver docs/apps-script-urbis-auth.gs). El nombre de usuario sí puede estar
   // aquí: un usuario no es un secreto.
   ADMIN_USER: 'urbisadmin',
+
+  // Servidor de análisis de URBIS para Empresas (fases 02-04).
+  // API es un interruptor: apunta a donde corra el servidor hoy. Si se muda,
+  // se cambia el CNAME del dominio y esto no se toca.
+  // REMOTO en false vuelve todo al navegador, útil para depurar sin red.
+  // La LICENCIA no va acá: este archivo es público y una licencia escrita en
+  // él la tendría cualquiera. Cada cliente pega la suya en su navegador
+  // (localStorage 'urbis_licencia_analisis').
+  ANALISIS: {
+    API: 'https://api.urbispro.city',
+    REMOTO: true,
+    ESPERA_MS: 70000
+  },
   DEFAULT_CENTER: [7.8891, -72.4967],
   DEFAULT_ZOOM: 15,
   TEMP_REPORT_TTL_HOURS: 8,

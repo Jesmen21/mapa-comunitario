@@ -1064,3 +1064,14 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-uso-item button.bo{ width:30px; height:30px; font-size:.8rem; }
 .aia-uso-item button.bo{ color:#f87171; border-color:rgba(248,113,113,.35); }
 #aia-uso-donde small{ display:block; font-size:.62rem; opacity:.7; margin-top:2px; }
+
+/* ── De dónde salió el informe ─────────────────────────────────────────────
+   Si el servidor no contestó y el cálculo se hizo en el navegador, hay que
+   decirlo. Un respaldo silencioso oculta que el servicio está caído, y con
+   el tiempo nadie lo arregla. */
+.aia-origen{
+  margin:0 0 12px; padding:8px 12px; border-radius:6px;
+  font-size:12.5px; line-height:1.4; font-weight:600;
+}
+.aia-origen-ok{ background:rgba(15,110,98,.12); color:#0F6E62; border:1px solid rgba(15,110,98,.28) }
+.aia-origen-aviso{ background:rgba(180,83,9,.12); color:#B45309; border:1px solid rgba(180,83,9,.32) }

@@ -860,8 +860,10 @@
       $('aia-resumen-mixto').hidden = false;
       $('aia-resumen-chips').innerHTML = S.usosMixto.map(u => etiquetaUso(u)).join(' + ');
       refrescarBotonAnalizar();
-      // Si ya hay un análisis en pantalla, recalcula al instante (sin red).
-      if (S.resultado && S.ultimosElementos) recalcularMixto();
+      // Si ya hay un análisis en pantalla, se recalcula. Va por el servidor,
+      // así que puede fallar: sin .catch() sería un rechazo sin capturar y el
+      // usuario vería la pantalla vieja sin enterarse de nada.
+      if (S.resultado && S.ultimosElementos) recalcularMixto().catch(avisarFalloRecalculo);
     });
   }
 
@@ -876,9 +878,12 @@
 
   // Recalcula el análisis mixto con los datos YA descargados (sin red) —
   // se usa al agregar/quitar un uso desde los chips de resultados.
-  function recalcularMixto(){
+  async function recalcularMixto(){
     if (!S.ultimosElementos || !S.lote) return;
-    const resultado = window.AIA_MOTOR.analizarMixto({
+    // Ya no es "sin red": el recálculo también va al servidor, porque el día
+    // que el motor salga del navegador no habrá con qué recalcular acá. Los
+    // puntos ya están descargados, así que solo viaja el cálculo.
+    const resultado = await window.AIA_REMOTO.analizar('mixto', {
       elementos: S.ultimosElementos, radioM: S.radioM, centro: S.lote,
       tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
       usos: S.usosMixto, config: S.config
@@ -897,7 +902,31 @@
     S.usosMixto = S.usosMixto.filter(u => u.id !== id);
     if (!S.usosMixto.length) { alert('El proyecto necesita al menos un uso. Agrega otro antes de quitar este.'); S.usosMixto.push(window.AIA_MOTOR.USOS_PROGRAMA[0]); }
     $('aia-resumen-chips').innerHTML = S.usosMixto.map(u => etiquetaUso(u)).join(' + ');
-    recalcularMixto();
+    recalcularMixto().catch(avisarFalloRecalculo);
+  }
+
+  // De dónde salió el informe. Si el servidor no contestó y se calculó acá,
+  // el usuario tiene que saberlo: un respaldo silencioso oculta que el
+  // servicio está caído, y con el tiempo nadie lo arregla.
+  function mostrarOrigenAnalisis(){
+    var e = (window.AIA_REMOTO && window.AIA_REMOTO.estado) || {};
+    var n = $('aia-origen-analisis');
+    if (!n) return;
+    if (e.donde === 'servidor') {
+      n.hidden = false;
+      n.className = 'aia-origen aia-origen-ok';
+      n.textContent = 'Calculado en el servidor de URBIS' + (e.ms ? ' · ' + e.ms + ' ms' : '');
+    } else if (e.aviso) {
+      n.hidden = false;
+      n.className = 'aia-origen aia-origen-aviso';
+      n.textContent = e.aviso;
+    } else {
+      n.hidden = true;
+    }
+  }
+
+  function avisarFalloRecalculo(err){
+    alert('No se pudo recalcular el análisis: ' + ((err && err.message) || err));
   }
 
   // ── Tabs "Nuevo análisis" / "Mis análisis" ──────────────────────────────
@@ -971,11 +1000,15 @@
       const comun = { elementos, radioM: S.radioM, centro: S.lote,
                       tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
                       dane: S.dane, danePorRadio };
-      const resultado = S.modo === 'mixto'
-        ? window.AIA_MOTOR.analizarMixto(Object.assign({}, comun,
-            { usos: S.usosMixto, config: S.config }))
-        : await window.AIA_MOTOR.analizar(Object.assign({}, comun,
-            { proyectoId: S.proyectoId }));
+      // El análisis lo hace el SERVIDOR (js/64). Si no contesta, el puente
+      // cae al motor local y lo dice; si el servidor rechaza la licencia, no
+      // cae: eso sería saltarse la licencia desde el propio producto.
+      const resultado = await window.AIA_REMOTO.analizar(
+        S.modo === 'mixto' ? 'mixto' : 'simple',
+        S.modo === 'mixto'
+          ? Object.assign({}, comun, { usos: S.usosMixto, config: S.config })
+          : Object.assign({}, comun, { proyectoId: S.proyectoId }),
+        function (msg) { const n = $('aia-cargando-msg'); if (n) n.textContent = msg; });
       // Nombre propio del proyecto (paso 5, opcional): si el usuario escribió
       // uno, reemplaza el nombre que el motor arma solo a partir del programa
       // ("Comercial (por definir) + Oficina...") — así el análisis se
@@ -990,6 +1023,7 @@
       S.resultado = resultado;
       pintarPOIs(resultado.pois);
       renderResultados(resultado);
+      mostrarOrigenAnalisis();
       setSheetState('resultados');
     } catch(err) {
       alert('No se pudo completar el análisis: ' + (err && err.message || err));

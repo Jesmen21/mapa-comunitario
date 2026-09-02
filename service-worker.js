@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v604-participacion-extranjera';
+const URBIS_CACHE = 'urbis-v605-analisis-en-servidor';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const URBIS_ASSETS = [
   './js/61-analisis-ia-datos.js',
   './js/62-analisis-ia-app.js',
   './js/63-analisis-ia-informe.js',
+  './js/64-analisis-remoto.js',
   './manifest.json',
   './assets/brand/urbis-logo.png',
   './assets/brand/llegada.png',
