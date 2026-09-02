@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v602-sin-sheetdb';
+const URBIS_CACHE = 'urbis-v603-admin-por-sesion';
 const URBIS_ASSETS = [
   './',
   './index.html',

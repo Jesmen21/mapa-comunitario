@@ -175,8 +175,14 @@
       if (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin()) return true;
       const w = window;
       if (w.userRole === 'gov') return true;
-      const u = String(w.userUsernameGlobal || '').toLowerCase();
-      return u === 'jesmen21' || u === 'jesmen21s' || u === 'urbisadmin';
+      // Antes bastaba llamarse «urbisadmin» o «jesmen21». Un nombre de usuario
+      // no es una credencial, y peor: si esa cuenta se borrara, el nombre
+      // quedaría libre y cualquiera podría registrarlo y entrar acá.
+      if (typeof window.urbisTieneAlgunPermiso === 'function' && window.urbisTieneAlgunPermiso()) return true;
+      try{
+        const s = (window.URBIS_AUTH && window.URBIS_AUTH.readSession) ? (window.URBIS_AUTH.readSession() || {}) : {};
+        return s.es_dueno === true || s.es_admin === true;
+      }catch(e){ return false; }
     } catch(e) { return false; }
   }
 

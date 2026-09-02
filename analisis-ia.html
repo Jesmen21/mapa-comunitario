@@ -17,20 +17,33 @@
   <script>
     // GATE de acceso: módulo exclusivo (dueño + admin). Corre antes de pintar
     // nada; si la sesión no está autorizada, vuelve al inicio de URBIS.
+    //
+    // Solo cuenta lo que dijo el SERVIDOR al iniciar sesión. Antes valían
+    // además tres cosas que no son credenciales: llamarse «urbisadmin»,
+    // llamarse «jesmen21», y tener la marca urbis_admin en el almacenamiento
+    // local. Esa última era la peor: bastaba abrir la consola, escribir
+    // localStorage.setItem('urbis_admin','1') y entrar a Urbis para Empresas
+    // sin saber ninguna contraseña. js/12 ya había tapado ese agujero, pero
+    // el arreglo nunca llegó a esta página —que ni siquiera carga js/12—.
+    //
+    // Este portón es del navegador, así que NO es seguridad de verdad: quien
+    // sepa la dirección puede saltárselo. Lo que protege el producto es la
+    // licencia del servidor (fase 03) y sacarle el motor al navegador
+    // (fase 04). Esto solo cierra la puerta que estaba abierta de par en par.
     (function(){
       function noAutorizado(){ location.replace('index.html'); }
       try{
         var s = JSON.parse(localStorage.getItem('urbis_auth_session_v1') || 'null');
-        var u = String((s && s.usuario) || '').trim().toLowerCase();
         var rol = String((s && s.rol) || '').trim().toLowerCase();
-        var esAdmin = rol === 'admin' || u === 'urbisadmin' || localStorage.getItem('urbis_admin') === '1';
-        var permitidos = ['jesmen21', 'jesmen21s'];
-        if (!(esAdmin || permitidos.indexOf(u) !== -1)) noAutorizado();
+        var permisos = (s && Array.isArray(s.permisos)) ? s.permisos : [];
+        var autorizado = !!(s && s.session_token) &&
+          (rol === 'admin' || s.es_admin === true || s.es_dueno === true || permisos.length > 0);
+        if (!autorizado) noAutorizado();
       }catch(e){ noAutorizado(); }
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=602-sin-sheetdb" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=603-admin-por-sesion" />
 </head>
 <body>
 
@@ -346,12 +359,12 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=602-sin-sheetdb"></script>
-<script src="js/03b-edificio-vocabulario.js?v=602-sin-sheetdb"></script>
-<script src="js/59-analisis-ia-catalogo.js?v=602-sin-sheetdb"></script>
-<script src="js/60-analisis-ia-motor.js?v=602-sin-sheetdb"></script>
-<script src="js/61-analisis-ia-datos.js?v=602-sin-sheetdb"></script>
-<script src="js/63-analisis-ia-informe.js?v=602-sin-sheetdb"></script>
-<script src="js/62-analisis-ia-app.js?v=602-sin-sheetdb"></script>
+<script src="js/00-config.js?v=603-admin-por-sesion"></script>
+<script src="js/03b-edificio-vocabulario.js?v=603-admin-por-sesion"></script>
+<script src="js/59-analisis-ia-catalogo.js?v=603-admin-por-sesion"></script>
+<script src="js/60-analisis-ia-motor.js?v=603-admin-por-sesion"></script>
+<script src="js/61-analisis-ia-datos.js?v=603-admin-por-sesion"></script>
+<script src="js/63-analisis-ia-informe.js?v=603-admin-por-sesion"></script>
+<script src="js/62-analisis-ia-app.js?v=603-admin-por-sesion"></script>
 </body>
 </html>

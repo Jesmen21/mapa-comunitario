@@ -5666,7 +5666,12 @@
             : JSON.parse(localStorage.getItem('urbis_auth_session_v1') || '{}');
       var u = String(s.usuario || '').trim().toLowerCase();
       var esAdmin = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin()) || String(s.rol || '').toLowerCase() === 'admin';
-      return esAdmin || u === 'jesmen21' || u === 'jesmen21s';
+      // Solo la sesión del servidor, o un permiso que el dueño haya repartido.
+      // Llamarse «jesmen21» no es una credencial: si esa cuenta quedara libre,
+      // cualquiera podría registrarla y quedarse con el módulo.
+      var conPermiso = (typeof window.urbisTieneAlgunPermiso === 'function' && window.urbisTieneAlgunPermiso())
+                    || (Array.isArray(s.permisos) && s.permisos.length > 0);
+      return esAdmin || s.es_dueno === true || conPermiso;
     }catch(e){ return false; }
   }
   function u52RefreshAiaModule(){

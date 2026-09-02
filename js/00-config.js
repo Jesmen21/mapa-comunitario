@@ -51,7 +51,12 @@ window.URBIS_CONFIG = {
   // 3) Pega la URL aquí.
   AUTH: {
     APPS_SCRIPT_ENDPOINT: 'https://script.google.com/macros/s/AKfycbw-P002YjsFDWoNguJG10Y5MJVwEenSRaSdqJKe1c31wJ1n2e1_bxMfHTF0XziQbOdioA/exec',
-    ADMIN_EMAIL: 'barrazapolo2@gmail.com',
+    // Referencia informativa. QUIEN DECIDE es el servidor: el .gs compara el
+    // correo de la sesión contra su propio URBIS_AUTH.ADMIN_EMAIL, y este
+    // valor no otorga nada. Estuvo desalineado con el servidor
+    // (barrazapolo2@gmail.com contra urbisprocity@gmail.com), lo que no
+    // rompía nada pero confundía al leer el código.
+    ADMIN_EMAIL: 'urbisprocity@gmail.com',
     SESSION_KEY: 'urbis_auth_session_v1',
     CODE_LENGTH: 6,
     CODE_TTL_MINUTES: 15
