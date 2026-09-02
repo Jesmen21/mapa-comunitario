@@ -10,17 +10,22 @@
    aprende a pedirle el resultado al servidor; después —y solo cuando esto
    esté probado— se le quita la copia local.
 
-   POR QUÉ TODAVÍA CAE AL MOTOR LOCAL
-   Hoy el servidor corre en un plan gratuito que se duerme: la primera visita
-   tras un rato de inactividad tarda entre 15 y 40 segundos en despertarlo. Si
-   esto no tuviera respaldo, un análisis en ese momento simplemente fallaría.
-   Así que si el servidor no contesta, se calcula localmente Y SE DICE: el
-   resultado trae de dónde salió. Un respaldo silencioso sería peor que
-   ninguno, porque nadie sabría que el servidor está caído.
+   YA NO HAY RESPALDO LOCAL, Y ESO ES A PROPÓSITO
+   Hasta la v606 esto caía al motor del navegador cuando el servidor no
+   contestaba. Desde la v607 el motor no está en el navegador, así que no hay
+   a qué caer: el servidor dejó de ser una mejora y pasa a ser un requisito.
 
-   Cuando se quite el motor del navegador (la otra mitad de la fase 04) este
-   respaldo desaparece por sí solo, porque no habrá a qué caer. Ese día el
-   servidor deja de ser una mejora y pasa a ser un requisito. */
+   Ojo con el detalle que casi se cuela: el respaldo llamaba a
+   `AIA_MOTOR.analizar`, y desde la v607 ese es js/67, que vuelve a llamar acá.
+   Habría sido una recursión infinita, y no la habría visto ninguna prueba,
+   porque todas corren con el servidor arriba. Por eso ahora se falla de
+   frente, con un mensaje que el usuario pueda entender, y hay una prueba que
+   apaga el servidor a propósito.
+
+   El servidor corre en un plan gratuito que se duerme: la primera consulta
+   tras un rato de inactividad tarda entre 15 y 40 segundos en despertarlo.
+   Eso no es un fallo, así que se avisa por pantalla a los 4 segundos en vez
+   de dejar al usuario mirando una rueda. */
 (function () {
   'use strict';
 
@@ -117,16 +122,19 @@
      Devuelve el informe, venga de donde venga, y deja en AIA_REMOTO.estado
      de dónde vino para que la pantalla lo pueda mostrar. */
   function analizar(modo, entrada, alAvisar) {
-    var local = function () {
-      estado = { donde: 'local', ms: null, aviso: estado.aviso, motivo: estado.motivo };
-      return modo === 'mixto'
-        ? Promise.resolve(window.AIA_MOTOR.analizarMixto(entrada))
-        : Promise.resolve(window.AIA_MOTOR.analizar(entrada));
-    };
+    // Sin servidor no hay análisis. Se falla acá, con nombre y apellido, en
+    // vez de devolver un informe a medias que parecería bueno.
+    function sinServidor(motivo, mensaje) {
+      estado = { donde: 'ninguno', ms: null, aviso: null, motivo: motivo };
+      var e = new Error(mensaje);
+      e.esDecision = true;   // que js/67 no intente arreglarlo por su cuenta
+      return Promise.reject(e);
+    }
 
     if (!disponible()) {
-      estado = { donde: 'local', ms: null, aviso: null, motivo: 'servidor no configurado' };
-      return local();
+      return sinServidor('servidor no configurado',
+        'El análisis de URBIS para Empresas corre en el servidor y este ' +
+        'navegador no lo tiene configurado. Avisale a URBIS.');
     }
 
     var ruta = modo === 'mixto' ? '/analizar-mixto' : '/analizar';
@@ -136,11 +144,10 @@
     }, function (e) {
       // Una decisión del servidor se respeta: sin licencia no hay análisis.
       if (e && e.esDecision) throw e;
-      estado = {
-        donde: 'local', ms: null, motivo: String((e && e.message) || e),
-        aviso: 'No se pudo conectar con el servidor de análisis; el informe se calculó en este dispositivo.'
-      };
-      return local();
+      return sinServidor(String((e && e.message) || e),
+        'No se pudo conectar con el servidor de análisis. El informe se calcula ' +
+        'allá, así que no hay forma de hacerlo en este dispositivo. Si el ' +
+        'servidor estaba dormido, volvé a intentar en un minuto.');
     });
   }
 

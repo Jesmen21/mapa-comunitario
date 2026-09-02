@@ -267,11 +267,13 @@
   }
 
   // ── Analizar es pedírselo al servidor ────────────────────────────────────
-  function porElPuente(modo, entrada) {
+  // `alAvisar` es el mensaje de «estoy despertando el servidor» que la
+  // pantalla muestra mientras se espera. Viaja hasta js/66 sin tocarse.
+  function porElPuente(modo, entrada, alAvisar) {
     if (!window.AIA_REMOTO) {
       return Promise.reject(new Error('Falta js/66-analisis-remoto.js: sin él no hay con qué analizar.'));
     }
-    return window.AIA_REMOTO.analizar(modo, entrada).then(function (datos) {
+    return window.AIA_REMOTO.analizar(modo, entrada, alAvisar).then(function (datos) {
       // El motor archivaba solo los usos sin categoría durante el análisis.
       // Ahora corre lejos, así que lo hace el navegador con los puntos que
       // vuelven ya clasificados: es contabilidad, no clasificación.
@@ -322,8 +324,8 @@
 
   window.AIA_MOTOR = {
     // Análisis: siempre por el servidor
-    analizar: function (entrada) { return porElPuente('simple', entrada); },
-    analizarMixto: function (entrada) { return porElPuente('mixto', entrada); },
+    analizar: function (entrada, alAvisar) { return porElPuente('simple', entrada, alAvisar); },
+    analizarMixto: function (entrada, alAvisar) { return porElPuente('mixto', entrada, alAvisar); },
 
     // Catálogo público (js/59): etiquetas para pintar, sin reglas
     TAXONOMIA: CAT.TAXONOMIA || [],

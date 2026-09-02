@@ -883,7 +883,7 @@
     // Ya no es "sin red": el recálculo también va al servidor, porque el día
     // que el motor salga del navegador no habrá con qué recalcular acá. Los
     // puntos ya están descargados, así que solo viaja el cálculo.
-    const resultado = await window.AIA_REMOTO.analizar('mixto', {
+    const resultado = await window.AIA_MOTOR.analizarMixto({
       elementos: S.ultimosElementos, radioM: S.radioM, centro: S.lote,
       tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
       usos: S.usosMixto, config: S.config
@@ -905,9 +905,9 @@
     recalcularMixto().catch(avisarFalloRecalculo);
   }
 
-  // De dónde salió el informe. Si el servidor no contestó y se calculó acá,
-  // el usuario tiene que saberlo: un respaldo silencioso oculta que el
-  // servicio está caído, y con el tiempo nadie lo arregla.
+  // De dónde salió el informe. Desde la v607 solo hay una respuesta posible
+  // —el servidor—, porque el motor ya no está en el navegador. El cartel se
+  // queda igual: el día que diga otra cosa, algo se rompió y hay que verlo.
   function mostrarOrigenAnalisis(){
     var e = (window.AIA_REMOTO && window.AIA_REMOTO.estado) || {};
     var n = $('aia-origen-analisis');
@@ -1000,15 +1000,18 @@
       const comun = { elementos, radioM: S.radioM, centro: S.lote,
                       tipoEstudio: S.tipoEstudio, direccionAprox: S.direccionAprox,
                       dane: S.dane, danePorRadio };
-      // El análisis lo hace el SERVIDOR (js/64). Si no contesta, el puente
-      // cae al motor local y lo dice; si el servidor rechaza la licencia, no
-      // cae: eso sería saltarse la licencia desde el propio producto.
-      const resultado = await window.AIA_REMOTO.analizar(
-        S.modo === 'mixto' ? 'mixto' : 'simple',
-        S.modo === 'mixto'
-          ? Object.assign({}, comun, { usos: S.usosMixto, config: S.config })
-          : Object.assign({}, comun, { proyectoId: S.proyectoId }),
-        function (msg) { const n = $('aia-cargando-msg'); if (n) n.textContent = msg; });
+      // El análisis lo hace el SERVIDOR. Se pide por AIA_MOTOR (js/67) y no
+      // por el puente directo: js/67 es el que archiva los usos sin categoría
+      // con los puntos que vuelven. Cuando esto llamaba al puente, la bandeja
+      // de pendientes no se llenaba nunca y el análisis salía igual de bien,
+      // así que nadie lo iba a notar.
+      const entrada = S.modo === 'mixto'
+        ? Object.assign({}, comun, { usos: S.usosMixto, config: S.config })
+        : Object.assign({}, comun, { proyectoId: S.proyectoId });
+      const avisar = function (msg) { const n = $('aia-cargando-msg'); if (n) n.textContent = msg; };
+      const resultado = S.modo === 'mixto'
+        ? await window.AIA_MOTOR.analizarMixto(entrada, avisar)
+        : await window.AIA_MOTOR.analizar(entrada, avisar);
       // Nombre propio del proyecto (paso 5, opcional): si el usuario escribió
       // uno, reemplaza el nombre que el motor arma solo a partir del programa
       // ("Comercial (por definir) + Oficina...") — así el análisis se
