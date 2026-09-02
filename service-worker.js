@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v601-sin-sheetdb';
+const URBIS_CACHE = 'urbis-v602-sin-sheetdb';
 const URBIS_ASSETS = [
   './',
   './index.html',

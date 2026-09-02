@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-01",
-  "proximaActualizacion": "2026-09-02",
+  "actualizado": "2026-09-02",
+  "proximaActualizacion": "2026-09-03",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,77 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-02",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Ejército dice haber frustrado un segundo atentado del ELN en zona rural de Cúcuta al hallar un vehículo con explosivos",
+      "detalle": "En la noche del 2 de septiembre, tropas ubicaron en la vereda Agua Clara, zona rural de Cúcuta, un vehículo reportado como hurtado que dio positivo a explosivos tras la verificación de una unidad canina especializada; técnicos antiexplosivos fueron coordinados para verificar y neutralizar la amenaza. El presidente Abelardo de la Espriella anunció el hallazgo en redes sociales y afirmó: \"¡Neutralizamos una posible acción terrorista del ELN en Cúcuta!\".",
+      "contrapunto": "La atribución al ELN proviene del anuncio presidencial y militar sobre el hallazgo; hasta esta actualización no hay una confirmación judicial independiente de autoría.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "El Tiempo · Ejército frustró un posible atentado del ELN en Cúcuta: \"los vamos a perseguir y combatir\"", "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-afirmo-que-el-ejercito-nacional-frustro-un-posible-atentado-del-eln-en-cucuta-los-vamos-a-perseguir-y-combatir-3582862" },
+        { "n": "Moncloa · De La Espriella lanza una ofensiva tras el atentado del ELN en Cúcuta", "u": "https://www.moncloa.com/2026/09/02/atentado-eln-cucuta-ofensiva-de-espriella-3424942/" }
+      ]
+    },
+    {
+      "fecha": "2026-09-01",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "Posesiona a los nueve nuevos magistrados del CNE en Barranquilla y denuncia \"maniobras\" para sembrar incertidumbre en las elecciones que lo llevaron al poder",
+      "detalle": "El 1 de septiembre, el presidente posesionó en Barranquilla a los nueve nuevos magistrados del Consejo Nacional Electoral, elegidos por el Congreso el 25 de agosto para un periodo de cuatro años: Nubia Stella Martínez, Silvio Carrasquilla, Juan Carlos Wills, Juan Felipe Lemus, Antonio Parra, Plinio Alarcón, Cielo Rusinque, Ana Jimena Bautista y Gersel Pérez. Durante el acto, De la Espriella afirmó que \"es cierto que durante ese proceso hubo maniobras, presiones e intentos de sembrar incertidumbre alrededor de las elecciones\" y calificó el no reconocimiento de su triunfo electoral como \"una maniobra sucia y corrosiva para la democracia\", aunque señaló que finalmente se respetó la voluntad de los colombianos.",
+      "contrapunto": "El presidente no identificó públicamente a responsables concretos ni aportó, en sus declaraciones durante el acto, evidencia verificable de las \"maniobras\" que menciona; no hay una decisión judicial o electoral que haya establecido fraude en el proceso que lo eligió.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Infobae · posesionó a los nuevos magistrados del CNE y cuestionó al gobierno Petro: \"intentaron alterar la voluntad popular\"", "u": "https://www.infobae.com/colombia/2026/09/01/abelardo-de-la-espriella-posesiono-a-los-nuevos-magistrados-del-cne-y-cuestiono-al-gobierno-petro-intentaron-alterar-la-voluntad-popular/" },
+        { "n": "El Espectador · posesionó al nuevo Consejo Nacional Electoral y lanzó pullas por intentos de sembrar incertidumbre en las elecciones", "u": "https://www.elespectador.com/politica/de-la-espriella-posesiono-al-nuevo-consejo-nacional-electoral-y-lanzo-pullas-por-intentos-de-sembrar-incertidumbre-en-las-elecciones/" },
+        { "n": "El Tiempo · posesionó a los nuevos magistrados del Consejo Nacional Electoral (CNE)", "u": "https://www.eltiempo.com/politica/gobierno/presidente-abelardo-de-la-espriella-posesiono-a-los-nuevos-magistrados-del-consejo-nacional-electoral-cne-3582686" },
+        { "n": "LaFM · posesionó a los nueve magistrados del CNE: independencia, fortalecer democracia", "u": "https://www.lafm.com.co/politica/abelardo-de-la-espriella-posesiono-magistrados-del-cne-independencia-fortalecer-democracia-409612" }
+      ]
+    },
+    {
+      "fecha": "2026-09-01",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Trasciende una hoja de ruta interna de la Presidencia que limitaría las ruedas de prensa y entrevistas a medios considerados \"amigos\" durante el cuatrienio",
+      "detalle": "Varios medios reportaron el 1 de septiembre el contenido de un documento interno de la Casa de Nariño que definiría la relación del Gobierno con la prensa: no se concederían ruedas de prensa abiertas ni entrevistas a medios que no estén catalogados como \"amigos\", salvo autorización expresa de la Presidencia; los ministros solo podrían dar una declaración sin espacio para preguntas; los viceministros no podrían actuar como voceros; y cada ministerio tendría un periodista de enlace con Casa de Nariño encargado de centralizar los temas relevantes para que la Presidencia decida cuáles se difunden. El vocero oficial tendría un máximo de tres intervenciones diarias.",
+      "contrapunto": "La Presidencia no ha confirmado ni desmentido públicamente, hasta esta actualización, la autenticidad ni el alcance del documento reportado por los medios. La medida se conoce después de que el Sindicato Colombiano de Periodistas ya había calificado de \"primer acto de censura\" restricciones de información durante la emergencia del terremoto, el 14 de agosto, y en contraste con declaraciones previas del propio De la Espriella, antes de asumir, en las que dijo que \"siempre\" defendería la libertad de prensa.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Infobae · la Presidencia habría definido su relación con los medios: sin ruedas de prensa y entrevistas, solo con los amigos", "u": "https://www.infobae.com/colombia/2026/09/01/presidencia-de-abelardo-de-la-espriella-habria-definido-su-relacion-con-los-medios-sin-ruedas-de-prensa-y-entrevistas-solo-con-los-amigos/" },
+        { "n": "La Silla Vacía · Presidencia solo dará ruedas de prensa a medios que sean sus \"amigos\"", "u": "https://www.lasillavacia.com/en-vivo/presidencia-solo-dara-ruedas-de-prensa-a-medios-que-sean-sus-amigos/" },
+        { "n": "El Espectador · Presidencia De la Espriella trabaja en nueva estrategia de comunicaciones: ¿qué papel tendrán los voceros?", "u": "https://www.elespectador.com/politica/presidencia-de-la-espriella-trabaja-en-nueva-estrategia-de-comunicaciones-que-papel-tendran-los-voceros/" },
+        { "n": "qhubo Bogotá · Presidencia limita entrevistas y ruedas de prensa a medios que considere \"amigos\"", "u": "https://www.qhubobogota.com/asi-paso/presidencia-entrevistas-prensa-medios/" }
+      ]
+    },
+    {
+      "fecha": "2026-09-01",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "titulo": "La prima de riesgo del país sube hasta 142 puntos básicos tras la radicación del Presupuesto General 2027, que eleva el déficit y las necesidades de financiación",
+      "detalle": "Tras la radicación ante el Congreso, por parte del Ministerio de Hacienda, del Presupuesto General de la Nación 2027 por $634,9 billones —$59,3 billones más que el proyecto original de $575,6 billones que había radicado el gobierno de Gustavo Petro—, los inversionistas reaccionaron elevando la prima de riesgo país hasta 142 puntos básicos, un indicador que mide el interés adicional que exigen frente a un activo seguro. El alza refleja la interpretación del mercado de que el nuevo presupuesto implica un mayor déficit, más endeudamiento y necesidades adicionales de financiación, lo que presionó al alza los rendimientos de los títulos de deuda pública.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · el presupuesto del Gobierno De la Espriella puso en duda si Colombia podrá pagar las deudas a los inversores: qué tiene que ver el precio del dólar", "u": "https://www.infobae.com/colombia/2026/09/01/el-presupuesto-del-gobierno-de-la-espriella-puso-en-duda-si-colombia-podra-pagar-las-deudas-a-los-inversores-que-tiene-que-ver-el-precio-del-dolar/" },
+        { "n": "El Colombiano · Gobierno De la Espriella radicó el Presupuesto 2027 por $634,9 billones", "u": "https://www.elcolombiano.com/negocios/presupuesto-2027-gobierno-de-la-espriella-MA40370268" }
+      ]
+    },
+    {
+      "fecha": "2026-08-31",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Un carro bomba deja un muerto y once heridos frente a una estación de Policía en Los Patios (Cúcuta); la Policía atribuye el ataque al ELN y el presidente convoca un consejo de seguridad",
+      "detalle": "En la noche del 31 de agosto, hacia las 11:15 p.m., un vehículo cargado con explosivos fue detonado por control remoto frente a la estación de Policía de Los Patios, en el área metropolitana de Cúcuta (Norte de Santander). El ataque dejó una persona muerta —un joven venezolano de 25 años que pasaba en moto por el lugar— y once heridos, entre ellos dos policías y nueve civiles, además de daños en más de 30 viviendas y locales comerciales. El comandante de la Policía Metropolitana de Cúcuta atribuyó la responsabilidad del atentado al ELN. Al día siguiente, el presidente Abelardo de la Espriella confirmó y presidió un consejo de seguridad extraordinario en Cúcuta, prometió perseguir \"con mano de hierro\" a los responsables y expresó su molestia por la ausencia de algunas autoridades locales en la reunión.",
+      "contrapunto": "La atribución del atentado al ELN corresponde, a la fecha de esta entrada, a un señalamiento policial en una investigación en curso; no hay todavía una imputación o decisión judicial que establezca responsables individuales.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        { "n": "Infobae · carro bomba cerca a la frontera entre Colombia y Venezuela deja 9 heridos y un joven venezolano muerto; las autoridades responsabilizaron a terroristas del ELN", "u": "https://www.infobae.com/colombia/2026/09/01/carro-bomba-cerca-a-la-frontera-entre-colombia-y-venezuela-deja-9-heridos-y-un-joven-venezolano-muerto-las-autoridades-responsabilizaron-a-terroristas-del-eln/" },
+        { "n": "El Espectador · ELN sería responsable de la explosión de un carro bomba en Los Patios, Policía de Cúcuta", "u": "https://www.elespectador.com/judicial/eln-seria-responsable-de-la-explosion-de-un-carro-bomba-en-los-patios-policia-de-cucuta/" },
+        { "n": "El Tiempo · los terroristas del ELN y los otros detalles del atentado con carro bomba en Los Patios, Cúcuta, que deja un muerto y 11 heridos", "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/los-terrorsitas-del-eln-y-los-otros-detalles-del-atentado-con-carro-bomba-en-los-patios-cucuta-que-deja-un-muerto-y-11-heridos-3582609" },
+        { "n": "Infobae · Abelardo de la Espriella confirmó consejo de seguridad en Cúcuta tras carro bomba en Los Patios: \"vamos a perseguir a quienes atenten contra los colombianos\"", "u": "https://www.infobae.com/colombia/2026/09/01/abelardo-de-la-espriella-confirmo-consejo-de-seguridad-en-cucuta-tras-carro-bomba-en-los-patios-vamos-a-perseguir-a-quienes-atenten-contra-los-colombianos/" },
+        { "n": "El País (Cali) · el enojo de De la Espriella por ausencia de autoridades en consejo de seguridad: \"no permitiremos que ningún mandatario se alinee con los bandidos\"", "u": "https://www.elpais.com.co/colombia/el-enojo-de-de-la-espriella-por-ausencia-de-autoridades-en-consejo-de-seguridad-no-permitiremos-que-ningun-mandatario-se-alinee-con-los-bandidos-0153.html" }
+      ]
+    },
     {
       "fecha": "2026-08-31",
       "precision": "exacta",
