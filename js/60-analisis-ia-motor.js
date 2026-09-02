@@ -2723,6 +2723,19 @@
         if (delCatalogo) return Object.assign({ esCustom:false }, delCatalogo);
         return { id:'custom_' + slugUso(item), nombre: item, icono:'✨', subs:[], complementarios:[], esCustom:true };
       }
+      // Un OBJETO también se vuelve a resolver contra el catálogo, y el
+      // catálogo gana. Dos motivos, los dos importantes:
+      //
+      // 1. Cuando el motor corre en el servidor, el navegador manda usos con
+      //    solo nombre e icono —las reglas ya no viajan al cliente—. Sin esta
+      //    resolución llegarían sin `subs` ni `complementarios` y el puntaje
+      //    saldría neutro sin que nada avisara: un análisis plausible y mal.
+      // 2. Y al revés: impide que quien llame a la API se invente sus propios
+      //    `subs` para sacarle al motor cómo puntúa.
+      if (item && item.id) {
+        const delCatalogo = USOS_PROGRAMA.find(u => u.id === item.id);
+        if (delCatalogo) return Object.assign({ esCustom:false }, item, delCatalogo);
+      }
       return item;
     });
   }
