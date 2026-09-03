@@ -43,6 +43,19 @@ console.log('\n  -- el modo sin conexión --');
   comprobar('todo lo que se precarga existe',
     faltan.length === 0,
     faltan.length ? 'FALTAN: ' + faltan.join(', ') : listados.length + ' archivos');
+
+  /* Y al revés, que es el fallo que de verdad ocurrió: nueve archivos que
+     index.html carga —el módulo educativo entre ellos— no estaban en la
+     lista. La app abría sin red y le faltaba media función, sin ningún
+     error visible: en plena salida a campo, «Falta el módulo educativo».
+     Este lado no se comprobaba porque todo lo listado sí existía. */
+  const idx = leer('index.html');
+  const cargados = [...new Set([...idx.matchAll(
+    /(?:src|href)="((?:\.\/)?(?:js|css)\/[^"?]+)/g)].map(m => m[1].replace(/^\.\//, '')))];
+  const sinCache = cargados.filter(f => !sw.includes(f));
+  comprobar('y todo lo que index.html carga se precarga',
+    sinCache.length === 0,
+    sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(', ') : cargados.length + ' archivos servidos');
 }
 
 // ── 2. una sola puerta al servidor ───────────────────────────────────────

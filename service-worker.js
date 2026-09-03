@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v626-sector-que-vale-solo';
+const URBIS_CACHE = 'urbis-v627-sin-red-completo';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -127,6 +127,23 @@ const URBIS_ASSETS = [
   './css/36-mobility-static-search.css',
   './css/43-clean-user-entry.css',
   './css/44-mobile-auth-onboarding.css',
+  /* Nueve archivos que index.html carga y que no estaban en esta lista. Sin
+     ellos la app abre sin red pero les falta media función: el módulo
+     educativo (js/64 y js/65) es justamente el que compara lo reconocido con
+     lo que el curso mapeó —y su ausencia se manifestaba como «Falta el
+     módulo educativo», sin señal, en plena salida a campo—. Los otros son la
+     cáscara de la app, el registro por correo y los ajustes de mapa.
+     Se comprueban en pruebas/revisar.js: si alguno se borra, `cache.addAll`
+     rechaza el lote ENTERO y el modo sin conexión desaparece en silencio. */
+  './js/00-app-shell.js',
+  './js/27-automapeo-default-off.js',
+  './js/28-zoom-marker-optimizer.js',
+  './js/41-email-registration-auth.js',
+  './js/37-mobility-state-controller.js',
+  './js/38-mobile-shell-visibility-guard.js',
+  './js/39-mobility-map-picker-hardfix.js',
+  './js/64-analisis-edu.js',
+  './js/65-analisis-edu-ui.js',
 ];
 
 self.addEventListener('install', event => {
