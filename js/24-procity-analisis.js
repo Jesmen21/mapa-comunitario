@@ -244,7 +244,7 @@
           : 'Toca el mapa para marcar el contorno (mínimo 3 puntos)') + '</small>' +
       '</div>' +
       '<div class="pca-barra-btns">' +
-        '<button type="button" data-u52-call="pca-deshacer"' + (n ? '' : ' disabled') + '>↩️</button>' +
+        '<button type="button" data-u52-call="pca-deshacer"' + (n ? '' : ' disabled') + ' aria-label="Deshacer el último punto">' + ico('deshacer', 16) + '</button>' +
         '<button type="button" data-u52-call="pca-cancelar">✕</button>' +
         '<button type="button" class="pca-ok" data-u52-call="pca-cerrar"' + (listo ? '' : ' disabled') + '>✓ Cerrar área</button>' +
       '</div>';
@@ -391,14 +391,14 @@
     const b = document.createElement('div');
     b.className = 'pca-burbuja';
     b.innerHTML =
-      '<div class="pca-burbuja-cab"><span>✏️</span><b>Área lista</b>' +
+      '<div class="pca-burbuja-cab"><span>' + ico('area', 18) + '</span><b>Área lista</b>' +
         '<button type="button" class="pca-burbuja-x" data-u52-call="pca-cerrar-burbuja" aria-label="Cerrar">✕</button></div>' +
       '<div class="pca-burbuja-datos">' + fmtArea(areaM2(S.pts)) +
         ' · ' + S.pts.length + ' vértices</div>' +
-      '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">📊 Ver el análisis</button>' +
+      '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">' + ico('estadistica', 16) + 'Ver el análisis</button>' +
       '<div class="pca-burbuja-alt">' +
-        '<button type="button" data-u52-call="pca-guardar">💾 Guardar</button>' +
-        '<button type="button" data-u52-call="pca-dibujar">✏️ Rehacer</button>' +
+        '<button type="button" data-u52-call="pca-guardar">' + ico('guardar', 16) + 'Guardar</button>' +
+        '<button type="button" data-u52-call="pca-dibujar">' + ico('lapiz', 16) + 'Rehacer</button>' +
       '</div>';
     // Los toques dentro de la burbuja no deben llegar al mapa (arrastrarlo ni
     // contar como clic en el terreno).
@@ -510,8 +510,8 @@
   }
   function vistaTexto(ctx){
     const v = vistaDelMapa(ctx);
-    return v.ico + ' Se genera sobre lo que estás viendo: <b>' + esc(v.etq) + '</b>' +
-      (v.id === 'todos' ? '' : '. Cambia la vista con el botón 👁️ del mapa.');
+    return icoCat(v.ico, 14) + 'Se genera sobre lo que estás viendo: <b>' + esc(v.etq) + '</b>' +
+      (v.id === 'todos' ? '' : '. Cambia la vista con el botón del ojo en el mapa.');
   }
 
   function puntosParaHeat(ctx){
@@ -692,7 +692,7 @@
       const nE = S.heat.ultimoConteo || 0;
       S.heat.chip.innerHTML =
         '<i style="background:' + (S.heat.colorExterno || '#ef4444') + '"></i>' +
-        '<div><b>' + esc(S.heat.etqExterno || '🔥 Mapa de calor') + '</b>' +
+        '<div><b>' + ico('calor', 14) + esc(S.heat.etqExterno || 'Mapa de calor') + '</b>' +
         '<small>' + nE + ' de ' + S.heat.externos.length + ' punto' +
         (S.heat.externos.length === 1 ? '' : 's') + ' en pantalla</small></div>' +
         '<button type="button" data-u52-call="pca-heat-off" aria-label="Quitar mapa de calor">\u2715</button>';
@@ -703,10 +703,10 @@
     const n = S.heat.ultimoConteo || 0;
     S.heat.chip.innerHTML =
       '<i style="background:' + color + '"></i>' +
-      '<div><b>' + (g ? g.i + ' ' + esc(g.t) : '🔥 Todos los usos') + '</b>' +
+      '<div><b>' + (g ? icoCat(g.i, 14) + esc(g.t) : ico('calor', 14) + 'Todos los usos') + '</b>' +
       '<small>' + n + ' punto' + (n === 1 ? '' : 's') + ' en pantalla' +
       (S.cerrada && S.pts.length >= 3 ? ' · dentro del área' : '') +
-      ' · ' + vistaDelMapa(ctx).ico + ' ' + esc(vistaDelMapa(ctx).etq) + '</small></div>' +
+      ' · ' + icoCat(vistaDelMapa(ctx).ico, 12) + esc(vistaDelMapa(ctx).etq) + '</small></div>' +
       '<button type="button" data-u52-call="pca-heat-off" aria-label="Quitar mapa de calor">✕</button>';
   }
 
@@ -773,15 +773,15 @@
       '<button type="button" class="pca-heat-btn' + (act === id ? ' activo' : '') + '" ' +
       'data-u52-call="pca-heat" data-gid="' + esc(id) + '" ' +
       'style="--c:' + (color || '#ef4444') + '">' +
-      '<i></i><span>' + ico + ' ' + esc(txt) + '</span></button>';
+      '<i></i><span>' + icoCat(ico, 13) + esc(txt) + '</span></button>';
     return '<div class="pca-heat-sel">' +
-      '<h4 class="pca-h pca-h-heat">🔥 Mapa de calor</h4>' +
+      h4('calor', 'Mapa de calor', 'pca-h-heat') +
       '<p class="pca-heat-ayuda">Muestra dónde se concentra lo mapeado. Elige una categoría y el panel se cierra para que lo veas sobre el mapa.</p>' +
       '<div class="pca-heat-chips">' +
         chip('todos', '🔥', 'Todos los usos', '#ef4444') +
         ctx.grupos.map(g => chip(g.id, g.i, g.t, ctx.colorGrupo[g.id])).join('') +
       '</div>' +
-      (act ? '<button type="button" class="pca-heat-off" data-u52-call="pca-heat-off">✕ Quitar el mapa de calor</button>' : '') +
+      (act ? '<button type="button" class="pca-heat-off" data-u52-call="pca-heat-off">' + ico('apagar', 16) + 'Quitar el mapa de calor</button>' : '') +
     '</div>';
   }
 
@@ -903,6 +903,19 @@
     return new Date(t).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  // Icono lineal (js/71) o nada; y el título de sección compuesto igual que
+  // en la hoja de reconocimiento, para que el panel y la hoja sean una cosa.
+  function ico(n, t){ return window.URBIS_ICONO ? window.URBIS_ICONO(n, { tam: t || 18 }) : ''; }
+  // Icono lineal para un emoji del catálogo o de la vista del mapa.
+  function icoCat(emoji, t){
+    const I = window.URBIS_ICONO;
+    return I && I.deEmoji ? '<i class="pca-cat-ico">' + I.deEmoji(emoji, { tam: t || 14 }) + '</i>' : '';
+  }
+  function h4(icono, titulo, extra){
+    return '<h4 class="pca-h' + (extra ? ' ' + extra : '') + '">' +
+      (icono ? '<i class="pca-h-ico">' + ico(icono, 16) + '</i>' : '') + '<span>' + titulo + '</span></h4>';
+  }
+
   function htmlSinArea(ctx){
     const areas = leerAreas();
     const guardadas = areas.length ? (
@@ -927,11 +940,11 @@
 
     return '<div class="pca-panel">' +
       '<div class="pca-intro">' +
-        '<span class="pca-intro-ico">✏️</span>' +
+        '<span class="pca-intro-ico">' + ico('lapiz', 22) + '</span>' +
         '<div><b>Dibuja el área que quieres analizar</b>' +
         '<small>Marca el contorno de un barrio, una manzana o un corredor y URBIS cuenta todo lo que la comunidad ya mapeó adentro — sin depender del radio de la ciudad.</small></div>' +
       '</div>' +
-      '<button type="button" class="pca-btn-principal" data-u52-call="pca-dibujar">✏️ Dibujar área en el mapa</button>' +
+      '<button type="button" class="pca-btn-principal" data-u52-call="pca-dibujar">' + ico('lapiz') + 'Dibujar área en el mapa</button>' +
       // Reconocimiento (js/68): mira qué tiene OpenStreetMap ANTES de salir a
       // mapear. Es otra pregunta que la de esta pantalla —acá se cuenta lo que
       // el curso ya levantó— así que va como segundo botón y no mezclado.
@@ -949,7 +962,7 @@
     if (!window.URBIS_PC_RECON) return '';
     const conArea = S.cerrada && S.pts.length >= 3;
     return '<button type="button" class="pca-btn-principal pca-btn-recon" data-u52-call="pca-reconocer">' +
-      (conArea ? '🔍 ¿Qué hay dentro de esta área?' : '🔍 ¿Qué hay en este sector?') +
+      ico('lupa') + (conArea ? '¿Qué hay dentro de esta área?' : '¿Qué hay en este sector?') +
       '</button>';
   }
 
@@ -991,9 +1004,9 @@
         '<div><b>' + esc(S.nombre || 'Área sin nombre') + '</b>' +
         '<small>' + fmtArea(r.areaM2) + ' · borde ' + fmtDist(r.perimetroM) + ' · ' + S.pts.length + ' vértices</small></div>' +
         '<div class="pca-cabeza-btns">' +
-          '<button type="button" data-u52-call="pca-guardar" aria-label="Guardar área">💾</button>' +
-          '<button type="button" data-u52-call="pca-dibujar" aria-label="Dibujar otra">✏️</button>' +
-          '<button type="button" data-u52-call="pca-limpiar" aria-label="Quitar área">✕</button>' +
+          '<button type="button" data-u52-call="pca-guardar" aria-label="Guardar área">' + ico('guardar', 18) + '</button>' +
+          '<button type="button" data-u52-call="pca-dibujar" aria-label="Dibujar otra">' + ico('lapiz', 18) + '</button>' +
+          '<button type="button" data-u52-call="pca-limpiar" aria-label="Quitar área">' + ico('cerrar', 18) + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -1010,12 +1023,12 @@
 
       (r.total === 0
         ? '<div class="pca-vacio">Dentro de esta área todavía no hay nada mapeado en Pro City. Mapea elementos aquí y vuelve a abrir el análisis.</div>'
-        : '<h4 class="pca-h">🏙️ Composición por Matriz de Usos</h4>' +
+        : h4('capas', 'Composición por Matriz de Usos') +
           (r.totalMatriz
             ? '<div class="pca-chart-wrap"><canvas id="pca-chart-grupos" height="200"></canvas></div>' + barras
             : '<div class="pca-vacio">En esta área no hay elementos de la Matriz de Usos todavía.</div>') +
 
-          '<h4 class="pca-h">🧩 Reparto por dimensión de Pro City</h4>' +
+          h4('estadistica', 'Reparto por dimensión de Pro City') +
           '<div class="pca-chart-wrap"><canvas id="pca-chart-dims" height="200"></canvas></div>' +
           tablaDims
       ) +
@@ -1057,18 +1070,18 @@
       '<option value="' + esc(id) + '"' + (estiloGuardado() === id ? ' selected' : '') + '>' +
       esc(E[id].nombre) + '</option>').join('');
     return '<div class="pca-exportar">' +
-      '<h4 class="pca-h pca-h-pdf">📄 Informe del área</h4>' +
+      h4('imprimir', 'Informe del área', 'pca-h-pdf') +
       '<p class="pca-exportar-ayuda">Una hoja con el mapa, las cifras y las gráficas de esta área, lista para imprimir o guardar como PDF.</p>' +
       '<label class="pca-exportar-estilo">Estilo' +
         '<select id="pca-estilo-pdf" data-u52-noclose>' + sel + '</select>' +
       '</label>' +
-      '<button type="button" class="pca-btn-pdf" data-u52-call="pca-pdf">📄 Generar el informe</button>' +
+      '<button type="button" class="pca-btn-pdf" data-u52-call="pca-pdf">' + ico('documento', 16) + 'Generar el informe</button>' +
       // Pedido explícito: que al sacar el PDF salgan también los archivos
       // geográficos. Van en un botón aparte y no automáticos, porque son dos
       // descargas y el navegador pide permiso para la segunda: encadenarlas a
       // escondidas haría que la mitad de las veces no llegara nada.
       '<button type="button" class="pca-btn-pdf-todo" data-u52-call="pca-pdf-todo">' +
-        '📄 + 📦 Informe y paquete geográfico</button>' +
+        ico('paquete', 16) + 'Informe y paquete geográfico</button>' +
       '<p class="pca-exportar-nota">El informe lleva de fondo la foto satelital analizada con la ' +
         'cobertura en vectores encima. El paquete trae KMZ, DXF y GeoJSON georreferenciados.</p>' +
     '</div>';
@@ -1603,18 +1616,18 @@ bloquesDiag,
     const visibles = orden.filter(c => c.pct > 0);
     S.rasterChip.innerHTML =
       '<div class="pca-raster-chip-txt">' +
-        '<b>🛰️ Cobertura del suelo</b>' +
+        '<b>' + ico('satelite', 14) + 'Cobertura del suelo</b>' +
         '<span class="pca-raster-chip-barra">' +
           visibles.map(c => '<i style="width:' + c.pct + '%;background:' + c.color + '" ' +
             'title="' + esc(c.etq) + '"></i>').join('') +
         '</span>' +
-        '<small>' + visibles.slice(0, 2).map(c => c.ico + ' ' + c.pct + '%').join(' · ') +
+        '<small>' + visibles.slice(0, 2).map(c => icoCat(c.ico, 12) + c.pct + '%').join(' · ') +
           (S.rasterVista === 'foto' ? ' · foto analizada'
                                     : (S.rasterEnVectores ? ' · vectores' : ' · imagen')) + '</small>' +
       '</div>' +
       '<button type="button" class="pca-raster-chip-foto' + (S.rasterVista === 'foto' ? ' activo' : '') + '" ' +
         'data-u52-call="pca-raster-foto" title="Comparar con la foto que se analizó" ' +
-        'aria-label="Ver la foto satelital analizada">' + (S.rasterVista === 'foto' ? '🎨' : '🛰️') + '</button>' +
+        'aria-label="Ver la foto satelital analizada">' + (S.rasterVista === 'foto' ? ico('paleta', 16) : ico('satelite', 16)) + '</button>' +
       '<button type="button" data-u52-call="pca-raster-off" aria-label="Quitar la capa de cobertura">✕</button>';
   }
 
@@ -1676,7 +1689,7 @@ bloquesDiag,
 
   function nombreGeo(tipo){
     const f = formaDe(tipo);
-    return f ? f.ico + ' ' + f.nom : '';
+    return f ? icoCat(f.ico, 14) + f.nom : '';
   }
   function colorGeo(tipo){
     const f = formaDe(tipo);
@@ -2113,7 +2126,7 @@ bloquesDiag,
     const par = PARAMETROS[S.geo.tipo];
     const ajuste = par ? par.etq(S.geo.par[par.clave]) : '';
     const aviso = n < 2
-      ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' en ' + v.ico + ' ' + esc(v.etq)
+      ? 'Solo ' + n + ' punto' + (n === 1 ? '' : 's') + ' en ' + icoCat(v.ico, 12) + esc(v.etq)
       : n + ' puntos · ' + (ajuste ? esc(ajuste) : esc(nombreFiltroGeo(ctx))) +
         (S.geo.ultimoDato ? ' · ' + esc(S.geo.ultimoDato) : '');
     S.geo.chip.innerHTML =
@@ -2122,7 +2135,7 @@ bloquesDiag,
       // El dado vive también en el chip: las variaciones se miran con el panel
       // cerrado, y volver a abrirlo para cada tirada rompía el ritmo de probar.
       '<button type="button" class="pca-geo-dado" data-u52-call="pca-geo-variar" ' +
-        'aria-label="Generar otra variación">🎲</button>' +
+        'aria-label="Generar otra variación">' + ico('dado', 16) + '</button>' +
       '<button type="button" data-u52-call="pca-geo-off" aria-label="Quitar la geometría">✕</button>';
   }
 
@@ -2162,7 +2175,7 @@ bloquesDiag,
     S.diag = d;
     const verImp = S.verImplantacion;
     return '<div class="pcd-sel">' +
-      '<h4 class="pca-h pca-h-diag">🎓 Qué dice esta área</h4>' +
+      h4('escuela', 'Qué dice esta área', 'pca-h-diag') +
       '<p class="pcd-ayuda">Lectura del sector a partir de tus ' + d.ind.total +
         ' elementos mapeados' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
       '<div class="pcd-sub">Población y reparto de usos</div>' +
@@ -2175,7 +2188,7 @@ bloquesDiag,
       // después se propone. Ese orden es el del ejercicio académico.
       '<button type="button" class="pcd-btn-imp" data-u52-call="pca-implantacion">' +
         (verImp ? '▾ Ocultar la propuesta de implantación'
-                : '🏗️ Proponer una implantación para esta área') + '</button>' +
+                : ico('obra', 16) + 'Proponer una implantación para esta área') + '</button>' +
       (verImp ? '<div class="pcd-imp"><div class="pcd-sub">Propuesta de implantación</div>' +
                 D.htmlImplantacion(d) +
                 '<p class="pcd-nota">Ejercicio académico: son líneas de partida para formular un ' +
@@ -2189,14 +2202,14 @@ bloquesDiag,
     const chip = f =>
       '<button type="button" class="pca-forma' + (act === f.id ? ' activo' : '') + '" ' +
       'data-u52-call="pca-geo" data-gid="' + esc(f.id) + '" style="--c:' + f.color + '">' +
-      '<i></i><span>' + f.ico + ' ' + esc(f.nom) + '</span></button>';
+      '<i></i><span>' + icoCat(f.ico, 14) + esc(f.nom) + '</span></button>';
     // Filtro de qué se conecta. Se muestra el conteo real de cada categoría
     // dentro del área para no ofrecer filtros que dejarían el dibujo vacío.
     const r = window.__pcaUltimo || { porGrupo: {}, total: 0 };
     const fchip = (id, ico, txt, n) =>
       '<button type="button" class="pca-geo-filtro' + (filtro === id ? ' activo' : '') + '" ' +
       'data-u52-call="pca-geo-filtro" data-gid="' + esc(id) + '">' +
-      ico + ' ' + esc(txt) + '<b>' + n + '</b></button>';
+      icoCat(ico, 13) + esc(txt) + '<b>' + n + '</b></button>';
     const filtros = fchip('todos', '🌐', 'Todo lo mapeado', r.total || 0) +
       ctx.grupos.filter(g => (r.porGrupo[g.id] || 0) > 0)
         .map(g => fchip(g.id, g.i, g.t, r.porGrupo[g.id])).join('');
@@ -2214,7 +2227,7 @@ bloquesDiag,
       '</label>') : '';
 
     return '<div class="pca-geo-sel">' +
-      '<h4 class="pca-h pca-h-geo">🕸️ Geometría del área</h4>' +
+      h4('area', 'Geometría del área', 'pca-h-geo') +
       '<p class="pca-geo-ayuda">Un mismo levantamiento admite muchas lecturas, y cada forma ' +
         'responde una pregunta distinta. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
       '<div class="pcd-vista">' + vistaTexto(ctx) + '</div>' +
@@ -2222,13 +2235,13 @@ bloquesDiag,
       '<div class="pca-geo-filtros">' + filtros + '</div>' +
       '<div class="pca-geo-sub">¿Cómo dibujarlos?</div>' +
       '<div class="pca-formas">' + FORMAS.map(chip).join('') + '</div>' +
-      (forma ? '<p class="pca-forma-que">' + forma.ico + ' <b>' + esc(forma.nom) + '</b> · ' +
+      (forma ? '<p class="pca-forma-que">' + icoCat(forma.ico, 14) + '<b>' + esc(forma.nom) + '</b> · ' +
                esc(forma.pregunta) + '</p>' : '') +
       ajuste +
       (act ? '<div class="pca-geo-acciones">' +
         '<button type="button" class="pca-geo-variar" data-u52-call="pca-geo-variar">' +
-          '🎲 Generar otra variación</button>' +
-        '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">✕ Quitar</button>' +
+          ico('dado', 16) + 'Generar otra variación</button>' +
+        '<button type="button" class="pca-heat-off" data-u52-call="pca-geo-off">' + ico('apagar', 16) + 'Quitar</button>' +
       '</div>' : '') +
     '</div>';
   }
@@ -2975,7 +2988,7 @@ bloquesDiag,
       // Atajo pedido: el panel tapa el mapa, así que sin esto había que
       // cerrarlo a mano y buscar el área para ver la imagen clasificada.
       '<button type="button" class="pca-btn-raster-mapa" data-u52-call="pca-raster-ver">' +
-        '🗺️ Ver en el mapa</button>' +
+        ico('mapa', 16) + 'Ver en el mapa</button>' +
       '<div class="pca-raster-barra">' +
         orden.filter(c => c.pct > 0).map(c =>
           '<i style="width:' + c.pct + '%;background:' + c.color + '" title="' + esc(c.etq) + '"></i>').join('') +
@@ -2983,7 +2996,7 @@ bloquesDiag,
       '<div class="pca-raster-lista">' +
         orden.map(c =>
           '<div class="pca-raster-fila' + (c.fiable ? '' : ' ambigua') + '">' +
-          '<span><i style="background:' + c.color + '"></i>' + c.ico + ' ' + esc(c.etq) + '</span>' +
+          '<span><i style="background:' + c.color + '"></i>' + icoCat(c.ico, 13) + esc(c.etq) + '</span>' +
           '<b>' + c.pct + '%</b><em>' + fmtArea(c.m2) + '</em></div>' +
           '<div class="pca-raster-nota">' + esc(c.nota) + '</div>').join('') +
       '</div>' +
@@ -2996,7 +3009,7 @@ bloquesDiag,
       // inexplicables.
       '<p class="pca-raster-ficha">' + res.pasadas + ' lecturas cruzadas · malla ' + esc(res.malla) +
         ' · velo retirado ' + res.velo + ' de 255 · umbral de verde ' + res.umbral + '</p>' +
-      '<div class="pca-raster-aviso"><b>⚠️ Cómo leer esto</b>' +
+      '<div class="pca-raster-aviso"><b>' + ico('alerta', 14) + 'Cómo leer esto</b>' +
         '<small>Estimación por <b>color</b> de imagen satelital: <b>no es NDVI ni un estudio ' +
         'ambiental certificado</b>. Un NDVI real necesita banda infrarroja, que no está disponible ' +
         'gratis. Por eso solo se declaran tres clases fiables — vegetación viva, gris construido y ' +
@@ -3007,7 +3020,7 @@ bloquesDiag,
         'de clasificar se le retira el velo de bruma, que es lo que aplana el color y hacía ' +
         'desaparecer árboles enteros. La vegetación se mide por <b>proporción</b> de verde y no ' +
         'por brillo, así que la copa en sombra también cuenta, y el borde apagado de una copa se ' +
-        'resuelve por lo que tiene al lado. El botón 🛰️ del recuadro sobre el mapa muestra <b>la foto que se analizó</b>: ' +
+        'resuelve por lo que tiene al lado. El botón de satélite del recuadro sobre el mapa muestra <b>la foto que se analizó</b>: ' +
         'no es la misma imagen del mapa de fondo y puede ser de otro año, así que si un árbol ' +
         'falta, ahí se ve si el problema es la clasificación o la foto. Las manchas de agua de menos de 600 m² se toman como techo ' +
         'o sombra —el zinc azul y el agua somera tienen el mismo color—, de modo que una ' +
@@ -3018,10 +3031,10 @@ bloquesDiag,
 
   function bloqueRaster(){
     return '<div class="pca-raster-sel">' +
-      '<h4 class="pca-h pca-h-raster">🛰️ Cobertura del suelo</h4>' +
+      h4('satelite', 'Cobertura del suelo', 'pca-h-raster') +
       '<p class="pca-raster-ayuda">Estima qué parte del área es vegetación, superficie construida, ' +
         'suelo desnudo o agua, clasificando el color de una imagen satelital.</p>' +
-      '<button type="button" class="pca-btn-raster" data-u52-call="pca-raster">🛰️ Analizar cobertura</button>' +
+      '<button type="button" class="pca-btn-raster" data-u52-call="pca-raster">' + ico('satelite', 16) + 'Analizar cobertura</button>' +
       '<div id="pca-raster-out">' + (S.raster ? '' : '') + '</div>' +
     '</div>';
   }
@@ -3113,7 +3126,7 @@ bloquesDiag,
     if (name === 'raster') {
       const btn = el;
       const out = document.getElementById('pca-raster-out');
-      if (btn) { btn.disabled = true; btn.textContent = '🛰️ Analizando…'; }
+      if (btn) { btn.disabled = true; btn.innerHTML = ico('satelite', 16) + 'Analizando…'; }
       // El análisis pasa de una lectura a tres, y a mucha más resolución: puede
       // tardar. Callado se siente colgado, así que va contando en qué anda.
       const avisar = function (txt) {
@@ -3127,7 +3140,7 @@ bloquesDiag,
       }).catch(err => {
         reg('raster-error');
         if (out) out.innerHTML = '<p class="pca-raster-error">No se pudo analizar: ' + esc(err.message) + '</p>';
-        if (btn) { btn.disabled = false; btn.textContent = '🛰️ Analizar cobertura'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = ico('satelite', 16) + 'Analizar cobertura'; }
       });
       return true;
     }

@@ -34,6 +34,7 @@
             // recordar y mantener.
             emitiendo: false, emitida: null, errorEmitir: '' };
 
+  function ico(n, t) { return window.URBIS_ICONO ? window.URBIS_ICONO(n, { tam: t || 16 }) : ''; }
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -250,9 +251,9 @@
             '<textarea class="ulic-campo ulic-enlace" readonly rows="2">' + esc(enlaceDe(e.licencia)) + '</textarea>' +
             '<div class="ulic-acciones">' +
               '<button type="button" data-ulic="copiar-enlace" class="ulic-principal">' +
-                (S.copiadoEnlace ? '✓ Enlace copiado' : '🔗 Copiar el enlace') + '</button>' +
+                (S.copiadoEnlace ? ico('ok', 16) + 'Enlace copiado' : ico('enlace', 16) + 'Copiar el enlace') + '</button>' +
               (navigator.share
-                ? '<button type="button" data-ulic="compartir" class="ulic-quitar">📤 Compartir</button>'
+                ? '<button type="button" data-ulic="compartir" class="ulic-quitar">' + ico('compartir', 16) + 'Compartir</button>'
                 : '') +
             '</div>' +
             '<p class="ulic-pista">Mandáselo por WhatsApp. Quien lo toque en su teléfono queda con la ' +
@@ -261,7 +262,7 @@
             '<label class="ulic-lab">O el texto suelto</label>' +
             '<textarea class="ulic-campo" readonly rows="3">' + esc(e.licencia) + '</textarea>' +
             '<button type="button" data-ulic="copiar-lic" class="ulic-quitar">' +
-              (S.copiada ? '✓ copiada' : '📋 Copiar la licencia') + '</button>' +
+              (S.copiada ? ico('ok', 16) + 'copiada' : ico('copiar', 16) + 'Copiar la licencia') + '</button>' +
             '<p class="ulic-pista">Apuntá el id <code>' + esc(e.id) + '</code>: es lo que se pone en ' +
             '<code>URBIS_REVOCADAS</code> el día que haya que anularla —si alguien la reenvía, se anula ' +
             'esa y se emite otra—.</p>' +
@@ -310,7 +311,7 @@
 
     return '' +
       '<div class="ulic-barra">' +
-        '<b>🔑 Licencia de URBIS para Empresas</b>' +
+        '<b>' + ico('llave', 16) + 'Licencia de URBIS para Empresas</b>' +
         '<button type="button" data-ulic="cerrar" class="ulic-x" aria-label="Cerrar">✕</button>' +
       '</div>' +
       '<div class="ulic-cuerpo">' +

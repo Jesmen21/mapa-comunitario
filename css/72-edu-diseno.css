@@ -22,7 +22,7 @@
   --edu-accent-soft:#E6F7FE; /* tinte para chips y filas activas */
   --edu-ink:#0F1F2E;         /* títulos */
   --edu-ink-2:#3B4A5A;       /* texto */
-  --edu-ink-3:#6B7A8A;       /* metadatos */
+  --edu-ink-3:#5A6878;       /* metadatos · 5.7:1 sobre blanco, 5.1 sobre el celeste suave */
   --edu-ground:#FFFFFF;
   --edu-ground-2:#F6F9FB;    /* gris-azulado frío, no gris plano */
   --edu-line:#E3EAF0;
@@ -124,7 +124,10 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
 .pcr-pestana .pcr-pest-t b{
   display:block; font-size:.9rem !important; font-weight:800 !important; letter-spacing:-.01em;
   color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  /* El nombre completo, a dos líneas como mucho: «Sector del 3 de s…» no
+     dice nada; «Sector del 3 de septiembre» sí. */
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; line-height:1.2;
 }
 .pcr-pestana .pcr-pest-dato{
   display:block; font-size:1.05rem !important; font-weight:800 !important;
@@ -147,4 +150,423 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
 @media (prefers-reduced-motion:reduce){
   .pca-card-area .pca-guardada-abrir, .pca-card-area .pca-guardada-borrar,
   .pcr-pestana .pcr-pest-ficha, .pcr-pestana .pcr-pest-fl{ transition:none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   2 · TÍTULOS Y JERARQUÍA
+   ══════════════════════════════════════════════════════════════════════
+   Título principal → subtítulo → sección → información → dato → microtexto.
+   La barra de arriba lleva un eyebrow («Modo educativo · Reconocimiento») y
+   el título; cada sección, un icono en su cajita y el texto. Mismo patrón en
+   la hoja de reconocimiento (.pcr-*) y en el panel de análisis (.pca-*). */
+.pcr-hoja, .pcr-hoja *, .pcr-pestana, .pcr-pestana *, .pca-panel, .pca-panel *{
+  font-family:var(--edu-font) !important; -webkit-font-smoothing:antialiased;
+}
+.pcr-hoja{
+  border-radius:20px 20px 0 0 !important; box-shadow:var(--edu-sombra-alta) !important;
+  background:var(--edu-ground) !important;
+}
+.pcr-hoja .pcr-barra{
+  padding:14px 16px 12px !important; gap:12px !important;
+  border-bottom:1px solid var(--edu-line) !important; background:var(--edu-ground);
+  position:relative;
+}
+/* La línea celeste corta bajo el título: la marca de sección del producto. */
+.pcr-hoja .pcr-barra::after{
+  content:''; position:absolute; left:16px; bottom:-1px; width:44px; height:3px;
+  border-radius:2px; background:var(--edu-accent);
+}
+.pcr-titulo{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.pcr-titulo .pcr-eyebrow{ display:block; }
+.pcr-hoja .pcr-barra b{
+  display:flex !important; align-items:center; gap:8px;
+  font-size:1.06rem !important; font-weight:800 !important; letter-spacing:-.015em !important;
+  line-height:1.2 !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-barra b .u-ico{ color:var(--edu-accent-deep) !important; margin:0; }
+.pcr-hoja .pcr-x{
+  width:36px !important; height:36px !important; border-radius:12px !important;
+  background:var(--edu-ground-2) !important; display:grid; place-items:center;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  transition:background .16s ease, transform .16s ease;
+}
+.pcr-hoja .pcr-x:hover{ background:var(--edu-line) !important; }
+.pcr-hoja .pcr-x:active{ transform:scale(.92); }
+.pcr-hoja .pcr-cuerpo{ padding:14px 16px 24px !important; gap:14px !important; }
+
+/* Sección: icono en cajita + texto. */
+.pcr-h, .pca-h{
+  display:flex !important; align-items:center !important; gap:9px !important;
+  margin:8px 0 0 !important; padding:0 !important;
+  font-size:.9rem !important; font-weight:800 !important; letter-spacing:-.012em !important;
+  line-height:1.2 !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-h > span, .pca-h > span{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-h-ico, .pca-h-ico{
+  flex:0 0 28px; width:28px; height:28px; border-radius:9px;
+  display:grid; place-items:center; font-style:normal;
+  background:var(--edu-accent-soft);
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pcr-h-ico .u-ico, .pca-h-ico .u-ico{ margin:0 !important; }
+.pcr-hoja .pcr-h, .pcr-pestana .pcr-h{ color:var(--edu-ink) !important; }
+
+/* Texto corrido, ayudas y metadatos: tres tintas, ninguna lavada. */
+.pcr-hoja .pcr-intro, .pcr-pestana .pcr-intro,
+.pcr-hoja .pcr-tarea-intro, .pcr-pestana .pcr-tarea-intro,
+.pcr-hoja .pcr-conc, .pcr-pestana .pcr-conc,
+.pcr-hoja .pcr-ok, .pcr-hoja .pcr-vacio-todo,
+.pcr-hoja .pcr-check li, .pcr-hoja .pcr-tareas li, .pcr-pestana .pcr-tareas li,
+.pcr-hoja .pcr-comp-lista li{
+  font-size:.84rem !important; line-height:1.5 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-hoja .pcr-pista, .pcr-pestana .pcr-pista, .pca-panel .pca-nota{
+  font-size:.76rem !important; line-height:1.45 !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-hoja .pcr-pista b, .pcr-pestana .pcr-pista b,
+.pcr-hoja .pcr-intro b, .pcr-hoja .pcr-tarea-intro b, .pcr-hoja .pcr-conc b,
+.pcr-pestana .pcr-conc b, .pcr-pestana .pcr-tarea-intro b{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; font-weight:700;
+}
+.pcr-hoja .pcr-lab, .pcr-pestana .pcr-lab{
+  font-size:.66rem !important; font-weight:700 !important; letter-spacing:.08em !important;
+  text-transform:uppercase !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+/* Los párrafos «de conclusión» dejan de ser cajas de color: una barra fina
+   celeste a la izquierda y texto normal. Menos tinta, misma jerarquía. */
+.pcr-hoja .pcr-conc, .pcr-pestana .pcr-conc{
+  background:transparent !important; border:0 !important; border-left:3px solid var(--edu-accent) !important;
+  border-radius:0 !important; padding:2px 0 2px 12px !important; margin:0 !important;
+}
+.pcr-hoja .pcr-nota{
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; padding:12px 14px !important;
+  font-size:.78rem !important; line-height:1.5 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-hoja .pcr-nota b{ color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   3 · BOTONES, CHIPS Y CONTROLES
+   ══════════════════════════════════════════════════════════════════════ */
+.pcr-hoja .pcr-principal, .pca-panel .pca-btn-principal{
+  display:flex !important; align-items:center; justify-content:center; gap:8px;
+  min-height:48px; padding:0 18px !important; width:100%;
+  border:0 !important; border-radius:12px !important;
+  background:var(--edu-accent-deep) !important;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+  font-size:.92rem !important; font-weight:700 !important; letter-spacing:-.005em;
+  box-shadow:0 6px 16px rgba(10,111,158,.22);
+  transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.pcr-hoja .pcr-principal:hover:not(:disabled), .pca-panel .pca-btn-principal:hover{ background:var(--edu-accent-ink) !important; }
+.pcr-hoja .pcr-principal:active:not(:disabled), .pca-panel .pca-btn-principal:active{ transform:scale(.985); box-shadow:0 3px 8px rgba(10,111,158,.2); }
+.pcr-hoja .pcr-principal:disabled{ background:var(--edu-line-2) !important; box-shadow:none; color:#fff !important; }
+.pcr-hoja .pcr-principal.pcr-secundario{
+  background:var(--edu-ground-2) !important; box-shadow:none;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pcr-hoja .pcr-principal.pcr-secundario:hover:not(:disabled){ background:var(--edu-accent-soft) !important; }
+.pca-panel .pca-btn-recon{ background:var(--edu-ground) !important; box-shadow:inset 0 0 0 1.5px var(--edu-accent-deep) !important;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important; }
+
+.pcr-hoja .pcr-mini, .pcr-pestana .pcr-mini, .pcr-pestana .pca-exp-btns button{
+  display:inline-flex !important; align-items:center; justify-content:center; gap:7px;
+  min-height:38px; padding:0 13px !important;
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line-2) !important;
+  border-radius:var(--edu-r-s) !important;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+  font-size:.78rem !important; font-weight:600 !important;
+  transition:background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.pcr-hoja .pcr-mini:hover:not(:disabled), .pcr-pestana .pcr-mini:hover{ background:var(--edu-accent-soft) !important; border-color:var(--edu-accent) !important; }
+.pcr-hoja .pcr-mini:active:not(:disabled){ transform:scale(.97); }
+.pcr-hoja .pcr-mini:disabled{ opacity:.5; }
+.pcr-hoja .pcr-llevar, .pcr-pestana .pcr-llevar{ display:flex; flex-wrap:wrap; gap:8px; }
+.pcr-hoja .pcr-llevar .pcr-llevar-b, .pcr-pestana .pcr-llevar .pcr-llevar-b{ flex:1 1 auto; }
+.pcr-hoja .pcr-exp-btns .pcr-exp-todo, .pcr-pestana .pca-exp-btns .pca-exp-todo{
+  background:var(--edu-accent-deep) !important; border-color:var(--edu-accent-deep) !important;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+
+/* Selectores de forma y de radio: segmentados, activo en azul profundo. */
+.pcr-hoja .pcr-formas, .pcr-hoja .pcr-radios{ gap:8px !important; }
+.pcr-hoja .pcr-forma, .pcr-hoja .pcr-radio{
+  display:inline-flex !important; align-items:center; justify-content:center; gap:7px;
+  min-height:44px; border:1px solid var(--edu-line-2) !important; border-radius:12px !important;
+  background:var(--edu-ground) !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  font-size:.82rem !important; font-weight:600 !important;
+  transition:background .16s ease, border-color .16s ease, color .16s ease;
+}
+.pcr-hoja .pcr-forma-on, .pcr-hoja .pcr-radio-on{
+  background:var(--edu-accent-deep) !important; border-color:var(--edu-accent-deep) !important;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+.pcr-hoja .pcr-areainfo{
+  background:var(--edu-accent-soft) !important; border-radius:var(--edu-r-s) !important;
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+  font-size:.86rem !important; font-weight:600 !important;
+}
+.pcr-hoja .pcr-centro code{
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace !important; font-size:.78rem !important;
+}
+
+/* Chips de dato y de calor. */
+.pcr-hoja .pcr-chip, .pcr-pestana .pcr-chip{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important;
+  border-radius:999px !important; padding:5px 11px !important;
+  font-size:.76rem !important; font-weight:500 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-hoja .pcr-chip b, .pcr-pestana .pcr-chip b{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+.pcr-hoja .pcr-cal-chip, .pcr-pestana .pcr-cal-chip{
+  min-height:36px; border-width:1px !important; border-color:var(--edu-line-2) !important;
+  font-weight:600 !important; font-size:.76rem !important;
+  transition:background .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
+}
+.pcr-hoja .pcr-cal-chip:active, .pcr-pestana .pcr-cal-chip:active{ transform:scale(.96); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   4 · DATOS: KPIs, filas, medidores, cobertura
+   ══════════════════════════════════════════════════════════════════════
+   El número manda; la etiqueta acompaña. Números tabulares para que las
+   columnas cuadren; un solo acento (el celeste profundo) para el dato clave
+   y tinta para el resto. */
+.pcr-hoja .pcr-kpis, .pcr-pestana .pcr-kpis, .pca-panel .pca-kpis{
+  gap:8px !important;
+  /* Tantas columnas como cifras haya: tres KPIs llenan el ancho en vez de
+     dejar una cuarta columna vacía. */
+  grid-template-columns:repeat(auto-fit, minmax(0, 1fr)) !important;
+}
+.pcr-hoja .pcr-kpi, .pcr-pestana .pcr-kpi, .pca-panel .pca-kpi{
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; padding:11px 6px 9px !important;
+  box-shadow:var(--edu-sombra);
+}
+.pcr-hoja .pcr-kpi b, .pcr-pestana .pcr-kpi b, .pca-panel .pca-kpi b{
+  font-size:clamp(.98rem, 4.4vw, 1.18rem) !important; font-weight:800 !important; letter-spacing:-.02em !important;
+  font-variant-numeric:tabular-nums; line-height:1.05 !important; white-space:nowrap;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-kpi:first-child b, .pcr-pestana .pcr-kpi:first-child b, .pca-panel .pca-kpi:first-child b{
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pcr-hoja .pcr-kpi small, .pcr-pestana .pcr-kpi small, .pca-panel .pca-kpi small{
+  font-size:.64rem !important; line-height:1.25 !important; margin-top:4px !important;
+  letter-spacing:.01em;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-hoja .pcr-kpi-oro{ background:#FFFBEB !important; border-color:#F3E3A8 !important; }
+.pcr-hoja .pcr-kpi-oro b{ color:#8A6400 !important; -webkit-text-fill-color:#8A6400 !important; }
+
+.pcr-hoja .pcr-fila-nom, .pcr-pestana .pcr-fila-nom{
+  font-size:.8rem !important; font-weight:500 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-hoja .pcr-fila-barra, .pcr-pestana .pcr-fila-barra{ height:8px !important; border-radius:4px !important; background:var(--edu-ground-2) !important; }
+.pcr-hoja .pcr-fila-barra i, .pcr-pestana .pcr-fila-barra i{ background:var(--edu-accent-deep) !important; border-radius:4px !important; }
+.pcr-hoja .pcr-fila-n, .pcr-pestana .pcr-fila-n{
+  font-weight:800 !important; font-variant-numeric:tabular-nums;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-med-barra, .pcr-pestana .pcr-med-barra{ height:8px !important; background:var(--edu-ground-2) !important; }
+.pcr-hoja .pcr-med-cab b, .pcr-pestana .pcr-med-cab b{
+  font-size:1.05rem !important; font-variant-numeric:tabular-nums;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-cob-barra, .pcr-pestana .pcr-cob-barra{ height:12px !important; border-radius:6px !important; }
+
+/* Tarjetas de contenido (rubro, núcleo, tarea): blancas, borde fino, sin
+   rellenos de color. El color va en la marca lateral, no en el fondo. */
+.pcr-hoja .pcr-rubro, .pcr-pestana .pcr-rubro,
+.pcr-hoja .pcr-nucleo, .pcr-pestana .pcr-nucleo,
+.pcr-hoja .pcr-tarea, .pcr-pestana .pcr-tarea{
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; box-shadow:var(--edu-sombra);
+}
+.pcr-hoja .pcr-tarea, .pcr-pestana .pcr-tarea{ border-left:3px solid var(--edu-accent) !important; }
+.pcr-hoja .pcr-tarea-nueva, .pcr-pestana .pcr-tarea-nueva{ border-left-color:var(--edu-warn) !important; background:#FFFDF6 !important; }
+.pcr-hoja .pcr-nucleo-i, .pcr-pestana .pcr-nucleo-i{ background:var(--edu-accent-deep) !important; }
+.pcr-hoja .pcr-tareas, .pcr-pestana .pcr-tareas{ padding-left:0 !important; list-style:none !important; display:flex; flex-direction:column; gap:6px; }
+.pcr-hoja .pcr-tareas li, .pcr-pestana .pcr-tareas li{
+  background:var(--edu-ground-2) !important; border-left:3px solid var(--edu-warn) !important;
+  border-radius:0 var(--edu-r-s) var(--edu-r-s) 0 !important; padding:8px 12px !important;
+}
+.pcr-hoja .pcr-tareas li b, .pcr-pestana .pcr-tareas li b{ color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   5 · LA HOJA DE ESTADÍSTICAS DE PRO CITY (js/20): cabecera y pestañas
+   ══════════════════════════════════════════════════════════════════════
+   La cabecera gana un eyebrow, y las pestañas dejan el degradado lavanda por
+   un control segmentado: fondo frío, la activa blanca con sombra y texto en
+   tinta, con una línea celeste debajo. Especificidad alta a propósito: css/52
+   fija los colores con !important. */
+#urbis-mobile-app .u52-procity-sheet .u52-procity-sheet-head .u52-procity-eyebrow{
+  display:block; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  margin-bottom:3px;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-sheet-head b{
+  font-family:var(--edu-font) !important; font-size:1.15rem !important; font-weight:800 !important;
+  letter-spacing:-.02em !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-sheet-head small{
+  font-family:var(--edu-font) !important; font-weight:500 !important; font-size:.78rem !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs{
+  display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important;
+  padding:6px !important; margin-bottom:14px !important;
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs button{
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:6px !important;
+  min-height:38px !important; padding:0 8px !important;
+  background:transparent !important; box-shadow:none !important; border-radius:10px !important;
+  font-family:var(--edu-font) !important; font-size:.76rem !important; font-weight:600 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  position:relative; transition:background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs button .u-ico{ color:var(--edu-ink-3) !important; margin:0 !important; }
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs button.active{
+  background:var(--edu-ground) !important; box-shadow:var(--edu-sombra) !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; font-weight:700 !important;
+}
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs button.active .u-ico{ color:var(--edu-accent-deep) !important; }
+#urbis-mobile-app .u52-procity-sheet .u52-procity-stats-tabs button.active::after{
+  content:''; position:absolute; left:14px; right:14px; bottom:5px; height:2px; border-radius:1px;
+  background:var(--edu-accent);
+}
+
+/* El panel de análisis (js/24), cabecera del área y primera pantalla. */
+.pca-panel .pca-cabeza{
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; box-shadow:var(--edu-sombra); padding:12px 12px 12px 14px !important;
+}
+.pca-panel .pca-cabeza b{
+  font-size:1rem !important; font-weight:800 !important; letter-spacing:-.015em;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pca-panel .pca-cabeza small{ color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important; font-size:.76rem !important; }
+.pca-panel .pca-cabeza-btns button{
+  width:40px; height:40px; display:grid; place-items:center;
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important; border-radius:var(--edu-r-s) !important;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pca-panel .pca-intro{
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; padding:14px !important; align-items:center !important;
+}
+.pca-panel .pca-intro-ico{
+  width:44px; height:44px; border-radius:12px; display:grid; place-items:center; flex:0 0 44px;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pca-panel .pca-intro b{ color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; font-size:.96rem !important; font-weight:800 !important; }
+.pca-panel .pca-intro small{ color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   6 · LOS BOTONES FLOTANTES DEL MAPA EN MODO EDUCATIVO
+   ══════════════════════════════════════════════════════════════════════ */
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-recon-btn,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-dibujar-btn,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn{
+  box-shadow:var(--edu-sombra-alta) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-recon-btn .u-ico,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-dibujar-btn .u-ico,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn .u-ico{ margin:0 !important; vertical-align:middle; }
+
+/* Foco visible y movimiento contenido. */
+.pcr-hoja button:focus-visible, .pcr-pestana button:focus-visible, .pca-panel button:focus-visible{
+  outline:2px solid var(--edu-accent) !important; outline-offset:2px !important;
+}
+@media (prefers-reduced-motion:reduce){
+  .pcr-hoja *, .pcr-pestana *, .pca-panel *{ transition:none !important; }
+}
+
+/* ── 7. Iconos de categoría ──────────────────────────────────────────────
+   Los emojis del catálogo (droguería, colegio, parque…) se pintan acá como
+   trazo lineal, alineados con el texto y en tinta secundaria: acompañan la
+   palabra, no compiten con ella. */
+.pcr-cat-ico, .pca-cat-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  vertical-align:-.15em; margin-right:.38em; flex:0 0 auto;
+  color:var(--edu-accent-deep); line-height:0;
+}
+.pcr-cat-ico svg, .pca-cat-ico svg{ display:block; }
+.pcr-hoja .pcr-edad-ico, .pcr-pestana .pcr-edad-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:8px;
+  background:var(--edu-accent-soft); color:var(--edu-accent-ink) !important;
+  -webkit-text-fill-color:var(--edu-accent-ink) !important; font-size:0;
+}
+.pcr-hoja .pcr-edad-ico .pcr-cat-ico, .pcr-pestana .pcr-edad-ico .pcr-cat-ico{ margin:0; color:inherit; }
+.pcr-hoja .pcr-punto, .pcr-pestana .pcr-punto{ margin-right:.35em; }
+.pcr-cal-chip .pcr-cat-ico, .pca-heat-btn .pca-cat-ico, .pca-geo-filtro .pca-cat-ico{ color:inherit; opacity:.85; }
+.pcr-cob-etq .pcr-cat-ico{ color:var(--edu-ink-2); }
+.pcr-vacio-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:52px; height:52px; border-radius:16px;
+  background:var(--edu-accent-soft); color:var(--edu-accent-ink) !important;
+  -webkit-text-fill-color:var(--edu-accent-ink) !important; font-size:0 !important;
+}
+.u52-empty-card .pcr-vacio-ico svg{ display:block; }
+/* Botones de la licencia y del análisis que ahora llevan icono. */
+.ulic-quitar .u-ico, .ulic-acciones .u-ico, .pca-burbuja .u-ico, .pca-btn-pdf .u-ico,
+.pca-btn-raster .u-ico, .pca-heat-off .u-ico{ vertical-align:-.2em; margin-right:.38em; }
+.pca-burbuja-cab span .u-ico{ margin:0; display:block; color:var(--edu-accent-ink); }
+
+/* ── 8. Modo educativo: la barra inferior y los cierres, en celeste ─────
+   Pro City nació lavanda; el modo educativo es celeste. Los botones que
+   quedaban en la otra familia (el central de la barra, la equis de la hoja
+   de estadísticas) se traen a la misma paleta que la lupa y el lápiz. */
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav{
+  background:rgba(255,255,255,.96) !important; border-top:1px solid var(--edu-line) !important;
+  box-shadow:0 -8px 26px rgba(10,111,158,.10) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus){
+  color:var(--edu-ink-2) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus):active{
+  background:var(--edu-accent-soft) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico{
+  color:var(--edu-accent-deep) !important; display:grid !important; place-items:center; height:24px;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico svg{ display:block; }
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) span:not(.procity-nav-ico){
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  font-family:var(--edu-font) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus{
+  background:linear-gradient(135deg, var(--edu-accent), var(--edu-accent-deep)) !important;
+  box-shadow:0 12px 26px rgba(10,111,158,.36), 0 0 0 5px rgba(255,255,255,.94) !important;
+  display:grid !important; place-items:center;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus svg{ display:block; }
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-sheet-head button{
+  background:var(--edu-ground-2) !important; color:var(--edu-ink) !important;
+  -webkit-text-fill-color:var(--edu-ink) !important;
+  box-shadow:inset 0 0 0 1px var(--edu-line) !important;
+  transition:background .15s ease, transform .12s ease;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-sheet-head button:active{
+  background:var(--edu-accent-soft) !important; transform:scale(.94);
 }

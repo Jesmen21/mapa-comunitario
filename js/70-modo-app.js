@@ -83,8 +83,36 @@
     b.className = 'u52-procity-perfil-btn';
     b.setAttribute('data-u52-go', 'profile');
     b.setAttribute('aria-label', 'Mi perfil y cerrar sesión');
-    b.textContent = '👤';
+    b.innerHTML = (window.URBIS_ICONO ? window.URBIS_ICONO('perfil', { tam: 24, grosor: 2 }) : '👤');
     hermano.parentNode.insertBefore(b, hermano.nextSibling);
+    vestirBotonesDelMapa();
+  }
+
+  /* Los botones flotantes del mapa que ve el estudiante —la lupa y el lápiz—
+     llevan un emoji cada uno. En la app educativa se les pone el icono lineal
+     del mismo juego que el resto del módulo, para que la columna de botones
+     se lea como una sola herramienta. Solo en este modo: en la app completa
+     esos botones conviven con otros que siguen siendo emoji, y cambiar dos
+     de seis daría más desorden del que quita. */
+  var VESTIDOS = {
+    '.u52-procity-recon-btn': 'lupa',
+    '.u52-procity-dibujar-btn': 'lapiz',
+    // La barra inferior del módulo: mismo trazo que la lupa y el lápiz.
+    '.u52-procity-nav [data-u52-call="procity-loc-gps"] .procity-nav-ico': 'ubicar',
+    '.u52-procity-nav [data-u52-call="procity-loc-manual"] .procity-nav-ico': 'tocar',
+    '.u52-procity-nav [data-u52-call="layers"] .procity-nav-ico': 'capas',
+    '.u52-procity-nav [data-u52-call="procity-stats-open"] .procity-nav-ico': 'estadistica',
+    '.u52-procity-nav .plus.procity-plus': 'mas'
+  };
+  function vestirBotonesDelMapa() {
+    if (!window.URBIS_ICONO) return;
+    Object.keys(VESTIDOS).forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (!el || el.getAttribute('data-u70-vestido')) return;
+      var central = el.classList.contains('plus');
+      el.innerHTML = window.URBIS_ICONO(VESTIDOS[sel], { tam: central ? 28 : 24, grosor: central ? 2.25 : 2 });
+      el.setAttribute('data-u70-vestido', '1');
+    });
   }
 
   /* Y el módulo propio se abre solo. Se hace pulsando SU botón, no llamando a

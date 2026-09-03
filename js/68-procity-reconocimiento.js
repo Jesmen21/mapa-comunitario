@@ -100,6 +100,41 @@
     cobEnMapa: false
   };
 
+  /* Icono lineal (js/71) o nada: la ficha no puede depender de que el
+     archivo de iconos haya cargado, así que sin él sale solo el texto. */
+  function ico(nombre, tam) {
+    return (window.URBIS_ICONO ? window.URBIS_ICONO(nombre, { tam: tam || 18 }) : '');
+  }
+  /* Título de sección: icono en su cajita + texto. Un solo sitio para que
+     las veintitantas cabeceras de la ficha se compongan igual. */
+  /* Icono lineal para un emoji del catálogo (usos, edades, cobertura). */
+  function icoCat(emoji, tam) {
+    var I = window.URBIS_ICONO;
+    if (!I || !I.deEmoji) return '';
+    return '<i class="pcr-cat-ico">' + I.deEmoji(emoji, { tam: tam || 14 }) + '</i>';
+  }
+  function sinEmoji(t) {
+    var I = window.URBIS_ICONO;
+    return I && I.sinEmoji ? I.sinEmoji(t) : String(t || '').replace(/^\S+\s/, '');
+  }
+  function h4(icono, titulo) {
+    return '<h4 class="pcr-h">' + (icono ? '<i class="pcr-h-ico">' + ico(icono, 16) + '</i>' : '') +
+      '<span>' + titulo + '</span></h4>';
+  }
+  /* La barra de arriba de la hoja: eyebrow pequeño + título. El eyebrow dice
+     en qué parte del producto se está («Modo educativo»); el título, qué se
+     está mirando. */
+  function barra(eyebrow, titulo, icono, accionCerrar) {
+    return '<div class="pcr-barra">' +
+      '<div class="pcr-titulo">' +
+        '<span class="pcr-eyebrow">' + esc(eyebrow) + '</span>' +
+        '<b>' + (icono ? ico(icono, 18) : '') + titulo + '</b>' +
+      '</div>' +
+      '<button type="button" data-pcr="' + (accionCerrar || 'cerrar') + '" class="pcr-x" aria-label="Cerrar">' +
+        ico('cerrar', 18) + '</button>' +
+    '</div>';
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -729,7 +764,7 @@
         fillColor: p.color || '#94a3b8',
         fillOpacity: sinCategoria ? 0.95 : 0.85
       }).bindPopup(
-        '<b>' + (p.icono ? p.icono + ' ' : '') + esc(p.nombre || 'Sin nombre') + '</b><br>' +
+        '<b>' + (p.icono ? icoCat(p.icono, 14) : '') + esc(p.nombre || 'Sin nombre') + '</b><br>' +
         esc(g.t || g.nombre || p.grupo || 'sin categoría') +
         (p.distM != null ? ' · ' + p.distM + ' m' : '') +
         (sinCategoria ? '<br><em>Sin categoría: verificar en campo</em>' : '')
@@ -868,7 +903,7 @@
         var g = guardarFicha(S.resultado, S.ultimasZonas, nom, S.fichaActualId);
         S.aviso = g.ok
           ? ('Ficha guardada' + (g.recortada ? ' (se borraron las más viejas por falta de espacio)' : '') +
-             '. La encontrás en la pestaña 🔍 Sector, con ' + g.n + ' más.')
+             '. La encontrás en la pestaña «Sector», con ' + g.n + ' más.')
           : g.error;
         pintar();
         return;
@@ -1049,7 +1084,7 @@
         data: {
           labels: datos.map(function (x) {
             var d = G[x.id] || {};
-            return (d.i ? d.i + ' ' : '') + (d.t || d.nombre || x.id) + ' · ' + x.n;
+            return (d.t || d.nombre || x.id) + ' · ' + x.n;
           }),
           datasets: [{
             data: datos.map(function (x) { return x.n; }),
@@ -1090,10 +1125,10 @@
         '<div class="pcr-mini-fila">' +
           '<div class="pcr-mini-que">' +
             (esPol
-              ? '<b>✏️ El área dibujada</b>' +
+              ? '<b>' + ico('area', 16) + 'El área dibujada</b>' +
                 (hayPol ? '<small>' + (formatearArea(areaDelPoligono()) || '') + '</small>'
                         : '<small>todavía no hay ninguna</small>')
-              : '<b>⭕ Un radio</b><small id="pcr-eco">' +
+              : '<b>' + ico('radio', 16) + 'Un radio</b><small id="pcr-eco">' +
                 (S.centro ? S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5) : 'mové el mapa') +
                 '</small>') +
           '</div>' +
@@ -1104,10 +1139,10 @@
         (esPol ? '' : '<p class="pcr-pista pcr-mini-pista">Mové el mapa: el círculo sigue el centro.</p>') +
 
         (esPol && !hayPol
-          ? '<button type="button" data-pcr="dibujar-area" class="pcr-principal">✏️ Dibujar el área en el mapa</button>'
+          ? '<button type="button" data-pcr="dibujar-area" class="pcr-principal">' + ico('lapiz') + 'Dibujar el área en el mapa</button>'
           : '<button type="button" data-pcr="analizar" class="pcr-principal"' +
               (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
-              (S.cargando ? '⏳ Consultando…' : '🔍 Ver qué hay') + '</button>') +
+              (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>') +
 
         (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
         (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
@@ -1159,16 +1194,16 @@
       '<div class="pcr-mini-cuerpo">' +
         '<div class="pcr-mini-fila">' +
           '<div class="pcr-mini-que">' +
-            '<b>🔥 Mapa de calor</b>' +
-            '<small>' + esc(S.calor.length ? etiquetaCalor().replace('🔥 ', '') : 'ninguna capa encendida') + '</small>' +
+            '<b>' + ico('calor', 16) + 'Mapa de calor</b>' +
+            '<small>' + esc(S.calor.length ? etiquetaCalor() : 'ninguna capa encendida') + '</small>' +
           '</div>' +
           '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Volver al informe">⋯</button>' +
         '</div>' +
         '<div class="pcr-calor-chips">' +
-          chip('todos', '🔥 Todos', st.total || 0, null) +
+          chip('todos', 'Todos los usos', st.total || 0, null) +
           grupos.map(function (g) { return chip('g:' + g.id, nombreGrupo(g.id), g.n, colorDeGrupo(g.id)); }).join('') +
         '</div>' +
-        '<button type="button" data-pcr="agrandar" class="pcr-principal">📄 Volver al informe</button>' +
+        '<button type="button" data-pcr="agrandar" class="pcr-principal">' + ico('atras') + 'Volver al informe</button>' +
       '</div>';
   }
 
@@ -1190,13 +1225,13 @@
       '<div class="pcr-formas" role="group" aria-label="Forma del área">' +
         '<button type="button" data-pcr="forma" data-f="radio" class="pcr-forma' +
           (esPol ? '' : ' pcr-forma-on') + '" aria-pressed="' + (esPol ? 'false' : 'true') + '">' +
-          '⭕ Un radio</button>' +
+          ico('radio') + 'Un radio</button>' +
         '<button type="button" data-pcr="forma" data-f="poligono" class="pcr-forma' +
           (esPol ? ' pcr-forma-on' : '') + '" aria-pressed="' + (esPol ? 'true' : 'false') + '">' +
-          '✏️ El área dibujada</button>' +
+          ico('area') + 'El área dibujada</button>' +
       '</div>' +
       (hayPol || esPol ? '' :
-        '<small class="pcr-pista">Para usar un área a medida, dibújala primero en Pro City con «✏️ Dibujar área en el mapa».</small>');
+        '<small class="pcr-pista">Para usar un área a medida, dibújala primero en Pro City con «Dibujar área en el mapa».</small>');
 
     // Con un área dibujada no hay centro ni radio que elegir: los deduce el
     // servidor del propio trazo. Mostrar esos controles ahí sería ofrecer una
@@ -1222,10 +1257,7 @@
         '</div>';
 
     return '' +
-      '<div class="pcr-barra">' +
-        '<b>🔍 ¿Qué hay en este sector?</b>' +
-        '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
-      '</div>' +
+      barra('Modo educativo · Reconocimiento', '¿Qué hay en este sector?', 'lupa') +
       '<div class="pcr-cuerpo">' +
         '<p class="pcr-intro">Antes de salir a mapear, mira qué tiene registrado OpenStreetMap en la zona. ' +
         'Sirve para llegar sabiendo qué esperar —y sobre todo, para ver qué <b>todavía no está mapeado</b>.</p>' +
@@ -1237,7 +1269,7 @@
 
         '<button type="button" data-pcr="analizar" class="pcr-principal"' +
           (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
-          (S.cargando ? '⏳ Consultando…' : '🔍 Ver qué hay') +
+          (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') +
         '</button>' +
         (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar. No cierres esta hoja.</p>' : '') +
 
@@ -1255,9 +1287,9 @@
 
     return '<div class="pcr-guardadas">' +
       '<div class="pcr-guardadas-cab">' +
-        '<h4 class="pcr-h">Reconocimientos guardados</h4>' +
+        h4('guardar', 'Reconocimientos guardados') +
         '<button type="button" data-pcr="ver-mapa" class="pcr-mini">' +
-          (S.enMapa ? '🙈 Quitar del mapa' : '🗺️ Ver en el mapa') + '</button>' +
+          (S.enMapa ? ico('apagar') + 'Quitar del mapa' : ico('mapa') + 'Ver en el mapa') + '</button>' +
       '</div>' +
       (hayCampo
         ? '<p class="pcr-pista">Después de la salida a campo, compará: vas a ver cuánto agregó el curso.</p>'
@@ -1273,9 +1305,9 @@
           '</div>' +
           '<button type="button" data-pcr="comparar" data-id="' + esc(f.id) + '"' +
             ' class="pcr-mini"' + (hayCampo && !S.comparando ? '' : ' disabled') + '>' +
-            (S.comparando ? '…' : '📊 Comparar') + '</button>' +
+            (S.comparando ? '…' : ico('comparar', 16) + 'Comparar') + '</button>' +
           '<button type="button" data-pcr="borrar-ficha" data-id="' + esc(f.id) + '"' +
-            ' class="pcr-x pcr-x-mini" aria-label="Borrar ficha">🗑️</button>' +
+            ' class="pcr-x pcr-x-mini" aria-label="Borrar ficha">' + ico('borrar', 16) + '</button>' +
         '</div>';
       }).join('') +
     '</div>';
@@ -1453,7 +1485,7 @@
         '</div>';
     }
 
-    return '<h4 class="pcr-h">Cuánta gente vive acá</h4>' +
+    return h4('poblacion', 'Cuánta gente vive acá') +
       '<div class="pcr-pobla">' +
         '<div class="pcr-pobla-n">' +
           '<b>' + Number(hoy).toLocaleString('es-CO') + '</b>' +
@@ -1505,9 +1537,9 @@
           '<i class="pcr-sexo-h" style="width:' + pctH + '%"></i>' +
         '</div>' +
         '<div class="pcr-sexo-pie">' +
-          '<span><i class="pcr-punto pcr-punto-m"></i> 👩 Mujeres <b>' +
+          '<span><i class="pcr-punto pcr-punto-m"></i> Mujeres <b>' +
             Number(d.mujeres).toLocaleString('es-CO') + '</b> · ' + pctM + '%</span>' +
-          '<span><i class="pcr-punto pcr-punto-h"></i> 👨 Hombres <b>' +
+          '<span><i class="pcr-punto pcr-punto-h"></i> Hombres <b>' +
             Number(d.hombres).toLocaleString('es-CO') + '</b> · ' + pctH + '%</span>' +
         '</div>' +
       '</div>';
@@ -1519,7 +1551,7 @@
     var edades = tramos.map(function (t) {
       var esDominante = t.id === d.tramoDominante;
       return '<div class="pcr-edad' + (esDominante ? ' pcr-edad-top' : '') + '">' +
-        '<span class="pcr-edad-ico">' + t.icono + '</span>' +
+        '<span class="pcr-edad-ico">' + icoCat(t.icono, 16) + '</span>' +
         '<span class="pcr-edad-nom">' + esc(t.etiqueta) + '</span>' +
         '<span class="pcr-edad-barra"><i style="width:' +
           Math.round((t.personas / mayor) * 100) + '%"></i></span>' +
@@ -1539,7 +1571,7 @@
           : 'Por debajo de 100 hay más niños que personas mayores.') + '</p>';
     }
 
-    return '<h4 class="pcr-h">Quiénes viven acá</h4>' +
+    return h4('edades', 'Quiénes viven acá') +
       sexo +
       '<div class="pcr-edades">' + edades + '</div>' +
       '<p class="pcr-pista">El tramo más numeroso es <b>' + esc(d.tramoDominanteEtq || '') + '</b>.</p>' +
@@ -1588,12 +1620,12 @@
   }
 
   function etiquetaCalor() {
-    if (S.calor.indexOf('todos') !== -1) return '🔥 Todos los usos encontrados';
+    if (S.calor.indexOf('todos') !== -1) return 'Todos los usos encontrados';
     if (S.calor.length === 1) {
       var id = S.calor[0];
-      return '🔥 ' + (id.slice(0, 2) === 'g:' ? nombreGrupo(id.slice(2)) : nombreDeSub(id.slice(2)));
+      return (id.slice(0, 2) === 'g:' ? nombreGrupo(id.slice(2)) : nombreDeSub(id.slice(2)));
     }
-    return '🔥 ' + S.calor.length + ' capas combinadas';
+    return S.calor.length + ' capas combinadas';
   }
 
   // Con una sola capa se tiñe con SU color (se reconoce de inmediato cuál es);
@@ -1663,11 +1695,11 @@
 
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
     return '' +
-      '<h4 class="pcr-h">Mapas de calor</h4>' +
+      h4('calor', 'Mapas de calor') +
       '<p class="pcr-pista">Elegí qué querés ver caliente. Podés <b>combinar varias</b> ' +
       'para encontrar dónde coinciden. Se pinta sobre el mapa: la hoja baja sola.</p>' +
       '<div class="pcr-calor-chips">' +
-        chip('todos', '🔥 Todos', st.total || pois.length, null) +
+        chip('todos', 'Todos los usos', st.total || pois.length, null) +
         grupos.map(function (g) {
           return chip('g:' + g.id, nombreGrupo(g.id), g.n, colorDeGrupo(g.id));
         }).join('') +
@@ -1676,7 +1708,7 @@
         ? '<p class="pcr-pista">Por uso concreto:</p><div class="pcr-calor-chips">' +
           subs.map(function (x) {
             var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
-            return chip('s:' + x.id, (t && t.icono ? t.icono + ' ' : '') + nombreDeSub(x.id),
+            return chip('s:' + x.id, nombreDeSub(x.id),
                         x.n, colorDeSub(x.id));
           }).join('') + '</div>'
         : '') +
@@ -1709,7 +1741,7 @@
     var via = mv.viaPrincipal;
     var vias = (mv.viasArterias || []).slice(0, 4);
     return '' +
-      '<h4 class="pcr-h">🚦 Cómo se llega</h4>' +
+      h4('movilidad', 'Cómo se llega') +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + (mv.nViasArterias || 0) + '</b><small>corredor' +
           ((mv.nViasArterias === 1) ? '' : 'es') + ' principal' + ((mv.nViasArterias === 1) ? '' : 'es') + '</small></div>' +
@@ -1744,7 +1776,7 @@
     var am = st.ambiente;
     if (!am) return '';
     return '' +
-      '<h4 class="pcr-h">🌳 Verde y agua</h4>' +
+      h4('verde', 'Verde y agua') +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + (am.parques || 0) + '</b><small>parques y plazas</small></div>' +
         '<div class="pcr-kpi"><b>' + (am.cuerposAgua || 0) + '</b><small>cuerpos de agua</small></div>' +
@@ -1774,12 +1806,12 @@
     if (!filas.length) return '';
     var top = filas[0];
     return '' +
-      '<h4 class="pcr-h">Qué manda en el sector</h4>' +
+      h4('estadistica', 'Qué manda en el sector') +
       '<p class="pcr-conc">Predomina <b>' + esc((NOMBRE_USO[top.id] || top.id).replace(/^\S+\s/, '')) +
         '</b> con el ' + top.n + '% del peso de los usos.</p>' +
       filas.map(function (x) {
         return '<div class="pcr-fila">' +
-          '<span class="pcr-fila-nom">' + esc(NOMBRE_USO[x.id] || x.id) + '</span>' +
+          '<span class="pcr-fila-nom">' + icoCat(NOMBRE_USO[x.id] || '', 14) + esc(sinEmoji(NOMBRE_USO[x.id] || x.id)) + '</span>' +
           '<span class="pcr-fila-barra"><i style="width:' + x.n + '%"></i></span>' +
           '<span class="pcr-fila-n">' + x.n + '%</span>' +
         '</div>';
@@ -1791,7 +1823,7 @@
     var ns = st.nucleos || [];
     if (!ns.length) return '';
     return '' +
-      '<h4 class="pcr-h">Dónde está la calle comercial</h4>' +
+      h4('comercio', 'Dónde está la calle comercial') +
       '<p class="pcr-pista">Grupos de comercios que están juntos. No es cuántos hay: es dónde se juntan, ' +
       'que es lo que hace que una calle tenga vida.</p>' +
       ns.map(function (n, i) {
@@ -1818,7 +1850,7 @@
     var conNombre = rubros.filter(function (r) { return (r.ejemplos || []).length; });
 
     return '' +
-      '<h4 class="pcr-h">📋 La lista para ir a verificar</h4>' +
+      h4('lista', 'La lista para ir a verificar') +
       '<p class="pcr-tarea-intro">Esto es lo que OpenStreetMap dice que hay, <b>con nombre y apellido</b>. ' +
       (conNombre.length
         ? 'Buscá cada uno en la calle: los que sigan abiertos se confirman, los que no, se corrigen. ' +
@@ -1829,7 +1861,7 @@
         rubros.slice(0, 14).map(function (r) {
           return '<div class="pcr-rubro">' +
             '<div class="pcr-rubro-cab">' +
-              '<span class="pcr-rubro-n">' + (r.icono ? r.icono + ' ' : '') + esc(r.nombre) + '</span>' +
+              '<span class="pcr-rubro-n">' + (r.icono ? icoCat(r.icono, 15) : '') + esc(r.nombre) + '</span>' +
               '<b>' + r.n + '</b>' +
             '</div>' +
             ((r.ejemplos || []).length
@@ -1860,7 +1892,7 @@
     var primero = an[0];
 
     return '' +
-      '<h4 class="pcr-h">Cómo cambia al alejarse</h4>' +
+      h4('anillos', 'Cómo cambia al alejarse') +
       '<p class="pcr-pista">Distancia medida desde el ' +
       (esPol ? 'centro del área dibujada' : 'centro del círculo') + '. ' +
       'Sirve para repartir el trabajo: un grupo por anillo.</p>' +
@@ -1972,7 +2004,7 @@
     }).join('');
 
     return '' +
-      '<h4 class="pcr-h">🧭 El plan de la salida</h4>' +
+      h4('brujula', 'El plan de la salida') +
       '<p class="pcr-tarea-intro">Reparto listo para imprimir: a cada grupo, un rumbo y un encargo. ' +
       'Primero los rumbos donde <b>no hay nada</b> —ahí todo lo que levanten es nuevo—, ' +
       'después los que tienen poco, y al final los que ya están mapeados, donde el trabajo es verificar.</p>' +
@@ -1991,7 +2023,7 @@
           '</div>';
         }).join('') +
       '</div>' +
-      '<p class="pcr-pista">Se imprime con el informe (🖨️ PDF) y va en el texto que copia 📋.</p>';
+      '<p class="pcr-pista">Se imprime con el informe en PDF y va en el texto que se copia.</p>';
   }
 
   // El mismo plan en texto pelado, para el PDF y para el portapapeles.
@@ -2079,7 +2111,7 @@
       return '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="cobertura" class="pcr-mini pcr-llevar-b"' +
           (S.cobCargando ? ' disabled' : '') + '>' +
-          (S.cobCargando ? '⏳ Leyendo la foto…' : '🛰️ Medir el verde en la foto satelital') +
+          (S.cobCargando ? 'Leyendo la foto…' : ico('satelite') + 'Medir el verde en la foto satelital') +
         '</button>' +
       '</div>' +
       (S.cobCargando
@@ -2104,7 +2136,7 @@
         orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
           return '<div class="pcr-cob-fila">' +
             '<span class="pcr-cob-pin" style="background:' + x.color + '"></span>' +
-            '<span class="pcr-cob-etq">' + x.ico + ' ' + esc(x.etq) + '</span>' +
+            '<span class="pcr-cob-etq">' + icoCat(x.ico, 14) + esc(x.etq) + '</span>' +
             '<b>' + x.pct + '%</b>' +
             '<small>' + Math.round(x.m2).toLocaleString('es-CO') + ' m²</small>' +
           '</div>';
@@ -2123,8 +2155,8 @@
         : '') +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="cob-mapa" class="pcr-mini pcr-llevar-b">' +
-          (S.cobEnMapa ? '🙈 Quitar del mapa' : '🗺️ Ver en el mapa') + '</button>' +
-        '<button type="button" data-pcr="cobertura" class="pcr-mini pcr-llevar-b">↻ Volver a leer</button>' +
+          (S.cobEnMapa ? ico('apagar') + 'Quitar del mapa' : ico('mapa') + 'Ver en el mapa') + '</button>' +
+        '<button type="button" data-pcr="cobertura" class="pcr-mini pcr-llevar-b">' + ico('reloj') + 'Volver a leer</button>' +
       '</div>';
   }
 
@@ -2222,7 +2254,7 @@
     ].filter(Boolean).join(' · ');
 
     return '' +
-      '<h4 class="pcr-h">🌍 Llevarlo a otro programa</h4>' +
+      h4('exportar', 'Llevarlo a otro programa') +
       '<p class="pcr-tarea-intro">Sale <b>georreferenciado y en vectores</b>: el contorno, cada uso con su ' +
       'categoría y su distancia, y —si leíste la foto— las manchas de vegetación como polígonos de verdad, ' +
       'editables y acotables. El DXF va en <b>metros UTM reales</b>: en AutoCAD 1 unidad = 1 metro.</p>' +
@@ -2235,11 +2267,11 @@
       (d.cobertura.length ? '' : ' Si leés la foto satelital antes de exportar, también van las manchas de verde.') +
       '</p>' +
       '<div class="pcr-exp-btns">' +
-        '<button type="button" data-pcr="exp" data-f="paquete" class="pcr-mini pcr-exp-todo">📦 Paquete completo (ZIP)</button>' +
-        '<button type="button" data-pcr="exp" data-f="kmz" class="pcr-mini">🌍 KMZ · Google Earth</button>' +
-        '<button type="button" data-pcr="exp" data-f="dxf" class="pcr-mini">📐 DXF · AutoCAD</button>' +
-        '<button type="button" data-pcr="exp" data-f="svg" class="pcr-mini">🎨 SVG · Corel / Illustrator</button>' +
-        '<button type="button" data-pcr="exp" data-f="geojson" class="pcr-mini">🗺️ GeoJSON · QGIS</button>' +
+        '<button type="button" data-pcr="exp" data-f="paquete" class="pcr-mini pcr-exp-todo">' + ico('exportar') + 'Paquete completo (ZIP)</button>' +
+        '<button type="button" data-pcr="exp" data-f="kmz" class="pcr-mini">' + ico('mapa') + 'KMZ · Google Earth</button>' +
+        '<button type="button" data-pcr="exp" data-f="dxf" class="pcr-mini">' + ico('area') + 'DXF · AutoCAD</button>' +
+        '<button type="button" data-pcr="exp" data-f="svg" class="pcr-mini">' + ico('lapiz') + 'SVG · Corel / Illustrator</button>' +
+        '<button type="button" data-pcr="exp" data-f="geojson" class="pcr-mini">' + ico('capas') + 'GeoJSON · QGIS</button>' +
         '<button type="button" data-pcr="exp" data-f="kml" class="pcr-mini">KML suelto</button>' +
       '</div>';
   }
@@ -2285,7 +2317,7 @@
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
     var chips = subs.map(function (x) {
       var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
-      return '<span class="pcr-chip">' + (t && t.icono ? t.icono + ' ' : '') +
+      return '<span class="pcr-chip">' + (t && t.icono ? icoCat(t.icono, 13) : '') +
              esc(t ? t.nombre : x.id) + ' <b>' + x.n + '</b></span>';
     }).join('');
 
@@ -2323,10 +2355,7 @@
     var radioEtiqueta = esPol ? 'de área dibujada' : 'de radio';
 
     return '' +
-      '<div class="pcr-barra">' +
-        '<b>🔍 Lo que hay ' + (esPol ? 'en el área' : 'en el sector') + '</b>' +
-        '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
-      '</div>' +
+      barra('Modo educativo · Reconocimiento', 'Lo que hay ' + (esPol ? 'en el área' : 'en el sector'), 'lupa') +
       '<div class="pcr-cuerpo">' +
 
         '<div class="pcr-kpis">' +
@@ -2339,7 +2368,7 @@
         bloquePoblacion(st, esPol) +
         bloqueDemografia(st) +
 
-        '<h4 class="pcr-h">Qué hay, por categoría</h4>' +
+        h4('capas', 'Qué hay, por categoría') +
         // El anillo se pinta después, cuando el canvas ya está en el documento.
         // Si Chart.js no cargó, las barras de abajo siguen contando lo mismo:
         // la gráfica es la forma bonita del dato, no el dato.
@@ -2348,7 +2377,7 @@
         (sinCategoria ? '<p class="pcr-pista">' + sinCategoria + ' punto' + (sinCategoria === 1 ? '' : 's') +
           ' sin categoría reconocida. Suelen ser usos poco comunes: buen material para revisar en campo.</p>' : '') +
 
-        (chips ? '<h4 class="pcr-h">Lo más repetido</h4><div class="pcr-chips">' + chips + '</div>' : '') +
+        (chips ? h4('porcentaje', 'Lo más repetido') + '<div class="pcr-chips">' + chips + '</div>' : '') +
 
         // El inventario dice QUÉ hay; lo que sigue dice cómo funciona el
         // sector: qué uso manda, cómo se llega, qué lo rodea y dónde está la
@@ -2364,13 +2393,13 @@
         // que domina: señalar «el mayor» en un reparto parejo sería inventar
         // un patrón que no existe.
         (zonas.concentracion
-          ? '<h4 class="pcr-h">Dónde se concentra</h4>' +
+          ? h4('campo', 'Dónde se concentra') +
             '<p class="pcr-conc">La mitad ' + esc(zonas.concentracion.rumbo.nombre) +
             ' reúne <b>' + zonas.concentracion.n + ' de ' + zonas.total + '</b> (' +
             zonas.concentracion.pct + '%). Es el lado más activo según los datos.</p>'
           : '') +
 
-        '<h4 class="pcr-h">A dónde ir</h4>' +
+        h4('norte', 'A dónde ir') +
         tareas +
 
         bloquePlan(res, zonas) +
@@ -2379,7 +2408,7 @@
         // parado en la esquina, que es de lo que se trataba.
         bloqueRubros(st) +
 
-        '<h4 class="pcr-h">Qué verificar en campo</h4>' +
+        h4('ok', 'Qué verificar en campo') +
         '<ul class="pcr-check">' +
           (sinCategoria
             ? '<li>Los <b>' + sinCategoria + '</b> punto' + (sinCategoria === 1 ? '' : 's') +
@@ -2401,21 +2430,21 @@
           'value="' + esc(S.nombreSugerido || '') + '">' +
 
         // Lo que se ve en el mapa detrás de esta hoja.
-        '<h4 class="pcr-h">En el mapa</h4>' +
+        h4('mapa', 'En el mapa') +
         '<p class="pcr-pista">' + (S.puntosEnMapa || 0) + ' puntos pintados con el color de su categoría. ' +
         'Cerrá esta hoja para verlos; tocá uno para saber qué es.</p>' +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="estratos" class="pcr-mini pcr-llevar-b"' +
             (S.cargandoEstratos ? ' disabled' : '') + '>' +
-            (S.cargandoEstratos ? '⏳ Cargando…' : (S.estratos ? '🙈 Quitar estratos' : '🎨 Pintar estratos')) +
+            (S.cargandoEstratos ? 'Cargando…' : (S.estratos ? ico('apagar') + 'Quitar estratos' : ico('capas') + 'Pintar estratos')) +
           '</button>' +
         '</div>' +
         (S.estratos && S.estratos.leyenda ? S.estratos.leyenda : '') +
 
         '<div class="pcr-llevar">' +
-          '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">💾 Guardar ficha</button>' +
-          '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">📋 Copiar</button>' +
-          '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">🖨️ PDF</button>' +
+          '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">' + ico('guardar') + 'Guardar ficha</button>' +
+          '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
+          '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
         '</div>' +
 
         // Guardar el ÁREA, no la ficha: queda en la misma lista de áreas de
@@ -2426,7 +2455,7 @@
 
         (esPol
           ? '<div class="pcr-llevar">' +
-              '<button type="button" data-pcr="guardar-area" class="pcr-mini pcr-llevar-b">📐 Guardar el área dibujada</button>' +
+              '<button type="button" data-pcr="guardar-area" class="pcr-mini pcr-llevar-b">' + ico('area') + 'Guardar el área dibujada</button>' +
             '</div>' +
             '<p class="pcr-pista">Queda guardada con el nombre de arriba. Después la volvés a cargar desde ' +
             '<b>Análisis → Áreas guardadas</b> y ahí se le suman los mapeos que haga el curso.</p>'
@@ -2726,20 +2755,20 @@
   function bloqueLlevarComparacion(c) {
     var d = datosDeComparacion(c);
     return '' +
-      '<h4 class="pcr-h">Llevarse el resultado</h4>' +
+      h4('exportar', 'Llevarse el resultado') +
       '<p class="pcr-pista">El cuadro completo, para el informe del curso. En los archivos, cada punto va ' +
       'teñido por su conclusión: <b>nuevo</b>, confirmado, discrepante o sin verificar.</p>' +
       '<div class="pcr-llevar">' +
-        '<button type="button" data-pcr="comp-copiar" class="pcr-mini pcr-llevar-b">📋 Copiar</button>' +
-        '<button type="button" data-pcr="comp-pdf" class="pcr-mini pcr-llevar-b">🖨️ PDF</button>' +
+        '<button type="button" data-pcr="comp-copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
+        '<button type="button" data-pcr="comp-pdf" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
       '</div>' +
       (d
         ? '<div class="pcr-exp-btns">' +
-            '<button type="button" data-pcr="comp-exp" data-f="paquete" class="pcr-mini pcr-exp-todo">📦 Paquete completo (ZIP)</button>' +
-            '<button type="button" data-pcr="comp-exp" data-f="kmz" class="pcr-mini">🌍 KMZ · Google Earth</button>' +
-            '<button type="button" data-pcr="comp-exp" data-f="dxf" class="pcr-mini">📐 DXF · AutoCAD</button>' +
-            '<button type="button" data-pcr="comp-exp" data-f="svg" class="pcr-mini">🎨 SVG · Corel</button>' +
-            '<button type="button" data-pcr="comp-exp" data-f="geojson" class="pcr-mini">🗺️ GeoJSON · QGIS</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="paquete" class="pcr-mini pcr-exp-todo">' + ico('exportar') + 'Paquete completo (ZIP)</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="kmz" class="pcr-mini">' + ico('mapa') + 'KMZ · Google Earth</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="dxf" class="pcr-mini">' + ico('area') + 'DXF · AutoCAD</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="svg" class="pcr-mini">' + ico('lapiz') + 'SVG · Corel</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="geojson" class="pcr-mini">' + ico('capas') + 'GeoJSON · QGIS</button>' +
             '<button type="button" data-pcr="comp-exp" data-f="kml" class="pcr-mini">KML suelto</button>' +
           '</div>'
         : '') +
@@ -2760,10 +2789,7 @@
     }
 
     return '' +
-      '<div class="pcr-barra">' +
-        '<b>📊 Antes y después</b>' +
-        '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
-      '</div>' +
+      barra('Modo educativo · Trabajo de campo', 'Antes y después', 'comparar') +
       '<div class="pcr-cuerpo">' +
         '<p class="pcr-intro">Reconocimiento de ' + comoSeLlama + ', del <b>' + esc(cuando) +
         '</b>, contra lo que el curso lleva mapeado en esa misma área.</p>' +
@@ -2776,16 +2802,16 @@
         '</div>' +
 
         (c.nuevos.length
-          ? '<h4 class="pcr-h">Lo que el curso agregó al mapa</h4>' +
+          ? h4('mas', 'Lo que el curso agregó al mapa') +
             '<p class="pcr-conc">' + c.nuevos.length + ' usos que <b>no estaban en OpenStreetMap</b>' +
             (aporte !== null ? ' — un ' + aporte + '% más de lo que había' : '') + '. ' +
             'Esto es trabajo que nadie había hecho antes en este sector.</p>' +
             lista(c.nuevos, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
-          : '<h4 class="pcr-h">Lo que el curso agregó al mapa</h4>' +
+          : h4('mas', 'Lo que el curso agregó al mapa') +
             '<p class="pcr-ok">Todo lo que el curso mapeó ya estaba en OpenStreetMap. El aporte de esta salida fue de verificación, no de descubrimiento.</p>') +
 
         (c.discrepancias.length
-          ? '<h4 class="pcr-h">Donde no coinciden</h4>' +
+          ? h4('alerta', 'Donde no coinciden') +
             '<p class="pcr-tarea-intro">Mismo sitio, categoría distinta. Puede que el local haya cambiado de uso, o que una de las dos clasificaciones esté equivocada. Vale la pena mirarlo.</p>' +
             lista(c.discrepancias, function (x) {
               return (x.campo.nombre || 'Sin nombre') + ': el curso dice «' + (x.campo.grupo || '?') +
@@ -2794,7 +2820,7 @@
           : '') +
 
         (c.sinVerificar.length
-          ? '<h4 class="pcr-h">Sin verificar</h4>' +
+          ? h4('ojo', 'Sin verificar') +
             '<p class="pcr-tarea-intro">' + c.sinVerificar.length + ' usos que OpenStreetMap tiene y el curso no visitó. ' +
             '<b>Esto no significa que hayan cerrado</b>: lo más probable es que nadie pasara por esas cuadras. Es la lista para la próxima salida.</p>' +
             lista(c.sinVerificar, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
@@ -2929,7 +2955,7 @@
       bloquePoblacion(st, esPol) +
       bloqueDemografia(st) +
       (filas.length
-        ? '<h4 class="pcr-h">Qué hay, por categoría</h4>' +
+        ? h4('capas', 'Qué hay, por categoría') +
           filas.map(function (x) {
             return '<div class="pcr-fila">' +
               '<span class="pcr-fila-nom">' + esc(nombreGrupo(x.id)) + '</span>' +
@@ -2980,10 +3006,10 @@
         '<i></i>' + esc(texto) + (n != null ? ' <b>' + n + '</b>' : '') + '</button>';
     }
 
-    return '<h4 class="pcr-h">Mapa de calor de este sector</h4>' +
+    return h4('calor', 'Mapa de calor de este sector') +
       '<p class="pcr-pista">Se pinta en el mapa; esta hoja se cierra sola para dejarlo ver.</p>' +
       '<div class="pcr-calor-chips">' +
-        chip('todos', '🔥 Todos', pois.length, null) +
+        chip('todos', 'Todos los usos', pois.length, null) +
         grupos.map(function (g) {
           return chip('g:' + g, nombreGrupo(g), cuenta[g], colorDelCatalogo(g));
         }).join('') +
@@ -3005,7 +3031,7 @@
     if (!c || !c.clases || !c.clases.length) return '';
     var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; });
     var verde = c.clases.filter(function (x) { return x.id === 'verde'; })[0] || { pct: 0 };
-    return '<h4 class="pcr-h">🛰️ Cobertura medida en la foto</h4>' +
+    return h4('satelite', 'Cobertura medida en la foto') +
       '<div class="pcr-cob-barra">' +
         orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
           return '<i style="width:' + x.pct + '%;background:' + x.color + '"></i>';
@@ -3015,7 +3041,7 @@
         orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
           return '<div class="pcr-cob-fila">' +
             '<span class="pcr-cob-pin" style="background:' + x.color + '"></span>' +
-            '<span class="pcr-cob-etq">' + (x.ico || '') + ' ' + esc(x.etq) + '</span>' +
+            '<span class="pcr-cob-etq">' + (x.ico ? icoCat(x.ico, 14) : '') + esc(x.etq) + '</span>' +
             '<b>' + x.pct + '%</b><small>' + Math.round(x.m2).toLocaleString('es-CO') + ' m²</small>' +
           '</div>';
         }).join('') +
@@ -3027,12 +3053,12 @@
   function htmlPestana() {
     var fichas = leerFichas();
     if (!fichas.length) {
-      return '<div class="u52-empty-card"><span>🔍</span><div>' +
+      return '<div class="u52-empty-card"><span class="pcr-vacio-ico">' + ico('lupa', 26) + '</span><div>' +
         '<b>Todavía no analizaste ningún sector</b>' +
-        '<small>Con la lupa 🔍 del mapa mirás qué hay en un sector antes de ir a mapearlo. ' +
+        '<small>Con la lupa del mapa mirás qué hay en un sector antes de ir a mapearlo. ' +
         'Cada análisis queda guardado acá.</small></div></div>' +
         '<div class="pcr-pest-pie">' +
-          '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">🔍 Analizar un sector</button>' +
+          '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">' + ico('lupa', 16) + 'Analizar un sector</button>' +
         '</div>';
     }
     var hayCampo = puntosDelCurso().length > 0;
@@ -3077,18 +3103,18 @@
                 '<div class="pcr-llevar">' +
                   (f.forma === 'poligono'
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-area" data-id="' +
-                      esc(f.id) + '">📐 Cargar el área en Análisis</button>'
+                      esc(f.id) + '">' + ico('area', 16) + 'Cargar el área en Análisis</button>'
                     : '') +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-copiar" data-id="' +
-                    esc(f.id) + '">📋 Copiar</button>' +
+                    esc(f.id) + '">' + ico('copiar') + 'Copiar</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-pdf" data-id="' +
-                    esc(f.id) + '">🖨️ PDF</button>' +
+                    esc(f.id) + '">' + ico('imprimir') + 'PDF</button>' +
                   (hayCampo
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-comparar" data-id="' +
-                      esc(f.id) + '">📊 Comparar con el campo</button>'
+                      esc(f.id) + '">' + ico('comparar', 16) + 'Comparar con el campo</button>'
                     : '') +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-borrar" data-id="' +
-                    esc(f.id) + '">🗑️ Borrar</button>' +
+                    esc(f.id) + '">' + ico('borrar', 16) + 'Borrar</button>' +
                 '</div>' +
                 (f.forma !== 'poligono'
                   ? '<p class="pcr-pista">Este sector se analizó por radio, así que no hay un área que cargar. ' +
@@ -3099,7 +3125,7 @@
         '</div>';
       }).join('') +
       '<div class="pcr-pest-pie">' +
-        '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">🔍 Analizar otro sector</button>' +
+        '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">' + ico('lupa', 16) + 'Analizar otro sector</button>' +
       '</div>' +
       (S.avisoPestana ? '<p class="pcr-aviso">' + esc(S.avisoPestana) + '</p>' : '') +
     '</div>';
@@ -3183,7 +3209,7 @@
       A3.calorExterno(
         sel.map(function (q) { return { lat: q.lat, lng: q.lng }; }),
         cal === 'todos' ? null : colorDelCatalogo(cal.slice(2)),
-        '🔥 ' + (cal === 'todos' ? (f.nombre || 'Sector guardado')
+        (cal === 'todos' ? (f.nombre || 'Sector guardado')
                                  : nombreGrupo(cal.slice(2)) + ' · ' + (f.nombre || 'sector guardado')),
         function () { S.calorGuardado = { ficha: '', cal: '' }; });
       try { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); } catch (e) {}

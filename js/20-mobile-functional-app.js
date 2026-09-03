@@ -2790,13 +2790,17 @@
     const _nSectores = (window.URBIS_PC_RECON && typeof window.URBIS_PC_RECON.hayFichas === 'function')
       ? window.URBIS_PC_RECON.hayFichas() : 0;
 
+    /* Pestañas con icono lineal (js/71) en vez de emoji: los emojis cambian
+       de forma y color según el teléfono y nunca se ven como parte de un
+       mismo producto. Si js/71 no cargó, salen sin icono y con el texto. */
+    const _ic = (n) => (window.URBIS_ICONO ? window.URBIS_ICONO(n, { tam: 15 }) : '');
     const tabs = `<div class="u52-procity-stats-tabs">
-        <button type="button" class="${proCity.statsTab==='totales'?'active':''}" data-u52-call="procity-stats-tab-totales">Totales</button>
-        <button type="button" class="${proCity.statsTab==='mios'?'active':''}" data-u52-call="procity-stats-tab-mios">Mis mapeos (${mios.length})</button>
-        <button type="button" class="${proCity.statsTab==='amigos'?'active':''}" data-u52-call="procity-stats-tab-amigos">👥 Amigos (${deAmigos.length})</button>
-        <button type="button" class="${proCity.statsTab==='carpetas'?'active':''}" data-u52-call="procity-stats-tab-carpetas">🤝 Cooperativo (${proCity.myFolders.length})</button>
-        <button type="button" class="${proCity.statsTab==='analisis'?'active':''}" data-u52-call="procity-stats-tab-analisis">📊 Análisis</button>
-        <button type="button" class="${proCity.statsTab==='sector'?'active':''}" data-u52-call="procity-stats-tab-sector">🔍 Sector${_nSectores ? ` (${_nSectores})` : ''}</button>
+        <button type="button" class="${proCity.statsTab==='totales'?'active':''}" data-u52-call="procity-stats-tab-totales">${_ic('estadistica')}<span>Totales</span></button>
+        <button type="button" class="${proCity.statsTab==='mios'?'active':''}" data-u52-call="procity-stats-tab-mios">${_ic('campo')}<span>Mis mapeos (${mios.length})</span></button>
+        <button type="button" class="${proCity.statsTab==='amigos'?'active':''}" data-u52-call="procity-stats-tab-amigos">${_ic('poblacion')}<span>Amigos (${deAmigos.length})</span></button>
+        <button type="button" class="${proCity.statsTab==='carpetas'?'active':''}" data-u52-call="procity-stats-tab-carpetas">${_ic('carpeta')}<span>Cooperativo (${proCity.myFolders.length})</span></button>
+        <button type="button" class="${proCity.statsTab==='analisis'?'active':''}" data-u52-call="procity-stats-tab-analisis">${_ic('area')}<span>Análisis</span></button>
+        <button type="button" class="${proCity.statsTab==='sector'?'active':''}" data-u52-call="procity-stats-tab-sector">${_ic('lupa')}<span>Sector${_nSectores ? ` (${_nSectores})` : ''}</span></button>
       </div>`;
 
     function _mineCard(p, permiteSeleccion){
@@ -2936,7 +2940,7 @@
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-stats-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>📊 Total mapeado: ${total}</b><small>Elementos urbanos georeferenciados</small></div>
+          <div><span class="u52-procity-eyebrow">Modo educativo · Pro City</span><b>Total mapeado: ${total}</b><small>Elementos urbanos georreferenciados</small></div>
           <button type="button" data-u52-call="procity-stats-close" aria-label="Cerrar">×</button>
         </div>
         ${tabs}

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v635-miniaturas-e-iconos';
+const URBIS_CACHE = 'urbis-v636-lenguaje-visual';
 const URBIS_ASSETS = [
   './',
   './index.html',

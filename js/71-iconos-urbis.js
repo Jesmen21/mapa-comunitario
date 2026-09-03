@@ -6,10 +6,11 @@
    peso según el teléfono —el 🔍 de un Samsung no es el de un iPhone— así que
    nunca se veían como partes de un mismo producto.
 
-   Los iconos de CATEGORÍA de uso (droguería, colegio, parque…) NO están
-   acá a propósito: vienen del catálogo, son datos y se usan en toda la app,
-   incluidos los popups del mapa y las exportaciones. Cambiarlos es otra
-   decisión, más grande que esta.
+   Los iconos de CATEGORÍA de uso (droguería, colegio, parque…) siguen
+   siendo un emoji en el catálogo: son datos y se usan en toda la app,
+   incluidos los popups del mapa y las exportaciones. Dentro del módulo
+   educativo se les pone cara lineal con deEmoji() —el dato no cambia, solo
+   cómo se pinta acá.
 
    Uso:  URBIS_ICONO('lupa')            → <svg …>
          URBIS_ICONO('lupa', {tam:18})  → 18 px
@@ -67,7 +68,52 @@
     carpeta:   '<path d="M3.5 7.5A2 2 0 0 1 5.5 5.5H10l2 2h6.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
     escuela:   '<path d="m3 9 9-5 9 5-9 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M21 9v5"/>',
     reloj:     '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    norte:     '<path d="m12 3 4 9h-8z" fill="currentColor" stroke="none"/><path d="m12 21-4-9h8z"/>'
+    norte:     '<path d="m12 3 4 9h-8z" fill="currentColor" stroke="none"/><path d="m12 21-4-9h8z"/>',
+    /* ── Categorías de uso y objetos de la interfaz ─────────────────────
+       Los emojis del catálogo siguen siendo el dato (popups, exportaciones,
+       app ciudadana). Acá solo se les da una cara lineal cuando se pintan
+       dentro del módulo educativo, vía deEmoji(). */
+    pastilla:  '<g transform="rotate(-45 12 12)"><rect x="4.5" y="9" width="15" height="6" rx="3"/><path d="M12 9v6"/></g>',
+    carrito:   '<path d="M3 4h2.5l2.2 10.5h10.3L20 7.5H6.3"/><circle cx="9.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/>',
+    cubiertos: '<path d="M7 3v18"/><path d="M4.5 3v5a2.5 2.5 0 0 0 5 0V3"/><path d="M16.5 21v-7"/><path d="M16.5 14c-1.7 0-3-1.5-3-4.5S15 3 16.5 3s3 3.5 3 6.5-1.3 4.5-3 4.5z"/>',
+    taza:      '<path d="M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M4 21h14"/>',
+    edificio:  '<rect x="5" y="3.5" width="14" height="17" rx="1.5"/><path d="M9 7.5h2M13 7.5h2M9 11h2M13 11h2M9 14.5h2M13 14.5h2M10.5 20.5v-3h3v3"/>',
+    institucion:'<path d="m3.5 9 8.5-5 8.5 5z"/><path d="M5.5 9v8M10 9v8M14 9v8M18.5 9v8"/><path d="M3.5 20.5h17M4.5 17h15"/>',
+    maletin:   '<rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5v-2a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2"/><path d="M3.5 12.5h17"/>',
+    salud:     '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+    portatil:  '<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18.5h18"/>',
+    pesa:      '<path d="M6 8v8M18 8v8M3.5 10v4M20.5 10v4M6 12h12"/>',
+    industria: '<path d="M3.5 20.5V10l5 3v-3l5 3v-3l5 3v7.5z"/><path d="M15.5 10V4h3v9"/>',
+    piezas:    '<path d="M9 4h4a1.5 1.5 0 0 1 1.5 1.5V8h2.5a1.5 1.5 0 0 1 1.5 1.5V13h-2a2 2 0 1 0 0 4h2v2.5A1.5 1.5 0 0 1 17 21H13v-2a2 2 0 1 0-4 0v2H4.5A1.5 1.5 0 0 1 3 19.5V15h2a2 2 0 1 0 0-4H3V8h6z"/>',
+    herramienta:'<path d="m3.5 17.5 9-9a4.5 4.5 0 0 1 6-5.5l-2.6 2.6 2 2L20.5 5a4.5 4.5 0 0 1-5.5 6l-9 9z"/>',
+    vaso:      '<path d="M6 4h12l-1.5 16h-9z"/><path d="M6.8 10h10.4"/>',
+    cajero:    '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/><path d="M8 15h3"/>',
+    cultura:   '<path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/>',
+    iglesia:   '<path d="M12 3v5M9.5 5.5h5"/><path d="M6 21V12l6-4 6 4v9z"/><path d="M10 21v-4h4v4"/>',
+    balanza:   '<path d="M12 4v16M6 20h12"/><path d="M4 8h16"/><path d="m7 8-3 6a3 3 0 0 0 6 0zM17 8l-3 6a3 3 0 0 0 6 0z"/>',
+    escudo:    '<path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/>',
+    parqueo:   '<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9.5 17V7h3.5a3 3 0 0 1 0 6H9.5"/>',
+    camion:    '<path d="M3.5 6.5h11v10h-11z"/><path d="M14.5 10h3.5l2.5 3v3.5h-6"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+    pregunta:  '<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7v.5"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/>',
+    destello:  '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8"/>',
+    nino:      '<circle cx="12" cy="8.5" r="3.2"/><path d="M6.5 20.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>',
+    mayor:     '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20.5c0-3.4 3-5.5 6.5-5.5s6.5 2.1 6.5 5.5"/><path d="M19 11v9.5M19 11a1.5 1.5 0 0 0-3 0"/>',
+    borrar:    '<path d="M4 7h16M9 7V4.5h6V7"/><path d="m6 7 1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+    deshacer:  '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    dado:      '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/>',
+    documento: '<path d="M6 3.5h8l4 4v13H6z"/><path d="M14 3.5v4h4"/><path d="M9 12h6M9 16h6"/>',
+    paquete:   '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/>',
+    paleta:    '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-.9 2-1.8 0-.8-.6-1.2-.6-2 0-.9.7-1.5 1.6-1.5h1.6a4 4 0 0 0 4-4c0-4.4-3.9-7.7-8.6-7.7z"/><circle cx="8" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="7.5" r="1.1" fill="currentColor" stroke="none"/>',
+    red:       '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="9" cy="18" r="2"/><circle cx="17" cy="17" r="2"/><path d="m7.9 6.4 8.2 1.3M6.4 8l2.2 8M10.9 17.6l4.2-.4M17.7 10l-.5 5"/>',
+    telarana:  '<circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6 6 18"/>',
+    triangulos:'<path d="m4 19 6-14 5 8 5-4-5 10z"/><path d="m10 5 10 4M4 19l11-6"/>',
+    ruta:      '<circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M6.5 17.5 10 12l5-1 2.5-4.5"/>',
+    obra:      '<path d="M4 20.5h16"/><path d="M6 20.5V6l10-2.5v17"/><path d="M16 8h4v12.5"/><path d="M9 9h4M9 13h4M9 17h4"/>',
+    mundo:     '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.8 2.8 2.8 14.2 0 17M12 3.5c-2.8 2.8-2.8 14.2 0 17"/>',
+    regla:     '<path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m8 12 1.5 1.5M10.5 9.5 12 11M13 7l1.5 1.5"/>',
+    nube:      '<path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18.5z"/>',
+    ubicar:    '<circle cx="12" cy="12" r="5.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+    tocar:     '<path d="M9.5 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12.5 10.5a1.5 1.5 0 0 1 3 0v1.5a1.5 1.5 0 0 1 3 0v1a1.5 1.5 0 0 1 3 0V17a4.5 4.5 0 0 1-4.5 4.5h-3.2a4.5 4.5 0 0 1-3.6-1.8L5.8 15.6a1.5 1.5 0 0 1 2.4-1.8l1.3 1.7"/>'
   };
 
   function icono(nombre, o) {
@@ -83,6 +129,56 @@
       'fill="none" stroke="currentColor" stroke-width="' + grosor + '" stroke-linecap="round" ' +
       'stroke-linejoin="round" aria-hidden="true" focusable="false">' + cuerpo + '</svg>';
   }
+
+  /* Puente emoji → icono. El catálogo de usos y algunos objetos de la app
+     traen su emoji como dato; acá se les pone la cara del sistema. Se busca
+     la clave más larga que EMPIECE el texto (así «🔍🛍️» gana sobre «🔍»).
+     Lo que no está en la tabla sale como pin genérico: mejor un pin sobrio
+     que un emoji que rompe la fila. */
+  var DE_EMOJI = {
+    '💊':'pastilla', '🛒':'carrito', '🍽️':'cubiertos', '🍽':'cubiertos', '☕':'taza', '🫖':'taza', '🥤':'taza',
+    '🏢':'edificio', '🏨':'edificio', '🏬':'comercio', '🛍️':'comercio', '🛍':'comercio', '🔍🛍️':'comercio',
+    '🏛️':'institucion', '🏛':'institucion', '💼':'maletin', '🧳':'maletin', '🔍💼':'maletin',
+    '🩺':'salud', '🚑':'salud', '🧑‍💻':'portatil', '🏋️':'pesa', '🏋':'pesa', '🏭':'industria',
+    '🧩':'piezas', '🔧':'herramienta', '🍻':'vaso', '🏧':'cajero', '🎭':'cultura', '🎓':'escuela',
+    '🏫':'escuela', '⛪':'iglesia', '⚖️':'balanza', '⚖':'balanza', '🚓':'escudo', '🅿️':'parqueo', '🅿':'parqueo',
+    '🚛':'camion', '❓':'pregunta', '✨':'destello', '⚠️':'alerta', '⚠':'alerta',
+    '🏠':'hogar', '🌳':'verde', '🌿':'verde', '💧':'agua', '🚌':'bus', '🧒':'nino', '👶':'nino',
+    '🧑':'perfil', '🧑‍🦱':'perfil', '👤':'perfil', '👩':'perfil', '👨':'perfil', '🧓':'mayor',
+    '👥':'poblacion', '📁':'carpeta', '🌐':'mundo', '🔥':'calor', '🔍':'lupa', '✏️':'lapiz', '✏':'lapiz',
+    '💾':'guardar', '📊':'estadistica', '🗑️':'borrar', '🗑':'borrar', '🛰️':'satelite', '🛰':'satelite',
+    '👁️':'ojo', '👁':'ojo', '🎲':'dado', '↩️':'deshacer', '↩':'deshacer', '🔗':'enlace', '🔑':'llave',
+    '📋':'copiar', '🖨️':'imprimir', '🖨':'imprimir', '📤':'compartir', '📄':'documento', '📦':'paquete',
+    '🎨':'paleta', '🗺️':'mapa', '🗺':'mapa', '🏗️':'obra', '🏗':'obra', '🟫':'capas', '🕸️':'red', '🕸':'red',
+    '🪢':'telarana', '📐':'triangulos', '🫧':'area', '⭕':'anillos', '☁️':'nube', '☁':'nube'
+  };
+  var CLAVES = Object.keys(DE_EMOJI).sort(function (a, b) { return b.length - a.length; });
+
+  function claveDe(texto) {
+    texto = String(texto == null ? '' : texto).trim();
+    for (var i = 0; i < CLAVES.length; i++) {
+      if (texto.indexOf(CLAVES[i]) === 0) return CLAVES[i];
+    }
+    return '';
+  }
+  // Nombre del icono que corresponde a un emoji (o texto que empieza por uno).
+  icono.nombreDeEmoji = function (texto) {
+    var k = claveDe(texto);
+    return k ? DE_EMOJI[k] : '';
+  };
+  // SVG del icono que reemplaza al emoji; si no se conoce, un pin.
+  icono.deEmoji = function (texto, o) {
+    return icono(icono.nombreDeEmoji(texto) || 'campo', o);
+  };
+  // El texto sin su emoji inicial («🏠 Vivienda» → «Vivienda»).
+  icono.sinEmoji = function (texto) {
+    texto = String(texto == null ? '' : texto);
+    var k = claveDe(texto);
+    var t = k ? texto.trim().slice(k.length) : texto;
+    // Emojis que no están en la tabla: cualquier pictograma inicial se cae igual.
+    try { t = t.replace(/^[\s\uFE0F]*\p{Extended_Pictographic}[\p{Emoji_Modifier}\uFE0F\u200D\p{Extended_Pictographic}]*/u, ''); } catch (e) {}
+    return t.replace(/^[\s\uFE0F]+/, '');
+  };
 
   icono.nombres = function () { return Object.keys(T); };
   window.URBIS_ICONO = icono;
