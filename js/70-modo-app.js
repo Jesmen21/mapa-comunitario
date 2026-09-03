@@ -34,20 +34,29 @@
   }
 
   var MODO = modoPedido();
-  if (!MODO) return;                    // sin parámetro, la app entera
 
-  // La marca va en <html> y no en <body>: el CSS tiene que poder esconder
-  // cosas ANTES de que la aplicación pinte, o se ven aparecer y desaparecer.
-  document.documentElement.setAttribute('data-urbis-modo', MODO);
-  window.URBIS_MODO_APP = MODO;
+  /* Sin parámetro NO se sale: la aplicación completa también quiere los
+     iconos del sistema. Lo que sigue atado al modo es lo que cambia QUÉ hay
+     —podar las tarjetas del inicio, añadir la salida al perfil, abrir el
+     módulo solo—; lo que cambia CÓMO SE VE se aplica en todas partes, para
+     que una mejora hecha para la app educativa no se quede solo ahí.
+     Pedido explícito: «que la web también use los iconos nuevos, todo cambio
+     que haga en la app se vea reflejado en la web». */
+  if (MODO) {
+    // La marca va en <html> y no en <body>: el CSS tiene que poder esconder
+    // cosas ANTES de que la aplicación pinte, o se ven aparecer y desaparecer.
+    document.documentElement.setAttribute('data-urbis-modo', MODO);
+    window.URBIS_MODO_APP = MODO;
+  }
 
-  var conf = MODOS[MODO];
+  var conf = MODO ? MODOS[MODO] : null;
 
   /* Las tarjetas del inicio que no son de este modo se quitan del DOM, no se
      esconden con CSS: una tarjeta invisible sigue recibiendo el foco del
      teclado y sigue leyéndose en un lector de pantalla, y el estudiante
      acabaría entrando a Minijuegos sin verlo. */
   function podarInicio() {
+    if (!conf) return 0;
     var quitadas = 0;
     document.querySelectorAll('.u52-module').forEach(function (b) {
       var suyo = conf.modulos.some(function (m) { return b.classList.contains(m); });
@@ -119,7 +128,7 @@
   ].join(',');
   function vestirPerfil() {
     var I = window.URBIS_ICONO;
-    if (MODO !== 'educativo' || !I || !I.nombreDeEmoji) return;
+    if (!I || !I.nombreDeEmoji) return;
     document.querySelectorAll(VESTIR_PERFIL).forEach(function (el) {
       if (el.getAttribute('data-u70-vestido')) return;
       var texto = (el.textContent || '').trim();
@@ -138,7 +147,13 @@
   var VESTIDOS_EDU = {
     '.u52-mapcentric-round[data-u52-back]': 'atras',
     '.u52-procity-filter-btn': 'filtro',
-    '.u52-mapcentric-filter[data-u52-call="locate"]': 'ubicar'
+    '.u52-mapcentric-filter[data-u52-call="locate"]': 'ubicar',
+    /* La carpeta cooperativa y el filtro de vista NO van acá aunque también
+       llevaran emoji: los dos se repintan solos cuando cambia el estado —qué
+       carpeta está activa, qué se está viendo— así que vestirlos desde fuera
+       duraría hasta el primer cambio. Cada uno pone su icono en la función que
+       ya lo repinta (js/20). Tener dos dueños del mismo botón es peor que
+       tener uno malo. */
   };
   /* Y los tres que llevan ESTADO en el emoji: qué se está viendo (👤 lo mío,
      👥 amigos, 📁 un proyecto, 🌐 todo), si hay carpeta cooperativa activa
@@ -170,7 +185,7 @@
     vestirPerfil();
     vestirVivos();
     if (!window.URBIS_ICONO) return;
-    var lista = Object.assign({}, VESTIDOS, MODO === 'educativo' ? VESTIDOS_EDU : {});
+    var lista = Object.assign({}, VESTIDOS, VESTIDOS_EDU);
     Object.keys(lista).forEach(function (sel) {
       var el = document.querySelector(sel);
       if (!el || el.getAttribute('data-u70-vestido')) return;
@@ -186,7 +201,7 @@
      día que ese camino cambie. */
   var clics = 0, ultimoClic = 0;
   function abrirLoSuyo() {
-    if (!conf.abre) return true;
+    if (!conf || !conf.abre) return true;
     var b = document.querySelector('[data-u52-call="' + conf.abre + '"]');
     if (!b) return false;
     /* No basta con pulsar: el arranque de la aplicación termina de acomodarse
@@ -202,6 +217,7 @@
   }
 
   function quedoAbierto() {
+    if (!conf) return true;
     if (MODO === 'educativo') return !!window.urbisProCityActivo;
     return true;
   }
@@ -247,6 +263,9 @@
     // Idempotente: lo ya vestido se salta. Se repite porque el perfil se
     // repinta y otros módulos le añaden filas después (Configuración).
     vestirBotonesDelMapa();
+    // Sin modo, hasta acá llega: no hay módulo propio que abrir ni al que
+    // volver, solo iconos que poner.
+    if (!conf) return;
     if (yaAbrio) { volverALoSuyo(); return; }
     // Si ya está abierto (lo abrió el clic anterior y esto es solo el DOM
     // acomodándose), no hay nada que hacer.

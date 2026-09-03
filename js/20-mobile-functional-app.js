@@ -3327,7 +3327,14 @@
   }
   function updateProCityVisualToggleIcon(){
     const btn = app.querySelector('.u52-procity-visual-toggle');
-    if(btn) btn.textContent = proCity.matrizVisualMode === 'color' ? '🎨' : '😀';
+    if(!btn) return;
+    // Con el juego de iconos cargado va el trazo; sin él, el emoji de antes.
+    // Este botón se repinta a cada toque, así que el icono tiene que ponerse
+    // ACÁ: vestirlo desde fuera duraría hasta el primer clic.
+    const I = window.URBIS_ICONO;
+    const nombre = proCity.matrizVisualMode === 'color' ? 'paleta' : 'campo';
+    if(I){ btn.innerHTML = I(nombre, { tam:24, grosor:2 }); btn.setAttribute('data-u70-vestido','1'); }
+    else btn.textContent = proCity.matrizVisualMode === 'color' ? '🎨' : '😀';
   }
   function toggleProCityVisualMode(){
     proCity.matrizVisualMode = proCity.matrizVisualMode === 'emoji' ? 'color' : 'emoji';
@@ -3584,7 +3591,12 @@
     if(!btn) return;
     const folder = proCity.activeFolder ? proCity.myFolders.find(f=>f.id === proCity.activeFolder) : null;
     btn.classList.toggle('activa', !!folder);
-    btn.textContent = folder ? '🟢' : '📁';
+    // El icono es siempre la carpeta: lo que cambia cuando hay una activa es
+    // el color, que ya lo pone la clase de arriba. Cambiar además el dibujo
+    // (antes salía un círculo verde) hacía que el botón pareciera otro botón.
+    const I0 = window.URBIS_ICONO;
+    if (I0) btn.innerHTML = I0('carpeta', { tam:24, grosor:2 });
+    else btn.textContent = folder ? '🟢' : '📁';
     btn.setAttribute('aria-label', folder ? `Mapeo cooperativo activo en "${folder.nombre}" — toca para cambiar` : 'Elegir carpeta cooperativa activa para mapear');
     btn.title = folder ? `Activo: ${folder.nombre}` : 'Elegir carpeta cooperativa';
   }
@@ -3642,16 +3654,18 @@
   function updateProCityViewFilterBtn(){
     const btn = app.querySelector('.u52-procity-view-filter-btn');
     if(!btn) return;
-    let icon = '👤', label = 'Viendo: solo lo tuyo';
+    let icon = '👤', nombreIcono = 'perfil', label = 'Viendo: solo lo tuyo';
     if(proCity.folderFilter){
       const f = proCity.myFolders.find(x=>x.id === proCity.folderFilter);
-      icon = '📁'; label = 'Viendo: proyecto "' + (f ? f.nombre : proCity.folderFilter) + '"';
+      icon = '📁'; nombreIcono = 'carpeta'; label = 'Viendo: proyecto "' + (f ? f.nombre : proCity.folderFilter) + '"';
     } else if(proCity.onlyFriends){
-      icon = '👥'; label = 'Viendo: solo tus amigos';
+      icon = '👥'; nombreIcono = 'poblacion'; label = 'Viendo: solo tus amigos';
     } else if(!proCity.onlyMine){
-      icon = '🌐'; label = 'Viendo: todo el mundo';
+      icon = '🌐'; nombreIcono = 'mundo'; label = 'Viendo: todo el mundo';
     }
-    btn.textContent = icon;
+    const I1 = window.URBIS_ICONO;
+    if (I1) btn.innerHTML = I1(nombreIcono, { tam:24, grosor:2 });
+    else btn.textContent = icon;
     btn.setAttribute('aria-label', label + ' — toca para cambiar');
     btn.title = label;
   }

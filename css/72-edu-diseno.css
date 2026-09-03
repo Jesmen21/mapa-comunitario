@@ -484,14 +484,14 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
 /* ══════════════════════════════════════════════════════════════════════
    6 · LOS BOTONES FLOTANTES DEL MAPA EN MODO EDUCATIVO
    ══════════════════════════════════════════════════════════════════════ */
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-recon-btn,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-dibujar-btn,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn{
+#urbis-mobile-app .u52-procity-recon-btn,
+#urbis-mobile-app .u52-procity-dibujar-btn,
+#urbis-mobile-app .u52-procity-perfil-btn{
   box-shadow:var(--edu-sombra-alta) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-recon-btn .u-ico,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-dibujar-btn .u-ico,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn .u-ico{ margin:0 !important; vertical-align:middle; }
+#urbis-mobile-app .u52-procity-recon-btn .u-ico,
+#urbis-mobile-app .u52-procity-dibujar-btn .u-ico,
+#urbis-mobile-app .u52-procity-perfil-btn .u-ico{ margin:0 !important; vertical-align:middle; }
 
 /* Foco visible y movimiento contenido. */
 .pcr-hoja button:focus-visible, .pcr-pestana button:focus-visible, .pca-panel button:focus-visible{
@@ -533,41 +533,47 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
 .pca-btn-raster .u-ico, .pca-heat-off .u-ico{ vertical-align:-.2em; margin-right:.38em; }
 .pca-burbuja-cab span .u-ico{ margin:0; display:block; color:var(--edu-accent-ink); }
 
-/* ── 8. Modo educativo: la barra inferior y los cierres, en celeste ─────
+/* ── 8. La barra inferior y los cierres, en celeste ─────────────────────
+   ESTO YA NO ES SOLO DEL MODO EDUCATIVO. Estas reglas nacieron atadas a
+   `[data-urbis-modo="educativo"]` para no cambiarle la cara a la aplicación
+   completa sin avisar. Se quitó esa atadura a pedido: «que la web también use
+   los iconos nuevos y la tipografía, todo cambio que haga en la app se vea
+   reflejado en la web». Lo que SIGUE atado al modo es lo que cambia qué hay
+   —qué módulos se ven, la salida al perfil—, no cómo se ve.
    Pro City nació lavanda; el modo educativo es celeste. Los botones que
    quedaban en la otra familia (el central de la barra, la equis de la hoja
    de estadísticas) se traen a la misma paleta que la lupa y el lápiz. */
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav{
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav{
   background:rgba(255,255,255,.96) !important; border-top:1px solid var(--edu-line) !important;
   box-shadow:0 -8px 26px rgba(10,111,158,.10) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus){
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus){
   color:var(--edu-ink-2) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus):active{
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus):active{
   background:var(--edu-accent-soft) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico{
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico{
   color:var(--edu-accent-deep) !important; display:grid !important; place-items:center; height:24px;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico svg{ display:block; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) span:not(.procity-nav-ico){
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico svg{ display:block; }
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) span:not(.procity-nav-ico){
   color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
   font-family:var(--edu-font) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus{
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus{
   background:linear-gradient(135deg, var(--edu-accent), var(--edu-accent-deep)) !important;
   box-shadow:0 12px 26px rgba(10,111,158,.36), 0 0 0 5px rgba(255,255,255,.94) !important;
   display:grid !important; place-items:center;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus svg{ display:block; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-sheet-head button{
+#urbis-mobile-app .u52-bottom-nav.u52-procity-nav .plus.procity-plus svg{ display:block; }
+#urbis-mobile-app .u52-procity-sheet-head button{
   background:var(--edu-ground-2) !important; color:var(--edu-ink) !important;
   -webkit-text-fill-color:var(--edu-ink) !important;
   box-shadow:inset 0 0 0 1px var(--edu-line) !important;
   transition:background .15s ease, transform .12s ease;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-sheet-head button:active{
+#urbis-mobile-app .u52-procity-sheet-head button:active{
   background:var(--edu-accent-soft) !important; transform:scale(.94);
 }
 
@@ -608,89 +614,89 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
   .pcr-hoja button:active, .pcr-pestana button:active, .pca-panel button:active{ transform:none !important; }
 }
 
-/* ── 10. Perfil y avatar en la app educativa ─────────────────────────────
+/* ── 10. Perfil y avatar ─────────────────────────────────────────────────
    Las pantallas son las de la app completa; acá solo se alinean con el
    módulo: iconos lineales en su cajita, botón de avatar en celeste. */
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-profile-id-icon svg,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-empty-card > span:first-child svg,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-profile-logout > span:first-child svg{ display:block; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-profile-id-icon,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card > span:first-child{
+#urbis-mobile-app .u52-profile-id-icon svg,
+#urbis-mobile-app .u52-empty-card > span:first-child svg,
+#urbis-mobile-app .u52-profile-logout > span:first-child svg{ display:block; }
+#urbis-mobile-app .u52-profile-id-icon,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card > span:first-child{
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
   background:var(--edu-accent-soft) !important; font-size:0 !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-profile-logout > span:first-child{
+#urbis-mobile-app .u52-profile-logout > span:first-child{
   font-size:0 !important; display:grid; place-items:center;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u65-avatar-open{
+#urbis-mobile-app .u65-avatar-open{
   display:inline-flex !important; align-items:center; justify-content:center; gap:8px;
   background:var(--edu-accent-deep) !important; color:#fff !important;
   -webkit-text-fill-color:#fff !important; border:0 !important; border-radius:12px !important;
   font-weight:700 !important; box-shadow:0 6px 16px rgba(10,111,158,.22) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u65-avatar-open span{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-profile-copy-id > span:first-child{ font-size:0 !important; display:grid; place-items:center; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-topbar [data-u52-back]{ font-size:0 !important; display:grid; place-items:center; }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-topbar [data-u52-back] svg{ display:block; }
+#urbis-mobile-app .u65-avatar-open span{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+#urbis-mobile-app .u52-profile-copy-id > span:first-child{ font-size:0 !important; display:grid; place-items:center; }
+#urbis-mobile-app .u52-topbar [data-u52-back]{ font-size:0 !important; display:grid; place-items:center; }
+#urbis-mobile-app .u52-topbar [data-u52-back] svg{ display:block; }
 /* La barra de la cabecera del mapa, vestida: los tres botones con trazo. */
-[data-urbis-modo="educativo"] .u52-mapcentric-round[data-u52-back] svg,
-[data-urbis-modo="educativo"] .u52-procity-filter-btn svg,
-[data-urbis-modo="educativo"] .u52-mapcentric-filter[data-u52-call="locate"] svg{ display:block; margin:auto; }
-[data-urbis-modo="educativo"] .u52-mapcentric-round[data-u52-back],
-[data-urbis-modo="educativo"] .u52-procity-filter-btn,
-[data-urbis-modo="educativo"] .u52-mapcentric-filter[data-u52-call="locate"]{
+.u52-mapcentric-round[data-u52-back] svg,
+.u52-procity-filter-btn svg,
+.u52-mapcentric-filter[data-u52-call="locate"] svg{ display:block; margin:auto; }
+.u52-mapcentric-round[data-u52-back],
+.u52-procity-filter-btn,
+.u52-mapcentric-filter[data-u52-call="locate"]{
   font-size:0 !important; color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
   display:grid !important; place-items:center;
 }
 /* La pantalla de perfil, en la paleta del módulo: tinta y celeste, no el
    índigo y el verde agua de la app general. Misma información, mismo orden. */
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-title,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="avatar"] .u52-title,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-card h1,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-card b,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card b,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout b{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-title,
+#urbis-mobile-app [data-u52-screen="avatar"] .u52-title,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-card h1,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-card b,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card b,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout b{
   color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
   font-family:var(--edu-font) !important; letter-spacing:-.01em;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-card h1{ font-weight:800 !important; }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-username{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-card h1{ font-weight:800 !important; }
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-username{
   color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important; font-weight:700 !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] #u52-profile-role,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card small,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout small,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card small{
+#urbis-mobile-app [data-u52-screen="profile"] #u52-profile-role,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card small,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout small,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card small{
   color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card{
   background:var(--edu-ground) !important; border:1px solid var(--edu-accent) !important;
   box-shadow:var(--edu-sombra) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card code{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-id-card code{
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
   border-color:var(--edu-accent) !important; background:var(--edu-accent-soft) !important;
   font-family:var(--edu-font) !important; letter-spacing:.06em;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-copy-id{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-copy-id{
   background:var(--edu-accent-deep) !important; color:#fff !important; -webkit-text-fill-color:#fff !important;
   border-radius:14px !important; box-shadow:0 6px 16px rgba(10,111,158,.22) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-copy-id small{ color:#fff !important; -webkit-text-fill-color:#fff !important; opacity:.9; }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-card,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-copy-id small{ color:#fff !important; -webkit-text-fill-color:#fff !important; opacity:.9; }
+#urbis-mobile-app [data-u52-screen="profile"] .u52-card,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-empty-card,
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout{
   border:1px solid var(--edu-line) !important; box-shadow:var(--edu-sombra) !important; background:var(--edu-ground) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav:not(.u52-procity-nav) button.active,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav:not(.u52-procity-nav) button.active span{
+#urbis-mobile-app .u52-bottom-nav:not(.u52-procity-nav) button.active,
+#urbis-mobile-app .u52-bottom-nav:not(.u52-procity-nav) button.active span{
   color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
 }
 /* Los tres botones de la cabecera ganan a la regla lavanda de css/52 (que
    lleva body + id + dos clases): mismo contexto, más un atributo. */
-html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-filter-btn:not([hidden]),
-html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter[data-u52-call="locate"],
-html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-round[data-u52-back]{
+html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-filter-btn:not([hidden]),
+html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-filter[data-u52-call="locate"],
+html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-round[data-u52-back]{
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
 }
 /* El anillo de categorías sin halo: la sombra es de la tarjeta, no del dato. */
@@ -755,37 +761,37 @@ html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-m
 /* Los iconos de Configuración y Cerrar sesión: css/42 pinta los `span` en
    casi blanco, y como el trazo hereda `currentColor`, el icono quedaba
    invisible sobre su caja blanca. Cada uno con su tinta y su caja. */
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout > span:first-child{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout > span:first-child{
   background:#FEF0F1 !important;
   color:#B4243A !important; -webkit-text-fill-color:#B4243A !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton > span:first-child{
+#urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton > span:first-child{
   background:var(--edu-accent-soft) !important;
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton b{
+#urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton b{
   color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout:not(.urbis-cfg-boton) b{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout:not(.urbis-cfg-boton) b{
   color:#B4243A !important; -webkit-text-fill-color:#B4243A !important;
 }
 /* Los seis botones flotantes del mapa, misma tinta y mismo trazo. */
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-view-filter-btn,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-active-folder-btn,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-visual-toggle{
+#urbis-mobile-app .u52-procity-view-filter-btn,
+#urbis-mobile-app .u52-procity-active-folder-btn,
+#urbis-mobile-app .u52-procity-visual-toggle{
   font-size:0 !important; display:grid !important; place-items:center;
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
 }
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-view-filter-btn svg,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-active-folder-btn svg,
-[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-visual-toggle svg{ display:block; }
+#urbis-mobile-app .u52-procity-view-filter-btn svg,
+#urbis-mobile-app .u52-procity-active-folder-btn svg,
+#urbis-mobile-app .u52-procity-visual-toggle svg{ display:block; }
 /* La última tarjeta del perfil quedaba debajo de la barra inferior. */
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-content,
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="avatar"] .u52-content{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-content,
+#urbis-mobile-app [data-u52-screen="avatar"] .u52-content{
   padding-bottom:calc(110px + env(safe-area-inset-bottom,0px)) !important;
 }
 /* Y su subtítulo deja de competir con el título de la fila. */
-[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout small{
+#urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout small{
   font-weight:500 !important; font-size:.8rem !important; line-height:1.4 !important;
   color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
@@ -1034,3 +1040,18 @@ html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-m
 .pcr-hoja .pcr-rosa-n, .pcr-pestana .pcr-rosa-n{
   fill:var(--edu-ink-3); font-size:9px; font-weight:700; text-anchor:middle;
 }
+/* La columna de botones del mapa, entera con el mismo trazo: la carpeta
+   cooperativa, el filtro de vista y el conmutador de iconos/colores. Los tres
+   llevaban emoji y quedaban desparejos junto a la lupa y el lápiz. */
+#urbis-mobile-app .u52-procity-active-folder-btn,
+#urbis-mobile-app .u52-procity-view-filter-btn,
+#urbis-mobile-app .u52-procity-visual-toggle{
+  display:grid !important; place-items:center; font-size:0 !important;
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+}
+#urbis-mobile-app .u52-procity-active-folder-btn[hidden],
+#urbis-mobile-app .u52-procity-view-filter-btn[hidden],
+#urbis-mobile-app .u52-procity-visual-toggle[hidden]{ display:none !important; }
+#urbis-mobile-app .u52-procity-active-folder-btn svg,
+#urbis-mobile-app .u52-procity-view-filter-btn svg,
+#urbis-mobile-app .u52-procity-visual-toggle svg{ display:block; }
