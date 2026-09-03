@@ -1,0 +1,27 @@
+QUÉ ES ESTO
+───────────
+assetlinks.json es lo que le dice a Android «esta app y este dominio son
+la misma cosa». Sin él, la aplicación abre urbispro.city CON la barra del
+navegador encima: funciona, pero no parece una app.
+
+QUÉ HAY QUE CAMBIAR
+───────────────────
+Una sola línea: la huella SHA-256 de la clave con la que se firmó el APK.
+PWABuilder la entrega dentro del paquete que se descarga (en el propio
+assetlinks.json que genera, o en signing-key-info.txt). Se copia acá,
+se sube, y en unos minutos Android deja de mostrar la barra.
+
+package_name tiene que ser EXACTAMENTE el que se escribió en PWABuilder.
+Si allá se puso otro, cambiarlo también acá.
+
+CÓMO SE COMPRUEBA
+─────────────────
+  https://urbispro.city/.well-known/assetlinks.json
+tiene que devolver este archivo tal cual (no un 404 ni la página de la app).
+
+OJO CON .nojekyll
+─────────────────
+El archivo .nojekyll de la raíz del repositorio es obligatorio: GitHub
+Pages usa Jekyll, y Jekyll no publica nada que empiece por punto. Sin él
+esta carpeta no existe para el mundo, y no hay ningún mensaje de error
+que lo explique.
