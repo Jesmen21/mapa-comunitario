@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v637-graficas-y-perfil';
+const URBIS_CACHE = 'urbis-v638-capas-del-analisis';
 const URBIS_ASSETS = [
   './',
   './index.html',

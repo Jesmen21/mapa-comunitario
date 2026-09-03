@@ -696,3 +696,59 @@ html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-m
 /* El anillo de categorías sin halo: la sombra es de la tarjeta, no del dato. */
 .pcr-hoja .pcr-grafica canvas, .pcr-pestana .pcr-grafica canvas,
 .pca-panel .pca-chart canvas, .pca-panel canvas{ filter:none !important; box-shadow:none !important; }
+
+/* ── 11. Las tres capas del análisis por área ────────────────────────────
+   Calor, cobertura y geometría se distinguían con tres lavados de color
+   (naranja, verde, violeta) para no perderse entre los subtítulos. Se
+   siguen distinguiendo —cada una conserva su color— pero como acento:
+   una barra fina a la izquierda y el icono teñido, sobre la misma tarjeta
+   blanca que todo lo demás. Menos tinta, misma señal. */
+.pca-panel .pca-heat-sel, .pca-panel .pca-raster-sel, .pca-panel .pca-geo-sel{
+  --capa:var(--edu-accent-deep);
+  position:relative; background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-l) !important; box-shadow:var(--edu-sombra); padding:14px 14px 14px 18px !important;
+  overflow:hidden;
+}
+.pca-panel .pca-heat-sel::before, .pca-panel .pca-raster-sel::before, .pca-panel .pca-geo-sel::before{
+  content:""; position:absolute; left:0; top:12px; bottom:12px; width:3px; border-radius:0 3px 3px 0;
+  background:var(--capa);
+}
+.pca-panel .pca-heat-sel{ --capa:#F97316; }
+.pca-panel .pca-raster-sel{ --capa:#16A34A; }
+.pca-panel .pca-geo-sel{ --capa:#8B5CF6; }
+.pca-panel .pca-heat-sel .pca-h-ico, .pca-panel .pca-raster-sel .pca-h-ico, .pca-panel .pca-geo-sel .pca-h-ico{
+  background:color-mix(in srgb, var(--capa) 12%, #fff) !important;
+  color:var(--capa) !important; -webkit-text-fill-color:var(--capa) !important;
+}
+.pca-panel .pca-h-heat, .pca-panel .pca-h-raster, .pca-panel .pca-h-geo{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pca-panel .pca-heat-ayuda, .pca-panel .pca-raster-ayuda, .pca-panel .pca-geo-ayuda{
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  font-size:.8rem !important; line-height:1.5 !important;
+}
+/* Los chips de calor, iguales a los del reconocimiento. */
+.pca-panel .pca-heat-btn, .pca-panel .pca-geo-filtro{
+  font-size:.78rem !important; font-weight:600 !important; padding:7px 12px 7px 9px !important;
+  border:1px solid var(--edu-line) !important; border-radius:999px !important; background:var(--edu-ground) !important;
+  color:var(--edu-ink) !important; font-family:var(--edu-font) !important;
+  transition:background .16s ease, border-color .16s ease, transform .12s ease;
+}
+.pca-panel .pca-heat-btn span, .pca-panel .pca-geo-filtro span{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important; font-weight:600 !important;
+}
+.pca-panel .pca-heat-btn i{ width:9px !important; height:9px !important; transition:transform .16s ease; }
+.pca-panel .pca-heat-btn.activo{ border-color:var(--c) !important; background:color-mix(in srgb, var(--c) 12%, #fff) !important; }
+.pca-panel .pca-heat-btn.activo i{ transform:scale(1.25); }
+.pca-panel .pca-heat-off{
+  border:1px solid var(--edu-line) !important; border-radius:10px !important; background:var(--edu-ground-2) !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important; font-family:var(--edu-font) !important;
+}
+/* El aviso «todavía no hay nada mapeado» habla, no grita. */
+.pca-panel .pca-vacio{
+  background:var(--edu-ground-2) !important; border:1px solid var(--edu-line) !important; border-left:3px solid #E0A93C !important;
+  border-radius:var(--edu-r-m) !important; color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  font-size:.82rem !important; line-height:1.5 !important; padding:11px 12px !important;
+}
+/* La barra de la licencia: aire entre la llave y el título. */
+.ulic-barra b .u-ico, .ulic-barra .u-ico{ margin-right:.45em; vertical-align:-.15em; }
