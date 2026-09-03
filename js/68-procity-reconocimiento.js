@@ -76,6 +76,10 @@
     // en pantalla. Se pide a botón como el terreno o el clima: cuesta una
     // consulta y no siempre hay puntos del curso que comparar.
     campo: null, campoCargando: false, campoAviso: '',
+    /* Los sectores elegidos para comparar entre sí. Es una lista de ids, no
+       de fichas: las fichas se releen del almacenamiento cada vez, así que si
+       una se borra la comparación se entera sola. */
+    cotejo: [],
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -4234,6 +4238,200 @@
       'contribución a todo el grupo, y con razón.</p>';
   }
 
+
+  /* ── Comparar sectores entre sí ────────────────────────────────────────
+     Hasta acá cada sector se lee solo, y solo no dice mucho: «4,8 m² de
+     espacio público por habitante» no es bueno ni malo hasta que se pone al
+     lado del sector de la otra mitad del curso. Es el ejercicio que cierra un
+     semestre —cada grupo levanta el suyo y después se miran juntos— y todo el
+     dato ya estaba guardado en las fichas.
+
+     Dos reglas que hacen que la tabla se pueda defender:
+
+     · Lo que un sector NO midió sale como raya, no como cero. Un sector sin
+       terreno medido no tiene «0% de pendiente»: no tiene dato, y ponerle un
+       cero lo haría ganar una fila que ni jugó.
+     · Solo se señala el mejor donde «mejor» significa algo. Más espacio
+       público por habitante es mejor y no hay discusión; más densidad o más
+       porcentaje construido no: depende de qué se quiera. Esas filas van sin
+       corona, y se dice por qué. */
+  var FILAS_COTEJO = [
+    { id: 'areaHa',    t: 'Tamaño',                 u: 'ha',      mejor: null,
+      de: function (f) { return f.areaM2 ? Math.round(f.areaM2 / 1000) / 10 : null; } },
+    { id: 'usos',      t: 'Usos registrados',       u: '',        mejor: null,
+      de: function (f) { return f.total != null ? f.total : null; } },
+    { id: 'densidad',  t: 'Usos por hectárea',      u: '',        mejor: null,
+      de: function (f) { return f.stats && f.stats.densidadPorHa != null ? f.stats.densidadPorHa : null; } },
+    { id: 'poblacion', t: 'Población estimada',     u: 'hab',     mejor: null,
+      de: function (f) { return f.stats && f.stats.poblacionEstimada ? f.stats.poblacionEstimada : null; } },
+    { id: 'mezcla',    t: 'Mezcla de usos',         u: '',        mejor: 'alto',
+      de: function (f) { return f.stats && f.stats.mezcla ? f.stats.mezcla.indice : null; } },
+    { id: 'ep',        t: 'Espacio público',        u: 'm²/hab',  mejor: 'alto',
+      de: function (f) {
+        var e = f.trazado && f.trazado.espacio, hab = f.stats && f.stats.poblacionEstimada;
+        if (!e || !e.piezas || !hab) return null;
+        return Math.round(10 * e.areaM2 / hab) / 10;
+      } },
+    { id: 'colegio',   t: 'Con colegio a 5 min',    u: '%',       mejor: 'alto',
+      de: function (f) { return cobertura(f, 'educacion'); } },
+    { id: 'salud',     t: 'Con salud a 10 min',     u: '%',       mejor: 'alto',
+      de: function (f) { return cobertura(f, 'salud'); } },
+    { id: 'parque',    t: 'Con parque a 5 min',     u: '%',       mejor: 'alto',
+      de: function (f) { return cobertura(f, 'recreacion'); } },
+    { id: 'mercar',    t: 'Con dónde mercar a 5 min', u: '%',     mejor: 'alto',
+      de: function (f) { return cobertura(f, 'abastecimiento'); } },
+    { id: 'lleno',     t: 'Suelo construido',       u: '%',       mejor: null,
+      de: function (f) { return f.trazado && f.trazado.llenos ? f.trazado.llenos.pctLleno : null; } },
+    { id: 'via',       t: 'Vía por hectárea',       u: 'km',      mejor: null,
+      de: function (f) { return f.trazado && f.trazado.vias ? f.trazado.vias.kmPorHa : null; } },
+    { id: 'cruces',    t: 'Tramo entre cruces',     u: 'm',       mejor: null,
+      de: function (f) { return f.trazado && f.trazado.morfologia ? f.trazado.morfologia.tramoMedioM : null; } },
+    { id: 'hd',        t: 'Altura ÷ ancho de calzada', u: '',     mejor: null,
+      de: function (f) { return f.trazado && f.trazado.perfil ? f.trazado.perfil.relacion : null; } },
+    { id: 'anden',     t: 'Vía con andén',          u: '%',       mejor: 'alto',
+      de: function (f) {
+        var p = f.trazado && f.trazado.perfil;
+        return p && p.anden ? p.anden.conAndenPct : null;
+      } },
+    { id: 'pendiente', t: 'Pendiente media',        u: '%',       mejor: 'bajo',
+      de: function (f) { return f.terreno && f.terreno.pendiente ? f.terreno.pendiente.media : null; } },
+    { id: 'desnivel',  t: 'Desnivel',               u: 'm',       mejor: null,
+      de: function (f) { return f.terreno && f.terreno.elevacion ? f.terreno.elevacion.relieve : null; } },
+    { id: 'temp',      t: 'Temperatura media',      u: '°',       mejor: null,
+      de: function (f) { return f.clima && f.clima.temperatura ? f.clima.temperatura.media : null; } },
+    { id: 'nuevos',    t: 'Encontrados por el curso', u: '',      mejor: 'alto',
+      de: function (f) { return f.campo ? (f.campo.nuevos || []).length : null; } }
+  ];
+
+  function cobertura(f, id) {
+    var a = f.stats && f.stats.accesibilidad;
+    if (!a || !a.categorias) return null;
+    var c = a.categorias.filter(function (x) { return x.id === id; })[0];
+    return c ? c.pctCubierto : null;
+  }
+
+  function fichasCotejadas() {
+    var todas = leerFichas();
+    return S.cotejo.map(function (id) {
+      return todas.filter(function (f) { return f.id === id; })[0];
+    }).filter(Boolean);
+  }
+
+  function alternarCotejo(id) {
+    var i = S.cotejo.indexOf(id);
+    if (i >= 0) S.cotejo.splice(i, 1);
+    // Cuatro columnas es lo que cabe en un teléfono sin que la tabla se lea
+    // con lupa. Más sectores no es más comparación: es menos.
+    else if (S.cotejo.length < 4) S.cotejo.push(id);
+    else S.avisoPestana = 'Se pueden comparar hasta cuatro sectores a la vez.';
+  }
+
+  function bloqueCotejo() {
+    var fs = fichasCotejadas();
+    if (fs.length < 2) {
+      return S.cotejo.length === 1
+        ? '<p class="pcr-pista pcr-cotejo-pista">Elegí <b>otro sector</b> para comparar con el que ' +
+          'marcaste. Se pueden poner hasta cuatro lado a lado.</p>'
+        : '';
+    }
+    var nombres = fs.map(function (f) { return f.nombre || ('Sector del ' + fmtFecha(f.ts)); });
+    var filas = FILAS_COTEJO.map(function (fila) {
+      var vals = fs.map(function (f) { return fila.de(f); });
+      var conDato = vals.filter(function (v) { return v != null; });
+      if (!conDato.length) return '';
+      var gana = null;
+      // El mejor solo se marca si hay con qué comparar: con un solo sector que
+      // midió eso, ganar no significa nada.
+      if (fila.mejor && conDato.length >= 2) {
+        gana = fila.mejor === 'alto' ? Math.max.apply(null, conDato) : Math.min.apply(null, conDato);
+        // Si empatan todos, nadie gana.
+        if (conDato.every(function (v) { return v === gana; })) gana = null;
+      }
+      return '<tr><th scope="row">' + esc(fila.t) + '</th>' +
+        vals.map(function (v) {
+          if (v == null) return '<td class="pcr-cot-nd" title="No se midió en este sector">—</td>';
+          var texto = (typeof v === 'number' ? String(v).replace('.', ',') : esc(String(v))) +
+                      (fila.u ? ' ' + fila.u : '');
+          return '<td' + (gana != null && v === gana ? ' class="pcr-cot-gana"' : '') + '>' +
+            texto + '</td>';
+        }).join('') +
+        '</tr>';
+    }).join('');
+
+    return '<div class="pcr-cotejo">' +
+      h4('comparar', 'Sectores lado a lado') +
+      '<div class="pcr-cot-caja"><table class="pcr-cot-tabla">' +
+        '<thead><tr><th></th>' +
+          nombres.map(function (n) { return '<th scope="col">' + esc(n) + '</th>'; }).join('') +
+        '</tr></thead><tbody>' + filas + '</tbody>' +
+      '</table></div>' +
+      '<p class="pcr-pista">La raya es <b>sin dato</b>, no cero: ese sector no midió eso. ' +
+      'Solo se señala el mejor donde «mejor» quiere decir algo — más espacio público por ' +
+      'habitante, más cobertura, menos pendiente. En densidad, en suelo construido o en la ' +
+      'relación altura/ancho no hay un mejor: depende de qué se quiera del sector, y ahí la ' +
+      'comparación es para discutirla, no para ganarla.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-cot-copiar">' +
+          ico('copiar') + 'Copiar la tabla</button>' +
+        '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-cot-pdf">' +
+          ico('imprimir') + 'Imprimir</button>' +
+        '<button type="button" class="pcr-mini" data-u52-call="pcr-cot-limpiar">' +
+          ico('borrar', 16) + 'Quitar todos</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function cotejoComoTexto() {
+    var fs = fichasCotejadas();
+    if (fs.length < 2) return '';
+    var nombres = fs.map(function (f) { return f.nombre || ('Sector del ' + fmtFecha(f.ts)); });
+    var l = ['URBIS · sectores lado a lado', new Date().toLocaleDateString('es-CO'), ''];
+    l.push(['Indicador'].concat(nombres).join('\t'));
+    FILAS_COTEJO.forEach(function (fila) {
+      var vals = fs.map(function (f) { return fila.de(f); });
+      if (!vals.some(function (v) { return v != null; })) return;
+      l.push([fila.t + (fila.u ? ' (' + fila.u + ')' : '')].concat(
+        vals.map(function (v) { return v == null ? '—' : String(v).replace('.', ','); })
+      ).join('\t'));
+    });
+    l.push('');
+    l.push('La raya es sin dato, no cero: ese sector no midió eso.');
+    return l.join('\n');
+  }
+
+  function cotejoImprimible() {
+    var fs = fichasCotejadas();
+    if (fs.length < 2) return '';
+    var nombres = fs.map(function (f) { return f.nombre || ('Sector del ' + fmtFecha(f.ts)); });
+    var filas = FILAS_COTEJO.map(function (fila) {
+      var vals = fs.map(function (f) { return fila.de(f); });
+      if (!vals.some(function (v) { return v != null; })) return '';
+      return '<tr><td>' + esc(fila.t) + '</td>' +
+        vals.map(function (v) {
+          return '<td class="n">' + (v == null ? '—' : esc(String(v).replace('.', ',')) +
+                 (fila.u ? ' ' + fila.u : '')) + '</td>';
+        }).join('') + '</tr>';
+    }).join('');
+    return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+      '<title>URBIS · sectores lado a lado</title><style>' +
+      'body{font-family:Inter,system-ui,sans-serif;color:#0F1F2E;margin:24px;font-size:12px}' +
+      'h1{font-size:18px;margin:0 0 4px}p.sub{color:#6B7A8A;margin:0 0 16px}' +
+      'table{border-collapse:collapse;width:100%}' +
+      'th,td{border-bottom:1px solid #E3EAF0;padding:6px 8px;text-align:left}' +
+      'thead th{background:#F3F8FB;color:#0A6F9E;font-size:11px;text-transform:uppercase;letter-spacing:.08em}' +
+      'td.n{text-align:right;font-variant-numeric:tabular-nums}' +
+      'p.pie{color:#6B7A8A;margin-top:14px;font-size:11px}' +
+      '</style></head><body>' +
+      '<h1>Sectores lado a lado</h1>' +
+      '<p class="sub">URBIS · urbispro.city · ' + esc(new Date().toLocaleDateString('es-CO')) + '</p>' +
+      '<table><thead><tr><th>Indicador</th>' +
+        nombres.map(function (n) { return '<th>' + esc(n) + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + filas + '</tbody></table>' +
+      '<p class="pie">La raya es <b>sin dato</b>, no cero: ese sector no midió eso. En densidad, ' +
+      'suelo construido y relación altura/ancho no hay un mejor: depende de qué se quiera del ' +
+      'sector.</p></body></html>';
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -5883,8 +6081,10 @@
     return '<div class="pcr-pestana">' +
       '<p class="pcr-pista">Cada sector que analizaste queda acá con su informe completo, ' +
       'aunque cierres la app. Cargá el área para que los mapeos del curso se sumen a lo que ya se sabía.</p>' +
+      bloqueCotejo() +
       fichas.map(function (f) {
         var abierta = S.pestanaAbierta === f.id;
+        var enCotejo = S.cotejo.indexOf(f.id) >= 0;
         var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : ((f.radioM || 0) + ' m');
         /* La tarjeta muestra la FORMA del sector —el polígono real o el
            círculo del radio— como miniatura de mapa, no un emoji. Es lo que
@@ -5911,6 +6111,15 @@
               '<small>' + (f.total || 0) + ' uso' + ((f.total || 0) === 1 ? '' : 's') + ' · ' + esc(cuando) + '</small>' +
             '</span>' +
             '<span class="pcr-pest-fl">' + ico(abierta ? 'abajo' : 'chevron', 18) + '</span>' +
+          '</button>' +
+          /* Va FUERA de la cabecera porque la cabecera ya es un botón, y un
+             botón dentro de otro no es HTML válido: el navegador lo desarma y
+             el de adentro deja de responder. */
+          '<button type="button" class="pcr-cot-chip' + (enCotejo ? ' puesto' : '') + '" ' +
+            'data-u52-call="pcr-cotejo" data-id="' + esc(f.id) + '" ' +
+            'aria-pressed="' + (enCotejo ? 'true' : 'false') + '">' +
+            ico(enCotejo ? 'ok' : 'comparar', 14) +
+            (enCotejo ? 'Comparando' : 'Comparar') +
           '</button>' +
           (abierta
             ? '<div class="pcr-pest-cuerpo">' +
@@ -5947,6 +6156,11 @@
         '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">' + ico('lupa', 16) + 'Analizar otro sector</button>' +
       '</div>' +
       (S.avisoPestana ? '<p class="pcr-aviso">' + esc(S.avisoPestana) + '</p>' : '') +
+      /* Si el portapapeles no funcionó —pasa en algunos navegadores de
+         teléfono cuando la app no está en primer plano—, el texto queda a la
+         vista para copiarlo a mano. Un «copiado» que no copió nada es peor
+         que no ofrecer el botón. */
+      (S.textoPlano ? '<textarea class="pcr-plano" readonly rows="8">' + esc(S.textoPlano) + '</textarea>' : '') +
     '</div>';
   }
 
@@ -6051,6 +6265,29 @@
       }
       wG.document.write(htmlG); wG.document.close();
       setTimeout(function () { try { wG.focus(); wG.print(); } catch (e) {} }, 600);
+      return true;
+    }
+    if (name === 'cotejo') {
+      alternarCotejo(id);
+      repintar(); return true;
+    }
+    if (name === 'cot-limpiar') { S.cotejo = []; S.avisoPestana = ''; repintar(); return true; }
+    if (name === 'cot-copiar') {
+      var txtCot = cotejoComoTexto();
+      if (!txtCot) return true;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(txtCot);
+          S.avisoPestana = 'Tabla copiada. Se pega en una hoja de cálculo con las columnas ya separadas.';
+        } else { S.avisoPestana = 'Copiala del cuadro de abajo.'; }
+      } catch (e) { S.avisoPestana = 'Copiala del cuadro de abajo.'; }
+      S.textoPlano = txtCot;
+      repintar(); return true;
+    }
+    if (name === 'cot-pdf') {
+      var htmlCot = cotejoImprimible();
+      if (!htmlCot) return true;
+      abrirImpresion(htmlCot, function (m) { S.avisoPestana = m; repintar(); });
       return true;
     }
     if (name === 'lamina') {

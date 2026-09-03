@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v661-licencia-del-curso';
+const URBIS_CACHE = 'urbis-v662-sectores-lado-a-lado';
 const URBIS_ASSETS = [
   './',
   './index.html',

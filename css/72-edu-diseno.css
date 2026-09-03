@@ -860,6 +860,53 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.8rem !important; color:var(--edu-ink-2) !important;
   -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+/* Sectores lado a lado. La tabla se desplaza dentro de su caja y nunca empuja
+   la hoja: con cuatro columnas en un teléfono de 360 px no hay forma de que
+   entre, y partir el texto la vuelve ilegible. */
+.pcr-pestana .pcr-cotejo{
+  margin:10px 0 16px; padding:12px; border-radius:14px;
+  background:var(--edu-ground-2); box-shadow:inset 0 0 0 1px var(--edu-line);
+}
+.pcr-pestana .pcr-cot-caja{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:6px -4px; padding:0 4px; }
+.pcr-pestana .pcr-cot-tabla{ border-collapse:collapse; width:100%; min-width:min(100%, 320px); }
+.pcr-pestana .pcr-cot-tabla th,
+.pcr-pestana .pcr-cot-tabla td{
+  padding:7px 9px; text-align:right; white-space:nowrap;
+  border-bottom:1px solid var(--edu-line);
+  font-size:.82rem !important; font-variant-numeric:tabular-nums;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-pestana .pcr-cot-tabla th[scope="row"]{
+  text-align:left; font-weight:600; white-space:normal; min-width:9.5em;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-pestana .pcr-cot-tabla thead th{
+  font-size:.72rem !important; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+  text-align:right; white-space:normal; vertical-align:bottom;
+}
+.pcr-pestana .pcr-cot-nd{ color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important; }
+.pcr-pestana .pcr-cot-gana{
+  font-weight:800; color:var(--edu-accent-ink) !important;
+  -webkit-text-fill-color:var(--edu-accent-ink) !important;
+  background:var(--edu-accent-soft);
+}
+.pcr-pestana .pcr-cotejo-pista{ margin:8px 0 12px; }
+
+/* El interruptor de cada tarjeta. Va discreto: se usa una vez cada tanto y no
+   compite con «ver el informe», que es lo que se toca siempre. */
+.pcr-pestana .pcr-cot-chip{
+  display:inline-flex; align-items:center; gap:5px;
+  margin:0 12px 10px; padding:5px 11px; border-radius:99px;
+  border:1px solid var(--edu-line); background:var(--edu-ground);
+  font-size:.74rem !important; font-weight:700; cursor:pointer;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-pestana .pcr-cot-chip.puesto{
+  border-color:var(--edu-accent); background:var(--edu-accent-soft);
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+}
+
 /* La síntesis: tres listas cortas, cada frase con el número que la sostiene.
    La barra de color de la izquierda es lo único que distingue a favor de en
    contra: probamos con iconos y a esa escala se volvían ruido. */
