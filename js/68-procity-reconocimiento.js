@@ -59,7 +59,11 @@
     capa: null,
     cargando: false,
     resultado: null,
-    error: ''
+    error: '',
+    aviso: '',
+    ultimasZonas: null,
+    comparacion: null,
+    comparando: false
   };
 
   function esc(s) {
@@ -122,7 +126,75 @@
       if (n === 0) vacios.push(r);
       else if (parejo > 0 && n < parejo * 0.3) flojos.push({ rumbo: r, n: n });
     });
-    return { cuenta: cuenta, vacios: vacios, flojos: flojos, total: total, parejo: parejo };
+    // El rumbo con más cosas, para decir hacia dónde mira el sector. Solo se
+    // nombra si de verdad destaca: con el reparto parejo, señalar «el más
+    // grande» sería inventar un patrón donde no lo hay.
+    var lleno = null;
+    RUMBOS.forEach(function (r) {
+      if (!lleno || cuenta[r.id] > cuenta[lleno.id]) lleno = r;
+    });
+    var destaca = lleno && total > 0 && cuenta[lleno.id] > parejo * 1.6;
+
+    return {
+      cuenta: cuenta, vacios: vacios, flojos: flojos, total: total, parejo: parejo,
+      concentracion: destaca ? { rumbo: lleno, n: cuenta[lleno.id],
+                                pct: Math.round(cuenta[lleno.id] / total * 100) } : null
+    };
+  }
+
+  // ── Fichas guardadas ──────────────────────────────────────────────────
+  // Una ficha se guarda para dos cosas: llevarla a campo sin depender de la
+  // red, y poder comparar después lo que decía OpenStreetMap con lo que el
+  // curso encontró. Por eso se guardan los puntos y no solo los totales.
+  var FICHAS_KEY = 'pcr_fichas_v1';
+  var MAX_FICHAS = 12;
+
+  function leerFichas() {
+    try { var f = JSON.parse(localStorage.getItem(FICHAS_KEY) || '[]'); return Array.isArray(f) ? f : []; }
+    catch (e) { return []; }
+  }
+
+  function guardarFicha(res, zonas, nombre) {
+    var meta = res.meta || {}, st = res.stats || {};
+    var ficha = {
+      id: 'f' + Date.now(),
+      ts: new Date().toISOString(),
+      nombre: nombre || '',
+      forma: meta.forma || 'radio',
+      centro: { lat: meta.lat, lng: meta.lng },
+      radioM: meta.radioM,
+      areaM2: meta.areaM2 || null,
+      poligono: meta.poligono || null,
+      total: st.total || 0,
+      porGrupo: st.porGrupo || {},
+      porSub: st.porSub || {},
+      rumbos: zonas.cuenta,
+      // Lo mínimo para comparar más adelante: dónde estaba y qué era.
+      pois: (res.pois || []).map(function (p) {
+        return { lat: p.lat, lng: p.lng, sub: p.sub, grupo: p.grupo, nombre: p.nombre || '' };
+      })
+    };
+    var todas = leerFichas();
+    todas.unshift(ficha);
+    while (todas.length > MAX_FICHAS) todas.pop();
+    try {
+      localStorage.setItem(FICHAS_KEY, JSON.stringify(todas));
+      return { ok: true, n: todas.length };
+    } catch (e) {
+      // localStorage lleno. Se reintenta con la mitad antes de rendirse: es
+      // preferible perder las fichas viejas que perder la que acaba de hacer.
+      try {
+        localStorage.setItem(FICHAS_KEY, JSON.stringify(todas.slice(0, Math.max(1, Math.floor(todas.length / 2)))));
+        return { ok: true, n: Math.max(1, Math.floor(todas.length / 2)), recortada: true };
+      } catch (e2) {
+        return { ok: false, error: 'No hay espacio para guardar la ficha en este dispositivo.' };
+      }
+    }
+  }
+
+  function borrarFicha(id) {
+    var todas = leerFichas().filter(function (f) { return f.id !== id; });
+    try { localStorage.setItem(FICHAS_KEY, JSON.stringify(todas)); } catch (e) {}
   }
 
   // Área por exceso esférico, en m². Misma fórmula que usa Pro City, para que
@@ -194,6 +266,97 @@
     if (S.capa) { try { S.capa.clearLayers(); } catch (e) {} }
   }
 
+  // ── Fase 4: lo que decía el mapa contra lo que encontró el curso ───────
+  //
+  // La idea: guardar el reconocimiento ANTES de salir, y al volver comparar.
+  // No es un ejercicio de puntaje, es la lección: el estudiante ve con números
+  // suyos que un mapa incompleto no es un mapa falso, pero tampoco la realidad.
+  //
+  // Los puntos del curso pasan por el MISMO motor que los de OpenStreetMap.
+  // Comparar «lo que dice OSM» con «lo que anotó el estudiante» exige que
+  // ambos hablen el mismo idioma de categorías; si cada lado usara el suyo,
+  // toda diferencia sería de vocabulario y ninguna de la calle.
+
+  // Dos puntos son «el mismo sitio» si están a menos de esto. Un local tiene
+  // frente de 5 a 10 m, y una coordenada tomada a pulso en el celular se va
+  // fácil 15 m. Por debajo de 35 m se perderían coincidencias reales; por
+  // encima, un local se emparejaría con su vecino.
+  var MISMO_SITIO_M = 35;
+
+  function puntosDelCurso() {
+    try {
+      if (typeof window.urbisDatosVisibles === 'function') return window.urbisDatosVisibles() || [];
+      return window.URBIS_EDU_DATOS || [];
+    } catch (e) { return []; }
+  }
+
+  /* Compara dos listas de puntos ya clasificados y reparte en cuatro cajas.
+     Es geometría pura y no toca red ni pantalla: se exporta para poder
+     comprobarla sin montar la aplicación. */
+  function compararListas(osm, campo) {
+    var usadoOsm = {};
+    var nuevos = [], confirmados = [], discrepancias = [];
+
+    (campo || []).forEach(function (c) {
+      var mejor = null, mejorD = Infinity, mejorI = -1;
+      (osm || []).forEach(function (o, i) {
+        if (usadoOsm[i]) return;
+        var d = haversineM({ lat: c.lat, lng: c.lng }, { lat: o.lat, lng: o.lng });
+        if (d < mejorD) { mejorD = d; mejor = o; mejorI = i; }
+      });
+      if (!mejor || mejorD > MISMO_SITIO_M) { nuevos.push(c); return; }
+      usadoOsm[mejorI] = true;
+      if (mejor.grupo === c.grupo) confirmados.push({ campo: c, osm: mejor, distM: Math.round(mejorD) });
+      else discrepancias.push({ campo: c, osm: mejor, distM: Math.round(mejorD) });
+    });
+
+    // Lo que OpenStreetMap tenía y el curso no tocó. NO significa que haya
+    // cerrado: puede que nadie pasara por esa cuadra. Se nombra por lo que
+    // es —sin verificar— y no por lo que se supone.
+    var sinVerificar = (osm || []).filter(function (o, i) { return !usadoOsm[i]; });
+
+    return { nuevos: nuevos, confirmados: confirmados,
+             discrepancias: discrepancias, sinVerificar: sinVerificar };
+  }
+
+  /* Toma una ficha guardada, pide al servidor que clasifique lo que el curso
+     mapeó DENTRO de esa misma área, y devuelve la comparación. */
+  async function compararConCampo(ficha) {
+    if (!window.URBIS_EDU || !window.URBIS_EDU.puntoAElemento) {
+      throw new Error('Falta el módulo educativo (js/64). Recarga la página.');
+    }
+    var crudos = puntosDelCurso();
+    if (!crudos.length) {
+      throw new Error('El curso todavía no tiene puntos mapeados en este dispositivo.');
+    }
+
+    var elementos = [];
+    crudos.forEach(function (p, i) {
+      var els = window.URBIS_EDU.puntoAElemento(p, i);
+      if (Array.isArray(els)) elementos = elementos.concat(els);
+      else if (els) elementos.push(els);
+    });
+
+    var peticion = {
+      elementos: elementos,
+      tipoEstudio: 'completo', proyectoId: 'recomendar',
+      dane: null, caminabilidad: null
+    };
+    if (ficha.forma === 'poligono' && ficha.poligono && ficha.poligono.length >= 3) {
+      peticion.poligono = ficha.poligono;
+    } else {
+      peticion.radioM = ficha.radioM;
+      peticion.centro = ficha.centro;
+    }
+
+    var res = await window.AIA_MOTOR.analizar(peticion);
+    var comp = compararListas(ficha.pois || [], res.pois || []);
+    comp.totalOsm = (ficha.pois || []).length;
+    comp.totalCampo = (res.pois || []).length;
+    comp.ficha = ficha;
+    return comp;
+  }
+
   // ── La hoja ───────────────────────────────────────────────────────────
   function hoja() {
     var el = document.getElementById('pcr-hoja');
@@ -209,6 +372,9 @@
       if (!b) return;
       var acc = b.getAttribute('data-pcr');
       if (acc === 'cerrar') { cerrar(); return; }
+      if (acc === 'volver') { S.resultado = null; S.comparacion = null; S.aviso = ''; S.textoPlano = ''; pintar(); return; }
+      if (acc === 'borrar-ficha') { borrarFicha(b.getAttribute('data-id')); pintar(); return; }
+      if (acc === 'comparar') { comparar(b.getAttribute('data-id')); return; }
       if (acc === 'radio') { S.radioM = Number(b.getAttribute('data-r')) || RADIO_POR_DEFECTO;
                              S.forma = 'radio'; S.resultado = null; S.error = '';
                              pintarCirculo(); pintar(); return; }
@@ -223,6 +389,33 @@
         pintarCirculo(); pintar(); return;
       }
       if (acc === 'analizar') { analizar(); return; }
+      if (acc === 'guardar') {
+        if (!S.resultado || !S.ultimasZonas) return;
+        var g = guardarFicha(S.resultado, S.ultimasZonas, '');
+        S.aviso = g.ok
+          ? ('Ficha guardada' + (g.recortada ? ' (se borraron las más viejas por falta de espacio)' : '') +
+             '. Tenés ' + g.n + ' guardada' + (g.n === 1 ? '' : 's') + '.')
+          : g.error;
+        pintar();
+        return;
+      }
+      if (acc === 'copiar') {
+        if (!S.resultado || !S.ultimasZonas) return;
+        var txt = fichaComoTexto(S.resultado, S.ultimasZonas);
+        var listo = function () { S.aviso = 'Copiado. Pegalo en tus notas o en un chat para tenerlo sin señal.'; pintar(); };
+        var falló = function () {
+          // Sin portapapeles (navegador viejo, o sin HTTPS) no se deja al
+          // usuario sin salida: se le muestra el texto para copiarlo a mano.
+          S.aviso = 'Este navegador no deja copiar solo. Mantené pulsado el texto de abajo para copiarlo.';
+          S.textoPlano = txt; pintar();
+        };
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(listo, falló);
+          } else { falló(); }
+        } catch (e) { falló(); }
+        return;
+      }
       if (acc === 'recentrar') { tomarCentro(); pintarCirculo(); pintar(); return; }
     });
     return el;
@@ -239,7 +432,9 @@
 
   function pintar() {
     var h = hoja();
-    h.innerHTML = S.resultado ? htmlFicha(S.resultado) : htmlAjustes();
+    h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
+                : S.resultado    ? htmlFicha(S.resultado)
+                : htmlAjustes();
     h.classList.toggle('pcr-visible', S.abierto);
   }
 
@@ -311,7 +506,40 @@
           (S.cargando ? '⏳ Consultando…' : '🔍 Ver qué hay') +
         '</button>' +
         (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar. No cierres esta hoja.</p>' : '') +
+
+        htmlGuardadas() +
       '</div>';
+  }
+
+  /* Las fichas guardadas, con lo único que se hace con ellas: compararlas
+     contra lo que el curso mapeó después. Si no hay ninguna, no se muestra
+     nada: un cajón vacío con un título encima solo ocupa pantalla. */
+  function htmlGuardadas() {
+    var fichas = leerFichas();
+    if (!fichas.length) return '';
+    var hayCampo = puntosDelCurso().length > 0;
+
+    return '<div class="pcr-guardadas">' +
+      '<h4 class="pcr-h">Reconocimientos guardados</h4>' +
+      (hayCampo
+        ? '<p class="pcr-pista">Después de la salida a campo, compará: vas a ver cuánto agregó el curso.</p>'
+        : '<p class="pcr-pista">Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.</p>') +
+      fichas.map(function (f) {
+        var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+        var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : (f.radioM + ' m');
+        return '<div class="pcr-guardada">' +
+          '<div class="pcr-guardada-t">' +
+            '<b>' + esc(cuando) + '</b>' +
+            '<small>' + esc(tam) + ' · ' + f.total + ' usos</small>' +
+          '</div>' +
+          '<button type="button" data-pcr="comparar" data-id="' + esc(f.id) + '"' +
+            ' class="pcr-mini"' + (hayCampo && !S.comparando ? '' : ' disabled') + '>' +
+            (S.comparando ? '…' : '📊 Comparar') + '</button>' +
+          '<button type="button" data-pcr="borrar-ficha" data-id="' + esc(f.id) + '"' +
+            ' class="pcr-x pcr-x-mini" aria-label="Borrar ficha">🗑️</button>' +
+        '</div>';
+      }).join('') +
+    '</div>';
   }
 
   // ── La ficha ──────────────────────────────────────────────────────────
@@ -320,6 +548,51 @@
     var d = G[g];
     if (!d) return g;
     return d.nombre || d.n || g;
+  }
+
+  /* La ficha en texto pelado, para pegarla en WhatsApp o en las notas del
+     celular. Un estudiante en la calle puede quedarse sin datos justo cuando
+     la necesita; el papel —o una nota copiada— no se cae. */
+  function fichaComoTexto(res, zonas) {
+    var st = res.stats || {}, meta = res.meta || {};
+    var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
+    var L = [];
+    L.push('RECONOCIMIENTO DEL SECTOR — URBIS Pro City');
+    L.push(new Date().toLocaleString('es-CO'));
+    L.push(meta.forma === 'poligono'
+      ? 'Área dibujada: ' + formatearArea(meta.areaM2)
+      : 'Radio: ' + meta.radioM + ' m desde ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5));
+    L.push('Usos registrados en OpenStreetMap: ' + (st.total || 0));
+    L.push('');
+    L.push('POR CATEGORÍA');
+    Object.keys(st.porGrupo || {}).forEach(function (g) {
+      if (st.porGrupo[g] > 0) L.push('  ' + nombreGrupo(g) + ': ' + st.porGrupo[g]);
+    });
+    L.push('');
+    L.push('LO MÁS REPETIDO');
+    Object.keys(st.porSub || {})
+      .map(function (k) { return { id: k, n: st.porSub[k] }; })
+      // «otro» no es un uso: es la falta de uno. Ya se cuenta aparte, y en la
+      // lista de lo más repetido solo sirve para ensuciarla.
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; })
+      .slice(0, 10)
+      .forEach(function (x) {
+        var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
+        L.push('  ' + (t ? t.nombre : x.id) + ': ' + x.n);
+      });
+    L.push('');
+    L.push('A DÓNDE IR (sin datos en OpenStreetMap)');
+    if (!zonas.vacios.length && !zonas.flojos.length) {
+      L.push('  Los ocho rumbos tienen datos. Toca verificar y corregir.');
+    } else {
+      zonas.vacios.forEach(function (r) { L.push('  [ ] Al ' + r.nombre + ' — sin un solo registro'); });
+      zonas.flojos.forEach(function (f) { L.push('  [ ] Al ' + f.rumbo.nombre + ' — apenas ' + f.n); });
+    }
+    L.push('');
+    L.push('Esto es lo que OpenStreetMap sabe del sector, no el sector.');
+    L.push('Lo pone gente voluntaria: está incompleto y a veces desactualizado.');
+    return L.join('\n');
   }
 
   function htmlFicha(res) {
@@ -334,6 +607,7 @@
       ? { lat: res.meta.lat, lng: res.meta.lng }
       : S.centro;
     var zonas = zonasSinDatos(pois, eje);
+    S.ultimasZonas = zonas;   // la usan «guardar» y «copiar», que corren después
 
     // Categorías con al menos un punto, de mayor a menor.
     var grupos = Object.keys(st.porGrupo || {})
@@ -356,7 +630,7 @@
     // en la calle, más útil que la categoría general.
     var subs = Object.keys(st.porSub || {})
       .map(function (s) { return { id: s, n: st.porSub[s] || 0 }; })
-      .filter(function (x) { return x.n > 0; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
       .sort(function (a, b) { return b.n - a.n; })
       .slice(0, 8);
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
@@ -420,8 +694,43 @@
 
         (chips ? '<h4 class="pcr-h">Lo más repetido</h4><div class="pcr-chips">' + chips + '</div>' : '') +
 
+        // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
+        // que domina: señalar «el mayor» en un reparto parejo sería inventar
+        // un patrón que no existe.
+        (zonas.concentracion
+          ? '<h4 class="pcr-h">Dónde se concentra</h4>' +
+            '<p class="pcr-conc">La mitad ' + esc(zonas.concentracion.rumbo.nombre) +
+            ' reúne <b>' + zonas.concentracion.n + ' de ' + zonas.total + '</b> (' +
+            zonas.concentracion.pct + '%). Es el lado más activo según los datos.</p>'
+          : '') +
+
         '<h4 class="pcr-h">A dónde ir</h4>' +
         tareas +
+
+        // De inventario a lista de tareas. Lo que el estudiante hace con esto
+        // parado en la esquina, que es de lo que se trataba.
+        '<h4 class="pcr-h">Qué verificar en campo</h4>' +
+        '<ul class="pcr-check">' +
+          (sinCategoria
+            ? '<li>Los <b>' + sinCategoria + '</b> punto' + (sinCategoria === 1 ? '' : 's') +
+              ' sin categoría: mirá qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
+            : '') +
+          (subs.length
+            ? '<li>Tomá una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
+              '</b> y comprobá que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
+            : '') +
+          '<li>Anotá lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
+          (zonas.total === 0
+            ? '<li>Este sector está entero sin mapear: cualquier cosa que levanten es información nueva.</li>'
+            : '') +
+        '</ul>' +
+
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">💾 Guardar ficha</button>' +
+          '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">📋 Copiar para llevar</button>' +
+        '</div>' +
+        (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
+        (S.textoPlano ? '<textarea class="pcr-plano" readonly rows="8">' + esc(S.textoPlano) + '</textarea>' : '') +
 
         '<div class="pcr-nota">' +
           '<b>Esto no es el sector: es lo que OpenStreetMap sabe del sector.</b> ' +
@@ -443,7 +752,8 @@
       S.error = 'Falta el motor de análisis. Recarga la página.'; pintar(); return;
     }
 
-    S.cargando = true; S.error = ''; pintar();
+    S.cargando = true; S.error = ''; S.aviso = ''; S.textoPlano = '';
+    pintar();
     try {
       var esPol = S.forma === 'poligono';
       if (esPol && (!window.AIA_DATOS.consultarEntornoPoligono)) {
@@ -483,6 +793,81 @@
     pintar();
   }
 
+  async function comparar(id) {
+    var ficha = leerFichas().filter(function (f) { return f.id === id; })[0];
+    if (!ficha) { S.error = 'Esa ficha ya no está guardada.'; pintar(); return; }
+    S.comparando = true; S.error = ''; S.aviso = ''; pintar();
+    try {
+      S.comparacion = await compararConCampo(ficha);
+      S.resultado = null;
+    } catch (e) {
+      S.error = (e && e.message) || 'No se pudo comparar.';
+    }
+    S.comparando = false;
+    pintar();
+  }
+
+  function htmlComparacion(c) {
+    var f = c.ficha;
+    var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+    var aporte = c.totalOsm > 0 ? Math.round(c.nuevos.length / c.totalOsm * 100) : null;
+
+    function lista(items, saca) {
+      return '<ul class="pcr-comp-lista">' + items.slice(0, 8).map(function (x) {
+        return '<li>' + esc(saca(x)) + '</li>';
+      }).join('') + (items.length > 8 ? '<li class="pcr-mas">y ' + (items.length - 8) + ' más</li>' : '') + '</ul>';
+    }
+
+    return '' +
+      '<div class="pcr-barra">' +
+        '<b>📊 Antes y después</b>' +
+        '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
+      '</div>' +
+      '<div class="pcr-cuerpo">' +
+        '<p class="pcr-intro">Reconocimiento del <b>' + esc(cuando) + '</b> contra lo que el curso lleva mapeado en esa misma área.</p>' +
+
+        '<div class="pcr-kpis">' +
+          '<div class="pcr-kpi"><b>' + c.totalOsm + '</b><small>tenía OSM</small></div>' +
+          '<div class="pcr-kpi"><b>' + c.totalCampo + '</b><small>mapeó el curso</small></div>' +
+          '<div class="pcr-kpi pcr-kpi-oro"><b>' + c.nuevos.length + '</b><small>usos nuevos</small></div>' +
+          '<div class="pcr-kpi"><b>' + c.confirmados.length + '</b><small>confirmados</small></div>' +
+        '</div>' +
+
+        (c.nuevos.length
+          ? '<h4 class="pcr-h">Lo que el curso agregó al mapa</h4>' +
+            '<p class="pcr-conc">' + c.nuevos.length + ' usos que <b>no estaban en OpenStreetMap</b>' +
+            (aporte !== null ? ' — un ' + aporte + '% más de lo que había' : '') + '. ' +
+            'Esto es trabajo que nadie había hecho antes en este sector.</p>' +
+            lista(c.nuevos, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
+          : '<h4 class="pcr-h">Lo que el curso agregó al mapa</h4>' +
+            '<p class="pcr-ok">Todo lo que el curso mapeó ya estaba en OpenStreetMap. El aporte de esta salida fue de verificación, no de descubrimiento.</p>') +
+
+        (c.discrepancias.length
+          ? '<h4 class="pcr-h">Donde no coinciden</h4>' +
+            '<p class="pcr-tarea-intro">Mismo sitio, categoría distinta. Puede que el local haya cambiado de uso, o que una de las dos clasificaciones esté equivocada. Vale la pena mirarlo.</p>' +
+            lista(c.discrepancias, function (x) {
+              return (x.campo.nombre || 'Sin nombre') + ': el curso dice «' + (x.campo.grupo || '?') +
+                     '», OSM dice «' + (x.osm.grupo || '?') + '»';
+            })
+          : '') +
+
+        (c.sinVerificar.length
+          ? '<h4 class="pcr-h">Sin verificar</h4>' +
+            '<p class="pcr-tarea-intro">' + c.sinVerificar.length + ' usos que OpenStreetMap tiene y el curso no visitó. ' +
+            '<b>Esto no significa que hayan cerrado</b>: lo más probable es que nadie pasara por esas cuadras. Es la lista para la próxima salida.</p>' +
+            lista(c.sinVerificar, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
+          : '') +
+
+        '<div class="pcr-nota">' +
+          '<b>Qué enseña este cuadro.</b> Ninguna de las dos listas es «la verdad». ' +
+          'OpenStreetMap tiene lo que alguien alguna vez mapeó; el curso tiene lo que alcanzó a caminar. ' +
+          'La diferencia entre las dos es, precisamente, el valor del trabajo de campo.' +
+        '</div>' +
+
+        '<button type="button" data-pcr="volver" class="pcr-principal pcr-secundario">Volver</button>' +
+      '</div>';
+  }
+
   // ── Entrada y salida ──────────────────────────────────────────────────
   function abrir() {
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
@@ -513,6 +898,11 @@
     // Se exponen para poder comprobarlos sin montar la app entera: el reparto
     // por rumbos es la parte que decide a dónde se manda a un estudiante.
     zonasSinDatos: zonasSinDatos,
+    compararListas: compararListas,
+    compararConCampo: compararConCampo,
+    leerFichas: leerFichas,
+    guardarFicha: guardarFicha,
+    fichaComoTexto: fichaComoTexto,
     rumboDe: rumboDe,
     rumboDe360: rumboDe360,
     estado: function () {
