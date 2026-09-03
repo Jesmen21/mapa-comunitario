@@ -8,3 +8,13 @@
 # queda a la vista. El backend de Apps Script, la metodología de las
 # rutinas y las notas de diseño se guardan por fuera.
 docs/
+
+# El motor de análisis. Vive en un repositorio PRIVADO —jesmen21/urbis-motor—
+# desde el 3 de septiembre de 2026, y Render despliega desde allá.
+#
+# Este repositorio es público porque tiene que serlo: es el que GitHub Pages
+# sirve como urbispro.city. Todo lo que esté acá se puede descargar, y las
+# reglas de clasificación, la taxonomía, los pesos y el cálculo de población
+# son el producto. La carpeta puede seguir existiendo en el disco de quien
+# trabaje —las pruebas la usan— pero no vuelve a subirse.
+servidor/

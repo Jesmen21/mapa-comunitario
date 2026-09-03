@@ -200,8 +200,20 @@ console.log('\n  -- identificadores sueltos --');
    'js/61-analisis-ia-datos.js', 'js/64-analisis-edu.js', 'servidor/motor-reglas.js',
    'js/68-procity-reconocimiento.js']
   .forEach(f => {
-    const s = sueltos(f);
-    comprobar(f, s.length === 0, s.length ? s.join(', ') : 'ninguno');
+    /* El motor vive en un repositorio PRIVADO desde que se sacó de acá
+       (jesmen21/urbis-motor). Si no está clonado al lado, esta comprobación
+       se salta diciéndolo: fallar por un archivo que a propósito no está
+       enseñaría a ignorar la salida, y una revisión que se ignora no revisa
+       nada. Con el repo clonado —o corriendo dentro de él— se comprueba
+       igual que siempre. */
+    const alterno = f.replace(/^servidor\//, '../urbis-motor/');
+    const cual = fs.existsSync(R(f)) ? f : (fs.existsSync(R(alterno)) ? alterno : null);
+    if (!cual) {
+      console.log('  \u2013 ' + f + '  \u2014 no está acá (vive en el repositorio privado del motor)');
+      return;
+    }
+    const s = sueltos(cual);
+    comprobar(cual, s.length === 0, s.length ? s.join(', ') : 'ninguno');
   });
 }
 

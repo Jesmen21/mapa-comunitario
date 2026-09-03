@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v629-tres-apps';
+const URBIS_CACHE = 'urbis-v630-motor-privado';
 const URBIS_ASSETS = [
   './',
   './index.html',
