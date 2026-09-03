@@ -958,3 +958,79 @@ html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-m
 .pcr-hoja .pcr-ubic-fin b, .pcr-pestana .pcr-ubic-fin b{
   color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
 }
+
+/* ── 15. Rutas de transporte público ─────────────────────────────────────
+   El número de la ruta en su color —el que le da el mapa de OpenStreetMap—
+   y el nombre al lado. Sin color registrado, el celeste del módulo. */
+.pcr-hoja .pcr-rutas, .pcr-pestana .pcr-rutas{
+  display:flex; flex-direction:column; gap:6px; margin:4px 0 8px; flex:0 0 auto;
+}
+.pcr-hoja .pcr-ruta, .pcr-pestana .pcr-ruta{
+  --ruta:var(--edu-accent-deep);
+  display:grid; grid-template-columns:auto 1fr; align-items:center; gap:10px;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:7px 10px; box-shadow:var(--edu-sombra);
+}
+.pcr-hoja .pcr-ruta-n, .pcr-pestana .pcr-ruta-n{
+  display:grid; place-items:center; min-width:30px; height:24px; padding:0 7px;
+  border-radius:7px; background:var(--ruta); color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  font-size:.76rem !important; font-weight:800 !important; font-variant-numeric:tabular-nums;
+}
+.pcr-hoja .pcr-ruta-nom, .pcr-pestana .pcr-ruta-nom{
+  font-size:.84rem !important; font-weight:600 !important; line-height:1.3; min-width:0;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-ruta-nom em, .pcr-pestana .pcr-ruta-nom em{
+  display:block; font-style:normal; font-size:.68rem; font-weight:500;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+
+/* ── 16. El trazado del sector ───────────────────────────────────────────
+   Llenos y vacíos, jerarquía vial y morfología. La barra de llenos usa dos
+   tintas planas —construido y libre— como la convención de una lámina. */
+.pcr-hoja .pcr-llenos, .pcr-pestana .pcr-llenos{
+  display:flex; flex-direction:column; gap:6px; margin:4px 0 8px; flex:0 0 auto;
+}
+.pcr-hoja .pcr-llenos-barra, .pcr-pestana .pcr-llenos-barra{
+  display:flex; height:16px; border-radius:6px; overflow:hidden;
+  box-shadow:inset 0 0 0 1px var(--edu-line);
+}
+.pcr-hoja .pcr-llenos-barra i, .pcr-pestana .pcr-llenos-barra i{ display:block; height:100%; }
+.pcr-hoja .pcr-lleno, .pcr-pestana .pcr-lleno{ background:var(--edu-ink-2); }
+.pcr-hoja .pcr-vacio, .pcr-pestana .pcr-vacio{ background:var(--edu-accent-soft); }
+.pcr-hoja .pcr-llenos-cifras, .pcr-pestana .pcr-llenos-cifras{
+  display:flex; justify-content:space-between; gap:12px;
+}
+.pcr-hoja .pcr-llenos-cifras span, .pcr-pestana .pcr-llenos-cifras span{
+  font-size:.78rem !important; color:var(--edu-ink-2) !important;
+  -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-hoja .pcr-llenos-cifras b, .pcr-pestana .pcr-llenos-cifras b{
+  font-size:.94rem !important; font-weight:800 !important; font-variant-numeric:tabular-nums;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+
+/* La rosa de orientación, al lado de sus cifras. */
+.pcr-hoja .pcr-morfo, .pcr-pestana .pcr-morfo{
+  display:flex; align-items:center; gap:14px; margin:4px 0 8px; flex:0 0 auto;
+  flex-wrap:wrap;
+}
+.pcr-hoja .pcr-morfo-datos, .pcr-pestana .pcr-morfo-datos{
+  flex:1 1 180px; min-width:0; display:flex; flex-direction:column; gap:1px;
+  border:1px solid var(--edu-line); border-radius:var(--edu-r-m); overflow:hidden;
+  background:var(--edu-line);
+}
+.pcr-hoja .pcr-rosa, .pcr-pestana .pcr-rosa{ flex:0 0 auto; display:block; }
+.pcr-hoja .pcr-rosa-borde, .pcr-pestana .pcr-rosa-borde{
+  fill:none; stroke:var(--edu-line); stroke-width:1;
+}
+.pcr-hoja .pcr-rosa-eje, .pcr-pestana .pcr-rosa-eje{
+  stroke:var(--edu-line); stroke-width:1; fill:none;
+}
+.pcr-hoja .pcr-rosa-petalos path, .pcr-pestana .pcr-rosa-petalos path{
+  fill:var(--edu-accent); fill-opacity:.55; stroke:var(--edu-accent-deep); stroke-width:.5;
+}
+.pcr-hoja .pcr-rosa-n, .pcr-pestana .pcr-rosa-n{
+  fill:var(--edu-ink-3); font-size:9px; font-weight:700; text-anchor:middle;
+}

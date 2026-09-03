@@ -162,8 +162,19 @@
     });
   }
 
+  /* El trazado urbano va por su propia ruta del servidor: recibe geometría y
+     devuelve llenos y vacíos, jerarquía vial y morfología. Se pide aparte
+     porque no siempre se quiere pagar el peso de traer las formas. */
+  function trazado(entrada, alAvisar) {
+    if (!disponible()) {
+      return Promise.reject(new Error('El servidor de análisis no está configurado en este navegador.'));
+    }
+    return pedir('/trazado', entrada, alAvisar).then(function (r) { return r.datos; });
+  }
+
   window.AIA_REMOTO = {
     analizar: analizar,
+    trazado: trazado,
     disponible: disponible,
     licencia: licencia,
     guardarLicencia: function (txt) {

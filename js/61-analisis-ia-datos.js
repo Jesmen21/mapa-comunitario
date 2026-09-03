@@ -44,7 +44,14 @@
       'node["public_transport"]' + a + ';' +
       'nwr["natural"~"^(water|wetland|wood|scrub|grassland)$"]' + a + ';' +
       'way["waterway"~"^(river|stream|canal)$"]' + a + ';' +
-      ');out center tags 3000;';
+      ');out center tags 3000;' +
+      // Segunda salida en la misma consulta: las rutas de transporte público
+      // que recogen en alguna parada del área. Van sin geometría —solo sus
+      // etiquetas— porque lo que se muestra es el nombre y el color, no el
+      // trazado: dibujar el recorrido pediría traer la ruta entera.
+      'node["highway"="bus_stop"]' + a + '->.paradas;' +
+      'rel(bn.paradas)["route"~"^(bus|minibus|share_taxi|trolleybus)$"];' +
+      'out tags 40;';
   }
 
   function construirQuery(lat, lng, radioM){
@@ -56,14 +63,17 @@
      al final lo rechaza. Los polígonos de Pro City vienen abiertos, pero se
      comprueba igual porque un anillo cerrado es lo que devuelve casi cualquier
      otra herramienta y el error que da Overpass no explica nada. */
-  function construirQueryPoligono(pts){
+  function filtroPoligono(pts){
     const p = pts.slice();
     if (p.length > 3) {
       const a = p[0], z = p[p.length - 1];
       if (Math.abs(a.lat - z.lat) < 1e-9 && Math.abs(a.lng - z.lng) < 1e-9) p.pop();
     }
     const lista = p.map(v => v.lat.toFixed(6) + ' ' + v.lng.toFixed(6)).join(' ');
-    return construirQueryCon('(poly:"' + lista + '")');
+    return '(poly:"' + lista + '")';
+  }
+  function construirQueryPoligono(pts){
+    return construirQueryCon(filtroPoligono(pts));
   }
 
   function claveCache(lat, lng, radioM){
@@ -159,16 +169,29 @@
       if (ultimoError) {
         throw new Error('El servicio de datos abiertos está saturado. Espera un minuto y vuelve a intentar.');
       }
-      // Dedup por type+id y descarte de elementos sin coordenadas.
+      /* Dedup por type+id y descarte de lo que no se puede situar.
+         La excepción son las RUTAS de transporte: una relación de ruta no
+         tiene posición propia —es un recorrido entero— y se pidió a
+         propósito, por las paradas que están dentro del área. Con el
+         descarte de siempre desaparecían acá mismo, antes de llegar al
+         motor, y el análisis salía sin transporte público sin que nada
+         avisara. */
       const vistos = new Set();
       const limpios = [];
       elementos.forEach(el => {
         const id = el.type + '/' + el.id;
         if (vistos.has(id)) return;
         vistos.add(id);
+        if (!el.tags) return;
+        const esRuta = el.type === 'relation' &&
+          /^(bus|minibus|share_taxi|trolleybus)$/.test(String(el.tags.route || ''));
+        if (esRuta) { limpios.push(el); return; }
+        // Con `out geom` un camino no trae lat/lon propios: trae su recorrido.
+        // Situarlo por su geometría es más exacto que descartarlo.
+        if (Array.isArray(el.geometry) && el.geometry.length) { limpios.push(el); return; }
         const lat2 = el.lat != null ? el.lat : (el.center && el.center.lat);
         const lng2 = el.lon != null ? el.lon : (el.center && el.center.lon);
-        if (lat2 == null || lng2 == null || !el.tags) return;
+        if (lat2 == null || lng2 == null) return;
         limpios.push(el);
       });
       guardarCache(clave, limpios);
@@ -176,6 +199,28 @@
     } finally {
       enVuelo = false;
     }
+  }
+
+  /* La geometría del trazado: huellas de los edificios y ejes de las vías.
+     Solo lo que se mide —edificios, vías vehiculares, agua—, y con `out geom`
+     en vez de `out center` porque acá la forma ES el dato. */
+  function construirQueryTrazadoCon(a){
+    return '[out:json][timeout:60];(' +
+      'way["building"]["building"!="no"]' + a + ';' +
+      'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|pedestrian)$"]' + a + ';' +
+      'way["waterway"~"^(river|stream|canal)$"]' + a + ';' +
+      ');out geom 4000;';
+  }
+  function consultarTrazado(lat, lng, radioM, forzar){
+    return traer('trz|' + claveCache(lat, lng, radioM),
+                 construirQueryTrazadoCon('(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')'), forzar);
+  }
+  function consultarTrazadoPoligono(pts, forzar){
+    if (!Array.isArray(pts) || pts.length < 3) {
+      return Promise.reject(new Error('El área necesita al menos 3 puntos.'));
+    }
+    return traer('trz|' + claveCachePoligono(pts),
+                 construirQueryTrazadoCon(filtroPoligono(pts)), forzar);
   }
 
   function consultarEntorno(lat, lng, radioM, forzar){
@@ -557,5 +602,6 @@
 
   window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
+                       consultarTrazado, consultarTrazadoPoligono,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

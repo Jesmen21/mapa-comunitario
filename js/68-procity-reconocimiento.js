@@ -97,6 +97,10 @@
     cobertura: null,
     cobCargando: false,
     cobAviso: '',
+    // El trazado urbano, que también se pide a botón.
+    trazado: null,
+    trzCargando: false,
+    trzAviso: '',
     cobEnMapa: false
   };
 
@@ -246,7 +250,10 @@
         ciclorrutas: mv.ciclorrutas, scoreAcceso: mv.scoreAcceso,
         exposicion: mv.exposicion, nivelExposicion: mv.nivelExposicion,
         viaPrincipal: mv.viaPrincipal || null,
-        viasArterias: (mv.viasArterias || []).slice(0, 4)
+        viasArterias: (mv.viasArterias || []).slice(0, 4),
+        // Las rutas pesan cuatro líneas y son la mitad de «cómo se llega»:
+        // sin guardarlas, un sector reabierto perdía el transporte público.
+        rutas: (mv.rutas || []).slice(0, 12)
       } : null,
       // Población y demografía: es la mitad del informe que no depende del
       // mapeo, así que sin ella la ficha guardada quedaría coja.
@@ -303,6 +310,9 @@
           : null
       } : null,
       ubicacion: res.ubicacion || null,
+      // El trazado no viene del análisis sino de una medición aparte, así que
+      // se toma del estado: si el estudiante lo midió, se guarda con la ficha.
+      trazado: S.trazado || null,
       forma: meta.forma || 'radio',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
@@ -678,6 +688,42 @@
       '</table>';
   }
 
+  function trazadoImpreso(t) {
+    if (!t) return '';
+    var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
+    return '<h2>El trazado del sector</h2>' +
+      '<div class="cob"><i style="width:' + ll.pctLleno + '%;background:#3B4A5A"></i>' +
+      '<i style="width:' + ll.pctVacio + '%;background:#E6F7FE"></i></div>' +
+      '<p class="pie">Lleno ' + ll.pctLleno + '% · vacío ' + ll.pctVacio + '% · ' +
+      (ll.edificios || 0) + ' edificios' +
+      (ll.sinGeometria ? ' (' + ll.sinGeometria + ' mapeados solo como punto, sin área)' : '') + '</p>' +
+      '<table>' +
+        (vi.porMalla || []).map(function (m) {
+          return '<tr><td>' + esc(m.etiqueta) + '</td><td class="n">' + String(m.km).replace('.', ',') + ' km</td></tr>';
+        }).join('') +
+        '<tr><td>Total de vías</td><td class="n">' + String(vi.kmTotal || 0).replace('.', ',') + ' km</td></tr>' +
+        '<tr><td>En un sentido</td><td class="n">' + (vi.unSentidoPct || 0) + '%</td></tr>' +
+        '<tr><td>Intersecciones</td><td class="n">' + (mo.intersecciones || 0) + '</td></tr>' +
+        '<tr><td>Tramo medio entre cruces</td><td class="n">' + (mo.tramoMedioM || 0) + ' m</td></tr>' +
+        '<tr><td>Calles sin salida</td><td class="n">' + (mo.sinSalida || 0) + '</td></tr>' +
+      '</table>' +
+      '<p class="pie">' + esc(mo.lectura || '') + ' Orden de la traza: ' +
+      String(mo.orden != null ? mo.orden : '—').replace('.', ',') + ' (0 = ninguna dirección manda, 1 = todas la misma).</p>';
+  }
+
+  function rutasImpresas(st) {
+    var rutas = (st.movilidad && st.movilidad.rutas) || [];
+    if (!rutas.length) return '';
+    return '<h2>Rutas de transporte público</h2><table>' +
+      rutas.map(function (r) {
+        return '<tr><td>' + esc(r.nombre || 'Sin nombre registrado') +
+          (r.operador ? ' <em>· ' + esc(r.operador) + '</em>' : '') +
+          '</td><td class="n">' + esc(r.ref || '·') + '</td></tr>';
+      }).join('') +
+      '</table><p class="pie">Rutas que recogen en alguna parada del área según OpenStreetMap. ' +
+      'El recorrido completo no se dibuja.</p>';
+  }
+
   function ubicacionImpresa(ubic) {
     if (!ubic) return '';
     var filas = [['País', ubic.pais], ['Departamento', ubic.departamento], ['Municipio', ubic.ciudad],
@@ -820,6 +866,8 @@
         return t ? t.nombre : id;
       }) + '</table>' +
       alturasImpresas(st) +
+      trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
+      rutasImpresas(st) +
       solImpreso(meta) +
       hitosImpresos(st) +
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
@@ -1102,6 +1150,7 @@
         return;
       }
       if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'trazado') { analizarTrazado(); return; }
       if (acc === 'cob-mapa') {
         var A4 = window.URBIS_PC_ANALISIS;
         if (!A4 || !S.cobertura) return;
@@ -1491,6 +1540,26 @@
         L.push('  ' + alt.conDato + ' de ' + alt.edificios + ' edificios traen la altura (' +
                alt.cobertura + '%). El más alto: ' + alt.maximo + ' pisos.');
       }
+      L.push('');
+    }
+    var trz = res.trazado || S.trazado;
+    if (trz) {
+      var tll = trz.llenos || {}, tvi = trz.vias || {}, tmo = trz.morfologia || {};
+      L.push('EL TRAZADO DEL SECTOR');
+      L.push('  Lleno: ' + tll.pctLleno + '% · vacío: ' + tll.pctVacio + '% (' + (tll.edificios || 0) + ' edificios)');
+      (tvi.porMalla || []).forEach(function (m) { L.push('  ' + m.etiqueta + ': ' + m.km + ' km'); });
+      L.push('  Total de vías: ' + tvi.kmTotal + ' km · en un sentido: ' + tvi.unSentidoPct + '%');
+      L.push('  Intersecciones: ' + tmo.intersecciones + ' · tramo medio: ' + tmo.tramoMedioM + ' m · sin salida: ' + tmo.sinSalida);
+      L.push('  ' + tmo.lectura);
+      L.push('');
+    }
+    var rts = (st.movilidad && st.movilidad.rutas) || [];
+    if (rts.length) {
+      L.push('RUTAS DE TRANSPORTE PÚBLICO');
+      rts.forEach(function (r) {
+        L.push('  ' + (r.ref ? '[' + r.ref + '] ' : '') + (r.nombre || 'Sin nombre registrado') +
+               (r.operador ? ' · ' + r.operador : ''));
+      });
       L.push('');
     }
     var SOL = window.URBIS_SOLAR;
@@ -2146,6 +2215,163 @@
     return '<p class="pcr-conc">' + p.join(' ') + '</p>';
   }
 
+  /* Las rutas de transporte público que sirven al sector. Lo que se muestra
+     es el número y el nombre —que es como la gente las llama—, no el
+     recorrido: dibujarlo pediría traer la ruta completa de punta a punta, y
+     lo que un análisis necesita saber es CUÁNTAS y CUÁLES pasan por acá. */
+  function bloqueRutas(mv) {
+    var rutas = (mv && mv.rutas) || [];
+    if (!rutas.length) {
+      if (!mv || !mv.paradasBus) return '';
+      return '<p class="pcr-pista">Hay <b>' + mv.paradasBus + '</b> parada' +
+        (mv.paradasBus === 1 ? '' : 's') + ' en el área, pero ninguna tiene ruta asociada en ' +
+        'OpenStreetMap. <b>Es tarea de campo:</b> anotar qué rutas paran ahí es de lo más útil ' +
+        'que se puede mapear, porque no está en ninguna parte.</p>';
+    }
+    return '<p class="pcr-lab">Rutas que recogen acá</p>' +
+      '<div class="pcr-rutas">' +
+        rutas.slice(0, 12).map(function (r) {
+          var etq = r.ref || '·';
+          var col = /^#[0-9a-f]{3,8}$/i.test(r.color) ? r.color : '';
+          return '<div class="pcr-ruta"' + (col ? ' style="--ruta:' + esc(col) + '"' : '') + '>' +
+            '<span class="pcr-ruta-n">' + esc(etq) + '</span>' +
+            '<span class="pcr-ruta-nom">' + esc(r.nombre || 'Sin nombre registrado') +
+              (r.operador ? '<em>' + esc(r.operador) + '</em>' : '') +
+            '</span></div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">Son las rutas que en OpenStreetMap recogen en alguna parada de esta ' +
+      'área' + (rutas.length > 12 ? ' (se muestran 12 de ' + rutas.length + ')' : '') + '. ' +
+      'El recorrido completo no se dibuja: lo que importa acá es cuántas y cuáles sirven al sector.</p>';
+  }
+
+  /* La rosa de orientación de las vías: un histograma polar de hacia dónde
+     apuntan las calles, ponderado por su longitud. Una cuadrícula da dos
+     pares de pétalos en cruz; un tejido irregular, una flor pareja. Es la
+     forma de ver de un golpe lo que el número de «orden» resume.
+     Se dibuja con los 18 sectores del motor reflejados a 36, porque una
+     calle no tiene sentido: la que va al nororiente va también al
+     suroccidente. */
+  function rosaDeVias(rosa) {
+    if (!rosa || !rosa.length) return '';
+    var R = 52, cx = 60, cy = 60;
+    var max = rosa.reduce(function (m, x) { return Math.max(m, x.metros); }, 0) || 1;
+    var petalos = '';
+    for (var vuelta = 0; vuelta < 2; vuelta++) {
+      rosa.forEach(function (b) {
+        var largo = R * Math.sqrt(b.metros / max);   // raíz: el área del pétalo es la que se compara
+        if (largo < 1) return;
+        var a1 = (b.desde + vuelta * 180 - 90) * Math.PI / 180;
+        var a2 = (b.hasta + vuelta * 180 - 90) * Math.PI / 180;
+        var x1 = cx + Math.cos(a1) * largo, y1 = cy + Math.sin(a1) * largo;
+        var x2 = cx + Math.cos(a2) * largo, y2 = cy + Math.sin(a2) * largo;
+        petalos += '<path d="M' + cx + ' ' + cy + ' L' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+          ' A' + largo.toFixed(1) + ' ' + largo.toFixed(1) + ' 0 0 1 ' +
+          x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z"/>';
+      });
+    }
+    return '<svg class="pcr-rosa" viewBox="0 0 120 120" width="120" height="120" ' +
+      'role="img" aria-label="Rosa de orientación de las vías del sector">' +
+      '<circle cx="60" cy="60" r="52" class="pcr-rosa-borde"/>' +
+      '<circle cx="60" cy="60" r="26" class="pcr-rosa-borde"/>' +
+      '<path d="M60 4V116M4 60H116" class="pcr-rosa-eje"/>' +
+      '<g class="pcr-rosa-petalos">' + petalos + '</g>' +
+      '<text x="60" y="12" class="pcr-rosa-n">N</text>' +
+      '</svg>';
+  }
+
+  /* Trazado urbano: llenos y vacíos, jerarquía de las vías y morfología. Los
+     tres salen de la misma consulta —la que trae la forma de las cosas— así
+     que van en un solo bloque, detrás de un solo botón. */
+  function bloqueTrazado() {
+    var t = S.trazado;
+    if (!t) {
+      return h4('capas', 'El trazado del sector') +
+        '<p class="pcr-pista">Llenos y vacíos, jerarquía de las vías y morfología de la traza. ' +
+        'Se mide aparte porque hay que traer <b>la forma</b> de cada edificio y cada calle del ' +
+        'área, y eso pesa bastante más que traer sus puntos.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="trazado" class="pcr-mini pcr-llevar-b"' +
+            (S.trzCargando ? ' disabled' : '') + '>' +
+            (S.trzCargando ? 'Midiendo…' : ico('area') + 'Medir el trazado del sector') +
+          '</button>' +
+        '</div>' +
+        (S.trzCargando ? '<p class="pcr-pista" id="pcr-trz-estado">' + esc(S.trzAviso || 'Preparando…') + '</p>' : '') +
+        (S.trzAviso && !S.trzCargando ? '<p class="pcr-error">' + esc(S.trzAviso) + '</p>' : '');
+    }
+
+    var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
+    var mallas = vi.porMalla || [];
+    return h4('capas', 'El trazado del sector') +
+
+      // ── Llenos y vacíos
+      '<p class="pcr-lab">Llenos y vacíos</p>' +
+      '<div class="pcr-llenos">' +
+        '<div class="pcr-llenos-barra">' +
+          '<i class="pcr-lleno" style="width:' + ll.pctLleno + '%"></i>' +
+          '<i class="pcr-vacio" style="width:' + ll.pctVacio + '%"></i>' +
+        '</div>' +
+        '<div class="pcr-llenos-cifras">' +
+          '<span><b>' + ll.pctLleno + '%</b> lleno</span>' +
+          '<span><b>' + ll.pctVacio + '%</b> vacío</span>' +
+        '</div>' +
+      '</div>' +
+      '<p class="pcr-pista">' + (ll.edificios || 0) + ' edificio' + (ll.edificios === 1 ? '' : 's') +
+        ' en el área. ' +
+        (ll.sinGeometria
+          ? '<b>' + ll.conGeometria + '</b> tienen forma registrada y suman ' +
+            formatearM2(ll.areaConstruidaM2) + ' construidos; ' +
+            (ll.sinGeometria === 1 ? 'el otro está mapeado' : 'los otros ' + ll.sinGeometria + ' están mapeados') +
+            ' solo como punto y no suma' + (ll.sinGeometria === 1 ? '' : 'n') + ' área, ' +
+            'así que el porcentaje es de los que sí tienen forma.'
+          : 'Suman ' + formatearM2(ll.areaConstruidaM2) + ' construidos. Se cuenta el edificio ' +
+            'entero cuando su centro cae dentro del área.') + '</p>' +
+
+      // ── Jerarquía vial
+      '<p class="pcr-lab">Jerarquía de las vías</p>' +
+      (mallas.length
+        ? '<div class="pcr-niveles">' +
+            mallas.map(function (m) {
+              return '<div class="pcr-nivel">' +
+                '<span class="pcr-nivel-nom">' + esc(m.etiqueta) + '</span>' +
+                '<span class="pcr-nivel-barra"><i style="width:' + m.pct + '%"></i></span>' +
+                '<span class="pcr-nivel-n">' + String(m.km).replace('.', ',') + '<em>km</em></span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '<p class="pcr-pista">Sin vías con forma registrada en el área.</p>') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + String(vi.kmTotal || 0).replace('.', ',') + '</b><small>km de vía</small></div>' +
+        '<div class="pcr-kpi"><b>' + (vi.unSentidoPct || 0) + '%</b><small>en un sentido</small></div>' +
+        '<div class="pcr-kpi"><b>' + (vi.sinNombre || 0) + '</b><small>tramo' +
+          (vi.sinNombre === 1 ? '' : 's') + ' sin nombre</small></div>' +
+      '</div>' +
+      (vi.sinNombre
+        ? '<p class="pcr-pista">' +
+          (vi.sinNombre === 1
+            ? 'Ese tramo sin nombre es tarea de campo'
+            : 'Esos ' + vi.sinNombre + ' tramos sin nombre son tarea de campo') +
+          ': ponerle nombre a una calle es de lo más útil que se puede mapear.</p>'
+        : '') +
+
+      // ── Morfología
+      '<p class="pcr-lab">Morfología de la traza</p>' +
+      '<div class="pcr-morfo">' +
+        rosaDeVias(mo.rosa) +
+        '<div class="pcr-morfo-datos">' +
+          '<div class="pcr-lote-fila"><span>Intersecciones</span><b>' + (mo.intersecciones || 0) + '</b></div>' +
+          '<div class="pcr-lote-fila"><span>Por km²</span><b>' + (mo.porKm2 || 0) + '</b></div>' +
+          '<div class="pcr-lote-fila"><span>Tramo medio</span><b>' + (mo.tramoMedioM || 0) + ' m</b></div>' +
+          '<div class="pcr-lote-fila"><span>Calles sin salida</span><b>' + (mo.sinSalida || 0) + '</b></div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="pcr-conc">' + esc(mo.lectura || '') + '</p>' +
+      '<p class="pcr-pista">La rosa mide hacia dónde apuntan las calles, pesando cada una por su ' +
+      'longitud. Dos pares de pétalos en cruz es una cuadrícula; una flor pareja, un tejido que ' +
+      'creció por adición. El número de orden va de 0 —ninguna dirección manda— a 1 —todas la ' +
+      'misma—: acá da <b>' + (mo.orden != null ? String(mo.orden).replace('.', ',') : '—') + '</b>.</p>';
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -2180,7 +2406,8 @@
         : '') +
       (mv.paradasBus === 0
         ? '<p class="pcr-pista">Sin paradas de bus registradas. Si en la calle sí las hay, ubicarlas es una tarea concreta para la salida.</p>'
-        : '');
+        : '') +
+      bloqueRutas(mv);
   }
 
   function bloqueAmbiente(st) {
@@ -2483,6 +2710,60 @@
     var c = Number.isFinite(meta.lat) ? { lat: meta.lat, lng: meta.lng } : S.centro;
     if (!c) return null;
     return circuloComoContorno(c, meta.radioM || S.radioM, 48);
+  }
+
+  /* El trazado urbano: llenos y vacíos, jerarquía vial y morfología. Se pide
+     a botón, como la lectura de la foto satelital y por la misma razón: trae
+     la FORMA de cada edificio y cada vía del área, que pesa mucho más que sus
+     centros. En un teléfono con datos, eso se pregunta antes de gastarlo. */
+  function analizarTrazado() {
+    if (!window.AIA_DATOS || !window.AIA_REMOTO || !window.AIA_REMOTO.trazado) {
+      S.trzAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+    }
+    var esPol = S.forma === 'poligono';
+    if (!listoParaAnalizar()) { S.trzAviso = 'Primero elegí el área.'; pintar(); return; }
+
+    S.trzCargando = true; S.trzAviso = 'Trayendo la forma de las calles y los edificios…';
+    pintar();
+
+    var traer = esPol
+      ? window.AIA_DATOS.consultarTrazadoPoligono(S.poligono)
+      : window.AIA_DATOS.consultarTrazado(S.centro.lat, S.centro.lng, S.radioM);
+
+    traer.then(function (elementos) {
+      var peticion = { elementos: elementos || [] };
+      if (esPol) {
+        peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
+      } else {
+        peticion.radioM = S.radioM;
+        peticion.centro = { lat: S.centro.lat, lng: S.centro.lng };
+      }
+      return window.AIA_REMOTO.trazado(peticion, function (txt) {
+        S.trzAviso = txt;
+        var caja = document.getElementById('pcr-trz-estado');
+        if (caja) caja.textContent = txt;
+      });
+    }).then(function (res) {
+      S.trazado = res; S.trzCargando = false; S.trzAviso = '';
+      // Se guarda con la ficha: pesa unas pocas cifras y es media lámina.
+      try {
+        if (S.fichaActualId && S.resultado) {
+          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
+                       S.nombreGuardado || '', S.fichaActualId);
+        }
+      } catch (e) {}
+      pintar();
+    }).catch(function (e) {
+      S.trzCargando = false;
+      S.trzAviso = (e && e.message) || 'No se pudo medir el trazado.';
+      pintar();
+    });
+  }
+
+  function ejeDelSector() {
+    var m = S.resultado && S.resultado.meta;
+    if (m && Number.isFinite(m.lat)) return { lat: m.lat, lng: m.lng };
+    return S.forma === 'poligono' ? centroideDe(S.poligono) : S.centro;
   }
 
   function analizarCobertura() {
@@ -2797,6 +3078,7 @@
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
         bloqueAlturas(st) +
+        bloqueTrazado() +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
@@ -3352,6 +3634,9 @@
 
   function informeGuardado(f) {
     var st = f.stats;
+    // El bloque del trazado lee S.trazado; para pintar el de una ficha
+    // guardada se le presta el suyo y se devuelve el estado como estaba.
+    var trzAntes = S.trazado;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -3388,6 +3673,13 @@
         : '') +
       bloqueUsoPredominante(st) +
       bloqueAlturas(st) +
+      (function () {
+        if (!f.trazado) return '';
+        S.trazado = f.trazado;
+        var html = bloqueTrazado();
+        S.trazado = trzAntes;
+        return html;
+      })() +
       bloqueSol(comoResultado(f).meta) +
       bloqueMovilidad(st) +
       bloqueAmbiente(st) +
@@ -3644,7 +3936,9 @@
     if (name === 'pdf') {
       if (!f) return true;
       var htmlG = htmlImprimible(comoResultado(f), comoZonas(f),
-                                 { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null });
+                                 { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null,
+                                   // El trazado de ESTA ficha, no el del último sector medido.
+                                   trazado: f.trazado || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
