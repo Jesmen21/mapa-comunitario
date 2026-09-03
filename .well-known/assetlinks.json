@@ -1,16 +1,20 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "city.urbispro.educativo",
       "sha256_cert_fingerprints": [
-        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-EDUCATIVO"
+        "64:88:42:6D:E6:0C:EC:58:A1:C6:02:6E:7C:2A:01:C8:BB:27:B7:FC:E2:E8:39:39:D1:29:EA:4D:19:C7:F4:28"
       ]
     }
   },
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "city.urbispro.app",
@@ -20,7 +24,9 @@
     }
   },
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "city.urbispro.empresas",
