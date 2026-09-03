@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v639-areas-sin-choque';
+const URBIS_CACHE = 'urbis-v640-vuelta-y-iconos';
 const URBIS_ASSETS = [
   './',
   './index.html',

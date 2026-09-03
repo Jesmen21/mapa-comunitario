@@ -24,6 +24,7 @@
     lupa:      '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
     lapiz:     '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m13.5 6.5 3 3"/>',
     perfil:    '<circle cx="12" cy="8" r="4"/><path d="M4 20.5c0-3.6 3.6-6 8-6s8 2.4 8 6"/>',
+    cuenta:    '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="9.8" r="2.8"/><path d="M6.8 18.6c.6-2.4 2.7-3.6 5.2-3.6s4.6 1.2 5.2 3.6"/>',
     area:      '<path d="M5 8.5 9.5 5l6 2.5L19 5.5v10L14.5 19l-6-2.5L5 18.5z"/><circle cx="5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="5.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="14.5" cy="19" r="1.4" fill="currentColor" stroke="none"/>',
     radio:     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12h8"/>',
     mapa:      '<path d="M3.5 6.5 9 4l6 2.5L20.5 4v13.5L15 20l-6-2.5-5.5 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',
@@ -114,6 +115,7 @@
     nube:      '<path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18.5z"/>',
     ubicar:    '<circle cx="12" cy="12" r="5.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
     filtro:    '<path d="M4 5h16l-6.5 7.5V19l-3 1.5V12.5z"/>',
+    simbolos:  '<circle cx="7.5" cy="7.5" r="3.2"/><rect x="13.8" y="4.3" width="6.4" height="6.4" rx="1.4"/><path d="m8 13.6 4 6.4H4z"/><path d="M17 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>',
     ajustes:   '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
     salir:     '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="m15 8 4 4-4 4M19 12H9"/>',
     tarjeta:   '<rect x="3" y="5.5" width="18" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.5-1.5 1.7-2.2 3-2.2s2.5.7 3 2.2M14 10h4M14 13.5h4"/>',
@@ -156,7 +158,7 @@
     '📋':'lista', '🖨️':'imprimir', '🖨':'imprimir', '📤':'compartir', '📄':'documento', '📦':'paquete',
     '🎨':'paleta', '🗺️':'mapa', '🗺':'mapa', '🏗️':'obra', '🏗':'obra', '🟫':'capas', '🕸️':'red', '🕸':'red',
     '🪢':'telarana', '📐':'triangulos', '🫧':'area', '⭕':'anillos', '☁️':'nube', '☁':'nube',
-    '🏆':'trofeo', '🪪':'tarjeta', '🚪':'salir', '⧉':'copiar', '←':'atras', '🎮':'dado', '🏙️':'edificio', '🏙':'edificio', '⚙️':'ajustes', '⚙':'ajustes'
+    '🏆':'trofeo', '🪪':'tarjeta', '🚪':'salir', '⧉':'copiar', '←':'atras', '🎮':'dado', '🏙️':'edificio', '🏙':'edificio', '⚙️':'ajustes', '⚙':'ajustes', '😀':'simbolos', '🎨':'paleta', '🟢':'carpeta'
   };
   var CLAVES = Object.keys(DE_EMOJI).sort(function (a, b) { return b.length - a.length; });
 

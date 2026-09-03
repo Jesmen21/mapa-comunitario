@@ -83,17 +83,17 @@
     b.className = 'u52-procity-perfil-btn';
     b.setAttribute('data-u52-go', 'profile');
     b.setAttribute('aria-label', 'Mi perfil y cerrar sesión');
-    b.innerHTML = (window.URBIS_ICONO ? window.URBIS_ICONO('perfil', { tam: 24, grosor: 2 }) : '👤');
+    b.innerHTML = (window.URBIS_ICONO ? window.URBIS_ICONO('cuenta', { tam: 24, grosor: 1.9 }) : '👤');
     hermano.parentNode.insertBefore(b, hermano.nextSibling);
     vestirBotonesDelMapa();
   }
 
-  /* Los botones flotantes del mapa que ve el estudiante —la lupa y el lápiz—
-     llevan un emoji cada uno. En la app educativa se les pone el icono lineal
-     del mismo juego que el resto del módulo, para que la columna de botones
-     se lea como una sola herramienta. Solo en este modo: en la app completa
-     esos botones conviven con otros que siguen siendo emoji, y cambiar dos
-     de seis daría más desorden del que quita. */
+  /* La columna flotante del mapa lleva un emoji por botón. En la app
+     educativa se visten TODOS con el icono lineal del módulo: se probó
+     cambiar solo la lupa y el lápiz, y el resultado en el teléfono fue una
+     columna con tres trazos y tres emojis —peor que antes—. Solo en este
+     modo: en la app completa esos botones son del mapa de reportes y
+     conservan su estilo. Los tres que llevan estado van aparte, en VIVOS. */
   var VESTIDOS = {
     '.u52-procity-recon-btn': 'lupa',
     '.u52-procity-dibujar-btn': 'lapiz',
@@ -140,8 +140,35 @@
     '.u52-procity-filter-btn': 'filtro',
     '.u52-mapcentric-filter[data-u52-call="locate"]': 'ubicar'
   };
+  /* Y los tres que llevan ESTADO en el emoji: qué se está viendo (👤 lo mío,
+     👥 amigos, 📁 un proyecto, 🌐 todo), si hay carpeta cooperativa activa
+     (📁/🟢) y si la matriz se pinta con símbolos o con color (😀/🎨). js/20
+     los reescribe con textContent cada vez que cambia el estado, así que no
+     sirve vestirlos una vez: se traduce el emoji que tengan en cada pasada.
+     Cuando js/20 vuelve a escribir, el texto reaparece y esto lo traduce otra
+     vez —sin tocar js/20, que es de la app completa y ahí el emoji se queda. */
+  var VIVOS = [
+    '.u52-procity-view-filter-btn',
+    '.u52-procity-active-folder-btn',
+    '.u52-procity-visual-toggle'
+  ];
+  function vestirVivos() {
+    var I = window.URBIS_ICONO;
+    if (MODO !== 'educativo' || !I || !I.nombreDeEmoji) return;
+    VIVOS.forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (!el) return;
+      var texto = (el.textContent || '').trim();
+      if (!texto) return;                       // ya lleva el icono puesto
+      var nombre = I.nombreDeEmoji(texto);
+      if (!nombre) return;
+      el.innerHTML = I(nombre, { tam: 24, grosor: 2 });
+    });
+  }
+
   function vestirBotonesDelMapa() {
     vestirPerfil();
+    vestirVivos();
     if (!window.URBIS_ICONO) return;
     var lista = Object.assign({}, VESTIDOS, MODO === 'educativo' ? VESTIDOS_EDU : {});
     Object.keys(lista).forEach(function (sel) {
@@ -191,6 +218,28 @@
      dibujar el inicio más adelante. */
   var yaAbrio = false, pendiente = false;
 
+  /* El regreso. La aplicación apaga Pro City en cuanto se navega a una
+     pantalla que no es el mapa (js/20 lo hace a propósito: el módulo no
+     debe quedar pegado en pantallas ajenas). En la app completa eso está
+     bien —se vuelve al inicio y se entra de nuevo—, pero en la educativa el
+     mapa de Pro City ES la aplicación: al volver del perfil, la pantalla
+     del mapa reaparecía con la cabecera «Reporte o evento» y la barra de
+     reportes ciudadanos, que en este modo no llevan a ninguna parte.
+
+     Así que si el mapa está a la vista y Pro City no está activo, se vuelve
+     a entrar pulsando su botón —el mismo camino de siempre—. */
+  var ultimoRegreso = 0;
+  function volverALoSuyo() {
+    if (MODO !== 'educativo') return;
+    var mapa = document.querySelector('.u52-screen.active[data-u52-screen="map"]');
+    if (!mapa || window.urbisProCityActivo) return;
+    var b = document.querySelector('[data-u52-call="' + conf.abre + '"]');
+    if (!b) return;
+    var ahora = Date.now();
+    if (ahora - ultimoRegreso < 500) return;
+    ultimoRegreso = ahora;
+    b.click();
+  }
   function revisar() {
     pendiente = false;
     podarInicio();
@@ -198,7 +247,7 @@
     // Idempotente: lo ya vestido se salta. Se repite porque el perfil se
     // repinta y otros módulos le añaden filas después (Configuración).
     vestirBotonesDelMapa();
-    if (yaAbrio) return;
+    if (yaAbrio) { volverALoSuyo(); return; }
     // Si ya está abierto (lo abrió el clic anterior y esto es solo el DOM
     // acomodándose), no hay nada que hacer.
     if (conf.abre && quedoAbierto()) { yaAbrio = true; return; }

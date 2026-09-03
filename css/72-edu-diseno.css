@@ -752,3 +752,40 @@ html[data-urbis-modo="educativo"] body.u52-real-map #urbis-mobile-app .u52-jac-m
 }
 /* La barra de la licencia: aire entre la llave y el título. */
 .ulic-barra b .u-ico, .ulic-barra .u-ico{ margin-right:.45em; vertical-align:-.15em; }
+/* Los iconos de Configuración y Cerrar sesión: css/42 pinta los `span` en
+   casi blanco, y como el trazo hereda `currentColor`, el icono quedaba
+   invisible sobre su caja blanca. Cada uno con su tinta y su caja. */
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout > span:first-child{
+  background:#FEF0F1 !important;
+  color:#B4243A !important; -webkit-text-fill-color:#B4243A !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton > span:first-child{
+  background:var(--edu-accent-soft) !important;
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .urbis-cfg-boton b{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout:not(.urbis-cfg-boton) b{
+  color:#B4243A !important; -webkit-text-fill-color:#B4243A !important;
+}
+/* Los seis botones flotantes del mapa, misma tinta y mismo trazo. */
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-view-filter-btn,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-active-folder-btn,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-visual-toggle{
+  font-size:0 !important; display:grid !important; place-items:center;
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+}
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-view-filter-btn svg,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-active-folder-btn svg,
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-visual-toggle svg{ display:block; }
+/* La última tarjeta del perfil quedaba debajo de la barra inferior. */
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-content,
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="avatar"] .u52-content{
+  padding-bottom:calc(110px + env(safe-area-inset-bottom,0px)) !important;
+}
+/* Y su subtítulo deja de competir con el título de la fila. */
+[data-urbis-modo="educativo"] #urbis-mobile-app [data-u52-screen="profile"] .u52-profile-logout small{
+  font-weight:500 !important; font-size:.8rem !important; line-height:1.4 !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
