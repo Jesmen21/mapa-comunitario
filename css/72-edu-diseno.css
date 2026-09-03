@@ -37,6 +37,24 @@
 /* ── Iconos lineales (js/71) ────────────────────────────────────────── */
 .u-ico{ display:inline-block; vertical-align:-0.2em; flex:0 0 auto; }
 button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
+/* Ese margen separa el icono del TEXTO que lo acompaña dentro del botón. En un
+   botón que lleva solo el icono no hay nada de qué separarse, y como el
+   contenido va centrado, el margen corre el dibujo media medida a la
+   izquierda. En el botón central de la barra eran 4,8 px —suficientes para
+   verlo torcido dentro del círculo, que es justo lo que se reportó—.
+   Los demás botones de solo icono se libran por casualidad: llevan
+   font-size:0 para esconder el emoji que tenían antes, y un margen medido en
+   «em» sobre un texto de tamaño cero mide cero. El central no, porque conserva
+   su tamaño de letra para el «+» de respaldo.
+   No se puede escribir «solo si le sigue texto» en CSS —los nodos de texto no
+   cuentan para :only-child— así que se apaga donde se sabe que el icono va
+   solo. */
+#urbis-mobile-app .u52-bottom-nav .plus > .u-ico,
+#urbis-mobile-app .u52-procity-recon-btn > .u-ico,
+#urbis-mobile-app .u52-procity-dibujar-btn > .u-ico,
+#urbis-mobile-app .u52-procity-perfil-btn > .u-ico,
+#urbis-mobile-app .u52-mapcentric-round > .u-ico,
+#urbis-mobile-app .u52-mapcentric-filter > .u-ico{ margin:0 !important; }
 
 /* ── Miniatura de mapa ──────────────────────────────────────────────── */
 .pca-minimapa{
