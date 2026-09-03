@@ -1092,11 +1092,17 @@
             borderColor: '#ffffff', borderWidth: 2
           }]
         },
-        options: {
-          responsive: true, maintainAspectRatio: false, cutout: '56%',
-          plugins: { legend: { position: 'bottom',
-            labels: { color: '#3f4b5c', font: { size: 10 }, boxWidth: 10, padding: 8 } } }
-        }
+        options: (function () {
+          var TG = window.URBIS_TEMA_GRAFICA;
+          return {
+            responsive: true, maintainAspectRatio: false, cutout: '62%',
+            plugins: {
+              legend: TG ? TG.leyenda('bottom')
+                         : { position: 'bottom', labels: { color: '#3f4b5c', font: { size: 10 }, boxWidth: 10, padding: 8 } },
+              tooltip: TG ? TG.tooltip() : {}
+            }
+          };
+        })()
       });
     } catch (e) {
       try { console.warn('[URBIS] no se pudo pintar la gráfica:', e); } catch (x) {}
@@ -1315,10 +1321,14 @@
 
   // ── La ficha ──────────────────────────────────────────────────────────
   function nombreGrupo(g) {
-    var G = (window.AIA_MOTOR && window.AIA_MOTOR.GRUPOS) || {};
+    // El catálogo público (js/59) llama «t» al nombre del grupo; el motor
+    // remoto, «nombre». Sin mirar los dos, la fila decía «comercio» donde
+    // la leyenda del anillo decía «Comercio y economía».
+    var G = (window.AIA_MOTOR && window.AIA_MOTOR.GRUPOS) ||
+            (window.AIA_CATALOGO && window.AIA_CATALOGO.GRUPOS) || {};
     var d = G[g];
     if (!d) return g;
-    return d.nombre || d.n || g;
+    return d.t || d.nombre || d.n || g;
   }
 
   /* La ficha en texto pelado, para pegarla en WhatsApp o en las notas del

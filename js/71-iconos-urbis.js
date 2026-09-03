@@ -113,6 +113,11 @@
     regla:     '<path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m8 12 1.5 1.5M10.5 9.5 12 11M13 7l1.5 1.5"/>',
     nube:      '<path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18.5z"/>',
     ubicar:    '<circle cx="12" cy="12" r="5.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+    filtro:    '<path d="M4 5h16l-6.5 7.5V19l-3 1.5V12.5z"/>',
+    ajustes:   '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+    salir:     '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="m15 8 4 4-4 4M19 12H9"/>',
+    tarjeta:   '<rect x="3" y="5.5" width="18" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.5-1.5 1.7-2.2 3-2.2s2.5.7 3 2.2M14 10h4M14 13.5h4"/>',
+    trofeo:    '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v3M9 20h6M10 16h4v4h-4z"/>',
     tocar:     '<path d="M9.5 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12.5 10.5a1.5 1.5 0 0 1 3 0v1.5a1.5 1.5 0 0 1 3 0v1a1.5 1.5 0 0 1 3 0V17a4.5 4.5 0 0 1-4.5 4.5h-3.2a4.5 4.5 0 0 1-3.6-1.8L5.8 15.6a1.5 1.5 0 0 1 2.4-1.8l1.3 1.7"/>'
   };
 
@@ -148,9 +153,10 @@
     '👥':'poblacion', '📁':'carpeta', '🌐':'mundo', '🔥':'calor', '🔍':'lupa', '✏️':'lapiz', '✏':'lapiz',
     '💾':'guardar', '📊':'estadistica', '🗑️':'borrar', '🗑':'borrar', '🛰️':'satelite', '🛰':'satelite',
     '👁️':'ojo', '👁':'ojo', '🎲':'dado', '↩️':'deshacer', '↩':'deshacer', '🔗':'enlace', '🔑':'llave',
-    '📋':'copiar', '🖨️':'imprimir', '🖨':'imprimir', '📤':'compartir', '📄':'documento', '📦':'paquete',
+    '📋':'lista', '🖨️':'imprimir', '🖨':'imprimir', '📤':'compartir', '📄':'documento', '📦':'paquete',
     '🎨':'paleta', '🗺️':'mapa', '🗺':'mapa', '🏗️':'obra', '🏗':'obra', '🟫':'capas', '🕸️':'red', '🕸':'red',
-    '🪢':'telarana', '📐':'triangulos', '🫧':'area', '⭕':'anillos', '☁️':'nube', '☁':'nube'
+    '🪢':'telarana', '📐':'triangulos', '🫧':'area', '⭕':'anillos', '☁️':'nube', '☁':'nube',
+    '🏆':'trofeo', '🪪':'tarjeta', '🚪':'salir', '⧉':'copiar', '←':'atras', '🎮':'dado', '🏙️':'edificio', '🏙':'edificio', '⚙️':'ajustes', '⚙':'ajustes'
   };
   var CLAVES = Object.keys(DE_EMOJI).sort(function (a, b) { return b.length - a.length; });
 
@@ -182,4 +188,35 @@
 
   icono.nombres = function () { return Object.keys(T); };
   window.URBIS_ICONO = icono;
+
+  /* ── El tema de las gráficas ──────────────────────────────────────────
+     Chart.js no hereda el CSS: cada gráfica traía su gris y su tamaño de
+     letra, y las tres del módulo educativo se veían de tres manos. Acá va
+     una sola: la tinta y la línea de los tokens, Inter, leyenda con puntos
+     redondos y sin cuadrados, esquinas suaves en las barras. */
+  var TEMA = {
+    tinta: '#0F1F2E', tinta2: '#3B4A5A', tinta3: '#5A6878', linea: '#E3EAF0',
+    acento: '#0A6F9E', fuente: "'Inter','Segoe UI',system-ui,-apple-system,sans-serif",
+    fuenteDe: function (tam, peso) { return { family: TEMA.fuente, size: tam || 11, weight: peso || '500' }; },
+    leyenda: function (posicion) {
+      return { position: posicion || 'bottom', align: 'start',
+        labels: { color: TEMA.tinta2, font: TEMA.fuenteDe(11), boxWidth: 8, boxHeight: 8,
+                  usePointStyle: true, pointStyle: 'circle', padding: 10 } };
+    },
+    tooltip: function () {
+      return { backgroundColor: TEMA.tinta, titleColor: '#fff', bodyColor: '#E6F7FE',
+        titleFont: TEMA.fuenteDe(12, '700'), bodyFont: TEMA.fuenteDe(12), padding: 10,
+        cornerRadius: 10, displayColors: true, boxWidth: 8, boxHeight: 8, usePointStyle: true };
+    },
+    // Ejes de una gráfica de barras horizontal: la rejilla solo en el eje del dato.
+    ejesBarras: function () {
+      return {
+        x: { ticks: { color: TEMA.tinta3, font: TEMA.fuenteDe(10), precision: 0 },
+             grid: { color: TEMA.linea, drawTicks: false }, border: { display: false } },
+        y: { ticks: { color: TEMA.tinta, font: TEMA.fuenteDe(11, '600') },
+             grid: { display: false }, border: { display: false } }
+      };
+    }
+  };
+  window.URBIS_TEMA_GRAFICA = TEMA;
 })();

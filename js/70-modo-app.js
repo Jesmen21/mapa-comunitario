@@ -104,13 +104,51 @@
     '.u52-procity-nav [data-u52-call="procity-stats-open"] .procity-nav-ico': 'estadistica',
     '.u52-procity-nav .plus.procity-plus': 'mas'
   };
+  /* Las pantallas de perfil y de avatar son las de la app completa, con sus
+     emojis (🎨 Elegir avatar, 🪪, 🏆, 📋, 🚪). En la app educativa se llega a
+     ellas desde el botón de perfil, así que se visten con el mismo trazo:
+     el emoji se cambia por su icono y el texto que lo acompañaba se queda. */
+  var VESTIR_PERFIL = [
+    '[data-u52-screen="profile"] .u65-avatar-open',
+    '[data-u52-screen="profile"] .u52-profile-id-icon',
+    '[data-u52-screen="profile"] .u52-empty-card > span:first-child',
+    '[data-u52-screen="profile"] .u52-profile-logout > span:first-child',
+    '[data-u52-screen="profile"] .u52-profile-copy-id > span:first-child',
+    '[data-u52-screen="profile"] .u52-topbar [data-u52-back]',
+    '[data-u52-screen="avatar"] .u52-topbar [data-u52-back]'
+  ].join(',');
+  function vestirPerfil() {
+    var I = window.URBIS_ICONO;
+    if (MODO !== 'educativo' || !I || !I.nombreDeEmoji) return;
+    document.querySelectorAll(VESTIR_PERFIL).forEach(function (el) {
+      if (el.getAttribute('data-u70-vestido')) return;
+      var texto = (el.textContent || '').trim();
+      var nombre = I.nombreDeEmoji(texto);
+      if (!nombre) return;
+      var resto = I.sinEmoji(texto);
+      el.innerHTML = I(nombre, { tam: resto ? 18 : 22, grosor: 2 }) +
+        (resto ? '<span>' + resto + '</span>' : '');
+      el.setAttribute('data-u70-vestido', '1');
+    });
+  }
+
+  /* La cabecera del mapa de Pro City (volver, filtro de la matriz, centrar
+     en el GPS) solo se viste en la app educativa: en la ciudadana esa misma
+     cabecera sirve al mapa de reportes, que conserva su propio estilo. */
+  var VESTIDOS_EDU = {
+    '.u52-mapcentric-round[data-u52-back]': 'atras',
+    '.u52-procity-filter-btn': 'filtro',
+    '.u52-mapcentric-filter[data-u52-call="locate"]': 'ubicar'
+  };
   function vestirBotonesDelMapa() {
+    vestirPerfil();
     if (!window.URBIS_ICONO) return;
-    Object.keys(VESTIDOS).forEach(function (sel) {
+    var lista = Object.assign({}, VESTIDOS, MODO === 'educativo' ? VESTIDOS_EDU : {});
+    Object.keys(lista).forEach(function (sel) {
       var el = document.querySelector(sel);
       if (!el || el.getAttribute('data-u70-vestido')) return;
       var central = el.classList.contains('plus');
-      el.innerHTML = window.URBIS_ICONO(VESTIDOS[sel], { tam: central ? 28 : 24, grosor: central ? 2.25 : 2 });
+      el.innerHTML = window.URBIS_ICONO(lista[sel], { tam: central ? 28 : 24, grosor: central ? 2.25 : 2 });
       el.setAttribute('data-u70-vestido', '1');
     });
   }
@@ -157,6 +195,9 @@
     pendiente = false;
     podarInicio();
     ponerSalida();
+    // Idempotente: lo ya vestido se salta. Se repite porque el perfil se
+    // repinta y otros módulos le añaden filas después (Configuración).
+    vestirBotonesDelMapa();
     if (yaAbrio) return;
     // Si ya está abierto (lo abrió el clic anterior y esto es solo el DOM
     // acomodándose), no hay nada que hacer.

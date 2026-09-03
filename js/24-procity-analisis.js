@@ -1468,6 +1468,7 @@ bloquesDiag,
     const r = window.__pcaUltimo;
     if (!r || typeof Chart === 'undefined') return;
 
+    const TG = window.URBIS_TEMA_GRAFICA;
     const cvG = document.getElementById('pca-chart-grupos');
     if (cvG && r.totalMatriz) {
       const filas = ctx.grupos.map(g => ({ g, n: r.porGrupo[g.id] || 0 }))
@@ -1477,12 +1478,12 @@ bloquesDiag,
         data: { labels: filas.map(x => x.g.t), datasets: [{
           data: filas.map(x => x.n),
           backgroundColor: filas.map(x => ctx.colorGrupo[x.g.id] || '#6b70e0'),
-          borderRadius: 4
+          borderRadius: 6, borderSkipped: false, barPercentage: .72, categoryPercentage: .8
         }]},
         options: {
           indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
-          plugins: { legend: { display: false } },
-          scales: {
+          plugins: { legend: { display: false }, tooltip: TG ? TG.tooltip() : {} },
+          scales: TG ? TG.ejesBarras() : {
             x: { ticks: { color: '#5a6a7a', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.06)' } },
             y: { ticks: { color: '#2f3f4e', font: { size: 10 } }, grid: { display: false } }
           }
@@ -1502,8 +1503,12 @@ bloquesDiag,
           borderColor: '#fff', borderWidth: 2
         }]},
         options: {
-          responsive: true, maintainAspectRatio: false, animation: false, cutout: '55%',
-          plugins: { legend: { position: 'right', labels: { color: '#2f3f4e', font: { size: 10 }, boxWidth: 10, padding: 6 } } }
+          responsive: true, maintainAspectRatio: false, animation: false, cutout: '62%',
+          plugins: {
+            legend: TG ? TG.leyenda('right')
+                       : { position: 'right', labels: { color: '#2f3f4e', font: { size: 10 }, boxWidth: 10, padding: 6 } },
+            tooltip: TG ? TG.tooltip() : {}
+          }
         }
       }));
     }

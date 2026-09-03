@@ -46,3 +46,12 @@ body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-perfil-btn,
    inicio, y un botón más sobre el mapa sería estorbo. */
 #urbis-mobile-app .u52-procity-perfil-btn{ display:none !important; }
 [data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn{ display:grid !important; }
+
+/* En la app educativa tampoco hay reportes ciudadanos: el «+» de la barra
+   general (que abre el reporte) y «Reportar» / «Mis reportes» se van. La
+   barra sigue existiendo para volver al inicio y al perfil. */
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav:not(.u52-procity-nav) .plus[data-u52-call="open-report"],
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav button[data-u52-go="map"],
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-bottom-nav button[data-u52-go="timeline"]{
+  display:none !important;
+}
