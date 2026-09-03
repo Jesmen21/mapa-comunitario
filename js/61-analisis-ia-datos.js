@@ -318,6 +318,62 @@
              limites: { minLat, maxLat, minLng, maxLng } };
   }
 
+  /* ── El clima ────────────────────────────────────────────────────────
+     Del archivo climático de Open-Meteo, la misma casa que las elevaciones:
+     sin clave ni registro. Se piden PROMEDIOS MENSUALES de varios años y no
+     el pronóstico de mañana — a un análisis urbano no le sirve saber si hoy
+     llueve; le sirve saber cómo es el sitio: cuánto calor hace, cuándo
+     llueve y de dónde sopla el viento, que es lo que decide orientaciones,
+     aleros y patios.
+
+     Se piden datos diarios de un periodo largo y se promedian acá por mes.
+     Es más liviano de lo que parece: un valor por día y variable. */
+  const CLIMA_API = 'https://archive-api.open-meteo.com/v1/archive';
+  const CLIMA_ANIOS = 5;
+
+  async function consultarClima(lat, lng, alAvisar){
+    const hoy = new Date();
+    // El archivo va con unos días de retraso; se pide hasta hace una semana.
+    const fin = new Date(hoy.getTime() - 7 * 86400000);
+    const ini = new Date(Date.UTC(fin.getUTCFullYear() - CLIMA_ANIOS, 0, 1));
+    const iso = d => d.toISOString().slice(0, 10);
+    const clave = 'clima|' + lat.toFixed(2) + ',' + lng.toFixed(2) + '|' + iso(ini) + '|' + iso(fin);
+    const guardado = leerCache(clave);
+    if (guardado) return guardado;
+
+    if (typeof alAvisar === 'function') alAvisar('Trayendo el clima de los últimos ' + CLIMA_ANIOS + ' años…');
+    const url = CLIMA_API + '?latitude=' + lat.toFixed(4) + '&longitude=' + lng.toFixed(4) +
+      '&start_date=' + iso(ini) + '&end_date=' + iso(fin) +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,' +
+      'wind_speed_10m_max,wind_direction_10m_dominant&timezone=auto';
+    let d;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('respondió ' + res.status);
+      d = await res.json();
+    } catch (e) {
+      throw new Error('No se pudo consultar el clima (' + (e.message || e) + ').');
+    }
+    const dia = d && d.daily;
+    if (!dia || !Array.isArray(dia.time) || !dia.time.length) {
+      throw new Error('El servicio de clima no devolvió datos para este punto.');
+    }
+    const salida = {
+      desde: iso(ini), hasta: iso(fin), anios: CLIMA_ANIOS,
+      zona: d.timezone || '',
+      dias: dia.time.map((f, i) => ({
+        f: f,
+        tMax: dia.temperature_2m_max ? dia.temperature_2m_max[i] : null,
+        tMin: dia.temperature_2m_min ? dia.temperature_2m_min[i] : null,
+        lluvia: dia.precipitation_sum ? dia.precipitation_sum[i] : null,
+        viento: dia.wind_speed_10m_max ? dia.wind_speed_10m_max[i] : null,
+        vientoDir: dia.wind_direction_10m_dominant ? dia.wind_direction_10m_dominant[i] : null
+      }))
+    };
+    guardarCache(clave, salida);
+    return salida;
+  }
+
   function consultarEntorno(lat, lng, radioM, forzar){
     return traer(claveCache(lat, lng, radioM), construirQuery(lat, lng, radioM), forzar);
   }
@@ -698,6 +754,6 @@
   window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarTrazado, consultarTrazadoPoligono,
-                       consultarElevacion, rejillaDe,
+                       consultarElevacion, rejillaDe, consultarClima,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

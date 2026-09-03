@@ -111,6 +111,10 @@
     // Las huellas de los edificios, para poder dibujar los llenos y vacíos.
     trzHuellas: null,
     llenosEnMapa: false,
+    // El clima, que también se pide a botón.
+    clima: null,
+    cliCargando: false,
+    cliAviso: '',
     cobEnMapa: false
   };
 
@@ -324,6 +328,7 @@
       // se toma del estado: si el estudiante lo midió, se guarda con la ficha.
       trazado: S.trazado || null,
       terreno: S.terreno || null,
+      clima: S.clima || null,
       forma: meta.forma || 'radio',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
@@ -699,6 +704,26 @@
       '</table>';
   }
 
+  function climaImpreso(c) {
+    if (!c) return '';
+    var t = c.temperatura || {}, ll = c.lluvia || {}, vi = c.viento || {};
+    return '<h2>El clima del sitio</h2><table>' +
+      (t.media != null ? '<tr><td>Temperatura media</td><td class="n">' + String(t.media).replace('.', ',') + ' °C</td></tr>' : '') +
+      (t.maxMedia != null ? '<tr><td>Máxima media</td><td class="n">' + String(t.maxMedia).replace('.', ',') + ' °C</td></tr>' : '') +
+      (t.minMedia != null ? '<tr><td>Mínima media</td><td class="n">' + String(t.minMedia).replace('.', ',') + ' °C</td></tr>' : '') +
+      (ll.anual != null ? '<tr><td>Lluvia al año</td><td class="n">' + ll.anual + ' mm</td></tr>' : '') +
+      (ll.masLluvioso ? '<tr><td>Mes más lluvioso</td><td class="n">' + esc(ll.masLluvioso.nombre) + ' · ' + ll.masLluvioso.lluvia + ' mm</td></tr>' : '') +
+      (ll.masSeco ? '<tr><td>Mes más seco</td><td class="n">' + esc(ll.masSeco.nombre) + ' · ' + ll.masSeco.lluvia + ' mm</td></tr>' : '') +
+      (vi.dominante ? '<tr><td>El viento viene del</td><td class="n">' + esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)</td></tr>' : '') +
+      (vi.mediaKmh != null ? '<tr><td>Viento medio</td><td class="n">' + String(vi.mediaKmh).replace('.', ',') + ' km/h</td></tr>' : '') +
+      '</table>' +
+      '<table>' + (c.meses || []).filter(function (m) { return m.lluvia !== null; }).map(function (m) {
+        return '<tr><td>' + esc(m.nombre) + '</td><td class="n">' + m.lluvia + ' mm · ' +
+               (m.tMax != null ? String(m.tMax).replace('.', ',') + ' °C' : '') + '</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="pie">' + esc(c.lectura || '') + ' ' + esc(c.advertencia || '') + '</p>';
+  }
+
   function terrenoImpreso(t) {
     if (!t) return '';
     var e = t.elevacion || {}, p = t.pendiente || {};
@@ -897,6 +922,7 @@
       }) + '</table>' +
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
+      climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       rutasImpresas(st) +
       solImpreso(meta) +
@@ -1230,6 +1256,7 @@
       }
       if (acc === 'trazado') { analizarTrazado(); return; }
       if (acc === 'terreno') { analizarTerreno(); return; }
+      if (acc === 'clima') { analizarClima(); return; }
       if (acc === 'llenos-mapa') {
         var puesto = pintarLlenos(!S.llenosEnMapa);
         // Verlos es bajar la hoja: están justo debajo de ella.
@@ -1411,7 +1438,7 @@
        vacíos—. Antes solo contaba el calor, así que «Ver en el mapa» del
        raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
        el botón y no pasaba nada visible. */
-    var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa;
+    var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos;
     var encoger = S.encogida && !S.comparacion && (!S.resultado || hayCapa);
     h.classList.toggle('pcr-encogida', encoger);
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
@@ -1450,6 +1477,9 @@
        otra cosa. */
     var capa = S.calor.length
       ? { icono: 'calor', titulo: 'Mapa de calor', detalle: etiquetaCalor() }
+      : S.estratos
+        ? { icono: 'capas', titulo: 'Manzanas por estrato',
+            detalle: (S.estratos.manzanas ? S.estratos.manzanas.length + ' manzanas del DANE' : 'del DANE') }
       : S.llenosEnMapa
         ? { icono: 'capas', titulo: 'Llenos y vacíos',
             detalle: (S.trazado && S.trazado.llenos)
@@ -1482,6 +1512,11 @@
         (S.llenosEnMapa
           ? '<button type="button" data-pcr="llenos-mapa" class="pcr-mini">' +
               ico('apagar', 16) + 'Quitar los llenos del mapa</button>'
+          : '') +
+        (S.estratos
+          ? '<button type="button" data-pcr="estratos" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar los estratos del mapa</button>' +
+            (S.estratos.leyenda || '')
           : '') +
         '<div class="pcr-calor-chips">' +
           chip('todos', 'Todos los usos', st.total || 0, null) +
@@ -1662,6 +1697,18 @@
         L.push('  ' + alt.conDato + ' de ' + alt.edificios + ' edificios traen la altura (' +
                alt.cobertura + '%). El más alto: ' + alt.maximo + ' pisos.');
       }
+      L.push('');
+    }
+    var cli = res.clima || S.clima;
+    if (cli) {
+      var ct = cli.temperatura || {}, cll = cli.lluvia || {}, cv = cli.viento || {};
+      L.push('EL CLIMA DEL SITIO');
+      if (ct.media != null) L.push('  Temperatura media: ' + ct.media + ' °C (máx ' + ct.maxMedia + ', mín ' + ct.minMedia + ')');
+      if (cll.anual != null) L.push('  Lluvia: ' + cll.anual + ' mm al año · ' + cll.diasConLluviaPct + '% de días con lluvia');
+      if (cll.masLluvioso) L.push('  Más lluvioso: ' + cll.masLluvioso.nombre + ' (' + cll.masLluvioso.lluvia + ' mm) · más seco: ' + cll.masSeco.nombre + ' (' + cll.masSeco.lluvia + ' mm)');
+      if (cv.dominante) L.push('  El viento viene del ' + cv.dominante.rumbo + ' (' + cv.dominante.pct + '%)');
+      L.push('  ' + cli.lectura);
+      L.push('  ' + cli.advertencia);
       L.push('');
     }
     var ter = res.terreno || S.terreno;
@@ -1880,6 +1927,17 @@
               : 'estrato') + '</small></div>'
           : '') +
       '</div>' +
+      /* Pintar las manzanas NO depende de que el censo haya traído el estrato:
+         son dos consultas distintas al DANE. Condicionarlo a eso escondía el
+         botón justo donde más falta hace —cuando la ficha no pudo decir de
+         qué estrato es el sector— y dejaba al estudiante sin la única forma
+         de averiguarlo. */
+      '<button type="button" data-pcr="estratos" class="pcr-mini pcr-estratos-btn"' +
+        (S.cargandoEstratos ? ' disabled' : '') + '>' +
+        (S.cargandoEstratos ? 'Cargando…'
+          : (S.estratos ? ico('apagar', 16) + 'Quitar los estratos'
+                        : ico('capas', 16) + 'Ver las manzanas por estrato')) +
+      '</button>' +
       pronostico +
       curva +
       '<p class="pcr-pista">' +
@@ -2427,6 +2485,116 @@
       '</svg>';
   }
 
+  /* El climograma: barras de lluvia y línea de temperatura sobre los doce
+     meses. Es el dibujo con el que se lee un clima de un vistazo —dónde está
+     la temporada seca y dónde la de lluvias— y el que va en cualquier lámina.
+     Las dos escalas son distintas a propósito y por eso van rotuladas: mezclar
+     milímetros y grados en un solo eje sería mentir con el dibujo. */
+  function climograma(meses) {
+    var lista = (meses || []).filter(function (m) { return m.lluvia !== null || m.tMax !== null; });
+    if (lista.length < 6) return '';
+    var W = 300, H = 120, mIzq = 24, mDer = 24, mAb = 18, mAr = 8;
+    var anchoUtil = W - mIzq - mDer;
+    var paso = anchoUtil / lista.length;
+    var maxLl = Math.max(10, Math.max.apply(null, lista.map(function (m) { return m.lluvia || 0; })));
+    var temps = lista.map(function (m) { return m.tMax; }).filter(function (x) { return x !== null; })
+      .concat(lista.map(function (m) { return m.tMin; }).filter(function (x) { return x !== null; }));
+    var tMin = Math.min.apply(null, temps), tMax = Math.max.apply(null, temps);
+    var rangoT = Math.max(4, tMax - tMin);
+    var Yll = function (v) { return (H - mAb) - (H - mAb - mAr) * (v / maxLl); };
+    var Yt = function (v) { return (H - mAb) - (H - mAb - mAr) * ((v - tMin) / rangoT); };
+
+    var barras = lista.map(function (m, i) {
+      if (m.lluvia === null) return '';
+      var x = mIzq + i * paso + paso * 0.18, w = paso * 0.64;
+      var y = Yll(m.lluvia);
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) +
+             '" height="' + Math.max(0, (H - mAb) - y).toFixed(1) + '" class="pcr-clima-lluvia"/>';
+    }).join('');
+    var linea = lista.map(function (m, i) {
+      if (m.tMax === null) return '';
+      return (i ? 'L' : 'M') + (mIzq + i * paso + paso / 2).toFixed(1) + ' ' + Yt(m.tMax).toFixed(1);
+    }).filter(Boolean).join(' ');
+    var etiquetas = lista.map(function (m, i) {
+      // Solo las iniciales, y una de cada dos en pantallas estrechas: doce
+      // etiquetas de tres letras no caben sin encimarse.
+      return '<text x="' + (mIzq + i * paso + paso / 2).toFixed(1) + '" y="' + (H - 5) +
+             '" class="pcr-clima-mes" text-anchor="middle">' +
+             esc(m.nombre.charAt(0).toUpperCase()) + '</text>';
+    }).join('');
+
+    return '<div class="pcr-clima-graf">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" ' +
+        'role="img" aria-label="Lluvia y temperatura mes a mes">' +
+        barras +
+        '<path d="' + linea + '" class="pcr-clima-temp"/>' +
+        '<text x="2" y="' + (mAr + 6) + '" class="pcr-clima-eje">' + Math.round(maxLl) + ' mm</text>' +
+        '<text x="' + (W - 2) + '" y="' + (mAr + 6) + '" class="pcr-clima-eje" text-anchor="end">' +
+          Math.round(tMax) + '°</text>' +
+        '<text x="' + (W - 2) + '" y="' + (H - mAb) + '" class="pcr-clima-eje" text-anchor="end">' +
+          Math.round(tMin) + '°</text>' +
+        etiquetas +
+      '</svg>' +
+      '<p class="pcr-pista pcr-clima-leyenda">Las barras son la lluvia del mes (izquierda, en mm) ' +
+      'y la línea la temperatura máxima media (derecha, en °C). Son dos escalas distintas.</p>' +
+    '</div>';
+  }
+
+  /* El clima del sitio. No el pronóstico de mañana: promedios de varios años,
+     que es lo que decide hacia dónde se abre, cuánto alero se necesita y por
+     dónde entra el aire. */
+  function bloqueClima() {
+    var c = S.clima;
+    if (!c) {
+      return h4('agua', 'El clima del sitio') +
+        '<p class="pcr-pista">Temperatura, lluvia y vientos, promediados de varios años. ' +
+        'No es el pronóstico de mañana: es cómo es el sitio.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="clima" class="pcr-mini pcr-llevar-b"' +
+            (S.cliCargando ? ' disabled' : '') + '>' +
+            (S.cliCargando ? 'Consultando…' : ico('agua') + 'Ver el clima del sitio') +
+          '</button>' +
+        '</div>' +
+        (S.cliCargando ? '<p class="pcr-pista" id="pcr-cli-estado">' + esc(S.cliAviso || 'Preparando…') + '</p>' : '') +
+        (S.cliAviso && !S.cliCargando ? '<p class="pcr-error">' + esc(S.cliAviso) + '</p>' : '');
+    }
+
+    var t = c.temperatura || {}, ll = c.lluvia || {}, vi = c.viento || {};
+    return h4('agua', 'El clima del sitio') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + (t.media != null ? String(t.media).replace('.', ',') + '°' : '—') +
+          '</b><small>de temperatura media</small></div>' +
+        '<div class="pcr-kpi"><b>' + (ll.anual != null ? ll.anual : '—') +
+          '</b><small>mm de lluvia al año</small></div>' +
+        '<div class="pcr-kpi"><b>' + (vi.mediaKmh != null ? String(vi.mediaKmh).replace('.', ',') : '—') +
+          '</b><small>km/h de viento</small></div>' +
+      '</div>' +
+      (c.lectura ? '<p class="pcr-conc">' + esc(c.lectura) + '</p>' : '') +
+      climograma(c.meses) +
+      '<div class="pcr-lote">' +
+        (t.masCaliente ? '<div class="pcr-lote-fila"><span>Mes más caliente</span><b>' +
+          esc(t.masCaliente.nombre) + ' · ' + String(t.masCaliente.tMax).replace('.', ',') + '°</b></div>' : '') +
+        (t.masFresco ? '<div class="pcr-lote-fila"><span>Mes más fresco</span><b>' +
+          esc(t.masFresco.nombre) + ' · ' + String(t.masFresco.tMax).replace('.', ',') + '°</b></div>' : '') +
+        (ll.masLluvioso ? '<div class="pcr-lote-fila"><span>Mes más lluvioso</span><b>' +
+          esc(ll.masLluvioso.nombre) + ' · ' + ll.masLluvioso.lluvia + ' mm</b></div>' : '') +
+        (ll.masSeco ? '<div class="pcr-lote-fila"><span>Mes más seco</span><b>' +
+          esc(ll.masSeco.nombre) + ' · ' + ll.masSeco.lluvia + ' mm</b></div>' : '') +
+        (ll.diasConLluviaPct != null ? '<div class="pcr-lote-fila"><span>Días con lluvia</span><b>' +
+          ll.diasConLluviaPct + '% del año</b></div>' : '') +
+        (vi.dominante ? '<div class="pcr-lote-fila"><span>El viento viene del</span><b>' +
+          esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)</b></div>' : '') +
+      '</div>' +
+      (vi.dominante
+        ? '<p class="pcr-conc">El viento entra sobre todo por el <b>' + esc(vi.dominante.rumbo) +
+          '</b>. Es por donde conviene abrir para ventilar — y por donde llega el ruido y el polvo ' +
+          'de lo que haya en esa dirección.</p>'
+        : '') +
+      '<p class="pcr-pista">' + esc(c.advertencia || '') +
+      (c.periodo ? ' Promedios de ' + esc(String(c.periodo.desde || '')) + ' a ' +
+        esc(String(c.periodo.hasta || '')) + '.' : '') + '</p>';
+  }
+
   /* El corte del terreno, dibujado. Un perfil es la silueta que se vería si
      se cortara el sector con un cuchillo por esa línea: el tramo que está
      DENTRO del área va lleno y el de fuera apenas insinuado, para que se
@@ -2971,6 +3139,41 @@
   /* El terreno: alturas, pendiente, hacia dónde baja la ladera y dos
      perfiles. Como el trazado y la foto satelital, se pide a botón: son tres
      consultas a un servicio de elevación, y eso no se gasta sin permiso. */
+  /* El clima. Una consulta al archivo climático y a promediar por mes. Como
+     el terreno y el trazado, se pide a botón. */
+  function analizarClima() {
+    var D = window.AIA_DATOS;
+    if (!D || !D.consultarClima || !window.AIA_REMOTO || !window.AIA_REMOTO.clima) {
+      S.cliAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+    }
+    var eje = ejeDelSector();
+    if (!eje) { S.cliAviso = 'Primero elegí el área.'; pintar(); return; }
+
+    S.cliCargando = true; S.cliAviso = 'Consultando el clima…';
+    pintar();
+
+    D.consultarClima(eje.lat, eje.lng, function (txt) {
+      S.cliAviso = txt;
+      var caja = document.getElementById('pcr-cli-estado');
+      if (caja) caja.textContent = txt;
+    }).then(function (clima) {
+      return window.AIA_REMOTO.clima({ clima: clima });
+    }).then(function (res) {
+      S.clima = res; S.cliCargando = false; S.cliAviso = '';
+      try {
+        if (S.fichaActualId && S.resultado) {
+          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
+                       S.nombreGuardado || '', S.fichaActualId);
+        }
+      } catch (e) {}
+      pintar();
+    }).catch(function (e) {
+      S.cliCargando = false;
+      S.cliAviso = (e && e.message) || 'No se pudo consultar el clima.';
+      pintar();
+    });
+  }
+
   function analizarTerreno() {
     var D = window.AIA_DATOS;
     if (!D || !D.consultarElevacion || !window.AIA_REMOTO || !window.AIA_REMOTO.terreno) {
@@ -3407,6 +3610,7 @@
         bloqueUsoPredominante(st) +
         bloqueAlturas(st) +
         bloqueTerreno() +
+        bloqueClima() +
         bloqueTrazado() +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
@@ -3876,6 +4080,8 @@
     var r = await pintarEstratos(true);
     S.cargandoEstratos = false;
     if (!r.ok) { S.estratos = null; S.aviso = r.error; pintar(); return; }
+    // Verlas es bajar la hoja: las manzanas están justo debajo.
+    S.encogida = true;
 
     // La leyenda: sin ella los colores son adivinanza. «Sin estrato» va al
     // final porque es la excepción del mapa —industrial, dotacional, lotes—,
@@ -4033,7 +4239,7 @@
     var st = f.stats;
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
-    var trzAntes = S.trazado, terAntes = S.terreno;
+    var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -4074,9 +4280,10 @@
         // completa— igual que en la ficha viva.
         S.trazado = f.trazado || null;
         S.terreno = f.terreno || null;
+        S.clima = f.clima || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
-                   (f.trazado ? bloqueTrazado() : '');
-        S.trazado = trzAntes; S.terreno = terAntes;
+                   (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '');
+        S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -4338,7 +4545,8 @@
                                  { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null,
                                    // El trazado y el terreno de ESTA ficha, no los del
                                    // último sector medido.
-                                   trazado: f.trazado || null, terreno: f.terreno || null });
+                                   trazado: f.trazado || null, terreno: f.terreno || null,
+                                   clima: f.clima || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');

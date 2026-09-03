@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v652-llenos-en-el-mapa';
+const URBIS_CACHE = 'urbis-v653-clima-y-estratos';
 const URBIS_ASSETS = [
   './',
   './index.html',

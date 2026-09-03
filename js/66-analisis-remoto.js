@@ -181,10 +181,20 @@
     return pedir('/terreno', entrada, alAvisar).then(function (r) { return r.datos; });
   }
 
+  /* El clima: recibe días del archivo climático y devuelve promedios por
+     mes. Va por su ruta como el terreno y el trazado. */
+  function clima(entrada, alAvisar) {
+    if (!disponible()) {
+      return Promise.reject(new Error('El servidor de análisis no está configurado en este navegador.'));
+    }
+    return pedir('/clima', entrada, alAvisar).then(function (r) { return r.datos; });
+  }
+
   window.AIA_REMOTO = {
     analizar: analizar,
     trazado: trazado,
     terreno: terreno,
+    clima: clima,
     disponible: disponible,
     licencia: licencia,
     guardarLicencia: function (txt) {

@@ -1133,3 +1133,23 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
   font-size:.78rem !important;
 }
+/* «Ver las manzanas por estrato», dentro del bloque de población: es ahí
+   donde se pregunta de qué estrato es el sector, no al final de la ficha. */
+.pcr-hoja .pcr-estratos-btn, .pcr-pestana .pcr-estratos-btn{
+  flex:0 0 auto; align-self:flex-start; margin-top:2px;
+}
+
+/* ── 19. El clima ────────────────────────────────────────────────────────
+   Climograma: barras de lluvia y línea de temperatura. Dos escalas
+   distintas, rotuladas a cada lado. */
+.pcr-hoja .pcr-clima-graf, .pcr-pestana .pcr-clima-graf{
+  flex:0 0 auto; margin:4px 0 8px;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:8px 8px 2px; box-shadow:var(--edu-sombra);
+}
+.pcr-hoja .pcr-clima-graf svg, .pcr-pestana .pcr-clima-graf svg{ display:block; }
+.pcr-clima-lluvia{ fill:var(--edu-accent); fill-opacity:.55; }
+.pcr-clima-temp{ fill:none; stroke:#E5484D; stroke-width:1.8; stroke-linejoin:round; stroke-linecap:round; }
+.pcr-clima-mes{ fill:var(--edu-ink-3); font-size:8px; font-weight:700; font-family:var(--edu-font); }
+.pcr-clima-eje{ fill:var(--edu-ink-3); font-size:8px; font-weight:600; font-family:var(--edu-font); }
+.pcr-hoja .pcr-clima-leyenda, .pcr-pestana .pcr-clima-leyenda{ margin:2px 0 4px !important; }
