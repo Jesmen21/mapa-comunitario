@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v660-devolver-al-mapa';
+const URBIS_CACHE = 'urbis-v661-licencia-del-curso';
 const URBIS_ASSETS = [
   './',
   './index.html',

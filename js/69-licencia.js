@@ -82,7 +82,7 @@
     el.id = 'ulic-hoja';
     el.className = 'ulic-hoja';
     el.setAttribute('role', 'dialog');
-    el.setAttribute('aria-label', 'Licencia de URBIS para Empresas');
+    el.setAttribute('aria-label', esEducativo() ? 'Licencia del curso' : 'Licencia de URBIS para Empresas');
     document.body.appendChild(el);
 
     el.addEventListener('click', function (ev) {
@@ -161,10 +161,13 @@
         // haría que cada análisis siguiente fallara sin que se entienda por qué.
         S.estado = null;
         S.motivo = r.motivo || '';
-        S.error = r.error || 'La licencia no es válida.';
+        /* Si el motivo ya tiene su aviso arriba —vencida, firma, sin cupo—, no
+           se repite abajo el texto del servidor: está escrito para quien
+           programa contra la API y encima del mensaje bueno solo confunde. */
+        S.error = avisoDelMotivo(S.motivo) ? '' : (r.error || 'La licencia no es válida.');
       }
     } catch (e) {
-      S.error = (e && e.message) || 'No se pudo comprobar la licencia.';
+      S.error = enCastellano(e);
     }
     S.comprobando = false;
     pintar();
@@ -311,27 +314,24 @@
 
     return '' +
       '<div class="ulic-barra">' +
-        '<b>' + ico('llave', 16) + 'Licencia de URBIS para Empresas</b>' +
+        '<b>' + ico('llave', 16) +
+          (esEducativo() ? 'Licencia del curso' : 'Licencia de URBIS para Empresas') + '</b>' +
         '<button type="button" data-ulic="cerrar" class="ulic-x" aria-label="Cerrar">✕</button>' +
       '</div>' +
       '<div class="ulic-cuerpo">' +
         (S.emitiendo ? '' :
-        (S.motivo === 'sin_cupo'
-          ? '<p class="ulic-alerta">Se agotó el cupo de análisis de hoy. Se reinicia mañana; si necesitás más, escribinos.</p>'
-          : S.motivo === 'vencida'
-            ? '<p class="ulic-alerta">Tu licencia venció. Escribinos para renovarla.</p>'
-            : S.motivo === 'revocada'
-              ? '<p class="ulic-alerta">Esta licencia fue anulada. Escribinos para saber por qué.</p>'
-              : S.motivo === 'instalada'
-                ? '<p class="ulic-instalada">✓ Licencia instalada desde el enlace. Abajo ves de quién es y hasta cuándo vale.</p>'
-                : '') +
+        avisoDelMotivo(S.motivo) +
 
         cuerpo +
 
-        '<label class="ulic-lab" for="ulic-campo">Tu licencia</label>' +
+        '<label class="ulic-lab" for="ulic-campo">' +
+          (esEducativo() ? 'La licencia del curso' : 'Tu licencia') + '</label>' +
         '<textarea id="ulic-campo" class="ulic-campo" rows="3" spellcheck="false" ' +
           'placeholder="URBIS1.xxxxx.xxxxx">' + esc(lic) + '</textarea>' +
-        '<p class="ulic-pista">Es el texto largo que te entregó URBIS. Empieza por <code>URBIS1.</code></p>' +
+        '<p class="ulic-pista">' + (esEducativo()
+          ? 'Es el texto largo que te pasó tu profesor. Empieza por <code>URBIS1.</code> — y si te mandó un ' +
+            'enlace, con tocarlo alcanza: no hace falta copiar nada.'
+          : 'Es el texto largo que te entregó URBIS. Empieza por <code>URBIS1.</code>') + '</p>' +
 
         (S.error ? '<p class="ulic-error">' + esc(S.error) + '</p>' : '') +
 
@@ -341,14 +341,71 @@
         '</button>' +
         (lic ? '<button type="button" data-ulic="quitar" class="ulic-quitar">Quitar la licencia de este dispositivo</button>' : '')) +
 
-        '<button type="button" data-ulic="modo-emitir" class="ulic-quitar ulic-emitir-link">' +
-          (S.emitiendo ? '← Volver' : 'Soy URBIS: emitir una licencia') + '</button>' +
+        (puedeEmitir()
+          ? '<button type="button" data-ulic="modo-emitir" class="ulic-quitar ulic-emitir-link">' +
+            (S.emitiendo ? '← Volver' : 'Soy URBIS: emitir una licencia') + '</button>'
+          : '') +
 
         (S.emitiendo ? htmlEmisor() : '') +
 
-        '<p class="ulic-nota">Tu licencia se guarda <b>solo en este navegador</b>. Si entrás desde otro ' +
-        'dispositivo, tenés que pegarla ahí también. No la compartas: cualquiera que la tenga consume tu cupo.</p>' +
+        '<p class="ulic-nota">La licencia se guarda <b>solo en este navegador</b>. Si entrás desde otro ' +
+        'dispositivo, tenés que pegarla ahí también. ' + (esEducativo()
+          ? 'No la publiques: es la del curso entero, y cualquiera que la tenga gasta el cupo de todas.'
+          : 'No la compartas: cualquiera que la tenga consume tu cupo.') + '</p>' +
       '</div>';
+  }
+
+  /* El aviso de arriba, según por qué se abrió la pantalla. Cada motivo tiene
+     una salida distinta y decirla es la mitad del trabajo: un error sin
+     «y ahora qué hago» no ayuda a nadie. */
+  function avisoDelMotivo(motivo) {
+    var edu = esEducativo();
+    if (motivo === 'sin_cupo' || motivo === 'sin_cupo_libre') {
+      return '<p class="ulic-alerta">' + (edu
+        ? 'Se agotaron los análisis de hoy de la licencia del curso. Se reinician mañana; si hacen falta más, avisale a tu profesor.'
+        : 'Se agotó el cupo de análisis de hoy. Se reinicia mañana; si necesitás más, escribinos.') + '</p>';
+    }
+    if (motivo === 'vencida') {
+      return '<p class="ulic-alerta">' + (edu
+        ? 'La licencia del curso venció. Avisale a tu profesor para que emita una nueva.'
+        : 'Tu licencia venció. Escribinos para renovarla.') + '</p>';
+    }
+    if (motivo === 'revocada') {
+      return '<p class="ulic-alerta">' + (edu
+        ? 'Esta licencia fue anulada. Avisale a tu profesor.'
+        : 'Esta licencia fue anulada. Escribinos para saber por qué.') + '</p>';
+    }
+    if (motivo === 'firma' || motivo === 'formato' || motivo === 'ilegible' || motivo === 'incompleta') {
+      return '<p class="ulic-alerta">' + (edu
+        ? 'Esa licencia no es válida. Puede que sea de un curso anterior: pedile el enlace nuevo a tu profesor.'
+        : 'Esa licencia no es válida. Revisá que la hayas pegado completa.') + '</p>';
+    }
+    if (motivo === 'ausente') {
+      return '<p class="ulic-alerta">' + (edu
+        ? 'Para analizar hace falta la licencia del curso. Tu profesor te pasa un <b>enlace</b> que la instala sola; también podés pegarla acá abajo.'
+        : 'Para analizar hace falta una licencia. Pegala acá abajo.') + '</p>';
+    }
+    if (motivo === 'instalada') {
+      return '<p class="ulic-instalada">✓ Licencia instalada desde el enlace. Abajo ves de quién es y hasta cuándo vale.</p>';
+    }
+    return '';
+  }
+
+  /* Los errores de red del navegador llegan en inglés y sin contexto —«Failed
+     to fetch», «NetworkError»— y ponerle eso delante a alguien que solo quiere
+     entrar a la app no le dice si el problema es suyo, del servidor o de la
+     licencia. Se traduce lo que sabemos y se deja pasar lo demás. */
+  function enCastellano(err) {
+    var t = String((err && err.message) || err || '');
+    if (!t) return 'No se pudo comprobar la licencia.';
+    if (/failed to fetch|networkerror|load failed|network request failed/i.test(t)) {
+      return 'No se pudo hablar con el servidor de URBIS. Puede ser tu conexión, o que el ' +
+             'servidor esté despertando: esperá unos segundos y volvé a intentar.';
+    }
+    if (/abort|timeout|no respondió/i.test(t)) {
+      return 'El servidor de URBIS tardó demasiado en responder. Volvé a intentar en un momento.';
+    }
+    return t;
   }
 
   // ── Entrada y salida ──────────────────────────────────────────────────
@@ -360,14 +417,19 @@
     // Se comprueba lo que ya haya guardado, para que el cliente vea su estado
     // sin tener que pulsar nada.
     var lic = guardada();
-    if (!lic && !motivo) return;
+    /* Sin licencia guardada no hay nada que comprobar, y preguntarle al
+       servidor «¿es válida esta licencia vacía?» solo sirve para que, cuando
+       la red falle, la estudiante vea un «Failed to fetch» en inglés encima
+       del mensaje que sí le explicaba qué hacer. El aviso del motivo ya dice
+       todo lo que necesita. */
+    if (!lic) return;
     S.comprobando = true; pintar();
     try {
       var r = await comprobar(lic);
       if (r.ok) { S.estado = r; if (!motivo) S.motivo = ''; }
       else { S.estado = null; if (!S.motivo) S.motivo = r.motivo || ''; S.error = r.error || ''; }
     } catch (err) {
-      S.error = (err && err.message) || '';
+      S.error = enCastellano(err);
     }
     S.comprobando = false;
     pintar();
@@ -420,6 +482,29 @@
     // Se abre la pantalla para que VEA de quién es y hasta cuándo vale. Una
     // instalación silenciosa deja a la persona sin saber qué recibió.
     abrir('instalada');
+  }
+
+  /* Esta pantalla la ven dos personas muy distintas: una constructora que
+     compró una licencia y una estudiante de segundo semestre a la que el
+     profesor le pasó un enlace por WhatsApp. Llamarle «Licencia de URBIS para
+     Empresas» a la segunda la deja convencida de que se metió donde no
+     debía. El contenido es el mismo; las palabras, no. */
+  function esEducativo() {
+    try {
+      if (String(window.URBIS_MODO_APP || '') === 'educativo') return true;
+      return /[?&]app=educativo/.test(location.search || '');
+    } catch (e) { return false; }
+  }
+
+  /* El enlace para emitir licencias no le sirve a nadie del curso: es la
+     herramienta de quien las reparte. En modo educativo se muestra solo si la
+     sesión dice que es administrador. */
+  function puedeEmitir() {
+    if (!esEducativo()) return true;
+    try {
+      var s = JSON.parse(localStorage.getItem('urbis_auth_session_v1') || '{}');
+      return !!(s && (s.es_admin || s.rol === 'admin'));
+    } catch (e) { return false; }
   }
 
   window.addEventListener('urbis:licencia', function (ev) {

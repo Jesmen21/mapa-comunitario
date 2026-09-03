@@ -53,13 +53,59 @@
     return !!(c.remoto && c.api);
   }
 
-  // Mensajes claros por código. El servidor ya manda su propio texto en
-  // español; esto es el respaldo por si algún día responde otra cosa.
+  /* Mensajes por MOTIVO, no por código, y en el idioma de quien está mirando.
+
+     El servidor manda su propio texto y durante un tiempo se mostraba tal
+     cual. El problema es que ese texto está escrito para quien programa
+     contra la API: a una estudiante que abre la app en el bus le decía
+     «Falta la licencia. Mandala en la cabecera Authorization: Bearer
+     <licencia>», que no es un error, es un jeroglífico. Y le hablaba de
+     «URBIS para Empresas» cuando lo que tiene en la mano es la app del curso.
+
+     Así que el texto del servidor pasa a ser el respaldo —para motivos que
+     esta tabla no conozca— y no el mensaje principal. */
+  function esEducativo() {
+    try {
+      if (String(window.URBIS_MODO_APP || '') === 'educativo') return true;
+      return /[?&]app=educativo/.test(location.search || '');
+    } catch (e) { return false; }
+  }
+
+  var MENSAJES = {
+    ausente: {
+      edu:  'Falta la licencia del curso. Pedísela a tu profesor: es un enlace que la instala sola.',
+      gen:  'Falta la licencia de URBIS, o no es válida.'
+    },
+    formato:  { edu: 'Esa licencia no tiene el formato correcto. Pedile el enlace a tu profesor.',
+                gen: 'La licencia no tiene el formato esperado.' },
+    firma:    { edu: 'Esa licencia no es válida. Puede que sea de un curso anterior: pedile la nueva a tu profesor.',
+                gen: 'La licencia no es válida.' },
+    ilegible: { edu: 'Esa licencia no es válida. Pedile el enlace a tu profesor.',
+                gen: 'La licencia no es válida.' },
+    vencida:  { edu: 'La licencia del curso venció. Avisale a tu profesor para que emita una nueva.',
+                gen: 'La licencia venció. Escribinos para renovarla.' },
+    revocada: { edu: 'Esta licencia fue anulada. Avisale a tu profesor.',
+                gen: 'Esta licencia fue anulada. Escribinos para saber por qué.' },
+    sin_cupo: { edu: 'Se agotaron los análisis de hoy de la licencia del curso. Se reinician mañana.',
+                gen: 'Se agotó el cupo de análisis de hoy para esta licencia.' },
+    sin_cupo_libre: { edu: 'Se agotaron los análisis gratuitos de hoy en este dispositivo. Se reinician mañana.',
+                      gen: 'Se agotaron los análisis gratuitos de hoy en este dispositivo. Se reinician mañana.' }
+  };
+
+  function motivoDe(codigo, cuerpo) {
+    if (cuerpo && cuerpo.motivo) return String(cuerpo.motivo);
+    if (codigo === 429) return 'sin_cupo';
+    if (codigo === 403) return 'vencida';
+    if (codigo === 401) return 'ausente';
+    return '';
+  }
+
   function mensajeDe(codigo, cuerpo) {
+    var m = MENSAJES[motivoDe(codigo, cuerpo)];
+    if (m) return esEducativo() ? m.edu : m.gen;
+    // Motivo que esta tabla no conoce: ahí sí vale más el texto del servidor
+    // que una frase genérica nuestra.
     if (cuerpo && cuerpo.error) return String(cuerpo.error);
-    if (codigo === 401) return 'Falta la licencia de URBIS para Empresas, o no es válida.';
-    if (codigo === 403) return 'La licencia venció o fue revocada.';
-    if (codigo === 429) return 'Se agotó el cupo de análisis de hoy para esta licencia.';
     return 'El servidor de análisis respondió con un error (' + codigo + ').';
   }
 
@@ -107,8 +153,7 @@
               // Un mensaje de error sin sitio adonde ir no sirve de nada. Se
               // avisa para que la pantalla de licencia se abra sola: es
               // exactamente lo que el usuario necesita en este momento.
-              e.motivo = (r.cuerpo && r.cuerpo.motivo) ||
-                         (r.codigo === 429 ? 'sin_cupo' : r.codigo === 403 ? 'vencida' : 'ausente');
+              e.motivo = motivoDe(r.codigo, r.cuerpo) || 'ausente';
               try {
                 window.dispatchEvent(new CustomEvent('urbis:licencia',
                   { detail: { motivo: e.motivo, codigo: r.codigo } }));
