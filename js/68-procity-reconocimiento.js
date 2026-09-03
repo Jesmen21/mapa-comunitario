@@ -108,6 +108,9 @@
     terreno: null,
     terCargando: false,
     terAviso: '',
+    // Las huellas de los edificios, para poder dibujar los llenos y vacíos.
+    trzHuellas: null,
+    llenosEnMapa: false,
     cobEnMapa: false
   };
 
@@ -924,7 +927,7 @@
   // Una lista de números no dice dónde está nada. El sentido de mirar un
   // sector antes de ir es verlo, así que el resultado se pinta: cada uso en
   // el color de su categoría y, debajo, las manzanas por estrato.
-  var capaPuntos = null, capaEstratos = null;
+  var capaPuntos = null, capaEstratos = null, capaLlenos = null;
 
   function pintarPuntos(pois) {
     var m = mapa();
@@ -958,10 +961,45 @@
 
   function quitarDelMapa() {
     var m = mapa();
-    [capaPuntos, capaEstratos].forEach(function (c) {
+    [capaPuntos, capaEstratos, capaLlenos].forEach(function (c) {
       if (c && m) { try { m.removeLayer(c); } catch (e) {} }
     });
-    capaPuntos = null; capaEstratos = null;
+    capaPuntos = null; capaEstratos = null; capaLlenos = null;
+    S.llenosEnMapa = false;
+  }
+
+  /* Los llenos y vacíos, dibujados. Las cifras dicen QUÉ PROPORCIÓN del área
+     está construida; el dibujo dice DÓNDE, que es otra cosa y es la que sirve
+     para proyectar: no es lo mismo un 12% repartido que un 12% todo en una
+     esquina. Es la lámina de llenos y vacíos de toda la vida.
+
+     Las huellas se guardan al medir el trazado y se pintan desde memoria: no
+     se vuelve a consultar la red para verlas. */
+  function pintarLlenos(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaLlenos) { try { m.removeLayer(capaLlenos); } catch (e) {} capaLlenos = null; }
+    S.llenosEnMapa = false;
+    if (!encender) return false;
+    var huellas = S.trzHuellas || [];
+    if (!huellas.length) return false;
+
+    capaLlenos = L.layerGroup();
+    huellas.forEach(function (anillo) {
+      try {
+        L.polygon(anillo.map(function (p) { return [p.lat, p.lng]; }), {
+          // Tinta plana y borde fino: es una lámina de llenos, no un mapa de
+          // colores. Lo construido pesa, lo libre es el fondo.
+          color: '#0F1F2E', weight: 0.6, opacity: 0.9,
+          fillColor: '#3B4A5A', fillOpacity: 0.82, interactive: false
+        }).addTo(capaLlenos);
+      } catch (e) {}
+    });
+    capaLlenos.addTo(m);
+    // Debajo de los puntos: los usos se siguen leyendo encima del tejido.
+    try { if (capaLlenos.bringToBack) capaLlenos.bringToBack(); } catch (e) {}
+    S.llenosEnMapa = true;
+    return true;
   }
 
   /* Manzanas por estrato, del DANE. Van DEBAJO de los puntos: son el fondo
@@ -1183,6 +1221,7 @@
         // otro radio no tiene que volver a dibujarlo.
         S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
         S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
+        S.trzHuellas = null; pintarLlenos(false);
         try {
           var A5 = window.URBIS_PC_ANALISIS;
           if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
@@ -1191,6 +1230,13 @@
       }
       if (acc === 'trazado') { analizarTrazado(); return; }
       if (acc === 'terreno') { analizarTerreno(); return; }
+      if (acc === 'llenos-mapa') {
+        var puesto = pintarLlenos(!S.llenosEnMapa);
+        // Verlos es bajar la hoja: están justo debajo de ella.
+        if (puesto) S.encogida = true;
+        pintar();
+        return;
+      }
       if (acc === 'cob-mapa') {
         var A4 = window.URBIS_PC_ANALISIS;
         if (!A4 || !S.cobertura) return;
@@ -1404,6 +1450,11 @@
        otra cosa. */
     var capa = S.calor.length
       ? { icono: 'calor', titulo: 'Mapa de calor', detalle: etiquetaCalor() }
+      : S.llenosEnMapa
+        ? { icono: 'capas', titulo: 'Llenos y vacíos',
+            detalle: (S.trazado && S.trazado.llenos)
+              ? S.trazado.llenos.pctLleno + '% construido · ' + (S.trzHuellas || []).length + ' huellas'
+              : 'las huellas de los edificios' }
       : S.cobEnMapa
         ? { icono: 'satelite', titulo: 'Cobertura del suelo',
             detalle: (S.cobertura && S.cobertura.clases
@@ -1427,6 +1478,10 @@
         (S.cobEnMapa
           ? '<button type="button" data-pcr="cob-mapa" class="pcr-mini">' +
               ico('apagar', 16) + 'Quitar la foto del mapa</button>'
+          : '') +
+        (S.llenosEnMapa
+          ? '<button type="button" data-pcr="llenos-mapa" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar los llenos del mapa</button>'
           : '') +
         '<div class="pcr-calor-chips">' +
           chip('todos', 'Todos los usos', st.total || 0, null) +
@@ -2508,6 +2563,11 @@
           '<span><b>' + ll.pctVacio + '%</b> vacío</span>' +
         '</div>' +
       '</div>' +
+      ((S.trzHuellas && S.trzHuellas.length)
+        ? '<button type="button" data-pcr="llenos-mapa" class="pcr-mini">' +
+            (S.llenosEnMapa ? ico('apagar', 16) + 'Quitar del mapa'
+                            : ico('mapa', 16) + 'Ver los llenos en el mapa') + '</button>'
+        : '') +
       '<p class="pcr-pista">' + (ll.edificios || 0) + ' edificio' + (ll.edificios === 1 ? '' : 's') +
         ' en el área. ' +
         (ll.sinGeometria
@@ -2976,6 +3036,23 @@
       : window.AIA_DATOS.consultarTrazado(S.centro.lat, S.centro.lng, S.radioM);
 
     traer.then(function (elementos) {
+      /* Las huellas de los edificios se guardan en memoria para poder
+         pintarlas cuando se pida, sin repetir la consulta. Solo los anillos:
+         las etiquetas no hacen falta para dibujar y ocupan de más. El tope
+         existe porque un sector grande del centro puede traer miles y el
+         teléfono no tiene por qué cargar con todos. */
+      S.trzHuellas = (elementos || [])
+        .filter(function (el) {
+          var t = el && el.tags;
+          return t && t.building && t.building !== 'no' &&
+                 Array.isArray(el.geometry) && el.geometry.length >= 3;
+        })
+        .slice(0, 3000)
+        .map(function (el) {
+          return el.geometry.map(function (p) {
+            return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
+          });
+        });
       var peticion = { elementos: elementos || [] };
       if (esPol) {
         peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
@@ -3859,6 +3936,7 @@
     if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
       S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
+      S.trzHuellas = null; pintarLlenos(false);
     }
     if (!S.centro) tomarCentro();
     pintarCirculo();
