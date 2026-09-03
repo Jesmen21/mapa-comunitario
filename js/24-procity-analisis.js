@@ -30,7 +30,10 @@
     charts: [],
     burbuja: null,
     // Mapa de calor: `grupo` es un id de la Matriz o 'todos'; null = apagado.
-    heat: { grupo: null, canvas: null, chip: null, pintando: false },
+    // `externos` son puntos prestados (js/68 presta los usos que encontró en
+    // OpenStreetMap); cuando los hay, mandan sobre los mapeos del curso.
+    heat: { grupo: null, canvas: null, chip: null, pintando: false,
+            externos: null, colorExterno: null, etqExterno: '', alApagar: null },
     // Fase 3 · geometría generada: `tipo` es 'red' | 'hull' | 'circulos'
     // (null = apagada) y `grupo` filtra QUÉ puntos se conectan ('todos' o
     // una categoría de la Matriz).
@@ -512,6 +515,12 @@
   }
 
   function puntosParaHeat(ctx){
+    /* Puntos prestados. El reconocimiento (js/68) trae los usos que encontró
+       en OpenStreetMap y quiere el mismo mapa de calor: en vez de copiar
+       estas setenta líneas —con su manejo de zoom, de pantalla oculta y de
+       reintentos— se le deja poner su propia lista. Todo lo demás es igual. */
+    if (S.heat.externos) return S.heat.externos;
+
     const gid = S.heat.grupo;
     const hayArea = S.cerrada && S.pts.length >= 3;
     const seVe = visibleSegunMapa(ctx);
@@ -538,7 +547,10 @@
     const m = mapa(), cv = S.heat.canvas;
     if (!m || !cv || !S.heat.grupo) return;
     const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
-    if (!ctx) return;
+    // Con puntos prestados no hace falta el contexto de Pro City: los puntos
+    // ya vienen resueltos. Exigirlo dejaría el calor apagado en el
+    // reconocimiento sin decir por qué.
+    if (!ctx && !S.heat.externos) return;
 
     const t = m.getSize();
     // Si el mapa está oculto (al cambiar de pantalla, por ejemplo) su tamaño
@@ -587,7 +599,12 @@
     S.heat.ultimoConteo = dentro;
 
     // 2) Teñir: el alfa acumulado indexa la tabla de color.
-    const color = (S.heat.grupo === 'todos') ? null : (ctx.colorGrupo[S.heat.grupo] || '#6b70e0');
+    // Con puntos prestados manda el color que pidió quien los prestó (js/68
+    // tiñe cada categoría con su color de la Matriz). Sin color, la rampa
+    // multicolor de "todos".
+    const color = S.heat.externos
+      ? (S.heat.colorExterno || null)
+      : ((S.heat.grupo === 'todos') ? null : (ctx.colorGrupo[S.heat.grupo] || '#6b70e0'));
     const lut = tablaColor(color);
     const img = g.getImageData(0, 0, cv.width, cv.height);
     const d = img.data;
@@ -632,6 +649,13 @@
   }
 
   function apagarHeat(){
+    // Quien prestó los puntos tiene botones encendidos en su propio panel: si
+    // el calor se apaga desde el chip del mapa, esos botones quedarían
+    // mintiendo. Se le avisa antes de borrar nada.
+    const avisar = S.heat.alApagar;
+    S.heat.externos = null; S.heat.colorExterno = null;
+    S.heat.etqExterno = ''; S.heat.alApagar = null;
+    if (typeof avisar === 'function') { try { avisar(); } catch(e){} }
     const m = mapa();
     clearTimeout(S.heat.reintento);
     if (S.heat.canvas) {
@@ -661,6 +685,19 @@
   function actualizarChipHeat(){
     if (!S.heat.chip || !S.heat.grupo) return;
     const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
+    // Puntos prestados: el chip no habla de grupos de la Matriz sino de lo que
+    // trajo quien los prestó, y lo dice con sus palabras. Sin esto el chip
+    // diría "Todos los usos" sobre un calor que es de un solo rubro.
+    if (S.heat.externos) {
+      const nE = S.heat.ultimoConteo || 0;
+      S.heat.chip.innerHTML =
+        '<i style="background:' + (S.heat.colorExterno || '#ef4444') + '"></i>' +
+        '<div><b>' + esc(S.heat.etqExterno || '🔥 Mapa de calor') + '</b>' +
+        '<small>' + nE + ' de ' + S.heat.externos.length + ' punto' +
+        (S.heat.externos.length === 1 ? '' : 's') + ' en pantalla</small></div>' +
+        '<button type="button" data-u52-call="pca-heat-off" aria-label="Quitar mapa de calor">\u2715</button>';
+      return;
+    }
     const g = ctx && S.heat.grupo !== 'todos' ? ctx.grupos.find(x => x.id === S.heat.grupo) : null;
     const color = S.heat.grupo === 'todos' ? '#ef4444' : ((ctx && ctx.colorGrupo[S.heat.grupo]) || '#6b70e0');
     const n = S.heat.ultimoConteo || 0;
@@ -3061,6 +3098,38 @@ bloquesDiag,
     dentroDelPoligono, areaM2, perimetroM,
     // Mapa de calor (Fase 2)
     heatActivo: () => S.heat.grupo, encenderHeat, apagarHeat,
+    /* Calor con puntos de fuera (lo usa el reconocimiento, js/68).
+       `puntos` es [{lat,lng}]; `color` pinta la escala. Con null se apaga. */
+    calorExterno: function (puntos, color, etiqueta, alApagar) {
+      if (!puntos || !puntos.length) { apagarHeat(); return 0; }
+      S.heat.externos = puntos.filter(function (p) {
+        return p && isFinite(p.lat) && isFinite(p.lng);
+      }).map(function (p) { return { lat: Number(p.lat), lng: Number(p.lng) }; });
+      S.heat.colorExterno = color || null;
+      S.heat.etqExterno = etiqueta || '';
+      S.heat.alApagar = (typeof alApagar === 'function') ? alApagar : null;
+      encenderHeat('todos');
+      return S.heat.externos.length;
+    },
+    /* El área dibujada, guardada con nombre desde fuera (lo usa js/68 para
+       que un sector reconocido quede en la misma lista de áreas que el
+       estudiante ya conoce, y sirva luego para el análisis de sus mapeos). */
+    guardarAreaConNombre: function (nombre, pts) {
+      const lista = (pts && pts.length >= 3) ? pts.slice() : S.pts.slice();
+      nombre = String(nombre || '').trim();
+      if (!nombre || lista.length < 3) return null;
+      const areas = leerAreas();
+      // Mismo nombre, misma área: se reemplaza en vez de acumular copias.
+      const previa = areas.filter(function (x) { return x.nombre === nombre; })[0];
+      const nueva = {
+        id: previa ? previa.id : 'a' + Date.now(), nombre, pts: lista,
+        fecha: new Date().toISOString(), areaM2: Math.round(areaM2(lista))
+      };
+      escribirAreas([nueva].concat(areas.filter(function (x) { return x.id !== nueva.id; })));
+      return nueva;
+    },
+    areasGuardadas: leerAreas,
+    cargarAreaPorId: cargarArea,
     // Geometría (Fase 3)
     geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro, geometriaActual,
     areaNombre: () => S.nombre,

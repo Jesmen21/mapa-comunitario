@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v619-demografia-dane';
+const URBIS_CACHE = 'urbis-v620-calor-y-sector';
 const URBIS_ASSETS = [
   './',
   './index.html',

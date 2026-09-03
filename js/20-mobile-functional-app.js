@@ -2784,12 +2784,19 @@
     const deAmigos = datos.filter(p => p && dimSet.has(p.tipo) && !esPropioProCity(p) && esDeAmigoProCity(p));
     deAmigos.sort((a,b) => new Date(b.fecha||0).getTime() - new Date(a.fecha||0).getTime());
 
+    /* Pedido explícito: que el reconocimiento de sector quede en una pestaña
+       propia, para no perder el análisis al salir. Los informes los guarda
+       js/68 en el propio dispositivo; acá solo se cuenta cuántos hay. */
+    const _nSectores = (window.URBIS_PC_RECON && typeof window.URBIS_PC_RECON.hayFichas === 'function')
+      ? window.URBIS_PC_RECON.hayFichas() : 0;
+
     const tabs = `<div class="u52-procity-stats-tabs">
         <button type="button" class="${proCity.statsTab==='totales'?'active':''}" data-u52-call="procity-stats-tab-totales">Totales</button>
         <button type="button" class="${proCity.statsTab==='mios'?'active':''}" data-u52-call="procity-stats-tab-mios">Mis mapeos (${mios.length})</button>
         <button type="button" class="${proCity.statsTab==='amigos'?'active':''}" data-u52-call="procity-stats-tab-amigos">👥 Amigos (${deAmigos.length})</button>
         <button type="button" class="${proCity.statsTab==='carpetas'?'active':''}" data-u52-call="procity-stats-tab-carpetas">🤝 Cooperativo (${proCity.myFolders.length})</button>
         <button type="button" class="${proCity.statsTab==='analisis'?'active':''}" data-u52-call="procity-stats-tab-analisis">📊 Análisis</button>
+        <button type="button" class="${proCity.statsTab==='sector'?'active':''}" data-u52-call="procity-stats-tab-sector">🔍 Sector${_nSectores ? ` (${_nSectores})` : ''}</button>
       </div>`;
 
     function _mineCard(p, permiteSeleccion){
@@ -2852,6 +2859,12 @@
     } else if(proCity.statsTab === 'amigos'){
       body = deAmigos.length ? `<div class="u52-procity-mine-list">${deAmigos.map(p=>_mineCard(p, false)).join('')}</div>`
         : `<div class="u52-empty-card"><span>👥</span><div><b>Aún no ves mapeos de amigos</b><small>Cuando un amigo tuyo en URBIS Social georreferencie algo, aparece aquí.</small></div></div>`;
+    } else if(proCity.statsTab === 'sector'){
+      // El informe entero lo dibuja js/68 con lo que guardó: acá no se
+      // consulta la red, así que la pestaña abre igual sin señal.
+      body = (window.URBIS_PC_RECON && typeof window.URBIS_PC_RECON.htmlPestana === 'function')
+        ? window.URBIS_PC_RECON.htmlPestana()
+        : '<div class="u52-empty-card"><span>🔍</span><div><b>Reconocimiento no disponible</b><small>Recarga la app para activar el análisis de sector.</small></div></div>';
     } else if(proCity.statsTab === 'analisis'){
       // El análisis por área vive en js/24; aquí solo se le pasa lo que él no
       // puede saber (la Matriz, los colores y cómo leer el autor de un punto).
@@ -2967,6 +2980,11 @@
     showProCityStats();
   };
   window.urbisProCityCerrarStats = function(){ hideProCityStats(); };
+  // Lo usa js/68 para repintar su pestaña tras desplegar, borrar o copiar.
+  window.urbisProCityAbrirSector = function(){
+    proCity.statsTab = 'sector';
+    showProCityStats();
+  };
   function setProCityStatsTab(tab){
     proCity.statsTab = tab;
     showProCityStats();
@@ -5685,6 +5703,9 @@
       // Acciones del análisis por área (js/24). Van aquí y no en nativeCall
       // porque varias necesitan el elemento (data-id del área guardada).
       else if(c.indexOf('pca-') === 0 && window.URBIS_PC_ANALISIS) { window.URBIS_PC_ANALISIS.accion(c.slice(4), call); }
+      // Y las de la pestaña «Sector» (js/68). Mismo motivo: necesitan el
+      // data-id de la ficha guardada sobre la que se hizo clic.
+      else if(c.indexOf('pcr-') === 0 && window.URBIS_PC_RECON) { window.URBIS_PC_RECON.accion(c.slice(4), call); }
       else nativeCall(c);
       return;
     }
