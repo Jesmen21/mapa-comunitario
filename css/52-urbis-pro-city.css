@@ -170,6 +170,34 @@
   #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus):active{
     background:var(--pc-sky-1) !important; transform:scale(.95) !important;
   }
+
+  /* El «+» del centro tiene que caer en el CENTRO de la barra, y con
+     `space-around` no siempre caía: los cinco botones llevan ancho fijo
+     (66 + 66 + 62 + 66 + 66 = 326 px) y en un teléfono de 360 px de ancho
+     —o en uno con el tamaño de pantalla del sistema aumentado— no caben en
+     los 316 px disponibles. Al desbordar, el reparto deja de repartir: los
+     botones quedan pegados desde la izquierda y el botón central aparece
+     unos 9 px corrido a la derecha.
+
+     Con una rejilla de cinco columnas iguales el centro es el centro por
+     construcción, a cualquier ancho: cada botón se centra en su casilla y
+     el «+» vive en la casilla del medio. El `:not([hidden])` no es adorno
+     —esta regla gana en especificidad a la de arriba, y sin él la barra se
+     quedaría visible cuando la app la oculta—. */
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png.u52-procity-nav:not([hidden]){
+    display:grid !important;
+    grid-template-columns:repeat(5, 1fr) !important;
+    justify-items:center !important;
+    align-items:center !important;
+    gap:0 !important;
+    padding-left:4px !important; padding-right:4px !important;
+  }
+  /* El ancho fijo pasa a ser un tope: el botón ocupa su casilla y nunca la
+     desborda, así que las etiquetas largas («Mi ubicación», «En el mapa»)
+     parten de línea dentro de su sitio en vez de correr la fila. */
+  #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png.u52-procity-nav:not([hidden]) button:not(.plus){
+    width:100% !important; max-width:72px !important; min-width:0 !important;
+  }
   /* ÍCONO grande y nítido (antes lo encogía la base a .62rem) */
   #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) .procity-nav-ico{
     font-size:1.5rem !important; line-height:1 !important; display:block !important;
@@ -177,7 +205,9 @@
   }
   /* LABEL legible con jerarquía (Inter, peso medio, índigo con buen contraste) */
   #urbis-mobile-app .u52-bottom-nav.u52-procity-nav button:not(.plus) span:not(.procity-nav-ico){
-    font-size:.68rem !important; font-weight:600 !important; line-height:1.05 !important;
+    /* En un teléfono de 320 px la casilla queda en 56 px y «ubicación» no
+       cabe: la letra cede un poco antes que desbordar sobre la vecina. */
+    font-size:clamp(.6rem, 2.9vw, .68rem) !important; font-weight:600 !important; line-height:1.05 !important;
     letter-spacing:-.004em !important;
     color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important;
   }
