@@ -422,6 +422,9 @@
 
   // ── Áreas guardadas ─────────────────────────────────────────────────────
 
+  // Id de un área guardada. Antes era solo la hora en milisegundos: dos
+  // guardados en el mismo instante chocaban y el segundo borraba al primero.
+  function idDeArea(){ return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function leerAreas(){
     try { const a = JSON.parse(localStorage.getItem(LS_AREAS) || '[]'); return Array.isArray(a) ? a : []; }
     catch(e){ return []; }
@@ -435,7 +438,7 @@
     if (!nombre) return;
     const areas = leerAreas();
     areas.unshift({
-      id: 'a' + Date.now(), nombre, pts: S.pts.slice(),
+      id: idDeArea(), nombre, pts: S.pts.slice(),
       fecha: new Date().toISOString(), areaM2: Math.round(areaM2(S.pts))
     });
     escribirAreas(areas);
@@ -3253,7 +3256,7 @@ bloquesDiag,
       // Mismo nombre, misma área: se reemplaza en vez de acumular copias.
       const previa = areas.filter(function (x) { return x.nombre === nombre; })[0];
       const nueva = {
-        id: previa ? previa.id : 'a' + Date.now(), nombre, pts: lista,
+        id: previa ? previa.id : idDeArea(), nombre, pts: lista,
         fecha: new Date().toISOString(), areaM2: Math.round(areaM2(lista))
       };
       escribirAreas([nueva].concat(areas.filter(function (x) { return x.id !== nueva.id; })));
