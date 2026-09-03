@@ -63,7 +63,9 @@
     aviso: '',
     ultimasZonas: null,
     comparacion: null,
-    comparando: false
+    comparando: false,
+    enMapa: false,
+    nombreGuardado: ''
   };
 
   function esc(s) {
@@ -207,6 +209,36 @@
       acc += (b.lng - a.lng) * rad * (2 + Math.sin(a.lat * rad) + Math.sin(b.lat * rad));
     }
     return Math.abs(acc * R * R / 2);
+  }
+
+  /* Centroide del ÁREA, igual que el del servidor: la media de los vértices
+     se iría hacia el lado donde el trazo dejó más puntos. */
+  function centroideDe(pts) {
+    if (!pts || !pts.length) return null;
+    if (pts.length < 3) {
+      return { lat: pts.reduce(function (a, p) { return a + p.lat; }, 0) / pts.length,
+               lng: pts.reduce(function (a, p) { return a + p.lng; }, 0) / pts.length };
+    }
+    var a2 = 0, cx = 0, cy = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i], q = pts[(i + 1) % pts.length];
+      var cruz = p.lng * q.lat - q.lng * p.lat;
+      a2 += cruz; cx += (p.lng + q.lng) * cruz; cy += (p.lat + q.lat) * cruz;
+    }
+    if (Math.abs(a2) < 1e-12) {
+      return { lat: pts.reduce(function (a, p) { return a + p.lat; }, 0) / pts.length,
+               lng: pts.reduce(function (a, p) { return a + p.lng; }, 0) / pts.length };
+    }
+    return { lat: cy / (3 * a2), lng: cx / (3 * a2) };
+  }
+
+  /* El DANE se consulta por punto y radio. Con un área dibujada se usa el
+     radio de un círculo de la MISMA superficie: es una aproximación, y la
+     ficha lo dice donde se muestra el número. */
+  function radioParaDane() {
+    if (S.forma !== 'poligono') return S.radioM;
+    var a = areaDelPoligono();
+    return a > 0 ? Math.max(50, Math.round(Math.sqrt(a / Math.PI))) : S.radioM;
   }
 
   function areaDelPoligono() {
@@ -357,6 +389,119 @@
     return comp;
   }
 
+  // ── Ver los reconocimientos en el mapa ────────────────────────────────
+  // Sirve para una pregunta que la lista no responde: ¿qué parte de la ciudad
+  // ya revisó el curso, y qué parte no? Sobre el mapa se ve de un vistazo;
+  // en una lista de fechas, no.
+  var capaGuardadas = null;
+
+  function verGuardadasEnMapa(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaGuardadas) { try { m.removeLayer(capaGuardadas); } catch (e) {} capaGuardadas = null; }
+    if (!encender) return false;
+
+    var fichas = leerFichas();
+    if (!fichas.length) return false;
+    capaGuardadas = L.layerGroup().addTo(m);
+    var caja = null;
+
+    fichas.forEach(function (f) {
+      var estilo = { color: '#3a3f78', weight: 2, fillColor: '#7b83c9',
+                     fillOpacity: 0.12, dashArray: '4 4' };
+      var forma = (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
+        ? L.polygon(f.poligono.map(function (p) { return [p.lat, p.lng]; }), estilo)
+        : (f.centro && Number.isFinite(f.centro.lat)
+            ? L.circle([f.centro.lat, f.centro.lng], Object.assign({ radius: f.radioM }, estilo))
+            : null);
+      if (!forma) return;
+      var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+      forma.bindTooltip((f.nombre || cuando) + ' · ' + f.total + ' usos', { sticky: true });
+      forma.addTo(capaGuardadas);
+      try { caja = caja ? caja.extend(forma.getBounds()) : forma.getBounds(); } catch (e) {}
+    });
+
+    // Encuadrar en todo lo revisado: si quedan fuera de pantalla, encender la
+    // capa no muestra nada y parece que el botón está roto.
+    if (caja) { try { m.fitBounds(caja.pad(0.15)); } catch (e) {} }
+    return true;
+  }
+
+  // ── El informe para imprimir ──────────────────────────────────────────
+  /* Usa la misma ventana de impresión que el resto de URBIS, pero NO el
+     informe de viabilidad: aquel responde «¿me conviene?» y este responde
+     «¿qué hay?». Meter la ficha en aquella plantilla haría que un
+     reconocimiento pareciera un estudio de mercado. */
+  function htmlImprimible(res, zonas) {
+    var st = res.stats || {}, meta = res.meta || {};
+    var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
+    var nom = (S.nombreGuardado || '').trim();
+    var cuando = new Date().toLocaleString('es-CO');
+    var area = meta.forma === 'poligono'
+      ? 'Área dibujada de ' + formatearArea(meta.areaM2)
+      : 'Radio de ' + meta.radioM + ' m desde ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5);
+
+    function filas(obj, nombrar) {
+      return Object.keys(obj || {})
+        .map(function (k) { return { id: k, n: obj[k] || 0 }; })
+        .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+        .sort(function (a, b) { return b.n - a.n; })
+        .map(function (x) { return '<tr><td>' + esc(nombrar(x.id)) + '</td><td class="n">' + x.n + '</td></tr>'; })
+        .join('');
+    }
+
+    var tareas = (!zonas.vacios.length && !zonas.flojos.length)
+      ? '<p>Los ocho rumbos tienen datos. El trabajo será de verificación y corrección.</p>'
+      : '<ul class="tareas">' +
+          zonas.vacios.map(function (r) { return '<li>Al ' + esc(r.nombre) + ' — sin un solo registro</li>'; }).join('') +
+          zonas.flojos.map(function (f) { return '<li>Al ' + esc(f.rumbo.nombre) + ' — apenas ' + f.n + '</li>'; }).join('') +
+        '</ul>';
+
+    return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+      '<title>Reconocimiento · ' + esc(nom || 'sector') + '</title><style>' +
+      '@page{margin:16mm}' +
+      'body{font:13px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;color:#12202e;margin:0}' +
+      'h1{font-size:21px;margin:0 0 3px;color:#075E88}' +
+      '.sub{color:#5a6472;font-size:12px;margin:0 0 18px}' +
+      'h2{font-size:14px;margin:22px 0 7px;color:#075E88;border-bottom:1px solid #c7e7f7;padding-bottom:4px}' +
+      'table{border-collapse:collapse;width:100%;max-width:340px}' +
+      'td{padding:3px 8px 3px 0;border-bottom:1px solid #eef2f6}' +
+      'td.n{text-align:right;font-weight:700;color:#0A6F9E;width:52px}' +
+      '.kpis{display:flex;gap:22px;margin:0 0 6px}' +
+      '.kpi b{display:block;font-size:19px;color:#0A6F9E}' +
+      '.kpi small{color:#5a6472;font-size:11px}' +
+      '.tareas{margin:0;padding-left:18px}' +
+      '.tareas li{margin-bottom:4px}' +
+      '.check{margin:0;padding-left:18px;list-style:none}' +
+      '.check li{margin-bottom:7px}' +
+      '.check li:before{content:"☐  ";color:#9aa7b4}' +
+      '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
+        'border-radius:6px;font-size:11.5px;color:#4a5568}' +
+      '</style></head><body>' +
+      '<h1>Reconocimiento del sector' + (nom ? ' · ' + esc(nom) : '') + '</h1>' +
+      '<p class="sub">URBIS Pro City · ' + esc(cuando) + ' · ' + esc(area) + '</p>' +
+      '<div class="kpis">' +
+        '<div class="kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+        '<div class="kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') + '</b><small>por hectárea</small></div>' +
+        '<div class="kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
+      '</div>' +
+      '<h2>Qué hay, por categoría</h2><table>' + filas(st.porGrupo, nombreGrupo) + '</table>' +
+      '<h2>Lo más repetido</h2><table>' + filas(st.porSub, function (id) {
+        var t = TAX.filter(function (u) { return u.sub === id; })[0];
+        return t ? t.nombre : id;
+      }) + '</table>' +
+      '<h2>A dónde ir</h2>' + tareas +
+      '<h2>Para verificar en campo</h2><ul class="check">' +
+        '<li>Los usos sin categoría: mirar qué son de verdad.</li>' +
+        '<li>Una muestra de lo más repetido: comprobar que siga abierto.</li>' +
+        '<li>Anotar lo que existe y no aparece acá.</li>' +
+      '</ul>' +
+      '<p class="nota"><b>Esto no es el sector: es lo que OpenStreetMap sabe del sector.</b> ' +
+      'Los datos los pone gente voluntaria, así que están incompletos y a veces desactualizados. ' +
+      'Sirve para llegar con una idea formada, no para reemplazar la salida a campo.</p>' +
+      '</body></html>';
+  }
+
   // ── La hoja ───────────────────────────────────────────────────────────
   function hoja() {
     var el = document.getElementById('pcr-hoja');
@@ -375,6 +520,27 @@
       if (acc === 'volver') { S.resultado = null; S.comparacion = null; S.aviso = ''; S.textoPlano = ''; pintar(); return; }
       if (acc === 'borrar-ficha') { borrarFicha(b.getAttribute('data-id')); pintar(); return; }
       if (acc === 'comparar') { comparar(b.getAttribute('data-id')); return; }
+      if (acc === 'imprimir') {
+        if (!S.resultado || !S.ultimasZonas) return;
+        var caja2 = document.getElementById('pcr-nombre');
+        S.nombreGuardado = caja2 ? String(caja2.value || '').trim() : '';
+        var html = htmlImprimible(S.resultado, S.ultimasZonas);
+        var abrir = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+        if (abrir) { abrir(html); return; }
+        var w = window.open('', '_blank');
+        if (!w) { S.aviso = 'Permite las ventanas emergentes para poder imprimir.'; pintar(); return; }
+        w.document.write(html); w.document.close();
+        setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
+        return;
+      }
+      if (acc === 'ver-mapa') {
+        S.enMapa = !S.enMapa;
+        var pudo = verGuardadasEnMapa(S.enMapa);
+        if (S.enMapa && !pudo) { S.enMapa = false; S.aviso = 'No hay reconocimientos que dibujar.'; }
+        else S.aviso = S.enMapa ? 'Áreas revisadas dibujadas en el mapa. Cerrá esta hoja para verlas.' : '';
+        pintar();
+        return;
+      }
       if (acc === 'radio') { S.radioM = Number(b.getAttribute('data-r')) || RADIO_POR_DEFECTO;
                              S.forma = 'radio'; S.resultado = null; S.error = '';
                              pintarCirculo(); pintar(); return; }
@@ -391,7 +557,12 @@
       if (acc === 'analizar') { analizar(); return; }
       if (acc === 'guardar') {
         if (!S.resultado || !S.ultimasZonas) return;
-        var g = guardarFicha(S.resultado, S.ultimasZonas, '');
+        // Un nombre, porque tres fichas del mismo día son indistinguibles por
+        // la fecha. Si no escribe nada, se guarda igual: obligarlo a nombrar
+        // algo que quizá analiza una sola vez sería cobrarle por adelantado.
+        var caja = document.getElementById('pcr-nombre');
+        var nom = caja ? String(caja.value || '').trim().slice(0, 60) : '';
+        var g = guardarFicha(S.resultado, S.ultimasZonas, nom);
         S.aviso = g.ok
           ? ('Ficha guardada' + (g.recortada ? ' (se borraron las más viejas por falta de espacio)' : '') +
              '. Tenés ' + g.n + ' guardada' + (g.n === 1 ? '' : 's') + '.')
@@ -430,12 +601,61 @@
     S.error = '';
   }
 
+  var grafica = null;
+
+  /* El anillo de categorías, con los colores del catálogo —los mismos del
+     modo empresarial, de donde salen el rosado de salud y el celeste—. Se
+     pinta DESPUÉS de meter el HTML: Chart.js necesita el canvas ya en el
+     documento. Si la librería no cargó, no pasa nada: las barras de abajo
+     cuentan lo mismo. La gráfica es la forma bonita del dato, no el dato. */
+  function pintarGrafica(res) {
+    if (grafica) { try { grafica.destroy(); } catch (e) {} grafica = null; }
+    if (typeof Chart === 'undefined') return;
+    var lienzo = document.getElementById('pcr-donut');
+    if (!lienzo || !res) return;
+
+    var st = res.stats || {};
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
+    var datos = Object.keys(st.porGrupo || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; });
+    if (!datos.length) return;
+
+    try {
+      grafica = new Chart(lienzo, {
+        type: 'doughnut',
+        data: {
+          labels: datos.map(function (x) {
+            var d = G[x.id] || {};
+            return (d.i ? d.i + ' ' : '') + (d.t || d.nombre || x.id) + ' · ' + x.n;
+          }),
+          datasets: [{
+            data: datos.map(function (x) { return x.n; }),
+            backgroundColor: datos.map(function (x) { return COL[x.id] || '#94a3b8'; }),
+            borderColor: '#ffffff', borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '56%',
+          plugins: { legend: { position: 'bottom',
+            labels: { color: '#3f4b5c', font: { size: 10 }, boxWidth: 10, padding: 8 } } }
+        }
+      });
+    } catch (e) {
+      try { console.warn('[URBIS] no se pudo pintar la gráfica:', e); } catch (x) {}
+    }
+  }
+
   function pintar() {
     var h = hoja();
     h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
                 : S.resultado    ? htmlFicha(S.resultado)
                 : htmlAjustes();
     h.classList.toggle('pcr-visible', S.abierto);
+    if (S.resultado && !S.comparacion) pintarGrafica(S.resultado);
+    else if (grafica) { try { grafica.destroy(); } catch (e) {} grafica = null; }
   }
 
   function htmlAjustes() {
@@ -520,7 +740,11 @@
     var hayCampo = puntosDelCurso().length > 0;
 
     return '<div class="pcr-guardadas">' +
-      '<h4 class="pcr-h">Reconocimientos guardados</h4>' +
+      '<div class="pcr-guardadas-cab">' +
+        '<h4 class="pcr-h">Reconocimientos guardados</h4>' +
+        '<button type="button" data-pcr="ver-mapa" class="pcr-mini">' +
+          (S.enMapa ? '🙈 Quitar del mapa' : '🗺️ Ver en el mapa') + '</button>' +
+      '</div>' +
       (hayCampo
         ? '<p class="pcr-pista">Después de la salida a campo, compará: vas a ver cuánto agregó el curso.</p>'
         : '<p class="pcr-pista">Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.</p>') +
@@ -529,7 +753,8 @@
         var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : (f.radioM + ' m');
         return '<div class="pcr-guardada">' +
           '<div class="pcr-guardada-t">' +
-            '<b>' + esc(cuando) + '</b>' +
+            '<b>' + esc(f.nombre || cuando) + '</b>' +
+            (f.nombre ? '<em class="pcr-guardada-f">' + esc(cuando) + '</em>' : '') +
             '<small>' + esc(tam) + ' · ' + f.total + ' usos</small>' +
           '</div>' +
           '<button type="button" data-pcr="comparar" data-id="' + esc(f.id) + '"' +
@@ -593,6 +818,108 @@
     L.push('Esto es lo que OpenStreetMap sabe del sector, no el sector.');
     L.push('Lo pone gente voluntaria: está incompleto y a veces desactualizado.');
     return L.join('\n');
+  }
+
+  /* Población del censo y su proyección. Va ANTES del inventario a propósito:
+     es la mitad del análisis que no depende de cuánto se haya mapeado, así que
+     está completa aunque OpenStreetMap no tenga nada del sector. */
+  function bloquePoblacion(st, esPol) {
+    if (!st || (!st.poblacionCenso && !st.poblacionEstimada)) return '';
+
+    var censal = st.poblacionEsCensal && st.poblacionCenso;
+    var hoy = st.poblacionProyectada || st.poblacionCenso || st.poblacionEstimada;
+    var serie = st.serieProyeccion || [];
+
+    /* La curva, con el mismo criterio que el modo empresarial: SÓLIDO lo que
+       llega hasta hoy, PUNTEADO lo que va hacia adelante. Un dato observado y
+       una estimación no pueden dibujarse igual; si se dibujan igual, el
+       estudiante lee la proyección como si fuera un conteo.
+       Se hace a mano en SVG y no con una librería: son doce puntos y una
+       línea, y así se ve igual sin red. */
+    var curva = '';
+    if (serie.length > 1) {
+      var W = 300, H = 66, pad = 4;
+      var vals = serie.map(function (p) { return p.poblacion; });
+      var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+      var rango = (max - min) || 1;
+      var px = function (i) { return pad + (i / (serie.length - 1)) * (W - pad * 2); };
+      var py = function (v) { return H - pad - ((v - min) / rango) * (H - pad * 2); };
+      var punto = function (p, i) { return (i ? 'L' : 'M') + px(i).toFixed(1) + ' ' + py(p.poblacion).toFixed(1); };
+
+      // Dónde termina lo conocido y empieza el pronóstico.
+      var iFuturo = -1;
+      serie.forEach(function (p, i) { if (iFuturo < 0 && p.futuro) iFuturo = i; });
+      var corte = iFuturo > 0 ? iFuturo - 1 : serie.length - 1;
+
+      var todo = serie.map(punto).join(' ');
+      var solido = serie.slice(0, corte + 1).map(punto).join(' ');
+      var area = solido + ' L' + px(corte).toFixed(1) + ' ' + H + ' L' + px(0).toFixed(1) + ' ' + H + ' Z';
+      var hoyP = serie[corte];
+
+      curva =
+        '<svg class="pcr-curva" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" ' +
+          'aria-label="Curva de población de ' + serie[0].anio + ' a ' + serie[serie.length - 1].anio + '">' +
+          '<path d="' + area + '" fill="rgba(52,204,254,.20)"/>' +
+          '<path d="' + todo + '" fill="none" stroke="#34CCFE" stroke-width="2" ' +
+            'stroke-dasharray="5 3" opacity=".55" vector-effect="non-scaling-stroke"/>' +
+          '<path d="' + solido + '" fill="none" stroke="#34CCFE" stroke-width="2" ' +
+            'stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+          '<circle cx="' + px(0).toFixed(1) + '" cy="' + py(serie[0].poblacion).toFixed(1) + '" r="3.5" fill="#ec4899"/>' +
+          '<circle cx="' + px(corte).toFixed(1) + '" cy="' + py(hoyP.poblacion).toFixed(1) +
+            '" r="3.5" fill="#fff" stroke="#0A6F9E" stroke-width="2"/>' +
+        '</svg>' +
+        '<div class="pcr-curva-eje">' +
+          '<span>' + serie[0].anio + '</span>' +
+          '<span>' + hoyP.anio + '</span>' +
+          '<span>' + serie[serie.length - 1].anio + '</span>' +
+        '</div>';
+    }
+
+    // El pronóstico en números, no solo en dibujo: de dónde viene, dónde está
+    // y a cuánto va. Es lo que un estudiante copia en su informe.
+    var pronostico = '';
+    if (st.poblacionCenso && st.poblacionProyectada && st.censoAnio) {
+      var ultimo = serie.length ? serie[serie.length - 1] : null;
+      pronostico =
+        '<div class="pcr-crece">' +
+          '<div><small>Censo ' + st.censoAnio + '</small><b>' +
+            Number(st.poblacionCenso).toLocaleString('es-CO') + '</b><em>contado</em></div>' +
+          '<span class="pcr-flecha">→</span>' +
+          '<div><small>' + (st.anioProyeccion || '') + '</small><b>' +
+            Number(st.poblacionProyectada).toLocaleString('es-CO') + '</b><em>hoy</em></div>' +
+          (ultimo && ultimo.futuro
+            ? '<span class="pcr-flecha">→</span>' +
+              '<div class="pcr-futuro"><small>' + ultimo.anio + '</small><b>' +
+                Number(ultimo.poblacion).toLocaleString('es-CO') + '</b><em>pronóstico</em></div>'
+            : '') +
+          (st.crecimientoPct != null ? '<span class="pcr-delta">+' + st.crecimientoPct + '%</span>' : '') +
+        '</div>';
+    }
+
+    return '<h4 class="pcr-h">Cuánta gente vive acá</h4>' +
+      '<div class="pcr-pobla">' +
+        '<div class="pcr-pobla-n">' +
+          '<b>' + Number(hoy).toLocaleString('es-CO') + '</b>' +
+          '<small>' + (censal ? 'personas · DANE' : 'personas · estimado') + '</small>' +
+        '</div>' +
+        (st.viviendasCenso
+          ? '<div class="pcr-pobla-n"><b>' + Number(st.viviendasCenso).toLocaleString('es-CO') + '</b><small>viviendas</small></div>'
+          : '') +
+        (st.estrato
+          ? '<div class="pcr-pobla-n"><b>' + esc(String(st.estrato)) + '</b><small>estrato</small></div>'
+          : '') +
+      '</div>' +
+      pronostico +
+      curva +
+      '<p class="pcr-pista">' +
+        (censal
+          ? 'Parte del censo del DANE; lo demás es proyección con su tasa de crecimiento' +
+            (st.tasaAnualDane ? ' (' + (st.tasaAnualDane * 100).toFixed(2) + '% al año)' : '') +
+            '. <b>El tramo punteado es pronóstico hacia adelante</b>, no un dato contado.'
+          : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no un dato observado.') +
+        (esPol ? ' En un área dibujada se consulta por el centro y un radio de superficie equivalente, así que es aproximada.' : '') +
+        (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') +
+      '</p>';
   }
 
   function htmlFicha(res) {
@@ -687,7 +1014,13 @@
           '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
         '</div>' +
 
+        bloquePoblacion(st, esPol) +
+
         '<h4 class="pcr-h">Qué hay, por categoría</h4>' +
+        // El anillo se pinta después, cuando el canvas ya está en el documento.
+        // Si Chart.js no cargó, las barras de abajo siguen contando lo mismo:
+        // la gráfica es la forma bonita del dato, no el dato.
+        (grupos.length ? '<div class="pcr-grafica"><canvas id="pcr-donut" height="190"></canvas></div>' : '') +
         (filas || '<p class="pcr-pista">Ningún uso quedó clasificado en una categoría.</p>') +
         (sinCategoria ? '<p class="pcr-pista">' + sinCategoria + ' punto' + (sinCategoria === 1 ? '' : 's') +
           ' sin categoría reconocida. Suelen ser usos poco comunes: buen material para revisar en campo.</p>' : '') +
@@ -725,9 +1058,15 @@
             : '') +
         '</ul>' +
 
+        '<label class="pcr-lab" for="pcr-nombre">Nombre del sector (opcional)</label>' +
+        '<input id="pcr-nombre" class="pcr-nombre" type="text" maxlength="60" ' +
+          'placeholder="Ej: La Playa, entre calles 8 y 12" ' +
+          'value="' + esc(S.nombreSugerido || '') + '">' +
+
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">💾 Guardar ficha</button>' +
-          '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">📋 Copiar para llevar</button>' +
+          '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">📋 Copiar</button>' +
+          '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">🖨️ PDF</button>' +
         '</div>' +
         (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
         (S.textoPlano ? '<textarea class="pcr-plano" readonly rows="8">' + esc(S.textoPlano) + '</textarea>' : '') +
@@ -764,11 +1103,29 @@
         ? await window.AIA_DATOS.consultarEntornoPoligono(S.poligono)
         : await window.AIA_DATOS.consultarEntorno(S.centro.lat, S.centro.lng, S.radioM);
 
+      // El censo NO depende de lo que OpenStreetMap tenga mapeado: viene del
+      // DANE. Es la mitad del análisis que siempre está completa, y por eso
+      // conviene que el estudiante la vea incluso en un sector sin datos. Si
+      // falla (sin red, o fuera de cobertura), el análisis sigue: se pierde la
+      // población, no la ficha.
+      var eje = esPol ? centroideDe(S.poligono) : S.centro;
+      var ubic = null, dane = null;
+      try {
+        if (window.AIA_DATOS.ubicacionDe) ubic = await window.AIA_DATOS.ubicacionDe(eje.lat, eje.lng);
+      } catch (e) { ubic = null; }
+      try {
+        if (window.AIA_DATOS.consultarDANE) {
+          dane = await window.AIA_DATOS.consultarDANE(
+            eje.lat, eje.lng, radioParaDane(), (ubic && ubic.ciudad) || '');
+        }
+      } catch (e) { dane = null; }
+
       var peticion = {
         elementos: elementos || [],
         tipoEstudio: 'completo',
         proyectoId: 'recomendar',
-        dane: null,
+        direccionAprox: (ubic && ubic.ciudad) || '',
+        dane: dane,
         caminabilidad: null
       };
       if (esPol) {
@@ -810,6 +1167,7 @@
   function htmlComparacion(c) {
     var f = c.ficha;
     var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+    var comoSeLlama = f.nombre ? esc(f.nombre) : 'el sector';
     var aporte = c.totalOsm > 0 ? Math.round(c.nuevos.length / c.totalOsm * 100) : null;
 
     function lista(items, saca) {
@@ -824,7 +1182,8 @@
         '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
       '</div>' +
       '<div class="pcr-cuerpo">' +
-        '<p class="pcr-intro">Reconocimiento del <b>' + esc(cuando) + '</b> contra lo que el curso lleva mapeado en esa misma área.</p>' +
+        '<p class="pcr-intro">Reconocimiento de ' + comoSeLlama + ', del <b>' + esc(cuando) +
+        '</b>, contra lo que el curso lleva mapeado en esa misma área.</p>' +
 
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + c.totalOsm + '</b><small>tenía OSM</small></div>' +

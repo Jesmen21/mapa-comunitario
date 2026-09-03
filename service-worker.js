@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v610-antes-y-despues';
+const URBIS_CACHE = 'urbis-v611-poblacion-y-pronostico';
 const URBIS_ASSETS = [
   './',
   './index.html',
