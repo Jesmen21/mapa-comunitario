@@ -921,6 +921,39 @@
           : 'No se pudo guardar el área.';
         pintar(); return;
       }
+      if (acc === 'comp-copiar') {
+        if (!S.comparacion) return;
+        var txtC = comparacionComoTexto(S.comparacion);
+        var listoC = function () { S.aviso = 'Copiado. Pegalo en el informe del curso.'; pintar(); };
+        var falloC = function () {
+          S.aviso = 'Este navegador no deja copiar solo. Mantené pulsado el texto de abajo.';
+          S.textoPlano = txtC; pintar();
+        };
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtC).then(listoC, falloC);
+          } else falloC();
+        } catch (e) { falloC(); }
+        return;
+      }
+      if (acc === 'comp-pdf') {
+        if (!S.comparacion) return;
+        var htmlC = comparacionImprimible(S.comparacion);
+        var abrirC = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+        if (abrirC) { abrirC(htmlC); return; }
+        var wC = window.open('', '_blank');
+        if (!wC) { S.aviso = 'Permite las ventanas emergentes para poder imprimir.'; pintar(); return; }
+        wC.document.write(htmlC); wC.document.close();
+        setTimeout(function () { try { wC.focus(); wC.print(); } catch (e) {} }, 600);
+        return;
+      }
+      if (acc === 'comp-exp') {
+        var EXPC = window.URBIS_PC_EXPORTAR;
+        var dC = S.comparacion ? datosDeComparacion(S.comparacion) : null;
+        if (!EXPC || !dC) { S.aviso = 'No hay una comparación que exportar.'; pintar(); return; }
+        EXPC.exportar(b.getAttribute('data-f'), dC);
+        return;
+      }
       if (acc === 'cobertura') { analizarCobertura(); return; }
       if (acc === 'cob-mapa') {
         var A4 = window.URBIS_PC_ANALISIS;
@@ -2488,6 +2521,188 @@
     pintar();
   }
 
+  // ── El antes y el después, para llevárselo ────────────────────────────
+  /* La comparación es la conclusión del ejercicio: cuánto agregó el curso al
+     mapa. Hasta ahora solo se podía mirar en la pantalla. Se copia, se
+     imprime y se exporta como todo lo demás, y en el archivo cada punto va
+     teñido por su CONCLUSIÓN —nuevo, confirmado, discrepante, sin
+     verificar—, que es la lectura que se quiere de un vistazo en Google
+     Earth: cuatro colores, cuatro conclusiones. */
+
+  var ESTADO_COMP = {
+    nuevo:        { etq: 'Nuevo del curso',  color: '#eab308' },
+    confirmado:   { etq: 'Confirmado',       color: '#22c55e' },
+    discrepancia: { etq: 'Discrepancia',     color: '#ec4899' },
+    sin_verificar:{ etq: 'Sin verificar',    color: '#94a3b8' }
+  };
+
+  function comparacionComoTexto(c) {
+    var f = c.ficha || {};
+    var L = [];
+    L.push('ANTES Y DESPUÉS — URBIS Pro City');
+    L.push((f.nombre ? f.nombre + ' · ' : '') + new Date().toLocaleString('es-CO'));
+    L.push('Reconocimiento del ' + new Date(f.ts).toLocaleDateString('es-CO') +
+           ' contra lo que el curso lleva mapeado.');
+    L.push('');
+    L.push('OpenStreetMap tenía: ' + c.totalOsm);
+    L.push('El curso mapeó: ' + c.totalCampo);
+    L.push('Usos NUEVOS: ' + c.nuevos.length +
+      (c.totalOsm > 0 ? ' (un ' + Math.round(c.nuevos.length / c.totalOsm * 100) + '% más de lo que había)' : ''));
+    L.push('Confirmados: ' + c.confirmados.length);
+    L.push('Discrepancias: ' + c.discrepancias.length);
+    L.push('Sin verificar: ' + c.sinVerificar.length);
+    L.push('');
+    if (c.nuevos.length) {
+      L.push('LO QUE EL CURSO AGREGÓ AL MAPA');
+      c.nuevos.forEach(function (x) {
+        L.push('  + ' + (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''));
+      });
+      L.push('');
+    }
+    if (c.discrepancias.length) {
+      L.push('DONDE NO COINCIDEN');
+      c.discrepancias.forEach(function (x) {
+        L.push('  ! ' + (x.campo.nombre || 'Sin nombre') + ': el curso dice «' + (x.campo.grupo || '?') +
+               '», OSM dice «' + (x.osm.grupo || '?') + '»');
+      });
+      L.push('');
+    }
+    if (c.sinVerificar.length) {
+      L.push('SIN VERIFICAR (la lista para la próxima salida)');
+      c.sinVerificar.forEach(function (x) {
+        L.push('  [ ] ' + (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''));
+      });
+      L.push('');
+    }
+    L.push('Ninguna de las dos listas es la verdad: OpenStreetMap tiene lo que');
+    L.push('alguien mapeó alguna vez, y el curso lo que alcanzó a caminar. La');
+    L.push('diferencia entre las dos es el valor del trabajo de campo.');
+    return L.join('\n');
+  }
+
+  function comparacionImprimible(c) {
+    var f = c.ficha || {};
+    var aporte = c.totalOsm > 0 ? Math.round(c.nuevos.length / c.totalOsm * 100) : null;
+    function tabla(items, saca) {
+      return '<ul class="check">' + items.map(function (x) {
+        return '<li>' + esc(saca(x)) + '</li>';
+      }).join('') + '</ul>';
+    }
+    return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+      '<title>Antes y después · ' + esc(f.nombre || 'sector') + '</title><style>' +
+      '@page{margin:16mm}' +
+      'body{font:13px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;color:#12202e;margin:0}' +
+      'h1{font-size:21px;margin:0 0 3px;color:#075E88}' +
+      '.sub{color:#5a6472;font-size:12px;margin:0 0 18px}' +
+      'h2{font-size:14px;margin:22px 0 7px;color:#075E88;border-bottom:1px solid #c7e7f7;padding-bottom:4px}' +
+      '.kpis{display:flex;gap:22px;margin:0 0 6px;flex-wrap:wrap}' +
+      '.kpi b{display:block;font-size:19px;color:#0A6F9E}' +
+      '.kpi small{color:#5a6472;font-size:11px}' +
+      '.kpi.oro b{color:#8a6400}' +
+      '.check{margin:0;padding-left:18px;list-style:none}' +
+      '.check li{margin-bottom:5px}' +
+      '.check li:before{content:"☐  ";color:#9aa7b4}' +
+      '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
+        'border-radius:6px;font-size:11.5px;color:#4a5568}' +
+      '</style></head><body>' +
+      '<h1>Antes y después' + (f.nombre ? ' · ' + esc(f.nombre) : '') + '</h1>' +
+      '<p class="sub">URBIS Pro City · ' + esc(new Date().toLocaleString('es-CO')) +
+      ' · reconocimiento del ' + esc(new Date(f.ts).toLocaleDateString('es-CO')) + '</p>' +
+      '<div class="kpis">' +
+        '<div class="kpi"><b>' + c.totalOsm + '</b><small>tenía OSM</small></div>' +
+        '<div class="kpi"><b>' + c.totalCampo + '</b><small>mapeó el curso</small></div>' +
+        '<div class="kpi oro"><b>' + c.nuevos.length + '</b><small>usos nuevos</small></div>' +
+        '<div class="kpi"><b>' + c.confirmados.length + '</b><small>confirmados</small></div>' +
+        '<div class="kpi"><b>' + c.sinVerificar.length + '</b><small>sin verificar</small></div>' +
+      '</div>' +
+      (c.nuevos.length
+        ? '<h2>Lo que el curso agregó al mapa</h2>' +
+          '<p>' + c.nuevos.length + ' usos que no estaban en OpenStreetMap' +
+          (aporte !== null ? ' — un ' + aporte + '% más de lo que había' : '') + '.</p>' +
+          tabla(c.nuevos, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
+        : '<h2>Lo que el curso agregó al mapa</h2><p>Todo lo mapeado ya estaba en OpenStreetMap: el aporte de esta salida fue de verificación.</p>') +
+      (c.discrepancias.length
+        ? '<h2>Donde no coinciden</h2>' +
+          tabla(c.discrepancias, function (x) {
+            return (x.campo.nombre || 'Sin nombre') + ': el curso dice «' + (x.campo.grupo || '?') +
+                   '», OSM dice «' + (x.osm.grupo || '?') + '»';
+          })
+        : '') +
+      (c.sinVerificar.length
+        ? '<h2>Sin verificar — la lista para la próxima salida</h2>' +
+          tabla(c.sinVerificar, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
+        : '') +
+      '<p class="nota"><b>Qué enseña este cuadro.</b> Ninguna de las dos listas es «la verdad». ' +
+      'OpenStreetMap tiene lo que alguien alguna vez mapeó; el curso tiene lo que alcanzó a caminar. ' +
+      'La diferencia entre las dos es, precisamente, el valor del trabajo de campo.</p>' +
+      '</body></html>';
+  }
+
+  function datosDeComparacion(c) {
+    var EXP = window.URBIS_PC_EXPORTAR, A = window.URBIS_PC_ANALISIS;
+    if (!EXP || !A || !c) return null;
+    var f = c.ficha || {};
+    var pts = (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
+      ? f.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; })
+      : (f.centro ? circuloComoContorno(f.centro, f.radioM || 500, 48) : null);
+    if (!pts) return null;
+
+    var puntos = [];
+    function meter(p, estado, extra) {
+      if (!p || !isFinite(p.lat) || !isFinite(p.lng)) return;
+      var reg = {
+        lat: Number(p.lat), lng: Number(p.lng),
+        nombre: p.nombre || 'Sin nombre',
+        grupo: ESTADO_COMP[estado].etq,
+        gid: estado,
+        fuente: (estado === 'sin_verificar') ? 'OpenStreetMap' : 'Mapeo del curso'
+      };
+      if (p.sub) reg.uso = nombreDeSub(p.sub);
+      if (extra) Object.keys(extra).forEach(function (k) { reg[k] = extra[k]; });
+      puntos.push(reg);
+    }
+    c.nuevos.forEach(function (p) { meter(p, 'nuevo'); });
+    c.confirmados.forEach(function (x) { meter(x.campo, 'confirmado', { dist_m: x.distM }); });
+    c.discrepancias.forEach(function (x) {
+      meter(x.campo, 'discrepancia', { dist_m: x.distM, segun_osm: x.osm.grupo || '' });
+    });
+    c.sinVerificar.forEach(function (p) { meter(p, 'sin_verificar'); });
+
+    var colores = {};
+    Object.keys(ESTADO_COMP).forEach(function (k) { colores[k] = ESTADO_COMP[k].color; });
+
+    return {
+      pts: pts, puntos: puntos, geo: null, raster: null, cobertura: [],
+      colores: colores, nombre: f.nombre || '',
+      osm: c.sinVerificar.length, campo: puntos.length - c.sinVerificar.length,
+      areaM2: A.areaM2(pts), perimetroM: A.perimetroM(pts, true)
+    };
+  }
+
+  function bloqueLlevarComparacion(c) {
+    var d = datosDeComparacion(c);
+    return '' +
+      '<h4 class="pcr-h">Llevarse el resultado</h4>' +
+      '<p class="pcr-pista">El cuadro completo, para el informe del curso. En los archivos, cada punto va ' +
+      'teñido por su conclusión: <b>nuevo</b>, confirmado, discrepante o sin verificar.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="comp-copiar" class="pcr-mini pcr-llevar-b">📋 Copiar</button>' +
+        '<button type="button" data-pcr="comp-pdf" class="pcr-mini pcr-llevar-b">🖨️ PDF</button>' +
+      '</div>' +
+      (d
+        ? '<div class="pcr-exp-btns">' +
+            '<button type="button" data-pcr="comp-exp" data-f="paquete" class="pcr-mini pcr-exp-todo">📦 Paquete completo (ZIP)</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="kmz" class="pcr-mini">🌍 KMZ · Google Earth</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="dxf" class="pcr-mini">📐 DXF · AutoCAD</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="svg" class="pcr-mini">🎨 SVG · Corel</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="geojson" class="pcr-mini">🗺️ GeoJSON · QGIS</button>' +
+            '<button type="button" data-pcr="comp-exp" data-f="kml" class="pcr-mini">KML suelto</button>' +
+          '</div>'
+        : '') +
+      (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
+      (S.textoPlano ? '<textarea class="pcr-plano" readonly rows="8">' + esc(S.textoPlano) + '</textarea>' : '');
+  }
+
   function htmlComparacion(c) {
     var f = c.ficha;
     var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
@@ -2540,6 +2755,8 @@
             '<b>Esto no significa que hayan cerrado</b>: lo más probable es que nadie pasara por esas cuadras. Es la lista para la próxima salida.</p>' +
             lista(c.sinVerificar, function (x) { return (x.nombre || 'Sin nombre') + ' · ' + (x.sub || ''); })
           : '') +
+
+        bloqueLlevarComparacion(c) +
 
         '<div class="pcr-nota">' +
           '<b>Qué enseña este cuadro.</b> Ninguna de las dos listas es «la verdad». ' +
@@ -2920,6 +3137,9 @@
     pintarEstratos: pintarEstratos,
     quitarDelMapa: quitarDelMapa,
     compararConCampo: compararConCampo,
+    // La conclusión del ejercicio, en texto y como paquete exportable.
+    comparacionComoTexto: comparacionComoTexto,
+    datosDeComparacion: datosDeComparacion,
     leerFichas: leerFichas,
     guardarFicha: guardarFicha,
     // Cobertura leída de la foto y el paquete que se lleva a otro programa.
