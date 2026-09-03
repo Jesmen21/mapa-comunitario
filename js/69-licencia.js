@@ -341,8 +341,31 @@
     abrir(d.motivo || '');
   });
 
+  /* ── La puerta ────────────────────────────────────────────────────────
+     Pedido explícito: «que puedas ver el mapa, pero si le das algún botón te
+     pida licencia». Hasta ahora la pantalla se abría DESPUÉS de que el
+     servidor rechazara el análisis: el usuario elegía su lote, apretaba
+     analizar, esperaba la ida y vuelta y recién entonces se enteraba de que
+     necesitaba una licencia. Ahora se entera al tocar el botón.
+
+     Solo mira si hay una licencia guardada, sin consultar al servidor: una
+     comprobación por red en cada clic agregaría un segundo de espera a quien
+     SÍ tiene licencia, que es el caso normal. Al servidor no se lo engaña de
+     todas formas —él verifica firma, vencimiento y cupo en cada análisis— y
+     esa segunda barrera sigue en pie: si la licencia guardada está vencida o
+     sin cupo, el 401/403/429 abre esta misma pantalla con el motivo exacto.
+
+     Devuelve true si se puede seguir. Si no, abre la pantalla y devuelve
+     false: quien llama solo tiene que no continuar. */
+  function permitido() {
+    if (guardada()) return true;
+    abrir('ausente');
+    return false;
+  }
+
   window.URBIS_LICENCIA = {
     abrir: abrir,
+    permitido: permitido,
     cerrar: cerrar,
     guardada: guardada,
     comprobar: comprobar,

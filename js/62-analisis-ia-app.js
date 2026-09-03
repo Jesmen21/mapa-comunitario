@@ -952,6 +952,12 @@
 
   async function ejecutarAnalisis(){
     if (!S.lote || S.analizando) return;
+    /* Pedido explícito: se puede ver el mapa y marcar el lote sin licencia;
+       analizarlo, no. Antes la pantalla de licencia aparecía DESPUÉS de que
+       el servidor rechazara la consulta —el cliente elegía, esperaba y solo
+       entonces se enteraba—. Ahora se entera al tocar el botón. */
+    var LIC = window.URBIS_LICENCIA;
+    if (LIC && typeof LIC.permitido === 'function' && !LIC.permitido()) return;
     S.analizando = true;
     refrescarBotonAnalizar();
     setSheetState('analizando');

@@ -2447,6 +2447,15 @@
   // ── El análisis ───────────────────────────────────────────────────────
   async function analizar() {
     if (S.cargando || !listoParaAnalizar()) return;
+    /* La licencia se pide ACÁ, al tocar el botón, y no cuando el servidor
+       rechace la consulta treinta segundos después. Ver el mapa y elegir el
+       sector es gratis; analizarlo es lo que cuesta. */
+    var LIC = window.URBIS_LICENCIA;
+    if (LIC && typeof LIC.permitido === 'function' && !LIC.permitido()) {
+      // La pantalla de licencia se abrió sola; acá no hay nada que decir.
+      cerrar();
+      return;
+    }
     if (!window.AIA_DATOS || !window.AIA_DATOS.consultarEntorno) {
       S.error = 'Falta el módulo de datos (js/61). Recarga la página.'; pintar(); return;
     }
