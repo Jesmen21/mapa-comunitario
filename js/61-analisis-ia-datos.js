@@ -223,6 +223,101 @@
                  construirQueryTrazadoCon(filtroPoligono(pts)), forzar);
   }
 
+  /* ── La altura del terreno ───────────────────────────────────────────
+     Open-Meteo sirve elevaciones sin pedir clave y sin registro, hasta cien
+     coordenadas por consulta. Sale del modelo Copernicus de 90 metros: para
+     un sector de varias hectáreas describe bien el relieve, pero NO sirve
+     para decir la cota exacta de una esquina. El bloque lo dice; callarlo
+     sería vender precisión que no hay.
+
+     Se pide una rejilla y no puntos sueltos porque de una rejilla salen la
+     pendiente, la orientación de la ladera y los perfiles; de puntos sueltos
+     solo salen cotas. */
+  const ELEVACION_API = 'https://api.open-meteo.com/v1/elevation';
+  const ELEV_POR_CONSULTA = 100;
+
+  async function consultarElevacion(puntos, alAvisar){
+    if (!Array.isArray(puntos) || !puntos.length) return [];
+    const cacheKey = 'elev|' + puntos.length + '|' +
+      puntos[0].lat.toFixed(4) + ',' + puntos[0].lng.toFixed(4) + '|' +
+      puntos[puntos.length - 1].lat.toFixed(4) + ',' + puntos[puntos.length - 1].lng.toFixed(4);
+    const guardado = leerCache(cacheKey);
+    if (guardado) return guardado;
+
+    const alturas = [];
+    const lotes = Math.ceil(puntos.length / ELEV_POR_CONSULTA);
+    for (let i = 0; i < puntos.length; i += ELEV_POR_CONSULTA) {
+      const trozo = puntos.slice(i, i + ELEV_POR_CONSULTA);
+      if (typeof alAvisar === 'function') {
+        alAvisar('Midiendo la altura del terreno… ' + (Math.floor(i / ELEV_POR_CONSULTA) + 1) + ' de ' + lotes);
+      }
+      const url = ELEVACION_API +
+        '?latitude=' + trozo.map(p => Number(p.lat).toFixed(5)).join(',') +
+        '&longitude=' + trozo.map(p => Number(p.lng).toFixed(5)).join(',');
+      let d;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('respondió ' + res.status);
+        d = await res.json();
+      } catch (e) {
+        throw new Error('No se pudo consultar la altura del terreno (' + (e.message || e) + ').');
+      }
+      const lista = d && d.elevation;
+      // Una respuesta con menos alturas que puntos desalinearía toda la
+      // rejilla: cada cota quedaría en el sitio de otra y la pendiente
+      // saldría inventada. Mejor fallar acá.
+      if (!Array.isArray(lista) || lista.length !== trozo.length) {
+        throw new Error('El servicio de elevación devolvió ' +
+          ((lista && lista.length) || 0) + ' alturas para ' + trozo.length + ' puntos.');
+      }
+      lista.forEach(v => alturas.push(Number(v)));
+    }
+    guardarCache(cacheKey, alturas);
+    return alturas;
+  }
+
+  /* La rejilla que se le pide: N×N sobre el rectángulo que envuelve al área.
+     Se incluyen también los puntos de FUERA del contorno a propósito — la
+     pendiente de un punto del borde se calcula con sus vecinos, y sin ellos
+     el borde entero quedaría sin pendiente. */
+  function rejillaDe(pts, centro, radioM){
+    let minLat, maxLat, minLng, maxLng;
+    if (Array.isArray(pts) && pts.length >= 3) {
+      minLat = Math.min.apply(null, pts.map(p => p.lat));
+      maxLat = Math.max.apply(null, pts.map(p => p.lat));
+      minLng = Math.min.apply(null, pts.map(p => p.lng));
+      maxLng = Math.max.apply(null, pts.map(p => p.lng));
+    } else {
+      const dLat = radioM / 111320;
+      const dLng = radioM / (111320 * Math.cos(centro.lat * Math.PI / 180));
+      minLat = centro.lat - dLat; maxLat = centro.lat + dLat;
+      minLng = centro.lng - dLng; maxLng = centro.lng + dLng;
+    }
+    // Un poco de margen para que el borde tenga vecinos de verdad.
+    const mLat = (maxLat - minLat) * 0.08, mLng = (maxLng - minLng) * 0.08;
+    minLat -= mLat; maxLat += mLat; minLng -= mLng; maxLng += mLng;
+
+    /* Cuántos puntos por lado. El modelo tiene 90 m de resolución, así que
+       muestrear más fino que eso no agrega información: solo interpola. Se
+       apunta a unos 60 m de paso, con un mínimo de 8 y un máximo de 18 —que
+       son 324 puntos, cuatro consultas—. */
+    const anchoM = (maxLng - minLng) * 111320 * Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
+    const altoM = (maxLat - minLat) * 111320;
+    const lado = Math.max(8, Math.min(18, Math.round(Math.max(anchoM, altoM) / 60)));
+
+    const puntos = [];
+    for (let f = 0; f < lado; f++) {
+      for (let c = 0; c < lado; c++) {
+        puntos.push({
+          lat: maxLat - (maxLat - minLat) * (f / (lado - 1)),
+          lng: minLng + (maxLng - minLng) * (c / (lado - 1))
+        });
+      }
+    }
+    return { filas: lado, columnas: lado, puntos: puntos,
+             limites: { minLat, maxLat, minLng, maxLng } };
+  }
+
   function consultarEntorno(lat, lng, radioM, forzar){
     return traer(claveCache(lat, lng, radioM), construirQuery(lat, lng, radioM), forzar);
   }
@@ -603,5 +698,6 @@
   window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarTrazado, consultarTrazadoPoligono,
+                       consultarElevacion, rejillaDe,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

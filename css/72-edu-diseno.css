@@ -1079,3 +1079,57 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 #urbis-mobile-app .u52-procity-active-folder-btn svg,
 #urbis-mobile-app .u52-procity-view-filter-btn svg,
 #urbis-mobile-app .u52-procity-visual-toggle svg{ display:block; }
+
+/* ── 17. El terreno ──────────────────────────────────────────────────────
+   Los dos cortes del terreno: la silueta llena, la línea encima y una marca
+   bajo el eje para el tramo que cae dentro del área analizada. */
+.pcr-hoja .pcr-perfil, .pcr-pestana .pcr-perfil{
+  display:flex; flex-direction:column; gap:4px; margin:0 0 10px; flex:0 0 auto;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:9px 10px 4px; box-shadow:var(--edu-sombra);
+}
+.pcr-hoja .pcr-perfil svg, .pcr-pestana .pcr-perfil svg{ display:block; overflow:visible; }
+.pcr-perfil-area{ fill:var(--edu-accent-soft); }
+.pcr-perfil-linea{ fill:none; stroke:var(--edu-accent-deep); stroke-width:1.6; stroke-linejoin:round; }
+.pcr-perfil-dentro{ stroke:var(--edu-accent); stroke-width:3; stroke-linecap:round; }
+.pcr-perfil-n{ fill:var(--edu-ink-3); font-size:8px; font-weight:600; font-family:var(--edu-font); }
+
+/* ── 18. Volver al análisis ──────────────────────────────────────────────
+   Con la hoja cerrada el análisis sigue en memoria, pero sin esto no había
+   forma de saberlo: el estudiante cerraba para ver el mapa y volvía a
+   analizar desde cero. Va arriba a la derecha, bajo la cabecera del mapa. */
+#urbis-mobile-app .pcr-volver,
+.pcr-volver{
+  position:fixed; top:96px; right:12px; z-index:2147483200;
+  display:flex; align-items:center; gap:8px; max-width:62vw;
+  padding:8px 12px 8px 10px; border:1px solid var(--edu-accent) !important;
+  border-radius:999px; background:var(--edu-ground) !important;
+  box-shadow:0 8px 22px rgba(10,111,158,.18);
+  color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
+  font-family:var(--edu-font); text-align:left; cursor:pointer;
+  transition:transform .12s ease, box-shadow .16s ease;
+}
+.pcr-volver[hidden]{ display:none !important; }
+.pcr-volver:active{ transform:scale(.96); }
+.pcr-volver .u-ico{ flex:0 0 auto; color:var(--edu-accent-deep); }
+.pcr-volver span{ min-width:0; display:flex; flex-direction:column; }
+.pcr-volver b{
+  font-size:.8rem !important; font-weight:700 !important; line-height:1.15;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pcr-volver small{
+  font-size:.66rem !important; line-height:1.2;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+@media (prefers-reduced-motion:reduce){ .pcr-volver{ transition:none !important; } }
+/* «Analizar otro sector»: la salida desde la ficha hacia la pantalla de
+   elegir área. Discreta y arriba del todo, donde se busca un «atrás». */
+.pcr-hoja .pcr-otro{
+  align-self:flex-start; flex:0 0 auto; margin:0 0 4px;
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  padding:2px 0 !important;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+  font-size:.78rem !important;
+}

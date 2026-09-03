@@ -172,9 +172,19 @@
     return pedir('/trazado', entrada, alAvisar).then(function (r) { return r.datos; });
   }
 
+  /* El terreno va por su propia ruta: recibe una rejilla de cotas —no
+     elementos de OpenStreetMap— y devuelve alturas, pendiente y perfiles. */
+  function terreno(entrada, alAvisar) {
+    if (!disponible()) {
+      return Promise.reject(new Error('El servidor de análisis no está configurado en este navegador.'));
+    }
+    return pedir('/terreno', entrada, alAvisar).then(function (r) { return r.datos; });
+  }
+
   window.AIA_REMOTO = {
     analizar: analizar,
     trazado: trazado,
+    terreno: terreno,
     disponible: disponible,
     licencia: licencia,
     guardarLicencia: function (txt) {

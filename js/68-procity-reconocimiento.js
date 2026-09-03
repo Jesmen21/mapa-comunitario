@@ -69,6 +69,9 @@
     // que uno mueve el mapa para poner el radio donde lo quiere, o dibuja el
     // área. Con la hoja entera encima no se ve dónde se está poniendo.
     encogida: false,
+    // De qué área es el resultado que está en memoria, para no mostrar una
+    // ficha de un sector distinto al que está elegido en el mapa.
+    huellaAnalizada: '',
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -101,6 +104,10 @@
     trazado: null,
     trzCargando: false,
     trzAviso: '',
+    // El terreno, que también se pide a botón.
+    terreno: null,
+    terCargando: false,
+    terAviso: '',
     cobEnMapa: false
   };
 
@@ -313,6 +320,7 @@
       // El trazado no viene del análisis sino de una medición aparte, así que
       // se toma del estado: si el estudiante lo midió, se guarda con la ficha.
       trazado: S.trazado || null,
+      terreno: S.terreno || null,
       forma: meta.forma || 'radio',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
@@ -688,6 +696,25 @@
       '</table>';
   }
 
+  function terrenoImpreso(t) {
+    if (!t) return '';
+    var e = t.elevacion || {}, p = t.pendiente || {};
+    return '<h2>El terreno</h2><table>' +
+      '<tr><td>Cota más baja</td><td class="n">' + e.min + ' msnm</td></tr>' +
+      '<tr><td>Cota más alta</td><td class="n">' + e.max + ' msnm</td></tr>' +
+      '<tr><td>Desnivel</td><td class="n">' + e.relieve + ' m</td></tr>' +
+      '<tr><td>Pendiente media</td><td class="n">' + String(p.media).replace('.', ',') + '%</td></tr>' +
+      '<tr><td>Pendiente máxima</td><td class="n">' + String(p.maxima).replace('.', ',') + '%</td></tr>' +
+      (t.orientacion ? '<tr><td>La ladera baja hacia</td><td class="n">' + esc(t.orientacion.rumbo) + '</td></tr>' : '') +
+      '</table>' +
+      '<table>' + (p.clases || []).map(function (c) {
+        return '<tr><td>' + esc(c.etiqueta) + '</td><td class="n">' + String(c.pct).replace('.', ',') + '%</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="pie">' + esc(t.lectura || '') + ' Alturas de un modelo de ' + t.resolucionM +
+      ' m de paso (' + esc(t.fuente || '') + '): sirve para leer el relieve, no para dar la cota de una ' +
+      'esquina. La medida fina se levanta en campo.</p>';
+  }
+
   function trazadoImpreso(t) {
     if (!t) return '';
     var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
@@ -866,6 +893,7 @@
         return t ? t.nombre : id;
       }) + '</table>' +
       alturasImpresas(st) +
+      terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       rutasImpresas(st) +
       solImpreso(meta) +
@@ -1150,7 +1178,19 @@
         return;
       }
       if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'otro') {
+        // Se suelta el resultado, no el área: quien quiera el mismo sector con
+        // otro radio no tiene que volver a dibujarlo.
+        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
+        S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
+        try {
+          var A5 = window.URBIS_PC_ANALISIS;
+          if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
+        } catch (e) {}
+        pintar(); return;
+      }
       if (acc === 'trazado') { analizarTrazado(); return; }
+      if (acc === 'terreno') { analizarTerreno(); return; }
       if (acc === 'cob-mapa') {
         var A4 = window.URBIS_PC_ANALISIS;
         if (!A4 || !S.cobertura) return;
@@ -1313,13 +1353,20 @@
 
   function pintar() {
     var h = hoja();
+    pintarVolver();
     // La ficha y la comparación se ven enteras: son para leer, no para
     // manipular el mapa.
     /* Con la ficha en pantalla la hoja NO se encoge: es para leer. La
        excepción es el mapa de calor, que se mira en el mapa —con la hoja
        entera encima no se ve nada de lo que se acaba de encender—, así que
        ahí sí baja, y baja mostrando los mismos interruptores. */
-    var encoger = S.encogida && !S.comparacion && (!S.resultado || S.calor.length > 0);
+    /* Encogida con resultado: pasa siempre que haya ALGO puesto en el mapa
+       que valga la pena mirar —el calor, la foto de cobertura o los llenos y
+       vacíos—. Antes solo contaba el calor, así que «Ver en el mapa» del
+       raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
+       el botón y no pasaba nada visible. */
+    var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa;
+    var encoger = S.encogida && !S.comparacion && (!S.resultado || hayCapa);
     h.classList.toggle('pcr-encogida', encoger);
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
     // hoja se quedaba con la clase de encogida y el contenido entero dentro
@@ -1351,16 +1398,36 @@
         '<i></i>' + esc(texto) + (n != null ? ' <b>' + n + '</b>' : '') + '</button>';
     }
 
+    /* La barra encogida tiene que decir QUÉ se está mirando. Decía siempre
+       «Mapa de calor», también cuando lo puesto era la foto de cobertura: el
+       estudiante encendía el raster, la hoja bajaba y el rótulo hablaba de
+       otra cosa. */
+    var capa = S.calor.length
+      ? { icono: 'calor', titulo: 'Mapa de calor', detalle: etiquetaCalor() }
+      : S.cobEnMapa
+        ? { icono: 'satelite', titulo: 'Cobertura del suelo',
+            detalle: (S.cobertura && S.cobertura.clases
+              ? (function () {
+                  var v = S.cobertura.clases.filter(function (c) { return c.id === 'verde'; })[0];
+                  return v ? 'verde ' + v.pct + '% del área' : 'sobre la foto satelital';
+                })()
+              : 'sobre la foto satelital') }
+        : { icono: 'capas', titulo: 'Sobre el mapa', detalle: 'ninguna capa encendida' };
+
     return '' +
       '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Volver al informe"></button>' +
       '<div class="pcr-mini-cuerpo">' +
         '<div class="pcr-mini-fila">' +
           '<div class="pcr-mini-que">' +
-            '<b>' + ico('calor', 16) + 'Mapa de calor</b>' +
-            '<small>' + esc(S.calor.length ? etiquetaCalor() : 'ninguna capa encendida') + '</small>' +
+            '<b>' + ico(capa.icono, 16) + esc(capa.titulo) + '</b>' +
+            '<small>' + esc(capa.detalle) + '</small>' +
           '</div>' +
           '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Volver al informe">⋯</button>' +
         '</div>' +
+        (S.cobEnMapa
+          ? '<button type="button" data-pcr="cob-mapa" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar la foto del mapa</button>'
+          : '') +
         '<div class="pcr-calor-chips">' +
           chip('todos', 'Todos los usos', st.total || 0, null) +
           grupos.map(function (g) { return chip('g:' + g.id, nombreGrupo(g.id), g.n, colorDeGrupo(g.id)); }).join('') +
@@ -1540,6 +1607,18 @@
         L.push('  ' + alt.conDato + ' de ' + alt.edificios + ' edificios traen la altura (' +
                alt.cobertura + '%). El más alto: ' + alt.maximo + ' pisos.');
       }
+      L.push('');
+    }
+    var ter = res.terreno || S.terreno;
+    if (ter) {
+      var te = ter.elevacion || {}, tp = ter.pendiente || {};
+      L.push('EL TERRENO');
+      L.push('  Entre ' + te.min + ' y ' + te.max + ' msnm · ' + te.relieve + ' m de desnivel');
+      L.push('  Pendiente media: ' + tp.media + '% · máxima: ' + tp.maxima + '%');
+      if (ter.orientacion) L.push('  La ladera baja hacia el ' + ter.orientacion.rumbo);
+      (tp.clases || []).forEach(function (c) { L.push('  ' + c.etiqueta + ': ' + c.pct + '%'); });
+      L.push('  ' + ter.lectura);
+      L.push('  Modelo de ' + ter.resolucionM + ' m de paso: para leer el relieve, no para dar cotas.');
       L.push('');
     }
     var trz = res.trazado || S.trazado;
@@ -2293,6 +2372,106 @@
       '</svg>';
   }
 
+  /* El corte del terreno, dibujado. Un perfil es la silueta que se vería si
+     se cortara el sector con un cuchillo por esa línea: el tramo que está
+     DENTRO del área va lleno y el de fuera apenas insinuado, para que se
+     entienda dónde empieza y termina lo analizado. */
+  function perfilDibujado(p) {
+    var pts = (p && p.puntos) || [];
+    if (pts.length < 3) return '';
+    var W = 300, H = 84, mIzq = 30, mAb = 16;
+    var zs = pts.map(function (x) { return x.z; });
+    var zMin = Math.min.apply(null, zs), zMax = Math.max.apply(null, zs);
+    var dMax = pts[pts.length - 1].d || 1;
+    // Con un terreno plano el rango sería cero y todo se dibujaría en una
+    // raya: se le da un mínimo de 10 m para que la silueta se vea.
+    var rango = Math.max(10, zMax - zMin);
+    var X = function (d) { return mIzq + (W - mIzq - 4) * (d / dMax); };
+    var Y = function (z) { return (H - mAb) - (H - mAb - 8) * ((z - zMin) / rango); };
+
+    var linea = pts.map(function (x, i) { return (i ? 'L' : 'M') + X(x.d).toFixed(1) + ' ' + Y(x.z).toFixed(1); }).join(' ');
+    var relleno = linea + ' L' + X(dMax).toFixed(1) + ' ' + (H - mAb) + ' L' + X(0).toFixed(1) + ' ' + (H - mAb) + ' Z';
+    // El tramo de dentro del área, marcado sobre el eje.
+    var dentro = pts.filter(function (x) { return x.dentro; });
+    var marca = dentro.length
+      ? '<path d="M' + X(dentro[0].d).toFixed(1) + ' ' + (H - mAb + 3) + ' L' +
+        X(dentro[dentro.length - 1].d).toFixed(1) + ' ' + (H - mAb + 3) + '" class="pcr-perfil-dentro"/>'
+      : '';
+    return '<div class="pcr-perfil">' +
+      '<span class="pcr-lab">' + esc(p.etiqueta) + '</span>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" preserveAspectRatio="none" ' +
+        'role="img" aria-label="Perfil del terreno ' + esc(p.etiqueta) + '">' +
+        '<path d="' + relleno + '" class="pcr-perfil-area"/>' +
+        '<path d="' + linea + '" class="pcr-perfil-linea"/>' +
+        marca +
+        '<text x="2" y="12" class="pcr-perfil-n">' + Math.round(zMax) + '</text>' +
+        '<text x="2" y="' + (H - mAb) + '" class="pcr-perfil-n">' + Math.round(zMin) + '</text>' +
+        '<text x="' + (W - 4) + '" y="' + (H - 3) + '" class="pcr-perfil-n" text-anchor="end">' +
+          Math.round(dMax) + ' m</text>' +
+      '</svg></div>';
+  }
+
+  /* El terreno. En un lote de ladera esto manda sobre casi todo lo demás:
+     decide por dónde corre el agua, cuánto cuesta construir y qué parte no se
+     puede ocupar. Hasta ahora el análisis no lo miraba. */
+  function bloqueTerreno() {
+    var t = S.terreno;
+    if (!t) {
+      return h4('crecer', 'El terreno') +
+        '<p class="pcr-pista">Alturas, pendiente, hacia dónde baja la ladera y dos cortes del ' +
+        'terreno. Se mide aparte porque hay que consultar la altura de una rejilla de puntos ' +
+        'sobre el área.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="terreno" class="pcr-mini pcr-llevar-b"' +
+            (S.terCargando ? ' disabled' : '') + '>' +
+            (S.terCargando ? 'Midiendo…' : ico('crecer') + 'Medir el terreno') +
+          '</button>' +
+        '</div>' +
+        (S.terCargando ? '<p class="pcr-pista" id="pcr-ter-estado">' + esc(S.terAviso || 'Preparando…') + '</p>' : '') +
+        (S.terAviso && !S.terCargando ? '<p class="pcr-error">' + esc(S.terAviso) + '</p>' : '');
+    }
+
+    var e = t.elevacion || {}, p = t.pendiente || {};
+    var mayor = (p.clases || []).reduce(function (m, x) { return Math.max(m, x.pct); }, 0) || 1;
+    return h4('crecer', 'El terreno') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + e.min + '</b><small>msnm, lo más bajo</small></div>' +
+        '<div class="pcr-kpi"><b>' + e.max + '</b><small>msnm, lo más alto</small></div>' +
+        '<div class="pcr-kpi"><b>' + e.relieve + ' m</b><small>de desnivel</small></div>' +
+      '</div>' +
+      '<p class="pcr-conc">' + esc(t.lectura || '') +
+        ' La pendiente media es del <b>' + String(p.media).replace('.', ',') + '%</b>' +
+        (p.maxima ? ' y llega al ' + String(p.maxima).replace('.', ',') + '%' : '') + '.' +
+        (t.orientacion
+          ? ' El terreno baja sobre todo hacia el <b>' + esc(t.orientacion.rumbo) + '</b> (' +
+            t.orientacion.pct + '% del área): por ahí corre el agua.'
+          : '') + '</p>' +
+
+      '<p class="pcr-lab">Cuánto del área tiene cada pendiente</p>' +
+      '<div class="pcr-niveles">' +
+        (p.clases || []).map(function (c) {
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + esc(c.etiqueta) + '</span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' + Math.round(100 * c.pct / mayor) + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + String(c.pct).replace('.', ',') + '<em>%</em></span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<ul class="pcr-check">' +
+        (p.clases || []).map(function (c) {
+          return '<li><b>' + esc(c.etiqueta) + '</b> — ' + esc(c.que) + '</li>';
+        }).join('') +
+      '</ul>' +
+
+      '<p class="pcr-lab">Cortes del terreno</p>' +
+      (t.perfiles || []).map(perfilDibujado).join('') +
+
+      '<p class="pcr-pista">Las alturas salen de un modelo de <b>' + t.resolucionM + ' metros de paso</b> (' +
+      esc(t.fuente || '') + '). Sirve para leer el relieve del sector; <b>no</b> para dar la cota de una ' +
+      'esquina ni para un diseño: entre dos puntos de la rejilla el terreno puede hacer cualquier cosa. ' +
+      'La medida fina se levanta con topografía en campo.</p>';
+  }
+
   /* Trazado urbano: llenos y vacíos, jerarquía de las vías y morfología. Los
      tres salen de la misma consulta —la que trae la forma de las cosas— así
      que van en un solo bloque, detrás de un solo botón. */
@@ -2729,6 +2908,59 @@
      a botón, como la lectura de la foto satelital y por la misma razón: trae
      la FORMA de cada edificio y cada vía del área, que pesa mucho más que sus
      centros. En un teléfono con datos, eso se pregunta antes de gastarlo. */
+  /* El terreno: alturas, pendiente, hacia dónde baja la ladera y dos
+     perfiles. Como el trazado y la foto satelital, se pide a botón: son tres
+     consultas a un servicio de elevación, y eso no se gasta sin permiso. */
+  function analizarTerreno() {
+    var D = window.AIA_DATOS;
+    if (!D || !D.consultarElevacion || !window.AIA_REMOTO || !window.AIA_REMOTO.terreno) {
+      S.terAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+    }
+    if (!listoParaAnalizar()) { S.terAviso = 'Primero elegí el área.'; pintar(); return; }
+
+    var esPol = S.forma === 'poligono';
+    S.terCargando = true; S.terAviso = 'Preparando la rejilla de alturas…';
+    pintar();
+
+    var rej;
+    try {
+      rej = D.rejillaDe(esPol ? S.poligono : null, esPol ? null : S.centro, S.radioM);
+    } catch (e) {
+      S.terCargando = false; S.terAviso = 'No se pudo armar la rejilla.'; pintar(); return;
+    }
+
+    D.consultarElevacion(rej.puntos, function (txt) {
+      S.terAviso = txt;
+      var caja = document.getElementById('pcr-ter-estado');
+      if (caja) caja.textContent = txt;
+    }).then(function (alturas) {
+      var puntos = rej.puntos.map(function (p, i) {
+        return { lat: p.lat, lng: p.lng, elev: alturas[i] };
+      });
+      var peticion = { rejilla: { filas: rej.filas, columnas: rej.columnas, puntos: puntos } };
+      if (esPol) {
+        peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
+      } else {
+        peticion.radioM = S.radioM;
+        peticion.centro = { lat: S.centro.lat, lng: S.centro.lng };
+      }
+      return window.AIA_REMOTO.terreno(peticion);
+    }).then(function (res) {
+      S.terreno = res; S.terCargando = false; S.terAviso = '';
+      try {
+        if (S.fichaActualId && S.resultado) {
+          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
+                       S.nombreGuardado || '', S.fichaActualId);
+        }
+      } catch (e) {}
+      pintar();
+    }).catch(function (e) {
+      S.terCargando = false;
+      S.terAviso = (e && e.message) || 'No se pudo medir el terreno.';
+      pintar();
+    });
+  }
+
   function analizarTrazado() {
     if (!window.AIA_DATOS || !window.AIA_REMOTO || !window.AIA_REMOTO.trazado) {
       S.trzAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
@@ -3063,6 +3295,12 @@
       barra('Modo educativo · Reconocimiento', 'Lo que hay ' + (esPol ? 'en el área' : 'en el sector'), 'lupa') +
       '<div class="pcr-cuerpo">' +
 
+        /* Desde que la ficha sobrevive a cerrar la hoja, hace falta una salida
+           clara hacia la pantalla de elegir área: sin ella, quien quisiera
+           analizar OTRO sector no tenía por dónde. */
+        '<button type="button" data-pcr="otro" class="pcr-mini pcr-otro">' +
+          ico('atras', 16) + 'Analizar otro sector</button>' +
+
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
           '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
@@ -3091,6 +3329,7 @@
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
         bloqueAlturas(st) +
+        bloqueTerreno() +
         bloqueTrazado() +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
@@ -3259,6 +3498,7 @@
       // resultado en vez de volver a pedirla, y así viaja también a la ficha.
       if (ubic) res.ubicacion = ubic;
       S.resultado = res;
+      S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
       // La cobertura leída era la del sector ANTERIOR: dejarla puesta sería
       // mostrar el verde de otra parte junto a los datos de esta.
       S.cobertura = null; S.cobAviso = ''; S.cobEnMapa = false;
@@ -3580,18 +3820,83 @@
   }
 
   // ── Entrada y salida ──────────────────────────────────────────────────
+  /* La huella del área analizada, para saber si la que hay ahora es la misma.
+     Con los vértices redondeados: mover el mapa un metro no es cambiar de
+     sector. */
+  function huellaDelArea(forma, poligono, centro, radioM) {
+    if (forma === 'poligono' && poligono && poligono.length >= 3) {
+      return 'p|' + poligono.map(function (p) {
+        return p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+      }).join(';');
+    }
+    if (centro) return 'r|' + centro.lat.toFixed(5) + ',' + centro.lng.toFixed(5) + '|' + radioM;
+    return '';
+  }
+
   function abrir() {
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
     S.abierto = true;
-    S.resultado = null;
     S.error = '';
     // Si viene de dibujar un área, esa es la que quiere analizar. Obligarlo a
     // elegirla de nuevo sería no haber mirado lo que acababa de hacer.
     var pol = poligonoDeProCity();
     if (pol) { S.poligono = pol; S.forma = 'poligono'; }
     if (!S.centro) tomarCentro();
+    /* El análisis SOBREVIVE a cerrar la hoja. Antes no: al volver a entrar por
+       la lupa se borraba, y el estudiante tenía que volver a consultar la red
+       y esperar por algo que ya había hecho hace un minuto. Solo se descarta
+       si el área cambió —otro polígono, otro centro, otro radio—, porque
+       entonces la ficha hablaría de un sector que ya no es el que está
+       elegido, y eso es peor que perderla. */
+    var ahora = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
+    /* Y si el área dibujada se borró desde Pro City, la ficha habla de algo
+       que ya no está seleccionado: también se descarta. Se pregunta al módulo
+       de análisis y solo se hace caso cuando está cargado —si no lo está, no
+       sabemos nada y borrar sería peor que esperar—. */
+    var A0 = window.URBIS_PC_ANALISIS;
+    var areaBorrada = !!(A0 && typeof A0.hayArea === 'function' &&
+                         !A0.hayArea() && S.huellaAnalizada.slice(0, 2) === 'p|');
+    if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
+      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
+      S.cobertura = null; S.cobEnMapa = false; S.calor = [];
+    }
+    if (!S.centro) tomarCentro();
     pintarCirculo();
     pintar();
+  }
+
+  /* El acceso directo para volver. Con la hoja cerrada, el análisis sigue en
+     memoria pero no hay ni una señal de que exista: el estudiante cierra para
+     ver el mapa y ya no sabe cómo volver sin repetirlo todo. Este botón está
+     mientras haya algo a lo que volver, y desaparece cuando no. */
+  function volverBtn() {
+    var el = document.getElementById('pcr-volver');
+    if (!el) {
+      el = document.createElement('button');
+      el.id = 'pcr-volver';
+      el.type = 'button';
+      el.className = 'pcr-volver';
+      el.addEventListener('click', function () { S.encogida = false; abrir(); });
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function pintarVolver() {
+    var el = volverBtn();
+    var hay = !!S.resultado && !S.abierto && !!window.urbisProCityActivo;
+    el.hidden = !hay;
+    if (!hay) return;
+    var st = (S.resultado.stats) || {};
+    var nombre = (S.nombreGuardado || '').trim();
+    el.innerHTML = ico('lupa', 18) +
+      '<span><b>' + esc(nombre || 'Volver al análisis') + '</b>' +
+      '<small>' + (st.total || 0) + ' usos · ' +
+      (S.resultado.meta && S.resultado.meta.forma === 'poligono'
+        ? esc(formatearArea(S.resultado.meta.areaM2) || 'área dibujada')
+        : (S.radioM >= 1000 ? (S.radioM / 1000) + ' km' : S.radioM + ' m')) +
+      '</small></span>';
+    el.setAttribute('aria-label', 'Volver al análisis del sector, sin repetirlo');
   }
 
   function cerrar() {
@@ -3603,6 +3908,7 @@
 
     var h = document.getElementById('pcr-hoja');
     if (h) h.classList.remove('pcr-visible');
+    pintarVolver();
   }
 
   // ── La pestaña «Sector» ───────────────────────────────────────────────
@@ -3649,7 +3955,7 @@
     var st = f.stats;
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
-    var trzAntes = S.trazado;
+    var trzAntes = S.trazado, terAntes = S.terreno;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -3689,8 +3995,10 @@
         // Con el trazado guardado, las alturas salen de su muestra —la
         // completa— igual que en la ficha viva.
         S.trazado = f.trazado || null;
-        var html = bloqueAlturas(st) + (f.trazado ? bloqueTrazado() : '');
-        S.trazado = trzAntes;
+        S.terreno = f.terreno || null;
+        var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
+                   (f.trazado ? bloqueTrazado() : '');
+        S.trazado = trzAntes; S.terreno = terAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -3950,8 +4258,9 @@
       if (!f) return true;
       var htmlG = htmlImprimible(comoResultado(f), comoZonas(f),
                                  { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null,
-                                   // El trazado de ESTA ficha, no el del último sector medido.
-                                   trazado: f.trazado || null });
+                                   // El trazado y el terreno de ESTA ficha, no los del
+                                   // último sector medido.
+                                   trazado: f.trazado || null, terreno: f.terreno || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
