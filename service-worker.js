@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v625-llevarse-la-conclusion';
+const URBIS_CACHE = 'urbis-v626-sector-que-vale-solo';
 const URBIS_ASSETS = [
   './',
   './index.html',

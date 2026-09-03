@@ -535,8 +535,8 @@
      informe de viabilidad: aquel responde «¿me conviene?» y este responde
      «¿qué hay?». Meter la ficha en aquella plantilla haría que un
      reconocimiento pareciera un estudio de mercado. */
-  function coberturaImpresa() {
-    var c = S.cobertura;
+  function coberturaImpresa(cob) {
+    var c = cob || S.cobertura;
     if (!c || !c.clases) return '';
     var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; });
     return '<h2>Cobertura del suelo (foto satelital)</h2>' +
@@ -609,10 +609,15 @@
       }).join('') + '</ul>';
   }
 
-  function htmlImprimible(res, zonas) {
+  /* `opts` deja imprimir algo que NO es lo que está en pantalla: un sector
+     guardado, semanas después, desde la pestaña. Sin esto el PDF de una ficha
+     vieja salía con el nombre y la cobertura del último análisis hecho, que
+     es peor que no tener el botón. */
+  function htmlImprimible(res, zonas, opts) {
+    var o = opts || {};
     var st = res.stats || {}, meta = res.meta || {};
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
-    var nom = (S.nombreGuardado || '').trim();
+    var nom = String(o.nombre !== undefined ? o.nombre : (S.nombreGuardado || '')).trim();
     var cuando = new Date().toLocaleString('es-CO');
     var area = meta.forma === 'poligono'
       ? 'Área dibujada de ' + formatearArea(meta.areaM2)
@@ -675,7 +680,7 @@
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
       }) + '</table>' +
-      coberturaImpresa() +
+      coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
       contextoImpreso(st) +
 
       '<h2>A dónde ir</h2>' + tareas +
@@ -1324,6 +1329,36 @@
       zonas.flojos.forEach(function (f) { L.push('  [ ] Al ' + f.rumbo.nombre + ' — apenas ' + f.n); });
     }
     L.push('');
+    var up = st.usoPredominante;
+    if (up) {
+      L.push('QUÉ MANDA EN EL SECTOR');
+      Object.keys(up).filter(function (k) { return up[k] > 0; })
+        .sort(function (a, b) { return up[b] - up[a]; })
+        .forEach(function (k) {
+          L.push('  ' + (NOMBRE_USO[k] || k).replace(/^\S+\s/, '') + ': ' + up[k] + '%');
+        });
+      L.push('');
+    }
+    var mv = st.movilidad;
+    if (mv) {
+      L.push('CÓMO SE LLEGA');
+      L.push('  ' + (mv.viaPrincipal
+        ? 'Vía principal: ' + (mv.viaPrincipal.nombre || 'sin nombre') +
+          (mv.viaPrincipal.distM != null ? ' (a ' + mv.viaPrincipal.distM + ' m)' : '')
+        : 'Sin vías con nombre registradas'));
+      L.push('  ' + (mv.nViasArterias || 0) + ' corredores · ' + (mv.paradasBus || 0) +
+             ' paradas de bus · ' + (mv.ciclorrutas || 0) + ' tramos de ciclorruta');
+      L.push('  Facilidad para llegar: ' + (mv.scoreAcceso || 0) + '/100 · exposición al tránsito: ' +
+             (mv.exposicion || 0) + '/100');
+      L.push('');
+    }
+    var am = st.ambiente;
+    if (am) {
+      L.push('VERDE Y AGUA');
+      L.push('  ' + (am.parques || 0) + ' parques · ' + (am.cuerposAgua || 0) + ' cuerpos de agua · ' +
+             (am.verdeNatural || 0) + ' manchas de verde · presencia de verde ' + (am.scoreVerde || 0) + '/100');
+      L.push('');
+    }
     var cobTxt = S.cobertura || (st && st.cobertura);
     if (cobTxt && cobTxt.clases) {
       L.push('COBERTURA DEL SUELO (foto satelital)');
@@ -2834,6 +2869,31 @@
     } catch (e) { return ''; }
   }
 
+  /* Una ficha guardada, con la forma que esperan los bloques que se
+     escribieron para un resultado recién traído. Son los mismos datos con
+     otro envoltorio: sin esto habría que duplicar el plan, el impreso y el
+     texto, uno para lo vivo y otro para lo guardado. */
+  function comoResultado(f) {
+    return {
+      stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
+      pois: f.pois || [],
+      meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
+              poligono: f.poligono || null,
+              lat: f.centro && f.centro.lat, lng: f.centro && f.centro.lng }
+    };
+  }
+  function comoZonas(f) {
+    if (!f.zonas) return { vacios: [], flojos: [], total: (f.pois || []).length };
+    return {
+      vacios: (f.zonas.vacios || []).map(function (x) { return { id: x.id, nombre: x.nombre }; }),
+      flojos: (f.zonas.flojos || []).map(function (x) {
+        return { rumbo: { id: x.id, nombre: x.nombre }, n: x.n };
+      }),
+      total: f.zonas.total != null ? f.zonas.total : (f.pois || []).length,
+      concentracion: null
+    };
+  }
+
   function informeGuardado(f) {
     var st = f.stats;
     if (!st) {
@@ -2875,6 +2935,9 @@
       bloqueNucleos(st) +
       bloqueAnillos(st, esPol) +
       bloqueRubros(st) +
+      // El reparto de la salida, reconstruido de lo guardado: es lo que se
+      // imprime la víspera para repartir a la mañana siguiente.
+      bloquePlan(comoResultado(f), comoZonas(f)) +
       (z && (z.vacios.length || z.flojos.length)
         ? '<h4 class="pcr-h">A dónde ir</h4><ul class="pcr-tareas">' +
           z.vacios.map(function (r) { return '<li><b>Al ' + esc(r.nombre) + '</b> — sin un solo registro</li>'; }).join('') +
@@ -2990,6 +3053,8 @@
                     : '') +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-copiar" data-id="' +
                     esc(f.id) + '">📋 Copiar</button>' +
+                  '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-pdf" data-id="' +
+                    esc(f.id) + '">🖨️ PDF</button>' +
                   (hayCampo
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-comparar" data-id="' +
                       esc(f.id) + '">📊 Comparar con el campo</button>'
@@ -3096,19 +3161,24 @@
       try { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); } catch (e) {}
       return true;
     }
+    if (name === 'pdf') {
+      if (!f) return true;
+      var htmlG = htmlImprimible(comoResultado(f), comoZonas(f),
+                                 { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null });
+      var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+      if (abrirG) { abrirG(htmlG); return true; }
+      var wG = window.open('', '_blank');
+      if (!wG) {
+        S.avisoPestana = 'Permití las ventanas emergentes para poder imprimir.';
+        repintar(); return true;
+      }
+      wG.document.write(htmlG); wG.document.close();
+      setTimeout(function () { try { wG.focus(); wG.print(); } catch (e) {} }, 600);
+      return true;
+    }
     if (name === 'copiar') {
       if (!f) return true;
-      var txt = fichaComoTexto(
-        { stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
-          pois: f.pois || [],
-          meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
-                  lat: f.centro && f.centro.lat, lng: f.centro && f.centro.lng } },
-        f.zonas
-          ? { vacios: (f.zonas.vacios || []),
-              flojos: (f.zonas.flojos || []).map(function (x) {
-                return { rumbo: { id: x.id, nombre: x.nombre }, n: x.n };
-              }) }
-          : { vacios: [], flojos: [] });
+      var txt = fichaComoTexto(comoResultado(f), comoZonas(f));
       var ok = function () { S.avisoPestana = 'Copiado. Pegalo en tus notas o en un chat.'; repintar(); };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, ok);
