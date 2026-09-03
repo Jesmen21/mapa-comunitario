@@ -60,6 +60,33 @@
     return quitadas;
   }
 
+  /* Una salida. En modo educativo la aplicación arranca DENTRO de Pro City y
+     su barra de abajo es la del módulo —ubicación, categoría, mapa, mapeado—:
+     no hay ningún camino de vuelta al perfil, así que tampoco hay forma de
+     cerrar sesión. En la aplicación completa eso no pasa porque siempre se
+     puede volver al inicio; acá el inicio no existe.
+
+     Se añade un botón flotante junto a los otros del mapa, con la misma
+     forma y el mismo sitio que ya usan la lupa y el lápiz, para que no
+     parezca un parche. Va DENTRO de la app —no suelto en el documento— para
+     que lo atienda el mismo despachador de clics que a los demás. */
+  var BOTON_PERFIL = 'u70-perfil-btn';
+
+  function ponerSalida() {
+    if (MODO !== 'educativo') return;
+    if (document.getElementById(BOTON_PERFIL)) return;
+    var hermano = document.querySelector('.u52-procity-recon-btn');
+    if (!hermano || !hermano.parentNode) return;
+    var b = document.createElement('button');
+    b.id = BOTON_PERFIL;
+    b.type = 'button';
+    b.className = 'u52-procity-perfil-btn';
+    b.setAttribute('data-u52-go', 'profile');
+    b.setAttribute('aria-label', 'Mi perfil y cerrar sesión');
+    b.textContent = '👤';
+    hermano.parentNode.insertBefore(b, hermano.nextSibling);
+  }
+
   /* Y el módulo propio se abre solo. Se hace pulsando SU botón, no llamando a
      la función por dentro: así pasa por el mismo camino que usa una persona
      —permisos, mapa, estado— y no por un atajo que se desincronizaría con el
@@ -101,6 +128,7 @@
   function revisar() {
     pendiente = false;
     podarInicio();
+    ponerSalida();
     if (yaAbrio) return;
     // Si ya está abierto (lo abrió el clic anterior y esto es solo el DOM
     // acomodándose), no hay nada que hacer.

@@ -18,3 +18,31 @@
 
 /* ── Modo ciudadano: sin los módulos profesionales ─────────────────── */
 [data-urbis-modo="ciudadano"] .u52-premium-module{ display:none !important; }
+
+/* ── La salida del modo educativo ──────────────────────────────────────
+   La app educativa arranca DENTRO de Pro City, y la barra de abajo es la
+   del módulo: ubicación, categoría, mapa, mapeado. No hay camino de vuelta
+   al perfil, así que tampoco había forma de cerrar sesión — en la app
+   completa eso no pasa porque siempre se puede volver al inicio, pero acá
+   el inicio no existe.
+
+   Mismo tamaño, misma esquina y misma familia visual que la lupa y el
+   lápiz, un escalón más arriba. En celeste lleno y no en blanco con borde,
+   porque no es una herramienta de análisis: es la puerta. */
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-perfil-btn,
+#urbis-mobile-app .u52-procity-perfil-btn{
+  position:absolute !important; z-index:2147483200 !important;
+  right:16px !important; bottom:calc(400px + env(safe-area-inset-bottom,0px)) !important;
+  width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+  display:grid !important; place-items:center !important; font-size:1.25rem !important;
+  background:#34CCFE !important; color:#06344a !important;
+  -webkit-text-fill-color:#06344a !important;
+  box-shadow:0 12px 24px rgba(14,134,190,.28) !important;
+  pointer-events:auto !important; cursor:pointer;
+  transition:transform .18s ease !important;
+}
+#urbis-mobile-app .u52-procity-perfil-btn:active{ transform:scale(.92) !important; }
+/* Solo en modo educativo: en la app completa se llega al perfil por el
+   inicio, y un botón más sobre el mapa sería estorbo. */
+#urbis-mobile-app .u52-procity-perfil-btn{ display:none !important; }
+[data-urbis-modo="educativo"] #urbis-mobile-app .u52-procity-perfil-btn{ display:grid !important; }
