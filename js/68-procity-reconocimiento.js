@@ -72,6 +72,10 @@
     // De qué área es el resultado que está en memoria, para no mostrar una
     // ficha de un sector distinto al que está elegido en el mapa.
     huellaAnalizada: '',
+    // La comparación con lo que mapeó el curso, hecha sobre el área que está
+    // en pantalla. Se pide a botón como el terreno o el clima: cuesta una
+    // consulta y no siempre hay puntos del curso que comparar.
+    campo: null, campoCargando: false, campoAviso: '',
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -333,6 +337,31 @@
       trazado: S.trazado || null,
       terreno: S.terreno || null,
       clima: S.clima || null,
+      /* La comparación con el campo, en versión corta: las cuentas y unos
+         pocos nombres. Guardar las cuatro listas enteras duplicaría todos los
+         puntos del sector dentro de la ficha, y lo que se lee después son las
+         cifras. */
+      campo: S.campo ? {
+        nuevos: (S.campo.nuevos || []).slice(0, 20).map(function (x) {
+          return { lat: x.lat, lng: x.lng, nombre: x.nombre || '', grupo: x.grupo || 'otro' };
+        }),
+        // De confirmados y sin verificar solo se lee la cantidad: se guardan
+        // vacíos para no duplicar cada punto del sector dentro de la ficha.
+        confirmados: (S.campo.confirmados || []).map(function () { return {}; }),
+        /* Se guarda con la MISMA forma que tiene viva —{campo, osm}— y no con
+           una propia. Un segundo formato obliga a que cada sitio que lo lea
+           sepa de cuál de los dos viene, y ese es el tipo de detalle que se
+           olvida y rompe la ficha guardada meses después. */
+        discrepancias: (S.campo.discrepancias || []).slice(0, 10).map(function (d) {
+          return {
+            campo: { nombre: (d.campo && d.campo.nombre) || '', grupo: (d.campo && d.campo.grupo) || 'otro' },
+            osm: { nombre: (d.osm && d.osm.nombre) || '', grupo: (d.osm && d.osm.grupo) || 'otro' },
+            distM: d.distM || 0
+          };
+        }),
+        sinVerificar: (S.campo.sinVerificar || []).map(function () { return {}; }),
+        cuando: new Date().toISOString()
+      } : null,
       forma: meta.forma || 'radio',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
@@ -803,6 +832,26 @@
       'que está dentro del área y lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
   }
 
+  function campoImpreso(c) {
+    if (!c) return '';
+    var nv = (c.nuevos || []).length, ds = (c.discrepancias || []).length;
+    var cf = (c.confirmados || []).length, sv = (c.sinVerificar || []).length;
+    return '<h2>Lo levantado en campo</h2><table>' +
+      '<tr><td>Coinciden con el mapa</td><td class="n">' + cf + '</td></tr>' +
+      '<tr><td>Encontrados por el curso, no estaban</td><td class="n">' + nv + '</td></tr>' +
+      '<tr><td>No coinciden: hay que corregir el mapa</td><td class="n">' + ds + '</td></tr>' +
+      '<tr><td>Del mapa, sin verificar en la calle</td><td class="n">' + sv + '</td></tr>' +
+      '</table>' +
+      (nv
+        ? '<p class="pie">Lo que el curso agrega: ' +
+          (c.nuevos || []).slice(0, 12).map(function (n2) {
+            return esc(n2.nombre || 'sin nombre');
+          }).join(' · ') + (nv > 12 ? ' y ' + (nv - 12) + ' más' : '') + '.</p>'
+        : '') +
+      '<p class="pie">«Sin verificar» no es «cerrado»: es que nadie pasó por ahí. Se considera el ' +
+      'mismo sitio a menos de ' + MISMO_SITIO_M + ' m, comparando la categoría y no el nombre.</p>';
+  }
+
   function perfilImpreso(t) {
     var p = t && t.perfil;
     if (!p) return '';
@@ -960,6 +1009,7 @@
     var o = opts || {};
     var st = res.stats || {}, meta = res.meta || {};
     var ubic = res.ubicacion || o.ubicacion || null;
+    var cmp = o.campo !== undefined ? o.campo : S.campo;
     var ter = o.terreno !== undefined ? o.terreno : S.terreno;
     var cli = o.clima !== undefined ? o.clima : S.clima;
     var trz = o.trazado !== undefined ? o.trazado : S.trazado;
@@ -1003,6 +1053,11 @@
             return { lat: p.lat, lng: p.lng, color: p.color || COL[p.grupo] || null };
           }),
           huellas: huellas || null,
+          // Lo que el curso encontró y no estaba: en rombo, para que se
+          // distinga del resto incluso impreso en blanco y negro.
+          destacados: (cmp && cmp.nuevos ? cmp.nuevos : []).map(function (n3) {
+            return { lat: n3.lat, lng: n3.lng, color: COL[n3.grupo] || '#34CCFE' };
+          }),
           etiqueta: 'Plano del sector analizado'
         })
       : '';
@@ -1091,6 +1146,8 @@
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
       '.cv{ font-size:3mm; color:#3B4A5A; display:inline-flex; align-items:center; gap:1.5mm }' +
       '.cv i{ width:2.6mm; height:2.6mm; border-radius:50%; display:inline-block }' +
+      '.cv i.rombo{ border-radius:0; transform:rotate(45deg); background:#34CCFE;' +
+        'box-shadow:0 0 0 .25mm #0F1F2E }' +
       '.cv b{ color:#0F1F2E }' +
       // Cifras grandes
       '.kpis{ display:flex; gap:5mm; flex-wrap:wrap }' +
@@ -1176,7 +1233,14 @@
       '<div class="rej">' +
 
         caja('Plano del sector', (plano ? '<div class="plano">' + plano + '</div>' : '') +
-          (conv ? '<div class="conv">' + conv + '</div>' : '') +
+          (conv
+            ? '<div class="conv">' + conv +
+              (cmp && (cmp.nuevos || []).length
+                ? '<span class="cv"><i class="rombo"></i>Encontrado por el curso <b>' +
+                  cmp.nuevos.length + '</b></span>'
+                : '') +
+              '</div>'
+            : '') +
           (huellas && huellas.length
             ? '<p class="nota">Las manchas oscuras son las huellas de los edificios registrados; ' +
               'los puntos, los usos mapeados, con el color de su categoría.</p>'
@@ -1382,6 +1446,27 @@
               'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
           })(), 'g3') +
 
+        caja('Lo levantado en campo',
+          (function () {
+            if (!cmp) return '';
+            var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length;
+            var cf = (cmp.confirmados || []).length, sv = (cmp.sinVerificar || []).length;
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + cf + '</b><small>coinciden</small></div>' +
+                '<div class="k"><b>' + nv + '</b><small>los encontró el curso</small></div>' +
+                '<div class="k"><b>' + ds + '</b><small>no coinciden</small></div>' +
+              '</div>' +
+              fila('Del mapa, sin verificar en la calle', sv) +
+              (nv
+                ? '<p class="lee">Lo que el curso le devuelve al mapa: ' +
+                  esc((cmp.nuevos || []).slice(0, 6).map(function (n6) {
+                    return n6.nombre || 'sin nombre';
+                  }).join(' · ')) + (nv > 6 ? ' y ' + (nv - 6) + ' más' : '') + '.</p>'
+                : '') +
+              '<p class="nota">«Sin verificar» no es «cerrado»: es que nadie pasó por ahí. Mismo ' +
+              'sitio a menos de ' + MISMO_SITIO_M + ' m, comparando la categoría y no el nombre.</p>';
+          })(), 'g3') +
+
         caja('Síntesis del sector',
           (function () {
             var sn = sintesisDelSector(res);
@@ -1500,6 +1585,7 @@
       perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
       accesibilidadImpresa(st) +
+      campoImpreso(o.campo !== undefined ? o.campo : S.campo) +
       sintesisImpresa(res) +
       rutasImpresas(st) +
       solImpreso(meta) +
@@ -1682,6 +1768,7 @@
         abrirImpresion(laminaImprimible(S.resultado), function (m) { S.aviso = m; pintar(); });
         return;
       }
+      if (acc === 'campo') { analizarCampo(); return; }
       if (acc === 'estratos') { alternarEstratos(); return; }
       if (acc === 'ver-mapa') {
         S.enMapa = !S.enMapa;
@@ -3642,6 +3729,20 @@
       } catch (err) {}
     }
 
+    // ── Lo levantado en campo
+    var cp = S.campo;
+    if (cp) {
+      var nv = (cp.nuevos || []).length, ds = (cp.discrepancias || []).length;
+      var cf = (cp.confirmados || []).length, sv = (cp.sinVerificar || []).length;
+      if (nv) F('El curso encontró usos que no estaban en el mapa', nv + ' nuevos');
+      if (cf + ds > 0 && cf >= (cf + ds) * 0.8)
+        F('Lo que se revisó en la calle coincide con el mapa', cf + ' de ' + (cf + ds));
+      if (ds) C('El mapa y la calle no coinciden en varios puntos', ds + ' por corregir');
+      if (sv) T('Recorrer las cuadras donde quedan registros sin verificar', sv + ' sin verificar');
+    } else if (puntosDelCurso().length) {
+      T('Comparar el análisis con lo que ya mapeó el curso', puntosDelCurso().length + ' puntos sin cruzar');
+    }
+
     // ── Lo que falta levantar en campo
     var al = st.alturas || (trz && trz.alturas);
     if (al && al.edificios && al.cobertura < 50)
@@ -3774,6 +3875,113 @@
       ' en <b>' + p.coberturaAncho + '%</b> de la vía, y de los pisos registrados en <b>' +
       p.coberturaAltura + '%</b> de los edificios. Con cobertura baja el promedio es de esos pocos y ' +
       'no del sector.</p>';
+  }
+
+
+  /* ── Lo levantado en campo ─────────────────────────────────────────────
+     La otra mitad del trabajo. Hasta acá todo el análisis dice lo que
+     OpenStreetMap sabe del sector; esto dice qué encontró el curso parado en
+     la esquina, y sobre todo dónde las dos cosas no coinciden.
+
+     Ya existía como pantalla aparte, colgada de una ficha guardada. El
+     problema de tenerlo aparte es que no entraba en el análisis: la síntesis
+     y la lámina hablaban del sector como si nadie lo hubiera caminado. Ahora
+     corre sobre el área que está en pantalla y alimenta las dos.
+
+     Las cuatro cajas de la comparación importan por separado y no se suman:
+     · CONFIRMADOS — el curso vio lo mismo que el mapa. Es el dato más
+       aburrido y el más valioso: valida la fuente.
+     · NUEVOS — existe y nadie lo había mapeado. Es lo que el curso le
+       devuelve a la ciudad.
+     · DISCREPANCIAS — el mapa dice una cosa y la calle otra. Cada una es una
+       corrección que hay que subir.
+     · SIN VERIFICAR — el mapa lo tiene y nadie pasó por ahí. NO significa que
+       haya cerrado; significa que falta caminar esa cuadra. Confundir las dos
+       cosas es el error que convierte un levantamiento en un rumor. */
+  async function analizarCampo() {
+    if (!S.resultado || S.campoCargando) return;
+    S.campoCargando = true; S.campoAviso = ''; pintar();
+    try {
+      var meta = S.resultado.meta || {};
+      // Una ficha de mentira con lo que `compararConCampo` necesita: el área y
+      // los puntos que ya trajo el análisis. Así no hay dos caminos distintos
+      // para lo mismo según la ficha esté guardada o no.
+      S.campo = await compararConCampo({
+        forma: meta.forma,
+        poligono: meta.poligono,
+        radioM: meta.radioM,
+        centro: { lat: meta.lat, lng: meta.lng },
+        pois: S.resultado.pois || []
+      });
+    } catch (e) {
+      S.campo = null;
+      S.campoAviso = (e && e.message) || 'No se pudo comparar con lo del curso.';
+    }
+    S.campoCargando = false;
+    pintar();
+  }
+
+  function bloqueCampo() {
+    var c = S.campo;
+    if (!c) {
+      var hay = puntosDelCurso().length;
+      return h4('campo', 'Lo levantado en campo') +
+        '<p class="pcr-pista">Compara este análisis con lo que el curso mapeó en la calle: qué ' +
+        'coincide, qué encontraron que no estaba y dónde el mapa dice una cosa y la esquina otra.' +
+        (hay ? ' Hay <b>' + hay + '</b> puntos del curso en este dispositivo.'
+             : ' <b>Todavía no hay puntos del curso en este dispositivo</b>, así que no hay con qué comparar.') +
+        '</p>' +
+        (hay
+          ? '<div class="pcr-llevar">' +
+              '<button type="button" data-pcr="campo" class="pcr-mini pcr-llevar-b"' +
+                (S.campoCargando ? ' disabled' : '') + '>' +
+                (S.campoCargando ? 'Comparando…' : ico('comparar') + 'Comparar con lo que mapeó el curso') +
+              '</button>' +
+            '</div>'
+          : '') +
+        (S.campoAviso ? '<p class="pcr-error">' + esc(S.campoAviso) + '</p>' : '');
+    }
+
+    var nuevos = c.nuevos || [], conf = c.confirmados || [];
+    var disc = c.discrepancias || [], sinV = c.sinVerificar || [];
+    var vistos = conf.length + disc.length;
+    return h4('campo', 'Lo levantado en campo') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + conf.length + '</b><small>coinciden con el mapa</small></div>' +
+        '<div class="pcr-kpi"><b>' + nuevos.length + '</b><small>encontrados por el curso</small></div>' +
+        '<div class="pcr-kpi"><b>' + disc.length + '</b><small>no coinciden</small></div>' +
+      '</div>' +
+      (vistos
+        ? '<p class="pcr-conc">De lo que el curso revisó, <b>' + conf.length + ' de ' + vistos +
+          '</b> están bien en OpenStreetMap' +
+          (disc.length ? ' y <b>' + disc.length + '</b> no.' : '.') + '</p>'
+        : '') +
+      (nuevos.length
+        ? '<p class="pcr-lab">Lo que el curso agrega al mapa</p>' +
+          nuevos.slice(0, 8).map(function (n) {
+            return '<div class="pcr-lote-fila"><span>' + esc(n.nombre || 'Sin nombre') +
+              '</span><b>' + esc(nombreGrupo(n.grupo || 'otro')) + '</b></div>';
+          }).join('') +
+          (nuevos.length > 8 ? '<p class="pcr-pista">Y ' + (nuevos.length - 8) + ' más.</p>' : '')
+        : '') +
+      (disc.length
+        ? '<p class="pcr-lab">Donde el mapa y la calle no coinciden</p>' +
+          disc.slice(0, 6).map(function (d) {
+            return '<div class="pcr-lote-fila"><span>' + esc(d.campo.nombre || d.osm.nombre || 'Sin nombre') +
+              '</span><b>' + esc(nombreGrupo(d.osm.grupo || 'otro')) + ' → ' +
+              esc(nombreGrupo(d.campo.grupo || 'otro')) + '</b></div>';
+          }).join('') +
+          '<p class="pcr-pista">A la izquierda lo que dice el mapa, a la derecha lo que se vio. Cada ' +
+          'una de estas es una corrección para subir a OpenStreetMap.</p>'
+        : '') +
+      (sinV.length
+        ? '<p class="pcr-conc"><b>' + sinV.length + '</b> registros del mapa quedaron <b>sin ' +
+          'verificar</b>: nadie del curso pasó por ahí. No quiere decir que hayan cerrado — quiere ' +
+          'decir que falta caminar esas cuadras.</p>'
+        : '') +
+      '<p class="pcr-pista">Se considera el mismo sitio cuando los dos puntos están a menos de ' +
+      MISMO_SITIO_M + ' m. Compara la categoría, no el nombre: dos droguerías con nombre distinto ' +
+      'en la misma esquina son la misma droguería mal escrita.</p>';
   }
 
   function bloqueMovilidad(st) {
@@ -4625,6 +4833,7 @@
         bloquePerfil() +
         bloqueEspacio(st) +
         bloqueAccesibilidad(st) +
+        bloqueCampo() +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
@@ -5169,7 +5378,7 @@
          nombre del anterior y con SU climatología —del sitio de al lado o de
          otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
          meses después, cuando los datos ya no se pueden creer. */
-      S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = '';
+      S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; pintarLlenos(false);
     }
@@ -5268,7 +5477,7 @@
     var st = f.stats;
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
-    var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima;
+    var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima, cmpAntes = S.campo;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -5310,12 +5519,14 @@
         S.trazado = f.trazado || null;
         S.terreno = f.terreno || null;
         S.clima = f.clima || null;
+        S.campo = f.campo || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
                    (f.trazado ? bloquePerfil() : '') +
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
+                   (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
-        S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
+        S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -5602,7 +5813,7 @@
         laminaImprimible(comoResultado(f), {
           nombre: f.nombre || '',
           trazado: f.trazado || null, terreno: f.terreno || null,
-          clima: f.clima || null, huellas: null
+          clima: f.clima || null, campo: f.campo || null, huellas: null
         }),
         function (m) { S.avisoPestana = m; repintar(); });
       return true;

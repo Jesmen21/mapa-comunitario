@@ -867,6 +867,23 @@
           '" r="' + r + '" fill="' + (p.color || '#94a3b8') + '" stroke="#12202e" stroke-width=".35"/>';
       }).join('') + '</g>';
     }
+    /* Lo que el curso encontró y no estaba en el mapa. Va en rombo y no en
+       círculo: en una lámina impresa en blanco y negro el color no distingue
+       nada, y la forma sí. Es la única capa del plano que no viene de una
+       fuente ajena, así que tiene que poder señalarse con el dedo. */
+    if (Array.isArray(o.destacados) && o.destacados.length) {
+      const r = (o.radioPunto || 1.9) * 1.5;
+      dentro += '<g>' + o.destacados.map(p => {
+        if (p.lat == null || p.lng == null) return '';
+        const x = X(+p.lng), y = Y(+p.lat);
+        const d = 'M' + x.toFixed(1) + ' ' + (y - r).toFixed(1) +
+                  'L' + (x + r).toFixed(1) + ' ' + y.toFixed(1) +
+                  'L' + x.toFixed(1) + ' ' + (y + r).toFixed(1) +
+                  'L' + (x - r).toFixed(1) + ' ' + y.toFixed(1) + 'Z';
+        return '<path d="' + d + '" fill="' + (p.color || '#34CCFE') +
+          '" stroke="#0F1F2E" stroke-width=".6"/>';
+      }).join('') + '</g>';
+    }
 
     // La forma.
     let figura = '';
@@ -874,7 +891,8 @@
       const d = pts.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
       // Con contenido dentro, el relleno del contorno se quita: taparía las
       // huellas y los usos que se acaban de dibujar.
-      const relleno = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length)
+      const relleno = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
+                      (o.destacados && o.destacados.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<path d="' + d + '" fill="' + relleno + '" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
       if (pts.length <= 24) {
@@ -886,7 +904,8 @@
       // Igual que con el polígono: si adentro hay algo dibujado, el relleno
       // se quita. Un velo celeste encima de los puntos les cambia el color y
       // deja de coincidir con las convenciones.
-      const rellenoC = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length)
+      const rellenoC = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
+                       (o.destacados && o.destacados.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + r.toFixed(1) +
         '" fill="' + rellenoC + '" stroke="#0A6F9E" stroke-width="1.6"/>' +
