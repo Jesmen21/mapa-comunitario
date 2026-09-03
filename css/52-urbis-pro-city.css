@@ -994,4 +994,41 @@
     transform:scale(.92) !important;
   }
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn[hidden]{ display:none !important; }
+
+  /* Reconocimiento del sector. Justo ENCIMA del lápiz porque son la misma
+     familia —herramientas de análisis, no filtros de lo que se ve— y porque
+     el orden natural es mirar qué hay y después dibujar sobre eso. En blanco
+     con el borde celeste para que no se confunda con el lápiz de un vistazo. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-recon-btn{
+    position:absolute !important; z-index:2147483200 !important;
+    right:16px !important; bottom:calc(340px + env(safe-area-inset-bottom,0px)) !important;
+    width:52px !important; height:52px !important; border:0 !important; border-radius:18px !important;
+    display:grid !important; place-items:center !important; font-size:1.3rem !important;
+    background:#fff !important; color:#0E86BE !important;
+    box-shadow:0 12px 24px rgba(14,134,190,.22), inset 0 0 0 2px #34CCFE !important;
+    pointer-events:auto !important;
+    transition:transform .18s ease, box-shadow .18s ease !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-recon-btn:active{
+    transform:scale(.92) !important;
+  }
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-recon-btn[hidden]{ display:none !important; }
+}
+
+/* Borrado en lote de mapeos. En rojo apagado, no en rojo de alarma: es una
+   acción legítima y frecuente (limpiar pruebas, corregir un mapeo mal puesto),
+   no una emergencia. La confirmación es la que frena, no el color. */
+.u52-procity-select-bulk-del{
+  border:1px solid #f0c2b0 !important; background:#fff6f2 !important;
+  color:#9a3412 !important; font-weight:700 !important;
+  border-radius:12px !important; padding:9px 13px !important;
+  font-size:.8rem !important; cursor:pointer !important;
+}
+.u52-procity-select-bulk-del:active{ transform:scale(.97); }
+
+/* De quién es un mapeo que no es tuyo. Discreto: es un dato de contexto para
+   el administrador, no el título de la tarjeta. */
+.u52-procity-mine-autor{
+  display:block; font-size:.68rem; color:#8a94a0; font-style:normal;
+  margin-top:1px;
 }

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v615-ver-en-el-mapa';
+const URBIS_CACHE = 'urbis-v616-borrar-mapeos';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -413,6 +413,7 @@
       <button class="u52-procity-active-folder-btn" data-u52-call="procity-active-folder-open" aria-label="Elegir carpeta cooperativa activa para mapear" hidden>📁</button>
       <button class="u52-procity-view-filter-btn" data-u52-call="procity-view-filter-open" aria-label="Elegir qué se ve en el mapa" hidden>👁️</button>
       <button class="u52-procity-dibujar-btn" data-u52-call="pca-dibujar" aria-label="Dibujar área de análisis" hidden>✏️</button>
+      <button class="u52-procity-recon-btn" data-u52-call="pca-reconocer" aria-label="Ver qué hay en este sector según OpenStreetMap" hidden>🔍</button>
       <div id="u52-map-report-status" class="u52-map-report-status u52-mapcentric-toast" aria-live="polite"></div>
       <div class="u52-mapcentric-actions" aria-label="Acciones rápidas de mapeo comunitario">
         <button data-u52-call="report-gps"><span class="gps">⌖</span><b>Reporte con<br>mi ubicación</b></button>
@@ -2610,6 +2611,11 @@
     // entrar antes a la pantalla de estadísticas.
     const dibujarBtn = app.querySelector('.u52-procity-dibujar-btn');
     if(dibujarBtn) dibujarBtn.hidden = !activo;
+    // Reconocimiento del sector (js/68). Estaba solo dentro de Mapeado →
+    // pestaña Análisis, dos niveles adentro: quien mira el mapa no lo
+    // encuentra nunca. Va al lado del lápiz, que es donde se lo busca.
+    const reconBtn = app.querySelector('.u52-procity-recon-btn');
+    if(reconBtn) reconBtn.hidden = !activo || !window.URBIS_PC_RECON;
     if(mapScreen) mapScreen.classList.toggle('u52-procity-mapscreen', !!activo);
     // Bandera global del módulo: Pro City y el mapa ciudadano son módulos
     // SEPARADOS. Las capas que se dibujan por fuera de pintarPuntos (la gota
@@ -2760,7 +2766,12 @@
       totalMatriz++;
     });
 
-    const mios = datos.filter(p => p && dimSet.has(p.tipo) && esPropioProCity(p));
+    /* Un administrador ve TODOS los mapeos en esta lista, no solo los suyos.
+       Sin esto no hay forma de limpiar datos de prueba o un mapeo mal puesto
+       por otra persona: había que ir buscándolos uno a uno en el mapa. Cada
+       ficha dice de quién es, para que no se confunda con lo propio. */
+    const _esAdminPC = (window.userRole === 'admin' || window.userRole === 'gov');
+    const mios = datos.filter(p => p && dimSet.has(p.tipo) && (esPropioProCity(p) || _esAdminPC));
     mios.sort((a,b) => new Date(b.fecha||0).getTime() - new Date(a.fecha||0).getTime());
     const deAmigos = datos.filter(p => p && dimSet.has(p.tipo) && !esPropioProCity(p) && esDeAmigoProCity(p));
     deAmigos.sort((a,b) => new Date(b.fecha||0).getTime() - new Date(a.fecha||0).getTime());
@@ -2792,6 +2803,13 @@
       const subUso = esMatriz ? uso : dim;
       const fecha = p.fecha ? new Date(p.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '';
       const lat = String(p.lat);
+      /* De quién es. Solo se dice cuando NO es tuyo: en la lista de un
+         administrador conviven sus mapeos con los de todo el mundo, y sin
+         nombre no hay forma de saber cuál se está por borrar. */
+      const _mioEste = esPropioProCity(p);
+      const _autorEste = (d[BASE_OFFSET + 2] || '').trim();
+      const autorTag = (!_mioEste && _autorEste)
+        ? `<em class="u52-procity-mine-autor">por ${esc(_autorEste)}</em>` : '';
       // Selección múltiple (pedido explícito): "seleccionar varios mapeos y
       // agregarlos a la carpeta" — se activa con el botón Seleccionar o
       // manteniendo presionada una tarjeta (long-press). Pedido explícito:
@@ -2808,7 +2826,7 @@
       const folderTag = folderIdDeEste ? `<small class="u52-procity-mine-folder-tag">🔗 En carpeta cooperativa${folderDeEste ? ': ' + esc(folderDeEste.nombre) : ''}</small>` : '';
       return `<button type="button" class="u52-procity-mine-card${marcado?' seleccionado':''}" data-u52-procity-mine="${esc(lat)}" data-u52-procity-select-target="${esc(lat)}">
         <span class="u52-procity-mine-ico" style="background:var(--pc-chip);color:var(--pc-lav-deep)">${dInfo.icon}</span>
-        <div class="u52-procity-mine-info"><b>${esc(label)}</b><small>${esc(subUso)} · ${esc(fecha)}</small>${folderTag}</div>
+        <div class="u52-procity-mine-info"><b>${esc(label)}</b><small>${esc(subUso)} · ${esc(fecha)}</small>${autorTag}${folderTag}</div>
         ${enSeleccion ? `<span class="u52-procity-mine-check">${marcado?'✅':'⬜'}</span>` : '<span class="u52-procity-mine-arrow">›</span>'}
       </button>`;
     }
@@ -2819,6 +2837,7 @@
         <div class="u52-procity-select-toolbar">
           <button type="button" class="u52-procity-select-toggle${proCity.selectMode?' activo':''}" data-u52-call="procity-select-toggle">${proCity.selectMode ? '✕ Cancelar selección' : '☑️ Seleccionar varios'}</button>
           ${proCity.selectMode && proCity.selectedLats.size ? `<button type="button" class="u52-procity-select-bulk-add" data-u52-call="procity-select-bulk-add">📁 Agregar ${proCity.selectedLats.size} a carpeta</button>` : ''}
+          ${proCity.selectMode && proCity.selectedLats.size ? `<button type="button" class="u52-procity-select-bulk-del" data-u52-call="procity-select-bulk-delete">🗑️ Eliminar ${proCity.selectedLats.size}</button>` : ''}
         </div>` : '';
       body = mios.length ? `${selToolbar}<div class="u52-procity-mine-list">${mios.map(p=>_mineCard(p, true)).join('')}</div>`
         : `<div class="u52-empty-card"><span>🗺️</span><div><b>Aún no has georreferenciado nada</b><small>Lo que mapees en Pro City aparecerá aquí.</small></div></div>`;
@@ -3741,6 +3760,55 @@
     else proCity.selectedLats.add(key);
     showProCityStats();
   }
+  /* Borrar en lote los mapeos marcados. Existe porque limpiar datos de prueba
+     —o un mapeo mal puesto— obligaba a buscarlos uno a uno en el mapa.
+
+     Tres cuidados, porque esto NO se deshace:
+      1. Se pide confirmación diciendo CUÁNTOS y que no hay vuelta atrás.
+      2. Se borra de uno en uno y se cuenta: si el servidor rechaza alguno
+         —solo se puede borrar lo propio, salvo con permiso de administrador—
+         se dice cuántos quedaron, en vez de dar por hecho que salió todo.
+      3. El mapa se repinta al final, no en cada borrado: con veinte mapeos
+         eso son veinte repintados y el celular se arrastra. */
+  async function borrarProCitySeleccionados(){
+    const lats = Array.from(proCity.selectedLats || []);
+    if(!lats.length) return;
+    if(typeof window.urbisDBDelete !== 'function'){
+      alert('Sin conexión con URBIS. Intenta de nuevo en un momento.');
+      return;
+    }
+    const msg = lats.length === 1
+      ? '¿Eliminar este mapeo? No se puede deshacer.'
+      : '¿Eliminar ' + lats.length + ' mapeos? No se puede deshacer.';
+    if(!confirm(msg)) return;
+
+    let hechos = 0; const fallidos = [];
+    for(const lat of lats){
+      try{
+        const out = await window.urbisDBDelete('lat', String(lat));
+        if(out && out.ok === false) fallidos.push(out.message || 'rechazado');
+        else hechos++;
+      }catch(e){ fallidos.push((e && e.message) || 'error de red'); }
+    }
+
+    // Lo borrado se va también de la copia en memoria, para que el mapa y las
+    // listas no sigan mostrando algo que ya no existe.
+    try{
+      if(Array.isArray(globalData)){
+        const fuera = new Set(lats.map(String));
+        globalData = globalData.filter(p => !p || !fuera.has(String(p.lat)));
+      }
+    }catch(e){}
+    try{ proCity.selectedLats.clear(); proCity.selectMode = false; }catch(e){}
+    try{ if(typeof pintarPuntos === 'function') pintarPuntos(datosVisiblesActuales()); }catch(e){}
+    try{ showProCityStats(); }catch(e){}
+
+    if(fallidos.length){
+      alert('Se eliminaron ' + hechos + ' de ' + lats.length + '.\n' +
+            'Los demás no se pudieron borrar: ' + fallidos[0]);
+    }
+  }
+
   function showProCityBulkTagFolderPicker(){
     const datos = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData : [];
     const puntos = datos.filter(p => p && proCity.selectedLats.has(String(p.lat)));
@@ -5258,6 +5326,7 @@
       if(name==='procity-tag-folder-close') { hideProCityTagFolderPicker(); return; }
       if(name==='procity-select-toggle') { toggleProCitySelectMode(); return; }
       if(name==='procity-select-bulk-add') { showProCityBulkTagFolderPicker(); return; }
+      if(name==='procity-select-bulk-delete') { borrarProCitySeleccionados(); return; }
       if(name==='procity-view-filter-open') { proCity.viewFilterStep = 'main'; showProCityViewFilterPicker(); return; }
       if(name==='procity-view-filter-close') { hideProCityViewFilterPicker(); return; }
       if(name==='procity-view-filter-back') { proCity.viewFilterStep = 'main'; showProCityViewFilterPicker(); return; }
