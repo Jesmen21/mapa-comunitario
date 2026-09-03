@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v623-cobertura-y-exportar';
+const URBIS_CACHE = 'urbis-v624-las-dos-mitades';
 const URBIS_ASSETS = [
   './',
   './index.html',

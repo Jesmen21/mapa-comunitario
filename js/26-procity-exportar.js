@@ -34,14 +34,17 @@
   function PC(){ return window.URBIS_PC_ANALISIS || null; }
 
   // Datos a exportar: el contorno del área y los puntos de Pro City dentro.
-  function recolectar(){
+  /* Los puntos que el curso mapeó DENTRO de un contorno cualquiera. Estaba
+     dentro de `recolectar`, atado al área dibujada de Pro City; se saca aparte
+     porque el reconocimiento (js/68) necesita lo mismo sobre su propio
+     contorno —que a veces es un círculo— y copiar este bucle habría dejado
+     dos lecturas de la ficha del edificio que envejecerían por separado. */
+  function puntosProCityDentro(pts){
     const pc = PC();
-    if (!pc || !pc.hayArea()) return null;
-    const pts = pc.puntosDelArea();
     const ctx = ctxPC();
     const datos = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData : [];
     const dentro = [];
-    if (ctx) {
+    if (pc && ctx && pts && pts.length >= 3) {
       datos.forEach(p => {
         if (!p || !ctx.esProCity(p.tipo)) return;
         const lat = parseFloat(String(p.lat || '').replace(',', '.'));
@@ -84,6 +87,15 @@
         dentro.push(reg);
       });
     }
+    return dentro;
+  }
+
+  function recolectar(){
+    const pc = PC();
+    if (!pc || !pc.hayArea()) return null;
+    const pts = pc.puntosDelArea();
+    const ctx = ctxPC();          // lo necesita la geometría de más abajo
+    const dentro = puntosProCityDentro(pts);
     // La geometría en curso (red / envolvente / círculos) y la cobertura ya
     // analizada, si las hay. Se exporta lo que el usuario TIENE puesto, no una
     // versión recalculada aparte: si en pantalla la red conecta 12 puntos, el
@@ -417,7 +429,11 @@
       // distancia quedó del centro. Sin ellos, en Google Earth cada marca
       // decía solo su categoría general y se perdía justo lo que se fue a ver.
       ['uso',            'Uso'],
-      ['dist_m',         'Distancia (m)']
+      ['dist_m',         'Distancia (m)'],
+      // De dónde salió el punto: lo que OpenStreetMap tenía o lo que levantó
+      // el curso. En un archivo que junta las dos mitades, es el atributo que
+      // permite verlas por separado.
+      ['fuente',         'Fuente']
     ];
     const marcas = d.puntos.map(function (p) {
       const filas = FICHA_KML.filter(par => p[par[0]] !== undefined && p[par[0]] !== '');
@@ -803,7 +819,7 @@
        'usos','n_usos',
        // Y los del reconocimiento, que es lo que permite filtrar por rubro o
        // por distancia en QGIS sin volver a la aplicación.
-       'uso','dist_m'].forEach(function (k) {
+       'uso','dist_m','fuente'].forEach(function (k) {
         if (p[k] !== undefined && p[k] !== '') props[k] = p[k];
       });
       f.push({ type:'Feature', properties: props,
@@ -1162,6 +1178,7 @@
   }
 
   window.URBIS_PC_EXPORTAR = { exportar, bloque, accion, inventario, recolectar,
+                               puntosProCityDentro,
                                construirKML, construirDXF, construirGeoJSON, construirSVG,
                                vectorizarCobertura, aUTM, zip, paqueteCompleto };
 })();
