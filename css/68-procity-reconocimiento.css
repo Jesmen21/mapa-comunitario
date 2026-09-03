@@ -753,3 +753,62 @@
 .pcr-informe .pcr-fila-barra,
 .pcr-informe .pcr-edad-barra{ flex:1 1 auto; }
 .pcr-pest-pie{ display:flex; justify-content:center; padding-top:4px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   La lista de campo y los anillos de distancia
+   ══════════════════════════════════════════════════════════════════════
+   Contar cosas no se puede verificar caminando; una lista con nombres sí.
+   Por eso el rubro se lee como una tarjeta con su cuenta a la derecha y los
+   nombres propios debajo, como un checklist. */
+.pcr-rubros{ display:flex; flex-direction:column; gap:8px; }
+.pcr-rubro{
+  border:1px solid #e6eef4; border-radius:11px; background:#fbfdff;
+  padding:9px 11px; flex:0 0 auto;
+}
+.pcr-rubro-cab{
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+}
+.pcr-rubro-n{
+  font-size:.82rem; font-weight:700;
+  color:#12202e !important; -webkit-text-fill-color:#12202e !important;
+}
+.pcr-rubro-cab b{
+  font-size:.92rem;
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-rubro-ej{ margin:5px 0 0; padding:0 0 0 16px; }
+.pcr-rubro-ej li{
+  font-size:.75rem; line-height:1.5; list-style:'☐  ';
+  color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important;
+}
+.pcr-rubro-ej li.pcr-mas{
+  list-style:none; margin-left:-16px; font-style:italic;
+  color:#6b7684 !important; -webkit-text-fill-color:#6b7684 !important;
+}
+.pcr-rubro-sin{
+  margin:5px 0 0; font-size:.72rem;
+  color:#6b7684 !important; -webkit-text-fill-color:#6b7684 !important;
+}
+
+.pcr-anillo{ display:flex; flex-direction:column; gap:2px; flex:0 0 auto; }
+.pcr-anillo-ej{
+  font-size:.68rem; line-height:1.35; padding-left:2px;
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+
+/* Y en la pestaña, lo mismo: las reglas de arriba son sin ámbito, pero el
+   ámbito importa donde hay que ganarle a las reglas globales de URBIS. */
+.pcr-pestana .pcr-rubro-n,
+.pcr-hoja .pcr-rubro-n{ color:#12202e !important; -webkit-text-fill-color:#12202e !important; }
+.pcr-pestana .pcr-rubro-cab b,
+.pcr-hoja .pcr-rubro-cab b{ color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important; }
+.pcr-pestana .pcr-rubro-ej li,
+.pcr-hoja .pcr-rubro-ej li{ color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important; }
+.pcr-pestana .pcr-rubro-sin, .pcr-pestana .pcr-anillo-ej, .pcr-pestana .pcr-rubro-ej li.pcr-mas,
+.pcr-hoja .pcr-rubro-sin, .pcr-hoja .pcr-anillo-ej, .pcr-hoja .pcr-rubro-ej li.pcr-mas{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+/* Mismo cuidado que con los medidores: hijos de un flex en columna con
+   scroll se aplastan a cero si no se les dice que no. */
+.pcr-hoja .pcr-rubros, .pcr-hoja .pcr-rubro, .pcr-hoja .pcr-anillo,
+.pcr-pestana .pcr-rubros, .pcr-pestana .pcr-rubro, .pcr-pestana .pcr-anillo{ flex:0 0 auto; }

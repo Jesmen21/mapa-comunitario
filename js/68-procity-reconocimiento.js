@@ -84,7 +84,9 @@
     // Qué ficha está desplegada en la pestaña «Sector», y su aviso (el de la
     // hoja no sirve: son dos pantallas distintas, cada una con lo suyo).
     pestanaAbierta: '',
-    avisoPestana: ''
+    avisoPestana: '',
+    // Qué capa de calor está encendida desde la pestaña, y de qué ficha.
+    calorGuardado: { ficha: '', cal: '' }
   };
 
   function esc(s) {
@@ -197,12 +199,24 @@
       } : null,
       // Población y demografía: es la mitad del informe que no depende del
       // mapeo, así que sin ella la ficha guardada quedaría coja.
+      /* Los nombres tienen que ser EXACTAMENTE los que lee el bloque de
+         población: guardar `viviendas` cuando el bloque lee `viviendasCenso`
+         hacía que la ficha guardada perdiera el conteo de viviendas sin que
+         nada avisara. */
       poblacionEstimada: st.poblacionEstimada, poblacionCenso: st.poblacionCenso,
-      poblacionProyectada: st.poblacionProyectada, poblacionHeuristica: st.poblacionHeuristica,
+      poblacionProyectada: st.poblacionProyectada, poblacionEsCensal: st.poblacionEsCensal,
       censoAnio: st.censoAnio, anioProyeccion: st.anioProyeccion,
-      tasaAnualDane: st.tasaAnualDane, estrato: st.estrato || null,
-      demografia: st.demografia || null, hogares: st.hogares,
-      viviendas: st.viviendas, densidadDane: st.densidadDane
+      tasaAnualDane: st.tasaAnualDane, crecimientoPct: st.crecimientoPct,
+      advertenciaProyeccion: st.advertenciaProyeccion,
+      serieProyeccion: st.serieProyeccion || [],
+      viviendasCenso: st.viviendasCenso, personasPorVivienda: st.personasPorVivienda,
+      estrato: st.estrato || null, demografia: st.demografia || null,
+      // Para la lista de campo y los anillos, que también se redibujan.
+      rubros: (st.rubros || []).slice(0, 14),
+      anillos: (st.anillos || []).map(function (a) {
+        return { etiqueta: a.etiqueta, n: a.n, comercios: a.comercios, peso: a.peso,
+                 ejemplos: (a.ejemplos || []).slice(0, 3) };
+      })
     };
   }
 
@@ -1319,6 +1333,11 @@
   // Color de una categoría: el que el propio catálogo le dio a sus puntos.
   // Así el calor y los círculos del mapa hablan del mismo color, que es lo
   // que permite leerlos juntos.
+  function colorDelCatalogo(g) {
+    var CAT = window.AIA_CATALOGO || {};
+    return (CAT.GRUPO_COLOR && CAT.GRUPO_COLOR[g]) || null;
+  }
+
   function colorDeGrupo(g) {
     var p = poisDelResultado().filter(function (x) { return x.grupo === g && x.color; })[0];
     return (p && p.color) || null;
@@ -1561,6 +1580,84 @@
       }).join('');
   }
 
+  // ── La lista de campo, con nombres propios ────────────────────────────
+  /* Hasta acá el informe cuenta cosas: «15 droguerías». Eso no se puede
+     verificar caminando. Lo que sí se puede es una lista con NOMBRES —«Cruz
+     Verde, La Rebaja, Farmatodo»—: el estudiante llega, los busca, marca los
+     que siguen abiertos y anota los que faltan. El servidor ya mandaba esos
+     nombres en `rubros.ejemplos` y no se estaban usando. */
+  function bloqueRubros(st) {
+    var rubros = (st.rubros || []).filter(function (r) { return r.n > 0 && r.sub !== 'otro'; });
+    if (!rubros.length) return '';
+    var conNombre = rubros.filter(function (r) { return (r.ejemplos || []).length; });
+
+    return '' +
+      '<h4 class="pcr-h">📋 La lista para ir a verificar</h4>' +
+      '<p class="pcr-tarea-intro">Esto es lo que OpenStreetMap dice que hay, <b>con nombre y apellido</b>. ' +
+      (conNombre.length
+        ? 'Buscá cada uno en la calle: los que sigan abiertos se confirman, los que no, se corrigen. ' +
+          'Lo que encuentres y no esté en esta lista es lo que el curso le agrega al mapa.'
+        : 'Ninguno tiene nombre registrado: son puntos anónimos, así que la tarea es justamente ponerles nombre.') +
+      '</p>' +
+      '<div class="pcr-rubros">' +
+        rubros.slice(0, 14).map(function (r) {
+          return '<div class="pcr-rubro">' +
+            '<div class="pcr-rubro-cab">' +
+              '<span class="pcr-rubro-n">' + (r.icono ? r.icono + ' ' : '') + esc(r.nombre) + '</span>' +
+              '<b>' + r.n + '</b>' +
+            '</div>' +
+            ((r.ejemplos || []).length
+              ? '<ul class="pcr-rubro-ej">' + r.ejemplos.map(function (e) {
+                  return '<li>' + esc(e) + '</li>';
+                }).join('') +
+                (r.n > r.ejemplos.length
+                  ? '<li class="pcr-mas">y ' + (r.n - r.ejemplos.length) + ' más sin nombre registrado</li>'
+                  : '') + '</ul>'
+              : '<p class="pcr-rubro-sin">Sin nombres registrados — anotarlos es tarea de campo.</p>') +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (rubros.length > 14
+        ? '<p class="pcr-pista">Y ' + (rubros.length - 14) + ' rubros más con menos presencia.</p>'
+        : '');
+  }
+
+  // ── Cómo cambia al alejarse del centro ────────────────────────────────
+  /* Un total no dice si las cosas están pegadas o desperdigadas. Los anillos
+     sí: «la mitad está en los primeros 200 m» es una forma del sector, y de
+     paso reparte el trabajo —a este grupo el anillo de adentro, a este otro
+     el de afuera—. */
+  function bloqueAnillos(st, esPol) {
+    var an = (st.anillos || []).filter(function (a) { return a.n > 0; });
+    if (an.length < 2) return '';
+    var mayor = an.reduce(function (m, a) { return Math.max(m, a.n); }, 1);
+    var primero = an[0];
+
+    return '' +
+      '<h4 class="pcr-h">Cómo cambia al alejarse</h4>' +
+      '<p class="pcr-pista">Distancia medida desde el ' +
+      (esPol ? 'centro del área dibujada' : 'centro del círculo') + '. ' +
+      'Sirve para repartir el trabajo: un grupo por anillo.</p>' +
+      an.map(function (a) {
+        return '<div class="pcr-anillo">' +
+          '<div class="pcr-fila">' +
+            '<span class="pcr-fila-nom">' + esc(a.etiqueta) + '</span>' +
+            '<span class="pcr-fila-barra"><i style="width:' + Math.round(a.n / mayor * 100) + '%"></i></span>' +
+            '<span class="pcr-fila-n">' + a.n + '</span>' +
+          '</div>' +
+          ((a.ejemplos || []).length
+            ? '<small class="pcr-anillo-ej">' + a.ejemplos.map(function (e) {
+                return esc(e.nombre) + ' (' + e.distM + ' m)';
+              }).join(' · ') + '</small>'
+            : '') +
+        '</div>';
+      }).join('') +
+      (primero && primero.n / Math.max(1, st.total) >= 0.5
+        ? '<p class="pcr-conc">Más de la mitad de lo registrado está <b>' + esc(primero.etiqueta) +
+          '</b>. Es un sector concentrado: se recorre a pie sin problema.</p>'
+        : '');
+  }
+
   function htmlFicha(res) {
     var st = res.stats || {};
     var pois = res.pois || [];
@@ -1674,6 +1771,7 @@
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
         bloqueNucleos(st) +
+        bloqueAnillos(st, esPol) +
         bloqueCalor(res) +
 
         // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
@@ -1691,6 +1789,8 @@
 
         // De inventario a lista de tareas. Lo que el estudiante hace con esto
         // parado en la esquina, que es de lo que se trataba.
+        bloqueRubros(st) +
+
         '<h4 class="pcr-h">Qué verificar en campo</h4>' +
         '<ul class="pcr-check">' +
           (sinCategoria
@@ -2026,6 +2126,8 @@
       bloqueMovilidad(st) +
       bloqueAmbiente(st) +
       bloqueNucleos(st) +
+      bloqueAnillos(st, esPol) +
+      bloqueRubros(st) +
       (z && (z.vacios.length || z.flojos.length)
         ? '<h4 class="pcr-h">A dónde ir</h4><ul class="pcr-tareas">' +
           z.vacios.map(function (r) { return '<li><b>Al ' + esc(r.nombre) + '</b> — sin un solo registro</li>'; }).join('') +
@@ -2038,6 +2140,35 @@
           z.concentracion.n + ' de ' + z.total + '</b> (' + z.concentracion.pct + '%).</p>'
         : '') +
     '</div>';
+  }
+
+  /* Los mismos interruptores de calor, pero sobre un sector YA guardado: se
+     puede volver semanas después y encender solo lo que interesa. Los puntos
+     salen de la ficha, así que esto funciona sin red. */
+  function chipsCalorGuardado(f) {
+    var pois = f.pois || [];
+    if (!pois.length) return '';
+    var cuenta = {};
+    pois.forEach(function (p) { if (p.grupo && p.grupo !== 'otro') cuenta[p.grupo] = (cuenta[p.grupo] || 0) + 1; });
+    var grupos = Object.keys(cuenta).sort(function (a, b) { return cuenta[b] - cuenta[a]; });
+    if (!grupos.length) return '';
+
+    function chip(cal, texto, n, color) {
+      var on = S.calorGuardado.ficha === f.id && S.calorGuardado.cal === cal;
+      return '<button type="button" class="pcr-cal-chip' + (on ? ' on' : '') + '"' +
+        ' data-u52-call="pcr-calorcat" data-id="' + esc(f.id) + '" data-cal="' + esc(cal) + '"' +
+        (color ? ' style="--cal:' + esc(color) + '"' : '') + '>' +
+        '<i></i>' + esc(texto) + (n != null ? ' <b>' + n + '</b>' : '') + '</button>';
+    }
+
+    return '<h4 class="pcr-h">Mapa de calor de este sector</h4>' +
+      '<p class="pcr-pista">Se pinta en el mapa; esta hoja se cierra sola para dejarlo ver.</p>' +
+      '<div class="pcr-calor-chips">' +
+        chip('todos', '🔥 Todos', pois.length, null) +
+        grupos.map(function (g) {
+          return chip('g:' + g, nombreGrupo(g), cuenta[g], colorDelCatalogo(g));
+        }).join('') +
+      '</div>';
   }
 
   function htmlPestana() {
@@ -2069,13 +2200,12 @@
           (abierta
             ? '<div class="pcr-pest-cuerpo">' +
                 informeGuardado(f) +
+                chipsCalorGuardado(f) +
                 '<div class="pcr-llevar">' +
                   (f.forma === 'poligono'
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-area" data-id="' +
                       esc(f.id) + '">📐 Cargar el área en Análisis</button>'
                     : '') +
-                  '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-calor" data-id="' +
-                    esc(f.id) + '">🔥 Mapa de calor</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-copiar" data-id="' +
                     esc(f.id) + '">📋 Copiar</button>' +
                   (hayCampo
@@ -2143,17 +2273,33 @@
       if (area && typeof A.cargarAreaPorId === 'function') A.cargarAreaPorId(area.id);
       return true;
     }
-    if (name === 'calor') {
-      var A2 = window.URBIS_PC_ANALISIS;
-      var pts = (f && f.pois) || [];
-      if (!A2 || typeof A2.calorExterno !== 'function' || !pts.length) {
-        S.avisoPestana = 'No hay puntos guardados de este sector para pintar el calor.';
+    if (name === 'calorcat') {
+      var A3 = window.URBIS_PC_ANALISIS;
+      var cal = el && el.getAttribute ? el.getAttribute('data-cal') : 'todos';
+      if (!f || !A3 || typeof A3.calorExterno !== 'function') {
+        S.avisoPestana = 'No se pudo pintar el calor de este sector.';
         repintar(); return true;
       }
-      A2.calorExterno(
-        pts.map(function (q) { return { lat: q.lat, lng: q.lng }; }),
-        null, '🔥 ' + (f.nombre || 'Sector guardado'), null);
-      // El calor se ve en el mapa, no acá: la hoja se cierra sola.
+      // Tocar el mismo chip encendido lo apaga: es un interruptor.
+      if (S.calorGuardado.ficha === f.id && S.calorGuardado.cal === cal) {
+        S.calorGuardado = { ficha: '', cal: '' };
+        A3.calorExterno(null);
+        repintar(); return true;
+      }
+      var sel = (cal === 'todos')
+        ? (f.pois || [])
+        : (f.pois || []).filter(function (p) { return 'g:' + p.grupo === cal; });
+      if (!sel.length) {
+        S.avisoPestana = 'Ese grupo no tiene puntos guardados en este sector.';
+        repintar(); return true;
+      }
+      S.calorGuardado = { ficha: f.id, cal: cal };
+      A3.calorExterno(
+        sel.map(function (q) { return { lat: q.lat, lng: q.lng }; }),
+        cal === 'todos' ? null : colorDelCatalogo(cal.slice(2)),
+        '🔥 ' + (cal === 'todos' ? (f.nombre || 'Sector guardado')
+                                 : nombreGrupo(cal.slice(2)) + ' · ' + (f.nombre || 'sector guardado')),
+        function () { S.calorGuardado = { ficha: '', cal: '' }; });
       try { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); } catch (e) {}
       return true;
     }
