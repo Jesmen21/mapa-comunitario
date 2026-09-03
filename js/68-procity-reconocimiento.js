@@ -84,7 +84,7 @@
        del sector. Es otra cosa que el área: el área es «qué hay alrededor»,
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
-    lote: null, loteDibujando: false, loteAviso: '',
+    lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -358,6 +358,15 @@
         : null,
       loteAnalisis: (function () {
         try { return analisisDelLote(); } catch (e) { return null; }
+      })(),
+      /* El recorrido a pie va SIN los tramos: la geometría de las calles
+         alcanzadas son miles de segmentos y no cabe en el almacenamiento del
+         teléfono. Lo que se lee después son los tres anillos. */
+      caminata: (function () {
+        var c = S.caminata;
+        if (!c || !c.anillos) return null;
+        return { anillos: c.anillos, distanciaAlaCalleM: c.distanciaAlaCalleM,
+                 pasoMPorMin: c.pasoMPorMin };
       })(),
       campo: S.campo ? {
         nuevos: (S.campo.nuevos || []).slice(0, 20).map(function (x) {
@@ -896,6 +905,31 @@
       a.nVecinos + ' usos registrados a menos de 200 m del centro del lote, en línea recta.</p>';
   }
 
+  /* El recorrido a pie, impreso. Tres filas y la comparación con la línea
+     recta, que es lo único que no se puede reconstruir mirando el plano. */
+  function caminataImpresa(c) {
+    if (!c || !c.anillos || !c.anillos.length) return '';
+    var a = c.anillos[1] || c.anillos[0];
+    var dif = a ? (a.usosRecta - a.usos) : 0;
+    return '<h2>Hasta dónde se llega caminando</h2><table>' +
+      c.anillos.map(function (x) {
+        return '<tr><td>' + x.minutos + ' minutos · ' + x.metros + ' m de recorrido</td>' +
+          '<td class="n">' + x.usos + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      (a && dif > 0
+        ? '<p class="pie">A ' + a.minutos + ' minutos caminando se llega a ' + a.usos +
+          ' usos; en línea recta parecían ' + a.usosRecta + '. Los ' + dif + ' de diferencia ' +
+          'están más lejos de lo que aparentan porque hay que dar la vuelta.</p>'
+        : a
+          ? '<p class="pie">A ' + a.minutos + ' minutos se llega a ' + a.usos +
+            ' usos: acá la línea recta no engañaba.</p>'
+          : '') +
+      '<p class="pie">Recorrido por las calles registradas a ' + (c.pasoMPorMin || 80) +
+      ' metros por minuto; el lote engancha a la calle más cercana, a ' +
+      c.distanciaAlaCalleM + ' m. No sabe si hay andén, dónde cruzar ni si la cuadra sube.</p>';
+  }
+
   function campoImpreso(c) {
     if (!c) return '';
     var nv = (c.nuevos || []).length, ds = (c.discrepancias || []).length;
@@ -1077,12 +1111,23 @@
     var lote = o.lote !== undefined ? o.lote : S.lote;
     var loteA = o.loteAnalisis !== undefined ? o.loteAnalisis
               : (function () { try { return analisisDelLote(); } catch (e) { return null; } })();
+    var cam = o.caminata !== undefined ? o.caminata : S.caminata;
     var ter = o.terreno !== undefined ? o.terreno : S.terreno;
     var cli = o.clima !== undefined ? o.clima : S.clima;
     var trz = o.trazado !== undefined ? o.trazado : S.trazado;
     var huellas = o.huellas !== undefined ? o.huellas : S.trzHuellas;
     var nombre = String(o.nombre !== undefined ? o.nombre : (S.nombreGuardado || '')).trim();
     var esPol = meta.forma === 'poligono';
+    /* Dos formatos del mismo pliego: 60 × 90 vertical, que es el que entra en
+       cualquier plotter, y 90 × 60 acostado, que es como se cuelga en un panel
+       de entrega. Cambia el papel y el número de columnas: doce en vez de
+       seis, con los mismos anchos de caja, así que entran el doble por fila y
+       la pila de filas se parte por la mitad. Eso es lo que compensa los
+       300 mm de alto que se pierden al acostar el pliego; el contenido es
+       exactamente el mismo. */
+    var horiz = !!o.horizontal;
+    var HOJA_W = horiz ? 900 : 600, HOJA_H = horiz ? 600 : 900;
+    var NCOL = horiz ? 12 : 6;
     var A = window.URBIS_PC_ANALISIS;
     // El catálogo de grupos y sus colores: se lee antes del plano porque el
     // plano ya los necesita para pintar cada punto.
@@ -1102,8 +1147,13 @@
        elástico de la hoja, porque es el único al que encoger no le quita
        información: el dibujo se escala dentro. */
     var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
-                 (trz && trz.espacio && trz.espacio.piezas ? 1 : 0);
-    var altoDelPlano = Math.max(150, 370 - 45 * extras);
+                 (trz && trz.espacio && trz.espacio.piezas ? 1 : 0) +
+                 (cam && cam.anillos && cam.anillos.length ? 1 : 0);
+    /* Acostado el plano puede ser bastante más alto: la columna en la que va
+       es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
+       quedaba con una banda blanca de 13 cm al pie. */
+    var altoDelPlano = horiz ? Math.max(300, 765 - 45 * extras)
+                             : Math.max(150, 370 - 45 * extras);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
@@ -1181,12 +1231,12 @@
     var hoy = new Date();
     return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
       '<title>Lámina · ' + esc(nombre || 'Análisis urbano') + '</title><style>' +
-      '@page{ size:600mm 900mm; margin:0 }' +
+      '@page{ size:' + HOJA_W + 'mm ' + HOJA_H + 'mm; margin:0 }' +
       '*{ box-sizing:border-box }' +
-      'html,body{ width:600mm; height:900mm; margin:0; padding:0;' +
+      'html,body{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; margin:0; padding:0;' +
         'font-family:Inter,"Segoe UI",system-ui,sans-serif; color:#0F1F2E;' +
         '-webkit-print-color-adjust:exact; print-color-adjust:exact }' +
-      '.hoja{ width:600mm; height:900mm; padding:22mm 20mm 16mm; display:flex;' +
+      '.hoja{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; padding:22mm 20mm 16mm; display:flex;' +
         'flex-direction:column; gap:9mm; background:#fff }' +
       // Cabecera: el logo arriba a la izquierda, como se pidió.
       '.cab{ display:flex; align-items:flex-start; gap:8mm; border-bottom:1.2mm solid #34CCFE; padding-bottom:6mm }' +
@@ -1199,8 +1249,8 @@
       '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
       // Rejilla de cajas
-      '.rej{ display:grid; grid-template-columns:repeat(6,1fr); gap:6mm; flex:1; min-height:0;' +
-        'align-content:start }' +
+      '.rej{ display:grid; grid-template-columns:repeat(' + NCOL + ',1fr); gap:6mm; flex:1;' +
+        'min-height:0; align-content:start }' +
       '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:5mm; background:#fff;' +
         'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
       '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
@@ -1539,6 +1589,38 @@
               'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
           })(), 'g3') +
 
+        /* Va pegada a «A distancia de caminar» a propósito: una mide en línea
+           recta sobre todo el sector, la otra recorre las calles desde el
+           lote. Leídas juntas, la diferencia entre las dos cifras es el
+           argumento. */
+        caja('Hasta dónde se camina desde el lote',
+          (function () {
+            if (!cam || !cam.anillos || !cam.anillos.length) return '';
+            var mayor = cam.anillos[cam.anillos.length - 1];
+            var a = cam.anillos[1] || cam.anillos[0];
+            var dif = a ? (a.usosRecta - a.usos) : 0;
+            return '<div class="camina">' +
+                cam.anillos.map(function (x) {
+                  var pct = mayor.usos ? Math.round(100 * x.usos / mayor.usos) : 0;
+                  return '<div class="cm">' +
+                    '<b>' + x.usos + '</b>' +
+                    '<span>' + x.minutos + ' minutos</span>' +
+                    '<i><u style="width:' + pct + '%"></u></i>' +
+                    '<small>' + x.metros + ' m de recorrido por las calles</small>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+              (a && dif > 0
+                ? '<p class="lee">A ' + a.minutos + ' minutos se llega a ' + a.usos +
+                  ' usos; en línea recta parecían ' + a.usosRecta + '.</p>'
+                : a ? '<p class="lee">Acá la línea recta no engañaba: las calles llevan derecho.</p>'
+                    : '') +
+              '<p class="nota">Recorrido real por las calles registradas, a ' +
+              (cam.pasoMPorMin || 80) + ' m por minuto; engancha a la calle más cercana, a ' +
+              cam.distanciaAlaCalleM + ' m. No sabe si hay andén, dónde cruzar ni si la cuadra ' +
+              'sube.</p>';
+          })(), 'g3') +
+
         caja('Lo levantado en campo',
           (function () {
             if (!cmp) return '';
@@ -1673,6 +1755,7 @@
       }) + '</table>' +
       loteImpresoIntervenir(o.loteAnalisis !== undefined ? o.loteAnalisis
         : (function () { try { return analisisDelLote(); } catch (e) { return null; } })()) +
+      caminataImpresa(o.caminata !== undefined ? o.caminata : S.caminata) +
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
@@ -1856,12 +1939,19 @@
         setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
         return;
       }
-      if (acc === 'lamina') {
+      if (acc === 'lamina' || acc === 'lamina-h') {
         if (!S.resultado) return;
         var caja3 = document.getElementById('pcr-nombre');
         S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
-        abrirImpresion(laminaImprimible(S.resultado), function (m) { S.aviso = m; pintar(); });
+        abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
+                       function (m) { S.aviso = m; pintar(); });
         return;
+      }
+      if (acc === 'caminata-mapa') {
+        var puso = pintarCaminata(!S.caminataEnMapa);
+        S.encogida = S.caminataEnMapa;
+        if (!puso && !S.caminataEnMapa) S.aviso = 'No hay recorrido que dibujar.';
+        pintar(); return;
       }
       if (acc === 'lote-dibujar') { iniciarLote(); return; }
       if (acc === 'lote-borrar') { cancelarLote(); return; }
@@ -2228,7 +2318,8 @@
        vacíos—. Antes solo contaba el calor, así que «Ver en el mapa» del
        raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
        el botón y no pasaba nada visible. */
-    var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos;
+    var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
+                  S.caminataEnMapa;
     /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
        esquinas de un terreno sobre un mapa tapado por un panel. */
     var encoger = S.loteDibujando ||
@@ -2278,6 +2369,11 @@
             detalle: (S.trazado && S.trazado.llenos)
               ? S.trazado.llenos.pctLleno + '% construido · ' + (S.trzHuellas || []).length + ' huellas'
               : 'las huellas de los edificios' }
+      : S.caminataEnMapa
+        ? { icono: 'caminar', titulo: 'Hasta dónde se camina',
+            detalle: (S.caminata && S.caminata.anillos && S.caminata.anillos.length)
+              ? 'desde el lote · 5, 10 y 15 minutos'
+              : 'desde el lote' }
       : S.cobEnMapa
         ? { icono: 'satelite', titulo: 'Cobertura del suelo',
             detalle: (S.cobertura && S.cobertura.clases
@@ -2310,6 +2406,11 @@
           ? '<button type="button" data-pcr="estratos" class="pcr-mini">' +
               ico('apagar', 16) + 'Quitar los estratos del mapa</button>' +
             (S.estratos.leyenda || '')
+          : '') +
+        (S.caminataEnMapa
+          ? '<button type="button" data-pcr="caminata-mapa" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar el recorrido del mapa</button>' +
+            '<p class="pcr-pista">Azul oscuro, 5 minutos; celeste, 10; claro, 15.</p>'
           : '') +
         '<div class="pcr-calor-chips">' +
           chip('todos', 'Todos los usos', st.total || 0, null) +
@@ -4808,7 +4909,8 @@
   }
 
   function cancelarLote() {
-    S.lote = null; S.loteDibujando = false; S.loteAviso = '';
+    S.lote = null; S.loteDibujando = false; S.loteAviso = ''; S.caminata = null;
+    pintarCaminata(false);
     soltarMapaLote();
     pintarLote(); pintar(); pintarBarraLote();
   }
@@ -4827,6 +4929,7 @@
     S.loteAviso = loteDentroDelArea() ? ''
       : 'El lote quedó fuera del área analizada: lo que tiene alrededor no está medido.';
     S.encogida = false;
+    recalcularCaminata();
     pintarLote(); pintar(); pintarBarraLote();
   }
 
@@ -5144,6 +5247,301 @@
             '<button type="button" data-pcr="lote-borrar" class="pcr-mini">' +
               ico('borrar', 16) + 'Quitar el lote</button>' +
           '</div>');
+  }
+
+
+  /* ── Hasta dónde se llega caminando ────────────────────────────────────
+     Toda la cobertura que calcula esta app hasta acá se mide en LÍNEA RECTA,
+     y en cada bloque se dice: «caminando siempre es más». Es verdad y es una
+     limitación, y con la forma de las calles ya en la mano se puede quitar.
+
+     Esto camina de verdad: arma un grafo con los tramos de vía del sector,
+     engancha el lote a la calle más cercana y recorre desde ahí sumando
+     metros, como caminaría una persona. Lo que sale es lo que se alcanza en
+     cinco, diez y quince minutos SIGUIENDO LAS CALLES, con sus vueltas.
+
+     Lo que sigue sin saber, y se dice donde se lee: si hay andén, si hay
+     dónde cruzar, y si la cuadra es una subida. En Cúcuta las tres cosas
+     cambian mucho un recorrido de diez minutos — y las tres se levantan
+     caminándolas, que es el trabajo del curso. */
+  var PASO_M_POR_MIN = 80;   // paso corriente de una persona adulta
+
+  /* El grafo. Los nodos se redondean a seis decimales —unos diez centímetros—
+     para que dos tramos que comparten esquina compartan también el nodo: sin
+     eso el grafo queda hecho de pedazos sueltos y no se puede caminar de una
+     calle a la otra. */
+  function grafoDeVias(vias) {
+    var nodos = {}, ady = {};
+    var clave = function (p) { return p.lat.toFixed(6) + ',' + p.lng.toFixed(6); };
+    (vias || []).forEach(function (v) {
+      for (var i = 1; i < v.pts.length; i++) {
+        var a = v.pts[i - 1], b = v.pts[i];
+        var ka = clave(a), kb = clave(b);
+        if (ka === kb) continue;
+        var d = haversineM(a, b);
+        if (!(d > 0)) continue;
+        if (!nodos[ka]) nodos[ka] = a;
+        if (!nodos[kb]) nodos[kb] = b;
+        (ady[ka] || (ady[ka] = [])).push({ a: kb, d: d });
+        (ady[kb] || (ady[kb] = [])).push({ a: ka, d: d });
+      }
+    });
+    return { nodos: nodos, ady: ady };
+  }
+
+  /* Dijkstra desde el nodo más cercano al punto de partida. Devuelve la
+     distancia caminando hasta cada nodo alcanzable dentro del tope. */
+  function caminarDesde(grafo, origen, topeM) {
+    var claves = Object.keys(grafo.nodos);
+    if (!claves.length) return null;
+    // Enganchar a la calle: el nodo más cercano al punto de partida.
+    var kIni = null, dIni = Infinity;
+    claves.forEach(function (k) {
+      var d = haversineM(origen, grafo.nodos[k]);
+      if (d < dIni) { dIni = d; kIni = k; }
+    });
+    // Si la calle más cercana está a más de cien metros, engancharse ahí sería
+    // inventar un camino que nadie recorre. Mejor decir que no se puede.
+    if (!kIni || dIni > 100) return { lejos: true, distanciaAlaCalleM: Math.round(dIni) };
+
+    var dist = {}; dist[kIni] = 0;
+    /* Cola por montón binario. Con una lista ordenada esto se vuelve
+       cuadrático y un sector del centro con veinte mil tramos deja el teléfono
+       pensando varios segundos. */
+    var cola = [{ k: kIni, d: 0 }];
+    var sacar = function () {
+      if (!cola.length) return null;
+      var top = cola[0], ult = cola.pop();
+      if (cola.length) {
+        cola[0] = ult;
+        var i = 0;
+        for (;;) {
+          var iz = 2 * i + 1, de = 2 * i + 2, m = i;
+          if (iz < cola.length && cola[iz].d < cola[m].d) m = iz;
+          if (de < cola.length && cola[de].d < cola[m].d) m = de;
+          if (m === i) break;
+          var t = cola[i]; cola[i] = cola[m]; cola[m] = t; i = m;
+        }
+      }
+      return top;
+    };
+    var meter = function (k, d) {
+      cola.push({ k: k, d: d });
+      var i = cola.length - 1;
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (cola[p].d <= cola[i].d) break;
+        var t = cola[i]; cola[i] = cola[p]; cola[p] = t; i = p;
+      }
+    };
+
+    var visto = {};
+    for (;;) {
+      var top = sacar();
+      if (!top) break;
+      if (visto[top.k]) continue;
+      visto[top.k] = true;
+      if (top.d > topeM) continue;
+      var vecinos = grafo.ady[top.k] || [];
+      for (var i = 0; i < vecinos.length; i++) {
+        var nd = top.d + vecinos[i].d;
+        if (nd > topeM) continue;
+        if (dist[vecinos[i].a] === undefined || nd < dist[vecinos[i].a]) {
+          dist[vecinos[i].a] = nd;
+          meter(vecinos[i].a, nd);
+        }
+      }
+    }
+    return { dist: dist, kIni: kIni, distanciaAlaCalleM: Math.round(dIni) };
+  }
+
+  function caminataDesdeLote() {
+    var pts = S.lote || [];
+    if (pts.length < 3) return null;
+    var vias = S.trzVias || [];
+    if (!vias.length) return { sinVias: true };
+
+    var centro = centroideDe(pts);
+    var grafo = grafoDeVias(vias);
+    var minutos = [5, 10, 15];
+    var tope = minutos[minutos.length - 1] * PASO_M_POR_MIN;
+    var r = caminarDesde(grafo, centro, tope);
+    if (!r) return { sinVias: true };
+    if (r.lejos) return { lejos: true, distanciaAlaCalleM: r.distanciaAlaCalleM };
+
+    var pois = (S.resultado && S.resultado.pois) || [];
+    var anillos = minutos.map(function (min) {
+      var metros = min * PASO_M_POR_MIN;
+      // Los nodos que se alcanzan en ese tiempo.
+      var alcanzados = [];
+      Object.keys(r.dist).forEach(function (k) {
+        if (r.dist[k] <= metros) alcanzados.push(grafo.nodos[k]);
+      });
+      /* Un uso se considera alcanzado si está a menos de 40 m de un punto de
+         calle al que se llega a tiempo: es la distancia de la puerta a la
+         calzada, incluyendo el antejardín y el andén. */
+      var conta = 0, ejemplos = [];
+      pois.forEach(function (p) {
+        for (var i = 0; i < alcanzados.length; i++) {
+          if (haversineM({ lat: p.lat, lng: p.lng }, alcanzados[i]) <= 40) {
+            conta++;
+            if (ejemplos.length < 5 && p.nombre) ejemplos.push(p.nombre);
+            return;
+          }
+        }
+      });
+      // Y en línea recta, para poder poner las dos cifras una al lado de otra.
+      var recta = pois.filter(function (p) {
+        return haversineM(centro, { lat: p.lat, lng: p.lng }) <= metros;
+      }).length;
+      return { minutos: min, metros: metros, nodos: alcanzados.length,
+               usos: conta, usosRecta: recta, ejemplos: ejemplos };
+    });
+
+    /* Los tramos que se recorren, para poder pintarlos. Un tramo pertenece al
+       anillo del minuto en que se alcanza su extremo MÁS LEJANO: si para
+       llegar al final de la cuadra hacen falta doce minutos, esa cuadra no es
+       de cinco aunque empiece cerca. */
+    var tramos = [];
+    Object.keys(grafo.ady).forEach(function (ka) {
+      var da = r.dist[ka];
+      if (da === undefined) return;
+      grafo.ady[ka].forEach(function (v) {
+        // Cada arista está dos veces (ida y vuelta): se toma una sola.
+        if (ka >= v.a) return;
+        var db = r.dist[v.a];
+        if (db === undefined) return;
+        var lejos = Math.max(da, db);
+        var min = null;
+        for (var i = 0; i < minutos.length; i++) {
+          if (lejos <= minutos[i] * PASO_M_POR_MIN) { min = minutos[i]; break; }
+        }
+        if (min === null || tramos.length >= 4000) return;
+        tramos.push({ a: grafo.nodos[ka], b: grafo.nodos[v.a], min: min });
+      });
+    });
+
+    return {
+      anillos: anillos, distanciaAlaCalleM: r.distanciaAlaCalleM,
+      pasoMPorMin: PASO_M_POR_MIN,
+      nodosTotales: Object.keys(grafo.nodos).length,
+      tramos: tramos
+    };
+  }
+
+  /* La caminata se calcula una sola vez y se guarda. Recorrer veinte mil
+     tramos en cada repintado de la hoja —y la hoja se repinta con cada toque—
+     dejaría el teléfono pensando por nada: ni el lote ni las calles cambian
+     entre un repintado y el siguiente. */
+  function recalcularCaminata() {
+    try { S.caminata = caminataDesdeLote(); } catch (e) { S.caminata = null; }
+  }
+
+
+  /* El recorrido, sobre el mapa. Es lo que convierte una tabla en un
+     argumento: se ve la mancha de lo que se alcanza a pie y se ve dónde se
+     corta. Tres colores, del más cercano al más lejano. */
+  var capaCaminata = null;
+  var COLOR_CAMINATA = { 5: '#0A6F9E', 10: '#34CCFE', 15: '#B8DFF2' };
+
+  function pintarCaminata(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaCaminata) { try { m.removeLayer(capaCaminata); } catch (e) {} capaCaminata = null; }
+    S.caminataEnMapa = false;
+    if (!encender) return false;
+    var c = S.caminata;
+    if (!c || !c.tramos || !c.tramos.length) return false;
+
+    capaCaminata = L.layerGroup();
+    /* De más lejano a más cercano, para que el color del anillo corto quede
+       ENCIMA: si se pintan al revés, el celeste claro de los quince minutos
+       tapa el azul de los cinco y la mancha se lee al revés de como es. */
+    [15, 10, 5].forEach(function (min) {
+      c.tramos.forEach(function (t) {
+        if (t.min !== min) return;
+        try {
+          L.polyline([[t.a.lat, t.a.lng], [t.b.lat, t.b.lng]], {
+            color: COLOR_CAMINATA[min] || '#34CCFE',
+            weight: min === 5 ? 6 : min === 10 ? 5 : 4,
+            opacity: 0.9, lineCap: 'round', interactive: false,
+            className: 'pcr-caminata-trazo'
+          }).addTo(capaCaminata);
+        } catch (e) {}
+      });
+    });
+    capaCaminata.addTo(m);
+    S.caminataEnMapa = true;
+    return true;
+  }
+
+  /* `guardada` llega desde una ficha reabierta: ahí el recorrido es una copia
+     sin tramos —pintarlo en el mapa pediría una geometría que no se guardó— y
+     el botón sobra. */
+  function bloqueCaminata(dato, guardada) {
+    var c = dato !== undefined && dato !== null ? dato : S.caminata;
+    if (!guardada && (!S.lote || S.lote.length < 3)) return '';
+    if (!c) return '';
+    if (c.sinVias) {
+      return h4('caminar', 'Hasta dónde se llega caminando') +
+        '<p class="pcr-pista">Para caminar hace falta la forma de las calles: medí el <b>trazado del ' +
+        'sector</b> y este bloque se llena solo. Sin las calles, lo único que se puede medir es la ' +
+        'línea recta, que siempre miente a favor.</p>';
+    }
+    if (c.lejos) {
+      return h4('caminar', 'Hasta dónde se llega caminando') +
+        '<p class="pcr-conc">La calle registrada más cercana está a <b>' + c.distanciaAlaCalleM +
+        ' m</b> del lote. Enganchar el recorrido a esa distancia sería inventar un camino que nadie ' +
+        'hace: puede que el lote sea interior de manzana, o que la calle que lo bordea no esté ' +
+        'mapeada. Mapearla es lo que falta.</p>';
+    }
+    var mayor = c.anillos[c.anillos.length - 1];
+    return h4('caminar', 'Hasta dónde se llega caminando') +
+      '<p class="pcr-pista">Esto no es línea recta: recorre las calles del sector desde el lote, con ' +
+      'sus vueltas, a ' + c.pasoMPorMin + ' metros por minuto.</p>' +
+      '<div class="pcr-niveles">' +
+        c.anillos.map(function (a) {
+          var pct = mayor.usos ? Math.round(100 * a.usos / mayor.usos) : 0;
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + a.minutos + ' minutos' +
+              '<small class="pcr-nivel-sub">' + a.metros + ' m de recorrido</small></span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' + pct + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + a.usos + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (function () {
+        var a = c.anillos[1] || c.anillos[0];
+        if (!a) return '';
+        var dif = a.usosRecta - a.usos;
+        if (dif <= 0) {
+          return '<p class="pcr-conc">A ' + a.minutos + ' minutos se llega a <b>' + a.usos +
+            '</b> usos. Acá la línea recta no engañaba: las calles llevan derecho.</p>';
+        }
+        return '<p class="pcr-conc">A ' + a.minutos + ' minutos caminando se llega a <b>' + a.usos +
+          '</b> usos. En línea recta parecían <b>' + a.usosRecta + '</b>: ' + dif + ' quedan más ' +
+          'lejos de lo que aparentan porque hay que dar la vuelta.</p>';
+      })() +
+      (mayor.ejemplos.length
+        ? '<p class="pcr-pista">A ' + mayor.minutos + ' minutos: ' +
+          esc(mayor.ejemplos.join(' · ')) + '.</p>'
+        : '') +
+      ((c.tramos || []).length
+        ? '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="caminata-mapa" class="pcr-mini pcr-llevar-b">' +
+              (S.caminataEnMapa ? ico('apagar', 16) + 'Quitar del mapa'
+                                : ico('mapa', 16) + 'Ver el recorrido en el mapa') +
+            '</button>' +
+          '</div>' +
+          (S.caminataEnMapa
+            ? '<p class="pcr-pista">Azul oscuro, 5 minutos; celeste, 10; claro, 15. ' +
+              'Cerrá esta hoja para verlo.</p>'
+            : '')
+        : '') +
+      '<p class="pcr-pista">El lote engancha a la calle más cercana, a <b>' + c.distanciaAlaCalleM +
+      ' m</b>. Lo que este recorrido <b>no</b> sabe: si hay andén, si hay dónde cruzar y si la cuadra ' +
+      'es una subida. Las tres cambian mucho diez minutos de camino en Cúcuta, y las tres se ' +
+      'levantan caminándolas.</p>';
   }
 
   function bloqueMovilidad(st) {
@@ -5670,6 +6068,9 @@
       });
     }).then(function (res) {
       S.trazado = res; S.trzCargando = false; S.trzAviso = '';
+      // Con las calles ya en la mano, el recorrido a pie desde el lote deja
+      // de ser una promesa y se puede calcular.
+      recalcularCaminata();
       // Se guarda con la ficha: pesa unas pocas cifras y es media lámina.
       try {
         if (S.fichaActualId && S.resultado) {
@@ -6009,6 +6410,7 @@
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
         bloqueLoteIntervenir() +
+        bloqueCaminata() +
         bloqueAlturas(st) +
         bloqueTerreno() +
         bloqueClima() +
@@ -6087,10 +6489,12 @@
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
           '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
           '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b">' + ico('documento') + 'Lámina 60×90</button>' +
+          '<button type="button" data-pcr="lamina-h" class="pcr-mini pcr-llevar-b">' + ico('documento') + 'Lámina 90×60</button>' +
         '</div>' +
-        '<p class="pcr-pista">La <b>lámina</b> arma una hoja vertical de 60 × 90 cm con el plano del ' +
-        'sector y todo lo medido, lista para imprimir o colgar. Lo que no mediste no sale: ' +
-        'medí el terreno, el clima y el trazado antes si querés que aparezcan.</p>' +
+        '<p class="pcr-pista">La <b>lámina</b> arma un solo pliego con el plano del sector y todo lo ' +
+        'medido, listo para imprimir o colgar: <b>60 × 90 cm</b> parada o <b>90 × 60 cm</b> ' +
+        'acostada, con el mismo contenido. Lo que no mediste no sale: medí el terreno, el clima y ' +
+        'el trazado antes si querés que aparezcan.</p>' +
 
         // Guardar el ÁREA, no la ficha: queda en la misma lista de áreas de
         // Pro City, así que se puede volver a ella sin redibujarla y el
@@ -6565,7 +6969,8 @@
       S.trzVias = null;
       // El lote pertenece al sector que se estaba mirando. Con otro sector es
       // un polígono huérfano flotando en un mapa que ya no es el suyo.
-      S.lote = null; S.loteDibujando = false; pintarLote();
+      S.lote = null; S.loteDibujando = false; S.caminata = null;
+      pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; pintarLlenos(false);
     }
@@ -6714,6 +7119,7 @@
                    (f.trazado ? bloquePerfil() : '') +
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
                    (f.loteAnalisis ? bloqueLoteIntervenir(f.loteAnalisis, true) : '') +
+                   (f.caminata ? bloqueCaminata(f.caminata, true) : '') +
                    (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
@@ -6881,6 +7287,8 @@
                     esc(f.id) + '">' + ico('imprimir') + 'PDF</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-lamina" data-id="' +
                     esc(f.id) + '">' + ico('documento') + 'Lámina 60×90</button>' +
+                  '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-lamina-h" data-id="' +
+                    esc(f.id) + '">' + ico('documento') + 'Lámina 90×60</button>' +
                   (hayCampo
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-comparar" data-id="' +
                       esc(f.id) + '">' + ico('comparar', 16) + 'Comparar con el campo</button>'
@@ -7000,7 +7408,8 @@
                                    // último sector medido.
                                    trazado: f.trazado || null, terreno: f.terreno || null,
                                    clima: f.clima || null,
-                                   loteAnalisis: f.loteAnalisis || null });
+                                   loteAnalisis: f.loteAnalisis || null,
+                                   caminata: f.caminata || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
@@ -7043,7 +7452,7 @@
       abrirImpresion(htmlCot, function (m) { S.avisoPestana = m; repintar(); });
       return true;
     }
-    if (name === 'lamina') {
+    if (name === 'lamina' || name === 'lamina-h') {
       if (!f) return true;
       // La lámina de ESTA ficha: su nombre, su terreno, su clima, su trazado.
       // Si se dejara leer el estado, un sector guardado en marzo saldría con
@@ -7054,7 +7463,9 @@
           nombre: f.nombre || '',
           trazado: f.trazado || null, terreno: f.terreno || null,
           clima: f.clima || null, campo: f.campo || null, huellas: null,
-          lote: f.lote || null, loteAnalisis: f.loteAnalisis || null
+          lote: f.lote || null, loteAnalisis: f.loteAnalisis || null,
+          caminata: f.caminata || null,
+          horizontal: name === 'lamina-h'
         }),
         function (m) { S.avisoPestana = m; repintar(); });
       return true;
