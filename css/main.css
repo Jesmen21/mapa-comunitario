@@ -1,99 +1,102 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=628-listo-para-apk");
-@import url("./00-brand-urbis.css?v=628-listo-para-apk");
+@import url("./00-app-shell.css?v=629-tres-apps");
+@import url("./00-brand-urbis.css?v=629-tres-apps");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=628-listo-para-apk");
-@import url("./02-map-tools-routing.css?v=628-listo-para-apk");
-@import url("./03-basemap-and-panels.css?v=628-listo-para-apk");
-@import url("./04-automap-markers-performance.css?v=628-listo-para-apk");
-@import url("./05-clusters.css?v=628-listo-para-apk");
-@import url("./06-landing.css?v=628-listo-para-apk");
-@import url("./07-mobile-advanced.css?v=628-listo-para-apk");
+@import url("./01-base-layout.css?v=629-tres-apps");
+@import url("./02-map-tools-routing.css?v=629-tres-apps");
+@import url("./03-basemap-and-panels.css?v=629-tres-apps");
+@import url("./04-automap-markers-performance.css?v=629-tres-apps");
+@import url("./05-clusters.css?v=629-tres-apps");
+@import url("./06-landing.css?v=629-tres-apps");
+@import url("./07-mobile-advanced.css?v=629-tres-apps");
 
-@import url("./08-role-accessibility.css?v=628-listo-para-apk");
-@import url("./09-achievements.css?v=628-listo-para-apk");
+@import url("./08-role-accessibility.css?v=629-tres-apps");
+@import url("./09-achievements.css?v=629-tres-apps");
 
-@import url("./10-sport.css?v=628-listo-para-apk");
+@import url("./10-sport.css?v=629-tres-apps");
 
 /* V36 high-contrast fix */
-@import url("./99-contrast-fix.css?v=628-listo-para-apk");
+@import url("./99-contrast-fix.css?v=629-tres-apps");
 
-@import url("12-module-access.css?v=628-listo-para-apk");
+@import url("12-module-access.css?v=629-tres-apps");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=628-listo-para-apk");
+@import url("./14-mobile-functional-app.css?v=629-tres-apps");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=628-listo-para-apk");
+@import url("./16-mobility-clean-traffic.css?v=629-tres-apps");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=628-listo-para-apk');
+@import url('./28-mobile-kawaii-entry.css?v=629-tres-apps');
 
-@import url('./29-mobile-kawaii-platform.css?v=628-listo-para-apk');
+@import url('./29-mobile-kawaii-platform.css?v=629-tres-apps');
 
-@import url('./30-zoom-marker-optimizer.css?v=628-listo-para-apk');
+@import url('./30-zoom-marker-optimizer.css?v=629-tres-apps');
 
-@import url('./36-mobility-static-search.css?v=628-listo-para-apk');
+@import url('./36-mobility-static-search.css?v=629-tres-apps');
 
 
-@import url('./41-email-registration-auth.css?v=628-listo-para-apk');
+@import url('./41-email-registration-auth.css?v=629-tres-apps');
 
-@import url('./42-turquoise-refresh.css?v=628-listo-para-apk');
+@import url('./42-turquoise-refresh.css?v=629-tres-apps');
 
-@import url('./43-clean-user-entry.css?v=628-listo-para-apk');
+@import url('./43-clean-user-entry.css?v=629-tres-apps');
 
-@import url('./44-mobile-auth-onboarding.css?v=628-listo-para-apk');
+@import url('./44-mobile-auth-onboarding.css?v=629-tres-apps');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=628-listo-para-apk');
+@import url('./45-mascotas-fundacion.css?v=629-tres-apps');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=628-listo-para-apk');
+@import url('./46-runner-strava.css?v=629-tres-apps');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=628-listo-para-apk');
+@import url('./47-aurea-menu.css?v=629-tres-apps');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=628-listo-para-apk');
+@import url('./48-runner-stats.css?v=629-tres-apps');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=628-listo-para-apk');
+@import url('./49-urbis-analisis.css?v=629-tres-apps');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=628-listo-para-apk');
+@import url('./99-mobile-clean-core.css?v=629-tres-apps');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=628-listo-para-apk');
+@import url('./99-safe-destination-dot.css?v=629-tres-apps');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=628-listo-para-apk');
+@import url('./51-cute-theme-pc.css?v=629-tres-apps');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=628-listo-para-apk');
+@import url('./52-urbis-pro-city.css?v=629-tres-apps');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=628-listo-para-apk');
-@import url('./68-procity-reconocimiento.css?v=628-listo-para-apk');
-@import url('./69-licencia.css?v=628-listo-para-apk');
+@import url('./24-procity-analisis.css?v=629-tres-apps');
+@import url('./68-procity-reconocimiento.css?v=629-tres-apps');
+@import url('./69-licencia.css?v=629-tres-apps');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=628-listo-para-apk');
+@import url('./53-auth-celeste.css?v=629-tres-apps');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=628-listo-para-apk');
+@import url('./54-config-admin.css?v=629-tres-apps');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=628-listo-para-apk');
+@import url('./55-vitrina.css?v=629-tres-apps');
+/* El último de la lista a propósito: esconde piezas que las hojas
+   anteriores muestran, y en CSS gana el que llega después. */
+@import url('./70-modo-app.css?v=629-tres-apps');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */

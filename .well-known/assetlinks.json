@@ -3,9 +3,29 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "city.urbispro.educativo",
+      "sha256_cert_fingerprints": [
+        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-EDUCATIVO"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "city.urbispro.app",
       "sha256_cert_fingerprints": [
-        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DE-TU-CLAVE-DE-FIRMA"
+        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-CIUDADANO"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "city.urbispro.empresas",
+      "sha256_cert_fingerprints": [
+        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-EMPRESARIAL"
       ]
     }
   }

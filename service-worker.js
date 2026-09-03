@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v628-listo-para-apk';
+const URBIS_CACHE = 'urbis-v629-tres-apps';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -144,6 +144,8 @@ const URBIS_ASSETS = [
   './js/39-mobility-map-picker-hardfix.js',
   './js/64-analisis-edu.js',
   './js/65-analisis-edu-ui.js',
+  './js/70-modo-app.js',
+  './css/70-modo-app.css',
 ];
 
 self.addEventListener('install', event => {

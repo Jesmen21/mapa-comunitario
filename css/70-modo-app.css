@@ -1,0 +1,20 @@
+/* URBIS · MODO DE APLICACIÓN (css/70)
+   ─────────────────────────────────────────────────────────────────────────
+   Lo que sobra en cada APK. El JS quita las tarjetas del inicio; acá se
+   ocultan las piezas de navegación que llevan a módulos que en ese modo no
+   existen. Sin esto el estudiante ve una barra inferior con «Rush» y
+   «Eventos» que no llevan a ninguna parte. */
+
+/* ── Modo educativo: solo Pro City ─────────────────────────────────── */
+[data-urbis-modo="educativo"] .u52-bottom-nav button[data-u52-go="map"],
+[data-urbis-modo="educativo"] .u52-bottom-nav button[data-u52-go="sport"],
+[data-urbis-modo="educativo"] .u52-bottom-nav button[data-u52-go="progress"],
+[data-urbis-modo="educativo"] .u52-bottom-nav button[data-u52-go="rush-social"],
+[data-urbis-modo="educativo"] .u52-bottom-nav button[data-u52-go="timeline"]{
+  display:none !important;
+}
+/* El aviso de módulos en desarrollo tampoco pinta nada acá. */
+[data-urbis-modo="educativo"] .u52-jac-dev-grid[aria-label*="desarrollo"]{ display:none !important; }
+
+/* ── Modo ciudadano: sin los módulos profesionales ─────────────────── */
+[data-urbis-modo="ciudadano"] .u52-premium-module{ display:none !important; }
