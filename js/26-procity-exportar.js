@@ -369,7 +369,12 @@
   function construirKML(d, opciones){
     const o = opciones || {};
     const ctx = ctxPC();
-    const colorDe = gid => (ctx && ctx.colorGrupo && ctx.colorGrupo[gid]) || '#6b70e0';
+    /* `d.colores` lo trae quien exporta datos que no son de la Matriz —el
+       reconocimiento usa las categorías de OpenStreetMap—. Sin esto, todos
+       sus puntos salían del mismo lila de reserva y el KMZ perdía la única
+       lectura que tenía en Google Earth: el color de cada categoría. */
+    const colorDe = gid => (d.colores && d.colores[gid]) ||
+                           (ctx && ctx.colorGrupo && ctx.colorGrupo[gid]) || '#6b70e0';
     const gruposUsados = [];
     d.puntos.forEach(p => { if (gruposUsados.indexOf(p.gid) === -1) gruposUsados.push(p.gid); });
 
@@ -407,7 +412,12 @@
       ['planta_baja',    'A nivel de calle'],
       ['epoca',          'Época'],
       ['vulnerabilidad', 'Vulnerabilidad potencial'],
-      ['usos',           'Usos']
+      ['usos',           'Usos'],
+      // Los del reconocimiento (js/68): el uso concreto de cada punto y a qué
+      // distancia quedó del centro. Sin ellos, en Google Earth cada marca
+      // decía solo su categoría general y se perdía justo lo que se fue a ver.
+      ['uso',            'Uso'],
+      ['dist_m',         'Distancia (m)']
     ];
     const marcas = d.puntos.map(function (p) {
       const filas = FICHA_KML.filter(par => p[par[0]] !== undefined && p[par[0]] !== '');
@@ -790,7 +800,10 @@
     d.puntos.forEach(function (p) {
       const props = { capa:'puntos', nombre:p.nombre, categoria:p.grupo, gid:p.gid };
       ['materialidad','pisos','planta_baja','frente_activo','epoca','vulnerabilidad',
-       'usos','n_usos'].forEach(function (k) {
+       'usos','n_usos',
+       // Y los del reconocimiento, que es lo que permite filtrar por rubro o
+       // por distancia en QGIS sin volver a la aplicación.
+       'uso','dist_m'].forEach(function (k) {
         if (p[k] !== undefined && p[k] !== '') props[k] = p[k];
       });
       f.push({ type:'Feature', properties: props,
@@ -871,7 +884,8 @@
       const ctx = ctxPC();
       capas += '<g id="puntos" inkscape:label="Puntos mapeados" inkscape:groupmode="layer">' +
         d.puntos.map(function (p) {
-          const col = (ctx && ctx.colorGrupo && ctx.colorGrupo[p.gid]) || '#6b70e0';
+          const col = (d.colores && d.colores[p.gid]) ||
+                      (ctx && ctx.colorGrupo && ctx.colorGrupo[p.gid]) || '#6b70e0';
           return '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="1.6" fill="' + col + '">' +
                  '<title>' + esc(p.nombre + ' · ' + p.grupo) + '</title></circle>';
         }).join('') + '</g>';
@@ -1053,8 +1067,14 @@
     });
   }
 
-  function exportar(formato){
-    const d = recolectar();
+  /* `datos` permite exportar algo que no es el área dibujada de Pro City. Lo
+     usa el reconocimiento (js/68), que tiene su propio contorno —a veces un
+     círculo— y sus propios puntos, los que encontró en OpenStreetMap. La
+     forma del objeto es la misma que devuelve `recolectar`, así que todos los
+     constructores de formato sirven sin tocarlos: era eso, o escribir un
+     segundo KMZ, un segundo DXF y un segundo SVG que envejecerían aparte. */
+  function exportar(formato, datos){
+    const d = datos || recolectar();
     if (!d) { alert('Primero dibuja y cierra un área para exportarla.'); return false; }
     try {
       if (formato === 'kmz') {
@@ -1087,8 +1107,8 @@
 
   // Qué hay disponible ahora mismo, para decirlo en el panel en vez de que el
   // usuario descubra al abrir el archivo que le faltaba analizar la cobertura.
-  function inventario(){
-    const d = recolectar();
+  function inventario(datos){
+    const d = datos || recolectar();
     if (!d) return null;
     return {
       puntos: d.puntos.length,
@@ -1098,13 +1118,18 @@
     };
   }
 
-  function bloque(){
-    const inv = inventario();
+  /* `datos` describe QUÉ se llevaría; `pre` es el prefijo de los data-u52-call,
+     para que otra pantalla pueda montar los mismos botones y atenderlos ella.
+     Sin el prefijo, los clics del reconocimiento acabarían exportando el área
+     de Pro City, que es otra cosa. */
+  function bloque(datos, pre){
+    const inv = inventario(datos);
     const trae = inv ? [
       inv.puntos + ' punto' + (inv.puntos === 1 ? '' : 's'),
       inv.geo ? inv.geo.replace(/^\S+\s/, '') : null,
       inv.cobertura ? 'cobertura en ' + inv.cobertura + ' polígonos' : null
     ].filter(Boolean).join(' · ') : '';
+    const p = pre || 'pca-';
     const falta = inv && !inv.cobertura
       ? '<p class="pca-exp-falta">Todavía no analizaste la cobertura del suelo: si lo haces antes de exportar, ' +
         'los archivos saldrán también con las manchas de vegetación y superficie dura como polígonos.</p>' : '';
@@ -1117,22 +1142,22 @@
       (trae ? '<p class="pca-exp-trae">Ahora mismo se llevaría: <b>' + esc(trae) + '</b>.</p>' : '') +
       falta +
       '<div class="pca-exp-btns">' +
-        '<button type="button" class="pca-exp-todo" data-u52-call="pca-exp-paquete">📦 Paquete completo (ZIP)</button>' +
-        '<button type="button" data-u52-call="pca-exp-kmz">🌍 KMZ · Google Earth</button>' +
-        '<button type="button" data-u52-call="pca-exp-dxf">📐 DXF · AutoCAD</button>' +
-        '<button type="button" data-u52-call="pca-exp-geojson">🗺️ GeoJSON · QGIS</button>' +
-        '<button type="button" data-u52-call="pca-exp-svg">🎨 SVG · Corel / Illustrator</button>' +
-        '<button type="button" data-u52-call="pca-exp-kml" class="pca-exp-sec">KML suelto</button>' +
+        '<button type="button" class="pca-exp-todo" data-u52-call="' + p + 'exp-paquete">📦 Paquete completo (ZIP)</button>' +
+        '<button type="button" data-u52-call="' + p + 'exp-kmz">🌍 KMZ · Google Earth</button>' +
+        '<button type="button" data-u52-call="' + p + 'exp-dxf">📐 DXF · AutoCAD</button>' +
+        '<button type="button" data-u52-call="' + p + 'exp-geojson">🗺️ GeoJSON · QGIS</button>' +
+        '<button type="button" data-u52-call="' + p + 'exp-svg">🎨 SVG · Corel / Illustrator</button>' +
+        '<button type="button" data-u52-call="' + p + 'exp-kml" class="pca-exp-sec">KML suelto</button>' +
       '</div></div>';
   }
 
-  function accion(name){
-    if (name === 'exp-paquete') { exportar('paquete'); return true; }
-    if (name === 'exp-kmz') { exportar('kmz'); return true; }
-    if (name === 'exp-dxf') { exportar('dxf'); return true; }
-    if (name === 'exp-kml') { exportar('kml'); return true; }
-    if (name === 'exp-geojson') { exportar('geojson'); return true; }
-    if (name === 'exp-svg') { exportar('svg'); return true; }
+  function accion(name, datos){
+    if (name === 'exp-paquete') { exportar('paquete', datos); return true; }
+    if (name === 'exp-kmz') { exportar('kmz', datos); return true; }
+    if (name === 'exp-dxf') { exportar('dxf', datos); return true; }
+    if (name === 'exp-kml') { exportar('kml', datos); return true; }
+    if (name === 'exp-geojson') { exportar('geojson', datos); return true; }
+    if (name === 'exp-svg') { exportar('svg', datos); return true; }
     return false;
   }
 

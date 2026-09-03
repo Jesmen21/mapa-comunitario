@@ -859,3 +859,78 @@
 }
 .pcr-hoja .pcr-plan, .pcr-hoja .pcr-tarea,
 .pcr-pestana .pcr-plan, .pcr-pestana .pcr-tarea{ flex:0 0 auto; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Cobertura del suelo y exportación
+   ══════════════════════════════════════════════════════════════════════
+   La barra apilada es la lectura rápida —cuánto verde, cuánta superficie
+   dura— y la lista de abajo el detalle con metros cuadrados. */
+.pcr-cob-barra{
+  display:flex; height:14px; border-radius:7px; overflow:hidden;
+  background:#eef3f7; flex:0 0 auto;
+}
+.pcr-cob-barra i{ display:block; height:100%; }
+.pcr-cob-lista{ display:flex; flex-direction:column; gap:5px; flex:0 0 auto; }
+.pcr-cob-fila{ display:flex; align-items:baseline; gap:7px; }
+.pcr-cob-pin{
+  width:9px; height:9px; border-radius:2px; flex:0 0 auto;
+}
+.pcr-cob-etq{
+  flex:1; min-width:0; font-size:.76rem;
+  color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important;
+}
+.pcr-cob-fila b{
+  font-size:.85rem;
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-cob-fila small{
+  font-size:.68rem; min-width:62px; text-align:right;
+  color:#6b7684 !important; -webkit-text-fill-color:#6b7684 !important;
+}
+.pcr-hoja .pcr-cob-etq, .pcr-pestana .pcr-cob-etq{
+  color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important;
+}
+.pcr-hoja .pcr-cob-fila b, .pcr-pestana .pcr-cob-fila b{
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-hoja .pcr-cob-fila small, .pcr-pestana .pcr-cob-fila small{
+  color:#6b7684 !important; -webkit-text-fill-color:#6b7684 !important;
+}
+
+/* Los botones de exportar: rejilla de dos columnas, porque son seis y en una
+   sola fila cada uno quedaría del ancho de un dedo meñique. */
+.pcr-exp-btns{
+  display:grid; grid-template-columns:1fr 1fr; gap:7px; flex:0 0 auto;
+}
+.pcr-exp-btns .pcr-exp-todo{ grid-column:1 / -1; }
+.pcr-exp-btns .pcr-mini{ width:100%; justify-content:center; text-align:center; }
+
+.pcr-hoja .pcr-cob-barra, .pcr-hoja .pcr-cob-lista, .pcr-hoja .pcr-cob-fila,
+.pcr-hoja .pcr-exp-btns,
+.pcr-pestana .pcr-cob-barra, .pcr-pestana .pcr-cob-lista, .pcr-pestana .pcr-cob-fila,
+.pcr-pestana .pcr-exp-btns{ flex:0 0 auto; }
+
+/* El bloque de exportar de js/26 se dibuja también dentro de la pestaña
+   «Sector»: sus clases vienen del panel de Pro City, así que acá hay que
+   volver a fijarles la tinta —la regla global de URBIS las aclara igual—. */
+.pcr-pestana .pca-exp-ayuda, .pcr-pestana .pca-exp-trae, .pcr-pestana .pca-exp-falta{
+  font-size:.75rem; line-height:1.45;
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-pestana .pca-exp-ayuda b, .pcr-pestana .pca-exp-trae b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-pestana .pca-h-geoexp{
+  font-size:.86rem; margin:10px 0 4px;
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-pestana .pca-exp-btns{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.pcr-pestana .pca-exp-btns button{
+  border:1.5px solid #cfe6f4; background:#fff; border-radius:9px;
+  padding:8px 9px; font-size:.73rem; font-weight:600; cursor:pointer;
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-pestana .pca-exp-btns .pca-exp-todo{
+  grid-column:1 / -1; background:#075E88; border-color:#075E88;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}

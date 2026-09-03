@@ -2596,11 +2596,18 @@ bloquesDiag,
     return out;
   }
 
-  function analizarRaster(progreso){
+  /* `ptsExternos` permite analizar un contorno que NO es el área dibujada en
+     Pro City. Lo usa el reconocimiento (js/68): cuando se analiza por radio
+     no hay ningún trazo, y convertir el círculo en polígono y metérselo a
+     Pro City le cambiaría al usuario el área que tenía puesta. Sin el
+     argumento se comporta igual que siempre. */
+  function analizarRaster(progreso, ptsExternos){
     const avisar = typeof progreso === 'function' ? progreso : function(){};
+    const externo = !!(ptsExternos && ptsExternos.length >= 3);
+    const contorno = externo ? ptsExternos.slice() : S.pts;
     return new Promise(function (resolve, reject) {
-      if (!S.cerrada || S.pts.length < 3) { reject(new Error('Primero dibuja un área.')); return; }
-      const bb = bboxDelArea(S.pts);
+      if (!externo && (!S.cerrada || S.pts.length < 3)) { reject(new Error('Primero dibuja un área.')); return; }
+      const bb = bboxDelArea(contorno);
       // Se pide un poco más ancho que el área para que el borde no quede pegado.
       const mLat = (bb.n - bb.s) * .04, mLng = (bb.e - bb.o) * .04;
       const caja = { s: bb.s - mLat, n: bb.n + mLat, o: bb.o - mLng, e: bb.e + mLng };
@@ -2708,7 +2715,7 @@ bloquesDiag,
         // Mismo criterio par-impar que dentroDelPoligono(), sin preguntarlo
         // millones de veces.
         const dentroMask = new Uint8Array(N);
-        const vert = S.pts, V = vert.length;
+        const vert = contorno, V = vert.length;
         const cortes = [];
         let dentro = 0;
         for (let y = 0; y < H; y++) {
@@ -2741,7 +2748,7 @@ bloquesDiag,
         //
         // El mínimo va en METROS CUADRADOS reales y no en píxeles: el mismo
         // número de píxeles son 20 m² en un lote y media hectárea en un barrio.
-        const m2Total = areaM2(S.pts);
+        const m2Total = areaM2(contorno);
         const m2PorPixel = m2Total / dentro;
         const MIN_AGUA = Math.min(
           Math.round(dentro * .06),
@@ -3134,6 +3141,18 @@ bloquesDiag,
     geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro, geometriaActual,
     areaNombre: () => S.nombre,
     // Cobertura del suelo (Fase 4)
-    analizarRaster, clasificarPixel, ultimoRaster: () => S.raster
+    analizarRaster, clasificarPixel, ultimoRaster: () => S.raster,
+    /* Pintar en el mapa una cobertura analizada desde fuera (js/68). Se pasa
+       por `S.raster` a propósito: es lo que leen el chip, el conmutador
+       foto/clases y la exportación, así que una cobertura externa se comporta
+       exactamente igual que una propia. */
+    mostrarRaster: function (res) {
+      if (!res) return false;
+      S.raster = res;
+      pintarRasterMapa(res);
+      chipRaster();
+      return true;
+    },
+    quitarRaster: function () { S.raster = null; apagarRasterMapa(); }
   };
 })();

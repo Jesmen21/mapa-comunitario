@@ -88,7 +88,16 @@
     // Qué capa de calor está encendida desde la pestaña, y de qué ficha.
     calorGuardado: { ficha: '', cal: '' },
     // En cuántos grupos sale el curso. Cuatro es lo típico de un curso de 30.
-    grupos: 4
+    grupos: 4,
+    /* Cobertura del suelo leída de la foto satelital. El «verde» que sale de
+       OpenStreetMap cuenta parques REGISTRADOS; esto mide el verde que de
+       verdad hay, píxel a píxel. Son dos cosas distintas y el informe las
+       muestra juntas a propósito: la diferencia entre las dos es, muchas
+       veces, el hallazgo. */
+    cobertura: null,
+    cobCargando: false,
+    cobAviso: '',
+    cobEnMapa: false
   };
 
   function esc(s) {
@@ -514,6 +523,58 @@
      informe de viabilidad: aquel responde «¿me conviene?» y este responde
      «¿qué hay?». Meter la ficha en aquella plantilla haría que un
      reconocimiento pareciera un estudio de mercado. */
+  function coberturaImpresa() {
+    var c = S.cobertura;
+    if (!c || !c.clases) return '';
+    var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; });
+    return '<h2>Cobertura del suelo (foto satelital)</h2>' +
+      '<div class="cob">' + orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
+        return '<i style="width:' + x.pct + '%;background:' + x.color + '"></i>';
+      }).join('') + '</div>' +
+      '<table>' + orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
+        return '<tr><td>' + esc(x.etq) + '</td><td class="n">' + x.pct + '%</td>' +
+          '<td class="n">' + Math.round(x.m2).toLocaleString('es-CO') + ' m²</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="pie">Medido sobre ' + esc(c.malla || '') + ' píxeles, a ' + (c.mPorPx || '?') +
+      ' m por píxel.' + (c.grueso ? ' A esta escala la lectura es de masas, no de elementos sueltos.' : '') +
+      (c.pctAmbiguo > 25 ? ' Un ' + c.pctAmbiguo + '% quedó en tonos cálidos no separables.' : '') + '</p>';
+  }
+
+  // Lo que explica POR QUÉ el sector es como es. Estaba en la pantalla y no
+  // en el papel, que es lo que se lleva a la salida.
+  function contextoImpreso(st) {
+    var up = st.usoPredominante, mv = st.movilidad, am = st.ambiente;
+    if (!up && !mv && !am) return '';
+    var filas = [];
+    if (up) {
+      Object.keys(up).filter(function (k) { return up[k] > 0; })
+        .sort(function (a, b) { return up[b] - up[a]; })
+        .forEach(function (k) {
+          filas.push('<tr><td>' + esc((NOMBRE_USO[k] || k).replace(/^\S+\s/, '')) +
+            '</td><td class="n">' + up[k] + '%</td></tr>');
+        });
+    }
+    var mvTxt = mv
+      ? '<p>' + (mv.viaPrincipal
+          ? 'Vía principal: <b>' + esc(mv.viaPrincipal.nombre || 'sin nombre') + '</b>' +
+            (mv.viaPrincipal.distM != null ? ', a ' + mv.viaPrincipal.distM + ' m' : '') + '. '
+          : 'Sin vías con nombre registradas. ') +
+        (mv.nViasArterias || 0) + ' corredor' + (mv.nViasArterias === 1 ? '' : 'es') +
+        ', ' + (mv.paradasBus || 0) + ' parada' + (mv.paradasBus === 1 ? '' : 's') + ' de bus, ' +
+        (mv.ciclorrutas || 0) + ' tramo' + (mv.ciclorrutas === 1 ? '' : 's') + ' de ciclorruta. ' +
+        'Facilidad para llegar ' + (mv.scoreAcceso || 0) + '/100 · exposición al tránsito ' +
+        (mv.exposicion || 0) + '/100 (' + esc(String(mv.nivelExposicion || '—').toLowerCase()) + ').</p>'
+      : '';
+    var amTxt = am
+      ? '<p>Verde y agua: ' + (am.parques || 0) + ' parque' + (am.parques === 1 ? '' : 's') + ', ' +
+        (am.cuerposAgua || 0) + ' cuerpo' + (am.cuerposAgua === 1 ? '' : 's') + ' de agua, ' +
+        (am.verdeNatural || 0) + ' mancha' + (am.verdeNatural === 1 ? '' : 's') + ' de verde. ' +
+        'Presencia de verde ' + (am.scoreVerde || 0) + '/100.</p>'
+      : '';
+    return '<h2>Cómo funciona el sector</h2>' + mvTxt + amTxt +
+      (filas.length ? '<table>' + filas.join('') + '</table>' : '');
+  }
+
   function planImpreso(res, zonas) {
     var plan;
     try { plan = repartirTrabajo(res, zonas, S.grupos || 4); } catch (e) { return ''; }
@@ -584,6 +645,9 @@
       'table.plan td.g{width:110px}' +
       'table.plan td.g span{color:#5a6472;font-size:11.5px}' +
       'table.plan em{color:#5a6472;font-style:normal;font-size:11.5px}' +
+      '.cob{display:flex;height:12px;border-radius:3px;overflow:hidden;max-width:340px;margin:2px 0 8px}' +
+      '.cob i{display:block;height:100%}' +
+      '.pie{color:#5a6472;font-size:11px;margin:5px 0 0}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       '</style></head><body>' +
@@ -599,6 +663,9 @@
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
       }) + '</table>' +
+      coberturaImpresa() +
+      contextoImpreso(st) +
+
       '<h2>A dónde ir</h2>' + tareas +
 
       /* El plan y la lista con nombres son la razón de imprimir esto: el
@@ -841,6 +908,28 @@
           ? ('Área «' + nom2 + '» guardada. La encontrás en Análisis → Áreas guardadas.')
           : 'No se pudo guardar el área.';
         pintar(); return;
+      }
+      if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'cob-mapa') {
+        var A4 = window.URBIS_PC_ANALISIS;
+        if (!A4 || !S.cobertura) return;
+        S.cobEnMapa = !S.cobEnMapa;
+        try {
+          if (S.cobEnMapa && typeof A4.mostrarRaster === 'function') A4.mostrarRaster(S.cobertura);
+          else if (typeof A4.quitarRaster === 'function') A4.quitarRaster();
+        } catch (e) {}
+        // Verla es cerrar la hoja: está justo encima del mapa.
+        if (S.cobEnMapa) { S.encogida = true; }
+        pintar();
+        return;
+      }
+      if (acc === 'exp') {
+        var EXP = window.URBIS_PC_EXPORTAR;
+        var f = b.getAttribute('data-f');
+        var datos = datosParaExportar(null);
+        if (!EXP || !datos) { S.aviso = 'No hay un área analizada que exportar.'; pintar(); return; }
+        EXP.exportar(f, datos);
+        return;
       }
       if (acc === 'grupos') {
         S.grupos = Number(b.getAttribute('data-g')) || 4;
@@ -1575,7 +1664,8 @@
         (am.scoreVerde >= 55 ? 'Sector con verde a la mano.'
          : am.scoreVerde >= 25 ? 'Verde escaso: mirá si el que hay está en uso o abandonado.'
          : 'Casi sin verde registrado. Contar los árboles de la calle es un levantamiento que cambia este número.'),
-        '#22c55e');
+        '#22c55e') +
+      bloqueCobertura();
   }
 
   var NOMBRE_USO = {
@@ -1827,6 +1917,217 @@
     return L.join('\n');
   }
 
+  // ── Cobertura del suelo, de la foto satelital ─────────────────────────
+  /* El motor de cobertura ya existe y está probado: vive en js/24 y lo usa el
+     análisis por área. Acá no se reescribe —serían mil líneas de clasificación
+     por píxel, con sus tres pasadas y su umbral adaptativo—: se le presta el
+     contorno de este sector y se le pide que lo analice. */
+
+  function circuloComoContorno(centro, radioM, lados) {
+    var n = lados || 48, rad = Math.PI / 180, R = 6378137;
+    var dLat = radioM / R / rad;
+    var dLng = dLat / Math.max(1e-6, Math.cos(centro.lat * rad));
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var a = i / n * 2 * Math.PI;
+      out.push({ lat: centro.lat + dLat * Math.sin(a), lng: centro.lng + dLng * Math.cos(a) });
+    }
+    return out;
+  }
+
+  // El contorno de LO ANALIZADO, sea un trazo o un círculo. Con radio no hay
+  // ningún polígono dibujado, así que se fabrica uno: es la misma forma que
+  // se le mostró al usuario en el mapa.
+  function contornoDelSector() {
+    var meta = (S.resultado && S.resultado.meta) || {};
+    if (meta.forma === 'poligono' || S.forma === 'poligono') {
+      var pol = meta.poligono || S.poligono;
+      if (pol && pol.length >= 3) {
+        return pol.map(function (p) { return { lat: Number(p.lat), lng: Number(p.lng) }; });
+      }
+      return null;
+    }
+    var c = Number.isFinite(meta.lat) ? { lat: meta.lat, lng: meta.lng } : S.centro;
+    if (!c) return null;
+    return circuloComoContorno(c, meta.radioM || S.radioM, 48);
+  }
+
+  function analizarCobertura() {
+    var A = window.URBIS_PC_ANALISIS;
+    if (!A || typeof A.analizarRaster !== 'function') {
+      S.cobAviso = 'Falta el módulo de análisis por área. Recargá la app.';
+      pintar(); return;
+    }
+    var contorno = contornoDelSector();
+    if (!contorno) { S.cobAviso = 'Primero analizá un sector.'; pintar(); return; }
+
+    S.cobCargando = true; S.cobAviso = 'Preparando la lectura de la foto…';
+    pintar();
+    A.analizarRaster(function (txt) {
+      // Son tres pasadas sobre millones de píxeles: callado se siente colgado.
+      S.cobAviso = txt;
+      var caja = document.getElementById('pcr-cob-estado');
+      if (caja) caja.textContent = txt;
+    }, contorno).then(function (res) {
+      S.cobertura = res; S.cobCargando = false; S.cobAviso = '';
+      // Se pinta sola en el mapa: el sentido de leer la foto es VER dónde
+      // está el verde, no solo con cuánto por ciento se quedó.
+      try {
+        if (typeof A.mostrarRaster === 'function') { A.mostrarRaster(res); S.cobEnMapa = true; }
+      } catch (e) {}
+      pintar();
+    }).catch(function (e) {
+      S.cobCargando = false;
+      S.cobAviso = 'No se pudo leer la foto satelital: ' + ((e && e.message) || e);
+      pintar();
+    });
+  }
+
+  function bloqueCobertura() {
+    var c = S.cobertura;
+    if (!c) {
+      return '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="cobertura" class="pcr-mini pcr-llevar-b"' +
+          (S.cobCargando ? ' disabled' : '') + '>' +
+          (S.cobCargando ? '⏳ Leyendo la foto…' : '🛰️ Medir el verde en la foto satelital') +
+        '</button>' +
+      '</div>' +
+      (S.cobCargando
+        ? '<p class="pcr-pista" id="pcr-cob-estado">' + esc(S.cobAviso || 'Preparando…') + '</p>'
+        : '<p class="pcr-pista">Lo de arriba cuenta parques <b>registrados</b> en OpenStreetMap. ' +
+          'Esto mide el verde que de verdad hay en la foto, píxel a píxel — y la diferencia ' +
+          'entre los dos números suele ser el hallazgo.</p>') +
+      (S.cobAviso && !S.cobCargando ? '<p class="pcr-error">' + esc(S.cobAviso) + '</p>' : '');
+    }
+
+    var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; });
+    var verde = c.clases.filter(function (x) { return x.id === 'verde'; })[0] || { pct: 0, m2: 0 };
+    var dom = orden[0];
+
+    return '' +
+      '<div class="pcr-cob-barra">' +
+        orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
+          return '<i style="width:' + x.pct + '%;background:' + x.color + '" title="' + esc(x.etq) + '"></i>';
+        }).join('') +
+      '</div>' +
+      '<div class="pcr-cob-lista">' +
+        orden.filter(function (x) { return x.pct > 0; }).map(function (x) {
+          return '<div class="pcr-cob-fila">' +
+            '<span class="pcr-cob-pin" style="background:' + x.color + '"></span>' +
+            '<span class="pcr-cob-etq">' + x.ico + ' ' + esc(x.etq) + '</span>' +
+            '<b>' + x.pct + '%</b>' +
+            '<small>' + Math.round(x.m2).toLocaleString('es-CO') + ' m²</small>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-conc">La foto dice que <b>' + verde.pct + '%</b> del área es vegetación viva' +
+        (dom && dom.id !== 'verde' ? ', y que lo que más hay es ' + esc(dom.etq.toLowerCase()) : '') +
+        '. Medido sobre ' + (c.malla || '') + ' píxeles, a ' + (c.mPorPx || '?') + ' m por píxel.</p>' +
+      (c.grueso
+        ? '<p class="pcr-pista">A esta escala cada píxel cubre varios metros: la lectura es de <b>masas</b>, ' +
+          'no de árboles sueltos. Para leer elementos, analizá un sector más chico.</p>'
+        : '') +
+      (c.pctAmbiguo > 25
+        ? '<p class="pcr-pista">Un ' + c.pctAmbiguo + '% quedó en tonos cálidos que no se pueden separar ' +
+          '(teja, concreto viejo, suelo desnudo y matorral seco comparten color). Eso se resuelve en campo.</p>'
+        : '') +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="cob-mapa" class="pcr-mini pcr-llevar-b">' +
+          (S.cobEnMapa ? '🙈 Quitar del mapa' : '🗺️ Ver en el mapa') + '</button>' +
+        '<button type="button" data-pcr="cobertura" class="pcr-mini pcr-llevar-b">↻ Volver a leer</button>' +
+      '</div>';
+  }
+
+  // ── Llevarse el sector a otro programa ────────────────────────────────
+  /* Los formatos ya existen y están probados en js/26 —KMZ, DXF en metros
+     UTM, GeoJSON, SVG y el paquete completo—. Lo único que faltaba era
+     entregarle ESTOS datos: el contorno analizado (que a veces es un
+     círculo), los usos que se encontraron en OpenStreetMap y, si se leyó, la
+     cobertura vectorizada. */
+  function datosParaExportar(ficha) {
+    var EXP = window.URBIS_PC_EXPORTAR, A = window.URBIS_PC_ANALISIS;
+    if (!EXP || !A) return null;
+
+    var pts, pois, raster, nombre;
+    if (ficha) {
+      // Un sector guardado: no lleva raster (ocuparía demasiado en el
+      // teléfono), pero sí su contorno y sus puntos.
+      pts = (ficha.forma === 'poligono' && ficha.poligono && ficha.poligono.length >= 3)
+        ? ficha.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; })
+        : (ficha.centro ? circuloComoContorno(ficha.centro, ficha.radioM || 500, 48) : null);
+      pois = ficha.pois || [];
+      raster = null;
+      nombre = ficha.nombre || '';
+    } else {
+      pts = contornoDelSector();
+      pois = poisDelResultado();
+      raster = S.cobertura;
+      nombre = S.nombreGuardado || '';
+    }
+    if (!pts || pts.length < 3) return null;
+
+    var cobertura = [];
+    if (raster && raster.rejilla && typeof EXP.vectorizarCobertura === 'function') {
+      try { cobertura = EXP.vectorizarCobertura(raster); } catch (e) { cobertura = []; }
+    }
+
+    var colores = {};
+    (pois || []).forEach(function (p) {
+      var g = p.grupo || 'otro';
+      if (!colores[g]) colores[g] = p.color || colorDelCatalogo(g) || '#6b70e0';
+    });
+
+    return {
+      pts: pts,
+      puntos: (pois || []).filter(function (p) {
+        return p && isFinite(p.lat) && isFinite(p.lng);
+      }).map(function (p) {
+        var reg = {
+          lat: Number(p.lat), lng: Number(p.lng),
+          nombre: p.nombre || 'Sin nombre',
+          grupo: nombreGrupo(p.grupo || 'otro'),
+          gid: p.grupo || 'otro'
+        };
+        // El uso concreto y la distancia viajan como atributos: es lo que
+        // permite filtrar en QGIS o etiquetar en AutoCAD sin volver a la app.
+        if (p.sub) reg.uso = nombreDeSub(p.sub);
+        if (p.distM != null) reg.dist_m = p.distM;
+        return reg;
+      }),
+      geo: null,
+      raster: raster, cobertura: cobertura, colores: colores,
+      nombre: nombre,
+      areaM2: A.areaM2(pts), perimetroM: A.perimetroM(pts, true)
+    };
+  }
+
+  function bloqueExportar() {
+    var d = datosParaExportar(null);
+    if (!d) return '';
+    var trae = [
+      d.puntos.length + ' uso' + (d.puntos.length === 1 ? '' : 's'),
+      'el contorno del área',
+      d.cobertura.length ? 'la cobertura en ' + d.cobertura.length + ' polígonos' : null
+    ].filter(Boolean).join(' · ');
+
+    return '' +
+      '<h4 class="pcr-h">🌍 Llevarlo a otro programa</h4>' +
+      '<p class="pcr-tarea-intro">Sale <b>georreferenciado y en vectores</b>: el contorno, cada uso con su ' +
+      'categoría y su distancia, y —si leíste la foto— las manchas de vegetación como polígonos de verdad, ' +
+      'editables y acotables. El DXF va en <b>metros UTM reales</b>: en AutoCAD 1 unidad = 1 metro.</p>' +
+      '<p class="pcr-pista">Ahora mismo se llevaría: <b>' + esc(trae) + '</b>.' +
+      (d.cobertura.length ? '' : ' Si leés la foto satelital antes de exportar, también van las manchas de verde.') +
+      '</p>' +
+      '<div class="pcr-exp-btns">' +
+        '<button type="button" data-pcr="exp" data-f="paquete" class="pcr-mini pcr-exp-todo">📦 Paquete completo (ZIP)</button>' +
+        '<button type="button" data-pcr="exp" data-f="kmz" class="pcr-mini">🌍 KMZ · Google Earth</button>' +
+        '<button type="button" data-pcr="exp" data-f="dxf" class="pcr-mini">📐 DXF · AutoCAD</button>' +
+        '<button type="button" data-pcr="exp" data-f="svg" class="pcr-mini">🎨 SVG · Corel / Illustrator</button>' +
+        '<button type="button" data-pcr="exp" data-f="geojson" class="pcr-mini">🗺️ GeoJSON · QGIS</button>' +
+        '<button type="button" data-pcr="exp" data-f="kml" class="pcr-mini">KML suelto</button>' +
+      '</div>';
+  }
+
   function htmlFicha(res) {
     var st = res.stats || {};
     var pois = res.pois || [];
@@ -2005,6 +2306,8 @@
         // Pro City, así que se puede volver a ella sin redibujarla y el
         // análisis de los mapeos del curso corre sobre exactamente el mismo
         // trazo que se reconoció. Es lo que junta las dos mitades.
+        bloqueExportar() +
+
         (esPol
           ? '<div class="pcr-llevar">' +
               '<button type="button" data-pcr="guardar-area" class="pcr-mini pcr-llevar-b">📐 Guardar el área dibujada</button>' +
@@ -2088,6 +2391,13 @@
       // para que la ficha lo diga con todas las letras.
       var res = await window.AIA_MOTOR.analizar(peticion);
       S.resultado = res;
+      // La cobertura leída era la del sector ANTERIOR: dejarla puesta sería
+      // mostrar el verde de otra parte junto a los datos de esta.
+      S.cobertura = null; S.cobAviso = ''; S.cobEnMapa = false;
+      try {
+        var Aq = window.URBIS_PC_ANALISIS;
+        if (Aq && typeof Aq.quitarRaster === 'function') Aq.quitarRaster();
+      } catch (e) {}
       // Se pintan sin que haya que pedirlo: el sentido de mirar un sector
       // antes de ir es VERLO. Una lista de números no dice dónde está nada.
       S.puntosEnMapa = pintarPuntos(res.pois || []);
@@ -2342,6 +2652,16 @@
       '</div>';
   }
 
+  function exportarGuardado(f) {
+    var EXP = window.URBIS_PC_EXPORTAR;
+    if (!EXP || typeof EXP.bloque !== 'function') return '';
+    var d = datosParaExportar(f);
+    if (!d) return '';
+    // Mismos botones que en el análisis por área, con prefijo propio para que
+    // los clics no acaben exportando el área de Pro City, que es otra cosa.
+    try { return EXP.bloque(d, 'pcr-'); } catch (e) { return ''; }
+  }
+
   function htmlPestana() {
     var fichas = leerFichas();
     if (!fichas.length) {
@@ -2372,6 +2692,7 @@
             ? '<div class="pcr-pest-cuerpo">' +
                 informeGuardado(f) +
                 chipsCalorGuardado(f) +
+                exportarGuardado(f) +
                 '<div class="pcr-llevar">' +
                   (f.forma === 'poligono'
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-area" data-id="' +
@@ -2442,6 +2763,17 @@
         return { lat: q.lat, lng: q.lng };
       }));
       if (area && typeof A.cargarAreaPorId === 'function') A.cargarAreaPorId(area.id);
+      return true;
+    }
+    if (name.indexOf('exp-') === 0) {
+      var EXP2 = window.URBIS_PC_EXPORTAR;
+      var fx = leerFichas().filter(function (x) { return x.id === S.pestanaAbierta; })[0];
+      var dx = fx ? datosParaExportar(fx) : null;
+      if (!EXP2 || !dx) {
+        S.avisoPestana = 'Este sector no tiene un contorno que exportar.';
+        repintar(); return true;
+      }
+      EXP2.accion(name, dx);
       return true;
     }
     if (name === 'calorcat') {
@@ -2517,6 +2849,11 @@
     compararConCampo: compararConCampo,
     leerFichas: leerFichas,
     guardarFicha: guardarFicha,
+    // Cobertura leída de la foto y el paquete que se lleva a otro programa.
+    // Se exponen para poder comprobarlos sin depender de una descarga real.
+    cobertura: function () { return S.cobertura; },
+    datosParaExportar: datosParaExportar,
+    contornoDelSector: contornoDelSector,
     // La pestaña «Sector» de Pro City: js/20 pide el HTML y despacha los clics.
     htmlPestana: htmlPestana,
     accion: accionPestana,
