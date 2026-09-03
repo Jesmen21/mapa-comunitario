@@ -103,6 +103,17 @@
             // motor local ahí sería saltarse la licencia desde el propio
             // producto. Se marcan para que el llamador NO haga respaldo.
             e.esDecision = (r.codigo === 401 || r.codigo === 403 || r.codigo === 429);
+            if (e.esDecision) {
+              // Un mensaje de error sin sitio adonde ir no sirve de nada. Se
+              // avisa para que la pantalla de licencia se abra sola: es
+              // exactamente lo que el usuario necesita en este momento.
+              e.motivo = (r.cuerpo && r.cuerpo.motivo) ||
+                         (r.codigo === 429 ? 'sin_cupo' : r.codigo === 403 ? 'vencida' : 'ausente');
+              try {
+                window.dispatchEvent(new CustomEvent('urbis:licencia',
+                  { detail: { motivo: e.motivo, codigo: r.codigo } }));
+              } catch (x) {}
+            }
             throw e;
           }
           var ms = ((window.performance && performance.now) ? performance.now() : Date.now()) - t0;

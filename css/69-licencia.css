@@ -1,0 +1,111 @@
+/* URBIS · Pantalla de licencia
+   Sobria a propósito: es la pantalla que ve alguien que ya pagó, o alguien a
+   quien acaban de cerrarle la puerta. Ni festiva ni alarmante. */
+
+.ulic-hoja{
+  position:fixed; left:0; right:0; bottom:0; z-index:4300;
+  max-height:88vh; display:flex; flex-direction:column;
+  background:#fff; color:#1e2b3a;
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -10px 40px rgba(12,32,46,.30);
+  transform:translateY(102%);
+  transition:transform .26s cubic-bezier(.22,.9,.3,1);
+}
+.ulic-hoja.ulic-visible{ transform:translateY(0); }
+@media (prefers-reduced-motion:reduce){ .ulic-hoja{ transition:none; } }
+@media (min-width:900px){
+  .ulic-hoja{ left:auto; right:22px; bottom:22px; width:430px;
+    border-radius:16px; transform:translateY(120%); }
+  .ulic-hoja.ulic-visible{ transform:translateY(0); }
+}
+
+.ulic-barra{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:14px 16px; border-bottom:1px solid #e2e8f0; flex:0 0 auto;
+}
+.ulic-barra b{ font-size:.98rem; color:#075E88; }
+.ulic-x{
+  border:none; background:#eef4f8; color:#075E88;
+  width:32px; height:32px; border-radius:9px; font-size:1rem; cursor:pointer;
+}
+.ulic-x:hover{ background:#dbe9f2; }
+.ulic-hoja button:focus-visible, .ulic-campo:focus-visible{
+  outline:2px solid #0A6F9E; outline-offset:2px;
+}
+
+.ulic-cuerpo{
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:14px 16px 22px;
+  display:flex; flex-direction:column; gap:12px;
+}
+
+/* Licencia en regla. Verde discreto: es una confirmación, no un premio. */
+.ulic-ok{
+  background:#f2fbf7; border:1px solid #c3e9d7;
+  border-radius:11px; padding:13px 14px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.ulic-ok > b{ font-size:.9rem; color:#0f7a52; }
+.ulic-ok p{ margin:0; font-size:.82rem; color:#41695a; line-height:1.45; }
+
+.ulic-datos{ display:flex; gap:16px; flex-wrap:wrap; }
+.ulic-datos small{ display:block; font-size:.62rem; color:#5a7268; letter-spacing:.04em; text-transform:uppercase; }
+.ulic-datos b{ display:block; font-size:.86rem; color:#12202e; }
+
+.ulic-cupo{
+  display:flex; align-items:baseline; gap:8px;
+  border-top:1px solid #d7ecdf; padding-top:9px;
+}
+.ulic-cupo span{ font-size:.74rem; color:#41695a; }
+.ulic-cupo b{ font-size:1rem; color:#0f7a52; font-variant-numeric:tabular-nums; }
+.ulic-cupo em{ font-size:.72rem; color:#5a7268; font-style:normal; margin-left:auto; }
+
+/* Puerta cerrada: ámbar, no rojo. El cupo agotado no es un fallo del cliente. */
+.ulic-alerta{
+  margin:0; font-size:.84rem; line-height:1.5; color:#7a5a00;
+  background:#fffbef; border:1px solid #f6dfa0;
+  border-radius:10px; padding:11px 13px;
+}
+
+.ulic-lab{
+  font-size:.7rem; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:#5a6472; margin-bottom:-6px;
+}
+.ulic-campo{
+  width:100%; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.76rem; line-height:1.5; color:#12202e;
+  border:1px solid #d8dfe8; border-radius:10px; padding:10px 12px;
+  background:#fbfdfe; resize:vertical; word-break:break-all;
+}
+.ulic-pista{ margin:0; font-size:.74rem; color:#6b7684; line-height:1.45; }
+.ulic-pista code{
+  font-family:ui-monospace,monospace; font-size:.92em;
+  background:#eef4f8; color:#075E88; padding:1px 5px; border-radius:4px;
+}
+
+.ulic-error{
+  margin:0; font-size:.82rem; color:#9a3412; line-height:1.45;
+  background:#fff3ea; border:1px solid #fcd9bd;
+  border-radius:10px; padding:10px 12px;
+}
+
+.ulic-principal{
+  border:none; background:#0A6F9E; color:#fff;
+  font-size:.9rem; font-weight:700; padding:13px;
+  border-radius:11px; cursor:pointer; width:100%;
+}
+.ulic-principal:hover:not(:disabled){ background:#075E88; }
+.ulic-principal:disabled{ background:#b7c4ce; cursor:default; }
+
+.ulic-quitar{
+  border:none; background:none; color:#8a94a0;
+  font-size:.76rem; padding:4px; cursor:pointer; text-decoration:underline;
+}
+.ulic-quitar:hover{ color:#9a3412; }
+
+.ulic-nota{
+  margin:0; font-size:.74rem; line-height:1.5; color:#4a5568;
+  background:#f4f7fa; border:1px solid #e2e8f0;
+  border-radius:9px; padding:10px 12px;
+}
+.ulic-nota b{ color:#075E88; }

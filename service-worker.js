@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v611-poblacion-y-pronostico';
+const URBIS_CACHE = 'urbis-v612-licencias-de-empresas';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -110,6 +110,8 @@ const URBIS_ASSETS = [
   './js/24-procity-analisis.js',
   './css/68-procity-reconocimiento.css',
   './js/68-procity-reconocimiento.js',
+  './css/69-licencia.css',
+  './js/69-licencia.js',
   './js/25-procity-analitica.js',
   './js/26-procity-exportar.js',
   './js/26-procity-diagnostico.js',
