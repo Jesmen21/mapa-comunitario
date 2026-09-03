@@ -860,6 +860,32 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.8rem !important; color:var(--edu-ink-2) !important;
   -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+/* La síntesis: tres listas cortas, cada frase con el número que la sostiene.
+   La barra de color de la izquierda es lo único que distingue a favor de en
+   contra: probamos con iconos y a esa escala se volvían ruido. */
+.pcr-hoja .pcr-sintesis, .pcr-pestana .pcr-sintesis{
+  list-style:none; margin:6px 0 14px; padding:0; display:flex; flex-direction:column; gap:6px;
+}
+.pcr-hoja .pcr-sintesis li, .pcr-pestana .pcr-sintesis li{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding:8px 10px 8px 12px; border-radius:10px;
+  background:var(--edu-ground-2); border-left:3px solid var(--edu-line);
+}
+.pcr-hoja .pcr-sintesis li span, .pcr-pestana .pcr-sintesis li span{
+  font-size:.85rem !important; color:var(--edu-ink) !important;
+  -webkit-text-fill-color:var(--edu-ink) !important; line-height:1.35;
+}
+.pcr-hoja .pcr-sintesis li b, .pcr-pestana .pcr-sintesis li b{
+  flex:0 0 auto; font-size:.72rem !important; font-weight:700; white-space:nowrap;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+  font-variant-numeric:tabular-nums;
+}
+.pcr-hoja .pcr-sintesis-bien li, .pcr-pestana .pcr-sintesis-bien li{ border-left-color:#22c55e; }
+.pcr-hoja .pcr-sintesis-mal li, .pcr-pestana .pcr-sintesis-mal li{ border-left-color:#e5484d; }
+.pcr-hoja .pcr-sintesis-falta li, .pcr-pestana .pcr-sintesis-falta li{
+  border-left-color:var(--edu-accent); border-left-style:dashed;
+}
+
 /* El rótulo de abajo en una fila de nivel: los minutos a pie del bloque de
    cobertura. Va en su propia línea porque «Servicio de salud» y «10 min ·
    800 m» juntos en una sola no caben en 412 px sin partirse mal. */

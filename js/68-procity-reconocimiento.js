@@ -262,6 +262,7 @@
       // La cobertura de equipamientos son cuatro filas: cabe de sobra, y sin
       // ella un sector reabierto perdería el bloque entero.
       accesibilidad: st.accesibilidad || null,
+      mezcla: st.mezcla || null,
       movilidad: mv ? {
         nViasArterias: mv.nViasArterias, paradasBus: mv.paradasBus,
         ciclorrutas: mv.ciclorrutas, scoreAcceso: mv.scoreAcceso,
@@ -769,6 +770,23 @@
       String(mo.orden != null ? mo.orden : '—').replace('.', ',') + ' (0 = ninguna dirección manda, 1 = todas la misma).</p>';
   }
 
+  function sintesisImpresa(res) {
+    var s2 = sintesisDelSector(res);
+    var lista = function (t, l) {
+      if (!l.length) return '';
+      return '<tr><td colspan="2"><b>' + t + '</b></td></tr>' +
+        l.map(function (x) {
+          return '<tr><td>' + esc(x.texto) + '</td><td class="n">' + esc(x.dato) + '</td></tr>';
+        }).join('');
+    };
+    var cuerpo = lista('Lo que juega a favor', s2.favor) +
+                 lista('Lo que juega en contra', s2.contra) +
+                 lista('Lo que falta levantar en campo', s2.falta);
+    if (!cuerpo) return '';
+    return '<h2>Síntesis del sector</h2><table>' + cuerpo + '</table>' +
+      '<p class="pie">Cada frase nace de un dato medido y solo aparece si ese dato está.</p>';
+  }
+
   function accesibilidadImpresa(st) {
     var a = st && st.accesibilidad;
     if (!a || !(a.categorias || []).length) return '';
@@ -941,7 +959,7 @@
        queda apaisado. */
     var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
                  (trz && trz.espacio && trz.espacio.piezas ? 1 : 0);
-    var altoDelPlano = Math.max(340, 520 - 45 * extras);
+    var altoDelPlano = Math.max(280, 440 - 45 * extras);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
@@ -1062,6 +1080,16 @@
       '.lee{ font-size:3.2mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
+      '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:7mm }' +
+      '.sn h3{ margin:0 0 2.5mm; font-size:3mm; letter-spacing:.14em; text-transform:uppercase;' +
+        'font-weight:800; color:#6B7A8A }' +
+      '.sn.ok h3{ color:#177245 } .sn.no h3{ color:#B3282C } .sn.tarea h3{ color:#0A6F9E }' +
+      '.sx{ border-left:.8mm solid #E3EAF0; padding:.5mm 0 1.5mm 3mm; margin-bottom:2.5mm }' +
+      '.sn.ok .sx{ border-left-color:#22c55e } .sn.no .sx{ border-left-color:#E5484D }' +
+      '.sn.tarea .sx{ border-left-color:#34CCFE }' +
+      '.sx span{ display:block; font-size:3.1mm; line-height:1.35; color:#0F1F2E }' +
+      '.sx small{ display:block; font-size:2.7mm; color:#6B7A8A; margin-top:.8mm;' +
+        'font-variant-numeric:tabular-nums }' +
       '.camina{ display:grid; grid-template-columns:repeat(4,1fr); gap:6mm }' +
       '.cm b{ display:block; font-size:9mm; line-height:1; font-weight:800; letter-spacing:-.02em;' +
         'color:#0A6F9E; font-variant-numeric:tabular-nums }' +
@@ -1139,8 +1167,17 @@
               .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
               .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
             if (!filas.length) return '';
+            var m = st.mezcla;
             return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
-                          function (x) { return x.n; }, function (x) { return x.n; });
+                          function (x) { return x.n; }, function (x) { return x.n; }) +
+              // El índice de mezcla cierra la caja: es la cifra que resume
+              // este reparto en una sola palabra defendible.
+              (m && m.usos
+                ? fila('Mezcla de usos', String(m.indice).replace('.', ',') + ' · ' + esc(m.nivel)) +
+                  '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. ' +
+                  'Se mide sobre lo mapeado, y en OpenStreetMap la vivienda está peor registrada ' +
+                  'que el comercio.</p>'
+                : '');
           })(), 'g3') +
 
         caja('Hitos y nodos',
@@ -1276,6 +1313,31 @@
               'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
           })(), 'g6') +
 
+        caja('Síntesis del sector',
+          (function () {
+            var sn = sintesisDelSector(res);
+            if (!sn.favor.length && !sn.contra.length && !sn.falta.length) return '';
+            /* Cuatro por columna. En pantalla la lista puede ser larga; en una
+               lámina, una columna de doce viñetas no la lee nadie de pie a dos
+               metros. Se quedan las cuatro primeras, que son las que salieron
+               de los datos más gruesos. */
+            var col = function (titulo, lista, clase) {
+              return '<div class="sn ' + clase + '"><h3>' + esc(titulo) + '</h3>' +
+                (lista.length
+                  ? lista.slice(0, 4).map(function (x) {
+                      return '<div class="sx"><span>' + esc(x.texto) + '</span>' +
+                        '<small>' + esc(x.dato) + '</small></div>';
+                    }).join('')
+                  : '<div class="sx"><span>—</span></div>') +
+                '</div>';
+            };
+            return '<div class="sint">' +
+                col('A favor', sn.favor, 'ok') +
+                col('En contra', sn.contra, 'no') +
+                col('Falta levantar', sn.falta, 'tarea') +
+              '</div>';
+          })(), 'g6') +
+
       '</div>' +
 
       '<footer class="pie">' +
@@ -1368,6 +1430,7 @@
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
       accesibilidadImpresa(st) +
+      sintesisImpresa(res) +
       rutasImpresas(st) +
       solImpreso(meta) +
       hitosImpresos(st) +
@@ -3375,6 +3438,160 @@
       'un poco más grande. Y solo cuenta lo <b>mapeado</b>. ' + esc(a.metodo || '') + '</p>';
   }
 
+
+  /* ── Síntesis del sector ───────────────────────────────────────────────
+     Hasta acá la ficha entrega treinta cifras. Una lámina de análisis no se
+     defiende con cifras sueltas: se defiende con cuatro o cinco frases que
+     digan qué le pasa a este sector, cada una con el número que la sostiene.
+     Eso es lo que arma este bloque.
+
+     Regla de oro: NO inventa. Cada frase nace de un dato medido y se apaga
+     sola si ese dato no está. Un sector al que no se le midió el terreno no
+     dice nada del terreno —ni bien ni mal—, y la tercera columna, «lo que
+     falta levantar», es tan parte de la síntesis como las otras dos: es la
+     tarea del curso escrita como tarea.
+
+     Devuelve listas en vez de HTML porque la usan tres superficies distintas
+     —la ficha, la lámina y el PDF— y cada una la pinta a su manera. */
+  function sintesisDelSector(res) {
+    var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
+    var trz = S.trazado, ter = S.terreno, cli = S.clima;
+    var favor = [], contra = [], falta = [];
+    var F = function (t, d) { favor.push({ texto: t, dato: d }); };
+    var C = function (t, d) { contra.push({ texto: t, dato: d }); };
+    var T = function (t, d) { falta.push({ texto: t, dato: d }); };
+    var num = function (x) { return String(x).replace('.', ','); };
+
+    // ── Mezcla de usos
+    var m = st.mezcla;
+    if (m && m.usos >= 1) {
+      if (m.indice >= 0.55) F('Usos mezclados: hay actividad a distintas horas', 'índice ' + num(m.indice));
+      else if (m.indice < 0.35) C('Sector monofuncional: se vacía a ciertas horas', 'índice ' + num(m.indice));
+    }
+
+    // ── Cuánto hay
+    if (st.densidadPorHa != null) {
+      if (st.densidadPorHa >= 12) F('Actividad concentrada, se recorre a pie', num(st.densidadPorHa) + ' usos por hectárea');
+      else if (st.densidadPorHa < 3) C('Muy poca actividad registrada por hectárea', num(st.densidadPorHa) + ' por ha');
+    }
+
+    // ── Espacio público
+    var e = trz && trz.espacio;
+    var hab = Number(st.poblacionEstimada || 0);
+    if (e) {
+      var meta1504 = e.metaM2Hab || 15;
+      var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
+      if (!e.piezas) {
+        C('Sin parques ni plazas con forma registrada en el área', '0 m² de espacio público');
+        T('Dibujar los parques y canchas que sí existen: sin el polígono no hay metros cuadrados', 'espacio público');
+      } else if (porHab != null && porHab < meta1504 / 2) {
+        C('Espacio público muy por debajo de la meta nacional', num(porHab) + ' de ' + meta1504 + ' m²/hab');
+      } else if (porHab != null && porHab >= meta1504) {
+        F('Cumple la meta nacional de espacio público', num(porHab) + ' m²/hab');
+      }
+    }
+
+    // ── Cobertura de equipamientos
+    var ac = st.accesibilidad;
+    if (ac && (ac.categorias || []).length) {
+      var peor = ac.categorias.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; })[0];
+      var todas = ac.categorias.every(function (c) { return c.pctCubierto >= 80; });
+      if (todas) F('Todo lo básico queda a distancia de caminar', 'las cuatro coberturas sobre 80%');
+      else if (peor && peor.pctCubierto < 50) {
+        C('Falta ' + peor.etiqueta.toLowerCase() + ' a distancia de caminar',
+          num(peor.pctCubierto) + '% del área cubierta' +
+          (hab > 0 ? ' · ' + Math.round(hab * peor.pctSinCubrir / 100).toLocaleString('es-CO') + ' hab. lejos' : ''));
+      }
+    }
+
+    // ── Cómo se llega
+    var mv = st.movilidad;
+    if (mv) {
+      if ((mv.rutas || []).length) F('Pasa transporte público por el área', (mv.rutas || []).length + ' rutas registradas');
+      else if (mv.paradasBus === 0) C('Sin paradas de transporte público registradas', '0 paradas');
+      if (mv.nViasArterias > 0) F('Conectado a la malla arterial de la ciudad', mv.nViasArterias + ' vías principales');
+    }
+
+    // ── El trazado
+    if (trz) {
+      var mo = trz.morfologia || {}, ll = trz.llenos || {};
+      if (mo.orden >= 0.35 && mo.perpendicular) F('Traza en cuadrícula: fácil de recorrer y de orientarse', 'orden ' + num(mo.orden));
+      else if (mo.orden != null && mo.orden < 0.18) C('Traza irregular: crecimiento por adición, difícil de recorrer', 'orden ' + num(mo.orden));
+      if (mo.tramoMedioM && mo.tramoMedioM > 200) C('Manzanas largas: pocas esquinas donde cruzar', mo.tramoMedioM + ' m entre cruces');
+      if (ll.pctLleno != null && ll.pctLleno < 15 && ll.conGeometria > 10)
+        F('Queda suelo sin construir dentro del área', num(ll.pctVacio) + '% libre');
+      if (ll.sinGeometria > ll.conGeometria)
+        T('Dibujar la forma de los edificios mapeados solo como punto', ll.sinGeometria + ' sin forma');
+    }
+
+    // ── El terreno
+    if (ter) {
+      var pe = ter.pendiente || {}, el = ter.elevacion || {};
+      if (pe.media != null && pe.media >= 12)
+        C('Pendiente fuerte: condiciona calles, accesos y costos', num(pe.media) + '% de pendiente media');
+      else if (pe.media != null && pe.media < 5)
+        F('Terreno plano: sin sobrecostos de topografía', num(pe.media) + '% de pendiente media');
+      if (el.relieve != null && el.relieve >= 60)
+        C('Desnivel alto de un extremo al otro', el.relieve + ' m de desnivel');
+      if (ter.orientacion && ter.orientacion.rumbo)
+        F('La ladera baja hacia el ' + ter.orientacion.rumbo + ': por ahí corre el agua', 'orientación medida');
+    }
+
+    // ── El clima y el sol
+    if (cli) {
+      var t = cli.temperatura || {}, vi = cli.viento || {};
+      if (t.media != null && t.media >= 26)
+        C('Clima cálido: sin sombra ni aire cruzado no se puede estar afuera', num(t.media) + '° de media');
+      if (vi.dominante && vi.dominante.rumbo)
+        F('El viento entra del ' + vi.dominante.rumbo + ': por ahí se ventila', vi.dominante.pct + '% del tiempo');
+    }
+    var SOL = window.URBIS_SOLAR;
+    if (SOL && meta.lat != null) {
+      try {
+        var sol = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
+        if (sol && sol.alturaMaxima != null) {
+          C('La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger',
+            sol.alturaMaxima + '° al mediodía');
+        }
+      } catch (err) {}
+    }
+
+    // ── Lo que falta levantar en campo
+    var al = st.alturas || (trz && trz.alturas);
+    if (al && al.edificios && al.cobertura < 50)
+      T('Contar los pisos de los edificios: hoy solo se sabe de una parte',
+        al.cobertura + '% con altura registrada');
+    if (trz && (trz.vias || {}).sinNombre)
+      T('Ponerle nombre a las calles sin nombre', trz.vias.sinNombre + ' tramos');
+    if ((st.porGrupo || {}).otro)
+      T('Definir la categoría de los usos que quedaron sin clasificar', st.porGrupo.otro + ' puntos');
+    if (!trz) T('Medir el trazado del sector: llenos y vacíos, vías y morfología', 'sin medir');
+    if (!ter) T('Medir el terreno: cotas, pendiente y perfiles', 'sin medir');
+    if (!cli) T('Medir el clima del sitio', 'sin medir');
+
+    return { favor: favor, contra: contra, falta: falta };
+  }
+
+  function bloqueSintesis(res) {
+    var s2 = sintesisDelSector(res);
+    if (!s2.favor.length && !s2.contra.length && !s2.falta.length) return '';
+    var col = function (titulo, lista, clase) {
+      if (!lista.length) return '';
+      return '<p class="pcr-lab">' + esc(titulo) + '</p>' +
+        '<ul class="pcr-sintesis pcr-sintesis-' + clase + '">' +
+          lista.map(function (x) {
+            return '<li><span>' + esc(x.texto) + '</span><b>' + esc(x.dato) + '</b></li>';
+          }).join('') +
+        '</ul>';
+    };
+    return h4('lista', 'Síntesis del sector') +
+      '<p class="pcr-pista">Lo que dicen juntas todas las mediciones. Cada frase trae el número que ' +
+      'la sostiene, y solo aparece si ese número se midió.</p>' +
+      col('Lo que juega a favor', s2.favor, 'bien') +
+      col('Lo que juega en contra', s2.contra, 'mal') +
+      col('Lo que falta levantar en campo', s2.falta, 'falta');
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -3457,7 +3674,33 @@
           '<span class="pcr-fila-n">' + x.n + '%</span>' +
         '</div>';
       }).join('') +
-      '<p class="pcr-pista">El porcentaje pesa lo que representa cada cosa: una zona residencial completa pesa más que un solo local.</p>';
+      '<p class="pcr-pista">El porcentaje pesa lo que representa cada cosa: una zona residencial completa pesa más que un solo local.</p>' +
+      bloqueMezcla(st);
+  }
+
+  /* ── Mezcla de usos ────────────────────────────────────────────────────
+     El número que separa un sector vivo de uno que se vacía. Un centro que a
+     las siete de la noche queda desierto y un barrio dormitorio donde no hay
+     dónde comprar el pan son el mismo problema medido desde dos lados, y los
+     dos dan un índice bajo.
+
+     Es entropía de Shannon normalizada sobre los mismos pesos del uso
+     predominante: 0 si todo el peso está en un uso, 1 si está repartido por
+     igual entre los siete. Se muestra con el nivel en palabras porque «0,62»
+     no le dice nada a nadie sin la escala al lado. */
+  function bloqueMezcla(st) {
+    var m = st && st.mezcla;
+    if (!m || m.usos < 1) return '';
+    var pct = Math.round(m.indice * 100);
+    return '<p class="pcr-lab">Mezcla de usos</p>' +
+      medidor('Índice de mezcla · ' + m.nivel, pct, m.lectura,
+              pct >= 55 ? '#22c55e' : pct >= 35 ? '#eab308' : '#e5484d') +
+      '<p class="pcr-pista">Va de 0 —un solo uso manda— a 100 —los siete repartidos por igual—. ' +
+      'Acá da <b>' + String(m.indice).replace('.', ',') + '</b> con <b>' + m.usos + ' de ' + m.maximo +
+      '</b> usos presentes. Se mide sobre lo mapeado: en OpenStreetMap el comercio está mucho mejor ' +
+      'registrado que la vivienda, así que un barrio de casas sin polígono de uso residencial sale ' +
+      'menos mezclado de lo que es. Mapear el uso del suelo corrige este número más que cualquier ' +
+      'otra cosa.</p>';
   }
 
   function bloqueNucleos(st) {
@@ -4218,6 +4461,11 @@
         h4('norte', 'A dónde ir') +
         tareas +
 
+        // La síntesis va acá, después de todas las mediciones y antes de las
+        // tareas: es el puente entre «esto es lo que hay» y «esto es lo que
+        // vas a hacer».
+        bloqueSintesis(res) +
+
         bloquePlan(res, zonas) +
 
         // De inventario a lista de tareas. Lo que el estudiante hace con esto
@@ -4879,7 +5127,8 @@
         S.clima = f.clima || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
-                   (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st);
+                   (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
+                   bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
         return html;
       })() +

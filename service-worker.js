@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v656-cobertura-caminando';
+const URBIS_CACHE = 'urbis-v657-mezcla-y-sintesis';
 const URBIS_ASSETS = [
   './',
   './index.html',
