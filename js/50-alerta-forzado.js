@@ -233,9 +233,39 @@
     } catch (e) {}
   }
 
+  /* En qué módulo estamos. Mismo criterio que la gota Áurea (js/47), y por la
+     misma razón: estar en capa propia hacía a estas alertas inmunes al cambio
+     de módulo, y se quedaban flotando encima de la matriz de usos de Pro City.
+     Reportado desde el uso real: «sale un evento viejo dentro del módulo
+     educativo».
+
+     Lista BLANCA y no negra a propósito: cualquier módulo nuevo que se monte
+     sobre este mismo mapa nace SIN las alertas, en vez de heredarlas hasta
+     que alguien reporte el fallo. */
+  function enModuloReportesYEventos() {
+    var pantalla;
+    try { pantalla = document.querySelector('.u52-screen[data-u52-screen="map"]'); } catch (e) { return true; }
+    if (!pantalla) return true;                                              // mapa clásico, sin módulos que separar
+    if (!pantalla.classList.contains('active')) return false;                // Movilidad, Nav, cualquier otra
+    if (window.urbisProCityActivo) return false;                             // bandera de js/20
+    if (pantalla.classList.contains('u52-procity-mapscreen')) return false;  // respaldo por clase
+    return true;
+  }
+
+  // Retira la capa del mapa sin destruirla: al volver al módulo ciudadano,
+  // render() la vuelve a poblar desde cero.
+  function limpiarCapa(m) {
+    Object.keys(_rendered).forEach(function (key) {
+      try { if (_layer) _layer.removeLayer(_rendered[key]); } catch (e) {}
+      delete _rendered[key];
+    });
+    try { if (m && _layer && m.hasLayer(_layer)) m.removeLayer(_layer); } catch (e) {}
+  }
+
   function render() {
     var m = getMap();
     if (!m) return;
+    if (!enModuloReportesYEventos()) { limpiarCapa(m); return; }
     var layer = ensureLayer(m);
     if (!layer) return;
     if (typeof window.urbisCrearMarcadorUrbano !== 'function') return;

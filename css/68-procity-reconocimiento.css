@@ -4,7 +4,14 @@
    accionable) para que no se sienta pegada de otro lado. */
 
 .pcr-hoja{
-  position:fixed; left:0; right:0; bottom:0; z-index:4200;
+  position:fixed; left:0; right:0; bottom:0;
+  /* La app móvil trabaja en el techo del rango: sus paneles van en
+     2147483250-260 y los botones del mapa en 2147483200. Con 4200 esta hoja
+     se creaba y quedaba DETRÁS de todo — el círculo aparecía en el mapa y la
+     hoja no, así que parecía que el botón no hacía nada. Va encima de los
+     paneles de Pro City y debajo de los avisos y los modales de pantalla
+     completa (2147483400 en adelante), que sí deben taparla. */
+  z-index:2147483300;
   max-height:86vh; display:flex; flex-direction:column;
   background:#fff; color:#1e2b3a;
   border-radius:18px 18px 0 0;

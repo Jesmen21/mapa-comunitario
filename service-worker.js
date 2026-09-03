@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v616-borrar-mapeos';
+const URBIS_CACHE = 'urbis-v617-modulos-separados';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -1331,6 +1331,10 @@
     // que avisarle para que se retire al salir del módulo de reportes y
     // eventos y vuelva al entrar, sin esperar su ciclo de refresco.
     try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
+    // Las alertas nacionales viven en otra capa propia (js/50) y sufren lo
+    // mismo: sin este aviso se quedan hasta su siguiente repintado, y se ven
+    // unos segundos encima del módulo educativo.
+    try{ if(typeof window.urbisRenderAlertasForzado === 'function') window.urbisRenderAlertasForzado(); }catch(e){}
     if(screen === 'home' || screen === 'sport' || screen === 'progress' || screen === 'profile' || screen === 'avatar' || screen === 'social' || screen === 'notifications') { renderRealStates(); refreshAvatarUI(); }
     if(screen === 'notifications'){ try{ _aureaMarkSeen(buildPremiumEventNotifications().map(n => n.id)); }catch(e){} } // al abrir noti, los eventos premium dejan de contar en el badge (pero siguen listados)
     if(screen === 'home' || screen === 'social' || screen === 'notifications') setTimeout(loadNotifications, 120);
@@ -2624,6 +2628,10 @@
     // les pide repintar YA, sin esperar su ciclo de refresco.
     try{ window.urbisProCityActivo = !!activo; }catch(e){}
     try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
+    // Las alertas nacionales viven en otra capa propia (js/50) y sufren lo
+    // mismo: sin este aviso se quedan hasta su siguiente repintado, y se ven
+    // unos segundos encima del módulo educativo.
+    try{ if(typeof window.urbisRenderAlertasForzado === 'function') window.urbisRenderAlertasForzado(); }catch(e){}
   }
 
   // BUG real reportado: al ir de Pro City DIRECTO a "Reportar" (o cualquier
@@ -4555,6 +4563,21 @@
     const _origPintarPuntos = window.pintarPuntos;
     if(typeof _origPintarPuntos !== 'function') return;
     window.pintarPuntos = function(data){
+      /* SEPARACIÓN DE MÓDULOS. Reportado desde el uso real: «sale un evento
+         viejo dentro del módulo educativo».
+
+         El mapa ciudadano ya no muestra los mapeos de Pro City —eso se
+         arregló hace tiempo en js/12— pero la otra mitad seguía sin hacer:
+         dentro de Pro City se veían los reportes y eventos del mapa
+         ciudadano, mezclando dos módulos que no tienen nada que ver.
+
+         Se le pasa una lista vacía al pintor original, con lo que ningún
+         marcador ciudadano se dibuja. Los mapeos de Pro City NO se pierden:
+         los pinta urbisRenderProCityPoints(), que se llama sin argumentos y
+         lee los datos por su cuenta. Y los reportes tampoco se borran: dejan
+         de verse ACÁ, y siguen intactos en el mapa ciudadano. */
+      if (window.urbisProCityActivo) return _origPintarPuntos([]);
+
       const tf = window.urbisCitizenTimeFilter;
       let usar = data;
       if(tf && tf.active){

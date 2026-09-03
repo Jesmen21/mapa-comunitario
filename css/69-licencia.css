@@ -3,7 +3,11 @@
    quien acaban de cerrarle la puerta. Ni festiva ni alarmante. */
 
 .ulic-hoja{
-  position:fixed; left:0; right:0; bottom:0; z-index:4300;
+  position:fixed; left:0; right:0; bottom:0;
+  /* Un escalón por encima de la hoja de reconocimiento: si el servidor pide
+     licencia mientras se analiza, esta tiene que quedar delante. Mismo motivo
+     que allá para no usar 4300: la app móvil vive en el techo del rango. */
+  z-index:2147483320;
   max-height:88vh; display:flex; flex-direction:column;
   background:#fff; color:#1e2b3a;
   border-radius:18px 18px 0 0;
