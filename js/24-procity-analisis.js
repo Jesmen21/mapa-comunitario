@@ -789,6 +789,12 @@
         '<small>Marca el contorno de un barrio, una manzana o un corredor y URBIS cuenta todo lo que la comunidad ya mapeó adentro — sin depender del radio de la ciudad.</small></div>' +
       '</div>' +
       '<button type="button" class="pca-btn-principal" data-u52-call="pca-dibujar">✏️ Dibujar área en el mapa</button>' +
+      // Reconocimiento (js/68): mira qué tiene OpenStreetMap ANTES de salir a
+      // mapear. Es otra pregunta que la de esta pantalla —acá se cuenta lo que
+      // el curso ya levantó— así que va como segundo botón y no mezclado.
+      (window.URBIS_PC_RECON
+        ? '<button type="button" class="pca-btn-principal pca-btn-recon" data-u52-call="pca-reconocer">🔍 ¿Qué hay en este sector?</button>'
+        : '') +
       guardadas +
       // El calor no necesita área: sin ella cubre todo lo mapeado en la ciudad.
       (ctx && ctx.grupos && ctx.grupos.length ? bloqueHeat(ctx) : '') +
@@ -2861,6 +2867,11 @@ bloquesDiag,
 
   function accion(name, el){
     if (name === 'dibujar')  { if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats(); iniciarDibujo(); return true; }
+    if (name === 'reconocer') {
+      if (typeof window.urbisProCityCerrarStats === 'function') window.urbisProCityCerrarStats();
+      if (window.URBIS_PC_RECON) window.URBIS_PC_RECON.abrir();
+      return true;
+    }
     if (name === 'ver-analisis') { cerrarBurbuja(); if (typeof window.urbisProCityAbrirAnalisis === 'function') window.urbisProCityAbrirAnalisis(); return true; }
     if (name === 'cerrar-burbuja') { cerrarBurbuja(); return true; }
     if (name === 'implantacion') {

@@ -64,20 +64,85 @@ console.log('\n  -- identificadores sueltos --');
     ('window localStorage sessionStorage document console navigator fetch setTimeout clearTimeout ' +
      'setInterval clearInterval AbortController performance CustomEvent Event location history ' +
      'alert confirm prompt crypto btoa atob requestAnimationFrame matchMedia innerWidth innerHeight ' +
-     'addEventListener removeEventListener getComputedStyle FileReader Blob URL Image L Chart').split(' '),
+     'addEventListener removeEventListener getComputedStyle FileReader Blob URL Image L Chart ' +
+     // `map` es el mapa de Leaflet de URBIS, que se declara en el arranque de
+     // la app y usan casi todos los módulos. Es un global de verdad, no un
+     // olvido: si no estuviera acá, todo archivo que toque el mapa daría falso.
+     'map').split(' '),
     ('get set var let const function return if else for while do break continue switch case default ' +
      'new typeof instanceof delete void in of try catch finally throw class extends super this null ' +
      'true false undefined async await yield static').split(' ')));
 
+  /* Deja el código sin textos, comentarios ni expresiones regulares, en UNA
+     pasada. Antes se hacía con varios `replace` encadenados y se rompía: una
+     comilla doble dentro de una expresión regular —`.replace(/"/g, ...)`, que
+     es código perfectamente normal— quedaba huérfana, y el borrado de textos
+     se comía desde ahí hasta la siguiente comilla del archivo. El resultado
+     eran cuarenta identificadores inventados. Reconocer qué es cada cosa
+     exige leer de izquierda a derecha, así que se lee. */
+  function despejar(src) {
+    let out = '', i = 0;
+    const n = src.length;
+    // Lo que puede ir ANTES de una `/` que abre expresión regular. Si lo que
+    // hay antes es un valor (nombre, número, paréntesis cerrado), la `/` es
+    // una división.
+    const ABRE = /[({[,;:!&|?+\-*%~^=<>]$/;
+    const PALABRA = /\b(return|typeof|instanceof|case|in|of|new|delete|void|do|else|yield|await|throw)$/;
+
+    function esRegex() {
+      const prev = out.replace(/\s+$/, '');
+      if (!prev) return true;
+      return ABRE.test(prev) || PALABRA.test(prev);
+    }
+
+    while (i < n) {
+      const c = src[i], d = src[i + 1];
+
+      if (c === '/' && d === '/') {                       // comentario de línea
+        while (i < n && src[i] !== '\n') i++;
+        continue;
+      }
+      if (c === '/' && d === '*') {                       // comentario de bloque
+        i += 2;
+        while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { if (src[i] === '\n') out += '\n'; i++; }
+        i += 2;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') {           // texto
+        const cierre = c;
+        i++;
+        while (i < n && src[i] !== cierre) {
+          if (src[i] === '\\') i++;
+          else if (src[i] === '\n') out += '\n';         // plantillas multilínea
+          i++;
+        }
+        i++;
+        out += '0';                                        // un valor cualquiera
+        continue;
+      }
+      if (c === '/' && esRegex()) {                        // expresión regular
+        i++;
+        let enClase = false;
+        while (i < n && (enClase || src[i] !== '/')) {
+          if (src[i] === '\\') i++;
+          else if (src[i] === '[') enClase = true;
+          else if (src[i] === ']') enClase = false;
+          else if (src[i] === '\n') break;                 // sin cerrar: era división
+          i++;
+        }
+        i++;
+        while (i < n && /[gimsuyd]/.test(src[i])) i++;
+        out += '0';
+        continue;
+      }
+      out += c;
+      i++;
+    }
+    return out;
+  }
+
   function sueltos(rel) {
-    let src = leer(rel)
-      .replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '))
-      .replace(/"(\\.|[^"\\])*"/g, '""').replace(/'(\\.|[^'\\])*'/g, "''")
-      .replace(/`(\\.|[^`\\])*`/g, '``')
-      .replace(/\/\/.*$/gm, '');
-    // Los literales de expresión regular llevan palabras dentro (name, u036f)
-    // que parecen identificadores y no lo son.
-    src = src.replace(/([=(,:[!&|?{;]|\breturn\b|\btest\b|=>)(\s*)\/(?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\\n])+\/[gimsuy]*/g, '$1$2 0 ');
+    const src = despejar(leer(rel));
 
     const decl = new Set();
     const add = n => { if (n) decl.add(n); };
@@ -119,7 +184,8 @@ console.log('\n  -- identificadores sueltos --');
   // del sitio queda fuera a propósito: da falsos positivos que enseñan a
   // ignorar la salida, y una revisión que se ignora no revisa nada.
   ['js/59-analisis-ia-catalogo.js', 'js/66-analisis-remoto.js', 'js/67-analisis-cliente.js',
-   'js/61-analisis-ia-datos.js', 'js/64-analisis-edu.js', 'servidor/motor-reglas.js']
+   'js/61-analisis-ia-datos.js', 'js/64-analisis-edu.js', 'servidor/motor-reglas.js',
+   'js/68-procity-reconocimiento.js']
   .forEach(f => {
     const s = sueltos(f);
     comprobar(f, s.length === 0, s.length ? s.join(', ') : 'ninguno');

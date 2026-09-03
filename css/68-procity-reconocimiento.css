@@ -1,0 +1,160 @@
+/* URBIS Pro City · Reconocimiento del sector
+   Hoja que sube desde abajo, como el resto del módulo en celular. Usa la
+   paleta de Pro City (lavanda profunda para títulos, celeste URBIS para lo
+   accionable) para que no se sienta pegada de otro lado. */
+
+.pcr-hoja{
+  position:fixed; left:0; right:0; bottom:0; z-index:4200;
+  max-height:86vh; display:flex; flex-direction:column;
+  background:#fff; color:#1e2b3a;
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -10px 40px rgba(12,32,46,.28);
+  transform:translateY(102%);
+  transition:transform .26s cubic-bezier(.22,.9,.3,1);
+  font-family:inherit;
+}
+.pcr-hoja.pcr-visible{ transform:translateY(0); }
+@media (prefers-reduced-motion:reduce){
+  .pcr-hoja{ transition:none; }
+}
+@media (min-width:900px){
+  .pcr-hoja{ left:auto; right:22px; bottom:22px; width:420px;
+    border-radius:16px; max-height:82vh; transform:translateY(120%); }
+  .pcr-hoja.pcr-visible{ transform:translateY(0); }
+}
+
+.pcr-barra{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:14px 16px; border-bottom:1px solid #e2e8f0; flex:0 0 auto;
+}
+.pcr-barra b{ font-size:1rem; color:#3a3f78; }
+.pcr-x{
+  border:none; background:#f0f2ff; color:#3a3f78;
+  width:32px; height:32px; border-radius:9px; font-size:1rem; cursor:pointer;
+}
+.pcr-x:hover{ background:#e2e6f8; }
+.pcr-x:focus-visible, .pcr-hoja button:focus-visible{
+  outline:2px solid #0A6F9E; outline-offset:2px;
+}
+
+.pcr-cuerpo{
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:14px 16px 22px;
+  display:flex; flex-direction:column; gap:14px;
+}
+
+.pcr-intro{ margin:0; font-size:.85rem; line-height:1.5; color:#4a5568; }
+.pcr-intro b{ color:#3a3f78; }
+
+.pcr-campo{ display:flex; flex-direction:column; gap:7px; }
+.pcr-lab{
+  font-size:.7rem; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:#5a6472;
+}
+.pcr-centro{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.pcr-centro code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.78rem; background:#f0f2ff; color:#3a3f78;
+  padding:5px 9px; border-radius:7px;
+}
+.pcr-mini{
+  border:1px solid #cfe0ea; background:#fff; color:#0A6F9E;
+  font-size:.76rem; font-weight:600; padding:5px 10px;
+  border-radius:7px; cursor:pointer;
+}
+.pcr-mini:hover{ background:#f2fbff; }
+.pcr-pista{ margin:0; font-size:.74rem; color:#6b7684; line-height:1.45; }
+.pcr-espera{ text-align:center; }
+
+.pcr-radios{ display:flex; gap:7px; }
+.pcr-radio{
+  flex:1; border:1px solid #d8dfe8; background:#fff; color:#3f4b5c;
+  font-size:.84rem; font-weight:600; padding:9px 4px;
+  border-radius:9px; cursor:pointer;
+}
+.pcr-radio-on{
+  background:#0A6F9E; border-color:#0A6F9E; color:#fff;
+}
+
+.pcr-principal{
+  border:none; background:#0A6F9E; color:#fff;
+  font-size:.92rem; font-weight:700; padding:13px;
+  border-radius:11px; cursor:pointer; width:100%;
+}
+.pcr-principal:hover:not(:disabled){ background:#075E88; }
+.pcr-principal:disabled{ background:#b7c4ce; cursor:default; }
+.pcr-secundario{ background:#f0f2ff; color:#3a3f78; }
+.pcr-secundario:hover:not(:disabled){ background:#e2e6f8; }
+
+.pcr-error{
+  margin:0; font-size:.82rem; color:#9a3412; line-height:1.45;
+  background:#fff3ea; border:1px solid #fcd9bd;
+  border-radius:9px; padding:10px 12px;
+}
+
+/* ── La ficha ─────────────────────────────────────────────────────── */
+.pcr-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.pcr-kpi{
+  background:#f7fbfd; border:1px solid #e2e6f0; border-radius:10px;
+  padding:9px 5px; text-align:center;
+}
+.pcr-kpi b{
+  display:block; font-size:1.02rem; font-weight:800; color:#0A6F9E;
+  line-height:1.1; font-variant-numeric:tabular-nums;
+}
+.pcr-kpi small{ display:block; font-size:.62rem; color:#5a6472; line-height:1.2; margin-top:3px; }
+
+.pcr-h{
+  margin:4px 0 0; font-size:.82rem; font-weight:800;
+  color:#3a3f78; letter-spacing:.01em;
+}
+
+.pcr-fila{ display:flex; align-items:center; gap:9px; }
+.pcr-fila-nom{ flex:0 0 33%; font-size:.8rem; color:#3f4b5c; }
+.pcr-fila-barra{
+  flex:1; height:8px; background:#eef2f6; border-radius:5px; overflow:hidden;
+}
+.pcr-fila-barra i{ display:block; height:100%; background:#34CCFE; border-radius:5px; }
+.pcr-fila-n{
+  flex:0 0 34px; text-align:right; font-size:.8rem; font-weight:700;
+  color:#0A6F9E; font-variant-numeric:tabular-nums;
+}
+
+.pcr-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.pcr-chip{
+  font-size:.75rem; color:#3f4b5c; background:#f0f2ff;
+  border-radius:20px; padding:5px 10px;
+}
+.pcr-chip b{ color:#0A6F9E; }
+
+/* El bloque de «a dónde ir»: es la razón de ser de la herramienta, así que
+   se lee distinto del resto. El oro URBIS marca lo que es una tarea. */
+.pcr-tarea-intro{ margin:0; font-size:.82rem; line-height:1.5; color:#4a5568; }
+.pcr-tarea-intro b{ color:#3a3f78; }
+.pcr-tareas{
+  margin:0; padding:0; list-style:none;
+  display:flex; flex-direction:column; gap:6px;
+}
+.pcr-tareas li{
+  font-size:.82rem; color:#3f4b5c; line-height:1.4;
+  background:#fffbef; border-left:3px solid #FABD0A;
+  border-radius:0 8px 8px 0; padding:8px 11px;
+}
+.pcr-tareas li b{ color:#7a5a00; }
+.pcr-ok, .pcr-vacio-todo{ margin:0; font-size:.82rem; line-height:1.5; color:#4a5568; }
+.pcr-vacio-todo{
+  background:#fffbef; border-left:3px solid #FABD0A;
+  border-radius:0 8px 8px 0; padding:10px 12px;
+}
+.pcr-vacio-todo b, .pcr-ok b{ color:#3a3f78; }
+
+.pcr-nota{
+  font-size:.76rem; line-height:1.5; color:#4a5568;
+  background:#f4f7fa; border:1px solid #e2e8f0;
+  border-radius:9px; padding:11px 12px;
+}
+.pcr-nota b{ color:#3a3f78; }
+
+/* Pro City fuerza colores de texto dentro de sus paneles; esta hoja vive
+   fuera de ellos, pero se blinda por si el usuario abre las dos a la vez. */
+.pcr-hoja, .pcr-hoja *{ -webkit-text-fill-color:currentColor; }

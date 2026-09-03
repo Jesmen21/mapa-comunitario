@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v607-motor-fuera-del-navegador';
+const URBIS_CACHE = 'urbis-v608-reconocimiento-del-sector';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -108,6 +108,8 @@ const URBIS_ASSETS = [
   './css/52-urbis-pro-city.css',
   './css/24-procity-analisis.css',
   './js/24-procity-analisis.js',
+  './css/68-procity-reconocimiento.css',
+  './js/68-procity-reconocimiento.js',
   './js/25-procity-analitica.js',
   './js/26-procity-exportar.js',
   './js/26-procity-diagnostico.js',
