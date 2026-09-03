@@ -343,7 +343,10 @@
          cifras. */
       campo: S.campo ? {
         nuevos: (S.campo.nuevos || []).slice(0, 20).map(function (x) {
-          return { lat: x.lat, lng: x.lng, nombre: x.nombre || '', grupo: x.grupo || 'otro' };
+          return { lat: x.lat, lng: x.lng, nombre: x.nombre || '', grupo: x.grupo || 'otro',
+                   // La etiqueta OSM viaja con el punto: sin ella, un sector
+                   // guardado no se puede volver a exportar para subirlo.
+                   tags: x.tags || null };
         }),
         // De confirmados y sin verificar solo se lee la cantidad: se guardan
         // vacíos para no duplicar cada punto del sector dentro de la ficha.
@@ -601,6 +604,22 @@
 
     var res = await window.AIA_MOTOR.analizar(peticion);
     var comp = compararListas(ficha.pois || [], res.pois || []);
+
+    /* A cada hallazgo se le pega la etiqueta OSM de la que salió. El motor
+       devuelve el punto ya clasificado —categoría, subcategoría, nombre— pero
+       para devolverle el dato a OpenStreetMap hace falta la etiqueta original
+       (`amenity=pharmacy`), no nuestra traducción. Deshacer la clasificación
+       al revés sería inventar; la etiqueta ya la había armado la app educativa
+       antes de mandarla, así que se guarda y se reusa. */
+    var porCoord = {};
+    elementos.forEach(function (el) {
+      if (!el || el.lat == null || el.lon == null) return;
+      porCoord[Number(el.lat).toFixed(6) + ',' + Number(el.lon).toFixed(6)] = el.tags || {};
+    });
+    (comp.nuevos || []).forEach(function (n) {
+      var k = Number(n.lat).toFixed(6) + ',' + Number(n.lng).toFixed(6);
+      if (porCoord[k]) n.tags = porCoord[k];
+    });
     comp.totalOsm = (ficha.pois || []).length;
     comp.totalCampo = (res.pois || []).length;
     comp.ficha = ficha;
@@ -1769,6 +1788,28 @@
         return;
       }
       if (acc === 'campo') { analizarCampo(); return; }
+      if (acc === 'osm') {
+        if (!S.campo) return;
+        var nom = (S.nombreGuardado || 'sector').replace(/[^\wáéíóúñ ]+/gi, '').trim().replace(/\s+/g, '-');
+        var pudo = descargarArchivo(construirOSM(S.campo),
+          'urbis-' + (nom || 'sector').toLowerCase() + '.osm', 'application/xml;charset=utf-8');
+        S.aviso = pudo
+          ? 'Archivo descargado. Se abre con JOSM: revisá punto por punto antes de subir.'
+          : 'No se pudo generar el archivo en este dispositivo.';
+        pintar(); return;
+      }
+      if (acc === 'osm-texto') {
+        if (!S.campo) return;
+        var txtOsm = textoCorrecciones(S.campo);
+        S.textoPlano = txtOsm;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtOsm);
+            S.aviso = 'Lista copiada. Pegala donde se reparta el trabajo.';
+          } else { S.aviso = 'Copiala del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Copiala del cuadro de abajo.'; }
+        pintar(); return;
+      }
       if (acc === 'estratos') { alternarEstratos(); return; }
       if (acc === 'ver-mapa') {
         S.enMapa = !S.enMapa;
@@ -3921,6 +3962,178 @@
     pintar();
   }
 
+
+  /* ── Devolverle el dato a OpenStreetMap ────────────────────────────────
+     Sin esto, lo que el curso encuentra caminando se queda en la lámina y
+     muere ahí. Un colegio que existe hace veinte años y no está en el mapa
+     seguirá sin estar el semestre que viene, y el análisis del año entrante
+     volverá a decir que el sector no tiene colegio.
+
+     El archivo sale en formato .osm, que es el que abre JOSM. NO se sube
+     desde acá y eso es a propósito: subir a OpenStreetMap se hace con la
+     cuenta de una persona, que responde por lo que sube, y cada punto se
+     revisa antes. Una carga automática de cientos de puntos es una
+     importación, y las importaciones tienen sus propias reglas en la
+     comunidad —se discuten antes— justamente para que nadie ensucie el mapa
+     de una ciudad entera con un botón.
+
+     Los identificadores van en negativo, que es como se marca «esto todavía
+     no existe en el servidor»: JOSM los crea al subir. */
+
+  /* De nuestra subcategoría a la etiqueta de OpenStreetMap.
+     
+     Hace falta porque lo que viaja al motor son etiquetas nuestras
+     —`urbis:sub=drogueria`— y eso en OpenStreetMap no significa nada: subirlo
+     sería ensuciar la base de datos de la ciudad con vocabulario privado.
+
+     La tabla es corta a propósito. Solo están las subcategorías que tienen una
+     etiqueta estándar y sin discusión para un PUNTO. Las que no —una vivienda,
+     una bodega, un uso cultural genérico— se quedan fuera del archivo y salen
+     en la lista para etiquetarlas a mano: en OpenStreetMap una etiqueta
+     inventada o mal elegida cuesta más trabajo de limpiar que el que ahorró. */
+  var SUB_A_OSM = {
+    drogueria:    { amenity: 'pharmacy' },
+    salud_ips:    { amenity: 'clinic' },
+    bomberos:     { amenity: 'fire_station' },
+    veterinaria:  { amenity: 'veterinary' },
+    hogar_cuidado:{ amenity: 'social_facility' },
+    colegio:      { amenity: 'school' },
+    universidad:  { amenity: 'college' },
+    gobierno:     { office: 'government' },
+    policia:      { amenity: 'police' },
+    gasolinera:   { amenity: 'fuel' },
+    supermercado: { shop: 'supermarket' },
+    comercio_otro:{ shop: 'yes' },
+    bar_ocio:     { amenity: 'bar' },
+    restaurante:  { amenity: 'restaurant' },
+    cafe:         { amenity: 'cafe' },
+    panaderia:    { shop: 'bakery' },
+    ferreteria:   { shop: 'hardware' },
+    banco:        { amenity: 'bank' },
+    iglesia:      { amenity: 'place_of_worship' },
+    deportivo:    { leisure: 'pitch' },
+    parque:       { leisure: 'park' },
+    transporte:   { amenity: 'parking' },
+    hotel:        { tourism: 'hotel' },
+    industria:    { man_made: 'works' }
+  };
+
+  // Etiquetas del levantamiento que SÍ son de OpenStreetMap y vale la pena
+  // conservar cuando vienen.
+  var TAGS_QUE_PASAN = ['name', 'building:levels', 'opening_hours', 'phone', 'website'];
+
+  function etiquetasOSM(tags) {
+    var t = tags || {};
+    var sub = t['urbis:sub'];
+    var base = sub && SUB_A_OSM[sub] ? SUB_A_OSM[sub] : null;
+    if (!base) return null;
+    var salida = {};
+    Object.keys(base).forEach(function (k) { salida[k] = base[k]; });
+    TAGS_QUE_PASAN.forEach(function (k) {
+      if (t[k] !== undefined && t[k] !== '' && t[k] !== null) salida[k] = t[k];
+    });
+    return salida;
+  }
+
+  function construirOSM(comp) {
+    var nuevos = (comp && comp.nuevos) || [];
+    if (!nuevos.length) return '';
+    var hoy = new Date().toISOString().slice(0, 10);
+    var esc2 = function (t) {
+      return String(t == null ? '' : t)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    };
+    var nodos = [];
+    nuevos.forEach(function (n) {
+      var tags = etiquetasOSM(n.tags);
+      // Sin etiqueta estándar no entra: mejor que falte a que ensucie.
+      if (!tags) return;
+      var i = nodos.length;
+      var filas = Object.keys(tags).map(function (k) {
+        return '    <tag k="' + esc2(k) + '" v="' + esc2(tags[k]) + '"/>';
+      });
+      /* `source=survey` es la etiqueta que dice «esto lo vi yo en la calle».
+         Importa: es la diferencia entre un dato levantado y uno copiado, y es
+         lo primero que mira quien revisa un cambio. */
+      filas.push('    <tag k="source" v="survey"/>');
+      filas.push('    <tag k="survey:date" v="' + hoy + '"/>');
+      nodos.push('  <node id="-' + (i + 1) + '" action="modify" visible="true" ' +
+        'lat="' + Number(n.lat).toFixed(7) + '" lon="' + Number(n.lng).toFixed(7) + '">\n' +
+        filas.join('\n') + '\n  </node>');
+    });
+    if (!nodos.length) return '';
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<osm version="0.6" generator="URBIS · urbispro.city" upload="true">\n' +
+      nodos.join('\n') + '\n</osm>\n';
+  }
+
+  /* La lista para revisar antes de subir. Va en texto plano porque se pega en
+     un cuaderno, en un chat de grupo o en un documento compartido, que es
+     donde de verdad se reparte el trabajo de un curso. */
+  function conEtiquetaOSM(comp) {
+    return ((comp && comp.nuevos) || []).filter(function (n) { return !!etiquetasOSM(n.tags); }).length;
+  }
+
+  function textoCorrecciones(comp) {
+    if (!comp) return '';
+    var l = [];
+    var enlace = function (lat, lng) {
+      return 'https://www.openstreetmap.org/edit#map=19/' +
+        Number(lat).toFixed(5) + '/' + Number(lng).toFixed(5);
+    };
+    l.push('URBIS · lo que falta corregir en OpenStreetMap');
+    l.push('Levantado en campo el ' + new Date().toLocaleDateString('es-CO'));
+    l.push('');
+    var nuevos = (comp.nuevos || []);
+    if (nuevos.length) {
+      l.push('AGREGAR (' + nuevos.length + ') — existen y no están en el mapa');
+      nuevos.forEach(function (n, i) {
+        var et = etiquetasOSM(n.tags);
+        l.push('  ' + (i + 1) + '. ' + (n.nombre || 'sin nombre') +
+               ' · ' + nombreGrupo(n.grupo || 'otro') +
+               (et ? '' : '   [ETIQUETA A MANO]'));
+        if (et) {
+          l.push('     etiqueta: ' + Object.keys(et).map(function (k) {
+            return k + '=' + et[k];
+          }).join(', '));
+        }
+        l.push('     ' + enlace(n.lat, n.lng));
+      });
+      l.push('');
+    }
+    var disc = (comp.discrepancias || []);
+    if (disc.length) {
+      l.push('CORREGIR (' + disc.length + ') — el mapa dice una cosa y la calle otra');
+      disc.forEach(function (d, i) {
+        l.push('  ' + (i + 1) + '. ' + ((d.campo && d.campo.nombre) || (d.osm && d.osm.nombre) || 'sin nombre'));
+        l.push('     el mapa dice: ' + nombreGrupo((d.osm && d.osm.grupo) || 'otro'));
+        l.push('     se vio:       ' + nombreGrupo((d.campo && d.campo.grupo) || 'otro'));
+        l.push('     ' + enlace(d.campo ? d.campo.lat : d.osm.lat, d.campo ? d.campo.lng : d.osm.lng));
+      });
+      l.push('');
+    }
+    l.push('Antes de subir: el dato tiene que ser lo que USTEDES vieron en la calle.');
+    l.push('Copiar de Google Maps o de otro mapa con derechos hace que le reviertan');
+    l.push('la contribución a todo el grupo. Cada punto se revisa y se sube desde');
+    l.push('la cuenta de quien lo levantó.');
+    return l.join('\n');
+  }
+
+  function descargarArchivo(texto, nombre, tipo) {
+    try {
+      var EXP = window.URBIS_PC_EXPORTAR;
+      var blob = new Blob([texto], { type: tipo || 'text/plain;charset=utf-8' });
+      if (EXP && typeof EXP.descargar === 'function') { EXP.descargar(blob, nombre); return true; }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = nombre;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { try { a.remove(); URL.revokeObjectURL(url); } catch (e) {} }, 1500);
+      return true;
+    } catch (e) { return false; }
+  }
+
   function bloqueCampo() {
     var c = S.campo;
     if (!c) {
@@ -3981,7 +4194,44 @@
         : '') +
       '<p class="pcr-pista">Se considera el mismo sitio cuando los dos puntos están a menos de ' +
       MISMO_SITIO_M + ' m. Compara la categoría, no el nombre: dos droguerías con nombre distinto ' +
-      'en la misma esquina son la misma droguería mal escrita.</p>';
+      'en la misma esquina son la misma droguería mal escrita.</p>' +
+      bloqueDevolver(c);
+  }
+
+  /* ── Subirlo al mapa ───────────────────────────────────────────────────
+     El paso que convierte el ejercicio en un aporte. Va con sus advertencias
+     porque las dos que están acá son las que le cuestan a un curso entero que
+     le reviertan el trabajo: subir con la cuenta de cada quien y no copiar de
+     otro mapa. */
+  function bloqueDevolver(c) {
+    var nuevos = (c.nuevos || []).length, disc = (c.discrepancias || []).length;
+    if (!nuevos && !disc) return '';
+    var conTag = conEtiquetaOSM(c), sinTag = nuevos - conTag;
+    return '<p class="pcr-lab">Devolverlo al mapa</p>' +
+      '<p class="pcr-pista">Lo que encontraron puede volver a OpenStreetMap, y entonces deja de ser ' +
+      'un dato de esta lámina para ser un dato de la ciudad: el semestre que viene el análisis ya ' +
+      'lo va a tener.</p>' +
+      '<div class="pcr-llevar">' +
+        (conTag
+          ? '<button type="button" data-pcr="osm" class="pcr-mini pcr-llevar-b">' + ico('exportar') +
+            'Archivo para JOSM (' + conTag + ')</button>'
+          : '') +
+        '<button type="button" data-pcr="osm-texto" class="pcr-mini pcr-llevar-b">' + ico('lista') +
+          'Lista para revisar</button>' +
+      '</div>' +
+      '<p class="pcr-pista">El archivo <b>no se sube solo</b>, y es a propósito: se abre en JOSM, se ' +
+      'revisa punto por punto y lo sube <b>cada quien con su cuenta</b>, que es quien responde por lo ' +
+      'que subió. Cargar cientos de puntos de una es una <i>importación</i>, y esas se discuten antes ' +
+      'con la comunidad.</p>' +
+      (sinTag
+        ? '<p class="pcr-pista"><b>' + sinTag + ' de los ' + nuevos + '</b> no entran en el archivo: su ' +
+          'uso no tiene una etiqueta estándar de OpenStreetMap para un punto —una vivienda, una ' +
+          'bodega, un uso cultural genérico—. Salen igual en la lista, para ponerles la etiqueta a ' +
+          'mano. Una etiqueta inventada cuesta más limpiarla que el trabajo que ahorra.</p>'
+        : '') +
+      '<p class="pcr-conc">Y lo más importante: el dato tiene que ser <b>lo que ustedes vieron en la ' +
+      'calle</b>. Copiar de Google Maps o de cualquier mapa con derechos hace que le reviertan la ' +
+      'contribución a todo el grupo, y con razón.</p>';
   }
 
   function bloqueMovilidad(st) {
@@ -5846,6 +6096,13 @@
     // por rumbos es la parte que decide a dónde se manda a un estudiante.
     zonasSinDatos: zonasSinDatos,
     compararListas: compararListas,
+    /* El archivo para JOSM y la lista de correcciones: geometría y texto, sin
+       red ni pantalla, así que se comprueban sin montar la aplicación. */
+    construirOSM: construirOSM,
+    textoCorrecciones: textoCorrecciones,
+    // La comparación que está usando la ficha en este momento. Se expone para
+    // poder comprobar que lo que se exporta es exactamente lo que se muestra.
+    campoActual: function () { return S.campo; },
     pintarEstratos: pintarEstratos,
     quitarDelMapa: quitarDelMapa,
     compararConCampo: compararConCampo,

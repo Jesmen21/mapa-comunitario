@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v659-campo-en-el-analisis';
+const URBIS_CACHE = 'urbis-v660-devolver-al-mapa';
 const URBIS_ASSETS = [
   './',
   './index.html',

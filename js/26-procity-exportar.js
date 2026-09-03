@@ -1178,6 +1178,9 @@
   }
 
   window.URBIS_PC_EXPORTAR = { exportar, bloque, accion, inventario, recolectar,
+                               // Bajar un archivo es el mismo baile en todas
+                               // partes; se expone para no repetirlo.
+                               descargar,
                                puntosProCityDentro,
                                construirKML, construirDXF, construirGeoJSON, construirSVG,
                                vectorizarCobertura, aUTM, zip, paqueteCompleto };
