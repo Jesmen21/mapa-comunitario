@@ -34,6 +34,9 @@
     crecer:    '<path d="M4 18 10 12l3.5 3.5L20 9"/><path d="M15 9h5v5"/>',
     edades:    '<path d="M5 20V10M10 20V6M15 20v-8M20 20V4"/>',
     hogar:     '<path d="m4 11 8-7 8 7"/><path d="M6 10v10h12V10"/><path d="M10 20v-6h4v6"/>',
+    // Una persona caminando: el bloque de cobertura mide minutos a pie, así
+    // que el icono tenía que ser un peatón y no un carro.
+    caminar: '<circle cx="12.5" cy="4.5" r="1.8"/><path d="M12 8l-3 4 2 2 1 6"/><path d="M13 14l3 3 1 3M12 8l3 1.5 2 2.5M9 12l-2.5 2"/>',
     movilidad: '<path d="M4 15h16l-1.5-5.5A2 2 0 0 0 16.6 8H7.4a2 2 0 0 0-1.9 1.5z"/><path d="M4 15v3h2M20 15v3h-2"/><circle cx="8" cy="18" r="1.8"/><circle cx="16" cy="18" r="1.8"/>',
     via:       '<path d="M7 20 10 4M17 20 14 4"/><path d="M12 6v2M12 11v2M12 16v2"/>',
     bus:       '<rect x="5" y="4" width="14" height="14" rx="2.5"/><path d="M5 11h14M8 21v-3M16 21v-3"/><circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/>',

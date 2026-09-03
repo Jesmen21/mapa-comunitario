@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v655-espacio-publico';
+const URBIS_CACHE = 'urbis-v656-cobertura-caminando';
 const URBIS_ASSETS = [
   './',
   './index.html',

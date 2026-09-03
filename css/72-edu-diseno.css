@@ -860,6 +860,14 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.8rem !important; color:var(--edu-ink-2) !important;
   -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+/* El rótulo de abajo en una fila de nivel: los minutos a pie del bloque de
+   cobertura. Va en su propia línea porque «Servicio de salud» y «10 min ·
+   800 m» juntos en una sola no caben en 412 px sin partirse mal. */
+.pcr-hoja .pcr-nivel-sub, .pcr-pestana .pcr-nivel-sub{
+  display:block; font-size:.68rem !important; font-weight:600;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+  letter-spacing:.02em; margin-top:1px;
+}
 .pcr-hoja .pcr-nivel-barra, .pcr-pestana .pcr-nivel-barra{
   height:9px; border-radius:99px; background:var(--edu-ground-2);
   box-shadow:inset 0 0 0 1px var(--edu-line); overflow:hidden;

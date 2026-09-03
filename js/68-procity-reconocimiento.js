@@ -259,6 +259,9 @@
       hitos: (st.hitos || []).slice(0, 9),
       alturas: st.alturas || null,
       ambiente: st.ambiente || null,
+      // La cobertura de equipamientos son cuatro filas: cabe de sobra, y sin
+      // ella un sector reabierto perdería el bloque entero.
+      accesibilidad: st.accesibilidad || null,
       movilidad: mv ? {
         nViasArterias: mv.nViasArterias, paradasBus: mv.paradasBus,
         ciclorrutas: mv.ciclorrutas, scoreAcceso: mv.scoreAcceso,
@@ -766,6 +769,22 @@
       String(mo.orden != null ? mo.orden : '—').replace('.', ',') + ' (0 = ninguna dirección manda, 1 = todas la misma).</p>';
   }
 
+  function accesibilidadImpresa(st) {
+    var a = st && st.accesibilidad;
+    if (!a || !(a.categorias || []).length) return '';
+    var hab = Number(st.poblacionEstimada || 0);
+    return '<h2>A distancia de caminar</h2><table>' +
+      a.categorias.map(function (c) {
+        return '<tr><td>' + esc(c.etiqueta) + ' <em>· ' + c.minutos + ' min (' + c.radioM + ' m)</em></td>' +
+          '<td class="n">' + String(c.pctCubierto).replace('.', ',') + '% del área' +
+          (hab > 0 && c.pctSinCubrir > 0
+            ? ' · ' + Math.round(hab * c.pctSinCubrir / 100).toLocaleString('es-CO') + ' hab. lejos'
+            : '') + '</td></tr>';
+      }).join('') +
+      '</table><p class="pie">Distancia en línea recta: caminando siempre es más. Cuenta solo lo ' +
+      'que está dentro del área y lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
+  }
+
   function espacioImpreso(t, st) {
     if (!t || !t.espacio || !t.espacio.piezas) return '';
     var e = t.espacio;
@@ -913,13 +932,24 @@
     var CAT = window.AIA_CATALOGO || {};
     var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
 
+    /* El alto del plano manda cuánto papel queda para lo demás, y la hoja no
+       puede crecer: son 900 mm y punto. Con todo medido —terreno, clima,
+       trazado, espacio público— las cajas de abajo no cabían y se recortaban
+       sin avisar; el bloque del clima perdía su lectura y nadie se enteraba
+       mirando la pantalla. Así que el plano cede altura a medida que hay más
+       que contar: con poco medido queda cuadrado y grande, con todo medido
+       queda apaisado. */
+    var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
+                 (trz && trz.espacio && trz.espacio.piezas ? 1 : 0);
+    var altoDelPlano = Math.max(340, 520 - 45 * extras);
+
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
       ? { pts: meta.poligono }
       : { centro: { lat: meta.lat, lng: meta.lng }, radioM: meta.radioM };
     var plano = (A && typeof A.miniatura === 'function')
       ? A.miniatura(forma, {
-          w: 520, h: 520, radioPunto: 2.6,
+          w: 520, h: altoDelPlano, radioPunto: 2.6,
           // Una ficha guardada no guarda el color de cada punto —sería
           // repetir el mismo dato cientos de veces—, así que se vuelve a
           // sacar del catálogo por su grupo. Sin esto la lámina de un sector
@@ -1032,6 +1062,13 @@
       '.lee{ font-size:3.2mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
+      '.camina{ display:grid; grid-template-columns:repeat(4,1fr); gap:6mm }' +
+      '.cm b{ display:block; font-size:9mm; line-height:1; font-weight:800; letter-spacing:-.02em;' +
+        'color:#0A6F9E; font-variant-numeric:tabular-nums }' +
+      '.cm span{ display:block; font-size:3.2mm; color:#0F1F2E; margin:1.5mm 0 2mm; font-weight:700 }' +
+      '.cm i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
+      '.cm u{ display:block; height:100%; border-radius:2mm; background:#34CCFE; text-decoration:none }' +
+      '.cm small{ display:block; font-size:2.7mm; color:#6B7A8A; margin-top:1.5mm; line-height:1.35 }' +
       '.hit i{ font-style:normal; font-weight:800; color:#0A6F9E }' +
       '.hit u{ text-decoration:none; color:#6B7A8A }' +
       // Los dibujos que vienen de la ficha
@@ -1216,6 +1253,29 @@
               'con forma mapeada. No entran andenes ni vías.</p>';
           })(), 'g3') +
 
+        caja('A distancia de caminar',
+          (function () {
+            var a = st.accesibilidad;
+            if (!a || !(a.categorias || []).length) return '';
+            var hab = Number(st.poblacionEstimada || 0);
+            return '<div class="camina">' +
+                a.categorias.map(function (c) {
+                  return '<div class="cm">' +
+                    '<b>' + String(c.pctCubierto).replace('.', ',') + '%</b>' +
+                    '<span>' + esc(c.etiqueta) + '</span>' +
+                    '<i><u style="width:' + c.pctCubierto + '%"></u></i>' +
+                    '<small>a ' + c.minutos + ' min a pie · ' + c.radioM + ' m' +
+                      (hab > 0 && c.pctSinCubrir > 0
+                        ? ' · ' + Math.round(hab * c.pctSinCubrir / 100).toLocaleString('es-CO') + ' hab. lejos'
+                        : '') + '</small>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+              '<p class="nota">Qué parte del área tiene cada cosa cerca, no cuántas hay. Distancia ' +
+              'en línea recta: caminando siempre es más. Cuenta solo lo que está dentro del área y ' +
+              'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
+          })(), 'g6') +
+
       '</div>' +
 
       '<footer class="pie">' +
@@ -1307,6 +1367,7 @@
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
+      accesibilidadImpresa(st) +
       rutasImpresas(st) +
       solImpreso(meta) +
       hitosImpresos(st) +
@@ -3259,6 +3320,61 @@
       'decreto no los llama efectivo. Tampoco cuenta lo privado ni lo que nadie ha mapeado.</p>';
   }
 
+
+  /* ── A distancia de caminar ────────────────────────────────────────────
+     No cuántos colegios hay: qué parte del sector tiene uno cerca. Son dos
+     preguntas distintas y la segunda es la que decide dónde falta algo. Un
+     sector puede tener tres colegios juntos en una esquina y media población
+     a veinte minutos del más cercano.
+
+     El motor reparte puntos de muestreo por dentro del área y pregunta desde
+     cada uno. Acá se muestra el resultado y, sobre todo, lo que el número NO
+     dice: mide en línea recta, cuenta solo lo que está dentro del área y solo
+     lo que alguien mapeó. */
+  function bloqueAccesibilidad(st) {
+    var a = st && st.accesibilidad;
+    if (!a || !a.categorias || !a.categorias.length) return '';
+    var hab = Number(st.poblacionEstimada || 0);
+    var cats = a.categorias;
+    var peor = cats.slice().sort(function (x, y) { return x.pctCubierto - y.pctCubierto; })[0];
+
+    return h4('caminar', 'A distancia de caminar') +
+      '<p class="pcr-pista">Qué parte del área tiene cada cosa cerca. No es lo mismo que ' +
+      'cuántas hay: tres colegios en la misma esquina dejan media población lejos.</p>' +
+      '<div class="pcr-niveles">' +
+        cats.map(function (c) {
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + esc(c.etiqueta) +
+              '<small class="pcr-nivel-sub">' + c.minutos + ' min · ' + c.radioM + ' m</small></span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' + c.pctCubierto + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + String(c.pctCubierto).replace('.', ',') + '<em>%</em></span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (peor
+        ? '<p class="pcr-conc">Lo que más falta es <b>' + esc(peor.etiqueta.toLowerCase()) + '</b>: ' +
+          (peor.puntos === 0
+            ? 'no hay ninguno registrado dentro del área.'
+            : String(peor.pctSinCubrir).replace('.', ',') + '% del sector queda a más de ' +
+              peor.radioM + ' m del más cercano' +
+              (hab > 0
+                ? ', unos <b>' + Math.round(hab * peor.pctSinCubrir / 100).toLocaleString('es-CO') +
+                  ' habitantes</b>'
+                : '') + '.') +
+          '</p>'
+        : '') +
+      cats.filter(function (c) { return c.puntos > 0 && (c.ejemplos || []).length; })
+        .map(function (c) {
+          return '<div class="pcr-lote-fila"><span>' + esc(c.etiqueta) + '</span><b>' +
+            c.puntos + ' en el área</b></div>';
+        }).join('') +
+      '<p class="pcr-pista">Tres advertencias que cambian la lectura. La distancia se mide ' +
+      '<b>en línea recta</b>: caminando siempre es más, porque hay manzanas y vías que no se ' +
+      'cruzan. Solo cuenta lo que está <b>dentro del área</b>: un colegio a media cuadra por ' +
+      'fuera del borde no entra, así que si el equipamiento está justo afuera, dibujá el área ' +
+      'un poco más grande. Y solo cuenta lo <b>mapeado</b>. ' + esc(a.metodo || '') + '</p>';
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -4080,6 +4196,7 @@
         bloqueClima() +
         bloqueTrazado() +
         bloqueEspacio(st) +
+        bloqueAccesibilidad(st) +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
@@ -4762,7 +4879,7 @@
         S.clima = f.clima || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
-                   (f.trazado ? bloqueEspacio(st) : '');
+                   (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st);
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
         return html;
       })() +
