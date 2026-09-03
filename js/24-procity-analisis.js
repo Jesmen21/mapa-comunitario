@@ -804,18 +804,124 @@
       'stroke-linejoin="round"/></svg>';
   }
 
+  /* Miniatura de mapa para una lista. Dibuja la forma REAL guardada —el
+     polígono con sus vértices, o el círculo de un radio— sobre un suelo con
+     rejilla tenue, con la flecha del norte y una barra de escala redonda
+     (100 m, 200 m, 500 m…). Es un SVG y no una foto del mapa a propósito: se
+     ve sin red, pesa nada, y no depende de que las teselas carguen. La forma
+     es la que importa para reconocer un área de un vistazo; la foto de fondo
+     se ve al abrirla.
+
+     `forma` = { pts:[{lat,lng}] }  o  { centro:{lat,lng}, radioM }.
+     `o.w/o.h` en px del viewBox (por defecto 120×84). */
+  function miniaturaMapa(forma, o){
+    o = o || {};
+    const W = o.w || 120, H = o.h || 84, PAD = 10;
+    const pts = forma && forma.pts && forma.pts.length >= 3 ? forma.pts : null;
+    const circ = !pts && forma && forma.centro && forma.radioM ? forma : null;
+    if (!pts && !circ) return '';
+
+    // Caja en grados, corrigiendo la longitud por la latitud para que un
+    // cuadrado se vea cuadrado y no aplastado.
+    let latC, lngC, halfLat, halfLng;
+    if (pts) {
+      const lats = pts.map(p => +p.lat), lngs = pts.map(p => +p.lng);
+      const s = Math.min(...lats), n = Math.max(...lats), w = Math.min(...lngs), e = Math.max(...lngs);
+      latC = (s + n) / 2; lngC = (w + e) / 2;
+      halfLat = Math.max((n - s) / 2, 1e-6); halfLng = Math.max((e - w) / 2, 1e-6);
+    } else {
+      latC = +circ.centro.lat; lngC = +circ.centro.lng;
+      halfLat = circ.radioM / 111320;
+      halfLng = halfLat / Math.max(1e-6, Math.cos(latC * Math.PI / 180));
+    }
+    const kx = Math.cos(latC * Math.PI / 180);           // grados de lng → "grados de lat"
+    const anchoDeg = halfLng * 2 * kx, altoDeg = halfLat * 2;
+    const esc = Math.min((W - 2 * PAD) / anchoDeg, (H - 2 * PAD) / altoDeg);
+    const X = lng => W / 2 + (lng - lngC) * kx * esc;
+    const Y = lat => H / 2 - (lat - latC) * esc;
+
+    // Rejilla tenue cada 12 px: da la sensación de plano sin competir.
+    let rejilla = '';
+    for (let x = 12; x < W; x += 12) rejilla += 'M' + x + ' 0V' + H;
+    for (let y = 12; y < H; y += 12) rejilla += 'M0 ' + y + 'H' + W;
+
+    // La forma.
+    let figura = '';
+    if (pts) {
+      const d = pts.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
+      figura = '<path d="' + d + '" fill="rgba(52,204,254,.22)" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
+      if (pts.length <= 24) {
+        figura += pts.map(p => '<circle cx="' + X(+p.lng).toFixed(1) + '" cy="' + Y(+p.lat).toFixed(1) +
+          '" r="1.6" fill="#0A6F9E"/>').join('');
+      }
+    } else {
+      const r = (circ.radioM / 111320) * esc;
+      figura = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + r.toFixed(1) +
+        '" fill="rgba(52,204,254,.22)" stroke="#0A6F9E" stroke-width="1.6"/>' +
+        '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="1.8" fill="#0A6F9E"/>';
+    }
+
+    // Escala: metros por píxel → una barra de longitud "redonda".
+    const mPorPx = (1 / esc) * 111320;
+    const candidatos = [50, 100, 200, 250, 500, 1000, 2000, 5000];
+    let metros = candidatos[0];
+    for (const c of candidatos) { if (c / mPorPx <= (W - 2 * PAD) * .45) metros = c; }
+    const largo = metros / mPorPx;
+    const etq = metros >= 1000 ? (metros / 1000) + ' km' : metros + ' m';
+    const escala = largo >= 14
+      ? '<path d="M' + PAD + ' ' + (H - 7) + 'h' + largo.toFixed(1) + '" stroke="#3B4A5A" stroke-width="1.4"/>' +
+        '<path d="M' + PAD + ' ' + (H - 10) + 'v6M' + (PAD + largo).toFixed(1) + ' ' + (H - 10) + 'v6" stroke="#3B4A5A" stroke-width="1.2"/>' +
+        '<text x="' + (PAD + largo / 2).toFixed(1) + '" y="' + (H - 10) + '" font-size="6.5" text-anchor="middle" ' +
+        'fill="#3B4A5A" font-family="Inter,system-ui,sans-serif" font-weight="600">' + etq + '</text>'
+      : '';
+
+    // Norte, arriba a la derecha.
+    const nx = W - 11, ny = 8;
+    const norte = '<path d="M' + nx + ' ' + (ny - 5) + 'l2.6 7-2.6-1.6-2.6 1.6z" fill="#0A6F9E"/>' +
+      '<text x="' + nx + '" y="' + (ny + 11) + '" font-size="6" text-anchor="middle" fill="#0A6F9E" ' +
+      'font-family="Inter,system-ui,sans-serif" font-weight="700">N</text>';
+
+    return '<svg class="pca-minimapa' + (o.clase ? ' ' + o.clase : '') + '" viewBox="0 0 ' + W + ' ' + H + '" ' +
+      'role="img" aria-label="' + (o.etiqueta || 'Forma del área') + '">' +
+      '<rect width="' + W + '" height="' + H + '" rx="8" fill="#F3F8FB"/>' +
+      '<path d="' + rejilla + '" stroke="#E1EAF1" stroke-width="1"/>' +
+      figura + escala + norte + '</svg>';
+  }
+
+  // Cuánto hace: para la fecha de una tarjeta, en palabras.
+  function haceCuanto(iso){
+    const t = new Date(iso).getTime();
+    if (!isFinite(t)) return '';
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 2) return 'ahora mismo';
+    if (m < 60) return 'hace ' + m + ' min';
+    const h = Math.round(m / 60);
+    if (h < 24) return 'hace ' + h + ' h';
+    const d = Math.round(h / 24);
+    if (d === 1) return 'ayer';
+    if (d < 30) return 'hace ' + d + ' días';
+    return new Date(t).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   function htmlSinArea(ctx){
     const areas = leerAreas();
     const guardadas = areas.length ? (
-      '<div class="pca-guardadas"><b>Áreas guardadas</b>' +
-      areas.map(a =>
-        '<div class="pca-guardada">' +
-          '<button type="button" class="pca-guardada-abrir" data-u52-call="pca-cargar" data-id="' + esc(a.id) + '">' +
-            miniaturaArea(a.pts) + '<div><b>' + esc(a.nombre) + '</b>' +
-            '<small>' + fmtArea(a.areaM2 || 0) + ' · ' + a.pts.length + ' vértices</small></div>' +
-          '</button>' +
-          '<button type="button" class="pca-guardada-borrar" data-u52-call="pca-borrar" data-id="' + esc(a.id) + '" aria-label="Borrar">🗑️</button>' +
-        '</div>').join('') +
+      '<div class="pca-guardadas">' +
+        '<div class="pca-sec"><span class="pca-sec-eyebrow">Tus áreas</span>' +
+          '<b>Áreas guardadas</b><small>Tocá una para volver a cargarla en el mapa.</small></div>' +
+        areas.map(a =>
+          '<div class="pca-guardada pca-card-area">' +
+            '<button type="button" class="pca-guardada-abrir" data-u52-call="pca-cargar" data-id="' + esc(a.id) + '">' +
+              miniaturaMapa({ pts: a.pts }, { etiqueta: 'Forma del área ' + a.nombre }) +
+              '<div class="pca-guardada-txt">' +
+                '<b>' + esc(a.nombre) + '</b>' +
+                '<span class="pca-guardada-dato">' + fmtArea(a.areaM2 || 0) + '</span>' +
+                '<small>' + a.pts.length + ' vértices · ' + esc(haceCuanto(a.fecha)) + '</small>' +
+              '</div>' +
+            '</button>' +
+            '<button type="button" class="pca-guardada-borrar" data-u52-call="pca-borrar" data-id="' + esc(a.id) + '" aria-label="Borrar área ' + esc(a.nombre) + '">' +
+              (window.URBIS_ICONO ? window.URBIS_ICONO('cerrar', { tam: 16 }) : '✕') + '</button>' +
+          '</div>').join('') +
       '</div>'
     ) : '';
 
@@ -3137,6 +3243,10 @@ bloquesDiag,
     },
     areasGuardadas: leerAreas,
     cargarAreaPorId: cargarArea,
+    // La miniatura de mapa y el «hace cuánto», compartidos con la pestaña
+    // «Sector» (js/68) para que las dos listas se vean como la misma cosa.
+    miniatura: miniaturaMapa,
+    haceCuanto: haceCuanto,
     // Geometría (Fase 3)
     geoActiva: () => S.geo.tipo, apagarGeo, refrescarPorFiltro, geometriaActual,
     areaNombre: () => S.nombre,

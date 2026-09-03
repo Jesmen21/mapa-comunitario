@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v634-salida-al-perfil';
+const URBIS_CACHE = 'urbis-v635-miniaturas-e-iconos';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -146,6 +146,8 @@ const URBIS_ASSETS = [
   './js/65-analisis-edu-ui.js',
   './js/70-modo-app.js',
   './css/70-modo-app.css',
+  './js/71-iconos-urbis.js',
+  './css/72-edu-diseno.css',
 ];
 
 self.addEventListener('install', event => {

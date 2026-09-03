@@ -1,0 +1,150 @@
+/* URBIS · DISEÑO DEL MODO EDUCATIVO (css/72)
+   ═══════════════════════════════════════════════════════════════════════
+   La capa visual común de las superficies del módulo educativo: la hoja de
+   reconocimiento (.pcr-*), la pestaña «Sector» (.pcr-pestana), el panel de
+   análisis y sus áreas guardadas (.pca-*), y los botones del mapa en modo
+   educativo. Va la ÚLTIMA en main.css a propósito: corrige encima de lo que
+   ya está sin reescribirlo.
+
+   Dirección: celeste URBIS como identidad, no como fondo. Suelo blanco y
+   gris-azulado frío, tinta casi negra para leer, un solo acento. Radios de
+   10 / 14 / 18, una sombra corta y una larga muy tenues, Inter en todo.
+
+   Regla de la casa que se repite acá porque no hay forma de heredarla:
+   cada color de texto va en `color` Y en `-webkit-text-fill-color`, con
+   !important, porque css/42 pinta p/small/span de casi blanco con !important
+   y gana a cualquier `color` a secas. */
+
+:root{
+  --edu-accent:#34CCFE;      /* celeste URBIS: acentos, activo, progreso */
+  --edu-accent-deep:#0A6F9E; /* botones, enlaces, trazos */
+  --edu-accent-ink:#075E88;  /* títulos de sección sobre blanco */
+  --edu-accent-soft:#E6F7FE; /* tinte para chips y filas activas */
+  --edu-ink:#0F1F2E;         /* títulos */
+  --edu-ink-2:#3B4A5A;       /* texto */
+  --edu-ink-3:#6B7A8A;       /* metadatos */
+  --edu-ground:#FFFFFF;
+  --edu-ground-2:#F6F9FB;    /* gris-azulado frío, no gris plano */
+  --edu-line:#E3EAF0;
+  --edu-line-2:#CFDCE6;
+  --edu-ok:#1B9E6B; --edu-warn:#B97800; --edu-bad:#C2410C; --edu-pink:#EC4899;
+  --edu-r-s:10px; --edu-r-m:14px; --edu-r-l:18px;
+  --edu-sombra:0 1px 2px rgba(15,31,46,.05), 0 8px 24px rgba(15,31,46,.06);
+  --edu-sombra-alta:0 2px 4px rgba(15,31,46,.06), 0 16px 40px rgba(15,31,46,.10);
+  --edu-font:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+
+/* ── Iconos lineales (js/71) ────────────────────────────────────────── */
+.u-ico{ display:inline-block; vertical-align:-0.2em; flex:0 0 auto; }
+button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
+
+/* ── Miniatura de mapa ──────────────────────────────────────────────── */
+.pca-minimapa{
+  display:block; width:100%; height:auto; border-radius:8px;
+  box-shadow:inset 0 0 0 1px var(--edu-line);
+  background:#F3F8FB;
+}
+
+/* ── Tarjeta de área / sector guardado ─────────────────────────────── */
+/* Miniatura a la izquierda, del alto de la tarjeta; nombre, dato grande y
+   metadatos a la derecha. La misma tarjeta en las dos listas. */
+.pca-sec{ display:flex; flex-direction:column; gap:1px; margin:6px 0 2px; }
+.pca-sec-eyebrow, .pcr-eyebrow{
+  font-size:.66rem !important; font-weight:700 !important; letter-spacing:.08em !important;
+  text-transform:uppercase !important; line-height:1.2 !important;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pca-sec > b{
+  font-size:.95rem !important; font-weight:800 !important; letter-spacing:-.01em !important;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pca-sec > small{
+  font-size:.74rem !important; line-height:1.4 !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+
+.pca-guardadas{ gap:10px !important; }
+.pca-card-area{ gap:8px !important; align-items:stretch !important; }
+.pca-card-area .pca-guardada-abrir{
+  flex:1; display:flex !important; align-items:stretch !important; gap:12px !important;
+  padding:8px !important; text-align:left;
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; box-shadow:var(--edu-sombra);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.pca-card-area .pca-guardada-abrir:hover{ border-color:var(--edu-line-2) !important; box-shadow:var(--edu-sombra-alta); }
+.pca-card-area .pca-guardada-abrir:active{ transform:scale(.985); }
+.pca-card-area .pca-minimapa{ width:104px; min-width:104px; height:auto; align-self:center; }
+.pca-guardada-txt{ display:flex; flex-direction:column; justify-content:center; gap:2px; min-width:0; }
+.pca-guardada-txt b{
+  display:block; font-size:.9rem !important; font-weight:800 !important; letter-spacing:-.01em;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pca-guardada-dato{
+  display:block; font-size:1.05rem !important; font-weight:800 !important;
+  font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pca-guardada-txt small{
+  display:block; font-size:.72rem !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pca-card-area .pca-guardada-borrar{
+  flex:0 0 40px; display:grid; place-items:center;
+  background:var(--edu-ground) !important; border:1px solid var(--edu-line) !important;
+  border-radius:var(--edu-r-m) !important; padding:0 !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+  transition:color .16s ease, border-color .16s ease, background .16s ease;
+}
+.pca-card-area .pca-guardada-borrar:hover{
+  color:var(--edu-bad) !important; -webkit-text-fill-color:var(--edu-bad) !important;
+  border-color:#F3C9B8 !important; background:#FFF6F1 !important;
+}
+
+/* La misma tarjeta en la pestaña «Sector». */
+.pcr-pestana .pcr-pest-ficha{
+  border:1px solid var(--edu-line); border-radius:var(--edu-r-m);
+  background:var(--edu-ground); box-shadow:var(--edu-sombra); overflow:hidden;
+  transition:box-shadow .16s ease, border-color .16s ease;
+}
+.pcr-pestana .pcr-pest-ficha.abierta{ border-color:var(--edu-accent); box-shadow:var(--edu-sombra-alta); }
+.pcr-pestana .pcr-pest-cab{
+  display:flex; align-items:stretch; gap:12px; width:100%;
+  padding:8px; border:none; background:transparent; text-align:left; cursor:pointer;
+  font-family:var(--edu-font);
+}
+.pcr-pestana .pcr-pest-mini{ width:108px; min-width:108px; align-self:center; }
+.pcr-pestana .pcr-pest-ico{
+  width:56px; min-width:56px; align-self:center; aspect-ratio:1; border-radius:var(--edu-r-s);
+  display:grid; place-items:center; background:var(--edu-accent-soft);
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pcr-pestana .pcr-pest-t{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:2px; }
+.pcr-pestana .pcr-pest-t b{
+  display:block; font-size:.9rem !important; font-weight:800 !important; letter-spacing:-.01em;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pcr-pestana .pcr-pest-dato{
+  display:block; font-size:1.05rem !important; font-weight:800 !important;
+  font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
+.pcr-pestana .pcr-pest-t small{
+  display:block; font-size:.72rem !important; margin:0 !important;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-pestana .pcr-pest-fl{
+  align-self:center; display:grid; place-items:center; width:28px; height:28px; border-radius:50%;
+  background:var(--edu-ground-2);
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+  transition:background .16s ease, transform .16s ease;
+}
+.pcr-pestana .pcr-pest-ficha.abierta .pcr-pest-fl{ background:var(--edu-accent-soft); }
+.pcr-pestana .pcr-pest-cuerpo{ border-top:1px solid var(--edu-line); padding:12px; }
+
+@media (prefers-reduced-motion:reduce){
+  .pca-card-area .pca-guardada-abrir, .pca-card-area .pca-guardada-borrar,
+  .pcr-pestana .pcr-pest-ficha, .pcr-pestana .pcr-pest-fl{ transition:none !important; }
+}

@@ -3043,12 +3043,31 @@
       fichas.map(function (f) {
         var abierta = S.pestanaAbierta === f.id;
         var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : ((f.radioM || 0) + ' m');
+        /* La tarjeta muestra la FORMA del sector —el polígono real o el
+           círculo del radio— como miniatura de mapa, no un emoji. Es lo que
+           permite reconocer un sector guardado de un vistazo, como en
+           cualquier app de mapas. La dibuja js/24 para que esta lista y la de
+           «Áreas guardadas» se vean como la misma cosa. */
+        var A = window.URBIS_PC_ANALISIS;
+        var mini = (A && typeof A.miniatura === 'function')
+          ? A.miniatura(
+              (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
+                ? { pts: f.poligono }
+                : { centro: f.centro, radioM: f.radioM || 500 },
+              { w: 108, h: 76, clase: 'pcr-pest-mini', etiqueta: 'Forma del sector ' + (f.nombre || '') })
+          : '';
+        var cuando = (A && typeof A.haceCuanto === 'function') ? A.haceCuanto(f.ts) : fmtFecha(f.ts);
+        var ico = function (n, t) { return window.URBIS_ICONO ? window.URBIS_ICONO(n, { tam: t || 18 }) : ''; };
         return '<div class="pcr-pest-ficha' + (abierta ? ' abierta' : '') + '">' +
-          '<button type="button" class="pcr-pest-cab" data-u52-call="pcr-ver" data-id="' + esc(f.id) + '">' +
-            '<span class="pcr-pest-ico">' + (f.forma === 'poligono' ? '📐' : '🎯') + '</span>' +
-            '<span class="pcr-pest-t"><b>' + esc(f.nombre || ('Sector del ' + fmtFecha(f.ts))) + '</b>' +
-            '<small>' + esc(tam) + ' · ' + (f.total || 0) + ' usos · ' + esc(fmtFecha(f.ts)) + '</small></span>' +
-            '<span class="pcr-pest-fl">' + (abierta ? '▾' : '▸') + '</span>' +
+          '<button type="button" class="pcr-pest-cab" data-u52-call="pcr-ver" data-id="' + esc(f.id) + '"' +
+            ' aria-expanded="' + (abierta ? 'true' : 'false') + '">' +
+            (mini || '<span class="pcr-pest-ico">' + ico(f.forma === 'poligono' ? 'area' : 'radio', 22) + '</span>') +
+            '<span class="pcr-pest-t">' +
+              '<b>' + esc(f.nombre || ('Sector del ' + fmtFecha(f.ts))) + '</b>' +
+              '<span class="pcr-pest-dato">' + esc(tam) + '</span>' +
+              '<small>' + (f.total || 0) + ' uso' + ((f.total || 0) === 1 ? '' : 's') + ' · ' + esc(cuando) + '</small>' +
+            '</span>' +
+            '<span class="pcr-pest-fl">' + ico(abierta ? 'abajo' : 'chevron', 18) + '</span>' +
           '</button>' +
           (abierta
             ? '<div class="pcr-pest-cuerpo">' +
