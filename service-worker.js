@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v662-sectores-lado-a-lado';
+const URBIS_CACHE = 'urbis-v663-vista-del-curso';
 const URBIS_ASSETS = [
   './',
   './index.html',

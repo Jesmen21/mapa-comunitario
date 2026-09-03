@@ -850,9 +850,61 @@
   // educativo, cada uno en su archivo: se expone una sola implementación para
   // que las posiciones del registro no se calculen en tres sitios distintos.
   // Lo que SÍ depende del registro serializado y por eso se queda aquí.
+  /* Quién levantó un punto y cuándo. Vive acá, junto a BASE_OFFSET, por la
+     misma razón que la ficha del edificio: las posiciones del registro se
+     calculan UNA vez y en un solo sitio. Tres funciones calculándolas por su
+     cuenta ya se pisaron los datos una vez.
+
+     Devuelve el nombre y el rol y NADA MÁS. En esas casillas también están el
+     correo y la cédula de quien reportó, y la vista del curso no los necesita
+     para nada: contar cuántos puntos levantó cada estudiante no requiere
+     tener su documento a mano. Lo que no se expone no se filtra. */
+  window.URBIS_AUTOR = Object.assign(window.URBIS_AUTOR || {}, {
+    de: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      return {
+        nombre: (d[BASE_OFFSET + 2] || '').trim(),
+        rol: (d[BASE_OFFSET + 3] || '').trim()
+      };
+    },
+    cuando: function (p) {
+      const d = String((p && p.descripcion) || '').split(' | ');
+      const iso = d[BASE_OFFSET + TIMELINE_EXTRA_OFFSET];
+      let f = iso ? new Date(iso) : null;
+      if (!f || isNaN(f.getTime())) {
+        const raw = (p && p.fecha) || '';
+        const m = String(raw).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        f = m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 12, 0, 0) : new Date(raw);
+      }
+      return (f && !isNaN(f.getTime())) ? f : null;
+    }
+  });
+
   window.URBIS_EDIFICIO = Object.assign(window.URBIS_EDIFICIO || {}, {
     esCategoriaEdificio: esCategoriaEdificio,
     leer: leerEdificio,
+    /* Qué campos de la ficha NO se registraron. Hace falta aparte de leer()
+       porque leer() normaliza —un edificio sin pisos anotados devuelve 1, para
+       que el análisis no castigue lo mapeado antes de que el campo
+       existiera—, y para saber qué falta por llenar hay que ver el crudo. Con
+       leer() solo, «sin pisos» daría cero siempre. */
+    faltantes: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V0 = VOC();
+      const base = URBIS_SLOTS.edificioMaterialidad;
+      const pisos = parseInt(d[base + 1], 10);
+      /* «Sin registrar», «No se sabe» y «Otro» SON valores del vocabulario
+         —están en la lista— pero no son una observación: `valorUtil` los
+         devuelve vacíos y por eso se pasa por ahí. Sin ese filtro, un edificio
+         al que le pusieron «No se sabe» contaría como ficha completa, que es
+         justo lo contrario de lo que esta vista tiene que mostrar. */
+      const util = (V0 && V0.valorUtil) ? V0.valorUtil : function (x) { return String(x || '').trim(); };
+      return {
+        materialidad: !util(delVocabulario(d[base], V0 && V0.MATERIALIDAD)),
+        pisos: !(isFinite(pisos) && pisos > 0),
+        epoca: !util(delVocabulario(d[base + 3], V0 && V0.EPOCA))
+      };
+    },
     usosMarcados: leerUsosMarcados,
     todosLosUsos: function(){ return todosLosUsos.slice(); }
   });

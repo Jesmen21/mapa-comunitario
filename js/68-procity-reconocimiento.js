@@ -4432,6 +4432,212 @@
       'sector.</p></body></html>';
   }
 
+
+  /* ── La vista del curso ────────────────────────────────────────────────
+     El profesor tiene treinta teléfonos levantando datos y ninguna forma de
+     ver el conjunto. Sabe lo que le cuentan, no lo que hay. Esta vista
+     responde las cuatro preguntas que se hace de verdad:
+
+       ¿Cuánto se ha levantado?   ¿Quién levantó qué?
+       ¿Qué parte de la ciudad quedó sin tocar?   ¿Qué está a medio llenar?
+
+     Corre sobre los mismos puntos que el mapa ya cargó: no consulta nada, no
+     cuesta nada y funciona con la app abierta en el salón.
+
+     Solo la ve quien administra. No por secreto —los puntos están a la vista
+     de todos en el mapa— sino porque una tabla que ordena a las personas por
+     cuánto produjeron no es algo que deba estar en la pantalla de cada
+     estudiante: eso lo mira un profesor para repartir el trabajo, no el curso
+     para compararse entre sí. */
+  function esProfesor() {
+    try {
+      if (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin()) return true;
+      var s2 = JSON.parse(localStorage.getItem('urbis_auth_session_v1') || '{}');
+      return !!(s2 && (s2.es_admin || s2.rol === 'admin' || s2.rol === 'gov'));
+    } catch (e) { return false; }
+  }
+
+  function resumenDelCurso() {
+    var pts = puntosDelCurso();
+    if (!pts.length) return null;
+    var AUT = window.URBIS_AUTOR, EDIF = window.URBIS_EDIFICIO;
+    var ahora = Date.now(), DIA = 86400000;
+    var porAutor = {}, porUso = {};
+    var hoy = 0, semana = 0, conFicha = 0, sinNada = 0, edificios = 0;
+    var faltaPisos = 0, faltaMaterial = 0, faltaEpoca = 0;
+
+    pts.forEach(function (p) {
+      var quien = (AUT && AUT.de ? AUT.de(p.descripcion).nombre : '') || 'Sin nombre';
+      var cuando = AUT && AUT.cuando ? AUT.cuando(p) : null;
+      var a = porAutor[quien] || (porAutor[quien] = { n: 0, ultima: null, conFicha: 0 });
+      a.n++;
+      if (cuando && (!a.ultima || cuando > a.ultima)) a.ultima = cuando;
+      if (cuando) {
+        var dif = ahora - cuando.getTime();
+        if (dif < DIA) hoy++;
+        if (dif < 7 * DIA) semana++;
+      }
+
+      // El uso es la cabeza de la etiqueta: «Comercial · Tienda | …».
+      var cabeza = String(p.descripcion || '').split(' | ')[0];
+      var uso = (cabeza.split('·')[0] || '').trim() || 'Sin uso';
+      porUso[uso] = (porUso[uso] || 0) + 1;
+
+      /* La ficha del edificio es la parte cara del levantamiento —hay que
+         pararse enfrente y mirar— así que es la que conviene vigilar. Solo
+         cuenta donde tiene sentido: un poste de luz no tiene pisos. */
+      /* La categoría del reporte —«Vivienda y Residencial», «Comercio y
+         Servicios»— viaja en `tipo`, no en la descripción. Un poste de luz no
+         tiene pisos, así que la ficha solo se le exige a lo que es un
+         edificio. */
+      if (EDIF && typeof EDIF.esCategoriaEdificio === 'function' &&
+          typeof EDIF.faltantes === 'function' && EDIF.esCategoriaEdificio(p.tipo)) {
+        edificios++;
+        var falta = EDIF.faltantes(p.descripcion);
+        if (falta.pisos) faltaPisos++;
+        if (falta.materialidad) faltaMaterial++;
+        if (falta.epoca) faltaEpoca++;
+        if (!falta.pisos && !falta.materialidad && !falta.epoca) { conFicha++; a.conFicha++; }
+        else if (falta.pisos && falta.materialidad && falta.epoca) sinNada++;
+      }
+    });
+
+    var autores = Object.keys(porAutor).map(function (k) {
+      return { nombre: k, n: porAutor[k].n, ultima: porAutor[k].ultima, conFicha: porAutor[k].conFicha };
+    }).sort(function (x, y) { return y.n - x.n; });
+
+    var usos = Object.keys(porUso).map(function (k) { return { uso: k, n: porUso[k] }; })
+      .sort(function (x, y) { return y.n - x.n; });
+
+    // Qué sectores guardados ya tienen trabajo de campo adentro y cuáles no.
+    var sectores = leerFichas().map(function (f) {
+      var dentro = pts.filter(function (p) { return puntoEnFicha(p, f); }).length;
+      return { nombre: f.nombre || ('Sector del ' + fmtFecha(f.ts)), n: dentro,
+               osm: f.total || 0, id: f.id };
+    }).sort(function (x, y) { return x.n - y.n; });
+
+    return {
+      total: pts.length, hoy: hoy, semana: semana,
+      autores: autores, usos: usos, sectores: sectores,
+      edificios: edificios, conFicha: conFicha, sinNada: sinNada,
+      faltaPisos: faltaPisos, faltaMaterial: faltaMaterial, faltaEpoca: faltaEpoca
+    };
+  }
+
+  /* ¿Este punto cae dentro de este sector? El polígono se resuelve con el
+     mismo algoritmo de siempre; el radio, por distancia al centro. */
+  function puntoEnFicha(p, f) {
+    var lat = parseFloat(String(p.lat || '').replace(',', '.'));
+    var lng = parseFloat(String(p.lng || '').replace(',', '.'));
+    if (!isFinite(lat) || !isFinite(lng)) return false;
+    if (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3) {
+      // El par-impar ya está escrito y probado en js/24: se pide prestado en
+      // vez de tener dos versiones del mismo algoritmo que puedan discrepar.
+      var A = window.URBIS_PC_ANALISIS;
+      if (!A || typeof A.dentroDelPoligono !== 'function') return false;
+      return A.dentroDelPoligono(lat, lng, f.poligono);
+    }
+    if (!f.centro || !isFinite(f.centro.lat)) return false;
+    return haversineM({ lat: lat, lng: lng }, f.centro) <= (f.radioM || 0);
+  }
+
+  function bloqueCurso() {
+    if (!esProfesor()) return '';
+    var r = resumenDelCurso();
+    if (!r) {
+      return '<div class="pcr-curso">' +
+        h4('perfil', 'Vista del curso') +
+        '<p class="pcr-pista">Todavía no hay puntos levantados en este dispositivo. Cuando el curso ' +
+        'empiece a mapear, acá vas a ver cuánto lleva cada quien y qué parte de la ciudad falta.</p>' +
+        '</div>';
+    }
+    var sinTocar = r.sectores.filter(function (x) { return x.n === 0; });
+    var fmt = function (d) {
+      if (!d) return 'sin fecha';
+      var A = window.URBIS_PC_ANALISIS;
+      return (A && typeof A.haceCuanto === 'function') ? A.haceCuanto(d.toISOString()) : fmtFecha(d);
+    };
+
+    return '<div class="pcr-curso">' +
+      h4('perfil', 'Vista del curso') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + r.total + '</b><small>puntos levantados</small></div>' +
+        '<div class="pcr-kpi"><b>' + r.semana + '</b><small>en los últimos 7 días</small></div>' +
+        '<div class="pcr-kpi"><b>' + r.autores.length + '</b><small>personas mapeando</small></div>' +
+      '</div>' +
+
+      '<p class="pcr-lab">Quién levantó cuánto</p>' +
+      '<div class="pcr-niveles">' +
+        r.autores.slice(0, 12).map(function (a) {
+          var pct = Math.round(100 * a.n / r.autores[0].n);
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + esc(a.nombre) +
+              '<small class="pcr-nivel-sub">' + esc(fmt(a.ultima)) + '</small></span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' + pct + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + a.n + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (r.autores.length > 12 ? '<p class="pcr-pista">Y ' + (r.autores.length - 12) + ' personas más.</p>' : '') +
+
+      '<p class="pcr-lab">Qué se levantó</p>' +
+      r.usos.slice(0, 8).map(function (u) {
+        return '<div class="pcr-lote-fila"><span>' + esc(u.uso) + '</span><b>' + u.n + '</b></div>';
+      }).join('') +
+
+      (r.edificios
+        ? '<p class="pcr-lab">La ficha del edificio, que es la parte cara</p>' +
+          '<div class="pcr-kpis">' +
+            '<div class="pcr-kpi"><b>' + Math.round(100 * r.conFicha / r.edificios) + '%</b>' +
+              '<small>completas de ' + r.edificios + '</small></div>' +
+            '<div class="pcr-kpi"><b>' + r.faltaPisos + '</b><small>sin pisos</small></div>' +
+            '<div class="pcr-kpi"><b>' + r.faltaEpoca + '</b><small>sin época</small></div>' +
+          '</div>' +
+          '<p class="pcr-pista">Sin pisos no hay alturas ni perfil de calle; sin época no hay lectura ' +
+          'de vulnerabilidad. Son los dos campos que más rinden y los que más se saltan.</p>'
+        : '') +
+
+      (r.sectores.length
+        ? '<p class="pcr-lab">Qué parte de la ciudad tiene trabajo de campo</p>' +
+          r.sectores.slice(0, 10).map(function (x) {
+            return '<div class="pcr-lote-fila' + (x.n === 0 ? ' pcr-curso-vacio' : '') + '">' +
+              '<span>' + esc(x.nombre) + '</span><b>' +
+              (x.n === 0 ? 'sin tocar' : x.n + ' punto' + (x.n === 1 ? '' : 's')) + '</b></div>';
+          }).join('') +
+          (sinTocar.length
+            ? '<p class="pcr-conc"><b>' + sinTocar.length + ' de ' + r.sectores.length +
+              '</b> sectores analizados no tienen todavía un solo punto levantado. Ahí es donde hay ' +
+              'que mandar gente.</p>'
+            : '<p class="pcr-conc">Todos los sectores analizados tienen ya trabajo de campo adentro.</p>')
+        : '<p class="pcr-pista">Analizá y guardá sectores para ver qué parte de la ciudad tiene ya ' +
+          'trabajo de campo y cuál no.</p>') +
+
+      '<div class="pcr-llevar">' +
+        '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-curso-csv">' +
+          ico('exportar') + 'Planilla por estudiante (CSV)</button>' +
+      '</div>' +
+      '<p class="pcr-pista">La planilla trae una fila por persona con lo que levantó y cuándo fue la ' +
+      'última vez. Se abre en Excel o en una hoja de cálculo.</p>' +
+    '</div>';
+  }
+
+  function cursoComoCSV() {
+    var r = resumenDelCurso();
+    if (!r) return '';
+    /* Punto y coma y no coma: en un Excel en español la coma es el separador
+       decimal, y un archivo separado por comas se abre todo en una columna.
+       Es la diferencia entre una planilla y un problema. */
+    var l = ['Nombre;Puntos levantados;Fichas de edificio completas;Última vez'];
+    r.autores.forEach(function (a) {
+      l.push([
+        String(a.nombre).replace(/[;\n\r]+/g, ' '),
+        a.n, a.conFicha,
+        a.ultima ? a.ultima.toLocaleString('es-CO') : 'sin fecha'
+      ].join(';'));
+    });
+    return l.join('\n');
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -6081,6 +6287,7 @@
     return '<div class="pcr-pestana">' +
       '<p class="pcr-pista">Cada sector que analizaste queda acá con su informe completo, ' +
       'aunque cierres la app. Cargá el área para que los mapeos del curso se sumen a lo que ya se sabía.</p>' +
+      bloqueCurso() +
       bloqueCotejo() +
       fichas.map(function (f) {
         var abierta = S.pestanaAbierta === f.id;
@@ -6269,6 +6476,14 @@
     }
     if (name === 'cotejo') {
       alternarCotejo(id);
+      repintar(); return true;
+    }
+    if (name === 'curso-csv') {
+      var csv = cursoComoCSV();
+      if (!csv) { S.avisoPestana = 'Todavía no hay puntos del curso para armar la planilla.'; repintar(); return true; }
+      var puso = descargarArchivo('\ufeff' + csv, 'urbis-curso-' +
+        new Date().toISOString().slice(0, 10) + '.csv', 'text/csv;charset=utf-8');
+      S.avisoPestana = puso ? 'Planilla descargada.' : 'No se pudo generar la planilla en este dispositivo.';
       repintar(); return true;
     }
     if (name === 'cot-limpiar') { S.cotejo = []; S.avisoPestana = ''; repintar(); return true; }

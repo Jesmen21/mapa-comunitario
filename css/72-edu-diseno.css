@@ -860,6 +860,19 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.8rem !important; color:var(--edu-ink-2) !important;
   -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+/* La vista del curso. Va arriba de todo en la pestaña y con un borde propio:
+   es la única parte de la app que le habla al profesor y no al estudiante, y
+   conviene que se note que es otra cosa. */
+.pcr-pestana .pcr-curso{
+  margin:0 0 16px; padding:12px 14px 14px; border-radius:14px;
+  background:var(--edu-ground); box-shadow:inset 0 0 0 1px var(--edu-accent);
+}
+.pcr-pestana .pcr-curso-vacio span,
+.pcr-pestana .pcr-curso-vacio b{
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-pestana .pcr-curso-vacio b{ font-style:italic; }
+
 /* Sectores lado a lado. La tabla se desplaza dentro de su caja y nunca empuja
    la hoja: con cuatro columnas en un teléfono de 360 px no hay forma de que
    entre, y partir el texto la vuelve ilegible. */
