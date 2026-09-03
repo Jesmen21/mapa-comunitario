@@ -766,6 +766,26 @@
       String(mo.orden != null ? mo.orden : '—').replace('.', ',') + ' (0 = ninguna dirección manda, 1 = todas la misma).</p>';
   }
 
+  function espacioImpreso(t, st) {
+    if (!t || !t.espacio || !t.espacio.piezas) return '';
+    var e = t.espacio;
+    var hab = Number((st && st.poblacionEstimada) || 0);
+    var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
+    return '<h2>Espacio público efectivo</h2><table>' +
+      '<tr><td>Área de espacio público</td><td class="n">' + formatearM2(e.areaM2) + '</td></tr>' +
+      '<tr><td>Del área del sector</td><td class="n">' + String(e.pctDelSector).replace('.', ',') + '%</td></tr>' +
+      (porHab != null
+        ? '<tr><td>Por habitante</td><td class="n">' + String(porHab).replace('.', ',') + ' m²</td></tr>' +
+          '<tr><td>Meta del Decreto 1504 de 1998</td><td class="n">' + (e.metaM2Hab || 15) + ' m²</td></tr>'
+        : '') +
+      (e.porClase || []).map(function (c) {
+        return '<tr><td>' + esc(c.etiqueta) + '</td><td class="n">' + formatearM2(c.areaM2) + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      '<p class="pie">Cuenta parques, plazas, zonas verdes y escenarios deportivos de uso público ' +
+      'con forma mapeada. No cuenta andenes ni vías. Lo que nadie ha mapeado no aparece.</p>';
+  }
+
   function rutasImpresas(st) {
     var rutas = (st.movilidad && st.movilidad.rutas) || [];
     if (!rutas.length) return '';
@@ -1169,7 +1189,32 @@
               '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
               (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
               '</p>';
-          })(), 'g6') +
+          })(), 'g3') +
+
+        caja('Espacio público efectivo',
+          (function () {
+            var e = trz && trz.espacio;
+            if (!e || !e.piezas) return '';
+            var hab = Number(st.poblacionEstimada || 0);
+            var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
+            var meta = e.metaM2Hab || 15;
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas</small></div>' +
+                '<div class="k"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del sector</small></div>' +
+                '<div class="k"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
+                  '</b><small>m² por habitante</small></div>' +
+              '</div>' +
+              (e.porClase || []).map(function (c) {
+                return fila(c.etiqueta, formatearM2(c.areaM2));
+              }).join('') +
+              (porHab != null
+                ? '<p class="lee">La meta nacional son ' + meta + ' m² por habitante (Decreto 1504 ' +
+                  'de 1998). Acá ' + (porHab >= meta ? 'se cumple' : 'falta' + ' ' +
+                  String(Math.round(10 * (meta - porHab)) / 10).replace('.', ',') + ' m² por habitante') + '.</p>'
+                : '') +
+              '<p class="nota">Parques, plazas, zonas verdes y escenarios deportivos de uso público ' +
+              'con forma mapeada. No entran andenes ni vías.</p>';
+          })(), 'g3') +
 
       '</div>' +
 
@@ -1261,6 +1306,7 @@
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
+      espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
       rutasImpresas(st) +
       solImpreso(meta) +
       hitosImpresos(st) +
@@ -3136,6 +3182,83 @@
       'misma—: acá da <b>' + (mo.orden != null ? String(mo.orden).replace('.', ',') : '—') + '</b>.</p>';
   }
 
+
+  /* ── Espacio público efectivo ──────────────────────────────────────────
+     Cuántos metros cuadrados de parque, plaza y cancha tiene el sector, y
+     cuántos le tocan a cada habitante. La cifra por habitante es la que se
+     discute en un consejo municipal, y la meta con la que se compara no es
+     opinión: el Decreto 1504 de 1998 fija 15 m² por habitante.
+
+     Sale del mismo viaje que el trazado —es la misma geometría— así que no
+     cuesta ninguna consulta más. Lo que sí hay que decir, y se dice, es que
+     solo cuenta lo que alguien mapeó: un parque que existe y no está en
+     OpenStreetMap deja el sector peor de lo que está, y eso se arregla
+     mapeándolo, que es justamente el trabajo del curso. */
+  function bloqueEspacio(st) {
+    var t = S.trazado;
+    if (!t || !t.espacio) return '';
+    var e = t.espacio;
+    var hab = Number((st && st.poblacionEstimada) || 0);
+    var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
+    var meta = e.metaM2Hab || 15;
+    var pctMeta = porHab != null ? Math.min(100, Math.round(100 * porHab / meta)) : 0;
+
+    if (!e.piezas) {
+      return h4('verde', 'Espacio público efectivo') +
+        '<p class="pcr-conc">No hay <b>ningún</b> parque, plaza ni cancha con forma registrada ' +
+        'dentro del área.</p>' +
+        '<p class="pcr-pista">Eso no significa que no exista: significa que nadie lo ha mapeado. ' +
+        'Es de lo más útil que puede levantar el curso, porque sin el polígono no hay metros ' +
+        'cuadrados y sin metros cuadrados no hay indicador que discutir.</p>';
+    }
+
+    return h4('verde', 'Espacio público efectivo') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas de espacio público</small></div>' +
+        '<div class="pcr-kpi"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del área del sector</small></div>' +
+        '<div class="pcr-kpi"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
+          '</b><small>m² por habitante</small></div>' +
+      '</div>' +
+      (porHab != null
+        ? medidor('Frente a la meta nacional (' + meta + ' m²/hab)', pctMeta,
+            (porHab >= meta
+              ? 'El sector cumple la meta del Decreto 1504 de 1998.'
+              : porHab >= meta / 2
+                ? 'Por debajo de la meta del Decreto 1504 de 1998: le falta cerca de la mitad.'
+                : 'Muy por debajo de la meta del Decreto 1504 de 1998. Es el dato con el que se ' +
+                  'pide un parque.'),
+            '#22c55e') +
+          '<p class="pcr-pista">Se usa la población estimada del sector (' +
+          hab.toLocaleString('es-CO') + ' habitantes, del censo del DANE repartido por área). ' +
+          'Si el área es pequeña, ese reparto tiene bastante margen y el m² por habitante lo ' +
+          'hereda.</p>'
+        : '<p class="pcr-pista">Sin población estimada no se puede sacar el metro cuadrado por ' +
+          'habitante, que es la cifra que compara el Decreto 1504 de 1998.</p>') +
+      (e.porClase && e.porClase.length
+        ? '<p class="pcr-lab">De qué está hecho</p>' +
+          '<div class="pcr-niveles">' +
+            e.porClase.map(function (c) {
+              return '<div class="pcr-nivel">' +
+                '<span class="pcr-nivel-nom">' + esc(c.etiqueta) + '</span>' +
+                '<span class="pcr-nivel-barra"><i style="width:' + c.pct + '%"></i></span>' +
+                '<span class="pcr-nivel-n">' + formatearM2(c.areaM2) + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '') +
+      ((e.mayores || []).length
+        ? '<p class="pcr-lab">Las piezas más grandes</p>' +
+          e.mayores.slice(0, 6).map(function (x) {
+            return '<div class="pcr-lote-fila"><span>' +
+              esc(x.nombre || x.tipo) + (x.nombre ? ' · ' + esc(x.tipo.toLowerCase()) : '') +
+              '</span><b>' + formatearM2(x.areaM2) + '</b></div>';
+          }).join('')
+        : '') +
+      '<p class="pcr-pista">Cuenta parques, plazas, zonas verdes y escenarios deportivos de uso ' +
+      'público con forma mapeada. <b>No</b> cuenta andenes ni vías: son espacio público, pero el ' +
+      'decreto no los llama efectivo. Tampoco cuenta lo privado ni lo que nadie ha mapeado.</p>';
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -3956,6 +4079,7 @@
         bloqueTerreno() +
         bloqueClima() +
         bloqueTrazado() +
+        bloqueEspacio(st) +
         bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
@@ -4637,7 +4761,8 @@
         S.terreno = f.terreno || null;
         S.clima = f.clima || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
-                   (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '');
+                   (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
+                   (f.trazado ? bloqueEspacio(st) : '');
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
         return html;
       })() +

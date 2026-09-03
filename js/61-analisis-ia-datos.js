@@ -209,6 +209,13 @@
       'way["building"]["building"!="no"]' + a + ';' +
       'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|pedestrian)$"]' + a + ';' +
       'way["waterway"~"^(river|stream|canal)$"]' + a + ';' +
+      /* El espacio público, con su FORMA. Contarlo por puntos no sirve: la
+         pregunta no es cuántos parques hay sino cuántos metros cuadrados
+         son, y eso solo sale del polígono. Viaja en la misma consulta que el
+         trazado porque es la misma geometría y una consulta menos. */
+      'way["leisure"~"^(park|garden|common|playground|dog_park|pitch|sports_centre|track)$"]' + a + ';' +
+      'way["landuse"~"^(recreation_ground|village_green)$"]' + a + ';' +
+      'way["place"="square"]' + a + ';' +
       ');out geom 4000;';
   }
   function consultarTrazado(lat, lng, radioM, forzar){
