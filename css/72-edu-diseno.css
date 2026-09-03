@@ -1063,6 +1063,28 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-llenos-barra i, .pcr-pestana .pcr-llenos-barra i{ display:block; height:100%; }
 .pcr-hoja .pcr-lleno, .pcr-pestana .pcr-lleno{ background:var(--edu-ink-2); }
 .pcr-hoja .pcr-vacio, .pcr-pestana .pcr-vacio{ background:var(--edu-accent-soft); }
+/* El tercer estado de la barra de andenes: «nadie lo ha dicho». Va rayado y
+   no en color, porque no es un valor intermedio entre sí y no — es la falta
+   de dato, y pintarla como un color más la haría parecer una medición. */
+.pcr-hoja .pcr-sindato, .pcr-pestana .pcr-sindato{
+  background:repeating-linear-gradient(45deg,
+    var(--edu-ground-2) 0 4px, var(--edu-line) 4px 8px);
+}
+
+/* La sección tipo de la calle: dos edificios y la calzada entre ellos, a
+   escala, con la altura y el ancho acotados como en un plano. */
+.pcr-hoja .pcr-seccion, .pcr-pestana .pcr-seccion{
+  margin:6px 0 10px; padding:8px; border-radius:12px;
+  background:var(--edu-ground-2); box-shadow:inset 0 0 0 1px var(--edu-line);
+}
+.pcr-hoja .pcr-seccion svg, .pcr-pestana .pcr-seccion svg{ display:block; width:100%; height:auto; }
+.pcr-hoja .pcr-sec-edif, .pcr-pestana .pcr-sec-edif{ fill:var(--edu-ink-2); }
+.pcr-hoja .pcr-sec-suelo, .pcr-pestana .pcr-sec-suelo{ stroke:var(--edu-ink-3); stroke-width:1.4; fill:none; }
+.pcr-hoja .pcr-sec-alt, .pcr-pestana .pcr-sec-alt{ stroke:var(--edu-accent-deep); stroke-width:1.4; fill:none; }
+.pcr-hoja .pcr-sec-cota, .pcr-pestana .pcr-sec-cota{ stroke:var(--edu-ink-3); stroke-width:1; fill:none; }
+.pcr-hoja .pcr-sec-t, .pcr-pestana .pcr-sec-t{
+  fill:var(--edu-ink-2); font-size:9px; font-weight:700; font-variant-numeric:tabular-nums;
+}
 .pcr-hoja .pcr-llenos-cifras, .pcr-pestana .pcr-llenos-cifras{
   display:flex; justify-content:space-between; gap:12px;
 }

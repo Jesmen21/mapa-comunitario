@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v657-mezcla-y-sintesis';
+const URBIS_CACHE = 'urbis-v658-perfil-de-calle';
 const URBIS_ASSETS = [
   './',
   './index.html',

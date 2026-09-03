@@ -803,6 +803,28 @@
       'que está dentro del área y lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
   }
 
+  function perfilImpreso(t) {
+    var p = t && t.perfil;
+    if (!p) return '';
+    var an = p.anden || {};
+    return '<h2>El perfil de la calle</h2><table>' +
+      (p.relacion != null
+        ? '<tr><td>Altura ÷ ancho de calzada</td><td class="n">' + String(p.relacion).replace('.', ',') + '</td></tr>' +
+          '<tr><td>Altura media construida</td><td class="n">' + String(p.alturaMediaM).replace('.', ',') + ' m</td></tr>' +
+          '<tr><td>Ancho medio de calzada</td><td class="n">' + String(p.anchoMedioM).replace('.', ',') + ' m</td></tr>'
+        : '') +
+      (p.porMalla || []).map(function (m) {
+        return '<tr><td>' + esc(m.etiqueta) + '</td><td class="n">' + String(m.anchoM).replace('.', ',') + ' m</td></tr>';
+      }).join('') +
+      '<tr><td>Vía con andén registrado</td><td class="n">' + String(an.conAndenPct).replace('.', ',') + '%</td></tr>' +
+      '<tr><td>Vía sin andén</td><td class="n">' + String(an.sinAndenPct).replace('.', ',') + '%</td></tr>' +
+      '<tr><td>Vía sin dato de andén</td><td class="n">' + String(an.sinDatoPct).replace('.', ',') + '%</td></tr>' +
+      '</table>' +
+      '<p class="pie">' + esc(p.lectura || '') + ' El ancho es el de la calzada, no de fachada a fachada. ' +
+      'Hay dato de ancho en ' + p.coberturaAncho + '% de la vía y de pisos en ' + p.coberturaAltura +
+      '% de los edificios.</p>';
+  }
+
   function espacioImpreso(t, st) {
     if (!t || !t.espacio || !t.espacio.piezas) return '';
     var e = t.espacio;
@@ -950,16 +972,21 @@
     var CAT = window.AIA_CATALOGO || {};
     var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
 
-    /* El alto del plano manda cuánto papel queda para lo demás, y la hoja no
-       puede crecer: son 900 mm y punto. Con todo medido —terreno, clima,
-       trazado, espacio público— las cajas de abajo no cabían y se recortaban
-       sin avisar; el bloque del clima perdía su lectura y nadie se enteraba
-       mirando la pantalla. Así que el plano cede altura a medida que hay más
-       que contar: con poco medido queda cuadrado y grande, con todo medido
-       queda apaisado. */
+    /* La hoja no puede crecer: son 900 mm y punto, y todo lo que no quepa se
+       recorta en silencio. Dos decisiones lo evitan.
+
+       La primera está en el CSS: la rejilla NO reparte el papel sobrante entre
+       las filas (`align-content:start`). Antes lo repartía por igual, así que
+       la fila del plano recibía un regalo que no necesitaba mientras la del
+       clima se quedaba corta y se comía su propia lectura.
+
+       La segunda es esta: el plano es la única caja con alto propio, y cede
+       milímetros a medida que hay más bloques medidos. Es el único elemento
+       elástico de la hoja, porque es el único al que encoger no le quita
+       información: el dibujo se escala dentro. */
     var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
                  (trz && trz.espacio && trz.espacio.piezas ? 1 : 0);
-    var altoDelPlano = Math.max(280, 440 - 45 * extras);
+    var altoDelPlano = Math.max(150, 370 - 45 * extras);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
@@ -1047,7 +1074,8 @@
       '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
       // Rejilla de cajas
-      '.rej{ display:grid; grid-template-columns:repeat(6,1fr); gap:6mm; flex:1; min-height:0 }' +
+      '.rej{ display:grid; grid-template-columns:repeat(6,1fr); gap:6mm; flex:1; min-height:0;' +
+        'align-content:start }' +
       '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:5mm; background:#fff;' +
         'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
       '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
@@ -1055,6 +1083,9 @@
       '.g6{ grid-column:span 6 } .g4{ grid-column:span 4 } .g3{ grid-column:span 3 }' +
       '.g2{ grid-column:span 2 }' +
       '.alto3{ grid-row:span 3 }' +
+      // El dibujo manda el alto de su caja y ocupa todo el ancho: así no
+      // quedan bandas blancas a los lados, que es lo que pasaba cuando la
+      // caja tenía alto propio y el plano se centraba dentro.
       '.plano{ background:#F3F8FB; border-radius:2mm; padding:2mm }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
@@ -1080,6 +1111,14 @@
       '.lee{ font-size:3.2mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
+      '.perf{ display:grid; grid-template-columns:1fr; gap:3mm; align-items:start }' +
+      '.perf-dib{ background:#F3F8FB; border-radius:2mm; padding:3mm }' +
+      '.pcr-seccion svg{ display:block; width:100%; height:auto }' +
+      '.pcr-sec-edif{ fill:#3B4A5A }' +
+      '.pcr-sec-suelo{ stroke:#5A6878; stroke-width:1.4; fill:none }' +
+      '.pcr-sec-alt{ stroke:#0A6F9E; stroke-width:1.4; fill:none }' +
+      '.pcr-sec-cota{ stroke:#5A6878; stroke-width:1; fill:none }' +
+      '.pcr-sec-t{ fill:#3B4A5A; font-size:9px; font-weight:700 }' +
       '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:7mm }' +
       '.sn h3{ margin:0 0 2.5mm; font-size:3mm; letter-spacing:.14em; text-transform:uppercase;' +
         'font-weight:800; color:#6B7A8A }' +
@@ -1090,7 +1129,7 @@
       '.sx span{ display:block; font-size:3.1mm; line-height:1.35; color:#0F1F2E }' +
       '.sx small{ display:block; font-size:2.7mm; color:#6B7A8A; margin-top:.8mm;' +
         'font-variant-numeric:tabular-nums }' +
-      '.camina{ display:grid; grid-template-columns:repeat(4,1fr); gap:6mm }' +
+      '.camina{ display:grid; grid-template-columns:repeat(2,1fr); gap:4mm 6mm }' +
       '.cm b{ display:block; font-size:9mm; line-height:1; font-weight:800; letter-spacing:-.02em;' +
         'color:#0A6F9E; font-variant-numeric:tabular-nums }' +
       '.cm span{ display:block; font-size:3.2mm; color:#0F1F2E; margin:1.5mm 0 2mm; font-weight:700 }' +
@@ -1103,10 +1142,10 @@
       '.pcr-clima-lluvia{ fill:#34CCFE; fill-opacity:.55 }' +
       '.pcr-clima-temp{ fill:none; stroke:#E5484D; stroke-width:1.8; stroke-linejoin:round }' +
       '.pcr-clima-mes,.pcr-clima-eje{ fill:#6B7A8A; font-size:8px; font-weight:700 }' +
-      '.pcr-clima-graf svg{ display:block; width:100%; height:auto }' +
+      '.pcr-clima-graf svg{ display:block; width:100%; height:auto; max-height:34mm }' +
       '.pcr-clima-graf .pcr-pista{ font-size:2.8mm; color:#6B7A8A; line-height:1.4; margin:2mm 0 0 }' +
       '.pcr-perfil{ margin:0 0 2mm }' +
-      '.pcr-perfil svg{ display:block; width:100% }' +
+      '.pcr-perfil svg{ display:block; width:100%; height:auto; max-height:20mm }' +
       '.pcr-perfil .pcr-lab{ font-size:2.6mm; letter-spacing:.1em; text-transform:uppercase; color:#6B7A8A; font-weight:700 }' +
       '.pcr-perfil-area{ fill:#E6F7FE } ' +
       '.pcr-perfil-linea{ fill:none; stroke:#0A6F9E; stroke-width:1.6 }' +
@@ -1290,6 +1329,36 @@
               'con forma mapeada. No entran andenes ni vías.</p>';
           })(), 'g3') +
 
+        caja('El perfil de la calle',
+          (function () {
+            var pf = trz && trz.perfil;
+            if (!pf) return '';
+            var an = pf.anden || {};
+            if (pf.relacion == null) {
+              return '<p class="lee">' + esc(pf.lectura || '') + '</p>';
+            }
+            return '<div class="perf">' +
+                '<div class="perf-dib">' + seccionDibujada(pf) + '</div>' +
+                '<div class="perf-datos">' +
+                  '<div class="kpis">' +
+                    '<div class="k"><b>' + String(pf.relacion).replace('.', ',') + '</b><small>altura ÷ ancho de calzada</small></div>' +
+                    '<div class="k"><b>' + String(pf.alturaMediaM).replace('.', ',') + '</b><small>m construidos</small></div>' +
+                    '<div class="k"><b>' + String(pf.anchoMedioM).replace('.', ',') + '</b><small>m de calzada</small></div>' +
+                  '</div>' +
+                  (pf.porMalla || []).map(function (m) {
+                    return fila(m.etiqueta, String(m.anchoM).replace('.', ',') + ' m');
+                  }).join('') +
+                  fila('Vía con andén registrado', String(an.conAndenPct).replace('.', ',') + '%') +
+                  fila('Sin dato de andén', String(an.sinDatoPct).replace('.', ',') + '%') +
+                  '<p class="lee">' + esc(pf.lectura || '') + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
+              'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
+              'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
+              '% de los edificios.</p>';
+          })(), 'g3') +
+
         caja('A distancia de caminar',
           (function () {
             var a = st.accesibilidad;
@@ -1311,7 +1380,7 @@
               '<p class="nota">Qué parte del área tiene cada cosa cerca, no cuántas hay. Distancia ' +
               'en línea recta: caminando siempre es más. Cuenta solo lo que está dentro del área y ' +
               'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
-          })(), 'g6') +
+          })(), 'g3') +
 
         caja('Síntesis del sector',
           (function () {
@@ -1428,6 +1497,7 @@
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
+      perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
       accesibilidadImpresa(st) +
       sintesisImpresa(res) +
@@ -3522,6 +3592,22 @@
         F('Queda suelo sin construir dentro del área', num(ll.pctVacio) + '% libre');
       if (ll.sinGeometria > ll.conGeometria)
         T('Dibujar la forma de los edificios mapeados solo como punto', ll.sinGeometria + ' sin forma');
+
+      var pf = trz.perfil;
+      if (pf && pf.relacion != null) {
+        if (pf.relacion >= 1)
+          F('Calle contenida: la altura acompaña al ancho', 'relación ' + num(pf.relacion));
+        else if (pf.relacion < 0.5)
+          C('Calle ancha para lo poco construido: escala de vehículo', 'relación ' + num(pf.relacion));
+      }
+      if (pf && pf.anden) {
+        if (pf.anden.sinAndenPct >= 20)
+          C('Vías sin andén registrado: no se puede caminar por todas partes',
+            num(pf.anden.sinAndenPct) + '% de la vía');
+        if (pf.anden.sinDatoPct >= 50)
+          T('Caminar el sector anotando dónde hay andén y dónde no',
+            num(pf.anden.sinDatoPct) + '% sin dato');
+      }
     }
 
     // ── El terreno
@@ -3590,6 +3676,104 @@
       col('Lo que juega a favor', s2.favor, 'bien') +
       col('Lo que juega en contra', s2.contra, 'mal') +
       col('Lo que falta levantar en campo', s2.falta, 'falta');
+  }
+
+
+  /* ── El perfil de la calle ─────────────────────────────────────────────
+     Lo alto que está construido contra lo ancho que es la calle. Es la medida
+     que explica por qué una cuadra se siente un sitio y la siguiente un
+     descampado, y es de lo que siempre lleva una lámina de análisis urbano.
+
+     Va con un dibujo de la sección porque el número solo no se entiende: dos
+     edificios enfrentados y la calzada entre ellos, a escala. El dibujo se
+     arma con los promedios del sector, así que es una sección TIPO, no la de
+     una calle concreta; se dice.
+
+     Y se dice también sobre qué parte de la vía hay dato. En OpenStreetMap el
+     ancho y los andenes están mapeados en muy pocas calles de Cúcuta: si la
+     cobertura es baja, el promedio es de esas pocas y no del sector. Anotarlo
+     caminando es de las tareas de campo que más cambian este bloque. */
+  function seccionDibujada(p) {
+    if (!p || p.alturaMediaM == null || p.anchoMedioM == null) return '';
+    var W = 320, H = 150, base = H - 26;
+    // Escala: que la calzada más los dos edificios entren en el ancho útil.
+    var anchoEdif = Math.max(18, p.anchoMedioM * 0.75);
+    var totalM = p.anchoMedioM + 2 * anchoEdif;
+    var k = (W - 24) / totalM;
+    var hPx = Math.min(base - 18, p.alturaMediaM * k);
+    var calzPx = p.anchoMedioM * k, edifPx = anchoEdif * k;
+    var x0 = 12, x1 = x0 + edifPx, x2 = x1 + calzPx, x3 = x2 + edifPx;
+    var cota = function (xa, xb, txt) {
+      var y = base + 13, m = (xa + xb) / 2;
+      return '<path d="M' + xa.toFixed(1) + ' ' + y + 'H' + xb.toFixed(1) + '" class="pcr-sec-cota"/>' +
+        '<path d="M' + xa.toFixed(1) + ' ' + (y - 3) + 'v6M' + xb.toFixed(1) + ' ' + (y - 3) + 'v6" class="pcr-sec-cota"/>' +
+        '<text x="' + m.toFixed(1) + '" y="' + (y + 11) + '" class="pcr-sec-t" text-anchor="middle">' + esc(txt) + '</text>';
+    };
+    return '<div class="pcr-seccion"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+      'aria-label="Sección tipo de la calle">' +
+      '<path d="M' + x0 + ' ' + base + 'H' + x3.toFixed(1) + '" class="pcr-sec-suelo"/>' +
+      '<rect x="' + x0 + '" y="' + (base - hPx).toFixed(1) + '" width="' + edifPx.toFixed(1) +
+        '" height="' + hPx.toFixed(1) + '" class="pcr-sec-edif"/>' +
+      '<rect x="' + x2.toFixed(1) + '" y="' + (base - hPx).toFixed(1) + '" width="' + edifPx.toFixed(1) +
+        '" height="' + hPx.toFixed(1) + '" class="pcr-sec-edif"/>' +
+      '<path d="M' + (x1 + 4).toFixed(1) + ' ' + (base - hPx).toFixed(1) + 'v' + hPx.toFixed(1) +
+        '" class="pcr-sec-alt"/>' +
+      '<text x="' + (x1 + 8).toFixed(1) + '" y="' + (base - hPx / 2).toFixed(1) + '" class="pcr-sec-t">' +
+        String(p.alturaMediaM).replace('.', ',') + ' m</text>' +
+      cota(x1, x2, String(p.anchoMedioM).replace('.', ',') + ' m de calzada') +
+      '</svg></div>';
+  }
+
+  function bloquePerfil() {
+    var t = S.trazado, p = t && t.perfil;
+    if (!p) return '';
+    var an = p.anden || {};
+    return h4('via', 'El perfil de la calle') +
+      (p.relacion != null
+        ? '<div class="pcr-kpis">' +
+            '<div class="pcr-kpi"><b>' + String(p.relacion).replace('.', ',') + '</b><small>altura ÷ ancho de calzada</small></div>' +
+            '<div class="pcr-kpi"><b>' + String(p.alturaMediaM).replace('.', ',') + '</b><small>m de altura media</small></div>' +
+            '<div class="pcr-kpi"><b>' + String(p.anchoMedioM).replace('.', ',') + '</b><small>m de calzada</small></div>' +
+          '</div>' +
+          seccionDibujada(p) +
+          '<p class="pcr-conc">' + esc(p.lectura) + '</p>'
+        : '<p class="pcr-pista">' + esc(p.lectura) + '</p>') +
+
+      (p.porMalla && p.porMalla.length
+        ? '<p class="pcr-lab">Ancho de calzada por jerarquía</p>' +
+          p.porMalla.map(function (m) {
+            return '<div class="pcr-lote-fila"><span>' + esc(m.etiqueta) + '</span><b>' +
+              String(m.anchoM).replace('.', ',') + ' m</b></div>';
+          }).join('')
+        : '') +
+
+      '<p class="pcr-lab">Andenes</p>' +
+      '<div class="pcr-llenos">' +
+        '<div class="pcr-llenos-barra">' +
+          '<i class="pcr-lleno" style="width:' + an.conAndenPct + '%"></i>' +
+          '<i class="pcr-vacio" style="width:' + (100 - an.conAndenPct - an.sinDatoPct) + '%"></i>' +
+          '<i class="pcr-sindato" style="width:' + an.sinDatoPct + '%"></i>' +
+        '</div>' +
+        '<div class="pcr-llenos-cifras">' +
+          '<span><b>' + String(an.conAndenPct).replace('.', ',') + '%</b> con andén</span>' +
+          '<span><b>' + String(an.sinAndenPct).replace('.', ',') + '%</b> sin andén</span>' +
+          '<span><b>' + String(an.sinDatoPct).replace('.', ',') + '%</b> sin dato</span>' +
+        '</div>' +
+      '</div>' +
+      (an.sinDatoPct >= 50
+        ? '<p class="pcr-conc">De <b>' + String(an.sinDatoPct).replace('.', ',') + '%</b> de las vías nadie ' +
+          'ha dicho si tienen andén. Caminar el sector anotando dónde hay y dónde no es un levantamiento ' +
+          'de una tarde, y es el que más cambia lo que se puede decir de la caminabilidad.</p>'
+        : '') +
+
+      '<p class="pcr-pista">El dibujo es una <b>sección tipo</b>, armada con los promedios del ' +
+      'sector: no es la de una calle concreta. El ancho es el de la <b>calzada</b>, no de fachada a fachada: en ' +
+      'OpenStreetMap eso es lo que guarda la etiqueta, así que la relación sale más alta que la de un ' +
+      'manual y los umbrales están corridos para eso. Sale de ' +
+      (p.anchoDe === 'width' ? '<b>el ancho registrado</b>' : '<b>los carriles</b>, a 3 m cada uno') +
+      ' en <b>' + p.coberturaAncho + '%</b> de la vía, y de los pisos registrados en <b>' +
+      p.coberturaAltura + '%</b> de los edificios. Con cobertura baja el promedio es de esos pocos y ' +
+      'no del sector.</p>';
   }
 
   function bloqueMovilidad(st) {
@@ -4438,6 +4622,7 @@
         bloqueTerreno() +
         bloqueClima() +
         bloqueTrazado() +
+        bloquePerfil() +
         bloqueEspacio(st) +
         bloqueAccesibilidad(st) +
         bloqueSol(meta) +
@@ -5127,6 +5312,7 @@
         S.clima = f.clima || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
+                   (f.trazado ? bloquePerfil() : '') +
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes;
