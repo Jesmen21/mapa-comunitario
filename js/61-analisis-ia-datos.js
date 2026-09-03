@@ -19,8 +19,13 @@
   // ── Query Overpass ──────────────────────────────────────────────────────
   // Una sola consulta con (around:R,lat,lng). Se excluye building=yes (el
   // valor genérico) para no traer miles de polígonos sin información de uso.
-  function construirQuery(lat, lng, radioM){
-    const a = '(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')';
+  /* `a` es el filtro de área, y es lo único que cambia entre pedir un círculo
+     y pedir un polígono. Overpass entiende los dos:
+       (around:500,7.89,-72.50)          un círculo
+       (poly:"7.89 -72.50 7.90 -72.51")  un área dibujada
+     Por eso no hace falta traer un rectángulo y recortarlo después: se le
+     pide exactamente el área, y viaja menos. */
+  function construirQueryCon(a){
     return '[out:json][timeout:25];(' +
       'nwr["amenity"]' + a + ';' +
       'nwr["shop"]' + a + ';' +
@@ -42,8 +47,34 @@
       ');out center tags 3000;';
   }
 
+  function construirQuery(lat, lng, radioM){
+    return construirQueryCon('(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')');
+  }
+
+  /* Overpass quiere los vértices como «lat lon lat lon», separados por
+     espacios y SIN comas, y quiere el anillo abierto: repetir el primer punto
+     al final lo rechaza. Los polígonos de Pro City vienen abiertos, pero se
+     comprueba igual porque un anillo cerrado es lo que devuelve casi cualquier
+     otra herramienta y el error que da Overpass no explica nada. */
+  function construirQueryPoligono(pts){
+    const p = pts.slice();
+    if (p.length > 3) {
+      const a = p[0], z = p[p.length - 1];
+      if (Math.abs(a.lat - z.lat) < 1e-9 && Math.abs(a.lng - z.lng) < 1e-9) p.pop();
+    }
+    const lista = p.map(v => v.lat.toFixed(6) + ' ' + v.lng.toFixed(6)).join(' ');
+    return construirQueryCon('(poly:"' + lista + '")');
+  }
+
   function claveCache(lat, lng, radioM){
     return lat.toFixed(4) + ',' + lng.toFixed(4) + ',' + Math.round(radioM);
+  }
+
+  // Los polígonos no tienen centro ni radio con los que hacer una clave. Se
+  // usan los vértices redondeados: el mismo trazo pide el mismo caché, y uno
+  // distinto pide datos nuevos.
+  function claveCachePoligono(pts){
+    return 'pol:' + pts.map(v => v.lat.toFixed(4) + ',' + v.lng.toFixed(4)).join(';');
   }
 
   function leerCache(clave){
@@ -91,8 +122,13 @@
   // analizó hoy y desde entonces alguien agregó el local al mapa, la app
   // seguía mostrando la foto vieja hasta el día siguiente, sin manera de
   // pedirle que volviera a mirar.
-  async function consultarEntorno(lat, lng, radioM, forzar){
-    const clave = claveCache(lat, lng, radioM);
+  /* El trabajo común de cualquier consulta a Overpass: caché, freno entre
+     peticiones, tres intentos, limpieza. Lo único que cambia entre pedir un
+     círculo y pedir un área dibujada es la consulta y la clave del caché, así
+     que eso se recibe y todo lo demás se comparte. Cuando esto estaba
+     duplicado, el reintento contra el espejo existía en un camino y no en el
+     otro, y fallaba solo el que menos se usaba. */
+  async function traer(clave, query, forzar){
     const cacheado = forzar ? null : leerCache(clave);
     if (cacheado) return cacheado;
 
@@ -104,12 +140,11 @@
 
     enVuelo = true;
     ultimaConsulta = Date.now();
-    const query = construirQuery(lat, lng, radioM);
     try {
       // El servidor principal a veces tiene baches breves (504) y se
       // recupera solo en segundos; reintentarlo es más confiable que un
       // espejo que puede estar caído por completo. Tres intentos en total:
-      // principal → principal (tras 3s) → espejo (tras 3s más) como último recurso.
+      // principal → principal (tras 3s) → espejo (tras 3s más).
       let elementos, ultimoError;
       const intentos = [
         () => fetchOverpass(OVERPASS_PRINCIPAL, query, 40000),
@@ -142,6 +177,21 @@
       enVuelo = false;
     }
   }
+
+  function consultarEntorno(lat, lng, radioM, forzar){
+    return traer(claveCache(lat, lng, radioM), construirQuery(lat, lng, radioM), forzar);
+  }
+
+  /* Lo mismo, para un área dibujada a mano. `pts` son los vértices en el
+     orden del trazo, como los guarda Pro City. */
+  function consultarEntornoPoligono(pts, forzar){
+    if (!Array.isArray(pts) || pts.length < 3) {
+      return Promise.reject(new Error('El área necesita al menos 3 puntos.'));
+    }
+    return traer(claveCachePoligono(pts), construirQueryPoligono(pts), forzar);
+  }
+
+
 
   // ── Búsqueda de dirección (LocationIQ, misma key de la app) ─────────────
   let buscarAbort = null;
@@ -499,6 +549,7 @@
     try { localStorage.removeItem(CACHE_KEY); return true; } catch(e) { return false; }
   }
 
-  window.AIA_DATOS = { consultarEntorno, limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
+  window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
+                       limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

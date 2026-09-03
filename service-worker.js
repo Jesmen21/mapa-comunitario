@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v608-reconocimiento-del-sector';
+const URBIS_CACHE = 'urbis-v609-areas-dibujadas';
 const URBIS_ASSETS = [
   './',
   './index.html',

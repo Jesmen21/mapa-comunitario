@@ -48,6 +48,12 @@
 
   var S = {
     abierto: false,
+    // 'radio' o 'poligono'. El polígono no se dibuja acá: se toma prestado el
+    // que el usuario ya trazó en Pro City, que es el mismo gesto que usa para
+    // agrupar mapeos. Aprender dos formas de dibujar por una función sería
+    // pedirle al estudiante que recuerde cuál sirve para qué.
+    forma: 'radio',
+    poligono: null,
     radioM: RADIO_POR_DEFECTO,
     centro: null,
     capa: null,
@@ -119,6 +125,33 @@
     return { cuenta: cuenta, vacios: vacios, flojos: flojos, total: total, parejo: parejo };
   }
 
+  // Área por exceso esférico, en m². Misma fórmula que usa Pro City, para que
+  // los dos digan lo mismo del mismo trazo.
+  function areaM2De(pts) {
+    if (!pts || pts.length < 3) return 0;
+    var R = 6378137, rad = Math.PI / 180, acc = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var a = pts[i], b = pts[(i + 1) % pts.length];
+      acc += (b.lng - a.lng) * rad * (2 + Math.sin(a.lat * rad) + Math.sin(b.lat * rad));
+    }
+    return Math.abs(acc * R * R / 2);
+  }
+
+  function areaDelPoligono() {
+    return (S.forma === 'poligono' && S.poligono) ? areaM2De(S.poligono) : 0;
+  }
+
+  function formatearArea(m2) {
+    if (!m2) return '';
+    if (m2 >= 1000000) return (m2 / 1000000).toFixed(2) + ' km²';
+    return (m2 / 10000).toFixed(1) + ' ha';
+  }
+
+  function listoParaAnalizar() {
+    if (S.forma === 'poligono') return !!(S.poligono && S.poligono.length >= 3);
+    return !!S.centro;
+  }
+
   // ── El círculo en el mapa ─────────────────────────────────────────────
   function capa() {
     var m = mapa();
@@ -129,15 +162,32 @@
 
   function pintarCirculo() {
     var c = capa();
-    if (!c || !S.centro) return;
+    if (!c) return;
     c.clearLayers();
-    L.circle([S.centro.lat, S.centro.lng], {
-      radius: S.radioM, color: '#0A6F9E', weight: 2, dashArray: '6 5',
-      fillColor: '#34CCFE', fillOpacity: 0.10
-    }).addTo(c);
+    var estilo = { color: '#0A6F9E', weight: 2, dashArray: '6 5',
+                   fillColor: '#34CCFE', fillOpacity: 0.10 };
+
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
+      L.polygon(S.poligono.map(function (p) { return [p.lat, p.lng]; }), estilo).addTo(c);
+      return;
+    }
+    if (!S.centro) return;
+    L.circle([S.centro.lat, S.centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
     L.circleMarker([S.centro.lat, S.centro.lng], {
       radius: 5, color: '#075E88', weight: 2, fillColor: '#FABD0A', fillOpacity: 1
     }).addTo(c);
+  }
+
+  /* Pro City guarda el área que el usuario dibujó. Se lee cada vez y no se
+     copia al abrir: si redibuja mientras esta hoja está abierta, lo que se
+     analiza tiene que ser lo último que trazó, no lo que había antes. */
+  function poligonoDeProCity() {
+    try {
+      var A = window.URBIS_PC_ANALISIS;
+      if (!A || !A.hayArea || !A.hayArea()) return null;
+      var pts = A.puntosDelArea();
+      return (pts && pts.length >= 3) ? pts : null;
+    } catch (e) { return null; }
   }
 
   function borrarCirculo() {
@@ -160,7 +210,18 @@
       var acc = b.getAttribute('data-pcr');
       if (acc === 'cerrar') { cerrar(); return; }
       if (acc === 'radio') { S.radioM = Number(b.getAttribute('data-r')) || RADIO_POR_DEFECTO;
-                             S.resultado = null; S.error = ''; pintarCirculo(); pintar(); return; }
+                             S.forma = 'radio'; S.resultado = null; S.error = '';
+                             pintarCirculo(); pintar(); return; }
+      if (acc === 'forma') {
+        var f = b.getAttribute('data-f');
+        if (f === 'poligono') {
+          var pol = poligonoDeProCity();
+          if (!pol) { S.error = 'Primero dibuja un área en Pro City, y vuelve acá.'; pintar(); return; }
+          S.poligono = pol;
+        }
+        S.forma = f; S.resultado = null; S.error = '';
+        pintarCirculo(); pintar(); return;
+      }
       if (acc === 'analizar') { analizar(); return; }
       if (acc === 'recentrar') { tomarCentro(); pintarCirculo(); pintar(); return; }
     });
@@ -194,6 +255,43 @@
       ? S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5)
       : 'sin definir';
 
+    var hayPol = !!poligonoDeProCity();
+    var esPol = S.forma === 'poligono';
+    var selector =
+      '<div class="pcr-formas" role="group" aria-label="Forma del área">' +
+        '<button type="button" data-pcr="forma" data-f="radio" class="pcr-forma' +
+          (esPol ? '' : ' pcr-forma-on') + '" aria-pressed="' + (esPol ? 'false' : 'true') + '">' +
+          '⭕ Un radio</button>' +
+        '<button type="button" data-pcr="forma" data-f="poligono" class="pcr-forma' +
+          (esPol ? ' pcr-forma-on' : '') + '" aria-pressed="' + (esPol ? 'true' : 'false') + '">' +
+          '✏️ El área dibujada</button>' +
+      '</div>' +
+      (hayPol || esPol ? '' :
+        '<small class="pcr-pista">Para usar un área a medida, dibújala primero en Pro City con «✏️ Dibujar área en el mapa».</small>');
+
+    // Con un área dibujada no hay centro ni radio que elegir: los deduce el
+    // servidor del propio trazo. Mostrar esos controles ahí sería ofrecer una
+    // decisión que no existe.
+    var ajusteArea = esPol
+      ? '<div class="pcr-campo">' +
+          '<label class="pcr-lab">Área dibujada</label>' +
+          '<p class="pcr-areainfo">' + (S.poligono ? S.poligono.length : 0) + ' vértices' +
+            (areaDelPoligono() ? ' · ' + formatearArea(areaDelPoligono()) : '') + '</p>' +
+          '<small class="pcr-pista">Se analiza exactamente lo que trazaste. Si lo redibujas, vuelve a tocar «El área dibujada».</small>' +
+        '</div>'
+      : '<div class="pcr-campo">' +
+          '<label class="pcr-lab">Centro del sector</label>' +
+          '<div class="pcr-centro">' +
+            '<code>' + esc(donde) + '</code>' +
+            '<button type="button" data-pcr="recentrar" class="pcr-mini">Usar el centro del mapa</button>' +
+          '</div>' +
+          '<small class="pcr-pista">Mueve el mapa hasta el sector y toca «Usar el centro del mapa».</small>' +
+        '</div>' +
+        '<div class="pcr-campo">' +
+          '<label class="pcr-lab">Radio</label>' +
+          '<div class="pcr-radios">' + botones + '</div>' +
+        '</div>';
+
     return '' +
       '<div class="pcr-barra">' +
         '<b>🔍 ¿Qué hay en este sector?</b>' +
@@ -203,24 +301,13 @@
         '<p class="pcr-intro">Antes de salir a mapear, mira qué tiene registrado OpenStreetMap en la zona. ' +
         'Sirve para llegar sabiendo qué esperar —y sobre todo, para ver qué <b>todavía no está mapeado</b>.</p>' +
 
-        '<div class="pcr-campo">' +
-          '<label class="pcr-lab">Centro del sector</label>' +
-          '<div class="pcr-centro">' +
-            '<code>' + esc(donde) + '</code>' +
-            '<button type="button" data-pcr="recentrar" class="pcr-mini">Usar el centro del mapa</button>' +
-          '</div>' +
-          '<small class="pcr-pista">Mueve el mapa hasta el sector y toca «Usar el centro del mapa».</small>' +
-        '</div>' +
-
-        '<div class="pcr-campo">' +
-          '<label class="pcr-lab">Radio</label>' +
-          '<div class="pcr-radios">' + botones + '</div>' +
-        '</div>' +
+        selector +
+        ajusteArea +
 
         (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
 
         '<button type="button" data-pcr="analizar" class="pcr-principal"' +
-          (S.cargando || !S.centro ? ' disabled' : '') + '>' +
+          (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
           (S.cargando ? '⏳ Consultando…' : '🔍 Ver qué hay') +
         '</button>' +
         (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar. No cierres esta hoja.</p>' : '') +
@@ -238,7 +325,15 @@
   function htmlFicha(res) {
     var st = res.stats || {};
     var pois = res.pois || [];
-    var zonas = zonasSinDatos(pois, S.centro);
+
+    // El centro para repartir los rumbos sale de la respuesta, no del estado
+    // local: con un área dibujada el servidor usó el CENTROIDE del polígono, y
+    // medir los rumbos desde el centro del mapa daría direcciones que no
+    // corresponden al área analizada. Mandaría al estudiante a otra parte.
+    var eje = (res.meta && Number.isFinite(res.meta.lat) && Number.isFinite(res.meta.lng))
+      ? { lat: res.meta.lat, lng: res.meta.lng }
+      : S.centro;
+    var zonas = zonasSinDatos(pois, eje);
 
     // Categorías con al menos un punto, de mayor a menor.
     var grupos = Object.keys(st.porGrupo || {})
@@ -293,18 +388,27 @@
     }
 
     var dens = st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—';
-    var radioTxt = S.radioM >= 1000 ? (S.radioM / 1000) + ' km' : S.radioM + ' m';
+
+    // Con un área dibujada, decir «radio de 412 m» sería inventarse una forma
+    // que el usuario no trazó: el radio equivalente existe para los cálculos,
+    // no para leerlo. Se muestra el tamaño real del área.
+    var meta = res.meta || {};
+    var esPol = meta.forma === 'poligono';
+    var radioTxt = esPol
+      ? (formatearArea(meta.areaM2) || '—')
+      : (S.radioM >= 1000 ? (S.radioM / 1000) + ' km' : S.radioM + ' m');
+    var radioEtiqueta = esPol ? 'de área dibujada' : 'de radio';
 
     return '' +
       '<div class="pcr-barra">' +
-        '<b>🔍 Lo que hay en el sector</b>' +
+        '<b>🔍 Lo que hay ' + (esPol ? 'en el área' : 'en el sector') + '</b>' +
         '<button type="button" data-pcr="cerrar" class="pcr-x" aria-label="Cerrar">✕</button>' +
       '</div>' +
       '<div class="pcr-cuerpo">' +
 
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
-          '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>de radio</small></div>' +
+          '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
           '<div class="pcr-kpi"><b>' + dens + '</b><small>por hectárea</small></div>' +
           '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
         '</div>' +
@@ -331,7 +435,7 @@
 
   // ── El análisis ───────────────────────────────────────────────────────
   async function analizar() {
-    if (S.cargando || !S.centro) return;
+    if (S.cargando || !listoParaAnalizar()) return;
     if (!window.AIA_DATOS || !window.AIA_DATOS.consultarEntorno) {
       S.error = 'Falta el módulo de datos (js/61). Recarga la página.'; pintar(); return;
     }
@@ -341,20 +445,36 @@
 
     S.cargando = true; S.error = ''; pintar();
     try {
-      var elementos = await window.AIA_DATOS.consultarEntorno(S.centro.lat, S.centro.lng, S.radioM);
+      var esPol = S.forma === 'poligono';
+      if (esPol && (!window.AIA_DATOS.consultarEntornoPoligono)) {
+        throw new Error('Esta versión no sabe consultar áreas dibujadas. Recarga la página.');
+      }
 
-      // Un sector sin datos NO es un fallo: es el resultado más interesante
-      // que puede dar esta herramienta. Se sigue adelante con la lista vacía
-      // para que la ficha lo diga con todas las letras.
-      var res = await window.AIA_MOTOR.analizar({
+      var elementos = esPol
+        ? await window.AIA_DATOS.consultarEntornoPoligono(S.poligono)
+        : await window.AIA_DATOS.consultarEntorno(S.centro.lat, S.centro.lng, S.radioM);
+
+      var peticion = {
         elementos: elementos || [],
-        radioM: S.radioM,
-        centro: { lat: S.centro.lat, lng: S.centro.lng },
         tipoEstudio: 'completo',
         proyectoId: 'recomendar',
         dane: null,
         caminabilidad: null
-      });
+      };
+      if (esPol) {
+        // Ni centro ni radio: el servidor saca el centroide y el radio
+        // equivalente del propio trazo. Mandarlos sería inventar un área que
+        // el usuario no dibujó.
+        peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
+      } else {
+        peticion.radioM = S.radioM;
+        peticion.centro = { lat: S.centro.lat, lng: S.centro.lng };
+      }
+
+      // Un sector sin datos NO es un fallo: es el resultado más interesante
+      // que puede dar esta herramienta. Se sigue adelante con la lista vacía
+      // para que la ficha lo diga con todas las letras.
+      var res = await window.AIA_MOTOR.analizar(peticion);
       S.resultado = res;
     } catch (e) {
       S.error = (e && e.message) || 'No se pudo consultar el sector.';
@@ -369,6 +489,10 @@
     S.abierto = true;
     S.resultado = null;
     S.error = '';
+    // Si viene de dibujar un área, esa es la que quiere analizar. Obligarlo a
+    // elegirla de nuevo sería no haber mirado lo que acababa de hacer.
+    var pol = poligonoDeProCity();
+    if (pol) { S.poligono = pol; S.forma = 'poligono'; }
     if (!S.centro) tomarCentro();
     pintarCirculo();
     pintar();
@@ -391,6 +515,15 @@
     zonasSinDatos: zonasSinDatos,
     rumboDe: rumboDe,
     rumboDe360: rumboDe360,
-    estado: function () { return { radioM: S.radioM, centro: S.centro, hay: !!S.resultado }; }
+    estado: function () {
+      return {
+        forma: S.forma,
+        radioM: S.radioM,
+        centro: S.centro,
+        vertices: S.poligono ? S.poligono.length : 0,
+        areaM2: Math.round(areaDelPoligono()),
+        hay: !!S.resultado
+      };
+    }
   };
 })();

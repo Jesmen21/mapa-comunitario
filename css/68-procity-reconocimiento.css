@@ -66,6 +66,21 @@
 .pcr-pista{ margin:0; font-size:.74rem; color:#6b7684; line-height:1.45; }
 .pcr-espera{ text-align:center; }
 
+/* Radio o área dibujada. Van juntos y del mismo tamaño porque son dos formas
+   igual de válidas de decir «este pedazo de ciudad», no una principal y una
+   alternativa. */
+.pcr-formas{ display:flex; gap:7px; }
+.pcr-forma{
+  flex:1; border:1px solid #d8dfe8; background:#fff; color:#3f4b5c;
+  font-size:.8rem; font-weight:600; padding:10px 4px;
+  border-radius:9px; cursor:pointer;
+}
+.pcr-forma-on{ background:#3a3f78; border-color:#3a3f78; color:#fff; }
+.pcr-areainfo{
+  margin:0; font-size:.85rem; font-weight:600; color:#0A6F9E;
+  background:#f0f2ff; border-radius:8px; padding:8px 11px;
+}
+
 .pcr-radios{ display:flex; gap:7px; }
 .pcr-radio{
   flex:1; border:1px solid #d8dfe8; background:#fff; color:#3f4b5c;
