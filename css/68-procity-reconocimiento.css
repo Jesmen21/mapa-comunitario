@@ -452,3 +452,119 @@
 }
 .pcr-radios-mini .pcr-radio{ padding:8px 4px; font-size:.8rem; }
 .pcr-mini-pista{ text-align:center; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   DEMOGRAFÍA · quiénes viven acá
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Sexo: una sola barra partida. Comparar dos proporciones se hace mejor con
+   una barra que con dos, o con una torta de dos gajos. */
+.pcr-sexo{ display:flex; flex-direction:column; gap:7px; }
+.pcr-sexo-barra{
+  display:flex; height:16px; border-radius:9px; overflow:hidden;
+  background:#eef2f6;
+}
+.pcr-sexo-barra i{ display:block; height:100%; }
+.pcr-sexo-m{ background:#ec4899; }   /* el rosa del catálogo */
+.pcr-sexo-h{ background:#34CCFE; }   /* y el celeste de la casa */
+.pcr-sexo-pie{
+  display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.76rem;
+}
+.pcr-sexo-pie span{ display:inline-flex; align-items:center; gap:5px; }
+.pcr-punto{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.pcr-punto-m{ background:#ec4899; }
+.pcr-punto-h{ background:#34CCFE; }
+
+/* Edades: barras horizontales con su icono. El tramo más numeroso se marca
+   para que el ojo encuentre solo de qué edad es el sector. */
+.pcr-edades{ display:flex; flex-direction:column; gap:6px; }
+.pcr-edad{ display:flex; align-items:center; gap:8px; }
+.pcr-edad-ico{ flex:0 0 auto; font-size:1rem; line-height:1; }
+.pcr-edad-nom{ flex:0 0 30%; font-size:.76rem; }
+.pcr-edad-barra{
+  flex:1; height:9px; background:#eef2f6; border-radius:5px; overflow:hidden;
+}
+.pcr-edad-barra i{ display:block; height:100%; background:#7cc9ea; border-radius:5px; }
+.pcr-edad-top .pcr-edad-barra i{ background:#0A6F9E; }
+.pcr-edad-n{
+  flex:0 0 62px; text-align:right; font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; line-height:1.15;
+}
+.pcr-edad-n em{ display:block; font-size:.64rem; font-weight:400; font-style:normal; }
+
+/* Contraste, en la misma tanda y no como parche: URBIS aclara small/span/em
+   dentro de la app móvil, así que todo texto nuevo nace con su color fijado
+   en las DOS propiedades. */
+.pcr-hoja .pcr-sexo-pie, .pcr-hoja .pcr-sexo-pie span, .pcr-hoja .pcr-edad-nom{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-hoja .pcr-sexo-pie b, .pcr-hoja .pcr-edad-n{
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-hoja .pcr-edad-n em{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+.pcr-hoja .pcr-edad-top .pcr-edad-nom{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; font-weight:700;
+}
+
+/* Los años del eje de la curva y el porcentaje de crecimiento salían casi
+   invisibles: eran de los pocos textos que quedaron sin fijar. */
+.pcr-hoja .pcr-curva-eje span{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+.pcr-hoja .pcr-delta{
+  color:#0b6b47 !important; -webkit-text-fill-color:#0b6b47 !important;
+}
+.pcr-hoja .pcr-crece em{
+  color:#5a6b78 !important; -webkit-text-fill-color:#5a6b78 !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   ALTURAS QUE NO SE DEJAN APLASTAR
+   ══════════════════════════════════════════════════════════════════════
+   .pcr-cuerpo es un contenedor flex en columna con scroll. Cuando el
+   contenido pasa del alto disponible, los hijos con flex-shrink por defecto
+   se COMPRIMEN — y una gráfica con height:66px terminaba midiendo 0 y
+   dejando un hueco blanco donde debía ir la curva de población. Se vio en el
+   celular como «un espacio vacío» y la prueba lo midió: 380×0.
+
+   Todo lo que tiene alto propio se declara inencogible.
+
+   OJO: solo los hijos DIRECTOS de esa columna. Las barras horizontales
+   (.pcr-edad-barra, .pcr-fila-barra) viven dentro de filas y necesitan lo
+   contrario —flex:1, para ocupar el ancho sobrante—. Metérselas en esta
+   lista les quitó el crecimiento y quedaron de ancho cero: las barras de
+   edad desaparecieron de la ficha. */
+.pcr-hoja .pcr-curva,
+.pcr-hoja .pcr-grafica,
+.pcr-hoja .pcr-sexo-barra,
+.pcr-hoja .pcr-kpis,
+.pcr-hoja .pcr-crece{
+  flex:0 0 auto;
+}
+/* Y estas al revés, por si alguna regla de arriba las alcanzara. */
+.pcr-hoja .pcr-edad-barra,
+.pcr-hoja .pcr-fila-barra{ flex:1 1 auto; }
+
+/* Y el texto que quedaba en blanco sobre blanco: los nombres de categoría y
+   los chips. Salían con contraste 1.05, o sea invisibles. */
+.pcr-hoja .pcr-fila-nom{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-hoja .pcr-chip{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-hoja .pcr-guardada-t b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-guardada-f{
+  color:#5a6b78 !important; -webkit-text-fill-color:#5a6b78 !important;
+}
+.pcr-hoja .pcr-mini-que b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-mini-que small{
+  color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important;
+}

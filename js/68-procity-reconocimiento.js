@@ -1081,8 +1081,16 @@
         (st.viviendasCenso
           ? '<div class="pcr-pobla-n"><b>' + Number(st.viviendasCenso).toLocaleString('es-CO') + '</b><small>viviendas</small></div>'
           : '') +
-        (st.estrato
-          ? '<div class="pcr-pobla-n"><b>' + esc(String(st.estrato)) + '</b><small>estrato</small></div>'
+        // `estrato` NO es un número: es un objeto con el reparto por manzanas
+        // (predominante, mínimo, máximo, promedio). Pintarlo con String() daba
+        // «[object Object]» en pantalla. Se muestra el predominante, y el
+        // rango al lado cuando el sector es mixto, que es lo que de verdad
+        // describe un barrio: «3 a 5» dice más que «promedio 4».
+        (st.estrato && st.estrato.predominante
+          ? '<div class="pcr-pobla-n"><b>' + esc(String(st.estrato.predominante)) + '</b><small>' +
+            (st.estrato.minimo !== st.estrato.maximo
+              ? 'estrato · va de ' + st.estrato.minimo + ' a ' + st.estrato.maximo
+              : 'estrato') + '</small></div>'
           : '') +
       '</div>' +
       pronostico +
@@ -1096,6 +1104,65 @@
         (esPol ? ' En un área dibujada se consulta por el centro y un radio de superficie equivalente, así que es aproximada.' : '') +
         (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') +
       '</p>';
+  }
+
+  /* Quién vive acá: sexo y edades del censo, con su iconografía.
+     Las barras se dibujan con divs y no con Chart.js: son cinco tramos, y una
+     librería para eso pesa más de lo que aporta —además de que si no carga,
+     esto sigue viéndose—. */
+  function bloqueDemografia(st) {
+    var d = st && st.demografia;
+    if (!d || !d.totalSexo) return '';
+
+    // Hombres y mujeres: una sola barra partida, que es como se compara mejor
+    // una proporción de dos.
+    var pctM = d.pctMujeres || 0, pctH = d.pctHombres || 0;
+    var sexo =
+      '<div class="pcr-sexo">' +
+        '<div class="pcr-sexo-barra">' +
+          '<i class="pcr-sexo-m" style="width:' + pctM + '%"></i>' +
+          '<i class="pcr-sexo-h" style="width:' + pctH + '%"></i>' +
+        '</div>' +
+        '<div class="pcr-sexo-pie">' +
+          '<span><i class="pcr-punto pcr-punto-m"></i> 👩 Mujeres <b>' +
+            Number(d.mujeres).toLocaleString('es-CO') + '</b> · ' + pctM + '%</span>' +
+          '<span><i class="pcr-punto pcr-punto-h"></i> 👨 Hombres <b>' +
+            Number(d.hombres).toLocaleString('es-CO') + '</b> · ' + pctH + '%</span>' +
+        '</div>' +
+      '</div>';
+
+    // Edades: barras horizontales, cada tramo con su icono. El más numeroso
+    // se marca, para que el ojo encuentre solo de qué edad es el sector.
+    var tramos = d.tramos || [];
+    var mayor = tramos.reduce(function (a, t) { return Math.max(a, t.personas || 0); }, 0) || 1;
+    var edades = tramos.map(function (t) {
+      var esDominante = t.id === d.tramoDominante;
+      return '<div class="pcr-edad' + (esDominante ? ' pcr-edad-top' : '') + '">' +
+        '<span class="pcr-edad-ico">' + t.icono + '</span>' +
+        '<span class="pcr-edad-nom">' + esc(t.etiqueta) + '</span>' +
+        '<span class="pcr-edad-barra"><i style="width:' +
+          Math.round((t.personas / mayor) * 100) + '%"></i></span>' +
+        '<span class="pcr-edad-n">' + Number(t.personas).toLocaleString('es-CO') +
+          '<em>' + t.pct + '%</em></span>' +
+      '</div>';
+    }).join('');
+
+    /* El índice de envejecimiento en palabras. Un número suelto —«112»— no
+       dice nada a un estudiante; la frase sí, y de paso enseña a leerlo. */
+    var env = '';
+    if (d.envejecimiento != null) {
+      env = '<p class="pcr-pista"><b>Índice de envejecimiento: ' + d.envejecimiento + '</b> — ' +
+        'por cada 100 menores de 15 años hay ' + d.envejecimiento + ' personas de 65 o más. ' +
+        (d.envejecimiento >= 100
+          ? 'Por encima de 100 el sector ya tiene más personas mayores que niños: pesa en escuelas, en salud y en accesibilidad.'
+          : 'Por debajo de 100 hay más niños que personas mayores.') + '</p>';
+    }
+
+    return '<h4 class="pcr-h">Quiénes viven acá</h4>' +
+      sexo +
+      '<div class="pcr-edades">' + edades + '</div>' +
+      '<p class="pcr-pista">El tramo más numeroso es <b>' + esc(d.tramoDominanteEtq || '') + '</b>.</p>' +
+      env;
   }
 
   function htmlFicha(res) {
@@ -1191,6 +1258,7 @@
         '</div>' +
 
         bloquePoblacion(st, esPol) +
+        bloqueDemografia(st) +
 
         '<h4 class="pcr-h">Qué hay, por categoría</h4>' +
         // El anillo se pinta después, cuando el canvas ya está en el documento.

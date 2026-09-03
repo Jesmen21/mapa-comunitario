@@ -192,6 +192,57 @@ console.log('\n  -- identificadores sueltos --');
   });
 }
 
+// ── 3b. las hojas de estilo no están rotas ───────────────────────────────
+// Un comentario mal cerrado en CSS no da error en ninguna parte: el navegador
+// se come el resto del archivo en silencio y las reglas de abajo dejan de
+// existir. Pasó de verdad —una curva desapareció de la ficha— y solo se vio
+// porque una prueba medía su altura.
+console.log('\n  -- las hojas de estilo --');
+{
+  /* Los comentarios de CSS NO se anidan: dentro de uno, un `/*` es texto y
+     nada más —«varios css/ *.css» aparece tal cual en un comentario de este
+     repositorio—. La primera versión de esta comprobación contaba anidamiento
+     y daba dos falsos positivos. Un comprobador que se equivoca enseña a
+     ignorarlo, así que se lee como lee el navegador: se entra al comentario
+     con el primer «/*» y se sale con el primer «* /».
+
+     Las llaves se cuentan DESPUÉS de quitar comentarios y textos, porque un
+     `content:"}"` es perfectamente legal y no desbalancea nada. */
+  const hojas = fs.readdirSync(R('css')).filter(f => f.endsWith('.css'));
+  const rotas = [];
+
+  hojas.forEach(f => {
+    const css = leer('css/' + f);
+    let limpio = '', i = 0, enComentario = false, comentarioAbiertoEn = 0, linea = 1;
+    let comilla = '';
+    while (i < css.length) {
+      if (css[i] === '\n') linea++;
+      if (enComentario) {
+        if (css.startsWith('*/', i)) { enComentario = false; i += 2; continue; }
+        i++; continue;
+      }
+      if (comilla) {
+        if (css[i] === '\\') { i += 2; continue; }
+        if (css[i] === comilla) comilla = '';
+        i++; continue;
+      }
+      if (css.startsWith('/*', i)) { enComentario = true; comentarioAbiertoEn = linea; i += 2; continue; }
+      if (css[i] === '"' || css[i] === "'") { comilla = css[i]; i++; continue; }
+      limpio += css[i];
+      i++;
+    }
+
+    if (enComentario) { rotas.push(f + ': comentario abierto en la línea ' + comentarioAbiertoEn + ' y nunca cerrado'); return; }
+    if (comilla) { rotas.push(f + ': hay un texto sin cerrar'); return; }
+    const abre = (limpio.match(/{/g) || []).length;
+    const cierra = (limpio.match(/}/g) || []).length;
+    if (abre !== cierra) rotas.push(f + ': ' + abre + ' llaves abiertas y ' + cierra + ' cerradas');
+  });
+
+  comprobar('ninguna hoja tiene comentarios o llaves sin cerrar',
+    rotas.length === 0, rotas.length ? rotas.join(' · ') : hojas.length + ' hojas revisadas');
+}
+
 // ── 4. las reglas no volvieron al navegador ──────────────────────────────
 console.log('\n  -- las reglas siguen del lado del servidor --');
 {

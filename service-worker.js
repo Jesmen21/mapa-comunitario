@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v618-legible-y-encogible';
+const URBIS_CACHE = 'urbis-v619-demografia-dane';
 const URBIS_ASSETS = [
   './',
   './index.html',
