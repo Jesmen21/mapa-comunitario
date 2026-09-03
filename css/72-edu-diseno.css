@@ -48,13 +48,19 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
    su tamaño de letra para el «+» de respaldo.
    No se puede escribir «solo si le sigue texto» en CSS —los nodos de texto no
    cuentan para :only-child— así que se apaga donde se sabe que el icono va
-   solo. */
+   solo.
+
+   Se apaga para TODA la familia de botones del mapa y no uno por uno: la
+   primera versión de esta regla listaba seis y dejaba fuera tres —el filtro
+   de vista, la carpeta y el conmutador de iconos— porque di por hecho que su
+   font-size:0 los libraba. No los libraba: quedaban 3,9 px corridos. Con
+   :only-child la regla alcanza a cualquier botón de estas familias que lleve
+   solo el icono, incluidos los que se agreguen después. Y solo a esos: dentro
+   de la ficha hay botones con icono MÁS texto, y ahí el margen sí hace falta,
+   pero esos no son de estas familias. */
 #urbis-mobile-app .u52-bottom-nav .plus > .u-ico,
-#urbis-mobile-app .u52-procity-recon-btn > .u-ico,
-#urbis-mobile-app .u52-procity-dibujar-btn > .u-ico,
-#urbis-mobile-app .u52-procity-perfil-btn > .u-ico,
-#urbis-mobile-app .u52-mapcentric-round > .u-ico,
-#urbis-mobile-app .u52-mapcentric-filter > .u-ico{ margin:0 !important; }
+#urbis-mobile-app [class*="u52-procity-"] > .u-ico:only-child,
+#urbis-mobile-app [class*="u52-mapcentric-"] > .u-ico:only-child{ margin:0 !important; }
 
 /* ── Miniatura de mapa ──────────────────────────────────────────────── */
 .pca-minimapa{

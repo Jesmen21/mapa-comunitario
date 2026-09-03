@@ -258,6 +258,19 @@ console.log('\n  -- las hojas de estilo --');
     }
 
     if (enComentario) { rotas.push(f + ': comentario abierto en la línea ' + comentarioAbiertoEn + ' y nunca cerrado'); return; }
+    /* Un cierre de comentario suelto —sin su apertura delante— es tan grave
+       como un comentario sin cerrar, y no se veía: el navegador se salta desde
+       ahí hasta que logra reengancharse, y la regla que sigue desaparece sin
+       que nada avise. Pasó de verdad: al partir un comentario en dos quedó un
+       cierre huérfano y con él se cayó la regla que centraba los iconos. Las
+       llaves seguían cuadrando, así que la comprobación de al lado no lo veía. */
+    const huerfano = limpio.indexOf('*' + '/');
+    if (huerfano >= 0) {
+      const lineaH = css.slice(0, css.indexOf('*' + '/', huerfano)).split('\n').length;
+      rotas.push(f + ': hay un cierre de comentario suelto cerca de la línea ' + lineaH +
+                 ' (la regla que le sigue no se aplica)');
+      return;
+    }
     if (comilla) { rotas.push(f + ': hay un texto sin cerrar'); return; }
     const abre = (limpio.match(/{/g) || []).length;
     const cierra = (limpio.match(/}/g) || []).length;

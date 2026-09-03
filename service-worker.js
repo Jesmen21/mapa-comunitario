@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v648-el-mas-centrado';
+const URBIS_CACHE = 'urbis-v649-iconos-centrados';
 const URBIS_ASSETS = [
   './',
   './index.html',
