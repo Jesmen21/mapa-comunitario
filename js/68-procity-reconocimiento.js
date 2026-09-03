@@ -65,7 +65,10 @@
     comparacion: null,
     comparando: false,
     enMapa: false,
-    nombreGuardado: ''
+    nombreGuardado: '',
+    puntosEnMapa: 0,
+    estratos: null,
+    cargandoEstratos: false
   };
 
   function esc(s) {
@@ -502,6 +505,89 @@
       '</body></html>';
   }
 
+  // ── Lo que se ve en el mapa ───────────────────────────────────────────
+  // Una lista de números no dice dónde está nada. El sentido de mirar un
+  // sector antes de ir es verlo, así que el resultado se pinta: cada uso en
+  // el color de su categoría y, debajo, las manzanas por estrato.
+  var capaPuntos = null, capaEstratos = null;
+
+  function pintarPuntos(pois) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return 0;
+    if (capaPuntos) { try { m.removeLayer(capaPuntos); } catch (e) {} capaPuntos = null; }
+    if (!pois || !pois.length) return 0;
+
+    capaPuntos = L.layerGroup().addTo(m);
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {};
+    pois.forEach(function (p) {
+      if (p.lat == null || p.lng == null) return;
+      var g = G[p.grupo] || {};
+      // Los que no se pudieron clasificar salen más grandes: son la tarea de
+      // campo, no ruido que haya que buscar con lupa.
+      var sinCategoria = !p.grupo || p.grupo === 'otro';
+      L.circleMarker([p.lat, p.lng], {
+        radius: sinCategoria ? 7 : 5,
+        color: '#12202e', weight: sinCategoria ? 1.8 : 1.1,
+        fillColor: p.color || '#94a3b8',
+        fillOpacity: sinCategoria ? 0.95 : 0.85
+      }).bindPopup(
+        '<b>' + (p.icono ? p.icono + ' ' : '') + esc(p.nombre || 'Sin nombre') + '</b><br>' +
+        esc(g.t || g.nombre || p.grupo || 'sin categoría') +
+        (p.distM != null ? ' · ' + p.distM + ' m' : '') +
+        (sinCategoria ? '<br><em>Sin categoría: verificar en campo</em>' : '')
+      ).addTo(capaPuntos);
+    });
+    return pois.length;
+  }
+
+  function quitarDelMapa() {
+    var m = mapa();
+    [capaPuntos, capaEstratos].forEach(function (c) {
+      if (c && m) { try { m.removeLayer(c); } catch (e) {} }
+    });
+    capaPuntos = null; capaEstratos = null;
+  }
+
+  /* Manzanas por estrato, del DANE. Van DEBAJO de los puntos: son el fondo
+     sobre el que se leen los usos, no un dato que compita con ellos. */
+  async function pintarEstratos(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return { ok: false, error: 'El mapa no está listo.' };
+    if (capaEstratos) { try { m.removeLayer(capaEstratos); } catch (e) {} capaEstratos = null; }
+    if (!encender) return { ok: true, apagado: true };
+    if (!window.AIA_DATOS || !window.AIA_DATOS.manzanasEstrato) {
+      return { ok: false, error: 'Falta el módulo de datos del DANE.' };
+    }
+
+    var eje = ejeActual();
+    if (!eje) return { ok: false, error: 'Primero elegí un sector.' };
+    var radio = S.forma === 'poligono' ? radioParaDane() : S.radioM;
+
+    var d;
+    try { d = await window.AIA_DATOS.manzanasEstrato(eje.lat, eje.lng, radio); }
+    catch (e) { return { ok: false, error: (e && e.message) || 'No se pudo cargar la estratificación.' }; }
+    if (!d || !d.manzanas || !d.manzanas.length) {
+      return { ok: false, error: 'El DANE no tiene manzanas con estrato en esta zona. Suele pasar fuera del perímetro urbano.' };
+    }
+
+    capaEstratos = L.layerGroup();
+    d.manzanas.forEach(function (mz) {
+      L.polygon(mz.anillos, { color: mz.color, weight: 0.8, opacity: 0.9,
+                              fillColor: mz.color, fillOpacity: 0.45 })
+        .bindPopup('<b>' + esc(mz.etiqueta) + '</b>')
+        .addTo(capaEstratos);
+    });
+    capaEstratos.addTo(m);
+    try { capaEstratos.eachLayer(function (l) { if (l.bringToBack) l.bringToBack(); }); } catch (e) {}
+    return { ok: true, n: d.manzanas.length, colores: d.colores, manzanas: d.manzanas };
+  }
+
+  function ejeActual() {
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) return centroideDe(S.poligono);
+    return S.centro;
+  }
+
   // ── La hoja ───────────────────────────────────────────────────────────
   function hoja() {
     var el = document.getElementById('pcr-hoja');
@@ -533,6 +619,7 @@
         setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
         return;
       }
+      if (acc === 'estratos') { alternarEstratos(); return; }
       if (acc === 'ver-mapa') {
         S.enMapa = !S.enMapa;
         var pudo = verGuardadasEnMapa(S.enMapa);
@@ -1063,6 +1150,18 @@
           'placeholder="Ej: La Playa, entre calles 8 y 12" ' +
           'value="' + esc(S.nombreSugerido || '') + '">' +
 
+        // Lo que se ve en el mapa detrás de esta hoja.
+        '<h4 class="pcr-h">En el mapa</h4>' +
+        '<p class="pcr-pista">' + (S.puntosEnMapa || 0) + ' puntos pintados con el color de su categoría. ' +
+        'Cerrá esta hoja para verlos; tocá uno para saber qué es.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="estratos" class="pcr-mini pcr-llevar-b"' +
+            (S.cargandoEstratos ? ' disabled' : '') + '>' +
+            (S.cargandoEstratos ? '⏳ Cargando…' : (S.estratos ? '🙈 Quitar estratos' : '🎨 Pintar estratos')) +
+          '</button>' +
+        '</div>' +
+        (S.estratos && S.estratos.leyenda ? S.estratos.leyenda : '') +
+
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">💾 Guardar ficha</button>' +
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">📋 Copiar</button>' +
@@ -1092,6 +1191,7 @@
     }
 
     S.cargando = true; S.error = ''; S.aviso = ''; S.textoPlano = '';
+    quitarDelMapa(); S.estratos = null; S.puntosEnMapa = 0;
     pintar();
     try {
       var esPol = S.forma === 'poligono';
@@ -1143,6 +1243,9 @@
       // para que la ficha lo diga con todas las letras.
       var res = await window.AIA_MOTOR.analizar(peticion);
       S.resultado = res;
+      // Se pintan sin que haya que pedirlo: el sentido de mirar un sector
+      // antes de ir es VERLO. Una lista de números no dice dónde está nada.
+      S.puntosEnMapa = pintarPuntos(res.pois || []);
     } catch (e) {
       S.error = (e && e.message) || 'No se pudo consultar el sector.';
     }
@@ -1227,6 +1330,33 @@
       '</div>';
   }
 
+  async function alternarEstratos() {
+    if (S.cargandoEstratos) return;
+    if (S.estratos) { await pintarEstratos(false); S.estratos = null; pintar(); return; }
+    S.cargandoEstratos = true; S.aviso = ''; pintar();
+    var r = await pintarEstratos(true);
+    S.cargandoEstratos = false;
+    if (!r.ok) { S.estratos = null; S.aviso = r.error; pintar(); return; }
+
+    // La leyenda: sin ella los colores son adivinanza. «Sin estrato» va al
+    // final porque es la excepción del mapa —industrial, dotacional, lotes—,
+    // no el escalón anterior al 1.
+    var presentes = [];
+    r.manzanas.forEach(function (mz) { if (presentes.indexOf(mz.estrato) === -1) presentes.push(mz.estrato); });
+    presentes.sort(function (a, b) { return (a === 0) - (b === 0) || a - b; });
+    S.estratos = {
+      n: r.n,
+      leyenda: '<div class="pcr-leyenda"><b>Estratificación DANE · ' + r.n + ' manzanas</b>' +
+        presentes.map(function (n) {
+          return '<span><i style="background:' + ((r.colores && r.colores[n]) || '#6b7280') + '"></i>' +
+                 (n ? n : 'S/E') + '</span>';
+        }).join('') +
+        '<em>S/E = sin estrato (industrial, dotacional o lotes)</em></div>'
+    };
+    S.aviso = 'Estratos pintados. Cerrá esta hoja para verlos.';
+    pintar();
+  }
+
   // ── Entrada y salida ──────────────────────────────────────────────────
   function abrir() {
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
@@ -1245,6 +1375,10 @@
   function cerrar() {
     S.abierto = false;
     borrarCirculo();
+    // Los puntos y los estratos SE QUEDAN: cerrar la hoja es justamente lo
+    // que se hace para poder mirarlos. Se van cuando se analiza otra cosa o
+    // con «Quitar del mapa».
+
     var h = document.getElementById('pcr-hoja');
     if (h) h.classList.remove('pcr-visible');
   }
@@ -1258,6 +1392,8 @@
     // por rumbos es la parte que decide a dónde se manda a un estudiante.
     zonasSinDatos: zonasSinDatos,
     compararListas: compararListas,
+    pintarEstratos: pintarEstratos,
+    quitarDelMapa: quitarDelMapa,
     compararConCampo: compararConCampo,
     leerFichas: leerFichas,
     guardarFicha: guardarFicha,

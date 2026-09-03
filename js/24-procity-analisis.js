@@ -792,13 +792,22 @@
       // Reconocimiento (js/68): mira qué tiene OpenStreetMap ANTES de salir a
       // mapear. Es otra pregunta que la de esta pantalla —acá se cuenta lo que
       // el curso ya levantó— así que va como segundo botón y no mezclado.
-      (window.URBIS_PC_RECON
-        ? '<button type="button" class="pca-btn-principal pca-btn-recon" data-u52-call="pca-reconocer">🔍 ¿Qué hay en este sector?</button>'
-        : '') +
+      botonReconocer() +
       guardadas +
       // El calor no necesita área: sin ella cubre todo lo mapeado en la ciudad.
       (ctx && ctx.grupos && ctx.grupos.length ? bloqueHeat(ctx) : '') +
     '</div>';
+  }
+
+  /* El botón del reconocimiento (js/68). Estuvo solo en la pantalla «sin
+     área», así que al dibujar un área desaparecía — justo cuando uno quiere
+     analizar ESA área. Va en las dos. */
+  function botonReconocer(){
+    if (!window.URBIS_PC_RECON) return '';
+    const conArea = S.cerrada && S.pts.length >= 3;
+    return '<button type="button" class="pca-btn-principal pca-btn-recon" data-u52-call="pca-reconocer">' +
+      (conArea ? '🔍 ¿Qué hay dentro de esta área?' : '🔍 ¿Qué hay en este sector?') +
+      '</button>';
   }
 
   function htmlPanel(ctx){
@@ -851,6 +860,10 @@
         kpi(r.mios, 'míos') +
         kpi(r.deOtros, 'de otros') +
       '</div>' +
+
+      // Con el área ya dibujada, esto responde la otra pregunta: no «qué
+      // mapeamos» sino «qué hay ahí según OpenStreetMap».
+      botonReconocer() +
 
       (r.total === 0
         ? '<div class="pca-vacio">Dentro de esta área todavía no hay nada mapeado en Pro City. Mapea elementos aquí y vuelve a abrir el análisis.</div>'

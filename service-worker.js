@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v614-cupo-libre';
+const URBIS_CACHE = 'urbis-v615-ver-en-el-mapa';
 const URBIS_ASSETS = [
   './',
   './index.html',

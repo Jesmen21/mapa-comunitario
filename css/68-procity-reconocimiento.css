@@ -298,3 +298,20 @@
 .pcr-guardadas-cab{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .pcr-guardadas-cab .pcr-h{ margin:0; }
 .pcr-guardada-f{ display:block; font-size:.66rem; color:#7a8794; font-style:normal; }
+
+/* ── Leyenda de estratos ────────────────────────────────────────────── */
+/* Sin leyenda, los colores del mapa son adivinanza. */
+.pcr-leyenda{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  background:#f7fbfd; border:1px solid #e2e6f0; border-radius:9px;
+  padding:9px 11px; font-size:.75rem; color:#3f4b5c;
+}
+.pcr-leyenda > b{ flex:0 0 100%; font-size:.74rem; color:#3a3f78; }
+.pcr-leyenda span{ display:inline-flex; align-items:center; gap:5px; }
+.pcr-leyenda i{
+  width:13px; height:13px; border-radius:3px;
+  border:1px solid rgba(0,0,0,.18); display:inline-block;
+}
+.pcr-leyenda em{
+  flex:0 0 100%; font-size:.68rem; color:#7a8794; font-style:normal;
+}
