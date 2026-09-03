@@ -186,7 +186,15 @@
      quedaría visible cuando la app la oculta—. */
   #urbis-mobile-app .u52-bottom-nav.u52-bottom-nav-png.u52-procity-nav:not([hidden]){
     display:grid !important;
-    grid-template-columns:repeat(5, 1fr) !important;
+    /* La casilla del medio va más ancha que las otras cuatro, y no es capricho.
+       Con cinco casillas iguales el «+» queda EXACTAMENTE en el centro —medido,
+       0 px de desfase— y aun así se ve corrido: a su izquierda tiene «En el
+       mapa», una etiqueta larga, y a su derecha «Mapa», que es corta. Como las
+       dos van centradas en su casilla, el hueco de la izquierda quedaba en 2-14
+       px y el de la derecha en 18-31. El ojo no compara centros: compara
+       huecos. Ensanchando el centro, los dos vecinos se apartan y el botón
+       respira por los dos lados. */
+    grid-template-columns:1fr 1fr 1.5fr 1fr 1fr !important;
     justify-items:center !important;
     align-items:center !important;
     gap:0 !important;

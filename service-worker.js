@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v645-trazado-y-rutas';
+const URBIS_CACHE = 'urbis-v646-barra-y-version';
 const URBIS_ASSETS = [
   './',
   './index.html',

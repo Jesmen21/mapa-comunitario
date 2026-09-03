@@ -2006,7 +2006,16 @@
      nivel» sacado de seis edificios de trescientos no describe el sector,
      describe la muestra. */
   function bloqueAlturas(st) {
+    /* Dos fuentes para lo mismo, y hay que elegir bien. La consulta del
+       análisis pide los edificios dejando fuera `building=yes` —el valor más
+       común de todos—, así que su muestra es pequeña y sesgada. La del
+       trazado los trae todos. Cuando el estudiante ha medido el trazado, ese
+       es el reparto bueno; además así los dos bloques dejan de dar conteos de
+       edificios distintos en la misma ficha, que es lo que confunde. */
     var a = st.alturas;
+    var t = S.trazado && S.trazado.alturas;
+    var deTrazado = !!(t && t.edificios > ((a && a.edificios) || 0));
+    if (deTrazado) a = t;
     if (!a || !a.edificios) return '';
     if (!a.conDato) {
       return h4('crecer', 'Alturas de lo construido') +
@@ -2039,7 +2048,11 @@
           'solo <b>' + a.conDato + ' de ' + a.edificios + '</b> edificios traen la altura. ' +
           'Los otros ' + a.sinDato + ' están sin contar — y contarlos en campo es trabajo del curso.</p>'
         : '<p class="pcr-pista">Casi todos los edificios del área traen su altura registrada, ' +
-          'así que el reparto de arriba sí describe el sector.</p>');
+          'así que el reparto de arriba sí describe el sector.</p>') +
+      (deTrazado
+        ? ''
+        : '<p class="pcr-pista">Este conteo deja fuera los edificios mapeados sin decir de qué son, ' +
+          'que suelen ser la mayoría. <b>Midiendo el trazado del sector</b> se cuentan todos.</p>');
   }
 
   /* Hitos y nodos. Los núcleos dicen dónde se concentra la actividad; los
@@ -3672,11 +3685,11 @@
           }).join('')
         : '') +
       bloqueUsoPredominante(st) +
-      bloqueAlturas(st) +
       (function () {
-        if (!f.trazado) return '';
-        S.trazado = f.trazado;
-        var html = bloqueTrazado();
+        // Con el trazado guardado, las alturas salen de su muestra —la
+        // completa— igual que en la ficha viva.
+        S.trazado = f.trazado || null;
+        var html = bloqueAlturas(st) + (f.trazado ? bloqueTrazado() : '');
         S.trazado = trzAntes;
         return html;
       })() +

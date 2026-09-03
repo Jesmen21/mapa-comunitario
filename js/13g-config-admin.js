@@ -292,7 +292,16 @@
         '<a class="ucfg-fila" href="mailto:' + CORREO_URBIS + '?subject=URBIS%20%C2%B7%20Contacto">' +
           '<span class="ucfg-ico">✉️</span><div><b>Contactarnos</b>' +
           '<small>' + CORREO_URBIS + '</small></div></a>' +
-        '<small class="ucfg-nota">URBIS · urbispro.city</small>' +
+        /* La versión, a la vista. Sin esto no hay forma de saber qué está
+           corriendo cada superficie: la app instalada, el navegador del
+           teléfono y el del computador pueden tener versiones distintas —cada
+           una guarda su propia copia— y la única manera de compararlas era
+           adivinando por cómo se ve la pantalla. Ahora se abre esto en las dos
+           y se leen los dos números. */
+        '<small class="ucfg-nota">URBIS · urbispro.city<br>' +
+          'Versión <b>' + esc(String(window.URBIS_APP_VERSION || 'desconocida')) + '</b>' +
+          (window.URBIS_MODO_APP ? ' · modo ' + esc(String(window.URBIS_MODO_APP)) : '') +
+        '</small>' +
       '</div>';
     document.body.appendChild(ov);
     ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
