@@ -274,6 +274,15 @@
             '<small>' + esc(resumenDeLoMio()) + '</small></div>' +
             (total ? '<span class="ucfg-badge">' + total + '</span>' : '') + '</button>'
           : '') +
+        /* Emitir licencias, solo para quien manda. Antes esta pantalla se
+           abría escribiendo `URBIS_LICENCIA.abrir()` en la consola del
+           navegador — en un celular no hay consola, así que en la práctica
+           no se podía emitir desde el teléfono. */
+        (soyDueno()
+          ? '<button type="button" class="ucfg-fila ucfg-fila-admin" data-ucfg="licencias">' +
+            '<span class="ucfg-ico">🔑</span><div><b>Licencias del análisis</b>' +
+            '<small>Emitir una licencia y mandarla por enlace: quien lo toque queda activado.</small></div></button>'
+          : '') +
         '<button type="button" class="ucfg-fila" data-ucfg="peticion">' +
           '<span class="ucfg-ico">💡</span><div><b>Escríbele al administrador</b>' +
           '<small>Pide una mejora o cuéntanos un problema. Puedes adjuntar una captura.</small></div></button>' +
@@ -293,6 +302,10 @@
         const q = b.getAttribute('data-ucfg');
         ov.remove();
         if (q === 'admin') window.urbisAbrirPanelAdmin();
+        else if (q === 'licencias') {
+          if (window.URBIS_LICENCIA && window.URBIS_LICENCIA.abrirEmisor) window.URBIS_LICENCIA.abrirEmisor();
+          else if (window.URBIS_LICENCIA) window.URBIS_LICENCIA.abrir();
+        }
         else if (q === 'peticion') window.urbisAbrirPeticion();
         else if (q === 'terminos') window.urbisAbrirTerminos();
       });

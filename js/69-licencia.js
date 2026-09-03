@@ -92,6 +92,31 @@
       if (acc === 'guardar') { guardarYComprobar(); return; }
       if (acc === 'modo-emitir') { S.emitiendo = !S.emitiendo; S.emitida = null; S.errorEmitir = ''; pintar(); return; }
       if (acc === 'emitir') { emitir(); return; }
+      if (acc === 'copiar-enlace') {
+        var en = S.emitida && enlaceDe(S.emitida.licencia);
+        if (!en) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(en).then(function () {
+              S.copiadoEnlace = true; pintar();
+            }, function () { S.copiadoEnlace = false; pintar(); });
+          }
+        } catch (e) {}
+        return;
+      }
+      if (acc === 'compartir') {
+        var en2 = S.emitida && enlaceDe(S.emitida.licencia);
+        if (!en2 || !navigator.share) return;
+        try {
+          navigator.share({
+            title: 'Licencia de URBIS',
+            text: 'Tocá este enlace para activar tu licencia de URBIS · ' +
+                  (S.emitida.cliente || '') + ' · vence ' + (S.emitida.vence || ''),
+            url: en2
+          }).catch(function () {});
+        } catch (e) {}
+        return;
+      }
       if (acc === 'copiar-lic') {
         var t = S.emitida && S.emitida.licencia;
         if (!t) return;
@@ -217,11 +242,29 @@
               '<div><small>Vence</small><b>' + esc(e.vence) + '</b></div>' +
               '<div><small>Cupo</small><b>' + (e.cupo || 'sin tope') + '</b></div>' +
             '</div>' +
+            /* El ENLACE primero, y el texto plano después: en un celular no
+               hay consola donde pegar nada, así que el camino que de verdad
+               se usa es mandar el enlace por WhatsApp y que la persona lo
+               toque. El texto queda por si alguien lo prefiere a mano. */
+            '<label class="ulic-lab">Enlace para mandar</label>' +
+            '<textarea class="ulic-campo ulic-enlace" readonly rows="2">' + esc(enlaceDe(e.licencia)) + '</textarea>' +
+            '<div class="ulic-acciones">' +
+              '<button type="button" data-ulic="copiar-enlace" class="ulic-principal">' +
+                (S.copiadoEnlace ? '✓ Enlace copiado' : '🔗 Copiar el enlace') + '</button>' +
+              (navigator.share
+                ? '<button type="button" data-ulic="compartir" class="ulic-quitar">📤 Compartir</button>'
+                : '') +
+            '</div>' +
+            '<p class="ulic-pista">Mandáselo por WhatsApp. Quien lo toque en su teléfono queda con la ' +
+            'licencia instalada, sin copiar ni pegar nada.</p>' +
+
+            '<label class="ulic-lab">O el texto suelto</label>' +
             '<textarea class="ulic-campo" readonly rows="3">' + esc(e.licencia) + '</textarea>' +
             '<button type="button" data-ulic="copiar-lic" class="ulic-quitar">' +
               (S.copiada ? '✓ copiada' : '📋 Copiar la licencia') + '</button>' +
-            '<p class="ulic-pista">Mandásela al cliente. Apuntá también su id <code>' + esc(e.id) + '</code>: ' +
-            'es lo que se pone en <code>URBIS_REVOCADAS</code> si algún día hay que anularla.</p>' +
+            '<p class="ulic-pista">Apuntá el id <code>' + esc(e.id) + '</code>: es lo que se pone en ' +
+            '<code>URBIS_REVOCADAS</code> el día que haya que anularla —si alguien la reenvía, se anula ' +
+            'esa y se emite otra—.</p>' +
           '</div>'
         : '') +
     '</div>';
@@ -278,7 +321,9 @@
             ? '<p class="ulic-alerta">Tu licencia venció. Escribinos para renovarla.</p>'
             : S.motivo === 'revocada'
               ? '<p class="ulic-alerta">Esta licencia fue anulada. Escribinos para saber por qué.</p>'
-              : '') +
+              : S.motivo === 'instalada'
+                ? '<p class="ulic-instalada">✓ Licencia instalada desde el enlace. Abajo ves de quién es y hasta cuándo vale.</p>'
+                : '') +
 
         cuerpo +
 
@@ -336,6 +381,46 @@
   /* Cuando el servidor rechaza por licencia, esta pantalla es exactamente lo
      que el usuario necesita. Aparece sola en vez de dejarlo con un mensaje de
      error y ningún sitio adonde ir. */
+  /* ── Licencia por enlace ──────────────────────────────────────────────
+     En un celular no hay F12, así que pedirle a treinta estudiantes que
+     abran una consola para pegar un texto no es un plan: es un plan que
+     falla. Con esto el administrador manda un enlace por WhatsApp, el
+     estudiante lo toca, y la licencia queda instalada sin que tenga que
+     copiar ni pegar nada.
+
+     La dirección se limpia enseguida —history.replaceState— por tres
+     motivos: que no quede la licencia a la vista en la barra, que no viaje
+     en el Referer al primer enlace externo que se toque, y que recargar la
+     página no reinstale una licencia que quizá el usuario acaba de quitar. */
+  /* El enlace se arma sobre el ORIGEN de esta página, no sobre una dirección
+     escrita a mano: así funciona igual en urbispro.city, en una copia de
+     pruebas o en localhost, sin que nadie tenga que acordarse de cambiarlo. */
+  function enlaceDe(lic) {
+    var base = location.origin + location.pathname.replace(/[^/]*$/, '');
+    return base + '?lic=' + encodeURIComponent(String(lic || '').trim());
+  }
+
+  function instalarDeLaURL() {
+    var lic = '';
+    try { lic = new URLSearchParams(location.search).get('lic') || ''; } catch (e) { return; }
+    lic = String(lic).trim();
+    if (!lic) return;
+
+    // Se limpia SIEMPRE, valga o no: una licencia mal copiada tampoco tiene
+    // por qué quedarse en la barra de direcciones.
+    try {
+      var u = new URL(location.href);
+      u.searchParams.delete('lic');
+      history.replaceState(null, '', u.pathname + (u.search || '') + u.hash);
+    } catch (e) {}
+
+    if (lic.indexOf('URBIS1.') !== 0) return;   // no es una licencia; se ignora
+    guardar(lic);
+    // Se abre la pantalla para que VEA de quién es y hasta cuándo vale. Una
+    // instalación silenciosa deja a la persona sin saber qué recibió.
+    abrir('instalada');
+  }
+
   window.addEventListener('urbis:licencia', function (ev) {
     var d = (ev && ev.detail) || {};
     abrir(d.motivo || '');
@@ -363,8 +448,24 @@
     return false;
   }
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', instalarDeLaURL);
+  } else {
+    instalarDeLaURL();
+  }
+
+  /* Abre la pantalla YA en modo emisor. Lo usa el botón de Configuración:
+     al administrador no le sirve la vista de «pegá tu licencia», él viene a
+     crear una. */
+  function abrirEmisor() {
+    S.emitiendo = true; S.emitida = null; S.errorEmitir = '';
+    S.copiada = false; S.copiadoEnlace = false;
+    abrir('');
+  }
+
   window.URBIS_LICENCIA = {
     abrir: abrir,
+    abrirEmisor: abrirEmisor,
     permitido: permitido,
     cerrar: cerrar,
     guardada: guardada,

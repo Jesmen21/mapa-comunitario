@@ -228,3 +228,23 @@
   color:#5e6b78 !important; -webkit-text-fill-color:#5e6b78 !important;
   text-decoration:underline;
 }
+
+/* ── Instalación por enlace y reparto ──────────────────────────────────
+   En un celular no hay F12: pedirle a treinta estudiantes que abran una
+   consola para pegar un texto es un plan que falla. El camino real es un
+   enlace por WhatsApp, así que el enlace va primero y grande, y el texto
+   suelto queda debajo para quien lo prefiera. */
+.ulic-instalada{
+  margin:0; font-size:.8rem; line-height:1.5; font-weight:600;
+  background:#e9f9f1; border:1px solid #bfe8d4; border-radius:9px;
+  padding:9px 11px;
+  color:#0b6b47 !important; -webkit-text-fill-color:#0b6b47 !important;
+}
+.ulic-hoja .ulic-instalada{ color:#0b6b47 !important; -webkit-text-fill-color:#0b6b47 !important; }
+.ulic-enlace{
+  font-size:.72rem !important; line-height:1.4 !important;
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.ulic-acciones{ display:flex; gap:8px; align-items:center; }
+.ulic-acciones .ulic-principal{ flex:1; }
+.ulic-acciones .ulic-quitar{ flex:0 0 auto; white-space:nowrap; }
