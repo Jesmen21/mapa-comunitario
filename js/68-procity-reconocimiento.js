@@ -847,6 +847,343 @@
       '</table><p class="pie">Falta la foto de cada uno: eso se levanta en la salida.</p>';
   }
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     LA LÁMINA
+     600 × 900 mm en vertical, que es el formato que se pidió y el que se
+     entrega en un taller. No es el informe en otro papel: es OTRA cosa. El
+     informe se lee de arriba abajo y explica; la lámina se cuelga en una
+     pared y se entiende de un vistazo desde dos metros. Por eso acá manda el
+     plano y las cifras van en cajas, no en párrafos.
+
+     Se arma con lo que el análisis ya sabe. Los bloques que se piden a botón
+     —terreno, clima, trazado, cobertura— solo aparecen si se midieron: una
+     lámina con huecos rotulados «sin datos» no la cuelga nadie.
+     ═══════════════════════════════════════════════════════════════════════ */
+  /* Abrir una hoja para imprimir. Es el mismo baile de siempre —usar el
+     ayudante del informe si está, si no abrir una ventana y escribirle
+     encima— y estaba copiado en tres sitios; acá está una vez. Avisa por
+     `alFallar` en vez de tocar el estado, porque quien lo llama sabe si el
+     aviso va en la ficha o en la pestaña. */
+  function abrirImpresion(html, alFallar) {
+    var ayuda = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+    if (ayuda) { ayuda(html); return true; }
+    var w = window.open('', '_blank');
+    if (!w) {
+      if (alFallar) alFallar('Permití las ventanas emergentes para poder imprimir.');
+      return false;
+    }
+    w.document.write(html); w.document.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
+    return true;
+  }
+
+  function laminaImprimible(res, opts) {
+    var o = opts || {};
+    var st = res.stats || {}, meta = res.meta || {};
+    var ubic = res.ubicacion || o.ubicacion || null;
+    var ter = o.terreno !== undefined ? o.terreno : S.terreno;
+    var cli = o.clima !== undefined ? o.clima : S.clima;
+    var trz = o.trazado !== undefined ? o.trazado : S.trazado;
+    var huellas = o.huellas !== undefined ? o.huellas : S.trzHuellas;
+    var nombre = String(o.nombre !== undefined ? o.nombre : (S.nombreGuardado || '')).trim();
+    var esPol = meta.forma === 'poligono';
+    var A = window.URBIS_PC_ANALISIS;
+    // El catálogo de grupos y sus colores: se lee antes del plano porque el
+    // plano ya los necesita para pintar cada punto.
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
+
+    // ── El plano: el contorno con lo que hay dentro ────────────────────
+    var forma = esPol && meta.poligono && meta.poligono.length >= 3
+      ? { pts: meta.poligono }
+      : { centro: { lat: meta.lat, lng: meta.lng }, radioM: meta.radioM };
+    var plano = (A && typeof A.miniatura === 'function')
+      ? A.miniatura(forma, {
+          w: 520, h: 520, radioPunto: 2.6,
+          // Una ficha guardada no guarda el color de cada punto —sería
+          // repetir el mismo dato cientos de veces—, así que se vuelve a
+          // sacar del catálogo por su grupo. Sin esto la lámina de un sector
+          // viejo salía con el plano en gris.
+          puntos: (res.pois || []).map(function (p) {
+            return { lat: p.lat, lng: p.lng, color: p.color || COL[p.grupo] || null };
+          }),
+          huellas: huellas || null,
+          etiqueta: 'Plano del sector analizado'
+        })
+      : '';
+
+    // ── Convenciones: los colores que aparecen en el plano ─────────────
+    var conv = Object.keys(st.porGrupo || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; })
+      .map(function (x) {
+        var d = G[x.id] || {};
+        return '<span class="cv"><i style="background:' + (COL[x.id] || '#94a3b8') + '"></i>' +
+          esc(d.t || d.nombre || x.id) + ' <b>' + x.n + '</b></span>';
+      }).join('');
+
+    function caja(titulo, cuerpo, clase) {
+      if (!cuerpo) return '';
+      return '<section class="caja' + (clase ? ' ' + clase : '') + '">' +
+        '<h2>' + esc(titulo) + '</h2>' + cuerpo + '</section>';
+    }
+    function fila(etq, val) {
+      return val === null || val === undefined || val === ''
+        ? '' : '<div class="f"><span>' + esc(etq) + '</span><b>' + val + '</b></div>';
+    }
+    function barras(lista, etqDe, valDe, pctDe) {
+      var max = lista.reduce(function (m, x) { return Math.max(m, pctDe(x)); }, 0) || 1;
+      return '<div class="barras">' + lista.map(function (x) {
+        return '<div class="b"><span>' + esc(etqDe(x)) + '</span>' +
+          '<i><u style="width:' + Math.round(100 * pctDe(x) / max) + '%"></u></i>' +
+          '<b>' + valDe(x) + '</b></div>';
+      }).join('') + '</div>';
+    }
+
+    // ── Ubicación ───────────────────────────────────────────────────────
+    var cadena = ubic
+      ? [ubic.pais, ubic.departamento, ubic.ciudad, ubic.comuna, ubic.barrio].filter(Boolean).join(' › ')
+      : '';
+
+    // ── Asoleamiento ────────────────────────────────────────────────────
+    var SOL = window.URBIS_SOLAR, sol = null, solAnio = null;
+    try {
+      if (SOL && meta.lat != null) {
+        sol = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
+        solAnio = SOL.anio(Number(meta.lat), Number(meta.lng));
+      }
+    } catch (e) { sol = null; }
+    var hh = function (x) {
+      return x ? x.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' }) : '—';
+    };
+
+    var hoy = new Date();
+    return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+      '<title>Lámina · ' + esc(nombre || 'Análisis urbano') + '</title><style>' +
+      '@page{ size:600mm 900mm; margin:0 }' +
+      '*{ box-sizing:border-box }' +
+      'html,body{ width:600mm; height:900mm; margin:0; padding:0;' +
+        'font-family:Inter,"Segoe UI",system-ui,sans-serif; color:#0F1F2E;' +
+        '-webkit-print-color-adjust:exact; print-color-adjust:exact }' +
+      '.hoja{ width:600mm; height:900mm; padding:22mm 20mm 16mm; display:flex;' +
+        'flex-direction:column; gap:9mm; background:#fff }' +
+      // Cabecera: el logo arriba a la izquierda, como se pidió.
+      '.cab{ display:flex; align-items:flex-start; gap:8mm; border-bottom:1.2mm solid #34CCFE; padding-bottom:6mm }' +
+      '.marca{ flex:0 0 auto; display:flex; flex-direction:column; gap:1mm }' +
+      '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#0A6F9E; font-weight:800 }' +
+      '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#6B7A8A; font-weight:700 }' +
+      '.tit{ flex:1; min-width:0 }' +
+      '.tit .ey{ font-size:3mm; letter-spacing:.24em; text-transform:uppercase; color:#0A6F9E; font-weight:800 }' +
+      '.tit h1{ margin:1mm 0 2mm; font-size:11mm; line-height:1.05; letter-spacing:-.02em; font-weight:800 }' +
+      '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
+      '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
+      // Rejilla de cajas
+      '.rej{ display:grid; grid-template-columns:repeat(6,1fr); gap:6mm; flex:1; min-height:0 }' +
+      '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:5mm; background:#fff;' +
+        'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
+      '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
+        'color:#0A6F9E; font-weight:800 }' +
+      '.g6{ grid-column:span 6 } .g4{ grid-column:span 4 } .g3{ grid-column:span 3 }' +
+      '.g2{ grid-column:span 2 }' +
+      '.alto3{ grid-row:span 3 }' +
+      '.plano{ background:#F3F8FB; border-radius:2mm; padding:2mm }' +
+      '.plano svg{ display:block; width:100%; height:auto }' +
+      '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
+      '.cv{ font-size:3mm; color:#3B4A5A; display:inline-flex; align-items:center; gap:1.5mm }' +
+      '.cv i{ width:2.6mm; height:2.6mm; border-radius:50%; display:inline-block }' +
+      '.cv b{ color:#0F1F2E }' +
+      // Cifras grandes
+      '.kpis{ display:flex; gap:5mm; flex-wrap:wrap }' +
+      '.k{ flex:1 1 0; min-width:24mm }' +
+      '.k b{ display:block; font-size:8mm; line-height:1; font-weight:800; letter-spacing:-.02em; color:#0A6F9E;' +
+        'font-variant-numeric:tabular-nums }' +
+      '.k small{ display:block; font-size:2.8mm; color:#6B7A8A; margin-top:1mm; line-height:1.25 }' +
+      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.2mm; padding:1.2mm 0;' +
+        'border-bottom:.25mm solid #EEF3F7 }' +
+      '.f span{ color:#3B4A5A } .f b{ color:#0F1F2E; font-variant-numeric:tabular-nums }' +
+      '.barras{ display:flex; flex-direction:column; gap:1.8mm }' +
+      '.b{ display:grid; grid-template-columns:26mm 1fr 14mm; align-items:center; gap:2mm; font-size:3mm }' +
+      '.b span{ color:#3B4A5A } ' +
+      '.b i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
+      '.b u{ display:block; height:100%; border-radius:2mm; background:#0A6F9E; text-decoration:none }' +
+      '.b b{ text-align:right; color:#0F1F2E; font-variant-numeric:tabular-nums }' +
+      '.nota{ font-size:2.8mm; color:#6B7A8A; line-height:1.45 }' +
+      '.lee{ font-size:3.2mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
+      '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
+        'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
+      '.hit i{ font-style:normal; font-weight:800; color:#0A6F9E }' +
+      '.hit u{ text-decoration:none; color:#6B7A8A }' +
+      // Los dibujos que vienen de la ficha
+      '.pcr-clima-lluvia{ fill:#34CCFE; fill-opacity:.55 }' +
+      '.pcr-clima-temp{ fill:none; stroke:#E5484D; stroke-width:1.8; stroke-linejoin:round }' +
+      '.pcr-clima-mes,.pcr-clima-eje{ fill:#6B7A8A; font-size:8px; font-weight:700 }' +
+      '.pcr-clima-graf svg{ display:block; width:100%; height:auto }' +
+      '.pcr-clima-graf .pcr-pista{ font-size:2.8mm; color:#6B7A8A; line-height:1.4; margin:2mm 0 0 }' +
+      '.pcr-perfil{ margin:0 0 2mm }' +
+      '.pcr-perfil svg{ display:block; width:100% }' +
+      '.pcr-perfil .pcr-lab{ font-size:2.6mm; letter-spacing:.1em; text-transform:uppercase; color:#6B7A8A; font-weight:700 }' +
+      '.pcr-perfil-area{ fill:#E6F7FE } ' +
+      '.pcr-perfil-linea{ fill:none; stroke:#0A6F9E; stroke-width:1.6 }' +
+      '.pcr-perfil-dentro{ stroke:#34CCFE; stroke-width:3; stroke-linecap:round }' +
+      '.pcr-perfil-n{ fill:#6B7A8A; font-size:8px; font-weight:600 }' +
+      '.pcr-rosa{ width:34mm; height:34mm }' +
+      '.pcr-rosa-borde,.pcr-rosa-eje{ fill:none; stroke:#E3EAF0; stroke-width:1 }' +
+      '.pcr-rosa-petalos path{ fill:#34CCFE; fill-opacity:.55; stroke:#0A6F9E; stroke-width:.5 }' +
+      '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
+      '.pie{ display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
+        'border-top:.35mm solid #E3EAF0; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
+      '</style></head><body><div class="hoja">' +
+
+      '<header class="cab">' +
+        '<div class="marca"><b>URBIS</b><small>Pro City</small></div>' +
+        '<div class="tit">' +
+          '<div class="ey">Análisis urbano · reconocimiento del sector</div>' +
+          '<h1>' + esc(nombre || (ubic && ubic.barrio) || 'Sector analizado') + '</h1>' +
+          '<div class="sub">' +
+            (esPol ? 'Área dibujada de ' + esc(formatearArea(meta.areaM2) || '') : 'Radio de ' + meta.radioM + ' m') +
+            (meta.perimetroM ? ' · perímetro ' + esc(formatearLargo(meta.perimetroM)) : '') +
+            ' · ' + (st.total || 0) + ' usos registrados' +
+          '</div>' +
+          (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
+        '</div>' +
+      '</header>' +
+
+      '<div class="rej">' +
+
+        caja('Plano del sector', (plano ? '<div class="plano">' + plano + '</div>' : '') +
+          (conv ? '<div class="conv">' + conv + '</div>' : '') +
+          (huellas && huellas.length
+            ? '<p class="nota">Las manchas oscuras son las huellas de los edificios registrados; ' +
+              'los puntos, los usos mapeados, con el color de su categoría.</p>'
+            : '<p class="nota">Los puntos son los usos mapeados, con el color de su categoría.</p>'),
+          'g4 alto3') +
+
+        caja('El sitio',
+          '<div class="kpis">' +
+            '<div class="k"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+            '<div class="k"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
+              '</b><small>por hectárea</small></div>' +
+          '</div>' +
+          fila('Área', esc(formatearArea(meta.areaM2) || '—')) +
+          fila('En metros cuadrados', esc(formatearM2(meta.areaM2))) +
+          fila('Perímetro', esc(formatearLargo(meta.perimetroM))) +
+          (esPol ? fila('Vértices', meta.vertices || 0) : fila('Radio', esc(formatearLargo(meta.radioM)))) +
+          (st.poblacionEstimada ? fila('Población', Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
+          (st.viviendasCenso ? fila('Viviendas', Number(st.viviendasCenso).toLocaleString('es-CO')) : '') +
+          (st.estrato && st.estrato.predominante
+            ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : ''),
+          'g2') +
+
+        caja('Qué hay, por categoría',
+          (function () {
+            var filas = Object.keys(st.porGrupo || {})
+              .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+              .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+              .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
+            if (!filas.length) return '';
+            return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
+                          function (x) { return x.n; }, function (x) { return x.n; });
+          })(), 'g3') +
+
+        caja('Hitos y nodos',
+          (function () {
+            var hs = st.hitos || [];
+            if (!hs.length) return '';
+            return hs.map(function (h) {
+              return '<div class="hit"><i>' + h.n + '</i><span>' + esc(h.nombre) +
+                '</span><u>' + esc(h.categoriaNombre) + ' · ' + h.distM + ' m</u></div>';
+            }).join('');
+          })(), 'g2') +
+
+        caja('Alturas de lo construido',
+          (function () {
+            var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
+            if (!a || !a.conDato) return '';
+            return barras(a.niveles, function (x) { return x.etiqueta; },
+                          function (x) { return x.pct + '%'; }, function (x) { return x.pct; }) +
+              '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
+              'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>';
+          })(), 'g3') +
+
+        caja('Llenos y vacíos',
+          (function () {
+            if (!trz || !trz.llenos) return '';
+            var ll = trz.llenos, vi = trz.vias || {}, mo = trz.morfologia || {};
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
+                '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
+                '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
+              '</div>' +
+              fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
+              fila('Vías', String(vi.kmTotal || 0).replace('.', ',') + ' km') +
+              fila('Tramo medio entre cruces', (mo.tramoMedioM || 0) + ' m') +
+              (mo.lectura ? '<p class="lee">' + esc(mo.lectura) + '</p>' : '');
+          })(), 'g3') +
+
+        caja('El terreno',
+          (function () {
+            if (!ter) return '';
+            var e = ter.elevacion || {}, p = ter.pendiente || {};
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + e.min + '</b><small>msnm, lo más bajo</small></div>' +
+                '<div class="k"><b>' + e.max + '</b><small>msnm, lo más alto</small></div>' +
+                '<div class="k"><b>' + e.relieve + '</b><small>m de desnivel</small></div>' +
+              '</div>' +
+              fila('Pendiente media', String(p.media).replace('.', ',') + '%') +
+              (ter.orientacion ? fila('La ladera baja hacia', esc(ter.orientacion.rumbo)) : '') +
+              (ter.perfiles || []).map(perfilDibujado).join('') +
+              (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
+          })(), 'g3') +
+
+        caja('El clima',
+          (function () {
+            if (!cli) return '';
+            var t = cli.temperatura || {}, ll = cli.lluvia || {}, vi = cli.viento || {};
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + (t.media != null ? String(t.media).replace('.', ',') + '°' : '—') +
+                  '</b><small>media</small></div>' +
+                '<div class="k"><b>' + (ll.anual != null ? ll.anual : '—') + '</b><small>mm al año</small></div>' +
+              '</div>' +
+              climograma(cli.meses) +
+              (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
+              (cli.lectura ? '<p class="lee">' + esc(cli.lectura) + '</p>' : '');
+          })(), 'g3') +
+
+        caja('Asoleamiento',
+          (function () {
+            if (!sol || !sol.salida) return '';
+            var cen = ((solAnio && solAnio.cenitales) || []).map(function (x) {
+              return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+            });
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + hh(sol.salida) + '</b><small>amanecer</small></div>' +
+                '<div class="k"><b>' + hh(sol.puesta) + '</b><small>atardecer</small></div>' +
+                '<div class="k"><b>' + sol.alturaMaxima + '°</b><small>al mediodía</small></div>' +
+              '</div>' +
+              fila('Sale por el', esc(SOL.rumbo(sol.azimutSalida)) + ' · ' + sol.azimutSalida + '°') +
+              fila('Se pone por el', esc(SOL.rumbo(sol.azimutPuesta)) + ' · ' + sol.azimutPuesta + '°') +
+              fila('Horas de luz', String(sol.duracionH).replace('.', ',') + ' h') +
+              (solAnio ? fila('En el año', solAnio.solsticios.masBajo.altura + '° a ' +
+                              solAnio.solsticios.masAlto.altura + '°') : '') +
+              '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
+              (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
+              '</p>';
+          })(), 'g6') +
+
+      '</div>' +
+
+      '<footer class="pie">' +
+        '<div>URBIS · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
+          (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
+        '<div style="max-width:120mm;text-align:right">Usos y vías de OpenStreetMap · población del DANE' +
+          (ter ? ' · relieve ' + esc(ter.fuente || '') : '') +
+          (cli ? ' · clima ' + esc(cli.fuente || '') : '') +
+          '. Esto no es el sector: es lo que estas fuentes saben de él.</div>' +
+      '</footer>' +
+      '</div></body></html>';
+  }
+
   /* `opts` deja imprimir algo que NO es lo que está en pantalla: un sector
      guardado, semanas después, desde la pestaña. Sin esto el PDF de una ficha
      vieja salía con el nombre y la cobertura del último análisis hecho, que
@@ -1096,6 +1433,13 @@
         if (!w) { S.aviso = 'Permite las ventanas emergentes para poder imprimir.'; pintar(); return; }
         w.document.write(html); w.document.close();
         setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
+        return;
+      }
+      if (acc === 'lamina') {
+        if (!S.resultado) return;
+        var caja3 = document.getElementById('pcr-nombre');
+        S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
+        abrirImpresion(laminaImprimible(S.resultado), function (m) { S.aviso = m; pintar(); });
         return;
       }
       if (acc === 'estratos') { alternarEstratos(); return; }
@@ -3676,7 +4020,11 @@
           '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">' + ico('guardar') + 'Guardar ficha</button>' +
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
           '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
+          '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b">' + ico('documento') + 'Lámina 60×90</button>' +
         '</div>' +
+        '<p class="pcr-pista">La <b>lámina</b> arma una hoja vertical de 60 × 90 cm con el plano del ' +
+        'sector y todo lo medido, lista para imprimir o colgar. Lo que no mediste no sale: ' +
+        'medí el terreno, el clima y el trazado antes si querés que aparezcan.</p>' +
 
         // Guardar el ÁREA, no la ficha: queda en la misma lista de áreas de
         // Pro City, así que se puede volver a ella sin redibujarla y el
@@ -4141,6 +4489,13 @@
                          !A0.hayArea() && S.huellaAnalizada.slice(0, 2) === 'p|');
     if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
       S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
+      /* El clima y el nombre también. Se quedaron fuera de esta lista la
+         primera vez y el resultado era feo de encontrar: como el análisis
+         siguiente se guarda solo, el sector nuevo quedaba archivado con el
+         nombre del anterior y con SU climatología —del sitio de al lado o de
+         otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
+         meses después, cuando los datos ya no se pueden creer. */
+      S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = '';
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; pintarLlenos(false);
     }
@@ -4433,6 +4788,8 @@
                     esc(f.id) + '">' + ico('copiar') + 'Copiar</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-pdf" data-id="' +
                     esc(f.id) + '">' + ico('imprimir') + 'PDF</button>' +
+                  '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-lamina" data-id="' +
+                    esc(f.id) + '">' + ico('documento') + 'Lámina 60×90</button>' +
                   (hayCampo
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-comparar" data-id="' +
                       esc(f.id) + '">' + ico('comparar', 16) + 'Comparar con el campo</button>'
@@ -4556,6 +4913,21 @@
       }
       wG.document.write(htmlG); wG.document.close();
       setTimeout(function () { try { wG.focus(); wG.print(); } catch (e) {} }, 600);
+      return true;
+    }
+    if (name === 'lamina') {
+      if (!f) return true;
+      // La lámina de ESTA ficha: su nombre, su terreno, su clima, su trazado.
+      // Si se dejara leer el estado, un sector guardado en marzo saldría con
+      // el relieve del último sector medido hoy, que es un error que nadie
+      // detecta mirando la hoja impresa.
+      abrirImpresion(
+        laminaImprimible(comoResultado(f), {
+          nombre: f.nombre || '',
+          trazado: f.trazado || null, terreno: f.terreno || null,
+          clima: f.clima || null, huellas: null
+        }),
+        function (m) { S.avisoPestana = m; repintar(); });
       return true;
     }
     if (name === 'copiar') {

@@ -848,19 +848,48 @@
     for (let x = 12; x < W; x += 12) rejilla += 'M' + x + ' 0V' + H;
     for (let y = 12; y < H; y += 12) rejilla += 'M0 ' + y + 'H' + W;
 
+    /* Lo que hay DENTRO del área, cuando se pide: las huellas de los
+       edificios primero —son el fondo construido— y encima los usos. Sin
+       esto la figura es solo un contorno; con esto es un plano. */
+    let dentro = '';
+    if (Array.isArray(o.huellas) && o.huellas.length) {
+      dentro += '<g>' + o.huellas.map(anillo => {
+        if (!anillo || anillo.length < 3) return '';
+        const d = anillo.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
+        return '<path d="' + d + '" fill="#3B4A5A" fill-opacity=".78" stroke="#0F1F2E" stroke-width=".3"/>';
+      }).join('') + '</g>';
+    }
+    if (Array.isArray(o.puntos) && o.puntos.length) {
+      const r = o.radioPunto || 1.9;
+      dentro += '<g>' + o.puntos.map(p => {
+        if (p.lat == null || p.lng == null) return '';
+        return '<circle cx="' + X(+p.lng).toFixed(1) + '" cy="' + Y(+p.lat).toFixed(1) +
+          '" r="' + r + '" fill="' + (p.color || '#94a3b8') + '" stroke="#12202e" stroke-width=".35"/>';
+      }).join('') + '</g>';
+    }
+
     // La forma.
     let figura = '';
     if (pts) {
       const d = pts.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
-      figura = '<path d="' + d + '" fill="rgba(52,204,254,.22)" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
+      // Con contenido dentro, el relleno del contorno se quita: taparía las
+      // huellas y los usos que se acaban de dibujar.
+      const relleno = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length)
+        ? 'none' : 'rgba(52,204,254,.22)';
+      figura = '<path d="' + d + '" fill="' + relleno + '" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
       if (pts.length <= 24) {
         figura += pts.map(p => '<circle cx="' + X(+p.lng).toFixed(1) + '" cy="' + Y(+p.lat).toFixed(1) +
           '" r="1.6" fill="#0A6F9E"/>').join('');
       }
     } else {
       const r = (circ.radioM / 111320) * esc;
+      // Igual que con el polígono: si adentro hay algo dibujado, el relleno
+      // se quita. Un velo celeste encima de los puntos les cambia el color y
+      // deja de coincidir con las convenciones.
+      const rellenoC = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length)
+        ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + r.toFixed(1) +
-        '" fill="rgba(52,204,254,.22)" stroke="#0A6F9E" stroke-width="1.6"/>' +
+        '" fill="' + rellenoC + '" stroke="#0A6F9E" stroke-width="1.6"/>' +
         '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="1.8" fill="#0A6F9E"/>';
     }
 
@@ -888,7 +917,7 @@
       'role="img" aria-label="' + (o.etiqueta || 'Forma del área') + '">' +
       '<rect width="' + W + '" height="' + H + '" rx="8" fill="#F3F8FB"/>' +
       '<path d="' + rejilla + '" stroke="#E1EAF1" stroke-width="1"/>' +
-      figura + escala + norte + '</svg>';
+      dentro + figura + escala + norte + '</svg>';
   }
 
   // Cuánto hace: para la fecha de una tarjeta, en palabras.
