@@ -860,6 +860,42 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.8rem !important; color:var(--edu-ink-2) !important;
   -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+/* El lote, en amarillo. El sector es celeste y el lote es amarillo: son dos
+   cosas distintas y tienen que verse distintas de un vistazo, en el mapa y en
+   el botón que las dibuja. */
+#urbis-mobile-app .pcr-lote-btn,
+.pcr-hoja .pcr-lote-btn{
+  border-color:#E0A800 !important;
+  background:#FFF8E1 !important;
+  color:#7A5901 !important; -webkit-text-fill-color:#7A5901 !important;
+}
+#urbis-mobile-app .pcr-lote-btn .u-ico,
+.pcr-hoja .pcr-lote-btn .u-ico{ color:#B8860B; }
+
+/* La barra de dibujo del lote. Va fija abajo y por encima de todo: mientras
+   se dibuja, la hoja está encogida y el pulgar tiene que encontrar los
+   botones donde ya está, no dentro de un panel que hay que reabrir. */
+.pcr-lote-barra{
+  position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index:100000; padding:12px 14px; border-radius:16px;
+  background:#FFF8E1; box-shadow:0 10px 30px rgba(15,31,46,.28), inset 0 0 0 1.5px #E0A800;
+  font-family:Inter,system-ui,sans-serif;
+}
+.pcr-lote-t{
+  font-size:.9rem; font-weight:700; color:#7A5901; margin-bottom:9px; line-height:1.3;
+}
+.pcr-lote-b{ display:flex; gap:8px; }
+.pcr-lote-b button{
+  flex:1; display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  padding:11px 8px; border-radius:12px; border:1px solid #E0A800;
+  background:#fff; color:#7A5901; font-size:.82rem; font-weight:700; cursor:pointer;
+}
+.pcr-lote-b button[disabled]{ opacity:.45; cursor:default; }
+.pcr-lote-b .pcr-lote-ok{ background:#B8860B; border-color:#B8860B; color:#fff; }
+.pcr-lote-aviso{
+  margin-top:9px; font-size:.8rem; color:#9A2A2A; line-height:1.35;
+}
+
 /* La vista del curso. Va arriba de todo en la pestaña y con un borde propio:
    es la única parte de la app que le habla al profesor y no al estudiante, y
    conviene que se note que es otra cosa. */

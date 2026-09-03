@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v663-vista-del-curso';
+const URBIS_CACHE = 'urbis-v664-el-lote';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -80,6 +80,11 @@
        de fichas: las fichas se releen del almacenamiento cada vez, así que si
        una se borra la comparación se entera sola. */
     cotejo: [],
+    /* El LOTE: el polígono chico que la estudiante quiere intervenir, dentro
+       del sector. Es otra cosa que el área: el área es «qué hay alrededor»,
+       el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
+       tiene su propio análisis. */
+    lote: null, loteDibujando: false, loteAviso: '',
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -345,6 +350,15 @@
          pocos nombres. Guardar las cuatro listas enteras duplicaría todos los
          puntos del sector dentro de la ficha, y lo que se lee después son las
          cifras. */
+      /* El lote va con la ficha: es la mitad del trabajo. Sin él, reabrir un
+         sector guardado devuelve el análisis del entorno y pierde el terreno
+         que la estudiante ya había marcado. */
+      lote: (S.lote && S.lote.length >= 3)
+        ? S.lote.map(function (q) { return { lat: q.lat, lng: q.lng }; })
+        : null,
+      loteAnalisis: (function () {
+        try { return analisisDelLote(); } catch (e) { return null; }
+      })(),
       campo: S.campo ? {
         nuevos: (S.campo.nuevos || []).slice(0, 20).map(function (x) {
           return { lat: x.lat, lng: x.lng, nombre: x.nombre || '', grupo: x.grupo || 'otro',
@@ -855,6 +869,33 @@
       'que está dentro del área y lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
   }
 
+  function loteImpresoIntervenir(a) {
+    if (!a) return '';
+    return '<h2>El lote a intervenir</h2><table>' +
+      '<tr><td>Área</td><td class="n">' + Number(a.areaM2).toLocaleString('es-CO') + ' m²</td></tr>' +
+      '<tr><td>Perímetro</td><td class="n">' + a.perimetroM + ' m</td></tr>' +
+      '<tr><td>Esquinas</td><td class="n">' + a.esquinas + '</td></tr>' +
+      (a.frentes || []).map(function (f) {
+        return '<tr><td>Frente sobre ' + esc(f.via) + '</td><td class="n">' + f.metros + ' m</td></tr>';
+      }).join('') +
+      (a.sinFrenteM
+        ? '<tr><td>Sin frente a calle registrada</td><td class="n">' + a.sinFrenteM + ' m</td></tr>'
+        : '') +
+      (a.lados || []).map(function (l) {
+        return '<tr><td>Lado ' + l.i + (l.via ? ' · ' + esc(l.via) : '') + '</td><td class="n">' +
+          l.largoM + ' m · mira al ' + esc((l.mira && l.mira.nombre) || '—') + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      (a.critica
+        ? '<p class="pie">La fachada que se calienta es el lado ' + a.critica.i +
+          (a.critica.via ? ' (' + esc(a.critica.via) + ')' : '') + ', que mira al ' +
+          esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') + ': en el trópico el sol de ' +
+          'la tarde entra casi horizontal por ahí.</p>'
+        : '') +
+      '<p class="pie">' + (a.esquinero ? 'Lote esquinero. ' : 'Lote medianero. ') +
+      a.nVecinos + ' usos registrados a menos de 200 m del centro del lote, en línea recta.</p>';
+  }
+
   function campoImpreso(c) {
     if (!c) return '';
     var nv = (c.nuevos || []).length, ds = (c.discrepancias || []).length;
@@ -1033,6 +1074,9 @@
     var st = res.stats || {}, meta = res.meta || {};
     var ubic = res.ubicacion || o.ubicacion || null;
     var cmp = o.campo !== undefined ? o.campo : S.campo;
+    var lote = o.lote !== undefined ? o.lote : S.lote;
+    var loteA = o.loteAnalisis !== undefined ? o.loteAnalisis
+              : (function () { try { return analisisDelLote(); } catch (e) { return null; } })();
     var ter = o.terreno !== undefined ? o.terreno : S.terreno;
     var cli = o.clima !== undefined ? o.clima : S.clima;
     var trz = o.trazado !== undefined ? o.trazado : S.trazado;
@@ -1076,6 +1120,9 @@
             return { lat: p.lat, lng: p.lng, color: p.color || COL[p.grupo] || null };
           }),
           huellas: huellas || null,
+          // El lote va encima del plano: es la pieza que la lámina tiene que
+          // señalar con el dedo.
+          lote: (lote && lote.length >= 3) ? lote : null,
           // Lo que el curso encontró y no estaba: en rombo, para que se
           // distinga del resto incluso impreso en blanco y negro.
           destacados: (cmp && cmp.nuevos ? cmp.nuevos : []).map(function (n3) {
@@ -1171,6 +1218,7 @@
       '.cv i{ width:2.6mm; height:2.6mm; border-radius:50%; display:inline-block }' +
       '.cv i.rombo{ border-radius:0; transform:rotate(45deg); background:#34CCFE;' +
         'box-shadow:0 0 0 .25mm #0F1F2E }' +
+      '.cv i.lote{ border-radius:0; background:#FFD54F; box-shadow:0 0 0 .35mm #7A5901 }' +
       '.cv b{ color:#0F1F2E }' +
       // Cifras grandes
       '.kpis{ display:flex; gap:5mm; flex-wrap:wrap }' +
@@ -1262,6 +1310,7 @@
                 ? '<span class="cv"><i class="rombo"></i>Encontrado por el curso <b>' +
                   cmp.nuevos.length + '</b></span>'
                 : '') +
+              (loteA ? '<span class="cv"><i class="lote"></i>El lote a intervenir</span>' : '') +
               '</div>'
             : '') +
           (huellas && huellas.length
@@ -1285,6 +1334,27 @@
           (st.estrato && st.estrato.predominante
             ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : ''),
           'g2') +
+
+        caja('El lote a intervenir',
+          (function () {
+            if (!loteA) return '';
+            return '<div class="kpis">' +
+                '<div class="k"><b>' + Number(loteA.areaM2).toLocaleString('es-CO') + '</b><small>m² de lote</small></div>' +
+                '<div class="k"><b>' + loteA.perimetroM + '</b><small>m de perímetro</small></div>' +
+              '</div>' +
+              (loteA.frentes || []).map(function (f) {
+                return fila('Frente sobre ' + f.via, f.metros + ' m');
+              }).join('') +
+              (loteA.sinFrenteM ? fila('Sin frente a calle registrada', loteA.sinFrenteM + ' m') : '') +
+              (loteA.critica
+                ? '<p class="lee">La fachada que se calienta es el lado ' + loteA.critica.i +
+                  (loteA.critica.via ? ' (' + esc(loteA.critica.via) + ')' : '') + ', que mira al ' +
+                  esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '.</p>'
+                : '') +
+              '<p class="nota">' + (loteA.esquinero ? 'Lote esquinero: da a ' + loteA.frentes.length +
+                ' calles. ' : 'Lote medianero: un solo frente. ') +
+              loteA.nVecinos + ' usos registrados a menos de 200 m.</p>';
+          })(), 'g2') +
 
         caja('Qué hay, por categoría',
           (function () {
@@ -1601,6 +1671,8 @@
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
       }) + '</table>' +
+      loteImpresoIntervenir(o.loteAnalisis !== undefined ? o.loteAnalisis
+        : (function () { try { return analisisDelLote(); } catch (e) { return null; } })()) +
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
@@ -1791,6 +1863,8 @@
         abrirImpresion(laminaImprimible(S.resultado), function (m) { S.aviso = m; pintar(); });
         return;
       }
+      if (acc === 'lote-dibujar') { iniciarLote(); return; }
+      if (acc === 'lote-borrar') { cancelarLote(); return; }
       if (acc === 'campo') { analizarCampo(); return; }
       if (acc === 'osm') {
         if (!S.campo) return;
@@ -2155,7 +2229,10 @@
        raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
        el botón y no pasaba nada visible. */
     var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos;
-    var encoger = S.encogida && !S.comparacion && (!S.resultado || hayCapa);
+    /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
+       esquinas de un terreno sobre un mapa tapado por un panel. */
+    var encoger = S.loteDibujando ||
+                  (S.encogida && !S.comparacion && (!S.resultado || hayCapa));
     h.classList.toggle('pcr-encogida', encoger);
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
     // hoja se quedaba con la clase de encogida y el contenido entero dentro
@@ -4638,6 +4715,437 @@
     return l.join('\n');
   }
 
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // EL LOTE
+  // El área dice qué hay alrededor. El lote dice dónde se va a proponer algo.
+  // Son dos preguntas distintas y por eso son dos dibujos distintos: el sector
+  // en celeste, el lote en amarillo, y cada uno con su análisis.
+  // ═══════════════════════════════════════════════════════════════════════
+  var capaLote = null;
+  var clickLote = null;
+
+  function pintarLote() {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return;
+    if (capaLote) { try { m.removeLayer(capaLote); } catch (e) {} capaLote = null; }
+    var pts = S.lote || [];
+    if (!pts.length) return;
+
+    capaLote = L.layerGroup();
+    /* Amarillo, y con relleno bajo: encima va a haber puntos de usos y a
+       veces las huellas de los edificios. Un amarillo opaco taparía justo lo
+       que hay que ver dentro del lote. */
+    var estilo = { color: '#B8860B', weight: 3, opacity: 1,
+                   fillColor: '#FFD54F', fillOpacity: 0.28 };
+    try {
+      if (pts.length >= 3) {
+        L.polygon(pts.map(function (p) { return [p.lat, p.lng]; }), estilo).addTo(capaLote);
+      } else if (pts.length === 2) {
+        L.polyline(pts.map(function (p) { return [p.lat, p.lng]; }),
+          { color: '#B8860B', weight: 3, dashArray: '6 4' }).addTo(capaLote);
+      }
+      // Las esquinas, para poder ver dónde se tocó y volver atrás con criterio.
+      pts.forEach(function (p, i) {
+        L.circleMarker([p.lat, p.lng], {
+          radius: i === 0 && S.loteDibujando ? 8 : 5,
+          color: '#7A5901', weight: 2, fillColor: '#FFD54F', fillOpacity: 1
+        }).addTo(capaLote);
+      });
+    } catch (e) {}
+    capaLote.addTo(m);
+    try { if (capaLote.bringToFront) capaLote.bringToFront(); } catch (e) {}
+  }
+
+  function iniciarLote() {
+    var m = mapa();
+    if (!m) { S.loteAviso = 'El mapa todavía no está listo.'; pintar(); return; }
+    S.lote = []; S.loteDibujando = true; S.loteAviso = '';
+    /* Acercar antes de dibujar. A la escala en que se ve un sector entero, un
+       lote de veinte metros mide diez píxeles: no se puede marcar una esquina
+       con el dedo y, peor, la cuarta esquina cae tan cerca de la primera que
+       cierra el lote sola antes de tiempo. Se acerca a 18, que es la escala a
+       la que una manzana ocupa la pantalla. */
+    try {
+      if (m.getZoom && m.getZoom() < 18) m.setZoom(18);
+    } catch (e) {}
+    pintarLote();
+    // La hoja se encoge sola: no se puede dibujar sobre un mapa tapado.
+    S.encogida = true;
+    if (!clickLote) {
+      clickLote = function (ev) {
+        if (!S.loteDibujando || !ev || !ev.latlng) return;
+        agregarPuntoLote(ev.latlng.lat, ev.latlng.lng);
+      };
+    }
+    try { m.on('click', clickLote); } catch (e) {}
+    try { m.getContainer().style.cursor = 'crosshair'; } catch (e) {}
+    pintar(); pintarBarraLote();
+  }
+
+  function agregarPuntoLote(lat, lng) {
+    if (!S.loteDibujando) return;
+    var pts = S.lote || (S.lote = []);
+    /* Tocar cerca del primer vértice cierra el lote. Se mide en PÍXELES y no
+       en metros: con el dedo, lo que la persona percibe es la distancia en
+       pantalla, y a poco zoom veinte metros son un punto. */
+    if (pts.length >= 3) {
+      try {
+        var m = mapa();
+        var a = m.latLngToContainerPoint(pts[0]);
+        var b = m.latLngToContainerPoint({ lat: lat, lng: lng });
+        if (Math.hypot(a.x - b.x, a.y - b.y) <= 26) { cerrarLote(); return; }
+      } catch (e) {}
+    }
+    pts.push({ lat: lat, lng: lng });
+    pintarLote(); pintarBarraLote();
+  }
+
+  function deshacerLote() {
+    if (!S.loteDibujando || !S.lote || !S.lote.length) return;
+    S.lote.pop();
+    pintarLote(); pintarBarraLote();
+  }
+
+  function cancelarLote() {
+    S.lote = null; S.loteDibujando = false; S.loteAviso = '';
+    soltarMapaLote();
+    pintarLote(); pintar(); pintarBarraLote();
+  }
+
+  function cerrarLote() {
+    if (!S.lote || S.lote.length < 3) {
+      S.loteAviso = 'Un lote necesita al menos tres esquinas.';
+      pintarBarraLote(); return;
+    }
+    S.loteDibujando = false;
+    soltarMapaLote();
+    /* Si el lote quedó fuera del sector no se bloquea —a lo mejor el sector
+       se dibujó chico— pero se dice: un lote afuera no tiene alrededor
+       analizado, y entonces la mitad de su ficha estaría vacía sin que se
+       entienda por qué. */
+    S.loteAviso = loteDentroDelArea() ? ''
+      : 'El lote quedó fuera del área analizada: lo que tiene alrededor no está medido.';
+    S.encogida = false;
+    pintarLote(); pintar(); pintarBarraLote();
+  }
+
+  function soltarMapaLote() {
+    var m = mapa();
+    if (m && clickLote) { try { m.off('click', clickLote); } catch (e) {} }
+    try { if (m) m.getContainer().style.cursor = ''; } catch (e) {}
+  }
+
+  function loteDentroDelArea() {
+    var pts = S.lote || [];
+    if (!pts.length) return false;
+    var meta = (S.resultado && S.resultado.meta) || {};
+    var c = centroideDe(pts);
+    if (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3) {
+      var A = window.URBIS_PC_ANALISIS;
+      if (!A || typeof A.dentroDelPoligono !== 'function') return true;
+      return A.dentroDelPoligono(c.lat, c.lng, meta.poligono);
+    }
+    if (meta.lat == null) return true;
+    return haversineM(c, { lat: meta.lat, lng: meta.lng }) <= (meta.radioM || 0);
+  }
+
+  /* La barra de dibujo. Va fija abajo y fuera de la hoja porque mientras se
+     dibuja la hoja está encogida: los botones tienen que estar donde el pulgar
+     ya está, no dentro de un panel que hay que volver a abrir. */
+  function pintarBarraLote() {
+    var el = document.getElementById('pcr-lote-barra');
+    if (!S.loteDibujando) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pcr-lote-barra';
+      el.className = 'pcr-lote-barra';
+      document.body.appendChild(el);
+      el.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-lote]');
+        if (!b) return;
+        var a = b.getAttribute('data-lote');
+        if (a === 'deshacer') deshacerLote();
+        else if (a === 'cerrar') cerrarLote();
+        else if (a === 'cancelar') cancelarLote();
+      });
+    }
+    var n = (S.lote || []).length;
+    el.innerHTML =
+      '<div class="pcr-lote-t">' +
+        (n === 0 ? 'Tocá las esquinas del lote'
+                 : n < 3 ? 'Seguí tocando: llevás ' + n + ' esquina' + (n === 1 ? '' : 's')
+                         : 'Llevás ' + n + ' esquinas. Tocá la primera para cerrar.') +
+      '</div>' +
+      '<div class="pcr-lote-b">' +
+        '<button type="button" data-lote="deshacer"' + (n ? '' : ' disabled') + '>' +
+          ico('deshacer', 16) + 'Deshacer</button>' +
+        '<button type="button" data-lote="cerrar" class="pcr-lote-ok"' + (n >= 3 ? '' : ' disabled') + '>' +
+          ico('ok', 16) + 'Listo</button>' +
+        '<button type="button" data-lote="cancelar">' + ico('cerrar', 16) + 'Cancelar</button>' +
+      '</div>' +
+      (S.loteAviso ? '<div class="pcr-lote-aviso">' + esc(S.loteAviso) + '</div>' : '');
+  }
+
+
+  /* ── El análisis del lote ──────────────────────────────────────────────
+     No consulta NADA. Todo sale de lo que ya se trajo para el sector: los
+     usos del análisis, la forma de las calles del trazado, la geometría del
+     propio lote y el sol, que es pura cuenta. Por eso es instantáneo — y por
+     eso el bloque avisa cuando algo falta porque no se midió, en vez de
+     ponerse a pedirlo por su cuenta.
+
+     Lo que responde es lo que una estudiante necesita antes de proponer algo:
+     cuánto mide, a qué calles da y cuántos metros de frente sobre cada una,
+     hacia dónde mira cada frente —que decide cuál se calienta— y qué tiene
+     pegado al lado. */
+  function analisisDelLote() {
+    var pts = S.lote || [];
+    if (pts.length < 3) return null;
+    var meta = (S.resultado && S.resultado.meta) || {};
+    var centro = centroideDe(pts);
+    var areaM2 = areaM2De(pts);
+
+    // ── Los lados, con su largo y su rumbo
+    var lados = [];
+    var perim = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var a = pts[i], b = pts[(i + 1) % pts.length];
+      var largo = haversineM(a, b);
+      if (largo < 0.5) continue;
+      perim += largo;
+      /* El rumbo del lado dobla a 0-180°: un lado no tiene ida y vuelta. Pero
+         para saber hacia dónde MIRA el frente hace falta la normal, y esa sí
+         tiene sentido: apunta hacia afuera del lote. */
+      var rumbo = rumboDe(a, b);
+      var medio = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
+      var haciaAfuera = (rumboDe(centro, medio) + 360) % 360;
+      lados.push({ i: lados.length + 1, a: a, b: b, medio: medio,
+                   largoM: Math.round(largo), rumbo: rumbo, mira: haciaAfuera });
+    }
+    if (!lados.length) return null;
+
+    // ── ¿A qué calle da cada lado?
+    var vias = S.trzVias || [];
+    lados.forEach(function (l) {
+      var mejor = null, mejorD = Infinity;
+      vias.forEach(function (v) {
+        for (var k = 1; k < v.pts.length; k++) {
+          var cerca = distanciaASegmento(l.medio, v.pts[k - 1], v.pts[k]);
+          /* Treinta metros: más lejos ya no es «el frente da a esa calle»,
+             es otra calle de la cuadra. */
+          if (cerca.d > 30 || cerca.d >= mejorD) continue;
+          // Y que el lado y la calle sean más o menos paralelos (±30°): si no,
+          // la calle que pasa perpendicular por la esquina se llevaría todos
+          // los frentes.
+          var rv = rumboDe(v.pts[k - 1], v.pts[k]);
+          var dif = Math.abs(((l.rumbo - rv + 180) % 180));
+          if (Math.min(dif, 180 - dif) > 30) continue;
+          /* Y —esto es lo que costó descubrir— que la calle esté del lado de
+             AFUERA. En un lote de veinte metros de fondo, la calle del frente
+             queda a menos de treinta metros también del lado de atrás, y sin
+             esta comprobación el fondo se anotaba como un segundo frente sobre
+             la misma calle: el lote decía tener ochenta metros de frente
+             cuando tiene cuarenta. */
+          var haciaLaVia = rumboDe(l.medio, cerca.p);
+          // Diferencia angular en [0,180]: 0 es «la calle está justo hacia
+          // donde mira el lado», 180 es «está a la espalda».
+          var giro = Math.abs(((haciaLaVia - l.mira + 540) % 360) - 180);
+          if (giro > 80) continue;
+          mejorD = cerca.d; mejor = v;
+        }
+      });
+      if (mejor) {
+        l.via = mejor.nombre || '';
+        l.viaClase = mejor.clase || '';
+        l.viaDistM = Math.round(mejorD);
+      }
+    });
+
+    // ── Los frentes, agrupados por calle
+    var porVia = {};
+    lados.forEach(function (l) {
+      if (!l.via) return;
+      var f = porVia[l.via] || (porVia[l.via] = { via: l.via, clase: l.viaClase, metros: 0, lados: [] });
+      f.metros += l.largoM;
+      f.lados.push(l.i);
+    });
+    var frentes = Object.keys(porVia).map(function (k) { return porVia[k]; })
+      .sort(function (x, y) { return y.metros - x.metros; });
+    var sinFrente = lados.filter(function (l) { return !l.via; })
+      .reduce(function (n, l) { return n + l.largoM; }, 0);
+
+    // ── Qué tiene al lado
+    var pois = ((S.resultado && S.resultado.pois) || []).map(function (p) {
+      return { nombre: p.nombre || '', grupo: p.grupo || 'otro', sub: p.sub || '',
+               distM: Math.round(haversineM(centro, { lat: p.lat, lng: p.lng })) };
+    }).filter(function (p) { return p.distM <= 200; })
+      .sort(function (a, b) { return a.distM - b.distM; });
+
+    // ── El sol sobre este lote
+    var SOL = window.URBIS_SOLAR, sol = null;
+    try {
+      if (SOL && centro.lat != null) sol = SOL.dia(new Date(), centro.lat, centro.lng);
+    } catch (e) { sol = null; }
+    /* La fachada que se calienta: la que mira más al occidente. En el trópico
+       el sol de la tarde entra casi horizontal por ahí, y es el que recalienta
+       —al mediodía está tan alto que la fachada apenas lo recibe. */
+    var critica = null, mejorOcc = -1;
+    lados.forEach(function (l) {
+      var d = Math.abs(((l.mira - 270 + 540) % 360) - 180);
+      var cerca = 180 - d;
+      if (cerca > mejorOcc) { mejorOcc = cerca; critica = l; }
+    });
+
+    return {
+      areaM2: Math.round(areaM2),
+      perimetroM: Math.round(perim),
+      esquinas: pts.length,
+      lados: lados.map(function (l) {
+        return { i: l.i, largoM: l.largoM, mira: rumboDe360(l.mira),
+                 via: l.via || '', clase: l.viaClase || '' };
+      }),
+      frentes: frentes,
+      sinFrenteM: Math.round(sinFrente),
+      esquinero: frentes.length >= 2,
+      vecinos: pois.slice(0, 12),
+      nVecinos: pois.length,
+      sol: sol,
+      critica: critica ? { i: critica.i, largoM: critica.largoM,
+                           mira: rumboDe360(critica.mira), via: critica.via || '' } : null,
+      dentro: loteDentroDelArea(),
+      hayVias: vias.length > 0,
+      centro: centro
+    };
+  }
+
+  /* Distancia de un punto a un segmento, en metros. Se proyecta a un plano
+     local —a esta escala el error es de centímetros— porque hacerlo sobre la
+     esfera para comparar treinta metros es traer un teodolito a medir una
+     mesa. */
+  function distanciaASegmento(p, a, b) {
+    var rad = Math.PI / 180;
+    var kx = Math.cos(p.lat * rad) * 111320, ky = 110540;
+    var px = (p.lng - a.lng) * kx, py = (p.lat - a.lat) * ky;
+    var bx = (b.lng - a.lng) * kx, by = (b.lat - a.lat) * ky;
+    var len2 = bx * bx + by * by;
+    if (!len2) return { d: Math.hypot(px, py), p: a };
+    var t = Math.max(0, Math.min(1, (px * bx + py * by) / len2));
+    return {
+      d: Math.hypot(px - t * bx, py - t * by),
+      p: { lat: a.lat + (b.lat - a.lat) * t, lng: a.lng + (b.lng - a.lng) * t }
+    };
+  }
+
+  /* `preA` es el análisis ya calculado que trae una ficha guardada. Se guarda
+     hecho y no se recalcula porque para rehacerlo harían falta la forma de
+     todas las calles del sector, y eso son dos mil geometrías que no tiene
+     sentido meter dentro de una ficha: el resultado ocupa veinte líneas. */
+  function bloqueLoteIntervenir(preA, soloLectura) {
+    // Sin sector analizado el lote no tiene contra qué leerse: se oculta el
+    // lápiz entero en vez de ofrecerlo y dar un análisis vacío.
+    if (!preA && !S.resultado) return '';
+    var a = preA || analisisDelLote();
+    if (!a) {
+      return h4('area', 'El lote a intervenir') +
+        '<p class="pcr-pista">El área dice <b>qué hay alrededor</b>. El lote dice <b>dónde vas a ' +
+        'proponer algo</b>. Marcalo y sale su propio análisis: cuánto mide, a qué calles da, ' +
+        'cuántos metros de frente sobre cada una, hacia dónde mira cada fachada y qué tiene pegado ' +
+        'al lado.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-llevar-b pcr-lote-btn">' +
+            ico('lapiz') + 'Marcar el lote</button>' +
+        '</div>' +
+        (S.loteAviso ? '<p class="pcr-error">' + esc(S.loteAviso) + '</p>' : '');
+    }
+
+    /* Ojo con las horas: en la ficha viva son objetos Date, pero una ficha
+       guardada pasó por JSON y vuelven como texto. Llamarles
+       toLocaleTimeString a un texto revienta, y como esto se pinta dentro del
+       informe guardado, la pestaña entera se quedaba sin abrir sin decir por
+       qué. Se acepta cualquiera de las dos formas. */
+    var hh = function (x) {
+      if (!x) return '—';
+      var d = (x instanceof Date) ? x : new Date(x);
+      return isNaN(d.getTime()) ? '—'
+        : d.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+    };
+    return h4('area', 'El lote a intervenir') +
+      (a.dentro ? '' : '<p class="pcr-error">' + esc(S.loteAviso || 'El lote quedó fuera del área analizada.') + '</p>') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + formatearM2(a.areaM2).replace(' m²', '') + '</b><small>m² de lote</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.perimetroM + '</b><small>m de perímetro</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.esquinas + '</b><small>esquinas</small></div>' +
+      '</div>' +
+
+      (a.frentes.length
+        ? '<p class="pcr-lab">Sus frentes</p>' +
+          a.frentes.map(function (f) {
+            return '<div class="pcr-lote-fila"><span>' + esc(f.via) + '</span><b>' +
+              f.metros + ' m de frente</b></div>';
+          }).join('') +
+          (a.sinFrenteM
+            ? '<p class="pcr-pista">Otros <b>' + a.sinFrenteM + ' m</b> del perímetro no dan a ninguna ' +
+              'calle registrada: son medianeros, o la calle no está mapeada.</p>'
+            : '') +
+          (a.esquinero
+            ? '<p class="pcr-conc">Es un <b>lote esquinero</b>: da a ' + a.frentes.length +
+              ' calles. Dos frentes es el doble de fachada útil y el doble de ruido.</p>'
+            : '<p class="pcr-conc">Es un lote <b>medianero</b>: un solo frente a la calle.</p>')
+        : (a.hayVias
+            ? '<p class="pcr-pista">Ningún lado del lote quedó a menos de 30 m de una calle con forma ' +
+              'registrada. Puede ser un interior de manzana, o que las calles de alrededor no estén ' +
+              'mapeadas.</p>'
+            : '<p class="pcr-pista">Para saber a qué calles da el lote hace falta <b>medir el trazado ' +
+              'del sector</b> primero: es de ahí de donde salen la forma y el nombre de las calles.</p>')) +
+
+      '<p class="pcr-lab">Sus lados, uno por uno</p>' +
+      a.lados.map(function (l) {
+        return '<div class="pcr-lote-fila"><span>Lado ' + l.i +
+          (l.via ? ' · ' + esc(l.via) : '') + '</span><b>' + l.largoM + ' m · mira al ' +
+          esc((l.mira && l.mira.nombre) || '—') + '</b></div>';
+      }).join('') +
+
+      (a.critica
+        ? '<p class="pcr-conc">La fachada que se calienta es el <b>lado ' + a.critica.i + '</b>' +
+          (a.critica.via ? ' (' + esc(a.critica.via) + ')' : '') + ', que mira al ' +
+          esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') + ': en el trópico el sol de la ' +
+          'tarde entra casi horizontal por ahí. Al mediodía está tan alto que la fachada apenas lo ' +
+          'recibe — el problema del mediodía es la cubierta.</p>'
+        : '') +
+      (a.sol && a.sol.salida
+        ? '<p class="pcr-pista">Hoy sobre este lote: sale a las ' + esc(hh(a.sol.salida)) +
+          ', se pone a las ' + esc(hh(a.sol.puesta)) + ', y al mediodía llega a ' +
+          a.sol.alturaMaxima + '°.</p>'
+        : '') +
+
+      (a.vecinos.length
+        ? '<p class="pcr-lab">Qué tiene pegado al lado</p>' +
+          a.vecinos.slice(0, 8).map(function (v) {
+            return '<div class="pcr-lote-fila"><span>' + esc(v.nombre || nombreGrupo(v.grupo)) +
+              '</span><b>a ' + v.distM + ' m</b></div>';
+          }).join('') +
+          '<p class="pcr-pista">' + a.nVecinos + ' usos registrados a menos de 200 m del centro del ' +
+          'lote. Medido en línea recta desde el centro, no desde la puerta.</p>'
+        : '<p class="pcr-pista">No hay usos registrados a menos de 200 m del lote. Puede ser un borde ' +
+          'de ciudad, o una cuadra sin mapear: eso se resuelve caminándola.</p>') +
+
+      (S.terreno
+        ? '<p class="pcr-pista">El terreno del sector se midió con un modelo de <b>90 m de paso</b>. ' +
+          'Para un lote de este tamaño eso da una cota, no una pendiente: la pendiente del lote se ' +
+          'mide en el sitio, con nivel o con manguera.</p>'
+        : '') +
+
+      (soloLectura
+        ? ''
+        : '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-llevar-b">' +
+              ico('lapiz') + 'Volver a marcarlo</button>' +
+            '<button type="button" data-pcr="lote-borrar" class="pcr-mini">' +
+              ico('borrar', 16) + 'Quitar el lote</button>' +
+          '</div>');
+  }
+
   function bloqueMovilidad(st) {
     var mv = st.movilidad;
     if (!mv) return '';
@@ -5128,6 +5636,26 @@
             return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
           });
         });
+      /* Las vías, con su nombre y su forma. Son lo que le permite al lote
+         decir «frente de 24 m sobre la Avenida 3» en vez de «un lado de 24
+         m»: sin la geometría de la calle, un lote es un polígono en el aire.
+         Se guardan acá porque ya llegaron; pedirlas otra vez para el lote
+         sería cobrar dos veces la misma consulta. */
+      S.trzVias = (elementos || [])
+        .filter(function (el) {
+          var t = el && el.tags;
+          return t && t.highway && Array.isArray(el.geometry) && el.geometry.length >= 2;
+        })
+        .slice(0, 2000)
+        .map(function (el) {
+          return {
+            nombre: (el.tags.name || '').trim(),
+            clase: el.tags.highway,
+            pts: el.geometry.map(function (p) {
+              return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
+            })
+          };
+        });
       var peticion = { elementos: elementos || [] };
       if (esPol) {
         peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
@@ -5480,6 +6008,7 @@
         // sector: qué uso manda, cómo se llega, qué lo rodea y dónde está la
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
+        bloqueLoteIntervenir() +
         bloqueAlturas(st) +
         bloqueTerreno() +
         bloqueClima() +
@@ -6033,6 +6562,10 @@
          otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
          meses después, cuando los datos ya no se pueden creer. */
       S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
+      S.trzVias = null;
+      // El lote pertenece al sector que se estaba mirando. Con otro sector es
+      // un polígono huérfano flotando en un mapa que ya no es el suyo.
+      S.lote = null; S.loteDibujando = false; pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; pintarLlenos(false);
     }
@@ -6132,6 +6665,7 @@
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
     var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima, cmpAntes = S.campo;
+    var loteAntes = S.lote;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -6174,13 +6708,16 @@
         S.terreno = f.terreno || null;
         S.clima = f.clima || null;
         S.campo = f.campo || null;
+        S.lote = f.lote || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
                    (f.trazado ? bloquePerfil() : '') +
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
+                   (f.loteAnalisis ? bloqueLoteIntervenir(f.loteAnalisis, true) : '') +
                    (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
+        S.lote = loteAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -6462,7 +6999,8 @@
                                    // El trazado y el terreno de ESTA ficha, no los del
                                    // último sector medido.
                                    trazado: f.trazado || null, terreno: f.terreno || null,
-                                   clima: f.clima || null });
+                                   clima: f.clima || null,
+                                   loteAnalisis: f.loteAnalisis || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
@@ -6515,7 +7053,8 @@
         laminaImprimible(comoResultado(f), {
           nombre: f.nombre || '',
           trazado: f.trazado || null, terreno: f.terreno || null,
-          clima: f.clima || null, campo: f.campo || null, huellas: null
+          clima: f.clima || null, campo: f.campo || null, huellas: null,
+          lote: f.lote || null, loteAnalisis: f.loteAnalisis || null
         }),
         function (m) { S.avisoPestana = m; repintar(); });
       return true;

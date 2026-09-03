@@ -885,6 +885,16 @@
       }).join('') + '</g>';
     }
 
+    /* El LOTE, si lo hay: el polígono chico que se va a intervenir. Va encima
+       de todo y en amarillo, que es su color en el mapa. Es lo único del plano
+       que no es un dato traído: es la decisión de quien lo dibujó. */
+    let lote = '';
+    if (Array.isArray(o.lote) && o.lote.length >= 3) {
+      const d = o.lote.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
+      lote = '<path d="' + d + '" fill="#FFD54F" fill-opacity=".45" stroke="#7A5901" ' +
+             'stroke-width="2" stroke-linejoin="round"/>';
+    }
+
     // La forma.
     let figura = '';
     if (pts) {
@@ -936,7 +946,7 @@
       'role="img" aria-label="' + (o.etiqueta || 'Forma del área') + '">' +
       '<rect width="' + W + '" height="' + H + '" rx="8" fill="#F3F8FB"/>' +
       '<path d="' + rejilla + '" stroke="#E1EAF1" stroke-width="1"/>' +
-      dentro + figura + escala + norte + '</svg>';
+      dentro + figura + lote + escala + norte + '</svg>';
   }
 
   // Cuánto hace: para la fecha de una tarjeta, en palabras.
