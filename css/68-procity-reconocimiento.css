@@ -812,3 +812,50 @@
    scroll se aplastan a cero si no se les dice que no. */
 .pcr-hoja .pcr-rubros, .pcr-hoja .pcr-rubro, .pcr-hoja .pcr-anillo,
 .pcr-pestana .pcr-rubros, .pcr-pestana .pcr-rubro, .pcr-pestana .pcr-anillo{ flex:0 0 auto; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   El plan de la salida
+   ══════════════════════════════════════════════════════════════════════
+   Se lee como un reparto, no como un párrafo: cada grupo es una tarjeta con
+   su rumbo arriba y su encargo debajo. Los rumbos SIN datos van marcados en
+   dorado, porque son los que valen doble: ahí todo lo que se levante es
+   información que no existía. */
+.pcr-plan{ display:flex; flex-direction:column; gap:8px; }
+.pcr-tarea{
+  border:1px solid #e2ebf2; border-left:3px solid #34CCFE; border-radius:10px;
+  background:#fbfdff; padding:9px 11px; flex:0 0 auto;
+}
+.pcr-tarea-nueva{ border-left-color:#eab308; background:#fffdf3; }
+.pcr-tarea-cab{
+  display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+}
+.pcr-tarea-cab b{
+  font-size:.85rem;
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-tarea-rumbo{
+  font-size:.74rem; font-weight:700;
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-tarea-que{
+  margin:4px 0 0; font-size:.78rem; line-height:1.45;
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-tarea-pista{
+  display:block; margin-top:3px; font-size:.7rem; line-height:1.4;
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+.pcr-hoja .pcr-tarea-cab b, .pcr-pestana .pcr-tarea-cab b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-tarea-rumbo, .pcr-pestana .pcr-tarea-rumbo{
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-hoja .pcr-tarea-que, .pcr-pestana .pcr-tarea-que{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-hoja .pcr-tarea-pista, .pcr-pestana .pcr-tarea-pista{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+.pcr-hoja .pcr-plan, .pcr-hoja .pcr-tarea,
+.pcr-pestana .pcr-plan, .pcr-pestana .pcr-tarea{ flex:0 0 auto; }

@@ -86,7 +86,9 @@
     pestanaAbierta: '',
     avisoPestana: '',
     // Qué capa de calor está encendida desde la pestaña, y de qué ficha.
-    calorGuardado: { ficha: '', cal: '' }
+    calorGuardado: { ficha: '', cal: '' },
+    // En cuántos grupos sale el curso. Cuatro es lo típico de un curso de 30.
+    grupos: 4
   };
 
   function esc(s) {
@@ -230,8 +232,10 @@
       // volver a consultar la red.
       stats: statsLigero(st),
       zonas: zonas ? {
-        vacios: (zonas.vacios || []).map(function (r) { return { nombre: r.nombre }; }),
-        flojos: (zonas.flojos || []).map(function (f) { return { nombre: f.rumbo.nombre, n: f.n }; }),
+        vacios: (zonas.vacios || []).map(function (r) { return { id: r.id, nombre: r.nombre }; }),
+        flojos: (zonas.flojos || []).map(function (f) {
+          return { id: f.rumbo.id, nombre: f.rumbo.nombre, n: f.n };
+        }),
         total: zonas.total,
         concentracion: zonas.concentracion
           ? { nombre: zonas.concentracion.rumbo.nombre, n: zonas.concentracion.n, pct: zonas.concentracion.pct }
@@ -510,6 +514,28 @@
      informe de viabilidad: aquel responde «¿me conviene?» y este responde
      «¿qué hay?». Meter la ficha en aquella plantilla haría que un
      reconocimiento pareciera un estudio de mercado. */
+  function planImpreso(res, zonas) {
+    var plan;
+    try { plan = repartirTrabajo(res, zonas, S.grupos || 4); } catch (e) { return ''; }
+    if (!plan || !plan.length) return '';
+    return '<h2>El plan de la salida (' + plan.length + ' grupos)</h2>' +
+      '<table class="plan">' + plan.map(function (a) {
+        return '<tr><td class="g"><b>' + esc(a.nombre) + '</b><br><span>al ' + esc(a.rumbo.nombre) +
+          (a.franja !== 'toda la franja' ? '<br>' + esc(a.franja) : '') + '</span></td>' +
+          '<td>' + esc(a.encargo) + (a.pista ? '<br><em>' + esc(a.pista) + '</em>' : '') + '</td></tr>';
+      }).join('') + '</table>';
+  }
+
+  function listaImpresa(st) {
+    var rubros = (st.rubros || []).filter(function (r) { return r.n > 0 && (r.ejemplos || []).length; });
+    if (!rubros.length) return '';
+    return '<h2>La lista para verificar (con nombre)</h2><ul class="check">' +
+      rubros.slice(0, 12).map(function (r) {
+        return '<li><b>' + esc(r.nombre) + '</b> (' + r.n + '): ' +
+          esc(r.ejemplos.join(', ')) + '</li>';
+      }).join('') + '</ul>';
+  }
+
   function htmlImprimible(res, zonas) {
     var st = res.stats || {}, meta = res.meta || {};
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
@@ -553,6 +579,11 @@
       '.check{margin:0;padding-left:18px;list-style:none}' +
       '.check li{margin-bottom:7px}' +
       '.check li:before{content:"☐  ";color:#9aa7b4}' +
+      'table.plan{max-width:none;margin-top:4px}' +
+      'table.plan td{vertical-align:top;padding:7px 10px 7px 0;border-bottom:1px solid #eef2f6}' +
+      'table.plan td.g{width:110px}' +
+      'table.plan td.g span{color:#5a6472;font-size:11.5px}' +
+      'table.plan em{color:#5a6472;font-style:normal;font-size:11.5px}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       '</style></head><body>' +
@@ -569,6 +600,13 @@
         return t ? t.nombre : id;
       }) + '</table>' +
       '<h2>A dónde ir</h2>' + tareas +
+
+      /* El plan y la lista con nombres son la razón de imprimir esto: el
+         diagnóstico se lee en el celular, pero el reparto se recorta y se le
+         da a cada grupo, y la lista se tacha caminando. */
+      planImpreso(res, zonas) +
+      listaImpresa(st) +
+
       '<h2>Para verificar en campo</h2><ul class="check">' +
         '<li>Los usos sin categoría: mirar qué son de verdad.</li>' +
         '<li>Una muestra de lo más repetido: comprobar que siga abierto.</li>' +
@@ -803,6 +841,11 @@
           ? ('Área «' + nom2 + '» guardada. La encontrás en Análisis → Áreas guardadas.')
           : 'No se pudo guardar el área.';
         pintar(); return;
+      }
+      if (acc === 'grupos') {
+        S.grupos = Number(b.getAttribute('data-g')) || 4;
+        pintar();
+        return;
       }
       if (acc === 'recentrar') { tomarCentro(); pintarCirculo(); pintar(); return; }
     });
@@ -1147,6 +1190,9 @@
       zonas.flojos.forEach(function (f) { L.push('  [ ] Al ' + f.rumbo.nombre + ' — apenas ' + f.n); });
     }
     L.push('');
+    if (zonas && zonas.vacios) {
+      try { L.push(planComoTexto(res, zonas)); L.push(''); } catch (e) {}
+    }
     L.push('Esto es lo que OpenStreetMap sabe del sector, no el sector.');
     L.push('Lo pone gente voluntaria: está incompleto y a veces desactualizado.');
     return L.join('\n');
@@ -1658,6 +1704,129 @@
         : '');
   }
 
+  // ── El plan de salida ─────────────────────────────────────────────────
+  /* Todo lo anterior es diagnóstico. Esto es lo que se imprime y se reparte
+     el día de la salida: a cada grupo, un rumbo, un encargo y un ejemplo
+     concreto de lo que va a encontrarse. Sale de lo que ya se calculó —los
+     rumbos vacíos, los flojos y los llenos— y no pide ningún dato nuevo.
+
+     El orden de reparto no es alfabético ni por tamaño: primero los rumbos
+     SIN datos, porque ahí todo lo que se levante es información que no
+     existía; después los flojos; y solo al final los llenos, donde el
+     trabajo es verificar. Un curso con pocos grupos debe gastar sus grupos
+     en lo primero. */
+
+  var GRUPOS_POSIBLES = [2, 3, 4, 5, 6, 8, 10];
+
+  function repartirTrabajo(res, zonas, nGrupos) {
+    var pois = (res.pois || []);
+    var eje = (res.meta && Number.isFinite(res.meta.lat))
+      ? { lat: res.meta.lat, lng: res.meta.lng } : S.centro;
+
+    // Qué hay en cada rumbo, con nombres: es lo que convierte «al nororiente»
+    // en «al nororiente, donde está la Droguería La Rebaja».
+    var porRumbo = {};
+    RUMBOS.forEach(function (r) { porRumbo[r.id] = { rumbo: r, n: 0, nombres: [], subs: {} }; });
+    pois.forEach(function (p) {
+      if (p.lat == null || p.lng == null || !eje) return;
+      var id = rumboDe360(rumboDe(eje, p)).id;
+      var casilla = porRumbo[id];
+      casilla.n++;
+      if (p.sub) casilla.subs[p.sub] = (casilla.subs[p.sub] || 0) + 1;
+      if (p.nombre && casilla.nombres.length < 3 && casilla.nombres.indexOf(p.nombre) === -1) {
+        casilla.nombres.push(p.nombre);
+      }
+    });
+
+    var vacios = zonas.vacios.map(function (r) { return r.id; });
+    var flojos = zonas.flojos.map(function (f) { return f.rumbo.id; });
+    var orden = RUMBOS.slice().sort(function (a, b) {
+      var pa = vacios.indexOf(a.id) !== -1 ? 0 : flojos.indexOf(a.id) !== -1 ? 1 : 2;
+      var pb = vacios.indexOf(b.id) !== -1 ? 0 : flojos.indexOf(b.id) !== -1 ? 1 : 2;
+      if (pa !== pb) return pa - pb;
+      return porRumbo[b.id].n - porRumbo[a.id].n;   // dentro de un nivel, primero lo más cargado
+    });
+
+    var n = Math.max(2, Math.min(10, nGrupos || 4));
+    var asignaciones = [];
+    for (var i = 0; i < n; i++) {
+      var r = orden[i % orden.length];
+      var casilla = porRumbo[r.id];
+      var vacio = vacios.indexOf(r.id) !== -1;
+      var flojo = flojos.indexOf(r.id) !== -1;
+      // Con más grupos que rumbos, el segundo grupo del mismo rumbo trabaja
+      // la parte de afuera: mandar dos grupos a la misma esquina es mandar a
+      // uno de los dos a repetir el trabajo del otro.
+      var vuelta = Math.floor(i / orden.length);
+      var subs = Object.keys(casilla.subs).sort(function (a, b) { return casilla.subs[b] - casilla.subs[a]; });
+      asignaciones.push({
+        nombre: 'Grupo ' + (i + 1),
+        rumbo: r,
+        franja: vuelta === 0 ? 'toda la franja' : (vuelta === 1 ? 'la mitad de afuera' : 'los bordes'),
+        n: casilla.n,
+        vacio: vacio, flojo: flojo,
+        encargo: vacio
+          ? 'Levantar de cero: acá OpenStreetMap no tiene NADA. Todo lo que anoten es información nueva.'
+          : flojo
+            ? 'Completar: hay apenas ' + casilla.n + ' registro' + (casilla.n === 1 ? '' : 's') +
+              '. Falta casi todo, así que lo suyo es levantar lo que no está.'
+            : 'Verificar y corregir: hay ' + casilla.n + ' registros. Comprobar que sigan ahí y anotar los que falten.',
+        pista: casilla.nombres.length
+          ? 'Van a pasar por ' + casilla.nombres.join(', ') + '.'
+          : (subs.length ? 'Lo que más hay por ahí: ' + nombreDeSub(subs[0]) + '.' : ''),
+        nombres: casilla.nombres
+      });
+    }
+    return asignaciones;
+  }
+
+  function bloquePlan(res, zonas) {
+    if (!zonas || !RUMBOS.length) return '';
+    var n = S.grupos || 4;
+    var plan = repartirTrabajo(res, zonas, n);
+    if (!plan.length) return '';
+
+    var botones = GRUPOS_POSIBLES.map(function (g) {
+      return '<button type="button" data-pcr="grupos" data-g="' + g + '"' +
+        ' class="pcr-radio' + (g === n ? ' pcr-radio-on' : '') + '">' + g + '</button>';
+    }).join('');
+
+    return '' +
+      '<h4 class="pcr-h">🧭 El plan de la salida</h4>' +
+      '<p class="pcr-tarea-intro">Reparto listo para imprimir: a cada grupo, un rumbo y un encargo. ' +
+      'Primero los rumbos donde <b>no hay nada</b> —ahí todo lo que levanten es nuevo—, ' +
+      'después los que tienen poco, y al final los que ya están mapeados, donde el trabajo es verificar.</p>' +
+      '<label class="pcr-lab">¿En cuántos grupos sale el curso?</label>' +
+      '<div class="pcr-radios">' + botones + '</div>' +
+      '<div class="pcr-plan">' +
+        plan.map(function (a) {
+          return '<div class="pcr-tarea' + (a.vacio ? ' pcr-tarea-nueva' : '') + '">' +
+            '<div class="pcr-tarea-cab">' +
+              '<b>' + esc(a.nombre) + '</b>' +
+              '<span class="pcr-tarea-rumbo">al ' + esc(a.rumbo.nombre) +
+              (a.franja !== 'toda la franja' ? ' · ' + esc(a.franja) : '') + '</span>' +
+            '</div>' +
+            '<p class="pcr-tarea-que">' + esc(a.encargo) + '</p>' +
+            (a.pista ? '<small class="pcr-tarea-pista">' + esc(a.pista) + '</small>' : '') +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">Se imprime con el informe (🖨️ PDF) y va en el texto que copia 📋.</p>';
+  }
+
+  // El mismo plan en texto pelado, para el PDF y para el portapapeles.
+  function planComoTexto(res, zonas) {
+    var plan = repartirTrabajo(res, zonas, S.grupos || 4);
+    var L = ['PLAN DE LA SALIDA (' + plan.length + ' grupos)'];
+    plan.forEach(function (a) {
+      L.push('  ' + a.nombre + ' — al ' + a.rumbo.nombre +
+             (a.franja !== 'toda la franja' ? ' (' + a.franja + ')' : ''));
+      L.push('     ' + a.encargo);
+      if (a.pista) L.push('     ' + a.pista);
+    });
+    return L.join('\n');
+  }
+
   function htmlFicha(res) {
     var st = res.stats || {};
     var pois = res.pois || [];
@@ -1786,6 +1955,8 @@
 
         '<h4 class="pcr-h">A dónde ir</h4>' +
         tareas +
+
+        bloquePlan(res, zonas) +
 
         // De inventario a lista de tareas. Lo que el estudiante hace con esto
         // parado en la esquina, que es de lo que se trataba.
@@ -2307,11 +2478,14 @@
       if (!f) return true;
       var txt = fichaComoTexto(
         { stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
+          pois: f.pois || [],
           meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
                   lat: f.centro && f.centro.lat, lng: f.centro && f.centro.lng } },
         f.zonas
           ? { vacios: (f.zonas.vacios || []),
-              flojos: (f.zonas.flojos || []).map(function (x) { return { rumbo: { nombre: x.nombre }, n: x.n }; }) }
+              flojos: (f.zonas.flojos || []).map(function (x) {
+                return { rumbo: { id: x.id, nombre: x.nombre }, n: x.n };
+              }) }
           : { vacios: [], flojos: [] });
       var ok = function () { S.avisoPestana = 'Copiado. Pegalo en tus notas o en un chat.'; repintar(); };
       try {

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v621-lista-de-campo';
+const URBIS_CACHE = 'urbis-v622-plan-de-salida';
 const URBIS_ASSETS = [
   './',
   './index.html',
