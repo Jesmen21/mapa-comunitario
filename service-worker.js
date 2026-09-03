@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v630-motor-privado';
+const URBIS_CACHE = 'urbis-v631-licencia-legible';
 const URBIS_ASSETS = [
   './',
   './index.html',

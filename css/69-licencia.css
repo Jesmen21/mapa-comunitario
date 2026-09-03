@@ -166,3 +166,65 @@
 .ulic-hoja .ulic-x{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
 .ulic-hoja .ulic-pista code{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
 .ulic-hoja .ulic-barra{ border-bottom:2px solid #34CCFE; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Los campos, blancos de verdad
+   ══════════════════════════════════════════════════════════════════════
+   Reportado tres veces desde el celular: la caja de la licencia y la fila de
+   «vence / análisis por día» salían en verde oscuro, casi negras, con el
+   texto encima sin leerse.
+
+   El color de letra ya estaba puesto; el FONDO no. Y hay dos reglas
+   globales que lo pintan oscuro —css/01 con `textarea { background:#1e1e1e }`
+   y css/54 con `textarea, input { background: rgba(7,17,13,.84) !important }`—
+   así que declarar `background:#fff` a secas, como hacía `.ulic-in`, no
+   alcanzaba: la de css/54 lleva !important y gana.
+
+   Va todo con !important y con el ámbito de la hoja, que es lo que ya se
+   había aprendido en css/68 con los textos. */
+.ulic-hoja .ulic-campo,
+.ulic-hoja .ulic-in,
+.ulic-hoja input.ulic-in,
+.ulic-hoja textarea.ulic-campo{
+  background:#fff !important;
+  border:1px solid #d8dfe8 !important;
+  color:#12202e !important; -webkit-text-fill-color:#12202e !important;
+  border-radius:9px !important;
+  padding:9px 11px !important;
+  width:100% !important;
+  font-family:inherit !important;
+  /* Safari en iOS le pone su propio degradado y sus esquinas a los campos. */
+  -webkit-appearance:none; appearance:none;
+}
+.ulic-hoja .ulic-campo{
+  font-family:ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  font-size:.78rem !important; line-height:1.45 !important;
+  resize:vertical;
+}
+/* El texto de ejemplo, gris legible: en oscuro sobre oscuro no se veía, y
+   en blanco sobre blanco tampoco se vería. */
+.ulic-hoja .ulic-campo::placeholder,
+.ulic-hoja .ulic-in::placeholder{
+  color:#8a97a4 !important; -webkit-text-fill-color:#8a97a4 !important;
+  opacity:1;
+}
+.ulic-hoja .ulic-campo:focus,
+.ulic-hoja .ulic-in:focus{
+  outline:2px solid #0A6F9E; outline-offset:1px;
+  border-color:#0A6F9E !important;
+}
+/* El iconito del calendario venía en blanco —pensado para fondo oscuro— y
+   sobre el campo claro desaparecía: quedaba una fecha que no se podía abrir
+   porque no se veía dónde tocar. */
+.ulic-hoja input[type="date"].ulic-in::-webkit-calendar-picker-indicator{
+  filter:none; opacity:.65; cursor:pointer;
+}
+/* La fila de dos campos: cada uno con su ancho, sin desbordar la hoja. */
+.ulic-hoja .ulic-fila{ display:flex; gap:9px; align-items:flex-start; }
+.ulic-hoja .ulic-fila > div{ flex:1 1 0; min-width:0; }
+
+/* Y el enlace de emitir, que se leía casi blanco sobre blanco. */
+.ulic-hoja .ulic-emitir-link{
+  color:#5e6b78 !important; -webkit-text-fill-color:#5e6b78 !important;
+  text-decoration:underline;
+}
