@@ -239,8 +239,14 @@
       const depto = a.state || a.region || '';
       const pais = a.country || '';
       const barrio = a.suburb || a.neighbourhood || a.quarter || '';
+      // La comuna es la división con la que se habla y se planifica en las
+      // ciudades colombianas, y es la que rotula una lámina de análisis. Los
+      // geocodificadores la devuelven en city_district o borough según el
+      // caso, así que se miran los dos.
+      const comuna = a.city_district || a.borough || a.district || '';
+      const via = a.road || '';
       if (!ciudad && !depto && !pais) return null;
-      return { ciudad, departamento: depto, pais, barrio,
+      return { ciudad, departamento: depto, pais, barrio, comuna, via,
                texto: [ciudad, depto, pais].filter(Boolean).join(', ') };
     } catch(e) { return null; }
   }

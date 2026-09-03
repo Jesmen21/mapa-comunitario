@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v642-barra-centrada';
+const URBIS_CACHE = 'urbis-v644-ubicacion-y-contexto';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -148,6 +148,7 @@ const URBIS_ASSETS = [
   './css/70-modo-app.css',
   './js/71-iconos-urbis.js',
   './css/72-edu-diseno.css',
+  './js/73-solar.js',
 ];
 
 self.addEventListener('install', event => {

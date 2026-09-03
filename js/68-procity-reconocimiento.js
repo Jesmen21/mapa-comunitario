@@ -235,6 +235,11 @@
       porGrupo: st.porGrupo || {}, porSub: st.porSub || {},
       usoPredominante: st.usoPredominante || null,
       nucleos: (st.nucleos || []).slice(0, 4),
+      // Hitos y alturas pesan poco (nueve hitos y cuatro filas) y son mitad
+      // del análisis físico: si no se guardan, la pestaña «Sector» pierde dos
+      // bloques al reabrir sin que nada avise.
+      hitos: (st.hitos || []).slice(0, 9),
+      alturas: st.alturas || null,
       ambiente: st.ambiente || null,
       movilidad: mv ? {
         nViasArterias: mv.nViasArterias, paradasBus: mv.paradasBus,
@@ -297,10 +302,13 @@
           ? { nombre: zonas.concentracion.rumbo.nombre, n: zonas.concentracion.n, pct: zonas.concentracion.pct }
           : null
       } : null,
+      ubicacion: res.ubicacion || null,
       forma: meta.forma || 'radio',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
       areaM2: meta.areaM2 || null,
+      perimetroM: meta.perimetroM || null,
+      vertices: meta.vertices || 0,
       poligono: meta.poligono || null,
       total: st.total || 0,
       porGrupo: st.porGrupo || {},
@@ -381,6 +389,19 @@
 
   function areaDelPoligono() {
     return (S.forma === 'poligono' && S.poligono) ? areaM2De(S.poligono) : 0;
+  }
+
+  // Metros cuadrados con separador de miles: una lámina de análisis rotula el
+  // área en m² además de en hectáreas, porque el m² es la unidad con la que se
+  // trabaja el lote y la hectárea la que se lee de un vistazo.
+  function formatearM2(m2) {
+    if (!m2) return '—';
+    return Math.round(m2).toLocaleString('es-CO') + ' m²';
+  }
+  function formatearLargo(m) {
+    if (!m) return '—';
+    if (m >= 1000) return (m / 1000).toFixed(2).replace('.', ',') + ' km';
+    return Math.round(m).toLocaleString('es-CO') + ' m';
   }
 
   function formatearArea(m2) {
@@ -644,6 +665,87 @@
       }).join('') + '</ul>';
   }
 
+  // Medidas del sitio, para el PDF.
+  function loteImpreso(meta, esPol) {
+    if (!meta || !meta.areaM2) return '';
+    return '<h2>Información del ' + (esPol ? 'área' : 'sector') + '</h2><table>' +
+      '<tr><td>Área</td><td class="n">' + formatearArea(meta.areaM2) + '</td></tr>' +
+      '<tr><td>En metros cuadrados</td><td class="n">' + formatearM2(meta.areaM2) + '</td></tr>' +
+      '<tr><td>Perímetro</td><td class="n">' + formatearLargo(meta.perimetroM) + '</td></tr>' +
+      (esPol
+        ? '<tr><td>Vértices del contorno</td><td class="n">' + (meta.vertices || 0) + '</td></tr>'
+        : '<tr><td>Radio</td><td class="n">' + formatearLargo(meta.radioM) + '</td></tr>') +
+      '</table>';
+  }
+
+  function ubicacionImpresa(ubic) {
+    if (!ubic) return '';
+    var filas = [['País', ubic.pais], ['Departamento', ubic.departamento], ['Municipio', ubic.ciudad],
+                 ['Comuna', ubic.comuna], ['Barrio', ubic.barrio]].filter(function (x) { return x[1]; });
+    if (!filas.length) return '';
+    return '<h2>Ubicación</h2><table>' +
+      filas.map(function (x) { return '<tr><td>' + x[0] + '</td><td class="n">' + esc(x[1]) + '</td></tr>'; }).join('') +
+      '</table>';
+  }
+
+  function solImpreso(meta) {
+    var SOL = window.URBIS_SOLAR;
+    if (!SOL || !meta || meta.lat == null || meta.lng == null) return '';
+    var d, a;
+    try {
+      d = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
+      a = SOL.anio(Number(meta.lat), Number(meta.lng));
+    } catch (e) { return ''; }
+    if (!d || !d.salida) return '';
+    var hora = function (x) { return x.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }); };
+    var cen = (a.cenitales || []).map(function (x) {
+      return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+    });
+    return '<h2>Asoleamiento</h2><table>' +
+      '<tr><td>Amanecer</td><td class="n">' + hora(d.salida) + ' · ' + d.azimutSalida + '°</td></tr>' +
+      '<tr><td>Mediodía solar</td><td class="n">' + hora(d.cenit) + ' · ' + d.alturaMaxima + '°</td></tr>' +
+      '<tr><td>Atardecer</td><td class="n">' + hora(d.puesta) + ' · ' + d.azimutPuesta + '°</td></tr>' +
+      '<tr><td>Horas de luz</td><td class="n">' + String(d.duracionH).replace('.', ',') + ' h</td></tr>' +
+      '<tr><td>Sol más alto del año</td><td class="n">' + a.solsticios.masAlto.altura + '°</td></tr>' +
+      '<tr><td>Sol más bajo del año</td><td class="n">' + a.solsticios.masBajo.altura + '°</td></tr>' +
+      '</table>' +
+      '<p class="pie">Calculado para hoy en las coordenadas del sector. Es el sol geométrico: ' +
+      'no considera montañas ni edificios vecinos. La fachada occidental es la que recibe el sol ' +
+      'bajo de la tarde.' +
+      (cen.length === 2 ? ' El sol pasa por el cenit dos veces al año, alrededor del ' +
+        esc(cen[0]) + ' y del ' + esc(cen[1]) + '.' : '') + '</p>';
+  }
+
+  function alturasImpresas(st) {
+    var a = st.alturas;
+    if (!a || !a.edificios) return '';
+    if (!a.conDato) {
+      return '<h2>Alturas de lo construido</h2><p>' + a.edificios + ' edificio' +
+        (a.edificios === 1 ? '' : 's') + ' en el área, ninguno con su número de pisos ' +
+        'registrado en OpenStreetMap. Contar niveles es tarea de campo.</p>';
+    }
+    return '<h2>Alturas de lo construido</h2><table>' +
+      a.niveles.map(function (x) {
+        return '<tr><td>' + esc(x.etiqueta) + '</td><td class="n">' + x.edificios + ' · ' + x.pct + '%</td></tr>';
+      }).join('') +
+      '</table><p class="pie">' + a.conDato + ' de ' + a.edificios +
+      ' edificios traen la altura (' + a.cobertura + '%); el más alto tiene ' + a.maximo + ' pisos.' +
+      (a.cobertura < 60 ? ' Los porcentajes describen esa muestra, no el sector completo.' : '') +
+      '</p>';
+  }
+
+  function hitosImpresos(st) {
+    var hs = st.hitos || [];
+    if (!hs.length) return '';
+    return '<h2>Hitos y nodos</h2><table class="plan">' +
+      hs.map(function (h) {
+        return '<tr><td class="g">' + h.n + '. <span>' + esc(h.categoriaNombre) + '</span></td>' +
+          '<td>' + esc(h.nombre) + ' <em>a ' + h.distM + ' m del centro' +
+          (h.registrado ? ' · registrado como patrimonio o en Wikidata' : '') + '</em></td></tr>';
+      }).join('') +
+      '</table><p class="pie">Falta la foto de cada uno: eso se levanta en la salida.</p>';
+  }
+
   /* `opts` deja imprimir algo que NO es lo que está en pantalla: un sector
      guardado, semanas después, desde la pestaña. Sin esto el PDF de una ficha
      vieja salía con el nombre y la cobertura del último análisis hecho, que
@@ -710,11 +812,16 @@
         '<div class="kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') + '</b><small>por hectárea</small></div>' +
         '<div class="kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
       '</div>' +
+      ubicacionImpresa(res.ubicacion || (o && o.ubicacion)) +
+      loteImpreso(meta, meta.forma === 'poligono') +
       '<h2>Qué hay, por categoría</h2><table>' + filas(st.porGrupo, nombreGrupo) + '</table>' +
       '<h2>Lo más repetido</h2><table>' + filas(st.porSub, function (id) {
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
       }) + '</table>' +
+      alturasImpresas(st) +
+      solImpreso(meta) +
+      hitosImpresos(st) +
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
       contextoImpreso(st) +
 
@@ -1343,7 +1450,16 @@
     L.push(meta.forma === 'poligono'
       ? 'Área dibujada: ' + formatearArea(meta.areaM2)
       : 'Radio: ' + meta.radioM + ' m desde ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5));
+    var ub = res.ubicacion;
+    if (ub) {
+      var cad = [ub.pais, ub.departamento, ub.ciudad, ub.comuna, ub.barrio].filter(Boolean);
+      if (cad.length) L.push('Ubicación: ' + cad.join(' › '));
+    }
     L.push('Usos registrados en OpenStreetMap: ' + (st.total || 0));
+    if (meta.areaM2) {
+      L.push('Área: ' + formatearArea(meta.areaM2) + ' (' + formatearM2(meta.areaM2) + ')');
+      if (meta.perimetroM) L.push('Perímetro: ' + formatearLargo(meta.perimetroM));
+    }
     L.push('');
     L.push('POR CATEGORÍA');
     Object.keys(st.porGrupo || {}).forEach(function (g) {
@@ -1363,6 +1479,51 @@
         L.push('  ' + (t ? t.nombre : x.id) + ': ' + x.n);
       });
     L.push('');
+    var alt = st.alturas;
+    if (alt && alt.edificios) {
+      L.push('ALTURAS DE LO CONSTRUIDO');
+      if (!alt.conDato) {
+        L.push('  ' + alt.edificios + ' edificios, ninguno con su número de pisos registrado.');
+      } else {
+        alt.niveles.forEach(function (x) {
+          L.push('  ' + x.etiqueta + ': ' + x.edificios + ' (' + x.pct + '%)');
+        });
+        L.push('  ' + alt.conDato + ' de ' + alt.edificios + ' edificios traen la altura (' +
+               alt.cobertura + '%). El más alto: ' + alt.maximo + ' pisos.');
+      }
+      L.push('');
+    }
+    var SOL = window.URBIS_SOLAR;
+    if (SOL && meta.lat != null && meta.lng != null) {
+      try {
+        var sd = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
+        var sa = SOL.anio(Number(meta.lat), Number(meta.lng));
+        if (sd && sd.salida) {
+          var hh = function (x) { return x.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }); };
+          L.push('ASOLEAMIENTO (hoy, calculado)');
+          L.push('  Amanecer: ' + hh(sd.salida) + ' por el ' + SOL.rumbo(sd.azimutSalida) + ' (' + sd.azimutSalida + '°)');
+          L.push('  Mediodía solar: ' + hh(sd.cenit) + ' a ' + sd.alturaMaxima + '° de altura');
+          L.push('  Atardecer: ' + hh(sd.puesta) + ' por el ' + SOL.rumbo(sd.azimutPuesta) + ' (' + sd.azimutPuesta + '°)');
+          L.push('  Horas de luz: ' + String(sd.duracionH).replace('.', ',') + ' h');
+          L.push('  En el año: de ' + sa.solsticios.masBajo.altura + '° a ' + sa.solsticios.masAlto.altura + '° al mediodía');
+          (sa.cenitales || []).forEach(function (x) {
+            L.push('  Sol en el cenit: ' + x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }));
+          });
+          L.push('  La fachada occidental recibe el sol bajo de la tarde.');
+          L.push('');
+        }
+      } catch (e) {}
+    }
+    var hs = st.hitos || [];
+    if (hs.length) {
+      L.push('HITOS Y NODOS');
+      hs.forEach(function (h) {
+        L.push('  ' + h.n + '. ' + h.nombre + ' — ' + h.categoriaNombre + ', a ' + h.distM + ' m' +
+               (h.registrado ? ' (patrimonio o Wikidata)' : ''));
+      });
+      L.push('  [ ] Falta la foto de cada uno: es de la salida.');
+      L.push('');
+    }
     L.push('A DÓNDE IR (sin datos en OpenStreetMap)');
     if (!zonas.vacios.length && !zonas.flojos.length) {
       L.push('  Los ocho rumbos tienen datos. Toca verificar y corregir.');
@@ -1743,6 +1904,246 @@
       '<div class="pcr-med-barra"><i style="width:' + v + '%;background:' + (color || '#34CCFE') + '"></i></div>' +
       (palabra ? '<small>' + esc(palabra) + '</small>' : '') +
     '</div>';
+  }
+
+  /* Información del área. Las medidas del sitio, juntas y en las dos unidades
+     con que se trabaja: hectáreas para leerlas, metros cuadrados para
+     proyectar. El perímetro ya lo calculaba el motor y no se mostraba en
+     ninguna parte de la ficha. Acá también entrará la elevación del terreno. */
+  function bloqueLote(meta, esPol) {
+    if (!meta) return '';
+    var filas = [
+      { etq: 'Área', val: formatearArea(meta.areaM2) },
+      { etq: 'En metros cuadrados', val: formatearM2(meta.areaM2) },
+      { etq: 'Perímetro', val: formatearLargo(meta.perimetroM) },
+      esPol
+        ? { etq: 'Vértices del contorno', val: (meta.vertices || 0) + '' }
+        : { etq: 'Radio', val: formatearLargo(meta.radioM) }
+    ];
+    return h4('area', esPol ? 'Información del área' : 'Información del sector') +
+      '<div class="pcr-lote">' +
+        filas.map(function (x) {
+          return '<div class="pcr-lote-fila"><span>' + esc(x.etq) + '</span><b>' + esc(x.val) + '</b></div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">El perímetro es el borde que se recorre a pie; ' +
+      'el área, lo que se puede ocupar. Las dos cifras salen de la geometría que ' +
+      (esPol ? 'dibujaste' : 'define el radio') + ', no de una estimación.</p>';
+  }
+
+  /* Alturas de lo construido. El dato viene edificio por edificio de
+     OpenStreetMap, y ahí está el problema: casi nadie lo registra. Por eso el
+     bloque empieza diciendo sobre cuántos edificios habla — un «54 % de un
+     nivel» sacado de seis edificios de trescientos no describe el sector,
+     describe la muestra. */
+  function bloqueAlturas(st) {
+    var a = st.alturas;
+    if (!a || !a.edificios) return '';
+    if (!a.conDato) {
+      return h4('crecer', 'Alturas de lo construido') +
+        '<p class="pcr-pista">Se encontraron <b>' + a.edificios + '</b> edificio' +
+        (a.edificios === 1 ? '' : 's') + ' en el área, pero ninguno tiene registrado ' +
+        'su número de pisos en OpenStreetMap. <b>Es una tarea de campo:</b> contar niveles ' +
+        'es de lo más rápido de levantar y de lo que más falta.</p>';
+    }
+    var mayor = a.niveles.reduce(function (m, x) { return Math.max(m, x.edificios); }, 0) || 1;
+    return h4('crecer', 'Alturas de lo construido') +
+      '<p class="pcr-conc">Predominan los de <b>' + esc(a.predominante.etiqueta.toLowerCase()) +
+        '</b>: ' + a.predominante.pct + '% de los que tienen el dato.</p>' +
+      '<div class="pcr-niveles">' +
+        a.niveles.map(function (x) {
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + esc(x.etiqueta) + '</span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' +
+              Math.round(100 * x.edificios / mayor) + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + x.edificios + '<em>' + x.pct + '%</em></span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + a.edificios + '</b><small>edificios en el área</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.cobertura + '%</b><small>con altura registrada</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.maximo + '</b><small>el más alto, en pisos</small></div>' +
+      '</div>' +
+      (a.cobertura < 60
+        ? '<p class="pcr-pista">Ojo con leer esos porcentajes como si fueran el sector entero: ' +
+          'solo <b>' + a.conDato + ' de ' + a.edificios + '</b> edificios traen la altura. ' +
+          'Los otros ' + a.sinDato + ' están sin contar — y contarlos en campo es trabajo del curso.</p>'
+        : '<p class="pcr-pista">Casi todos los edificios del área traen su altura registrada, ' +
+          'así que el reparto de arriba sí describe el sector.</p>');
+  }
+
+  /* Hitos y nodos. Los núcleos dicen dónde se concentra la actividad; los
+     hitos dicen qué le da identidad al sector y con qué se orienta la gente.
+     Van numerados porque así se citan en una lámina: «el 3» y todos saben
+     cuál es. */
+  function bloqueHitos(st) {
+    var hs = st.hitos || [];
+    if (!hs.length) return '';
+    var porCat = {};
+    hs.forEach(function (h) {
+      (porCat[h.categoriaNombre] = porCat[h.categoriaNombre] || []).push(h);
+    });
+    return h4('campo', 'Hitos y nodos') +
+      '<p class="pcr-pista">Lo que le da identidad al sector y sirve para orientarse. ' +
+      'Van numerados para poder citarlos: el número es el mismo en la lista y en el informe.</p>' +
+      '<div class="pcr-hitos">' +
+        Object.keys(porCat).map(function (cat) {
+          return '<div class="pcr-hito-cat">' +
+            '<span class="pcr-lab">' + esc(cat) + '</span>' +
+            porCat[cat].map(function (h) {
+              return '<div class="pcr-hito">' +
+                '<span class="pcr-hito-n">' + h.n + '</span>' +
+                '<span class="pcr-hito-nom">' + esc(h.nombre) +
+                  (h.registrado ? '<em>con ficha en Wikidata o declarado patrimonio</em>' : '') +
+                '</span>' +
+                '<span class="pcr-hito-d">' + h.distM + ' m</span>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">Falta la foto de cada uno: esa no la tiene ninguna base de datos. ' +
+      'Es el registro fotográfico de la salida.</p>';
+  }
+
+  /* Asoleamiento. El único bloque del análisis que no depende de que alguien
+     haya mapeado algo: la posición del sol es geometría, así que sale igual
+     en un sector lleno de datos y en uno vacío. Se calcula al PINTAR, no al
+     analizar, para que un sector guardado en marzo no muestre en octubre las
+     horas de marzo. */
+  function bloqueSol(meta) {
+    var SOL = window.URBIS_SOLAR;
+    if (!SOL || !meta || meta.lat == null || meta.lng == null) return '';
+    var lat = Number(meta.lat), lng = Number(meta.lng);
+    if (!isFinite(lat) || !isFinite(lng)) return '';
+
+    var hoy = new Date();
+    var d, a;
+    try { d = SOL.dia(hoy, lat, lng); a = SOL.anio(lat, lng, hoy.getFullYear()); }
+    catch (e) { return ''; }
+    if (!d || !d.salida) return '';
+
+    /* «05:43 a. m.» no cabe en un tercio de pantalla de teléfono y parte en
+       dos líneas, dejando las tres tarjetas descuadradas. Se separa la hora
+       del meridiano: la hora grande, el «a. m.» pequeño al lado. */
+    var hora = function (x) {
+      if (!x) return '—';
+      var t = x.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+      var m = t.match(/^(\d{1,2}:\d{2})\s*(.*)$/);
+      return m ? esc(m[1]) + (m[2] ? '<em>' + esc(m[2]) + '</em>' : '') : esc(t);
+    };
+    var fc = SOL.fachadaCritica(d, lat);
+    var sombraAmanecer = SOL.rumbo(SOL.sombra(d.azimutSalida));
+    var sombraTarde = SOL.rumbo(SOL.sombra(d.azimutPuesta));
+    var cenitales = (a.cenitales || []).map(function (x) {
+      return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+    });
+
+    return h4('brujula', 'Asoleamiento') +
+      '<p class="pcr-pista">Para <b>hoy</b>, en las coordenadas de este sector y en la hora ' +
+      'de este teléfono. Es el sol geométrico: no sabe si enfrente hay una montaña o una torre. ' +
+      'Dice de dónde viene la luz — la sombra real se mide en el sitio.</p>' +
+      '<div class="pcr-sol">' +
+        '<div class="pcr-sol-hito">' +
+          '<span class="pcr-lab">Amanecer</span><b>' + hora(d.salida) + '</b>' +
+          '<small>por el ' + esc(SOL.rumbo(d.azimutSalida)) + ' · ' + d.azimutSalida + '°</small>' +
+        '</div>' +
+        '<div class="pcr-sol-hito pcr-sol-alto">' +
+          '<span class="pcr-lab">Mediodía solar</span><b>' + hora(d.cenit) + '</b>' +
+          '<small>a ' + d.alturaMaxima + '° sobre el horizonte</small>' +
+        '</div>' +
+        '<div class="pcr-sol-hito">' +
+          '<span class="pcr-lab">Atardecer</span><b>' + hora(d.puesta) + '</b>' +
+          '<small>por el ' + esc(SOL.rumbo(d.azimutPuesta)) + ' · ' + d.azimutPuesta + '°</small>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + String(d.duracionH).replace('.', ',') + ' h</b><small>de luz hoy</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.solsticios.masAlto.altura + '°</b><small>lo más alto del año</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.solsticios.masBajo.altura + '°</b><small>lo más bajo del año</small></div>' +
+      '</div>' +
+      '<p class="pcr-conc">Al amanecer las sombras caen hacia el <b>' + esc(sombraAmanecer) +
+        '</b>; en la tarde, hacia el <b>' + esc(sombraTarde) + '</b>. ' +
+        (fc.manda === 'cubierta'
+          ? 'Hoy el sol culmina casi vertical (' + d.alturaMaxima + '°), así que a esa hora ' +
+            'la fachada recibe poco y <b>el problema es la cubierta</b>.'
+          : 'El sol culmina hacia el <b>' + esc(fc.culminacion) + '</b> a ' + d.alturaMaxima + '°.') +
+        ' Lo que de verdad recalienta es el sol de la tarde, que entra bajo por el ' +
+        '<b>occidente</b>: es la fachada que hay que proteger.</p>' +
+      (cenitales.length === 2
+        ? '<p class="pcr-pista">Este sector está en el trópico, así que el sol le pasa por ' +
+          '<b>el cenit dos veces al año</b>: alrededor del <b>' + esc(cenitales[0]) + '</b> y del <b>' +
+          esc(cenitales[1]) + '</b>. Esos días la luz cae vertical, la fachada casi no la recibe y ' +
+          'la cubierta se lleva todo. Un manual europeo no cuenta con esto porque allá no pasa nunca.</p>'
+        : '');
+  }
+
+  /* Ubicación. Una lámina de análisis urbano abre situando el lote: país,
+     departamento, municipio, comuna, barrio. No es adorno — es lo que permite
+     a alguien que no conoce la ciudad entender de qué se está hablando.
+     Se arma con la geocodificación inversa que ya se consulta para el censo,
+     así que no cuesta una petición más. */
+  function bloqueUbicacion(ubic, st, meta) {
+    if (!ubic) return '';
+    var cadena = [
+      { etq: 'País', val: ubic.pais },
+      { etq: 'Departamento', val: ubic.departamento },
+      { etq: 'Municipio', val: ubic.ciudad },
+      { etq: 'Comuna', val: ubic.comuna },
+      { etq: 'Barrio', val: ubic.barrio }
+    ].filter(function (x) { return x.val; });
+    if (!cadena.length) return '';
+    return h4('mapa', 'Ubicación') +
+      '<div class="pcr-ubic">' +
+        cadena.map(function (x, i) {
+          return '<div class="pcr-ubic-paso' + (i === cadena.length - 1 ? ' pcr-ubic-fin' : '') + '">' +
+            '<span class="pcr-lab">' + esc(x.etq) + '</span>' +
+            '<b>' + esc(x.val) + '</b></div>';
+        }).join('') +
+      '</div>' +
+      parrafoDeContexto(ubic, st, meta) +
+      '<p class="pcr-pista">La cadena sale de la geocodificación inversa de las coordenadas ' +
+      'del sector. Si el barrio o la comuna no aparecen, es que no están registrados ahí — ' +
+      'no que no existan.</p>';
+  }
+
+  /* El párrafo que la lámina escribe a mano para situar el lote. Se redacta
+     con lo que ya se sabe y NADA más: si no hay estrato, no se menciona; si
+     no hay hitos, no se inventan colindancias. Un párrafo que afirme de más
+     es peor que no tenerlo, porque el estudiante lo copia tal cual. */
+  function parrafoDeContexto(ubic, st, meta) {
+    var p = [];
+    var donde = [];
+    if (ubic.barrio) donde.push('el barrio <b>' + esc(ubic.barrio) + '</b>');
+    if (ubic.comuna) donde.push('la <b>' + esc(ubic.comuna) + '</b>');
+    var lugar = donde.length ? donde.join(', de ') : '';
+    if (lugar && ubic.ciudad) {
+      p.push('El área analizada está en ' + lugar + ', en <b>' + esc(ubic.ciudad) + '</b>' +
+             (ubic.departamento ? ', ' + esc(ubic.departamento) : '') + '.');
+    } else if (ubic.ciudad) {
+      p.push('El área analizada está en <b>' + esc(ubic.ciudad) + '</b>' +
+             (ubic.departamento ? ', ' + esc(ubic.departamento) : '') + '.');
+    }
+    if (meta && meta.areaM2) {
+      p.push('Cubre <b>' + formatearArea(meta.areaM2) + '</b>.');
+    }
+    var up = st && st.usoPredominante;
+    if (up && up.id && up.pct >= 40) {
+      p.push('Es un sector predominantemente <b>' +
+             esc(sinEmoji(NOMBRE_USO[up.id] || up.id).toLowerCase()) + '</b> (' + up.pct + '% del peso de los usos).');
+    }
+    if (st && st.estrato) {
+      p.push('El estrato predominante de las manzanas es <b>' + esc(String(st.estrato)) + '</b>.');
+    }
+    var hs = (st && st.hitos) || [];
+    if (hs.length) {
+      var cerca = hs.slice().sort(function (a, b) { return a.distM - b.distM; }).slice(0, 2);
+      p.push('Lo más cercano que sirve de referencia: ' +
+             cerca.map(function (h) { return '<b>' + esc(h.nombre) + '</b> (a ' + h.distM + ' m)'; }).join(' y ') + '.');
+    }
+    if (!p.length) return '';
+    return '<p class="pcr-conc">' + p.join(' ') + '</p>';
   }
 
   function bloqueMovilidad(st) {
@@ -2375,6 +2776,8 @@
           '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
         '</div>' +
 
+        bloqueUbicacion(res.ubicacion, st, meta) +
+        bloqueLote(meta, esPol) +
         bloquePoblacion(st, esPol) +
         bloqueDemografia(st) +
 
@@ -2393,9 +2796,12 @@
         // sector: qué uso manda, cómo se llega, qué lo rodea y dónde está la
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
+        bloqueAlturas(st) +
+        bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
         bloqueNucleos(st) +
+        bloqueHitos(st) +
         bloqueAnillos(st, esPol) +
         bloqueCalor(res) +
 
@@ -2554,6 +2960,9 @@
       // que puede dar esta herramienta. Se sigue adelante con la lista vacía
       // para que la ficha lo diga con todas las letras.
       var res = await window.AIA_MOTOR.analizar(peticion);
+      // La ubicación ya se consultó arriba para el DANE: se guarda con el
+      // resultado en vez de volver a pedirla, y así viaja también a la ficha.
+      if (ubic) res.ubicacion = ubic;
       S.resultado = res;
       // La cobertura leída era la del sector ANTERIOR: dejarla puesta sería
       // mostrar el verde de otra parte junto a los datos de esta.
@@ -2922,7 +3331,9 @@
     return {
       stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
       pois: f.pois || [],
+      ubicacion: f.ubicacion || null,
       meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
+              perimetroM: f.perimetroM || null, vertices: f.vertices || 0,
               poligono: f.poligono || null,
               lat: f.centro && f.centro.lat, lng: f.centro && f.centro.lng }
     };
@@ -2962,6 +3373,8 @@
         '<div class="pcr-kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
           '</b><small>por hectárea</small></div>' +
       '</div>' +
+      bloqueUbicacion(f.ubicacion, st, comoResultado(f).meta) +
+      bloqueLote(comoResultado(f).meta, esPol) +
       bloquePoblacion(st, esPol) +
       bloqueDemografia(st) +
       (filas.length
@@ -2974,10 +3387,13 @@
           }).join('')
         : '') +
       bloqueUsoPredominante(st) +
+      bloqueAlturas(st) +
+      bloqueSol(comoResultado(f).meta) +
       bloqueMovilidad(st) +
       bloqueAmbiente(st) +
       coberturaGuardada(st.cobertura) +
       bloqueNucleos(st) +
+      bloqueHitos(st) +
       bloqueAnillos(st, esPol) +
       bloqueRubros(st) +
       // El reparto de la salida, reconstruido de lo guardado: es lo que se
