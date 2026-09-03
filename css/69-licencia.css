@@ -135,3 +135,34 @@
   font-family:ui-monospace,monospace; font-size:.9em;
   background:#eef4f8; color:#075E88; padding:1px 5px; border-radius:4px;
 }
+
+
+/* ── Contraste, por el mismo motivo que en css/68 ───────────────────────
+   URBIS aclara `small`, `p` y `span` dentro de la app móvil, y varias reglas
+   fijan -webkit-text-fill-color, que gana sobre `color`. Hay que repetir el
+   color en las dos propiedades. Sin esto, la pantalla donde alguien pega una
+   licencia que pagó se lee a medias. */
+.ulic-hoja, .ulic-hoja *{ -webkit-text-fill-color:currentColor; }
+.ulic-hoja .ulic-pista, .ulic-hoja .ulic-nota{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+.ulic-hoja .ulic-lab{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.ulic-hoja .ulic-barra b{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.ulic-hoja .ulic-ok > b{ color:#0b6b47 !important; -webkit-text-fill-color:#0b6b47 !important; }
+.ulic-hoja .ulic-ok p{ color:#33564a !important; -webkit-text-fill-color:#33564a !important; }
+.ulic-hoja .ulic-datos small{ color:#4a6459 !important; -webkit-text-fill-color:#4a6459 !important; }
+.ulic-hoja .ulic-datos b{ color:#12202e !important; -webkit-text-fill-color:#12202e !important; }
+.ulic-hoja .ulic-cupo span, .ulic-hoja .ulic-cupo em{
+  color:#3c5a4e !important; -webkit-text-fill-color:#3c5a4e !important;
+}
+.ulic-hoja .ulic-cupo b{ color:#0b6b47 !important; -webkit-text-fill-color:#0b6b47 !important; }
+.ulic-hoja .ulic-alerta{ color:#6b4e00 !important; -webkit-text-fill-color:#6b4e00 !important; }
+.ulic-hoja .ulic-error{ color:#8a2f0f !important; -webkit-text-fill-color:#8a2f0f !important; }
+.ulic-hoja .ulic-campo, .ulic-hoja .ulic-in{
+  color:#12202e !important; -webkit-text-fill-color:#12202e !important;
+}
+.ulic-hoja .ulic-principal{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+.ulic-hoja .ulic-quitar{ color:#5e6b78 !important; -webkit-text-fill-color:#5e6b78 !important; }
+.ulic-hoja .ulic-x{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.ulic-hoja .ulic-pista code{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.ulic-hoja .ulic-barra{ border-bottom:2px solid #34CCFE; }

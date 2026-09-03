@@ -177,9 +177,96 @@
 }
 .pcr-nota b{ color:#3a3f78; }
 
-/* Pro City fuerza colores de texto dentro de sus paneles; esta hoja vive
-   fuera de ellos, pero se blinda por si el usuario abre las dos a la vez. */
+/* ══════════════════════════════════════════════════════════════════════
+   CONTRASTE · esto NO es maquillaje, es que el texto se lea
+   ══════════════════════════════════════════════════════════════════════
+   Reportado desde el celular: «no entiendo nada, los textos salen muy
+   claros». URBIS tiene reglas globales que aclaran `small`, `p` y `span`
+   dentro de la app móvil, y varias fijan `-webkit-text-fill-color`, que gana
+   sobre `color` aunque `color` esté puesto. Declarar el color a secas no
+   alcanza: hay que repetirlo en las dos propiedades y con !important, que es
+   exactamente lo que ya hacía el panel de Pro City (css/24) por lo mismo.
+
+   La paleta es la de la casa: celeste #34CCFE para lo accionable, azul
+   profundo #075E88 para los títulos, y tinta #12202e para leer. Nada de
+   grises lavados. */
 .pcr-hoja, .pcr-hoja *{ -webkit-text-fill-color:currentColor; }
+
+/* Texto corrido y ayudas: tinta oscura, no gris claro. */
+.pcr-hoja .pcr-intro,
+.pcr-hoja .pcr-tarea-intro,
+.pcr-hoja .pcr-conc,
+.pcr-hoja .pcr-ok,
+.pcr-hoja .pcr-vacio-todo,
+.pcr-hoja .pcr-nota,
+.pcr-hoja .pcr-check li,
+.pcr-hoja .pcr-tareas li,
+.pcr-hoja .pcr-comp-lista li{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+.pcr-hoja .pcr-pista,
+.pcr-hoja .pcr-curva-eje,
+.pcr-hoja .pcr-leyenda,
+.pcr-hoja .pcr-guardada-t small{
+  color:#4a5c6e !important; -webkit-text-fill-color:#4a5c6e !important;
+}
+
+/* Rótulos: celeste oscurecido, que es el azul URBIS legible sobre blanco.
+   El celeste puro (#34CCFE) sobre blanco no se lee, y era justo lo que
+   pasaba con «CENTRO DEL SECTOR» y «RADIO». */
+.pcr-hoja .pcr-lab{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-h{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-barra b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+
+/* Lo destacado, en azul profundo; los números, en el celeste oscuro. */
+.pcr-hoja b, .pcr-hoja strong{
+  color:#12202e !important; -webkit-text-fill-color:#12202e !important;
+}
+.pcr-hoja .pcr-intro b, .pcr-hoja .pcr-nota b,
+.pcr-hoja .pcr-tarea-intro b, .pcr-hoja .pcr-conc b,
+.pcr-hoja .pcr-ok b, .pcr-hoja .pcr-vacio-todo b,
+.pcr-hoja .pcr-check li b{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+.pcr-hoja .pcr-kpi b, .pcr-hoja .pcr-fila-n,
+.pcr-hoja .pcr-chip b, .pcr-hoja .pcr-pobla-n b,
+.pcr-hoja .pcr-crece b{
+  color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important;
+}
+.pcr-hoja .pcr-kpi small, .pcr-hoja .pcr-pobla-n small,
+.pcr-hoja .pcr-crece small, .pcr-hoja .pcr-crece em,
+.pcr-hoja .pcr-chip{
+  color:#3f5163 !important; -webkit-text-fill-color:#3f5163 !important;
+}
+.pcr-hoja .pcr-tareas li b{ color:#6b4e00 !important; -webkit-text-fill-color:#6b4e00 !important; }
+.pcr-hoja .pcr-futuro b{ color:#a8236a !important; -webkit-text-fill-color:#a8236a !important; }
+.pcr-hoja .pcr-error{ color:#8a2f0f !important; -webkit-text-fill-color:#8a2f0f !important; }
+.pcr-hoja .pcr-aviso{ color:#0c5b3d !important; -webkit-text-fill-color:#0c5b3d !important; }
+
+/* Botones: el texto NO hereda del sitio, se fija acá. */
+.pcr-hoja .pcr-forma, .pcr-hoja .pcr-radio{
+  color:#28455c !important; -webkit-text-fill-color:#28455c !important;
+}
+.pcr-hoja .pcr-forma-on{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+.pcr-hoja .pcr-radio-on{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+.pcr-hoja .pcr-principal{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+.pcr-hoja .pcr-secundario{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.pcr-hoja .pcr-mini{ color:#0A6F9E !important; -webkit-text-fill-color:#0A6F9E !important; }
+.pcr-hoja .pcr-x{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
+.pcr-hoja .pcr-centro code, .pcr-hoja .pcr-areainfo{
+  color:#075E88 !important; -webkit-text-fill-color:#075E88 !important;
+}
+
+/* El celeste de la casa donde toca: la barra de arriba y el acento. */
+.pcr-hoja .pcr-barra{ border-bottom:2px solid #34CCFE; }
+.pcr-hoja .pcr-forma-on{ background:#075E88 !important; border-color:#075E88 !important; }
+.pcr-hoja .pcr-radio-on{ background:#0A6F9E !important; border-color:#0A6F9E !important; }
 
 /* ── Fase 3: de inventario a herramienta de trabajo ─────────────────── */
 
@@ -322,3 +409,46 @@
 .pcr-leyenda em{
   flex:0 0 100%; font-size:.68rem; color:#7a8794; font-style:normal;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOJA ENCOGIDA · para ver el mapa mientras se ubica lo que se va a analizar
+   ══════════════════════════════════════════════════════════════════════
+   Pedido desde el uso real: al elegir radio o área, la hoja debe bajar para
+   dejar ver el mapa. Con la hoja entera encima no se ve dónde se está
+   poniendo el círculo. */
+.pcr-hoja.pcr-encogida{
+  max-height:none;
+  border-radius:20px 20px 0 0;
+  box-shadow:0 -8px 28px rgba(12,32,46,.22);
+}
+.pcr-hoja.pcr-encogida .pcr-mini-cuerpo{
+  display:flex; flex-direction:column; gap:9px;
+  padding:4px 16px 18px;
+}
+
+/* El asa: se toca para abrir la hoja entera. Ancha, porque en el celular se
+   agarra con el pulgar. */
+.pcr-asa{
+  display:block; width:100%; border:0; background:none;
+  padding:10px 0 6px; cursor:pointer;
+}
+.pcr-asa::before{
+  content:''; display:block; width:44px; height:5px; margin:0 auto;
+  border-radius:99px; background:#cfe0ea;
+}
+.pcr-asa:active::before{ background:#34CCFE; }
+
+.pcr-mini-fila{ display:flex; align-items:center; gap:10px; }
+.pcr-mini-que{ flex:1; min-width:0; }
+.pcr-mini-que b{ display:block; font-size:.9rem; }
+.pcr-mini-que small{
+  display:block; font-size:.72rem;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.pcr-mini-mas{
+  flex:0 0 auto; width:38px; height:38px; border:1px solid #cfe0ea;
+  background:#fff; border-radius:12px; font-size:1.1rem; line-height:1;
+  cursor:pointer;
+}
+.pcr-radios-mini .pcr-radio{ padding:8px 4px; font-size:.8rem; }
+.pcr-mini-pista{ text-align:center; }

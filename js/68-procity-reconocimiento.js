@@ -65,6 +65,10 @@
     comparacion: null,
     comparando: false,
     enMapa: false,
+    // Encogida: la hoja baja a una barra y deja ver el mapa. Es el momento en
+    // que uno mueve el mapa para poner el radio donde lo quiere, o dibuja el
+    // área. Con la hoja entera encima no se ve dónde se está poniendo.
+    encogida: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -639,7 +643,23 @@
           S.poligono = pol;
         }
         S.forma = f; S.resultado = null; S.error = '';
+        // Al elegir la forma, la hoja baja: es cuando hay que VER el mapa
+        // para poner el radio o dibujar el área.
+        S.encogida = true;
+        if (f === 'radio') { tomarCentro(); seguirAlMapa(true); }
+        else seguirAlMapa(false);
         pintarCirculo(); pintar(); return;
+      }
+      if (acc === 'agrandar') { S.encogida = false; seguirAlMapa(false); pintar(); return; }
+      if (acc === 'encoger') { S.encogida = true;
+        if (S.forma === 'radio') seguirAlMapa(true);
+        pintar(); return; }
+      if (acc === 'dibujar-area') {
+        // Se le pide a Pro City su lápiz de siempre y se cierra esta hoja: no
+        // se puede dibujar sobre el mapa con una hoja encima.
+        cerrar();
+        try { if (window.URBIS_PC_ANALISIS) window.URBIS_PC_ANALISIS.iniciarDibujo(); } catch (e) {}
+        return;
       }
       if (acc === 'analizar') { analizar(); return; }
       if (acc === 'guardar') {
@@ -677,6 +697,27 @@
       if (acc === 'recentrar') { tomarCentro(); pintarCirculo(); pintar(); return; }
     });
     return el;
+  }
+
+  /* Mientras la hoja está encogida y se analiza por radio, el círculo sigue
+     al centro del mapa: se mueve el mapa y se ve exactamente qué se va a
+     analizar, sin tener que tocar «usar el centro» cada vez. Se conecta y se
+     desconecta a propósito —dejarlo escuchando siempre repintaría el círculo
+     en cada gesto del usuario aunque esta herramienta esté cerrada—. */
+  var siguiendo = false;
+  function alMoverElMapa() {
+    if (!S.encogida || S.forma !== 'radio') return;
+    var m = mapa(); if (!m) return;
+    var c = m.getCenter();
+    S.centro = { lat: c.lat, lng: c.lng };
+    pintarCirculo();
+    var eco = document.getElementById('pcr-eco');
+    if (eco) eco.textContent = S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5);
+  }
+  function seguirAlMapa(activar) {
+    var m = mapa(); if (!m) return;
+    if (activar && !siguiendo) { m.on('moveend', alMoverElMapa); siguiendo = true; }
+    else if (!activar && siguiendo) { m.off('moveend', alMoverElMapa); siguiendo = false; }
   }
 
   function tomarCentro() {
@@ -735,10 +776,58 @@
     }
   }
 
+  /* La barra de abajo cuando la hoja está encogida. Lleva SOLO lo que hace
+     falta con el mapa a la vista: qué se va a analizar, el radio, y el botón.
+     Todo lo demás está a un toque, en el asa. */
+  function htmlEncogida() {
+    var esPol = S.forma === 'poligono';
+    var hayPol = !!(S.poligono && S.poligono.length >= 3);
+
+    var radios = RADIOS.map(function (r) {
+      return '<button type="button" data-pcr="radio" data-r="' + r + '"' +
+        ' class="pcr-radio' + (r === S.radioM ? ' pcr-radio-on' : '') + '">' +
+        (r >= 1000 ? (r / 1000) + 'km' : r + 'm') + '</button>';
+    }).join('');
+
+    return '' +
+      '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Abrir la hoja"></button>' +
+      '<div class="pcr-mini-cuerpo">' +
+        '<div class="pcr-mini-fila">' +
+          '<div class="pcr-mini-que">' +
+            (esPol
+              ? '<b>✏️ El área dibujada</b>' +
+                (hayPol ? '<small>' + (formatearArea(areaDelPoligono()) || '') + '</small>'
+                        : '<small>todavía no hay ninguna</small>')
+              : '<b>⭕ Un radio</b><small id="pcr-eco">' +
+                (S.centro ? S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5) : 'mové el mapa') +
+                '</small>') +
+          '</div>' +
+          '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Más opciones">⋯</button>' +
+        '</div>' +
+
+        (esPol ? '' : '<div class="pcr-radios pcr-radios-mini">' + radios + '</div>') +
+        (esPol ? '' : '<p class="pcr-pista pcr-mini-pista">Mové el mapa: el círculo sigue el centro.</p>') +
+
+        (esPol && !hayPol
+          ? '<button type="button" data-pcr="dibujar-area" class="pcr-principal">✏️ Dibujar el área en el mapa</button>'
+          : '<button type="button" data-pcr="analizar" class="pcr-principal"' +
+              (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
+              (S.cargando ? '⏳ Consultando…' : '🔍 Ver qué hay') + '</button>') +
+
+        (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
+        (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
+      '</div>';
+  }
+
   function pintar() {
     var h = hoja();
+    // La ficha y la comparación se ven enteras: son para leer, no para
+    // manipular el mapa.
+    var encoger = S.encogida && !S.resultado && !S.comparacion;
+    h.classList.toggle('pcr-encogida', encoger);
     h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
                 : S.resultado    ? htmlFicha(S.resultado)
+                : encoger        ? htmlEncogida()
                 : htmlAjustes();
     h.classList.toggle('pcr-visible', S.abierto);
     if (S.resultado && !S.comparacion) pintarGrafica(S.resultado);
@@ -1250,6 +1339,9 @@
       S.error = (e && e.message) || 'No se pudo consultar el sector.';
     }
     S.cargando = false;
+    // Con resultado, la hoja se abre sola: ya no hay nada que ubicar en el
+    // mapa y sí mucho que leer.
+    if (S.resultado) { S.encogida = false; seguirAlMapa(false); }
     pintar();
   }
 

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v617-modulos-separados';
+const URBIS_CACHE = 'urbis-v618-legible-y-encogible';
 const URBIS_ASSETS = [
   './',
   './index.html',
