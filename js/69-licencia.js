@@ -27,7 +27,12 @@
 
   var CLAVE = 'urbis_licencia_analisis';
 
-  var S = { abierto: false, estado: null, comprobando: false, error: '', motivo: '' };
+  var S = { abierto: false, estado: null, comprobando: false, error: '', motivo: '',
+            // Modo emisor: solo para el dueño de URBIS, y solo si conoce el
+            // secreto. Vive en la misma hoja porque es la misma conversación
+            // —licencias— y separarlo en otra página sería un sitio más que
+            // recordar y mantener.
+            emitiendo: false, emitida: null, errorEmitir: '' };
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -85,6 +90,20 @@
       var acc = b.getAttribute('data-ulic');
       if (acc === 'cerrar') { cerrar(); return; }
       if (acc === 'guardar') { guardarYComprobar(); return; }
+      if (acc === 'modo-emitir') { S.emitiendo = !S.emitiendo; S.emitida = null; S.errorEmitir = ''; pintar(); return; }
+      if (acc === 'emitir') { emitir(); return; }
+      if (acc === 'copiar-lic') {
+        var t = S.emitida && S.emitida.licencia;
+        if (!t) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(t).then(function () {
+              S.errorEmitir = ''; S.copiada = true; pintar();
+            }, function () { S.copiada = false; pintar(); });
+          }
+        } catch (e) {}
+        return;
+      }
       if (acc === 'quitar') {
         borrar(); S.estado = null; S.error = ''; S.motivo = '';
         pintar(); return;
@@ -123,6 +142,89 @@
     }
     S.comprobando = false;
     pintar();
+  }
+
+  async function emitir() {
+    var g = function (id) { var e = document.getElementById(id); return e ? String(e.value || '').trim() : ''; };
+    var secreto = g('ulic-secreto');
+    var cliente = g('ulic-cliente');
+    var vence = g('ulic-vence');
+    var plan = g('ulic-plan');
+    var cupo = Number(g('ulic-cupo') || 0);
+
+    if (!secreto) { S.errorEmitir = 'Falta el secreto de URBIS.'; pintar(); return; }
+    if (!cliente) { S.errorEmitir = 'Ponele el nombre del cliente.'; pintar(); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(vence)) { S.errorEmitir = 'La fecha va como 2027-12-31.'; pintar(); return; }
+
+    S.comprobando = true; S.errorEmitir = ''; S.emitida = null; S.copiada = false; pintar();
+    try {
+      var base = api();
+      var res = await fetch(base + '/emitir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + secreto },
+        body: JSON.stringify({ cliente: cliente, plan: plan, vence: vence, cupo: cupo })
+      });
+      var c = await res.json();
+      if (c && c.ok) S.emitida = c;
+      else S.errorEmitir = (c && c.error) || ('El servidor respondió ' + res.status + '.');
+    } catch (e) {
+      S.errorEmitir = (e && e.message) || 'No se pudo emitir la licencia.';
+    }
+    S.comprobando = false;
+    pintar();
+  }
+
+  function htmlEmisor() {
+    var e = S.emitida;
+    var hoy = new Date();
+    var dentroDeUnAnio = new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate())
+      .toISOString().slice(0, 10);
+
+    return '<div class="ulic-emisor">' +
+      '<p class="ulic-pista">Solo para URBIS. Tu secreto <b>no se guarda</b>: se usa para esta ' +
+      'emisión y se olvida al cerrar.</p>' +
+
+      '<label class="ulic-lab" for="ulic-secreto">Secreto de URBIS</label>' +
+      '<input id="ulic-secreto" class="ulic-in" type="password" autocomplete="off" spellcheck="false" ' +
+        'placeholder="el valor de URBIS_SECRETO">' +
+
+      '<label class="ulic-lab" for="ulic-cliente">Cliente</label>' +
+      '<input id="ulic-cliente" class="ulic-in" type="text" maxlength="80" placeholder="Constructora del Norte S.A.S.">' +
+
+      '<div class="ulic-fila">' +
+        '<div><label class="ulic-lab" for="ulic-vence">Vence</label>' +
+          '<input id="ulic-vence" class="ulic-in" type="date" value="' + dentroDeUnAnio + '"></div>' +
+        '<div><label class="ulic-lab" for="ulic-cupo">Análisis por día</label>' +
+          '<input id="ulic-cupo" class="ulic-in" type="number" min="0" step="10" value="200"></div>' +
+      '</div>' +
+      '<p class="ulic-pista">Cupo <b>0</b> = sin tope. El tope es lo que evita que un cliente ' +
+      'con licencia buena raspe la clasificación entera llamando un millón de veces.</p>' +
+
+      '<label class="ulic-lab" for="ulic-plan">Plan (opcional)</label>' +
+      '<input id="ulic-plan" class="ulic-in" type="text" maxlength="40" placeholder="Pro">' +
+
+      (S.errorEmitir ? '<p class="ulic-error">' + esc(S.errorEmitir) + '</p>' : '') +
+
+      '<button type="button" data-ulic="emitir" class="ulic-principal"' +
+        (S.comprobando ? ' disabled' : '') + '>' +
+        (S.comprobando ? 'Emitiendo…' : 'Emitir licencia') + '</button>' +
+
+      (e
+        ? '<div class="ulic-ok">' +
+            '<b>✓ Licencia emitida y verificada</b>' +
+            '<div class="ulic-datos">' +
+              '<div><small>Cliente</small><b>' + esc(e.cliente) + '</b></div>' +
+              '<div><small>Vence</small><b>' + esc(e.vence) + '</b></div>' +
+              '<div><small>Cupo</small><b>' + (e.cupo || 'sin tope') + '</b></div>' +
+            '</div>' +
+            '<textarea class="ulic-campo" readonly rows="3">' + esc(e.licencia) + '</textarea>' +
+            '<button type="button" data-ulic="copiar-lic" class="ulic-quitar">' +
+              (S.copiada ? '✓ copiada' : '📋 Copiar la licencia') + '</button>' +
+            '<p class="ulic-pista">Mandásela al cliente. Apuntá también su id <code>' + esc(e.id) + '</code>: ' +
+            'es lo que se pone en <code>URBIS_REVOCADAS</code> si algún día hay que anularla.</p>' +
+          '</div>'
+        : '') +
+    '</div>';
   }
 
   function pintar() {
@@ -169,6 +271,7 @@
         '<button type="button" data-ulic="cerrar" class="ulic-x" aria-label="Cerrar">✕</button>' +
       '</div>' +
       '<div class="ulic-cuerpo">' +
+        (S.emitiendo ? '' :
         (S.motivo === 'sin_cupo'
           ? '<p class="ulic-alerta">Se agotó el cupo de análisis de hoy. Se reinicia mañana; si necesitás más, escribinos.</p>'
           : S.motivo === 'vencida'
@@ -190,7 +293,12 @@
           (S.comprobando ? ' disabled' : '') + '>' +
           (S.comprobando ? 'Comprobando…' : 'Comprobar y guardar') +
         '</button>' +
-        (lic ? '<button type="button" data-ulic="quitar" class="ulic-quitar">Quitar la licencia de este dispositivo</button>' : '') +
+        (lic ? '<button type="button" data-ulic="quitar" class="ulic-quitar">Quitar la licencia de este dispositivo</button>' : '')) +
+
+        '<button type="button" data-ulic="modo-emitir" class="ulic-quitar ulic-emitir-link">' +
+          (S.emitiendo ? '← Volver' : 'Soy URBIS: emitir una licencia') + '</button>' +
+
+        (S.emitiendo ? htmlEmisor() : '') +
 
         '<p class="ulic-nota">Tu licencia se guarda <b>solo en este navegador</b>. Si entrás desde otro ' +
         'dispositivo, tenés que pegarla ahí también. No la compartas: cualquiera que la tenga consume tu cupo.</p>' +

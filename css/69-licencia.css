@@ -109,3 +109,25 @@
   border-radius:9px; padding:10px 12px;
 }
 .ulic-nota b{ color:#075E88; }
+
+/* ── Emisor de licencias (solo URBIS) ───────────────────────────────── */
+.ulic-emitir-link{ align-self:flex-start; color:#7a8794; }
+.ulic-emisor{
+  display:flex; flex-direction:column; gap:9px;
+  border:1px solid #e2e8f0; border-radius:11px;
+  padding:13px 14px; background:#fbfdfe;
+}
+.ulic-in{
+  width:100%; font:inherit; font-size:.84rem; color:#12202e;
+  border:1px solid #d8dfe8; border-radius:9px; padding:9px 11px;
+  background:#fff;
+}
+.ulic-in:focus{ outline:2px solid #0A6F9E; outline-offset:1px; border-color:#0A6F9E; }
+.ulic-fila{ display:flex; gap:9px; }
+.ulic-fila > div{ flex:1; display:flex; flex-direction:column; gap:5px; }
+.ulic-emisor .ulic-lab{ margin-bottom:-4px; }
+.ulic-emisor .ulic-ok{ margin-top:4px; }
+.ulic-emisor code{
+  font-family:ui-monospace,monospace; font-size:.9em;
+  background:#eef4f8; color:#075E88; padding:1px 5px; border-radius:4px;
+}
