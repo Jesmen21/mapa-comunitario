@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-02",
-  "proximaActualizacion": "2026-09-03",
+  "actualizado": "2026-09-03",
+  "proximaActualizacion": "2026-09-04",
   "categorias": {
     "gobierno": { "nombre": "Gobierno y decretos", "icono": "🏛️", "color": "#1E7A4B" },
     "israel": { "nombre": "Relación con Israel", "icono": "🇮🇱", "color": "#2563eb" },
@@ -19,6 +19,37 @@
     "legitimidad": { "nombre": "Legitimidad electoral", "icono": "⚖️", "color": "#0f766e" }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "El Gobierno propone que la consulta previa y la licencia ambiental avancen en paralelo, sin que una condicione el trámite de la otra",
+      "detalle": "El vocero del Gobierno, Miller Soto, anunció el 3 de septiembre una propuesta para que la consulta previa con comunidades étnicas y el trámite de licenciamiento ambiental avancen de manera paralela y autónoma, de modo que uno no condicione el inicio, la evaluación o la decisión del otro. Según Soto, \"la consulta previa no se acaba, se transforma para hacerla más clara, más eficiente y más garantista\". Mientras la autoridad ambiental analiza los posibles impactos de un proyecto, la entidad a cargo de la consulta previa establecería de forma independiente si existe afectación directa a una comunidad. El Gobierno sostiene que, aunque son trámites jurídicamente independientes, en la práctica terminan condicionándose entre sí y generan demoras en algunos proyectos.",
+      "contrapunto": "La propuesta, anunciada por vocería de gobierno y sin un decreto o proyecto de ley radicado hasta esta actualización, modifica el peso que históricamente ha tenido la consulta previa —un mecanismo de protección constitucional de comunidades étnicas— frente al licenciamiento ambiental. URBIS no encontró, a la fecha de esta entrada, pronunciamientos públicos de organizaciones indígenas, afrodescendientes o ambientales sobre el anuncio.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        { "n": "Infobae · Gobierno de Abelardo de la Espriella propone que consulta previa y licencia ambiental avancen en paralelo", "u": "https://www.infobae.com/colombia/2026/09/03/gobierno-de-abelardo-de-la-espriella-propone-que-consulta-previa-y-licencia-ambiental-avancen-en-paralelo/" },
+        { "n": "El Espectador · Gobierno de la Espriella anuncia cambios en la consulta previa y en licencias ambientales", "u": "https://www.elespectador.com/ambiente/gobierno-de-la-espriella-anuncia-cambios-en-la-consulta-previa-y-en-licencias-ambientales/" },
+        { "n": "Valora Analitik · Gobierno De la Espriella anuncia importante cambio en expedición de licencias ambientales en Colombia", "u": "https://www.valoraanalitik.com/gobierno-de-la-espriella-anuncia-importante-cambio-en-expedicion-de-licencias-ambientales-en-colombia/" }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Viviane Morales renuncia al Ministerio de Educación a los 28 días del cargo; el presidente designa en su reemplazo a Ilva Myriam Hoyos, cuyo nombramiento genera controversia",
+      "detalle": "El presidente confirmó el 3 de septiembre la renuncia irrevocable de Viviane Morales al Ministerio de Educación, alegando \"una situación familiar inesperada\", tras apenas 28 días en el cargo. En su reemplazo, designó a la abogada Ilva Myriam Hoyos, doctora en Derecho por la Universidad de Navarra y exprocuradora delegada para la Defensa de los Derechos de la Infancia, la Adolescencia y la Familia durante la Procuraduría de Alejandro Ordóñez. El presidente la elogió en redes sociales: \"Su talante, fortaleza, honradez y firme defensa de los valores la preceden. Estoy seguro de que será una gran ministra\".",
+      "contrapunto": "El exministro de Justicia Jorge Iván Cuervo señaló que Hoyos ha sostenido \"posiciones muy reaccionarias y hostiles contra los derechos de la mujer\" durante su paso por la Procuraduría; medios como El Colombiano describieron su llegada al ministerio como polémica por esas posiciones. El Gobierno no ha respondido públicamente a esas críticas hasta esta actualización.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        { "n": "Infobae · Viviane Morales sale del Ministerio de Educación: en su reemplazo, Abelardo de la Espriella designó a Ilva Myriam Hoyos", "u": "https://www.infobae.com/colombia/2026/09/03/viviane-morales-sale-del-ministerio-de-educacion-en-su-reemplazo-abelardo-de-la-espriella-designo-a-ilva-myriam-hoyos/" },
+        { "n": "Infobae · Viviane Morales renunció al Ministerio de Educación y le produjo un particular récord al Gobierno: la más rápida en la historia de Colombia", "u": "https://www.infobae.com/colombia/2026/09/03/viviane-morales-renuncio-al-ministerio-de-educacion-y-le-produjo-un-particular-record-al-gobierno-de-abelardo-de-la-espriella-la-mas-rapida-en-la-historia-de-colombia/" },
+        { "n": "El Tiempo · Viviane Morales renuncia al Ministerio de Educación por \"una situación familiar inesperada\"; Ilva Myriam Hoyos asumirá el cargo", "u": "https://www.eltiempo.com/politica/gobierno/viviane-morales-renuncia-al-ministerio-de-educacion-por-una-situacion-familiar-inesperada-ilva-myriam-hoyos-asumira-el-cargo-3583137" },
+        { "n": "El Heraldo · De la Espriella designa a Ilva Myriam Hoyos como nueva ministra de Educación: ¿qué pasó con Viviane Morales?", "u": "https://www.elheraldo.co/colombia/2026/09/03/de-la-espriella-designa-a-a-ilva-myriam-hoyos-como-nueva-ministra-de-educacion-que-paso-con-viviane-morales/" },
+        { "n": "El Espectador · ¿Quién es Ilva Myriam Hoyos, la nueva ministra de Educación y reemplazo de Viviane Morales?", "u": "https://www.elespectador.com/educacion/quien-es-ilva-myriam-hoyos-la-nueva-ministra-de-educacion-y-reemplazo-de-viviane-morales/" },
+        { "n": "El Colombiano · la apuesta de De la Espriella con la nueva ministra de Educación", "u": "https://www.elcolombiano.com/colombia/ilva-myriam-hoyos-y-su-polemica-llegada-al-ministerio-de-educacion-KC40605917" }
+      ]
+    },
     {
       "fecha": "2026-09-02",
       "precision": "exacta",
