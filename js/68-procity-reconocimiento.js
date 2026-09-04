@@ -2879,8 +2879,15 @@
       if (acc === 'amenaza') { pedirAmenaza(); return; }
       if (acc === 'amenaza-texto') {
         var AM2 = window.URBIS_AMENAZA;
-        if (!AM2 || !S.amenaza) return;
-        var txtAm = AM2.comoTexto(S.amenaza);
+        var IN2 = window.URBIS_INUNDACION;
+        if ((!AM2 || !S.amenaza) && !(IN2 && S.inundacion)) return;
+        /* Lo que se pega en la memoria del proyecto lleva las dos amenazas.
+           Copiar solo el sismo dejaría fuera justo la que en Cúcuta se puede
+           ver desde la ventana. */
+        var txtAm = [
+          (AM2 && S.amenaza) ? AM2.comoTexto(S.amenaza) : '',
+          (IN2 && S.inundacion) ? IN2.comoTexto(S.inundacion) : ''
+        ].filter(Boolean).join('\n\n');
         S.textoPlano = txtAm;
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -4676,6 +4683,74 @@
      La única determinante de este análisis que viene de una norma y no de una
      medición. Por eso se dice de dónde sale y qué alcance tiene: es del
      municipio, no del lote, y no dimensiona nada. */
+  /* El agua. Se dibuja aparte del sismo porque puede llegar sola: si el SGC
+     está caído y el IDEAM contesta, quedarse sin mostrar la inundación por
+     solidaridad con el otro servidor no le sirve a nadie. Devuelve cadena
+     vacía cuando no hay nada que decir, así que se puede sumar sin condición
+     en los dos caminos del bloque de amenaza. */
+  function bloqueInundacion() {
+    var inu = S.inundacion;
+    if (!inu && S.inundacionAviso) {
+      return '<p class="pcr-lab">La inundación</p>' +
+        '<p class="pcr-ojo">No se pudo consultar el mapa de inundación del IDEAM: ' +
+        esc(S.inundacionAviso) + ' Eso <b>no quiere decir que el lote no se inunde</b>: ' +
+        'quiere decir que no se sabe.</p>';
+    }
+    if (!inu) return '';
+    if (inu.sinDato) {
+      return '<p class="pcr-lab">La inundación</p>' +
+        '<p class="pcr-ojo">El servicio del IDEAM contestó, pero ninguna de sus capas de ' +
+        'inundación se pudo leer. No se sabe.</p>';
+    }
+    var dentro = inu.trPeor != null;
+    return '<p class="pcr-lab">La inundación</p>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b style="color:' + esc(inu.color) + '">' + esc(inu.nombre) +
+          '</b><small>amenaza de inundación</small></div>' +
+        (dentro
+          ? '<div class="pcr-kpi"><b>' + inu.trPeor + ' años</b>' +
+            '<small>periodo de retorno</small></div>'
+          : '') +
+      '</div>' +
+      (dentro
+        ? '<p class="pcr-conc">El lote cae dentro de la mancha de <b>' + inu.trPeor +
+          ' años</b>: según el mapa nacional, se inunda <b>' + esc(inu.frecuencia) + '</b>. ' +
+          esc(inu.que) + '</p>' +
+          (inu.dentroDe.length > 1
+            ? '<div class="pcr-lote">' + inu.dentroDe.map(function (tr) {
+                return '<div class="pcr-lote-fila"><span>Mancha de ' + tr +
+                  ' años</span><b>lo toca</b></div>';
+              }).join('') + '</div>'
+            : '') +
+          (inu.enLaDeCien
+            ? '<p class="pcr-conc pcr-ojo">Está dentro de la mancha de <b>100 años</b>, que es ' +
+              'con la que los POT delimitan suelo de protección por amenaza de inundación. ' +
+              'Antes de dibujar nada, esto se verifica en la cartografía del POT vigente: si ' +
+              'ahí también aparece, el lote puede no ser urbanizable.</p>'
+            : '')
+        : '<p class="pcr-conc">El lote <b>no cae</b> en ninguna de las ' + inu.consultadas +
+          ' manchas de inundación del mapa nacional.</p>') +
+      /* La salvedad va SIEMPRE, y con más razón cuando el resultado es
+         «fuera»: es justo ahí donde alguien lo leería como un permiso. */
+      '<p class="pcr-pista">' + esc(inu.salvedad) + '</p>' +
+      (function () {
+        /* Lo mismo que se hace con la remoción en masa: cruzar el dato
+           nacional con algo medido de ESTE lote. Un terreno plano al lado de
+           un río es otra conversación que uno en pendiente. */
+        var pe = S.terreno && S.terreno.pendiente;
+        if (!pe || pe.media == null) return '';
+        var m = Number(pe.media);
+        return '<p class="pcr-pista">La pendiente medida acá es <b>' +
+          String(pe.media).replace('.', ',') + '%</b>. ' +
+          (m < 3
+            ? 'Terreno casi plano: el agua que llegue no se va sola, se queda. El desagüe ' +
+              'no es un detalle técnico de después, es parte de la implantación.'
+            : 'Con esa pendiente el agua corre; el problema se traslada a dónde va a parar ' +
+              'y a qué hay aguas abajo.') + '</p>';
+      })() +
+      '<p class="pcr-pista">' + esc(inu.fuente) + '.</p>';
+  }
+
   function bloqueAmenaza() {
     var am = S.amenaza;
     if (!am) {
@@ -4693,7 +4768,8 @@
           ? '<p class="pcr-pista">El servidor del Servicio Geológico es lento: puede tardar ' +
             'medio minuto.</p>' : '') +
         (S.amenazaAviso && !S.amenazaCargando
-          ? '<p class="pcr-error">' + esc(S.amenazaAviso) + '</p>' : '');
+          ? '<p class="pcr-error">' + esc(S.amenazaAviso) + '</p>' : '') +
+        bloqueInundacion();
     }
     var D = window.URBIS_DIBUJO;
     var dib = '';
@@ -4802,6 +4878,7 @@
       'capa es un punto por cabecera. Si Cúcuta llega a tener microzonificación sísmica, manda ' +
       'esa y no esto. El SGC publica la aceleración en gal (cm/s²); dividida por 981 da los g de ' +
       'la norma.</p>' +
+      bloqueInundacion() +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="amenaza-texto" class="pcr-mini">' +
           ico('copiar', 16) + 'Copiar para la memoria</button>' +
@@ -10034,17 +10111,39 @@
                pintar(); return; }
     var e = ejeDelSector();
     if (!e || e.lat == null) { S.amenazaAviso = 'Primero analizá un sector.'; pintar(); return; }
-    S.amenazaCargando = true; S.amenazaAviso = ''; pintar();
+    S.amenazaCargando = true; S.amenazaAviso = ''; S.inundacionAviso = ''; pintar();
+
+    /* El agua se pide junto con el sismo, por el mismo botón y en la misma
+       espera. Son dos servidores distintos —el SGC y el IDEAM— pero una sola
+       pregunta: «¿qué le puede pasar a este sitio?». Separarlas en dos
+       botones obligaría a saber de antemano que hay dos, que es justo lo que
+       alguien que abre esto por primera vez no sabe.
+
+       Van en paralelo y cada una aguanta que la otra falle: que el IDEAM esté
+       caído no es razón para quedarse sin los coeficientes de la norma, ni al
+       revés. Por eso el `catch` de la inundación devuelve en vez de propagar. */
+    var IN = window.URBIS_INUNDACION;
+    var agua = IN
+      ? IN.consultar(e.lat, e.lng).then(function (inu) { S.inundacion = inu; },
+          function (err) {
+            S.inundacion = null;
+            S.inundacionAviso = (err && err.message) || 'No se pudo consultar la inundación.';
+          })
+      : Promise.resolve();
+
     // Se devuelve la promesa: sin ella «Medir todo» daba este paso por
     // terminado apenas empezaba, lo contaba como fallido y seguía con la foto
     // satelital mientras el SGC todavía estaba contestando.
-    return AM.consultar(e.lat, e.lng).then(function (am) {
-      S.amenaza = am; S.amenazaCargando = false; S.amenazaAviso = '';
-      guardarFichaViva();
-      pintar();
-    }).catch(function (err) {
+    return Promise.all([
+      AM.consultar(e.lat, e.lng).then(function (am) {
+        S.amenaza = am; S.amenazaAviso = '';
+      }, function (err) {
+        S.amenazaAviso = (err && err.message) || 'No se pudo consultar la amenaza sísmica.';
+      }),
+      agua
+    ]).then(function () {
       S.amenazaCargando = false;
-      S.amenazaAviso = (err && err.message) || 'No se pudo consultar la amenaza sísmica.';
+      guardarFichaViva();
       pintar();
     });
   }

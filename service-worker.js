@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v686-el-toque-rapido';
+const URBIS_CACHE = 'urbis-v687-el-agua';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -152,6 +152,7 @@ const URBIS_ASSETS = [
   './js/74-dibujos-analisis.js',
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
+  './js/79-amenaza-inundacion.js',
   './js/77-sin-senal.js',
   './js/78-que-cabe.js',
 ];

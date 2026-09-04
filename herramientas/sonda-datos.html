@@ -105,11 +105,22 @@
   —de la Alcaldía, del Área Metropolitana—, agréguela en una línea nueva. Tiene que terminar
   en <code>/rest/services</code>.</p>
   <label for="raices">Raíces de servicios ArcGIS, una por línea</label>
-  <textarea id="raices" spellcheck="false">https://ags.esri.co/arcgis/rest/services
-https://srvags.sgc.gov.co/arcgis/rest/services</textarea>
-  <p class="pista">El IDEAM no publica en ArcGIS sino en GeoServer, que habla otro idioma:
-  esta sonda no lo entiende y por eso ya no viene en la lista. Sus capas de inundación hay que
-  buscarlas aparte.</p>
+  <textarea id="raices" spellcheck="false">https://visualizador.ideam.gov.co/gisserver/rest/services
+https://srvags.sgc.gov.co/arcgis/rest/services
+https://ags.esri.co/arcgis/rest/services
+https://mapas.igac.gov.co/server/rest/services
+https://geoportal.dane.gov.co/mparcgis/rest/services
+https://geoservicios.upra.gov.co/arcgis/rest/services
+https://portalsig.anla.gov.co/publico/rest/services
+http://geoservicios.gestiondelriesgo.gov.co:6080/arcgis/rest/services</textarea>
+  <p class="pista">Antes acá decía que el IDEAM no publicaba en ArcGIS. Era falso, y no era un
+  dato: era una suposición mía escrita con el tono de un dato. El IDEAM sí publica en ArcGIS,
+  en <code>visualizador.ideam.gov.co</code>, y ahí están las manchas de inundación por periodo
+  de retorno que ahora usa la ficha. Las tres direcciones de GeoServer que estuvieron en la
+  caja&nbsp;3 eran del mismo material: inventadas siguiendo un patrón, nunca comprobadas.</p>
+  <p class="pista">El último de la lista va por <code>http</code> y con puerto: la sonda lo
+  intenta igual porque sirve para mirar, pero el relevo del motor de URBIS no lo aceptaría.
+  Una fuente que solo habla http no se puede usar en la aplicación.</p>
 
   <label for="claves">Palabras que hay que cazar</label>
   <input id="claves" value="amenaza, riesgo, inunda, ronda, hidric, hídric, torrencial, remocion, remoción, deslizamiento, sismic, sísmic, pot, uso_suelo, uso del suelo, tratamiento, norma">

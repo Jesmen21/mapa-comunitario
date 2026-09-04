@@ -217,6 +217,44 @@ console.log('\n  -- identificadores sueltos --');
   });
 }
 
+// ── 3c. los scripts sueltos de las páginas parsean ───────────────────────
+/* Un `<script>` escrito dentro del HTML que no cierre bien no rompe la página:
+   el navegador descarta ESE bloque y sigue como si nada. Lo que había adentro
+   simplemente no existe, sin error visible en ningún lado salvo una consola
+   que en un celular nadie abre.
+
+   Se encontró así: un IIFE de index.html al que le faltaba el `})();` del
+   final. Adentro estaba el código que distingue deslizar de tocar en pantalla
+   táctil, y llevaba meses sin correr —en un teléfono, arrastrar el dedo por
+   encima de un botón lo activaba igual—. Los archivos .js sí se revisan desde
+   siempre; estos no, y por eso fue el único sitio donde algo así podía
+   esconderse tanto tiempo. */
+console.log('\n  -- los scripts escritos dentro de las páginas --');
+{
+  const { execFileSync } = require('child_process');
+  const os = require('os');
+  const paginas = fs.readdirSync(RAIZ).filter(f => f.endsWith('.html'));
+  const rotos = [];
+  let cuantos = 0;
+  paginas.forEach(pag => {
+    const html = leer(pag);
+    const re = /<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      // Los que no son JavaScript —plantillas, JSON incrustado— no se parsean.
+      if (/type\s*=\s*["']?(?!text\/javascript|module|application\/javascript)/i.test(m[1])) continue;
+      cuantos++;
+      const tmp = path.join(os.tmpdir(), 'urbis-suelto-' + process.pid + '-' + cuantos + '.js');
+      fs.writeFileSync(tmp, m[2], 'utf8');
+      try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); }
+      catch (e) { rotos.push(pag + ':' + (html.slice(0, m.index).split('\n').length)); }
+      finally { try { fs.unlinkSync(tmp); } catch (e) {} }
+    }
+  });
+  comprobar('todos parsean', rotos.length === 0,
+    rotos.length ? 'ROTOS: ' + rotos.join(', ') : cuantos + ' scripts en ' + paginas.length + ' páginas');
+}
+
 // ── 3b. las hojas de estilo no están rotas ───────────────────────────────
 // Un comentario mal cerrado en CSS no da error en ninguna parte: el navegador
 // se come el resto del archivo en silencio y las reglas de abajo dejan de
