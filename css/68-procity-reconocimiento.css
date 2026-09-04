@@ -114,6 +114,20 @@
   border-radius:9px; padding:10px 12px;
 }
 
+/* De dónde salió el centro del análisis, y de dónde salieron los índices.
+   Las dos dicen la procedencia de un dato, así que se ven igual. */
+.pcr-origen{ margin-top:-2px; }
+.pcr-cabe-fuente{
+  border:1px solid #e2e6f0; border-radius:10px; padding:12px 13px; background:#fbfdfe;
+}
+.pcr-campo-linea{ display:grid; grid-template-columns:96px 1fr; gap:9px; align-items:center; margin:7px 0; }
+.pcr-campo-linea>span{ font-size:.78rem; color:#56707f; }
+.pcr-campo-linea input{
+  width:100%; padding:7px 9px; border:1px solid #cfd8e3; border-radius:7px;
+  background:#fff; color:#233748; font-size:.86rem;
+}
+.pcr-fuente-ok{ font-size:.84rem; }
+
 /* La hoja plantada porque seguir borraría lo que no se pudo guardar. Se ve
    como un bloque de medición y no como un error al pie: es una decisión que
    hay que tomar, no una noticia que leer. */

@@ -86,7 +86,8 @@ for(let a=0;a<14;a++){
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,160)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ── El sector, guardado con sitio de sobra.
   const holgado=await pg.evaluate(async (D)=>{

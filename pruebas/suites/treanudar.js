@@ -109,7 +109,8 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ══ ANTES DE LA RECARGA ═══════════════════════════════════════════════
   const antes=await pg.evaluate(async (D)=>{
@@ -176,7 +177,8 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
 
   // ══ LA RECARGA, de verdad ═════════════════════════════════════════════
   await pg.reload({waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
   const redTrasRecarga=JSON.parse(JSON.stringify(red));
 
   const despues=await pg.evaluate(async (D)=>{

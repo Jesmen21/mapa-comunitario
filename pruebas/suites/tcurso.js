@@ -90,7 +90,8 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ── El sector y mi propio recorrido.
   await pg.evaluate(async (D)=>{
@@ -204,7 +205,8 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
     if(bg){ window.prompt=()=>'Sector del curso'; bg.click(); await esperar(700); }
   });
   await pg.reload({waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
   const tras=await pg.evaluate(async ()=>{
     const o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));
     const R=window.URBIS_PC_RECON;

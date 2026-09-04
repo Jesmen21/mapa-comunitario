@@ -58,7 +58,8 @@ const FICHAS=[
     const pg=await ctx.newPage();
     const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
     await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-    await pg.waitForTimeout(3400);
+    // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
     const o=await pg.evaluate(async (C)=>{
       const out={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));

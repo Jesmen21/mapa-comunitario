@@ -23,15 +23,27 @@ const fs=require('fs'); const path=require('path');
 const S=E.TRABAJO; const LEAFLET=S+'node_modules/leaflet/dist/';
 const C={lat:7.8939,lng:-72.5078}, L=0.004;
 const POL =[{lat:C.lat-L,lng:C.lng-L},{lat:C.lat+L,lng:C.lng-L},{lat:C.lat+L,lng:C.lng+L},{lat:C.lat-L,lng:C.lng+L}];
-// El área B, a unos trescientos metros: otro sector, no otro encuadre.
-const POL2=POL.map(p=>({lat:p.lat-0.0030,lng:p.lng-0.0030}));
+/* El área B, a kilómetro y medio: otro barrio, sin discusión posible. La
+   primera versión de esta prueba la ponía a trescientos metros, solapada con
+   la primera —y ahí la respuesta correcta no es obvia: un lote dibujado
+   dentro del área que se acaba de estudiar sigue siendo del mismo sitio. La
+   prueba tiene que separar los casos que sí son distintos. */
+const POL2=POL.map(p=>({lat:p.lat-0.0135,lng:p.lng-0.0135}));
 const GLAT=m=>m/110540, GLNG=m=>m/(111320*Math.cos(C.lat*Math.PI/180));
 const Q=(dx,dy)=>({lat:C.lat+GLAT(dy), lng:C.lng+GLNG(dx)});
+// Un lote chico, bien dentro del área: el mismo sitio, otro encuadre.
+const LOTE=[Q(-40,-30),Q(40,-30),Q(40,30),Q(-40,30)];
 
+/* Usos en LOS DOS barrios. La primera versión solo poblaba el primero, y el
+   análisis del segundo se quedaba sin nada que analizar: la prueba medía
+   entonces «qué pasa con un sector vacío», que es otra cosa. */
+const C2={lat:C.lat-0.0135, lng:C.lng-0.0135};
 let id=1; const usos=[];
-for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
-  usos.push({type:'node',id:id++,lat:C.lat+Math.cos(a)*d,lon:C.lng+Math.sin(a)*d,
-    tags:{name:'U'+i, amenity:['pharmacy','restaurant','school'][i%3]}}); }
+[C,C2].forEach(function(centro){
+  for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
+    usos.push({type:'node',id:id++,lat:centro.lat+Math.cos(a)*d,lon:centro.lng+Math.sin(a)*d,
+      tags:{name:'U'+id, amenity:['pharmacy','restaurant','school'][i%3]}}); }
+});
 
 // Ana y Luis, que caminaron la misma esquina que la estudiante.
 const DIR=path.join(S,'recorridos-sector'); fs.mkdirSync(DIR,{recursive:true});
@@ -71,7 +83,8 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,160)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ── El sector A, con una marca propia encima.
   await pg.evaluate(async (D)=>{
@@ -127,6 +140,32 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
     return o;
   });
 
+  /* ── El lote, dentro del área que se acaba de analizar ────────────────
+     Cambia la huella —otra forma— pero no el lugar: lo hecho a mano se queda,
+     y el análisis viejo se suelta porque sus cuentas eran de otra huella. */
+  const conLote=await pg.evaluate(async (D)=>{
+    const {LOTE}=D, o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const R=window.URBIS_PC_RECON, H=()=>document.getElementById('pcr-hoja');
+    const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]'); if(a){ a.click(); await esperar(400); } };
+    await abrir();
+    const bf=H().querySelector('[data-pcr="forma"][data-f="lote"]');
+    if(bf){ bf.click(); await esperar(400); }
+    const bd=H().querySelector('[data-pcr="lote-dibujar"]');
+    if(bd){ bd.click(); await esperar(400);
+      LOTE.forEach(p=>window.map.fire('click',{latlng:{lat:p.lat,lng:p.lng}}));
+      await esperar(200);
+      const c=document.querySelector('#pcr-lote-barra [data-lote="cerrar"]'); if(c){ c.click(); await esperar(600); }
+    }
+    /* El limitador de Overpass: cinco segundos entre consultas, y rechaza sin
+       avisar bonito. Sin esta espera el análisis se cae con «Espera 3
+       segundos» y la prueba mide eso en vez de lo que quería medir. */
+    await esperar(5200);
+    await R.analizar(); await esperar(1500);
+    o.loteSobrevive=!!R.centroDelLoteDePrueba();
+    o.marcas=(R.intangibleDePrueba()||[]).length;
+    return o;
+  },{LOTE});
+
   /* ── Otra área: eso sí es otro sector ─────────────────────────────────── */
   const otroSector=await pg.evaluate(async (D)=>{
     const {POL2}=D, o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));
@@ -142,9 +181,18 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
     o.loDice=/quedó guardado con/i.test(t) && /pestaña «Sector»/i.test(t);
     o.cuenta=/1 marca tuya/.test(t) && /2 recorridos traídos/.test(t);
     o.frase=(t.match(/[^.]{0,40}(quedó guardado con)[^.]{0,150}\./i)||[])[0]||'no dice nada';
+    o.hayTraba=!!H().querySelector('.pcr-traba');
+    o.hayGuardadoMal=!!H().querySelector('.pcr-guardado-mal');
+    o.hayLapizArmado=!!document.getElementById('pcr-int-barra');
+    o.hayLoteArmado=!!document.getElementById('pcr-lote-barra');
     // Y se analiza el sector nuevo: nada del anterior puede colarse.
+    await esperar(5200);
     await R.analizar(); await esperar(1500);
+    o.seAnalizo=R.estado().hay;
+    o.errorAlAnalizar=[...H().querySelectorAll('.pcr-error')].map(x=>(x.textContent||'').trim()).join(' | ').slice(0,120);
     o.marcasTrasAnalizar=(R.intangibleDePrueba()||[]).length;
+    const t2=(H().textContent||'').replace(/\s+/g,' ').trim();
+    o.error=t2.slice(0,240);
     const fs2=R.leerFichas()||[];
     o.fichas=fs2.length;
     o.idB=(fs2[0]||{}).id;
@@ -186,6 +234,13 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
   T('«Analizar otro sector» sobre la misma área no borra el trabajo',
     mismoSitio.marcas===1 && mismoSitio.curso===2,
     mismoSitio.marcas+' marcas · '+mismoSitio.curso+' recorridos');
+  /* La primera versión de la guarda miraba solo la huella, y con eso pasar de
+     «área dibujada» a «lote» en el mismo sitio borraba el lote que la
+     estudiante acababa de dibujar: la guarda haciendo justo lo que existía
+     para impedir. */
+  T('y marcar un lote dentro del área analizada tampoco',
+    conLote.loteSobrevive===true && conLote.marcas===1,
+    conLote.marcas+' marcas · lote '+(conLote.loteSobrevive?'entero':'perdido'));
 
   console.log('\n  -- otra área sí lo es --');
   T('el trabajo del sector anterior se suelta',
@@ -194,7 +249,9 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
   T('con la cuenta de lo que llevaba', otroSector.cuenta===true);
   /* Lo que hacía el código de antes: la marca del sector A terminaba
      archivada en la ficha del B, a trescientos metros. */
-  T('nada del sector anterior se cuela en el nuevo',
+  T('el sector nuevo se analiza de verdad', otroSector.seAnalizo===true,
+    otroSector.errorAlAnalizar||'sin errores');
+  T('y nada del anterior se cuela en él',
     otroSector.marcasTrasAnalizar===0 && otroSector.enFichaB.marcas===0 && otroSector.enFichaB.curso===0,
     JSON.stringify(otroSector.enFichaB));
   T('y el nuevo es otra ficha, no la de antes pisada',

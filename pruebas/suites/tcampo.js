@@ -94,7 +94,8 @@ let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,110)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ══ EN CASA, CON WIFI ═══════════════════════════════════════════════════
   const casa = await pg.evaluate(async (D)=>{
@@ -129,7 +130,8 @@ let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   // ══ SE CORTA LA RED Y SE CIERRA LA APP ═════════════════════════════════
   hayRed = false;
   await pg.reload({waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   const campo = await pg.evaluate(async (D)=>{
     const {C}=D, esperar=ms=>new Promise(r=>setTimeout(r,ms)), o={};

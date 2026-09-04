@@ -72,6 +72,16 @@
     // De qué área es el resultado que está en memoria, para no mostrar una
     // ficha de un sector distinto al que está elegido en el mapa.
     huellaAnalizada: '',
+    /* De dónde salió el punto alrededor del cual se consulta. Se marca donde
+       se decide y viaja con la ficha. No es adorno: llegó un informe de campo
+       —«ajusté el radio sobre el lote y el análisis se hizo en mi ubicación
+       GPS»— que no pude reproducir en tres intentos. Con esto, una foto de la
+       hoja contesta sola de dónde salió el centro. */
+    centroDe: '',
+    /* Dónde y hasta dónde llegaba el sector analizado. Es contra esto que se
+       decide si lo siguiente es el mismo lugar con otro encuadre o un barrio
+       distinto. */
+    sectorAnclado: null,
     /* Cuando cambiar de área destruiría trabajo que no se pudo archivar, la
        hoja se planta acá hasta que alguien decida. Guarda el recuento de lo
        que está en juego. */
@@ -110,6 +120,12 @@
     /* Los índices del POT que el estudiante escribe a mano. URBIS no los
        conoce: acá solo se guardan para hacer la cuenta con ellos. */
     indices: null, queCabeAbierto: false,
+    /* De dónde salieron los índices y de qué año son. Los escribe la persona
+       que fue a buscarlos. Sin esto, un número copiado en una ventanilla se
+       lee meses después como si lo hubiera medido la aplicación —el mismo
+       error que ya se corrigió dos veces: un valor puesto a mano mostrado con
+       la seguridad de una medición—. */
+    indicesFuente: null,
     /* EL PLIEGO: qué cajas y qué mapas van al papel. Guarda las APAGADAS y no
        las encendidas, para que una caja nueva —de una versión posterior—
        aparezca sola en el pliego de un sector guardado hace meses en vez de
@@ -448,6 +464,12 @@
       // trabajo de haber ido a buscar el POT: perderlos al recargar sería
       // hacerle repetir esa búsqueda.
       indices: S.indices || null,
+      /* Cuáles se escribieron a mano. Se guardaba el VALOR y no esto, así que
+         un sector reabierto con los siete índices del POT puestos volvía
+         diciendo «cuenta de ejemplo»: la única señal de que un número salió
+         de la ficha normativa es que alguien lo escribió. */
+      indicesPuestos: S.indicesPuestos || null,
+      indicesFuente: S.indicesFuente || null,
       pliegoOff: (S.pliegoOff || []).slice(),
       pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
@@ -484,6 +506,9 @@
         cuando: new Date().toISOString()
       } : null,
       forma: meta.forma || 'radio',
+      // Cómo se eligió el centro. Es una palabra y contesta la pregunta que
+      // una captura de pantalla no podía contestar.
+      centroDe: S.centroDeAnalizado || '',
       centro: { lat: meta.lat, lng: meta.lng },
       radioM: meta.radioM,
       areaM2: meta.areaM2 || null,
@@ -757,6 +782,27 @@
       if (c) return c;
     }
     return S.centro;
+  }
+
+  /* De dónde salió ese punto, con las MISMAS ramas y en el mismo orden que la
+     función de arriba. Van juntas a propósito: si una crece una rama y la
+     otra no, la hoja diría que el análisis se hizo alrededor de una cosa
+     mientras se hace alrededor de otra, que es peor que no decir nada. */
+  function origenDelCentro() {
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) return 'area';
+    if (S.forma === 'lote' && centroDelLote()) return 'lote';
+    return S.centroDe || 'mapa';
+  }
+
+  var ORIGEN_TEXTO = {
+    area: 'el área que dibujaste',
+    lote: 'el lote que marcaste',
+    mapa: 'el centro del mapa, donde estaba la vista',
+    ficha: 'el sector guardado que retomaste'
+  };
+
+  function comoSeEligioElCentro(id) {
+    return ORIGEN_TEXTO[id] || ORIGEN_TEXTO.mapa;
   }
 
 
@@ -3010,6 +3056,16 @@
     /* Los índices del POT. Mismo criterio que la nota de una marca: se
        guardan al SALIR del campo y no en cada tecla, porque repintar la hoja
        destruiría el campo en la primera y cerraría el teclado del teléfono. */
+    /* La fuente de los índices. Mismo criterio que los índices y las notas:
+       al SALIR del campo, no en cada tecla. */
+    el.addEventListener('change', function (ev) {
+      var c = ev.target.closest && ev.target.closest('[data-pcr-fuente]');
+      if (!c) return;
+      S.indicesFuente = S.indicesFuente || {};
+      S.indicesFuente[c.getAttribute('data-pcr-fuente')] = String(c.value || '').trim().slice(0, 120);
+      guardarFichaViva();
+      pintar();
+    });
     el.addEventListener('change', function (ev) {
       var c = ev.target.closest && ev.target.closest('[data-pcr-idx]');
       if (!c) return;
@@ -3439,7 +3495,7 @@
         }
         S.forma = f; S.resultado = null; S.error = '';
         // Partiendo del lote, el centro es el suyo desde el primer momento.
-        if (f === 'lote' && centroDelLote()) S.centro = centroDelLote();
+        if (f === 'lote' && centroDelLote()) { S.centro = centroDelLote(); S.centroDe = 'lote'; }
         // Al elegir la forma, la hoja baja: es cuando hay que VER el mapa
         // para poner el radio o dibujar el área.
         S.encogida = true;
@@ -3587,18 +3643,13 @@
         pintar(); return;
       }
       if (acc === 'otro') {
-        /* Se suelta el resultado, no el área: quien quiera el mismo sector con
-           otro radio no tiene que volver a dibujarlo. Y NO se suelta la
-           huella: es lo único que recuerda a qué sector pertenecen las marcas
-           y los recorridos que siguen en memoria. Borrarla acá era lo que
-           dejaba pasar las marcas de un barrio al siguiente. */
-        S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
-        S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
-        S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
-        try {
-          var A5 = window.URBIS_PC_ANALISIS;
-          if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
-        } catch (e) {}
+        /* Se suelta el resultado, no el área ni el trabajo a mano: quien
+           quiera el mismo sector con otro radio no tiene que volver a
+           dibujarlo, y sus marcas siguen siendo de ese barrio. Tampoco se
+           suelta el ancla del sector: es lo que recuerda A QUÉ LUGAR
+           pertenece lo que queda en memoria, y borrarla acá era lo que dejaba
+           pasar las marcas de un barrio al siguiente. */
+        soltarElAnalisis();
         pintar(); return;
       }
       if (acc === 'trazado') { analizarTrazado(); return; }
@@ -3653,6 +3704,7 @@
     var m = mapa(); if (!m) return;
     var c = m.getCenter();
     S.centro = { lat: c.lat, lng: c.lng };
+    S.centroDe = 'mapa';
     pintarCirculo();
     var eco = document.getElementById('pcr-eco');
     if (eco) eco.textContent = S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5);
@@ -3668,6 +3720,7 @@
     if (!m) return;
     var c = m.getCenter();
     S.centro = { lat: c.lat, lng: c.lng };
+    S.centroDe = 'mapa';
     S.resultado = null;
     S.error = '';
   }
@@ -4970,6 +5023,28 @@
      a alguien que no conoce la ciudad entender de qué se está hablando.
      Se arma con la geocodificación inversa que ya se consulta para el censo,
      así que no cuesta una petición más. */
+  /* Alrededor de qué se hizo la consulta, dicho con todas las letras y con
+     las coordenadas al lado.
+
+     Llegó un informe de campo que no pude reproducir en tres intentos:
+     «marqué el lote, ajusté el radio, y el análisis se hizo en mi ubicación
+     GPS». Sin esta línea, una captura de la hoja no permite distinguir un
+     error de la aplicación de un lápiz que se soltó sin querer, así que la
+     conversación se queda en dos personas adivinando. Con ella, la foto
+     contesta sola.
+
+     Y sirve aunque el error no exista: saber a qué está anclada la cuenta es
+     parte de leerla. */
+  function bloqueDondeSeMidio(origen, meta) {
+    if (!origen) return '';
+    var donde = '';
+    if (meta && isFinite(meta.lat) && isFinite(meta.lng)) {
+      donde = ' (' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) + ')';
+    }
+    return '<p class="pcr-pista pcr-origen">Se midió alrededor de <b>' +
+      esc(comoSeEligioElCentro(origen)) + '</b>' + esc(donde) + '.</p>';
+  }
+
   function bloqueUbicacion(ubic, st, meta) {
     if (!ubic) return '';
     var cadena = [
@@ -8133,7 +8208,7 @@
     S.sombras = null;
     /* Partiendo del lote, cerrarlo es lo que define el centro del análisis:
        el círculo aparece ahí mismo para que se vea qué se va a estudiar. */
-    if (S.forma === 'lote') { S.centro = centroDelLote(); pintarCirculo(); }
+    if (S.forma === 'lote') { S.centro = centroDelLote(); S.centroDe = 'lote'; pintarCirculo(); }
     pintarLote(); pintar(); pintarBarraLote();
   }
 
@@ -10142,6 +10217,51 @@
       '</div>';
   }
 
+  /* De dónde salieron los índices, escrito por quien fue a buscarlos.
+
+     La lista de mandados ya dice a quién pedir cada cosa —Planeación
+     Municipal, el POMCA del Pamplonita, la microzonificación si existe—. Lo
+     que faltaba era lo de después: una vez traído el número, que quede
+     anotado de qué documento salió y de qué año es.
+
+     Sin eso, dentro de tres meses la ficha muestra un índice de ocupación con
+     la misma cara con la que muestra la pendiente del terreno, que sí se
+     midió. Es exactamente el error que ya se corrigió dos veces en este
+     módulo, y el que más caro sale: no se nota mirando la ficha, se nota
+     cuando alguien defiende una lámina con un número que nadie puede
+     rastrear. */
+  function bloqueFuenteIndices(guardada) {
+    var f = S.indicesFuente || {};
+    var hay = !!(f.documento || f.fecha);
+    if (guardada) {
+      return hay
+        ? '<p class="pcr-conc pcr-fuente-ok">Los índices salieron de <b>' + esc(f.documento || 'sin documento anotado') +
+          '</b>' + (f.fecha ? ', de ' + esc(f.fecha) : '') + '.</p>'
+        : '<p class="pcr-conc pcr-ojo">Estos índices se escribieron a mano y <b>nadie anotó de ' +
+          'dónde salieron</b>. No se pueden citar en una entrega sin volver a buscar la fuente.</p>';
+    }
+    return '<div class="pcr-cabe-fuente">' +
+      '<p class="pcr-lab">De dónde los sacaste</p>' +
+      '<label class="pcr-campo-linea">' +
+        '<span>Documento</span>' +
+        '<input type="text" maxlength="120" data-pcr-fuente="documento" ' +
+          'placeholder="Acuerdo 0089 · Planeación Municipal" ' +
+          'value="' + esc(f.documento || '') + '" />' +
+      '</label>' +
+      '<label class="pcr-campo-linea">' +
+        '<span>De qué año</span>' +
+        '<input type="text" maxlength="40" data-pcr-fuente="fecha" ' +
+          'placeholder="2011, revisado en 2019" ' +
+          'value="' + esc(f.fecha || '') + '" />' +
+      '</label>' +
+      (hay
+        ? '<p class="pcr-pista">Queda escrito con la ficha y sale en la lámina: es lo que hace ' +
+          'citable el número.</p>'
+        : '<p class="pcr-pista">Dos líneas ahora te ahorran volver a la ventanilla dentro de tres ' +
+          'meses, cuando nadie se acuerde de qué acuerdo era.</p>') +
+    '</div>';
+  }
+
   function bloqueQueCabe(guardada) {
     var Q = window.URBIS_QUE_CABE;
     var la = null;
@@ -10183,6 +10303,7 @@
       'escribas. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
       'es parte del ejercicio.</p>' +
       (guardada ? '' : '<div class="pcr-cabe-campos">' + campos + '</div>') +
+      bloqueFuenteIndices(guardada) +
       /* La banda va PEGADA a las cifras, no arriba del todo. La advertencia de
          más arriba dice de dónde salen los índices; esta dice si ESTAS cifras
          son de este lote o de un ejemplo. Un estudiante que baja hasta los
@@ -11552,6 +11673,7 @@
           '<div class="pcr-kpi"><b>' + dens + '</b><small>por hectárea</small></div>' +
           '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
         '</div>' +
+        bloqueDondeSeMidio(S.centroDeAnalizado, meta) +
 
         bloqueUbicacion(res.ubicacion, st, meta) +
         bloqueLote(meta, esPol) +
@@ -11806,6 +11928,10 @@
       if (ubic) res.ubicacion = ubic;
       S.resultado = res;
       S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
+      // De dónde salió el punto que se acaba de consultar, congelado acá: lo
+      // que valga después no es lo que se preguntó.
+      S.centroDeAnalizado = origenDelCentro();
+      S.sectorAnclado = anclaDelSector();
       // La cobertura leída era la del sector ANTERIOR: dejarla puesta sería
       // mostrar el verde de otra parte junto a los datos de esta.
       S.cobertura = null; S.cobAviso = ''; S.cobEnMapa = false;
@@ -12161,9 +12287,11 @@
       } catch (e) {}
       S.forma = 'poligono'; S.poligono = pol;
       S.centro = centroideDe(pol);
+      S.centroDe = 'ficha';
     } else if (f.centro && f.centro.lat != null) {
       S.forma = f.forma === 'lote' ? 'lote' : 'radio';
       S.centro = { lat: f.centro.lat, lng: f.centro.lng };
+      S.centroDe = 'ficha';
       S.radioM = f.radioM || RADIO_POR_DEFECTO;
     } else {
       return false;
@@ -12173,8 +12301,13 @@
     S.resultado = comoResultado(f);
     S.ultimasZonas = comoZonas(f);
     S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
+    // Y el ancla: lo retomado pertenece al lugar de la ficha, no al último
+    // sitio que se hubiera mirado en el mapa.
+    S.sectorAnclado = anclaDelSector();
     S.fichaActualId = f.id || '';
     S.nombreGuardado = f.nombre || '';
+    // El origen es del análisis que se archivó, no del estado de ahora.
+    S.centroDeAnalizado = f.centroDe || 'ficha';
 
     // 3 · Todo lo que se midió aparte.
     S.trazado = f.trazado || null;
@@ -12194,6 +12327,8 @@
     S.pliegoOff = (f.pliegoOff || []).slice();
     S.pliegoMapasOff = (f.pliegoMapasOff || []).slice();
     S.indices = f.indices || null;
+    S.indicesPuestos = f.indicesPuestos || null;
+    S.indicesFuente = f.indicesFuente || null;
     S.pliegoCabe = null;
     S.lote = (f.lote && f.lote.length >= 3)
       ? f.lote.map(function (p) { return { lat: p.lat, lng: p.lng }; }) : null;
@@ -12318,6 +12453,22 @@
   function revisarCambioDeArea(ahora, areaBorrada) {
     if (!S.huellaAnalizada) return false;
     if (ahora === S.huellaAnalizada && !areaBorrada) return false;
+
+    /* Cambió el encuadre. La pregunta que decide qué se borra no es esa sino
+       la otra: ¿es OTRO SITIO?
+
+       Se separan porque son dos cosas distintas. El análisis pertenece a una
+       huella —otro radio, otra forma, otro polígono y las cuentas ya no son
+       de eso—, así que se suelta siempre. Lo que la persona puso a mano
+       pertenece a un LUGAR: si marca el lote dentro del área que acababa de
+       analizar, sus marcas siguen siendo de ese barrio.
+
+       La primera versión de esta guarda usaba solo la huella, y con eso pasar
+       de «área dibujada» a «lote» en el mismo sitio borraba el lote que la
+       estudiante acababa de dibujar. Que es justo lo que la guarda existía
+       para impedir, hecho por la guarda. */
+    if (!esOtroSitio()) { soltarElAnalisis(); return false; }
+
     var hecho = trabajoAMano();
     /* Si el sector anterior NO se pudo archivar, borrarlo es perderlo de
        verdad. Se para: la hoja se queda donde está y dice por qué, con la
@@ -12326,6 +12477,67 @@
     if (hecho.hay && S.avisoGuardado) { S.trabaDescartar = hecho; return true; }
     descartarSectorAnterior(hecho);
     return false;
+  }
+
+  /* ¿El punto que se va a consultar ahora cae fuera del sector que se
+     analizó? Se compara contra el ALCANCE de aquel sector —su radio, o la
+     distancia del centro a la esquina más lejana del área— porque eso es lo
+     que se recorrió: un lote dibujado dentro del área que se acaba de
+     estudiar está en el mismo barrio; un área a un kilómetro y medio, no. */
+  function esOtroSitio() {
+    var a = S.sectorAnclado;
+    if (!a || !isFinite(a.lat)) return true;
+    var c = centroDeAnalisis();
+    if (!c || !isFinite(c.lat)) return true;
+    return distanciaM(c, a) > (a.alcanceM || 0);
+  }
+
+  function distanciaM(a, b) {
+    var R = 6371000, r = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * r;
+    var dLng = (b.lng - a.lng) * r * Math.cos((a.lat + b.lat) / 2 * r);
+    return Math.sqrt(dLat * dLat + dLng * dLng) * R;
+  }
+
+  /* Hasta dónde llegaba el sector que se analizó. Es lo que se ancla al
+     terminar un análisis, y contra lo que se mide si el siguiente es otro
+     sitio. */
+  function anclaDelSector() {
+    var c = centroDeAnalisis();
+    if (!c || !isFinite(c.lat)) return null;
+    var alcance = S.radioM || 500;
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
+      alcance = 0;
+      S.poligono.forEach(function (p) { alcance = Math.max(alcance, distanciaM(p, c)); });
+    }
+    return { lat: c.lat, lng: c.lng, alcanceM: Math.max(120, alcance) };
+  }
+
+  /* Soltar el ANÁLISIS y nada más: las cuentas eran de una huella que ya no
+     está elegida. Lo que la persona puso a mano se queda, porque es del
+     lugar. Es lo que hace el botón «Analizar otro sector», y lo que hace
+     cambiar el encuadre del mismo sitio: una sola función para los dos, que
+     antes eran dos listas copiadas que se iban separando. */
+  function soltarElAnalisis() {
+    S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
+    S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
+    S.trzHuellas = null; S.trzPisos = null; S.trzVias = null; S.sombras = null;
+    /* El nombre y lo medido para el sector se van con el análisis, aunque el
+       lugar sea el mismo: pertenecen a la FICHA, y analizar otra huella hace
+       una ficha nueva. Dejarlos pasar es el error que ya se cometió una vez
+       —el sector siguiente quedaba archivado con el nombre del anterior y con
+       SU climatología, del sitio de al lado— y que no se nota mirando la
+       ficha: se nota meses después, cuando los datos ya no se pueden creer.
+       Lo probó la suite de la lámina en cuanto lo rompí otra vez. */
+    S.clima = null; S.cliAviso = ''; S.campo = null;
+    S.amenaza = null; S.amenazaAviso = '';
+    S.nombreGuardado = ''; S.nombreSugerido = '';
+    S.terAviso = ''; S.trzAviso = '';
+    pintarLlenos(false);
+    try {
+      var A5 = window.URBIS_PC_ANALISIS;
+      if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
+    } catch (e) {}
   }
 
   /* Lo que el estudiante puso a mano y ningún servidor puede devolver. Se
@@ -12378,11 +12590,12 @@
       // qué se midió, y en el sector nuevo no se midió nada todavía.
     S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
     S.amenaza = null; S.amenazaAviso = '';
-    S.indices = null; S.indicesPuestos = null;
+    S.indices = null; S.indicesPuestos = null; S.indicesFuente = null;
     pintarCaminata(false); pintarLote();
     S.cobertura = null; S.cobEnMapa = false; S.calor = [];
     S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
     S.trabaDescartar = null;
+    S.sectorAnclado = null;
     // El borrador del lápiz era de aquel sector, no de este.
     olvidarTrazoVivo();
 
@@ -12537,6 +12750,7 @@
     var amAntes = S.amenaza;
     var loteAntes = S.lote, rejAntes = S.terRejilla;
     var curAntes = S.intCurso, uniAntes = S.intUnion, intAntes = S.intangible;
+    var idxAntes = S.indices, pusAntes = S.indicesPuestos, fteAntes = S.indicesFuente;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -12567,6 +12781,7 @@
         '<div class="pcr-kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
           '</b><small>por hectárea</small></div>' +
       '</div>' +
+      bloqueDondeSeMidio(f.centroDe, comoResultado(f).meta) +
       bloqueUbicacion(f.ubicacion, st, comoResultado(f).meta) +
       bloqueLote(comoResultado(f).meta, esPol) +
       bloquePoblacion(st, esPol) +
@@ -12596,6 +12811,12 @@
            quedaría viejo en cuanto cambiara la forma de unirlos. */
         S.intCurso = f.intCurso || [];
         S.intUnion = null;
+        /* Los índices también se prestan. Sin esto, «qué cabe» de un sector
+           archivado se calculaba con los índices que hubiera en memoria —los
+           de otro lote, o los de ejemplo— y los mostraba como suyos. */
+        S.indices = f.indices || null;
+        S.indicesPuestos = f.indicesPuestos || null;
+        S.indicesFuente = f.indicesFuente || null;
         /* Por la misma función que lo arma en vivo —`rehacerUnion`— y no por
            una cuenta paralela: dos caminos calculando el mismo acuerdo es
            cómo se llega a que la ficha guardada diga un número y la viva
@@ -12621,6 +12842,7 @@
         S.amenaza = amAntes;
         S.lote = loteAntes; S.terRejilla = rejAntes;
         S.intCurso = curAntes; S.intUnion = uniAntes; S.intangible = intAntes;
+        S.indices = idxAntes; S.indicesPuestos = pusAntes; S.indicesFuente = fteAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -13119,7 +13341,10 @@
         centro: S.centro,
         vertices: S.poligono ? S.poligono.length : 0,
         areaM2: Math.round(areaDelPoligono()),
-        hay: !!S.resultado
+        hay: !!S.resultado,
+        // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
+        // puede distinguir un análisis que falló de otro que ni empezó.
+        consultando: !!S.cargando
       };
     }
   };

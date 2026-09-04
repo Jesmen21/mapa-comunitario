@@ -183,7 +183,8 @@ const T=(q,c,d)=>{ (c?ok:mal).push(q); console.log('  '+(c?'✓':'✗')+' '+q+(d
      cargada probaría un camino que ningún estudiante recorre. */
   const desdeCero=async()=>{
     await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-    await pg.waitForTimeout(3400);
+    // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
     await preparar();
   };
 

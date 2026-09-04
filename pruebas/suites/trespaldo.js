@@ -57,7 +57,8 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,160)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ── Un sector con una marca propia.
   await pg.evaluate(async (D)=>{
@@ -165,7 +166,8 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
 
   // Se recarga la aplicación: es lo que hace un teléfono cuando reclama memoria.
   await pg.reload({waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   const tras=await pg.evaluate(async ()=>{
     const o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));

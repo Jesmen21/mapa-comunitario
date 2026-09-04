@@ -116,7 +116,8 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
-  await pg.waitForTimeout(3400);
+  // A la condición y no al reloj: ver `esperarLaApp` en pruebas/entorno.js.
+  await E.esperarLaApp(pg);
 
   // ── Vuelta 1: un solo uso, sin medir nada más
   const r1=await pg.evaluate(async (D)=>{

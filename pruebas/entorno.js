@@ -22,7 +22,28 @@ const RAIZ = path.resolve(__dirname, '..');
 const TRABAJO = process.env.URBIS_PRUEBAS_TRABAJO ||
   path.join(RAIZ, '..', 'urbis-pruebas');
 
+/* Esperar a que la aplicación esté ARMADA, en vez de a que pase un rato.
+
+   Las suites arrancaban con un `waitForTimeout(3400)` y con eso alcanzaba
+   casi siempre. «Casi siempre» es el problema: corriendo cuatro navegadores
+   en paralelo, de vez en cuando Leaflet todavía no había puesto el mapa y la
+   suite caía con «map.on is not a function» —un rojo que no era una
+   regresión—. Una prueba que falla al azar enseña a ignorar los rojos, que
+   es lo peor que le puede pasar a un banco de pruebas.
+
+   Se espera a la condición: el mapa existe y responde. Y se le pone tope,
+   porque una espera sin límite convierte un fallo en un cuelgue. */
+async function esperarLaApp(pg, msTope) {
+  await pg.waitForFunction(function () {
+    return !!(window.map && typeof window.map.on === 'function' &&
+              window.URBIS_PC_RECON && window.URBIS_CONFIG);
+  }, null, { timeout: msTope || 20000 });
+  // Un respiro corto para los módulos que se enganchan al mapa recién creado.
+  await pg.waitForTimeout(400);
+}
+
 module.exports = {
+  esperarLaApp: esperarLaApp,
   RAIZ: RAIZ,
   TRABAJO: TRABAJO.replace(/\/*$/, '/'),
   MODULOS: process.env.URBIS_PRUEBAS_MODULOS || path.join(TRABAJO, 'node_modules'),
