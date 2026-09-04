@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>URBIS · Sonda de servicios de datos</title>
+<style>
+  :root{
+    --tinta:#12212B; --tinta-2:#3B4A5A; --tinta-3:#6B7A8A;
+    --papel:#FFFFFF; --fondo:#F3F8FB; --linea:#DCE7EF;
+    --celeste:#34CCFE; --hondo:#0A6F9E;
+    --bien:#177245; --mal:#B3282C; --duda:#B07D18;
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--fondo); color:var(--tinta);
+    font:15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:16px; max-width:960px; margin-inline:auto;
+  }
+  header{border-bottom:3px solid var(--celeste); padding-bottom:12px; margin-bottom:16px}
+  .eyebrow{
+    font-size:.7rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--hondo); margin:0 0 2px;
+  }
+  h1{font-size:1.5rem; margin:0 0 6px; letter-spacing:-.01em}
+  h2{font-size:1rem; margin:22px 0 8px; color:var(--hondo)}
+  p{margin:0 0 10px; color:var(--tinta-2)}
+  .pista{font-size:.85rem; color:var(--tinta-3)}
+  section{
+    background:var(--papel); border:1px solid var(--linea); border-radius:var(--r);
+    padding:14px; margin-bottom:14px;
+  }
+  label{display:block; font-size:.78rem; font-weight:700; color:var(--tinta-2); margin:10px 0 4px}
+  input,textarea{
+    width:100%; font:inherit; font-size:.9rem; padding:9px 10px;
+    border:1px solid var(--linea); border-radius:8px; background:var(--fondo); color:var(--tinta);
+  }
+  textarea{min-height:76px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.8rem}
+  .fila{display:flex; gap:10px; flex-wrap:wrap}
+  .fila > div{flex:1 1 140px; min-width:0}
+  .botones{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  button{
+    font:inherit; font-weight:700; font-size:.88rem; cursor:pointer;
+    padding:10px 14px; border-radius:8px; border:1px solid var(--hondo);
+    background:var(--hondo); color:#fff;
+  }
+  button.secundario{background:var(--papel); color:var(--hondo)}
+  button[disabled]{opacity:.5; cursor:default}
+  #estado{font-size:.85rem; color:var(--tinta-3); margin-top:10px; min-height:1.4em}
+  .marca{
+    display:inline-block; padding:1px 8px; border-radius:999px;
+    font-size:.72rem; font-weight:800; color:#fff;
+  }
+  .m-bien{background:var(--bien)} .m-mal{background:var(--mal)} .m-duda{background:var(--duda)}
+  .hallazgo{
+    border:1px solid var(--linea); border-left:4px solid var(--celeste);
+    border-radius:8px; padding:10px 12px; margin-bottom:8px; background:var(--papel);
+  }
+  .hallazgo b{display:block; font-size:.92rem}
+  .hallazgo code{
+    display:block; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:.72rem; color:var(--tinta-3); word-break:break-all; margin:3px 0 6px;
+  }
+  pre{
+    background:#0F1B24; color:#D9E7F0; border-radius:8px; padding:12px;
+    font-size:.72rem; line-height:1.45; overflow:auto; max-height:60vh;
+    white-space:pre-wrap; word-break:break-word; margin:0;
+  }
+  ol{margin:0 0 10px; padding-left:20px; color:var(--tinta-2); font-size:.9rem}
+  li{margin-bottom:5px}
+  footer{font-size:.78rem; color:var(--tinta-3); text-align:center; padding:16px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">URBIS · herramienta interna</p>
+  <h1>Sonda de servicios de datos</h1>
+  <p class="pista">Busca capas de <b>amenaza, riesgo y POT</b> en servidores ArcGIS y averigua
+  tres cosas: si existen, cómo se llaman sus campos, y si el navegador las puede consultar.
+  Esto último es lo que decide si URBIS las puede usar directo o hay que pasarlas por el motor.</p>
+</header>
+
+<section>
+  <h2>1 · Dónde buscar</h2>
+  <p class="pista">Ya vienen cargados los servidores conocidos. Si le pasan otra dirección
+  —de la Alcaldía, del Área Metropolitana—, agréguela en una línea nueva. Tiene que terminar
+  en <code>/rest/services</code>.</p>
+  <label for="raices">Raíces de servicios ArcGIS, una por línea</label>
+  <textarea id="raices" spellcheck="false">https://ags.esri.co/arcgis/rest/services
+https://srvags.sgc.gov.co/arcgis/rest/services
+https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
+
+  <label for="claves">Palabras que hay que cazar</label>
+  <input id="claves" value="amenaza, riesgo, inundac, remocion, remoción, deslizamiento, sismic, sísmic, pot, uso_suelo, uso del suelo, tratamiento, norma">
+
+  <div class="fila">
+    <div>
+      <label for="lat">Latitud del punto de prueba</label>
+      <input id="lat" value="7.8939" inputmode="decimal">
+    </div>
+    <div>
+      <label for="lng">Longitud</label>
+      <input id="lng" value="-72.5078" inputmode="decimal">
+    </div>
+    <div>
+      <label for="radio">Radio (m)</label>
+      <input id="radio" value="500" inputmode="numeric">
+    </div>
+  </div>
+  <p class="pista">El punto que viene puesto es el centro de Cúcuta. Cámbielo si quiere probar
+  sobre un barrio concreto.</p>
+
+  <div class="botones">
+    <button id="explorar">Explorar</button>
+    <button id="limpiar" class="secundario">Limpiar</button>
+  </div>
+  <div id="estado"></div>
+</section>
+
+<section id="caja-uno">
+  <h2>2 · Si ya tiene la dirección de una capa</h2>
+  <p class="pista">Cuando alguien de Planeación le pase un enlace, péguelo acá y la sonda lo
+  examina sin explorar nada más. Sirve tanto la dirección del servicio como la de una capa suelta.</p>
+  <label for="suelto">Dirección del servicio o de la capa</label>
+  <input id="suelto" placeholder="https://…/arcgis/rest/services/…/MapServer" spellcheck="false">
+  <div class="botones">
+    <button id="examinar" class="secundario">Examinar esta</button>
+  </div>
+</section>
+
+<section>
+  <h2>3 · Lo que hay que mandarle a Claude</h2>
+  <p class="pista">Cuando termine, copie todo de acá y péguelo en la conversación. No lleva
+  claves ni datos personales: son nombres de capas, nombres de campos y un ejemplo de respuesta.</p>
+  <div class="botones">
+    <button id="copiar" class="secundario">Copiar todo</button>
+    <button id="bajar" class="secundario">Descargar como archivo</button>
+  </div>
+  <div id="hallazgos" style="margin-top:12px"></div>
+  <pre id="informe">Todavía no se ha explorado nada.</pre>
+</section>
+
+<section>
+  <h2>Si no aparece nada</h2>
+  <ol>
+    <li><b>Planeación de Cúcuta o el Área Metropolitana.</b> Muchos municipios tienen geoportal
+      y no lo anuncian. Los datos del POT son públicos por la Ley 1712: se pueden pedir.</li>
+    <li><b>Colombia en Mapas (IGAC)</b> y el portal de <b>Datos Abiertos</b>. Fíjese si lo que
+      publican es un servicio en vivo o solo un PDF.</li>
+    <li>Si el POT solo existe como <b>PDF o shapefile de descarga</b>, no sirve para consultar
+      en vivo: hay que cargarlo una vez y servirlo desde el motor de URBIS. Es más trabajo,
+      pero se puede.</li>
+  </ol>
+</section>
+
+<footer>URBIS Pro City · herramienta de diagnóstico, no forma parte de la aplicación</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var informe = [];
+  var hallazgos = [];
+
+  function linea(t) { informe.push(t); pintarInforme(); }
+  function pintarInforme() {
+    $('informe').textContent = informe.length ? informe.join('\n') : 'Todavía no se ha explorado nada.';
+  }
+  function estado(t) { $('estado').textContent = t; }
+
+  function pintarHallazgos() {
+    $('hallazgos').innerHTML = hallazgos.map(function (h) {
+      return '<div class="hallazgo">' +
+        '<b>' + escapar(h.titulo) + ' <span class="marca m-' + h.marca + '">' +
+          escapar(h.etiqueta) + '</span></b>' +
+        '<code>' + escapar(h.url) + '</code>' +
+        (h.nota ? '<span class="pista">' + escapar(h.nota) + '</span>' : '') +
+      '</div>';
+    }).join('');
+  }
+  function escapar(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* Una sola puerta a la red. Lo que importa no es solo el contenido: también
+     POR QUÉ falla. Un fallo de CORS y un servidor caído se ven igual desde
+     JavaScript —el navegador no cuenta cuál fue—, así que se dice como es y no
+     se inventa una certeza que no hay. */
+  function traer(url, ms) {
+    var ctrl = new AbortController();
+    var reloj = setTimeout(function () { ctrl.abort(); }, ms || 25000);
+    return fetch(url, { signal: ctrl.signal, credentials: 'omit' })
+      .then(function (r) {
+        if (!r.ok) return { error: 'contestó HTTP ' + r.status };
+        return r.json().then(function (j) {
+          if (j && j.error) {
+            return { error: 'error del servicio: ' + (j.error.message || JSON.stringify(j.error)) };
+          }
+          return { ok: j };
+        }, function () { return { error: 'contestó algo que no es JSON' }; });
+      })
+      .catch(function (e) {
+        return { error: e && e.name === 'AbortError'
+          ? 'tardó más de ' + Math.round((ms || 25000) / 1000) + ' s'
+          : 'el navegador no la pudo leer (CORS cerrado, servidor caído o dirección mal escrita)' };
+      })
+      .then(function (r) { clearTimeout(reloj); return r; });
+  }
+
+  function claves() {
+    return $('claves').value.split(',')
+      .map(function (s) { return s.trim().toLowerCase(); })
+      .filter(Boolean);
+  }
+  function interesa(nombre) {
+    var n = String(nombre || '').toLowerCase();
+    return claves().some(function (k) { return n.indexOf(k) !== -1; });
+  }
+
+  function paramsPunto() {
+    var lat = Number($('lat').value), lng = Number($('lng').value);
+    var radio = Number($('radio').value) || 500;
+    var p = new URLSearchParams();
+    p.set('geometry', JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }));
+    p.set('geometryType', 'esriGeometryPoint');
+    p.set('inSR', '4326');
+    p.set('distance', String(radio));
+    p.set('units', 'esriSRUnit_Meter');
+    p.set('spatialRel', 'esriSpatialRelIntersects');
+    p.set('outFields', '*');
+    p.set('returnGeometry', 'false');
+    // Dos basta: lo que hace falta es ver la FORMA de la respuesta, no bajarse
+    // el barrio entero al teléfono de nadie.
+    p.set('resultRecordCount', '2');
+    p.set('f', 'json');
+    return p.toString();
+  }
+
+  // ── El examen de una capa: sus campos y qué contesta sobre el punto ────
+  function examinarCapa(base, id, nombre) {
+    var url = base + '/' + id;
+    linea('');
+    linea('    CAPA ' + id + ' · ' + (nombre || '(sin nombre)'));
+    linea('    ' + url);
+    return traer(url + '?f=json').then(function (r) {
+      if (r.error) { linea('      ✗ no se pudieron leer los campos: ' + r.error); return; }
+      var d = r.ok;
+      linea('      tipo de geometría: ' + (d.geometryType || '—') +
+            ' · dibuja hasta 1:' + (d.minScale || '∞') + ', desde 1:' + (d.maxScale || 0));
+      var campos = (d.fields || []).map(function (f) {
+        return '        · ' + f.name + '   (' + f.type.replace('esriFieldType', '') + ')' +
+               (f.alias && f.alias !== f.name ? '   «' + f.alias + '»' : '');
+      });
+      linea('      CAMPOS (' + campos.length + '):');
+      campos.forEach(function (c) { linea(c); });
+      // Los valores posibles de un campo codificado: sin esto, un «2» no se
+      // sabe si es amenaza media o alta.
+      (d.fields || []).forEach(function (f) {
+        if (f.domain && f.domain.codedValues) {
+          linea('      VALORES DE ' + f.name + ':');
+          f.domain.codedValues.slice(0, 20).forEach(function (v) {
+            linea('        ' + JSON.stringify(v.code) + ' = ' + v.name);
+          });
+        }
+      });
+      return traer(url + '/query?' + paramsPunto()).then(function (q) {
+        if (q.error) {
+          linea('      ✗ la consulta sobre el punto falló: ' + q.error);
+          hallazgos.push({ titulo: nombre || ('capa ' + id), url: url, marca: 'duda',
+            etiqueta: 'campos sí, consulta no', nota: q.error });
+          pintarHallazgos();
+          return;
+        }
+        var fs = (q.ok && q.ok.features) || [];
+        linea('      RESPUESTA SOBRE EL PUNTO: ' + fs.length + ' registro(s)');
+        fs.slice(0, 2).forEach(function (f, i) {
+          linea('        registro ' + (i + 1) + ': ' + JSON.stringify(f.attributes));
+        });
+        if (!fs.length) {
+          linea('        (vacío: puede que la capa no cubra este punto, probá otro)');
+        }
+        hallazgos.push({ titulo: nombre || ('capa ' + id), url: url,
+          marca: fs.length ? 'bien' : 'duda',
+          etiqueta: fs.length ? 'sirve' : 'responde, pero vacía acá',
+          nota: fs.length ? 'El navegador la consulta sin problema: URBIS la puede usar directo.'
+                          : 'Contesta bien pero no hay nada en este punto. Probá con otro barrio.' });
+        pintarHallazgos();
+      });
+    });
+  }
+
+  // ── El examen de un servicio: sus capas ───────────────────────────────
+  function examinarServicio(url, nombre) {
+    linea('');
+    linea('  ── ' + (nombre || url));
+    linea('  ' + url);
+    return traer(url + '?f=json').then(function (r) {
+      if (r.error) {
+        linea('  ✗ ' + r.error);
+        hallazgos.push({ titulo: nombre || url, url: url, marca: 'mal',
+          etiqueta: 'no se pudo leer', nota: r.error });
+        pintarHallazgos();
+        return;
+      }
+      var capas = (r.ok.layers || []).concat(r.ok.tables || []);
+      linea('  ' + (r.ok.serviceDescription || r.ok.description || '').slice(0, 240));
+      linea('  CAPAS: ' + capas.length);
+      capas.forEach(function (c) { linea('    [' + c.id + '] ' + c.name); });
+      if (!capas.length) {
+        // Puede ser una capa suelta y no un servicio con varias.
+        return examinarCapa(url.replace(/\/\d+$/, ''), '', nombre);
+      }
+      // Se examinan las que interesan; si ninguna coincide, las tres primeras,
+      // porque a veces el nombre útil está en la capa y no en el servicio.
+      var elegidas = capas.filter(function (c) { return interesa(c.name); });
+      if (!elegidas.length) elegidas = capas.slice(0, 3);
+      return elegidas.slice(0, 6).reduce(function (cadena, c) {
+        return cadena.then(function () { return examinarCapa(url, c.id, c.name); });
+      }, Promise.resolve());
+    });
+  }
+
+  // ── La exploración de una raíz ────────────────────────────────────────
+  function explorarRaiz(raiz) {
+    raiz = raiz.replace(/\/+$/, '');
+    linea('');
+    linea('═══════════════════════════════════════════════════════════');
+    linea('RAÍZ: ' + raiz);
+    estado('Leyendo ' + raiz + ' …');
+    return traer(raiz + '?f=json').then(function (r) {
+      if (r.error) {
+        linea('✗ ' + r.error);
+        hallazgos.push({ titulo: raiz, url: raiz, marca: 'mal',
+          etiqueta: 'inalcanzable', nota: r.error });
+        pintarHallazgos();
+        return;
+      }
+      var carpetas = r.ok.folders || [];
+      var servicios = (r.ok.services || []).map(function (s) {
+        return { nombre: s.name, tipo: s.type };
+      });
+      linea('versión ArcGIS: ' + (r.ok.currentVersion || '—') +
+            ' · carpetas: ' + carpetas.length + ' · servicios en la raíz: ' + servicios.length);
+      // Las carpetas se leen una por una: son listados chicos y es donde suele
+      // estar todo (en ags.esri.co, el DANE vive en «LivingAtlas»).
+      return carpetas.reduce(function (cadena, f) {
+        return cadena.then(function () {
+          estado('Leyendo la carpeta ' + f + ' …');
+          return traer(raiz + '/' + f + '?f=json', 15000).then(function (rf) {
+            if (rf.error) { linea('  carpeta ' + f + ': ✗ ' + rf.error); return; }
+            (rf.ok.services || []).forEach(function (s) {
+              servicios.push({ nombre: s.name, tipo: s.type });
+            });
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        linea('servicios en total: ' + servicios.length);
+        var buenos = servicios.filter(function (s) { return interesa(s.nombre); });
+        linea('DE INTERÉS: ' + buenos.length);
+        if (!buenos.length) {
+          linea('(ninguno con esas palabras — probá cambiando la lista de arriba)');
+          // Igual se deja la lista completa: a veces el nombre no dice nada y
+          // el ojo humano lo reconoce.
+          linea('Lista completa, por si alguno se reconoce a simple vista:');
+          servicios.slice(0, 200).forEach(function (s) {
+            linea('  ' + s.nombre + '  (' + s.tipo + ')');
+          });
+          return;
+        }
+        buenos.forEach(function (s) { linea('  ✔ ' + s.nombre + '  (' + s.tipo + ')'); });
+        return buenos.slice(0, 8).reduce(function (cadena, s) {
+          return cadena.then(function () {
+            estado('Examinando ' + s.nombre + ' …');
+            return examinarServicio(raiz + '/' + s.nombre + '/' + (s.tipo || 'MapServer'), s.nombre);
+          });
+        }, Promise.resolve());
+      });
+    });
+  }
+
+  function encabezado() {
+    informe = [];
+    hallazgos = [];
+    linea('SONDA DE SERVICIOS DE DATOS · URBIS');
+    linea('fecha: ' + new Date().toISOString());
+    linea('punto de prueba: ' + $('lat').value + ', ' + $('lng').value +
+          ' · radio ' + $('radio').value + ' m');
+    linea('desde: ' + location.origin);
+    linea('palabras buscadas: ' + claves().join(', '));
+    pintarHallazgos();
+  }
+
+  function trabajando(si) {
+    ['explorar', 'examinar', 'limpiar'].forEach(function (id) { $(id).disabled = si; });
+  }
+
+  $('explorar').addEventListener('click', function () {
+    var raices = $('raices').value.split('\n')
+      .map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!raices.length) { estado('Poné al menos una dirección.'); return; }
+    trabajando(true);
+    encabezado();
+    raices.reduce(function (cadena, r) {
+      return cadena.then(function () { return explorarRaiz(r); });
+    }, Promise.resolve()).then(function () {
+      estado('Listo. Copiá todo y pegámelo.');
+      trabajando(false);
+    });
+  });
+
+  $('examinar').addEventListener('click', function () {
+    var u = $('suelto').value.trim().replace(/\?.*$/, '').replace(/\/+$/, '');
+    if (!u) { estado('Pegá una dirección primero.'); return; }
+    trabajando(true);
+    encabezado();
+    estado('Examinando …');
+    // Si la dirección termina en un número es una capa suelta; si no, un servicio.
+    var esCapa = /\/\d+$/.test(u);
+    var tarea = esCapa
+      ? examinarCapa(u.replace(/\/\d+$/, ''), u.match(/\/(\d+)$/)[1], 'capa suelta')
+      : examinarServicio(u, '');
+    tarea.then(function () {
+      estado('Listo. Copiá todo y pegámelo.');
+      trabajando(false);
+    });
+  });
+
+  $('limpiar').addEventListener('click', function () {
+    informe = []; hallazgos = [];
+    pintarInforme(); pintarHallazgos(); estado('');
+  });
+
+  $('copiar').addEventListener('click', function () {
+    var t = informe.join('\n');
+    if (!t) { estado('Todavía no hay nada que copiar.'); return; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(
+          function () { estado('Copiado. Pegalo en la conversación.'); },
+          function () { estado('No dejó copiar: seleccioná el texto de abajo a mano.'); });
+      } else { estado('Seleccioná el texto de abajo y copialo a mano.'); }
+    } catch (e) { estado('Seleccioná el texto de abajo y copialo a mano.'); }
+  });
+
+  $('bajar').addEventListener('click', function () {
+    var t = informe.join('\n');
+    if (!t) { estado('Todavía no hay nada que descargar.'); return; }
+    var a = document.createElement('a');
+    var blob = new Blob([t], { type: 'text/plain;charset=utf-8' });
+    a.href = URL.createObjectURL(blob);
+    a.download = 'urbis-sonda-' + new Date().toISOString().slice(0, 10) + '.txt';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    estado('Descargado.');
+  });
+})();
+</script>
+</body>
+</html>
