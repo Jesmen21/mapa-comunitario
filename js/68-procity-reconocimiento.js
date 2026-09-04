@@ -98,6 +98,10 @@
        quedar fuera por no estar en una lista que se escribió antes de que
        existiera. */
     pliegoOff: [], pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
+    // La amenaza sísmica del municipio, del Servicio Geológico. Se pide a
+    // botón como el clima o el terreno: es una consulta a un servidor lento y
+    // no todos los ejercicios la necesitan.
+    amenaza: null, amenazaCargando: false, amenazaAviso: '',
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -387,6 +391,9 @@
       })(),
       // Cómo quedó armado el pliego. Son unos pocos nombres y evitan que
       // reabrir una ficha para reimprimirla devuelva otra lámina.
+      // La amenaza es del municipio y no cambia nunca: guardarla evita
+      // volver a esperar medio minuto al servidor del SGC.
+      amenaza: S.amenaza || null,
       pliegoOff: (S.pliegoOff || []).slice(),
       pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
@@ -1073,6 +1080,34 @@
       an.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
   }
 
+  function amenazaImpresa(am) {
+    if (!am) return '';
+    return '<h2>La amenaza sísmica</h2>' +
+      '<table>' +
+        '<tr><td>Nivel de amenaza (NSR-10)</td><td class="n">' + esc(am.nivel) + '</td></tr>' +
+        (am.aa != null ? '<tr><td>Aa · aceleración horizontal pico efectiva</td><td class="n">' +
+          String(am.aa).replace('.', ',') + '</td></tr>' : '') +
+        (am.av != null ? '<tr><td>Av · velocidad horizontal pico efectiva</td><td class="n">' +
+          String(am.av).replace('.', ',') + '</td></tr>' : '') +
+        (am.ae != null ? '<tr><td>Ae · umbral de daño</td><td class="n">' +
+          String(am.ae).replace('.', ',') + '</td></tr>' : '') +
+        (am.ad != null ? '<tr><td>Ad · seguridad limitada</td><td class="n">' +
+          String(am.ad).replace('.', ',') + '</td></tr>' : '') +
+        am.curva.map(function (p) {
+          return '<tr><td>Aceleración pico en roca, cada ' + p.tr + ' años</td><td class="n">' +
+            p.gal + ' gal · ' + String(p.g).replace('.', ',') + ' g</td></tr>';
+        }).join('') +
+      '</table>' +
+      (am.pide ? '<p class="pie">' + esc(am.pide) + ' El sistema estructural lo decide un ' +
+        'ingeniero: esto dice qué le pide la norma al proyecto, no cómo resolverlo.</p>' : '') +
+      '<p class="pie">Referido al municipio de ' + esc(am.municipio) + ' (' +
+      esc(am.departamento) + '), no al lote: la NSR-10 da Aa y Av por municipio y la capa ' +
+      'consultada es un punto por cabecera municipal. Si el municipio tiene microzonificación ' +
+      'sísmica, esa manda sobre este valor. La aceleración se publica en gal (cm/s²); ' +
+      'dividida por 981 da los g de la norma.</p>' +
+      '<p class="nota">' + esc(am.fuente) + '.</p>';
+  }
+
   function campoImpreso(c) {
     if (!c) return '';
     var nv = (c.nuevos || []).length, ds = (c.discrepancias || []).length;
@@ -1654,6 +1689,32 @@
       '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
       (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
       '</p>';
+      })(), 'g3') +
+      
+      /* La amenaza sísmica. Va con la curva dibujada: cinco cifras sueltas no
+      dicen nada, y dibujadas dicen cuánto más fuerte es el sismo que se
+      acepta cuando se acepta que pase más rara vez. */
+      caja('La amenaza sísmica',
+      (function () {
+      var am = o.amenaza !== undefined ? o.amenaza : S.amenaza;
+      if (!am) return '';
+      var d3 = dib('curvaDeAmenaza', am.curva);
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + esc(am.nivel) + '</b><small>amenaza sísmica</small></div>' +
+      (am.aa != null ? '<div class="k"><b>' + String(am.aa).replace('.', ',') +
+      '</b><small>Aa</small></div>' : '') +
+      (am.av != null ? '<div class="k"><b>' + String(am.av).replace('.', ',') +
+      '</b><small>Av</small></div>' : '') +
+      '</div>' +
+      (d3 ? '<div class="dib">' + d3 + '</div>' : '') +
+      (am.diseno
+      ? fila('Aceleración de diseño (475 años)', am.diseno.gal + ' gal · ' +
+      String(am.diseno.g).replace('.', ',') + ' g')
+      : '') +
+      (am.pide ? '<p class="lee">' + esc(am.pide) + '</p>' : '') +
+      '<p class="nota">Valor del municipio de ' + esc(am.municipio) + ', no del lote: la ' +
+      'NSR-10 da Aa y Av por municipio. Si hay microzonificación sísmica, manda esa. ' +
+      esc(am.fuente) + '.</p>';
       })(), 'g3') +
       
       caja('Espacio público efectivo',
@@ -2354,6 +2415,7 @@
       sombrasImpresas(o.sombras !== undefined ? o.sombras
         : (function () { try { return sombrasDelLote(); } catch (e) { return null; } })()) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
+      amenazaImpresa(o.amenaza !== undefined ? o.amenaza : S.amenaza) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
@@ -2586,6 +2648,20 @@
         abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
                        function (m) { S.aviso = m; pintar(); });
         return;
+      }
+      if (acc === 'amenaza') { pedirAmenaza(); return; }
+      if (acc === 'amenaza-texto') {
+        var AM2 = window.URBIS_AMENAZA;
+        if (!AM2 || !S.amenaza) return;
+        var txtAm = AM2.comoTexto(S.amenaza);
+        S.textoPlano = txtAm;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtAm);
+            S.aviso = 'Copiado con la fuente y la advertencia. Va tal cual a la memoria.';
+          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
+        pintar(); return;
       }
       if (acc === 'pliego-caja') {
         var idCaja = b.getAttribute('data-c') || '';
@@ -4300,6 +4376,72 @@
   /* El clima del sitio. No el pronóstico de mañana: promedios de varios años,
      que es lo que decide hacia dónde se abre, cuánto alero se necesita y por
      dónde entra el aire. */
+  /* ── La amenaza sísmica ────────────────────────────────────────────────
+     La única determinante de este análisis que viene de una norma y no de una
+     medición. Por eso se dice de dónde sale y qué alcance tiene: es del
+     municipio, no del lote, y no dimensiona nada. */
+  function bloqueAmenaza() {
+    var am = S.amenaza;
+    if (!am) {
+      return h4('escudo', 'La amenaza sísmica') +
+        '<p class="pcr-pista">El nivel de amenaza del municipio y los coeficientes <b>Aa</b> y ' +
+        '<b>Av</b> con los que la NSR-10 arma el espectro de diseño. Es la determinante más dura ' +
+        'del sitio y la única que viene de una norma.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="amenaza" class="pcr-mini pcr-llevar-b"' +
+            (S.amenazaCargando ? ' disabled' : '') + '>' +
+            (S.amenazaCargando ? 'Consultando…' : ico('escudo') + 'Ver la amenaza sísmica') +
+          '</button>' +
+        '</div>' +
+        (S.amenazaCargando
+          ? '<p class="pcr-pista">El servidor del Servicio Geológico es lento: puede tardar ' +
+            'medio minuto.</p>' : '') +
+        (S.amenazaAviso && !S.amenazaCargando
+          ? '<p class="pcr-error">' + esc(S.amenazaAviso) + '</p>' : '');
+    }
+    var D = window.URBIS_DIBUJO;
+    var dib = '';
+    try { dib = (D && D.curvaDeAmenaza) ? D.curvaDeAmenaza(am.curva) : ''; } catch (e) { dib = ''; }
+    return h4('escudo', 'La amenaza sísmica') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b style="color:' + esc(am.color) + '">' + esc(am.nivel) +
+          '</b><small>amenaza sísmica</small></div>' +
+        (am.aa != null ? '<div class="pcr-kpi"><b>' + String(am.aa).replace('.', ',') +
+          '</b><small>Aa</small></div>' : '') +
+        (am.av != null ? '<div class="pcr-kpi"><b>' + String(am.av).replace('.', ',') +
+          '</b><small>Av</small></div>' : '') +
+      '</div>' +
+      (am.pide ? '<p class="pcr-conc">' + esc(am.pide) + ' El sistema estructural lo decide un ' +
+        'ingeniero; lo que le toca al taller es saber que el edificio está en amenaza <b>' +
+        esc(am.nivel.toLowerCase()) + '</b> y proyectar en consecuencia: regularidad en planta y ' +
+        'en altura, juntas, y nada de plantas bajas sin muros.</p>' : '') +
+      (dib ? '<div class="pcr-dibujo">' + dib + '</div>' : '') +
+      '<div class="pcr-lote">' +
+        am.curva.map(function (p) {
+          return '<div class="pcr-lote-fila"><span>Cada ' + p.tr + ' años</span><b>' +
+            p.gal + ' gal · ' + String(p.g).replace('.', ',') + ' g</b></div>';
+        }).join('') +
+        (am.ae != null ? '<div class="pcr-lote-fila"><span>Ae · umbral de daño</span><b>' +
+          String(am.ae).replace('.', ',') + '</b></div>' : '') +
+        (am.ad != null ? '<div class="pcr-lote-fila"><span>Ad · seguridad limitada</span><b>' +
+          String(am.ad).replace('.', ',') + '</b></div>' : '') +
+      '</div>' +
+      '<p class="pcr-pista">Referido a <b>' + esc(am.municipio) + '</b> (' +
+      esc(am.departamento) + ')' +
+      (am.distanciaM != null ? ', cuyo punto de referencia está a ' +
+        (am.distanciaM >= 1000 ? (Math.round(am.distanciaM / 100) / 10) + ' km'
+                               : am.distanciaM + ' m') + ' del sector' : '') +
+      '. <b>Es un valor del municipio, no del lote</b>: la NSR-10 da Aa y Av por municipio y esta ' +
+      'capa es un punto por cabecera. Si Cúcuta llega a tener microzonificación sísmica, manda ' +
+      'esa y no esto. El SGC publica la aceleración en gal (cm/s²); dividida por 981 da los g de ' +
+      'la norma.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="amenaza-texto" class="pcr-mini">' +
+          ico('copiar', 16) + 'Copiar para la memoria</button>' +
+      '</div>' +
+      '<p class="pcr-pista">' + esc(am.fuente) + '.</p>';
+  }
+
   function bloqueClima() {
     var c = S.clima;
     if (!c) {
@@ -5169,6 +5311,10 @@
         falta: 'medí el terreno', dato: 'cotas, pendiente y cortes' },
       { id: 'el-clima', t: 'El clima', g: 'El suelo', listo: !!S.clima,
         falta: 'pedí el clima', dato: 'temperatura, lluvia y viento' },
+      { id: 'la-amenaza-sismica', t: 'La amenaza sísmica', g: 'El suelo',
+        listo: !!S.amenaza, falta: 'pedí la amenaza sísmica',
+        dato: S.amenaza ? ('amenaza ' + String(S.amenaza.nivel || '').toLowerCase())
+                        : 'Aa, Av y la curva' },
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
         falta: 'analizá el sector', dato: 'la carta solar del sitio' },
 
@@ -9032,6 +9178,24 @@
     return S.forma === 'poligono' ? centroideDe(S.poligono) : S.centro;
   }
 
+  function pedirAmenaza() {
+    var AM = window.URBIS_AMENAZA;
+    if (!AM) { S.amenazaAviso = 'Falta el módulo de amenaza sísmica. Recargá la app.';
+               pintar(); return; }
+    var e = ejeDelSector();
+    if (!e || e.lat == null) { S.amenazaAviso = 'Primero analizá un sector.'; pintar(); return; }
+    S.amenazaCargando = true; S.amenazaAviso = ''; pintar();
+    AM.consultar(e.lat, e.lng).then(function (am) {
+      S.amenaza = am; S.amenazaCargando = false; S.amenazaAviso = '';
+      guardarFichaViva();
+      pintar();
+    }).catch(function (err) {
+      S.amenazaCargando = false;
+      S.amenazaAviso = (err && err.message) || 'No se pudo consultar la amenaza sísmica.';
+      pintar();
+    });
+  }
+
   function analizarCobertura() {
     var A = window.URBIS_PC_ANALISIS;
     if (!A || typeof A.analizarRaster !== 'function') {
@@ -9361,6 +9525,7 @@
         bloqueAlturas(st) +
         bloqueTerreno() +
         bloqueClima() +
+        bloqueAmenaza() +
         bloqueTrazado() +
         bloquePerfil() +
         bloqueEspacio(st) +
@@ -9948,6 +10113,7 @@
       // La composición del pliego era de ESE sector: qué apagar depende de
       // qué se midió, y en el sector nuevo no se midió nada todavía.
       S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
+      S.amenaza = null; S.amenazaAviso = '';
       pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
@@ -10048,6 +10214,7 @@
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
     var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima, cmpAntes = S.campo;
+    var amAntes = S.amenaza;
     var loteAntes = S.lote, rejAntes = S.terRejilla;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
@@ -10090,11 +10257,14 @@
         S.trazado = f.trazado || null;
         S.terreno = f.terreno || null;
         S.clima = f.clima || null;
+        S.amenaza = f.amenaza || null;
         S.campo = f.campo || null;
         S.lote = f.lote || null;
         S.terRejilla = f.terrenoRejilla || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
-                   (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
+                   (f.clima ? bloqueClima() : '') +
+                   (f.amenaza ? bloqueAmenaza() : '') +
+                   (f.trazado ? bloqueTrazado() : '') +
                    (f.trazado ? bloquePerfil() : '') +
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
                    (f.loteAnalisis ? bloqueLoteIntervenir(f.loteAnalisis, true) : '') +
@@ -10106,6 +10276,7 @@
                    (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
+        S.amenaza = amAntes;
         S.lote = loteAntes; S.terRejilla = rejAntes;
         return html;
       })() +
@@ -10470,6 +10641,7 @@
           })(),
           sombras: null,
           intangible: f.intangible || [],
+          amenaza: f.amenaza || null,
           /* Y su composición: la lámina de una ficha archivada tiene que
              salir con las cajas que tenía cuando se archivó, no con las que
              estén puestas ahora en otro sector. */

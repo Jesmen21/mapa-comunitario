@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v675-armar-el-pliego';
+const URBIS_CACHE = 'urbis-v676-amenaza-sismica';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -151,6 +151,7 @@ const URBIS_ASSETS = [
   './js/73-solar.js',
   './js/74-dibujos-analisis.js',
   './js/75-lo-intangible.js',
+  './js/76-amenaza-sismica.js',
 ];
 
 self.addEventListener('install', event => {

@@ -90,8 +90,10 @@
   en <code>/rest/services</code>.</p>
   <label for="raices">Raíces de servicios ArcGIS, una por línea</label>
   <textarea id="raices" spellcheck="false">https://ags.esri.co/arcgis/rest/services
-https://srvags.sgc.gov.co/arcgis/rest/services
-https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
+https://srvags.sgc.gov.co/arcgis/rest/services</textarea>
+  <p class="pista">El IDEAM no publica en ArcGIS sino en GeoServer, que habla otro idioma:
+  esta sonda no lo entiende y por eso ya no viene en la lista. Sus capas de inundación hay que
+  buscarlas aparte.</p>
 
   <label for="claves">Palabras que hay que cazar</label>
   <input id="claves" value="amenaza, riesgo, inundac, remocion, remoción, deslizamiento, sismic, sísmic, pot, uso_suelo, uso del suelo, tratamiento, norma">
@@ -193,7 +195,7 @@ https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
      se inventa una certeza que no hay. */
   function traer(url, ms) {
     var ctrl = new AbortController();
-    var reloj = setTimeout(function () { ctrl.abort(); }, ms || 25000);
+    var reloj = setTimeout(function () { ctrl.abort(); }, ms || 45000);
     return fetch(url, { signal: ctrl.signal, credentials: 'omit' })
       .then(function (r) {
         if (!r.ok) return { error: 'contestó HTTP ' + r.status };
@@ -206,7 +208,7 @@ https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
       })
       .catch(function (e) {
         return { error: e && e.name === 'AbortError'
-          ? 'tardó más de ' + Math.round((ms || 25000) / 1000) + ' s'
+          ? 'tardó más de ' + Math.round((ms || 45000) / 1000) + ' s'
           : 'el navegador no la pudo leer (CORS cerrado, servidor caído o dirección mal escrita)' };
       })
       .then(function (r) { clearTimeout(reloj); return r; });
@@ -234,9 +236,11 @@ https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
     p.set('spatialRel', 'esriSpatialRelIntersects');
     p.set('outFields', '*');
     p.set('returnGeometry', 'false');
-    // Dos basta: lo que hace falta es ver la FORMA de la respuesta, no bajarse
-    // el barrio entero al teléfono de nadie.
-    p.set('resultRecordCount', '2');
+    /* NO se pide `resultRecordCount`. Parecía prudente —«dame solo dos»— y
+       resultó ser lo que tumbaba capas enteras: los servidores ArcGIS 10.9
+       del Servicio Geológico contestan «Pagination is not supported» y se
+       pierde la capa. La respuesta se recorta al mostrarla, que es donde
+       había que recortarla desde el principio. */
     p.set('f', 'json');
     return p.toString();
   }
@@ -373,7 +377,27 @@ https://geoservicios.ideam.gov.co/geoserver/rest/services</textarea>
           return;
         }
         buenos.forEach(function (s) { linea('  ✔ ' + s.nombre + '  (' + s.tipo + ')'); });
-        return buenos.slice(0, 8).reduce(function (cadena, s) {
+        /* Un servicio por carpeta. En el Servicio Geológico hay doce variantes
+           del mismo mapa sísmico —una por periodo de retorno— con la MISMA
+           tabla adentro: examinarlas todas gastó la sonda entera en repetir
+           una respuesta y dejó sin mirar los movimientos en masa, que es lo
+           que de verdad le pasa a Cúcuta. Se examina una de cada carpeta y se
+           deja anotado el resto para poder pedirlas a mano. */
+        var porCarpeta = {}, unaCada = [];
+        buenos.forEach(function (s) {
+          var carpeta = s.nombre.indexOf('/') > 0 ? s.nombre.split('/')[0] : '(raíz)';
+          if (porCarpeta[carpeta]) { porCarpeta[carpeta].push(s.nombre); return; }
+          porCarpeta[carpeta] = [];
+          unaCada.push(s);
+        });
+        Object.keys(porCarpeta).forEach(function (c) {
+          if (porCarpeta[c].length) {
+            linea('  (de la carpeta ' + c + ' se examina una sola; las otras ' +
+                  porCarpeta[c].length + ' suelen traer la misma tabla — si hace falta, ' +
+                  'pegalas en la caja 2)');
+          }
+        });
+        return unaCada.slice(0, 12).reduce(function (cadena, s) {
           return cadena.then(function () {
             estado('Examinando ' + s.nombre + ' …');
             return examinarServicio(raiz + '/' + s.nombre + '/' + (s.tipo || 'MapServer'), s.nombre);

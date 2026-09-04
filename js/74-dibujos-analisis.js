@@ -536,7 +536,78 @@
       '</svg>';
   }
 
+  /* ── La curva de amenaza sísmica ──────────────────────────────────────
+     Cinco cifras que sueltas no dicen nada y dibujadas dicen todo: cuánto
+     más fuerte es el sismo que se acepta cuando se acepta que pase más rara
+     vez. El eje del tiempo va logarítmico porque los periodos de retorno de
+     la norma lo están —75, 225, 475, 975, 2475—: en lineal, los tres
+     primeros se apelotonan contra el margen y no se lee ninguno.
+
+     El de 475 años va marcado: es el de diseño de la NSR-10, y es la única
+     de las cinco cifras con la que un estudiante va a hacer algo. */
+  function curvaDeAmenaza(curva, opts) {
+    var pts = (curva || []).filter(function (p) { return p && p.gal != null; });
+    if (pts.length < 2) return '';
+    var o = opts || {};
+    var W = o.w || 300, H = o.h || 150;
+    var iz = 34, de = 12, ar = 14, ab = 26;
+    var maxG = Math.max.apply(null, pts.map(function (p) { return p.gal; }));
+    var tope = Math.ceil(maxG / 100) * 100;
+    var lx = Math.log(pts[0].tr), rx = Math.log(pts[pts.length - 1].tr);
+    var px = function (tr) {
+      return iz + (Math.log(tr) - lx) / ((rx - lx) || 1) * (W - iz - de);
+    };
+    var py = function (g) { return H - ab - (g / tope) * (H - ar - ab); };
+
+    var rejilla = '';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
+      var y = py(tope * f);
+      rejilla += '<line x1="' + n1(iz) + '" y1="' + n1(y) + '" x2="' + n1(W - de) +
+        '" y2="' + n1(y) + '" stroke="' + LINEA + '" stroke-width=".5"/>' +
+        '<text x="' + n1(iz - 4) + '" y="' + n1(y + 3) + '" font-size="7" fill="' + GRIS +
+        '" text-anchor="end">' + Math.round(tope * f) + '</text>';
+    });
+
+    var linea = pts.map(function (p, i) {
+      return (i ? 'L' : 'M') + n1(px(p.tr)) + ' ' + n1(py(p.gal));
+    }).join(' ');
+    var area = linea + ' L' + n1(px(pts[pts.length - 1].tr)) + ' ' + n1(H - ab) +
+               ' L' + n1(px(pts[0].tr)) + ' ' + n1(H - ab) + ' Z';
+
+    var marcas = pts.map(function (p) {
+      var esDiseno = p.tr === 475;
+      return '<circle cx="' + n1(px(p.tr)) + '" cy="' + n1(py(p.gal)) + '" r="' +
+          (esDiseno ? 4 : 2.4) + '" fill="' + (esDiseno ? ALERTA : AZUL) + '"' +
+          (esDiseno ? ' stroke="#fff" stroke-width="1.4"' : '') + '/>' +
+        '<text x="' + n1(px(p.tr)) + '" y="' + n1(H - ab + 11) + '" font-size="7" fill="' +
+          (esDiseno ? TINTA : GRIS) + '" text-anchor="middle"' +
+          (esDiseno ? ' font-weight="700"' : '') + '>' + p.tr + '</text>' +
+        (esDiseno
+          ? '<text x="' + n1(px(p.tr)) + '" y="' + n1(py(p.gal) - 8) + '" font-size="7.5" ' +
+            'fill="' + ALERTA + '" text-anchor="middle" font-weight="700">' +
+            p.gal + ' gal</text>'
+          : '');
+    }).join('');
+
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" ' +
+        'preserveAspectRatio="xMidYMid meet" role="img" ' +
+        'aria-label="Aceleración pico en roca según el periodo de retorno. ' +
+        'A 475 años, ' + (pts.filter(function (p) { return p.tr === 475; })[0] || {}).gal +
+        ' gal.">' +
+      rejilla +
+      '<path d="' + area + '" fill="' + AZUL + '" fill-opacity=".1"/>' +
+      '<path d="' + linea + '" fill="none" stroke="' + AZUL + '" stroke-width="1.8" ' +
+        'stroke-linejoin="round"/>' +
+      marcas +
+      '<text x="' + n1(iz - 4) + '" y="' + n1(ar - 5) + '" font-size="7" fill="' + GRIS +
+        '" text-anchor="end">gal</text>' +
+      '<text x="' + n1(W - de) + '" y="' + n1(H - 4) + '" font-size="7" fill="' + GRIS +
+        '" text-anchor="end">años de periodo de retorno</text>' +
+    '</svg>';
+  }
+
   window.URBIS_DIBUJO = {
+    curvaDeAmenaza: curvaDeAmenaza,
     planoDeSombras: planoDeSombras,
     corteTopografico: corteTopografico,
     cartaSolar: cartaSolar,
