@@ -275,6 +275,63 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
   },{C,POL});
 
   const errFin=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
+  /* ── El contraste DESPUÉS de analizar ────────────────────────────────
+     La medición de arriba mira la hoja recién abierta. Los textos que llegaron
+     reportados desde el celular —los chips de «falta medir», los pies de los
+     dibujos, las casillas de «qué cabe»— no existen hasta que hay un análisis,
+     así que ninguna de las dos cosas se estaba comprobando.
+
+     Medidos antes del arreglo: 1,0:1 los chips (menta sobre blanco) y 1,1:1
+     las casillas (tinta oscura sobre el fondo oscuro que css/42 le pone a
+     todo `input`). Uno y uno es texto invisible.
+
+     El fondo del asunto es que css/42 pinta con !important TODO `p, small,
+     span, label` e `input`, y esta hoja lo desandaba clase por clase: una
+     clase nueva nacía ilegible y solo se descubría en un teléfono. Ahora hay
+     un suelo legible para toda la hoja, y esta comprobación lo vigila sobre
+     la ficha ENTERA, con las casillas incluidas. */
+  r.barrido = await pg.evaluate(async () => {
+    const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const H=document.getElementById('pcr-hoja');
+    const a=H.querySelector('[data-pcr="agrandar"]'); if(a){ a.click(); await esperar(400); }
+    const rgb=c=>(String(c).match(/[\d.]+/g)||[]).slice(0,3).map(Number);
+    const lum=c=>{const v=rgb(c);if(v.length<3)return null;
+      const f=v.map(x=>{x/=255;return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4);});
+      return .2126*f[0]+.7152*f[1]+.0722*f[2];};
+    const fondoDe=el=>{let e=el;
+      while(e){const c=getComputedStyle(e).backgroundColor;
+        if(c&&!/rgba\(0, 0, 0, 0\)|transparent/.test(c))return c; e=e.parentElement;}
+      return 'rgb(255,255,255)';};
+    const ratio=(col,fon)=>{const x=lum(col),y=lum(fon);
+      if(x==null||y==null)return null;
+      return Math.round(((Math.max(x,y)+.05)/(Math.min(x,y)+.05))*10)/10;};
+    const malos=[];
+    // texto propio del elemento, para no contar dos veces al padre
+    H.querySelectorAll('*').forEach(el=>{
+      if(![...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim().length>1)) return;
+      const cs=getComputedStyle(el);
+      if(cs.display==='none'||cs.visibility==='hidden'||Number(cs.opacity)<.1) return;
+      const col=(cs.webkitTextFillColor&&cs.webkitTextFillColor!=='rgba(0, 0, 0, 0)')
+        ? cs.webkitTextFillColor : cs.color;
+      const r=ratio(col,fondoDe(el)); if(r==null) return;
+      const px=parseFloat(cs.fontSize)||14;
+      const min=(px>=24||(px>=18.66&&Number(cs.fontWeight)>=700))?3:4.5;
+      if(r<min) malos.push({cls:String(el.className||el.tagName).slice(0,26), r,
+        t:(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,24)});
+    });
+    // y las casillas, cuyo valor no es un nodo de texto
+    H.querySelectorAll('input, textarea, select').forEach(el=>{
+      const cs=getComputedStyle(el);
+      if(cs.display==='none'||!el.offsetParent||cs.type==='range') return;
+      const col=(cs.webkitTextFillColor&&cs.webkitTextFillColor!=='rgba(0, 0, 0, 0)')
+        ? cs.webkitTextFillColor : cs.color;
+      const r=ratio(col,fondoDe(el)); if(r==null) return;
+      if(r<4.5) malos.push({cls:'[input] '+String(el.className||'').slice(0,18), r,
+        t:String(el.value||'').slice(0,16)});
+    });
+    return { n:H.querySelectorAll('*').length, malos:malos.slice(0,6), total:malos.length };
+  });
+
   await pg.close(); await b.close();
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
@@ -382,6 +439,12 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
   T('el pliego la ofrece', !!r.enElPliego && r.enElPliego.gris===false);
   T('y los índices viajan con la ficha, para no repetir la búsqueda del POT',
     !!r.guardado && r.guardado.io===0.6, r.guardado?JSON.stringify(r.guardado):'no se guardó');
+
+  console.log('\n  -- todo lo de la ficha se lee --');
+  T('ni un texto ni una casilla por debajo del mínimo',
+    r.barrido.total===0,
+    r.barrido.total ? r.barrido.malos.map(m=>m.cls+' '+m.r+':1 «'+m.t+'»').join(' | ')
+                    : r.barrido.n+' elementos revisados');
 
   console.log('');
   T('sin errores de JavaScript', errFin.length===0, errFin.slice(0,2).join(' | ')||'ninguno');

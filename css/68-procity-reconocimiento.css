@@ -193,6 +193,51 @@
 .pcr-hoja, .pcr-hoja *,
 .pcr-pestana, .pcr-pestana *{ -webkit-text-fill-color:currentColor; }
 
+/* ── El suelo legible ─────────────────────────────────────────────────────
+   css/42 pinta TODO `p, small, span, label` de menta pálido con !important.
+   Debajo de esta línea hay una lista larga de antídotos, uno por clase, que
+   fue creciendo a medida que aparecían textos ilegibles.
+
+   Esa forma de arreglarlo tiene un defecto que se paga cada vez: una clase
+   NUEVA nace invisible, y solo se descubre cuando alguien la ve en un
+   teléfono. Pasó con el bloque de lo intangible, y volvió a pasar con los
+   chips de «falta medir» y los pies de los dibujos —medidos: 1,0:1, menta
+   sobre blanco, literalmente ilegibles—.
+
+   Así que se invierte. Esta regla da un color legible por DEFECTO a todo el
+   texto de la hoja, y las de abajo siguen mandando sobre ella porque tienen
+   más especificidad: `.pcr-hoja .pcr-pista` (0,2,0) gana a `.pcr-hoja p`
+   (0,1,1). Contra la regla global de css/42 (0,0,1) gana esta.
+
+   El efecto es que una clase nueva nace LEGIBLE y hay que esforzarse para
+   romperla, que es al revés de como estaba. */
+/* Lo mismo para las casillas. css/42 pinta todo `input` con fondo oscuro y
+   letra casi blanca, para los formularios sobre fondo oscuro de la app. En
+   esta hoja, que es papel, eso daba tinta oscura sobre fondo oscuro: medido,
+   1,1:1. La regla de arriba solo tocaba el color de la letra, así que el
+   arreglo anterior dejó la mitad del problema. */
+.pcr-hoja input, .pcr-hoja select, .pcr-hoja textarea,
+.pcr-pestana input, .pcr-pestana select, .pcr-pestana textarea{
+  background:#fff !important;
+  color:#12202e !important; -webkit-text-fill-color:#12202e !important;
+  border:1px solid #d7e3ec !important;
+  box-shadow:none !important;
+}
+.pcr-hoja input:focus, .pcr-pestana input:focus{
+  border-color:#34CCFE !important; outline:2px solid rgba(52,204,254,.28) !important;
+  outline-offset:1px;
+}
+.pcr-hoja input[type=range], .pcr-pestana input[type=range]{
+  background:transparent !important; border:0 !important;
+}
+
+.pcr-hoja p, .pcr-hoja small, .pcr-hoja span, .pcr-hoja label,
+.pcr-hoja li, .pcr-hoja td, .pcr-hoja th, .pcr-hoja em, .pcr-hoja output,
+.pcr-pestana p, .pcr-pestana small, .pcr-pestana span, .pcr-pestana label,
+.pcr-pestana li, .pcr-pestana td, .pcr-pestana th, .pcr-pestana em, .pcr-pestana output{
+  color:#233748 !important; -webkit-text-fill-color:#233748 !important;
+}
+
 /* Texto corrido y ayudas: tinta oscura, no gris claro. */
 .pcr-hoja .pcr-intro,
 .pcr-hoja .pcr-tarea-intro,

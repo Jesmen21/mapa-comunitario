@@ -1646,13 +1646,22 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
    pinta de menta todo `small` dentro de un botón o una etiqueta, y sin esto
    la palabra «ejemplo» quedaba blanca sobre blanco. Ya pasó una vez con el
    bloque de lo intangible; acá está desde el principio. */
-.pcr-cabe-c.pcr-cabe-ej{
-  border-left:3px solid var(--edu-warn, #D9A227);
+/* El mostaza se veía mal y no era de esta paleta: siete tarjetas con una
+   barra dorada al canto convertían una marca discreta en un semáforo. Y la
+   unidad peleaba con el título en la misma línea, así que «0 a 1 · ejemplo»
+   se partía en dos renglones al lado de un título de dos.
+
+   Ahora la etiqueta va DEBAJO del título, en su propia línea, y lo que marca
+   el ejemplo es la casilla: borde punteado en vez de continuo. Punteado se
+   lee como «esto está por rellenar» sin gritar, que es exactamente lo que
+   es. */
+.pcr-cabe-c > span{ flex-direction:column; align-items:flex-start; gap:1px; }
+.pcr-cabe-c.pcr-cabe-ej input{
+  border-style:dashed !important; border-color:#9fb3c2 !important;
+  background:#fbfdff !important;
 }
 .pcr-hoja .pcr-cabe-ej small, .pcr-pestana .pcr-cabe-ej small{
-  color:var(--edu-warn-ink, #8A6410) !important;
-  -webkit-text-fill-color:var(--edu-warn-ink, #8A6410) !important;
-  font-weight:700;
+  color:#5c6f80 !important; -webkit-text-fill-color:#5c6f80 !important;
 }
 
 /* Lo que hay que ir a buscar: cinco cosas con dónde pedirlas. Cada una es un
