@@ -47,6 +47,10 @@
     background:var(--hondo); color:#fff;
   }
   button.secundario{background:var(--papel); color:var(--hondo)}
+  /* El botón que casi siempre es el correcto tiene que verse como tal: si hay
+     cuatro y el bueno está abajo, la gente toca el primero. Pasó tres veces. */
+  button.grande{font-size:1.05rem; padding:15px 26px; width:100%}
+  #caja-todo{border:2px solid var(--hondo)}
   button[disabled]{opacity:.5; cursor:default}
   #estado{font-size:.85rem; color:var(--tinta-3); margin-top:10px; min-height:1.4em}
   .marca{
@@ -82,6 +86,18 @@
   tres cosas: si existen, cómo se llaman sus campos, y si el navegador las puede consultar.
   Esto último es lo que decide si URBIS las puede usar directo o hay que pasarlas por el motor.</p>
 </header>
+
+<section id="caja-todo">
+  <h2>Correr todo</h2>
+  <p class="pista">Los dos idiomas de una vez —ArcGIS y GeoServer— en un solo informe.
+  Si no sabe cuál necesita, es este. Tarda unos minutos: los servidores del Estado son
+  lentos y hay que preguntarle a cada capa por separado.</p>
+  <div class="botones">
+    <button id="explorar-todo" class="grande">Explorar todo</button>
+  </div>
+  <p class="pista">Las cajas de abajo sirven para correr una sola cosa, o para pegar una
+  dirección que le hayan pasado.</p>
+</section>
 
 <section>
   <h2>1 · Dónde buscar</h2>
@@ -446,9 +462,34 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
   }
 
   function trabajando(si) {
-    ['explorar', 'examinar', 'explorar-ogc', 'limpiar']
+    ['explorar', 'examinar', 'explorar-ogc', 'explorar-todo', 'limpiar']
       .forEach(function (id) { if ($(id)) $(id).disabled = si; });
   }
+
+  /* Las dos exploraciones, una detrás de la otra y en un solo informe. Existe
+     porque la página tenía cuatro botones y el que hacía falta estaba abajo:
+     tres corridas seguidas salieron con el equivocado. Cuando alguien se
+     equivoca tres veces con el mismo botón, el que está mal es el botón. */
+  function listaDe(id) {
+    return $(id).value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+
+  $('explorar-todo').addEventListener('click', function () {
+    var arc = listaDe('raices'), ogc = listaDe('ogc');
+    if (!arc.length && !ogc.length) { estado('No hay ninguna dirección que explorar.'); return; }
+    trabajando(true);
+    encabezado();
+    arc.reduce(function (cadena, u) {
+      return cadena.then(function () { return explorarRaiz(u); });
+    }, Promise.resolve()).then(function () {
+      return ogc.reduce(function (cadena, u) {
+        return cadena.then(function () { return explorarOGC(u); });
+      }, Promise.resolve());
+    }).then(function () {
+      estado('Listo, los dos. Copiá todo y pegámelo.');
+      trabajando(false);
+    });
+  });
 
   /* ══ GeoServer: WMS y WFS ══════════════════════════════════════════════
      Otro idioma entero. ArcGIS contesta JSON y se le pregunta por un punto;
