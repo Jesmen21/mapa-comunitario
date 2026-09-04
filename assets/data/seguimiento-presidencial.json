@@ -64,6 +64,60 @@
   },
   "entradas": [
     {
+      "fecha": "2026-08-29",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "En consejo de ministros ordena una revisión integral de la contratación pública para \"romper la rosca\"; la oposición responde que terminó \"montando su propia rosca\"",
+      "detalle": "El 29 de agosto, tras un consejo de ministros de más de siete horas en Barranquilla, el presidente Abelardo de la Espriella ordenó una auditoría de los contratos públicos en cada entidad del Ejecutivo —incluidos abogados externos, firmas liquidadoras, convenios con universidades públicas, logística de eventos y negocios fiduciarios— para identificar sobrecostos, intermediarios y concentración de contratos. \"Vamos a revisar cada rincón del Estado para desmontar, dentro de la ley, las roscas, los monopolios y las redes que han convertido la contratación pública en un negocio reservado para pocos [...] Ministerio por ministerio, entidad por entidad, empresa por empresa [...] Hay que romper la rosca\", dijo el presidente, y prometió que no habrá privilegios para nadie.",
+      "contrapunto": "La representante a la Cámara Laura Beltrán, conocida como \"Lalis\" (Pacto Histórico), respondió que, pese al discurso contra las \"roscas\", en los primeros cerca de 300 nombramientos del Gobierno pesó más haber trabajado en la firma De la Espriella Abogados, en la Universidad Sergio Arboleda o tener vínculos con la política tradicional que la falta de conexiones, y concluyó que el presidente terminó \"gobernando con los mismos de siempre\" y \"montando su propia rosca\". Por separado, una investigación de Infobae publicada el 3 de septiembre identificó a varios de los principales aportantes de la campaña de segunda vuelta de De la Espriella que después obtuvieron cargos en el Gobierno: Richard Caicedo, quien recibió $7 millones por trabajo administrativo en la campaña, fue designado presidente del Icetex el 18 de agosto; y Yesica Tovar, que recibió $35 millones durante la campaña, apareció después vinculada a contratos estatales. URBIS no encontró, a la fecha de este registro, una respuesta oficial del Gobierno a estos señalamientos puntuales sobre aportantes de campaña.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Lalis 'puso contra las cuerdas' a Abelardo de la Espriella por la contratación pública al acusarlo de \"montar su propia 'rosca'\"",
+          "u": "https://www.infobae.com/colombia/2026/08/30/lalis-puso-contra-las-cuerdas-a-abelardo-de-la-espriella-por-la-contratacion-publica-al-acusarlo-de-montar-su-propia-rosca/"
+        },
+        {
+          "n": "Semana · Presidente Abelardo De La Espriella ordena revisión profunda de la contratación para acabar con las \"roscas\": \"No habrá privilegios para nadie\"",
+          "u": "https://www.semana.com/nacion/articulo/presidente-abelardo-de-la-espriella-ordena-revision-profunda-de-la-contratacion-para-acabar-con-las-roscas-no-habra-privilegios-para-nadie/202651/"
+        },
+        {
+          "n": "El Espectador · \"Romper la rosca\": la instrucción que lanzó De la Espriella en consejo de ministros",
+          "u": "https://www.elespectador.com/politica/de-la-espriella-le-pidio-a-su-gabinete-romper-la-rosca-en-la-contratacion-asi-fue-el-consejo-de-ministros/"
+        },
+        {
+          "n": "Infobae · Estos fueron algunos de los principales aportantes a la campaña de Abelardo de la Espriella en segunda vuelta: varios terminaron con cargos en el Gobierno",
+          "u": "https://www.infobae.com/colombia/2026/09/03/estos-fueron-algunos-de-los-principales-aportantes-a-la-campana-de-abelardo-de-la-espriella-en-segunda-vuelta-varios-terminaron-con-cargos-en-el-gobierno/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "El Gobierno deroga la resolución de 2015 que suspendía la aspersión aérea con glifosato sobre cultivos ilícitos, aunque su reanudación sigue condicionada",
+      "detalle": "Mediante la Resolución 0006, firmada el 18 de agosto de 2026 por el viceministro de Política Criminal, Carlos Gónima, y conocida públicamente el 28 de agosto, el Consejo Nacional de Estupefacientes derogó la Resolución 006 de 2015, que había suspendido la aspersión aérea con glifosato para erradicar cultivos de uso ilícito. La suspensión de 2015 se había adoptado después de que la Agencia Internacional para la Investigación del Cáncer (IARC) clasificara el glifosato como \"probablemente carcinógeno\", y de que la Corte Constitucional, en la Sentencia T-236 de 2017, concluyera que la sustancia es tóxica y puede causar cáncer u otras afectaciones celulares según el nivel de exposición; ese fallo condicionó cualquier reanudación al cumplimiento de varios requisitos, entre ellos un plan de manejo ambiental vigente aprobado por la Autoridad Nacional de Licencias Ambientales (ANLA), un concepto del Instituto Nacional de Salud y la consulta previa con comunidades étnicas. La propia Resolución 0006 reconoce que esos requisitos no se han cumplido, por lo que la derogación no habilita de forma inmediata la aspersión: abre la puerta a una eventual reanudación, pero no la ordena.",
+      "contrapunto": "El 1 de septiembre, el \"gabinete de oposición\" conformado por sectores cercanos a Iván Cepeda y Gustavo Petro calificó de \"ineficaz\" el anuncio de nuevas fumigaciones para erradicar cultivos ilícitos. Organizaciones campesinas y comunidades que se identifican como afectadas por aspersiones irregulares en el pasado advirtieron sobre los riesgos de toxicidad aguda del glifosato por ingestión o contacto con la piel, y sobre posibles efectos en cultivos legales, fuentes de agua y ecosistemas si la aspersión se reanuda sin los estudios de impacto ambiental y sanitario exigidos por la Corte Constitucional.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Aspersión aérea con glifosato en cultivos ilícitos en Colombia: gobierno de Abelardo de la Espriella revocó resolución que la prohibía",
+          "u": "https://www.infobae.com/colombia/2026/08/28/aspersion-aerea-con-glifosato-en-cultivos-ilicitos-en-colombia-gobierno-de-abelardo-de-la-espriella-revoco-resolucion-que-la-prohibia/"
+        },
+        {
+          "n": "El Espectador · Gobierno De la Espriella tumba decreto que prohibía la aspersión aérea con glifosato",
+          "u": "https://www.elespectador.com/judicial/gobierno-de-la-espriella-tumba-decreto-que-prohibia-la-aspersion-aerea-con-glifosato/"
+        },
+        {
+          "n": "Semana · ¿Regresa la aspersión aérea con glifosato? Gobierno De La Espriella revoca decreto que la prohibía",
+          "u": "https://www.semana.com/nacion/articulo/regresa-la-aspersion-aerea-con-glifosato-gobierno-de-la-espriella-revoca-decreto-que-la-prohibia/202651/"
+        },
+        {
+          "n": "Infobae · Gabinete a la sombra de Iván Cepeda y Gustavo Petro criticó nuevas fumigaciones para erradicar cultivos ilícitos que anunció Abelardo de la Espriella: \"Ineficaz\"",
+          "u": "https://www.infobae.com/colombia/2026/09/01/gabinete-a-la-sombra-de-ivan-cepeda-y-gustavo-petro-critico-nuevas-fumigaciones-para-erradicar-cultivos-ilicitos-que-anuncio-abelardo-de-la-espriella-ineficaz/"
+        }
+      ]
+    },
+    {
       "fecha": "2026-08-27",
       "precision": "exacta",
       "categoria": "gobierno",
