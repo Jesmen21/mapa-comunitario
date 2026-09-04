@@ -97,6 +97,12 @@
        sueltas en un dato: dónde varias personas, cada una por su lado,
        dijeron lo mismo. */
     intCurso: [], intUnion: null, intAcuerdosEnMapa: false, intCursoAviso: '',
+    /* Lo que el archivado tenga que decir. Vive aparte de `aviso` a propósito:
+       varios sitios escriben `aviso` JUSTO DESPUÉS de guardar —la importación
+       del curso, sin ir más lejos, ponía «Se juntaron 14 recorridos» encima
+       del aviso de que ninguno se había podido guardar— y una advertencia de
+       pérdida no puede depender del orden en que se llamen dos funciones. */
+    avisoGuardado: '',
     /* Los índices del POT que el estudiante escribe a mano. URBIS no los
        conoce: acá solo se guardan para hacer la cuenta con ellos. */
     indices: null, queCabeAbierto: false,
@@ -495,19 +501,85 @@
     var todas = leerFichas().filter(function (f) { return f.id !== ficha.id; });
     todas.unshift(ficha);
     while (todas.length > MAX_FICHAS) todas.pop();
+    return escribirFichas(todas);
+  }
+
+  /* La caché de consultas de Overpass, que vive en js/61. Se nombra acá y no
+     se importa de allá para no atar dos módulos por una cadena de texto que
+     cambia una vez cada nunca. */
+  var CACHE_USOS_KEY = 'aia_overpass_cache_v1';
+
+  /* Escribir cuando el teléfono ya no tiene sitio.
+
+     El almacenamiento de un navegador son unos cinco megabytes, y cuando se
+     acaban `setItem` lanza y ya está: quien no mire lo que devuelve pierde el
+     trabajo sin enterarse. Medido con un sector de trescientos usos, una
+     ficha llena pesa 44 KB, de los cuales 31 son los puntos.
+
+     Se suelta lastre en el orden en que duele menos, y lo que se soltó se
+     dice:
+
+       1. La caché de consultas. Es caché: se vuelve a llenar sola y lo único
+          que cuesta es que la próxima consulta tarde unos segundos más.
+       2. Los puntos del sector que se está guardando. Overpass los vuelve a
+          dar con una consulta; las cuentas —totales, grupos, rumbos— se
+          quedan, así que el informe se sigue leyendo entero.
+       3. Las fichas viejas, de una en una y de la más vieja a la más nueva.
+          Van al final porque cada una es el trabajo de una tarde, y porque
+          antes se tiraba la mitad de golpe aunque hubiera bastado con una.
+       4. Rendirse. Y decirlo, que es la parte que faltaba.
+
+     Lo que una persona caminó no se suelta nunca —las marcas intangibles, los
+     recorridos que trajo el curso, el lote, los índices del POT, los puntos
+     levantados en campo—: no hay servidor al que volver a pedírselos. */
+  function escribirFichas(todas) {
+    function intento(lista) {
+      try { localStorage.setItem(FICHAS_KEY, JSON.stringify(lista)); return true; }
+      catch (e) { return false; }
+    }
+    if (intento(todas)) return { ok: true, n: todas.length };
+
+    var soltado = {};
+
+    // 1. La caché de Overpass. Es caché: se vuelve a llenar sola con la
+    //    siguiente consulta y no le cuesta a nadie más que unos segundos.
     try {
-      localStorage.setItem(FICHAS_KEY, JSON.stringify(todas));
-      return { ok: true, n: todas.length };
-    } catch (e) {
-      // localStorage lleno. Se reintenta con la mitad antes de rendirse: es
-      // preferible perder las fichas viejas que perder la que acaba de hacer.
-      try {
-        localStorage.setItem(FICHAS_KEY, JSON.stringify(todas.slice(0, Math.max(1, Math.floor(todas.length / 2)))));
-        return { ok: true, n: Math.max(1, Math.floor(todas.length / 2)), recortada: true };
-      } catch (e2) {
-        return { ok: false, error: 'No hay espacio para guardar la ficha en este dispositivo.' };
+      if (localStorage.getItem(CACHE_USOS_KEY)) {
+        localStorage.removeItem(CACHE_USOS_KEY);
+        soltado.cache = true;
+        if (intento(todas)) return { ok: true, n: todas.length, cache: true };
+      }
+    } catch (e) {}
+
+    // 2. Los puntos del sector que se está guardando. Las cuentas se quedan;
+    //    lo que se pierde es la lista, y esa la vuelve a dar una consulta.
+    var f = todas[0], puntos = (f && f.pois) ? f.pois.length : 0;
+    if (puntos) {
+      f.pois = [];
+      // Cuántos se soltaron, para poder avisarlo al reabrir el sector.
+      f.sinPuntos = puntos;
+      soltado.sinPuntos = puntos;
+      if (intento(todas)) {
+        return { ok: true, n: todas.length, cache: soltado.cache, sinPuntos: puntos };
       }
     }
+
+    // 3. Las fichas viejas, de una en una y de la más vieja a la más nueva.
+    //    Es lo último porque cada una es el trabajo entero de una tarde.
+    var borradas = 0;
+    while (todas.length > 1) {
+      todas.pop(); borradas++;
+      if (intento(todas)) {
+        return { ok: true, n: todas.length, cache: soltado.cache,
+                 sinPuntos: soltado.sinPuntos, borradas: borradas };
+      }
+    }
+
+    /* Ni así. No se llegó a escribir, así que lo que hubiera guardado sigue
+       donde estaba: no se informan fichas borradas porque no se borró
+       ninguna —el `pop` fue sobre una copia en memoria que nunca se
+       escribió—. La caché sí se soltó de verdad, y no se echa de menos. */
+    return { ok: false, error: 'No hay espacio en este teléfono para guardar el sector.' };
   }
 
   function borrarFicha(id) {
@@ -3301,11 +3373,15 @@
         var nom = caja ? String(caja.value || '').trim().slice(0, 60) : '';
         S.nombreGuardado = nom;
         var g = guardarFicha(S.resultado, S.ultimasZonas, nom, S.fichaActualId);
-        S.aviso = g.ok
-          ? ('Ficha guardada' + (g.recortada ? ' (se borraron las más viejas por falta de espacio)' : '') +
-             '. La encontrás en la pestaña «Sector», con ' + g.n + ' más.')
-          : g.error;
-        pintar();
+        if (g.ok) {
+          S.aviso = 'Ficha guardada. La encontrás en la pestaña «Sector»' +
+                    (g.n > 1 ? ', con ' + (g.n - 1) + ' más.' : '.');
+          pintar();
+        }
+        /* Lo que haya que decir de la falta de espacio lo dice el mismo sitio
+           que lo dice en el guardado automático: un solo texto, y no dos que
+           se van separando. */
+        contarLoGuardado(g);
         return;
       }
       if (acc === 'copiar') {
@@ -3353,13 +3429,18 @@
            septiembre», la pestaña «Sector» le muestra un nombre que él no
            puso y no reconoce. */
         S.nombreGuardado = nom2;
+        var g3 = null;
         if (S.resultado && S.ultimasZonas) {
-          try { guardarFicha(S.resultado, S.ultimasZonas, nom2, S.fichaActualId); } catch (e) {}
+          try { g3 = guardarFicha(S.resultado, S.ultimasZonas, nom2, S.fichaActualId); } catch (e) {}
         }
         S.aviso = g2
           ? ('Área «' + nom2 + '» guardada. La encontrás en Análisis → Áreas guardadas.')
           : 'No se pudo guardar el área.';
-        pintar(); return;
+        pintar();
+        // Si el sector que va con el área no cupo, se dice: el área sola no
+        // sirve de nada si el análisis que la explica no se guardó.
+        contarLoGuardado(g3);
+        return;
       }
       if (acc === 'comp-copiar') {
         if (!S.comparacion) return;
@@ -8293,12 +8374,61 @@
      hora y el navegador de un teléfono se recarga solo: perder ese trabajo
      por no haber tocado «guardar» sería la peor manera de perderlo. */
   function guardarFichaViva() {
+    if (!(S.fichaActualId && S.resultado)) return null;
+    var g;
     try {
-      if (S.fichaActualId && S.resultado) {
-        guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
-                     S.nombreGuardado || '', S.fichaActualId);
-      }
-    } catch (e) {}
+      g = guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
+                       S.nombreGuardado || '', S.fichaActualId);
+    } catch (e) {
+      g = { ok: false, error: 'No se pudo archivar el sector: ' + ((e && e.message) || 'error del navegador') + '.' };
+    }
+    contarLoGuardado(g);
+    return g;
+  }
+
+  /* Lo que el guardado tenga que decir, dicho.
+
+     Este era el agujero: el autoguardado envolvía todo en un `try {} catch
+     (e) {}` y tiraba lo que devolvía. Medido con el almacenamiento lleno, un
+     estudiante dibujaba una marca intangible, la veía en el mapa, cerraba la
+     aplicación y la marca no estaba: nunca había llegado al disco y nadie se
+     lo dijo. El trabajo de una tarde de campo, perdido en silencio.
+
+     Solo habla cuando pasó algo. Un guardado normal no tiene por qué
+     interrumpir a nadie. */
+  function contarLoGuardado(g) {
+    if (!g) return;
+    if (!g.ok) {
+      var texto = (g.error || 'No se pudo guardar el sector.') +
+        ' Lo que hiciste sigue en pantalla, pero se pierde si cerrás la aplicación.' +
+        ' Exportá tu recorrido con «Compartir el mío» y borrá sectores guardados' +
+        ' desde la pestaña «Sector» para hacer sitio.';
+      if (S.avisoGuardado !== texto) { S.avisoGuardado = texto; pintar(); }
+      return;
+    }
+    var partes = [];
+    if (g.cache) {
+      partes.push('El teléfono estaba sin espacio: se vació la caché de consultas para hacer sitio. ' +
+        'No se perdió nada, la próxima consulta tarda un poco más.');
+    }
+    if (g.borradas) {
+      partes.push('No había espacio: se ' +
+        (g.borradas === 1 ? 'borró el sector guardado más viejo'
+                          : 'borraron los ' + g.borradas + ' sectores guardados más viejos') +
+        ' para que cupiera este.');
+    }
+    if (g.sinPuntos) {
+      partes.push('Este sector se guardó sin sus ' + g.sinPuntos + ' usos, que no cabían: ' +
+        'al reabrirlo hay que volver a analizar para verlos en el mapa. Las cuentas, tus ' +
+        'marcas, el lote y los recorridos del curso quedaron completos.');
+    }
+    /* Se repinta también cuando el aviso DESAPARECE. Si no, una advertencia de
+       que el sector no se estaba guardando se quedaba en pantalla después del
+       primer guardado que sí cupo, y una alarma que sigue encendida cuando ya
+       no pasa nada deja de leerse a los dos minutos. */
+    var antes = S.avisoGuardado;
+    S.avisoGuardado = partes.join(' ');
+    if (S.avisoGuardado !== antes) pintar();
   }
 
   /* `ctx` deja pasar el sector de una ficha guardada. Sin eso, abrir una
@@ -10453,12 +10583,7 @@
       return window.AIA_REMOTO.clima({ clima: clima });
     }).then(function (res) {
       S.clima = res; S.cliCargando = false; S.cliAviso = '';
-      try {
-        if (S.fichaActualId && S.resultado) {
-          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
-                       S.nombreGuardado || '', S.fichaActualId);
-        }
-      } catch (e) {}
+      guardarFichaViva();
       pintar();
     }).catch(function (e) {
       S.cliCargando = false;
@@ -10514,12 +10639,7 @@
       return window.AIA_REMOTO.terreno(peticion);
     }).then(function (res) {
       S.terreno = res; S.terCargando = false; S.terAviso = '';
-      try {
-        if (S.fichaActualId && S.resultado) {
-          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
-                       S.nombreGuardado || '', S.fichaActualId);
-        }
-      } catch (e) {}
+      guardarFichaViva();
       pintar();
     }).catch(function (e) {
       S.terCargando = false;
@@ -10613,12 +10733,7 @@
       recalcularCaminata();
     S.sombras = null;
       // Se guarda con la ficha: pesa unas pocas cifras y es media lámina.
-      try {
-        if (S.fichaActualId && S.resultado) {
-          guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
-                       S.nombreGuardado || '', S.fichaActualId);
-        }
-      } catch (e) {}
+      guardarFichaViva();
       pintar();
     }).catch(function (e) {
       S.trzCargando = false;
@@ -11225,6 +11340,11 @@
       barra('Modo educativo · Reconocimiento', 'Lo que hay ' + (esPol ? 'en el área' : 'en el sector'), 'lupa') +
       '<div class="pcr-cuerpo">' +
 
+        /* Arriba del todo y no al pie: si el sector no se está guardando, todo
+           lo que se lea más abajo se va a perder al cerrar la aplicación, y
+           enterarse después de haber trabajado media hora no sirve de nada. */
+        (S.avisoGuardado ? '<p class="pcr-error pcr-guardado-mal">' + esc(S.avisoGuardado) + '</p>' : '') +
+
         /* Desde que la ficha sobrevive a cerrar la hoja, hace falta una salida
            clara hacia la pantalla de elegir área: sin ella, quien quisiera
            analizar OTRO sector no tenía por dónde. */
@@ -11509,13 +11629,8 @@
          cerrar una hoja es el tipo de pérdida que no se perdona. El botón
          «Guardar ficha» sigue existiendo, y lo que hace ahora es ponerle
          nombre a esta misma entrada en vez de crear otra. */
-      try {
-        var ejeAuto = (S.resultado.meta && Number.isFinite(S.resultado.meta.lat))
-          ? { lat: S.resultado.meta.lat, lng: S.resultado.meta.lng } : S.centro;
-        S.fichaActualId = 'f' + Date.now();
-        guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeAuto),
-                     S.nombreGuardado || '', S.fichaActualId);
-      } catch (e) {}
+      S.fichaActualId = 'f' + Date.now();
+      guardarFichaViva();
     }
     pintar();
   }
@@ -12124,6 +12239,15 @@
     var mayor = filas.length ? filas[0].n : 1;
 
     return '<div class="pcr-informe">' +
+      /* Un sector que se guardó sin sus puntos por falta de espacio lo dice
+         acá arriba. Sin este aviso, el mapa de calor sale vacío y las cifras
+         llenas, y la lectura obvia —«en este barrio no hay nada»— es falsa:
+         los usos se contaron, lo que no cupo fue la lista. */
+      (f.sinPuntos
+        ? '<p class="pcr-pista">Este sector se guardó sin sus ' + f.sinPuntos + ' usos: no había ' +
+          'espacio en el teléfono. Las cuentas son las del análisis, pero para volver a ver los ' +
+          'puntos en el mapa hay que analizarlo otra vez.</p>'
+        : '') +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
         '<div class="pcr-kpi"><b>' + esc(tam) + '</b><small>' + (esPol ? 'área' : 'alcance') + '</small></div>' +

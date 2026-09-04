@@ -114,6 +114,14 @@
   border-radius:9px; padding:10px 12px;
 }
 
+/* El aviso de que el sector NO se está guardando. Es el único de la hoja que
+   habla de trabajo que se va a perder, así que va con más peso que el resto
+   de los errores y separado de lo que viene debajo. */
+.pcr-guardado-mal{
+  margin:0 0 10px; font-weight:600;
+  background:#fdeceb; border-color:#f3b7b1;
+}
+
 /* ── La ficha ─────────────────────────────────────────────────────── */
 .pcr-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
 .pcr-kpi{

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v705-el-curso-no-se-pierde';
+const URBIS_CACHE = 'urbis-v706-lo-que-no-cabe-se-dice';
 const URBIS_ASSETS = [
   './',
   './index.html',
