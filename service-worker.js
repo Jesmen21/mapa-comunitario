@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v689-dos-operativos-que-faltaban';
+const URBIS_CACHE = 'urbis-v690-cual-cristo-rey';
 const URBIS_ASSETS = [
   './',
   './index.html',
