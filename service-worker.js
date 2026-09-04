@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v701-por-donde-corta';
+const URBIS_CACHE = 'urbis-v702-corte-a-la-carta';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -153,6 +153,7 @@ const URBIS_ASSETS = [
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
   './js/79-amenaza-inundacion.js',
+  './js/80-cortes-a-mano.js',
   './js/77-sin-senal.js',
   './js/78-que-cabe.js',
 ];

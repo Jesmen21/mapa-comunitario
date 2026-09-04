@@ -140,9 +140,60 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
        dice su propia etiqueta. */
     o.etiquetas = (window.URBIS_PC_RECON.terrenoDePrueba
       ? (window.URBIS_PC_RECON.terrenoDePrueba().perfiles||[]) : []).map(p=>p.etiqueta||'');
-    // Y que se puedan quitar.
-    if (bc) { H.querySelector('[data-pcr="cortes-mapa"]').click(); await esperar(600); }
+    /* ── Cortar por donde uno diga ───────────────────────────────────────
+       Los dos cortes del motor van por el medio del rectángulo. Un proyecto
+       se corta por donde el terreno decide algo: la ladera que se va a
+       aterrazar, el eje de la calle. Dos toques en el mapa y sale el corte
+       con la letra que le toque, y lo calcula el teléfono con las cotas ya
+       guardadas: sin señal y sin pedir nada. */
+    function abrirHoja(){ const a=H.querySelector('[data-pcr="agrandar"]'); if(a) a.click(); }
+    o.hayBotonCortar = !!H.querySelector('[data-pcr="corte-nuevo"]');
+    const bn = H.querySelector('[data-pcr="corte-nuevo"]');
+    if (bn) { bn.click(); await esperar(500); }
+    o.barraCorte = !!document.getElementById('pcr-corte-barra');
+    o.pideEmpezar = /dónde EMPIEZA/.test(
+      (document.getElementById('pcr-corte-barra')||{textContent:''}).textContent);
+    // dos toques: una diagonal por dentro del sector
+    window.map.fire('click',{latlng:{lat:C.lat-0.0025, lng:C.lng-0.0025}});
+    await esperar(300);
+    o.pideTerminar = /dónde TERMINA/.test(
+      (document.getElementById('pcr-corte-barra')||{textContent:''}).textContent);
+    window.map.fire('click',{latlng:{lat:C.lat+0.0025, lng:C.lng+0.0025}});
+    await esperar(800);
+    const t2 = window.URBIS_PC_RECON.terrenoDePrueba();
+    const mios = (t2.perfiles||[]).filter(p=>p.aMano);
+    o.cortesAMano = mios.length;
+    o.letraNueva = mios[0] ? mios[0].marca + '–' + mios[0].marcaFin : '';
+    o.etiquetaNueva = mios[0] ? mios[0].etiqueta : '';
+    o.largoNuevo = mios[0] ? mios[0].largoM : 0;
+    o.cotasNuevas = mios[0] ? (mios[0].puntos||[]).length : 0;
+    o.suenaIgual = mios[0] ? /de \w+ a \w+|al opuesto/.test(mios[0].etiqueta) : false;
+    o.barraTrasCortar = !!document.getElementById('pcr-corte-barra');
+    // aparece en la ficha como un corte más
+    abrirHoja();
+    o.enLaFicha = /C–C′/.test((H.textContent||''));
+    // y una segunda vez da la D
+    const bn2 = H.querySelector('[data-pcr="corte-nuevo"]');
+    if (bn2) { bn2.click(); await esperar(400); }
+    window.map.fire('click',{latlng:{lat:C.lat-0.002, lng:C.lng+0.002}});
+    await esperar(250);
+    window.map.fire('click',{latlng:{lat:C.lat+0.002, lng:C.lng-0.002}});
+    await esperar(700);
+    const t3 = window.URBIS_PC_RECON.terrenoDePrueba();
+    o.letras2 = (t3.perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
+    // se pueden quitar de a uno
+    abrirHoja();
+    const bb = H.querySelector('[data-pcr="corte-borrar"]');
+    if (bb) { bb.click(); await esperar(500); }
+    const t4 = window.URBIS_PC_RECON.terrenoDePrueba();
+    o.letrasTrasBorrar = (t4.perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
+
+    // Y que se puedan quitar del mapa.
+    abrirHoja();
+    if (bc) { const b2=H.querySelector('[data-pcr="cortes-mapa"]');
+      if (b2 && S_cortesPuestos()) b2.click(); await esperar(600); }
     o.letrasTrasQuitar = document.querySelectorAll('.pcr-corte-letra').length;
+    function S_cortesPuestos(){ return document.querySelectorAll('.pcr-corte-letra').length>0; }
 
     // Guardar y reabrir
     const bg=[...H.querySelectorAll('button')].filter(b=>/Guardar/i.test(b.textContent||''))[0];
@@ -153,6 +204,10 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     const cab=document.querySelector('.pcr-pest-cab'); if(cab){ cab.click(); await esperar(600); }
     const pest=document.querySelector('.pcr-pestana');
     o.pestPerfiles=pest?pest.querySelectorAll('.pcr-corte').length:0;
+    /* El corte de a mano tiene que sobrevivir a guardar y reabrir: si no, el
+       estudiante lo pierde entre una clase y la siguiente, que es cuando lo
+       iba a usar. Se busca su letra dentro de la pestaña. */
+    o.pestConMio = pest ? /D–D′/.test((pest.textContent||'')) : false;
     o.pestDesnivel=!!(pest&&/desnivel/.test(txt(pest)));
     return o;
   },{C,POL,RAMPA});
@@ -197,7 +252,14 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   P('y avisa de la resolución del modelo', r.avisoResolucion);
 
   console.log('\n  -- el sector guardado no lo pierde --');
-  P('la pestaña trae los dos cortes', r.pestPerfiles===2, r.pestPerfiles+' perfiles');
+  /* Tres y no dos: los dos del motor más el que se dibujó a mano. La versión
+     anterior de esta comprobación exigía exactamente dos y empezó a fallar al
+     añadir los cortes propios — pero lo que había cambiado era lo correcto, no
+     la aplicación. Se aprieta en vez de aflojarse: ahora además se exige que
+     el de a mano esté ahí con su letra. */
+  P('la pestaña trae los cortes del motor y el que se dibujó',
+    r.pestPerfiles===3 && r.pestConMio,
+    r.pestPerfiles+' perfiles' + (r.pestConMio?', con el D–D′ propio':', sin el propio'));
   P('y el desnivel', r.pestDesnivel);
 
   console.log('\n  -- por dónde van los cortes, sobre el plano --');
@@ -222,6 +284,22 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
       pares.map(x=>x.e.replace(/\s*\(.*/,'')+': dice '+x.esperado+', va '+x.real).join(' · '));
   }
   P('y se pueden quitar', r.letrasTrasQuitar===0, r.letrasTrasQuitar+' letras después');
+
+  console.log('\n  -- cortar por donde uno diga --');
+  P('el bloque lo ofrece', r.hayBotonCortar);
+  P('y guía los dos toques, uno por uno',
+    r.barraCorte && r.pideEmpezar && r.pideTerminar,
+    r.pideEmpezar ? 'primero dónde empieza, después dónde termina' : 'no guía');
+  P('sale un corte con cotas de verdad, no una raya',
+    r.cortesAMano===1 && r.cotasNuevas>=12 && r.largoNuevo>100,
+    r.cotasNuevas+' cotas en '+r.largoNuevo+' m');
+  P('con la letra que sigue a las del motor', r.letraNueva==='C–C′', r.letraNueva);
+  P('y su rumbo escrito como los otros dos', r.suenaIgual, r.etiquetaNueva);
+  P('la barra se cierra sola al segundo toque', r.barraTrasCortar===false);
+  P('aparece en la ficha como un corte más', r.enLaFicha);
+  P('el segundo corte es la D', r.letras2==='CD', r.letras2);
+  P('se pueden quitar de a uno, y la letra libre se reutiliza',
+    r.letrasTrasBorrar==='D', 'quedó: '+r.letrasTrasBorrar);
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

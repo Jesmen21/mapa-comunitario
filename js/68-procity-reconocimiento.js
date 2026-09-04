@@ -115,6 +115,7 @@
     midiendoTodo: null,
     // Las teselas guardadas para caminar sin señal: qué hay y qué va bajando.
     teselas: null, bajandoTeselas: null, cortesEnMapa: false,
+    corteDibujando: false, cortePts: null, corteAviso: '',
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -3052,6 +3053,10 @@
         if (!puestasS && !S.sombrasEnMapa) S.aviso = 'No hay sombras que dibujar.';
         pintar(); return;
       }
+      if (acc === 'corte-nuevo') { iniciarCorte(); return; }
+      if (acc === 'corte-borrar') {
+        borrarCorte(b.getAttribute('data-c') || ''); return;
+      }
       if (acc === 'cortes-mapa') {
         var puesto = pintarCortes(!S.cortesEnMapa);
         S.encogida = puesto;
@@ -5290,6 +5295,31 @@
           '</div>'
         : '<p class="pcr-pista">Este análisis no trae por dónde se cortó: volvé a medir el ' +
           'terreno y las líneas A–A′ y B–B′ se podrán ver sobre el mapa.</p>') +
+      /* Cortar por donde uno diga. Los dos del motor van por el medio del
+         rectángulo; un proyecto se corta por donde el terreno decide algo. */
+      (S.terRejilla
+        ? '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="corte-nuevo" class="pcr-mini pcr-llevar-b">' +
+              ico('lapiz', 16) + 'Cortar por donde yo diga</button>' +
+          '</div>' +
+          '<p class="pcr-pista">Dos toques en el mapa —dónde empieza y dónde termina— y sale ' +
+          'el corte con su letra: <b>C–C′</b>, <b>D–D′</b>, y así. Lo calcula el teléfono con ' +
+          'las cotas que ya están guardadas: no hace falta señal.</p>'
+        : '') +
+      (S.corteAviso ? '<p class="pcr-error">' + esc(S.corteAviso) + '</p>' : '') +
+      (function () {
+        var mios = (t.perfiles || []).filter(function (p) { return p.aMano; });
+        if (!mios.length) return '';
+        return '<div class="pcr-lote">' +
+          mios.map(function (p) {
+            return '<div class="pcr-lote-fila">' +
+              '<span>' + esc(p.marca + '–' + p.marcaFin) + ' · ' + p.largoM + ' m</span>' +
+              '<button type="button" data-pcr="corte-borrar" data-c="' + esc(p.id) +
+                '" class="pcr-mini">' + ico('cerrar', 14) + 'Quitar</button>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      })() +
 
       '<p class="pcr-pista">Las alturas salen de un modelo de <b>' + t.resolucionM + ' metros de paso</b> (' +
       esc(t.fuente || '') + '). Sirve para leer el relieve del sector; <b>no</b> para dar la cota de una ' +
@@ -7852,6 +7882,7 @@
     }
     if (cual !== 'lote' && S.loteDibujando) cancelarLote();
     if (cual !== 'intangible' && S.intDibujando) cerrarIntangible();
+    if (cual !== 'corte' && S.corteDibujando) cancelarCorte();
   }
 
   function alternarHoja(quieroEncogida) {
@@ -9282,6 +9313,151 @@
      Las letras van en un `divIcon` y no en un `tooltip`: un tooltip se
      esconde al tocar cualquier otra cosa, y estas letras son parte del
      dibujo, no un aviso. */
+  /* ── Cortar por donde uno diga ────────────────────────────────────────
+     Los dos cortes del motor van por el medio del rectángulo. Un proyecto no
+     se corta por ahí: se corta por la ladera que se va a aterrazar, por el
+     eje de la calle a la que da el lote, por la quebrada. Así que se marcan
+     dos puntos en el mapa y sale el corte, con la letra que le toque —C, D,
+     E— y el mismo dibujo que los otros dos.
+
+     Lo calcula el teléfono con la rejilla de cotas que la ficha ya guarda:
+     ni una consulta de red, y funciona parado en el terreno sin señal, que
+     es cuando hace falta. */
+  var clickCorte = null;
+
+  function iniciarCorte() {
+    var K = window.URBIS_CORTES;
+    if (!K) { S.corteAviso = 'Falta el módulo de cortes. Recargá la app.'; pintar(); return; }
+    if (!S.terRejilla) {
+      S.corteAviso = 'Primero medí el terreno: los cortes se sacan de sus cotas.';
+      pintar(); return;
+    }
+    var m = mapa();
+    if (!m) { S.corteAviso = 'El mapa todavía no está listo.'; pintar(); return; }
+    soltarOtrosLapices('corte');
+    S.cortePts = []; S.corteDibujando = true; S.corteAviso = '';
+    S.encogida = true; S.encogidaAMano = false;
+    if (!clickCorte) {
+      clickCorte = function (ev) {
+        if (!S.corteDibujando || !ev || !ev.latlng) return;
+        agregarPuntoCorte(ev.latlng.lat, ev.latlng.lng);
+      };
+    }
+    try { m.on('click', clickCorte); } catch (e) {}
+    try { m.getContainer().style.cursor = 'crosshair'; } catch (e) {}
+    pintar(); pintarBarraCorte();
+  }
+
+  function agregarPuntoCorte(lat, lng) {
+    if (!S.corteDibujando) return;
+    var pts = S.cortePts || (S.cortePts = []);
+    pts.push({ lat: lat, lng: lng });
+    if (pts.length >= 2) { cerrarCorte(); return; }
+    pintar(); pintarBarraCorte();
+  }
+
+  function cerrarCorte() {
+    var K = window.URBIS_CORTES;
+    var pts = S.cortePts || [];
+    if (!K || pts.length < 2) { S.corteAviso = 'Un corte necesita dos puntos.'; pintarBarraCorte(); return; }
+    var ter = S.terreno;
+    var previos = (ter && ter.perfiles) || [];
+    /* La cota la pone la aplicación con SU `cotaEn`, el mismo que dibuja las
+       curvas de nivel. El módulo del corte solo recorre la línea. */
+    var nuevo = K.corteNuevo(function (lat, lng) {
+      return cotaEn({ lat: lat, lng: lng });
+    }, pts[0], pts[1], previos, {
+      dentro: function (c) { return puntoDentroDelSector(c); }
+    });
+    soltarCorte();
+    if (!nuevo) {
+      /* Dos causas y las dos se dicen: o los dos toques cayeron casi encima,
+         o el corte se salió de donde hay cotas. Un «no se pudo» a secas
+         obliga a adivinar cuál de las dos fue. */
+      S.corteAviso = 'No salió el corte: o los dos puntos quedaron muy juntos, o la línea ' +
+        'se sale del área donde se midieron las cotas.';
+      pintar(); return;
+    }
+    if (!ter) { S.corteAviso = 'Primero medí el terreno.'; pintar(); return; }
+    ter.perfiles = previos.concat([nuevo]);
+    S.corteAviso = '';
+    S.aviso = 'Corte ' + nuevo.marca + '–' + nuevo.marcaFin + ' hecho, de ' +
+      nuevo.largoM + ' m.';
+    guardarFichaViva();
+    // Si las líneas ya estaban puestas, se repintan con la nueva adentro.
+    if (S.cortesEnMapa) pintarCortes(true);
+    pintar();
+  }
+
+  function cancelarCorte() {
+    S.cortePts = null; S.corteDibujando = false; S.corteAviso = '';
+    soltarCorte();
+    pintar(); pintarBarraCorte();
+  }
+
+  function soltarCorte() {
+    S.corteDibujando = false; S.cortePts = null;
+    var m = mapa();
+    if (m && clickCorte) { try { m.off('click', clickCorte); } catch (e) {} }
+    try { if (m) m.getContainer().style.cursor = ''; } catch (e) {}
+    pintarBarraCorte();
+  }
+
+  function borrarCorte(id) {
+    var ter = S.terreno;
+    if (!ter || !ter.perfiles) return;
+    ter.perfiles = ter.perfiles.filter(function (p) { return !(p.aMano && p.id === id); });
+    guardarFichaViva();
+    if (S.cortesEnMapa) pintarCortes(true);
+    pintar();
+  }
+
+  /* Dentro del sector, para marcar qué tramo del corte está en lo analizado.
+     Es la misma pregunta que se hace el motor con sus dos cortes. */
+  function puntoDentroDelSector(c) {
+    var meta = (S.resultado && S.resultado.meta) || {};
+    var A = window.URBIS_PC_ANALISIS;
+    if (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3 &&
+        A && typeof A.dentroDelPoligono === 'function') {
+      try { return A.dentroDelPoligono(c.lat, c.lng, meta.poligono); } catch (e) {}
+    }
+    var eje = centroDeAnalisis();
+    if (!eje) return true;
+    return metrosEntreDos(eje, c) <= (S.radioM || 500);
+  }
+  function metrosEntreDos(a, b) {
+    var dLat = (b.lat - a.lat) * 110540;
+    var dLng = (b.lng - a.lng) * 111320 * Math.cos(a.lat * Math.PI / 180);
+    return Math.hypot(dLat, dLng);
+  }
+
+  /* La barra de abajo mientras se marca, igual que la del lote: los botones
+     donde el pulgar ya está y no dentro de un panel que hay que abrir. */
+  function pintarBarraCorte() {
+    var el = document.getElementById('pcr-corte-barra');
+    if (!S.corteDibujando) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pcr-corte-barra';
+      el.className = 'pcr-lote-barra';
+      document.body.appendChild(el);
+      el.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-corte]');
+        if (b && b.getAttribute('data-corte') === 'cancelar') cancelarCorte();
+      });
+    }
+    var n = (S.cortePts || []).length;
+    el.innerHTML =
+      '<div class="pcr-lote-t">' +
+        (n === 0 ? 'Tocá dónde EMPIEZA el corte'
+                 : 'Ahora tocá dónde TERMINA') +
+      '</div>' +
+      '<div class="pcr-lote-b">' +
+        '<button type="button" data-corte="cancelar">' + ico('cerrar', 16) + 'Cancelar</button>' +
+      '</div>' +
+      (S.corteAviso ? '<div class="pcr-lote-aviso">' + esc(S.corteAviso) + '</div>' : '');
+  }
+
   function pintarCortes(encender) {
     var m = mapa();
     if (!m || typeof L === 'undefined') return false;
