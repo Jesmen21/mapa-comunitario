@@ -133,10 +133,70 @@ const REGISTRO = { type:'FeatureCollection', features:[
   });
   await ctx.route(/geoserver-que-no-existe/, r=>r.abort('addressunreachable'));
 
+  /* ── El relevo del motor ────────────────────────────────────────────────
+     Tres servicios de ArcGIS de mentira, cada uno para una respuesta distinta
+     del relevo:
+
+       arcgis-cors-cerrado   el navegador no puede leerlo, el relevo sí
+       arcgis-con-token      contesta «Token Required» — el relevo NO ayuda
+       arcgis-abierto        se lee directo — el relevo NO debe tocarse
+
+     El segundo y el tercero son la mitad que importa: un relevo que se dispara
+     siempre convierte cada consulta en dos y le manda a nuestro servidor
+     trabajo que no arregla nada. */
+  const SERVICIO_POT={serviceDescription:'Clasificacion del suelo POT',
+    layers:[{id:0,name:'Clasificacion del Suelo'}]};
+  const CAPA_POT={geometryType:'esriGeometryPolygon',minScale:0,maxScale:0,
+    fields:[{name:'OBJECTID',type:'esriFieldTypeOID'},
+            {name:'MUNICIPIO',type:'esriFieldTypeString'},
+            {name:'CLASE',type:'esriFieldTypeString'}]};
+  const respuestaArcgis=(u)=>/\/0(\?|$)/.test(u.split('/query')[0])||/\/0\?f=json/.test(u)
+    ? CAPA_POT : SERVICIO_POT;
+
+  let relevosPedidos=[];
+  await ctx.route(/arcgis-cors-cerrado/, r=>r.abort());
+  await ctx.route(/arcgis-con-token/, r=>r.fulfill({status:200,
+    contentType:'application/json',
+    body:JSON.stringify({error:{message:'Token Required',code:499}})}));
+  await ctx.route(/arcgis-abierto/, r=>r.fulfill({status:200,
+    contentType:'application/json',
+    body:JSON.stringify(respuestaArcgis(decodeURIComponent(r.request().url())))}));
+  await ctx.route(/api\.urbispro\.city\/geo/, r=>{
+    const u=decodeURIComponent(new URL(r.request().url()).searchParams.get('u')||'');
+    relevosPedidos.push(u);
+    if(/arcgis-cors-cerrado/.test(u)){
+      return r.fulfill({status:200,contentType:'application/json',
+        body:JSON.stringify({ok:true,de:'https://arcgis-cors-cerrado.gov.co',
+          datos:respuestaArcgis(u)})});
+    }
+    r.fulfill({status:400,contentType:'application/json',
+      body:JSON.stringify({ok:false,error:'Ese dominio no está en la lista del relevo.'})});
+  });
+
   await pg.fill('#ogc','https://geoserver-de-mentira.gov.co/geoserver/ows\n' +
     'https://geoserver-con-cors-cerrado.gov.co/geoserver/ows\n' +
     'https://geoserver-que-no-existe.gov.co/geoserver/ows');
   await pg.click('#explorar-ogc');
+  await pg.waitForFunction(()=>/Listo/.test(document.getElementById('estado').textContent),
+    {timeout:120000});
+
+  /* Cada corrida EMPIEZA el informe de nuevo, así que el del GeoServer hay
+     que guardarlo antes de correr la caja 2. Escribir las dos aserciones
+     contra el segundo informe dejaba trece comprobaciones mirando una hoja
+     vacía y pasando por otra razón. */
+  const ogc = await pg.evaluate(()=>({
+    informe:document.getElementById('informe').textContent,
+    hallazgos:[...document.querySelectorAll('.hallazgo')].map(h=>({
+      texto:(h.textContent||'').replace(/\s+/g,' ').trim(),
+      marca:(h.querySelector('.marca')||{}).textContent||''
+    }))
+  }));
+
+  /* La caja 2, que es la que examina direcciones sueltas. */
+  await pg.fill('#suelto','https://arcgis-cors-cerrado.gov.co/server/rest/services/pot/MapServer\n' +
+    'https://arcgis-con-token.gov.co/server/rest/services/pot/MapServer\n' +
+    'https://arcgis-abierto.gov.co/server/rest/services/pot/MapServer');
+  await pg.click('#examinar');
   await pg.waitForFunction(()=>/Listo/.test(document.getElementById('estado').textContent),
     {timeout:120000});
 
@@ -152,8 +212,9 @@ const REGISTRO = { type:'FeatureCollection', features:[
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const I=r.informe||'';
-  const conCapa=q=>r.hallazgos.filter(h=>h.texto.indexOf(q)>=0)[0];
+  const I=ogc.informe||'';            // el del GeoServer
+  const J=r.informe||'';              // el de la caja 2, donde vive el relevo
+  const conCapa=q=>ogc.hallazgos.filter(h=>h.texto.indexOf(q)>=0)[0];
 
   console.log('\n  -- lee las capacidades --');
   T('pide el documento de capacidades en WMS 1.3.0',
@@ -210,8 +271,8 @@ const REGISTRO = { type:'FeatureCollection', features:[
     !!conCapa('Amenaza por inundación') &&
     /sirve/.test(conCapa('Amenaza por inundación').marca),
     conCapa('Amenaza por inundación') ? conCapa('Amenaza por inundación').marca : 'no está');
-  T('hay un hallazgo por capa mirada', r.hallazgos.length>=3,
-    r.hallazgos.length+' hallazgos');
+  T('hay un hallazgo por capa mirada', ogc.hallazgos.length>=3,
+    ogc.hallazgos.length+' hallazgos');
 
   console.log('\n  -- los tres rojos no son el mismo rojo --');
   T('el que contesta pero no deja leerlo se distingue',
@@ -221,11 +282,29 @@ const REGISTRO = { type:'FeatureCollection', features:[
     /el dominio tampoco contesta/.test(I) && /No es cosa de permisos/.test(I),
     (I.match(/y el dominio tampoco contesta[^.]*\./)||['no lo distingue'])[0]);
   T('cada uno con su etiqueta en el resumen',
-    r.hallazgos.some(h=>/no deja leerlo/.test(h.marca||h.texto)) &&
-    r.hallazgos.some(h=>/no hay servidor/.test(h.marca||h.texto)),
-    r.hallazgos.map(h=>h.marca).join(' · '));
+    ogc.hallazgos.some(h=>/no deja leerlo/.test(h.marca||h.texto)) &&
+    ogc.hallazgos.some(h=>/no hay servidor/.test(h.marca||h.texto)),
+    ogc.hallazgos.map(h=>h.marca).join(' · '));
 
   console.log('');
+  console.log('\n  -- el relevo del motor --');
+  T('lo que el navegador no pudo leer, se pide por el relevo',
+    relevosPedidos.some(u=>/arcgis-cors-cerrado/.test(u)),
+    relevosPedidos.length+' consultas relevadas');
+  T('y llega el dato: las capas del servicio',
+    /Clasificacion del Suelo/.test(J));
+  T('marcado, para no confundir «sirve» con «sirve por nuestro servidor»',
+    /⇄[^\n]*RELEVO/.test(J),
+    (J.match(/⇄[^\n]*/)||[''])[0].trim());
+  /* La otra mitad, y la que se olvida: un relevo que se dispara siempre
+     duplica cada consulta y le manda al servidor trabajo inútil. */
+  T('lo que contestó «Token Required» NO se releva: el relevo no lo arregla',
+    !relevosPedidos.some(u=>/arcgis-con-token/.test(u)));
+  T('y lo que se leyó directo, tampoco',
+    !relevosPedidos.some(u=>/arcgis-abierto/.test(u)));
+  T('el que ni con relevo se pudo, lo dice entero',
+    !/⇄[^\n]*arcgis-con-token/.test(J) && /Token Required/.test(J));
+
   T('sin errores de JavaScript', errFin.length===0, errFin.slice(0,2).join(' | ')||'ninguno');
   console.log('\n  '+(mal?mal+' fallaron':'todo pasó'));
   process.exit(mal?1:0);

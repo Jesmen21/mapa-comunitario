@@ -95,6 +95,14 @@
   <div class="botones">
     <button id="explorar-todo" class="grande">Explorar todo</button>
   </div>
+  <p class="pista"><label><input type="checkbox" id="relevo" checked>
+  Cuando el navegador no pueda leer un servicio, volver a pedirlo por el motor de URBIS</label></p>
+  <p class="pista">Media Colombia oficial publica sus mapas sin permitir que una página web
+  los lea —eso es el «CORS cerrado»—. El motor de URBIS no tiene ese límite, porque el CORS
+  es una regla del navegador y no de la red. Sin esto, la sonda contesta «no se pudo leer»
+  justo en los servicios más interesantes, que es lo que pasó con el IGAC.
+  Lo que llegue por ahí sale marcado con <b>⇄</b>: sirve dentro de URBIS, pero no desde
+  una página cualquiera.</p>
   <p class="pista">Las cajas de abajo sirven para correr una sola cosa, o para pegar una
   dirección que le hayan pasado.</p>
 </section>
@@ -155,12 +163,21 @@ http://geoservicios.gestiondelriesgo.gov.co:6080/arcgis/rest/services</textarea>
 <section id="caja-uno">
   <h2>2 · Ir derecho a unas capas</h2>
   <p class="pista">Sin explorar nada: examina solo lo que esté acá, una dirección por línea.
-  Vienen puestas las dos de <b>movimientos en masa</b> —los deslizamientos, que es lo que de
-  verdad le pasa a una ciudad construida sobre laderas—. Sirve la dirección del servicio o la
-  de una capa suelta; si Planeación le pasa un enlace, agréguelo en una línea nueva.</p>
+  Sirve la dirección del servicio o la de una capa suelta; si Planeación le pasa un enlace,
+  agréguelo en una línea nueva.</p>
+  <p class="pista">Vienen puestas dos cosas. Las de <b>movimientos en masa</b> —los
+  deslizamientos, que es lo que de verdad le pasa a una ciudad construida sobre laderas—
+  y las cinco del <b>POT en el IGAC</b>, que aparecieron explorando y que el navegador no
+  pudo leer por CORS. Con el relevo encendido ahora sí se deberían ver: lo que hace falta
+  saber de ellas es si traen a Cúcuta o solo a los municipios que alcanzaron a cargar.</p>
   <label for="suelto">Direcciones, una por línea</label>
   <textarea id="suelto" spellcheck="false">https://srvags.sgc.gov.co/arcgis/rest/services/Mapa_Nacional_Amenaza_Mov_Masa_100K/Mapa_Nacional_Amenaza_Movimientos_Masa_100K/MapServer
-https://srvags.sgc.gov.co/arcgis/rest/services/SIMMA/ZonificacionAmenazaCache/MapServer</textarea>
+https://srvags.sgc.gov.co/arcgis/rest/services/SIMMA/ZonificacionAmenazaCache/MapServer
+https://mapas.igac.gov.co/server/rest/services/ordenamientoterritorial/clasificaciondelsuelopot/MapServer
+https://mapas.igac.gov.co/server/rest/services/ordenamientoterritorial/zonificacionusossegunpot/MapServer
+https://mapas.igac.gov.co/server/rest/services/ordenamientoterritorial/datosnacionalespot/MapServer
+https://mapas.igac.gov.co/server/rest/services/atlas/potmunicipal/MapServer
+https://mapas.igac.gov.co/server/rest/services/atlas/estadovigenciapot/MapServer</textarea>
   <div class="botones">
     <button id="examinar">Examinar estas</button>
   </div>
@@ -242,11 +259,60 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  /* El relevo del motor de URBIS. La sonda existe para averiguar qué publica
+     un servicio, y en la corrida contra el IGAC la mitad de las respuestas
+     fueron «el navegador no la pudo leer»: CORS cerrado. Eso no dice nada del
+     servicio —dice algo del navegador—, y dejaba la sonda sin poder hacer su
+     único trabajo justo en los sitios más interesantes.
+
+     El motor de URBIS no tiene ese límite: CORS es una regla del navegador, no
+     de la red. Su ruta /geo pide por encargo, con lista blanca de dominios.
+     Así que cuando el camino directo falla, se reintenta por ahí.
+
+     Se marca en la salida cuál vino por dónde. Importa: una capa que solo se
+     alcanza por el relevo se puede usar en URBIS —el motor la va a poder
+     pedir— pero NO se puede usar desde una página cualquiera. Es la diferencia
+     entre «esto sirve» y «esto sirve si lo pasás por nuestro servidor», y
+     confundirlas costaría una tarde. */
+  var RELEVO = 'https://api.urbispro.city/geo?u=';
+  var relevadas = 0;
+
+  function usarRelevo() {
+    var c = document.getElementById('relevo');
+    return !c || c.checked;
+  }
+
   /* Una sola puerta a la red. Lo que importa no es solo el contenido: también
      POR QUÉ falla. Un fallo de CORS y un servidor caído se ven igual desde
      JavaScript —el navegador no cuenta cuál fue—, así que se dice como es y no
      se inventa una certeza que no hay. */
   function traer(url, ms) {
+    return directo(url, ms).then(function (r) {
+      /* Solo se releva lo que el relevo puede arreglar. Un servicio que
+         contestó «Token Required» va a contestar lo mismo desde cualquier
+         parte, y reintentarlo es esperar el doble para el mismo no. Lo que sí
+         arregla es que el NAVEGADOR no haya podido leer la respuesta. */
+      if (!r.error || !/no la pudo leer/.test(r.error)) return r;
+      if (!usarRelevo() || !/^https:/i.test(url)) return r;
+      return directo(RELEVO + encodeURIComponent(url), ms).then(function (v) {
+        if (v.error) {
+          return { error: r.error + ' — y por el relevo del motor tampoco: ' + v.error };
+        }
+        // El relevo envuelve: { ok, de, datos }. Lo de adentro es la respuesta.
+        var d = v.ok && v.ok.ok === true ? v.ok.datos : v.ok;
+        if (v.ok && v.ok.ok === false) {
+          return { error: r.error + ' — y el relevo dijo: ' + (v.ok.error || 'sin detalle') };
+        }
+        if (d && d.error) {
+          return { error: 'error del servicio: ' + (d.error.message || JSON.stringify(d.error)) };
+        }
+        relevadas++;
+        return { ok: d, porRelevo: true };
+      });
+    });
+  }
+
+  function directo(url, ms) {
     var ctrl = new AbortController();
     var reloj = setTimeout(function () { ctrl.abort(); }, ms || 45000);
     return fetch(url, { signal: ctrl.signal, credentials: 'omit' })
@@ -306,6 +372,7 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
     linea('    ' + url);
     return traer(url + '?f=json').then(function (r) {
       if (r.error) { linea('      ✗ no se pudieron leer los campos: ' + r.error); return; }
+      if (r.porRelevo) linea('      ⇄ por el relevo del motor');
       var d = r.ok;
       linea('      tipo de geometría: ' + (d.geometryType || '—') +
             ' · dibuja hasta 1:' + (d.minScale || '∞') + ', desde 1:' + (d.maxScale || 0));
@@ -365,6 +432,10 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
         return;
       }
       var capas = (r.ok.layers || []).concat(r.ok.tables || []);
+      /* Se dice de dónde vino. Una capa que solo se alcanza por el relevo
+         sirve en URBIS —el motor la puede pedir— pero no desde una página
+         cualquiera, y esa diferencia hay que verla al leer la salida. */
+      if (r.porRelevo) linea('  ⇄ el navegador no pudo, esto llegó POR EL RELEVO del motor');
       linea('  ' + (r.ok.serviceDescription || r.ok.description || '').slice(0, 240));
       linea('  CAPAS: ' + capas.length);
       capas.forEach(function (c) { linea('    [' + c.id + '] ' + c.name); });
