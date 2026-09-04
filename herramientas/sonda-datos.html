@@ -123,13 +123,16 @@ https://srvags.sgc.gov.co/arcgis/rest/services</textarea>
 </section>
 
 <section id="caja-uno">
-  <h2>2 · Si ya tiene la dirección de una capa</h2>
-  <p class="pista">Cuando alguien de Planeación le pase un enlace, péguelo acá y la sonda lo
-  examina sin explorar nada más. Sirve tanto la dirección del servicio como la de una capa suelta.</p>
-  <label for="suelto">Dirección del servicio o de la capa</label>
-  <input id="suelto" placeholder="https://…/arcgis/rest/services/…/MapServer" spellcheck="false">
+  <h2>2 · Ir derecho a unas capas</h2>
+  <p class="pista">Sin explorar nada: examina solo lo que esté acá, una dirección por línea.
+  Vienen puestas las dos de <b>movimientos en masa</b> —los deslizamientos, que es lo que de
+  verdad le pasa a una ciudad construida sobre laderas—. Sirve la dirección del servicio o la
+  de una capa suelta; si Planeación le pasa un enlace, agréguelo en una línea nueva.</p>
+  <label for="suelto">Direcciones, una por línea</label>
+  <textarea id="suelto" spellcheck="false">https://srvags.sgc.gov.co/arcgis/rest/services/Mapa_Nacional_Amenaza_Mov_Masa_100K/Mapa_Nacional_Amenaza_Movimientos_Masa_100K/MapServer
+https://srvags.sgc.gov.co/arcgis/rest/services/SIMMA/ZonificacionAmenazaCache/MapServer</textarea>
   <div class="botones">
-    <button id="examinar" class="secundario">Examinar esta</button>
+    <button id="examinar">Examinar estas</button>
   </div>
 </section>
 
@@ -438,17 +441,24 @@ https://srvags.sgc.gov.co/arcgis/rest/services</textarea>
   });
 
   $('examinar').addEventListener('click', function () {
-    var u = $('suelto').value.trim().replace(/\?.*$/, '').replace(/\/+$/, '');
-    if (!u) { estado('Pegá una dirección primero.'); return; }
+    var urls = $('suelto').value.split('\n')
+      .map(function (x) { return x.trim().replace(/\?.*$/, '').replace(/\/+$/, ''); })
+      .filter(Boolean);
+    if (!urls.length) { estado('Pegá al menos una dirección.'); return; }
     trabajando(true);
     encabezado();
-    estado('Examinando …');
-    // Si la dirección termina en un número es una capa suelta; si no, un servicio.
-    var esCapa = /\/\d+$/.test(u);
-    var tarea = esCapa
-      ? examinarCapa(u.replace(/\/\d+$/, ''), u.match(/\/(\d+)$/)[1], 'capa suelta')
-      : examinarServicio(u, '');
-    tarea.then(function () {
+    /* Todas en un solo informe. Antes cada examen borraba el anterior, así que
+       mirar dos capas obligaba a copiar en medio; con dos direcciones y un
+       servidor lento, ese paso se olvida. */
+    urls.reduce(function (cadena, u, i) {
+      return cadena.then(function () {
+        estado('Examinando ' + (i + 1) + ' de ' + urls.length + ' …');
+        // Si la dirección termina en un número es una capa suelta; si no, un servicio.
+        return /\/\d+$/.test(u)
+          ? examinarCapa(u.replace(/\/\d+$/, ''), u.match(/\/(\d+)$/)[1], 'capa suelta')
+          : examinarServicio(u, '');
+      });
+    }, Promise.resolve()).then(function () {
       estado('Listo. Copiá todo y pegámelo.');
       trabajando(false);
     });
