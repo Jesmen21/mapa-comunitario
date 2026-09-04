@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v693-los-nunca-y-los-de-siempre';
+const URBIS_CACHE = 'urbis-v694-un-cero-no-es-una-medicion';
 const URBIS_ASSETS = [
   './',
   './index.html',
