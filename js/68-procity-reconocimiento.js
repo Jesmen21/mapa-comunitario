@@ -949,6 +949,29 @@
       '<table>' + (p.clases || []).map(function (c) {
         return '<tr><td>' + esc(c.etiqueta) + '</td><td class="n">' + String(c.pct).replace('.', ',') + '%</td></tr>';
       }).join('') + '</table>' +
+      /* Los cortes DEL SECTOR: A–A′, B–B′ y los que haya dibujado el
+         estudiante. Faltaban en el PDF, y era el hueco más caro de todos:
+         alguien corta el terreno por donde le importa, parado en la calle, y
+         eso no aparece en la hoja que entrega. La ficha los mostraba, la
+         lámina también, y el informe no.
+
+         Cada uno con su rótulo debajo —A–A′, C–C′— porque un corte sin
+         nombre no se puede referir desde el texto ni cruzar con la línea
+         dibujada en el plano, que es para lo que sirve la letra. */
+      ((t.perfiles || []).length
+        ? '<h3>Cortes del terreno</h3>' +
+          (t.perfiles || []).map(function (p) {
+            var d = dib('corteTopografico', { etiqueta: p.etiqueta || '', puntos: p.puntos || [] });
+            if (!d) return '';
+            return '<div class="dib dib-ancho">' + d + '</div>' +
+              '<p class="pie pie-corte"><b>' + esc((p.marca || '') + '–' + (p.marcaFin || '')) +
+              '</b> ' + esc(p.etiqueta || '') +
+              (p.aMano ? ' · trazado en campo' : '') +
+              (p.largoM ? ' · ' + p.largoM + ' m' : '') + '</p>';
+          }).join('') +
+          '<p class="pie">Las líneas de estos cortes van marcadas en el plano del sector con su ' +
+          'letra en cada punta.</p>'
+        : '') +
       /* Los cortes por el lote van también al PDF: es la hoja que la
          estudiante lleva impresa a la asesoría. */
       (terLote && terLote.cortes && terLote.cortes.length
@@ -2366,6 +2389,10 @@
       '.pcr-clima-graf svg{ display:block; width:100%; height:auto; max-height:34mm }' +
       '.pcr-clima-graf .pcr-pista{ font-size:2.8mm; color:#6B7A8A; line-height:1.4; margin:2mm 0 0 }' +
       '.pcr-perfil{ margin:0 0 2mm }' +
+      /* El rótulo de cada corte, pegado a su dibujo: sin él, tres siluetas
+         seguidas son tres siluetas y no A, B y C. */
+      '.pie-corte{ margin:-1mm 0 3mm; font-size:2.7mm }' +
+      '.pie-corte b{ color:#0A6F9E }' +
       '.pcr-perfil svg{ display:block; width:100%; height:auto; max-height:20mm }' +
       '.pcr-perfil .pcr-lab{ font-size:2.6mm; letter-spacing:.1em; text-transform:uppercase; color:#6B7A8A; font-weight:700 }' +
       '.pcr-perfil-area{ fill:#E6F7FE } ' +
