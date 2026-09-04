@@ -64,6 +64,134 @@
   },
   "entradas": [
     {
+      "fecha": "2026-08-29",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "En consejo de ministros ordena una revisión integral de la contratación pública para \"romper la rosca\"; la oposición responde que terminó \"montando su propia rosca\"",
+      "detalle": "El 29 de agosto, tras un consejo de ministros de más de siete horas en Barranquilla, el presidente Abelardo de la Espriella ordenó una auditoría de los contratos públicos en cada entidad del Ejecutivo —incluidos abogados externos, firmas liquidadoras, convenios con universidades públicas, logística de eventos y negocios fiduciarios— para identificar sobrecostos, intermediarios y concentración de contratos. \"Vamos a revisar cada rincón del Estado para desmontar, dentro de la ley, las roscas, los monopolios y las redes que han convertido la contratación pública en un negocio reservado para pocos [...] Ministerio por ministerio, entidad por entidad, empresa por empresa [...] Hay que romper la rosca\", dijo el presidente, y prometió que no habrá privilegios para nadie.",
+      "contrapunto": "La representante a la Cámara Laura Beltrán, conocida como \"Lalis\" (Pacto Histórico), respondió que, pese al discurso contra las \"roscas\", en los primeros cerca de 300 nombramientos del Gobierno pesó más haber trabajado en la firma De la Espriella Abogados, en la Universidad Sergio Arboleda o tener vínculos con la política tradicional que la falta de conexiones, y concluyó que el presidente terminó \"gobernando con los mismos de siempre\" y \"montando su propia rosca\". Por separado, una investigación de Infobae publicada el 3 de septiembre identificó a varios de los principales aportantes de la campaña de segunda vuelta de De la Espriella que después obtuvieron cargos en el Gobierno: Richard Caicedo, quien recibió $7 millones por trabajo administrativo en la campaña, fue designado presidente del Icetex el 18 de agosto; y Yesica Tovar, que recibió $35 millones durante la campaña, apareció después vinculada a contratos estatales. URBIS no encontró, a la fecha de este registro, una respuesta oficial del Gobierno a estos señalamientos puntuales sobre aportantes de campaña.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Lalis 'puso contra las cuerdas' a Abelardo de la Espriella por la contratación pública al acusarlo de \"montar su propia 'rosca'\"",
+          "u": "https://www.infobae.com/colombia/2026/08/30/lalis-puso-contra-las-cuerdas-a-abelardo-de-la-espriella-por-la-contratacion-publica-al-acusarlo-de-montar-su-propia-rosca/"
+        },
+        {
+          "n": "Semana · Presidente Abelardo De La Espriella ordena revisión profunda de la contratación para acabar con las \"roscas\": \"No habrá privilegios para nadie\"",
+          "u": "https://www.semana.com/nacion/articulo/presidente-abelardo-de-la-espriella-ordena-revision-profunda-de-la-contratacion-para-acabar-con-las-roscas-no-habra-privilegios-para-nadie/202651/"
+        },
+        {
+          "n": "El Espectador · \"Romper la rosca\": la instrucción que lanzó De la Espriella en consejo de ministros",
+          "u": "https://www.elespectador.com/politica/de-la-espriella-le-pidio-a-su-gabinete-romper-la-rosca-en-la-contratacion-asi-fue-el-consejo-de-ministros/"
+        },
+        {
+          "n": "Infobae · Estos fueron algunos de los principales aportantes a la campaña de Abelardo de la Espriella en segunda vuelta: varios terminaron con cargos en el Gobierno",
+          "u": "https://www.infobae.com/colombia/2026/09/03/estos-fueron-algunos-de-los-principales-aportantes-a-la-campana-de-abelardo-de-la-espriella-en-segunda-vuelta-varios-terminaron-con-cargos-en-el-gobierno/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-28",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "El Gobierno deroga la resolución de 2015 que suspendía la aspersión aérea con glifosato sobre cultivos ilícitos, aunque su reanudación sigue condicionada",
+      "detalle": "Mediante la Resolución 0006, firmada el 18 de agosto de 2026 por el viceministro de Política Criminal, Carlos Gónima, y conocida públicamente el 28 de agosto, el Consejo Nacional de Estupefacientes derogó la Resolución 006 de 2015, que había suspendido la aspersión aérea con glifosato para erradicar cultivos de uso ilícito. La suspensión de 2015 se había adoptado después de que la Agencia Internacional para la Investigación del Cáncer (IARC) clasificara el glifosato como \"probablemente carcinógeno\", y de que la Corte Constitucional, en la Sentencia T-236 de 2017, concluyera que la sustancia es tóxica y puede causar cáncer u otras afectaciones celulares según el nivel de exposición; ese fallo condicionó cualquier reanudación al cumplimiento de varios requisitos, entre ellos un plan de manejo ambiental vigente aprobado por la Autoridad Nacional de Licencias Ambientales (ANLA), un concepto del Instituto Nacional de Salud y la consulta previa con comunidades étnicas. La propia Resolución 0006 reconoce que esos requisitos no se han cumplido, por lo que la derogación no habilita de forma inmediata la aspersión: abre la puerta a una eventual reanudación, pero no la ordena.",
+      "contrapunto": "El 1 de septiembre, el \"gabinete de oposición\" conformado por sectores cercanos a Iván Cepeda y Gustavo Petro calificó de \"ineficaz\" el anuncio de nuevas fumigaciones para erradicar cultivos ilícitos. Organizaciones campesinas y comunidades que se identifican como afectadas por aspersiones irregulares en el pasado advirtieron sobre los riesgos de toxicidad aguda del glifosato por ingestión o contacto con la piel, y sobre posibles efectos en cultivos legales, fuentes de agua y ecosistemas si la aspersión se reanuda sin los estudios de impacto ambiental y sanitario exigidos por la Corte Constitucional.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Aspersión aérea con glifosato en cultivos ilícitos en Colombia: gobierno de Abelardo de la Espriella revocó resolución que la prohibía",
+          "u": "https://www.infobae.com/colombia/2026/08/28/aspersion-aerea-con-glifosato-en-cultivos-ilicitos-en-colombia-gobierno-de-abelardo-de-la-espriella-revoco-resolucion-que-la-prohibia/"
+        },
+        {
+          "n": "El Espectador · Gobierno De la Espriella tumba decreto que prohibía la aspersión aérea con glifosato",
+          "u": "https://www.elespectador.com/judicial/gobierno-de-la-espriella-tumba-decreto-que-prohibia-la-aspersion-aerea-con-glifosato/"
+        },
+        {
+          "n": "Semana · ¿Regresa la aspersión aérea con glifosato? Gobierno De La Espriella revoca decreto que la prohibía",
+          "u": "https://www.semana.com/nacion/articulo/regresa-la-aspersion-aerea-con-glifosato-gobierno-de-la-espriella-revoca-decreto-que-la-prohibia/202651/"
+        },
+        {
+          "n": "Infobae · Gabinete a la sombra de Iván Cepeda y Gustavo Petro criticó nuevas fumigaciones para erradicar cultivos ilícitos que anunció Abelardo de la Espriella: \"Ineficaz\"",
+          "u": "https://www.infobae.com/colombia/2026/09/01/gabinete-a-la-sombra-de-ivan-cepeda-y-gustavo-petro-critico-nuevas-fumigaciones-para-erradicar-cultivos-ilicitos-que-anuncio-abelardo-de-la-espriella-ineficaz/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-27",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Se confirma que tres menores de edad murieron en el bombardeo de la Operación Amón contra el frente de alias Calarcá en El Retorno, Guaviare; el Congreso radica moción de censura contra el ministro de Defensa",
+      "detalle": "En la noche del 27 de agosto, un operativo militar —Operación Amón— contra una estructura del frente de alias Calarcá, del Estado Mayor de Bloques y Frentes de las disidencias de las FARC, dejó un saldo de diez muertos en zona rural de El Retorno (Guaviare). El Instituto Nacional de Medicina Legal confirmó, tras el análisis de los cuerpos, que tres de los fallecidos eran menores de edad (dos de 15 años y uno de 16); también fue capturada una persona y un menor fue recuperado y puesto bajo el proceso de restablecimiento de derechos. El ministro de Defensa, general (r) Jorge Eduardo Mora, atribuyó la muerte de los menores a que los grupos armados \"los instrumentalizaron\", y el Ministerio anunció una mesa con la Fiscalía y la Rama Judicial para reforzar la protección frente al reclutamiento.",
+      "contrapunto": "El 1 de septiembre, 19 representantes a la Cámara, en su mayoría del Pacto Histórico, radicaron una moción de censura contra el ministro Mora con cuatro cargos: falta de inteligencia previa sobre la presencia de menores, deficiencia en el análisis de medidas alternativas menos letales, cuestionamiento a la figura de \"función de combate continuo\" invocada por el Gobierno, y críticas a voceros oficiales por trasladar la responsabilidad al grupo armado sin explicar el deber de protección del Estado. El congresista Óscar Benavides, impulsor de la moción, acusó al Gobierno de \"lavarse las manos\". La Defensoría del Pueblo advirtió por separado, el 1 de septiembre, un aumento del reclutamiento forzado de menores por grupos armados (1.173 casos reportados entre 2024 y 2026). Hasta la fecha de este registro, el Congreso no ha votado la moción de censura.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Radican ante el Congreso moción de censura contra el ministro de Defensa por la muerte de tres menores en bombardeo en Guaviare",
+          "u": "https://www.eltiempo.com/politica/congreso/radican-ante-el-congreso-mocion-de-censura-contra-el-ministro-de-defensa-por-la-muerte-de-tres-menores-en-bombardeo-en-guaviare-3582708"
+        },
+        {
+          "n": "Infobae · Tres menores de edad murieron en operativos militares en El Retorno, Guaviare, y esto dijo el Ministerio de Defensa: \"los instrumentalizaron\"",
+          "u": "https://www.infobae.com/colombia/2026/08/31/tres-menores-de-edad-murieron-en-operativos-militares-en-el-retorno-guaviare-y-esto-dijo-el-ministerio-de-defensa-los-instrumentalizaron/"
+        },
+        {
+          "n": "Infobae · Por la muerte de tres menores en bombardeo en el Guaviare, el congresista Óscar Benavides anunció moción de censura al ministro de Defensa: \"se está lavando las manos\"",
+          "u": "https://www.infobae.com/colombia/2026/09/01/por-la-muerte-de-tres-menores-en-bombardeo-en-el-guaviare-el-congresista-oscar-benavides-anuncio-mocion-de-censura-al-ministro-de-defensa-se-esta-lavando-las-manos/"
+        },
+        {
+          "n": "La Silla Vacía · 19 firmas de la oposición apoyan moción de censura contra el mindefensa",
+          "u": "https://www.lasillavacia.com/en-vivo/19-firmas-de-la-oposicion-apoyan-mocion-de-censura-contra-el-mindefensa/"
+        },
+        {
+          "n": "Infobae · Defensoría del Pueblo alertó sobre el aumento del reclutamiento forzado de menores de edad por grupos armados en Colombia",
+          "u": "https://www.infobae.com/colombia/2026/09/01/defensoria-del-pueblo-alerto-sobre-el-aumento-del-reclutamiento-forzado-de-menores-de-edad-por-grupos-armados-en-colombia-son-cientos-los-casos-reportados-entre-2024-y-2026/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-02",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El presidente camina entre los 23 cuerpos de disidentes de alias Iván Mordisco exhibidos tras la Operación Azarías en Guaviare; Petro lo acusa de \"hacer de la muerte un trofeo\"",
+      "detalle": "La Operación Azarías, ejecutada en la noche del 30 de agosto en la vereda Lagos del Dorado, municipio de Miraflores (Guaviare), contra el frente Carolina Ramírez —estructura de las disidencias de las FARC comandada por alias Iván Mordisco—, fue anunciada inicialmente el 31 de agosto con un saldo de ocho muertos, tres capturados y dos personas rescatadas que se identificaron como menores de edad, aún sin verificar. En los días siguientes el presidente Abelardo de la Espriella actualizó el balance a 23 \"terroristas\" muertos y seis capturados, entre ellos alias \"Víctor\", señalado como tercero al mando de la estructura, y calificó la operación como \"el golpe más contundente que ha dado nuestra Fuerza Pública en los últimos 12 años\", afirmando: \"Yo mismo autoricé esa operación hace dos semanas como comandante en jefe de nuestra Fuerza Pública\". El 2 de septiembre el presidente recorrió, ante las cámaras, un batallón militar en Guaviare donde los 23 cuerpos estaban dispuestos en el piso, envueltos en bolsas plásticas blancas, junto a armamento incautado, en un video que confirmó los resultados de la operación.",
+      "contrapunto": "El expresidente Gustavo Petro, en gira por México, criticó la difusión de las imágenes: \"Esto se llama hacer de la muerte un trofeo, solo gente sin alma puede hacer esto. Cuál Cristo Rey, aquí está el señor que se esconde entre la muerte, lo contrario de Jesús que pregonaba la luz y la vida\", y agregó que \"solo los asesinos acostumbrados a matar pueden pasear orondos y felices entre los caídos\". El senador y excandidato presidencial Iván Cepeda escribió que el presidente \"dice ser cristiano, pero en realidad es un ser sin escrúpulos y sin el menor sentido de humanidad\". Ambas críticas vincularon la escena con \"Viva Cristo Rey\", el lema religioso con el que De la Espriella cierra habitualmente sus discursos desde su posesión del 7 de agosto —y por el que un juzgado laboral de Bogotá ya le había ordenado disculparse por vulnerar la neutralidad religiosa del Estado—, para cuestionar la coherencia entre esa invocación religiosa y recorrer sin mostrar emoción los cuerpos expuestos. Medios citaron además críticas de que el derecho internacional humanitario no distingue entre \"muertos buenos y malos\" —el combatiente dado de baja es persona protegida— y prohíbe exponerlo a la curiosidad pública o instrumentalizar su dignidad con fines propagandísticos. El Ministerio de Defensa defendió la legalidad de la operación y sostuvo que se ajustó a los protocolos del DIH; un analista consultado por la prensa defendió el operativo calificándolo de acto de disuasión y respaldo a la Fuerza Pública, y no de \"un espectáculo\".",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Abelardo de la Espriella confirmó tercer bombardeo contra disidencias de alias Iván Mordisco: la Operación Azarías deja 8 fallecidos y al menos 3 capturados",
+          "u": "https://www.infobae.com/colombia/2026/08/31/abelardo-de-la-espriella-confirmo-tercer-bombardeo-contra-disidencias-de-alias-ivan-mordisco-la-operacion-azarias-deja-8-fallecidos-y-al-menos-3-capturados/"
+        },
+        {
+          "n": "Semana · Abelardo de la Espriella entregó detalles de la Operación Azarías en la que cayó alias Tigre, cabecilla de la estructura de Iván Mordisco",
+          "u": "https://www.semana.com/amp/politica/articulo/abelardo-de-la-espriella-entrego-detalles-de-la-operacion-azarias-en-la-que-cayo-alias-tigre-cabecilla-de-la-estructura-de-ivan-mordisco/202655/"
+        },
+        {
+          "n": "Infobae · Petro criticó a De la Espriella por la \"exhibición\" de cadáveres de criminales de las disidencias de las FARC: \"Hacer de la muerte un trofeo\"",
+          "u": "https://www.infobae.com/colombia/2026/09/03/petro-critico-a-de-la-espriella-por-la-exhibicion-de-cadaveres-de-criminales-de-las-disidencias-de-las-farc-hacer-de-la-muerte-un-trofeo/"
+        },
+        {
+          "n": "Infobae · Analista defendió la operación en Guaviare tras el video de De la Espriella que confirmó los resultados mientras caminaba entre cadáveres: \"no es un espectáculo\"",
+          "u": "https://www.infobae.com/colombia/2026/09/04/analista-defendio-la-operacion-en-guaviare-tras-el-video-de-de-la-espriella-que-confirmo-los-resultados-mientras-caminaba-entre-cadaveres-no-es-un-espectaculo/"
+        },
+        {
+          "n": "CNN en Español · De la Espriella apuesta por la mano dura en Colombia. Las críticas no tardaron en llegar",
+          "u": "https://kvia.com/news/noticias/cnn-spanish/2026/09/04/de-la-espriella-apuesta-por-la-mano-dura-en-colombia-las-criticas-no-tardaron-en-llegar/"
+        },
+        {
+          "n": "Sahagún en Línea (AFP/Colprensa) · \"Solo gente sin alma puede hacer esto\": Petro cuestiona a Abelardo por polémicas imágenes",
+          "u": "https://www.sahagunenlinea.com/2026/09/03/solo-gente-sin-alma-iupuede-hacer-esto-petro-cuestiona-a-abelardo-por-polemicas-imagenes/"
+        },
+        {
+          "n": "Infobae · Políticos cuestionaron a Abelardo de la Espriella por caminar sobre cadáveres tras bombardeo a las disidencias: \"siguen teniendo dignidad\"",
+          "u": "https://www.infobae.com/colombia/2026/09/03/politicos-cuestionaron-a-abelardo-de-la-espriella-por-caminar-sobre-cadaveres-tras-bombardeo-a-las-disidencias-siguen-teniendo-dignidad/"
+        },
+        {
+          "n": "Infobae · \"Viva Cristo Rey\", el lema de De la Espriella que abre el debate sobre política y religión",
+          "u": "https://www.infobae.com/america/agencias/2026/09/03/viva-cristo-rey-el-lema-de-de-la-espriella-que-abre-el-debate-sobre-politica-y-religion/"
+        }
+      ]
+    },
+    {
       "fecha": "2026-09-04",
       "precision": "exacta",
       "categoria": "gobierno",
