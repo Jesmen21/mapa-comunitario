@@ -119,16 +119,37 @@
      módulo tiene para decir. */
   var catalogo = null;
 
+  /* Buscar «inundación» y un periodo de retorno NO alcanza, y esto se aprendió
+     mirando la respuesta de verdad. El servicio publica tres familias con el
+     mismo periodo:
+
+       Amenaza    Inundacion TR 10 Años Centros Poblados 2K
+       Profundidad Inundacion TR 10 Años Centros Poblados 2K
+       Velocidad  Inundacion TR 10 Años Centros Poblados 2K
+
+     Son el mismo modelo hidráulico contado por tres atributos distintos, y
+     dibujan más o menos la misma mancha. Un filtro por «inunda» + periodo se
+     lleva las quince: triplica las consultas y hace que la ficha liste «2, 2,
+     2, 10, 10, 10…» como si fueran hallazgos separados. La palabra que
+     distingue la capa de AMENAZA de sus dos acompañantes es «amenaza», y por
+     eso se exige.
+
+     La creciente súbita entra también: es una amenaza de agua con periodo de
+     retorno, y en una ciudad al pie de una cordillera puede importar más que
+     el desborde lento del río. Pero se marca aparte, porque no es lo mismo. */
   function capasDe(servicio) {
     var d = servicio && servicio.layers;
     if (!d || !d.length) return [];
     return d.map(function (c) {
       var nombre = String(c.name || '');
-      if (!/inunda/i.test(nombre)) return null;
+      if (!/amenaza/i.test(nombre)) return null;
+      var esCreciente = /creciente/i.test(nombre);
+      if (!/inunda/i.test(nombre) && !esCreciente) return null;
       // «TR 100», «TR100», «T.R. 2.33», «periodo de retorno 50»
       var m = nombre.match(/(?:t\.?\s*r\.?|retorno)\s*[:\-]?\s*(\d+(?:[.,]\d+)?)/i);
       if (!m) return null;
-      return { id: c.id, nombre: nombre, tr: Number(String(m[1]).replace(',', '.')) };
+      return { id: c.id, nombre: nombre, tr: Number(String(m[1]).replace(',', '.')),
+               tipo: esCreciente ? 'creciente' : 'desborde' };
     }).filter(Boolean).sort(function (a, b) { return a.tr - b.tr; });
   }
 
@@ -148,62 +169,128 @@
 
      `returnCountOnly` porque no nos interesa QUÉ polígono es: solo si hay
      alguno. Es una respuesta de dos líneas en vez de una geometría entera. */
-  function tocaLaCapa(capa, lat, lng, msTope) {
+  function contar(capa, lat, lng, radioM, msTope) {
     var p = new URLSearchParams();
     p.set('geometry', JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }));
     p.set('geometryType', 'esriGeometryPoint');
     p.set('inSR', '4326');
+    if (radioM) { p.set('distance', String(radioM)); p.set('units', 'esriSRUnit_Meter'); }
     p.set('spatialRel', 'esriSpatialRelIntersects');
     p.set('returnCountOnly', 'true');
     p.set('where', '1=1');
     p.set('f', 'json');
     return traer(SERVICIO + '/' + capa.id + '/query?' + p.toString(), msTope)
-      .then(function (d) { return { capa: capa, dentro: Number(d && d.count) > 0 }; },
-            function (e) { return { capa: capa, error: e.message || String(e) }; });
+      .then(function (d) { return Number(d && d.count) || 0; });
+  }
+
+  /* ── Treinta kilómetros ───────────────────────────────────────────────
+     Esta segunda consulta es la corrección más importante de este módulo, y
+     salió de correr la sonda contra el servicio real.
+
+     Las cinco capas de amenaza contestaron CERO sobre el centro de Cúcuta. Un
+     cero se puede leer de dos maneras opuestas: «el lote está fuera de la
+     mancha» —una buena noticia— o «acá no hay ninguna mancha dibujada porque
+     nadie modeló esta ciudad»— que no es ninguna noticia. Las capas se llaman
+     «Centros Poblados 2K»: están hechas a escala 1:2.000 para una lista de
+     centros poblados, no para el país entero. Si Cúcuta no está en esa lista,
+     el cero no significa nada.
+
+     Preguntar por los treinta kilómetros de alrededor separa las dos cosas.
+     Si en toda la redonda del municipio no hay un solo polígono, la capa no
+     cubre este sitio y hay que decirlo con esas palabras. Si los hay pero
+     ninguno toca el lote, entonces sí: está fuera de la mancha.
+
+     Sin esta consulta, la aplicación le habría dicho a un estudiante que su
+     lote no se inunda cuando lo cierto era que nadie lo había mirado. Es
+     exactamente el error que este módulo se escribió para no cometer, y lo
+     estaba cometiendo. */
+  var RADIO_COBERTURA_M = 30000;
+
+  function medirCapa(capa, lat, lng, msTope) {
+    return Promise.all([
+      contar(capa, lat, lng, 0, msTope),
+      contar(capa, lat, lng, RADIO_COBERTURA_M, msTope)
+    ]).then(function (r) {
+      return { capa: capa, dentro: r[0] > 0, cubre: r[1] > 0 };
+    }, function (e) {
+      return { capa: capa, error: e.message || String(e) };
+    });
   }
 
   /* ── La lectura ───────────────────────────────────────────────────────
      Recibe qué capas contienen el punto y arma el veredicto. */
   function leer(tocadas, consultadas) {
-    var dentro = tocadas.filter(function (t) { return t.dentro; })
-                        .map(function (t) { return t.tr; })
-                        .sort(function (a, b) { return a - b; });
+    var buenas = tocadas.filter(function (t) { return !t.error; });
     var fallos = tocadas.filter(function (t) { return t.error; });
 
-    /* Que no toque ninguna capa y que TODAS hayan fallado se ven igual en la
-       lista de arriba: cero manchas. No son lo mismo, y confundirlos sería
-       decirle a alguien «no se inunda» cuando lo cierto es «no se pudo
-       averiguar». Si no quedó ni una capa buena, no hay veredicto. */
-    var buenas = tocadas.length - fallos.length;
-    if (!buenas) {
+    /* Que no toque ninguna capa y que TODAS hayan fallado se ven igual en una
+       lista de ceros. No son lo mismo, y confundirlos sería decirle a alguien
+       «no se inunda» cuando lo cierto es «no se pudo averiguar». */
+    if (!buenas.length) {
       return { sinDato: true, fallos: fallos.map(function (f) { return f.error; }),
                consultadas: consultadas, cuando: new Date().toISOString(), fuente: FUENTE };
     }
 
-    var peor = dentro.length ? dentro[0] : null;
-    var g = peor != null ? gradoDe(peor) : null;
-    return {
+    var cubren = buenas.filter(function (t) { return t.cubre; });
+    var dentro = buenas.filter(function (t) { return t.dentro; })
+                       .map(function (t) { return t.tr; })
+                       .sort(function (a, b) { return a - b; });
+    var creciente = buenas.filter(function (t) { return t.dentro && t.tipo === 'creciente'; })
+                          .map(function (t) { return t.tr; });
+
+    var base = {
       sinDato: false,
       dentroDe: dentro,
-      trPeor: peor,
-      grado: g ? g.id : 'fuera',
-      nombre: g ? g.nombre : 'Fuera de las manchas conocidas',
-      color: g ? g.color : '#2E9E5B',
-      que: g ? g.que
-             : 'El lote no cae en ninguna mancha de inundación del mapa nacional.',
-      frecuencia: peor != null ? comoSeDice(peor) : '',
-      // La de 100 años es la que usan los POT para delimitar.
-      enLaDeCien: dentro.filter(function (tr) { return tr >= 75 && tr <= 150; }).length > 0,
+      creciente: creciente,
       consultadas: consultadas,
+      capasQueCubren: cubren.length,
       fallos: fallos.map(function (f) { return f.error; }),
-      escala: 'nacional',
-      salvedad: 'El mapa del IDEAM es nacional y dibuja los ríos grandes. No ' +
-                'dibuja quebradas ni encharcamiento por alcantarillado, que en ' +
-                'Cúcuta son buena parte de las inundaciones reales. Quedar fuera ' +
-                'de la mancha no es un certificado de que no se inunda.',
+      escala: 'centros poblados 1:2.000',
       fuente: FUENTE,
       cuando: new Date().toISOString()
     };
+
+    /* Ninguna capa tiene un solo polígono en treinta kilómetros a la redonda:
+       el IDEAM no modeló esta ciudad. Se dice así, y NO se dice que el lote
+       quede fuera de nada. */
+    if (!cubren.length) {
+      return Object.assign(base, {
+        cobertura: false,
+        trPeor: null,
+        grado: 'sin-cobertura',
+        nombre: 'Sin modelar',
+        color: '#6B7A8A',
+        que: 'El IDEAM no modeló la inundación de este sitio. Sus manchas de 2 a 100 años ' +
+             'están hechas a escala 1:2.000 para una lista de centros poblados, y este no ' +
+             'está en ella.',
+        frecuencia: '',
+        enLaDeCien: false,
+        salvedad: 'Esto NO quiere decir que el lote no se inunde: quiere decir que nadie lo ' +
+                  'midió con este mapa. Para Cúcuta, lo que sí existe es el POMCA del río ' +
+                  'Pamplonita —CORPONOR levantó la cota de ronda del tramo urbano— y la ' +
+                  'cartografía de amenaza del POT vigente. Las dos hay que pedirlas: no se ' +
+                  'publican como servicio.'
+      });
+    }
+
+    var peor = dentro.length ? dentro[0] : null;
+    var g = peor != null ? gradoDe(peor) : null;
+    return Object.assign(base, {
+      cobertura: true,
+      trPeor: peor,
+      grado: g ? g.id : 'fuera',
+      nombre: g ? g.nombre : 'Fuera de las manchas modeladas',
+      color: g ? g.color : '#2E9E5B',
+      que: g ? g.que
+             : 'El sitio está modelado y el lote queda fuera de las manchas.',
+      frecuencia: peor != null ? comoSeDice(peor) : '',
+      // La de 100 años es la que usan los POT para delimitar.
+      enLaDeCien: dentro.filter(function (tr) { return tr >= 75 && tr <= 150; }).length > 0,
+      salvedad: 'El modelo del IDEAM sigue los cauces que estudió. No dibuja quebradas ' +
+                'menores ni encharcamiento por alcantarillado, que en Cúcuta son buena ' +
+                'parte de las inundaciones reales. Quedar fuera de la mancha no es un ' +
+                'certificado.'
+    });
   }
 
   var FUENTE = 'IDEAM · Amenaza ambiental, manchas de inundación por periodo de retorno';
@@ -221,10 +308,11 @@
                         'con periodo de retorno legible.');
       }
       return Promise.all(cat.capas.map(function (c) {
-        return tocaLaCapa(c, lat, lng, op.msTope);
+        return medirCapa(c, lat, lng, op.msTope);
       })).then(function (res) {
         var tocadas = res.map(function (r) {
-          return { tr: r.capa.tr, nombre: r.capa.nombre, dentro: !!r.dentro, error: r.error };
+          return { tr: r.capa.tr, nombre: r.capa.nombre, tipo: r.capa.tipo,
+                   dentro: !!r.dentro, cubre: !!r.cubre, error: r.error };
         });
         return leer(tocadas, cat.capas.length);
       });
@@ -238,18 +326,30 @@
       return 'AMENAZA DE INUNDACIÓN — no se pudo consultar el servicio del IDEAM.\n' +
              '  Esto NO quiere decir que el lote no se inunde: quiere decir que no se sabe.';
     }
+    if (!inu.cobertura) {
+      return ['AMENAZA DE INUNDACIÓN — sin modelar',
+              '  ' + inu.que,
+              '  ' + inu.salvedad,
+              '  Se consultaron ' + inu.consultadas + ' capas y ninguna tiene un solo ' +
+              'polígono en 30 km a la redonda.',
+              '  Fuente: ' + inu.fuente + '.'].join('\n');
+    }
     var l = ['AMENAZA DE INUNDACIÓN — ' + inu.nombre];
     if (inu.trPeor != null) {
       l.push('  El lote entra en la mancha de ' + inu.trPeor + ' años: se inunda ' +
              inu.frecuencia + '.');
       l.push('  Periodos de retorno que lo tocan: ' + inu.dentroDe.join(', ') + ' años.');
+      if (inu.creciente.length) {
+        l.push('  Y está en zona de CRECIENTE SÚBITA (TR ' + inu.creciente.join(', ') +
+               '): eso no sube despacio, llega de golpe.');
+      }
       if (inu.enLaDeCien) {
         l.push('  Está dentro de la mancha de 100 años, que es con la que los POT ' +
                'delimitan suelo de protección por inundación.');
       }
     } else {
-      l.push('  No cae dentro de ninguna de las ' + inu.consultadas +
-             ' manchas de inundación del mapa nacional.');
+      l.push('  El sitio SÍ está modelado (' + inu.capasQueCubren + ' de ' + inu.consultadas +
+             ' capas tienen manchas cerca) y el lote queda fuera de todas.');
     }
     if (inu.que) l.push('  ' + inu.que);
     l.push('  ' + inu.salvedad);
@@ -260,6 +360,7 @@
   window.URBIS_INUNDACION = {
     consultar: consultar, leer: leer, comoTexto: comoTexto,
     descubrir: descubrir, capasDe: capasDe, gradoDe: gradoDe,
+    RADIO_COBERTURA_M: RADIO_COBERTURA_M,
     comoSeDice: comoSeDice, traer: traer,
     SERVICIO: SERVICIO, GRADOS: GRADOS, FUENTE: FUENTE,
     // Solo para las pruebas: vaciar lo que se guardó del catálogo.

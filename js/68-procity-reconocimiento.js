@@ -4702,6 +4702,21 @@
         '<p class="pcr-ojo">El servicio del IDEAM contestó, pero ninguna de sus capas de ' +
         'inundación se pudo leer. No se sabe.</p>';
     }
+    /* El sitio no está modelado. Esto NO se pinta en verde ni se parece a
+       «queda fuera de la mancha»: es la ausencia de un dato, y en una ficha
+       una ausencia con cara de buena noticia es peor que un renglón vacío. */
+    if (!inu.cobertura) {
+      return '<p class="pcr-lab">La inundación</p>' +
+        '<div class="pcr-kpis">' +
+          '<div class="pcr-kpi"><b style="color:' + esc(inu.color) + '">Sin modelar</b>' +
+          '<small>amenaza de inundación</small></div>' +
+        '</div>' +
+        '<p class="pcr-conc pcr-ojo">' + esc(inu.que) + ' <b>No quiere decir que no se ' +
+        'inunde</b>: quiere decir que nadie lo midió con este mapa.</p>' +
+        '<p class="pcr-pista">' + esc(inu.salvedad) + '</p>' +
+        '<p class="pcr-pista">Se consultaron ' + inu.consultadas + ' capas y ninguna tiene ' +
+        'un polígono en 30 km a la redonda. ' + esc(inu.fuente) + '.</p>';
+    }
     var dentro = inu.trPeor != null;
     return '<p class="pcr-lab">La inundación</p>' +
       '<div class="pcr-kpis">' +
@@ -4722,14 +4737,20 @@
                   ' años</span><b>lo toca</b></div>';
               }).join('') + '</div>'
             : '') +
+          (inu.creciente && inu.creciente.length
+            ? '<p class="pcr-conc pcr-ojo">Además está en zona de <b>creciente súbita</b>. ' +
+              'Eso no sube despacio y no da tiempo a sacar nada: llega de golpe. Cambia el ' +
+              'proyecto entero, no solo la cota del primer piso.</p>'
+            : '') +
           (inu.enLaDeCien
             ? '<p class="pcr-conc pcr-ojo">Está dentro de la mancha de <b>100 años</b>, que es ' +
               'con la que los POT delimitan suelo de protección por amenaza de inundación. ' +
               'Antes de dibujar nada, esto se verifica en la cartografía del POT vigente: si ' +
               'ahí también aparece, el lote puede no ser urbanizable.</p>'
             : '')
-        : '<p class="pcr-conc">El lote <b>no cae</b> en ninguna de las ' + inu.consultadas +
-          ' manchas de inundación del mapa nacional.</p>') +
+        : '<p class="pcr-conc">El sitio <b>sí está modelado</b> —' + inu.capasQueCubren +
+          ' de ' + inu.consultadas + ' capas tienen manchas cerca— y el lote queda ' +
+          '<b>fuera</b> de todas.</p>') +
       /* La salvedad va SIEMPRE, y con más razón cuando el resultado es
          «fuera»: es justo ahí donde alguien lo leería como un permiso. */
       '<p class="pcr-pista">' + esc(inu.salvedad) + '</p>' +
