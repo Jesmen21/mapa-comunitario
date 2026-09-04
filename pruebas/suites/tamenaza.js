@@ -46,6 +46,25 @@ const VECINO={"OBJECTID":880,"NOMDEPTO":"NORTE DE SANTANDER","NOMMUN":"Villa del
   "NOMCAB":" ","POINT_X":-72.4736,"POINT_Y":7.8341,
   "PGA75":160,"PGA225":260,"PGA475":350,"PGA975":450,"PGA2475":600,
   "NIVEL":"Alta","AA":0.30,"AV":0.25,"AE":0.20,"AD":0.1};
+/* La capa que existe para servir la NSR-10, también literal. Fijate en Av:
+   dice 0,3 donde el mapa de aceleraciones dice 0,25. Esa discrepancia es real
+   y está acá para que la aplicación no pueda volver a taparla. Y el nombre
+   viene a los gritos, «CÚCUTA», como lo manda el servicio. */
+const NSR={"OBJECTID":822,"RULEID":1,"NOMBRE_DEPARTAMENTO":"NORTE DE SANTANDER",
+  "CÓDIGO_MUNICIPIO":"54001","NOMBRE_MUNICIPIO":"CÚCUTA","NOMBRE_CENTRO_POBLADO":"CÚCUTA",
+  "AA":0.35,"AV":0.3,"ZONA_AMENAZA_SÍSMICA":"Alta","AE":0.25,"AD":0.1,
+  "LONGITUD":-72.50559097,"LATITUD":7.90526712};
+/* Movimientos en masa. Los cuatro porcentajes crudos suman 100,647 —no cien—
+   porque así los publica el servicio, y la ficha tiene que decirlo en vez de
+   redondear a cien y fingir una precisión que nadie dio.
+
+   La cifra que se muestra es 100,7 y no 100,6: se suman los porcentajes YA
+   REDONDEADOS, que son los que el estudiante tiene delante (0 + 32,8 + 59,2 +
+   8,7). Decir «suman 100,6» debajo de cuatro números que suman 100,7 sería
+   una discrepancia nueva puesta por nosotros. */
+const MASA={"OBJECTID":821,"CATEGORIA":"M","AREA_KM":1135.66529446,"CODIGO_DAN":"54001",
+  "DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cúcuta",
+  "SUM_BAJA":0,"SUM_MEDIA":32.77987281,"SUM_ALTA":59.15464252,"SUM_MUY_AL":8.71232415};
 
 const usos=[]; let id=1;
 for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
@@ -76,12 +95,20 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
   await ctx.route(/ags\.esri\.co/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
 
-  // ── El SGC. Se guarda la consulta para poder mirarla después.
-  let consulta=null, veces=0;
+  /* El SGC, con sus tres capas. Se guarda cada consulta por separado: parte
+     de lo que hay que comprobar es que a cada capa se le pregunte como
+     corresponde —por contención al polígono municipal, por cercanía a la
+     nube de cabeceras—. */
+  const consultas={}; let veces=0;
   await ctx.route(/srvags\.sgc\.gov\.co/, r=>{
-    veces++; consulta=decodeURIComponent(r.request().url());
+    veces++;
+    const u=decodeURIComponent(r.request().url());
+    let cuerpo;
+    if(/Zonas_amenaza_Sismica_NR10/.test(u)){ consultas.nsr=u; cuerpo=[{attributes:NSR}]; }
+    else if(/Mov_Masa/.test(u)){ consultas.masa=u; cuerpo=[{attributes:MASA}]; }
+    else { consultas.pga=u; cuerpo=[{attributes:VECINO},{attributes:CUCUTA}]; }
     r.fulfill({status:200,contentType:'application/json',
-      body:JSON.stringify({features:[{attributes:VECINO},{attributes:CUCUTA}]})});
+      body:JSON.stringify({features:cuerpo})});
   });
 
   const pg=await ctx.newPage();
@@ -119,7 +146,10 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     for(let i=0;i<50 && !/Aa/.test(txt());i++) await esperar(300);
     await esperar(400);
     await abrir();
-    o.ficha=trozo('La amenaza sísmica',1500);
+    // Largo de sobra: con los movimientos en masa adentro, el bloque pasa los
+    // dos mil caracteres y las advertencias del final quedaban fuera del
+    // trozo — la prueba decía que faltaban y estaban.
+    o.ficha=trozo('La amenaza sísmica',4000);
     o.kpis=[...H().querySelectorAll('.pcr-kpi')]
       .map(k=>(k.textContent||'').replace(/\s+/g,' ').trim())
       .filter(t=>/amenaza sísmica|^0,3|^0,2/.test(t));
@@ -160,7 +190,8 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     o.guardado=(function(){
       try{ const f=(R.leerFichas()||[])[0];
         return f&&f.amenaza?{ municipio:f.amenaza.municipio, aa:f.amenaza.aa,
-                              nivel:f.amenaza.nivel }:null;
+                              av:f.amenaza.av, nivel:f.amenaza.nivel,
+                              masa:!!(f.amenaza.masa) }:null;
       }catch(e){ return null; }
     })();
     return o;
@@ -173,21 +204,29 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const LAM=r.lamina||'', PDF=r.pdf||'', F=r.ficha||'';
 
-  console.log('\n  -- la consulta --');
+  console.log('\n  -- las tres consultas --');
   T('el módulo está cargado', r.hayModulo===true);
   T('sin pedirla, el bloque invita en vez de decir «sin datos»',
     /coeficientes/.test(r.antes) && /NSR-10/.test(r.antes));
-  T('se consulta una sola vez', veces===1, veces+' consultas');
-  T('a la capa de 475 años, que es la de diseño',
-    /Mapa_Amenaza_Sismica_Nacional_PGA475/.test(consulta||''));
+  T('se piden las tres capas de una vez, y una sola vez cada una',
+    veces===3 && consultas.nsr && consultas.pga && consultas.masa, veces+' consultas');
+  T('los coeficientes, a la capa que existe para servir la norma',
+    /Zonas_amenaza_Sismica_NR10/.test(consultas.nsr||''));
+  /* Contención y no distancia: la capa es de polígonos municipales, así que
+     la pregunta exacta es «¿dentro de cuál cae este punto?». Con `distance`
+     se estaría preguntando otra cosa. */
+  T('preguntándole por contención, no por cercanía',
+    !/distance=/.test(consultas.nsr||''));
+  T('la curva, a la capa de 475 años, que es la de diseño',
+    /Mapa_Amenaza_Sismica_Nacional_PGA475/.test(consultas.pga||''));
+  T('esa sí por cercanía, porque es una nube de cabeceras',
+    /distance=40000/.test(consultas.pga||''));
+  T('y los deslizamientos, al mapa nacional de movimientos en masa',
+    /Mov_Masa/.test(consultas.masa||'') && !/distance=/.test(consultas.masa||''));
   /* Sin `resultRecordCount`: varias capas de este servidor contestan
      «Pagination is not supported» y se caen enteras. Lo descubrió la sonda. */
-  T('sin paginación, que es lo que tumba a este servidor',
-    !/resultRecordCount/.test(consulta||''));
-  T('pidiendo solo los campos que se usan, y no todo',
-    /outFields=NOMDEPTO,NOMMUN/.test(consulta||'') && !/outFields=\*/.test(consulta||''));
-  T('y barriendo cuarenta kilómetros, que es lo que separa una cabecera de su borde',
-    /distance=40000/.test(consulta||''));
+  T('ninguna con paginación, que es lo que tumba a este servidor',
+    !/resultRecordCount/.test(JSON.stringify(consultas)));
 
   console.log('\n  -- las cifras de la norma --');
   T('elige el municipio más cercano y no el primero de la lista',
@@ -197,9 +236,21 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
      salen pegados a su etiqueta —«0,35Aa»— y un límite de palabra entre la
      coma y la A no existe. Mirando la tarjeta se comprueba además que el
      número está donde el ojo lo va a buscar. */
-  const kpi = n => (r.kpis||[]).filter(k=>k.indexOf(n)===0)[0]||'';
-  T('Aa llega intacto y va en su tarjeta', kpi('0,35')==='0,35Aa', (r.kpis||[]).join(' · '));
-  T('y Av también', kpi('0,25')==='0,25Av');
+  /* Coincidencia exacta y no por prefijo: «0,3» también es el principio de
+     «0,35», así que buscar por prefijo devolvía la tarjeta de Aa cuando se
+     preguntaba por la de Av. */
+  const kpi = etq => (r.kpis||[]).filter(k=>k===etq)[0]||'';
+  T('Aa llega intacto y va en su tarjeta', kpi('0,35Aa')==='0,35Aa', (r.kpis||[]).join(' · '));
+  /* 0,3 y no 0,25: manda la capa normativa. Si alguien volviera a leer Av del
+     mapa de aceleraciones, esta línea lo caza — y es justo el número que
+     define la rama de periodo largo del espectro. */
+  T('Av se toma de la capa normativa, no del mapa de aceleraciones',
+    kpi('0,3Av')==='0,3Av' && !kpi('0,25Av'), (r.kpis||[]).join(' · '));
+  T('y la discrepancia entre las dos capas se dice, no se tapa',
+    /no coinciden en/.test(F) && /Av/.test(F) && /A.2.3-2/.test(F),
+    (F.match(/Las dos capas del SGC no coinciden[^.]*\./)||['no lo dice'])[0]);
+  T('el nombre del municipio deja de venir a los gritos',
+    /Cúcuta/.test(F) && !/CÚCUTA/.test(F));
   T('el nivel es el que dijo el servicio', /Alta/.test(F));
   T('y se traduce a lo que la norma pide',
     /disipación de energía especial/.test(F),
@@ -237,6 +288,25 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
   T('la lámina la lleva también',
     /<h2>La amenaza sísmica<\/h2>/.test(LAM) && /años de periodo de retorno/.test(LAM));
 
+  console.log('\n  -- movimientos en masa --');
+  T('sale el reparto del municipio', /amenaza alta o muy alta/.test(F),
+    (F.match(/[\d,]+% del municipio de [^ ]+ está/)||['no está'])[0]);
+  T('con los cuatro escalones', /32,8% media/.test(F) && /59,2% alta/.test(F) &&
+    /8,7% muy alta/.test(F));
+  T('sumando 67,9 en alta o muy alta', /67,9/.test(F));
+  T('se dice a las claras que NO habla del lote',
+    /no dice nada de este lote/.test(F) && /1:100.000/.test(F));
+  T('y que los porcentajes del servicio no cuadran a cien',
+    /suman 100,7%/.test(F),
+    (F.match(/suman [\d,]+%/)||['no lo dice'])[0]);
+  T('se cruza con la pendiente, que es lo único medido del sitio',
+    /medí el terreno y volvé acá/.test(F) || /lo que sí está medido es la pendiente/.test(F),
+    (F.match(/pendiente[^.]{0,60}\./)||['no lo cruza'])[0]);
+  T('la lámina lo resume en una línea',
+    /amenaza alta o muy alta por deslizamiento/.test(LAM));
+  T('y el PDF le da su propia tabla',
+    /<h3>Movimientos en masa<\/h3>/.test(PDF) && /% del municipio/.test(PDF));
+
   console.log('\n  -- en el resto de la aplicación --');
   T('el PDF trae la sección con Aa y Av',
     /<h2>La amenaza sísmica<\/h2>/.test(PDF) && /aceleración horizontal pico efectiva/.test(PDF));
@@ -245,6 +315,7 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
   T('viaja con la ficha, para no volver a esperar al SGC',
     !!r.guardado && r.guardado.aa===0.35 && /Cúcuta/.test(r.guardado.municipio||''),
     r.guardado?JSON.stringify(r.guardado):'no se guardó');
+  T('y el deslizamiento va con ella', !!r.guardado && r.guardado.masa===true);
 
   console.log('');
   T('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

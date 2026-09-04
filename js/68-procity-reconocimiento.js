@@ -1100,6 +1100,31 @@
       '</table>' +
       (am.pide ? '<p class="pie">' + esc(am.pide) + ' El sistema estructural lo decide un ' +
         'ingeniero: esto dice qué le pide la norma al proyecto, no cómo resolverlo.</p>' : '') +
+      (am.discrepan && am.discrepan.length
+        ? '<p class="pie">Las dos capas del SGC no coinciden en ' +
+          esc(am.discrepan.map(function (d) {
+            return d.cual + ' (' + d.normativa + ' contra ' + d.mapa + ')'; }).join(' ni en ')) +
+          '. Acá se toma el de la capa de zonas NSR-10, que es la que existe para servir la ' +
+          'norma. Verificalo contra la tabla A.2.3-2 antes de usarlo en un cálculo.</p>'
+        : '') +
+      (am.masa
+        ? '<h3>Movimientos en masa</h3><table>' +
+          am.masa.categorias.map(function (c) {
+            return '<tr><td>Amenaza ' + esc(c.nombre.toLowerCase()) + '</td><td class="n">' +
+              String(c.pct).replace('.', ',') + '% del municipio</td></tr>';
+          }).join('') +
+          '<tr><td>Superficie del municipio</td><td class="n">' +
+          Math.round(am.masa.areaKm2).toLocaleString('es-CO') + ' km²</td></tr>' +
+          '</table>' +
+          '<p class="pie">Es el reparto del municipio entero, no del lote: a escala ' +
+          esc(am.masa.escala) + ' un predio no se alcanza a leer, y los ' +
+          Math.round(am.masa.areaKm2).toLocaleString('es-CO') + ' km² de ' +
+          esc(am.masa.municipio) + ' son casi todos de ladera rural. Lo que sí habla del sitio ' +
+          'es su pendiente, que se mide en la sección del terreno. Los porcentajes son los que ' +
+          'publica el servicio y suman ' + String(am.masa.sumaPct).replace('.', ',') +
+          '%, no cien exactos.</p>' +
+          '<p class="nota">' + esc(am.masa.fuente) + '.</p>'
+        : '') +
       '<p class="pie">Referido al municipio de ' + esc(am.municipio) + ' (' +
       esc(am.departamento) + '), no al lote: la NSR-10 da Aa y Av por municipio y la capa ' +
       'consultada es un punto por cabecera municipal. Si el municipio tiene microzonificación ' +
@@ -1712,8 +1737,20 @@
       String(am.diseno.g).replace('.', ',') + ' g')
       : '') +
       (am.pide ? '<p class="lee">' + esc(am.pide) + '</p>' : '') +
+      (am.masa
+      ? fila('Municipio en amenaza alta o muy alta por deslizamiento',
+      String(am.masa.altaOMasPct).replace('.', ',') + '% de sus ' +
+      Math.round(am.masa.areaKm2).toLocaleString('es-CO') + ' km²')
+      : '') +
+      (am.discrepan && am.discrepan.length
+      ? '<p class="lee">Las dos capas del SGC no coinciden en ' +
+      esc(am.discrepan.map(function (d) { return d.cual; }).join(' ni en ')) +
+      '; acá va el de la capa de zonas NSR-10. Verificalo contra la tabla A.2.3-2.</p>'
+      : '') +
       '<p class="nota">Valor del municipio de ' + esc(am.municipio) + ', no del lote: la ' +
       'NSR-10 da Aa y Av por municipio. Si hay microzonificación sísmica, manda esa. ' +
+      (am.masa ? 'El deslizamiento es el reparto del municipio entero a escala ' +
+      esc(am.masa.escala) + ': un predio no se alcanza a leer ahí. ' : '') +
       esc(am.fuente) + '.</p>';
       })(), 'g3') +
       
@@ -4426,6 +4463,67 @@
         (am.ad != null ? '<div class="pcr-lote-fila"><span>Ad · seguridad limitada</span><b>' +
           String(am.ad).replace('.', ',') + '</b></div>' : '') +
       '</div>' +
+      // La discrepancia entre las dos capas del SGC. Se dice, no se decide.
+      (am.discrepan && am.discrepan.length
+        ? '<p class="pcr-conc pcr-cabe-no">Las dos capas del SGC no coinciden en ' +
+          am.discrepan.map(function (d) {
+            return '<b>' + esc(d.cual) + '</b> (' + String(d.normativa).replace('.', ',') +
+              ' contra ' + String(d.mapa).replace('.', ',') + ')'; }).join(' ni en ') +
+          '. Acá se muestra el de la capa de <b>zonas NSR-10</b>, que es la que existe para ' +
+          'servir la norma; la otra los trae como dato secundario de un mapa de aceleraciones. ' +
+          'Antes de meterlo en un cálculo, verificalo contra la tabla A.2.3-2.</p>'
+        : '') +
+      // Movimientos en masa. Va después del sismo porque en una ciudad de
+      // laderas pesa más, y el orden de lectura de una ficha es de lo general
+      // a lo que de verdad decide.
+      (am.masa
+        ? '<p class="pcr-lab">Movimientos en masa</p>' +
+          '<div class="pcr-llenos">' +
+            '<div class="pcr-llenos-barra">' +
+              am.masa.categorias.map(function (c) {
+                return '<i style="width:' + Math.min(100, c.pct) + '%;background:' +
+                  esc(c.color) + '"></i>';
+              }).join('') +
+            '</div>' +
+            '<div class="pcr-llenos-cifras">' +
+              am.masa.categorias.filter(function (c) { return c.pct > 0; }).map(function (c) {
+                return '<span><b>' + String(c.pct).replace('.', ',') + '%</b> ' +
+                  esc(c.nombre.toLowerCase()) + '</span>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+          '<p class="pcr-conc"><b>' + String(am.masa.altaOMasPct).replace('.', ',') +
+          '%</b> del municipio de ' + esc(am.masa.municipio) + ' está en amenaza alta o muy ' +
+          'alta por movimientos en masa. Pero eso son sus ' +
+          Math.round(am.masa.areaKm2).toLocaleString('es-CO') + ' km² enteros, casi todos de ' +
+          'ladera rural: <b>no dice nada de este lote</b>. A escala ' + esc(am.masa.escala) +
+          ' un predio no se alcanza a leer.</p>' +
+          (function () {
+            /* Lo único que sí habla del lote es la pendiente, que URBIS ya
+               mide. Cruzarlas es lo que convierte una cifra de contexto en
+               una pregunta concreta para la salida de campo. */
+            var pe = S.terreno && S.terreno.pendiente;
+            if (!pe || pe.media == null) {
+              return '<p class="pcr-pista">Lo que sí se puede medir de este sitio es su ' +
+                'pendiente: medí el terreno y volvé acá.</p>';
+            }
+            var m = Number(pe.media);
+            return '<p class="pcr-pista">Del lote, lo que sí está medido es la pendiente: <b>' +
+              String(pe.media).replace('.', ',') + '%</b> de media. ' +
+              (m >= 25
+                ? 'Con esa pendiente, en un municipio así, la estabilidad del terreno es una ' +
+                  'pregunta de proyecto y no un trámite: pide estudio de suelos.'
+                : m >= 12
+                  ? 'Es una pendiente que se maneja, pero conviene mirar en campo si hay ' +
+                    'taludes cortados o llenos sin compactar cerca.'
+                  : 'Es terreno suave: lo que pasa en las laderas del municipio no le llega ' +
+                    'a este lote.') + '</p>';
+          })() +
+          '<p class="pcr-pista">' + esc(am.masa.categorias.length ?
+            'Los porcentajes son los que publica el servicio y suman ' +
+            String(am.masa.sumaPct).replace('.', ',') + '%, no cien exactos.' : '') +
+          ' ' + esc(am.masa.fuente) + '.</p>'
+        : '') +
       '<p class="pcr-pista">Referido a <b>' + esc(am.municipio) + '</b> (' +
       esc(am.departamento) + ')' +
       (am.distanciaM != null ? ', cuyo punto de referencia está a ' +
@@ -5313,8 +5411,9 @@
         falta: 'pedí el clima', dato: 'temperatura, lluvia y viento' },
       { id: 'la-amenaza-sismica', t: 'La amenaza sísmica', g: 'El suelo',
         listo: !!S.amenaza, falta: 'pedí la amenaza sísmica',
-        dato: S.amenaza ? ('amenaza ' + String(S.amenaza.nivel || '').toLowerCase())
-                        : 'Aa, Av y la curva' },
+        dato: S.amenaza ? ('amenaza ' + String(S.amenaza.nivel || '').toLowerCase() +
+                           (S.amenaza.masa ? ' · y deslizamiento' : ''))
+                        : 'Aa, Av, la curva y el deslizamiento' },
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
         falta: 'analizá el sector', dato: 'la carta solar del sitio' },
 

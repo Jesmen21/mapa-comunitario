@@ -29,12 +29,30 @@
 (function () {
   'use strict';
 
-  /* La capa del periodo de retorno de 475 años —el de diseño de la NSR-10,
-     10% de probabilidad de excedencia en 50 años—. Se consulta solo esta
-     porque su tabla trae TODOS los periodos: pedir las otras cinco sería
-     cinco consultas para repetir las mismas cifras. */
-  var CAPA = 'https://srvags.sgc.gov.co/arcgis/rest/services/Amenaza_Sismica/' +
-             'Mapa_Amenaza_Sismica_Nacional_PGA475/MapServer/0/query';
+  var SGC = 'https://srvags.sgc.gov.co/arcgis/rest/services/';
+
+  /* TRES capas, y cada una porque la anterior no alcanzaba.
+
+     1 · Los coeficientes de la NSR-10, de la capa que existe para eso. Es de
+         POLÍGONOS —los límites municipales—, así que la pregunta que se le
+         hace es exacta: «¿dentro de qué municipio cae este punto?». No hay que
+         buscar la cabecera más cercana ni elegir entre dos.
+
+     2 · La curva de aceleración por periodo de retorno, de la capa del mapa
+         sísmico. Esa es de puntos, uno por cabecera, y ahí sí hay que ir al
+         más cercano. Trae los cinco periodos en una sola fila: pedir las
+         cinco capas sería cinco consultas para repetir las mismas cifras.
+
+     3 · Los movimientos en masa, que en una ciudad construida sobre laderas
+         pesan más que el sismo. También por polígono municipal.
+
+     Las tres se piden a la vez y cada una aguanta que las otras fallen: este
+     servidor se cae de a una capa, no entero, y perder la curva no es razón
+     para quedarse sin los coeficientes. */
+  var CAPA_NSR = SGC + 'Zonas_amenaza_Sismica_NR10/Municipios_Amenaza_NR10/FeatureServer/0/query';
+  var CAPA = SGC + 'Amenaza_Sismica/Mapa_Amenaza_Sismica_Nacional_PGA475/MapServer/0/query';
+  var CAPA_MASA = SGC + 'Mapa_Nacional_Amenaza_Mov_Masa_100K/' +
+                  'Mapa_Nacional_Amenaza_Movimientos_Masa_100K/FeatureServer/3/query';
 
   var CAMPOS = ['NOMDEPTO', 'NOMMUN', 'POINT_X', 'POINT_Y',
                 'PGA75', 'PGA225', 'PGA475', 'PGA975', 'PGA2475',
@@ -72,13 +90,36 @@
     return Math.hypot(dLat, dLng);
   }
 
-  /* La lectura. Recibe los atributos crudos del servicio y devuelve lo que la
-     ficha necesita, ya en unidades que se puedan escribir en una lámina. */
-  function leer(a, centro) {
-    if (!a) return null;
-    var nivel = String(a.NIVEL || '').trim();
+  /* La lectura. Recibe los atributos crudos de las DOS capas sísmicas y
+     devuelve lo que la ficha necesita, en unidades que se puedan escribir en
+     una lámina.
+
+     Manda `nsr` cuando está: es la capa que existe para servir la NSR-10 y
+     contesta por contención dentro del municipio. La otra trae los mismos
+     coeficientes como atributo secundario de un mapa de aceleraciones, y en
+     Cúcuta NO dan lo mismo —Av 0,30 contra 0,25—. Cuál de las dos tiene razón
+     lo dice la tabla A.2.3-2 de la norma, que no está en ningún servicio; lo
+     único honesto es tomar la de la capa normativa y AVISAR de la
+     discrepancia en vez de elegir en silencio. */
+  function leer(a, centro, nsr) {
+    if (!a && !nsr) return null;
+    a = a || {};
+    var nivel = String((nsr && nsr['ZONA_AMENAZA_SÍSMICA']) || a.NIVEL || '').trim();
     var zona = zonaDe(nivel);
     var punto = { lat: num(a.POINT_Y), lng: num(a.POINT_X) };
+
+    // Los coeficientes, de la capa normativa si está.
+    var co = nsr || a;
+    var aa = num(co.AA), av = num(co.AV), ae = num(co.AE), ad = num(co.AD);
+    var discrepan = [];
+    if (nsr && a && a.NIVEL !== undefined) {
+      [['Aa', 'AA'], ['Av', 'AV'], ['Ae', 'AE'], ['Ad', 'AD']].forEach(function (par) {
+        var x = num(nsr[par[1]]), y = num(a[par[1]]);
+        if (x != null && y != null && Math.abs(x - y) > 1e-9) {
+          discrepan.push({ cual: par[0], normativa: x, mapa: y });
+        }
+      });
+    }
     /* El SGC publica la aceleración en gal (cm/s²). Se guarda además en g,
        que es la unidad en la que está escrita la norma —Aa y Av son
        fracciones de g— y la única en la que las dos cifras se pueden
@@ -87,14 +128,27 @@
       var gal = num(a['PGA' + tr]);
       return { tr: tr, gal: gal, g: gal == null ? null : Math.round(gal / 9.81) / 100 };
     }).filter(function (p) { return p.gal != null; });
+    /* El nombre del municipio: de la capa normativa primero, y en versalitas
+       arregladas —el servicio lo manda todo en mayúsculas, «CÚCUTA», y una
+       lámina con eso adentro grita. */
+    function bonito(t) {
+      t = String(t || '').trim();
+      if (!t || t !== t.toUpperCase()) return t;
+      return t.toLowerCase().replace(/(^|[\s.'-])([a-záéíóúñ])/g, function (m, a1, b1) {
+        return a1 + b1.toUpperCase();
+      });
+    }
     return {
-      municipio: String(a.NOMMUN || '').trim(),
-      departamento: String(a.NOMDEPTO || '').trim(),
+      municipio: bonito((nsr && nsr.NOMBRE_MUNICIPIO) || a.NOMMUN || ''),
+      departamento: bonito((nsr && nsr.NOMBRE_DEPARTAMENTO) || a.NOMDEPTO || ''),
       nivel: nivel,
       zona: zona ? zona.id : '',
       color: zona ? zona.color : '#6B7A8A',
       pide: zona ? zona.pide : '',
-      aa: num(a.AA), av: num(a.AV), ae: num(a.AE), ad: num(a.AD),
+      aa: aa, av: av, ae: ae, ad: ad,
+      // De dónde salieron los coeficientes, para poder decirlo en la ficha.
+      fuenteCoef: nsr ? 'normativa' : 'mapa',
+      discrepan: discrepan,
       curva: curva,
       // La de 475 años es la de diseño: la que se compara con Aa.
       diseno: curva.filter(function (p) { return p.tr === 475; })[0] || null,
@@ -105,24 +159,31 @@
     };
   }
 
-  function consultar(lat, lng, msTope) {
+  /* Una consulta a una capa. `radioM` a cero pregunta por CONTENCIÓN —el
+     punto dentro del polígono—, que es lo que corresponde con los límites
+     municipales; con radio, barre alrededor, que es lo que hace falta con una
+     capa de puntos. */
+  function pedir(url, campos, lat, lng, radioM, msTope) {
     var p = new URLSearchParams();
     p.set('geometry', JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }));
     p.set('geometryType', 'esriGeometryPoint');
     p.set('inSR', '4326');
-    p.set('distance', String(RADIO_M));
-    p.set('units', 'esriSRUnit_Meter');
+    if (radioM) {
+      p.set('distance', String(radioM));
+      p.set('units', 'esriSRUnit_Meter');
+    }
     p.set('spatialRel', 'esriSpatialRelIntersects');
-    p.set('outFields', CAMPOS);
+    p.set('outFields', campos);
     p.set('returnGeometry', 'false');
     p.set('f', 'json');
 
     var ctrl = new AbortController();
-    /* Veinticinco segundos. Este servidor es lento de verdad: en las pruebas
-       de campo, varias de sus capas pasaron de veinte. Cortar antes deja al
-       estudiante con un «no se pudo» que en realidad era «no esperaste». */
-    var reloj = setTimeout(function () { ctrl.abort(); }, msTope || 25000);
-    return fetch(CAPA + '?' + p.toString(), { signal: ctrl.signal, credentials: 'omit' })
+    /* Cuarenta y cinco segundos. Este servidor es lento de verdad: en la
+       prueba de campo varias de sus capas pasaron de veinte y una de
+       cuarenta y cinco. Cortar antes deja al estudiante con un «no se pudo»
+       que en realidad era «no esperaste». */
+    var reloj = setTimeout(function () { ctrl.abort(); }, msTope || 45000);
+    return fetch(url + '?' + p.toString(), { signal: ctrl.signal, credentials: 'omit' })
       .then(function (r) {
         if (!r.ok) throw new Error('El servicio del SGC contestó ' + r.status + '.');
         return r.json();
@@ -132,22 +193,7 @@
           throw new Error('El servicio del SGC devolvió un error: ' +
             (d.error.message || 'sin detalle') + '.');
         }
-        var fs = (d && d.features) || [];
-        if (!fs.length) {
-          throw new Error('No hay ninguna cabecera municipal a menos de ' +
-            (RADIO_M / 1000) + ' km de este punto. ¿Está sobre Colombia?');
-        }
-        var centro = { lat: lat, lng: lng };
-        // El más cercano manda: a cuarenta kilómetros entran varios municipios.
-        var mejor = null, mejorD = Infinity;
-        fs.forEach(function (f) {
-          var a = f.attributes || {};
-          if (a.POINT_Y == null || a.POINT_X == null) return;
-          var d2 = metrosEntre(centro, { lat: Number(a.POINT_Y), lng: Number(a.POINT_X) });
-          if (d2 < mejorD) { mejorD = d2; mejor = a; }
-        });
-        if (!mejor) throw new Error('El servicio contestó sin coordenadas utilizables.');
-        return leer(mejor, centro);
+        return ((d && d.features) || []).map(function (f) { return f.attributes || {}; });
       })
       .catch(function (e) {
         if (e && e.name === 'AbortError') {
@@ -157,6 +203,79 @@
       })
       .then(function (r) { clearTimeout(reloj); return r; },
             function (e) { clearTimeout(reloj); throw e; });
+  }
+
+  /* Los movimientos en masa. El servicio da el reparto del MUNICIPIO entero
+     entre las cuatro categorías, en porcentaje de su superficie. Para Cúcuta
+     —mil ciento treinta y cinco kilómetros cuadrados, casi todos de ladera—
+     eso dice muchísimo del territorio y NADA del lote, y así hay que
+     contarlo. */
+  function leerMasa(a) {
+    if (!a) return null;
+    var cat = [
+      { id: 'baja', nombre: 'Baja', color: '#2E9E5B', pct: num(a.SUM_BAJA) },
+      { id: 'media', nombre: 'Media', color: '#D9A227', pct: num(a.SUM_MEDIA) },
+      { id: 'alta', nombre: 'Alta', color: '#D9662B', pct: num(a.SUM_ALTA) },
+      { id: 'muy_alta', nombre: 'Muy alta', color: '#C0392B', pct: num(a.SUM_MUY_AL) }
+    ].filter(function (c) { return c.pct != null; })
+     .map(function (c) { return { id: c.id, nombre: c.nombre, color: c.color,
+                                  pct: Math.round(c.pct * 10) / 10 }; });
+    if (!cat.length) return null;
+    var suma = cat.reduce(function (t, c) { return t + c.pct; }, 0);
+    var mayor = cat.slice().sort(function (x, y) { return y.pct - x.pct; })[0];
+    var altaOMas = cat.filter(function (c) { return c.id === 'alta' || c.id === 'muy_alta'; })
+      .reduce(function (t, c) { return t + c.pct; }, 0);
+    return {
+      municipio: String(a.MUNICIPIO || '').trim(),
+      departamento: String(a.DEPARTAMEN || '').trim(),
+      areaKm2: num(a.AREA_KM),
+      categorias: cat,
+      dominante: mayor,
+      altaOMasPct: Math.round(altaOMas * 10) / 10,
+      /* El propio servicio no cuadra a cien exactos —acá suma 100,6— y decir
+         «100%» sería inventar una precisión que no dio. Se informa la suma
+         tal cual para que se vea de dónde sale. */
+      sumaPct: Math.round(suma * 10) / 10,
+      escala: '1:100.000',
+      fuente: 'Servicio Geológico Colombiano · Mapa Nacional de Amenaza por ' +
+              'Movimientos en Masa (2015), escala 1:100.000'
+    };
+  }
+
+  function consultar(lat, lng, msTope) {
+    var centro = { lat: lat, lng: lng };
+    // Cada una aguanta su propio fracaso: con este servidor, exigir las tres
+    // sería quedarse sin ninguna cada vez que una se cae.
+    var blando = function (pr) {
+      return pr.then(function (r) { return { ok: r }; },
+                     function (e) { return { error: (e && e.message) || String(e) }; });
+    };
+    return Promise.all([
+      blando(pedir(CAPA_NSR, '*', lat, lng, 0, msTope)),
+      blando(pedir(CAPA, CAMPOS, lat, lng, RADIO_M, msTope)),
+      blando(pedir(CAPA_MASA, '*', lat, lng, 0, msTope))
+    ]).then(function (res) {
+      var nsr = (res[0].ok || [])[0] || null;
+      var pgas = res[1].ok || [];
+      var masa = (res[2].ok || [])[0] || null;
+
+      // De la capa de puntos, la cabecera más cercana.
+      var mejor = null, mejorD = Infinity;
+      pgas.forEach(function (a) {
+        if (a.POINT_Y == null || a.POINT_X == null) return;
+        var d2 = metrosEntre(centro, { lat: Number(a.POINT_Y), lng: Number(a.POINT_X) });
+        if (d2 < mejorD) { mejorD = d2; mejor = a; }
+      });
+
+      if (!nsr && !mejor) {
+        throw new Error(res[0].error || res[1].error ||
+          'El SGC no devolvió nada sobre este punto. ¿Está sobre Colombia?');
+      }
+      var am = leer(mejor, centro, nsr);
+      am.masa = leerMasa(masa);
+      am.fallos = [res[0].error, res[1].error, res[2].error].filter(Boolean);
+      return am;
+    });
   }
 
   /* El texto, para llevárselo. Lo que se copia tiene que poder pegarse en la
@@ -173,13 +292,32 @@
              String(p.g).replace('.', ',') + ' g)');
     });
     if (am.pide) l.push('  ' + am.pide);
+    (am.discrepan || []).forEach(function (d) {
+      l.push('  OJO: ' + d.cual + ' difiere entre las dos capas del SGC — ' +
+             d.normativa + ' en la de zonas NSR-10 (la que se usa acá) y ' +
+             d.mapa + ' en la del mapa de aceleraciones. Verificalo contra la ' +
+             'tabla A.2.3-2 de la norma antes de usarlo en un cálculo.');
+    });
     l.push('  Valor del municipio, no del lote. Si hay microzonificación sísmica, manda esa.');
     l.push('  Fuente: ' + am.fuente + '.');
+    if (am.masa) {
+      l.push('');
+      l.push('MOVIMIENTOS EN MASA — ' + am.masa.municipio +
+             ' (' + am.masa.areaKm2.toFixed(0) + ' km²)');
+      am.masa.categorias.forEach(function (c) {
+        l.push('  Amenaza ' + c.nombre.toLowerCase() + ': ' +
+               String(c.pct).replace('.', ',') + '% del municipio');
+      });
+      l.push('  Es el reparto del MUNICIPIO ENTERO, no del lote: a escala ' +
+             am.masa.escala + ' no se puede leer un predio.');
+      l.push('  Fuente: ' + am.masa.fuente + '.');
+    }
     return l.join('\n');
   }
 
   window.URBIS_AMENAZA = {
-    consultar: consultar, leer: leer, comoTexto: comoTexto,
-    ZONAS: ZONAS, zonaDe: zonaDe, CAPA: CAPA
+    consultar: consultar, leer: leer, leerMasa: leerMasa, comoTexto: comoTexto,
+    ZONAS: ZONAS, zonaDe: zonaDe,
+    CAPA: CAPA, CAPA_NSR: CAPA_NSR, CAPA_MASA: CAPA_MASA
   };
 })();

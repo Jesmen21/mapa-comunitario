@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v676-amenaza-sismica';
+const URBIS_CACHE = 'urbis-v677-movimientos-en-masa';
 const URBIS_ASSETS = [
   './',
   './index.html',
