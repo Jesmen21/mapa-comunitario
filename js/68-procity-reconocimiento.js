@@ -96,6 +96,9 @@
        sueltas en un dato: dónde varias personas, cada una por su lado,
        dijeron lo mismo. */
     intCurso: [], intUnion: null, intAcuerdosEnMapa: false, intCursoAviso: '',
+    /* Los índices del POT que el estudiante escribe a mano. URBIS no los
+       conoce: acá solo se guardan para hacer la cuenta con ellos. */
+    indices: null, queCabeAbierto: false,
     /* EL PLIEGO: qué cajas y qué mapas van al papel. Guarda las APAGADAS y no
        las encendidas, para que una caja nueva —de una versión posterior—
        aparezca sola en el pliego de un sector guardado hace meses en vez de
@@ -403,6 +406,10 @@
       // La amenaza es del municipio y no cambia nunca: guardarla evita
       // volver a esperar medio minuto al servidor del SGC.
       amenaza: S.amenaza || null,
+      // Los índices que escribió el estudiante. Son siete números y son el
+      // trabajo de haber ido a buscar el POT: perderlos al recargar sería
+      // hacerle repetir esa búsqueda.
+      indices: S.indices || null,
       pliegoOff: (S.pliegoOff || []).slice(),
       pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
@@ -1089,6 +1096,46 @@
       an.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
   }
 
+  function queCabeImpreso(lote, idx) {
+    var Q = window.URBIS_QUE_CABE;
+    if (!Q || !lote) return '';
+    var q = null;
+    try { q = Q.calcular(lote, idx || S.indices || Q.porDefecto(), ctxQueCabe()); }
+    catch (e) { return ''; }
+    if (!q) return '';
+    return '<h2>Qué cabe en el lote</h2>' +
+      '<p class="pie"><b>Los índices de esta cuenta los puso a mano quien hizo el informe y ' +
+      'salen del POT del municipio.</b> URBIS no los conoce ni los verifica: si están mal, ' +
+      'todo lo que sigue está mal. Buscarlos y citarlos es parte del trabajo.</p>' +
+      '<table>' +
+        '<tr><td>Índice de ocupación</td><td class="n">' +
+          String(q.indices.io).replace('.', ',') + '</td></tr>' +
+        '<tr><td>Índice de construcción</td><td class="n">' +
+          String(q.indices.ic).replace('.', ',') + '</td></tr>' +
+        '<tr><td>Altura máxima</td><td class="n">' + q.indices.pisos + ' pisos</td></tr>' +
+        '<tr><td>Aislamientos (antejardín / lateral / posterior)</td><td class="n">' +
+          q.indices.aisFrente + ' / ' + q.indices.aisLado + ' / ' + q.indices.aisFondo +
+          ' m</td></tr>' +
+        '<tr><td>Área del lote</td><td class="n">' + formatearM2(q.areaLoteM2) + '</td></tr>' +
+        '<tr><td>Área libre de aislamientos (aproximada)</td><td class="n">' +
+          formatearM2(q.areaNetaM2) + '</td></tr>' +
+        '<tr><td>Huella posible</td><td class="n">' + formatearM2(q.huellaM2) + '</td></tr>' +
+        '<tr><td>Área construible</td><td class="n">' + formatearM2(q.construibleM2) +
+          '</td></tr>' +
+        '<tr><td>Pisos que salen</td><td class="n">' +
+          String(q.pisosQueSalen).replace('.', ',') + '</td></tr>' +
+        '<tr><td>Viviendas de ' + q.indices.m2Vivienda + ' m²</td><td class="n">' +
+          q.viviendas + '</td></tr>' +
+        '<tr><td>Personas, a ' + String(q.personasPorVivienda).replace('.', ',') +
+          ' por vivienda</td><td class="n">' + q.personas + '</td></tr>' +
+      '</table>' +
+      (q.cruces.length
+        ? '<h3>Contra lo que se midió del sitio</h3>' +
+          q.cruces.map(function (c) { return '<p class="pie">' + esc(c.texto) + '</p>'; }).join('')
+        : '') +
+      q.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
+  }
+
   function amenazaImpresa(am) {
     if (!am) return '';
     return '<h2>La amenaza sísmica</h2>' +
@@ -1584,6 +1631,34 @@
       /* La lectura de proyecto, en el papel. Va pegada al lote porque es su
       consecuencia: sol, sombra, agua, acceso y viento leídos como
       condiciones y no como cifras. */
+      /* Qué cabe. Va con la advertencia adentro y no al pie: una lámina se
+      lee colgada y de lejos, y quien la mire tiene que saber de dónde
+      salieron esos índices sin agacharse a buscar la letra chica. */
+      caja('Qué cabe en el lote',
+      (function () {
+      var Q = window.URBIS_QUE_CABE;
+      if (!Q || !loteA) return '';
+      var q = null;
+      try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe()); }
+      catch (e) { return ''; }
+      if (!q) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + q.huellaM2.toLocaleString('es-CO') + '</b><small>m² de huella</small></div>' +
+      '<div class="k"><b>' + q.construibleM2.toLocaleString('es-CO') + '</b><small>m² construibles</small></div>' +
+      '<div class="k"><b>' + q.viviendas + '</b><small>viviendas</small></div>' +
+      '</div>' +
+      fila('Índices usados', 'ocupación ' + String(q.indices.io).replace('.', ',') +
+      ' · construcción ' + String(q.indices.ic).replace('.', ',') + ' · ' +
+      q.indices.pisos + ' pisos') +
+      fila('Aislamientos', q.indices.aisFrente + ' / ' + q.indices.aisLado + ' / ' +
+      q.indices.aisFondo + ' m') +
+      fila('Pisos que salen', String(q.pisosQueSalen).replace('.', ',')) +
+      fila('Gente', q.personas + ' personas') +
+      (q.cruces.length ? '<p class="lee">' + esc(q.cruces[0].texto) + '</p>' : '') +
+      '<p class="nota">Los índices los puso quien hizo la lámina y salen del POT: URBIS no ' +
+      'los conoce ni los verifica. El área después de aislamientos es aproximada.</p>';
+      })(), 'g3') +
+      
       caja('Qué le pide el sitio al proyecto',
       (function () {
       var lista = (function () { try { return determinantesDelLote(st); } catch (e) { return []; } })();
@@ -2455,6 +2530,10 @@
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
       }) + '</table>' +
+      queCabeImpreso((function () {
+        try { return o.loteAnalisis !== undefined ? o.loteAnalisis : analisisDelLote(); }
+        catch (e) { return null; }
+      })(), o.indices) +
       loteImpresoIntervenir(o.loteAnalisis !== undefined ? o.loteAnalisis
         : (function () { try { return analisisDelLote(); } catch (e) { return null; } })(),
         o.lote !== undefined ? o.lote : S.lote) +
@@ -2678,6 +2757,21 @@
       if (!n) return;
       anotarMarcaInt(n.getAttribute('data-pcr-nota'), n.value);
     }, true);
+    /* Los índices del POT. Mismo criterio que la nota de una marca: se
+       guardan al SALIR del campo y no en cada tecla, porque repintar la hoja
+       destruiría el campo en la primera y cerraría el teclado del teléfono. */
+    el.addEventListener('change', function (ev) {
+      var c = ev.target.closest && ev.target.closest('[data-pcr-idx]');
+      if (!c) return;
+      var Q = window.URBIS_QUE_CABE;
+      if (!Q) return;
+      S.indices = S.indices || Q.porDefecto();
+      var v = Number(c.value);
+      // Un índice negativo o vacío no es una opinión: es un error de tecleo.
+      S.indices[c.getAttribute('data-pcr-idx')] = (isFinite(v) && v >= 0) ? v : 0;
+      guardarFichaViva();
+      pintar();
+    });
     /* Los recorridos que llegan como archivo. Se lee cada uno por separado y
        se dice cuáles no sirvieron: importar cinco y que se caigan dos en
        silencio sería peor que no importar ninguno. */
@@ -2872,6 +2966,30 @@
       }
       if (acc === 'int-dibujar') { iniciarIntangible(b.getAttribute('data-t')); return; }
       if (acc === 'int-borrar') { borrarMarcaInt(b.getAttribute('data-m')); return; }
+      if (acc === 'cabe-texto') {
+        var QC = window.URBIS_QUE_CABE;
+        if (!QC) return;
+        var laC = null;
+        try { laC = analisisDelLote(); } catch (e) {}
+        if (!laC) return;
+        var txtC = QC.comoTexto(QC.calcular(laC, S.indices || QC.porDefecto(), ctxQueCabe()));
+        S.textoPlano = txtC;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtC);
+            S.aviso = 'Copiado, con la advertencia de dónde salen los índices.';
+          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
+        pintar(); return;
+      }
+      if (acc === 'cabe-reiniciar') {
+        var QR = window.URBIS_QUE_CABE;
+        if (!QR) return;
+        S.indices = QR.porDefecto();
+        S.aviso = 'Volvieron los valores de ejemplo. No son la norma de Cúcuta: son un ' +
+                  'punto de partida para que la cuenta arranque.';
+        guardarFichaViva(); pintar(); return;
+      }
       if (acc === 'int-exportar') {
         var IE = IN();
         if (!IE) return;
@@ -5570,6 +5688,9 @@
 
       { id: 'el-lote-a-intervenir', t: 'El lote a intervenir', g: 'El lote', listo: hayLote,
         falta: 'marcá el lote', dato: 'medidas y frentes' },
+      { id: 'que-cabe-en-el-lote', t: 'Qué cabe en el lote', g: 'El lote',
+        listo: hayLote, falta: 'marcá el lote',
+        dato: 'huella, metros y viviendas' },
       { id: 'que-le-pide-el-sitio-al-proyecto', t: 'Qué le pide el sitio al proyecto',
         g: 'El lote', listo: det(), falta: 'marcá el lote y medí algo más',
         dato: 'las determinantes' },
@@ -8857,6 +8978,101 @@
   }
 
   /* ── Juntar los recorridos del curso ─────────────────────────────────── */
+  /* ── Qué cabe en el lote ───────────────────────────────────────────────
+     El puente que le faltaba al módulo: hasta acá todo mide el sitio, y esto
+     es el primer paso del otro lado. */
+  function ctxQueCabe() {
+    var st = (S.resultado && S.resultado.stats) || {};
+    var trz = S.trazado || {};
+    var esp = trz.espacio;
+    var hab = Number(st.poblacionEstimada || 0);
+    var so = null;
+    try { so = sombrasDelLote(); } catch (e) {}
+    var tarde = so && so.horas ? so.horas.filter(function (h) { return h.hora === 15; })[0] : null;
+    return {
+      pendientePct: (S.terreno && S.terreno.pendiente && S.terreno.pendiente.media != null)
+        ? Number(S.terreno.pendiente.media) : null,
+      sombraPct: tarde ? tarde.pctLote : null,
+      amenazaAlta: !!(S.amenaza && /alta/i.test(S.amenaza.nivel || '')),
+      m2PublicoPorHab: (esp && esp.areaM2 && hab > 0)
+        ? Math.round(10 * esp.areaM2 / hab) / 10 : null,
+      usosCerca: (S.caminata && S.caminata.anillos && S.caminata.anillos.length)
+        ? S.caminata.anillos[Math.min(1, S.caminata.anillos.length - 1)].usos : null,
+      personasPorVivienda: st.personasPorVivienda != null
+        ? Number(st.personasPorVivienda) : null
+    };
+  }
+
+  function bloqueQueCabe(guardada) {
+    var Q = window.URBIS_QUE_CABE;
+    var la = null;
+    try { la = analisisDelLote(); } catch (e) {}
+    if (!Q) return '';
+    if (!la) {
+      if (guardada) return '';
+      return h4('crecer', 'Qué cabe en el lote') +
+        '<p class="pcr-pista">Hasta acá todo mide el sitio. Esto es el primer paso del otro ' +
+        'lado: cuánto se puede construir ahí y cuánta gente cabe. <b>Marcá el lote</b> y se ' +
+        'llena.</p>';
+    }
+    var idx = S.indices || (S.indices = Q.porDefecto());
+    var q = Q.calcular(la, idx, ctxQueCabe());
+    if (!q) return '';
+
+    var campos = Q.CAMPOS.map(function (c) {
+      return '<label class="pcr-cabe-c">' +
+        '<span><b>' + esc(c.nombre) + '</b><small>' + esc(c.unidad) + '</small></span>' +
+        '<input type="number" step="any" min="0" data-pcr-idx="' + esc(c.id) + '" ' +
+          'value="' + esc(String(idx[c.id])) + '"' + (guardada ? ' disabled' : '') + ' />' +
+        '<em>' + esc(c.ayuda) + '</em>' +
+      '</label>';
+    }).join('');
+
+    return h4('crecer', 'Qué cabe en el lote') +
+      /* La advertencia va PRIMERO y no al pie. Es la diferencia entre una
+         herramienta útil y una peligrosa, y al pie no la lee nadie. */
+      /* Clase propia y no `pcr-cabe-no`: esa es la del «no cabe en el pliego»
+         y compartirla hacía dos cosas malas a la vez —pintaba esta
+         advertencia como un error de encaje, y la prueba de si el pliego cabe
+         la encontraba a ella en vez de a su resultado—. */
+      '<p class="pcr-conc pcr-ojo"><b>Estos índices los ponés vos.</b> Salen del POT del ' +
+      'municipio y URBIS no los conoce ni los verifica: acá solo se hace la cuenta con lo que ' +
+      'escribas. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
+      'es parte del ejercicio.</p>' +
+      (guardada ? '' : '<div class="pcr-cabe-campos">' + campos + '</div>') +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + q.huellaM2.toLocaleString('es-CO') +
+          '</b><small>m² de huella</small></div>' +
+        '<div class="pcr-kpi"><b>' + q.construibleM2.toLocaleString('es-CO') +
+          '</b><small>m² construibles</small></div>' +
+        '<div class="pcr-kpi"><b>' + String(q.pisosQueSalen).replace('.', ',') +
+          '</b><small>pisos que salen</small></div>' +
+      '</div>' +
+      '<p class="pcr-conc">En un lote de <b>' + q.areaLoteM2.toLocaleString('es-CO') +
+      ' m²</b> caben <b>' + q.viviendas + '</b> viviendas de ' + idx.m2Vivienda +
+      ' m², o sea unas <b>' + q.personas + '</b> personas, contando ' +
+      String(q.personasPorVivienda).replace('.', ',') + ' por vivienda' +
+      (ctxQueCabe().personasPorVivienda != null ? ' —el dato del censo para este sector—' :
+        ' —promedio, porque el censo no dio el dato acá—') + '.</p>' +
+      (q.cruces.length
+        ? '<p class="pcr-lab">Contra lo que se midió del sitio</p>' +
+          q.cruces.map(function (c) {
+            return '<p class="pcr-conc pcr-cabe-cruce">' + esc(c.texto) + '</p>';
+          }).join('')
+        : '<p class="pcr-pista">Todavía no hay con qué cruzarlo: medí el terreno, el trazado y ' +
+          'la amenaza, y acá aparece qué le hace cada cosa a lo que cabe.</p>') +
+      (guardada ? '' :
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="cabe-texto" class="pcr-mini">' +
+            ico('copiar', 16) + 'Copiar para la memoria</button>' +
+          '<button type="button" data-pcr="cabe-reiniciar" class="pcr-mini">' +
+            ico('deshacer', 16) + 'Volver a los valores de ejemplo</button>' +
+        '</div>') +
+      q.avisos.map(function (a) {
+        return '<p class="pcr-pista pcr-int-aviso">' + esc(a) + '</p>';
+      }).join('');
+  }
+
   function bloqueCursoIntangible() {
     var I = IN();
     if (!I) return '';
@@ -10156,6 +10372,8 @@
         // calle que concentra la actividad.
         bloqueUsoPredominante(st) +
         bloqueLoteIntervenir() +
+        // El puente: hasta acá se mide el sitio, y acá empieza el proyecto.
+        bloqueQueCabe() +
         bloqueCaminata() +
         /* Lo intangible va acá y no al final: es lo que se recoge caminando,
            y quien tiene la hoja abierta en la calle no llega al final. */
@@ -10757,6 +10975,7 @@
     S.intangible = (f.intangible || []).slice();
     S.pliegoOff = (f.pliegoOff || []).slice();
     S.pliegoMapasOff = (f.pliegoMapasOff || []).slice();
+    S.indices = f.indices || null;
     S.pliegoCabe = null;
     S.lote = (f.lote && f.lote.length >= 3)
       ? f.lote.map(function (p) { return { lat: p.lat, lng: p.lng }; }) : null;
@@ -10875,6 +11094,7 @@
       // qué se midió, y en el sector nuevo no se midió nada todavía.
       S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
       S.amenaza = null; S.amenazaAviso = '';
+      S.indices = null;
       pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
@@ -11035,6 +11255,7 @@
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
                    (f.loteAnalisis ? bloqueLoteIntervenir(f.loteAnalisis, true) : '') +
                    (f.caminata ? bloqueCaminata(f.caminata, true) : '') +
+                   (f.loteAnalisis ? bloqueQueCabe(true) : '') +
                    ((f.intangible && f.intangible.length)
                      ? bloqueIntangible(f.intangible, true, {
                          areaSectorM2: f.areaM2 || 0, lote: f.lote,
@@ -11411,6 +11632,7 @@
           /* Y su composición: la lámina de una ficha archivada tiene que
              salir con las cajas que tenía cuando se archivó, no con las que
              estén puestas ahora en otro sector. */
+          indices: f.indices || null,
           pliegoOff: f.pliegoOff || [],
           pliegoMapasOff: f.pliegoMapasOff || [],
           horizontal: name === 'lamina-h'

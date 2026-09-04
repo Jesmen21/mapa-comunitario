@@ -1598,3 +1598,49 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 /* Seguir donde quedó: la misma pieza que «medir todo» —un estado y una
    acción— pero en el color de lo que ya existe y no en el de lo que falta. */
 .pcr-reanudar{ border-color:var(--edu-accent-deep); background:var(--edu-accent-soft); }
+
+/* ── 28. Qué cabe en el lote ─────────────────────────────────────────────
+   Siete campos que alguien tiene que ir a buscar al POT y escribir. Cada uno
+   lleva su explicación debajo, no en un globo: la mitad de los errores de un
+   taller salen de confundir ocupación con construcción, y esa confusión no se
+   resuelve con un signo de interrogación que hay que tocar. */
+.pcr-cabe-campos{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;
+  margin:4px 0 12px;
+}
+.pcr-cabe-c{
+  display:flex; flex-direction:column; gap:4px; min-width:0;
+  border:1px solid var(--edu-line); border-radius:var(--edu-r-s);
+  padding:8px 9px; background:var(--edu-ground);
+}
+.pcr-cabe-c > span{ display:flex; align-items:baseline; gap:6px; }
+.pcr-hoja .pcr-cabe-c b, .pcr-pestana .pcr-cabe-c b{
+  font-size:.78rem; font-weight:700;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-cabe-c small, .pcr-pestana .pcr-cabe-c small{
+  font-size:.66rem;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-cabe-c input{
+  width:100%; box-sizing:border-box; font:inherit; font-size:.95rem; font-weight:700;
+  padding:6px 8px; border-radius:var(--edu-r-s);
+  border:1px solid var(--edu-line); background:var(--edu-paper);
+}
+.pcr-hoja .pcr-cabe-c input, .pcr-pestana .pcr-cabe-c input{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-cabe-c input:disabled{ opacity:.7; }
+.pcr-hoja .pcr-cabe-c em, .pcr-pestana .pcr-cabe-c em{
+  font-size:.66rem; line-height:1.35; font-style:normal;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-cabe-cruce{ border-left:3px solid var(--edu-accent-deep); padding-left:9px; }
+
+/* La advertencia fuerte: lo que hay que leer antes de creerle a una cifra.
+   Distinta de `pcr-cabe-no`, que es el resultado de si el pliego encaja. */
+.pcr-hoja .pcr-ojo, .pcr-pestana .pcr-ojo{
+  border-left:3px solid var(--edu-accent-deep); padding-left:9px;
+  background:var(--edu-accent-soft); border-radius:0 var(--edu-r-s) var(--edu-r-s) 0;
+  padding-top:7px; padding-bottom:7px; padding-right:9px;
+}

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v684-como-se-siente';
+const URBIS_CACHE = 'urbis-v685-que-cabe';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -153,6 +153,7 @@ const URBIS_ASSETS = [
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
   './js/77-sin-senal.js',
+  './js/78-que-cabe.js',
 ];
 
 self.addEventListener('install', event => {
