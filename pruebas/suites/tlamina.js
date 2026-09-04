@@ -285,7 +285,13 @@ function climaSimulado(){
   ['Plano del sector','El sitio','Qué hay, por categoría','Alturas de lo construido',
    'Llenos y vacíos','El terreno','El clima','Asoleamiento','Hitos y nodos']
     .forEach(t=>P('  · '+t, cajas.indexOf(t)!==-1));
-  P('el terreno trae los dos cortes', (h.match(/pcr-corte/g)||[]).length>=2);
+  /* Con la hoja llena entra UN corte y no dos: el segundo es el que menos
+     dice y su sitio son los milímetros que le faltan a la caja del terreno
+     para no recortarse. Los dos siguen saliendo en el PDF, que no tiene
+     límite de alto (lo comprueba tcortes). */
+  P('el terreno trae su corte, con escala',
+    (h.match(/class="pcr-corte"/g)||[]).length>=1 && /V ×\d+/.test(h),
+    (h.match(/class="pcr-corte"/g)||[]).length+' cortes · '+((h.match(/V ×\d+/)||['sin escala'])[0]));
   P('el clima trae el climograma', /pcr-clima-lluvia/.test(h) && /pcr-clima-temp/.test(h));
   P('el asoleamiento sale sin consultar nada', /amanecer/.test(h) && /atardecer/.test(h));
 

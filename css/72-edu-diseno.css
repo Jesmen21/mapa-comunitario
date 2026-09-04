@@ -1359,3 +1359,31 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 /* Tres opciones de forma ya no caben en una línea de teléfono: envuelven. */
 .pcr-hoja .pcr-formas{ flex-wrap:wrap; }
 .pcr-hoja .pcr-formas .pcr-forma{ flex:1 1 44%; }
+
+/* ── 22. Lo que falta levantar ───────────────────────────────────────────
+   No es una lista de carencias: es la lista de tareas de la salida, y por
+   eso se lee como una ficha de trabajo —número, qué se hace, qué enciende—
+   y no como una tabla de errores. */
+.pcr-hoja .pcr-falta, .pcr-pestana .pcr-falta{
+  flex:0 0 auto; display:flex; flex-direction:column; gap:8px; margin:4px 0 8px;
+}
+.pcr-falta-item{
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:10px 12px; box-shadow:var(--edu-sombra);
+}
+.pcr-falta-cab{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.pcr-falta-n{
+  flex:0 0 auto; width:20px; height:20px; border-radius:50%;
+  background:var(--edu-accent-deep); color:#fff; font-size:.72rem; font-weight:800;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.pcr-falta-cab b{ flex:1; min-width:0; font-size:.92rem; color:var(--edu-ink-1); }
+.pcr-falta-cab code{
+  flex:0 0 auto; font-size:.68rem; color:var(--edu-ink-3);
+  background:var(--edu-fondo); border:1px solid var(--edu-line);
+  padding:1px 6px; border-radius:6px;
+}
+.pcr-falta-hoy{ margin:6px 0 2px; font-size:.8rem; color:var(--edu-ink-2); }
+.pcr-falta-enciende{ margin:0 0 4px; font-size:.8rem; color:var(--edu-accent-deep); }
+.pcr-falta-enciende i{ font-style:normal; font-weight:700; }
+.pcr-falta-item .pcr-pista{ margin:0 !important; }

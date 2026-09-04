@@ -1250,7 +1250,9 @@
                  (trz && trz.espacio && trz.espacio.piezas ? 1 : 0) +
                  (cam && cam.anillos && cam.anillos.length ? 1 : 0) +
                  (zonasL ? 1 : 0) +
-                 (sombrasL && sombrasL.horas && sombrasL.horas.length ? 1 : 0);
+                 (sombrasL && sombrasL.horas && sombrasL.horas.length ? 1 : 0) +
+                 ((function () { try { return faltantesDelSector(st).length ? 1 : 0; }
+                                 catch (e) { return 0; } })());
     /* Acostado el plano puede ser bastante más alto: la columna en la que va
        es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
        quedaba con una banda blanca de 13 cm al pie. */
@@ -1410,7 +1412,7 @@
       /* Igual que los demás dibujos, manda el alto: dos cortes a todo el
          ancho de la caja se llevaban 16 mm más que los dos que había antes y
          la caja del terreno se recortaba por abajo. */
-      '.corte svg{ display:block; height:' + (extras >= 5 ? 18 : 26) + 'mm; width:auto;' +
+      '.corte svg{ display:block; height:' + (extras >= 6 ? 15 : extras >= 5 ? 18 : 26) + 'mm; width:auto;' +
         'max-width:100%; margin:0 auto }' +
       '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
@@ -1448,6 +1450,15 @@
       '.pcr-sec-alt{ stroke:#0A6F9E; stroke-width:1.4; fill:none }' +
       '.pcr-sec-cota{ stroke:#5A6878; stroke-width:1; fill:none }' +
       '.pcr-sec-t{ fill:#3B4A5A; font-size:9px; font-weight:700 }' +
+      '.falta{ display:flex; flex-direction:column; gap:2.5mm }' +
+      '.fa{ display:grid; grid-template-columns:6mm 1fr auto; gap:2.5mm; align-items:baseline;' +
+        'border-bottom:.25mm solid #EEF3F7; padding-bottom:2mm }' +
+      '.fa-n{ font-weight:800; color:#0A6F9E; font-size:3.6mm }' +
+      '.fa b{ display:block; font-size:3.2mm; color:#0F1F2E }' +
+      '.fa small{ display:block; font-size:2.7mm; color:#6B7A8A; margin-top:.5mm }' +
+      '.fa em{ display:block; font-size:2.7mm; color:#0A6F9E; font-style:normal; margin-top:.5mm }' +
+      '.fa code{ font-size:2.6mm; color:#6B7A8A; background:#F3F8FB; padding:.6mm 1.4mm;' +
+        'border-radius:1mm; white-space:nowrap }' +
       '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:7mm }' +
       '.sn h3{ margin:0 0 2.5mm; font-size:3mm; letter-spacing:.14em; text-transform:uppercase;' +
         'font-weight:800; color:#6B7A8A }' +
@@ -1637,8 +1648,12 @@
                  pasan POR ÉL: cruzan el sector igual que los del centro, pero
                  además dicen dónde cae el lote en la ladera, que es lo que se
                  defiende en la entrega. Sin lote, los del centro. */
+              /* Con la hoja llena va UN corte y no dos: el segundo es el que
+                 menos dice —el terreno ya se leyó en el primero— y su sitio
+                 son los 68 px que le faltan a esta caja para no recortarse.
+                 Los dos siguen saliendo en el PDF. */
               (terLote && terLote.cortes.length
-                ? terLote.cortes.map(function (c) {
+                ? terLote.cortes.slice(0, extras >= 5 ? 1 : 2).map(function (c) {
                     var d = dib('corteTopografico', c);
                     return d ? '<div class="corte">' + d + '</div>' : '';
                   }).join('') +
@@ -1647,7 +1662,8 @@
                       ', con ' + (terLote.pendientePct != null ? terLote.pendientePct + '% de pendiente' :
                                   'pendiente suave') + '. La banda amarilla es el lote.</p>'
                     : '<p class="nota">La banda amarilla es el lote.</p>')
-                : (ter.perfiles || []).map(perfilDibujado).join('')) +
+                : (ter.perfiles || []).slice(0, extras >= 5 ? 1 : 2)
+                    .map(perfilDibujado).join('')) +
               (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
           })(), 'g3') +
 
@@ -1862,6 +1878,31 @@
               'nadie lo ha mapeado. Es donde el curso agrega lo que no existía.</p>';
           })(), 'g3') +
 
+        /* La lista de faltantes, en el papel. Es la caja que se recorta y se
+           lleva a la salida: dice qué anotar y qué se enciende con cada cosa. */
+        caja('Lo que falta levantar',
+          (function () {
+            var lista = (function () { try { return faltantesDelSector(st); } catch (e) { return []; } })();
+            if (!lista.length) return '';
+            /* Con la hoja llena entran cuatro y no cinco: la quinta tarea es
+               siempre la que menos enciende, y perderla cuesta menos que
+               recortar en silencio la caja del terreno. */
+            return '<div class="falta">' +
+                lista.slice(0, extras >= 5 ? 4 : 5).map(function (x, i) {
+                  return '<div class="fa">' +
+                    '<span class="fa-n">' + (i + 1) + '</span>' +
+                    '<div><b>' + esc(x.titulo) + '</b>' +
+                      '<small>' + esc(x.cuantos) + '</small>' +
+                      '<em>enciende: ' + esc(x.enciende.join(' · ')) + '</em></div>' +
+                    '<code>' + esc(x.etiqueta) + '</code>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+              '<p class="nota">En orden de lo que más análisis enciende por menos trabajo. La ' +
+              'etiqueta es la que se escribe en OpenStreetMap; lo que se levante vuelve a esta ' +
+              'misma lámina cuando se vuelva a medir el sector.</p>';
+          })(), 'g3') +
+
         caja('Síntesis del sector',
           (function () {
             var sn = sintesisDelSector(res);
@@ -2003,6 +2044,8 @@
       hitosImpresos(st) +
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
       contextoImpreso(st) +
+
+      queFaltaImpreso(st) +
 
       '<h2>A dónde ir</h2>' +
       (function () {
@@ -3088,6 +3131,9 @@
         });
       L.push('');
     }
+    // La lista de lo que falta va ANTES del reparto: es lo que hay que
+    // anotar, y el reparto solo dice quién va a dónde.
+    try { var qf = queFaltaComoTexto(st); if (qf) { L.push(qf); L.push(''); } } catch (e) {}
     if (zonas && zonas.vacios) {
       try { L.push(planComoTexto(res, zonas)); L.push(''); } catch (e) {}
     }
@@ -4290,6 +4336,230 @@
 
      Devuelve listas en vez de HTML porque la usan tres superficies distintas
      —la ficha, la lámina y el PDF— y cada una la pinta a su manera. */
+  /* ── Lo que falta para que el análisis hable ───────────────────────────
+     Media docena de bloques de esta ficha terminan diciendo lo mismo: «esto
+     no se puede medir porque nadie lo mapeó». Dicho bloque por bloque, cada
+     aviso parece una limitación de la aplicación. Juntos y ordenados, son
+     otra cosa: la lista de tareas de la salida a campo, con el detalle de qué
+     enciende cada una.
+
+     Y encienden en cadena. Contar los pisos de cuatro construcciones no
+     agrega «un dato»: agrega el perfil de la calle, las alturas y la sombra
+     sobre el lote, tres bloques que hoy están vacíos. Eso es lo que esta
+     lista dice y ninguna otra parte de la ficha decía.
+
+     El orden no es por importancia sino por RENDIMIENTO: lo que enciende más
+     cosas con menos trabajo va primero, porque una salida a campo dura una
+     mañana y hay que decidir en qué se gasta. */
+  function faltantesDelSector(st) {
+    var trz = S.trazado;
+    var lista = [];
+    var alt = (st && st.alturas) || {};
+    var perf = trz && trz.perfil;
+    var vi = (trz && trz.vias) || {};
+    var ll = (trz && trz.llenos) || {};
+    var esp = trz && trz.espacio;
+
+    function item(o) { lista.push(o); }
+
+    /* ── Los pisos: es el dato que más cosas enciende de una sola vez.
+
+       La cuenta sale del TRAZADO y no del inventario de usos: la consulta de
+       usos excluye `building=yes` a propósito —si no, cada casa entraría como
+       un uso— así que ahí los edificios ni aparecen. Los que valen son los
+       que trajeron forma, que son los que se pueden contar desde la acera. */
+    var edificiosTrz = ll.edificios || alt.edificios || 0;
+    var pctAltura = (perf && perf.coberturaAltura != null) ? perf.coberturaAltura
+                  : (alt.cobertura != null ? alt.cobertura : null);
+    if (edificiosTrz && pctAltura != null && pctAltura < 100) {
+      var sin = Math.max(1, Math.round(edificiosTrz * (100 - pctAltura) / 100));
+      var vecinos = null;
+      try {
+        var so = S.sombras || (S.lote && S.lote.length >= 3 ? sombrasDelLote() : null);
+        vecinos = so ? (so.vecinosSinPisos || 0) : null;
+      } catch (e) { vecinos = null; }
+      item({
+        id: 'pisos', etiqueta: 'building:levels',
+        titulo: 'Contar los pisos de los edificios',
+        cuantos: sin + ' de ' + edificiosTrz + ' sin altura registrada (' + pctAltura +
+                 '% la trae)',
+        enciende: ['El perfil de la calle', 'Alturas de lo construido', 'La sombra de los vecinos'],
+        como: 'Se cuentan desde la acera y se anotan como <b>building:levels</b>. Un piso es un ' +
+              'piso: el altillo cuenta, la terraza no.',
+        cuesta: vecinos != null && vecinos > 0
+          ? 'Los ' + vecinos + ' que rodean el lote son media hora y ya encienden la sombra.'
+          : 'Una cuadra entera son unos veinte minutos.',
+        peso: 3
+      });
+    }
+
+    // ── El ancho de la calzada.
+    if (perf && (perf.coberturaAncho == null || perf.coberturaAncho < 60)) {
+      item({
+        id: 'ancho', etiqueta: 'width / lanes',
+        titulo: 'Medir el ancho de la calzada',
+        cuantos: (perf.coberturaAncho || 0) + '% de las vías lo trae' +
+                 (perf.viasConWidth || perf.viasConLanes
+                   ? ' (' + (perf.viasConWidth || 0) + ' con ancho, ' + (perf.viasConLanes || 0) + ' con carriles)'
+                   : ''),
+        enciende: ['El perfil de la calle: la relación altura ÷ ancho'],
+        como: 'Con cinta o contando carriles: <b>width=8</b> en metros, o <b>lanes=2</b>. Es de ' +
+              'calzada a calzada, sin contar el andén.',
+        cuesta: 'Tres o cuatro calles distintas alcanzan: el resto se parece.',
+        peso: 2
+      });
+    }
+
+    // ── El andén, que es de lo que menos hay y más se camina.
+    if (perf && perf.anden && perf.anden.sinDatoPct > 20) {
+      item({
+        id: 'anden', etiqueta: 'sidewalk',
+        titulo: 'Anotar dónde hay andén y dónde no',
+        cuantos: String(perf.anden.sinDatoPct).replace('.', ',') + '% de las vías sin dato',
+        enciende: ['Hasta dónde se llega caminando', 'A distancia de caminar'],
+        como: '<b>sidewalk=both</b>, <b>left</b>, <b>right</b> o <b>no</b> en cada tramo. Sin andén ' +
+              'no es lo mismo que sin dato, y hoy el mapa no los distingue.',
+        cuesta: 'Se anota caminando, sin instrumentos.',
+        peso: 2
+      });
+    }
+
+    // ── Los parques sin forma: sin polígono no hay metros cuadrados.
+    if (esp && !esp.piezas) {
+      item({
+        id: 'espacio', etiqueta: 'leisure=park',
+        titulo: 'Dibujar los parques, plazas y canchas',
+        cuantos: 'ninguno tiene forma registrada en el área',
+        enciende: ['Espacio público efectivo', 'El indicador del Decreto 1504'],
+        como: 'Se dibuja el polígono del parque —no un punto— y se etiqueta <b>leisure=park</b>, ' +
+              '<b>pitch</b> o <b>place=square</b> según lo que sea.',
+        cuesta: 'Un parque son cuatro esquinas y dos minutos.',
+        peso: 3
+      });
+    }
+
+    // ── Calles sin nombre: es lo que le da frentes al lote.
+    if (vi.sinNombre) {
+      item({
+        id: 'nombres', etiqueta: 'name',
+        titulo: 'Ponerle nombre a las calles que no lo tienen',
+        cuantos: vi.sinNombre + ' tramo' + (vi.sinNombre === 1 ? '' : 's') + ' sin nombre',
+        enciende: ['Los frentes del lote', 'El plan de la salida'],
+        como: 'El nombre de la placa, tal cual: <b>name=Calle 12</b>. Si no hay placa, se anota lo ' +
+              'que dice la gente y se marca para verificar.',
+        cuesta: 'Se levanta de paso, mientras se camina.',
+        peso: 1
+      });
+    }
+
+    // ── Edificios mapeados como punto.
+    if (ll.sinGeometria) {
+      item({
+        id: 'huellas', etiqueta: 'building',
+        titulo: 'Dibujar la huella de los edificios que son solo un punto',
+        cuantos: ll.sinGeometria + ' sin forma, de ' + (ll.edificios || 0),
+        enciende: ['Llenos y vacíos', 'Área construida'],
+        como: 'Se calca el contorno sobre la foto satelital y se etiqueta <b>building=yes</b>. Esto ' +
+              'se puede hacer en el escritorio, sin salir.',
+        cuesta: 'No es trabajo de campo: es una tarde de calcar.',
+        peso: 1
+      });
+    }
+
+    // ── Vivienda sin registrar: es lo que desfigura la mezcla de usos.
+    var g = (st && st.porGrupo) || {};
+    var totalUsos = Object.keys(g).reduce(function (a, k) { return a + (g[k] || 0); }, 0);
+    var viv = g.vivienda || 0;
+    if (totalUsos >= 10 && viv / totalUsos < 0.15) {
+      item({
+        id: 'vivienda', etiqueta: 'building=residential',
+        titulo: 'Registrar la vivienda',
+        cuantos: viv + ' de ' + totalUsos + ' usos son vivienda (' +
+                 Math.round(100 * viv / totalUsos) + '%)',
+        enciende: ['El índice de mezcla de usos', 'La lectura de qué uso manda'],
+        como: 'En OpenStreetMap el comercio está mucho mejor mapeado que la casa donde vive la ' +
+              'gente, así que un barrio residencial sale monofuncional al revés. Se corrige ' +
+              'etiquetando <b>building=residential</b> o <b>house</b>.',
+        cuesta: 'Es la tarea más larga, y la que más cambia el diagnóstico.',
+        peso: 2
+      });
+    }
+
+    /* El orden: primero lo que enciende más bloques. A igualdad, lo que
+       cuesta menos —el peso lo dice—. */
+    lista.sort(function (a, b) {
+      return (b.enciende.length * 10 + b.peso) - (a.enciende.length * 10 + a.peso);
+    });
+    return lista;
+  }
+
+  function bloqueQueFalta(st) {
+    var lista = faltantesDelSector(st);
+    if (!S.trazado) {
+      return h4('campo', 'Lo que falta para que esto hable') +
+        '<p class="pcr-pista">Con el <b>trazado del sector</b> medido, acá sale la lista de lo que ' +
+        'hay que levantar en la salida y qué análisis enciende cada cosa.</p>';
+    }
+    if (!lista.length) {
+      return h4('campo', 'Lo que falta para que esto hable') +
+        '<p class="pcr-ok">No falta ninguno de los datos que este análisis sabe usar: pisos, anchos, ' +
+        'andenes, nombres de calle y espacio público están registrados. El trabajo del curso acá es ' +
+        '<b>verificar</b>, que también hace falta.</p>';
+    }
+    var bloques = lista.reduce(function (a, x) { return a + x.enciende.length; }, 0);
+    return h4('campo', 'Lo que falta para que esto hable') +
+      '<p class="pcr-tarea-intro">Media docena de bloques de esta ficha terminan diciendo «no se ' +
+      'puede medir porque nadie lo mapeó». Junto, eso no es una limitación: es la <b>lista de ' +
+      'tareas de la salida</b>. Estas ' + lista.length + ' encienden <b>' + bloques + '</b> ' +
+      'análisis que hoy están vacíos, y van en orden de lo que más enciende por menos trabajo.</p>' +
+      '<div class="pcr-falta">' +
+        lista.map(function (x, i) {
+          return '<div class="pcr-falta-item">' +
+            '<div class="pcr-falta-cab">' +
+              '<span class="pcr-falta-n">' + (i + 1) + '</span>' +
+              '<b>' + esc(x.titulo) + '</b>' +
+              '<code>' + x.etiqueta + '</code>' +
+            '</div>' +
+            '<p class="pcr-falta-hoy">Hoy: ' + esc(x.cuantos) + '.</p>' +
+            '<p class="pcr-falta-enciende">Enciende: ' +
+              x.enciende.map(function (e) { return '<i>' + esc(e) + '</i>'; }).join(' · ') + '</p>' +
+            '<p class="pcr-pista">' + x.como + ' ' + esc(x.cuesta) + '</p>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">La etiqueta en gris es la que se escribe en OpenStreetMap. Lo que se ' +
+      'levante vuelve a esta misma ficha: se mide el sector otra vez y los bloques vacíos se ' +
+      'llenan solos.</p>';
+  }
+
+  // La misma lista en texto pelado, para el portapapeles y el PDF.
+  function queFaltaComoTexto(st) {
+    var lista = faltantesDelSector(st);
+    if (!lista.length) return '';
+    var L = ['LO QUE FALTA LEVANTAR (en orden de lo que más enciende)'];
+    lista.forEach(function (x, i) {
+      L.push('  ' + (i + 1) + '. ' + x.titulo + '  [' + x.etiqueta + ']');
+      L.push('     hoy: ' + x.cuantos);
+      L.push('     enciende: ' + x.enciende.join(', '));
+    });
+    return L.join('\n');
+  }
+
+  function queFaltaImpreso(st) {
+    var lista = faltantesDelSector(st);
+    if (!lista.length) return '';
+    return '<h2>Lo que falta para que esto hable</h2>' +
+      '<table class="plan">' +
+        lista.map(function (x, i) {
+          return '<tr><td class="g">' + (i + 1) + '. <span>' + esc(x.etiqueta) + '</span></td>' +
+            '<td><b>' + esc(x.titulo) + '</b><br><em>Hoy: ' + esc(x.cuantos) + '. Enciende: ' +
+            esc(x.enciende.join(', ')) + '.</em></td></tr>';
+        }).join('') +
+      '</table>' +
+      '<p class="pie">En orden de lo que más análisis enciende por menos trabajo de campo. La ' +
+      'etiqueta es la que se escribe en OpenStreetMap.</p>';
+  }
+
   function sintesisDelSector(res) {
     var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
     var trz = S.trazado, ter = S.terreno, cli = S.clima;
@@ -7507,6 +7777,12 @@
         // tareas: es el puente entre «esto es lo que hay» y «esto es lo que
         // vas a hacer».
         bloqueSintesis(res) +
+
+        /* Entre la síntesis y el reparto: «esto es lo que hay», «esto es lo
+           que falta», «esto es a dónde van». La lista de faltantes es el
+           puente entre las dos, y sin ella el plan manda a caminar sin decir
+           qué anotar. */
+        bloqueQueFalta(st) +
 
         bloquePlan(res, zonas) +
 
