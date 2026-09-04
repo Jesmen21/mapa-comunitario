@@ -201,6 +201,25 @@ const geo=[
   r.desbordes=await medidor.evaluate(()=>{
     const h=document.querySelector('.hoja');
     return { altoHoja:h?h.scrollHeight:0, altoPapel:h?h.clientHeight:0,
+      /* En columnas, la caja que no cabe no se recorta: se va a una columna
+         que no existe y desaparece del papel sin dejar rastro. Se detecta
+         mirando si alguna queda fuera del rectángulo de la rejilla. */
+      perdidas: (function () {
+        const rej = document.querySelector('.rej');
+        if (!rej) return [];
+        const R = rej.getBoundingClientRect();
+        const fuera = [...rej.children].filter(c => {
+          const b = c.getBoundingClientRect();
+          return b.height === 0 || b.right > R.right + 2;
+        }).map(c => (c.querySelector('h2') || {}).textContent || '?');
+        // Y la hoja entera: si el contenido la pasó, lo de abajo se imprime
+        // fuera del papel, que es la misma pérdida por otra puerta.
+        const h = document.querySelector('.hoja');
+        if (h && h.scrollHeight > h.clientHeight + 2) {
+          fuera.push('(la hoja se pasa ' + (h.scrollHeight - h.clientHeight) + ' px de alto)');
+        }
+        return fuera;
+      })(),
       cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?') };
@@ -316,6 +335,8 @@ const geo=[
   console.log('\n  -- y sigue cabiendo en el papel --');
   const D=r.desbordes||{};
   T('ninguna caja se recorta', (D.cajas||[]).length===0, (D.cajas||[]).join(' · ')||'ninguna');
+  T('ni se pierde fuera de la hoja', (D.perdidas||[]).length===0,
+    (D.perdidas||[]).join(' · ')||'ninguna');
   T('y la hoja no se pasa de los 900 mm',
     D.altoHoja>0 && D.altoHoja<=D.altoPapel+2, D.altoHoja+' de '+D.altoPapel+' px');
 
@@ -329,9 +350,21 @@ const geo=[
      de alto, una rejilla paga el hueco de cada encaje por triplicado y la hoja
      dejó de cerrar en cuanto entraron los dibujos; en columnas cada caja
      conserva su alto natural y la siguiente arranca pegada. */
-  T('acostado fluye en tres columnas, sin rejilla',
-    /columns:3/.test(LH) && /column-fill:auto/.test(LH));
+  /* La hoja fluye en columnas de periódico en las dos orientaciones —dos
+     paradas, tres acostada, y tres también parada cuando va llena—, con el
+     plano fuera del flujo, arriba, a todo el ancho. La cuadrícula se fue
+     cuando los dibujos y las listas la desbordaron. */
+  /* Se mira la regla de la rejilla, no el documento entero: adentro de las
+     cajas sigue habiendo cuadrículas —las barras, la síntesis— y buscar
+     «grid-template-columns» en toda la hoja encuentra esas. */
+  const reglaRej=(LH.match(/\.rej\{[^}]*\}/)||[''])[0];
+  T('acostado fluye en columnas de periódico, sin rejilla',
+    /columns:[34]/.test(reglaRej) && !/grid-template-columns/.test(reglaRej), reglaRej.slice(0,40));
+  T('y el plano manda arriba, fuera del flujo',
+    /class="caja plano-hero"/.test(LH));
   T('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');
+  T('ni se pierde fuera del pliego acostado', (DH.perdidas||[]).length===0,
+    (DH.perdidas||[]).join(' · ')||'ninguna');
   T('y cabe en los 600 mm de alto',
     DH.altoHoja>0 && DH.altoHoja<=DH.altoPapel+2, DH.altoHoja+' de '+DH.altoPapel+' px');
 

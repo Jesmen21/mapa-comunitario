@@ -1227,7 +1227,6 @@
        puede ocupar este contenido en este papel. */
     var horiz = !!o.horizontal;
     var HOJA_W = horiz ? 900 : 600, HOJA_H = horiz ? 600 : 900;
-    var NCOL = 6;
     var A = window.URBIS_PC_ANALISIS;
     // El catálogo de grupos y sus colores: se lee antes del plano porque el
     // plano ya los necesita para pintar cada punto.
@@ -1252,16 +1251,29 @@
                  (zonasL ? 1 : 0) +
                  (sombrasL && sombrasL.horas && sombrasL.horas.length ? 1 : 0) +
                  ((function () { try { return faltantesDelSector(st).length ? 1 : 0; }
+                                 catch (e) { return 0; } })()) +
+                 ((function () { try { return determinantesDelLote(st).length ? 1 : 0; }
                                  catch (e) { return 0; } })());
     /* Acostado el plano puede ser bastante más alto: la columna en la que va
        es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
        quedaba con una banda blanca de 13 cm al pie. */
-    /* El plano es la única caja con alto propio y por eso es la que cede
-       cuando hay mucho medido. El piso bajó de 150 a 110 al entrar los cuatro
-       dibujos: con todo medido —terreno, clima, trazado, espacio público,
-       caminata y rumbos— la hoja pedía 32 mm más de los que tiene, y esos
-       32 mm salen de acá o salen de recortar la última caja en silencio. */
-    var altoDelPlano = Math.max(110, 370 - 45 * extras);
+    /* El plano ocupa todo el ancho de la hoja, así que su alto sale de esta
+       proporción: 520 de ancho por esto de alto. Cede a medida que hay más
+       medido, porque lo que se mide va abajo y necesita papel; con un sector
+       recién analizado se lleva media hoja, que es lo que corresponde cuando
+       no hay nada más que contar. */
+    /* El plano ocupa todo el ancho, así que su alto en el papel es una
+       consecuencia de esa proporción. Se razona al revés: primero cuántos
+       milímetros de hoja se le dan —bastantes si no hay nada más que contar,
+       menos a medida que hay medido— y de ahí sale la proporción que hay que
+       pedirle al dibujo.
+
+       Acostada se le dan muchos menos: la hoja tiene 300 mm menos de alto y
+       un plano a todo el ancho de 860 mm se comería el pliego entero. */
+    var anchoPlanoMM = (horiz ? 900 : 600) - 48;
+    var altoPlanoMM = horiz ? Math.max(55, 105 - 8 * extras)
+                            : Math.max(90, 210 - 14 * extras);
+    var altoDelPlano = Math.round(520 * altoPlanoMM / anchoPlanoMM);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
@@ -1339,6 +1351,412 @@
       return x ? x.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' }) : '—';
     };
 
+    /* Las cajas se arman antes de escribir la hoja, y no dentro del return,
+       por una razón concreta: hace falta saber CUÁNTO OCUPAN para decidir en
+       cuántas columnas se reparten. Un sector recién analizado llena media
+       hoja y en tres columnas quedaría con una banda blanca de un palmo; uno
+       con todo medido no cabe en dos. La medida es la longitud del HTML —no
+       es el alto exacto, pero es proporcional a él, y para elegir entre dos y
+       tres alcanza de sobra—. */
+    var cajasHTML =
+      
+      caja('El sitio',
+      '<div class="kpis">' +
+      '<div class="k"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+      '<div class="k"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
+      '</b><small>por hectárea</small></div>' +
+      '</div>' +
+      fila('Área', esc(formatearArea(meta.areaM2) || '—')) +
+      fila('En metros cuadrados', esc(formatearM2(meta.areaM2))) +
+      fila('Perímetro', esc(formatearLargo(meta.perimetroM))) +
+      (esPol ? fila('Vértices', meta.vertices || 0) : fila('Radio', esc(formatearLargo(meta.radioM)))) +
+      (st.poblacionEstimada ? fila('Población', Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
+      (st.viviendasCenso ? fila('Viviendas', Number(st.viviendasCenso).toLocaleString('es-CO')) : '') +
+      (st.estrato && st.estrato.predominante
+      ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : ''),
+      'g2') +
+      
+      caja('El lote a intervenir',
+      (function () {
+      if (!loteA) return '';
+      var pl = dib('planoDelLote', lote, loteA);
+      return (pl ? '<div class="dib">' + pl + '</div>' : '') +
+      '<div class="kpis">' +
+      '<div class="k"><b>' + Number(loteA.areaM2).toLocaleString('es-CO') + '</b><small>m² de lote</small></div>' +
+      '<div class="k"><b>' + loteA.perimetroM + '</b><small>m de perímetro</small></div>' +
+      '</div>' +
+      (loteA.frentes || []).map(function (f) {
+      return fila('Frente sobre ' + f.via, f.metros + ' m');
+      }).join('') +
+      (loteA.sinFrenteM ? fila('Sin frente a calle registrada', loteA.sinFrenteM + ' m') : '') +
+      (loteA.critica
+      ? '<p class="lee">La fachada que se calienta es el lado ' + loteA.critica.i +
+      (loteA.critica.via ? ' (' + esc(loteA.critica.via) + ')' : '') + ', que mira al ' +
+      esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '.</p>'
+      : '') +
+      '<p class="nota">' + (loteA.esquinero ? 'Lote esquinero: da a ' + loteA.frentes.length +
+      ' calles. ' : 'Lote medianero: un solo frente. ') +
+      loteA.nVecinos + ' usos registrados a menos de 200 m.</p>';
+      })(), 'g2') +
+      
+      /* La lectura de proyecto, en el papel. Va pegada al lote porque es su
+      consecuencia: sol, sombra, agua, acceso y viento leídos como
+      condiciones y no como cifras. */
+      caja('Qué le pide el sitio al proyecto',
+      (function () {
+      var lista = (function () { try { return determinantesDelLote(st); } catch (e) { return []; } })();
+      if (!lista.length) return '';
+      var quitar = function (t) { return String(t).replace(/<[^>]+>/g, ''); };
+      return '<div class="deter">' +
+      lista.slice(0, extras >= 5 ? 4 : 6).map(function (d) {
+      return '<div class="de"><b>' + esc(quitar(d.titulo)) + '</b>' +
+      '<span>' + esc(quitar(d.dice)) + '</span></div>';
+      }).join('') +
+      '</div>' +
+      '<p class="nota">Determinantes, no propuestas: ninguna dice qué construir. Cada una ' +
+      'sale de una medición de esta lámina.</p>';
+      })(), 'g3') +
+      
+      caja('Qué hay, por categoría',
+      (function () {
+      var filas = Object.keys(st.porGrupo || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
+      if (!filas.length) return '';
+      var m = st.mezcla;
+      return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
+      function (x) { return x.n; }, function (x) { return x.n; }) +
+      // El índice de mezcla cierra la caja: es la cifra que resume
+      // este reparto en una sola palabra defendible.
+      (m && m.usos
+      ? fila('Mezcla de usos', String(m.indice).replace('.', ',') + ' · ' + esc(m.nivel)) +
+      '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. ' +
+      'Se mide sobre lo mapeado, y en OpenStreetMap la vivienda está peor registrada ' +
+      'que el comercio.</p>'
+      : '');
+      })(), 'g3') +
+      
+      caja('Hitos y nodos',
+      (function () {
+      var hs = st.hitos || [];
+      if (!hs.length) return '';
+      return hs.map(function (h) {
+      return '<div class="hit"><i>' + h.n + '</i><span>' + esc(h.nombre) +
+      '</span><u>' + esc(h.categoriaNombre) + ' · ' + h.distM + ' m</u></div>';
+      }).join('');
+      })(), 'g2') +
+      
+      caja('Alturas de lo construido',
+      (function () {
+      var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
+      if (!a || !a.conDato) return '';
+      return barras(a.niveles, function (x) { return x.etiqueta; },
+      function (x) { return x.pct + '%'; }, function (x) { return x.pct; }) +
+      '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
+      'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>';
+      })(), 'g3') +
+      
+      caja('Llenos y vacíos',
+      (function () {
+      if (!trz || !trz.llenos) return '';
+      var ll = trz.llenos, vi = trz.vias || {}, mo = trz.morfologia || {};
+      var tr = dib('trama', ll.pctLleno);
+      /* La trama va AL LADO de las cifras, no encima: sola en una caja
+      ancha queda flotando en medio del papel como si se hubiera
+      caído ahí. Pegada a los porcentajes, es la misma cifra dibujada
+      y se lee de corrido. */
+      return '<div class="dib-par">' +
+      (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
+      '<div class="kpis">' +
+      '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
+      '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
+      '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
+      '</div>' +
+      '</div>' +
+      fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
+      fila('Vías', String(vi.kmTotal || 0).replace('.', ',') + ' km') +
+      fila('Tramo medio entre cruces', (mo.tramoMedioM || 0) + ' m') +
+      (mo.lectura ? '<p class="lee">' + esc(mo.lectura) + '</p>' : '');
+      })(), 'g3') +
+      
+      caja('El terreno',
+      (function () {
+      if (!ter) return '';
+      var e = ter.elevacion || {}, p = ter.pendiente || {};
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + e.min + '</b><small>msnm, lo más bajo</small></div>' +
+      '<div class="k"><b>' + e.max + '</b><small>msnm, lo más alto</small></div>' +
+      '<div class="k"><b>' + e.relieve + '</b><small>m de desnivel</small></div>' +
+      '</div>' +
+      fila('Pendiente media', String(p.media).replace('.', ',') + '%') +
+      (ter.orientacion ? fila('La ladera baja hacia', esc(ter.orientacion.rumbo)) : '') +
+      /* Con un lote marcado, los cortes que van al papel son los que
+      pasan POR ÉL: cruzan el sector igual que los del centro, pero
+      además dicen dónde cae el lote en la ladera, que es lo que se
+      defiende en la entrega. Sin lote, los del centro. */
+      /* Con la hoja llena va UN corte y no dos: el segundo es el que
+      menos dice —el terreno ya se leyó en el primero— y su sitio
+      son los 68 px que le faltan a esta caja para no recortarse.
+      Los dos siguen saliendo en el PDF. */
+      (terLote && terLote.cortes.length
+      ? terLote.cortes.slice(0, extras >= 5 ? 1 : 2).map(function (c) {
+      var d = dib('corteTopografico', c);
+      return d ? '<div class="corte">' + d + '</div>' : '';
+      }).join('') +
+      (terLote.baja
+      ? '<p class="nota">Bajo el lote el terreno baja hacia el ' + esc(terLote.baja.nombre) +
+      ', con ' + (terLote.pendientePct != null ? terLote.pendientePct + '% de pendiente' :
+      'pendiente suave') + '. La banda amarilla es el lote.</p>'
+      : '<p class="nota">La banda amarilla es el lote.</p>')
+      : (ter.perfiles || []).slice(0, extras >= 5 ? 1 : 2)
+      .map(perfilDibujado).join('')) +
+      (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
+      })(), 'g3') +
+      
+      caja('El clima',
+      (function () {
+      if (!cli) return '';
+      var t = cli.temperatura || {}, ll = cli.lluvia || {}, vi = cli.viento || {};
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + (t.media != null ? String(t.media).replace('.', ',') + '°' : '—') +
+      '</b><small>media</small></div>' +
+      '<div class="k"><b>' + (ll.anual != null ? ll.anual : '—') + '</b><small>mm al año</small></div>' +
+      '</div>' +
+      climograma(cli.meses) +
+      (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
+      (cli.lectura ? '<p class="lee">' + esc(cli.lectura) + '</p>' : '');
+      })(), 'g3') +
+      
+      caja('Asoleamiento',
+      (function () {
+      if (!sol || !sol.salida) return '';
+      var cen = ((solAnio && solAnio.cenitales) || []).map(function (x) {
+      return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+      });
+      var carta = dib('cartaSolar', { lat: Number(meta.lat), lng: Number(meta.lng) });
+      return (carta ? '<div class="dib">' + carta + '</div>' : '') +
+      '<div class="kpis">' +
+      '<div class="k"><b>' + hh(sol.salida) + '</b><small>amanecer</small></div>' +
+      '<div class="k"><b>' + hh(sol.puesta) + '</b><small>atardecer</small></div>' +
+      '<div class="k"><b>' + sol.alturaMaxima + '°</b><small>al mediodía</small></div>' +
+      '</div>' +
+      fila('Sale por el', esc(SOL.rumbo(sol.azimutSalida)) + ' · ' + sol.azimutSalida + '°') +
+      fila('Se pone por el', esc(SOL.rumbo(sol.azimutPuesta)) + ' · ' + sol.azimutPuesta + '°') +
+      fila('Horas de luz', String(sol.duracionH).replace('.', ',') + ' h') +
+      (solAnio ? fila('En el año', solAnio.solsticios.masBajo.altura + '° a ' +
+      solAnio.solsticios.masAlto.altura + '°') : '') +
+      '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
+      (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
+      '</p>';
+      })(), 'g3') +
+      
+      caja('Espacio público efectivo',
+      (function () {
+      var e = trz && trz.espacio;
+      if (!e || !e.piezas) return '';
+      var hab = Number(st.poblacionEstimada || 0);
+      var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
+      var meta = e.metaM2Hab || 15;
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas</small></div>' +
+      '<div class="k"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del sector</small></div>' +
+      '<div class="k"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
+      '</b><small>m² por habitante</small></div>' +
+      '</div>' +
+      (e.porClase || []).map(function (c) {
+      return fila(c.etiqueta, formatearM2(c.areaM2));
+      }).join('') +
+      (porHab != null
+      ? '<p class="lee">La meta nacional son ' + meta + ' m² por habitante (Decreto 1504 ' +
+      'de 1998). Acá ' + (porHab >= meta ? 'se cumple' : 'falta' + ' ' +
+      String(Math.round(10 * (meta - porHab)) / 10).replace('.', ',') + ' m² por habitante') + '.</p>'
+      : '') +
+      '<p class="nota">Parques, plazas, zonas verdes y escenarios deportivos de uso público ' +
+      'con forma mapeada. No entran andenes ni vías.</p>';
+      })(), 'g3') +
+      
+      caja('El perfil de la calle',
+      (function () {
+      var pf = trz && trz.perfil;
+      if (!pf) return '';
+      var an = pf.anden || {};
+      if (pf.relacion == null) {
+      return '<p class="lee">' + esc(pf.lectura || '') + '</p>';
+      }
+      return '<div class="perf">' +
+      '<div class="perf-dib">' + seccionDibujada(pf) + '</div>' +
+      '<div class="perf-datos">' +
+      '<div class="kpis">' +
+      '<div class="k"><b>' + String(pf.relacion).replace('.', ',') + '</b><small>altura ÷ ancho de calzada</small></div>' +
+      '<div class="k"><b>' + String(pf.alturaMediaM).replace('.', ',') + '</b><small>m construidos</small></div>' +
+      '<div class="k"><b>' + String(pf.anchoMedioM).replace('.', ',') + '</b><small>m de calzada</small></div>' +
+      '</div>' +
+      (pf.porMalla || []).map(function (m) {
+      return fila(m.etiqueta, String(m.anchoM).replace('.', ',') + ' m');
+      }).join('') +
+      fila('Vía con andén registrado', String(an.conAndenPct).replace('.', ',') + '%') +
+      fila('Sin dato de andén', String(an.sinDatoPct).replace('.', ',') + '%') +
+      '<p class="lee">' + esc(pf.lectura || '') + '</p>' +
+      '</div>' +
+      '</div>' +
+      '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
+      'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
+      'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
+      '% de los edificios.</p>';
+      })(), 'g3') +
+      
+      caja('A distancia de caminar',
+      (function () {
+      var a = st.accesibilidad;
+      if (!a || !(a.categorias || []).length) return '';
+      var hab = Number(st.poblacionEstimada || 0);
+      return '<div class="camina">' +
+      a.categorias.map(function (c) {
+      return '<div class="cm">' +
+      '<b>' + String(c.pctCubierto).replace('.', ',') + '%</b>' +
+      '<span>' + esc(c.etiqueta) + '</span>' +
+      '<i><u style="width:' + c.pctCubierto + '%"></u></i>' +
+      '<small>a ' + c.minutos + ' min a pie · ' + c.radioM + ' m' +
+      (hab > 0 && c.pctSinCubrir > 0
+      ? ' · ' + Math.round(hab * c.pctSinCubrir / 100).toLocaleString('es-CO') + ' hab. lejos'
+      : '') + '</small>' +
+      '</div>';
+      }).join('') +
+      '</div>' +
+      '<p class="nota">Qué parte del área tiene cada cosa cerca, no cuántas hay. Distancia ' +
+      'en línea recta: caminando siempre es más. Cuenta solo lo que está dentro del área y ' +
+      'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
+      })(), 'g3') +
+      
+      /* Va pegada a «A distancia de caminar» a propósito: una mide en línea
+      recta sobre todo el sector, la otra recorre las calles desde el
+      lote. Leídas juntas, la diferencia entre las dos cifras es el
+      argumento. */
+      caja('Hasta dónde se camina desde el lote',
+      (function () {
+      if (!cam || !cam.anillos || !cam.anillos.length) return '';
+      var mayor = cam.anillos[cam.anillos.length - 1];
+      var a = cam.anillos[1] || cam.anillos[0];
+      var dif = a ? (a.usosRecta - a.usos) : 0;
+      return '<div class="camina">' +
+      cam.anillos.map(function (x) {
+      var pct = mayor.usos ? Math.round(100 * x.usos / mayor.usos) : 0;
+      return '<div class="cm">' +
+      '<b>' + x.usos + '</b>' +
+      '<span>' + x.minutos + ' minutos</span>' +
+      '<i><u style="width:' + pct + '%"></u></i>' +
+      '<small>' + x.metros + ' m de recorrido por las calles</small>' +
+      '</div>';
+      }).join('') +
+      '</div>' +
+      (a && dif > 0
+      ? '<p class="lee">A ' + a.minutos + ' minutos se llega a ' + a.usos +
+      ' usos; en línea recta parecían ' + a.usosRecta + '.</p>'
+      : a ? '<p class="lee">Acá la línea recta no engañaba: las calles llevan derecho.</p>'
+      : '') +
+      '<p class="nota">Recorrido real por las calles registradas, a ' +
+      (cam.pasoMPorMin || 80) + ' m por minuto; engancha a la calle más cercana, a ' +
+      cam.distanciaAlaCalleM + ' m. No sabe si hay andén, dónde cruzar ni si la cuadra ' +
+      'sube.</p>';
+      })(), 'g3') +
+      
+      /* La sombra de los vecinos, en planta. Va pegada al lote: las dos
+      cajas responden a la misma pregunta —qué se puede poner acá— desde
+      los dos lados, el suelo y el sol. */
+      caja('La sombra de los vecinos',
+      (function () {
+      if (!sombrasL || !sombrasL.horas || !sombrasL.horas.length) return '';
+      var d2 = dib('planoDeSombras', sombrasL);
+      if (!d2) return '';
+      return '<div class="dib">' + d2 + '</div>' +
+      '<div class="kpis">' +
+      sombrasL.horas.map(function (h) {
+      return '<div class="k"><b>' + h.pctLote + '%</b><small>en sombra a las ' +
+      h.hora + ':00</small></div>';
+      }).join('') +
+      '</div>' +
+      '<p class="nota">' + sombrasL.vecinos + ' edificios a menos de 200 m, a ' +
+      sombrasL.alturaPorPiso + ' m por piso' +
+      (sombrasL.vecinosSinPisos
+      ? '; otros ' + sombrasL.vecinosSinPisos + ' sin pisos registrados no proyectan nada, ' +
+      'así que la sombra real es mayor'
+      : '') +
+      '. Sin árboles ni muros, y con el terreno supuesto plano.</p>';
+      })(), 'g3') +
+      
+      caja('Lo levantado en campo',
+      (function () {
+      if (!cmp) return '';
+      var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length;
+      var cf = (cmp.confirmados || []).length, sv = (cmp.sinVerificar || []).length;
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + cf + '</b><small>coinciden</small></div>' +
+      '<div class="k"><b>' + nv + '</b><small>los encontró el curso</small></div>' +
+      '<div class="k"><b>' + ds + '</b><small>no coinciden</small></div>' +
+      '</div>' +
+      fila('Del mapa, sin verificar en la calle', sv) +
+      (nv
+      ? '<p class="lee">Lo que el curso le devuelve al mapa: ' +
+      esc((cmp.nuevos || []).slice(0, 6).map(function (n6) {
+      return n6.nombre || 'sin nombre';
+      }).join(' · ')) + (nv > 6 ? ' y ' + (nv - 6) + ' más' : '') + '.</p>'
+      : '') +
+      '<p class="nota">«Sin verificar» no es «cerrado»: es que nadie pasó por ahí. Mismo ' +
+      'sitio a menos de ' + MISMO_SITIO_M + ' m, comparando la categoría y no el nombre.</p>';
+      })(), 'g3') +
+      
+      /* Dónde falta mapear, dibujado. Es la caja que manda a alguien a
+      caminar: un gajo punteado es un rumbo del que OpenStreetMap no sabe
+      nada, y eso se lee de lejos, colgado en la pared. */
+      caja('Dónde falta mapear',
+      (function () {
+      var rosa = rosaDeLoMapeado(zonasL);
+      if (!rosa) return '';
+      var sin = (zonasL.vacios || []).map(function (r) { return r.nombre; });
+      var poco = (zonasL.flojos || []).map(function (f) { return f.rumbo.nombre; });
+      return '<div class="dib">' + rosa + '</div>' +
+      (sin.length
+      ? '<p class="lee">Sin un solo registro al <b>' + esc(sin.join(', ')) + '</b>.</p>'
+      : '<p class="lee">Los ocho rumbos tienen algo mapeado: el trabajo es verificar.</p>') +
+      (poco.length ? fila('Con muy poco', esc(poco.join(', '))) : '') +
+      fila('Usos mapeados en total', zonasL.total || 0) +
+      '<p class="nota">Un rumbo vacío no quiere decir que no haya nada: quiere decir que ' +
+      'nadie lo ha mapeado. Es donde el curso agrega lo que no existía.</p>';
+      })(), 'g3') +
+      
+      /* La lista de faltantes, en el papel. Es la caja que se recorta y se
+      lleva a la salida: dice qué anotar y qué se enciende con cada cosa. */
+      caja('Lo que falta levantar',
+      (function () {
+      var lista = (function () { try { return faltantesDelSector(st); } catch (e) { return []; } })();
+      if (!lista.length) return '';
+      /* Con la hoja llena entran cuatro y no cinco: la quinta tarea es
+      siempre la que menos enciende, y perderla cuesta menos que
+      recortar en silencio la caja del terreno. */
+      return '<div class="falta">' +
+      lista.slice(0, extras >= 5 ? 4 : 5).map(function (x, i) {
+      return '<div class="fa">' +
+      '<span class="fa-n">' + (i + 1) + '</span>' +
+      '<div><b>' + esc(x.titulo) + '</b>' +
+      '<small>' + esc(x.cuantos) + '</small>' +
+      '<em>enciende: ' + esc(x.enciende.join(' · ')) + '</em></div>' +
+      '<code>' + esc(x.etiqueta) + '</code>' +
+      '</div>';
+      }).join('') +
+      '</div>' +
+      '<p class="nota">En orden de lo que más análisis enciende por menos trabajo. La ' +
+      'etiqueta es la que se escribe en OpenStreetMap; lo que se levante vuelve a esta ' +
+      'misma lámina cuando se vuelva a medir el sector.</p>';
+      })(), 'g3');
+
+    /* Columnas: dos parada y tres acostada mientras el contenido quepa; una
+       más cuando no. Los umbrales salen de medir hojas reales: una hoja con
+       terreno, clima, trazado, lote, sombras y las dos listas ronda los
+       veinte mil caracteres de cajas. */
+    var COLUMNAS = horiz ? (cajasHTML.length > 14000 ? 4 : 3)
+                         : (cajasHTML.length > 20000 ? 3 : 2);
+
     var hoy = new Date();
     return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
       '<title>Lámina · ' + esc(nombre || 'Análisis urbano') + '</title><style>' +
@@ -1360,19 +1778,36 @@
       '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
       // Rejilla de cajas
-      (horiz
-        /* `column-fill:auto` llena una columna hasta abajo antes de pasar a la
-           siguiente, en vez de repartir parejo. En un pliego de alto fijo eso
-           es lo que se quiere: la hoja se ve llena y el blanco que sobra queda
-           todo junto al final, como un margen, y no en tres bandas. */
-        ? '.rej{ columns:3; column-gap:6mm; column-fill:auto; flex:1; min-height:0;' +
-          'height:100%; overflow:hidden }' +
-          // En columnas los anchos de la rejilla no aplican: manda la columna.
-          '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
-            'page-break-inside:avoid; margin:0 0 6mm }' +
-          '.alto3{ grid-row:auto }'
-        : '.rej{ display:grid; grid-template-columns:repeat(' + NCOL + ',1fr); gap:5mm; flex:1;' +
-          'min-height:0; align-content:start }') +
+      /* La rejilla es de columnas de periódico en las dos orientaciones: dos
+         paradas, tres acostada. Fue una cuadrícula hasta que los dibujos y las
+         listas la desbordaron —una fila vale por su caja más larga, y ese
+         desperdicio se paga en cada fila—; en columnas cada caja conserva su
+         alto natural y la siguiente arranca pegada.
+
+         El reparto es `balance` y no `auto`. Llenar una columna hasta abajo
+         antes de empezar la siguiente deja en el pie de cada una el hueco de
+         la caja que no alcanzó a entrar, y con quince cajas esos huecos suman
+         una caja entera: la última se iba a una columna que no existe y
+         DESAPARECÍA del papel, sin recortarse ni avisar. Repartido parejo, el
+         hueco se reparte también y todo entra. */
+      /* Dos columnas en vertical, y tres cuando la hoja va llena: con quince
+         cajas, dos columnas obligan a que cada una sea más alta que el papel
+         disponible y la última se cae. Tres columnas de 18 cm siguen siendo
+         anchas para lo que llevan —tres cifras y una lectura— y el reparto
+         deja de ir al límite. Acostada son tres siempre. */
+      /* Acostada van cuatro columnas: ahí el papel tiene 300 mm menos de alto
+         y, entre el plano y la síntesis, a las columnas les quedan unos
+         100 mm. Con tres, cinco cajas se caían del pliego. */
+      /* Sin alto fijo: las columnas se equilibran solas y la rejilla mide lo
+         que mide su contenido. Con `height:100%` la rejilla se comía todo el
+         papel sobrante y la síntesis quedaba clavada al pie, con una banda
+         blanca en medio de la hoja; así el blanco que sobra queda al final,
+         debajo de todo, que es un margen y no un agujero. */
+      '.rej{ columns:' + COLUMNAS + '; column-gap:6mm }' +
+      '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
+        'page-break-inside:avoid; margin:0 0 6mm }' +
+      '.plano-hero{ flex:0 0 auto }' +
+      '.sintesis-pie{ flex:0 0 auto; margin-top:6mm }' +
       /* 4 mm de margen interno y no 5: con los dibujos dentro, ese milímetro
          por caja es lo que hace que la hoja cierre. Menos de 4 y el texto
          empieza a tocar el borde impreso. */
@@ -1380,9 +1815,9 @@
         'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
       '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
         'color:#0A6F9E; font-weight:800 }' +
-      '.g6{ grid-column:span 6 } .g4{ grid-column:span 4 } .g3{ grid-column:span 3 }' +
-      '.g2{ grid-column:span 2 }' +
-      '.alto3{ grid-row:span 3 }' +
+      /* Las clases de ancho vienen del tiempo de la cuadrícula. En columnas no
+         mandan —el ancho lo pone la columna— y se dejan sin efecto en vez de
+         quitarlas de cada caja: son catorce sitios y ninguno gana nada. */
       // El dibujo manda el alto de su caja y ocupa todo el ancho: así no
       // quedan bandas blancas a los lados, que es lo que pasaba cuando la
       // caja tenía alto propio y el plano se centraba dentro.
@@ -1450,6 +1885,10 @@
       '.pcr-sec-alt{ stroke:#0A6F9E; stroke-width:1.4; fill:none }' +
       '.pcr-sec-cota{ stroke:#5A6878; stroke-width:1; fill:none }' +
       '.pcr-sec-t{ fill:#3B4A5A; font-size:9px; font-weight:700 }' +
+      '.deter{ display:flex; flex-direction:column; gap:2.5mm }' +
+      '.de{ border-left:.8mm solid #34CCFE; padding:.5mm 0 1mm 3mm }' +
+      '.de b{ display:block; font-size:3.1mm; color:#0F1F2E }' +
+      '.de span{ display:block; font-size:2.8mm; color:#3B4A5A; line-height:1.35; margin-top:.6mm }' +
       '.falta{ display:flex; flex-direction:column; gap:2.5mm }' +
       '.fa{ display:grid; grid-template-columns:6mm 1fr auto; gap:2.5mm; align-items:baseline;' +
         'border-bottom:.25mm solid #EEF3F7; padding-bottom:2mm }' +
@@ -1495,7 +1934,8 @@
       '.pcr-rosa-borde,.pcr-rosa-eje{ fill:none; stroke:#E3EAF0; stroke-width:1 }' +
       '.pcr-rosa-petalos path{ fill:#34CCFE; fill-opacity:.55; stroke:#0A6F9E; stroke-width:.5 }' +
       '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
-      '.pie{ display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
+      // El pie se va al fondo del papel aunque el contenido termine antes.
+      '.pie{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
         'border-top:.35mm solid #E3EAF0; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
       '</style></head><body><div class="hoja">' +
 
@@ -1513,9 +1953,13 @@
         '</div>' +
       '</header>' +
 
-      '<div class="rej">' +
-
-        caja('Plano del sector', (plano ? '<div class="plano">' + plano + '</div>' : '') +
+      /* El plano, a todo el ancho y antes de la rejilla. Era una caja más
+         dentro de una cuadrícula, y eso obligaba a que las filas se
+         repartieran el papel: cada fila valía por su caja más larga y los
+         huecos del encaje se pagaban dos y tres veces. Fuera de la rejilla es
+         lo que siempre fue en una lámina —el plano manda y el resto se
+         acomoda— y de paso deja de competir por el alto. */
+      caja('Plano del sector', (plano ? '<div class="plano">' + plano + '</div>' : '') +
           (conv
             ? '<div class="conv">' + conv +
               (cmp && (cmp.nuevos || []).length
@@ -1529,381 +1973,17 @@
             ? '<p class="nota">Las manchas oscuras son las huellas de los edificios registrados; ' +
               'los puntos, los usos mapeados, con el color de su categoría.</p>'
             : '<p class="nota">Los puntos son los usos mapeados, con el color de su categoría.</p>'),
-          'g4 alto3') +
+          'plano-hero') +
 
-        caja('El sitio',
-          '<div class="kpis">' +
-            '<div class="k"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
-            '<div class="k"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
-              '</b><small>por hectárea</small></div>' +
-          '</div>' +
-          fila('Área', esc(formatearArea(meta.areaM2) || '—')) +
-          fila('En metros cuadrados', esc(formatearM2(meta.areaM2))) +
-          fila('Perímetro', esc(formatearLargo(meta.perimetroM))) +
-          (esPol ? fila('Vértices', meta.vertices || 0) : fila('Radio', esc(formatearLargo(meta.radioM)))) +
-          (st.poblacionEstimada ? fila('Población', Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
-          (st.viviendasCenso ? fila('Viviendas', Number(st.viviendasCenso).toLocaleString('es-CO')) : '') +
-          (st.estrato && st.estrato.predominante
-            ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : ''),
-          'g2') +
+      '<div class="rej">' + cajasHTML +
+      '</div>' +
 
-        caja('El lote a intervenir',
-          (function () {
-            if (!loteA) return '';
-            var pl = dib('planoDelLote', lote, loteA);
-            return (pl ? '<div class="dib">' + pl + '</div>' : '') +
-              '<div class="kpis">' +
-                '<div class="k"><b>' + Number(loteA.areaM2).toLocaleString('es-CO') + '</b><small>m² de lote</small></div>' +
-                '<div class="k"><b>' + loteA.perimetroM + '</b><small>m de perímetro</small></div>' +
-              '</div>' +
-              (loteA.frentes || []).map(function (f) {
-                return fila('Frente sobre ' + f.via, f.metros + ' m');
-              }).join('') +
-              (loteA.sinFrenteM ? fila('Sin frente a calle registrada', loteA.sinFrenteM + ' m') : '') +
-              (loteA.critica
-                ? '<p class="lee">La fachada que se calienta es el lado ' + loteA.critica.i +
-                  (loteA.critica.via ? ' (' + esc(loteA.critica.via) + ')' : '') + ', que mira al ' +
-                  esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '.</p>'
-                : '') +
-              '<p class="nota">' + (loteA.esquinero ? 'Lote esquinero: da a ' + loteA.frentes.length +
-                ' calles. ' : 'Lote medianero: un solo frente. ') +
-              loteA.nVecinos + ' usos registrados a menos de 200 m.</p>';
-          })(), 'g2') +
-
-        caja('Qué hay, por categoría',
-          (function () {
-            var filas = Object.keys(st.porGrupo || {})
-              .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
-              .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
-              .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
-            if (!filas.length) return '';
-            var m = st.mezcla;
-            return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
-                          function (x) { return x.n; }, function (x) { return x.n; }) +
-              // El índice de mezcla cierra la caja: es la cifra que resume
-              // este reparto en una sola palabra defendible.
-              (m && m.usos
-                ? fila('Mezcla de usos', String(m.indice).replace('.', ',') + ' · ' + esc(m.nivel)) +
-                  '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. ' +
-                  'Se mide sobre lo mapeado, y en OpenStreetMap la vivienda está peor registrada ' +
-                  'que el comercio.</p>'
-                : '');
-          })(), 'g3') +
-
-        caja('Hitos y nodos',
-          (function () {
-            var hs = st.hitos || [];
-            if (!hs.length) return '';
-            return hs.map(function (h) {
-              return '<div class="hit"><i>' + h.n + '</i><span>' + esc(h.nombre) +
-                '</span><u>' + esc(h.categoriaNombre) + ' · ' + h.distM + ' m</u></div>';
-            }).join('');
-          })(), 'g2') +
-
-        caja('Alturas de lo construido',
-          (function () {
-            var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
-            if (!a || !a.conDato) return '';
-            return barras(a.niveles, function (x) { return x.etiqueta; },
-                          function (x) { return x.pct + '%'; }, function (x) { return x.pct; }) +
-              '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
-              'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>';
-          })(), 'g3') +
-
-        caja('Llenos y vacíos',
-          (function () {
-            if (!trz || !trz.llenos) return '';
-            var ll = trz.llenos, vi = trz.vias || {}, mo = trz.morfologia || {};
-            var tr = dib('trama', ll.pctLleno);
-            /* La trama va AL LADO de las cifras, no encima: sola en una caja
-               ancha queda flotando en medio del papel como si se hubiera
-               caído ahí. Pegada a los porcentajes, es la misma cifra dibujada
-               y se lee de corrido. */
-            return '<div class="dib-par">' +
-                (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
-                '<div class="kpis">' +
-                  '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
-                  '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
-                  '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
-                '</div>' +
-              '</div>' +
-              fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
-              fila('Vías', String(vi.kmTotal || 0).replace('.', ',') + ' km') +
-              fila('Tramo medio entre cruces', (mo.tramoMedioM || 0) + ' m') +
-              (mo.lectura ? '<p class="lee">' + esc(mo.lectura) + '</p>' : '');
-          })(), 'g3') +
-
-        caja('El terreno',
-          (function () {
-            if (!ter) return '';
-            var e = ter.elevacion || {}, p = ter.pendiente || {};
-            return '<div class="kpis">' +
-                '<div class="k"><b>' + e.min + '</b><small>msnm, lo más bajo</small></div>' +
-                '<div class="k"><b>' + e.max + '</b><small>msnm, lo más alto</small></div>' +
-                '<div class="k"><b>' + e.relieve + '</b><small>m de desnivel</small></div>' +
-              '</div>' +
-              fila('Pendiente media', String(p.media).replace('.', ',') + '%') +
-              (ter.orientacion ? fila('La ladera baja hacia', esc(ter.orientacion.rumbo)) : '') +
-              /* Con un lote marcado, los cortes que van al papel son los que
-                 pasan POR ÉL: cruzan el sector igual que los del centro, pero
-                 además dicen dónde cae el lote en la ladera, que es lo que se
-                 defiende en la entrega. Sin lote, los del centro. */
-              /* Con la hoja llena va UN corte y no dos: el segundo es el que
-                 menos dice —el terreno ya se leyó en el primero— y su sitio
-                 son los 68 px que le faltan a esta caja para no recortarse.
-                 Los dos siguen saliendo en el PDF. */
-              (terLote && terLote.cortes.length
-                ? terLote.cortes.slice(0, extras >= 5 ? 1 : 2).map(function (c) {
-                    var d = dib('corteTopografico', c);
-                    return d ? '<div class="corte">' + d + '</div>' : '';
-                  }).join('') +
-                  (terLote.baja
-                    ? '<p class="nota">Bajo el lote el terreno baja hacia el ' + esc(terLote.baja.nombre) +
-                      ', con ' + (terLote.pendientePct != null ? terLote.pendientePct + '% de pendiente' :
-                                  'pendiente suave') + '. La banda amarilla es el lote.</p>'
-                    : '<p class="nota">La banda amarilla es el lote.</p>')
-                : (ter.perfiles || []).slice(0, extras >= 5 ? 1 : 2)
-                    .map(perfilDibujado).join('')) +
-              (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
-          })(), 'g3') +
-
-        caja('El clima',
-          (function () {
-            if (!cli) return '';
-            var t = cli.temperatura || {}, ll = cli.lluvia || {}, vi = cli.viento || {};
-            return '<div class="kpis">' +
-                '<div class="k"><b>' + (t.media != null ? String(t.media).replace('.', ',') + '°' : '—') +
-                  '</b><small>media</small></div>' +
-                '<div class="k"><b>' + (ll.anual != null ? ll.anual : '—') + '</b><small>mm al año</small></div>' +
-              '</div>' +
-              climograma(cli.meses) +
-              (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
-              (cli.lectura ? '<p class="lee">' + esc(cli.lectura) + '</p>' : '');
-          })(), 'g3') +
-
-        caja('Asoleamiento',
-          (function () {
-            if (!sol || !sol.salida) return '';
-            var cen = ((solAnio && solAnio.cenitales) || []).map(function (x) {
-              return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
-            });
-            var carta = dib('cartaSolar', { lat: Number(meta.lat), lng: Number(meta.lng) });
-            return (carta ? '<div class="dib">' + carta + '</div>' : '') +
-              '<div class="kpis">' +
-                '<div class="k"><b>' + hh(sol.salida) + '</b><small>amanecer</small></div>' +
-                '<div class="k"><b>' + hh(sol.puesta) + '</b><small>atardecer</small></div>' +
-                '<div class="k"><b>' + sol.alturaMaxima + '°</b><small>al mediodía</small></div>' +
-              '</div>' +
-              fila('Sale por el', esc(SOL.rumbo(sol.azimutSalida)) + ' · ' + sol.azimutSalida + '°') +
-              fila('Se pone por el', esc(SOL.rumbo(sol.azimutPuesta)) + ' · ' + sol.azimutPuesta + '°') +
-              fila('Horas de luz', String(sol.duracionH).replace('.', ',') + ' h') +
-              (solAnio ? fila('En el año', solAnio.solsticios.masBajo.altura + '° a ' +
-                              solAnio.solsticios.masAlto.altura + '°') : '') +
-              '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
-              (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
-              '</p>';
-          })(), 'g3') +
-
-        caja('Espacio público efectivo',
-          (function () {
-            var e = trz && trz.espacio;
-            if (!e || !e.piezas) return '';
-            var hab = Number(st.poblacionEstimada || 0);
-            var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
-            var meta = e.metaM2Hab || 15;
-            return '<div class="kpis">' +
-                '<div class="k"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas</small></div>' +
-                '<div class="k"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del sector</small></div>' +
-                '<div class="k"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
-                  '</b><small>m² por habitante</small></div>' +
-              '</div>' +
-              (e.porClase || []).map(function (c) {
-                return fila(c.etiqueta, formatearM2(c.areaM2));
-              }).join('') +
-              (porHab != null
-                ? '<p class="lee">La meta nacional son ' + meta + ' m² por habitante (Decreto 1504 ' +
-                  'de 1998). Acá ' + (porHab >= meta ? 'se cumple' : 'falta' + ' ' +
-                  String(Math.round(10 * (meta - porHab)) / 10).replace('.', ',') + ' m² por habitante') + '.</p>'
-                : '') +
-              '<p class="nota">Parques, plazas, zonas verdes y escenarios deportivos de uso público ' +
-              'con forma mapeada. No entran andenes ni vías.</p>';
-          })(), 'g3') +
-
-        caja('El perfil de la calle',
-          (function () {
-            var pf = trz && trz.perfil;
-            if (!pf) return '';
-            var an = pf.anden || {};
-            if (pf.relacion == null) {
-              return '<p class="lee">' + esc(pf.lectura || '') + '</p>';
-            }
-            return '<div class="perf">' +
-                '<div class="perf-dib">' + seccionDibujada(pf) + '</div>' +
-                '<div class="perf-datos">' +
-                  '<div class="kpis">' +
-                    '<div class="k"><b>' + String(pf.relacion).replace('.', ',') + '</b><small>altura ÷ ancho de calzada</small></div>' +
-                    '<div class="k"><b>' + String(pf.alturaMediaM).replace('.', ',') + '</b><small>m construidos</small></div>' +
-                    '<div class="k"><b>' + String(pf.anchoMedioM).replace('.', ',') + '</b><small>m de calzada</small></div>' +
-                  '</div>' +
-                  (pf.porMalla || []).map(function (m) {
-                    return fila(m.etiqueta, String(m.anchoM).replace('.', ',') + ' m');
-                  }).join('') +
-                  fila('Vía con andén registrado', String(an.conAndenPct).replace('.', ',') + '%') +
-                  fila('Sin dato de andén', String(an.sinDatoPct).replace('.', ',') + '%') +
-                  '<p class="lee">' + esc(pf.lectura || '') + '</p>' +
-                '</div>' +
-              '</div>' +
-              '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
-              'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
-              'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
-              '% de los edificios.</p>';
-          })(), 'g3') +
-
-        caja('A distancia de caminar',
-          (function () {
-            var a = st.accesibilidad;
-            if (!a || !(a.categorias || []).length) return '';
-            var hab = Number(st.poblacionEstimada || 0);
-            return '<div class="camina">' +
-                a.categorias.map(function (c) {
-                  return '<div class="cm">' +
-                    '<b>' + String(c.pctCubierto).replace('.', ',') + '%</b>' +
-                    '<span>' + esc(c.etiqueta) + '</span>' +
-                    '<i><u style="width:' + c.pctCubierto + '%"></u></i>' +
-                    '<small>a ' + c.minutos + ' min a pie · ' + c.radioM + ' m' +
-                      (hab > 0 && c.pctSinCubrir > 0
-                        ? ' · ' + Math.round(hab * c.pctSinCubrir / 100).toLocaleString('es-CO') + ' hab. lejos'
-                        : '') + '</small>' +
-                  '</div>';
-                }).join('') +
-              '</div>' +
-              '<p class="nota">Qué parte del área tiene cada cosa cerca, no cuántas hay. Distancia ' +
-              'en línea recta: caminando siempre es más. Cuenta solo lo que está dentro del área y ' +
-              'lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
-          })(), 'g3') +
-
-        /* Va pegada a «A distancia de caminar» a propósito: una mide en línea
-           recta sobre todo el sector, la otra recorre las calles desde el
-           lote. Leídas juntas, la diferencia entre las dos cifras es el
-           argumento. */
-        caja('Hasta dónde se camina desde el lote',
-          (function () {
-            if (!cam || !cam.anillos || !cam.anillos.length) return '';
-            var mayor = cam.anillos[cam.anillos.length - 1];
-            var a = cam.anillos[1] || cam.anillos[0];
-            var dif = a ? (a.usosRecta - a.usos) : 0;
-            return '<div class="camina">' +
-                cam.anillos.map(function (x) {
-                  var pct = mayor.usos ? Math.round(100 * x.usos / mayor.usos) : 0;
-                  return '<div class="cm">' +
-                    '<b>' + x.usos + '</b>' +
-                    '<span>' + x.minutos + ' minutos</span>' +
-                    '<i><u style="width:' + pct + '%"></u></i>' +
-                    '<small>' + x.metros + ' m de recorrido por las calles</small>' +
-                  '</div>';
-                }).join('') +
-              '</div>' +
-              (a && dif > 0
-                ? '<p class="lee">A ' + a.minutos + ' minutos se llega a ' + a.usos +
-                  ' usos; en línea recta parecían ' + a.usosRecta + '.</p>'
-                : a ? '<p class="lee">Acá la línea recta no engañaba: las calles llevan derecho.</p>'
-                    : '') +
-              '<p class="nota">Recorrido real por las calles registradas, a ' +
-              (cam.pasoMPorMin || 80) + ' m por minuto; engancha a la calle más cercana, a ' +
-              cam.distanciaAlaCalleM + ' m. No sabe si hay andén, dónde cruzar ni si la cuadra ' +
-              'sube.</p>';
-          })(), 'g3') +
-
-        /* La sombra de los vecinos, en planta. Va pegada al lote: las dos
-           cajas responden a la misma pregunta —qué se puede poner acá— desde
-           los dos lados, el suelo y el sol. */
-        caja('La sombra de los vecinos',
-          (function () {
-            if (!sombrasL || !sombrasL.horas || !sombrasL.horas.length) return '';
-            var d2 = dib('planoDeSombras', sombrasL);
-            if (!d2) return '';
-            return '<div class="dib">' + d2 + '</div>' +
-              '<div class="kpis">' +
-                sombrasL.horas.map(function (h) {
-                  return '<div class="k"><b>' + h.pctLote + '%</b><small>en sombra a las ' +
-                    h.hora + ':00</small></div>';
-                }).join('') +
-              '</div>' +
-              '<p class="nota">' + sombrasL.vecinos + ' edificios a menos de 200 m, a ' +
-              sombrasL.alturaPorPiso + ' m por piso' +
-              (sombrasL.vecinosSinPisos
-                ? '; otros ' + sombrasL.vecinosSinPisos + ' sin pisos registrados no proyectan nada, ' +
-                  'así que la sombra real es mayor'
-                : '') +
-              '. Sin árboles ni muros, y con el terreno supuesto plano.</p>';
-          })(), 'g3') +
-
-        caja('Lo levantado en campo',
-          (function () {
-            if (!cmp) return '';
-            var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length;
-            var cf = (cmp.confirmados || []).length, sv = (cmp.sinVerificar || []).length;
-            return '<div class="kpis">' +
-                '<div class="k"><b>' + cf + '</b><small>coinciden</small></div>' +
-                '<div class="k"><b>' + nv + '</b><small>los encontró el curso</small></div>' +
-                '<div class="k"><b>' + ds + '</b><small>no coinciden</small></div>' +
-              '</div>' +
-              fila('Del mapa, sin verificar en la calle', sv) +
-              (nv
-                ? '<p class="lee">Lo que el curso le devuelve al mapa: ' +
-                  esc((cmp.nuevos || []).slice(0, 6).map(function (n6) {
-                    return n6.nombre || 'sin nombre';
-                  }).join(' · ')) + (nv > 6 ? ' y ' + (nv - 6) + ' más' : '') + '.</p>'
-                : '') +
-              '<p class="nota">«Sin verificar» no es «cerrado»: es que nadie pasó por ahí. Mismo ' +
-              'sitio a menos de ' + MISMO_SITIO_M + ' m, comparando la categoría y no el nombre.</p>';
-          })(), 'g3') +
-
-        /* Dónde falta mapear, dibujado. Es la caja que manda a alguien a
-           caminar: un gajo punteado es un rumbo del que OpenStreetMap no sabe
-           nada, y eso se lee de lejos, colgado en la pared. */
-        caja('Dónde falta mapear',
-          (function () {
-            var rosa = rosaDeLoMapeado(zonasL);
-            if (!rosa) return '';
-            var sin = (zonasL.vacios || []).map(function (r) { return r.nombre; });
-            var poco = (zonasL.flojos || []).map(function (f) { return f.rumbo.nombre; });
-            return '<div class="dib">' + rosa + '</div>' +
-              (sin.length
-                ? '<p class="lee">Sin un solo registro al <b>' + esc(sin.join(', ')) + '</b>.</p>'
-                : '<p class="lee">Los ocho rumbos tienen algo mapeado: el trabajo es verificar.</p>') +
-              (poco.length ? fila('Con muy poco', esc(poco.join(', '))) : '') +
-              fila('Usos mapeados en total', zonasL.total || 0) +
-              '<p class="nota">Un rumbo vacío no quiere decir que no haya nada: quiere decir que ' +
-              'nadie lo ha mapeado. Es donde el curso agrega lo que no existía.</p>';
-          })(), 'g3') +
-
-        /* La lista de faltantes, en el papel. Es la caja que se recorta y se
-           lleva a la salida: dice qué anotar y qué se enciende con cada cosa. */
-        caja('Lo que falta levantar',
-          (function () {
-            var lista = (function () { try { return faltantesDelSector(st); } catch (e) { return []; } })();
-            if (!lista.length) return '';
-            /* Con la hoja llena entran cuatro y no cinco: la quinta tarea es
-               siempre la que menos enciende, y perderla cuesta menos que
-               recortar en silencio la caja del terreno. */
-            return '<div class="falta">' +
-                lista.slice(0, extras >= 5 ? 4 : 5).map(function (x, i) {
-                  return '<div class="fa">' +
-                    '<span class="fa-n">' + (i + 1) + '</span>' +
-                    '<div><b>' + esc(x.titulo) + '</b>' +
-                      '<small>' + esc(x.cuantos) + '</small>' +
-                      '<em>enciende: ' + esc(x.enciende.join(' · ')) + '</em></div>' +
-                    '<code>' + esc(x.etiqueta) + '</code>' +
-                  '</div>';
-                }).join('') +
-              '</div>' +
-              '<p class="nota">En orden de lo que más análisis enciende por menos trabajo. La ' +
-              'etiqueta es la que se escribe en OpenStreetMap; lo que se levante vuelve a esta ' +
-              'misma lámina cuando se vuelva a medir el sector.</p>';
-          })(), 'g3') +
-
-        caja('Síntesis del sector',
+      /* La síntesis cierra la hoja a todo el ancho, fuera de las columnas.
+         Adentro era la última en entrar y la primera en no caber: quince
+         cajas se reparten mal en dos columnas y la que sobra desaparece.
+         Afuera, además, es lo que corresponde —es la conclusión, no un dato
+         más— y sus tres listas se leen mejor en tres columnas anchas. */
+      caja('Síntesis del sector',
           (function () {
             var sn = sintesisDelSector(res);
             if (!sn.favor.length && !sn.contra.length && !sn.falta.length) return '';
@@ -1926,9 +2006,7 @@
                 col('En contra', sn.contra, 'no') +
                 col('Falta levantar', sn.falta, 'tarea') +
               '</div>';
-          })(), 'g6') +
-
-      '</div>' +
+          })(), 'sintesis-pie') +
 
       '<footer class="pie">' +
         '<div>URBIS · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
@@ -2038,6 +2116,7 @@
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
       accesibilidadImpresa(st) +
       campoImpreso(o.campo !== undefined ? o.campo : S.campo) +
+      determinantesImpresas(st) +
       sintesisImpresa(res) +
       rutasImpresas(st) +
       solImpreso(meta) +
@@ -3133,6 +3212,7 @@
     }
     // La lista de lo que falta va ANTES del reparto: es lo que hay que
     // anotar, y el reparto solo dice quién va a dónde.
+    try { var dt = determinantesComoTexto(st); if (dt) { L.push(dt); L.push(''); } } catch (e) {}
     try { var qf = queFaltaComoTexto(st); if (qf) { L.push(qf); L.push(''); } } catch (e) {}
     if (zonas && zonas.vacios) {
       try { L.push(planComoTexto(res, zonas)); L.push(''); } catch (e) {}
@@ -4491,6 +4571,183 @@
       return (b.enciende.length * 10 + b.peso) - (a.enciende.length * 10 + a.peso);
     });
     return lista;
+  }
+
+  /* ── Qué le pide el sitio al proyecto ──────────────────────────────────
+     Todo lo medido hasta acá describe el lugar. Esto es el paso siguiente y
+     el que un curso de proyectos necesita: pasar de «el terreno baja al
+     suroccidente» a «el agua entra por ahí, y el proyecto tiene que decir qué
+     hace con ella».
+
+     Son determinantes, no propuestas. Cada una nace de una medición concreta
+     —y la cita— y ninguna dice qué construir: dicen a qué hay que responder.
+     La respuesta es del estudiante, y por eso el bloque termina diciéndolo con
+     todas las letras. Una aplicación que dictara el partido arquitectónico le
+     estaría haciendo la tarea a quien está aprendiendo a hacerla. */
+  function determinantesDelLote(st) {
+    var a = (function () { try { return analisisDelLote(); } catch (e) { return null; } })();
+    if (!a) return [];
+    var lista = [];
+    function D(o) { lista.push(o); }
+
+    // ── El sol de la tarde: la fachada que hay que proteger.
+    if (a.critica) {
+      D({ id: 'sol', icono: 'brujula',
+          titulo: 'Proteger la fachada de la tarde',
+          dice: 'El lado ' + a.critica.i + (a.critica.via ? ' (' + esc(a.critica.via) + ')' : '') +
+                ' mira al ' + esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') +
+                '. En el trópico el sol de la tarde entra casi horizontal por ahí: es la fachada ' +
+                'que se calienta, y la que ningún alero resuelve —contra el sol bajo sirve el ' +
+                'quiebrasol vertical, la doble piel o simplemente no abrir ahí—.',
+          porque: 'de la orientación medida de cada lado del lote' });
+    }
+
+    // ── La sombra de los vecinos: dónde NO poner lo que necesita sol.
+    var so = S.sombras || (function () { try { return sombrasDelLote(); } catch (e) { return null; } })();
+    if (so && so.horas && so.horas.length) {
+      var manana = so.horas.filter(function (h) { return h.hora === 9; })[0];
+      var tarde = so.horas.filter(function (h) { return h.hora === 15; })[0];
+      var maxPct = so.horas.reduce(function (m, h) { return Math.max(m, h.pctLote); }, 0);
+      if (maxPct >= 15) {
+        D({ id: 'sombra', icono: 'brujula',
+            titulo: 'Contar con la sombra de al lado',
+            dice: 'Los vecinos tapan hasta el ' + maxPct + '% del lote' +
+                  (manana && tarde
+                    ? ' (' + manana.pctLote + '% a las 9, ' + tarde.pctLote + '% a las 15)'
+                    : '') +
+                  '. Un patio o una huerta puestos en esa franja no van a recibir sol; los ' +
+                  'espacios que sí lo necesitan tienen que ir en la parte que queda libre.',
+            porque: 'de proyectar las huellas de ' + so.vecinos + ' edificios vecinos con sus pisos' });
+      } else if (so.vecinos) {
+        D({ id: 'sombra', icono: 'brujula',
+            titulo: 'El sol llega al lote todo el día',
+            dice: 'Los vecinos apenas tapan el ' + maxPct + '% del lote. Eso es una ventaja y a la ' +
+                  'vez el problema: sin sombra de nadie, la sombra hay que ponerla en el proyecto.',
+            porque: 'de proyectar las huellas de los vecinos con sus pisos' });
+      }
+    }
+
+    // ── El agua y la pendiente.
+    var tl = (function () { try { return terrenoDelLote(); } catch (e) { return null; } })();
+    if (tl && tl.baja) {
+      D({ id: 'agua', icono: 'crecer',
+          titulo: 'Sacar el agua hacia el ' + esc(tl.baja.nombre),
+          dice: 'El terreno bajo el lote baja hacia el ' + esc(tl.baja.nombre) +
+                (tl.pendientePct != null ? ', con ' + tl.pendientePct + '% de pendiente' : '') +
+                '. Por ahí corre el agua de lluvia: es donde va el drenaje y donde NO conviene ' +
+                'enterrar nada. Si la pendiente pasa del 15%, la plataforma se paga en muros.',
+          porque: 'del modelo de elevación, con ' + tl.resolucionM + ' m de paso' });
+    }
+
+    // ── El acceso: por dónde entra, según la jerarquía de sus frentes.
+    if ((a.frentes || []).length) {
+      var vias = S.trzVias || [];
+      var claseDe = function (nombre) {
+        var v = vias.filter(function (x) { return x.nombre === nombre; })[0];
+        return v ? v.clase : '';
+      };
+      var RANGO = { motorway: 6, trunk: 6, primary: 5, secondary: 4, tertiary: 3,
+                    residential: 2, unclassified: 2, living_street: 1, service: 1, pedestrian: 1 };
+      var ordenados = a.frentes.slice().sort(function (x, y) {
+        return (RANGO[claseDe(y.via)] || 2) - (RANGO[claseDe(x.via)] || 2) || y.metros - x.metros;
+      });
+      var mayor = ordenados[0], menor = ordenados[ordenados.length - 1];
+      var jerarquia = RANGO[claseDe(mayor.via)] || 2;
+      if (a.esquinero && ordenados.length > 1 && jerarquia >= 4) {
+        D({ id: 'acceso', icono: 'movilidad',
+            titulo: 'Separar el acceso del ruido',
+            dice: 'El lote da a ' + ordenados.length + ' calles. ' + esc(mayor.via) + ' es la de ' +
+                  'mayor jerarquía —' + mayor.metros + ' m de frente—: por ahí llega la gente y ' +
+                  'también el ruido. ' + esc(menor.via) + ' es la tranquila. Un acceso peatonal por ' +
+                  'la primera y lo que pida silencio hacia la segunda es la decisión que este lote ' +
+                  'permite y un medianero no.',
+            porque: 'de la jerarquía vial medida en el trazado y de los frentes del lote' });
+      } else {
+        D({ id: 'acceso', icono: 'movilidad',
+            titulo: 'Un solo frente: todo entra por ' + esc(mayor.via),
+            dice: mayor.metros + ' m de frente sobre ' + esc(mayor.via) + ' y ' +
+                  (a.sinFrenteM ? a.sinFrenteM + ' m de medianera' : 'el resto medianero') +
+                  '. Acceso, servicio y fachada comparten el mismo lado: separarlos en planta es ' +
+                  'parte del problema, no un detalle.',
+            porque: 'de los frentes medidos contra las calles registradas' });
+      }
+    }
+
+    // ── El viento, si el clima está medido.
+    var cli = S.clima, vi = cli && cli.viento;
+    if (vi && vi.dominante && vi.dominante.pct >= 25) {
+      D({ id: 'viento', icono: 'nube',
+          titulo: 'Abrir al viento del ' + esc(vi.dominante.rumbo),
+          dice: 'El viento dominante viene del ' + esc(vi.dominante.rumbo) + ' el ' +
+                vi.dominante.pct + '% del tiempo. En un clima como este la ventilación cruzada no ' +
+                'es un extra: es lo que decide si adentro se puede estar sin aire acondicionado.',
+          porque: 'de varios años de registro climático, ponderado por velocidad' });
+    }
+
+    // ── Qué le falta al barrio, que es lo que el proyecto podría aportar.
+    var acc = st && st.accesibilidad;
+    if (acc && acc.categorias) {
+      var faltan = acc.categorias.filter(function (c) { return c.pctCubierto < 40; })
+        .sort(function (x, y) { return x.pctCubierto - y.pctCubierto; });
+      if (faltan.length) {
+        D({ id: 'programa', icono: 'campo',
+            titulo: 'Lo que el barrio no tiene cerca',
+            dice: faltan.map(function (c) {
+              return esc(c.etiqueta.toLowerCase()) + ' (' + String(c.pctCubierto).replace('.', ',') +
+                     '% del área lo tiene a ' + c.minutos + ' min)';
+            }).join(', ') + '. No es una orden de programa: es lo que este sector le pediría a ' +
+            'cualquier cosa que se construya, y lo que permite defender un uso frente a otro.',
+            porque: 'del muestreo de cobertura sobre el área analizada' });
+      }
+    }
+
+    return lista;
+  }
+
+  function bloqueDeterminantes(st) {
+    var lista = determinantesDelLote(st);
+    if (!S.lote || S.lote.length < 3) return '';
+    if (!lista.length) return '';
+    return h4('destello', 'Qué le pide el sitio al proyecto') +
+      '<p class="pcr-tarea-intro">Hasta acá el análisis describe el lugar. Esto es lo otro: las ' +
+      '<b>condiciones que el sitio impone</b> y a las que el proyecto tiene que responder. Cada una ' +
+      'sale de una medición de esta misma ficha.</p>' +
+      '<div class="pcr-deter">' +
+        lista.map(function (d) {
+          return '<div class="pcr-deter-item">' +
+            '<div class="pcr-deter-cab">' + ico(d.icono, 18) + '<b>' + d.titulo + '</b></div>' +
+            '<p class="pcr-deter-dice">' + d.dice + '</p>' +
+            '<p class="pcr-deter-porque">Sale ' + esc(d.porque) + '.</p>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-conc">Ninguna de estas dice <b>qué</b> construir. Dicen a qué hay que ' +
+      'responder: la respuesta es el proyecto, y esa es tuya.</p>';
+  }
+
+  function determinantesComoTexto(st) {
+    var lista = determinantesDelLote(st);
+    if (!lista.length) return '';
+    var quitar = function (t) { return String(t).replace(/<[^>]+>/g, ''); };
+    var L = ['QUÉ LE PIDE EL SITIO AL PROYECTO'];
+    lista.forEach(function (d) {
+      L.push('  · ' + quitar(d.titulo));
+      L.push('    ' + quitar(d.dice));
+    });
+    L.push('  Ninguna dice qué construir: dicen a qué hay que responder.');
+    return L.join('\n');
+  }
+
+  function determinantesImpresas(st) {
+    var lista = determinantesDelLote(st);
+    if (!lista.length) return '';
+    return '<h2>Qué le pide el sitio al proyecto</h2><table class="plan">' +
+      lista.map(function (d) {
+        return '<tr><td class="g"><b>' + d.titulo + '</b></td><td>' + d.dice +
+          ' <em>' + esc(d.porque) + '</em></td></tr>';
+      }).join('') +
+      '</table><p class="pie">Son determinantes, no propuestas: ninguna dice qué construir, dicen ' +
+      'a qué hay que responder.</p>';
   }
 
   function bloqueQueFalta(st) {
@@ -7735,6 +7992,10 @@
         bloqueUsoPredominante(st) +
         bloqueLoteIntervenir() +
         bloqueCaminata() +
+        /* Las determinantes van pegadas al lote: son la lectura de proyecto de
+           todo lo que se midió sobre él —sol, sombra, agua, acceso, viento— y
+           leerlas acá evita tener que reconstruirlas al final. */
+        bloqueDeterminantes(st) +
         bloqueAlturas(st) +
         bloqueTerreno() +
         bloqueClima() +

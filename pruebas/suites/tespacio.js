@@ -187,6 +187,20 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
   await medidor.setViewportSize({width:2268,height:3402});
   await medidor.setContent(r.lamina||'<i></i>',{waitUntil:'load'});
   await medidor.waitForTimeout(400);
+  /* Dos formas de perder una caja: que se recorte por dentro, o que en el
+     flujo de columnas se vaya a una columna que no existe y desaparezca. Se
+     miran las dos. */
+  r.perdidas=await medidor.evaluate(()=>{
+    const rej=document.querySelector('.rej'); if(!rej) return [];
+    const R=rej.getBoundingClientRect();
+    const fuera=[...rej.children].filter(c=>{ const b=c.getBoundingClientRect();
+      return b.height===0 || b.right>R.right+2; })
+      .map(c=>(c.querySelector('h2')||{}).textContent||'?');
+    const h=document.querySelector('.hoja');
+    if(h && h.scrollHeight>h.clientHeight+2)
+      fuera.push('(la hoja se pasa '+(h.scrollHeight-h.clientHeight)+' px de alto)');
+    return fuera;
+  });
   r.desbordes=await medidor.evaluate(()=>[...document.querySelectorAll('.caja')]
     .filter(c=>c.scrollHeight>c.clientHeight+2)
     .map(c=>(c.querySelector('h2')||{}).textContent||'?'));
@@ -248,6 +262,8 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
   console.log('\n  -- llega a la lámina --');
   P('con todo medido, ninguna caja se sale de su recuadro',
     (r.desbordes||[]).length===0, (r.desbordes||[]).join(' · ')||'ninguna');
+  P('ni se pierde fuera de la hoja', (r.perdidas||[]).length===0,
+    (r.perdidas||[]).join(' · ')||'ninguna');
   P('y con todo medido: terreno, clima y campo',
     r.midioTerreno && r.midioClima && r.midioCampo,
     'terreno '+r.midioTerreno+' · clima '+r.midioClima+' · campo '+r.midioCampo);

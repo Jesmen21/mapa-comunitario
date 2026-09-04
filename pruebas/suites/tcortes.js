@@ -182,6 +182,25 @@ const geo=[
     await m.setContent(html||'<i></i>',{waitUntil:'load'});
     await m.waitForTimeout(400);
     const out=await m.evaluate(()=>({
+      /* En columnas, la caja que no cabe no se recorta: se va a una columna
+         que no existe y desaparece del papel sin dejar rastro. Se detecta
+         mirando si alguna queda fuera del rectángulo de la rejilla. */
+      perdidas: (function () {
+        const rej = document.querySelector('.rej');
+        if (!rej) return [];
+        const R = rej.getBoundingClientRect();
+        const fuera = [...rej.children].filter(c => {
+          const b = c.getBoundingClientRect();
+          return b.height === 0 || b.right > R.right + 2;
+        }).map(c => (c.querySelector('h2') || {}).textContent || '?');
+        // Y la hoja entera: si el contenido la pasó, lo de abajo se imprime
+        // fuera del papel, que es la misma pérdida por otra puerta.
+        const h = document.querySelector('.hoja');
+        if (h && h.scrollHeight > h.clientHeight + 2) {
+          fuera.push('(la hoja se pasa ' + (h.scrollHeight - h.clientHeight) + ' px de alto)');
+        }
+        return fuera;
+      })(),
       cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?'),
@@ -245,6 +264,8 @@ const geo=[
   T('y la lámina de un sector guardado', /por el lote, de occidente a oriente/.test(LG));
   T('ninguna caja se recorta', (r.medida.cajas||[]).length===0,
     (r.medida.cajas||[]).join(' · ')||'ninguna');
+  T('ni se pierde fuera de la hoja', (r.medida.perdidas||[]).length===0,
+    (r.medida.perdidas||[]).join(' · ')||'ninguna');
 
   console.log('\n  -- la ficha guardada --');
   T('guarda la rejilla de cotas', r.guardada.hay===true && r.guardada.limites===true,

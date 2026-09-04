@@ -1,25 +1,22 @@
 const E = require('../entorno.js');
-/* Tanda P · lo que falta levantar, y qué enciende cada cosa.
+/* Tanda Q · qué le pide el sitio al proyecto.
 
-   Media docena de bloques de la ficha terminan diciendo «no se puede medir
-   porque nadie lo mapeó». Esta prueba comprueba que, juntos, se conviertan en
-   una lista de tareas con nombre, cantidad y consecuencia.
+   El análisis describe el lugar; esto es el paso que un curso de proyectos
+   necesita: pasar de «el terreno baja al suroccidente» a «el agua entra por
+   ahí y el proyecto tiene que decir qué hace con ella».
 
-   La maqueta está armada para que falten cosas concretas y para que NO falten
-   otras, que es lo único que distingue una lista de verdad de una lista que
-   se escribe siempre igual:
+   La maqueta es la misma de las curvas y las sombras, y por eso se sabe qué
+   tiene que salir:
 
-     · dos edificios, uno con pisos y otro sin  → falta «contar los pisos»
-     · vías sin width ni lanes                  → falta «medir el ancho»
-     · vías sin sidewalk                        → falta «anotar el andén»
-     · un tramo sin nombre                      → falta «ponerle nombre»
-     · ningún parque con forma                  → falta «dibujar los parques»
-     · casi ningún uso de vivienda              → falta «registrar la vivienda»
+     · rampa que sube al oriente        → el agua baja al occidente
+     · torre de 10 pisos al occidente   → sombra sobre el lote por la tarde
+     · lote con su lado corto al poniente → fachada crítica de la tarde
+     · una sola calle con nombre        → un frente, no esquinero
+     · ningún colegio ni parque cerca   → lo que el barrio no tiene
 
-   Y se comprueba el orden: lo que enciende más análisis por menos trabajo va
-   primero. Contar pisos enciende tres bloques; ponerle nombre a una calle,
-   uno. Si el orden se invirtiera, la salida a campo se gastaría en lo que
-   menos rinde.                                                             */
+   Y lo que NO puede pasar: que ninguna determinante diga qué construir. Eso
+   se comprueba palabra por palabra, porque es la línea que separa una
+   herramienta de análisis de una que le hace la tarea al estudiante.       */
 const {chromium}=require(E.MODULOS + '/playwright-core');
 const fs=require('fs');
 const S=E.TRABAJO;
@@ -44,10 +41,10 @@ const edificio=(pts,pisos)=>({type:'way',id:id++,
   tags: pisos?{building:'yes','building:levels':String(pisos)}:{building:'yes'},
   geometry:pts.map(p=>({lat:p.lat,lon:p.lng}))});
 const geo=[
-  via('Calle 7','residential',[P(-200,-300),P(-200,0),P(-200,300)]),
+  // Una calle pegada al lote: sin frente no hay determinante de acceso, y sin
+  // acceso la lectura de proyecto se queda coja justo donde más importa.
+  via('Calle 7','residential',[P(-30,-300),P(-30,0),P(-30,300)]),
   via('Avenida 3','secondary',[P(-400,80),P(0,80),P(400,80)]),
-  // Un tramo sin placa: es lo que tiene que aparecer como tarea de nombre.
-  via('','residential',[P(-200,-300),P(0,-300),P(200,-300)]),
   // La torre: 20 × 20 m, centrada 40 m al occidente del lote, 10 pisos.
   edificio([P(-60,-10),P(-40,-10),P(-40,10),P(-60,10),P(-60,-10)], 10),
   // Y un galpón sin pisos registrados, para que la ficha lo diga.
@@ -133,14 +130,13 @@ const geo=[
     await esperar(400);
     document.querySelector('[data-lote="cerrar"]').click(); await esperar(900);
 
-    // ── La lista de lo que falta.
-    o.falta=trozo('Lo que falta para que esto hable',1400);
-    o.items=[...H().querySelectorAll('.pcr-falta-item')].map(el=>({
-      n:(el.querySelector('.pcr-falta-n')||{}).textContent||'',
-      titulo:((el.querySelector('.pcr-falta-cab b')||{}).textContent||'').trim(),
-      etiqueta:((el.querySelector('.pcr-falta-cab code')||{}).textContent||'').trim(),
-      hoy:((el.querySelector('.pcr-falta-hoy')||{}).textContent||'').trim(),
-      enciende:[...el.querySelectorAll('.pcr-falta-enciende i')].map(x=>x.textContent.trim())
+    // ── Las determinantes.
+    o.deter=trozo('Qué le pide el sitio al proyecto',3200);
+    o.items=[...H().querySelectorAll('.pcr-deter-item')].map(el=>({
+      titulo:((el.querySelector('.pcr-deter-cab b')||{}).textContent||'').trim(),
+      dice:((el.querySelector('.pcr-deter-dice')||{}).textContent||'').trim(),
+      porque:((el.querySelector('.pcr-deter-porque')||{}).textContent||'').trim(),
+      icono:!!el.querySelector('.pcr-deter-cab svg')
     }));
 
     // ── Y en el papel.
@@ -150,10 +146,6 @@ const geo=[
     o.lamina=capturado; capturado='';
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(700);
     o.pdf=capturado; capturado='';
-    const bCopiar=[...H().querySelectorAll('button')].filter(b=>/Copiar/i.test(b.textContent||''))[0];
-    o.hayCopiar=!!bCopiar;
-    o.texto=(function(){ try{ return window.URBIS_PC_RECON.fichaComoTexto ?
-      window.URBIS_PC_RECON.fichaComoTexto() : ''; }catch(e){ return ''; } })();
     return o;
   },{C,POL});
 
@@ -196,56 +188,56 @@ const geo=[
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const items=r.items||[];
-  const item=id=>items.filter(x=>new RegExp(id,'i').test(x.titulo+' '+x.etiqueta))[0];
+  const item=q=>items.filter(x=>new RegExp(q,'i').test(x.titulo))[0];
 
-  console.log('\n  -- la lista existe y dice de qué se trata --');
-  T('sale el bloque', items.length>0, items.length+' tareas');
-  T('y explica que son la lista de tareas de la salida',
-    /lista de tareas de la salida/.test(r.falta));
-  T('diciendo cuántos análisis encienden entre todas',
-    /encienden \d+ análisis/.test(r.falta),
-    (r.falta.match(/encienden \d+ análisis/)||['no lo dice'])[0]);
+  console.log('\n  -- la lectura de proyecto --');
+  T('sale el bloque', items.length>=3, items.length+' determinantes');
+  T('y aclara que son condiciones, no propuestas',
+    /condiciones que el sitio impone/.test(r.deter));
+  T('cada una dice de dónde sale', items.every(x=>/^Sale /.test(x.porque)),
+    (items[0]||{}).porque||'');
+  T('y lleva su icono', items.every(x=>x.icono));
 
-  console.log('\n  -- lo que falta en esta maqueta, y solo eso --');
-  const esperadas=[['pisos','building:levels'],['ancho','width'],['andén','sidewalk'],
-                   ['parques','leisure'],['nombre','name'],['vivienda','residential']];
-  esperadas.forEach(([q,etq])=>{
-    const it=item(q);
-    T('pide ' + q, !!it && it.etiqueta.indexOf(etq)>=0, it?it.etiqueta:'no está');
-  });
+  console.log('\n  -- lo que esta maqueta tiene que decir --');
+  T('la fachada de la tarde, que en el trópico es la que se calienta',
+    !!item('fachada de la tarde') && /occidente/.test(item('fachada de la tarde').dice),
+    (item('fachada de la tarde')||{}).dice||'no está');
+  T('la sombra de la torre del occidente',
+    !!item('sombra') && /%/.test(item('sombra').dice),
+    (item('sombra')||{}).titulo||'no está');
+  /* La rampa sube al oriente: el agua baja al occidente. Si la determinante
+     dijera «oriente» estaría mandando el drenaje cuesta arriba. */
+  T('el agua, hacia donde de verdad baja',
+    !!item('agua') && /occidente/.test(item('agua').titulo+item('agua').dice) &&
+    !/hacia el oriente/.test((item('agua')||{}).dice||''),
+    (item('agua')||{}).titulo||'no está');
+  T('el acceso, con la calle que existe',
+    !!item('frente|acceso') && /Calle 7|Avenida 3/.test(item('frente|acceso').dice),
+    (item('frente|acceso')||{}).titulo||'no está');
+  T('y lo que el barrio no tiene cerca',
+    !!item('no tiene cerca') && /colegio|parque/i.test(item('no tiene cerca').dice),
+    (item('no tiene cerca')||{}).dice.slice(0,80)||'no está');
 
-  console.log('\n  -- cada tarea dice cuánto falta y qué enciende --');
-  T('todas traen la cuenta de hoy', items.every(x=>/Hoy:/.test(x.hoy)),
-    (items[0]||{}).hoy||'');
-  T('y todas encienden algo', items.every(x=>x.enciende.length>0));
-  T('contar los pisos enciende tres bloques',
-    (item('pisos')||{}).enciende && item('pisos').enciende.length===3,
-    ((item('pisos')||{}).enciende||[]).join(' · '));
-  T('entre ellos la sombra de los vecinos',
-    ((item('pisos')||{}).enciende||[]).some(e=>/sombra/i.test(e)));
-  T('y el nombre de una calle, uno solo o dos',
-    ((item('nombre')||{}).enciende||[]).length<=2);
+  console.log('\n  -- la línea que no se cruza --');
+  /* Ninguna determinante puede decir QUÉ construir. Es la diferencia entre
+     una herramienta que ayuda a proyectar y una que proyecta por vos. */
+  const todo=items.map(x=>x.titulo+' '+x.dice).join(' ');
+  T('ninguna manda construir nada',
+    !/deb[eé]s? (poner|construir|hacer|levantar)|se debe construir|proponemos|recomendamos/i.test(todo),
+    (todo.match(/deb[eé]s? \w+|proponemos|recomendamos/i)||['limpio'])[0]);
+  T('y el bloque lo dice con todas las letras',
+    /Ninguna de estas dice.*qué.*construir/i.test(r.deter) ||
+    /la respuesta es el proyecto/i.test(r.deter));
 
-  console.log('\n  -- el orden es por rendimiento, no por capricho --');
-  T('lo que más enciende va primero',
-    items.length>1 && items[0].enciende.length>=items[items.length-1].enciende.length,
-    items.map(x=>x.enciende.length).join(' ≥ '));
-  T('y los pisos están entre las dos primeras',
-    items.slice(0,2).some(x=>/pisos/i.test(x.titulo)),
-    items.slice(0,2).map(x=>x.titulo).join(' · '));
-  T('numeradas de 1 en adelante', items[0].n==='1' && items[items.length-1].n===String(items.length));
-
-  console.log('\n  -- y viaja a donde se necesita --');
-  T('la lámina trae su propia caja', /Lo que falta levantar/.test(r.lamina||''));
-  T('con la etiqueta de OpenStreetMap a la vista', /building:levels/.test(r.lamina||''));
-  T('el PDF también', /Lo que falta para que esto hable/.test(r.pdf||''));
-  T('y el texto que se copia la lleva',
-    /LO QUE FALTA LEVANTAR/.test(r.texto||'') || r.texto==='' ,
-    r.texto? 'sí' : '(no se pudo leer el texto)');
-
-  T('ninguna caja se recorta ni se pierde fuera de la hoja',
-    (r.medida.cajas||[]).length===0 && (r.medida.perdidas||[]).length===0,
-    ((r.medida.cajas||[]).concat(r.medida.perdidas||[]).join(' · '))||'ninguna');
+  console.log('\n  -- y viaja al papel --');
+  T('la lámina trae su caja', /Qué le pide el sitio al proyecto/.test(r.lamina||''));
+  T('el PDF también', /Qué le pide el sitio al proyecto/.test(r.pdf||''));
+  T('con la misma advertencia',
+    /no dice qué construir|Determinantes, no propuestas/i.test((r.lamina||'')+(r.pdf||'')));
+  T('ninguna caja se recorta', (r.medida.cajas||[]).length===0,
+    (r.medida.cajas||[]).join(' · ')||'ninguna');
+  T('ni se pierde fuera de la hoja', (r.medida.perdidas||[]).length===0,
+    (r.medida.perdidas||[]).join(' · ')||'ninguna');
 
   console.log('');
   T('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

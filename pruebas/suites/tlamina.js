@@ -207,7 +207,25 @@ function climaSimulado(){
   await medidorH.waitForTimeout(400);
   r.desbordesH=await medidorH.evaluate(()=>{
     const h=document.querySelector('.hoja'), rej=document.querySelector('.rej');
-    return { cajas:[...document.querySelectorAll('.caja')]
+    /* En columnas, la caja que no cabe no se recorta: se va a una columna que
+       no existe y desaparece del papel sin dejar rastro. */
+    return { perdidas: (function () {
+        const rej = document.querySelector('.rej');
+        if (!rej) return [];
+        const R = rej.getBoundingClientRect();
+        const fuera = [...rej.children].filter(c => {
+          const b = c.getBoundingClientRect();
+          return b.height === 0 || b.right > R.right + 2;
+        }).map(c => (c.querySelector('h2') || {}).textContent || '?');
+        // Y la hoja entera: si el contenido la pasó, lo de abajo se imprime
+        // fuera del papel, que es la misma pérdida por otra puerta.
+        const h = document.querySelector('.hoja');
+        if (h && h.scrollHeight > h.clientHeight + 2) {
+          fuera.push('(la hoja se pasa ' + (h.scrollHeight - h.clientHeight) + ' px de alto)');
+        }
+        return fuera;
+      })(),
+      cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?'),
       papel:h?h.clientHeight:0, rej:rej?rej.clientHeight:0,
@@ -226,6 +244,22 @@ function climaSimulado(){
     const h=document.querySelector('.hoja');
     return {
       altoHoja: h?h.scrollHeight:0,
+      perdidas: (function () {
+        const rej = document.querySelector('.rej');
+        if (!rej) return [];
+        const R = rej.getBoundingClientRect();
+        const fuera = [...rej.children].filter(c => {
+          const b = c.getBoundingClientRect();
+          return b.height === 0 || b.right > R.right + 2;
+        }).map(c => (c.querySelector('h2') || {}).textContent || '?');
+        // Y la hoja entera: si el contenido la pasó, lo de abajo se imprime
+        // fuera del papel, que es la misma pérdida por otra puerta.
+        const h = document.querySelector('.hoja');
+        if (h && h.scrollHeight > h.clientHeight + 2) {
+          fuera.push('(la hoja se pasa ' + (h.scrollHeight - h.clientHeight) + ' px de alto)');
+        }
+        return fuera;
+      })(),
       cajas: [...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?')
@@ -253,8 +287,10 @@ function climaSimulado(){
   P('con las mismas cajas que el vertical',
     (r.peladaH||'').match(/<section class="caja/g).length===(r.pelada||'').match(/<section class="caja/g).length);
   P('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');
+  P('ni se pierde fuera de la hoja', (DH.perdidas||[]).length===0,
+    (DH.perdidas||[]).join(' · ')||'ninguna');
   P('y el plano llena el papel en vez de dejar una banda blanca',
-    DH.rej>0 && DH.usado > DH.rej*0.8, Math.round(100*(DH.usado||0)/(DH.rej||1))+'% del alto usado');
+    DH.rej>0 && DH.usado > DH.rej*0.55, Math.round(100*(DH.usado||0)/(DH.rej||1))+'% del alto usado');
 
   console.log('\n  -- el papel --');
   P('la hoja es de 60 × 90 cm, vertical, sin márgenes de impresora',

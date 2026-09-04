@@ -176,6 +176,25 @@ const geo=[
     await m.setContent(html||'<i></i>',{waitUntil:'load'});
     await m.waitForTimeout(400);
     const out=await m.evaluate(()=>({
+      /* En columnas, la caja que no cabe no se recorta: se va a una columna
+         que no existe y desaparece del papel sin dejar rastro. Se detecta
+         mirando si alguna queda fuera del rectángulo de la rejilla. */
+      perdidas: (function () {
+        const rej = document.querySelector('.rej');
+        if (!rej) return [];
+        const R = rej.getBoundingClientRect();
+        const fuera = [...rej.children].filter(c => {
+          const b = c.getBoundingClientRect();
+          return b.height === 0 || b.right > R.right + 2;
+        }).map(c => (c.querySelector('h2') || {}).textContent || '?');
+        // Y la hoja entera: si el contenido la pasó, lo de abajo se imprime
+        // fuera del papel, que es la misma pérdida por otra puerta.
+        const h = document.querySelector('.hoja');
+        if (h && h.scrollHeight > h.clientHeight + 2) {
+          fuera.push('(la hoja se pasa ' + (h.scrollHeight - h.clientHeight) + ' px de alto)');
+        }
+        return fuera;
+      })(),
       cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?'),
@@ -186,6 +205,7 @@ const geo=[
   r.medidaV=await medir(r.lamina,2268,3402);
   r.medidaH=await medir(r.laminaH,3402,2268);
   fs.writeFileSync(S+'dibujos-lamina.html', r.lamina||'', 'utf8');
+  fs.writeFileSync(S+'dibujos-lamina-h.html', r.laminaH||'', 'utf8');
   fs.writeFileSync(S+'lamina-h.html', r.laminaH||'', 'utf8');
   await pg.close(); await b.close();
 
@@ -250,6 +270,9 @@ const geo=[
   T('y la lámina de un sector guardado', /pcr-plano-lote/.test(LG) && /pcr-carta/.test(LG));
   T('ninguna caja se recorta en la vertical', (r.medidaV.cajas||[]).length===0,
     (r.medidaV.cajas||[]).join(' · ')||'ninguna');
+  T('ni se pierde ninguna fuera de la hoja, en ninguna de las dos',
+    (r.medidaV.perdidas||[]).length===0 && (r.medidaH.perdidas||[]).length===0,
+    ((r.medidaV.perdidas||[]).concat(r.medidaH.perdidas||[]).join(' · '))||'ninguna');
   T('ni en la acostada', (r.medidaH.cajas||[]).length===0,
     (r.medidaH.cajas||[]).join(' · ')||'ninguna');
 
