@@ -90,6 +90,45 @@ for(let i=0;i<30;i++){ const a=i*12*Math.PI/180, d=(80+(i%5)*30)/111320;
     o.sectorSinEmoji=sec?!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(sec.innerText):false;
     o.sectorTexto=sec?sec.innerText.replace(/\s+/g,' ').slice(0,80):'';
     o.sectorFlechaSvg=!!(sec && sec.querySelector('.pcr-pest-fl svg'));
+
+    /* ── La tercera lista: «Reconocimientos guardados», dentro de la hoja ──
+       Las otras dos ya tenían miniatura; esta no, y es la que se ve al
+       volver a abrir la herramienta. Llegó reportado como que «solo sale
+       texto». Con cuatro sectores parecidos —«La Playa», «La Playa 2»— un
+       nombre y dos cifras no dicen cuál es cuál: lo que identifica un sector
+       es su forma. */
+    try{ window.urbisProCityCerrarStats(); }catch(e){}
+    await esperar(250);
+    const R2=window.URBIS_PC_RECON; R2.abrir(); await esperar(500);
+    let H2=document.getElementById('pcr-hoja');
+    let ag=H2 && H2.querySelector('[data-pcr="agrandar"]'); if(ag){ ag.click(); await esperar(400); }
+    /* La lista vive en la pantalla ANTERIOR al análisis, que es donde uno
+       vuelve para mirar otro sector. Con un resultado en pantalla se ve la
+       ficha, no la lista. */
+    const otro=[...H2.querySelectorAll('button')].filter(x=>/Analizar otro sector/.test(x.textContent||''))[0];
+    if(otro){ otro.click(); await esperar(700); }
+    H2=document.getElementById('pcr-hoja');
+    ag=H2 && H2.querySelector('[data-pcr="agrandar"]'); if(ag){ ag.click(); await esperar(400); }
+    const fila=H2 && H2.querySelector('.pcr-guardada');
+    o.hayGuardada=!!fila;
+    const mini=fila && fila.querySelector('.pcr-guardada-mini svg');
+    o.listaTieneMini=!!mini;
+    o.listaTienePuntos=!!(mini && mini.querySelectorAll('circle').length>0);
+    o.listaCuantosPuntos=mini?mini.querySelectorAll('circle').length:0;
+    o.listaMideAlgo=(function(){
+      if(!mini) return '';
+      const r=mini.getBoundingClientRect();
+      return Math.round(r.width)+'×'+Math.round(r.height)+' px';
+    })();
+    /* La miniatura va ANTES del nombre en el orden del documento: es lo que
+       se reconoce de un vistazo, y si va después ya se leyó el texto. */
+    o.listaMiniPrimero=(function(){
+      if(!fila) return false;
+      const hijos=[...fila.children];
+      const iM=hijos.findIndex(x=>x.classList.contains('pcr-guardada-mini'));
+      const iT=hijos.findIndex(x=>x.classList.contains('pcr-guardada-t'));
+      return iM>=0 && iT>=0 && iM<iT;
+    })();
     return o;
   },{C,POL});
 
@@ -115,6 +154,14 @@ for(let i=0;i<30;i++){ const a=i*12*Math.PI/180, d=(80+(i%5)*30)/111320;
   P('la tarjeta lleva el mapa', r.haySector && r.sectorTieneSvg, r.sectorTexto);
   P('la flecha es un icono lineal', r.sectorFlechaSvg);
   P('sin emojis', r.sectorSinEmoji);
+  console.log('\n  -- la lista de reconocimientos guardados --');
+  P('hay una ficha guardada en la lista', r.hayGuardada);
+  P('y lleva su plano, no solo texto', r.listaTieneMini, r.listaMideAlgo);
+  P('con los usos encontrados dibujados dentro',
+    r.listaTienePuntos, r.listaCuantosPuntos+' puntos en el plano');
+  P('el plano va antes del nombre: es lo que se reconoce primero',
+    r.listaMiniPrimero);
+
   console.log('');
   const errReales=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   P('sin errores de JavaScript', errReales.length===0, errReales.slice(0,3).join(' / ')||'ninguno');

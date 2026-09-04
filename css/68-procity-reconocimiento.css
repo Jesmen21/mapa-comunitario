@@ -1011,3 +1011,21 @@
   font:700 12px/1 Inter, system-ui, sans-serif; color:#12202e;
   box-shadow:0 1px 4px rgba(12,32,46,.35);
 }
+
+
+/* ── La miniatura de cada reconocimiento guardado ─────────────────────────
+   La lista era solo texto y con cuatro sectores parecidos no se distinguía
+   ninguno. La miniatura va PRIMERO en la fila: es lo que se reconoce de un
+   vistazo, antes de leer el nombre. */
+.pcr-guardada-mini{
+  flex:0 0 auto; width:96px; height:68px; overflow:hidden;
+  border-radius:8px; border:1px solid #d7e3ec; background:#f7fbfd;
+  display:flex; align-items:center; justify-content:center;
+}
+.pcr-guardada-mini svg{ display:block; width:100%; height:100%; }
+@media (max-width:360px){
+  /* En pantallas angostas la miniatura le quitaba sitio al nombre, que es lo
+     que se toca. Se encoge en vez de desaparecer: media pista sigue siendo
+     una pista. */
+  .pcr-guardada-mini{ width:64px; height:46px; }
+}

@@ -3899,6 +3899,7 @@
         var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
         var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : (f.radioM + ' m');
         return '<div class="pcr-guardada">' +
+          miniaturaDeFicha(f) +
           '<div class="pcr-guardada-t">' +
             '<b>' + esc(f.nombre || cuando) + '</b>' +
             (f.nombre ? '<em class="pcr-guardada-f">' + esc(cuando) + '</em>' : '') +
@@ -3912,6 +3913,58 @@
         '</div>';
       }).join('') +
     '</div>';
+  }
+
+  /* La miniatura de un reconocimiento guardado.
+
+     La lista era solo texto: un nombre, una fecha y dos cifras. Con cuatro
+     sectores parecidos —«La Playa», «La Playa 2»— eso no basta para saber
+     cuál es cuál, y a un curso de arquitectura menos que a nadie: lo que
+     identifica un sector es su FORMA.
+
+     No es una imagen del mapa: es un plano de lo que se analizó, con la
+     silueta del área, los usos que se encontraron pintados por categoría, y
+     el lote si se marcó. Se dibuja del propio guardado, así que aparece
+     instantáneo y sin señal —bajarle un mapa a cada ficha sería una imagen
+     por ficha cada vez que se abre la lista—.
+
+     La ficha ya guardaba todo esto para poder comparar después; acá no se
+     agrega ni un byte al almacenamiento. */
+  function miniaturaDeFicha(f) {
+    var A = window.URBIS_PC_ANALISIS;
+    if (!A || typeof A.miniatura !== 'function' || !f) return '';
+    var forma = (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
+      ? { pts: f.poligono }
+      : (f.centro && f.radioM ? { centro: f.centro, radioM: f.radioM } : null);
+    if (!forma) return '';
+
+    /* Una muestra y no todos: una ficha puede traer mil usos y en 96 píxeles
+       de ancho no se distinguen; dibujarlos todos solo hace el SVG pesado.
+       Se toman repartidos por la lista —uno de cada n— y no los primeros,
+       que vendrían todos del mismo rincón. */
+    var pois = f.pois || [];
+    var tope = 160;
+    var paso = Math.max(1, Math.ceil(pois.length / tope));
+    var puntos = [];
+    for (var i = 0; i < pois.length; i += paso) {
+      var p = pois[i];
+      if (p && p.lat != null) {
+        puntos.push({ lat: p.lat, lng: p.lng, color: colorDeGrupo(p.grupo) });
+      }
+    }
+    var poligonos = (f.lote && f.lote.length >= 3)
+      ? [{ pts: f.lote, relleno: '#E0A800', opacidad: .75, borde: '#7A5901' }]
+      : null;
+
+    var svg = '';
+    try {
+      svg = A.miniatura(forma, {
+        w: 96, h: 68, puntos: puntos, radioPunto: 1.5,
+        poligonos: poligonos,
+        etiqueta: 'Plano de ' + (f.nombre || 'el sector guardado')
+      });
+    } catch (e) { svg = ''; }
+    return svg ? '<div class="pcr-guardada-mini">' + svg + '</div>' : '';
   }
 
   // ── La ficha ──────────────────────────────────────────────────────────
