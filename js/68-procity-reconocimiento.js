@@ -102,6 +102,9 @@
     // botón como el clima o el terreno: es una consulta a un servidor lento y
     // no todos los ejercicios la necesitan.
     amenaza: null, amenazaCargando: false, amenazaAviso: '',
+    // Mientras corre «Medir todo»: qué paso va y qué salió. Null cuando no
+    // hay nada corriendo, que es también la señal para cancelar la cadena.
+    midiendoTodo: null,
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -2685,6 +2688,14 @@
         abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
                        function (m) { S.aviso = m; pintar(); });
         return;
+      }
+      if (acc === 'medir-todo') { medirTodo(false); return; }
+      if (acc === 'medir-parar') {
+        // Poner el estado en null es la señal que mira la cadena entre paso y
+        // paso: lo que ya está pedido termina, pero no arranca nada más.
+        S.midiendoTodo = null;
+        S.aviso = 'Se paró de medir. Lo que ya estaba pedido termina solo.';
+        pintar(); return;
       }
       if (acc === 'amenaza') { pedirAmenaza(); return; }
       if (acc === 'amenaza-texto') {
@@ -9089,7 +9100,7 @@
     S.cliCargando = true; S.cliAviso = 'Consultando el clima…';
     pintar();
 
-    D.consultarClima(eje.lat, eje.lng, function (txt) {
+    return D.consultarClima(eje.lat, eje.lng, function (txt) {
       S.cliAviso = txt;
       var caja = document.getElementById('pcr-cli-estado');
       if (caja) caja.textContent = txt;
@@ -9129,7 +9140,7 @@
       S.terCargando = false; S.terAviso = 'No se pudo armar la rejilla.'; pintar(); return;
     }
 
-    D.consultarElevacion(rej.puntos, function (txt) {
+    return D.consultarElevacion(rej.puntos, function (txt) {
       S.terAviso = txt;
       var caja = document.getElementById('pcr-ter-estado');
       if (caja) caja.textContent = txt;
@@ -9186,7 +9197,7 @@
       ? window.AIA_DATOS.consultarTrazadoPoligono(S.poligono)
       : window.AIA_DATOS.consultarTrazado(S.centro.lat, S.centro.lng, S.radioM);
 
-    traer.then(function (elementos) {
+    return traer.then(function (elementos) {
       /* Las huellas de los edificios se guardan en memoria para poder
          pintarlas cuando se pida, sin repetir la consulta. Solo los anillos:
          las etiquetas no hacen falta para dibujar y ocupan de más. El tope
@@ -9277,6 +9288,142 @@
     return S.forma === 'poligono' ? centroideDe(S.poligono) : S.centro;
   }
 
+  /* ── Medir todo ────────────────────────────────────────────────────────
+     Analizar un sector deja la ficha a medias a propósito: cada medición
+     cuesta una consulta a un servicio distinto y no todos los ejercicios las
+     necesitan. Pero en el uso real casi siempre se quieren todas, y pedirlas
+     de a una son cinco botones repartidos por una hoja de treinta bloques,
+     cada uno con su espera, y ninguno avisa de que existen los otros.
+
+     Esto las encadena. Va EN SERIE y no en paralelo por dos razones: el
+     limitador de Overpass rechaza dos consultas seguidas —el trazado se
+     caería—, y en un teléfono cinco descargas simultáneas más la lectura de
+     la foto satelital dejan la aplicación sin memoria.
+
+     Un paso que falla no detiene la cadena. Es lo contrario de lo que uno
+     escribiría por instinto, y es lo correcto: que el servicio del clima esté
+     caído no es razón para quedarse además sin el trazado. Al final se dice
+     qué salió y qué no. */
+  var PASOS_MEDIR = [
+    { id: 'trazado', nombre: 'El trazado', que: 'calles, huellas y espacio público',
+      hecho: function () { return !!S.trazado; },
+      // La única que pasa por Overpass, y por eso la única que tiene que
+      // esperar el limitador de cinco segundos desde el análisis.
+      esperaAntesMs: 5600,
+      correr: function () { return analizarTrazado(); } },
+    { id: 'terreno', nombre: 'El terreno', que: 'cotas, pendiente y curvas de nivel',
+      hecho: function () { return !!S.terreno; },
+      correr: function () { return analizarTerreno(); } },
+    { id: 'clima', nombre: 'El clima', que: 'temperatura, lluvia y vientos',
+      hecho: function () { return !!S.clima; },
+      correr: function () { return analizarClima(); } },
+    { id: 'amenaza', nombre: 'La amenaza', que: 'sismo y movimientos en masa',
+      hecho: function () { return !!S.amenaza; },
+      correr: function () { return pedirAmenaza(); } },
+    /* La foto va última a propósito: es la más cara —tres pasadas sobre
+       millones de píxeles— y la única que puede tumbar un teléfono viejo. Si
+       se cae, todo lo anterior ya está hecho. */
+    { id: 'cobertura', nombre: 'La foto satelital', que: 'cobertura del suelo clasificada',
+      hecho: function () { return !!S.cobertura; },
+      correr: function () { return analizarCobertura(); } }
+  ];
+
+  /* El botón y su cuenta. Va arriba de la ficha, antes de los bloques que
+     encadena: si estuviera al lado de cualquiera de ellos parecería suyo. */
+  function bloqueMedirTodo() {
+    if (!S.resultado) return '';
+    var m = S.midiendoTodo;
+    var faltan = PASOS_MEDIR.filter(function (p) { return !p.hecho(); });
+    if (m) {
+      return '<div class="pcr-medir pcr-medir-va">' +
+        '<p class="pcr-lab">Midiendo el sector · ' + (m.hecho + 1) + ' de ' + m.total + '</p>' +
+        '<p class="pcr-conc">' + esc(m.actual) + '…</p>' +
+        '<div class="pcr-medir-barra"><i style="width:' +
+          Math.round(100 * m.hecho / m.total) + '%"></i></div>' +
+        (m.ok.length ? '<p class="pcr-pista">Listo: ' + esc(m.ok.join(', ')) + '.</p>' : '') +
+        (m.mal.length ? '<p class="pcr-pista">No se pudo con ' + esc(m.mal.join(', ')) +
+          '.</p>' : '') +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="medir-parar" class="pcr-mini">' +
+            ico('cerrar', 16) + 'Parar</button>' +
+        '</div>' +
+      '</div>';
+    }
+    if (!faltan.length) {
+      return '<div class="pcr-medir">' +
+        '<p class="pcr-conc">Todo medido: trazado, terreno, clima, amenaza y la foto ' +
+        'satelital. Lo que sigue es de la calle —marcar el lote y salir a mirar—.</p>' +
+      '</div>';
+    }
+    return '<div class="pcr-medir">' +
+      '<p class="pcr-lab">Falta medir</p>' +
+      '<p class="pcr-pista">El análisis trae lo que hay; lo demás son mediciones aparte, cada ' +
+      'una a un servicio distinto. Se pueden pedir de a una más abajo, o todas de una vez ' +
+      'acá. Tarda cerca de un minuto y se puede parar.</p>' +
+      '<div class="pcr-medir-lista">' +
+        PASOS_MEDIR.map(function (p) {
+          var ya = p.hecho();
+          return '<span class="pcr-medir-p' + (ya ? ' on' : '') + '">' +
+            ico(ya ? 'ok' : 'reloj', 14) + esc(p.nombre) + '</span>';
+        }).join('') +
+      '</div>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="medir-todo" class="pcr-principal">' +
+          ico('destello', 16) + 'Medir todo lo que falta</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function medirTodo(forzar) {
+    if (S.midiendoTodo || !S.resultado) return Promise.resolve(null);
+    var pendientes = PASOS_MEDIR.filter(function (p) { return forzar || !p.hecho(); });
+    if (!pendientes.length) {
+      S.aviso = 'Ya está todo medido.'; pintar(); return Promise.resolve(null);
+    }
+    S.midiendoTodo = { total: pendientes.length, hecho: 0, actual: pendientes[0].nombre,
+                       ok: [], mal: [] };
+    pintar();
+    var esperar = function (ms) {
+      return new Promise(function (r) { setTimeout(r, ms); });
+    };
+    return pendientes.reduce(function (cadena, paso, i) {
+      return cadena.then(function () {
+        if (!S.midiendoTodo) return null;           // lo cancelaron
+        S.midiendoTodo.actual = paso.nombre; pintar();
+        return esperar(paso.esperaAntesMs || (i ? 400 : 0)).then(function () {
+          if (!S.midiendoTodo) return null;
+          var pr;
+          try { pr = paso.correr(); } catch (e) { pr = Promise.reject(e); }
+          return Promise.resolve(pr).then(
+            function () {
+              /* Se comprueba el ESTADO y no que la promesa haya resuelto: casi
+                 todas estas funciones atrapan su propio error, guardan el aviso
+                 y resuelven igual. Sin esto, la cadena diría que midió cinco
+                 cosas cuando midió dos. */
+              if (S.midiendoTodo) {
+                (paso.hecho() ? S.midiendoTodo.ok : S.midiendoTodo.mal).push(paso.nombre);
+              }
+            },
+            function () { if (S.midiendoTodo) S.midiendoTodo.mal.push(paso.nombre); }
+          );
+        });
+      }).then(function () {
+        if (S.midiendoTodo) { S.midiendoTodo.hecho++; pintar(); }
+      });
+    }, Promise.resolve()).then(function () {
+      var r = S.midiendoTodo;
+      S.midiendoTodo = null;
+      if (r) {
+        S.aviso = r.mal.length
+          ? 'Medido: ' + (r.ok.join(', ') || 'nada') + '. No se pudo con ' +
+            r.mal.join(', ') + '; probá esos de a uno.'
+          : 'Listo: ' + r.ok.join(', ') + '.';
+      }
+      pintar();
+      return r;
+    });
+  }
+
   function pedirAmenaza() {
     var AM = window.URBIS_AMENAZA;
     if (!AM) { S.amenazaAviso = 'Falta el módulo de amenaza sísmica. Recargá la app.';
@@ -9284,7 +9431,10 @@
     var e = ejeDelSector();
     if (!e || e.lat == null) { S.amenazaAviso = 'Primero analizá un sector.'; pintar(); return; }
     S.amenazaCargando = true; S.amenazaAviso = ''; pintar();
-    AM.consultar(e.lat, e.lng).then(function (am) {
+    // Se devuelve la promesa: sin ella «Medir todo» daba este paso por
+    // terminado apenas empezaba, lo contaba como fallido y seguía con la foto
+    // satelital mientras el SGC todavía estaba contestando.
+    return AM.consultar(e.lat, e.lng).then(function (am) {
       S.amenaza = am; S.amenazaCargando = false; S.amenazaAviso = '';
       guardarFichaViva();
       pintar();
@@ -9306,7 +9456,7 @@
 
     S.cobCargando = true; S.cobAviso = 'Preparando la lectura de la foto…';
     pintar();
-    A.analizarRaster(function (txt) {
+    return A.analizarRaster(function (txt) {
       // Son tres pasadas sobre millones de píxeles: callado se siente colgado.
       S.cobAviso = txt;
       var caja = document.getElementById('pcr-cob-estado');
@@ -9596,6 +9746,10 @@
         bloqueLote(meta, esPol) +
         bloquePoblacion(st, esPol) +
         bloqueDemografia(st) +
+
+        // Antes que nada: qué falta medir. Los cinco botones que encadena
+        // están repartidos por treinta bloques y ninguno avisa de los otros.
+        bloqueMedirTodo() +
 
         h4('capas', 'Qué hay, por categoría') +
         // El anillo se pinta después, cuando el canvas ya está en el documento.

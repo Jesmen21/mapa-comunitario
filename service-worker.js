@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v677-movimientos-en-masa';
+const URBIS_CACHE = 'urbis-v678-medir-todo';
 const URBIS_ASSETS = [
   './',
   './index.html',

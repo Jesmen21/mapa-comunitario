@@ -1564,3 +1564,33 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-cabe-no, .pcr-pestana .pcr-cabe-no{
   border-left:3px solid #B3282C; padding-left:9px;
 }
+
+/* ── 27. Medir todo ──────────────────────────────────────────────────────
+   Va arriba de la ficha y tiene que leerse como una sola pieza —un estado y
+   una acción—, no como un bloque más de los treinta que vienen abajo. Por eso
+   lleva fondo propio y no cabecera con icono: no es una sección del informe,
+   es lo que hay que hacer antes de leerlo. */
+.pcr-medir{
+  border:1px solid var(--edu-line); border-radius:var(--edu-r-m);
+  background:var(--edu-ground); padding:12px; margin:2px 0 14px;
+}
+.pcr-medir-va{ border-color:var(--edu-accent-deep); background:var(--edu-accent-soft); }
+.pcr-medir-lista{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 10px; }
+.pcr-medir-p{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 9px; border-radius:999px; font-size:.74rem;
+  border:1px solid var(--edu-line); background:var(--edu-paper);
+  color:var(--edu-ink-3);
+}
+.pcr-medir-p svg{ flex:0 0 auto; }
+.pcr-medir-p.on{
+  border-color:var(--edu-accent-deep); color:var(--edu-accent-deep); font-weight:700;
+}
+.pcr-medir-barra{
+  height:6px; border-radius:999px; background:var(--edu-line);
+  overflow:hidden; margin:8px 0;
+}
+.pcr-medir-barra i{
+  display:block; height:100%; background:var(--edu-accent-deep);
+  transition:width .35s ease;
+}
