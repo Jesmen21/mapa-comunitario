@@ -462,6 +462,21 @@
   border-radius:99px; background:#cfe0ea;
 }
 .pcr-asa:active::before{ background:#34CCFE; }
+/* El asa de la hoja ABIERTA. Alta a propósito —24 px de zona tocable contra
+   los 5 que mide la rayita— porque es el objetivo de un pulgar en movimiento,
+   no de un dedo apuntando. `touch-action:none` es lo que impide que el
+   navegador se quede con el gesto vertical y lo convierta en desplazamiento
+   de la página antes de que lleguemos a verlo. */
+.pcr-asa-abierta{
+  padding:9px 0 5px; touch-action:none; -webkit-user-select:none; user-select:none;
+  background:var(--edu-ground, #fff);
+  border-radius:20px 20px 0 0;
+}
+.pcr-hoja.pcr-encogida .pcr-asa{ touch-action:none; }
+/* Arrastrando no hay transición: la pone y la quita el gesto. Esta regla solo
+   existe para que el REGRESO a su sitio, cuando el tirón no llegó, se vea
+   como un movimiento y no como un salto. */
+.pcr-hoja{ will-change:transform; }
 
 .pcr-mini-fila{ display:flex; align-items:center; gap:10px; }
 .pcr-mini-que{ flex:1; min-width:0; }

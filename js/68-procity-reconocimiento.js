@@ -84,6 +84,7 @@
        del sector. Es otra cosa que el área: el área es «qué hay alrededor»,
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
+    encogidaAMano: false,
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
     /* LO INTANGIBLE: lo que no se puede bajar de ningún servidor. Dónde no se
        pasa de noche, qué esquina está oscura, dónde huele mal, dónde da gusto
@@ -186,7 +187,14 @@
      en qué parte del producto se está («Modo educativo»); el título, qué se
      está mirando. */
   function barra(eyebrow, titulo, icono, accionCerrar) {
-    return '<div class="pcr-barra">' +
+    /* El asa va también en la hoja abierta, no solo en la encogida. Sirve
+       para dos cosas: se toca para bajar la hoja y se ARRASTRA para bajarla o
+       subirla siguiendo el dedo. Antes solo se podía con botones —«volver al
+       informe» y la X—, que obliga a buscar un objetivo pequeño para algo que
+       el pulgar ya sabe hacer solo. */
+    return '<button type="button" data-pcr="asa" class="pcr-asa pcr-asa-abierta" ' +
+      'aria-label="Arrastrar para ver el mapa"></button>' +
+      '<div class="pcr-barra">' +
       '<div class="pcr-titulo">' +
         '<span class="pcr-eyebrow">' + esc(eyebrow) + '</span>' +
         '<b>' + (icono ? ico(icono, 18) : '') + titulo + '</b>' +
@@ -3006,23 +3014,27 @@
           alternarCapa(c.id, prender);
         });
         S.encogida = prender;
+        S.encogidaAMano = false;
         pintar(); return;
       }
       if (acc === 'sombras-mapa') {
         var puestasS = pintarSombras(!S.sombrasEnMapa);
         S.encogida = S.sombrasEnMapa;
+        S.encogidaAMano = false;
         if (!puestasS && !S.sombrasEnMapa) S.aviso = 'No hay sombras que dibujar.';
         pintar(); return;
       }
       if (acc === 'curvas-mapa') {
         var puestas = pintarCurvas(!S.curvasEnMapa);
         S.encogida = S.curvasEnMapa;
+        S.encogidaAMano = false;
         if (!puestas && !S.curvasEnMapa) S.aviso = 'No hay curvas que dibujar: el sector es plano.';
         pintar(); return;
       }
       if (acc === 'caminata-mapa') {
         var puso = pintarCaminata(!S.caminataEnMapa);
         S.encogida = S.caminataEnMapa;
+        S.encogidaAMano = false;
         if (!puso && !S.caminataEnMapa) S.aviso = 'No hay recorrido que dibujar.';
         pintar(); return;
       }
@@ -3092,12 +3104,14 @@
       if (acc === 'int-acuerdos-mapa') {
         var puestos = pintarAcuerdos(!S.intAcuerdosEnMapa);
         S.encogida = S.intAcuerdosEnMapa;
+        S.encogidaAMano = false;
         if (!puestos && !S.intAcuerdosEnMapa) S.aviso = 'Todavía no hay sitios donde coincidan.';
         pintar(); return;
       }
       if (acc === 'int-mapa') {
         var puestasInt = pintarIntangible(!S.intEnMapa);
         S.encogida = S.intEnMapa;
+        S.encogidaAMano = false;
         if (!puestasInt && !S.intEnMapa) S.aviso = 'Todavía no hay nada marcado.';
         pintar(); return;
       }
@@ -3168,22 +3182,14 @@
         else seguirAlMapa(false);
         pintarCirculo(); pintar(); return;
       }
+      if (acc === 'asa') { alternarHoja(!S.encogida); return; }
       if (acc === 'lote-deshacer') { deshacerLote(); return; }
       if (acc === 'lote-cerrar') { cerrarLote(); return; }
       if (acc === 'lote-cancelar') { cancelarLote(); S.encogida = false; pintar(); return; }
-      if (acc === 'agrandar') {
-        /* Si se está dibujando un lote, «volver» tiene que SALIR del dibujo.
-           Sin esto el botón bajaba `S.encogida` y la hoja se quedaba igual,
-           porque `encoger` manda mientras `loteDibujando` sea verdadero. Un
-           botón que no hace nada es peor que uno que no está. */
-        if (S.loteDibujando) cancelarLote();
-        S.encogida = false; seguirAlMapa(false); pintar(); return;
-      }
+      if (acc === 'agrandar') { alternarHoja(false); return; }
       // Nota: el calor sigue encendido en el mapa al volver al informe. Se
       // apaga desde los chips o desde el chip del propio mapa.
-      if (acc === 'encoger') { S.encogida = true;
-        if (S.forma === 'radio') seguirAlMapa(true);
-        pintar(); return; }
+      if (acc === 'encoger') { alternarHoja(true); return; }
       if (acc === 'dibujar-area') {
         // Se le pide a Pro City su lápiz de siempre y se cierra esta hoja: no
         // se puede dibujar sobre el mapa con una hoja encima.
@@ -3527,8 +3533,15 @@
                   S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa;
     /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
        esquinas de un terreno sobre un mapa tapado por un panel. */
+    /* `encogidaAMano` es la diferencia entre «se encogió sola porque encendí
+       una capa» y «la empujé yo». El guardián de `hayCapa` existe para que
+       una capa apagada no deje la hoja abajo mostrando nada; pero aplicado a
+       un gesto de la persona significaba que, con la ficha analizada y sin
+       ninguna capa encendida, la hoja NO SE DEJABA BAJAR. Que es justo lo
+       que alguien quiere hacer cuando quiere mirar el mapa. */
     var encoger = S.loteDibujando ||
-                  (S.encogida && !S.comparacion && (!S.resultado || hayCapa));
+                  (S.encogida && !S.comparacion &&
+                   (S.encogidaAMano || !S.resultado || hayCapa));
     h.classList.toggle('pcr-encogida', encoger);
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
     // hoja se quedaba con la clase de encogida y el contenido entero dentro
@@ -7739,6 +7752,115 @@
   /* La barra de dibujo. Va fija abajo y fuera de la hoja porque mientras se
      dibuja la hoja está encogida: los botones tienen que estar donde el pulgar
      ya está, no dentro de un panel que hay que volver a abrir. */
+  /* ── Subir y bajar la hoja ───────────────────────────────────────────
+     Un solo sitio que decide el estado, para que el botón y el gesto no se
+     puedan separar nunca. Antes había tres despachos distintos —«agrandar»,
+     «encoger» y el asa— y solo uno de ellos sabía que hay que cancelar el
+     dibujo del lote al subir. */
+  function alternarHoja(quieroEncogida) {
+    if (!quieroEncogida && S.loteDibujando) cancelarLote();
+    S.encogida = !!quieroEncogida;
+    // Lo pidió una persona: mientras dure, manda sobre cualquier automatismo.
+    S.encogidaAMano = !!quieroEncogida;
+    if (quieroEncogida) { if (S.forma === 'radio') seguirAlMapa(true); }
+    else seguirAlMapa(false);
+    pintar();
+  }
+
+  /* ── El arrastre ─────────────────────────────────────────────────────
+     La hoja se baja empujándola con el dedo y se sube tirando de ella, como
+     cualquier panel de teléfono. Antes solo se podía con botones, que obliga
+     a apuntar a un objetivo pequeño para algo que el pulgar hace solo.
+
+     Tres decisiones que no son obvias:
+
+     · El gesto arranca SOLO desde el asa. Empezarlo desde cualquier parte de
+       la hoja pelearía con el desplazamiento del contenido: la ficha mide
+       varias pantallas y el mismo movimiento hacia abajo significa dos cosas
+       distintas según dónde empiece. El asa es un objetivo ancho —toda la
+       hoja de lado a lado— así que no cuesta encontrarla.
+
+     · Mientras se arrastra se apaga la transición y se mueve la hoja con el
+       dedo. Un panel que espera a que sueltes para moverse no se siente
+       arrastrable, se siente lento.
+
+     · Al soltar decide el TIRÓN antes que la distancia. Un movimiento rápido
+       y corto es una intención clara —así se cierra un panel en cualquier
+       teléfono— y exigirle media pantalla la convierte en un forcejeo.       */
+  var arr = null;
+
+  function hojaEl() { return document.getElementById('pcr-hoja'); }
+
+  function empezarArrastre(ev) {
+    var h = hojaEl();
+    if (!h || !S.abierto) return;
+    var y = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+    if (y == null) return;
+    arr = { y0: y, y: y, t0: Date.now(), alto: h.getBoundingClientRect().height, movido: false };
+    h.style.transition = 'none';
+  }
+
+  function moverArrastre(ev) {
+    if (!arr) return;
+    var h = hojaEl();
+    if (!h) return;
+    var y = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+    if (y == null) return;
+    var d = y - arr.y0;
+    arr.y = y;
+    if (Math.abs(d) > 4) arr.movido = true;
+    /* Solo se puede en la dirección que tiene sentido: encogida no baja más y
+       abierta no sube más. Y lo que sí se puede se frena a un tercio pasado
+       el tope, para que el dedo note el límite en vez de que la hoja se
+       quede muerta. */
+    var v = S.encogida ? Math.min(0, d) : Math.max(0, d);
+    var sobra = S.encogida ? Math.max(0, d) : Math.min(0, d);
+    h.style.transform = 'translateY(' + (v + sobra / 3) + 'px)';
+    if (arr.movido && ev.cancelable) { try { ev.preventDefault(); } catch (e) {} }
+  }
+
+  function soltarArrastre() {
+    if (!arr) return;
+    var h = hojaEl();
+    var d = arr.y - arr.y0;
+    var ms = Math.max(1, Date.now() - arr.t0);
+    var vel = d / ms;                       // px por milisegundo, con signo
+    var movido = arr.movido;
+    arr = null;
+    if (h) { h.style.transition = ''; h.style.transform = ''; }
+    if (!movido) return;                    // fue un toque: lo atiende el clic
+    // Un tirón de 0,5 px/ms es un gesto claro aunque haya recorrido poco.
+    var tiron = Math.abs(vel) > 0.5;
+    var bastante = Math.abs(d) > 70;
+    if (!tiron && !bastante) return;        // no llegó: vuelve a su sitio
+    var haciaAbajo = d > 0;
+    if (haciaAbajo && !S.encogida) alternarHoja(true);
+    else if (!haciaAbajo && S.encogida) alternarHoja(false);
+  }
+
+  /* Los oyentes van en el documento y no en el asa: el dedo se sale de un asa
+     de cinco píxeles de alto en el primer milímetro, y con los oyentes puestos
+     ahí el arrastre se cortaba solo. */
+  var arrastreListo = false;
+  function prepararArrastre() {
+    if (arrastreListo) return;
+    arrastreListo = true;
+    document.addEventListener('touchstart', function (ev) {
+      var a = ev.target && ev.target.closest && ev.target.closest('.pcr-asa');
+      if (a) empezarArrastre(ev);
+    }, { passive: true });
+    document.addEventListener('touchmove', moverArrastre, { passive: false });
+    document.addEventListener('touchend', soltarArrastre, { passive: true });
+    document.addEventListener('touchcancel', soltarArrastre, { passive: true });
+    // Con ratón, para poder probarlo y para las tabletas con lápiz.
+    document.addEventListener('mousedown', function (ev) {
+      var a = ev.target && ev.target.closest && ev.target.closest('.pcr-asa');
+      if (a) empezarArrastre(ev);
+    });
+    document.addEventListener('mousemove', moverArrastre);
+    document.addEventListener('mouseup', soltarArrastre);
+  }
+
   function pintarBarraLote() {
     var el = document.getElementById('pcr-lote-barra');
     if (!S.loteDibujando) { if (el) el.remove(); return; }
@@ -11368,6 +11490,7 @@
 
   function abrir() {
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
+    prepararArrastre();
     S.abierto = true;
     S.error = '';
     // Si viene de dibujar un área, esa es la que quiere analizar. Obligarlo a

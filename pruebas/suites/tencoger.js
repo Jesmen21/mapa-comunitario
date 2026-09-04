@@ -144,6 +144,94 @@ const elements=[{type:'node',id:1,lat:C.lat+0.001,lon:C.lng,tags:{amenity:'pharm
   console.log('\n  -- y al analizar vuelve a abrirse --');
   P('se abre sola con el resultado', !r.trasAnalizar && r.hayFicha);
 
+  /* ── Bajarla y subirla con el dedo ───────────────────────────────────
+     Pedido desde el celular: poder empujar la hoja hacia abajo para ver el
+     mapa y tirar de ella para volver a subirla, en vez de tener que apuntar
+     a un botón. Se prueba con toques de VERDAD —`page.touchscreen` mueve el
+     dedo por pasos— porque un gesto se rompe en cosas que un `dispatchEvent`
+     no reproduce: la dirección, la velocidad y de dónde arranca. */
+  const encogida = async () => pg.evaluate(() =>
+    /pcr-encogida/.test((document.getElementById('pcr-hoja')||{className:''}).className));
+  const asa = async () => pg.evaluate(() => {
+    const a = document.querySelector('#pcr-hoja .pcr-asa');
+    if (!a) return null;
+    const r = a.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  });
+  /* Un gesto con pasos y con tiempo. De una sola zancada no hay velocidad que
+     medir y el navegador no lo distingue de un toque. */
+  const arrastrar = async (desde, dy, ms) => {
+    /* Sin un toque previo: el asa ES un botón y tocarla ya alterna la hoja,
+       así que el gesto llegaba con la hoja ya cambiada y medía otra cosa. */
+    const pasos = 8;
+    await pg.evaluate(async (D) => {
+      const { x, y, dy, ms, pasos } = D;
+      const ev = (t, cy) => {
+        const el = document.elementFromPoint(x, Math.max(1, Math.min(innerHeight-1, cy)));
+        const toque = new Touch({ identifier: 1, target: el || document.body,
+          clientX: x, clientY: cy });
+        (el || document.body).dispatchEvent(new TouchEvent(t, { bubbles: true,
+          cancelable: true, touches: t === 'touchend' ? [] : [toque],
+          changedTouches: [toque] }));
+      };
+      ev('touchstart', y);
+      for (let i = 1; i <= pasos; i++) {
+        ev('touchmove', y + (dy * i) / pasos);
+        await new Promise(r => setTimeout(r, ms / pasos));
+      }
+      ev('touchend', y + dy);
+    }, { x: desde.x, y: desde.y, dy, ms, pasos });
+    await pg.waitForTimeout(500);
+  };
+
+  /* Cada gesto parte de un estado FORZADO y comprobado. Sin eso, tres de
+     estas cinco pasaban de gratis: con la hoja nunca encogida, «sigue
+     abierta» es cierto por no haber pasado nada. Se toca el asa —un toque
+     alterna— hasta dejarla como hace falta. */
+  const ponerla = async (quieroEncogida) => {
+    for (let i = 0; i < 3; i++) {
+      if ((await encogida()) === quieroEncogida) return true;
+      const a = await asa();
+      if (!a) return false;
+      await pg.evaluate(() => document.querySelector('#pcr-hoja .pcr-asa').click());
+      await pg.waitForTimeout(450);
+    }
+    return (await encogida()) === quieroEncogida;
+  };
+
+  const g = {};
+  let a1 = await asa();
+  g.hayAsaAbierta = !!a1;
+  g.partioAbierta = await ponerla(false);
+  a1 = await asa();
+  if (a1) await arrastrar(a1, 220, 320);          // empujón claro hacia abajo
+  g.bajoConElDedo = g.partioAbierta && (await encogida());
+
+  g.partioEncogida = await ponerla(true);
+  const a2 = await asa();
+  if (a2) await arrastrar(a2, -220, 320);         // y tirón hacia arriba
+  g.subioConElDedo = g.partioEncogida && !(await encogida());
+
+  // Un movimiento corto y lento no debe hacer nada: es un roce, no un gesto.
+  const abiertaParaElRoce = await ponerla(false);
+  const a3 = await asa();
+  if (a3) await arrastrar(a3, 30, 600);
+  g.elRoceNoLaMueve = abiertaParaElRoce && !(await encogida());
+
+  // Y un tirón CORTO pero rápido sí, que es como se cierra un panel de verdad.
+  const abiertaParaElTiron = await ponerla(false);
+  const a4 = await asa();
+  if (a4) await arrastrar(a4, 60, 90);
+  g.elTironCortoSi = abiertaParaElTiron && (await encogida());
+
+  console.log('\n  -- se baja y se sube con el dedo --');
+  P('la hoja abierta tiene asa', g.hayAsaAbierta);
+  P('y tocarla también la baja y la sube', g.partioAbierta && g.partioEncogida);
+  P('empujándola hacia abajo, se encoge y deja ver el mapa', g.bajoConElDedo);
+  P('y tirando de ella hacia arriba, vuelve', g.subioConElDedo);
+  P('un roce corto y lento no la mueve', g.elRoceNoLaMueve);
+  P('pero un tirón corto y rápido sí, como en cualquier teléfono', g.elTironCortoSi);
+
   console.log('');
   P('sin errores de JavaScript', err.filter(e=>!/L is not defined|Unexpected end/.test(e)).length===0, err.slice(0,2).join(' / ')||'ninguno');
   console.log('\n  '+(mal?mal+' fallaron':'todo pasó')+'\n');
