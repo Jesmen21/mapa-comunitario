@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v682-alerta-inundaciones-meta';
+const URBIS_CACHE = 'urbis-v683-guajira-corte-suprema';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-03",
-  "proximaActualizacion": "2026-09-04",
+  "actualizado": "2026-09-04",
+  "proximaActualizacion": "2026-09-05",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -63,6 +63,112 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-04",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La Fuerza Pública da de baja a alias 'Bendito Menor', cabecilla de las ACSN en La Guajira, junto a su pareja y dos hombres de su seguridad; el presidente viaja a Riohacha a dar detalles",
+      "detalle": "En la madrugada del 4 de septiembre, un operativo de la Fuerza Pública en el barrio Los Olivos, en Riohacha (La Guajira), terminó con la muerte de Naín Andrés Pérez Toncel, alias \"Naín\" o \"Bendito Menor\", máximo cabecilla de las Autodefensas Conquistadoras de la Sierra Nevada (ACSN), señalado de homicidio, extorsión, reclutamiento de menores y desplazamiento forzado en La Guajira, Magdalena y Cesar. En el mismo procedimiento murieron su pareja, Rosa Angélica Tarazona, alias \"La Bebecita\", y dos hombres de su esquema de seguridad. El Ejército confirmó los hechos y el presidente Abelardo de la Espriella viajó al Batallón Cartagena, en Riohacha, para entregar un balance oficial del operativo, que se produjo semanas después de que \"Bendito Menor\" se exhibiera en video recorriendo Riohacha en moto y burlándose de la recompensa ofrecida por su captura.",
+      "contrapunto": "El 3 de septiembre, un día antes de la confirmación oficial, varios medios habían reportado —citando fuentes de inteligencia militar— una versión distinta y no confirmada: que \"Bendito Menor\" podría haber sido ejecutado por integrantes de su propia organización por incumplir órdenes internas; las ACSN salieron a negar esa versión. Ninguna autoridad llegó a confirmar esa hipótesis, y el 4 de septiembre el Ejército atribuyó la muerte al operativo de la Fuerza Pública.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Ejército confirmó que sí dieron de baja a Bendito Menor: presidente Abelardo de la Espriella ya está en La Guajira para dar nuevos detalles",
+          "u": "https://www.infobae.com/colombia/2026/09/04/ejercito-confirmo-que-si-dieron-de-baja-a-bendito-menor-presidente-abelardo-de-la-espriella-ya-esta-en-la-guajira-para-dar-nuevos-detalles/"
+        },
+        {
+          "n": "El Tiempo · Las horas finales de 'Bendito Menor': detalles del operativo en el que fue abatido el peligroso cabecilla y tres miembros más de las ACSN en Riohacha",
+          "u": "https://www.eltiempo.com/colombia/barranquilla/las-horas-finales-de-bendito-menor-detalles-del-operativo-en-el-que-fue-abatido-el-peligroso-cabecilla-y-tres-miembros-mas-de-las-acsn-en-riohacha-3583505"
+        },
+        {
+          "n": "Vanguardia · De la Espriella llegará a Riohacha para revelar detalles de operativo contra 'Bendito Menor'",
+          "u": "https://www.vanguardia.com/colombia/2026/09/04/de-la-espriella-llegara-a-riohacha-para-revelar-resultados-de-operativo-contra-bendito-menor/"
+        },
+        {
+          "n": "Infobae · 'Bendito Menor' habría caído a manos de las propias Autodefensas Conquistadoras de la Sierra: inteligencia militar verifica si fue ejecutado",
+          "u": "https://www.infobae.com/colombia/2026/09/03/bendito-menor-habria-caido-a-manos-de-las-propias-autodefensas-conquistadoras-de-la-sierra-inteligencia-militar-verifica-si-fue-ejecutado/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "De la Espriella se reúne con la Sala Plena de la Corte Suprema, promete no interferir en sus decisiones y ordena reforzar la seguridad de los magistrados tras amenazas ligadas al caso Kiko Gómez",
+      "detalle": "El presidente se reunió el 3 de septiembre con la Sala Plena de la Corte Suprema de Justicia, luego de que el magistrado José Joaquín Urbano denunciara amenazas contra sí mismo y advirtiera riesgos para otros integrantes de la Sala Penal, presuntamente relacionados con una decisión adoptada contra el exgobernador de La Guajira Juan Francisco Gómez Cerchar, alias \"Kiko Gómez\", condenado por parapolítica. De la Espriella dijo a los magistrados que las decisiones judiciales serán respetadas \"desde el juez más humilde hasta el magistrado más encumbrado\" y afirmó que \"la autonomía de esta rama será celosamente protegida y el Ejecutivo jamás interferirá en las competencias que la Constitución y la ley les han reservado\". El mismo día ordenó al Inpec inspeccionar la celda de Kiko Gómez en la cárcel de La Dorada —donde se halló un teléfono celular— y pidió a la Policía Nacional y a la Unidad Nacional de Protección reforzar de inmediato la seguridad de los magistrados de la Sala Penal.",
+      "contrapunto": "La atribución de las amenazas al entorno de Kiko Gómez proviene de la denuncia del magistrado Urbano y de la respuesta del Gobierno; hasta esta actualización no hay una imputación o investigación formal que establezca responsables por estos hechos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Abelardo de la Espriella se reunió con la Corte Suprema y defendió la independencia judicial: \"Las decisiones de los jueces serán respetadas\"",
+          "u": "https://www.infobae.com/colombia/2026/09/03/abelardo-de-la-espriella-se-reunio-con-la-corte-suprema-y-defendio-la-independencia-judicial-las-decisiones-de-los-jueces-seran-respetadas/"
+        },
+        {
+          "n": "Infobae · Corte Suprema pidió reforzar la seguridad por el caso 'Kiko' Gómez y De la Espriella aprovechó para lanzar fuerte advertencia",
+          "u": "https://www.infobae.com/colombia/2026/09/03/corte-suprema-pidio-reforzar-la-seguridad-por-el-caso-kiko-gomez-y-de-la-espriella-aprovecho-para-lanzar-fuerte-advertencia/"
+        },
+        {
+          "n": "Infobae · Abelardo de la Espriella no descarta traslado de 'Kiko' Gómez tras inspección de su celda: hallaron estos elementos ocultos",
+          "u": "https://www.infobae.com/colombia/2026/09/03/abelardo-de-la-espriella-no-descarta-traslado-de-kiko-gomez-tras-inspeccion-de-su-celda-hallaron-estos-elementos-ocultos/"
+        },
+        {
+          "n": "La Razón · \"Quien se mete con la Corte, se mete con el Presidente\": De la Espriella ordena reforzar seguridad de magistrados",
+          "u": "https://larazon.co/quien-se-mete-con-la-corte-se-mete-con-el-presidente-de-la-espriella-ordena-reforzar-seguridad-de-magistrados/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "exterior",
+      "titulo": "De la Espriella imparte a los embajadores ante EE. UU. y la ONU sus primeras instrucciones de política exterior: \"que Colombia vuelva a hacerse respetar\"",
+      "detalle": "El presidente se reunió el 3 de septiembre en la Casa de Nariño con la embajadora de Colombia en Estados Unidos, María Consuelo Araújo, y el embajador ante la ONU, Mauricio Gaona, a quienes encomendó abrir puertas, construir alianzas, atraer inversión y defender los intereses del país en los escenarios bilateral y multilateral, bajo la directriz de que Colombia \"vuelva a hacerse respetar\" en el mundo. Entre las tareas inmediatas de Gaona está representar al país en el Consejo de Seguridad y en la próxima Asamblea General de la ONU. El encuentro coincidió con el anuncio de la próxima visita a Colombia del secretario de Estado de EE. UU., Marco Rubio.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella dio instrucciones a los embajadores ante Estados Unidos y la ONU y les encargó esta especial misión: hacerse respetar",
+          "u": "https://www.infobae.com/colombia/2026/09/04/de-la-espriella-dio-instrucciones-a-los-embajadores-ante-estados-unidos-y-la-onu-y-les-encargo-esta-especial-mision-hacerse-respetar/"
+        },
+        {
+          "n": "El Heraldo · De La Espriella fija a sus embajadores las primeras tareas de política exterior",
+          "u": "https://www.elheraldo.co/politica/2026/09/04/de-la-espriella-fija-a-sus-embajadores-las-primeras-tareas-de-politica-exterior/"
+        },
+        {
+          "n": "El Tiempo · Presidente Abelardo De La Espriella se reunió con los embajadores Mauricio Gaona y María Consuelo Araújo: abrir puertas y atraer inversión",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-se-reunio-con-los-embajadores-mauricio-gaona-y-maria-consuelo-araujo-abrir-puertas-y-atraer-inversion-3583483"
+        },
+        {
+          "n": "Semana · Primeras órdenes de Abelardo De La Espriella a los embajadores María Consuelo Araújo y Mauricio Gaona: \"vuelve a hacerse respetar\"",
+          "u": "https://www.semana.com/politica/articulo/primeras-ordenes-de-abelardo-de-la-espriella-a-los-embajadores-maria-consuelo-araujo-y-mauricio-gaona-vuelve-a-hacerse-respetar/202644/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "aproximada",
+      "categoria": "eeuu",
+      "titulo": "Se anuncia la visita a Colombia del secretario de Estado de EE. UU., Marco Rubio, quien se reunirá con De la Espriella en Barranquilla: sería la primera de un alto funcionario de la administración Trump desde la posesión",
+      "detalle": "El 3 de septiembre se conoció que el secretario de Estado de Estados Unidos, Marco Rubio, viajará a Colombia para reunirse con el presidente Abelardo de la Espriella en Barranquilla, en lo que sería la primera visita de un funcionario de alto rango de la administración de Donald Trump desde la posesión presidencial del 7 de agosto. Los medios difieren sobre la fecha exacta del encuentro —unos la ubican el martes 8 y otros el miércoles 9 de septiembre—, a la espera de confirmación oficial del Departamento de Estado. La agenda incluiría asuntos diplomáticos y económicos de la relación bilateral, entre ellos aranceles y seguridad, además de una breve gira de Rubio por otros países de la región.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Heraldo · Marco Rubio llegará a Colombia para reunirse con Abelardo De la Espriella en Barranquilla",
+          "u": "https://www.elheraldo.co/colombia/2026/09/03/marco-rubio-llegara-a-colombia-para-reunirse-con-abelardo-de-la-espriella-en-barranquilla/"
+        },
+        {
+          "n": "Infobae · Marco Rubio, secretario de Estado de Estados Unidos, viajará a Colombia para reunirse con Abelardo de la Espriella",
+          "u": "https://www.infobae.com/colombia/2026/09/03/marco-rubio-secretario-de-estado-de-estados-unidos-viajara-a-colombia-para-reunirse-con-abelardo-de-la-espriella/"
+        },
+        {
+          "n": "El País (Cali) · Marco Rubio visitará Colombia la próxima semana y se reunirá con De la Espriella en Barranquilla",
+          "u": "https://www.elpais.com.co/politica/marco-rubio-visitara-colombia-la-proxima-semana-y-se-reunira-con-de-la-espriella-en-barranquilla-0337.html"
+        },
+        {
+          "n": "Colombia.com · Rubio aterrizará en Barranquilla: aranceles y seguridad marcarán su visita",
+          "u": "https://www.colombia.com/actualidad/nacionales/visita-que-genera-expectativa-marco-rubio-llegara-a-colombia-y-se-reunira-con-de-la-espriella-598935"
+        }
+      ]
+    },
     {
       "fecha": "2026-09-03",
       "precision": "exacta",
