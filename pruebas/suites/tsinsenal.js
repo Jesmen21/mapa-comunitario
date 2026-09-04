@@ -128,11 +128,52 @@ const PNG=Buffer.from(
     o.capa=(function(){ const c=SS.capaBase(); return c?c._url:''; })();
     o.urlEjemplo=SS.urlDe({z:16,x:19567,y:31325});
 
-    // ── Guardarlo.
+    /* ── Guardarlo, contando lo que le cuesta a la hoja ────────────────
+       Llegó reportado desde el celular: mientras guardaba, la hoja saltaba
+       arriba y no dejaba bajar, y al final ni guardaba. La causa era que el
+       avance repintaba la hoja ENTERA por cada imagen —eran más de
+       cuatrocientas—, y cada `innerHTML` nuevo tira el punto de lectura.
+
+       Se mide de dos maneras, porque una sola no basta: cuántas veces se
+       reconstruye la hoja, y si el sitio donde estabas leyendo sigue donde
+       estaba. La segunda es la que el usuario nota. */
+    const hoja=H();
+    let reconstrucciones=0;
+    const obs=new MutationObserver(ms=>{
+      ms.forEach(m=>{ if(m.type==='childList' && m.target===hoja) reconstrucciones++; });
+    });
+    obs.observe(hoja,{childList:true});
+    /* El que se desplaza no es la hoja sino un hijo suyo. Buscarlo en vez de
+       suponerlo: medir el scroll del elemento equivocado da cero siempre y la
+       comprobación pasa sin comprobar nada. */
+    const scroller = (function(){
+      if (hoja.scrollHeight - hoja.clientHeight > 40) return hoja;
+      return hoja.querySelector('.pcr-cuerpo') ||
+        [...hoja.querySelectorAll('*')]
+        .filter(e=>e.scrollHeight - e.clientHeight > 40)
+        .sort((a,b)=>b.scrollHeight-a.scrollHeight)[0] || hoja;
+    })();
+    scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) * 0.5);
+    const dondeIba = scroller.scrollTop;
+
     H().querySelector('[data-pcr="teselas"]').click();
-    await esperar(700);
-    o.durante=bloque();
-    for(let i=0;i<120 && /Guardando el mapa/.test(bloque());i++) await esperar(500);
+    /* Se muestrea seguido desde el primer instante: con el arreglo, 149
+       imágenes se guardan tan rápido que a los 700 ms ya había terminado y la
+       prueba miraba el bloque de después. */
+    o.durante=''; o.scrollDurante=dondeIba;
+    for(let i=0;i<200;i++){
+      const t=bloque();
+      if(/Guardando el mapa/.test(t)){ o.durante=t;
+        const sc=H().querySelector('.pcr-cuerpo')||scroller;
+        o.scrollDurante=sc.scrollTop; break; }
+      if(i>6 && !/Guardando/.test(t) && o.durante) break;
+      await esperar(20);
+    }
+    o.seQuedoDondeIba = dondeIba > 0 && Math.abs(o.scrollDurante - dondeIba) < 40;
+    o.scrollAntes = dondeIba;
+    for(let i=0;i<120 && /Guardando el mapa/.test(bloque());i++) await esperar(300);
+    obs.disconnect();
+    o.reconstrucciones = reconstrucciones;
     await esperar(600); await abrir();
     o.despues=bloque();
     o.medida=await SS.medida();
@@ -256,6 +297,19 @@ const PNG=Buffer.from(
   console.log('    acierto directo    : ' + sinRed.aciertoDirecto);
   console.log('    peticiones de red  : ' + pedidas + ' (antes de mirar: ' + pedidasTrasGuardar + ')');
   }
+
+  console.log('\n  -- guardando, la hoja se puede seguir leyendo --');
+  /* La reconstrucción de la hoja tira el punto de lectura. Con una por
+     imagen, la hoja saltaba arriba cuatrocientas veces y era imposible
+     bajar. Se admite alguna —al empezar y al terminar— pero no una por
+     tesela. */
+  T('no se reconstruye la hoja una vez por imagen',
+    r.reconstrucciones <= 6,
+    r.reconstrucciones + ' reconstrucciones para ' + (r.medida ? r.medida.teselas : '?') +
+    ' teselas');
+  T('y el punto donde estabas leyendo se queda quieto',
+    r.seQuedoDondeIba === true,
+    'iba por ' + r.scrollAntes + ' px y quedó en ' + r.scrollDurante);
 
   console.log('');
   T('sin errores de JavaScript', errFin.length===0, errFin.slice(0,2).join(' | ')||'ninguno');

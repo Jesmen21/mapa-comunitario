@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v699-un-solo-centro';
+const URBIS_CACHE = 'urbis-v700-donde-ibas-leyendo';
 const URBIS_ASSETS = [
   './',
   './index.html',

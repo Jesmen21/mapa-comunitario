@@ -3573,10 +3573,34 @@
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
     // hoja se quedaba con la clase de encogida y el contenido entero dentro
     // —bajaba a una barra de 90 px con el informe completo comprimido—.
+    /* Dónde iba leyendo, para devolverlo después.
+
+       `innerHTML` tira el contenido y con él la posición del desplazamiento:
+       la hoja vuelve arriba. Con una ficha de treinta bloques eso es perder
+       el sitio en un texto de varias pantallas, y cada repintado lo hace. Se
+       notó guardando el mapa —cuatrocientas imágenes, y la hoja saltando
+       arriba en cada una, imposible de leer— pero pasaba en todos los
+       repintados: encender una capa, medir algo, cambiar un índice.
+
+       Solo se devuelve si la hoja sigue mostrando LO MISMO: volver al mismo
+       píxel después de pasar de los ajustes a la ficha no significa nada y
+       dejaría a alguien en mitad de un texto que no había empezado a leer. */
+    var cuerpoAntes = h.querySelector('.pcr-cuerpo');
+    var iba = cuerpoAntes ? cuerpoAntes.scrollTop : 0;
+    var mismaVista = S.comparacion ? 'comparacion' : encoger ? 'encogida'
+                   : S.resultado ? 'ficha' : 'ajustes';
+    var eraLaMisma = (h.__vista === mismaVista);
+    h.__vista = mismaVista;
+
     h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
                 : encoger        ? htmlEncogida()
                 : S.resultado    ? htmlFicha(S.resultado)
                 : htmlAjustes();
+
+    if (iba > 0 && eraLaMisma) {
+      var cuerpo = h.querySelector('.pcr-cuerpo');
+      if (cuerpo) cuerpo.scrollTop = iba;
+    }
     h.classList.toggle('pcr-visible', S.abierto);
     // El anillo solo existe en la ficha entera: pintarlo encogida buscaría un
     // canvas que no está.
@@ -10314,9 +10338,14 @@
     var b = S.bajandoTeselas;
     if (b) {
       var pct = b.total ? Math.round(100 * b.hechas / b.total) : 0;
+      /* Con identificador: mientras baja, se retoca ESTE renglón y ESTA barra
+         en su sitio. Repintar la hoja entera por cada imagen —eran 421— la
+         reconstruía cuatrocientas veces, y con ella se perdía el punto de
+         lectura: la hoja saltaba arriba y no dejaba bajar. */
       return '<div class="pcr-medir pcr-medir-va">' +
-        '<p class="pcr-lab">Guardando el mapa · ' + b.hechas + ' de ' + b.total + '</p>' +
-        '<div class="pcr-medir-barra"><i style="width:' + pct + '%"></i></div>' +
+        '<p class="pcr-lab" id="pcr-tes-txt">Guardando el mapa · ' + b.hechas +
+          ' de ' + b.total + '</p>' +
+        '<div class="pcr-medir-barra"><i id="pcr-tes-barra" style="width:' + pct + '%"></i></div>' +
         '<p class="pcr-pista">Se puede cerrar la hoja: sigue bajando.</p>' +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="teselas-parar" class="pcr-mini">' +
@@ -10372,11 +10401,19 @@
       /* Se repinta con lo que informa el guardador, no con un contador
          propio: si el navegador descarta la mitad por falta de espacio, la
          barra tiene que reflejar eso y no una cuenta optimista. */
-      if (S.bajandoTeselas) {
-        S.bajandoTeselas.hechas = est.hechas;
-        S.bajandoTeselas.total = est.total;
-        pintar();
-      }
+      if (!S.bajandoTeselas) return;
+      S.bajandoTeselas.hechas = est.hechas;
+      S.bajandoTeselas.total = est.total;
+      /* Se toca lo que cambió y NADA más. `pintar()` acá rehacía el
+         `innerHTML` de toda la hoja por cada imagen: cuatrocientas
+         reconstrucciones, cada una perdiendo el punto de lectura —la hoja
+         saltaba arriba— y robándole tiempo a la propia descarga, que era lo
+         que estaba en curso. Llegó reportado como que la hoja no dejaba
+         bajar y que al final ni guardaba. */
+      var txt = document.getElementById('pcr-tes-txt');
+      var barra = document.getElementById('pcr-tes-barra');
+      if (txt) txt.textContent = 'Guardando el mapa · ' + est.hechas + ' de ' + est.total;
+      if (barra) barra.style.width = (est.total ? Math.round(100 * est.hechas / est.total) : 0) + '%';
     });
     S.bajandoTeselas = { hechas: 0, total: pr.estado ? pr.estado.total : 0, pr: pr };
     pintar();
@@ -10388,6 +10425,12 @@
           ? 'Mapa guardado, con ' + est.fallos + ' imágenes que no bajaron. En esos puntos ' +
             'quedará gris.'
           : 'Mapa guardado. Ya se puede caminar el sector sin señal.';
+      /* `medirTeselas()` repinta al terminar su medición, pero si falla —o si
+         tarda— la hoja se quedaba con la barra de progreso de un guardado que
+         ya terminó. Se repinta acá y que la medición repinte otra vez si
+         quiere: una hoja que miente sobre lo que está pasando es peor que un
+         repintado de más. */
+      pintar();
       medirTeselas();
     }).catch(function (e) {
       S.bajandoTeselas = null;
