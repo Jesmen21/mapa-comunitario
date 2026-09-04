@@ -410,6 +410,25 @@
         var I = window.URBIS_INTANGIBLE;
         try { return I ? I.paraGuardar(S.intangible || []) : []; } catch (e) { return []; }
       })(),
+      /* Los recorridos que trajo el curso. Vale la misma razón que para el
+         propio, y multiplicada por cuarenta: un recorrido de campo no se
+         puede volver a pedir a ningún servidor.
+
+         Vivían SOLO en memoria. Un profesor importaba los cuarenta archivos
+         de su curso, el teléfono se bloqueaba o el navegador reclamaba la
+         pestaña, y había que volver a importarlos uno por uno. Sin ningún
+         aviso: la pantalla simplemente volvía a decir que había un solo
+         recorrido, el suyo.
+
+         Van con la ficha y no en su propia caja porque pertenecen a ESTE
+         sector: en otro barrio serían manchas de color sobre calles donde
+         nadie estuvo, que es la misma razón por la que se borran al analizar
+         un sector nuevo. Cuarenta recorridos pesan unos 120 KB. */
+      intCurso: (function () {
+        var lista = S.intCurso || [];
+        if (!lista.length) return null;
+        try { return JSON.parse(JSON.stringify(lista)); } catch (e) { return null; }
+      })(),
       // Cómo quedó armado el pliego. Son unos pocos nombres y evitan que
       // reabrir una ficha para reimprimirla devuelva otra lámina.
       // La amenaza es del municipio y no cambia nunca: guardarla evita
@@ -2902,6 +2921,12 @@
           if (--quedan === 0) {
             inp.value = '';
             rehacerUnion();
+            /* Se guarda en cuanto llegan. Guardarlos solo cuando cambie otra
+               cosa deja una ventana en la que un profesor acaba de importar
+               los cuarenta archivos de su curso y todavía no hay nada
+               escrito: si el teléfono se bloquea ahí, se perdieron los
+               cuarenta y hay que repetir la importación uno por uno. */
+            guardarFichaViva();
             S.intCursoAviso = malos.join(' · ');
             S.aviso = buenos
               ? 'Se juntaron ' + buenos + ' recorrido' + (buenos === 1 ? '' : 's') + '.'
@@ -3165,6 +3190,8 @@
       if (acc === 'int-curso-borrar') {
         S.intCurso = []; S.intCursoAviso = '';
         rehacerUnion(); pintarAcuerdos(false);
+        // Que el borrado también quede escrito: si no, se quitan y vuelven.
+        guardarFichaViva();
         S.aviso = 'Se quitaron los recorridos traídos. El tuyo queda.';
         pintar(); return;
       }
@@ -11842,6 +11869,12 @@
     S.campo = f.campo || null;
     S.caminata = f.caminata || null;
     S.intangible = (f.intangible || []).slice();
+    /* Y los del curso. `rehacerUnion` se llama después de repartir todo el
+       estado: la unión se calcula a partir del propio recorrido MÁS los
+       traídos, así que hacerla antes de tener los dos daría una unión de la
+       mitad. */
+    S.intCurso = (f.intCurso || []).slice();
+    S.intUnion = null;
     S.pliegoOff = (f.pliegoOff || []).slice();
     S.pliegoMapasOff = (f.pliegoMapasOff || []).slice();
     S.indices = f.indices || null;
@@ -11861,6 +11894,10 @@
     try { pintarCirculo(); } catch (e) {}
     try { pintarLote(); } catch (e) {}
     try { if (S.intangible.length) pintarIntangible(true); } catch (e) {}
+    /* La unión se rehace acá y no al repartir el estado: se calcula con el
+       recorrido propio MÁS los del curso, así que hacerla antes de tener los
+       dos daría los acuerdos de la mitad de la clase. */
+    try { if (S.intCurso.length) rehacerUnion(); } catch (e) {}
     return true;
   }
 
@@ -12579,6 +12616,8 @@
        sean del sitio que se marcó. */
     centroDeAnalisisDePrueba: function () { return centroDeAnalisis(); },
     terrenoDePrueba: function () { return S.terreno; },
+    cursoDePrueba: function () { return S.intCurso || []; },
+    intangibleDePrueba: function () { return S.intangible || []; },
     centroDelLoteDePrueba: function () { return centroDelLote(); },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';

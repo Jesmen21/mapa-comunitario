@@ -64,7 +64,14 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
   await ctx.addInitScript(()=>{ try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'martarojas',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
-    localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
+    /* Solo en el primer arranque. Limpiarlo en CADA carga borraría la ficha
+       justo en la recarga que simula cerrar la aplicación, que es lo que esta
+       prueba quiere medir. */
+    if(!localStorage.getItem('__curso_limpio')){
+      localStorage.removeItem('aia_overpass_cache_v1');
+      localStorage.removeItem('pcr_fichas_v1');
+      localStorage.setItem('__curso_limpio','1');
+    }
   }catch(e){} });
   await ctx.route('**', r=>/localhost:(8199|8787)/.test(r.request().url())?r.continue():r.abort());
   await ctx.route(/unpkg\.com/, r=>{const u=r.request().url();
@@ -181,6 +188,47 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
     return o;
   });
 
+  /* ── El curso sobrevive a que se cierre la aplicación ────────────────
+     Los recorridos traídos vivían SOLO en memoria. Un profesor importaba los
+     archivos de su curso, el teléfono se bloqueaba o el navegador reclamaba
+     la pestaña, y había que volver a importarlos uno por uno. Sin ningún
+     aviso: la pantalla volvía a decir que había un recorrido, el suyo.
+
+     Es lo mismo que ya se decía del recorrido propio en el código que lo
+     guarda —«es lo único de la ficha que no se puede volver a pedir»— y vale
+     multiplicado por el número de estudiantes. */
+  await pg.evaluate(async ()=>{
+    const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const H=document.getElementById('pcr-hoja');
+    const bg=[...H.querySelectorAll('button')].filter(b=>/Guardar/i.test(b.textContent||''))[0];
+    if(bg){ window.prompt=()=>'Sector del curso'; bg.click(); await esperar(700); }
+  });
+  await pg.reload({waitUntil:'domcontentloaded'});
+  await pg.waitForTimeout(3400);
+  const tras=await pg.evaluate(async ()=>{
+    const o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const R=window.URBIS_PC_RECON;
+    const bPC=document.querySelector('[data-u52-call="procity-open-map"]');
+    if(bPC){ bPC.click(); await esperar(600); }
+    R.abrir(); await esperar(500);
+    const H=()=>document.getElementById('pcr-hoja');
+    const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
+      if(a){ a.click(); await esperar(400); } };
+    await abrir();
+    const br=H().querySelector('[data-pcr="reanudar"]');
+    o.ofreceReanudar=!!br;
+    if(br){ br.click(); await esperar(1000); await abrir(); }
+    const t=(H().textContent||'').replace(/\s+/g,' ').trim();
+    o.kpis=[...H().querySelectorAll('.pcr-kpi')]
+      .map(k=>(k.textContent||'').replace(/\s+/g,' ').trim())
+      .filter(x=>/recorridos|coinciden/.test(x));
+    o.nombres=/Ana/.test(t) && /Luis/.test(t) && /Sof/.test(t);
+    o.enLaFicha = (function(){
+      try{ return ((R.leerFichas()||[])[0].intCurso||[]).length; }catch(e){ return -1; }
+    })();
+    return o;
+  });
+
   const errFin=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
 
@@ -222,6 +270,15 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
   T('sigue habiendo cuatro y no cinco', /4recorridos/.test(kpi(repetido.kpis,'recorridos')),
     (repetido.kpis||[]).join(' · '));
   T('y se dice por qué se rechazó', /ya estaba traído/.test(repetido.error||''), repetido.error);
+
+  console.log('\n  -- y el curso sobrevive a cerrar la aplicación --');
+  T('la hoja ofrece retomar el sector', tras.ofreceReanudar);
+  T('con los cuatro recorridos, no solo el propio',
+    /4recorridos/.test(kpi(tras.kpis,'recorridos')),
+    (tras.kpis||[]).join(' · ')+' · '+tras.enLaFicha+' traídos guardados con la ficha');
+  T('y con el nombre de cada quien', tras.nombres);
+  T('los acuerdos se vuelven a calcular solos',
+    /coinciden/.test((tras.kpis||[]).join(' ')), kpi(tras.kpis,'coinciden'));
 
   console.log('');
   T('sin errores de JavaScript', errFin.length===0, errFin.slice(0,2).join(' | ')||'ninguno');
