@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v666-dibujos';
+const URBIS_CACHE = 'urbis-v667-cortes';
 const URBIS_ASSETS = [
   './',
   './index.html',

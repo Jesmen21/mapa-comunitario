@@ -1331,3 +1331,12 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 /* La trama son cien cuadraditos de 9 px: en un teléfono angosto no puede
    crecer más que su mitad de la fila o empuja al pie fuera de la caja. */
 .pcr-dibujo-fila .pcr-trama{ flex:0 0 auto; width:112px; }
+/* El corte del terreno: caja propia, porque es un dibujo ancho y con eje.
+   Va a todo el ancho de la ficha —un corte angosto no se lee— y con el
+   fondo del papel, no el de la tarjeta. */
+.pcr-hoja .pcr-corte-caja, .pcr-pestana .pcr-corte-caja{
+  flex:0 0 auto; margin:6px 0 8px;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:8px; box-shadow:var(--edu-sombra);
+}
+.pcr-corte-caja svg{ display:block; width:100%; height:auto; }

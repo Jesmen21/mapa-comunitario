@@ -323,7 +323,130 @@
       'role="img" aria-label="' + esc(o.etiqueta || (p + ' de cada cien')) + '">' + celdas + '</svg>';
   }
 
+  /* ── 5 · Corte topográfico ──────────────────────────────────────────────
+     El dibujo que la ficha ya hacía, pero hecho como se hace un corte: con
+     escala. El de antes estiraba el terreno hasta llenar la caja
+     (`preserveAspectRatio="none"`), así que una loma de tres metros y un
+     barranco de ochenta salían con la misma silueta y en ninguna parte decía
+     cuánto se había estirado. Un corte sin escala no es un corte: es un
+     garabato con forma de montaña.
+
+     Acá el eje horizontal va a escala real y el vertical se exagera —como en
+     cualquier lámina de topografía, porque si no un sector de un kilómetro
+     con veinte metros de desnivel sale plano— pero la exageración se CALCULA
+     y se ESCRIBE en el dibujo: «V ×8». Con eso el corte se puede leer, y se
+     puede desconfiar de él con conocimiento de causa.
+
+     `marca` sombrea un tramo del recorrido —el lote, normalmente— para que se
+     vea dónde cae dentro del corte. */
+  function corteTopografico(corte, opts) {
+    var c = corte || {}, o = opts || {};
+    var pts = (c.puntos || []).filter(function (p) {
+      return p && isFinite(p.d) && isFinite(p.z);
+    });
+    if (pts.length < 3) return '';
+
+    var W = 320, H = 118, mIzq = 26, mDer = 8, mAr = 16, mAb = 22;
+    var util = { w: W - mIzq - mDer, h: H - mAr - mAb };
+    var dMax = pts[pts.length - 1].d || 1;
+    var zs = pts.map(function (p) { return p.z; });
+    var zMin = Math.min.apply(null, zs), zMax = Math.max.apply(null, zs);
+    var relieve = zMax - zMin;
+
+    /* La exageración: la que hace que el relieve ocupe unos dos tercios del
+       alto útil, redondeada a un número que se pueda decir en voz alta. Con
+       un terreno de verdad plano no se exagera nada — estirar dos metros
+       ciento veinte veces dibuja una cordillera que no existe. */
+    var escalaH = util.w / dMax;                       // unidades por metro
+    var exagBruta = relieve > 0.5 ? (util.h * 0.66) / (relieve * escalaH) : 1;
+    var PASOS = [1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100];
+    var exag = PASOS[0];
+    for (var i = 0; i < PASOS.length; i++) if (PASOS[i] <= exagBruta) exag = PASOS[i];
+    if (relieve <= 0.5) exag = 1;
+    var escalaV = escalaH * exag;
+
+    // La base del dibujo es una cota redonda por debajo del mínimo.
+    var paso = relieve > 200 ? 50 : relieve > 80 ? 20 : relieve > 30 ? 10 : relieve > 8 ? 5 : 1;
+    var zBase = Math.floor(zMin / paso) * paso;
+    var X = function (d) { return mIzq + d * escalaH; };
+    var Y = function (z) { return (H - mAb) - (z - zBase) * escalaV; };
+    // Si con la exageración elegida el dibujo se sale por arriba, se recorta
+    // la exageración en vez de dejar que el terreno salga de la caja.
+    while (Y(zMax) < mAr && exag > 1) {
+      exag = PASOS[Math.max(0, PASOS.indexOf(exag) - 1)];
+      escalaV = escalaH * exag;
+      if (exag === 1) break;
+    }
+
+    var linea = pts.map(function (p, i2) {
+      return (i2 ? 'L' : 'M') + n1(X(p.d)) + ' ' + n1(Y(p.z));
+    }).join(' ');
+    var relleno = linea + ' L' + n1(X(dMax)) + ' ' + (H - mAb) + ' L' + n1(X(0)) + ' ' + (H - mAb) + ' Z';
+
+    // Cotas al costado: solo las que caben, para no empedrar el eje.
+    var cotas = '';
+    for (var z = zBase; z <= zMax + paso; z += paso) {
+      var y = Y(z);
+      if (y < mAr - 2 || y > H - mAb) continue;
+      cotas += '<path d="M' + mIzq + ' ' + n1(y) + 'H' + (W - mDer) + '" stroke="' + LINEA +
+        '" stroke-width=".6" stroke-dasharray="2 3"/>' +
+        '<text x="' + (mIzq - 3) + '" y="' + n1(y + 3) + '" font-size="7.5" text-anchor="end" ' +
+        'fill="' + GRIS + '">' + Math.round(z) + '</text>';
+    }
+
+    // Marcas de distancia, cada 100, 200 o 500 m según lo largo que sea.
+    var pasoD = dMax > 2500 ? 500 : dMax > 1200 ? 200 : 100;
+    var ticks = '';
+    for (var d = 0; d <= dMax; d += pasoD) {
+      ticks += '<path d="M' + n1(X(d)) + ' ' + (H - mAb) + 'v4" stroke="' + GRIS + '" stroke-width=".8"/>' +
+        '<text x="' + n1(X(d)) + '" y="' + (H - mAb + 12) + '" font-size="7" text-anchor="middle" ' +
+        'fill="' + GRIS + '">' + d + '</text>';
+    }
+
+    // El tramo marcado: el lote, o lo que se pida.
+    var marca = '';
+    if (c.marca && isFinite(c.marca.desde) && isFinite(c.marca.hasta) && c.marca.hasta > c.marca.desde) {
+      var x1 = X(c.marca.desde), x2 = X(c.marca.hasta);
+      // Un lote de veinte metros en un corte de un kilómetro es una raya de
+      // medio milímetro: se le da un ancho mínimo visible y se dice al pie
+      // que está exagerado, que es preferible a que no se vea.
+      if (x2 - x1 < 3) { var m2 = (x1 + x2) / 2; x1 = m2 - 1.5; x2 = m2 + 1.5; }
+      marca = '<rect x="' + n1(x1) + '" y="' + mAr + '" width="' + n1(x2 - x1) + '" ' +
+        'height="' + n1(H - mAb - mAr) + '" fill="#FFD54F" fill-opacity=".45"/>' +
+        '<text x="' + n1((x1 + x2) / 2) + '" y="' + (mAr - 5) + '" font-size="7.5" ' +
+        'text-anchor="middle" font-weight="700" fill="#7A5901">' +
+        esc(c.marca.texto || 'el lote') + '</text>';
+    }
+
+    // El tramo que cae dentro del área analizada, sobre el eje.
+    var dentro = pts.filter(function (p) { return p.dentro; });
+    var barra = dentro.length
+      ? '<path d="M' + n1(X(dentro[0].d)) + ' ' + (H - mAb + 2) + 'H' +
+        n1(X(dentro[dentro.length - 1].d)) + '" stroke="' + AZUL + '" stroke-width="2"/>'
+      : '';
+
+    return '<svg class="pcr-corte" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" ' +
+      'role="img" aria-label="' + esc((c.etiqueta || 'Corte del terreno') + ': de ' +
+        Math.round(zMin) + ' a ' + Math.round(zMax) + ' metros sobre el nivel del mar en ' +
+        Math.round(dMax) + ' metros de recorrido') + '">' +
+      cotas +
+      '<path d="' + relleno + '" fill="' + AZUL + '" fill-opacity=".13"/>' +
+      marca +
+      '<path d="' + linea + '" fill="none" stroke="' + TINTA + '" stroke-width="1.6" ' +
+        'stroke-linejoin="round"/>' +
+      '<path d="M' + mIzq + ' ' + (H - mAb) + 'H' + (W - mDer) + '" stroke="' + GRIS + '" stroke-width="1"/>' +
+      barra + ticks +
+      '<text x="' + mIzq + '" y="10" font-size="8" font-weight="700" fill="' + TINTA + '">' +
+        esc(c.etiqueta || 'Corte') + '</text>' +
+      '<text x="' + (W - mDer) + '" y="10" font-size="7.5" text-anchor="end" fill="' + GRIS + '">' +
+        'V ×' + exag + ' · ' + Math.round(zMax - zMin) + ' m de desnivel</text>' +
+      '<text x="' + (W - mDer) + '" y="' + (H - 3) + '" font-size="7" text-anchor="end" ' +
+        'fill="' + GRIS + '">metros de recorrido</text>' +
+      '</svg>';
+  }
+
   window.URBIS_DIBUJO = {
+    corteTopografico: corteTopografico,
     cartaSolar: cartaSolar,
     rosaDeRumbos: rosaDeRumbos,
     planoDelLote: planoDelLote,

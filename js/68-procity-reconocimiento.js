@@ -85,6 +85,7 @@
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
+    terRejilla: null,
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -345,6 +346,11 @@
       // se toma del estado: si el estudiante lo midió, se guarda con la ficha.
       trazado: S.trazado || null,
       terreno: S.terreno || null,
+      /* La rejilla de cotas, cruda. Son 18 × 18 números —dos kilobytes— y con
+         ella una ficha reabierta puede volver a cortar el terreno por el lote
+         sin pedirle nada al servicio de elevación. Guardar los cortes ya
+         dibujados ocuparía más y serviría para menos. */
+      terrenoRejilla: S.terRejilla || null,
       clima: S.clima || null,
       /* La comparación con el campo, en versión corta: las cuentas y unos
          pocos nombres. Guardar las cuatro listas enteras duplicaría todos los
@@ -803,7 +809,7 @@
       '<p class="pie">' + esc(c.lectura || '') + ' ' + esc(c.advertencia || '') + '</p>';
   }
 
-  function terrenoImpreso(t) {
+  function terrenoImpreso(t, terLote) {
     if (!t) return '';
     var e = t.elevacion || {}, p = t.pendiente || {};
     return '<h2>El terreno</h2><table>' +
@@ -817,6 +823,19 @@
       '<table>' + (p.clases || []).map(function (c) {
         return '<tr><td>' + esc(c.etiqueta) + '</td><td class="n">' + String(c.pct).replace('.', ',') + '%</td></tr>';
       }).join('') + '</table>' +
+      /* Los cortes por el lote van también al PDF: es la hoja que la
+         estudiante lleva impresa a la asesoría. */
+      (terLote && terLote.cortes && terLote.cortes.length
+        ? terLote.cortes.map(function (c) {
+            var d = dib('corteTopografico', c);
+            return d ? '<div class="dib dib-ancho">' + d + '</div>' : '';
+          }).join('') +
+          '<p class="pie">Los dos cortes cruzan el sector por el centro del lote; la banda amarilla ' +
+          'es el lote.' +
+          (terLote.baja ? ' Ahí el terreno baja hacia el ' + esc(terLote.baja.nombre) +
+            (terLote.pendientePct != null ? ', con ' + terLote.pendientePct + '% de pendiente' : '') + '.' : '') +
+          '</p>'
+        : '') +
       '<p class="pie">' + esc(t.lectura || '') + ' Alturas de un modelo de ' + t.resolucionM +
       ' m de paso (' + esc(t.fuente || '') + '): sirve para leer el relieve, no para dar la cota de una ' +
       'esquina. La medida fina se levanta en campo.</p>';
@@ -1129,6 +1148,8 @@
         return c ? zonasSinDatos(res.pois || [], c) : null;
       } catch (e) { return null; }
     })();
+    var terLote = o.terrenoLote !== undefined ? o.terrenoLote
+                : (function () { try { return terrenoDelLote(); } catch (e) { return null; } })();
     var cam = o.caminata !== undefined ? o.caminata : S.caminata;
     var ter = o.terreno !== undefined ? o.terreno : S.terreno;
     var cli = o.clima !== undefined ? o.clima : S.clima;
@@ -1325,10 +1346,16 @@
          avisar. */
       // Manda el ALTO, y el ancho lo pone la proporción del dibujo.
       '.dib svg{ display:block; height:' +
-        (extras >= 5 ? 26 : extras >= 3 ? 34 : 44) + 'mm; width:auto; max-width:100% }' +
+        (extras >= 5 ? 21 : extras >= 3 ? 34 : 44) + 'mm; width:auto; max-width:100% }' +
       '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto }' +
       '.dib-chico svg{ width:100%; height:auto }' +
       '.dib-par{ display:flex; align-items:center; gap:5mm }' +
+      '.corte{ background:#F7FAFC; border-radius:2mm; padding:2mm; margin:1.5mm 0 }' +
+      /* Igual que los demás dibujos, manda el alto: dos cortes a todo el
+         ancho de la caja se llevaban 16 mm más que los dos que había antes y
+         la caja del terreno se recortaba por abajo. */
+      '.corte svg{ display:block; height:' + (extras >= 5 ? 18 : 26) + 'mm; width:auto;' +
+        'max-width:100%; margin:0 auto }' +
       '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
@@ -1550,7 +1577,21 @@
               '</div>' +
               fila('Pendiente media', String(p.media).replace('.', ',') + '%') +
               (ter.orientacion ? fila('La ladera baja hacia', esc(ter.orientacion.rumbo)) : '') +
-              (ter.perfiles || []).map(perfilDibujado).join('') +
+              /* Con un lote marcado, los cortes que van al papel son los que
+                 pasan POR ÉL: cruzan el sector igual que los del centro, pero
+                 además dicen dónde cae el lote en la ladera, que es lo que se
+                 defiende en la entrega. Sin lote, los del centro. */
+              (terLote && terLote.cortes.length
+                ? terLote.cortes.map(function (c) {
+                    var d = dib('corteTopografico', c);
+                    return d ? '<div class="corte">' + d + '</div>' : '';
+                  }).join('') +
+                  (terLote.baja
+                    ? '<p class="nota">Bajo el lote el terreno baja hacia el ' + esc(terLote.baja.nombre) +
+                      ', con ' + (terLote.pendientePct != null ? terLote.pendientePct + '% de pendiente' :
+                                  'pendiente suave') + '. La banda amarilla es el lote.</p>'
+                    : '<p class="nota">La banda amarilla es el lote.</p>')
+                : (ter.perfiles || []).map(perfilDibujado).join('')) +
               (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
           })(), 'g3') +
 
@@ -1840,6 +1881,7 @@
       '.dib{margin:6px 0 8px;max-width:340px}' +
       '.dib svg{display:block;width:100%;height:auto}' +
       '.dib-chico{max-width:130px}' +
+      '.dib-ancho{max-width:420px}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       '</style></head><body>' +
@@ -1862,7 +1904,9 @@
         o.lote !== undefined ? o.lote : S.lote) +
       caminataImpresa(o.caminata !== undefined ? o.caminata : S.caminata) +
       alturasImpresas(st) +
-      terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
+      terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno,
+        o.terrenoLote !== undefined ? o.terrenoLote
+          : (function () { try { return terrenoDelLote(); } catch (e) { return null; } })()) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
@@ -2234,7 +2278,7 @@
       if (acc === 'otro') {
         // Se suelta el resultado, no el área: quien quiera el mismo sector con
         // otro radio no tiene que volver a dibujarlo.
-        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
+        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null;
         S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
         S.trzHuellas = null; pintarLlenos(false);
         try {
@@ -3634,7 +3678,22 @@
      se cortara el sector con un cuchillo por esa línea: el tramo que está
      DENTRO del área va lleno y el de fuera apenas insinuado, para que se
      entienda dónde empieza y termina lo analizado. */
+  /* El corte del terreno. Antes se estiraba hasta llenar la caja y no decía
+     cuánto: una loma de tres metros y un barranco de ochenta salían con la
+     misma silueta. Ahora lo dibuja js/74 con escala horizontal real y la
+     exageración vertical escrita en el propio dibujo. Se conserva la firma
+     —recibe un perfil del motor— para que los sitios que ya lo llamaban no
+     tengan que enterarse. */
   function perfilDibujado(p) {
+    var nuevo = dib('corteTopografico', { etiqueta: (p && p.etiqueta) || '', puntos: (p && p.puntos) || [] });
+    if (nuevo) return '<div class="pcr-corte-caja">' + nuevo + '</div>';
+    return perfilDibujadoViejo(p);
+  }
+
+  /* El dibujo de antes queda como respaldo por si js/74 no cargó: sin él, un
+     fallo al cargar un archivo dejaría el bloque del terreno sin ningún
+     corte, que es peor que un corte sin escala. */
+  function perfilDibujadoViejo(p) {
     var pts = (p && p.puntos) || [];
     if (pts.length < 3) return '';
     var W = 300, H = 84, mIzq = 30, mAb = 16;
@@ -5290,6 +5349,140 @@
     };
   }
 
+  /* ── El terreno bajo el lote ───────────────────────────────────────────
+     La rejilla de cotas está en la mano desde que se midió el terreno, así
+     que cortarla por donde haga falta no cuesta ni una consulta más. Lo que
+     hay que decir —y se dice— es hasta dónde alcanza: el modelo tiene 90 m de
+     paso, así que un lote de veinte metros cabe entero dentro de una celda.
+     El corte sirve para situar el lote en la ladera, no para dar la cota de
+     una esquina. */
+
+  /* La cota en cualquier punto, interpolada entre los cuatro nodos que lo
+     rodean. Bilineal: es lo que corresponde a una rejilla regular, y hacer
+     algo más fino sobre un modelo de 90 m sería fingir precisión. */
+  function cotaEn(p, rejDada) {
+    var R = rejDada || S.terRejilla;
+    if (!R || !R.limites || !R.z || !R.filas || !R.columnas) return null;
+    var L = R.limites;
+    var anchoLng = L.maxLng - L.minLng, altoLat = L.maxLat - L.minLat;
+    if (!anchoLng || !altoLat) return null;
+    var fx = (p.lng - L.minLng) / anchoLng * (R.columnas - 1);
+    // La fila 0 de la rejilla es la de MÁS latitud: se cuenta hacia abajo.
+    var fy = (L.maxLat - p.lat) / altoLat * (R.filas - 1);
+    if (!(fx >= 0 && fx <= R.columnas - 1 && fy >= 0 && fy <= R.filas - 1)) return null;
+    var c0 = Math.floor(fx), f0 = Math.floor(fy);
+    var c1 = Math.min(R.columnas - 1, c0 + 1), f1 = Math.min(R.filas - 1, f0 + 1);
+    var tx = fx - c0, ty = fy - f0;
+    var z = function (f, c) { return R.z[f * R.columnas + c]; };
+    var z00 = z(f0, c0), z01 = z(f0, c1), z10 = z(f1, c0), z11 = z(f1, c1);
+    if (z00 == null || z01 == null || z10 == null || z11 == null) return null;
+    return (z00 * (1 - tx) + z01 * tx) * (1 - ty) + (z10 * (1 - tx) + z11 * tx) * ty;
+  }
+
+  /* Un corte del terreno entre dos puntos, con `n` muestras. Devuelve la
+     misma forma que traen los perfiles del motor —{d, z, dentro}— para que un
+     solo dibujo sirva para los dos. */
+  function corteEntre(a, b, n, dentroDe, rejDada) {
+    var pasos = Math.max(8, n || 60), out = [];
+    var largo = haversineM(a, b);
+    for (var i = 0; i <= pasos; i++) {
+      var t = i / pasos;
+      var p = { lat: a.lat + (b.lat - a.lat) * t, lng: a.lng + (b.lng - a.lng) * t };
+      var z = cotaEn(p, rejDada);
+      if (z == null) continue;
+      out.push({ d: Math.round(largo * t), z: Math.round(z * 10) / 10,
+                 lat: p.lat, lng: p.lng,
+                 dentro: dentroDe ? !!dentroDe(p) : true });
+    }
+    return out;
+  }
+
+  /* Los dos cortes por el lote y las cifras del terreno que lo sostiene.
+     Los cortes NO se recortan al lote: van de borde a borde de la rejilla,
+     porque un corte de veinte metros sobre un modelo de noventa es una línea
+     recta que no dice nada. Lo que se marca es DÓNDE cae el lote dentro del
+     corte, que es la pregunta de verdad: si está en la parte alta, en la baja
+     o a media ladera. */
+  /* `loteDado` y `rejDada` llegan desde una ficha guardada, que imprime sin
+     tocar el estado de la ficha viva. Sin parámetros, trabaja sobre lo que
+     hay en pantalla. */
+  function terrenoDelLote(loteDado, rejDada) {
+    var pts = loteDado || S.lote || [];
+    var R = rejDada || S.terRejilla;
+    if (pts.length < 3 || !R || !R.limites) return null;
+    var L = R.limites;
+    var Z = function (p) { return cotaEn(p, R); };
+    var centro = centroideDe(pts);
+    if (Z(centro) == null) return null;
+
+    var lats = pts.map(function (p) { return p.lat; });
+    var lngs = pts.map(function (p) { return p.lng; });
+    var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
+    var minLng = Math.min.apply(null, lngs), maxLng = Math.max.apply(null, lngs);
+
+    function corteConMarca(a, b, dLote1, dLote2, etiqueta) {
+      var puntos = corteEntre(a, b, 80, null, R);
+      if (puntos.length < 3) return null;
+      return { etiqueta: etiqueta, puntos: puntos,
+               marca: { desde: dLote1, hasta: dLote2, texto: 'el lote' } };
+    }
+
+    // A–A′: de poniente a naciente por la latitud del lote.
+    var oesteA = { lat: centro.lat, lng: L.minLng }, esteA = { lat: centro.lat, lng: L.maxLng };
+    var largoA = haversineM(oesteA, esteA);
+    var fA = function (lng) { return largoA * (lng - L.minLng) / (L.maxLng - L.minLng); };
+    // B–B′: de norte a sur por la longitud del lote.
+    var norteB = { lat: L.maxLat, lng: centro.lng }, surB = { lat: L.minLat, lng: centro.lng };
+    var largoB = haversineM(norteB, surB);
+    var fB = function (lat) { return largoB * (L.maxLat - lat) / (L.maxLat - L.minLat); };
+
+    var cortes = [
+      corteConMarca(oesteA, esteA, fA(minLng), fA(maxLng), 'A–A′ por el lote, de occidente a oriente'),
+      corteConMarca(norteB, surB, fB(maxLat), fB(minLat), 'B–B′ por el lote, de norte a sur')
+    ].filter(Boolean);
+    if (!cortes.length) return null;
+
+    // Las cotas del propio lote: en las esquinas y en el centro.
+    var cotas = pts.map(Z).concat([Z(centro)])
+      .filter(function (z) { return z != null; });
+    var cMin = Math.min.apply(null, cotas), cMax = Math.max.apply(null, cotas);
+
+    /* Hacia dónde baja el terreno en el lote: el gradiente de la rejilla en
+       el centro, medido con dos puntos a cada lado a un paso de la rejilla.
+       Es la dirección por la que corre el agua, que es lo primero que se
+       pregunta de un terreno en pendiente. */
+    var pasoLat = (L.maxLat - L.minLat) / (R.filas - 1);
+    var pasoLng = (L.maxLng - L.minLng) / (R.columnas - 1);
+    var zN = Z({ lat: centro.lat + pasoLat, lng: centro.lng });
+    var zS = Z({ lat: centro.lat - pasoLat, lng: centro.lng });
+    var zE = Z({ lat: centro.lat, lng: centro.lng + pasoLng });
+    var zO = Z({ lat: centro.lat, lng: centro.lng - pasoLng });
+    var baja = null, pendPct = null;
+    if (zN != null && zS != null && zE != null && zO != null) {
+      var mLat = haversineM({ lat: centro.lat - pasoLat, lng: centro.lng },
+                            { lat: centro.lat + pasoLat, lng: centro.lng });
+      var mLng = haversineM({ lat: centro.lat, lng: centro.lng - pasoLng },
+                            { lat: centro.lat, lng: centro.lng + pasoLng });
+      var dzdx = mLng ? (zE - zO) / mLng : 0;
+      var dzdy = mLat ? (zN - zS) / mLat : 0;
+      pendPct = Math.round(Math.sqrt(dzdx * dzdx + dzdy * dzdy) * 1000) / 10;
+      if (pendPct > 1) {
+        // El agua baja al contrario del ascenso: de ahí los signos cambiados.
+        baja = rumboDe360((Math.atan2(-dzdx, -dzdy) * 180 / Math.PI + 360) % 360);
+      }
+    }
+
+    return {
+      cortes: cortes,
+      cota: { centro: Math.round(Z(centro) * 10) / 10,
+              min: Math.round(cMin * 10) / 10, max: Math.round(cMax * 10) / 10,
+              relieve: Math.round((cMax - cMin) * 10) / 10 },
+      pendientePct: pendPct,
+      baja: baja,
+      resolucionM: (S.terreno && S.terreno.resolucionM) || 90
+    };
+  }
+
   /* `preA` es el análisis ya calculado que trae una ficha guardada. Se guarda
      hecho y no se recalcula porque para rehacerlo harían falta la forma de
      todas las calles del sector, y eso son dos mil geometrías que no tiene
@@ -5378,6 +5571,41 @@
           'tarde entra casi horizontal por ahí. Al mediodía está tan alto que la fachada apenas lo ' +
           'recibe — el problema del mediodía es la cubierta.</p>'
         : '') +
+      /* El terreno bajo el lote: dos cortes por su centro, de borde a borde
+         del sector, con el lote marcado sobre el recorrido. Es la respuesta a
+         «¿está arriba o abajo de la ladera?», que es la pregunta que decide
+         accesos, escorrentía y plataformas. */
+      (function () {
+        var tl = (function () { try { return terrenoDelLote(); } catch (e) { return null; } })();
+        if (!tl) {
+          return S.terreno
+            ? ''
+            : '<p class="pcr-pista">Para ver <b>el corte del terreno por el lote</b> hay que ' +
+              '<b>medir el terreno</b> del sector primero: de ahí sale la rejilla de cotas.</p>';
+        }
+        return '<p class="pcr-lab">El terreno bajo el lote</p>' +
+          '<div class="pcr-kpis">' +
+            '<div class="pcr-kpi"><b>' + tl.cota.centro + '</b><small>msnm en el centro</small></div>' +
+            '<div class="pcr-kpi"><b>' + tl.cota.relieve + ' m</b><small>de desnivel en el lote</small></div>' +
+            '<div class="pcr-kpi"><b>' + (tl.pendientePct != null ? tl.pendientePct + '%' : '—') +
+              '</b><small>de pendiente</small></div>' +
+          '</div>' +
+          (tl.baja
+            ? '<p class="pcr-conc">El terreno baja hacia el <b>' + esc(tl.baja.nombre) + '</b>: ' +
+              'por ahí corre el agua, y por ahí hay que sacarla del lote.</p>'
+            : '<p class="pcr-conc">En el entorno del lote el terreno es prácticamente plano.</p>') +
+          tl.cortes.map(function (c) {
+            var d = dib('corteTopografico', c);
+            return d ? '<div class="pcr-corte-caja">' + d + '</div>' : '';
+          }).join('') +
+          '<p class="pcr-pista">Los dos cortes cruzan el sector entero por el centro del lote, y la ' +
+          'banda amarilla es dónde cae el lote dentro de cada uno. No se recortan al lote a ' +
+          'propósito: el modelo tiene <b>' + tl.resolucionM + ' m de paso</b>, así que un lote de ' +
+          'este tamaño cabe dentro de una sola celda y su corte propio sería una línea recta ' +
+          'inventada. Esto sitúa el lote en la ladera; la cota de cada esquina se levanta con ' +
+          'topografía en campo.</p>';
+      })() +
+
       (a.sol && a.sol.salida
         ? '<p class="pcr-pista">Hoy sobre este lote: sale a las ' + esc(hh(a.sol.salida)) +
           ', se pone a las ' + esc(hh(a.sol.puesta)) + ', y al mediodía llega a ' +
@@ -6140,6 +6368,17 @@
       var puntos = rej.puntos.map(function (p, i) {
         return { lat: p.lat, lng: p.lng, elev: alturas[i] };
       });
+      /* La rejilla de cotas se guarda además de mandarse. Son 18 × 18 puntos
+         —dos kilobytes— y con ella el navegador puede cortar el terreno por
+         donde haga falta sin volver a consultar nada: por el lote, por una
+         calle, por donde el estudiante quiera. Tirarla era pedirle otra vez
+         al servicio de elevación lo que ya estaba en la mano. */
+      S.terRejilla = {
+        filas: rej.filas, columnas: rej.columnas, limites: rej.limites,
+        z: puntos.map(function (p) {
+          return Number.isFinite(Number(p.elev)) ? Math.round(Number(p.elev) * 10) / 10 : null;
+        })
+      };
       var peticion = { rejilla: { filas: rej.filas, columnas: rej.columnas, puntos: puntos } };
       if (esPol) {
         peticion.poligono = S.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
@@ -7129,7 +7368,7 @@
     var areaBorrada = !!(A0 && typeof A0.hayArea === 'function' &&
                          !A0.hayArea() && S.huellaAnalizada.slice(0, 2) === 'p|');
     if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
-      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null;
+      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null;
       /* El clima y el nombre también. Se quedaron fuera de esta lista la
          primera vez y el resultado era feo de encontrar: como el análisis
          siguiente se guarda solo, el sector nuevo quedaba archivado con el
@@ -7241,7 +7480,7 @@
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
     // guardada se le presta el suyo y se devuelve el estado como estaba.
     var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima, cmpAntes = S.campo;
-    var loteAntes = S.lote;
+    var loteAntes = S.lote, rejAntes = S.terRejilla;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -7285,6 +7524,7 @@
         S.clima = f.clima || null;
         S.campo = f.campo || null;
         S.lote = f.lote || null;
+        S.terRejilla = f.terrenoRejilla || null;
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') + (f.trazado ? bloqueTrazado() : '') +
                    (f.trazado ? bloquePerfil() : '') +
@@ -7294,7 +7534,7 @@
                    (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
-        S.lote = loteAntes;
+        S.lote = loteAntes; S.terRejilla = rejAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -7581,7 +7821,11 @@
                                    clima: f.clima || null,
                                    loteAnalisis: f.loteAnalisis || null,
                                    lote: f.lote || null,
-                                   caminata: f.caminata || null });
+                                   caminata: f.caminata || null,
+                                   terrenoLote: (function () {
+                                     try { return terrenoDelLote(f.lote, f.terrenoRejilla); }
+                                     catch (e) { return null; }
+                                   })() });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
@@ -7637,6 +7881,9 @@
           clima: f.clima || null, campo: f.campo || null, huellas: null,
           lote: f.lote || null, loteAnalisis: f.loteAnalisis || null,
           caminata: f.caminata || null,
+          terrenoLote: (function () {
+            try { return terrenoDelLote(f.lote, f.terrenoRejilla); } catch (e) { return null; }
+          })(),
           horizontal: name === 'lamina-h'
         }),
         function (m) { S.avisoPestana = m; repintar(); });
