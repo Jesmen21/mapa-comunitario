@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v665-caminando';
+const URBIS_CACHE = 'urbis-v666-dibujos';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -149,6 +149,7 @@ const URBIS_ASSETS = [
   './js/71-iconos-urbis.js',
   './css/72-edu-diseno.css',
   './js/73-solar.js',
+  './js/74-dibujos-analisis.js',
 ];
 
 self.addEventListener('install', event => {

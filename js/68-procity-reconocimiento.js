@@ -825,7 +825,9 @@
   function trazadoImpreso(t) {
     if (!t) return '';
     var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
+    var tr = dib('trama', ll.pctLleno);
     return '<h2>El trazado del sector</h2>' +
+      (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="cob"><i style="width:' + ll.pctLleno + '%;background:#3B4A5A"></i>' +
       '<i style="width:' + ll.pctVacio + '%;background:#E6F7FE"></i></div>' +
       '<p class="pie">Lleno ' + ll.pctLleno + '% · vacío ' + ll.pctVacio + '% · ' +
@@ -878,9 +880,12 @@
       'que está dentro del área y lo que alguien mapeó. ' + esc(a.metodo || '') + '</p>';
   }
 
-  function loteImpresoIntervenir(a) {
+  function loteImpresoIntervenir(a, poligono) {
     if (!a) return '';
-    return '<h2>El lote a intervenir</h2><table>' +
+    var pl = dib('planoDelLote', poligono || S.lote, a);
+    return '<h2>El lote a intervenir</h2>' +
+      (pl ? '<div class="dib">' + pl + '</div>' : '') +
+      '<table>' +
       '<tr><td>Área</td><td class="n">' + Number(a.areaM2).toLocaleString('es-CO') + ' m²</td></tr>' +
       '<tr><td>Perímetro</td><td class="n">' + a.perimetroM + ' m</td></tr>' +
       '<tr><td>Esquinas</td><td class="n">' + a.esquinas + '</td></tr>' +
@@ -1028,7 +1033,10 @@
     var cen = (a.cenitales || []).map(function (x) {
       return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
     });
-    return '<h2>Asoleamiento</h2><table>' +
+    var carta = dib('cartaSolar', { lat: Number(meta.lat), lng: Number(meta.lng) });
+    return '<h2>Asoleamiento</h2>' +
+      (carta ? '<div class="dib">' + carta + '</div>' : '') +
+      '<table>' +
       '<tr><td>Amanecer</td><td class="n">' + hora(d.salida) + ' · ' + d.azimutSalida + '°</td></tr>' +
       '<tr><td>Mediodía solar</td><td class="n">' + hora(d.cenit) + ' · ' + d.alturaMaxima + '°</td></tr>' +
       '<tr><td>Atardecer</td><td class="n">' + hora(d.puesta) + ' · ' + d.azimutPuesta + '°</td></tr>' +
@@ -1111,6 +1119,16 @@
     var lote = o.lote !== undefined ? o.lote : S.lote;
     var loteA = o.loteAnalisis !== undefined ? o.loteAnalisis
               : (function () { try { return analisisDelLote(); } catch (e) { return null; } })();
+    /* Los rumbos con y sin datos: la misma cuenta que hace la ficha. Acá se
+       rehace porque la lámina puede imprimirse de un sector guardado, donde
+       las zonas no viajan con la ficha pero los puntos sí. */
+    var zonasL = (function () {
+      try {
+        var c = (meta.lat != null && meta.lng != null)
+          ? { lat: Number(meta.lat), lng: Number(meta.lng) } : null;
+        return c ? zonasSinDatos(res.pois || [], c) : null;
+      } catch (e) { return null; }
+    })();
     var cam = o.caminata !== undefined ? o.caminata : S.caminata;
     var ter = o.terreno !== undefined ? o.terreno : S.terreno;
     var cli = o.clima !== undefined ? o.clima : S.clima;
@@ -1120,14 +1138,23 @@
     var esPol = meta.forma === 'poligono';
     /* Dos formatos del mismo pliego: 60 × 90 vertical, que es el que entra en
        cualquier plotter, y 90 × 60 acostado, que es como se cuelga en un panel
-       de entrega. Cambia el papel y el número de columnas: doce en vez de
-       seis, con los mismos anchos de caja, así que entran el doble por fila y
-       la pila de filas se parte por la mitad. Eso es lo que compensa los
-       300 mm de alto que se pierden al acostar el pliego; el contenido es
-       exactamente el mismo. */
+       de entrega. El contenido es el mismo; lo que cambia es cómo se acomoda.
+
+       En vertical va una rejilla con cajas de distinto ancho: el plano grande
+       arriba a la izquierda y el resto alrededor. Esa rejilla no sirve
+       acostada. Con 300 mm menos de alto, cada fila vale por el alto de su
+       caja más larga y los huecos que deja el encaje se pagan tres veces; con
+       los dibujos dentro, la hoja dejó de cerrar y las últimas cajas se
+       recortaban sin avisar.
+
+       Acostada, entonces, no hay rejilla: hay tres columnas de periódico. Cada
+       caja conserva su alto natural, no se parte por la mitad y la siguiente
+       arranca pegada — no quedan huecos que rellenar. El alto que hace falta
+       pasa a ser la suma de todo dividida entre tres, que es lo mínimo que
+       puede ocupar este contenido en este papel. */
     var horiz = !!o.horizontal;
     var HOJA_W = horiz ? 900 : 600, HOJA_H = horiz ? 600 : 900;
-    var NCOL = horiz ? 12 : 6;
+    var NCOL = 6;
     var A = window.URBIS_PC_ANALISIS;
     // El catálogo de grupos y sus colores: se lee antes del plano porque el
     // plano ya los necesita para pintar cada punto.
@@ -1148,12 +1175,17 @@
        información: el dibujo se escala dentro. */
     var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
                  (trz && trz.espacio && trz.espacio.piezas ? 1 : 0) +
-                 (cam && cam.anillos && cam.anillos.length ? 1 : 0);
+                 (cam && cam.anillos && cam.anillos.length ? 1 : 0) +
+                 (zonasL ? 1 : 0);
     /* Acostado el plano puede ser bastante más alto: la columna en la que va
        es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
        quedaba con una banda blanca de 13 cm al pie. */
-    var altoDelPlano = horiz ? Math.max(300, 765 - 45 * extras)
-                             : Math.max(150, 370 - 45 * extras);
+    /* El plano es la única caja con alto propio y por eso es la que cede
+       cuando hay mucho medido. El piso bajó de 150 a 110 al entrar los cuatro
+       dibujos: con todo medido —terreno, clima, trazado, espacio público,
+       caminata y rumbos— la hoja pedía 32 mm más de los que tiene, y esos
+       32 mm salen de acá o salen de recortar la última caja en silencio. */
+    var altoDelPlano = Math.max(110, 370 - 45 * extras);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
@@ -1249,9 +1281,23 @@
       '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
       // Rejilla de cajas
-      '.rej{ display:grid; grid-template-columns:repeat(' + NCOL + ',1fr); gap:6mm; flex:1;' +
-        'min-height:0; align-content:start }' +
-      '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:5mm; background:#fff;' +
+      (horiz
+        /* `column-fill:auto` llena una columna hasta abajo antes de pasar a la
+           siguiente, en vez de repartir parejo. En un pliego de alto fijo eso
+           es lo que se quiere: la hoja se ve llena y el blanco que sobra queda
+           todo junto al final, como un margen, y no en tres bandas. */
+        ? '.rej{ columns:3; column-gap:6mm; column-fill:auto; flex:1; min-height:0;' +
+          'height:100%; overflow:hidden }' +
+          // En columnas los anchos de la rejilla no aplican: manda la columna.
+          '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
+            'page-break-inside:avoid; margin:0 0 6mm }' +
+          '.alto3{ grid-row:auto }'
+        : '.rej{ display:grid; grid-template-columns:repeat(' + NCOL + ',1fr); gap:5mm; flex:1;' +
+          'min-height:0; align-content:start }') +
+      /* 4 mm de margen interno y no 5: con los dibujos dentro, ese milímetro
+         por caja es lo que hace que la hoja cierre. Menos de 4 y el texto
+         empieza a tocar el borde impreso. */
+      '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:4mm; background:#fff;' +
         'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
       '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
         'color:#0A6F9E; font-weight:800 }' +
@@ -1262,6 +1308,28 @@
       // quedan bandas blancas a los lados, que es lo que pasaba cuando la
       // caja tenía alto propio y el plano se centraba dentro.
       '.plano{ background:#F3F8FB; border-radius:2mm; padding:2mm }' +
+      /* Los dibujos de js/74 traen su propio color y su propio viewBox: acá
+         solo se les da la caja y un techo de alto, que es lo único que puede
+         desbordar una hoja que no crece. */
+      /* La caja del dibujo se ciñe al dibujo (`fit-content`) en vez de ocupar
+         toda la columna: con el fondo estirado de lado a lado, un dibujo alto
+         y angosto quedaba flotando entre dos bandas celestes que no dicen
+         nada. */
+      '.dib{ background:#F7FAFC; border-radius:2mm; padding:3mm; display:flex;' +
+        'justify-content:center; width:fit-content; max-width:100%; margin:0 auto }' +
+      /* Techo de alto para los dibujos. Depende de cuánto se midió: con un
+         sector recién analizado sobra papel y los dibujos se ven grandes; con
+         terreno, clima, trazado, espacio público, caminata y rumbos encima,
+         la hoja va justa y son ellos los que ceden. Sin este techo la carta
+         solar se llevaba medio pliego y las últimas cajas se recortaban sin
+         avisar. */
+      // Manda el ALTO, y el ancho lo pone la proporción del dibujo.
+      '.dib svg{ display:block; height:' +
+        (extras >= 5 ? 26 : extras >= 3 ? 34 : 44) + 'mm; width:auto; max-width:100% }' +
+      '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto }' +
+      '.dib-chico svg{ width:100%; height:auto }' +
+      '.dib-par{ display:flex; align-items:center; gap:5mm }' +
+      '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
       '.cv{ font-size:3mm; color:#3B4A5A; display:inline-flex; align-items:center; gap:1.5mm }' +
@@ -1388,7 +1456,9 @@
         caja('El lote a intervenir',
           (function () {
             if (!loteA) return '';
-            return '<div class="kpis">' +
+            var pl = dib('planoDelLote', lote, loteA);
+            return (pl ? '<div class="dib">' + pl + '</div>' : '') +
+              '<div class="kpis">' +
                 '<div class="k"><b>' + Number(loteA.areaM2).toLocaleString('es-CO') + '</b><small>m² de lote</small></div>' +
                 '<div class="k"><b>' + loteA.perimetroM + '</b><small>m de perímetro</small></div>' +
               '</div>' +
@@ -1450,10 +1520,18 @@
           (function () {
             if (!trz || !trz.llenos) return '';
             var ll = trz.llenos, vi = trz.vias || {}, mo = trz.morfologia || {};
-            return '<div class="kpis">' +
-                '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
-                '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
-                '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
+            var tr = dib('trama', ll.pctLleno);
+            /* La trama va AL LADO de las cifras, no encima: sola en una caja
+               ancha queda flotando en medio del papel como si se hubiera
+               caído ahí. Pegada a los porcentajes, es la misma cifra dibujada
+               y se lee de corrido. */
+            return '<div class="dib-par">' +
+                (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
+                '<div class="kpis">' +
+                  '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
+                  '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
+                  '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
+                '</div>' +
               '</div>' +
               fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
               fila('Vías', String(vi.kmTotal || 0).replace('.', ',') + ' km') +
@@ -1496,7 +1574,9 @@
             var cen = ((solAnio && solAnio.cenitales) || []).map(function (x) {
               return x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
             });
-            return '<div class="kpis">' +
+            var carta = dib('cartaSolar', { lat: Number(meta.lat), lng: Number(meta.lng) });
+            return (carta ? '<div class="dib">' + carta + '</div>' : '') +
+              '<div class="kpis">' +
                 '<div class="k"><b>' + hh(sol.salida) + '</b><small>amanecer</small></div>' +
                 '<div class="k"><b>' + hh(sol.puesta) + '</b><small>atardecer</small></div>' +
                 '<div class="k"><b>' + sol.alturaMaxima + '°</b><small>al mediodía</small></div>' +
@@ -1642,6 +1722,25 @@
               'sitio a menos de ' + MISMO_SITIO_M + ' m, comparando la categoría y no el nombre.</p>';
           })(), 'g3') +
 
+        /* Dónde falta mapear, dibujado. Es la caja que manda a alguien a
+           caminar: un gajo punteado es un rumbo del que OpenStreetMap no sabe
+           nada, y eso se lee de lejos, colgado en la pared. */
+        caja('Dónde falta mapear',
+          (function () {
+            var rosa = rosaDeLoMapeado(zonasL);
+            if (!rosa) return '';
+            var sin = (zonasL.vacios || []).map(function (r) { return r.nombre; });
+            var poco = (zonasL.flojos || []).map(function (f) { return f.rumbo.nombre; });
+            return '<div class="dib">' + rosa + '</div>' +
+              (sin.length
+                ? '<p class="lee">Sin un solo registro al <b>' + esc(sin.join(', ')) + '</b>.</p>'
+                : '<p class="lee">Los ocho rumbos tienen algo mapeado: el trabajo es verificar.</p>') +
+              (poco.length ? fila('Con muy poco', esc(poco.join(', '))) : '') +
+              fila('Usos mapeados en total', zonasL.total || 0) +
+              '<p class="nota">Un rumbo vacío no quiere decir que no haya nada: quiere decir que ' +
+              'nadie lo ha mapeado. Es donde el curso agrega lo que no existía.</p>';
+          })(), 'g3') +
+
         caja('Síntesis del sector',
           (function () {
             var sn = sintesisDelSector(res);
@@ -1736,6 +1835,11 @@
       '.cob{display:flex;height:12px;border-radius:3px;overflow:hidden;max-width:340px;margin:2px 0 8px}' +
       '.cob i{display:block;height:100%}' +
       '.pie{color:#5a6472;font-size:11px;margin:5px 0 0}' +
+      /* Los dibujos traen su propio color en los atributos: acá solo se les
+         pone un ancho de columna para que no salgan a tamaño de pantalla. */
+      '.dib{margin:6px 0 8px;max-width:340px}' +
+      '.dib svg{display:block;width:100%;height:auto}' +
+      '.dib-chico{max-width:130px}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       '</style></head><body>' +
@@ -1754,7 +1858,8 @@
         return t ? t.nombre : id;
       }) + '</table>' +
       loteImpresoIntervenir(o.loteAnalisis !== undefined ? o.loteAnalisis
-        : (function () { try { return analisisDelLote(); } catch (e) { return null; } })()) +
+        : (function () { try { return analisisDelLote(); } catch (e) { return null; } })(),
+        o.lote !== undefined ? o.lote : S.lote) +
       caminataImpresa(o.caminata !== undefined ? o.caminata : S.caminata) +
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno) +
@@ -1771,7 +1876,11 @@
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
       contextoImpreso(st) +
 
-      '<h2>A dónde ir</h2>' + tareas +
+      '<h2>A dónde ir</h2>' +
+      (function () {
+        var rosa = rosaDeLoMapeado(zonas);
+        return rosa ? '<div class="dib">' + rosa + '</div>' : '';
+      })() + tareas +
 
       /* El plan y la lista con nombres son la razón de imprimir esto: el
          diagnóstico se lee en el celular, pero el reparto se recorta y se le
@@ -3209,6 +3318,19 @@
     });
 
     return h4('brujula', 'Asoleamiento') +
+      /* La carta solar antes que los números: es el dibujo con el que un
+         arquitecto decide dónde van los quiebrasoles, y hasta ahora este
+         bloque lo daba en tres cifras y dos párrafos. */
+      (function () {
+        var carta = dib('cartaSolar', { lat: lat, lng: lng, fecha: hoy });
+        return carta
+          ? '<div class="pcr-dibujo pcr-dibujo-solo">' + carta +
+            '<p class="pcr-dibujo-pie">Vista desde arriba: el centro es el cenit y el borde, el ' +
+            'horizonte. La línea gruesa es el recorrido del sol <b>hoy</b>; las punteadas, el día ' +
+            'más alto y el más bajo del año — entre esas dos se mueve el resto. El sector rojo es ' +
+            'el occidente.</p></div>'
+          : '';
+      })() +
       '<p class="pcr-pista">Para <b>hoy</b>, en las coordenadas de este sector y en la hora ' +
       'de este teléfono. Es el sol geométrico: no sabe si enfrente hay una montaña o una torre. ' +
       'Dice de dónde viene la luz — la sombra real se mide en el sitio.</p>' +
@@ -3351,6 +3473,25 @@
      Se dibuja con los 18 sectores del motor reflejados a 36, porque una
      calle no tiene sentido: la que va al nororiente va también al
      suroccidente. */
+  /* Los dibujos viven en js/74 para que la lámina y el PDF los usen sin
+     arrastrar nada de acá. Este atajo evita repetir la comprobación de que el
+     módulo cargó en los seis sitios donde se dibuja. */
+  function dib(nombre, a, b, c) {
+    var D = window.URBIS_DIBUJO;
+    if (!D || typeof D[nombre] !== 'function') return '';
+    try { return D[nombre](a, b, c) || ''; } catch (e) { return ''; }
+  }
+
+  /* La rosa de los ocho rumbos con lo que hay mapeado en cada uno. La cuenta
+     ya la hace zonasSinDatos; acá solo se ordena como la espera el dibujo. */
+  function rosaDeLoMapeado(zonas) {
+    if (!zonas || !zonas.cuenta) return '';
+    return dib('rosaDeRumbos', RUMBOS.map(function (r) {
+      return { id: r.id, nombre: r.nombre, n: zonas.cuenta[r.id] || 0 };
+    }), { etiqueta: 'Rosa de los ocho rumbos del sector: cuántos usos mapeados hay en cada uno; ' +
+          'los rumbos punteados no tienen ninguno' });
+  }
+
   function rosaDeVias(rosa) {
     if (!rosa || !rosa.length) return '';
     var R = 52, cx = 60, cy = 60;
@@ -3615,6 +3756,15 @@
 
       // ── Llenos y vacíos
       '<p class="pcr-lab">Llenos y vacíos</p>' +
+      /* Cien cuadraditos al lado de la barra: la barra dice la proporción, la
+         trama la deja contar. Es el mismo dato dos veces a propósito — uno se
+         lee de cerca y el otro de lejos, colgado en la pared. */
+      '<div class="pcr-dibujo pcr-dibujo-fila">' +
+        dib('trama', ll.pctLleno, { etiqueta: ll.pctLleno + ' de cada cien metros cuadrados del ' +
+             'sector están construidos' }) +
+        '<p class="pcr-dibujo-pie">De cada cien metros cuadrados del sector, <b>' + ll.pctLleno +
+        '</b> están construidos.</p>' +
+      '</div>' +
       '<div class="pcr-llenos">' +
         '<div class="pcr-llenos-barra">' +
           '<i class="pcr-lleno" style="width:' + ll.pctLleno + '%"></i>' +
@@ -5180,6 +5330,18 @@
         '<div class="pcr-kpi"><b>' + a.perimetroM + '</b><small>m de perímetro</small></div>' +
         '<div class="pcr-kpi"><b>' + a.esquinas + '</b><small>esquinas</small></div>' +
       '</div>' +
+      /* El plano acotado. Es lo primero que se dibuja en cualquier
+         anteproyecto y hasta acá el lote se leía como una tabla de números:
+         cada lado con su medida, la calle a la que da, y en rojo la fachada
+         que recibe el sol de la tarde. */
+      (function () {
+        var pl = dib('planoDelLote', S.lote, a);
+        return pl
+          ? '<div class="pcr-dibujo pcr-dibujo-solo">' + pl +
+            '<p class="pcr-dibujo-pie">El lote a escala, con el norte arriba. Cada lado lleva su ' +
+            'medida y, si da a una calle registrada, su nombre.</p></div>'
+          : '';
+      })() +
 
       (a.frentes.length
         ? '<p class="pcr-lab">Sus frentes</p>' +
@@ -6438,6 +6600,15 @@
           : '') +
 
         h4('norte', 'A dónde ir') +
+        (function () {
+          var rosa = rosaDeLoMapeado(zonas);
+          return rosa
+            ? '<div class="pcr-dibujo pcr-dibujo-solo">' + rosa +
+              '<p class="pcr-dibujo-pie">Cuántos usos mapeados hay en cada rumbo del sector. Los ' +
+              'gajos punteados son los que no tienen <b>ninguno</b>: ahí todo lo que levanten es ' +
+              'nuevo.</p></div>'
+            : '';
+        })() +
         tareas +
 
         // La síntesis va acá, después de todas las mediciones y antes de las
@@ -7409,6 +7580,7 @@
                                    trazado: f.trazado || null, terreno: f.terreno || null,
                                    clima: f.clima || null,
                                    loteAnalisis: f.loteAnalisis || null,
+                                   lote: f.lote || null,
                                    caminata: f.caminata || null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }

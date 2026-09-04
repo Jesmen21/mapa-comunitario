@@ -1305,3 +1305,29 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-clima-mes{ fill:var(--edu-ink-3); font-size:8px; font-weight:700; font-family:var(--edu-font); }
 .pcr-clima-eje{ fill:var(--edu-ink-3); font-size:8px; font-weight:600; font-family:var(--edu-font); }
 .pcr-hoja .pcr-clima-leyenda, .pcr-pestana .pcr-clima-leyenda{ margin:2px 0 4px !important; }
+
+/* ── 20. Los dibujos del análisis ────────────────────────────────────────
+   Carta solar, rosa de los ocho rumbos, plano del lote y trama de llenos.
+   Los cuatro salen de js/74 con los colores puestos en los atributos —tienen
+   que servir igual en la lámina y en el PDF, que son documentos aparte—, así
+   que acá solo se les da la caja: el fondo, el aire alrededor y el pie.
+
+   Un dibujo sin pie es un adorno: el pie es el que dice qué se está mirando
+   y es lo que se lee después de que el ojo se paró en la figura. */
+.pcr-hoja .pcr-dibujo, .pcr-pestana .pcr-dibujo{
+  flex:0 0 auto; margin:6px 0 10px;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:10px; box-shadow:var(--edu-sombra);
+}
+.pcr-dibujo-solo{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.pcr-dibujo-fila{ display:flex; align-items:center; gap:12px; }
+.pcr-dibujo svg{ display:block; max-width:100%; height:auto; }
+.pcr-dibujo-pie{
+  margin:0; font-size:.74rem; line-height:1.4; color:var(--edu-ink-3);
+  text-align:center;
+}
+.pcr-dibujo-fila .pcr-dibujo-pie{ text-align:left; flex:1; }
+.pcr-dibujo-pie b{ color:var(--edu-ink-1); font-weight:700; }
+/* La trama son cien cuadraditos de 9 px: en un teléfono angosto no puede
+   crecer más que su mitad de la fila o empuja al pie fuera de la caja. */
+.pcr-dibujo-fila .pcr-trama{ flex:0 0 auto; width:112px; }
