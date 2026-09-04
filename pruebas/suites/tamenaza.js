@@ -121,6 +121,21 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
       body:JSON.stringify({features:cuerpo})});
   });
 
+  /* El IDEAM, contestando que no modeló este sitio. Esta suite es del SISMO y
+     no le importa el agua, pero desde que las dos se piden con el mismo botón,
+     sin esta ruta la inundación se iba por el relevo del motor —que en pruebas
+     no tiene salida a internet— y se quedaba esperando hasta agotarse. Sola
+     pasaba; con cuatro suites en paralelo, no siempre. Una prueba que depende
+     de la carga de la máquina no prueba nada. */
+  await ctx.route(/visualizador\.ideam\.gov\.co/, r=>{
+    const u=decodeURIComponent(r.request().url());
+    r.fulfill({status:200,contentType:'application/json',
+      body: /MapServer\?f=json/.test(u)
+        ? JSON.stringify({layers:[{id:1,name:'Amenaza Inundacion TR 2 Años Centros Poblados 2K'},
+                                  {id:5,name:'Amenaza Inundacion TR 100 Años Centros Poblados 2K'}]})
+        : JSON.stringify({count:0})});
+  });
+
   const pg=await ctx.newPage();
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});

@@ -440,8 +440,18 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
       linea('  CAPAS: ' + capas.length);
       capas.forEach(function (c) { linea('    [' + c.id + '] ' + c.name); });
       if (!capas.length) {
-        // Puede ser una capa suelta y no un servicio con varias.
-        return examinarCapa(url.replace(/\/\d+$/, ''), '', nombre);
+        /* Dos cosas distintas se ven igual acá. Si la dirección termina en un
+           número es una CAPA suelta, y hay que mirarla. Si no, es un servicio
+           que no publica ninguna capa —el IGAC tiene uno así, con descripción
+           y todo—, y preguntarle por el punto devolvía «0 registro(s)», que se
+           lee como «no hay nada en este sitio» cuando lo cierto es «no hay
+           nada en este servicio». */
+        if (/\/\d+$/.test(url)) return examinarCapa(url.replace(/\/\d+$/, ''), '', nombre);
+        linea('  ✗ este servicio no publica NINGUNA capa: no hay nada que consultar.');
+        hallazgos.push({ titulo: nombre || url, url: url, marca: 'mal',
+          etiqueta: 'vacío', nota: 'el servicio existe pero no tiene capas' });
+        pintarHallazgos();
+        return;
       }
       // Se examinan las que interesan; si ninguna coincide, las tres primeras,
       // porque a veces el nombre útil está en la capa y no en el servicio.
@@ -501,27 +511,46 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
           return;
         }
         buenos.forEach(function (s) { linea('  ✔ ' + s.nombre + '  (' + s.tipo + ')'); });
-        /* Un servicio por carpeta. En el Servicio Geológico hay doce variantes
-           del mismo mapa sísmico —una por periodo de retorno— con la MISMA
-           tabla adentro: examinarlas todas gastó la sonda entera en repetir
-           una respuesta y dejó sin mirar los movimientos en masa, que es lo
-           que de verdad le pasa a Cúcuta. Se examina una de cada carpeta y se
-           deja anotado el resto para poder pedirlas a mano. */
-        var porCarpeta = {}, unaCada = [];
+        /* Uno por FAMILIA de nombre, no por carpeta.
+
+           La regla vieja agrupaba por carpeta, y era la agrupación equivocada.
+           Nació de un problema real: el Servicio Geológico tiene doce variantes
+           del mismo mapa sísmico —una por periodo de retorno— con la misma
+           tabla adentro, y examinarlas todas gastaba la sonda entera repitiendo
+           una respuesta. Pero la carpeta no es lo que las hace repetidas: lo que
+           las hace repetidas es que se LLAMAN casi igual.
+
+           Y cuando eso no coincide, la regla hace daño. En el IGAC, la carpeta
+           `ordenamientoterritorial` tiene cuatro mapas distintos —clasificación
+           del suelo, zonificación de usos, datos nacionales, Villavicencio— y
+           se examinaba solo el primero por orden alfabético, que además resultó
+           estar vacío. La pregunta que la sonda salió a contestar —qué trae el
+           POT del IGAC— se quedó sin contestar por eso.
+
+           Así que se agrupa por la RAÍZ del nombre: sin carpeta, sin acentos,
+           sin dígitos, las diez primeras letras. Las doce del sismo caen juntas
+           y las 168 de potencial de uso también; las cuatro del POT no, porque
+           no se parecen. */
+        function raizDelNombre(n) {
+          return String(n).split('/').pop()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase().replace(/[^a-z]/g, '').slice(0, 10);
+        }
+        var porFamilia = {}, unaCada = [];
         buenos.forEach(function (s) {
-          var carpeta = s.nombre.indexOf('/') > 0 ? s.nombre.split('/')[0] : '(raíz)';
-          if (porCarpeta[carpeta]) { porCarpeta[carpeta].push(s.nombre); return; }
-          porCarpeta[carpeta] = [];
+          var fam = raizDelNombre(s.nombre);
+          if (porFamilia[fam]) { porFamilia[fam].push(s.nombre); return; }
+          porFamilia[fam] = [];
           unaCada.push(s);
         });
-        Object.keys(porCarpeta).forEach(function (c) {
-          if (porCarpeta[c].length) {
-            linea('  (de la carpeta ' + c + ' se examina una sola; las otras ' +
-                  porCarpeta[c].length + ' suelen traer la misma tabla — si hace falta, ' +
-                  'pegalas en la caja 2)');
+        Object.keys(porFamilia).forEach(function (c) {
+          if (porFamilia[c].length) {
+            linea('  (de «' + c + '…» se examina una sola; las otras ' +
+                  porFamilia[c].length + ' se llaman casi igual y suelen traer la ' +
+                  'misma tabla — si hace falta, pegalas en la caja 2)');
           }
         });
-        return unaCada.slice(0, 12).reduce(function (cadena, s) {
+        return unaCada.slice(0, 16).reduce(function (cadena, s) {
           return cadena.then(function () {
             estado('Examinando ' + s.nombre + ' …');
             return examinarServicio(raiz + '/' + s.nombre + '/' + (s.tipo || 'MapServer'), s.nombre);

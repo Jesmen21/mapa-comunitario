@@ -158,6 +158,9 @@ const REGISTRO = { type:'FeatureCollection', features:[
   await ctx.route(/arcgis-con-token/, r=>r.fulfill({status:200,
     contentType:'application/json',
     body:JSON.stringify({error:{message:'Token Required',code:499}})}));
+  await ctx.route(/arcgis-vacio/, r=>r.fulfill({status:200,
+    contentType:'application/json',
+    body:JSON.stringify({serviceDescription:'Clasificacion del suelo POT',layers:[]})}));
   await ctx.route(/arcgis-abierto/, r=>r.fulfill({status:200,
     contentType:'application/json',
     body:JSON.stringify(respuestaArcgis(decodeURIComponent(r.request().url())))}));
@@ -195,7 +198,8 @@ const REGISTRO = { type:'FeatureCollection', features:[
   /* La caja 2, que es la que examina direcciones sueltas. */
   await pg.fill('#suelto','https://arcgis-cors-cerrado.gov.co/server/rest/services/pot/MapServer\n' +
     'https://arcgis-con-token.gov.co/server/rest/services/pot/MapServer\n' +
-    'https://arcgis-abierto.gov.co/server/rest/services/pot/MapServer');
+    'https://arcgis-abierto.gov.co/server/rest/services/pot/MapServer\n' +
+    'https://arcgis-vacio.gov.co/server/rest/services/pot/MapServer');
   await pg.click('#examinar');
   await pg.waitForFunction(()=>/Listo/.test(document.getElementById('estado').textContent),
     {timeout:120000});
@@ -287,6 +291,35 @@ const REGISTRO = { type:'FeatureCollection', features:[
     ogc.hallazgos.map(h=>h.marca).join(' · '));
 
   console.log('');
+  console.log('\n  -- qué se examina y qué se salta --');
+  /* La regla vieja agrupaba por carpeta y era la agrupación equivocada: en el
+     IGAC, cuatro mapas distintos del POT viven en la misma carpeta y solo se
+     miraba el primero por orden alfabético —que además estaba vacío—. La
+     pregunta que la sonda salió a contestar se quedó sin contestar por eso.
+     Ahora se agrupa por cómo se LLAMAN, que es lo que de verdad los repite. */
+  const raizDe = n => String(n).split('/').pop()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z]/g,'').slice(0,10);
+  const familias = l => new Set(l.map(raizDe)).size;
+  T('cuatro mapas distintos de una misma carpeta NO se agrupan',
+    familias(['ordenamientoterritorial/clasificaciondelsuelopot',
+              'ordenamientoterritorial/zonificacionusossegunpot',
+              'ordenamientoterritorial/datosnacionalespot',
+              'ordenamientoterritorial/villavicenciozonificacionpot'])===4);
+  T('pero las variantes del mismo mapa sísmico sí',
+    familias(['Amenaza_Sismica/Mapa_Amenaza_Sismica_Nacional_PGA225',
+              'Amenaza_Sismica/Mapa_Amenaza_Sismica_Nacional_PGA475',
+              'Amenaza_Sismica/Mapa_Amenaza_Sismica_Nacional_PGA2475'])===1);
+  T('y los 168 municipios de agrología, que fue el problema original',
+    familias(['agrologia/potencialusoaipe41016','agrologia/potencialusozaragoza05895',
+              'agrologia/potencialusotumaco52835'])===1);
+  T('los acentos no separan familias',
+    familias(['Inundación_01___12_Marzo_2026_MIL1',
+              'Inundacion_13___18_Marzo_2026_MIL1'])===1);
+  T('un servicio sin capas se dice vacío, no se consulta como si fuera una',
+    /no publica NINGUNA capa/.test(J) && !/vacio del todo/.test(J),
+    (J.match(/[^\n]*NINGUNA capa[^\n]*/)||['(no salió en esta corrida)'])[0].trim());
+
   console.log('\n  -- el relevo del motor --');
   T('lo que el navegador no pudo leer, se pide por el relevo',
     relevosPedidos.some(u=>/arcgis-cors-cerrado/.test(u)),
