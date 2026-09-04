@@ -3168,7 +3168,17 @@
         else seguirAlMapa(false);
         pintarCirculo(); pintar(); return;
       }
-      if (acc === 'agrandar') { S.encogida = false; seguirAlMapa(false); pintar(); return; }
+      if (acc === 'lote-deshacer') { deshacerLote(); return; }
+      if (acc === 'lote-cerrar') { cerrarLote(); return; }
+      if (acc === 'lote-cancelar') { cancelarLote(); S.encogida = false; pintar(); return; }
+      if (acc === 'agrandar') {
+        /* Si se está dibujando un lote, «volver» tiene que SALIR del dibujo.
+           Sin esto el botón bajaba `S.encogida` y la hoja se quedaba igual,
+           porque `encoger` manda mientras `loteDibujando` sea verdadero. Un
+           botón que no hace nada es peor que uno que no está. */
+        if (S.loteDibujando) cancelarLote();
+        S.encogida = false; seguirAlMapa(false); pintar(); return;
+      }
       // Nota: el calor sigue encendido en el mapa al volver al informe. Se
       // apaga desde los chips o desde el chip del propio mapa.
       if (acc === 'encoger') { S.encogida = true;
@@ -3588,6 +3598,45 @@
                 })()
               : 'sobre la foto satelital') }
         : { icono: 'capas', titulo: 'Sobre el mapa', detalle: 'ninguna capa encendida' };
+
+    /* Dibujando un lote, este panel mostraba los chips del mapa de calor y un
+       botón «Volver al informe» que no volvía a ningún lado: `encoger` es
+       verdadero mientras `loteDibujando` lo sea, así que bajar `S.encogida`
+       no cambiaba nada. Desde afuera se veía como una aplicación colgada —el
+       botón no hacía nada, el calor no se podía apagar, la ficha no aparecía—
+       y encima cada toque en el mapa añadía otro vértice, porque el oyente
+       del lote seguía puesto.
+
+       Un panel que ofrece los controles de otra cosa no es un detalle de
+       presentación: es lo que hace que alguien crea que la aplicación se
+       rompió. Mientras se dibuja, acá van los controles del lote y nada más.
+       (La barra flotante de abajo sigue estando; esto es para cuando queda
+       tapada por la propia hoja, que es lo que pasó en campo.) */
+    if (S.loteDibujando) {
+      var nL = (S.lote || []).length;
+      return '' +
+        '<button type="button" data-pcr="agrandar" class="pcr-asa" ' +
+          'aria-label="Cancelar el lote y volver"></button>' +
+        '<div class="pcr-mini-cuerpo">' +
+          '<div class="pcr-mini-fila">' +
+            '<div class="pcr-mini-que">' +
+              '<b>' + ico('lapiz', 16) + 'Marcando el lote</b>' +
+              '<small>' + (nL === 0 ? 'tocá las esquinas sobre el mapa'
+                        : nL < 3 ? 'llevás ' + nL + ' esquina' + (nL === 1 ? '' : 's')
+                        : 'llevás ' + nL + ' esquinas · tocá la primera para cerrar') +
+              '</small>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="lote-deshacer" class="pcr-mini"' +
+              (nL ? '' : ' disabled') + '>' + ico('deshacer', 16) + 'Deshacer</button>' +
+            '<button type="button" data-pcr="lote-cerrar" class="pcr-mini pcr-llevar-b"' +
+              (nL >= 3 ? '' : ' disabled') + '>' + ico('ok', 16) + 'Listo</button>' +
+          '</div>' +
+          '<button type="button" data-pcr="lote-cancelar" class="pcr-principal">' +
+            ico('atras') + 'Cancelar y volver al informe</button>' +
+        '</div>';
+    }
 
     return '' +
       '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Volver al informe"></button>' +
@@ -7620,13 +7669,18 @@
       } catch (e) {}
     }
     pts.push({ lat: lat, lng: lng });
-    pintarLote(); pintarBarraLote();
+    /* `pintar()` además de la barra: desde que el panel encogido muestra las
+       esquinas que llevás, dejarlo fuera hacía que ese contador dijera «tocá
+       las esquinas» para siempre. Un contador que no cuenta confunde más que
+       no ponerlo. La hoja encogida es un panel de cuatro líneas, así que
+       repintarla por toque no cuesta nada. */
+    pintarLote(); pintarBarraLote(); pintar();
   }
 
   function deshacerLote() {
     if (!S.loteDibujando || !S.lote || !S.lote.length) return;
     S.lote.pop();
-    pintarLote(); pintarBarraLote();
+    pintarLote(); pintarBarraLote(); pintar();
   }
 
   function cancelarLote() {

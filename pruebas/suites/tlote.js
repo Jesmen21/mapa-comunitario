@@ -178,6 +178,61 @@ for(let i=0;i<40;i++){ const ang=i*9*Math.PI/180, d=(200+(i%6)*80)/111320;
     return o;
   });
   Object.assign(r, extra);
+
+  /* ── El panel encogido mientras se dibuja ────────────────────────────
+     Esto salió de un fallo en campo, con captura: alguien analizó un sector,
+     empezó a marcar un lote, y la aplicación se quedó «congelada». El panel
+     de abajo mostraba los chips del MAPA DE CALOR y un botón «Volver al
+     informe» que no volvía a ningún lado, el calor no se podía apagar, la
+     ficha no aparecía —ni vegetación, ni DANE, ni movilidad— y cada toque en
+     el mapa añadía otro vértice al polígono.
+
+     Una sola causa para los cinco síntomas: `encoger` es verdadero mientras
+     `loteDibujando` lo sea, así que bajar `S.encogida` no cambiaba nada. El
+     botón estaba muerto y el oyente del mapa seguía puesto.
+
+     Se prueba desde una página nueva porque el estado de arriba ya tiene un
+     lote cerrado y una ficha guardada. */
+  await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
+  await pg.waitForTimeout(3200);
+  const cong=await pg.evaluate(async (D)=>{
+    const {C,POL}=D, esperar=ms=>new Promise(r=>setTimeout(r,ms)), o={};
+    window.URBIS_CONFIG.ANALISIS.API=window.__URBIS_MOTOR;
+    window.map.setView([C.lat,C.lng],16); await esperar(500);
+    const R=window.URBIS_PC_RECON;
+    const bPC=document.querySelector('[data-u52-call="procity-open-map"]');
+    if(bPC){ bPC.click(); await esperar(600); }
+    R.abrir(); await esperar(300);
+    await R.analizar(); await esperar(1500);
+    const H=()=>document.getElementById('pcr-hoja');
+    const bl=[...H().querySelectorAll('[data-pcr="lote-dibujar"]')][0];
+    if(bl){ bl.click(); await esperar(700); }
+    o.seEncoge=/pcr-encogida/.test(H().className);
+    const t=()=>(H().textContent||'').replace(/\s+/g,' ').trim();
+    // El panel tiene que hablar del LOTE, no del mapa de calor.
+    o.panel=t().slice(0,140);
+    o.hablaDelLote=/Marcando el lote/.test(t());
+    o.sinChipsDeCalor=!/Todos los usos/.test(t());
+    o.tieneSalida=!!H().querySelector('[data-pcr="lote-cancelar"]');
+    // Marcar dos esquinas y comprobar que el panel las cuenta.
+    window.map.fire('click',{latlng:{lat:C.lat+0.0004,lng:C.lng+0.0004}});
+    window.map.fire('click',{latlng:{lat:C.lat+0.0004,lng:C.lng-0.0004}});
+    await esperar(400);
+    o.cuenta=/llevás 2 esquinas/.test(t());
+    // Y ahora la salida: tiene que abrir la ficha de verdad.
+    const salir=H().querySelector('[data-pcr="lote-cancelar"]');
+    if(salir){ salir.click(); await esperar(700); }
+    o.trasSalir=/pcr-encogida/.test(H().className);
+    o.hayFicha=/usos registrados/.test(t());
+    // El mapa ya no puede seguir marcando vértices.
+    const antes=document.querySelectorAll('.leaflet-interactive').length;
+    window.map.fire('click',{latlng:{lat:C.lat+0.0008,lng:C.lng+0.0008}});
+    await esperar(300);
+    o.mapaLibre=document.querySelectorAll('.leaflet-interactive').length===antes;
+    return o;
+  },{C,POL});
+  r.cong=cong;
+
   r.err=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
 
@@ -245,6 +300,15 @@ for(let i=0;i<40;i++){ const ang=i*9*Math.PI/180, d=(200+(i%6)*80)/111320;
   P('la pestaña trae el asoleamiento', r.pestSol===3, r.pestSol+' momentos del día');
   P('la pestaña trae los hitos', r.pestHitos && r.pestHitosN===r.hitos.length,
     r.pestHitosN+' en la pestaña, '+r.hitos.length+' en la ficha');
+
+  console.log('\n  -- dibujando el lote, la hoja no se puede quedar colgada --');
+  P('el panel se encoge para dejar ver el mapa', r.cong.seEncoge);
+  P('y habla del LOTE, no del mapa de calor',
+    r.cong.hablaDelLote && r.cong.sinChipsDeCalor, r.cong.panel.slice(0,70));
+  P('cuenta las esquinas que se van marcando', r.cong.cuenta);
+  P('hay una salida visible sin buscarla', r.cong.tieneSalida);
+  P('y esa salida SÍ abre la ficha', !r.cong.trasSalir && r.cong.hayFicha);
+  P('después, tocar el mapa ya no dibuja vértices', r.cong.mapaLibre);
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');
