@@ -233,6 +233,68 @@ for(let i=0;i<40;i++){ const ang=i*9*Math.PI/180, d=(200+(i%6)*80)/111320;
   },{C,POL});
   r.cong=cong;
 
+  /* ── Un lápiz a la vez ───────────────────────────────────────────────
+     Sobre el mismo mapa se pueden dibujar tres cosas: el área del sector, el
+     lote y las marcas de lo intangible. Cada una se armaba por su cuenta.
+     Con dos armadas, un solo toque alimentaba los DOS dibujos: cuatro toques
+     dejaban cuatro vértices de sector y un lote cerrado encima.
+
+     Desde fuera eso no se lee como «tengo dos modos activos» —nadie sabe que
+     existen dos—, se lee como «no me deja dibujar el área»: sale una cosa
+     distinta de la que se pidió. Así llegó reportado, con captura. */
+  await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
+  await pg.waitForTimeout(3200);
+  const lap = await pg.evaluate(async (D) => {
+    const {C}=D, esperar=ms=>new Promise(r=>setTimeout(r,ms)), o={};
+    window.URBIS_CONFIG.ANALISIS.API=window.__URBIS_MOTOR;
+    window.map.setView([C.lat,C.lng],17); await esperar(400);
+    const A=window.URBIS_PC_ANALISIS, R=window.URBIS_PC_RECON;
+    const bPC=document.querySelector('[data-u52-call="procity-open-map"]');
+    if(bPC){ bPC.click(); await esperar(600); }
+    R.abrir(); await esperar(400);
+    const H=()=>document.getElementById('pcr-hoja');
+    // 1 · se arma el LOTE
+    const bf=[...H().querySelectorAll('button')].filter(b=>/El lote y su entorno/.test(b.textContent||''))[0];
+    if(bf){ bf.click(); await esperar(400); }
+    const bd=H().querySelector('[data-pcr="lote-dibujar"]');
+    if(bd){ bd.click(); await esperar(600); }
+    o.loteArmado=!!document.getElementById('pcr-lote-barra');
+    // 2 · y ahora el lápiz del SECTOR
+    A.iniciarDibujo(); await esperar(500);
+    o.sectorArmado=A.estaDibujando();
+    o.loteSoltado=!document.getElementById('pcr-lote-barra');
+    return o;
+  },{C});
+
+  /* 3 · los toques van a UN solo dibujo. Se disparan por el mapa y no con
+     `touchscreen.tap` porque el choque ocurre en los oyentes de Leaflet —los
+     dos escuchaban el mismo `click`—, no en el gesto; y este contexto no
+     tiene pantalla táctil. */
+  const conteo = await pg.evaluate(async (C) => {
+    const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const d=0.0004;
+    for (const p of [[d,d],[d,-d],[-d,-d],[-d,d]]) {
+      window.map.fire('click',{latlng:{lat:C.lat+p[0], lng:C.lng+p[1]}});
+      await esperar(200);
+    }
+    return { verticesSector: document.querySelectorAll('.pca-vertice-root').length,
+             hayBarraLote: !!document.getElementById('pcr-lote-barra') };
+  }, C);
+
+  // 4 · y al revés: armar el lote suelta el lápiz del sector
+  const alReves = await pg.evaluate(async () => {
+    const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    const A=window.URBIS_PC_ANALISIS;
+    A.iniciarDibujo(); await esperar(300);
+    const antes=A.estaDibujando();
+    const H=document.getElementById('pcr-hoja');
+    const bd=H.querySelector('[data-pcr="lote-dibujar"]');
+    if(bd){ bd.click(); await esperar(600); }
+    return { armadoAntes: antes, sectorSoltado: !A.estaDibujando(),
+             loteArmado: !!document.getElementById('pcr-lote-barra') };
+  });
+  r.lap = Object.assign({}, lap, conteo, alReves);
+
   r.err=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
 
@@ -309,6 +371,16 @@ for(let i=0;i<40;i++){ const ang=i*9*Math.PI/180, d=(200+(i%6)*80)/111320;
   P('hay una salida visible sin buscarla', r.cong.tieneSalida);
   P('y esa salida SÍ abre la ficha', !r.cong.trasSalir && r.cong.hayFicha);
   P('después, tocar el mapa ya no dibuja vértices', r.cong.mapaLibre);
+
+  console.log('\n  -- un lápiz a la vez sobre el mismo mapa --');
+  P('armar el lote pone su barra', r.lap.loteArmado);
+  P('armar el lápiz del sector SUELTA el del lote',
+    r.lap.sectorArmado && r.lap.loteSoltado);
+  P('y los toques alimentan un solo dibujo, no dos',
+    r.lap.verticesSector===4 && !r.lap.hayBarraLote,
+    r.lap.verticesSector+' vértices de sector, barra del lote: '+r.lap.hayBarraLote);
+  P('la regla vale en los dos sentidos: armar el lote suelta el sector',
+    r.lap.armadoAntes && r.lap.sectorSoltado && r.lap.loteArmado);
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

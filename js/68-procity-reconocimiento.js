@@ -7644,6 +7644,7 @@
   function iniciarLote() {
     var m = mapa();
     if (!m) { S.loteAviso = 'El mapa todavía no está listo.'; pintar(); return; }
+    soltarOtrosLapices('lote');
     S.lote = []; S.loteDibujando = true; S.loteAviso = '';
     /* Acercar antes de dibujar. A la escala en que se ve un sector entero, un
        lote de veinte metros mide diez píxeles: no se puede marcar una esquina
@@ -7757,6 +7758,32 @@
      puedan separar nunca. Antes había tres despachos distintos —«agrandar»,
      «encoger» y el asa— y solo uno de ellos sabía que hay que cancelar el
      dibujo del lote al subir. */
+  /* ── Un lápiz a la vez ───────────────────────────────────────────────
+     Sobre este mismo mapa se pueden dibujar TRES cosas: el área del sector
+     (js/24, el lápiz de la barra derecha), el lote, y las marcas de lo
+     intangible. Cada una se armaba por su cuenta y ninguna sabía de las
+     otras.
+
+     Con dos armadas, un solo toque alimentaba los dos dibujos. Se comprobó:
+     cuatro toques dejaron cuatro vértices de sector Y un lote cerrado de
+     7.558 m² encima. Desde fuera eso no se lee como «tengo dos modos
+     activos» —nadie sabe que existen dos—: se lee como «no me deja dibujar
+     el área», porque sale una cosa distinta de la que se pidió.
+
+     Armar un lápiz suelta los otros. Es toda la regla, y tiene que estar en
+     los tres sitios donde se arma uno; si falta en uno, vuelve el problema
+     por ahí. */
+  function soltarOtrosLapices(cual) {
+    if (cual !== 'sector') {
+      try {
+        var A = window.URBIS_PC_ANALISIS;
+        if (A && A.estaDibujando && A.estaDibujando() && A.cancelar) A.cancelar();
+      } catch (e) {}
+    }
+    if (cual !== 'lote' && S.loteDibujando) cancelarLote();
+    if (cual !== 'intangible' && S.intDibujando) cerrarIntangible();
+  }
+
   function alternarHoja(quieroEncogida) {
     if (!quieroEncogida && S.loteDibujando) cancelarLote();
     S.encogida = !!quieroEncogida;
@@ -7959,6 +7986,7 @@
     if (!I || !I.tipo(tipoId)) return;
     var m = mapa();
     if (!m) { S.intAviso = 'El mapa todavía no está listo.'; pintar(); return; }
+    soltarOtrosLapices('intangible');
     S.intTipo = tipoId; S.intPts = []; S.intDibujando = true; S.intAviso = '';
     S.encogida = true;
     /* Un sitio de olor o un foco de basura se marcan con precisión de metros;
@@ -12141,6 +12169,10 @@
        se puede saber si un repintado lento se arregla memorizando bloques o
        dejando de reemplazar la hoja entera, y optimizar sin saberlo es tirar
        a ver si pega. */
+    /* Para que el lápiz del sector, que vive en otro archivo, pueda soltar
+       los de esta hoja al armarse. Sin esto la regla solo valdría en dos de
+       los tres sentidos. */
+    soltarLapices: function () { soltarOtrosLapices('sector'); },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';
     },

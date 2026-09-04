@@ -255,6 +255,15 @@
 
   function iniciarDibujo(){
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
+    /* Soltar los lápices de la hoja de reconocimiento —el del lote y el de
+       lo intangible— antes de armar este. Con dos armados un solo toque
+       alimenta los dos dibujos, y lo que se ve es que «no deja dibujar el
+       área»: sale otra cosa. La regla vive en js/68 porque es quien conoce
+       sus modos; acá solo se la pide. */
+    try {
+      var R = window.URBIS_PC_RECON;
+      if (R && typeof R.soltarLapices === 'function') R.soltarLapices();
+    } catch (e) {}
     reg('area-dibujo-inicio');
     cerrarBurbuja();
     S.dibujando = true;

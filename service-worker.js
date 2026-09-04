@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v696-la-hoja-se-empuja';
+const URBIS_CACHE = 'urbis-v697-un-lapiz-a-la-vez';
 const URBIS_ASSETS = [
   './',
   './index.html',
