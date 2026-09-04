@@ -53,6 +53,12 @@
   var CAPA = SGC + 'Amenaza_Sismica/Mapa_Amenaza_Sismica_Nacional_PGA475/MapServer/0/query';
   var CAPA_MASA = SGC + 'Mapa_Nacional_Amenaza_Mov_Masa_100K/' +
                   'Mapa_Nacional_Amenaza_Movimientos_Masa_100K/FeatureServer/3/query';
+  /* 4 · Cómo se SIENTE un sismo acá, en palabras. Aa = 0,35 no le dice nada a
+     alguien de primer año; «se siente fuerte, con potencial de daño ligero»
+     sí, y es la misma amenaza contada de la única manera que se puede llevar
+     a una discusión de taller. También por polígono municipal. */
+  var CAPA_INTENSIDAD = SGC + 'Zonificacion_Sismica_Intensidad_Esperada/' +
+    'Departamentos_Municipios_zonificacion_Intensidad_Sismica_Esperada/MapServer/0/query';
 
   var CAMPOS = ['NOMDEPTO', 'NOMMUN', 'POINT_X', 'POINT_Y',
                 'PGA75', 'PGA225', 'PGA475', 'PGA975', 'PGA2475',
@@ -242,6 +248,24 @@
     };
   }
 
+  /* La intensidad esperada. Se toman las dos PALABRAS y no su campo PGA:
+     esa capa publica un rango —«9.20-18.0»— que no es el mismo que la
+     aceleración de diseño de la NSR-10 y que, puesto al lado de Aa = 0,35,
+     solo puede confundir. Dos cifras distintas para lo que parece lo mismo,
+     sin nadie explicando en qué se diferencian, es peor que una sola. */
+  function leerIntensidad(a) {
+    if (!a) return null;
+    var per = String(a.PERCEPCION || '').trim();
+    var pot = String(a.POTENCIAL || '').trim();
+    if (!per && !pot) return null;
+    return {
+      percepcion: per, potencial: pot,
+      zona: String(a.ZONAS_AMENAZA_SISMICA_NSR_10 || '').trim(),
+      fuente: 'Servicio Geológico Colombiano · Zonificación sísmica de la ' +
+              'intensidad esperada'
+    };
+  }
+
   function consultar(lat, lng, msTope) {
     var centro = { lat: lat, lng: lng };
     // Cada una aguanta su propio fracaso: con este servidor, exigir las tres
@@ -253,11 +277,13 @@
     return Promise.all([
       blando(pedir(CAPA_NSR, '*', lat, lng, 0, msTope)),
       blando(pedir(CAPA, CAMPOS, lat, lng, RADIO_M, msTope)),
-      blando(pedir(CAPA_MASA, '*', lat, lng, 0, msTope))
+      blando(pedir(CAPA_MASA, '*', lat, lng, 0, msTope)),
+      blando(pedir(CAPA_INTENSIDAD, '*', lat, lng, 0, msTope))
     ]).then(function (res) {
       var nsr = (res[0].ok || [])[0] || null;
       var pgas = res[1].ok || [];
       var masa = (res[2].ok || [])[0] || null;
+      var inten = (res[3].ok || [])[0] || null;
 
       // De la capa de puntos, la cabecera más cercana.
       var mejor = null, mejorD = Infinity;
@@ -273,7 +299,8 @@
       }
       var am = leer(mejor, centro, nsr);
       am.masa = leerMasa(masa);
-      am.fallos = [res[0].error, res[1].error, res[2].error].filter(Boolean);
+      am.intensidad = leerIntensidad(inten);
+      am.fallos = [res[0].error, res[1].error, res[2].error, res[3].error].filter(Boolean);
       return am;
     });
   }
@@ -291,6 +318,10 @@
       l.push('    ' + String(p.tr).padStart(4, ' ') + ' años: ' + p.gal + ' gal (' +
              String(p.g).replace('.', ',') + ' g)');
     });
+    if (am.intensidad) {
+      l.push('  Cómo se siente: ' + am.intensidad.percepcion.toLowerCase() +
+             ', con potencial de daño ' + am.intensidad.potencial.toLowerCase() + '.');
+    }
     if (am.pide) l.push('  ' + am.pide);
     (am.discrepan || []).forEach(function (d) {
       l.push('  OJO: ' + d.cual + ' difiere entre las dos capas del SGC — ' +
@@ -316,8 +347,10 @@
   }
 
   window.URBIS_AMENAZA = {
-    consultar: consultar, leer: leer, leerMasa: leerMasa, comoTexto: comoTexto,
+    consultar: consultar, leer: leer, leerMasa: leerMasa,
+    leerIntensidad: leerIntensidad, comoTexto: comoTexto,
     ZONAS: ZONAS, zonaDe: zonaDe,
-    CAPA: CAPA, CAPA_NSR: CAPA_NSR, CAPA_MASA: CAPA_MASA
+    CAPA: CAPA, CAPA_NSR: CAPA_NSR, CAPA_MASA: CAPA_MASA,
+    CAPA_INTENSIDAD: CAPA_INTENSIDAD
   };
 })();

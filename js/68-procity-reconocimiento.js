@@ -1100,6 +1100,12 @@
           String(am.av).replace('.', ',') + '</td></tr>' : '') +
         (am.ae != null ? '<tr><td>Ae · umbral de daño</td><td class="n">' +
           String(am.ae).replace('.', ',') + '</td></tr>' : '') +
+        (am.intensidad
+          ? '<tr><td>Cómo se percibe un sismo</td><td class="n">' +
+            esc(am.intensidad.percepcion) + '</td></tr>' +
+            '<tr><td>Potencial de daño esperado</td><td class="n">' +
+            esc(am.intensidad.potencial) + '</td></tr>'
+          : '') +
         (am.ad != null ? '<tr><td>Ad · seguridad limitada</td><td class="n">' +
           String(am.ad).replace('.', ',') + '</td></tr>' : '') +
         am.curva.map(function (p) {
@@ -1139,7 +1145,9 @@
       'consultada es un punto por cabecera municipal. Si el municipio tiene microzonificación ' +
       'sísmica, esa manda sobre este valor. La aceleración se publica en gal (cm/s²); ' +
       'dividida por 981 da los g de la norma.</p>' +
-      '<p class="nota">' + esc(am.fuente) + '.</p>';
+      '<p class="nota">' + esc(am.fuente) +
+      (am.intensidad ? '. La percepción y el potencial de daño, de ' +
+        esc(am.intensidad.fuente) : '') + '.</p>';
   }
 
   function campoImpreso(c) {
@@ -1744,6 +1752,10 @@
       (am.diseno
       ? fila('Aceleración de diseño (475 años)', am.diseno.gal + ' gal · ' +
       String(am.diseno.g).replace('.', ',') + ' g')
+      : '') +
+      (am.intensidad
+      ? fila('Cómo se siente un sismo acá',
+      esc(am.intensidad.percepcion) + ', daño ' + esc(am.intensidad.potencial.toLowerCase()))
       : '') +
       (am.pide ? '<p class="lee">' + esc(am.pide) + '</p>' : '') +
       (am.masa
@@ -4577,6 +4589,16 @@
         (am.av != null ? '<div class="pcr-kpi"><b>' + String(am.av).replace('.', ',') +
           '</b><small>Av</small></div>' : '') +
       '</div>' +
+      /* Cómo se siente, en palabras. Va ANTES de los coeficientes: «Aa =
+         0,35» no le dice nada a alguien de primer año, y «se siente fuerte»
+         sí. Es la misma amenaza contada de la única manera que se puede
+         llevar a una discusión de taller. */
+      (am.intensidad
+        ? '<p class="pcr-conc">Un sismo acá <b>se siente ' +
+          esc(am.intensidad.percepcion.toLowerCase()) + '</b>, con potencial de daño <b>' +
+          esc(am.intensidad.potencial.toLowerCase()) + '</b>. Es la misma amenaza de arriba ' +
+          'dicha en palabras, que es como se discute en un taller.</p>'
+        : '') +
       (am.pide ? '<p class="pcr-conc">' + esc(am.pide) + ' El sistema estructural lo decide un ' +
         'ingeniero; lo que le toca al taller es saber que el edificio está en amenaza <b>' +
         esc(am.nivel.toLowerCase()) + '</b> y proyectar en consecuencia: regularidad en planta y ' +

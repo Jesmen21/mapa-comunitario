@@ -62,6 +62,14 @@ const NSR={"OBJECTID":822,"RULEID":1,"NOMBRE_DEPARTAMENTO":"NORTE DE SANTANDER",
    REDONDEADOS, que son los que el estudiante tiene delante (0 + 32,8 + 59,2 +
    8,7). Decir «suman 100,6» debajo de cuatro números que suman 100,7 sería
    una discrepancia nueva puesta por nosotros. */
+/* La zonificación de intensidad esperada, literal. Se le toman las dos
+   PALABRAS y no su campo PGA: publica «9.20-18.0», que no es la aceleración
+   de diseño de la NSR-10 y que, puesta al lado de Aa = 0,35, solo puede
+   confundir. Está adentro a propósito, para que se compruebe que NO sale. */
+const INTENSIDAD={"OBJECTID":822,"CATEGORIA":"M","AREA_KM":1135.85351703,
+  "CODIGO_DANE":"54001","DEPARTAMENTO":"Norte de Santander","MUNICIPIO":"Cúcuta",
+  "ZONAS_AMENAZA_SISMICA_NSR_10":"Alta","PERCEPCION":"Fuerte","POTENCIAL":"Ligero",
+  "PGA":"9.20-18.0"};
 const MASA={"OBJECTID":821,"CATEGORIA":"M","AREA_KM":1135.66529446,"CODIGO_DAN":"54001",
   "DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cúcuta",
   "SUM_BAJA":0,"SUM_MEDIA":32.77987281,"SUM_ALTA":59.15464252,"SUM_MUY_AL":8.71232415};
@@ -106,6 +114,8 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     let cuerpo;
     if(/Zonas_amenaza_Sismica_NR10/.test(u)){ consultas.nsr=u; cuerpo=[{attributes:NSR}]; }
     else if(/Mov_Masa/.test(u)){ consultas.masa=u; cuerpo=[{attributes:MASA}]; }
+    else if(/Intensidad_Sismica_Esperada/.test(u)){ consultas.inten=u;
+      cuerpo=[{attributes:INTENSIDAD}]; }
     else { consultas.pga=u; cuerpo=[{attributes:VECINO},{attributes:CUCUTA}]; }
     r.fulfill({status:200,contentType:'application/json',
       body:JSON.stringify({features:cuerpo})});
@@ -208,8 +218,9 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
   T('el módulo está cargado', r.hayModulo===true);
   T('sin pedirla, el bloque invita en vez de decir «sin datos»',
     /coeficientes/.test(r.antes) && /NSR-10/.test(r.antes));
-  T('se piden las tres capas de una vez, y una sola vez cada una',
-    veces===3 && consultas.nsr && consultas.pga && consultas.masa, veces+' consultas');
+  T('se piden las cuatro capas de una vez, y una sola vez cada una',
+    veces===4 && consultas.nsr && consultas.pga && consultas.masa && consultas.inten,
+    veces+' consultas');
   T('los coeficientes, a la capa que existe para servir la norma',
     /Zonas_amenaza_Sismica_NR10/.test(consultas.nsr||''));
   /* Contención y no distancia: la capa es de polígonos municipales, así que
@@ -287,6 +298,23 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     r.dibujo.etq);
   T('la lámina la lleva también',
     /<h2>La amenaza sísmica<\/h2>/.test(LAM) && /años de periodo de retorno/.test(LAM));
+
+  console.log('\n  -- cómo se siente, en palabras --');
+  /* «Aa = 0,35» no le dice nada a alguien de primer año; «se siente fuerte,
+     con daño ligero» sí, y es la misma amenaza contada de la única manera que
+     se puede llevar a una discusión de taller. */
+  T('la ficha lo dice en palabras',
+    /se siente fuerte/.test(F) && /potencial de daño ligero/.test(F),
+    (F.match(/Un sismo acá[^.]{0,70}/)||['no lo dice'])[0]);
+  /* Y NO se muestra el PGA de esa capa: publica «9.20-18.0», que no es la
+     aceleración de diseño y que al lado de Aa = 0,35 solo puede confundir.
+     Dos cifras distintas para lo que parece lo mismo es peor que una sola. */
+  T('sin colar su PGA, que es otra medida y confundiría',
+    !/9,20|9\.20|18,0-|9\.20-18/.test(F));
+  T('la lámina lo lleva', /Cómo se siente un sismo acá/.test(LAM) && /Fuerte/.test(LAM));
+  T('el PDF también, con las dos filas',
+    /Cómo se percibe un sismo/.test(PDF) && /Potencial de daño esperado/.test(PDF));
+  T('y nombra de dónde salió', /intensidad esperada/.test(PDF));
 
   console.log('\n  -- movimientos en masa --');
   T('sale el reparto del municipio', /amenaza alta o muy alta/.test(F),
