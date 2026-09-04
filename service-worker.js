@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v691-la-misma-rosca';
+const URBIS_CACHE = 'urbis-v692-lo-que-hay-que-ir-a-buscar';
 const URBIS_ASSETS = [
   './',
   './index.html',

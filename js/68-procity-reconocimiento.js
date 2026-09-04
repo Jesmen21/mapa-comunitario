@@ -1100,7 +1100,7 @@
     var Q = window.URBIS_QUE_CABE;
     if (!Q || !lote) return '';
     var q = null;
-    try { q = Q.calcular(lote, idx || S.indices || Q.porDefecto(), ctxQueCabe()); }
+    try { q = Q.calcular(lote, idx || S.indices || Q.porDefecto(), ctxQueCabe(), S.indicesPuestos); }
     catch (e) { return ''; }
     if (!q) return '';
     return '<h2>Qué cabe en el lote</h2>' +
@@ -1639,7 +1639,7 @@
       var Q = window.URBIS_QUE_CABE;
       if (!Q || !loteA) return '';
       var q = null;
-      try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe()); }
+      try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe(), o.indicesPuestos || S.indicesPuestos); }
       catch (e) { return ''; }
       if (!q) return '';
       return '<div class="kpis">' +
@@ -2768,7 +2768,13 @@
       S.indices = S.indices || Q.porDefecto();
       var v = Number(c.value);
       // Un índice negativo o vacío no es una opinión: es un error de tecleo.
-      S.indices[c.getAttribute('data-pcr-idx')] = (isFinite(v) && v >= 0) ? v : 0;
+      var cual = c.getAttribute('data-pcr-idx');
+      S.indices[cual] = (isFinite(v) && v >= 0) ? v : 0;
+      /* Que alguien haya escrito en la casilla es la única señal de que ese
+         número salió de la ficha normativa y no del ejemplo. Se guarda aparte
+         del valor: un índice que por casualidad coincide con el de ejemplo
+         sigue estando confirmado si alguien lo escribió. */
+      (S.indicesPuestos = S.indicesPuestos || {})[cual] = true;
       guardarFichaViva();
       pintar();
     });
@@ -2897,6 +2903,20 @@
         } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
         pintar(); return;
       }
+      if (acc === 'pedido-texto') {
+        var QP = window.URBIS_QUE_CABE;
+        if (!QP || !QP.textoDelPedido) return;
+        var donde = (S.resultado && S.resultado.lugar && S.resultado.lugar.ciudad) || '';
+        var txtP = QP.textoDelPedido(donde);
+        S.textoPlano = txtP;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtP);
+            S.aviso = 'Copiada. Pegala en las notas del teléfono y llevala a la ventanilla.';
+          } else { S.aviso = 'Copiala del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Copiala del cuadro de abajo.'; }
+        pintar(); return;
+      }
       if (acc === 'pliego-caja') {
         var idCaja = b.getAttribute('data-c') || '';
         var estabaC = cajasDelPliego(S.resultado).filter(function (c) {
@@ -2979,7 +2999,7 @@
         var laC = null;
         try { laC = analisisDelLote(); } catch (e) {}
         if (!laC) return;
-        var txtC = QC.comoTexto(QC.calcular(laC, S.indices || QC.porDefecto(), ctxQueCabe()));
+        var txtC = QC.comoTexto(QC.calcular(laC, S.indices || QC.porDefecto(), ctxQueCabe(), S.indicesPuestos));
         S.textoPlano = txtC;
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2993,6 +3013,7 @@
         var QR = window.URBIS_QUE_CABE;
         if (!QR) return;
         S.indices = QR.porDefecto();
+        S.indicesPuestos = {};
         S.aviso = 'Volvieron los valores de ejemplo. No son la norma de Cúcuta: son un ' +
                   'punto de partida para que la cuenta arranque.';
         guardarFichaViva(); pintar(); return;
@@ -9101,6 +9122,36 @@
     };
   }
 
+  /* La lista para la ventanilla. Existe porque el POT de Cúcuta no está
+     publicado como servicio en ningún servidor del Estado —se revisaron el
+     SGC, el IDEAM, el IGAC, la UPRA y la ANLA— y no va a estarlo por ahora.
+     Así que el estudiante va a Planeación, y presentarse sin saber qué pedir
+     es volver con las manos vacías: en un mostrador, «necesito los datos del
+     POT» no es una pregunta que alguien pueda contestar, y «la ficha
+     normativa del predio tal» sí. */
+  function bloquePedido() {
+    var Q = window.URBIS_QUE_CABE;
+    if (!Q || !Q.PEDIDO) return '';
+    return '<p class="pcr-lab">Lo que hay que ir a buscar</p>' +
+      '<p class="pcr-pista">Estos números no están en ningún servicio web: hay que pedirlos. ' +
+      'Con lo de los dos primeros puntos se llenan las casillas de arriba y la cuenta deja de ' +
+      'ser un ejemplo.</p>' +
+      '<div class="pcr-lote">' +
+        Q.PEDIDO.map(function (p, i) {
+          return '<div class="pcr-pedido">' +
+            '<b>' + (i + 1) + '. ' + esc(p.que) + '</b>' +
+            '<span class="pcr-pedido-d">' + esc(p.donde) + '</span>' +
+            '<em>' + esc(p.trae) + '</em>' +
+            '<em class="pcr-pedido-c">' + esc(p.con) + '</em>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="pedido-texto" class="pcr-mini">' +
+          ico('copiar', 16) + 'Copiar la lista para llevarla</button>' +
+      '</div>';
+  }
+
   function bloqueQueCabe(guardada) {
     var Q = window.URBIS_QUE_CABE;
     var la = null;
@@ -9114,12 +9165,16 @@
         'llena.</p>';
     }
     var idx = S.indices || (S.indices = Q.porDefecto());
-    var q = Q.calcular(la, idx, ctxQueCabe());
+    var q = Q.calcular(la, idx, ctxQueCabe(), S.indicesPuestos);
     if (!q) return '';
 
+    var puestos = S.indicesPuestos || {};
     var campos = Q.CAMPOS.map(function (c) {
-      return '<label class="pcr-cabe-c">' +
-        '<span><b>' + esc(c.nombre) + '</b><small>' + esc(c.unidad) + '</small></span>' +
+      var confirmado = !!puestos[c.id];
+      var delProyecto = c.deQuien === 'proyecto';
+      return '<label class="pcr-cabe-c' + (confirmado || delProyecto ? '' : ' pcr-cabe-ej') + '">' +
+        '<span><b>' + esc(c.nombre) + '</b><small>' + esc(c.unidad) +
+          (delProyecto ? '' : (confirmado ? ' · del POT' : ' · ejemplo')) + '</small></span>' +
         '<input type="number" step="any" min="0" data-pcr-idx="' + esc(c.id) + '" ' +
           'value="' + esc(String(idx[c.id])) + '"' + (guardada ? ' disabled' : '') + ' />' +
         '<em>' + esc(c.ayuda) + '</em>' +
@@ -9138,6 +9193,20 @@
       'escribas. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
       'es parte del ejercicio.</p>' +
       (guardada ? '' : '<div class="pcr-cabe-campos">' + campos + '</div>') +
+      /* La banda va PEGADA a las cifras, no arriba del todo. La advertencia de
+         más arriba dice de dónde salen los índices; esta dice si ESTAS cifras
+         son de este lote o de un ejemplo. Un estudiante que baja hasta los
+         números grandes ya se olvidó del párrafo de arriba, y los números
+         grandes es lo que copia. */
+      (q.deEjemplo
+        ? '<p class="pcr-conc pcr-ojo"><b>Cuenta de ejemplo.</b> ' +
+          (q.confirmados ? q.faltan.length + ' de los ' + q.delPot + ' índices siguen siendo ' +
+            'los que trae URBIS' : 'Ningún índice se ha cambiado todavía') +
+          ', así que lo de abajo <b>no es de este lote</b>: es lo que daría un lote de este ' +
+          'tamaño con unos números cualesquiera. Sirve para ver cómo funciona; no sirve para ' +
+          'una entrega.</p>'
+        : '<p class="pcr-conc">Los ' + q.delPot + ' índices vienen de la ficha normativa, ' +
+          'así que esta cuenta es de <b>este</b> lote.</p>') +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + q.huellaM2.toLocaleString('es-CO') +
           '</b><small>m² de huella</small></div>' +
@@ -9166,6 +9235,10 @@
           '<button type="button" data-pcr="cabe-reiniciar" class="pcr-mini">' +
             ico('deshacer', 16) + 'Volver a los valores de ejemplo</button>' +
         '</div>') +
+      /* Lo que hay que ir a buscar. Aparece solo mientras falten índices: una
+         vez que están puestos, esta lista es ruido debajo de un resultado
+         bueno. */
+      (guardada || !q.deEjemplo ? '' : bloquePedido()) +
       q.avisos.map(function (a) {
         return '<p class="pcr-pista pcr-int-aviso">' + esc(a) + '</p>';
       }).join('');

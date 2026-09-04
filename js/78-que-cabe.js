@@ -50,7 +50,50 @@
              'de él depende que el vecino tenga ventana.' },
     { id: 'm2Vivienda', nombre: 'Tamaño de la vivienda', unidad: 'm²', pordefecto: 60,
       ayuda: 'Para traducir metros construidos a cuántas familias. La VIS en Colombia ' +
-             'ronda los 50 m²; una vivienda de estrato medio, 80 o 90.' }
+             'ronda los 50 m²; una vivienda de estrato medio, 80 o 90.',
+      // Este no sale del POT: lo decide quien proyecta.
+      deQuien: 'proyecto' }
+  ];
+
+  /* Lo que hay que ir a pedir, y con qué palabras.
+
+     URBIS no trae el POT de Cúcuta y no va a traerlo: no está publicado como
+     servicio en ningún servidor del Estado —se revisaron el SGC, el IDEAM, el
+     IGAC, la UPRA y la ANLA—. Así que el estudiante va a Planeación. Esta
+     lista existe porque ir sin saber qué pedir es volver con las manos
+     vacías: en una ventanilla, «necesito los datos del POT» no es una
+     pregunta que alguien pueda contestar, y «la ficha normativa del predio
+     tal» sí.
+
+     Va con el número predial porque es lo que identifica el lote en el
+     mostrador; sin él la respuesta es «¿de cuál predio?». */
+  var PEDIDO = [
+    { que: 'La ficha normativa del predio',
+      donde: 'Secretaría de Planeación Municipal',
+      trae: 'Trae de una vez el tratamiento, los índices de ocupación y construcción, ' +
+            'la altura y los aislamientos: los seis primeros campos de acá.',
+      con: 'Llevá el número predial o la dirección exacta.' },
+    { que: 'El plano de tratamientos urbanísticos y el de usos del suelo',
+      donde: 'Secretaría de Planeación Municipal · cartografía del POT vigente',
+      trae: 'Dice qué se puede hacer en el sector, que es distinto de cuánto. Un lote ' +
+            'con índices generosos y uso restringido no admite lo que sale de la cuenta.',
+      con: 'Pedí la versión VIGENTE con su número de acuerdo y el año.' },
+    { que: 'El mapa de amenaza por inundación del POT',
+      donde: 'Secretaría de Planeación Municipal · componente de gestión del riesgo',
+      trae: 'Es lo que URBIS no pudo darte: el IDEAM no modeló Cúcuta y su mapa nacional ' +
+            'no dibuja quebradas. Si el lote está en suelo de protección por amenaza, ' +
+            'no hay cuenta de índices que valga.',
+      con: 'Preguntá también si hay estudio de detalle para esa comuna.' },
+    { que: 'La cota de ronda del río Pamplonita',
+      donde: 'CORPONOR · POMCA del Pamplonita',
+      trae: 'CORPONOR levantó la ronda del tramo urbano. Es el dato bueno de agua para ' +
+            'Cúcuta y no está en ningún servicio web.',
+      con: 'Solo hace falta si el lote está cerca del río o de una quebrada.' },
+    { que: '¿Hay microzonificación sísmica de Cúcuta?',
+      donde: 'Secretaría de Planeación Municipal',
+      trae: 'Si existe, MANDA sobre el Aa y el Av que URBIS te mostró, y puede duplicar ' +
+            'la aceleración de diseño.',
+      con: 'Es una pregunta de sí o no; si la respuesta es sí, pedí el documento.' }
   ];
 
   function porDefecto() {
@@ -61,10 +104,17 @@
 
   /* La cuenta. `lote` es lo que midió URBIS; `idx` lo que escribió la
      persona; `ctx` lo demás que ya se midió del sitio. */
-  function calcular(lote, idx, ctx) {
+  function calcular(lote, idx, ctx, puestos) {
     if (!lote || !lote.areaM2) return null;
     var i = idx || porDefecto();
     var c = ctx || {};
+    /* Cuáles de los índices tocó una persona. Sin esto, una cuenta hecha con
+       los valores de ejemplo sale con la misma cara de seguridad que una hecha
+       con la ficha normativa en la mano — y es la misma clase de error que
+       decirle a alguien que su lote no se inunda cuando nadie lo midió. */
+    var p = puestos || {};
+    var delPot = CAMPOS.filter(function (x) { return x.deQuien !== 'proyecto'; });
+    var sinConfirmar = delPot.filter(function (x) { return !p[x.id]; });
     var area = Number(lote.areaM2);
 
     /* El área que queda después de los aislamientos, estimada por el
@@ -166,13 +216,44 @@
       mandaAltura: mandaAltura,
       cruces: cruces,
       avisos: avisos,
-      indices: i
+      indices: i,
+      // Cuántos de los seis del POT vienen de la ficha normativa y cuántos son
+      // el ejemplo que trae la aplicación.
+      confirmados: delPot.length - sinConfirmar.length,
+      delPot: delPot.length,
+      faltan: sinConfirmar.map(function (x) { return x.nombre; }),
+      deEjemplo: sinConfirmar.length > 0
     };
+  }
+
+  /* La lista para llevar a la ventanilla. Se copia y se pega en el teléfono:
+     es lo que convierte «buscá el POT» en cinco cosas que se pueden pedir. */
+  function textoDelPedido(donde) {
+    var l = ['LO QUE HAY QUE IR A BUSCAR' + (donde ? ' — ' + donde : ''), ''];
+    PEDIDO.forEach(function (p, i) {
+      l.push((i + 1) + '. ' + p.que);
+      l.push('   Dónde: ' + p.donde);
+      l.push('   ' + p.trae);
+      l.push('   ' + p.con);
+      l.push('');
+    });
+    l.push('Con lo de los puntos 1 y 2 se llenan los índices en URBIS y la cuenta de');
+    l.push('qué cabe deja de ser un ejemplo. Los puntos 3, 4 y 5 son lo que ningún');
+    l.push('servicio web publica para Cúcuta.');
+    return l.join('\n');
   }
 
   function comoTexto(q) {
     if (!q) return 'Qué cabe: sin lote o sin índices.';
-    var l = ['QUÉ CABE EN EL LOTE'];
+    var l = ['QUÉ CABE EN EL LOTE' + (q.deEjemplo ? ' — CUENTA DE EJEMPLO' : '')];
+    /* Va arriba y en mayúsculas porque este texto se pega en una memoria de
+       proyecto, y ahí la advertencia de la pantalla ya no está. Un renglón al
+       pie no lo lee nadie; el título sí. */
+    if (q.deEjemplo) {
+      l.push('  OJO: ' + q.faltan.length + ' de ' + q.delPot + ' índices son los valores de');
+      l.push('  EJEMPLO que trae URBIS, no los del POT: ' + q.faltan.join(', ') + '.');
+      l.push('  Las cifras de abajo no son de este lote hasta que se cambien.');
+    }
     l.push('  Lote: ' + q.areaLoteM2.toLocaleString('es-CO') + ' m²');
     l.push('  Índices usados (del POT, puestos a mano): ocupación ' +
            String(q.indices.io).replace('.', ',') + ' · construcción ' +
@@ -193,6 +274,7 @@
   }
 
   window.URBIS_QUE_CABE = {
-    CAMPOS: CAMPOS, porDefecto: porDefecto, calcular: calcular, comoTexto: comoTexto
+    CAMPOS: CAMPOS, PEDIDO: PEDIDO, porDefecto: porDefecto,
+    calcular: calcular, comoTexto: comoTexto, textoDelPedido: textoDelPedido
   };
 })();

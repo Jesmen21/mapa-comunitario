@@ -172,14 +172,76 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
              t.indexOf('Estos índices los ponés vos') < t.indexOf('m² de huella');
     })();
 
+    /* ── Lo de ejemplo y lo confirmado ──────────────────────────────────
+       Antes de tocar nada, los seis índices del POT son los que trae URBIS.
+       Se mide en tres sitios: la banda sobre las cifras, la marca en cada
+       casilla, y el color de esa marca —que la aplicación pinta de menta
+       todo `small` dentro de una etiqueta y esto ya quedó blanco sobre
+       blanco una vez, en el bloque de lo intangible—. */
+    o.antesDeTocar = {
+      banda: /Cuenta de ejemplo/.test(o.conLote),
+      dice: /no es de este lote/.test(o.conLote),
+      marcadas: H().querySelectorAll('.pcr-cabe-ej').length,
+      hayLista: /Lo que hay que ir a buscar/.test(o.conLote),
+      pideFicha: /ficha normativa del predio/.test(o.conLote),
+      pidePlaneacion: /Planeación Municipal/.test(o.conLote)
+    };
+    o.contraste = (function () {
+      const m = H().querySelector('.pcr-cabe-ej small');
+      if (!m) return null;
+      const cs = getComputedStyle(m);
+      const lum = c => {
+        const v = (c.match(/[\d.]+/g) || []).slice(0, 3).map(x => {
+          x = Number(x) / 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4);
+        });
+        return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+      };
+      let fondo = cs.backgroundColor, el = m;
+      while (el && (!fondo || /rgba\(0, 0, 0, 0\)|transparent/.test(fondo))) {
+        el = el.parentElement; if (!el) break; fondo = getComputedStyle(el).backgroundColor;
+      }
+      const a = lum(cs.webkitTextFillColor || cs.color), b = lum(fondo || 'rgb(255,255,255)');
+      return Math.round(((Math.max(a, b) + .05) / (Math.min(a, b) + .05)) * 10) / 10;
+    })();
+
+    // El texto que se pega en una memoria tiene que llevar la marca: ahí la
+    // pantalla ya no está.
+    o.textoDeEjemplo = (function () {
+      const Q = window.URBIS_QUE_CABE, R = window.URBIS_PC_RECON;
+      const t = Q.comoTexto(Q.calcular({ areaM2: 1000, perimetroM: 130 },
+        Q.porDefecto(), {}, {}));
+      return { titulo: /CUENTA DE EJEMPLO/.test(t), cuerpo: /valores de/.test(t) };
+    })();
+    o.listaParaLlevar = window.URBIS_QUE_CABE.textoDelPedido('Cúcuta');
+
     // ── Cambiar un índice y ver que la cuenta cambia.
     const ic=H().querySelector('[data-pcr-idx="ic"]');
     ic.value='4';
     ic.dispatchEvent(new Event('change',{bubbles:true}));
     await esperar(700); await abrir();
-    o.conIC4=trozo('Qué cabe en el lote',3000);
+    /* 6.000 y no 3.000: con la banda de «cuenta de ejemplo» y la lista de la
+       ventanilla adentro, el bloque creció y el corte viejo dejaba fuera la
+       frase del final. La prueba se ensancha para leer más, nunca se afloja
+       para exigir menos. */
+    o.conIC4=trozo('Qué cabe en el lote',6000);
     // Con IC 4 el tope pasa a ser la ALTURA, no el índice.
     o.mandaAltura=/no manda el índice de construcción sino la altura/.test(o.conIC4);
+
+    /* Con los SEIS puestos, la banda tiene que irse y la lista de la
+       ventanilla también. Una advertencia que no se apaga cuando el problema
+       se resuelve deja de leerse a los dos días. */
+    ['io','ic','pisos','aisFrente','aisLado','aisFondo'].forEach(id=>{
+      const el=H().querySelector('[data-pcr-idx="'+id+'"]');
+      if(el){ el.value=String(Number(el.value)||1); el.dispatchEvent(new Event('change',{bubbles:true})); }
+    });
+    await esperar(700); await abrir();
+    const conTodos=trozo('Qué cabe en el lote',5000);
+    o.conLosSeis={
+      sinBanda: !/Cuenta de ejemplo/.test(conTodos),
+      loDice: /vienen de la ficha normativa/.test(conTodos),
+      sinLista: !/Lo que hay que ir a buscar/.test(conTodos),
+      marcadas: H().querySelectorAll('.pcr-cabe-ej').length
+    };
 
     // Un valor absurdo no puede colarse.
     const io=H().querySelector('[data-pcr-idx="io"]');
@@ -245,6 +307,38 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
   T('y el PDF también, antes de la tabla',
     /los puso a mano quien hizo el informe/.test(PDF) &&
     PDF.indexOf('los puso a mano') < PDF.indexOf('Índice de ocupación'));
+
+  console.log('\n  -- de ejemplo no es lo mismo que medido --');
+  /* La cuenta sale igual de segura con los índices del POT que con los que
+     trae la aplicación de fábrica. Es el mismo error que decirle a alguien
+     que su lote no se inunda cuando nadie lo midió, en otro sitio. */
+  T('sin tocar nada, las cifras se marcan como ejemplo',
+    r.antesDeTocar.banda && r.antesDeTocar.dice);
+  T('y cada casilla sin confirmar lo dice',
+    r.antesDeTocar.marcadas===6, r.antesDeTocar.marcadas+' de 6 marcadas');
+  T('la marca se lee: contraste suficiente sobre su fondo',
+    r.contraste!==null && r.contraste>=4.5, r.contraste+':1');
+  T('el texto que se pega en la memoria lleva la marca en el TÍTULO',
+    r.textoDeEjemplo.titulo && r.textoDeEjemplo.cuerpo);
+
+  T('y cuando los seis están puestos, la banda se apaga',
+    r.conLosSeis.sinBanda && r.conLosSeis.loDice);
+  T('y no queda ninguna casilla marcada como ejemplo',
+    r.conLosSeis.marcadas===0, r.conLosSeis.marcadas+' marcadas');
+
+  console.log('\n  -- lo que hay que ir a buscar --');
+  /* El POT de Cúcuta no está publicado como servicio en ningún servidor del
+     Estado. El estudiante va a Planeación, y presentarse sin saber qué pedir
+     es volver con las manos vacías. */
+  T('aparece la lista mientras falten índices', r.antesDeTocar.hayLista);
+  T('nombra el documento que de verdad hay que pedir', r.antesDeTocar.pideFicha);
+  T('y a quién pedírselo', r.antesDeTocar.pidePlaneacion);
+  T('la lista se puede copiar entera, con los cinco puntos',
+    /1\. La ficha normativa/.test(r.listaParaLlevar) &&
+    /5\. ¿Hay microzonificación/.test(r.listaParaLlevar));
+  T('incluye lo que URBIS no pudo dar: el agua y la ronda del Pamplonita',
+    /Pamplonita/.test(r.listaParaLlevar) && /IDEAM no modeló Cúcuta/.test(r.listaParaLlevar));
+  T('y desaparece cuando ya no hace falta', r.conLosSeis.sinLista);
 
   console.log('\n  -- la cuenta, contra una respuesta conocida --');
   /* Lote 40 × 25 = 1.000 m², perímetro 130, frente 40 a la avenida.
