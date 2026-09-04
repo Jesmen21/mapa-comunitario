@@ -1440,3 +1440,116 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 .pcr-capa-gris{ opacity:.55; cursor:default; }
 .pcr-capa-gris i{ filter:grayscale(1); }
+
+/* ── 25. Lo intangible ───────────────────────────────────────────────────
+   Es el único bloque de la ficha que se llena a mano, y tiene que verse
+   distinto por eso: los lápices son objetos que se toman —cuadrados, con su
+   color al frente—, y las marcas, una lista de testimonios con su nota
+   escribible al lado. El resto de la hoja informa; esto se usa. */
+.pcr-hoja .pcr-int-lapices, .pcr-pestana .pcr-int-lapices{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px;
+  margin:4px 0 10px;
+}
+.pcr-int-lapiz{
+  display:flex; align-items:center; gap:8px; text-align:left; min-width:0;
+  padding:7px 8px; border-radius:var(--edu-r-m);
+  border:1px solid var(--edu-line); background:var(--edu-ground);
+  color:var(--edu-ink); font:inherit; cursor:pointer;
+}
+.pcr-int-lapiz:active{ transform:translateY(1px); }
+.pcr-int-lapiz i{
+  flex:0 0 auto; width:26px; height:26px; border-radius:var(--edu-r-s);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:.82rem; font-style:normal; line-height:1;
+}
+.pcr-int-lapiz span{ display:flex; flex-direction:column; min-width:0; }
+/* El mismo !important que las capas, y por lo mismo: la aplicación pinta de
+   menta claro todo `small` dentro de un botón. */
+.pcr-hoja .pcr-int-lapiz b, .pcr-pestana .pcr-int-lapiz b{
+  font-size:.8rem; font-weight:700; line-height:1.25;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-int-lapiz small, .pcr-pestana .pcr-int-lapiz small{
+  font-size:.68rem;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+
+/* El recuento por tipo: una tarjeta por color, con el borde del color para
+   que la leyenda del mapa y la de la ficha sean la misma. */
+.pcr-int-cuenta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:6px;
+  margin:2px 0 10px;
+}
+.pcr-int-c{
+  border:1px solid var(--edu-line); border-left-width:4px;
+  border-radius:var(--edu-r-s); padding:6px 8px; background:var(--edu-ground);
+  display:flex; flex-direction:column; gap:1px; min-width:0;
+}
+.pcr-int-c b{ font-size:1.05rem; font-weight:800; color:var(--edu-ink); line-height:1.1; }
+/* Otra vez el !important y el prefijo de la hoja: una regla global de la
+   aplicación pinta TODO `small` y `span` de menta casi blanca, y sin esto el
+   nombre del tipo sale blanco sobre blanco justo en la tarjeta que lo nombra. */
+.pcr-hoja .pcr-int-c small, .pcr-pestana .pcr-int-c small{
+  font-size:.68rem; line-height:1.25;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-int-c em{ font-size:.64rem; font-style:normal; color:var(--edu-ink-3); }
+
+.pcr-int-et{
+  display:inline-block; padding:1px 7px; border-radius:999px;
+  color:#fff; font-size:.72rem; font-weight:700; white-space:nowrap;
+}
+.pcr-int-des{ border-left:3px solid var(--edu-accent-deep); padding-left:9px; }
+
+.pcr-int-lista{ display:flex; flex-direction:column; gap:6px; margin:2px 0 10px; }
+.pcr-int-item{
+  display:flex; align-items:flex-start; gap:8px;
+  border:1px solid var(--edu-line); border-radius:var(--edu-r-s);
+  padding:7px 8px; background:var(--edu-ground);
+}
+.pcr-int-item > i{
+  flex:0 0 auto; width:10px; height:10px; border-radius:3px; margin-top:4px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.12) inset;
+}
+.pcr-int-tx{ display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 auto; }
+.pcr-int-tx b{ font-size:.82rem; color:var(--edu-ink); }
+.pcr-hoja .pcr-int-tx small, .pcr-pestana .pcr-int-tx small{
+  font-size:.68rem;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-hoja .pcr-int-tx q, .pcr-pestana .pcr-int-tx q{
+  font-size:.76rem; font-style:italic;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
+.pcr-int-nota{
+  width:100%; box-sizing:border-box; font:inherit; font-size:.76rem;
+  padding:5px 7px; border-radius:var(--edu-r-s);
+  border:1px solid var(--edu-line); background:var(--edu-paper);
+  color:var(--edu-ink);
+}
+/* El texto de ayuda del campo lo pinta la misma regla global. Sin esto, la
+   pregunta que invita a escribir la nota es invisible. */
+.pcr-hoja .pcr-int-nota::placeholder, .pcr-pestana .pcr-int-nota::placeholder{
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+  opacity:1;
+}
+.pcr-hoja .pcr-int-nota, .pcr-pestana .pcr-int-nota{
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-int-x{
+  flex:0 0 auto; border:0; background:transparent; cursor:pointer;
+  color:var(--edu-ink-3); padding:2px; line-height:0;
+}
+.pcr-int-aviso{ font-style:italic; }
+
+/* La barra de dibujo hereda la del lote y solo agrega la pregunta: mientras
+   se camina, lo que hace falta en pantalla no es el nombre de la capa sino
+   qué hay que mirar. */
+.pcr-int-barra .pcr-int-punto{
+  display:inline-block; width:10px; height:10px; border-radius:3px;
+  margin-right:6px; vertical-align:-1px;
+}
+.pcr-int-preg{
+  margin:2px 0 8px; font-size:.76rem; line-height:1.4;
+  color:var(--edu-ink-2); font-style:italic;
+}

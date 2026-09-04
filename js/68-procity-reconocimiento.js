@@ -85,6 +85,13 @@
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
+    /* LO INTANGIBLE: lo que no se puede bajar de ningún servidor. Dónde no se
+       pasa de noche, qué esquina está oscura, dónde huele mal, dónde da gusto
+       quedarse. Es una lista de marcas dibujadas a mano, con su tipo y su
+       nota; el módulo js/75 sabe qué significa cada una y qué se puede cruzar
+       con lo que sí se midió. */
+    intangible: [], intDibujando: false, intTipo: '', intPts: null, intAviso: '',
+    intEnMapa: false,
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -364,6 +371,13 @@
         : null,
       loteAnalisis: (function () {
         try { return analisisDelLote(); } catch (e) { return null; }
+      })(),
+      /* Lo intangible va entero: son unas pocas decenas de vértices y es lo
+         único de la ficha que no se puede volver a pedir. Si se pierde, se
+         pierde el recorrido de una persona. */
+      intangible: (function () {
+        var I = window.URBIS_INTANGIBLE;
+        try { return I ? I.paraGuardar(S.intangible || []) : []; } catch (e) { return []; }
       })(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
          alcanzadas son miles de segmentos y no cabe en el almacenamiento del
@@ -1002,6 +1016,53 @@
       c.distanciaAlaCalleM + ' m. No sabe si hay andén, dónde cruzar ni si la cuadra sube.</p>';
   }
 
+  /* Lo intangible, en el PDF. Va con las notas completas: la lámina las
+     recorta por falta de papel, pero el informe es donde tienen que estar
+     enteras —son la voz de quien recorrió, y sin ellas las manchas de color
+     no significan nada dentro de seis meses—. */
+  function intangibleImpreso(marcas, an) {
+    var IT = window.URBIS_INTANGIBLE;
+    if (!IT) return '';
+    var ms = (marcas || []).filter(IT.valida);
+    if (!ms.length) return '';
+    if (!an) return '';
+    return '<h2>Lo intangible</h2>' +
+      '<p class="pie">Todo lo demás de este informe se bajó de algún lado. Esto no: lo marcó ' +
+      'quien caminó el sector. Es un testimonio, no una medición, y no se promedia con las ' +
+      'cifras de arriba.</p>' +
+      '<table>' +
+        an.porTipo.map(function (t) {
+          return '<tr><td>' + esc(t.nombre) + '</td><td class="n">' + t.n +
+            (t.geom === 'linea' ? ' · ' + t.metros + ' m'
+             : t.m2 ? ' · ' + formatearM2(t.m2) : '') + '</td></tr>';
+        }).join('') +
+        (an.pctSector != null
+          ? '<tr><td>Superficie marcada</td><td class="n">' + an.pctSector + '% del sector</td></tr>'
+          : '') +
+      '</table>' +
+      (an.lote && an.lote.dentroDe.length
+        ? '<p class="pie">El lote cae dentro de: ' +
+          esc(an.lote.dentroDe.map(function (x) { return x.nombre.toLowerCase(); }).join(', ')) +
+          '. Eso no se resuelve con la implantación.</p>'
+        : '') +
+      (an.desacuerdos.length
+        ? '<h3>Donde no coinciden la percepción y el conteo</h3>' +
+          an.desacuerdos.map(function (d) {
+            return '<p class="pie">' + esc(d.texto) + '</p>';
+          }).join('')
+        : '') +
+      (function () {
+        var conNota = ms.filter(function (m) { return !!m.nota; });
+        if (!conNota.length) return '';
+        return '<h3>En sus palabras</h3><table>' +
+          conNota.map(function (m) {
+            var t = IT.tipo(m.tipo) || { nombre: m.tipo };
+            return '<tr><td>' + esc(t.nombre) + '</td><td>' + esc(m.nota) + '</td></tr>';
+          }).join('') + '</table>';
+      })() +
+      an.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
+  }
+
   function campoImpreso(c) {
     if (!c) return '';
     var nv = (c.nuevos || []).length, ds = (c.discrepancias || []).length;
@@ -1253,7 +1314,11 @@
                  ((function () { try { return faltantesDelSector(st).length ? 1 : 0; }
                                  catch (e) { return 0; } })()) +
                  ((function () { try { return determinantesDelLote(st).length ? 1 : 0; }
-                                 catch (e) { return 0; } })());
+                                 catch (e) { return 0; } })()) +
+                 ((function () {
+                    var msE = (o.intangible !== undefined ? o.intangible : S.intangible) || [];
+                    return msE.length ? 1 : 0;
+                  })());
     /* Acostado el plano puede ser bastante más alto: la columna en la que va
        es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
        quedaba con una banda blanca de 13 cm al pie. */
@@ -1280,6 +1345,7 @@
           lote: lote, cobertura: o.cobertura !== undefined ? o.cobertura : S.cobertura,
           estratos: o.estratos, huellas: huellas, curvas: curvasL,
           sombras: sombrasL, caminata: cam,
+          intangible: o.intangible !== undefined ? o.intangible : S.intangible,
           maxCategorias: horiz ? 5 : 6
         });
       } catch (e) { return []; }
@@ -1766,6 +1832,54 @@
       '<p class="nota">En orden de lo que más análisis enciende por menos trabajo. La ' +
       'etiqueta es la que se escribe en OpenStreetMap; lo que se levante vuelve a esta ' +
       'misma lámina cuando se vuelva a medir el sector.</p>';
+      })(), 'g3') +
+      
+      /* Lo intangible. Es la única caja del pliego cuyo contenido no salió de
+      ninguna consulta, y por eso lleva el nombre de quien caminó: en una
+      lámina colgada, la diferencia entre un dato y un testimonio tiene que
+      poder leerse sin preguntar. */
+      caja('Lo intangible',
+      (function () {
+      var IT2 = window.URBIS_INTANGIBLE;
+      var msL = (o.intangible !== undefined ? o.intangible : S.intangible) || [];
+      if (!IT2) return '';
+      msL = msL.filter(IT2.valida);
+      if (!msL.length) return '';
+      var anL = (function () {
+      try { return analisisIntangible(msL); } catch (e) { return null; }
+      })();
+      if (!anL) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + anL.total + '</b><small>marcas de lo que no se mide</small></div>' +
+      (anL.pctSector != null
+      ? '<div class="k"><b>' + anL.pctSector + '%</b><small>del sector marcado</small></div>'
+      : '') +
+      '</div>' +
+      '<div class="barras">' +
+      anL.porTipo.map(function (t) {
+      return '<div class="b"><span>' + esc(t.nombre) + '</span>' +
+      '<i><u style="width:' + Math.round(100 * t.n / anL.total) +
+      '%;background:' + esc(t.color) + '"></u></i><b>' + t.n + '</b></div>';
+      }).join('') +
+      '</div>' +
+      (anL.lote && anL.lote.dentroDe.length
+      ? '<p class="lee">El lote cae dentro de <b>' +
+      esc(anL.lote.dentroDe.map(function (x) { return x.nombre.toLowerCase(); }).join(', ')) +
+      '</b>.</p>'
+      : '') +
+      anL.desacuerdos.slice(0, 2).map(function (d) {
+      return '<p class="lee">' + esc(d.texto) + '</p>';
+      }).join('') +
+      (function () {
+      var notas = [];
+      msL.forEach(function (mk) {
+      if (mk.nota) notas.push('«' + mk.nota + '»');
+      });
+      return notas.length
+      ? '<p class="nota">' + esc(notas.slice(0, 4).join(' ')) + '</p>' : '';
+      })() +
+      '<p class="nota">Esto no es una medición: es lo que vio quien caminó, y vale por ' +
+      'eso. No se promedia con las cifras de esta lámina.</p>';
       })(), 'g3');
 
     /* Columnas: dos parada y tres acostada mientras el contenido quepa; una
@@ -2122,6 +2236,7 @@
       'h1{font-size:21px;margin:0 0 3px;color:#075E88}' +
       '.sub{color:#5a6472;font-size:12px;margin:0 0 18px}' +
       'h2{font-size:14px;margin:22px 0 7px;color:#075E88;border-bottom:1px solid #c7e7f7;padding-bottom:4px}' +
+      'h3{font-size:11.5px;margin:12px 0 4px;color:#0A6F9E;letter-spacing:.02em}' +
       'table{border-collapse:collapse;width:100%;max-width:340px}' +
       'td{padding:3px 8px 3px 0;border-bottom:1px solid #eef2f6}' +
       'td.n{text-align:right;font-weight:700;color:#0A6F9E;width:52px}' +
@@ -2178,6 +2293,7 @@
               cobertura: o.cobertura !== undefined ? o.cobertura : (st.cobertura || S.cobertura),
               estratos: o.estratos, curvas: o.curvas, sombras: o.sombras,
               caminata: o.caminata !== undefined ? o.caminata : S.caminata,
+              intangible: o.intangible !== undefined ? o.intangible : S.intangible,
               maxCategorias: 6 });
           } catch (e) { return []; }
         })();
@@ -2203,6 +2319,11 @@
         : (function () { try { return analisisDelLote(); } catch (e) { return null; } })(),
         o.lote !== undefined ? o.lote : S.lote) +
       caminataImpresa(o.caminata !== undefined ? o.caminata : S.caminata) +
+      (function () {
+        var ms = o.intangible !== undefined ? o.intangible : S.intangible;
+        try { return intangibleImpreso(ms, analisisIntangible(ms, o.intangibleCtx)); }
+        catch (e) { return ''; }
+      })() +
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno,
         o.terrenoLote !== undefined ? o.terrenoLote
@@ -2403,6 +2524,19 @@
       S.resultado = null;
       pintar();
     });
+    /* La nota de una marca intangible se escribe letra a letra y NO repinta la
+       hoja: si repintara, el campo se destruiría en la primera tecla y el
+       teclado del teléfono se cerraría solo. Se guarda al salir del campo. */
+    el.addEventListener('change', function (ev) {
+      var n = ev.target.closest('[data-pcr-nota]');
+      if (!n) return;
+      anotarMarcaInt(n.getAttribute('data-pcr-nota'), n.value);
+    });
+    el.addEventListener('blur', function (ev) {
+      var n = ev.target && ev.target.closest && ev.target.closest('[data-pcr-nota]');
+      if (!n) return;
+      anotarMarcaInt(n.getAttribute('data-pcr-nota'), n.value);
+    }, true);
     el.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-pcr]');
       if (!b) return;
@@ -2469,6 +2603,27 @@
         var puso = pintarCaminata(!S.caminataEnMapa);
         S.encogida = S.caminataEnMapa;
         if (!puso && !S.caminataEnMapa) S.aviso = 'No hay recorrido que dibujar.';
+        pintar(); return;
+      }
+      if (acc === 'int-dibujar') { iniciarIntangible(b.getAttribute('data-t')); return; }
+      if (acc === 'int-borrar') { borrarMarcaInt(b.getAttribute('data-m')); return; }
+      if (acc === 'int-mapa') {
+        var puestasInt = pintarIntangible(!S.intEnMapa);
+        S.encogida = S.intEnMapa;
+        if (!puestasInt && !S.intEnMapa) S.aviso = 'Todavía no hay nada marcado.';
+        pintar(); return;
+      }
+      if (acc === 'int-texto') {
+        var I0 = IN();
+        if (!I0) return;
+        var txtInt = I0.comoTexto(analisisIntangible(), S.intangible || []);
+        S.textoPlano = txtInt;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtInt);
+            S.aviso = 'Testimonio copiado. Va con nombre y fecha: es de quien caminó.';
+          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'lote-dibujar') { iniciarLote(); return; }
@@ -4927,6 +5082,16 @@
                  on: !!S.caminataEnMapa,
                  listo: !!(S.caminata && S.caminata.tramos && S.caminata.tramos.length),
                  falta: 'marcá el lote y medí el trazado' });
+    /* Lo intangible es la única capa que no se enciende midiendo nada: se
+       enciende caminando. Por eso lo que le falta no es una medición sino
+       una salida a la calle, y así se lo dice. */
+    lista.push({ id: 'intangible', grupo: 'El lote', nombre: 'Lo intangible',
+                 dato: (S.intangible && S.intangible.length
+                   ? S.intangible.length + ' marca' + (S.intangible.length === 1 ? '' : 's')
+                   : 'lo que solo se ve caminando'),
+                 color: '#E23D3D', on: !!S.intEnMapa,
+                 listo: !!(S.intangible && S.intangible.length),
+                 falta: 'marcá lo que viste en la calle' });
     return lista;
   }
 
@@ -4961,6 +5126,7 @@
     if (id === 'curvas') { pintarCurvas(!!encender); return; }
     if (id === 'sombras') { pintarSombras(!!encender); return; }
     if (id === 'caminata') { pintarCaminata(!!encender); return; }
+    if (id === 'intangible') { pintarIntangible(!!encender); return; }
   }
 
   /* ── Los mapas del pliego ──────────────────────────────────────────────
@@ -5114,6 +5280,33 @@
         pie: cam.anillos.map(function (a) { return a.minutos + ' min'; }).join(' · ') +
              ' desde el lote, por las calles'
       });
+    }
+    /* Y el último, que es el único dibujado a mano: lo que vio quien caminó.
+       Va al final de la banda a propósito —se lee después de todo lo medido,
+       que es el orden en que hay que discutirlo—. */
+    var IT = window.URBIS_INTANGIBLE;
+    var marcas = o.intangible !== undefined ? o.intangible : S.intangible;
+    if (IT && marcas && marcas.length) {
+      var buenas = marcas.filter(IT.valida);
+      if (buenas.length) {
+        var zonasI = [], lineasI = [], puntosI = [];
+        buenas.forEach(function (mk) {
+          var c2 = IT.color(mk.tipo);
+          if (mk.geom === 'zona') zonasI.push({ pts: mk.pts, relleno: c2, opacidad: 0.3,
+                                                borde: c2, ancho: 0.6 });
+          else if (mk.geom === 'linea') lineasI.push({ pts: mk.pts, color: c2, ancho: 2.6 });
+          else puntosI.push({ lat: mk.pts[0].lat, lng: mk.pts[0].lng, color: c2 });
+        });
+        var cuenta = {};
+        buenas.forEach(function (mk) { cuenta[mk.tipo] = (cuenta[mk.tipo] || 0) + 1; });
+        mapas.push({
+          id: 'intangible', titulo: 'Lo intangible',
+          svg: mini({ poligonos: zonasI, lineas: lineasI, puntos: puntosI, radioPunto: 3 }),
+          pie: Object.keys(cuenta).map(function (k) {
+            return (IT.tipo(k) ? IT.tipo(k).nombre : k) + ' ' + cuenta[k];
+          }).join(' · ') + ' · lo que no se puede bajar de ningún servidor'
+        });
+      }
     }
     /* Los rasters —la clasificación del suelo y la foto de la que salió— van
        primero y ocupan el doble de papel. Es lo que pidió el curso: en una
@@ -6395,6 +6588,238 @@
   }
 
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // LO INTANGIBLE
+  // Todo lo demás de esta hoja se bajó de algún lado. Esto no: solo lo tiene
+  // quien caminó. El lápiz se usa igual que el del lote —se toca el mapa y
+  // una barra abajo dice cuántos puntos llevás—, pero antes hay que elegir
+  // QUÉ se está marcando, porque de eso depende si lo que se dibuja es una
+  // zona, una línea o un sitio.
+  // ═══════════════════════════════════════════════════════════════════════
+  var capaInt = null;
+  var clickInt = null;
+
+  function IN() { return window.URBIS_INTANGIBLE || null; }
+
+  /* Las marcas cerradas más la que se esté dibujando. Se pintan juntas para
+     que la de ahora se vea en el mismo lenguaje que las de antes. */
+  function pintarIntangible(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaInt) { try { m.removeLayer(capaInt); } catch (e) {} capaInt = null; }
+    if (encender === false) { S.intEnMapa = false; return false; }
+    var I = IN();
+    if (!I) return false;
+    var marcas = (S.intangible || []).filter(I.valida);
+    var enCurso = (S.intDibujando && S.intPts && S.intPts.length)
+      ? [{ tipo: S.intTipo, geom: I.geomDe(S.intTipo), pts: S.intPts, enCurso: true }] : [];
+    if (!marcas.length && !enCurso.length) { S.intEnMapa = false; return false; }
+
+    capaInt = L.layerGroup();
+    marcas.concat(enCurso).forEach(function (k) {
+      var col = I.color(k.tipo);
+      var pts = k.pts.map(function (p) { return [p.lat, p.lng]; });
+      try {
+        if (k.geom === 'zona' && pts.length >= 3) {
+          L.polygon(pts, { color: col, weight: 2, opacity: .95, fillColor: col,
+                           fillOpacity: k.enCurso ? .12 : .22,
+                           dashArray: k.enCurso ? '6 4' : null }).addTo(capaInt);
+        } else if (k.geom === 'linea' || (k.enCurso && pts.length >= 2)) {
+          /* La barrera va gruesa y punteada: es lo único de este mapa que no
+             es un área sino un corte, y a la escala del sector una línea fina
+             se confunde con una calle. */
+          L.polyline(pts, { color: col, weight: 5, opacity: .9,
+                            dashArray: k.geom === 'linea' ? '10 6' : '6 4' }).addTo(capaInt);
+        }
+        // Los vértices, siempre: son lo que se puede deshacer.
+        k.pts.forEach(function (p, i) {
+          L.circleMarker([p.lat, p.lng], {
+            radius: k.geom === 'punto' ? 8 : (i === 0 && k.enCurso ? 8 : 4),
+            color: '#fff', weight: 2, fillColor: col, fillOpacity: 1
+          }).addTo(capaInt);
+        });
+      } catch (e) {}
+    });
+    capaInt.addTo(m);
+    try { if (capaInt.bringToFront) capaInt.bringToFront(); } catch (e) {}
+    S.intEnMapa = true;
+    return true;
+  }
+
+  function iniciarIntangible(tipoId) {
+    var I = IN();
+    if (!I || !I.tipo(tipoId)) return;
+    var m = mapa();
+    if (!m) { S.intAviso = 'El mapa todavía no está listo.'; pintar(); return; }
+    S.intTipo = tipoId; S.intPts = []; S.intDibujando = true; S.intAviso = '';
+    S.encogida = true;
+    /* Un sitio de olor o un foco de basura se marcan con precisión de metros;
+       una zona insegura, de manzanas. Por eso el acercamiento no es el mismo
+       que el del lote: acá 17 deja ver un par de manzanas alrededor, que es
+       lo que hace falta para ubicarse mientras se recorre. */
+    try { if (m.getZoom && m.getZoom() < 16) m.setZoom(17); } catch (e) {}
+    if (!clickInt) {
+      clickInt = function (ev) {
+        if (!S.intDibujando || !ev || !ev.latlng) return;
+        agregarPuntoInt(ev.latlng.lat, ev.latlng.lng);
+      };
+    }
+    try { m.on('click', clickInt); } catch (e) {}
+    try { m.getContainer().style.cursor = 'crosshair'; } catch (e) {}
+    pintarIntangible(true); pintar(); pintarBarraInt();
+  }
+
+  function agregarPuntoInt(lat, lng) {
+    if (!S.intDibujando) return;
+    var I = IN(); if (!I) return;
+    var pts = S.intPts || (S.intPts = []);
+    var geom = I.geomDe(S.intTipo);
+    // Un sitio es un solo toque: se cierra solo, sin pasar por «Listo».
+    if (geom === 'punto') { S.intPts = [{ lat: lat, lng: lng }]; cerrarIntangible(); return; }
+    // Tocar la primera esquina cierra la zona, igual que en el lote.
+    if (geom === 'zona' && pts.length >= 3) {
+      try {
+        var m = mapa();
+        var a = m.latLngToContainerPoint(pts[0]);
+        var b = m.latLngToContainerPoint({ lat: lat, lng: lng });
+        if (Math.hypot(a.x - b.x, a.y - b.y) <= 26) { cerrarIntangible(); return; }
+      } catch (e) {}
+    }
+    pts.push({ lat: lat, lng: lng });
+    pintarIntangible(true); pintarBarraInt();
+  }
+
+  function deshacerInt() {
+    if (!S.intDibujando || !S.intPts || !S.intPts.length) return;
+    S.intPts.pop();
+    pintarIntangible(true); pintarBarraInt();
+  }
+
+  function cancelarInt() {
+    S.intDibujando = false; S.intPts = null; S.intTipo = ''; S.intAviso = '';
+    soltarMapaInt();
+    pintarIntangible((S.intangible || []).length > 0);
+    pintar(); pintarBarraInt();
+  }
+
+  function soltarMapaInt() {
+    var m = mapa();
+    if (m && clickInt) { try { m.off('click', clickInt); } catch (e) {} }
+    try { if (m) m.getContainer().style.cursor = ''; } catch (e) {}
+  }
+
+  function cerrarIntangible() {
+    var I = IN(); if (!I) return;
+    var pts = S.intPts || [], min = I.minimoPuntos(S.intTipo);
+    if (pts.length < min) {
+      S.intAviso = min === 3 ? 'Una zona necesita al menos tres esquinas.'
+                             : 'Una barrera necesita al menos dos puntos.';
+      pintarBarraInt(); return;
+    }
+    var marca = I.nuevaMarca(S.intTipo, pts, '');
+    S.intangible = (S.intangible || []).concat([marca]);
+    S.intDibujando = false; S.intPts = null; S.intAviso = '';
+    soltarMapaInt();
+    pintarIntangible(true);
+    guardarIntangibleEnFicha();
+    pintar(); pintarBarraInt();
+  }
+
+  function borrarMarcaInt(id) {
+    S.intangible = (S.intangible || []).filter(function (m) { return m.id !== id; });
+    pintarIntangible((S.intangible || []).length > 0);
+    guardarIntangibleEnFicha();
+    pintar();
+  }
+
+  /* La nota es lo que convierte una mancha de color en un testimonio: sin
+     ella, dentro de un mes nadie sabe por qué esa esquina estaba marcada. */
+  function anotarMarcaInt(id, texto) {
+    (S.intangible || []).forEach(function (m) {
+      if (m.id === id) m.nota = String(texto || '').slice(0, 220);
+    });
+    guardarIntangibleEnFicha();
+  }
+
+  /* Cada marca se guarda apenas se cierra. Recorrer un sector lleva una hora
+     y el navegador de un teléfono se recarga solo: perder el recorrido por no
+     haber tocado «guardar» sería la peor manera de perderlo. */
+  function guardarIntangibleEnFicha() {
+    try {
+      if (S.fichaActualId && S.resultado) {
+        guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
+                     S.nombreGuardado || '', S.fichaActualId);
+      }
+    } catch (e) {}
+  }
+
+  /* `ctx` deja pasar el sector de una ficha guardada. Sin eso, abrir una
+     ficha vieja cruzaba sus marcas contra el sector que estuviera en memoria
+     —otro barrio, con otros usos— y sacaba conclusiones de la nada. */
+  function analisisIntangible(marcas, ctx) {
+    var I = IN();
+    if (!I) return null;
+    var ms = marcas !== undefined && marcas !== null ? marcas : (S.intangible || []);
+    var meta = (S.resultado && S.resultado.meta) || {};
+    var propio = {
+      areaSectorM2: meta.areaM2 || (meta.radioM ? Math.PI * meta.radioM * meta.radioM : 0),
+      lote: S.lote,
+      pois: (S.resultado && S.resultado.pois) || [],
+      hayCaminata: !!(S.caminata && S.caminata.anillos)
+    };
+    if (ctx) {
+      Object.keys(ctx).forEach(function (k) {
+        if (ctx[k] !== undefined && ctx[k] !== null) propio[k] = ctx[k];
+      });
+    }
+    return I.analizar(ms, propio);
+  }
+
+  /* La barra de dibujo, hermana de la del lote y por las mismas razones: se
+     dibuja con la hoja encogida, y los botones tienen que caer donde el pulgar
+     ya está. */
+  function pintarBarraInt() {
+    var el = document.getElementById('pcr-int-barra');
+    if (!S.intDibujando) { if (el) el.remove(); return; }
+    var I = IN(); if (!I) return;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pcr-int-barra';
+      el.className = 'pcr-lote-barra pcr-int-barra';
+      document.body.appendChild(el);
+      el.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-int]');
+        if (!b) return;
+        var a = b.getAttribute('data-int');
+        if (a === 'deshacer') deshacerInt();
+        else if (a === 'cerrar') cerrarIntangible();
+        else if (a === 'cancelar') cancelarInt();
+      });
+    }
+    var t = I.tipo(S.intTipo) || { nombre: '', color: '#999', pregunta: '' };
+    var n = (S.intPts || []).length, min = I.minimoPuntos(S.intTipo);
+    var geom = I.geomDe(S.intTipo);
+    el.innerHTML =
+      '<div class="pcr-lote-t">' +
+        '<i class="pcr-int-punto" style="background:' + esc(t.color) + '"></i>' +
+        esc(t.nombre) + ' — ' +
+        (geom === 'punto' ? 'tocá el sitio exacto'
+          : n === 0 ? (geom === 'zona' ? 'tocá las esquinas de la zona' : 'tocá por dónde va la barrera')
+          : n < min ? 'llevás ' + n + ' de ' + min
+          : geom === 'zona' ? 'llevás ' + n + '. Tocá la primera para cerrar.'
+                            : 'llevás ' + n + '. Tocá «Listo» cuando termines.') +
+      '</div>' +
+      '<div class="pcr-int-preg">' + esc(t.pregunta) + '</div>' +
+      '<div class="pcr-lote-b">' +
+        '<button type="button" data-int="deshacer"' + (n ? '' : ' disabled') + '>' +
+          ico('deshacer', 16) + 'Deshacer</button>' +
+        '<button type="button" data-int="cerrar" class="pcr-lote-ok"' +
+          (n >= min ? '' : ' disabled') + '>' + ico('ok', 16) + 'Listo</button>' +
+        '<button type="button" data-int="cancelar">' + ico('cerrar', 16) + 'Cancelar</button>' +
+      '</div>' +
+      (S.intAviso ? '<div class="pcr-lote-aviso">' + esc(S.intAviso) + '</div>' : '');
+  }
+
   /* ── El análisis del lote ──────────────────────────────────────────────
      No consulta NADA. Todo sale de lo que ya se trajo para el sector: los
      usos del análisis, la forma de las calles del trazado, la geometría del
@@ -7445,6 +7870,117 @@
     return true;
   }
 
+  /* ── Lo intangible, en la ficha ────────────────────────────────────────
+     Es el único bloque de la hoja que no se llena solo. Todos los demás
+     salen de una consulta o de una cuenta; este sale de que alguien haya
+     caminado. Por eso, vacío, no dice «sin datos»: dice qué preguntas hay
+     que llevarse a la calle. */
+  function bloqueIntangible(marcas, guardada, ctx) {
+    var I = IN();
+    if (!I) return '';
+    var ms = (marcas !== undefined && marcas !== null ? marcas : (S.intangible || []))
+      .filter(I.valida);
+    var an = analisisIntangible(ms, ctx);
+    var cab = h4('ojo', 'Lo intangible');
+    var lapices = guardada ? '' :
+      '<div class="pcr-int-lapices">' +
+        I.TIPOS.map(function (t) {
+          return '<button type="button" class="pcr-int-lapiz" data-pcr="int-dibujar" ' +
+            'data-t="' + esc(t.id) + '" title="' + esc(t.pregunta) + '">' +
+            '<i style="background:' + esc(t.color) + '">' + t.ico + '</i>' +
+            '<span><b>' + esc(t.nombre) + '</b>' +
+              '<small>' + (t.geom === 'zona' ? 'zona' : t.geom === 'linea' ? 'línea' : 'un sitio') +
+            '</small></span></button>';
+        }).join('') +
+      '</div>';
+
+    if (!ms.length) {
+      return cab +
+        '<p class="pcr-pista">Todo lo que hay más arriba se bajó de algún lado. Esto no: <b>solo lo ' +
+        'tiene quien caminó</b>. Dónde no pasarías de noche, qué esquina queda a oscuras, dónde ' +
+        'huele mal, dónde te quedarías un rato. Nada de eso está en ningún mapa, y es la mitad de ' +
+        'lo que decide un proyecto.</p>' +
+        (guardada ? '<p class="pcr-pista">Esta ficha se guardó sin marcas.</p>' : lapices) +
+        '<p class="pcr-conc">Elegí un lápiz y tocá el mapa. Se puede hacer sentado mirando la foto, ' +
+        'pero sirve de verdad recorriendo: son las preguntas que uno se hace caminando.</p>';
+    }
+
+    var puestas = S.intEnMapa;
+    return cab +
+      '<p class="pcr-pista">' + an.total + ' marca' + (an.total === 1 ? '' : 's') +
+        ' de lo que no se puede medir' +
+        (an.pctSector != null && an.pctSector > 0
+          ? ', sobre <b>' + an.pctSector + '%</b> de la superficie del sector' : '') + '.</p>' +
+      '<div class="pcr-int-cuenta">' +
+        an.porTipo.map(function (t) {
+          return '<div class="pcr-int-c" style="border-color:' + esc(t.color) + '">' +
+            '<b>' + t.n + '</b><small>' + esc(t.nombre) + '</small>' +
+            '<em>' + (t.geom === 'linea' ? t.metros + ' m'
+                    : t.geom === 'punto' ? 'sitios'
+                    : formatearM2(t.m2)) + '</em></div>';
+        }).join('') +
+      '</div>' +
+      // Lo que le toca al lote. Es la única parte de esto que cambia una
+      // decisión de proyecto, así que va antes que la lista.
+      (an.lote && (an.lote.dentroDe.length || an.lote.cerca.length)
+        ? '<p class="pcr-lab">El lote</p>' +
+          (an.lote.dentroDe.length
+            ? '<p class="pcr-conc">El lote cae <b>dentro</b> de ' +
+              an.lote.dentroDe.map(function (x) {
+                return '<span class="pcr-int-et" style="background:' + esc(x.color) + '">' +
+                  esc(x.nombre) + '</span>'; }).join(' ') +
+              '. Eso no se resuelve con la implantación: es un problema del proyecto entero.</p>'
+            : '') +
+          (an.lote.cerca.length
+            ? '<p class="pcr-pista">Cerca, sin tocarlo: ' +
+              an.lote.cerca.map(function (x) {
+                return esc(x.nombre) + ' a ' + x.m + ' m'; }).join(' · ') + '.</p>'
+            : '')
+        : '') +
+      // Los desacuerdos: donde la percepción y el conteo dicen cosas
+      // distintas. Es lo más útil que sale de todo el ejercicio.
+      (an.desacuerdos.length
+        ? '<p class="pcr-lab">Donde no coinciden con lo medido</p>' +
+          an.desacuerdos.map(function (d) {
+            return '<p class="pcr-conc pcr-int-des">' + esc(d.texto) + '</p>';
+          }).join('')
+        : '') +
+      '<p class="pcr-lab">Las marcas</p>' +
+      '<div class="pcr-int-lista">' +
+        ms.map(function (m) {
+          var t = I.tipo(m.tipo) || { nombre: m.tipo, color: '#999' };
+          var tam = m.geom === 'zona' ? formatearM2(Math.round(I.areaM2(m.pts)))
+                  : m.geom === 'linea' ? Math.round(I.largoM(m.pts)) + ' m' : 'un sitio';
+          return '<div class="pcr-int-item">' +
+            '<i style="background:' + esc(t.color) + '"></i>' +
+            '<div class="pcr-int-tx"><b>' + esc(t.nombre) + '</b>' +
+              '<small>' + esc(tam) + '</small>' +
+              (guardada
+                ? (m.nota ? '<q>' + esc(m.nota) + '</q>' : '')
+                : '<input type="text" class="pcr-int-nota" data-pcr-nota="' + esc(m.id) + '" ' +
+                  'value="' + esc(m.nota || '') + '" maxlength="220" ' +
+                  'placeholder="Por qué, en tus palabras" />') +
+            '</div>' +
+            (guardada ? '' :
+              '<button type="button" class="pcr-int-x" data-pcr="int-borrar" data-m="' +
+                esc(m.id) + '" aria-label="Borrar esta marca">' + ico('borrar', 15) + '</button>') +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (guardada ? '' :
+        lapices +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="int-mapa" class="pcr-mini">' +
+            ico(puestas ? 'apagar' : 'ojo', 16) +
+            (puestas ? 'Quitar del mapa' : 'Ver en el mapa') + '</button>' +
+          '<button type="button" data-pcr="int-texto" class="pcr-mini">' +
+            ico('copiar', 16) + 'Copiar el testimonio</button>' +
+        '</div>') +
+      an.avisos.map(function (a) {
+        return '<p class="pcr-pista pcr-int-aviso">' + esc(a) + '</p>';
+      }).join('');
+  }
+
   function bloqueCaminata(dato, guardada) {
     var c = dato !== undefined && dato !== null ? dato : S.caminata;
     if (!guardada && (!S.lote || S.lote.length < 3)) return '';
@@ -8404,6 +8940,9 @@
         bloqueUsoPredominante(st) +
         bloqueLoteIntervenir() +
         bloqueCaminata() +
+        /* Lo intangible va acá y no al final: es lo que se recoge caminando,
+           y quien tiene la hoja abierta en la calle no llega al final. */
+        bloqueIntangible() +
         /* Las determinantes van pegadas al lote: son la lectura de proyecto de
            todo lo que se midió sobre él —sol, sombra, agua, acceso, viento— y
            leerlas acá evita tener que reconstruirlas al final. */
@@ -8734,6 +9273,7 @@
       'h1{font-size:21px;margin:0 0 3px;color:#075E88}' +
       '.sub{color:#5a6472;font-size:12px;margin:0 0 18px}' +
       'h2{font-size:14px;margin:22px 0 7px;color:#075E88;border-bottom:1px solid #c7e7f7;padding-bottom:4px}' +
+      'h3{font-size:11.5px;margin:12px 0 4px;color:#0A6F9E;letter-spacing:.02em}' +
       '.kpis{display:flex;gap:22px;margin:0 0 6px;flex-wrap:wrap}' +
       '.kpi b{display:block;font-size:19px;color:#0A6F9E}' +
       '.kpi small{color:#5a6472;font-size:11px}' +
@@ -8987,6 +9527,10 @@
       // El lote pertenece al sector que se estaba mirando. Con otro sector es
       // un polígono huérfano flotando en un mapa que ya no es el suyo.
       S.lote = null; S.loteDibujando = false; S.caminata = null; S.sombras = null;
+      /* Las marcas pertenecen al sector que se caminó. En otro sector serían
+         manchas de color sobre un barrio donde nadie estuvo. */
+      S.intangible = []; S.intDibujando = false; S.intPts = null; S.intTipo = '';
+      pintarIntangible(false);
       pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
@@ -9138,6 +9682,10 @@
                    (f.trazado ? bloqueEspacio(st) : '') + bloqueAccesibilidad(st) +
                    (f.loteAnalisis ? bloqueLoteIntervenir(f.loteAnalisis, true) : '') +
                    (f.caminata ? bloqueCaminata(f.caminata, true) : '') +
+                   ((f.intangible && f.intangible.length)
+                     ? bloqueIntangible(f.intangible, true, {
+                         areaSectorM2: f.areaM2 || 0, lote: f.lote,
+                         pois: f.pois || [], hayCaminata: !!f.caminata }) : '') +
                    (f.campo ? bloqueCampo() : '') +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;

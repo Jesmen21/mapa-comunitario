@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v673-los-mapas';
+const URBIS_CACHE = 'urbis-v674-lo-intangible';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -150,6 +150,7 @@ const URBIS_ASSETS = [
   './css/72-edu-diseno.css',
   './js/73-solar.js',
   './js/74-dibujos-analisis.js',
+  './js/75-lo-intangible.js',
 ];
 
 self.addEventListener('install', event => {
