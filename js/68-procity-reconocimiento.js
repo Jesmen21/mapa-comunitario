@@ -505,9 +505,25 @@
     return (m2 / 10000).toFixed(1) + ' ha';
   }
 
+  /* «800 m» o «1,2 km»: la misma cifra dicha como se dice en una conversación
+     y no como la guarda el programa. */
+  function textoRadio(m) {
+    var r = Number(m) || 0;
+    return r >= 1000 ? String(Math.round(r / 100) / 10).replace('.', ',') + ' km' : r + ' m';
+  }
+
   function listoParaAnalizar() {
     if (S.forma === 'poligono') return !!(S.poligono && S.poligono.length >= 3);
+    // Con el lote como punto de partida, el centro lo pone el propio lote: no
+    // hay nada que tocar en el mapa, y por eso alcanza con haberlo marcado.
+    if (S.forma === 'lote') return !!(S.lote && S.lote.length >= 3);
     return !!S.centro;
+  }
+
+  /* El centro del análisis cuando se parte del lote: su centroide. Se recalcula
+     cada vez y no se copia, para que redibujar el lote mueva el círculo. */
+  function centroDelLote() {
+    return (S.lote && S.lote.length >= 3) ? centroideDe(S.lote) : null;
   }
 
   // ── El círculo en el mapa ─────────────────────────────────────────────
@@ -529,9 +545,14 @@
       L.polygon(S.poligono.map(function (p) { return [p.lat, p.lng]; }), estilo).addTo(c);
       return;
     }
-    if (!S.centro) return;
-    L.circle([S.centro.lat, S.centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
-    L.circleMarker([S.centro.lat, S.centro.lng], {
+    /* Partiendo del lote, el círculo va centrado en él: el lote amarillo se
+       pinta aparte y queda encima, que es como se lee la lámina —el terreno a
+       intervenir sobre el entorno que se estudia—. */
+    var centro = S.forma === 'lote' ? centroDelLote() : S.centro;
+    if (!centro) return;
+    L.circle([centro.lat, centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
+    var S_centro = centro;
+    L.circleMarker([S_centro.lat, S_centro.lng], {
       radius: 5, color: '#075E88', weight: 2, fillColor: '#FABD0A', fillOpacity: 1
     }).addTo(c);
   }
@@ -2071,6 +2092,25 @@
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-label', 'Reconocimiento del sector');
     document.body.appendChild(el);
+    /* El deslizador del radio se mueve con el dedo puesto encima: repintar la
+       hoja en cada paso le arrancaría el control de la mano. Mientras se
+       arrastra solo se mueve el círculo del mapa y el número; la hoja se
+       repinta al soltar. */
+    el.addEventListener('input', function (ev) {
+      var b = ev.target.closest('[data-pcr="radio-rango"]');
+      if (!b) return;
+      S.radioM = Number(b.value) || S.radioM;
+      var eco = document.getElementById('pcr-radio-eco');
+      if (eco) eco.textContent = textoRadio(S.radioM);
+      pintarCirculo();
+    });
+    el.addEventListener('change', function (ev) {
+      var b = ev.target.closest('[data-pcr="radio-rango"]');
+      if (!b) return;
+      S.radioM = Number(b.value) || S.radioM;
+      S.resultado = null;
+      pintar();
+    });
     el.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-pcr]');
       if (!b) return;
@@ -2151,6 +2191,8 @@
           S.poligono = pol;
         }
         S.forma = f; S.resultado = null; S.error = '';
+        // Partiendo del lote, el centro es el suyo desde el primer momento.
+        if (f === 'lote' && centroDelLote()) S.centro = centroDelLote();
         // Al elegir la forma, la hoja baja: es cuando hay que VER el mapa
         // para poner el radio o dibujar el área.
         S.encogida = true;
@@ -2421,6 +2463,38 @@
     var esPol = S.forma === 'poligono';
     var hayPol = !!(S.poligono && S.poligono.length >= 3);
 
+    /* Partiendo del lote, la barra lleva lo único que hace falta con el mapa
+       a la vista: el lote, cuánto alrededor se va a mirar y el botón. */
+    if (S.forma === 'lote') {
+      var cL = centroDelLote();
+      return '' +
+        '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Abrir la hoja"></button>' +
+        '<div class="pcr-mini-cuerpo">' +
+          '<div class="pcr-mini-fila">' +
+            '<div class="pcr-mini-que">' +
+              '<b>' + ico('lapiz', 16) + 'El lote y su entorno</b>' +
+              '<small>' + (cL ? formatearM2(areaM2De(S.lote)) + ' de lote · ' + textoRadio(S.radioM) +
+                                ' alrededor'
+                              : 'todavía sin marcar') + '</small>' +
+            '</div>' +
+            '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Más opciones">⋯</button>' +
+          '</div>' +
+          (cL
+            ? '<div class="pcr-rango-fila">' +
+                '<input type="range" class="pcr-rango" data-pcr="radio-rango" min="100" max="2000" ' +
+                  'step="50" value="' + S.radioM + '" aria-label="Radio alrededor del lote, en metros">' +
+                '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
+              '</div>' +
+              '<button type="button" data-pcr="analizar" class="pcr-principal"' +
+                (S.cargando ? ' disabled' : '') + '>' +
+                (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>'
+            : '<button type="button" data-pcr="lote-dibujar" class="pcr-principal">' +
+                ico('lapiz') + 'Marcar el lote en el mapa</button>') +
+          (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
+          (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
+        '</div>';
+    }
+
     var radios = RADIOS.map(function (r) {
       return '<button type="button" data-pcr="radio" data-r="' + r + '"' +
         ' class="pcr-radio' + (r === S.radioM ? ' pcr-radio-on' : '') + '">' +
@@ -2587,22 +2661,68 @@
 
     var hayPol = !!poligonoDeProCity();
     var esPol = S.forma === 'poligono';
+    var esLote = S.forma === 'lote';
+    function botonForma(f, icono, texto) {
+      var on = S.forma === f || (f === 'radio' && !esPol && !esLote);
+      return '<button type="button" data-pcr="forma" data-f="' + f + '" class="pcr-forma' +
+        (on ? ' pcr-forma-on' : '') + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+        ico(icono) + texto + '</button>';
+    }
     var selector =
       '<div class="pcr-formas" role="group" aria-label="Forma del área">' +
-        '<button type="button" data-pcr="forma" data-f="radio" class="pcr-forma' +
-          (esPol ? '' : ' pcr-forma-on') + '" aria-pressed="' + (esPol ? 'false' : 'true') + '">' +
-          ico('radio') + 'Un radio</button>' +
-        '<button type="button" data-pcr="forma" data-f="poligono" class="pcr-forma' +
-          (esPol ? ' pcr-forma-on' : '') + '" aria-pressed="' + (esPol ? 'true' : 'false') + '">' +
-          ico('area') + 'El área dibujada</button>' +
+        botonForma('radio', 'radio', 'Un radio') +
+        botonForma('poligono', 'area', 'El área dibujada') +
+        /* La tercera es la que corresponde al trabajo real del curso: primero
+           se marca el lote a intervenir y después se estudia lo que tiene
+           alrededor. El radio se mide desde el lote, no desde donde quedó el
+           mapa. */
+        botonForma('lote', 'lapiz', 'El lote y su entorno') +
       '</div>' +
-      (hayPol || esPol ? '' :
+      (hayPol || esPol || esLote ? '' :
         '<small class="pcr-pista">Para usar un área a medida, dibújala primero en Pro City con «Dibujar área en el mapa».</small>');
 
     // Con un área dibujada no hay centro ni radio que elegir: los deduce el
     // servidor del propio trazo. Mostrar esos controles ahí sería ofrecer una
     // decisión que no existe.
-    var ajusteArea = esPol
+    var ajusteArea = esLote
+      ? (function () {
+          var c = centroDelLote();
+          if (!c) {
+            return '<div class="pcr-campo">' +
+              '<label class="pcr-lab">El lote a intervenir</label>' +
+              '<p class="pcr-pista">Marcá en el mapa el terreno sobre el que vas a proponer algo. ' +
+              'Después elegís cuánto de su alrededor querés estudiar: el círculo azul sale ' +
+              'centrado en el lote.</p>' +
+              '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-lote-btn">' +
+                ico('lapiz') + 'Marcar el lote en el mapa</button>' +
+              (S.loteAviso ? '<p class="pcr-error">' + esc(S.loteAviso) + '</p>' : '') +
+            '</div>';
+          }
+          return '<div class="pcr-campo">' +
+              '<label class="pcr-lab">El lote a intervenir</label>' +
+              '<p class="pcr-areainfo">' + formatearM2(areaM2De(S.lote)) + ' · ' +
+                S.lote.length + ' esquinas · centro en ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5) +
+              '</p>' +
+              '<div class="pcr-llevar">' +
+                '<button type="button" data-pcr="lote-dibujar" class="pcr-mini">' +
+                  ico('lapiz', 16) + 'Volver a marcarlo</button>' +
+                '<button type="button" data-pcr="lote-borrar" class="pcr-mini">' +
+                  ico('borrar', 16) + 'Quitarlo</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="pcr-campo">' +
+              '<label class="pcr-lab" for="pcr-radio-rango">Cuánto alrededor del lote</label>' +
+              '<div class="pcr-rango-fila">' +
+                '<input type="range" id="pcr-radio-rango" class="pcr-rango" data-pcr="radio-rango" ' +
+                  'min="100" max="2000" step="50" value="' + S.radioM + '" ' +
+                  'aria-label="Radio alrededor del lote, en metros">' +
+                '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
+              '</div>' +
+              '<small class="pcr-pista">De 100 m a 2 km desde el centro del lote. El círculo azul del ' +
+              'mapa se mueve con el control; el lote queda encima, en amarillo.</small>' +
+            '</div>';
+        })()
+      : esPol
       ? '<div class="pcr-campo">' +
           '<label class="pcr-lab">Área dibujada</label>' +
           '<p class="pcr-areainfo">' + (S.poligono ? S.poligono.length : 0) + ' vértices' +
@@ -5135,10 +5255,16 @@
        se dibujó chico— pero se dice: un lote afuera no tiene alrededor
        analizado, y entonces la mitad de su ficha estaría vacía sin que se
        entienda por qué. */
-    S.loteAviso = loteDentroDelArea() ? ''
+    /* El aviso de «quedó fuera» solo tiene sentido si hay un área analizada
+       contra la que comparar. Partiendo del lote no la hay todavía —el área
+       sale de él— y decirlo sería avisar de un problema inventado. */
+    S.loteAviso = (!S.resultado || loteDentroDelArea()) ? ''
       : 'El lote quedó fuera del área analizada: lo que tiene alrededor no está medido.';
-    S.encogida = false;
+    S.encogida = S.forma === 'lote' && !S.resultado;
     recalcularCaminata();
+    /* Partiendo del lote, cerrarlo es lo que define el centro del análisis:
+       el círculo aparece ahí mismo para que se vea qué se va a estudiar. */
+    if (S.forma === 'lote') { S.centro = centroDelLote(); pintarCirculo(); }
     pintarLote(); pintar(); pintarBarraLote();
   }
 

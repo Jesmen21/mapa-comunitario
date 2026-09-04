@@ -1340,3 +1340,22 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   border-radius:var(--edu-r-m); padding:8px; box-shadow:var(--edu-sombra);
 }
 .pcr-corte-caja svg{ display:block; width:100%; height:auto; }
+
+/* ── 21. El radio alrededor del lote ─────────────────────────────────────
+   Un deslizador y su cifra, en una sola línea. El control se toca con el
+   dedo, así que va alto: 28 px de alto útil es lo mínimo que no se falla. */
+.pcr-hoja .pcr-rango-fila{
+  display:flex; align-items:center; gap:10px; flex:0 0 auto; margin:2px 0 4px;
+}
+.pcr-hoja .pcr-rango{
+  flex:1; min-width:0; height:28px; accent-color:var(--edu-accent-deep);
+  background:transparent;
+}
+.pcr-hoja .pcr-rango-eco{
+  flex:0 0 auto; min-width:56px; text-align:right;
+  font-weight:800; font-size:.95rem; color:var(--edu-accent-deep);
+  font-variant-numeric:tabular-nums;
+}
+/* Tres opciones de forma ya no caben en una línea de teléfono: envuelven. */
+.pcr-hoja .pcr-formas{ flex-wrap:wrap; }
+.pcr-hoja .pcr-formas .pcr-forma{ flex:1 1 44%; }
