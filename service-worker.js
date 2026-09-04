@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v698-que-nazca-legible';
+const URBIS_CACHE = 'urbis-v699-un-solo-centro';
 const URBIS_ASSETS = [
   './',
   './index.html',

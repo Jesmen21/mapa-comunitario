@@ -581,6 +581,33 @@
     return (S.lote && S.lote.length >= 3) ? centroideDe(S.lote) : null;
   }
 
+  /* ── De dónde sale el centro, en un solo sitio ───────────────────────
+     Había tres funciones eligiéndolo por su cuenta —la que dibuja el
+     círculo, la que consulta OpenStreetMap y la que pide clima, terreno y
+     amenaza— y solo la primera sabía del caso del lote. Las otras dos
+     tomaban `S.centro`, que es una copia: se sincroniza al cerrar el lote y
+     puede quedarse vieja después.
+
+     El resultado de que discrepen es el peor que puede dar esta aplicación:
+     el círculo dibujado en un sitio y las cifras traídas de otro, sin nada
+     en pantalla que lo delate. Llegó reportado así —«el análisis lo hizo
+     alrededor de mi ubicación y no donde le marqué»— con la captura de un
+     círculo a la izquierda y todos los puntos a la derecha.
+
+     Ahora es una sola función y se calcula al usarla, no se guarda. Tres
+     lugares no pueden discrepar si solo hay uno. */
+  function centroDeAnalisis() {
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
+      return centroideDe(S.poligono);
+    }
+    if (S.forma === 'lote') {
+      var c = centroDelLote();
+      if (c) return c;
+    }
+    return S.centro;
+  }
+
+
   // ── El círculo en el mapa ─────────────────────────────────────────────
   function capa() {
     var m = mapa();
@@ -603,7 +630,7 @@
     /* Partiendo del lote, el círculo va centrado en él: el lote amarillo se
        pinta aparte y queda encima, que es como se lee la lámina —el terreno a
        intervenir sobre el entorno que se estudia—. */
-    var centro = S.forma === 'lote' ? centroDelLote() : S.centro;
+    var centro = centroDeAnalisis();
     if (!centro) return;
     L.circle([centro.lat, centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
     var S_centro = centro;
@@ -10225,7 +10252,7 @@
   function ejeDelSector() {
     var m = S.resultado && S.resultado.meta;
     if (m && Number.isFinite(m.lat)) return { lat: m.lat, lng: m.lng };
-    return S.forma === 'poligono' ? centroideDe(S.poligono) : S.centro;
+    return centroDeAnalisis();
   }
 
   /* ── Medir todo ────────────────────────────────────────────────────────
@@ -11009,16 +11036,20 @@
         throw new Error('Esta versión no sabe consultar áreas dibujadas. Recarga la página.');
       }
 
+      /* El MISMO centro que se dibujó. Antes esta línea leía `S.centro`
+         directamente y el círculo salía de otra cuenta: en modo lote podían
+         ser dos sitios distintos. */
+      var ejeConsulta = centroDeAnalisis();
       var elementos = esPol
         ? await window.AIA_DATOS.consultarEntornoPoligono(S.poligono)
-        : await window.AIA_DATOS.consultarEntorno(S.centro.lat, S.centro.lng, S.radioM);
+        : await window.AIA_DATOS.consultarEntorno(ejeConsulta.lat, ejeConsulta.lng, S.radioM);
 
       // El censo NO depende de lo que OpenStreetMap tenga mapeado: viene del
       // DANE. Es la mitad del análisis que siempre está completa, y por eso
       // conviene que el estudiante la vea incluso en un sector sin datos. Si
       // falla (sin red, o fuera de cobertura), el análisis sigue: se pierde la
       // población, no la ficha.
-      var eje = esPol ? centroideDe(S.poligono) : S.centro;
+      var eje = ejeConsulta;
       var ubic = null, dane = null;
       try {
         if (window.AIA_DATOS.ubicacionDe) ubic = await window.AIA_DATOS.ubicacionDe(eje.lat, eje.lng);
@@ -12173,6 +12204,11 @@
        los de esta hoja al armarse. Sin esto la regla solo valdría en dos de
        los tres sentidos. */
     soltarLapices: function () { soltarOtrosLapices('sector'); },
+    /* Para poder comprobar desde fuera que lo dibujado y lo consultado son el
+       mismo punto. Es la única propiedad de la que depende que las cifras
+       sean del sitio que se marcó. */
+    centroDeAnalisisDePrueba: function () { return centroDeAnalisis(); },
+    centroDelLoteDePrueba: function () { return centroDelLote(); },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';
     },
