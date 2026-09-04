@@ -350,7 +350,161 @@
     return l.join('\n');
   }
 
+  /* ── Juntar los recorridos del curso ───────────────────────────────────
+     Está escrito arriba y hay que hacerle caso: un mapa de percepción de una
+     persona es la opinión de una persona; de veinte que caminaron la misma
+     manzana, ya es otra cosa. Hasta acá cada recorrido moría en el teléfono
+     que lo levantó.
+
+     Se juntan por ARCHIVO y no por servidor, a propósito. Un recorrido es un
+     testimonio con nombre: mandarlo solo debería pasar cuando quien lo hizo
+     decide mandarlo. Y de paso funciona en un salón sin internet, que es
+     donde se hace la puesta en común.
+
+     Lo que sale de juntarlos no es la suma —eso sería un montón de manchas
+     encimadas— sino el ACUERDO: dónde varias personas, cada una por su lado,
+     dijeron lo mismo. Esa es la pregunta que vale.                        */
+  var PAQUETE = 'urbis-intangible-1';
+
+  /* Veinticinco metros de lado. Es la escala a la que dos personas que
+     marcaron «la misma esquina» de verdad marcaron la misma esquina: con diez
+     metros, dos trazos a pulso del mismo portón caen en celdas distintas y el
+     acuerdo desaparece; con cien, media cuadra se vuelve un punto. */
+  var CELDA_M = 25;
+
+  function celdaDe(lat, lng) {
+    return Math.round(lat * 110540 / CELDA_M) + ':' + 
+           Math.round(lng * rLng(lat) / CELDA_M);
+  }
+
+  /* Las celdas que toca una marca. Se topan en cuatrocientas: una zona
+     dibujada de un kilómetro de lado son mil seiscientas celdas y contarlas
+     no agrega nada —a esa escala ya no es una percepción de un sitio— pero sí
+     cuelga un teléfono. */
+  function celdasDe(m) {
+    var salida = {}, i, j;
+    if (!m || !m.pts || !m.pts.length) return [];
+    if (m.geom === 'punto') {
+      salida[celdaDe(m.pts[0].lat, m.pts[0].lng)] = 1;
+    } else if (m.geom === 'linea') {
+      for (i = 1; i < m.pts.length; i++) {
+        var a = m.pts[i - 1], b = m.pts[i];
+        var pasos = Math.min(200, Math.max(1, Math.ceil(largoM([a, b]) / (CELDA_M / 2))));
+        for (j = 0; j <= pasos; j++) {
+          var t = j / pasos;
+          salida[celdaDe(a.lat + (b.lat - a.lat) * t, a.lng + (b.lng - a.lng) * t)] = 1;
+        }
+      }
+    } else {
+      var c = { s: Infinity, n: -Infinity, o: Infinity, e: -Infinity };
+      m.pts.forEach(function (p) {
+        c.s = Math.min(c.s, p.lat); c.n = Math.max(c.n, p.lat);
+        c.o = Math.min(c.o, p.lng); c.e = Math.max(c.e, p.lng);
+      });
+      var dLat = CELDA_M / 110540, dLng = CELDA_M / rLng((c.s + c.n) / 2);
+      var n = 0;
+      for (var y = c.s; y <= c.n + dLat / 2 && n < 400; y += dLat) {
+        for (var x = c.o; x <= c.e + dLng / 2 && n < 400; x += dLng) {
+          if (dentro(y, x, m.pts)) { salida[celdaDe(y, x)] = 1; n++; }
+        }
+      }
+    }
+    return Object.keys(salida);
+  }
+
+  function centroDeCelda(clave) {
+    var p = String(clave).split(':');
+    var lat = Number(p[0]) * CELDA_M / 110540;
+    return { lat: lat, lng: Number(p[1]) * CELDA_M / rLng(lat) };
+  }
+
+  /* El paquete que se lleva de un teléfono a otro. Lleva quién lo hizo y de
+     qué sector: sin eso, juntar dos recorridos de barrios distintos daría un
+     mapa que no es de ninguna parte. */
+  function paraCompartir(marcas, meta) {
+    var m = meta || {};
+    return {
+      formato: PAQUETE,
+      autor: String(m.autor || '').slice(0, 60),
+      sector: String(m.sector || '').slice(0, 80),
+      centro: m.centro || null,
+      cuando: new Date().toISOString(),
+      marcas: paraGuardar(marcas)
+    };
+  }
+
+  /* Leer uno. Devuelve el paquete o el motivo por el que no sirve: quien pega
+     un archivo equivocado tiene derecho a saber cuál era el problema. */
+  function leerPaquete(texto) {
+    var d;
+    try { d = typeof texto === 'string' ? JSON.parse(texto) : texto; }
+    catch (e) { return { error: 'Eso no es un recorrido de URBIS: no se pudo leer como datos.' }; }
+    if (!d || d.formato !== PAQUETE) {
+      return { error: 'Eso no es un recorrido de lo intangible. Tiene que ser el archivo que ' +
+                      'exporta la aplicación.' };
+    }
+    var buenas = (d.marcas || []).filter(valida);
+    if (!buenas.length) return { error: 'Ese recorrido no trae ninguna marca válida.' };
+    return { ok: { autor: d.autor || 'Sin nombre', sector: d.sector || '',
+                   cuando: d.cuando || '', centro: d.centro || null, marcas: buenas } };
+  }
+
+  /* Juntar. Lo que devuelve no es la suma sino el acuerdo. */
+  function unir(paquetes) {
+    var ps = (paquetes || []).filter(function (p) { return p && p.marcas && p.marcas.length; });
+    if (!ps.length) return null;
+
+    // Quién dijo qué, celda por celda y tipo por tipo.
+    var mapa = {};
+    ps.forEach(function (p, iP) {
+      var quien = p.autor || ('recorrido ' + (iP + 1));
+      p.marcas.filter(valida).forEach(function (m) {
+        celdasDe(m).forEach(function (c) {
+          var k = m.tipo + '|' + c;
+          if (!mapa[k]) mapa[k] = { tipo: m.tipo, celda: c, quienes: {} };
+          mapa[k].quienes[quien] = 1;
+        });
+      });
+    });
+
+    var celdas = Object.keys(mapa).map(function (k) {
+      var e = mapa[k];
+      var q = Object.keys(e.quienes);
+      var p = centroDeCelda(e.celda);
+      return { tipo: e.tipo, nombre: POR_ID[e.tipo] ? POR_ID[e.tipo].nombre : e.tipo,
+               color: color(e.tipo), lat: p.lat, lng: p.lng,
+               personas: q.length, quienes: q };
+    });
+
+    var acuerdos = celdas.filter(function (c) { return c.personas >= 2; })
+      .sort(function (a, b) { return b.personas - a.personas; });
+
+    var porTipo = TIPOS.map(function (t) {
+      var suyas = celdas.filter(function (c) { return c.tipo === t.id; });
+      if (!suyas.length) return null;
+      var deAcuerdo = suyas.filter(function (c) { return c.personas >= 2; });
+      return { id: t.id, nombre: t.nombre, color: t.color,
+               celdas: suyas.length, acuerdo: deAcuerdo.length,
+               maximo: suyas.reduce(function (x, c) { return Math.max(x, c.personas); }, 0) };
+    }).filter(Boolean);
+
+    return {
+      recorridos: ps.length,
+      autores: ps.map(function (p, i) { return p.autor || ('recorrido ' + (i + 1)); }),
+      marcas: ps.reduce(function (t, p) { return t + p.marcas.filter(valida).length; }, 0),
+      celdas: celdas, acuerdos: acuerdos, porTipo: porTipo,
+      celdaM: CELDA_M,
+      /* Con un solo recorrido no hay acuerdo posible, y decirlo evita la peor
+         lectura de todas: creer que una coincidencia consigo mismo significa
+         algo. */
+      hayAcuerdoPosible: ps.length >= 2
+    };
+  }
+
   window.URBIS_INTANGIBLE = {
+    PAQUETE: PAQUETE, CELDA_M: CELDA_M,
+    paraCompartir: paraCompartir, leerPaquete: leerPaquete, unir: unir,
+    celdasDe: celdasDe, celdaDe: celdaDe, centroDeCelda: centroDeCelda,
     TIPOS: TIPOS,
     tipo: tipo, color: color, geomDe: geomDe, minimoPuntos: minimoPuntos,
     nuevaMarca: nuevaMarca, valida: valida, paraGuardar: paraGuardar,

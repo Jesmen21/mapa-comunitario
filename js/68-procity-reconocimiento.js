@@ -92,6 +92,10 @@
        con lo que sí se midió. */
     intangible: [], intDibujando: false, intTipo: '', intPts: null, intAviso: '',
     intEnMapa: false,
+    /* Los recorridos del curso, juntados. Es lo que convierte veinte opiniones
+       sueltas en un dato: dónde varias personas, cada una por su lado,
+       dijeron lo mismo. */
+    intCurso: [], intUnion: null, intAcuerdosEnMapa: false, intCursoAviso: '',
     /* EL PLIEGO: qué cajas y qué mapas van al papel. Guarda las APAGADAS y no
        las encendidas, para que una caja nueva —de una versión posterior—
        aparezca sola en el pliego de un sector guardado hace meses en vez de
@@ -2662,6 +2666,45 @@
       if (!n) return;
       anotarMarcaInt(n.getAttribute('data-pcr-nota'), n.value);
     }, true);
+    /* Los recorridos que llegan como archivo. Se lee cada uno por separado y
+       se dice cuáles no sirvieron: importar cinco y que se caigan dos en
+       silencio sería peor que no importar ninguno. */
+    el.addEventListener('change', function (ev) {
+      var inp = ev.target.closest && ev.target.closest('#pcr-int-archivo');
+      if (!inp || !inp.files || !inp.files.length) return;
+      var I2 = IN();
+      if (!I2) return;
+      var quedan = inp.files.length, buenos = 0, malos = [];
+      Array.prototype.forEach.call(inp.files, function (f) {
+        var fr = new FileReader();
+        fr.onload = function () {
+          var r = I2.leerPaquete(String(fr.result || ''));
+          if (r.error) malos.push(f.name + ': ' + r.error);
+          else {
+            // El mismo recorrido dos veces no es un acuerdo: es el mismo.
+            var yaEsta = (S.intCurso || []).some(function (p) {
+              return p.autor === r.ok.autor && p.cuando === r.ok.cuando;
+            });
+            if (yaEsta) malos.push(f.name + ': ese recorrido ya estaba traído.');
+            else { S.intCurso = (S.intCurso || []).concat([r.ok]); buenos++; }
+          }
+          if (--quedan === 0) {
+            inp.value = '';
+            rehacerUnion();
+            S.intCursoAviso = malos.join(' · ');
+            S.aviso = buenos
+              ? 'Se juntaron ' + buenos + ' recorrido' + (buenos === 1 ? '' : 's') + '.'
+              : 'No se pudo juntar ninguno.';
+            pintar();
+          }
+        };
+        fr.onerror = function () {
+          malos.push(f.name + ': no se pudo leer el archivo.');
+          if (--quedan === 0) { inp.value = ''; S.intCursoAviso = malos.join(' · '); pintar(); }
+        };
+        fr.readAsText(f);
+      });
+    });
     el.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-pcr]');
       if (!b) return;
@@ -2817,6 +2860,48 @@
       }
       if (acc === 'int-dibujar') { iniciarIntangible(b.getAttribute('data-t')); return; }
       if (acc === 'int-borrar') { borrarMarcaInt(b.getAttribute('data-m')); return; }
+      if (acc === 'int-exportar') {
+        var IE = IN();
+        if (!IE) return;
+        var paq = IE.paraCompartir(S.intangible || [], {
+          autor: quienSoy() || 'Sin nombre',
+          sector: S.nombreGuardado || '',
+          centro: ejeDelSector()
+        });
+        var comoNombre = (paq.autor || 'recorrido').toLowerCase()
+          .replace(/[^\wáéíóúñ]+/gi, '-').replace(/^-+|-+$/g, '');
+        var puso = descargarArchivo(JSON.stringify(paq),
+          'urbis-intangible-' + (comoNombre || 'recorrido') + '.json', 'application/json');
+        /* Además del archivo, al portapapeles: en un salón se pasa antes por
+           el grupo de chat que por un cable. */
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(JSON.stringify(paq));
+          }
+        } catch (e) {}
+        S.textoPlano = JSON.stringify(paq);
+        S.aviso = puso
+          ? 'Recorrido exportado y copiado. Pasáselo a quien lo va a juntar.'
+          : 'No se pudo descargar acá, pero quedó copiado y en el cuadro de abajo.';
+        pintar(); return;
+      }
+      if (acc === 'int-importar') {
+        var inp = document.getElementById('pcr-int-archivo');
+        if (inp) inp.click();
+        return;
+      }
+      if (acc === 'int-curso-borrar') {
+        S.intCurso = []; S.intCursoAviso = '';
+        rehacerUnion(); pintarAcuerdos(false);
+        S.aviso = 'Se quitaron los recorridos traídos. El tuyo queda.';
+        pintar(); return;
+      }
+      if (acc === 'int-acuerdos-mapa') {
+        var puestos = pintarAcuerdos(!S.intAcuerdosEnMapa);
+        S.encogida = S.intAcuerdosEnMapa;
+        if (!puestos && !S.intAcuerdosEnMapa) S.aviso = 'Todavía no hay sitios donde coincidan.';
+        pintar(); return;
+      }
       if (acc === 'int-mapa') {
         var puestasInt = pintarIntangible(!S.intEnMapa);
         S.encogida = S.intEnMapa;
@@ -5817,6 +5902,22 @@
     /* Y el último, que es el único dibujado a mano: lo que vio quien caminó.
        Va al final de la banda a propósito —se lee después de todo lo medido,
        que es el orden en que hay que discutirlo—. */
+    /* El acuerdo del curso, si lo hay. Va aparte del mapa de marcas y no
+       encima: uno dice lo que vio cada quien y el otro, en qué coinciden, y
+       encimarlos borraría justo la diferencia que vale. */
+    if (S.intUnion && S.intUnion.hayAcuerdoPosible && S.intUnion.acuerdos.length) {
+      var ac = S.intUnion.acuerdos;
+      mapas.push({
+        id: 'acuerdos', titulo: 'Dónde coincide el curso',
+        svg: mini({ calor: ac.map(function (c) { return { lat: c.lat, lng: c.lng }; }),
+                    calorColor: '#B3282C', calorRadio: 7,
+                    puntos: ac.map(function (c) {
+                      return { lat: c.lat, lng: c.lng, color: c.color }; }),
+                    radioPunto: 2.2 }),
+        pie: ac.length + ' sitios donde coincidieron ' + S.intUnion.recorridos +
+             ' recorridos hechos por separado'
+      });
+    }
     var IT = window.URBIS_INTANGIBLE;
     var marcas = o.intangible !== undefined ? o.intangible : S.intangible;
     if (IT && marcas && marcas.length) {
@@ -7419,6 +7520,7 @@
     S.intDibujando = false; S.intPts = null; S.intAviso = '';
     soltarMapaInt();
     pintarIntangible(true);
+    rehacerUnion();
     guardarFichaViva();
     pintar(); pintarBarraInt();
   }
@@ -7426,6 +7528,7 @@
   function borrarMarcaInt(id) {
     S.intangible = (S.intangible || []).filter(function (m) { return m.id !== id; });
     pintarIntangible((S.intangible || []).length > 0);
+    rehacerUnion();
     guardarFichaViva();
     pintar();
   }
@@ -7456,6 +7559,55 @@
   /* `ctx` deja pasar el sector de una ficha guardada. Sin eso, abrir una
      ficha vieja cruzaba sus marcas contra el sector que estuviera en memoria
      —otro barrio, con otros usos— y sacaba conclusiones de la nada. */
+  /* Quién está caminando. Del inicio de sesión si lo hay; si no, se pregunta.
+     Un recorrido sin nombre no es un testimonio, es una mancha. */
+  function quienSoy() {
+    try {
+      var k = (window.URBIS_CONFIG && window.URBIS_CONFIG.AUTH &&
+               window.URBIS_CONFIG.AUTH.SESSION_KEY) || 'urbis_auth_session_v1';
+      var d = JSON.parse(localStorage.getItem(k) || '{}');
+      if (d && d.usuario) return String(d.usuario);
+    } catch (e) {}
+    return '';
+  }
+
+  function rehacerUnion() {
+    var I = IN();
+    if (!I) return;
+    var mios = (S.intangible || []).filter(I.valida);
+    var todos = (S.intCurso || []).slice();
+    if (mios.length) {
+      todos.unshift({ autor: quienSoy() || 'Mi recorrido', marcas: mios });
+    }
+    S.intUnion = todos.length ? I.unir(todos) : null;
+  }
+
+  /* Los acuerdos, sobre el mapa. Un círculo por celda donde coincidieron dos
+     o más, del tamaño de cuántos fueron: es lo único de todo esto que se lee
+     de un vistazo desde el fondo del salón. */
+  var capaAcuerdos = null;
+  function pintarAcuerdos(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaAcuerdos) { try { m.removeLayer(capaAcuerdos); } catch (e) {} capaAcuerdos = null; }
+    if (encender === false) { S.intAcuerdosEnMapa = false; return false; }
+    var u = S.intUnion;
+    if (!u || !u.acuerdos || !u.acuerdos.length) { S.intAcuerdosEnMapa = false; return false; }
+    capaAcuerdos = L.layerGroup();
+    u.acuerdos.forEach(function (c) {
+      try {
+        L.circleMarker([c.lat, c.lng], {
+          radius: Math.min(16, 5 + c.personas * 2.5),
+          color: '#ffffff', weight: 1.5,
+          fillColor: c.color, fillOpacity: Math.min(0.85, 0.3 + c.personas * 0.15)
+        }).bindTooltip(c.nombre + ' · ' + c.personas + ' personas').addTo(capaAcuerdos);
+      } catch (e) {}
+    });
+    capaAcuerdos.addTo(m);
+    S.intAcuerdosEnMapa = true;
+    return true;
+  }
+
   function analisisIntangible(marcas, ctx) {
     var I = IN();
     if (!I) return null;
@@ -8678,7 +8830,78 @@
         '</div>') +
       an.avisos.map(function (a) {
         return '<p class="pcr-pista pcr-int-aviso">' + esc(a) + '</p>';
-      }).join('');
+      }).join('') +
+      (guardada ? '' : bloqueCursoIntangible());
+  }
+
+  /* ── Juntar los recorridos del curso ─────────────────────────────────── */
+  function bloqueCursoIntangible() {
+    var I = IN();
+    if (!I) return '';
+    var mios = (S.intangible || []).filter(I.valida);
+    if (!mios.length && !(S.intCurso || []).length) return '';
+    var u = S.intUnion;
+
+    var cab = '<p class="pcr-lab">Juntarlo con el curso</p>';
+    var explica = '<p class="pcr-pista">Un mapa de percepción de una persona es la opinión de ' +
+      'una persona. De veinte que caminaron la misma manzana, ya es otra cosa. Esto junta ' +
+      'recorridos por archivo —no por servidor— para que cada quien decida cuándo comparte el ' +
+      'suyo, y para que funcione en un salón sin internet.</p>';
+
+    var traer =
+      '<div class="pcr-llevar">' +
+        (mios.length
+          ? '<button type="button" data-pcr="int-exportar" class="pcr-mini pcr-llevar-b">' +
+            ico('compartir', 16) + 'Compartir mi recorrido</button>'
+          : '') +
+        '<button type="button" data-pcr="int-importar" class="pcr-mini">' +
+          ico('carpeta', 16) + 'Traer los de otros</button>' +
+        ((S.intCurso || []).length
+          ? '<button type="button" data-pcr="int-curso-borrar" class="pcr-mini">' +
+            ico('borrar', 16) + 'Quitar los traídos</button>'
+          : '') +
+      '</div>' +
+      '<input type="file" id="pcr-int-archivo" accept=".json,application/json" multiple ' +
+        'style="position:absolute;left:-9999px" />' +
+      (S.intCursoAviso ? '<p class="pcr-error">' + esc(S.intCursoAviso) + '</p>' : '');
+
+    if (!u || !u.hayAcuerdoPosible) {
+      return cab + explica +
+        ((S.intCurso || []).length
+          ? ''
+          : '<p class="pcr-conc">Todavía es un solo recorrido: el tuyo. Con uno no hay acuerdo ' +
+            'posible, y creer que coincidís con vos mismo sería la peor lectura de todas.</p>') +
+        traer;
+    }
+
+    return cab + explica +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + u.recorridos + '</b><small>recorridos</small></div>' +
+        '<div class="pcr-kpi"><b>' + u.marcas + '</b><small>marcas en total</small></div>' +
+        '<div class="pcr-kpi"><b>' + u.acuerdos.length + '</b><small>sitios donde coinciden</small></div>' +
+      '</div>' +
+      '<p class="pcr-pista">De: ' + esc(u.autores.join(', ')) + '.</p>' +
+      (u.acuerdos.length
+        ? '<p class="pcr-conc">En <b>' + u.acuerdos.length + '</b> sitios de ' + u.celdaM +
+          ' m coincidieron dos o más personas que caminaron por separado. Ahí la percepción ' +
+          'deja de ser de alguien y pasa a ser del barrio: es lo único de todo esto que se ' +
+          'puede defender en una lámina.</p>' +
+          '<div class="pcr-int-cuenta">' +
+            u.porTipo.filter(function (t) { return t.acuerdo > 0; }).map(function (t) {
+              return '<div class="pcr-int-c" style="border-color:' + esc(t.color) + '">' +
+                '<b>' + t.acuerdo + '</b><small>' + esc(t.nombre) + '</small>' +
+                '<em>hasta ' + t.maximo + ' personas</em></div>';
+            }).join('') +
+          '</div>'
+        : '<p class="pcr-conc">Los ' + u.recorridos + ' recorridos no coinciden en ningún sitio. ' +
+          'Eso también es un hallazgo: o cada quien caminó por otro lado, o lo que se percibe ' +
+          'no es del barrio sino de quien lo mira. Vale la pena preguntarlo en clase.</p>') +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="int-acuerdos-mapa" class="pcr-mini">' +
+          ico(S.intAcuerdosEnMapa ? 'apagar' : 'ojo', 16) +
+          (S.intAcuerdosEnMapa ? 'Quitar del mapa' : 'Ver dónde coinciden') + '</button>' +
+      '</div>' +
+      traer;
   }
 
   function bloqueCaminata(dato, guardada) {
@@ -10624,6 +10847,8 @@
          manchas de color sobre un barrio donde nadie estuvo. */
       S.intangible = []; S.intDibujando = false; S.intPts = null; S.intTipo = '';
       pintarIntangible(false);
+      S.intCurso = []; S.intUnion = null; S.intCursoAviso = '';
+      pintarAcuerdos(false);
       // La composición del pliego era de ESE sector: qué apagar depende de
       // qué se midió, y en el sector nuevo no se midió nada todavía.
       S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
