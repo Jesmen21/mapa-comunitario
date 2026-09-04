@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v710-que-se-lea-medido-no-mirado';
+const URBIS_CACHE = 'urbis-v711-el-dia-entero-de-una-sentada';
 const URBIS_ASSETS = [
   './',
   './index.html',
