@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-01",
+  "actualizado": "2026-09-04",
   "alertas": [
+    {
+      "tipo": "Zona de inundación activa",
+      "titulo": "Emergencia por lluvias e inundaciones en el Meta — 29 municipios afectados, 3 de septiembre de 2026",
+      "lat": 3.568,
+      "lng": -73.784,
+      "desde": "2026-09-03",
+      "expira": "2026-09-08",
+      "lineas": [
+        "📅 La emergencia se agravó el 3 de septiembre de 2026: la Gobernación del Meta pidió ayuda urgente a la UNGRD y, ese mismo día, un helicóptero Black Hawk de la Fuerza Aeroespacial rescató por cable a tres personas, dos de ellas adultas mayores, aisladas por la creciente del río Ariari en zona rural de El Castillo.",
+        "📊 Balance acumulado de la temporada de lluvias en el Meta: 8.471 familias afectadas y 2.615 sin vivienda en 29 municipios; 259 viviendas destruidas y 1.237 averiadas; 95,1 km de vías afectadas y 27 puentes o estructuras hidráulicas comprometidos. El río Upía se mantiene en alerta roja por su nivel, y Cubarral, El Dorado y El Castillo siguen con la conexión terrestre interrumpida.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación del Meta y la UNGRD. No es un reporte ciudadano."
+      ],
+      "fuente": "Gobernación del Meta / UNGRD",
+      "url": "https://www.eltiempo.com/colombia/otras-ciudades/creciente-subita-del-rio-ariari-dejo-varias-familias-incomunicadas-y-agrava-la-situacion-generada-por-las-lluvias-en-los-29-municipios-del-meta-3583245"
+    },
     {
       "tipo": "Sismo",
       "titulo": "Terremoto de magnitud 7,4 — 10 de agosto de 2026, San José del Palmar, Chocó",

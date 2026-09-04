@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v681-juntar-el-curso';
+const URBIS_CACHE = 'urbis-v682-alerta-inundaciones-meta';
 const URBIS_ASSETS = [
   './',
   './index.html',
