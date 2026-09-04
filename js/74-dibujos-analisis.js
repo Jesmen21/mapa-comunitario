@@ -445,7 +445,99 @@
       '</svg>';
   }
 
+  /* ── 6 · Las sombras de los vecinos sobre el lote ───────────────────────
+     Tres horas en una sola planta: la mañana, el mediodía y la tarde. Las
+     sombras se pintan translúcidas, así que donde se cruzan el papel se
+     oscurece solo y se ve de un vistazo qué parte del lote no ve el sol en
+     todo el día.
+
+     El lote va encima de todo, en amarillo: la pregunta del dibujo no es
+     «cómo son las sombras» sino «cuánto de MI lote tapan». */
+  var TINTE_HORA = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
+
+  function planoDeSombras(datos, opts) {
+    var d = datos || {}, o = opts || {};
+    var lote = d.lote || [];
+    if (lote.length < 3 || !d.horas || !d.horas.length) return '';
+    var W = 300, H = 240, pad = 18;
+
+    var lat0 = d.centro ? d.centro.lat : lote[0].lat;
+    var rad = Math.PI / 180;
+    var kx = Math.cos(lat0 * rad) * 111320, ky = 110540;
+    var lng0 = d.centro ? d.centro.lng : lote[0].lng;
+    var M = function (p) { return { x: (p.lng - lng0) * kx, y: -(p.lat - lat0) * ky }; };
+
+    // La ventana del dibujo: el lote y lo que lo rodea, con un tope para que
+    // una torre lejana con sombra de doscientos metros no encoja el lote a un
+    // punto. Lo que quede fuera se recorta.
+    var todos = lote.map(M);
+    (d.huellasCerca || []).forEach(function (e) { e.anillo.forEach(function (p) { todos.push(M(p)); }); });
+    d.horas.forEach(function (h) {
+      (h.sombras || []).forEach(function (poli) { poli.forEach(function (p) { todos.push(M(p)); }); });
+    });
+    var lim = 130;   // metros a cada lado del centro, como mucho
+    var minX = Math.max(-lim, Math.min.apply(null, todos.map(function (q) { return q.x; })));
+    var maxX = Math.min(lim, Math.max.apply(null, todos.map(function (q) { return q.x; })));
+    var minY = Math.max(-lim, Math.min.apply(null, todos.map(function (q) { return q.y; })));
+    var maxY = Math.min(lim, Math.max.apply(null, todos.map(function (q) { return q.y; })));
+    var anchoM = Math.max(40, maxX - minX), altoM = Math.max(40, maxY - minY);
+    var k = Math.min((W - pad * 2) / anchoM, (H - pad * 2 - 22) / altoM);
+    var oX = (W - anchoM * k) / 2 - minX * k;
+    var oY = (H - 22 - altoM * k) / 2 - minY * k;
+    var X = function (q) { return oX + q.x * k; };
+    var Y = function (q) { return oY + q.y * k; };
+    var camino = function (poli) {
+      return poli.map(function (p, i) {
+        var q = M(p);
+        return (i ? 'L' : 'M') + n1(X(q)) + ' ' + n1(Y(q));
+      }).join(' ') + ' Z';
+    };
+
+    var sombras = d.horas.map(function (h) {
+      if (!h.sombras || !h.sombras.length) return '';
+      return '<g fill="' + (TINTE_HORA[h.hora] || TINTA) + '" fill-opacity=".22" ' +
+        'stroke="' + (TINTE_HORA[h.hora] || TINTA) + '" stroke-opacity=".5" stroke-width=".8">' +
+        h.sombras.map(function (poli) { return '<path d="' + camino(poli) + '"/>'; }).join('') +
+        '</g>';
+    }).join('');
+
+    var edificios = (d.huellasCerca || []).map(function (e) {
+      return '<path d="' + camino(e.anillo) + '" fill="#3B4A5A" fill-opacity=".85"/>';
+    }).join('');
+
+    var leyenda = d.horas.map(function (h, i) {
+      var x = 8 + i * 74;
+      return '<rect x="' + x + '" y="' + (H - 14) + '" width="8" height="8" rx="1.5" ' +
+        'fill="' + (TINTE_HORA[h.hora] || TINTA) + '" fill-opacity=".45"/>' +
+        '<text x="' + (x + 12) + '" y="' + (H - 7) + '" font-size="7.5" fill="' + GRIS + '">' +
+        h.hora + ':00 · ' + h.pctLote + '% del lote</text>';
+    }).join('');
+
+    return '<svg class="pcr-sombras" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" ' +
+      'role="img" aria-label="' + esc(o.etiqueta || ('Sombras de los edificios vecinos sobre el lote a ' +
+      'las ' + d.horas.map(function (h) { return h.hora + ':00, que tapan el ' + h.pctLote + '% del lote'; })
+      .join('; '))) + '">' +
+      '<rect x="0" y="0" width="' + W + '" height="' + (H - 20) + '" fill="#F7FAFC"/>' +
+      sombras + edificios +
+      '<path d="' + camino(lote) + '" fill="#FFD54F" fill-opacity=".45" stroke="#7A5901" stroke-width="1.8"/>' +
+      '<g transform="translate(' + (W - 16) + ',16)">' +
+        '<path d="M0 -10L3.5 5L0 1.5L-3.5 5Z" fill="' + TINTA + '"/>' +
+        '<text x="0" y="15" font-size="7" text-anchor="middle" font-weight="700" fill="' + TINTA + '">N</text>' +
+      '</g>' +
+      (function () {
+        var metros = anchoM > 160 ? 50 : anchoM > 80 ? 25 : 10;
+        var largo = metros * k;
+        return '<g transform="translate(8,' + (H - 26) + ')">' +
+          '<path d="M0 0H' + n1(largo) + 'M0 -3V3M' + n1(largo) + ' -3V3" stroke="' + TINTA + '" stroke-width="1"/>' +
+          '<text x="' + n1(largo + 5) + '" y="3" font-size="7" fill="' + GRIS + '">' + metros + ' m</text>' +
+        '</g>';
+      })() +
+      leyenda +
+      '</svg>';
+  }
+
   window.URBIS_DIBUJO = {
+    planoDeSombras: planoDeSombras,
     corteTopografico: corteTopografico,
     cartaSolar: cartaSolar,
     rosaDeRumbos: rosaDeRumbos,

@@ -852,6 +852,22 @@
        edificios primero —son el fondo construido— y encima los usos. Sin
        esto la figura es solo un contorno; con esto es un plano. */
     let dentro = '';
+    /* Las curvas de nivel van DEBAJO de todo lo demás: son el terreno sobre el
+       que está puesto el resto. Marrón claro, y las de cota redonda un poco
+       más gruesas, como en cualquier plancha de topografía. */
+    if (o.curvas && Array.isArray(o.curvas.curvas) && o.curvas.curvas.length) {
+      const paso = o.curvas.intervalo || 1;
+      dentro += '<g fill="none">' + o.curvas.curvas.map(c => {
+        const maestra = (c.z % (paso * 5)) === 0;
+        return (c.lineas || []).map(linea => {
+          if (!linea || linea.length < 2) return '';
+          const d = linea.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ');
+          return '<path d="' + d + '" stroke="' + (maestra ? '#8A5A20' : '#B08050') +
+            '" stroke-width="' + (maestra ? 0.9 : 0.5) + '" stroke-opacity="' +
+            (maestra ? 0.85 : 0.6) + '"/>';
+        }).join('');
+      }).join('') + '</g>';
+    }
     if (Array.isArray(o.huellas) && o.huellas.length) {
       dentro += '<g>' + o.huellas.map(anillo => {
         if (!anillo || anillo.length < 3) return '';
@@ -902,6 +918,7 @@
       // Con contenido dentro, el relleno del contorno se quita: taparía las
       // huellas y los usos que se acaban de dibujar.
       const relleno = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
+                      (o.curvas && o.curvas.curvas && o.curvas.curvas.length) ||
                       (o.destacados && o.destacados.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<path d="' + d + '" fill="' + relleno + '" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
@@ -915,6 +932,7 @@
       // se quita. Un velo celeste encima de los puntos les cambia el color y
       // deja de coincidir con las convenciones.
       const rellenoC = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
+                       (o.curvas && o.curvas.curvas && o.curvas.curvas.length) ||
                        (o.destacados && o.destacados.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + r.toFixed(1) +

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v668-desde-el-lote';
+const URBIS_CACHE = 'urbis-v669-curvas-y-sombras';
 const URBIS_ASSETS = [
   './',
   './index.html',

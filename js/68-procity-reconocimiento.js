@@ -85,7 +85,7 @@
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
-    terRejilla: null,
+    terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
     estratos: null,
@@ -123,7 +123,7 @@
     terCargando: false,
     terAviso: '',
     // Las huellas de los edificios, para poder dibujar los llenos y vacíos.
-    trzHuellas: null,
+    trzHuellas: null, trzPisos: null,
     llenosEnMapa: false,
     // El clima, que también se pide a botón.
     clima: null,
@@ -830,7 +830,29 @@
       '<p class="pie">' + esc(c.lectura || '') + ' ' + esc(c.advertencia || '') + '</p>';
   }
 
-  function terrenoImpreso(t, terLote) {
+  /* Las sombras de los vecinos, impresas. El dibujo y las tres cifras: es lo
+     que se lleva a la asesoría para defender dónde va el patio. */
+  function sombrasImpresas(so) {
+    if (!so || !so.horas || !so.horas.length) return '';
+    var d = dib('planoDeSombras', so);
+    return '<h2>La sombra de los vecinos sobre el lote</h2>' +
+      (d ? '<div class="dib dib-ancho">' + d + '</div>' : '') +
+      '<table>' +
+        so.horas.map(function (h) {
+          return '<tr><td>A las ' + h.hora + ':00 · sol a ' + h.altitud + '°</td>' +
+            '<td class="n">' + h.pctLote + '% del lote</td></tr>';
+        }).join('') +
+      '</table>' +
+      '<p class="pie">' + so.vecinos + ' edificios a menos de 200 m, el más alto de ' + so.masAlto +
+      ' pisos, contando ' + so.alturaPorPiso + ' m por piso.' +
+      (so.vecinosSinPisos
+        ? ' Otros ' + so.vecinosSinPisos + ' no tienen pisos registrados y no proyectan nada: la ' +
+          'sombra real es mayor que esta.'
+        : '') +
+      ' No entran árboles ni muros y el terreno se supone plano.</p>';
+  }
+
+  function terrenoImpreso(t, terLote, curvas) {
     if (!t) return '';
     var e = t.elevacion || {}, p = t.pendiente || {};
     return '<h2>El terreno</h2><table>' +
@@ -856,6 +878,11 @@
           (terLote.baja ? ' Ahí el terreno baja hacia el ' + esc(terLote.baja.nombre) +
             (terLote.pendientePct != null ? ', con ' + terLote.pendientePct + '% de pendiente' : '') + '.' : '') +
           '</p>'
+        : '') +
+      (curvas && curvas.curvas && curvas.curvas.length
+        ? '<p class="pie">Curvas de nivel cada ' + curvas.intervalo + ' m, entre los ' +
+          curvas.zMin + ' y los ' + curvas.zMax + ' msnm: van dibujadas sobre el plano del sector ' +
+          'en la lámina, y se pueden ver sobre el mapa desde la aplicación.</p>'
         : '') +
       '<p class="pie">' + esc(t.lectura || '') + ' Alturas de un modelo de ' + t.resolucionM +
       ' m de paso (' + esc(t.fuente || '') + '): sirve para leer el relieve, no para dar la cota de una ' +
@@ -1169,6 +1196,10 @@
         return c ? zonasSinDatos(res.pois || [], c) : null;
       } catch (e) { return null; }
     })();
+    var curvasL = o.curvas !== undefined ? o.curvas
+                : (function () { try { return curvasDelTerreno(); } catch (e) { return null; } })();
+    var sombrasL = o.sombras !== undefined ? o.sombras
+                 : (function () { try { return sombrasDelLote(); } catch (e) { return null; } })();
     var terLote = o.terrenoLote !== undefined ? o.terrenoLote
                 : (function () { try { return terrenoDelLote(); } catch (e) { return null; } })();
     var cam = o.caminata !== undefined ? o.caminata : S.caminata;
@@ -1218,7 +1249,8 @@
     var extras = (ter ? 1 : 0) + (cli ? 1 : 0) + (trz ? 1 : 0) +
                  (trz && trz.espacio && trz.espacio.piezas ? 1 : 0) +
                  (cam && cam.anillos && cam.anillos.length ? 1 : 0) +
-                 (zonasL ? 1 : 0);
+                 (zonasL ? 1 : 0) +
+                 (sombrasL && sombrasL.horas && sombrasL.horas.length ? 1 : 0);
     /* Acostado el plano puede ser bastante más alto: la columna en la que va
        es más angosta y le sobra papel debajo. Sin esto la lámina de 90 × 60
        quedaba con una banda blanca de 13 cm al pie. */
@@ -1244,6 +1276,9 @@
             return { lat: p.lat, lng: p.lng, color: p.color || COL[p.grupo] || null };
           }),
           huellas: huellas || null,
+          // Las curvas de nivel van dentro del plano del sector: es el mismo
+          // dibujo, no uno más, y no cuesta un milímetro de papel.
+          curvas: curvasL,
           // El lote va encima del plano: es la pieza que la lámina tiene que
           // señalar con el dedo.
           lote: (lote && lote.length >= 3) ? lote : null,
@@ -1763,6 +1798,30 @@
               'sube.</p>';
           })(), 'g3') +
 
+        /* La sombra de los vecinos, en planta. Va pegada al lote: las dos
+           cajas responden a la misma pregunta —qué se puede poner acá— desde
+           los dos lados, el suelo y el sol. */
+        caja('La sombra de los vecinos',
+          (function () {
+            if (!sombrasL || !sombrasL.horas || !sombrasL.horas.length) return '';
+            var d2 = dib('planoDeSombras', sombrasL);
+            if (!d2) return '';
+            return '<div class="dib">' + d2 + '</div>' +
+              '<div class="kpis">' +
+                sombrasL.horas.map(function (h) {
+                  return '<div class="k"><b>' + h.pctLote + '%</b><small>en sombra a las ' +
+                    h.hora + ':00</small></div>';
+                }).join('') +
+              '</div>' +
+              '<p class="nota">' + sombrasL.vecinos + ' edificios a menos de 200 m, a ' +
+              sombrasL.alturaPorPiso + ' m por piso' +
+              (sombrasL.vecinosSinPisos
+                ? '; otros ' + sombrasL.vecinosSinPisos + ' sin pisos registrados no proyectan nada, ' +
+                  'así que la sombra real es mayor'
+                : '') +
+              '. Sin árboles ni muros, y con el terreno supuesto plano.</p>';
+          })(), 'g3') +
+
         caja('Lo levantado en campo',
           (function () {
             if (!cmp) return '';
@@ -1927,7 +1986,11 @@
       alturasImpresas(st) +
       terrenoImpreso(o.terreno !== undefined ? o.terreno : S.terreno,
         o.terrenoLote !== undefined ? o.terrenoLote
-          : (function () { try { return terrenoDelLote(); } catch (e) { return null; } })()) +
+          : (function () { try { return terrenoDelLote(); } catch (e) { return null; } })(),
+        o.curvas !== undefined ? o.curvas
+          : (function () { try { return curvasDelTerreno(); } catch (e) { return null; } })()) +
+      sombrasImpresas(o.sombras !== undefined ? o.sombras
+        : (function () { try { return sombrasDelLote(); } catch (e) { return null; } })()) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
@@ -2000,13 +2063,19 @@
     return pois.length;
   }
 
+  /* Las capas que esta hoja pone sobre el mapa. Se declaran juntas y arriba
+     porque quitarDelMapa las apaga todas de una vez: una capa que se declara
+     al lado de su función es una capa que alguien olvida apagar. */
+  var capaCurvas = null, capaSombras = null;
+
   function quitarDelMapa() {
     var m = mapa();
-    [capaPuntos, capaEstratos, capaLlenos].forEach(function (c) {
+    [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras].forEach(function (c) {
       if (c && m) { try { m.removeLayer(c); } catch (e) {} }
     });
     capaPuntos = null; capaEstratos = null; capaLlenos = null;
-    S.llenosEnMapa = false;
+    capaCurvas = null; capaSombras = null;
+    S.llenosEnMapa = false; S.curvasEnMapa = false; S.sombrasEnMapa = false;
   }
 
   /* Los llenos y vacíos, dibujados. Las cifras dicen QUÉ PROPORCIÓN del área
@@ -2139,6 +2208,18 @@
         abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
                        function (m) { S.aviso = m; pintar(); });
         return;
+      }
+      if (acc === 'sombras-mapa') {
+        var puestasS = pintarSombras(!S.sombrasEnMapa);
+        S.encogida = S.sombrasEnMapa;
+        if (!puestasS && !S.sombrasEnMapa) S.aviso = 'No hay sombras que dibujar.';
+        pintar(); return;
+      }
+      if (acc === 'curvas-mapa') {
+        var puestas = pintarCurvas(!S.curvasEnMapa);
+        S.encogida = S.curvasEnMapa;
+        if (!puestas && !S.curvasEnMapa) S.aviso = 'No hay curvas que dibujar: el sector es plano.';
+        pintar(); return;
       }
       if (acc === 'caminata-mapa') {
         var puso = pintarCaminata(!S.caminataEnMapa);
@@ -2320,9 +2401,9 @@
       if (acc === 'otro') {
         // Se suelta el resultado, no el área: quien quiera el mismo sector con
         // otro radio no tiene que volver a dibujarlo.
-        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null;
+        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
         S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
-        S.trzHuellas = null; pintarLlenos(false);
+        S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
         try {
           var A5 = window.URBIS_PC_ANALISIS;
           if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
@@ -2546,7 +2627,7 @@
        raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
        el botón y no pasaba nada visible. */
     var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
-                  S.caminataEnMapa;
+                  S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa;
     /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
        esquinas de un terreno sobre un mapa tapado por un panel. */
     var encoger = S.loteDibujando ||
@@ -2596,6 +2677,16 @@
             detalle: (S.trazado && S.trazado.llenos)
               ? S.trazado.llenos.pctLleno + '% construido · ' + (S.trzHuellas || []).length + ' huellas'
               : 'las huellas de los edificios' }
+      : S.sombrasEnMapa
+        ? { icono: 'brujula', titulo: 'La sombra de los vecinos',
+            detalle: (S.sombras && S.sombras.horas
+              ? S.sombras.horas.map(function (h) { return h.hora + ':00'; }).join(' · ') + ' de hoy'
+              : 'sobre el lote') }
+      : S.curvasEnMapa
+        ? { icono: 'crecer', titulo: 'Curvas de nivel',
+            detalle: (S.curvas && S.curvas.intervalo
+              ? 'cada ' + S.curvas.intervalo + ' m · ' + S.curvas.zMin + ' a ' + S.curvas.zMax + ' msnm'
+              : 'del modelo de elevación') }
       : S.caminataEnMapa
         ? { icono: 'caminar', titulo: 'Hasta dónde se camina',
             detalle: (S.caminata && S.caminata.anillos && S.caminata.anillos.length)
@@ -2633,6 +2724,14 @@
           ? '<button type="button" data-pcr="estratos" class="pcr-mini">' +
               ico('apagar', 16) + 'Quitar los estratos del mapa</button>' +
             (S.estratos.leyenda || '')
+          : '') +
+        (S.sombrasEnMapa
+          ? '<button type="button" data-pcr="sombras-mapa" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar las sombras del mapa</button>'
+          : '') +
+        (S.curvasEnMapa
+          ? '<button type="button" data-pcr="curvas-mapa" class="pcr-mini">' +
+              ico('apagar', 16) + 'Quitar las curvas del mapa</button>'
           : '') +
         (S.caminataEnMapa
           ? '<button type="button" data-pcr="caminata-mapa" class="pcr-mini">' +
@@ -3899,6 +3998,35 @@
           return '<li><b>' + esc(c.etiqueta) + '</b> — ' + esc(c.que) + '</li>';
         }).join('') +
       '</ul>' +
+
+      /* Las curvas de nivel: el mismo terreno leído por planta. Un corte dice
+         cómo sube el terreno por una línea; las curvas lo dicen por todo el
+         plano, y son las que se calcan para proyectar. */
+      (function () {
+        var cv = S.curvas || (S.curvas = curvasDelTerreno());
+        if (!cv) return '';
+        if (cv.plano) {
+          return '<p class="pcr-lab">Curvas de nivel</p>' +
+            '<p class="pcr-pista">El sector es plano —menos de un metro entre lo más alto y lo más ' +
+            'bajo—, así que no hay curvas que dibujar. Eso también es un dato: acá la topografía ' +
+            'no condiciona nada.</p>';
+        }
+        var n2 = cv.curvas.length;
+        return '<p class="pcr-lab">Curvas de nivel</p>' +
+          '<p class="pcr-conc"><b>' + n2 + '</b> curva' + (n2 === 1 ? '' : 's') + ' cada <b>' +
+          cv.intervalo + ' m</b>, entre los ' + cv.zMin + ' y los ' + cv.zMax + ' msnm. Las de cota ' +
+          'redonda —cada ' + (cv.intervalo * 5) + ' m— van más gruesas.</p>' +
+          '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="curvas-mapa" class="pcr-mini pcr-llevar-b">' +
+              (S.curvasEnMapa ? ico('apagar', 16) + 'Quitar las curvas del mapa'
+                              : ico('mapa', 16) + 'Ver las curvas en el mapa') +
+            '</button>' +
+          '</div>' +
+          '<p class="pcr-pista">Salen del mismo modelo de ' + cv.resolucionM + ' m de paso: dibujan ' +
+          'la <b>forma del sector</b>, no el detalle de una manzana. Para un anteproyecto sirven ' +
+          'para decidir por dónde entra el acceso y hacia dónde se aterraza; para replantear hace ' +
+          'falta topografía de campo.</p>';
+      })() +
 
       '<p class="pcr-lab">Cortes del terreno</p>' +
       (t.perfiles || []).map(perfilDibujado).join('') +
@@ -5239,6 +5367,7 @@
 
   function cancelarLote() {
     S.lote = null; S.loteDibujando = false; S.loteAviso = ''; S.caminata = null;
+    S.sombras = null;
     pintarCaminata(false);
     soltarMapaLote();
     pintarLote(); pintar(); pintarBarraLote();
@@ -5262,6 +5391,7 @@
       : 'El lote quedó fuera del área analizada: lo que tiene alrededor no está medido.';
     S.encogida = S.forma === 'lote' && !S.resultado;
     recalcularCaminata();
+    S.sombras = null;
     /* Partiendo del lote, cerrarlo es lo que define el centro del análisis:
        el círculo aparece ahí mismo para que se vea qué se va a estudiar. */
     if (S.forma === 'lote') { S.centro = centroDelLote(); pintarCirculo(); }
@@ -5523,6 +5653,268 @@
     return out;
   }
 
+  /* ── Curvas de nivel ───────────────────────────────────────────────────
+     La misma rejilla de cotas, leída de la otra manera. Un corte dice cómo
+     sube el terreno POR UNA LÍNEA; las curvas lo dicen por todo el plano a la
+     vez, y son el dibujo con el que se decide dónde entra un acceso y hacia
+     dónde se aterraza.
+
+     El método es el clásico: cuadro por cuadro de la rejilla, se mira qué
+     esquinas quedan por encima de la cota buscada y se traza el segmento que
+     separa unas de otras, interpolando sobre los lados. Es «marching squares»
+     y tiene medio siglo; no hace falta nada más moderno para 289 cuadros.
+
+     La honestidad de siempre: el modelo tiene 90 m de paso, así que estas
+     curvas describen la forma del sector, NO el detalle de una manzana. Con
+     un intervalo demasiado fino se dibujarían pliegues que el modelo no sabe;
+     por eso el intervalo lo elige el relieve y no el usuario. */
+  function intervaloDeCurvas(relieve) {
+    var PASOS = [1, 2, 5, 10, 25, 50, 100];
+    for (var i = 0; i < PASOS.length; i++) {
+      // Entre seis y quince curvas: menos no dibuja la ladera, más la ensucia.
+      if (relieve / PASOS[i] <= 15) return PASOS[i];
+    }
+    return PASOS[PASOS.length - 1];
+  }
+
+  function curvasDelTerreno(rejDada) {
+    var R = rejDada || S.terRejilla;
+    if (!R || !R.limites || !R.z || R.filas < 2 || R.columnas < 2) return null;
+    var L = R.limites, F = R.filas, C = R.columnas;
+    var zs = R.z.filter(function (v) { return v != null; });
+    if (zs.length < 4) return null;
+    var zMin = Math.min.apply(null, zs), zMax = Math.max.apply(null, zs);
+    var relieve = zMax - zMin;
+    if (relieve < 1) return { intervalo: 0, curvas: [], plano: true, zMin: zMin, zMax: zMax };
+
+    var paso = intervaloDeCurvas(relieve);
+    var latDe = function (f) { return L.maxLat - (L.maxLat - L.minLat) * (f / (F - 1)); };
+    var lngDe = function (c) { return L.minLng + (L.maxLng - L.minLng) * (c / (C - 1)); };
+    var z = function (f, c) { return R.z[f * C + c]; };
+
+    // El punto donde una arista cruza la cota, interpolando linealmente.
+    function cruce(f1, c1, z1, f2, c2, z2, v) {
+      var t = (v - z1) / (z2 - z1);
+      return { lat: latDe(f1) + (latDe(f2) - latDe(f1)) * t,
+               lng: lngDe(c1) + (lngDe(c2) - lngDe(c1)) * t };
+    }
+
+    var curvas = [];
+    for (var v = Math.ceil(zMin / paso) * paso; v <= zMax; v += paso) {
+      var segs = [];
+      for (var f = 0; f < F - 1; f++) {
+        for (var c = 0; c < C - 1; c++) {
+          var za = z(f, c), zb = z(f, c + 1), zc = z(f + 1, c + 1), zd = z(f + 1, c);
+          if (za == null || zb == null || zc == null || zd == null) continue;
+          var pts = [];
+          // Arriba, derecha, abajo, izquierda: cada lado aporta como mucho un
+          // punto, y los puntos de un mismo cuadro se unen entre ellos.
+          if ((za < v) !== (zb < v)) pts.push(cruce(f, c, za, f, c + 1, zb, v));
+          if ((zb < v) !== (zc < v)) pts.push(cruce(f, c + 1, zb, f + 1, c + 1, zc, v));
+          if ((zc < v) !== (zd < v)) pts.push(cruce(f + 1, c + 1, zc, f + 1, c, zd, v));
+          if ((zd < v) !== (za < v)) pts.push(cruce(f + 1, c, zd, f, c, za, v));
+          /* Con dos puntos hay un segmento. Con cuatro el cuadro es una silla
+             —dos crestas cruzadas— y hay dos segmentos; se unen por pares en
+             el orden en que salieron, que para una rejilla de 90 m da el
+             dibujo correcto sin tener que resolver la ambigüedad de la silla,
+             que a esta escala no se ve. */
+          if (pts.length >= 2) segs.push([pts[0], pts[1]]);
+          if (pts.length === 4) segs.push([pts[2], pts[3]]);
+        }
+      }
+      if (segs.length) curvas.push({ z: Math.round(v * 10) / 10, lineas: encadenar(segs) });
+    }
+    return { intervalo: paso, curvas: curvas, zMin: Math.round(zMin), zMax: Math.round(zMax),
+             resolucionM: (S.terreno && S.terreno.resolucionM) || 90 };
+  }
+
+  /* Los segmentos sueltos, cosidos en líneas continuas. Dibujar dos mil rayas
+     independientes funciona, pero una curva partida en trozos no se puede
+     rotular con su cota ni se lee como una curva: se ve como una trama. */
+  function encadenar(segs) {
+    var clave = function (p) { return p.lat.toFixed(6) + ',' + p.lng.toFixed(6); };
+    var porPunto = {};
+    segs.forEach(function (s2, i) {
+      [clave(s2[0]), clave(s2[1])].forEach(function (k) {
+        (porPunto[k] || (porPunto[k] = [])).push(i);
+      });
+    });
+    var usado = new Array(segs.length), lineas = [];
+    for (var i = 0; i < segs.length; i++) {
+      if (usado[i]) continue;
+      usado[i] = true;
+      var linea = [segs[i][0], segs[i][1]];
+      // Se estira por los dos extremos hasta que no haya con qué seguir.
+      [0, 1].forEach(function (lado) {
+        for (var vueltas = 0; vueltas < 4000; vueltas++) {
+          var punta = lado ? linea[linea.length - 1] : linea[0];
+          var vecinos = porPunto[clave(punta)] || [];
+          var siguiente = -1;
+          for (var j = 0; j < vecinos.length; j++) {
+            if (!usado[vecinos[j]]) { siguiente = vecinos[j]; break; }
+          }
+          if (siguiente < 0) break;
+          usado[siguiente] = true;
+          var s3 = segs[siguiente];
+          var otro = (clave(s3[0]) === clave(punta)) ? s3[1] : s3[0];
+          if (lado) linea.push(otro); else linea.unshift(otro);
+        }
+      });
+      lineas.push(linea);
+    }
+    return lineas;
+  }
+
+  /* ── Las sombras de los vecinos sobre el lote ──────────────────────────
+     La carta solar dice por dónde entra el sol. Lo que no dice es si al lote
+     le llega, porque eso depende de lo que tenga enfrente. Con las huellas de
+     los edificios y sus pisos —los dos ya vienen con el trazado— la sombra se
+     puede proyectar: es geometría, no adivinanza.
+
+     Cada edificio proyecta su huella desplazada en el sentido contrario al
+     sol, una distancia igual a su altura dividida por la tangente de la altura
+     solar. La sombra es la envolvente de la huella y su desplazada: el casco
+     convexo de las dos. Para plantas rectangulares —que es lo que hay— la
+     envolvente y el casco coinciden.
+
+     Lo que esto NO sabe, y se dice en la ficha: los edificios sin pisos
+     registrados no proyectan nada (y son mayoría), los árboles y los muros no
+     están, y el terreno se supone plano. En una ladera la sombra real cae más
+     lejos ladera abajo y más cerca ladera arriba. */
+  var HORAS_SOMBRA = [9, 12, 15];
+  var ALTO_POR_PISO_M = 3;
+
+  function sombrasDelLote(fecha) {
+    var pts = S.lote || [];
+    var SOL = window.URBIS_SOLAR;
+    var huellas = S.trzHuellas || [], pisos = S.trzPisos || [];
+    if (pts.length < 3 || !SOL || !huellas.length) return null;
+
+    var centro = centroideDe(pts);
+    var dia = fecha ? new Date(fecha) : new Date();
+    var rad = Math.PI / 180;
+    var kx = Math.cos(centro.lat * rad) * 111320, ky = 110540;
+    var aMetros = function (p) {
+      return { x: (p.lng - centro.lng) * kx, y: (p.lat - centro.lat) * ky };
+    };
+    var aGrados = function (q) {
+      return { lat: centro.lat + q.y / ky, lng: centro.lng + q.x / kx };
+    };
+
+    /* Solo los vecinos: a más de 200 m, para tapar el sol de la tarde a un
+       lote haría falta una torre de sesenta pisos, y esas no se cuentan por
+       docenas en un barrio. Filtrar acá es lo que deja el cálculo en unos
+       pocos milisegundos. */
+    var cerca = [];
+    var sinPisos = 0;
+    huellas.forEach(function (anillo, i) {
+      if (!anillo || anillo.length < 3) return;
+      var c0 = anillo[0];
+      if (haversineM(centro, c0) > 200) return;
+      var n2 = pisos[i];
+      if (!n2) { sinPisos++; return; }
+      cerca.push({ anillo: anillo, pisos: n2, alturaM: n2 * ALTO_POR_PISO_M });
+    });
+    if (!cerca.length) {
+      return { sinAlturas: true, vecinosSinPisos: sinPisos, horas: [] };
+    }
+
+    // Muestreo del lote: una rejilla de puntos por dentro, para medir qué
+    // parte queda en sombra sin tener que intersecar polígonos.
+    var A = window.URBIS_PC_ANALISIS;
+    var dentroLote = function (p) {
+      return A && A.dentroDelPoligono ? A.dentroDelPoligono(p.lat, p.lng, pts) : false;
+    };
+    var lats = pts.map(function (p) { return p.lat; });
+    var lngs = pts.map(function (p) { return p.lng; });
+    var muestras = [];
+    var N = 14;
+    for (var i2 = 0; i2 < N; i2++) {
+      for (var j = 0; j < N; j++) {
+        var q = { lat: Math.min.apply(null, lats) + (Math.max.apply(null, lats) - Math.min.apply(null, lats)) * ((i2 + 0.5) / N),
+                  lng: Math.min.apply(null, lngs) + (Math.max.apply(null, lngs) - Math.min.apply(null, lngs)) * ((j + 0.5) / N) };
+        if (dentroLote(q)) muestras.push(aMetros(q));
+      }
+    }
+    if (!muestras.length) return null;
+
+    var horas = HORAS_SOMBRA.map(function (h) {
+      var t = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate(), h, 0, 0);
+      var pos;
+      try { pos = SOL.posicion(t, centro.lat, centro.lng); } catch (e) { return null; }
+      if (!pos || pos.altitud <= 5) {
+        return { hora: h, altitud: pos ? Math.round(pos.altitud * 10) / 10 : null,
+                 bajo: true, sombras: [], pctLote: 0 };
+      }
+      var largoPorMetro = 1 / Math.tan(pos.altitud * rad);
+      // La sombra se va al lado opuesto del sol.
+      var az = (pos.azimut + 180) % 360;
+      var dx = Math.sin(az * rad), dy = Math.cos(az * rad);
+
+      var sombras = cerca.map(function (e) {
+        var base = e.anillo.map(aMetros);
+        var largo = e.alturaM * largoPorMetro;
+        var movida = base.map(function (q) { return { x: q.x + dx * largo, y: q.y + dy * largo }; });
+        return cascoConvexo(base.concat(movida));
+      }).filter(function (poli) { return poli.length >= 3; });
+
+      var tapadas = 0;
+      muestras.forEach(function (q) {
+        for (var k = 0; k < sombras.length; k++) {
+          if (dentroDePoligonoXY(q, sombras[k])) { tapadas++; return; }
+        }
+      });
+
+      return {
+        hora: h,
+        altitud: Math.round(pos.altitud * 10) / 10,
+        azimut: Math.round(pos.azimut * 10) / 10,
+        pctLote: Math.round(100 * tapadas / muestras.length),
+        sombras: sombras.map(function (poli) { return poli.map(aGrados); })
+      };
+    }).filter(Boolean);
+
+    return {
+      horas: horas, vecinos: cerca.length, vecinosSinPisos: sinPisos,
+      alturaPorPiso: ALTO_POR_PISO_M,
+      masAlto: cerca.reduce(function (m, e) { return Math.max(m, e.pisos); }, 0),
+      centro: centro, lote: pts.slice(),
+      huellasCerca: cerca.map(function (e) { return { anillo: e.anillo, pisos: e.pisos }; })
+    };
+  }
+
+  /* Casco convexo por el método de la cadena monótona. Sobre coordenadas ya
+     proyectadas a metros, que es donde «convexo» quiere decir algo. */
+  function cascoConvexo(puntos) {
+    var ps = puntos.slice().sort(function (a, b) { return a.x - b.x || a.y - b.y; });
+    if (ps.length < 3) return ps;
+    var cruz = function (o, a, b) {
+      return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    };
+    var abajo = [], arriba = [];
+    ps.forEach(function (p) {
+      while (abajo.length >= 2 && cruz(abajo[abajo.length - 2], abajo[abajo.length - 1], p) <= 0) abajo.pop();
+      abajo.push(p);
+    });
+    for (var i = ps.length - 1; i >= 0; i--) {
+      var p2 = ps[i];
+      while (arriba.length >= 2 && cruz(arriba[arriba.length - 2], arriba[arriba.length - 1], p2) <= 0) arriba.pop();
+      arriba.push(p2);
+    }
+    abajo.pop(); arriba.pop();
+    return abajo.concat(arriba);
+  }
+
+  function dentroDePoligonoXY(p, poli) {
+    var dentro = false;
+    for (var i = 0, j = poli.length - 1; i < poli.length; j = i++) {
+      var a = poli[i], b = poli[j];
+      if ((a.y > p.y) !== (b.y > p.y) &&
+          p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) dentro = !dentro;
+    }
+    return dentro;
+  }
+
   /* Los dos cortes por el lote y las cifras del terreno que lo sostiene.
      Los cortes NO se recortan al lote: van de borde a borde de la rejilla,
      porque un corte de veinte metros sobre un modelo de noventa es una línea
@@ -5730,6 +6122,61 @@
           'este tamaño cabe dentro de una sola celda y su corte propio sería una línea recta ' +
           'inventada. Esto sitúa el lote en la ladera; la cota de cada esquina se levanta con ' +
           'topografía en campo.</p>';
+      })() +
+
+      /* Las sombras de los vecinos. La carta solar dice por dónde entra el
+         sol; esto dice si al lote le llega. */
+      (function () {
+        var so = S.sombras || (S.sombras = (function () {
+          try { return sombrasDelLote(); } catch (e) { return null; }
+        })());
+        if (!so) {
+          /* En una ficha guardada no viajan las huellas —serían miles de
+             polígonos dentro del almacenamiento del teléfono—, así que acá no
+             se puede proyectar nada y tampoco tiene sentido mandar a medir un
+             trazado que ya se midió. Se calla. */
+          if (soloLectura) return '';
+          return (S.trzHuellas && S.trzHuellas.length)
+            ? ''
+            : '<p class="pcr-pista">Para proyectar <b>la sombra de los vecinos</b> sobre el lote hay ' +
+              'que <b>medir el trazado del sector</b>: de ahí salen las huellas de los edificios y ' +
+              'sus pisos.</p>';
+        }
+        if (so.sinAlturas) {
+          return '<p class="pcr-lab">La sombra de los vecinos</p>' +
+            '<p class="pcr-conc">Hay edificios alrededor, pero <b>ninguno</b> de los ' +
+            so.vecinosSinPisos + ' que rodean el lote tiene sus pisos registrados en OpenStreetMap, ' +
+            'y sin altura no hay sombra que proyectar.</p>' +
+            '<p class="pcr-pista">Contar los pisos de las cuatro o cinco construcciones que dan al ' +
+            'lote es media hora de campo y es lo que enciende este análisis. Se anotan en el mapeo ' +
+            'como <b>building:levels</b>.</p>';
+        }
+        var dib1 = dib('planoDeSombras', so);
+        return '<p class="pcr-lab">La sombra de los vecinos</p>' +
+          '<div class="pcr-kpis">' +
+            so.horas.map(function (h) {
+              return '<div class="pcr-kpi"><b>' + h.pctLote + '%</b><small>del lote en sombra a las ' +
+                h.hora + ':00</small></div>';
+            }).join('') +
+          '</div>' +
+          (dib1 ? '<div class="pcr-dibujo pcr-dibujo-solo">' + dib1 +
+            '<p class="pcr-dibujo-pie">Planta de hoy con las sombras de las tres horas superpuestas. ' +
+            'Donde se cruzan, el lote no ve el sol en casi todo el día.</p></div>' : '') +
+          '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="sombras-mapa" class="pcr-mini pcr-llevar-b">' +
+              (S.sombrasEnMapa ? ico('apagar', 16) + 'Quitar las sombras del mapa'
+                               : ico('mapa', 16) + 'Ver las sombras en el mapa') +
+            '</button>' +
+          '</div>' +
+          '<p class="pcr-pista">Se proyectan <b>' + so.vecinos + ' edificio' +
+          (so.vecinos === 1 ? '' : 's') + '</b> a menos de 200 m, el más alto de ' + so.masAlto +
+          ' pisos, contando <b>' + so.alturaPorPiso + ' m por piso</b>. ' +
+          (so.vecinosSinPisos
+            ? 'Otros <b>' + so.vecinosSinPisos + '</b> no tienen pisos registrados y no proyectan ' +
+              'nada: la sombra real es mayor que esta. '
+            : '') +
+          'No entran árboles, muros ni tanques, y el terreno se supone plano: en ladera la sombra ' +
+          'cae más lejos cuesta abajo. Es geometría del sol, no una simulación.</p>';
       })() +
 
       (a.sol && a.sol.salida
@@ -5994,6 +6441,71 @@
   /* `guardada` llega desde una ficha reabierta: ahí el recorrido es una copia
      sin tramos —pintarlo en el mapa pediría una geometría que no se guardó— y
      el botón sobra. */
+  /* Las curvas sobre el mapa. Marrón, como en cualquier plancha de
+     topografía, y las que caen en cota redonda —cada quinta— más gruesas y
+     rotuladas: es lo que permite leer una ladera sin contar curvas una por
+     una. */
+  function pintarCurvas(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaCurvas) { try { m.removeLayer(capaCurvas); } catch (e) {} capaCurvas = null; }
+    S.curvasEnMapa = false;
+    if (!encender) return false;
+    var cv = S.curvas || (S.curvas = curvasDelTerreno());
+    if (!cv || !cv.curvas || !cv.curvas.length) return false;
+
+    capaCurvas = L.layerGroup();
+    cv.curvas.forEach(function (c) {
+      var maestra = (c.z % (cv.intervalo * 5)) === 0;
+      c.lineas.forEach(function (linea) {
+        if (linea.length < 2) return;
+        try {
+          var pl = L.polyline(linea.map(function (p) { return [p.lat, p.lng]; }), {
+            color: maestra ? '#8A5A20' : '#B08050',
+            weight: maestra ? 2.4 : 1.4, opacity: 0.95, interactive: !!maestra
+          }).addTo(capaCurvas);
+          if (maestra) pl.bindTooltip(c.z + ' msnm', { sticky: true });
+        } catch (e) {}
+      });
+    });
+    capaCurvas.addTo(m);
+    S.curvasEnMapa = true;
+    return true;
+  }
+
+  /* Las sombras sobre el mapa. Las tres horas a la vez, translúcidas: donde
+     se cruzan, el mapa se oscurece solo. */
+  function pintarSombras(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaSombras) { try { m.removeLayer(capaSombras); } catch (e) {} capaSombras = null; }
+    S.sombrasEnMapa = false;
+    if (!encender) return false;
+    var so = S.sombras || (S.sombras = (function () {
+      try { return sombrasDelLote(); } catch (e) { return null; }
+    })());
+    if (!so || !so.horas || !so.horas.length) return false;
+
+    var TINTE = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
+    capaSombras = L.layerGroup();
+    var puso = false;
+    so.horas.forEach(function (h) {
+      (h.sombras || []).forEach(function (poli) {
+        try {
+          L.polygon(poli.map(function (p) { return [p.lat, p.lng]; }), {
+            color: TINTE[h.hora] || '#0F1F2E', weight: 1, opacity: 0.6,
+            fillColor: TINTE[h.hora] || '#0F1F2E', fillOpacity: 0.22, interactive: false
+          }).addTo(capaSombras);
+          puso = true;
+        } catch (e) {}
+      });
+    });
+    if (!puso) return false;
+    capaSombras.addTo(m);
+    S.sombrasEnMapa = true;
+    return true;
+  }
+
   function bloqueCaminata(dato, guardada) {
     var c = dato !== undefined && dato !== null ? dato : S.caminata;
     if (!guardada && (!S.lote || S.lote.length < 3)) return '';
@@ -6549,18 +7061,32 @@
          las etiquetas no hacen falta para dibujar y ocupan de más. El tope
          existe porque un sector grande del centro puede traer miles y el
          teléfono no tiene por qué cargar con todos. */
-      S.trzHuellas = (elementos || [])
+      var edificios = (elementos || [])
         .filter(function (el) {
           var t = el && el.tags;
           return t && t.building && t.building !== 'no' &&
                  Array.isArray(el.geometry) && el.geometry.length >= 3;
         })
-        .slice(0, 3000)
-        .map(function (el) {
-          return el.geometry.map(function (p) {
-            return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
-          });
+        .slice(0, 3000);
+      S.trzHuellas = edificios.map(function (el) {
+        return el.geometry.map(function (p) {
+          return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
         });
+      });
+      /* Los pisos de cada huella, en el mismo orden. Se guardaban solo los
+         anillos —para dibujar no hace falta más— pero sin la altura no hay
+         sombra que proyectar, y la sombra de los vecinos es lo que decide
+         dónde se puede poner un patio. `null` cuando el edificio no la trae:
+         inventarle tres pisos a lo que no se sabe sería dibujar una sombra
+         que no existe. */
+      S.trzPisos = edificios.map(function (el) {
+        var t = el.tags || {};
+        var n1 = parseFloat(t['building:levels']);
+        if (isFinite(n1) && n1 > 0) return Math.min(60, n1);
+        var alt = parseFloat(t.height);
+        if (isFinite(alt) && alt > 0) return Math.min(60, Math.round(alt / 3 * 10) / 10);
+        return null;
+      });
       /* Las vías, con su nombre y su forma. Son lo que le permite al lote
          decir «frente de 24 m sobre la Avenida 3» en vez de «un lado de 24
          m»: sin la geometría de la calle, un lote es un polígono en el aire.
@@ -6598,6 +7124,7 @@
       // Con las calles ya en la mano, el recorrido a pie desde el lote deja
       // de ser una promesa y se puede calcular.
       recalcularCaminata();
+    S.sombras = null;
       // Se guarda con la ficha: pesa unas pocas cifras y es media lámina.
       try {
         if (S.fichaActualId && S.resultado) {
@@ -7494,7 +8021,7 @@
     var areaBorrada = !!(A0 && typeof A0.hayArea === 'function' &&
                          !A0.hayArea() && S.huellaAnalizada.slice(0, 2) === 'p|');
     if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
-      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null;
+      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
       /* El clima y el nombre también. Se quedaron fuera de esta lista la
          primera vez y el resultado era feo de encontrar: como el análisis
          siguiente se guarda solo, el sector nuevo quedaba archivado con el
@@ -7505,10 +8032,10 @@
       S.trzVias = null;
       // El lote pertenece al sector que se estaba mirando. Con otro sector es
       // un polígono huérfano flotando en un mapa que ya no es el suyo.
-      S.lote = null; S.loteDibujando = false; S.caminata = null;
+      S.lote = null; S.loteDibujando = false; S.caminata = null; S.sombras = null;
       pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
-      S.trzHuellas = null; pintarLlenos(false);
+      S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
     }
     if (!S.centro) tomarCentro();
     pintarCirculo();
@@ -7951,7 +8478,16 @@
                                    terrenoLote: (function () {
                                      try { return terrenoDelLote(f.lote, f.terrenoRejilla); }
                                      catch (e) { return null; }
-                                   })() });
+                                   })(),
+                                   curvas: (function () {
+                                     try { return curvasDelTerreno(f.terrenoRejilla); }
+                                     catch (e) { return null; }
+                                   })(),
+                                   // Las huellas no viajan con la ficha, así que
+                                   // no hay sombras que proyectar: null y no lo
+                                   // que haya en pantalla, que sería de otro
+                                   // sector.
+                                   sombras: null });
       var abrirG = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
@@ -8010,6 +8546,10 @@
           terrenoLote: (function () {
             try { return terrenoDelLote(f.lote, f.terrenoRejilla); } catch (e) { return null; }
           })(),
+          curvas: (function () {
+            try { return curvasDelTerreno(f.terrenoRejilla); } catch (e) { return null; }
+          })(),
+          sombras: null,
           horizontal: name === 'lamina-h'
         }),
         function (m) { S.avisoPestana = m; repintar(); });
