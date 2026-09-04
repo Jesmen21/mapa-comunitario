@@ -125,8 +125,11 @@ const geo=[
     await esperar(400);
     document.querySelector('[data-lote="cerrar"]').click(); await esperar(900);
 
-    // ── El panel de capas.
-    const capas=()=>[...H().querySelectorAll('.pcr-capa')].map(b=>({
+    /* ── El panel de capas.
+       Por `[data-pcr="capa"]` y no por la clase: «Armar el pliego» usa los
+       mismos interruptores para elegir qué va al papel, y buscarlos por
+       `.pcr-capa` traía los dos panales revueltos. */
+    const capas=()=>[...H().querySelectorAll('.pcr-capa[data-pcr="capa"]')].map(b=>({
       id:b.getAttribute('data-c'),
       nombre:((b.querySelector('b')||{}).textContent||'').trim(),
       pie:((b.querySelector('small')||{}).textContent||'').trim(),

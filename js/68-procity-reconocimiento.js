@@ -92,6 +92,12 @@
        con lo que sí se midió. */
     intangible: [], intDibujando: false, intTipo: '', intPts: null, intAviso: '',
     intEnMapa: false,
+    /* EL PLIEGO: qué cajas y qué mapas van al papel. Guarda las APAGADAS y no
+       las encendidas, para que una caja nueva —de una versión posterior—
+       aparezca sola en el pliego de un sector guardado hace meses en vez de
+       quedar fuera por no estar en una lista que se escribió antes de que
+       existiera. */
+    pliegoOff: [], pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -379,6 +385,10 @@
         var I = window.URBIS_INTANGIBLE;
         try { return I ? I.paraGuardar(S.intangible || []) : []; } catch (e) { return []; }
       })(),
+      // Cómo quedó armado el pliego. Son unos pocos nombres y evitan que
+      // reabrir una ficha para reimprimirla devuelva otra lámina.
+      pliegoOff: (S.pliegoOff || []).slice(),
+      pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
          alcanzadas son miles de segmentos y no cabe en el almacenamiento del
          teléfono. Lo que se lee después son los tres anillos. */
@@ -1241,6 +1251,12 @@
 
   function laminaImprimible(res, opts) {
     var o = opts || {};
+    /* Las cajas apagadas viajan por `opts` para que una ficha guardada se
+       imprima con la composición con la que se guardó, y no con la que haya
+       en pantalla en este momento. */
+    var apagadas = o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []);
+    var mapasApagados = o.pliegoMapasOff !== undefined
+      ? (o.pliegoMapasOff || []) : (S.pliegoMapasOff || []);
     var st = res.stats || {}, meta = res.meta || {};
     var ubic = res.ubicacion || o.ubicacion || null;
     var cmp = o.campo !== undefined ? o.campo : S.campo;
@@ -1347,9 +1363,10 @@
           sombras: sombrasL, caminata: cam,
           intangible: o.intangible !== undefined ? o.intangible : S.intangible,
           maxCategorias: horiz ? 5 : 6
-        });
+        }).filter(function (m) { return mapasApagados.indexOf(m.id) === -1; });
       } catch (e) { return []; }
     })();
+    if (apagadas.indexOf('los-mapas-del-sector') !== -1) mapas = [];
 
     var anchoPlanoMM = (horiz ? 900 : 600) - 48;
     var altoPlanoMM = horiz ? Math.max(55, 105 - 8 * extras)
@@ -1400,8 +1417,12 @@
           esc(d.t || d.nombre || x.id) + ' <b>' + x.n + '</b></span>';
       }).join('');
 
+    /* Una caja no sale por dos razones distintas y hay que distinguirlas: o
+       no tiene con qué llenarse, o la apagaron. La primera es una medición
+       que falta; la segunda, una decisión de quien arma la lámina. */
     function caja(titulo, cuerpo, clase) {
       if (!cuerpo) return '';
+      if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
       return '<section class="caja' + (clase ? ' ' + clase : '') + '">' +
         '<h2>' + esc(titulo) + '</h2>' + cuerpo + '</section>';
     }
@@ -2564,6 +2585,41 @@
         S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
         abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
                        function (m) { S.aviso = m; pintar(); });
+        return;
+      }
+      if (acc === 'pliego-caja') {
+        var idCaja = b.getAttribute('data-c') || '';
+        var estabaC = cajasDelPliego(S.resultado).filter(function (c) {
+          return c.id === idCaja; })[0];
+        if (!estabaC || !estabaC.listo) return;
+        alternarCajaPliego(idCaja, !estabaC.on);
+        pintar(); return;
+      }
+      if (acc === 'pliego-mapa') {
+        var idMapa = b.getAttribute('data-c') || '';
+        var estabaM = mapasDisponibles(S.resultado).filter(function (m) {
+          return m.id === idMapa; })[0];
+        if (!estabaM || !estabaM.listo) return;
+        alternarMapaPliego(idMapa, !estabaM.on);
+        pintar(); return;
+      }
+      if (acc === 'pliego-todo' || acc === 'pliego-nada') {
+        /* «Dejar solo el plano» no apaga TODO: un pliego sin plano no es un
+           pliego, es una hoja de cifras. Deja lo que hace que se entienda de
+           qué sector se está hablando. */
+        var MINIMO = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio'];
+        S.pliegoOff = acc === 'pliego-todo' ? []
+          : cajasDelPliego(S.resultado).filter(function (c) {
+              return MINIMO.indexOf(c.id) === -1; }).map(function (c) { return c.id; });
+        // Los recuadros vuelven todos: la banda es lo que se mira primero, y
+        // dejarla a medias al «poner todo» sería una sorpresa.
+        if (acc === 'pliego-todo') S.pliegoMapasOff = [];
+        S.pliegoCabe = null;
+        guardarFichaViva();
+        pintar(); return;
+      }
+      if (acc === 'pliego-probar' || acc === 'pliego-probar-h') {
+        probarSiCabe(acc === 'pliego-probar-h');
         return;
       }
       if (acc === 'capa') {
@@ -5037,6 +5093,194 @@
      de lo que se puede poner sobre el mapa, con lo que está puesto marcado, y
      con las que todavía no se pueden encender en gris, diciendo qué falta
      para encenderlas. */
+  /* ── Armar el pliego ───────────────────────────────────────────────────
+     Las capas del mapa resolvieron el orden en pantalla. Esto es lo mismo
+     para el papel: una lámina no se hace poniendo TODO, se hace eligiendo. Un
+     pliego de 90 × 60 con veintiuna cajas es un informe colgado en la pared;
+     con ocho, es una lámina.
+
+     Se guardan las APAGADAS. Es a propósito: así una caja que se agregue
+     después aparece sola en el pliego de un sector archivado, en vez de
+     quedarse fuera por no figurar en una lista escrita antes de que
+     existiera.
+
+     Esto arma EL PLIEGO. El PDF sigue completo siempre: uno es una
+     composición y el otro es el archivo, y no tienen por qué ser lo mismo. */
+  function slugPliego(t) {
+    return String(t || '').toLowerCase()
+      .replace(/[áàä]/g, 'a').replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i')
+      .replace(/[óòö]/g, 'o').replace(/[úùü]/g, 'u').replace(/ñ/g, 'n')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function pliegoApagada(titulo) {
+    return (S.pliegoOff || []).indexOf(slugPliego(titulo)) !== -1;
+  }
+
+  /* El inventario del pliego. Cada entrada dice si la caja TIENE con qué
+     llenarse; si no, qué falta medir. Las condiciones son las mismas que usa
+     cada caja para devolver vacío —la prueba tpliego comprueba justamente que
+     no se separen: lo que acá sale listo tiene que aparecer en el papel, y lo
+     que sale gris no puede aparecer. */
+  function cajasDelPliego(res) {
+    var st = (res && res.stats) || {};
+    var trz = S.trazado, esPol = (res && res.meta && res.meta.forma) === 'poligono';
+    var hayLote = !!(S.lote && S.lote.length >= 3);
+    function det() { try { return determinantesDelLote(st).length > 0; } catch (e) { return false; } }
+    function falt() { try { return faltantesDelSector(st).length > 0; } catch (e) { return false; } }
+    function somb() { try { var x = sombrasDelLote(); return !!(x && x.horas && x.horas.length); }
+                      catch (e) { return false; } }
+    var lista = [
+      { id: 'plano-del-sector', t: 'Plano del sector', g: 'La hoja', listo: !!res,
+        falta: 'analizá el sector', dato: 'el dibujo que manda' },
+      { id: 'los-mapas-del-sector', t: 'Los mapas del sector', g: 'La hoja',
+        listo: !!res, falta: 'analizá el sector', dato: 'la banda de recuadros' },
+      { id: 'sintesis-del-sector', t: 'Síntesis del sector', g: 'La hoja', listo: !!res,
+        falta: 'analizá el sector', dato: 'a favor, en contra y qué falta' },
+
+      { id: 'el-sitio', t: 'El sitio', g: 'Lo que hay', listo: !!res,
+        falta: 'analizá el sector', dato: 'las cifras de arriba' },
+      { id: 'que-hay-por-categoria', t: 'Qué hay, por categoría', g: 'Lo que hay',
+        listo: Object.keys(st.porGrupo || {}).some(function (k) {
+          return k !== 'otro' && st.porGrupo[k] > 0; }),
+        falta: 'no hay usos clasificados', dato: (st.total || 0) + ' usos' },
+      { id: 'hitos-y-nodos', t: 'Hitos y nodos', g: 'Lo que hay',
+        listo: !!(st.hitos && st.hitos.length), falta: 'no hay hitos registrados',
+        dato: ((st.hitos || []).length) + ' hitos' },
+      { id: 'a-distancia-de-caminar', t: 'A distancia de caminar', g: 'Lo que hay',
+        listo: !!st.accesibilidad, falta: 'analizá el sector', dato: 'qué se alcanza a pie' },
+
+      { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
+        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
+        falta: 'medí el trazado', dato: 'cuántos pisos hay' },
+      { id: 'llenos-y-vacios', t: 'Llenos y vacíos', g: 'El suelo',
+        listo: !!(trz && trz.llenos), falta: 'medí el trazado',
+        dato: trz && trz.llenos ? trz.llenos.pctLleno + '% construido' : '' },
+      { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
+        listo: !!(trz && trz.perfil), falta: 'medí el trazado', dato: 'la sección tipo' },
+      /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una
+         pieza de espacio público con forma registrada. Un sector sin un solo
+         parque mapeado tiene el objeto y no tiene la caja. */
+      { id: 'espacio-publico-efectivo', t: 'Espacio público efectivo', g: 'El suelo',
+        listo: !!(trz && trz.espacio && trz.espacio.piezas),
+        falta: 'medí el trazado; sin parques mapeados no hay qué medir',
+        dato: 'plazas y parques' },
+      { id: 'el-terreno', t: 'El terreno', g: 'El suelo', listo: !!S.terreno,
+        falta: 'medí el terreno', dato: 'cotas, pendiente y cortes' },
+      { id: 'el-clima', t: 'El clima', g: 'El suelo', listo: !!S.clima,
+        falta: 'pedí el clima', dato: 'temperatura, lluvia y viento' },
+      { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
+        falta: 'analizá el sector', dato: 'la carta solar del sitio' },
+
+      { id: 'el-lote-a-intervenir', t: 'El lote a intervenir', g: 'El lote', listo: hayLote,
+        falta: 'marcá el lote', dato: 'medidas y frentes' },
+      { id: 'que-le-pide-el-sitio-al-proyecto', t: 'Qué le pide el sitio al proyecto',
+        g: 'El lote', listo: det(), falta: 'marcá el lote y medí algo más',
+        dato: 'las determinantes' },
+      { id: 'hasta-donde-se-camina-desde-el-lote', t: 'Hasta dónde se camina desde el lote',
+        g: 'El lote', listo: !!(S.caminata && S.caminata.anillos),
+        falta: 'marcá el lote y medí el trazado', dato: '5, 10 y 15 min' },
+      { id: 'la-sombra-de-los-vecinos', t: 'La sombra de los vecinos', g: 'El lote',
+        listo: somb(), falta: 'marcá el lote y medí el trazado', dato: '9, 12 y 15 h' },
+
+      { id: 'lo-intangible', t: 'Lo intangible', g: 'El trabajo del curso',
+        listo: !!(S.intangible && S.intangible.length),
+        falta: 'marcá lo que viste en la calle',
+        dato: (S.intangible || []).length + ' marcas' },
+      { id: 'lo-levantado-en-campo', t: 'Lo levantado en campo', g: 'El trabajo del curso',
+        listo: !!S.campo, falta: 'compará con lo del curso', dato: 'lo que encontró la salida' },
+      { id: 'donde-falta-mapear', t: 'Dónde falta mapear', g: 'El trabajo del curso',
+        listo: !!res, falta: 'analizá el sector', dato: 'la rosa de los rumbos' },
+      { id: 'lo-que-falta-levantar', t: 'Lo que falta levantar', g: 'El trabajo del curso',
+        listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' }
+    ];
+    var off = S.pliegoOff || [];
+    lista.forEach(function (c) {
+      c.on = off.indexOf(c.id) === -1;
+      c.esPol = esPol;
+    });
+    return lista;
+  }
+
+  /* Los recuadros de la banda, enumerados sin dibujarlos. `mapasDelPliego`
+     proyecta cientos de puntos por recuadro: pedirle la lista para pintar
+     unos interruptores costaría más que la lámina entera. Las condiciones son
+     las mismas, y la prueba tpliego comprueba que no se separen. */
+  function mapasDisponibles(res) {
+    var st = (res && res.stats) || {};
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {};
+    var pois = (res && res.pois) || [];
+    var cob = S.cobertura;
+    var lista = [];
+    if (pois.length) {
+      lista.push({ id: 'calor:todos', t: 'Todos los usos', listo: true,
+                   dato: pois.length + ' usos' });
+      Object.keys(st.porGrupo || {})
+        .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+        .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
+        .sort(function (a, b) { return b.n - a.n; })
+        .slice(0, 6)
+        .forEach(function (g) {
+          lista.push({ id: 'calor:' + g.id,
+                       t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id),
+                       listo: true, dato: g.n + ' usos' });
+        });
+    }
+    lista.push({ id: 'cobertura', t: 'Cobertura del suelo',
+                 listo: !!(cob && cob.overlayImagen && cob.overlayLimites),
+                 dato: 'clasificada sobre la foto', falta: 'leé la foto satelital' });
+    lista.push({ id: 'foto', t: 'La foto satelital',
+                 listo: !!(cob && cob.imagen && cob.overlayLimites),
+                 dato: 'la imagen cruda', falta: 'leé la foto satelital' });
+    lista.push({ id: 'estratos', t: 'Manzanas por estrato',
+                 listo: !!(S.estratos && S.estratos.manzanas && S.estratos.manzanas.length),
+                 dato: 'del DANE', falta: 'poné los estratos en el mapa' });
+    lista.push({ id: 'llenos', t: 'Llenos y vacíos',
+                 listo: !!(S.trzHuellas && S.trzHuellas.length),
+                 dato: 'huellas de edificio', falta: 'medí el trazado' });
+    lista.push({ id: 'curvas', t: 'Curvas de nivel',
+                 listo: (function () {
+                   try { var c = curvasDelTerreno(); return !!(c && c.curvas && c.curvas.length); }
+                   catch (e) { return false; } })(),
+                 dato: 'del relieve', falta: 'medí el terreno' });
+    lista.push({ id: 'sombras', t: 'La sombra de los vecinos',
+                 listo: (function () {
+                   try { var x = sombrasDelLote(); return !!(x && x.horas && x.horas.length); }
+                   catch (e) { return false; } })(),
+                 dato: '9, 12 y 15 h', falta: 'marcá el lote y medí el trazado' });
+    lista.push({ id: 'caminata', t: 'Hasta dónde se camina',
+                 listo: !!(S.caminata && S.caminata.tramos && S.caminata.tramos.length),
+                 dato: '5, 10 y 15 min', falta: 'marcá el lote y medí el trazado' });
+    lista.push({ id: 'intangible', t: 'Lo intangible',
+                 listo: !!(S.intangible && S.intangible.length),
+                 dato: (S.intangible || []).length + ' marcas',
+                 falta: 'marcá lo que viste en la calle' });
+    var off = S.pliegoMapasOff || [];
+    lista.forEach(function (m) { m.on = off.indexOf(m.id) === -1; });
+    return lista;
+  }
+
+  function alternarMapaPliego(id, encender) {
+    var off = S.pliegoMapasOff || (S.pliegoMapasOff = []);
+    var i = off.indexOf(id);
+    if (encender && i !== -1) off.splice(i, 1);
+    if (!encender && i === -1) off.push(id);
+    S.pliegoCabe = null;
+    guardarFichaViva();
+  }
+
+  function alternarCajaPliego(id, encender) {
+    var off = S.pliegoOff || (S.pliegoOff = []);
+    var i = off.indexOf(id);
+    if (encender && i !== -1) off.splice(i, 1);
+    if (!encender && i === -1) off.push(id);
+    // Cualquier cambio invalida la última prueba de encaje: el papel que
+    // cabía con dieciséis cajas no dice nada de cómo cabe con dieciocho.
+    S.pliegoCabe = null;
+    guardarFichaViva();
+  }
+
   function capasDisponibles(st) {
     var CAT = window.AIA_CATALOGO || {};
     var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
@@ -5316,6 +5560,171 @@
        y acá igual solo hay dos llaves). */
     mapas.sort(function (a, b) { return (b.grande ? 1 : 0) - (a.grande ? 1 : 0); });
     return mapas;
+  }
+
+  /* ── ¿Cabe? ────────────────────────────────────────────────────────────
+     La comprobación que hasta ahora solo existía en las pruebas, puesta donde
+     hace falta de verdad: en la mano de quien va a mandar el pliego a
+     imprimir. En columnas, una caja que no cabe NO se recorta —se va a una
+     columna que no existe y desaparece del papel sin dejar rastro—, así que
+     mirar la pantalla no sirve para saberlo.
+
+     Se arma la lámina en un marco escondido y se mide. Los milímetros del
+     papel son medida absoluta, así que la hoja se dibuja a su tamaño real
+     dentro del marco por chico que sea, y lo que se mide es lo que se va a
+     imprimir. */
+  function probarSiCabe(horizontal) {
+    if (!S.resultado) return Promise.resolve(null);
+    S.pliegoProbando = true; pintar();
+    return new Promise(function (listo) {
+      var marco = document.createElement('iframe');
+      marco.setAttribute('aria-hidden', 'true');
+      marco.style.cssText = 'position:fixed;left:-9999px;top:0;width:420px;height:600px;' +
+                            'border:0;visibility:hidden';
+      document.body.appendChild(marco);
+      var terminar = function (r) {
+        try { marco.remove(); } catch (e) {}
+        S.pliegoProbando = false; S.pliegoCabe = r;
+        pintar(); listo(r);
+      };
+      var reloj = setTimeout(function () {
+        terminar({ error: 'La prueba tardó demasiado. Imprimí y mirá el papel.' });
+      }, 9000);
+      try {
+        var html = laminaImprimible(S.resultado, { horizontal: !!horizontal });
+        var d = marco.contentDocument;
+        d.open(); d.write(html); d.close();
+        setTimeout(function () {
+          clearTimeout(reloj);
+          try {
+            var v = marco.contentWindow, dd = marco.contentDocument;
+            var hoja = dd.querySelector('.hoja');
+            var rej = dd.querySelector('.rej');
+            var perdidas = [];
+            if (rej) {
+              var R = rej.getBoundingClientRect();
+              Array.prototype.forEach.call(rej.children, function (c) {
+                var b = c.getBoundingClientRect();
+                if (b.height === 0 || b.right > R.right + 2) {
+                  perdidas.push((c.querySelector('h2') || {}).textContent || 'una caja');
+                }
+              });
+            }
+            var sobra = hoja ? (hoja.scrollHeight - hoja.clientHeight) : 0;
+            terminar({
+              horizontal: !!horizontal,
+              cabe: perdidas.length === 0 && sobra <= 2,
+              perdidas: perdidas,
+              // De píxeles a milímetros: es la unidad en la que está pensado
+              // el papel y la única que le dice algo a quien lo va a imprimir.
+              sobraMM: sobra > 2 ? Math.round(sobra / 3.7795) : 0,
+              cajas: dd.querySelectorAll('.caja').length,
+              columnas: rej ? (v.getComputedStyle(rej).columnCount || '?') : '?'
+            });
+          } catch (e) { terminar({ error: 'No se pudo medir en este navegador.' }); }
+        }, 700);
+      } catch (e) {
+        clearTimeout(reloj);
+        terminar({ error: 'No se pudo armar la lámina para medirla.' });
+      }
+    });
+  }
+
+  /* ── Armar el pliego, en la ficha ──────────────────────────────────── */
+  function bloquePliego(res) {
+    if (!res) return '';
+    var lista = cajasDelPliego(res);
+    var listas = lista.filter(function (c) { return c.listo; });
+    var puestas = listas.filter(function (c) { return c.on; });
+    var grupos = ['La hoja', 'Lo que hay', 'El suelo', 'El lote', 'El trabajo del curso'];
+    var cabe = S.pliegoCabe;
+    return h4('plan', 'Armar el pliego') +
+      '<p class="pcr-pista">Una lámina no se hace poniendo todo: se hace eligiendo. Hay <b>' +
+      listas.length + '</b> caja' + (listas.length === 1 ? '' : 's') + ' con qué llenarse y llevás <b>' +
+      puestas.length + '</b> puesta' + (puestas.length === 1 ? '' : 's') + '. Las grises necesitan una ' +
+      'medición que todavía no está. <b>El PDF sale completo igual</b>: uno es la composición y el ' +
+      'otro es el archivo.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="pliego-todo" class="pcr-mini">' + ico('ok', 16) +
+          'Poner todo</button>' +
+        '<button type="button" data-pcr="pliego-nada" class="pcr-mini">' + ico('apagar', 16) +
+          'Dejar solo el plano</button>' +
+      '</div>' +
+      grupos.map(function (g) {
+        var suyas = lista.filter(function (c) { return c.g === g; });
+        if (!suyas.length) return '';
+        return '<p class="pcr-lab">' + g + '</p>' +
+          '<div class="pcr-capas">' +
+            suyas.map(function (c) {
+              return '<button type="button" class="pcr-capa' + (c.on && c.listo ? ' on' : '') +
+                (c.listo ? '' : ' pcr-capa-gris') + '" data-pcr="pliego-caja" data-c="' +
+                esc(c.id) + '"' + (c.listo ? '' : ' disabled') +
+                ' aria-pressed="' + (c.on && c.listo ? 'true' : 'false') + '">' +
+                '<i style="background:' + (c.listo ? (c.on ? '#0A6F9E' : '#C7D3DD') : '#E2E8F0') + '"></i>' +
+                '<span><b>' + esc(c.t) + '</b>' +
+                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) + '</small></span>' +
+              '</button>';
+            }).join('') +
+          '</div>';
+      }).join('') +
+      /* Los recuadros de la banda. Van aparte de las cajas porque no compiten
+         por el mismo papel: la banda tiene su franja y las cifras la suya. */
+      (function () {
+        if (pliegoApagada('Los mapas del sector')) {
+          return '<p class="pcr-lab">La banda de mapas</p>' +
+            '<p class="pcr-pista">Apagada entera. Encendé «Los mapas del sector» para elegir ' +
+            'cuáles van.</p>';
+        }
+        var mps = mapasDisponibles(res);
+        var listosM = mps.filter(function (m) { return m.listo; });
+        var puestosM = listosM.filter(function (m) { return m.on; });
+        return '<p class="pcr-lab">La banda de mapas · ' + puestosM.length + ' de ' +
+          listosM.length + '</p>' +
+          '<div class="pcr-capas">' +
+            mps.map(function (m) {
+              return '<button type="button" class="pcr-capa' + (m.on && m.listo ? ' on' : '') +
+                (m.listo ? '' : ' pcr-capa-gris') + '" data-pcr="pliego-mapa" data-c="' +
+                esc(m.id) + '"' + (m.listo ? '' : ' disabled') +
+                ' aria-pressed="' + (m.on && m.listo ? 'true' : 'false') + '">' +
+                '<i style="background:' + (m.listo ? (m.on ? '#0A6F9E' : '#C7D3DD') : '#E2E8F0') + '"></i>' +
+                '<span><b>' + esc(m.t) + '</b>' +
+                  '<small>' + esc(m.listo ? (m.dato || '') : (m.falta || '')) + '</small></span>' +
+              '</button>';
+            }).join('') +
+          '</div>';
+      })() +
+
+      /* La prueba de encaje. Va al final porque solo tiene sentido cuando ya
+         se eligió qué poner. */
+      '<p class="pcr-lab">Antes de imprimir</p>' +
+      '<p class="pcr-pista">En columnas, la caja que no cabe no se recorta: se va a una columna que ' +
+      'no existe y <b>desaparece del papel</b> sin avisar. Esto arma la lámina y la mide antes de ' +
+      'que salga la primera copia.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="pliego-probar" class="pcr-mini pcr-llevar-b"' +
+          (S.pliegoProbando ? ' disabled' : '') + '>' +
+          (S.pliegoProbando ? 'Midiendo…' : ico('regla', 16) + 'Probar si cabe, parado') + '</button>' +
+        '<button type="button" data-pcr="pliego-probar-h" class="pcr-mini pcr-llevar-b"' +
+          (S.pliegoProbando ? ' disabled' : '') + '>' +
+          (S.pliegoProbando ? 'Midiendo…' : ico('regla', 16) + 'Y acostado') + '</button>' +
+      '</div>' +
+      (cabe
+        ? (cabe.error
+            ? '<p class="pcr-error">' + esc(cabe.error) + '</p>'
+            : cabe.cabe
+              ? '<p class="pcr-conc pcr-cabe-si">Cabe ' + (cabe.horizontal ? 'acostado' : 'parado') +
+                ': <b>' + cabe.cajas + '</b> cajas en <b>' + esc(String(cabe.columnas)) +
+                '</b> columnas, y no se pierde ninguna.</p>'
+              : '<p class="pcr-conc pcr-cabe-no">No cabe ' +
+                (cabe.horizontal ? 'acostado' : 'parado') + '. ' +
+                (cabe.perdidas.length
+                  ? 'Se ' + (cabe.perdidas.length === 1 ? 'pierde' : 'pierden') + ' <b>' +
+                    esc(cabe.perdidas.join(', ')) + '</b>. '
+                  : '') +
+                (cabe.sobraMM
+                  ? 'El contenido se pasa <b>' + cabe.sobraMM + ' mm</b> del papel. ' : '') +
+                'Apagá una caja, o probá ' + (cabe.horizontal ? 'parado' : 'acostado') + '.</p>')
+        : '');
   }
 
   function bloqueCapas(st) {
@@ -6721,14 +7130,14 @@
     S.intDibujando = false; S.intPts = null; S.intAviso = '';
     soltarMapaInt();
     pintarIntangible(true);
-    guardarIntangibleEnFicha();
+    guardarFichaViva();
     pintar(); pintarBarraInt();
   }
 
   function borrarMarcaInt(id) {
     S.intangible = (S.intangible || []).filter(function (m) { return m.id !== id; });
     pintarIntangible((S.intangible || []).length > 0);
-    guardarIntangibleEnFicha();
+    guardarFichaViva();
     pintar();
   }
 
@@ -6738,13 +7147,15 @@
     (S.intangible || []).forEach(function (m) {
       if (m.id === id) m.nota = String(texto || '').slice(0, 220);
     });
-    guardarIntangibleEnFicha();
+    guardarFichaViva();
   }
 
-  /* Cada marca se guarda apenas se cierra. Recorrer un sector lleva una hora
-     y el navegador de un teléfono se recarga solo: perder el recorrido por no
-     haber tocado «guardar» sería la peor manera de perderlo. */
-  function guardarIntangibleEnFicha() {
+  /* Vuelve a archivar la ficha del sector que se está mirando. Se llama cada
+     vez que cambia algo que el estudiante hizo a mano —una marca intangible,
+     una caja del pliego— y no vino de la red. Recorrer un sector lleva una
+     hora y el navegador de un teléfono se recarga solo: perder ese trabajo
+     por no haber tocado «guardar» sería la peor manera de perderlo. */
+  function guardarFichaViva() {
     try {
       if (S.fichaActualId && S.resultado) {
         guardarFicha(S.resultado, zonasSinDatos(S.resultado.pois || [], ejeDelSector()),
@@ -8962,6 +9373,9 @@
         bloqueHitos(st) +
         bloqueAnillos(st, esPol) +
         bloqueCapas(st) +
+        // Las capas ordenan el mapa; esto ordena el papel. Van juntas porque
+        // son la misma pregunta hecha dos veces.
+        bloquePliego(res) +
         bloqueCalor(res) +
 
         // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
@@ -9531,6 +9945,9 @@
          manchas de color sobre un barrio donde nadie estuvo. */
       S.intangible = []; S.intDibujando = false; S.intPts = null; S.intTipo = '';
       pintarIntangible(false);
+      // La composición del pliego era de ESE sector: qué apagar depende de
+      // qué se midió, y en el sector nuevo no se midió nada todavía.
+      S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
       pintarCaminata(false); pintarLote();
       S.cobertura = null; S.cobEnMapa = false; S.calor = [];
       S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
@@ -10052,6 +10469,12 @@
             try { return curvasDelTerreno(f.terrenoRejilla); } catch (e) { return null; }
           })(),
           sombras: null,
+          intangible: f.intangible || [],
+          /* Y su composición: la lámina de una ficha archivada tiene que
+             salir con las cajas que tenía cuando se archivó, no con las que
+             estén puestas ahora en otro sector. */
+          pliegoOff: f.pliegoOff || [],
+          pliegoMapasOff: f.pliegoMapasOff || [],
           horizontal: name === 'lamina-h'
         }),
         function (m) { S.avisoPestana = m; repintar(); });

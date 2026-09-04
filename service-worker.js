@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v674-lo-intangible';
+const URBIS_CACHE = 'urbis-v675-armar-el-pliego';
 const URBIS_ASSETS = [
   './',
   './index.html',

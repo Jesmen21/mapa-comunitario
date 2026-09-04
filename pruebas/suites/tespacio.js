@@ -130,7 +130,19 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
     await R.analizar(); await esperar(900);
 
     const H=()=>document.getElementById('pcr-hoja');
-    o.antesNoEsta=!/Espacio público efectivo/.test(txt(H()));
+    /* Sin trazado no hay bloque. Se mira por la CABECERA y no por el texto
+       de toda la hoja: «Armar el pliego» nombra las cajas que todavía no se
+       pueden llenar —para eso está—, así que el título aparece ahí en gris
+       aunque la sección no exista. Lo que no puede haber es la sección. */
+    const cabeceras=()=>[...H().querySelectorAll('.pcr-h span')]
+      .map(x=>(x.textContent||'').trim());
+    o.antesNoEsta=cabeceras().indexOf('Espacio público efectivo')===-1;
+    // Y en el inventario del pliego tiene que estar, gris y diciendo qué falta.
+    o.antesEnElPliego=(function(){
+      const b=H().querySelector('[data-pcr="pliego-caja"][data-c="espacio-publico-efectivo"]');
+      return b?{ gris:b.classList.contains('pcr-capa-gris'),
+                 pie:((b.querySelector('small')||{}).textContent||'').trim() }:null;
+    })();
 
     await esperar(5200);   // el limitador de Overpass
     H().querySelector('[data-pcr="trazado"]').click();
@@ -225,6 +237,9 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
   console.log('\n  -- se pide con el trazado, no aparte --');
   P('la consulta del trazado trae también el espacio público', r.pidioEspacio);
   P('y antes de medirlo el bloque no está', r.antesNoEsta);
+  P('aunque el pliego ya lo nombre, en gris y diciendo qué falta',
+    !!r.antesEnElPliego && r.antesEnElPliego.gris===true && /medí el trazado/.test(r.antesEnElPliego.pie),
+    r.antesEnElPliego?r.antesEnElPliego.pie:'no está en el inventario');
 
   console.log('\n  -- los metros cuadrados --');
   const m2 = (kpi(/hect(á|a)reas de espacio/) || 0) * 10000;
