@@ -114,6 +114,14 @@
   border-radius:9px; padding:10px 12px;
 }
 
+/* La hoja plantada porque seguir borraría lo que no se pudo guardar. Se ve
+   como un bloque de medición y no como un error al pie: es una decisión que
+   hay que tomar, no una noticia que leer. */
+.pcr-traba{
+  border-color:#f3b7b1; background:#fdeceb;
+}
+.pcr-traba .pcr-lab{ color:#8a2f0f; }
+
 /* El aviso de que el sector NO se está guardando. Es el único de la hoja que
    habla de trabajo que se va a perder, así que va con más peso que el resto
    de los errores y separado de lo que viene debajo. */

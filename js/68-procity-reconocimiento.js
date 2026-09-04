@@ -72,6 +72,10 @@
     // De qué área es el resultado que está en memoria, para no mostrar una
     // ficha de un sector distinto al que está elegido en el mapa.
     huellaAnalizada: '',
+    /* Cuando cambiar de área destruiría trabajo que no se pudo archivar, la
+       hoja se planta acá hasta que alguien decida. Guarda el recuento de lo
+       que está en juego. */
+    trabaDescartar: null,
     // La comparación con lo que mapeó el curso, hecha sobre el área que está
     // en pantalla. Se pide a botón como el terreno o el clima: cuesta una
     // consulta y no siempre hay puntos del curso que comparar.
@@ -3476,10 +3480,24 @@
         return;
       }
       if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'traba-descartar') {
+        // Lo decidió una persona sabiendo qué perdía. Eso es lo que faltaba.
+        S.trabaDescartar = null;
+        S.avisoGuardado = '';
+        /* Sin recuento: `descartarSectorAnterior` con uno diría «quedó
+           guardado», y este es justamente el caso en que no quedó. */
+        descartarSectorAnterior(null);
+        S.aviso = 'Se descartó el sector anterior, con lo que tenía sin guardar. ' +
+                  'La hoja arranca de cero con el área nueva.';
+        pintar(); return;
+      }
       if (acc === 'otro') {
-        // Se suelta el resultado, no el área: quien quiera el mismo sector con
-        // otro radio no tiene que volver a dibujarlo.
-        S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
+        /* Se suelta el resultado, no el área: quien quiera el mismo sector con
+           otro radio no tiene que volver a dibujarlo. Y NO se suelta la
+           huella: es lo único que recuerda a qué sector pertenecen las marcas
+           y los recorridos que siguen en memoria. Borrarla acá era lo que
+           dejaba pasar las marcas de un barrio al siguiente. */
+        S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
         S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
         S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
         try {
@@ -3995,6 +4013,12 @@
     return '' +
       barra('Modo educativo · Reconocimiento', '¿Qué hay en este sector?', 'lupa') +
       '<div class="pcr-cuerpo">' +
+        bloqueTraba() +
+        /* El aviso también acá. No estaba: la vista de ajustes era la única de
+           las tres que no lo pintaba, así que todo lo que se dijera al soltar
+           un sector —adónde fue a parar, qué llevaba— se escribía en un estado
+           que nadie llegaba a leer nunca. */
+        (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
         '<p class="pcr-intro">Antes de salir a mapear, mira qué tiene registrado OpenStreetMap en la zona. ' +
         'Sirve para llegar sabiendo qué esperar —y sobre todo, para ver qué <b>todavía no está mapeado</b>.</p>' +
 
@@ -9903,7 +9927,7 @@
       an.avisos.map(function (a) {
         return '<p class="pcr-pista pcr-int-aviso">' + esc(a) + '</p>';
       }).join('') +
-      (guardada ? '' : bloqueCursoIntangible());
+      bloqueCursoIntangible(guardada);
   }
 
   /* ── Juntar los recorridos del curso ─────────────────────────────────── */
@@ -10054,7 +10078,19 @@
       }).join('');
   }
 
-  function bloqueCursoIntangible() {
+  /* `guardada` = se está leyendo una ficha archivada, no la del sector vivo.
+
+     Antes este bloque se omitía entero en ese caso, y el resultado era una
+     pérdida aparente: la ficha llevaba los cuarenta recorridos del curso
+     guardados desde v705 —se puede comprobar en el almacenamiento— y el
+     informe no los mencionaba. Quien reabría un sector de la semana pasada
+     veía sus propias marcas y ninguna de las demás, y concluía lo razonable:
+     que no se habían guardado.
+
+     Lo que se quita en ese caso son los botones, no la información: traer,
+     compartir y quitar recorridos son cosas del sector que se está
+     trabajando. Para eso está «Retomar». */
+  function bloqueCursoIntangible(guardada) {
     var I = IN();
     if (!I) return '';
     var mios = (S.intangible || []).filter(I.valida);
@@ -10067,8 +10103,10 @@
       'recorridos por archivo —no por servidor— para que cada quien decida cuándo comparte el ' +
       'suyo, y para que funcione en un salón sin internet.</p>';
 
-    var traer =
-      '<div class="pcr-llevar">' +
+    var traer = guardada
+      ? '<p class="pcr-pista">Es lo que quedó archivado con este sector. Para traer más ' +
+        'recorridos o compartir el tuyo, retomá el sector desde la tarjeta de arriba.</p>'
+      : '<div class="pcr-llevar">' +
         (mios.length
           ? '<button type="button" data-pcr="int-exportar" class="pcr-mini pcr-llevar-b">' +
             ico('compartir', 16) + 'Compartir mi recorrido</button>'
@@ -11344,6 +11382,7 @@
            lo que se lea más abajo se va a perder al cerrar la aplicación, y
            enterarse después de haber trabajado media hora no sirve de nada. */
         (S.avisoGuardado ? '<p class="pcr-error pcr-guardado-mal">' + esc(S.avisoGuardado) + '</p>' : '') +
+        bloqueTraba() +
 
         /* Desde que la ficha sobrevive a cerrar la hoja, hace falta una salida
            clara hacia la pantalla de elegir área: sin ella, quien quisiera
@@ -11528,6 +11567,12 @@
   // ── El análisis ───────────────────────────────────────────────────────
   async function analizar() {
     if (S.cargando || !listoParaAnalizar()) return;
+    /* También acá y no solo al abrir la hoja: el área se puede cambiar sin
+       cerrarla —otro radio, otra forma, el lote— y entonces `abrir` no vuelve
+       a pasar. */
+    if (revisarCambioDeArea(huellaDelArea(S.forma, S.poligono, S.centro, S.radioM), false)) {
+      pintar(); return;
+    }
     /* La licencia se pide ACÁ, al tocar el botón, y no cuando el servidor
        rechace la consulta treinta segundos después. Ver el mapa y elegir el
        sector es gratis; analizarlo es lo que cuesta. */
@@ -12069,6 +12114,138 @@
     return '';
   }
 
+  /* La hoja plantada: el área cambió, hay trabajo a mano, y el archivado
+     había fallado. Seguir sería borrar lo único que no se puede volver a
+     pedir a ningún servidor. Se para y se pregunta, que es lo que hay que
+     hacer cuando la respuesta correcta depende de algo que la aplicación no
+     sabe: si esa tarde de campo importa o no. */
+  function bloqueTraba() {
+    var t = S.trabaDescartar;
+    if (!t) return '';
+    var piezas = [];
+    if (t.marcas) piezas.push(t.marcas + (t.marcas === 1 ? ' marca tuya' : ' marcas tuyas'));
+    if (t.curso) piezas.push(t.curso + (t.curso === 1 ? ' recorrido traído' : ' recorridos traídos'));
+    if (t.lote) piezas.push('el lote');
+    if (t.indices) piezas.push('los índices del POT');
+    if (t.campo) piezas.push('lo levantado en campo');
+    return '<div class="pcr-medir pcr-traba">' +
+      '<p class="pcr-lab">Antes de cambiar de área</p>' +
+      '<p class="pcr-conc">Este sector <b>no se pudo guardar</b> —no hay espacio en el teléfono— y ' +
+      'tiene ' + esc(listaEnTexto(piezas)) + '. Si seguís con el área nueva, eso se pierde: ' +
+      'no está archivado en ninguna parte.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="int-exportar" class="pcr-mini pcr-llevar-b">' +
+          ico('compartir', 16) + 'Sacar mi recorrido a un archivo</button>' +
+        '<button type="button" data-pcr="traba-descartar" class="pcr-mini">' +
+          ico('borrar', 16) + 'Descartarlo y seguir</button>' +
+      '</div>' +
+      '<p class="pcr-pista">También podés hacer sitio borrando sectores guardados desde la ' +
+      'pestaña «Sector» y volver a intentarlo.</p>' +
+    '</div>';
+  }
+
+  /* ¿El área que está elegida es la misma del trabajo que hay en memoria?
+
+     La guarda vivía dentro de `abrir` y pedía además que hubiera un resultado
+     cargado. Medido: por eso el botón «Analizar otro sector» la esquivaba —
+     suelta el resultado y dejaba la huella en blanco—, y la marca de un
+     sector aparecía archivada en la ficha del siguiente, a trescientos metros,
+     como si alguien la hubiera caminado ahí. Un dato de percepción atribuido
+     a un barrio donde nadie estuvo es peor que no tener el dato.
+
+     Ahora manda la HUELLA sola: es lo que dice a qué sector pertenece lo que
+     hay en memoria, con o sin análisis cargado encima. */
+  function revisarCambioDeArea(ahora, areaBorrada) {
+    if (!S.huellaAnalizada) return false;
+    if (ahora === S.huellaAnalizada && !areaBorrada) return false;
+    var hecho = trabajoAMano();
+    /* Si el sector anterior NO se pudo archivar, borrarlo es perderlo de
+       verdad. Se para: la hoja se queda donde está y dice por qué, con la
+       salida a la mano. Es el único caso en que cambiar de área destruye
+       algo, y hasta v706 ni siquiera se sabía que podía pasar. */
+    if (hecho.hay && S.avisoGuardado) { S.trabaDescartar = hecho; return true; }
+    descartarSectorAnterior(hecho);
+    return false;
+  }
+
+  /* Lo que el estudiante puso a mano y ningún servidor puede devolver. Se
+     cuenta antes de borrar nada: es la diferencia entre «se descartó un
+     análisis» y «se perdió una tarde de campo». */
+  function trabajoAMano() {
+    var I = IN();
+    var marcas = 0;
+    try { marcas = (S.intangible || []).filter(I ? I.valida : function () { return true; }).length; }
+    catch (e) { marcas = (S.intangible || []).length; }
+    var t = {
+      marcas: marcas,
+      curso: (S.intCurso || []).length,
+      lote: !!(S.lote && S.lote.length >= 3),
+      indices: !!(S.indicesPuestos && Object.keys(S.indicesPuestos).length),
+      campo: !!(S.campo && (S.campo.nuevos || []).length)
+    };
+    t.hay = !!(t.marcas || t.curso || t.lote || t.indices || t.campo);
+    return t;
+  }
+
+  /* Soltar el sector anterior porque se eligió otra área.
+
+     Lo hacía en silencio: cuarenta recorridos del curso, las marcas de una
+     tarde y el lote desaparecían de la pantalla sin una palabra. Medido: la
+     ficha SÍ queda archivada y se puede volver a ella desde la pestaña
+     «Sector», pero eso no se dice en ninguna parte, así que para quien lo
+     está mirando es indistinguible de haberlo perdido. */
+  function descartarSectorAnterior(hecho) {
+    var comoSeLlamaba = S.nombreGuardado || '';
+    S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
+      /* El clima y el nombre también. Se quedaron fuera de esta lista la
+         primera vez y el resultado era feo de encontrar: como el análisis
+         siguiente se guarda solo, el sector nuevo quedaba archivado con el
+         nombre del anterior y con SU climatología —del sitio de al lado o de
+         otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
+         meses después, cuando los datos ya no se pueden creer. */
+    S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
+    S.trzVias = null;
+      // El lote pertenece al sector que se estaba mirando. Con otro sector es
+      // un polígono huérfano flotando en un mapa que ya no es el suyo.
+    S.lote = null; S.loteDibujando = false; S.caminata = null; S.sombras = null;
+      /* Las marcas pertenecen al sector que se caminó. En otro sector serían
+         manchas de color sobre un barrio donde nadie estuvo. */
+    S.intangible = []; S.intDibujando = false; S.intPts = null; S.intTipo = '';
+    pintarIntangible(false);
+    S.intCurso = []; S.intUnion = null; S.intCursoAviso = '';
+    pintarAcuerdos(false);
+      // La composición del pliego era de ESE sector: qué apagar depende de
+      // qué se midió, y en el sector nuevo no se midió nada todavía.
+    S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
+    S.amenaza = null; S.amenazaAviso = '';
+    S.indices = null; S.indicesPuestos = null;
+    pintarCaminata(false); pintarLote();
+    S.cobertura = null; S.cobEnMapa = false; S.calor = [];
+    S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
+    S.trabaDescartar = null;
+
+    // Y se dice adónde fue a parar, con las cifras de lo que había.
+    if (hecho && hecho.hay) {
+      var piezas = [];
+      if (hecho.marcas) piezas.push(hecho.marcas + (hecho.marcas === 1 ? ' marca tuya' : ' marcas tuyas'));
+      if (hecho.curso) piezas.push(hecho.curso + (hecho.curso === 1 ? ' recorrido traído' : ' recorridos traídos'));
+      if (hecho.lote) piezas.push('el lote');
+      if (hecho.indices) piezas.push('los índices del POT');
+      if (hecho.campo) piezas.push('lo levantado en campo');
+      S.aviso = 'Cambiaste de área, así que la hoja arranca de cero. ' +
+        (comoSeLlamaba ? '«' + comoSeLlamaba + '»' : 'El sector anterior') +
+        ' quedó guardado con ' + listaEnTexto(piezas) +
+        ': está en la pestaña «Sector», y con «Retomar» volvés a trabajarlo.';
+    }
+  }
+
+  // «a, b y c». Se escribe una vez acá y no en cada aviso.
+  function listaEnTexto(xs) {
+    if (!xs.length) return '';
+    if (xs.length === 1) return xs[0];
+    return xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1];
+  }
+
   function abrir() {
     if (!mapa()) { alert('El mapa aún no está listo.'); return; }
     prepararArrastre();
@@ -12093,34 +12270,7 @@
     var A0 = window.URBIS_PC_ANALISIS;
     var areaBorrada = !!(A0 && typeof A0.hayArea === 'function' &&
                          !A0.hayArea() && S.huellaAnalizada.slice(0, 2) === 'p|');
-    if (S.resultado && S.huellaAnalizada && (ahora !== S.huellaAnalizada || areaBorrada)) {
-      S.resultado = null; S.huellaAnalizada = ''; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
-      /* El clima y el nombre también. Se quedaron fuera de esta lista la
-         primera vez y el resultado era feo de encontrar: como el análisis
-         siguiente se guarda solo, el sector nuevo quedaba archivado con el
-         nombre del anterior y con SU climatología —del sitio de al lado o de
-         otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
-         meses después, cuando los datos ya no se pueden creer. */
-      S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
-      S.trzVias = null;
-      // El lote pertenece al sector que se estaba mirando. Con otro sector es
-      // un polígono huérfano flotando en un mapa que ya no es el suyo.
-      S.lote = null; S.loteDibujando = false; S.caminata = null; S.sombras = null;
-      /* Las marcas pertenecen al sector que se caminó. En otro sector serían
-         manchas de color sobre un barrio donde nadie estuvo. */
-      S.intangible = []; S.intDibujando = false; S.intPts = null; S.intTipo = '';
-      pintarIntangible(false);
-      S.intCurso = []; S.intUnion = null; S.intCursoAviso = '';
-      pintarAcuerdos(false);
-      // La composición del pliego era de ESE sector: qué apagar depende de
-      // qué se midió, y en el sector nuevo no se midió nada todavía.
-      S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
-      S.amenaza = null; S.amenazaAviso = '';
-      S.indices = null;
-      pintarCaminata(false); pintarLote();
-      S.cobertura = null; S.cobEnMapa = false; S.calor = [];
-      S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
-    }
+    revisarCambioDeArea(ahora, areaBorrada);
     if (!S.centro) tomarCentro();
     /* Cuánto mapa hay guardado se cuenta al abrir y no al pintar: el depósito
        lo puede vaciar el navegador por su cuenta cuando le falta espacio, así
@@ -12224,6 +12374,7 @@
     var trzAntes = S.trazado, terAntes = S.terreno, cliAntes = S.clima, cmpAntes = S.campo;
     var amAntes = S.amenaza;
     var loteAntes = S.lote, rejAntes = S.terRejilla;
+    var curAntes = S.intCurso, uniAntes = S.intUnion, intAntes = S.intangible;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Volvé a analizar el sector para tener el informe completo.</p>';
@@ -12278,6 +12429,17 @@
         S.campo = f.campo || null;
         S.lote = f.lote || null;
         S.terRejilla = f.terrenoRejilla || null;
+        /* Los recorridos del curso también se prestan, y el acuerdo se vuelve
+           a calcular con ellos: guardarlo ya calculado ocuparía más y se
+           quedaría viejo en cuanto cambiara la forma de unirlos. */
+        S.intCurso = f.intCurso || [];
+        S.intUnion = null;
+        /* Por la misma función que lo arma en vivo —`rehacerUnion`— y no por
+           una cuenta paralela: dos caminos calculando el mismo acuerdo es
+           cómo se llega a que la ficha guardada diga un número y la viva
+           diga otro. */
+        S.intangible = f.intangible || [];
+        try { rehacerUnion(); } catch (e) { S.intUnion = null; }
         var html = bloqueAlturas(st) + (f.terreno ? bloqueTerreno() : '') +
                    (f.clima ? bloqueClima() : '') +
                    (f.amenaza ? bloqueAmenaza() : '') +
@@ -12296,6 +12458,7 @@
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
         S.amenaza = amAntes;
         S.lote = loteAntes; S.terRejilla = rejAntes;
+        S.intCurso = curAntes; S.intUnion = uniAntes; S.intangible = intAntes;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
