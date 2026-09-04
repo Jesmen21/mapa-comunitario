@@ -1594,3 +1594,7 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   display:block; height:100%; background:var(--edu-accent-deep);
   transition:width .35s ease;
 }
+
+/* Seguir donde quedó: la misma pieza que «medir todo» —un estado y una
+   acción— pero en el color de lo que ya existe y no en el de lo que falta. */
+.pcr-reanudar{ border-color:var(--edu-accent-deep); background:var(--edu-accent-soft); }

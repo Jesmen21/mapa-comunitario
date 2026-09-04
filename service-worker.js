@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v678-medir-todo';
+const URBIS_CACHE = 'urbis-v679-seguir-donde-quede';
 const URBIS_ASSETS = [
   './',
   './index.html',

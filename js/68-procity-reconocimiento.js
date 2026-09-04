@@ -2689,6 +2689,18 @@
                        function (m) { S.aviso = m; pintar(); });
         return;
       }
+      if (acc === 'reanudar') {
+        var idF = b.getAttribute('data-id') || '';
+        var fF = (leerFichas() || []).filter(function (x) { return x.id === idF; })[0];
+        if (!fF) { S.error = 'Esa ficha ya no está guardada.'; pintar(); return; }
+        if (reanudarFicha(fF)) {
+          S.aviso = 'Listo, seguimos con «' + (fF.nombre || 'el sector') + '». Si necesitás ' +
+                    'llenos y vacíos o sombras, volvé a medir el trazado.';
+        } else {
+          S.error = 'Esa ficha no guarda el área: no se puede reanudar.';
+        }
+        pintar(); return;
+      }
       if (acc === 'medir-todo') { medirTodo(false); return; }
       if (acc === 'medir-parar') {
         // Poner el estado en null es la señal que mira la cadena entre paso y
@@ -3347,6 +3359,9 @@
         ico(icono) + texto + '</button>';
     }
     var selector =
+      // Antes del selector: si hay un sector archivado, seguir con ese es casi
+      // siempre lo que se quiere, y volver a dibujar el área es lo que no.
+      bloqueReanudar() +
       '<div class="pcr-formas" role="group" aria-label="Forma del área">' +
         botonForma('radio', 'radio', 'Un radio') +
         botonForma('poligono', 'area', 'El área dibujada') +
@@ -9306,7 +9321,12 @@
      qué salió y qué no. */
   var PASOS_MEDIR = [
     { id: 'trazado', nombre: 'El trazado', que: 'calles, huellas y espacio público',
-      hecho: function () { return !!S.trazado; },
+      /* Las DOS cosas. El análisis del trazado se guarda con la ficha, pero
+         la geometría cruda —miles de polígonos— no cabe en un teléfono. Un
+         sector reanudado tiene lo primero y no lo segundo, y dar el paso por
+         hecho dejaría al estudiante con los llenos y vacíos, las sombras y el
+         recorrido a pie vacíos sin que nada le dijera por qué. */
+      hecho: function () { return !!(S.trazado && S.trzHuellas && S.trzHuellas.length); },
       // La única que pasa por Overpass, y por eso la única que tiene que
       // esperar el limitador de cinco segundos desde el análisis.
       esperaAntesMs: 5600,
@@ -9360,6 +9380,15 @@
       '<p class="pcr-pista">El análisis trae lo que hay; lo demás son mediciones aparte, cada ' +
       'una a un servicio distinto. Se pueden pedir de a una más abajo, o todas de una vez ' +
       'acá. Tarda cerca de un minuto y se puede parar.</p>' +
+      /* El caso del sector reanudado, dicho donde se va a leer: el trazado
+         figura como pendiente y sus cifras están abajo, y sin esta línea eso
+         parece un error de la aplicación. */
+      (S.trazado && !(S.trzHuellas && S.trzHuellas.length)
+        ? '<p class="pcr-pista">De este sector volvieron las cifras del trazado, pero no las ' +
+          '<b>huellas de los edificios</b>: son miles de polígonos y no caben en el ' +
+          'almacenamiento del teléfono. Volver a medirlo es una sola consulta, y con eso ' +
+          'vuelven los llenos y vacíos, las sombras y el recorrido a pie.</p>'
+        : '') +
       '<div class="pcr-medir-lista">' +
         PASOS_MEDIR.map(function (p) {
           var ya = p.hecho();
@@ -10313,6 +10342,123 @@
   /* La huella del área analizada, para saber si la que hay ahora es la misma.
      Con los vértices redondeados: mover el mapa un metro no es cambiar de
      sector. */
+  /* ── Seguir donde se quedó ─────────────────────────────────────────────
+     El análisis vive en memoria. Sobrevive a cerrar la hoja —eso ya estaba—
+     pero no a que se recargue la pestaña, y en un teléfono con la aplicación
+     abierta una hora caminando, eso pasa. Hasta ahora el estudiante volvía y
+     se encontraba con la pantalla del principio: su sector estaba archivado,
+     pero como una ficha de lectura, y para seguir trabajando había que volver
+     a consultar la red y esperar al limitador.
+
+     Esto lo devuelve entero. Lo único que no vuelve son las huellas de los
+     edificios: son miles de polígonos que no caben en el almacenamiento de un
+     teléfono, y por eso no se guardan. Se dice, no se disimula. */
+  function reanudarFicha(f) {
+    if (!f) return false;
+    var A = window.URBIS_PC_ANALISIS;
+
+    // 1 · El área. Sin esto, la hoja descarta el resultado apenas se abre:
+    //     compara la huella del área elegida con la del análisis y no coinciden.
+    if (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3) {
+      var pol = f.poligono.map(function (p) { return { lat: p.lat, lng: p.lng }; });
+      try {
+        if (A && A.iniciarDibujo) {
+          A.iniciarDibujo();
+          pol.forEach(function (p) { A.agregarPunto(p.lat, p.lng); });
+          // Tocar la primera esquina otra vez es lo que cierra el área.
+          A.agregarPunto(pol[0].lat, pol[0].lng);
+        }
+      } catch (e) {}
+      S.forma = 'poligono'; S.poligono = pol;
+      S.centro = centroideDe(pol);
+    } else if (f.centro && f.centro.lat != null) {
+      S.forma = f.forma === 'lote' ? 'lote' : 'radio';
+      S.centro = { lat: f.centro.lat, lng: f.centro.lng };
+      S.radioM = f.radioM || RADIO_POR_DEFECTO;
+    } else {
+      return false;
+    }
+
+    // 2 · El análisis y sus zonas, reconstruidos de lo guardado.
+    S.resultado = comoResultado(f);
+    S.ultimasZonas = comoZonas(f);
+    S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
+    S.fichaActualId = f.id || '';
+    S.nombreGuardado = f.nombre || '';
+
+    // 3 · Todo lo que se midió aparte.
+    S.trazado = f.trazado || null;
+    S.terreno = f.terreno || null;
+    S.terRejilla = f.terrenoRejilla || null;
+    S.clima = f.clima || null;
+    S.amenaza = f.amenaza || null;
+    S.campo = f.campo || null;
+    S.caminata = f.caminata || null;
+    S.intangible = (f.intangible || []).slice();
+    S.pliegoOff = (f.pliegoOff || []).slice();
+    S.pliegoMapasOff = (f.pliegoMapasOff || []).slice();
+    S.pliegoCabe = null;
+    S.lote = (f.lote && f.lote.length >= 3)
+      ? f.lote.map(function (p) { return { lat: p.lat, lng: p.lng }; }) : null;
+
+    /* Lo que NO vuelve, y hay que dejarlo explícitamente en cero para que la
+       hoja no crea que lo tiene: la geometría cruda del trazado. De ahí salen
+       los llenos y vacíos, las sombras y el grafo por el que se camina. */
+    S.trzHuellas = null; S.trzPisos = null; S.trzVias = null;
+    S.sombras = null; S.curvas = null;
+    S.cobertura = null; S.cobEnMapa = false;
+    S.calor = []; S.estratos = null;
+
+    S.error = ''; S.aviso = '';
+    try { pintarCirculo(); } catch (e) {}
+    try { pintarLote(); } catch (e) {}
+    try { if (S.intangible.length) pintarIntangible(true); } catch (e) {}
+    return true;
+  }
+
+  /* La tarjeta que lo ofrece. Solo aparece cuando NO hay análisis en memoria:
+     con uno en pantalla sería una invitación a tirarlo. */
+  function bloqueReanudar() {
+    if (S.resultado) return '';
+    var fichas = [];
+    try { fichas = leerFichas() || []; } catch (e) { return ''; }
+    if (!fichas.length) return '';
+    var f = fichas[0];
+    if (!f || !f.stats) return '';
+
+    var medido = [];
+    if (f.trazado) medido.push('el trazado');
+    if (f.terreno) medido.push('el terreno');
+    if (f.clima) medido.push('el clima');
+    if (f.amenaza) medido.push('la amenaza');
+    if (f.lote) medido.push('el lote');
+    if (f.intangible && f.intangible.length) {
+      medido.push(f.intangible.length + ' marca' + (f.intangible.length === 1 ? '' : 's') +
+                  ' de lo intangible');
+    }
+
+    var cuando = '';
+    try {
+      var dias = Math.floor((Date.now() - new Date(f.ts).getTime()) / 86400000);
+      cuando = dias <= 0 ? 'de hoy' : dias === 1 ? 'de ayer' : 'de hace ' + dias + ' días';
+    } catch (e) {}
+
+    return '<div class="pcr-medir pcr-reanudar">' +
+      '<p class="pcr-lab">Seguir donde quedaste</p>' +
+      '<p class="pcr-conc"><b>' + esc(f.nombre || 'Sector sin nombre') + '</b>' +
+      (cuando ? ' · ' + esc(cuando) : '') + ' · ' + (f.total || 0) + ' usos' +
+      (medido.length ? ', con ' + esc(medido.join(', ')) : '') + '.</p>' +
+      '<p class="pcr-pista">Vuelve el sector entero sin consultar la red otra vez. Lo único ' +
+      'que no vuelve son las huellas de los edificios —son miles de polígonos y no caben en el ' +
+      'teléfono—, así que para los llenos y vacíos y las sombras hay que volver a medir el ' +
+      'trazado.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="reanudar" data-id="' + esc(f.id || '') +
+          '" class="pcr-principal">' + ico('atras', 16) + 'Seguir con este sector</button>' +
+      '</div>' +
+    '</div>';
+  }
+
   function huellaDelArea(forma, poligono, centro, radioM) {
     if (forma === 'poligono' && poligono && poligono.length >= 3) {
       return 'p|' + poligono.map(function (p) {
