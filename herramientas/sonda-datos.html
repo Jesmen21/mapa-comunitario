@@ -96,7 +96,10 @@ https://srvags.sgc.gov.co/arcgis/rest/services</textarea>
   buscarlas aparte.</p>
 
   <label for="claves">Palabras que hay que cazar</label>
-  <input id="claves" value="amenaza, riesgo, inundac, remocion, remoción, deslizamiento, sismic, sísmic, pot, uso_suelo, uso del suelo, tratamiento, norma">
+  <input id="claves" value="amenaza, riesgo, inunda, ronda, hidric, hídric, torrencial, remocion, remoción, deslizamiento, sismic, sísmic, pot, uso_suelo, uso del suelo, tratamiento, norma">
+  <p class="pista"><b>inunda</b> y no <b>inundación</b>: media Colombia oficial nombra sus capas
+  «zonas inundables», y buscar la palabra entera las dejaba fuera. Lo mismo con <b>ronda</b> e
+  <b>hídrica</b>, que es como el POT llama a lo que no se puede construir junto a un caño.</p>
 
   <div class="fila">
     <div>
@@ -136,8 +139,28 @@ https://srvags.sgc.gov.co/arcgis/rest/services/SIMMA/ZonificacionAmenazaCache/Ma
   </div>
 </section>
 
+<section id="caja-ogc">
+  <h2>3 · Servidores GeoServer (WMS y WFS)</h2>
+  <p class="pista">Lo de arriba habla ArcGIS. Media Colombia oficial —el IDEAM, y muchos
+  geoportales municipales— publica en <b>GeoServer</b>, que habla otro idioma: WMS y WFS. Esta
+  caja habla ese. Es por donde hay que buscar las <b>inundaciones</b>, y probablemente también
+  el POT si Planeación tiene geoportal.</p>
+  <p class="pista">Las direcciones que vienen puestas <b>no están verificadas</b>: son las que
+  tienen forma de servir esos datos. Si alguna sale en rojo puede que no exista, que esté caída,
+  o que no deje consultar desde un navegador — y saber cuál de las tres es media respuesta.</p>
+  <label for="ogc">Direcciones de GeoServer, una por línea</label>
+  <textarea id="ogc" spellcheck="false">https://geoservicios.ideam.gov.co/geoserver/ows
+https://geoservicios.ideam.gov.co/geoserver/wms
+https://siac.ideam.gov.co/geoserver/ows</textarea>
+  <p class="pista">Suelen terminar en <code>/geoserver/ows</code> o <code>/geoserver/wms</code>.
+  Si le pasan una que termina en <code>/geoserver</code>, agréguele <code>/ows</code>.</p>
+  <div class="botones">
+    <button id="explorar-ogc">Explorar los GeoServer</button>
+  </div>
+</section>
+
 <section>
-  <h2>3 · Lo que hay que mandarle a Claude</h2>
+  <h2>4 · Lo que hay que mandarle a Claude</h2>
   <p class="pista">Cuando termine, copie todo de acá y péguelo en la conversación. No lleva
   claves ni datos personales: son nombres de capas, nombres de campos y un ejemplo de respuesta.</p>
   <div class="botones">
@@ -423,8 +446,233 @@ https://srvags.sgc.gov.co/arcgis/rest/services/SIMMA/ZonificacionAmenazaCache/Ma
   }
 
   function trabajando(si) {
-    ['explorar', 'examinar', 'limpiar'].forEach(function (id) { $(id).disabled = si; });
+    ['explorar', 'examinar', 'explorar-ogc', 'limpiar']
+      .forEach(function (id) { if ($(id)) $(id).disabled = si; });
   }
+
+  /* ══ GeoServer: WMS y WFS ══════════════════════════════════════════════
+     Otro idioma entero. ArcGIS contesta JSON y se le pregunta por un punto;
+     GeoServer contesta XML, describe sus capas en un documento que puede
+     pesar megas, y para preguntarle por un punto hay dos caminos distintos
+     que fallan por razones distintas. Acá se prueban los dos y se dice cuál
+     anduvo, porque eso es justamente lo que hay que saber antes de escribir
+     una línea de código contra él. */
+
+  function traerTexto(url, ms) {
+    var ctrl = new AbortController();
+    var reloj = setTimeout(function () { ctrl.abort(); }, ms || 45000);
+    return fetch(url, { signal: ctrl.signal, credentials: 'omit' })
+      .then(function (r) {
+        if (!r.ok) return { error: 'contestó HTTP ' + r.status };
+        return r.text().then(function (t) { return { ok: t }; });
+      })
+      .catch(function (e) {
+        return { error: e && e.name === 'AbortError'
+          ? 'tardó más de ' + Math.round((ms || 45000) / 1000) + ' s'
+          : 'el navegador no la pudo leer (CORS cerrado, servidor caído o dirección mal escrita)' };
+      })
+      .then(function (r) { clearTimeout(reloj); return r; });
+  }
+
+  function base(u) { return String(u || '').replace(/\?.*$/, '').replace(/\/+$/, ''); }
+  function unir(u, q) { return base(u) + (base(u).indexOf('?') >= 0 ? '&' : '?') + q; }
+
+  /* Las capas del documento de capacidades. Se leen las que tienen <Name>:
+     las que no lo tienen son carpetas, están para agrupar y no se pueden
+     pedir. */
+  function capasDelXML(texto) {
+    var doc;
+    try { doc = new DOMParser().parseFromString(texto, 'application/xml'); }
+    catch (e) { return { error: 'el documento de capacidades no se pudo leer como XML' }; }
+    if (doc.querySelector('parsererror')) {
+      return { error: 'el documento de capacidades vino roto' };
+    }
+    var nodos = doc.getElementsByTagName('Layer');
+    if (!nodos.length) {
+      var exc = doc.getElementsByTagName('ServiceException')[0] ||
+                doc.getElementsByTagName('ows:ExceptionText')[0];
+      return { error: exc ? ('el servidor contestó una excepción: ' +
+                             (exc.textContent || '').trim().slice(0, 160))
+                          : 'el documento no trae ninguna capa' };
+    }
+    var salida = [];
+    for (var i = 0; i < nodos.length; i++) {
+      var n = nodos[i];
+      var hijoDirecto = function (etq) {
+        for (var j = 0; j < n.childNodes.length; j++) {
+          var c = n.childNodes[j];
+          if (c.nodeType === 1 && (c.localName === etq || c.nodeName === etq)) return c;
+        }
+        return null;
+      };
+      var nom = hijoDirecto('Name'), tit = hijoDirecto('Title');
+      if (!nom) continue;                      // es una carpeta, no una capa
+      var caja = n.getElementsByTagName('EX_GeographicBoundingBox')[0] ||
+                 n.getElementsByTagName('LatLonBoundingBox')[0];
+      var extension = '';
+      if (caja) {
+        var v = function (etq, attr) {
+          var e = caja.getElementsByTagName(etq)[0];
+          if (e) return (e.textContent || '').trim();
+          return caja.getAttribute(attr) || '';
+        };
+        extension = v('westBoundLongitude', 'minx') + ', ' + v('southBoundLatitude', 'miny') +
+                    ' a ' + v('eastBoundLongitude', 'maxx') + ', ' + v('northBoundLatitude', 'maxy');
+      }
+      salida.push({ nombre: (nom.textContent || '').trim(),
+                    titulo: tit ? (tit.textContent || '').trim() : '',
+                    extension: extension });
+    }
+    return { ok: salida };
+  }
+
+  /* Preguntar por un punto. Dos caminos, y ninguno es el obvio:
+
+     · WFS con salida JSON es el bueno cuando está: devuelve los atributos
+       tal cual. Pero en WFS 2.0 con EPSG:4326 el orden de la caja es
+       LATITUD, LONGITUD —al revés que en todo lo demás— y media
+       implementación lo hace al derecho. Se prueban los dos órdenes y se
+       informa cuál anduvo: adivinarlo después, escribiendo la aplicación,
+       cuesta una tarde.
+
+     · WMS GetFeatureInfo es el que casi siempre está, aunque sea feo: se le
+       pide un mapa de 101 por 101 píxeles y se le pregunta qué hay en el del
+       medio. En 1.1.1 el orden es longitud, latitud, sin sorpresas. */
+  function preguntarPorPunto(url, capa, lat, lng) {
+    var d = 0.0025;   // unos 275 m de lado, como el radio de la caja de arriba
+    var lonlat = [lng - d, lat - d, lng + d, lat + d].join(',');
+    var latlon = [lat - d, lng - d, lat + d, lng + d].join(',');
+    var wfs = function (caja, etiqueta) {
+      return unir(url, 'service=WFS&version=2.0.0&request=GetFeature' +
+        '&typeNames=' + encodeURIComponent(capa) +
+        '&outputFormat=' + encodeURIComponent('application/json') +
+        '&count=2&srsName=EPSG:4326' +
+        '&bbox=' + encodeURIComponent(caja + ',urn:ogc:def:crs:EPSG::4326'));
+    };
+    var pasos = [
+      { como: 'WFS 2.0, caja en latitud/longitud (lo que manda la norma)', u: wfs(latlon) },
+      { como: 'WFS 2.0, caja en longitud/latitud (lo que hacen muchos)', u: wfs(lonlat) },
+      { como: 'WMS GetFeatureInfo 1.1.1', u: unir(url,
+          'service=WMS&version=1.1.1&request=GetFeatureInfo' +
+          '&layers=' + encodeURIComponent(capa) +
+          '&query_layers=' + encodeURIComponent(capa) +
+          '&srs=EPSG:4326&bbox=' + encodeURIComponent(lonlat) +
+          '&width=101&height=101&x=50&y=50&feature_count=2' +
+          '&info_format=' + encodeURIComponent('application/json')) }
+    ];
+    return pasos.reduce(function (cadena, paso) {
+      return cadena.then(function (hecho) {
+        if (hecho) return hecho;
+        return traerTexto(paso.u, 30000).then(function (r) {
+          if (r.error) { linea('        ✗ ' + paso.como + ': ' + r.error); return null; }
+          var d2;
+          try { d2 = JSON.parse(r.ok); }
+          catch (e) {
+            /* Contestó, pero no JSON: casi siempre es una excepción XML, y
+               su texto dice exactamente qué le molestó. */
+            var m = String(r.ok).match(/<(?:ows:)?ExceptionText[^>]*>([\s\S]*?)<\//);
+            linea('        ✗ ' + paso.como + ': contestó ' +
+                  (m ? 'una excepción — ' + m[1].trim().slice(0, 160)
+                     : 'algo que no es JSON'));
+            return null;
+          }
+          var fs = (d2 && d2.features) || [];
+          linea('        ✔ ' + paso.como + ': ' + fs.length + ' registro(s)');
+          fs.slice(0, 2).forEach(function (f, i) {
+            linea('          registro ' + (i + 1) + ': ' + JSON.stringify(f.properties || {}));
+          });
+          if (!fs.length) {
+            linea('          (vacío: puede que la capa no cubra este punto, probá otro)');
+          }
+          return { como: paso.como, n: fs.length };
+        });
+      });
+    }, Promise.resolve(null));
+  }
+
+  function explorarOGC(url) {
+    url = base(url);
+    linea('');
+    linea('═══════════════════════════════════════════════════════════');
+    linea('GEOSERVER: ' + url);
+    estado('Pidiendo las capacidades de ' + url + ' …');
+    var cap = unir(url, 'service=WMS&version=1.3.0&request=GetCapabilities');
+    linea('capacidades: ' + cap);
+    return traerTexto(cap).then(function (r) {
+      if (r.error) {
+        linea('✗ ' + r.error);
+        hallazgos.push({ titulo: url, url: cap, marca: 'mal',
+          etiqueta: 'inalcanzable', nota: r.error });
+        pintarHallazgos();
+        return;
+      }
+      linea('el documento pesa ' + Math.round(r.ok.length / 1024) + ' kB');
+      var c = capasDelXML(r.ok);
+      if (c.error) {
+        linea('✗ ' + c.error);
+        hallazgos.push({ titulo: url, url: cap, marca: 'mal',
+          etiqueta: 'contestó, pero no capas', nota: c.error });
+        pintarHallazgos();
+        return;
+      }
+      var capas = c.ok;
+      linea('CAPAS: ' + capas.length);
+      var buenas = capas.filter(function (x) {
+        return interesa(x.nombre) || interesa(x.titulo);
+      });
+      linea('DE INTERÉS: ' + buenas.length);
+      if (!buenas.length) {
+        linea('(ninguna con esas palabras — acá va la lista completa, por si alguna se ' +
+              'reconoce a simple vista)');
+        capas.slice(0, 300).forEach(function (x) {
+          linea('  ' + x.nombre + (x.titulo ? '  «' + x.titulo + '»' : ''));
+        });
+        hallazgos.push({ titulo: url, url: cap, marca: 'duda',
+          etiqueta: capas.length + ' capas, ninguna con esas palabras',
+          nota: 'Mirá la lista completa en el informe y probá cambiando las palabras.' });
+        pintarHallazgos();
+        return;
+      }
+      buenas.forEach(function (x) {
+        linea('  ✔ ' + x.nombre + (x.titulo ? '  «' + x.titulo + '»' : ''));
+      });
+      return buenas.slice(0, 6).reduce(function (cadena, x) {
+        return cadena.then(function () {
+          linea('');
+          linea('    CAPA ' + x.nombre);
+          if (x.titulo) linea('    «' + x.titulo + '»');
+          if (x.extension) linea('    cubre de ' + x.extension);
+          estado('Preguntándole a ' + x.nombre + ' …');
+          return preguntarPorPunto(url, x.nombre, Number($('lat').value),
+                                   Number($('lng').value))
+            .then(function (r2) {
+              hallazgos.push({ titulo: x.titulo || x.nombre, url: url + ' · ' + x.nombre,
+                marca: r2 ? (r2.n ? 'bien' : 'duda') : 'mal',
+                etiqueta: r2 ? (r2.n ? 'sirve' : 'responde, pero vacía acá')
+                             : 'no deja consultar por punto',
+                nota: r2 ? ('Anduvo con ' + r2.como + '.')
+                         : 'La capa existe pero ninguna de las tres formas de preguntarle ' +
+                           'funcionó desde el navegador.' });
+              pintarHallazgos();
+            });
+        });
+      }, Promise.resolve());
+    });
+  }
+
+  $('explorar-ogc').addEventListener('click', function () {
+    var urls = $('ogc').value.split('\n')
+      .map(function (x) { return x.trim(); }).filter(Boolean);
+    if (!urls.length) { estado('Poné al menos una dirección.'); return; }
+    trabajando(true);
+    encabezado();
+    urls.reduce(function (cadena, u) {
+      return cadena.then(function () { return explorarOGC(u); });
+    }, Promise.resolve()).then(function () {
+      estado('Listo. Copiá todo y pegámelo.');
+      trabajando(false);
+    });
+  });
 
   $('explorar').addEventListener('click', function () {
     var raices = $('raices').value.split('\n')
