@@ -586,6 +586,62 @@
     return { ok: false, error: 'No hay espacio en este teléfono para guardar el sector.' };
   }
 
+  /* ── El respaldo de la salida entera ──────────────────────────────────
+
+     Hasta v707 se podía exportar una ficha, o un recorrido. Al final de una
+     jornada de campo, con el curso entero en un teléfono, no había forma de
+     archivar el día: y un teléfono que se pierde se lleva la salida completa,
+     que son cuarenta personas caminando una tarde.
+
+     Medido: las doce fichas que caben pesan 522 KB y el paquete se arma en
+     dos milisegundos. Cabe en un correo. */
+  var RESPALDO_FORMATO = 'urbis-respaldo-1';
+
+  function respaldoDeTodo(fichas) {
+    return {
+      formato: RESPALDO_FORMATO,
+      app: (window.URBIS_APP_VERSION || ''),
+      cuando: new Date().toISOString(),
+      quien: quienSoy() || '',
+      fichas: fichas || []
+    };
+  }
+
+  /* Traer un respaldo. Las fichas que ya están NO se duplican ni se pisan: se
+     reconocen por su id, que lleva la marca de tiempo de cuando se analizó el
+     sector. Traer dos veces el mismo archivo tiene que dar lo mismo que
+     traerlo una, o el respaldo no sirve para juntar los de varios teléfonos. */
+  function traerRespaldo(texto) {
+    var d;
+    try { d = JSON.parse(String(texto || '')); }
+    catch (e) { return { error: 'Ese archivo no es un respaldo de URBIS: no se pudo leer.' }; }
+    if (!d || d.formato !== RESPALDO_FORMATO || !Array.isArray(d.fichas)) {
+      return { error: 'Ese archivo no es un respaldo de URBIS. Buscá el que dice «urbis-respaldo».' };
+    }
+    var buenas = d.fichas.filter(function (f) { return f && f.id && f.stats; });
+    if (!buenas.length) return { error: 'El respaldo no trae ningún sector con informe.' };
+
+    var mias = leerFichas();
+    var tengo = {};
+    mias.forEach(function (f) { tengo[f.id] = true; });
+    var nuevas = buenas.filter(function (f) { return !tengo[f.id]; });
+    var repetidas = buenas.length - nuevas.length;
+
+    // Las más nuevas primero, medidas por su fecha, sin importar de qué
+    // teléfono vinieron: al recortar por falta de sitio se cae lo más viejo.
+    var todas = mias.concat(nuevas).sort(function (a, b) {
+      return String(b.ts || '').localeCompare(String(a.ts || ''));
+    });
+    var cabian = todas.length;
+    while (todas.length > MAX_FICHAS) todas.pop();
+    var noCupieron = cabian - todas.length;
+
+    var g = escribirFichas(todas);
+    if (!g.ok) return { error: g.error };
+    return { ok: true, nuevas: nuevas.length, repetidas: repetidas,
+             noCupieron: noCupieron, guardado: g };
+  }
+
   function borrarFicha(id) {
     var todas = leerFichas().filter(function (f) { return f.id !== id; });
     try { localStorage.setItem(FICHAS_KEY, JSON.stringify(todas)); } catch (e) {}
@@ -2971,6 +3027,45 @@
       (S.indicesPuestos = S.indicesPuestos || {})[cual] = true;
       guardarFichaViva();
       pintar();
+    });
+    /* El respaldo entra por la pestaña «Sector», que la dibuja js/20 y vive
+       fuera de esta hoja: por eso el oyente va en el documento y no en `el`.
+       Se registra una sola vez, con la hoja, y no cada vez que se repinta la
+       pestaña —que es varias veces por minuto—. */
+    document.addEventListener('change', function (ev) {
+      var inp = ev.target && ev.target.closest && ev.target.closest('#pcr-respaldo-archivo');
+      if (!inp || !inp.files || !inp.files.length) return;
+      var arch = inp.files[0];
+      var fr = new FileReader();
+      fr.onload = function () {
+        var r = traerRespaldo(String(fr.result || ''));
+        inp.value = '';
+        if (r.error) { S.avisoPestana = arch.name + ': ' + r.error; }
+        else {
+          var partes = [];
+          partes.push(r.nuevas
+            ? ('Entraron ' + r.nuevas + ' sector' + (r.nuevas === 1 ? '' : 'es') + '.')
+            : 'No entró ninguno nuevo.');
+          if (r.repetidas) {
+            partes.push(r.repetidas + (r.repetidas === 1 ? ' ya estaba' : ' ya estaban') +
+                        ' y no se duplicaron.');
+          }
+          if (r.noCupieron) {
+            partes.push('Se quedaron fuera ' + r.noCupieron + ' por el tope de ' + MAX_FICHAS +
+                        ' sectores: los más viejos.');
+          }
+          S.avisoPestana = partes.join(' ');
+          // Lo que el archivado tenga que decir de la falta de espacio.
+          contarLoGuardado(r.guardado);
+        }
+        try { if (typeof window.urbisProCityAbrirSector === 'function') window.urbisProCityAbrirSector(); } catch (e) {}
+      };
+      fr.onerror = function () {
+        inp.value = '';
+        S.avisoPestana = arch.name + ': no se pudo leer el archivo.';
+        try { if (typeof window.urbisProCityAbrirSector === 'function') window.urbisProCityAbrirSector(); } catch (e) {}
+      };
+      fr.readAsText(arch);
     });
     /* Los recorridos que llegan como archivo. Se lee cada uno por separado y
        se dice cuáles no sirvieron: importar cinco y que se caigan dos en
@@ -8318,6 +8413,62 @@
     pintarIntangible(true); pintar(); pintarBarraInt();
   }
 
+  /* ── El trazo a medio dibujar ─────────────────────────────────────────
+
+     Una marca cerrada está a salvo desde v705. La que se está dibujando, no:
+     vivía solo en memoria, y una recarga del navegador —que en un teléfono
+     pasa sola— se llevaba las esquinas ya tocadas sin dejar rastro.
+
+     Va en su PROPIA llave y no con la ficha. Medido: archivar la ficha entera
+     cuesta unos dos milisegundos y el trazo suelto dos centésimas, cien veces
+     menos. A un toque por esquina, con la ficha era un gasto que se nota en un
+     teléfono de gama media; así se puede guardar en cada toque sin pensarlo.
+
+     Lleva la huella del sector: un trazo recuperado sobre otro barrio serían
+     esquinas de una manzana donde nadie estuvo. */
+  var TRAZO_KEY = 'pcr_trazo_vivo_v1';
+
+  function guardarTrazoVivo() {
+    try {
+      if (!S.intDibujando || !S.intPts || !S.intPts.length) { localStorage.removeItem(TRAZO_KEY); return; }
+      localStorage.setItem(TRAZO_KEY, JSON.stringify({
+        sector: S.huellaAnalizada || '',
+        tipo: S.intTipo,
+        pts: S.intPts,
+        ts: Date.now()
+      }));
+    } catch (e) {}
+  }
+
+  function olvidarTrazoVivo() {
+    try { localStorage.removeItem(TRAZO_KEY); } catch (e) {}
+  }
+
+  /* Se llama al cargar un sector: si hay un trazo guardado y es de ESTE
+     sector, vuelve el lápiz con las esquinas puestas. No se cierra solo —
+     cerrar por su cuenta una zona que la persona todavía estaba dibujando
+     sería inventarle una forma. */
+  function recuperarTrazoVivo() {
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(TRAZO_KEY) || 'null'); } catch (e) { d = null; }
+    if (!d || !d.pts || !d.pts.length || !d.tipo) return false;
+    if (!S.huellaAnalizada || d.sector !== S.huellaAnalizada) return false;
+    var I = IN();
+    if (!I || !I.tipo(d.tipo)) { olvidarTrazoVivo(); return false; }
+    iniciarIntangible(d.tipo);
+    if (!S.intDibujando) return false;
+    S.intPts = d.pts.slice();
+    /* El aviso va en la barra del lápiz y no en `aviso` de la hoja: quien
+       llama a esto —«Retomar el sector»— escribe su propio mensaje justo
+       después, y el que se escribe último gana. Es el mismo enredo que
+       tapaba el aviso de que no había espacio, y la misma solución: cada
+       cosa dice lo suyo en su sitio. */
+    S.intAviso = 'Se recuperó el trazo que estabas dibujando: ' + d.pts.length +
+      (d.pts.length === 1 ? ' esquina' : ' esquinas') + '.';
+    pintarIntangible(true); pintarBarraInt();
+    return true;
+  }
+
   function agregarPuntoInt(lat, lng) {
     if (!S.intDibujando) return;
     var I = IN(); if (!I) return;
@@ -8335,16 +8486,19 @@
       } catch (e) {}
     }
     pts.push({ lat: lat, lng: lng });
+    guardarTrazoVivo();
     pintarIntangible(true); pintarBarraInt();
   }
 
   function deshacerInt() {
     if (!S.intDibujando || !S.intPts || !S.intPts.length) return;
     S.intPts.pop();
+    guardarTrazoVivo();
     pintarIntangible(true); pintarBarraInt();
   }
 
   function cancelarInt() {
+    olvidarTrazoVivo();
     S.intDibujando = false; S.intPts = null; S.intTipo = ''; S.intAviso = '';
     soltarMapaInt();
     pintarIntangible((S.intangible || []).length > 0);
@@ -8367,6 +8521,8 @@
     }
     var marca = I.nuevaMarca(S.intTipo, pts, '');
     S.intangible = (S.intangible || []).concat([marca]);
+    // Ya es una marca guardada con la ficha: el borrador sobra.
+    olvidarTrazoVivo();
     S.intDibujando = false; S.intPts = null; S.intAviso = '';
     soltarMapaInt();
     pintarIntangible(true);
@@ -12058,6 +12214,10 @@
        recorrido propio MÁS los del curso, así que hacerla antes de tener los
        dos daría los acuerdos de la mitad de la clase. */
     try { if (S.intCurso.length) rehacerUnion(); } catch (e) {}
+    /* Y el trazo que estaba a medias cuando el navegador se llevó la pestaña.
+       Va al final, cuando la huella del sector ya está puesta: es lo que le
+       deja comprobar que el trazo es de ESTE barrio. */
+    try { recuperarTrazoVivo(); } catch (e) {}
     return true;
   }
 
@@ -12223,6 +12383,8 @@
     S.cobertura = null; S.cobEnMapa = false; S.calor = [];
     S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
     S.trabaDescartar = null;
+    // El borrador del lápiz era de aquel sector, no de este.
+    olvidarTrazoVivo();
 
     // Y se dice adónde fue a parar, con las cifras de lo que había.
     if (hecho && hecho.hay) {
@@ -12641,6 +12803,18 @@
       }).join('') +
       '<div class="pcr-pest-pie">' +
         '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">' + ico('lupa', 16) + 'Analizar otro sector</button>' +
+        /* Llevarse TODO en un archivo. Hasta acá se exportaba de a una ficha o
+           de a un recorrido: al final de una salida, un profesor con el curso
+           entero en el teléfono no tenía cómo archivar la jornada, y un
+           teléfono que se pierde se lleva la salida completa. Medido: las doce
+           fichas que caben pesan medio megabyte y el paquete se arma en dos
+           milisegundos. */
+        '<button type="button" class="pcr-mini" data-u52-call="pcr-respaldo">' +
+          ico('exportar', 16) + 'Bajar todo en un archivo</button>' +
+        '<button type="button" class="pcr-mini" data-u52-call="pcr-restaurar">' +
+          ico('carpeta', 16) + 'Traer un archivo de respaldo</button>' +
+        '<input type="file" id="pcr-respaldo-archivo" accept=".json,application/json" ' +
+          'style="position:absolute;left:-9999px" />' +
       '</div>' +
       (S.avisoPestana ? '<p class="pcr-aviso">' + esc(S.avisoPestana) + '</p>' : '') +
       /* Si el portapapeles no funcionó —pasa en algunos navegadores de
@@ -12782,6 +12956,30 @@
       S.avisoPestana = puso ? 'Planilla descargada.' : 'No se pudo generar la planilla en este dispositivo.';
       repintar(); return true;
     }
+    if (name === 'respaldo') {
+      var fichasR = leerFichas();
+      if (!fichasR.length) {
+        S.avisoPestana = 'Todavía no hay sectores guardados que bajar.'; repintar(); return true;
+      }
+      var paqR = JSON.stringify(respaldoDeTodo(fichasR));
+      var kb = Math.max(1, Math.round(paqR.length / 1024));
+      var listo = descargarArchivo(paqR, 'urbis-respaldo-' +
+        new Date().toISOString().slice(0, 10) + '.json', 'application/json');
+      S.avisoPestana = listo
+        ? ('Se bajaron ' + fichasR.length + ' sector' + (fichasR.length === 1 ? '' : 'es') +
+           ' en un archivo de ' + kb + ' KB. Guardalo fuera del teléfono: es la copia de la ' +
+           'salida entera, con las marcas, los recorridos del curso y los lotes.')
+        : 'Este navegador no dejó bajar el archivo. Copiá el texto de abajo y guardalo vos.';
+      if (!listo) S.textoPlano = paqR;
+      repintar(); return true;
+    }
+    if (name === 'restaurar') {
+      try {
+        var inpR = document.getElementById('pcr-respaldo-archivo');
+        if (inpR) inpR.click();
+      } catch (e) {}
+      return true;
+    }
     if (name === 'cot-limpiar') { S.cotejo = []; S.avisoPestana = ''; repintar(); return true; }
     if (name === 'cot-copiar') {
       var txtCot = cotejoComoTexto();
@@ -12877,6 +13075,11 @@
     datosDeComparacion: datosDeComparacion,
     leerFichas: leerFichas,
     guardarFicha: guardarFicha,
+    /* El respaldo de la salida entera: armarlo y volver a traerlo son
+       funciones puras sobre una lista, así que se comprueban sin depender de
+       que el navegador de pruebas deje descargar un archivo. */
+    respaldoDeTodo: respaldoDeTodo,
+    traerRespaldo: traerRespaldo,
     // Cobertura leída de la foto y el paquete que se lleva a otro programa.
     // Se exponen para poder comprobarlos sin depender de una descarga real.
     cobertura: function () { return S.cobertura; },

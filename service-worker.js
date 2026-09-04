@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v707-las-marcas-no-cambian-de-barrio';
+const URBIS_CACHE = 'urbis-v708-la-salida-entera-en-un-archivo';
 const URBIS_ASSETS = [
   './',
   './index.html',
