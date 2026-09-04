@@ -2178,9 +2178,29 @@
       "precision": "exacta",
       "categoria": "gobierno",
       "titulo": "Nombra su gabinete: 18 ministros por el Decreto 1136",
-      "detalle": "Primer equipo de gobierno completo, oficializado el mismo día de la posesión.",
+      "detalle": "Primer equipo de gobierno completo, oficializado el mismo día de la posesión mediante el Decreto 1136: 18 ministros (nueve mujeres y nueve hombres). Cambio Radical obtuvo la mayor cuota burocrática del gabinete, con el Ministerio del Interior (Rodrigo Lara), el de Transporte (Elsa Noguera) y el ICA (Lina María Garrido).",
       "fuente": "La República",
-      "url": "https://www.larepublica.co/economia/estos-son-los-18-ministros-con-los-que-abelardo-de-la-espriella-comienza-su-mandato-4453827"
+      "url": "https://www.larepublica.co/economia/estos-son-los-18-ministros-con-los-que-abelardo-de-la-espriella-comienza-su-mandato-4453827",
+      "contrapunto": "Durante la campaña, De la Espriella había repetido que su sello sería gobernar sin \"políticos de siempre\" ni \"politiquería de cuotas burocráticas\", bajo la consigna de \"los nunca\" —quienes \"nunca han vivido del Estado\", \"nunca se han robado un peso\"— frente a \"los de siempre\". Medios como La Silla Vacía y Cambio señalaron que el gabinete contradijo ese discurso: la ministra de Transporte, Elsa Noguera, es una figura asociada al clan Char —uno de los más señalados en la Costa Caribe por prácticas clientelistas—, tras haber sido su cuota en la Alcaldía y la Gobernación del Atlántico y en el Ministerio de Vivienda del gobierno de Juan Manuel Santos; el ministro del Interior, Rodrigo Lara, tampoco fue leído por esos medios como una ruptura con la política tradicional. La revista Cambio tituló que \"la vieja clase política vuelve al gobierno con De la Espriella\", en contraste con la promesa de campaña.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Cambio · \"Los nunca\" ya perdieron con De la Espriella",
+          "u": "https://cambiocolombia.com/puntos-de-vista/articulo/2026/7/los-nunca-ya-perdieron-con-de-la-espriella"
+        },
+        {
+          "n": "La Silla Vacía · Los políticos \"de siempre\" en la campaña de Abelardo De La Espriella",
+          "u": "https://www.lasillavacia.com/silla-nacional/los-politicos-de-siempre-en-la-campana-de-abelardo-de-la-espriella/"
+        },
+        {
+          "n": "Infobae · Elsa Noguera: esta es la trayectoria de la economista que llegará al Ministerio de Transporte",
+          "u": "https://www.infobae.com/colombia/2026/07/07/elsa-noguera-esta-es-la-trayectoria-de-la-economista-que-llegara-al-ministerio-de-transporte/"
+        },
+        {
+          "n": "Sur · La vieja clase política vuelve al gobierno con De la Espriella",
+          "u": "https://www.sur.org.co/la-vieja-clase-politica-vuelve-al-gobierno-con-de-la-espriella/"
+        }
+      ]
     },
     {
       "fecha": "2026-08-07",

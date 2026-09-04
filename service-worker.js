@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v692-lo-que-hay-que-ir-a-buscar';
+const URBIS_CACHE = 'urbis-v693-los-nunca-y-los-de-siempre';
 const URBIS_ASSETS = [
   './',
   './index.html',
