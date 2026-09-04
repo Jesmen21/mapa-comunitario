@@ -994,3 +994,20 @@
   grid-column:1 / -1; background:#075E88; border-color:#075E88;
   color:#fff !important; -webkit-text-fill-color:#fff !important;
 }
+
+
+/* ── Las letras de los cortes, sobre el mapa ──────────────────────────────
+   A, A′, B y B′ en las puntas de cada línea de corte. Van en un `divIcon` y
+   no en un tooltip porque son parte del dibujo: un tooltip se esconde al
+   tocar cualquier otra cosa.
+
+   Círculo blanco con borde: sobre la foto satelital una letra suelta no se
+   lee en ningún color, y el círculo es además la convención de la lámina. */
+.pcr-corte-letra-root{ background:none !important; border:0 !important; }
+.pcr-corte-letra{
+  display:flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:50%;
+  background:#fff; border:1.8px solid #12202e;
+  font:700 12px/1 Inter, system-ui, sans-serif; color:#12202e;
+  box-shadow:0 1px 4px rgba(12,32,46,.35);
+}

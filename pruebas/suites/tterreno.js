@@ -104,6 +104,46 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     o.lineas=H.querySelectorAll('.pcr-corte').length;
     o.avisoResolucion=[...H.querySelectorAll('.pcr-pista')].some(p=>/metros de paso/.test(txt(p)));
 
+    /* ── Por dónde se cortó ──────────────────────────────────────────────
+       Un perfil sin su A–A′ marcada en planta no se puede situar: se ve una
+       silueta y no se sabe de dónde salió. Es la mitad de la convención de
+       cualquier lámina de topografía y faltaba; llegó reportado así.
+
+       Se comprueba lo que de verdad importa: que las líneas estén SOBRE EL
+       MAPA —no en la ficha—, que lleven las cuatro letras, y que la de A–A′
+       vaya de oeste a este y la de B–B′ de norte a sur, que es lo que las
+       hace un corte y no dos rayas cualesquiera. */
+    o.hayBotonCortes = !!H.querySelector('[data-pcr="cortes-mapa"]');
+    const antesDeCortes = document.querySelectorAll('.leaflet-pane path').length;
+    const bc = H.querySelector('[data-pcr="cortes-mapa"]');
+    if (bc) { bc.click(); await esperar(700); }
+    o.letras = [...document.querySelectorAll('.pcr-corte-letra')].map(e=>e.textContent).sort();
+    o.lineasNuevas = document.querySelectorAll('.leaflet-pane path').length - antesDeCortes;
+    /* Las trazas, leídas del propio mapa: se busca cada polilínea de trazos y
+       se mira hacia dónde va. Medir el rumbo y no solo contar líneas es lo
+       que distingue un corte bien puesto de dos rayas en el sitio. */
+    o.rumbos = (function(){
+      const r=[];
+      window.map.eachLayer(function(l){
+        if(!l || typeof l.getLatLngs!=='function') return;
+        const op=l.options||{};
+        if(!op.dashArray || op.color!=='#12202e') return;
+        const pts=l.getLatLngs(); if(!pts || pts.length<2) return;
+        const a=pts[0], b=pts[pts.length-1];
+        r.push({ dLat:+( (b.lat-a.lat).toFixed(5) ), dLng:+( (b.lng-a.lng).toFixed(5) ) });
+      });
+      return r;
+    })();
+    /* Los rótulos que el motor le puso a cada corte. Comprobar la dirección
+       contra el RÓTULO, y no contra una brújula escrita a mano en la prueba,
+       es lo que pilla el error de verdad: una línea que va al revés de lo que
+       dice su propia etiqueta. */
+    o.etiquetas = (window.URBIS_PC_RECON.terrenoDePrueba
+      ? (window.URBIS_PC_RECON.terrenoDePrueba().perfiles||[]) : []).map(p=>p.etiqueta||'');
+    // Y que se puedan quitar.
+    if (bc) { H.querySelector('[data-pcr="cortes-mapa"]').click(); await esperar(600); }
+    o.letrasTrasQuitar = document.querySelectorAll('.pcr-corte-letra').length;
+
     // Guardar y reabrir
     const bg=[...H.querySelectorAll('button')].filter(b=>/Guardar/i.test(b.textContent||''))[0];
     if(bg){ window.prompt=()=>'Sector con ladera'; bg.click(); await esperar(500); }
@@ -159,6 +199,29 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   console.log('\n  -- el sector guardado no lo pierde --');
   P('la pestaña trae los dos cortes', r.pestPerfiles===2, r.pestPerfiles+' perfiles');
   P('y el desnivel', r.pestDesnivel);
+
+  console.log('\n  -- por dónde van los cortes, sobre el plano --');
+  P('el bloque ofrece verlas en el mapa', r.hayBotonCortes);
+  P('se dibujan las dos líneas', r.rumbos.length===2, r.rumbos.length+' trazas');
+  P('con las cuatro letras en las puntas',
+    r.letras.join('') === 'AA′BB′', r.letras.join(' '));
+  {
+    /* Cada línea tiene que ir hacia donde su propio rótulo dice. Que un corte
+       rotulado «de occidente a oriente» se dibuje de norte a sur es el error
+       que dejaría al estudiante situando el perfil al revés. */
+    const rumboDe = (e) => /occidente a oriente/i.test(e) ? 'OE'
+                         : /oriente a occidente/i.test(e) ? 'EO'
+                         : /norte a sur/i.test(e) ? 'NS'
+                         : /sur a norte/i.test(e) ? 'SN' : '?';
+    const dibujado = (d) => Math.abs(d.dLng) > Math.abs(d.dLat)
+      ? (d.dLng > 0 ? 'OE' : 'EO') : (d.dLat < 0 ? 'NS' : 'SN');
+    const pares = r.etiquetas.map((e,i)=>({ e, esperado: rumboDe(e),
+      real: r.rumbos[i] ? dibujado(r.rumbos[i]) : '—' }));
+    P('cada línea va hacia donde dice su rótulo',
+      pares.length === 2 && pares.every(x => x.esperado !== '?' && x.esperado === x.real),
+      pares.map(x=>x.e.replace(/\s*\(.*/,'')+': dice '+x.esperado+', va '+x.real).join(' · '));
+  }
+  P('y se pueden quitar', r.letrasTrasQuitar===0, r.letrasTrasQuitar+' letras después');
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

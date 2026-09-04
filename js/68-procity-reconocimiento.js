@@ -114,7 +114,7 @@
     // hay nada corriendo, que es también la señal para cancelar la cadena.
     midiendoTodo: null,
     // Las teselas guardadas para caminar sin señal: qué hay y qué va bajando.
-    teselas: null, bajandoTeselas: null,
+    teselas: null, bajandoTeselas: null, cortesEnMapa: false,
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -2700,16 +2700,17 @@
   /* Las capas que esta hoja pone sobre el mapa. Se declaran juntas y arriba
      porque quitarDelMapa las apaga todas de una vez: una capa que se declara
      al lado de su función es una capa que alguien olvida apagar. */
-  var capaCurvas = null, capaSombras = null;
+  var capaCurvas = null, capaSombras = null, capaCortes = null;
 
   function quitarDelMapa() {
     var m = mapa();
-    [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras].forEach(function (c) {
+    [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras, capaCortes].forEach(function (c) {
       if (c && m) { try { m.removeLayer(c); } catch (e) {} }
     });
     capaPuntos = null; capaEstratos = null; capaLlenos = null;
-    capaCurvas = null; capaSombras = null;
+    capaCurvas = null; capaSombras = null; capaCortes = null;
     S.llenosEnMapa = false; S.curvasEnMapa = false; S.sombrasEnMapa = false;
+    S.cortesEnMapa = false;
   }
 
   /* Los llenos y vacíos, dibujados. Las cifras dicen QUÉ PROPORCIÓN del área
@@ -3049,6 +3050,13 @@
         S.encogida = S.sombrasEnMapa;
         S.encogidaAMano = false;
         if (!puestasS && !S.sombrasEnMapa) S.aviso = 'No hay sombras que dibujar.';
+        pintar(); return;
+      }
+      if (acc === 'cortes-mapa') {
+        var puesto = pintarCortes(!S.cortesEnMapa);
+        S.encogida = puesto;
+        S.encogidaAMano = false;
+        if (!puesto && !S.cortesEnMapa) S.aviso = 'Este análisis no trae por dónde se cortó. Volvé a medir el terreno.';
         pintar(); return;
       }
       if (acc === 'curvas-mapa') {
@@ -5271,6 +5279,17 @@
 
       '<p class="pcr-lab">Cortes del terreno</p>' +
       (t.perfiles || []).map(perfilDibujado).join('') +
+      /* El botón va justo debajo de las siluetas, no en la barra de capas de
+         arriba: es acá donde alguien se pregunta «¿y por dónde cortó?». */
+      ((t.perfiles || []).some(function (p) { return p.traza && p.traza.length >= 2; })
+        ? '<div class="pcr-llevar">' +
+            '<button type="button" data-pcr="cortes-mapa" class="pcr-mini pcr-llevar-b">' +
+              ico(S.cortesEnMapa ? 'apagar' : 'capas', 16) +
+              (S.cortesEnMapa ? 'Quitar las líneas del mapa'
+                              : 'Ver por dónde van los cortes') + '</button>' +
+          '</div>'
+        : '<p class="pcr-pista">Este análisis no trae por dónde se cortó: volvé a medir el ' +
+          'terreno y las líneas A–A′ y B–B′ se podrán ver sobre el mapa.</p>') +
 
       '<p class="pcr-pista">Las alturas salen de un modelo de <b>' + t.resolucionM + ' metros de paso</b> (' +
       esc(t.fuente || '') + '). Sirve para leer el relieve del sector; <b>no</b> para dar la cota de una ' +
@@ -9249,6 +9268,58 @@
      topografía, y las que caen en cota redonda —cada quinta— más gruesas y
      rotuladas: es lo que permite leer una ladera sin contar curvas una por
      una. */
+  /* ── Las líneas de corte sobre el plano ───────────────────────────────
+     Un perfil topográfico sin su A–A′ marcada en planta no se puede situar:
+     se ve una silueta y no se sabe de dónde salió. Es la mitad de la
+     convención de cualquier lámina de topografía, y faltaba. Llegó reportado
+     así: «me hizo un corte pero no muestra las líneas por dónde lo hizo».
+
+     El motor ya dice por dónde cortó —la traza entera, no solo los extremos,
+     porque el corte va por una fila de la rejilla y sobre el terreno eso no
+     es exactamente una recta—. Acá se dibuja como se dibuja en una lámina:
+     línea fina de trazos, y la letra en cada punta.
+
+     Las letras van en un `divIcon` y no en un `tooltip`: un tooltip se
+     esconde al tocar cualquier otra cosa, y estas letras son parte del
+     dibujo, no un aviso. */
+  function pintarCortes(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaCortes) { try { m.removeLayer(capaCortes); } catch (e) {} capaCortes = null; }
+    S.cortesEnMapa = false;
+    if (!encender) return false;
+    var ter = S.terreno;
+    var perfiles = (ter && ter.perfiles) || [];
+    var conTraza = perfiles.filter(function (p) { return p.traza && p.traza.length >= 2; });
+    if (!conTraza.length) return false;
+
+    capaCortes = L.layerGroup();
+    conTraza.forEach(function (p) {
+      var pts = p.traza.map(function (q) { return [q.lat, q.lng]; });
+      try {
+        // Dos trazos: uno blanco grueso debajo para que la línea se lea
+        // sobre la foto satelital, que es donde peor se ven las líneas finas.
+        L.polyline(pts, { color: '#fff', weight: 4, opacity: .85,
+          dashArray: '9 7', interactive: false }).addTo(capaCortes);
+        L.polyline(pts, { color: '#12202e', weight: 1.8, opacity: .95,
+          dashArray: '9 7', interactive: false }).addTo(capaCortes);
+      } catch (e) {}
+      [[pts[0], p.marca || p.id.charAt(0)],
+       [pts[pts.length - 1], p.marcaFin || (p.id.charAt(0) + '′')]].forEach(function (par) {
+        try {
+          L.marker(par[0], { interactive: false, keyboard: false,
+            icon: L.divIcon({ className: 'pcr-corte-letra-root',
+              html: '<span class="pcr-corte-letra">' + esc(par[1]) + '</span>',
+              iconSize: [26, 26], iconAnchor: [13, 13] })
+          }).addTo(capaCortes);
+        } catch (e) {}
+      });
+    });
+    capaCortes.addTo(m);
+    S.cortesEnMapa = true;
+    return true;
+  }
+
   function pintarCurvas(encender) {
     var m = mapa();
     if (!m || typeof L === 'undefined') return false;
@@ -12251,6 +12322,7 @@
        mismo punto. Es la única propiedad de la que depende que las cifras
        sean del sitio que se marcó. */
     centroDeAnalisisDePrueba: function () { return centroDeAnalisis(); },
+    terrenoDePrueba: function () { return S.terreno; },
     centroDelLoteDePrueba: function () { return centroDelLote(); },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';
