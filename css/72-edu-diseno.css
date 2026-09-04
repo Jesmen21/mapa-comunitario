@@ -1327,7 +1327,7 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   text-align:center;
 }
 .pcr-dibujo-fila .pcr-dibujo-pie{ text-align:left; flex:1; }
-.pcr-dibujo-pie b{ color:var(--edu-ink-1); font-weight:700; }
+.pcr-dibujo-pie b{ color:var(--edu-ink); font-weight:700; }
 /* La trama son cien cuadraditos de 9 px: en un teléfono angosto no puede
    crecer más que su mitad de la fila o empuja al pie fuera de la caja. */
 .pcr-dibujo-fila .pcr-trama{ flex:0 0 auto; width:112px; }
@@ -1377,10 +1377,10 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   background:var(--edu-accent-deep); color:#fff; font-size:.72rem; font-weight:800;
   display:inline-flex; align-items:center; justify-content:center;
 }
-.pcr-falta-cab b{ flex:1; min-width:0; font-size:.92rem; color:var(--edu-ink-1); }
+.pcr-falta-cab b{ flex:1; min-width:0; font-size:.92rem; color:var(--edu-ink); }
 .pcr-falta-cab code{
   flex:0 0 auto; font-size:.68rem; color:var(--edu-ink-3);
-  background:var(--edu-fondo); border:1px solid var(--edu-line);
+  background:var(--edu-ground-2); border:1px solid var(--edu-line);
   padding:1px 6px; border-radius:6px;
 }
 .pcr-falta-hoy{ margin:6px 0 2px; font-size:.8rem; color:var(--edu-ink-2); }
@@ -1399,7 +1399,44 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   border-left:3px solid var(--edu-accent); padding:2px 0 4px 12px;
 }
 .pcr-deter-cab{ display:flex; align-items:center; gap:8px; }
-.pcr-deter-cab b{ font-size:.95rem; color:var(--edu-ink-1); }
+.pcr-deter-cab b{ font-size:.95rem; color:var(--edu-ink); }
 .pcr-deter-cab svg{ flex:0 0 auto; color:var(--edu-accent-deep); }
 .pcr-deter-dice{ margin:4px 0 3px; font-size:.86rem; line-height:1.5; color:var(--edu-ink-2); }
 .pcr-deter-porque{ margin:0; font-size:.74rem; color:var(--edu-ink-3); font-style:italic; }
+
+/* ── 24. Las capas del mapa ──────────────────────────────────────────────
+   Una lista de interruptores, no una lista de enlaces: cada uno lleva su
+   color —el mismo con el que se dibuja en el mapa— para poder reconocer en
+   la leyenda lo que se está viendo sin leer el nombre. */
+.pcr-hoja .pcr-capas, .pcr-pestana .pcr-capas{
+  flex:0 0 auto; display:flex; flex-direction:column; gap:6px; margin:2px 0 10px;
+}
+.pcr-capa{
+  display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+  padding:8px 10px; border-radius:var(--edu-r-m);
+  border:1px solid var(--edu-line); background:var(--edu-ground);
+  color:var(--edu-ink); font:inherit; cursor:pointer;
+}
+.pcr-capa i{
+  flex:0 0 auto; width:12px; height:12px; border-radius:3px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.12) inset;
+}
+.pcr-capa span{ display:flex; flex-direction:column; min-width:0; }
+/* Con !important y el prefijo de la hoja porque la aplicación pinta de menta
+   claro TODO `small` dentro de un botón: sin esto, el pie de cada capa sale
+   blanco sobre blanco. El `-webkit-text-fill-color` va también, que es lo que
+   de verdad manda en el color del texto cuando está puesto. */
+.pcr-hoja .pcr-capa b, .pcr-pestana .pcr-capa b{
+  font-size:.86rem; font-weight:700;
+  color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-capa small, .pcr-pestana .pcr-capa small{
+  font-size:.72rem;
+  color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
+}
+.pcr-capa.on{
+  border-color:var(--edu-accent-deep); background:var(--edu-accent-soft);
+  box-shadow:inset 3px 0 0 var(--edu-accent-deep);
+}
+.pcr-capa-gris{ opacity:.55; cursor:default; }
+.pcr-capa-gris i{ filter:grayscale(1); }

@@ -2331,6 +2331,27 @@
                        function (m) { S.aviso = m; pintar(); });
         return;
       }
+      if (acc === 'capa') {
+        var idCapa = b.getAttribute('data-c') || '';
+        var estaba = capasDisponibles((S.resultado && S.resultado.stats) || {})
+          .filter(function (c) { return c.id === idCapa; })[0];
+        alternarCapa(idCapa, !(estaba && estaba.on));
+        S.encogida = true;
+        pintar(); return;
+      }
+      if (acc === 'capas-todo' || acc === 'capas-nada') {
+        var prender = acc === 'capas-todo';
+        capasDisponibles((S.resultado && S.resultado.stats) || {}).forEach(function (c) {
+          if (!c.listo) return;
+          /* Al encender todo, del calor se pone solo «todos»: encender las
+             diez categorías a la vez pinta diez manchas superpuestas y no se
+             lee ninguna. */
+          if (prender && c.id.indexOf('calor:g:') === 0) return;
+          alternarCapa(c.id, prender);
+        });
+        S.encogida = prender;
+        pintar(); return;
+      }
       if (acc === 'sombras-mapa') {
         var puestasS = pintarSombras(!S.sombrasEnMapa);
         S.encogida = S.sombrasEnMapa;
@@ -4748,6 +4769,134 @@
       }).join('') +
       '</table><p class="pie">Son determinantes, no propuestas: ninguna dice qué construir, dicen ' +
       'a qué hay que responder.</p>';
+  }
+
+  /* ── Las capas del mapa ────────────────────────────────────────────────
+     Cada capa nació al lado del bloque que la explica, y eso está bien para
+     entenderla: el botón de las curvas vive en «El terreno», el de las
+     sombras en «El lote». Pero cuando hay diez encendidas a la vez, apagar
+     una obliga a recorrer la ficha entera buscando dónde estaba su botón.
+
+     Este panel no reemplaza a esos botones: los reúne. Es la lista completa
+     de lo que se puede poner sobre el mapa, con lo que está puesto marcado, y
+     con las que todavía no se pueden encender en gris, diciendo qué falta
+     para encenderlas. */
+  function capasDisponibles(st) {
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
+    var grupos = Object.keys((st && st.porGrupo) || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; });
+
+    var lista = [];
+    lista.push({ id: 'calor:todos', grupo: 'Lo que hay', nombre: 'Todos los usos, en calor',
+                 color: '#0A6F9E', on: S.calor.indexOf('todos') !== -1, listo: !!S.resultado,
+                 falta: 'analizá el sector' });
+    grupos.forEach(function (g) {
+      lista.push({ id: 'calor:g:' + g.id, grupo: 'Lo que hay',
+                   nombre: (G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id,
+                   dato: g.n + ' usos', color: COL[g.id] || '#94a3b8',
+                   on: S.calor.indexOf('g:' + g.id) !== -1, listo: !!S.resultado,
+                   falta: 'analizá el sector' });
+    });
+
+    lista.push({ id: 'cobertura', grupo: 'El suelo', nombre: 'Cobertura del suelo',
+                 dato: 'de la foto satelital', color: '#22c55e',
+                 on: !!S.cobEnMapa, listo: !!S.cobertura, falta: 'medí la cobertura' });
+    lista.push({ id: 'estratos', grupo: 'El suelo', nombre: 'Manzanas por estrato',
+                 dato: 'del DANE', color: '#8b5cf6',
+                 on: !!S.estratos, listo: !!S.resultado, falta: 'analizá el sector' });
+    lista.push({ id: 'llenos', grupo: 'El suelo', nombre: 'Llenos y vacíos',
+                 dato: 'huellas de los edificios', color: '#3B4A5A',
+                 on: !!S.llenosEnMapa, listo: !!(S.trzHuellas && S.trzHuellas.length),
+                 falta: 'medí el trazado' });
+    lista.push({ id: 'curvas', grupo: 'El suelo', nombre: 'Curvas de nivel',
+                 dato: (S.curvas && S.curvas.intervalo ? 'cada ' + S.curvas.intervalo + ' m' : 'del relieve'),
+                 color: '#8A5A20', on: !!S.curvasEnMapa, listo: !!S.terRejilla,
+                 falta: 'medí el terreno' });
+
+    lista.push({ id: 'sombras', grupo: 'El lote', nombre: 'La sombra de los vecinos',
+                 dato: '9, 12 y 15 h', color: '#7C4DFF',
+                 on: !!S.sombrasEnMapa,
+                 listo: !!(S.lote && S.lote.length >= 3 && S.trzHuellas && S.trzHuellas.length),
+                 falta: 'marcá el lote y medí el trazado' });
+    lista.push({ id: 'caminata', grupo: 'El lote', nombre: 'Hasta dónde se camina',
+                 dato: '5, 10 y 15 min', color: '#0A6F9E',
+                 on: !!S.caminataEnMapa,
+                 listo: !!(S.caminata && S.caminata.tramos && S.caminata.tramos.length),
+                 falta: 'marcá el lote y medí el trazado' });
+    return lista;
+  }
+
+  /* Encender o apagar una capa por su nombre. Cada una tiene su propio
+     interruptor —el calor va por chips, el raster vive en js/24, los llenos
+     tienen su capa— así que acá se traduce el nombre a la llave que
+     corresponde y no se duplica ninguna lógica. */
+  function alternarCapa(id, encender) {
+    if (id.indexOf('calor:') === 0) {
+      var cal = id.slice(6);
+      var i = S.calor.indexOf(cal);
+      if (encender && i === -1) S.calor.push(cal);
+      if (!encender && i !== -1) S.calor.splice(i, 1);
+      // «Todos» y una categoría son excluyentes: pintar los dos deja el mapa
+      // en una mancha sin lectura posible.
+      if (encender && cal === 'todos') S.calor = ['todos'];
+      else if (encender) S.calor = S.calor.filter(function (x) { return x !== 'todos'; });
+      aplicarCalor();
+      return;
+    }
+    if (id === 'cobertura') {
+      var A4 = window.URBIS_PC_ANALISIS;
+      S.cobEnMapa = !!encender;
+      try {
+        if (S.cobEnMapa && A4 && typeof A4.mostrarRaster === 'function') A4.mostrarRaster(S.cobertura);
+        if (!S.cobEnMapa && A4 && typeof A4.quitarRaster === 'function') A4.quitarRaster();
+      } catch (e) {}
+      return;
+    }
+    if (id === 'estratos') { pintarEstratos(!!encender); return; }
+    if (id === 'llenos') { pintarLlenos(!!encender); return; }
+    if (id === 'curvas') { pintarCurvas(!!encender); return; }
+    if (id === 'sombras') { pintarSombras(!!encender); return; }
+    if (id === 'caminata') { pintarCaminata(!!encender); return; }
+  }
+
+  function bloqueCapas(st) {
+    var lista = capasDisponibles(st);
+    var puestas = lista.filter(function (c) { return c.on; }).length;
+    var listas = lista.filter(function (c) { return c.listo; }).length;
+    var grupos = ['Lo que hay', 'El suelo', 'El lote'];
+    return h4('capas', 'Las capas del mapa') +
+      '<p class="pcr-pista">Todo lo que se puede poner sobre el mapa, en un solo sitio. Hay <b>' +
+      listas + '</b> capa' + (listas === 1 ? '' : 's') + ' disponible' + (listas === 1 ? '' : 's') +
+      ' y <b>' + puestas + '</b> puesta' + (puestas === 1 ? '' : 's') + '. Las grises necesitan una ' +
+      'medición que todavía no está.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="capas-todo" class="pcr-mini">' + ico('ok', 16) +
+          'Encender todo</button>' +
+        '<button type="button" data-pcr="capas-nada" class="pcr-mini">' + ico('apagar', 16) +
+          'Apagar todo</button>' +
+      '</div>' +
+      grupos.map(function (g) {
+        var suyas = lista.filter(function (c) { return c.grupo === g; });
+        if (!suyas.length) return '';
+        return '<p class="pcr-lab">' + g + '</p>' +
+          '<div class="pcr-capas">' +
+            suyas.map(function (c) {
+              return '<button type="button" class="pcr-capa' + (c.on ? ' on' : '') +
+                (c.listo ? '' : ' pcr-capa-gris') + '" data-pcr="capa" data-c="' + esc(c.id) + '"' +
+                (c.listo ? '' : ' disabled') + ' aria-pressed="' + (c.on ? 'true' : 'false') + '">' +
+                '<i style="background:' + esc(c.color) + '"></i>' +
+                '<span><b>' + esc(c.nombre) + '</b>' +
+                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) + '</small></span>' +
+              '</button>';
+            }).join('') +
+          '</div>';
+      }).join('') +
+      '<p class="pcr-pista">Encender varias a la vez es útil para comparar —el calor del comercio ' +
+      'sobre los llenos y vacíos, por ejemplo— pero con más de tres el mapa deja de decir nada. ' +
+      'Para la lámina, cada capa sale en su propio recuadro.</p>';
   }
 
   function bloqueQueFalta(st) {
@@ -8010,6 +8159,7 @@
         bloqueNucleos(st) +
         bloqueHitos(st) +
         bloqueAnillos(st, esPol) +
+        bloqueCapas(st) +
         bloqueCalor(res) +
 
         // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
