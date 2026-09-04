@@ -11695,6 +11695,14 @@
     fichaComoTexto: fichaComoTexto,
     rumboDe: rumboDe,
     rumboDe360: rumboDe360,
+    /* Solo para medir: deja cronometrar por separado lo que cuesta ARMAR el
+       texto de la ficha y lo que cuesta METERLO en el documento. Sin esto no
+       se puede saber si un repintado lento se arregla memorizando bloques o
+       dejando de reemplazar la hoja entera, y optimizar sin saberlo es tirar
+       a ver si pega. */
+    htmlDeLaFicha: function () {
+      return S.resultado ? htmlFicha(S.resultado) : '';
+    },
     estado: function () {
       return {
         forma: S.forma,

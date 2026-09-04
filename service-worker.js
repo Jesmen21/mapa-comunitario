@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v685-que-cabe';
+const URBIS_CACHE = 'urbis-v686-el-toque-rapido';
 const URBIS_ASSETS = [
   './',
   './index.html',
