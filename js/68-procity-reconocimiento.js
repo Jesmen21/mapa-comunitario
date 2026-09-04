@@ -105,6 +105,8 @@
     // Mientras corre «Medir todo»: qué paso va y qué salió. Null cuando no
     // hay nada corriendo, que es también la señal para cancelar la cadena.
     midiendoTodo: null,
+    // Las teselas guardadas para caminar sin señal: qué hay y qué va bajando.
+    teselas: null, bajandoTeselas: null,
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
     puntosEnMapa: 0,
@@ -2700,6 +2702,22 @@
           S.error = 'Esa ficha no guarda el área: no se puede reanudar.';
         }
         pintar(); return;
+      }
+      if (acc === 'teselas') { guardarTeselas(); return; }
+      if (acc === 'teselas-parar') {
+        var bt = S.bajandoTeselas;
+        if (bt && bt.pr && bt.pr.estado) bt.pr.estado.cancelar();
+        return;
+      }
+      if (acc === 'teselas-borrar') {
+        var SS2 = window.URBIS_SIN_SENAL;
+        if (!SS2) return;
+        SS2.borrar().then(function () {
+          S.teselas = { teselas: 0, mb: 0, hay: false };
+          S.aviso = 'Se borró el mapa guardado.';
+          pintar();
+        });
+        return;
       }
       if (acc === 'medir-todo') { medirTodo(false); return; }
       if (acc === 'medir-parar') {
@@ -9348,6 +9366,102 @@
       correr: function () { return analizarCobertura(); } }
   ];
 
+  /* ── Llevárselo a la calle ─────────────────────────────────────────────
+     Lo intangible se marca caminando, y caminando no hay señal. Sin las
+     teselas guardadas el mapa queda gris, y sobre un mapa gris no se puede
+     señalar dónde está oscuro. */
+  function bloqueSinSenal() {
+    var SS = window.URBIS_SIN_SENAL;
+    if (!SS || !S.resultado) return '';
+    var contorno = null;
+    try { contorno = contornoDelSector(); } catch (e) {}
+    if (!contorno || contorno.length < 2) return '';
+
+    var b = S.bajandoTeselas;
+    if (b) {
+      var pct = b.total ? Math.round(100 * b.hechas / b.total) : 0;
+      return '<div class="pcr-medir pcr-medir-va">' +
+        '<p class="pcr-lab">Guardando el mapa · ' + b.hechas + ' de ' + b.total + '</p>' +
+        '<div class="pcr-medir-barra"><i style="width:' + pct + '%"></i></div>' +
+        '<p class="pcr-pista">Se puede cerrar la hoja: sigue bajando.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="teselas-parar" class="pcr-mini">' +
+            ico('cerrar', 16) + 'Parar</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    var est = SS.estimar(contorno);
+    var g = S.teselas;
+    return '<div class="pcr-medir">' +
+      '<p class="pcr-lab">Llevárselo a la calle</p>' +
+      (g && g.hay
+        ? '<p class="pcr-conc">Hay <b>' + g.teselas + '</b> teselas guardadas (' +
+          String(g.mb).replace('.', ',') + ' MB). El mapa se ve sin señal.</p>'
+        : '<p class="pcr-pista">Sin señal el mapa queda gris, y sobre un mapa gris no se ' +
+          'puede marcar dónde está oscuro. Esto baja el mapa del sector <b>antes</b> de salir, ' +
+          'con un margen de 250 m alrededor y en las tres escalas que sirven caminando.</p>') +
+      '<p class="pcr-pista">Son unas <b>' + est.teselas + '</b> imágenes, cerca de <b>' +
+      String(est.mb).replace('.', ',') + ' MB</b>. Conviene hacerlo con wifi.' +
+      (est.foto
+        ? ' Estás con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
+          'navegador le reserva mucho más espacio del que ocupa, así que puede que no quepan ' +
+          'todas. Si solo necesitás ubicarte, cambiá a un mapa de dibujo antes de guardar.'
+        : '') + '</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="teselas" class="pcr-mini pcr-llevar-b">' +
+          ico('nube', 16) + (g && g.hay ? 'Volver a guardar' : 'Guardar el mapa') + '</button>' +
+        (g && g.hay
+          ? '<button type="button" data-pcr="teselas-borrar" class="pcr-mini">' +
+            ico('borrar', 16) + 'Borrar lo guardado</button>'
+          : '') +
+      '</div>' +
+      '<p class="pcr-pista">Esto guarda el <b>mapa</b>, no el análisis: analizar un sector, ' +
+      'medir el trazado o preguntarle al Servicio Geológico siguen necesitando red. Lo de la ' +
+      'calle es marcar, y para marcar hace falta ver.</p>' +
+    '</div>';
+  }
+
+  function medirTeselas() {
+    var SS = window.URBIS_SIN_SENAL;
+    if (!SS) return;
+    SS.medida().then(function (m) { S.teselas = m; pintar(); });
+  }
+
+  function guardarTeselas() {
+    var SS = window.URBIS_SIN_SENAL;
+    if (!SS || S.bajandoTeselas) return;
+    var contorno = null;
+    try { contorno = contornoDelSector(); } catch (e) {}
+    if (!contorno) { S.aviso = 'Primero analizá un sector.'; pintar(); return; }
+    var pr = SS.guardar(contorno, 250, function (est) {
+      /* Se repinta con lo que informa el guardador, no con un contador
+         propio: si el navegador descarta la mitad por falta de espacio, la
+         barra tiene que reflejar eso y no una cuenta optimista. */
+      if (S.bajandoTeselas) {
+        S.bajandoTeselas.hechas = est.hechas;
+        S.bajandoTeselas.total = est.total;
+        pintar();
+      }
+    });
+    S.bajandoTeselas = { hechas: 0, total: pr.estado ? pr.estado.total : 0, pr: pr };
+    pintar();
+    pr.then(function (est) {
+      S.bajandoTeselas = null;
+      S.aviso = est.cancelado
+        ? 'Se paró de guardar. Lo que alcanzó a bajar queda servido.'
+        : est.fallos
+          ? 'Mapa guardado, con ' + est.fallos + ' imágenes que no bajaron. En esos puntos ' +
+            'quedará gris.'
+          : 'Mapa guardado. Ya se puede caminar el sector sin señal.';
+      medirTeselas();
+    }).catch(function (e) {
+      S.bajandoTeselas = null;
+      S.aviso = (e && e.message) || 'No se pudo guardar el mapa.';
+      pintar();
+    });
+  }
+
   /* El botón y su cuenta. Va arriba de la ficha, antes de los bloques que
      encadena: si estuviera al lado de cualquiera de ellos parecería suyo. */
   function bloqueMedirTodo() {
@@ -9779,6 +9893,7 @@
         // Antes que nada: qué falta medir. Los cinco botones que encadena
         // están repartidos por treinta bloques y ninguno avisa de los otros.
         bloqueMedirTodo() +
+        bloqueSinSenal() +
 
         h4('capas', 'Qué hay, por categoría') +
         // El anillo se pinta después, cuando el canvas ya está en el documento.
@@ -10518,6 +10633,11 @@
       S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
     }
     if (!S.centro) tomarCentro();
+    /* Cuánto mapa hay guardado se cuenta al abrir y no al pintar: el depósito
+       lo puede vaciar el navegador por su cuenta cuando le falta espacio, así
+       que recordarlo sería mentir, y contarlo en cada repintado sería contar
+       mil archivos treinta veces por minuto. */
+    try { medirTeselas(); } catch (e) {}
     pintarCirculo();
     pintar();
   }

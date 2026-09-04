@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v679-seguir-donde-quede';
+const URBIS_CACHE = 'urbis-v680-sin-senal';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -152,6 +152,7 @@ const URBIS_ASSETS = [
   './js/74-dibujos-analisis.js',
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
+  './js/77-sin-senal.js',
 ];
 
 self.addEventListener('install', event => {
@@ -161,9 +162,17 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+/* Las teselas del mapa que alguien se llevó a la calle. Van en un depósito
+   APARTE y sin versión a propósito: el de la aplicación se borra entero en
+   cada actualización —para eso está— y un sector que se guardó anoche para
+   recorrerlo hoy no puede desaparecer porque salió una versión nueva. Lo
+   llena js/77 desde la página; acá solo se conserva y se sirve. */
+const URBIS_TESELAS = 'urbis-teselas-v1';
+
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== URBIS_CACHE).map(k => caches.delete(k))))
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== URBIS_CACHE && k !== URBIS_TESELAS).map(k => caches.delete(k))))
   );
   self.clients.claim();
 });
@@ -187,6 +196,29 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  /* Las teselas guardadas se miran ANTES de salir a la red. Con señal la
+     diferencia es de milisegundos; sin ella es la diferencia entre un mapa y
+     una pantalla gris, que es donde se marca lo que se ve caminando.
+
+     Se reconocen por la URL y no por el destino de la petición: una tesela
+     pedida por Leaflet y la misma pedida por el guardador tienen destinos
+     distintos y son el mismo archivo. */
+  if (/basemaps\.cartocdn\.com|server\.arcgisonline\.com|clarity\.maptiles\.arcgis\.com|mt\d\.google\.com\/vt/.test(request.url)) {
+    /* Coincidencia exacta, sin normalizar nada. El guardador pide la
+       dirección con el propio `getTileUrl` de la capa que está puesta, así que
+       la clave con la que archivó es carácter por carácter la que el mapa
+       pide ahora — subdominio, sufijo de retina y parámetros incluidos.
+       Cualquier arreglo de la URL acá sería adivinar de nuevo lo que Leaflet
+       ya sabe. */
+    event.respondWith(
+      caches.open(URBIS_TESELAS)
+        .then(cache => cache.match(request, { ignoreVary: true }))
+        .then(hit => hit || fetch(request))
+        .catch(() => fetch(request))
     );
     return;
   }
