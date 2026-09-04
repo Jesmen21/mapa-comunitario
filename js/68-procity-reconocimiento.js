@@ -13318,7 +13318,19 @@
        texto de la ficha y lo que cuesta METERLO en el documento. Sin esto no
        se puede saber si un repintado lento se arregla memorizando bloques o
        dejando de reemplazar la hoja entera, y optimizar sin saberlo es tirar
-       a ver si pega. */
+       a ver si pega.
+
+       MEDIDO, con un sector de 300 usos y la ficha entera desplegada:
+       armarla cuesta 3,6 ms y meterla en el documento 18,8 ms —78 KB y 1295
+       nodos—. O sea unos 22 ms por repintado, de los que cinco sextos son la
+       inserción. Conclusión: memorizar bloques no arreglaría nada; si algún
+       día hay que bajarlo, lo que hay que dejar de hacer es reemplazar la
+       hoja entera.
+
+       Y la otra conclusión, la que importaba: 22 ms no es una congelación.
+       La que se reportó en campo no venía de acá —era el botón muerto y los
+       tres lápices armados a la vez, corregidos en v698—, así que esto se
+       queda como está. Medir también sirve para no tocar. */
     /* Para que el lápiz del sector, que vive en otro archivo, pueda soltar
        los de esta hoja al armarse. Sin esto la regla solo valdría en dos de
        los tres sentidos. */

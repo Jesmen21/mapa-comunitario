@@ -349,6 +349,18 @@
 .pcr-pestana .pcr-radio-on{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
 .pcr-hoja .pcr-principal,
 .pcr-pestana .pcr-principal{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+/* Los que van sobre fondo pintado. El piso legible de arriba obliga a tinta
+   oscura en cada `span` de la hoja, y esta bolita azul quedaba con texto
+   #233748 sobre #075E88: contraste 2,2:1, medido. El piso haciendo justo lo
+   que existe para impedir.
+
+   Van con el prefijo `.pcr-hoja` / `.pcr-pestana` porque es lo que le gana al
+   piso, y agrupados acá para que el siguiente distintivo de fondo pintado
+   tenga un sitio evidente donde ponerse en vez de descubrirse en una foto de
+   campo. Lo vigila la suite `tcontraste`. */
+.pcr-hoja .pcr-nucleo-i,
+.pcr-pestana .pcr-nucleo-i{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
+
 .pcr-hoja .pcr-secundario,
 .pcr-pestana .pcr-secundario{ color:#075E88 !important; -webkit-text-fill-color:#075E88 !important; }
 .pcr-hoja .pcr-mini,
