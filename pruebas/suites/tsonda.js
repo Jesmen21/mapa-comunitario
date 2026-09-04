@@ -117,7 +117,25 @@ const REGISTRO = { type:'FeatureCollection', features:[
   await pg.goto(E.ESTATICO + '/herramientas/sonda-datos.html',{waitUntil:'domcontentloaded'});
   await pg.waitForTimeout(700);
 
-  await pg.fill('#ogc','https://geoserver-de-mentira.gov.co/geoserver/ows');
+  /* Tres direcciones: la que anda, una cuyo dominio contesta pero no deja
+     leer —CORS cerrado—, y una que no existe. Los tres rojos se ven idénticos
+     desde JavaScript, y son tres arreglos distintos: pasar la consulta por el
+     motor, esperar, o buscar la dirección buena. Que la sonda los separe es
+     lo que convierte un «no se pudo» en algo accionable. */
+  await ctx.route(/geoserver-con-cors-cerrado/, r=>{
+    // Llega, contesta, pero sin cabeceras que dejen leerlo. Para `no-cors`
+    // eso es una respuesta válida y opaca; para `fetch` normal, un fallo.
+    if(r.request().headers()['sec-fetch-mode']==='no-cors' ||
+       r.request().headers()['origin']===undefined){
+      return r.fulfill({status:200,contentType:'text/xml',body:'<x/>'});
+    }
+    return r.abort('failed');
+  });
+  await ctx.route(/geoserver-que-no-existe/, r=>r.abort('addressunreachable'));
+
+  await pg.fill('#ogc','https://geoserver-de-mentira.gov.co/geoserver/ows\n' +
+    'https://geoserver-con-cors-cerrado.gov.co/geoserver/ows\n' +
+    'https://geoserver-que-no-existe.gov.co/geoserver/ows');
   await pg.click('#explorar-ogc');
   await pg.waitForFunction(()=>/Listo/.test(document.getElementById('estado').textContent),
     {timeout:120000});
@@ -194,6 +212,18 @@ const REGISTRO = { type:'FeatureCollection', features:[
     conCapa('Amenaza por inundación') ? conCapa('Amenaza por inundación').marca : 'no está');
   T('hay un hallazgo por capa mirada', r.hallazgos.length>=3,
     r.hallazgos.length+' hallazgos');
+
+  console.log('\n  -- los tres rojos no son el mismo rojo --');
+  T('el que contesta pero no deja leerlo se distingue',
+    /el dominio SÍ contesta/.test(I) && /desde el motor de URBIS/.test(I),
+    (I.match(/pero el dominio SÍ contesta[^.]*\./)||['no lo distingue'])[0]);
+  T('y el que ni existe, también',
+    /el dominio tampoco contesta/.test(I) && /No es cosa de permisos/.test(I),
+    (I.match(/y el dominio tampoco contesta[^.]*\./)||['no lo distingue'])[0]);
+  T('cada uno con su etiqueta en el resumen',
+    r.hallazgos.some(h=>/no deja leerlo/.test(h.marca||h.texto)) &&
+    r.hallazgos.some(h=>/no hay servidor/.test(h.marca||h.texto)),
+    r.hallazgos.map(h=>h.marca).join(' · '));
 
   console.log('');
   T('sin errores de JavaScript', errFin.length===0, errFin.slice(0,2).join(' | ')||'ninguno');

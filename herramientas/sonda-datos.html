@@ -631,6 +631,28 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
     }, Promise.resolve(null));
   }
 
+  /* ¿Existe siquiera el servidor?
+
+     Cuando `fetch` falla, el navegador NO dice por qué: un CORS cerrado, un
+     servidor caído y una dirección mal escrita se ven exactamente igual desde
+     JavaScript. Y son tres respuestas distintas: la primera se arregla
+     pasando la consulta por el motor, la segunda se arregla esperando, y la
+     tercera se arregla buscando la dirección buena.
+
+     `no-cors` las separa a medias, que es más de lo que había. Devuelve una
+     respuesta opaca —no se puede leer nada de ella— pero la promesa RESUELVE
+     si la petición llegó a algún lado y FALLA si no hubo con quién hablar.
+     Así que:
+
+       · resuelve  → el dominio existe y contestó algo. El problema es de
+                     permisos o de ruta, no de que no haya servidor.
+       · falla     → no se llegó: la dirección está mal, el dominio no existe
+                     o está caído.                                          */
+  function alcanzable(url) {
+    return fetch(url, { mode: 'no-cors', credentials: 'omit' })
+      .then(function () { return true; }, function () { return false; });
+  }
+
   function explorarOGC(url) {
     url = base(url);
     linea('');
@@ -642,10 +664,27 @@ https://siac.ideam.gov.co/geoserver/ows</textarea>
     return traerTexto(cap).then(function (r) {
       if (r.error) {
         linea('✗ ' + r.error);
-        hallazgos.push({ titulo: url, url: cap, marca: 'mal',
-          etiqueta: 'inalcanzable', nota: r.error });
-        pintarHallazgos();
-        return;
+        estado('Averiguando si ese servidor existe siquiera …');
+        return alcanzable(cap).then(function (vive) {
+          if (vive) {
+            linea('   pero el dominio SÍ contesta: lo que falla es leerlo desde el ' +
+                  'navegador. O tiene CORS cerrado —y entonces hay que consultarlo desde ' +
+                  'el motor de URBIS y no desde la página—, o la ruta está mal y su error ' +
+                  'tampoco se puede leer.');
+            hallazgos.push({ titulo: url, url: cap, marca: 'duda',
+              etiqueta: 'el servidor contesta, pero no deja leerlo',
+              nota: 'Habría que consultarlo desde el motor, no desde el navegador. ' +
+                    'Antes conviene confirmar que la dirección es la correcta.' });
+          } else {
+            linea('   y el dominio tampoco contesta: la dirección está mal escrita, no ' +
+                  'existe, o el servidor está caído. No es cosa de permisos.');
+            hallazgos.push({ titulo: url, url: cap, marca: 'mal',
+              etiqueta: 'no hay servidor en esa dirección',
+              nota: 'Ni siquiera se llegó a hablar con el dominio. Hay que conseguir la ' +
+                    'dirección buena.' });
+          }
+          pintarHallazgos();
+        });
       }
       linea('el documento pesa ' + Math.round(r.ok.length / 1024) + ' kB');
       var c = capasDelXML(r.ok);
