@@ -936,8 +936,42 @@
       'esquina. La medida fina se levanta en campo.</p>';
   }
 
+  /* ¿Este trazado midió algo, o son ceros de no haber encontrado nada?
+
+     Los dos se ven idénticos en la respuesta del motor: con un sector donde
+     OpenStreetMap no tiene nada, contesta 0 km de vías, 0 intersecciones, 0
+     edificios y una lectura honesta al pie que dice que no hay con qué
+     describir la traza. Pero la lectura va DESPUÉS de una tabla de cinco
+     ceros, y lo que se lee primero es la tabla. En un PDF que se entrega,
+     «0 intersecciones» no se lee como «acá no hay datos»: se lee como una
+     medición, y en un sector urbano es una medición imposible.
+
+     Es el mismo error que decirle a alguien que su lote no se inunda cuando
+     nadie lo midió, y que darle una cuenta de índices inventados con cara de
+     norma. Tercera vez en esta aplicación, en el tercer sitio distinto.
+
+     Acá además no es un callejón sin salida: que OSM no tenga nada mapeado es
+     el PRINCIPIO del ejercicio de campo, y URBIS ya sabe exportar a JOSM. */
+  function trazadoSinDatos(t) {
+    if (!t) return true;
+    var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
+    return !(Number(vi.kmTotal) > 0) &&
+           !(Number(ll.edificios) > 0) &&
+           !(Number(mo.intersecciones) > 0);
+  }
+
+  /* El texto de «acá no hay nada», en un solo sitio para que la ficha, la
+     lámina y el PDF digan lo mismo. */
+  var TRAZADO_VACIO = 'OpenStreetMap no tiene vías ni edificios mapeados en este sector. ' +
+    'Eso no quiere decir que no los haya: quiere decir que nadie los ha dibujado todavía. ' +
+    'No hay cifras que mostrar acá hasta que alguien salga a levantarlas.';
+
   function trazadoImpreso(t) {
     if (!t) return '';
+    if (trazadoSinDatos(t)) {
+      return '<h2>El trazado del sector</h2>' +
+        '<p class="pie">' + esc(TRAZADO_VACIO) + '</p>';
+    }
     var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
     var tr = dib('trama', ll.pctLleno);
     return '<h2>El trazado del sector</h2>' +
@@ -1723,6 +1757,7 @@
       ancha queda flotando en medio del papel como si se hubiera
       caído ahí. Pegada a los porcentajes, es la misma cifra dibujada
       y se lee de corrido. */
+      if (trazadoSinDatos(trz)) return '<p class="lee">' + esc(TRAZADO_VACIO) + '</p>';
       return '<div class="dib-par">' +
       (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="kpis">' +
@@ -3845,7 +3880,13 @@
       L.push('');
     }
     var trz = res.trazado || S.trazado;
-    if (trz) {
+    if (trz && trazadoSinDatos(trz)) {
+      /* En la memoria de un proyecto, una línea de ceros se convierte en una
+         cifra citada. Se dice lo que pasa. */
+      L.push('EL TRAZADO DEL SECTOR');
+      L.push('  ' + TRAZADO_VACIO);
+      L.push('');
+    } else if (trz) {
       var tll = trz.llenos || {}, tvi = trz.vias || {}, tmo = trz.morfologia || {};
       L.push('EL TRAZADO DEL SECTOR');
       L.push('  Lleno: ' + tll.pctLleno + '% · vacío: ' + tll.pctVacio + '% (' + (tll.edificios || 0) + ' edificios)');
@@ -5144,6 +5185,30 @@
         (S.trzAviso && !S.trzCargando ? '<p class="pcr-error">' + esc(S.trzAviso) + '</p>' : '');
     }
 
+    /* Midió, pero no encontró nada. Antes esto se pintaba como una medición:
+       «0 km de vía», «0% en un sentido», y una barra de llenos y vacíos con
+       las dos mitades en cero. La ficha llegaba a contradecirse sola —decía
+       «sin vías con forma registrada» y tres renglones más abajo ponía «0 km»
+       como si lo hubiera contado—.
+
+       Y acá el vacío no es un callejón: es el principio del trabajo de campo,
+       que es de lo que trata el módulo. Así que se dice y se ofrece salir a
+       levantarlo. */
+    if (trazadoSinDatos(t)) {
+      return h4('capas', 'El trazado del sector') +
+        '<p class="pcr-conc pcr-ojo"><b>Acá no hay nada mapeado.</b> ' + esc(TRAZADO_VACIO) +
+        '</p>' +
+        '<p class="pcr-pista">Es la mejor noticia que puede dar este módulo para una salida ' +
+        'de campo: un sector sin mapear es uno donde lo que ustedes levanten no lo tenía ' +
+        'nadie. Dibujen las manzanas y las calles en el mapa, y con «llevar a JOSM» eso ' +
+        'vuelve a OpenStreetMap para todo el mundo.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="trazado" class="pcr-mini"' +
+            (S.trzCargando ? ' disabled' : '') + '>' +
+            ico('area') + 'Volver a medir</button>' +
+        '</div>';
+    }
+
     var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
     var mallas = vi.porMalla || [];
     return h4('capas', 'El trazado del sector') +
@@ -5781,9 +5846,15 @@
       { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
         listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
         falta: 'medí el trazado', dato: 'cuántos pisos hay' },
+      /* `!trazadoSinDatos` y no `trz.llenos`: en un sector sin nada mapeado el
+         motor devuelve el objeto igual, con todo en cero, y la caja se ofrecía
+         como lista para poner en la lámina «0% construido». La misma deriva
+         que ya se coló una vez con el espacio público. */
       { id: 'llenos-y-vacios', t: 'Llenos y vacíos', g: 'El suelo',
-        listo: !!(trz && trz.llenos), falta: 'medí el trazado',
-        dato: trz && trz.llenos ? trz.llenos.pctLleno + '% construido' : '' },
+        listo: !!(trz && trz.llenos) && !trazadoSinDatos(trz),
+        falta: trz ? 'no hay nada mapeado en el sector' : 'medí el trazado',
+        dato: trz && trz.llenos && !trazadoSinDatos(trz)
+          ? trz.llenos.pctLleno + '% construido' : '' },
       { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
         listo: !!(trz && trz.perfil), falta: 'medí el trazado', dato: 'la sección tipo' },
       /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una

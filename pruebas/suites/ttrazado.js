@@ -57,12 +57,17 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
   await ctx.route(/locationiq\.com/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({address:{city:'Cúcuta',state:'Norte de Santander',country:'Colombia'}})}));
   let consultas=0;
+  /* Con `vacio` en true, OpenStreetMap contesta que no tiene NADA con forma en
+     este sector. No es un caso raro: pasa en cualquier barrio que nadie haya
+     mapeado, que en Cúcuta son varios, y es justo donde este módulo tendría
+     que servir más. */
+  let vacio=false;
   await ctx.route(/overpass/, r=>{
     const q=(r.request().postData()||'')+r.request().url();
     consultas++;
     const esTrazado=/out(\+|%20|\s)geom/.test(q);
     r.fulfill({status:200,contentType:'application/json',
-      body:JSON.stringify({elements: esTrazado ? geo : usos})});
+      body:JSON.stringify({elements: esTrazado ? (vacio ? [] : geo) : usos})});
   });
   await ctx.route(/ags\.esri\.co/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
@@ -135,6 +140,59 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
     return o;
   },{C,POL});
 
+  /* ── El sector sin mapear ────────────────────────────────────────────
+     El motor contesta 0 km, 0 intersecciones y 0 edificios, con una lectura
+     honesta al pie. Pero la lectura iba DESPUÉS de una tabla de cinco ceros,
+     y lo que se lee primero es la tabla: en un PDF que se entrega, «0
+     intersecciones» no se lee como «no hay datos» sino como una medición, y
+     en un sector urbano es una medición imposible. */
+  vacio=true;
+  /* Página nueva. La primera corrida dejó el sector analizado y la caché de
+     Overpass llena; reutilizarla no volvía a pedir nada y el escenario se
+     medía a sí mismo. */
+  await pg.goto(E.ESTATICO + '/index.html',{waitUntil:'domcontentloaded'});
+  await pg.waitForTimeout(3200);
+  const v=await pg.evaluate(async (D)=>{
+    const {C,POL}=D, esperar=ms=>new Promise(r=>setTimeout(r,ms)), o={};
+    window.URBIS_CONFIG.ANALISIS.API=window.__URBIS_MOTOR;
+    window.map.setView([C.lat,C.lng],15); await esperar(500);
+    const A=window.URBIS_PC_ANALISIS, R=window.URBIS_PC_RECON;
+    let capturado='';
+    window.AIA_INFORME=window.AIA_INFORME||{};
+    window.AIA_INFORME.abrirVentanaImpresion=function(h){ capturado=h; };
+    const bPC=document.querySelector('[data-u52-call="procity-open-map"]');
+    if(bPC){ bPC.click(); await esperar(600); }
+    A.iniciarDibujo(); POL.forEach(p=>A.agregarPunto(p.lat,p.lng));
+    A.agregarPunto(POL[0].lat,POL[0].lng);
+    R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
+    await R.analizar(); await esperar(900);
+    const H=()=>document.getElementById('pcr-hoja');
+    // Los cinco segundos de Overpass: sin ellos contesta «Espera 4 segundos».
+    await esperar(5200);
+    const bt=H().querySelector('[data-pcr="trazado"]'); if(bt){ bt.click(); }
+    for(let i=0;i<50;i++){ await esperar(300);
+      if(!/Midiendo…/.test(H().textContent||'')) break; }
+    await esperar(600);
+    const a=H().querySelector('[data-pcr="agrandar"]'); if(a){ a.click(); await esperar(400); }
+    const txt=(H().textContent||'').replace(/\s+/g,' ').trim();
+    const i0=txt.indexOf('El trazado del sector');
+    o.ficha = i0<0 ? '' : txt.slice(i0, i0+800);
+    /* Sin espacio: `textContent` pega el número y su etiqueta, así que el KPI
+       sale «0km de vía» y no «0 km de vía». Escrito con espacio, esta
+       comprobación no podía fallar nunca — pasaba igual con la corrección
+       puesta y quitada, que es la definición de una prueba inútil. */
+    o.hayCeros=/0\s*km de vía|0\s*%\s*en un sentido|\b0\s*intersecciones/.test(txt);
+    const bl=[...H().querySelectorAll('button')].filter(b=>/lámina|lamina/i.test(b.textContent||''))[0];
+    if(bl){ bl.click(); await esperar(1000); }
+    o.lamina=capturado; capturado='';
+    const bp=[...H().querySelectorAll('button')].filter(b=>/PDF|informe/i.test(b.textContent||''))[0];
+    if(bp){ bp.click(); await esperar(1000); }
+    o.pdf=capturado;
+    o.pliego=(H().textContent||'').replace(/\s+/g,' ');
+    return o;
+  },{C,POL});
+  r.vacio=v;
+
   r.consultas=consultas;
   r.err=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
@@ -166,8 +224,27 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
   P('y la rosa de orientación', r.pestRosa>=4, r.pestRosa+' pétalos');
   P('con las mismas intersecciones', r.pestCruces==='36', r.pestCruces+' en la pestaña');
 
+  console.log('\n  -- un sector que nadie ha mapeado --');
+  P('la ficha lo dice, en vez de mostrar ceros',
+    /no hay nada mapeado/i.test(r.vacio.ficha) &&
+    /nadie los ha dibujado/.test(r.vacio.ficha));
+  P('y no queda ni un cero con cara de medición', !r.vacio.hayCeros,
+    r.vacio.hayCeros ? 'todavía sale «0 km de vía»' : 'ninguno');
+  P('ofrece salir a levantarlo, que es de lo que trata el módulo',
+    /JOSM/.test(r.vacio.ficha));
+  P('la lámina dice lo mismo y no dibuja una barra vacía',
+    /nadie los ha dibujado/.test(r.vacio.lamina) &&
+    !/0<\/b><small>construido/.test(r.vacio.lamina));
+  P('el PDF también, que es lo que se entrega',
+    /nadie los ha dibujado/.test(r.vacio.pdf) &&
+    !/Intersecciones<\/td><td class="n">0</.test(r.vacio.pdf));
+  P('el pliego dice por qué esa caja no se puede poner',
+    /no hay nada mapeado en el sector/.test(r.vacio.pliego),
+    (r.vacio.pliego.match(/.{0,40}no hay nada mapeado en el sector.{0,20}/)||['no aparece'])[0].trim());
+
   console.log('');
-  P('una sola consulta más a OpenStreetMap', r.consultas===2, r.consultas+' consultas en total');
+  P('una sola consulta más a OpenStreetMap por corrida', r.consultas===4,
+    r.consultas+' consultas en total, en dos corridas');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');
   console.log('\n  '+(mal?mal+' fallaron':'todo pasó'));
   process.exit(mal?1:0);
