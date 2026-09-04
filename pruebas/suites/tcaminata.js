@@ -359,7 +359,7 @@ const geo=[
      «grid-template-columns» en toda la hoja encuentra esas. */
   const reglaRej=(LH.match(/\.rej\{[^}]*\}/)||[''])[0];
   T('acostado fluye en columnas de periódico, sin rejilla',
-    /columns:[34]/.test(reglaRej) && !/grid-template-columns/.test(reglaRej), reglaRej.slice(0,40));
+    /columns:[2-6]/.test(reglaRej) && !/grid-template-columns/.test(reglaRej), reglaRej.slice(0,40));
   T('y el plano manda arriba, fuera del flujo',
     /class="caja plano-hero"/.test(LH));
   T('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');

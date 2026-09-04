@@ -1270,9 +1270,27 @@
 
        Acostada se le dan muchos menos: la hoja tiene 300 mm menos de alto y
        un plano a todo el ancho de 860 mm se comería el pliego entero. */
+    /* Los mapas se arman una sola vez: cada uno proyecta cientos de puntos y
+       hacerlo dos veces —para la banda y para contar cuántos hay— duplicaría
+       el trabajo más caro de la hoja. */
+    var mapas = (function () {
+      try {
+        return mapasDelPliego(res, {
+          w: horiz ? 260 : 300, h: horiz ? 180 : 200,
+          lote: lote, cobertura: o.cobertura !== undefined ? o.cobertura : S.cobertura,
+          estratos: o.estratos, huellas: huellas, curvas: curvasL,
+          sombras: sombrasL, caminata: cam,
+          maxCategorias: horiz ? 5 : 6
+        });
+      } catch (e) { return []; }
+    })();
+
     var anchoPlanoMM = (horiz ? 900 : 600) - 48;
     var altoPlanoMM = horiz ? Math.max(55, 105 - 8 * extras)
                             : Math.max(90, 210 - 14 * extras);
+    // Con la banda de mapas debajo, el plano cede: son dos figuras grandes
+    // seguidas y la hoja no da para las dos a tamaño completo.
+    if (mapas.length) altoPlanoMM = Math.round(altoPlanoMM * (horiz ? 0.62 : 0.64));
     var altoDelPlano = Math.round(520 * altoPlanoMM / anchoPlanoMM);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
@@ -1754,8 +1772,15 @@
        más cuando no. Los umbrales salen de medir hojas reales: una hoja con
        terreno, clima, trazado, lote, sombras y las dos listas ronda los
        veinte mil caracteres de cajas. */
-    var COLUMNAS = horiz ? (cajasHTML.length > 14000 ? 4 : 3)
-                         : (cajasHTML.length > 20000 ? 3 : 2);
+    /* Con la banda de mapas arriba, las cifras se reparten en una columna
+       más: los mapas mandan en el pliego y el texto se acomoda alrededor, no
+       al revés. */
+    /* Con la banda de mapas arriba, al texto le queda menos hoja y necesita
+       más columnas para caber. Si además hay mucho medido, una más: es lo que
+       hace que el pliego cierre en vez de imprimirse por fuera del papel. */
+    var COLUMNAS = horiz
+      ? (mapas.length ? (cajasHTML.length > 14000 ? 6 : 5) : cajasHTML.length > 14000 ? 4 : 3)
+      : (mapas.length ? (cajasHTML.length > 20000 ? 5 : 4) : cajasHTML.length > 20000 ? 3 : 2);
 
     var hoy = new Date();
     return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
@@ -1807,6 +1832,23 @@
       '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
         'page-break-inside:avoid; margin:0 0 6mm }' +
       '.plano-hero{ flex:0 0 auto }' +
+      '.mapas-banda{ flex:0 0 auto; margin-bottom:6mm }' +
+      /* Cuatro por fila parada, cinco acostada. La cuenta la mandan los dos
+         rasters: ocupan dos columnas cada uno, y con tres por fila el segundo
+         se caía a una fila propia —dos filas gastadas en dos dibujos, y la
+         hoja se pasaba 70 cm de largo—. Con cuatro entran los dos juntos. */
+      '.mapas{ display:grid; grid-template-columns:repeat(' + (horiz ? 5 : 4) + ',1fr); gap:5mm }' +
+      '.mp{ margin:0; display:flex; flex-direction:column; gap:1.5mm }' +
+      '.mp figcaption{ font-size:2.9mm; font-weight:800; color:#0A6F9E; letter-spacing:.02em }' +
+      '.mp-dib{ background:#F3F8FB; border-radius:1.5mm; padding:1mm }' +
+      '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' +
+        (horiz ? 40 : 50) + 'mm }' +
+      /* Los rasters van al doble de ancho. Son la foto del territorio y su
+         clasificación: lo único del pliego que se lee desde tres metros. */
+      '.mp.grande{ grid-column:span 2 }' +
+      '.mp.grande figcaption{ font-size:3.6mm }' +
+      '.mp.grande .mp-dib svg{ max-height:' + (horiz ? 62 : 84) + 'mm }' +
+      '.mp small{ font-size:2.5mm; color:#6B7A8A; line-height:1.3 }' +
       '.sintesis-pie{ flex:0 0 auto; margin-top:6mm }' +
       /* 4 mm de margen interno y no 5: con los dibujos dentro, ese milímetro
          por caja es lo que hace que la hoja cierre. Menos de 4 y el texto
@@ -1975,6 +2017,30 @@
             : '<p class="nota">Los puntos son los usos mapeados, con el color de su categoría.</p>'),
           'plano-hero') +
 
+      /* La banda de mapas. Va inmediatamente después del plano y antes de
+         cualquier cifra, porque en una lámina de arquitectura eso es lo que
+         se mira primero y desde lejos: el ojo entra por los planos y recién
+         después lee. Cada capa en su recuadro, con su leyenda; en pantalla se
+         encienden de a una, en el papel salen todas. */
+      (function () {
+        if (!mapas.length) return '';
+        return '<section class="caja mapas-banda">' +
+            '<h2>Los mapas del sector</h2>' +
+            '<div class="mapas">' +
+              mapas.map(function (m) {
+                return '<figure class="mp' + (m.grande ? ' grande' : '') + '">' +
+                  '<figcaption>' + esc(m.titulo) + '</figcaption>' +
+                  '<div class="mp-dib">' + m.svg + '</div>' +
+                  '<small>' + esc(m.pie) + '</small>' +
+                '</figure>';
+              }).join('') +
+            '</div>' +
+            '<p class="nota">Cada recuadro es la misma área con una capa encima. Los de calor ' +
+            'muestran dónde se concentra cada categoría —la mancha oscurece donde hay varios ' +
+            'juntos—; el resto son mediciones del suelo y del lote.</p>' +
+          '</section>';
+      })() +
+
       '<div class="rej">' + cajasHTML +
       '</div>' +
 
@@ -2081,6 +2147,16 @@
       '.dib svg{display:block;width:100%;height:auto}' +
       '.dib-chico{max-width:130px}' +
       '.dib-ancho{max-width:420px}' +
+      '.mapas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 4px}' +
+      '.mp{margin:0;break-inside:avoid;page-break-inside:avoid}' +
+      '.mp figcaption{font-size:11px;font-weight:700;color:#075E88;margin-bottom:2px}' +
+      '.mp-dib{background:#F3F8FB;border-radius:4px;padding:3px}' +
+      '.mp-dib svg{display:block;width:100%;height:auto}' +
+      /* La clasificación del suelo y la foto de la que salió mandan la
+         página: van al doble de ancho y encabezan la hoja. */
+      '.mp.grande{grid-column:span 2}' +
+      '.mp.grande figcaption{font-size:13px}' +
+      '.mp small{display:block;font-size:9.5px;color:#5a6472;line-height:1.3;margin-top:2px}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       '</style></head><body>' +
@@ -2091,6 +2167,31 @@
         '<div class="kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') + '</b><small>por hectárea</small></div>' +
         '<div class="kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
       '</div>' +
+      /* Los mapas, arriba del todo: en una hoja de arquitectura se entra por
+         los planos y recién después se lee. Antes el PDF empezaba con una
+         tabla de cifras. */
+      (function () {
+        var mps = (function () {
+          try {
+            return mapasDelPliego(res, { w: 260, h: 180,
+              lote: o.lote !== undefined ? o.lote : S.lote,
+              cobertura: o.cobertura !== undefined ? o.cobertura : (st.cobertura || S.cobertura),
+              estratos: o.estratos, curvas: o.curvas, sombras: o.sombras,
+              caminata: o.caminata !== undefined ? o.caminata : S.caminata,
+              maxCategorias: 6 });
+          } catch (e) { return []; }
+        })();
+        if (!mps.length) return '';
+        return '<h2>Los mapas del sector</h2><div class="mapas">' +
+          mps.map(function (m) {
+            return '<figure class="mp' + (m.grande ? ' grande' : '') + '">' +
+              '<figcaption>' + esc(m.titulo) + '</figcaption>' +
+              '<div class="mp-dib">' + m.svg + '</div>' +
+              '<small>' + esc(m.pie) + '</small></figure>';
+          }).join('') + '</div>' +
+          '<p class="pie">Cada recuadro es la misma área con una capa encima. En la aplicación se ' +
+          'encienden de a una; acá salen todas las que tienen datos.</p>';
+      })() +
       ubicacionImpresa(res.ubicacion || (o && o.ubicacion)) +
       loteImpreso(meta, meta.forma === 'poligono') +
       '<h2>Qué hay, por categoría</h2><table>' + filas(st.porGrupo, nombreGrupo) + '</table>' +
@@ -4860,6 +4961,168 @@
     if (id === 'curvas') { pintarCurvas(!!encender); return; }
     if (id === 'sombras') { pintarSombras(!!encender); return; }
     if (id === 'caminata') { pintarCaminata(!!encender); return; }
+  }
+
+  /* ── Los mapas del pliego ──────────────────────────────────────────────
+     En pantalla las capas se encienden de a una y se miran encimadas. En el
+     papel eso no sirve: una lámina no tiene interruptores, así que cada capa
+     necesita su propio recuadro, con su leyenda y su escala.
+
+     Se dibujan TODAS las que tengan datos, estén encendidas o no. Es a
+     propósito: lo que se llevó a la impresión es el análisis completo, y que
+     el mapa de calor del comercio no salga porque en ese momento estaba
+     apagado sería perder trabajo ya hecho por un estado de pantalla.
+
+     El orden es el de lectura de una lámina de urbanismo: primero lo que hay
+     —los usos—, después el suelo, y al final lo que le pasa al lote. Con una
+     excepción al final: los dos rasters se adelantan al primer puesto y
+     salen al doble de ancho. */
+  function mapasDelPliego(res, opts) {
+    var o = opts || {};
+    var A = window.URBIS_PC_ANALISIS;
+    if (!A || typeof A.miniatura !== 'function' || !res) return [];
+    var st = res.stats || {}, meta = res.meta || {};
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
+    var forma = (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3)
+      ? { pts: meta.poligono }
+      : { centro: { lat: meta.lat, lng: meta.lng }, radioM: meta.radioM };
+    var lote = o.lote !== undefined ? o.lote : S.lote;
+    var W = o.w || 300, H = o.h || 210;
+    var base = { w: W, h: H, lote: (lote && lote.length >= 3) ? lote : null };
+    function mini(extra) {
+      try { return A.miniatura(forma, Object.assign({}, base, extra)) || ''; }
+      catch (e) { return ''; }
+    }
+    var pois = res.pois || [];
+    var mapas = [];
+
+    // ── 1 · Los usos, todos y por categoría.
+    if (pois.length) {
+      mapas.push({
+        id: 'calor:todos', titulo: 'Todos los usos',
+        svg: mini({ calor: pois, calorColor: '#0A6F9E', calorRadio: 8,
+                    puntos: pois.map(function (p) {
+                      return { lat: p.lat, lng: p.lng, color: COL[p.grupo] || '#94a3b8' };
+                    }), radioPunto: 1.6 }),
+        pie: pois.length + ' usos registrados, con el color de su categoría'
+      });
+      var grupos = Object.keys(st.porGrupo || {})
+        .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+        .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
+        .sort(function (a, b) { return b.n - a.n; })
+        .slice(0, o.maxCategorias || 6);
+      grupos.forEach(function (g) {
+        var suyos = pois.filter(function (p) { return p.grupo === g.id; });
+        if (!suyos.length) return;
+        mapas.push({
+          id: 'calor:' + g.id,
+          titulo: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id),
+          svg: mini({ calor: suyos, calorColor: COL[g.id] || '#94a3b8', calorRadio: 9,
+                      puntos: suyos.map(function (p) {
+                        return { lat: p.lat, lng: p.lng, color: COL[g.id] || '#94a3b8' };
+                      }), radioPunto: 1.6 }),
+          pie: g.n + ' usos · dónde se concentra'
+        });
+      });
+    }
+
+    // ── 2 · El suelo.
+    var cob = o.cobertura !== undefined ? o.cobertura : S.cobertura;
+    if (cob && cob.overlayImagen && cob.overlayLimites) {
+      var clases = (cob.clases || []).filter(function (c) { return c.pct > 0; })
+        .sort(function (a, b) { return b.pct - a.pct; }).slice(0, 4);
+      mapas.push({
+        id: 'cobertura', titulo: 'Cobertura del suelo', grande: true,
+        svg: mini({ imagen: { url: cob.overlayImagen, limites: cob.overlayLimites, opacidad: 0.92 } }),
+        pie: clases.length
+          ? clases.map(function (c) { return c.etq + ' ' + c.pct + '%'; }).join(' · ')
+          : 'clasificada sobre la foto satelital'
+      });
+      if (cob.imagen) {
+        mapas.push({
+          id: 'foto', titulo: 'La foto satelital', grande: true,
+          svg: mini({ imagen: { url: cob.imagen, limites: cob.overlayLimites } }),
+          pie: 'la misma imagen con la que se clasificó'
+        });
+      }
+    }
+    var estr = o.estratos !== undefined ? o.estratos : S.estratos;
+    if (estr && estr.manzanas && estr.manzanas.length) {
+      mapas.push({
+        id: 'estratos', titulo: 'Manzanas por estrato',
+        svg: mini({ poligonos: estr.manzanas.map(function (mz) {
+          return { pts: (mz.anillos && mz.anillos[0] || []).map(function (a) {
+                     return { lat: a[0], lng: a[1] }; }),
+                   relleno: mz.color, opacidad: 0.65, borde: '#ffffff', ancho: 0.4 };
+        }) }),
+        pie: estr.manzanas.length + ' manzanas del DANE'
+      });
+    }
+    var hue = o.huellas !== undefined ? o.huellas : S.trzHuellas;
+    if (hue && hue.length) {
+      mapas.push({
+        id: 'llenos', titulo: 'Llenos y vacíos',
+        svg: mini({ huellas: hue }),
+        pie: hue.length + ' huellas de edificio' +
+             (S.trazado && S.trazado.llenos ? ' · ' + S.trazado.llenos.pctLleno + '% construido' : '')
+      });
+    }
+    var cv = o.curvas !== undefined ? o.curvas
+           : (function () { try { return curvasDelTerreno(); } catch (e) { return null; } })();
+    if (cv && cv.curvas && cv.curvas.length) {
+      mapas.push({
+        id: 'curvas', titulo: 'Curvas de nivel',
+        svg: mini({ curvas: cv }),
+        pie: 'cada ' + cv.intervalo + ' m · de ' + cv.zMin + ' a ' + cv.zMax + ' msnm'
+      });
+    }
+
+    // ── 3 · Lo que le pasa al lote.
+    var so = o.sombras !== undefined ? o.sombras
+           : (function () { try { return sombrasDelLote(); } catch (e) { return null; } })();
+    if (so && so.horas && so.horas.length) {
+      var TINTE = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
+      var polis = [];
+      so.horas.forEach(function (h) {
+        (h.sombras || []).forEach(function (poli) {
+          polis.push({ pts: poli, relleno: TINTE[h.hora] || '#3B4A5A', opacidad: 0.28 });
+        });
+      });
+      if (polis.length) {
+        mapas.push({
+          id: 'sombras', titulo: 'La sombra de los vecinos',
+          svg: mini({ poligonos: polis, huellas: (so.huellasCerca || []).map(function (e) { return e.anillo; }) }),
+          pie: so.horas.map(function (h) { return h.hora + ':00 → ' + h.pctLote + '%'; }).join(' · ') +
+               ' del lote en sombra'
+        });
+      }
+    }
+    var cam = o.caminata !== undefined ? o.caminata : S.caminata;
+    if (cam && cam.tramos && cam.tramos.length) {
+      var COLC = { 5: '#0A6F9E', 10: '#34CCFE', 15: '#B8DFF2' };
+      var lineas = [];
+      [15, 10, 5].forEach(function (min) {
+        cam.tramos.forEach(function (t) {
+          if (t.min !== min) return;
+          lineas.push({ pts: [t.a, t.b], color: COLC[min], ancho: min === 5 ? 2.2 : 1.6 });
+        });
+      });
+      mapas.push({
+        id: 'caminata', titulo: 'Hasta dónde se camina',
+        svg: mini({ lineas: lineas }),
+        pie: cam.anillos.map(function (a) { return a.minutos + ' min'; }).join(' · ') +
+             ' desde el lote, por las calles'
+      });
+    }
+    /* Los rasters —la clasificación del suelo y la foto de la que salió— van
+       primero y ocupan el doble de papel. Es lo que pidió el curso: en una
+       lámina de arquitectura la imagen del territorio manda, y el resto de
+       las capas son la lectura que se hace sobre ella. El orden de adentro de
+       cada grupo no se toca (el `sort` de JavaScript es estable desde ES2019,
+       y acá igual solo hay dos llaves). */
+    mapas.sort(function (a, b) { return (b.grande ? 1 : 0) - (a.grande ? 1 : 0); });
+    return mapas;
   }
 
   function bloqueCapas(st) {
@@ -8659,6 +8922,10 @@
     presentes.sort(function (a, b) { return (a === 0) - (b === 0) || a - b; });
     S.estratos = {
       n: r.n,
+      /* Las manzanas se guardan además de pintarse: la lámina las necesita
+         para dibujar su propio mapa de estratos, y volver a pedírselas al
+         DANE para imprimir sería cobrar dos veces la misma consulta. */
+      manzanas: r.manzanas || [],
       leyenda: '<div class="pcr-leyenda"><b>Estratificación DANE · ' + r.n + ' manzanas</b>' +
         presentes.map(function (n) {
           return '<span><i style="background:' + ((r.colores && r.colores[n]) || '#6b7280') + '"></i>' +

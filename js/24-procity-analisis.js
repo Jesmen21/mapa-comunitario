@@ -852,6 +852,55 @@
        edificios primero —son el fondo construido— y encima los usos. Sin
        esto la figura es solo un contorno; con esto es un plano. */
     let dentro = '';
+    /* La foto o el ráster clasificado, si se pide: van al fondo del todo,
+       porque son el suelo sobre el que está el resto. Se coloca por sus
+       límites geográficos —el mismo rectángulo con el que se pinta en el
+       mapa— así que cae exactamente donde corresponde y no «más o menos». */
+    if (o.imagen && o.imagen.url && o.imagen.limites) {
+      const L2 = o.imagen.limites;
+      const s2 = +L2[0][0], w2 = +L2[0][1], n2 = +L2[1][0], e2 = +L2[1][1];
+      const x1 = X(w2), x2 = X(e2), y1 = Y(n2), y2 = Y(s2);
+      dentro += '<image href="' + o.imagen.url + '" x="' + Math.min(x1, x2).toFixed(1) +
+        '" y="' + Math.min(y1, y2).toFixed(1) + '" width="' + Math.abs(x2 - x1).toFixed(1) +
+        '" height="' + Math.abs(y2 - y1).toFixed(1) + '" opacity="' +
+        (o.imagen.opacidad != null ? o.imagen.opacidad : 1) + '" preserveAspectRatio="none"/>';
+    }
+    /* Polígonos sueltos —manzanas por estrato, sombras de los vecinos—: cada
+       uno con su color, porque cada capa tiene el suyo y en una lámina el
+       color ES la leyenda. */
+    if (Array.isArray(o.poligonos) && o.poligonos.length) {
+      dentro += '<g>' + o.poligonos.map(pol => {
+        const anillo = pol && pol.pts;
+        if (!Array.isArray(anillo) || anillo.length < 3) return '';
+        const d = anillo.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ') + ' Z';
+        return '<path d="' + d + '" fill="' + (pol.relleno || '#94a3b8') + '" fill-opacity="' +
+          (pol.opacidad != null ? pol.opacidad : 0.55) + '" stroke="' + (pol.borde || 'none') +
+          '" stroke-width="' + (pol.ancho || 0.5) + '"/>';
+      }).join('') + '</g>';
+    }
+    /* Líneas sueltas: los tramos que se alcanzan caminando, por ejemplo. */
+    if (Array.isArray(o.lineas) && o.lineas.length) {
+      dentro += '<g fill="none" stroke-linecap="round">' + o.lineas.map(ln => {
+        const pts2 = ln && ln.pts;
+        if (!Array.isArray(pts2) || pts2.length < 2) return '';
+        const d = pts2.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ');
+        return '<path d="' + d + '" stroke="' + (ln.color || '#0A6F9E') + '" stroke-width="' +
+          (ln.ancho || 1.2) + '" stroke-opacity="' + (ln.opacidad != null ? ln.opacidad : 0.9) + '"/>';
+      }).join('') + '</g>';
+    }
+    /* Mancha de calor: cada punto es un disco translúcido y grande. Donde hay
+       varios cerca, la superposición oscurece sola —que es exactamente lo que
+       hace un mapa de calor— sin necesitar filtros, que en una hoja impresa no
+       siempre sobreviven. */
+    if (Array.isArray(o.calor) && o.calor.length) {
+      const rc = o.calorRadio || 7;
+      dentro += '<g fill="' + (o.calorColor || '#e5484d') + '" fill-opacity=".18">' +
+        o.calor.map(p => {
+          if (p.lat == null || p.lng == null) return '';
+          return '<circle cx="' + X(+p.lng).toFixed(1) + '" cy="' + Y(+p.lat).toFixed(1) +
+            '" r="' + rc + '"/>';
+        }).join('') + '</g>';
+    }
     /* Las curvas de nivel van DEBAJO de todo lo demás: son el terreno sobre el
        que está puesto el resto. Marrón claro, y las de cota redonda un poco
        más gruesas, como en cualquier plancha de topografía. */
@@ -919,7 +968,9 @@
       // huellas y los usos que se acaban de dibujar.
       const relleno = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
                       (o.curvas && o.curvas.curvas && o.curvas.curvas.length) ||
-                      (o.destacados && o.destacados.length)
+                      (o.destacados && o.destacados.length) ||
+                      (o.imagen && o.imagen.url) || (o.poligonos && o.poligonos.length) ||
+                      (o.calor && o.calor.length) || (o.lineas && o.lineas.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<path d="' + d + '" fill="' + relleno + '" stroke="#0A6F9E" stroke-width="1.6" stroke-linejoin="round"/>';
       if (pts.length <= 24) {
@@ -933,7 +984,9 @@
       // deja de coincidir con las convenciones.
       const rellenoC = (o.huellas && o.huellas.length) || (o.puntos && o.puntos.length) ||
                        (o.curvas && o.curvas.curvas && o.curvas.curvas.length) ||
-                       (o.destacados && o.destacados.length)
+                       (o.destacados && o.destacados.length) ||
+                       (o.imagen && o.imagen.url) || (o.poligonos && o.poligonos.length) ||
+                       (o.calor && o.calor.length) || (o.lineas && o.lineas.length)
         ? 'none' : 'rgba(52,204,254,.22)';
       figura = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + r.toFixed(1) +
         '" fill="' + rellenoC + '" stroke="#0A6F9E" stroke-width="1.6"/>' +

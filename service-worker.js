@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v672-las-capas';
+const URBIS_CACHE = 'urbis-v673-los-mapas';
 const URBIS_ASSETS = [
   './',
   './index.html',
