@@ -8124,6 +8124,7 @@
   }
 
   function iniciarLote() {
+    olvidarHistoria('lote');
     var m = mapa();
     if (!m) { S.loteAviso = 'El mapa todavía no está listo.'; pintar(); return; }
     soltarOtrosLapices('lote');
@@ -8150,6 +8151,54 @@
     pintar(); pintarBarraLote();
   }
 
+  /* Un «control zeta» de verdad para los lápices de esta hoja.
+
+     `deshacer` quitaba el último punto y ya. Desde que también se puede
+     BORRAR un vértice del medio —tocándolo, que es lo que se pidió—, quitar
+     el último dejaría de deshacer lo último que hizo la persona. Se guarda el
+     estado anterior antes de cada cambio.
+
+     Y el vértice se busca en PÍXELES de pantalla y no en metros, por lo mismo
+     que el cierre: lo que el dedo percibe es la distancia en pantalla, y a
+     poco zoom veintiséis píxeles son muchos metros. El primer vértice no se
+     borra: tocarlo cierra la figura, que es lo que la barra viene diciendo y
+     lo que la gente ya tiene aprendido. */
+  function recordarPuntos(clave, pts) {
+    S.historias = S.historias || {};
+    var h = S.historias[clave] || (S.historias[clave] = []);
+    h.push((pts || []).map(function (p) { return { lat: p.lat, lng: p.lng }; }));
+    if (h.length > 60) h.shift();
+  }
+
+  function hayQueDeshacer(clave) {
+    return !!(S.historias && S.historias[clave] && S.historias[clave].length);
+  }
+
+  function deshacerPuntos(clave) {
+    if (!hayQueDeshacer(clave)) return null;
+    return S.historias[clave].pop();
+  }
+
+  function olvidarHistoria(clave) {
+    if (S.historias) S.historias[clave] = [];
+  }
+
+  // Devuelve el índice del vértice tocado, o -1. Nunca el primero.
+  function verticeTocado(pts, lat, lng) {
+    if (!pts || pts.length < 2) return -1;
+    var m = mapa(); if (!m) return -1;
+    var cual = -1, mejor = 27;
+    try {
+      var b = m.latLngToContainerPoint({ lat: lat, lng: lng });
+      for (var i = 1; i < pts.length; i++) {
+        var a = m.latLngToContainerPoint(pts[i]);
+        var d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < mejor) { mejor = d; cual = i; }
+      }
+    } catch (e) { return -1; }
+    return cual;
+  }
+
   function agregarPuntoLote(lat, lng) {
     if (!S.loteDibujando) return;
     var pts = S.lote || (S.lote = []);
@@ -8164,6 +8213,15 @@
         if (Math.hypot(a.x - b.x, a.y - b.y) <= 26) { cerrarLote(); return; }
       } catch (e) {}
     }
+    // Tocar un vértice ya puesto lo quita, en vez de amontonar otro encima.
+    var cual = verticeTocado(pts, lat, lng);
+    if (cual > 0) {
+      recordarPuntos('lote', pts);
+      pts.splice(cual, 1);
+      pintarLote(); pintarBarraLote(); pintar();
+      return;
+    }
+    recordarPuntos('lote', pts);
     pts.push({ lat: lat, lng: lng });
     /* `pintar()` además de la barra: desde que el panel encogido muestra las
        esquinas que llevás, dejarlo fuera hacía que ese contador dijera «tocá
@@ -8174,8 +8232,10 @@
   }
 
   function deshacerLote() {
-    if (!S.loteDibujando || !S.lote || !S.lote.length) return;
-    S.lote.pop();
+    if (!S.loteDibujando) return;
+    var antes = deshacerPuntos('lote');
+    if (!antes) return;
+    S.lote = antes;
     pintarLote(); pintarBarraLote(); pintar();
   }
 
@@ -8371,9 +8431,17 @@
     document.addEventListener('mouseup', soltarArrastre);
   }
 
+  /* La misma regla que en el área: mientras se dibuja, la barra manda en el
+     borde de abajo. Acá lo que tapaba los botones no era la navegación sino
+     el propio cuerpo de la hoja encogida, de lado a lado. */
+  function marcarQueSeDibuja(clase, si) {
+    try { document.body.classList.toggle(clase, !!si); } catch (e) {}
+  }
+
   function pintarBarraLote() {
     var el = document.getElementById('pcr-lote-barra');
-    if (!S.loteDibujando) { if (el) el.remove(); return; }
+    if (!S.loteDibujando) { if (el) el.remove(); marcarQueSeDibuja('urbis-dibujando-lote', false); return; }
+    marcarQueSeDibuja('urbis-dibujando-lote', true);
     if (!el) {
       el = document.createElement('div');
       el.id = 'pcr-lote-barra';
@@ -8392,11 +8460,13 @@
     el.innerHTML =
       '<div class="pcr-lote-t">' +
         (n === 0 ? 'Tocá las esquinas del lote'
-                 : n < 3 ? 'Seguí tocando: llevás ' + n + ' esquina' + (n === 1 ? '' : 's')
-                         : 'Llevás ' + n + ' esquinas. Tocá la primera para cerrar.') +
+                 : n < 3 ? 'Seguí tocando: llevás ' + n + ' esquina' + (n === 1 ? '' : 's') +
+                           '. Una que salió mal se quita tocándola.'
+                         : 'Llevás ' + n + ' esquinas. Tocá la primera para cerrar, ' +
+                           'o cualquier otra para quitarla.') +
       '</div>' +
       '<div class="pcr-lote-b">' +
-        '<button type="button" data-lote="deshacer"' + (n ? '' : ' disabled') + '>' +
+        '<button type="button" data-lote="deshacer"' + (hayQueDeshacer('lote') ? '' : ' disabled') + '>' +
           ico('deshacer', 16) + 'Deshacer</button>' +
         '<button type="button" data-lote="cerrar" class="pcr-lote-ok"' + (n >= 3 ? '' : ' disabled') + '>' +
           ico('ok', 16) + 'Listo</button>' +
@@ -8470,6 +8540,7 @@
     var m = mapa();
     if (!m) { S.intAviso = 'El mapa todavía no está listo.'; pintar(); return; }
     soltarOtrosLapices('intangible');
+    olvidarHistoria('int');
     S.intTipo = tipoId; S.intPts = []; S.intDibujando = true; S.intAviso = '';
     S.encogida = true;
     /* Un sitio de olor o un foco de basura se marcan con precisión de metros;
@@ -8560,14 +8631,27 @@
         if (Math.hypot(a.x - b.x, a.y - b.y) <= 26) { cerrarIntangible(); return; }
       } catch (e) {}
     }
+    // Tocar un vértice ya puesto lo quita: es la misma regla en los tres
+    // lápices, y lo que se pidió para poder arreglar EL punto que salió mal.
+    var cual = verticeTocado(pts, lat, lng);
+    if (cual > 0) {
+      recordarPuntos('int', pts);
+      pts.splice(cual, 1);
+      guardarTrazoVivo();
+      pintarIntangible(true); pintarBarraInt();
+      return;
+    }
+    recordarPuntos('int', pts);
     pts.push({ lat: lat, lng: lng });
     guardarTrazoVivo();
     pintarIntangible(true); pintarBarraInt();
   }
 
   function deshacerInt() {
-    if (!S.intDibujando || !S.intPts || !S.intPts.length) return;
-    S.intPts.pop();
+    if (!S.intDibujando) return;
+    var antes = deshacerPuntos('int');
+    if (!antes) return;
+    S.intPts = antes;
     guardarTrazoVivo();
     pintarIntangible(true); pintarBarraInt();
   }
@@ -8762,7 +8846,8 @@
      ya está. */
   function pintarBarraInt() {
     var el = document.getElementById('pcr-int-barra');
-    if (!S.intDibujando) { if (el) el.remove(); return; }
+    if (!S.intDibujando) { if (el) el.remove(); marcarQueSeDibuja('urbis-dibujando-int', false); return; }
+    marcarQueSeDibuja('urbis-dibujando-int', true);
     var I = IN(); if (!I) return;
     if (!el) {
       el = document.createElement('div');
@@ -8787,13 +8872,13 @@
         esc(t.nombre) + ' — ' +
         (geom === 'punto' ? 'tocá el sitio exacto'
           : n === 0 ? (geom === 'zona' ? 'tocá las esquinas de la zona' : 'tocá por dónde va la barrera')
-          : n < min ? 'llevás ' + n + ' de ' + min
-          : geom === 'zona' ? 'llevás ' + n + '. Tocá la primera para cerrar.'
+          : n < min ? 'llevás ' + n + ' de ' + min + ' — una que salió mal se quita tocándola'
+          : geom === 'zona' ? 'llevás ' + n + '. Tocá la primera para cerrar, o cualquier otra para quitarla.'
                             : 'llevás ' + n + '. Tocá «Listo» cuando termines.') +
       '</div>' +
       '<div class="pcr-int-preg">' + esc(t.pregunta) + '</div>' +
       '<div class="pcr-lote-b">' +
-        '<button type="button" data-int="deshacer"' + (n ? '' : ' disabled') + '>' +
+        '<button type="button" data-int="deshacer"' + (hayQueDeshacer('int') ? '' : ' disabled') + '>' +
           ico('deshacer', 16) + 'Deshacer</button>' +
         '<button type="button" data-int="cerrar" class="pcr-lote-ok"' +
           (n >= min ? '' : ' disabled') + '>' + ico('ok', 16) + 'Listo</button>' +
@@ -13343,6 +13428,12 @@
     cursoDePrueba: function () { return S.intCurso || []; },
     intangibleDePrueba: function () { return S.intangible || []; },
     centroDelLoteDePrueba: function () { return centroDelLote(); },
+    /* Los vértices que se están dibujando. Se exponen para poder comprobar
+       desde fuera que tocar uno lo quita y que deshacer lo devuelve: sin
+       verlos, la prueba solo podría mirar el texto de la barra, que es lo que
+       dice que pasó y no lo que pasó. */
+    loteDePrueba: function () { return S.lote || []; },
+    trazoDePrueba: function () { return S.intPts || []; },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';
     },

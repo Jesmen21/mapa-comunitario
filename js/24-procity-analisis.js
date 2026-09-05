@@ -230,9 +230,26 @@
     return b;
   }
 
+  /* Mientras se dibuja, la barra manda en el borde de abajo.
+
+     MEDIDO: los tres botones —deshacer, cancelar y cerrar— caían justo debajo
+     de la barra de navegación del teléfono, que va con z-index 2.147.483.270
+     contra los 100.000 de la barra. Tocar «Deshacer» cambiaba de pestaña. Los
+     botones estaban ahí desde siempre y ninguno se podía tocar con el dedo:
+     la única forma de cerrar el área era tocar el primer punto en el mapa, y
+     la de arreglar un error, ninguna.
+
+     Con la clase puesta, la navegación se esconde: mientras se dibuja no hay
+     nada que hacer con ella, y la salida —«Cancelar»— pasa a estar donde se
+     puede tocar. */
+  function marcarQueSeDibuja(si){
+    try { document.body.classList.toggle('urbis-dibujando-area', !!si); } catch(e){}
+  }
+
   function pintarBarra(){
     const b = barra();
-    if (!S.dibujando) { b.hidden = true; return; }
+    if (!S.dibujando) { b.hidden = true; marcarQueSeDibuja(false); return; }
+    marcarQueSeDibuja(true);
     const n = S.pts.length;
     const listo = n >= 3;
     b.innerHTML =
@@ -240,12 +257,21 @@
         '<b>' + n + ' punto' + (n === 1 ? '' : 's') + '</b>' +
         '<small>' + (listo
           ? fmtArea(areaM2(S.pts)) + ' · borde ' + fmtDist(perimetroM(S.pts, true)) +
-            ' — o toca el punto dorado para cerrar'
-          : 'Toca el mapa para marcar el contorno (mínimo 3 puntos)') + '</small>' +
+            ' — toca el punto dorado para cerrar, o cualquier otro para quitarlo'
+          : n >= 1
+            ? 'Toca el mapa para seguir el contorno. Un punto que salió mal se quita tocándolo.'
+            : 'Toca el mapa para marcar el contorno (mínimo 3 puntos)') + '</small>' +
       '</div>' +
       '<div class="pca-barra-btns">' +
-        '<button type="button" data-u52-call="pca-deshacer"' + (n ? '' : ' disabled') + ' aria-label="Deshacer el último punto">' + ico('deshacer', 16) + '</button>' +
-        '<button type="button" data-u52-call="pca-cancelar">✕</button>' +
+        /* Con la palabra al lado del icono. Un icono suelto entre un aspa y un
+           «Cerrar área» no se lee como «deshacer»: se lee como adorno, y quien
+           se equivocó en un punto no encuentra dónde arreglarlo. Los otros dos
+           lápices de la aplicación ya lo dicen con todas las letras; este era
+           el que faltaba. */
+        '<button type="button" data-u52-call="pca-deshacer"' + (S.historia && S.historia.length ? '' : ' disabled') +
+          ' aria-label="Deshacer lo último">' + ico('deshacer', 16) + 'Deshacer</button>' +
+        '<button type="button" data-u52-call="pca-cancelar" aria-label="Cancelar el dibujo">' +
+          '✕ Cancelar</button>' +
         '<button type="button" class="pca-ok" data-u52-call="pca-cerrar"' + (listo ? '' : ' disabled') + '>✓ Cerrar área</button>' +
       '</div>';
     b.hidden = false;
@@ -269,10 +295,46 @@
     S.dibujando = true;
     S.cerrada = false;
     S.pts = [];
+    S.historia = [];
     S.nombre = '';
     repintar();
     pintarBarra();
     try { mapa().getContainer().style.cursor = 'crosshair'; } catch(e){}
+  }
+
+  /* El historial del dibujo. `deshacer` quitaba el último punto y ya; desde
+     que también se puede BORRAR un vértice del medio, quitar el último dejaría
+     de deshacer lo último que hizo la persona. Se guarda el estado anterior
+     antes de cada cambio: eso es lo que la gente espera de un «control zeta»,
+     y es lo que se pidió. */
+  function recordar(){
+    S.historia = (S.historia || []).concat([S.pts.map(function(p){ return {lat:p.lat, lng:p.lng}; })]);
+    if (S.historia.length > 60) S.historia.shift();
+  }
+
+  /* Borrar un vértice tocándolo. El primero NO se borra: tocarlo cierra el
+     área, que es lo que la barra viene diciendo desde siempre y lo que la
+     gente ya tiene aprendido. Se mide en píxeles de pantalla y no en metros,
+     por lo mismo que el cierre: lo que el dedo percibe es la distancia en
+     pantalla, y a menos zoom 26 px son muchos metros. */
+  function borrarVertice(lat, lng){
+    if (!S.dibujando || S.pts.length < 2) return false;
+    const m = mapa(); if (!m) return false;
+    let cual = -1, mejor = 27;
+    try {
+      const b = m.latLngToContainerPoint({ lat, lng });
+      for (let i = 1; i < S.pts.length; i++) {
+        const a = m.latLngToContainerPoint(S.pts[i]);
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < mejor) { mejor = d; cual = i; }
+      }
+    } catch(e){ return false; }
+    if (cual < 0) return false;
+    recordar();
+    S.pts.splice(cual, 1);
+    repintar();
+    pintarBarra();
+    return true;
   }
 
   function agregarPunto(lat, lng){
@@ -289,14 +351,21 @@
         if (Math.hypot(a.x - b.x, a.y - b.y) <= 26) { cerrar(); return; }
       } catch(e){}
     }
+    // Tocar un vértice que ya está puesto lo quita, en vez de amontonar otro
+    // encima. Es lo que se pidió: poder arreglar EL punto que salió mal, no
+    // solo el último.
+    if (borrarVertice(lat, lng)) return;
+    recordar();
     S.pts.push({ lat, lng });
     repintar();
     pintarBarra();
   }
 
   function deshacer(){
-    if (!S.dibujando || !S.pts.length) return;
-    S.pts.pop();
+    if (!S.dibujando) return;
+    const h = S.historia || [];
+    if (!h.length) return;
+    S.pts = h.pop();
     repintar();
     pintarBarra();
   }
@@ -3388,7 +3457,25 @@ bloquesDiag,
   // no ejecutar la acción dos veces.
   document.addEventListener('click', function(ev){
     const b = ev.target.closest && ev.target.closest('[data-u52-call^="pca-"]');
-    if (!b || b.closest('#urbis-mobile-app')) return;
+    if (!b) return;
+    /* Si el botón vive DENTRO de la aplicación, lo atiende el enrutador de
+       js/20 y acá no hay nada que hacer. La pregunta hay que hacérsela al
+       CAMINO del evento y no al árbol de ahora:
+
+       `composedPath()` se calcula cuando el evento se despacha. `closest()`
+       sube por el árbol en el momento en que se lo llama —y para entonces el
+       primer manejador ya repintó la barra, así que el botón que se tocó está
+       desprendido del documento y su `closest` no encuentra nada—. Con eso la
+       guarda fallaba y la acción se ejecutaba DOS VECES por un solo toque.
+
+       Con «deshacer» se veía: un toque saltaba dos pasos atrás. Con «cerrar»
+       o «cancelar» no se notaba, porque hacer dos veces lo mismo da igual, y
+       por eso llevaba ahí desde siempre sin que nadie lo viera. */
+    const camino = (typeof ev.composedPath === 'function') ? ev.composedPath() : null;
+    const dentro = camino
+      ? camino.some(function (n) { return n && n.id === 'urbis-mobile-app'; })
+      : !!b.closest('#urbis-mobile-app');
+    if (dentro) return;
     ev.preventDefault();
     accion(b.getAttribute('data-u52-call').slice(4), b);
   });

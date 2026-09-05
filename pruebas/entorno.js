@@ -35,6 +35,13 @@ const TRABAJO = process.env.URBIS_PRUEBAS_TRABAJO ||
    porque una espera sin límite convierte un fallo en un cuelgue. */
 async function esperarLaApp(pg, msTope) {
   await pg.waitForFunction(function () {
+    /* La pantalla de bienvenida tapa TODO durante tres segundos y medio, y
+       después se quita sola. Una suite que empiece antes toca el splash y no
+       la aplicación: los clics no llegan, y lo que se ve es una prueba que
+       falla por algo que no tiene nada que ver. Casi me manda a arreglar un
+       botón de deshacer que estaba bien. */
+    var sp = document.getElementById('urbis-beta-splash');
+    if (sp && getComputedStyle(sp).pointerEvents !== 'none') return false;
     return !!(window.map && typeof window.map.on === 'function' &&
               window.URBIS_PC_RECON && window.URBIS_CONFIG);
   }, null, { timeout: msTope || 20000 });

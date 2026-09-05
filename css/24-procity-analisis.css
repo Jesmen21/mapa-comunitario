@@ -57,6 +57,33 @@
   padding:10px 12px; box-shadow:0 10px 30px rgba(0,0,0,.45);
 }
 #pca-barra[hidden]{ display:none; }
+
+/* ── Mientras se dibuja, la barra manda abajo ──────────────────────────────
+   Medido en un teléfono de 412 px: los botones de la barra caían en y 855-892
+   y los de la navegación en 827-894, con el z-index de la navegación
+   ganándole por veinte mil veces. Los tres botones existían desde siempre y
+   ninguno se podía tocar con el dedo: cerrar el área solo se podía tocando el
+   primer punto en el mapa, y deshacer un punto no se podía de ninguna manera.
+
+   Se esconde lo de abajo en vez de subir la barra: mientras se dibuja no hay
+   nada que hacer con la navegación, y una barra flotando a media pantalla es
+   más rara que una navegación que vuelve al soltar el lápiz. Vale para los
+   tres lápices —el área, el lote y lo intangible—, que tenían el mismo
+   problema con tapaderas distintas. */
+body.urbis-dibujando-area .u52-bottom-nav,
+body.urbis-dibujando-lote .u52-bottom-nav,
+body.urbis-dibujando-int  .u52-bottom-nav{ display:none !important; }
+
+/* La hoja encogida deja solo el asa: su cuerpo —el deslizador del radio y el
+   botón grande— es lo que tapaba la barra del lote de lado a lado. */
+body.urbis-dibujando-lote .pcr-hoja.pcr-encogida .pcr-mini-cuerpo,
+body.urbis-dibujando-int  .pcr-hoja.pcr-encogida .pcr-mini-cuerpo{ display:none !important; }
+
+/* Y por si algo más aparece encima: las barras de dibujo van arriba de todo.
+   No es cinturón y tirantes de más —lo de abajo ya se esconde—: es que la
+   próxima capa que alguien agregue con un z-index enorme no vuelva a dejar
+   estos botones sin tocar. */
+#pca-barra, #pcr-lote-barra, #pcr-int-barra{ z-index:2147483400; }
 .pca-barra-info{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:130px; }
 .pca-barra-info b{ font-size:.92rem; font-weight:800; color:#34CCFE; }
 .pca-barra-info small{ font-size:.74rem; color:#b7cbd8; line-height:1.3; }
@@ -64,8 +91,15 @@
 .pca-barra-btns button{
   background:#193a4e; color:#eaf4fa;
   border:1px solid #2c5f7d; border-radius:10px;
-  padding:8px 11px; font-size:.9rem; font-weight:700; cursor:pointer;
+  /* 44 px de alto: es el blanco que una guía de interfaz táctil da por
+     mínimo, y estos botones medían 37. Con el icono y la palabra al lado,
+     además, dejan de ser adivinanzas. */
+  min-height:44px; display:inline-flex; align-items:center; gap:6px;
+  padding:8px 13px; font-size:.9rem; font-weight:700; cursor:pointer;
 }
+/* En pantallas angostas los tres no caben en una fila con sus palabras: bajan
+   a la suya antes que encogerse hasta no poder tocarse. */
+.pca-barra-btns{ flex-wrap:wrap; }
 .pca-barra-btns button[disabled]{ opacity:.4; cursor:default; }
 .pca-barra-btns .pca-ok{ background:#34CCFE; color:#052538; border-color:#34CCFE; font-weight:800; }
 

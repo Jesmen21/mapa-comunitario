@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v711-el-dia-entero-de-una-sentada';
+const URBIS_CACHE = 'urbis-v712-poder-arreglar-un-punto';
 const URBIS_ASSETS = [
   './',
   './index.html',

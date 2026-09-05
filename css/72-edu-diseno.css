@@ -889,6 +889,10 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   flex:1; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   padding:11px 8px; border-radius:12px; border:1px solid #E0A800;
   background:#fff; color:#7A5901; font-size:.82rem; font-weight:700; cursor:pointer;
+  /* 44 px de alto, el mínimo de un blanco táctil. Medían 42 y, sobre todo,
+     estaban tapados por el cuerpo de la hoja encogida: ver la nota de
+     `urbis-dibujando-*` en css/24. */
+  min-height:44px;
 }
 .pcr-lote-b button[disabled]{ opacity:.45; cursor:default; }
 .pcr-lote-b .pcr-lote-ok{ background:#B8860B; border-color:#B8860B; color:#fff; }
