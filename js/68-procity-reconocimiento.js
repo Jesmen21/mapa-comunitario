@@ -105,6 +105,7 @@
     // El intervalo de las curvas que pidió la persona; null = lo elige el relieve.
     curvasPaso: null,
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
+    llenosFoto: null, llenosFotoCargando: false, llenosFotoAviso: '', llenosFotoEnMapa: false,
     /* LO INTANGIBLE: lo que no se puede bajar de ningún servidor. Dónde no se
        pasa de noche, qué esquina está oscura, dónde huele mal, dónde da gusto
        quedarse. Es una lista de marcas dibujadas a mano, con su tipo y su
@@ -4073,6 +4074,31 @@
       if (acc === 'trazado') { analizarTrazado(); return; }
       if (acc === 'terreno') { analizarTerreno(); return; }
       if (acc === 'clima') { analizarClima(); return; }
+      /* Leer los llenos de la foto: la cuenta la hace js/76 y tarda unos
+         segundos sobre millones de píxeles, así que se avisa mientras. */
+      if (acc === 'llenos-foto') {
+        var LF = window.URBIS_LLENOS_FOTO;
+        if (!LF || S.llenosFotoCargando) return;
+        S.llenosFotoCargando = true; S.llenosFotoAviso = 'Leyendo la foto…'; pintar();
+        LF.estimar({
+          raster: S.cobertura, huellas: S.trzHuellas || [], vias: S.trzVias || [],
+          alAvisar: function (t) {
+            S.llenosFotoAviso = t;
+            var c = document.getElementById('pcr-lfoto-estado');
+            if (c) c.textContent = t;
+          }
+        }).then(function (r) {
+          S.llenosFotoCargando = false; S.llenosFoto = r;
+          if (r && r.ok) { pintarLlenosFoto(true); }
+          guardarFichaViva(); pintar();
+        }).catch(function (e) {
+          S.llenosFotoCargando = false;
+          S.llenosFoto = { ok: false, detalle: 'No se pudo leer la foto: ' + ((e && e.message) || e) };
+          pintar();
+        });
+        return;
+      }
+      if (acc === 'llenos-foto-mapa') { pintarLlenosFoto(!S.llenosFotoEnMapa); pintar(); return; }
       if (acc === 'llenos-mapa') {
         var puesto = pintarLlenos(!S.llenosEnMapa);
         // Verlos es bajar la hoja: están justo debajo de ella.
@@ -4118,7 +4144,17 @@
      en cada gesto del usuario aunque esta herramienta esté cerrada—. */
   var siguiendo = false;
   function alMoverElMapa() {
-    if (!S.encogida || S.forma !== 'radio') return;
+    /* Con un análisis hecho, el círculo YA NO es una propuesta: es el sector
+       que se estudió, y tiene que quedarse donde se estudió.
+
+       Sin esta guarda, bajar la hoja para mirar una capa y arrastrar el mapa
+       movía el círculo detrás del dedo, y quedaba a un kilómetro de la foto
+       clasificada del propio análisis. Llegó con dos capturas: en una, el
+       recuadro de la cobertura arriba y el círculo punteado abajo, sin
+       tocarse. Se leyó como «al navegar por el mapa salía este radio de
+       más», y es peor que un dibujo suelto: son dos sitios distintos
+       diciendo ser el mismo sector. */
+    if (!S.encogida || S.forma !== 'radio' || S.resultado) return;
     var m = mapa(); if (!m) return;
     var c = m.getCenter();
     S.centro = { lat: c.lat, lng: c.lng };
@@ -4450,6 +4486,7 @@
     var capas = [];
     if (S.cobEnMapa)      capas.push(interruptor('cob-mapa', 'satelite', 'Foto'));
     if (S.llenosEnMapa)   capas.push(interruptor('llenos-mapa', 'capas', 'Llenos'));
+    if (S.llenosFotoEnMapa) capas.push(interruptor('llenos-foto-mapa', 'satelite', 'Llenos de la foto'));
     if (S.estratos)       capas.push(interruptor('estratos', 'capas', 'Estratos'));
     if (S.sombrasEnMapa)  capas.push(interruptor('sombras-mapa', 'brujula', 'Sombras'));
     if (S.curvasEnMapa)   capas.push(interruptor('curvas-mapa', 'crecer', 'Curvas'));
@@ -6274,6 +6311,10 @@
             (S.llenosEnMapa ? ico('apagar', 16) + 'Quitar del mapa'
                             : ico('mapa', 16) + 'Ver los llenos en el mapa') + '</button>'
         : '') +
+      /* Y lo mismo, pero leído de la foto. Las huellas de OpenStreetMap son
+         las que alguien dibujó; la foto es lo que hay. En Cúcuta la diferencia
+         es media ciudad, y era la queja: «aún hay manzanas que no lee». */
+      bloqueLlenosFoto() +
       h4('capas', 'El trazado del sector') +
       '<p class="pcr-pista">' + (ll.edificios || 0) + ' edificio' + (ll.edificios === 1 ? '' : 's') +
         ' en el área. ' +
@@ -8889,7 +8930,7 @@
      encendidas, apagar una no es motivo para tapar el mapa con el informe. */
   function hayCapaPuesta() {
     return S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
-           S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa;
+           S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa || S.llenosFotoEnMapa;
   }
 
   function alternarHoja(quieroEncogida) {
@@ -8898,7 +8939,9 @@
     if (!quieroEncogida) S.minima = false;
     // Lo pidió una persona: mientras dure, manda sobre cualquier automatismo.
     S.encogidaAMano = !!quieroEncogida;
-    if (quieroEncogida) { if (S.forma === 'radio') seguirAlMapa(true); }
+    // Y no se vuelve a seguir el mapa si ya hay un sector analizado: bajar la
+    // hoja para ver una capa no es pedir otro sector.
+    if (quieroEncogida) { if (S.forma === 'radio' && !S.resultado) seguirAlMapa(true); }
     else seguirAlMapa(false);
     pintar();
   }
@@ -9761,6 +9804,90 @@
       }
     }
     return { filas: F2, columnas: C2, z: z2, limites: R.limites };
+  }
+
+  /* ── Los llenos, leídos de la foto ──────────────────────────────────
+     El porcentaje de arriba cuenta las huellas que OpenStreetMap tiene
+     dibujadas. Esto lee la foto satelital y estima cuánto suelo está
+     construido de verdad, aprendiendo el color de los techos DE ESTE SECTOR
+     con las huellas que sí están mapeadas. La cuenta la hace js/76; acá se
+     pide, se explica y se ofrece verla sobre el mapa. */
+  /* La máscara de los llenos leídos de la foto, sobre el mapa. Es una imagen
+     clavada por sus esquinas —no mil polígonos—, que es lo que un teléfono
+     puede dibujar sin ahogarse: gris lo que ya tiene huella, naranja lo que
+     la foto lee como construido y nadie ha mapeado. */
+  var capaLlenosFoto = null;
+  function pintarLlenosFoto(encender) {
+    var m = mapa();
+    if (capaLlenosFoto) { try { m && m.removeLayer(capaLlenosFoto); } catch (e) {} capaLlenosFoto = null; }
+    S.llenosFotoEnMapa = false;
+    if (!encender || !m || typeof L === 'undefined') return false;
+    var r = S.llenosFoto;
+    if (!r || !r.ok || !r.imagen || !r.limites) return false;
+    try {
+      capaLlenosFoto = L.imageOverlay(r.imagen, r.limites, { opacity: 0.72, interactive: false });
+      capaLlenosFoto.addTo(m);
+      S.llenosFotoEnMapa = true;
+      // Con la hoja entera encima no se ve nada de lo que se acaba de encender.
+      S.encogida = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function bloqueLlenosFoto() {
+    var F = window.URBIS_LLENOS_FOTO;
+    if (!F) return '';
+    var r = S.llenosFoto;
+    var listo = !!(S.cobertura && S.cobertura.rejilla) && !!(S.trzHuellas && S.trzHuellas.length);
+
+    if (S.llenosFotoCargando) {
+      return '<p class="pcr-lab">Los llenos, leídos de la foto</p>' +
+        '<p class="pcr-conc" id="pcr-lfoto-estado">' + esc(S.llenosFotoAviso || 'Leyendo…') + '</p>';
+    }
+    if (!listo) {
+      return '<p class="pcr-lab">Los llenos, leídos de la foto</p>' +
+        '<p class="pcr-pista">El porcentaje de arriba cuenta <b>las huellas que alguien ya dibujó</b> ' +
+        'en OpenStreetMap, que en esta ciudad son una parte de lo que hay construido. La foto ' +
+        'satelital dice cuánto suelo está cubierto de verdad. Hacen falta las dos mediciones: ' +
+        (S.cobertura && S.cobertura.rejilla ? '' : '<b>la foto satelital</b>') +
+        ((S.cobertura && S.cobertura.rejilla) || (S.trzHuellas && S.trzHuellas.length) ? '' : ' y ') +
+        (S.trzHuellas && S.trzHuellas.length ? '' : '<b>el trazado</b>') +
+        '.</p>';
+    }
+    if (r && !r.ok) {
+      return '<p class="pcr-lab">Los llenos, leídos de la foto</p>' +
+        '<p class="pcr-pista">' + esc(r.detalle || 'No se pudo estimar.') + '</p>' +
+        '<button type="button" data-pcr="llenos-foto" class="pcr-mini">' +
+          ico('satelite', 16) + 'Volver a intentarlo</button>';
+    }
+    if (!r) {
+      return '<p class="pcr-lab">Los llenos, leídos de la foto</p>' +
+        '<p class="pcr-pista">Con la foto y las huellas ya medidas, se puede estimar cuánto suelo ' +
+        'está construido <b>aunque nadie lo haya mapeado</b>: se aprende el color de los techos de ' +
+        'este sector con las huellas que sí están, y se busca ese color en el resto de la foto.</p>' +
+        '<button type="button" data-pcr="llenos-foto" class="pcr-principal">' +
+          ico('satelite') + 'Leer los llenos de la foto</button>';
+    }
+    var falta = r.pctSinMapear > 0 ? r.pctSinMapear : 0;
+    return '<p class="pcr-lab">Los llenos, leídos de la foto</p>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + r.pct + '%</b><small>construido según la foto</small></div>' +
+        '<div class="pcr-kpi"><b>' + r.pctOSM + '%</b><small>con huella mapeada</small></div>' +
+        '<div class="pcr-kpi pcr-kpi-oro"><b>' + falta + '%</b><small>del sector, construido y sin mapear</small></div>' +
+      '</div>' +
+      '<p class="pcr-conc">La foto ve <b>' + formatearM2(r.m2) + '</b> de suelo construido; ' +
+      'OpenStreetMap tiene dibujados <b>' + formatearM2(r.m2OSM) + '</b>. La diferencia —' +
+      formatearM2(Math.max(0, r.m2 - r.m2OSM)) + '— es, en área, <b>lo que falta por mapear</b>.</p>' +
+      '<button type="button" data-pcr="llenos-foto-mapa" class="pcr-mini">' +
+        (S.llenosFotoEnMapa ? ico('apagar', 16) + 'Quitar del mapa'
+                            : ico('mapa', 16) + 'Ver en el mapa lo que falta') + '</button>' +
+      '<p class="pcr-pista">En el mapa, <b>gris</b> lo que ya tiene huella y <b>naranja</b> lo que ' +
+      'la foto lee como construido y nadie ha dibujado. La estimación se calibró con <b>' +
+      r.huellas + '</b> huellas de este mismo sector, a <b>' + r.mPorPx + ' m por píxel</b>, y ' +
+      'separa los dos colores con una confianza del <b>' + r.confianza + '%</b>. ' +
+      'Un patio de tierra, un lote pelado y una cancha de arena tienen el color de una teja vieja: ' +
+      'donde el barrio es denso apenas pesan, en la periferia esta cifra se pasa de largo. ' +
+      'Es una <b>estimación</b>, no un catastro.</p>';
   }
 
   function curvasDelTerreno(rejDada) {
@@ -13345,6 +13472,7 @@
     S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
     S.trzHuellas = null; S.trzPisos = null; S.trzVias = null; S.sombras = null;
+    try { pintarLlenosFoto(false); } catch (e) {} S.llenosFoto = null;
     /* El nombre y lo medido para el sector se van con el análisis, aunque el
        lugar sea el mismo: pertenecen a la FICHA, y analizar otra huella hace
        una ficha nueva. Dejarlos pasar es el error que ya se cometió una vez
@@ -14262,6 +14390,9 @@
        verlos, la prueba solo podría mirar el texto de la barra, que es lo que
        dice que pasó y no lo que pasó. */
     loteDePrueba: function () { return S.lote || []; },
+    // Bajar la hoja por el mismo camino que el dedo, para poder comprobar que
+    // con la hoja abajo el círculo del sector analizado no sigue al mapa.
+    encogerDePrueba: function () { alternarHoja(true); },
     trazoDePrueba: function () { return S.intPts || []; },
     htmlDeLaFicha: function () {
       return S.resultado ? htmlFicha(S.resultado) : '';

@@ -171,6 +171,7 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
                centro:f.centro||null, lote:(f.lote||[]).length };
     }catch(e){ return {error:String(e)}; } })();
     o.trasAnalizar={ circulos:circulos(), lotes:poligonos() };
+
     return o;
   },{C});
 

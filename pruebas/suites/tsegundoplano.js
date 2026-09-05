@@ -145,8 +145,40 @@ for (let i = 0; i < 40; i++) {
     if (caja) { caja.value = 'El barrio de la prueba'; caja.dispatchEvent(new Event('input', { bubbles: true })); }
     const g = document.getElementById('pcr-hoja').querySelector('[data-pcr="guardar"]');
     if (g) { g.click(); await esperar(700); }
+    /* ── El círculo del sector no se va detrás del mapa ────────────────
+       Con la hoja bajada para mirar una capa, arrastrar el mapa movía el
+       círculo detrás del dedo y lo dejaba a un kilómetro de la foto
+       clasificada del propio análisis. Llegó con dos capturas —el recuadro
+       de la cobertura arriba y el círculo punteado abajo, sin tocarse— y se
+       leyó como «al navegar por el mapa salía este radio de más». Con el
+       sector ya analizado, el círculo no es una propuesta: es lo que se
+       estudió, y se queda donde se estudió.
+
+       La hoja se baja como se baja de verdad, empujándola desde el asa: es
+       el único camino que vuelve a poner el círculo a seguir al mapa. */
+    const circulos = () => { const out = [];
+      window.map.eachLayer(l => { if (l instanceof L.Circle && l.getRadius)
+        out.push({ lat: l.getLatLng().lat, lng: l.getLatLng().lng, r: l.getRadius() }); });
+      return out; };
+    const asa = document.getElementById('pcr-hoja').querySelector('.pcr-asa');
+    if (asa) {
+      const c = asa.getBoundingClientRect();
+      const x0 = Math.round(c.left + c.width / 2), y0 = Math.round(c.top + c.height / 2);
+      const toque = (t, y) => asa.dispatchEvent(new TouchEvent(t, { bubbles: true, cancelable: true,
+        touches: t === 'touchend' ? [] : [new Touch({ identifier: 1, target: asa, clientX: x0, clientY: y })],
+        changedTouches: [new Touch({ identifier: 1, target: asa, clientX: x0, clientY: y })] }));
+      toque('touchstart', y0); await esperar(40);
+      for (let i = 1; i <= 6; i++) { toque('touchmove', y0 + i * 20); await esperar(20); }
+      toque('touchend', y0 + 120); await esperar(600);
+    }
+    const bajada = !!document.querySelector('#pcr-hoja.pcr-encogida');
+    const antesDeMover = circulos();
+    window.map.panTo([7.8939 + 0.012, -72.5078 - 0.010]); await esperar(900);
+    const trasMover = circulos();
+
     R.cerrar(); await esperar(300);
-    return { fichas: (R.leerFichas() || []).length,
+    return { hojaBaja: bajada, circuloAntes: antesDeMover, circuloDespues: trasMover,
+      fichas: (R.leerFichas() || []).length,
       volver: (function () { const v = document.getElementById('pcr-volver');
         return v ? { oculto: v.hidden, txt: (v.textContent || '').trim() } : null; })() };
   });
@@ -203,6 +235,17 @@ for (let i = 0; i < 40; i++) {
   T('no se hace pasar por bueno un punto que no sirve',
     /imprecisa|impreciso/i.test((r.imprecisa || {}).dice || ''), (r.imprecisa || {}).dice || '(no dice nada)');
   T('y dice de cuánto es el error', /\d+\s*m/.test((r.imprecisa || {}).dice || ''));
+
+  console.log('\n  -- el círculo del sector no sigue al mapa --');
+  const cA = ((r.antes || {}).circuloAntes || [])[0], cB = ((r.antes || {}).circuloDespues || [])[0];
+  const met = (a, b) => (a && b) ? Math.round(Math.hypot((a.lat - b.lat) * 110540,
+    (a.lng - b.lng) * 111320 * Math.cos(a.lat * Math.PI / 180))) : -1;
+  T('la hoja se baja empujándola con el dedo', (r.antes || {}).hojaBaja === true);
+  T('y arrastrar el mapa no se lleva el círculo del sector analizado',
+    !!cB && met(cA, cB) <= 2, cB ? met(cA, cB) + ' m de desplazamiento' : 'no hay círculo');
+  T('ni aparece un segundo círculo',
+    ((r.antes || {}).circuloDespues || []).length === 1,
+    ((r.antes || {}).circuloDespues || []).length + ' círculos');
 
   console.log('\n  -- el sector, cuando el navegador se lleva la pestaña --');
   T('quedó archivado antes', (r.antes || {}).fichas === 1);
