@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v721-el-circulo-sigue-al-lote';
+const URBIS_CACHE = 'urbis-v722-volver-a-la-app';
 const URBIS_ASSETS = [
   './',
   './index.html',

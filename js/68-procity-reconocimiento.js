@@ -13328,17 +13328,73 @@
       el.id = 'pcr-volver';
       el.type = 'button';
       el.className = 'pcr-volver';
-      el.addEventListener('click', function () { S.encogida = false; abrir(); });
+      el.addEventListener('click', function () {
+        /* Sin análisis en memoria, el botón TRAE el de hace un rato antes de
+           abrir: es lo que se está pidiendo al tocarlo. */
+        if (!S.resultado) {
+          var f = fichaRecienViva();
+          if (f) {
+            if (reanudarFicha(f)) {
+              S.aviso = 'Listo, seguimos con «' + (f.nombre || 'el sector') + '». Si necesitás ' +
+                        'llenos y vacíos o sombras, volvé a medir el trazado.';
+            } else {
+              S.error = 'Ese sector no guarda el área: no se puede reanudar.';
+            }
+          }
+        }
+        S.encogida = false; abrir();
+      });
       document.body.appendChild(el);
     }
     return el;
   }
 
+  /* El sector que estaba vivo hace un rato, si el navegador se llevó la
+     pestaña.
+
+     Dicho así: «me salgo de la aplicación, vuelvo, y se resetea todo, como si
+     no se guardara lo que estoy haciendo». No se perdía nada —está archivado
+     y vuelve entero sin red— pero el mapa aparecía vacío, sin puntos, sin
+     círculo y sin lote, y para encontrar el sector había que abrir la lupa y
+     buscar la tarjeta de adentro. Desde afuera eso es indistinguible de
+     haberlo perdido.
+
+     Media hora: es el tiempo en el que «estaba trabajando en esto» sigue
+     siendo cierto. Pasado eso el botón no insiste —el mapa limpio es lo
+     correcto cuando se abre la aplicación otro día— y la tarjeta de la hoja
+     sigue ofreciéndolo igual. */
+  var VIVO_MS = 30 * 60 * 1000;
+  function fichaRecienViva() {
+    if (S.resultado) return null;
+    var f;
+    try { f = (leerFichas() || [])[0]; } catch (e) { return null; }
+    if (!f || !f.stats) return null;
+    var t = 0;
+    try { t = new Date(f.ts).getTime(); } catch (e) { t = 0; }
+    if (!t || Date.now() - t > VIVO_MS) return null;
+    return f;
+  }
+
   function pintarVolver() {
     var el = volverBtn();
-    var hay = !!S.resultado && !S.abierto && !!window.urbisProCityActivo;
+    var fuera = !S.abierto && !!window.urbisProCityActivo;
+    var reciente = fuera ? fichaRecienViva() : null;
+    var hay = fuera && (!!S.resultado || !!reciente);
     el.hidden = !hay;
     if (!hay) return;
+    if (!S.resultado && reciente) {
+      var med = [];
+      if (reciente.trazado) med.push('el trazado');
+      if (reciente.terreno) med.push('el terreno');
+      if (reciente.lote) med.push('el lote');
+      el.innerHTML = ico('atras', 18) +
+        '<span><b>Seguir donde quedaste</b>' +
+        '<small>' + esc(reciente.nombre || 'Sector sin nombre') + ' · ' +
+        (reciente.total || 0) + ' usos' + (med.length ? ', con ' + esc(med.join(', ')) : '') +
+        '</small></span>';
+      el.setAttribute('aria-label', 'Seguir con el sector que estabas analizando');
+      return;
+    }
     var st = (S.resultado.stats) || {};
     var nombre = (S.nombreGuardado || '').trim();
     el.innerHTML = ico('lupa', 18) +
@@ -13966,6 +14022,12 @@
   window.URBIS_PC_RECON = {
     abrir: abrir,
     cerrar: cerrar,
+    /* Que el botón flotante se pinte al entrar a Pro City. Lo llama js/20 en
+       el único sitio por el que pasan la entrada y la salida del módulo.
+       Sin esto, después de que el navegador se lleve la pestaña, el botón que
+       ofrece seguir con el sector no aparecía hasta que algo repintara la
+       hoja —y lo que hay que repintar es justamente lo que no se ve—. */
+    alEntrarAProCity: function () { try { pintarVolver(); } catch (e) {} },
     analizar: analizar,
     abierto: function () { return S.abierto; },
     // Se exponen para poder comprobarlos sin montar la app entera: el reparto

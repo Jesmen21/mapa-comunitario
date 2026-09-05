@@ -242,7 +242,29 @@
     }catch(e){}
   }
   function onMobileGpsPoint(pos){
-    if((pos.coords.accuracy || 0) > 50) return; // ignorar lecturas con error > 50 m
+    /* Lecturas con más de 50 m de error no sirven para mapear: un punto
+       registrado con esa incertidumbre cae a media cuadra de donde está.
+
+       Pero descartarlas EN SILENCIO era la mitad de la queja «no sale mi
+       punto satelital»: bajo techo, en un patio interior o con el cielo
+       tapado, todas las lecturas llegan con 60, 80, 120 m y ninguna pasa,
+       así que no aparece el punto, no cambia el estado, y desde afuera se ve
+       igual que si el GPS estuviera muerto. Se sigue sin usar la lectura;
+       lo que cambia es que ahora se dice. */
+    if((pos.coords.accuracy || 0) > 50){
+      mobileGps.imprecisas = (mobileGps.imprecisas || 0) + 1;
+      /* Tres seguidas: el GPS está dando lecturas y ninguna sirve. No hace
+         falta que sea la primera vez —al volver de otra aplicación el punto
+         viejo sigue dibujado, y un punto viejo que no se mueve es lo que
+         hace pensar que la aplicación se colgó—. Con una lectura buena el
+         contador se reinicia y el estado vuelve a decir los metros. */
+      if(mobileGps.imprecisas >= 3){
+        setMobilityStatus('Señal imprecisa · ' + Math.round(pos.coords.accuracy) +
+          ' m. Con el cielo tapado el GPS no ubica: salí a un sitio abierto.');
+      }
+      return;
+    }
+    mobileGps.imprecisas = 0;
     const point = {lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:pos.coords.accuracy||0, t:Date.now()};
     mobileGps.last = point;
     window.urbisMobileLastGPS = point;
@@ -262,6 +284,32 @@
       console.warn('GPS móvil no disponible', err);
       setMobilityStatus('Activa permisos de ubicación.');
     }, {enableHighAccuracy:true, maximumAge:500, timeout:12000});
+  }
+  /* Volver a pedir el seguimiento desde cero.
+
+     `startMobileGpsWatch` no hace nada si ya hay un `watchId` guardado, y esa
+     guarda es correcta mientras la aplicación está en primer plano. El
+     problema es lo que pasa al salir: Android suspende el seguimiento de una
+     pestaña en segundo plano y muchas veces no lo devuelve al volver. El
+     identificador sigue ahí —así que nadie vuelve a pedirlo— pero ya no
+     llegan lecturas: el punto se queda congelado donde estaba y no hay
+     manera de despertarlo sin cerrar y abrir la aplicación. Llegó dicho
+     así: «se bugea y me toca reiniciar la app para que vuelva y salga mi
+     punto satelital».
+
+     Al volver se suelta el viejo y se pide uno nuevo. Cuesta una lectura. */
+  function restartMobileGpsWatch(){
+    try{
+      if(mobileGps.watchId !== null && navigator.geolocation && navigator.geolocation.clearWatch){
+        navigator.geolocation.clearWatch(mobileGps.watchId);
+      }
+    }catch(e){}
+    mobileGps.watchId = null;
+    const viejo = mobileGps.last ? (Date.now() - (mobileGps.last.t || 0)) : Infinity;
+    startMobileGpsWatch();
+    // Con la última lectura vieja, el punto que se ve en pantalla ya no dice
+    // dónde estás: se avisa en vez de dejarlo pasar por bueno.
+    if(viejo > 30000) setMobilityStatus('Buscando tu ubicación…');
   }
 
   app.innerHTML = `
@@ -701,14 +749,31 @@
     if(document.visibilityState !== 'visible' || !urbisMobileHiddenAt) return;
     const away = Date.now() - urbisMobileHiddenAt;
     urbisMobileHiddenAt = 0;
-    // Umbral de 2 minutos: evita re-centrar de golpe en cambios rapidísimos
-    // de app (ej. abrir la cámara para una foto de reporte y volver).
-    if(away > 120000){ try{ ensureMobileGps(true); }catch(e){} }
+    retomarLaApp(away);
   }, false);
   // iOS/Safari a veces restaura la página desde bfcache sin visibilitychange.
   window.addEventListener('pageshow', function(ev){
-    if(ev.persisted){ try{ ensureMobileGps(true); }catch(e){} }
+    if(ev.persisted) retomarLaApp(Infinity);
   });
+
+  /* Lo que hay que rehacer al volver de otra aplicación. Son tres cosas, y
+     antes solo se hacía la tercera —y solo pasados dos minutos—, así que una
+     vuelta corta dejaba la aplicación a medias: el mapa en blanco y el punto
+     congelado, sin nada que lo dijera. */
+  function retomarLaApp(away){
+    /* 1. El mapa se vuelve a medir. En segundo plano el navegador puede
+       devolver la pestaña con otro tamaño —la barra del sistema, el teclado,
+       el cambio de orientación— y Leaflet sigue creyendo el de antes: las
+       teselas salen en blanco o corridas hasta que algo lo toca. */
+    try{ if(window.map && typeof map.invalidateSize === 'function') map.invalidateSize(); }catch(e){}
+    // 2. El seguimiento del GPS, siempre: ver `restartMobileGpsWatch`.
+    try{ restartMobileGpsWatch(); }catch(e){}
+    /* 3. Recentrar el mapa en donde estás, solo si estuviste fuera un rato.
+       El umbral de dos minutos es de cuando se pidió esto y sigue valiendo:
+       en un cambio rapidísimo de aplicación —abrir la cámara para una foto y
+       volver— mover el mapa debajo del dedo es una grosería. */
+    if(away > 120000){ try{ ensureMobileGps(true); }catch(e){} }
+  }
 
   function describeCurrentRoute(){
     try{
@@ -2627,6 +2692,12 @@
     // — el único punto por el que pasan tanto la entrada como la salida — y se
     // les pide repintar YA, sin esperar su ciclo de refresco.
     try{ window.urbisProCityActivo = !!activo; }catch(e){}
+    /* Y que el reconocimiento repinte su botón flotante: si el navegador se
+       llevó la pestaña mientras se estaba analizando un sector, es el que
+       ofrece traerlo de vuelta, y hasta que no se pinta no hay manera de
+       saber desde el mapa que el trabajo sigue ahí. */
+    try{ if(window.URBIS_PC_RECON && typeof window.URBIS_PC_RECON.alEntrarAProCity === 'function')
+      window.URBIS_PC_RECON.alEntrarAProCity(); }catch(e){}
     try{ if(typeof window.urbisRenderAureaForzado === 'function') window.urbisRenderAureaForzado(); }catch(e){}
     // Las alertas nacionales viven en otra capa propia (js/50) y sufren lo
     // mismo: sin este aviso se quedan hasta su siguiente repintado, y se ven
