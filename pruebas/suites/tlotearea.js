@@ -102,14 +102,6 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
       return b2 ? b2.disabled : 'no hay botón';
     })();
 
-    // ── Marcarlo.
-    const LOTE=[Q(-15,-15),Q(15,-15),Q(15,15),Q(-15,15)];
-    const bDib=H().querySelector('[data-pcr="lote-dibujar"]');
-    if(bDib){ bDib.click(); await esperar(600); }
-    LOTE.forEach(p=>window.map.fire('click',{latlng:{lat:p.lat,lng:p.lng}}));
-    await esperar(400);
-    document.querySelector('[data-lote="cerrar"]').click(); await esperar(800);
-
     // El círculo del mapa, leído del propio Leaflet.
     const circulos=()=>{
       const out=[];
@@ -117,6 +109,29 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
         out.push({r:l.getRadius(), lat:l.getLatLng().lat, lng:l.getLatLng().lng}); });
       return out;
     };
+
+    // ── Marcarlo. El mapa se deja LEJOS del predio a propósito: es lo que
+    //    pasa de verdad —se busca el lote en el mapa y se marca donde esté—,
+    //    y es lo que dejaba al círculo dibujado en otro barrio.
+    /* El predio NO está donde estaba el mapa al abrir la hoja: está a un
+       kilómetro y medio, que es lo que pasa siempre —se abre la lupa mirando
+       una parte de la ciudad y el lote a estudiar está en otra—. Así se
+       reprodujo la captura que trajo esto: seis esquinas marcadas al sur y el
+       círculo punteado sobre el centro de Cúcuta. */
+    const LOTE=[Q(1500-15,-1200-15),Q(1500+15,-1200-15),Q(1500+15,-1200+15),Q(1500-15,-1200+15)];
+    const bDib=H().querySelector('[data-pcr="lote-dibujar"]');
+    if(bDib){ bDib.click(); await esperar(600); }
+    o.antesDeMarcar=circulos();
+    o.lejosDelLote=(function(){ const c=circulos()[0], m=(LOTE[0].lat+LOTE[2].lat)/2, n=(LOTE[0].lng+LOTE[2].lng)/2;
+      return c ? Math.round(Math.hypot((c.lat-m)*110540,
+        (c.lng-n)*111320*Math.cos(m*Math.PI/180))) : -1; })();
+    window.map.fire('click',{latlng:{lat:LOTE[0].lat,lng:LOTE[0].lng}});
+    await esperar(300);
+    o.conUnaEsquina={ circulos:circulos(), esquina:{lat:LOTE[0].lat,lng:LOTE[0].lng} };
+    LOTE.slice(1).forEach(p=>window.map.fire('click',{latlng:{lat:p.lat,lng:p.lng}}));
+    await esperar(400);
+    o.antesDeCerrar=circulos();
+    document.querySelector('[data-lote="cerrar"]').click(); await esperar(800);
     const poligonos=()=>{
       const out=[];
       window.map.eachLayer(l=>{ if(l instanceof L.Polygon && l.options && /FFD54F/i.test(l.options.fillColor||''))
@@ -179,6 +194,23 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
   T('y no ofrece un radio de algo que no existe', r.sinRango===true);
   T('y no ofrece analizar la nada',
     r.botonBloqueado==='no hay botón' || r.botonBloqueado===true, String(r.botonBloqueado));
+
+  /* El círculo tiene que seguir a las esquinas MIENTRAS se marcan, y no
+     esperar a que el lote se cierre. Marcar seis esquinas viendo el círculo
+     punteado a dos kilómetros —sobre donde estaba el mapa al empezar— es
+     marcar a ciegas: la pantalla dice que se va a estudiar un sitio mientras
+     el dedo está señalando otro. */
+  console.log('\n  -- mientras se marca, el círculo va detrás --');
+  T('buscar el predio en el mapa deja el círculo lejos, para empezar',
+    r.lejosDelLote>=1500, r.lejosDelLote+' m del predio');
+  const cu=(r.conUnaEsquina.circulos||[])[0];
+  T('con la primera esquina puesta, el círculo ya está ahí',
+    !!cu && met(cu, r.conUnaEsquina.esquina)<=5,
+    cu ? met(cu, r.conUnaEsquina.esquina)+' m de la esquina' : 'no hay círculo');
+  const ca=(r.antesDeCerrar||[])[0];
+  T('y con las cuatro, en el centro del predio, sin haber cerrado nada',
+    !!ca && met(ca, r.centroLote)<=5,
+    ca ? met(ca, r.centroLote)+' m del centro del lote' : 'no hay círculo');
 
   console.log('\n  -- al cerrarlo, el círculo sale del lote --');
   const c1=(r.trasCerrar.circulos||[])[0];

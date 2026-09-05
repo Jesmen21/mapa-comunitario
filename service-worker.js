@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v720-el-plano-de-la-tarjeta';
+const URBIS_CACHE = 'urbis-v721-el-circulo-sigue-al-lote';
 const URBIS_ASSETS = [
   './',
   './index.html',

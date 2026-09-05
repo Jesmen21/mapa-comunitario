@@ -763,6 +763,25 @@
     return (S.lote && S.lote.length >= 3) ? centroideDe(S.lote) : null;
   }
 
+  /* El centro MIENTRAS se dibuja, que no es lo mismo: con una o dos esquinas
+     todavía no hay polígono del que sacar un centroide, pero sí hay un sitio
+     al que el círculo tiene que ir. Es el promedio de lo que lleve puesto.
+
+     Existe porque el círculo se quedaba donde estuviera hasta que el lote se
+     cerraba. Llegó con la captura: seis esquinas marcadas sobre un predio al
+     sur de la ciudad y el círculo punteado a dos kilómetros, encima del
+     centro de Cúcuta, que era donde estaba el mapa al empezar. Marcar un lote
+     viendo el círculo en otro barrio es marcar a ciegas: la pantalla dice que
+     se va a estudiar un sitio mientras se está señalando otro. */
+  function centroDibujandoLote() {
+    var pts = S.lote || [];
+    if (!pts.length) return null;
+    if (pts.length >= 3) return centroideDe(pts);
+    var la = 0, ln = 0;
+    pts.forEach(function (p) { la += Number(p.lat); ln += Number(p.lng); });
+    return { lat: la / pts.length, lng: ln / pts.length };
+  }
+
   /* ── De dónde sale el centro, en un solo sitio ───────────────────────
      Había tres funciones eligiéndolo por su cuenta —la que dibuja el
      círculo, la que consulta OpenStreetMap y la que pide clima, terreno y
@@ -833,7 +852,13 @@
     /* Partiendo del lote, el círculo va centrado en él: el lote amarillo se
        pinta aparte y queda encima, que es como se lee la lámina —el terreno a
        intervenir sobre el entorno que se estudia—. */
-    var centro = centroDeAnalisis();
+    /* Dibujando el lote y con el lote como punto de partida, el círculo sigue
+       a las esquinas que se van poniendo. En cualquier otro caso manda
+       `centroDeAnalisis`: si ya hay un sector analizado, su círculo es suyo y
+       marcar un predio dentro no lo mueve. */
+    var centro = (S.forma === 'lote' && S.loteDibujando)
+      ? (centroDibujandoLote() || centroDeAnalisis())
+      : centroDeAnalisis();
     if (!centro) return;
     L.circle([centro.lat, centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
     var S_centro = centro;
@@ -8666,6 +8691,7 @@
     if (cual > 0) {
       recordarPuntos('lote', pts);
       pts.splice(cual, 1);
+      seguirElLote();
       pintarLote(); pintarBarraLote(); pintar();
       return;
     }
@@ -8676,7 +8702,17 @@
        las esquinas» para siempre. Un contador que no cuenta confunde más que
        no ponerlo. La hoja encogida es un panel de cuatro líneas, así que
        repintarla por toque no cuesta nada. */
+    seguirElLote();
     pintarLote(); pintarBarraLote(); pintar();
+  }
+
+  /* El círculo, detrás de cada esquina. Solo con el lote como punto de
+     partida: es el único caso en el que el centro del análisis SALE del lote,
+     y mover el círculo de un sector ya analizado por marcar un predio dentro
+     sería decir que se va a estudiar otra cosa. */
+  function seguirElLote() {
+    if (S.forma !== 'lote') return;
+    try { pintarCirculo(); } catch (e) {}
   }
 
   function deshacerLote() {
@@ -8684,6 +8720,7 @@
     var antes = deshacerPuntos('lote');
     if (!antes) return;
     S.lote = antes;
+    seguirElLote();
     pintarLote(); pintarBarraLote(); pintar();
   }
 
