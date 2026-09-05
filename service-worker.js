@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v718-volver-a-ver-el-analisis';
+const URBIS_CACHE = 'urbis-v719-el-logo-del-archivo';
 const URBIS_ASSETS = [
   './',
   './index.html',

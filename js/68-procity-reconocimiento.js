@@ -1672,22 +1672,30 @@
 
   /* El logo de URBIS, dibujado y no traído.
 
-     Es el mismo isotipo de la aplicación —el pin blanco con la U y el punto
-     amarillo sobre el celeste—, pero en trazos: la lámina se arma en una
-     ventana o en un marco que no comparte la carpeta del sitio, así que un
-     `<img src="assets/…">` sale roto justo donde más se nota, y en el papel
-     un logo pixelado a 90 cm se ve peor que ninguno. Dibujado entra en el
-     PDF como vector y se imprime nítido al tamaño que sea. */
+     Es el isotipo de la aplicación —el pin blanco con la U y el punto
+     amarillo sobre el celeste— pero en trazos, y no una imagen: la lámina se
+     arma en una ventana o en un marco que no comparte la carpeta del sitio,
+     así que un `<img src="assets/…">` sale roto justo donde más se nota, y
+     en el papel un logo pixelado a 90 cm se ve peor que ninguno. Dibujado
+     entra en el PDF como vector y se imprime nítido al tamaño que sea.
+
+     Las medidas no son a ojo: salen de medir el archivo del logo píxel a
+     píxel y pasarlas a esta caja de 100. El pin ocupa de 23,5 a 76,5 de
+     ancho y termina en punta a 80; la U lleva trazo de 6,1 con los tallos en
+     40,3 y 58,25; el punto amarillo mide 4,8 de radio y se apoya en el tallo
+     derecho, con un anillo blanco de 7 que lo separa. Los colores son los
+     del archivo: celeste #34CCFE y amarillo #FABD0A. */
   function marcaURBIS(mm) {
     var m = mm || 14;
     return '<svg class="logo" width="' + m + 'mm" height="' + m + 'mm" viewBox="0 0 100 100" ' +
       'role="img" aria-label="URBIS" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="100" height="100" rx="20" fill="#34CCFE"/>' +
-      '<path d="M50 17c-15 0-27 12-27 27 0 16 18 28 27 36 9-8 27-20 27-36 0-15-12-27-27-27z" fill="#fff"/>' +
-      '<path d="M38.5 33v17a11.5 11.5 0 0 0 23 0V33" fill="none" stroke="#34CCFE" stroke-width="7.1" ' +
-        'stroke-linecap="round"/>' +
-      '<circle cx="60.5" cy="36.5" r="11.6" fill="#fff"/>' +
-      '<circle cx="60.5" cy="36.5" r="8.9" fill="#FBBE07"/>' +
+      '<rect width="100" height="100" fill="#34CCFE"/>' +
+      '<path d="M50 18.6c-14.6 0-26.5 11.9-26.5 26.5 0 15.8 17.7 27.6 26.5 34.9 8.8-7.3 26.5-19.1 ' +
+        '26.5-34.9 0-14.6-11.9-26.5-26.5-26.5z" fill="#fff"/>' +
+      '<path d="M40.3 35.9v13.2a8.98 8.98 0 0 0 17.95 0V35.9" fill="none" stroke="#34CCFE" ' +
+        'stroke-width="6.1" stroke-linecap="round"/>' +
+      '<circle cx="58.25" cy="37.4" r="7" fill="#fff"/>' +
+      '<circle cx="58.25" cy="37.4" r="4.85" fill="#FABD0A"/>' +
     '</svg>';
   }
 

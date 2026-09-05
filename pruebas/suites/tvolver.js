@@ -241,8 +241,17 @@ for (let i = 0; i < 8; i++) {
     T('y va en trazos, no en una imagen que puede no llegar', par[0] === 'parada'
       ? !/<img[^>]+assets\//.test(t) : !/<img[^>]+assets\//.test(t));
   });
+  /* Que sea el logo de verdad y no un dibujo parecido: los dos colores del
+     archivo —celeste #34CCFE y amarillo #FABD0A, medidos del PNG, no
+     elegidos a ojo— y las cuatro piezas del isotipo: el fondo, el pin, la U
+     y el punto sobre su anillo blanco. */
+  const marca = (LV.match(/<svg class="logo"[\s\S]*?<\/svg>/) || [''])[0];
   T('el logo es el de URBIS: el pin, la U y el punto',
-    /viewBox="0 0 100 100"/.test(LV) && /#FBBE07/.test(LV) && /aria-label="URBIS"/.test(LV));
+    /viewBox="0 0 100 100"/.test(marca) && /aria-label="URBIS"/.test(marca) &&
+    /#FABD0A/.test(marca) && (marca.match(/#34CCFE/g) || []).length >= 2 &&
+    (marca.match(/<circle cx="58\.25"/g) || []).length === 2 &&
+    /stroke-linecap="round"/.test(marca),
+    (marca.match(/<(path|circle|rect)\b/g) || []).length + ' piezas');
 
   console.log('');
   T('sin errores de JavaScript', (r.err || []).length === 0, (r.err || []).join(' | ') || 'ninguno');
