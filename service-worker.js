@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v726-el-pdf-que-no-se-rinde';
+const URBIS_CACHE = 'urbis-v727-el-pdf-tambien-desde-el-sector';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -152,6 +152,7 @@ const URBIS_ASSETS = [
   './js/74-dibujos-analisis.js',
   './js/75-pliego-pdf.js',
   './js/76-llenos-foto.js',
+  './js/77-marca-urbis.js',
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
   './js/79-amenaza-inundacion.js',

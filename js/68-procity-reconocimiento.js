@@ -1741,6 +1741,35 @@
     });
   }
 
+  /* La lámina de un sector GUARDADO, también en PDF. Misma cuenta que la de
+     la ficha viva; lo único distinto es de dónde sale el nombre y que el
+     aviso va a la pestaña. */
+  function bajarPliegoDeFicha(f, horizontal, html, alAvisar) {
+    var P = window.URBIS_PLIEGO_PDF;
+    if (!P || !P.disponible()) { abrirImpresion(html, alAvisar); return; }
+    var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
+    var nombre = String((f && f.nombre) || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
+    if (alAvisar) alAvisar('Dibujando la lámina… tarda unos segundos.');
+    P.generar(html, {
+      anchoMM: mm.anchoMM, altoMM: mm.altoMM,
+      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm',
+      alAvisar: function (t) { if (alAvisar) alAvisar(t); }
+    }).then(function (r) {
+      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
+                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
+      if (alAvisar) {
+        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
+                 Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
+                 'Está en las descargas del teléfono, ya con su tamaño puesto.');
+      }
+    }).catch(function (e) {
+      if (alAvisar) {
+        alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
+                 '. Probá desde la ficha del sector, o imprimí desde un computador.');
+      }
+    });
+  }
+
   function abrirImpresion(html, alFallar) {
     var ayuda = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
     if (ayuda) { ayuda(html); return true; }
@@ -1754,33 +1783,70 @@
     return true;
   }
 
-  /* El logo de URBIS, dibujado y no traído.
+  /* El logo de URBIS, el de verdad.
 
-     Es el isotipo de la aplicación —el pin blanco con la U y el punto
-     amarillo sobre el celeste— pero en trazos, y no una imagen: la lámina se
-     arma en una ventana o en un marco que no comparte la carpeta del sitio,
-     así que un `<img src="assets/…">` sale roto justo donde más se nota, y
-     en el papel un logo pixelado a 90 cm se ve peor que ninguno. Dibujado
-     entra en el PDF como vector y se imprime nítido al tamaño que sea.
+     Estuvo dibujado en trazos durante dos versiones: se midió el archivo
+     píxel a píxel y el dibujo caía dentro de dos píxeles en el contorno del
+     pin, en el punto amarillo y en los dos tallos de la U. No alcanzó: la U
+     salía con otra forma y se notaba. «Deja este logo original, deja esta
+     forma tal cual.» Una marca no se aproxima.
 
-     Las medidas no son a ojo: salen de medir el archivo del logo píxel a
-     píxel y pasarlas a esta caja de 100. El pin ocupa de 23,5 a 76,5 de
-     ancho y termina en punta a 80; la U lleva trazo de 6,1 con los tallos en
-     40,3 y 58,25; el punto amarillo mide 4,8 de radio y se apoya en el tallo
-     derecho, con un anillo blanco de 7 que lo separa. Los colores son los
-     del archivo: celeste #34CCFE y amarillo #FABD0A. */
+     Así que va el archivo, incrustado en base64 (js/77) y no como ruta: la
+     lámina se arma en una ventana o en un marco que no comparte la carpeta
+     del sitio, y un `<img src="assets/…">` sale roto justo en la cabecera.
+     A 192 píxeles y quince milímetros de lado son más de trescientos puntos
+     por pulgada, que es más de lo que imprime un plotter.
+
+     Si por lo que sea no está el archivo de la marca, no se pone nada: mejor
+     la cabecera sin logo que con un logo que no es el logo. */
   function marcaURBIS(mm) {
+    var png = window.URBIS_MARCA_PNG;
+    if (!png) return '';
     var m = mm || 14;
-    return '<svg class="logo" width="' + m + 'mm" height="' + m + 'mm" viewBox="0 0 100 100" ' +
-      'role="img" aria-label="URBIS" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="100" height="100" fill="#34CCFE"/>' +
-      '<path d="M50 18.6c-14.6 0-26.5 11.9-26.5 26.5 0 15.8 17.7 27.6 26.5 34.9 8.8-7.3 26.5-19.1 ' +
-        '26.5-34.9 0-14.6-11.9-26.5-26.5-26.5z" fill="#fff"/>' +
-      '<path d="M40.3 35.9v13.2a8.98 8.98 0 0 0 17.95 0V35.9" fill="none" stroke="#34CCFE" ' +
-        'stroke-width="6.1" stroke-linecap="round"/>' +
-      '<circle cx="58.25" cy="37.4" r="7" fill="#fff"/>' +
-      '<circle cx="58.25" cy="37.4" r="4.85" fill="#FABD0A"/>' +
-    '</svg>';
+    return '<img class="logo" src="' + png + '" width="' + m + 'mm" height="' + m + 'mm" ' +
+      'alt="URBIS" style="width:' + m + 'mm;height:' + m + 'mm">';
+  }
+
+  /* La lámina de un sector GUARDADO, también en PDF. Misma cuenta que la de
+     la ficha viva; lo único distinto es de dónde sale el nombre y que el
+     aviso va a la pestaña. */
+  function bajarPliegoDeFicha(f, horizontal, html, alAvisar) {
+    var P = window.URBIS_PLIEGO_PDF;
+    if (!P || !P.disponible()) { abrirImpresion(html, alAvisar); return; }
+    var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
+    var nombre = String((f && f.nombre) || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
+    if (alAvisar) alAvisar('Dibujando la lámina… tarda unos segundos.');
+    P.generar(html, {
+      anchoMM: mm.anchoMM, altoMM: mm.altoMM,
+      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm',
+      alAvisar: function (t) { if (alAvisar) alAvisar(t); }
+    }).then(function (r) {
+      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
+                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
+      if (alAvisar) {
+        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
+                 Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
+                 'Está en las descargas del teléfono, ya con su tamaño puesto.');
+      }
+    }).catch(function (e) {
+      if (alAvisar) {
+        alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
+                 '. Probá desde la ficha del sector, o imprimí desde un computador.');
+      }
+    });
+  }
+
+  function abrirImpresion(html, alFallar) {
+    var ayuda = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
+    if (ayuda) { ayuda(html); return true; }
+    var w = window.open('', '_blank');
+    if (!w) {
+      if (alFallar) alFallar('Permití las ventanas emergentes para poder imprimir.');
+      return false;
+    }
+    w.document.write(html); w.document.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
+    return true;
   }
 
   function laminaImprimible(res, opts) {
@@ -2844,7 +2910,7 @@
         'border-radius:50%; background:#34CCFE; opacity:.13 }' +
       '.marca{ flex:0 0 auto; display:flex; flex-direction:column; gap:1mm; padding-right:8mm;' +
         'border-right:.4mm solid rgba(255,255,255,.28) }' +
-      '.marca .logo{ display:block; margin-bottom:1.5mm; border-radius:3mm }' +
+      '.marca .logo{ display:block; margin-bottom:1.5mm; border-radius:3mm; object-fit:contain }' +
       '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#fff; font-weight:800 }' +
       '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#34CCFE; font-weight:700 }' +
       '.tit{ flex:1; min-width:0; position:relative }' +
@@ -12743,7 +12809,12 @@
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">' + ico('guardar') + 'Guardar ficha</button>' +
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
-          '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
+          /* «PDF» a secas, al lado de «Lámina … · PDF», llevaba a tocarlo
+             esperando el pliego y a encontrarse el cuadro de impresión del
+             teléfono. Son dos cosas distintas: esto es el informe entero en
+             hojas, para leer; la lámina es un pliego, para colgar. */
+          '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' +
+            ico('imprimir') + 'Informe en hojas</button>' +
           '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b"' +
             (S.pdfArmando ? ' disabled' : '') + '>' + ico('documento') +
             (S.pdfArmando ? 'Armando el PDF…' : 'Lámina 60×90 · PDF') + '</button>' +
@@ -14055,11 +14126,11 @@
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-copiar" data-id="' +
                     esc(f.id) + '">' + ico('copiar') + 'Copiar</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-pdf" data-id="' +
-                    esc(f.id) + '">' + ico('imprimir') + 'PDF</button>' +
+                    esc(f.id) + '">' + ico('imprimir') + 'Informe en hojas</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-lamina" data-id="' +
-                    esc(f.id) + '">' + ico('documento') + 'Lámina 60×90</button>' +
+                    esc(f.id) + '">' + ico('documento') + 'Lámina 60×90 · PDF</button>' +
                   '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-lamina-h" data-id="' +
-                    esc(f.id) + '">' + ico('documento') + 'Lámina 90×60</button>' +
+                    esc(f.id) + '">' + ico('documento') + 'Lámina 90×60 · PDF</button>' +
                   (hayCampo
                     ? '<button type="button" class="pcr-mini pcr-llevar-b" data-u52-call="pcr-comparar" data-id="' +
                       esc(f.id) + '">' + ico('comparar', 16) + 'Comparar con el campo</button>'
@@ -14279,7 +14350,13 @@
       // Si se dejara leer el estado, un sector guardado en marzo saldría con
       // el relieve del último sector medido hoy, que es un error que nadie
       // detecta mirando la hoja impresa.
-      abrirImpresion(
+      /* Y baja como PDF del tamaño del pliego, igual que desde la ficha
+         viva. Este camino se quedó con el de antes —abrir la vista de
+         impresión— y por eso, desde la pestaña «Sector», el mismo botón
+         seguía llevando al cuadro de papeles de Android: «le doy donde dice
+         lámina y me sale la opción de PDF/imprimir». Son dos sitios que
+         hacen lo mismo y tenían que hacerlo igual. */
+      bajarPliegoDeFicha(f, name === 'lamina-h',
         laminaImprimible(comoResultado(f), {
           nombre: f.nombre || '',
           trazado: f.trazado || null, terreno: f.terreno || null,

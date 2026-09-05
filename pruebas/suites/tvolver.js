@@ -202,6 +202,17 @@ for (let i = 0; i < 8; i++) {
     const esperar = ms => new Promise(x => setTimeout(x, ms));
     let capturado = ''; window.AIA_INFORME = window.AIA_INFORME || {};
     window.AIA_INFORME.abrirVentanaImpresion = function (h) { capturado = h; return true; };
+    /* Desde el sector guardado, el botón de la lámina BAJA un PDF: la hoja no
+       pasa por la vista de impresión. Se toma del propio armador del PDF, que
+       recibe exactamente el mismo HTML, y se le corta la bajada para que la
+       prueba no llene la carpeta de descargas. */
+    if (window.URBIS_PLIEGO_PDF) {
+      window.URBIS_PLIEGO_PDF.bajar = function () {};
+      window.URBIS_PLIEGO_PDF.generar = function (html) {
+        capturado = html;
+        return Promise.resolve({ blob: new Blob(['x']), dpi: 120, bytes: 1, ancho: 1, alto: 1 });
+      };
+    }
     const o = {};
     const b1 = document.querySelector('[data-u52-call="pcr-lamina"]');
     if (b1) { b1.click(); await esperar(1200); }
@@ -286,26 +297,30 @@ for (let i = 0; i < 8; i++) {
     LV.length + ' · ' + LH.length + ' caracteres');
   [['parada', LV], ['acostada', LH]].forEach(function (par) {
     const t = par[1];
-    T('la ' + par[0] + ' lleva el logo dibujado, antes del nombre',
-      /<div class="marca"><svg class="logo"/.test(t) &&
+    T('la ' + par[0] + ' lleva el logo arriba a la izquierda, antes del nombre',
+      /<div class="marca"><img class="logo"/.test(t) &&
       t.indexOf('class="logo"') < t.indexOf('<b>URBIS</b>'));
-    /* Dibujado y no traído: un `<img src="assets/…">` en la lámina sale roto
-       —se arma en un marco que no comparte la carpeta del sitio— y en el
-       papel un logo pixelado a 90 cm se ve peor que ninguno. */
-    T('y va en trazos, no en una imagen que puede no llegar', par[0] === 'parada'
-      ? !/<img[^>]+assets\//.test(t) : !/<img[^>]+assets\//.test(t));
+    /* Incrustado y no por ruta: la lámina se arma en una ventana o en un
+       marco que no comparte la carpeta del sitio, así que un
+       `<img src="assets/…">` sale roto justo en la cabecera. */
+    T('y viaja dentro del archivo, no como ruta que puede no llegar',
+      !/<img[^>]+src="(?!data:)/.test(t));
   });
   /* Que sea el logo de verdad y no un dibujo parecido: los dos colores del
      archivo —celeste #34CCFE y amarillo #FABD0A, medidos del PNG, no
      elegidos a ojo— y las cuatro piezas del isotipo: el fondo, el pin, la U
      y el punto sobre su anillo blanco. */
-  const marca = (LV.match(/<svg class="logo"[\s\S]*?<\/svg>/) || [''])[0];
-  T('el logo es el de URBIS: el pin, la U y el punto',
-    /viewBox="0 0 100 100"/.test(marca) && /aria-label="URBIS"/.test(marca) &&
-    /#FABD0A/.test(marca) && (marca.match(/#34CCFE/g) || []).length >= 2 &&
-    (marca.match(/<circle cx="58\.25"/g) || []).length === 2 &&
-    /stroke-linecap="round"/.test(marca),
-    (marca.match(/<(path|circle|rect)\b/g) || []).length + ' piezas');
+  /* El logo es EL ARCHIVO, no un dibujo parecido. Estuvo redibujado en trazos
+     dos versiones: se midió el original píxel a píxel y el contorno caía
+     dentro de dos píxeles, pero la U salía con otra forma y se notó. «Deja
+     este logo original, deja esta forma tal cual.» Se comprueba que lo que
+     viaja en la cabecera sea la marca incrustada de js/77 y que no haya
+     vuelto ningún dibujo a mano. */
+  const marca = (LV.match(/<img class="logo"[^>]*>/) || [''])[0];
+  T('el logo de la cabecera es el archivo de la marca, incrustado',
+    /src="data:image\/png;base64,/.test(marca) && marca.length > 200,
+    marca ? marca.slice(0, 60) + '…' : '(no está)');
+  T('y no un dibujo hecho a mano', !/<svg class="logo"/.test(LV));
 
   console.log('');
   T('sin errores de JavaScript', (r.err || []).length === 0, (r.err || []).join(' | ') || 'ninguno');

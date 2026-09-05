@@ -143,6 +143,31 @@ const PT = mm => mm * 72 / 25.4;
   });
   r.sinLienzo.pestanas = pestanasDespues;
 
+  /* ── El mismo botón, desde el sector guardado ────────────────────────── */
+  const esperaGuardada = pg.waitForEvent('download', { timeout: 60000 }).catch(() => null);
+  r.guardado = await pg.evaluate(async () => {
+    const esperar = ms => new Promise(x => setTimeout(x, ms));
+    const R = window.URBIS_PC_RECON;
+    const H = document.getElementById('pcr-hoja');
+    const g = H.querySelector('[data-pcr="guardar"]'); if (g) { g.click(); await esperar(700); }
+    R.cerrar(); await esperar(200);
+    let imprimio = false;
+    window.AIA_INFORME = window.AIA_INFORME || {};
+    window.AIA_INFORME.abrirVentanaImpresion = function () { imprimio = true; return true; };
+    if (typeof window.urbisProCityAbrirSector === 'function') window.urbisProCityAbrirSector();
+    await esperar(800);
+    const cab = document.querySelector('.pcr-pest-cab'); if (cab) { cab.click(); await esperar(700); }
+    const cuerpo = document.querySelector('.pcr-pest-ficha.abierta .pcr-pest-cuerpo');
+    const botones = cuerpo ? [...cuerpo.querySelectorAll('button')].map(x => (x.textContent || '').trim()).join(' | ') : '';
+    const bl = cuerpo ? cuerpo.querySelector('[data-u52-call="pcr-lamina-h"]') : null;
+    if (bl) bl.click();
+    await esperar(2500);
+    return { fichas: (R.leerFichas() || []).length, botones: botones, imprimio: imprimio };
+  });
+  const bajada2 = await esperaGuardada;
+  r.guardado.bajo = !!bajada2;
+  r.guardado.nombre = bajada2 ? bajada2.suggestedFilename() : '';
+
   r.err = err;
   await pg.close(); await b.close();
 
@@ -199,6 +224,23 @@ const PT = mm => mm * 72 / 25.4;
     ((r.sinLienzo || {}).enPantalla || '(no dice nada)').slice(0, 90));
   T('y no abre ninguna otra pestaña', (r.sinLienzo || {}).pestanas === 0,
     (r.sinLienzo || {}).pestanas + ' pestañas');
+
+  /* Y desde la pestaña «Sector», que es el otro sitio donde vive el mismo
+     botón. Ese camino se quedó con el de antes —abrir la vista de impresión—
+     y por eso el mismo botón seguía llevando al cuadro de papeles del
+     teléfono: «le doy donde dice lámina y me sale la opción de PDF/imprimir».
+     Dos sitios que hacen lo mismo tienen que hacerlo igual. */
+  console.log('\n  -- y también desde un sector guardado --');
+  T('el sector quedó archivado', (r.guardado || {}).fichas >= 1,
+    ((r.guardado || {}).fichas || 0) + ' fichas');
+  T('la pestaña ofrece la lámina como PDF',
+    /Lámina 90×60 · PDF/.test((r.guardado || {}).botones || ''),
+    ((r.guardado || {}).botones || '(sin botones)').slice(0, 80));
+  T('y tocarla baja un archivo, sin abrir la vista de impresión',
+    (r.guardado || {}).bajo === true && (r.guardado || {}).imprimio === false,
+    'bajó:' + (r.guardado || {}).bajo + ' · vista de impresión:' + (r.guardado || {}).imprimio);
+  T('con nombre de lámina y su tamaño',
+    /90x60\.pdf$/.test((r.guardado || {}).nombre || ''), (r.guardado || {}).nombre || '(sin nombre)');
 
   console.log('\n  -- y el camino de antes sigue --');
   T('se puede ver e imprimir, para una impresora de verdad', r.hayVerImprimir);
