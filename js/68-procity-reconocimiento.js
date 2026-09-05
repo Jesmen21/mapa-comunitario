@@ -4625,7 +4625,8 @@
 
      La ficha ya guardaba todo esto para poder comparar después; acá no se
      agrega ni un byte al almacenamiento. */
-  function miniaturaDeFicha(f) {
+  function miniaturaDeFicha(f, opts) {
+    var op = opts || {};
     var A = window.URBIS_PC_ANALISIS;
     if (!A || typeof A.miniatura !== 'function' || !f) return '';
     var forma = (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
@@ -4654,12 +4655,13 @@
     var svg = '';
     try {
       svg = A.miniatura(forma, {
-        w: 96, h: 68, puntos: puntos, radioPunto: 1.5,
-        poligonos: poligonos,
+        w: op.w || 96, h: op.h || 68, puntos: puntos, radioPunto: op.radioPunto || 1.5,
+        poligonos: poligonos, clase: op.clase || '',
         etiqueta: 'Plano de ' + (f.nombre || 'el sector guardado')
       });
     } catch (e) { svg = ''; }
-    return svg ? '<div class="pcr-guardada-mini">' + svg + '</div>' : '';
+    if (!svg) return '';
+    return op.pelado ? svg : '<div class="pcr-guardada-mini">' + svg + '</div>';
   }
 
   // ── La ficha ──────────────────────────────────────────────────────────
@@ -8686,10 +8688,14 @@
   }
 
   function cancelarLote() {
+    // Si había un lote archivado, quitarlo también se guarda: si no, el que
+    // se acaba de borrar vuelve solo al reabrir el sector.
+    var habia = !!(S.lote && S.lote.length >= 3);
     S.lote = null; S.loteDibujando = false; S.loteAviso = ''; S.caminata = null;
     S.sombras = null;
     pintarCaminata(false);
     soltarMapaLote();
+    if (habia) guardarFichaViva();
     pintarLote(); pintar(); pintarBarraLote();
   }
 
@@ -8715,6 +8721,12 @@
     /* Partiendo del lote, cerrarlo es lo que define el centro del análisis:
        el círculo aparece ahí mismo para que se vea qué se va a estudiar. */
     if (S.forma === 'lote') { S.centro = centroDelLote(); S.centroDe = 'lote'; pintarCirculo(); }
+    /* Y queda archivado. Sin esto, el lote dibujado DESPUÉS de analizar no
+       llegaba nunca al disco: se veía en pantalla, se imprimía en la lámina,
+       y al volver al sector otro día había desaparecido. Todo lo demás que
+       se mide —clima, terreno, trazado, marcas— se guarda al terminar; el
+       lote, que es la mitad del trabajo, era lo único que no. */
+    guardarFichaViva();
     pintarLote(); pintar(); pintarBarraLote();
   }
 
@@ -13600,13 +13612,15 @@
            cualquier app de mapas. La dibuja js/24 para que esta lista y la de
            «Áreas guardadas» se vean como la misma cosa. */
         var A = window.URBIS_PC_ANALISIS;
-        var mini = (A && typeof A.miniatura === 'function')
-          ? A.miniatura(
-              (f.forma === 'poligono' && f.poligono && f.poligono.length >= 3)
-                ? { pts: f.poligono }
-                : { centro: f.centro, radioM: f.radioM || 500 },
-              { w: 108, h: 76, clase: 'pcr-pest-mini', etiqueta: 'Forma del sector ' + (f.nombre || '') })
-          : '';
+        /* El MISMO plano que la lista de la hoja: la silueta del sector con
+           los usos que se encontraron y el lote en amarillo si se marcó.
+
+           Acá se dibujaba solo la silueta, y era la queja: «cuando quiero
+           volver a ver un sector guardado solo sale el radio azul, sin
+           información y sin el polígono amarillo». Con un círculo vacío, la
+           tarjeta de un sector con ochenta usos y su lote marcado se ve
+           idéntica a la de un sector donde no se encontró nada. */
+        var mini = miniaturaDeFicha(f, { w: 108, h: 76, clase: 'pcr-pest-mini', pelado: true });
         var cuando = (A && typeof A.haceCuanto === 'function') ? A.haceCuanto(f.ts) : fmtFecha(f.ts);
         var ico = function (n, t) { return window.URBIS_ICONO ? window.URBIS_ICONO(n, { tam: t || 18 }) : ''; };
         return '<div class="pcr-pest-ficha' + (abierta ? ' abierta' : '') + '">' +

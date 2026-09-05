@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v719-el-logo-del-archivo';
+const URBIS_CACHE = 'urbis-v720-el-plano-de-la-tarjeta';
 const URBIS_ASSETS = [
   './',
   './index.html',

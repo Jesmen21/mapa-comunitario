@@ -34,6 +34,10 @@ const S = E.TRABAJO, LEAFLET = S + 'node_modules/leaflet/dist/';
 const C = { lat: 7.8939, lng: -72.5078 }, L = 0.004;
 const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - L },
              { lat: C.lat + L, lng: C.lng + L }, { lat: C.lat - L, lng: C.lng + L }];
+const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(C.lat * Math.PI / 180));
+const Q = (dx, dy) => ({ lat: C.lat + GLAT(dy), lng: C.lng + GLNG(dx) });
+// Un lote de 120 × 80 m en el medio del sector: el polígono amarillo.
+const LOTE = [Q(-60, -40), Q(60, -40), Q(60, 40), Q(-60, 40)];
 
 let id = 1; const usos = [];
 for (let i = 0; i < 120; i++) {
@@ -109,6 +113,30 @@ for (let i = 0; i < 8; i++) {
     return { fichas: (R.leerFichas() || []).length, titulos, id: ((R.leerFichas() || [])[0] || {}).id };
   }, { C, POL });
 
+  /* ── El lote, dibujado DESPUÉS de analizar ──────────────────────────────
+     Es el orden normal: primero se mira qué hay en el sector, después se
+     elige el predio. Y era el que se perdía: cerrar el lote no archivaba
+     nada, así que el polígono amarillo se veía en pantalla, salía en la
+     lámina, y no estaba al volver al sector otro día. */
+  r.lote = await pg.evaluate(async (D) => {
+    const { LOTE } = D, esperar = ms => new Promise(x => setTimeout(x, ms));
+    const R = window.URBIS_PC_RECON, H = () => document.getElementById('pcr-hoja');
+    const a = H().querySelector('[data-pcr="agrandar"]'); if (a) { a.click(); await esperar(400); }
+    const bl = H().querySelector('[data-pcr="lote-dibujar"]');
+    if (!bl) return { hayBoton: false };
+    bl.click(); await esperar(400);
+    LOTE.forEach(p => window.map.fire('click', { latlng: { lat: p.lat, lng: p.lng } }));
+    await esperar(250);
+    const c = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
+    if (c) { c.click(); await esperar(900); }
+    const f = (R.leerFichas() || [])[0] || {};
+    return { hayBoton: true,
+      enPantalla: (R.loteDePrueba ? R.loteDePrueba().length : -1),
+      // Lo único que importa: si llegó al disco sin que nadie apretara nada más.
+      guardado: (f.lote || []).length,
+      conAnalisis: !!f.loteAnalisis };
+  }, { LOTE });
+
   /* ── Se suelta el análisis, como quien vuelve a la app otro día: en la
      hoja queda la lista de guardados y nada más. */
   r.lista = await pg.evaluate(async () => {
@@ -136,6 +164,12 @@ for (let i = 0; i < 8; i++) {
 
   r.abierto = await pg.evaluate(() => {
     const pest = document.querySelector('.pcr-pestana');
+    /* El plano de la tarjeta: la silueta del sector CON lo que se encontró
+       dentro y el lote en amarillo. Dibujaba solo la silueta, y así una
+       tarjeta de un sector con cien usos y su predio marcado se veía igual
+       que la de un sector vacío. */
+    const tar = document.querySelector('.pcr-pest-ficha .pcr-pest-cab');
+    const plano = tar ? tar.querySelector('svg') : null;
     const ab = document.querySelector('.pcr-pest-ficha.abierta');
     const cuerpo = ab ? ab.querySelector('.pcr-pest-cuerpo') : null;
     const visible = (el) => { if (!el) return false; const c = el.getBoundingClientRect();
@@ -153,7 +187,12 @@ for (let i = 0; i < 8; i++) {
       // Y que se pueda seguir trabajando desde ahí.
       lamina: cuerpo ? !!cuerpo.querySelector('[data-u52-call="pcr-lamina"]') : false,
       laminaH: cuerpo ? !!cuerpo.querySelector('[data-u52-call="pcr-lamina-h"]') : false,
-      pdf: cuerpo ? !!cuerpo.querySelector('[data-u52-call="pcr-pdf"]') : false
+      pdf: cuerpo ? !!cuerpo.querySelector('[data-u52-call="pcr-pdf"]') : false,
+      plano: {
+        hay: !!plano,
+        usos: plano ? plano.querySelectorAll('circle').length : 0,
+        lote: plano ? plano.innerHTML.indexOf('#E0A800') >= 0 : false
+      }
     };
   });
   r.pedidosAlVolver = pedidas.length - antesDePedidos;
@@ -225,6 +264,21 @@ for (let i = 0; i < 8; i++) {
   T('se puede sacar el PDF y las dos láminas desde ahí',
     AB.pdf && AB.lamina && AB.laminaH);
   T('sin pedirle nada a la red', r.pedidosAlVolver === 0, r.pedidosAlVolver + ' peticiones');
+
+  console.log('\n  -- el lote dibujado después de analizar --');
+  const LO = r.lote || {};
+  T('se puede dibujar desde la ficha', LO.hayBoton);
+  T('y queda en pantalla', LO.enPantalla === 4, LO.enPantalla + ' esquinas');
+  T('se archiva solo, sin apretar nada más', (LO.guardado || 0) >= 3,
+    (LO.guardado || 0) + ' esquinas guardadas');
+  T('con sus cuentas: área, frente, lo que cabe', LO.conAnalisis);
+
+  console.log('\n  -- el plano de la tarjeta --');
+  const PL = (r.abierto || {}).plano || {};
+  T('la tarjeta del sector guardado lleva su plano', PL.hay);
+  T('con los usos encontrados dentro, no un contorno vacío',
+    (PL.usos || 0) >= 10, (PL.usos || 0) + ' puntos');
+  T('y con el lote en amarillo', PL.lote);
 
   console.log('\n  -- el logo, arriba a la izquierda --');
   const LV = (r.laminas || {}).v || '', LH = (r.laminas || {}).h || '';
