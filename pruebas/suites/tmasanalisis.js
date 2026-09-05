@@ -1,0 +1,283 @@
+const E = require('../entorno.js');
+/* Lo que estaba medido y no se mostraba.
+
+   Salió de un inventario, no de una corazonada: se listó lo que el motor
+   devuelve en cada respuesta contra lo que la aplicación lee, y aparecieron
+   cinco cosas calculadas que no llegaban a ninguna parte o llegaban a medias.
+   Esta suite es esa lista, comprobada una por una.
+
+     1 · LA INUNDACIÓN estaba medida, salía en la ficha y en el informe en
+         hojas, y no tenía caja en el pliego. En Cúcuta, con el Pamplonita y
+         el Zulia, es de lo primero que pregunta un jurado.
+     2 · LAS CIFRAS DE MOVILIDAD —vía principal y a qué distancia, corredores,
+         paradas, ciclorrutas, facilidad para llegar, exposición al tránsito—
+         solo salían en el informe en hojas.
+     3 · EL FLUJO peatonal contra vehicular, con su reparto por franjas del
+         día y su vida nocturna, viajaba en cada respuesta y NADIE lo leía.
+         Cero usos en toda la aplicación.
+     4 · VERDE Y AGUA —parques, cuerpos de agua, manchas de verde— igual: solo
+         en el informe en hojas.
+     5 · LA JERARQUÍA VIAL existía como recuadro del pliego y no como capa del
+         mapa: era la única de las siete que estaba en el papel y no se podía
+         encender sobre el sitio.
+
+   El sector de prueba trae calles de las cuatro jerarquías, parques, una
+   quebrada y paradas de bus, y el IDEAM contesta que el punto cae dentro de
+   la mancha de cien años, que es el caso que hay que saber contar.          */
+const { chromium } = require(E.MODULOS + '/playwright-core');
+const fs = require('fs');
+const S = E.TRABAJO, LEAFLET = S + 'node_modules/leaflet/dist/';
+const C = { lat: 7.8939, lng: -72.5078 }, L = 0.005;
+const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - L },
+             { lat: C.lat + L, lng: C.lng + L }, { lat: C.lat - L, lng: C.lng + L }];
+const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(C.lat * Math.PI / 180));
+const P = (dx, dy) => ({ lat: C.lat + GLAT(dy), lng: C.lng + GLNG(dx) });
+
+let id = 1;
+const nodo = (tags, dx, dy) => ({ type: 'node', id: id++,
+  lat: P(dx, dy).lat, lon: P(dx, dy).lng, tags: tags });
+const usos = [];
+for (let i = 0; i < 10; i++) usos.push(nodo({ shop: 'clothes', name: 'Ropa ' + i }, -300 + i * 40, 150));
+for (let i = 0; i < 8; i++) usos.push(nodo({ amenity: 'restaurant', name: 'Comida ' + i }, 80 + i * 35, -160));
+for (let i = 0; i < 5; i++) usos.push(nodo({ amenity: 'school', name: 'Colegio ' + i }, -150 + i * 55, 300));
+for (let i = 0; i < 4; i++) usos.push(nodo({ amenity: 'bar', name: 'Bar ' + i }, 120 + i * 40, 60));
+// Lo que alimenta «verde y agua»: parques con nombre y un cuerpo de agua.
+for (let i = 0; i < 3; i++) usos.push(nodo({ leisure: 'park', name: 'Parque ' + i }, -250 + i * 220, -260));
+usos.push(nodo({ natural: 'water', name: 'Laguna del Parque' }, 300, 320));
+usos.push(nodo({ landuse: 'forest', name: 'Bosque del cerro' }, -380, 380));
+// Y lo que alimenta la movilidad: paradas de bus.
+for (let i = 0; i < 4; i++) usos.push(nodo({ highway: 'bus_stop', name: 'Parada ' + i }, -200 + i * 140, 0));
+
+/* Las vías llevan `center` además de `geometry`: la consulta de usos las pide
+   con `out center` y de ahí saca el motor los corredores arteriales y su
+   distancia. Sin el centro, un sector con avenidas se analizaba como si no
+   tuviera ninguna vía con nombre. */
+const via = (nombre, clase, pts) => ({ type: 'way', id: id++,
+  tags: { highway: clase, name: nombre, lanes: '2' },
+  center: { lat: pts[Math.floor(pts.length / 2)].lat, lon: pts[Math.floor(pts.length / 2)].lng },
+  geometry: pts.map(p => ({ lat: p.lat, lon: p.lng })) });
+const geo = [
+  via('Autopista Nacional', 'trunk', [P(-600, -500), P(-100, 0), P(600, 500)]),
+  via('Avenida 1', 'primary', [P(-600, 200), P(600, 200)]),
+  via('Avenida 3', 'primary', [P(-300, -600), P(-300, 600)]),
+  via('Calle 8', 'secondary', [P(-600, -200), P(600, -200)]),
+  via('Carrera 5', 'tertiary', [P(-600, 400), P(600, 400)]),
+  via('Ciclorruta del río', 'cycleway', [P(-500, 100), P(500, 100)])
+].concat(
+  Array.from({ length: 8 }, (_, i) => via('Calle interior ' + i, 'residential',
+    [P(-500 + i * 130, -500), P(-500 + i * 130, 500)]))
+);
+
+/* El IDEAM: el punto cae dentro de la mancha de 100 años, que es la que usan
+   los POT para delimitar y por tanto la que hay que saber decir. */
+const CAPAS_IDEAM = [
+  { id: 1, name: 'Amenaza Inundacion TR 2 Años Centros Poblados 2K' },
+  { id: 5, name: 'Amenaza Inundacion TR 100 Años Centros Poblados 2K' }
+];
+
+(async () => {
+  const b = await chromium.launch({ executablePath: E.CHROMIUM, args: ['--no-sandbox'] });
+  const ctx = await b.newContext({ serviceWorkers: 'block', timezoneId: 'America/Bogota', locale: 'es-CO',
+    viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
+  await ctx.addInitScript(() => {
+    /* Solo en el marco principal: ver la nota en las demás suites. La
+       aplicación crea un marco escondido para medir la lámina. */
+    if (window.top !== window) return;
+    try {
+      localStorage.setItem('urbis_licencia_analisis', 'URBIS1.deprueba.deprueba');
+      localStorage.setItem('urbis_auth_session_v1', JSON.stringify({ usuario: 'urbisprocity', rol: 'admin',
+        es_admin: true, session_token: 't', active: true, verified: true }));
+      localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
+    } catch (e) {}
+  });
+  await ctx.route('**', r => /localhost:(8199|8787)/.test(r.request().url()) ? r.continue() : r.abort());
+  await ctx.route(/unpkg\.com/, r => { const u = r.request().url();
+    r.fulfill({ status: 200, contentType: u.endsWith('.css') ? 'text/css' : 'text/javascript',
+      body: fs.readFileSync(LEAFLET + (u.endsWith('.css') ? 'leaflet.css' : 'leaflet.js'), 'utf8') }); });
+  await ctx.route(/script\.google\.com/, r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"data":[]}' }));
+  await ctx.route(/cdn\.jsdelivr\.net/, r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await ctx.route(/locationiq\.com/, r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ address: { city: 'Cúcuta', state: 'Norte de Santander', country: 'Colombia', suburb: 'La Playa' } }) }));
+  await ctx.route(/overpass/, r => {
+    const q = (r.request().postData() || '') + r.request().url();
+    r.fulfill({ status: 200, contentType: 'application/json',
+      // La consulta de usos también trae las vías —con su centro—: de ahí
+      // salen los corredores arteriales, las paradas y el flujo.
+      body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos.concat(geo) }) });
+  });
+  await ctx.route(/ags\.esri\.co/, r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) }));
+  await ctx.route(/srvags\.sgc\.gov\.co/, r => {
+    const u = decodeURIComponent(r.request().url());
+    const cuerpo = /Zonas_amenaza_Sismica_NR10/.test(u)
+      ? [{ attributes: { AMENAZA: 'ALTA', AA: 0.35, AV: 0.30, MUNICIPIO: 'CÚCUTA' } }]
+      : [{ attributes: { PGA: 0.34, MUNICIPIO: 'CÚCUTA', DEPARTAMEN: 'NORTE DE SANTANDER' } }];
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ features: cuerpo }) });
+  });
+  await ctx.route(/visualizador\.ideam\.gov\.co/, r => {
+    const u = decodeURIComponent(r.request().url());
+    if (/MapServer\?f=json/.test(u)) {
+      return r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ layers: CAPAS_IDEAM, documentInfo: { Title: 'Amenaza ambiental' } }) });
+    }
+    /* Dos consultas por capa: si la capa CUBRE la zona (un rectángulo grande)
+       y si CONTIENE el punto. Acá las dos capas cubren, y el punto cae dentro
+       de la de cien años y fuera de la de dos. */
+    const capa = (u.match(/MapServer\/(\d+)\/query/) || [])[1];
+    const grande = /esriGeometryEnvelope/.test(u) || /distance=/.test(u);
+    const cuenta = grande ? 1 : (capa === '5' ? 1 : 0);
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: cuenta }) });
+  });
+
+  const pg = await ctx.newPage();
+  const err = []; pg.on('pageerror', e => err.push(String(e.message).slice(0, 140)));
+  await pg.goto(E.ESTATICO + '/index.html?app=educativo', { waitUntil: 'domcontentloaded' });
+  await E.esperarLaApp(pg);
+
+  const r = await pg.evaluate(async (D) => {
+    const { C, POL } = D, o = {}, esperar = ms => new Promise(x => setTimeout(x, ms));
+    const txt = el => (el ? (el.textContent || '') : '').replace(/\s+/g, ' ').trim();
+    window.URBIS_CONFIG.ANALISIS.API = window.__URBIS_MOTOR;
+    let capturado = '';
+    window.AIA_INFORME = window.AIA_INFORME || {};
+    window.AIA_INFORME.abrirVentanaImpresion = function (h) { capturado = h; };
+    window.map.setView([C.lat, C.lng], 15); await esperar(500);
+    const A = window.URBIS_PC_ANALISIS, R = window.URBIS_PC_RECON;
+    const bPC = document.querySelector('[data-u52-call="procity-open-map"]');
+    if (bPC) { bPC.click(); await esperar(600); }
+    A.iniciarDibujo(); POL.forEach(p => A.agregarPunto(p.lat, p.lng)); A.agregarPunto(POL[0].lat, POL[0].lng);
+    R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
+    await R.analizar(); await esperar(1400);
+    const H = () => document.getElementById('pcr-hoja');
+    const abrir = async () => { const a = H().querySelector('[data-pcr="agrandar"]');
+      if (a) { a.click(); await esperar(450); } };
+
+    // ── Lo que hay que medir para que las cinco cosas existan.
+    await esperar(5200);   // el limitador de Overpass: se espera, como una persona
+    const medir = async (acc, sel) => {
+      const x = H().querySelector('[data-pcr="' + acc + '"]');
+      if (!x) return false;
+      x.click();
+      for (let i = 0; i < 70 && !document.querySelector(sel); i++) await esperar(400);
+      await esperar(250); return !!document.querySelector(sel);
+    };
+    o.trazado = await medir('trazado', '.pcr-llenos');
+    const bAm = H().querySelector('[data-pcr="amenaza"]');
+    if (bAm) { bAm.click(); }
+    for (let i = 0; i < 60 && !R.estadoInundacion; i++) await esperar(400);
+    await esperar(2500);
+    await abrir();
+
+    // ── 3 · el flujo, en la ficha en pantalla.
+    const hoja = txt(H());
+    o.flujoEnFicha = /Quién pasa por acá/.test(hoja);
+    o.flujoDice = (hoja.match(/Quién pasa por acá[^]{0,240}/) || [''])[0];
+
+    // ── 5 · la capa de vías, sobre el mapa.
+    const formas = () => document.querySelectorAll('.leaflet-overlay-pane path').length;
+    o.formasAntes = formas();
+    const bVia = H().querySelector('[data-pcr="capa"][data-c="vias"]');
+    o.hayCapaVias = !!bVia;
+    if (bVia) { bVia.click(); await esperar(900); }
+    o.formasConVias = formas();
+    o.viasEncendida = !!(R.estado && R.estado().viasEnMapa) ||
+      !!document.querySelector('[data-pcr="capa"][data-c="vias"].on');
+    await abrir();
+    const bVia2 = H().querySelector('[data-pcr="capa"][data-c="vias"]');
+    if (bVia2) { bVia2.click(); await esperar(700); }
+    o.formasSinVias = formas();
+    await abrir();
+
+    // ── El papel.
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
+    o.lamina = capturado; capturado = '';
+    await abrir();
+    H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
+    o.pdf = capturado; capturado = '';
+
+    // Y que todo esto viaje con la ficha archivada.
+    o.guardado = (function () {
+      try {
+        const f = (R.leerFichas() || [])[0] || {};
+        return { inundacion: !!f.inundacion,
+                 flujo: !!(f.stats && f.stats.movilidad && f.stats.movilidad.flujo) };
+      } catch (e) { return { error: String(e) }; }
+    })();
+    return o;
+  }, { C, POL });
+
+  r.err = err.filter(e => !/L is not defined|Unexpected end/.test(e));
+  await pg.close(); await b.close();
+  fs.writeFileSync(S + 'masanalisis-lamina.html', r.lamina || '', 'utf8');
+
+  const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
+  let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
+  const LAM = r.lamina || '', PDF = r.pdf || '';
+  // El cuerpo de una caja de la lámina, para no confundir su texto con el de
+  // la caja de al lado.
+  const cajaDe = t => (LAM.split('<section class="caja')
+    .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+
+  console.log('\n  -- 1 · la inundación llega al pliego --');
+  T('la lámina trae su caja', !!cajaDe('La inundación'));
+  T('y dice en qué mancha cae y cada cuánto se inunda',
+    /100<\/b><small>años de retorno/.test(cajaDe('La inundación')) &&
+    /se inunda/.test(cajaDe('La inundación')),
+    (cajaDe('La inundación').match(/mancha de <b>\d+ años<\/b>[^<]*/) || ['no lo dice'])[0]);
+  T('con la salvedad, que es la mitad del dato',
+    /no es un certificado/.test(cajaDe('La inundación')));
+  T('y va en la banda ambiental, con el resto del riesgo',
+    /banda-ambiental[^]*?<h2>La inundación<\/h2>/.test(LAM.replace(/\n/g, '')));
+
+  console.log('\n  -- 2 · cómo se llega, con cifras --');
+  const CL = cajaDe('Cómo se llega');
+  T('la lámina trae su caja', !!CL);
+  T('con la vía que manda y a qué distancia',
+    /Vía principal<\/span><b>[^<]*Autopista Nacional/.test(CL),
+    (CL.match(/Vía principal<\/span><b>[^<]*/) || ['no está'])[0].replace(/<[^>]*>/g, ' '));
+  T('los corredores, las paradas y la ciclorruta',
+    /Corredores arteriales/.test(CL) && /Paradas de transporte/.test(CL) &&
+    /Tramos de ciclorruta/.test(CL));
+  T('y los dos índices, que antes solo salían en el informe en hojas',
+    /facilidad para llegar \/100/.test(CL) && /exposición al tránsito \/100/.test(CL));
+  T('va en la banda de movilidad, con la red y la calle',
+    /banda-movilidad[^]*?<h2>Cómo se llega<\/h2>/.test(LAM.replace(/\n/g, '')));
+
+  console.log('\n  -- 3 · el flujo, que no salía en ninguna parte --');
+  T('sale en la ficha en pantalla', r.flujoEnFicha === true,
+    (r.flujoDice || '').slice(0, 90) || 'no sale');
+  T('con el reparto del día', /Mañana|Mediodía|Tarde|Noche/.test(r.flujoDice || ''),
+    (r.flujoDice || '').slice(0, 120));
+  T('y con la lectura, no solo el número',
+    /Manda el|No pasa casi nadie|parejos/.test(r.flujoDice || ''),
+    (r.flujoDice || '').replace(/^[^]*?(Manda el|No pasa|Peatón y carro)/, '$1').slice(0, 90));
+  T('y llega al pliego', /Flujo a pie contra en carro/.test(CL),
+    (CL.match(/Flujo a pie contra en carro<\/span><b>[^<]*/) || ['no llega'])[0].replace(/<[^>]*>/g, ' '));
+
+  console.log('\n  -- 4 · verde y agua --');
+  const VA = cajaDe('Verde y agua');
+  T('la lámina trae su caja', !!VA);
+  T('con parques, agua y manchas de verde',
+    /parques<\/small>/.test(VA) && /cuerpos de agua<\/small>/.test(VA) &&
+    /manchas de verde<\/small>/.test(VA));
+  T('y dice que cuenta lo REGISTRADO, no lo que hay',
+    /OpenStreetMap tiene registrado/.test(VA));
+
+  console.log('\n  -- 5 · la jerarquía vial, también sobre el mapa --');
+  T('la capa está en el panel', r.hayCapaVias === true);
+  T('y encenderla dibuja la red', r.formasConVias > r.formasAntes,
+    r.formasAntes + ' → ' + r.formasConVias + ' formas');
+  T('apagarla la quita', r.formasSinVias <= r.formasAntes,
+    r.formasConVias + ' → ' + r.formasSinVias + ' formas');
+
+  console.log('\n  -- y todo viaja con la ficha --');
+  T('la inundación queda archivada', (r.guardado || {}).inundacion === true);
+  T('y el flujo también', (r.guardado || {}).flujo === true,
+    JSON.stringify(r.guardado));
+
+  console.log('');
+  T('sin errores de JavaScript', r.err.length === 0, r.err.join(' | ') || 'ninguno');
+  console.log('\n  ' + (mal ? mal + ' fallaron' : 'todo pasó'));
+  process.exit(mal ? 1 : 0);
+})();

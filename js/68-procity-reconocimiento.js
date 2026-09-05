@@ -150,6 +150,7 @@
        aparezca sola en el pliego de un sector guardado hace meses en vez de
        quedar fuera por no estar en una lista que se escribió antes de que
        existiera. */
+    viasEnMapa: false,
     pliegoOff: APAGADAS_DE_ENTRADA.slice(), pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
     // La amenaza sísmica del municipio, del Servicio Geológico. Se pide a
     // botón como el clima o el terreno: es una consulta a un servidor lento y
@@ -368,7 +369,12 @@
         viasArterias: (mv.viasArterias || []).slice(0, 4),
         // Las rutas pesan cuatro líneas y son la mitad de «cómo se llega»:
         // sin guardarlas, un sector reabierto perdía el transporte público.
-        rutas: (mv.rutas || []).slice(0, 12)
+        rutas: (mv.rutas || []).slice(0, 12),
+        /* Y el flujo, que son diez números: cuánto peatón, cuánto carro, cuál
+           manda, el reparto por franjas y si la calle sigue viva de noche. Es
+           lo que decide el formato de un proyecto, así que una ficha reabierta
+           sin él perdería la caja entera de «cómo se llega». */
+        flujo: mv.flujo || null
       } : null,
       // Población y demografía: es la mitad del informe que no depende del
       // mapeo, así que sin ella la ficha guardada quedaría coja.
@@ -479,6 +485,10 @@
       // La amenaza es del municipio y no cambia nunca: guardarla evita
       // volver a esperar medio minuto al servidor del SGC.
       amenaza: S.amenaza || null,
+      /* Y la inundación con ella: son dos servicios distintos del mismo
+         momento y guardarlos por separado dejaría fichas con el sismo y sin
+         el río, que en Cúcuta es la mitad que falta. */
+      inundacion: S.inundacion || null,
       // Los índices que escribió el estudiante. Son siete números y son el
       // trabajo de haber ido a buscar el POT: perderlos al recargar sería
       // hacerle repetir esa búsqueda.
@@ -2201,6 +2211,9 @@
       'El clima':                          ['suelo', 'nube'],
       'Asoleamiento':                      ['suelo', 'destello'],
       'La amenaza sísmica':                ['suelo', 'alerta'],
+      'La inundación':                     ['suelo', 'agua'],
+      'Verde y agua':                      ['suelo', 'verde'],
+      'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
       'A distancia de caminar':            ['mover', 'caminar'],
       'Hasta dónde se camina desde el lote': ['mover', 'ruta'],
@@ -2587,6 +2600,135 @@
       esc(am.fuente) + '.</p>';
       })(), 'g3') +
       
+      /* ── La inundación ────────────────────────────────────────────────
+         Estaba medida, salía en la ficha y en el informe en hojas, y NO
+         tenía caja en el pliego. En Cúcuta, con el Pamplonita y el Zulia,
+         eso es de lo primero que pregunta un jurado y era lo único del
+         análisis de riesgo que no llegaba al papel.
+
+         Se dice entero, incluido cuando no se sabe: «sin modelar» no se
+         pinta como buena noticia, porque en una lámina una ausencia con cara
+         de todo-en-orden es peor que un renglón vacío. */
+      caja('La inundación',
+      (function () {
+      var inu = o.inundacion !== undefined ? o.inundacion : S.inundacion;
+      if (!inu || inu.sinDato) return '';
+      if (!inu.cobertura) {
+      return '<div class="kpis">' +
+      '<div class="k"><b style="color:' + esc(inu.color) + '">Sin modelar</b>' +
+      '<small>amenaza de inundación</small></div>' +
+      '</div>' +
+      '<p class="lee">' + esc(inu.que) + ' <b>No quiere decir que no se inunde</b>: quiere ' +
+      'decir que nadie lo midió con este mapa.</p>' +
+      '<p class="nota">' + esc(inu.salvedad) + ' ' + esc(inu.fuente) + '.</p>';
+      }
+      var dentro = inu.trPeor != null;
+      return '<div class="kpis">' +
+      '<div class="k"><b style="color:' + esc(inu.color) + '">' + esc(inu.nombre) + '</b>' +
+      '<small>amenaza de inundación</small></div>' +
+      (dentro ? '<div class="k"><b>' + inu.trPeor + '</b><small>años de retorno</small></div>' : '') +
+      '</div>' +
+      (dentro
+      ? '<p class="lee">El lote cae en la mancha de <b>' + inu.trPeor + ' años</b>: se inunda ' +
+      esc(inu.frecuencia) + '. ' + esc(inu.que) + '</p>' +
+      (inu.dentroDe.length > 1
+      ? inu.dentroDe.map(function (tr) {
+      return fila('Mancha de ' + tr + ' años', 'lo toca'); }).join('')
+      : '') +
+      (inu.creciente && inu.creciente.length
+      ? '<p class="lee">Además está en zona de <b>creciente súbita</b>: no sube despacio, ' +
+      'llega de golpe. Cambia el acceso, la evacuación y el nivel del primer piso.</p>'
+      : '') +
+      (inu.enLaDeCien
+      ? fila('En la mancha de 100 años', 'la que usa el POT para delimitar') : '')
+      : '<p class="lee">El sitio está modelado y el lote queda <b>fuera</b> de las manchas.</p>') +
+      '<p class="nota">' + esc(inu.salvedad) + ' Escala ' + esc(inu.escala) + '. ' +
+      esc(inu.fuente) + '.</p>';
+      })(), 'g3') +
+
+      /* ── Cómo se llega ────────────────────────────────────────────────
+         El pliego tenía el perfil de la calle, lo que se alcanza a pie, hasta
+         dónde se camina y el mapa de jerarquía vial; le faltaban las cifras
+         del corredor, que son las que contestan «cómo llega hasta acá quien
+         no vive acá». Estaban calculadas desde siempre y solo salían en el
+         informe en hojas.
+
+         Y con ellas el FLUJO, que es la parte que no salía en ningún lado: si
+         por esta calle pasa más gente a pie o más carros, en qué franja del
+         día está viva y si sigue viva de noche. Es lo que decide el formato
+         de un proyecto —a qué se abre, dónde entra, a qué hora sirve— y
+         estaba dentro de la respuesta del servidor sin que nadie la leyera. */
+      caja('Cómo se llega',
+      (function () {
+      var mv = st.movilidad;
+      if (!mv) return '';
+      var fl = mv.flujo || null;
+      var FR = [['manana', 'Mañana'], ['mediodia', 'Mediodía'], ['tarde', 'Tarde'], ['noche', 'Noche']];
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + (mv.scoreAcceso || 0) + '</b><small>facilidad para llegar /100</small></div>' +
+      '<div class="k"><b>' + (mv.exposicion || 0) + '</b><small>exposición al tránsito /100</small></div>' +
+      (fl && fl.dominante
+      ? '<div class="k"><b>' + esc(fl.dominante === 'ninguno' ? 'poco' : fl.dominante) +
+      '</b><small>qué predomina</small></div>'
+      : '') +
+      '</div>' +
+      (mv.viaPrincipal
+      ? fila('Vía principal', esc(mv.viaPrincipal.nombre || 'sin nombre') +
+      (mv.viaPrincipal.jerarquia ? ' · ' + esc(mv.viaPrincipal.jerarquia) : '') +
+      (mv.viaPrincipal.distM != null ? ' · a ' + Math.round(mv.viaPrincipal.distM) + ' m' : ''))
+      : fila('Vías arterias', 'ninguna con nombre registrada')) +
+      fila('Corredores arteriales', mv.nViasArterias || 0) +
+      fila('Paradas de transporte', mv.paradasBus || 0) +
+      fila('Tramos de ciclorruta', mv.ciclorrutas || 0) +
+      (fl
+      ? fila('Flujo a pie contra en carro', (fl.peatonal || 0) + ' / ' + (fl.vehicular || 0)) +
+      (fl.franjas
+      ? barras(FR.filter(function (f) { return fl.franjas[f[0]] != null; }),
+      function (f) { return f[1]; },
+      function (f) { return fl.franjas[f[0]] + '%'; },
+      function (f) { return fl.franjas[f[0]]; })
+      : '') +
+      '<p class="lee">' +
+      (fl.dominante === 'peatonal' ? 'Manda el peatón: el proyecto se abre a la calle.'
+      : fl.dominante === 'vehicular' ? 'Manda el carro: hay que resolver el acceso y protegerse del ruido.'
+      : fl.dominante === 'ninguno' ? 'No pasa casi nadie, ni a pie ni en carro: el proyecto tiene que traer su propia gente.'
+      : 'Peatón y carro parejos: hay que atender bien los dos accesos.') +
+      (fl.franjaFuerte ? ' La calle está más viva en ' + esc(fl.franjaFuerte) + '.' : '') +
+      (fl.vidaNocturna ? ' Y sigue viva de noche.' : '') +
+      '</p>'
+      : '') +
+      '<p class="nota">La facilidad para llegar y la exposición al tránsito son índices de 0 a ' +
+      '100 armados con la jerarquía de las vías cercanas y su distancia. El flujo es una ' +
+      'estimación a partir de los usos y de los corredores, no un aforo.</p>';
+      })(), 'g3') +
+
+      /* ── Verde y agua ─────────────────────────────────────────────────
+         Lo mismo: contado desde siempre y solo en el informe en hojas. En una
+         lámina de análisis ambiental es de las primeras cosas que se miran, y
+         es distinto de la cobertura leída de la foto: esto son los parques,
+         los cuerpos de agua y las manchas de verde REGISTRADOS —tienen nombre
+         y dueño— y aquello es cuánto verde hay, lo haya registrado alguien o
+         no. Juntas dicen si el verde del sector es público o es de patio. */
+      caja('Verde y agua',
+      (function () {
+      var am = st.ambiente;
+      if (!am) return '';
+      var nada = !am.parques && !am.cuerposAgua && !am.verdeNatural;
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + (am.parques || 0) + '</b><small>parques</small></div>' +
+      '<div class="k"><b>' + (am.cuerposAgua || 0) + '</b><small>cuerpos de agua</small></div>' +
+      '<div class="k"><b>' + (am.verdeNatural || 0) + '</b><small>manchas de verde</small></div>' +
+      '</div>' +
+      (am.scoreVerde != null ? fila('Presencia de verde', am.scoreVerde + ' / 100') : '') +
+      (nada
+      ? '<p class="lee">No hay parques, ni agua, ni verde registrados en el área. Puede que ' +
+      'no los haya o que nadie los haya mapeado: la foto satelital lo desempata.</p>'
+      : '') +
+      '<p class="nota">Contado sobre lo que OpenStreetMap tiene registrado con nombre. La ' +
+      'caja de cobertura del suelo dice cuánto verde hay de verdad, lo haya registrado ' +
+      'alguien o no.</p>';
+      })(), 'g3') +
+
       caja('Espacio público efectivo',
       (function () {
       var e = trz && trz.espacio;
@@ -2869,12 +3011,14 @@
         que: 'dónde queda · cuánto mide · el plano del sector',
         cajas: ['Plano del sector', 'El sitio'] },
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
-        que: 'relieve · clima · sol · sombra · amenaza · espacio público',
+        que: 'relieve · clima · sol · amenaza · inundación · verde · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
-                'La amenaza sísmica', 'Espacio público efectivo'] },
+                'La amenaza sísmica', 'La inundación', 'Verde y agua',
+                'Espacio público efectivo'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
-        que: 'la calle · lo que se alcanza a pie · hasta dónde se camina',
-        cajas: ['El perfil de la calle', 'A distancia de caminar', 'Hasta dónde se camina desde el lote'] },
+        que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
+        cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
+                'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
         que: 'qué hay · dónde · hitos y nodos',
         cajas: ['Qué hay, por categoría', 'Hitos y nodos'] },
@@ -3638,17 +3782,18 @@
   /* Las capas que esta hoja pone sobre el mapa. Se declaran juntas y arriba
      porque quitarDelMapa las apaga todas de una vez: una capa que se declara
      al lado de su función es una capa que alguien olvida apagar. */
-  var capaCurvas = null, capaSombras = null, capaCortes = null;
+  var capaCurvas = null, capaSombras = null, capaCortes = null, capaVias = null;
 
   function quitarDelMapa() {
     var m = mapa();
-    [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras, capaCortes].forEach(function (c) {
+    [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras, capaCortes,
+     capaVias].forEach(function (c) {
       if (c && m) { try { m.removeLayer(c); } catch (e) {} }
     });
     capaPuntos = null; capaEstratos = null; capaLlenos = null;
-    capaCurvas = null; capaSombras = null; capaCortes = null;
+    capaCurvas = null; capaSombras = null; capaCortes = null; capaVias = null;
     S.llenosEnMapa = false; S.curvasEnMapa = false; S.sombrasEnMapa = false;
-    S.cortesEnMapa = false;
+    S.cortesEnMapa = false; S.viasEnMapa = false;
   }
 
   /* Los llenos y vacíos, dibujados. Las cifras dicen QUÉ PROPORCIÓN del área
@@ -7298,6 +7443,16 @@
         falta: trz ? 'no hay nada mapeado en el sector' : 'medí el trazado',
         dato: trz && trz.llenos && !trazadoSinDatos(trz)
           ? trz.llenos.pctLleno + '% construido' : '' },
+      { id: 'como-se-llega', t: 'Cómo se llega', g: 'Cómo se mueve',
+        listo: !!(res && res.stats && res.stats.movilidad),
+        falta: 'analizá el sector',
+        dato: (function () {
+          var m = res && res.stats && res.stats.movilidad;
+          if (!m) return 'corredores, buses y flujo';
+          var f = m.flujo && m.flujo.dominante;
+          return (m.nViasArterias || 0) + ' corredores · ' + (m.paradasBus || 0) + ' paradas' +
+                 (f && f !== 'ninguno' ? ' · flujo ' + f : '');
+        })() },
       { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
         listo: !!(trz && trz.perfil), falta: 'medí el trazado', dato: 'la sección tipo' },
       /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una
@@ -7316,6 +7471,20 @@
         dato: S.amenaza ? ('amenaza ' + String(S.amenaza.nivel || '').toLowerCase() +
                            (S.amenaza.masa ? ' · y deslizamiento' : ''))
                         : 'Aa, Av, la curva y el deslizamiento' },
+      { id: 'la-inundacion', t: 'La inundación', g: 'El suelo',
+        listo: !!(S.inundacion && !S.inundacion.sinDato),
+        falta: 'pedí la amenaza: la inundación viene con ella',
+        dato: S.inundacion && S.inundacion.nombre
+          ? String(S.inundacion.nombre).toLowerCase()
+          : 'las manchas del IDEAM' },
+      { id: 'verde-y-agua', t: 'Verde y agua', g: 'El suelo',
+        listo: !!(res && res.stats && res.stats.ambiente),
+        falta: 'analizá el sector',
+        dato: (function () {
+          var a = res && res.stats && res.stats.ambiente;
+          return a ? (a.parques || 0) + ' parques · ' + (a.cuerposAgua || 0) + ' de agua'
+                   : 'parques, agua y manchas de verde';
+        })() },
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
         falta: 'analizá el sector', dato: 'la carta solar del sitio' },
 
@@ -7591,6 +7760,15 @@
                  dato: 'huellas de los edificios', color: '#3B4A5A',
                  on: !!S.llenosEnMapa, listo: !!(S.trzHuellas && S.trzHuellas.length),
                  falta: 'medí el trazado' });
+    lista.push({ id: 'vias', grupo: 'Cómo se mueve', nombre: 'Jerarquía vial',
+                 dato: (function () {
+                   var rj = redPorJerarquia(S.trzVias);
+                   return rj.length ? rj.map(function (j) { return j.etq.toLowerCase(); }).join(' · ')
+                                    : 'troncales, principales y locales';
+                 })(),
+                 color: '#16A34A',
+                 on: !!S.viasEnMapa, listo: !!(S.trzVias && S.trzVias.length),
+                 falta: 'medí el trazado' });
     lista.push({ id: 'curvas', grupo: 'El suelo', nombre: 'Curvas de nivel',
                  dato: (S.curvas && S.curvas.intervalo ? 'cada ' + S.curvas.intervalo + ' m' : 'del relieve'),
                  color: '#8A5A20', on: !!S.curvasEnMapa, listo: !!S.terRejilla,
@@ -7648,6 +7826,7 @@
     if (id === 'estratos') { pintarEstratos(!!encender); return; }
     if (id === 'llenos') { pintarLlenos(!!encender); return; }
     if (id === 'curvas') { pintarCurvas(!!encender); return; }
+    if (id === 'vias') { pintarVias(!!encender); return; }
     if (id === 'sombras') { pintarSombras(!!encender); return; }
     if (id === 'caminata') { pintarCaminata(!!encender); return; }
     if (id === 'intangible') { pintarIntangible(!!encender); return; }
@@ -8199,7 +8378,17 @@
     var lista = capasDisponibles(st);
     var puestas = lista.filter(function (c) { return c.on; }).length;
     var listas = lista.filter(function (c) { return c.listo; }).length;
-    var grupos = ['Lo que hay', 'El suelo', 'El lote'];
+    /* El orden preferido, y DESPUÉS lo que no esté en él. La lista era fija y
+       una capa de un grupo nuevo desaparecía del panel sin decir nada: la
+       jerarquía vial se agregó con grupo «Cómo se mueve», salía en el pliego y
+       no se podía encender sobre el mapa, y el síntoma era que el botón no
+       existía. Un panel que decide qué mostrar por una lista escrita a mano
+       vuelve a perder la siguiente. */
+    var PREFERIDOS = ['Lo que hay', 'Cómo se mueve', 'El suelo', 'El lote'];
+    var grupos = PREFERIDOS.slice();
+    lista.forEach(function (c) {
+      if (c.grupo && grupos.indexOf(c.grupo) === -1) grupos.push(c.grupo);
+    });
     return h4('capas', 'Las capas del mapa') +
       '<p class="pcr-pista">Todo lo que se puede poner sobre el mapa, en un solo sitio. Hay <b>' +
       listas + '</b> capa' + (listas === 1 ? '' : 's') + ' disponible' + (listas === 1 ? '' : 's') +
@@ -11738,6 +11927,40 @@
     return true;
   }
 
+  /* ── La jerarquía vial sobre el mapa ──────────────────────────────────
+     El recuadro del pliego existía desde v732 y la capa no: era la única de
+     las siete que estaba en el papel y no se podía encender sobre el mapa,
+     que es donde se comprueba si el dibujo dice la verdad del sitio. Ahora
+     están las dos, y las dos leen la misma tabla —`JERARQUIA_VIAL`—, así que
+     no pueden pintar de colores distintos.
+
+     De menor a mayor jerarquía, para que las troncales queden encima: al
+     revés, cien calles locales tapan la avenida. */
+  function pintarVias(encender) {
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return false;
+    if (capaVias) { try { m.removeLayer(capaVias); } catch (e) {} capaVias = null; }
+    S.viasEnMapa = false;
+    if (!encender) return false;
+    var vias = S.trzVias || [];
+    if (!vias.length) return false;
+    capaVias = L.layerGroup();
+    JERARQUIA_VIAL.slice().reverse().forEach(function (j) {
+      vias.forEach(function (v) {
+        if (jerarquiaVialDe(v.clase) !== j || !v.pts || v.pts.length < 2) return;
+        try {
+          L.polyline(v.pts.map(function (p) { return [p.lat, p.lng]; }), {
+            color: j.color, weight: j.ancho * 1.7, opacity: 0.9, interactive: true
+          }).addTo(capaVias)
+            .bindTooltip((v.nombre || 'sin nombre') + ' · ' + j.etq.toLowerCase(), { sticky: true });
+        } catch (e) {}
+      });
+    });
+    capaVias.addTo(m);
+    S.viasEnMapa = true;
+    return true;
+  }
+
   /* Las sombras sobre el mapa. Las tres horas a la vez, translúcidas: donde
      se cruzan, el mapa se oscurece solo. */
   function pintarSombras(encender) {
@@ -12261,7 +12484,71 @@
       (mv.paradasBus === 0
         ? '<p class="pcr-pista">Sin paradas de bus registradas. Si en la calle sí las hay, ubicarlas es una tarea concreta para la salida.</p>'
         : '') +
+      bloqueFlujo(mv) +
       bloqueRutas(mv);
+  }
+
+  /* ── Quién pasa por acá: a pie o en carro ─────────────────────────────
+     El servidor calculaba esto desde siempre —cuánto peatón, cuánto
+     vehículo, cuál manda, cómo se reparte el día y si la calle sigue viva de
+     noche— y NINGUNA parte de la aplicación lo mostraba. Se descubrió
+     inventariando lo que el motor devuelve contra lo que la ficha usa: diez
+     números que ya viajaban en cada respuesta y que nadie leía.
+
+     Vale la pena porque contesta la pregunta que decide el formato de un
+     proyecto antes que ninguna cifra de área: a qué se abre, por dónde entra
+     y a qué hora sirve. Un local de barrio en una calle vehicular con la
+     puerta a la calle está mal resuelto, y eso no lo dice el índice de
+     ocupación. */
+  function bloqueFlujo(mv) {
+    var f = mv && mv.flujo;
+    if (!f) return '';
+    var FR = [['manana', 'Mañana'], ['mediodia', 'Mediodía'],
+              ['tarde', 'Tarde'], ['noche', 'Noche']];
+    var hayFranjas = f.franjas && FR.some(function (x) { return f.franjas[x[0]] != null; });
+    var LEE = {
+      peatonal: 'Manda el peatón. El proyecto se abre a la calle: vitrina, zaguán, sombra ' +
+                'en el andén. Encerrarlo detrás de un parqueadero sería darle la espalda a ' +
+                'lo que ya funciona.',
+      vehicular: 'Manda el carro. Hay que resolver el acceso vehicular y protegerse del ' +
+                 'ruido y del polvo; la fachada a la vía no es la buena para dormir.',
+      equilibrado: 'Peatón y carro parejos. Los dos accesos hay que atenderlos bien, y el ' +
+                   'punto de conflicto es dónde se cruzan.',
+      ninguno: 'No pasa casi nadie, ni a pie ni en carro. Un proyecto acá no se cuelga de ' +
+               'un flujo que no existe: tiene que traer su propia gente.'
+    };
+    return '<p class="pcr-lab">Quién pasa por acá</p>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + (f.peatonal || 0) + '</b><small>flujo a pie /100</small></div>' +
+        '<div class="pcr-kpi"><b>' + (f.vehicular || 0) + '</b><small>flujo en carro /100</small></div>' +
+        (f.franjaFuerte
+          ? '<div class="pcr-kpi"><b>' + esc(f.franjaFuerte.replace(/^(el|la) /, '')) +
+            '</b><small>la hora fuerte</small></div>'
+          : '') +
+      '</div>' +
+      /* Las mismas clases que el bloque de cobertura: nombre, barra y número.
+         Inventar otra fila de barras para esto sería tener dos que se ven
+         casi igual y se mantienen por separado. */
+      (hayFranjas
+        ? '<div class="pcr-niveles">' +
+            FR.filter(function (x) { return f.franjas[x[0]] != null; }).map(function (x) {
+              return '<div class="pcr-nivel">' +
+                '<span class="pcr-nivel-nom">' + x[1] + '</span>' +
+                '<span class="pcr-nivel-barra"><i style="width:' +
+                  Math.max(2, f.franjas[x[0]]) + '%"></i></span>' +
+                '<b class="pcr-nivel-n">' + f.franjas[x[0]] + '%</b>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '') +
+      '<p class="pcr-conc">' + esc(LEE[f.dominante] || LEE.equilibrado) + '</p>' +
+      (f.vidaNocturna
+        ? '<p class="pcr-conc">Y sigue viva de noche, que en Cúcuta no es lo común: cambia el ' +
+          'horario de un local y cambia quién se siente seguro caminando.</p>'
+        : '') +
+      '<p class="pcr-pista">Es una <b>estimación</b> a partir de los usos registrados y de los ' +
+      'corredores cercanos, no un aforo. Contar cuánta gente pasa en diez minutos, a tres horas ' +
+      'distintas, la desmiente o la confirma en una tarde.</p>';
   }
 
   function bloqueAmbiente(st) {
@@ -14084,6 +14371,7 @@
     S.terRejilla = f.terrenoRejilla || null;
     S.clima = f.clima || null;
     S.amenaza = f.amenaza || null;
+    S.inundacion = f.inundacion || null; S.inundacionAviso = '';
     S.campo = f.campo || null;
     S.caminata = f.caminata || null;
     S.intangible = (f.intangible || []).slice();
@@ -14672,6 +14960,7 @@
         S.terreno = f.terreno || null;
         S.clima = f.clima || null;
         S.amenaza = f.amenaza || null;
+        S.inundacion = f.inundacion || null;
         S.campo = f.campo || null;
         S.lote = f.lote || null;
         S.terRejilla = f.terrenoRejilla || null;
@@ -15120,6 +15409,7 @@
           sombras: null,
           intangible: f.intangible || [],
           amenaza: f.amenaza || null,
+          inundacion: f.inundacion || null,
           /* Y su composición: la lámina de una ficha archivada tiene que
              salir con las cajas que tenía cuando se archivó, no con las que
              estén puestas ahora en otro sector. */

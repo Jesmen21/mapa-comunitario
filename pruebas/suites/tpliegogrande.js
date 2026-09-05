@@ -327,16 +327,23 @@ const geo = [
       torcidos.length === 0,
       torcidos.map(m => m.t + ': ' + m.propVB.toFixed(2)).join(' · ') ||
         'todos a la forma del sector (' + (mapas[0] || {}).propVB.toFixed(2) + ')');
-    /* Y que el dibujo use su caja. Queda algo de blanco cuando la caja es más
-       ancha que el sector —el reparto de la banda no puede darle a cada mapa
-       una caja con su forma exacta—, pero de ahí a que el dibujo ocupe media
-       caja hay un trecho, y ese trecho es el que se estaba perdiendo. */
-    const aprovecha = m => (m.hueco > 0 ? Math.min(m.w, m.h * (m.propVB || 1)) / m.hueco : 0);
-    const flacos = mapas.filter(m => aprovecha(m) < 0.6);
-    T('y el dibujo ocupa su caja, no la mitad',
-      flacos.length === 0,
-      flacos.map(m => m.t + ': ' + Math.round(aprovecha(m) * 100) + '%').join(' · ') ||
-        'del ' + Math.round(Math.min.apply(null, mapas.map(aprovecha)) * 100) + '% para arriba');
+    /* Y que ningún dibujo se quede corto. Queda blanco cuando la caja es más
+       ancha que el sector —el reparto de la banda no le puede dar a cada mapa
+       una caja con su forma exacta— y eso no se puede evitar; lo que sí se
+       puede es que el dibujo llegue hasta donde le dejan. Así que se le exige
+       lo máximo posible: o llena el ancho de su caja, o está topado por el
+       alto, y el tope se lee del propio pliego —el mapa más alto—. Un dibujo
+       que no llene ni una cosa ni la otra está dejando papel sin usar, que es
+       lo que pasaba con el techo de alto fijo. */
+    const dibujado = m => Math.min(m.w, m.h * (m.propVB || 1));   // ancho real del dibujo
+    const techo = Math.max.apply(null, mapas.map(m => m.h));
+    const cortos = mapas.filter(m =>
+      dibujado(m) < m.hueco * 0.95 && m.h < techo * 0.95);
+    T('y ningún dibujo se queda corto: llena el ancho o llega al tope de alto',
+      cortos.length === 0,
+      cortos.map(m => m.t + ': ' + Math.round(dibujado(m) / m.hueco * 100) + '% del ancho, ' +
+        m.h + ' de ' + techo + ' px de alto').join(' · ') ||
+        mapas.length + ' mapas, tope de alto ' + mm(techo) + ' mm');
   });
 
   console.log('\n  -- la caja del lote dice el reparto, no veintidós renglones --');
