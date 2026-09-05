@@ -429,14 +429,34 @@
   display:flex; flex-direction:column; gap:7px;
   border-top:1px solid #e2e8f0; padding-top:14px; margin-top:4px;
 }
+/* La fila del sector, en dos alturas: arriba el sector —miniatura y nombre,
+   a todo el ancho— y abajo lo que se hace con él. En una sola línea, con
+   «Comparar» al lado, el nombre se partía en cuatro renglones de tres
+   letras: en 412 px de pantalla no caben un plano, un título y dos botones
+   en la misma línea. */
 .pcr-guardada{
-  display:flex; align-items:center; gap:8px;
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
   background:#f7fbfd; border:1px solid #e2e6f0;
   border-radius:9px; padding:8px 10px;
 }
+.pcr-guardada > .pcr-mini{ margin-left:auto; }
+/* La tarjeta entera es el botón que abre el informe: en un teléfono se
+   toca la fila, no un botón de 28 px. Mínimo 44 px de alto, que es lo que
+   mide un dedo. */
+.pcr-guardada-ir{
+  flex:1 1 100%; min-width:0; display:flex; align-items:center; gap:8px;
+  background:none; border:0; padding:0; margin:0; text-align:left;
+  font:inherit; color:inherit; cursor:pointer; min-height:44px;
+}
+.pcr-guardada-ir:active{ opacity:.7; }
 .pcr-guardada-t{ flex:1; min-width:0; }
 .pcr-guardada-t b{ display:block; font-size:.83rem; color:#3a3f78; }
 .pcr-guardada-t small{ display:block; font-size:.7rem; color:#5a6472; }
+.pcr-guardada-ver{
+  display:inline-flex; align-items:center; gap:4px; margin-top:3px;
+  font-size:.68rem; font-style:normal; font-weight:700; color:#0a6f9e;
+}
+.pcr-guardada-ver svg{ width:13px; height:13px; }
 .pcr-x-mini{ width:28px; height:28px; font-size:.82rem; flex:0 0 auto; }
 .pcr-mini:disabled{ opacity:.45; cursor:default; }
 

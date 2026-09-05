@@ -124,10 +124,16 @@ for(let i=0;i<30;i++){ const a=i*12*Math.PI/180, d=(80+(i%5)*30)/111320;
        se reconoce de un vistazo, y si va después ya se leyó el texto. */
     o.listaMiniPrimero=(function(){
       if(!fila) return false;
-      const hijos=[...fila.children];
-      const iM=hijos.findIndex(x=>x.classList.contains('pcr-guardada-mini'));
-      const iT=hijos.findIndex(x=>x.classList.contains('pcr-guardada-t'));
-      return iM>=0 && iT>=0 && iM<iT;
+      /* En ORDEN DEL DOCUMENTO, no entre los hijos directos: desde que la
+         fila entera es el botón que abre el informe, el plano y el nombre
+         cuelgan de él y no de la fila. Lo que la prueba defiende es que el
+         plano se lea primero, no de quién cuelga; mirando solo los hijos
+         directos, cualquier envoltorio nuevo la hacía fallar sin que nada
+         se hubiera movido de sitio. */
+      const m=fila.querySelector('.pcr-guardada-mini');
+      const t=fila.querySelector('.pcr-guardada-t');
+      if(!m||!t) return false;
+      return !!(m.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING);
     })();
     return o;
   },{C,POL});

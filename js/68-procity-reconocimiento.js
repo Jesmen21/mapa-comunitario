@@ -1670,6 +1670,27 @@
     return true;
   }
 
+  /* El logo de URBIS, dibujado y no traído.
+
+     Es el mismo isotipo de la aplicación —el pin blanco con la U y el punto
+     amarillo sobre el celeste—, pero en trazos: la lámina se arma en una
+     ventana o en un marco que no comparte la carpeta del sitio, así que un
+     `<img src="assets/…">` sale roto justo donde más se nota, y en el papel
+     un logo pixelado a 90 cm se ve peor que ninguno. Dibujado entra en el
+     PDF como vector y se imprime nítido al tamaño que sea. */
+  function marcaURBIS(mm) {
+    var m = mm || 14;
+    return '<svg class="logo" width="' + m + 'mm" height="' + m + 'mm" viewBox="0 0 100 100" ' +
+      'role="img" aria-label="URBIS" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="100" height="100" rx="20" fill="#34CCFE"/>' +
+      '<path d="M50 17c-15 0-27 12-27 27 0 16 18 28 27 36 9-8 27-20 27-36 0-15-12-27-27-27z" fill="#fff"/>' +
+      '<path d="M38.5 33v17a11.5 11.5 0 0 0 23 0V33" fill="none" stroke="#34CCFE" stroke-width="7.1" ' +
+        'stroke-linecap="round"/>' +
+      '<circle cx="60.5" cy="36.5" r="11.6" fill="#fff"/>' +
+      '<circle cx="60.5" cy="36.5" r="8.9" fill="#FBBE07"/>' +
+    '</svg>';
+  }
+
   function laminaImprimible(res, opts) {
     var o = opts || {};
     /* Las cajas apagadas viajan por `opts` para que una ficha guardada se
@@ -2731,6 +2752,7 @@
         'border-radius:50%; background:#34CCFE; opacity:.13 }' +
       '.marca{ flex:0 0 auto; display:flex; flex-direction:column; gap:1mm; padding-right:8mm;' +
         'border-right:.4mm solid rgba(255,255,255,.28) }' +
+      '.marca .logo{ display:block; margin-bottom:1.5mm; border-radius:3mm }' +
       '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#fff; font-weight:800 }' +
       '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#34CCFE; font-weight:700 }' +
       '.tit{ flex:1; min-width:0; position:relative }' +
@@ -2950,7 +2972,7 @@
       '</style></head><body><div class="hoja">' +
 
       '<header class="cab">' +
-        '<div class="marca"><b>URBIS</b><small>Pro City</small></div>' +
+        '<div class="marca">' + marcaURBIS(15) + '<b>URBIS</b><small>Pro City</small></div>' +
         '<div class="tit">' +
           '<div class="ey">Análisis urbano · reconocimiento del sector</div>' +
           '<h1>' + esc(nombre || (ubic && ubic.barrio) || 'Sector analizado') + '</h1>' +
@@ -3444,6 +3466,33 @@
       if (acc === 'volver') { S.resultado = null; S.comparacion = null; S.aviso = ''; S.textoPlano = ''; pintar(); return; }
       if (acc === 'borrar-ficha') { borrarFicha(b.getAttribute('data-id')); pintar(); return; }
       if (acc === 'comparar') { comparar(b.getAttribute('data-id')); return; }
+      /* Volver a ver un sector guardado, entero. El informe completo ya
+         existe —lo arma `informeGuardado` con lo que la ficha trae, sin
+         red— pero vivía solo en la pestaña de sectores, y desde la hoja no
+         había cómo llegar. Acá se abre esa pestaña con la ficha desplegada,
+         que es exactamente lo que hay que ver, en vez de duplicar el
+         informe dentro de la hoja. */
+      if (acc === 'ver-ficha') {
+        var idV = b.getAttribute('data-id');
+        if (!idV) return;
+        S.pestanaAbierta = idV; S.avisoPestana = '';
+        if (typeof window.urbisProCityAbrirSector === 'function') {
+          cerrar();
+          try { window.urbisProCityAbrirSector(); } catch (e) {}
+          // Que la ficha desplegada quede a la vista y no debajo de las que
+          // están antes en la lista.
+          setTimeout(function () {
+            try {
+              var d = document.querySelector('.pcr-pest-ficha.abierta');
+              if (d && d.scrollIntoView) d.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            } catch (e) {}
+          }, 260);
+        } else {
+          S.aviso = 'El informe guardado se abre desde la pestaña de sectores.';
+          pintar();
+        }
+        return;
+      }
       if (acc === 'imprimir') {
         if (!S.resultado || !S.ultimasZonas) return;
         var caja2 = document.getElementById('pcr-nombre');
@@ -4495,9 +4544,19 @@
       '</div>';
   }
 
-  /* Las fichas guardadas, con lo único que se hace con ellas: compararlas
-     contra lo que el curso mapeó después. Si no hay ninguna, no se muestra
-     nada: un cajón vacío con un título encima solo ocupa pantalla. */
+  /* Las fichas guardadas. Dos cosas se hacen con ellas: VOLVER A VERLAS
+     enteras —el informe completo, con sus gráficas, sin repetir el
+     análisis— y compararlas contra lo que el curso mapeó después.
+
+     Lo primero faltaba: la lista solo ofrecía «Comparar», y comparar además
+     está apagado mientras nadie haya mapeado. Un sector analizado, con todo
+     medido, quedaba guardado y sin puerta de entrada desde acá; había que
+     saber que el informe vive en otra pestaña. Se dijo con estas palabras:
+     «me gustaría entrar y volver a ver todo el análisis, todo lo que se
+     investigó, y solo sale un botón que dice comparar».
+
+     Si no hay ninguna ficha no se muestra nada: un cajón vacío con un
+     título encima solo ocupa pantalla. */
   function htmlGuardadas() {
     var fichas = leerFichas();
     if (!fichas.length) return '';
@@ -4509,19 +4568,30 @@
         '<button type="button" data-pcr="ver-mapa" class="pcr-mini">' +
           (S.enMapa ? ico('apagar') + 'Quitar del mapa' : ico('mapa') + 'Ver en el mapa') + '</button>' +
       '</div>' +
+      '<p class="pcr-pista">Tocá un sector para volver a ver su informe entero, con sus gráficas, ' +
+      'sin repetir el análisis. ' +
       (hayCampo
-        ? '<p class="pcr-pista">Después de la salida a campo, compará: vas a ver cuánto agregó el curso.</p>'
-        : '<p class="pcr-pista">Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.</p>') +
+        ? 'Y después de la salida a campo, compará: vas a ver cuánto agregó el curso.'
+        : 'Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.') +
+      '</p>' +
       fichas.map(function (f) {
         var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
         var tam = f.forma === 'poligono' ? formatearArea(f.areaM2) : (f.radioM + ' m');
+        /* La tarjeta entera abre el informe: en un teléfono, apuntarle a un
+           botón de 28 px al lado de la miniatura es peor que tocar la fila,
+           y tocar la fila es lo que cualquiera intenta primero. Los dos
+           botones de al lado se quedan por lo suyo. */
         return '<div class="pcr-guardada">' +
-          miniaturaDeFicha(f) +
-          '<div class="pcr-guardada-t">' +
-            '<b>' + esc(f.nombre || cuando) + '</b>' +
-            (f.nombre ? '<em class="pcr-guardada-f">' + esc(cuando) + '</em>' : '') +
-            '<small>' + esc(tam) + ' · ' + f.total + ' usos</small>' +
-          '</div>' +
+          '<button type="button" class="pcr-guardada-ir" data-pcr="ver-ficha" data-id="' + esc(f.id) + '"' +
+            ' aria-label="Ver el informe de ' + esc(f.nombre || cuando) + '">' +
+            miniaturaDeFicha(f) +
+            '<span class="pcr-guardada-t">' +
+              '<b>' + esc(f.nombre || cuando) + '</b>' +
+              (f.nombre ? '<em class="pcr-guardada-f">' + esc(cuando) + '</em>' : '') +
+              '<small>' + esc(tam) + ' · ' + f.total + ' usos</small>' +
+              '<em class="pcr-guardada-ver">' + ico('lupa', 13) + 'Ver el análisis</em>' +
+            '</span>' +
+          '</button>' +
           '<button type="button" data-pcr="comparar" data-id="' + esc(f.id) + '"' +
             ' class="pcr-mini"' + (hayCampo && !S.comparando ? '' : ' disabled') + '>' +
             (S.comparando ? '…' : ico('comparar', 16) + 'Comparar') + '</button>' +
@@ -12139,19 +12209,18 @@
       '</div>';
     }).join('');
 
-    // Los usos concretos más repetidos: es lo que el estudiante va a ver
-    // en la calle, más útil que la categoría general.
+    /* Los usos concretos más repetidos: es lo que el estudiante va a ver en
+       la calle, más útil que la categoría general. Los dibuja
+       `chipsMasRepetido`, que comparten esta ficha y el informe de un sector
+       guardado; la lista en crudo se queda acá porque más abajo, en «qué
+       verificar en campo», se nombra el primero de todos. */
     var subs = Object.keys(st.porSub || {})
       .map(function (s) { return { id: s, n: st.porSub[s] || 0 }; })
       .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
       .sort(function (a, b) { return b.n - a.n; })
       .slice(0, 8);
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
-    var chips = subs.map(function (x) {
-      var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
-      return '<span class="pcr-chip">' + (t && t.icono ? icoCat(t.icono, 13) : '') +
-             esc(t ? t.nombre : x.id) + ' <b>' + x.n + '</b></span>';
-    }).join('');
+    var chips = chipsMasRepetido(st);
 
     // El bloque que da sentido a todo esto.
     var tareas;
@@ -13277,6 +13346,29 @@
     };
   }
 
+  /* «Lo más repetido»: los usos concretos, no la categoría. Es lo que un
+     estudiante va a ver en la calle —seis peluquerías, cuatro papelerías— y
+     lo que hace que una categoría abstracta signifique algo.
+
+     Vive en su propia función porque lo pintan dos pantallas: la ficha viva
+     y el informe de un sector guardado. Estaba solo en la primera, así que
+     al volver a abrir un sector el bloque desaparecía sin motivo: el dato
+     estaba guardado, lo que faltaba era dibujarlo. */
+  function chipsMasRepetido(st) {
+    var subs = Object.keys((st && st.porSub) || {})
+      .map(function (s) { return { id: s, n: st.porSub[s] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; })
+      .slice(0, 8);
+    if (!subs.length) return '';
+    var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
+    return subs.map(function (x) {
+      var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
+      return '<span class="pcr-chip">' + (t && t.icono ? icoCat(t.icono, 13) : '') +
+             esc(t ? t.nombre : x.id) + ' <b>' + x.n + '</b></span>';
+    }).join('');
+  }
+
   function informeGuardado(f) {
     var st = f.stats;
     // El bloque del trazado lee S.trazado; para pintar el de una ficha
@@ -13330,6 +13422,10 @@
               '<span class="pcr-fila-n">' + x.n + '</span></div>';
           }).join('')
         : '') +
+      (function () {
+        var ch = chipsMasRepetido(st);
+        return ch ? h4('porcentaje', 'Lo más repetido') + '<div class="pcr-chips">' + ch + '</div>' : '';
+      })() +
       bloqueUsoPredominante(st) +
       (function () {
         // Con el trazado guardado, las alturas salen de su muestra —la
