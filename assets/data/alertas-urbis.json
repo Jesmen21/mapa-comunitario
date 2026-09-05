@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-04",
+  "actualizado": "2026-09-05",
   "alertas": [
+    {
+      "tipo": "Zona de inundación activa",
+      "titulo": "Colapso del puente El Ocal por creciente de ríos — 2 de septiembre de 2026, Guayabetal, Cundinamarca",
+      "lat": 4.2153,
+      "lng": -73.8144,
+      "desde": "2026-09-02",
+      "expira": "2026-09-10",
+      "lineas": [
+        "📅 El puente El Ocal, que conecta el casco urbano de Guayabetal con 11 veredas, colapsó en la madrugada del 2 de septiembre de 2026 por la creciente de los ríos Negro y Blanco; las lluvias intensas de los días siguientes, incluidas las de esta semana, han seguido agravando la situación.",
+        "📊 Más de 1.600 personas de 11 veredas permanecen incomunicadas. La Gobernación de Cundinamarca decretó calamidad pública en la zona rural e instaló un puesto de mando unificado con la Alcaldía, Bomberos y Defensa Civil; se construyó una tarabita de 432 metros para el paso de insumos mientras se diseña un nuevo puente.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Cundinamarca y la Alcaldía de Guayabetal. No es un reporte ciudadano."
+      ],
+      "fuente": "Gobernación de Cundinamarca / Alcaldía de Guayabetal",
+      "url": "https://www.elpais.com.co/colombia/puente-el-ocal-en-guayabetal-cundinamarca-colapso-por-fuertes-lluvias-gobernacion-anuncia-construccion-de-una-tarabita-temporal-0234.html"
+    },
     {
       "tipo": "Zona de inundación activa",
       "titulo": "Emergencia por lluvias e inundaciones en el Meta — 29 municipios afectados, 3 de septiembre de 2026",
