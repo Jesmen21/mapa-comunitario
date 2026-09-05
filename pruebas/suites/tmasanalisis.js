@@ -47,6 +47,12 @@ usos.push(nodo({ natural: 'water', name: 'Laguna del Parque' }, 300, 320));
 usos.push(nodo({ landuse: 'forest', name: 'Bosque del cerro' }, -380, 380));
 // Y lo que alimenta la movilidad: paradas de bus.
 for (let i = 0; i < 4; i++) usos.push(nodo({ highway: 'bus_stop', name: 'Parada ' + i }, -200 + i * 140, 0));
+/* Infraestructura de servicios: lo que sí registra OpenStreetMap. Un tanque,
+   una subestación y una planta, a distancias distintas del lote, que es lo que
+   la caja tiene que ordenar y medir. */
+usos.push(nodo({ man_made: 'water_tower', name: 'Tanque La Cumbre' }, 90, 140));
+usos.push(nodo({ power: 'substation', name: 'Subestación El Salado' }, -260, -180));
+usos.push(nodo({ man_made: 'works', name: 'Planta de tratamiento' }, 420, -380));
 
 /* Las vías llevan `center` además de `geometry`: la consulta de usos las pide
    con `out center` y de ahí saca el motor los corredores arteriales y su
@@ -56,6 +62,13 @@ const via = (nombre, clase, pts) => ({ type: 'way', id: id++,
   tags: { highway: clase, name: nombre, lanes: '2' },
   center: { lat: pts[Math.floor(pts.length / 2)].lat, lon: pts[Math.floor(pts.length / 2)].lng },
   geometry: pts.map(p => ({ lat: p.lat, lon: p.lng })) });
+/* Edificios vecinos del lote, con pisos: sin ellos la sombra que arroja el
+   proyecto no tiene a quién tocar y la prueba pasaría diciendo «sin vecinos»
+   sin haber comprobado nada. */
+const edif = (dx, dy, w2, h2, pisos) => ({ type: 'way', id: id++,
+  tags: { building: 'yes', 'building:levels': String(pisos) },
+  geometry: [P(dx, dy), P(dx + w2, dy), P(dx + w2, dy + h2), P(dx, dy + h2), P(dx, dy)]
+    .map(p => ({ lat: p.lat, lon: p.lng })) });
 const geo = [
   via('Autopista Nacional', 'trunk', [P(-600, -500), P(-100, 0), P(600, 500)]),
   via('Avenida 1', 'primary', [P(-600, 200), P(600, 200)]),
@@ -65,7 +78,14 @@ const geo = [
   via('Ciclorruta del río', 'cycleway', [P(-500, 100), P(500, 100)])
 ].concat(
   Array.from({ length: 8 }, (_, i) => via('Calle interior ' + i, 'residential',
-    [P(-500 + i * 130, -500), P(-500 + i * 130, 500)]))
+    [P(-500 + i * 130, -500), P(-500 + i * 130, 500)])),
+  /* PEGADOS al lote, que va de (−40,−30) a (40,30). A cuarenta metros no los
+     alcanzaba ninguna sombra y la prueba pasaba diciendo «sin vecinos
+     tocados», que es pasar sin comprobar nada: el camino que importa —contar
+     a quién le cae encima— no se ejecutaba. Uno a cada lado, porque de qué
+     lado cae la sombra depende de la hora. */
+  [edif(-55, -20, 14, 40, 3), edif(41, -20, 14, 40, 3),
+   edif(-20, 31, 40, 14, 4), edif(-150, -120, 70, 60, 5)]
 );
 
 /* El IDEAM: el punto cae dentro de la mancha de 100 años, que es la que usan
@@ -163,6 +183,25 @@ const CAPAS_IDEAM = [
       await esperar(250); return !!document.querySelector(sel);
     };
     o.trazado = await medir('trazado', '.pcr-llenos');
+
+    /* Un lote, que es lo que hace falta para el ruido y para la sombra que
+       arroja el proyecto: las dos se calculan desde el predio, no desde el
+       sector. */
+    await abrir();
+    const bf = [...H().querySelectorAll('button')].filter(x => /El lote y su entorno/.test(x.textContent || ''))[0];
+    if (bf) { bf.click(); await esperar(400); }
+    const bd = H().querySelector('[data-pcr="lote-dibujar"]');
+    if (bd) { bd.click(); await esperar(500); }
+    const LOTE = [[-40, -30], [40, -30], [40, 30], [-40, 30]];
+    for (const [dx, dy] of LOTE) {
+      window.map.fire('click', { latlng: { lat: C.lat + dy / 110540,
+        lng: C.lng + dx / (111320 * Math.cos(C.lat * Math.PI / 180)) } });
+      await esperar(60);
+    }
+    const bc = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
+    if (bc) { bc.click(); await esperar(900); }
+    o.lados = (R.loteDePrueba() || []).length;
+    R.abrir(); await esperar(400); await abrir();
     const bAm = H().querySelector('[data-pcr="amenaza"]');
     if (bAm) { bAm.click(); }
     for (let i = 0; i < 60 && !R.estadoInundacion; i++) await esperar(400);
@@ -270,6 +309,53 @@ const CAPAS_IDEAM = [
     r.formasAntes + ' → ' + r.formasConVias + ' formas');
   T('apagarla la quita', r.formasSinVias <= r.formasAntes,
     r.formasConVias + ' → ' + r.formasSinVias + ' formas');
+
+  console.log('\n  -- 6 · el ruido del tránsito, modelado --');
+  const RU = cajaDe('El ruido del tránsito');
+  T('la lámina trae su caja', !!RU);
+  T('con el nivel estimado en dB(A) y su grado',
+    /dB\(A\) estimados/.test(RU) && /(Muy alto|Alto|En el límite|Moderado|Tranquilo)<\/b>/.test(RU),
+    (RU.match(/>([\d,]+)<\/b><small>dB\(A\) estimados/) || ['no está'])[1] || 'no está');
+  T('y las vías que más aportan, con su distancia',
+    /Autopista Nacional|Avenida|Calle/.test(RU) && /dB · a \d+ m/.test(RU),
+    (RU.match(/>[^<]*<\/span><b>[\d,]+ dB · a \d+ m/) || ['no lo dice'])[0].replace(/<[^>]*>/g, ' '));
+  /* Lo que separa un modelo honesto de un número inventado es que diga qué no
+     sabe. Acá eso no es cosmético: sin la advertencia, 68 dB(A) estimados se
+     leen como 68 dB(A) medidos. */
+  T('y dice que es ESTIMADO, no medido, y qué no sabe',
+    /ESTIMADO, no medido/.test(RU) && /sonómetro/.test(RU));
+  T('con el límite de la norma colombiana a la vista', /627 de 2006/.test(RU));
+
+  console.log('\n  -- 7 · la sombra que arroja el proyecto --');
+  const SO = cajaDe('La sombra que arrojás');
+  T('la lámina trae su caja', !!SO);
+  T('con los pisos que permite la norma y la altura',
+    /pisos que permite la norma/.test(SO) && /m de alto/.test(SO));
+  T('y cuántos m² de sombra se salen del lote, hora por hora',
+    (SO.match(/A las \d+:00<\/span><b>[^<]*m² fuera/g) || []).length >= 2,
+    (SO.match(/A las \d+:00<\/span><b>[^<]*/g) || []).map(x => x.replace(/<[^>]*>/g, ' ')).join(' · ') || 'no lo dice');
+  /* Y que de verdad le caiga a alguien. Aceptar «sin vecinos tocados» como
+     respuesta válida dejaba sin ejecutar el único camino que importa. */
+  const tocados = (SO.match(/(\d+) vecinos? tocados?/g) || [])
+    .map(x => Number(x.match(/\d+/)[0]));
+  T('y le cae encima a alguien de verdad, con su cuenta',
+    tocados.some(n2 => n2 > 0) && /le tapa el <b>\d+%<\/b>/.test(SO),
+    (SO.match(/le cae encima a <b>\d+<\/b> edificios?[^]*?le tapa el <b>\d+%<\/b>/) || ['no toca a nadie'])[0]
+      .replace(/<[^>]*>/g, ''));
+  T('y advierte que el volumen es el de la norma, no un proyecto dibujado',
+    /no un proyecto dibujado/.test(SO) && /encogiendo el lote/.test(SO));
+
+  console.log('\n  -- 4 · la infraestructura de servicios --');
+  const IN = cajaDe('Infraestructura de servicios');
+  T('la lámina trae su caja cuando hay algo registrado', !!IN);
+  T('con lo que hay y a qué distancia',
+    /objetos registrados/.test(IN) && /a \d+ m/.test(IN),
+    (IN.match(/>(\d+)<\/b><small>objetos registrados/) || ['?', '0'])[1] + ' objetos');
+  /* Y lo que NO es. Esta es la aserción que importa: sin ella, una caja
+     titulada «infraestructura de servicios» se lee como si contestara si el
+     barrio tiene agua, y no lo contesta ni puede. */
+  T('y dice a las claras que no es la cobertura de servicios públicos',
+    /NO es la cobertura de servicios públicos/.test(IN) && /censo del DANE por manzana/.test(IN));
 
   console.log('\n  -- y todo viaja con la ficha --');
   T('la inundación queda archivada', (r.guardado || {}).inundacion === true);

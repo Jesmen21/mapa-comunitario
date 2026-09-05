@@ -2213,8 +2213,11 @@
       'La amenaza sísmica':                ['suelo', 'alerta'],
       'La inundación':                     ['suelo', 'agua'],
       'Verde y agua':                      ['suelo', 'verde'],
+      'El ruido del tránsito':             ['mover', 'alerta'],
+      'Infraestructura de servicios':      ['suelo', 'industria'],
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
+      'La sombra que arrojás':             ['proyecto', 'destello'],
       'A distancia de caminar':            ['mover', 'caminar'],
       'Hasta dónde se camina desde el lote': ['mover', 'ruta'],
       'El perfil de la calle':             ['mover', 'via'],
@@ -2702,6 +2705,69 @@
       'estimación a partir de los usos y de los corredores, no un aforo.</p>';
       })(), 'g3') +
 
+      /* ── La infraestructura de servicios ──────────────────────────────
+         Lo que hay registrado y a qué distancia. NO es cobertura de servicios
+         públicos —eso es censo del DANE y no hay de dónde bajarlo—, y la caja
+         lo dice en vez de dejar que se lea como si lo fuera. */
+      caja('Infraestructura de servicios',
+      (function () {
+      var inf = o.infra !== undefined ? o.infra
+              : (function () { try { return infraDeServicios(res); } catch (e) { return null; } })();
+      if (!inf) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + inf.n + '</b><small>objetos registrados</small></div>' +
+      (inf.masCerca && inf.masCerca.distM != null
+      ? '<div class="k"><b>' + inf.masCerca.distM + '</b><small>m al más cercano</small></div>'
+      : '') +
+      '</div>' +
+      inf.lista.slice(0, 6).map(function (x) {
+      return fila(x.nombre || (x.etq ? x.etq.charAt(0).toUpperCase() + x.etq.slice(1) : 'Sin nombre'),
+      (x.etq && x.nombre ? esc(x.etq) + ' · ' : '') +
+      (x.distM != null ? 'a ' + x.distM + ' m' : 'sin ubicar'));
+      }).join('') +
+      '<p class="nota">Esto NO es la cobertura de servicios públicos: es lo que ' +
+      'OpenStreetMap tiene registrado como infraestructura —tanques, subestaciones, plantas, ' +
+      'rellenos— y a qué distancia queda. Si el barrio tiene agua, alcantarillado y energía, y ' +
+      'cuántas horas al día, eso lo levanta el censo del DANE por manzana y no hay servicio que ' +
+      'lo sirva a una aplicación: hay que pedirlo, o preguntarlo en la calle.</p>';
+      })(), 'g3') +
+
+      /* ── El ruido del tránsito ────────────────────────────────────────
+         Modelado, no medido, y por eso lo dice en la caja. Nadie publica un
+         mapa de ruido de Cúcuta; lo que sí está medido son las vías, su
+         jerarquía y su distancia, y con eso el ruido del tránsito se estima
+         razonablemente. Sirve para decidir a qué lado NO van los dormitorios.
+         Ver el modelo entero, con lo que no sabe, en `ruidoDelLote`. */
+      caja('El ruido del tránsito',
+      (function () {
+      var ru = o.ruido !== undefined ? o.ruido
+             : (function () { try { return ruidoDelLote(); } catch (e) { return null; } })();
+      if (!ru) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b style="color:' + esc(ru.color) + '">' + conComa(ru.dB) +
+      '</b><small>dB(A) estimados</small></div>' +
+      '<div class="k"><b style="color:' + esc(ru.color) + '">' + esc(ru.etq) +
+      '</b><small>nivel</small></div>' +
+      '</div>' +
+      ru.principales.map(function (a) {
+      return '<div class="f"><span><i class="sol-punto" style="background:' + esc(a.color) + '"></i>' +
+        esc(a.nombre || a.etq) + '</span><b>' + conComa(a.dB) + ' dB · a ' + a.distM + ' m</b></div>';
+      }).join('') +
+      '<p class="lee">' +
+      (ru.pasaElLimite
+      ? 'Por encima de los <b>65 dB(A)</b> que la Resolución 627 de 2006 pone como límite de día ' +
+        'para vivienda. La fachada que da a la vía no es la buena para dormir: por ahí van los ' +
+        'servicios, y las ventanas de las alcobas al otro lado o con doble vidrio.'
+      : 'Por debajo de los 65 dB(A) del límite diurno para vivienda. Es una ventaja del sitio y ' +
+        'vale decirlo, sobre todo si el sector alrededor no la tiene.') +
+      '</p>' +
+      '<p class="nota">ESTIMADO, no medido: sale de la jerarquía de las ' + ru.cuantas + ' vías ' +
+      'cercanas y de su distancia, con caída de 3 dB al doblar la distancia y suma de energías. ' +
+      'No sabe cuánto tránsito pasa de verdad, ni si hay semáforo, pendiente, tapia o fachada que ' +
+      'rebote, ni cuenta las motos aparte. Para un dato defendible hace falta un sonómetro y tres ' +
+      'mediciones a horas distintas.</p>';
+      })(), 'g3') +
+
       /* ── Verde y agua ─────────────────────────────────────────────────
          Lo mismo: contado desde siempre y solo en el informe en hojas. En una
          lámina de análisis ambiental es de las primeras cosas que se miran, y
@@ -2863,6 +2929,50 @@
       '. Sin árboles ni muros, y con el terreno supuesto plano.</p>';
       })(), 'g3') +
       
+      /* ── La sombra que arroja el proyecto ─────────────────────────────
+         La caja de arriba dice quién le tapa el sol al lote. Esta dice a
+         quién se lo tapa el lote, que es la pregunta que hace un jurado
+         apenas ve la volumetría y que hasta ahora no tenía respuesta en
+         ninguna parte de la aplicación. */
+      caja('La sombra que arrojás',
+      (function () {
+      var sp = o.sombraProyecto !== undefined ? o.sombraProyecto
+             : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })();
+      if (!sp || !sp.horas || !sp.horas.length) return '';
+      var util = sp.horas.filter(function (h) { return !h.bajo; });
+      if (!util.length) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + sp.pisos + '</b><small>pisos que permite la norma</small></div>' +
+      '<div class="k"><b>' + sp.alturaM + '</b><small>m de alto</small></div>' +
+      (sp.peor
+      ? '<div class="k"><b>' + Number(sp.peor.m2Fuera).toLocaleString('es-CO') +
+      '</b><small>m² de sombra fuera del lote a las ' + sp.peor.hora + ':00</small></div>'
+      : '') +
+      '</div>' +
+      util.map(function (h) {
+      return fila('A las ' + h.hora + ':00',
+      Number(h.m2Fuera).toLocaleString('es-CO') + ' m² fuera · ' +
+      (h.tocados.length
+        ? h.tocados.length + (h.tocados.length === 1 ? ' vecino tocado' : ' vecinos tocados')
+        : 'sin vecinos tocados') +
+      ' · sombra de ' + h.largoM + ' m');
+      }).join('') +
+      (sp.peor && sp.peor.tocados.length
+      ? '<p class="lee">A las ' + sp.peor.hora + ':00 la sombra se sale <b>' +
+      Number(sp.peor.m2Fuera).toLocaleString('es-CO') + ' m²</b> del lote y le cae encima a <b>' +
+      sp.peor.tocados.length + '</b> edificio' + (sp.peor.tocados.length === 1 ? '' : 's') +
+      '; al más afectado le tapa el <b>' + sp.peor.tocados[0].pct + '%</b>. Eso es lo que hay ' +
+      'que poder defender: no que el proyecto reciba sol, sino que no se lo quite a nadie.</p>'
+      : '<p class="lee">La sombra del volumen permitido no alcanza ningún edificio vecino ' +
+      'registrado en las tres horas. Es un argumento a favor y conviene decirlo.</p>') +
+      '<p class="nota">El volumen es el que permite la norma —' + sp.pisos + ' pisos sobre ' +
+      Number(sp.huellaM2).toLocaleString('es-CO') + ' m² de huella—, no un proyecto dibujado, y la ' +
+      'huella se modela encogiendo el lote hacia su centro: un proyecto real se separa distinto en ' +
+      'cada lindero. Sirve para saber a quién le cae la sombra y en qué orden de magnitud.' +
+      (sp.vecinosSinPisos ? ' ' + sp.vecinosSinPisos + ' vecinos sin pisos registrados no se ' +
+      'pueden evaluar como afectados.' : '') + '</p>';
+      })(), 'g3') +
+
       caja('Lo levantado en campo',
       (function () {
       if (!cmp) return '';
@@ -3014,6 +3124,7 @@
         que: 'relieve · clima · sol · amenaza · inundación · verde · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'La inundación', 'Verde y agua',
+                'El ruido del tránsito', 'Infraestructura de servicios',
                 'Espacio público efectivo'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
@@ -3027,7 +3138,8 @@
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
       { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
-        cajas: ['El lote a intervenir', 'Qué cabe en el lote', 'Qué le pide el sitio al proyecto'] },
+        cajas: ['El lote a intervenir', 'Qué cabe en el lote', 'La sombra que arrojás',
+                'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
         que: 'lo intangible · lo levantado · lo que falta',
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] },
@@ -7477,6 +7589,22 @@
         dato: S.inundacion && S.inundacion.nombre
           ? String(S.inundacion.nombre).toLowerCase()
           : 'las manchas del IDEAM' },
+      { id: 'infraestructura-de-servicios', t: 'Infraestructura de servicios', g: 'El suelo',
+        listo: (function () {
+          try { return !!infraDeServicios(res); } catch (e) { return false; }
+        })(),
+        falta: 'no hay infraestructura registrada en el área',
+        dato: 'tanques, subestaciones y plantas, con su distancia' },
+      { id: 'el-ruido-del-transito', t: 'El ruido del tránsito', g: 'El suelo',
+        listo: (function () {
+          try { return !!ruidoDelLote(); } catch (e) { return false; }
+        })(),
+        falta: 'medí el trazado: el ruido se estima desde las vías',
+        dato: (function () {
+          try { var r2 = ruidoDelLote(); return r2 ? conComa(r2.dB) + ' dB(A) · ' + r2.etq.toLowerCase()
+                                                   : 'estimado desde la jerarquía vial'; }
+          catch (e) { return 'estimado desde la jerarquía vial'; }
+        })() },
       { id: 'verde-y-agua', t: 'Verde y agua', g: 'El suelo',
         listo: !!(res && res.stats && res.stats.ambiente),
         falta: 'analizá el sector',
@@ -7493,6 +7621,13 @@
       { id: 'que-cabe-en-el-lote', t: 'Qué cabe en el lote', g: 'El lote',
         listo: hayLote, falta: 'marcá el lote',
         dato: 'huella, metros y viviendas' },
+      { id: 'la-sombra-que-arrojas', t: 'La sombra que arrojás', g: 'El lote',
+        listo: (function () {
+          try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.length); }
+          catch (e) { return false; }
+        })(),
+        falta: 'marcá el lote y medí el trazado',
+        dato: 'a quién le tapa el sol el volumen permitido' },
       { id: 'que-le-pide-el-sitio-al-proyecto', t: 'Qué le pide el sitio al proyecto',
         g: 'El lote', listo: det(), falta: 'marcá el lote y medí algo más',
         dato: 'las determinantes' },
@@ -11102,6 +11237,297 @@
       centro: centro, lote: pts.slice(),
       huellasCerca: cerca.map(function (e) { return { anillo: e.anillo, pisos: e.pisos }; })
     };
+  }
+
+  /* ── La infraestructura de servicios que sí está registrada ───────────
+     Lo que se pidió era «servicios públicos»: si el barrio tiene agua,
+     alcantarillado y energía. Eso NO se puede contestar con lo que URBIS
+     tiene, y conviene decirlo antes que dar un número que suene a respuesta:
+     la cobertura por manzana la levanta el DANE en el censo y no hay servicio
+     público que la sirva a un navegador; OpenStreetMap no registra coberturas,
+     registra OBJETOS.
+
+     Lo que sí se puede contestar, y para un proyecto importa, es qué
+     infraestructura hay cerca y a qué distancia: una subestación al lado es
+     una servidumbre y un retiro; un tanque elevado dice por dónde llega el
+     agua y a qué cota; un relleno o una planta de tratamiento a trescientos
+     metros es una determinante que aparece en la primera revisión. Esos
+     objetos ya vienen clasificados en el análisis —la subcategoría
+     `infra_servicios`— y hasta ahora solo se contaban dentro del montón de
+     «servicios». */
+  var INFRA_ETQ = {
+    water_tower: 'tanque de agua', works: 'planta o fábrica', tower: 'torre',
+    mast: 'antena', substation: 'subestación eléctrica', recycling: 'punto de reciclaje',
+    landfill: 'relleno', waste_transfer_station: 'estación de residuos',
+    waste_disposal: 'disposición de residuos', storage_tank: 'tanque de almacenamiento'
+  };
+  function infraDeServicios(res) {
+    var pois = (res && res.pois) || [];
+    var centro = (S.lote && S.lote.length >= 3) ? centroideDe(S.lote)
+      : (res && res.meta && res.meta.lat != null
+          ? { lat: res.meta.lat, lng: res.meta.lng } : null);
+    var lista = pois.filter(function (p) { return p.sub === 'infra_servicios'; })
+      .map(function (p) {
+        var t = p.tags || {};
+        var etq = INFRA_ETQ[t.man_made] || INFRA_ETQ[t.power] || INFRA_ETQ[t.amenity] ||
+                  INFRA_ETQ[t.landuse] || INFRA_ETQ[t.building] || '';
+        return { nombre: p.nombre || '', etq: etq,
+                 distM: centro && p.lat != null ? Math.round(haversineM(centro, p)) : null };
+      })
+      .sort(function (a, b) {
+        if (a.distM == null) return 1;
+        if (b.distM == null) return -1;
+        return a.distM - b.distM;
+      });
+    if (!lista.length) return null;
+    return { lista: lista, n: lista.length, desdeElLote: !!(S.lote && S.lote.length >= 3),
+             masCerca: lista[0] };
+  }
+
+  /* ── El ruido del tránsito, modelado ──────────────────────────────────
+     No hay dónde bajarlo: nadie publica un mapa de ruido de Cúcuta. Pero el
+     ruido del tránsito es de las pocas cosas del ambiente urbano que se
+     dejan modelar razonablemente con lo que ya está medido —qué vías hay,
+     de qué jerarquía y a qué distancia—, y no tenerlo era peor: hasta ahora
+     la única pista era la frase «protegerse del ruido» en una lectura.
+
+     El modelo, dicho entero para que se pueda discutir:
+
+       · Cada jerarquía tiene un nivel de referencia a 10 m de la calzada,
+         del orden de lo que mide la literatura de tránsito urbano: una
+         troncal ronda los 75 dB(A) y una calle local los 58.
+       · El nivel cae 3 dB(A) cada vez que se dobla la distancia, que es la
+         divergencia de una fuente LINEAL —una calle es una línea de coches,
+         no un altavoz—. Un punto se atenuaría a 6.
+       · Cuando llegan dos fuentes se suman en energía, no en decibeles: dos
+         calles de 60 dan 63, no 120.
+
+     Lo que el modelo NO sabe, y por eso va escrito al lado del número: cuánto
+     tránsito pasa de verdad, si hay semáforo —frenar y arrancar suena más que
+     rodar—, si el pavimento está bueno, si hay una pendiente que hace rugir
+     los camiones, si hay una tapia que apantalla o una fachada que rebota. En
+     Cúcuta hay que sumarle las motos, que el modelo tampoco distingue.
+
+     Sirve para lo que sirve: decidir a qué lado del lote NO van los
+     dormitorios, y saber si hace falta medir en serio con sonómetro. */
+  var RUIDO_REF = { troncal: 75, principal: 72, secundaria: 68, colectora: 63,
+                    local: 58, peatonal: 50 };
+  function ruidoDelLote() {
+    var pts = (S.lote && S.lote.length >= 3) ? S.lote : null;
+    var centro = pts ? centroideDe(pts) : (S.resultado && S.resultado.meta &&
+      S.resultado.meta.lat != null ? { lat: S.resultado.meta.lat, lng: S.resultado.meta.lng } : null);
+    if (!centro) return null;
+    var vias = S.trzVias || [];
+    if (!vias.length) return null;
+
+    var aportes = [];
+    vias.forEach(function (v) {
+      var j = jerarquiaVialDe(v.clase);
+      if (!j || !v.pts || v.pts.length < 2) return;
+      var ref = RUIDO_REF[j.id];
+      if (ref == null) return;
+      // La distancia al TRAMO más cercano de esa vía, no a su primer punto:
+      // una avenida que pasa a treinta metros y sigue un kilómetro tiene su
+      // punto más cercano en cualquier parte.
+      var d = Infinity;
+      for (var i = 1; i < v.pts.length; i++) {
+        var c = distanciaASegmento(centro, v.pts[i - 1], v.pts[i]);
+        if (c.d < d) d = c.d;
+      }
+      if (!isFinite(d)) return;
+      // A menos de 10 m no se baja del nivel de referencia: el modelo deja de
+      // valer pegado a la calzada y prometer 80 dB sería inventar precisión.
+      var dm = Math.max(10, d);
+      var nivel = ref - 10 * Math.log(dm / 10) / Math.LN10;   // −3 dB al doblar
+      if (nivel < 30) return;
+      aportes.push({ nombre: v.nombre || '', jerarquia: j.id, etq: j.etq,
+                     color: j.color, distM: Math.round(d), dB: Math.round(nivel * 10) / 10 });
+    });
+    if (!aportes.length) return null;
+    // Suma energética: 10·log10(Σ 10^(Li/10)).
+    var suma = aportes.reduce(function (a, x) { return a + Math.pow(10, x.dB / 10); }, 0);
+    var total = Math.round(10 * Math.log(suma) / Math.LN10 * 10) / 10;
+    aportes.sort(function (a, b) { return b.dB - a.dB; });
+
+    /* Los escalones son los de la norma colombiana de ruido ambiental
+       —Resolución 627 de 2006 del entonces MAVDT—: 65 dB(A) de día en sector
+       de tranquilidad y ruido moderado, que es donde cae la vivienda. */
+    var G = total >= 75 ? { id: 'muy-alto', etq: 'Muy alto', color: '#B3282C' }
+          : total >= 70 ? { id: 'alto', etq: 'Alto', color: '#C2410C' }
+          : total >= 65 ? { id: 'en-el-limite', etq: 'En el límite', color: '#D97706' }
+          : total >= 55 ? { id: 'moderado', etq: 'Moderado', color: '#0A6F9E' }
+                        : { id: 'tranquilo', etq: 'Tranquilo', color: '#2E9E5B' };
+    return {
+      dB: total, grado: G.id, etq: G.etq, color: G.color,
+      limiteDiaVivienda: 65,
+      pasaElLimite: total > 65,
+      principales: aportes.slice(0, 4),
+      cuantas: aportes.length,
+      desdeElLote: !!pts
+    };
+  }
+
+  /* ── La sombra que arroja el proyecto ─────────────────────────────────
+     La caja de al lado calcula la sombra que los VECINOS echan sobre el lote.
+     Esta es la inversa, y es la que pregunta un jurado apenas ve la
+     volumetría: a quién le tapás el sol vos.
+
+     Es el mismo cálculo con el signo cambiado —el mismo sol, el mismo casco
+     convexo, el mismo muestreo—, así que costó poco y llevaba años faltando.
+
+     De qué volumen se habla: el que sale de «Qué cabe en el lote», que es lo
+     que la norma permite y no lo que alguien vaya a construir. La huella se
+     modela encogiendo el propio lote hacia su centro hasta que su área sea la
+     huella permitida. Es una APROXIMACIÓN y hay que decirlo: un proyecto real
+     se separa distinto en cada lindero y casi nunca es una reducción a escala
+     del predio. Sirve para saber a quién le va a caer la sombra y en qué
+     orden de magnitud; no reemplaza la sombra del proyecto dibujado. */
+  function sombraDelProyecto(fecha) {
+    var pts = S.lote || [];
+    var SOL = window.URBIS_SOLAR, Q = window.URBIS_QUE_CABE;
+    if (pts.length < 3 || !SOL || !Q) return null;
+    var la = null;
+    try { la = analisisDelLote(); } catch (e) {}
+    if (!la) return null;
+    var q = null;
+    try { q = Q.calcular(la, S.indices || Q.porDefecto(), ctxQueCabe(), S.indicesPuestos); }
+    catch (e) { return null; }
+    if (!q || !q.huellaM2 || !(q.indices && q.indices.pisos)) return null;
+
+    var centro = centroideDe(pts);
+    var rad = Math.PI / 180;
+    var kx = Math.cos(centro.lat * rad) * 111320, ky = 110540;
+    var aMetros = function (p) { return { x: (p.lng - centro.lng) * kx, y: (p.lat - centro.lat) * ky }; };
+    var aGrados = function (q2) { return { lat: centro.lat + q2.y / ky, lng: centro.lng + q2.x / kx }; };
+
+    var loteXY = pts.map(aMetros);
+    var areaLote = Math.abs(areaXY(loteXY));
+    if (!(areaLote > 0)) return null;
+    /* El encogimiento va por la raíz del cociente de áreas: encoger un
+       polígono a la mitad de lado deja un cuarto de área, no la mitad. */
+    var k = Math.sqrt(Math.min(1, q.huellaM2 / areaLote));
+    var huellaXY = loteXY.map(function (p) { return { x: p.x * k, y: p.y * k }; });
+    var pisos = q.indices.pisos;
+    var alturaM = pisos * ALTO_POR_PISO_M;
+
+    /* Los vecinos a los que puede alcanzarle. El mismo radio de 200 m que usa
+       la sombra de los vecinos: más allá, para que un edificio le tape el sol
+       a otro hace falta una torre que en un barrio no hay. */
+    var vecinos = [];
+    (S.trzHuellas || []).forEach(function (anillo, i) {
+      if (!anillo || anillo.length < 3) return;
+      if (haversineM(centro, anillo[0]) > 200) return;
+      var xy = anillo.map(aMetros);
+      // Que no sea el propio lote: una huella cuyo centro cae dentro del lote
+      // es el edificio que ya está y que el proyecto reemplaza.
+      var c = centroXY(xy);
+      if (dentroDePoligonoXY(c, loteXY)) return;
+      vecinos.push({ anillo: anillo, xy: xy, pisos: (S.trzPisos || [])[i] || null,
+                     muestras: muestrearXY(xy, 6) });
+    });
+
+    var horas = HORAS_SOMBRA.map(function (h) {
+      var dia = fecha ? new Date(fecha) : new Date();
+      var t = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate(), h, 0, 0);
+      var pos;
+      try { pos = SOL.posicion(t, centro.lat, centro.lng); } catch (e) { return null; }
+      if (!pos || pos.altitud <= 5) {
+        return { hora: h, altitud: pos ? Math.round(pos.altitud * 10) / 10 : null,
+                 bajo: true, sombra: [], m2Fuera: 0, tocados: [] };
+      }
+      var largo = alturaM / Math.tan(pos.altitud * rad);
+      var az = (pos.azimut + 180) % 360;
+      var dx = Math.sin(az * rad), dy = Math.cos(az * rad);
+      var movida = huellaXY.map(function (p) { return { x: p.x + dx * largo, y: p.y + dy * largo }; });
+      var sombra = cascoConvexo(huellaXY.concat(movida));
+      if (sombra.length < 3) return { hora: h, altitud: pos.altitud, sombra: [], m2Fuera: 0, tocados: [] };
+
+      /* Cuánta sombra cae FUERA del lote, que es la que le cuesta a alguien.
+         Se mide muestreando la caja de la sombra: intersecar dos polígonos
+         cóncavos con exactitud costaría más y no cambiaría la decisión. */
+      var m2Fuera = areaFueraXY(sombra, loteXY);
+      var tocados = vecinos.map(function (v) {
+        var n = 0;
+        v.muestras.forEach(function (m) { if (dentroDePoligonoXY(m, sombra)) n++; });
+        return { pisos: v.pisos, anillo: v.anillo,
+                 pct: v.muestras.length ? Math.round(100 * n / v.muestras.length) : 0 };
+      }).filter(function (v) { return v.pct > 0; })
+        .sort(function (a, b) { return b.pct - a.pct; });
+
+      return {
+        hora: h, altitud: Math.round(pos.altitud * 10) / 10,
+        azimut: Math.round(pos.azimut * 10) / 10,
+        largoM: Math.round(largo),
+        m2Fuera: Math.round(m2Fuera),
+        tocados: tocados,
+        sombra: sombra.map(aGrados)
+      };
+    }).filter(Boolean);
+
+    var peor = horas.slice().sort(function (a, b) { return b.m2Fuera - a.m2Fuera; })[0] || null;
+    var masTocados = horas.reduce(function (m, h) { return Math.max(m, h.tocados.length); }, 0);
+    return {
+      horas: horas, pisos: pisos, alturaM: Math.round(alturaM),
+      huellaM2: q.huellaM2, areaLoteM2: Math.round(areaLote),
+      vecinosCerca: vecinos.length,
+      vecinosSinPisos: vecinos.filter(function (v) { return !v.pisos; }).length,
+      peor: peor, masTocados: masTocados,
+      centro: centro, lote: pts.slice()
+    };
+  }
+
+  // El área con signo de un anillo en metros. Se usa para saber cuánto mide el
+  // lote sin volver a pedirle nada a nadie.
+  function areaXY(poli) {
+    var a = 0;
+    for (var i = 0, j = poli.length - 1; i < poli.length; j = i++) {
+      a += (poli[j].x + poli[i].x) * (poli[j].y - poli[i].y);
+    }
+    return a / 2;
+  }
+  function centroXY(poli) {
+    var x = 0, y = 0;
+    poli.forEach(function (p) { x += p.x; y += p.y; });
+    return { x: x / poli.length, y: y / poli.length };
+  }
+  /* Una rejilla de puntos dentro de un anillo, para preguntar «qué parte de
+     esto quedó tapado» sin intersecar polígonos. Con `n` chico basta: lo que
+     se busca es si a un vecino le cae encima media fachada o una esquina. */
+  function muestrearXY(poli, n) {
+    // En dos renglones y no en uno: la revisión sin navegador lee las
+    // declaraciones hasta el primer punto y coma, y con el `return p.x;` de la
+    // función de en medio se le pierde la segunda variable.
+    var xs = poli.map(function (p) { return p.x; });
+    var ys = poli.map(function (p) { return p.y; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var p = { x: x0 + (x1 - x0) * ((i + 0.5) / n), y: y0 + (y1 - y0) * ((j + 0.5) / n) };
+        if (dentroDePoligonoXY(p, poli)) out.push(p);
+      }
+    }
+    return out.length ? out : [centroXY(poli)];
+  }
+  /* Cuántos metros cuadrados de `poli` caen fuera de `dentro`. Por muestreo
+     sobre la caja de `poli`: cada muestra vale el área de su celda. */
+  function areaFueraXY(poli, dentro) {
+    // En dos renglones y no en uno: la revisión sin navegador lee las
+    // declaraciones hasta el primer punto y coma, y con el `return p.x;` de la
+    // función de en medio se le pierde la segunda variable.
+    var xs = poli.map(function (p) { return p.x; });
+    var ys = poli.map(function (p) { return p.y; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var N = 40, cel = ((x1 - x0) / N) * ((y1 - y0) / N), fuera = 0;
+    for (var i = 0; i < N; i++) {
+      for (var j = 0; j < N; j++) {
+        var p = { x: x0 + (x1 - x0) * ((i + 0.5) / N), y: y0 + (y1 - y0) * ((j + 0.5) / N) };
+        if (dentroDePoligonoXY(p, poli) && !dentroDePoligonoXY(p, dentro)) fuera += cel;
+      }
+    }
+    return fuera;
   }
 
   /* Casco convexo por el método de la cadena monótona. Sobre coordenadas ya

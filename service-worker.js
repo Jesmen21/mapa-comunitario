@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v734-lo-que-estaba-medido-y-no-se-mostraba';
+const URBIS_CACHE = 'urbis-v735-la-sombra-que-arrojas-el-ruido-y-la-infraestructura';
 const URBIS_ASSETS = [
   './',
   './index.html',
