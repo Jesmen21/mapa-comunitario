@@ -310,8 +310,8 @@ const geo=[
   console.log('\n  -- probar si cabe --');
   T('la prueba responde', !!r.cabe, r.cabe?r.cabe.texto:'no respondió');
   T('con esta lámina, cabe', !!r.cabe && r.cabe.si===true, r.cabe?r.cabe.texto:'');
-  T('y dice cuántas cajas y en cuántas columnas',
-    !!r.cabe && /\d+ cajas en \d+ columnas/.test(r.cabe.texto||''), r.cabe?r.cabe.texto:'');
+  T('y dice cuántas cajas y en cuántas bandas',
+    !!r.cabe && /\d+ cajas en [4-9] bandas/.test(r.cabe.texto||''), r.cabe?r.cabe.texto:'');
   T('el marco escondido se retira solo', r.sinMarcos===0, r.sinMarcos+' marcos quedaron');
 
   console.log('\n  -- se guarda con la ficha --');

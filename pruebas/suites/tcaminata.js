@@ -244,7 +244,7 @@ const geo=[
   r.detalleH=await medidor.evaluate(()=>{
     const rej=document.querySelector('.rej');
     return {
-      filas:getComputedStyle(rej).gridTemplateRows,
+      fueraDeBanda:document.querySelectorAll('.caja').length-document.querySelectorAll('.banda .bcuerpo .caja').length,
       rejAlto:rej.clientHeight, rejContenido:rej.scrollHeight,
       cajas:[...document.querySelectorAll('.caja')].map(c=>({
         t:(c.querySelector('h2')||{}).textContent||'?',
@@ -349,22 +349,25 @@ const geo=[
   T('y trae exactamente las mismas cajas',
     (LH.match(/<section class="caja/g)||[]).length===(LAM.match(/<section class="caja/g)||[]).length,
     (LH.match(/<section class="caja/g)||[]).length+' vs '+(LAM.match(/<section class="caja/g)||[]).length);
-  /* Acostado no hay rejilla: hay tres columnas de periódico. Con 300 mm menos
-     de alto, una rejilla paga el hueco de cada encaje por triplicado y la hoja
-     dejó de cerrar en cuanto entraron los dibujos; en columnas cada caja
-     conserva su alto natural y la siguiente arranca pegada. */
-  /* La hoja fluye en columnas de periódico en las dos orientaciones —dos
-     paradas, tres acostada, y tres también parada cuando va llena—, con el
-     plano fuera del flujo, arriba, a todo el ancho. La cuadrícula se fue
-     cuando los dibujos y las listas la desbordaron. */
-  /* Se mira la regla de la rejilla, no el documento entero: adentro de las
-     cajas sigue habiendo cuadrículas —las barras, la síntesis— y buscar
-     «grid-template-columns» en toda la hoja encuentra esas. */
-  const reglaRej=(LH.match(/\.rej\{[^}]*\}/)||[''])[0];
-  T('acostado fluye en columnas de periódico, sin rejilla',
-    /columns:[2-6]/.test(reglaRej) && !/grid-template-columns/.test(reglaRej), reglaRej.slice(0,40));
-  T('y el plano manda arriba, fuera del flujo',
-    /class="caja plano-hero"/.test(LH));
+  /* La hoja se organiza en BANDAS de ancho completo, una por categoría, con
+     su número y su título, y las cajas de cada una en fila debajo. Fue
+     columnas de periódico —que llenan parejo pero mezclan los temas— hasta
+     que se pidió, con una lámina de referencia en la mano, «organizada
+     horizontalmente, con títulos». Acostado, las bandas cortas comparten
+     fila; lo que no cambia es que NINGUNA caja queda fuera de una banda. */
+  T('acostado va en bandas tituladas, no en columnas de periódico',
+    /\.rej\{ display:flex; flex-direction:column/.test(LH) && !/\.rej\{ columns:/.test(LH) &&
+    (LH.match(/<div class="banda banda-[a-z]+/g)||[]).length>=4,
+    (LH.match(/<div class="banda banda-[a-z]+/g)||[]).length+' bandas');
+  T('cada banda lleva número, título y qué trae',
+    (LH.match(/<div class="bcab"><b>\d\d<\/b><h3>[^<]+<\/h3><small>[^<]+<\/small><\/div>/g)||[]).length===
+    (LH.match(/<div class="banda banda-/g)||[]).length);
+  T('y el plano abre la primera, con la ficha del sitio',
+    /<div class="banda banda-ubicacion"[^>]*><div class="bcab"><b>01<\/b>/.test(LH) &&
+    LH.indexOf('class="caja plano-hero"') > LH.indexOf('banda-ubicacion') &&
+    LH.indexOf('class="caja plano-hero"') < LH.indexOf('<h2>El sitio</h2>'));
+  T('ninguna caja queda fuera de su banda', (r.detalleH||{}).fueraDeBanda===0,
+    (r.detalleH||{}).fueraDeBanda+' sueltas');
   T('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');
   T('ni se pierde fuera del pliego acostado', (DH.perdidas||[]).length===0,
     (DH.perdidas||[]).join(' · ')||'ninguna');

@@ -1789,12 +1789,26 @@
     })();
     if (apagadas.indexOf('los-mapas-del-sector') !== -1) mapas = [];
 
-    var anchoPlanoMM = (horiz ? 900 : 600) - 48;
+    /* El plano comparte su banda con la ficha del sitio: ocupa tres de cuatro
+       columnas parado y cinco de seis acostado. Si el sitio está apagado se
+       queda con la fila entera. */
+    var conSitio = apagadas.indexOf(slugPliego('El sitio')) === -1;
+    var pesoPlano = 3;
+    /* Acostado, la banda del plano comparte la fila con la de los mapas —seis
+       de diez columnas para ellos— y el plano se queda con tres de las
+       cuatro que restan. */
+    var anchoFila = horiz ? 10 : 6;
+    var anchoBanda1 = ((horiz ? 900 : 600) - 40) * ((pesoPlano + (conSitio ? 1 : 0)) / (horiz && mapas.length ? anchoFila : (pesoPlano + (conSitio ? 1 : 0))));
+    var anchoPlanoMM = Math.round((anchoBanda1 - (conSitio ? 4 : 0)) *
+                                  (conSitio ? pesoPlano / (pesoPlano + 1) : 1)) - 8;
     var altoPlanoMM = horiz ? Math.max(46, 96 - 8 * extras)
                             : Math.max(76, 198 - 14 * extras);
     // Con la banda de mapas debajo, el plano cede: son dos figuras grandes
     // seguidas y la hoja no da para las dos a tamaño completo.
-    if (mapas.length) altoPlanoMM = Math.round(altoPlanoMM * (horiz ? 0.62 : 0.64));
+    /* Con los mapas en la hoja el plano ya no es la única figura y cede; pero
+       comparte banda con la ficha del sitio, que mide sus buenos 90 mm, así
+       que encogerlo más de eso no le devuelve papel a nadie. */
+    if (mapas.length) altoPlanoMM = horiz ? 56 : 78;
     var altoDelPlano = Math.round(520 * altoPlanoMM / anchoPlanoMM);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
@@ -2507,27 +2521,60 @@
        anidadas, y la prueba lo comprueba— y se vuelven a pegar por grupo,
        con su cabecera delante. En la rejilla de columnas la cabecera ocupa
        todo el ancho y el grupo fluye debajo. */
+    /* Las categorías, en el orden en que se leen de pie: primero dónde es,
+       después los mapas, y de ahí el análisis por temas hasta la síntesis.
+       Cada una es una BANDA de ancho completo con su número, su título y una
+       línea de qué trae, y sus cajas van en fila debajo. Es la organización
+       que se pidió con una lámina en la mano: «organizada horizontalmente,
+       con títulos». */
     var GRUPOS = [
-      { n: 1, id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
-        que: 'relieve, clima, sol, sombra, amenaza y espacio público',
+      { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio',
+        que: 'dónde queda · cuánto mide · el plano del sector',
+        cajas: ['Plano del sector', 'El sitio'] },
+      { id: 'mapas', titulo: 'Los mapas del sector', fam: 'sitio',
+        que: 'la misma área, una capa por recuadro',
+        cajas: ['Los mapas del sector'] },
+      { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
+        que: 'relieve · clima · sol · sombra · amenaza · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'Espacio público efectivo'] },
-      { n: 2, id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
-        que: 'la calle, lo que se alcanza a pie y hasta dónde se camina',
+      { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
+        que: 'la calle · lo que se alcanza a pie · hasta dónde se camina',
         cajas: ['El perfil de la calle', 'A distancia de caminar', 'Hasta dónde se camina desde el lote'] },
-      { n: 3, id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
-        que: 'población, viviendas, estrato, qué hay y dónde',
-        cajas: ['El sitio', 'Qué hay, por categoría', 'Hitos y nodos'] },
-      { n: 4, id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
-        que: 'llenos y vacíos, trazado y alturas',
+      { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
+        que: 'qué hay · dónde · hitos y nodos',
+        cajas: ['Qué hay, por categoría', 'Hitos y nodos'] },
+      { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
+        que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
-      { n: 5, id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
-        que: 'el predio, lo que cabe y lo que el sitio le pide al proyecto',
+      { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
+        que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'Qué cabe en el lote', 'Qué le pide el sitio al proyecto'] },
-      { n: 6, id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
-        que: 'lo intangible, lo levantado y lo que falta',
-        cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] }
+      { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
+        que: 'lo intangible · lo levantado · lo que falta',
+        cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] },
+      { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre',
+        que: 'a favor · en contra · falta levantar',
+        cajas: ['Síntesis del sector'] }
     ];
+    /* Cuántas columnas de la fila ocupa cada caja. El plano vale por varias
+       —es la figura de la lámina—, y los mapas y la síntesis ocupan la fila
+       entera. El resto vale una. */
+    var ANCHO_FILA = anchoFila;
+    var PESO = { 'Plano del sector': pesoPlano,
+                 'Los mapas del sector': horiz ? 6 : ANCHO_FILA, 'Síntesis del sector': ANCHO_FILA };
+    function pesoDe(titulo) { return PESO[titulo] || 1; }
+    /* Las bandas se arman DESPUÉS de las cajas y no reescribiendo el orden
+       del código: cada caja se construye donde vive su cálculo, y moverlas
+       en la fuente sería trasladar doscientas líneas por una decisión de
+       presentación. Acá se cortan por su `<section>` —no hay secciones
+       anidadas, y la prueba lo comprueba— y se vuelven a pegar por grupo.
+
+       Una banda por fila cuando el grupo es ancho. Los grupos cortos —dos o
+       tres cajas— comparten fila: con 900 mm de alto no hay papel para nueve
+       bandas de ancho completo, y tampoco hace falta: dos títulos en la
+       misma línea siguen siendo dos títulos, y las cajas siguen debajo del
+       suyo. Cada banda ocupa de la fila la parte que le toca por sus cajas. */
     function agruparCajas(html) {
       var trozos = html.split(/(?=<section class="caja)/).filter(function (t) { return t.indexOf('<section') === 0; });
       var porTitulo = {};
@@ -2536,36 +2583,131 @@
         var titulo = m ? m[1] : '';
         (porTitulo[titulo] || (porTitulo[titulo] = [])).push(t);
       });
-      var puestas = {}, salida = '', nGrupos = 0, indice = [];
+      var puestas = {}, bandas = [], indice = [];
       GRUPOS.forEach(function (g) {
-        var suyas = [];
-        g.cajas.forEach(function (tt) { (porTitulo[tt] || []).forEach(function (t) { suyas.push(t); puestas[tt] = true; }); });
+        var suyas = [], peso = 0;
+        g.cajas.forEach(function (tt) {
+          (porTitulo[tt] || []).forEach(function (t) { suyas.push(t); peso += pesoDe(tt); puestas[tt] = true; });
+        });
         if (!suyas.length) return;
-        nGrupos++;
-        var fam = FAMILIAS[g.fam] || FAMILIAS.sitio;
-        salida += '<div class="grupo grupo-' + g.id + '" style="--tinte:' + fam.tinte + ';--suave:' + fam.suave + '">' +
-          '<b>' + g.n + '</b><div><h3>' + esc(g.titulo) + '</h3><small>' + esc(g.que) + '</small></div></div>' +
-          // Cada caja del grupo lleva su número en el distintivo.
-          suyas.map(function (t) { return t.replace('<span class="ic" aria-hidden="true">',
-            '<span class="ic" aria-hidden="true"><em>' + g.n + '</em>'); }).join('');
-        indice.push({ n: g.n, titulo: g.titulo, fam: fam });
+        bandas.push({ g: g, cajas: suyas, peso: peso, fam: FAMILIAS[g.fam] || FAMILIAS.sitio });
       });
       // Lo que no esté en ningún grupo —una caja nueva que todavía no se
       // clasificó— sale al final, visible, en vez de perderse.
       var sueltas = [];
       Object.keys(porTitulo).forEach(function (tt) { if (!puestas[tt]) sueltas = sueltas.concat(porTitulo[tt]); });
       if (sueltas.length) {
-        salida += '<div class="grupo grupo-otras" style="--tinte:#6B7A8A;--suave:#EEF3F7"><b>' + (nGrupos + 1) +
-          '</b><h3>Otras mediciones</h3><small>sin categoría todavía</small></div>' + sueltas.join('');
+        bandas.push({ g: { id: 'otras', titulo: 'Otras mediciones', que: 'sin categoría todavía' },
+                      cajas: sueltas, peso: sueltas.length, fam: { tinte: '#6B7A8A', suave: '#EEF3F7' } });
       }
-      return { html: salida, grupos: nGrupos, indice: indice };
+      // Las filas: bandas seguidas mientras quepan en el ancho.
+      var filas = [], fila = null;
+      bandas.forEach(function (bd, i) {
+        bd.n = i + 1;
+        indice.push({ n: bd.n, titulo: bd.g.titulo, fam: bd.fam });
+        if (!fila || fila.peso + bd.peso > ANCHO_FILA) { fila = { bandas: [], peso: 0 }; filas.push(fila); }
+        fila.bandas.push(bd); fila.peso += bd.peso;
+      });
+      var salida = filas.map(function (f) {
+        return '<div class="fila">' + f.bandas.map(function (bd) {
+          var cols = Math.min(bd.peso, ANCHO_FILA);
+          return '<div class="banda banda-' + bd.g.id + (bd.cajas.length === 1 ? ' sola' : '') +
+              '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
+            '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
+              '<small>' + esc(bd.g.que) + '</small></div>' +
+            '<div class="bcuerpo" style="grid-template-columns:repeat(' + cols + ',minmax(0,1fr))">' +
+              bd.cajas.join('') + '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+      }).join('');
+      return { html: salida, grupos: bandas.length, filas: filas.length, indice: indice };
     }
-    var agrupado = agruparCajas(cajasHTML);
-    cajasHTML = agrupado.html;
 
-    var COLUMNAS = horiz
-      ? (mapas.length ? (cajasHTML.length > 14000 ? 6 : 5) : cajasHTML.length > 14000 ? 4 : 3)
-      : (mapas.length ? (cajasHTML.length > 20000 ? 5 : 4) : cajasHTML.length > 20000 ? 3 : 2);
+    /* Las tres cajas que no salen de la lista —el plano, la banda de mapas y
+       la síntesis— se arman acá y entran a las bandas con las demás: el
+       plano abre la primera con la ficha del sitio, los mapas van seguidos
+       y la síntesis cierra. */
+    var cajaPlano =
+      /* El plano, a todo el ancho y antes de la rejilla. Era una caja más
+         dentro de una cuadrícula, y eso obligaba a que las filas se
+         repartieran el papel: cada fila valía por su caja más larga y los
+         huecos del encaje se pagaban dos y tres veces. Fuera de la rejilla es
+         lo que siempre fue en una lámina —el plano manda y el resto se
+         acomoda— y de paso deja de competir por el alto. */
+      caja('Plano del sector', (plano
+            ? '<div class="plano"><div class="plano-cuerpo" style="width:' +
+              Math.round(anchoPlanoMM * anchoDelPlano / 520) + 'mm">' + plano + '</div></div>'
+            : '') +
+          (conv
+            ? '<div class="conv">' + conv +
+              (cmp && (cmp.nuevos || []).length
+                ? '<span class="cv"><i class="rombo"></i>Encontrado por el curso <b>' +
+                  cmp.nuevos.length + '</b></span>'
+                : '') +
+              (loteA ? '<span class="cv"><i class="lote"></i>El lote a intervenir</span>' : '') +
+              '</div>'
+            : '') +
+          (huellas && huellas.length
+            ? '<p class="nota">Las manchas oscuras son las huellas de los edificios registrados; ' +
+              'los puntos, los usos mapeados, con el color de su categoría.</p>'
+            : '<p class="nota">Los puntos son los usos mapeados, con el color de su categoría.</p>'),
+          'plano-hero');
+    var cajaMapas =
+      /* La banda de mapas. Va inmediatamente después del plano y antes de
+         cualquier cifra, porque en una lámina de arquitectura eso es lo que
+         se mira primero y desde lejos: el ojo entra por los planos y recién
+         después lee. Cada capa en su recuadro, con su leyenda; en pantalla se
+         encienden de a una, en el papel salen todas. */
+      (function () {
+        if (!mapas.length) return '';
+        return '<section class="caja mapas-banda">' +
+            '<h2>Los mapas del sector</h2>' +
+            '<div class="mapas">' +
+              mapas.map(function (m) {
+                return '<figure class="mp' + (m.grande ? ' grande' : '') + '">' +
+                  '<figcaption>' + esc(m.titulo) + '</figcaption>' +
+                  '<div class="mp-dib">' + m.svg + '</div>' +
+                  '<small>' + esc(m.pie) + '</small>' +
+                '</figure>';
+              }).join('') +
+            '</div>' +
+            '<p class="nota">Cada recuadro es la misma área con una capa encima. Los de calor ' +
+            'muestran dónde se concentra cada categoría —la mancha oscurece donde hay varios ' +
+            'juntos—; el resto son mediciones del suelo y del lote.</p>' +
+          '</section>';
+      })();
+    var cajaSintesis =
+      /* La síntesis cierra la hoja a todo el ancho, fuera de las columnas.
+         Adentro era la última en entrar y la primera en no caber: quince
+         cajas se reparten mal en dos columnas y la que sobra desaparece.
+         Afuera, además, es lo que corresponde —es la conclusión, no un dato
+         más— y sus tres listas se leen mejor en tres columnas anchas. */
+      caja('Síntesis del sector',
+          (function () {
+            var sn = sintesisDelSector(res);
+            if (!sn.favor.length && !sn.contra.length && !sn.falta.length) return '';
+            /* Cuatro por columna. En pantalla la lista puede ser larga; en una
+               lámina, una columna de doce viñetas no la lee nadie de pie a dos
+               metros. Se quedan las cuatro primeras, que son las que salieron
+               de los datos más gruesos. */
+            var col = function (titulo, lista, clase) {
+              return '<div class="sn ' + clase + '"><h3>' + esc(titulo) + '</h3>' +
+                (lista.length
+                  ? lista.slice(0, 4).map(function (x) {
+                      return '<div class="sx"><span>' + esc(x.texto) + '</span>' +
+                        '<small>' + esc(x.dato) + '</small></div>';
+                    }).join('')
+                  : '<div class="sx"><span>—</span></div>') +
+                '</div>';
+            };
+            return '<div class="sint">' +
+                col('A favor', sn.favor, 'ok') +
+                col('En contra', sn.contra, 'no') +
+                col('Falta levantar', sn.falta, 'tarea') +
+              '</div>';
+          })(), 'sintesis-pie');
+    var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis);
+    cajasHTML = agrupado.html;
 
     var hoy = new Date();
     return '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
@@ -2596,80 +2738,51 @@
       '.tit h1{ margin:1mm 0 2mm; font-size:11.5mm; line-height:1.05; letter-spacing:-.02em; font-weight:800; color:#fff }' +
       '.tit .sub{ font-size:3.6mm; color:#D6EEF8; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#9FD8F0; margin-top:1.5mm }' +
-      // Rejilla de cajas
-      /* La rejilla es de columnas de periódico en las dos orientaciones: dos
-         paradas, tres acostada. Fue una cuadrícula hasta que los dibujos y las
-         listas la desbordaron —una fila vale por su caja más larga, y ese
-         desperdicio se paga en cada fila—; en columnas cada caja conserva su
-         alto natural y la siguiente arranca pegada.
-
-         El reparto es `balance` y no `auto`. Llenar una columna hasta abajo
-         antes de empezar la siguiente deja en el pie de cada una el hueco de
-         la caja que no alcanzó a entrar, y con quince cajas esos huecos suman
-         una caja entera: la última se iba a una columna que no existe y
-         DESAPARECÍA del papel, sin recortarse ni avisar. Repartido parejo, el
-         hueco se reparte también y todo entra. */
-      /* Dos columnas en vertical, y tres cuando la hoja va llena: con quince
-         cajas, dos columnas obligan a que cada una sea más alta que el papel
-         disponible y la última se cae. Tres columnas de 18 cm siguen siendo
-         anchas para lo que llevan —tres cifras y una lectura— y el reparto
-         deja de ir al límite. Acostada son tres siempre. */
-      /* Acostada van cuatro columnas: ahí el papel tiene 300 mm menos de alto
-         y, entre el plano y la síntesis, a las columnas les quedan unos
-         100 mm. Con tres, cinco cajas se caían del pliego. */
-      /* Sin alto fijo: las columnas se equilibran solas y la rejilla mide lo
-         que mide su contenido. Con `height:100%` la rejilla se comía todo el
-         papel sobrante y la síntesis quedaba clavada al pie, con una banda
-         blanca en medio de la hoja; así el blanco que sobra queda al final,
-         debajo de todo, que es un margen y no un agujero. */
-      '.rej{ columns:' + COLUMNAS + '; column-gap:6mm }' +
-      '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
-        'page-break-inside:avoid; margin:0 0 4.5mm }' +
-      /* La cabecera de cada categoría: número, título y una línea de qué
-         trae. Ocupa todo el ancho —`column-span`— y el grupo fluye debajo en
-         columnas. Es lo que convierte veinte cajas en seis bloques. */
-      /* MEDIDO: con la cabecera partiendo las columnas (`column-span:all`),
-         cada grupo de dos o tres cajas dejaba dos o tres columnas vacías y la
-         hoja crecía un 60 %: 4.756 px para 3.402. Un pliego de 60 × 90 con
-         todo medido no admite seis bandas de ancho completo. La cabecera va
-         DENTRO del flujo, como el titular de sección de un periódico: abre su
-         grupo donde le toca, las cajas del grupo van seguidas, y el papel se
-         llena parejo. */
-      '.rej>.grupo{ display:flex; align-items:center; gap:2.2mm; margin:0 0 2.2mm; padding:1.1mm 3mm 1.1mm 2.2mm;' +
-        'border-radius:2mm; background:var(--suave); border-left:1.8mm solid var(--tinte);' +
-        'break-after:avoid; page-break-after:avoid; -webkit-column-break-after:avoid }' +
-      '.grupo b{ flex:0 0 auto; width:7mm; height:7mm; border-radius:50%; background:var(--tinte); color:#fff;' +
-        'display:flex; align-items:center; justify-content:center; font-size:3.8mm; font-weight:800 }' +
-      '.grupo h3{ margin:0; font-size:3.3mm; letter-spacing:.1em; text-transform:uppercase; color:var(--tinte); font-weight:800; line-height:1.15 }' +
-      '.grupo small{ display:block; font-size:2.4mm; color:#3B4A5A; line-height:1.25 }' +
-      '.grupo div{ min-width:0 }' +
-      /* El índice de categorías bajo la cabecera del pliego: seis pastillas
-         numeradas con su color. Es lo que hace que el número que lleva cada
-         caja en su distintivo se lea sin buscar la cabecera del grupo. */
-      '.indice{ display:flex; flex-wrap:wrap; gap:2mm; margin:3mm 0 0 }' +
-      '.indice span{ display:inline-flex; align-items:center; gap:1.6mm; padding:.9mm 2.8mm .9mm 1.1mm; border-radius:99px;' +
-        'background:rgba(255,255,255,.14); color:#fff; font-size:2.8mm; font-weight:800; letter-spacing:.06em; text-transform:uppercase }' +
-      '.indice b{ width:5mm; height:5mm; border-radius:50%; background:#34CCFE; color:#052538; display:inline-flex;' +
-        'align-items:center; justify-content:center; font-size:2.9mm }' +
-      '.plano-hero{ flex:0 0 auto }' +
-      '.mapas-banda{ flex:0 0 auto; margin-bottom:6mm }' +
-      /* Cuatro por fila parada, cinco acostada. La cuenta la mandan los dos
-         rasters: ocupan dos columnas cada uno, y con tres por fila el segundo
-         se caía a una fila propia —dos filas gastadas en dos dibujos, y la
-         hoja se pasaba 70 cm de largo—. Con cuatro entran los dos juntos. */
-      '.mapas{ display:grid; grid-template-columns:repeat(' + (horiz ? 5 : 4) + ',1fr); gap:4mm }' +
-      '.mp{ margin:0; display:flex; flex-direction:column; gap:1.5mm }' +
+      // Las bandas
+      /* La hoja es una pila de FILAS, y cada fila una o más BANDAS con su
+         cabecera —número, título, qué trae— y sus cajas en una rejilla de
+         tantas columnas como cajas. Antes era columnas de periódico, que
+         llenan parejo pero mezclan los temas; y antes de eso una cuadrícula.
+         Con las bandas cada categoría se lee de un vistazo y de lado a lado,
+         que es como se lee una lámina colgada. */
+      '.rej{ display:flex; flex-direction:column; gap:' + (horiz ? 3.5 : 5) + 'mm }' +
+      '.fila{ display:flex; gap:' + (horiz ? 6 : 7) + 'mm; align-items:stretch }' +
+      '.banda{ min-width:0; display:flex; flex-direction:column; gap:2.4mm }' +
+      /* La cabecera de banda: el número en el color del tema, el título en
+         mayúsculas y, a la derecha, la línea de qué trae. Una regla debajo
+         cierra el título de lado a lado, como en la lámina de referencia. */
+      '.bcab{ display:flex; align-items:baseline; gap:2.6mm; padding-bottom:1.4mm;' +
+        'border-bottom:.55mm solid var(--tinte) }' +
+      '.bcab b{ font-size:5.2mm; font-weight:800; color:var(--tinte); letter-spacing:.02em;' +
+        'font-variant-numeric:tabular-nums }' +
+      '.bcab h3{ margin:0; font-size:4.6mm; letter-spacing:.06em; text-transform:uppercase; color:#0F1F2E;' +
+        'font-weight:800; line-height:1.1; white-space:nowrap }' +
+      '.bcab small{ margin-left:auto; text-align:right; font-size:2.5mm; letter-spacing:.18em; text-transform:uppercase;' +
+        'color:#6B7A8A; font-weight:700; line-height:1.3 }' +
+      '.bcuerpo{ display:grid; gap:' + (horiz ? 3.5 : 4) + 'mm; align-items:stretch; flex:1 }' +
+      /* En una banda de una sola caja el título de la caja repite el de la
+         banda: se esconde y la caja queda como el cuerpo de su banda. */
+      '.banda.sola .caja>h2, .banda.sola .caja>.ic{ display:none }' +
+      '.banda.sola .caja{ border-top-width:.35mm; padding-top:3.4mm }' +
+      '.plano-hero{ grid-column:span ' + pesoPlano + ' }' +
+      '.mapas-banda,.sintesis-pie{ grid-column:1 / -1 }' +
+      /* Los mapas en fila, del mismo tamaño: son la misma área con una capa
+         encima cada uno, y se comparan de un vistazo si van lado a lado. Los
+         dos rasters —la foto y su clasificación— van al doble de ancho: son
+         lo único del pliego que se lee desde tres metros. Cuando no caben en
+         una fila, siguen en la de abajo. */
+      '.mapas{ display:grid; grid-template-columns:repeat(' +
+        Math.max(1, Math.min(mapas.reduce(function (n, m) { return n + (m.grande ? 2 : 1); }, 0), horiz ? 9 : 7)) +
+        ',minmax(0,1fr)); gap:3.5mm }' +
+      '.mp{ margin:0; display:flex; flex-direction:column; gap:1.5mm; min-width:0 }' +
       '.mp figcaption{ font-size:2.9mm; font-weight:800; color:#0A6F9E; letter-spacing:.02em }' +
       '.mp-dib{ background:#F3F8FB; border-radius:1.5mm; padding:1mm }' +
       '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' +
         (horiz ? 40 : 50) + 'mm }' +
-      /* Los rasters van al doble de ancho. Son la foto del territorio y su
-         clasificación: lo único del pliego que se lee desde tres metros. */
       '.mp.grande{ grid-column:span 2 }' +
-      '.mp.grande figcaption{ font-size:3.6mm }' +
+      '.mp.grande figcaption{ font-size:3.4mm }' +
       '.mp.grande .mp-dib svg{ max-height:' + (horiz ? 62 : 84) + 'mm }' +
       '.mp small{ font-size:2.5mm; color:#6B7A8A; line-height:1.3 }' +
-      '.sintesis-pie{ flex:0 0 auto; margin-top:6mm }' +
       /* 4 mm de margen interno y no 5: con los dibujos dentro, ese milímetro
          por caja es lo que hace que la hoja cierre. Menos de 4 y el texto
          empieza a tocar el borde impreso. */
@@ -2679,9 +2792,9 @@
       '.plano-hero,.mapas-banda{ --tinte:#0A6F9E; --suave:#E8F4FA }' +
       '.sintesis-pie{ --tinte:#0F1F2E; --suave:#EEF3F7 }' +
       '.caja{ --tinte:#0A6F9E; --suave:#E8F4FA; position:relative; border:.35mm solid #E3EAF0;' +
-        'border-top:1.4mm solid var(--tinte); border-radius:3mm; padding:4mm 4mm 4mm; background:#fff;' +
-        'display:flex; flex-direction:column; gap:2.2mm; overflow:hidden }' +
-      '.caja h2{ margin:0 12mm 0 0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
+        'border-top:1.4mm solid var(--tinte); border-radius:3mm; padding:3.4mm 3.6mm 3.4mm; background:#fff;' +
+        'display:flex; flex-direction:column; gap:2mm; overflow:hidden }' +
+      '.caja h2{ margin:0 12mm 0 0; font-size:3.2mm; letter-spacing:.14em; text-transform:uppercase;' +
         'color:var(--tinte); font-weight:800; padding-bottom:1.6mm; border-bottom:.3mm solid var(--suave) }' +
       /* El distintivo con el icono, arriba a la derecha. Se coloca desde acá
          para que el h2 siga siendo lo primero de la caja. */
@@ -2745,13 +2858,13 @@
       '.cv i.lote{ border-radius:0; background:#FFD54F; box-shadow:0 0 0 .35mm #7A5901 }' +
       '.cv b{ color:#0F1F2E }' +
       // Cifras grandes
-      '.kpis{ display:flex; gap:5mm; flex-wrap:wrap }' +
-      '.k{ flex:1 1 0; min-width:24mm }' +
-      '.k b{ display:block; font-size:8.4mm; line-height:1; font-weight:800; letter-spacing:-.025em; color:#0A6F9E;' +
+      '.kpis{ display:flex; gap:4mm; flex-wrap:wrap }' +
+      '.k{ flex:1 1 0; min-width:20mm }' +
+      '.k b{ display:block; font-size:7.4mm; line-height:1; font-weight:800; letter-spacing:-.025em; color:#0A6F9E;' +
         'font-variant-numeric:tabular-nums }' +
       '.k{ padding-left:2.4mm; border-left:.7mm solid var(--suave,#E8F4FA) }' +
-      '.k small{ display:block; font-size:2.8mm; color:#6B7A8A; margin-top:1mm; line-height:1.25 }' +
-      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.2mm; padding:1.2mm 0;' +
+      '.k small{ display:block; font-size:2.6mm; color:#6B7A8A; margin-top:.8mm; line-height:1.25 }' +
+      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3mm; padding:1mm 0;' +
         'border-bottom:.25mm solid #EEF3F7 }' +
       '.f span{ color:#3B4A5A } .f b{ color:#0F1F2E; font-variant-numeric:tabular-nums }' +
       '.barras{ display:flex; flex-direction:column; gap:1.8mm }' +
@@ -2760,8 +2873,8 @@
       '.b i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
       '.b u{ display:block; height:100%; border-radius:2mm; background:#0A6F9E; text-decoration:none }' +
       '.b b{ text-align:right; color:#0F1F2E; font-variant-numeric:tabular-nums }' +
-      '.nota{ font-size:2.8mm; color:#6B7A8A; line-height:1.45 }' +
-      '.lee{ font-size:3.2mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
+      '.nota{ font-size:2.6mm; color:#6B7A8A; line-height:1.4 }' +
+      '.lee{ font-size:3mm; color:#0F1F2E; line-height:1.4; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
       '.perf{ display:grid; grid-template-columns:1fr; gap:3mm; align-items:start }' +
@@ -2801,7 +2914,7 @@
       '.sx small{ display:block; font-size:2.7mm; color:#6B7A8A; margin-top:.8mm;' +
         'font-variant-numeric:tabular-nums }' +
       '.camina{ display:grid; grid-template-columns:repeat(2,1fr); gap:4mm 6mm }' +
-      '.cm b{ display:block; font-size:9mm; line-height:1; font-weight:800; letter-spacing:-.02em;' +
+      '.cm b{ display:block; font-size:7.6mm; line-height:1; font-weight:800; letter-spacing:-.02em;' +
         'color:#0A6F9E; font-variant-numeric:tabular-nums }' +
       '.cm span{ display:block; font-size:3.2mm; color:#0F1F2E; margin:1.5mm 0 2mm; font-weight:700 }' +
       '.cm i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
@@ -2847,98 +2960,10 @@
             ' · ' + (st.total || 0) + ' usos registrados' +
           '</div>' +
           (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
-          /* El índice de categorías, dentro de la banda: seis pastillas
-             numeradas. Es lo que hace que el número del distintivo de cada
-             caja se lea sin buscar la cabecera de su grupo. */
-          (agrupado.indice.length
-            ? '<div class="indice">' + agrupado.indice.map(function (g) {
-                return '<span><b>' + g.n + '</b>' + esc(g.titulo) + '</span>';
-              }).join('') + '</div>'
-            : '') +
         '</div>' +
       '</header>' +
 
-      /* El plano, a todo el ancho y antes de la rejilla. Era una caja más
-         dentro de una cuadrícula, y eso obligaba a que las filas se
-         repartieran el papel: cada fila valía por su caja más larga y los
-         huecos del encaje se pagaban dos y tres veces. Fuera de la rejilla es
-         lo que siempre fue en una lámina —el plano manda y el resto se
-         acomoda— y de paso deja de competir por el alto. */
-      caja('Plano del sector', (plano
-            ? '<div class="plano"><div class="plano-cuerpo" style="width:' +
-              Math.round(anchoPlanoMM * anchoDelPlano / 520) + 'mm">' + plano + '</div></div>'
-            : '') +
-          (conv
-            ? '<div class="conv">' + conv +
-              (cmp && (cmp.nuevos || []).length
-                ? '<span class="cv"><i class="rombo"></i>Encontrado por el curso <b>' +
-                  cmp.nuevos.length + '</b></span>'
-                : '') +
-              (loteA ? '<span class="cv"><i class="lote"></i>El lote a intervenir</span>' : '') +
-              '</div>'
-            : '') +
-          (huellas && huellas.length
-            ? '<p class="nota">Las manchas oscuras son las huellas de los edificios registrados; ' +
-              'los puntos, los usos mapeados, con el color de su categoría.</p>'
-            : '<p class="nota">Los puntos son los usos mapeados, con el color de su categoría.</p>'),
-          'plano-hero') +
-
-      /* La banda de mapas. Va inmediatamente después del plano y antes de
-         cualquier cifra, porque en una lámina de arquitectura eso es lo que
-         se mira primero y desde lejos: el ojo entra por los planos y recién
-         después lee. Cada capa en su recuadro, con su leyenda; en pantalla se
-         encienden de a una, en el papel salen todas. */
-      (function () {
-        if (!mapas.length) return '';
-        return '<section class="caja mapas-banda">' +
-            '<h2>Los mapas del sector</h2>' +
-            '<div class="mapas">' +
-              mapas.map(function (m) {
-                return '<figure class="mp' + (m.grande ? ' grande' : '') + '">' +
-                  '<figcaption>' + esc(m.titulo) + '</figcaption>' +
-                  '<div class="mp-dib">' + m.svg + '</div>' +
-                  '<small>' + esc(m.pie) + '</small>' +
-                '</figure>';
-              }).join('') +
-            '</div>' +
-            '<p class="nota">Cada recuadro es la misma área con una capa encima. Los de calor ' +
-            'muestran dónde se concentra cada categoría —la mancha oscurece donde hay varios ' +
-            'juntos—; el resto son mediciones del suelo y del lote.</p>' +
-          '</section>';
-      })() +
-
-      '<div class="rej">' + cajasHTML +
-      '</div>' +
-
-      /* La síntesis cierra la hoja a todo el ancho, fuera de las columnas.
-         Adentro era la última en entrar y la primera en no caber: quince
-         cajas se reparten mal en dos columnas y la que sobra desaparece.
-         Afuera, además, es lo que corresponde —es la conclusión, no un dato
-         más— y sus tres listas se leen mejor en tres columnas anchas. */
-      caja('Síntesis del sector',
-          (function () {
-            var sn = sintesisDelSector(res);
-            if (!sn.favor.length && !sn.contra.length && !sn.falta.length) return '';
-            /* Cuatro por columna. En pantalla la lista puede ser larga; en una
-               lámina, una columna de doce viñetas no la lee nadie de pie a dos
-               metros. Se quedan las cuatro primeras, que son las que salieron
-               de los datos más gruesos. */
-            var col = function (titulo, lista, clase) {
-              return '<div class="sn ' + clase + '"><h3>' + esc(titulo) + '</h3>' +
-                (lista.length
-                  ? lista.slice(0, 4).map(function (x) {
-                      return '<div class="sx"><span>' + esc(x.texto) + '</span>' +
-                        '<small>' + esc(x.dato) + '</small></div>';
-                    }).join('')
-                  : '<div class="sx"><span>—</span></div>') +
-                '</div>';
-            };
-            return '<div class="sint">' +
-                col('A favor', sn.favor, 'ok') +
-                col('En contra', sn.contra, 'no') +
-                col('Falta levantar', sn.falta, 'tarea') +
-              '</div>';
-          })(), 'sintesis-pie') +
+      '<div class="rej">' + cajasHTML + '</div>' +
 
       '<footer class="pie">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
@@ -7210,7 +7235,7 @@
               // el papel y la única que le dice algo a quien lo va a imprimir.
               sobraMM: sobra > 2 ? Math.round(sobra / 3.7795) : 0,
               cajas: dd.querySelectorAll('.caja').length,
-              columnas: rej ? (v.getComputedStyle(rej).columnCount || '?') : '?'
+              bandas: dd.querySelectorAll('.banda').length
             });
           } catch (e) { terminar({ error: 'No se pudo medir en este navegador.' }); }
         }, 700);
@@ -7304,8 +7329,8 @@
             ? '<p class="pcr-error">' + esc(cabe.error) + '</p>'
             : cabe.cabe
               ? '<p class="pcr-conc pcr-cabe-si">Cabe ' + (cabe.horizontal ? 'acostado' : 'parado') +
-                ': <b>' + cabe.cajas + '</b> cajas en <b>' + esc(String(cabe.columnas)) +
-                '</b> columnas, y no se pierde ninguna.</p>'
+                ': <b>' + cabe.cajas + '</b> cajas en <b>' + cabe.bandas +
+                '</b> bandas, y no se pierde ninguna.</p>'
               : '<p class="pcr-conc pcr-cabe-no">No cabe ' +
                 (cabe.horizontal ? 'acostado' : 'parado') + '. ' +
                 (cabe.perdidas.length

@@ -214,8 +214,12 @@ const geo=[
 
   console.log('\n  -- la banda en la lámina --');
   T('existe la banda de mapas', /<section class="caja mapas-banda">/.test(LAM));
-  T('va arriba, antes de las columnas de texto',
-    LAM.indexOf('mapas-banda')>0 && LAM.indexOf('mapas-banda') < LAM.indexOf('class="rej"'));
+  /* Es la banda 02 de la lámina: después de la ubicación y antes de todo el
+     análisis. Una banda de una sola caja, así que el título de la banda es
+     el suyo. */
+  T('es la segunda banda de la lámina, después de la ubicación',
+    /<div class="banda banda-mapas sola"[^>]*><div class="bcab"><b>02<\/b><h3>Los mapas del sector<\/h3>/.test(LAM) &&
+    LAM.indexOf('banda-ubicacion') < LAM.indexOf('banda-mapas'));
   T('trae un recuadro por capa con datos', figuras(LAM)>=6, figuras(LAM)+' recuadros');
   T('cada recuadro tiene su título y su pie',
     titulos(LAM).length===figuras(LAM) &&

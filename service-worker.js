@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v715-el-pliego-por-categorias';
+const URBIS_CACHE = 'urbis-v716-la-lamina-en-bandas';
 const URBIS_ASSETS = [
   './',
   './index.html',
