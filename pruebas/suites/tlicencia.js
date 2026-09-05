@@ -46,7 +46,14 @@ function esperar(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
   const b=await chromium.launch({executablePath:E.CHROMIUM,args:['--no-sandbox']});
   const ctx=await b.newContext({serviceWorkers:'block'});
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t'}));
     localStorage.removeItem('urbis_licencia_analisis');
     localStorage.removeItem('aia_overpass_cache_v1');

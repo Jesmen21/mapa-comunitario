@@ -78,7 +78,14 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
      `evaluate` no existe el `require` de node, así que se la deja en
      `window` antes de cargar nada. */
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
@@ -238,8 +245,36 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
   const LAM=r2.lamina||'';
   P('la lámina cierra con la síntesis', /Síntesis del sector<\/h2>/.test(LAM));
   P('con las tres columnas', /A favor<\/h3>/.test(LAM) && /En contra<\/h3>/.test(LAM) && /Falta levantar<\/h3>/.test(LAM));
-  P('y como mucho cuatro por columna',
-    (LAM.match(/<div class="sn ok">[\s\S]*?<\/div><\/div>/)||[''])[0].split('class="sx"').length-1 <= 4);
+  /* Siete por columna, y antes eran cuatro. Se subió el tope porque se pidió
+     —«mejorar el sistema FODA porque argumenta muy poquitas cosas»— y porque
+     el corte de cuatro se había decidido cuando la síntesis sacaba ocho o
+     nueve frases en total; ahora saca el doble y cortar en cuatro tiraba
+     justo las de la red vial, la cobertura y el lote.
+
+     Se comprueban los dos lados. Que no pase de siete: una columna de quince
+     viñetas no la lee nadie frente a un pliego. Y que cuando corta lo DIGA:
+     resumir es quedarse con siete y avisar que hay más; esconder es quedarse
+     con siete y callarse, que es lo mismo que se ve y no es lo mismo que se
+     hace. */
+  const colSint = c => (LAM.match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>'))||[''])[0];
+  const viñetas = c => colSint(c).split('class="sx"').length - 1;
+  P('y como mucho siete por columna',
+    ['ok','no','tarea'].every(c => viñetas(c) <= 7),
+    ['ok','no','tarea'].map(c => c + ':' + viñetas(c)).join(' · '));
+  /* Y si corta, que lo diga —y solo si corta—. El aviso se compara contra la
+     lista COMPLETA, no contra lo que se ve: mirando solo el papel, siete
+     viñetas sin aviso pueden ser siete de siete o siete de doce, y son cosas
+     distintas. Con la lista al lado, la comprobación es exacta en los dos
+     sentidos: nada se esconde y no se avisa de nada que no falte. */
+  const LISTA = { ok: r2.favor || [], no: r2.contra || [], tarea: r2.falta || [] };
+  const marca = c => (colSint(c).match(/sx-mas"><span>y (\d+) más/) || [])[1];
+  P('y si corta, dice cuántas dejó fuera —y solo si corta—',
+    ['ok','no','tarea'].every(c => {
+      const sobran = Math.max(0, LISTA[c].length - 7);
+      return sobran ? Number(marca(c)) === sobran : marca(c) === undefined;
+    }),
+    ['ok','no','tarea'].map(c => c + ': ' + LISTA[c].length + ' → ' +
+      viñetas(c) + (marca(c) ? ' +' + marca(c) : '')).join(' · '));
 
   console.log('');
   P('sin errores de JavaScript', errs.length===0, errs.join(' | ')||'ninguno');

@@ -56,7 +56,14 @@ const geo=[
   const ctx=await b.newContext({serviceWorkers:'block',timezoneId:'America/Bogota',locale:'es-CO',
     viewport:{width:412,height:915},deviceScaleFactor:2,isMobile:true,hasTouch:true});
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
@@ -122,17 +129,11 @@ const geo=[
       listo:!x.classList.contains('pcr-capa-gris'),
       on:x.classList.contains('on')
     }));
-    /* `fuera` es el recuadro encendido que NO cabe: la banda del pliego tiene
-       siete columnas y no encoge los recuadros para que quepan todos, así que
-       el selector lo dice antes de imprimir. Encendido y encendido-pero-fuera
-       son dos estados distintos y la prueba los distingue: lo que se comprueba
-       abajo es que el papel diga exactamente lo mismo que el selector. */
     const inventarioMapas=()=>[...H().querySelectorAll('[data-pcr="pliego-mapa"]')].map(x=>({
       id:x.getAttribute('data-c'),
       titulo:((x.querySelector('b')||{}).textContent||'').trim(),
       listo:!x.classList.contains('pcr-capa-gris'),
-      on:x.classList.contains('on'),
-      fuera:x.classList.contains('pcr-capa-fuera')
+      on:x.classList.contains('on')
     }));
 
     // ── Recién analizado: casi todo gris, porque casi nada se midió.
@@ -168,9 +169,15 @@ const geo=[
     o.invMapas=inventarioMapas();
     const L1=await lamina();
     o.enPapel=titulos(L1);
-    o.bandaEnPapel=(L1.match(/<figcaption>([^<]+)<\/figcaption>/g)||[])
-      .map(t=>t.replace(/<[^>]+>/g,''));
-    o.hayBanda=/mapas-banda/.test(L1);
+    /* Los mapas ya no van en una tira: cada uno es una caja con `data-g`
+       dentro de la banda de su tema. Y cuando el mapa se llama igual que una
+       caja de cifras del mismo tema —«Llenos y vacíos» es las dos cosas— el
+       rótulo del mapa lleva de qué se trata, así que acá se le quita para
+       comparar contra el selector, que nombra la capa. */
+    const mapasDelPapel = h => (h.match(/<section class="caja mapa-caja[^>]*><h2>([^<]+)<\/h2>/g)||[])
+      .map(t=>t.replace(/.*<h2>/,'').replace('</h2>','').replace(/ · el mapa$/,''));
+    o.bandaEnPapel=mapasDelPapel(L1);
+    o.hayBanda=/class="caja mapa-caja/.test(L1);
 
     // ── Apagar tres cajas y un recuadro, y volver a mirar el papel.
     await abrir();
@@ -192,8 +199,7 @@ const geo=[
     o.invTrasApagar=inventario();
     const L2=await lamina();
     o.enPapel2=titulos(L2);
-    o.bandaEnPapel2=(L2.match(/<figcaption>([^<]+)<\/figcaption>/g)||[])
-      .map(t=>t.replace(/<[^>]+>/g,''));
+    o.bandaEnPapel2=mapasDelPapel(L2);
 
     // ── «Dejar solo el plano» y volver a «Poner todo».
     await abrir();
@@ -204,8 +210,7 @@ const geo=[
     H().querySelector('[data-pcr="pliego-todo"]').click(); await esperar(400); await abrir();
     const L4=await lamina();
     o.enPapel4=titulos(L4);
-    o.bandaEnPapel4=(L4.match(/<figcaption>([^<]+)<\/figcaption>/g)||[])
-      .map(t=>t.replace(/<[^>]+>/g,''));
+    o.bandaEnPapel4=mapasDelPapel(L4);
 
     // ── El PDF, que no se toca: es el archivo.
     await abrir();
@@ -274,26 +279,17 @@ const geo=[
     grisesQueSalen.length===0, grisesQueSalen.join(' · ')||'ninguna se cuela');
   T('la banda enumera sus recuadros sin dibujarlos',
     (r.invMapas||[]).length>=8, (r.invMapas||[]).length+' recuadros');
-  const mapasProm=(r.invMapas||[]).filter(m=>m.listo && m.on && !m.fuera)
+  /* TODOS los que estén puestos salen. Hubo una versión que dejaba uno por
+     tema para que salieran grandes, y la tumbó el uso real: «veo 10 mapas en
+     el último análisis que hice, no me dejes mapas a un lado». Lo que cede es
+     el tamaño con el que se compone la hoja, no la lista. */
+  const mapasProm=(r.invMapas||[]).filter(m=>m.listo && m.on)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)===-1).map(m=>m.titulo);
-  T('y lo que da por puesto aparece de verdad en la banda',
+  T('y lo que da por puesto aparece de verdad, sin dejar ninguno a un lado',
     r.hayBanda===true && mapasProm.length===0, mapasProm.join(' · ')||'ninguno falta');
   const mapasGrises=(r.invMapas||[]).filter(m=>!m.listo)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)>=0).map(m=>m.titulo);
   T('sin colar los grises', mapasGrises.length===0, mapasGrises.join(' · ')||'ninguno');
-  /* Y el otro lado del trato, que es el que faltaba: el que el selector marca
-     como que NO cabe tampoco puede aparecer. Sin esto la promesa se cumple
-     apagando el aviso, que es peor que no avisar. */
-  const mapasFueraQueSalen=(r.invMapas||[]).filter(m=>m.fuera)
-    .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)>=0).map(m=>m.titulo);
-  T('y el que avisa que no cabe, no se cuela',
-    mapasFueraQueSalen.length===0, mapasFueraQueSalen.join(' · ')||'ninguno se cuela');
-  /* La banda no encoge los recuadros para que quepan todos: siete columnas,
-     y los anchos valen dos. Que la cuenta del papel no se pase. */
-  const ANCHOS=['cobertura','foto','llenos'];
-  const pesoEnPapel=(r.invMapas||[]).filter(m=>m.listo && m.on && !m.fuera)
-    .reduce((a,m)=>a+(ANCHOS.indexOf(m.id)>=0?2:1),0);
-  T('y la banda no se pasa de siete columnas', pesoEnPapel<=7, pesoEnPapel+' columnas');
 
   console.log('\n  -- apagar y encender --');
   T('se apagaron tres cajas', (r.apagadas||[]).length===3, (r.apagadas||[]).join(' · '));

@@ -30,7 +30,11 @@ const srv = http.createServer((rq,rs)=>{
   const errs = [];
   pg.on('pageerror', e => { if(!/Unexpected end of input/.test(e.message)) errs.push(e.message); });
   await pg.addInitScript(() => {
-    /* Desde que la licencia se pide AL TOCAR el botón (js/69 permitido),
+    /* Solo en el marco principal: ver la nota en las demás suites. La
+       aplicación crea un marco escondido para medir la lámina, y sin esta
+       guarda ese marco vuelve a ejecutar esto a mitad de la prueba. */
+    if (window.top !== window) return;
+        /* Desde que la licencia se pide AL TOCAR el botón (js/69 permitido),
        una suite sin licencia guardada se queda en la pantalla de licencia
        en vez de analizar. Es el comportamiento correcto: acá se pone la
        licencia igual que la pondría el curso en cada dispositivo. */

@@ -21,7 +21,14 @@ for(let i=0;i<30;i++){ const a=i*12*Math.PI/180, d=(80+(i%5)*30)/111320;
      `evaluate` no existe el `require` de node, así que se la deja en
      `window` antes de cargar nada. */
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,
       session_token:'t',active:true,verified:true,nombre_completo:'D'}));

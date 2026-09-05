@@ -74,7 +74,14 @@ const RECORRIDO=[
   const ctx=await b.newContext({serviceWorkers:'block',timezoneId:'America/Bogota',locale:'es-CO',
     viewport:{width:412,height:915},deviceScaleFactor:2,isMobile:true,hasTouch:true});
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
@@ -421,8 +428,14 @@ const RECORRIDO=[
     /marcas de lo que no se mide/.test(LAM) && /El lote cae dentro de/.test(LAM));
   T('y dice que es un testimonio, no una medición',
     /no es una medición/.test(LAM) && /quien caminó/.test(LAM));
-  T('el mapa de lo intangible entra en la banda del pliego',
-    /<figcaption>Lo intangible<\/figcaption>/.test(LAM));
+  /* El mapa va en la banda de su tema —trabajo de campo—, y como se llama
+     igual que la caja de cifras del mismo tema, el rótulo dice de qué se
+     trata: dos cajas con el mismo nombre, una al lado de la otra y una con un
+     dibujo adentro, hacen dudar de si es la misma repetida. */
+  T('el mapa de lo intangible entra en la banda de trabajo de campo',
+    /<section class="caja mapa-caja[^>]*data-g="campo"[^>]*><h2>Lo intangible · el mapa<\/h2>/.test(LAM),
+    ((LAM.match(/<section class="caja mapa-caja[^>]*><h2>[^<]*/g)||[])
+      .map(x=>x.replace(/.*<h2>/,''))).join(' · ')||'ningún mapa');
   T('el PDF trae la sección', /<h2>Lo intangible<\/h2>/.test(PDF));
   T('con los desacuerdos aparte', /Donde no coinciden la percepción y el conteo/.test(PDF));
   T('y las notas completas, en sus palabras',

@@ -61,7 +61,14 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
   const ctx=await b.newContext({serviceWorkers:'block',timezoneId:'America/Bogota',locale:'es-CO',
     viewport:{width:412,height:915},deviceScaleFactor:2,isMobile:true,hasTouch:true});
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'martarojas',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     /* Solo en el primer arranque. Limpiarlo en CADA carga borraría la ficha
@@ -265,8 +272,15 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
   T('con el tamaño de la celda a la vista', /sitios de 25 m/.test(juntos.texto));
   T('se pueden ver en el mapa', juntos.hayBotonMapa===true && juntos.enMapa>0,
     juntos.enMapa+' sitios dibujados');
-  T('y entran en la banda del pliego',
-    /<figcaption>Dónde coincide el curso<\/figcaption>/.test(repetido.lamina||''));
+  /* El mapa ya no va en una tira debajo del plano: va en la banda de SU
+     tema, que en este caso es el trabajo de campo. Se comprueban las dos
+     cosas —que está y en qué banda—, porque un mapa en la banda equivocada
+     es un mapa que nadie encuentra. */
+  T('y entra en la banda de trabajo de campo, con las demás del curso',
+    /<section class="caja mapa-caja[^>]*data-g="campo"[^>]*><h2>Dónde coincide el curso<\/h2>/
+      .test(repetido.lamina||''),
+    ((repetido.lamina||'').match(/<section class="caja mapa-caja[^>]*data-g="[^"]*"[^>]*><h2>[^<]*/g)||[])
+      .map(x=>x.replace(/.*data-g="([^"]*)".*<h2>/,'$1: ')).join(' · ')||'ningún mapa');
 
   console.log('\n  -- el mismo recorrido dos veces no es un acuerdo --');
   T('sigue habiendo cuatro y no cinco', /4recorridos/.test(kpi(repetido.kpis,'recorridos')),

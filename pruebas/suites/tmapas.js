@@ -69,7 +69,14 @@ const geo=[
   const ctx=await b.newContext({serviceWorkers:'block',timezoneId:'America/Bogota',locale:'es-CO',
     viewport:{width:412,height:915},deviceScaleFactor:2,isMobile:true,hasTouch:true});
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
@@ -198,10 +205,13 @@ const geo=[
       cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?'),
-      /* Lo que de veras importa: que el raster ocupe el doble que un mapa
-         normal. Si el `span 2` se cae, esto lo caza aunque el HTML esté. */
-      anchos: [...document.querySelectorAll('.mapas .mp')].map(f=>({
-        grande: f.classList.contains('grande'),
+      /* A qué escala se compuso la hoja para cerrar. La lámina no crece: con
+         muchos mapas se compone más chica, y eso hay que poder verlo. */
+      escala: (function(){ const r=document.querySelector('.rej');
+        const t=r?getComputedStyle(r).transform:'none';
+        const m=t&&t!=='none'?t.match(/matrix\(([\d.]+)/):null; return m?Number(m[1]):1; })(),
+      anchos: [...document.querySelectorAll('.mapa-caja')].map(f=>({
+        g: f.getAttribute('data-g')||'',
         w: Math.round(f.getBoundingClientRect().width),
         alto: Math.round(f.getBoundingClientRect().height)
       }))
@@ -216,61 +226,62 @@ const geo=[
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const LAM=r.lamina||'', PDF=r.pdf||'';
-  const figuras=h=>(h.match(/<figure class="mp/g)||[]).length;
+  // En la lámina un mapa es una caja con `data-g`; en el PDF sigue siendo una
+  // figura de la tira, porque el PDF son hojas y no tiene que elegir nada.
+  const conBanda=h=>(h.match(/<section class="caja mapa-caja[^>]*data-g="([^"]+)"[^>]*><h2>([^<]+)<\/h2>/g)||[])
+    .map(x=>({ g:(x.match(/data-g="([^"]+)"/)||[])[1], t:(x.match(/<h2>([^<]+)/)||[])[1] }));
+  const figuras=h=>/mapa-caja/.test(h) ? conBanda(h).length : (h.match(/<figure class="mp/g)||[]).length;
   const grandes=h=>(h.match(/<figure class="mp grande"/g)||[]).length;
-  const titulos=h=>(h.match(/<figcaption>([^<]+)<\/figcaption>/g)||[])
-    .map(t=>t.replace(/<[^>]+>/g,''));
+  const titulos=h=>/mapa-caja/.test(h)
+    ? conBanda(h).map(x=>x.t.replace(/ · el mapa$/,''))
+    : (h.match(/<figcaption>([^<]+)<\/figcaption>/g)||[]).map(t=>t.replace(/<[^>]+>/g,''));
 
   console.log('\n  -- lo que se midió antes de imprimir --');
   T('la foto satelital quedó leída', r.cobertura===true);
 
-  console.log('\n  -- la banda en la lámina --');
-  T('existe la banda de mapas', /<section class="caja mapas-banda">/.test(LAM));
-  /* Es la banda 02 de la lámina: después de la ubicación y antes de todo el
-     análisis. Una banda de una sola caja, así que el título de la banda es
-     el suyo. */
-  T('es la segunda banda de la lámina, después de la ubicación',
-    /<div class="banda banda-mapas sola"[^>]*><div class="bcab"><b>02<\/b><h3>Los mapas del sector<\/h3>/.test(LAM) &&
-    LAM.indexOf('banda-ubicacion') < LAM.indexOf('banda-mapas'));
-  /* Siete columnas y ni una más: los anchos valen dos. Se comprueban las dos
-     caras, porque una sola se cumple sola. Que no se pase —o los recuadros
-     vuelven a ser sellos— y que no sobre —o se está tirando papel—. */
-  const ANCHOS=['Cobertura del suelo','La foto satelital','Llenos y vacíos'];
-  const columnas=h=>titulos(h).reduce((a,t)=>a+(ANCHOS.indexOf(t)>=0?2:1),0);
-  T('la banda del pliego no se pasa de siete columnas',
-    columnas(LAM)<=7, columnas(LAM)+' columnas en '+figuras(LAM)+' recuadros');
-  T('y las usa, no deja media banda vacía', columnas(LAM)>=6, columnas(LAM)+' columnas');
-  T('cada recuadro tiene su título y su pie',
-    titulos(LAM).length===figuras(LAM) &&
-    (LAM.match(/<div class="mp-dib">/g)||[]).length===figuras(LAM),
+  console.log('\n  -- los mapas, cada uno con su tema --');
+  /* Ya no hay una tira: cada mapa es una caja con `data-g` dentro de la banda
+     de su tema. Se pidió así —«en vez de que los mapas salgan en una sola
+     línea, que se integren dependiendo el tema»— y por dos razones que se
+     sostienen solas: un mapa de curvas al lado de la caja del terreno dice
+     algo, y el mismo mapa a treinta centímetros en una tira con otros ocho
+     es un recuadro que hay que ir a buscar. */
+  T('los mapas van en cajas propias, no en una tira', figuras(LAM) >= 4,
+    figuras(LAM) + ' cajas de mapa');
+  T('cada una dice a qué banda pertenece',
+    figuras(LAM) > 0 && conBanda(LAM).length === figuras(LAM),
+    conBanda(LAM).map(x => x.g + ': ' + x.t).join(' · ') || 'ninguna');
+  /* Y en la banda correcta, no en cualquiera. Un mapa de usos en la banda
+     ambiental está tan perdido como en una tira. */
+  const enBanda = (t, g) => conBanda(LAM).some(x => x.t.indexOf(t) === 0 && x.g === g);
+  T('la cobertura va con lo ambiental', enBanda('Cobertura del suelo', 'ambiental'));
+  T('la foto va con la ubicación', enBanda('La foto satelital', 'ubicacion'));
+  T('los usos van con lo demográfico', enBanda('Todos los usos', 'demografico'));
+  T('los llenos van con la morfología', enBanda('Llenos y vacíos', 'forma'));
+  T('cada caja tiene su título y su pie',
+    (LAM.match(/<div class="mp-dib">/g)||[]).length===figuras(LAM) &&
+    (LAM.match(/<small class="mp-pie">/g)||[]).length===figuras(LAM),
     titulos(LAM).slice(0,4).join(' · '));
-  /* El mapa de todos los usos NO es prescindible aunque sea de calor: es el
-     que ubica, y sin él los demás recuadros son manchas sin sitio. Por eso
-     entra antes que la foto en el reparto, y por eso se exige acá. */
-  T('el mapa que ubica —todos los usos— entra siempre',
+  /* NINGUNO se queda fuera. Hubo una versión que dejaba uno por tema para que
+     salieran grandes, y la tumbó el uso real: «veo 10 mapas en el último
+     análisis que hice, no me dejes mapas a un lado». Lo que cede para que
+     quepan es el tamaño al que se compone la hoja, no la lista. */
+  T('los de calor por categoría no se quedan fuera',
+    titulos(LAM).filter(t=>/ropa|comida|educa|comerc/i.test(t)).length>=2,
+    titulos(LAM).join(' · '));
+  T('y el mapa que ubica —todos los usos— está',
     titulos(LAM).indexOf('Todos los usos')>=0, titulos(LAM).join(' · '));
   T('y el rubro de un solo local no se gana un recuadro',
     !titulos(LAM).some(t=>/óptica/i.test(t)));
+  /* La hoja no crece: con muchos mapas se compone más chica. Lo que no puede
+     pasar es que se pase del papel, que es perder cajas en silencio. */
+  T('y la hoja cierra, compuesta a la escala que haga falta',
+    (r.medida.perdidas||[]).length===0 && (r.medida.cajas||[]).length===0,
+    'compuesta al ' + Math.round((r.medida.escala||1)*100) + '%');
 
-  console.log('\n  -- los rasters mandan --');
+  console.log('\n  -- los rasters siguen mandando --');
   T('la clasificación y la foto están las dos',
     /Cobertura del suelo/.test(LAM) && /La foto satelital/.test(LAM));
-  T('van primeras de la banda',
-    titulos(LAM)[0]==='Cobertura del suelo' && titulos(LAM)[1]==='La foto satelital',
-    titulos(LAM).slice(0,2).join(' · '));
-  /* Y los llenos y vacíos con ellos: se pidió por su nombre —«no se ve con
-     claridad los rasters o los llenos y vacíos»— y tiene el mismo motivo,
-     que es un dibujo de grano fino y no una mancha. Se exige la lista
-     exacta, no un número: «tres anchos» lo cumpliría cualquier trío. */
-  const anchosDe=h=>(h.match(/<figure class="mp grande"><figcaption>([^<]+)/g)||[])
-    .map(x=>x.replace(/.*<figcaption>/,''));
-  T('los tres de grano fino van al doble',
-    anchosDe(LAM).length===3 && ANCHOS.every(t=>anchosDe(LAM).indexOf(t)>=0),
-    anchosDe(LAM).join(' · ')||'ninguno ancho');
-  T('y la hoja les da ese doble ancho', (function(){
-    const a=r.medida.anchos||[]; const g=a.filter(x=>x.grande), p=a.filter(x=>!x.grande);
-    return g.length===3 && p.length>0 && g[0].w > p[0].w*1.6;
-  })(), (r.medida.anchos||[]).map(x=>(x.grande?'▮':'▫')+x.w).join(' '));
   T('la imagen viaja de verdad dentro del dibujo',
     (LAM.match(/<image href="data:image\/png;base64,/g)||[]).length===2,
     (LAM.match(/<image href="data:image\/png/g)||[]).length+' imágenes');
@@ -288,8 +299,15 @@ const geo=[
   T('los usos salen todos juntos y por categoría',
     /Todos los usos/.test(PDF) && titulos(PDF).filter(t=>/ropa|comida|educa|comerc/i.test(t)).length>=2,
     titulos(PDF).join(' · '));
-  T('y trae más que el pliego, que sí tiene que elegir',
-    figuras(PDF) > figuras(LAM), figuras(PDF)+' en el PDF contra '+figuras(LAM)+' en el pliego');
+  /* Los mismos que el pliego, uno por uno: ninguno de los dos elige. Lo que
+     los distingue es CÓMO los presentan —el PDF en una tira, hoja tras hoja;
+     el pliego repartidos por tema y con la hoja compuesta más chica—, no
+     cuáles traen. */
+  T('con los mismos que el pliego, sin dejar ninguno a un lado',
+    figuras(PDF) === figuras(LAM) &&
+    titulos(LAM).every(t => titulos(PDF).indexOf(t) >= 0),
+    figuras(PDF)+' en el PDF y '+figuras(LAM)+' en el pliego · ' +
+    (titulos(LAM).filter(t => titulos(PDF).indexOf(t) < 0).join(' · ') || 'los mismos'));
   T('los de grano fino primeros y al doble', grandes(PDF)===3 &&
     titulos(PDF)[0]==='Cobertura del suelo', titulos(PDF).slice(0,3).join(' · '));
   T('y la hoja sabe darles ese doble',

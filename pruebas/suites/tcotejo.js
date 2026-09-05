@@ -72,7 +72,12 @@ const FICHAS=[
   const b=await chromium.launch({executablePath:E.CHROMIUM,args:['--no-sandbox']});
   const ctx=await b.newContext({serviceWorkers:'block',timezoneId:'America/Bogota',locale:'es-CO',
     viewport:{width:412,height:915},deviceScaleFactor:2,isMobile:true,hasTouch:true});
-  await ctx.addInitScript(([fichas])=>{ try{
+  await ctx.addInitScript(([fichas])=>{
+    /* Solo en el marco principal: ver la nota en las demás suites. La
+       aplicación crea un marco escondido para medir la lámina, y sin esta
+       guarda ese marco vuelve a ejecutar esto a mitad de la prueba. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t',active:true,verified:true}));
     localStorage.setItem('pcr_fichas_v1', JSON.stringify(fichas));

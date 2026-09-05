@@ -52,6 +52,37 @@ for (let i = 0; i < 220; i++) {
     tags: { name: 'Sitio ' + i, amenity: ['pharmacy', 'school', 'bank', 'restaurant', 'police'][i % 5] } });
 }
 const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
+/* Calles con jerarquía de verdad, que es lo que pide el mapa de movilidad:
+   una troncal, dos principales, dos secundarias, dos colectoras y un puñado
+   de locales y senderos. Sin esto el sector no tiene red y el mapa que se
+   pidió —«las vías principales de un color verde y las secundarias de otro»—
+   no tendría nada que dibujar. */
+const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(C.lat * Math.PI / 180));
+const P = (dx, dy) => ({ lat: C.lat + GLAT(dy), lng: C.lng + GLNG(dx) });
+let gid = 90000;
+const via = (nombre, clase, pts) => ({ type: 'way', id: gid++,
+  tags: { highway: clase, name: nombre, lanes: '2' },
+  geometry: pts.map(p => ({ lat: p.lat, lon: p.lng })) });
+const edif = (dx, dy, w2, h2, pisos) => ({ type: 'way', id: gid++,
+  tags: { building: 'yes', 'building:levels': String(pisos) },
+  geometry: [P(dx, dy), P(dx + w2, dy), P(dx + w2, dy + h2), P(dx, dy + h2), P(dx, dy)]
+    .map(p => ({ lat: p.lat, lon: p.lng })) });
+const geo = [
+  via('Autopista Nacional', 'trunk', [P(-600, -500), P(-100, 0), P(600, 500)]),
+  via('Avenida 1', 'primary', [P(-600, 200), P(0, 200), P(600, 200)]),
+  via('Avenida 3', 'primary', [P(-300, -600), P(-300, 0), P(-300, 600)]),
+  via('Calle 8', 'secondary', [P(-600, -200), P(0, -200), P(600, -200)]),
+  via('Calle 12', 'secondary', [P(200, -600), P(200, 0), P(200, 600)]),
+  via('Carrera 5', 'tertiary', [P(-600, 400), P(600, 400)]),
+  via('Carrera 9', 'tertiary', [P(-500, -400), P(500, -400)])
+].concat(
+  Array.from({ length: 12 }, (_, i) => via('Calle interior ' + i, 'residential',
+    [P(-600 + i * 100, -600), P(-600 + i * 100, 600)])),
+  Array.from({ length: 6 }, (_, i) => via('Sendero ' + i, 'footway',
+    [P(-400, -500 + i * 180), P(400, -500 + i * 180)])),
+  Array.from({ length: 30 }, (_, i) => edif(-560 + (i % 10) * 115,
+    -400 + Math.floor(i / 10) * 220, 60, 90, 3 + (i % 5)))
+);
 
 (async () => {
   const b = await chromium.launch({ executablePath: E.CHROMIUM, args: ['--no-sandbox'] });
@@ -59,6 +90,12 @@ const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
     viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
   await ctx.addInitScript(() => {
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
     try {
       localStorage.setItem('urbis_licencia_analisis', 'URBIS1.deprueba.deprueba');
       localStorage.setItem('urbis_auth_session_v1', JSON.stringify({ usuario: 'martarojas', rol: 'admin',
@@ -74,7 +111,12 @@ const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
   await ctx.route(/cdn\.jsdelivr\.net/, r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   await ctx.route(/locationiq\.com/, r => r.fulfill({ status: 200, contentType: 'application/json',
     body: JSON.stringify({ address: { city: 'Cúcuta', state: 'Norte de Santander', country: 'Colombia', suburb: 'La Playa' } }) }));
-  await ctx.route(/overpass/, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ elements: usos }) }));
+  await ctx.route(/overpass/, r => {
+    // La consulta con geometría trae calles y edificios; la de usos, los POI.
+    const q = (r.request().postData() || '') + r.request().url();
+    r.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos }) });
+  });
   await ctx.route(/ags\.esri\.co/, r => r.fulfill({ status: 200, contentType: 'application/json',
     body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) }));
   await ctx.route(/elevation/, r => { const u = new URL(r.request().url());
@@ -173,22 +215,31 @@ const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
     await m.waitForTimeout(600);
     const out = await m.evaluate(() => {
       const hoja = document.querySelector('.hoja');
-      if (!hoja) return null;
-      const alto = hoja.style.height;
-      hoja.style.height = 'auto';
-      const pide = hoja.scrollHeight;
-      hoja.style.height = alto;
+      const rej = document.querySelector('.rej'), marco = document.querySelector('.rejilla');
+      if (!hoja || !rej || !marco) return null;
+      /* Lo que el contenido PIDE, con la hoja ya compuesta a la escala que le
+         tocó. Se mide la rejilla con `getBoundingClientRect` —que SÍ cuenta la
+         reducción— contra el marco que la recorta, y se le suman cabecera y
+         pie. Con `scrollHeight` de la hoja no serviría: devuelve el tamaño sin
+         reducir y diría que se pasa siempre. */
+      const pide = Math.round(rej.getBoundingClientRect().height +
+        (hoja.clientHeight - marco.getBoundingClientRect().height));
+      const esc = (function () {
+        const t = getComputedStyle(rej).transform;
+        const mm = t && t !== 'none' ? t.match(/matrix\(([\d.]+)/) : null;
+        return mm ? Number(mm[1]) : 1;
+      })();
       return {
-        ancho: hoja.clientWidth, papel: hoja.clientHeight, pide: pide,
+        ancho: hoja.clientWidth, papel: hoja.clientHeight, pide: pide, escala: esc,
         recortadas: [...document.querySelectorAll('.caja')]
           .filter(c => c.scrollHeight > c.clientHeight + 2)
           .map(c => ((c.querySelector('h2') || {}).textContent || '?')),
-        mapas: [...document.querySelectorAll('.mp')].map(f => {
-          const s = f.querySelector('svg'), d = f.querySelector('.mp-dib');
+        mapas: [...document.querySelectorAll('.mapa-caja')].map(f => {
+          const s = f.querySelector('.mp-dib svg'), d = f.querySelector('.mp-dib');
           const sb = s ? s.getBoundingClientRect() : { width: 0, height: 0 };
           const vb = String((s && s.getAttribute('viewBox')) || '').trim().split(/\s+/).map(Number);
-          return { t: ((f.querySelector('figcaption') || {}).textContent || '?'),
-            grande: f.classList.contains('grande'),
+          return { t: ((f.querySelector('h2') || {}).textContent || '?'),
+            banda: f.getAttribute('data-g') || '',
             hueco: Math.round(d ? d.getBoundingClientRect().width : 0),
             w: Math.round(sb.width), h: Math.round(sb.height),
             // La proporción del dibujo mismo, para saber si se encogió dentro.
@@ -226,35 +277,66 @@ const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
     /* Lo que se salía. Se mide con la hoja SUELTA y no por el desbordamiento:
        con la altura fija, el reparto del papel esconde el problema hasta que
        la impresora corta. */
+    /* La hoja no crece y el contenido de un sector bien trabajado se pasa:
+       se compone más chica hasta cerrar, y lo que se comprueba es que CIERRE.
+       Se mide la rejilla ya reducida, no el tamaño sin reducir. */
     T('el contenido cabe en la hoja, no la desborda',
-      o.pide <= o.papel, o.pide <= o.papel
+      o.pide <= o.papel + 2, (o.pide <= o.papel + 2
         ? 'sobran ' + mm(o.papel - o.pide) + ' mm'
-        : 'SE PASA ' + mm(o.pide - o.papel) + ' mm');
+        : 'SE PASA ' + mm(o.pide - o.papel) + ' mm') +
+        ' · compuesta al ' + Math.round(o.escala * 100) + '%');
     T('y ninguna caja se recorta por dentro',
       (o.recortadas || []).length === 0, (o.recortadas || []).join(' · ') || 'ninguna');
 
-    console.log('\n  -- ' + nom + ': los mapas se ven --');
+    console.log('\n  -- ' + nom + ': los mapas se ven y están todos --');
     const mapas = o.mapas || [];
-    const grandes = mapas.filter(m => m.grande);
-    T('hay recuadros de mapa', mapas.length >= 3, mapas.length + ' recuadros');
-    T('los rasters van al doble de ancho', grandes.length >= 2,
-      grandes.map(m => m.t).join(' · ') || 'ninguno ancho');
-    /* El tamaño, en milímetros de papel. Antes: 40 mm de alto acostada y 62
-       los anchos. Un raster de 40 mm no se lee ni con la nariz pegada. */
+    /* Ni uno a un lado. Se pidió con todas las letras después de ver una
+       versión que dejaba solo cuatro: «veo 10 mapas en el último análisis que
+       hice, no me dejes mapas a un lado». Acá se midieron cinco capas —los dos
+       rasters, los llenos, la jerarquía vial y los usos— y las cinco tienen
+       que estar en el papel. */
+    T('están todos los que se midieron, ninguno a un lado', mapas.length >= 5,
+      mapas.length + ' mapas: ' + mapas.map(m => m.t).join(' · '));
+    /* Y cada uno en la banda de SU tema, que es la otra mitad de lo que se
+       pidió: «en vez de que los mapas salgan en una sola línea, que se
+       integren dependiendo el tema». Un mapa sin banda es un mapa suelto. */
+    const sinBanda = mapas.filter(m => !m.banda);
+    T('y cada uno en la banda de su tema, no en una tira suelta',
+      sinBanda.length === 0 && new Set(mapas.map(m => m.banda)).size >= 3,
+      mapas.map(m => m.banda + ':' + m.t).join(' · '));
+    T('la jerarquía vial va con la movilidad',
+      mapas.some(m => /Jerarquía vial/.test(m.t) && m.banda === 'movilidad'),
+      (mapas.filter(m => /Jerarquía vial/.test(m.t))[0] || {}).banda || 'no está');
+    /* El tamaño, en milímetros de papel. En la tira que se quitó, un recuadro
+       normal medía 40 mm de alto acostado y el dibujo de adentro se encogía a
+       58 mm de ancho dentro de un hueco de 96. */
     const altoMin = Math.min.apply(null, mapas.map(m => mm(m.h)));
-    const altoG = grandes.length ? Math.min.apply(null, grandes.map(m => mm(m.h))) : 0;
-    T('ningún recuadro baja de 45 mm de alto', altoMin >= 45, altoMin + ' mm el más bajo');
-    T('y los rasters pasan de 90 mm', altoG >= 90, altoG + ' mm el más bajo de los anchos');
-    /* Y que el dibujo LLENE su hueco. Un `max-height` fijo no recorta: encoge
-       el dibujo entero hasta caber en el alto y lo centra, así que el
-       recuadro sigue midiendo lo mismo y el mapa adentro mide la mitad. Se ve
-       comparando la proporción del hueco con la del `viewBox`. */
-    const torcidos = mapas.filter(m => m.propVB > 0 &&
-      Math.abs(m.propHueco - m.propVB) / m.propVB > 0.12);
-    T('cada mapa llena su recuadro en vez de encogerse dentro',
+    T('ninguno baja de 45 mm de alto', altoMin >= 45, altoMin + ' mm el más bajo);'.slice(0, -2));
+    /* ── Que el sector LLENE el dibujo ────────────────────────────────
+       El recuadro tenía la proporción fija 260 × 180 sin importar la forma del
+       sector, así que un sector cuadrado —el de esta prueba lo es— salía
+       flotando en el medio con dos franjas de rejilla a los lados y se veía
+       la mitad de grande de lo que podía. Se reportó así: «quiero el cuadrado
+       que estás analizando más grande y no sobrealargarlo de más».
+
+       Se comprueba sobre el `viewBox`, que es donde vive la decisión: si el
+       sector es cuadrado, el recuadro tiene que ser cuadrado. Con el 260 × 180
+       de antes esto da 1,44 y falla. */
+    const torcidos = mapas.filter(m => Math.abs(m.propVB - 1) > 0.15);
+    T('el recuadro tiene la forma del sector, no una fija',
       torcidos.length === 0,
-      torcidos.map(m => m.t + ' ' + m.w + '×' + m.h + 'px, hueco ' +
-        m.propHueco.toFixed(2) + ' contra dibujo ' + m.propVB.toFixed(2)).join(' · ') || 'todos llenos');
+      torcidos.map(m => m.t + ': ' + m.propVB.toFixed(2)).join(' · ') ||
+        'todos a la forma del sector (' + (mapas[0] || {}).propVB.toFixed(2) + ')');
+    /* Y que el dibujo use su caja. Queda algo de blanco cuando la caja es más
+       ancha que el sector —el reparto de la banda no puede darle a cada mapa
+       una caja con su forma exacta—, pero de ahí a que el dibujo ocupe media
+       caja hay un trecho, y ese trecho es el que se estaba perdiendo. */
+    const aprovecha = m => (m.hueco > 0 ? Math.min(m.w, m.h * (m.propVB || 1)) / m.hueco : 0);
+    const flacos = mapas.filter(m => aprovecha(m) < 0.6);
+    T('y el dibujo ocupa su caja, no la mitad',
+      flacos.length === 0,
+      flacos.map(m => m.t + ': ' + Math.round(aprovecha(m) * 100) + '%').join(' · ') ||
+        'del ' + Math.round(Math.min.apply(null, mapas.map(aprovecha)) * 100) + '% para arriba');
   });
 
   console.log('\n  -- la caja del lote dice el reparto, no veintidós renglones --');

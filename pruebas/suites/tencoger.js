@@ -17,7 +17,14 @@ const elements=[{type:'node',id:1,lat:C.lat+0.001,lon:C.lng,tags:{amenity:'pharm
      `evaluate` no existe el `require` de node, así que se la deja en
      `window` antes de cargar nada. */
   await ctx.addInitScript(m => { window.__URBIS_MOTOR = m; }, E.MOTOR);
-  await ctx.addInitScript(()=>{ try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal. `addInitScript` corre en TODOS los marcos, y
+     la aplicación crea uno escondido para medir la lámina antes de imprimirla:
+     sin esta guarda, ese marco volvía a ejecutar esto y borraba las fichas ya
+     guardadas a mitad de la prueba. Costó encontrarlo porque el síntoma era
+     «no se guardó» en suites que no tocan el guardado. */
+    if (window.top !== window) return;
+    try{
     /* Desde que la licencia se pide AL TOCAR el botón (js/69 permitido),
        una suite sin licencia guardada se queda en la pantalla de licencia
        en vez de analizar. Es el comportamiento correcto: acá se pone la

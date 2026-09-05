@@ -96,6 +96,10 @@ const server = http.createServer((req, res) => {
      del curso. Sin esto el análisis lanza excepción y la pantalla se queda
      vacía sin decir por qué. */
   await ctx.addInitScript(() => {
+    /* Solo en el marco principal: ver la nota en las demás suites. La
+       aplicación crea un marco escondido para medir la lámina, y sin esta
+       guarda ese marco vuelve a ejecutar esto a mitad de la prueba. */
+    if (window.top !== window) return;
     try { localStorage.setItem('urbis_licencia_analisis', 'URBIS1.deprueba.deprueba'); } catch (e) {}
   });
   await pg.goto(base + '/index.html', { waitUntil: 'load' });

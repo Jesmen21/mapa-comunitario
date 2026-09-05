@@ -1172,12 +1172,3 @@
 .pcr-todo-t small{ font-size:.74rem; color:#5a6472; }
 .pcr-todo-fila .pcr-mini{ flex:1 1 0; min-width:44%; min-height:44px; }
 
-/* ── El recuadro de mapa que está encendido y no cabe ───────────────────
-   La banda del pliego tiene siete columnas y no encoge los recuadros para que
-   quepan todos: los que sobran se quedan fuera. Encendido pero fuera no es lo
-   mismo que apagado ni que gris —el dato existe y la decisión es tuya—, así
-   que lleva su propio aviso en naranja quemado en vez de confundirse con
-   ninguno de los dos. */
-.pcr-capa-fuera{ border-color:#F3C79E; background:#FFF6EE; }
-.pcr-capa-fuera b{ color:#7C3A0B; }
-.pcr-capa-fuera small{ color:#C2410C; font-weight:700; }

@@ -47,7 +47,12 @@ let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const ctx=await b.newContext({serviceWorkers:'block',viewport:{width:412,height:915},
     isMobile:true,hasTouch:true,locale:'es-CO',timezoneId:'America/Bogota'});
   await ctx.addInitScript(m=>{window.__URBIS_MOTOR=m;},E.MOTOR);
-  await ctx.addInitScript(()=>{try{
+  await ctx.addInitScript(()=>{
+    /* Solo en el marco principal: ver la nota en las demás suites. La
+       aplicación crea un marco escondido para medir la lámina, y sin esta
+       guarda ese marco vuelve a ejecutar esto a mitad de la prueba. */
+    if (window.top !== window) return;
+    try{
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'u',rol:'admin',
       es_admin:true,session_token:'t',active:true,verified:true}));
