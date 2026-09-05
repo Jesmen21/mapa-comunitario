@@ -1790,8 +1790,8 @@
     if (apagadas.indexOf('los-mapas-del-sector') !== -1) mapas = [];
 
     var anchoPlanoMM = (horiz ? 900 : 600) - 48;
-    var altoPlanoMM = horiz ? Math.max(55, 105 - 8 * extras)
-                            : Math.max(90, 210 - 14 * extras);
+    var altoPlanoMM = horiz ? Math.max(46, 96 - 8 * extras)
+                            : Math.max(76, 198 - 14 * extras);
     // Con la banda de mapas debajo, el plano cede: son dos figuras grandes
     // seguidas y la hoja no da para las dos a tamaño completo.
     if (mapas.length) altoPlanoMM = Math.round(altoPlanoMM * (horiz ? 0.62 : 0.64));
@@ -1820,8 +1820,11 @@
         : { an: 1, al: 1 };
       if (bb.al > 0) {
         var proporcion = bb.an / bb.al;
-        // Un margen del 15 % alrededor del sector, y nunca más ancho que el papel.
-        anchoDelPlano = Math.max(200, Math.min(520, Math.round(altoDelPlano * proporcion * 1.15)));
+        /* Un margen del 15 % alrededor del sector, y nunca más ancho que el
+           papel. El mínimo es el propio alto del dibujo y no una cifra fija:
+           con el plano a 76 mm de alto, un mínimo de 200 unidades volvía a
+           dejar bandas vacías a los lados y la barra de escala decía «2 km». */
+        anchoDelPlano = Math.max(altoDelPlano, Math.min(520, Math.round(altoDelPlano * proporcion * 1.15)));
       }
     } catch (e) { anchoDelPlano = 520; }
     var plano = (A && typeof A.miniatura === 'function')
@@ -1880,6 +1883,7 @@
       mover:    { tinte: '#0B98C4', suave: '#E4F5FB' },
       proyecto: { tinte: '#B8860B', suave: '#FBF3DC' },
       campo:    { tinte: '#6D4AC8', suave: '#EFEAFB' },
+      forma:    { tinte: '#3B4A5A', suave: '#EDF1F4' },
       cierre:   { tinte: '#0F1F2E', suave: '#EEF3F7' }
     };
     var CARA = {
@@ -1887,8 +1891,8 @@
       'Los mapas del sector':              ['sitio', 'capas'],
       'El sitio':                          ['sitio', 'ubicar'],
       'Qué hay, por categoría':            ['sitio', 'capas'],
-      'Alturas de lo construido':          ['sitio', 'edificio'],
-      'Llenos y vacíos':                   ['sitio', 'area'],
+      'Alturas de lo construido':          ['forma', 'edificio'],
+      'Llenos y vacíos':                   ['forma', 'area'],
       'Hitos y nodos':                     ['sitio', 'red'],
       'Dónde falta mapear':                ['campo', 'norte'],
       'El terreno':                        ['suelo', 'perfil'],
@@ -2489,6 +2493,76 @@
     /* Con la banda de mapas arriba, al texto le queda menos hoja y necesita
        más columnas para caber. Si además hay mucho medido, una más: es lo que
        hace que el pliego cierre en vez de imprimirse por fuera del papel. */
+    /* ── Ordenar por categorías ──────────────────────────────────────────
+       Las cajas salían en el orden en que se miden, mezcladas: el terreno
+       junto a los hitos, la sombra junto al perfil de la calle. Se pidió el
+       orden de una lámina de análisis urbano —ambiental, movilidad,
+       demográfico, forma, el lote, el campo— con cada bloque numerado y
+       rotulado, que es como se presenta y como se lee de pie.
+
+       Se hace DESPUÉS de armar las cajas y no reescribiendo el orden del
+       código: cada caja se construye donde vive su cálculo, y reordenarlas
+       en la fuente sería mover doscientas líneas por una decisión de
+       presentación. Acá se cortan por su `<section>` —no hay secciones
+       anidadas, y la prueba lo comprueba— y se vuelven a pegar por grupo,
+       con su cabecera delante. En la rejilla de columnas la cabecera ocupa
+       todo el ancho y el grupo fluye debajo. */
+    var GRUPOS = [
+      { n: 1, id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
+        que: 'relieve, clima, sol, sombra, amenaza y espacio público',
+        cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
+                'La amenaza sísmica', 'Espacio público efectivo'] },
+      { n: 2, id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
+        que: 'la calle, lo que se alcanza a pie y hasta dónde se camina',
+        cajas: ['El perfil de la calle', 'A distancia de caminar', 'Hasta dónde se camina desde el lote'] },
+      { n: 3, id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
+        que: 'población, viviendas, estrato, qué hay y dónde',
+        cajas: ['El sitio', 'Qué hay, por categoría', 'Hitos y nodos'] },
+      { n: 4, id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
+        que: 'llenos y vacíos, trazado y alturas',
+        cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
+      { n: 5, id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
+        que: 'el predio, lo que cabe y lo que el sitio le pide al proyecto',
+        cajas: ['El lote a intervenir', 'Qué cabe en el lote', 'Qué le pide el sitio al proyecto'] },
+      { n: 6, id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
+        que: 'lo intangible, lo levantado y lo que falta',
+        cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] }
+    ];
+    function agruparCajas(html) {
+      var trozos = html.split(/(?=<section class="caja)/).filter(function (t) { return t.indexOf('<section') === 0; });
+      var porTitulo = {};
+      trozos.forEach(function (t) {
+        var m = t.match(/<h2>([^<]*)<\/h2>/);
+        var titulo = m ? m[1] : '';
+        (porTitulo[titulo] || (porTitulo[titulo] = [])).push(t);
+      });
+      var puestas = {}, salida = '', nGrupos = 0, indice = [];
+      GRUPOS.forEach(function (g) {
+        var suyas = [];
+        g.cajas.forEach(function (tt) { (porTitulo[tt] || []).forEach(function (t) { suyas.push(t); puestas[tt] = true; }); });
+        if (!suyas.length) return;
+        nGrupos++;
+        var fam = FAMILIAS[g.fam] || FAMILIAS.sitio;
+        salida += '<div class="grupo grupo-' + g.id + '" style="--tinte:' + fam.tinte + ';--suave:' + fam.suave + '">' +
+          '<b>' + g.n + '</b><div><h3>' + esc(g.titulo) + '</h3><small>' + esc(g.que) + '</small></div></div>' +
+          // Cada caja del grupo lleva su número en el distintivo.
+          suyas.map(function (t) { return t.replace('<span class="ic" aria-hidden="true">',
+            '<span class="ic" aria-hidden="true"><em>' + g.n + '</em>'); }).join('');
+        indice.push({ n: g.n, titulo: g.titulo, fam: fam });
+      });
+      // Lo que no esté en ningún grupo —una caja nueva que todavía no se
+      // clasificó— sale al final, visible, en vez de perderse.
+      var sueltas = [];
+      Object.keys(porTitulo).forEach(function (tt) { if (!puestas[tt]) sueltas = sueltas.concat(porTitulo[tt]); });
+      if (sueltas.length) {
+        salida += '<div class="grupo grupo-otras" style="--tinte:#6B7A8A;--suave:#EEF3F7"><b>' + (nGrupos + 1) +
+          '</b><h3>Otras mediciones</h3><small>sin categoría todavía</small></div>' + sueltas.join('');
+      }
+      return { html: salida, grupos: nGrupos, indice: indice };
+    }
+    var agrupado = agruparCajas(cajasHTML);
+    cajasHTML = agrupado.html;
+
     var COLUMNAS = horiz
       ? (mapas.length ? (cajasHTML.length > 14000 ? 6 : 5) : cajasHTML.length > 14000 ? 4 : 3)
       : (mapas.length ? (cajasHTML.length > 20000 ? 5 : 4) : cajasHTML.length > 20000 ? 3 : 2);
@@ -2501,8 +2575,8 @@
       'html,body{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; margin:0; padding:0;' +
         'font-family:Inter,"Segoe UI",system-ui,sans-serif; color:#0F1F2E;' +
         '-webkit-print-color-adjust:exact; print-color-adjust:exact }' +
-      '.hoja{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; padding:' + (horiz ? '12mm 20mm 10mm' : '16mm 20mm 11mm') + '; display:flex;' +
-        'flex-direction:column; gap:' + (horiz ? 5 : 7) + 'mm; background:#fff }' +
+      '.hoja{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; padding:' + (horiz ? '11mm 20mm 8mm' : '15mm 20mm 9mm') + '; display:flex;' +
+        'flex-direction:column; gap:' + (horiz ? 4.5 : 6) + 'mm; background:#fff }' +
       // Cabecera: el logo arriba a la izquierda, como se pidió.
       /* La cabecera es una BANDA de identidad y no una raya bajo el título:
          azul profundo de URBIS, con el agua —el celeste— arriba como filo. Se
@@ -2550,14 +2624,40 @@
          debajo de todo, que es un margen y no un agujero. */
       '.rej{ columns:' + COLUMNAS + '; column-gap:6mm }' +
       '.rej>*{ break-inside:avoid; -webkit-column-break-inside:avoid;' +
-        'page-break-inside:avoid; margin:0 0 6mm }' +
+        'page-break-inside:avoid; margin:0 0 4.5mm }' +
+      /* La cabecera de cada categoría: número, título y una línea de qué
+         trae. Ocupa todo el ancho —`column-span`— y el grupo fluye debajo en
+         columnas. Es lo que convierte veinte cajas en seis bloques. */
+      /* MEDIDO: con la cabecera partiendo las columnas (`column-span:all`),
+         cada grupo de dos o tres cajas dejaba dos o tres columnas vacías y la
+         hoja crecía un 60 %: 4.756 px para 3.402. Un pliego de 60 × 90 con
+         todo medido no admite seis bandas de ancho completo. La cabecera va
+         DENTRO del flujo, como el titular de sección de un periódico: abre su
+         grupo donde le toca, las cajas del grupo van seguidas, y el papel se
+         llena parejo. */
+      '.rej>.grupo{ display:flex; align-items:center; gap:2.2mm; margin:0 0 2.2mm; padding:1.1mm 3mm 1.1mm 2.2mm;' +
+        'border-radius:2mm; background:var(--suave); border-left:1.8mm solid var(--tinte);' +
+        'break-after:avoid; page-break-after:avoid; -webkit-column-break-after:avoid }' +
+      '.grupo b{ flex:0 0 auto; width:7mm; height:7mm; border-radius:50%; background:var(--tinte); color:#fff;' +
+        'display:flex; align-items:center; justify-content:center; font-size:3.8mm; font-weight:800 }' +
+      '.grupo h3{ margin:0; font-size:3.3mm; letter-spacing:.1em; text-transform:uppercase; color:var(--tinte); font-weight:800; line-height:1.15 }' +
+      '.grupo small{ display:block; font-size:2.4mm; color:#3B4A5A; line-height:1.25 }' +
+      '.grupo div{ min-width:0 }' +
+      /* El índice de categorías bajo la cabecera del pliego: seis pastillas
+         numeradas con su color. Es lo que hace que el número que lleva cada
+         caja en su distintivo se lea sin buscar la cabecera del grupo. */
+      '.indice{ display:flex; flex-wrap:wrap; gap:2mm; margin:3mm 0 0 }' +
+      '.indice span{ display:inline-flex; align-items:center; gap:1.6mm; padding:.9mm 2.8mm .9mm 1.1mm; border-radius:99px;' +
+        'background:rgba(255,255,255,.14); color:#fff; font-size:2.8mm; font-weight:800; letter-spacing:.06em; text-transform:uppercase }' +
+      '.indice b{ width:5mm; height:5mm; border-radius:50%; background:#34CCFE; color:#052538; display:inline-flex;' +
+        'align-items:center; justify-content:center; font-size:2.9mm }' +
       '.plano-hero{ flex:0 0 auto }' +
       '.mapas-banda{ flex:0 0 auto; margin-bottom:6mm }' +
       /* Cuatro por fila parada, cinco acostada. La cuenta la mandan los dos
          rasters: ocupan dos columnas cada uno, y con tres por fila el segundo
          se caía a una fila propia —dos filas gastadas en dos dibujos, y la
          hoja se pasaba 70 cm de largo—. Con cuatro entran los dos juntos. */
-      '.mapas{ display:grid; grid-template-columns:repeat(' + (horiz ? 5 : 4) + ',1fr); gap:5mm }' +
+      '.mapas{ display:grid; grid-template-columns:repeat(' + (horiz ? 5 : 4) + ',1fr); gap:4mm }' +
       '.mp{ margin:0; display:flex; flex-direction:column; gap:1.5mm }' +
       '.mp figcaption{ font-size:2.9mm; font-weight:800; color:#0A6F9E; letter-spacing:.02em }' +
       '.mp-dib{ background:#F3F8FB; border-radius:1.5mm; padding:1mm }' +
@@ -2580,14 +2680,17 @@
       '.sintesis-pie{ --tinte:#0F1F2E; --suave:#EEF3F7 }' +
       '.caja{ --tinte:#0A6F9E; --suave:#E8F4FA; position:relative; border:.35mm solid #E3EAF0;' +
         'border-top:1.4mm solid var(--tinte); border-radius:3mm; padding:4mm 4mm 4mm; background:#fff;' +
-        'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
+        'display:flex; flex-direction:column; gap:2.2mm; overflow:hidden }' +
       '.caja h2{ margin:0 12mm 0 0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
         'color:var(--tinte); font-weight:800; padding-bottom:1.6mm; border-bottom:.3mm solid var(--suave) }' +
       /* El distintivo con el icono, arriba a la derecha. Se coloca desde acá
          para que el h2 siga siendo lo primero de la caja. */
-      '.caja .ic{ position:absolute; top:3.2mm; right:3.6mm; width:8.5mm; height:8.5mm; border-radius:2.2mm;' +
-        'background:var(--suave); color:var(--tinte); display:flex; align-items:center; justify-content:center }' +
-      '.caja .ic svg{ width:5.6mm; height:5.6mm }' +
+      '.caja .ic{ position:absolute; top:3.2mm; right:3.6mm; height:8.5mm; padding:0 2mm 0 1.4mm; border-radius:2.2mm;' +
+        'background:var(--suave); color:var(--tinte); display:flex; align-items:center; justify-content:center; gap:1.4mm }' +
+      '.caja .ic em{ font-style:normal; font-weight:800; font-size:3.6mm; width:5.4mm; height:5.4mm; border-radius:50%;' +
+        'background:var(--tinte); color:#fff; display:inline-flex; align-items:center; justify-content:center }' +
+      '.caja .ic svg{ width:5mm; height:5mm }' +
+      '.caja h2{ margin-right:18mm }' +
       '.caja .k b, .caja .cm b, .caja .fa-n{ color:var(--tinte) }' +
       '.caja .b u{ background:var(--tinte) }' +
       '.caja .lee{ border-left-color:var(--tinte); background:var(--suave); padding:2.2mm 3mm; border-radius:0 2mm 2mm 0 }' +
@@ -2744,6 +2847,14 @@
             ' · ' + (st.total || 0) + ' usos registrados' +
           '</div>' +
           (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
+          /* El índice de categorías, dentro de la banda: seis pastillas
+             numeradas. Es lo que hace que el número del distintivo de cada
+             caja se lea sin buscar la cabecera de su grupo. */
+          (agrupado.indice.length
+            ? '<div class="indice">' + agrupado.indice.map(function (g) {
+                return '<span><b>' + g.n + '</b>' + esc(g.titulo) + '</span>';
+              }).join('') + '</div>'
+            : '') +
         '</div>' +
       '</header>' +
 
