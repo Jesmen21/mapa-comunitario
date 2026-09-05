@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-04",
-  "proximaActualizacion": "2026-09-05",
+  "actualizado": "2026-09-05",
+  "proximaActualizacion": "2026-09-06",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -63,6 +63,76 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-04",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La Policía captura a alias 'Firulais', señalado por inteligencia de planear un atentado contra el presidente; horas después el ELN ataca con drones un batallón en Ocaña y mueren tres militares",
+      "detalle": "El 4 de septiembre el presidente Abelardo de la Espriella anunció la captura, en Ocaña (Norte de Santander), de Dairo Ferizzola Rojas, alias \"Firu\" o \"Firulais\", integrante del frente Camilo Torres Restrepo del ELN señalado por inteligencia militar y policial —mediante un trabajo conjunto de la Policía Nacional (Dijin) y la Operación Sparta— como francotirador designado por el Estado Mayor de Bloques y Frentes de Guerra Nororiental para planear y ejecutar una acción armada contra el presidente. Esa misma noche, el frente Camilo Torres Restrepo atacó con un enjambre de drones cargados con explosivos, disparos de fusil y artefactos no convencionales el Cantón Militar El Trapiche, sede del Batallón de Infantería No. 15 \"General Francisco de Paula Santander\" en Ocaña. El ataque dejó tres uniformados muertos —el capitán Marco David Pirajón Montezuma y el soldado profesional Joel Alberto Jiménez Jaramillo, fallecidos en el lugar, y el soldado profesional Jhon Carlos Marrugo Manjarrez, que murió mientras recibía atención médica—, cinco soldados profesionales heridos y una aeronave de la Fuerza Aérea impactada por esquirlas. El presidente calificó el ataque de un hecho del que el ELN \"se va a arrepentir\" y anunció que diseñará, junto con la cúpula militar y policial, \"una nueva estrategia para el Catatumbo\" centrada en las estructuras del ELN, sus cabecillas, sus fuentes de financiación y las actividades ilegales que sostienen su accionar armado.",
+      "contrapunto": "Fuentes militares consultadas por la prensa plantearon como principal hipótesis de inteligencia que el ataque al batallón fue una represalia directa por la captura de alias \"Firulais\", pero esa relación no ha sido confirmada oficialmente por el Ejército ni reivindicada por el ELN. La acusación de que \"Firulais\" planeaba un atentado contra el presidente proviene de la versión del Gobierno y de fuentes de inteligencia militar y policial; hasta la fecha de este registro no hay un proceso judicial concluido que la confirme.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Estas son las identidades de los dos uniformados muertos tras ataque del Eln a cantón militar en Ocaña, Norte de Santander",
+          "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/estas-son-las-identidades-de-los-dos-uniformados-muertos-tras-ataque-del-eln-a-canton-militar-en-ocana-norte-de-santander-ejercito-se-pronuncio-3583795"
+        },
+        {
+          "n": "El Tiempo · Abelardo De La Espriella se pronunció tras el asesinato de dos militares durante ataque del Eln en Ocaña: 'Se van a arrepentir'",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/abelardo-de-la-espriella-se-pronuncio-tras-el-asesinato-de-dos-militares-durante-ataque-del-eln-en-ocana-norte-de-santander-se-van-a-arrepentir-3583796"
+        },
+        {
+          "n": "Semana · Ejército confirmó la muerte de un tercer militar tras ataque del ELN en Ocaña, Norte de Santander",
+          "u": "https://www.semana.com/nacion/articulo/ejercito-confirmo-la-muerte-de-un-tercer-militar-tras-ataque-del-eln-en-ocana-norte-de-santander/202653/"
+        },
+        {
+          "n": "Semana · Dos militares muertos, cinco heridos y una aeronave de la FAC impactada por esquirlas deja el atentado a un batallón en Ocaña",
+          "u": "https://www.semana.com/nacion/cucuta/articulo/dos-militares-muertos-cinco-heridos-y-una-aeronave-de-la-fac-impactada-por-esquirlas-deja-el-atentado-a-un-batallon-en-ocana/202653/"
+        },
+        {
+          "n": "Semana · Esta es la nueva estrategia militar del nuevo Gobierno para enfrentar la escalada terrorista del ELN en el Catatumbo",
+          "u": "https://www.semana.com/politica/articulo/esta-es-la-nueva-estrategia-militar-del-nuevo-gobierno-para-enfrentar-la-escalada-terrorista-del-eln-en-el-catatumbo/202651/"
+        },
+        {
+          "n": "Infobae · De la Espriella lanzó dura advertencia al ELN tras el asesinato de dos soldados durante ofensiva a instalación militar: \"Los vamos a combatir sin descanso\"",
+          "u": "https://www.infobae.com/colombia/2026/09/05/de-la-espriella-lanzo-dura-advertencia-al-eln-tras-el-asesinato-de-dos-soldados-durante-ofensiva-a-instalacion-militar-los-vamos-a-combatir-sin-descanso/"
+        },
+        {
+          "n": "Infobae · De la Espriella anuncia la captura de un terrorista presuntamente designado para atentar contra él",
+          "u": "https://www.infobae.com/america/agencias/2026/09/04/de-la-espriella-anuncia-la-captura-de-un-terrorista-presuntamente-designado-para-atentar-contra-el/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-04",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "En la Cumbre de Gobernadores en Mompox, De la Espriella advierte que ningún mandatario regional puede negociar con grupos armados y apunta al gobernador de Nariño; este responde que no hubo negociaciones clandestinas",
+      "detalle": "Convocados por la Federación Nacional de Departamentos, los gobernadores del país se reunieron el 4 de septiembre con el presidente Abelardo de la Espriella en una Cumbre de Gobernadores en Santa Cruz de Mompox (Bolívar), con la asistencia del ministro del Interior, Rodrigo Lara, la consejera para las Regiones, Valerie Lafaurie, y la primera dama, Ana Lucía Pineda. La agenda incluyó descentralización, finanzas territoriales, salud, regalías, energía, y la atención a las regiones tras el terremoto de agosto y los incendios forestales en el Tolima. En materia de seguridad, el presidente advirtió que \"ningún gobernador ni alcalde puede adelantar por su cuenta negociaciones, acuerdos o contactos clandestinos con estructuras terroristas\" y afirmó que haría responder ante la justicia a quien cruzara esa línea, en referencia a los contactos del gobernador de Nariño, Luis Alfonso Escobar, quien había viajado a Venezuela durante el gobierno de Petro para acercamientos con la Segunda Marquetalia y el ELN, y había promovido diálogos con el grupo Comuneros del Sur.",
+      "contrapunto": "El gobernador Escobar respondió en X que \"el Gobierno de Nariño no ha adelantado negociaciones clandestinas\" ni \"acuerdos por debajo de la mesa\", y precisó que los Diálogos Regionales de Paz en el departamento fueron conducidos por el Gobierno Nacional a través de sus delegados, no por la administración departamental.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Semana · Abelardo De La Espriella, de frente con los gobernadores del país: los temas clave que discutirá con las regiones",
+          "u": "https://www.semana.com/nacion/articulo/abelardo-de-la-espriella-con-los-gobernadores-del-pais-los-temas-clave-que-discutira-con-las-regiones/202654/"
+        },
+        {
+          "n": "El Espectador · Gobernadores se reunieron con presidente De la Espriella y elevaron peticiones regionales",
+          "u": "https://www.elespectador.com/politica/gobernadores-se-reunieron-con-presidente-de-la-espriella-y-elevaron-peticiones-regionales/"
+        },
+        {
+          "n": "Infobae · De la Espriella lanzó dura advertencia a mandatarios regionales que hagan \"conversaciones clandestinas\" con terroristas: señaló al gobernador de Nariño",
+          "u": "https://www.infobae.com/colombia/2026/09/05/de-la-espriella-lanzo-dura-advertencia-a-mandatarios-regionales-que-hagan-conversaciones-clandestinas-con-terroristas-senalo-al-gobernador-de-narino/"
+        },
+        {
+          "n": "Semana · Luis Alfonso Escobar responde a advertencia de De La Espriella: \"El Gobierno de Nariño no ha adelantado negociaciones clandestinas\"",
+          "u": "https://www.semana.com/politica/articulo/luis-alfonso-escobar-responde-a-advertencia-de-de-la-espriella-el-gobierno-de-narino-no-ha-adelantado-negociaciones-clandestinas/202615/"
+        },
+        {
+          "n": "El País (Cali) · De La Espriella no permitirá negociaciones con criminales; lanzó advertencia a un gobernador",
+          "u": "https://www.elpais.com.co/politica/de-la-espriella-endurece-postura-frente-a-grupos-armados-ningun-gobernador-ni-alcalde-puede-negociar-por-su-cuenta-0417.html"
+        }
+      ]
+    },
     {
       "fecha": "2026-08-29",
       "precision": "exacta",
