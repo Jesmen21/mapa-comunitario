@@ -43,7 +43,7 @@
      reservar. Se intenta de más a menos y se usa la primera que el navegador
      acepte de verdad —se comprueba, no se supone—. A 96 ppp el pliego sigue
      siendo legible a un metro, que es como se mira una lámina colgada. */
-  var CALIDADES = [150, 120, 96];
+  var CALIDADES = [120, 96, 72];
 
   function medirEnPx(mm) { return Math.round(mm * PX_POR_MM); }
 
@@ -211,25 +211,85 @@
     } catch (e) { return false; }
   }
 
+  /* ¿Se dibujó algo, o quedó un papel en blanco?
+
+     Es la falla silenciosa de este camino: un lienzo demasiado grande para el
+     teléfono NO lanza ningún error —se reserva, se dibuja encima y sale todo
+     blanco—, y entonces el PDF pesa lo que pesa y no tiene nada dentro. Se
+     mira una parrilla de puntos repartidos por la hoja; si TODOS son del mismo
+     color, no se dibujó la lámina.
+
+     Se muestrea con `getImageData` de a un píxel y no la hoja entera: leer
+     dieciocho millones de píxeles para saber si hay algo cuesta más que
+     dibujarlos. */
+  function tieneDibujo(lienzo) {
+    try {
+      var x = lienzo.getContext('2d');
+      var w = lienzo.width, h = lienzo.height, distintos = 0, primero = null;
+      for (var i = 1; i <= 6; i++) {
+        for (var j = 1; j <= 6; j++) {
+          var d = x.getImageData(Math.round(w * i / 7), Math.round(h * j / 7), 1, 1).data;
+          var clave = d[0] + ',' + d[1] + ',' + d[2];
+          if (primero === null) primero = clave;
+          else if (clave !== primero) distintos++;
+        }
+      }
+      return distintos > 0;
+    } catch (e) { return false; }
+  }
+
+  /* Un intento completo a una resolución: componer, dibujar, comprobar que
+     hay algo y comprimir. Cualquier tropiezo devuelve null y el de arriba
+     baja un escalón. */
+  async function intentar(html, anchoMM, altoMM, dpi) {
+    var base = { w: medirEnPx(anchoMM), h: medirEnPx(altoMM) };
+    var k = dpi / 96;
+    var w = Math.round(base.w * k), h = Math.round(base.h * k);
+    if (!cabeElLienzo(w, h)) return null;
+    var lienzo = await dibujar(svgDeLaLamina(html, anchoMM, altoMM, k), w, h);
+    if (!tieneDibujo(lienzo)) { lienzo.width = lienzo.height = 1; return null; }
+    var url = lienzo.toDataURL('image/jpeg', 0.92);
+    lienzo.width = lienzo.height = 1;     // decenas de megabytes: se sueltan ya
+    if (!/^data:image\/jpeg/.test(url) || url.length < 5000) return null;
+    return { jpeg: bytesDe(url), w: w, h: h, dpi: dpi };
+  }
+
+  /* ── Armar el PDF ──────────────────────────────────────────────────────
+     Se prueba de más fino a más grueso y se hace TODO el camino en cada
+     intento, no solo reservar el lienzo.
+
+     Estaba al revés: se elegía la resolución comprobando que el lienzo se
+     pudiera reservar, y con eso se daba por buena. Pero reservar es lo barato:
+     lo que se cae en un teléfono es dibujar dieciocho millones de píxeles y
+     comprimirlos, y eso pasaba DESPUÉS de haber elegido. El fallo llegaba al
+     final, se caía al camino viejo —el cuadro de impresión de Android, con su
+     lista de papeles— y desde afuera se veía como si el botón nuevo no
+     hiciera nada: «al darle guardar PDF me sale esa opción azul otra vez».
+
+     Y se empieza en 120 y no en 150: a 90 cm de ancho son 4.252 píxeles, que
+     es más de lo que resuelve un plotter a un metro de distancia, y le quita
+     al teléfono un tercio de la memoria del intento. */
   async function generar(html, opts) {
     var o = opts || {};
     var anchoMM = o.anchoMM || 900, altoMM = o.altoMM || 600;
-    var base = { w: medirEnPx(anchoMM), h: medirEnPx(altoMM) };
-    var elegida = 0, w = 0, h = 0;
+    var avisar = typeof o.alAvisar === 'function' ? o.alAvisar : function () {};
+    var fallos = [];
     for (var i = 0; i < CALIDADES.length; i++) {
-      var k = CALIDADES[i] / 96;
-      var pw = Math.round(base.w * k), ph = Math.round(base.h * k);
-      if (cabeElLienzo(pw, ph)) { elegida = CALIDADES[i]; w = pw; h = ph; break; }
+      var dpi = CALIDADES[i];
+      try {
+        avisar('Dibujando la lámina a ' + dpi + ' puntos por pulgada…');
+        var r = await intentar(html, anchoMM, altoMM, dpi);
+        if (r) {
+          var blob = pdfConImagen(r.jpeg, r.w, r.h, anchoMM, altoMM, o.titulo);
+          return { blob: blob, dpi: dpi, bytes: blob.size, ancho: r.w, alto: r.h,
+                   intentos: i + 1, bajadas: fallos };
+        }
+        fallos.push(dpi + ' ppp: no cupo');
+      } catch (e) {
+        fallos.push(dpi + ' ppp: ' + ((e && e.message) || e));
+      }
     }
-    if (!elegida) throw new Error('Este teléfono no puede componer una imagen tan grande.');
-
-    var svg = svgDeLaLamina(html, anchoMM, altoMM, elegida / 96);
-    var lienzo = await dibujar(svg, w, h);
-    var jpeg = bytesDe(lienzo.toDataURL('image/jpeg', 0.93));
-    // El lienzo se suelta cuanto antes: son decenas de megabytes.
-    lienzo.width = lienzo.height = 1;
-    var blob = pdfConImagen(jpeg, w, h, anchoMM, altoMM, o.titulo);
-    return { blob: blob, dpi: elegida, bytes: blob.size, ancho: w, alto: h };
+    throw new Error('no se pudo componer la imagen del pliego (' + fallos.join('; ') + ')');
   }
 
   function bajar(blob, nombre) {

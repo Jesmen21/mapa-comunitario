@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v725-los-llenos-de-la-foto';
+const URBIS_CACHE = 'urbis-v726-el-pdf-que-no-se-rinde';
 const URBIS_ASSETS = [
   './',
   './index.html',

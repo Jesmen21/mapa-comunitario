@@ -1706,10 +1706,15 @@
     }
     var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
     var nombre = (S.nombreGuardado || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
-    S.pdfArmando = true; pintar();
+    S.pdfArmando = true; S.pdfAviso = 'Dibujando la lámina…'; pintar();
     return P.generar(html, {
       anchoMM: mm.anchoMM, altoMM: mm.altoMM,
-      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm'
+      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm',
+      alAvisar: function (t) {
+        S.pdfAviso = t;
+        var c = document.getElementById('pcr-pdf-estado');
+        if (c) c.textContent = t;
+      }
     }).then(function (r) {
       P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
                       (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
@@ -1721,12 +1726,17 @@
       }
       return true;
     }).catch(function (e) {
-      S.pdfArmando = false;
-      if (alAvisar) {
-        alAvisar('No se pudo armar el PDF (' + ((e && e.message) || e) + '). ' +
-                 'Se abre la vista de impresión: ahí el tamaño lo elige el teléfono.');
-      }
-      abrirImpresion(html, alAvisar);
+      S.pdfArmando = false; S.pdfAviso = '';
+      /* Y NO se cae en silencio al cuadro de impresión del teléfono. Eso es
+         lo que pasaba: el PDF fallaba al final, se abría el cuadro de Android
+         con su lista de papeles, y desde afuera parecía que el botón nuevo no
+         hacía nada. Se dice qué falló y se deja la otra puerta a un toque,
+         para que abrirla sea una decisión y no una sorpresa. */
+      S.pdfError = 'No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
+        '. Podés abrir la vista de impresión, pero ahí el tamaño del papel lo elige el ' +
+        'teléfono y el pliego sale encajado en una hoja carta.';
+      if (alAvisar) alAvisar('');
+      pintar();
       return false;
     });
   }
@@ -3590,6 +3600,7 @@
       }
       if (acc === 'lamina' || acc === 'lamina-h') {
         if (!S.resultado || S.pdfArmando) return;
+        S.pdfError = '';
         var caja3 = document.getElementById('pcr-nombre');
         S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
         bajarPliegoPDF(acc === 'lamina-h', function (m) { S.aviso = m; pintar(); });
@@ -12736,6 +12747,7 @@
           '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b"' +
             (S.pdfArmando ? ' disabled' : '') + '>' + ico('documento') +
             (S.pdfArmando ? 'Armando el PDF…' : 'Lámina 60×90 · PDF') + '</button>' +
+          '' +
           '<button type="button" data-pcr="lamina-h" class="pcr-mini pcr-llevar-b"' +
             (S.pdfArmando ? ' disabled' : '') + '>' + ico('documento') +
             (S.pdfArmando ? 'Armando el PDF…' : 'Lámina 90×60 · PDF') + '</button>' +
@@ -12746,6 +12758,10 @@
         'teléfono —que solo ofrece carta, oficio y tabloide, y encajaba el pliego en una hoja—. ' +
         'Tarda unos segundos: la hoja se dibuja entera antes de guardarse. Lo que no mediste no ' +
         'sale: medí el terreno, el clima y el trazado antes si querés que aparezcan.</p>' +
+        (S.pdfArmando
+          ? '<p class="pcr-conc" id="pcr-pdf-estado">' + esc(S.pdfAviso || 'Dibujando la lámina…') + '</p>'
+          : '') +
+        (S.pdfError ? '<p class="pcr-error">' + esc(S.pdfError) + '</p>' : '') +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="lamina-ver" class="pcr-mini">' + ico('imprimir', 16) +
             'Ver e imprimir 60×90</button>' +

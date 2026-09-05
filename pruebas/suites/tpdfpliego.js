@@ -116,6 +116,33 @@ const PT = mm => mm * 72 / 25.4;
   // Y el camino de siempre, para mandarlo a una impresora de verdad.
   r.hayVerImprimir = await pg.evaluate(() =>
     !!document.querySelector('#pcr-hoja [data-pcr="lamina-ver-h"]'));
+  /* ── Y ahora, con el lienzo roto a propósito ─────────────────────────
+     Se le hace devolver un lienzo que no dibuja nada, que es como se porta un
+     teléfono sin memoria para una imagen de este tamaño: no lanza ningún
+     error, deja el papel en blanco. */
+  let pestanasDespues = 0;
+  ctx.on('page', () => { pestanasDespues++; });
+  r.sinLienzo = await pg.evaluate(async () => {
+    const esperar = ms => new Promise(x => setTimeout(x, ms));
+    const antes = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (t, o2) {
+      const c = antes.call(this, t, o2);
+      if (c && this.width > 2000) { c.drawImage = function () {}; }   // no dibuja
+      return c;
+    };
+    const H = document.getElementById('pcr-hoja');
+    const b2 = H.querySelector('[data-pcr="lamina-h"]');
+    if (b2) b2.click();
+    for (let i = 0; i < 60; i++) { await esperar(500);
+      if (/No se pudo armar el PDF/.test(H.textContent || '')) break; }
+    HTMLCanvasElement.prototype.getContext = antes;
+    const t = H.textContent || '';
+    return { fallo: /No se pudo armar el PDF/.test(t),
+      enPantalla: (t.match(/No se pudo armar el PDF[^]{0,120}/) || [''])[0],
+      mensaje: '' };
+  });
+  r.sinLienzo.pestanas = pestanasDespues;
+
   r.err = err;
   await pg.close(); await b.close();
 
@@ -158,6 +185,20 @@ const PT = mm => mm * 72 / 25.4;
   T('y el primer objeto empieza donde dice',
     prim > 0 && /^1 0 obj/.test(txt.slice(prim, prim + 8)),
     prim + ' → ' + JSON.stringify(txt.slice(prim, prim + 8)));
+
+  /* Y si el teléfono no puede con la imagen, NO se cae en silencio al cuadro
+     de impresión del sistema. Eso es lo que pasaba: el PDF fallaba al final
+     —reservar el lienzo es barato, dibujar dieciocho millones de píxeles y
+     comprimirlos no—, se abría el cuadro azul de Android con su lista de
+     papeles, y desde afuera parecía que el botón nuevo no hacía nada. */
+  console.log('\n  -- si no puede, lo dice --');
+  T('sin lienzo no devuelve un PDF en blanco', r.sinLienzo && r.sinLienzo.fallo === true,
+    (r.sinLienzo || {}).mensaje || 'no falló');
+  T('la ficha lo explica en vez de abrir el cuadro del teléfono',
+    /No se pudo armar el PDF/.test((r.sinLienzo || {}).enPantalla || ''),
+    ((r.sinLienzo || {}).enPantalla || '(no dice nada)').slice(0, 90));
+  T('y no abre ninguna otra pestaña', (r.sinLienzo || {}).pestanas === 0,
+    (r.sinLienzo || {}).pestanas + ' pestañas');
 
   console.log('\n  -- y el camino de antes sigue --');
   T('se puede ver e imprimir, para una impresora de verdad', r.hayVerImprimir);
