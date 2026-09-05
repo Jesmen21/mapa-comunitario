@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v716-la-lamina-en-bandas';
+const URBIS_CACHE = 'urbis-v717-la-lamina-en-bandas';
 const URBIS_ASSETS = [
   './',
   './index.html',
