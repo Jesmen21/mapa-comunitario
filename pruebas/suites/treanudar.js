@@ -216,6 +216,16 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
       window.map.eachLayer(l=>{ if(l instanceof L.Polygon && l.options &&
         /^#FFD54F$/i.test(l.options.fillColor||'')) n++; });
       return n; })();
+    /* Y los usos, otra vez sobre el mapa. Se guardan con la ficha desde
+       siempre —posición, categoría y nombre— pero al retomar el sector se
+       repintaban el círculo, el lote y las marcas, y los puntos no: volvía el
+       contorno de un sector vacío. «Cuando entro a un análisis viejo no salen
+       los puntos de los usos.» Estaban guardados; faltaba dibujarlos. */
+    o.puntosEnMapa=(function(){ let n=0;
+      window.map.eachLayer(l=>{ if(l instanceof L.CircleMarker && !(l instanceof L.Circle)) n++; });
+      return n; })();
+    o.puntosGuardados=((window.URBIS_PC_RECON.leerFichas()||[])[0]||{}).pois;
+    o.puntosGuardados=(o.puntosGuardados||[]).length;
     o.climaApagadoEnPliego=(function(){
       const b=H().querySelector('[data-pcr="pliego-caja"][data-c="el-clima"]');
       return b?!b.classList.contains('on'):null;
@@ -268,6 +278,9 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   T('el clima', despues.tieneClima===true);
   T('la amenaza sísmica', despues.tieneAmenaza===true);
   T('el lote, dibujado en el mapa', despues.loteEnMapa>=1, despues.loteEnMapa+' polígono(s)');
+  T('y los usos, otra vez pintados sobre el mapa',
+    despues.puntosEnMapa>0 && despues.puntosEnMapa>=despues.puntosGuardados,
+    despues.puntosEnMapa+' puntos en el mapa de '+despues.puntosGuardados+' guardados');
   T('la marca intangible', despues.marcas===1, despues.marcas+' marca(s)');
   T('y hasta la caja que había apagado del pliego',
     despues.climaApagadoEnPliego===true);

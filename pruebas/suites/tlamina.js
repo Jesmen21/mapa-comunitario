@@ -182,6 +182,14 @@ function climaSimulado(){
     o.pestanas=cabs.map(c=>(c.textContent||'').replace(/\s+/g,' ').trim().slice(0,60));
     const cab=cabs.filter(c=>/La Playa/.test(c.textContent||''))[0]||cabs[0];
     if(cab){ cab.click(); await esperar(600); }
+    /* Desde el sector guardado la lámina BAJA un PDF y no pasa por la vista
+       de impresión: se toma del armador del PDF, que recibe el mismo HTML, y
+       se le corta la bajada para no llenar la carpeta de descargas. */
+    if (window.URBIS_PLIEGO_PDF) {
+      window.URBIS_PLIEGO_PDF.bajar = function () {};
+      window.URBIS_PLIEGO_PDF.generar = function (h) { capturado = h;
+        return Promise.resolve({ blob: new Blob(['x']), dpi: 120, bytes: 1, ancho: 1, alto: 1 }); };
+    }
     const bg2=document.querySelector('[data-u52-call="pcr-lamina"]');
     o.hayBotonGuardado=!!bg2;
     if(bg2){ bg2.click(); await esperar(500); }

@@ -13390,6 +13390,22 @@
        Va al final, cuando la huella del sector ya está puesta: es lo que le
        deja comprobar que el trazo es de ESTE barrio. */
     try { recuperarTrazoVivo(); } catch (e) {}
+    /* Y los usos, otra vez sobre el mapa.
+
+       Se guardan con la ficha desde siempre —posición, categoría y nombre—
+       pero al retomar un sector se repintaban el círculo, el lote y las
+       marcas, y los puntos no: volvía el contorno de un sector vacío. Llegó
+       dicho así: «cuando entro a un análisis viejo no salen los puntos de los
+       usos, deberían guardarse también». Estaban guardados; faltaba
+       dibujarlos.
+
+       Si la ficha se archivó sin ellos por falta de espacio —lo dice
+       `sinPuntos`— no hay nada que pintar y el informe ya lo advierte
+       arriba. */
+    try {
+      var pois = (S.resultado && S.resultado.pois) || [];
+      S.puntosEnMapa = pois.length ? pintarPuntos(pois) : 0;
+    } catch (e) {}
     return true;
   }
 

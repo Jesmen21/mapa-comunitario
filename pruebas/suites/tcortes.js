@@ -169,6 +169,14 @@ const geo=[
     const cuerpo=document.querySelector('.pcr-pest-cuerpo');
     o.reabierta={ cortes:cuerpo?cuerpo.querySelectorAll('.pcr-corte').length:0,
                   bajo:/El terreno bajo el lote/.test(cuerpo?cuerpo.textContent:'') };
+    /* Desde el sector guardado la lámina BAJA un PDF y no pasa por la vista
+       de impresión: se toma del armador del PDF, que recibe el mismo HTML, y
+       se le corta la bajada para no llenar la carpeta de descargas. */
+    if (window.URBIS_PLIEGO_PDF) {
+      window.URBIS_PLIEGO_PDF.bajar = function () {};
+      window.URBIS_PLIEGO_PDF.generar = function (h) { capturado = h;
+        return Promise.resolve({ blob: new Blob(['x']), dpi: 120, bytes: 1, ancho: 1, alto: 1 }); };
+    }
     const bl=[...document.querySelectorAll('[data-u52-call="pcr-lamina"]')][0];
     if(bl){ bl.click(); await esperar(700); }
     o.laminaGuardada=capturado; capturado='';
