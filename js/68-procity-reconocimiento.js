@@ -151,6 +151,7 @@
        quedar fuera por no estar en una lista que se escribió antes de que
        existiera. */
     viasEnMapa: false,
+    evo: null, evoCargando: '', evoAviso: '',
     pliegoOff: APAGADAS_DE_ENTRADA.slice(), pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
     // La amenaza sísmica del municipio, del Servicio Geológico. Se pide a
     // botón como el clima o el terreno: es una consulta a un servidor lento y
@@ -489,6 +490,25 @@
          momento y guardarlos por separado dejaría fichas con el sismo y sin
          el río, que en Cúcuta es la mitad que falta. */
       inundacion: S.inundacion || null,
+      /* La evolución, SIN las imágenes. Cada estampa es un PNG en base64 y
+         quince de ellas son megas: el almacenamiento del teléfono son cinco
+         en total. Lo que se defiende son las cifras y la tendencia, y eso
+         pesa nada; las imágenes se vuelven a pedir con un botón. */
+      evo: (function () {
+        var e = S.evo;
+        if (!e) return null;
+        var limpiar = function (s2) {
+          if (!s2) return null;
+          return { fuente: s2.fuente, nombre: s2.nombre, modo: s2.modo,
+                   metrosPorPixel: s2.metrosPorPixel, caja: s2.caja,
+                   tendencia: s2.tendencia || null,
+                   pasos: (s2.pasos || []).map(function (p) {
+                     return { anio: p.anio, ok: p.ok, hueco: p.hueco,
+                              fiable: p.fiable, medida: p.medida || null };
+                   }) };
+        };
+        return { landsat: limpiar(e.landsat), wayback: limpiar(e.wayback) };
+      })(),
       // Los índices que escribió el estudiante. Son siete números y son el
       // trabajo de haber ido a buscar el POT: perderlos al recargar sería
       // hacerle repetir esa búsqueda.
@@ -2215,6 +2235,7 @@
       'Verde y agua':                      ['suelo', 'verde'],
       'El ruido del tránsito':             ['mover', 'alerta'],
       'Infraestructura de servicios':      ['suelo', 'industria'],
+      'Cómo cambió el sitio':              ['suelo', 'reloj'],
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
       'La sombra que arrojás':             ['proyecto', 'destello'],
@@ -2705,6 +2726,50 @@
       'estimación a partir de los usos y de los corredores, no un aforo.</p>';
       })(), 'g3') +
 
+      /* ── Cómo cambió el sitio ─────────────────────────────────────────
+         La serie larga, en el papel: las estampas de cada año en fila, las
+         cifras y la conclusión. Es de las pocas cajas del pliego que habla
+         del TIEMPO y no del estado de hoy, y por eso vale lo que ocupa: un
+         jurado que ve que el sector perdió catorce puntos de vegetación en
+         cuarenta años entiende de qué va el proyecto antes de que se lo
+         expliquen. */
+      caja('Cómo cambió el sitio',
+      (function () {
+      var EV = window.URBIS_EVOLUCION;
+      var ev = (o.evo !== undefined ? o.evo : S.evo) || {};
+      var L = ev.landsat;
+      if (!EV || !L) return '';
+      var buenos = (L.pasos || []).filter(function (p) { return p.ok && p.medida; });
+      if (buenos.length < 2) return '';
+      var conc = EV.conclusion(L) || [];
+      var t = L.tendencia;
+      return '<div class="evo-tira">' +
+      buenos.map(function (p) {
+      return '<figure class="evo-p' + (p.fiable ? '' : ' evo-dudoso') + '">' +
+        '<img src="' + p.imagen + '" alt="' + p.anio + '">' +
+        '<figcaption>' + p.anio + '</figcaption>' +
+        '<small>' + conComa(p.medida.verde) + '%</small></figure>';
+      }).join('') +
+      '</div>' +
+      (t
+      ? '<div class="kpis">' +
+        '<div class="k"><b>' + conComa(t.verdeDesde) + '%</b><small>verde en ' + t.desde + '</small></div>' +
+        '<div class="k"><b>' + conComa(t.verdeHasta) + '%</b><small>verde en ' + t.hasta + '</small></div>' +
+        '<div class="k"><b>' + (t.verde > 0 ? '+' : '') + conComa(t.verde) +
+        '</b><small>puntos de diferencia</small></div>' +
+        '</div>'
+      : '') +
+      conc.map(function (c) {
+      return '<p class="lee">' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
+      }).join('') +
+      '<p class="nota">Landsat, 30 m por píxel: la estampa se ve a cuadros y el lote son unos ' +
+      'pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con ' +
+      '<b>NDVI</b>, el índice de la banda infrarroja, que significa lo mismo en ' + (t ? t.desde : 1984) +
+      ' y hoy; el clasificador de colores de la foto de hoy no serviría acá, mediría la ' +
+      'diferencia entre dos cámaras. Los años medio tapados por nubes se marcan y no entran ' +
+      'en la conclusión.</p>';
+      })(), 'g3') +
+
       /* ── La infraestructura de servicios ──────────────────────────────
          Lo que hay registrado y a qué distancia. NO es cobertura de servicios
          públicos —eso es censo del DANE y no hay de dónde bajarlo—, y la caja
@@ -3125,7 +3190,7 @@
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'La inundación', 'Verde y agua',
                 'El ruido del tránsito', 'Infraestructura de servicios',
-                'Espacio público efectivo'] },
+                'Cómo cambió el sitio', 'Espacio público efectivo'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
@@ -3453,6 +3518,16 @@
          el pie debajo. Ocupa dos porque un mapa al ancho de una caja de
          cifras es del tamaño que tenía en la tira que se quitó, y de eso se
          trataba. */
+      /* La tira de la evolución, en el papel: cuadradas y en fila. Sin
+         suavizado —a 30 m por píxel, suavizar es fingir un detalle que no
+         está— y con el año medio tapado por nubes en punteado. */
+      '.evo-tira{ display:flex; gap:2mm; flex-wrap:wrap; margin:1mm 0 2mm }' +
+      '.evo-p{ margin:0; flex:0 0 auto; text-align:center }' +
+      '.evo-p img{ display:block; width:22mm; height:22mm; object-fit:cover;' +
+        'border-radius:1.5mm; border:.3mm solid #DBE5EC; image-rendering:pixelated }' +
+      '.evo-p figcaption{ font-size:2.6mm; font-weight:800; color:#233748 }' +
+      '.evo-p small{ font-size:2.4mm; color:#6B7A8A }' +
+      '.evo-dudoso img{ opacity:.55; border-style:dashed }' +
       '.mapa-caja{ grid-column:span 1 }' +
       '.mapa-caja.mapa-ancho{ grid-column:span 2 }' +
       '.mp-dib{ background:#F3F8FB; border-radius:1.5mm; padding:1mm }' +
@@ -4640,6 +4715,9 @@
         return;
       }
       if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'evolucion' || acc === 'evolucion-alta') {
+        pedirEvolucion(acc === 'evolucion-alta' ? 'wayback' : 'landsat'); return;
+      }
       if (acc === 'curvas-paso') {
         S.curvasPaso = Number(b.getAttribute('data-paso')) || null;
         S.curvas = null;
@@ -7589,6 +7667,16 @@
         dato: S.inundacion && S.inundacion.nombre
           ? String(S.inundacion.nombre).toLowerCase()
           : 'las manchas del IDEAM' },
+      { id: 'como-cambio-el-sitio', t: 'Cómo cambió el sitio', g: 'El suelo',
+        listo: !!(S.evo && S.evo.landsat && (S.evo.landsat.pasos || [])
+                   .filter(function (p) { return p.ok && p.medida; }).length >= 2),
+        falta: 'pedí la evolución desde 1984',
+        dato: (function () {
+          var t = S.evo && S.evo.landsat && S.evo.landsat.tendencia;
+          return t ? t.desde + ' → ' + t.hasta + ' · ' + (t.verde > 0 ? '+' : '') +
+                     conComa(t.verde) + ' puntos de verde'
+                   : 'la serie de Landsat y su tendencia';
+        })() },
       { id: 'infraestructura-de-servicios', t: 'Infraestructura de servicios', g: 'El suelo',
         listo: (function () {
           try { return !!infraDeServicios(res); } catch (e) { return false; }
@@ -11239,6 +11327,46 @@
     };
   }
 
+  /* ── La evolución del sitio, año por año ──────────────────────────────
+     Dos series que no se mezclan: la larga de Landsat desde 1984, que se mide
+     con un índice y da la tendencia, y la corta de alta resolución desde
+     2014, que se mira. El porqué entero está en js/80.
+
+     Se piden a mano y no con el análisis: son diez o quince descargas de
+     imagen y una lectura de píxeles por cada una. Nadie quiere eso cada vez
+     que dibuja un sector; quien quiere la evolución la pide. */
+  function pedirEvolucion(fuente) {
+    var EV = window.URBIS_EVOLUCION;
+    if (!EV) { S.evoAviso = 'Falta el módulo de evolución. Recargá la app.'; pintar(); return; }
+    var contorno = contornoDelSector();
+    if (!contorno || contorno.length < 3) {
+      S.evoAviso = 'Primero analizá un sector.'; pintar(); return;
+    }
+    var cual = fuente === 'wayback' ? 'wayback' : 'landsat';
+    S.evoCargando = cual; S.evoAviso = 'Preparando…'; pintar();
+    return EV.serie({
+      fuente: cual, contorno: contorno,
+      alAvisar: function (t) {
+        S.evoAviso = t;
+        var c = document.getElementById('pcr-evo-estado');
+        if (c) c.textContent = t;
+      }
+    }).then(function (s2) {
+      S.evo = S.evo || {};
+      S.evo[cual] = s2;
+      S.evoCargando = ''; S.evoAviso = '';
+      /* Solo las cifras viajan con la ficha. Las imágenes son megas y se
+         vuelven a pedir; el dato pesa nada y es lo que se defiende. */
+      guardarFichaViva();
+      pintar();
+      return s2;
+    }, function (e) {
+      S.evoCargando = '';
+      S.evoAviso = 'No se pudo traer la serie: ' + ((e && e.message) || 'error') + '.';
+      pintar();
+    });
+  }
+
   /* ── La infraestructura de servicios que sí está registrada ───────────
      Lo que se pidió era «servicios públicos»: si el barrio tiene agua,
      alcantarillado y energía. Eso NO se puede contestar con lo que URBIS
@@ -12977,6 +13105,106 @@
       'distintas, la desmiente o la confirma en una tarde.</p>';
   }
 
+  /* ── La evolución, en la ficha ────────────────────────────────────────
+     Dos botones y dos resultados que no se mezclan. La serie larga trae
+     números y conclusión; la corta trae imágenes y nada más, porque poner un
+     porcentaje sobre fotos de otro sensor y compararlo con el de Landsat
+     sería juntar lo que no se junta. */
+  function bloqueEvolucion() {
+    var EV = window.URBIS_EVOLUCION;
+    if (!EV || !S.resultado) return '';
+    var e = S.evo || {};
+    var L = e.landsat, W = e.wayback;
+    var cargando = S.evoCargando;
+
+    var cab = h4('reloj', 'Cómo cambió el sitio') +
+      '<p class="pcr-pista">Dos series de imágenes satelitales del mismo sector. La larga ' +
+      'arranca en <b>1984</b> y se ve a cuadros —treinta metros por píxel—, pero sirve para ' +
+      '<b>medir</b>: lo que se calcula no es una forma sino una proporción sobre miles de ' +
+      'píxeles. La corta arranca en <b>2014</b> en alta resolución y sirve para <b>mirar</b>.</p>';
+
+    var botones = '<div class="pcr-llevar">' +
+      '<button type="button" data-pcr="evolucion" class="pcr-mini pcr-llevar-b"' +
+        (cargando ? ' disabled' : '') + '>' + ico('crecer', 16) +
+        (cargando === 'landsat' ? 'Trayendo…' : (L ? 'Rehacer desde 1984' : 'Medir desde 1984')) +
+      '</button>' +
+      '<button type="button" data-pcr="evolucion-alta" class="pcr-mini"' +
+        (cargando ? ' disabled' : '') + '>' + ico('ojo', 16) +
+        (cargando === 'wayback' ? 'Trayendo…' : (W ? 'Rehacer las fotos' : 'Ver las fotos desde 2014')) +
+      '</button>' +
+    '</div>' +
+    (cargando ? '<p class="pcr-conc" id="pcr-evo-estado">' + esc(S.evoAviso || 'Trayendo…') + '</p>' : '') +
+    (S.evoAviso && !cargando ? '<p class="pcr-error">' + esc(S.evoAviso) + '</p>' : '');
+
+    return cab + botones + serieLarga(L) + serieCorta(W);
+  }
+
+  function serieLarga(s2) {
+    if (!s2) return '';
+    var EV = window.URBIS_EVOLUCION;
+    var buenos = s2.pasos.filter(function (p) { return p.ok && p.medida; });
+    if (!buenos.length) {
+      return '<p class="pcr-ojo">No se pudo leer ninguna imagen de la serie larga. ' +
+        'Puede ser el servicio, puede ser la conexión: no quiere decir que el sitio no haya ' +
+        'cambiado.</p>';
+    }
+    var conc = EV.conclusion(s2) || [];
+    var maxV = buenos.reduce(function (m, p) { return Math.max(m, p.medida.verde); }, 1);
+    return '<p class="pcr-lab">Desde 1984, medido</p>' +
+      '<div class="pcr-evo-tira">' +
+        buenos.map(function (p) {
+          return '<figure class="pcr-evo-p' + (p.fiable ? '' : ' pcr-evo-dudoso') + '">' +
+            '<img src="' + p.imagen + '" alt="El sector en ' + p.anio + '" loading="lazy">' +
+            '<figcaption>' + p.anio + '</figcaption>' +
+            '<small>' + String(p.medida.verde).replace('.', ',') + '% verde</small>' +
+          '</figure>';
+        }).join('') +
+      '</div>' +
+      '<div class="pcr-niveles">' +
+        buenos.map(function (p) {
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + p.anio +
+              (p.fiable ? '' : '<span class="pcr-nivel-sub">medio tapado, no cuenta</span>') + '</span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' +
+              Math.max(2, Math.round(100 * p.medida.verde / maxV)) + '%"></i></span>' +
+            '<b class="pcr-nivel-n">' + String(p.medida.verde).replace('.', ',') + '%</b>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (conc.length
+        ? '<ul class="pcr-sintesis pcr-sintesis-bien">' +
+            conc.map(function (c) {
+              return '<li><span>' + esc(c.texto) + '</span><b>' + esc(c.dato) + '</b></li>';
+            }).join('') +
+          '</ul>'
+        : '<p class="pcr-pista">La serie no da para afirmar un cambio: las diferencias caben ' +
+          'dentro del error de medir a treinta metros con otro satélite y otra fecha del año.</p>') +
+      '<p class="pcr-pista">Cada barra es el porcentaje del sector con vegetación, calculado con ' +
+      'el <b>NDVI</b> —el índice de la banda infrarroja— y no con el clasificador de colores que ' +
+      'usa la foto de hoy: el clasificador está calibrado para los colores de un proveedor, y ' +
+      'comparar años con él mediría la diferencia entre dos cámaras. Un año medio tapado por ' +
+      'nubes se marca y no entra en la conclusión.</p>';
+  }
+
+  function serieCorta(s2) {
+    if (!s2) return '';
+    var buenos = s2.pasos.filter(function (p) { return p.ok; });
+    if (!buenos.length) return '';
+    return '<p class="pcr-lab">Desde 2014, en alta resolución</p>' +
+      '<div class="pcr-evo-tira pcr-evo-alta">' +
+        buenos.map(function (p) {
+          return '<figure class="pcr-evo-p">' +
+            '<img src="' + p.imagen + '" alt="El sector en ' + p.anio + '" loading="lazy">' +
+            '<figcaption>' + p.anio + '</figcaption>' +
+          '</figure>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">Acá NO hay porcentajes a propósito. Son de otro sensor y otro ' +
+      'procesamiento que la serie larga, y ponerles un número al lado invitaría a compararlos ' +
+      'con los de arriba, que es justo lo que no se puede hacer. Estas son para mirar: qué se ' +
+      'construyó, qué se taló, por dónde iba el agua.</p>';
+  }
+
   function bloqueAmbiente(st) {
     var am = st.ambiente;
     if (!am) return '';
@@ -14167,6 +14395,7 @@
         bloqueSol(meta) +
         bloqueMovilidad(st) +
         bloqueAmbiente(st) +
+        bloqueEvolucion() +
         bloqueNucleos(st) +
         bloqueHitos(st) +
         bloqueAnillos(st, esPol) +
@@ -14798,6 +15027,9 @@
     S.clima = f.clima || null;
     S.amenaza = f.amenaza || null;
     S.inundacion = f.inundacion || null; S.inundacionAviso = '';
+    // Las cifras de la evolución vuelven; las estampas hay que volver a
+    // pedirlas, que es lo que se decidió al archivarlas.
+    S.evo = f.evo || null; S.evoAviso = ''; S.evoCargando = '';
     S.campo = f.campo || null;
     S.caminata = f.caminata || null;
     S.intangible = (f.intangible || []).slice();
@@ -15836,6 +16068,7 @@
           intangible: f.intangible || [],
           amenaza: f.amenaza || null,
           inundacion: f.inundacion || null,
+          evo: f.evo || null,
           /* Y su composición: la lámina de una ficha archivada tiene que
              salir con las cajas que tenía cuando se archivó, no con las que
              estén puestas ahora en otro sector. */

@@ -1172,3 +1172,30 @@
 .pcr-todo-t small{ font-size:.74rem; color:#5a6472; }
 .pcr-todo-fila .pcr-mini{ flex:1 1 0; min-width:44%; min-height:44px; }
 
+
+/* ── La tira de la evolución ────────────────────────────────────────────
+   Las imágenes en fila y con scroll horizontal: son entre siete y quince y en
+   un teléfono no caben de otra forma. Cuadradas porque la caja que se le pide
+   al satélite es cuadrada —una caja alargada deformaría el sitio y en una
+   comparación entre años parecería que cambió de forma—. */
+.pcr-evo-tira{
+  display:flex; gap:8px; overflow-x:auto; padding:2px 0 8px;
+  scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+}
+.pcr-evo-p{
+  margin:0; flex:0 0 auto; width:104px; scroll-snap-align:start;
+  display:flex; flex-direction:column; gap:3px;
+}
+.pcr-evo-p img{
+  display:block; width:104px; height:104px; object-fit:cover;
+  border-radius:8px; background:#eef3f7; border:1px solid #dbe5ec;
+  image-rendering:pixelated;   /* a 30 m, suavizar es fingir detalle que no hay */
+}
+.pcr-evo-alta .pcr-evo-p{ width:132px; }
+.pcr-evo-alta .pcr-evo-p img{ width:132px; height:132px; image-rendering:auto; }
+.pcr-evo-p figcaption{ font-size:.78rem; font-weight:800; color:#233748; }
+.pcr-evo-p small{ font-size:.68rem; color:#5a6472; }
+/* El año medio tapado por nubes: se muestra, no se esconde, pero se ve que no
+   cuenta. Esconderlo dejaría una serie con un salto sin explicación. */
+.pcr-evo-dudoso img{ opacity:.55; border-style:dashed; }
+.pcr-evo-dudoso figcaption{ color:#8a94a0; }
