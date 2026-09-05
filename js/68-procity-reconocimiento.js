@@ -1801,9 +1801,32 @@
     var forma = esPol && meta.poligono && meta.poligono.length >= 3
       ? { pts: meta.poligono }
       : { centro: { lat: meta.lat, lng: meta.lng }, radioM: meta.radioM };
+    /* El ancho del dibujo lo pone la PROPORCIÓN del sector, no el papel.
+       Con el dibujo siempre a todo el ancho, un sector cuadrado se ajustaba
+       al alto y quedaba como una estampilla entre dos bandas blancas; y la
+       barra de escala, que se calcula sobre el ancho, decía «5 km» para un
+       sector de novecientos metros. Llegó en captura: el plano —lo que hace
+       lámina a la lámina— era lo más chico de la hoja. */
+    var anchoDelPlano = 520;
+    try {
+      var bb = forma.pts
+        ? (function () {
+            var lats = forma.pts.map(function (q) { return q.lat; });
+            var lngs = forma.pts.map(function (q) { return q.lng; });
+            var kx = Math.cos(((Math.min.apply(null, lats) + Math.max.apply(null, lats)) / 2) * Math.PI / 180);
+            return { an: (Math.max.apply(null, lngs) - Math.min.apply(null, lngs)) * kx,
+                     al: (Math.max.apply(null, lats) - Math.min.apply(null, lats)) };
+          })()
+        : { an: 1, al: 1 };
+      if (bb.al > 0) {
+        var proporcion = bb.an / bb.al;
+        // Un margen del 15 % alrededor del sector, y nunca más ancho que el papel.
+        anchoDelPlano = Math.max(200, Math.min(520, Math.round(altoDelPlano * proporcion * 1.15)));
+      }
+    } catch (e) { anchoDelPlano = 520; }
     var plano = (A && typeof A.miniatura === 'function')
       ? A.miniatura(forma, {
-          w: 520, h: altoDelPlano, radioPunto: 2.6,
+          w: anchoDelPlano, h: altoDelPlano, radioPunto: 2.6,
           // Una ficha guardada no guarda el color de cada punto —sería
           // repetir el mismo dato cientos de veces—, así que se vuelve a
           // sacar del catálogo por su grupo. Sin esto la lámina de un sector
@@ -1841,11 +1864,63 @@
     /* Una caja no sale por dos razones distintas y hay que distinguirlas: o
        no tiene con qué llenarse, o la apagaron. La primera es una medición
        que falta; la segunda, una decisión de quien arma la lámina. */
+    /* Cada caja lleva la FAMILIA a la que pertenece —el sitio, el terreno y
+       el clima, cómo se mueve la gente, el proyecto, lo que levantó el
+       curso— y un icono. Es lo que hace que un pliego de veinte cajas se
+       recorra con el ojo desde dos metros: las del mismo color se leen
+       juntas, y el icono dice de qué va cada una antes que el rótulo.
+
+       El icono va DESPUÉS del h2 y se coloca por CSS: el h2 tiene que seguir
+       siendo el primer hijo de la sección y llevar el título limpio, porque
+       así lo leen las pruebas y así lo entiende cualquiera que procese el
+       HTML. Decorar no puede costar estructura. */
+    var FAMILIAS = {
+      sitio:    { tinte: '#0A6F9E', suave: '#E8F4FA' },
+      suelo:    { tinte: '#0E7C86', suave: '#E3F3F4' },
+      mover:    { tinte: '#0B98C4', suave: '#E4F5FB' },
+      proyecto: { tinte: '#B8860B', suave: '#FBF3DC' },
+      campo:    { tinte: '#6D4AC8', suave: '#EFEAFB' },
+      cierre:   { tinte: '#0F1F2E', suave: '#EEF3F7' }
+    };
+    var CARA = {
+      'Plano del sector':                  ['sitio', 'mapa'],
+      'Los mapas del sector':              ['sitio', 'capas'],
+      'El sitio':                          ['sitio', 'ubicar'],
+      'Qué hay, por categoría':            ['sitio', 'capas'],
+      'Alturas de lo construido':          ['sitio', 'edificio'],
+      'Llenos y vacíos':                   ['sitio', 'area'],
+      'Hitos y nodos':                     ['sitio', 'red'],
+      'Dónde falta mapear':                ['campo', 'norte'],
+      'El terreno':                        ['suelo', 'perfil'],
+      'El clima':                          ['suelo', 'nube'],
+      'Asoleamiento':                      ['suelo', 'destello'],
+      'La amenaza sísmica':                ['suelo', 'alerta'],
+      'La sombra de los vecinos':          ['suelo', 'brujula'],
+      'A distancia de caminar':            ['mover', 'caminar'],
+      'Hasta dónde se camina desde el lote': ['mover', 'ruta'],
+      'El perfil de la calle':             ['mover', 'via'],
+      'Espacio público efectivo':          ['mover', 'verde'],
+      'El lote a intervenir':              ['proyecto', 'lapiz'],
+      'Qué cabe en el lote':               ['proyecto', 'crecer'],
+      'Qué le pide el sitio al proyecto':  ['proyecto', 'plan'],
+      'Lo intangible':                     ['campo', 'ojo'],
+      'Lo levantado en campo':             ['campo', 'campo'],
+      'Lo que falta levantar':             ['campo', 'lista'],
+      'Síntesis del sector':               ['cierre', 'documento']
+    };
     function caja(titulo, cuerpo, clase) {
       if (!cuerpo) return '';
       if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
-      return '<section class="caja' + (clase ? ' ' + clase : '') + '">' +
-        '<h2>' + esc(titulo) + '</h2>' + cuerpo + '</section>';
+      var cara = CARA[titulo] || ['sitio', 'info'];
+      var fam = FAMILIAS[cara[0]] || FAMILIAS.sitio;
+      /* Las cajas con clase propia —el plano, la banda de mapas, la síntesis—
+         conservan su `class` exacta: hay suites que la leen literal, y no es
+         un capricho: es la promesa de que la estructura del pliego se puede
+         procesar. Su tinte va por esa misma clase en la hoja de estilo. */
+      return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + '">' +
+        '<h2>' + esc(titulo) + '</h2>' +
+        '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
+        cuerpo + '</section>';
     }
     function fila(etq, val) {
       return val === null || val === undefined || val === ''
@@ -1919,8 +1994,9 @@
          lámina es lo que se lee de lejos junto al plano. */
       (loteA.lados || []).map(function (l) {
       var nv = l.nivelSol || nivelDeSol(l.solTarde);
-      return fila('<span class="sol-punto" style="background:' + esc(nv.color) + '"></span>Lado ' + l.i +
-        (l.via ? ' · ' + esc(l.via) : ''), l.largoM + ' m · ' + esc(nv.nombre));
+      // A mano y no con fila(): fila escapa la etiqueta, y el punto es HTML.
+      return '<div class="f"><span><i class="sol-punto" style="background:' + esc(nv.color) + '"></i>Lado ' +
+        l.i + (l.via ? ' · ' + esc(l.via) : '') + '</span><b>' + l.largoM + ' m · ' + esc(nv.nombre) + '</b></div>';
       }).join('') +
       (loteA.critica
       ? '<p class="lee">La que más se calienta es el lado ' + loteA.critica.i +
@@ -2425,18 +2501,27 @@
       'html,body{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; margin:0; padding:0;' +
         'font-family:Inter,"Segoe UI",system-ui,sans-serif; color:#0F1F2E;' +
         '-webkit-print-color-adjust:exact; print-color-adjust:exact }' +
-      '.hoja{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; padding:22mm 20mm 16mm; display:flex;' +
-        'flex-direction:column; gap:9mm; background:#fff }' +
+      '.hoja{ width:' + HOJA_W + 'mm; height:' + HOJA_H + 'mm; padding:' + (horiz ? '12mm 20mm 10mm' : '16mm 20mm 11mm') + '; display:flex;' +
+        'flex-direction:column; gap:' + (horiz ? 5 : 7) + 'mm; background:#fff }' +
       // Cabecera: el logo arriba a la izquierda, como se pidió.
-      '.cab{ display:flex; align-items:flex-start; gap:8mm; border-bottom:1.2mm solid #34CCFE; padding-bottom:6mm }' +
-      '.marca{ flex:0 0 auto; display:flex; flex-direction:column; gap:1mm }' +
-      '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#0A6F9E; font-weight:800 }' +
-      '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#6B7A8A; font-weight:700 }' +
-      '.tit{ flex:1; min-width:0 }' +
-      '.tit .ey{ font-size:3mm; letter-spacing:.24em; text-transform:uppercase; color:#0A6F9E; font-weight:800 }' +
-      '.tit h1{ margin:1mm 0 2mm; font-size:11mm; line-height:1.05; letter-spacing:-.02em; font-weight:800 }' +
-      '.tit .sub{ font-size:3.6mm; color:#3B4A5A; line-height:1.4 }' +
-      '.tit .cad{ font-size:3.2mm; color:#6B7A8A; margin-top:1.5mm }' +
+      /* La cabecera es una BANDA de identidad y no una raya bajo el título:
+         azul profundo de URBIS, con el agua —el celeste— arriba como filo. Se
+         pidió con estas palabras: «el pliego celeste, con el agua arriba». Y
+         es lo que hace que veinte pliegos colgados en un salón se
+         reconozcan de la misma casa desde la puerta. */
+      '.cab{ flex:0 0 auto; display:flex; align-items:flex-start; gap:8mm; padding:' + (horiz ? '3.5mm 9mm 3.5mm' : '5mm 9mm 5mm') + '; border-radius:3mm;' +
+        'background:#075E88; color:#fff; border-top:2.2mm solid #34CCFE; position:relative; overflow:hidden }' +
+      '.cab:after{ content:""; position:absolute; right:-30mm; top:-40mm; width:110mm; height:110mm;' +
+        'border-radius:50%; background:#34CCFE; opacity:.13 }' +
+      '.marca{ flex:0 0 auto; display:flex; flex-direction:column; gap:1mm; padding-right:8mm;' +
+        'border-right:.4mm solid rgba(255,255,255,.28) }' +
+      '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#fff; font-weight:800 }' +
+      '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#34CCFE; font-weight:700 }' +
+      '.tit{ flex:1; min-width:0; position:relative }' +
+      '.tit .ey{ font-size:3mm; letter-spacing:.24em; text-transform:uppercase; color:#34CCFE; font-weight:800 }' +
+      '.tit h1{ margin:1mm 0 2mm; font-size:11.5mm; line-height:1.05; letter-spacing:-.02em; font-weight:800; color:#fff }' +
+      '.tit .sub{ font-size:3.6mm; color:#D6EEF8; line-height:1.4 }' +
+      '.tit .cad{ font-size:3.2mm; color:#9FD8F0; margin-top:1.5mm }' +
       // Rejilla de cajas
       /* La rejilla es de columnas de periódico en las dos orientaciones: dos
          paradas, tres acostada. Fue una cuadrícula hasta que los dibujos y las
@@ -2488,17 +2573,38 @@
       /* 4 mm de margen interno y no 5: con los dibujos dentro, ese milímetro
          por caja es lo que hace que la hoja cierre. Menos de 4 y el texto
          empieza a tocar el borde impreso. */
-      '.caja{ border:.35mm solid #E3EAF0; border-radius:3mm; padding:4mm; background:#fff;' +
+      Object.keys(FAMILIAS).map(function (k) {
+        return '.fam-' + k + '{ --tinte:' + FAMILIAS[k].tinte + '; --suave:' + FAMILIAS[k].suave + ' }';
+      }).join('') +
+      '.plano-hero,.mapas-banda{ --tinte:#0A6F9E; --suave:#E8F4FA }' +
+      '.sintesis-pie{ --tinte:#0F1F2E; --suave:#EEF3F7 }' +
+      '.caja{ --tinte:#0A6F9E; --suave:#E8F4FA; position:relative; border:.35mm solid #E3EAF0;' +
+        'border-top:1.4mm solid var(--tinte); border-radius:3mm; padding:4mm 4mm 4mm; background:#fff;' +
         'display:flex; flex-direction:column; gap:2.5mm; overflow:hidden }' +
-      '.caja h2{ margin:0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
-        'color:#0A6F9E; font-weight:800 }' +
+      '.caja h2{ margin:0 12mm 0 0; font-size:3.4mm; letter-spacing:.14em; text-transform:uppercase;' +
+        'color:var(--tinte); font-weight:800; padding-bottom:1.6mm; border-bottom:.3mm solid var(--suave) }' +
+      /* El distintivo con el icono, arriba a la derecha. Se coloca desde acá
+         para que el h2 siga siendo lo primero de la caja. */
+      '.caja .ic{ position:absolute; top:3.2mm; right:3.6mm; width:8.5mm; height:8.5mm; border-radius:2.2mm;' +
+        'background:var(--suave); color:var(--tinte); display:flex; align-items:center; justify-content:center }' +
+      '.caja .ic svg{ width:5.6mm; height:5.6mm }' +
+      '.caja .k b, .caja .cm b, .caja .fa-n{ color:var(--tinte) }' +
+      '.caja .b u{ background:var(--tinte) }' +
+      '.caja .lee{ border-left-color:var(--tinte); background:var(--suave); padding:2.2mm 3mm; border-radius:0 2mm 2mm 0 }' +
+      '.caja .de{ border-left-color:var(--tinte) }' +
+      '.caja .mp figcaption{ color:var(--tinte) }' +
       /* Las clases de ancho vienen del tiempo de la cuadrícula. En columnas no
          mandan —el ancho lo pone la columna— y se dejan sin efecto en vez de
          quitarlas de cada caja: son catorce sitios y ninguno gana nada. */
       // El dibujo manda el alto de su caja y ocupa todo el ancho: así no
       // quedan bandas blancas a los lados, que es lo que pasaba cuando la
       // caja tenía alto propio y el plano se centraba dentro.
+      /* El ancho del recuadro va en milímetros, calculado de la proporción del
+         sector. Con `fit-content` sobre un SVG que solo trae viewBox, el
+         recuadro y el dibujo se medían el uno al otro y daban cero: el plano
+         desaparecía de la lámina sin dejar hueco. */
       '.plano{ background:#F3F8FB; border-radius:2mm; padding:2mm }' +
+      '.plano-cuerpo{ max-width:100%; margin:0 auto }' +
       /* Los dibujos de js/74 traen su propio color y su propio viewBox: acá
          solo se les da la caja y un techo de alto, que es lo único que puede
          desbordar una hoja que no crece. */
@@ -2538,8 +2644,9 @@
       // Cifras grandes
       '.kpis{ display:flex; gap:5mm; flex-wrap:wrap }' +
       '.k{ flex:1 1 0; min-width:24mm }' +
-      '.k b{ display:block; font-size:8mm; line-height:1; font-weight:800; letter-spacing:-.02em; color:#0A6F9E;' +
+      '.k b{ display:block; font-size:8.4mm; line-height:1; font-weight:800; letter-spacing:-.025em; color:#0A6F9E;' +
         'font-variant-numeric:tabular-nums }' +
+      '.k{ padding-left:2.4mm; border-left:.7mm solid var(--suave,#E8F4FA) }' +
       '.k small{ display:block; font-size:2.8mm; color:#6B7A8A; margin-top:1mm; line-height:1.25 }' +
       '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.2mm; padding:1.2mm 0;' +
         'border-bottom:.25mm solid #EEF3F7 }' +
@@ -2575,7 +2682,12 @@
       '.fa em{ display:block; font-size:2.7mm; color:#0A6F9E; font-style:normal; margin-top:.5mm }' +
       '.fa code{ font-size:2.6mm; color:#6B7A8A; background:#F3F8FB; padding:.6mm 1.4mm;' +
         'border-radius:1mm; white-space:nowrap }' +
-      '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:7mm }' +
+      '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm }' +
+      /* Tres paneles de color y no tres columnas de texto: la síntesis es lo
+         que se lee de pie desde el fondo del salón, y a favor, en contra y
+         falta levantar tienen que distinguirse antes de leerse. */
+      '.sn{ border-radius:2.5mm; padding:3.5mm 4mm 2mm; background:#F4F7FA }' +
+      '.sn.ok{ background:#EAF7EF } .sn.no{ background:#FCEDEE } .sn.tarea{ background:#E6F6FC }' +
       '.sn h3{ margin:0 0 2.5mm; font-size:3mm; letter-spacing:.14em; text-transform:uppercase;' +
         'font-weight:800; color:#6B7A8A }' +
       '.sn.ok h3{ color:#177245 } .sn.no h3{ color:#B3282C } .sn.tarea h3{ color:#0A6F9E }' +
@@ -2617,7 +2729,8 @@
       '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
       // El pie se va al fondo del papel aunque el contenido termine antes.
       '.pie{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
-        'border-top:.35mm solid #E3EAF0; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
+        'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
+      '.pie b{ color:#075E88 }' +
       '</style></head><body><div class="hoja">' +
 
       '<header class="cab">' +
@@ -2640,7 +2753,10 @@
          huecos del encaje se pagaban dos y tres veces. Fuera de la rejilla es
          lo que siempre fue en una lámina —el plano manda y el resto se
          acomoda— y de paso deja de competir por el alto. */
-      caja('Plano del sector', (plano ? '<div class="plano">' + plano + '</div>' : '') +
+      caja('Plano del sector', (plano
+            ? '<div class="plano"><div class="plano-cuerpo" style="width:' +
+              Math.round(anchoPlanoMM * anchoDelPlano / 520) + 'mm">' + plano + '</div></div>'
+            : '') +
           (conv
             ? '<div class="conv">' + conv +
               (cmp && (cmp.nuevos || []).length
@@ -2714,7 +2830,7 @@
           })(), 'sintesis-pie') +
 
       '<footer class="pie">' +
-        '<div>URBIS · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
+        '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
         '<div style="max-width:120mm;text-align:right">Usos y vías de OpenStreetMap · población del DANE' +
           (ter ? ' · relieve ' + esc(ter.fuente || '') : '') +
