@@ -143,6 +143,81 @@ const PT = mm => mm * 72 / 25.4;
   });
   r.sinLienzo.pestanas = pestanasDespues;
 
+  /* ── El ruido de las protecciones de identificación ───────────────────
+     Llegó con una captura: «no se pudo componer la imagen del pliego (120
+     ppp: no cupo; 96 ppp: no cupo; 72 ppp: no cupo)». Los tres. Y a 72 ppp un
+     pliego son 2.551 × 1.701 píxeles —cuatro megapíxeles y medio, lo que
+     dibuja cualquier teléfono de hace diez años—, así que la memoria no era.
+
+     Era la comprobación de que el lienzo servía: pintaba un píxel de un color
+     conocido y exigía los tres canales EXACTOS. Varios navegadores, y casi
+     todos en modo privado, alteran a propósito lo que devuelve `getImageData`
+     unas pocas unidades para que una página no pueda identificar el aparato
+     por cómo dibuja. Con esa protección puesta, la igualdad exacta no se
+     cumple NUNCA, a ningún tamaño, y el pliego se declaraba imposible en un
+     teléfono perfectamente capaz.
+
+     Acá se imita esa protección con un desvío fijo por canal —así se porta:
+     mueve unas unidades, no borra el dibujo— y se pide lo que el usuario
+     pedía: que el PDF salga igual.                                        */
+  const HOJA_PRUEBA =
+    '<html><head><style>html,body{margin:0;font-family:system-ui,sans-serif;color:#123}' +
+    '.a{background:#1e6fbf;color:#fff;padding:60px;font-size:90px}' +
+    '.b{padding:60px;font-size:60px}</style></head>' +
+    '<body><div class="a">URBIS · pliego de prueba</div>' +
+    '<div class="b">Con el lienzo alterado por la protección del navegador.</div></body></html>';
+
+  r.ruido = await pg.evaluate(async (html) => {
+    const antes = CanvasRenderingContext2D.prototype.getImageData;
+    let lecturas = 0;
+    // Un desvío FIJO: eso es lo que hace la protección de verdad. Mueve el
+    // color, no lo inventa, así que las diferencias entre puntos siguen ahí.
+    CanvasRenderingContext2D.prototype.getImageData = function () {
+      const d = antes.apply(this, arguments), p = d.data;
+      lecturas++;
+      for (let i = 0; i < p.length; i += 4) {
+        p[i]     = Math.min(255, p[i] + 9);
+        p[i + 1] = Math.max(0, p[i + 1] - 7);
+        p[i + 2] = Math.min(255, p[i + 2] + 11);
+      }
+      return d;
+    };
+    let sale = null, error = '';
+    try {
+      const g = await window.URBIS_PLIEGO_PDF.generar(html, { titulo: 'ruido' });
+      sale = { dpi: g.dpi, bytes: g.bytes, ancho: g.ancho, alto: g.alto };
+    } catch (e) { error = String((e && e.message) || e); }
+    CanvasRenderingContext2D.prototype.getImageData = antes;
+    return { sale: sale, error: error, lecturas: lecturas };
+  }, HOJA_PRUEBA);
+
+  /* ── Y con ruido Y sin dibujo: sigue diciendo que no ──────────────────
+     La tolerancia de arriba se puede aflojar de más y dejar pasar cualquier
+     cosa. Esto es el otro lado: con la misma protección puesta, un lienzo que
+     no dibuja nada tiene que seguir cazándose. Lo caza la comprobación que
+     mira DIFERENCIAS entre treinta y seis puntos, que un desvío fijo no
+     borra; si alguien la aflojara también, acá bajaría un pliego en blanco. */
+  r.ruidoEnBlanco = await pg.evaluate(async (html) => {
+    const antesG = CanvasRenderingContext2D.prototype.getImageData;
+    const antesD = CanvasRenderingContext2D.prototype.drawImage;
+    CanvasRenderingContext2D.prototype.getImageData = function () {
+      const d = antesG.apply(this, arguments), p = d.data;
+      for (let i = 0; i < p.length; i += 4) {
+        p[i]     = Math.min(255, p[i] + 9);
+        p[i + 1] = Math.max(0, p[i + 1] - 7);
+        p[i + 2] = Math.min(255, p[i + 2] + 11);
+      }
+      return d;
+    };
+    CanvasRenderingContext2D.prototype.drawImage = function () {};
+    let bajo = false, error = '';
+    try { await window.URBIS_PLIEGO_PDF.generar(html, {}); bajo = true; }
+    catch (e) { error = String((e && e.message) || e); }
+    CanvasRenderingContext2D.prototype.getImageData = antesG;
+    CanvasRenderingContext2D.prototype.drawImage = antesD;
+    return { bajo: bajo, error: error };
+  }, HOJA_PRUEBA);
+
   /* ── El mismo botón, desde el sector guardado ────────────────────────── */
   const esperaGuardada = pg.waitForEvent('download', { timeout: 60000 }).catch(() => null);
   r.guardado = await pg.evaluate(async () => {
@@ -224,6 +299,23 @@ const PT = mm => mm * 72 / 25.4;
     ((r.sinLienzo || {}).enPantalla || '(no dice nada)').slice(0, 90));
   T('y no abre ninguna otra pestaña', (r.sinLienzo || {}).pestanas === 0,
     (r.sinLienzo || {}).pestanas + ' pestañas');
+
+  /* Y lo que traía la captura del error: los tres «no cupo» seguidos en un
+     teléfono que sí podía. */
+  console.log('\n  -- con el lienzo alterado por la protección del navegador --');
+  T('el pliego sale igual, no dice «no cupo»',
+    !!(r.ruido && r.ruido.sale), (r.ruido || {}).error || 'salió');
+  T('y sale del tamaño de siempre, no de uno recortado',
+    !!(r.ruido && r.ruido.sale && r.ruido.sale.bytes > 100000 && r.ruido.sale.dpi >= 72),
+    r.ruido && r.ruido.sale
+      ? r.ruido.sale.dpi + ' ppp · ' + Math.round(r.ruido.sale.bytes / 1024) + ' KB · ' +
+        r.ruido.sale.ancho + '×' + r.ruido.sale.alto + ' px'
+      : '(no salió)');
+  T('la comprobación del lienzo se hizo de verdad, no se saltó',
+    (r.ruido || {}).lecturas > 0, ((r.ruido || {}).lecturas || 0) + ' lecturas');
+  T('pero con ruido Y sin dibujo sigue diciendo que no',
+    (r.ruidoEnBlanco || {}).bajo === false,
+    (r.ruidoEnBlanco || {}).bajo ? 'bajó un pliego en blanco' : ((r.ruidoEnBlanco || {}).error || '').slice(0, 70));
 
   /* Y desde la pestaña «Sector», que es el otro sitio donde vive el mismo
      botón. Ese camino se quedó con el de antes —abrir la vista de impresión—

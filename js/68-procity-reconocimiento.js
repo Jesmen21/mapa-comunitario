@@ -9911,6 +9911,49 @@
     } catch (e) { return false; }
   }
 
+  /* ── Antes de exportar: encender y apagar todo, en un solo sitio ──────
+     Se pidió así, después de leer la ficha entera: «uno baja y baja y hay
+     tantas cosas por bajar; sería bueno dejar abajo un resumen de activar
+     todo y desactivar todo, que todo lo que sea activar y desactivar esté
+     abajo, lo último, junto lo del PDF».
+
+     Tiene sentido más allá de la comodidad: encender o apagar TODO es una
+     decisión que se toma al final, cuando ya se sabe qué se midió y qué se va
+     a entregar. Los interruptores de cada cosa siguen donde viven —al lado
+     del bloque que los explica—; esto es el atajo de los tres «todo», con lo
+     que llevás puesto de cada uno, pegado a los botones de la lámina. */
+  function bloqueAntesDeExportar(res) {
+    /* Los mapas del pliego NO se cuentan acá: armar esa lista dibuja cada
+       capa entera, que es el trabajo más caro de la ficha, y esto es un
+       atajo de dos botones. Su «poner todo» viaja con el de las cajas. */
+    var capas = [], cajas = [];
+    try { capas = capasDisponibles((res && res.stats) || {}) || []; } catch (e) {}
+    try { cajas = (cajasDelPliego(res) || []).filter(function (c) { return c.listo; }); } catch (e) {}
+    var capasListas = capas.filter(function (c) { return c.listo; });
+    var capasOn = capasListas.filter(function (c) { return c.on; }).length;
+    var cajasOn = cajas.filter(function (c) { return c.on; }).length;
+    if (!capasListas.length && !cajas.length) return '';
+
+    function fila(etq, on, de, todo, nada, textoTodo, textoNada) {
+      return '<div class="pcr-todo-fila">' +
+        '<span class="pcr-todo-t"><b>' + esc(etq) + '</b> <small>' + on + ' de ' + de + '</small></span>' +
+        '<button type="button" data-pcr="' + todo + '" class="pcr-mini">' + ico('ok', 15) + esc(textoTodo) + '</button>' +
+        '<button type="button" data-pcr="' + nada + '" class="pcr-mini">' + ico('apagar', 15) + esc(textoNada) + '</button>' +
+      '</div>';
+    }
+    return h4('capas', 'Antes de exportar') +
+      '<p class="pcr-pista">Lo que se enciende y se apaga de una vez, junto. Cada cosa sigue ' +
+      'teniendo su interruptor donde se explica; esto es el atajo.</p>' +
+      (capasListas.length
+        ? fila('Capas sobre el mapa', capasOn, capasListas.length,
+               'capas-todo', 'capas-nada', 'Encender todo', 'Apagar todo')
+        : '') +
+      (cajas.length
+        ? fila('Cajas del pliego', cajasOn, cajas.length,
+               'pliego-todo', 'pliego-nada', 'Poner todo', 'Solo el plano')
+        : '');
+  }
+
   function bloqueLlenosFoto() {
     var F = window.URBIS_LLENOS_FOTO;
     if (!F) return '';
@@ -12840,12 +12883,16 @@
             'Ver e imprimir 90×60</button>' +
         '</div>' +
 
+        /* El atajo de los «todo», pegado a los botones del pliego: encender o
+           apagar todo es una decisión que se toma al final, cuando ya se sabe
+           qué se midió y qué se va a entregar. */
+        bloqueAntesDeExportar(res) +
+        bloqueExportar() +
+
         // Guardar el ÁREA, no la ficha: queda en la misma lista de áreas de
         // Pro City, así que se puede volver a ella sin redibujarla y el
         // análisis de los mapeos del curso corre sobre exactamente el mismo
         // trazo que se reconoció. Es lo que junta las dos mitades.
-        bloqueExportar() +
-
         (esPol
           ? '<div class="pcr-llevar">' +
               '<button type="button" data-pcr="guardar-area" class="pcr-mini pcr-llevar-b">' + ico('area') + 'Guardar el área dibujada</button>' +

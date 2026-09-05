@@ -200,15 +200,38 @@
      `canvas` demasiado grande no lanza ningún error —devuelve un lienzo en
      blanco, que es peor—, así que se pinta un píxel y se lee. */
   function cabeElLienzo(w, h) {
+    var c, x;
     try {
-      var c = document.createElement('canvas');
+      c = document.createElement('canvas');
       c.width = w; c.height = h;
-      var x = c.getContext('2d');
+      x = c.getContext('2d');
       if (!x) return false;
+      // Si el lienzo no se pudo reservar, el navegador deja las medidas en
+      // cero: eso sí es un no rotundo.
+      if (c.width !== w || c.height !== h) return false;
       x.fillStyle = '#123456'; x.fillRect(0, 0, 2, 2);
-      var d = x.getImageData(0, 0, 1, 1).data;
-      return d[0] === 0x12 && d[1] === 0x34 && d[2] === 0x56;
     } catch (e) { return false; }
+    /* Y ahora, si se puede, se comprueba que lo pintado esté ahí.
+
+       Con TOLERANCIA, y esto no es un detalle: varios navegadores y modos de
+       privacidad alteran ligeramente lo que devuelve `getImageData` para
+       impedir que una página identifique el aparato por cómo dibuja. La
+       comprobación pedía los tres canales exactos, así que en un teléfono con
+       esa protección puesta fallaba SIEMPRE —a cualquier tamaño— y el PDF
+       decía «no cupo» a 120, a 96 y a 72 puntos por pulgada. A 72, un pliego
+       son cuatro megapíxeles: eso lo dibuja cualquier teléfono. No era la
+       memoria; era esta comprobación.
+
+       Un ruido de identificación mueve unas pocas unidades; un lienzo que no
+       se reservó devuelve cero en todo. Con cuarenta de margen se distinguen
+       sin confundirse. Y si `getImageData` está directamente bloqueado y
+       lanza, no se da por perdido: se sigue, y quien decide es la
+       comprobación de que la lámina se dibujó. */
+    try {
+      var d = x.getImageData(0, 0, 1, 1).data;
+      if (d[3] === 0) return false;
+      return Math.abs(d[0] - 0x12) < 40 && Math.abs(d[1] - 0x34) < 40 && Math.abs(d[2] - 0x56) < 40;
+    } catch (e) { return true; }
   }
 
   /* ¿Se dibujó algo, o quedó un papel en blanco?
@@ -226,6 +249,9 @@
     try {
       var x = lienzo.getContext('2d');
       var w = lienzo.width, h = lienzo.height, distintos = 0, primero = null;
+      // Se miran DIFERENCIAS entre puntos, así que el ruido de las
+      // protecciones de identificación no estorba: lo que delata un papel en
+      // blanco es que los treinta y seis puntos sean iguales.
       for (var i = 1; i <= 6; i++) {
         for (var j = 1; j <= 6; j++) {
           var d = x.getImageData(Math.round(w * i / 7), Math.round(h * j / 7), 1, 1).data;

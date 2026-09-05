@@ -189,6 +189,47 @@ const geo=[
     const asa3=H().querySelector('[data-pcr="agrandar"]');
     if(asa3){ asa3.click(); await esperar(500); }
     o.nada={ formas:formas(), capas:capas().filter(c=>c.on).map(c=>c.id) };
+
+    /* ── El atajo de «todo», abajo, junto a lo que se exporta ───────────
+       Se pidió después de usar la ficha entera de verdad: «uno baja y baja
+       y hay tantas cosas por bajar; sería bueno dejar abajo un resumen de
+       activar todo y desactivar todo, que todo lo que sea activar y
+       desactivar esté abajo, lo último, junto lo del PDF y cosas así».
+
+       Así que no basta con que el atajo exista en alguna parte: se comprueba
+       DÓNDE está —después del panel de capas, junto a los botones de la
+       lámina— y que diga cuánto llevás puesto, que es el «resumen». Y que
+       toque de verdad: dos sitios que hacen lo mismo tienen que hacerlo
+       igual, no parecerse. */
+    const SIGUE = 4;   // Node.DOCUMENT_POSITION_FOLLOWING
+    const sigue = (a, b) => !!(a && b) && !!(a.compareDocumentPosition(b) & SIGUE);
+    const filas = () => [...H().querySelectorAll('.pcr-todo-fila')];
+    const resumen = () => filas().map(f =>
+      ((f.querySelector('.pcr-todo-t') || {}).textContent || '').replace(/\s+/g, ' ').trim());
+    // El primero de cada uno es el del panel de arriba, que es el de siempre.
+    const panelTodo = H().querySelector('[data-pcr="capas-todo"]');
+    const laminaPDF = H().querySelector('[data-pcr="lamina-h"], [data-pcr="lamina-ver-h"]');
+    o.abajo = {
+      filas: resumen(),
+      acciones: filas().map(f =>
+        [...f.querySelectorAll('button')].map(b => b.getAttribute('data-pcr')).join('+')),
+      trasElPanel: sigue(panelTodo, filas()[0] || null),
+      juntoALaLamina: sigue(laminaPDF, filas()[0] || null),
+      // Y antes de «Llevarlo a otro programa», que es lo último de exportar.
+      antesDeExportar: sigue(filas()[filas().length - 1] || null,
+        H().querySelector('[data-pcr="exp"]')),
+      conNada: resumen()[0] || ''
+    };
+    /* Tocar el de ABAJO, no el de arriba: es el que se acaba de añadir y el
+       que podría estar puesto sin cablear. */
+    const botonAbajo = (filas()[0] || document.createElement('i'))
+      .querySelector('[data-pcr="capas-todo"]');
+    o.abajo.hayBoton = !!botonAbajo;
+    if (botonAbajo) { botonAbajo.click(); await esperar(1200); }
+    const asa4 = H().querySelector('[data-pcr="agrandar"]');
+    if (asa4) { asa4.click(); await esperar(500); }
+    o.abajo.encendidas = capas().filter(c => c.on).length;
+    o.abajo.conTodo = resumen()[0] || '';
     return o;
   },{C,POL});
 
@@ -274,6 +315,28 @@ const geo=[
     (r.todo.capas||[]).filter(id=>/^calor/.test(id)).join(' · ')||'ninguna');
   T('y apagar todo no deja nada puesto', (r.nada.capas||[]).length===0,
     (r.nada.capas||[]).join(' · ')||'ninguna');
+
+  console.log('\n  -- y el mismo atajo abajo, junto a lo del pliego --');
+  const A = r.abajo || {};
+  T('hay un resumen de «todo» al final de la ficha', (A.filas || []).length >= 1,
+    (A.filas || []).join(' · ') || 'no hay ninguno');
+  T('trae las capas del mapa y las cajas del pliego',
+    (A.acciones || []).join(' ').indexOf('capas-todo+capas-nada') >= 0 &&
+    (A.acciones || []).join(' ').indexOf('pliego-todo+pliego-nada') >= 0,
+    (A.acciones || []).join(' · ') || 'ninguna');
+  T('está después del panel de capas, no repetido arriba', A.trasElPanel === true);
+  T('y junto a los botones de la lámina, como se pidió', A.juntoALaLamina === true);
+  T('antes de «Llevarlo a otro programa»', A.antesDeExportar === true);
+
+  /* El «resumen» de la petición: no dos botones sueltos, sino cuánto llevás
+     puesto de cada cosa. Si no cambia al encender todo, no es un resumen. */
+  T('dice cuántas están puestas, no solo ofrece los botones',
+    /(?:^|\s)0 de \d+/.test(A.conNada || ''), A.conNada || '(no dice nada)');
+  T('y la cuenta cambia cuando se enciende todo desde abajo',
+    !!A.conTodo && A.conTodo !== A.conNada && !/(?:^|\s)0 de \d+/.test(A.conTodo),
+    (A.conNada || '?') + '  →  ' + (A.conTodo || '?'));
+  T('el botón de abajo enciende de verdad, no es un adorno',
+    A.hayBoton === true && A.encendidas >= 4, (A.encendidas || 0) + ' capas puestas');
 
   console.log('');
   T('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

@@ -1157,3 +1157,17 @@
      una pista. */
   .pcr-guardada-mini{ width:64px; height:46px; }
 }
+
+/* ── El atajo de «todo», antes de exportar ──────────────────────────────
+   Una fila por cosa: qué es, cuánto llevás puesto, y los dos botones. En un
+   teléfono angosto los botones bajan solos a la línea siguiente en vez de
+   apretarse hasta no poder tocarlos. */
+.pcr-todo-fila{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  padding:9px 0; border-bottom:1px solid #eef3f7;
+}
+.pcr-todo-fila:last-child{ border-bottom:0; }
+.pcr-todo-t{ flex:1 1 100%; min-width:0; display:flex; align-items:baseline; gap:8px; }
+.pcr-todo-t b{ font-size:.86rem; color:#233748; }
+.pcr-todo-t small{ font-size:.74rem; color:#5a6472; }
+.pcr-todo-fila .pcr-mini{ flex:1 1 0; min-width:44%; min-height:44px; }
