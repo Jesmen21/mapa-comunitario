@@ -12,11 +12,21 @@ const E = require('../entorno.js');
    teselas, que acá no salen). Con eso, la banda tiene que traer:
 
      · un recuadro por capa con datos, encendida o apagada;
-     · los dos rasters —la clasificación y la foto— PRIMEROS y al doble de
-       ancho, con la imagen de verdad dentro del SVG;
+     · los rasters y los llenos —los dibujos de grano fino— PRIMEROS y al
+       doble de ancho, con la imagen de verdad dentro del SVG;
      · la banda arriba del todo, antes del texto, en la lámina y en el PDF.
 
-   Y nada de eso puede empujar una caja fuera de la hoja.                   */
+   Y nada de eso puede empujar una caja fuera de la hoja.
+
+   Una diferencia que hay que tener presente al leer lo de abajo: EL PLIEGO Y
+   EL PDF NO TRAEN LO MISMO, y es a propósito. El PDF son hojas, crecen, y
+   traen todo lo medido. El pliego mide 90 × 60 y no crece: su banda tiene
+   siete columnas y los recuadros no se encogen para que quepan todos —así se
+   llegó a los recuadros de 53 mm que se reportaron como «no se ve con
+   claridad los rasters o los llenos y vacíos»—, así que los que sobran se
+   quedan fuera y el selector de la ficha lo avisa antes de imprimir. De ahí
+   que «un recuadro por capa con datos» se le exija al PDF, y al pliego se le
+   exija otra cosa: que traiga los que importan, a un tamaño que se lea.   */
 const {chromium}=require(E.MODULOS + '/playwright-core');
 const fs=require('fs');
 const S=E.TRABAJO;
@@ -222,14 +232,23 @@ const geo=[
   T('es la segunda banda de la lámina, después de la ubicación',
     /<div class="banda banda-mapas sola"[^>]*><div class="bcab"><b>02<\/b><h3>Los mapas del sector<\/h3>/.test(LAM) &&
     LAM.indexOf('banda-ubicacion') < LAM.indexOf('banda-mapas'));
-  T('trae un recuadro por capa con datos', figuras(LAM)>=6, figuras(LAM)+' recuadros');
+  /* Siete columnas y ni una más: los anchos valen dos. Se comprueban las dos
+     caras, porque una sola se cumple sola. Que no se pase —o los recuadros
+     vuelven a ser sellos— y que no sobre —o se está tirando papel—. */
+  const ANCHOS=['Cobertura del suelo','La foto satelital','Llenos y vacíos'];
+  const columnas=h=>titulos(h).reduce((a,t)=>a+(ANCHOS.indexOf(t)>=0?2:1),0);
+  T('la banda del pliego no se pasa de siete columnas',
+    columnas(LAM)<=7, columnas(LAM)+' columnas en '+figuras(LAM)+' recuadros');
+  T('y las usa, no deja media banda vacía', columnas(LAM)>=6, columnas(LAM)+' columnas');
   T('cada recuadro tiene su título y su pie',
     titulos(LAM).length===figuras(LAM) &&
     (LAM.match(/<div class="mp-dib">/g)||[]).length===figuras(LAM),
     titulos(LAM).slice(0,4).join(' · '));
-  T('los usos salen todos juntos y por categoría',
-    /Todos los usos/.test(LAM) && titulos(LAM).filter(t=>/ropa|comida|educa|comerc/i.test(t)).length>=2,
-    titulos(LAM).join(' · '));
+  /* El mapa de todos los usos NO es prescindible aunque sea de calor: es el
+     que ubica, y sin él los demás recuadros son manchas sin sitio. Por eso
+     entra antes que la foto en el reparto, y por eso se exige acá. */
+  T('el mapa que ubica —todos los usos— entra siempre',
+    titulos(LAM).indexOf('Todos los usos')>=0, titulos(LAM).join(' · '));
   T('y el rubro de un solo local no se gana un recuadro',
     !titulos(LAM).some(t=>/óptica/i.test(t)));
 
@@ -239,10 +258,18 @@ const geo=[
   T('van primeras de la banda',
     titulos(LAM)[0]==='Cobertura del suelo' && titulos(LAM)[1]==='La foto satelital',
     titulos(LAM).slice(0,2).join(' · '));
-  T('marcadas para ocupar el doble', grandes(LAM)===2, grandes(LAM)+' de '+figuras(LAM));
+  /* Y los llenos y vacíos con ellos: se pidió por su nombre —«no se ve con
+     claridad los rasters o los llenos y vacíos»— y tiene el mismo motivo,
+     que es un dibujo de grano fino y no una mancha. Se exige la lista
+     exacta, no un número: «tres anchos» lo cumpliría cualquier trío. */
+  const anchosDe=h=>(h.match(/<figure class="mp grande"><figcaption>([^<]+)/g)||[])
+    .map(x=>x.replace(/.*<figcaption>/,''));
+  T('los tres de grano fino van al doble',
+    anchosDe(LAM).length===3 && ANCHOS.every(t=>anchosDe(LAM).indexOf(t)>=0),
+    anchosDe(LAM).join(' · ')||'ninguno ancho');
   T('y la hoja les da ese doble ancho', (function(){
     const a=r.medida.anchos||[]; const g=a.filter(x=>x.grande), p=a.filter(x=>!x.grande);
-    return g.length===2 && p.length>0 && g[0].w > p[0].w*1.6;
+    return g.length===3 && p.length>0 && g[0].w > p[0].w*1.6;
   })(), (r.medida.anchos||[]).map(x=>(x.grande?'▮':'▫')+x.w).join(' '));
   T('la imagen viaja de verdad dentro del dibujo',
     (LAM.match(/<image href="data:image\/png;base64,/g)||[]).length===2,
@@ -254,8 +281,16 @@ const geo=[
   T('el PDF también empieza por los mapas',
     /Los mapas del sector/.test(PDF) &&
     PDF.indexOf('Los mapas del sector') < PDF.indexOf('Qué hay, por categoría'));
-  T('con los mismos recuadros', figuras(PDF)>=6, figuras(PDF)+' recuadros');
-  T('los rasters primeros y al doble', grandes(PDF)===2 &&
+  /* Acá sí: un recuadro por capa con datos. El PDF son hojas y crecen, así
+     que no tiene por qué elegir —y es donde queda lo que el pliego dejó
+     fuera—. */
+  T('trae un recuadro por capa con datos', figuras(PDF)>=6, figuras(PDF)+' recuadros');
+  T('los usos salen todos juntos y por categoría',
+    /Todos los usos/.test(PDF) && titulos(PDF).filter(t=>/ropa|comida|educa|comerc/i.test(t)).length>=2,
+    titulos(PDF).join(' · '));
+  T('y trae más que el pliego, que sí tiene que elegir',
+    figuras(PDF) > figuras(LAM), figuras(PDF)+' en el PDF contra '+figuras(LAM)+' en el pliego');
+  T('los de grano fino primeros y al doble', grandes(PDF)===3 &&
     titulos(PDF)[0]==='Cobertura del suelo', titulos(PDF).slice(0,3).join(' · '));
   T('y la hoja sabe darles ese doble',
     /\.mp\.grande\{grid-column:span 2\}/.test(PDF));

@@ -122,11 +122,17 @@ const geo=[
       listo:!x.classList.contains('pcr-capa-gris'),
       on:x.classList.contains('on')
     }));
+    /* `fuera` es el recuadro encendido que NO cabe: la banda del pliego tiene
+       siete columnas y no encoge los recuadros para que quepan todos, así que
+       el selector lo dice antes de imprimir. Encendido y encendido-pero-fuera
+       son dos estados distintos y la prueba los distingue: lo que se comprueba
+       abajo es que el papel diga exactamente lo mismo que el selector. */
     const inventarioMapas=()=>[...H().querySelectorAll('[data-pcr="pliego-mapa"]')].map(x=>({
       id:x.getAttribute('data-c'),
       titulo:((x.querySelector('b')||{}).textContent||'').trim(),
       listo:!x.classList.contains('pcr-capa-gris'),
-      on:x.classList.contains('on')
+      on:x.classList.contains('on'),
+      fuera:x.classList.contains('pcr-capa-fuera')
     }));
 
     // ── Recién analizado: casi todo gris, porque casi nada se midió.
@@ -268,13 +274,26 @@ const geo=[
     grisesQueSalen.length===0, grisesQueSalen.join(' · ')||'ninguna se cuela');
   T('la banda enumera sus recuadros sin dibujarlos',
     (r.invMapas||[]).length>=8, (r.invMapas||[]).length+' recuadros');
-  const mapasProm=(r.invMapas||[]).filter(m=>m.listo && m.on)
+  const mapasProm=(r.invMapas||[]).filter(m=>m.listo && m.on && !m.fuera)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)===-1).map(m=>m.titulo);
-  T('y lo que da por listo aparece de verdad en la banda',
+  T('y lo que da por puesto aparece de verdad en la banda',
     r.hayBanda===true && mapasProm.length===0, mapasProm.join(' · ')||'ninguno falta');
   const mapasGrises=(r.invMapas||[]).filter(m=>!m.listo)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)>=0).map(m=>m.titulo);
   T('sin colar los grises', mapasGrises.length===0, mapasGrises.join(' · ')||'ninguno');
+  /* Y el otro lado del trato, que es el que faltaba: el que el selector marca
+     como que NO cabe tampoco puede aparecer. Sin esto la promesa se cumple
+     apagando el aviso, que es peor que no avisar. */
+  const mapasFueraQueSalen=(r.invMapas||[]).filter(m=>m.fuera)
+    .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)>=0).map(m=>m.titulo);
+  T('y el que avisa que no cabe, no se cuela',
+    mapasFueraQueSalen.length===0, mapasFueraQueSalen.join(' · ')||'ninguno se cuela');
+  /* La banda no encoge los recuadros para que quepan todos: siete columnas,
+     y los anchos valen dos. Que la cuenta del papel no se pase. */
+  const ANCHOS=['cobertura','foto','llenos'];
+  const pesoEnPapel=(r.invMapas||[]).filter(m=>m.listo && m.on && !m.fuera)
+    .reduce((a,m)=>a+(ANCHOS.indexOf(m.id)>=0?2:1),0);
+  T('y la banda no se pasa de siete columnas', pesoEnPapel<=7, pesoEnPapel+' columnas');
 
   console.log('\n  -- apagar y encender --');
   T('se apagaron tres cajas', (r.apagadas||[]).length===3, (r.apagadas||[]).join(' · '));
