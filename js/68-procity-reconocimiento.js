@@ -46,6 +46,19 @@
     { id: 'NO', nombre: 'noroeste', desde: 292.5, hasta: 337.5 }
   ];
 
+  /* ── Lo que NO entra al pliego mientras nadie lo encienda ──────────────
+     «Lo que sí quitaría del pdf es donde dice falta mapear, 07 trabajo de
+     campo, porque eso es un pdf pa presentar algo que existe en el momento.»
+
+     Es una distinción buena y vale la pena escribirla: la ficha en pantalla es
+     una herramienta de trabajo y ahí lo que falta es lo más útil que hay —dice
+     a dónde ir mañana—; el pliego es una entrega, y una entrega presenta lo
+     que se levantó, no la lista de lo que no. Las dos cajas siguen en la ficha
+     y siguen en el selector del pliego, encendibles con un toque: quien esté
+     armando un pliego para una revisión de avance las quiere. Lo que cambia es
+     de qué lado empieza el interruptor. */
+  var APAGADAS_DE_ENTRADA = ['donde-falta-mapear', 'lo-que-falta-levantar'];
+
   var S = {
     abierto: false,
     // 'radio' o 'poligono'. El polígono no se dibuja acá: se toma prestado el
@@ -137,7 +150,7 @@
        aparezca sola en el pliego de un sector guardado hace meses en vez de
        quedar fuera por no estar en una lista que se escribió antes de que
        existiera. */
-    pliegoOff: [], pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
+    pliegoOff: APAGADAS_DE_ENTRADA.slice(), pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
     // La amenaza sísmica del municipio, del Servicio Geológico. Se pide a
     // botón como el clima o el terreno: es una consulta a un servidor lento y
     // no todos los ejercicios la necesitan.
@@ -2475,12 +2488,13 @@
       pasan POR ÉL: cruzan el sector igual que los del centro, pero
       además dicen dónde cae el lote en la ladera, que es lo que se
       defiende en la entrega. Sin lote, los del centro. */
-      /* Con la hoja llena va UN corte y no dos: el segundo es el que
-      menos dice —el terreno ya se leyó en el primero— y su sitio
-      son los 68 px que le faltan a esta caja para no recortarse.
-      Los dos siguen saliendo en el PDF. */
+      /* Los DOS cortes, siempre. Se recortaba a uno cuando la hoja iba llena
+      —el segundo era lo que se sacrificaba para que la caja no se
+      cortara—, y eso se decidió cuando la hoja no sabía encogerse sola.
+      Ahora sabe: lo que cede es el tamaño de composición, no un corte
+      del terreno, que es de lo que se defiende un proyecto en ladera. */
       (terLote && terLote.cortes.length
-      ? terLote.cortes.slice(0, extras >= 5 ? 1 : 2).map(function (c) {
+      ? terLote.cortes.slice(0, 2).map(function (c) {
       var d = dib('corteTopografico', c);
       return d ? '<div class="corte">' + d + '</div>' : '';
       }).join('') +
@@ -2489,7 +2503,7 @@
       ', con ' + (terLote.pendientePct != null ? terLote.pendientePct + '% de pendiente' :
       'pendiente suave') + '. La banda amarilla es el lote.</p>'
       : '<p class="nota">La banda amarilla es el lote.</p>')
-      : (ter.perfiles || []).slice(0, extras >= 5 ? 1 : 2)
+      : (ter.perfiles || []).slice(0, 2)
       .map(perfilDibujado).join('')) +
       (ter.lectura ? '<p class="lee">' + esc(ter.lectura) + '</p>' : '');
       })(), 'g3') +
@@ -3247,30 +3261,36 @@
       /* Los dibujos de js/74 traen su propio color y su propio viewBox: acá
          solo se les da la caja y un techo de alto, que es lo único que puede
          desbordar una hoja que no crece. */
-      /* La caja del dibujo se ciñe al dibujo (`fit-content`) en vez de ocupar
-         toda la columna: con el fondo estirado de lado a lado, un dibujo alto
-         y angosto quedaba flotando entre dos bandas celestes que no dicen
-         nada. */
-      '.dib{ background:#F7FAFC; border-radius:2mm; padding:3mm; display:flex;' +
-        'justify-content:center; width:fit-content; max-width:100%; margin:0 auto }' +
-      /* Techo de alto para los dibujos. Depende de cuánto se midió: con un
-         sector recién analizado sobra papel y los dibujos se ven grandes; con
-         terreno, clima, trazado, espacio público, caminata y rumbos encima,
-         la hoja va justa y son ellos los que ceden. Sin este techo la carta
-         solar se llevaba medio pliego y las últimas cajas se recortaban sin
-         avisar. */
-      // Manda el ALTO, y el ancho lo pone la proporción del dibujo.
-      '.dib svg{ display:block; height:' +
-        (extras >= 5 ? 21 : extras >= 3 ? 34 : 44) + 'mm; width:auto; max-width:100% }' +
+      /* ── Los dibujos llenan su caja ──────────────────────────────────
+         La carta solar, el plano de sombras y el plano del lote se dibujaban
+         con un alto FIJO de 21 mm cuando la hoja iba llena, y quedaban del
+         tamaño de una estampilla al lado de mapas de 85 mm. Se pidió
+         corregirlo por su nombre: «haga más grande el gráfico de asoleamiento,
+         casi del mismo tamaño de los mapas», «igual aumenta el tamaño de las
+         sombras de los vecinos», «donde dice lote a intervenir sale muy
+         pequeño también el gráfico».
+
+         Ahora manda el ANCHO de la caja, como en los recuadros de mapa: el
+         dibujo la llena y el alto sale de su propia proporción. El techo está
+         solo para que un dibujo cuadrado en una caja muy ancha no se lleve
+         media hoja; lo que reparte el papel cuando falta es la reducción de la
+         hoja entera, que se mide, y no un número escrito acá a ojo. */
+      '.dib{ background:#F7FAFC; border-radius:2mm; padding:3mm; margin:0 auto }' +
+      '.dib svg{ display:block; width:100%; height:auto; max-height:' +
+        (horiz ? 165 : 200) + 'mm }' +
+      /* La trama de llenos y vacíos es la excepción: es una muestra del patrón
+         al lado de sus cifras, no un plano, y a 90 mm sería una cortina. */
       '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto }' +
-      '.dib-chico svg{ width:100%; height:auto }' +
+      '.dib-chico svg{ width:100%; height:auto; max-height:30mm }' +
       '.dib-par{ display:flex; align-items:center; gap:5mm }' +
       '.corte{ background:#F7FAFC; border-radius:2mm; padding:2mm; margin:1.5mm 0 }' +
-      /* Igual que los demás dibujos, manda el alto: dos cortes a todo el
-         ancho de la caja se llevaban 16 mm más que los dos que había antes y
-         la caja del terreno se recortaba por abajo. */
-      '.corte svg{ display:block; height:' + (extras >= 6 ? 15 : extras >= 5 ? 18 : 26) + 'mm; width:auto;' +
-        'max-width:100%; margin:0 auto }' +
+      /* Los cortes topográficos, a todo el ancho de su caja. Estaban a 15 mm
+         de alto con la hoja llena, que en un pliego es una raya: «no veo el
+         espacio para agregar cortes topográficos». Un corte es ancho y bajo
+         por naturaleza, así que llenar el ancho no cuesta casi alto y es
+         cuando por fin se le ve la ladera. */
+      '.corte svg{ display:block; width:100%; height:auto; max-height:' +
+        (horiz ? 55 : 65) + 'mm; margin:0 auto }' +
       '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
@@ -14354,7 +14374,7 @@
     pintarAcuerdos(false);
       // La composición del pliego era de ESE sector: qué apagar depende de
       // qué se midió, y en el sector nuevo no se midió nada todavía.
-    S.pliegoOff = []; S.pliegoMapasOff = []; S.pliegoCabe = null;
+    S.pliegoOff = APAGADAS_DE_ENTRADA.slice(); S.pliegoMapasOff = []; S.pliegoCabe = null;
     S.amenaza = null; S.amenazaAviso = '';
     S.indices = null; S.indicesPuestos = null; S.indicesFuente = null;
     pintarCaminata(false); pintarLote();

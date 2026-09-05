@@ -176,6 +176,20 @@ const geo=[
     // ── Y en el papel.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='La rampa del oriente';
+    /* Estas dos cajas nacen APAGADAS en el pliego: «lo que sí quitaría del
+       pdf es donde dice falta mapear, porque eso es un pdf pa presentar algo
+       que existe en el momento». Siguen existiendo y siguen encendibles, que
+       es lo que se comprueba: primero la lámina de entrada, sin ellas, y
+       después la misma con el interruptor puesto. */
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(700);
+    o.laminaDeEntrada=capturado; capturado='';
+    const asaF=H().querySelector('[data-pcr="agrandar"]'); if(asaF){ asaF.click(); await esperar(400); }
+    ['donde-falta-mapear','lo-que-falta-levantar'].forEach(id=>{
+      const b=H().querySelector('[data-pcr="pliego-caja"][data-c="'+id+'"]');
+      if(b) b.click();
+    });
+    await esperar(500);
+    const asaF2=H().querySelector('[data-pcr="agrandar"]'); if(asaF2){ asaF2.click(); await esperar(400); }
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(700);
     o.lamina=capturado; capturado='';
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(700);
@@ -266,7 +280,11 @@ const geo=[
   T('numeradas de 1 en adelante', items[0].n==='1' && items[items.length-1].n===String(items.length));
 
   console.log('\n  -- y viaja a donde se necesita --');
-  T('la lámina trae su propia caja', /Lo que falta levantar/.test(r.lamina||''));
+  T('la lámina trae su propia caja cuando se enciende',
+    /Lo que falta levantar/.test(r.lamina||''));
+  T('y de entrada no la trae, porque un pliego presenta lo que existe',
+    !/Lo que falta levantar/.test(r.laminaDeEntrada||'') &&
+    !/Dónde falta mapear/.test(r.laminaDeEntrada||''));
   T('con la etiqueta de OpenStreetMap a la vista', /building:levels/.test(r.lamina||''));
   T('el PDF también', /Lo que falta para que esto hable/.test(r.pdf||''));
   T('y el texto que se copia la lleva',

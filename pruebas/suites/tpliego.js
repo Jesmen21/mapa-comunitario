@@ -309,10 +309,19 @@ const geo=[
   T('«dejar solo el plano» deja el plano y poco más',
     (r.enPapel3||[]).length<=3 && (r.enPapel3||[]).indexOf('Plano del sector')>=0,
     (r.enPapel3||[]).join(' · '));
-  T('y «poner todo» devuelve la lámina entera',
-    (r.enPapel4||[]).length===(r.enPapel||[]).length &&
-    (r.bandaEnPapel4||[]).length===(r.bandaEnPapel||[]).length,
-    (r.enPapel4||[]).length+' cajas · '+(r.bandaEnPapel4||[]).length+' recuadros');
+  /* «Poner todo» es todo, y eso ahora es MÁS que la lámina de entrada: dos
+     cajas nacen apagadas —«dónde falta mapear» y «lo que falta levantar»,
+     porque un pliego presenta lo que existe— y este botón las enciende junto
+     con las demás. Se comprueban las dos cosas: que devuelve al menos lo que
+     había y que trae las dos que empezaban fuera. */
+  const volvieron = ['Dónde falta mapear','Lo que falta levantar']
+    .filter(t => (r.enPapel4||[]).indexOf(t) >= 0);
+  T('y «poner todo» devuelve la lámina entera, incluso lo que nace apagado',
+    (r.enPapel4||[]).length >= (r.enPapel||[]).length &&
+    (r.bandaEnPapel4||[]).length===(r.bandaEnPapel||[]).length &&
+    volvieron.length === 2,
+    (r.enPapel4||[]).length+' cajas contra '+(r.enPapel||[]).length+' de entrada · ' +
+    (r.bandaEnPapel4||[]).length+' recuadros · volvieron: '+(volvieron.join(', ')||'ninguna'));
 
   console.log('\n  -- el PDF es el archivo, no la composición --');
   T('se apagó el terreno en el pliego', r.terrenoFueraDelPliego===true);

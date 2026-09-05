@@ -153,6 +153,15 @@ const geo=[
     // ── El papel.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='La Playa, borde oriental';
+    /* «Dónde falta mapear» nace apagada en el pliego —una entrega presenta
+       lo que se levantó, no la lista de lo que falta—, así que se enciende
+       para comprobar que su dibujo sigue saliendo cuando alguien la quiere. */
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(500);
+    o.laminaDeEntrada=capturado; capturado='';
+    const asaD=H().querySelector('[data-pcr="agrandar"]'); if(asaD){ asaD.click(); await esperar(400); }
+    const bFalta=H().querySelector('[data-pcr="pliego-caja"][data-c="donde-falta-mapear"]');
+    if(bFalta){ bFalta.click(); await esperar(500); }
+    const asaD2=H().querySelector('[data-pcr="agrandar"]'); if(asaD2){ asaD2.click(); await esperar(400); }
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(500);
     o.lamina=capturado; capturado='';
     H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(500);
@@ -285,7 +294,12 @@ const geo=[
     /pcr-carta/.test(LAM) && /pcr-rosa-rumbos/.test(LAM) && /pcr-plano-lote/.test(LAM) && /pcr-trama/.test(LAM),
     ['carta','rosa','plano','trama'].filter((x,i)=>
       [/pcr-carta/,/pcr-rosa-rumbos/,/pcr-plano-lote/,/pcr-trama/][i].test(LAM)).join(' '));
-  T('con su propia caja de «dónde falta mapear»', /Dónde falta mapear/.test(LAM));
+  T('con su propia caja de «dónde falta mapear», cuando se enciende',
+    /Dónde falta mapear/.test(LAM));
+  /* Y la otra cara: de entrada NO está. Sin esta comprobación, el día que
+     alguien la vuelva a encender por defecto nadie se entera. */
+  T('que de entrada no está, porque un pliego presenta lo que existe',
+    !/Dónde falta mapear/.test(r.laminaDeEntrada||''));
   T('el pliego acostado también', r.medidaH.dibujos===r.medidaV.dibujos,
     r.medidaH.dibujos+' vs '+r.medidaV.dibujos);
   T('el PDF también',

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v732-mapas-por-tema-jerarquia-vial-y-la-hoja-que-cierra';
+const URBIS_CACHE = 'urbis-v733-los-graficos-llenan-su-caja-y-el-pliego-presenta-lo-que-existe';
 const URBIS_ASSETS = [
   './',
   './index.html',
