@@ -118,7 +118,9 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     await new Promise(r=>setTimeout(r,1400));
     o.hojaBaja=!!document.querySelector('#pcr-hoja.pcr-encogida');
     o.barraDice=(document.querySelector('#pcr-hoja .pcr-mini-que b')||{textContent:''}).textContent.replace(/\s+/g,' ').trim();
-    o.leyendaEnBarra=!!document.querySelector('#pcr-hoja .pcr-mini-cuerpo .pcr-leyenda');
+    // En la barra encogida la leyenda va compacta, en una línea: la de cinco
+    // renglones era parte de lo que tapaba el mapa.
+    o.leyendaEnBarra=!!document.querySelector('#pcr-hoja .pcr-mini-cuerpo .pcr-leyenda, #pcr-hoja .pcr-mini-cuerpo .pcr-leyenda-corta');
     o.manzanasPintadas=document.querySelectorAll('.leaflet-overlay-pane path').length;
     {
       const q=document.querySelector('#pcr-hoja [data-pcr="estratos"]');
@@ -134,8 +136,8 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
       if(ag2){ ag2.click(); await new Promise(r=>setTimeout(r,300)); }
     }
     o.textoTrasEstratos=document.getElementById('pcr-hoja').innerText;
-    o.hayLeyenda=!!document.querySelector('.pcr-leyenda');
-    o.coloresLeyenda=Array.from(document.querySelectorAll('.pcr-leyenda i'))
+    o.hayLeyenda=!!document.querySelector('.pcr-leyenda, .pcr-leyenda-corta');
+    o.coloresLeyenda=Array.from(document.querySelectorAll('.pcr-leyenda i, .pcr-leyenda-corta i'))
       .map(i=>i.style.background).filter(Boolean).length;
     o.trasEstratos=document.querySelectorAll('.leaflet-overlay-pane path').length;
 

@@ -2125,13 +2125,81 @@ gruposOrdenados.map(seccion).join(''),
   }
 
   // ── Salida ──────────────────────────────────────────────────────────────
+  /* El PDF, DENTRO de la aplicación.
+
+     Abría una ventana nueva con `window.open` y le pedía imprimir. En un
+     teléfono, y más en la app instalada, esa ventana la bloquea el navegador
+     y lo que se veía era un aviso de «permite ventanas emergentes» —o nada—.
+     Llegó de campo así: «ese PDF no lo veo». El informe de usos sí salía
+     porque va por otro camino; la lámina, que es lo que hace falta para
+     presentar, no.
+
+     Ahora se abre encima de la aplicación, en un marco propio, con un botón
+     que imprime ESE marco —que en el teléfono es «Guardar como PDF»— y otro
+     que baja el archivo tal cual, por si la impresión tampoco está. Y una
+     vista previa que se puede mirar y desplazar antes de decidir. */
   function abrirVentanaImpresion(html){
-    const w = window.open('', '_blank');
-    if (!w) { alert('Permite ventanas emergentes para exportar el PDF.'); return false; }
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => { try { w.focus(); w.print(); } catch(e) {} }, 600);
-    return true;
+    try {
+      const viejo = document.getElementById('aia-impresion');
+      if (viejo) viejo.remove();
+      const caja = document.createElement('div');
+      caja.id = 'aia-impresion';
+      caja.setAttribute('role', 'dialog');
+      caja.setAttribute('aria-label', 'Vista previa para imprimir o guardar como PDF');
+      caja.style.cssText = 'position:fixed;inset:0;z-index:2147483500;background:#0f2434;display:flex;' +
+        'flex-direction:column;font-family:Inter,system-ui,sans-serif;';
+      caja.innerHTML =
+        '<div style="display:flex;gap:8px;align-items:center;padding:10px 12px calc(10px + env(safe-area-inset-top,0px));' +
+          'background:#0f2434;color:#eaf4fa;flex-wrap:wrap">' +
+          '<b style="flex:1;min-width:120px;font-size:.92rem">Vista previa</b>' +
+          '<button type="button" data-aia-imp="imprimir" style="min-height:44px;border:0;border-radius:10px;' +
+            'padding:8px 14px;font-weight:800;background:#34CCFE;color:#052538;font-size:.9rem">Guardar como PDF / Imprimir</button>' +
+          '<button type="button" data-aia-imp="bajar" style="min-height:44px;border:1px solid #2c5f7d;border-radius:10px;' +
+            'padding:8px 12px;font-weight:700;background:#193a4e;color:#eaf4fa;font-size:.86rem">Bajar el archivo</button>' +
+          '<button type="button" data-aia-imp="cerrar" aria-label="Cerrar" style="min-height:44px;min-width:44px;border:1px solid #2c5f7d;' +
+            'border-radius:10px;background:#193a4e;color:#eaf4fa;font-size:1.1rem">✕</button>' +
+        '</div>' +
+        '<iframe title="Documento para imprimir" style="flex:1;border:0;background:#fff;width:100%"></iframe>' +
+        '<p style="margin:0;padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));color:#b7cbd8;font-size:.72rem;line-height:1.35">' +
+          'En el teléfono, «Imprimir» abre el diálogo del sistema: ahí elegí <b>Guardar como PDF</b>. ' +
+          'Si no aparece, «Bajar el archivo» guarda la lámina como página web para abrirla en un computador.</p>';
+      document.body.appendChild(caja);
+      const marco = caja.querySelector('iframe');
+      marco.srcdoc = html;
+      const anterior = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const cerrar = () => { try { caja.remove(); } catch(e) {} document.body.style.overflow = anterior; };
+      caja.addEventListener('click', (ev) => {
+        const b = ev.target.closest && ev.target.closest('[data-aia-imp]');
+        if (!b) return;
+        const que = b.getAttribute('data-aia-imp');
+        if (que === 'cerrar') { cerrar(); return; }
+        if (que === 'imprimir') {
+          try { marco.contentWindow.focus(); marco.contentWindow.print(); }
+          catch(e) { try { window.print(); } catch(e2) {} }
+          return;
+        }
+        if (que === 'bajar') {
+          try {
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'urbis-lamina-' + new Date().toISOString().slice(0, 10) + '.html';
+            document.body.appendChild(a); a.click();
+            setTimeout(() => { try { a.remove(); URL.revokeObjectURL(url); } catch(e) {} }, 1500);
+          } catch(e) {}
+        }
+      });
+      return true;
+    } catch (e) {
+      // Si el marco no se pudo armar, se intenta lo de siempre.
+      const w = window.open('', '_blank');
+      if (!w) { alert('Permite ventanas emergentes para exportar el PDF.'); return false; }
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => { try { w.focus(); w.print(); } catch(e2) {} }, 600);
+      return true;
+    }
   }
 
   function generar(r, chartsPNG, opciones){

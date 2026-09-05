@@ -529,14 +529,80 @@
    dejar ver el mapa. Con la hoja entera encima no se ve dónde se está
    poniendo el círculo. */
 .pcr-hoja.pcr-encogida{
-  max-height:none;
+  /* TOPE. La hoja encogida existe para dejar ver el mapa, y sin tope crecía
+     con cada capa encendida hasta taparlo entero —cuatro botones de ancho
+     completo, una leyenda, siete chips y un «Volver»: más alto que la
+     pantalla, en captura—. Con el 42 % del alto, el mapa nunca queda con
+     menos del 58 %. Lo que no quepa se desplaza adentro. */
+  max-height:42vh;
+  display:flex; flex-direction:column;
   border-radius:20px 20px 0 0;
   box-shadow:0 -8px 28px rgba(12,32,46,.22);
 }
 .pcr-hoja.pcr-encogida .pcr-mini-cuerpo{
-  display:flex; flex-direction:column; gap:9px;
-  padding:4px 16px 18px;
+  display:flex; flex-direction:column; gap:8px;
+  padding:2px 14px 12px;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0;
 }
+/* Al mínimo: solo el asa y una línea. Para mirar el mapa sin nada encima y
+   poder mandar una captura. */
+.pcr-hoja.pcr-minima{ max-height:none; }
+.pcr-hoja.pcr-minima .pcr-mini-cuerpo.pcr-mini-linea{
+  flex-direction:row; align-items:center; gap:10px; padding:0 14px 10px; overflow:visible;
+}
+.pcr-mini-que-b{
+  flex:1; min-width:0; text-align:left; border:0; background:none; padding:0; cursor:pointer;
+  font:inherit; color:inherit;
+}
+.pcr-mini-que-b b, .pcr-mini-que-b small{ display:block; }
+.pcr-mini-que small, .pcr-mini-que-b small{
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* El sol sobre cada lado del lote: el punto de color en la fila y la leyenda
+   de cinco niveles, del rojo al azul. */
+.pcr-sol-punto{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.pcr-sol-leyenda{ display:flex; flex-wrap:wrap; gap:5px 12px; margin:6px 0 2px; font-size:.72rem; }
+.pcr-sol-leyenda span{ display:inline-flex; align-items:center; gap:5px; }
+.pcr-sol-leyenda i{ width:14px; height:5px; border-radius:2px; display:inline-block; }
+/* El intervalo de las curvas, a elegir. */
+.pcr-curvas-pasos{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:8px 0 6px; }
+
+/* La fila de interruptores: una capa, un chip. Apagada no aparece. */
+.pcr-capas-fila{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.pcr-capas-lab{
+  font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+  color:#7a8794 !important; -webkit-text-fill-color:#7a8794 !important; margin-right:2px;
+}
+.pcr-capa-chip{
+  display:inline-flex; align-items:center; gap:5px;
+  border:1.5px solid #0A6F9E; background:#0A6F9E; border-radius:999px;
+  padding:5px 8px 5px 10px; font-size:.74rem; font-weight:700; cursor:pointer;
+  min-height:32px;
+}
+.pcr-hoja .pcr-capa-chip, .pcr-hoja .pcr-capa-chip i{
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+.pcr-capa-chip i{
+  display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%;
+  background:rgba(255,255,255,.22); font-style:normal;
+}
+.pcr-capa-chip:active{ transform:scale(.97); }
+
+/* La leyenda de estratos, en una línea. */
+.pcr-leyenda-corta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 9px; font-size:.7rem; }
+.pcr-leyenda-corta span{ display:inline-flex; align-items:center; gap:4px; }
+.pcr-leyenda-corta i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+.pcr-leyenda-corta em{ font-style:normal; color:#7a8794 !important; -webkit-text-fill-color:#7a8794 !important; }
+.pcr-pista-corta{ font-size:.7rem; }
+
+/* Los usos del calor, en UNA fila que se desplaza de lado: siete chips
+   apilados eran siete renglones, casi la mitad de lo que tapaba. */
+.pcr-hoja.pcr-encogida .pcr-calor-fila{
+  flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:4px; scrollbar-width:thin;
+}
+.pcr-hoja.pcr-encogida .pcr-calor-fila .pcr-cal-chip{ flex:0 0 auto; white-space:nowrap; }
 
 /* El asa: se toca para abrir la hoja entera. Ancha, porque en el celular se
    agarra con el pulgar. */

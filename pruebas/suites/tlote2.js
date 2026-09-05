@@ -156,7 +156,7 @@ for(let i=0;i<12;i++){
 
     const todo=txt(H());
     const i=todo.indexOf('El lote a intervenir');
-    o.bloque=i>=0?todo.slice(i,i+2200):'';
+    o.bloque=i>=0?todo.slice(i,i+3600):'';   // creció: cada lado con su nivel de sol y la escala
     o.kpis=[...H().querySelectorAll('.pcr-kpi')].map(txt).filter(x=>/de lote|de perímetro|esquinas/.test(x));
     o.filas=[...H().querySelectorAll('.pcr-lote-fila')].map(txt);
 
@@ -259,9 +259,11 @@ for(let i=0;i<12;i++){
   P('lista los cuatro lados con su rumbo',
     (r.filas||[]).filter(x=>/^Lado \d/.test(x)).length===4,
     (r.filas||[]).filter(x=>/^Lado \d/.test(x)).join(' | ').slice(0,140));
-  P('y señala la fachada que se calienta, la del occidente',
-    /fachada que se calienta/.test(B) && /occidente/.test(B),
-    (B.match(/La fachada que se calienta[^.]*\./)||['no lo dice'])[0].slice(0,110));
+  /* Ya no es «la fachada que se calienta» sino «la que más»: todos los lados
+     llevan su nivel de sol, y la crítica es la primera de una escala. */
+  P('y señala la fachada que más se calienta, la del occidente',
+    /La que más se calienta/.test(B) && /occidente/.test(B) && /sol pleno de la tarde/.test(B),
+    (B.match(/La que más se calienta[^.;]*/)||['no lo dice'])[0].slice(0,110));
 
   console.log('\n  -- qué tiene al lado --');
   P('nombra los usos más cercanos', /Droguería La Esquina/.test(B) && /Colegio San José/.test(B));

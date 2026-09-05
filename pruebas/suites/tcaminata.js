@@ -148,7 +148,9 @@ const geo=[
     o.puestos=trazos(); o.orden=orden();
     o.encogida=!!document.querySelector('.pcr-hoja.pcr-encogida') ||
                !!(H()&&H().className.indexOf('encogida')>=0);
-    o.botonApaga=/Quitar el recorrido del mapa/.test(txt(H()));
+    // Ya no es un botón de ancho completo sino el chip de la fila «En el
+    // mapa», con su etiqueta accesible: es lo que apaga la capa.
+    o.botonApaga=!!H().querySelector('.pcr-capa-chip[data-pcr="caminata-mapa"][aria-label*="Quitar recorrido"]');
     o.leyenda=/Azul oscuro, 5 minutos/.test(txt(H()));
     o.rotulo=/Hasta dónde se camina/.test(txt(H()));
 

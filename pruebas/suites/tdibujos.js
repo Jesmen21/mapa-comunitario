@@ -134,7 +134,10 @@ const geo=[
     const plano=svg('.pcr-plano-lote');
     o.plano={ hay:!!plano,
       textos:plano?[...plano.querySelectorAll('text')].map(t=>t.textContent):[],
-      critica:cuenta(plano,'path[stroke-width="4"]'),
+      // La fachada crítica va más gruesa que las demás: 5 contra 3,5. Y todas
+      // llevan color, del rojo al azul, según cuánto sol de la tarde reciben.
+      critica:cuenta(plano,'path[stroke-width="5"]'),
+      conColor:cuenta(plano,'path[stroke-width="3.5"], path[stroke-width="5"]'),
       esquinas:cuenta(plano,'circle') };
 
     const tr=svg('.pcr-trama');
@@ -247,9 +250,13 @@ const geo=[
     (r.plano.textos||[]).filter(t=>/Calle/.test(t)).join(' · ')||'ninguna');
   T('con el norte y la barra de escala',
     (r.plano.textos||[]).indexOf('N')>=0 && (r.plano.textos||[]).some(t=>/^\d+ m$/.test(t)));
-  T('y la leyenda del rojo en su propio renglón',
-    (r.plano.textos||[]).some(t=>/^En rojo, la fachada/.test(t)));
-  T('y la fachada de la tarde marcada', r.plano.critica===1, r.plano.critica+' lado en rojo');
+  /* Ya no es «en rojo, la fachada»: cada lado lleva el color de cuánto sol
+     de la tarde recibe, del rojo al azul, y la leyenda es esa escala. Llegó
+     de campo que al lado de la línea roja también pegaba el sol. */
+  T('y la escala del sol en su propio renglón',
+    (r.plano.textos||[]).some(t=>/^Sol de la tarde sobre cada lado/.test(t)));
+  T('con cada lado coloreado y la fachada de la tarde más gruesa',
+    r.plano.critica===1 && r.plano.conColor>=4, r.plano.conColor+' lados con color · '+r.plano.critica+' gruesa');
   T('una esquina dibujada por vértice', r.plano.esquinas===4, r.plano.esquinas);
 
   console.log('\n  -- la trama de llenos y vacíos --');

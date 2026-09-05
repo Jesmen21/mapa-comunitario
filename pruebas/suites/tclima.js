@@ -189,7 +189,11 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   console.log('\n  -- se pide, no se hace de oficio --');
   P('el bloque ofrece el botón', r.hayBoton);
   P('y no trae datos hasta que se pulsa', r.antesSinDatos);
-  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=4,
+  /* Siete y no cuatro: la rejilla pasó de 18 a 26 puntos por lado para que
+     las curvas salgan suaves y no a tramos rectos de sesenta metros. El
+     modelo sigue siendo de 90 m; lo que cambió es el dibujo, y la nota de la
+     ficha lo sigue diciendo. */
+  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=7,
     r.consultasElev+' consultas · '+r.puntosPedidos+' puntos');
 
   console.log('   [diag] aviso en pantalla: '+JSON.stringify(r.aviso||''));

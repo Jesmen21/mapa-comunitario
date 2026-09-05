@@ -132,11 +132,13 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     // mapa tapado por el panel sería pintar para nadie.
     o.hojaBaja=h.classList.contains('pcr-encogida');
     o.barraDice=(h.innerText||'').replace(/\s+/g,' ').trim().slice(0,120);
-    o.leyendaEnBarra=!!h.querySelector('.pcr-leyenda');
+    // En la barra encogida la leyenda va compacta, en una línea: la de antes
+    // ocupaba cinco renglones y era parte de lo que tapaba el mapa.
+    o.leyendaEnBarra=!!h.querySelector('.pcr-leyenda, .pcr-leyenda-corta');
     o.manzanasPintadas=document.querySelectorAll('.leaflet-overlay-pane path').length;
     o.textoTrasEstratos=document.getElementById('pcr-hoja').innerText;
-    o.hayLeyenda=!!document.querySelector('.pcr-leyenda');
-    o.coloresLeyenda=Array.from(document.querySelectorAll('.pcr-leyenda i'))
+    o.hayLeyenda=!!document.querySelector('.pcr-leyenda, .pcr-leyenda-corta');
+    o.coloresLeyenda=Array.from(document.querySelectorAll('.pcr-leyenda i, .pcr-leyenda-corta i'))
       .map(i=>i.style.background).filter(Boolean).length;
     o.trasEstratos=document.querySelectorAll('.leaflet-overlay-pane path').length;
 

@@ -99,6 +99,11 @@
        el lote es «acá voy a proponer algo». Por eso va aparte, en amarillo, y
        tiene su propio análisis. */
     encogidaAMano: false,
+    /* Encogida al mínimo: solo el asa y una línea. Es lo que hace falta para
+       mirar el mapa sin nada encima y para mandar una captura. */
+    minima: false,
+    // El intervalo de las curvas que pidió la persona; null = lo elige el relieve.
+    curvasPaso: null,
     lote: null, loteDibujando: false, loteAviso: '', caminata: null, caminataEnMapa: false,
     /* LO INTANGIBLE: lo que no se puede bajar de ningún servidor. Dónde no se
        pasa de noche, qué esquina está oscura, dónde huele mal, dónde da gusto
@@ -1300,8 +1305,10 @@
         ? '<tr><td>Sin frente a calle registrada</td><td class="n">' + a.sinFrenteM + ' m</td></tr>'
         : '') +
       (a.lados || []).map(function (l) {
-        return '<tr><td>Lado ' + l.i + (l.via ? ' · ' + esc(l.via) : '') + '</td><td class="n">' +
-          l.largoM + ' m · mira al ' + esc((l.mira && l.mira.nombre) || '—') + '</td></tr>';
+        var nv = l.nivelSol || nivelDeSol(l.solTarde);
+        return '<tr><td><span class="sol-punto" style="background:' + esc(nv.color) + '"></span>Lado ' +
+          l.i + (l.via ? ' · ' + esc(l.via) : '') + '</td><td class="n">' +
+          l.largoM + ' m · mira al ' + esc((l.mira && l.mira.nombre) || '—') + ' · ' + esc(nv.nombre) + '</td></tr>';
       }).join('') +
       '</table>' +
       (a.critica
@@ -1908,10 +1915,18 @@
       return fila('Frente sobre ' + f.via, f.metros + ' m');
       }).join('') +
       (loteA.sinFrenteM ? fila('Sin frente a calle registrada', loteA.sinFrenteM + ' m') : '') +
+      /* Cada lado con cuánto sol de la tarde recibe, del rojo al azul. En la
+         lámina es lo que se lee de lejos junto al plano. */
+      (loteA.lados || []).map(function (l) {
+      var nv = l.nivelSol || nivelDeSol(l.solTarde);
+      return fila('<span class="sol-punto" style="background:' + esc(nv.color) + '"></span>Lado ' + l.i +
+        (l.via ? ' · ' + esc(l.via) : ''), l.largoM + ' m · ' + esc(nv.nombre));
+      }).join('') +
       (loteA.critica
-      ? '<p class="lee">La fachada que se calienta es el lado ' + loteA.critica.i +
+      ? '<p class="lee">La que más se calienta es el lado ' + loteA.critica.i +
       (loteA.critica.via ? ' (' + esc(loteA.critica.via) + ')' : '') + ', que mira al ' +
-      esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '.</p>'
+      esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '; los de al lado la siguen ' +
+      'en la medida en que también miran al poniente.</p>'
       : '') +
       '<p class="nota">' + (loteA.esquinero ? 'Lote esquinero: da a ' + loteA.frentes.length +
       ' calles. ' : 'Lote medianero: un solo frente. ') +
@@ -2750,6 +2765,7 @@
       'table{border-collapse:collapse;width:100%;max-width:340px}' +
       'td{padding:3px 8px 3px 0;border-bottom:1px solid #eef2f6}' +
       'td.n{text-align:right;font-weight:700;color:#0A6F9E;width:52px}' +
+      '.sol-punto{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}' +
       '.kpis{display:flex;gap:22px;margin:0 0 6px}' +
       '.kpi b{display:block;font-size:19px;color:#0A6F9E}' +
       '.kpi small{color:#5a6472;font-size:11px}' +
@@ -3327,7 +3343,7 @@
       }
       if (acc === 'sombras-mapa') {
         var puestasS = pintarSombras(!S.sombrasEnMapa);
-        S.encogida = S.sombrasEnMapa;
+        S.encogida = S.sombrasEnMapa || hayCapaPuesta();
         S.encogidaAMano = false;
         if (!puestasS && !S.sombrasEnMapa) S.aviso = 'No hay sombras que dibujar.';
         pintar(); return;
@@ -3345,14 +3361,14 @@
       }
       if (acc === 'curvas-mapa') {
         var puestas = pintarCurvas(!S.curvasEnMapa);
-        S.encogida = S.curvasEnMapa;
+        S.encogida = S.curvasEnMapa || hayCapaPuesta();
         S.encogidaAMano = false;
         if (!puestas && !S.curvasEnMapa) S.aviso = 'No hay curvas que dibujar: el sector es plano.';
         pintar(); return;
       }
       if (acc === 'caminata-mapa') {
         var puso = pintarCaminata(!S.caminataEnMapa);
-        S.encogida = S.caminataEnMapa;
+        S.encogida = S.caminataEnMapa || hayCapaPuesta();
         S.encogidaAMano = false;
         if (!puso && !S.caminataEnMapa) S.aviso = 'No hay recorrido que dibujar.';
         pintar(); return;
@@ -3631,6 +3647,15 @@
         return;
       }
       if (acc === 'cobertura') { analizarCobertura(); return; }
+      if (acc === 'curvas-paso') {
+        S.curvasPaso = Number(b.getAttribute('data-paso')) || null;
+        S.curvas = null;
+        if (S.curvasEnMapa) pintarCurvas(true);
+        pintar(); return;
+      }
+      if (acc === 'minimizar') { S.minima = true; pintar(); return; }
+      if (acc === 'desminimizar') { S.minima = false; pintar(); return; }
+      if (acc === 'int-mapa') { pintarIntangible(false); pintar(); return; }
       if (acc === 'traba-descartar') {
         // Lo decidió una persona sabiendo qué perdía. Eso es lo que faltaba.
         S.trabaDescartar = null;
@@ -3884,6 +3909,7 @@
                   (S.encogida && !S.comparacion &&
                    (S.encogidaAMano || !S.resultado || hayCapa));
     h.classList.toggle('pcr-encogida', encoger);
+    h.classList.toggle('pcr-minima', encoger && !!S.minima && !S.loteDibujando);
     // `encoger` va ANTES de `S.resultado`: si no, con la ficha en pantalla la
     // hoja se quedaba con la clase de encogida y el contenido entero dentro
     // —bajaba a una barra de 90 px con el informe completo comprimido—.
@@ -4016,6 +4042,54 @@
         '</div>';
     }
 
+    /* Un interruptor por capa encendida, todos en UNA fila. Antes cada capa
+       ponía un botón de ancho completo y el estrato además su leyenda; con
+       la foto, los llenos, los estratos y las curvas encendidos la hoja
+       encogida medía más que la pantalla y TAPABA EL MAPA ENTERO —llegó en
+       captura: cuatro botones, una leyenda, siete chips y «Volver», y del
+       mapa no quedaba un píxel—. Una hoja que existe para dejar ver el mapa
+       y lo tapa no es un detalle de presentación. */
+    function interruptor(acc, icono, texto) {
+      return '<button type="button" data-pcr="' + acc + '" class="pcr-capa-chip on" ' +
+        'aria-label="Quitar ' + esc(texto.toLowerCase()) + ' del mapa">' +
+        ico(icono, 14) + esc(texto) + '<i>' + ico('apagar', 12) + '</i></button>';
+    }
+    var capas = [];
+    if (S.cobEnMapa)      capas.push(interruptor('cob-mapa', 'satelite', 'Foto'));
+    if (S.llenosEnMapa)   capas.push(interruptor('llenos-mapa', 'capas', 'Llenos'));
+    if (S.estratos)       capas.push(interruptor('estratos', 'capas', 'Estratos'));
+    if (S.sombrasEnMapa)  capas.push(interruptor('sombras-mapa', 'brujula', 'Sombras'));
+    if (S.curvasEnMapa)   capas.push(interruptor('curvas-mapa', 'crecer', 'Curvas'));
+    if (S.caminataEnMapa) capas.push(interruptor('caminata-mapa', 'caminar', 'Recorrido'));
+    if (S.intEnMapa && (S.intangible || []).length)
+                          capas.push(interruptor('int-mapa', 'ojo', 'Percepción'));
+
+    /* La leyenda de estratos en una sola línea, y solo mientras estén
+       puestos: es lo único de las capas que necesita leyenda para leerse. */
+    var leyendaCorta = S.estratos
+      ? '<div class="pcr-leyenda-corta">' +
+          [['#8B1A1A','1'],['#E4572E','2'],['#E8C547','3'],['#4CAF50','4'],['#2E9BD6','5'],['#7B3FE4','6'],['#7A8794','S/E']]
+            .map(function (e) { return '<span><i style="background:' + e[0] + '"></i>' + e[1] + '</span>'; }).join('') +
+          '<em>estrato DANE</em>' +
+        '</div>'
+      : '';
+
+    /* Si está en mínimo, solo el asa y una línea: es el estado para mirar el
+       mapa sin nada encima y para poder mandar una captura. Se llega
+       empujando la hoja hacia abajo una segunda vez. */
+    if (S.minima) {
+      return '' +
+        '<button type="button" data-pcr="desminimizar" class="pcr-asa" aria-label="Subir los controles"></button>' +
+        '<div class="pcr-mini-cuerpo pcr-mini-linea">' +
+          '<button type="button" data-pcr="desminimizar" class="pcr-mini-que pcr-mini-que-b">' +
+            '<b>' + ico(capa.icono, 16) + esc(capa.titulo) + '</b>' +
+            '<small>' + esc(capa.detalle) + (capas.length ? ' · ' + capas.length + (capas.length === 1 ? ' capa' : ' capas') : '') + '</small>' +
+          '</button>' +
+          '<button type="button" data-pcr="agrandar" class="pcr-mini" aria-label="Volver al informe">' +
+            ico('atras', 14) + 'Informe</button>' +
+        '</div>';
+    }
+
     return '' +
       '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Volver al informe"></button>' +
       '<div class="pcr-mini-cuerpo">' +
@@ -4024,39 +4098,23 @@
             '<b>' + ico(capa.icono, 16) + esc(capa.titulo) + '</b>' +
             '<small>' + esc(capa.detalle) + '</small>' +
           '</div>' +
-          '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Volver al informe">⋯</button>' +
+          '<button type="button" data-pcr="minimizar" class="pcr-mini" aria-label="Bajar los controles y ver el mapa">' +
+            ico('mapa', 14) + 'Ver el mapa</button>' +
+          '<button type="button" data-pcr="agrandar" class="pcr-mini pcr-mini-mas" aria-label="Volver al informe">' +
+            ico('atras', 14) + 'Informe</button>' +
         '</div>' +
-        (S.cobEnMapa
-          ? '<button type="button" data-pcr="cob-mapa" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar la foto del mapa</button>'
-          : '') +
-        (S.llenosEnMapa
-          ? '<button type="button" data-pcr="llenos-mapa" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar los llenos del mapa</button>'
-          : '') +
-        (S.estratos
-          ? '<button type="button" data-pcr="estratos" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar los estratos del mapa</button>' +
-            (S.estratos.leyenda || '')
-          : '') +
-        (S.sombrasEnMapa
-          ? '<button type="button" data-pcr="sombras-mapa" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar las sombras del mapa</button>'
-          : '') +
-        (S.curvasEnMapa
-          ? '<button type="button" data-pcr="curvas-mapa" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar las curvas del mapa</button>'
+        (capas.length
+          ? '<div class="pcr-capas-fila">' +
+              '<span class="pcr-capas-lab">En el mapa</span>' + capas.join('') +
+            '</div>' + leyendaCorta
           : '') +
         (S.caminataEnMapa
-          ? '<button type="button" data-pcr="caminata-mapa" class="pcr-mini">' +
-              ico('apagar', 16) + 'Quitar el recorrido del mapa</button>' +
-            '<p class="pcr-pista">Azul oscuro, 5 minutos; celeste, 10; claro, 15.</p>'
+          ? '<p class="pcr-pista pcr-pista-corta">Azul oscuro, 5 minutos; celeste, 10; claro, 15.</p>'
           : '') +
-        '<div class="pcr-calor-chips">' +
+        '<div class="pcr-calor-chips pcr-calor-fila">' +
           chip('todos', 'Todos los usos', st.total || 0, null) +
           grupos.map(function (g) { return chip('g:' + g.id, nombreGrupo(g.id), g.n, colorDeGrupo(g.id)); }).join('') +
         '</div>' +
-        '<button type="button" data-pcr="agrandar" class="pcr-principal">' + ico('atras') + 'Volver al informe</button>' +
       '</div>';
   }
 
@@ -5658,10 +5716,25 @@
                               : ico('mapa', 16) + 'Ver las curvas en el mapa') +
             '</button>' +
           '</div>' +
-          '<p class="pcr-pista">Salen del mismo modelo de ' + cv.resolucionM + ' m de paso: dibujan ' +
-          'la <b>forma del sector</b>, no el detalle de una manzana. Para un anteproyecto sirven ' +
-          'para decidir por dónde entra el acceso y hacia dónde se aterraza; para replantear hace ' +
-          'falta topografía de campo.</p>';
+          /* El intervalo, a elegir. Se pidió a 2 m; se ofrecen los que el
+             desnivel admite sin pasar de ochenta curvas, y el más fino
+             siempre lleva al lado lo que es: interpolación de un modelo de
+             90 m. Elegirlo es del estudiante; decirlo, de la aplicación. */
+          '<div class="pcr-curvas-pasos"><span class="pcr-capas-lab">Cada</span>' +
+            PASOS_CURVAS.filter(function (pz) {
+              var n = (cv.zMax - cv.zMin) / pz; return n >= 3 && n <= 80;
+            }).map(function (pz) {
+              var on = pz === cv.intervalo;
+              return '<button type="button" class="pcr-cal-chip' + (on ? ' on' : '') + '" ' +
+                'data-pcr="curvas-paso" data-paso="' + pz + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+                pz + ' m</button>';
+            }).join('') +
+          '</div>' +
+          '<p class="pcr-pista">Salen de un modelo de <b>' + cv.resolucionM + ' m de paso</b>: entre dos ' +
+          'cotas medidas, la curva es interpolación. Dibujan la <b>forma del sector</b>, no el ' +
+          'detalle de una manzana' + (cv.intervalo < 10 ? ' —y a ' + cv.intervalo + ' m, menos todavía—' : '') +
+          '. Para un anteproyecto sirven para decidir por dónde entra el acceso y hacia dónde se ' +
+          'aterraza; para replantear hace falta topografía de campo.</p>';
       })() +
 
       '<p class="pcr-lab">Cortes del terreno</p>' +
@@ -5793,6 +5866,30 @@
             'así que el porcentaje es de los que sí tienen forma.'
           : 'Suman ' + formatearM2(ll.areaConstruidaM2) + ' construidos. Se cuenta el edificio ' +
             'entero cuando su centro cae dentro del área.') + '</p>' +
+      /* Lo que estas cifras SON: lo que OpenStreetMap tiene dibujado, no lo
+         construido de verdad. Llegó en captura, comparado con la foto
+         satelital: «no cuadran en nada». No cuadran porque en Cúcuta faltan
+         manzanas enteras por mapear, y un porcentaje calculado sobre lo
+         mapeado sale bajo sin que nada lo diga. Con la foto leída se puede
+         acotar por arriba: la superficie dura de la foto incluye calles y
+         techos, así que lo construido está entre lo mapeado y eso. */
+      (function () {
+        var dura = null;
+        try {
+          var cl = (S.cobertura && S.cobertura.clases) || [];
+          var c = cl.filter(function (x) { return x.id === 'construido'; })[0];
+          if (c && isFinite(c.pct)) dura = Math.round(c.pct);
+        } catch (e) { dura = null; }
+        return '<p class="pcr-conc pcr-ojo"><b>Es lo que OpenStreetMap tiene dibujado, no lo construido ' +
+          'de verdad.</b> Donde falten edificios por mapear —y en Cúcuta faltan manzanas enteras— el ' +
+          'porcentaje sale bajo. ' +
+          (dura != null
+            ? 'La foto satelital dice que el <b>' + dura + '%</b> del área es superficie dura, calles ' +
+              'incluidas: lo construido está <b>entre el ' + ll.pctLleno + '% y el ' + dura + '%</b>.'
+            : 'Leé la foto satelital y esta cifra se acota por arriba con la superficie dura que se ve.') +
+          ' Para la lámina, lo honesto es dibujar los llenos calcando la foto, que es lo que se hace a ' +
+          'mano, y usar este número como piso.</p>';
+      })() +
 
       // ── Jerarquía vial
       '<p class="pcr-lab">Jerarquía de las vías</p>' +
@@ -8111,6 +8208,25 @@
         L.polyline(pts.map(function (p) { return [p.lat, p.lng]; }),
           { color: '#B8860B', weight: 3, dashArray: '6 4' }).addTo(capaLote);
       }
+      /* Cada lado con el color de cuánto sol de la tarde recibe. Antes solo
+         la fachada crítica iba en rojo, y las demás como si no les diera:
+         llegó en captura que «al lado de esa línea roja también pega el sol».
+         Solo con el lote cerrado y analizado; mientras se dibuja, no hay
+         lados que leer. */
+      if (pts.length >= 3 && !S.loteDibujando && S.resultado) {
+        var an = null;
+        try { an = analisisDelLote(); } catch (e) { an = null; }
+        ((an && an.lados) || []).forEach(function (l) {
+          if (!l.a || !l.b || !l.nivelSol) return;
+          var pl = L.polyline([[l.a.lat, l.a.lng], [l.b.lat, l.b.lng]], {
+            color: l.nivelSol.color, weight: 6, opacity: .95, lineCap: 'butt'
+          }).addTo(capaLote);
+          try {
+            pl.bindTooltip('Lado ' + l.i + (l.via ? ' · ' + l.via : '') + ' · mira al ' +
+              ((l.mira && l.mira.nombre) || '—') + ' · ' + l.nivelSol.nombre, { sticky: true });
+          } catch (e) {}
+        });
+      }
       // Las esquinas, para poder ver dónde se tocó y volver atrás con criterio.
       pts.forEach(function (p, i) {
         L.circleMarker([p.lat, p.lng], {
@@ -8327,9 +8443,18 @@
     if (cual !== 'corte' && S.corteDibujando) cancelarCorte();
   }
 
+  /* ¿Queda algo puesto sobre el mapa? Es lo que decide si al apagar una capa
+     la hoja vuelve a abrirse entera o se queda abajo: con tres capas
+     encendidas, apagar una no es motivo para tapar el mapa con el informe. */
+  function hayCapaPuesta() {
+    return S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
+           S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa;
+  }
+
   function alternarHoja(quieroEncogida) {
     if (!quieroEncogida && S.loteDibujando) cancelarLote();
     S.encogida = !!quieroEncogida;
+    if (!quieroEncogida) S.minima = false;
     // Lo pidió una persona: mientras dure, manda sobre cualquier automatismo.
     S.encogidaAMano = !!quieroEncogida;
     if (quieroEncogida) { if (S.forma === 'radio') seguirAlMapa(true); }
@@ -8383,8 +8508,12 @@
        abierta no sube más. Y lo que sí se puede se frena a un tercio pasado
        el tope, para que el dedo note el límite en vez de que la hoja se
        quede muerta. */
-    var v = S.encogida ? Math.min(0, d) : Math.max(0, d);
-    var sobra = S.encogida ? Math.max(0, d) : Math.min(0, d);
+    /* Tres alturas y no dos: abierta, encogida y mínima. Encogida todavía
+       puede bajar —al mínimo— y solo el mínimo no baja más. */
+    var puedeBajar = !S.encogida || !S.minima;
+    var puedeSubir = S.encogida;
+    var v = (d > 0 ? (puedeBajar ? d : 0) : (puedeSubir ? d : 0));
+    var sobra = d - v;
     h.style.transform = 'translateY(' + (v + sobra / 3) + 'px)';
     if (arr.movido && ev.cancelable) { try { ev.preventDefault(); } catch (e) {} }
   }
@@ -8404,8 +8533,10 @@
     var bastante = Math.abs(d) > 70;
     if (!tiron && !bastante) return;        // no llegó: vuelve a su sitio
     var haciaAbajo = d > 0;
-    if (haciaAbajo && !S.encogida) alternarHoja(true);
-    else if (!haciaAbajo && S.encogida) alternarHoja(false);
+    if (haciaAbajo && !S.encogida) { alternarHoja(true); return; }
+    if (haciaAbajo && S.encogida && !S.minima) { S.minima = true; pintar(); return; }
+    if (!haciaAbajo && S.encogida && S.minima) { S.minima = false; pintar(); return; }
+    if (!haciaAbajo && S.encogida) alternarHoja(false);
   }
 
   /* Los oyentes van en el documento y no en el asa: el dedo se sale de un asa
@@ -8990,10 +9121,22 @@
        el sol de la tarde entra casi horizontal por ahí, y es el que recalienta
        —al mediodía está tan alto que la fachada apenas lo recibe. */
     var critica = null, mejorOcc = -1;
+    /* Cuánto sol de la tarde recibe CADA lado, y no solo cuál recibe más.
+       Llegó de campo: la hoja pintaba de rojo una sola fachada y el lado de
+       al lado —que también mira al poniente, un poco menos— quedaba como si
+       no le diera el sol. Se mide contra el azimut de la puesta de HOY, no
+       contra un 270° fijo: en Cúcuta el sol se pone hasta 23° al norte o al
+       sur del oeste según la época, y esos grados cambian qué fachada se
+       calienta. */
+    var azPuesta = (sol && isFinite(sol.azimutPuesta)) ? sol.azimutPuesta : 270;
+    var azSalida = (sol && isFinite(sol.azimutSalida)) ? sol.azimutSalida : 90;
     lados.forEach(function (l) {
       var d = Math.abs(((l.mira - 270 + 540) % 360) - 180);
       var cerca = 180 - d;
       if (cerca > mejorOcc) { mejorOcc = cerca; critica = l; }
+      l.solTarde = exposicionSolar(l.mira, azPuesta);
+      l.solManana = exposicionSolar(l.mira, azSalida);
+      l.nivelSol = nivelDeSol(l.solTarde);
     });
 
     return {
@@ -9002,8 +9145,13 @@
       esquinas: pts.length,
       lados: lados.map(function (l) {
         return { i: l.i, largoM: l.largoM, mira: rumboDe360(l.mira),
-                 via: l.via || '', clase: l.viaClase || '' };
+                 via: l.via || '', clase: l.viaClase || '',
+                 // Coordenadas del lado, para pintarlo en el mapa con su color.
+                 a: { lat: l.a.lat, lng: l.a.lng }, b: { lat: l.b.lat, lng: l.b.lng },
+                 solTarde: l.solTarde, solManana: l.solManana,
+                 nivelSol: l.nivelSol };
       }),
+      azimutPuesta: Math.round(azPuesta),
       frentes: frentes,
       sinFrenteM: Math.round(sinFrente),
       esquinero: frentes.length >= 2,
@@ -9099,13 +9247,17 @@
      curvas describen la forma del sector, NO el detalle de una manzana. Con
      un intervalo demasiado fino se dibujarían pliegues que el modelo no sabe;
      por eso el intervalo lo elige el relieve y no el usuario. */
+  var PASOS_CURVAS = [1, 2, 5, 10, 25, 50, 100];
   function intervaloDeCurvas(relieve) {
-    var PASOS = [1, 2, 5, 10, 25, 50, 100];
-    for (var i = 0; i < PASOS.length; i++) {
-      // Entre seis y quince curvas: menos no dibuja la ladera, más la ensucia.
-      if (relieve / PASOS[i] <= 15) return PASOS[i];
+    /* Hasta veinticuatro curvas, y no quince: con quince, un sector de 156 m
+       de desnivel salía a 25 m, y en campo se leyó «como a cada treinta»: la
+       ladera se veía en seis rayas. Con veinticuatro sale a 10 m. Más fino
+       que lo que el modelo sabe no se elige solo: se ofrece, y se dice lo
+       que es. */
+    for (var i = 0; i < PASOS_CURVAS.length; i++) {
+      if (relieve / PASOS_CURVAS[i] <= 24) return PASOS_CURVAS[i];
     }
-    return PASOS[PASOS.length - 1];
+    return PASOS_CURVAS[PASOS_CURVAS.length - 1];
   }
 
   function curvasDelTerreno(rejDada) {
@@ -9118,7 +9270,17 @@
     var relieve = zMax - zMin;
     if (relieve < 1) return { intervalo: 0, curvas: [], plano: true, zMin: zMin, zMax: zMax };
 
-    var paso = intervaloDeCurvas(relieve);
+    /* El intervalo lo elige el relieve, salvo que la persona haya pedido otro.
+       Se le deja pedirlo porque para un anteproyecto a veces hacen falta las
+       de 5 m aunque el modelo sea de 90 m de paso: lo que se dibuja entre dos
+       cotas medidas es interpolación, y eso va escrito al lado. */
+    var paso = (S.curvasPaso && PASOS_CURVAS.indexOf(S.curvasPaso) !== -1)
+      ? S.curvasPaso : intervaloDeCurvas(relieve);
+    // Con un paso pedido demasiado fino para el desnivel salen cientos de
+    // curvas: se limita a ochenta y se avisa con el número.
+    while (relieve / paso > 80 && PASOS_CURVAS.indexOf(paso) < PASOS_CURVAS.length - 1) {
+      paso = PASOS_CURVAS[PASOS_CURVAS.indexOf(paso) + 1];
+    }
     var latDe = function (f) { return L.maxLat - (L.maxLat - L.minLat) * (f / (F - 1)); };
     var lngDe = function (c) { return L.minLng + (L.maxLng - L.minLng) * (c / (C - 1)); };
     var z = function (f, c) { return R.z[f * C + c]; };
@@ -9432,6 +9594,33 @@
     };
   }
 
+  /* Cuánto le da el sol a una fachada que mira hacia `mira` (azimut de su
+     normal) cuando el sol está en `azSol`: el coseno del ángulo entre las
+     dos, recortado a cero. Uno es de frente; cero es de canto o de espaldas.
+     Es geometría de primer curso y basta: no modela vecinos ni montañas —eso
+     lo dicen las sombras, aparte—. */
+  function exposicionSolar(mira, azSol) {
+    var d = Math.abs(((mira - azSol + 540) % 360) - 180);   // 0..180
+    var c = Math.cos(d * Math.PI / 180);
+    return c > 0 ? Math.round(c * 100) / 100 : 0;
+  }
+
+  /* La escala en cinco niveles, del rojo al azul: es lo que se pidió, y es
+     la que se lee de un vistazo en el mapa y en la lámina. */
+  var NIVELES_SOL = [
+    { id: 'pleno',   nombre: 'sol pleno de la tarde', color: '#C62828', min: 0.85 },
+    { id: 'fuerte',  nombre: 'sol fuerte',            color: '#EF6C00', min: 0.60 },
+    { id: 'medio',   nombre: 'sol medio',             color: '#F9C80E', min: 0.35 },
+    { id: 'poco',    nombre: 'poco sol',              color: '#43A047', min: 0.10 },
+    { id: 'ninguno', nombre: 'sin sol de la tarde',   color: '#1E88E5', min: 0 }
+  ];
+  function nivelDeSol(x) {
+    for (var i = 0; i < NIVELES_SOL.length; i++) {
+      if ((x || 0) >= NIVELES_SOL[i].min) return NIVELES_SOL[i];
+    }
+    return NIVELES_SOL[NIVELES_SOL.length - 1];
+  }
+
   /* `preA` es el análisis ya calculado que trae una ficha guardada. Se guarda
      hecho y no se recalcula porque para rehacerlo harían falta la forma de
      todas las calles del sector, y eso son dos mil geometrías que no tiene
@@ -9506,19 +9695,28 @@
             : '<p class="pcr-pista">Para saber a qué calles da el lote hace falta <b>medir el trazado ' +
               'del sector</b> primero: es de ahí de donde salen la forma y el nombre de las calles.</p>')) +
 
-      '<p class="pcr-lab">Sus lados, uno por uno</p>' +
+      '<p class="pcr-lab">Sus lados, y cuánto sol de la tarde recibe cada uno</p>' +
       a.lados.map(function (l) {
-        return '<div class="pcr-lote-fila"><span>Lado ' + l.i +
+        var nv = l.nivelSol || nivelDeSol(l.solTarde);
+        return '<div class="pcr-lote-fila pcr-lado-sol"><span>' +
+          '<i class="pcr-sol-punto" style="background:' + esc(nv.color) + '"></i>Lado ' + l.i +
           (l.via ? ' · ' + esc(l.via) : '') + '</span><b>' + l.largoM + ' m · mira al ' +
-          esc((l.mira && l.mira.nombre) || '—') + '</b></div>';
+          esc((l.mira && l.mira.nombre) || '—') + ' · ' + esc(nv.nombre) + '</b></div>';
       }).join('') +
+      '<div class="pcr-sol-leyenda">' +
+        NIVELES_SOL.map(function (n) {
+          return '<span><i style="background:' + n.color + '"></i>' + esc(n.nombre) + '</span>';
+        }).join('') +
+      '</div>' +
 
       (a.critica
-        ? '<p class="pcr-conc">La fachada que se calienta es el <b>lado ' + a.critica.i + '</b>' +
+        ? '<p class="pcr-conc">La que más se calienta es el <b>lado ' + a.critica.i + '</b>' +
           (a.critica.via ? ' (' + esc(a.critica.via) + ')' : '') + ', que mira al ' +
-          esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') + ': en el trópico el sol de la ' +
-          'tarde entra casi horizontal por ahí. Al mediodía está tan alto que la fachada apenas lo ' +
-          'recibe — el problema del mediodía es la cubierta.</p>'
+          esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') + '; los de al lado la siguen ' +
+          'en la medida en que también miran al poniente. Se mide contra el sol que se pone ' +
+          (a.azimutPuesta ? 'hoy a los ' + a.azimutPuesta + '°' : 'hoy') + ', no contra un oeste fijo: ' +
+          'en el trópico el sol de la tarde entra casi horizontal, y al mediodía está tan alto que ' +
+          'la fachada apenas lo recibe — el problema del mediodía es la cubierta.</p>'
         : '') +
       /* El terreno bajo el lote: dos cortes por su centro, de borde a borde
          del sector, con el lote marcado sobre el recorrido. Es la respuesta a

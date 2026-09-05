@@ -132,7 +132,7 @@ const geo=[
     document.querySelector('[data-lote="cerrar"]').click(); await esperar(900);
 
     // ── Las curvas.
-    o.curvasTexto=trozo('Curvas de nivel',420);
+    o.curvasTexto=trozo('Curvas de nivel',1100);   // creció: selector de intervalo y nota de interpolación
     H().querySelector('[data-pcr="curvas-mapa"]').click(); await esperar(600);
     o.curvasMapa=(function(){
       const out=[];

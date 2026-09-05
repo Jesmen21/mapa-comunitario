@@ -252,14 +252,24 @@
          cuanto el dibujo se imprimía pequeño, que es como termina en la
          lámina. */
       var rot = l.largoM + ' m' + (l.via ? ' · ' + String(l.via).slice(0, 14) : '');
-      return (esCritica
+      /* Cada lado con el color de cuánto sol de la tarde recibe —del rojo al
+         azul—, y no solo la fachada crítica en rojo: llegó de campo que «al
+         lado de esa línea roja también pega el sol». El análisis trae el
+         nivel; sin él, se vuelve al dibujo de antes. */
+      var colorSol = l.nivelSol && l.nivelSol.color;
+      var trazo = colorSol
         ? '<path d="M' + n1(p1.x) + ' ' + n1(p1.y) + 'L' + n1(p2.x) + ' ' + n1(p2.y) + '" ' +
-          'stroke="' + ALERTA + '" stroke-width="4" stroke-linecap="round"/>'
-        : '') +
+          'stroke="' + colorSol + '" stroke-width="' + (esCritica ? 5 : 3.5) + '" stroke-linecap="butt"/>'
+        : (esCritica
+          ? '<path d="M' + n1(p1.x) + ' ' + n1(p1.y) + 'L' + n1(p2.x) + ' ' + n1(p2.y) + '" ' +
+            'stroke="' + ALERTA + '" stroke-width="4" stroke-linecap="round"/>'
+          : '');
+      return trazo +
         '<text x="' + n1(mx + hx) + '" y="' + n1(my + hy + 3) + '" font-size="8.5" ' +
         'text-anchor="middle" font-weight="700" fill="' + (esCritica ? ALERTA : GRIS) + '">' +
         esc(rot) + '</text>';
     }).join('');
+    var hayNiveles = (a.lados || []).some(function (l) { return l.nivelSol && l.nivelSol.color; });
 
     var esquinas = P.map(function (p) {
       return '<circle cx="' + n1(p.x) + '" cy="' + n1(p.y) + '" r="2.6" fill="' + TINTA + '"/>';
@@ -275,8 +285,8 @@
     })();
     var largoBarra = metrosBarra * escala;
 
-    return '<svg class="pcr-plano-lote" viewBox="0 0 ' + W + ' ' + (H + 38) + '" width="' + W + '" ' +
-      'height="' + (H + 38) + '" role="img" aria-label="' +
+    return '<svg class="pcr-plano-lote" viewBox="0 0 ' + W + ' ' + (H + 44) + '" width="' + W + '" ' +
+      'height="' + (H + 44) + '" role="img" aria-label="' +
       esc(o.etiqueta || 'Plano acotado del lote: cada lado con su largo, la calle a la que da y ' +
       'en rojo la fachada que recibe el sol de la tarde') + '">' +
       '<path d="' + contorno + '" fill="#FFD54F" fill-opacity=".28" stroke="#7A5901" stroke-width="1.6"/>' +
@@ -293,10 +303,20 @@
       '</g>' +
       /* La leyenda va en su propio renglón, debajo de la escala: al lado se
          montaba encima de la barra en cuanto la barra medía cien metros. */
-      (a.critica
-        ? '<text x="12" y="' + (H + 31) + '" font-size="8" fill="' + ALERTA + '" ' +
-          'font-weight="700">En rojo, la fachada que recibe el sol de la tarde.</text>'
-        : '') +
+      (hayNiveles
+        ? '<g transform="translate(12,' + (H + 27) + ')">' +
+            [['#C62828','pleno'],['#EF6C00','fuerte'],['#F9C80E','medio'],['#43A047','poco'],['#1E88E5','sin sol']]
+              .map(function (e, i) {
+                var x = i * 48;
+                return '<rect x="' + x + '" y="-6" width="10" height="6" fill="' + e[0] + '"/>' +
+                  '<text x="' + (x + 13) + '" y="0" font-size="7.5" fill="' + GRIS + '">' + e[1] + '</text>';
+              }).join('') +
+            '<text x="0" y="10" font-size="7" fill="' + GRIS + '">Sol de la tarde sobre cada lado, del rojo al azul.</text>' +
+          '</g>'
+        : (a.critica
+          ? '<text x="12" y="' + (H + 31) + '" font-size="8" fill="' + ALERTA + '" ' +
+            'font-weight="700">En rojo, la fachada que recibe el sol de la tarde.</text>'
+          : '')) +
       '</svg>';
   }
 

@@ -305,12 +305,16 @@
     minLat -= mLat; maxLat += mLat; minLng -= mLng; maxLng += mLng;
 
     /* Cuántos puntos por lado. El modelo tiene 90 m de resolución, así que
-       muestrear más fino que eso no agrega información: solo interpola. Se
-       apunta a unos 60 m de paso, con un mínimo de 8 y un máximo de 18 —que
-       son 324 puntos, cuatro consultas—. */
+       muestrear más fino que eso no agrega información: solo interpola. Pero
+       la interpolación sí cambia el DIBUJO: con 18 puntos por lado las curvas
+       salían a tramos rectos de sesenta metros y en campo se leyeron como
+       «imperfecciones de la topografía». Se apunta a unos 45 m de paso, con
+       un mínimo de 8 y un máximo de 26 —676 puntos, siete consultas—: las
+       curvas salen suaves, y la nota de la ficha sigue diciendo de qué
+       modelo vienen. */
     const anchoM = (maxLng - minLng) * 111320 * Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
     const altoM = (maxLat - minLat) * 111320;
-    const lado = Math.max(8, Math.min(18, Math.round(Math.max(anchoM, altoM) / 60)));
+    const lado = Math.max(8, Math.min(26, Math.round(Math.max(anchoM, altoM) / 45)));
 
     const puntos = [];
     for (let f = 0; f < lado; f++) {
