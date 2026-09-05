@@ -1119,13 +1119,35 @@
         'Facilidad para llegar ' + (mv.scoreAcceso || 0) + '/100 · exposición al tránsito ' +
         (mv.exposicion || 0) + '/100 (' + esc(String(mv.nivelExposicion || '—').toLowerCase()) + ').</p>'
       : '';
+    /* El flujo, que no salía en ningún documento. Va acá y no en una sección
+       propia porque es la otra mitad de «cómo funciona el sector»: la primera
+       dice por dónde se llega y esta, quién pasa. */
+    var flTxt = (mv && mv.flujo)
+      ? (function () {
+          var f = mv.flujo;
+          var LEE = { peatonal: 'Manda el peatón: el proyecto se abre a la calle.',
+                      vehicular: 'Manda el carro: hay que resolver el acceso y protegerse del ruido.',
+                      ninguno: 'No pasa casi nadie, ni a pie ni en carro: el proyecto tiene que traer su propia gente.',
+                      equilibrado: 'Peatón y carro parejos: los dos accesos hay que atenderlos bien.' };
+          var FR = [['manana', 'mañana'], ['mediodia', 'mediodía'], ['tarde', 'tarde'], ['noche', 'noche']];
+          return '<p>Quién pasa: flujo a pie <b>' + (f.peatonal || 0) + '</b>/100 y en carro <b>' +
+            (f.vehicular || 0) + '</b>/100. ' + esc(LEE[f.dominante] || LEE.equilibrado) +
+            (f.franjaFuerte ? ' Más viva en ' + esc(f.franjaFuerte) + '.' : '') +
+            (f.vidaNocturna ? ' Sigue viva de noche.' : '') +
+            (f.franjas
+              ? ' Reparto del día: ' + FR.filter(function (x) { return f.franjas[x[0]] != null; })
+                  .map(function (x) { return x[1] + ' ' + f.franjas[x[0]] + '%'; }).join(', ') + '.'
+              : '') +
+            ' Es una estimación a partir de los usos y los corredores, no un aforo.</p>';
+        })()
+      : '';
     var amTxt = am
       ? '<p>Verde y agua: ' + (am.parques || 0) + ' parque' + (am.parques === 1 ? '' : 's') + ', ' +
         (am.cuerposAgua || 0) + ' cuerpo' + (am.cuerposAgua === 1 ? '' : 's') + ' de agua, ' +
         (am.verdeNatural || 0) + ' mancha' + (am.verdeNatural === 1 ? '' : 's') + ' de verde. ' +
         'Presencia de verde ' + (am.scoreVerde || 0) + '/100.</p>'
       : '';
-    return '<h2>Cómo funciona el sector</h2>' + mvTxt + amTxt +
+    return '<h2>Cómo funciona el sector</h2>' + mvTxt + flTxt + amTxt +
       (filas.length ? '<table>' + filas.join('') + '</table>' : '');
   }
 
@@ -1182,6 +1204,141 @@
                (m.tMax != null ? String(m.tMax).replace('.', ',') + ' °C' : '') + '</td></tr>';
       }).join('') + '</table>' +
       '<p class="pie">' + esc(c.lectura || '') + ' ' + esc(c.advertencia || '') + '</p>';
+  }
+
+  /* ── Lo que faltaba en el informe en hojas ────────────────────────────
+     El pliego y el informe son dos documentos distintos y por eso no traen lo
+     mismo —uno es una hoja para colgar y el otro son páginas para leer—, pero
+     lo que traen no puede CONTRADECIRSE. Seis cosas medidas llegaban al
+     pliego y no al informe: quien archivara el informe de un sector se
+     quedaba sin la inundación, sin el ruido, sin la sombra que arroja, sin la
+     infraestructura, sin el flujo y sin la evolución.
+
+     La regla, para lo que venga: una medición nueva entra en los dos o en
+     ninguno, y si entra en uno solo hay que poder decir por qué. */
+  function demografiaImpresa(st) {
+    var d = st && st.demografia;
+    if (!d || !d.totalSexo) return '';
+    return '<h2>Quién vive acá</h2><table>' +
+      '<tr><td>Mujeres</td><td class="n">' + conComa(d.pctMujeres || 0) + '%</td></tr>' +
+      '<tr><td>Hombres</td><td class="n">' + conComa(d.pctHombres || 0) + '%</td></tr>' +
+      (d.envejecimiento != null
+        ? '<tr><td>Índice de envejecimiento</td><td class="n">' + conComa(d.envejecimiento) + '</td></tr>'
+        : '') +
+      (d.tramos || []).filter(function (t) { return (t.personas || 0) > 0; }).map(function (t) {
+        return '<tr><td>' + esc(t.etiqueta) + '</td><td class="n">' +
+          Number(t.personas).toLocaleString('es-CO') + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      (d.tramoDominanteEtq
+        ? '<p>El grupo más numeroso es <b>' + esc(d.tramoDominanteEtq) + '</b>. Es lo que decide ' +
+          'el programa: no pide lo mismo un sector de familias jóvenes que uno que envejece.</p>'
+        : '') +
+      '<p class="pie">Censo del DANE de 2018 por manzana, proyectado al año en curso. Es el ' +
+      'reparto de quien vive acá, no de quien pasa.</p>';
+  }
+
+  function inundacionImpresa(inu) {
+    if (!inu || inu.sinDato) return '';
+    if (!inu.cobertura) {
+      return '<h2>La inundación</h2>' +
+        '<p><b>Sin modelar.</b> ' + esc(inu.que) + '</p>' +
+        '<p class="pie">NO quiere decir que no se inunde: quiere decir que nadie lo midió con ' +
+        'este mapa. ' + esc(inu.salvedad) + ' ' + esc(inu.fuente) + '.</p>';
+    }
+    var dentro = inu.trPeor != null;
+    return '<h2>La inundación</h2><table>' +
+      '<tr><td>Amenaza</td><td class="n">' + esc(inu.nombre) + '</td></tr>' +
+      (dentro ? '<tr><td>Periodo de retorno</td><td class="n">' + inu.trPeor + ' años</td></tr>' +
+                '<tr><td>Se inunda</td><td class="n">' + esc(inu.frecuencia) + '</td></tr>' : '') +
+      (dentro && inu.enLaDeCien
+        ? '<tr><td>En la mancha de 100 años</td><td class="n">sí · es la del POT</td></tr>' : '') +
+      (inu.creciente && inu.creciente.length
+        ? '<tr><td>Creciente súbita</td><td class="n">sí</td></tr>' : '') +
+      '</table>' +
+      '<p>' + esc(inu.que) + '</p>' +
+      '<p class="pie">' + esc(inu.salvedad) + ' Escala ' + esc(inu.escala) + '. ' + esc(inu.fuente) + '.</p>';
+  }
+
+  function ruidoImpreso(ru) {
+    if (!ru) return '';
+    return '<h2>El ruido del tránsito</h2><table>' +
+      '<tr><td>Nivel estimado</td><td class="n">' + conComa(ru.dB) + ' dB(A) · ' + esc(ru.etq) + '</td></tr>' +
+      '<tr><td>Límite diurno para vivienda</td><td class="n">' + ru.limiteDiaVivienda + ' dB(A)</td></tr>' +
+      ru.principales.map(function (a) {
+        return '<tr><td>' + esc(a.nombre || a.etq) + '</td><td class="n">' + conComa(a.dB) +
+          ' dB · a ' + a.distM + ' m</td></tr>';
+      }).join('') +
+      '</table>' +
+      '<p class="pie">ESTIMADO, no medido: de la jerarquía de las ' + ru.cuantas + ' vías cercanas y ' +
+      'su distancia, con caída de 3 dB al doblar la distancia y suma de energías. No sabe cuánto ' +
+      'tránsito pasa, ni si hay semáforo, pendiente, tapia o fachada que rebote, ni cuenta las ' +
+      'motos aparte. Límite de la Resolución 627 de 2006.</p>';
+  }
+
+  function sombraProyectoImpresa(sp) {
+    if (!sp || !sp.horas || !sp.horas.length) return '';
+    var util = sp.horas.filter(function (h) { return !h.bajo; });
+    if (!util.length) return '';
+    return '<h2>La sombra que arroja el proyecto</h2><table>' +
+      '<tr><td>Volumen que permite la norma</td><td class="n">' + sp.pisos + ' pisos · ' +
+        sp.alturaM + ' m</td></tr>' +
+      '<tr><td>Huella</td><td class="n">' + Number(sp.huellaM2).toLocaleString('es-CO') + ' m²</td></tr>' +
+      util.map(function (h) {
+        return '<tr><td>A las ' + h.hora + ':00</td><td class="n">' +
+          Number(h.m2Fuera).toLocaleString('es-CO') + ' m² fuera del lote · ' +
+          (h.tocados.length
+            ? h.tocados.length + (h.tocados.length === 1 ? ' vecino tocado' : ' vecinos tocados') +
+              ' · al más afectado ' + h.tocados[0].pct + '%'
+            : 'sin vecinos tocados') + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      '<p class="pie">El volumen es el que permite la norma, no un proyecto dibujado, y la huella ' +
+      'se modela encogiendo el lote hacia su centro: un proyecto real se separa distinto en cada ' +
+      'lindero. Sirve para saber a quién le cae la sombra y en qué orden de magnitud.' +
+      (sp.vecinosSinPisos ? ' ' + sp.vecinosSinPisos + ' vecinos sin pisos registrados no se ' +
+      'pueden evaluar.' : '') + '</p>';
+  }
+
+  function infraImpresa(inf) {
+    if (!inf) return '';
+    return '<h2>Infraestructura de servicios</h2><table>' +
+      inf.lista.slice(0, 10).map(function (x) {
+        return '<tr><td>' + esc(x.nombre || (x.etq || 'Sin nombre')) + '</td><td class="n">' +
+          (x.etq && x.nombre ? esc(x.etq) + ' · ' : '') +
+          (x.distM != null ? 'a ' + x.distM + ' m' : 'sin ubicar') + '</td></tr>';
+      }).join('') +
+      '</table>' +
+      '<p class="pie">Esto NO es la cobertura de servicios públicos: es lo que OpenStreetMap tiene ' +
+      'registrado como infraestructura y a qué distancia queda. Si el barrio tiene agua, ' +
+      'alcantarillado y energía, y cuántas horas al día, lo levanta el censo del DANE por manzana ' +
+      'y no hay servicio que lo sirva a una aplicación.</p>';
+  }
+
+  function evolucionImpresa(evo) {
+    var EV = window.URBIS_EVOLUCION;
+    var L = evo && evo.landsat;
+    if (!EV || !L) return '';
+    var buenos = (L.pasos || []).filter(function (p) { return p.ok && p.medida; });
+    if (buenos.length < 2) return '';
+    var t = L.tendencia;
+    return '<h2>Cómo cambió el sitio</h2><table>' +
+      buenos.map(function (p) {
+        return '<tr><td>' + p.anio + (p.fiable ? '' : ' (medio tapado, no cuenta)') +
+          '</td><td class="n">' + conComa(p.medida.verde) + '% verde · ' +
+          conComa(p.medida.duro) + '% duro · ' + conComa(p.medida.agua) + '% agua</td></tr>';
+      }).join('') +
+      '</table>' +
+      (t
+        ? EV.conclusion(L).map(function (c) {
+            return '<p>' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
+          }).join('')
+        : '') +
+      '<p class="pie">Landsat, 30 m por píxel: la imagen se ve a cuadros y el lote son unos pocos ' +
+      'píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con NDVI, el ' +
+      'índice de la banda infrarroja, que significa lo mismo en 1984 y hoy; el clasificador de ' +
+      'colores de la foto de hoy mediría la diferencia entre dos cámaras. Los años medio tapados ' +
+      'por nubes se marcan y no entran en la conclusión.</p>';
   }
 
   /* Las sombras de los vecinos, impresas. El dibujo y las tres cifras: es lo
@@ -2236,6 +2393,7 @@
       'El ruido del tránsito':             ['mover', 'alerta'],
       'Infraestructura de servicios':      ['suelo', 'industria'],
       'Cómo cambió el sitio':              ['suelo', 'reloj'],
+      'Quién vive acá':                    ['sitio', 'poblacion'],
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
       'La sombra que arrojás':             ['proyecto', 'destello'],
@@ -2726,6 +2884,38 @@
       'estimación a partir de los usos y de los corredores, no un aforo.</p>';
       })(), 'g3') +
 
+      /* ── Quién vive acá ───────────────────────────────────────────────
+         El censo por edades y sexo estaba calculado, salía en la ficha y no
+         llegaba al papel. Se me pasó en el inventario de v734 y lo encontré
+         al buscar qué más faltaba: es de las que cambian el programa de un
+         proyecto —un sector que envejece no pide lo mismo que uno de familias
+         jóvenes— y no se podía defender en el pliego. */
+      caja('Quién vive acá',
+      (function () {
+      var d = st.demografia;
+      if (!d || !d.totalSexo) return '';
+      var tramos = (d.tramos || []).filter(function (t) { return (t.personas || 0) > 0; });
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + conComa(d.pctMujeres || 0) + '%</b><small>mujeres</small></div>' +
+      '<div class="k"><b>' + conComa(d.pctHombres || 0) + '%</b><small>hombres</small></div>' +
+      (d.envejecimiento != null
+      ? '<div class="k"><b>' + conComa(d.envejecimiento) + '</b><small>índice de envejecimiento</small></div>'
+      : '') +
+      '</div>' +
+      (tramos.length
+      ? barras(tramos, function (t) { return t.etiqueta; },
+      function (t) { return Number(t.personas).toLocaleString('es-CO'); },
+      function (t) { return t.personas; })
+      : '') +
+      (d.tramoDominanteEtq
+      ? '<p class="lee">El grupo más numeroso es <b>' + esc(d.tramoDominanteEtq) + '</b>. ' +
+      'Es lo que decide el programa: no pide lo mismo un sector de familias jóvenes que uno ' +
+      'que envejece.</p>'
+      : '') +
+      '<p class="nota">Censo del DANE de 2018 por manzana, proyectado al año en curso. Es el ' +
+      'reparto de quien vive acá, no de quien pasa.</p>';
+      })(), 'g3') +
+
       /* ── Cómo cambió el sitio ─────────────────────────────────────────
          La serie larga, en el papel: las estampas de cada año en fila, las
          cifras y la conclusión. Es de las pocas cajas del pliego que habla
@@ -3197,7 +3387,7 @@
                 'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
         que: 'qué hay · dónde · hitos y nodos',
-        cajas: ['Qué hay, por categoría', 'Hitos y nodos'] },
+        cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
         que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
@@ -3892,6 +4082,8 @@
         : (function () { try { return sombrasDelLote(); } catch (e) { return null; } })()) +
       climaImpreso(o.clima !== undefined ? o.clima : S.clima) +
       amenazaImpresa(o.amenaza !== undefined ? o.amenaza : S.amenaza) +
+      // Pegada al sismo: son los dos riesgos del sitio y se leen juntos.
+      inundacionImpresa(o.inundacion !== undefined ? o.inundacion : S.inundacion) +
       trazadoImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       perfilImpreso(o.trazado !== undefined ? o.trazado : S.trazado) +
       espacioImpreso(o.trazado !== undefined ? o.trazado : S.trazado, st) +
@@ -3904,6 +4096,14 @@
       hitosImpresos(st) +
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +
       contextoImpreso(st) +
+      /* Las seis que llegaban al pliego y no acá. Ver la nota donde se
+         definen: una medición nueva entra en los dos documentos o en ninguno. */
+      ruidoImpreso((function () { try { return ruidoDelLote(); } catch (e) { return null; } })()) +
+      infraImpresa((function () { try { return infraDeServicios(res); } catch (e) { return null; } })()) +
+      sombraProyectoImpresa(o.sombraProyecto !== undefined ? o.sombraProyecto
+        : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })()) +
+      evolucionImpresa(o.evo !== undefined ? o.evo : S.evo) +
+      demografiaImpresa(st) +
 
       queFaltaImpreso(st) +
 
@@ -7615,6 +7815,12 @@
         listo: Object.keys(st.porGrupo || {}).some(function (k) {
           return k !== 'otro' && st.porGrupo[k] > 0; }),
         falta: 'no hay usos clasificados', dato: (st.total || 0) + ' usos' },
+      { id: 'quien-vive-aca', t: 'Quién vive acá', g: 'Lo que hay',
+        listo: !!(st.demografia && st.demografia.totalSexo),
+        falta: 'el censo no tiene reparto por edades acá',
+        dato: st.demografia && st.demografia.tramoDominanteEtq
+          ? 'sobre todo ' + String(st.demografia.tramoDominanteEtq).toLowerCase()
+          : 'edades y sexo del censo' },
       { id: 'hitos-y-nodos', t: 'Hitos y nodos', g: 'Lo que hay',
         listo: !!(st.hitos && st.hitos.length), falta: 'no hay hitos registrados',
         dato: ((st.hitos || []).length) + ' hitos' },

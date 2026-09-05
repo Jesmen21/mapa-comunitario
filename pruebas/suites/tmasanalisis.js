@@ -126,8 +126,25 @@ const CAPAS_IDEAM = [
       // salen los corredores arteriales, las paradas y el flujo.
       body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos.concat(geo) }) });
   });
-  await ctx.route(/ags\.esri\.co/, r => r.fulfill({ status: 200, contentType: 'application/json',
-    body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) }));
+  /* El DANE. La consulta de demografía pide sumas por sexo y por tramo de
+     edad; sin esas columnas, `st.demografia` queda en nulo y la caja de «quién
+     vive acá» no sale —que es correcto, pero deja la prueba sin comprobar
+     nada—. Se responde con un reparto verosímil de un barrio joven. */
+  const EDADES = ['0_4','5_9','10_14','15_19','20_24','25_29','30_34','35_39','40_44',
+                  '45_49','50_54','55_59','60_64','65_69','70_74','75_79','80_84','85_89',
+                  '90_94','95_99','100_MAS'];
+  const REPARTO = [260,270,255,250,240,230,210,190,170,150,130,110,90,70,50,35,20,12,6,3,1];
+  await ctx.route(/ags\.esri\.co/, r => {
+    const u = decodeURIComponent(r.request().url());
+    if (/SEXO_M/.test(u)) {
+      const a = { MUJ: 1580, HOM: 1465 };
+      EDADES.forEach((e, i) => { a['E' + e] = REPARTO[i]; });
+      return r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ features: [{ attributes: a }] }) });
+    }
+    r.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) });
+  });
   await ctx.route(/srvags\.sgc\.gov\.co/, r => {
     const u = decodeURIComponent(r.request().url());
     const cuerpo = /Zonas_amenaza_Sismica_NR10/.test(u)
@@ -356,6 +373,33 @@ const CAPAS_IDEAM = [
      barrio tiene agua, y no lo contesta ni puede. */
   T('y dice a las claras que no es la cobertura de servicios públicos',
     /NO es la cobertura de servicios públicos/.test(IN) && /censo del DANE por manzana/.test(IN));
+
+  /* ── Y que los dos documentos no se contradigan ─────────────────────
+     El pliego y el informe en hojas son distintos a propósito —uno se cuelga
+     y el otro se lee—, pero lo que traen no puede contradecirse. Seis
+     mediciones llegaban al pliego y no al informe: quien archivara el informe
+     de un sector se quedaba sin la inundación, sin el ruido, sin la sombra
+     que arroja, sin la infraestructura, sin el flujo y sin quién vive acá.
+
+     Esta comprobación es la que impide que vuelva a pasar: cada medición
+     nueva tiene que aparecer en los dos, o alguien tiene que venir acá y
+     escribir por qué no. */
+  console.log('\n  -- los dos documentos dicen lo mismo --');
+  const EN_LOS_DOS = [
+    ['la inundación', /La inundación/, /La inundación/],
+    ['cómo se llega', /Cómo se llega/, /Cómo funciona el sector/],
+    ['el flujo', /Flujo a pie contra en carro/, /Quién pasa: flujo a pie/],
+    ['verde y agua', /Verde y agua/, /Verde y agua:/],
+    ['el ruido', /El ruido del tránsito/, /El ruido del tránsito/],
+    ['la sombra que arrojás', /La sombra que arrojás/, /La sombra que arroja el proyecto/],
+    ['la infraestructura', /Infraestructura de servicios/, /Infraestructura de servicios/],
+    ['quién vive acá', /Quién vive acá/, /Quién vive acá/]
+  ];
+  EN_LOS_DOS.forEach(([nombre, enPliego, enInforme]) => {
+    const p1 = enPliego.test(LAM), p2 = enInforme.test(PDF);
+    T(nombre + ', en el pliego y en el informe', p1 && p2,
+      'pliego: ' + (p1 ? 'sí' : 'NO') + ' · informe: ' + (p2 ? 'sí' : 'NO'));
+  });
 
   console.log('\n  -- y todo viaja con la ficha --');
   T('la inundación queda archivada', (r.guardado || {}).inundacion === true);

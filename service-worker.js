@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v736-como-cambio-el-sitio-desde-1984';
+const URBIS_CACHE = 'urbis-v737-los-dos-pdf-dicen-lo-mismo';
 const URBIS_ASSETS = [
   './',
   './index.html',
