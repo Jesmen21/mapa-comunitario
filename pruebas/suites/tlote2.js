@@ -163,7 +163,7 @@ for(let i=0;i<12;i++){
     // A la lámina.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='Sector con lote';
-    const bl=H().querySelector('[data-pcr="lamina"]');
+    const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(500); }
     o.lamina=lamina;
 

@@ -1682,6 +1682,54 @@
      encima— y estaba copiado en tres sitios; acá está una vez. Avisa por
      `alFallar` en vez de tocar el estado, porque quien lo llama sabe si el
      aviso va en la ficha o en la pestaña. */
+  /* El pliego, a un archivo PDF del tamaño que es.
+
+     Se pidió con el diálogo de Android en la mano: al imprimir, el teléfono
+     abre su propio cuadro de «Guardar como PDF» con SU lista de papeles
+     —Carta, Oficio, Tabloide, ANSI— y ninguno mide 90 × 60; el pliego sale
+     encajado en una hoja carta y no sirve ni para colgar ni para plotear.
+     «Sería bueno ahorrar trabajo y que salga directamente en PDF, en el
+     formato que yo quiero.»
+
+     Así que se arma acá —ver js/75— y se baja como archivo. Sin otra
+     pestaña, sin diálogo del sistema y sin elegir papel: el papel ya está
+     escrito dentro del archivo. */
+  function bajarPliegoPDF(horizontal, alAvisar) {
+    var P = window.URBIS_PLIEGO_PDF;
+    var html = laminaImprimible(S.resultado, { horizontal: !!horizontal });
+    if (!P || !P.disponible()) {
+      // Sin lo que hace falta, se cae al camino de siempre en vez de dejar
+      // a alguien sin lámina.
+      abrirImpresion(html, alAvisar);
+      return Promise.resolve(false);
+    }
+    var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
+    var nombre = (S.nombreGuardado || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
+    S.pdfArmando = true; pintar();
+    return P.generar(html, {
+      anchoMM: mm.anchoMM, altoMM: mm.altoMM,
+      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm'
+    }).then(function (r) {
+      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
+                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
+      S.pdfArmando = false;
+      if (alAvisar) {
+        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
+                 Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
+                 'Está en las descargas del teléfono, ya con su tamaño puesto.');
+      }
+      return true;
+    }).catch(function (e) {
+      S.pdfArmando = false;
+      if (alAvisar) {
+        alAvisar('No se pudo armar el PDF (' + ((e && e.message) || e) + '). ' +
+                 'Se abre la vista de impresión: ahí el tamaño lo elige el teléfono.');
+      }
+      abrirImpresion(html, alAvisar);
+      return false;
+    });
+  }
+
   function abrirImpresion(html, alFallar) {
     var ayuda = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
     if (ayuda) { ayuda(html); return true; }
@@ -3540,10 +3588,21 @@
         return;
       }
       if (acc === 'lamina' || acc === 'lamina-h') {
-        if (!S.resultado) return;
+        if (!S.resultado || S.pdfArmando) return;
         var caja3 = document.getElementById('pcr-nombre');
         S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
-        abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-h' }),
+        bajarPliegoPDF(acc === 'lamina-h', function (m) { S.aviso = m; pintar(); });
+        return;
+      }
+      // La vista de impresión sigue estando, para quien quiera mirarla antes
+      // o mandarla a una impresora de verdad.
+      if (acc === 'lamina-ver' || acc === 'lamina-ver-h') {
+        if (!S.resultado) return;
+        // El nombre se lee acá también: es el título de la lámina, y por los
+        // dos caminos sale la misma hoja.
+        var cajaV = document.getElementById('pcr-nombre');
+        S.nombreGuardado = cajaV ? String(cajaV.value || '').trim() : S.nombreGuardado;
+        abrirImpresion(laminaImprimible(S.resultado, { horizontal: acc === 'lamina-ver-h' }),
                        function (m) { S.aviso = m; pintar(); });
         return;
       }
@@ -6185,10 +6244,12 @@
 
     var ll = t.llenos || {}, vi = t.vias || {}, mo = t.morfologia || {};
     var mallas = vi.porMalla || [];
-    return h4('capas', 'El trazado del sector') +
-
-      // ── Llenos y vacíos
-      '<p class="pcr-lab">Llenos y vacíos</p>' +
+    /* Llenos y vacíos con TÍTULO propio y no como una etiqueta dentro del
+       trazado. En la lámina siempre fue una caja con su nombre; acá era una
+       línea pequeña en mitad de un bloque largo, y se buscó sin encontrarla:
+       «no vi los llenos y vacíos». Lo que tiene nombre en el papel tiene que
+       tener nombre en la pantalla. */
+    return h4('area', 'Llenos y vacíos') +
       /* Cien cuadraditos al lado de la barra: la barra dice la proporción, la
          trama la deja contar. Es el mismo dato dos veces a propósito — uno se
          lee de cerca y el otro de lejos, colgado en la pared. */
@@ -6213,6 +6274,7 @@
             (S.llenosEnMapa ? ico('apagar', 16) + 'Quitar del mapa'
                             : ico('mapa', 16) + 'Ver los llenos en el mapa') + '</button>'
         : '') +
+      h4('capas', 'El trazado del sector') +
       '<p class="pcr-pista">' + (ll.edificios || 0) + ' edificio' + (ll.edificios === 1 ? '' : 's') +
         ' en el área. ' +
         (ll.sinGeometria
@@ -9626,17 +9688,79 @@
      curvas describen la forma del sector, NO el detalle de una manzana. Con
      un intervalo demasiado fino se dibujarían pliegues que el modelo no sabe;
      por eso el intervalo lo elige el relieve y no el usuario. */
-  var PASOS_CURVAS = [1, 2, 5, 10, 25, 50, 100];
+  var PASOS_CURVAS = [1, 2, 4, 5, 10, 25, 50, 100];
+  /* Cuarenta curvas, no veinticuatro. Con veinticuatro, un sector de 156 m de
+     desnivel —una ladera cualquiera de Cúcuta— salía a 10 m, y se pidió lo
+     contrario con estas palabras: «no sea cada diez metros; a cada cinco o
+     cuatro metros está bien, cada cuatro metros». Con cuarenta, ese mismo
+     sector sale a 4 m y uno de 60 m también.
+
+     Cuarenta líneas es lo que una lámina admite sin volverse una trama, y lo
+     que el dibujo aguanta sin pesar: son polilíneas, no imágenes. Más fino
+     sigue estando a un toque en el selector, con lo que es escrito al lado:
+     entre dos cotas medidas, la curva es interpolación de un modelo de 90 m. */
   function intervaloDeCurvas(relieve) {
-    /* Hasta veinticuatro curvas, y no quince: con quince, un sector de 156 m
-       de desnivel salía a 25 m, y en campo se leyó «como a cada treinta»: la
-       ladera se veía en seis rayas. Con veinticuatro sale a 10 m. Más fino
-       que lo que el modelo sabe no se elige solo: se ofrece, y se dice lo
-       que es. */
-    for (var i = 0; i < PASOS_CURVAS.length; i++) {
-      if (relieve / PASOS_CURVAS[i] <= 24) return PASOS_CURVAS[i];
+    /* De 4 m para arriba, salvo que el sector sea casi plano: por debajo de
+       eso el modelo de 90 m ya no describe relieve, dibuja su propia
+       interpolación, y cuatro curvas de mentira valen menos que dos de
+       verdad. El selector sigue ofreciendo 1 y 2 m para quien las quiera:
+       elegirlas es del estudiante, ponerlas solo no. */
+    if (relieve <= 8) return 1;
+    if (relieve <= 16) return 2;
+    for (var i = PASOS_CURVAS.indexOf(4); i < PASOS_CURVAS.length; i++) {
+      if (relieve / PASOS_CURVAS[i] <= 40) return PASOS_CURVAS[i];
     }
     return PASOS_CURVAS[PASOS_CURVAS.length - 1];
+  }
+
+  /* La rejilla, más tupida, solo para DIBUJAR.
+
+     Al servicio de altura se le piden pocos puntos —cuesta una consulta por
+     cada cien, y pedir de más es lo que terminó devolviendo «429: demasiadas
+     consultas» en mitad de una clase—. Pero una rejilla de pocos puntos
+     trazada tal cual da curvas de tramos rectos, que en campo se leyeron
+     como «imperfecciones de la topografía» cuando eran del dibujo.
+
+     Así que se pide poco y se dibuja fino: entre cotas medidas se interpola
+     con Catmull-Rom, que pasa por los puntos que sí se midieron y curva
+     suave entre ellos. No inventa relieve nuevo —el modelo sigue siendo de
+     90 m y la ficha lo sigue diciendo—: hace que la línea que ya era
+     interpolación se vea como una curva y no como una escalera.
+
+     Solo para las curvas. Las cifras —altura, pendiente, hacia dónde baja—
+     se calculan sobre lo medido, sin tocar. */
+  function tupirRejilla(R, veces) {
+    var F = R.filas, C = R.columnas, n = Math.max(1, veces || 3);
+    if (n === 1 || F < 4 || C < 4) return R;
+    var z = R.z;
+    var en = function (f, c) {
+      f = Math.max(0, Math.min(F - 1, f)); c = Math.max(0, Math.min(C - 1, c));
+      var v = z[f * C + c];
+      return v == null ? null : Number(v);
+    };
+    // Catmull-Rom en una dimensión, con los cuatro vecinos.
+    var cr = function (p0, p1, p2, p3, t) {
+      if (p0 == null || p1 == null || p2 == null || p3 == null) return null;
+      var t2 = t * t, t3 = t2 * t;
+      return 0.5 * ((2 * p1) + (-p0 + p2) * t +
+                    (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+                    (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+    };
+    var F2 = (F - 1) * n + 1, C2 = (C - 1) * n + 1, z2 = new Array(F2 * C2);
+    for (var f2 = 0; f2 < F2; f2++) {
+      var ff = f2 / n, fi = Math.floor(ff), ft = ff - fi;
+      if (fi >= F - 1) { fi = F - 2; ft = 1; }
+      for (var c2 = 0; c2 < C2; c2++) {
+        var cc = c2 / n, ci = Math.floor(cc), ct = cc - ci;
+        if (ci >= C - 1) { ci = C - 2; ct = 1; }
+        var col = [];
+        for (var k = -1; k <= 2; k++) {
+          col.push(cr(en(fi + k, ci - 1), en(fi + k, ci), en(fi + k, ci + 1), en(fi + k, ci + 2), ct));
+        }
+        z2[f2 * C2 + c2] = cr(col[0], col[1], col[2], col[3], ft);
+      }
+    }
+    return { filas: F2, columnas: C2, z: z2, limites: R.limites };
   }
 
   function curvasDelTerreno(rejDada) {
@@ -9660,9 +9784,13 @@
     while (relieve / paso > 80 && PASOS_CURVAS.indexOf(paso) < PASOS_CURVAS.length - 1) {
       paso = PASOS_CURVAS[PASOS_CURVAS.indexOf(paso) + 1];
     }
+    /* Se traza sobre la rejilla tupida y no sobre la medida: mismas cotas,
+       misma extensión, curvas suaves. Ver `tupirRejilla`. */
+    var D = tupirRejilla(R, 3);
+    F = D.filas; C = D.columnas;
     var latDe = function (f) { return L.maxLat - (L.maxLat - L.minLat) * (f / (F - 1)); };
     var lngDe = function (c) { return L.minLng + (L.maxLng - L.minLng) * (c / (C - 1)); };
-    var z = function (f, c) { return R.z[f * C + c]; };
+    var z = function (f, c) { return D.z[f * C + c]; };
 
     // El punto donde una arista cruza la cota, interpolando linealmente.
     function cruce(f1, c1, z1, f2, c2, z2, v) {
@@ -12345,6 +12473,16 @@
         // están repartidos por treinta bloques y ninguno avisa de los otros.
         bloqueMedirTodo() +
         bloqueSinSenal() +
+        /* Las capas, ARRIBA. Estaban en el puesto veintidós de treinta y dos
+           bloques, después de todo lo que se lee: existían, con su lista
+           completa y sus interruptores, y nadie las encontraba. Llegó dicho
+           así: «no vi las opciones de desactivar capas; quedó todo encima de
+           una cosa, todo combinado».
+
+           Un panel de control no se busca hacia el final de un informe. Va
+           antes de lo que se lee, junto a «qué falta medir», que es el otro
+           control de esta ficha. */
+        bloqueCapas(st) +
 
         h4('capas', 'Qué hay, por categoría') +
         // El anillo se pinta después, cuando el canvas ya está en el documento.
@@ -12387,9 +12525,8 @@
         bloqueNucleos(st) +
         bloqueHitos(st) +
         bloqueAnillos(st, esPol) +
-        bloqueCapas(st) +
-        // Las capas ordenan el mapa; esto ordena el papel. Van juntas porque
-        // son la misma pregunta hecha dos veces.
+        // Las capas ordenan el mapa —y viven arriba, con los controles—;
+        // esto ordena el papel.
         bloquePliego(res) +
         bloqueCalor(res) +
 
@@ -12469,13 +12606,25 @@
           '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">' + ico('guardar') + 'Guardar ficha</button>' +
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
           '<button type="button" data-pcr="imprimir" class="pcr-mini pcr-llevar-b">' + ico('imprimir') + 'PDF</button>' +
-          '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b">' + ico('documento') + 'Lámina 60×90</button>' +
-          '<button type="button" data-pcr="lamina-h" class="pcr-mini pcr-llevar-b">' + ico('documento') + 'Lámina 90×60</button>' +
+          '<button type="button" data-pcr="lamina" class="pcr-mini pcr-llevar-b"' +
+            (S.pdfArmando ? ' disabled' : '') + '>' + ico('documento') +
+            (S.pdfArmando ? 'Armando el PDF…' : 'Lámina 60×90 · PDF') + '</button>' +
+          '<button type="button" data-pcr="lamina-h" class="pcr-mini pcr-llevar-b"' +
+            (S.pdfArmando ? ' disabled' : '') + '>' + ico('documento') +
+            (S.pdfArmando ? 'Armando el PDF…' : 'Lámina 90×60 · PDF') + '</button>' +
         '</div>' +
         '<p class="pcr-pista">La <b>lámina</b> arma un solo pliego con el plano del sector y todo lo ' +
-        'medido, listo para imprimir o colgar: <b>60 × 90 cm</b> parada o <b>90 × 60 cm</b> ' +
-        'acostada, con el mismo contenido. Lo que no mediste no sale: medí el terreno, el clima y ' +
-        'el trazado antes si querés que aparezcan.</p>' +
+        'medido: <b>60 × 90 cm</b> parada o <b>90 × 60 cm</b> acostada, con el mismo contenido. ' +
+        'Baja un <b>PDF ya del tamaño del pliego</b>, sin pasar por el cuadro de impresión del ' +
+        'teléfono —que solo ofrece carta, oficio y tabloide, y encajaba el pliego en una hoja—. ' +
+        'Tarda unos segundos: la hoja se dibuja entera antes de guardarse. Lo que no mediste no ' +
+        'sale: medí el terreno, el clima y el trazado antes si querés que aparezcan.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="lamina-ver" class="pcr-mini">' + ico('imprimir', 16) +
+            'Ver e imprimir 60×90</button>' +
+          '<button type="button" data-pcr="lamina-ver-h" class="pcr-mini">' + ico('imprimir', 16) +
+            'Ver e imprimir 90×60</button>' +
+        '</div>' +
 
         // Guardar el ÁREA, no la ficha: queda en la misma lista de áreas de
         // Pro City, así que se puede volver a ella sin redibujarla y el
@@ -12499,7 +12648,20 @@
           'Sirve para llegar con una idea formada, no para reemplazar la salida a campo.' +
         '</div>' +
 
-        '<button type="button" data-pcr="cerrar" class="pcr-principal pcr-secundario">Listo</button>' +
+        /* Decía «Listo», al final de catorce metros de informe, y cerraba la
+           hoja. Quien llega ahí acaba de leerlo todo y lee «Listo» como «ya
+           terminé de leer»: lo toca, la hoja se va, y desde afuera parece que
+           el análisis se perdió. Llegó dicho así —«si le doy a Listo me saca
+           del análisis y me toca volver a la lupita»—.
+
+           No se quita el botón: hace falta una salida al final. Se le pone el
+           nombre de lo que hace, y debajo, en una línea, qué pasa con el
+           análisis y por dónde se vuelve. */
+        '<button type="button" data-pcr="cerrar" class="pcr-principal pcr-secundario">' +
+          ico('mapa', 16) + 'Cerrar y ver el mapa</button>' +
+        '<p class="pcr-pista pcr-pista-cerrar">El análisis <b>no se pierde</b>: la hoja se baja para ' +
+        'dejar ver el mapa y vuelve con el botón <b>«Volver al análisis»</b>, abajo a la izquierda. ' +
+        'Y queda archivado en la pestaña «Sector» aunque cierres la aplicación.</p>' +
       '</div>';
   }
 

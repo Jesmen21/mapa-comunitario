@@ -261,13 +261,44 @@
       const url = ELEVACION_API +
         '?latitude=' + trozo.map(p => Number(p.lat).toFixed(5)).join(',') +
         '&longitude=' + trozo.map(p => Number(p.lng).toFixed(5)).join(',');
-      let d;
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('respondió ' + res.status);
-        d = await res.json();
-      } catch (e) {
-        throw new Error('No se pudo consultar la altura del terreno (' + (e.message || e) + ').');
+      /* El servicio de altura es gratuito y sin clave, y cobra por PUNTO:
+         una consulta de cien puntos le cuenta como cien. Medir el terreno de
+         un par de sectores seguidos agota la cuota de la hora y responde
+         «429». Pasó en mitad de una clase y se vio así: «el terreno no
+         cargó, el análisis quedó sin cortes».
+
+         Dos cosas contra eso. Pedir menos puntos —eso vive en `rejillaDe`— y
+         no rendirse al primer 429: se espera y se reintenta, porque la cuota
+         se libera sola. Las esperas son de un segundo y medio y cuatro; más
+         que eso es dejar a alguien mirando una pantalla quieta. */
+      let d, ultimo = '';
+      const esperar = ms => new Promise(x => setTimeout(x, ms));
+      for (let intento = 0; intento < 3; intento++) {
+        if (intento) {
+          if (typeof alAvisar === 'function') {
+            alAvisar('El servicio de altura está saturado. Reintentando…');
+          }
+          await esperar(intento === 1 ? 1500 : 4000);
+        }
+        try {
+          const res = await fetch(url);
+          if (res.status === 429 || res.status === 503) { ultimo = 'saturado'; continue; }
+          if (!res.ok) throw new Error('respondió ' + res.status);
+          d = await res.json();
+          ultimo = '';
+          break;
+        } catch (e) {
+          ultimo = (e && e.message) || String(e);
+          // Un fallo de red se reintenta igual; uno de formato, no.
+          if (!/respondió|Failed|network|fetch/i.test(ultimo)) break;
+        }
+      }
+      if (!d) {
+        throw new Error(ultimo === 'saturado'
+          ? 'El servicio de altura del terreno está atendiendo demasiadas consultas ' +
+            'ahora mismo. Es gratuito y tiene un cupo por hora. Esperá un par de minutos ' +
+            'y volvé a darle a «Medir el terreno»: lo demás del análisis ya está.'
+          : 'No se pudo consultar la altura del terreno (' + ultimo + ').');
       }
       const lista = d && d.elevation;
       // Una respuesta con menos alturas que puntos desalinearía toda la
@@ -304,17 +335,24 @@
     const mLat = (maxLat - minLat) * 0.08, mLng = (maxLng - minLng) * 0.08;
     minLat -= mLat; maxLat += mLat; minLng -= mLng; maxLng += mLng;
 
-    /* Cuántos puntos por lado. El modelo tiene 90 m de resolución, así que
-       muestrear más fino que eso no agrega información: solo interpola. Pero
-       la interpolación sí cambia el DIBUJO: con 18 puntos por lado las curvas
-       salían a tramos rectos de sesenta metros y en campo se leyeron como
-       «imperfecciones de la topografía». Se apunta a unos 45 m de paso, con
-       un mínimo de 8 y un máximo de 26 —676 puntos, siete consultas—: las
-       curvas salen suaves, y la nota de la ficha sigue diciendo de qué
-       modelo vienen. */
+    /* Cuántos puntos por lado.
+
+       El modelo tiene 90 m de resolución: muestrear más fino no agrega
+       información, solo interpola. Se pedían 26 por lado —676 puntos, siete
+       consultas— porque con menos las curvas salían a tramos rectos. Pero el
+       servicio cobra por PUNTO, no por consulta: 676 puntos son 676 en su
+       cuenta, y medir un par de sectores seguidos devolvía «429 · demasiadas
+       consultas» y dejaba el análisis sin terreno y sin cortes.
+
+       Ahora se piden 16 por lado como mucho —256 puntos, tres consultas, un
+        62 % menos— con un paso de unos 70 m, todavía más fino que el modelo.
+       Lo que se perdía al bajar de 26 era el DIBUJO, y eso se arregla donde
+       corresponde: las curvas se trazan sobre una rejilla interpolada
+       (`tupirRejilla` en js/68), que pasa por las cotas medidas y curva entre
+       ellas. Se pide poco y se dibuja fino. */
     const anchoM = (maxLng - minLng) * 111320 * Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
     const altoM = (maxLat - minLat) * 111320;
-    const lado = Math.max(8, Math.min(26, Math.round(Math.max(anchoM, altoM) / 45)));
+    const lado = Math.max(8, Math.min(16, Math.round(Math.max(anchoM, altoM) / 70)));
 
     const puntos = [];
     for (let f = 0; f < lado; f++) {

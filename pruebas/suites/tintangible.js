@@ -130,7 +130,29 @@ const RECORRIDO=[
     const H=()=>document.getElementById('pcr-hoja');
     const btn=id=>H().querySelector('[data-pcr="'+id+'"]');
     const txt=()=>(H().textContent||'').replace(/\s+/g,' ').trim();
-    const trozo=(desde,largo)=>{ const t=txt(); const i=t.indexOf(desde); return i<0?'':t.slice(i,i+largo); };
+    /* Desde el TÍTULO del bloque y no desde la primera vez que aparecen esas
+       palabras en la hoja. El panel de capas nombra todas las capas —«Curvas
+       de nivel», «Llenos y vacíos», «Percepción»— y desde que vive arriba,
+       con los controles, esos nombres aparecen antes en la lista que en su
+       propio bloque: cortar por la primera coincidencia devolvía el trozo
+       equivocado y la prueba leía la lista en vez del bloque. */
+    const trozo=(desde,largo)=>{
+      const hoja=document.getElementById('pcr-hoja');
+      const cab=hoja ? [...hoja.querySelectorAll('.pcr-h, .pcr-lab')]
+        .filter(h=>((h.textContent||'').trim()===desde))[0] : null;
+      const t=txt();
+      if(!cab) { const i=t.indexOf(desde); return i<0?'':t.slice(i,i+largo); }
+      /* Del título hacia adelante, en el texto de toda la hoja: se busca la
+         coincidencia que empieza donde empieza este encabezado. */
+      let i=-1, desde0=0;
+      const antes=(function(){
+        const r=document.createRange();
+        r.setStart(hoja,0); r.setEndBefore(cab);
+        return (r.toString()||'').replace(/\s+/g,' ').trim().length;
+      })();
+      i=t.indexOf(desde, Math.max(0, antes-40));
+      return i<0?'':t.slice(i,i+largo);
+    };
 
     // ── Antes de caminar: el bloque tiene que invitar, no decir «sin datos».
     o.vacio=trozo('Lo intangible',420);
@@ -263,7 +285,7 @@ const RECORRIDO=[
     // ── El papel.
     const nom=document.getElementById('pcr-nombre');
     if(nom) nom.value='El recorrido de la tarde';
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(900);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado; capturado='';
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf=capturado; capturado='';

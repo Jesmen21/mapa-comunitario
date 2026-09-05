@@ -362,6 +362,32 @@ console.log('\n  -- la versión --');
   const decl = (idx.match(/URBIS_APP_VERSION\s*=\s*'([\w-]+)'/) || [])[1];
   comprobar('y window.URBIS_APP_VERSION dice lo mismo',
     decl === tokens.get('index.html'), decl || '(no está)');
+
+  /* Y que la versión HAYA CAMBIADO si cambió el código.
+
+     Pasó: el `sed` que sube la versión en los cinco archivos murió a medias
+     —se lo llevó por delante un `pkill` de la misma línea— y la tanda se
+     subió con código nuevo y la versión de la anterior. Los cinco archivos
+     coincidían entre sí, que es lo único que se comprobaba, así que nada
+     avisó. Un teléfono que ya tenía la versión anterior en su caché no se
+     habría enterado nunca del arreglo.
+
+     Se compara con la versión del último commit y solo se exige el cambio
+     cuando hay código sin comprometer: mientras se trabaja, repetir la
+     comprobación no tiene por qué molestar. */
+  try {
+    const cp = require('child_process');
+    const enGit = (orden) => cp.execSync(orden, { cwd: RAIZ, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString().trim();
+    const sucio = enGit('git status --porcelain -- js css index.html');
+    if (sucio) {
+      const anterior = (enGit('git show HEAD:index.html').match(/URBIS_APP_VERSION\s*=\s*'([\w-]+)'/) || [])[1];
+      comprobar('la versión sube cuando cambia el código',
+        !anterior || anterior !== decl,
+        anterior === decl ? 'sigue en ' + decl + ' y hay cambios sin subir'
+                          : (anterior || '(sin anterior)') + ' → ' + decl);
+    }
+  } catch (e) { /* sin git, no se puede comparar: no es motivo para fallar */ }
 }
 
 console.log('\n  ' + (fallos ? fallos + ' comprobaciones fallaron' : 'todas las comprobaciones pasaron') + '\n');

@@ -161,9 +161,9 @@ const geo=[
     // ── La lámina y el PDF tienen que llevar el recorrido.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='El callejón El Retiro';
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(500);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(500);
     o.lamina=capturado; capturado='';
-    H().querySelector('[data-pcr="lamina-h"]').click(); await esperar(500);
+    H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(500);
     o.laminaH=capturado; capturado='';
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(500);
     o.pdf=capturado; capturado='';

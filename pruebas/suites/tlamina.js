@@ -118,7 +118,7 @@ function climaSimulado(){
     R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
     await R.analizar(); await esperar(900);
     const H=()=>document.getElementById('pcr-hoja');
-    const bLam=()=>H().querySelector('[data-pcr="lamina"]');
+    const bLam=()=>H().querySelector('[data-pcr="lamina-ver"]');
 
     o.hayBoton=!!bLam();
 
@@ -128,7 +128,7 @@ function climaSimulado(){
     /* Y la misma, acostada. El pliego de 90 × 60 tiene 300 mm menos de alto y
        el plano crece para llenarlos: con un sector sin nada medido hay menos
        cajas que repartir, que es justo cuando el plano se puede pasar. */
-    H().querySelector('[data-pcr="lamina-h"]').click(); await esperar(300);
+    H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(300);
     o.peladaH=capturado; capturado='';
 
     // ── Ahora las tres mediciones de la tanda B
@@ -297,8 +297,13 @@ function climaSimulado(){
   P('la hoja es de 60 × 90 cm, vertical, sin márgenes de impresora',
     /@page\{\s*size:600mm 900mm;\s*margin:0\s*\}/.test(h));
   P('y el cuerpo mide lo mismo', /width:600mm; height:900mm/.test(h));
-  P('lleva la marca arriba a la izquierda',
-    h.indexOf('<div class="marca"><b>URBIS</b>') < h.indexOf('<div class="tit">'));
+  /* Con `indexOf` a secas esta comprobación dejó de comprobar el día que la
+     marca cambió: el texto buscado desapareció, `indexOf` devolvió -1, y -1
+     es menor que cualquier cosa, así que pasaba sola. Se exige que las dos
+     piezas ESTÉN y en ese orden. */
+  const iMarca = h.indexOf('<div class="marca">'), iTit = h.indexOf('<div class="tit">');
+  P('lleva la marca arriba a la izquierda, antes del título',
+    iMarca >= 0 && iTit >= 0 && iMarca < iTit, 'marca ' + iMarca + ' · título ' + iTit);
   P('con el nombre que puso el estudiante', /<h1>La Playa, entre calles 8 y 12<\/h1>/.test(h));
   P('y la cadena de ubicación', /Colombia › Norte de Santander › Cúcuta/.test(h),
     (h.match(/<div class="cad">([^<]*)/)||[])[1]||'no sale');

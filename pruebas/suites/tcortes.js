@@ -145,7 +145,7 @@ const geo=[
     // ── El papel.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='La ladera del oriente';
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(600);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(600);
     o.lamina=capturado; capturado='';
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(600);
     o.pdf=capturado; capturado='';

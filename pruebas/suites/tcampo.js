@@ -185,7 +185,8 @@ let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
     let capturado='';
     window.AIA_INFORME=window.AIA_INFORME||{};
     window.AIA_INFORME.abrirVentanaImpresion=function(h){ capturado=h; };
-    const bp=[...H().querySelectorAll('button')].filter(x=>/PDF|informe/i.test(x.textContent||''))[0];
+    // Por su acción: «PDF» ahora también aparece en los botones de la lámina.
+    const bp=H().querySelector('[data-pcr="imprimir"]');
     if(bp){ bp.click(); await esperar(1100); }
     o.pdf=capturado.length;
     o.pdfTraeElCorte=/C–C′/.test(capturado);

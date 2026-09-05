@@ -257,7 +257,7 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
     o.trasReiniciar=[...H().querySelectorAll('[data-pcr-idx]')].map(x=>x.value).join(',');
 
     // ── El papel.
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(900);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado; capturado='';
     await abrir();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);

@@ -112,7 +112,7 @@ const geo=[
     const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
       if(a){ a.click(); await esperar(450); } };
     const lamina=async()=>{ await abrir();
-      H().querySelector('[data-pcr="lamina"]').click(); await esperar(900);
+      H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
       const h=capturado; capturado=''; return h; };
     const titulos=h=>(h.match(/<section class="caja[^"]*"><h2>([^<]+)<\/h2>/g)||[])
       .map(t=>t.replace(/.*<h2>/,'').replace('</h2>',''));
@@ -206,7 +206,7 @@ const geo=[
     H().querySelector('[data-pcr="pliego-caja"][data-c="el-terreno"]').click(); await esperar(350);
     await abrir();
     o.terrenoFueraDelPliego=!(inventario().filter(c=>c.id==='el-terreno')[0]||{}).on;
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(900);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.laminaSinTerreno=titulos(capturado); capturado='';
     await abrir();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);

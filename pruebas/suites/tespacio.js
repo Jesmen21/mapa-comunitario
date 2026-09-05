@@ -185,7 +185,7 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
     o.midioCampo=/coinciden con el mapa/.test(txt(H()));
 
     // Y que llegue a la lámina.
-    const bl=H().querySelector('[data-pcr="lamina"]');
+    const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(400); }
     o.lamina=lamina;
     return o;

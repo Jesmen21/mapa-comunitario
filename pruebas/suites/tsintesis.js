@@ -180,7 +180,7 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
       .map(li=>txt(li.querySelector('span'))+' ‹'+txt(li.querySelector('b'))+'›');
     o.favor=grupo('bien'); o.contra=grupo('mal'); o.falta=grupo('falta');
 
-    const bl=H().querySelector('[data-pcr="lamina"]');
+    const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(500); }
     o.lamina=lamina;
     return o;

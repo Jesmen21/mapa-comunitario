@@ -155,7 +155,9 @@ const geo=[
     if(asa){ asa.click(); await esperar(500); }
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='La banda de mapas';
-    btn('lamina').click(); await esperar(900);
+    // La vista de impresión: el botón «Lámina … · PDF» baja el archivo y no
+    // pasa por acá, y lo que esta prueba lee es la hoja.
+    btn('lamina-ver').click(); await esperar(900);
     o.lamina=capturado; capturado='';
     btn('imprimir').click(); await esperar(900);
     o.pdf=capturado; capturado='';

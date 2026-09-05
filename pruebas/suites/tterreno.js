@@ -47,8 +47,13 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   await ctx.route(/overpass/, r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({elements:usos})}));
   await ctx.route(/ags\.esri\.co/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
-  let consultasElev=0, puntosPedidos=0;
+  /* La primera consulta se contesta con un 429, que es lo que devuelve de
+     verdad el servicio de altura cuando se le agota el cupo de la hora —pasó
+     en clase y dejó el análisis sin terreno y sin cortes—. El módulo tiene
+     que esperar y volver a pedirla, no rendirse. */
+  let consultasElev=0, puntosPedidos=0, saturadas=0;
   await ctx.route(/api\.open-meteo\.com\/v1\/elevation/, r=>{
+    if (!saturadas) { saturadas++; return r.fulfill({ status:429, contentType:'text/plain', body:'too many' }); }
     consultasElev++;
     const u=new URL(r.request().url());
     const lngs=(u.searchParams.get('longitude')||'').split(',').map(Number);
@@ -139,8 +144,12 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
        contra el RÓTULO, y no contra una brújula escrita a mano en la prueba,
        es lo que pilla el error de verdad: una línea que va al revés de lo que
        dice su propia etiqueta. */
-    o.etiquetas = (window.URBIS_PC_RECON.terrenoDePrueba
-      ? (window.URBIS_PC_RECON.terrenoDePrueba().perfiles||[]) : []).map(p=>p.etiqueta||'');
+    /* Con guarda: si el terreno no se midió —el servicio caído, o el «429»
+       que dejó esto sin cortes en clase—, esto era un `null.perfiles` y la
+       suite se caía sin decir una palabra. Una prueba que revienta no dice
+       qué se rompió; una que falla, sí. */
+    o.etiquetas = ((window.URBIS_PC_RECON.terrenoDePrueba
+      ? (window.URBIS_PC_RECON.terrenoDePrueba() || {}).perfiles : null) || []).map(p=>p.etiqueta||'');
     /* ── Cortar por donde uno diga ───────────────────────────────────────
        Los dos cortes del motor van por el medio del rectángulo. Un proyecto
        se corta por donde el terreno decide algo: la ladera que se va a
@@ -162,7 +171,7 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     window.map.fire('click',{latlng:{lat:C.lat+0.0025, lng:C.lng+0.0025}});
     await esperar(800);
     const t2 = window.URBIS_PC_RECON.terrenoDePrueba();
-    const mios = (t2.perfiles||[]).filter(p=>p.aMano);
+    const mios = ((t2||{}).perfiles||[]).filter(p=>p.aMano);
     o.cortesAMano = mios.length;
     o.letraNueva = mios[0] ? mios[0].marca + '–' + mios[0].marcaFin : '';
     o.etiquetaNueva = mios[0] ? mios[0].etiqueta : '';
@@ -181,13 +190,13 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     window.map.fire('click',{latlng:{lat:C.lat+0.002, lng:C.lng-0.002}});
     await esperar(700);
     const t3 = window.URBIS_PC_RECON.terrenoDePrueba();
-    o.letras2 = (t3.perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
+    o.letras2 = ((t3||{}).perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
     // se pueden quitar de a uno
     abrirHoja();
     const bb = H.querySelector('[data-pcr="corte-borrar"]');
     if (bb) { bb.click(); await esperar(500); }
     const t4 = window.URBIS_PC_RECON.terrenoDePrueba();
-    o.letrasTrasBorrar = (t4.perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
+    o.letrasTrasBorrar = ((t4||{}).perfiles||[]).filter(p=>p.aMano).map(p=>p.marca).join('');
 
     // Y que se puedan quitar del mapa.
     abrirHoja();
@@ -213,7 +222,7 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     return o;
   },{C,POL,RAMPA});
 
-  r.consultasElev=consultasElev; r.puntosPedidos=puntosPedidos;
+  r.consultasElev=consultasElev; r.puntosPedidos=puntosPedidos; r.saturadas=saturadas;
   r.err=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
 
@@ -227,8 +236,17 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
      las curvas salgan suaves y no a tramos rectos de sesenta metros. El
      modelo sigue siendo de 90 m; lo que cambió es el dibujo, y la nota de la
      ficha lo sigue diciendo. */
-  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=7,
+  /* El servicio de altura cobra por PUNTO: una consulta de cien puntos le
+     cuenta como cien, y medir un par de sectores seguidos agotaba el cupo de
+     la hora —«429»— y dejaba el análisis sin terreno. Se pide una rejilla de
+     16 por lado como mucho; lo fino se pone al dibujar, interpolando entre
+     cotas medidas. Se mide el techo real: tres consultas y 256 puntos. */
+  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=3,
     r.consultasElev+' consultas · '+r.puntosPedidos+' puntos');
+  P('y sin pasarse de puntos, que es lo que cobra el servicio',
+    r.puntosPedidos>0 && r.puntosPedidos<=256, r.puntosPedidos+' puntos');
+  P('un «429» del servicio no tumba la medición: se espera y se reintenta',
+    r.saturadas===1 && r.consultasElev>0, r.saturadas+' rechazos · '+r.consultasElev+' consultas buenas');
 
   console.log('   [diag] aviso en pantalla: '+JSON.stringify(r.aviso||''));
   console.log('\n  -- las alturas --');

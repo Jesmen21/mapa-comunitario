@@ -184,7 +184,7 @@ for(let i=0;i<12;i++){ const a=i*30*Math.PI/180, d=(160+(i%3)*70)/111320;
     let capturado='';
     window.AIA_INFORME=window.AIA_INFORME||{};
     window.AIA_INFORME.abrirVentanaImpresion=function(h){ capturado=h; };
-    H().querySelector('[data-pcr="lamina"]').click(); await esperar(900);
+    H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado;
     return o;
   });

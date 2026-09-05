@@ -513,6 +513,33 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
 #urbis-mobile-app .u52-procity-perfil-btn{
   box-shadow:var(--edu-sombra-alta) !important;
 }
+/* ── El relleno significa ENCENDIDO ─────────────────────────────────────
+   El lápiz y el perfil salían en celeste lleno desde el primer momento, con
+   la lupa al lado en blanco. Tres botones iguales de tamaño y dos pintados
+   como si estuvieran puestos: se leyó así —«aparecen ya marcados en azul,
+   como si estuviesen activos, y eso confunde»— y es exactamente lo que
+   dicen. En una barra de herramientas, el relleno es el estado, no la
+   identidad del botón.
+
+   En reposo, los tres iguales: blanco con el aro celeste y el trazo celeste.
+   Lleno solo el lápiz, y solo MIENTRAS se está dibujando: ahí el relleno
+   dice algo verdadero —hay un trazo abierto y el mapa está en modo dibujo—
+   y es la señal que le falta a quien no sabe por qué el mapa no responde
+   como siempre. */
+#urbis-mobile-app .u52-procity-dibujar-btn,
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn,
+#urbis-mobile-app .u52-procity-perfil-btn,
+body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-perfil-btn{
+  background:#fff !important; color:var(--edu-accent-deep) !important;
+  -webkit-text-fill-color:var(--edu-accent-deep) !important;
+  box-shadow:0 12px 24px rgba(14,134,190,.22), inset 0 0 0 2px var(--edu-accent) !important;
+}
+body.urbis-dibujando-area #urbis-mobile-app .u52-procity-dibujar-btn,
+body.u52-real-map.urbis-dibujando-area #urbis-mobile-app .u52-jac-mapcentric .u52-procity-dibujar-btn{
+  background:linear-gradient(135deg,#34CCFE,#0E86BE) !important; color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  box-shadow:0 12px 24px rgba(14,134,190,.34), inset 0 0 0 1px rgba(255,255,255,.45) !important;
+}
 #urbis-mobile-app .u52-procity-recon-btn .u-ico,
 #urbis-mobile-app .u52-procity-dibujar-btn .u-ico,
 #urbis-mobile-app .u52-procity-perfil-btn .u-ico{ margin:0 !important; vertical-align:middle; }
@@ -1256,8 +1283,16 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
    analizar desde cero. Va arriba a la derecha, bajo la cabecera del mapa. */
 #urbis-mobile-app .pcr-volver,
 .pcr-volver{
-  position:fixed; top:96px; right:12px; z-index:2147483200;
-  display:flex; align-items:center; gap:8px; max-width:62vw;
+  /* Abajo a la izquierda y no arriba a la derecha.
+     Arriba caía justo sobre la tarjeta blanca de «UrbisProCity», blanco
+     sobre blanco: estaba puesto y respondía al toque, pero no se veía. Se
+     notó en el peor sitio —«si le doy a Listo me saca del análisis y me toca
+     volver a la lupita»— cuando el camino de vuelta estaba ahí, encima de la
+     cabecera, confundido con ella. Abajo a la izquierda no hay nada: la
+     barra de abajo empieza más abajo y los botones flotantes están a la
+     derecha. */
+  position:fixed; bottom:calc(104px + env(safe-area-inset-bottom,0px)); left:12px; z-index:2147483200;
+  display:flex; align-items:center; gap:8px; max-width:74vw;
   padding:8px 12px 8px 10px; border:1px solid var(--edu-accent) !important;
   border-radius:999px; background:var(--edu-ground) !important;
   box-shadow:0 8px 22px rgba(10,111,158,.18);

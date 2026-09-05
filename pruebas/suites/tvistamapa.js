@@ -137,7 +137,7 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
     let capturado=''; window.AIA_INFORME=window.AIA_INFORME||{};
     const orig=window.AIA_INFORME.abrirVentanaImpresion;
     window.AIA_INFORME.abrirVentanaImpresion=function(h){ capturado=h; return true; };
-    const bla=H().querySelector('[data-pcr="lamina"]'); if(bla){ bla.click(); await esperar(900); }
+    const bla=H().querySelector('[data-pcr="lamina-ver"]'); if(bla){ bla.click(); await esperar(900); }
     window.AIA_INFORME.abrirVentanaImpresion=orig;
     o.laminaConEscala=/Sol de la tarde sobre cada lado, del rojo al azul/.test(capturado);
     o.laminaNiveles=(capturado.match(/sol-punto/g)||[]).length;
@@ -159,7 +159,7 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
     // ── 4 · El PDF, dentro de la aplicación.
     window.__abrio=0; const wo=window.open; window.open=function(){ window.__abrio++; return null; };
     await abrir();
-    const bl2=H().querySelector('[data-pcr="lamina"]'); if(bl2){ bl2.click(); await esperar(1200); }
+    const bl2=H().querySelector('[data-pcr="lamina-ver"]'); if(bl2){ bl2.click(); await esperar(1200); }
     window.open=wo;
     const caja=document.getElementById('aia-impresion');
     o.pdfEnLaApp=!!caja;
@@ -210,8 +210,11 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
     r.laminaNiveles+' lados con nivel');
 
   console.log('\n  -- las curvas --');
-  /* Con 150 m de desnivel el tope viejo daba 25 m; el nuevo, 10. */
-  T('el intervalo automático es más fino que antes', r.intervaloAuto==='10', 'cada '+r.intervaloAuto+' m');
+  /* Con 150 m de desnivel: el tope original daba 25 m, el de veinticuatro
+     curvas daba 10, y el de ahora —cuarenta curvas, y de 4 m para arriba—
+     da 4. Se pidió así, con estas palabras: «no sea cada diez metros; a cada
+     cinco o cuatro metros está bien». */
+  T('el intervalo automático sale a cuatro metros', r.intervaloAuto==='4', 'cada '+r.intervaloAuto+' m');
   T('y se ofrece elegirlo', (r.pasosOfrecidos||[]).length>=2 && (r.pasosOfrecidos||[]).indexOf(2)>=0,
     (r.pasosOfrecidos||[]).join(', ')+' m');
   T('diciendo que entre cotas medidas es interpolación', r.diceInterpolacion===true);

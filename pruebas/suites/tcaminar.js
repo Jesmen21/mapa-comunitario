@@ -98,7 +98,7 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
     // El sector guardado tiene que conservarlo.
     const caja=document.getElementById('pcr-nombre');
     if(caja) caja.value='Sector de la cobertura';
-    const bl=H().querySelector('[data-pcr="lamina"]');
+    const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(400); }
     o.lamina=lamina;
 

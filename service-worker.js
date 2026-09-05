@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v722-volver-a-la-app';
+const URBIS_CACHE = 'urbis-v724-el-pliego-en-pdf';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -150,6 +150,7 @@ const URBIS_ASSETS = [
   './css/72-edu-diseno.css',
   './js/73-solar.js',
   './js/74-dibujos-analisis.js',
+  './js/75-pliego-pdf.js',
   './js/75-lo-intangible.js',
   './js/76-amenaza-sismica.js',
   './js/79-amenaza-inundacion.js',

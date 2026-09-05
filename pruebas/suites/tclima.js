@@ -147,11 +147,47 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     o.climaConc=[...H4.querySelectorAll('.pcr-conc')].map(x=>txt(x)).filter(x=>/viento entra|Clima/.test(x));
     o.climaAdvertencia=[...H4.querySelectorAll('.pcr-pista')].some(x=>/modelo global reanalizado/.test(txt(x)));
 
+    /* El último botón de la hoja tiene que decir QUÉ HACE. Decía «Listo» al
+       final de catorce metros de informe, y cerraba: quien acaba de leerlo
+       todo lo lee como «ya terminé de leer», lo toca, y desde afuera parece
+       que el análisis se perdió. */
+    o.botonFinal=(function(){
+      const b=[...H4.querySelectorAll('[data-pcr="cerrar"]')].pop();
+      return b?txt(b):'(no hay)';
+    })();
+    o.diceQueNoSePierde=[...H4.querySelectorAll('.pcr-pista')]
+      .some(x=>/no se pierde/i.test(txt(x)) && /Volver al análisis/i.test(txt(x)));
+
     // ── Cerrar la hoja: el análisis TIENE que seguir ahí
     R.cerrar(); await esperar(400);
     const v=document.getElementById('pcr-volver');
     o.hayVolver=!!(v && !v.hidden);
     o.textoVolver=v?txt(v):'';
+    /* Y tiene que VERSE. Estaba arriba a la derecha, justo encima de la
+       tarjeta blanca de «UrbisProCity»: blanco sobre blanco. Respondía al
+       toque, pero nadie lo veía, y el camino de vuelta al análisis pasaba por
+       volver a abrir la lupa. Se comprueba que lo que hay en su centro sea él
+       mismo y que no se monte sobre la cabecera del mapa. */
+    o.volverALaVista=(function(){
+      if(!v || v.hidden) return 'no está';
+      const c=v.getBoundingClientRect();
+      if(c.width<40 || c.height<20) return 'sin tamaño';
+      const e=document.elementFromPoint(c.left+c.width/2, c.top+c.height/2);
+      if(!(e===v || v.contains(e))) return 'tapado por '+((e&&(e.id||e.className))||'algo');
+      /* Y con AIRE: no basta con no tocarla en este teléfono. La cabecera
+         crece con la barra de estado y con el margen seguro de cada aparato;
+         el sitio de antes quedaba dos píxeles por debajo de ella acá y encima
+         de ella en el teléfono desde el que se reportó. Se exige un margen
+         que aguante esa diferencia. */
+      const cab=document.querySelector('.u52-mapcentric-topbar');
+      if(cab){ const k=cab.getBoundingClientRect(), aire=24;
+        const pisa=!(c.right<k.left-aire || c.left>k.right+aire ||
+                     c.bottom<k.top-aire || c.top>k.bottom+aire);
+        if(pisa) return 'pegado a la cabecera del mapa (' +
+          Math.round(c.top-k.bottom)+' px por debajo)';
+      }
+      return 'a la vista';
+    })();
     if(v) v.click();
     await esperar(600);
     const H2=document.getElementById('pcr-hoja');
@@ -193,8 +229,15 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
      las curvas salgan suaves y no a tramos rectos de sesenta metros. El
      modelo sigue siendo de 90 m; lo que cambió es el dibujo, y la nota de la
      ficha lo sigue diciendo. */
-  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=7,
+  /* El servicio de altura cobra por PUNTO: una consulta de cien puntos le
+     cuenta como cien, y medir un par de sectores seguidos agotaba el cupo de
+     la hora —«429»— y dejaba el análisis sin terreno. Se pide una rejilla de
+     16 por lado como mucho; lo fino se pone al dibujar, interpolando entre
+     cotas medidas. Se mide el techo real: tres consultas y 256 puntos. */
+  P('pide la rejilla en pocas consultas', r.consultasElev>0 && r.consultasElev<=3,
     r.consultasElev+' consultas · '+r.puntosPedidos+' puntos');
+  P('y sin pasarse de puntos, que es lo que cobra el servicio',
+    r.puntosPedidos>0 && r.puntosPedidos<=256, r.puntosPedidos+' puntos');
 
   console.log('   [diag] aviso en pantalla: '+JSON.stringify(r.aviso||''));
   console.log('\n  -- las alturas --');
@@ -240,6 +283,11 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
 
   console.log('\n  -- el análisis no se pierde al cerrar --');
   P('con la hoja cerrada queda el acceso directo', r.hayVolver, r.textoVolver||'no aparece');
+  P('el botón del final dice qué hace, no solo «Listo»',
+    /cerrar y ver el mapa/i.test(r.botonFinal||''), r.botonFinal);
+  P('y avisa de que el análisis no se pierde', r.diceQueNoSePierde===true);
+  P('el acceso directo se ve de verdad, no debajo de la cabecera del mapa',
+    r.volverALaVista==='a la vista', r.volverALaVista);
   P('y al tocarlo vuelve la ficha entera, sin repetir nada', r.volvioConFicha);
   P('pero si se cambia el área, empieza limpia', r.otraAreaEmpiezaLimpia);
 

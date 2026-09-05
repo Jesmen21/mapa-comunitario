@@ -182,10 +182,15 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
        comprobación no podía fallar nunca — pasaba igual con la corrección
        puesta y quitada, que es la definición de una prueba inútil. */
     o.hayCeros=/0\s*km de vía|0\s*%\s*en un sentido|\b0\s*intersecciones/.test(txt);
-    const bl=[...H().querySelectorAll('button')].filter(b=>/lámina|lamina/i.test(b.textContent||''))[0];
+    /* Por su acción y no por su texto. Buscar «lámina» daba con el botón
+       correcto hasta que hubo dos —el que baja el PDF del pliego y el que
+       abre la vista de impresión— y buscar «PDF» daba con el de la lámina
+       antes que con el del informe. Una prueba que elige botones por su
+       rótulo se rompe el día que el rótulo mejora. */
+    const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(1000); }
     o.lamina=capturado; capturado='';
-    const bp=[...H().querySelectorAll('button')].filter(b=>/PDF|informe/i.test(b.textContent||''))[0];
+    const bp=H().querySelector('[data-pcr="imprimir"]');
     if(bp){ bp.click(); await esperar(1000); }
     o.pdf=capturado;
     o.pliego=(H().textContent||'').replace(/\s+/g,' ');
