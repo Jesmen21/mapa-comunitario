@@ -283,9 +283,11 @@ for (let i = 0; i < 30; i++) {
                fecha: (t.querySelector('small') || {}).textContent || '' };
     })();
 
-    // ── El papel.
+    // ── El papel: los DOS documentos, que es donde se pidió que salieran.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(1200);
     o.lamina = capturado; capturado = '';
+    H().querySelector('[data-pcr="imprimir"]').click(); await esperar(1200);
+    o.pdf = capturado; capturado = '';
 
     // ── Y lo que queda archivado.
     o.guardado = (function () {
@@ -415,6 +417,8 @@ for (let i = 0; i < 30; i++) {
 
   console.log('\n  -- y llega al papel --');
   const EV = cajaDe('Cómo cambió el sitio');
+  const PDF = r.pdf || '';
+  const secPDF = (PDF.split('<h2>').filter(x => x.indexOf('Cómo cambió el sitio</h2>') === 0)[0] || '');
   T('la lámina trae su caja', !!EV);
   T('con las estampas y los dos extremos',
     (EV.match(/<figure class="evo-p/g) || []).length >= 8 &&
@@ -422,6 +426,26 @@ for (let i = 0; i < 30; i++) {
     (EV.match(/<figure class="evo-p/g) || []).length + ' estampas');
   T('la conclusión, y de dónde sale el número',
     /perdió vegetación/.test(EV) && /NDVI/.test(EV) && /30 m por píxel/.test(EV));
+  /* ── Las fotos, diagramadas en los dos ───────────────────────────────
+     Se pidió que el historial saliera «diagramado en el PDF» y no salía: la
+     caja del pliego solo sabía dibujar la serie de Landsat —la que mide— y
+     el informe en hojas llevaba una tabla de porcentajes sin una sola
+     imagen. Una tabla de números no es el historial de un sitio: es su
+     resumen. Y la serie que hoy funciona de verdad es justo la que faltaba. */
+  T('el pliego trae también la tira de fotos, más grande que las de medir',
+    /class="evo-tira evo-alta"/.test(EV) &&
+    /\.evo-alta \.evo-p img\{ width:34mm/.test(r.lamina || ''),
+    (EV.match(/class="evo-tira[^"]*"/g) || []).join(' · ') || 'no hay tiras');
+  T('el informe en hojas trae las dos tiras, con sus imágenes',
+    /<div class="evo evo-alta">/.test(secPDF) && /<div class="evo">/.test(secPDF) &&
+    (secPDF.match(/<img src="data:image/g) || []).length >= 8,
+    (secPDF.match(/<img src="data:image/g) || []).length + ' imágenes en el informe');
+  T('y sigue trayendo las cifras y la conclusión',
+    /% verde · /.test(secPDF) && /perdió vegetación/.test(secPDF));
+  /* Una ficha archivada no guarda las estampas —son megas— así que al
+     reimprimirla hay que traer las cifras y NINGUNA imagen rota. */
+  T('ninguna estampa sale rota en los dos documentos',
+    !/<img src="undefined"/.test(EV + secPDF) && !/<img src="">/.test(EV + secPDF));
 
   console.log('\n  -- lo que se archiva son las cifras, no las imágenes --');
   const G = r.guardado || {};

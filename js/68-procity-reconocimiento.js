@@ -1423,28 +1423,61 @@
 
   function evolucionImpresa(evo) {
     var EV = window.URBIS_EVOLUCION;
-    var L = evo && evo.landsat;
-    if (!EV || !L) return '';
-    var buenos = (L.pasos || []).filter(function (p) { return p.ok && p.medida; });
-    if (buenos.length < 2) return '';
-    var t = L.tendencia;
-    return '<h2>Cómo cambió el sitio</h2><table>' +
-      buenos.map(function (p) {
-        return '<tr><td>' + p.anio + (p.fiable ? '' : ' (medio tapado, no cuenta)') +
-          '</td><td class="n">' + conComa(p.medida.verde) + '% verde · ' +
-          conComa(p.medida.duro) + '% duro · ' + conComa(p.medida.agua) + '% agua</td></tr>';
-      }).join('') +
-      '</table>' +
+    var L = evo && evo.landsat, W = evo && evo.wayback;
+    if (!EV || (!L && !W)) return '';
+    var conFoto = function (ps) {
+      return (ps || []).filter(function (p) { return p.ok && p.imagen; });
+    };
+    var fotos = conFoto(W && W.pasos);
+    var medidos = conFoto(L && L.pasos).filter(function (p) { return p.medida; });
+    var cifras = ((L && L.pasos) || []).filter(function (p) { return p.ok && p.medida; });
+    if (!fotos.length && cifras.length < 2) return '';
+    var t = L && L.tendencia;
+    /* Las estampas, también acá. El informe llevaba una tabla de porcentajes
+       y ninguna imagen: se pidió que el historial saliera «diagramado en el
+       PDF», y una tabla de números no es el historial de un sitio, es su
+       resumen. La regla de siempre —una medición entra en los dos documentos
+       o en ninguno— vale igual para cómo se presenta. */
+    var tira = function (pasos, clase, pieDe) {
+      if (!pasos.length) return '';
+      return '<div class="evo' + (clase ? ' ' + clase : '') + '">' +
+        pasos.map(function (p) {
+          return '<figure' + (p.fiable === false || p.sustituto ? ' class="dudoso"' : '') + '>' +
+            '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) + '">' +
+            '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
+            '<small>' + esc(pieDe(p)) + '</small></figure>';
+        }).join('') + '</div>';
+    };
+    return '<h2>Cómo cambió el sitio</h2>' +
+      (fotos.length
+        ? '<h3>Las fotos, de ' + (fotos[0].anioReal || fotos[0].anio) + ' a ' +
+          (fotos[fotos.length - 1].anioReal || fotos[fotos.length - 1].anio) + '</h3>' +
+          tira(fotos, 'evo-alta', function (p) { return p.fecha || ''; }) +
+          '<p class="pie">Debajo de cada foto va la <b>fecha de la entrega</b> de la que salió, no ' +
+          'el año que se pidió: el proveedor publica por entregas fechadas. Son para mirar —qué se ' +
+          'construyó, qué se taló, por dónde iba el agua— y por eso no llevan porcentaje.</p>'
+        : '') +
+      (medidos.length ? '<h3>Medido desde ' + medidos[0].anio + '</h3>' +
+        tira(medidos, '', function (p) { return conComa(p.medida.verde) + '% verde'; }) : '') +
+      (cifras.length
+        ? '<table>' + cifras.map(function (p) {
+            return '<tr><td>' + p.anio + (p.fiable ? '' : ' (medio tapado, no cuenta)') +
+              '</td><td class="n">' + conComa(p.medida.verde) + '% verde · ' +
+              conComa(p.medida.duro) + '% duro · ' + conComa(p.medida.agua) + '% agua</td></tr>';
+          }).join('') + '</table>'
+        : '') +
       (t
         ? EV.conclusion(L).map(function (c) {
             return '<p>' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
           }).join('')
         : '') +
-      '<p class="pie">Landsat, 30 m por píxel: la imagen se ve a cuadros y el lote son unos pocos ' +
-      'píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con NDVI, el ' +
-      'índice de la banda infrarroja, que significa lo mismo en 1984 y hoy; el clasificador de ' +
-      'colores de la foto de hoy mediría la diferencia entre dos cámaras. Los años medio tapados ' +
-      'por nubes se marcan y no entran en la conclusión.</p>';
+      (cifras.length
+        ? '<p class="pie">Landsat, 30 m por píxel: la imagen se ve a cuadros y el lote son unos ' +
+          'pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con ' +
+          'NDVI, el índice de la banda infrarroja, que significa lo mismo en 1984 y hoy; el ' +
+          'clasificador de colores de la foto de hoy mediría la diferencia entre dos cámaras. Los ' +
+          'años medio tapados por nubes se marcan y no entran en la conclusión.</p>'
+        : '');
   }
 
   /* Las sombras de los vecinos, impresas. El dibujo y las tres cifras: es lo
@@ -3307,20 +3340,51 @@
       (function () {
       var EV = window.URBIS_EVOLUCION;
       var ev = (o.evo !== undefined ? o.evo : S.evo) || {};
-      var L = ev.landsat;
-      if (!EV || !L) return '';
-      var buenos = (L.pasos || []).filter(function (p) { return p.ok && p.medida; });
-      if (buenos.length < 2) return '';
-      var conc = EV.conclusion(L) || [];
-      var t = L.tendencia;
-      return '<div class="evo-tira">' +
-      buenos.map(function (p) {
-      return '<figure class="evo-p' + (p.fiable ? '' : ' evo-dudoso') + '">' +
-        '<img src="' + p.imagen + '" alt="' + p.anio + '">' +
-        '<figcaption>' + p.anio + '</figcaption>' +
-        '<small>' + conComa(p.medida.verde) + '%</small></figure>';
-      }).join('') +
-      '</div>' +
+      var L = ev.landsat, W = ev.wayback;
+      if (!EV) return '';
+      /* Las estampas no viajan con la ficha archivada —quince PNG son megas y
+         el almacenamiento del teléfono son cinco en total— así que una lámina
+         reimpresa de un sector viejo trae las cifras y no las fotos. Se
+         comprueba por imagen y no por paso: un `<img src="undefined">` es un
+         recuadro roto en mitad del pliego. */
+      var conFoto = function (ps) {
+        return (ps || []).filter(function (p) { return p.ok && p.imagen; });
+      };
+      var tira = function (pasos, clase, pieDe) {
+        if (!pasos.length) return '';
+        return '<div class="evo-tira' + (clase ? ' ' + clase : '') + '">' +
+        pasos.map(function (p) {
+          return '<figure class="evo-p' + (p.fiable === false || p.sustituto ? ' evo-dudoso' : '') + '">' +
+          '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) + '">' +
+          '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
+          '<small>' + esc(pieDe(p)) + '</small></figure>';
+        }).join('') + '</div>';
+      };
+
+      /* ── Las fotos, primero ──────────────────────────────────────────
+         Se pidió que el historial saliera «diagramado en el PDF» y hasta
+         ahora no salía: la caja solo sabía dibujar la serie de Landsat, que
+         es la que mide, y la de alta resolución —la que se mira, y la única
+         que de verdad funciona hoy— no llegaba al papel ni en el pliego ni en
+         el informe. Van arriba porque son las que se leen de lejos: un jurado
+         ve tres fotos del mismo sitio en tres décadas y entiende el proyecto
+         antes de que se lo expliquen. */
+      var fotos = conFoto(W && W.pasos);
+      var medidos = conFoto(L && L.pasos).filter(function (p) { return p.medida; });
+      var cifras = (L && L.pasos || []).filter(function (p) { return p.ok && p.medida; });
+      if (!fotos.length && !cifras.length) return '';
+      var t = L && L.tendencia;
+      var conc = (L && cifras.length >= 2) ? (EV.conclusion(L) || []) : [];
+
+      return (fotos.length
+      ? '<p class="lee">Las fotos, de ' + (fotos[0].anioReal || fotos[0].anio) + ' a ' +
+        (fotos[fotos.length - 1].anioReal || fotos[fotos.length - 1].anio) + '</p>' +
+        tira(fotos, 'evo-alta', function (p) { return p.fecha || ''; })
+      : '') +
+      (medidos.length
+      ? '<p class="lee">Medido desde ' + (medidos[0].anio) + '</p>' +
+        tira(medidos, '', function (p) { return conComa(p.medida.verde) + '% verde'; })
+      : '') +
       (t
       ? '<div class="kpis">' +
         '<div class="k"><b>' + conComa(t.verdeDesde) + '%</b><small>verde en ' + t.desde + '</small></div>' +
@@ -3332,12 +3396,21 @@
       conc.map(function (c) {
       return '<p class="lee">' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
       }).join('') +
-      '<p class="nota">Landsat, 30 m por píxel: la estampa se ve a cuadros y el lote son unos ' +
-      'pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con ' +
-      '<b>NDVI</b>, el índice de la banda infrarroja, que significa lo mismo en ' + (t ? t.desde : 1984) +
-      ' y hoy; el clasificador de colores de la foto de hoy no serviría acá, mediría la ' +
-      'diferencia entre dos cámaras. Los años medio tapados por nubes se marcan y no entran ' +
-      'en la conclusión.</p>';
+      '<p class="nota">' +
+      (fotos.length
+      ? 'Debajo de cada foto va la <b>fecha de la entrega</b> de la que salió, no el año que se ' +
+        'pidió: el proveedor publica por entregas fechadas. Las fotos son para MIRAR —qué se ' +
+        'construyó, qué se taló, por dónde iba el agua— y por eso no llevan porcentaje. '
+      : '') +
+      (cifras.length
+      ? 'Los porcentajes salen de Landsat a 30 m por píxel: la estampa se ve a cuadros y el lote ' +
+        'son unos pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí ' +
+        'aguanta. Con <b>NDVI</b>, el índice de la banda infrarroja, que significa lo mismo en ' +
+        (t ? t.desde : 1984) + ' y hoy; el clasificador de colores de la foto de hoy mediría la ' +
+        'diferencia entre dos cámaras. Los años medio tapados por nubes se marcan y no entran en ' +
+        'la conclusión.'
+      : '') +
+      '</p>';
       })(), 'g3') +
 
       /* ── La infraestructura de servicios ──────────────────────────────
@@ -4187,6 +4260,11 @@
         'border-radius:1.5mm; border:.3mm solid #DBE5EC; image-rendering:pixelated }' +
       '.evo-p figcaption{ font-size:2.6mm; font-weight:800; color:#233748 }' +
       '.evo-p small{ font-size:2.4mm; color:#6B7A8A }' +
+      /* Las fotos de alta resolución van más grandes que las estampas de
+         Landsat, y no por gusto: aquéllas son para MEDIR —una proporción
+         sobre miles de píxeles, que se lee en la cifra de al lado— y éstas
+         son para MIRAR. Una foto de 22 mm en un pliego de 90 cm no se mira. */
+      '.evo-alta .evo-p img{ width:34mm; height:34mm; image-rendering:auto }' +
       '.evo-dudoso img{ opacity:.55; border-style:dashed }' +
       '.mapa-caja{ grid-column:span 1 }' +
       '.mapa-caja.mapa-ancho{ grid-column:span 2 }' +
@@ -4503,6 +4581,17 @@
       '.dib-chico{max-width:130px}' +
       '.dib-ancho{max-width:420px}' +
       '.mapas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 4px}' +
+      /* Las tiras del historial: en fila, y que NO se partan entre dos
+         páginas —media serie al pie de una hoja y media al principio de la
+         siguiente deja de ser una comparación—. */
+      '.evo{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;break-inside:avoid}' +
+      '.evo figure{margin:0;text-align:center}' +
+      '.evo img{display:block;width:74px;height:74px;object-fit:cover;border-radius:5px;' +
+        'border:1px solid #dbe5ec;background:#eef3f7;image-rendering:pixelated}' +
+      '.evo.evo-alta img{width:104px;height:104px;image-rendering:auto}' +
+      '.evo figcaption{font-size:10.5px;font-weight:700;color:#233748}' +
+      '.evo small{font-size:9.5px;color:#6B7A8A;display:block}' +
+      '.evo .dudoso img{opacity:.55;border-style:dashed}' +
       '.cv-l{list-style:none;margin:4px 0 2px;padding:0;display:flex;flex-wrap:wrap;gap:2px 10px}' +
       '.cv-l li{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#3B4A5A}' +
       '.cv-l i.mu{display:inline-block;width:9px;height:9px;border-radius:50%}' +

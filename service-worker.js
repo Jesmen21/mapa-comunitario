@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v745-la-tira-no-se-deja-aplastar';
+const URBIS_CACHE = 'urbis-v746-el-historial-diagramado-en-los-dos-documentos';
 const URBIS_ASSETS = [
   './',
   './index.html',
