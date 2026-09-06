@@ -594,6 +594,26 @@ const geo = [
      que hacía falta era verlo en planta. Este sector trae treinta edificios
      con su altura registrada, así que el mapa tiene que salir con cada
      huella pintada por pisos y su tabla de convenciones. */
+  /* ── Los gráficos de las cajas del lote ─────────────────────────────
+     «Donde dice cuadra del lote le hacen falta gráficos», «donde dice qué
+     cabe en el lote le hacen falta gráficos», «la sombra que arroja: hace
+     falta mapa del sector con gráficos de barras». Cada caja lleva el suyo,
+     y la sombra además su mapa con el contexto debajo. */
+  console.log('\n  -- los gráficos de las cajas del lote --');
+  const secV = t => ((r.v || '').split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  T('la cuadra dibuja su frente: la tira con la fachada, los huecos y el lote',
+    /class="pcr-seccion pcr-frente"/.test(secV('La cuadra del lote')) && /pcr-fr-vacio/.test(secV('La cuadra del lote')) &&
+    /el lote<\/text>/.test(secV('La cuadra del lote')));
+  T('lo que cabe dibuja el lote con su huella y la torre por pisos',
+    /class="pcr-seccion pcr-cabe-dib"/.test(secV('Qué cabe en el lote')) && /pcr-cb-huella/.test(secV('Qué cabe en el lote')) &&
+    (secV('Qué cabe en el lote').match(/pcr-cb-piso/g) || []).length >= 1 && /viviendas<\/text>/.test(secV('Qué cabe en el lote')));
+  const SOM = secV('La sombra que arrojás');
+  T('la sombra que arroja tiene su mapa, con las manchas por hora y el contexto debajo',
+    /^ mapa-caja/.test(SOM) && /<div class="mp-ctx">/.test(SOM) && (SOM.match(/fill-opacity="0\.3"/g) || []).length >= 2,
+    SOM ? (SOM.match(/fill-opacity="0\.3"/g) || []).length + ' manchas' : 'sin caja');
+  T('y sus barras por hora, con los metros cuadrados fuera del lote',
+    /class="pcr-seccion pcr-sombra-horas"/.test(SOM) && /9:00<\/text>/.test(SOM) && /15:00<\/text>/.test(SOM));
+
   console.log('\n  -- los mapas que faltaban --');
   /* El mapa lleva « · el mapa» en el título cuando hay una caja de cifras
      con el mismo nombre, para que el índice no tenga dos entradas iguales. */

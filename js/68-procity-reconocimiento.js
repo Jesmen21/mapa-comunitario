@@ -2812,7 +2812,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        que sus techos son más bajos: MEDIDO, con los de la parada la hoja
        acostada no cerraba ni al 30 % y empezaba a tirar cajas. */
     var TOPE = horiz
-      ? { mapa: 70, mapa2: 80, mapa3: 95, plano: 100, dib: 50, dibAlto: 80, corte: 36, rosa: 38, foto: 55 }
+      ? { mapa: 82, mapa2: 92, mapa3: 105, plano: 110, dib: 52, dibAlto: 84, corte: 38, rosa: 40, foto: 58 }
       : { mapa: 110, mapa2: 130, mapa3: 160, plano: 160, dib: 80, dibAlto: 140, corte: 55, rosa: 55, foto: 90 };
     var altoMapaMM = TOPE.mapa;
 
@@ -2841,8 +2841,8 @@ function donaHTML(datos, colorDe, nombreDe) {
        la morfología llevan ahora su contexto debajo, así que necesitan el
        ancho de una columna de texto. */
     var PESO_MAPA = horiz
-      ? { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2 }
-      : { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2 };
+      ? { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2, 'sombra-proyecto': 2 }
+      : { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2, 'sombra-proyecto': 2 };
     /* Cuántas columnas vale una fila del pliego. Acostado, la banda del plano
        comparte la fila con la del análisis ambiental y el plano se queda con
        tres de las cuatro columnas de la suya.
@@ -3225,6 +3225,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="k"><b>' + q.construibleM2.toLocaleString('es-CO') + '</b><small>m² construibles</small></div>' +
       '<div class="k"><b>' + q.viviendas + '</b><small>viviendas</small></div>' +
       '</div>' +
+      cabeDibujado(q) +
       fila('Índices usados', 'ocupación ' + String(q.indices.io).replace('.', ',') +
       ' · construcción ' + String(q.indices.ic).replace('.', ',') + ' · ' +
       q.indices.pisos + ' pisos') +
@@ -4121,6 +4122,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (cu.frenteTipicoM != null
       ? '<div class="k"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>' : '') +
       '</div>' +
+      frenteDibujado(cu) +
       fila('Frente sobre', esc(cu.via || 'calle sin nombre') +
       (cu.jerarquia ? ' · ' + esc(cu.jerarquia.toLowerCase()) : '')) +
       fila('Tramo medido', cu.largoM + ' m') +
@@ -4167,6 +4169,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</b><small>m² de sombra fuera del lote a las ' + sp.peor.hora + ':00</small></div>'
       : '') +
       '</div>' +
+      sombraHorasDibujada(sp) +
       util.map(function (h) {
       return fila('A las ' + h.hora + ':00',
       Number(h.m2Fuera).toLocaleString('es-CO') + ' m² fuera · ' +
@@ -4445,7 +4448,8 @@ function donaHTML(datos, colorDe, nombreDe) {
          lista en letra de lupa, sobra. */
       var FUSIONAR = ['Llenos y vacíos', 'Alturas de lo construido', 'Hitos y nodos',
                       'Cómo se llega', 'A distancia de caminar', 'Verde y agua',
-                      'El ruido del tránsito', 'Dónde está la calle comercial', 'Cómo cambia al alejarse'];
+                      'El ruido del tránsito', 'Dónde está la calle comercial', 'Cómo cambia al alejarse',
+                      'La sombra que arrojás'];
       FUSIONAR.forEach(function (tt) {
         var texto = (porTitulo[tt] || [])[0];
         if (!texto) return;
@@ -5092,6 +5096,16 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pcr-sec-alt{ stroke:#0A6F9E; stroke-width:1.4; fill:none }' +
       '.pcr-sec-cota{ stroke:#5A6878; stroke-width:1; fill:none }' +
       '.pcr-sec-t{ fill:#3B4A5A; font-size:9px; font-weight:700 }' +
+      '.pcr-sec-t-fuerte{ font-size:10.5px; fill:#0F1F2E }' +
+      '.pcr-sec-ventana{ fill:#F3F8FB; fill-opacity:.85 }' +
+      '.pcr-sec-persona{ fill:#E5484D } .pcr-sec-persona-t{ stroke:#E5484D; stroke-width:1.6; fill:none; stroke-linecap:round }' +
+      '.pcr-sec-anden{ fill:#9AA9B8 } .pcr-sec-regla{ stroke:#6B7A8A; stroke-width:1; fill:none } .pcr-sec-aguja{ fill:#E5484D }' +
+      /* El frente de la cuadra, lo que cabe y la sombra por horas: los tres
+         dibujos nuevos de las cajas del lote comparten la caja de la sección. */
+      '.pcr-seccion{ background:#F3F8FB; border-radius:2mm; padding:2mm; margin:1mm 0 2mm }' +
+      '.pcr-fr-vacio{ fill:#E3EAF0 } .pcr-fr-lleno{ fill:#3B4A5A }' +
+      '.pcr-fr-lote{ fill:#FFD54F; stroke:#7A5901; stroke-width:.8 } .pcr-fr-esq{ stroke:#0A6F9E; stroke-width:1; stroke-dasharray:2 2 }' +
+      '.pcr-cb-lote{ fill:#FFF3C4; stroke:#7A5901; stroke-width:1 } .pcr-cb-huella{ fill:#0A6F9E; fill-opacity:.7 } .pcr-cb-piso{ fill:#3B4A5A }' +
       '.deter{ display:flex; flex-direction:column; gap:2.5mm }' +
       '.de{ border-left:.8mm solid #34CCFE; padding:.5mm 0 1mm 3mm }' +
       '.de b{ display:block; font-size:3.1mm; color:#0F1F2E }' +
@@ -9683,6 +9697,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     llega: 'movilidad', caminar: 'movilidad',
     agua: 'ambiental', ruido: 'ambiental',
     comercial: 'demografico', anillos: 'demografico',
+    'sombra-proyecto': 'lote',
     acuerdos: 'campo', intangible: 'campo'
   };
   function grupoDeMapa(id) {
@@ -9785,6 +9800,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     lista.push({ id: 'comercial', t: 'Dónde está la calle comercial',
                  listo: !!((st.nucleos || []).length),
                  dato: 'los locales juntos y su calle en rojo', falta: 'no hay comercios agrupados en el área' });
+    lista.push({ id: 'sombra-proyecto', t: 'La sombra que arrojás',
+                 listo: (function () { try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.some(function (h) { return !h.bajo; })); }
+                                       catch (e) { return false; } })(),
+                 dato: 'a quién le cae la sombra del volumen permitido, a las 9, 12 y 15',
+                 falta: 'marcá el lote y medí el trazado' });
     lista.push({ id: 'anillos', t: 'Cómo cambia al alejarse',
                  listo: (st.anillos || []).filter(function (a) { return a.n > 0; }).length >= 2,
                  dato: 'los anillos de distancia con lo que hay en cada uno', falta: 'analizá el sector' });
@@ -10581,6 +10601,35 @@ function donaHTML(datos, colorDe, nombreDe) {
         }),
         conv: anN.map(function (a, i) { return { c: TONOS_AN[Math.min(i, 3)], t: a.etiqueta + ' · ' + a.n + ' usos', f: 'punto' }; }),
         pie: 'cuántos usos hay en cada anillo de distancia al centro del área'
+      });
+    }
+
+    // ── La sombra que arroja el volumen permitido, sobre el plano: a quién le cae.
+    var spM = o.sombraProyecto !== undefined ? o.sombraProyecto
+            : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })();
+    if (spM && spM.horas && spM.horas.some(function (h) { return !h.bajo && h.sombra && h.sombra.length >= 3; })) {
+      var TINTE_P = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
+      var polisP = [], tocadosP = [], vistosT = {};
+      spM.horas.forEach(function (h) {
+        if (h.bajo || !h.sombra || h.sombra.length < 3) return;
+        polisP.push({ pts: h.sombra, relleno: TINTE_P[h.hora] || '#3B4A5A', opacidad: 0.3 });
+        (h.tocados || []).forEach(function (t) {
+          var kT = t.anillo && t.anillo[0] ? t.anillo[0].lat + ',' + t.anillo[0].lng : '';
+          if (t.anillo && !vistosT[kT]) { vistosT[kT] = true; tocadosP.push(t.anillo); }
+        });
+      });
+      var huellasCerca = (S.trzHuellas || []).filter(function (an) {
+        return an && an[0] && haversineM(spM.centro, an[0]) <= 160;
+      });
+      mapas.push({
+        id: 'sombra-proyecto', titulo: 'La sombra que arrojás', grupo: grupoDeMapa('sombra-proyecto'),
+        svg: mini({ poligonos: polisP, huellas: huellasCerca,
+                    destacados: tocadosP.map(function (an) { return { lat: an[0].lat, lng: an[0].lng, color: '#E5484D' }; }) }),
+        conv: spM.horas.filter(function (h) { return !h.bajo && h.sombra && h.sombra.length >= 3; }).map(function (h) {
+          return { c: TINTE_P[h.hora] || '#3B4A5A', t: h.hora + ':00 · ' + Number(h.m2Fuera).toLocaleString('es-CO') + ' m² fuera del lote', f: 'area' };
+        }).concat([{ c: '#3B4A5A', t: 'Edificio vecino', f: 'area' }])
+          .concat(tocadosP.length ? [{ c: '#E5484D', t: 'Vecino al que le cae la sombra', f: 'punto' }] : []),
+        pie: spM.pisos + ' pisos sobre ' + Number(spM.huellaM2).toLocaleString('es-CO') + ' m² de huella, el volumen de la norma y no un proyecto dibujado'
       });
     }
 
@@ -11617,34 +11666,90 @@ function donaHTML(datos, colorDe, nombreDe) {
      ancho y los andenes están mapeados en muy pocas calles de Cúcuta: si la
      cobertura es baja, el promedio es de esas pocas y no del sector. Anotarlo
      caminando es de las tareas de campo que más cambian este bloque. */
+  /* ── La sección de la calle, para que la entienda cualquiera ──────────
+     «No se entiende qué es cada cosa; yo como arquitecto no entiendo, mucho
+     menos un cliente.» Tenía razón: dos rectángulos negros, una raya y un
+     número. Ahora cada cosa lleva su nombre —edificio, calzada, andén—, hay
+     una persona de 1,7 m para que la escala se lea sin regla, la altura y el
+     ancho van acotados con su valor, y debajo está la única cifra que
+     importa explicada con una regla: la relación altura ÷ ancho, de calle
+     abierta a cañón, con la aguja donde cae este sector. */
   function seccionDibujada(p) {
     if (!p || p.alturaMediaM == null || p.anchoMedioM == null) return '';
-    var W = 320, H = 150, base = H - 26;
-    // Escala: que la calzada más los dos edificios entren en el ancho útil.
-    var anchoEdif = Math.max(18, p.anchoMedioM * 0.75);
-    var totalM = p.anchoMedioM + 2 * anchoEdif;
-    var k = (W - 24) / totalM;
-    var hPx = Math.min(base - 18, p.alturaMediaM * k);
-    var calzPx = p.anchoMedioM * k, edifPx = anchoEdif * k;
-    var x0 = 12, x1 = x0 + edifPx, x2 = x1 + calzPx, x3 = x2 + edifPx;
-    var cota = function (xa, xb, txt) {
-      var y = base + 13, m = (xa + xb) / 2;
+    var W = 360, H = 254, base = 118;
+    var an = p.anden || {};
+    var andenM = an.anchoMedioM != null ? an.anchoMedioM : (an.conAndenPct > 0 ? 1.5 : 0);
+    var anchoEdif = Math.max(9, Math.min(14, p.anchoMedioM * 0.6));
+    var totalM = p.anchoMedioM + 2 * andenM + 2 * anchoEdif;
+    var k = (W - 40) / totalM;
+    var hPx = Math.min(base - 22, Math.max(10, p.alturaMediaM * k));
+    var x0 = 20;
+    var xe1 = x0 + anchoEdif * k;
+    var xa1 = xe1 + andenM * k;
+    var xa2 = xa1 + p.anchoMedioM * k;
+    var xe2 = xa2 + andenM * k;
+    var x3 = xe2 + anchoEdif * k;
+    var f1 = function (v) { return String(Math.round(v * 10) / 10).replace('.', ','); };
+    var cota = function (xa, xb, y, txt) {
+      var m = (xa + xb) / 2;
       return '<path d="M' + xa.toFixed(1) + ' ' + y + 'H' + xb.toFixed(1) + '" class="pcr-sec-cota"/>' +
         '<path d="M' + xa.toFixed(1) + ' ' + (y - 3) + 'v6M' + xb.toFixed(1) + ' ' + (y - 3) + 'v6" class="pcr-sec-cota"/>' +
         '<text x="' + m.toFixed(1) + '" y="' + (y + 11) + '" class="pcr-sec-t" text-anchor="middle">' + esc(txt) + '</text>';
     };
+    var edificio = function (x, w) {
+      var pisos = Math.max(1, Math.round(p.alturaMediaM / 3));
+      var ph = hPx / pisos, ventanas = '';
+      for (var i = 0; i < pisos && ph >= 4; i++) {
+        var yv = base - (i + 1) * ph + ph * 0.3;
+        ventanas += '<rect x="' + (x + w * 0.2).toFixed(1) + '" y="' + yv.toFixed(1) + '" width="' + (w * 0.22).toFixed(1) +
+          '" height="' + (ph * 0.4).toFixed(1) + '" class="pcr-sec-ventana"/>' +
+          '<rect x="' + (x + w * 0.58).toFixed(1) + '" y="' + yv.toFixed(1) + '" width="' + (w * 0.22).toFixed(1) +
+          '" height="' + (ph * 0.4).toFixed(1) + '" class="pcr-sec-ventana"/>';
+      }
+      return '<rect x="' + x.toFixed(1) + '" y="' + (base - hPx).toFixed(1) + '" width="' + w.toFixed(1) +
+        '" height="' + hPx.toFixed(1) + '" class="pcr-sec-edif"/>' + ventanas;
+    };
+    // La persona: 1,7 m a la misma escala, parada en el andén o en el borde.
+    var hp = Math.max(6, 1.7 * k), px = xa1 + Math.max(6, hp * 0.3), pyTop = base - hp;
+    var persona = '<circle cx="' + px.toFixed(1) + '" cy="' + (pyTop + hp * 0.14).toFixed(1) + '" r="' + (hp * 0.13).toFixed(1) + '" class="pcr-sec-persona"/>' +
+      '<path d="M' + px.toFixed(1) + ' ' + (pyTop + hp * 0.28).toFixed(1) + 'v' + (hp * 0.42).toFixed(1) +
+      'm0 0l-' + (hp * 0.16).toFixed(1) + ' ' + (hp * 0.3).toFixed(1) + 'm' + (hp * 0.16).toFixed(1) + ' -' + (hp * 0.3).toFixed(1) +
+      'l' + (hp * 0.16).toFixed(1) + ' ' + (hp * 0.3).toFixed(1) + 'M' + (px - hp * 0.2).toFixed(1) + ' ' + (pyTop + hp * 0.45).toFixed(1) +
+      'h' + (hp * 0.4).toFixed(1) + '" class="pcr-sec-persona-t"/>';
+    var andenes = andenM > 0
+      ? '<rect x="' + xe1.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="pcr-sec-anden"/>' +
+        '<rect x="' + xa2.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="pcr-sec-anden"/>'
+      : '';
+    // La regla de la relación altura ÷ ancho, con la aguja.
+    var rel = Number(p.relacion) || 0;
+    var ry = H - 30, rx0 = 34, rx1 = W - 34;
+    var escalaRel = function (v) { return rx0 + (rx1 - rx0) * Math.max(0, Math.min(1, v / 3)); };
+    var marcas = [[0.25, 'abierta'], [0.5, 'amable'], [1, 'contenida'], [2, 'cañón']];
+    var regla = '<path d="M' + rx0 + ' ' + ry + 'H' + rx1 + '" class="pcr-sec-regla"/>' +
+      marcas.map(function (m, i) {
+        var x = escalaRel(m[0]);
+        return '<path d="M' + x.toFixed(1) + ' ' + (ry - 3) + 'v6" class="pcr-sec-regla"/>' +
+          '<text x="' + x.toFixed(1) + '" y="' + (ry + 12) + '" class="pcr-sec-t" text-anchor="middle">' + m[0].toString().replace('.', ',') + '</text>' +
+          '<text x="' + x.toFixed(1) + '" y="' + (ry + (i % 2 ? 31 : 22)) + '" class="pcr-sec-t" text-anchor="middle">' + m[1] + '</text>';
+      }).join('') +
+      '<path d="M' + escalaRel(rel).toFixed(1) + ' ' + (ry - 4) + 'l-4 -7h8z" class="pcr-sec-aguja"/>' +
+      '<text x="' + Math.max(rx0 + 30, Math.min(rx1 - 30, escalaRel(rel))).toFixed(1) + '" y="' + (ry - 14) +
+        '" class="pcr-sec-t pcr-sec-t-fuerte" text-anchor="middle">esta calle: ' + f1(rel) + (rel > 3 ? ' (fuera de la regla)' : '') + '</text>';
     return '<div class="pcr-seccion"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-      'aria-label="Sección tipo de la calle">' +
+      'aria-label="Sección tipo de la calle: edificios, andenes y calzada, con una persona de escala">' +
       '<path d="M' + x0 + ' ' + base + 'H' + x3.toFixed(1) + '" class="pcr-sec-suelo"/>' +
-      '<rect x="' + x0 + '" y="' + (base - hPx).toFixed(1) + '" width="' + edifPx.toFixed(1) +
-        '" height="' + hPx.toFixed(1) + '" class="pcr-sec-edif"/>' +
-      '<rect x="' + x2.toFixed(1) + '" y="' + (base - hPx).toFixed(1) + '" width="' + edifPx.toFixed(1) +
-        '" height="' + hPx.toFixed(1) + '" class="pcr-sec-edif"/>' +
-      '<path d="M' + (x1 + 4).toFixed(1) + ' ' + (base - hPx).toFixed(1) + 'v' + hPx.toFixed(1) +
-        '" class="pcr-sec-alt"/>' +
-      '<text x="' + (x1 + 8).toFixed(1) + '" y="' + (base - hPx / 2).toFixed(1) + '" class="pcr-sec-t">' +
-        String(p.alturaMediaM).replace('.', ',') + ' m</text>' +
-      cota(x1, x2, String(p.anchoMedioM).replace('.', ',') + ' m de calzada') +
+      edificio(x0, xe1 - x0) + edificio(xe2, x3 - xe2) + andenes + persona +
+      // Los nombres, encima de cada cosa.
+      '<text x="' + x0 + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t">edificio típico · ' + f1(p.alturaMediaM) + ' m de alto</text>' +
+      '<text x="' + ((xa1 + xa2) / 2).toFixed(1) + '" y="' + (base + 10) + '" class="pcr-sec-t" text-anchor="middle">calzada</text>' +
+      (andenM > 0 ? '<text x="' + ((xa2 + xe2) / 2).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="middle">andén</text>' : '') +
+      '<text x="' + (px + hp * 0.3).toFixed(1) + '" y="' + (pyTop + 4).toFixed(1) + '" class="pcr-sec-t">1,7 m</text>' +
+      '<text x="' + (x3).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="end">' + Math.max(1, Math.round(p.alturaMediaM / 3)) + ' pisos</text>' +
+      // Las cotas: la altura al lado del edificio, el ancho bajo la calzada.
+      '<path d="M' + (xe1 - 4).toFixed(1) + ' ' + (base - hPx).toFixed(1) + 'v' + hPx.toFixed(1) + '" class="pcr-sec-alt"/>' +
+      cota(xa1, xa2, base + 20, f1(p.anchoMedioM) + ' m de calzada' + (andenM > 0 ? ' + andenes de ' + f1(andenM) + ' m' : '')) +
+      '<text x="' + x0 + '" y="' + (ry - 32) + '" class="pcr-sec-t">Altura ÷ ancho: qué tan encajonada se siente la calle</text>' +
+      regla +
       '</svg></div>';
   }
 
@@ -14238,8 +14343,114 @@ function donaHTML(datos, colorDe, nombreDe) {
       usos: usos, nUsos: nUsos, esquinas: listaEsq,
       // La lectura, que es lo que se defiende.
       continua: pctLleno >= 70, rota: pctLleno < 40,
-      tramo: tramo.slice()
+      tramo: tramo.slice(),
+      // Y dónde cae cada cosa a lo largo del tramo, en metros desde su
+      // arranque: los trozos con fachada y la posición del lote. Es lo que
+      // permite DIBUJAR el frente en vez de resumirlo en un porcentaje.
+      llenos: unidos.map(function (u) { return [Math.round(u[0]), Math.round(u[1])]; }),
+      loteS: (function () { var q = sobreElTramo(centro); return q.s != null ? Math.round(q.s) : null; })()
     };
+  }
+
+  /* ── El frente, dibujado ──────────────────────────────────────────────
+     «Donde dice cuadra del lote le hacen falta gráficos que ayuden a medir
+     visualmente lo que hablan». El frente es una LÍNEA —tantos metros de
+     calle— así que se dibuja como tal: una tira con la fachada en oscuro,
+     los huecos en claro, el lote en amarillo donde cae y las esquinas
+     marcadas. Un 64 % de fachada se entiende; ver que el hueco mayor está
+     justo al lado del lote se entiende mejor. */
+  function frenteDibujado(cu) {
+    if (!cu || !cu.largoM) return '';
+    var W = 320, H = 64, x0 = 10, x1 = W - 10, y = 22, h = 16;
+    var k = (x1 - x0) / cu.largoM;
+    var X = function (m) { return (x0 + m * k).toFixed(1); };
+    var tira = '<rect x="' + x0 + '" y="' + y + '" width="' + (x1 - x0) + '" height="' + h +
+      '" rx="2" class="pcr-fr-vacio"/>' +
+      (cu.llenos || []).map(function (u) {
+        return '<rect x="' + X(u[0]) + '" y="' + y + '" width="' + Math.max(1, (u[1] - u[0]) * k).toFixed(1) +
+          '" height="' + h + '" class="pcr-fr-lleno"/>';
+      }).join('');
+    var lote = cu.loteS != null
+      ? '<path d="M' + X(cu.loteS) + ' ' + (y - 6) + 'l-5 -7h10z" class="pcr-fr-lote"/>' +
+        '<text x="' + X(cu.loteS) + '" y="' + (y - 15) + '" class="pcr-sec-t" text-anchor="middle">el lote</text>'
+      : '';
+    var esquinas = (cu.esquinas || []).map(function (e) {
+      if (e.s == null) return '';
+      return '<path d="M' + X(e.s) + ' ' + (y - 3) + 'v' + (h + 6) + '" class="pcr-fr-esq"/>' +
+        '<text x="' + X(e.s) + '" y="' + (y + h + 12) + '" class="pcr-sec-t" text-anchor="middle">' +
+        esc(String(e.nombre || 'esquina').slice(0, 18)) + '</text>';
+    }).join('');
+    return '<div class="pcr-seccion pcr-frente"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+      'aria-label="El frente de la cuadra: fachada, huecos y lote">' +
+      tira + lote + esquinas +
+      '<text x="' + x0 + '" y="' + (H - 3) + '" class="pcr-sec-t">0 m</text>' +
+      '<text x="' + x1 + '" y="' + (H - 3) + '" class="pcr-sec-t" text-anchor="end">' + cu.largoM + ' m · ' +
+        cu.pctLleno + '% con fachada</text>' +
+      '</svg></div>';
+  }
+
+  /* ── Lo que cabe, dibujado ────────────────────────────────────────────
+     El lote como un rectángulo a escala de su área, con la huella permitida
+     adentro, y al lado la torre: tantos pisos sobre esa huella, con los
+     metros construibles y las viviendas. Son las tres cifras de la caja
+     puestas una encima de la otra, que es como se comparan. */
+  function cabeDibujado(q) {
+    if (!q || !q.areaLoteM2 || !q.huellaM2) return '';
+    var W = 320, H = 120;
+    // El lote: un cuadrado de lado proporcional a la raíz del área.
+    var L = 92, x0 = 14, y0 = 14;
+    var k = Math.sqrt(Math.max(0.02, Math.min(1, q.huellaM2 / q.areaLoteM2)));
+    var hs = L * k, hx = x0 + (L - hs) / 2, hy = y0 + (L - hs) / 2;
+    var pctOcup = Math.round(100 * q.huellaM2 / q.areaLoteM2);
+    // La torre: un rectángulo por piso, hasta los que salen.
+    var pisos = Math.max(1, Math.min(30, Math.round(q.pisosQueSalen || q.pisosTope || 1)));
+    var tx = 140, tw = 64, tb = H - 22, ph = Math.min(18, Math.floor((tb - 14) / pisos));
+    var torre = '';
+    for (var i = 0; i < pisos; i++) {
+      torre += '<rect x="' + tx + '" y="' + (tb - (i + 1) * ph + 1) + '" width="' + tw + '" height="' + (ph - 1.2) +
+        '" class="pcr-cb-piso"/>';
+    }
+    return '<div class="pcr-seccion pcr-cabe-dib"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+      'aria-label="El lote, la huella permitida y la torre que sale">' +
+      '<rect x="' + x0 + '" y="' + y0 + '" width="' + L + '" height="' + L + '" rx="3" class="pcr-cb-lote"/>' +
+      '<rect x="' + hx.toFixed(1) + '" y="' + hy.toFixed(1) + '" width="' + hs.toFixed(1) + '" height="' + hs.toFixed(1) +
+        '" rx="2" class="pcr-cb-huella"/>' +
+      '<text x="' + x0 + '" y="' + (y0 + L + 12) + '" class="pcr-sec-t">lote ' +
+        q.areaLoteM2.toLocaleString('es-CO') + ' m² · huella ' + pctOcup + '%</text>' +
+      torre +
+      '<path d="M' + (tx - 6) + ' ' + tb + 'H' + (tx + tw + 6) + '" class="pcr-sec-suelo"/>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - pisos * ph + 8) + '" class="pcr-sec-t">' + pisos + ' piso' + (pisos === 1 ? '' : 's') + '</text>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - pisos * ph / 2 + 3) + '" class="pcr-sec-t">' +
+        q.construibleM2.toLocaleString('es-CO') + ' m²</text>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 14) + '" class="pcr-sec-t">' + q.viviendas + ' viviendas</text>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 3) + '" class="pcr-sec-t">' + q.personas + ' personas</text>' +
+      '</svg></div>';
+  }
+
+  /* ── La sombra que arroja, hora por hora ──────────────────────────────
+     Tres barras —9, 12 y 15— con los metros cuadrados que se salen del lote
+     y, encima, a cuántos vecinos les cae. El mapa dice a quién; esto dice
+     cuánto y a qué hora, que es lo que se defiende con un número. */
+  function sombraHorasDibujada(sp) {
+    if (!sp || !sp.horas) return '';
+    var horas = sp.horas.filter(function (h) { return !h.bajo; });
+    if (!horas.length) return '';
+    var TINTE = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
+    var W = 320, H = 96, base = H - 20, top = 16;
+    var max = Math.max.apply(null, horas.map(function (h) { return h.m2Fuera; })) || 1;
+    var bw = 54, gap = (W - horas.length * bw) / (horas.length + 1);
+    return '<div class="pcr-seccion pcr-sombra-horas"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+      'aria-label="Sombra fuera del lote por hora">' +
+      horas.map(function (h, i) {
+        var x = gap + i * (bw + gap), alto = Math.max(2, (base - top) * h.m2Fuera / max);
+        return '<rect x="' + x.toFixed(1) + '" y="' + (base - alto).toFixed(1) + '" width="' + bw + '" height="' + alto.toFixed(1) +
+          '" rx="2" fill="' + TINTE[h.hora] + '" fill-opacity=".85"/>' +
+          '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (base - alto - 4).toFixed(1) + '" class="pcr-sec-t" text-anchor="middle">' +
+            Number(h.m2Fuera).toLocaleString('es-CO') + ' m²' + (h.tocados.length ? ' · ' + h.tocados.length + ' vecino' + (h.tocados.length === 1 ? '' : 's') : '') + '</text>' +
+          '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (base + 13) + '" class="pcr-sec-t" text-anchor="middle">' + h.hora + ':00</text>';
+      }).join('') +
+      '<path d="M' + (gap / 2).toFixed(1) + ' ' + base + 'H' + (W - gap / 2).toFixed(1) + '" class="pcr-sec-suelo"/>' +
+      '</svg></div>';
   }
 
   /* ── El ruido del tránsito, modelado ──────────────────────────────────
@@ -15740,6 +15951,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? '<div class="pcr-kpi"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>'
           : '') +
       '</div>' +
+      frenteDibujado(cu) +
       '<div class="pcr-lote">' +
         '<div class="pcr-lote-fila"><span>Fachada construida</span><b>' + cu.llenoM + ' m</b></div>' +
         '<div class="pcr-lote-fila"><span>Huecos</span><b>' + cu.huecos +
@@ -15824,6 +16036,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'una entrega.</p>'
         : '<p class="pcr-conc">Los ' + q.delPot + ' índices vienen de la ficha normativa, ' +
           'así que esta cuenta es de <b>este</b> lote.</p>') +
+      cabeDibujado(q) +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + q.huellaM2.toLocaleString('es-CO') +
           '</b><small>m² de huella</small></div>' +
@@ -16695,13 +16908,41 @@ function donaHTML(datos, colorDe, nombreDe) {
          las etiquetas no hacen falta para dibujar y ocupan de más. El tope
          existe porque un sector grande del centro puede traer miles y el
          teléfono no tiene por qué cargar con todos. */
-      var edificios = (elementos || [])
-        .filter(function (el) {
-          var t = el && el.tags;
-          return t && t.building && t.building !== 'no' &&
-                 Array.isArray(el.geometry) && el.geometry.length >= 3;
-        })
-        .slice(0, 3000);
+      /* Un edificio puede venir como `way` con su geometría o como
+         `relation` multipolígono con la geometría en sus miembros: un centro
+         comercial, un conjunto cerrado, una clínica. Se toma cada anillo
+         exterior como una huella —con las mismas etiquetas, que son las de
+         la relación— porque para llenos y vacíos lo que cuenta es la mancha
+         y no el número de anillos. */
+      var comoHuellas = function (el) {
+        var t = el && el.tags;
+        if (!t || !t.building || t.building === 'no') return [];
+        if (Array.isArray(el.geometry) && el.geometry.length >= 3) return [{ tags: t, geometry: el.geometry }];
+        if (el.type === 'relation' && Array.isArray(el.members)) {
+          return el.members.filter(function (m) {
+            return m && (m.role === 'outer' || !m.role) && Array.isArray(m.geometry) && m.geometry.length >= 3;
+          }).map(function (m) { return { tags: t, geometry: m.geometry }; });
+        }
+        return [];
+      };
+      var edificios = [];
+      (elementos || []).forEach(function (el) { edificios = edificios.concat(comoHuellas(el)); });
+      /* Si son más de los que el teléfono debe cargar, se quedan los más
+         cercanos al centro y no los primeros de la lista: la lista viene en
+         el orden en que Overpass los encontró, y cortarla por ahí dejaba
+         manzanas enteras sin huellas en cualquier parte del sector. */
+      var TOPE_HUELLAS = 9000;
+      if (edificios.length > TOPE_HUELLAS) {
+        var cH = centroDeAnalisis();
+        if (cH) {
+          edificios.forEach(function (e) {
+            var g0 = e.geometry[0];
+            e._d = haversineM(cH, { lat: g0.lat, lng: g0.lon != null ? g0.lon : g0.lng });
+          });
+          edificios.sort(function (a, b) { return a._d - b._d; });
+        }
+        edificios = edificios.slice(0, TOPE_HUELLAS);
+      }
       S.trzHuellas = edificios.map(function (el) {
         return el.geometry.map(function (p) {
           return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
@@ -19512,6 +19753,9 @@ function donaHTML(datos, colorDe, nombreDe) {
        verlos, la prueba solo podría mirar el texto de la barra, que es lo que
        dice que pasó y no lo que pasó. */
     loteDePrueba: function () { return S.lote || []; },
+    // Cuántas huellas trajo el trazado: para comprobar que un multipolígono
+    // entra con sus anillos sin contar rayas del mapa que no son huellas.
+    huellasDePrueba: function () { return (S.trzHuellas || []).length; },
     // Bajar la hoja por el mismo camino que el dedo, para poder comprobar que
     // con la hoja abajo el círculo del sector analizado no sigue al mapa.
     encogerDePrueba: function () { alternarHoja(true); },

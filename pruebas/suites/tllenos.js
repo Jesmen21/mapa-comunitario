@@ -34,6 +34,15 @@ for(let i=0;i<40;i++){
 }
 /* Y tres mapeados solo como punto: el bloque tiene que declararlos aparte. */
 for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C.lng+0.0005},tags:{building:'yes'}});
+/* Y un edificio grande como MULTIPOLÍGONO —un centro comercial, un conjunto—
+   con dos anillos exteriores en sus miembros, que es como lo trae
+   OpenStreetMap. Sin leerlo, la manzana entera salía vacía en los llenos y
+   vacíos aunque tuviera el edificio más grande del sector. */
+(function(){ const d=0.00016, bx=C.lng+L*0.45, by=C.lat+L*0.45;
+  const anillo=(x,y)=>[{lat:y,lon:x},{lat:y+d,lon:x},{lat:y+d,lon:x+d},{lat:y,lon:x+d},{lat:y,lon:x}];
+  geo.push({type:'relation',id:id++,tags:{type:'multipolygon',building:'retail',name:'Centro comercial'},
+    members:[{type:'way',ref:1,role:'outer',geometry:anillo(bx,by)},{type:'way',ref:2,role:'outer',geometry:anillo(bx+2*d,by)}]});
+})();
 
 (async()=>{
   const b=await chromium.launch({executablePath:E.CHROMIUM,args:['--no-sandbox']});
@@ -131,6 +140,7 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
     if(bMapa){
       bMapa.click(); await esperar(500);
       o.huellasEnMapa=document.querySelectorAll('.leaflet-overlay-pane path').length;
+      o.huellasContadas=window.URBIS_PC_RECON.huellasDePrueba ? window.URBIS_PC_RECON.huellasDePrueba() : -1;
       o.hojaEncogida=!!document.querySelector('#pcr-hoja.pcr-encogida');
       o.barraDice=txt(document.querySelector('#pcr-hoja .pcr-mini-que b'));
       // Y se pueden quitar
@@ -190,6 +200,8 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
   console.log('\n  -- los llenos, en el mapa --');
   P('el bloque ofrece verlos en el mapa', r.hayVerLlenos);
   P('se dibujan las huellas de los edificios', r.huellasEnMapa>=40, r.huellasEnMapa+' formas en el mapa');
+  P('también las de un multipolígono, un anillo por cada miembro exterior', r.huellasContadas===42,
+    r.huellasContadas+' huellas: 40 casas + 2 anillos del centro comercial');
   P('y la hoja baja para dejarlas ver', r.hojaEncogida);
   P('la barra de abajo dice qué se está mirando', /Llenos y vacíos/.test(r.barraDice||''), r.barraDice);
   P('se pueden quitar', r.huellasTrasQuitar < r.huellasEnMapa,

@@ -1238,6 +1238,23 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-sec-t, .pcr-pestana .pcr-sec-t{
   fill:var(--edu-ink-2); font-size:9px; font-weight:700; font-variant-numeric:tabular-nums;
 }
+/* Lo nuevo de la sección —ventanas, la persona de escala, los andenes y la
+   regla de altura ÷ ancho— y los tres dibujos de las cajas del lote: el
+   frente de la cuadra, lo que cabe y la sombra por horas. */
+.pcr-hoja .pcr-sec-t-fuerte, .pcr-pestana .pcr-sec-t-fuerte{ font-size:10.5px; fill:var(--edu-ink); }
+.pcr-hoja .pcr-sec-ventana, .pcr-pestana .pcr-sec-ventana{ fill:var(--edu-ground-2); fill-opacity:.9; }
+.pcr-hoja .pcr-sec-persona, .pcr-pestana .pcr-sec-persona{ fill:#E5484D; }
+.pcr-hoja .pcr-sec-persona-t, .pcr-pestana .pcr-sec-persona-t{ stroke:#E5484D; stroke-width:1.6; fill:none; stroke-linecap:round; }
+.pcr-hoja .pcr-sec-anden, .pcr-pestana .pcr-sec-anden{ fill:var(--edu-ink-3); }
+.pcr-hoja .pcr-sec-regla, .pcr-pestana .pcr-sec-regla{ stroke:var(--edu-ink-3); stroke-width:1; fill:none; }
+.pcr-hoja .pcr-sec-aguja, .pcr-pestana .pcr-sec-aguja{ fill:#E5484D; }
+.pcr-hoja .pcr-fr-vacio, .pcr-pestana .pcr-fr-vacio{ fill:var(--edu-line); }
+.pcr-hoja .pcr-fr-lleno, .pcr-pestana .pcr-fr-lleno{ fill:var(--edu-ink-2); }
+.pcr-hoja .pcr-fr-lote, .pcr-pestana .pcr-fr-lote{ fill:#FFD54F; stroke:#7A5901; stroke-width:.8; }
+.pcr-hoja .pcr-fr-esq, .pcr-pestana .pcr-fr-esq{ stroke:var(--edu-accent-deep); stroke-width:1; stroke-dasharray:2 2; }
+.pcr-hoja .pcr-cb-lote, .pcr-pestana .pcr-cb-lote{ fill:#FFF3C4; stroke:#7A5901; stroke-width:1; }
+.pcr-hoja .pcr-cb-huella, .pcr-pestana .pcr-cb-huella{ fill:var(--edu-accent-deep); fill-opacity:.7; }
+.pcr-hoja .pcr-cb-piso, .pcr-pestana .pcr-cb-piso{ fill:var(--edu-ink-2); }
 .pcr-hoja .pcr-llenos-cifras, .pcr-pestana .pcr-llenos-cifras{
   display:flex; justify-content:space-between; gap:12px;
 }

@@ -135,6 +135,11 @@ let PELADA=false;
     o.filas=[...H().querySelectorAll('.pcr-lote-fila')].map(txt);
     o.hayDibujo=!!H().querySelector('.pcr-seccion svg');
     o.edificios=H().querySelectorAll('.pcr-sec-edif').length;
+    /* Lo que hace que la sección se entienda sin ser arquitecto: cada cosa
+       con su nombre, una persona de escala y la regla de altura ÷ ancho con
+       la aguja. «No se entiende qué es cada cosa.» */
+    o.persona=!!H().querySelector('.pcr-seccion .pcr-sec-persona');
+    o.rotulos=[...H().querySelectorAll('.pcr-seccion svg text')].map(t=>t.textContent).join(' | ');
     o.cifras=[...H().querySelectorAll('.pcr-llenos-cifras')].map(txt);
     const grupo=(cl,sel)=>[...H().querySelectorAll('.pcr-sintesis-'+cl+' li'+(sel||''))]
       .map(li=>txt(li.querySelector('span'))+' ‹'+txt(li.querySelector('b'))+'›');
@@ -178,6 +183,11 @@ let PELADA=false;
   console.log('\n  -- la sección dibujada --');
   P('dibuja la sección', con.hayDibujo);
   P('con los dos edificios enfrentados', con.edificios===2, con.edificios+' volúmenes');
+  P('con una persona de escala y cada cosa con su nombre',
+    con.persona && /edificio típico/.test(con.rotulos||'') && /calzada/.test(con.rotulos||'') && /1,7 m/.test(con.rotulos||''),
+    (con.rotulos||'').slice(0,140));
+  P('y la regla de altura ÷ ancho, de abierta a cañón, con esta calle marcada',
+    /abierta/.test(con.rotulos||'') && /cañón/.test(con.rotulos||'') && /esta calle: \d+,?\d*/.test(con.rotulos||''));
   P('y avisa de que es una sección tipo, no la de una calle concreta',
     /sección tipo/i.test(con.bloque) && /no es la de una calle concreta/.test(con.bloque));
 

@@ -186,6 +186,13 @@
         const esRuta = el.type === 'relation' &&
           /^(bus|minibus|share_taxi|trolleybus)$/.test(String(el.tags.route || ''));
         if (esRuta) { limpios.push(el); return; }
+        /* Y los MULTIPOLÍGONOS con su geometría en los miembros: un centro
+           comercial o un conjunto es una relación sin posición propia, y
+           este descarte se los comía antes de que el trazado los viera. La
+           manzana entera salía vacía en los llenos y vacíos. */
+        const conMiembros = el.type === 'relation' && Array.isArray(el.members) &&
+          el.members.some(m => m && Array.isArray(m.geometry) && m.geometry.length >= 3);
+        if (conMiembros) { limpios.push(el); return; }
         // Con `out geom` un camino no trae lat/lon propios: trae su recorrido.
         // Situarlo por su geometría es más exacto que descartarlo.
         if (Array.isArray(el.geometry) && el.geometry.length) { limpios.push(el); return; }
@@ -204,9 +211,16 @@
   /* La geometría del trazado: huellas de los edificios y ejes de las vías.
      Solo lo que se mide —edificios, vías vehiculares, agua—, y con `out geom`
      en vez de `out center` porque acá la forma ES el dato. */
+  /* Los edificios van como `way` Y como `relation`: los grandes —un centro
+     comercial, un conjunto, una clínica— están en OpenStreetMap como
+     multipolígono, y sin la segunda línea la manzana entera salía VACÍA en
+     los llenos y vacíos aunque tuviera el edificio más grande del sector.
+     «Salen manzanas con edificios y están vacíos en el análisis»: era esto,
+     y era el tope de abajo. */
   function construirQueryTrazadoCon(a){
     return '[out:json][timeout:60];(' +
       'way["building"]["building"!="no"]' + a + ';' +
+      'relation["building"]["building"!="no"]' + a + ';' +
       'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|pedestrian)$"]' + a + ';' +
       'way["waterway"~"^(river|stream|canal)$"]' + a + ';' +
       /* El espacio público, con su FORMA. Contarlo por puntos no sirve: la
@@ -216,7 +230,11 @@
       'way["leisure"~"^(park|garden|common|playground|dog_park|pitch|sports_centre|track)$"]' + a + ';' +
       'way["landuse"~"^(recreation_ground|village_green)$"]' + a + ';' +
       'way["place"="square"]' + a + ';' +
-      ');out geom 4000;';
+      /* Doce mil y no cuatro mil. El tope corta la respuesta donde caiga, y
+         un radio de un kilómetro en una ciudad compacta pasa de cuatro mil
+         elementos con solo las casas: lo que quedaba fuera eran manzanas
+         enteras, y en el mapa salían sin construir. */
+      ');out geom 12000;';
   }
   function consultarTrazado(lat, lng, radioM, forzar){
     return traer('trz|' + claveCache(lat, lng, radioM),
