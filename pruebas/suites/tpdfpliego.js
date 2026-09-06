@@ -89,7 +89,16 @@ const PT = mm => mm * 72 / 25.4;
     const a = H.querySelector('[data-pcr="agrandar"]'); if (a) { a.click(); await esperar(400); }
     const caja = document.getElementById('pcr-nombre');
     if (caja) { caja.value = 'La Playa'; caja.dispatchEvent(new Event('input', { bubbles: true })); }
+    /* Y se GUARDA con ese nombre antes de bajar el PDF, que es lo que hace
+       cualquiera: guardar «cleri prueba 1» y después exportar. Guardar
+       repinta la hoja, y el repintado devolvía la casilla a la sugerencia,
+       así que el PDF salía con otro nombre. */
+    const g = H.querySelector('[data-pcr="guardar"]');
+    if (g) { g.click(); await esperar(700); }
+    const a2 = H.querySelector('[data-pcr="agrandar"]'); if (a2 && H.classList.contains('pcr-encogida')) { a2.click(); await esperar(300); }
+    window.__valorTrasGuardar = (document.getElementById('pcr-nombre') || {}).value || '';
   }, { C, POL });
+  r.valorTrasGuardar = await pg.evaluate(() => window.__valorTrasGuardar);
 
   /* ── El botón baja un archivo, sin abrir ninguna otra pestaña ──────────
      Que no se abra otra ventana es la mitad de lo que se pidió: en el
@@ -268,6 +277,10 @@ const PT = mm => mm * 72 / 25.4;
   console.log('\n  -- tocar «Lámina 90×60 · PDF» --');
   T('baja un archivo', r.hayBajada);
   T('con nombre de lámina y su tamaño', /URBIS-lamina-.*90x60\.pdf$/.test(r.nombre || ''), r.nombre || '(sin nombre)');
+  T('la casilla conserva el nombre después de guardar', r.valorTrasGuardar === 'La Playa',
+    JSON.stringify(r.valorTrasGuardar));
+  T('y el archivo se llama como se guardó el sector', /URBIS-lamina-La-Playa-90x60\.pdf$/.test(r.nombre || ''),
+    r.nombre || '(sin nombre)');
   T('y sin abrir ninguna otra pestaña', r.otraPestana === 0, r.otraPestana + ' pestañas');
   T('la ficha dice qué bajó y dónde está', /Lámina bajada/.test(r.aviso || ''), r.aviso || '(no dice nada)');
 

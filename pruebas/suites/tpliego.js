@@ -121,8 +121,16 @@ const geo=[
     const lamina=async()=>{ await abrir();
       H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
       const h=capturado; capturado=''; return h; };
-    const titulos=h=>(h.match(/<section class="caja[^"]*"><h2>([^<]+)<\/h2>/g)||[])
-      .map(t=>t.replace(/.*<h2>/,'').replace('</h2>',''));
+    /* Las cajas de CIFRAS del papel. Los mapas no cuentan —son otra lista,
+       la de los recuadros— salvo cuando llevan dentro el contexto de su caja:
+       los llenos y vacíos, las alturas y los hitos van debajo de su mapa, y
+       apagar esa caja deja el mapa sin ese contexto. Así una caja fundida
+       cuenta como caja mientras está puesta y deja de contar al apagarla,
+       igual que las demás. */
+    const titulos=h=>h.split('<section class="caja').slice(1).map(x=>x.split('</section>')[0])
+      .filter(x=>!/^ mapa-caja/.test(x) || /<div class="mp-ctx">/.test(x))
+      .map(x=>((x.match(/<h2>([^<]+)<\/h2>/)||[])[1]||'').replace(/ · el mapa$/,''))
+      .filter(Boolean);
     const inventario=()=>[...H().querySelectorAll('[data-pcr="pliego-caja"]')].map(x=>({
       id:x.getAttribute('data-c'),
       titulo:((x.querySelector('b')||{}).textContent||'').trim(),

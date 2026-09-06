@@ -290,7 +290,10 @@ function climaSimulado(){
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const P=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
   const h=r.html||'';
-  const cajas=(h.match(/<section class="caja[^"]*"><h2>([^<]+)<\/h2>/g)||[])
+  /* Con atributos después de la clase: los llenos y vacíos, las alturas y
+     los hitos son ahora la caja de SU mapa —el contexto va debajo del
+     dibujo—, y una caja de mapa lleva `data-g` y `data-p`. */
+  const cajas=(h.match(/<section class="caja[^"]*"[^>]*><h2>([^<]+)<\/h2>/g)||[])
     .map(x=>x.replace(/.*<h2>/,'').replace('</h2>',''));
 
   console.log('\n  -- el botón está donde se lo busca --');
@@ -387,9 +390,20 @@ function climaSimulado(){
   P('tipografía Inter, como el resto de URBIS', /font-family:Inter/.test(h));
   P('sin un solo emoji', !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(h),
     (h.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu)||[]).join(' ')||'ninguno');
-  P('el pie dice de dónde salió cada cosa',
-    /OpenStreetMap/.test(h) && /DANE/.test(h) && /urbispro\.city/.test(h));
-  P('y advierte que esto no es el sector', /no es el sector/.test(h));
+  /* El pie lleva las redes y nada más: las fuentes se pidieron fuera del
+     pliego —«ocúltela, solo deja las redes sociales»— y siguen en el informe
+     en hojas, que es donde se cita. */
+  const pie=(h.match(/<footer class="pie">[\s\S]*?<\/footer>/)||[''])[0];
+  P('el pie lleva las redes de URBIS', /urbispro\.city/.test(pie) && /@urbis_co/.test(pie));
+  P('y no la lista de fuentes, que va en el informe',
+    !/OpenStreetMap/.test(pie) && !/DANE/.test(pie) && !/no es el sector/.test(pie));
+  /* Y el contexto de la morfología, debajo de su mapa y no en una caja al
+     lado: «sería mejor poner el contexto de cada uno debajo de los mapas». */
+  const mapaLlenos=(h.split('<section class="caja').filter(x=>/^ mapa-caja/.test(x) && /<h2>Llenos y vacíos<\/h2>/.test(x))[0])||'';
+  P('los llenos y vacíos llevan su contexto debajo del mapa',
+    /<div class="mp-ctx">/.test(mapaLlenos) && /construido<\/small>/.test(mapaLlenos));
+  P('y no queda otra caja aparte con el mismo nombre',
+    cajas.filter(t=>t==='Llenos y vacíos').length===1 && !/<section class="caja fam-[a-z]+"><h2>Llenos y vacíos<\/h2>/.test(h));
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

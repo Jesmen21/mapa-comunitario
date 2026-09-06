@@ -341,6 +341,17 @@ const geo = [
             banda: f.getAttribute('data-g') || '',
             hueco: Math.round(d ? d.getBoundingClientRect().width : 0),
             w: Math.round(sb.width), h: Math.round(sb.height),
+            /* El techo de alto de ESTE mapa, en píxeles de papel. Los techos
+               van en milímetros de papel deshaciendo la reducción con `--k`,
+               y son distintos por peso: un mapa de dos columnas tiene el suyo
+               y el héroe de tres el suyo. El estilo calculado lo da ya
+               resuelto, en píxeles sin reducir, así que se multiplica por la
+               reducción para compararlo con lo que se mide en pantalla. */
+            tope: (function () {
+              const mh = s ? parseFloat(getComputedStyle(s).maxHeight) : NaN;
+              return isFinite(mh) ? Math.round(mh * esc) : 0;
+            })(),
+            peso: Number(f.getAttribute('data-p') || 1),
             // La proporción del dibujo mismo, para saber si se encogió dentro.
             propVB: (vb.length === 4 && vb[3]) ? vb[2] / vb[3] : 0,
             propHueco: sb.height ? sb.width / sb.height : 0 };
@@ -457,13 +468,17 @@ const geo = [
        que no llene ni una cosa ni la otra está dejando papel sin usar, que es
        lo que pasaba con el techo de alto fijo. */
     const dibujado = m => Math.min(m.w, m.h * (m.propVB || 1));   // ancho real del dibujo
+    /* Contra SU techo, no contra el mapa más alto: desde que los techos van
+       por peso —el héroe de tres columnas más alto que los de dos— un mapa
+       de dos columnas topado en el suyo no está dejando papel sin usar. */
     const techo = Math.max.apply(null, mapas.map(m => m.h));
+    const techoDe = m => m.tope || techo;
     const cortos = mapas.filter(m =>
-      dibujado(m) < m.hueco * 0.95 && m.h < techo * 0.95);
-    T('y ningún dibujo se queda corto: llena el ancho o llega al tope de alto',
+      dibujado(m) < m.hueco * 0.95 && m.h < techoDe(m) * 0.95);
+    T('y ningún dibujo se queda corto: llena el ancho o llega a su tope de alto',
       cortos.length === 0,
       cortos.map(m => m.t + ': ' + Math.round(dibujado(m) / m.hueco * 100) + '% del ancho, ' +
-        m.h + ' de ' + techo + ' px de alto').join(' · ') ||
+        m.h + ' de ' + techoDe(m) + ' px de alto').join(' · ') ||
         mapas.length + ' mapas, tope de alto ' + mm(techo) + ' mm');
   });
 

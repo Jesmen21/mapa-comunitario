@@ -378,6 +378,8 @@ for (let i = 0; i < 30; i++) {
 
   r.err = err.filter(e => !/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
+  // La lámina queda en el directorio de trabajo para poder mirarla.
+  fs.writeFileSync(S + 'lamina-evolucion.html', r.lamina || '', 'utf8');
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
@@ -482,13 +484,20 @@ for (let i = 0; i < 30; i++) {
      sitio están muy pequeños; deben ser más grandes, incluso más grandes que
      los mapas de mapeos». La estampa pasó de 34 a 46 mm y la caja ocupa dos
      columnas, que es lo que le da el ancho de dos mapas. */
-  T('el pliego trae también la tira de fotos, más grande que las de medir',
-    /class="evo-tira evo-alta"/.test(EV) &&
-    /\.evo-alta \.evo-p img\{ width:46mm/.test(r.lamina || ''),
-    (EV.match(/class="evo-tira[^"]*"/g) || []).join(' · ') || 'no hay tiras');
-  T('y la caja ocupa dos columnas: más ancha que un mapa',
-    /^[^>]*caja-doble/.test(((r.lamina || '').split('<section class="caja')
-      .filter(x => /<h2>Cómo cambió el sitio<\/h2>/.test(x))[0]) || ''));
+  /* Y después, con el pliego de 60 × 90 en la mano: «dedicarle casi toda
+     una celda horizontal completa de la hoja para mostrar su línea de
+     tiempo». La caja ocupa la fila entera de su banda y las fotos se
+     reparten ese ancho —cinco fotos de más de diez centímetros—, en vez de
+     un tamaño fijo de estampilla. */
+  const cajaEvo = ((r.lamina || '').split('<section class="caja')
+      .filter(x => /<h2>Cómo cambió el sitio<\/h2>/.test(x))[0]) || '';
+  T('el pliego trae también la tira de fotos, en una caja de fila entera',
+    /class="evo-tira evo-alta"/.test(EV) && /^[^>]*caja-fila/.test(cajaEvo),
+    (cajaEvo.match(/^[^"]*/) || [''])[0]);
+  T('y las fotos se reparten el ancho de la fila, cuadradas',
+    /\.caja-fila \.evo-alta \.evo-p\{ flex:1 1 0/.test(r.lamina || '') &&
+    /\.caja-fila \.evo-alta \.evo-p img\{ width:100%; height:auto; aspect-ratio:1 \/ 1/.test(r.lamina || ''));
+  T('con la serie medida y la conclusión en dos columnas debajo', /<div class="evo-cuerpo">/.test(cajaEvo));
   T('el informe en hojas trae las dos tiras, con sus imágenes',
     /<div class="evo evo-alta">/.test(secPDF) && /<div class="evo">/.test(secPDF) &&
     (secPDF.match(/<img src="data:image/g) || []).length >= 8,

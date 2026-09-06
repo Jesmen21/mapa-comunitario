@@ -2774,7 +2774,44 @@ function donaHTML(datos, colorDe, nombreDe) {
        la caja. Con un techo bajo volvía el problema de siempre —el dibujo se
        encogía hasta caber en el alto y dejaba franjas blancas a los lados—,
        que es justo lo que se pidió quitar. */
-    var altoMapaMM = horiz ? 170 : 210;
+    /* ── Los topes de alto, en milímetros DE PAPEL ─────────────────────
+       Todos los techos de esta hoja estaban en milímetros de COMPOSICIÓN, y
+       la hoja se compone más ancha y se reduce entera: un techo de 210 mm
+       con la hoja al 40 % son 84 mm en el papel. Mientras la reducción era
+       poca no se notaba; al pedir los mapas grandes de verdad, cada mapa que
+       crecía hacía la hoja más alta, la reducción mayor, y el techo —y con él
+       todos los dibujos— más chico: el pedido se anulaba a sí mismo.
+
+       Así que los techos se escriben ahora en papel: `calc(X mm / var(--k))`,
+       con `--k` igual a la reducción de la hoja. El navegador deshace la
+       reducción al medir el tope, y un mapa de 150 mm mide 150 mm salga la
+       hoja al 90 % o al 40 %. Lo que cede con la reducción es SOLO la letra,
+       que es lo que siempre debió ceder. Y como es una variable de CSS, la
+       búsqueda de `laminaQueQuepa` la cambia junto con la reducción sin
+       volver a escribir el documento. */
+    /* Con un SUELO a la reducción que deshacen: por debajo del 50 % los
+       dibujos vuelven a encogerse con la hoja. MEDIDO sin el suelo, con el
+       sector de prueba de la banda de mapas —catorce usos y diez capas—: los
+       mapas a tamaño de papel entero no cabían ni al 30 % y «cabe todo»
+       empezaba a tirar cajas, mientras el pliego salía con un cuarto de hoja
+       en blanco debajo y los mapas de un sector de catorce usos del tamaño
+       de la mano. Un sector con poco que contar tiene los mapas grandes; uno
+       que revienta la hoja reparte el encogimiento entre todo, que es lo que
+       hacía antes y lo que hace que quepa. */
+    var SUELO_K = 0.5;
+    var papel = function (mm) { return 'calc(' + mm + 'mm / max(var(--k, 1), ' + SUELO_K + '))'; };
+    /* Los techos, en papel. Medidos con el sector de prueba de veintidós
+       lados y diez capas: con los héroes a 160 y los mapas de dos columnas a
+       130 la hoja parada cierra con letra legible; más alto que eso, el
+       papel fijo de los dibujos se come el de la letra y ya no hay
+       reducción que alcance. */
+    /* Acostada, la hoja tiene 300 mm menos de alto y los mismos temas, así
+       que sus techos son más bajos: MEDIDO, con los de la parada la hoja
+       acostada no cerraba ni al 30 % y empezaba a tirar cajas. */
+    var TOPE = horiz
+      ? { mapa: 70, mapa2: 80, mapa3: 95, plano: 100, dib: 50, dibAlto: 80, corte: 36, rosa: 38, foto: 55 }
+      : { mapa: 110, mapa2: 130, mapa3: 160, plano: 160, dib: 80, dibAlto: 140, corte: 55, rosa: 55, foto: 90 };
+    var altoMapaMM = TOPE.mapa;
 
     /* El plano comparte su banda con la ficha del sitio: ocupa tres de cuatro
        columnas parado y cinco de seis acostado. Si el sitio está apagado se
@@ -2786,7 +2823,23 @@ function donaHTML(datos, colorDe, nombreDe) {
        queda flotando entre dos franjas de rejilla. En dos columnas la llena.
        «El cuadrado que estás analizando más grande, y no sobrealargarlo de
        más» es exactamente esto. */
-    var pesoPlano = proporcionDelSector >= 1.25 ? 3 : 2;
+    /* Cuatro parado y seis acostado, con la foto satelital al lado a tres y
+       cuatro. Llegó con el pliego impreso en la mano: «la imagen satelital
+       donde sale el lote pintado de amarillo la quiero un 300 % más grande,
+       porque la imagen inicial debe ser la más importante para dar contexto»
+       y «el plano del sector lo quiero grande para mostrar con más detalle
+       los mapeos». Los dos juntos llenan la primera fila con la ficha del
+       sitio, y lo que cede es la hoja entera, que se compone más apretada:
+       eso se aceptó por escrito —«tendrás que reorganizar la diagramación»—. */
+    var pesoPlano = horiz ? 5 : 4;
+    /* Cuántas columnas vale cada mapa en la banda de su tema. Lo que no está
+       acá vale una —o dos si el sector es ancho, ver `mapaAncho`—. Los tres
+       del análisis ambiental se pidieron «un 300 % más grandes», y los dos de
+       la morfología llevan ahora su contexto debajo, así que necesitan el
+       ancho de una columna de texto. */
+    var PESO_MAPA = horiz
+      ? { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2 }
+      : { foto: 3, cobertura: 2, masa: 2, curvas: 2, llenos: 2, alturas: 2 };
     /* Cuántas columnas vale una fila del pliego. Acostado, la banda del plano
        comparte la fila con la del análisis ambiental y el plano se queda con
        tres de las cuatro columnas de la suya.
@@ -2805,9 +2858,15 @@ function donaHTML(datos, colorDe, nombreDe) {
        `tpliegogrande` mide el desborde con la rejilla ya reducida y falla en
        cuanto pasa, que es exactamente como se descubrió esto. */
     var anchoFila = horiz ? 12 : 8;
-    var anchoBanda1 = ((horiz ? 900 : 600) - 40) * ((pesoPlano + (conSitio ? 1 : 0)) / (horiz && mapas.length ? anchoFila : (pesoPlano + (conSitio ? 1 : 0))));
-    var anchoPlanoMM = Math.round((anchoBanda1 - (conSitio ? 4 : 0)) *
-                                  (conSitio ? pesoPlano / (pesoPlano + 1) : 1)) - 8;
+    /* La primera banda: la foto, el plano y la ficha del sitio. El ancho del
+       plano en el papel sale de cuántas columnas de la fila se lleva su
+       banda y de cuántas de esas son suyas; con eso se compone el dibujo a la
+       proporción justa para llenarlo, sin franjas a los lados. */
+    var hayFoto = mapas.some(function (m) { return m.id === 'foto'; });
+    var pesoSitio = horiz ? 2 : 1;
+    var colsBanda1 = pesoPlano + (conSitio ? pesoSitio : 0) + (hayFoto ? PESO_MAPA.foto : 0);
+    var anchoBanda1 = ((horiz ? 900 : 600) - 40) * Math.min(1, colsBanda1 / anchoFila);
+    var anchoPlanoMM = Math.round(anchoBanda1 * pesoPlano / colsBanda1) - 8;
     var altoPlanoMM = horiz ? Math.max(46, 96 - 8 * extras)
                             : Math.max(76, 198 - 14 * extras);
     // Con la banda de mapas debajo, el plano cede: son dos figuras grandes
@@ -2818,7 +2877,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* Más alto que antes: la foto y el plano son «los dos planos
        protagonistas» y con las bandas apiladas en dos renglones el papel
        alcanza. */
-    if (mapas.length) altoPlanoMM = horiz ? 72 : 104;
+    /* Doscientos parado: el plano es la figura de la lámina y se pidió
+       grande. Acostado, la hoja tiene 300 mm menos de alto y el plano ya
+       ocupa media fila de ancho. */
+    if (mapas.length) altoPlanoMM = TOPE.plano;
     var altoDelPlano = Math.round(520 * altoPlanoMM / anchoPlanoMM);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
@@ -2975,7 +3037,15 @@ function donaHTML(datos, colorDe, nombreDe) {
        renglones y el papel alcanza: el historial —«más grandes incluso que
        los mapas de mapeos, para ver con claridad»— y el lote, que se quedó
        sin la lista de lados y es todo dibujo. */
-    var CAJAS_DOBLES = ['Cómo cambió el sitio', 'El lote a intervenir'];
+    var CAJAS_DOBLES = horiz ? ['Cómo cambió el sitio', 'El lote a intervenir'] : ['El lote a intervenir'];
+    /* La fila ENTERA de su banda: «las imágenes satelitales de cómo cambia el
+       sitio, sería bueno dedicarle casi toda una celda horizontal completa
+       de la hoja para mostrar su línea de tiempo». Cinco fotos en fila a lo
+       ancho del pliego es una línea de tiempo; cinco fotos de 46 mm en una
+       caja de dos columnas eran estampillas. */
+    /* Solo parada: acostada la fila entera son 860 mm para cinco fotos y la
+       hoja, que ya va justa de alto, no lo paga; ahí sigue a dos columnas. */
+    var CAJAS_FILA = horiz ? [] : ['Cómo cambió el sitio'];
     /* Y el lote además ocupa los dos renglones de su banda, como un mapa: es
        el dibujo que se pidió «más grande», y a dos columnas por un renglón
        quedaba ancho y chato, con el plano —que es casi cuadrado— del tamaño
@@ -2987,7 +3057,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
       var ancha = (CAJAS_DIBUJO.indexOf(titulo) !== -1 ? ' caja-dibujo' : '') +
                   (CAJAS_DOBLES.indexOf(titulo) !== -1 ? ' caja-doble' : '') +
-                  (CAJAS_ALTAS.indexOf(titulo) !== -1 ? ' caja-alta' : '');
+                  (CAJAS_ALTAS.indexOf(titulo) !== -1 ? ' caja-alta' : '') +
+                  (CAJAS_FILA.indexOf(titulo) !== -1 ? ' caja-fila' : '');
       var cara = CARA[titulo] || ['sitio', 'info'];
       var fam = FAMILIAS[cara[0]] || FAMILIAS.sitio;
       /* Las cajas con clase propia —el plano, la banda de mapas, la síntesis—
@@ -3740,10 +3811,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         (fotos[fotos.length - 1].anioReal || fotos[fotos.length - 1].anio) + '</p>' +
         tira(fotos, 'evo-alta', function (p) { return p.fecha || ''; })
       : '') +
+      '<div class="evo-cuerpo"><div>' +
       (medidos.length
       ? '<p class="lee">Medido desde ' + (medidos[0].anio) + '</p>' +
         tira(medidos, '', function (p) { return conComa(p.medida.verde) + '% verde'; })
       : '') +
+      '</div><div>' +
       (t
       ? '<div class="kpis">' +
         '<div class="k"><b>' + conComa(t.verdeDesde) + '%</b><small>verde en ' + t.desde + '</small></div>' +
@@ -3755,6 +3828,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       conc.map(function (c) {
       return '<p class="lee">' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
       }).join('') +
+      '</div></div>' +
       '<p class="nota">' +
       (fotos.length
       ? 'Debajo de cada foto va la <b>fecha de la entrega</b> de la que salió, no el año que se ' +
@@ -4265,8 +4339,18 @@ function donaHTML(datos, colorDe, nombreDe) {
         que: 'relieve · clima · sol · amenaza · inundación · verde · cobertura · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'La inundación', 'Verde y agua',
-                'El ruido del tránsito', 'Infraestructura de servicios',
-                'Cómo cambió el sitio', 'Cobertura del suelo', 'Espacio público efectivo'] },
+                'El ruido del tránsito', 'Infraestructura de servicios']
+                .concat(horiz ? ['Cómo cambió el sitio'] : [])
+                .concat(['Cobertura del suelo', 'Espacio público efectivo']) },
+      /* La línea de tiempo, banda propia y de fila entera. Dentro del
+         ambiental, «fila entera» era la fila de ESA banda, y cuando el
+         ambiental compartía fila con la ubicación eso eran tres columnas:
+         cinco fotos en 200 mm. Como banda aparte con el peso de la fila, la
+         fila es la hoja. Acostada sigue dentro del ambiental a dos columnas,
+         que es lo que la hoja de 600 mm de alto paga. */
+      { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo',
+        que: 'las fotos desde 2014 · lo medido desde 1984',
+        cajas: horiz ? [] : ['Cómo cambió el sitio'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
@@ -4309,9 +4393,16 @@ function donaHTML(datos, colorDe, nombreDe) {
        para tres cajas. Con siete comparten fila y la síntesis, si nadie la
        acompaña, se estira igual: el peso permite compartir, no obliga. Esos
        milímetros son los que se van a los mapas. */
+    /* «El terreno» vale lo que un mapa del ambiental: lleva los dos cortes
+       topográficos, y se pidió que salieran «a la misma escala» que los
+       mapas de al lado. Un corte es ancho y bajo, así que darle columnas es
+       darle escala sin costarle alto a la hoja. */
     var PESO = { 'Plano del sector': pesoPlano,
+                 'El sitio': pesoSitio,
                  'Síntesis del sector': horiz ? 7 : ANCHO_FILA,
-                 'Cómo cambió el sitio': 2, 'El lote a intervenir': 2 };
+                 'Cómo cambió el sitio': horiz ? 2 : ANCHO_FILA,
+                 'El terreno': PESO_MAPA.curvas,
+                 'El lote a intervenir': 2 };
     function pesoDe(titulo) { return PESO[titulo] || 1; }
     /* Las bandas se arman DESPUÉS de las cajas y no reescribiendo el orden
        del código: cada caja se construye donde vive su cálculo, y moverlas
@@ -4338,6 +4429,43 @@ function donaHTML(datos, colorDe, nombreDe) {
         var m = t.match(/<h2>([^<]*)<\/h2>/);
         var titulo = m ? m[1] : '';
         (porTitulo[titulo] || (porTitulo[titulo] = [])).push(t);
+      });
+      /* ── El contexto, debajo de su mapa ──────────────────────────────
+         «Veo dos cajas aparte explicando el mapa de llenos y vacíos y el de
+         las alturas, a la derecha de ellos; sería mejor poner el contexto de
+         cada uno debajo de los mapas que están analizando.» Y de los hitos:
+         «salen debajo del mapa enumerados pero pequeños, y hay otra caja que
+         dice hitos y nodos». Son el mismo dato dos veces en dos sitios. La
+         caja de cifras se mete dentro de la caja del mapa, debajo del
+         dibujo, y desaparece como caja aparte: el mapa recupera su nombre a
+         secas —ya no hay otra igual— y el pie de los hitos, que repetía la
+         lista en letra de lupa, sobra. */
+      var FUSIONAR = ['Llenos y vacíos', 'Alturas de lo construido', 'Hitos y nodos'];
+      FUSIONAR.forEach(function (tt) {
+        var texto = (porTitulo[tt] || [])[0];
+        if (!texto) return;
+        var marca = '<h2>' + esc(tt) + ' · el mapa</h2>';
+        var gid = null, idx = -1;
+        Object.keys(porGrupo).some(function (g2) {
+          idx = porGrupo[g2].findIndex(function (t) { return t.indexOf(marca) !== -1; });
+          if (idx >= 0) { gid = g2; return true; }
+          return false;
+        });
+        if (!gid) return;
+        var cuerpo = texto.replace(/^<section[^>]*>/, '').replace(/<\/section>$/, '')
+                          .replace(/<h2>[^<]*<\/h2>/, '')
+                          .replace(/<span class="ic"[\s\S]*?<\/span>/, '');
+        porGrupo[gid][idx] = porGrupo[gid][idx]
+          .replace(marca, '<h2>' + esc(tt) + '</h2>')
+          .replace(/<small class="mp-pie">[\s\S]*?<\/small>/, function (m) {
+            // El pie de los hitos repetía la lista en letra de lupa; la
+            // lista va ahora debajo, en renglones. El pie queda —cada mapa
+            // lleva el suyo— pero dice a dónde mirar.
+            return tt === 'Hitos y nodos'
+              ? '<small class="mp-pie">los números son los de la lista de abajo</small>' : m;
+          })
+          .replace(/<\/section>$/, '<div class="mp-ctx">' + cuerpo + '</div></section>');
+        delete porTitulo[tt];
       });
       var puestas = {}, bandas = [], indice = [];
       GRUPOS.forEach(function (g) {
@@ -4373,7 +4501,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       bandas.forEach(function (bd) {
         var esMapa = function (t) { return /^<section class="caja mapa-caja/.test(t); };
         var anchoDe = function (t) {
-          if (esMapa(t)) return /mapa-ancho/.test(t) ? 2 : 1;
+          if (esMapa(t)) {
+            var p = t.match(/ data-p="(\d+)"/);
+            return p ? Number(p[1]) : (/mapa-ancho/.test(t) ? 2 : 1);
+          }
           var m = t.match(/<h2>([^<]*)<\/h2>/);
           return pesoDe(m ? m[1] : '');
         };
@@ -4558,9 +4689,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cajaMapas = mapas.map(function (m) {
       var cara = CARA['Los mapas del sector'] || ['sitio', 'capas'];
       var titulo = titulosDeCaja.indexOf(m.titulo) >= 0 ? m.titulo + ' · el mapa' : m.titulo;
-      return '<section class="caja mapa-caja' + (mapaAncho ? ' mapa-ancho' : '') +
+      /* Las columnas que se lleva, escritas en la caja: la banda las lee de
+         ahí para repartir, y la hoja de estilo para el `span`. */
+      var peso = PESO_MAPA[m.id] || (mapaAncho ? 2 : 1);
+      return '<section class="caja mapa-caja' + (mapaAncho && !PESO_MAPA[m.id] ? ' mapa-ancho' : '') +
+          (PESO_MAPA[m.id] ? ' mapa-p' + peso : '') +
           ' fam-' + (GRUPO_FAM[m.grupo] || 'sitio') +
-          '" data-g="' + esc(m.grupo || 'mapas') + '">' +
+          '" data-g="' + esc(m.grupo || 'mapas') + '" data-p="' + peso + '">' +
           '<h2>' + esc(titulo) + '</h2>' +
           '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
           '<div class="mp-dib">' + m.svg + '</div>' +
@@ -4684,7 +4819,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          reducir—, así que la rejilla va dentro de un marco que sí lo ocupa y
          que recorta lo que sobre. */
       '.rejilla{ flex:1 1 auto; min-height:0; overflow:hidden }' +
-      '.rej{ display:flex; flex-direction:column; gap:' + (horiz ? 3.5 : 5) + 'mm' +
+      '.rej{ display:flex; flex-direction:column; gap:' + (horiz ? 3.5 : 5) + 'mm; --k:' + escalaHoja +
         (escalaHoja < 1
           ? '; transform:scale(' + escalaHoja + '); transform-origin:top left;' +
             ' width:' + Math.round(1000 / escalaHoja) / 10 + '%'
@@ -4733,10 +4868,31 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* 46 mm, «más grandes incluso que los mapas de mapeos»: la caja va a dos
          columnas para que quepan cinco en fila. */
       '.evo-alta .evo-p img{ width:46mm; height:46mm; image-rendering:auto }' +
+      /* En la fila entera las fotos se reparten el ancho de la banda, y no
+         un tamaño fijo: cinco fotos a lo ancho de un pliego de 60 son fotos
+         de más de diez centímetros, que es lo que se pidió que se viera.
+         Cuadradas por `aspect-ratio`, con techo para que una banda muy ancha
+         y pocas fotos no se coma media hoja. */
+      '.caja-fila .evo-tira.evo-alta{ flex-wrap:nowrap; gap:4mm }' +
+      '.caja-fila .evo-alta .evo-p{ flex:1 1 0; min-width:0 }' +
+      '.caja-fila .evo-alta .evo-p img{ width:100%; height:auto; aspect-ratio:1 / 1; max-height:' + papel(TOPE.foto) + ' }' +
+      '.caja-fila .evo-alta .evo-p figcaption{ font-size:4.2mm }' +
+      '.caja-fila .evo-alta .evo-p small{ font-size:3.2mm }' +
+      '.caja-fila .evo-tira:not(.evo-alta) .evo-p img{ width:30mm; height:30mm }' +
+      /* Y lo que dice la serie —las estampas medidas, las cifras y la
+         conclusión— va en dos columnas debajo de las fotos, para que la
+         fila no sea una tira de fotos con medio metro de texto debajo. */
+      '.caja-fila .evo-cuerpo{ display:grid; grid-template-columns:1fr 1fr; gap:4mm 8mm; align-items:start }' +
       '.caja-doble{ grid-column:span 2 }' +
       '.evo-dudoso img{ opacity:.55; border-style:dashed }' +
       '.mapa-caja{ grid-column:span 1 }' +
       '.mapa-caja.mapa-ancho{ grid-column:span 2 }' +
+      [2, 3, 4, 5, 6].map(function (n) { return '.mapa-caja.mapa-p' + n + '{ grid-column:span ' + n + ' }'; }).join('') +
+      '.caja-fila{ grid-column:1 / -1 }' +
+      /* El contexto que se fundió con su mapa: separado del dibujo por una
+         regla fina, y con el mismo cuerpo que tendría en su caja. */
+      '.mp-ctx{ display:flex; flex-direction:column; gap:2mm; margin-top:2mm; padding-top:2.4mm;' +
+        'border-top:.3mm solid var(--suave) }' +
       '.mp-dib{ background:#F3F8FB; border-radius:1.5mm; padding:1mm }' +
       /* LLENA el ancho de su caja, con un techo de alto. Es al revés que los
          demás dibujos de la hoja, y a propósito: acá el recuadro ya tiene la
@@ -4744,7 +4900,9 @@ function donaHTML(datos, colorDe, nombreDe) {
          el ancho es llenar la caja, sin franjas a los lados y sin deformar
          nada. El techo es lo único que impide que un mapa en una banda muy
          ancha se lleve media hoja de alto. */
-      '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' + altoMapaMM + 'mm }' +
+      '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' + papel(TOPE.mapa) + ' }' +
+      '.mapa-p2 .mp-dib svg{ max-height:' + papel(TOPE.mapa2) + ' }' +
+      '.mapa-p3 .mp-dib svg, .mapa-p4 .mp-dib svg{ max-height:' + papel(TOPE.mapa3) + ' }' +
       '.mp-pie{ font-size:2.7mm; color:#5A6472; line-height:1.35 }' +
       /* Una banda de un solo mapa —un tema del que solo se midió el dibujo—
          no puede esconder su título como hacen las de una sola caja: el
@@ -4794,8 +4952,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          la caja sin deformar nada; el techo de alto es lo único que impide
          que un plano cuadrado en una caja ancha se lleve media hoja. */
       '.plano-cuerpo{ width:100%; margin:0 auto }' +
-      '.plano-cuerpo svg{ display:block; width:100%; height:auto; max-height:' +
-        (horiz ? 120 : 190) + 'mm }' +
+      '.plano-cuerpo svg{ display:block; width:100%; height:auto; max-height:' + papel(TOPE.plano + 10) + ' }' +
       /* Los dibujos de js/74 traen su propio color y su propio viewBox: acá
          solo se les da la caja y un techo de alto, que es lo único que puede
          desbordar una hoja que no crece. */
@@ -4837,11 +4994,10 @@ function donaHTML(datos, colorDe, nombreDe) {
          probé con el que la hoja cierra, y deja los dibujos a la altura de un
          recuadro de mapa, que es como se pidieron. Un dibujo ancho y bajo
          —el año de lluvia, la curva de amenaza— ni lo toca. */
-      '.dib svg{ display:block; width:100%; height:auto; margin:0 auto; max-height:' +
-        (horiz ? 90 : 108) + 'mm }' +
+      '.dib svg{ display:block; width:100%; height:auto; margin:0 auto; max-height:' + papel(TOPE.dib) + ' }' +
       /* El plano del lote, en su caja de dos por dos, crece hasta el alto de
          dos mapas: es lo que se pidió, «el gráfico más grande». */
-      '.caja-alta .dib svg{ max-height:' + (horiz ? 160 : 190) + 'mm }' +
+      '.caja-alta .dib svg{ max-height:' + papel(TOPE.dibAlto) + ' }' +
       /* La trama de llenos y vacíos es la excepción: es una muestra del patrón
          al lado de sus cifras, no un plano, y a 90 mm sería una cortina. */
       '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto; align-self:center }' +
@@ -4853,8 +5009,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          espacio para agregar cortes topográficos». Un corte es ancho y bajo
          por naturaleza, así que llenar el ancho no cuesta casi alto y es
          cuando por fin se le ve la ladera. */
-      '.corte svg{ display:block; width:100%; height:auto; max-height:' +
-        (horiz ? 55 : 65) + 'mm; margin:0 auto }' +
+      '.corte svg{ display:block; width:100%; height:auto; max-height:' + papel(TOPE.corte) + '; margin:0 auto }' +
       '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
@@ -4873,7 +5028,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.sexo{ display:flex; height:3.6mm; border-radius:2mm; overflow:hidden; margin:1mm 0 2mm }' +
       '.sexo i{ display:block; height:100% } .sexo-m{ background:#ec4899 } .sexo-h{ background:#34CCFE }' +
       '.k-m b{ color:#ec4899 } .k-h b{ color:#0A6F9E }' +
-      '.dib-rosa{ max-width:40mm; margin:0; flex:0 0 auto } .dib-rosa svg{ max-height:40mm }' +
+      /* La rosa de los vientos, casi del tamaño del climograma: «el gráfico
+         de los vientos actualmente está muy pequeño para una hoja de un
+         pliego». */
+      '.dib-rosa{ max-width:' + papel(TOPE.rosa) + '; margin:0; flex:0 0 auto } .dib-rosa svg{ max-height:' + papel(TOPE.rosa) + ' }' +
       /* Las muestras de los mapas: cada forma dice de qué clase es el dato. */
       '.cv i.mu-punto{ border-radius:50% }' +
       '.cv i.mu-area{ border-radius:.4mm; width:3.4mm; height:2.4mm }' +
@@ -5008,11 +5166,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<footer class="pie">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
-        '<div style="max-width:120mm;text-align:right">Usos y vías de OpenStreetMap · población del DANE' +
-          (ter ? ' · relieve ' + esc(ter.fuente || '') : '') +
-          (cli ? ' · clima ' + esc(cli.fuente || '') : '') +
-          '. Esto no es el sector: es lo que estas fuentes saben de él.' +
-          '<span class="redes">' + pieRedes(3.4, 'mm') + '</span></div>' +
+        /* Solo las redes. Las fuentes —OpenStreetMap, el DANE, el relieve,
+           el clima— se pidieron fuera del pliego: «ocúltela, solo deja las
+           redes sociales de URBIS». Siguen en el informe en hojas, que es
+           donde se cita. */
+        '<div style="text-align:right"><span class="redes">' + pieRedes(3.4, 'mm') + '</span></div>' +
       '</footer>' +
       '</div></body></html>';
   }
@@ -5608,7 +5766,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'imprimir') {
         if (!S.resultado || !S.ultimasZonas) return;
         var caja2 = document.getElementById('pcr-nombre');
-        S.nombreGuardado = caja2 ? String(caja2.value || '').trim() : '';
+        // Sin casilla en pantalla se conserva el nombre que había: borrarlo
+        // por no encontrarla es lo que dejaba el PDF sin título.
+        if (caja2) S.nombreGuardado = String(caja2.value || '').trim();
         var html = htmlImprimible(S.resultado, S.ultimasZonas);
         var abrir = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
         if (abrir) { abrir(html); return; }
@@ -5622,7 +5782,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (!S.resultado || S.pdfArmando) return;
         S.pdfError = '';
         var caja3 = document.getElementById('pcr-nombre');
-        S.nombreGuardado = caja3 ? String(caja3.value || '').trim() : '';
+        if (caja3) S.nombreGuardado = String(caja3.value || '').trim();
         bajarPliegoPDF(acc === 'lamina-h', function (m) { S.aviso = m; pintar(); });
         return;
       }
@@ -10320,6 +10480,10 @@ function donaHTML(datos, colorDe, nombreDe) {
          la medida no cambiaría por más que se encogiera y la búsqueda se iría
          siempre al mínimo. */
       var mide = function (k) {
+        /* `--k` va con la reducción: los techos de los dibujos están en
+           milímetros de papel y la deshacen con esta variable, así que
+           medir sin moverla sería medir una hoja que no es la que sale. */
+        rej.style.setProperty('--k', String(k >= 1 ? 1 : k));
         if (k >= 1) { rej.style.transform = ''; rej.style.width = ''; }
         else {
           rej.style.transformOrigin = 'top left';
@@ -16901,9 +17065,15 @@ function donaHTML(datos, colorDe, nombreDe) {
         bloqueQueFalta(st) +
 
         '<label class="pcr-lab" for="pcr-nombre">Nombre del sector (opcional)</label>' +
+        /* Con el nombre GUARDADO dentro, y la sugerencia solo si no hay
+           ninguno. Se escribía siempre la sugerencia, así que al guardar
+           «cleri prueba 1» la hoja se repintaba con la casilla otra vez en la
+           sugerencia, y el botón del PDF —que lee la casilla— bajaba la
+           lámina con otro nombre y sin el título: «cuando exporto el PDF sale
+           con otro nombre y no con el que lo guardé». */
         '<input id="pcr-nombre" class="pcr-nombre" type="text" maxlength="60" ' +
           'placeholder="Ej: La Playa, entre calles 8 y 12" ' +
-          'value="' + esc(S.nombreSugerido || '') + '">' +
+          'value="' + esc(S.nombreGuardado || S.nombreSugerido || '') + '">' +
 
         // Lo que se ve en el mapa detrás de esta hoja.
         h4('mapa', 'En el mapa') +
