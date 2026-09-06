@@ -863,6 +863,47 @@
       totalMatriz++;
     });
 
+    /* ── Lo que se contó piso por piso ────────────────────────────────
+       Hasta acá este panel contaba PUNTOS: una torre de doce pisos con
+       comercio abajo pesaba lo mismo que un kiosco. Desde que se mapea planta
+       por planta hay con qué medir lo que de verdad ocupa el suelo —cuántas
+       plantas hay sobre esta hectárea, qué se hace en ellas y cuántos
+       edificios mezclan usos—, y dejarlo fuera era tirar el trabajo de campo
+       justo donde el estudiante viene a leerlo. */
+    const alt = (function () {
+      const EDIF = window.URBIS_EDIFICIO;
+      if (!EDIF || typeof EDIF.leer !== 'function') return null;
+      let edificios = 0, conPisos = 0, plantas = 0, maximo = 0, mixtos = 0, sinPlantas = 0, altos = 0;
+      const porUso = {};
+      pc.forEach(p => {
+        const uso = ctx.usoDe(p);
+        const esEdif = (typeof EDIF.esCategoriaEdificio === 'function' && EDIF.esCategoriaEdificio(p.tipo)) ||
+                       (String(p.tipo || '') === ctx.matrizKey &&
+                        typeof EDIF.esUsoDeEdificio === 'function' && EDIF.esUsoDeEdificio(uso));
+        if (!esEdif) return;
+        edificios++;
+        const f = EDIF.leer(p.descripcion);
+        if (!f.pisosRegistrados) return;
+        conPisos++; plantas += f.pisos;
+        if (f.pisos > maximo) maximo = f.pisos;
+        if (f.mezcla && f.mezcla.mixto) mixtos++;
+        if (f.pisos >= 4) altos++;
+        if (!(f.usosPorPiso || []).length) { sinPlantas++; return; }
+        // Un piso con tres usos cuenta como un tercio en cada uno: el
+        // edificio no crece por repartirse.
+        const enPiso = EDIF.porPisoDe(f.usosPorPiso);
+        Object.keys(enPiso).forEach(k => {
+          const usos = enPiso[k], parte = 1 / usos.length;
+          usos.forEach(u => { porUso[u] = (porUso[u] || 0) + parte; });
+        });
+      });
+      if (!conPisos) return null;
+      return { edificios, conPisos, plantas, maximo, mixtos, sinPlantas, altos,
+        media: Math.round(10 * plantas / conPisos) / 10,
+        porUso: Object.keys(porUso).map(u => ({ uso: u, plantas: Math.round(porUso[u] * 10) / 10 }))
+          .sort((a, b) => b.plantas - a.plantas) };
+    })();
+
     const m2 = areaM2(S.pts);
     const ha = m2 / 10000;
     return {
@@ -873,6 +914,10 @@
       areaM2: m2, areaHa: ha,
       perimetroM: perimetroM(S.pts, true),
       densidad: ha > 0 ? Math.round((pc.length / ha) * 10) / 10 : 0,
+      alturas: alt,
+      // Plantas por hectárea: la edificabilidad que se ve en la calle, no la
+      // que permite la norma.
+      densidadPlantas: (alt && ha > 0) ? Math.round((alt.plantas / ha) * 10) / 10 : 0,
       mios: pc.filter(p => ctx.esPropio(p)).length,
       deOtros: pc.filter(p => !ctx.esPropio(p)).length
     };
@@ -1321,6 +1366,34 @@
         kpi(r.deOtros, 'de otros') +
       '</div>' +
 
+      /* Lo contado piso por piso, cuando lo hay. Va pegado a las cifras del
+         área porque responde la misma pregunta —cuánto hay acá— pero en la
+         única unidad que distingue una torre de una casa. */
+      (r.alturas
+        ? h4('crecer', 'Lo que se contó piso por piso') +
+          '<div class="pca-kpis">' +
+            kpi(r.alturas.plantas, 'plantas contadas') +
+            kpi(r.densidadPlantas, 'plantas por hectárea') +
+            kpi(String(r.alturas.media).replace('.', ','), 'pisos de media') +
+            kpi(r.alturas.mixtos, 'de uso mixto') +
+          '</div>' +
+          (r.alturas.porUso.length
+            ? '<table class="pca-tabla"><tr><th>Qué hay en las plantas</th><th>Plantas</th></tr>' +
+              r.alturas.porUso.map(x =>
+                '<tr><td>' + esc(x.uso) + '</td><td class="n">' +
+                String(x.plantas).replace('.', ',') + '</td></tr>').join('') +
+              '</table>'
+            : '') +
+          '<p class="pca-nota">' + r.alturas.conPisos + ' de ' + r.alturas.edificios +
+            ' edificios mapeados traen sus pisos' +
+            (r.alturas.sinPlantas
+              ? '; a ' + r.alturas.sinPlantas + ' le' + (r.alturas.sinPlantas === 1 ? '' : 's') +
+                ' falta decir qué hay en cada planta'
+              : '') +
+            '. Un piso con varios usos se reparte entre ellos, así que la suma de arriba ' +
+            'es el número de plantas y no se infla al mezclar.</p>'
+        : '') +
+
       // Con el área ya dibujada, esto responde la otra pregunta: no «qué
       // mapeamos» sino «qué hay ahí según OpenStreetMap».
       botonReconocer() +
@@ -1715,6 +1788,28 @@
   '</div>',
 '</div>',
 
+/* Lo contado piso por piso, en el papel. Es la única cifra de esta hoja que
+   no sale de contar puntos, y por eso va con su propio bloque: dice cuánto se
+   construyó sobre esta hectárea, no cuántas cosas se marcaron. */
+(r.alturas ? [
+'<div class="fila">',
+  '<div class="bloque"><h2>Lo que se contó piso por piso</h2>',
+    '<div class="kpis">',
+      kpi(r.alturas.plantas, 'plantas contadas'), kpi(r.densidadPlantas, 'plantas por hectárea'),
+      kpi(String(r.alturas.media).replace('.', ','), 'pisos de media'), kpi(r.alturas.mixtos, 'de uso mixto'),
+    '</div>',
+    (r.alturas.porUso.length
+      ? '<table style="margin-top:6px"><tr><th>Qué hay en las plantas</th><th>Plantas</th></tr>' +
+        r.alturas.porUso.map(function (x) {
+          return '<tr><td>' + esc(x.uso) + '</td><td>' + String(x.plantas).replace('.', ',') + '</td></tr>';
+        }).join('') + '</table>'
+      : ''),
+    '<div class="datos" style="margin-top:6px">', r.alturas.conPisos, ' de ', r.alturas.edificios,
+      ' edificios mapeados traen sus pisos; el más alto, ', r.alturas.maximo, '. Un piso con varios ',
+      'usos se reparte entre ellos.</div>',
+  '</div>',
+'</div>'].join('') : ''),
+
 '<div class="fila">',
   '<div class="bloque"><h2>Composición por Matriz de Usos</h2>',
     (g.barras ? '<div class="chart"><img src="' + g.barras + '" alt=""></div>' : ''),
@@ -1963,7 +2058,19 @@ bloquesDiag,
       const lng = parseFloat(String(p.lng || '').replace(',', '.'));
       if (isNaN(lat) || isNaN(lng)) return acc;
       if (!dentroDelPoligono(lat, lng, S.pts)) return acc;
-      if (filtro !== 'todos') {
+      /* Dos filtros que no son categorías sino ALTURA: tejer la red solo
+         entre lo alto contesta «¿la ciudad alta está junta o dispersa?», y
+         entre lo mixto, «¿la mezcla de usos se agrupa en un eje?». Las dos
+         preguntas nacieron del mapeo piso por piso y antes no se podían
+         hacer: el generador solo miraba dónde estaba cada punto. */
+      if (filtro === 'pisos-altos' || filtro === 'pisos-mixtos') {
+        const EDIF = window.URBIS_EDIFICIO;
+        if (!EDIF || typeof EDIF.leer !== 'function') return acc;
+        const fi = EDIF.leer(p.descripcion);
+        if (!fi.pisosRegistrados) return acc;
+        if (filtro === 'pisos-altos' && fi.pisos < 4) return acc;
+        if (filtro === 'pisos-mixtos' && !(fi.mezcla && fi.mezcla.mixto)) return acc;
+      } else if (filtro !== 'todos') {
         // Solo los elementos de la Matriz tienen categoría; el resto de
         // dimensiones de Pro City quedan fuera al filtrar por categoría.
         if (String(p.tipo || '') !== ctx.matrizKey) return acc;
@@ -2015,6 +2122,8 @@ bloquesDiag,
   function nombreFiltroGeo(ctx){
     const f = S.geo.grupo || 'todos';
     if (f === 'todos') return 'todo lo mapeado';
+    if (f === 'pisos-altos') return 'lo de cuatro pisos o más';
+    if (f === 'pisos-mixtos') return 'los edificios de uso mixto';
     const g = ctx && ctx.grupos.find(x => x.id === f);
     return g ? g.t : 'una categoría';
   }
@@ -2519,7 +2628,12 @@ bloquesDiag,
       '<button type="button" class="pca-geo-filtro' + (filtro === id ? ' activo' : '') + '" ' +
       'data-u52-call="pca-geo-filtro" data-gid="' + esc(id) + '">' +
       icoCat(ico, 13) + esc(txt) + '<b>' + n + '</b></button>';
+    const al = r.alturas || null;
     const filtros = fchip('todos', '🌐', 'Todo lo mapeado', r.total || 0) +
+      /* Lo contado piso por piso, cuando hay al menos dos: con uno solo no
+         hay geometría que tejer y el chip prometería un dibujo vacío. */
+      (al && al.altos >= 2 ? fchip('pisos-altos', '🏢', 'Solo lo alto (4+ pisos)', al.altos) : '') +
+      (al && al.mixtos >= 2 ? fchip('pisos-mixtos', '🧩', 'Solo los mixtos', al.mixtos) : '') +
       ctx.grupos.filter(g => (r.porGrupo[g.id] || 0) > 0)
         .map(g => fchip(g.id, g.i, g.t, r.porGrupo[g.id])).join('');
 
