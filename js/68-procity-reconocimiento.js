@@ -424,6 +424,141 @@
     };
   }
 
+  /* ── La geometría del trazado, guardada con la ficha ──────────────────
+     Hasta acá el trazado se archivaba a medias: viajaban sus CIFRAS —el
+     porcentaje construido, el perfil, las alturas— y se tiraban las huellas
+     de los edificios y las calles, «miles de polígonos que no caben en el
+     almacenamiento de un teléfono». La consecuencia se veía al reabrir un
+     sector para imprimirlo en casa: sin huellas no hay mapa de llenos y
+     vacíos, ni de alturas, ni las dos sombras, ni la cuadra del lote; sin
+     calles no hay ruido, ni cómo se llega, ni a distancia de caminar. Media
+     lámina se iba, y lo que quedaba era volver a medir el trazado —una
+     consulta a Overpass, cinco segundos de espera y señal, que en campo es
+     justo lo que no hay—.
+
+     No cabían PORQUE se guardaban como estaban en memoria: objetos
+     `{lat, lng}` con quince decimales, que son cien caracteres por esquina.
+     Medido sobre un sector de manzanas de casas: 3.000 huellas ocupan 751 KB
+     así, 295 KB redondeadas al metro como los estratos, y 69 KB escritas
+     como enteros en unidades de 1e-5 grados —un metro— delta a delta en una
+     sola cadena. Con eso caben, y lo que decide qué entra deja de ser una
+     regla y pasa a ser un presupuesto en bytes.
+
+     Lo que no cabe en el presupuesto se corta por CERCANÍA al lote —o al
+     centro, si no hay lote—, que es donde se dibuja el proyecto: si un
+     sector enorme no entra entero, lo que vuelve es el vecindario del lote y
+     no las primeras huellas que devolvió Overpass, que venían en el orden en
+     que las encontró. Y se dice cuántas volvieron de cuántas. */
+  var TOPE_HUELLAS_B = 70000, TOPE_VIAS_B = 30000;
+
+  function anilloComprimido(pts, latB, lngB) {
+    var out = [], la = 0, ln = 0, n = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i]; if (!p) continue;
+      var lng = p.lng != null ? p.lng : p.lon;
+      if (!Number.isFinite(+p.lat) || !Number.isFinite(+lng)) continue;
+      var y = Math.round((+p.lat - latB) * 1e5), x = Math.round((+lng - lngB) * 1e5);
+      // Dos esquinas que caen en el mismo metro son una sola: a esta escala
+      // no se distinguen, y guardarlas dos veces cuesta lo mismo que una real.
+      if (n && y === la && x === ln) continue;
+      if (n === 0) out.push(y, x); else out.push(y - la, x - ln);
+      la = y; ln = x; n++;
+    }
+    return n >= 2 ? out.join(',') : '';
+  }
+  function anilloDescomprimido(txt, latB, lngB) {
+    var v = String(txt || '').split(','), pts = [], la = 0, ln = 0;
+    for (var i = 0; i + 1 < v.length; i += 2) {
+      var y = +v[i], x = +v[i + 1];
+      if (i === 0) { la = y; ln = x; } else { la += y; ln += x; }
+      pts.push({ lat: latB + la / 1e5, lng: lngB + ln / 1e5 });
+    }
+    return pts;
+  }
+  function trazadoParaGuardar(centro) {
+    var eje = null;
+    try { eje = (S.lote && S.lote.length >= 3) ? centroideDe(S.lote) : (centro || null); }
+    catch (e) { eje = centro || null; }
+    return comprimirTrazado(S.trzHuellas || [], S.trzPisos || [], S.trzVias || [], eje);
+  }
+  /* Aparte del estado y sin leerlo: así se puede comprobar con un sector de
+     tres mil huellas —el caso en que el presupuesto corta— sin tener que
+     hacérselas devolver a Overpass en una prueba. */
+  function comprimirTrazado(H, P, V, eje) {
+    H = H || []; P = P || []; V = V || [];
+    if (!H.length && !V.length) return null;
+    /* La base, para que los números sean chicos: la esquina suroeste de todo
+       lo que se guarda. Redondeada al metro como el resto. */
+    var latB = 91, lngB = 181;
+    var mirar = function (p) {
+      if (!p) return;
+      var lng = p.lng != null ? p.lng : p.lon;
+      if (+p.lat < latB) latB = +p.lat;
+      if (+lng < lngB) lngB = +lng;
+    };
+    H.forEach(function (a) { (a || []).forEach(mirar); });
+    V.forEach(function (v) { ((v && v.pts) || []).forEach(mirar); });
+    if (latB > 90 || lngB > 180) return null;
+    latB = Math.floor(latB * 1e5) / 1e5; lngB = Math.floor(lngB * 1e5) / 1e5;
+
+    // Desde dónde se mide la cercanía: el lote es donde se dibuja el proyecto.
+    var lejos = function (pt) {
+      if (!eje || !pt) return 0;
+      var lng = pt.lng != null ? pt.lng : pt.lon;
+      try { return haversineM(eje, { lat: +pt.lat, lng: +lng }); } catch (e) { return 0; }
+    };
+
+    var conIndice = H.map(function (a, i) { return { a: a, i: i, d: lejos((a || [])[0]) }; })
+      .sort(function (x, y) { return x.d - y.d; });
+    var textos = [], pisos = [], usados = 0;
+    for (var k = 0; k < conIndice.length; k++) {
+      var t = anilloComprimido(conIndice[k].a, latB, lngB);
+      if (!t) continue;
+      if (usados + t.length + 1 > TOPE_HUELLAS_B) break;
+      usados += t.length + 1;
+      textos.push(t);
+      var n = P[conIndice[k].i];
+      pisos.push(n == null ? '' : String(n));
+    }
+    var conV = V.map(function (v) { return { v: v, d: lejos(((v && v.pts) || [])[0]) }; })
+      .sort(function (x, y) { return x.d - y.d; });
+    var vias = [], usadosV = 0;
+    for (var j = 0; j < conV.length; j++) {
+      var vv = conV[j].v;
+      var g = anilloComprimido((vv && vv.pts) || [], latB, lngB);
+      if (!g) continue;
+      var nom = String((vv && vv.nombre) || '').slice(0, 60);
+      var coste = g.length + nom.length + 24;
+      if (usadosV + coste > TOPE_VIAS_B) break;
+      usadosV += coste;
+      vias.push({ n: nom, c: String((vv && vv.clase) || ''), g: g });
+    }
+    return { b: [latB, lngB], h: textos.join(';'), p: pisos.join(','),
+             nH: H.length, kH: textos.length,
+             v: vias, nV: V.length, kV: vias.length };
+  }
+  function trazadoDesdeGuardado(g) {
+    if (!g || !Array.isArray(g.b)) return null;
+    var latB = +g.b[0], lngB = +g.b[1];
+    if (!Number.isFinite(latB) || !Number.isFinite(lngB)) return null;
+    var crudos = String(g.h || '').split(';').filter(Boolean);
+    var pisosTxt = String(g.p || '').split(',');
+    var huellas = [], pisos = [];
+    crudos.forEach(function (t, i) {
+      var pts = anilloDescomprimido(t, latB, lngB);
+      if (pts.length < 3) return;
+      huellas.push(pts);
+      var n = parseFloat(pisosTxt[i]);
+      pisos.push(Number.isFinite(n) && n > 0 ? n : null);
+    });
+    var vias = (g.v || []).map(function (v) {
+      return { nombre: v.n || '', clase: v.c || '', pts: anilloDescomprimido(v.g, latB, lngB) };
+    }).filter(function (v) { return v.pts.length >= 2; });
+    if (!huellas.length && !vias.length) return null;
+    return { huellas: huellas, pisos: pisos, vias: vias,
+             huellasTotal: g.nH || huellas.length, viasTotal: g.nV || vias.length };
+  }
+
   function guardarFicha(res, zonas, nombre, id) {
     var meta = res.meta || {}, st = res.stats || {};
     var ficha = {
@@ -551,6 +686,13 @@
          de la ficha normativa es que alguien lo escribió. */
       indicesPuestos: S.indicesPuestos || null,
       indicesFuente: S.indicesFuente || null,
+      /* Las huellas de los edificios y las calles, comprimidas. Ver
+         `trazadoParaGuardar`: es lo que hace que un sector reabierto en casa
+         siga teniendo llenos y vacíos, alturas, sombras, ruido y cuadra. */
+      trz2: (function () {
+        try { return trazadoParaGuardar({ lat: meta.lat, lng: meta.lng }); }
+        catch (e) { return null; }
+      })(),
       pliegoOff: (S.pliegoOff || []).slice(),
       pliegoLetra: S.pliegoLetra || 'todo',
       pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
@@ -662,27 +804,44 @@
       }
     } catch (e) {}
 
-    // 2. Los puntos del sector que se está guardando. Las cuentas se quedan;
+    /* 2. La geometría del trazado: las huellas de los edificios y las calles.
+          Va antes que los puntos porque pesa más que ellos y cuesta lo mismo
+          recuperarla —una consulta—, así que soltarla libera más sitio por el
+          mismo precio. Lo que se pierde son los mapas que se dibujan de ella;
+          las cifras del trazado se quedan. */
+    var f = todas[0];
+    if (f && f.trz2) {
+      var huellasFuera = f.trz2.kH || 0;
+      f.trz2 = null; f.sinTrazado = huellasFuera;
+      soltado.sinTrazado = huellasFuera;
+      if (intento(todas)) {
+        return { ok: true, n: todas.length, cache: soltado.cache, sinTrazado: huellasFuera };
+      }
+    }
+
+    // 3. Los puntos del sector que se está guardando. Las cuentas se quedan;
     //    lo que se pierde es la lista, y esa la vuelve a dar una consulta.
-    var f = todas[0], puntos = (f && f.pois) ? f.pois.length : 0;
+    var puntos = (f && f.pois) ? f.pois.length : 0;
     if (puntos) {
       f.pois = [];
       // Cuántos se soltaron, para poder avisarlo al reabrir el sector.
       f.sinPuntos = puntos;
       soltado.sinPuntos = puntos;
       if (intento(todas)) {
-        return { ok: true, n: todas.length, cache: soltado.cache, sinPuntos: puntos };
+        return { ok: true, n: todas.length, cache: soltado.cache,
+                 sinTrazado: soltado.sinTrazado, sinPuntos: puntos };
       }
     }
 
-    // 3. Las fichas viejas, de una en una y de la más vieja a la más nueva.
+    // 4. Las fichas viejas, de una en una y de la más vieja a la más nueva.
     //    Es lo último porque cada una es el trabajo entero de una tarde.
     var borradas = 0;
     while (todas.length > 1) {
       todas.pop(); borradas++;
       if (intento(todas)) {
         return { ok: true, n: todas.length, cache: soltado.cache,
-                 sinPuntos: soltado.sinPuntos, borradas: borradas };
+                 sinTrazado: soltado.sinTrazado, sinPuntos: soltado.sinPuntos,
+                 borradas: borradas };
       }
     }
 
@@ -13431,6 +13590,11 @@ function donaHTML(datos, colorDe, nombreDe) {
                           : 'borraron los ' + g.borradas + ' sectores guardados más viejos') +
         ' para que cupiera este.');
     }
+    if (g.sinTrazado) {
+      partes.push('No cabía la geometría del trazado —' + g.sinTrazado + ' huellas de edificios y ' +
+        'las calles—, así que este sector se guardó sin ella: al reabrirlo, los llenos y vacíos y ' +
+        'las sombras piden volver a medir el trazado. Las cifras y lo tuyo quedaron completos.');
+    }
     if (g.sinPuntos) {
       partes.push('Este sector se guardó sin sus ' + g.sinPuntos + ' usos, que no cabían: ' +
         'al reabrirlo hay que volver a analizar para verlos en el mapa. Las cuentas, tus ' +
@@ -17108,6 +17272,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         }
         edificios = edificios.slice(0, TOPE_HUELLAS);
       }
+      // Recién medido está entero: si venía a medias de una ficha, ya no.
+      S.trzParcial = null;
       S.trzHuellas = edificios.map(function (el) {
         return el.geometry.map(function (p) {
           return { lat: p.lat, lng: p.lon != null ? p.lon : p.lng };
@@ -17205,6 +17371,8 @@ function donaHTML(datos, colorDe, nombreDe) {
          hecho dejaría al estudiante con los llenos y vacíos, las sombras y el
          recorrido a pie vacíos sin que nada le dijera por qué. */
       hecho: function () { return !!(S.trazado && S.trzHuellas && S.trzHuellas.length); },
+      // Y si volvió a medias —el sector no cabía entero—, se puede volver a
+      // medir para traerlo completo: lo dice `bloqueMedir`, no este paso.
       // La única que pasa por Overpass, y por eso la única que tiene que
       // esperar el limitador de cinco segundos desde el análisis.
       esperaAntesMs: 5600,
@@ -17378,9 +17546,18 @@ function donaHTML(datos, colorDe, nombreDe) {
          parece un error de la aplicación. */
       (S.trazado && !(S.trzHuellas && S.trzHuellas.length)
         ? '<p class="pcr-pista">De este sector volvieron las cifras del trazado, pero no las ' +
-          '<b>huellas de los edificios</b>: son miles de polígonos y no caben en el ' +
-          'almacenamiento del teléfono. Volver a medirlo es una sola consulta, y con eso ' +
+          '<b>huellas de los edificios</b>: no cabían en el almacenamiento del teléfono. ' +
+          'Volver a medirlo es una sola consulta, y con eso ' +
           'vuelven los llenos y vacíos, las sombras y el recorrido a pie.</p>'
+        : '') +
+      /* Y el caso de en medio: volvieron, pero no todas. Un mapa de llenos y
+         vacíos que se corta a doscientos metros del lote parece un barrio que
+         se acaba, y eso hay que decirlo antes de que alguien lo lea así. */
+      (S.trzParcial
+        ? '<p class="pcr-pista">De este sector volvieron las <b>' + S.trzParcial.guardadas +
+          '</b> huellas más cercanas al lote, de ' + S.trzParcial.total + ': el sector entero no ' +
+          'cabía en el teléfono. Los llenos y vacíos y las alturas dibujan esa parte; volver a ' +
+          'medir el trazado las trae todas.</p>'
         : '') +
       '<div class="pcr-medir-lista">' +
         PASOS_MEDIR.map(function (p) {
@@ -18622,9 +18799,10 @@ function donaHTML(datos, colorDe, nombreDe) {
      pero como una ficha de lectura, y para seguir trabajando había que volver
      a consultar la red y esperar al limitador.
 
-     Esto lo devuelve entero. Lo único que no vuelve son las huellas de los
-     edificios: son miles de polígonos que no caben en el almacenamiento de un
-     teléfono, y por eso no se guardan. Se dice, no se disimula. */
+     Esto lo devuelve entero, huellas y calles incluidas: se guardan
+     comprimidas —ver `trazadoParaGuardar`— y lo que no cabe en el
+     presupuesto se corta por cercanía al lote y se dice. Se dice, no se
+     disimula. */
   function reanudarFicha(f) {
     if (!f) return false;
     var A = window.URBIS_PC_ANALISIS;
@@ -18693,10 +18871,21 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.lote = (f.lote && f.lote.length >= 3)
       ? f.lote.map(function (p) { return { lat: p.lat, lng: p.lng }; }) : null;
 
-    /* Lo que NO vuelve, y hay que dejarlo explícitamente en cero para que la
-       hoja no crea que lo tiene: la geometría cruda del trazado. De ahí salen
-       los llenos y vacíos, las sombras y el grafo por el que se camina. */
-    S.trzHuellas = null; S.trzPisos = null; S.trzVias = null;
+    /* La geometría del trazado, de vuelta: las huellas de los edificios con
+       sus pisos y las calles con su nombre. Es lo que dibuja los llenos y
+       vacíos, las alturas, las dos sombras, el ruido y la cuadra del lote, y
+       lo que alimenta el grafo por el que se camina. Si el sector era tan
+       grande que no cupo entero, vuelve el vecindario del lote y se dice
+       cuánto: ver `trazadoParaGuardar`. */
+    var trzG = null;
+    try { trzG = trazadoDesdeGuardado(f.trz2); } catch (e) { trzG = null; }
+    S.trzHuellas = trzG ? trzG.huellas : null;
+    S.trzPisos = trzG ? trzG.pisos : null;
+    S.trzVias = trzG ? trzG.vias : null;
+    S.trzParcial = (trzG && trzG.huellas.length < trzG.huellasTotal)
+      ? { guardadas: trzG.huellas.length, total: trzG.huellasTotal } : null;
+    /* Estas dos sí se recalculan solas de lo anterior, y guardarlas ya
+       hechas las dejaría viejas en cuanto cambiara el lote. */
     S.sombras = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false;
     S.calor = [];
@@ -18771,10 +18960,26 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-conc"><b>' + esc(f.nombre || 'Sector sin nombre') + '</b>' +
       (cuando ? ' · ' + esc(cuando) : '') + ' · ' + (f.total || 0) + ' usos' +
       (medido.length ? ', con ' + esc(medido.join(', ')) : '') + '.</p>' +
-      '<p class="pcr-pista">Vuelve el sector entero sin consultar la red otra vez. Lo único ' +
-      'que no vuelve son las huellas de los edificios —son miles de polígonos y no caben en el ' +
-      'teléfono—, así que para los llenos y vacíos y las sombras hay que volver a medir el ' +
-      'trazado.</p>' +
+      (function () {
+        /* Qué trae de verdad. Antes decía que las huellas no volvían nunca;
+           ahora vuelven comprimidas, y lo que hay que decir es si cupieron
+           todas: un sector grande vuelve con el vecindario del lote. */
+        var g = f.trz2;
+        if (!g || !g.kH) {
+          return '<p class="pcr-pista">Vuelve el sector entero sin consultar la red otra vez. ' +
+            (f.trazado
+              ? 'De este quedaron las cifras del trazado pero no las <b>huellas de los ' +
+                'edificios</b>, así que para los llenos y vacíos y las sombras hay que volver a ' +
+                'medir el trazado.'
+              : 'El trazado no se llegó a medir.') + '</p>';
+        }
+        var todas = g.kH >= (g.nH || g.kH);
+        return '<p class="pcr-pista">Vuelve el sector entero sin consultar la red otra vez, ' +
+          '<b>con las huellas de los edificios y las calles</b>' +
+          (todas ? '' : ' —las <b>' + g.kH + '</b> más cercanas al lote, de ' + g.nH +
+            ': el sector no cabía entero en el teléfono—') +
+          ', así que los llenos y vacíos, las alturas, las sombras y la cuadra siguen ahí.</p>';
+      })() +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="reanudar" data-id="' + esc(f.id || '') +
           '" class="pcr-principal">' + ico('atras', 16) + 'Seguir con este sector</button>' +
@@ -18969,9 +19174,10 @@ function donaHTML(datos, colorDe, nombreDe) {
      cambiar el encuadre del mismo sitio: una sola función para los dos, que
      antes eran dos listas copiadas que se iban separando. */
   function soltarElAnalisis() {
+    S.trzParcial = null;
     S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;
-    S.trzHuellas = null; S.trzPisos = null; S.trzVias = null; S.sombras = null;
+    S.trzHuellas = null; S.trzPisos = null; S.trzVias = null; S.trzParcial = null; S.sombras = null;
     try { pintarLlenosFoto(false); } catch (e) {} S.llenosFoto = null;
     /* El nombre y lo medido para el sector se van con el análisis, aunque el
        lugar sea el mismo: pertenecen a la FICHA, y analizar otra huella hace
@@ -19044,7 +19250,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.indices = null; S.indicesPuestos = null; S.indicesFuente = null;
     pintarCaminata(false); pintarLote();
     S.cobertura = null; S.cobEnMapa = false; S.calor = [];
-    S.trzHuellas = null; S.trzPisos = null; pintarLlenos(false);
+    S.trzHuellas = null; S.trzPisos = null; S.trzParcial = null; pintarLlenos(false);
     S.trabaDescartar = null;
     S.sectorAnclado = null;
     // El borrador del lápiz era de aquel sector, no de este.
@@ -19411,6 +19617,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.campo = f.campo || null;
         S.lote = f.lote || null;
         S.terRejilla = f.terrenoRejilla || null;
+        /* Y la geometría del trazado, que es la que dibuja los mapas de
+           llenos, alturas y sombras: sin prestarla, el informe de un sector
+           archivado salía con las cifras y sin sus mapas. */
+        var trzI = null;
+        try { trzI = trazadoDesdeGuardado(f.trz2); } catch (e) { trzI = null; }
+        S.trzHuellas = trzI ? trzI.huellas : null;
+        S.trzPisos = trzI ? trzI.pisos : null;
+        S.trzVias = trzI ? trzI.vias : null;
         /* Los recorridos del curso también se prestan, y el acuerdo se vuelve
            a calcular con ellos: guardarlo ya calculado ocuparía más y se
            quedaría viejo en cuanto cambiara la forma de unirlos. */
@@ -19989,6 +20203,35 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Cuántas huellas trajo el trazado: para comprobar que un multipolígono
     // entra con sus anillos sin contar rayas del mapa que no son huellas.
     huellasDePrueba: function () { return (S.trzHuellas || []).length; },
+    /* La geometría del trazado tal como está en memoria, en corto: para
+       comprobar que un sector reanudado la trae de vuelta con las mismas
+       esquinas y no solo con la misma cantidad. */
+    /* El códec solo, para poder darle un sector que NO cabe y comprobar por
+       dónde corta. Devuelve lo guardado y lo que se lee de vuelta. */
+    comprimirTrazadoDePrueba: function (huellas, pisos, vias, eje) {
+      var g = comprimirTrazado(huellas, pisos, vias, eje);
+      return { guardado: g, bytes: JSON.stringify(g || null).length,
+               vuelta: trazadoDesdeGuardado(g) };
+    },
+    trazadoDePrueba: function () {
+      var h = S.trzHuellas || [], ps = S.trzPisos || [];
+      /* Una por una y no como dos listas paralelas: al guardarlas se ordenan
+         por cercanía al lote, así que lo que tiene que volver igual es CADA
+         huella con sus pisos, no el orden en que están. La llave es su primera
+         esquina redondeada a diezmetros, que no se mueve al comprimir. */
+      return {
+        huellas: h.length,
+        vias: (S.trzVias || []).map(function (v) { return v.nombre || v.clase || '?'; }),
+        una: h.map(function (a, i) {
+          var p0 = (a || [])[0] || { lat: 0, lng: 0 };
+          return { k: (Math.round(p0.lat * 1e4) / 1e4) + ',' + (Math.round(p0.lng * 1e4) / 1e4),
+                   p: ps[i] == null ? null : ps[i],
+                   n: (a || []).length,
+                   e: [p0.lat, p0.lng] };
+        }),
+        parcial: S.trzParcial || null
+      };
+    },
     // La pendiente píxel a píxel, sobre una rejilla cualquiera: para poder
     // comprobar el reparto contra una superficie de la que se sabe la respuesta.
     rasterDePendiente: rasterDePendiente,

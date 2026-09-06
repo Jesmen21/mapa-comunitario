@@ -37,6 +37,15 @@ const geo=[
   {type:'way',id:id++,tags:{building:'yes','building:levels':'6'},
    geometry:[P(-60,-10),P(-40,-10),P(-40,10),P(-60,10),P(-60,-10)].map(p=>({lat:p.lat,lon:p.lng}))}
 ];
+/* Y una manzana de casas alrededor. Con un solo edificio no se puede
+   comprobar que la geometría guardada vuelva completa ni en qué orden se
+   corta cuando no cabe: hacen falta huellas a distintas distancias del lote,
+   que es por donde se corta. Van con sus pisos, que viajan aparte. */
+for(let i=0;i<24;i++){
+  const x=-260+(i%6)*95, y=-240+Math.floor(i/6)*160;
+  geo.push({type:'way',id:id++,tags:{building:'house','building:levels':String(1+(i%4))},
+    geometry:[P(x,y),P(x+18,y),P(x+18,y+12),P(x,y+12),P(x,y)].map(p=>({lat:p.lat,lon:p.lng}))});
+}
 const NSR={"NOMBRE_DEPARTAMENTO":"NORTE DE SANTANDER","NOMBRE_MUNICIPIO":"CÚCUTA",
   "AA":0.35,"AV":0.3,"ZONA_AMENAZA_SÍSMICA":"Alta","AE":0.25,"AD":0.1,
   "LONGITUD":-72.50559097,"LATITUD":7.90526712};
@@ -177,6 +186,38 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     o.tieneAmenaza=/0,35/.test(o.texto);
     o.marcas=[...H().querySelectorAll('.pcr-int-item')].length;
     o.fichas=(R.leerFichas()||[]).length;
+    /* La geometría del trazado, medida en memoria y en el disco: es lo que
+       tiene que estar del otro lado de la recarga. */
+    o.trz=R.trazadoDePrueba();
+    /* Y el caso que no cabe: un sector de tres mil huellas, que es lo que hay
+       en un kilómetro de ciudad compacta. El presupuesto corta, y lo que
+       importa es POR DÓNDE: tienen que quedarse las de cerca del lote. */
+    o.tope=(function(){
+      const G=m=>m/110540, GN=m=>m/(111320*Math.cos(C.lat*Math.PI/180));
+      const H=[], PS=[]; const lado=55;
+      for(let i=0;i<3000;i++){
+        const gx=i%lado, gy=Math.floor(i/lado);
+        const x=-900+1800*gx/lado, y=-900+1800*gy/lado;
+        const p=(dx,dy)=>({lat:C.lat+G(y+dy), lng:C.lng+GN(x+dx)});
+        H.push([p(0,0),p(9,0),p(9,12),p(0,12),p(0,0)]);
+        PS.push(i%4===0?null:1+(i%5));
+      }
+      const eje={lat:C.lat, lng:C.lng};
+      const r2=R.comprimirTrazadoDePrueba(H, PS, [], eje);
+      const g=r2.guardado||{}, v=r2.vuelta||{};
+      // A qué distancia del eje quedó la más lejana de las que sí se guardaron.
+      const met=(a,b)=>Math.hypot((a.lat-b.lat)*110540,(a.lng-b.lng)*111320*Math.cos(a.lat*Math.PI/180));
+      const dGuardadas=(v.huellas||[]).map(a=>met(eje,a[0]));
+      const dTodas=H.map(a=>met(eje,a[0])).sort((p2,q2)=>p2-q2);
+      return { total:g.nH, guardadas:g.kH, bytes:r2.bytes, vueltas:(v.huellas||[]).length,
+               lejosGuardada:Math.round(Math.max(...dGuardadas)),
+               lejosQueTocaba:Math.round(dTodas[(g.kH||1)-1]),
+               pisosOk:(v.pisos||[]).length===(v.huellas||[]).length };
+    })();
+    o.ficha=(function(){ const f=(R.leerFichas()||[])[0]||{};
+      const kb=x=>Math.round(JSON.stringify(x||null).length/1024);
+      return { kb:kb(f), trzKB:kb(f.trz2), guardadas:(f.trz2||{}).kH||0, total:(f.trz2||{}).nH||0,
+               vias:((f.trz2||{}).v||[]).length }; })();
     return o;
   },{C,POL});
 
@@ -268,6 +309,17 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
        vuelva a figurar como pendiente: es lo que hace que «medir todo» las
        recupere en vez de darlas por buenas. */
     o.avisoHuellas=/no caben en el almacenamiento del teléfono/.test(o.texto);
+    o.trz=R.trazadoDePrueba();
+    /* Y que los mapas que se dibujan DE la geometría vuelvan a estar listos
+       en el inventario del pliego: es para lo que se guardó. */
+    o.mapas=(function(){ const q={};
+      ['llenos','alturas','vias','sombras'].forEach(id2=>{
+        const b2=H().querySelector('[data-pcr="pliego-mapa"][data-c="'+id2+'"]');
+        q[id2]=b2?!b2.classList.contains('pcr-capa-gris'):null; });
+      return q; })();
+    o.cuadraLista=(function(){
+      const b2=H().querySelector('[data-pcr="pliego-caja"][data-c="la-cuadra-del-lote"]');
+      return b2?!b2.classList.contains('pcr-capa-gris'):null; })();
     o.trazadoPendiente=(function(){
       const ps=[...H().querySelectorAll('.pcr-medir-p')]
         .map(p=>({n:(p.textContent||'').trim(), on:p.classList.contains('on')}));
@@ -299,8 +351,9 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     (despues.tarjeta||'').slice(0,100));
   T('diciendo qué trae', /el trazado/.test(despues.tarjeta) && /el terreno/.test(despues.tarjeta) &&
     /lo intangible/.test(despues.tarjeta));
-  T('y avisando de lo que no vuelve',
-    /huellas de los edificios/.test(despues.tarjeta) && /no caben en el teléfono/.test(despues.tarjeta));
+  T('diciendo que trae las huellas y las calles, que es lo que dibuja los mapas',
+    /con las huellas de los edificios y las calles/.test(despues.tarjeta||''),
+    (despues.tarjeta||'').slice(0,220));
   T('hay botón para seguir', despues.hayBoton===true);
 
   console.log('\n  -- lo que volvió --');
@@ -333,10 +386,77 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   T('la marca intangible', despues.marcas===1, despues.marcas+' marca(s)');
   T('y hasta la caja que había apagado del pliego',
     despues.climaApagadoEnPliego===true);
-  T('el trazado vuelve a figurar como pendiente, porque le faltan las huellas',
-    despues.trazadoPendiente.pendiente===true, despues.trazadoPendiente.lista);
-  T('y se explica por qué, donde se va a leer',
-    despues.avisoHuellas===true);
+  /* ── La geometría del trazado, de vuelta ─────────────────────────────
+     Hasta acá se tiraba al archivar —«miles de polígonos que no caben en el
+     almacenamiento de un teléfono»— y un sector reabierto en casa para
+     imprimirlo perdía los llenos y vacíos, las alturas, las dos sombras, el
+     ruido y la cuadra del lote: media lámina. Cabe si se guarda como enteros
+     de un metro delta a delta, y eso es lo que se comprueba: que vuelva
+     ENTERA, con las mismas esquinas y los mismos pisos, y que pese lo que se
+     dijo que iba a pesar. */
+  console.log('\n  -- y la geometría del trazado, que antes se perdía --');
+  const tA=antes.trz||{}, tD=despues.trz||{};
+  T('vuelven todas las huellas que se midieron',
+    tD.huellas>0 && tD.huellas===tA.huellas, tD.huellas+' de '+tA.huellas);
+  /* Cada huella con SUS pisos, buscada por dónde está y no por el sitio que
+     ocupa en la lista: al guardarlas se ordenan por cercanía al lote, y ese
+     orden es a propósito —es por donde se corta si el sector no cabe—. */
+  const porLlave=t=>{ const m={}; (t.una||[]).forEach(u=>{ m[u.k]=u; }); return m; };
+  const mA=porLlave(tA), mD=porLlave(tD);
+  const faltan=Object.keys(mA).filter(k=>!mD[k]);
+  const pisosMal=Object.keys(mA).filter(k=>mD[k] && mD[k].p!==mA[k].p);
+  T('cada una con sus pisos y sus esquinas',
+    faltan.length===0 && pisosMal.length===0 &&
+    Object.keys(mA).every(k=>mD[k].n===mA[k].n),
+    faltan.length+' sin volver · '+pisosMal.length+' con otros pisos');
+  /* Y en el mismo sitio. Se guardan en enteros de 1e-5 grados, que es un
+     metro: la esquina vuelve a menos de metro y medio de donde estaba, que a
+     la escala de una lámina es el grosor de la línea. */
+  const met=(a,b)=>Math.round(Math.hypot((a[0]-b[0])*110540,(a[1]-b[1])*111320*Math.cos(a[0]*Math.PI/180))*10)/10;
+  const dist=Object.keys(mA).filter(k=>mD[k]).map(k=>met(mA[k].e,mD[k].e));
+  T('y en el mismo sitio, a menos de metro y medio',
+    dist.length>=20 && dist.every(d=>d<=1.5),
+    dist.length+' comparadas · la que más se movió: '+Math.max(...dist,0)+' m');
+  T('y las calles, con su nombre',
+    (tD.vias||[]).length===(tA.vias||[]).length && (tD.vias||[]).indexOf('Avenida 3')>=0,
+    (tD.vias||[]).join(' · ')||'ninguna');
+  T('el trazado ya NO figura como pendiente: está entero',
+    despues.trazadoPendiente.pendiente===false, despues.trazadoPendiente.lista);
+  T('y no queda el aviso de que las huellas no volvieron',
+    despues.avisoHuellas===false);
+  /* Para lo que se guardó: los mapas que se dibujan de la geometría y la
+     caja de la cuadra, que necesita el lote Y el trazado. */
+  T('los mapas que se dibujan de ella vuelven listos para el pliego',
+    despues.mapas.llenos===true && despues.mapas.alturas===true && despues.mapas.vias===true,
+    JSON.stringify(despues.mapas));
+  T('y la cuadra del lote también', despues.cuadraLista===true);
+  /* El precio, medido. Una ficha llena pesaba 44 KB, de los cuales 31 eran
+     los puntos; la geometría tiene su propio presupuesto en bytes —70 KB las
+     huellas, 30 las calles— y por debajo de él se guarda entera. */
+  const FI=antes.ficha||{};
+  T('guardadas las 25 huellas y las dos calles, sin cortar nada',
+    FI.guardadas===25 && FI.total===25 && FI.vias===2,
+    FI.guardadas+' de '+FI.total+' huellas · '+FI.vias+' calles');
+  T('y por lo que costó: la geometría cabe en unos pocos kilobytes',
+    FI.trzKB<=6 && FI.kb<=60, FI.trzKB+' KB la geometría · '+FI.kb+' KB la ficha entera');
+  /* Y el sector que NO cabe. Tres mil huellas son 69 KB comprimidas y el
+     presupuesto son 70: se corta, y lo que decide qué entra es la distancia
+     al lote —donde se dibuja el proyecto— y no el orden en que Overpass las
+     encontró, que es el orden en que llegan. */
+  const TO=antes.tope||{};
+  T('un sector que no cabe se corta en el presupuesto, no en la memoria',
+    TO.total===3000 && TO.guardadas>0 && TO.guardadas<3000 && TO.bytes<=105000,
+    TO.guardadas+' de '+TO.total+' huellas · '+Math.round(TO.bytes/1024)+' KB');
+  /* El 1 % de tolerancia es la diferencia entre las dos maneras de medir la
+     distancia, no holgura: la aplicación ordena con haversine y esta prueba
+     mide en plano, y a novecientos metros eso son tres. Si el corte fuera por
+     orden de llegada, la más lejana guardada estaría en la esquina de la
+     rejilla —a unos 1.270 m— y esto lo cazaría igual. */
+  T('y lo que se queda es lo de cerca del lote, no lo primero que llegó',
+    TO.lejosGuardada<=TO.lejosQueTocaba*1.01,
+    'la más lejana guardada, a '+TO.lejosGuardada+' m; la que tocaba, a '+TO.lejosQueTocaba+' m');
+  T('lo cortado se lee igual de vuelta, con sus pisos',
+    TO.vueltas===TO.guardadas && TO.pisosOk===true, TO.vueltas+' de vuelta');
   T('lo demás sigue marcado como medido',
     /✓El terreno/.test(despues.trazadoPendiente.lista) &&
     /✓El clima/.test(despues.trazadoPendiente.lista) &&
