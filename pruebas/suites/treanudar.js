@@ -147,6 +147,23 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
       if(a){ a.click(); await esperar(400); } };
 
+    /* Los títulos de las cajas de la lámina y el inventario de recuadros, que
+       es lo que hay que comparar de los dos lados de la recarga. */
+    const laminaYMapas=async()=>{
+      let cap='';
+      window.AIA_INFORME=window.AIA_INFORME||{};
+      const antesFn=window.AIA_INFORME.abrirVentanaImpresion;
+      window.AIA_INFORME.abrirVentanaImpresion=function(h){ cap=h; };
+      await abrir();
+      const bv=H().querySelector('[data-pcr="lamina-ver"]');
+      if(bv){ bv.click(); await esperar(1400); }
+      window.AIA_INFORME.abrirVentanaImpresion=antesFn;
+      await abrir();
+      return { cajas:(cap.match(/<h2>([^<]+)<\/h2>/g)||[]).map(x=>x.replace(/<\/?h2>/g,'')).sort(),
+               mapas:[...H().querySelectorAll('[data-pcr="pliego-mapa"]')]
+                 .map(x=>(x.getAttribute('data-c')||'')+(x.classList.contains('pcr-capa-gris')?'(gris)':'')).sort() };
+    };
+
     // Ponerle nombre, para reconocerlo del otro lado.
     const caja=document.getElementById('pcr-nombre');
     if(caja){ caja.value='El barrio de la prueba';
@@ -186,6 +203,11 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     o.tieneAmenaza=/0,35/.test(o.texto);
     o.marcas=[...H().querySelectorAll('.pcr-int-item')].length;
     o.fichas=(R.leerFichas()||[]).length;
+    /* La lámina entera, para poder compararla con la del sector reanudado.
+       Es la comprobación que caza lo que ninguna otra ve: una medición nueva
+       que se olvide de viajar con la ficha desaparece del papel al reabrir el
+       sector, y nada en la pantalla lo dice. */
+    o.lamina=await laminaYMapas();
     /* La geometría del trazado, medida en memoria y en el disco: es lo que
        tiene que estar del otro lado de la recarga. */
     o.trz=R.trazadoDePrueba();
@@ -267,6 +289,22 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
       if(a){ a.click(); await esperar(400); } };
     await abrir();
+    /* Los títulos de las cajas de la lámina y el inventario de recuadros, que
+       es lo que hay que comparar de los dos lados de la recarga. */
+    const laminaYMapas=async()=>{
+      let cap='';
+      window.AIA_INFORME=window.AIA_INFORME||{};
+      const antesFn=window.AIA_INFORME.abrirVentanaImpresion;
+      window.AIA_INFORME.abrirVentanaImpresion=function(h){ cap=h; };
+      await abrir();
+      const bv=H().querySelector('[data-pcr="lamina-ver"]');
+      if(bv){ bv.click(); await esperar(1400); }
+      window.AIA_INFORME.abrirVentanaImpresion=antesFn;
+      await abrir();
+      return { cajas:(cap.match(/<h2>([^<]+)<\/h2>/g)||[]).map(x=>x.replace(/<\/?h2>/g,'')).sort(),
+               mapas:[...H().querySelectorAll('[data-pcr="pliego-mapa"]')]
+                 .map(x=>(x.getAttribute('data-c')||'')+(x.classList.contains('pcr-capa-gris')?'(gris)':'')).sort() };
+    };
 
     o.texto=txt();
     o.estado=R.estado();
@@ -313,13 +351,14 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     /* Y que los mapas que se dibujan DE la geometría vuelvan a estar listos
        en el inventario del pliego: es para lo que se guardó. */
     o.mapas=(function(){ const q={};
-      ['llenos','alturas','vias','sombras'].forEach(id2=>{
+      ['llenos','alturas','vias','sombras','caminata'].forEach(id2=>{
         const b2=H().querySelector('[data-pcr="pliego-mapa"][data-c="'+id2+'"]');
         q[id2]=b2?!b2.classList.contains('pcr-capa-gris'):null; });
       return q; })();
     o.cuadraLista=(function(){
       const b2=H().querySelector('[data-pcr="pliego-caja"][data-c="la-cuadra-del-lote"]');
       return b2?!b2.classList.contains('pcr-capa-gris'):null; })();
+    o.lamina=await laminaYMapas();
     o.trazadoPendiente=(function(){
       const ps=[...H().querySelectorAll('.pcr-medir-p')]
         .map(p=>({n:(p.textContent||'').trim(), on:p.classList.contains('on')}));
@@ -430,6 +469,17 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     despues.mapas.llenos===true && despues.mapas.alturas===true && despues.mapas.vias===true,
     JSON.stringify(despues.mapas));
   T('y la cuadra del lote también', despues.cuadraLista===true);
+  /* El recorrido a pie se archiva SIN sus tramos —miles de segmentos de
+     calle— y era el único mapa del pliego que un sector reanudado seguía
+     perdiendo: volvía con sus tres anillos y sin nada que dibujar. Con las
+     calles de vuelta se rehace sin red, y lo que no puede cambiar son sus
+     CIFRAS: rehacerlo sobre otro grafo daría otros números con la misma cara. */
+  T('el recorrido a pie vuelve entero, con sus tramos para dibujarlo',
+    despues.mapas.caminata===true && (tD.caminata||{}).tramos>0,
+    (tD.caminata||{}).tramos+' tramos');
+  T('y con las mismas cifras que se midieron',
+    !!tA.caminata && (tD.caminata||{}).anillos===tA.caminata.anillos,
+    (tA.caminata||{}).anillos+' → '+(tD.caminata||{}).anillos);
   /* El precio, medido. Una ficha llena pesaba 44 KB, de los cuales 31 eran
      los puntos; la geometría tiene su propio presupuesto en bytes —70 KB las
      huellas, 30 las calles— y por debajo de él se guarda entera. */
@@ -457,6 +507,23 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     'la más lejana guardada, a '+TO.lejosGuardada+' m; la que tocaba, a '+TO.lejosQueTocaba+' m');
   T('lo cortado se lee igual de vuelta, con sus pisos',
     TO.vueltas===TO.guardadas && TO.pisosOk===true, TO.vueltas+' de vuelta');
+  /* ── Y la comprobación que las resume a todas ────────────────────────
+     El pliego de un sector reanudado tiene que ser el MISMO que el del
+     sector vivo. No es una comprobación más: es la que caza lo que ninguna
+     otra ve —una medición nueva que se olvide de viajar con la ficha
+     desaparece del papel al reabrirlo, y en la pantalla no se nota—. */
+  console.log('\n  -- y el pliego reabierto es el mismo pliego --');
+  const LA=(antes.lamina||{}), LD=(despues.lamina||{});
+  const sinD=(LA.cajas||[]).filter(x=>(LD.cajas||[]).indexOf(x)<0);
+  const sinA=(LD.cajas||[]).filter(x=>(LA.cajas||[]).indexOf(x)<0);
+  T('la lámina trae las mismas cajas, una por una',
+    (LA.cajas||[]).length>=25 && sinD.length===0 && sinA.length===0,
+    (LA.cajas||[]).length+' cajas en vivo · '+(LD.cajas||[]).length+' al reanudar' +
+    (sinD.length?' · faltan: '+sinD.join(', '):'')+(sinA.length?' · sobran: '+sinA.join(', '):''));
+  T('y el mismo inventario de recuadros, listos y grises',
+    (LA.mapas||[]).length>0 && (LA.mapas||[]).join('|')===(LD.mapas||[]).join('|'),
+    (LD.mapas||[]).filter((x,i)=>x!==(LA.mapas||[])[i]).join(' · ')||'idéntico');
+
   T('lo demás sigue marcado como medido',
     /✓El terreno/.test(despues.trazadoPendiente.lista) &&
     /✓El clima/.test(despues.trazadoPendiente.lista) &&

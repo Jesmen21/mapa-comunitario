@@ -53,6 +53,19 @@ const PNG=Buffer.from(
   }catch(e){} });
 
   let hayRed=true, pedidas=0, servidasPorLaRed=0;
+  /* Las teselas DISTINTAS, además de las peticiones. Contar peticiones mide
+     dos cosas a la vez: las que baja el depósito —que es lo que se quiere
+     comprobar— y las que el mapa de la pantalla vuelve a pedir mientras
+     tanto, que con la ruta interceptada no pasan por la caché del navegador
+     y se cuentan cada vez que se repinta. Bajo carga eso hacía fallar la
+     prueba con el depósito perfecto. Las distintas son el depósito más un
+     puñado de la vista, y eso sí es una cuenta del guardado. */
+  const teselasDistintas=new Set();
+  /* Y cuántas había pedidas justo antes de tocar «guardar el mapa». La página
+     lo avisa por consola —es el único momento que Node no puede ver desde
+     fuera— y con eso la cuenta que se comprueba es la del DEPÓSITO y no la
+     del mapa de la pantalla, que ya había pedido las suyas. */
+  let distintasAlEmpezar=null;
 
   await ctx.route('**', r=>/localhost:(8199|8787)/.test(r.request().url())?r.continue():r.abort());
   /* DESPUÉS del comodín, y no antes: en Playwright la ruta que manda es la
@@ -62,7 +75,7 @@ const PNG=Buffer.from(
      arranca con el satélite y la primera versión de esta prueba interceptaba
      solo cartocdn, así que medía un mapa que nadie estaba mirando. */
   await ctx.route(/basemaps\.cartocdn\.com|arcgisonline\.com|maptiles\.arcgis\.com|mt\d\.google\.com\/vt/, r=>{
-    pedidas++;
+    pedidas++; teselasDistintas.add(r.request().url());
     if(!hayRed){ r.abort('failed'); return; }
     servidasPorLaRed++;
     r.fulfill({status:200,contentType:'image/png',body:PNG});
@@ -81,6 +94,8 @@ const PNG=Buffer.from(
     body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
 
   const pg=await ctx.newPage();
+  pg.on('console', m=>{ if(m.text()==='URBIS-ANTES-DE-GUARDAR' && distintasAlEmpezar===null)
+    distintasAlEmpezar=teselasDistintas.size; });
   const err=[]; pg.on('pageerror',e=>err.push(String(e.message).slice(0,140)));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo',{waitUntil:'domcontentloaded'});
   await pg.waitForTimeout(4000);
@@ -163,6 +178,8 @@ const PNG=Buffer.from(
     scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) * 0.5);
     const dondeIba = scroller.scrollTop;
 
+    console.log('URBIS-ANTES-DE-GUARDAR');
+    await esperar(60);
     H().querySelector('[data-pcr="teselas"]').click();
     /* Se muestrea seguido desde el primer instante: con el arreglo, 149
        imágenes se guardan tan rápido que a los 700 ms ya había terminado y la
@@ -187,7 +204,7 @@ const PNG=Buffer.from(
     return o;
   },{C,POL});
 
-  const pedidasTrasGuardar=pedidas;
+  const pedidasTrasGuardar=pedidas, distintasTrasGuardar=teselasDistintas.size;
 
   // ══ SE CORTA LA RED ═══════════════════════════════════════════════════
   hayRed=false;
@@ -268,9 +285,22 @@ const PNG=Buffer.from(
   /* El mapa de la pantalla también pide teselas mientras esto corre, así que
      el contador de la red lleva unas cuantas de más. Lo que se comprueba es
      que no falte ninguna y que no se dispare. */
+  /* Contra las DISTINTAS y no contra las peticiones: ver `teselasDistintas`.
+     El margen es el puñado de teselas de la vista que no están en el
+     depósito —una pantalla a otro acercamiento—, no holgura para que quepa
+     un depósito que se disparó. */
+  /* Las que se pidieron DURANTE el guardado, y ninguna otra: distintas al
+     terminar menos las que ya había pedido el mapa de la pantalla. Así la
+     cuenta es la del depósito —tiene que traer las que dijo, ni una menos— y
+     el margen es solo para las que el mapa repinte mientras tanto, que
+     quieto no son muchas. Contra las peticiones en bruto, esta prueba
+     fallaba con el depósito perfecto: bajo carga el mapa vuelve a pedir las
+     suyas y, con la ruta interceptada, no pasan por la caché. */
+  const delDeposito = distintasTrasGuardar - (distintasAlEmpezar||0);
   T('bajó lo que dijo que iba a bajar',
-    pedidasTrasGuardar >= r.estimado.teselas && pedidasTrasGuardar <= r.estimado.teselas + 40,
-    pedidasTrasGuardar+' pedidas contra '+r.estimado.teselas+' estimadas');
+    delDeposito >= r.estimado.teselas && delDeposito <= r.estimado.teselas + 12,
+    delDeposito+' teselas nuevas contra '+r.estimado.teselas+' estimadas · '+
+    (distintasAlEmpezar||0)+' ya las tenía la pantalla · '+pedidasTrasGuardar+' peticiones en total');
   /* Casi todas, no todas: con un mapa de satélite las respuestas son opacas y
      Chromium cobra su cuota con un relleno de varios megas por tesela, así
      que las últimas pueden no caber. Lo que no puede pasar es que se guarde
@@ -302,7 +332,8 @@ const PNG=Buffer.from(
   console.log('    guardada de ejemplo: ' + ((sinRed.guardadas||{}).ejemplo||'—'));
   console.log('    teselas en depósito: ' + ((sinRed.guardadas||{}).n));
   console.log('    acierto directo    : ' + sinRed.aciertoDirecto);
-  console.log('    peticiones de red  : ' + pedidas + ' (antes de mirar: ' + pedidasTrasGuardar + ')');
+  console.log('    peticiones de red  : ' + pedidas + ' (antes de mirar: ' + pedidasTrasGuardar +
+              ' · distintas: ' + distintasTrasGuardar + ')');
   }
 
   console.log('\n  -- guardando, la hoja se puede seguir leyendo --');

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v770-el-sector-vuelve-con-sus-calles';
+const URBIS_CACHE = 'urbis-v771-el-recorrido-a-pie-vuelve-entero';
 const URBIS_ASSETS = [
   './',
   './index.html',

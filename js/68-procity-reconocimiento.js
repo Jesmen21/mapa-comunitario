@@ -18884,6 +18884,25 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.trzVias = trzG ? trzG.vias : null;
     S.trzParcial = (trzG && trzG.huellas.length < trzG.huellasTotal)
       ? { guardadas: trzG.huellas.length, total: trzG.huellasTotal } : null;
+    /* El recorrido a pie se archiva SIN sus tramos —son miles de segmentos de
+       calle— así que volvía con sus tres anillos y sin nada que dibujar: el
+       mapa «hasta dónde se camina» era el único del pliego que un sector
+       reanudado seguía perdiendo. Con las calles de vuelta se rehace acá
+       mismo y sin red, que es un Dijkstra sobre el grafo del sector.
+
+       Solo si volvieron TODAS. La caminata no es un dibujo, es una medición
+       —cuántos usos se alcanzan a cinco, diez y quince minutos— y rehacerla
+       sobre un grafo al que le faltan calles daría otros números con la misma
+       cara: menos usos alcanzados porque faltan las calles, no porque el
+       barrio haya cambiado. Si el sector no cupo entero, se quedan los
+       anillos que se archivaron, que son los que se midieron. */
+    var viasEnteras = !!(trzG && trzG.vias.length >= (trzG.viasTotal || 0));
+    if (viasEnteras && S.lote && S.lote.length >= 3 && S.trzVias && S.trzVias.length) {
+      try {
+        var cam2 = caminataDesdeLote();
+        if (cam2 && cam2.anillos && cam2.anillos.length) S.caminata = cam2;
+      } catch (e) {}
+    }
     /* Estas dos sí se recalculan solas de lo anterior, y guardarlas ya
        hechas las dejaría viejas en cuanto cambiara el lote. */
     S.sombras = null; S.curvas = null;
@@ -19625,6 +19644,17 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.trzHuellas = trzI ? trzI.huellas : null;
         S.trzPisos = trzI ? trzI.pisos : null;
         S.trzVias = trzI ? trzI.vias : null;
+        /* Y con ellas el recorrido a pie, por la misma razón y con la misma
+           condición que al reanudar: se archiva sin tramos y se rehace acá si
+           las calles volvieron todas. */
+        S.caminata = f.caminata || null;
+        if (trzI && trzI.vias.length >= (trzI.viasTotal || 0) &&
+            S.lote && S.lote.length >= 3 && trzI.vias.length) {
+          try {
+            var camI = caminataDesdeLote();
+            if (camI && camI.anillos && camI.anillos.length) S.caminata = camI;
+          } catch (e) {}
+        }
         /* Los recorridos del curso también se prestan, y el acuerdo se vuelve
            a calcular con ellos: guardarlo ya calculado ocuparía más y se
            quedaría viejo en cuanto cambiara la forma de unirlos. */
@@ -20229,7 +20259,18 @@ function donaHTML(datos, colorDe, nombreDe) {
                    n: (a || []).length,
                    e: [p0.lat, p0.lng] };
         }),
-        parcial: S.trzParcial || null
+        parcial: S.trzParcial || null,
+        /* Y el recorrido a pie, que se dibuja del grafo de esas mismas
+           calles: sus tramos y las cifras de cada anillo, que son las que no
+           pueden cambiar al reabrir el sector. */
+        caminata: (function () {
+          var c = S.caminata;
+          if (!c || !c.anillos) return null;
+          return { tramos: (c.tramos || []).length,
+                   anillos: c.anillos.map(function (a) {
+                     return [a.minutos, a.nodos, a.usos, a.usosRecta].join('/');
+                   }).join(' · ') };
+        })()
       };
     },
     // La pendiente píxel a píxel, sobre una rejilla cualquiera: para poder
