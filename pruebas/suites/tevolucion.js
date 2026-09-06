@@ -478,10 +478,17 @@ for (let i = 0; i < 30; i++) {
      el informe en hojas llevaba una tabla de porcentajes sin una sola
      imagen. Una tabla de números no es el historial de un sitio: es su
      resumen. Y la serie que hoy funciona de verdad es justo la que faltaba. */
+  /* Y después, con el pliego real en la mano: «los mapas de cómo cambió el
+     sitio están muy pequeños; deben ser más grandes, incluso más grandes que
+     los mapas de mapeos». La estampa pasó de 34 a 46 mm y la caja ocupa dos
+     columnas, que es lo que le da el ancho de dos mapas. */
   T('el pliego trae también la tira de fotos, más grande que las de medir',
     /class="evo-tira evo-alta"/.test(EV) &&
-    /\.evo-alta \.evo-p img\{ width:34mm/.test(r.lamina || ''),
+    /\.evo-alta \.evo-p img\{ width:46mm/.test(r.lamina || ''),
     (EV.match(/class="evo-tira[^"]*"/g) || []).join(' · ') || 'no hay tiras');
+  T('y la caja ocupa dos columnas: más ancha que un mapa',
+    /^[^>]*caja-doble/.test(((r.lamina || '').split('<section class="caja')
+      .filter(x => /<h2>Cómo cambió el sitio<\/h2>/.test(x))[0]) || ''));
   T('el informe en hojas trae las dos tiras, con sus imágenes',
     /<div class="evo evo-alta">/.test(secPDF) && /<div class="evo">/.test(secPDF) &&
     (secPDF.match(/<img src="data:image/g) || []).length >= 8,

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v751-landsat-por-el-enlace-que-manda-el-servidor';
+const URBIS_CACHE = 'urbis-v752-el-pliego-que-se-pidio-mientras-dormias';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -497,6 +497,26 @@
          momento y guardarlos por separado dejaría fichas con el sismo y sin
          el río, que en Cúcuta es la mitad que falta. */
       inundacion: S.inundacion || null,
+      /* Las manzanas por estrato, con sus contornos. Se pidieron en el PDF y
+         no salían: se pintaban, se archivaba la ficha, y al reabrirla para
+         imprimir el pliego ya no estaban, porque no viajaban con ella y el
+         mapa del pliego se dibuja de lo que hay en memoria. Pesan poco —los
+         vértices van redondeados al metro— y volver a pedírselas al DANE
+         para reimprimir sería cobrar dos veces la misma consulta. */
+      estratos: (function () {
+        var e = S.estratos;
+        if (!e || !e.manzanas || !e.manzanas.length) return null;
+        var r5 = function (x) { return Math.round(Number(x) * 1e5) / 1e5; };
+        return { n: e.n, leyenda: e.leyenda || '',
+          manzanas: e.manzanas.map(function (mz) {
+            return { estrato: mz.estrato, color: mz.color, etiqueta: mz.etiqueta,
+              anillos: (mz.anillos || []).map(function (an) {
+                return (an || []).map(function (p) {
+                  return Array.isArray(p) ? [r5(p[0]), r5(p[1])] : [r5(p.lat), r5(p.lng)];
+                });
+              }) };
+          }) };
+      })(),
       /* La evolución, SIN las imágenes. Cada estampa es un PNG en base64 y
          quince de ellas son megas: el almacenamiento del teléfono son cinco
          en total. Lo que se defiende son las cifras y la tendencia, y eso
@@ -1207,6 +1227,14 @@
       (vi.dominante ? '<tr><td>El viento viene del</td><td class="n">' + esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)</td></tr>' : '') +
       (vi.mediaKmh != null ? '<tr><td>Viento medio</td><td class="n">' + String(vi.mediaKmh).replace('.', ',') + ' km/h</td></tr>' : '') +
       '</table>' +
+      (function () {
+        var rosa = (vi.rosa || []).filter(function (r2) { return r2 && r2.pct != null; });
+        var dr = rosa.length === 8
+          ? dib('rosaDeRumbos', rosa.map(function (r2) { return { n: r2.pct }; }),
+                { etiqueta: 'De dónde viene el viento, por rumbo' }) : '';
+        return dr ? '<div class="dib dib-chico" style="max-width:150px">' + dr + '</div>' +
+          '<p class="pie">La rosa de los vientos: qué parte del tiempo viene de cada rumbo.</p>' : '';
+      })() +
       '<table>' + (c.meses || []).filter(function (m) { return m.lluvia !== null; }).map(function (m) {
         return '<tr><td>' + esc(m.nombre) + '</td><td class="n">' + m.lluvia + ' mm · ' +
                (m.tMax != null ? String(m.tMax).replace('.', ',') + ' °C' : '') + '</td></tr>';
@@ -1630,12 +1658,13 @@
           return '<tr><td>' + esc(x.texto) + '</td><td class="n">' + esc(x.dato) + '</td></tr>';
         }).join('');
     };
-    var cuerpo = lista('Lo que juega a favor', s2.favor) +
-                 lista('Lo que juega en contra', s2.contra) +
-                 lista('Lo que falta levantar en campo', s2.falta);
+    var fd = s2.foda || fodaDe(s2.favor, s2.contra, s2.falta);
+    var cuerpo = FODA_CUADRANTES.map(function (q) { return lista(q.t + ' · ' + q.que, fd[q.id] || []); }).join('');
     if (!cuerpo) return '';
-    return '<h2>Síntesis del sector</h2><table>' + cuerpo + '</table>' +
-      '<p class="pie">Cada frase nace de un dato medido y solo aparece si ese dato está.</p>';
+    return '<h2>Síntesis del sector</h2><h3>Matriz FODA</h3><table>' + cuerpo + '</table>' +
+      '<p class="pie">Cada frase nace de un dato medido y solo aparece si ese dato está. Fortalezas y ' +
+      'debilidades son lo interno del sector; oportunidades y amenazas, lo que le viene de afuera; lo que ' +
+      'falta levantar en campo va con las oportunidades.</p>';
   }
 
   function accesibilidadImpresa(st) {
@@ -2320,6 +2349,93 @@
       });
   }
 
+  /* Los rangos de pendiente de la guía colombiana de movimientos en masa
+     (SGC, 2017), que son los que usa cualquier estudio de zonificación: hasta
+     7 % plano o suave, 7 a 15 % moderado, 15 a 30 % fuerte, más de 30 % muy
+     fuerte. La pendiente es el primer factor de susceptibilidad y el único
+     que se puede medir desde acá con lo que ya se tiene: el modelo de
+     elevación del terreno. */
+  var RANGOS_PENDIENTE = [
+    { id: 'baja',    etq: 'Baja',     rango: '< 7 %',    hasta: 7,        color: '#D9F2E3' },
+    { id: 'media',   etq: 'Media',    rango: '7 a 15 %', hasta: 15,       color: '#F6E27F' },
+    { id: 'alta',    etq: 'Alta',     rango: '15 a 30 %', hasta: 30,      color: '#F59E0B' },
+    { id: 'muyalta', etq: 'Muy alta', rango: '> 30 %',   hasta: Infinity, color: '#B91C1C' }
+  ];
+  function susceptibilidadPendiente(R) {
+    if (!R || !R.limites || !R.z || R.filas < 3 || R.columnas < 3) return null;
+    var L = R.limites, F = R.filas, C = R.columnas;
+    var dLat = (L.maxLat - L.minLat) / (F - 1), dLng = (L.maxLng - L.minLng) / (C - 1);
+    var latM = (L.maxLat + L.minLat) / 2;
+    var pasoY = dLat * 110540, pasoX = dLng * 111320 * Math.cos(latM * Math.PI / 180);
+    var z = function (f, c) { var v = R.z[f * C + c]; return v == null ? null : Number(v); };
+    var celdas = [], cuenta = { baja: 0, media: 0, alta: 0, muyalta: 0 }, n = 0;
+    for (var f = 0; f < F; f++) {
+      for (var c = 0; c < C; c++) {
+        var z0 = z(f, c); if (z0 == null) continue;
+        var zn = z(Math.max(0, f - 1), c), zs = z(Math.min(F - 1, f + 1), c);
+        var zo = z(f, Math.max(0, c - 1)), ze = z(f, Math.min(C - 1, c + 1));
+        if (zn == null || zs == null || zo == null || ze == null) continue;
+        var dzdy = (zn - zs) / (pasoY * (f === 0 || f === F - 1 ? 1 : 2));
+        var dzdx = (ze - zo) / (pasoX * (c === 0 || c === C - 1 ? 1 : 2));
+        var pend = Math.sqrt(dzdx * dzdx + dzdy * dzdy) * 100;
+        var r2 = RANGOS_PENDIENTE.filter(function (x) { return pend < x.hasta; })[0] ||
+                 RANGOS_PENDIENTE[RANGOS_PENDIENTE.length - 1];
+        cuenta[r2.id]++; n++;
+        var lat0 = L.maxLat - dLat * (f - 0.5), lat1 = L.maxLat - dLat * (f + 0.5);
+        var lng0 = L.minLng + dLng * (c - 0.5), lng1 = L.minLng + dLng * (c + 0.5);
+        celdas.push({ pts: [{ lat: lat0, lng: lng0 }, { lat: lat0, lng: lng1 },
+                            { lat: lat1, lng: lng1 }, { lat: lat1, lng: lng0 }],
+                      color: r2.color, rango: r2.id, pendiente: Math.round(pend * 10) / 10 });
+      }
+    }
+    if (!n) return null;
+    var reparto = {};
+    Object.keys(cuenta).forEach(function (k) { reparto[k] = Math.round(1000 * cuenta[k] / n) / 10; });
+    return { celdas: celdas, reparto: reparto, n: n };
+  }
+
+  /* El color de cada tipo de uso del suelo —vivienda, comercio, institucional…—
+     para que las barras de «qué manda» lleven el color del uso que miden y no
+     el azul de la casa. Son los de la paleta del catálogo cuando existen ahí y
+     una elección fija para los que no. */
+  var COLOR_USO = {
+    residencial: '#F28C4B', comercial: '#E5484D', institucional: '#3B82F6',
+    servicios: '#14B8A6', industrial: '#6B7280', mixto: '#6366F1', ambiental: '#22C55E'
+  };
+
+  /* La dona de las categorías, dibujada a mano: la ficha la hace con
+     Chart.js, que no viaja al papel. Doce arcos y una leyenda con el color
+     de cada uso, que es a la vez la TABLA DE CONVENCIONES de los mapas de
+     usos —se pidió por su nombre— porque los puntos del plano llevan
+     exactamente estos colores. */
+function donaHTML(datos, colorDe, nombreDe) {
+    var total = datos.reduce(function (a, x) { return a + x.n; }, 0);
+    if (!total) return '';
+    var R = 46, r = 28, cx = 60, cy = 60, ang = -Math.PI / 2, arcos = '';
+    datos.forEach(function (x) {
+      var a2 = ang + 2 * Math.PI * x.n / total;
+      var grande = (a2 - ang) > Math.PI ? 1 : 0;
+      var p = function (rad, a) { return (cx + rad * Math.cos(a)).toFixed(1) + ' ' + (cy + rad * Math.sin(a)).toFixed(1); };
+      arcos += '<path d="M' + p(R, ang) + ' A' + R + ' ' + R + ' 0 ' + grande + ' 1 ' + p(R, a2) +
+        ' L' + p(r, a2) + ' A' + r + ' ' + r + ' 0 ' + grande + ' 0 ' + p(r, ang) + ' Z" fill="' +
+        esc(colorDe(x)) + '" stroke="#fff" stroke-width="1.2"/>';
+      ang = a2;
+    });
+    return '<div class="dona-par">' +
+      '<svg class="dona" viewBox="0 0 120 120" role="img" aria-label="Reparto de los usos por categoría">' +
+        arcos + '<text x="60" y="57" text-anchor="middle" font-size="15" font-weight="800" fill="#0F1F2E">' +
+        total + '</text><text x="60" y="69" text-anchor="middle" font-size="7" fill="#6B7A8A">usos</text>' +
+      '</svg>' +
+      '<div class="dona-ley">' + datos.map(function (x) {
+        return '<span class="cv"><i class="mu mu-punto" style="background:' + esc(colorDe(x)) + '"></i>' +
+          esc(nombreDe(x)) + ' <b>' + x.n + '</b></span>';
+      }).join('') + '</div>' +
+    '</div>';
+  }
+
+
+  var donaImpresa = donaHTML;
+
   function trazasDeCortes(ter) {
     var t = ter !== undefined ? ter : S.terreno;
     return ((t && t.perfiles) || [])
@@ -2401,7 +2517,7 @@
        ve. Y se dice: la ficha avisa a qué tamaño se compuso antes de imprimir.
        Un pliego al 40 % es la señal de que sobran capas para este papel, no un
        pliego roto. */
-    var escalaHoja = Math.max(0.4, Math.min(1, Number(o.escala) || 1));
+    var escalaHoja = Math.max(0.3, Math.min(1, Number(o.escala) || 1));
     /* Cuántos lados del lote se enumeran antes de pasar al reparto. Acostada
        la hoja tiene 300 mm menos de alto, así que aguanta menos renglones.
        Ver el porqué entero donde se usan, en la caja del lote. */
@@ -2567,7 +2683,7 @@
        vuelve a sacar la hoja de la hoja. No es un descuido: la prueba de
        `tpliegogrande` mide el desborde con la rejilla ya reducida y falla en
        cuanto pasa, que es exactamente como se descubrió esto. */
-    var anchoFila = horiz ? 12 : 6;
+    var anchoFila = horiz ? 12 : 8;
     var anchoBanda1 = ((horiz ? 900 : 600) - 40) * ((pesoPlano + (conSitio ? 1 : 0)) / (horiz && mapas.length ? anchoFila : (pesoPlano + (conSitio ? 1 : 0))));
     var anchoPlanoMM = Math.round((anchoBanda1 - (conSitio ? 4 : 0)) *
                                   (conSitio ? pesoPlano / (pesoPlano + 1) : 1)) - 8;
@@ -2578,7 +2694,10 @@
     /* Con los mapas en la hoja el plano ya no es la única figura y cede; pero
        comparte banda con la ficha del sitio, que mide sus buenos 90 mm, así
        que encogerlo más de eso no le devuelve papel a nadie. */
-    if (mapas.length) altoPlanoMM = horiz ? 56 : 78;
+    /* Más alto que antes: la foto y el plano son «los dos planos
+       protagonistas» y con las bandas apiladas en dos renglones el papel
+       alcanza. */
+    if (mapas.length) altoPlanoMM = horiz ? 72 : 104;
     var altoDelPlano = Math.round(520 * altoPlanoMM / anchoPlanoMM);
 
     // ── El plano: el contorno con lo que hay dentro ────────────────────
@@ -2613,7 +2732,12 @@
     } catch (e) { anchoDelPlano = 520; }
     var plano = (A && typeof A.miniatura === 'function')
       ? A.miniatura(forma, {
-          w: anchoDelPlano, h: altoDelPlano, radioPunto: 2.6,
+          /* Radio 1,5 y no 2,6. Con ochocientos usos, los puntos de 2,6 se
+             montaban unos sobre otros y tapaban el plano entero: «salen muy
+             grandes y dañan la estética y la claridad». A 1,5 se ven como
+             una textura de color por sector, que es lo que dice un plano de
+             usos; el detalle de cada punto está en los mapas por categoría. */
+          w: anchoDelPlano, h: altoDelPlano, radioPunto: 1.5,
           // Una ficha guardada no guarda el color de cada punto —sería
           // repetir el mismo dato cientos de veces—, así que se vuelve a
           // sacar del catálogo por su grupo. Sin esto la lámina de un sector
@@ -2726,10 +2850,23 @@
        mapa, que es lo que se pidió, y el papel no cuesta ni un milímetro
        más. La marca se queda porque es lo que la prueba mide. */
     var CAJAS_DIBUJO = ['El lote a intervenir', 'El clima', 'Asoleamiento', 'La amenaza sísmica'];
+    /* Y las que SÍ van a dos columnas, ahora que las bandas se apilan en dos
+       renglones y el papel alcanza: el historial —«más grandes incluso que
+       los mapas de mapeos, para ver con claridad»— y el lote, que se quedó
+       sin la lista de lados y es todo dibujo. */
+    var CAJAS_DOBLES = ['Cómo cambió el sitio', 'El lote a intervenir'];
+    /* Y el lote además ocupa los dos renglones de su banda, como un mapa: es
+       el dibujo que se pidió «más grande», y a dos columnas por un renglón
+       quedaba ancho y chato, con el plano —que es casi cuadrado— del tamaño
+       de antes y papel blanco a los lados. A dos por dos el plano crece de
+       verdad y las cuatro cajas de la norma se apilan al lado. */
+    var CAJAS_ALTAS = ['El lote a intervenir'];
     function caja(titulo, cuerpo, clase) {
       if (!cuerpo) return '';
       if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
-      var ancha = CAJAS_DIBUJO.indexOf(titulo) !== -1 ? ' caja-dibujo' : '';
+      var ancha = (CAJAS_DIBUJO.indexOf(titulo) !== -1 ? ' caja-dibujo' : '') +
+                  (CAJAS_DOBLES.indexOf(titulo) !== -1 ? ' caja-doble' : '') +
+                  (CAJAS_ALTAS.indexOf(titulo) !== -1 ? ' caja-alta' : '');
       var cara = CARA[titulo] || ['sitio', 'info'];
       var fam = FAMILIAS[cara[0]] || FAMILIAS.sitio;
       /* Las cajas con clase propia —el plano, la banda de mapas, la síntesis—
@@ -2760,14 +2897,21 @@
           '"></i>' + esc(c.t) + '</span>';
       }).join('') + '</div>';
     }
-    function barras(lista, etqDe, valDe, pctDe) {
+    /* `colorDe` es lo que pidió quien lee el pliego: «si estamos analizando
+       vivienda, que es de un color, la barra debe ser de ese color». Todas las
+       barras salían del mismo azul, y una barra azul de vivienda al lado de
+       un mapa donde la vivienda es naranja obliga a leer dos veces. */
+    function barras(lista, etqDe, valDe, pctDe, colorDe) {
       var max = lista.reduce(function (m, x) { return Math.max(m, pctDe(x)); }, 0) || 1;
       return '<div class="barras">' + lista.map(function (x) {
+        var col = colorDe ? colorDe(x) : null;
         return '<div class="b"><span>' + esc(etqDe(x)) + '</span>' +
-          '<i><u style="width:' + Math.round(100 * pctDe(x) / max) + '%"></u></i>' +
+          '<i><u style="width:' + Math.round(100 * pctDe(x) / max) + '%' +
+          (col ? ';background:' + esc(col) : '') + '"></u></i>' +
           '<b>' + valDe(x) + '</b></div>';
       }).join('') + '</div>';
     }
+    var dona = donaHTML;
 
     // ── Ubicación ───────────────────────────────────────────────────────
     var cadena = ubic
@@ -2824,72 +2968,48 @@
       return fila('Frente sobre ' + f.via, f.metros + ' m');
       }).join('') +
       (loteA.sinFrenteM ? fila('Sin frente a calle registrada', loteA.sinFrenteM + ' m') : '') +
-      /* Cada lado con cuánto sol de la tarde recibe, del rojo al azul. En la
-         lámina es lo que se lee de lejos junto al plano.
-
-         Con un TECHO, y esto llegó en captura: un lote de 193.863 m² con
-         veintidós lados ponía veintidós renglones acá, la caja crecía a 283
-         mm y la fila entera del pliego con ella —las bandas de una fila se
-         estiran hasta la más alta—, y los 900 mm de papel acostado se
-         pasaban por 52. Lo de abajo se imprimía fuera de la hoja: «aquí se
-         sale de la hoja».
-
-         No se arregla con letra más chica. Veintidós renglones de «Lado 12 ·
-         194 m · sin sol de la tarde» no se leen en un pliego colgado, que es
-         para lo que existe la lámina; el que necesita el listado entero lo
-         tiene en la ficha, en pantalla y con scroll. Así que acá va lo que
-         un proyecto usa: el reparto por cuánto sol recibe cada cara —que es
-         la lectura, y son cinco renglones como mucho— y los lados que de
-         verdad reciben sol de la tarde, que son a los que hay que
-         responderles. Los que no reciben nada se cuentan, no se enumeran.
-
-         Un lote de pocos lados no pierde nada: hasta ocho se listan enteros,
-         que es como estaba y es lo que se quiere ver de una esquina. */
+      /* Sin la lista de lados. Se pidió así —«en vez de una lista larga de
+         cada lado con su intensidad solar, con ver el gráfico se defiende
+         solo»— y es verdad: el plano acotado ya trae cada lado con su
+         medida y su color de sol. Lo que la lámina agrega es la CONCLUSIÓN,
+         que es lo que el dibujo no dice solo: qué cara se calienta y cuánto
+         del perímetro recibe sol de la tarde. La lista entera sigue en la
+         ficha, en pantalla y con scroll. */
       (function () {
       var lados = (loteA.lados || []).map(function (l) {
       return { l: l, nv: l.nivelSol || nivelDeSol(l.solTarde) };
       });
-      // A mano y no con fila(): fila escapa la etiqueta, y el punto es HTML.
-      function renglon(x) {
-      return '<div class="f"><span><i class="sol-punto" style="background:' + esc(x.nv.color) + '"></i>Lado ' +
-        x.l.i + (x.l.via ? ' · ' + esc(x.l.via) : '') + '</span><b>' + x.l.largoM + ' m · ' + esc(x.nv.nombre) + '</b></div>';
-      }
-      if (lados.length <= TECHO_LADOS) return lados.map(renglon).join('');
-      // El reparto: cuántos lados y cuántos metros en cada nivel de sol, en
-      // el orden en que están los niveles, del que más se calienta al que no.
-      var reparto = NIVELES_SOL.map(function (nv) {
-      var suyos = lados.filter(function (x) { return x.nv.id === nv.id; });
-      return { nv: nv, n: suyos.length,
-      m: suyos.reduce(function (a, x) { return a + (Number(x.l.largoM) || 0); }, 0) };
-      }).filter(function (g) { return g.n > 0; });
-      // Y los que reciben algo de sol de la tarde, del más largo al más
-      // corto: son los que le ponen condiciones a la fachada.
-      var alSol = lados.filter(function (x) { return x.nv.id !== 'ninguno'; })
-      .sort(function (a, b) { return (b.l.largoM || 0) - (a.l.largoM || 0); })
-      .slice(0, TECHO_AL_SOL);
-      return reparto.map(function (g) {
-      return '<div class="f"><span><i class="sol-punto" style="background:' + esc(g.nv.color) + '"></i>' +
-        esc(g.nv.nombre.charAt(0).toUpperCase() + g.nv.nombre.slice(1)) + '</span><b>' +
-        g.n + ' lado' + (g.n === 1 ? '' : 's') + ' · ' + Math.round(g.m) + ' m</b></div>';
-      }).join('') +
+      if (!lados.length) return '';
+      var alSol = lados.filter(function (x) { return x.nv.id !== 'ninguno'; });
+      var mSol = alSol.reduce(function (a, x) { return a + (Number(x.l.largoM) || 0); }, 0);
+      var peor = lados.slice().sort(function (a, b) {
+      return (b.l.solTarde || 0) - (a.l.solTarde || 0); })[0];
+      return '<p class="lee">' +
+      (peor && peor.nv.id !== 'ninguno'
+      ? 'La cara que más se calienta es el <b>lado ' + peor.l.i + '</b>' +
+        (peor.l.via ? ' sobre ' + esc(peor.l.via) : '') + ' —' + peor.l.largoM + ' m, ' +
+        esc(peor.nv.nombre) + '—: es la que hay que proteger del sol de la tarde. '
+      : 'Ningún lado recibe sol pleno de la tarde. ') +
       (alSol.length
-      ? '<p class="nota">Los que reciben sol de la tarde, de mayor a menor:</p>' +
-        alSol.map(renglon).join('')
-      : '') +
-      '<p class="nota">El lote tiene <b>' + lados.length + ' lados</b>; acá va el reparto y ' +
-      (alSol.length ? 'los ' + alSol.length + ' más largos que reciben sol' : 'ninguno recibe sol de la tarde') +
-      '. El listado lado por lado está en la ficha.</p>';
+      ? '<b>' + alSol.length + ' de ' + lados.length + ' lados</b> reciben algo de sol de la tarde, ' +
+        Math.round(mSol) + ' m de perímetro; el resto mira al oriente o queda a la sombra.'
+      : '') + '</p>';
       })() +
-      (loteA.critica
-      ? '<p class="lee">La que más se calienta es el lado ' + loteA.critica.i +
-      (loteA.critica.via ? ' (' + esc(loteA.critica.via) + ')' : '') + ', que mira al ' +
-      esc((loteA.critica.mira && loteA.critica.mira.nombre) || 'occidente') + '; los de al lado la siguen ' +
-      'en la medida en que también miran al poniente.</p>'
-      : '') +
-      '<p class="nota">' + (loteA.esquinero ? 'Lote esquinero: da a ' + loteA.frentes.length +
-      ' calles. ' : 'Lote medianero: un solo frente. ') +
-      loteA.nVecinos + ' usos registrados a menos de 200 m.</p>';
+      (function () {
+      var q = (o.loteAnalisis !== undefined ? o.loteAnalisis : loteA) || {};
+      var ix = q.indices || (q.queCabe && q.queCabe.indices) || null;
+      return ix && (ix.ocupacion || ix.construccion)
+      ? '<p class="nota">Con los índices aplicados' +
+        (ix.ocupacion ? ' —ocupación ' + conComa(ix.ocupacion) : '') +
+        (ix.construccion ? ', construcción ' + conComa(ix.construccion) : '') +
+        (ix.ocupacion || ix.construccion ? '—' : '') +
+        ', lo que cabe está en la caja de al lado. Los lados del plano llevan su medida y el ' +
+        'color de cuánto sol de la tarde reciben, del rojo al azul.</p>'
+      : '<p class="nota">Los lados del plano llevan su medida y el color de cuánto sol de la tarde ' +
+        'reciben, del rojo al azul.</p>';
+      })();
       })(), 'g2') +
+
       
       /* La lectura de proyecto, en el papel. Va pegada al lote porque es su
       consecuencia: sol, sombra, agua, acceso y viento leídos como
@@ -2957,10 +3077,19 @@
       var filas = Object.keys(st.porGrupo || {})
       .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
       .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
-      .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
+      .sort(function (a, b) { return b.n - a.n; });
       if (!filas.length) return '';
-      return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
-      function (x) { return x.n; }, function (x) { return x.n; });
+      /* La dona que la ficha dibuja con Chart.js, acá a mano —«faltó el
+         gráfico de usos en el PDF»— y las barras con el color de cada
+         categoría. La leyenda de la dona es además la TABLA DE CONVENCIONES
+         de los mapas de usos: son exactamente los colores de los puntos. */
+      var colorDe = function (x) { return COL[x.id] || '#94a3b8'; };
+      var nombreDe = function (x) { return sinEmoji(nombreGrupo(x.id)); };
+      return dona(filas, colorDe, nombreDe) +
+      '<p class="lee-min">Convenciones de los mapas de usos: cada punto del plano lleva el ' +
+      'color de su categoría.</p>' +
+      barras(filas.slice(0, 8), nombreDe, function (x) { return x.n; },
+      function (x) { return x.n; }, colorDe);
       })(), 'g3') +
 
       /* ── Qué manda en el sector ───────────────────────────────────────
@@ -2988,7 +3117,8 @@
       esc(sinEmoji(NOMBRE_USO[top.id] || top.id)) + '</b> con el ' + top.n +
       '% del peso de los usos.</p>' +
       barras(filas, function (x) { return sinEmoji(NOMBRE_USO[x.id] || x.id); },
-      function (x) { return x.n + '%'; }, function (x) { return x.n; }) +
+      function (x) { return x.n + '%'; }, function (x) { return x.n; },
+      function (x) { return COLOR_USO[x.id] || '#0A6F9E'; }) +
       (m && m.usos
       ? fila('Mezcla de usos', String(m.indice).replace('.', ',') + ' · ' + esc(m.nivel)) +
       '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. Acá da ' +
@@ -3059,8 +3189,11 @@
       (function () {
       var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
       if (!a || !a.conDato) return '';
+      var TONO = { '1': '#BFE3F7', '2': '#5BB4E5', '3': '#0A6F9E', '+3': '#0B3A57' };
       return barras(a.niveles, function (x) { return x.etiqueta; },
-      function (x) { return x.pct + '%'; }, function (x) { return x.pct; }) +
+      function (x) { return x.pct + '%'; }, function (x) { return x.pct; },
+      function (x) { return TONO[String(x.id || x.nivel || x.k || '')] ||
+        (/más|\+/i.test(x.etiqueta) ? TONO['+3'] : (TONO[(x.etiqueta || '').charAt(0)] || '#0A6F9E')); }) +
       '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
       'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>';
       })(), 'g3') +
@@ -3134,7 +3267,24 @@
       '<div class="k"><b>' + (ll.anual != null ? ll.anual : '—') + '</b><small>mm al año</small></div>' +
       '</div>' +
       climograma(cli.meses) +
-      (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
+      /* La rosa de los vientos. La caja del clima quedaba con medio metro de
+         papel vacío y el dato estaba: el motor manda el reparto del viento
+         por los ocho rumbos y solo se imprimía el dominante. Un proyecto
+         orienta los patios y las aberturas con esto. */
+      (function () {
+      var rosa = (vi.rosa || []).filter(function (r2) { return r2 && r2.pct != null; });
+      var dr = rosa.length === 8
+      ? dib('rosaDeRumbos', rosa.map(function (r2) { return { n: r2.pct }; }),
+      { etiqueta: 'De dónde viene el viento, en porcentaje del tiempo por cada rumbo' })
+      : '';
+      return dr
+      ? '<div class="dib-par"><div class="dib dib-rosa">' + dr + '</div><div>' +
+        (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
+        (vi.mediaKmh != null ? fila('Viento medio', conComa(vi.mediaKmh) + ' km/h') : '') +
+        '<p class="nota">La rosa dice de dónde viene el viento y qué parte del tiempo: ' +
+        'el pétalo largo es el rumbo que ventila. Por ahí se abren los patios.</p></div></div>'
+      : (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '');
+      })() +
       (cli.lectura ? '<p class="lee">' + esc(cli.lectura) + '</p>' : '');
       })(), 'g3') +
       
@@ -3361,17 +3511,27 @@
       (pobl && st.poblacionCenso
       ? '<p class="nota">El conteo es censo; lo que sigue es proyección con la tasa del ' +
       'DANE. Un pronóstico no es un dato contado.</p>' : '') +
+      /* La misma estética que la ficha: una sola barra partida para mujeres y
+         hombres —que es como se compara mejor una proporción de dos— y las
+         edades en barras con el tramo dominante más oscuro. Salían como
+         cifras sueltas y barras azules; se pidió «el censo con sus gráficos y
+         estética». */
+      '<div class="sexo"><i class="sexo-m" style="width:' + (d.pctMujeres || 0) + '%"></i>' +
+      '<i class="sexo-h" style="width:' + (d.pctHombres || 0) + '%"></i></div>' +
       '<div class="kpis">' +
-      '<div class="k"><b>' + conComa(d.pctMujeres || 0) + '%</b><small>mujeres</small></div>' +
-      '<div class="k"><b>' + conComa(d.pctHombres || 0) + '%</b><small>hombres</small></div>' +
+      '<div class="k k-m"><b>' + conComa(d.pctMujeres || 0) + '%</b><small>mujeres · ' +
+      Number(d.mujeres || 0).toLocaleString('es-CO') + '</small></div>' +
+      '<div class="k k-h"><b>' + conComa(d.pctHombres || 0) + '%</b><small>hombres · ' +
+      Number(d.hombres || 0).toLocaleString('es-CO') + '</small></div>' +
       (d.envejecimiento != null
       ? '<div class="k"><b>' + conComa(d.envejecimiento) + '</b><small>índice de envejecimiento</small></div>'
       : '') +
       '</div>' +
       (tramos.length
       ? barras(tramos, function (t) { return t.etiqueta; },
-      function (t) { return Number(t.personas).toLocaleString('es-CO'); },
-      function (t) { return t.personas; })
+      function (t) { return Number(t.personas).toLocaleString('es-CO') + ' · ' + t.pct + '%'; },
+      function (t) { return t.personas; },
+      function (t) { return t.id === d.tramoDominante ? '#0B3A57' : '#5BB4E5'; })
       : '') +
       (d.tramoDominanteEtq
       ? '<p class="lee">El grupo más numeroso es <b>' + esc(d.tramoDominanteEtq) + '</b>. ' +
@@ -3568,6 +3728,12 @@
       (function () {
       var c = o.cobertura !== undefined ? o.cobertura : S.cobertura;
       if (!c || !c.clases || !c.clases.length) return '';
+      /* Con el raster en la lámina la barra va debajo de él —ver `extra` del
+         mapa de cobertura— y esta caja sobra: dos veces la misma medición a
+         medio metro una de otra es lo que confundía. Solo sale cuando la
+         clasificación existe sin imagen que la acompañe. */
+      if (c.overlayImagen && c.overlayLimites &&
+          mapasApagados.indexOf('cobertura') === -1) return '';
       var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; })
       .filter(function (x) { return x.pct > 0; });
       if (!orden.length) return '';
@@ -3998,7 +4164,8 @@
        acompaña, se estira igual: el peso permite compartir, no obliga. Esos
        milímetros son los que se van a los mapas. */
     var PESO = { 'Plano del sector': pesoPlano,
-                 'Síntesis del sector': horiz ? 7 : ANCHO_FILA };
+                 'Síntesis del sector': horiz ? 7 : ANCHO_FILA,
+                 'Cómo cambió el sitio': 2, 'El lote a intervenir': 2 };
     function pesoDe(titulo) { return PESO[titulo] || 1; }
     /* Las bandas se arman DESPUÉS de las cajas y no reescribiendo el orden
        del código: cada caja se construye donde vive su cálculo, y moverlas
@@ -4041,6 +4208,54 @@
         if (!suyas.length) return;
         bandas.push({ g: g, cajas: suyas, peso: peso, fam: FAMILIAS[g.fam] || FAMILIAS.sitio });
       });
+      /* ── Apilar de a dos ─────────────────────────────────────────────
+         Cada fila del pliego medía lo que medía su mapa, y las cajas de
+         cifras de al lado —la mitad de altas— quedaban con la mitad de abajo
+         en blanco. Se veía en el PDF real: «El sitio», «Cómo se llega»,
+         «Quién vive acá», todas con un palmo de papel vacío debajo. Ese
+         palmo, multiplicado por treinta cajas, era la razón de que la hoja
+         tuviera que encogerse al 42 % y la letra saliera de lupa.
+
+         Ahora una banda con mapas se compone en DOS renglones: el mapa ocupa
+         los dos y las cajas de cifras se apilan de a dos a su lado. La banda
+         pide la mitad de columnas, caben el doble de bandas por fila, la
+         hoja necesita menos filas y se encoge menos. Lo que se gana no es
+         estética: es tamaño de letra sin quitar ni una caja. El número de
+         columnas es la mitad de las CELDAS —un mapa vale dos por ancho que
+         tenga, porque ocupa los dos renglones— y el peso con el que la banda
+         entra en la fila es ese mismo número. */
+      bandas.forEach(function (bd) {
+        var esMapa = function (t) { return /^<section class="caja mapa-caja/.test(t); };
+        var anchoDe = function (t) {
+          if (esMapa(t)) return /mapa-ancho/.test(t) ? 2 : 1;
+          var m = t.match(/<h2>([^<]*)<\/h2>/);
+          return pesoDe(m ? m[1] : '');
+        };
+        var celdas = 0, celdasAncho = 0, conMapa = false;
+        bd.cajas.forEach(function (t) {
+          var an = anchoDe(t);
+          var alto = (esMapa(t) || /plano-hero/.test(t) || /^<section class="caja[^"]*caja-alta/.test(t)) ? 2 : 1;
+          if (alto === 2) conMapa = true;
+          celdas += an * alto; celdasAncho += an;
+        });
+        bd.celdasAncho = celdasAncho;
+        /* Dos renglones si hay un mapa que los justifique o si hay cajas de
+           sobra para apilar; una sola caja no se apila con nadie. La síntesis
+           va sola y a lo ancho: no entra en este reparto. */
+        var renglones = (conMapa || bd.cajas.length >= 4) && !/sintesis-pie/.test(bd.cajas[0]) ? 2 : 1;
+        /* Y tres —o los que hagan falta— cuando ni en dos cabe en el ancho
+           de la fila. Se vio en el pliego parado: la banda demográfica con
+           seis mapas y cinco cajas pedía nueve columnas para ocho, la grilla
+           la partía sola en un tercer renglón y ahí quedaba UNA caja con
+           siete huecos al lado. Si va a haber tercer renglón, que se decida
+           acá y con las columnas repartidas, no que lo improvise la grilla. */
+        if (renglones === 2 && Math.ceil(celdas / 2) > ANCHO_FILA) {
+          renglones = Math.ceil(celdas / ANCHO_FILA);
+        }
+        bd.renglones = renglones;
+        bd.cols = Math.max(1, Math.ceil(celdas / renglones));
+        bd.peso = bd.cols;
+      });
       /* Un mapa cuyo grupo no existe en la lámina —porque no se midió nada de
          ese tema— no puede desaparecer en silencio: va con las sueltas. */
       Object.keys(porGrupo).forEach(function (gid) {
@@ -4057,13 +4272,37 @@
         bandas.push({ g: { id: 'otras', titulo: 'Otras mediciones', que: 'sin categoría todavía' },
                       cajas: sueltas, peso: sueltas.length, fam: { tinte: '#6B7A8A', suave: '#EEF3F7' } });
       }
-      // Las filas: bandas seguidas mientras quepan en el ancho.
-      var filas = [], fila = null;
+      /* Las filas: bandas seguidas mientras quepan en el ancho. Y cuando la
+         siguiente no cabe, se mira si alguna de MÁS ADELANTE sí cabe antes
+         de cerrar la fila. Se vio en el pliego parado: la movilidad —tres
+         columnas— quedaba sola porque la demográfica pide seis, y sola se
+         estiraba a la fila entera con el perfil de la calle de medio metro;
+         la morfología, dos bandas después, pedía tres y cabía al lado. El
+         orden de lectura cambia de a una banda y la numeración lo sigue; la
+         síntesis no se adelanta nunca: cierra. */
+      var filas = [], pendientes = bandas.slice(), orden = [];
+      var esSintesis = function (bd) { return /sintesis-pie/.test(bd.cajas[0] || ''); };
+      while (pendientes.length) {
+        var fila = { bandas: [], peso: 0 };
+        var primera = pendientes.shift();
+        fila.bandas.push(primera); fila.peso += primera.peso; orden.push(primera);
+        if (!esSintesis(primera)) {
+          for (var k = 0; k < pendientes.length; k++) {
+            var cand = pendientes[k];
+            /* La síntesis solo entra si ya no queda nada más por poner: así
+               comparte fila con la última banda cuando cabe —como antes— sin
+               adelantarse a ninguna. */
+            if ((esSintesis(cand) && pendientes.length > 1) || fila.peso + cand.peso > ANCHO_FILA) continue;
+            fila.bandas.push(cand); fila.peso += cand.peso; orden.push(cand);
+            pendientes.splice(k, 1); k--;
+          }
+        }
+        filas.push(fila);
+      }
+      bandas = orden;
       bandas.forEach(function (bd, i) {
         bd.n = i + 1;
         indice.push({ n: bd.n, titulo: bd.g.titulo, fam: bd.fam });
-        if (!fila || fila.peso + bd.peso > ANCHO_FILA) { fila = { bandas: [], peso: 0 }; filas.push(fila); }
-        fila.bandas.push(bd); fila.peso += bd.peso;
       });
       var salida = filas.map(function (f) {
         return '<div class="fila">' + f.bandas.map(function (bd) {
@@ -4078,17 +4317,31 @@
              abajo con cinco columnas de blanco al lado. Siete en dos
              renglones no son seis y una: son cuatro y tres, y de paso cada
              caja queda más ancha, que es donde el texto deja de partirse. */
-          var enFila = Math.min(bd.peso, ANCHO_FILA);
-          var cols = enFila;
-          if (bd.cajas.length > enFila) {
-            var renglones = Math.ceil(bd.cajas.length / enFila);
-            cols = Math.ceil(bd.cajas.length / renglones);
+          /* Las columnas ya las decidió el reparto de arriba —la mitad de las
+             celdas cuando la banda va en dos renglones—. El tope de la fila
+             sigue mandando: una banda de más columnas que la fila se parte
+             en más renglones, con las columnas repartidas parejas. */
+          /* Con tope: una banda que pide más columnas que la fila se queda con
+             las de la fila y baja a más renglones. NO se reparten las
+             columnas «parejas» acá como se hacía antes: con mapas de dos
+             renglones eso partía la banda demográfica en cuatro renglones de
+             cuatro columnas y la hoja parada se salía 18 mm. La grilla densa
+             rellena los huecos sola. */
+          var cols = Math.min(bd.cols || bd.peso, ANCHO_FILA);
+          var renglones = bd.renglones;
+          /* Una banda que igual quedó sola en su fila se extiende a lo ancho
+             en UN renglón, con una columna por caja: apilada en dos y
+             estirada a la fila entera, cada caja salía del doble de ancho
+             que de alto y el papel se iba en blanco. */
+          if (f.bandas.length === 1 && renglones >= 2 && bd.celdasAncho <= ANCHO_FILA) {
+            renglones = 1; cols = bd.celdasAncho;
           }
           return '<div class="banda banda-' + bd.g.id + (bd.cajas.length === 1 ? ' sola' : '') +
               '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
             '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
               '<small>' + esc(bd.g.que) + '</small></div>' +
-            '<div class="bcuerpo" style="grid-template-columns:repeat(' + cols + ',minmax(0,1fr))">' +
+            '<div class="bcuerpo' + (renglones >= 2 ? ' dos' : '') +
+              '" style="grid-template-columns:repeat(' + cols + ',minmax(0,1fr))">' +
               bd.cajas.join('') + '</div>' +
           '</div>';
         }).join('') + '</div>';
@@ -4170,6 +4423,9 @@
              cada cosa, y lo segundo se necesita ANTES —mientras el ojo sigue
              en el dibujo—. */
           convenciones(m.conv) +
+          /* Lo que el mapa quiera poner debajo además de su leyenda: la barra
+             de cobertura va junto al raster porque separada confundía. */
+          (m.extra || '') +
           '<small class="mp-pie">' + esc(m.pie) + '</small>' +
         '</section>';
     }).join('');
@@ -4195,22 +4451,29 @@
                en pantalla, donde se puede bajar con el dedo. Y se dice cuántas
                quedaron, que es la diferencia entre resumir y esconder. */
             var TOPE_SINTESIS = 7;
-            var col = function (titulo, lista, clase) {
+            /* La MATRIZ FODA, en sus cuatro cuadrantes. Antes eran tres
+               columnas —a favor, en contra, falta levantar— y se pidió la
+               matriz por su nombre, «muy importante». Fortalezas y
+               debilidades son lo interno del sector; oportunidades y
+               amenazas lo que le viene de afuera, y lo que falta levantar va
+               con las oportunidades: es información que el proyecto todavía
+               puede ganar. */
+            var col = function (q, lista) {
               var mas = Math.max(0, lista.length - TOPE_SINTESIS);
-              return '<div class="sn ' + clase + '"><h3>' + esc(titulo) + '</h3>' +
+              return '<div class="sn ' + q.clase + '"><h3>' + esc(q.t) + '<small>' + esc(q.que) + '</small></h3>' +
                 (lista.length
                   ? lista.slice(0, TOPE_SINTESIS).map(function (x) {
-                      return '<div class="sx"><span>' + esc(x.texto) + '</span>' +
+                      return '<div class="sx' + (x.tarea ? ' sx-tarea' : '') + '"><span>' + esc(x.texto) + '</span>' +
                         '<small>' + esc(x.dato) + '</small></div>';
                     }).join('') +
                     (mas ? '<div class="sx sx-mas"><span>y ' + mas + ' más en la ficha</span></div>' : '')
                   : '<div class="sx"><span>—</span></div>') +
                 '</div>';
             };
-            return '<div class="sint">' +
-                col('A favor', sn.favor, 'ok') +
-                col('En contra', sn.contra, 'no') +
-                col('Falta levantar', sn.falta, 'tarea') +
+            var fd = sn.foda;
+            return '<p class="lee">Matriz FODA del sector</p>' +
+              '<div class="foda">' +
+                FODA_CUADRANTES.map(function (q) { return col(q, fd[q.id] || []); }).join('') +
               '</div>';
           })(), 'sintesis-pie');
     var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis);
@@ -4293,7 +4556,11 @@
         'font-weight:800; line-height:1.1; white-space:nowrap }' +
       '.bcab small{ margin-left:auto; text-align:right; font-size:2.5mm; letter-spacing:.18em; text-transform:uppercase;' +
         'color:#6B7A8A; font-weight:700; line-height:1.3 }' +
-      '.bcuerpo{ display:grid; gap:' + (horiz ? 3.5 : 4) + 'mm; align-items:stretch; flex:1 }' +
+      '.bcuerpo{ display:grid; gap:' + (horiz ? 3.5 : 4) + 'mm; align-items:stretch; flex:1;' +
+        ' grid-auto-flow:row dense; grid-auto-rows:auto }' +
+      /* En una banda de dos renglones el mapa —y el plano— ocupan los dos, y
+         las cajas de cifras se apilan de a dos en las columnas de al lado. */
+      '.bcuerpo.dos .mapa-caja, .bcuerpo.dos .plano-hero, .bcuerpo.dos .caja-alta{ grid-row:span 2 }' +
       /* En una banda de una sola caja el título de la caja repite el de la
          banda: se esconde y la caja queda como el cuerpo de su banda. */
       '.banda.sola .caja>h2, .banda.sola .caja>.ic{ display:none }' +
@@ -4317,7 +4584,10 @@
          Landsat, y no por gusto: aquéllas son para MEDIR —una proporción
          sobre miles de píxeles, que se lee en la cifra de al lado— y éstas
          son para MIRAR. Una foto de 22 mm en un pliego de 90 cm no se mira. */
-      '.evo-alta .evo-p img{ width:34mm; height:34mm; image-rendering:auto }' +
+      /* 46 mm, «más grandes incluso que los mapas de mapeos»: la caja va a dos
+         columnas para que quepan cinco en fila. */
+      '.evo-alta .evo-p img{ width:46mm; height:46mm; image-rendering:auto }' +
+      '.caja-doble{ grid-column:span 2 }' +
       '.evo-dudoso img{ opacity:.55; border-style:dashed }' +
       '.mapa-caja{ grid-column:span 1 }' +
       '.mapa-caja.mapa-ancho{ grid-column:span 2 }' +
@@ -4423,6 +4693,9 @@
          —el año de lluvia, la curva de amenaza— ni lo toca. */
       '.dib svg{ display:block; width:100%; height:auto; margin:0 auto; max-height:' +
         (horiz ? 90 : 108) + 'mm }' +
+      /* El plano del lote, en su caja de dos por dos, crece hasta el alto de
+         dos mapas: es lo que se pidió, «el gráfico más grande». */
+      '.caja-alta .dib svg{ max-height:' + (horiz ? 160 : 190) + 'mm }' +
       /* La trama de llenos y vacíos es la excepción: es una muestra del patrón
          al lado de sus cifras, no un plano, y a 90 mm sería una cortina. */
       '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto; align-self:center }' +
@@ -4445,6 +4718,16 @@
         'box-shadow:0 0 0 .25mm #0F1F2E }' +
       '.cv i.lote{ border-radius:0; background:#FFD54F; box-shadow:0 0 0 .35mm #7A5901 }' +
       '.cv b{ color:#0F1F2E }' +
+      /* La dona de categorías y su leyenda, que es la tabla de convenciones. */
+      '.dona-par{ display:flex; align-items:center; gap:4mm; margin:1mm 0 2mm }' +
+      '.dona{ width:34mm; height:34mm; flex:0 0 auto }' +
+      '.dona-ley{ display:flex; flex-direction:column; gap:1.2mm; min-width:0 }' +
+      '.lee-min{ font-size:2.7mm; color:#6B7A8A; margin:0 0 1.5mm }' +
+      /* Mujeres y hombres en una sola barra partida, como en la ficha. */
+      '.sexo{ display:flex; height:3.6mm; border-radius:2mm; overflow:hidden; margin:1mm 0 2mm }' +
+      '.sexo i{ display:block; height:100% } .sexo-m{ background:#ec4899 } .sexo-h{ background:#34CCFE }' +
+      '.k-m b{ color:#ec4899 } .k-h b{ color:#0A6F9E }' +
+      '.dib-rosa{ max-width:40mm; margin:0; flex:0 0 auto } .dib-rosa svg{ max-height:40mm }' +
       /* Las muestras de los mapas: cada forma dice de qué clase es el dato. */
       '.cv i.mu-punto{ border-radius:50% }' +
       '.cv i.mu-area{ border-radius:.4mm; width:3.4mm; height:2.4mm }' +
@@ -4461,20 +4744,20 @@
         'font-variant-numeric:tabular-nums }' +
       '.k{ padding-left:2.4mm; border-left:.7mm solid var(--suave,#E8F4FA) }' +
       '.k small{ display:block; font-size:2.9mm; color:#6B7A8A; margin-top:.8mm; line-height:1.25 }' +
-      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.4mm; padding:1mm 0;' +
+      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.6mm; padding:1mm 0;' +
         'border-bottom:.25mm solid #EEF3F7 }' +
       '.f span{ color:#3B4A5A } .f b{ color:#0F1F2E; font-variant-numeric:tabular-nums }' +
       '.barras{ display:flex; flex-direction:column; gap:1.8mm }' +
-      '.b{ display:grid; grid-template-columns:28mm 1fr 15mm; align-items:center; gap:2mm; font-size:3.4mm }' +
+      '.b{ display:grid; grid-template-columns:28mm 1fr 16mm; align-items:center; gap:2mm; font-size:3.6mm }' +
       '.b span{ color:#3B4A5A } ' +
       '.b i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
       '.b u{ display:block; height:100%; border-radius:2mm; background:#0A6F9E; text-decoration:none }' +
       '.b b{ text-align:right; color:#0F1F2E; font-variant-numeric:tabular-nums }' +
-      '.nota{ font-size:2.9mm; color:#6B7A8A; line-height:1.45 }' +
-      '.lee{ font-size:3.4mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
+      '.nota{ font-size:3.1mm; color:#6B7A8A; line-height:1.45 }' +
+      '.lee{ font-size:3.6mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.cobb{ display:flex; height:3.5mm; border-radius:1mm; overflow:hidden; margin:0 0 2mm }' +
       '.cobb i{ display:block; height:100% }' +
-      '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3.4mm;' +
+      '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3.6mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
       '.perf{ display:grid; grid-template-columns:1fr; gap:3mm; align-items:start }' +
       '.perf-dib{ background:#F3F8FB; border-radius:2mm; padding:3mm }' +
@@ -4498,6 +4781,13 @@
       '.fa code{ font-size:2.6mm; color:#6B7A8A; background:#F3F8FB; padding:.6mm 1.4mm;' +
         'border-radius:1mm; white-space:nowrap }' +
       '.sint{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm }' +
+      /* La matriz FODA: dos por dos, fortalezas y oportunidades arriba,
+         debilidades y amenazas abajo, que es el orden en que se lee. */
+      '.foda{ display:grid; grid-template-columns:repeat(2,1fr); gap:4mm }' +
+      '.sn.riesgo{ background:#FFF4E5 } .sn.riesgo h3{ color:#B45309 } .sn.riesgo .sx{ border-left-color:#F59E0B }' +
+      '.sn h3 small{ display:block; font-size:2.5mm; letter-spacing:0; text-transform:none; font-weight:500; color:#6B7A8A; margin-top:.5mm }' +
+      '.sx-tarea span:before{ content:""; display:inline-block; width:2.2mm; height:2.2mm; ' +
+        'border:0.3mm solid #9aa7b4; border-radius:0.4mm; margin-right:1mm; vertical-align:-0.2mm }' +
       /* Tres paneles de color y no tres columnas de texto: la síntesis es lo
          que se lee de pie desde el fondo del salón, y a favor, en contra y
          falta levantar tienen que distinguirse antes de leerse. */
@@ -4669,6 +4959,11 @@
       '.evo small{font-size:9.5px;color:#6B7A8A;display:block}' +
       '.evo .dudoso img{opacity:.55;border-style:dashed}' +
       '.cv-l{list-style:none;margin:4px 0 2px;padding:0;display:flex;flex-wrap:wrap;gap:2px 10px}' +
+      '.dona-par{display:flex;align-items:center;gap:14px;margin:6px 0 8px}' +
+      '.dona{width:120px;height:120px;flex:0 0 auto}' +
+      '.dona-ley{display:flex;flex-direction:column;gap:3px}' +
+      '.dona-ley .cv{font-size:11px;color:#3B4A5A;display:inline-flex;align-items:center;gap:6px}' +
+      '.dona-ley .cv i{width:9px;height:9px;border-radius:50%;display:inline-block}' +
       '.cv-l li{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#3B4A5A}' +
       '.cv-l i.mu{display:inline-block;width:9px;height:9px;border-radius:50%}' +
       '.cv-l i.mu-area{border-radius:2px;width:12px;height:8px}' +
@@ -4733,7 +5028,17 @@
       })() +
       ubicacionImpresa(res.ubicacion || (o && o.ubicacion)) +
       loteImpreso(meta, meta.forma === 'poligono') +
-      '<h2>Qué hay, por categoría</h2><table>' + filas(st.porGrupo, nombreGrupo) + '</table>' +
+      '<h2>Qué hay, por categoría</h2>' +
+      (function () {
+        var datos = Object.keys(st.porGrupo || {})
+          .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+          .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+          .sort(function (a, b) { return b.n - a.n; });
+        var COL2 = (window.AIA_CATALOGO && window.AIA_CATALOGO.GRUPO_COLOR) || {};
+        return datos.length ? donaImpresa(datos, function (x) { return COL2[x.id] || '#94a3b8'; },
+          function (x) { return sinEmoji(nombreGrupo(x.id)); }) : '';
+      })() +
+      '<table>' + filas(st.porGrupo, nombreGrupo) + '</table>' +
       '<h2>Lo más repetido</h2><table>' + filas(st.porSub, function (id) {
         var t = TAX.filter(function (u) { return u.sub === id; })[0];
         return t ? t.nombre : id;
@@ -4914,22 +5219,26 @@
 
   /* Manzanas por estrato, del DANE. Van DEBAJO de los puntos: son el fondo
      sobre el que se leen los usos, no un dato que compita con ellos. */
-  async function pintarEstratos(encender) {
+  async function pintarEstratos(encender, guardadas) {
     var m = mapa();
     if (!m || typeof L === 'undefined') return { ok: false, error: 'El mapa no está listo.' };
     if (capaEstratos) { try { m.removeLayer(capaEstratos); } catch (e) {} capaEstratos = null; }
     if (!encender) return { ok: true, apagado: true };
-    if (!window.AIA_DATOS || !window.AIA_DATOS.manzanasEstrato) {
-      return { ok: false, error: 'Falta el módulo de datos del DANE.' };
-    }
-
-    var eje = ejeActual();
-    if (!eje) return { ok: false, error: 'Primero elegí un sector.' };
-    var radio = S.forma === 'poligono' ? radioParaDane() : S.radioM;
 
     var d;
-    try { d = await window.AIA_DATOS.manzanasEstrato(eje.lat, eje.lng, radio); }
-    catch (e) { return { ok: false, error: (e && e.message) || 'No se pudo cargar la estratificación.' }; }
+    if (guardadas && guardadas.manzanas) {
+      // Las de una ficha reabierta: ya se pidieron una vez.
+      d = guardadas;
+    } else {
+      if (!window.AIA_DATOS || !window.AIA_DATOS.manzanasEstrato) {
+        return { ok: false, error: 'Falta el módulo de datos del DANE.' };
+      }
+      var eje = ejeActual();
+      if (!eje) return { ok: false, error: 'Primero elegí un sector.' };
+      var radio = S.forma === 'poligono' ? radioParaDane() : S.radioM;
+      try { d = await window.AIA_DATOS.manzanasEstrato(eje.lat, eje.lng, radio); }
+      catch (e) { return { ok: false, error: (e && e.message) || 'No se pudo cargar la estratificación.' }; }
+    }
     if (!d || !d.manzanas || !d.manzanas.length) {
       return { ok: false, error: 'El DANE no tiene manzanas con estrato en esta zona. Suele pasar fuera del perímetro urbano.' };
     }
@@ -8978,9 +9287,9 @@
      agruparía distinto que el papel. Los identificadores son los de las
      bandas, en `GRUPOS`. */
   var GRUPO_DE_MAPA = {
-    'calor:todos': 'demografico', estratos: 'demografico',
-    cobertura: 'ambiental', curvas: 'ambiental', sombras: 'ambiental',
-    foto: 'ubicacion', llenos: 'forma',
+    'calor:todos': 'demografico', estratos: 'demografico', hitos: 'demografico',
+    cobertura: 'ambiental', curvas: 'ambiental', sombras: 'ambiental', masa: 'ambiental',
+    foto: 'ubicacion', llenos: 'forma', alturas: 'forma',
     vias: 'movilidad', caminata: 'movilidad',
     acuerdos: 'campo', intangible: 'campo'
   };
@@ -9021,6 +9330,15 @@
     lista.push({ id: 'estratos', t: 'Manzanas por estrato',
                  listo: !!(S.estratos && S.estratos.manzanas && S.estratos.manzanas.length),
                  dato: 'del DANE', falta: 'poné los estratos en el mapa' });
+    lista.push({ id: 'hitos', t: 'Hitos y nodos',
+                 listo: !!((st.hitos || []).some(function (h) { return h.lat != null; })),
+                 dato: 'numerados y con su nombre', falta: 'no hay hitos registrados' });
+    lista.push({ id: 'alturas', t: 'Alturas de lo construido',
+                 listo: !!((S.trzPisos || []).filter(function (x) { return x != null; }).length >= 3),
+                 dato: 'cada huella con el tono de sus pisos', falta: 'medí el trazado' });
+    lista.push({ id: 'masa', t: 'Susceptibilidad por pendiente',
+                 listo: !!S.terRejilla, dato: 'los rangos de la guía, del modelo de elevación',
+                 falta: 'medí el terreno' });
     lista.push({ id: 'llenos', t: 'Llenos y vacíos',
                  listo: !!(S.trzHuellas && S.trzHuellas.length),
                  dato: 'huellas de edificio', falta: 'medí el trazado' });
@@ -9297,6 +9615,24 @@
         conv: clases.map(function (c) {
           return { c: c.color, t: c.etq + ' ' + c.pct + '%', f: 'area' };
         }),
+        /* La barra de cobertura, DEBAJO del raster. Iba en una caja aparte y
+           «al verlas tan separadas confunde»: es la misma medición dibujada de
+           dos formas, y se leen juntas o no se leen. */
+        extra: (function () {
+          var todas = (cob.clases || []).filter(function (c) { return c.pct > 0; })
+            .sort(function (a, b) { return b.pct - a.pct; });
+          if (!todas.length) return '';
+          return '<div class="cobb">' + todas.map(function (x) {
+              return '<i style="width:' + x.pct + '%;background:' + esc(String(x.color)) + '"></i>';
+            }).join('') + '</div>' +
+            todas.map(function (x) {
+              return '<div class="f"><span><i class="mu mu-area" style="background:' + esc(String(x.color)) +
+                '"></i> ' + esc(x.etq) + '</span><b>' + x.pct + '% · ' +
+                Math.round(x.m2).toLocaleString('es-CO') + ' m²</b></div>';
+            }).join('') +
+            '<p class="nota">Medido sobre ' + esc(String(cob.malla || '')) + ' píxeles, a ' +
+            (cob.mPorPx || '?') + ' m por píxel. No depende de que alguien lo haya mapeado.</p>';
+        })(),
         pie: clases.length
           ? 'clasificada píxel a píxel sobre la foto satelital'
           : 'clasificada sobre la foto satelital'
@@ -9310,6 +9646,98 @@
         });
       }
     }
+    /* ── Hitos y nodos, con su nombre ───────────────────────────────────
+       Se pidió «un mapeo exclusivo de hitos y nodos con los nombres, y
+       puntos comerciales o parques importantes». La lista numerada ya
+       existía; lo que no existía era verlos EN EL PLANO con su nombre al
+       lado, que es como se usan en una lámina: «el 3 es el hospital, y el
+       parque queda a dos cuadras». Van los hitos numerados y, en verde, los
+       parques con nombre propio, que son los nodos que la gente usa para
+       ubicarse aunque no pesen en el flujo peatonal. */
+    var hitos = (st.hitos || []).filter(function (h) { return h.lat != null && h.lng != null; });
+    var parques = pois.filter(function (p) {
+      return /parque|plaza/i.test(p.sub || '') && p.nombre && /[a-záéíóú]/i.test(p.nombre) &&
+             p.lat != null && p.lng != null;
+    }).slice(0, 6);
+    if (hitos.length) {
+      mapas.push({
+        id: 'hitos', titulo: 'Hitos y nodos', grupo: grupoDeMapa('hitos'),
+        svg: mini({ rotulos: hitos.map(function (h) {
+                      return { lat: h.lat, lng: h.lng, n: h.n, texto: h.nombre,
+                               color: COL[h.grupo] || '#0A6F9E' };
+                    }).concat(parques.map(function (p) {
+                      return { lat: p.lat, lng: p.lng, texto: p.nombre, color: '#16A34A' };
+                    })),
+                    huellas: (o.huellas !== undefined ? o.huellas : S.trzHuellas) || [] }),
+        conv: [{ c: '#0A6F9E', t: 'Hito numerado, con su nombre', f: 'punto' }]
+          .concat(parques.length ? [{ c: '#16A34A', t: 'Parque o plaza con nombre', f: 'punto' }] : []),
+        pie: hitos.map(function (h) { return h.n + ' ' + h.nombre; }).join(' · ')
+      });
+    }
+
+    /* ── Alturas de lo construido, en planta ────────────────────────────
+       «Faltó altura de lo construido»: las barras del reparto estaban, pero
+       una lámina de morfología muestra DÓNDE están los edificios altos, no
+       cuántos hay. Cada huella con el tono de sus pisos; las que no traen la
+       altura, en gris, porque inventarles tres pisos sería dibujar una
+       ciudad que no se midió. */
+    var huellasA = (o.huellas !== undefined ? o.huellas : S.trzHuellas) || [];
+    var pisosA = (o.pisos !== undefined ? o.pisos : S.trzPisos) || [];
+    var conPisos = pisosA.filter(function (x) { return x != null; }).length;
+    if (huellasA.length && conPisos >= 3) {
+      var COLOR_PISOS = function (n) {
+        if (n == null) return '#C9D3DC';
+        if (n <= 1) return '#BFE3F7'; if (n <= 2) return '#5BB4E5';
+        if (n <= 3) return '#0A6F9E'; return '#0B3A57';
+      };
+      mapas.push({
+        id: 'alturas', titulo: 'Alturas de lo construido', grupo: grupoDeMapa('alturas'),
+        svg: mini({ poligonos: huellasA.map(function (an, i) {
+          return { pts: an, relleno: COLOR_PISOS(pisosA[i]), opacidad: 0.9, borde: '#0F1F2E', ancho: 0.2 };
+        }) }),
+        /* Solo los tonos que el dibujo pinta de verdad: una convención que
+           nombra un color que no está manda a buscarlo. */
+        conv: (function () {
+          var usados = {};
+          pisosA.slice(0, huellasA.length).forEach(function (n) { usados[COLOR_PISOS(n)] = 1; });
+          return [{ c: '#BFE3F7', t: '1 piso', f: 'area' }, { c: '#5BB4E5', t: '2 pisos', f: 'area' },
+                  { c: '#0A6F9E', t: '3 pisos', f: 'area' }, { c: '#0B3A57', t: '4 o más', f: 'area' },
+                  { c: '#C9D3DC', t: 'Sin altura registrada', f: 'area' }]
+            .filter(function (c) { return usados[c.c]; });
+        })(),
+        pie: conPisos + ' de ' + huellasA.length + ' edificios traen la altura registrada'
+      });
+    }
+
+    /* ── Susceptibilidad a movimientos en masa, por pendiente ───────────
+       «Falta gráfico y mapa de los movimientos de masa». El servicio del
+       Servicio Geológico da el reparto del MUNICIPIO entero a 1:100.000, y a
+       esa escala un predio no se lee: no hay mapa oficial del sector que
+       dibujar. Lo que sí se midió es el terreno, y la pendiente es el primer
+       factor de susceptibilidad de cualquier método: se clasifica cada celda
+       del modelo de elevación en los cuatro rangos que usa la guía
+       colombiana y se pinta. Se dice en el pie lo que es —susceptibilidad
+       por pendiente, no amenaza calificada— para no vestir de dato oficial
+       un cálculo del sitio. */
+    var RJ = o.terrenoRejilla !== undefined ? o.terrenoRejilla : S.terRejilla;
+    var susc = (function () { try { return susceptibilidadPendiente(RJ); } catch (e) { return null; } })();
+    if (susc && susc.celdas.length) {
+      mapas.push({
+        id: 'masa', titulo: 'Susceptibilidad por pendiente', grupo: grupoDeMapa('masa'),
+        svg: mini({ poligonos: susc.celdas.map(function (c) {
+          return { pts: c.pts, relleno: c.color, opacidad: 0.78, borde: 'none' };
+        }) }),
+        conv: RANGOS_PENDIENTE.filter(function (r2) {
+          return susc.celdas.some(function (c) { return c.rango === r2.id; });
+        }).map(function (r2) {
+          var q = susc.reparto[r2.id] || 0;
+          return { c: r2.color, t: r2.etq + ' · ' + r2.rango + ' · ' + q + '%', f: 'area' };
+        }),
+        pie: 'pendiente del modelo de elevación, en los rangos de la guía de movimientos en masa; ' +
+             'no es el mapa oficial de amenaza'
+      });
+    }
+
     var estr = o.estratos !== undefined ? o.estratos : S.estratos;
     if (estr && estr.manzanas && estr.manzanas.length) {
       mapas.push({
@@ -9572,11 +10000,16 @@
      de fábrica habría empezado a tirar cajas por su cuenta, que es justo lo
      contrario de lo que se pidió antes: «no me dejes mapas a un lado». */
   var LETRAS_PLIEGO = [
-    { id: 'todo',   t: 'Cabe todo',     piso: 0.40, mm: '1,4', sacrifica: false,
+    /* Piso 0,30 y, si ni así, se apagan cajas y se dice cuáles. Antes el
+       piso era 0,40 sin sacrificio y lo que no cabía se RECORTABA en silencio
+       por el borde de abajo: en el PDF real la síntesis entera —la
+       conclusión— no salió y nadie avisó. Recortar sin decirlo es peor que
+       apagar diciéndolo. */
+    { id: 'todo',   t: 'Cabe todo',     piso: 0.30, mm: '1,1', sacrifica: true,
       pista: 'entran todas, letra de lupa' },
-    { id: 'media',  t: 'Equilibrio',    piso: 0.62, mm: '2,1', sacrifica: true,
+    { id: 'media',  t: 'Equilibrio',    piso: 0.62, mm: '2,2', sacrifica: true,
       pista: 'se lee de cerca, cabe casi todo' },
-    { id: 'grande', t: 'Se lee de pie', piso: 0.80, mm: '2,7', sacrifica: true,
+    { id: 'grande', t: 'Se lee de pie', piso: 0.80, mm: '2,9', sacrifica: true,
       pista: 'para colgar, con menos cajas' }
   ];
   /* De la escala de composición a milímetros de letra sobre el papel. El
@@ -9589,7 +10022,7 @@
      X mm», así que tiene que seguir al estilo: subió de 3 a 3,4 cuando se
      pidió la letra «un poquito más grande», y si se vuelve a tocar allá hay
      que tocarlo acá o la ficha empieza a prometer un tamaño que no es. */
-  var CUERPO_MM = 3.4;
+  var CUERPO_MM = 3.6;
   function mmDeLetra(escala) {
     return conComa(Math.round(CUERPO_MM * (escala || 1) * 10) / 10);
   }
@@ -10081,8 +10514,14 @@
     var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
     var trz = S.trazado, ter = S.terreno, cli = S.clima;
     var favor = [], contra = [], falta = [];
-    var F = function (t, d) { favor.push({ texto: t, dato: d }); };
-    var C = function (t, d) { contra.push({ texto: t, dato: d }); };
+    /* `amb` es el ámbito: 'int' para lo que es del sector mismo —su traza,
+       sus usos, su lote— y 'ext' para lo que le viene de afuera —el clima,
+       el terreno, el transporte de la ciudad, las amenazas—. Es lo que
+       separa una FODA de una lista de pros y contras: fortalezas y
+       debilidades son internas, oportunidades y amenazas externas, y sin la
+       marca no se puede armar la matriz sin inventar. */
+    var F = function (t, d, amb) { favor.push({ texto: t, dato: d, ambito: amb || 'int' }); };
+    var C = function (t, d, amb) { contra.push({ texto: t, dato: d, ambito: amb || 'int' }); };
     var T = function (t, d) { falta.push({ texto: t, dato: d }); };
     var num = function (x) { return String(x).replace('.', ','); };
 
@@ -10131,21 +10570,21 @@
     // ── Cómo se llega
     var mv = st.movilidad;
     if (mv) {
-      if ((mv.rutas || []).length) F('Pasa transporte público por el área', (mv.rutas || []).length + ' rutas registradas');
-      else if (mv.paradasBus === 0) C('Sin paradas de transporte público registradas', '0 paradas');
-      if (mv.nViasArterias > 0) F('Conectado a la malla arterial de la ciudad', mv.nViasArterias + ' vías principales');
+      if ((mv.rutas || []).length) F('Pasa transporte público por el área', (mv.rutas || []).length + ' rutas registradas', 'ext');
+      else if (mv.paradasBus === 0) C('Sin paradas de transporte público registradas', '0 paradas', 'ext');
+      if (mv.nViasArterias > 0) F('Conectado a la malla arterial de la ciudad', mv.nViasArterias + ' vías principales', 'ext');
       if (mv.viaPrincipal && mv.viaPrincipal.nombre)
         F('La ' + mv.viaPrincipal.nombre + ' es la puerta del sector: por ahí llega quien no vive acá',
-          (mv.viaPrincipal.jerarquia || 'vía') + ' a ' + Math.round(mv.viaPrincipal.distM) + ' m');
+          (mv.viaPrincipal.jerarquia || 'vía') + ' a ' + Math.round(mv.viaPrincipal.distM) + ' m', 'ext');
       if (mv.ciclorrutas > 0)
-        F('Hay ciclorruta registrada: la bicicleta ya tiene por dónde', mv.ciclorrutas + ' tramos');
+        F('Hay ciclorruta registrada: la bicicleta ya tiene por dónde', mv.ciclorrutas + ' tramos', 'ext');
       else if (mv.ciclorrutas === 0)
         T('Anotar por dónde circulan las bicicletas hoy, aunque no haya ciclorruta', 'sin ciclorruta registrada');
       if (mv.paradasBus > 0 && hab > 0) {
         var porParada = Math.round(hab / mv.paradasBus);
         if (porParada > 1500)
           C('Pocas paradas para la gente que vive acá', mv.paradasBus + ' paradas · ' +
-            porParada.toLocaleString('es-CO') + ' hab. por parada');
+            porParada.toLocaleString('es-CO') + ' hab. por parada', 'ext');
       }
     }
 
@@ -10167,7 +10606,7 @@
         C('Solo calles locales: el sector no está en la red de la ciudad', conComa(Math.round(kmTotal * 10) / 10) + ' km, todos locales');
       else if (pctMayores >= 30)
         C('Mucha vía de paso para lo chico que es el sector: la atraviesan más de los que llegan',
-          pctMayores + '% de la red es de jerarquía mayor');
+          pctMayores + '% de la red es de jerarquía mayor', 'ext');
       else if (pctMayores >= 8)
         F('La red tiene jerarquía: se distingue por dónde se pasa y por dónde se llega',
           conComa(Math.round(kmMayores * 10) / 10) + ' de ' + conComa(Math.round(kmTotal * 10) / 10) + ' km');
@@ -10227,9 +10666,9 @@
     if (cli) {
       var t = cli.temperatura || {}, vi = cli.viento || {};
       if (t.media != null && t.media >= 26)
-        C('Clima cálido: sin sombra ni aire cruzado no se puede estar afuera', num(t.media) + '° de media');
+        C('Clima cálido: sin sombra ni aire cruzado no se puede estar afuera', num(t.media) + '° de media', 'ext');
       if (vi.dominante && vi.dominante.rumbo)
-        F('El viento entra del ' + vi.dominante.rumbo + ': por ahí se ventila', vi.dominante.pct + '% del tiempo');
+        F('El viento entra del ' + vi.dominante.rumbo + ': por ahí se ventila', vi.dominante.pct + '% del tiempo', 'ext');
     }
     var SOL = window.URBIS_SOLAR;
     if (SOL && meta.lat != null) {
@@ -10311,7 +10750,7 @@
           Number(la.areaM2).toLocaleString('es-CO') + ' m²');
       if (la.nVecinos != null && la.nVecinos < 5)
         C('Casi nada registrado a menos de 200 m del lote: el proyecto llega antes que la ciudad',
-          la.nVecinos + ' usos alrededor');
+          la.nVecinos + ' usos alrededor', 'ext');
     } else if (S.resultado) {
       T('Dibujar el lote: sin él el análisis es del sector y no del proyecto', 'sin lote');
     }
@@ -10327,27 +10766,80 @@
         medidas + ' de 5 medidas');
     }
 
-    return { favor: favor, contra: contra, falta: falta };
+    /* ── Las amenazas del sitio, que faltaban ───────────────────────────
+       Una FODA sin sismo ni inundación en una ciudad de laderas sobre el
+       Pamplonita está incompleta. Cada una entra solo si se midió. */
+    var amz = S.amenaza, inu = S.inundacion;
+    if (amz && amz.nivel) {
+      C('Amenaza sísmica ' + String(amz.nivel).toLowerCase() + ': la estructura se diseña para eso',
+        (amz.aa != null ? 'Aa ' + conComa(amz.aa) : 'NSR-10'), 'ext');
+      if (amz.masa && amz.masa.altaOMasPct >= 30)
+        C('Municipio con mucha ladera en amenaza por movimientos en masa: mirar la pendiente del lote',
+          conComa(amz.masa.altaOMasPct) + '% del municipio en alta o muy alta', 'ext');
+    }
+    /* Los campos son los mismos que lee la caja de la inundación: `trPeor`
+       es el periodo de retorno de la mancha más frecuente que cubre el sitio,
+       y está solo cuando el sitio cae dentro de alguna. */
+    if (inu && inu.cobertura && inu.trPeor != null) {
+      C('El sitio cae dentro de una mancha de inundación registrada: se inunda ' + (inu.frecuencia || 'cada tanto'),
+        (inu.nombre || 'mancha del IDEAM') + ' · ' + inu.trPeor + ' años de retorno', 'ext');
+    }
+    var rd = (function () { try { return ruidoDelLote(); } catch (e) { return null; } })();
+    if (rd && rd.dB >= 65) {
+      C('Ruido del tránsito por encima del límite para vivienda: la fachada que da a la vía no es la de dormir',
+        conComa(rd.dB) + ' dB(A) · límite 65', 'ext');
+    }
+    return { favor: favor, contra: contra, falta: falta, foda: fodaDe(favor, contra, falta) };
   }
 
+  /* La matriz. Fortalezas y debilidades son lo interno; oportunidades y
+     amenazas, lo externo. Lo que falta levantar en campo va con las
+     oportunidades: cada tarea es una información que el proyecto todavía
+     puede ganar, y una FODA de diagnóstico las pone ahí. */
+  function fodaDe(favor, contra, falta) {
+    var es = function (amb) { return function (x) { return (x.ambito || 'int') === amb; }; };
+    return {
+      fortalezas: favor.filter(es('int')),
+      oportunidades: favor.filter(es('ext')).concat((falta || []).map(function (x) {
+        return { texto: x.texto, dato: x.dato, tarea: true };
+      })),
+      debilidades: contra.filter(es('int')),
+      amenazas: contra.filter(es('ext'))
+    };
+  }
+  var FODA_CUADRANTES = [
+    { id: 'fortalezas',    t: 'Fortalezas',    clase: 'ok',    que: 'lo que el sector tiene a favor' },
+    { id: 'oportunidades', t: 'Oportunidades', clase: 'tarea', que: 'lo que viene de afuera y lo que falta levantar' },
+    { id: 'debilidades',   t: 'Debilidades',   clase: 'no',    que: 'lo que el sector tiene en contra' },
+    { id: 'amenazas',      t: 'Amenazas',      clase: 'riesgo', que: 'lo que le viene de afuera' }
+  ];
+
+  /* La misma matriz en pantalla que en el papel. Se pidió «agregar la
+     matriz FODA» y la ficha seguía con tres listas —a favor, en contra,
+     falta levantar— que eran la FODA sin decirlo: el que la leía en el
+     teléfono y después en el pliego veía dos ordenamientos distintos de las
+     mismas frases. Los cuatro cuadrantes, con lo que falta levantar dentro
+     de las oportunidades y marcado como tarea. */
+  var CLASE_FODA = { fortalezas: 'bien', oportunidades: 'oport', debilidades: 'mal', amenazas: 'riesgo' };
   function bloqueSintesis(res) {
     var s2 = sintesisDelSector(res);
     if (!s2.favor.length && !s2.contra.length && !s2.falta.length) return '';
-    var col = function (titulo, lista, clase) {
+    var fd = s2.foda || fodaDe(s2.favor, s2.contra, s2.falta);
+    var col = function (q, lista) {
       if (!lista.length) return '';
-      return '<p class="pcr-lab">' + esc(titulo) + '</p>' +
-        '<ul class="pcr-sintesis pcr-sintesis-' + clase + '">' +
+      return '<p class="pcr-lab">' + esc(q.t) + ' <small>· ' + esc(q.que) + '</small></p>' +
+        '<ul class="pcr-sintesis pcr-sintesis-' + CLASE_FODA[q.id] + ' pcr-foda-' + q.id + '">' +
           lista.map(function (x) {
-            return '<li><span>' + esc(x.texto) + '</span><b>' + esc(x.dato) + '</b></li>';
+            return '<li' + (x.tarea ? ' class="pcr-sx-tarea"' : '') + '><span>' + esc(x.texto) +
+              '</span><b>' + esc(x.dato) + '</b></li>';
           }).join('') +
         '</ul>';
     };
     return h4('lista', 'Síntesis del sector') +
-      '<p class="pcr-pista">Lo que dicen juntas todas las mediciones. Cada frase trae el número que ' +
-      'la sostiene, y solo aparece si ese número se midió.</p>' +
-      col('Lo que juega a favor', s2.favor, 'bien') +
-      col('Lo que juega en contra', s2.contra, 'mal') +
-      col('Lo que falta levantar en campo', s2.falta, 'falta');
+      '<p class="pcr-pista">Matriz FODA del sector: lo que dicen juntas todas las mediciones. Cada ' +
+      'frase trae el número que la sostiene y solo aparece si ese número se midió. Fortalezas y ' +
+      'debilidades son lo interno del sector; oportunidades y amenazas, lo que le viene de afuera.</p>' +
+      FODA_CUADRANTES.map(function (q) { return col(q, fd[q.id] || []); }).join('');
   }
 
 
@@ -16655,6 +17147,7 @@
     };
     S.aviso = 'Estratos pintados. Cerrá esta hoja para verlos.';
     pintar();
+    try { guardarFichaViva(); } catch (e) {}
   }
 
   // ── Entrada y salida ──────────────────────────────────────────────────
@@ -16746,7 +17239,14 @@
     S.trzHuellas = null; S.trzPisos = null; S.trzVias = null;
     S.sombras = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false;
-    S.calor = []; S.estratos = null;
+    S.calor = [];
+    /* Las manzanas por estrato SÍ vuelven, pintadas de lo guardado y sin
+       pedir nada: es lo que había en el mapa cuando se archivó, y lo que el
+       pliego reimpreso necesita para su mapa de estratos. Van acá, después
+       de la limpieza, porque antes se restauraban y esta misma línea las
+       borraba. */
+    S.estratos = (f.estratos && f.estratos.manzanas && f.estratos.manzanas.length) ? f.estratos : null;
+    if (S.estratos) { try { pintarEstratos(true, S.estratos); } catch (e) {} }
 
     S.error = ''; S.aviso = '';
     try { pintarCirculo(); } catch (e) {}
@@ -17933,7 +18433,11 @@
         // La composición del pliego: el tamaño de letra elegido y las cajas
         // que ese tamaño dejó fuera en la última lámina que se armó.
         pliegoLetra: S.pliegoLetra || 'todo',
-        pliegoFuera: (S.pliegoFuera || []).slice()
+        pliegoFuera: (S.pliegoFuera || []).slice(),
+        // Las manzanas por estrato que hay en memoria, que son las que el
+        // pliego dibuja y las que viajan con la ficha.
+        estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,
+        estratosLeyenda: !!(S.estratos && S.estratos.leyenda)
       };
     }
   };

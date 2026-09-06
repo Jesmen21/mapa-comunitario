@@ -132,9 +132,10 @@ let PELADA=false;
     o.hayDibujo=!!H().querySelector('.pcr-seccion svg');
     o.edificios=H().querySelectorAll('.pcr-sec-edif').length;
     o.cifras=[...H().querySelectorAll('.pcr-llenos-cifras')].map(txt);
-    const grupo=cl=>[...H().querySelectorAll('.pcr-sintesis-'+cl+' li')]
+    const grupo=(cl,sel)=>[...H().querySelectorAll('.pcr-sintesis-'+cl+' li'+(sel||''))]
       .map(li=>txt(li.querySelector('span'))+' ‹'+txt(li.querySelector('b'))+'›');
-    o.favor=grupo('bien'); o.contra=grupo('mal'); o.falta=grupo('falta');
+    o.favor=grupo('bien').concat(grupo('oport',':not(.pcr-sx-tarea)'));
+    o.contra=grupo('mal').concat(grupo('riesgo')); o.falta=grupo('oport','.pcr-sx-tarea');
     return o;
   },D);
 

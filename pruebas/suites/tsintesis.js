@@ -144,9 +144,13 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
     o.mezcla=i>=0?todo.slice(i,i+520):'';
     const j=todo.indexOf('Síntesis del sector');
     o.sintesis=j>=0?todo.slice(j,j+2000):'';
-    const grupo=cl=>[...H.querySelectorAll('.pcr-sintesis-'+cl+' li')]
+    /* La ficha ya es una matriz FODA. A favor = fortalezas más las
+       oportunidades que vienen de afuera; en contra = debilidades más
+       amenazas; falta levantar = las oportunidades marcadas como tarea. */
+    const grupo=(cl,sel)=>[...H.querySelectorAll('.pcr-sintesis-'+cl+' li'+(sel||''))]
       .map(li=>txt(li.querySelector('span'))+' ‹'+txt(li.querySelector('b'))+'›');
-    o.favor=grupo('bien'); o.contra=grupo('mal'); o.falta=grupo('falta');
+    o.favor=grupo('bien').concat(grupo('oport',':not(.pcr-sx-tarea)'));
+    o.contra=grupo('mal').concat(grupo('riesgo')); o.falta=grupo('oport','.pcr-sx-tarea');
     return o;
   },{C,POL});
 
@@ -183,13 +187,21 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
     const todo=txt(H());
     const i=todo.indexOf('Mezcla de usos');
     o.mezcla=i>=0?todo.slice(i,i+520):'';
-    const grupo=cl=>[...H().querySelectorAll('.pcr-sintesis-'+cl+' li')]
+    const grupo=(cl,sel)=>[...H().querySelectorAll('.pcr-sintesis-'+cl+' li'+(sel||''))]
       .map(li=>txt(li.querySelector('span'))+' ‹'+txt(li.querySelector('b'))+'›');
-    o.favor=grupo('bien'); o.contra=grupo('mal'); o.falta=grupo('falta');
+    o.favor=grupo('bien').concat(grupo('oport',':not(.pcr-sx-tarea)'));
+    o.contra=grupo('mal').concat(grupo('riesgo')); o.falta=grupo('oport','.pcr-sx-tarea');
+    // Los cuatro cuadrantes tal como los muestra la ficha, para cotejarlos
+    // uno a uno con las columnas del pliego.
+    o.foda={ ok:grupo('bien'), tarea:grupo('oport'), no:grupo('mal'), riesgo:grupo('riesgo') };
+    o.cuadrantesEnFicha=[...H().querySelectorAll('.pcr-lab')].map(txt).filter(t=>/^(Fortalezas|Oportunidades|Debilidades|Amenazas)/.test(t));
 
     const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(500); }
     o.lamina=lamina;
+    const bi=H().querySelector('[data-pcr="imprimir"]');
+    if(bi){ bi.click(); await esperar(700); }
+    o.pdf=lamina;
     return o;
   },{C,POL});
 
@@ -244,7 +256,21 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
   console.log('\n  -- llega a la lámina --');
   const LAM=r2.lamina||'';
   P('la lámina cierra con la síntesis', /Síntesis del sector<\/h2>/.test(LAM));
-  P('con las tres columnas', /A favor<\/h3>/.test(LAM) && /En contra<\/h3>/.test(LAM) && /Falta levantar<\/h3>/.test(LAM));
+  /* Se pidió «la matriz FODA» por su nombre, y en el pliego real no salía
+     ninguna síntesis —se había recortado por abajo—. Cuatro cuadrantes con su
+     nombre, en la ficha y en los dos documentos. */
+  const CUAD=['Fortalezas','Oportunidades','Debilidades','Amenazas'];
+  P('como matriz FODA, con los cuatro cuadrantes',
+    /Matriz FODA del sector/.test(LAM) && CUAD.every(c=>new RegExp('<h3>'+c+'<small>').test(LAM)),
+    CUAD.filter(c=>new RegExp('<h3>'+c+'<small>').test(LAM)).join(' · ')||'ninguno');
+  P('la ficha en pantalla trae los mismos cuatro', (r2.cuadrantesEnFicha||[]).length===4,
+    (r2.cuadrantesEnFicha||[]).map(t=>t.split(' ')[0]).join(' · ')||'ninguno');
+  P('y el informe en hojas también',
+    /<h3>Matriz FODA<\/h3>/.test(r2.pdf||'') && CUAD.every(c=>new RegExp('<b>'+c+' · ').test(r2.pdf||'')));
+  const colSint = c => (LAM.match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>'))||[''])[0];
+  P('la ladera fuerte es debilidad, no amenaza: lo interno y lo externo no se mezclan',
+    /Pendiente fuerte/.test(colSint('no')) && !/Pendiente fuerte/.test(colSint('riesgo')),
+    'debilidades: ' + (/Pendiente fuerte/.test(colSint('no'))?'sí':'no') + ' · amenazas: ' + (/Pendiente fuerte/.test(colSint('riesgo'))?'SÍ':'no'));
   /* Siete por columna, y antes eran cuatro. Se subió el tope porque se pidió
      —«mejorar el sistema FODA porque argumenta muy poquitas cosas»— y porque
      el corte de cuatro se había decidido cuando la síntesis sacaba ocho o
@@ -256,25 +282,41 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
      resumir es quedarse con siete y avisar que hay más; esconder es quedarse
      con siete y callarse, que es lo mismo que se ve y no es lo mismo que se
      hace. */
-  const colSint = c => (LAM.match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>'))||[''])[0];
   const viñetas = c => colSint(c).split('class="sx"').length - 1;
-  P('y como mucho siete por columna',
-    ['ok','no','tarea'].every(c => viñetas(c) <= 7),
-    ['ok','no','tarea'].map(c => c + ':' + viñetas(c)).join(' · '));
+  const CLASES=['ok','tarea','no','riesgo'];
+  P('y como mucho siete por cuadrante',
+    CLASES.every(c => viñetas(c) <= 7),
+    CLASES.map(c => c + ':' + viñetas(c)).join(' · '));
   /* Y si corta, que lo diga —y solo si corta—. El aviso se compara contra la
      lista COMPLETA, no contra lo que se ve: mirando solo el papel, siete
      viñetas sin aviso pueden ser siete de siete o siete de doce, y son cosas
      distintas. Con la lista al lado, la comprobación es exacta en los dos
      sentidos: nada se esconde y no se avisa de nada que no falte. */
-  const LISTA = { ok: r2.favor || [], no: r2.contra || [], tarea: r2.falta || [] };
+  const LISTA = r2.foda || { ok: [], tarea: [], no: [], riesgo: [] };
   const marca = c => (colSint(c).match(/sx-mas"><span>y (\d+) más/) || [])[1];
   P('y si corta, dice cuántas dejó fuera —y solo si corta—',
-    ['ok','no','tarea'].every(c => {
-      const sobran = Math.max(0, LISTA[c].length - 7);
+    CLASES.every(c => {
+      const sobran = Math.max(0, (LISTA[c]||[]).length - 7);
       return sobran ? Number(marca(c)) === sobran : marca(c) === undefined;
     }),
-    ['ok','no','tarea'].map(c => c + ': ' + LISTA[c].length + ' → ' +
+    CLASES.map(c => c + ': ' + (LISTA[c]||[]).length + ' → ' +
       viñetas(c) + (marca(c) ? ' +' + marca(c) : '')).join(' · '));
+
+  /* ── La rosa de los vientos, en la caja del clima ─────────────────
+     «En el PDF falta el gráfico de la dirección de los vientos, en el mismo
+     cuadro del clima». El motor manda el reparto por los ocho rumbos y solo
+     se imprimía el dominante en una fila. Va la rosa, en la caja del clima
+     del pliego y en el bloque del clima del informe. */
+  console.log('\n  -- la rosa de los vientos, en la caja del clima --');
+  const cajaClima = (LAM.split('<section class="caja').filter(x=>/<h2>El clima<\/h2>/.test(x))[0])||'';
+  P('la caja del clima del pliego trae la rosa', /<div class="dib dib-rosa"><svg class="pcr-rosa-rumbos"/.test(cajaClima),
+    cajaClima ? (/pcr-rosa-rumbos/.test(cajaClima)?'con rosa':'sin rosa') : 'no hay caja de clima');
+  P('con los ocho rumbos dibujados', (cajaClima.match(/<path d="M100 100 L/g)||[]).length===8,
+    (cajaClima.match(/<path d="M100 100 L/g)||[]).length+' rumbos');
+  P('y dice de dónde viene el viento y qué parte del tiempo', /El viento viene del<\/span><b>[A-Za-z]+ \(\d+%\)/.test(cajaClima));
+  const climaPdf = ((r2.pdf||'').split('<h2>').filter(x=>/^El clima del sitio</.test(x))[0])||'';
+  P('el informe en hojas también la trae', /pcr-rosa-rumbos/.test(climaPdf),
+    climaPdf ? (/pcr-rosa-rumbos/.test(climaPdf)?'con rosa':'sin rosa') : 'no hay bloque de clima');
 
   console.log('');
   P('sin errores de JavaScript', errs.length===0, errs.join(' | ')||'ninguno');

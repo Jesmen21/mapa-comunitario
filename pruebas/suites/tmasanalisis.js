@@ -557,6 +557,59 @@ const CAPAS_IDEAM = [
       'pliego: ' + (p1 ? 'sí' : 'NO') + ' · informe: ' + (p2 ? 'sí' : 'NO'));
   });
 
+  /* ── Lo que se pidió con el pliego real en la mano ──────────────────
+     Una lista numerada, mirando el PDF de un sector de Cúcuta: faltaba la
+     matriz FODA, el gráfico de usos por categoría, la tabla de convenciones
+     de los usos, el censo con sus gráficos, un mapa exclusivo de hitos y
+     nodos con los nombres, y las barras «del color de lo que se analiza».
+     Cada una se exige en el documento donde se pidió y, si es una medición,
+     en los dos. */
+  console.log('\n  -- lo que se pidió con el pliego real en la mano --');
+  const cajaLam = t => (LAM.split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const CUAD = ['Fortalezas', 'Oportunidades', 'Debilidades', 'Amenazas'];
+  T('la matriz FODA, con sus cuatro cuadrantes, en el pliego',
+    /Matriz FODA del sector/.test(LAM) && CUAD.every(c => new RegExp('<h3>' + c + '<small>').test(LAM)),
+    CUAD.filter(c => new RegExp('<h3>' + c + '<small>').test(LAM)).join(' · ') || 'ninguno');
+  T('y en el informe', /<h3>Matriz FODA<\/h3>/.test(PDF) && CUAD.every(c => new RegExp('<b>' + c + ' · ').test(PDF)));
+  /* La inundación y el ruido son cosas que le VIENEN al sector: amenazas.
+     Esta suite las mide, así que el cuadrante no puede salir vacío. */
+  const amenazas = ((LAM.match(/<div class="sn riesgo">[\s\S]*?<\/div><\/div>/) || [''])[0].match(/<span>[^<]*/g) || []).map(x => x.slice(6));
+  T('la inundación medida cae en amenazas, no en debilidades', amenazas.some(a => /inunda/i.test(a)) &&
+    !((LAM.match(/<div class="sn no">[\s\S]*?<\/div><\/div>/) || [''])[0]).match(/inunda/i),
+    amenazas.join(' | ').slice(0, 160) || '(amenazas vacías)');
+
+  const dona = h => (h.match(/<svg class="dona"/g) || []).length;
+  T('el gráfico de usos por categoría —la dona— en los dos', dona(LAM) >= 1 && dona(PDF) >= 1,
+    'pliego ' + dona(LAM) + ' · informe ' + dona(PDF));
+  const QH = cajaLam('Qué hay, por categoría');
+  T('con una leyenda que es a la vez la tabla de convenciones de los usos',
+    /Convenciones de los mapas de usos/.test(QH) && (QH.match(/class="cv"/g) || []).length >= 3,
+    (QH.match(/class="cv"/g) || []).length + ' entradas');
+  /* «Si estamos analizando vivienda, que es de un color, la barra debe ser
+     de ese color». Cada barra de la caja lleva el color de su categoría, el
+     mismo de los puntos del mapa; y no son todas iguales. */
+  const coloresBarras = (QH.match(/<u style="width:\d+%;background:(#[0-9A-Fa-f]{6})"/g) || []).map(x => x.slice(-8, -1));
+  T('y cada barra del color de su categoría, no todas iguales',
+    coloresBarras.length >= 3 && new Set(coloresBarras).size >= 3,
+    coloresBarras.join(' ') || 'barras sin color');
+
+  /* El censo, con gráfico: la barra de mujeres y hombres y las edades. */
+  const QV = cajaLam('Quién vive acá');
+  T('el censo trae la barra de mujeres y hombres', /<div class="sexo"><i class="sexo-m" style="width:\d+(\.\d+)?%"/.test(QV) && /k-m/.test(QV) && /k-h/.test(QV));
+  T('y las edades como barras, con la franja que manda resaltada',
+    (QV.match(/<u style="width:\d+%;background:#/g) || []).length >= 3 && /background:#0B3A57/.test(QV),
+    (QV.match(/<u style="width:\d+%;background:#/g) || []).length + ' barras de edad');
+
+  /* El mapa de hitos y nodos, con los nombres al lado del punto. */
+  const HN = (LAM.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) && /<h2>Hitos y nodos( · el mapa)?<\/h2>/.test(x))[0] || '');
+  const rotulos = (HN.match(/paint-order="stroke"/g) || []).length;
+  T('un mapa exclusivo de hitos y nodos', !!HN);
+  T('con el número y el nombre al lado de cada punto', rotulos >= 3 && /Colegio \d/.test(HN),
+    rotulos + ' rótulos');
+  T('y los parques con nombre, en verde', /fill="#16A34A"/.test(HN) && /Parque \d/.test(HN),
+    (HN.match(/Parque \d/g) || []).join(' · ') || 'sin parques');
+  T('el informe en hojas lo trae también', /<figcaption>Hitos y nodos<\/figcaption>/.test(PDF));
+
   /* ── Las redes, en todo lo que se imprime ───────────────────────────
      Un pliego colgado en una entrega lo mira gente que no sabe de dónde
      salió. La cuenta va al pie de los dos documentos, y en un solo lugar del

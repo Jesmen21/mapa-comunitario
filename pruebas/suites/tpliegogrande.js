@@ -285,8 +285,26 @@ const geo = [
                lo cuenta mientras que las pistas de la grilla vienen sin
                escalar. Mezclarlos daba anchos multiplicados por la escala y
                la síntesis, que ocupa la fila entera, medía tres columnas. */
-            ocupa: cajas.reduce((a, c) => a +
-              Math.max(1, Math.round((c.offsetWidth + hueco) / unidad)), 0) };
+            /* Y por ALTO también: en una banda de dos renglones el mapa ocupa
+               los dos, así que vale el doble de celdas que su ancho. Se lee
+               del propio estilo calculado —`grid-row-end: span 2`— y no de
+               la clase, para medir lo que la grilla hizo y no lo que se le
+               pidió. */
+            ocupa: (function () {
+              /* Los renglones que ocupa cada caja se miden por GEOMETRÍA —el
+                 alto de la caja contra el alto de la pista— y no por el
+                 estilo calculado: Chromium devuelve `auto` en `grid-row-end`
+                 para un `span 2` autocolocado, aunque la caja ocupe los dos
+                 renglones de verdad. */
+              const pistasF = cs.gridTemplateRows.split(/\s+/).filter(Boolean).map(parseFloat);
+              const huecoF = parseFloat(cs.rowGap) || 0;
+              const unidadF = (pistasF[0] || 1) + huecoF;
+              return cajas.reduce((a, c) => {
+                const anchoCol = Math.max(1, Math.round((c.offsetWidth + hueco) / unidad));
+                const fil = Math.max(1, Math.round((c.offsetHeight + huecoF) / unidadF));
+                return a + anchoCol * Math.min(fil, pistasF.length || 1);
+              }, 0);
+            })() };
         }),
         /* Las cuatro cajas cuyo contenido principal es un DIBUJO —la carta
            solar, la curva de amenaza, el año de lluvia, el plano del predio—
@@ -371,7 +389,12 @@ const geo = [
        que deje más huecos que renglones es un renglón desbalanceado. */
     const flojas = (o.bandas || [])
       .map(b => Object.assign({ huecos: b.cols * b.renglones - b.ocupa }, b))
-      .filter(b => b.huecos >= b.renglones);
+      /* Estrictamente MÁS huecos que renglones: con los mapas a dos renglones
+         y la grilla densa, el último renglón suele quedar con una celda por
+         renglón sin llenar, y eso no es un renglón vacío sino el resto de una
+         división. El caso que esto vigila —siete cajas en seis columnas, una
+         sola abajo con cinco huecos— sigue fallando. */
+      .filter(b => b.huecos > b.renglones);
     T('ninguna banda deja un renglón casi vacío',
       flojas.length === 0,
       flojas.map(b => b.t + ' (' + b.n + ' cajas ocupan ' + b.ocupa + ' de ' +
@@ -492,8 +515,15 @@ const geo = [
 
   console.log('\n  -- el tamaño de la letra lo elige quien arma la lámina --');
   T('están los tres tamaños', r.hayBotones === 3, r.hayBotones + ' de 3');
+  /* Tres cosas, y no una proporción suelta. Que «se lee de pie» llegue a
+     los 2,3 mm que se leen a un metro; que sea de verdad más grande que
+     «cabe todo»; y que «cabe todo» no baje de 1,5 mm, que es el piso de lo
+     que se lee de cerca. El 1,6× de antes era un retrato del día en que se
+     escribió: cuando el empaquetado en dos renglones subió «cabe todo» de
+     1,35 a 1,73 mm —que es justo lo que se buscaba—, la proporción bajó sin
+     que nada empeorara. */
   T('con «se lee de pie» la letra sale más grande de verdad',
-    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) > letraMM(r.vTodo) * 1.6,
+    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) * 1.3 && letraMM(r.vTodo) >= 1.5,
     letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm');
   T('y lo que cede es el contenido, no la legibilidad',
     (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) < cajasDe(r.vTodo),
@@ -513,18 +543,56 @@ const geo = [
     (r.fueraTodo || []).length === 0 && cajasDe(r.vTodo) === cajasDe(r.v),
     cajasDe(r.vTodo) + ' cajas · fuera: ' + ((r.fueraTodo || []).join(', ') || 'ninguna'));
 
-  console.log('\n  -- la caja del lote dice el reparto, no veintidós renglones --');
+  /* Primero fue «no veintidós renglones, el reparto por sol». Después, con
+     el pliego real en la mano: «en vez de una lista larga de cada lado, con
+     ver el gráfico se defiende solo; el gráfico más grande y una conclusión
+     de la norma y el lote». Así que la caja ya no lista NADA: el plano
+     acotado lleva cada lado con su medida y su color, la caja ocupa dos
+     columnas para que se lea, y cierra con la conclusión —qué cara se
+     calienta y cuánto perímetro recibe sol—, que es lo que el dibujo no dice
+     solo. */
+  console.log('\n  -- la caja del lote: el plano grande y la conclusión, sin lista --');
   const cajaLote = (r.h || '').split('<section class="caja')
     .filter(t => /<h2>El lote a intervenir<\/h2>/.test(t))[0] || '';
-  const renglones = (cajaLote.match(/>Lado \d+/g) || []).length;
+  const renglones = (cajaLote.match(/>Lado \d+/g) || []).length +
+                    (cajaLote.match(/<\/span><b>\d+ lados? · \d+ m/g) || []).length;
   T('la caja del lote está en la lámina', !!cajaLote);
-  T('no pone un renglón por lado', renglones > 0 && renglones <= 8,
-    renglones + ' renglones de «Lado N» para 22 lados');
-  T('reparte los lados por cuánto sol reciben',
-    /(Sol pleno de la tarde|Sol fuerte|Sol medio|Poco sol|Sin sol de la tarde)<\/span><b>\d+ lados? · \d+ m/.test(cajaLote),
-    (cajaLote.match(/>(?:Sol|Poco|Sin)[^<]*<\/span><b>[^<]*/g) || []).join(' · ').slice(0, 110) || '(no reparte)');
-  T('y dice cuántos lados tiene y dónde está el listado entero',
-    /22 lados<\/b>/.test(cajaLote) && /listado lado por lado está en la ficha/.test(cajaLote));
+  T('sin renglones por lado ni reparto: el plano acotado lo dice solo', renglones === 0,
+    renglones + ' renglones de lista para 22 lados');
+  T('ocupa dos columnas, para que el plano se lea', /^[^>]*caja-doble/.test(cajaLote),
+    (cajaLote.match(/^[^"]*/) || [''])[0]);
+  T('y cierra con la conclusión: qué cara se calienta',
+    /La cara que más se calienta es el <b>lado \d+<\/b>[^<]*—\d+ m, (sol pleno de la tarde|sol fuerte|sol medio|poco sol)—/i.test(cajaLote),
+    (cajaLote.match(/La cara que más se calienta[^.]*\./) || ['(no concluye)'])[0].replace(/<[^>]+>/g, '').slice(0, 120));
+  T('y cuánto del perímetro recibe sol de la tarde',
+    /<b>\d+ de 22 lados<\/b> reciben algo de sol de la tarde, \d+ m de perímetro/.test(cajaLote),
+    (cajaLote.match(/\d+ de 22 lados<\/b>[^;]*/) || ['(no lo dice)'])[0].replace(/<[^>]+>/g, ''));
+
+  /* ── Los mapas que faltaban ────────────────────────────────────────
+     «Faltó altura de lo construido»: las barras del reparto estaban, y lo
+     que hacía falta era verlo en planta. Este sector trae treinta edificios
+     con su altura registrada, así que el mapa tiene que salir con cada
+     huella pintada por pisos y su tabla de convenciones. */
+  console.log('\n  -- los mapas que faltaban --');
+  /* El mapa lleva « · el mapa» en el título cuando hay una caja de cifras
+     con el mismo nombre, para que el índice no tenga dos entradas iguales. */
+  const mapaDe = (html, t) => (html || '').split('<section class="caja')
+    .filter(x => /^ mapa-caja/.test(x) && new RegExp('<h2>' + t + '( · el mapa)?</h2>').test(x))[0] || '';
+  const ALT = mapaDe(r.h, 'Alturas de lo construido');
+  const tonos = (ALT.match(/fill="#(BFE3F7|5BB4E5|0A6F9E|0B3A57)"/g) || []).length;
+  T('alturas de lo construido, en planta y por pisos', tonos >= 25,
+    tonos + ' huellas con tono de pisos');
+  /* Este sector tiene edificios de 3 a 7 pisos y todos con la altura: la
+     tabla nombra esos dos tonos y NO el de un piso ni el de «sin altura»,
+     porque no están pintados y mandarían a buscarlos. */
+  const convAlt = (ALT.match(/mu-area" style="[^"]*"><\/i>[^<]*/g) || []).map(x => x.split('</i>')[1]);
+  T('con la escala de pisos en sus convenciones, solo la que pinta',
+    convAlt.indexOf('3 pisos') >= 0 && convAlt.indexOf('4 o más') >= 0 &&
+    convAlt.indexOf('1 piso') < 0 && convAlt.indexOf('Sin altura registrada') < 0,
+    convAlt.join(' · ') || 'sin tabla');
+  T('y el pie dice cuántos edificios traen la altura', /30 de 30 edificios traen la altura/.test(ALT),
+    (ALT.match(/\d+ de \d+ edificios traen la altura/) || ['(no lo dice)'])[0]);
+  T('el mapa parado también lo trae', !!mapaDe(r.v, 'Alturas de lo construido'));
 
   console.log('');
   T('sin errores de JavaScript', err.length === 0, err.join(' | ') || 'ninguno');

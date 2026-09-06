@@ -54,7 +54,12 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
        licencia igual que la pondría el curso en cada dispositivo. */
     localStorage.setItem('urbis_licencia_analisis','URBIS1.deprueba.deprueba');
     localStorage.setItem('urbis_auth_session_v1',JSON.stringify({usuario:'urbisprocity',rol:'admin',es_admin:true,session_token:'t'}));
-    localStorage.removeItem('aia_overpass_cache_v1'); localStorage.removeItem('pcr_fichas_v1');
+    localStorage.removeItem('aia_overpass_cache_v1');
+    /* Las fichas se borran al empezar, no al recargar: la segunda mitad de
+       la prueba recarga la página para reanudar la ficha que la primera
+       archivó, y `sessionStorage` es lo único que sobrevive a esa recarga
+       sin sobrevivir a la prueba siguiente. */
+    if(!sessionStorage.getItem('pcr_prueba_conservar')) localStorage.removeItem('pcr_fichas_v1');
   }catch(e){} });
   await ctx.route('**', r=>/localhost:(8199|8787)/.test(r.request().url())?r.continue():r.abort());
   await ctx.route(/unpkg\.com/, r=>{const u=r.request().url();
@@ -66,9 +71,10 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
   await ctx.route(/locationiq\.com/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({address:{city:'Cúcuta',state:'Norte de Santander',country:'Colombia'}})}));
   await ctx.route(/overpass/, r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({elements})}));
+  let pedidosDane=0;
   await ctx.route(/ags\.esri\.co/, r=>{
     const u=r.request().url()+(r.request().postData()||'');
-    if(/Estrato/i.test(u)) return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(manzanas)});
+    if(/Estrato/i.test(u)){ pedidosDane++; return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(manzanas)}); }
     r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})});
   });
 
@@ -158,12 +164,62 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     if(bPoner){ bPoner.click(); await new Promise(r=>setTimeout(r,1200)); }
     o.trasEstratos=document.querySelectorAll('.leaflet-overlay-pane path').length;
 
+    /* ── Y en el papel ──────────────────────────────────────────────
+       «Faltó manzanas por estratos en el PDF». Con las manzanas pintadas se
+       arman la lámina y el informe, y los dos tienen que traer el mapa con
+       un color por estrato en sus convenciones. */
+    let capturado = '';
+    window.AIA_INFORME = window.AIA_INFORME || {};
+    window.AIA_INFORME.abrirVentanaImpresion = function (html) { capturado = html; };
+    const asa = h.querySelector('[data-pcr="agrandar"]');
+    if (asa) { asa.click(); await new Promise(r=>setTimeout(r,500)); }
+    const bLam = h.querySelector('[data-pcr="lamina-ver"]');
+    if (bLam) { bLam.click(); await new Promise(r=>setTimeout(r,900)); }
+    o.lamina = capturado; capturado = '';
+    const asa2 = h.querySelector('[data-pcr="agrandar"]');
+    if (asa2 && h.classList.contains('pcr-encogida')) { asa2.click(); await new Promise(r=>setTimeout(r,500)); }
+    const bImp = h.querySelector('[data-pcr="imprimir"]');
+    if (bImp) { bImp.click(); await new Promise(r=>setTimeout(r,900)); }
+    o.informe = capturado; capturado = '';
+
     // cerrar la hoja NO debe borrar lo pintado: cerrarla es lo que se hace para mirar
     window.URBIS_PC_RECON.cerrar();
     await new Promise(r=>setTimeout(r,300));
     o.trasCerrar=document.querySelectorAll('.leaflet-overlay-pane path').length;
+    /* Y las manzanas tienen que haber viajado con la ficha archivada: es lo
+       que las trae de vuelta al reanudar, y al pliego que se imprima después. */
+    o.fichaEstratos=(function(){ try{ const f=(window.URBIS_PC_RECON.leerFichas()||[])[0];
+      return f&&f.estratos&&f.estratos.manzanas ? f.estratos.manzanas.length : 0; }catch(e){ return -1; } })();
+    try{ sessionStorage.setItem('pcr_prueba_conservar','1'); }catch(e){}
     return o;
   }, {C,POL});
+
+  /* ── Reanudar la ficha: las manzanas vuelven solas ────────────────────
+     Se pintaban, se archivaba la ficha y al reabrirla ya no estaban: no
+     viajaban con ella. Ahora vuelven pintadas y sin volver a pedirle nada al
+     DANE, que es la promesa de reanudar. */
+  pedidosDane=0;
+  await pg.reload({waitUntil:'domcontentloaded'});
+  await pg.waitForTimeout(3000);
+  const r2=await pg.evaluate(async (D)=>{
+    const {C}=D, o={}, esperar=ms=>new Promise(r=>setTimeout(r,ms));
+    window.URBIS_CONFIG.ANALISIS.API=window.__URBIS_MOTOR;
+    window.map.setView([C.lat+0.002,C.lng+0.002],15); await esperar(500);
+    const R=window.URBIS_PC_RECON;
+    R.abrir(); await esperar(700);
+    const H=()=>document.getElementById('pcr-hoja');
+    const bR=H().querySelector('[data-pcr="reanudar"]');
+    o.hayBoton=!!bR;
+    if(bR){ bR.click(); await esperar(1500); }
+    const est=(R.estado&&R.estado())||{};
+    o.n=est.estratos||0; o.tieneEstratos=o.n>0;
+    o.leyenda=!!est.estratosLeyenda;
+    /* Las manzanas pintadas se cuentan por su estilo —el relleno al 45 %—
+       y no por «formas en el mapa», que sumaría los puntos de usos. */
+    o.formas=(function(){ let n=0; try{ window.map.eachLayer(l=>{ if(l instanceof L.Polygon && l.options && l.options.fillOpacity===0.45) n++; }); }catch(e){} return n; })();
+    return o;
+  },{C,POL});
+  r2.pedidosDane=pedidosDane;
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const P=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
@@ -194,6 +250,26 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
   P('con su leyenda', r.hayLeyenda && r.coloresLeyenda>=3, r.coloresLeyenda+' colores');
   P('y dice cuántas manzanas', /manzanas/.test(r.textoTrasEstratos||''),
     (r.textoTrasEstratos||'').split('\n').filter(l=>/manzanas/.test(l))[0]);
+
+  console.log('\n  -- y en el papel --');
+  const mapaEstr = ((r.lamina||'').split('<section class="caja')
+    .filter(x=>/^ mapa-caja/.test(x) && /<h2>Manzanas por estrato<\/h2>/.test(x))[0])||'';
+  const conv = (mapaEstr.match(/mu-area" style="[^"]*"><\/i>[^<]*/g)||[]).map(x=>x.split('</i>')[1]);
+  P('el pliego trae el mapa de manzanas por estrato', !!mapaEstr);
+  P('con las manzanas pintadas', (mapaEstr.match(/<path d="M[^"]*Z" fill="#/g)||[]).length >= 3,
+    (mapaEstr.match(/<path d="M[^"]*Z" fill="#/g)||[]).length+' manzanas');
+  P('y un color por estrato en las convenciones, no uno por manzana',
+    conv.length>=3 && conv.length<=6 && conv.every(c=>/Estrato \d/.test(c)), conv.join(' · ')||'sin tabla');
+  P('el informe en hojas lo trae también',
+    /<figcaption>Manzanas por estrato<\/figcaption>/.test(r.informe||''));
+
+  console.log('\n  -- y viajan con la ficha --');
+  P('la ficha archivada lleva las manzanas', r.fichaEstratos>=3, r.fichaEstratos+' manzanas en la ficha');
+  P('al reanudarla vuelven', r2.hayBoton && r2.tieneEstratos && r2.n===r.fichaEstratos,
+    r2.n+' manzanas tras reanudar (botón '+(r2.hayBoton?'sí':'NO')+')');
+  P('pintadas en el mapa, con su leyenda', r2.formas===r.fichaEstratos && r2.leyenda,
+    r2.formas+' manzanas pintadas en el mapa');
+  P('y sin volver a pedirle nada al DANE', r2.pedidosDane===0, r2.pedidosDane+' consultas');
 
   console.log('\n  -- cerrar la hoja no borra lo pintado --');
   // El contorno del área SÍ se quita al cerrar —ya no hay nada que encuadrar—,

@@ -1009,9 +1009,14 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 .pcr-hoja .pcr-sintesis-bien li, .pcr-pestana .pcr-sintesis-bien li{ border-left-color:#22c55e; }
 .pcr-hoja .pcr-sintesis-mal li, .pcr-pestana .pcr-sintesis-mal li{ border-left-color:#e5484d; }
-.pcr-hoja .pcr-sintesis-falta li, .pcr-pestana .pcr-sintesis-falta li{
+.pcr-hoja .pcr-sintesis-oport li, .pcr-pestana .pcr-sintesis-oport li{ border-left-color:#0A6F9E; }
+.pcr-hoja .pcr-sintesis-riesgo li, .pcr-pestana .pcr-sintesis-riesgo li{ border-left-color:#f59e0b; }
+/* Lo que falta levantar en campo va dentro de las oportunidades, marcado
+   como tarea: es información que el proyecto todavía puede ganar. */
+.pcr-hoja .pcr-sintesis li.pcr-sx-tarea, .pcr-pestana .pcr-sintesis li.pcr-sx-tarea{
   border-left-color:var(--edu-accent); border-left-style:dashed;
 }
+.pcr-hoja .pcr-lab small, .pcr-pestana .pcr-lab small{ font-weight:500; opacity:.75; text-transform:none; letter-spacing:0; }
 
 /* El rótulo de abajo en una fila de nivel: los minutos a pie del bloque de
    cobertura. Va en su propia línea porque «Servicio de salud» y «10 min ·

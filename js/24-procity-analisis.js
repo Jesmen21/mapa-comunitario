@@ -1062,6 +1062,31 @@
       }).join('') + '</g>';
     }
 
+    /* Puntos CON NOMBRE: los hitos y nodos del sector, numerados, y los
+       parques con nombre. Se pidió «un mapeo exclusivo de hitos y nodos con
+       los nombres», y con razón: un hito sin nombre en el plano es un punto
+       más, y el número solo sirve si la lista de al lado lo repite. El rótulo
+       lleva un halo blanco para leerse sobre la foto o sobre las huellas. */
+    let rotulos = '';
+    if (Array.isArray(o.rotulos) && o.rotulos.length) {
+      const fz = o.rotuloTam || 5.2;
+      rotulos = '<g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">' +
+        o.rotulos.map(rt => {
+          if (!rt || rt.lat == null || rt.lng == null) return '';
+          const x = X(+rt.lng), y = Y(+rt.lat);
+          const col = rt.color || '#0A6F9E';
+          const txt = String(rt.texto || '').replace(/[<&>]/g, '').slice(0, 26);
+          const num = rt.n != null ? String(rt.n) : '';
+          return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (num ? 4.2 : 2.6) +
+              '" fill="' + col + '" stroke="#fff" stroke-width="1"/>' +
+            (num ? '<text x="' + x.toFixed(1) + '" y="' + (y + 1.9).toFixed(1) + '" text-anchor="middle" ' +
+              'font-size="5" font-weight="800" fill="#fff">' + num + '</text>' : '') +
+            (txt ? '<text x="' + (x + (num ? 6 : 4.2)).toFixed(1) + '" y="' + (y + 1.9).toFixed(1) +
+              '" font-size="' + fz + '" font-weight="700" fill="#12202e" stroke="#fff" stroke-width="2.4" ' +
+              'paint-order="stroke" stroke-linejoin="round">' + txt + '</text>' : '');
+        }).join('') + '</g>';
+    }
+
     /* Por dónde se cortó el terreno. Va casi arriba del todo —solo el lote y
        el contorno le pasan por encima— porque la línea del corte es una
        REFERENCIA: dice dónde mirar, y una referencia tapada no sirve.
@@ -1164,7 +1189,7 @@
       'role="img" aria-label="' + (o.etiqueta || 'Forma del área') + '">' +
       '<rect width="' + W + '" height="' + H + '" rx="8" fill="#F3F8FB"/>' +
       '<path d="' + rejilla + '" stroke="#E1EAF1" stroke-width="1"/>' +
-      dentro + figura + cortes + lote + escala + norte + '</svg>';
+      dentro + figura + cortes + lote + rotulos + escala + norte + '</svg>';
   }
 
   // Cuánto hace: para la fecha de una tarjeta, en palabras.

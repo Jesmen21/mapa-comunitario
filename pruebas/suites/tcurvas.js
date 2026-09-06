@@ -309,6 +309,37 @@ const geo=[
   T('y la tabla de convenciones lo nombra, con su muestra punteada',
     /mu-punteado/.test(CURVAS) && /Corte topográfico/.test(CURVAS),
     (CURVAS.match(/mu-[a-z]+"[^>]*>[^<]*/g) || []).map(x => x.split('>')[1]).join(' · ') || 'sin tabla');
+  /* ── Movimientos en masa: por pendiente, del terreno medido ────────
+     «Falta gráfico y mapa de los movimientos de masa». El mapa oficial del
+     Servicio Geológico es del municipio a 1:100.000 y a esa escala un predio
+     no se lee; lo que sí se midió acá es el terreno, y la pendiente es el
+     primer factor de cualquier método. Esta rampa sube 200 m en unos 1.300 m
+     —un 15 % largo—, así que las celdas tienen que caer en los rangos medio
+     y alto, y ninguna en «baja»: si saliera verde, el mapa estaría pintando
+     otra cosa. Y tiene que decir lo que es: susceptibilidad por pendiente,
+     no el mapa oficial de amenaza. */
+  console.log('\n  -- movimientos en masa, por la pendiente del terreno --');
+  const MASA = cajaLam('Susceptibilidad por pendiente');
+  const celdasDe = c => (MASA.match(new RegExp('fill="' + c + '"', 'g')) || []).length;
+  T('el pliego trae el mapa de susceptibilidad por pendiente', !!MASA);
+  T('con las celdas en los rangos medio y alto, no en «baja»',
+    celdasDe('#F6E27F') + celdasDe('#F59E0B') >= 20 && celdasDe('#D9F2E3') === 0,
+    'baja ' + celdasDe('#D9F2E3') + ' · media ' + celdasDe('#F6E27F') + ' · alta ' + celdasDe('#F59E0B') +
+    ' · muy alta ' + celdasDe('#B91C1C'));
+  /* Las convenciones nombran solo los rangos que el dibujo pinta —en esta
+     rampa, medio y alto— y cada uno con su porcentaje. Una entrada «Baja»
+     con 0 % mandaría a buscar un verde que no está. */
+  const rangosConv = (MASA.match(/(Baja|Media|Alta|Muy alta) · [^·]* · \d+%<\/span>/g) || [])
+    .map(x => x.split(' · ')[0]);
+  /* La rampa es pareja —15 % en todas partes—, así que cae entera en «Alta»
+     y la tabla trae esa sola entrada: la que está pintada. */
+  T('con los rangos que pinta, cada uno con su porcentaje, y sin nombrar los que no pinta',
+    rangosConv.length >= 1 && rangosConv.indexOf('Baja') < 0 && rangosConv.indexOf('Alta') >= 0 &&
+    rangosConv.length === new Set(MASA.match(/fill="#(D9F2E3|F6E27F|F59E0B|B91C1C)"/g) || []).size,
+    rangosConv.join(' | ') || 'sin tabla');
+  T('y dice que no es el mapa oficial de amenaza', /no es el mapa oficial de amenaza/.test(MASA));
+  T('el informe en hojas lo trae también', /<figcaption>Susceptibilidad por pendiente<\/figcaption>/.test(r.pdf || ''));
+
   const prometeCortes = /van marcadas en el plano del sector/.test(r.pdf || '');
   const dibujaCortes = /stroke-dasharray="5 3\.5"/.test(r.pdf || '');
   T('el informe ya no promete algo que no dibuja', !prometeCortes || dibujaCortes,
