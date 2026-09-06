@@ -2797,8 +2797,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        en blanco debajo y los mapas de un sector de catorce usos del tamaño
        de la mano. Un sector con poco que contar tiene los mapas grandes; uno
        que revienta la hoja reparte el encogimiento entre todo, que es lo que
-       hacía antes y lo que hace que quepa. */
-    var SUELO_K = 0.5;
+       hacía antes y lo que hace que quepa. El suelo es el piso de
+       «Equilibrio»: en los dos tamaños que se leen los dibujos van a su
+       tamaño de papel, y en «cabe todo» —letra de lupa— se encogen con la
+       hoja, que es la única forma de que quepan dieciocho mapas. */
+    var SUELO_K = 0.62;
     var papel = function (mm) { return 'calc(' + mm + 'mm / max(var(--k, 1), ' + SUELO_K + '))'; };
     /* Los techos, en papel. Medidos con el sector de prueba de veintidós
        lados y diez capas: con los héroes a 160 y los mapas de dos columnas a
@@ -4440,7 +4443,9 @@ function donaHTML(datos, colorDe, nombreDe) {
          dibujo, y desaparece como caja aparte: el mapa recupera su nombre a
          secas —ya no hay otra igual— y el pie de los hitos, que repetía la
          lista en letra de lupa, sobra. */
-      var FUSIONAR = ['Llenos y vacíos', 'Alturas de lo construido', 'Hitos y nodos'];
+      var FUSIONAR = ['Llenos y vacíos', 'Alturas de lo construido', 'Hitos y nodos',
+                      'Cómo se llega', 'A distancia de caminar', 'Verde y agua',
+                      'El ruido del tránsito', 'Dónde está la calle comercial', 'Cómo cambia al alejarse'];
       FUSIONAR.forEach(function (tt) {
         var texto = (porTitulo[tt] || [])[0];
         if (!texto) return;
@@ -4508,14 +4513,30 @@ function donaHTML(datos, colorDe, nombreDe) {
           var m = t.match(/<h2>([^<]*)<\/h2>/);
           return pesoDe(m ? m[1] : '');
         };
-        var celdas = 0, celdasAncho = 0, conMapa = false;
+        var celdas = 0, celdasAncho = 0, conMapa = false, deDos = 0, deUna = 0;
         bd.cajas.forEach(function (t) {
           var an = anchoDe(t);
           var alto = (esMapa(t) || /plano-hero/.test(t) || /^<section class="caja[^"]*caja-alta/.test(t)) ? 2 : 1;
-          if (alto === 2) conMapa = true;
+          if (alto === 2) { conMapa = true; deDos++; } else { deUna++; }
           celdas += an * alto; celdasAncho += an;
         });
         bd.celdasAncho = celdasAncho;
+        /* Una banda donde MANDAN los mapas no se apila. Apilar de a dos sirve
+           cuando al lado del mapa hay cajas de cifras que caben dos en su
+           alto; con seis mapas y una caja, los dos renglones son una grilla
+           de mapas que ocupan los dos y una caja que se queda con un hueco
+           encima o debajo. Desde que la calle comercial, los anillos, el
+           ruido y lo demás tienen mapa, la demográfica y la movilidad son
+           así: van en tantos renglones como haga falta, de a una fila, y
+           cada caja de cifras se estira al alto de su mapa. */
+        if (conMapa && deDos >= deUna && !/sintesis-pie/.test(bd.cajas[0])) {
+          var reng = Math.max(1, Math.ceil(celdasAncho / ANCHO_FILA));
+          bd.renglones = reng;
+          bd.sinApilar = true;
+          bd.cols = Math.max(1, Math.ceil(celdasAncho / reng));
+          bd.peso = bd.cols;
+          return;
+        }
         /* Dos renglones si hay un mapa que los justifique o si hay cajas de
            sobra para apilar; una sola caja no se apila con nadie. La síntesis
            va sola y a lo ancho: no entra en este reparto. */
@@ -4617,7 +4638,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
             '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
               '<small>' + esc(bd.g.que) + '</small></div>' +
-            '<div class="bcuerpo' + (renglones >= 2 ? ' dos' : '') +
+            '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
               '" style="grid-template-columns:repeat(' + cols + ',minmax(0,1fr))">' +
               bd.cajas.join('') + '</div>' +
           '</div>';
@@ -9659,6 +9680,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     cobertura: 'ambiental', curvas: 'ambiental', sombras: 'ambiental', masa: 'ambiental',
     foto: 'ubicacion', llenos: 'forma', alturas: 'forma',
     vias: 'movilidad', caminata: 'movilidad',
+    llega: 'movilidad', caminar: 'movilidad',
+    agua: 'ambiental', ruido: 'ambiental',
+    comercial: 'demografico', anillos: 'demografico',
     acuerdos: 'campo', intangible: 'campo'
   };
   function grupoDeMapa(id) {
@@ -9744,6 +9768,26 @@ function donaHTML(datos, colorDe, nombreDe) {
                  listo: !!(S.intangible && S.intangible.length),
                  dato: (S.intangible || []).length + ' marcas',
                  falta: 'marcá lo que viste en la calle' });
+    /* Los seis que les faltaban a sus cajas. */
+    var mvD = st.movilidad || null;
+    lista.push({ id: 'llega', t: 'Cómo se llega', pide: 'trazado',
+                 listo: !!(mvD && ((S.trzVias && S.trzVias.length) || (mvD.tramosVia || []).length)),
+                 dato: 'la vía principal en rojo, las arterias y las paradas', falta: 'medí el trazado' });
+    lista.push({ id: 'caminar', t: 'A distancia de caminar',
+                 listo: !!(st.accesibilidad && (st.accesibilidad.categorias || []).some(function (c) { return c.puntos > 0; })),
+                 dato: 'el más cercano de cada cosa y el camino', falta: 'no hay equipamientos registrados' });
+    lista.push({ id: 'agua', t: 'Verde y agua',
+                 listo: pois.some(function (p) { return /^(agua|parque|verde_natural)$/.test(p.sub || '') && p.lat != null; }),
+                 dato: 'cuáles son, con su nombre', falta: 'no hay agua ni verde registrados' });
+    lista.push({ id: 'ruido', t: 'El ruido del tránsito', pide: 'trazado',
+                 listo: (function () { try { return !!ruidoDelLote() && !!(S.trzVias && S.trzVias.length); } catch (e) { return false; } })(),
+                 dato: 'cada vía con lo que emite', falta: 'medí el trazado' });
+    lista.push({ id: 'comercial', t: 'Dónde está la calle comercial',
+                 listo: !!((st.nucleos || []).length),
+                 dato: 'los locales juntos y su calle en rojo', falta: 'no hay comercios agrupados en el área' });
+    lista.push({ id: 'anillos', t: 'Cómo cambia al alejarse',
+                 listo: (st.anillos || []).filter(function (a) { return a.n > 0; }).length >= 2,
+                 dato: 'los anillos de distancia con lo que hay en cada uno', falta: 'analizá el sector' });
     var off = S.pliegoMapasOff || [];
     lista.forEach(function (m) { m.on = off.indexOf(m.id) === -1; });
     /* El tema de cada uno, del mismo sitio del que lo saca el papel. Sin
@@ -10327,6 +10371,219 @@ function donaHTML(datos, colorDe, nombreDe) {
        las capas son la lectura que se hace sobre ella. El orden de adentro de
        cada grupo no se toca (el `sort` de JavaScript es estable desde ES2019,
        y acá igual solo hay dos llaves). */
+    /* ── Los mapas que les faltaban a seis cajas ───────────────────────
+       Con el pliego impreso en la mano: «índice sin su gráfico no vale
+       nada», «si el texto no tiene su representante gráfico no vale nada ese
+       texto solo diagramado». Seis cajas hablaban de DÓNDE están las cosas
+       —cómo se llega, qué queda a distancia de caminar, cuáles son los
+       cuerpos de agua, por dónde entra el ruido, dónde está la calle
+       comercial, cómo cambia al alejarse— y eran texto y barras. Cada una
+       tiene ahora su recuadro, y en la lámina su contexto va debajo del
+       dibujo. */
+    var centroM = (meta.lat != null && meta.lng != null)
+      ? { lat: Number(meta.lat), lng: Number(meta.lng) } : null;
+    var viasN = (o.vias !== undefined ? o.vias : S.trzVias) || [];
+    var origenN = (lote && lote.length >= 3) ? centroideDe(lote) : centroM;
+
+    // ── Cómo se llega: la vía principal en rojo, las arterias y las paradas.
+    var mvN = st.movilidad || null;
+    var paradasN = pois.filter(function (p) { return p.sub === 'parada_bus' && p.lat != null; });
+    if (mvN && centroM && (viasN.length || (mvN.tramosVia || []).length)) {
+      var nombreVP = (mvN.viaPrincipal && mvN.viaPrincipal.nombre) ? String(mvN.viaPrincipal.nombre).toLowerCase() : '';
+      var lineasLl = [], jerVistas = {}, hayVP = false, rotVP = null, hayCiclo = false;
+      viasN.forEach(function (v) {
+        var j = jerarquiaVialDe(v.clase);
+        if (!j || !v.pts || v.pts.length < 2) return;
+        var esVP = !!(nombreVP && v.nombre && String(v.nombre).toLowerCase() === nombreVP);
+        var arteria = j.id === 'troncal' || j.id === 'principal' || j.id === 'secundaria';
+        if (esVP) {
+          if (!hayVP) rotVP = { lat: v.pts[Math.floor(v.pts.length / 2)].lat, lng: v.pts[Math.floor(v.pts.length / 2)].lng,
+                                texto: mvN.viaPrincipal.nombre, color: '#E5484D' };
+          hayVP = true;
+          lineasLl.push({ pts: v.pts, color: '#E5484D', ancho: 3.2, opacidad: 1 });
+        } else if (arteria) {
+          jerVistas[j.id] = j;
+          lineasLl.push({ pts: v.pts, color: j.color, ancho: j.ancho + 0.5, opacidad: 0.95 });
+        } else if (/cycle/.test(String(v.clase || ''))) {
+          hayCiclo = true;
+          lineasLl.push({ pts: v.pts, color: '#6D4AC8', ancho: 1.3, opacidad: 0.95 });
+        } else {
+          lineasLl.push({ pts: v.pts, color: '#D5DEE6', ancho: 0.5, opacidad: 0.9 });
+        }
+      });
+      // Sin trazado medido, los tramos de arteria que trae el análisis, como puntos.
+      var tramosLl = viasN.length ? [] : (mvN.tramosVia || []).map(function (t) {
+        return { lat: t.lat, lng: t.lng, color: '#16A34A' };
+      });
+      var convLl = [];
+      if (hayVP) convLl.push({ c: '#E5484D', t: 'Vía principal: ' + (mvN.viaPrincipal.nombre || ''), f: 'linea' });
+      ['troncal', 'principal', 'secundaria'].forEach(function (id) {
+        if (jerVistas[id]) convLl.push({ c: jerVistas[id].color, t: jerVistas[id].etq, f: 'linea' });
+      });
+      if (tramosLl.length) convLl.push({ c: '#16A34A', t: 'Tramo de vía arteria', f: 'punto' });
+      if (hayCiclo) convLl.push({ c: '#6D4AC8', t: 'Ciclorruta', f: 'linea' });
+      if (paradasN.length) convLl.push({ c: '#0A6F9E', t: 'Parada de transporte', f: 'punto' });
+      mapas.push({
+        id: 'llega', titulo: 'Cómo se llega', grupo: grupoDeMapa('llega'),
+        svg: mini({ lineas: lineasLl,
+                    puntos: tramosLl.concat(paradasN.map(function (p) { return { lat: p.lat, lng: p.lng, color: '#0A6F9E' }; })),
+                    radioPunto: 2.2,
+                    rotulos: rotVP ? [rotVP] : [] }),
+        conv: convLl,
+        pie: 'facilidad para llegar ' + (mvN.scoreAcceso || 0) + '/100 · exposición al tránsito ' +
+             (mvN.exposicion || 0) + '/100' + (viasN.length ? '' : ' · medí el trazado para ver las calles')
+      });
+    }
+
+    // ── A distancia de caminar: el más cercano de cada cosa y el camino.
+    var accN = st.accesibilidad;
+    if (accN && (accN.categorias || []).length && origenN) {
+      var DESTINOS = [
+        { id: 'educacion',      t: 'Colegio o jardín',  subs: ['colegio'],                                        color: '#a855f7' },
+        { id: 'salud',          t: 'Servicio de salud', subs: ['salud_ips', 'salud_otro', 'drogueria'],           color: '#ec4899' },
+        { id: 'recreacion',     t: 'Parque o cancha',   subs: ['parque', 'deportivo'],                            color: '#22c55e' },
+        { id: 'abastecimiento', t: 'Dónde mercar',      subs: ['supermercado', 'tienda_barrio', 'tienda_descuento'], color: '#e5484d' }
+      ];
+      var grafoN = viasN.length ? grafoDeVias(viasN) : null;
+      var rotCa = [], linCa = [], convCa = [], nCa = 0, porCalle = 0;
+      DESTINOS.forEach(function (dd) {
+        var cat = (accN.categorias || []).filter(function (c) { return c.id === dd.id; })[0];
+        var cerca = pois.filter(function (p) { return dd.subs.indexOf(p.sub) !== -1 && p.lat != null; })
+          .map(function (p) { return { p: p, d: haversineM(origenN, p) }; })
+          .sort(function (a, b) { return a.d - b.d; })[0];
+        if (!cerca) return;
+        nCa++;
+        var ruta = null;
+        try { ruta = grafoN ? rutaAPie(grafoN, origenN, cerca.p) : null; } catch (e) { ruta = null; }
+        if (ruta) porCalle++;
+        var largo = ruta ? ruta.metros : Math.round(cerca.d);
+        linCa.push({ pts: ruta ? ruta.pts : [origenN, cerca.p], color: dd.color, ancho: 2.2, opacidad: 0.95 });
+        rotCa.push({ lat: cerca.p.lat, lng: cerca.p.lng, n: nCa, texto: cerca.p.nombre || dd.t, color: dd.color });
+        convCa.push({ c: dd.color, f: 'linea',
+                      t: nCa + ' · ' + dd.t + ' · ' + largo + ' m' + (ruta ? ' por la calle' : ' en línea recta') +
+                         (cat ? ' · ' + conComa(cat.pctCubierto) + '% del área lo tiene cerca' : '') });
+      });
+      if (nCa) {
+        mapas.push({
+          id: 'caminar', titulo: 'A distancia de caminar', grupo: grupoDeMapa('caminar'),
+          svg: mini({ lineas: linCa, rotulos: rotCa,
+                      destacados: [{ lat: origenN.lat, lng: origenN.lng, color: '#FFD54F' }] }),
+          conv: convCa.concat([{ c: '#FFD54F', t: (lote && lote.length >= 3) ? 'El lote' : 'El centro del sector', f: 'punto' }]),
+          pie: 'el más cercano de cada cosa' +
+               (porCalle ? ', y el camino por la calle' : ', en línea recta: medí el trazado para verlo por la calle')
+        });
+      }
+    }
+
+    // ── Verde y agua: cuáles son, no cuántos.
+    var COLV = { agua: '#3b82f6', parque: '#22c55e', verde_natural: '#84cc16' };
+    var NOMV = { agua: 'Cuerpo de agua', parque: 'Parque o zona verde', verde_natural: 'Verde natural' };
+    var verdesN = pois.filter(function (p) { return COLV[p.sub] && p.lat != null; });
+    if (verdesN.length) {
+      var conNombre = function (p) { return p.nombre && /[a-záéíóú]{3}/i.test(p.nombre) && !/^parque\s*\/?\s*zona verde$/i.test(p.nombre); };
+      var rotV = verdesN.filter(conNombre).slice(0, 10).map(function (p) {
+        return { lat: p.lat, lng: p.lng, texto: p.nombre, color: COLV[p.sub] };
+      });
+      var ptsV = verdesN.filter(function (p) { return !conNombre(p); }).map(function (p) {
+        return { lat: p.lat, lng: p.lng, color: COLV[p.sub] };
+      });
+      var cuentaV = {};
+      verdesN.forEach(function (p) { cuentaV[p.sub] = (cuentaV[p.sub] || 0) + 1; });
+      mapas.push({
+        id: 'agua', titulo: 'Verde y agua', grupo: grupoDeMapa('agua'),
+        svg: mini({ rotulos: rotV, puntos: ptsV, radioPunto: 2.4 }),
+        conv: ['agua', 'parque', 'verde_natural'].filter(function (k) { return cuentaV[k]; }).map(function (k) {
+          return { c: COLV[k], t: NOMV[k] + ' · ' + cuentaV[k], f: 'punto' };
+        }),
+        pie: 'lo que OpenStreetMap tiene registrado, con su nombre cuando lo tiene; la cobertura del suelo dice cuánto verde hay de verdad'
+      });
+    }
+
+    // ── El ruido del tránsito: cada vía con el nivel que emite.
+    var ruN = (function () { try { return ruidoDelLote(); } catch (e) { return null; } })();
+    if (ruN && viasN.length && origenN) {
+      var bandaDe = function (dB) {
+        return dB >= 72 ? { c: '#B3282C', t: '72 dB(A) o más' }
+             : dB >= 65 ? { c: '#D97706', t: '65 a 71 dB(A)' }
+             : dB >= 58 ? { c: '#EAB308', t: '58 a 64 dB(A)' }
+             :            { c: '#C9D3DC', t: 'menos de 58 dB(A)' };
+      };
+      var lineasRu = [], bandasVistas = {};
+      viasN.forEach(function (v) {
+        var j = jerarquiaVialDe(v.clase);
+        if (!j || !v.pts || v.pts.length < 2 || RUIDO_REF[j.id] == null) return;
+        var b = bandaDe(RUIDO_REF[j.id]);
+        bandasVistas[b.t] = b;
+        lineasRu.push({ pts: v.pts, color: b.c, ancho: b.c === '#C9D3DC' ? 0.6 : 1.4 + (RUIDO_REF[j.id] - 58) / 8, opacidad: 0.95 });
+      });
+      mapas.push({
+        id: 'ruido', titulo: 'El ruido del tránsito', grupo: grupoDeMapa('ruido'),
+        svg: mini({ lineas: lineasRu,
+                    rotulos: [{ lat: origenN.lat, lng: origenN.lng, texto: conComa(ruN.dB) + ' dB(A) · ' + ruN.etq, color: ruN.color }] }),
+        conv: Object.keys(bandasVistas).map(function (k) { return { c: bandasVistas[k].c, t: k, f: 'linea' }; })
+          .concat([{ c: ruN.color, t: 'En el ' + (ruN.desdeElLote ? 'lote' : 'centro') + ': ' + conComa(ruN.dB) + ' dB(A), ' + ruN.etq.toLowerCase(), f: 'punto' }]),
+        pie: 'lo que emite cada vía por su jerarquía, a 10 m de la calzada; estimado, no medido'
+      });
+    }
+
+    // ── Dónde está la calle comercial: los locales juntos y su calle en rojo.
+    if ((st.nucleos || []).length && centroM) {
+      var nucs = nucleosComerciales(pois, centroM);
+      if (nucs.length) {
+        var rotN = [], ptsN = [], lineasN = [];
+        nucs.forEach(function (g, i) {
+          rotN.push({ lat: g.centro.lat, lng: g.centro.lng, n: i + 1, texto: g.n + ' locales', color: '#E5484D' });
+          g.miembros.forEach(function (m) { ptsN.push({ lat: m.lat, lng: m.lng, color: '#E5484D' }); });
+          // La calle: los tramos de vía que pasan a menos de 40 m de dos locales del grupo.
+          viasN.forEach(function (v) {
+            if (!v.pts || v.pts.length < 2) return;
+            for (var s = 1; s < v.pts.length; s++) {
+              var cerca = 0;
+              for (var q = 0; q < g.miembros.length && cerca < 2; q++) {
+                if (distanciaASegmento(g.miembros[q], v.pts[s - 1], v.pts[s]).d <= 40) cerca++;
+              }
+              if (cerca >= 2) lineasN.push({ pts: [v.pts[s - 1], v.pts[s]], color: '#E5484D', ancho: 3, opacidad: 0.9 });
+            }
+          });
+        });
+        mapas.push({
+          id: 'comercial', titulo: 'Dónde está la calle comercial', grupo: grupoDeMapa('comercial'),
+          svg: mini({ lineas: lineasN, puntos: ptsN, rotulos: rotN, radioPunto: 2 }),
+          conv: [{ c: '#E5484D', t: 'Local de comercio', f: 'punto' }]
+            .concat(lineasN.length ? [{ c: '#E5484D', t: 'La calle comercial: tramos con locales a los dos lados', f: 'linea' }] : []),
+          pie: 'los grupos numerados como en la lista de abajo, del que más pesa al que menos' +
+               (viasN.length ? '' : ' · medí el trazado para ver la calle en rojo')
+        });
+      }
+    }
+
+    // ── Cómo cambia al alejarse: los anillos con lo que hay en cada uno.
+    var anN = (st.anillos || []).filter(function (a) { return a.n > 0; });
+    if (anN.length >= 2 && centroM) {
+      var TONOS_AN = ['#0B3A57', '#0A6F9E', '#5BB4E5', '#BFE3F7'];
+      var tonoDe = function (d) {
+        for (var i = 0; i < anN.length; i++) { if (d < anN[i].hasta) return TONOS_AN[Math.min(i, 3)]; }
+        return TONOS_AN[3];
+      };
+      mapas.push({
+        id: 'anillos', titulo: 'Cómo cambia al alejarse', grupo: grupoDeMapa('anillos'),
+        svg: mini({
+          poligonos: anN.slice().reverse().map(function (a, i) {
+            return { pts: anilloDe(centroM, a.hasta, 64), relleno: '#0A6F9E', opacidad: 0.035, borde: '#0A6F9E', ancho: 0.8 };
+          }),
+          puntos: pois.filter(function (p) { return p.lat != null && p.distM != null; }).map(function (p) {
+            return { lat: p.lat, lng: p.lng, color: tonoDe(p.distM) };
+          }),
+          radioPunto: 1.7,
+          rotulos: anN.map(function (a) {
+            return { lat: centroM.lat + a.hasta / 110540, lng: centroM.lng, texto: a.etiqueta + ' · ' + a.n, color: '#0A6F9E' };
+          })
+        }),
+        conv: anN.map(function (a, i) { return { c: TONOS_AN[Math.min(i, 3)], t: a.etiqueta + ' · ' + a.n + ' usos', f: 'punto' }; }),
+        pie: 'cuántos usos hay en cada anillo de distancia al centro del área'
+      });
+    }
+
     mapas.sort(function (a, b) { return (b.grande ? 1 : 0) - (a.grande ? 1 : 0); });
     return mapas;
   }
@@ -10526,9 +10783,26 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
       var candidatos = ordenDeSacrificio(res, o);
       var apagadasYa = (o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
+      /* Y después de las cajas, los MAPAS, del último al primero. Con
+         dieciocho recuadros a tamaño de papel, «se lee de pie» no cerraba ni
+         apagando las treinta cajas, y caía al mínimo de siempre: letra de
+         1,4 mm con todas las cajas fuera, que es lo peor de los dos mundos.
+         Los mapas ceden después de las cifras y en orden inverso al de la
+         lámina —los últimos son los que se añadieron por último—, y nunca la
+         foto ni el plano de todos los usos, que son los que ubican. */
+      var mapasYa = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || []) : (S.pliegoMapasOff || []));
+      var candMapas = [];
+      try {
+        candMapas = mapasDisponibles(res).filter(function (m) {
+          return m.listo && mapasYa.indexOf(m.id) === -1 && m.id !== 'foto' && m.id !== 'calor:todos';
+        }).map(function (m) { return m.id; }).reverse();
+      } catch (e) { candMapas = []; }
+      var todosLosCandidatos = candidatos.concat(candMapas);
       var conN = function (n) {
+        var offC = candidatos.slice(0, Math.min(n, candidatos.length));
+        var offM = candMapas.slice(0, Math.max(0, n - candidatos.length));
         return laminaImprimible(res, Object.assign({}, o, {
-          escala: piso, pliegoOff: apagadasYa.concat(candidatos.slice(0, n)) }));
+          escala: piso, pliegoOff: apagadasYa.concat(offC), pliegoMapasOff: mapasYa.concat(offM) }));
       };
       var cabeConN = function (n) {
         d.open(); d.write(conN(n)); d.close();
@@ -10536,7 +10810,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (!r2 || !m2) return true;
         return r2.getBoundingClientRect().height <= m2.getBoundingClientRect().height + 1;
       };
-      var bajoN = 0, altoN = candidatos.length, elegido = null;
+      var bajoN = 0, altoN = todosLosCandidatos.length, elegido = null;
       while (bajoN <= altoN) {
         var med = Math.floor((bajoN + altoN) / 2);
         if (cabeConN(med)) { elegido = med; altoN = med - 1; } else { bajoN = med + 1; }
@@ -10545,10 +10819,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         /* Ni apagándolas todas: es un sector con más mapas que papel. Se
            vuelve al comportamiento viejo —el mínimo absoluto— porque una hoja
            chiquita se lee y una vacía no. */
-        S.pliegoFuera = candidatos.slice();
+        S.pliegoFuera = todosLosCandidatos.slice();
         return laminaImprimible(res, Object.assign({}, o, { escala: 0.4 }));
       }
-      S.pliegoFuera = candidatos.slice(0, elegido);
+      S.pliegoFuera = todosLosCandidatos.slice(0, elegido);
       return conN(elegido);
     } catch (e) {
       return html;
@@ -10679,7 +10953,11 @@ function donaHTML(datos, colorDe, nombreDe) {
           ', así que la última lámina salió sin ' +
           conComaY(S.pliegoFuera.map(function (id) {
             var c = lista.filter(function (x) { return x.id === id; })[0];
-            return c ? c.t : id;
+            if (c) return c.t;
+            // Un mapa que cedió: su nombre está en la otra lista.
+            var m = (function () { try { return mapasDisponibles(res).filter(function (x) { return x.id === id; })[0]; }
+                                   catch (e) { return null; } })();
+            return m ? 'el mapa de ' + m.t.toLowerCase() : id;
           })) + '. Están todas en el informe en hojas.</p>'
         : '') +
       grupos.map(function (g) {
@@ -14679,6 +14957,126 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
     }
     return { dist: dist, kIni: kIni, distanciaAlaCalleM: Math.round(dIni) };
+  }
+
+  /* El camino a pie de un punto a otro por la calle, con sus vueltas. El
+     mismo Dijkstra de arriba pero guardando por dónde se llegó a cada nodo,
+     que es lo que permite volver a dibujar la ruta. Se para al llegar: no
+     hace falta recorrer el sector entero para ir al colegio de la esquina. */
+  function rutaAPie(grafo, origen, destino) {
+    var claves = Object.keys(grafo.nodos);
+    if (!claves.length) return null;
+    var masCerca = function (p) {
+      var k0 = null, d0 = Infinity;
+      claves.forEach(function (k) {
+        var d = haversineM(p, grafo.nodos[k]);
+        if (d < d0) { d0 = d; k0 = k; }
+      });
+      return { k: k0, d: d0 };
+    };
+    var a = masCerca(origen), b = masCerca(destino);
+    // A más de 150 m de la calle más cercana no hay camino que dibujar
+    // sin inventarlo.
+    if (!a.k || !b.k || a.d > 150 || b.d > 150) return null;
+    var dist = {}, prev = {}, visto = {};
+    dist[a.k] = 0;
+    var cola = [{ k: a.k, d: 0 }];
+    var sacar = function () {
+      var top = cola[0], ult = cola.pop();
+      if (cola.length) {
+        cola[0] = ult;
+        var i = 0;
+        for (;;) {
+          var iz = 2 * i + 1, de = 2 * i + 2, m = i;
+          if (iz < cola.length && cola[iz].d < cola[m].d) m = iz;
+          if (de < cola.length && cola[de].d < cola[m].d) m = de;
+          if (m === i) break;
+          var t = cola[i]; cola[i] = cola[m]; cola[m] = t; i = m;
+        }
+      }
+      return top;
+    };
+    var meter = function (k, d) {
+      cola.push({ k: k, d: d });
+      var i = cola.length - 1;
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (cola[p].d <= cola[i].d) break;
+        var t = cola[i]; cola[i] = cola[p]; cola[p] = t; i = p;
+      }
+    };
+    while (cola.length) {
+      var top = sacar();
+      if (visto[top.k]) continue;
+      visto[top.k] = true;
+      if (top.k === b.k) break;
+      // Tope generoso: tres kilómetros de calle. Más lejos que eso no es
+      // «a distancia de caminar» de nadie.
+      if (top.d > 3000) continue;
+      var vecinos = grafo.ady[top.k] || [];
+      for (var i = 0; i < vecinos.length; i++) {
+        var nd = top.d + vecinos[i].d;
+        if (dist[vecinos[i].a] === undefined || nd < dist[vecinos[i].a]) {
+          dist[vecinos[i].a] = nd; prev[vecinos[i].a] = top.k;
+          meter(vecinos[i].a, nd);
+        }
+      }
+    }
+    if (dist[b.k] === undefined) return null;
+    var pts = [], k = b.k, tope = 5000;
+    while (k && tope-- > 0) { pts.push(grafo.nodos[k]); if (k === a.k) break; k = prev[k]; }
+    pts.reverse();
+    return { pts: [origen].concat(pts, [destino]), metros: Math.round(dist[b.k] + a.d + b.d) };
+  }
+
+  // Un anillo de radio dado alrededor de un punto, como polígono de n lados.
+  function anilloDe(centro, radioM, n) {
+    var pts = [], rad = Math.PI / 180;
+    var kx = 111320 * Math.cos(centro.lat * rad), ky = 110540;
+    for (var i = 0; i < (n || 48); i++) {
+      var a = 2 * Math.PI * i / (n || 48);
+      pts.push({ lat: centro.lat + Math.sin(a) * radioM / ky, lng: centro.lng + Math.cos(a) * radioM / kx });
+    }
+    return pts;
+  }
+
+  /* Los grupos de comercios que están juntos, con la misma cuenta que hace
+     el motor para la caja «Dónde está la calle comercial»: dos locales a
+     menos de 180 m son la misma calle, y menos de tres no son un núcleo. Se
+     rehace acá porque la caja llega con cifras y sin coordenadas —cuántos y a
+     qué distancia—, y el mapa necesita DÓNDE. Es geometría, no
+     clasificación: los locales ya vienen clasificados. */
+  function nucleosComerciales(pois, centro) {
+    var RADIO_NUCLEO = 180, MEDIA = 250;
+    var influencia = function (d) { return 1 / (1 + Math.pow(d / MEDIA, 2)); };
+    var locales = (pois || []).filter(function (p) { return p.grupo === 'comercio' && p.lat != null && p.lng != null; })
+      .map(function (p) { return { lat: p.lat, lng: p.lng, nombre: p.nombre || '', sub: p.sub,
+                                   distM: p.distM != null ? p.distM : Math.round(haversineM(centro, p)) }; })
+      .sort(function (a, b) { return a.distM - b.distM; });
+    var usados = {}, grupos = [];
+    locales.forEach(function (semilla, i) {
+      if (usados[i]) return;
+      var grupo = [semilla]; usados[i] = true;
+      var crecio = true;
+      while (crecio) {
+        crecio = false;
+        locales.forEach(function (otro, j) {
+          if (usados[j]) return;
+          if (grupo.some(function (m) { return haversineM(m, otro) <= RADIO_NUCLEO; })) {
+            grupo.push(otro); usados[j] = true; crecio = true;
+          }
+        });
+      }
+      if (grupo.length < 3) return;
+      grupos.push({
+        n: grupo.length, miembros: grupo,
+        centro: centroideDe(grupo),
+        distM: Math.round(grupo.reduce(function (a, p) { return a + p.distM; }, 0) / grupo.length),
+        influencia: grupo.reduce(function (a, p) { return a + influencia(p.distM); }, 0)
+      });
+    });
+    grupos.sort(function (a, b) { return b.influencia - a.influencia; });
+    return grupos.slice(0, 4);
   }
 
   function caminataDesdeLote() {

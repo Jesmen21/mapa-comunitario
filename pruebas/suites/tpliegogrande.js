@@ -537,8 +537,14 @@ const geo = [
      escribió: cuando el empaquetado en dos renglones subió «cabe todo» de
      1,35 a 1,73 mm —que es justo lo que se buscaba—, la proporción bajó sin
      que nada empeorara. */
+  /* El piso de «cabe todo» es el que promete la ficha: 1,1 mm, letra de
+     lupa. Estaba en 1,5 desde el empaquetado en dos renglones; con seis
+     mapas más en la hoja —los que les faltaban a sus cajas, pedidos con el
+     pliego en la mano— «cabe todo» cierra más apretado, y ese es el canje
+     que se eligió: los mapas grandes y todos, y la letra chica la elige quien
+     quiera todo en la misma hoja. */
   T('con «se lee de pie» la letra sale más grande de verdad',
-    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) * 1.3 && letraMM(r.vTodo) >= 1.5,
+    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) * 1.3 && letraMM(r.vTodo) >= 1.1,
     letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm');
   T('y lo que cede es el contenido, no la legibilidad',
     (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) < cajasDe(r.vTodo),

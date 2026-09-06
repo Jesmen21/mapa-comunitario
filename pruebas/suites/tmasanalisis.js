@@ -393,6 +393,29 @@ const CAPAS_IDEAM = [
   T('y advierte que el volumen es el de la norma, no un proyecto dibujado',
     /no un proyecto dibujado/.test(SO) && /encogiendo el lote/.test(SO));
 
+  /* ── Los índices con su mapa ────────────────────────────────────────
+     Con el pliego impreso en la mano: «índice sin su gráfico no vale nada».
+     Seis cajas que hablaban de dónde están las cosas tienen ahora su
+     recuadro, con el contexto debajo del dibujo y sus convenciones. */
+  console.log('\n  -- los índices con su mapa --');
+  const mapaCon = t => (LAM.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) &&
+    new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const muestras = x => (x.match(/class="mu mu-[a-z]+"/g) || []).length;
+  [['Cómo se llega', /Vía principal: /], ['A distancia de caminar', /1 · Colegio o jardín|1 · Servicio de salud|1 · Parque o cancha|1 · Dónde mercar/],
+   ['Verde y agua', /Parque o zona verde · \d+|Cuerpo de agua · \d+|Verde natural · \d+/],
+   ['El ruido del tránsito', /dB\(A\)/], ['Dónde está la calle comercial', /Local de comercio/],
+   ['Cómo cambia al alejarse', /hasta \d+ m · \d+ usos/]].forEach(par => {
+    const M = mapaCon(par[0]);
+    T(par[0] + ': tiene mapa, con el contexto debajo y sus convenciones',
+      !!M && /<div class="mp-ctx">/.test(M) && muestras(M) >= 1 && par[1].test(M),
+      M ? muestras(M) + ' muestras' : 'sin mapa');
+  });
+  T('la vía principal va en rojo sobre el plano de cómo se llega',
+    /stroke="#E5484D" stroke-width="3.2"/.test(mapaCon('Cómo se llega')));
+  T('el ruido rotula el lote con sus decibeles', /\d+,?\d* dB\(A\) · (Muy alto|Alto|En el límite|Moderado|Tranquilo)</.test(mapaCon('El ruido del tránsito')));
+  T('y el camino a pie va por la calle, no en línea recta', /por la calle/.test(mapaCon('A distancia de caminar')),
+    (mapaCon('A distancia de caminar').match(/\d+ m (por la calle|en línea recta)/) || ['no dice'])[0]);
+
   console.log('\n  -- 4 · la infraestructura de servicios --');
   const IN = cajaDe('Infraestructura de servicios');
   T('la lámina trae su caja cuando hay algo registrado', !!IN);
@@ -496,8 +519,11 @@ const CAPAS_IDEAM = [
   T('el informe trae su sección', !!NS);
   T('con cuántos locales y a qué distancia', /\d+ locales/.test(NC) && /\d+ m/.test(NC),
     (NC.match(/\d+ locales · [^<]*/) || ['no lo dice'])[0]);
+  /* En el pliego se cuentan los RENGLONES de la lista y no las veces que
+     dice «locales»: el mapa que va encima rotula cada núcleo con sus
+     locales, y eso es el mismo dato dibujado, no otro núcleo. */
   T('y los dos cuentan los mismos núcleos',
-    (NC.match(/\d+ locales/g) || []).length === (NS.match(/\d+ locales/g) || []).length,
+    (NC.match(/<div class="hit">/g) || []).length === (NS.match(/\d+ locales/g) || []).length,
     'pliego ' + (NC.match(/\d+ locales/g) || []).length +
     ' · informe ' + (NS.match(/\d+ locales/g) || []).length);
 

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v763-la-lamina-con-los-mapas-grandes';
+const URBIS_CACHE = 'urbis-v764-los-indices-con-su-mapa';
 const URBIS_ASSETS = [
   './',
   './index.html',
