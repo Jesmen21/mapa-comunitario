@@ -185,9 +185,14 @@
      y cuatro; el tope existe para que una caja rarísima no dispare cien
      descargas en un teléfono. */
   var TOPE_TESELAS = 16;
-  function traerWayback(anio, caja, tam, msTope) {
-    var ent = entregaDe(anio);
-    if (!ent) return Promise.reject(new Error('no hay entrega de Wayback para ' + anio));
+
+  /* ── Pegar teselas ─────────────────────────────────────────────────────
+     Lo que tienen en común Wayback y Landsat: el mundo viene en cuadrados de
+     256 píxeles y el sector cae en uno, en dos o en cuatro. Se bajan los que
+     lo cubren, se pegan y se recorta la caja. `urlDe(z, x, y)` es lo único
+     que cambia entre un proveedor y otro. El tope existe para que una caja
+     rarísima no dispare cien descargas en un teléfono. */
+  function pegarTeselas(urlDe, caja, tam, msTope, extra) {
     var z = zoomPara(caja, tam), mundo = 256 * Math.pow(2, z);
     var px0 = mercX(caja.o) * mundo, px1 = mercX(caja.e) * mundo;
     var py0 = mercY(caja.n) * mundo, py1 = mercY(caja.s) * mundo;
@@ -201,9 +206,7 @@
     for (var ty = ty0; ty <= ty1; ty++) {
       for (var tx = tx0; tx <= tx1; tx++) {
         (function (x, y) {
-          var u = TESELA_WAYBACK.replace('{r}', ent.r).replace('{z}', z)
-                                .replace('{y}', y).replace('{x}', x);
-          pedidos.push(teselaImagen(u, msTope).then(function (im) {
+          pedidos.push(teselaImagen(urlDe(z, x, y), msTope).then(function (im) {
             return { im: im, dx: (x - tx0) * 256, dy: (y - ty0) * 256 };
           }));
         })(tx, ty);
@@ -221,31 +224,58 @@
                    Math.max(1, px1 - px0), Math.max(1, py1 - py0), 0, 0, tam, tam);
       grande.width = grande.height = 1;
       try {
-        return { datos: cx.getImageData(0, 0, tam, tam).data, tam: tam, lienzo: cv,
-                 url: cv.toDataURL('image/png'), fecha: ent.fecha,
-                 anioReal: ent.anio, sustituto: !!ent.sustituto, zoom: z };
+        return Object.assign({ datos: cx.getImageData(0, 0, tam, tam).data, tam: tam, lienzo: cv,
+                               url: cv.toDataURL('image/png'), zoom: z }, extra || {});
       } catch (e) {
         throw new Error('el navegador bloqueó la lectura de la imagen (CORS)');
       }
     });
   }
 
-  /* ── Landsat, por el Planetary Computer ────────────────────────────────
-     Son DOS peticiones y no una, y ahí estaba el otro error: primero se
-     REGISTRA una búsqueda —qué colección, qué años, cuánta nube se tolera— y
-     el servidor devuelve un identificador; con ese identificador se pide el
-     recorte. No hay ninguna URL que acepte un año suelto.
+  function traerWayback(anio, caja, tam, msTope) {
+    var ent = entregaDe(anio);
+    if (!ent) return Promise.reject(new Error('no hay entrega de Wayback para ' + anio));
+    return pegarTeselas(function (z, x, y) {
+      return TESELA_WAYBACK.replace('{r}', ent.r).replace('{z}', z)
+                           .replace('{y}', y).replace('{x}', x);
+    }, caja, tam, msTope, { fecha: ent.fecha, anioReal: ent.anio, sustituto: !!ent.sustituto });
+  }
 
-     Esta parte NO se ha podido comprobar contra el servicio: desde donde se
-     programa la red no llega a ese dominio. Está escrita siguiendo la forma
-     documentada de la API y, a diferencia de la anterior, deja constancia de
-     en qué paso falla y con qué código —`ultimoDiagnostico()`—, para que un
-     fallo en un teléfono se pueda leer en vez de adivinar. */
+  /* ── Landsat, por el Planetary Computer ────────────────────────────────
+     Son dos peticiones y no una: primero se REGISTRA una búsqueda —qué
+     colección, qué años, cuánta nube se tolera— y el servidor devuelve un
+     identificador y unos ENLACES; con ellos se piden las teselas.
+
+     La versión anterior registraba bien y después pedía un recorte en una
+     ruta que se escribió de memoria. Llegó la respuesta en captura, y era
+     la del servidor diciendo que esa ruta no existe: «404 {"detail":"Not
+     Found"}». Lo que sí existía era el registro, y el registro devuelve la
+     lista de enlaces con la plantilla de teselas. Así que ya no se adivina
+     ninguna ruta: se lee la que el servidor manda (`rel: tilejson`), se le
+     piden las teselas y se pegan igual que las de Wayback. Si el día de
+     mañana mueven la ruta, mueven el enlace con ella.
+
+     El NDVI se pide calculado en el servidor, en la escala de la
+     Colección 2: los valores vienen como enteros con factor 0,0000275 y
+     desplazamiento −0,2, y el desplazamiento NO se cancela en la división,
+     así que se corrige en el denominador (2 × 0,2 / 0,0000275 ≈ 14.545). Sin
+     eso el índice sale comprimido hacia cero y el verde se subestima. */
   var PC = 'https://planetarycomputer.microsoft.com/api/data/v1';
+  var COLECCION_LANDSAT = 'landsat-c2-l2';
+  var EXPRESION_NDVI = '(nir08-red)/(nir08+red-14545)';
   var diagnostico = [];
   function anota(x) {
     diagnostico.push(Object.assign({ cuando: new Date().toISOString() }, x));
     if (diagnostico.length > 40) diagnostico.shift();
+  }
+  function motivoDeRed(e) {
+    var m = (e && e.message) || 'falló';
+    // Un `fetch` que ni sale de la máquina no trae código: eso es CORS o no
+    // hay red, y conviene decirlo porque se arregla distinto.
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
+      m = 'el navegador no pudo llegar al servicio (CORS o sin red)';
+    }
+    return m;
   }
 
   var busquedas = {};
@@ -253,7 +283,7 @@
     var llave = anio + ':' + Math.round(caja.latC * 1000) + ',' + Math.round(caja.lngC * 1000);
     if (busquedas[llave]) return busquedas[llave];
     var cuerpo = {
-      collections: ['landsat-c2-l2'],
+      collections: [COLECCION_LANDSAT],
       datetime: anio + '-01-01T00:00:00Z/' + anio + '-12-31T23:59:59Z',
       bbox: [caja.o, caja.s, caja.e, caja.n],
       // Menos de un tercio de nube: por encima de eso la escena mide la nube
@@ -268,8 +298,11 @@
       body: JSON.stringify(cuerpo)
     }).then(function (r) {
       if (!r.ok) {
-        anota({ paso: 'registrar', anio: anio, estado: r.status });
-        throw new Error('el catálogo no aceptó la búsqueda (' + r.status + ')');
+        return r.text().catch(function () { return ''; }).then(function (t) {
+          anota({ paso: 'registrar', anio: anio, estado: r.status,
+                  cuerpo: String(t || '').replace(/\s+/g, ' ').slice(0, 160) });
+          throw new Error('el catálogo no aceptó la búsqueda (' + r.status + ')');
+        });
       }
       return r.json();
     }).then(function (j) {
@@ -279,57 +312,77 @@
                 cuerpo: JSON.stringify(j).slice(0, 200) });
         throw new Error('el catálogo no devolvió identificador de búsqueda');
       }
-      anota({ paso: 'registrar', anio: anio, estado: 'ok', id: String(id).slice(0, 12) });
-      return id;
+      /* El enlace al tilejson, tal como lo manda el servidor. Es la pieza
+         que faltaba: con él no hay ruta que adivinar. Si no viene, se prueba
+         la forma documentada y se deja anotado que se tuvo que suponer. */
+      var enlaces = Array.isArray(j.links) ? j.links : [];
+      var tj = enlaces.filter(function (l) { return l && l.rel === 'tilejson' && l.href; })[0];
+      var hrefTJ = tj ? String(tj.href) : (PC + '/mosaic/' + id + '/tilejson.json');
+      anota({ paso: 'registrar', anio: anio, estado: 'ok', id: String(id).slice(0, 12),
+              tilejson: tj ? 'del servidor' : 'supuesto' });
+      return { id: id, tilejson: hrefTJ };
     }).catch(function (e) {
       delete busquedas[llave];   // que un fallo no se quede pegado para siempre
-      anota({ paso: 'registrar', anio: anio, error: (e && e.message) || 'falló' });
-      throw e;
+      var m = motivoDeRed(e);
+      anota({ paso: 'registrar', anio: anio, error: m });
+      throw new Error(m);
     });
     return busquedas[llave];
   }
 
+  /* La plantilla de teselas de una búsqueda ya registrada. Se pide al
+     tilejson con los parámetros de dibujo —qué expresión, qué escala, qué
+     colección— y él devuelve la URL de tesela con todo eso ya puesto y con
+     `{z}/{x}/{y}` donde van las coordenadas. */
+  var plantillas = {};
+  function plantillaDeTeselas(reg, anio) {
+    if (plantillas[reg.id]) return plantillas[reg.id];
+    var sep = reg.tilejson.indexOf('?') === -1 ? '?' : '&';
+    var url = reg.tilejson + sep +
+      'collection=' + encodeURIComponent(COLECCION_LANDSAT) +
+      '&expression=' + encodeURIComponent(EXPRESION_NDVI) +
+      '&asset_as_band=true&rescale=-1,1&format=png&tile_format=png';
+    plantillas[reg.id] = fetch(url, { mode: 'cors' }).then(function (r) {
+      if (!r.ok) {
+        return r.text().catch(function () { return ''; }).then(function (t) {
+          anota({ paso: 'tilejson', anio: anio, estado: r.status,
+                  cuerpo: String(t || '').replace(/\s+/g, ' ').slice(0, 160) });
+          throw new Error('el tilejson devolvió ' + r.status +
+            (t ? ': ' + String(t).replace(/\s+/g, ' ').slice(0, 90) : ''));
+        });
+      }
+      return r.json();
+    }).then(function (j) {
+      var t = j && Array.isArray(j.tiles) && j.tiles[0];
+      if (!t || t.indexOf('{z}') === -1) {
+        anota({ paso: 'tilejson', anio: anio, estado: 'sin plantilla',
+                cuerpo: JSON.stringify(j).slice(0, 160) });
+        throw new Error('el tilejson no trajo plantilla de teselas');
+      }
+      anota({ paso: 'tilejson', anio: anio, estado: 'ok',
+              plantilla: String(t).replace(/\?.*$/, '').slice(-60) });
+      return String(t);
+    }).catch(function (e) {
+      delete plantillas[reg.id];
+      var m = motivoDeRed(e);
+      anota({ paso: 'tilejson', anio: anio, error: m });
+      throw new Error(m);
+    });
+    return plantillas[reg.id];
+  }
+
   function traerLandsat(anio, caja, tam, msTope) {
-    return registrarBusqueda(anio, caja).then(function (id) {
-      /* El recorte, con el NDVI calculado en el servidor: (nir08 − red) /
-         (nir08 + red), reescalado de −1..1 a 0..255. Se pide PNG porque es
-         lo único que un navegador sabe leer píxel a píxel. */
-      var url = PC + '/mosaic/' + id + '/crop/' +
-        [caja.o, caja.s, caja.e, caja.n].join(',') + '.png' +
-        '?width=' + tam + '&height=' + tam +
-        '&expression=' + encodeURIComponent('(nir08-red)/(nir08+red)') +
-        '&rescale=-1,1&asset_as_band=true';
-      /* El recorte se pide con `fetch` y no con una etiqueta `img`, y la
-         diferencia es todo lo que hace falta para poder arreglarlo: una
-         imagen que no carga solo sabe decir «no se pudo», y con eso el primer
-         fallo en un teléfono no se pudo diagnosticar. Con `fetch` se lee el
-         código y el cuerpo del error, que es lo que el servidor está
-         explicando. Después el blob se vuelve imagen igual. */
-      return fetch(url, { mode: 'cors' }).then(function (r) {
-        if (!r.ok) {
-          return r.text().catch(function () { return ''; }).then(function (t) {
-            anota({ paso: 'recorte', anio: anio, estado: r.status,
-                    cuerpo: String(t || '').replace(/\s+/g, ' ').slice(0, 160) });
-            throw new Error('el recorte devolvió ' + r.status +
-              (t ? ': ' + String(t).replace(/\s+/g, ' ').slice(0, 90) : ''));
-          });
-        }
-        return r.blob();
-      }).then(function (blob) {
-        var u2 = URL.createObjectURL(blob);
-        return traerImagen(u2, tam, msTope).then(function (img) {
-          URL.revokeObjectURL(u2);
-          anota({ paso: 'recorte', anio: anio, estado: 'ok' });
-          return img;
-        }, function (e) { URL.revokeObjectURL(u2); throw e; });
-      }).catch(function (e) {
-        var m = (e && e.message) || 'falló';
-        // Un `fetch` que ni sale de la máquina no trae código: eso es CORS o
-        // no hay red, y conviene decirlo porque se arregla distinto.
-        if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
-          m = 'el navegador no pudo llegar al servicio (CORS o sin red)';
-        }
-        anota({ paso: 'recorte', anio: anio, error: m });
+    return registrarBusqueda(anio, caja).then(function (reg) {
+      return plantillaDeTeselas(reg, anio);
+    }).then(function (plantilla) {
+      return pegarTeselas(function (z, x, y) {
+        return plantilla.replace('{z}', z).replace('{x}', x).replace('{y}', y);
+      }, caja, tam, msTope).then(function (img) {
+        anota({ paso: 'teselas', anio: anio, estado: 'ok', zoom: img.zoom });
+        return img;
+      }, function (e) {
+        var m = motivoDeRed(e);
+        anota({ paso: 'teselas', anio: anio, error: m });
         throw new Error(m);
       });
     });

@@ -94,6 +94,45 @@ for (let i = 0; i < 30; i++) {
      cada dirección pedida y se contesta con una tesela hecha a mano. Así se
      comprueba lo único que no se podía comprobar —qué se pide y a dónde— sin
      depender de que Esri conteste. */
+  /* Y el catálogo de Landsat, con sus TRES pasos: registrar la búsqueda,
+     pedir el tilejson y bajar las teselas. Llegó en captura la respuesta del
+     servidor a la versión anterior —«404 {"detail":"Not Found"}» al pedir un
+     recorte en una ruta que se escribió de memoria— y el registro sí pasaba.
+     Así que el módulo dejó de adivinar rutas: lee el enlace `tilejson` que
+     devuelve el registro y usa la plantilla de teselas que ese tilejson
+     trae. Acá el servidor de mentira devuelve una plantilla con una ruta
+     INVENTADA a propósito (`/de-donde-diga-el-servidor/`): si las teselas se
+     piden ahí, es que el módulo la leyó y no la supuso. */
+  const pcPedidas = [];
+  await ctx.route(/planetarycomputer\.microsoft\.com/, r => {
+    const req = r.request(), u = req.url();
+    pcPedidas.push(req.method() + ' ' + u);
+    const cors = { 'Access-Control-Allow-Origin': '*',
+                   'Access-Control-Allow-Headers': 'content-type',
+                   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS' };
+    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (/\/mosaic\/register$/.test(u)) {
+      return r.fulfill({ status: 200, contentType: 'application/json', headers: cors,
+        body: JSON.stringify({ searchid: 'abc123', links: [
+          { rel: 'metadata', href: 'https://planetarycomputer.microsoft.com/api/data/v1/mosaic/abc123/info' },
+          { rel: 'tilejson', href: 'https://planetarycomputer.microsoft.com/api/data/v1/mosaic/abc123/tilejson.json' }
+        ] }) });
+    }
+    if (/tilejson\.json/.test(u)) {
+      const q = u.split('?')[1] || '';
+      return r.fulfill({ status: 200, contentType: 'application/json', headers: cors,
+        body: JSON.stringify({ tilejson: '2.2.0', tiles: [
+          'https://planetarycomputer.microsoft.com/api/data/v1/de-donde-diga-el-servidor/abc123/{z}/{x}/{y}.png?' + q
+        ] }) });
+    }
+    if (/de-donde-diga-el-servidor/.test(u)) {
+      // Un índice en gris: 200 de 255 sobre −1..1 es NDVI ≈ 0,57, vegetación viva.
+      return r.fulfill({ status: 200, contentType: 'image/png', headers: cors,
+                         body: pngLiso(256, 200, 200, 200) });
+    }
+    r.fulfill({ status: 404, contentType: 'application/json', headers: cors,
+                body: '{"detail":"Not Found"}' });
+  });
   const teselasPedidas = [];
   await ctx.route(/wayback\.maptiles\.arcgis\.com/, r => {
     teselasPedidas.push(r.request().url());
@@ -326,9 +365,16 @@ for (let i = 0; i < 30; i++) {
                                              error: p.error || null,
                                              pinta: !!(p.imagen && p.imagen.length > 200) }));
     } catch (e) { o.error = String(e && e.message); }
+    try {
+      const s3 = await EV.serie({ fuente: 'landsat', caja: caja, anios: [1990, 2000], tam: 64 });
+      o.landsat = (s3.pasos || []).map(p => ({ anio: p.anio, ok: !!p.ok, error: p.error || null,
+        verde: p.medida ? p.medida.verde : null, hueco: p.hueco }));
+      o.diag = EV.diagnostico().map(d => [d.paso, d.anio, d.estado || d.error, d.tilejson || ''].join(' · '));
+    } catch (e) { o.errorLandsat = String(e && e.message); }
     return o;
   }, { C, POL });
   r.teselas = teselasPedidas.slice();
+  r.pc = pcPedidas.slice();
 
   r.err = err.filter(e => !/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
@@ -490,6 +536,33 @@ for (let i = 0; i < 30; i++) {
     (RR.pasos || []).map(p => p.fecha).join(' · '));
   T('y el zoom deja el sector a la escala pedida, no al mundo entero',
     RR.zoom >= 12 && RR.zoom <= 19, 'zoom ' + RR.zoom);
+
+  console.log('\n  -- Landsat: la ruta la dice el servidor, no se adivina --');
+  const PCP = r.pc || [];
+  T('registra la búsqueda una vez por año, con la colección y la nube tolerada',
+    PCP.filter(x => /^POST .*\/mosaic\/register$/.test(x)).length === 2,
+    PCP.filter(x => /register/.test(x)).length + ' registros');
+  T('pide el tilejson por el enlace que devolvió el registro',
+    PCP.some(x => /\/mosaic\/abc123\/tilejson\.json\?/.test(x)),
+    (PCP.filter(x => /tilejson/.test(x))[0] || 'no lo pidió').replace(/^GET https:\/\/[^/]+/, '').slice(0, 110));
+  T('con el NDVI corregido por el desplazamiento de la Colección 2 y la colección declarada',
+    PCP.some(x => /tilejson/.test(x) && /nir08-red/.test(decodeURIComponent(x)) &&
+                  /14545/.test(decodeURIComponent(x)) && /collection=landsat-c2-l2/.test(x)));
+  T('y baja las teselas donde la plantilla dijo, aunque sea una ruta que no conocía',
+    PCP.filter(x => /de-donde-diga-el-servidor\/abc123\/\d+\/\d+\/\d+\.png/.test(x)).length >= 2,
+    PCP.filter(x => /de-donde-diga/.test(x)).length + ' teselas');
+  T('nunca la ruta de recorte inventada que devolvía 404',
+    !PCP.some(x => /\/crop\//.test(x)), PCP.filter(x => /crop/.test(x)).join(' ') || 'ninguna');
+  const LS = RR.landsat || [];
+  T('y con eso la serie mide', LS.length === 2 && LS.every(p => p.ok && p.verde != null),
+    LS.map(p => p.anio + ':' + (p.ok ? p.verde + '% verde' : p.error)).join(' · ') || (RR.errorLandsat || 'sin pasos'));
+  T('el gris de 200 sobre 255 se lee como vegetación viva, que es lo que es',
+    LS.every(p => p.verde >= 99), LS.map(p => p.verde).join(' · '));
+  T('y el diagnóstico deja constancia de los tres pasos',
+    (RR.diag || []).some(d => /^registrar · \d+ · ok · del servidor/.test(d)) &&
+    (RR.diag || []).some(d => /^tilejson · \d+ · ok/.test(d)) &&
+    (RR.diag || []).some(d => /^teselas · \d+ · ok/.test(d)),
+    (RR.diag || []).slice(0, 3).join(' | '));
 
   console.log('');
   T('sin errores de JavaScript', r.err.length === 0, r.err.join(' | ') || 'ninguno');

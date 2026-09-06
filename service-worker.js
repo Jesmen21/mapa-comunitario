@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v750-la-ficha-vuelve-donde-se-quedo';
+const URBIS_CACHE = 'urbis-v751-landsat-por-el-enlace-que-manda-el-servidor';
 const URBIS_ASSETS = [
   './',
   './index.html',
