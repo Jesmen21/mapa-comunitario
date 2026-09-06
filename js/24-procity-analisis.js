@@ -1488,7 +1488,108 @@
   // —cobertura, geometría, puntos y contorno— en SVG translúcido. Así el
   // informe muestra lo mismo que la pantalla, no una aproximación, y funciona
   // sin conexión y sin clave de API.
-  function mapaDesdeRaster(w, h){
+  /* ── Lo levantado, encima del plano del informe ───────────────────────
+     El plano salía con el contorno y, si se había leído la foto, la cobertura
+     y la geometría. Los puntos mapeados no salían en ninguno de los dos
+     caminos: quien abría el PDF veía DÓNDE está el área y no lo que el curso
+     levantó adentro, que es de lo que trata el resto de la hoja.
+
+     Se dibuja una sola vez para los dos fondos —la foto del análisis y el
+     mapa estático—, porque entre ellos lo único que cambia es de dónde sale
+     la imagen y cómo se proyecta; lo que va encima es lo mismo.
+
+     Los edificios con los pisos contados van en ROMBO y con el tono de su
+     altura, igual que en la lámina del sector: en un informe fotocopiado el
+     color no distingue nada y la forma sí. El borde del rombo conserva el
+     color de su categoría, así que un edificio no pierde su uso por tener
+     pisos. */
+  const TONO_PISOS = n => n == null ? '#C9D3DC'
+    : (n <= 1 ? '#BFE3F7' : n <= 2 ? '#5BB4E5' : n <= 3 ? '#0A6F9E' : '#0B3A57');
+  const ETQ_PISOS = { 1:'Un piso', 2:'Dos pisos', 3:'Tres pisos', 4:'Cuatro o más' };
+
+  function loMapeadoEnPlano(ctx, r, X, Y){
+    const vacio = { svg:'', grupos:[], pisos:[] };
+    if (!ctx || !r || !r.puntos || !r.puntos.length) return vacio;
+    const EDIF = window.URBIS_EDIFICIO;
+    const usados = {}, tonos = {};
+    let circulos = '', rombos = '';
+    r.puntos.forEach(p => {
+      const lat = parseFloat(String(p.lat || '').replace(',', '.'));
+      const lng = parseFloat(String(p.lng || '').replace(',', '.'));
+      if (isNaN(lat) || isNaN(lng)) return;
+      const x = X(lng), y = Y(lat);
+      const g = ctx.grupos.find(gr => gr.usos.includes(ctx.usoDe(p)));
+      const col = g ? (ctx.colorGrupo[g.id] || '#6b70e0') : '#94a3b8';
+      if (g) usados[g.id] = true;
+      let f = null;
+      try { f = (EDIF && typeof EDIF.leer === 'function') ? EDIF.leer(p.descripcion) : null; }
+      catch (e) { f = null; }
+      if (f && f.pisosRegistrados) {
+        const k = Math.min(4, Math.max(1, f.pisos));
+        tonos[k] = true;
+        rombos += '<path d="M' + x.toFixed(1) + ' ' + (y - 4.4).toFixed(1) +
+          'l4.4 4.4-4.4 4.4-4.4-4.4z" fill="' + TONO_PISOS(f.pisos) + '" stroke="' + col +
+          '" stroke-width="1.1"/>';
+      } else {
+        circulos += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+          '" r="2.6" fill="' + col + '" stroke="#fff" stroke-width=".8"/>';
+      }
+    });
+    // Los rombos van encima: son pocos y son lo que el curso fue a contar.
+    return {
+      svg: circulos + rombos,
+      grupos: ctx.grupos.filter(g => usados[g.id])
+        .map(g => ({ t: g.t, c: ctx.colorGrupo[g.id] || '#6b70e0' })),
+      pisos: [1, 2, 3, 4].filter(k => tonos[k])
+        .map(k => ({ t: ETQ_PISOS[k], c: TONO_PISOS(k) }))
+    };
+  }
+
+  /* La geometría generada, sobre cualquiera de los dos fondos.
+
+     Se dibuja por lo que la forma TRAE y no por su nombre. Antes preguntaba
+     por el tipo —`red` para las líneas, `hull` para el anillo—, así que la
+     malla de proximidad, la triangulación y el árbol mínimo salían en pantalla
+     y no en el PDF, y la envolvente cóncava tampoco: cuatro de las siete
+     formas se perdían al imprimir sin que nada lo dijera. Es la misma regla
+     que ya sigue el exportador: preguntar qué trae. */
+  function geometriaEnPlano(g, X, Y, mPx){
+    if (!g) return '';
+    let d = '';
+    if (g.lineas && g.lineas.length) {
+      d += g.lineas.map(par => '<line x1="' + X(par[0].lng).toFixed(1) + '" y1="' +
+        Y(par[0].lat).toFixed(1) + '" x2="' + X(par[1].lng).toFixed(1) + '" y2="' +
+        Y(par[1].lat).toFixed(1) + '" stroke="' + g.color +
+        '" stroke-width="1.6" stroke-opacity=".95"/>').join('');
+    }
+    if (g.anillo && g.anillo.length >= 3) {
+      d += '<polygon points="' + g.anillo.map(pt => X(pt.lng).toFixed(1) + ',' +
+        Y(pt.lat).toFixed(1)).join(' ') + '" fill="' + g.color +
+        '" fill-opacity=".12" stroke="' + g.color + '" stroke-width="1.8"/>';
+    }
+    if (g.radioM) {
+      const rpx = mPx(g.radioM);
+      d += (g.puntos || []).map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' +
+        Y(pt.lat).toFixed(1) + '" r="' + rpx.toFixed(1) + '" fill="' + g.color +
+        '" fill-opacity=".14" stroke="' + g.color + '" stroke-width="1"/>').join('');
+    }
+    return d + (g.puntos || []).map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' +
+      Y(pt.lat).toFixed(1) + '" r="2.2" fill="' + g.color + '"/>').join('');
+  }
+
+  // Las convenciones del plano. Sin ellas los colores del dibujo no dicen
+  // nada, y un rombo azul oscuro es una mancha.
+  function convencionesDelPlano(capas){
+    const items = (capas.grupos || []).concat(capas.pisos || []);
+    if (!items.length) return '';
+    return '<div class="conv">' + items.map(x =>
+      '<span><i style="background:' + x.c + '"></i>' + esc(x.t) + '</span>').join('') +
+      ((capas.pisos || []).length
+        ? '<span class="conv-nota">El rombo es un edificio con los pisos contados en campo.</span>'
+        : '') + '</div>';
+  }
+
+  function mapaDesdeRaster(w, h, ctx, res){
     const r = S.raster;
     if (!r || !r.imagen || !r.overlayLimites) return '';
     const L = r.overlayLimites;
@@ -1523,26 +1624,11 @@
         }).join('');
       } catch (err) {}
     }
-    // La geometría generada, con el mismo criterio de color que en pantalla.
-    const g = geometriaActual();
-    if (g) {
-      if (g.tipo === 'red' && g.lineas) {
-        capas += g.lineas.map(par2 =>
-          '<line x1="' + X(par2[0].lng).toFixed(1) + '" y1="' + Y(par2[0].lat).toFixed(1) +
-          '" x2="' + X(par2[1].lng).toFixed(1) + '" y2="' + Y(par2[1].lat).toFixed(1) +
-          '" stroke="' + g.color + '" stroke-width="1.6" stroke-opacity=".95"/>').join('');
-      } else if (g.tipo === 'hull' && g.anillo && g.anillo.length >= 3) {
-        capas += '<polygon points="' + anillo(g.anillo) + '" fill="' + g.color +
-                 '" fill-opacity=".12" stroke="' + g.color + '" stroke-width="1.8"/>';
-      } else if (g.tipo === 'circulos') {
-        const rpx = g.radioM / 111320 * escala;
-        capas += g.puntos.map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' + Y(pt.lat).toFixed(1) +
-                 '" r="' + rpx.toFixed(1) + '" fill="' + g.color + '" fill-opacity=".14" stroke="' +
-                 g.color + '" stroke-width="1"/>').join('');
-      }
-      capas += (g.puntos || []).map(pt => '<circle cx="' + X(pt.lng).toFixed(1) + '" cy="' +
-               Y(pt.lat).toFixed(1) + '" r="2.2" fill="' + g.color + '"/>').join('');
-    }
+    // La geometría generada, con el mismo criterio de color que en pantalla,
+    // y encima lo que el curso mapeó dentro del contorno.
+    capas += geometriaEnPlano(geometriaActual(ctx), X, Y, m => m / 111320 * escala);
+    const enc = loMapeadoEnPlano(ctx, res, X, Y);
+    capas += enc.svg;
 
     return '<div class="mapa-wrap" style="width:' + w + 'px;height:' + h + 'px">' +
       '<img src="' + r.imagen + '" width="' + w + '" height="' + h + '" alt="" ' +
@@ -1550,11 +1636,11 @@
       '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">' +
       capas +
       '<polygon points="' + anillo(S.pts) + '" fill="none" stroke="#0E86BE" stroke-width="3" ' +
-      'stroke-linejoin="round"/></svg></div>';
+      'stroke-linejoin="round"/></svg></div>' + convencionesDelPlano(enc);
   }
 
-  function mapaDelArea(w, h){
-    const conRaster = mapaDesdeRaster(w, h);
+  function mapaDelArea(w, h, ctx, res){
+    const conRaster = mapaDesdeRaster(w, h, ctx, res);
     if (conRaster) return conRaster;
     const cfg = (window.URBIS_CONFIG && window.URBIS_CONFIG.LOCATIONIQ) || {};
     const lats = S.pts.map(p => p.lat), lngs = S.pts.map(p => p.lng);
@@ -1584,12 +1670,23 @@
         '&center=' + cLat + ',' + cLng + '&zoom=' + z + '&size=' + w + 'x' + h + '&format=png'
       : '';
 
+    /* Y encima, lo mismo que lleva el plano con foto: la geometría y lo
+       mapeado. Sin esto, el informe de quien no leyó la foto satelital salía
+       con un plano vacío —el contorno y nada más—, que es justo el caso más
+       común: leer la foto es un paso aparte y el mapeo no lo necesita. */
+    const X = lng => w / 2 + (lng - cLng) * 111320 * Math.cos(cLat * Math.PI / 180) / mpp;
+    const Y = lat => h / 2 - (lat - cLat) * 110540 / mpp;
+    const enc = loMapeadoEnPlano(ctx, res, X, Y);
+
     return '<div class="mapa-wrap" style="width:' + w + 'px;height:' + h + 'px">' +
       (url ? '<img src="' + url + '" width="' + w + '" height="' + h + '" alt="">' : '<div class="mapa-vacio"></div>') +
       '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">' +
         '<polygon points="' + puntos + '" fill="rgba(52,204,254,.22)" stroke="#0E86BE" ' +
-        'stroke-width="3" stroke-linejoin="round"/></svg>' +
-    '</div>';
+        'stroke-width="3" stroke-linejoin="round"/>' +
+        geometriaEnPlano(geometriaActual(ctx), X, Y, m => m / mpp) +
+        enc.svg +
+      '</svg>' +
+    '</div>' + convencionesDelPlano(enc);
   }
 
   // Gráficas en PNG con los colores del estilo elegido (igual que hace js/62
@@ -1752,6 +1849,10 @@
 '.mapa-wrap img{display:block;width:100%;height:auto}',
 '.mapa-wrap svg{position:absolute;left:0;top:0;width:100%;height:100%}',
 '.mapa-vacio{width:100%;height:100%;background:repeating-linear-gradient(45deg,#e8edf1,#e8edf1 8px,#dfe6ec 8px,#dfe6ec 16px)}',
+'.conv{display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:5px}',
+'.conv span{font-size:7.5px;color:', t.txt2, ';display:flex;align-items:center;gap:3px;line-height:1.3}',
+'.conv i{width:7px;height:7px;border-radius:2px;display:block;flex:0 0 auto}',
+'.conv .conv-nota{font-style:italic;color:', t.txt3, '}',
 '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}',
 '.kpi{border:1px solid ', t.borde, ';border-radius:6px;padding:6px 3px;text-align:center;background:', t.suave, '}',
 '.kpi b{display:block;font-size:13px;font-weight:800;color:', t.acento, ';line-height:1.15}',
@@ -1775,7 +1876,7 @@
 '<div class="sub">Cúcuta, Norte de Santander<br>', esc(fecha), '</div></header>',
 
 '<div class="fila">',
-  '<div class="bloque"><h2>El área analizada</h2>', mapaDelArea(430, 320), '</div>',
+  '<div class="bloque"><h2>El área analizada</h2>', mapaDelArea(430, 320, ctx, r), '</div>',
   '<div class="bloque"><h2>Cifras del área</h2>',
     '<div class="datos"><b>Superficie:</b> ', fmtArea(r.areaM2), '<br>',
     '<b>Perímetro:</b> ', fmtDist(r.perimetroM), '<br>',
@@ -1809,6 +1910,49 @@
       'usos se reparte entre ellos.</div>',
   '</div>',
 '</div>'].join('') : ''),
+
+/* La geometría que el estudiante generó. Va DICHA y no solo dibujada: sobre
+   el plano es un trazo morado, y sin esta caja nadie sabe si une todo lo
+   mapeado o solo los edificios de cuatro pisos o más, que es la diferencia
+   entre dos lecturas distintas del mismo levantamiento. */
+(function () {
+  const g = geometriaActual(ctx);
+  if (!g) return '';
+  const fm = formaDe(g.tipo), P = PARAMETROS[g.tipo];
+  const par = (P && S.geo.par && S.geo.par[P.clave] != null) ? P.etq(S.geo.par[P.clave]) : '';
+  const n = (g.puntos || []).length;
+  return '<div class="fila"><div class="bloque ancho" style="grid-column:1/-1">' +
+    '<h2>Geometría del área <em>· ' + esc(fm ? fm.nom : g.tipo) + '</em></h2>' +
+    '<div class="datos"><b>Tejida sobre:</b> ' + esc(g.filtro) + ', <b>' + n + '</b> punto' +
+      (n === 1 ? '' : 's') + '.' + (par ? '<br><b>Ajuste:</b> ' + esc(par) + '.' : '') +
+      (fm ? '<br>' + esc(fm.pregunta) : '') + '</div>' +
+    '<p class="pie-nota">Es el trazo de color del plano de arriba.</p>' +
+    '</div></div>';
+})(),
+
+/* La cobertura leída sobre la foto. El informe ya llevaba la foto de fondo
+   con las manchas encima, pero no las cifras: se veía el verde y no cuánto
+   era. Y el aviso viaja con ellas —clasificar por color no es NDVI—, porque
+   una cifra suelta en un PDF se cita después sin su letra chica. */
+(function () {
+  const rr = S.raster;
+  if (!rr || !rr.clases || !rr.clases.length) return '';
+  const orden = rr.clases.slice().sort((a, b) => b.pct - a.pct);
+  return '<div class="fila"><div class="bloque ancho" style="grid-column:1/-1">' +
+    '<h2>Cobertura del suelo <em>· leída sobre la foto satelital</em></h2>' +
+    '<div class="pcd-barra">' + orden.filter(c => c.pct > 0).map(c =>
+      '<i style="width:' + c.pct + '%;background:' + c.color + '"></i>').join('') + '</div>' +
+    '<table style="margin-top:6px"><tr><th>Clase</th><th>%</th><th>Superficie</th></tr>' +
+    orden.map(c => '<tr><td><i style="background:' + c.color + '"></i>' + esc(c.etq) +
+      '</td><td class="n">' + c.pct + '%</td><td class="n">' + fmtArea(c.m2) + '</td></tr>').join('') +
+    '</table>' +
+    '<p class="pie-nota">Estimación por <b>color</b> de imagen satelital: no es NDVI ni un ' +
+      'estudio ambiental certificado. El ' + rr.pctAmbiguo + '% queda en tonos cálidos, donde ' +
+      'teja, concreto envejecido, suelo descubierto y matorral seco no se distinguen. ' +
+      rr.pasadas + ' lecturas cruzadas, malla ' + esc(rr.malla) + ', ' +
+      String(rr.mPorPx).replace('.', ',') + ' m por píxel.</p>' +
+    '</div></div>';
+})(),
 
 '<div class="fila">',
   '<div class="bloque"><h2>Composición por Matriz de Usos</h2>',

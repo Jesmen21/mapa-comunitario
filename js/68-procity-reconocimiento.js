@@ -3323,10 +3323,22 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Y lo contado en campo, piso por piso: cuando OpenStreetMap no trae
       nada, es la única altura que hay; cuando trae, es la que se midió de
       verdad y va debajo, con su nombre. */
+      /* Y qué se hace en esas plantas. El informe lo llevaba en tabla desde
+         que se mapea planta por planta y el pliego no, y son el mismo dato:
+         una medición nueva entra en los dos documentos o en ninguno. Acá va
+         en barras porque una lámina se lee a dos metros. */
+      var plantas = (c && c.plantas.length)
+      ? '<p class="lee-min">Qué hay en las plantas</p>' +
+        barras(c.plantas.slice(0, 6), function (x) { return x.uso; },
+        function (x) { return 'en ' + x.n; },
+        function (x) { return Math.round(100 * x.n / c.plantas[0].n); },
+        function () { return '#0A6F9E'; })
+      : '';
       var deCampo = c
       ? (deOsm ? '<p class="lee-min">Contado en campo, piso por piso</p>' : '') +
         barras(c.niveles, function (x) { return x.etiqueta; },
         function (x) { return x.edificios; }, function (x) { return x.pct; }, tono) +
+        plantas +
         '<p class="lee campo">' + fraseAlturasCampo(c) + '</p>'
       : '';
       return deOsm + deCampo;
@@ -9218,9 +9230,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'a-distancia-de-caminar', t: 'A distancia de caminar', g: 'Lo que hay',
         listo: !!st.accesibilidad, falta: 'analizá el sector', dato: 'qué se alcanza a pie' },
 
+      /* Dos maneras de tener alturas, y durante un tiempo esta lista solo
+         reconoció una. Un curso que contó cuarenta edificios en la calle veía
+         la caja en gris, con «medí el trazado» al lado y sin poder apagarla ni
+         encenderla, mientras el pliego la imprimía igual con lo contado
+         dentro: la composición decía una cosa y el papel otra. En un barrio
+         colombiano casi nadie registró la altura en OpenStreetMap, así que la
+         de campo es justamente la que hay. */
       { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
-        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
-        falta: 'medí el trazado', dato: 'cuántos pisos hay' },
+        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato) ||
+                  (function () { try { return !!alturasDeCampo(); } catch (e) { return false; } })()),
+        falta: 'medí el trazado o contá los pisos en la calle',
+        dato: (function () {
+          var c; try { c = alturasDeCampo(); } catch (e) { c = null; }
+          return c ? c.conPisos + ' edificios contados en campo' : 'cuántos pisos hay';
+        })() },
       /* `!trazadoSinDatos` y no `trz.llenos`: en un sector sin nada mapeado el
          motor devuelve el objeto igual, con todo en cero, y la caja se ofrecía
          como lista para poner en la lámina «0% construido». La misma deriva
@@ -18128,10 +18152,41 @@ function donaHTML(datos, colorDe, nombreDe) {
      escribieron para un resultado recién traído. Son los mismos datos con
      otro envoltorio: sin esto habría que duplicar el plan, el impreso y el
      texto, uno para lo vivo y otro para lo guardado. */
+  /* Los usos de un sector guardado vuelven con su color y su icono.
+
+     La ficha archiva de cada punto lo mínimo —dónde estaba y qué era—, porque
+     el almacenamiento de un teléfono son cinco megabytes y un sector trae
+     ochocientos puntos: el color NO se guarda, se deduce del catálogo, que es
+     de donde salió. Faltaba deducirlo al traerlo de vuelta, así que al seguir
+     con un sector archivado los ochocientos volvían al mapa en gris —«salen
+     los puntos como sin color cuando cada uno debería tener su color de uso
+     representativo»—. El dato estaba completo; lo que faltaba era el color, y
+     un color no es un dato: es una consulta al catálogo.
+
+     Se rellena acá, en la puerta por la que entra todo sector guardado —el
+     mapa, la ficha reabierta, el informe y la lámina reimpresa—, y no en el
+     mapa: así el que dibuja no tiene que saber de dónde vino lo que dibuja. */
+  function poisConColor(lista) {
+    var CAT = window.AIA_CATALOGO || {};
+    var COL = CAT.GRUPO_COLOR || {}, G = CAT.GRUPOS || {};
+    var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || CAT.TAXONOMIA || [];
+    var icoDe = {};
+    TAX.forEach(function (t) { if (t && t.sub) icoDe[t.sub] = t.icono; });
+    return (lista || []).map(function (p) {
+      if (!p || (p.color && p.icono)) return p;
+      var q = {}, k;
+      for (k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) q[k] = p[k]; }
+      var g = q.grupo || 'otro';
+      if (!q.color) q.color = COL[g] || '#94a3b8';
+      if (!q.icono) q.icono = icoDe[q.sub] || (G[g] && G[g].i) || '';
+      return q;
+    });
+  }
+
   function comoResultado(f) {
     return {
       stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
-      pois: f.pois || [],
+      pois: poisConColor(f.pois || []),
       ubicacion: f.ubicacion || null,
       meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
               perimetroM: f.perimetroM || null, vertices: f.vertices || 0,

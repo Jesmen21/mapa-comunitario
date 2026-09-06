@@ -79,7 +79,11 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     /* Cuatro edificios y un parque. Las plantas se escriben con el mismo
        vocabulario que usa el formulario: no hay dos caminos para el dato. */
     const usosMat = EDIF.todosLosUsos().map(() => 'NO');
-    const punto = (cabeza, dLat, pisos, plantas) => {
+    /* El desplazamiento en longitud no es adorno: cinco puntos en la misma
+       vertical son colineales, y con puntos colineales no hay triangulación
+       ni envolvente —la geometría existe y no dibuja nada—, así que la prueba
+       del plano estaría midiendo un dibujo vacío. */
+    const punto = (cabeza, dLat, pisos, plantas, dLng) => {
       const d = [cabeza, 'Ref', 'nota', 'Bueno', 'Activo', 'N/A'].concat(usosMat)
         /* El autor es la sesión de la prueba: el mapa abre en «solo lo mío» y
            un punto de otro no entraría al conteo, que es exactamente lo que
@@ -89,19 +93,19 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
         .concat([EDIF.SIN_REGISTRAR, pisos, '', '', '']);
       while (d.length <= SL.edificioUsosPorPiso) d.push('');
       d[SL.edificioUsosPorPiso] = plantas;
-      return { tipo: '🗺️ Matriz de Usos', lat: String(C.lat + dLat), lng: String(C.lng),
+      return { tipo: '🗺️ Matriz de Usos', lat: String(C.lat + dLat), lng: String(C.lng + (dLng || 0)),
         descripcion: d.join(' | '), fecha: new Date().toISOString() };
     };
     const GYM = 'Deportivo o gimnasio', OFI = 'Oficinas o servicios';
     await window.urbisGuardarFila(punto('Residencial · Torre residencial (4–10 pisos)', 0.0000, '5',
-      '1-2:Comercio;3:' + GYM + '+Comercio+' + OFI + ';4-5:Vivienda'));
+      '1-2:Comercio;3:' + GYM + '+Comercio+' + OFI + ';4-5:Vivienda', 0.0000));
     await window.urbisGuardarFila(punto('Comercial · Centro comercial', 0.0004, '6',
-      '1:Comercio;2-6:' + OFI));
+      '1:Comercio;2-6:' + OFI, 0.0007));
     await window.urbisGuardarFila(punto('Residencial · Torre residencial (4–10 pisos)', 0.0008, '4',
-      '1-4:Vivienda'));
+      '1-4:Vivienda', -0.0009));
     await window.urbisGuardarFila(punto('Residencial · Casa de dos pisos', 0.0012, '2',
-      '1:Comercio;2:Vivienda'));
-    await window.urbisGuardarFila(punto('Esp. Público · Parque de bolsillo', 0.0016, '', ''));
+      '1:Comercio;2:Vivienda', 0.0011));
+    await window.urbisGuardarFila(punto('Esp. Público · Parque de bolsillo', 0.0016, '', '', -0.0006));
     if (typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos();
     for (let i = 0; i < 40; i++) {
       const n = ((typeof window.urbisDatosVisibles === 'function' ? window.urbisDatosVisibles() : []) || []).length;
@@ -135,10 +139,44 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     window.AIA_INFORME.abrirVentanaImpresion = function (h) { capturado = h; };
     A.accion('pdf', null);
     await esperar(900);
-    o.informe = capturado;
+    o.informe = capturado; capturado = '';
+
+    /* Y el mismo informe con una forma de LÍNEAS y con la foto satelital
+       leída. Son los dos caminos del plano —el mapa estático pedido a la red
+       y la propia foto del análisis— y hay que mirar los dos: hasta ahora
+       solo uno dibujaba la geometría, ninguno dibujaba lo mapeado, y de las
+       siete formas solo se imprimían tres. */
+    A.accion('geo', { dataset: { gid: 'mst' } });
+    await esperar(600);
+    A.accion('pdf', null); await esperar(900);
+    o.informeLineas = capturado; capturado = '';
+
+    const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ' +
+      'AAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    A.mostrarRaster({
+      imagen: PNG, overlayImagen: PNG,
+      overlayLimites: [[C.lat - 0.002, C.lng - 0.002], [C.lat + 0.002, C.lng + 0.002]],
+      clases: [
+        { id:'verde', etq:'Vegetación viva', ico:'🌳', color:'#22c55e', pct:31.4, m2:12000, fiable:true, nota:'n' },
+        { id:'construido', etq:'Superficie dura gris', ico:'🏗️', color:'#94a3b8', pct:48.2, m2:18000, fiable:true, nota:'n' },
+        { id:'agua', etq:'Agua', ico:'💧', color:'#3b82f6', pct:0, m2:0, fiable:true, nota:'n' },
+        { id:'mixto', etq:'Tonos cálidos (no separables)', ico:'🟫', color:'#c9a26a', pct:20.4, m2:7600, fiable:false, nota:'n' }
+      ],
+      pctAmbiguo: 20.4, areaM2: 37600, pasadas: 3, malla: '720×540', mPorPx: 0.82
+    });
+    await esperar(400);
+    A.accion('pdf', null); await esperar(900);
+    o.informeFoto = capturado;
     return o;
   }, { C, POL });
   await pg.close(); await b.close();
+
+  /* Los tres informes quedan en el directorio de trabajo, como hace la
+     lámina: una hoja de PDF se revisa mirándola, y para mirarla hay que
+     poder abrirla. */
+  fs.writeFileSync(S + 'informe-area.html', r.informe || '', 'utf8');
+  fs.writeFileSync(S + 'informe-area-lineas.html', r.informeLineas || '', 'utf8');
+  fs.writeFileSync(S + 'informe-area-foto.html', r.informeFoto || '', 'utf8');
 
   const P = r.panel || '';
   const kpi = t => { const m = P.match(new RegExp('<b>([^<]*)</b><small>' + t + '</small>')); return m ? m[1] : null; };
@@ -188,6 +226,32 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   T('con las mismas diecisiete plantas', /<b>17<\/b><small>plantas contadas<\/small>/.test(I),
     (I.match(/<b>[^<]*<\/b><small>plantas contadas<\/small>/) || ['no está'])[0]);
   T('y su tabla por uso', /<th>Qué hay en las plantas<\/th>/.test(I) && /<td>Vivienda<\/td><td>7<\/td>/.test(I));
+
+  console.log('\n  -- y el plano del informe lleva lo que se levantó --');
+  const rombos = (I.match(/l4\.4 4\.4-4\.4 4\.4-4\.4-4\.4z/g) || []).length;
+  T('los cuatro edificios con pisos van en rombo', rombos === 4, rombos + ' rombos');
+  T('y el parque, que no tiene pisos, en punto de su categoría',
+    (I.match(/r="2\.6"/g) || []).length === 1);
+  T('cada rombo con el tono de su altura',
+    /fill="#0B3A57"/.test(I) && /fill="#5BB4E5"/.test(I));
+  T('y las convenciones dicen qué es cada cosa',
+    /class="conv"/.test(I) && /El rombo es un edificio con los pisos contados en campo/.test(I) &&
+    /Cuatro o más/.test(I));
+  T('el plano dibuja la geometría generada', /fill-opacity=".12"/.test(I));
+  T('y el informe dice cuál es y sobre qué se tejió',
+    /Geometría del área <em>· Envolvente convexa<\/em>/.test(I) &&
+    /Tejida sobre:<\/b> todo lo mapeado, <b>5<\/b> puntos/.test(I),
+    (I.match(/Tejida sobre:<\/b>[^<]*<b>\d+<\/b> puntos?/) || ['no está'])[0]);
+
+  const IL = r.informeLineas || '';
+  T('una forma de líneas también se imprime', /<line /.test(IL) && /Recorrido mínimo/.test(IL));
+
+  const IF = r.informeFoto || '';
+  T('con la foto leída el plano sigue llevando lo mapeado',
+    (IF.match(/l4\.4 4\.4-4\.4 4\.4-4\.4-4\.4z/g) || []).length === 4 && /<line /.test(IF));
+  T('y las cifras de la cobertura entran al informe',
+    /Cobertura del suelo/.test(IF) && /Vegetación viva/.test(IF) && /48,?2?\.?2?%/.test(IF) &&
+    /no es NDVI/.test(IF));
 
   console.log('');
   T('sin errores de JavaScript', err.filter(e => !/L is not defined|Unexpected end/.test(e)).length === 0,

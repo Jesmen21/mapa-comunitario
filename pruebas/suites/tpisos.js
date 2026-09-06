@@ -538,6 +538,23 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     /<b>2<\/b> de uso mixto: comercio abajo, vivienda arriba/.test(cajaAlt),
     cajaAlt ? (cajaAlt.match(/Levantado en campo[\s\S]*?<\/p>/) || ['sin frase'])[0].replace(/<[^>]+>/g, '') : 'sin caja');
   T('y el informe en hojas también', /<h3>Contado en campo, piso por piso<\/h3>/.test(r2.informe || '') && /Qué hay en las plantas/.test(r2.informe || ''));
+  /* El reparto por planta, en el pliego. Lo tenía el informe desde que se
+     mapea planta por planta y la lámina no, siendo el mismo dato: una
+     medición nueva entra en los dos documentos o en ninguno. */
+  T('y la caja del pliego dice qué hay en esas plantas',
+    /Qué hay en las plantas/.test(cajaAlt) && /<b>en 2<\/b>/.test(cajaAlt),
+    (cajaAlt.match(/Qué hay en las plantas[\s\S]{0,220}/) || ['no está'])[0].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 120));
+
+  /* Y la caja cuenta como disponible al componer la lámina. En este sector
+     OpenStreetMap no trae ni una altura: si solo mirara ese dato, la caja
+     saldría gris, sin poder encenderse ni apagarse y diciendo «medí el
+     trazado», mientras el pliego la imprime con lo contado dentro. */
+  const botonAlt = ((r2.ficha || '').match(/<button[^>]*data-c="alturas-de-lo-construido"[\s\S]*?<\/button>/) || [''])[0];
+  T('la caja de alturas se puede componer con lo contado en campo',
+    !!botonAlt && !/disabled/.test(botonAlt) && !/pcr-capa-gris/.test(botonAlt),
+    botonAlt ? botonAlt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : 'no está');
+  T('y dice cuántos edificios la llenan', /2 edificios contados en campo/.test(botonAlt),
+    (botonAlt.match(/<small>[^<]*/) || ['sin texto'])[0].replace('<small>', ''));
 
   /* Y llega a la síntesis, que es donde se leen las conclusiones. Lo mixto
      contado en campo no sale de ningún dato abierto: es lo que el curso

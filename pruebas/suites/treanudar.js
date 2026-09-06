@@ -231,8 +231,19 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     o.puntosEnMapa=(function(){ let n=0;
       window.map.eachLayer(l=>{ if(l instanceof L.CircleMarker && !(l instanceof L.Circle)) n++; });
       return n; })();
-    o.puntosGuardados=((window.URBIS_PC_RECON.leerFichas()||[])[0]||{}).pois;
-    o.puntosGuardados=(o.puntosGuardados||[]).length;
+    /* Y con SU color. La ficha no guarda el color de cada punto —cinco
+       megabytes de almacenamiento y ochocientos puntos por sector—: se deduce
+       del catálogo al traerlo de vuelta. Sin deducirlo, el sector reanudado
+       volvía entero en gris. */
+    o.coloresPuntos=(function(){ const c={};
+      window.map.eachLayer(l=>{ if(l instanceof L.CircleMarker && !(l instanceof L.Circle) && l.options){
+        const k=String(l.options.fillColor||'').toLowerCase(); c[k]=(c[k]||0)+1; } });
+      return c; })();
+    const fichaG=(window.URBIS_PC_RECON.leerFichas()||[])[0]||{};
+    o.gruposGuardados=(function(){ const g={};
+      (fichaG.pois||[]).forEach(p=>{ const k=p.grupo||'otro'; g[k]=(g[k]||0)+1; }); return g; })();
+    o.colorCatalogo=(window.AIA_CATALOGO||{}).GRUPO_COLOR||{};
+    o.puntosGuardados=(fichaG.pois||[]).length;
     o.climaApagadoEnPliego=(function(){
       const b=H().querySelector('[data-pcr="pliego-caja"][data-c="el-clima"]');
       return b?!b.classList.contains('on'):null;
@@ -288,6 +299,14 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   T('y los usos, otra vez pintados sobre el mapa',
     despues.puntosEnMapa>0 && despues.puntosEnMapa>=despues.puntosGuardados,
     despues.puntosEnMapa+' puntos en el mapa de '+despues.puntosGuardados+' guardados');
+  const cols=despues.coloresPuntos||{};
+  T('y cada uno con el color de su uso, no en gris',
+    !cols['#94a3b8'], JSON.stringify(cols));
+  T('con los colores que el catálogo le da a cada categoría',
+    Object.keys(despues.gruposGuardados||{}).length>0 &&
+    Object.keys(despues.gruposGuardados).every(g=>
+      cols[String((despues.colorCatalogo||{})[g]||'').toLowerCase()]>0),
+    Object.keys(despues.gruposGuardados||{}).join(', '));
   T('la marca intangible', despues.marcas===1, despues.marcas+' marca(s)');
   T('y hasta la caja que había apagado del pliego',
     despues.climaApagadoEnPliego===true);
