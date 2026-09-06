@@ -145,6 +145,12 @@ const PT = mm => mm * 72 / 25.4;
     const t = H.textContent || '';
     return { fallo: /No se pudo armar el PDF/.test(t),
       enPantalla: (t.match(/No se pudo armar el PDF[^]{0,120}/) || [''])[0],
+      /* Lo que la ficha explica sobre los DOS caminos de impresión. Llegó
+         preguntado: «cuando entro al cuadro de impresión de Android no
+         encuentro 60 × 90 cm». No lo va a encontrar —Android tiene carta,
+         oficio y tabloide y nada más—, y el botón se llamaba «Ver e imprimir
+         60×90», o sea que estaba prometiendo justo lo que no hay. */
+      copia: t.replace(/\s+/g, ' '),
       mensaje: '' };
   });
   r.sinLienzo.pestanas = pestanasDespues;
@@ -305,6 +311,27 @@ const PT = mm => mm * 72 / 25.4;
     ((r.sinLienzo || {}).enPantalla || '(no dice nada)').slice(0, 90));
   T('y no abre ninguna otra pestaña', (r.sinLienzo || {}).pestanas === 0,
     (r.sinLienzo || {}).pestanas + ' pestañas');
+
+  /* ── Los dos caminos, distinguibles ───────────────────────────────────
+     El archivo que baja el botón de la lámina YA es de 60 × 90 cm: el tamaño
+     va escrito en el PDF y no se elige en ninguna parte. El otro camino pasa
+     por el cuadro de impresión del sistema, que en un teléfono no tiene ese
+     papel. Los dos botones se llamaban casi igual y el segundo prometía el
+     tamaño por su nombre, así que la ficha tiene que decir cuál es cuál. */
+  console.log('\n  -- cuál de los dos botones sirve en el celular --');
+  const COPIA = (r.sinLienzo || {}).copia || '';
+  T('la ficha dice que el archivo trae el pliego escrito dentro',
+    /ya trae el tamaño del pliego escrito dentro/.test(COPIA) &&
+    /no hay que elegir papel/.test(COPIA),
+    (COPIA.match(/Estos dos botones[^.]{0,120}/) || ['no lo dice'])[0].slice(0, 110));
+  T('y avisa de que en el teléfono el cuadro del sistema no tiene 60 × 90',
+    /solo tiene carta, oficio y tabloide/.test(COPIA),
+    (COPIA.match(/en el teléfono ese cuadro[^.]{0,90}/) || ['no lo avisa'])[0].slice(0, 100));
+  /* Y que el botón de mirar ya no se llame por un tamaño que no va a poder
+     dar: era el nombre lo que mandaba a buscar 60 × 90 donde no lo hay. */
+  T('el botón de mirar ya no promete un tamaño que el sistema no da',
+    !/Ver e imprimir 60/.test(COPIA) && /Ver la lámina parada/.test(COPIA),
+    (COPIA.match(/Ver la lámina \w+/g) || ['no está']).join(' · '));
 
   /* Y lo que traía la captura del error: los tres «no cupo» seguidos en un
      teléfono que sí podía. */

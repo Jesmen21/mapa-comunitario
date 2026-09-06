@@ -16127,19 +16127,41 @@
         '</div>' +
         '<p class="pcr-pista">La <b>lámina</b> arma un solo pliego con el plano del sector y todo lo ' +
         'medido: <b>60 × 90 cm</b> parada o <b>90 × 60 cm</b> acostada, con el mismo contenido. ' +
-        'Baja un <b>PDF ya del tamaño del pliego</b>, sin pasar por el cuadro de impresión del ' +
-        'teléfono —que solo ofrece carta, oficio y tabloide, y encajaba el pliego en una hoja—. ' +
-        'Tarda unos segundos: la hoja se dibuja entera antes de guardarse. Lo que no mediste no ' +
-        'sale: medí el terreno, el clima y el trazado antes si querés que aparezcan.</p>' +
+        '<b>Estos dos botones son los que sirven en el celular:</b> bajan un archivo que ya trae ' +
+        'el tamaño del pliego escrito dentro, así que no hay que elegir papel en ninguna parte ' +
+        '—se lleva el archivo al plotter y sale a 60 × 90—. Tarda unos segundos: la hoja se ' +
+        'dibuja entera antes de guardarse. Lo que no mediste no sale: medí el terreno, el clima ' +
+        'y el trazado antes si querés que aparezcan.</p>' +
         (S.pdfArmando
           ? '<p class="pcr-conc" id="pcr-pdf-estado">' + esc(S.pdfAviso || 'Dibujando la lámina…') + '</p>'
           : '') +
         (S.pdfError ? '<p class="pcr-error">' + esc(S.pdfError) + '</p>' : '') +
+        /* ── El otro camino, el del cuadro de impresión ───────────────────
+           Decían «Ver e imprimir 60×90» y prometían un tamaño que en un
+           teléfono NO existe: llegó preguntado —«cuando entro al cuadro de
+           impresión de Android no encuentro 60 × 90 cm»— y la pregunta es
+           justa, porque el botón lo estaba anunciando.
+
+           Android ofrece carta, oficio y tabloide y nada más. Este camino
+           sirve en un computador, donde el navegador deja escribir el tamaño
+           a mano y además saca la letra en VECTOR —nítida a cualquier
+           aumento— en vez de una imagen. En el teléfono es para MIRAR la
+           lámina antes de bajarla, no para imprimirla.
+
+           Se dice arriba del botón y no en una nota al pie: una advertencia
+           que hay que ir a buscar no es una advertencia. */
+        '<p class="pcr-lab">Verla antes de bajarla</p>' +
+        '<p class="pcr-pista">Esto la abre para mirarla. Si le das a imprimir desde ahí, ' +
+        'el pliego pasa por el <b>cuadro de impresión del sistema</b>: en un computador podés ' +
+        'escribir 60 × 90 cm a mano y sale con la letra en <b>vector</b>, más nítida; ' +
+        '<b>en el teléfono ese cuadro solo tiene carta, oficio y tabloide</b> y encajará el ' +
+        'pliego en una hoja. Para imprimir desde el celular usá los botones de arriba: ' +
+        'el archivo ya sale con el pliego escrito dentro y no hay que elegir papel.</p>' +
         '<div class="pcr-llevar">' +
-          '<button type="button" data-pcr="lamina-ver" class="pcr-mini">' + ico('imprimir', 16) +
-            'Ver e imprimir 60×90</button>' +
-          '<button type="button" data-pcr="lamina-ver-h" class="pcr-mini">' + ico('imprimir', 16) +
-            'Ver e imprimir 90×60</button>' +
+          '<button type="button" data-pcr="lamina-ver" class="pcr-mini">' + ico('ojo', 16) +
+            'Ver la lámina parada</button>' +
+          '<button type="button" data-pcr="lamina-ver-h" class="pcr-mini">' + ico('ojo', 16) +
+            'Ver la lámina acostada</button>' +
         '</div>' +
 
         /* El atajo de los «todo», pegado a los botones del pliego: encender o
