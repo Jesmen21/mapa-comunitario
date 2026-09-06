@@ -301,8 +301,14 @@ const geo=[
   T('el recuadro de curvas también, que es donde se leen contra el relieve',
     /stroke-dasharray="5 3\.5"/.test(CURVAS) && /font-size="4\.4"/.test(CURVAS),
     (CURVAS.match(/stroke-dasharray="5 3\.5"/g) || []).length + ' trazos');
-  T('y su pie lo dice, para quien mira el papel sin buscar',
-    /las líneas punteadas son los cortes/.test(CURVAS));
+  /* Antes esto lo decía el pie en texto corrido —«las líneas punteadas son
+     los cortes»— y ahora lo dice la tabla de convenciones, con la muestra
+     punteada al lado. Se aprieta, no se afloja: además del rótulo se exige
+     la MUESTRA, que es lo que permite reconocer la línea en el dibujo sin
+     leer nada. */
+  T('y la tabla de convenciones lo nombra, con su muestra punteada',
+    /mu-punteado/.test(CURVAS) && /Corte topográfico/.test(CURVAS),
+    (CURVAS.match(/mu-[a-z]+"[^>]*>[^<]*/g) || []).map(x => x.split('>')[1]).join(' · ') || 'sin tabla');
   const prometeCortes = /van marcadas en el plano del sector/.test(r.pdf || '');
   const dibujaCortes = /stroke-dasharray="5 3\.5"/.test(r.pdf || '');
   T('el informe ya no promete algo que no dibuja', !prometeCortes || dibujaCortes,

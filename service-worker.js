@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v741-los-cortes-en-el-plano-y-los-logos';
+const URBIS_CACHE = 'urbis-v742-la-tabla-de-convenciones';
 const URBIS_ASSETS = [
   './',
   './index.html',

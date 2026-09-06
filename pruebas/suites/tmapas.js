@@ -288,6 +288,70 @@ const geo=[
   T('el pie dice con qué se quedó la clasificación',
     /Superficie dura gris 52%/.test(LAM));
 
+  /* ── La tabla de convenciones ────────────────────────────────────────
+     Llegó pedida y con razón: «a los mapas les hace falta tabla de
+     convenciones». Hasta acá el único recuadro que decía qué era cada color
+     era el plano del sector; los demás dejaban el color en el dibujo y el
+     significado en el pie, en texto corrido, que es donde nadie lo cruza.
+
+     Lo que se comprueba no es que la tabla EXISTA —eso lo cumpliría una
+     tabla que mintiera—: es que sus colores sean los que el dibujo usa de
+     verdad. Una convención que nombra un color que el mapa no pinta es peor
+     que ninguna, porque manda a buscar algo que no está.
+
+     Los rasters quedan fuera de esa comprobación y no por comodidad: sus
+     colores viven dentro del PNG clasificado, no en el SVG, así que ahí no
+     hay nada que cotejar. */
+  const cajasMapa = h => (h.split('<section class="caja mapa-caja').slice(1))
+    .map(x => '<section class="caja mapa-caja' + x.split('</section>')[0]);
+  const tituloDe = x => ((x.match(/<h2>([^<]+)<\/h2>/) || [])[1] || '?');
+  const muestrasDe = x => (x.match(/class="mu mu-[a-z]+" style="[^"]*(?:background|border-color):\s*([^;"]+)/g) || [])
+    .map(m => (m.match(/(?:background|border-color):\s*([^;"]+)/) || [])[1].trim().toLowerCase());
+  const coloresDelDibujo = x => {
+    const d = (x.match(/<div class="mp-dib">([^]*?)<\/div>/) || [])[1] || '';
+    return (d.match(/(?:fill|stroke)="(#[0-9a-fA-F]{3,6})"/g) || [])
+      .map(m => (m.match(/"(#[0-9a-fA-F]{3,6})"/) || [])[1].toLowerCase());
+  };
+  const esRaster = x => /<image href=/.test(x);
+
+  console.log('\n  -- la tabla de convenciones de cada mapa --');
+  const conTabla = cajasMapa(LAM).filter(x => muestrasDe(x).length > 0);
+  /* La foto satelital cruda queda fuera y no por descuido: no usa el color
+     para significar nada —es una fotografía—, así que no tiene qué nombrar.
+     El que sí lo usa es el raster CLASIFICADO, y ese lleva su tabla. */
+  const sinTabla = cajasMapa(LAM)
+    .filter(x => muestrasDe(x).length === 0 && !/La foto satelital/.test(tituloDe(x)))
+    .map(tituloDe);
+  T('todos los mapas del pliego la llevan, menos la foto cruda', sinTabla.length === 0,
+    sinTabla.join(' · ') || conTabla.length + ' mapas, todos con tabla');
+  const mienten = cajasMapa(LAM).filter(x => !esRaster(x) && muestrasDe(x).length)
+    .map(x => ({ t: tituloDe(x),
+                 sobran: muestrasDe(x).filter(c => coloresDelDibujo(x).indexOf(c) < 0) }))
+    .filter(x => x.sobran.length);
+  T('y ninguna nombra un color que el mapa no pinta', mienten.length === 0,
+    mienten.map(x => x.t + ' (' + x.sobran.join(', ') + ')').join(' · ') || 'todas dicen la verdad');
+  const vial = cajasMapa(LAM).filter(x => /Jerarquía vial/.test(tituloDe(x)))[0] || '';
+  /* Cuántas jerarquías salgan depende del sector: acá lo que se pide es que
+     haya una muestra por cada una NOMBRADA con sus kilómetros, sin inventar
+     categorías que el sector no tiene. */
+  T('la jerarquía vial dice qué color es cada categoría, con sus kilómetros',
+    muestrasDe(vial).length >= 2 &&
+    muestrasDe(vial).length === (vial.match(/ km<\/span>/g) || []).length &&
+    new Set(muestrasDe(vial)).size === muestrasDe(vial).length,
+    muestrasDe(vial).length + ' muestras · ' +
+    (vial.match(/>([A-ZÁÉÍÓÚ][^<·]*) · [\d,]+ km</g) || []).map(x => x.slice(1).split(' ·')[0]).join(', '));
+  const somb = cajasMapa(LAM).filter(x => /sombra de los vecinos · el mapa/i.test(tituloDe(x)))[0] || '';
+  T('y las sombras, qué mancha es de qué hora',
+    /9:00 ·/.test(somb) && /15:00 ·/.test(somb), muestrasDe(somb).length + ' muestras');
+  T('la muestra lleva la forma del dato, no siempre un punto',
+    /mu-linea/.test(LAM) && /mu-area/.test(LAM) && /mu-punto/.test(LAM),
+    ['punto', 'linea', 'area', 'punteado'].filter(f => LAM.indexOf('mu-' + f) >= 0).join(' · '));
+  /* Con el `> 0` delante: sin él, «cero tablas acá y cero allá» pasaba, que
+     es exactamente el estado que esta suite viene a impedir. */
+  T('el informe en hojas trae las mismas tablas',
+    conTabla.length > 0 && (PDF.match(/class="cv-l"/g) || []).length === conTabla.length,
+    (PDF.match(/class="cv-l"/g) || []).length + ' en el informe · ' + conTabla.length + ' en el pliego');
+
   console.log('\n  -- la banda en el PDF --');
   T('el PDF también empieza por los mapas',
     /Los mapas del sector/.test(PDF) &&

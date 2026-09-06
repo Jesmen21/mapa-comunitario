@@ -2243,6 +2243,21 @@
      los cortes dibujados abajo y no tenía dónde ubicarlos. Llegó en captura
      de un sector real: la caja de curvas mostraba el relieve y ninguna
      línea. */
+  function grupoDeUsos(st, tope) {
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {}, COL = CAT.GRUPO_COLOR || {};
+    return Object.keys((st && st.porGrupo) || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; })
+      .slice(0, tope || 6)
+      .map(function (x) {
+        var d = G[x.id] || {};
+        return { c: COL[x.id] || '#94a3b8',
+                 t: sinEmoji(d.t || d.nombre || x.id) + ' · ' + x.n };
+      });
+  }
+
   function trazasDeCortes(ter) {
     var t = ter !== undefined ? ter : S.terreno;
     return ((t && t.perfiles) || [])
@@ -2652,6 +2667,21 @@
     function fila(etq, val) {
       return val === null || val === undefined || val === ''
         ? '' : '<div class="f"><span>' + esc(etq) + '</span><b>' + val + '</b></div>';
+    }
+    /* La tabla de convenciones de un mapa. La muestra lleva la FORMA de lo
+       que representa —un punto es un punto, una vía es una raya, una mancha
+       es un rectángulo, un corte es una raya punteada—: en una lámina que
+       puede acabar fotocopiada en blanco y negro la forma distingue lo que el
+       color ya no. */
+    function convenciones(lista) {
+      if (!lista || !lista.length) return '';
+      return '<div class="conv conv-mp">' + lista.map(function (c) {
+        if (!c || !c.t) return '';
+        var f = c.f || 'punto';
+        return '<span class="cv"><i class="mu mu-' + esc(f) + '" style="' +
+          (f === 'punteado' ? 'border-color:' : 'background:') + esc(c.c || '#94a3b8') +
+          '"></i>' + esc(c.t) + '</span>';
+      }).join('') + '</div>';
     }
     function barras(lista, etqDe, valDe, pctDe) {
       var max = lista.reduce(function (m, x) { return Math.max(m, pctDe(x)); }, 0) || 1;
@@ -4001,6 +4031,11 @@
           '<h2>' + esc(titulo) + '</h2>' +
           '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
           '<div class="mp-dib">' + m.svg + '</div>' +
+          /* Las convenciones, debajo del dibujo y encima del pie. Ese orden
+             no es casual: el pie explica cómo se midió y la tabla dice qué es
+             cada cosa, y lo segundo se necesita ANTES —mientras el ojo sigue
+             en el dibujo—. */
+          convenciones(m.conv) +
           '<small class="mp-pie">' + esc(m.pie) + '</small>' +
         '</section>';
     }).join('');
@@ -4248,6 +4283,15 @@
         'box-shadow:0 0 0 .25mm #0F1F2E }' +
       '.cv i.lote{ border-radius:0; background:#FFD54F; box-shadow:0 0 0 .35mm #7A5901 }' +
       '.cv b{ color:#0F1F2E }' +
+      /* Las muestras de los mapas: cada forma dice de qué clase es el dato. */
+      '.cv i.mu-punto{ border-radius:50% }' +
+      '.cv i.mu-area{ border-radius:.4mm; width:3.4mm; height:2.4mm }' +
+      '.cv i.mu-linea{ border-radius:.6mm; width:4.6mm; height:1.1mm }' +
+      '.cv i.mu-punteado{ background:none !important; width:4.6mm; height:0;' +
+        'border-top:.9mm dashed #12202e; border-radius:0 }' +
+      '.conv-mp{ gap:1.2mm 3.5mm; margin:1.5mm 0 0 }' +
+      '.conv-mp .cv{ font-size:2.7mm }' +
+      '.mapa-caja .mp-pie{ margin-top:1mm }' +
       // Cifras grandes
       '.kpis{ display:flex; gap:4mm; flex-wrap:wrap }' +
       '.k{ flex:1 1 0; min-width:20mm }' +
@@ -4451,6 +4495,13 @@
       '.dib-chico{max-width:130px}' +
       '.dib-ancho{max-width:420px}' +
       '.mapas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 4px}' +
+      '.cv-l{list-style:none;margin:4px 0 2px;padding:0;display:flex;flex-wrap:wrap;gap:2px 10px}' +
+      '.cv-l li{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#3B4A5A}' +
+      '.cv-l i.mu{display:inline-block;width:9px;height:9px;border-radius:50%}' +
+      '.cv-l i.mu-area{border-radius:2px;width:12px;height:8px}' +
+      '.cv-l i.mu-linea{border-radius:2px;width:16px;height:4px}' +
+      '.cv-l i.mu-punteado{background:none !important;width:16px;height:0;' +
+        'border-top:3px dashed #12202e;border-radius:0}' +
       '.mp{margin:0;break-inside:avoid;page-break-inside:avoid}' +
       '.mp figcaption{font-size:11px;font-weight:700;color:#075E88;margin-bottom:2px}' +
       '.mp-dib{background:#F3F8FB;border-radius:4px;padding:3px}' +
@@ -4491,6 +4542,17 @@
             return '<figure class="mp' + (m.grande ? ' grande' : '') + '">' +
               '<figcaption>' + esc(m.titulo) + '</figcaption>' +
               '<div class="mp-dib">' + m.svg + '</div>' +
+              /* Las mismas convenciones que en el pliego: un mapa sin ellas es
+                 una mancha de colores, y eso no cambia porque la hoja sea
+                 tamaño carta. */
+              ((m.conv || []).length
+                ? '<ul class="cv-l">' + m.conv.map(function (c) {
+                    var f = c.f || 'punto';
+                    return '<li><i class="mu mu-' + f + '" style="' +
+                      (f === 'punteado' ? 'border-color:' : 'background:') +
+                      esc(c.c || '#94a3b8') + '"></i>' + esc(c.t) + '</li>';
+                  }).join('') + '</ul>'
+                : '') +
               '<small>' + esc(m.pie) + '</small></figure>';
           }).join('') + '</div>' +
           '<p class="pie">Cada recuadro es la misma área con una capa encima. En la aplicación se ' +
@@ -8829,6 +8891,17 @@
                     puntos: pois.map(function (p) {
                       return { lat: p.lat, lng: p.lng, color: COL[p.grupo] || '#94a3b8' };
                     }), radioPunto: 1.6 }),
+        /* La tabla de convenciones. Un mapa sin ella es una mancha de
+           colores: se pidió por su nombre —«a los mapas les hace falta tabla
+           de convenciones»— y tiene razón, porque hasta ahora el único
+           recuadro que decía qué era cada color era el plano del sector. Los
+           demás dejaban el color en el dibujo y el significado en el pie, en
+           texto corrido, que es donde nadie lo cruza.
+
+           `f` es la FORMA de la muestra —punto, línea, área, punteado—: en
+           una lámina que puede acabar fotocopiada en blanco y negro, la
+           forma distingue lo que el color ya no. */
+        conv: grupoDeUsos(st, 6),
         pie: pois.length + ' usos registrados, con el color de su categoría'
       });
       var grupos = Object.keys(st.porGrupo || {})
@@ -8846,6 +8919,8 @@
                       puntos: suyos.map(function (p) {
                         return { lat: p.lat, lng: p.lng, color: COL[g.id] || '#94a3b8' };
                       }), radioPunto: 1.6 }),
+          conv: [{ c: COL[g.id] || '#94a3b8',
+                   t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id) + ' · ' + g.n }],
           pie: g.n + ' usos · dónde se concentra'
         });
       });
@@ -8860,8 +8935,11 @@
         id: 'cobertura', titulo: 'Cobertura del suelo', grupo: grupoDeMapa('cobertura'),
         grande: !!MAPAS_ANCHOS.cobertura,
         svg: mini({ imagen: { url: cob.overlayImagen, limites: cob.overlayLimites, opacidad: 0.92 } }),
+        conv: clases.map(function (c) {
+          return { c: c.color, t: c.etq + ' ' + c.pct + '%', f: 'area' };
+        }),
         pie: clases.length
-          ? clases.map(function (c) { return c.etq + ' ' + c.pct + '%'; }).join(' · ')
+          ? 'clasificada píxel a píxel sobre la foto satelital'
           : 'clasificada sobre la foto satelital'
       });
       if (cob.imagen) {
@@ -8882,6 +8960,18 @@
                      return { lat: a[0], lng: a[1] }; }),
                    relleno: mz.color, opacidad: 0.65, borde: '#ffffff', ancho: 0.4 };
         }) }),
+        /* Un color por estrato, no uno por manzana: la leyenda dice la
+           escala, y la escala es lo que se lee. */
+        conv: (function () {
+          var vistos = {}, salida = [];
+          estr.manzanas.forEach(function (mz) {
+            var e = mz.estrato != null ? mz.estrato : mz.nivel;
+            if (e == null || vistos[e]) return;
+            vistos[e] = 1;
+            salida.push({ c: mz.color, t: 'Estrato ' + e, f: 'area', orden: Number(e) || 0 });
+          });
+          return salida.sort(function (a, b) { return a.orden - b.orden; }).slice(0, 7);
+        })(),
         pie: estr.manzanas.length + ' manzanas del DANE'
       });
     }
@@ -8894,6 +8984,8 @@
         id: 'llenos', titulo: 'Llenos y vacíos', grupo: grupoDeMapa('llenos'),
         grande: !!MAPAS_ANCHOS.llenos,
         svg: mini({ huellas: hue }),
+        conv: [{ c: '#3B4A5A', t: 'Huella de edificio', f: 'area' },
+               { c: '#F3F8FB', t: 'Sin construir', f: 'area' }],
         pie: hue.length + ' huellas de edificio' +
              (S.trazado && S.trazado.llenos ? ' · ' + S.trazado.llenos.pctLleno + '% construido' : '')
       });
@@ -8905,9 +8997,11 @@
         id: 'curvas', titulo: 'Curvas de nivel', grupo: grupoDeMapa('curvas'),
         svg: mini({ curvas: cv,
                     cortes: trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno) }),
-        pie: 'cada ' + cv.intervalo + ' m · de ' + cv.zMin + ' a ' + cv.zMax + ' msnm' +
-             (trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno).length
-               ? ' · las líneas punteadas son los cortes' : '')
+        conv: [{ c: '#8A5A20', t: 'Curva maestra · cada ' + (cv.intervalo * 5) + ' m', f: 'linea' },
+               { c: '#B08050', t: 'Curva intermedia · cada ' + cv.intervalo + ' m', f: 'linea' }]
+          .concat(trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno).length
+            ? [{ c: '#12202e', t: 'Corte topográfico', f: 'punteado' }] : []),
+        pie: 'de ' + cv.zMin + ' a ' + cv.zMax + ' msnm'
       });
     }
 
@@ -8926,8 +9020,14 @@
         mapas.push({
           id: 'sombras', titulo: 'La sombra de los vecinos', grupo: grupoDeMapa('sombras'),
           svg: mini({ poligonos: polis, huellas: (so.huellasCerca || []).map(function (e) { return e.anillo; }) }),
-          pie: so.horas.map(function (h) { return h.hora + ':00 → ' + h.pctLote + '%'; }).join(' · ') +
-               ' del lote en sombra'
+          /* Cuál mancha es de qué hora. El pie decía «9:00 → 20% · 12:00 →
+             13%» y el dibujo tenía tres colores: había que adivinar cuál era
+             cuál. */
+          conv: so.horas.map(function (h) {
+            return { c: TINTE[h.hora] || '#3B4A5A',
+                     t: h.hora + ':00 · ' + h.pctLote + '% del lote', f: 'area' };
+          }).concat([{ c: '#3B4A5A', t: 'Edificio vecino', f: 'area' }]),
+          pie: 'sombra proyectada de los edificios de alrededor'
         });
       }
     }
@@ -8955,24 +9055,36 @@
         id: 'vias', titulo: 'Jerarquía vial', grupo: grupoDeMapa('vias'),
         grande: !!MAPAS_ANCHOS.vias,
         svg: mini({ lineas: lineasV }),
-        pie: red.map(function (j) { return j.etq + ' ' + conComa(j.km) + ' km'; }).join(' · ')
+        conv: red.map(function (j) {
+          return { c: j.color, t: j.etq + ' · ' + conComa(j.km) + ' km', f: 'linea' };
+        }),
+        pie: 'la red por jerarquía, de la troncal a la peatonal'
       });
     }
     var cam = o.caminata !== undefined ? o.caminata : S.caminata;
     if (cam && cam.tramos && cam.tramos.length) {
       var COLC = { 5: '#0A6F9E', 10: '#34CCFE', 15: '#B8DFF2' };
-      var lineas = [];
+      var lineas = [], minDibujados = [];
       [15, 10, 5].forEach(function (min) {
+        var antes = lineas.length;
         cam.tramos.forEach(function (t) {
           if (t.min !== min) return;
           lineas.push({ pts: [t.a, t.b], color: COLC[min], ancho: min === 5 ? 2.2 : 1.6 });
         });
+        /* Solo los anillos que de verdad se dibujaron. Se listaban los tres
+           siempre, y en un sector donde a los quince minutos ya no queda
+           calle que recorrer la convención nombraba un color que el mapa no
+           pinta: manda a buscar algo que no está. Lo cazó la prueba nueva de
+           las convenciones el mismo día que se escribió. */
+        if (lineas.length > antes) minDibujados.push(min);
       });
       mapas.push({
         id: 'caminata', titulo: 'Hasta dónde se camina', grupo: grupoDeMapa('caminata'),
         svg: mini({ lineas: lineas }),
-        pie: cam.anillos.map(function (a) { return a.minutos + ' min'; }).join(' · ') +
-             ' desde el lote, por las calles'
+        conv: minDibujados.slice().sort(function (a, b) { return a - b; }).map(function (min) {
+          return { c: COLC[min], t: 'A ' + min + ' minutos a pie', f: 'linea' };
+        }),
+        pie: 'medido por las calles desde el lote, no en línea recta'
       });
     }
     /* Y el último, que es el único dibujado a mano: lo que vio quien caminó.
@@ -8990,6 +9102,7 @@
                     puntos: ac.map(function (c) {
                       return { lat: c.lat, lng: c.lng, color: c.color }; }),
                     radioPunto: 2.2 }),
+        conv: [{ c: '#B3282C', t: 'Sitio en el que coincidieron', f: 'punto' }],
         pie: ac.length + ' sitios donde coincidieron ' + S.intUnion.recorridos +
              ' recorridos hechos por separado'
       });
@@ -9012,9 +9125,11 @@
         mapas.push({
           id: 'intangible', titulo: 'Lo intangible', grupo: grupoDeMapa('intangible'),
           svg: mini({ poligonos: zonasI, lineas: lineasI, puntos: puntosI, radioPunto: 3 }),
-          pie: Object.keys(cuenta).map(function (k) {
-            return (IT.tipo(k) ? IT.tipo(k).nombre : k) + ' ' + cuenta[k];
-          }).join(' · ') + ' · lo que no se puede bajar de ningún servidor'
+          conv: Object.keys(cuenta).map(function (k) {
+            return { c: IT.color(k), f: 'punto',
+                     t: (IT.tipo(k) ? IT.tipo(k).nombre : k) + ' · ' + cuenta[k] };
+          }),
+          pie: 'lo que no se puede bajar de ningún servidor: lo marcó quien caminó'
         });
       }
     }
