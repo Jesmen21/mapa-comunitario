@@ -147,6 +147,11 @@
     'Vivienda',
     'Comercio',
     'Oficinas o servicios',
+    /* El gimnasio entró por el ejemplo con que se pidió esto —«el piso 3
+       tiene gym, cafetería y oficina»— y se queda porque no es comercio: un
+       gimnasio mueve gente a horas en que las tiendas están cerradas, y el
+       motor ya sabía contarlo aparte. */
+    'Deportivo o gimnasio',
     'Educación, salud o institucional',
     'Hospedaje',
     'Industria, taller o bodega',
@@ -154,6 +159,10 @@
     'Desocupado o en obra',
     NO_SE_SABE
   ];
+  /* Cuántos usos caben en UN piso. Cuatro es lo que se puede mirar desde la
+     acera y decir con seguridad; más que eso ya es un directorio del
+     edificio, y eso no se levanta caminando. */
+  const USOS_TOPE_PISO = 4;
   const USOS_PISO_UTILES = new Set(USOS_PISO.filter(u => u !== NO_SE_SABE));
   // La subcategoría del motor para cada uso de piso, para que el análisis
   // reparta la altura entre lo que hay de verdad en cada planta.
@@ -161,6 +170,7 @@
     'Vivienda': 'residencial',
     'Comercio': 'comercio_otro',
     'Oficinas o servicios': 'oficina',
+    'Deportivo o gimnasio': 'deportivo',
     'Educación, salud o institucional': 'gobierno',
     'Hospedaje': 'hotel',
     'Industria, taller o bodega': 'bodega',
@@ -169,39 +179,74 @@
   };
   const PISOS_TOPE = 60;
 
-  // "1:Comercio;2-4:Vivienda" ⇄ [{piso:1, uso:'Comercio'}, {piso:2, uso:'Vivienda'}, …]
-  // Con tramos para que una torre de treinta pisos no ocupe media casilla.
-  // Nunca lleva «|»: es el separador del registro.
+  /* "1:Comercio;3:Comercio+Oficinas o servicios;4-6:Vivienda"
+       ⇄ [{piso:1, uso:'Comercio'}, {piso:3, uso:'Comercio'},
+          {piso:3, uso:'Oficinas o servicios'}, {piso:4, uso:'Vivienda'}, …]
+
+     Tres separadores y ninguno se pisa: «;» entre tramos, «:» entre el piso
+     y sus usos, «+» entre los usos de un mismo piso. Ninguno aparece dentro
+     de un uso, y «|» —el del registro— no se usa acá.
+
+     Los tramos existen para que una torre de treinta pisos no ocupe media
+     casilla, y ahora comparan el CONJUNTO de usos del piso: dos pisos
+     seguidos se juntan solo si tienen exactamente los mismos.
+
+     Un piso con varios usos llegó pedido con un ejemplo concreto: «el piso 3
+     tiene gym, cafetería y oficina». Un edificio real no reparte un uso por
+     planta; eso era una simplificación nuestra. */
   function codificarPisos(lista){
     const porPiso = {};
     (lista || []).forEach(x => {
       const p = parseInt(x && x.piso, 10);
       const u = String((x && x.uso) || '').trim();
-      if (isFinite(p) && p >= 1 && p <= PISOS_TOPE && USOS_PISO.indexOf(u) !== -1) porPiso[p] = u;
+      if (!isFinite(p) || p < 1 || p > PISOS_TOPE || USOS_PISO.indexOf(u) === -1) return;
+      const arr = porPiso[p] || (porPiso[p] = []);
+      if (arr.indexOf(u) === -1 && arr.length < USOS_TOPE_PISO) arr.push(u);
     });
-    const pisos = Object.keys(porPiso).map(Number).sort((a, b) => a - b);
+    /* Un piso que ya dice algo deja de decir «no se sabe»: las dos cosas
+       juntas no son media observación, son una contradicción. */
+    Object.keys(porPiso).forEach(p => {
+      const reales = porPiso[p].filter(u => u !== NO_SE_SABE);
+      if (reales.length) porPiso[p] = reales;
+    });
     const tramos = [];
-    pisos.forEach(p => {
+    Object.keys(porPiso).map(Number).sort((a, b) => a - b).forEach(p => {
+      const clave = porPiso[p].join('+');
       const ult = tramos[tramos.length - 1];
-      if (ult && ult.uso === porPiso[p] && ult.hasta === p - 1) ult.hasta = p;
-      else tramos.push({ desde: p, hasta: p, uso: porPiso[p] });
+      if (ult && ult.clave === clave && ult.hasta === p - 1) ult.hasta = p;
+      else tramos.push({ desde: p, hasta: p, clave: clave });
     });
-    return tramos.map(t => (t.desde === t.hasta ? t.desde : t.desde + '-' + t.hasta) + ':' + t.uso).join(';');
+    return tramos.map(t => (t.desde === t.hasta ? t.desde : t.desde + '-' + t.hasta) + ':' + t.clave).join(';');
   }
   function leerPisos(texto){
-    const out = [];
+    const porPiso = {};
     String(texto || '').split(';').forEach(tramo => {
       const m = tramo.trim().match(/^(\d{1,2})(?:-(\d{1,2}))?:(.+)$/);
       if (!m) return;
-      const uso = m[3].trim();
-      if (USOS_PISO.indexOf(uso) === -1) return;
+      const usos = m[3].split('+').map(u => u.trim())
+        .filter((u, i, a) => USOS_PISO.indexOf(u) !== -1 && a.indexOf(u) === i)
+        .slice(0, USOS_TOPE_PISO);
+      if (!usos.length) return;
       const desde = parseInt(m[1], 10), hasta = m[2] ? parseInt(m[2], 10) : desde;
-      for (let p = desde; p <= Math.min(hasta, PISOS_TOPE); p++) out.push({ piso: p, uso: uso });
+      // Si el texto repite un piso, manda el último tramo que lo nombra.
+      for (let p = desde; p <= Math.min(hasta, PISOS_TOPE); p++) porPiso[p] = usos;
     });
-    // Un piso, un uso: si el texto lo repite, manda el último.
-    const porPiso = {};
-    out.forEach(x => { porPiso[x.piso] = x.uso; });
-    return Object.keys(porPiso).map(Number).sort((a, b) => a - b).map(p => ({ piso: p, uso: porPiso[p] }));
+    const out = [];
+    Object.keys(porPiso).map(Number).sort((a, b) => a - b).forEach(p => {
+      porPiso[p].forEach(u => out.push({ piso: p, uso: u }));
+    });
+    return out;
+  }
+  // Los usos de cada piso, agrupados: { 3: ['Comercio', 'Oficinas o servicios'] }
+  function porPisoDe(lista){
+    const m = {};
+    (lista || []).forEach(x => {
+      const p = parseInt(x && x.piso, 10);
+      if (!isFinite(p)) return;
+      const arr = m[p] || (m[p] = []);
+      if (arr.indexOf(x.uso) === -1) arr.push(x.uso);
+    });
+    return m;
   }
 
   // Qué es el edificio, leído de sus pisos. `mixto` solo cuando hay dos usos
@@ -211,21 +256,46 @@
     const utiles = l.filter(x => USOS_PISO_UTILES.has(x.uso));
     const distintos = [];
     utiles.forEach(x => { if (distintos.indexOf(x.uso) === -1) distintos.push(x.uso); });
+    const porPiso = porPisoDe(l);
+    const nPisos = Object.keys(porPiso).length;
+    // Los pisos que juntan varios usos: un gimnasio, una cafetería y una
+    // oficina en la misma planta es un hecho urbano distinto de tres plantas
+    // con una cosa cada una, y se dice.
+    const utilesPorPiso = porPisoDe(utiles);
+    const varios = Object.keys(utilesPorPiso)
+      .filter(p => utilesPorPiso[p].length > 1).map(Number).sort((a, b) => a - b);
     const minus = u => String(u).charAt(0).toLowerCase() + String(u).slice(1);
+    const cuantos = n => ['', 'un', 'dos', 'tres', 'cuatro'][n] || n;
     let resumen = '';
     if (!l.length) resumen = '';
     else if (!distintos.length) resumen = 'Sin usos observados';
     else if (distintos.length === 1) resumen = 'Todo ' + minus(distintos[0]);
     else {
-      const abajo = utiles[0], arriba = utiles.slice(1);
-      const arribaIgual = arriba.length && arriba.every(x => x.uso === arriba[0].uso) && arriba[0].uso !== abajo.uso;
-      if (abajo.piso === 1 && arribaIgual) resumen = abajo.uso + ' abajo, ' + minus(arriba[0].uso) + ' arriba';
-      else resumen = 'Mixto: ' + distintos.map(u => {
-        const ps = utiles.filter(x => x.uso === u).map(x => x.piso);
-        return minus(u) + ' (piso' + (ps.length > 1 ? 's ' : ' ') + ps.join(', ') + ')';
-      }).join(', ');
+      const abajo = utiles.filter(x => x.piso === utiles[0].piso);
+      const arriba = utiles.filter(x => x.piso !== utiles[0].piso);
+      const arribaIgual = !varios.length && arriba.length &&
+        arriba.every(x => x.uso === arriba[0].uso) && arriba[0].uso !== abajo[0].uso;
+      if (abajo.length === 1 && abajo[0].piso === 1 && arribaIgual) {
+        resumen = abajo[0].uso + ' abajo, ' + minus(arriba[0].uso) + ' arriba';
+      } else if (distintos.length <= 3) {
+        resumen = 'Mixto: ' + distintos.map(u => {
+          const ps = utiles.filter(x => x.uso === u).map(x => x.piso);
+          return minus(u) + ' (piso' + (ps.length > 1 ? 's ' : ' ') + ps.join(', ') + ')';
+        }).join(', ');
+      } else {
+        /* Con cuatro usos o más la lista detallada no la lee nadie en un
+           teléfono: se dice cuántos y dónde se apilan, que es lo que
+           distingue este edificio del de al lado. */
+        resumen = 'Mixto: ' + distintos.length + ' usos en ' + nPisos + ' piso' + (nPisos === 1 ? '' : 's');
+      }
+      if (varios.length) {
+        resumen += (distintos.length <= 3 ? ' · ' : ', ') + 'el piso ' + varios.join(' y el ') +
+          ' junta' + (varios.length > 1 ? 'n' : '') + ' ' +
+          cuantos(Math.max.apply(null, varios.map(p => utilesPorPiso[p].length))) + ' usos';
+      }
     }
-    return { pisos: l.length, usos: distintos, mixto: distintos.length >= 2, resumen: resumen };
+    return { pisos: nPisos, usos: distintos, mixto: distintos.length >= 2,
+             variosPorPiso: varios, resumen: resumen };
   }
 
   // Cuánto levanta, si el nombre del tipo lo dice: «Casa de dos pisos»,
@@ -302,20 +372,39 @@
   // conservando lo que ya se había elegido.
   const FILAS_TOPE = 12;   // más de doce se arrastran desde el último elegido
   function escHtml(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+  function opcionesDe(val){
+    return USOS_PISO.map(u => '<option value="' + escHtml(u) + '"' +
+      (u === val ? ' selected' : '') + '>' + escHtml(u) + '</option>').join('');
+  }
   function htmlUsosPorPiso(pisos, actuales, defectoDe){
     const n = Math.max(0, Math.min(parseInt(pisos, 10) || 0, PISOS_TOPE));
     if (!n) return '';
-    const elegido = {};
-    (actuales || []).forEach(x => { elegido[x.piso] = x.uso; });
+    const elegido = porPisoDe(actuales);
     const filas = [];
     const tope = Math.min(n, FILAS_TOPE);
     for (let p = tope; p >= 1; p--) {
-      const val = elegido[p] || (typeof defectoDe === 'function' ? defectoDe(p) : '') || NO_SE_SABE;
+      const usos = (elegido[p] && elegido[p].length ? elegido[p]
+        : [(typeof defectoDe === 'function' ? defectoDe(p) : '') || NO_SE_SABE]).slice(0, USOS_TOPE_PISO);
       const rotulo = (p === FILAS_TOPE && n > FILAS_TOPE) ? 'Piso ' + p + ' al ' + n : (p === 1 ? 'Piso 1 (calle)' : 'Piso ' + p);
+      /* El primer uso va suelto y los demás con su «×»: quitar el único uso
+         de un piso dejaría una planta sin nada que decir, y para eso ya está
+         «no se sabe». */
+      /* El «+ uso» va EN LÍNEA con el primer desplegable, no debajo: en un
+         renglón propio por planta la lista crecía un setenta por ciento y en
+         una torre de doce pisos eso son doce renglones de botón. */
+      const mas = usos.length < USOS_TOPE_PISO
+        ? '<button type="button" class="edif-mas" data-mas="' + p +
+          '" aria-label="Agregar otro uso al piso ' + p + '">+ uso</button>'
+        : '<span></span>';
+      const campos = usos.map((u, i) => i === 0
+        ? '<select id="ins-uso-piso-' + p + '" class="ins-uso-piso" data-piso="' + p + '">' + opcionesDe(u) + '</select>' + mas
+        : '<span class="edif-uso-extra">' +
+            '<select id="ins-uso-piso-' + p + '-' + i + '" class="ins-uso-piso" data-piso="' + p + '">' + opcionesDe(u) + '</select>' +
+            '<button type="button" class="edif-quita" data-quita-piso="' + p + '" data-quita-i="' + i +
+              '" aria-label="Quitar este uso del piso ' + p + '">×</button>' +
+          '</span>').join('');
       filas.push('<div class="edif-piso"><label for="ins-uso-piso-' + p + '">' + escHtml(rotulo) + '</label>' +
-        '<select id="ins-uso-piso-' + p + '" class="ins-uso-piso" data-piso="' + p + '">' +
-        USOS_PISO.map(u => '<option value="' + escHtml(u) + '"' + (u === val ? ' selected' : '') + '>' + escHtml(u) + '</option>').join('') +
-        '</select></div>');
+        '<div class="edif-usos">' + campos + '</div></div>');
     }
     return filas.join('');
   }
@@ -325,14 +414,21 @@
     const n = Math.min(parseInt(insPisos && insPisos.value, 10) || 0, PISOS_TOPE);
     if (!n) return [];
     const sel = {};
-    R.querySelectorAll('select.ins-uso-piso').forEach(s => { sel[parseInt(s.getAttribute('data-piso'), 10)] = s.value; });
+    R.querySelectorAll('select.ins-uso-piso').forEach(s => {
+      const p = parseInt(s.getAttribute('data-piso'), 10);
+      const arr = sel[p] || (sel[p] = []);
+      if (arr.indexOf(s.value) === -1 && arr.length < USOS_TOPE_PISO) arr.push(s.value);
+    });
     const out = [];
-    let ultimo = '';
+    let ultimo = null;
     for (let p = 1; p <= n; p++) {
-      const u = sel[p] || ultimo;
-      if (!u) continue;
-      ultimo = u;
-      out.push({ piso: p, uso: u });
+      let usos = sel[p] || ultimo;
+      if (!usos || !usos.length) continue;
+      // Con un uso real, el «no se sabe» del mismo piso sobra.
+      const reales = usos.filter(u => u !== NO_SE_SABE);
+      usos = reales.length ? reales : usos;
+      ultimo = usos;
+      usos.forEach(u => out.push({ piso: p, uso: u }));
     }
     return out;
   }
@@ -347,13 +443,47 @@
       resumen.textContent = m.resumen ? (m.mixto ? 'Edificio mixto · ' : '') + m.resumen : '';
       resumen.classList.toggle('es-mixto', !!m.mixto);
     };
-    const rearmar = () => {
-      cont.innerHTML = htmlUsosPorPiso(insPisos.value, leerUsosPorPisoDelFormulario(R), defectoDe);
+    const rearmar = (lista) => {
+      cont.innerHTML = htmlUsosPorPiso(insPisos.value, lista || leerUsosPorPisoDelFormulario(R), defectoDe);
       decir();
     };
-    insPisos.addEventListener('input', rearmar);
-    insPisos.addEventListener('change', rearmar);
+    insPisos.addEventListener('input', () => rearmar());
+    insPisos.addEventListener('change', () => rearmar());
     cont.addEventListener('change', decir);
+    /* Agregar y quitar usos de una misma planta. Se rearma la lista entera y
+       no solo el renglón tocado: así el «+ uso» desaparece al llegar al tope
+       y vuelve al quitar uno, sin llevar la cuenta por otro lado. */
+    cont.addEventListener('click', ev => {
+      const mas = ev.target.closest('[data-mas]');
+      if (mas) {
+        ev.preventDefault();
+        const p = parseInt(mas.getAttribute('data-mas'), 10);
+        const lista = leerUsosPorPisoDelFormulario(R);
+        const enEse = lista.filter(x => x.piso === p).map(x => x.uso);
+        if (enEse.length >= USOS_TOPE_PISO) return;
+        // El uso nuevo arranca en uno que ese piso todavía no tenga: un
+        // desplegable repetido se descarta solo y parecería que no pasó nada.
+        const libre = USOS_PISO.filter(u => u !== NO_SE_SABE && enEse.indexOf(u) === -1)[0];
+        if (!libre) return;
+        const hasta = lista.filter(x => x.piso <= p);
+        const desde = lista.filter(x => x.piso > p);
+        rearmar(hasta.concat([{ piso: p, uso: libre }], desde));
+        return;
+      }
+      const quita = ev.target.closest('[data-quita-piso]');
+      if (quita) {
+        ev.preventDefault();
+        const p = parseInt(quita.getAttribute('data-quita-piso'), 10);
+        const i = parseInt(quita.getAttribute('data-quita-i'), 10);
+        const lista = leerUsosPorPisoDelFormulario(R);
+        let visto = -1;
+        rearmar(lista.filter(x => {
+          if (x.piso !== p) return true;
+          visto++;
+          return visto !== i;
+        }));
+      }
+    });
     decir();
   }
 
@@ -372,6 +502,8 @@
     esFrenteMuerto: function (v){ return PLANTA_BAJA_MUERTA.has(String(v || '')); },
     // El edificio piso por piso.
     USOS_PISO: USOS_PISO,
+    USOS_TOPE_PISO: USOS_TOPE_PISO,
+    porPisoDe: porPisoDe,
     codificarPisos: codificarPisos,
     leerPisos: leerPisos,
     mezclaDe: mezclaDe,

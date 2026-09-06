@@ -261,16 +261,30 @@
        solo si ninguna planta la cubre. */
     const porPlanta = (ficha.usosPorPiso || []);
     if (porPlanta.length && EDIF && typeof EDIF.subDeUsoPiso === 'function') {
-      const cuenta = {};
+      /* Cada planta vale UNO y se reparte entre lo que hay en ella. Un piso
+         con gimnasio, cafetería y oficina no son tres pisos: es un piso
+         partido en tres, y contarlo como tres inflaría el edificio hasta
+         hacerlo pesar más que la torre de al lado. Así, un edificio de cinco
+         pisos siempre suma cinco, se reparta como se reparta. */
+      const porPiso = {};
       porPlanta.forEach(function (x) {
-        const sub = EDIF.subDeUsoPiso(x.uso);
-        if (sub) cuenta[sub] = (cuenta[sub] || 0) + 1;
+        (porPiso[x.piso] = porPiso[x.piso] || []).push(x.uso);
+      });
+      const cuenta = {};
+      Object.keys(porPiso).forEach(function (p) {
+        const usos = porPiso[p], parte = 1 / usos.length;
+        usos.forEach(function (u) {
+          const sub = EDIF.subDeUsoPiso(u);
+          if (sub) cuenta[sub] = (cuenta[sub] || 0) + parte;
+        });
       });
       const subsPlanta = Object.keys(cuenta);
       if (subsPlanta.length) {
         subs.length = 0;
         subsPlanta.forEach(function (s2) { subs.push(s2); });
-        intensidadDe = function (sub) { return cuenta[sub] || 1; };
+        intensidadDe = function (sub) {
+          return Math.round((cuenta[sub] || 1) * 100) / 100;
+        };
       }
     }
 

@@ -70,6 +70,23 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     o.mezclaNoSabe = E2.mezclaDe([{ piso: 1, uso: 'Comercio' }, { piso: 2, uso: E2.NO_SE_SABE }]);
     o.torre = E2.codificarPisos(Array.from({ length: 30 }, (_, i) => ({ piso: i + 1, uso: i ? 'Oficinas o servicios' : 'Comercio' })));
     o.basura = E2.leerPisos('1:Lo que sea;2:Vivienda;x:Comercio');
+    /* Un piso con varios usos: «el piso 3 tiene gym, cafetería y oficina».
+       Se escribe con «+» y vuelve entero. */
+    const GYM = 'Deportivo o gimnasio', OFI = 'Oficinas o servicios';
+    const conGym = [{ piso: 1, uso: 'Comercio' }, { piso: 2, uso: 'Comercio' },
+                    { piso: 3, uso: GYM }, { piso: 3, uso: 'Comercio' }, { piso: 3, uso: OFI },
+                    { piso: 4, uso: 'Vivienda' }, { piso: 5, uso: 'Vivienda' }];
+    o.codigoVarios = E2.codificarPisos(conGym);
+    o.vueltaVarios = E2.leerPisos(o.codigoVarios);
+    o.mezclaVarios = E2.mezclaDe(conGym);
+    // El tope: cuatro usos por planta, que es lo que se puede ver desde la acera.
+    o.tope = E2.codificarPisos(['Vivienda', 'Comercio', OFI, GYM, 'Hospedaje']
+      .map(u => ({ piso: 2, uso: u })));
+    // Y «no se sabe» no convive con un uso real en la misma planta.
+    o.noSabeFuera = E2.codificarPisos([{ piso: 1, uso: 'Comercio' }, { piso: 1, uso: E2.NO_SE_SABE }]);
+    // Dos pisos seguidos se juntan en un tramo solo si tienen los mismos usos.
+    o.tramoDistinto = E2.codificarPisos([{ piso: 1, uso: 'Comercio' }, { piso: 1, uso: OFI },
+                                         { piso: 2, uso: 'Comercio' }]);
     o.pisosNombre = [E2.pisosDelNombre('Casa de dos pisos'), E2.pisosDelNombre('Torre residencial (4–10 pisos)'), E2.pisosDelNombre('Bar')];
     o.defectoMixto = [E2.usoPisoPorDefecto('Mixto (Residencial-Comercial)', 1), E2.usoPisoPorDefecto('Mixto (Residencial-Comercial)', 2)];
     o.esEdificio = [E2.esUsoDeEdificio('Residencial'), E2.esUsoDeEdificio('Esp. Público'), E2.esUsoDeEdificio('Vías e Infraestructura Vial')];
@@ -117,6 +134,16 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     const p = { lat: '7.9', lng: '-72.4', tipo: 'Vivienda y Residencial', descripcion: conFicha('3', '1:Comercio;2-3:Vivienda') };
     const els = EDU.puntoAElemento(p, 0) || [];
     o.elementos = els.map(e => ({ sub: e.tags['urbis:sub'], int: e.tags['urbis:intensidad'], mixto: e.tags['urbis:mixto'], niveles: e.tags['building:levels'] }));
+
+    /* Y una planta partida entre tres usos vale UNA, no tres: el edificio de
+       cinco pisos tiene que seguir sumando cinco, se reparta como se reparta.
+       Contar tres lo haría pesar más que la torre de al lado. */
+    const p2 = { lat: '7.9', lng: '-72.4', tipo: 'Vivienda y Residencial',
+      descripcion: conFicha('5', '1-2:Comercio;3:' + GYM + '+Comercio+' + OFI + ';4-5:Vivienda') };
+    const els2 = EDU.puntoAElemento(p2, 1) || [];
+    o.reparto = els2.map(e => ({ sub: e.tags['urbis:sub'], int: Number(e.tags['urbis:intensidad']) }))
+      .sort((a, b) => a.sub < b.sub ? -1 : 1);
+    o.repartoSuma = Math.round(o.reparto.reduce((n, x) => n + x.int, 0) * 100) / 100;
     return o;
   });
   await pg1.close();
@@ -132,6 +159,27 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   T('una torre de treinta pisos cabe en dos tramos', r1.torre === '1:Comercio;2-30:Oficinas o servicios', r1.torre);
   T('lo que no está en la lista no entra', r1.basura.length === 1 && r1.basura[0].uso === 'Vivienda', JSON.stringify(r1.basura));
   T('el nombre del tipo ya dice los pisos', JSON.stringify(r1.pisosNombre) === '[2,4,0]', r1.pisosNombre.join(','));
+
+  console.log('\n  -- y un piso puede tener varios usos --');
+  /* Se pidió con el ejemplo en la mano: «el piso 3 tiene gym, cafetería y
+     oficina». Un edificio real no reparte un uso por planta. */
+  T('se escriben con «+» dentro de su piso',
+    r1.codigoVarios === '1-2:Comercio;3:Deportivo o gimnasio+Comercio+Oficinas o servicios;4-5:Vivienda',
+    r1.codigoVarios);
+  T('y vuelven los tres, en su piso', (r1.vueltaVarios || []).filter(x => x.piso === 3).length === 3 &&
+    JSON.stringify(r1.vueltaVarios.map(x => x.uso)) ===
+    JSON.stringify(['Comercio', 'Comercio', 'Deportivo o gimnasio', 'Comercio', 'Oficinas o servicios', 'Vivienda', 'Vivienda']),
+    (r1.vueltaVarios || []).filter(x => x.piso === 3).map(x => x.uso).join(' + '));
+  T('el edificio se lee como mixto y dice qué piso los junta',
+    r1.mezclaVarios.mixto && JSON.stringify(r1.mezclaVarios.variosPorPiso) === '[3]' &&
+    /el piso 3 junta tres usos/.test(r1.mezclaVarios.resumen), r1.mezclaVarios.resumen);
+  T('con cuatro usos o más no lista todo: dice cuántos y en cuántos pisos',
+    /^Mixto: 4 usos en 5 pisos/.test(r1.mezclaVarios.resumen), r1.mezclaVarios.resumen);
+  T('cuatro usos por planta es el tope', (r1.tope.split(':')[1] || '').split('+').length === 4, r1.tope);
+  T('«no se sabe» no convive con un uso observado en la misma planta',
+    r1.noSabeFuera === '1:Comercio', r1.noSabeFuera);
+  T('dos pisos se juntan en un tramo solo si tienen los MISMOS usos',
+    r1.tramoDistinto === '1:Comercio+Oficinas o servicios;2:Comercio', r1.tramoDistinto);
   T('un mixto declarado se prellena con el local abajo', r1.defectoMixto[0] === 'Comercio' && r1.defectoMixto[1] === 'Vivienda');
   T('un parque o una vía no tienen pisos', r1.esEdificio[0] === true && !r1.esEdificio[1] && !r1.esEdificio[2]);
 
@@ -160,6 +208,17 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     JSON.stringify(r1.elementos));
   T('marcado como mixto y con sus tres niveles',
     (r1.elementos || []).every(e => e.mixto === 'si' && e.niveles === '3'));
+  /* Cinco pisos: dos de comercio, uno partido entre tres usos y dos de
+     vivienda. El piso partido da un tercio a cada uno, así que el comercio
+     suma 2,33 y el edificio entero sigue sumando cinco. El total llega a
+     4,99 y no a 5 porque cada peso se redondea a dos decimales al escribirlo
+     —un tercio no se escribe exacto—: se admite ese centavo y no más, que es
+     la diferencia entre redondear y contar mal. */
+  const rep = {}; (r1.reparto || []).forEach(x => { rep[x.sub] = x.int; });
+  T('una planta partida entre tres usos vale una, no tres',
+    Math.abs(r1.repartoSuma - 5) <= 0.02 && rep.comercio_otro === 2.33 &&
+    rep.deportivo === 0.33 && rep.oficina === 0.33 && rep.residencial === 2,
+    (r1.reparto || []).map(x => x.sub + ' ' + x.int).join(' · ') + ' = ' + r1.repartoSuma);
   T('sin errores de página en esa parte', errs1.length === 0, errs1[0] || 'ninguno');
 
   /* ══ 2 · Pro City, en la aplicación de verdad ════════════════════════════ */
@@ -264,6 +323,28 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     })();
     if (ip) { ip.value = '2'; ip.dispatchEvent(new Event('input', { bubbles: true })); await esperar(250); }
     o.vuelveADos = panel ? panel.querySelectorAll('select.ins-uso-piso').length : 0;
+
+    /* ── Varios usos en una misma planta, con el dedo ──────────────────
+       «El piso 3 tiene gym, cafetería y oficina». Acá el edificio tiene dos
+       pisos, así que se prueba en el segundo: se toca «+ uso», se elige otro,
+       y se comprueba que el código los junta con «+». Después se quita con
+       la «×» y todo vuelve como estaba, que es lo que el resto de la prueba
+       espera encontrar. */
+    const E3 = window.URBIS_EDIFICIO;
+    const codigoAhora = () => E3.codificarPisos(E3.leerUsosPorPisoDelFormulario(panel));
+    o.codigoAntesDeSumar = codigoAhora();
+    const bMas = panel && panel.querySelector('[data-mas="2"]');
+    o.hayMas = !!bMas;
+    if (bMas) { bMas.click(); await esperar(250); }
+    o.selectsPiso2 = panel ? panel.querySelectorAll('select.ins-uso-piso[data-piso="2"]').length : 0;
+    const nuevo2 = panel && panel.querySelectorAll('select.ins-uso-piso[data-piso="2"]')[1];
+    if (nuevo2) { nuevo2.value = 'Deportivo o gimnasio'; nuevo2.dispatchEvent(new Event('change', { bubbles: true })); await esperar(200); }
+    o.codigoConDos = codigoAhora();
+    o.resumenConDos = ((panel && panel.querySelector('#ins-pisos-resumen')) || {}).textContent || '';
+    const bQuita = panel && panel.querySelector('[data-quita-piso="2"]');
+    o.hayQuita = !!bQuita;
+    if (bQuita) { bQuita.click(); await esperar(250); }
+    o.codigoTrasQuitar = codigoAhora();
 
     const s1 = panel && panel.querySelector('select.ins-uso-piso[data-piso="1"]');
     if (s1) { s1.value = 'Comercio'; s1.dispatchEvent(new Event('change', { bubbles: true })); await esperar(150); }
@@ -404,6 +485,13 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     !!tr && tr.filas === 12 && tr.alto < tr.contenido && tr.alto <= tr.ventana * 0.45,
     tr ? tr.filas + ' plantas · lista ' + tr.alto + ' de ' + tr.contenido + ' px · panel ' + tr.panel : 'no hay lista');
   T('y al volver a dos pisos vuelven dos plantas', r2.vuelveADos === 2, r2.vuelveADos + ' plantas');
+  T('cada planta trae su «+ uso» para sumar otro', r2.hayMas && r2.selectsPiso2 === 2,
+    r2.selectsPiso2 + ' desplegables en el piso 2');
+  T('y los dos usos quedan juntos en su piso',
+    r2.codigoAntesDeSumar === '1-2:Vivienda' && r2.codigoConDos === '1:Vivienda;2:Vivienda+Deportivo o gimnasio',
+    r2.codigoConDos);
+  T('la lectura del edificio lo dice al momento', /el piso 2 junta dos usos/.test(r2.resumenConDos), r2.resumenConDos);
+  T('y con la «×» se quita el que sobra', r2.hayQuita && r2.codigoTrasQuitar === '1-2:Vivienda', r2.codigoTrasQuitar);
   T('con tienda abajo, lo dice antes de guardar', /Edificio mixto · Comercio abajo, vivienda arriba/.test(r2.resumen), r2.resumen);
   T('se guarda en su casilla del registro', r2.guardo && r2.slotPisos === '2' && r2.slotPlantas === '1:Comercio;2:Vivienda',
     'pisos «' + r2.slotPisos + '» · plantas «' + r2.slotPlantas + '»');

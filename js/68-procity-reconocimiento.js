@@ -2185,7 +2185,10 @@
         (c.plantas.length
           ? '<tr><td colspan="2"><b>Qué hay en las plantas</b></td></tr>' +
             c.plantas.map(function (x) {
-              return '<tr><td>' + esc(x.uso) + '</td><td class="n">' + x.n + ' planta' + (x.n === 1 ? '' : 's') + '</td></tr>';
+              /* «En N pisos» y no «N plantas»: un piso puede tener varios
+                 usos a la vez, así que la suma de esta columna pasa del
+                 número de plantas del edificio y llamarlas plantas mentiría. */
+              return '<tr><td>' + esc(x.uso) + '</td><td class="n">en ' + x.n + ' piso' + (x.n === 1 ? '' : 's') + '</td></tr>';
             }).join('')
           : '') +
         '</table><p class="pie">' + fraseAlturasCampo(c) + '</p>'
