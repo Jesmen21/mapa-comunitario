@@ -124,7 +124,11 @@ let PELADA=false;
     for(let i=0;i<70 && !document.querySelector('.pcr-llenos');i++) await esperar(400);
     await esperar(400);
 
-    const todo=txt(H());
+    /* El bloque se lee DENTRO de su pestaña. Buscarlo en la ficha entera
+       dejó de valer cuando se repartió en pestañas: la de General lista por su
+       nombre todas las cajas del pliego, así que el primer hallazgo del
+       título era el renglón de ese índice y no el bloque. */
+    const todo=txt(H().querySelector('[data-tab="movilidad"]')||H());
     const i=todo.indexOf('El perfil de la calle');
     o.bloque=i>=0?todo.slice(i,i+1500):'';
     o.kpis=[...H().querySelectorAll('.pcr-kpi')].map(txt);

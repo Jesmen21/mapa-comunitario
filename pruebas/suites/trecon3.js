@@ -67,7 +67,17 @@ for(let i=0;i<140;i++){
     await window.URBIS_PC_RECON.analizar();
 
     const h=document.getElementById('pcr-hoja');
-    o.texto=h.innerText;
+    /* La ficha se lee entera, pestaña por pestaña. Desde que se repartió,
+       `innerText` solo devuelve la pestaña abierta —lo que se VE— y estas
+       comprobaciones son sobre lo que la ficha DICE, esté en la pestaña que
+       esté. Que se pueda llegar a cada una es cosa de tpestanas. */
+    const textoFicha=()=>{ const h2=document.getElementById('pcr-hoja');
+      if(!h2) return '';
+      /* `textContent` y no `innerText`: incluye las pestañas cerradas, que
+         es donde vive casi todo. La cabecera y las cifras del sector están
+         fuera de las pestañas, así que se lee la hoja entera. */
+      return h2.querySelector('.pcr-tab') ? h2.textContent : h2.innerText; };
+    o.texto=textoFicha();
     o.diceConcentracion=/Dónde se concentra/.test(o.texto);
     o.nombraLado=/(norte|noreste|noroeste|sur|oriente|occidente)/i.test(o.texto);
     o.hayCheck=/Qué verificar en campo/.test(o.texto);

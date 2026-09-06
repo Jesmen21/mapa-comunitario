@@ -158,7 +158,11 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
     await esperar(400);
 
     // El bloque: desde su título hasta el final de la hoja.
-    const todo=txt(H());
+    /* El bloque se lee DENTRO de su pestaña. Buscarlo en la ficha entera
+       dejó de valer cuando se repartió en pestañas: la de General lista por su
+       nombre todas las cajas del pliego, así que el primer hallazgo del
+       título era el renglón de ese índice y no el bloque. */
+    const todo=txt(H().querySelector('[data-tab="ambiente"]')||H());
     const i=todo.indexOf('Espacio público efectivo');
     o.bloque=i>=0?todo.slice(i,i+1400):'';
     o.kpis=[...H().querySelectorAll('.pcr-kpi')].map(txt);

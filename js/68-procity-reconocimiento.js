@@ -61,6 +61,11 @@
 
   var S = {
     abierto: false,
+    /* Qué pestaña de la ficha se está mirando. Arranca en «General» porque
+       es el tablero de mandos —las capas y lo que falta medir—: lo primero
+       que alguien necesita después de analizar no es leer, es saber qué
+       tiene y qué le falta. */
+    pestanaFicha: 'general',
     // 'radio' o 'poligono'. El polígono no se dibuja acá: se toma prestado el
     // que el usuario ya trazó en Pro City, que es el mismo gesto que usa para
     // agrupar mapeos. Aprender dos formas de dibujar por una función sería
@@ -5550,6 +5555,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       var b = ev.target.closest('[data-pcr]');
       if (!b) return;
       var acc = b.getAttribute('data-pcr');
+      /* Medir algo lleva a donde aparece el resultado. Con la ficha en
+         pestañas, tocar «medir el terreno» y quedarse en General sería pedir
+         un dato y esconderlo: el sitio donde sale la respuesta es parte de la
+         respuesta. Va acá, antes de repartir la acción, para que valga por
+         igual para el botón del bloque, el de «medir todo» y el de la lista
+         de lo que falta. */
+      if (PESTANA_DE[acc] && S.resultado) S.pestanaFicha = PESTANA_DE[acc];
       if (acc === 'cerrar') { cerrar(); return; }
       if (acc === 'volver') { S.resultado = null; S.comparacion = null; S.aviso = ''; S.textoPlano = ''; pintar(); return; }
       if (acc === 'borrar-ficha') { borrarFicha(b.getAttribute('data-id')); pintar(); return; }
@@ -6092,6 +6104,20 @@ function donaHTML(datos, colorDe, nombreDe) {
                   'La hoja arranca de cero con el área nueva.';
         pintar(); return;
       }
+      if (acc === 'pestana') {
+        var pes = b.getAttribute('data-t') || 'general';
+        if (pes !== S.pestanaFicha) {
+          S.pestanaFicha = pes;
+          /* Se empieza a leer arriba. La memoria de posición es POR pestaña
+             —ver `pintar`—, así que volver a una deja el ojo donde estaba,
+             pero llegar a otra por primera vez no puede dejarlo a media
+             página de un texto que no ha visto. */
+          pintar();
+          var cu = hoja().querySelector('.pcr-cuerpo');
+          if (cu) cu.scrollTop = (hoja().__donde || {})['ficha:' + pes] || 0;
+        }
+        return;
+      }
       if (acc === 'otro') {
         /* Se suelta el resultado, no el área ni el trabajo a mano: quien
            quiera el mismo sector con otro radio no tiene que volver a
@@ -6222,6 +6248,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (typeof Chart === 'undefined') return;
     var lienzo = document.getElementById('pcr-donut');
     if (!lienzo || !res) return;
+    /* Si su pestaña está cerrada, el lienzo mide cero y Chart.js dibujaría un
+       anillo de un píxel que después no se rehace. Se deja para cuando la
+       pestaña se abra: cambiar de pestaña repinta la ficha y vuelve a pasar
+       por acá. */
+    if (lienzo.offsetParent === null) return;
 
     var st = res.stats || {};
     var CAT = window.AIA_CATALOGO || {};
@@ -6298,7 +6329,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               '<button type="button" data-pcr="analizar" class="pcr-principal"' +
                 (S.cargando ? ' disabled' : '') + '>' +
                 (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>'
-            : '<button type="button" data-pcr="lote-dibujar" class="pcr-principal">' +
+            : '<button type="button" data-pcr="lote-dibujar" class="pcr-principal pcr-lote-btn">' +
                 ico('lapiz') + 'Marcar el lote en el mapa</button>') +
           (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
           (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
@@ -6410,8 +6441,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        pisa a la otra. */
     var cuerpoAntes = h.querySelector('.pcr-cuerpo');
     var iba = cuerpoAntes ? cuerpoAntes.scrollTop : 0;
+    /* Una posición por vista Y POR PESTAÑA: la ficha son ocho lecturas
+       distintas desde que se repartió en pestañas, y devolver a alguien al
+       píxel 1.800 de «Ambiente» cuando vuelve a «Movilidad» es dejarlo en
+       mitad de otra cosa. */
     var mismaVista = S.comparacion ? 'comparacion' : encoger ? 'encogida'
-                   : S.resultado ? 'ficha' : 'ajustes';
+                   : S.resultado ? ('ficha:' + (S.pestanaFicha || 'general')) : 'ajustes';
     /* Y se olvida en cuanto cambia el sector. Devolver a alguien al píxel
        1.800 de la ficha ANTERIOR lo deja en mitad de un texto que no ha
        leído, y encima de otro sitio. Se compara el objeto del resultado y no
@@ -6673,7 +6708,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                 S.lote.length + ' esquinas · centro en ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5) +
               '</p>' +
               '<div class="pcr-llevar">' +
-                '<button type="button" data-pcr="lote-dibujar" class="pcr-mini">' +
+                '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-lote-btn">' +
                   ico('lapiz', 16) + 'Volver a marcarlo</button>' +
                 '<button type="button" data-pcr="lote-borrar" class="pcr-mini">' +
                   ico('borrar', 16) + 'Quitarlo</button>' +
@@ -9469,19 +9504,19 @@ function donaHTML(datos, colorDe, nombreDe) {
                        listo: true, dato: g.n + ' usos' });
         });
     }
-    lista.push({ id: 'cobertura', t: 'Cobertura del suelo',
+    lista.push({ id: 'cobertura', t: 'Cobertura del suelo', pide: 'cobertura',
                  listo: !!(cob && cob.overlayImagen && cob.overlayLimites),
                  dato: 'clasificada sobre la foto', falta: 'leé la foto satelital' });
-    lista.push({ id: 'foto', t: 'La foto satelital',
+    lista.push({ id: 'foto', t: 'La foto satelital', pide: 'cobertura',
                  listo: !!(cob && cob.imagen && cob.overlayLimites),
                  dato: 'la imagen cruda', falta: 'leé la foto satelital' });
-    lista.push({ id: 'estratos', t: 'Manzanas por estrato',
+    lista.push({ id: 'estratos', t: 'Manzanas por estrato', pide: 'estratos',
                  listo: !!(S.estratos && S.estratos.manzanas && S.estratos.manzanas.length),
                  dato: 'del DANE', falta: 'poné los estratos en el mapa' });
     lista.push({ id: 'hitos', t: 'Hitos y nodos',
                  listo: !!((st.hitos || []).some(function (h) { return h.lat != null; })),
                  dato: 'numerados y con su nombre', falta: 'no hay hitos registrados' });
-    lista.push({ id: 'alturas', t: 'Alturas de lo construido',
+    lista.push({ id: 'alturas', t: 'Alturas de lo construido', pide: 'trazado',
                  /* Dos maneras de tenerlo: midiendo el trazado, que trae las
                     huellas de OpenStreetMap, o contando los pisos en la
                     calle. La segunda es la que de verdad describe un barrio
@@ -9493,13 +9528,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                         })(),
                  dato: 'cada huella con el tono de sus pisos, y lo contado en campo en rombo',
                  falta: 'medí el trazado o contá los pisos en la calle' });
-    lista.push({ id: 'masa', t: 'Susceptibilidad por pendiente',
+    lista.push({ id: 'masa', t: 'Susceptibilidad por pendiente', pide: 'terreno',
                  listo: !!S.terRejilla, dato: 'los rangos de la guía, del modelo de elevación',
                  falta: 'medí el terreno' });
-    lista.push({ id: 'llenos', t: 'Llenos y vacíos',
+    lista.push({ id: 'llenos', t: 'Llenos y vacíos', pide: 'trazado',
                  listo: !!(S.trzHuellas && S.trzHuellas.length),
                  dato: 'huellas de edificio', falta: 'medí el trazado' });
-    lista.push({ id: 'vias', t: 'Jerarquía vial',
+    lista.push({ id: 'vias', t: 'Jerarquía vial', pide: 'trazado',
                  listo: !!(S.trzVias && S.trzVias.length),
                  dato: (function () {
                    var rj = redPorJerarquia(S.trzVias);
@@ -9507,7 +9542,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                                     : 'la red por jerarquía';
                  })(),
                  falta: 'medí el trazado' });
-    lista.push({ id: 'curvas', t: 'Curvas de nivel',
+    lista.push({ id: 'curvas', t: 'Curvas de nivel', pide: 'terreno',
                  listo: (function () {
                    try { var c = curvasDelTerreno(); return !!(c && c.curvas && c.curvas.length); }
                    catch (e) { return false; } })(),
@@ -10608,6 +10643,58 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Encender varias a la vez es útil para comparar —el calor del comercio ' +
       'sobre los llenos y vacíos, por ejemplo— pero con más de tres el mapa deja de decir nada. ' +
       'Para la lámina, cada capa sale en su propio recuadro.</p>';
+  }
+
+  /* Qué le falta al PLIEGO, no al análisis: los mapas y las mediciones que
+     hoy no saldrían impresos. Llegó pedido así: «como hay tanto texto, tanta
+     cosa, uno por estar buscando y buscando no activa un análisis y no sale
+     en el PDF». La lista junta las mediciones que faltan —las cinco del
+     botón de medir— con los mapas del inventario que no están listos, y cada
+     renglón trae el botón que lo consigue: tocarlo mide Y salta a la pestaña
+     donde aparece el resultado. */
+  function pendientesDelPliego(res) {
+    var out = [], vistos = {};
+    PASOS_MEDIR.forEach(function (p) {
+      if (p.hecho()) return;
+      vistos[p.id] = 1;
+      out.push({ que: p.nombre, por: p.que, pide: p.id, pestana: pestanaDe(p.id) });
+    });
+    var mapas = [];
+    try { mapas = mapasDisponibles(res) || []; } catch (e) { mapas = []; }
+    mapas.forEach(function (m) {
+      if (m.listo || !m.pide || vistos[m.pide]) return;
+      vistos[m.pide] = 1;
+      out.push({ que: m.t, por: m.falta || '', pide: m.pide, pestana: pestanaDe(m.pide) });
+    });
+    /* El lote no es un mapa ni una medición: es un trazo a mano, y sin él la
+       mitad del pliego —lo que cabe, la cuadra, las determinantes— no existe. */
+    if (!(S.lote && S.lote.length >= 3)) {
+      out.push({ que: 'El lote a intervenir', por: 'marcalo en el mapa',
+                 pide: 'lote-dibujar', pestana: 'lote' });
+    }
+    return out;
+  }
+  function bloqueFaltaPliego(res) {
+    if (!S.resultado) return '';
+    var lista = pendientesDelPliego(res);
+    if (!lista.length) {
+      return h4('documento', 'Lo que va a salir en el pliego') +
+        '<p class="pcr-ok">Todo lo que este análisis sabe medir está medido: el pliego sale ' +
+        'completo. Lo que falte de acá en adelante se levanta caminando.</p>';
+    }
+    return h4('documento', 'Lo que hoy NO saldría en el pliego') +
+      '<p class="pcr-pista">Cada una de estas es una caja vacía en el PDF. Tocá el botón y se ' +
+      'mide: la ficha salta sola a la pestaña donde aparece el resultado.</p>' +
+      '<div class="pcr-pend">' +
+        lista.map(function (x) {
+          return '<div class="pcr-pend-i">' +
+            '<div><b>' + esc(x.que) + '</b>' +
+            (x.por ? '<small>' + esc(x.por) + '</small>' : '') + '</div>' +
+            '<button type="button" class="pcr-mini" data-pcr="' + esc(x.pide) + '">' +
+              ico('destello', 15) + 'Hacerlo</button>' +
+          '</div>';
+        }).join('') +
+      '</div>';
   }
 
   function bloqueQueFalta(st) {
@@ -14292,7 +14379,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (soloLectura
         ? ''
         : '<div class="pcr-llevar">' +
-            '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-llevar-b">' +
+            '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-llevar-b pcr-lote-btn">' +
               ico('lapiz') + 'Volver a marcarlo</button>' +
             '<button type="button" data-pcr="lote-borrar" class="pcr-mini">' +
               ico('borrar', 16) + 'Quitar el lote</button>' +
@@ -16611,6 +16698,68 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* Las pestañas de la ficha. Los nombres son los de las bandas del pliego
+     —ver GRUPOS en la lámina— para que lo que se lee en pantalla y lo que se
+     imprime se llamen igual. «General» es la única que no está en el papel:
+     es el tablero de mandos. */
+  var PESTANAS = [
+    { id: 'general',   t: 'General',      ico: 'ajustes' },
+    { id: 'sitio',     t: 'El sitio',     ico: 'mapa' },
+    { id: 'ambiente',  t: 'Ambiente',     ico: 'verde' },
+    { id: 'movilidad', t: 'Movilidad',    ico: 'movilidad' },
+    { id: 'gente',     t: 'Gente y usos', ico: 'poblacion' },
+    { id: 'forma',     t: 'Forma urbana', ico: 'edificio' },
+    { id: 'lote',      t: 'El lote',      ico: 'area' },
+    { id: 'sintesis',  t: 'Síntesis',     ico: 'lista' }
+  ];
+  /* En qué pestaña vive cada medición, para poder mandar a alguien ahí desde
+     «lo que falta». La llave es la acción del botón que la mide. */
+  var PESTANA_DE = {
+    terreno: 'ambiente', clima: 'ambiente', amenaza: 'ambiente', cobertura: 'ambiente',
+    evolucion: 'ambiente', sombras: 'ambiente', curvas: 'ambiente',
+    trazado: 'forma', 'lote-dibujar': 'lote', caminata: 'movilidad',
+    estratos: 'general', 'int-dibujar': 'gente'
+  };
+  function pestanaDe(accion) { return PESTANA_DE[accion] || 'general'; }
+
+  function htmlPestanas(P) {
+    var conAlgo = PESTANAS.filter(function (p) {
+      var h = P[p.id] || '';
+      return h.replace(/\s+/g, '') !== '';
+    });
+    if (!conAlgo.length) return '';
+    /* La pestaña elegida solo vale si tiene algo que mostrar: sin lote no hay
+       pestaña del lote, y quedarse en una pestaña vacía se ve igual que una
+       aplicación rota. */
+    var activa = conAlgo.some(function (p) { return p.id === S.pestanaFicha; })
+      ? S.pestanaFicha : conAlgo[0].id;
+    /* Cuántas cosas le faltan a cada pestaña para que su parte del pliego
+       salga completa. Va en la propia pestaña y no dentro: la gracia es
+       enterarse SIN entrar, que era el problema —«uno por estar buscando y
+       buscando no activa un análisis»—. */
+    var pend = {};
+    try {
+      pendientesDelPliego(S.resultado).forEach(function (x) {
+        pend[x.pestana] = (pend[x.pestana] || 0) + 1;
+      });
+    } catch (e) {}
+    return '<nav class="pcr-tabs" role="tablist" aria-label="Temas del análisis">' +
+      conAlgo.map(function (p) {
+        var n = pend[p.id] || 0;
+        return '<button type="button" role="tab" class="pcr-tab-b' + (p.id === activa ? ' activa' : '') +
+          '" data-pcr="pestana" data-t="' + p.id + '"' +
+          ' aria-selected="' + (p.id === activa ? 'true' : 'false') + '">' +
+          ico(p.ico, 16) + '<span>' + esc(p.t) + '</span>' +
+          (n ? '<i class="pcr-tab-pend" title="' + n + ' sin medir para el pliego">' + n + '</i>' : '') +
+          '</button>';
+      }).join('') +
+      '</nav>' +
+      conAlgo.map(function (p) {
+        return '<section class="pcr-tab" data-tab="' + p.id + '"' +
+          (p.id === activa ? '' : ' hidden') + '>' + P[p.id] + '</section>';
+      }).join('');
+  }
+
   function htmlFicha(res) {
     var st = res.stats || {};
     var pois = res.pois || [];
@@ -16688,152 +16837,43 @@ function donaHTML(datos, colorDe, nombreDe) {
       : (S.radioM >= 1000 ? (S.radioM / 1000) + ' km' : S.radioM + ' m');
     var radioEtiqueta = esPol ? 'de área dibujada' : 'de radio';
 
-    return '' +
-      barra('Modo educativo · Reconocimiento', 'Lo que hay ' + (esPol ? 'en el área' : 'en el sector'), 'lupa') +
-      '<div class="pcr-cuerpo">' +
+    /* ── La ficha, repartida en pestañas ──────────────────────────────
+       Llegó dicho así: «cuando se hace el análisis se hace una lista
+       larguísima de muchas cosas y mucho texto y muchos gráficos, y uno tiene
+       que bajar y bajar y bajar». Era cierto: cuarenta bloques en un solo
+       rollo, y para llegar a la movilidad había que pasar por la demografía,
+       el terreno y el clima.
 
-        /* Arriba del todo y no al pie: si el sector no se está guardando, todo
-           lo que se lea más abajo se va a perder al cerrar la aplicación, y
-           enterarse después de haber trabajado media hora no sirve de nada. */
-        (S.avisoGuardado ? '<p class="pcr-error pcr-guardado-mal">' + esc(S.avisoGuardado) + '</p>' : '') +
-        bloqueTraba() +
+       Las pestañas son LAS MISMAS BANDAS DEL PLIEGO y con sus mismos nombres:
+       lo que se lee en «Ambiente» es lo que se imprime en la banda ambiental.
+       Una taxonomía y no dos, para no tener que aprender la aplicación dos
+       veces. Delante va «General», que en el papel no existe porque es el
+       tablero de mandos: las capas del mapa y lo que falta medir para que el
+       pliego salga completo.
 
-        /* Desde que la ficha sobrevive a cerrar la hoja, hace falta una salida
-           clara hacia la pantalla de elegir área: sin ella, quien quisiera
-           analizar OTRO sector no tenía por dónde. */
-        '<button type="button" data-pcr="otro" class="pcr-mini pcr-otro">' +
-          ico('atras', 16) + 'Analizar otro sector</button>' +
+       Lo que no es un tema sino el encabezado —el aviso de guardado, la traba
+       de licencia, las cifras del sector— se queda fuera de las pestañas y
+       visible siempre. */
+    var P = {};
 
-        '<div class="pcr-kpis">' +
-          '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
-          '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
-          '<div class="pcr-kpi"><b>' + dens + '</b><small>por hectárea</small></div>' +
-          '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
-        '</div>' +
-        bloqueDondeSeMidio(S.centroDeAnalizado, meta) +
-
-        bloqueUbicacion(res.ubicacion, st, meta) +
-        bloqueLote(meta, esPol) +
-        bloquePoblacion(st, esPol) +
-        bloqueDemografia(st) +
-
+    P.general =
         // Antes que nada: qué falta medir. Los cinco botones que encadena
         // están repartidos por treinta bloques y ninguno avisa de los otros.
         bloqueMedirTodo() +
         bloqueSinSenal() +
-        /* Las capas, ARRIBA. Estaban en el puesto veintidós de treinta y dos
-           bloques, después de todo lo que se lee: existían, con su lista
-           completa y sus interruptores, y nadie las encontraba. Llegó dicho
-           así: «no vi las opciones de desactivar capas; quedó todo encima de
-           una cosa, todo combinado».
-
-           Un panel de control no se busca hacia el final de un informe. Va
-           antes de lo que se lee, junto a «qué falta medir», que es el otro
-           control de esta ficha. */
+        /* Las capas y el calor, juntos y en la primera pestaña. Estaban
+           repartidos por el informe —uno en el puesto veintidós y el otro
+           cerca del final— y llegó dicho dos veces: «no vi las opciones de
+           desactivar capas» y «una pestaña enfocada solo en eso». Un panel de
+           control no se busca dentro de un informe. */
         bloqueCapas(st) +
-
-        h4('capas', 'Qué hay, por categoría') +
-        // El anillo se pinta después, cuando el canvas ya está en el documento.
-        // Si Chart.js no cargó, las barras de abajo siguen contando lo mismo:
-        // la gráfica es la forma bonita del dato, no el dato.
-        (grupos.length ? '<div class="pcr-grafica"><canvas id="pcr-donut" height="190"></canvas></div>' : '') +
-        (filas || '<p class="pcr-pista">Ningún uso quedó clasificado en una categoría.</p>') +
-        (sinCategoria ? '<p class="pcr-pista">' + sinCategoria + ' punto' + (sinCategoria === 1 ? '' : 's') +
-          ' sin categoría reconocida. Suelen ser usos poco comunes: buen material para revisar en campo.</p>' : '') +
-
-        (chips ? h4('porcentaje', 'Lo más repetido') + '<div class="pcr-chips">' + chips + '</div>' : '') +
-
-        // El inventario dice QUÉ hay; lo que sigue dice cómo funciona el
-        // sector: qué uso manda, cómo se llega, qué lo rodea y dónde está la
-        // calle que concentra la actividad.
-        bloqueUsoPredominante(st) +
-        bloqueLoteIntervenir() +
-        // El puente: hasta acá se mide el sitio, y acá empieza el proyecto.
-        bloqueCuadra() +
-        bloqueQueCabe() +
-        bloqueCaminata() +
-        /* Lo intangible va acá y no al final: es lo que se recoge caminando,
-           y quien tiene la hoja abierta en la calle no llega al final. */
-        bloqueIntangible() +
-        /* Las determinantes van pegadas al lote: son la lectura de proyecto de
-           todo lo que se midió sobre él —sol, sombra, agua, acceso, viento— y
-           leerlas acá evita tener que reconstruirlas al final. */
-        bloqueDeterminantes(st) +
-        bloqueAlturas(st) +
-        bloqueTerreno() +
-        bloqueClima() +
-        bloqueAmenaza() +
-        bloqueTrazado() +
-        bloquePerfil() +
-        bloqueEspacio(st) +
-        bloqueAccesibilidad(st) +
-        bloqueCampo() +
-        bloqueSol(meta) +
-        bloqueMovilidad(st) +
-        bloqueAmbiente(st) +
-        bloqueEvolucion() +
-        bloqueNucleos(st) +
-        bloqueHitos(st) +
-        bloqueAnillos(st, esPol) +
-        // Las capas ordenan el mapa —y viven arriba, con los controles—;
-        // esto ordena el papel.
-        bloquePliego(res) +
         bloqueCalor(res) +
-
-        // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
-        // que domina: señalar «el mayor» en un reparto parejo sería inventar
-        // un patrón que no existe.
-        (zonas.concentracion
-          ? h4('campo', 'Dónde se concentra') +
-            '<p class="pcr-conc">La mitad ' + esc(zonas.concentracion.rumbo.nombre) +
-            ' reúne <b>' + zonas.concentracion.n + ' de ' + zonas.total + '</b> (' +
-            zonas.concentracion.pct + '%). Es el lado más activo según los datos.</p>'
-          : '') +
-
-        h4('norte', 'A dónde ir') +
-        (function () {
-          var rosa = rosaDeLoMapeado(zonas);
-          return rosa
-            ? '<div class="pcr-dibujo pcr-dibujo-solo">' + rosa +
-              '<p class="pcr-dibujo-pie">Cuántos usos mapeados hay en cada rumbo del sector. Los ' +
-              'gajos punteados son los que no tienen <b>ninguno</b>: ahí todo lo que levanten es ' +
-              'nuevo.</p></div>'
-            : '';
-        })() +
-        tareas +
-
-        // La síntesis va acá, después de todas las mediciones y antes de las
-        // tareas: es el puente entre «esto es lo que hay» y «esto es lo que
-        // vas a hacer».
-        bloqueSintesis(res) +
-
-        /* Entre la síntesis y el reparto: «esto es lo que hay», «esto es lo
-           que falta», «esto es a dónde van». La lista de faltantes es el
-           puente entre las dos, y sin ella el plan manda a caminar sin decir
-           qué anotar. */
+        // Las capas ordenan el mapa; esto ordena el papel.
+        bloquePliego(res) +
+        /* Entre los controles y la exportación: «esto es lo que hay», «esto
+           es lo que falta». Acá es donde alguien mira antes de imprimir. */
+        bloqueFaltaPliego(res) +
         bloqueQueFalta(st) +
-
-        bloquePlan(res, zonas) +
-
-        // De inventario a lista de tareas. Lo que el estudiante hace con esto
-        // parado en la esquina, que es de lo que se trataba.
-        bloqueRubros(st) +
-
-        h4('ok', 'Qué verificar en campo') +
-        '<ul class="pcr-check">' +
-          (sinCategoria
-            ? '<li>Los <b>' + sinCategoria + '</b> punto' + (sinCategoria === 1 ? '' : 's') +
-              ' sin categoría: mirá qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
-            : '') +
-          (subs.length
-            ? '<li>Tomá una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
-              '</b> y comprobá que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
-            : '') +
-          '<li>Anotá lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
-          (zonas.total === 0
-            ? '<li>Este sector está entero sin mapear: cualquier cosa que levanten es información nueva.</li>'
-            : '') +
-        '</ul>' +
 
         '<label class="pcr-lab" for="pcr-nombre">Nombre del sector (opcional)</label>' +
         '<input id="pcr-nombre" class="pcr-nombre" type="text" maxlength="60" ' +
@@ -16932,7 +16972,139 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<b>Esto no es el sector: es lo que OpenStreetMap sabe del sector.</b> ' +
           'Los datos los pone gente voluntaria, así que están incompletos y a veces desactualizados. ' +
           'Sirve para llegar con una idea formada, no para reemplazar la salida a campo.' +
+        '</div>';
+
+    P.sitio =
+        bloqueDondeSeMidio(S.centroDeAnalizado, meta) +
+        bloqueUbicacion(res.ubicacion, st, meta) +
+        bloqueLote(meta, esPol) +
+        bloqueAnillos(st, esPol) +
+
+        // Hacia dónde mira el sector. Solo aparece si de verdad hay un lado
+        // que domina: señalar «el mayor» en un reparto parejo sería inventar
+        // un patrón que no existe.
+        (zonas.concentracion
+          ? h4('campo', 'Dónde se concentra') +
+            '<p class="pcr-conc">La mitad ' + esc(zonas.concentracion.rumbo.nombre) +
+            ' reúne <b>' + zonas.concentracion.n + ' de ' + zonas.total + '</b> (' +
+            zonas.concentracion.pct + '%). Es el lado más activo según los datos.</p>'
+          : '') +
+
+        h4('norte', 'A dónde ir') +
+        (function () {
+          var rosa = rosaDeLoMapeado(zonas);
+          return rosa
+            ? '<div class="pcr-dibujo pcr-dibujo-solo">' + rosa +
+              '<p class="pcr-dibujo-pie">Cuántos usos mapeados hay en cada rumbo del sector. Los ' +
+              'gajos punteados son los que no tienen <b>ninguno</b>: ahí todo lo que levanten es ' +
+              'nuevo.</p></div>'
+            : '';
+        })() +
+        tareas;
+
+    P.ambiente =
+        bloqueTerreno() +
+        bloqueClima() +
+        bloqueSol(meta) +
+        bloqueAmenaza() +
+        bloqueAmbiente(st) +
+        bloqueEvolucion() +
+        bloqueEspacio(st);
+
+    P.movilidad =
+        bloqueMovilidad(st) +
+        bloquePerfil() +
+        bloqueCaminata() +
+        bloqueAccesibilidad(st);
+
+    P.gente =
+        bloquePoblacion(st, esPol) +
+        bloqueDemografia(st) +
+
+        h4('capas', 'Qué hay, por categoría') +
+        // El anillo se pinta después, cuando el canvas ya está en el documento.
+        // Si Chart.js no cargó, las barras de abajo siguen contando lo mismo:
+        // la gráfica es la forma bonita del dato, no el dato.
+        (grupos.length ? '<div class="pcr-grafica"><canvas id="pcr-donut" height="190"></canvas></div>' : '') +
+        (filas || '<p class="pcr-pista">Ningún uso quedó clasificado en una categoría.</p>') +
+        (sinCategoria ? '<p class="pcr-pista">' + sinCategoria + ' punto' + (sinCategoria === 1 ? '' : 's') +
+          ' sin categoría reconocida. Suelen ser usos poco comunes: buen material para revisar en campo.</p>' : '') +
+
+        (chips ? h4('porcentaje', 'Lo más repetido') + '<div class="pcr-chips">' + chips + '</div>' : '') +
+
+        // El inventario dice QUÉ hay; lo que sigue dice cómo funciona el
+        // sector: qué uso manda, dónde se juntan y con qué se orienta la gente.
+        bloqueUsoPredominante(st) +
+        bloqueNucleos(st) +
+        bloqueHitos(st) +
+        /* Lo que levantó el curso, junto a lo que dice el mapa abierto: son
+           las dos mitades de la misma pregunta —qué hay acá— y compararlas es
+           la mitad del ejercicio. */
+        bloqueCampo() +
+        /* Lo intangible va con la gente y no al final: es lo que se recoge
+           caminando y preguntando, no una medición del suelo. */
+        bloqueIntangible() +
+        bloqueRubros(st);
+
+    P.forma =
+        bloqueTrazado() +
+        bloqueAlturas(st);
+
+    P.lote =
+        bloqueLoteIntervenir() +
+        // El puente: hasta acá se mide el sitio, y acá empieza el proyecto.
+        bloqueCuadra() +
+        bloqueQueCabe() +
+        /* Las determinantes van pegadas al lote: son la lectura de proyecto de
+           todo lo que se midió sobre él —sol, sombra, agua, acceso, viento— y
+           leerlas acá evita tener que reconstruirlas al final. */
+        bloqueDeterminantes(st);
+
+    P.sintesis =
+        // La síntesis, después de todas las mediciones: es el puente entre
+        // «esto es lo que hay» y «esto es lo que vas a hacer».
+        bloqueSintesis(res) +
+        bloquePlan(res, zonas) +
+        h4('ok', 'Qué verificar en campo') +
+        '<ul class="pcr-check">' +
+          (sinCategoria
+            ? '<li>Los <b>' + sinCategoria + '</b> punto' + (sinCategoria === 1 ? '' : 's') +
+              ' sin categoría: mirá qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
+            : '') +
+          (subs.length
+            ? '<li>Tomá una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
+              '</b> y comprobá que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
+            : '') +
+          '<li>Anotá lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
+          (zonas.total === 0
+            ? '<li>Este sector está entero sin mapear: cualquier cosa que levanten es información nueva.</li>'
+            : '') +
+        '</ul>';
+
+    return '' +
+      barra('Modo educativo · Reconocimiento', 'Lo que hay ' + (esPol ? 'en el área' : 'en el sector'), 'lupa') +
+      '<div class="pcr-cuerpo">' +
+
+        /* Arriba del todo y no al pie: si el sector no se está guardando, todo
+           lo que se lea más abajo se va a perder al cerrar la aplicación, y
+           enterarse después de haber trabajado media hora no sirve de nada. */
+        (S.avisoGuardado ? '<p class="pcr-error pcr-guardado-mal">' + esc(S.avisoGuardado) + '</p>' : '') +
+        bloqueTraba() +
+
+        /* Desde que la ficha sobrevive a cerrar la hoja, hace falta una salida
+           clara hacia la pantalla de elegir área: sin ella, quien quisiera
+           analizar OTRO sector no tenía por dónde. */
+        '<button type="button" data-pcr="otro" class="pcr-mini pcr-otro">' +
+          ico('atras', 16) + 'Analizar otro sector</button>' +
+
+        '<div class="pcr-kpis">' +
+          '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+          '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
+          '<div class="pcr-kpi"><b>' + dens + '</b><small>por hectárea</small></div>' +
+          '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
         '</div>' +
+
+        htmlPestanas(P) +
 
         /* Decía «Listo», al final de catorce metros de informe, y cerraba la
            hoja. Quien llega ahí acaba de leerlo todo y lee «Listo» como «ya
@@ -18584,6 +18756,12 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Lo contado en campo piso por piso, dentro del sector: para comprobarlo
     // sin leer el HTML de la ficha.
     alturasDeCampo: alturasDeCampo,
+    // Abrir una pestaña de la ficha por su nombre.
+    verPestana: function (id) {
+      if (!PESTANAS.some(function (p) { return p.id === id; })) return false;
+      S.pestanaFicha = id; pintar(); return true;
+    },
+    pestanaActual: function () { return S.pestanaFicha; },
     guardarFicha: guardarFicha,
     /* El respaldo de la salida entera: armarlo y volver a traerlo son
        funciones puras sobre una lista, así que se comprueban sin depender de

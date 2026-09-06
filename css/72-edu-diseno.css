@@ -901,6 +901,24 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 #urbis-mobile-app .pcr-lote-btn .u-ico,
 .pcr-hoja .pcr-lote-btn .u-ico{ color:#B8860B; }
+/* Y cuando ese botón es la acción principal —lo que se ve al entrar por la
+   lupa sin lote todavía— va amarillo LLENO, no pálido: es el único sitio de
+   la ficha donde el ojo tiene que caer sin leer, y el celeste de las demás
+   acciones principales lo escondía entre ellas. El texto va oscuro porque
+   sobre amarillo el blanco no se lee. */
+#urbis-mobile-app .pcr-principal.pcr-lote-btn,
+.pcr-hoja .pcr-principal.pcr-lote-btn{
+  background:linear-gradient(180deg,#FFD54A,#F0B400) !important;
+  border:0 !important;
+  color:#4A3600 !important; -webkit-text-fill-color:#4A3600 !important;
+  box-shadow:0 6px 16px rgba(224,168,0,.32) !important;
+}
+#urbis-mobile-app .pcr-principal.pcr-lote-btn:hover:not(:disabled),
+.pcr-hoja .pcr-principal.pcr-lote-btn:hover:not(:disabled){
+  background:linear-gradient(180deg,#FFCB23,#E0A800) !important;
+}
+#urbis-mobile-app .pcr-principal.pcr-lote-btn .u-ico,
+.pcr-hoja .pcr-principal.pcr-lote-btn .u-ico{ color:#6B4F00; }
 
 /* La barra de dibujo del lote. Va fija abajo y por encima de todo: mientras
    se dibuja, la hoja está encogida y el pulgar tiene que encontrar los
@@ -1762,3 +1780,69 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   background:var(--edu-accent-soft); border-radius:0 var(--edu-r-s) var(--edu-r-s) 0;
   padding-top:7px; padding-bottom:7px; padding-right:9px;
 }
+
+/* ── Las pestañas de la ficha ────────────────────────────────────────────
+   La ficha eran cuarenta bloques en un solo rollo y llegó dicho así: «uno
+   tiene que bajar y bajar y bajar». La barra se pega arriba mientras se lee
+   —si hay que subir a buscarla, cambiar de tema vuelve a costar lo mismo— y
+   se desplaza de lado, que es como se pasan las categorías en cualquier
+   aplicación de teléfono. */
+.pcr-hoja .pcr-tabs, .pcr-pestana .pcr-tabs{
+  position:sticky; top:0; z-index:6;
+  display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
+  margin:2px -14px 10px; padding:8px 14px;
+  background:var(--edu-ground); box-shadow:0 6px 12px -10px rgba(15,31,46,.5);
+  -webkit-overflow-scrolling:touch;
+}
+.pcr-hoja .pcr-tabs::-webkit-scrollbar, .pcr-pestana .pcr-tabs::-webkit-scrollbar{ display:none; }
+.pcr-hoja .pcr-tab-b, .pcr-pestana .pcr-tab-b{
+  flex:0 0 auto; display:inline-flex; align-items:center; gap:6px;
+  padding:8px 12px; border-radius:999px; border:1px solid var(--edu-line) !important;
+  background:var(--edu-ground-2) !important;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+  font-size:.78rem !important; font-weight:800 !important; white-space:nowrap;
+  transition:background .15s ease, color .15s ease, border-color .15s ease;
+}
+.pcr-hoja .pcr-tab-b .u-ico, .pcr-pestana .pcr-tab-b .u-ico{ opacity:.75; }
+.pcr-hoja .pcr-tab-b.activa, .pcr-pestana .pcr-tab-b.activa,
+.pcr-hoja .pcr-tab-b.activa span, .pcr-pestana .pcr-tab-b.activa span{
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+.pcr-hoja .pcr-tab-b.activa, .pcr-pestana .pcr-tab-b.activa{
+  background:var(--edu-accent-deep) !important; border-color:var(--edu-accent-deep) !important;
+}
+/* El rótulo hereda el color del botón y no el de la hoja: sin esto, el
+   `span` de dentro se quedaba con la tinta oscura del texto general sobre el
+   azul de la pestaña activa —2,2:1, ilegible— y la comprobación de contraste
+   lo cazó antes que ningún ojo. */
+.pcr-hoja .pcr-tab-b span, .pcr-pestana .pcr-tab-b span{
+  color:inherit !important; -webkit-text-fill-color:inherit !important;
+}
+.pcr-hoja .pcr-tab-b.activa .u-ico, .pcr-pestana .pcr-tab-b.activa .u-ico{ opacity:1; color:#fff; }
+/* La pestaña con lo que falta se marca: es la única que pide una acción. */
+.pcr-hoja .pcr-tab-b .pcr-tab-pend, .pcr-pestana .pcr-tab-b .pcr-tab-pend{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:17px; height:17px; padding:0 4px; border-radius:9px;
+  background:#E0A800; color:#3A2B00; -webkit-text-fill-color:#3A2B00;
+  font-size:.62rem; font-weight:900;
+}
+.pcr-hoja .pcr-tab-b.activa .pcr-tab-pend, .pcr-pestana .pcr-tab-b.activa .pcr-tab-pend{
+  background:#FFD54A; color:#4A3600; -webkit-text-fill-color:#4A3600;
+}
+
+/* Lo que hoy no saldría en el pliego: un renglón por cosa y su botón. */
+.pcr-hoja .pcr-pend, .pcr-pestana .pcr-pend{ display:flex; flex-direction:column; gap:6px; margin:6px 0 10px; }
+.pcr-hoja .pcr-pend-i, .pcr-pestana .pcr-pend-i{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 11px; border-radius:12px;
+  background:var(--edu-ground-2); border-left:3px solid #E0A800;
+}
+.pcr-hoja .pcr-pend-i b, .pcr-pestana .pcr-pend-i b{
+  display:block; font-size:.82rem !important; color:var(--edu-ink) !important;
+  -webkit-text-fill-color:var(--edu-ink) !important;
+}
+.pcr-hoja .pcr-pend-i small, .pcr-pestana .pcr-pend-i small{
+  display:block; font-size:.7rem !important; color:var(--edu-ink-3) !important;
+  -webkit-text-fill-color:var(--edu-ink-3) !important; line-height:1.3;
+}
+.pcr-hoja .pcr-pend-i .pcr-mini, .pcr-pestana .pcr-pend-i .pcr-mini{ flex:0 0 auto; }

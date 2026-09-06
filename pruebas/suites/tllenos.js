@@ -111,10 +111,10 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
     const H=h();
     o.hayLlenos=!!H.querySelector('.pcr-llenos-barra');
     o.error=txt(H.querySelector('.pcr-error'))||txt(H.querySelector('#pcr-trz-estado'))||'';
-    o.pctLleno=txt(H.querySelector('.pcr-llenos-cifras span b'));
+    o.pctLleno=txt(H.querySelector('[data-tab="forma"] .pcr-llenos-cifras span b'));
     // La barra de andenes reusa el mismo marcado: se mira la PRIMERA, que
     // es la de llenos y vacíos.
-    o.cifras=[...(H.querySelector('.pcr-llenos-cifras')||{querySelectorAll:()=>[]})
+    o.cifras=[...(H.querySelector('[data-tab="forma"] .pcr-llenos-cifras')||{querySelectorAll:()=>[]})
       .querySelectorAll('span')].map(x=>txt(x));
     o.avisoPuntos=[...H.querySelectorAll('.pcr-pista')].some(p=>/solo como punto/.test(txt(p)));
     // Jerarquía

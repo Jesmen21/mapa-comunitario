@@ -132,7 +132,12 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     o.btnEnPoblacion=(function(){
       const b2=h.querySelector('.pcr-estratos-btn');
       if(!b2) return false;
-      const t=(h.innerText||'');
+      /* Dentro de su pestaña: población, el botón y las categorías viven
+         los tres en «Gente y usos», y el orden entre ellos es lo que se
+         comprueba. `innerText` de la hoja entera dejó de servir cuando la
+         ficha se repartió: solo devuelve la pestaña abierta. */
+      const sec=h.querySelector('[data-tab="gente"]');
+      const t=((sec||h).textContent||'');
       const iPob=t.indexOf('Cuánta gente vive');
       const iOtro=t.indexOf('Qué hay, por categoría');
       const iBtn=t.indexOf((b2.textContent||'').trim());

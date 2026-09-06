@@ -141,7 +141,13 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
 
     const H=()=>document.getElementById('pcr-hoja');
     const txt=()=>(H().textContent||'').replace(/\s+/g,' ').trim();
-    const trozo=(d,n)=>{ const t=txt(); const i=t.indexOf(d); return i<0?'':t.slice(i,i+n); };
+    /* Los trozos se recortan DENTRO de la pestaña del lote. Con la ficha
+       repartida, la pestaña General lista por su nombre todas las cajas del
+       pliego —«Qué cabe en el lote» entre ellas—, así que buscar el título en
+       la ficha entera devolvía el renglón de ese índice. */
+    const txtLote=()=>{ const s2=H().querySelector('[data-tab="lote"]');
+      return ((s2||H()).textContent||'').replace(/\s+/g,' ').trim(); };
+    const trozo=(d,n)=>{ const t=txtLote(); const i=t.indexOf(d); return i<0?'':t.slice(i,i+n); };
     const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
       if(a){ a.click(); await esperar(400); } };
     await abrir();

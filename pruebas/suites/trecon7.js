@@ -93,27 +93,53 @@ elements.push({type:'way',id:5001,tags:{highway:'primary',name:'Avenida Libertad
     await R.analizar();
     await esperar(500);
     const h=document.getElementById('pcr-hoja');
-    o.texto=h.innerText;
+    /* La ficha se lee entera, pestaña por pestaña. Desde que se repartió,
+       `innerText` solo devuelve la pestaña abierta —lo que se VE— y estas
+       comprobaciones son sobre lo que la ficha DICE, esté en la pestaña que
+       esté. Que se pueda llegar a cada una es cosa de tpestanas. */
+    const textoFicha=()=>{ const h2=document.getElementById('pcr-hoja');
+      if(!h2) return '';
+      /* `textContent` y no `innerText`: incluye las pestañas cerradas, que
+         es donde vive casi todo. La cabecera y las cifras del sector están
+         fuera de las pestañas, así que se lee la hoja entera. */
+      return h2.querySelector('.pcr-tab') ? h2.textContent : h2.innerText; };
+    o.texto=textoFicha();
 
     // ── 1) El análisis extendido ──────────────────────────────────────
     o.diceUso=/Qué manda en el sector/.test(o.texto);
     o.diceMovilidad=/Cómo se llega/.test(o.texto);
     o.diceAmbiente=/Verde y agua/.test(o.texto);
-    o.medidores=h.querySelectorAll('.pcr-med').length;
-    o.carrilesConAncho=Array.from(h.querySelectorAll('.pcr-med-barra'))
-      .map(i=>i.getBoundingClientRect().width).filter(w=>w>20).length;
-    o.barrasConValor=Array.from(h.querySelectorAll('.pcr-med-barra i'))
-      .map(i=>i.getBoundingClientRect().width).filter(w=>w>0).length;
+    /* Lo que se MIDE en pantalla —altos, anchos, colores— hay que mirarlo
+       con su pestaña abierta: un elemento en una pestaña cerrada no tiene
+       tamaño, y medirlo daría cero sin que nada esté roto. Se abren las dos
+       que traen medidores y se mide cada una donde vive. */
+    const verPestana=async(id)=>{ R.verPestana(id); await esperar(220); };
+    /* Los medidores están repartidos entre movilidad y ambiente, así que se
+       recorren las pestañas y se mide cada uno con la suya abierta. Medir
+       todo de una sola vez daría cero en las cerradas y parecería que no se
+       pintaron. */
+    const PESTANAS=['general','sitio','ambiente','movilidad','gente','forma','lote','sintesis'];
+    /* Se mide DENTRO de la pestaña abierta y no en la hoja entera: si no,
+       cada vuelta volvería a encontrar los mismos elementos —los de las
+       pestañas cerradas incluidos— y devolvería ocho ceros por cada uno. */
+    const porPestana=async(sel,f2)=>{ const out=[];
+      for(const p of PESTANAS){ await verPestana(p);
+        const sec=h.querySelector('[data-tab="'+p+'"]');
+        if(!sec) continue;
+        Array.from(sec.querySelectorAll(sel)).forEach(e=>out.push(f2(e))); }
+      return out; };
+    const alto=e=>Math.round(e.getBoundingClientRect().height);
+    const ancho=e=>e.getBoundingClientRect().width;
+    o.medidores=(await porPestana('.pcr-med',()=>1)).length;
+    o.carrilesConAncho=(await porPestana('.pcr-med-barra',ancho)).filter(w=>w>20).length;
+    o.barrasConValor=(await porPestana('.pcr-med-barra i',ancho)).filter(w=>w>0).length;
     /* Alto, no solo ancho. `.pcr-cuerpo` es un flex en columna con scroll:
        sus hijos se aplastan a cero cuando el contenido desborda, y ya pasó
        una vez con las barras de edad. Un medidor de 3 px de alto se lee como
        «no se pintó». */
-    o.altosMedidor=Array.from(h.querySelectorAll('.pcr-med'))
-      .map(e=>Math.round(e.getBoundingClientRect().height));
-    o.altosBarra=Array.from(h.querySelectorAll('.pcr-med-barra'))
-      .map(e=>Math.round(e.getBoundingClientRect().height));
-    o.altosNucleo=Array.from(h.querySelectorAll('.pcr-nucleo'))
-      .map(e=>Math.round(e.getBoundingClientRect().height));
+    o.altosMedidor=await porPestana('.pcr-med',alto);
+    o.altosBarra=await porPestana('.pcr-med-barra',alto);
+    o.altosNucleo=await porPestana('.pcr-nucleo',alto);
     // Y el rótulo del medidor, que la regla global de URBIS dejaba invisible.
     o.rotulos=Array.from(h.querySelectorAll('.pcr-med-cab span')).map(e=>{
       const cs=getComputedStyle(e); return (e.textContent||'').slice(0,20)+'|'+cs.webkitTextFillColor;});
@@ -126,8 +152,7 @@ elements.push({type:'way',id:5001,tags:{highway:'primary',name:'Avenida Libertad
     o.rubros=h.querySelectorAll('.pcr-rubro').length;
     o.nombresPropios=Array.from(h.querySelectorAll('.pcr-rubro-ej li'))
       .map(li=>li.textContent.trim()).filter(t=>/^M\d+$/.test(t)).length;
-    o.altosRubro=Array.from(h.querySelectorAll('.pcr-rubro'))
-      .map(e=>Math.round(e.getBoundingClientRect().height));
+    o.altosRubro=await porPestana('.pcr-rubro',alto);
     // Anillos
     // El plan de la salida: el reparto que se imprime y se entrega.
     o.hayPlan=/El plan de la salida/.test(o.texto);
@@ -136,8 +161,7 @@ elements.push({type:'way',id:5001,tags:{highway:'primary',name:'Avenida Libertad
     o.rumbosDelPlan=Array.from(h.querySelectorAll('.pcr-tarea-rumbo'))
       .map(e=>e.textContent.trim());
     o.rumbosRepetidos=o.rumbosDelPlan.length-new Set(o.rumbosDelPlan).size;
-    o.altosTarea=Array.from(h.querySelectorAll('.pcr-tarea'))
-      .map(e=>Math.round(e.getBoundingClientRect().height));
+    o.altosTarea=await porPestana('.pcr-tarea',alto);
     // cambiar el número de grupos debe rehacer el reparto
     const bG=Array.from(h.querySelectorAll('[data-pcr="grupos"]')).filter(x=>x.getAttribute('data-g')==='8')[0];
     o.hayBotonGrupos=!!bG;

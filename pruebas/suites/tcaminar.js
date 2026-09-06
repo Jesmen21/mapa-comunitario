@@ -91,7 +91,11 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
     await R.analizar(); await esperar(1200);
 
     const H=()=>document.getElementById('pcr-hoja');
-    const todo=txt(H());
+    /* El bloque se lee DENTRO de su pestaña. Buscarlo en la ficha entera
+       dejó de valer cuando se repartió en pestañas: la de General lista por su
+       nombre todas las cajas del pliego, así que el primer hallazgo del
+       título era el renglón de ese índice y no el bloque. */
+    const todo=txt(H().querySelector('[data-tab="movilidad"]')||H());
     const i=todo.indexOf('A distancia de caminar');
     o.bloque=i>=0?todo.slice(i,i+1600):'';
     // Cada fila: rótulo, minutos y porcentaje.

@@ -161,7 +161,11 @@ for(let i=0;i<12;i++){
     o.barraSeFue=!document.getElementById('pcr-lote-barra');
     o.hojaVolvio=!H().classList.contains('pcr-encogida');
 
-    const todo=txt(H());
+    /* El bloque se lee DENTRO de su pestaña. Buscarlo en la ficha entera
+       dejó de valer cuando se repartió en pestañas: la de General lista por su
+       nombre todas las cajas del pliego, así que el primer hallazgo del
+       título era el renglón de ese índice y no el bloque. */
+    const todo=txt(H().querySelector('[data-tab="lote"]')||H());
     const i=todo.indexOf('El lote a intervenir');
     o.bloque=i>=0?todo.slice(i,i+3600):'';   // creció: cada lado con su nivel de sol y la escala
     o.kpis=[...H().querySelectorAll('.pcr-kpi')].map(txt).filter(x=>/de lote|de perímetro|esquinas/.test(x));

@@ -209,7 +209,13 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
       .map(k=>(k.textContent||'').replace(/\s+/g,' ').trim())
       .filter(t=>/amenaza sísmica|^0,3|^0,2/.test(t));
     o.dibujo=(function(){
-      const d=H().querySelector('.pcr-dibujo svg');
+      /* EL dibujo de la amenaza, no el primero de la ficha. Se buscaba
+         `.pcr-dibujo svg` a secas y con la ficha repartida en pestañas el
+         primero pasó a ser la rosa de los rumbos, que vive en otra. Se busca
+         por lo que la curva DICE de sí misma, que es lo que un lector con
+         lector de pantalla también usa para encontrarla. */
+      const d=[...H().querySelectorAll('.pcr-dibujo svg')]
+        .filter(x=>/periodo de retorno/i.test(x.getAttribute('aria-label')||''))[0];
       return d?{ hay:true, etq:d.getAttribute('aria-label')||'',
                  puntos:d.querySelectorAll('circle').length }:{hay:false};
     })();
