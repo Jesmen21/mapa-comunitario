@@ -2200,10 +2200,59 @@
 
   /* Las redes de URBIS, para el pie de todo lo que se imprime. Van acá y no
      escritas cuatro veces: el día que cambie una cuenta se cambia una línea y
-     no se queda un documento viejo mandando a un perfil que ya no existe.
-     Instagram y TikTok llevan el mismo nombre, así que se dice una sola vez
-     en vez de repetir la arroba. */
-  var REDES_URBIS = 'Instagram y TikTok @urbis_co';
+     no queda un documento viejo mandando a un perfil que ya no existe.
+
+     Cada una con su icono y separada de la otra. Se probó primero con la
+     frase corrida —«Instagram y TikTok @urbis_co»— y en el pliego impreso se
+     leía como una línea más de texto legal: la marca de una red se reconoce
+     por su forma antes que por su nombre, y dos logos a la derecha del pie se
+     ven desde lejos donde una frase no.
+
+     Los iconos van dibujados acá y no traídos de ninguna parte: son dos
+     trazos, el PDF se arma metiendo el HTML en un SVG y una imagen externa lo
+     habría dejado en blanco. */
+  var CUENTA_URBIS = '@urbis_co';
+  var LOGO_RED = {
+    instagram: '<rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4" fill="none" ' +
+      'stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<circle cx="17.5" cy="6.6" r="1.35" fill="currentColor"/>',
+    tiktok: '<path fill="currentColor" d="M15.9 2.2h2.9c.2 1.3.8 2.4 1.8 3.2.8.6 1.7 1 2.7 1.1v2.9' +
+      'c-1.7 0-3.3-.5-4.6-1.5v6.4a6.1 6.1 0 1 1-6.1-6.1c.3 0 .6 0 .9.1v3a3.2 3.2 0 1 0 2.4 3.1V2.2z"/>'
+  };
+  function logoRed(cual, tam) {
+    var d = LOGO_RED[cual];
+    if (!d) return '';
+    return '<svg viewBox="0 0 24 24" width="' + tam + '" height="' + tam + '" ' +
+      'aria-hidden="true" focusable="false">' + d + '</svg>';
+  }
+  /* El bloque del pie: los dos perfiles, uno al lado del otro. `unidad` es
+     'mm' en el pliego —que se compone en milímetros de papel— y 'px' en las
+     hojas de tamaño carta. */
+  function pieRedes(tam, unidad) {
+    var u = unidad || 'px';
+    return ['instagram', 'tiktok'].map(function (r) {
+      return '<span class="red">' + logoRed(r, tam + u) + '<b>' + CUENTA_URBIS + '</b></span>';
+    }).join('');
+  }
+
+  /* Por dónde se cortó el terreno, en la forma que dibuja la miniatura. El
+     informe decía desde v72x que «las líneas de estos cortes van marcadas en
+     el plano del sector con su letra en cada punta» y no iban: el plano se
+     armaba con las curvas de nivel y sin las trazas, así que el lector veía
+     los cortes dibujados abajo y no tenía dónde ubicarlos. Llegó en captura
+     de un sector real: la caja de curvas mostraba el relieve y ninguna
+     línea. */
+  function trazasDeCortes(ter) {
+    var t = ter !== undefined ? ter : S.terreno;
+    return ((t && t.perfiles) || [])
+      .filter(function (p) { return p.traza && p.traza.length >= 2; })
+      .map(function (p) {
+        return { traza: p.traza,
+                 marca: p.marca || String(p.id || 'A').charAt(0),
+                 marcaFin: p.marcaFin || (String(p.id || 'A').charAt(0) + '′') };
+      });
+  }
 
   function laminaImprimible(res, opts) {
     var o = opts || {};
@@ -2507,6 +2556,9 @@
           destacados: (cmp && cmp.nuevos ? cmp.nuevos : []).map(function (n3) {
             return { lat: n3.lat, lng: n3.lng, color: COL[n3.grupo] || '#34CCFE' };
           }),
+          // Las trazas de los cortes, con su letra en cada punta: es lo que
+          // el informe promete y lo que permite decir «el corte A–A′».
+          cortes: trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno),
           etiqueta: 'Plano del sector analizado'
         })
       : '';
@@ -4290,7 +4342,9 @@
       '.pie{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
         'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
       '.pie b{ color:#075E88 }' +
-      '.pie .redes{ display:block; margin-top:1.5mm; font-size:3.1mm; letter-spacing:.04em }' +
+      '.pie .redes{ display:flex; justify-content:flex-end; gap:6mm; margin-top:2mm }' +
+      '.pie .red{ display:inline-flex; align-items:center; gap:1.4mm; color:#075E88 }' +
+      '.pie .red b{ font-size:3.1mm; letter-spacing:.04em }' +
       '</style></head><body><div class="hoja">' +
 
       '<header class="cab">' +
@@ -4316,7 +4370,7 @@
           (ter ? ' · relieve ' + esc(ter.fuente || '') : '') +
           (cli ? ' · clima ' + esc(cli.fuente || '') : '') +
           '. Esto no es el sector: es lo que estas fuentes saben de él.' +
-          '<b class="redes">' + esc(REDES_URBIS) + '</b></div>' +
+          '<span class="redes">' + pieRedes(3.4, 'mm') + '</span></div>' +
       '</footer>' +
       '</div></body></html>';
   }
@@ -4380,8 +4434,10 @@
       '.cob i{display:block;height:100%}' +
       /* Las redes, al pie: a la derecha y separadas por una raya fina, para
          que se lean como firma y no como una línea más del informe. */
-      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
-        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:18px;' +
+        'padding-top:8px;border-top:1px solid #c7e7f7;color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes .red{display:inline-flex;align-items:center;gap:5px}' +
+      '.redes .sitio{margin-right:auto;color:#6B7A8A}' +
       '.pie{color:#5a6472;font-size:11px;margin:5px 0 0}' +
       /* Dos de las tablas nuevas llevan tres columnas —los núcleos, los
          anillos— y a 340 mm la última quedaba partida en dos renglones. */
@@ -4529,7 +4585,7 @@
       '<p class="nota"><b>Esto no es el sector: es lo que OpenStreetMap sabe del sector.</b> ' +
       'Los datos los pone gente voluntaria, así que están incompletos y a veces desactualizados. ' +
       'Sirve para llegar con una idea formada, no para reemplazar la salida a campo.</p>' +
-      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
+      '<p class="redes"><span class="sitio">URBIS · urbispro.city</span>' + pieRedes(15) + '</p>' +
       '</body></html>';
   }
 
@@ -8847,8 +8903,11 @@
     if (cv && cv.curvas && cv.curvas.length) {
       mapas.push({
         id: 'curvas', titulo: 'Curvas de nivel', grupo: grupoDeMapa('curvas'),
-        svg: mini({ curvas: cv }),
-        pie: 'cada ' + cv.intervalo + ' m · de ' + cv.zMin + ' a ' + cv.zMax + ' msnm'
+        svg: mini({ curvas: cv,
+                    cortes: trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno) }),
+        pie: 'cada ' + cv.intervalo + ' m · de ' + cv.zMin + ' a ' + cv.zMax + ' msnm' +
+             (trazasDeCortes(o.terreno !== undefined ? o.terreno : S.terreno).length
+               ? ' · las líneas punteadas son los cortes' : '')
       });
     }
 
@@ -10243,8 +10302,10 @@
       'td.n{text-align:right;font-variant-numeric:tabular-nums}' +
       /* Las redes, al pie: a la derecha y separadas por una raya fina, para
          que se lean como firma y no como una línea más del informe. */
-      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
-        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:18px;' +
+        'padding-top:8px;border-top:1px solid #c7e7f7;color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes .red{display:inline-flex;align-items:center;gap:5px}' +
+      '.redes .sitio{margin-right:auto;color:#6B7A8A}' +
       'p.pie{color:#6B7A8A;margin-top:14px;font-size:11px}' +
       '</style></head><body>' +
       '<h1>Sectores lado a lado</h1>' +
@@ -10255,7 +10316,7 @@
       '<p class="pie">La raya es <b>sin dato</b>, no cero: ese sector no midió eso. En densidad, ' +
       'suelo construido y relación altura/ancho no hay un mejor: depende de qué se quiera del ' +
       'sector.</p>' +
-      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
+      '<p class="redes"><span class="sitio">URBIS · urbispro.city</span>' + pieRedes(15) + '</p>' +
       '</body></html>';
   }
 
@@ -15687,8 +15748,10 @@
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
       /* Las redes, al pie: a la derecha y separadas por una raya fina, para
          que se lean como firma y no como una línea más del informe. */
-      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
-        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:18px;' +
+        'padding-top:8px;border-top:1px solid #c7e7f7;color:#075E88;font-size:11px;letter-spacing:.04em}' +
+      '.redes .red{display:inline-flex;align-items:center;gap:5px}' +
+      '.redes .sitio{margin-right:auto;color:#6B7A8A}' +
       '</style></head><body>' +
       '<h1>Antes y después' + (f.nombre ? ' · ' + esc(f.nombre) : '') + '</h1>' +
       '<p class="sub">URBIS Pro City · ' + esc(new Date().toLocaleString('es-CO')) +
@@ -15720,7 +15783,7 @@
       '<p class="nota"><b>Qué enseña este cuadro.</b> Ninguna de las dos listas es «la verdad». ' +
       'OpenStreetMap tiene lo que alguien alguna vez mapeó; el curso tiene lo que alcanzó a caminar. ' +
       'La diferencia entre las dos es, precisamente, el valor del trabajo de campo.</p>' +
-      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
+      '<p class="redes"><span class="sitio">URBIS · urbispro.city</span>' + pieRedes(15) + '</p>' +
       '</body></html>';
   }
 

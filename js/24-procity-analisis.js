@@ -1062,6 +1062,41 @@
       }).join('') + '</g>';
     }
 
+    /* Por dónde se cortó el terreno. Va casi arriba del todo —solo el lote y
+       el contorno le pasan por encima— porque la línea del corte es una
+       REFERENCIA: dice dónde mirar, y una referencia tapada no sirve.
+
+       Dos trazos, igual que sobre el mapa: uno blanco grueso debajo para que
+       la línea se lea sobre la foto satelital o sobre un manojo de curvas de
+       nivel, que es donde peor se ven las líneas finas. Y la letra en cada
+       punta, dentro de un disco, porque es lo que permite decir «el corte
+       A–A′» en el texto y que alguien lo encuentre en el plano. */
+    let cortes = '';
+    if (Array.isArray(o.cortes) && o.cortes.length) {
+      const trazos = [], letras = [];
+      o.cortes.forEach(c => {
+        const t = c && c.traza;
+        if (!Array.isArray(t) || t.length < 2) return;
+        const d = t.map((p, i) => (i ? 'L' : 'M') + X(+p.lng).toFixed(1) + ' ' + Y(+p.lat).toFixed(1)).join(' ');
+        trazos.push('<path d="' + d + '" stroke="#fff" stroke-width="2.6" stroke-opacity=".9" ' +
+          'stroke-dasharray="5 3.5"/>' +
+          '<path d="' + d + '" stroke="#12202e" stroke-width="1.1" stroke-dasharray="5 3.5"/>');
+        [[t[0], c.marca || 'A'], [t[t.length - 1], c.marcaFin || 'A′']].forEach(par => {
+          const x = X(+par[0].lng), y = Y(+par[0].lat);
+          letras.push('<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+            '" r="3.6" fill="#fff" stroke="#12202e" stroke-width=".7"/>' +
+            '<text x="' + x.toFixed(1) + '" y="' + (y + 1.7).toFixed(1) + '" text-anchor="middle" ' +
+            'font-size="4.4" font-weight="700" fill="#12202e" ' +
+            'font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">' +
+            String(par[1]).replace(/[<&>]/g, '') + '</text>');
+        });
+      });
+      if (trazos.length) {
+        cortes = '<g fill="none" stroke-linecap="round">' + trazos.join('') + '</g>' +
+                 '<g>' + letras.join('') + '</g>';
+      }
+    }
+
     /* El LOTE, si lo hay: el polígono chico que se va a intervenir. Va encima
        de todo y en amarillo, que es su color en el mapa. Es lo único del plano
        que no es un dato traído: es la decisión de quien lo dibujó. */
@@ -1129,7 +1164,7 @@
       'role="img" aria-label="' + (o.etiqueta || 'Forma del área') + '">' +
       '<rect width="' + W + '" height="' + H + '" rx="8" fill="#F3F8FB"/>' +
       '<path d="' + rejilla + '" stroke="#E1EAF1" stroke-width="1"/>' +
-      dentro + figura + lote + escala + norte + '</svg>';
+      dentro + figura + cortes + lote + escala + norte + '</svg>';
   }
 
   // Cuánto hace: para la fecha de una tarjeta, en palabras.

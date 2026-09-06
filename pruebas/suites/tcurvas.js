@@ -277,6 +277,38 @@ const geo=[
   T('la barra de abajo dice qué capa está puesta', r.barraCurvas===true);
   T('y al apagarlas no queda ninguna', r.curvasApagadas===0, r.curvasApagadas+' curvas');
 
+  /* ── Por dónde se cortó, dibujado en el plano ──────────────────────
+     El informe decía «las líneas de estos cortes van marcadas en el plano
+     del sector con su letra en cada punta» y NO iban: el plano se armaba con
+     las curvas de nivel y sin las trazas. Se vio en una captura de un sector
+     real de Cúcuta —la caja de curvas mostraba el relieve y ninguna línea—,
+     y es la misma clase de falla que la caja de cobertura que prometía
+     «Verde y agua»: el documento afirmaba algo de sí mismo que era mentira.
+
+     Lo que se comprueba es el DIBUJO, no la frase: las trazas punteadas y la
+     letra en cada punta, en el plano del sector y en el recuadro de curvas,
+     que son los dos sitios donde alguien va a buscarlas. */
+  const cajaLam = t => ((r.lamina || '').split('<section class="caja')
+    .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  console.log('\n  -- por dónde se cortó, en el plano --');
+  const PLANO = cajaLam('Plano del sector'), CURVAS = cajaLam('Curvas de nivel');
+  T('el plano del sector trae las trazas punteadas',
+    /stroke-dasharray="5 3\.5"/.test(PLANO),
+    (PLANO.match(/stroke-dasharray="5 3\.5"/g) || []).length + ' trazos');
+  T('con la letra de cada punta, que es para lo que sirve',
+    (PLANO.match(/font-size="4\.4"[^>]*>[A-Z]′?</g) || []).length >= 4,
+    (PLANO.match(/font-size="4\.4"[^>]*>([A-Z]′?)</g) || []).join(' ') || 'ninguna letra');
+  T('el recuadro de curvas también, que es donde se leen contra el relieve',
+    /stroke-dasharray="5 3\.5"/.test(CURVAS) && /font-size="4\.4"/.test(CURVAS),
+    (CURVAS.match(/stroke-dasharray="5 3\.5"/g) || []).length + ' trazos');
+  T('y su pie lo dice, para quien mira el papel sin buscar',
+    /las líneas punteadas son los cortes/.test(CURVAS));
+  const prometeCortes = /van marcadas en el plano del sector/.test(r.pdf || '');
+  const dibujaCortes = /stroke-dasharray="5 3\.5"/.test(r.pdf || '');
+  T('el informe ya no promete algo que no dibuja', !prometeCortes || dibujaCortes,
+    prometeCortes ? (dibujaCortes ? 'lo promete y lo dibuja' : 'LO PROMETE Y NO LO DIBUJA')
+                  : 'no lo promete');
+
   console.log('\n  -- la sombra de los vecinos --');
   T('sale con las tres horas', (r.kpis||[]).length===3, (r.kpis||[]).join(' · '));
   const pct=h=>{ const k=(r.kpis||[]).filter(t=>t.indexOf(h+':00')>=0)[0]||'';

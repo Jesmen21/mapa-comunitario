@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v740-los-renglones-parejos-y-la-firma';
+const URBIS_CACHE = 'urbis-v741-los-cortes-en-el-plano-y-los-logos';
 const URBIS_ASSETS = [
   './',
   './index.html',

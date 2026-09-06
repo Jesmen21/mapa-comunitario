@@ -556,16 +556,27 @@ const CAPAS_IDEAM = [
      código: el día que cambie no puede quedar un PDF viejo mandando a un
      perfil que ya no existe. */
   console.log('\n  -- las redes de URBIS, al pie --');
-  T('el pliego las lleva', /@urbis_co/.test(LAM),
-    (LAM.match(/Instagram y TikTok @urbis_co/) || ['no están'])[0]);
+  /* Cada perfil con su logo y separado del otro. La frase corrida —«Instagram
+     y TikTok @urbis_co»— se leía en el pliego impreso como una línea más de
+     texto legal: una red se reconoce por su forma antes que por su nombre.
+     Los logos van dibujados en el documento y no traídos de una dirección: el
+     PDF se arma metiendo el HTML dentro de un SVG, y una imagen de fuera se
+     queda en blanco sin avisar. */
+  const perfiles = h => (h.match(/<span class="red">/g) || []).length;
+  const logos = h => ({ instagram: /<circle cx="17\.5" cy="6\.6"/.test(h),
+                        tiktok: /d="M15\.9 2\.2h2\.9/.test(h) });
+  T('el pliego lleva los dos perfiles, separados', perfiles(LAM) === 2,
+    perfiles(LAM) + ' perfiles · ' + (LAM.match(/@urbis_co/g) || []).length + ' veces la cuenta');
+  T('cada uno con el logo de su red', logos(LAM).instagram && logos(LAM).tiktok,
+    JSON.stringify(logos(LAM)));
   T('y van en el pie, no perdidas en una caja',
     /<footer class="pie">[^]*@urbis_co[^]*<\/footer>/.test(LAM.replace(/\n/g, '')));
   T('a la derecha, con las fuentes', /text-align:right"[^]*?@urbis_co/.test(LAM.replace(/\n/g, '')));
-  T('el informe en hojas también', /@urbis_co/.test(PDF),
-    (PDF.match(/class="redes">[^<]*/) || ['no están'])[0]);
-  T('y las dos dicen exactamente lo mismo',
-    (LAM.match(/Instagram y TikTok @urbis_co/g) || []).length === 1 &&
-    (PDF.match(/Instagram y TikTok @urbis_co/g) || []).length === 1);
+  T('el informe en hojas lleva los mismos dos', perfiles(PDF) === 2 &&
+    logos(PDF).instagram && logos(PDF).tiktok, perfiles(PDF) + ' perfiles');
+  T('sin imágenes traídas de fuera, que el PDF dejaría en blanco',
+    !/<img[^>]*class="red|class="red"[^]*?<img/.test(LAM) &&
+    !/(src|href)="https?:[^"]*(instagram|tiktok)/i.test(LAM + PDF));
 
   console.log('\n  -- y todo viaja con la ficha --');
   T('la inundación queda archivada', (r.guardado || {}).inundacion === true);
