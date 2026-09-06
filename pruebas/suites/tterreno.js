@@ -126,10 +126,30 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
        MAPA —no en la ficha—, que lleven las cuatro letras, y que la de A–A′
        vaya de oeste a este y la de B–B′ de norte a sur, que es lo que las
        hace un corte y no dos rayas cualesquiera. */
+    /* ── Volver donde se quedó ────────────────────────────────────────
+       Contado así: «bajo hasta la topografía, le doy a ver las líneas del
+       corte en el mapa, y cuando vuelvo a la ficha me sube hasta arriba y me
+       toca bajar bastante para volver a la zona».
+
+       Pasaba en todas las capas —las curvas, la caminata, las sombras, cada
+       interruptor— porque ir al mapa CAMBIA de vista: la hoja se encoge para
+       dejar ver el mapa, y la posición solo se devolvía cuando la vista
+       seguía siendo la misma. Se mide el recorrido entero: bajar, ir al mapa,
+       volver, y comprobar que la ficha esté donde estaba y no en cero. */
+    const cuerpo = () => H.querySelector('.pcr-cuerpo');
+    (function () { const c = cuerpo();
+      if (c) c.scrollTop = Math.round((c.scrollHeight - c.clientHeight) * 0.6); })();
+    o.dondeIba = cuerpo() ? cuerpo().scrollTop : 0;
     o.hayBotonCortes = !!H.querySelector('[data-pcr="cortes-mapa"]');
     const antesDeCortes = document.querySelectorAll('.leaflet-pane path').length;
     const bc = H.querySelector('[data-pcr="cortes-mapa"]');
     if (bc) { bc.click(); await esperar(700); }
+    // La hoja se encogió para dejar ver el mapa; se vuelve a subir, que es lo
+    // que hace quien acaba de mirar por dónde pasan los cortes.
+    o.encogioAlIr = !!document.querySelector('#pcr-hoja.pcr-encogida');
+    (function () { const a = H.querySelector('[data-pcr="agrandar"]'); if (a) a.click(); })();
+    await esperar(400);
+    o.dondeVuelve = cuerpo() ? cuerpo().scrollTop : 0;
     o.letras = [...document.querySelectorAll('.pcr-corte-letra')].map(e=>e.textContent).sort();
     o.lineasNuevas = document.querySelectorAll('.leaflet-pane path').length - antesDeCortes;
     /* Las trazas, leídas del propio mapa: se busca cada polilínea de trazos y
@@ -291,6 +311,19 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     r.pestPerfiles===3 && r.pestConMio,
     r.pestPerfiles+' perfiles' + (r.pestConMio?', con el D–D′ propio':', sin el propio'));
   P('y el desnivel', r.pestDesnivel);
+
+  /* ── Volver donde se quedó ─────────────────────────────────────────────
+     «Bajo hasta la topografía, le doy a ver las líneas del corte en el mapa,
+     y cuando vuelvo a la ficha me sube hasta arriba». La ficha ya devolvía la
+     posición, pero solo si NO cambiaba de vista, y mirar el mapa cambia de
+     vista por definición: la hoja se encoge para dejarlo ver. */
+  console.log('\n  -- volver donde se quedó --');
+  P('la hoja se encoge para dejar ver el mapa', r.encogioAlIr === true);
+  P('se había bajado de verdad, no un par de píxeles', r.dondeIba > 200,
+    r.dondeIba + ' px');
+  P('y al volver a la ficha sigue ahí, no arriba del todo',
+    Math.abs((r.dondeVuelve || 0) - (r.dondeIba || 0)) <= 4,
+    'iba en ' + r.dondeIba + ' px · volvió a ' + r.dondeVuelve + ' px');
 
   console.log('\n  -- por dónde van los cortes, sobre el plano --');
   P('el bloque ofrece verlas en el mapa', r.hayBotonCortes);

@@ -5917,8 +5917,16 @@
        vacíos—. Antes solo contaba el calor, así que «Ver en el mapa» del
        raster marcaba la hoja para encogerse y la hoja no se movía: se pulsaba
        el botón y no pasaba nada visible. */
+    /* Con `cortesEnMapa` y `viasEnMapa`, que faltaban. Las dos capas se
+       encendían, se pintaban sobre el mapa, marcaban la hoja para que se
+       encogiera… y la hoja no se movía, porque esta lista decide si el
+       encogimiento vale la pena y no las nombraba. Desde afuera: se toca «ver
+       por dónde van los cortes», el panel sigue tapando el mapa y parece que
+       el botón no hizo nada. Salió comprobando el ir y volver de la ficha, no
+       buscándolo. */
     var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
-                  S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa;
+                  S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa ||
+                  S.cortesEnMapa || S.viasEnMapa;
     /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
        esquinas de un terreno sobre un mapa tapado por un panel. */
     /* `encogidaAMano` es la diferencia entre «se encogió sola porque encendí
@@ -5944,14 +5952,35 @@
        arriba en cada una, imposible de leer— pero pasaba en todos los
        repintados: encender una capa, medir algo, cambiar un índice.
 
-       Solo se devuelve si la hoja sigue mostrando LO MISMO: volver al mismo
-       píxel después de pasar de los ajustes a la ficha no significa nada y
-       dejaría a alguien en mitad de un texto que no había empezado a leer. */
+       Cada vista recuerda LA SUYA, y ésa es la diferencia con lo que hacía
+       antes. Se guardaba una sola posición y solo se devolvía si la hoja
+       seguía mostrando lo mismo, que es correcto —volver al mismo píxel al
+       pasar de los ajustes a la ficha no significa nada— pero dejaba fuera
+       justo el caso que más duele:
+
+         se baja media ficha hasta la topografía, se toca «ver por dónde van
+         los cortes», la hoja se encoge para dejar ver el mapa, se mira, se
+         vuelve a subir la hoja… y aparece arriba del todo. Hay que volver a
+         bajar media ficha. Y pasa igual con las curvas, la caminata, las
+         sombras y cada capa que se enciende.
+
+       Con una posición por vista, la ficha vuelve donde estaba y la barra
+       encogida vuelve donde estaba: son dos lecturas distintas y ninguna
+       pisa a la otra. */
     var cuerpoAntes = h.querySelector('.pcr-cuerpo');
     var iba = cuerpoAntes ? cuerpoAntes.scrollTop : 0;
     var mismaVista = S.comparacion ? 'comparacion' : encoger ? 'encogida'
                    : S.resultado ? 'ficha' : 'ajustes';
-    var eraLaMisma = (h.__vista === mismaVista);
+    /* Y se olvida en cuanto cambia el sector. Devolver a alguien al píxel
+       1.800 de la ficha ANTERIOR lo deja en mitad de un texto que no ha
+       leído, y encima de otro sitio. Se compara el objeto del resultado y no
+       una bandera: así vale para todos los caminos por los que cambia —un
+       análisis nuevo, una ficha archivada que se retoma, «analizar otro»— sin
+       tener que acordarse de limpiarlo en cada uno. */
+    if (h.__deQuien !== S.resultado) { h.__donde = {}; h.__deQuien = S.resultado; }
+    if (!h.__donde) h.__donde = {};
+    if (h.__vista && iba > 0) h.__donde[h.__vista] = iba;
+    var vuelveA = h.__donde[mismaVista] || 0;
     h.__vista = mismaVista;
 
     h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
@@ -5959,9 +5988,11 @@
                 : S.resultado    ? htmlFicha(S.resultado)
                 : htmlAjustes();
 
-    if (iba > 0 && eraLaMisma) {
+    if (vuelveA > 0) {
       var cuerpo = h.querySelector('.pcr-cuerpo');
-      if (cuerpo) cuerpo.scrollTop = iba;
+      // Si la ficha encogió de contenido, el propio navegador recorta el
+      // salto al final de lo que hay: no hace falta comprobarlo acá.
+      if (cuerpo) cuerpo.scrollTop = vuelveA;
     }
     h.classList.toggle('pcr-visible', S.abierto);
     // El anillo solo existe en la ficha entera: pintarlo encogida buscaría un
