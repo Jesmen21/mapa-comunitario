@@ -374,6 +374,39 @@ const CAPAS_IDEAM = [
   T('y dice a las claras que no es la cobertura de servicios públicos',
     /NO es la cobertura de servicios públicos/.test(IN) && /censo del DANE por manzana/.test(IN));
 
+  console.log('\n  -- la cuadra: la escala que faltaba --');
+  const CU = cajaDe('La cuadra del lote');
+  T('la lámina trae su caja', !!CU);
+  T('con el frente al que da y cuánto mide el tramo',
+    /Frente sobre<\/span><b>[^<]*Calle interior|Frente sobre<\/span><b>[^<]*Avenida|Frente sobre<\/span><b>[^<]*Calle/.test(CU) &&
+    /Tramo medido<\/span><b>\d+ m/.test(CU),
+    (CU.match(/Frente sobre<\/span><b>[^<]*/) || ['no lo dice'])[0].replace(/<[^>]*>/g, ' '));
+  T('cuánto del frente tiene fachada y cuántos edificios',
+    /del frente con fachada/.test(CU) && /edificios dan al frente/.test(CU),
+    (CU.match(/>(\d+)%<\/b><small>del frente con fachada/) || ['?', '?'])[1] + '% con ' +
+    (CU.match(/>(\d+)<\/b><small>edificios dan al frente/) || ['?', '?'])[1] + ' edificios');
+  /* El promedio esconde lo que importa: un frente 70 % construido con los
+     huecos repartidos es otra cosa que uno con un baldío de cuarenta metros.
+     Por eso se guarda el mayor y no solo la cuenta. */
+  T('y los huecos, con el mayor aparte', /Huecos<\/span><b>\d+/.test(CU),
+    (CU.match(/Huecos<\/span><b>[^<]*/) || ['no'])[0].replace(/<[^>]*>/g, ' '));
+  T('con la lectura para proyectar, no solo cifras',
+    /Frente continuo|Frente roto|Frente a medias/.test(CU),
+    (CU.match(/(Frente continuo|Frente roto|Frente a medias)[^<]{0,60}/) || ['no la trae'])[0]);
+  /* Y lo que NO es. Sin esta frase, «edificios que dan al frente» se lee como
+     predios y alguien cuenta lotes que nadie contó. */
+  T('y dice que NO es catastro, que cuenta edificios',
+    /NO es catastro/.test(CU) && /no predios|y no predios/.test(CU));
+
+  console.log('\n  -- los índices, por fin citables --');
+  const QC = cajaDe('Qué cabe en el lote');
+  /* El bloque que pide la fuente dice «sale en la lámina» desde que existe, y
+     no salía: el papel llevaba los números y no de dónde venían, que es lo que
+     los hace defendibles. Sin fuente anotada, que lo diga. */
+  T('sin fuente anotada, el papel lo dice',
+    /nadie anotó de dónde/.test(QC),
+    (QC.match(/nadie anotó de dónde[^<]{0,40}/) || ['no lo dice'])[0]);
+
   /* ── Y que los dos documentos no se contradigan ─────────────────────
      El pliego y el informe en hojas son distintos a propósito —uno se cuelga
      y el otro se lee—, pero lo que traen no puede contradecirse. Seis
@@ -393,7 +426,9 @@ const CAPAS_IDEAM = [
     ['el ruido', /El ruido del tránsito/, /El ruido del tránsito/],
     ['la sombra que arrojás', /La sombra que arrojás/, /La sombra que arroja el proyecto/],
     ['la infraestructura', /Infraestructura de servicios/, /Infraestructura de servicios/],
-    ['quién vive acá', /Quién vive acá/, /Quién vive acá/]
+    ['quién vive acá', /Quién vive acá/, /Quién vive acá/],
+    ['la cuadra', /La cuadra del lote/, /La cuadra del lote/],
+    ['de dónde salieron los índices', /nadie anotó de dónde/, /nadie anotó de dónde/]
   ];
   EN_LOS_DOS.forEach(([nombre, enPliego, enInforme]) => {
     const p1 = enPliego.test(LAM), p2 = enInforme.test(PDF);

@@ -1656,7 +1656,57 @@
         ? '<h3>Contra lo que se midió del sitio</h3>' +
           q.cruces.map(function (c) { return '<p class="pie">' + esc(c.texto) + '</p>'; }).join('')
         : '') +
+      /* De dónde salieron los índices, también acá: el pliego y el informe no
+         pueden decir cosas distintas, y un número sin fuente en el informe
+         archivado es un número que hay que volver a buscar. */
+      (function () {
+        var f = S.indicesFuente || {};
+        if (!f.documento && !f.fecha && !f.tratamiento) {
+          return '<p class="pie">Estos índices se escribieron a mano y nadie anotó de dónde ' +
+            'salieron: no se pueden citar sin volver a buscar la fuente.</p>';
+        }
+        return '<p>Según <b>' + esc(f.documento || 'documento sin anotar') + '</b>' +
+          (f.fecha ? ', de ' + esc(f.fecha) : '') +
+          (f.tratamiento ? ' · tratamiento <b>' + esc(f.tratamiento) + '</b>' : '') + '.</p>';
+      })() +
       q.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
+  }
+
+  /* La cuadra, impresa. La escala del medio: ni el sector ni el lote, sino el
+     frente al que da el proyecto. Ver `laCuadraDelLote` para qué se mide y
+     por qué cada cosa. */
+  function cuadraImpresa(cu) {
+    if (!cu) return '';
+    return '<h2>La cuadra del lote</h2><table>' +
+      '<tr><td>Frente sobre</td><td class="n">' + esc(cu.via || 'calle sin nombre') +
+        (cu.jerarquia ? ' · ' + esc(cu.jerarquia.toLowerCase()) : '') + '</td></tr>' +
+      '<tr><td>Tramo medido</td><td class="n">' + cu.largoM + ' m</td></tr>' +
+      '<tr><td>Fachada construida</td><td class="n">' + cu.llenoM + ' m · ' + cu.pctLleno + '%</td></tr>' +
+      '<tr><td>Edificios que dan al frente</td><td class="n">' + cu.edificios + '</td></tr>' +
+      (cu.frenteTipicoM != null
+        ? '<tr><td>Frente típico de un edificio</td><td class="n">' + cu.frenteTipicoM + ' m</td></tr>' : '') +
+      '<tr><td>Huecos</td><td class="n">' + cu.huecos +
+        (cu.mayorHuecoM ? ' · el mayor de ' + cu.mayorHuecoM + ' m' : '') + '</td></tr>' +
+      (cu.esquinas.length
+        ? '<tr><td>Esquinas en el tramo</td><td class="n">' +
+          esc(cu.esquinas.map(function (e) { return e.nombre || 'sin nombre'; }).join(', ')) +
+          '</td></tr>' : '') +
+      (cu.usos.length
+        ? '<tr><td>Usos que se asoman</td><td class="n">' +
+          esc(cu.usos.slice(0, 4).map(function (u) { return u.nombre + ' ' + u.n; }).join(' · ')) +
+          '</td></tr>' : '') +
+      '</table>' +
+      '<p>' + (cu.continua
+        ? 'Frente continuo: la fachada acompaña la calle y un proyecto que se retire rompe algo que funciona.'
+        : cu.rota
+          ? 'Frente roto: más de la mitad del tramo está vacío. Acá un proyecto no continúa una fachada, la empieza.'
+          : 'Frente a medias: hay fachada y hay huecos. Lo que decide es dónde caen los huecos, no el promedio.') +
+      (cu.mayorHuecoM >= 25
+        ? ' El hueco mayor es de ' + cu.mayorHuecoM + ' m: eso no es un retiro, es un lote sin construir o un predio grande.'
+        : '') + '</p>' +
+      '<p class="pie">El frente son ' + cu.largoM + ' m de la calle a la que da el lote, con lo que ' +
+      'se asoma a menos de 30 m. NO es catastro: cuenta EDIFICIOS, que es lo que OpenStreetMap ' +
+      'registra, no predios; dos casas pareadas con una sola huella cuentan como una.</p>';
   }
 
   function amenazaImpresa(am) {
@@ -2397,6 +2447,7 @@
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
       'La sombra que arrojás':             ['proyecto', 'destello'],
+      'La cuadra del lote':                ['proyecto', 'via'],
       'A distancia de caminar':            ['mover', 'caminar'],
       'Hasta dónde se camina desde el lote': ['mover', 'ruta'],
       'El perfil de la calle':             ['mover', 'via'],
@@ -2585,6 +2636,21 @@
       fila('Pisos que salen', String(q.pisosQueSalen).replace('.', ',')) +
       fila('Gente', q.personas + ' personas') +
       (q.cruces.length ? '<p class="lee">' + esc(q.cruces[0].texto) + '</p>' : '') +
+      /* De dónde salieron los índices, EN EL PAPEL. El bloque de la ficha que
+         los pide dice «sale en la lámina» desde que existe, y no salía: la
+         lámina llevaba los números y no su procedencia, que es justo lo que
+         los vuelve citables. Un índice sin fuente en una entrega es un número
+         que hay que volver a buscar. */
+      (function () {
+      var f = (o.indicesFuente !== undefined ? o.indicesFuente : S.indicesFuente) || {};
+      if (!f.documento && !f.fecha && !f.tratamiento) {
+      return '<p class="nota">Estos índices se escribieron a mano y <b>nadie anotó de dónde ' +
+      'salieron</b>: no se pueden citar sin volver a buscar la fuente.</p>';
+      }
+      return '<p class="lee">Según <b>' + esc(f.documento || 'documento sin anotar') + '</b>' +
+      (f.fecha ? ', de ' + esc(f.fecha) : '') +
+      (f.tratamiento ? ' · tratamiento <b>' + esc(f.tratamiento) + '</b>' : '') + '.</p>';
+      })() +
       '<p class="nota">Los índices los puso quien hizo la lámina y salen del POT: URBIS no ' +
       'los conoce ni los verifica. El área después de aislamientos es aproximada.</p>';
       })(), 'g3') +
@@ -3184,6 +3250,46 @@
       '. Sin árboles ni muros, y con el terreno supuesto plano.</p>';
       })(), 'g3') +
       
+      /* ── La cuadra ────────────────────────────────────────────────────
+         La escala que faltaba: ni el sector ni el lote, sino el frente al que
+         da el proyecto. Ver `laCuadraDelLote` para qué se mide y por qué. */
+      caja('La cuadra del lote',
+      (function () {
+      var cu = o.cuadra !== undefined ? o.cuadra
+             : (function () { try { return laCuadraDelLote(); } catch (e) { return null; } })();
+      if (!cu) return '';
+      return '<div class="kpis">' +
+      '<div class="k"><b>' + cu.pctLleno + '%</b><small>del frente con fachada</small></div>' +
+      '<div class="k"><b>' + cu.edificios + '</b><small>edificios dan al frente</small></div>' +
+      (cu.frenteTipicoM != null
+      ? '<div class="k"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>' : '') +
+      '</div>' +
+      fila('Frente sobre', esc(cu.via || 'calle sin nombre') +
+      (cu.jerarquia ? ' · ' + esc(cu.jerarquia.toLowerCase()) : '')) +
+      fila('Tramo medido', cu.largoM + ' m') +
+      fila('Fachada construida', cu.llenoM + ' m') +
+      fila('Huecos', cu.huecos + (cu.mayorHuecoM ? ' · el mayor de ' + cu.mayorHuecoM + ' m' : '')) +
+      (cu.esquinas.length
+      ? fila('Esquinas en el tramo',
+      esc(cu.esquinas.map(function (e) { return e.nombre || 'sin nombre'; }).join(', ')))
+      : '') +
+      (cu.usos.length
+      ? fila('Usos que se asoman',
+      esc(cu.usos.slice(0, 3).map(function (u) { return u.nombre + ' ' + u.n; }).join(' · ')))
+      : '') +
+      '<p class="lee">' + (cu.continua
+      ? 'Frente continuo: la fachada acompaña la calle, y un proyecto que se retire rompe algo que funciona.'
+      : cu.rota
+      ? 'Frente roto: más de la mitad del tramo está vacío. Acá un proyecto no continúa una fachada, la empieza.'
+      : 'Frente a medias: hay fachada y hay huecos. Lo que decide es dónde caen, no el promedio.') +
+      (cu.mayorHuecoM >= 25
+      ? ' El hueco mayor es de ' + cu.mayorHuecoM + ' m: eso no es un retiro, es un lote sin construir.'
+      : '') + '</p>' +
+      '<p class="nota">El frente son ' + cu.largoM + ' m de la calle a la que da el lote, con lo ' +
+      'que se asoma a menos de 30 m. NO es catastro: cuenta EDIFICIOS —lo que OpenStreetMap ' +
+      'registra— y no predios; dos casas pareadas con una huella cuentan como una.</p>';
+      })(), 'g3') +
+
       /* ── La sombra que arroja el proyecto ─────────────────────────────
          La caja de arriba dice quién le tapa el sol al lote. Esta dice a
          quién se lo tapa el lote, que es la pregunta que hace un jurado
@@ -3393,8 +3499,8 @@
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
       { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
-        cajas: ['El lote a intervenir', 'Qué cabe en el lote', 'La sombra que arrojás',
-                'Qué le pide el sitio al proyecto'] },
+        cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
+                'La sombra que arrojás', 'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
         que: 'lo intangible · lo levantado · lo que falta',
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] },
@@ -4104,6 +4210,8 @@
         : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })()) +
       evolucionImpresa(o.evo !== undefined ? o.evo : S.evo) +
       demografiaImpresa(st) +
+      cuadraImpresa(o.cuadra !== undefined ? o.cuadra
+        : (function () { try { return laCuadraDelLote(); } catch (e) { return null; } })()) +
 
       queFaltaImpreso(st) +
 
@@ -7915,6 +8023,12 @@
       { id: 'que-cabe-en-el-lote', t: 'Qué cabe en el lote', g: 'El lote',
         listo: hayLote, falta: 'marcá el lote',
         dato: 'huella, metros y viviendas' },
+      { id: 'la-cuadra-del-lote', t: 'La cuadra del lote', g: 'El lote',
+        listo: (function () {
+          try { return !!laCuadraDelLote(); } catch (e) { return false; }
+        })(),
+        falta: 'marcá el lote y medí el trazado',
+        dato: 'el frente al que da: fachada, huecos, esquinas y usos' },
       { id: 'la-sombra-que-arrojas', t: 'La sombra que arrojás', g: 'El lote',
         listo: (function () {
           try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.length); }
@@ -11618,6 +11732,209 @@
              masCerca: lista[0] };
   }
 
+  /* ── La cuadra del lote ───────────────────────────────────────────────
+     La escala que faltaba. Todo el análisis era «el sector» —un radio o un
+     polígono de un kilómetro— o «el lote», y no existía lo del medio, que es
+     justamente donde uno proyecta: cómo es el frente de cuadra al que va a dar
+     el proyecto, si la fachada de enfrente es continua o está rota, dónde se
+     abren los locales, si la esquina está activa.
+
+     La cuadra no viene dibujada en ningún lado. Se podría sacar como cara del
+     grafo de calles, pero eso es caro y frágil; acá se define de una forma
+     más simple y que dice lo mismo para proyectar: EL FRENTE, o sea el tramo
+     de la calle a la que da el lote, ciento veinte metros a cada lado, y todo
+     lo que se asoma a él.
+
+     Lo que se mide, y por qué cada cosa:
+
+       · CONTINUIDAD. Cuánto del frente tiene edificio contra cuánto está
+         vacío. Es lo que hace que una cuadra se sienta calle y no descampado,
+         y es lo primero que un proyecto continúa o rompe.
+       · EL HUECO MÁS GRANDE. Un frente 70 % construido con los huecos
+         repartidos es otra cosa que uno con un lote baldío de cuarenta
+         metros. El promedio esconde eso; el máximo no.
+       · LOS USOS QUE DAN AL FRENTE. Lo que está a menos de veinticinco
+         metros de la calle es lo que se ve al caminarla. Un frente de
+         comercio y uno de vivienda piden fachadas distintas.
+       · LAS ESQUINAS. Dónde cruza otra calle: son los puntos donde la gente
+         gira, donde el comercio se paga más caro y donde un acceso funciona.
+
+     Lo que NO es: no es catastro. No sabe cuántos predios hay ni dónde están
+     sus linderos; cuenta EDIFICIOS, que es lo que OpenStreetMap registra. Dos
+     casas pareadas con una sola huella cuentan como una. */
+  function laCuadraDelLote() {
+    var pts = (S.lote && S.lote.length >= 3) ? S.lote : null;
+    if (!pts) return null;
+    var vias = S.trzVias || [];
+    var huellas = S.trzHuellas || [];
+    if (!vias.length) return null;
+    var la = null;
+    try { la = analisisDelLote(); } catch (e) {}
+    var centro = centroideDe(pts);
+
+    /* A qué calle da. Si el lote tiene frentes reconocidos, el más largo; si
+       no —lote interior, o calle sin nombre—, la vía más cercana. */
+    var nombreFrente = '';
+    if (la && (la.frentes || []).length) {
+      nombreFrente = la.frentes.slice().sort(function (a, b) {
+        return (b.metros || 0) - (a.metros || 0); })[0].via || '';
+    }
+    var via = null, mejorD = Infinity;
+    vias.forEach(function (v) {
+      if (!v.pts || v.pts.length < 2) return;
+      if (nombreFrente && v.nombre !== nombreFrente) return;
+      for (var i = 1; i < v.pts.length; i++) {
+        var c = distanciaASegmento(centro, v.pts[i - 1], v.pts[i]);
+        if (c.d < mejorD) { mejorD = c.d; via = v; }
+      }
+    });
+    if (!via && nombreFrente) {
+      // El nombre no apareció entre las vías medidas: se cae a la más cercana.
+      vias.forEach(function (v) {
+        if (!v.pts || v.pts.length < 2) return;
+        for (var i = 1; i < v.pts.length; i++) {
+          var c = distanciaASegmento(centro, v.pts[i - 1], v.pts[i]);
+          if (c.d < mejorD) { mejorD = c.d; via = v; }
+        }
+      });
+    }
+    if (!via) return null;
+
+    // El tramo: los vértices de la vía a menos de 120 m del lote.
+    var LARGO = 120;
+    var tramo = via.pts.filter(function (p) { return haversineM(centro, p) <= LARGO; });
+    if (tramo.length < 2) {
+      /* Una vía dibujada con dos vértices lejanos no tiene puntos cerca, y sin
+         tramo no hay frente que medir. Se toma el segmento más cercano entero,
+         que es la recta sobre la que se asoma el lote. */
+      var mejorI = 1;
+      for (var i2 = 1; i2 < via.pts.length; i2++) {
+        var c2 = distanciaASegmento(centro, via.pts[i2 - 1], via.pts[i2]);
+        if (c2.d <= mejorD + 0.01) { mejorI = i2; break; }
+      }
+      tramo = [via.pts[mejorI - 1], via.pts[mejorI]];
+    }
+    var largoTramo = 0;
+    for (var k = 1; k < tramo.length; k++) largoTramo += haversineM(tramo[k - 1], tramo[k]);
+    if (!(largoTramo > 0)) return null;
+
+    /* Proyectar cada edificio sobre el tramo: dónde empieza y dónde termina
+       medido a lo largo de la calle. Con eso, la continuidad es un problema de
+       intervalos en una recta y no de geometría en el plano. */
+    var acumulado = [0];
+    for (var k2 = 1; k2 < tramo.length; k2++) {
+      acumulado.push(acumulado[k2 - 1] + haversineM(tramo[k2 - 1], tramo[k2]));
+    }
+    var sobreElTramo = function (p) {
+      var mejor = null, dMejor = Infinity;
+      for (var i3 = 1; i3 < tramo.length; i3++) {
+        var c3 = distanciaASegmento(p, tramo[i3 - 1], tramo[i3]);
+        if (c3.d < dMejor) {
+          dMejor = c3.d;
+          mejor = acumulado[i3 - 1] + haversineM(tramo[i3 - 1], c3.p);
+        }
+      }
+      return { s: mejor, d: dMejor };
+    };
+
+    var CERCA = 30;   // hasta dónde se considera «da al frente»
+    var intervalos = [], edificios = 0;
+    huellas.forEach(function (anillo) {
+      if (!anillo || anillo.length < 3) return;
+      var ss = [], cerca = false;
+      anillo.forEach(function (p) {
+        var q = sobreElTramo(p);
+        if (q.s == null) return;
+        if (q.d <= CERCA) cerca = true;
+        ss.push(q.s);
+      });
+      if (!cerca || !ss.length) return;
+      var a = Math.max(0, Math.min.apply(null, ss));
+      var b = Math.min(largoTramo, Math.max.apply(null, ss));
+      if (b - a < 1) return;
+      edificios++;
+      intervalos.push([a, b]);
+    });
+
+    // Unir los intervalos y medir lo lleno y los huecos.
+    intervalos.sort(function (a, b) { return a[0] - b[0]; });
+    var unidos = [];
+    intervalos.forEach(function (iv) {
+      var u = unidos[unidos.length - 1];
+      if (u && iv[0] <= u[1] + 0.5) u[1] = Math.max(u[1], iv[1]);
+      else unidos.push([iv[0], iv[1]]);
+    });
+    var lleno = unidos.reduce(function (a, u) { return a + (u[1] - u[0]); }, 0);
+    var huecos = [];
+    var cursor = 0;
+    unidos.forEach(function (u) {
+      if (u[0] - cursor > 0.5) huecos.push(Math.round(u[0] - cursor));
+      cursor = Math.max(cursor, u[1]);
+    });
+    if (largoTramo - cursor > 0.5) huecos.push(Math.round(largoTramo - cursor));
+    var mayorHueco = huecos.length ? Math.max.apply(null, huecos) : 0;
+
+    // Los usos que se asoman al frente.
+    var CAT = window.AIA_CATALOGO || {};
+    var G = CAT.GRUPOS || {};
+    var porGrupo = {}, nUsos = 0;
+    ((S.resultado && S.resultado.pois) || []).forEach(function (p) {
+      if (p.lat == null) return;
+      var q = sobreElTramo(p);
+      if (q.s == null || q.d > 25) return;
+      nUsos++;
+      var g = p.grupo || 'otro';
+      porGrupo[g] = (porGrupo[g] || 0) + 1;
+    });
+    var usos = Object.keys(porGrupo).map(function (g) {
+      return { id: g, n: porGrupo[g],
+               nombre: sinEmoji((G[g] && (G[g].t || G[g].nombre)) || g) };
+    }).sort(function (a, b) { return b.n - a.n; });
+
+    /* Las esquinas del tramo: dónde otra vía se le cruza. Se cuenta un cruce
+       por vía distinta, no por vértice: una calle dibujada en dos tramos que
+       llegan al mismo punto es una esquina, no dos. */
+    var esquinas = {};
+    vias.forEach(function (v) {
+      if (v === via || !v.pts || v.pts.length < 2) return;
+      var nom = v.nombre || ('sin nombre ' + (v.clase || ''));
+      v.pts.forEach(function (p) {
+        var q = sobreElTramo(p);
+        if (q.s != null && q.d <= 12) {
+          if (!esquinas[nom] || Math.abs(q.s - largoTramo / 2) < Math.abs(esquinas[nom].s - largoTramo / 2)) {
+            esquinas[nom] = { nombre: v.nombre || '', clase: v.clase || '', s: Math.round(q.s) };
+          }
+        }
+      });
+    });
+    var listaEsq = Object.keys(esquinas).map(function (k) { return esquinas[k]; })
+      .sort(function (a, b) { return a.s - b.s; });
+
+    /* El frente típico de un edificio del tramo. NO es el lote típico —eso es
+       catastro y URBIS no lo tiene—, pero es lo más cerca que se puede estar
+       con huellas de edificio: dice si la cuadra es de casas de seis metros o
+       de bodegas de treinta, que es lo que un proyecto tiene que continuar o
+       romper a sabiendas. La mediana y no el promedio: una bodega entre veinte
+       casas mueve el promedio y no mueve la mediana. */
+    var frentes = intervalos.map(function (iv) { return iv[1] - iv[0]; })
+      .sort(function (a, b) { return a - b; });
+    var frenteTipico = frentes.length
+      ? Math.round(frentes[Math.floor(frentes.length / 2)]) : null;
+
+    var pctLleno = Math.round(100 * lleno / largoTramo);
+    return {
+      frenteTipicoM: frenteTipico,
+      via: via.nombre || '', clase: via.clase || '',
+      jerarquia: (jerarquiaVialDe(via.clase) || {}).etq || '',
+      largoM: Math.round(largoTramo), llenoM: Math.round(lleno), pctLleno: pctLleno,
+      edificios: edificios, huecos: huecos.length, mayorHuecoM: mayorHueco,
+      usos: usos, nUsos: nUsos, esquinas: listaEsq,
+      // La lectura, que es lo que se defiende.
+      continua: pctLleno >= 70, rota: pctLleno < 40,
+      tramo: tramo.slice()
+    };
+  }
+
   /* ── El ruido del tránsito, modelado ──────────────────────────────────
      No hay dónde bajarlo: nadie publica un mapa de ruido de Cúcuta. Pero el
      ruido del tránsito es de las pocas cosas del ambiente urbano que se
@@ -12937,11 +13254,12 @@
      rastrear. */
   function bloqueFuenteIndices(guardada) {
     var f = S.indicesFuente || {};
-    var hay = !!(f.documento || f.fecha);
+    var hay = !!(f.documento || f.fecha || f.tratamiento);
     if (guardada) {
       return hay
         ? '<p class="pcr-conc pcr-fuente-ok">Los índices salieron de <b>' + esc(f.documento || 'sin documento anotado') +
-          '</b>' + (f.fecha ? ', de ' + esc(f.fecha) : '') + '.</p>'
+          '</b>' + (f.fecha ? ', de ' + esc(f.fecha) : '') +
+          (f.tratamiento ? ', para el tratamiento <b>' + esc(f.tratamiento) + '</b>' : '') + '.</p>'
         : '<p class="pcr-conc pcr-ojo">Estos índices se escribieron a mano y <b>nadie anotó de ' +
           'dónde salieron</b>. No se pueden citar en una entrega sin volver a buscar la fuente.</p>';
     }
@@ -12959,12 +13277,68 @@
           'placeholder="2011, revisado en 2019" ' +
           'value="' + esc(f.fecha || '') + '" />' +
       '</label>' +
+      /* El tratamiento urbanístico. Es lo que decide QUÉ índices aplican, así
+         que sin él los tres números de arriba no se pueden verificar: dos
+         predios de la misma manzana con tratamientos distintos tienen normas
+         distintas. Anotarlo cuesta una línea y es lo primero que pregunta
+         quien revisa. */
+      '<label class="pcr-campo-linea">' +
+        '<span>Tratamiento</span>' +
+        '<input type="text" maxlength="80" data-pcr-fuente="tratamiento" ' +
+          'placeholder="Consolidación · Desarrollo · Renovación…" ' +
+          'value="' + esc(f.tratamiento || '') + '" />' +
+      '</label>' +
       (hay
         ? '<p class="pcr-pista">Queda escrito con la ficha y sale en la lámina: es lo que hace ' +
           'citable el número.</p>'
         : '<p class="pcr-pista">Dos líneas ahora te ahorran volver a la ventanilla dentro de tres ' +
           'meses, cuando nadie se acuerde de qué acuerdo era.</p>') +
     '</div>';
+  }
+
+  /* La cuadra, en la ficha. Va entre el lote y «qué cabe»: es el orden en que
+     se proyecta —dónde estoy, qué hay al lado, qué puedo poner—. */
+  function bloqueCuadra() {
+    var cu = null;
+    try { cu = laCuadraDelLote(); } catch (e) {}
+    if (!cu) return '';
+    return h4('via', 'La cuadra del lote') +
+      '<p class="pcr-pista">Ni el sector ni el lote: <b>el frente</b> al que va a dar el ' +
+      'proyecto. Son ' + cu.largoM + ' m de <b>' + esc(cu.via || 'la calle sin nombre') +
+      '</b> con todo lo que se asoma a menos de treinta metros.</p>' +
+      '<div class="pcr-kpis">' +
+        '<div class="pcr-kpi"><b>' + cu.pctLleno + '%</b><small>del frente con fachada</small></div>' +
+        '<div class="pcr-kpi"><b>' + cu.edificios + '</b><small>edificios dan al frente</small></div>' +
+        (cu.frenteTipicoM != null
+          ? '<div class="pcr-kpi"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>'
+          : '') +
+      '</div>' +
+      '<div class="pcr-lote">' +
+        '<div class="pcr-lote-fila"><span>Fachada construida</span><b>' + cu.llenoM + ' m</b></div>' +
+        '<div class="pcr-lote-fila"><span>Huecos</span><b>' + cu.huecos +
+          (cu.mayorHuecoM ? ' · el mayor de ' + cu.mayorHuecoM + ' m' : '') + '</b></div>' +
+        (cu.esquinas.length
+          ? '<div class="pcr-lote-fila"><span>Esquinas en el tramo</span><b>' +
+            esc(cu.esquinas.map(function (e) { return e.nombre || 'sin nombre'; }).join(', ')) +
+            '</b></div>'
+          : '') +
+        (cu.usos.length
+          ? '<div class="pcr-lote-fila"><span>Usos que se asoman</span><b>' +
+            esc(cu.usos.slice(0, 3).map(function (u) { return u.nombre + ' ' + u.n; }).join(' · ')) +
+            '</b></div>'
+          : '') +
+      '</div>' +
+      '<p class="pcr-conc">' + (cu.continua
+        ? 'Frente continuo: la fachada acompaña la calle, y un proyecto que se retire rompe algo que funciona.'
+        : cu.rota
+          ? 'Frente roto: más de la mitad del tramo está vacío. Acá un proyecto no continúa una fachada, la empieza.'
+          : 'Frente a medias: hay fachada y hay huecos. Lo que decide es dónde caen, no el promedio.') +
+      (cu.mayorHuecoM >= 25
+        ? ' El hueco mayor es de ' + cu.mayorHuecoM + ' m: eso no es un retiro, es un lote sin construir.'
+        : '') + '</p>' +
+      '<p class="pcr-pista">NO es catastro: cuenta <b>edificios</b>, que es lo que OpenStreetMap ' +
+      'registra, no predios. Dos casas pareadas con una sola huella cuentan como una, y el frente ' +
+      'típico es la mediana —una bodega entre veinte casas mueve el promedio y no la mediana—.</p>';
   }
 
   function bloqueQueCabe(guardada) {
@@ -14580,6 +14954,7 @@
         bloqueUsoPredominante(st) +
         bloqueLoteIntervenir() +
         // El puente: hasta acá se mide el sitio, y acá empieza el proyecto.
+        bloqueCuadra() +
         bloqueQueCabe() +
         bloqueCaminata() +
         /* Lo intangible va acá y no al final: es lo que se recoge caminando,
