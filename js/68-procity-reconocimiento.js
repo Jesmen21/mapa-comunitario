@@ -1518,7 +1518,9 @@
     if (!sp || !sp.horas || !sp.horas.length) return '';
     var util = sp.horas.filter(function (h) { return !h.bajo; });
     if (!util.length) return '';
-    return '<h2>La sombra que arroja el proyecto</h2><table>' +
+    // El mismo dibujo que en el pliego: una medición se presenta igual en
+    // los dos documentos, o el informe archivado queda diciendo menos.
+    return '<h2>La sombra que arroja el proyecto</h2>' + sombraHorasDibujada(sp) + '<table>' +
       '<tr><td>Volumen que permite la norma</td><td class="n">' + sp.pisos + ' pisos · ' +
         sp.alturaM + ' m</td></tr>' +
       '<tr><td>Huella</td><td class="n">' + Number(sp.huellaM2).toLocaleString('es-CO') + ' m²</td></tr>' +
@@ -1915,6 +1917,7 @@
       '<p class="pie"><b>Los índices de esta cuenta los puso a mano quien hizo el informe y ' +
       'salen del POT del municipio.</b> URBIS no los conoce ni los verifica: si están mal, ' +
       'todo lo que sigue está mal. Buscarlos y citarlos es parte del trabajo.</p>' +
+      cabeDibujado(q) +
       '<table>' +
         '<tr><td>Índice de ocupación</td><td class="n">' +
           String(q.indices.io).replace('.', ',') + '</td></tr>' +
@@ -1962,7 +1965,7 @@
      por qué cada cosa. */
   function cuadraImpresa(cu) {
     if (!cu) return '';
-    return '<h2>La cuadra del lote</h2><table>' +
+    return '<h2>La cuadra del lote</h2>' + frenteDibujado(cu) + '<table>' +
       '<tr><td>Frente sobre</td><td class="n">' + esc(cu.via || 'calle sin nombre') +
         (cu.jerarquia ? ' · ' + esc(cu.jerarquia.toLowerCase()) : '') + '</td></tr>' +
       '<tr><td>Tramo medido</td><td class="n">' + cu.largoM + ' m</td></tr>' +
@@ -5355,6 +5358,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.mp small{display:block;font-size:9.5px;color:#5a6472;line-height:1.3;margin-top:2px}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
+      /* Los dibujos de las cajas del lote —el frente de la cuadra, lo que
+         cabe, la sombra por horas—, con las mismas clases que en el pliego. */
+      '.pcr-seccion{background:#F3F8FB;border-radius:6px;padding:6px;margin:4px 0 8px;max-width:420px;break-inside:avoid}' +
+      '.pcr-seccion svg{display:block;width:100%;height:auto}' +
+      '.pcr-sec-suelo{stroke:#5A6878;stroke-width:1.4;fill:none}' +
+      '.pcr-sec-t{fill:#3B4A5A;font-size:9px;font-weight:700}' +
+      '.pcr-fr-vacio{fill:#E3EAF0} .pcr-fr-lleno{fill:#3B4A5A}' +
+      '.pcr-fr-lote{fill:#FFD54F;stroke:#7A5901;stroke-width:.8} .pcr-fr-esq{stroke:#0A6F9E;stroke-width:1;stroke-dasharray:2 2}' +
+      '.pcr-cb-lote{fill:#FFF3C4;stroke:#7A5901;stroke-width:1} .pcr-cb-huella{fill:#0A6F9E;fill-opacity:.7} .pcr-cb-piso{fill:#3B4A5A}' +
       '</style></head><body>' +
       '<h1>Reconocimiento del sector' + (nom ? ' · ' + esc(nom) : '') + '</h1>' +
       '<p class="sub">URBIS Pro City · ' + esc(cuando) + ' · ' + esc(area) + '</p>' +

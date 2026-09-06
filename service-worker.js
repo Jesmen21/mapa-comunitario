@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v768-la-pendiente-pixel-a-pixel';
+const URBIS_CACHE = 'urbis-v769-los-dibujos-tambien-en-hojas';
 const URBIS_ASSETS = [
   './',
   './index.html',

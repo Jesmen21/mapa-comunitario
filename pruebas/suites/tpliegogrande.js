@@ -201,6 +201,9 @@ const geo = [
     const bh = H().querySelector('[data-pcr="lamina-ver-h"]');
     if (bh) { bh.click(); await esperar(500); }
     o.h = capturado; capturado = '';
+    // Y el informe en hojas, para comparar los dos documentos.
+    const bp = H().querySelector('[data-pcr="imprimir"]'); if (bp) { bp.click(); await esperar(1200); }
+    o.pdf = capturado; capturado = '';
 
     /* ── El tamaño de la letra ────────────────────────────────────────
        Se cambia y se vuelve a armar la lámina, que es lo que hace un
@@ -611,6 +614,18 @@ const geo = [
   T('la sombra que arroja tiene su mapa, con las manchas por hora y el contexto debajo',
     /^ mapa-caja/.test(SOM) && /<div class="mp-ctx">/.test(SOM) && (SOM.match(/fill-opacity="0\.3"/g) || []).length >= 2,
     SOM ? (SOM.match(/fill-opacity="0\.3"/g) || []).length + ' manchas' : 'sin caja');
+  /* Y los mismos tres dibujos en el informe en hojas: una medición se
+     presenta igual en los dos documentos, o el archivado queda diciendo
+     menos que la lámina. */
+  const secP = t => ((r.pdf || '').split('<h2>').filter(x => x.indexOf(t + '</h2>') === 0)[0] || '');
+  T('el informe en hojas trae los tres dibujos, como el pliego',
+    /class="pcr-seccion pcr-frente"/.test(secP('La cuadra del lote')) &&
+    /class="pcr-seccion pcr-cabe-dib"/.test(secP('Qué cabe en el lote')) &&
+    /class="pcr-seccion pcr-sombra-horas"/.test(secP('La sombra que arroja el proyecto')),
+    ['La cuadra del lote', 'Qué cabe en el lote', 'La sombra que arroja el proyecto']
+      .map(t => t + ': ' + (/pcr-seccion/.test(secP(t)) ? 'con dibujo' : 'sin dibujo')).join(' · '));
+  T('y con su estilo puesto en la hoja',
+    /\.pcr-fr-lleno\{/.test(r.pdf || '') && /\.pcr-cb-huella\{/.test(r.pdf || '') && /\.pcr-seccion svg\{/.test(r.pdf || ''));
   T('y sus barras por hora, con los metros cuadrados fuera del lote',
     /class="pcr-seccion pcr-sombra-horas"/.test(SOM) && /9:00<\/text>/.test(SOM) && /15:00<\/text>/.test(SOM));
 
