@@ -98,6 +98,13 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
 
     // ── La tercera: empezar por el lote.
     const bLote=H().querySelector('[data-pcr="forma"][data-f="lote"]');
+    /* Cómo se ve ANTES de tocarlo: es el botón por el que tiene que entrar el
+       estudiante, y se pidió que se note sin leer —amarillo y latiendo—. Se
+       lee del estilo calculado, que es lo que pinta el navegador. */
+    o.lupita=(function(){ if(!bLote) return null; const cs=getComputedStyle(bLote);
+      return { fondo:cs.backgroundImage, anim:cs.animationName, color:cs.color,
+               otros:[...H().querySelectorAll('[data-pcr="forma"]')].filter(b=>b!==bLote)
+                 .map(b=>getComputedStyle(b).animationName) }; })();
     if(bLote){ bLote.click(); await esperar(500); }
     o.pideLote=/Marcar el lote en el mapa/.test(txt());
     o.sinRango=!H().querySelector('[data-pcr="radio-rango"]');
@@ -152,6 +159,10 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     const asa=H().querySelector('[data-pcr="agrandar"]');
     if(asa){ asa.click(); await esperar(500); }
     o.conLote=txt().slice(0,600);
+    // Elegido y con el lote marcado: sigue amarillo, pero ya no late.
+    o.lupitaOn=(function(){ const b2=H().querySelector('[data-pcr="forma"][data-f="lote"]');
+      if(!b2) return null; const cs=getComputedStyle(b2);
+      return { on:b2.classList.contains('pcr-forma-on'), fondo:cs.backgroundImage, anim:cs.animationName }; })();
     const rango=H().querySelector('[data-pcr="radio-rango"]');
     o.rango=rango?{min:rango.min,max:rango.max,paso:rango.step,valor:rango.value}:null;
 
@@ -196,6 +207,25 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     (r.formas||[]).map(f=>f.f+':'+f.t).join(' · '));
   T('la nueva se llama por lo que hace',
     (r.formas||[]).some(f=>f.f==='lote' && /lote y su entorno/i.test(f.t)));
+  /* «El botón de la lupita que dice el lote y su entorno, en amarillo y con
+     una animación para que el estudiante sepa que le debe dar clic ahí.» El
+     amarillo del lote es el mismo de todos sus botones: 255,213,74 arriba y
+     240,180,0 abajo. La letra va oscura, porque sobre amarillo el blanco no
+     se lee, y late SOLO ese: si latieran los tres no señalaría nada. */
+  const lum=c=>{ const m=String(c||'').match(/(\d+),\s*(\d+),\s*(\d+)/);
+    return m ? (0.2126*m[1]+0.7152*m[2]+0.0722*m[3])/255 : 1; };
+  console.log('\n  -- la lupita, en amarillo y latiendo --');
+  T('«el lote y su entorno» es amarillo',
+    !!r.lupita && /linear-gradient/.test(r.lupita.fondo) && /255, 213, 74/.test(r.lupita.fondo) &&
+    /240, 180, 0/.test(r.lupita.fondo), r.lupita?r.lupita.fondo:'no está');
+  T('con la letra oscura', !!r.lupita && lum(r.lupita.color)<0.35, r.lupita?r.lupita.color:'');
+  T('y late', !!r.lupita && r.lupita.anim==='pcr-lupita', r.lupita?r.lupita.anim:'');
+  T('solo ese: los otros dos, quietos',
+    !!r.lupita && r.lupita.otros.length===2 && r.lupita.otros.every(a=>a==='none'),
+    r.lupita?r.lupita.otros.join(' · '):'');
+  T('elegido, sigue amarillo y se queda quieto',
+    !!r.lupitaOn && r.lupitaOn.on && /240, 180, 0/.test(r.lupitaOn.fondo) && r.lupitaOn.anim==='none',
+    r.lupitaOn?JSON.stringify(r.lupitaOn):'no está');
 
   console.log('\n  -- primero el lote --');
   T('sin lote, pide marcarlo', r.pideLote===true);

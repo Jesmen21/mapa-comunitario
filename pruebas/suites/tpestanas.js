@@ -115,6 +115,16 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     o.poblacionSoloEnGente = ['general', 'sitio', 'ambiente', 'movilidad', 'forma', 'lote', 'sintesis']
       .every(p => !enPestana(p, 'Cuánta gente vive'));
 
+    /* La tira de mapas de cada pestaña: el pliego asomándose. Se lee dentro
+       de su sección, arriba del todo, con un dibujo por recuadro. */
+    const tira = (id2) => { const sec = H().querySelector('.pcr-tab[data-tab="' + id2 + '"]');
+      const fig = sec ? [...sec.querySelectorAll('.pcr-tira .pcr-tira-i')] : [];
+      return { n: fig.length, svg: fig.filter(f => f.querySelector('svg')).length,
+               titulos: fig.map(f => ((f.querySelector('figcaption') || {}).textContent || '').trim()),
+               arriba: !!sec && !!sec.firstElementChild && sec.firstElementChild.classList.contains('pcr-tira') }; };
+    o.tiras = { general: tira('general'), sitio: tira('sitio'), ambiente: tira('ambiente'),
+                movilidad: tira('movilidad'), gente: tira('gente'), sintesis: tira('sintesis') };
+
     // Lo que falta para el pliego, con su botón.
     const pend = [...H().querySelectorAll('.pcr-pend-i')];
     o.pendientes = pend.map(x => {
@@ -155,6 +165,8 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     o.terrenoEnAmbiente = /Curvas de nivel|corte/i.test(
       (H().querySelector('[data-tab="ambiente"]') || {}).textContent || '');
     o.pendientesTras = H().querySelectorAll('.pcr-pend-i').length;
+    // Y la tira de Ambiente ya trae el terreno, como va a salir.
+    o.tiraAmbienteTras = tira('ambiente');
     return o;
   }, { C, POL });
   await pg.close(); await b.close();
@@ -197,6 +209,26 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   T('y esa deja de estar en la lista de lo que falta',
     r.pendientesTras < (r.pendientes || []).length,
     (r.pendientes || []).length + ' → ' + r.pendientesTras);
+
+  /* «En cada pestaña una miniatura del mapa de cómo va a salir en el PDF.»
+     La tira va arriba de la pestaña, con los recuadros de SU banda y el
+     mismo dibujo del pliego; aparece cuando hay qué mostrar y cambia cuando
+     se mide: Ambiente nace sin mapa y con el terreno medido trae las
+     curvas. General y Síntesis no tienen banda de mapas y no llevan tira. */
+  console.log('\n  -- el pliego se asoma en cada pestaña --');
+  const ti = r.tiras || {};
+  T('Gente y usos abre con el mapa de todos los usos, como va a salir',
+    !!ti.gente && ti.gente.n >= 1 && ti.gente.arriba && ti.gente.titulos.some(t => /Todos los usos/.test(t)),
+    ti.gente ? (ti.gente.titulos.join(' · ') || 'sin tira') : 'sin pestaña');
+  T('cada recuadro trae su dibujo', !!ti.gente && ti.gente.n >= 1 && ti.gente.svg === ti.gente.n,
+    ti.gente ? ti.gente.svg + ' de ' + ti.gente.n : '');
+  T('General y Síntesis no llevan tira: no tienen banda de mapas',
+    !!ti.general && ti.general.n === 0 && !!ti.sintesis && ti.sintesis.n === 0);
+  T('Ambiente, sin medir, todavía no tiene mapa que mostrar',
+    !!ti.ambiente && ti.ambiente.n === 0, ti.ambiente ? ti.ambiente.titulos.join(' · ') : '');
+  T('medido el terreno, Ambiente muestra las curvas como van a salir',
+    !!r.tiraAmbienteTras && r.tiraAmbienteTras.arriba && r.tiraAmbienteTras.titulos.some(t => /Curvas de nivel/.test(t)),
+    r.tiraAmbienteTras ? (r.tiraAmbienteTras.titulos.join(' · ') || 'sin tira') : 'sin pestaña');
 
   console.log('');
   T('sin errores de JavaScript', err.filter(e => !/L is not defined|Unexpected end/.test(e)).length === 0,

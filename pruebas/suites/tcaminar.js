@@ -95,9 +95,16 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
        dejó de valer cuando se repartió en pestañas: la de General lista por su
        nombre todas las cajas del pliego, así que el primer hallazgo del
        título era el renglón de ese índice y no el bloque. */
-    const todo=txt(H().querySelector('[data-tab="movilidad"]')||H());
-    const i=todo.indexOf('A distancia de caminar');
-    o.bloque=i>=0?todo.slice(i,i+1600):'';
+    const sec=H().querySelector('[data-tab="movilidad"]')||H();
+    const todo=txt(sec);
+    /* Y por su CABECERA, no por la primera vez que aparece el título: la
+       pestaña abre con la tira de mapas del pliego, y uno de esos mapas se
+       llama igual que el bloque. Se toma el texto desde el h4 hasta el
+       siguiente h4, que es exactamente el bloque y nada más. */
+    const cabA=[...sec.querySelectorAll('h4.pcr-h')].filter(h=>/A distancia de caminar/.test(h.textContent||''))[0];
+    o.bloque=(function(){ if(!cabA) return ''; let t='';
+      for(let e=cabA; e; e=e.nextElementSibling){ if(e!==cabA && e.matches('h4.pcr-h')) break; t+=' '+txt(e); }
+      return t.trim(); })();
     // Cada fila: rótulo, minutos y porcentaje.
     o.filas=[...H().querySelectorAll('.pcr-nivel')].map(n=>({
       nom:txt(n.querySelector('.pcr-nivel-nom')),

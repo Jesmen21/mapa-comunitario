@@ -5759,7 +5759,28 @@ function donaHTML(datos, colorDe, nombreDe) {
     el.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-pcr]');
       if (!b) return;
-      var acc = b.getAttribute('data-pcr');
+      despachar(b, b.getAttribute('data-pcr'));
+    });
+    return el;
+
+    /* El atajo de una caja gris: lo que le falta, por el camino del botón
+       real. Lo intangible es la excepción —no se mide, se marca con un lápiz
+       que hay que elegir—, así que ahí el atajo lleva a los lápices. */
+    function atajo(b, pide) {
+      if (!pide) return;
+      if (pide === 'int-dibujar') {
+        S.pestanaFicha = pestanaDe('int-dibujar');
+        S.intAviso = 'Elegí un lápiz y marcá en el mapa lo que viste en la calle.';
+        pintar(); return;
+      }
+      despachar(b, pide);
+    }
+
+    /* Qué hace cada botón de la hoja. Va con nombre y separado del oyente
+       porque no solo se llega acá tocando: una caja gris del pliego manda su
+       acción por este mismo camino, y tiene que pasar por las mismas reglas
+       —el salto a la pestaña del resultado, la primera— que el botón real. */
+    function despachar(b, acc) {
       /* Medir algo lleva a donde aparece el resultado. Con la ficha en
          pestañas, tocar «medir el terreno» y quedarse en General sería pedir
          un dato y esconderlo: el sitio donde sale la respuesta es parte de la
@@ -5917,7 +5938,13 @@ function donaHTML(datos, colorDe, nombreDe) {
         var idCaja = b.getAttribute('data-c') || '';
         var estabaC = cajasDelPliego(S.resultado).filter(function (c) {
           return c.id === idCaja; })[0];
-        if (!estabaC || !estabaC.listo) return;
+        if (!estabaC) return;
+        /* Gris con acción: la caja es el atajo a lo que le falta. Se manda
+           por el MISMO despachador que el botón real —con su salto a la
+           pestaña del resultado— y no por una copia de la llamada, para que
+           no haya dos maneras de medir el terreno que se separen con el
+           tiempo. */
+        if (!estabaC.listo) { atajo(b, estabaC.pide); return; }
         alternarCajaPliego(idCaja, !estabaC.on);
         pintar(); return;
       }
@@ -5965,6 +5992,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         var idCapa = b.getAttribute('data-c') || '';
         var estaba = capasDisponibles((S.resultado && S.resultado.stats) || {})
           .filter(function (c) { return c.id === idCapa; })[0];
+        // Una capa gris no se enciende: se mide lo que le falta, si se puede.
+        if (estaba && !estaba.listo) { atajo(b, estaba.pide); return; }
         alternarCapa(idCapa, !(estaba && estaba.on));
         S.encogida = true;
         pintar(); return;
@@ -6398,8 +6427,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         return;
       }
       if (acc === 'recentrar') { tomarCentro(); pintarCirculo(); pintar(); return; }
-    });
-    return el;
+    }
   }
 
   /* Mientras la hoja está encogida y se analiza por radio, el círculo sigue
@@ -9568,9 +9596,48 @@ function donaHTML(datos, colorDe, nombreDe) {
         listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' }
     ];
     var off = S.pliegoOff || [];
+    /* Qué consigue cada caja gris. Se pidió así: «las cajas grises que salen
+       en el análisis que no se han hecho, que sean el acceso rápido para
+       analizar». Antes una caja gris era un botón apagado con «medí el
+       trazado» al lado: decía qué faltaba y obligaba a ir a buscarlo a otra
+       pestaña. Ahora lleva la acción que la llena, y tocarla es tocar el
+       botón que la mide. La llave es la MISMA acción del despachador de
+       clics, así que el atajo hace exactamente lo que hace el botón real,
+       salto a la pestaña incluido.
+
+       Las que no tienen acción son las que no dependen de una medición sino
+       del sitio: «no hay hitos registrados» no se arregla tocando nada. Y las
+       compuestas —«marcá el lote y medí el trazado»— piden lo PRIMERO que
+       falta, en ese orden. */
+    var loteYTrazado = !hayLote ? 'lote-dibujar' : (!trz ? 'trazado' : null);
+    var PIDE = {
+      'alturas-de-lo-construido': trz ? null : 'trazado',
+      'llenos-y-vacios': trz ? null : 'trazado',
+      'el-perfil-de-la-calle': trz ? null : 'trazado',
+      'espacio-publico-efectivo': trz ? null : 'trazado',
+      'el-ruido-del-transito': trz ? null : 'trazado',
+      'el-terreno': 'terreno',
+      'el-clima': 'clima',
+      'la-amenaza-sismica': 'amenaza',
+      'la-inundacion': S.amenaza ? null : 'amenaza',
+      'como-cambio-el-sitio': 'evolucion',
+      'cobertura-del-suelo': 'cobertura',
+      'el-lote-a-intervenir': 'lote-dibujar',
+      'que-cabe-en-el-lote': 'lote-dibujar',
+      'la-cuadra-del-lote': loteYTrazado,
+      'la-sombra-que-arrojas': loteYTrazado,
+      'hasta-donde-se-camina-desde-el-lote': loteYTrazado,
+      'la-sombra-de-los-vecinos': loteYTrazado,
+      'que-le-pide-el-sitio-al-proyecto': !hayLote ? 'lote-dibujar' : (!trz ? 'trazado' : (!S.terreno ? 'terreno' : null)),
+      'lo-intangible': 'int-dibujar',
+      'lo-levantado-en-campo': 'campo'
+    };
     lista.forEach(function (c) {
       c.on = off.indexOf(c.id) === -1;
       c.esPol = esPol;
+      if (c.listo) return;
+      c.pide = PIDE[c.id] !== undefined ? PIDE[c.id]
+             : (c.falta === 'analizá el sector' ? 'analizar' : null);
     });
     return lista;
   }
@@ -9900,6 +9967,24 @@ function donaHTML(datos, colorDe, nombreDe) {
                  color: '#E23D3D', on: !!S.intEnMapa,
                  listo: !!(S.intangible && S.intangible.length),
                  falta: 'marcá lo que viste en la calle' });
+    /* Lo que consigue cada capa gris: la misma regla que las cajas del
+       pliego —ver `cajasDelPliego`— y la misma llave del despachador, para
+       que tocar la capa apagada sea tocar el botón que la mide. Las capas
+       piden la geometría del trazado y no solo su análisis: un sector
+       reanudado trae lo segundo sin lo primero, y ahí lo que falta es volver
+       a medirlo. */
+    var hayLoteC = !!(S.lote && S.lote.length >= 3);
+    var sinHuellas = !(S.trzHuellas && S.trzHuellas.length);
+    var loteYTrazadoC = !hayLoteC ? 'lote-dibujar' : (sinHuellas ? 'trazado' : null);
+    var PIDE_CAPA = {
+      cobertura: 'cobertura', llenos: sinHuellas ? 'trazado' : null, vias: sinHuellas ? 'trazado' : null,
+      curvas: 'terreno', sombras: loteYTrazadoC, caminata: loteYTrazadoC, intangible: 'int-dibujar'
+    };
+    lista.forEach(function (c) {
+      if (c.listo) return;
+      c.pide = PIDE_CAPA[c.id] !== undefined ? PIDE_CAPA[c.id]
+             : (c.falta === 'analizá el sector' ? 'analizar' : null);
+    });
     return lista;
   }
 
@@ -10952,6 +11037,13 @@ function donaHTML(datos, colorDe, nombreDe) {
   }
 
   /* ── Armar el pliego, en la ficha ──────────────────────────────────── */
+  /* Cómo se dice, en la caja gris, lo que pasa al tocarla. Por acción y no
+     por caja: es el mismo verbo que usa el botón real. */
+  var VERBO_DE = {
+    trazado: 'se mide', terreno: 'se mide', clima: 'se pide', amenaza: 'se pide',
+    cobertura: 'se lee la foto', evolucion: 'se pide', 'lote-dibujar': 'se marca',
+    'int-dibujar': 'vas a los lápices', campo: 'se compara', analizar: 'se analiza'
+  };
   function bloquePliego(res) {
     if (!res) return '';
     var lista = cajasDelPliego(res);
@@ -10963,8 +11055,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Una lámina no se hace poniendo todo: se hace eligiendo. Hay <b>' +
       listas.length + '</b> caja' + (listas.length === 1 ? '' : 's') + ' con qué llenarse y llevás <b>' +
       puestas.length + '</b> puesta' + (puestas.length === 1 ? '' : 's') + '. Las grises necesitan una ' +
-      'medición que todavía no está. <b>El PDF sale completo igual</b>: uno es la composición y el ' +
-      'otro es el archivo.</p>' +
+      'medición que todavía no está: <b>tocá una y se hace ahí mismo</b>. El PDF sale completo igual: ' +
+      'uno es la composición y el otro es el archivo.</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="pliego-todo" class="pcr-mini">' + ico('ok', 16) +
           'Poner todo</button>' +
@@ -11015,13 +11107,20 @@ function donaHTML(datos, colorDe, nombreDe) {
         return '<p class="pcr-lab">' + g + '</p>' +
           '<div class="pcr-capas">' +
             suyas.map(function (c) {
+              /* Una caja gris CON acción sigue siendo un botón: tocarla mide lo
+                 que le falta. Solo queda apagada la que no depende de medir. */
+              var pide = !c.listo && c.pide;
               return '<button type="button" class="pcr-capa' + (c.on && c.listo ? ' on' : '') +
-                (c.listo ? '' : ' pcr-capa-gris') + '" data-pcr="pliego-caja" data-c="' +
-                esc(c.id) + '"' + (c.listo ? '' : ' disabled') +
+                (c.listo ? '' : ' pcr-capa-gris') + (pide ? ' pcr-capa-pide' : '') +
+                '" data-pcr="pliego-caja" data-c="' + esc(c.id) + '"' +
+                (pide ? ' data-pide="' + esc(pide) + '"' : '') +
+                (c.listo || pide ? '' : ' disabled') +
                 ' aria-pressed="' + (c.on && c.listo ? 'true' : 'false') + '">' +
                 '<i style="background:' + (c.listo ? (c.on ? '#0A6F9E' : '#C7D3DD') : '#E2E8F0') + '"></i>' +
                 '<span><b>' + esc(c.t) + '</b>' +
-                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) + '</small></span>' +
+                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) +
+                  (pide ? ' <em>· tocá acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
+                  '</small></span>' +
               '</button>';
             }).join('') +
           '</div>';
@@ -11133,7 +11232,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Todo lo que se puede poner sobre el mapa, en un solo sitio. Hay <b>' +
       listas + '</b> capa' + (listas === 1 ? '' : 's') + ' disponible' + (listas === 1 ? '' : 's') +
       ' y <b>' + puestas + '</b> puesta' + (puestas === 1 ? '' : 's') + '. Las grises necesitan una ' +
-      'medición que todavía no está.</p>' +
+      'medición que todavía no está: <b>tocá una y se hace ahí mismo</b>.</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="capas-todo" class="pcr-mini">' + ico('ok', 16) +
           'Encender todo</button>' +
@@ -11146,12 +11245,18 @@ function donaHTML(datos, colorDe, nombreDe) {
         return '<p class="pcr-lab">' + g + '</p>' +
           '<div class="pcr-capas">' +
             suyas.map(function (c) {
+              // Gris con acción: sigue siendo botón, y tocarla mide lo que le falta.
+              var pide = !c.listo && c.pide;
               return '<button type="button" class="pcr-capa' + (c.on ? ' on' : '') +
-                (c.listo ? '' : ' pcr-capa-gris') + '" data-pcr="capa" data-c="' + esc(c.id) + '"' +
-                (c.listo ? '' : ' disabled') + ' aria-pressed="' + (c.on ? 'true' : 'false') + '">' +
+                (c.listo ? '' : ' pcr-capa-gris') + (pide ? ' pcr-capa-pide' : '') +
+                '" data-pcr="capa" data-c="' + esc(c.id) + '"' +
+                (pide ? ' data-pide="' + esc(pide) + '"' : '') +
+                (c.listo || pide ? '' : ' disabled') + ' aria-pressed="' + (c.on ? 'true' : 'false') + '">' +
                 '<i style="background:' + esc(c.color) + '"></i>' +
                 '<span><b>' + esc(c.nombre) + '</b>' +
-                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) + '</small></span>' +
+                  '<small>' + esc(c.listo ? (c.dato || '') : c.falta) +
+                  (pide ? ' <em>· tocá acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
+                  '</small></span>' +
               '</button>';
             }).join('') +
           '</div>';
@@ -17546,9 +17651,71 @@ function donaHTML(datos, colorDe, nombreDe) {
     terreno: 'ambiente', clima: 'ambiente', amenaza: 'ambiente', cobertura: 'ambiente',
     evolucion: 'ambiente', sombras: 'ambiente', curvas: 'ambiente',
     trazado: 'forma', 'lote-dibujar': 'lote', caminata: 'movilidad',
-    estratos: 'general', 'int-dibujar': 'gente'
+    estratos: 'general', 'int-dibujar': 'gente', campo: 'gente'
   };
   function pestanaDe(accion) { return PESTANA_DE[accion] || 'general'; }
+
+  /* ── La tira de mapas de cada pestaña ──────────────────────────────────
+     «En cada pestaña una miniatura del mapa de cómo va a salir en el PDF.»
+     Cada pestaña de la ficha es una banda del pliego y la banda se abre con
+     sus mapas; en pantalla, hasta ahora, esos mapas solo se veían al
+     imprimir. La tira son los MISMOS recuadros que arma la lámina —el mismo
+     dibujo, la misma lista, el mismo apagado— al ancho de un pulgar y arriba
+     de la pestaña: el pliego asomándose donde se decide qué medir y qué
+     poner.
+
+     Se arman una vez por estado. Cada recuadro proyecta cientos de puntos,
+     `pintar` corre a cada toque, y sin la huella la ficha se pondría más
+     lenta con cada medición nueva, justo al revés de lo que se quiere. La
+     huella es lo que cambia un dibujo: el área, lo medido y lo trazado. Lo
+     apagado NO entra en la huella —se lee al pintar, encima de lo guardado—
+     porque apagar un mapa no cambia su dibujo, solo si sale. */
+  var tiraCache = { huella: '', mapas: [] };
+  function mapasParaLaTira(res) {
+    if (!res) return [];
+    var m = res.meta || {};
+    var huella = [
+      m.lat, m.lng, m.radioM, (m.poligono || []).length, (res.pois || []).length,
+      (S.lote || []).length, !!S.trazado, (S.trzHuellas || []).length,
+      !!S.terreno, S.curvasPaso || '', !!S.cobertura, !!S.estratos, !!S.sombras,
+      !!S.caminata, (S.intangible || []).length, !!S.campo,
+      S.amenaza ? (S.amenaza.masa ? 2 : 1) : 0
+    ].join('|');
+    if (huella === tiraCache.huella) return tiraCache.mapas;
+    var mapas;
+    try { mapas = mapasDelPliego(res, { h: 140, maxCategorias: 6 }) || []; }
+    catch (e) { mapas = []; }
+    tiraCache = { huella: huella, mapas: mapas };
+    return mapas;
+  }
+  /* Qué bandas del pliego asoman en cada pestaña: las mismas que GRUPO_DE_MAPA
+     reparte al componer la lámina. «General» y «Síntesis» no llevan tira
+     porque no tienen banda con mapas. */
+  var BANDAS_DE_PESTANA = {
+    sitio: ['ubicacion'], ambiente: ['ambiental', 'tiempo'], movilidad: ['movilidad'],
+    gente: ['demografico', 'campo'], forma: ['forma'], lote: ['lote']
+  };
+  function tiraDeMapas(res, pestana) {
+    var bandas = BANDAS_DE_PESTANA[pestana];
+    if (!bandas || !res) return '';
+    var mios = mapasParaLaTira(res).filter(function (m) { return bandas.indexOf(m.grupo) >= 0; });
+    if (!mios.length) return '';
+    var apagados = S.pliegoMapasOff || [];
+    var puestos = mios.filter(function (m) { return apagados.indexOf(m.id) === -1; });
+    return '<div class="pcr-tira">' +
+      '<p class="pcr-lab">Así sale en el pliego · ' + puestos.length + ' de ' + mios.length +
+        ' mapa' + (mios.length === 1 ? '' : 's') + '</p>' +
+      '<div class="pcr-tira-m">' +
+        mios.map(function (m) {
+          var off = apagados.indexOf(m.id) >= 0;
+          return '<figure class="pcr-tira-i' + (off ? ' apagado' : '') + '" data-mapa="' + esc(m.id) + '">' +
+            '<div class="pcr-tira-d">' + m.svg + '</div>' +
+            '<figcaption>' + esc(m.titulo) + (off ? ' · apagado' : '') + '</figcaption>' +
+          '</figure>';
+        }).join('') +
+      '</div>' +
+    '</div>';
+  }
 
   function htmlPestanas(P) {
     var conAlgo = PESTANAS.filter(function (p) {
@@ -17809,6 +17976,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '</div>';
 
     P.sitio =
+        tiraDeMapas(res, 'sitio') +
         bloqueDondeSeMidio(S.centroDeAnalizado, meta) +
         bloqueUbicacion(res.ubicacion, st, meta) +
         bloqueLote(meta, esPol) +
@@ -17837,6 +18005,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         tareas;
 
     P.ambiente =
+        tiraDeMapas(res, 'ambiente') +
         bloqueTerreno() +
         bloqueClima() +
         bloqueSol(meta) +
@@ -17846,12 +18015,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         bloqueEspacio(st);
 
     P.movilidad =
+        tiraDeMapas(res, 'movilidad') +
         bloqueMovilidad(st) +
         bloquePerfil() +
         bloqueCaminata() +
         bloqueAccesibilidad(st);
 
     P.gente =
+        tiraDeMapas(res, 'gente') +
         bloquePoblacion(st, esPol) +
         bloqueDemografia(st) +
 
@@ -17881,10 +18052,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         bloqueRubros(st);
 
     P.forma =
+        tiraDeMapas(res, 'forma') +
         bloqueTrazado() +
         bloqueAlturas(st);
 
     P.lote =
+        tiraDeMapas(res, 'lote') +
         bloqueLoteIntervenir() +
         // El puente: hasta acá se mide el sitio, y acá empieza el proyecto.
         bloqueCuadra() +

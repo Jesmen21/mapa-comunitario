@@ -416,6 +416,25 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     await esperar(1800);
     const m2 = marcadorDe(latOtro);
     o.hayOtro = !!m2;
+    /* El icono del punto en el mapa. El sistema de pisos y plantas cambió lo
+       que va DESPUÉS del primer separador de la descripción; Pro City saca el
+       uso del primer campo —«Residencial · Casa de tres o más pisos» →
+       Residencial— y le pone el emoji de la Matriz, 🏠, o el de repuesto 📍
+       cuando no lo reconoce. Se lee del marcador de Leaflet, que es lo que
+       se ve, y no de la función que lo elige. */
+    const iconoDe = (mk, cabeza) => {
+      try {
+        const html = String((mk && mk.options && mk.options.icon && mk.options.icon.options &&
+                             mk.options.icon.options.html) || '');
+        const m = html.match(/u52-procity-matriz-pin">([^<]+)</);
+        return { cabeza, html: html.slice(0, 160), pin: m ? m[1] : '',
+                 esRepuesto: !m || m[1] === '📍' };
+      } catch (e) { return { error: String(e) }; }
+    };
+    o.iconoOtro = iconoDe(m2, dOtro[0]);
+    // Y el del punto sin plantas registradas, para comparar: mismo uso, mismo icono.
+    o.iconoPrimero = iconoDe(marcadorDe(C.lat), String(((typeof globalData !== 'undefined' && globalData) || [])
+      .filter(x => Math.abs(parseFloat(x.lat) - C.lat) < 1e-6)[0].descripcion).split(' | ')[0]);
     if (m2) { m2.fire('click', { latlng: { lat: latOtro, lng: C.lng } }); await esperar(600); }
     await clic('[data-u52-call="procity-sel-edit"]', 900);
     const panelEd2 = q('#u52-quick-report-panel');
@@ -446,6 +465,8 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
       if (n >= 2) break;
       await esperar(300);
     }
+    // Editadas las plantas y refrescado el mapa, el icono sigue siendo el suyo.
+    o.iconoOtroTras = iconoDe(marcadorDe(latOtro), tras ? String(tras.descripcion).split(' | ')[0] : dOtro[0]);
     const A = window.URBIS_PC_ANALISIS, R = window.URBIS_PC_RECON;
     A.iniciarDibujo(); POL.forEach(p => A.agregarPunto(p.lat, p.lng)); A.agregarPunto(POL[0].lat, POL[0].lng);
     R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
@@ -509,6 +530,17 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   T('mientras lo que sí pregunta queda guardado',
     !!te && te.pisos === 3 && te.plantas === '1:Comercio;2-3:Vivienda',
     te ? te.pisos + ' pisos · ' + te.plantas : 'nada');
+  /* Pedido de revisión: «los emojis e iconos de los mapeos, que sigan bien
+     después del cambio de sistema». El icono sale del primer campo de la
+     descripción y las plantas van en una casilla al final, así que no
+     tendrían por qué tocarse; esto lo deja comprobado en el marcador. */
+  const ic = r2.iconoOtro, ic2 = r2.iconoOtroTras, ic0 = r2.iconoPrimero;
+  T('el punto con pisos lleva en el mapa el icono de su uso —🏠 Residencial—, no el de repuesto',
+    !!ic && /^Residencial/.test(ic.cabeza || '') && ic.pin === '🏠' && !ic.esRepuesto, JSON.stringify(ic));
+  T('y lo sigue llevando después de editarle las plantas',
+    !!ic2 && ic2.pin === '🏠' && !ic2.esRepuesto, JSON.stringify(ic2));
+  T('igual que el punto sin plantas del mismo uso',
+    !!ic0 && !ic0.esRepuesto && ic0.pin === (ic ? ic.pin : ''), JSON.stringify(ic0));
 
   console.log('\n  -- y el sector analizado lo cuenta --');
   const c = r2.campo;

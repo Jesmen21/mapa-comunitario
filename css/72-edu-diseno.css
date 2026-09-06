@@ -334,6 +334,35 @@ button > .u-ico:first-child, .pcr-h > .u-ico:first-child{ margin-right:.35em; }
   background:var(--edu-accent-deep) !important; border-color:var(--edu-accent-deep) !important;
   color:#fff !important; -webkit-text-fill-color:#fff !important;
 }
+/* «El lote y su entorno», en amarillo y latiendo. Es la manera de entrar que
+   corresponde al trabajo real del curso —primero el lote, después lo que
+   tiene alrededor— y se pidió así: «el botón de la lupita que dice el lote y
+   su entorno, en amarillo y con una animación para que el estudiante sepa
+   que le debe dar clic ahí». El lote es amarillo en el mapa y en cada botón
+   que lo dibuja; este es el primero que se ve y era el único celeste. El
+   latido es un anillo que se abre y se apaga, no el botón moviéndose: lo
+   segundo marea y lo primero señala. Elegido, se queda quieto y más oscuro;
+   con la preferencia de menos movimiento, quieto desde el principio. */
+.pcr-hoja .pcr-forma[data-f="lote"]{
+  background:linear-gradient(180deg,#FFD54A,#F0B400) !important;
+  border-color:#E0A800 !important;
+  color:#4A3600 !important; -webkit-text-fill-color:#4A3600 !important;
+  animation:pcr-lupita 1.8s ease-out infinite;
+}
+.pcr-hoja .pcr-forma[data-f="lote"] .u-ico{ color:#6B4F00; }
+.pcr-hoja .pcr-forma-on[data-f="lote"]{
+  background:linear-gradient(180deg,#F0B400,#D99E00) !important;
+  border-color:#B8860B !important;
+  box-shadow:inset 0 0 0 2px rgba(74,54,0,.35);
+  animation:none;
+}
+@keyframes pcr-lupita{
+  0%,100%{ box-shadow:0 0 0 0 rgba(240,180,0,.55); }
+  70%{ box-shadow:0 0 0 10px rgba(240,180,0,0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .pcr-hoja .pcr-forma[data-f="lote"]{ animation:none; box-shadow:0 0 0 3px rgba(240,180,0,.35); }
+}
 .pcr-hoja .pcr-areainfo{
   background:var(--edu-accent-soft) !important; border-radius:var(--edu-r-s) !important;
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important;
@@ -1541,6 +1570,14 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 .pcr-capa-gris{ opacity:.55; cursor:default; }
 .pcr-capa-gris i{ filter:grayscale(1); }
+/* Una caja gris CON acción es un atajo, y tiene que verse como algo que se
+   toca: menos apagada que las que no dependen de medir, con el borde
+   punteado de lo que falta y el «tocá acá» en el color de las acciones. */
+.pcr-capa-gris.pcr-capa-pide{ opacity:.85; cursor:pointer; border-style:dashed; }
+.pcr-hoja .pcr-capa-pide small em, .pcr-pestana .pcr-capa-pide small em{
+  font-style:normal; font-weight:700;
+  color:var(--edu-accent-deep) !important; -webkit-text-fill-color:var(--edu-accent-deep) !important;
+}
 
 /* ── 25. Lo intangible ───────────────────────────────────────────────────
    Es el único bloque de la ficha que se llena a mano, y tiene que verse
@@ -1868,3 +1905,26 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   -webkit-text-fill-color:var(--edu-ink-3) !important; line-height:1.3;
 }
 .pcr-hoja .pcr-pend-i .pcr-mini, .pcr-pestana .pcr-pend-i .pcr-mini{ flex:0 0 auto; }
+
+/* ── La tira de mapas de cada pestaña ─────────────────────────────────────
+   El pliego asomándose en la pestaña: los recuadros de su banda, al ancho de
+   un pulgar, con el mismo dibujo que van a tener en el papel. Se desliza de
+   lado, como una tira de fotos; el apagado se ve apagado. */
+.pcr-hoja .pcr-tira, .pcr-pestana .pcr-tira{ margin:2px 0 14px; }
+.pcr-hoja .pcr-tira-m, .pcr-pestana .pcr-tira-m{
+  display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px;
+  scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+}
+.pcr-hoja .pcr-tira-i, .pcr-pestana .pcr-tira-i{
+  flex:0 0 132px; margin:0; padding:6px; scroll-snap-align:start;
+  display:flex; flex-direction:column; gap:4px;
+  border:1px solid var(--edu-line-2); border-radius:10px; background:var(--edu-ground);
+}
+.pcr-hoja .pcr-tira-i.apagado, .pcr-pestana .pcr-tira-i.apagado{ opacity:.45; }
+.pcr-hoja .pcr-tira-d svg, .pcr-pestana .pcr-tira-d svg{
+  width:100%; height:auto; display:block; border-radius:6px;
+}
+.pcr-hoja .pcr-tira-i figcaption, .pcr-pestana .pcr-tira-i figcaption{
+  font-size:.68rem; line-height:1.25; font-weight:600;
+  color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
+}
