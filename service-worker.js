@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v766-lo-que-falta-se-toca';
+const URBIS_CACHE = 'urbis-v767-el-tiempo-en-alta-resolucion';
 const URBIS_ASSETS = [
   './',
   './index.html',

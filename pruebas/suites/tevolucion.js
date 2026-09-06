@@ -17,9 +17,13 @@ const E = require('../entorno.js');
      · Que un año medio tapado no entre en la conclusión, y que igual se vea.
      · Que la tendencia no afirme un cambio que cabe en el error. Dos puntos
        de diferencia a treinta metros no son un cambio, son ruido.
-     · Que las dos series NO se mezclen: la de alta resolución no lleva
-       porcentajes, porque compararlos con los de Landsat sería comparar dos
-       cámaras.
+     · Que las fotos de alta resolución lleven SU verde, medido con el mismo
+       clasificador que lee la cobertura de hoy —son del mismo proveedor y se
+       comparan entre sí—, y que las dos series no se mezclen: los números de
+       Landsat son de otra cámara y se dicen aparte.
+     · Que al pliego vayan SOLO las fotos: se pidió con la estampa rayada de
+       2004 en la mano. Y que a Landsat se le pida, por año, el satélite que
+       no raya.
 
    El servicio no se toca: `URBIS_EVOLUCION_URL` se sustituye por una función
    que devuelve imágenes hechas a mano con la proporción que se quiera. Es a
@@ -106,7 +110,7 @@ for (let i = 0; i < 30; i++) {
   const pcPedidas = [];
   await ctx.route(/planetarycomputer\.microsoft\.com/, r => {
     const req = r.request(), u = req.url();
-    pcPedidas.push(req.method() + ' ' + u);
+    pcPedidas.push(req.method() + ' ' + u + (req.method() === 'POST' ? ' ' + (req.postData() || '') : ''));
     const cors = { 'Access-Control-Allow-Origin': '*',
                    'Access-Control-Allow-Headers': 'content-type',
                    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS' };
@@ -197,15 +201,20 @@ for (let i = 0; i < 30; i++) {
       return cv.toDataURL('image/png');
     };
 
-    // Una foto en color, para la serie de alta resolución.
-    const pintaColor = (c1, c2) => {
+    /* Una foto en color, para la serie de alta resolución: las primeras
+       filas verdes —un verde de copa, como lo ve el clasificador de la
+       cobertura— y el resto gris de techo. Con el porcentaje exacto de filas
+       verdes se puede exigir el número exacto. */
+    const pintaVerde = (pctVerde) => {
       const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
       const x = cv.getContext('2d');
-      for (let i = 0; i < 64; i += 8) for (let j = 0; j < 64; j += 8) {
-        x.fillStyle = ((i + j) / 8) % 2 ? c1 : c2; x.fillRect(i, j, 8, 8);
-      }
+      const filas = Math.round(64 * pctVerde / 100);
+      x.fillStyle = '#4a7f52'; x.fillRect(0, 0, 64, filas);
+      x.fillStyle = '#8b8f7a'; x.fillRect(0, filas, 64, 64 - filas);
       return cv.toDataURL('image/png');
     };
+    // El guion de las fotos: el mismo sector pierde verde año a año.
+    const GUION_HD = { 2014: 40, 2017: 34, 2020: 28, 2023: 22 };
 
     /* El guion de la prueba: un sector que pierde vegetación y gana suelo
        duro entre 1984 y hoy, con un año medio tapado en el medio. */
@@ -223,7 +232,7 @@ for (let i = 0; i < 30; i++) {
     const pedidas = [];
     window.URBIS_EVOLUCION_URL = function (fuente, anio) {
       pedidas.push(fuente + ':' + anio);
-      if (fuente === 'wayback') return pintaColor('#4a7f52', '#8b8f7a');
+      if (fuente === 'wayback') return pintaVerde(GUION_HD[anio] != null ? GUION_HD[anio] : 16);
       const g = GUION[anio] || GUION[2024];
       return pinta(g, !!g.tapado);
     };
@@ -261,6 +270,24 @@ for (let i = 0; i < 30; i++) {
       return { medida: EV.medirIndice(im, [-1, 1]), hueco: EV.huecoDe(im) };
     })();
     o.conHueco = conHueco;
+
+    // ── Y la foto en color, con el clasificador de la cobertura.
+    o.medicionFoto = await (async () => {
+      const url = pintaVerde(40);
+      const im = await new Promise((ok, no) => {
+        const i2 = new Image(); i2.crossOrigin = 'anonymous';
+        i2.onload = () => {
+          const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+          const cx = cv.getContext('2d'); cx.drawImage(i2, 0, 0, 64, 64);
+          ok({ datos: cx.getImageData(0, 0, 64, 64).data, tam: 64 });
+        };
+        i2.onerror = () => no(new Error('no cargó'));
+        i2.src = url;
+      });
+      return EV.medirFoto(im);
+    })();
+    // Qué satélite se le pide a cada año.
+    o.plataformas = { a2004: EV.plataformasDe(2004), a2012: EV.plataformasDe(2012), a2019: EV.plataformasDe(2019) };
 
     // ── La caja del sector, cuadrada.
     const caja = EV.cajaDe(POL);
@@ -303,8 +330,9 @@ for (let i = 0; i < 30; i++) {
     for (let i = 0; i < 90 && !(H().textContent || '').match(/Desde 2014, en alta/); i++) await esperar(400);
     await esperar(500); await abrir();
     o.altaEnFicha = /Desde 2014, en alta/.test(hoja());
-    o.textoAlta = (hoja().match(/Desde 2014, en alta[^]{0,320}/) || [''])[0];
+    o.textoAlta = (hoja().match(/Desde 2014, en alta[^]{0,1600}?(?=Desde 1984, medido|$)/) || [''])[0];
     o.tiraAlta = H().querySelectorAll('.pcr-evo-alta .pcr-evo-p').length;
+    o.piesAlta = [...H().querySelectorAll('.pcr-evo-alta .pcr-evo-p small')].map(x => (x.textContent || '').trim());
     /* Y CUÁNTO MIDE en pantalla, que es distinto de cuántas hay. La tira se
        corre de lado, así que es un contenedor de scroll; dentro de la columna
        flexible de la ficha eso le quita el tamaño mínimo automático y la
@@ -332,10 +360,13 @@ for (let i = 0; i < 30; i++) {
     o.guardado = (function () {
       try {
         const f = (R.leerFichas() || [])[0] || {};
-        const e = f.evo && f.evo.landsat;
+        const e = f.evo && f.evo.landsat, w = f.evo && f.evo.wayback;
         return { hay: !!e, pasos: e ? e.pasos.length : 0,
                  conImagen: e ? e.pasos.filter(p => p.imagen).length : -1,
                  tendencia: !!(e && e.tendencia),
+                 fotos: w ? { medidas: w.pasos.filter(p => p.medida).length,
+                              conImagen: w.pasos.filter(p => p.imagen).length,
+                              tendencia: !!w.tendencia } : null,
                  pesoKB: Math.round((JSON.stringify(f.evo || {}).length) / 1024) };
       } catch (e2) { return { error: String(e2) }; }
     })();
@@ -408,6 +439,20 @@ for (let i = 0; i < 30; i++) {
   T('la franja sin dato se cuenta como hueco', (r.conHueco || {}).hueco > 10,
     (r.conHueco || {}).hueco + '% de hueco');
   T('y NO como agua', CH.agua === 0, CH.agua + '% de agua con 0 puesto');
+  /* La foto en color se mide con el clasificador de la cobertura: se le
+     ponen cuarenta filas verdes de cien y tiene que leer cuarenta. */
+  const MF = r.medicionFoto || {};
+  T('la foto en color se mide con el clasificador de la cobertura: 40 % puesto, 40 % leído',
+    Math.abs((MF.verde || 0) - 40) <= 1 && Math.abs((MF.duro || 0) - 60) <= 1,
+    MF.verde + '% verde · ' + MF.duro + '% duro');
+  /* Y a Landsat se le pide, por año, el satélite que no raya: el 7 perdió el
+     corrector de barrido en 2003 y así salía la estampa de 2004. */
+  const PL = r.plataformas || {};
+  T('a cada año de Landsat se le pide el satélite que no raya',
+    (PL.a2004 || []).indexOf('landsat-5') >= 0 && (PL.a2004 || []).indexOf('landsat-7') === -1 &&
+    (PL.a2012 || []).join() === 'landsat-7' && (PL.a2019 || []).indexOf('landsat-8') >= 0,
+    '2004 → ' + (PL.a2004 || []).join('/') + ' · 2012 → ' + (PL.a2012 || []).join('/') +
+    ' · 2019 → ' + (PL.a2019 || []).join('/'));
 
   console.log('\n  -- la caja que se le pide al satélite --');
   T('es cuadrada en el suelo, no en la proyección',
@@ -439,7 +484,7 @@ for (let i = 0; i < 30; i++) {
   T('diciendo que mide con NDVI y por qué no con el clasificador de colores',
     /NDVI/.test(r.textoFicha || '') && /dos cámaras/.test(r.textoFicha || ''));
 
-  console.log('\n  -- la serie de alta resolución no se mezcla --');
+  console.log('\n  -- la serie de alta resolución, medida --');
   T('trae sus fotos', r.altaEnFicha === true && r.tiraAlta >= 3, r.tiraAlta + ' fotos');
   /* Que se VEAN, no que estén. Las estampas son de 132 px y con el pie
      debajo la tira pasa de 150; aplastada medía diez, con las cinco figuras
@@ -455,25 +500,41 @@ for (let i = 0; i < 30; i++) {
      tienen entrega ninguna. Que la fecha viaje se comprueba abajo, con el
      adaptador de verdad, que es donde ese dato existe. */
   T('con su año debajo', G2.pie === true);
-  /* Lo que importa: NO llevan porcentajes. Ponerles un número al lado
-     invitaría a compararlos con los de Landsat, que es otro sensor y otro
-     procesamiento. */
-  T('y NO les pone porcentajes, a propósito',
-    /NO hay porcentajes a propósito/.test(r.textoAlta || '') &&
-    !/%\s*verde/.test(r.textoAlta || ''),
-    (r.textoAlta || '').slice(0, 80));
+  /* Se pidió «el verde medido sobre las fotos HD»: cada foto lleva su
+     porcentaje, leído con el mismo clasificador que la cobertura de hoy, y
+     la conclusión sale de ahí. Antes no llevaban número a propósito; ahora
+     lo que se defiende es que se comparen ENTRE SÍ y no con Landsat. */
+  T('y cada foto lleva su verde, medido',
+    (r.piesAlta || []).length >= 4 && (r.piesAlta || []).every(x => /\d+(,\d)?% verde/.test(x)),
+    (r.piesAlta || []).join(' · '));
+  T('con el clasificador de la foto de hoy, dicho así',
+    /mismo clasificador/.test(r.textoAlta || '') && /no se comparan/.test(r.textoAlta || ''),
+    (r.textoAlta || '').slice(-160));
+  T('y la conclusión sale de las fotos: perdió vegetación y se urbanizó',
+    /perdió vegetación entre 2014 y 20\d\d/.test(r.textoAlta || '') && /Se urbanizó/.test(r.textoAlta || ''),
+    ((r.textoAlta || '').match(/perdió vegetación[^%]*%/) || ['no lo dice'])[0]);
+  T('es lo que va al pliego, y lo dice', /lo que va al pliego/.test(r.textoAlta || ''));
 
   console.log('\n  -- y llega al papel --');
   const EV = cajaDe('Cómo cambió el sitio');
   const PDF = r.pdf || '';
   const secPDF = (PDF.split('<h2>').filter(x => x.indexOf('Cómo cambió el sitio</h2>') === 0)[0] || '');
   T('la lámina trae su caja', !!EV);
-  T('con las estampas y los dos extremos',
-    (EV.match(/<figure class="evo-p/g) || []).length >= 8 &&
-    /verde en 1984/.test(EV) && /verde en 2\d{3}/.test(EV),
-    (EV.match(/<figure class="evo-p/g) || []).length + ' estampas');
+  /* Solo las fotos: «solo HD desde 2014, sin la Landsat rayada de 2004, y
+     el verde medido sobre las HD». Las estampas de la caja son las de alta
+     resolución —una por año pedido— con su porcentaje debajo, los dos
+     extremos son 2014 y hoy, y la conclusión sale de ellas. */
+  const anioHoy = new Date().getFullYear();
+  T('con las fotos, una por año, y los dos extremos: 2014 y hoy',
+    (EV.match(/<figure class="evo-p/g) || []).length === (r.tiraAlta || 0) &&
+    /verde en 2014/.test(EV) && new RegExp('verde en ' + anioHoy).test(EV),
+    (EV.match(/<figure class="evo-p/g) || []).length + ' estampas · ' + r.tiraAlta + ' fotos');
+  T('cada una con su verde debajo', (EV.match(/% verde<\/small>/g) || []).length >= 4,
+    (EV.match(/% verde<\/small>/g) || []).length + ' con porcentaje');
   T('la conclusión, y de dónde sale el número',
-    /perdió vegetación/.test(EV) && /NDVI/.test(EV) && /30 m por píxel/.test(EV));
+    /perdió vegetación entre 2014/.test(EV) && /mismo clasificador/.test(EV));
+  T('y sin la serie de Landsat: ni sus estampas, ni sus rayas, ni 1984',
+    !/<div class="evo-tira">/.test(EV) && !/1984/.test(EV) && !/NDVI/.test(EV));
   /* ── Las fotos, diagramadas en los dos ───────────────────────────────
      Se pidió que el historial saliera «diagramado en el PDF» y no salía: la
      caja del pliego solo sabía dibujar la serie de Landsat —la que mide— y
@@ -498,10 +559,16 @@ for (let i = 0; i < 30; i++) {
     /\.caja-fila \.evo-alta \.evo-p\{ flex:1 1 0/.test(r.lamina || '') &&
     /\.caja-fila \.evo-alta \.evo-p img\{ width:100%; height:auto; aspect-ratio:1 \/ 1/.test(r.lamina || ''));
   T('con la serie medida y la conclusión en dos columnas debajo', /<div class="evo-cuerpo">/.test(cajaEvo));
+  /* El informe en hojas es el archivo: trae las fotos con su verde y, detrás,
+     la serie de Landsat que se midió, cada una con su conclusión. */
   T('el informe en hojas trae las dos tiras, con sus imágenes',
     /<div class="evo evo-alta">/.test(secPDF) && /<div class="evo">/.test(secPDF) &&
     (secPDF.match(/<img src="data:image/g) || []).length >= 8,
     (secPDF.match(/<img src="data:image/g) || []).length + ' imágenes en el informe');
+  T('las fotos primero, con su verde, y Landsat detrás como «más atrás»',
+    secPDF.indexOf('en alta resolución</h3>') >= 0 &&
+    secPDF.indexOf('en alta resolución</h3>') < secPDF.indexOf('Más atrás, con Landsat') &&
+    /perdió vegetación entre 2014/.test(secPDF) && /perdió vegetación entre 1984/.test(secPDF));
   T('y sigue trayendo las cifras y la conclusión',
     /% verde · /.test(secPDF) && /perdió vegetación/.test(secPDF));
   /* Una ficha archivada no guarda las estampas —son megas— así que al
@@ -517,6 +584,9 @@ for (let i = 0; i < 30; i++) {
      en total: guardarlas se comería la salida entera de un curso. */
   T('y SIN las imágenes, que son megas', G.conImagen === 0 && G.pesoKB < 40,
     G.conImagen + ' con imagen · ' + G.pesoKB + ' KB');
+  T('las fotos guardan su verde y su tendencia, también sin imagen',
+    !!G.fotos && G.fotos.medidas >= 4 && G.fotos.conImagen === 0 && G.fotos.tendencia,
+    JSON.stringify(G.fotos));
 
   /* ── Lo que se le pide al servicio de verdad ──────────────────────────
      Esto es lo que no existía y por lo que el historial no funcionaba en un
@@ -555,8 +625,13 @@ for (let i = 0; i < 30; i++) {
 
   console.log('\n  -- Landsat: la ruta la dice el servidor, no se adivina --');
   const PCP = r.pc || [];
+  T('y la búsqueda de Landsat lleva puesto el satélite del año: el 5 para 1990 y 2000',
+    (r.pc || []).filter(x => /mosaic\/register/.test(x) && /"platform"/.test(x) && /landsat-5/.test(x) &&
+                             !/landsat-7/.test(x)).length >= 2,
+    ((r.pc || []).filter(x => /register/.test(x)).map(x => (x.match(/"platform":\{[^}]*\}/) || ['sin platform'])[0])).join(' · '));
   T('registra la búsqueda una vez por año, con la colección y la nube tolerada',
-    PCP.filter(x => /^POST .*\/mosaic\/register$/.test(x)).length === 2,
+    PCP.filter(x => /^POST .*\/mosaic\/register \{/.test(x) && /"collections":\["landsat-c2-l2"\]/.test(x) &&
+                    /"eo:cloud_cover":\{"lt":30\}/.test(x)).length === 2,
     PCP.filter(x => /register/.test(x)).length + ' registros');
   T('pide el tilejson por el enlace que devolvió el registro',
     PCP.some(x => /\/mosaic\/abc123\/tilejson\.json\?/.test(x)),

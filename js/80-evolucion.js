@@ -279,6 +279,17 @@
   }
 
   var busquedas = {};
+  /* Qué satélite se le pide a cada año. Landsat 7 perdió el corrector de
+     barrido en 2003 y desde entonces sus escenas llegan RAYADAS —franjas sin
+     dato cada pocas líneas— y así salía la estampa de 2004 en el pliego. En
+     esos años Landsat 5 seguía volando, sin rayas, y desde 2013 están el 8 y
+     el 9. Se pide el satélite y no solo el año: 2012 es el único hueco —el 5
+     se apagó en 2011 y el 8 subió en 2013— y ahí no queda más que el 7. */
+  function plataformasDe(anio) {
+    if (anio <= 2011) return ['landsat-4', 'landsat-5'];
+    if (anio === 2012) return ['landsat-7'];
+    return ['landsat-8', 'landsat-9'];
+  }
   function registrarBusqueda(anio, caja) {
     var llave = anio + ':' + Math.round(caja.latC * 1000) + ',' + Math.round(caja.lngC * 1000);
     if (busquedas[llave]) return busquedas[llave];
@@ -287,8 +298,9 @@
       datetime: anio + '-01-01T00:00:00Z/' + anio + '-12-31T23:59:59Z',
       bbox: [caja.o, caja.s, caja.e, caja.n],
       // Menos de un tercio de nube: por encima de eso la escena mide la nube
-      // y no el suelo, y la serie mentiría con cara de dato.
-      query: { 'eo:cloud_cover': { lt: 30 } },
+      // y no el suelo, y la serie mentiría con cara de dato. Y el satélite
+      // sin rayas de ese año, ver `plataformasDe`.
+      query: { 'eo:cloud_cover': { lt: 30 }, platform: { in: plataformasDe(anio) } },
       // La más limpia primero, que es la que el mosaico va a usar arriba.
       sortby: [{ field: 'eo:cloud_cover', direction: 'asc' }]
     };
@@ -471,6 +483,53 @@
              verde: pct(rala + viva) };
   }
 
+  /* ── Medir una foto en color ───────────────────────────────────────────
+     Las fotos de alta resolución salen del MISMO proveedor que la foto de hoy
+     —son sus entregas anteriores— y por eso se pueden leer con el mismo
+     clasificador de colores con el que URBIS lee la cobertura del suelo: lo
+     que en 2014 era verde se ve verde con la misma cámara en 2024. Antes no
+     llevaban número a propósito, para que nadie las comparara con Landsat; se
+     pidió lo contrario —«que el verde salga medido de las fotos HD»— y tiene
+     sentido mientras la comparación sea entre ellas. Con Landsat siguen sin
+     compararse: otro sensor.
+
+     El clasificador se toma de js/24 cuando está —es el mismo código, con
+     los mismos umbrales, y si se ajusta allá se ajusta acá— y si no, la
+     copia de abajo, que es la misma regla escrita una vez más. */
+  var VERDE_FIRME = 0.07, VERDE_SAT = 0.17;
+  function clasePixel(r, g, b) {
+    var A = window.URBIS_PC_ANALISIS;
+    if (A && typeof A.clasificarPixel === 'function') return A.clasificarPixel(r, g, b);
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var sat = max === 0 ? 0 : (max - min) / max;
+    var suma = r + g + b || 1;
+    var R = r / suma, G = g / suma, B = b / suma;
+    var exg = 2 * G - R - B, exb = 2 * B - R - G, luz = suma / 3;
+    if (exg > VERDE_FIRME && g > r && sat >= VERDE_SAT) return 'verde';
+    if (exb > 0.09 && luz < 125) return 'agua';
+    if (sat < 0.16) return 'construido';
+    return 'mixto';
+  }
+  function medirFoto(img) {
+    var d = img.datos, n = 0, verde = 0, agua = 0, duro = 0, mixto = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 250) continue;
+      n++;
+      var c = clasePixel(d[i], d[i + 1], d[i + 2]);
+      if (c === 'verde') verde++;
+      else if (c === 'agua') agua++;
+      else if (c === 'construido') duro++;
+      else mixto++;
+    }
+    if (!n) return null;
+    var pct = function (x) { return Math.round(1000 * x / n) / 10; };
+    /* Las mismas llaves que la medición de índice, para que la tendencia y
+       la conclusión se calculen igual: el verde de la foto es todo «viva»
+       —el color no separa rala de viva— y lo gris neutro es lo duro. */
+    return { pixeles: n, agua: pct(agua), duro: pct(duro), mixto: pct(mixto),
+             rala: 0, viva: pct(verde), verde: pct(verde) };
+  }
+
   /* Cuánto de la imagen es hueco. Con una escena medio cubierta de nube —o
      medio fuera del borde— la proporción se calcula sobre lo que quedó, y eso
      puede ser una muestra sesgada: se dice y el año se marca. */
@@ -537,7 +596,7 @@
         return traerDe(fuente.id, anio, caja, tam, o.msTope)
           .then(function (img) {
             var hueco = huecoDe(img);
-            var med = fuente.modo === 'indice' ? medirIndice(img, fuente.rango) : null;
+            var med = fuente.modo === 'indice' ? medirIndice(img, fuente.rango) : medirFoto(img);
             pasos.push({ anio: anio, ok: true, hueco: hueco,
                          // Con más de la mitad sin dato, la proporción se
                          // calcula sobre una muestra que no representa nada.
@@ -592,46 +651,50 @@
     if (!s || !s.tendencia) return [];
     var t = s.tendencia, out = [];
     var pp = function (x) { return (x > 0 ? '+' : '') + String(x).replace('.', ',') + ' puntos'; };
+    // Con coma, como el resto del papel: «41,4 %» y no «41.4 %».
+    var c = function (x) { return String(x).replace('.', ','); };
 
     if (t.verde <= -MINIMO) {
       out.push({ tema: 'ambiental', signo: 'mal',
         texto: 'El sector perdió vegetación entre ' + t.desde + ' y ' + t.hasta,
-        dato: t.verdeDesde + '% → ' + t.verdeHasta + '% (' + pp(t.verde) + ')' });
+        dato: c(t.verdeDesde) + '% → ' + c(t.verdeHasta) + '% (' + pp(t.verde) + ')' });
     } else if (t.verde >= MINIMO) {
       out.push({ tema: 'ambiental', signo: 'bien',
         texto: 'El sector ganó vegetación entre ' + t.desde + ' y ' + t.hasta,
-        dato: t.verdeDesde + '% → ' + t.verdeHasta + '% (' + pp(t.verde) + ')' });
+        dato: c(t.verdeDesde) + '% → ' + c(t.verdeHasta) + '% (' + pp(t.verde) + ')' });
     } else {
       out.push({ tema: 'ambiental', signo: 'igual',
         texto: 'La vegetación del sector se mantuvo entre ' + t.desde + ' y ' + t.hasta,
-        dato: t.verdeDesde + '% → ' + t.verdeHasta + '%' });
+        dato: c(t.verdeDesde) + '% → ' + c(t.verdeHasta) + '%' });
     }
 
     if (t.duro >= MINIMO) {
       out.push({ tema: 'urbanizacion', signo: 'mal',
         texto: 'Se urbanizó: creció la superficie sin vegetación, que a esta escala es lo construido',
-        dato: t.duroDesde + '% → ' + t.duroHasta + '% (' + pp(t.duro) + ')' });
+        dato: c(t.duroDesde) + '% → ' + c(t.duroHasta) + '% (' + pp(t.duro) + ')' });
     } else if (t.duro <= -MINIMO) {
       out.push({ tema: 'urbanizacion', signo: 'bien',
         texto: 'Retrocedió la superficie dura: o se reverdeció, o se abandonó',
-        dato: t.duroDesde + '% → ' + t.duroHasta + '% (' + pp(t.duro) + ')' });
+        dato: c(t.duroDesde) + '% → ' + c(t.duroHasta) + '% (' + pp(t.duro) + ')' });
     }
 
     if (t.agua <= -MINIMO) {
       out.push({ tema: 'hidrica', signo: 'mal',
         texto: 'Hay menos agua a la vista que en ' + t.desde +
                '. Puede ser sequía, puede ser una quebrada canalizada o entubada',
-        dato: t.aguaDesde + '% → ' + t.aguaHasta + '%' });
+        dato: c(t.aguaDesde) + '% → ' + c(t.aguaHasta) + '%' });
     } else if (t.agua >= MINIMO) {
       out.push({ tema: 'hidrica', signo: 'ojo',
         texto: 'Hay más agua a la vista que en ' + t.desde +
                '. Conviene mirar si el sitio se inunda o si cambió el cauce',
-        dato: t.aguaDesde + '% → ' + t.aguaHasta + '%' });
+        dato: c(t.aguaDesde) + '% → ' + c(t.aguaHasta) + '%' });
     }
     return out;
   }
 
   window.URBIS_EVOLUCION = {
+    medirFoto: medirFoto,
+    plataformasDe: plataformasDe,
     FUENTES: FUENTES,
     ENTREGAS: ENTREGAS,
     entregaDe: entregaDe,

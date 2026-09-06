@@ -1560,55 +1560,68 @@
     var conFoto = function (ps) {
       return (ps || []).filter(function (p) { return p.ok && p.imagen; });
     };
+    var anioDe = function (p) { return p.anioReal || p.anio; };
     var fotos = conFoto(W && W.pasos);
-    var medidos = conFoto(L && L.pasos).filter(function (p) { return p.medida; });
-    var cifras = ((L && L.pasos) || []).filter(function (p) { return p.ok && p.medida; });
-    if (!fotos.length && cifras.length < 2) return '';
-    var t = L && L.tendencia;
+    var cifrasW = ((W && W.pasos) || []).filter(function (p) { return p.ok && p.medida; });
+    var medidosL = conFoto(L && L.pasos).filter(function (p) { return p.medida; });
+    var cifrasL = ((L && L.pasos) || []).filter(function (p) { return p.ok && p.medida; });
+    if (!fotos.length && cifrasW.length < 2 && cifrasL.length < 2) return '';
     /* Las estampas, también acá. El informe llevaba una tabla de porcentajes
        y ninguna imagen: se pidió que el historial saliera «diagramado en el
        PDF», y una tabla de números no es el historial de un sitio, es su
        resumen. La regla de siempre —una medición entra en los dos documentos
-       o en ninguno— vale igual para cómo se presenta. */
+       o en ninguno— vale igual para cómo se presenta. El informe es el
+       archivo: trae las fotos, que son lo que va al pliego, y detrás la
+       serie de Landsat si se midió, que al pliego no va. */
     var tira = function (pasos, clase, pieDe) {
       if (!pasos.length) return '';
       return '<div class="evo' + (clase ? ' ' + clase : '') + '">' +
         pasos.map(function (p) {
           return '<figure' + (p.fiable === false || p.sustituto ? ' class="dudoso"' : '') + '>' +
-            '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) + '">' +
-            '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
+            '<img src="' + p.imagen + '" alt="El sector en ' + anioDe(p) + '">' +
+            '<figcaption>' + anioDe(p) + '</figcaption>' +
             '<small>' + esc(pieDe(p)) + '</small></figure>';
         }).join('') + '</div>';
     };
-    return '<h2>Cómo cambió el sitio</h2>' +
-      (fotos.length
-        ? '<h3>Las fotos, de ' + (fotos[0].anioReal || fotos[0].anio) + ' a ' +
-          (fotos[fotos.length - 1].anioReal || fotos[fotos.length - 1].anio) + '</h3>' +
-          tira(fotos, 'evo-alta', function (p) { return p.fecha || ''; }) +
-          '<p class="pie">Debajo de cada foto va la <b>fecha de la entrega</b> de la que salió, no ' +
-          'el año que se pidió: el proveedor publica por entregas fechadas. Son para mirar —qué se ' +
-          'construyó, qué se taló, por dónde iba el agua— y por eso no llevan porcentaje.</p>'
-        : '') +
-      (medidos.length ? '<h3>Medido desde ' + medidos[0].anio + '</h3>' +
-        tira(medidos, '', function (p) { return conComa(p.medida.verde) + '% verde'; }) : '') +
-      (cifras.length
-        ? '<table>' + cifras.map(function (p) {
-            return '<tr><td>' + p.anio + (p.fiable ? '' : ' (medio tapado, no cuenta)') +
-              '</td><td class="n">' + conComa(p.medida.verde) + '% verde · ' +
-              conComa(p.medida.duro) + '% duro · ' + conComa(p.medida.agua) + '% agua</td></tr>';
-          }).join('') + '</table>'
-        : '') +
-      (t
-        ? EV.conclusion(L).map(function (c) {
+    var tabla = function (cifras) {
+      return '<table>' + cifras.map(function (p) {
+        return '<tr><td>' + anioDe(p) + (p.fiable === false ? ' (medio tapado, no cuenta)' : '') +
+          '</td><td class="n">' + conComa(p.medida.verde) + '% verde · ' +
+          conComa(p.medida.duro) + '% duro · ' + conComa(p.medida.agua) + '% agua</td></tr>';
+      }).join('') + '</table>';
+    };
+    var frases = function (s2) {
+      return s2 && s2.tendencia
+        ? EV.conclusion(s2).map(function (c) {
             return '<p>' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
           }).join('')
+        : '';
+    };
+    return '<h2>Cómo cambió el sitio</h2>' +
+      (fotos.length
+        ? '<h3>De ' + anioDe(fotos[0]) + ' a ' + anioDe(fotos[fotos.length - 1]) +
+          ', en alta resolución</h3>' +
+          tira(fotos, 'evo-alta', function (p) {
+            return (p.fecha ? p.fecha + ' · ' : '') + (p.medida ? conComa(p.medida.verde) + '% verde' : '');
+          })
         : '') +
-      (cifras.length
-        ? '<p class="pie">Landsat, 30 m por píxel: la imagen se ve a cuadros y el lote son unos ' +
+      (cifrasW.length ? tabla(cifrasW) + frases(W) : '') +
+      (fotos.length || cifrasW.length
+        ? '<p class="pie">Debajo de cada foto, la <b>fecha de la entrega</b> de la que salió y el ' +
+          'porcentaje del sector con vegetación, medido sobre la foto con el mismo clasificador que ' +
+          'lee la cobertura de hoy; todas salen del mismo proveedor y por eso los años se comparan ' +
+          'entre sí. Una diferencia menor de 3 puntos cabe en el error y no se afirma.</p>'
+        : '') +
+      (cifrasL.length
+        ? '<h3>Más atrás, con Landsat · desde ' + cifrasL[0].anio + '</h3>' +
+          tira(medidosL, '', function (p) { return conComa(p.medida.verde) + '% verde'; }) +
+          tabla(cifrasL) + frases(L) +
+          '<p class="pie">Landsat, 30 m por píxel: la imagen se ve a cuadros y el lote son unos ' +
           'pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí aguanta. Con ' +
-          'NDVI, el índice de la banda infrarroja, que significa lo mismo en 1984 y hoy; el ' +
-          'clasificador de colores de la foto de hoy mediría la diferencia entre dos cámaras. Los ' +
-          'años medio tapados por nubes se marcan y no entran en la conclusión.</p>'
+          'NDVI, el índice de la banda infrarroja, que significa lo mismo en 1984 y hoy; por eso ' +
+          'estos porcentajes NO se comparan con los de las fotos de arriba, que son de otro sensor. ' +
+          'Los años medio tapados por nubes se marcan y no entran en la conclusión. A cada año se ' +
+          'le pide el satélite que no raya: Landsat 5 hasta 2011, 8 y 9 desde 2013.</p>'
         : '');
   }
 
@@ -3774,51 +3787,42 @@ function donaHTML(datos, colorDe, nombreDe) {
       (function () {
       var EV = window.URBIS_EVOLUCION;
       var ev = (o.evo !== undefined ? o.evo : S.evo) || {};
-      var L = ev.landsat, W = ev.wayback;
-      if (!EV) return '';
-      /* Las estampas no viajan con la ficha archivada —quince PNG son megas y
-         el almacenamiento del teléfono son cinco en total— así que una lámina
-         reimpresa de un sector viejo trae las cifras y no las fotos. Se
-         comprueba por imagen y no por paso: un `<img src="undefined">` es un
+      var W = ev.wayback;
+      if (!EV || !W) return '';
+      /* Solo las fotos de alta resolución. Son las que se miran y, desde que
+         el verde se mide sobre ellas, también las que se comparan. La serie
+         de Landsat ya no va al papel —se pidió con la estampa rayada de 2004
+         en la mano— y queda en la ficha para quien quiera mirar más atrás.
+         Las estampas no viajan con la ficha archivada —son megas—, así que
+         una lámina reimpresa de un sector viejo trae las cifras y no las
+         fotos; se comprueba por imagen: un `<img src="undefined">` es un
          recuadro roto en mitad del pliego. */
-      var conFoto = function (ps) {
-        return (ps || []).filter(function (p) { return p.ok && p.imagen; });
-      };
-      var tira = function (pasos, clase, pieDe) {
-        if (!pasos.length) return '';
-        return '<div class="evo-tira' + (clase ? ' ' + clase : '') + '">' +
-        pasos.map(function (p) {
-          return '<figure class="evo-p' + (p.fiable === false || p.sustituto ? ' evo-dudoso' : '') + '">' +
-          '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) + '">' +
-          '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
-          '<small>' + esc(pieDe(p)) + '</small></figure>';
-        }).join('') + '</div>';
-      };
-
-      /* ── Las fotos, primero ──────────────────────────────────────────
-         Se pidió que el historial saliera «diagramado en el PDF» y hasta
-         ahora no salía: la caja solo sabía dibujar la serie de Landsat, que
-         es la que mide, y la de alta resolución —la que se mira, y la única
-         que de verdad funciona hoy— no llegaba al papel ni en el pliego ni en
-         el informe. Van arriba porque son las que se leen de lejos: un jurado
-         ve tres fotos del mismo sitio en tres décadas y entiende el proyecto
-         antes de que se lo expliquen. */
-      var fotos = conFoto(W && W.pasos);
-      var medidos = conFoto(L && L.pasos).filter(function (p) { return p.medida; });
-      var cifras = (L && L.pasos || []).filter(function (p) { return p.ok && p.medida; });
-      if (!fotos.length && !cifras.length) return '';
-      var t = L && L.tendencia;
-      var conc = (L && cifras.length >= 2) ? (EV.conclusion(L) || []) : [];
-
+      var fotos = (W.pasos || []).filter(function (p) { return p.ok && p.imagen; });
+      var cifras = (W.pasos || []).filter(function (p) { return p.ok && p.medida; });
+      if (!fotos.length && cifras.length < 2) return '';
+      var t = W.tendencia;
+      var conc = cifras.length >= 2 ? (EV.conclusion(W) || []) : [];
+      var anioDe = function (p) { return p.anioReal || p.anio; };
       return (fotos.length
-      ? '<p class="lee">Las fotos, de ' + (fotos[0].anioReal || fotos[0].anio) + ' a ' +
-        (fotos[fotos.length - 1].anioReal || fotos[fotos.length - 1].anio) + '</p>' +
-        tira(fotos, 'evo-alta', function (p) { return p.fecha || ''; })
+      ? '<p class="lee">De ' + anioDe(fotos[0]) + ' a ' + anioDe(fotos[fotos.length - 1]) +
+        ', en alta resolución</p>' +
+        '<div class="evo-tira evo-alta">' +
+        fotos.map(function (p) {
+          return '<figure class="evo-p' + (p.sustituto ? ' evo-dudoso' : '') + '">' +
+          '<img src="' + p.imagen + '" alt="El sector en ' + anioDe(p) + '">' +
+          '<figcaption>' + anioDe(p) + '</figcaption>' +
+          '<small>' + (p.fecha ? esc(p.fecha) + ' · ' : '') +
+            (p.medida ? conComa(p.medida.verde) + '% verde' : '') + '</small></figure>';
+        }).join('') + '</div>'
       : '') +
       '<div class="evo-cuerpo"><div>' +
-      (medidos.length
-      ? '<p class="lee">Medido desde ' + (medidos[0].anio) + '</p>' +
-        tira(medidos, '', function (p) { return conComa(p.medida.verde) + '% verde'; })
+      (cifras.length
+      ? '<p class="lee">El verde, año por año</p>' +
+        cifras.map(function (p) {
+          return fila(String(anioDe(p)), conComa(p.medida.verde) + '% verde · ' +
+            conComa(p.medida.duro) + '% duro' +
+            (p.medida.agua ? ' · ' + conComa(p.medida.agua) + '% agua' : ''));
+        }).join('')
       : '') +
       '</div><div>' +
       (t
@@ -3833,21 +3837,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       return '<p class="lee">' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
       }).join('') +
       '</div></div>' +
-      '<p class="nota">' +
-      (fotos.length
-      ? 'Debajo de cada foto va la <b>fecha de la entrega</b> de la que salió, no el año que se ' +
-        'pidió: el proveedor publica por entregas fechadas. Las fotos son para MIRAR —qué se ' +
-        'construyó, qué se taló, por dónde iba el agua— y por eso no llevan porcentaje. '
-      : '') +
-      (cifras.length
-      ? 'Los porcentajes salen de Landsat a 30 m por píxel: la estampa se ve a cuadros y el lote ' +
-        'son unos pocos píxeles, pero lo que se mide es una proporción sobre miles y eso sí ' +
-        'aguanta. Con <b>NDVI</b>, el índice de la banda infrarroja, que significa lo mismo en ' +
-        (t ? t.desde : 1984) + ' y hoy; el clasificador de colores de la foto de hoy mediría la ' +
-        'diferencia entre dos cámaras. Los años medio tapados por nubes se marcan y no entran en ' +
-        'la conclusión.'
-      : '') +
-      '</p>';
+      '<p class="nota">Debajo de cada foto, la <b>fecha de la entrega</b> de la que salió —el ' +
+      'proveedor publica por entregas fechadas, no por años— y el porcentaje del sector con ' +
+      'vegetación, medido sobre la foto con el <b>mismo clasificador</b> de colores que lee la ' +
+      'cobertura de hoy. Todas salen del mismo proveedor, así que los años se comparan entre sí; ' +
+      'una diferencia menor de 3 puntos cabe en el error y no se afirma.</p>';
       })(), 'g3') +
 
       /* ── La infraestructura de servicios ──────────────────────────────
@@ -9512,15 +9506,17 @@ function donaHTML(datos, colorDe, nombreDe) {
         dato: S.inundacion && S.inundacion.nombre
           ? String(S.inundacion.nombre).toLowerCase()
           : 'las manchas del IDEAM' },
+      /* Las fotos de alta resolución, con su verde medido: es lo que va al
+         papel. La serie de Landsat ya no cuenta para esta caja. */
       { id: 'como-cambio-el-sitio', t: 'Cómo cambió el sitio', g: 'El suelo',
-        listo: !!(S.evo && S.evo.landsat && (S.evo.landsat.pasos || [])
+        listo: !!(S.evo && S.evo.wayback && (S.evo.wayback.pasos || [])
                    .filter(function (p) { return p.ok && p.medida; }).length >= 2),
-        falta: 'pedí la evolución desde 1984',
+        falta: 'pedí las fotos desde 2014',
         dato: (function () {
-          var t = S.evo && S.evo.landsat && S.evo.landsat.tendencia;
+          var t = S.evo && S.evo.wayback && S.evo.wayback.tendencia;
           return t ? t.desde + ' → ' + t.hasta + ' · ' + (t.verde > 0 ? '+' : '') +
                      conComa(t.verde) + ' puntos de verde'
-                   : 'la serie de Landsat y su tendencia';
+                   : 'las fotos desde 2014 y su verde';
         })() },
       { id: 'infraestructura-de-servicios', t: 'Infraestructura de servicios', g: 'El suelo',
         listo: (function () {
@@ -9620,7 +9616,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'el-clima': 'clima',
       'la-amenaza-sismica': 'amenaza',
       'la-inundacion': S.amenaza ? null : 'amenaza',
-      'como-cambio-el-sitio': 'evolucion',
+      'como-cambio-el-sitio': 'evolucion-alta',
       'cobertura-del-suelo': 'cobertura',
       'el-lote-a-intervenir': 'lote-dibujar',
       'que-cabe-en-el-lote': 'lote-dibujar',
@@ -11041,7 +11037,8 @@ function donaHTML(datos, colorDe, nombreDe) {
      por caja: es el mismo verbo que usa el botón real. */
   var VERBO_DE = {
     trazado: 'se mide', terreno: 'se mide', clima: 'se pide', amenaza: 'se pide',
-    cobertura: 'se lee la foto', evolucion: 'se pide', 'lote-dibujar': 'se marca',
+    cobertura: 'se lee la foto', evolucion: 'se pide', 'evolucion-alta': 'se traen las fotos',
+    'lote-dibujar': 'se marca',
     'int-dibujar': 'vas a los lápices', campo: 'se compara', analizar: 'se analiza'
   };
   function bloquePliego(res) {
@@ -16444,37 +16441,62 @@ function donaHTML(datos, colorDe, nombreDe) {
     var L = e.landsat, W = e.wayback;
     var cargando = S.evoCargando;
 
+    /* Las fotos de alta resolución mandan, y son las que van al pliego. Se
+       pidió con el pliego en la mano: «solo las fotos HD desde 2014, sin la
+       Landsat rayada de 2004, y el verde medido sobre las HD». Landsat se
+       queda en la ficha, segunda, para quien quiera saber si el sector ya
+       venía perdiendo verde antes de 2014: sirve para medir la tendencia
+       larga y se ve a cuadros; al papel no va. */
     var cab = h4('reloj', 'Cómo cambió el sitio') +
-      '<p class="pcr-pista">Dos series de imágenes satelitales del mismo sector. La larga ' +
-      'arranca en <b>1984</b> y se ve a cuadros —treinta metros por píxel—, pero sirve para ' +
-      '<b>medir</b>: lo que se calcula no es una forma sino una proporción sobre miles de ' +
-      'píxeles. La corta arranca en <b>2014</b> en alta resolución y sirve para <b>mirar</b>.</p>';
+      '<p class="pcr-pista">Las fotos del mismo sector desde <b>2014</b>, en alta resolución y ' +
+      'del mismo proveedor que la foto de hoy, con el <b>verde medido</b> sobre cada una. Son las ' +
+      'que van al pliego. Más atrás solo llega Landsat —desde 1984, a treinta metros por píxel—, ' +
+      'que mide la tendencia larga y se queda en la ficha.</p>';
 
-    /* Las fotos van PRIMERO, y el orden es una confesión: la serie de alta
-       resolución está comprobada contra el servicio de verdad —la prueba
-       intercepta la red y verifica qué se pide y a dónde— y la de Landsat no.
-       Se escribió siguiendo la forma documentada de su API, pero desde donde
-       se programa la red no llega a ese dominio y no hay manera de
-       confirmarlo. Ofrecer primero la que se sabe que anda, y decir de la
-       otra que está en prueba, es lo honesto mientras siga así. */
     var botones = '<div class="pcr-llevar">' +
       '<button type="button" data-pcr="evolucion-alta" class="pcr-mini pcr-llevar-b"' +
         (cargando ? ' disabled' : '') + '>' + ico('ojo', 16) +
-        (cargando === 'wayback' ? 'Trayendo…' : (W ? 'Rehacer las fotos' : 'Ver las fotos desde 2014')) +
+        (cargando === 'wayback' ? 'Trayendo…' : (W ? 'Rehacer desde 2014' : 'Ver cómo cambió desde 2014')) +
       '</button>' +
       '<button type="button" data-pcr="evolucion" class="pcr-mini"' +
         (cargando ? ' disabled' : '') + '>' + ico('crecer', 16) +
-        (cargando === 'landsat' ? 'Trayendo…' : (L ? 'Rehacer desde 1984' : 'Medir desde 1984')) +
+        (cargando === 'landsat' ? 'Trayendo…' : (L ? 'Rehacer desde 1984' : 'Medir desde 1984 con Landsat')) +
       '</button>' +
     '</div>' +
-    (L ? '' : '<p class="pcr-pista">Las fotos desde 2014 salen del mismo proveedor que la foto ' +
-      'de hoy y están comprobadas. La medición desde 1984 pide otro catálogo —el de Landsat— y ' +
-      '<b>todavía no se ha podido confirmar contra el servicio</b>: si falla, la ficha dice qué ' +
-      'contestó el servidor en vez de encogerse de hombros.</p>') +
+    (L ? '' : '<p class="pcr-pista">La serie de Landsat no va al pliego: se ve a cuadros y, si ' +
+      'falla, la ficha dice qué contestó el servidor. Se pide el satélite sin rayas de cada año.</p>') +
     (cargando ? '<p class="pcr-conc" id="pcr-evo-estado">' + esc(S.evoAviso || 'Trayendo…') + '</p>' : '') +
     (S.evoAviso && !cargando ? '<p class="pcr-error">' + esc(S.evoAviso) + '</p>' : '');
 
-    return cab + botones + serieLarga(L) + serieCorta(W);
+    return cab + botones + serieCorta(W) + serieLarga(L);
+  }
+
+  /* Las barras de una serie medida: un renglón por año con su porcentaje de
+     verde, a escala del mayor. Las dos series las usan igual. */
+  function barrasDeVerde(pasos, anioDe) {
+    if (!pasos.length) return '';
+    var maxV = pasos.reduce(function (m, p) { return Math.max(m, p.medida.verde); }, 1);
+    return '<div class="pcr-niveles">' +
+      pasos.map(function (p) {
+        return '<div class="pcr-nivel">' +
+          '<span class="pcr-nivel-nom">' + anioDe(p) +
+            (p.fiable === false ? '<span class="pcr-nivel-sub">medio tapado, no cuenta</span>' : '') + '</span>' +
+          '<span class="pcr-nivel-barra"><i style="width:' +
+            Math.max(2, Math.round(100 * p.medida.verde / maxV)) + '%"></i></span>' +
+          '<b class="pcr-nivel-n">' + String(p.medida.verde).replace('.', ',') + '%</b>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+  function frasesDe(s2, conc) {
+    return conc.length
+      ? '<ul class="pcr-sintesis pcr-sintesis-bien">' +
+          conc.map(function (c) {
+            return '<li><span>' + esc(c.texto) + '</span><b>' + esc(c.dato) + '</b></li>';
+          }).join('') +
+        '</ul>'
+      : '<p class="pcr-pista">La serie no da para afirmar un cambio: las diferencias caben ' +
+        'dentro del error de medir con otra fecha del año y otra luz.</p>';
   }
 
   function serieLarga(s2) {
@@ -16494,8 +16516,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         detalleDelFallo();
     }
     var conc = EV.conclusion(s2) || [];
-    var maxV = buenos.reduce(function (m, p) { return Math.max(m, p.medida.verde); }, 1);
-    return '<p class="pcr-lab">Desde 1984, medido</p>' +
+    return '<p class="pcr-lab">Desde 1984, medido con Landsat · no va al pliego</p>' +
       '<div class="pcr-evo-tira">' +
         buenos.map(function (p) {
           return '<figure class="pcr-evo-p' + (p.fiable ? '' : ' pcr-evo-dudoso') + '">' +
@@ -16505,35 +16526,17 @@ function donaHTML(datos, colorDe, nombreDe) {
           '</figure>';
         }).join('') +
       '</div>' +
-      '<div class="pcr-niveles">' +
-        buenos.map(function (p) {
-          return '<div class="pcr-nivel">' +
-            '<span class="pcr-nivel-nom">' + p.anio +
-              (p.fiable ? '' : '<span class="pcr-nivel-sub">medio tapado, no cuenta</span>') + '</span>' +
-            '<span class="pcr-nivel-barra"><i style="width:' +
-              Math.max(2, Math.round(100 * p.medida.verde / maxV)) + '%"></i></span>' +
-            '<b class="pcr-nivel-n">' + String(p.medida.verde).replace('.', ',') + '%</b>' +
-          '</div>';
-        }).join('') +
-      '</div>' +
-      (conc.length
-        ? '<ul class="pcr-sintesis pcr-sintesis-bien">' +
-            conc.map(function (c) {
-              return '<li><span>' + esc(c.texto) + '</span><b>' + esc(c.dato) + '</b></li>';
-            }).join('') +
-          '</ul>'
-        : '<p class="pcr-pista">La serie no da para afirmar un cambio: las diferencias caben ' +
-          'dentro del error de medir a treinta metros con otro satélite y otra fecha del año.</p>') +
+      barrasDeVerde(buenos, function (p) { return p.anio; }) +
+      frasesDe(s2, conc) +
       '<p class="pcr-pista">Cada barra es el porcentaje del sector con vegetación, calculado con ' +
       'el <b>NDVI</b> —el índice de la banda infrarroja— y no con el clasificador de colores que ' +
       'usa la foto de hoy: el clasificador está calibrado para los colores de un proveedor, y ' +
-      'comparar años con él mediría la diferencia entre dos cámaras. Un año medio tapado por ' +
-      'nubes se marca y no entra en la conclusión.</p>';
+      'comparar años con él mediría la diferencia entre dos cámaras. Por lo mismo, estos ' +
+      'porcentajes NO se comparan con los de las fotos de arriba. Un año medio tapado por ' +
+      'nubes se marca y no entra en la conclusión. A cada año se le pide el satélite que no ' +
+      'raya: Landsat 5 hasta 2011, 8 y 9 desde 2013.</p>';
   }
 
-  /* El parte técnico de la última tanda. Va plegado porque no es para leer:
-     es para copiarlo y mandarlo cuando algo falla en un teléfono ajeno, que
-     es exactamente lo que no se pudo hacer la primera vez. */
   function detalleDelFallo() {
     var EV = window.URBIS_EVOLUCION;
     var d = (EV && typeof EV.diagnostico === 'function') ? EV.diagnostico() : [];
@@ -16546,30 +16549,35 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function serieCorta(s2) {
     if (!s2) return '';
+    var EV = window.URBIS_EVOLUCION;
     var buenos = s2.pasos.filter(function (p) { return p.ok; });
     if (!buenos.length) return '';
-    return '<p class="pcr-lab">Desde 2014, en alta resolución</p>' +
+    var medidos = buenos.filter(function (p) { return p.medida; });
+    var conc = medidos.length >= 2 ? (EV.conclusion(s2) || []) : [];
+    var anioDe = function (p) { return p.anioReal || p.anio; };
+    return '<p class="pcr-lab">Desde 2014, en alta resolución · lo que va al pliego</p>' +
       '<div class="pcr-evo-tira pcr-evo-alta">' +
         buenos.map(function (p) {
           /* La fecha DE LA IMAGEN, no el año que se pidió. Esri publica por
              entregas fechadas, no por años: rotular «2016» una estampa de
              diciembre de 2015 sería inventarse el dato justo en la caja que
-             existe para comparar años. */
+             existe para comparar años. Y debajo, el verde medido sobre ella. */
           return '<figure class="pcr-evo-p' + (p.sustituto ? ' pcr-evo-dudoso' : '') + '">' +
-            '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) +
-              '" loading="lazy">' +
-            '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
-            (p.fecha ? '<small>' + esc(p.fecha) + '</small>' : '') +
+            '<img src="' + p.imagen + '" alt="El sector en ' + anioDe(p) + '" loading="lazy">' +
+            '<figcaption>' + anioDe(p) + '</figcaption>' +
+            '<small>' + (p.fecha ? esc(p.fecha) + ' · ' : '') +
+              (p.medida ? String(p.medida.verde).replace('.', ',') + '% verde' : '') + '</small>' +
           '</figure>';
         }).join('') +
       '</div>' +
-      '<p class="pcr-pista">Debajo de cada estampa va la <b>fecha de la entrega</b> de la que ' +
-      'salió, no el año que se pidió: el proveedor publica por entregas fechadas y no por años, ' +
-      'y rotular con un año que no es sería inventar el dato justo donde se comparan años. ' +
-      'Acá NO hay porcentajes a propósito. Son de otro sensor y otro ' +
-      'procesamiento que la serie larga, y ponerles un número al lado invitaría a compararlos ' +
-      'con los de arriba, que es justo lo que no se puede hacer. Estas son para mirar: qué se ' +
-      'construyó, qué se taló, por dónde iba el agua.</p>';
+      barrasDeVerde(medidos, anioDe) +
+      (medidos.length >= 2 ? frasesDe(s2, conc) : '') +
+      '<p class="pcr-pista">Debajo de cada foto va la <b>fecha de la entrega</b> de la que ' +
+      'salió, no el año que se pidió —el proveedor publica por entregas fechadas—, y el ' +
+      'porcentaje del sector con vegetación, medido sobre la foto con el <b>mismo clasificador</b> ' +
+      'de colores que lee la cobertura de hoy. Todas salen del mismo proveedor, así que los años ' +
+      'se comparan entre sí; una diferencia menor de 3 puntos cabe en el error y no se afirma. ' +
+      'Con los porcentajes de Landsat no se comparan: otro sensor y otra escala.</p>';
   }
 
   function bloqueAmbiente(st) {
@@ -17649,7 +17657,7 @@ function donaHTML(datos, colorDe, nombreDe) {
      «lo que falta». La llave es la acción del botón que la mide. */
   var PESTANA_DE = {
     terreno: 'ambiente', clima: 'ambiente', amenaza: 'ambiente', cobertura: 'ambiente',
-    evolucion: 'ambiente', sombras: 'ambiente', curvas: 'ambiente',
+    evolucion: 'ambiente', 'evolucion-alta': 'ambiente', sombras: 'ambiente', curvas: 'ambiente',
     trazado: 'forma', 'lote-dibujar': 'lote', caminata: 'movilidad',
     estratos: 'general', 'int-dibujar': 'gente', campo: 'gente'
   };
