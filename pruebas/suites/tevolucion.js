@@ -266,6 +266,22 @@ for (let i = 0; i < 30; i++) {
     o.altaEnFicha = /Desde 2014, en alta/.test(hoja());
     o.textoAlta = (hoja().match(/Desde 2014, en alta[^]{0,320}/) || [''])[0];
     o.tiraAlta = H().querySelectorAll('.pcr-evo-alta .pcr-evo-p').length;
+    /* Y CUÁNTO MIDE en pantalla, que es distinto de cuántas hay. La tira se
+       corre de lado, así que es un contenedor de scroll; dentro de la columna
+       flexible de la ficha eso le quita el tamaño mínimo automático y la
+       aplasta a diez píxeles. Estaba en el DOM entero, con sus cinco
+       estampas, y en el teléfono se veían tres rebanadas de imagen sin pie:
+       contar figuras decía que todo estaba bien. */
+    o.geom = (function () {
+      var t = H().querySelector('.pcr-evo-alta');
+      if (!t) return null;
+      var f = t.querySelector('.pcr-evo-p'), im = t.querySelector('img');
+      var alto = function (el) { return el ? Math.round(el.getBoundingClientRect().height) : 0; };
+      return { tira: alto(t), figura: alto(f), imagen: alto(im),
+               anchoImagen: im ? Math.round(im.getBoundingClientRect().width) : 0,
+               pie: !!t.querySelector('figcaption'),
+               fecha: (t.querySelector('small') || {}).textContent || '' };
+    })();
 
     // ── El papel.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(1200);
@@ -375,6 +391,20 @@ for (let i = 0; i < 30; i++) {
 
   console.log('\n  -- la serie de alta resolución no se mezcla --');
   T('trae sus fotos', r.altaEnFicha === true && r.tiraAlta >= 3, r.tiraAlta + ' fotos');
+  /* Que se VEAN, no que estén. Las estampas son de 132 px y con el pie
+     debajo la tira pasa de 150; aplastada medía diez, con las cinco figuras
+     puestas y contadas. La prueba pide el alto de verdad porque contar
+     elementos no distingue una tira completa de una rebanada. */
+  const G2 = r.geom || {};
+  T('y se ven enteras, no aplastadas',
+    G2.imagen >= 120 && G2.tira >= 150 && G2.figura >= G2.imagen,
+    'tira ' + G2.tira + ' · figura ' + G2.figura + ' · imagen ' +
+    G2.anchoImagen + '×' + G2.imagen + ' px');
+  /* El año, debajo. La FECHA de la entrega no se pide acá a propósito: en
+     esta vuelta el adaptador está sustituido por imágenes de mentira, que no
+     tienen entrega ninguna. Que la fecha viaje se comprueba abajo, con el
+     adaptador de verdad, que es donde ese dato existe. */
+  T('con su año debajo', G2.pie === true);
   /* Lo que importa: NO llevan porcentajes. Ponerles un número al lado
      invitaría a compararlos con los de Landsat, que es otro sensor y otro
      procesamiento. */

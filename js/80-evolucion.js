@@ -299,12 +299,38 @@
         '?width=' + tam + '&height=' + tam +
         '&expression=' + encodeURIComponent('(nir08-red)/(nir08+red)') +
         '&rescale=-1,1&asset_as_band=true';
-      return traerImagen(url, tam, msTope).then(function (img) {
-        anota({ paso: 'recorte', anio: anio, estado: 'ok' });
-        return img;
-      }, function (e) {
-        anota({ paso: 'recorte', anio: anio, error: (e && e.message) || 'falló' });
-        throw e;
+      /* El recorte se pide con `fetch` y no con una etiqueta `img`, y la
+         diferencia es todo lo que hace falta para poder arreglarlo: una
+         imagen que no carga solo sabe decir «no se pudo», y con eso el primer
+         fallo en un teléfono no se pudo diagnosticar. Con `fetch` se lee el
+         código y el cuerpo del error, que es lo que el servidor está
+         explicando. Después el blob se vuelve imagen igual. */
+      return fetch(url, { mode: 'cors' }).then(function (r) {
+        if (!r.ok) {
+          return r.text().catch(function () { return ''; }).then(function (t) {
+            anota({ paso: 'recorte', anio: anio, estado: r.status,
+                    cuerpo: String(t || '').replace(/\s+/g, ' ').slice(0, 160) });
+            throw new Error('el recorte devolvió ' + r.status +
+              (t ? ': ' + String(t).replace(/\s+/g, ' ').slice(0, 90) : ''));
+          });
+        }
+        return r.blob();
+      }).then(function (blob) {
+        var u2 = URL.createObjectURL(blob);
+        return traerImagen(u2, tam, msTope).then(function (img) {
+          URL.revokeObjectURL(u2);
+          anota({ paso: 'recorte', anio: anio, estado: 'ok' });
+          return img;
+        }, function (e) { URL.revokeObjectURL(u2); throw e; });
+      }).catch(function (e) {
+        var m = (e && e.message) || 'falló';
+        // Un `fetch` que ni sale de la máquina no trae código: eso es CORS o
+        // no hay red, y conviene decirlo porque se arregla distinto.
+        if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
+          m = 'el navegador no pudo llegar al servicio (CORS o sin red)';
+        }
+        anota({ paso: 'recorte', anio: anio, error: m });
+        throw new Error(m);
       });
     });
   }

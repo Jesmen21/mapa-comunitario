@@ -621,6 +621,11 @@
 .pcr-hoja.pcr-encogida .pcr-calor-fila{
   flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
   padding-bottom:4px; scrollbar-width:thin;
+  /* La otra tira que se corre de lado, con el mismo remedio y por la misma
+     razón: contenedor de scroll dentro de una columna flexible. Acá no se
+     había notado porque son chips de una línea y aplastarlos se ve menos,
+     pero el fallo es el mismo. */
+  flex:0 0 auto;
 }
 .pcr-hoja.pcr-encogida .pcr-calor-fila .pcr-cal-chip{ flex:0 0 auto; white-space:nowrap; }
 
@@ -1181,11 +1186,22 @@
 .pcr-evo-tira{
   display:flex; gap:8px; overflow-x:auto; padding:2px 0 8px;
   scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+  /* `flex:0 0 auto` y no lo de fábrica. La hoja de la ficha es una columna
+     flexible, y un hijo que además es contenedor de scroll —esto, por la tira
+     que se corre de lado— pierde su tamaño mínimo automático: en vez de
+     ocupar lo que ocupan las estampas, se deja aplastar hasta diez píxeles.
+     Se vio en la calle el día que las fotos por fin cargaron: se veían tres
+     rebanadas de imagen y el pie ni aparecía. No es un alto que falte, es un
+     encogimiento que sobra. */
+  flex:0 0 auto;
 }
 .pcr-evo-p{
   margin:0; flex:0 0 auto; width:104px; scroll-snap-align:start;
   display:flex; flex-direction:column; gap:3px;
 }
+/* Y lo mismo hacia adentro: la estampa es una columna y la imagen es su
+   primer hijo, así que sin esto vuelve a aplastarse un nivel más abajo. */
+.pcr-evo-p img{ flex:0 0 auto; }
 .pcr-evo-p img{
   display:block; width:104px; height:104px; object-fit:cover;
   border-radius:8px; background:#eef3f7; border:1px solid #dbe5ec;

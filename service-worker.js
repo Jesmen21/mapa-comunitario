@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v744-el-historial-satelital-con-la-direccion-correcta';
+const URBIS_CACHE = 'urbis-v745-la-tira-no-se-deja-aplastar';
 const URBIS_ASSETS = [
   './',
   './index.html',
