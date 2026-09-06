@@ -1314,6 +1314,25 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+/* El asa de plegar: la pestaña de la derecha que corre el aviso a un lado.
+   Se pidió porque el aviso estorba cuando se está haciendo otra cosa encima
+   del mapa, y borrarlo del todo devolvería el problema que vino a resolver
+   —con la hoja cerrada nada indica que el análisis siga vivo—. */
+.pcr-volver-asa{
+  flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; margin-left:2px; border-radius:50%;
+  background:var(--edu-accent-soft,#E8F4FA); color:var(--edu-accent-deep);
+  transform:rotate(180deg);   /* el chevron apunta a la izquierda: hacia donde se va */
+}
+/* Plegado: queda el disco con el icono, en el mismo sitio y del tamaño de un
+   botón flotante. No desaparece —seguiría sin haber señal de que el análisis
+   existe— y un toque lo abre otra vez. */
+.pcr-volver.pcr-volver-plegada{
+  max-width:none; width:44px; height:44px; padding:0; gap:0;
+  justify-content:center; border-radius:50%;
+}
+.pcr-volver.pcr-volver-plegada span{ display:none; }
+.pcr-volver.pcr-volver-plegada .u-ico{ margin:0; }
 @media (prefers-reduced-motion:reduce){ .pcr-volver{ transition:none !important; } }
 /* «Analizar otro sector»: la salida desde la ficha hacia la pantalla de
    elegir área. Discreta y arriba del todo, donde se busca un «atrás». */

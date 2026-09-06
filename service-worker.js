@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v742-la-tabla-de-convenciones';
+const URBIS_CACHE = 'urbis-v743-la-letra-del-pliego-la-elige-quien-lo-arma';
 const URBIS_ASSETS = [
   './',
   './index.html',

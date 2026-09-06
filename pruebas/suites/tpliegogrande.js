@@ -201,6 +201,39 @@ const geo = [
     const bh = H().querySelector('[data-pcr="lamina-ver-h"]');
     if (bh) { bh.click(); await esperar(500); }
     o.h = capturado; capturado = '';
+
+    /* ── El tamaño de la letra ────────────────────────────────────────
+       Se cambia y se vuelve a armar la lámina, que es lo que hace un
+       estudiante que ve la letra chica. Lo que interesa medir no es el
+       botón: es que la hoja de verdad salga con letra más grande y que lo
+       que cede sea el contenido, dicho con nombre. */
+    const desplegar = async () => {
+      const asa = H().querySelector('[data-pcr="agrandar"]');
+      if (asa) { asa.click(); await esperar(400); }
+    };
+    const ponLetra = async (id) => {
+      await desplegar();
+      const b = H().querySelector('[data-pcr="pliego-letra"][data-c="' + id + '"]');
+      if (!b) return false;
+      b.click(); await esperar(400);
+      await desplegar();
+      const bv2 = H().querySelector('[data-pcr="lamina-ver"]');
+      if (bv2) { bv2.click(); await esperar(600); }
+      return true;
+    };
+    o.hayBotones = ['todo', 'media', 'grande']
+      .filter(id => !!H().querySelector('[data-pcr="pliego-letra"][data-c="' + id + '"]')).length;
+    o.puestoGrande = await ponLetra('grande');
+    o.vGrande = capturado; capturado = '';
+    o.fueraGrande = ((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
+    /* El aviso se lee AQUÍ y no después de tocar nada más: cambiar el tamaño
+       lo borra a propósito —lo que quedó fuera con el tamaño anterior ya no
+       vale—, así que sobrevive justo entre armar la lámina y volver a
+       elegir, que es cuando alguien lo lee. */
+    o.avisoFuera = ((H().textContent || '').match(/A [\d,]+ mm de letra no cab[^.]*\./) || [''])[0];
+    await ponLetra('todo');
+    o.vTodo = capturado; capturado = '';
+    o.fueraTodo = ((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
     return o;
   }, { C, POL, LOTE });
 
@@ -386,6 +419,43 @@ const geo = [
         m.h + ' de ' + techo + ' px de alto').join(' · ') ||
         mapas.length + ' mapas, tope de alto ' + mm(techo) + ' mm');
   });
+
+  /* ── El tamaño de la letra ────────────────────────────────────────────
+     Llegó medido: la letra del pliego salía a 1,35 mm —3,8 puntos— en una
+     hoja de 60 × 90 cm, porque la hoja se encogía sin suelo hasta que todo
+     cupiera. Con treinta y tres cajas eso da el 42 %.
+
+     No hay ajuste que lo arregle: es un canje. Lo que se comprueba acá es
+     que el canje esté en manos de quien arma la lámina y que se diga en voz
+     alta: al elegir letra grande la hoja sale con letra grande DE VERDAD, lo
+     que cede es el contenido, y las cajas que se caen se nombran. Y que
+     «cabe todo» siga sin tirar ninguna, que es lo que se pidió antes —«no me
+     dejes mapas a un lado»— y por eso es lo de fábrica. */
+  const escalaDe = h => Number(((h || '').match(/transform:scale\(([\d.]+)\)/) || [0, 1])[1]);
+  const letraMM = h => Number((3 * escalaDe(h)).toFixed(2));
+  const cajasDe = h => (h || '').split('<section class="caja').length - 1;
+  console.log('\n  -- el tamaño de la letra lo elige quien arma la lámina --');
+  T('están los tres tamaños', r.hayBotones === 3, r.hayBotones + ' de 3');
+  T('con «se lee de pie» la letra sale más grande de verdad',
+    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) > letraMM(r.vTodo) * 1.6,
+    letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm');
+  T('y lo que cede es el contenido, no la legibilidad',
+    (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) < cajasDe(r.vTodo),
+    cajasDe(r.vTodo) + ' cajas → ' + cajasDe(r.vGrande) +
+    ' · fuera: ' + ((r.fueraGrande || []).join(', ') || 'ninguna'));
+  /* Las cuatro que hacen que un pliego sea un pliego no se sacrifican nunca:
+     sin plano no se sabe de qué sector se habla y sin síntesis no hay
+     conclusión, que es lo que un jurado lee primero. */
+  const INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio', 'sintesis-del-sector'];
+  T('sin tocar el plano, los mapas, el sitio ni la síntesis',
+    INTOCABLES.every(id => (r.fueraGrande || []).indexOf(id) < 0) &&
+    /<h2>Plano del sector<\/h2>/.test(r.vGrande) && /<h2>Síntesis del sector<\/h2>/.test(r.vGrande),
+    (r.fueraGrande || []).filter(id => INTOCABLES.indexOf(id) >= 0).join(', ') || 'ninguna intocable');
+  T('la ficha dice cuáles se cayeron, con nombre', /no cabían/.test(r.avisoFuera || ''),
+    r.avisoFuera || 'no lo dice');
+  T('«cabe todo» no tira ninguna, que es lo que se pidió antes',
+    (r.fueraTodo || []).length === 0 && cajasDe(r.vTodo) === cajasDe(r.v),
+    cajasDe(r.vTodo) + ' cajas · fuera: ' + ((r.fueraTodo || []).join(', ') || 'ninguna'));
 
   console.log('\n  -- la caja del lote dice el reparto, no veintidós renglones --');
   const cajaLote = (r.h || '').split('<section class="caja')

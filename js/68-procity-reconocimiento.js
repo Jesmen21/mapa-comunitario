@@ -153,6 +153,13 @@
     viasEnMapa: false,
     evo: null, evoCargando: '', evoAviso: '',
     pliegoOff: APAGADAS_DE_ENTRADA.slice(), pliegoMapasOff: [], pliegoCabe: null, pliegoProbando: false,
+    /* De fábrica, «cabe todo». No es lo que se leería mejor —es letra de
+       lupa— y aun así es lo correcto de entrada: entra en conflicto directo
+       con lo que se pidió antes, «no me dejes mapas a un lado», y esa
+       decisión no la puede tomar el programa por su cuenta. La ficha dice
+       ahora en milímetros de qué tamaño sale la letra, así que la elección
+       está a la vista y a un toque. */
+    pliegoLetra: 'todo', pliegoFuera: [],
     // La amenaza sísmica del municipio, del Servicio Geológico. Se pide a
     // botón como el clima o el terreno: es una consulta a un servidor lento y
     // no todos los ejercicios la necesitan.
@@ -520,6 +527,7 @@
       indicesPuestos: S.indicesPuestos || null,
       indicesFuente: S.indicesFuente || null,
       pliegoOff: (S.pliegoOff || []).slice(),
+      pliegoLetra: S.pliegoLetra || 'todo',
       pliegoMapasOff: (S.pliegoMapasOff || []).slice(),
       /* El recorrido a pie va SIN los tramos: la geometría de las calles
          alcanzadas son miles de segmentos y no cabe en el almacenamiento del
@@ -2046,7 +2054,7 @@
   function bajarPliegoPDF(horizontal, alAvisar) {
     var P = window.URBIS_PLIEGO_PDF;
     // Ajustada al papel antes de dibujarla: ver `laminaQueQuepa`.
-    var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal });
+    var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
     if (!P || !P.disponible()) {
       // Sin lo que hace falta, se cae al camino de siempre en vez de dejar
       // a alguien sin lámina.
@@ -4998,8 +5006,16 @@
         // dos caminos sale la misma hoja.
         var cajaV = document.getElementById('pcr-nombre');
         S.nombreGuardado = cajaV ? String(cajaV.value || '').trim() : S.nombreGuardado;
-        abrirImpresion(laminaQueQuepa(S.resultado, { horizontal: acc === 'lamina-ver-h' }),
+        var fueraAntes = (S.pliegoFuera || []).length;
+        abrirImpresion(laminaQueQuepa(S.resultado, { horizontal: acc === 'lamina-ver-h',
+          letra: S.pliegoLetra }),
                        function (m) { S.aviso = m; pintar(); });
+        /* Armar la lámina es lo que averigua qué cajas no cupieron al tamaño
+           de letra elegido, y ese aviso no sirve de nada si la ficha no se
+           vuelve a dibujar para mostrarlo. Se repinta SOLO si hay algo nuevo
+           que decir: un repintado gratuito reemplaza el DOM de la hoja, y con
+           él los botones que alguien puede tener a medio tocar. */
+        if ((S.pliegoFuera || []).length !== fueraAntes) pintar();
         return;
       }
       if (acc === 'reanudar') {
@@ -5103,6 +5119,19 @@
         S.pliegoCabe = null;
         guardarFichaViva();
         pintar(); return;
+      }
+      if (acc === 'pliego-letra') {
+        var idL = b.getAttribute('data-c') || 'todo';
+        if (LETRAS_PLIEGO.filter(function (x) { return x.id === idL; }).length) {
+          S.pliegoLetra = idL;
+          // Lo que quedó fuera con el tamaño anterior ya no vale: se recalcula
+          // al armar la próxima lámina, y hasta entonces no se afirma nada.
+          S.pliegoFuera = [];
+          S.pliegoCabe = null;
+          guardarFichaViva();
+          pintar();
+        }
+        return;
       }
       if (acc === 'pliego-probar' || acc === 'pliego-probar-h') {
         probarSiCabe(acc === 'pliego-probar-h');
@@ -8573,6 +8602,11 @@
   function jerarquiaVialDe(clase) { return JER_POR_CLASE[String(clase || '')] || null; }
   // La coma decimal de acá, que es la que lee quien va a imprimir esto.
   function conComa(x) { return String(x).replace('.', ','); }
+  function conComaY(lista) {
+    var xs = (lista || []).map(function (x) { return esc(String(x)); });
+    if (xs.length <= 1) return xs[0] || '';
+    return xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1];
+  }
   /* Los metros de una polilínea. Sirve para decir cuántos kilómetros hay de
      cada jerarquía, que es lo que convierte un dibujo bonito en una medición. */
   function largoDeVia(pts) {
@@ -9179,6 +9213,85 @@
      Si no hay navegador donde medir —o algo falla—, devuelve la lámina tal
      cual, que es exactamente lo que había antes de esto: el peor caso de esta
      función es el caso de siempre y nunca deja a nadie sin lámina. */
+  /* ── El tamaño de la letra del pliego ─────────────────────────────────
+     Llegó medido, no de oído: «los textos están muy pequeños para estar en un
+     pliego». Se montó la lámina real y se midió la letra sobre el papel. Daba
+     1,35 mm —3,8 puntos— en una hoja de 60 × 90 cm. Eso no se lee ni de
+     cerca, y explica de paso lo otro que se notó: a 120 puntos por pulgada,
+     una letra de 3,8 puntos son seis píxeles de alto, así que se ve dentada
+     por chica antes que por la resolución del PDF.
+
+     La causa no es un descuido de tipografía: la hoja se encogía sin suelo
+     hasta que el contenido cupiera, y con treinta y tres cajas y diez mapas
+     eso da el 42 %. La misma lámina, medida quitando cajas hasta que cerrara
+     sin encoger:
+
+         letra 3,0 mm (8,5 pt) → caben 14 de 33 cajas
+         letra 2,4 mm (6,8 pt) → caben 19
+         letra 1,9 mm (5,5 pt) → caben 24
+         letra 1,3 mm (3,8 pt) → caben 32     ← lo que hacía
+
+     O sea que no hay ajuste que lo arregle: es un canje, y quien arma el
+     pliego es el que tiene que elegir de qué lado ceder. Lo que sí se arregla
+     es QUIÉN decide y si se dice: antes decidía el encogedor, en silencio.
+     Ahora se elige el tamaño y lo que cede es el contenido —apagando cajas y
+     diciendo cuáles—, no la legibilidad.
+
+     `media` es lo que trae de fábrica: 1,9 mm es casi metro y medio más de
+     letra que antes y todavía deja veinticuatro cajas. Quien quiera las
+     treinta y tres las tiene a un toque en «Cabe todo». */
+  /* `sacrifica` es la diferencia de fondo entre «cabe todo» y las otras dos,
+     y por eso la primera se llama así: con ella NADA se apaga —la hoja se
+     encoge hasta donde haga falta, que es lo que hacía siempre— y con las
+     otras lo que cede es el contenido. Sin esa distinción, elegir el tamaño
+     de fábrica habría empezado a tirar cajas por su cuenta, que es justo lo
+     contrario de lo que se pidió antes: «no me dejes mapas a un lado». */
+  var LETRAS_PLIEGO = [
+    { id: 'todo',   t: 'Cabe todo',     piso: 0.40, mm: '1,3', sacrifica: false,
+      pista: 'entran todas, letra de lupa' },
+    { id: 'media',  t: 'Equilibrio',    piso: 0.62, mm: '1,9', sacrifica: true,
+      pista: 'se lee de cerca, cabe casi todo' },
+    { id: 'grande', t: 'Se lee de pie', piso: 0.80, mm: '2,4', sacrifica: true,
+      pista: 'para colgar, con menos cajas' }
+  ];
+  /* De la escala de composición a milímetros de letra sobre el papel. El
+     cuerpo de las cajas está puesto en 3 mm y se encoge con la hoja, así que
+     la letra que sale es el producto. Decir «se compuso al 82 %» no le sirve
+     a nadie —¿el 82 % de qué?—; decir «la letra sale a 2,5 mm» se compara con
+     una regla. */
+  var CUERPO_MM = 3;
+  function mmDeLetra(escala) {
+    return conComa(Math.round(CUERPO_MM * (escala || 1) * 10) / 10);
+  }
+
+  function letraDePliego() {
+    var id = S.pliegoLetra || 'todo';
+    return LETRAS_PLIEGO.filter(function (x) { return x.id === id; })[0] || LETRAS_PLIEGO[1];
+  }
+  function pisoDeLetra(id) {
+    var l = LETRAS_PLIEGO.filter(function (x) { return x.id === id; })[0];
+    return (l || letraDePliego()).piso;
+  }
+
+  /* En qué orden se sacrifican las cajas cuando no caben todas al tamaño
+     pedido. Se protegen las cuatro que hacen que un pliego sea un pliego: el
+     plano, la ficha del sitio, la banda de mapas y la síntesis. Sin plano no
+     se sabe de qué sector se habla; sin síntesis no hay conclusión, que es lo
+     que un jurado lee primero.
+
+     El resto cae de atrás hacia adelante, que es el orden en que lo haría
+     quien arma la hoja: lo del cierre pesa menos que lo del sitio. */
+  var PLIEGO_INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio',
+                           'sintesis-del-sector'];
+  function ordenDeSacrificio(res, o) {
+    var off = (o && o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
+    var lista;
+    try { lista = cajasDelPliego(res) || []; } catch (e) { return []; }
+    return lista.filter(function (c) {
+      return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1;
+    }).map(function (c) { return c.id; }).reverse();
+  }
+
   function laminaQueQuepa(res, opts) {
     var o = opts || {};
     var html;
@@ -9211,16 +9324,64 @@
         }
         return rej.getBoundingClientRect().height <= cabeEn + 1;
       };
-      if (mide(1)) return html;
-      var bajo = 0.4, alto = 1, mejor = null;
+      if (mide(1)) { S.pliegoFuera = []; return html; }
+      var piso = pisoDeLetra(o.letra);
+      var bajo = piso, alto = 1, mejor = null;
       for (var i = 0; i < 7; i++) {
         var k = Math.round((bajo + alto) / 2 * 1000) / 1000;
         if (mide(k)) { mejor = k; bajo = k; } else { alto = k; }
       }
-      /* Si ni al mínimo cabe, se manda el mínimo igual: una hoja compuesta al
-         70 % se lee, y una a la que le faltan tres cajas por abajo no se
-         puede leer aunque el resto esté grande. */
-      return laminaImprimible(res, Object.assign({}, o, { escala: mejor || 0.4 }));
+      if (mejor) { S.pliegoFuera = []; return laminaImprimible(res, Object.assign({}, o, { escala: mejor })); }
+
+      /* Ni al piso cabe. Antes se mandaba el mínimo igual y la rejilla, que
+         recorta, se comía lo que sobraba sin decir nada: la hoja salía de la
+         impresora con tres cajas menos y nadie se enteraba hasta verla
+         colgada.
+
+         Ahora el tamaño de letra manda. Si a ese tamaño no cabe todo, lo que
+         cede es el CONTENIDO y no la legibilidad: se apagan cajas —de las
+         prescindibles y empezando por el final— hasta que la hoja cierre, y
+         se deja dicho cuáles fueron. Están todas en el informe en hojas, que
+         es el documento que no tiene que caber en un pliego.
+
+         Se busca el número de cajas a apagar por bisección y no de a una: al
+         mínimo son treinta y tres renderizados de una lámina con diez mapas,
+         y eso en un teléfono es medio minuto de pantalla congelada. */
+      /* «Cabe todo» no apaga nada: se manda el mínimo y ya, que es lo que se
+         hacía antes de v743. Una hoja compuesta chiquita se lee con esfuerzo;
+         una a la que le faltan cajas que alguien encendió a mano es una
+         promesa rota. */
+      var cual = LETRAS_PLIEGO.filter(function (x) { return x.id === (o.letra || S.pliegoLetra); })[0];
+      if (cual && !cual.sacrifica) {
+        S.pliegoFuera = [];
+        return laminaImprimible(res, Object.assign({}, o, { escala: piso }));
+      }
+      var candidatos = ordenDeSacrificio(res, o);
+      var apagadasYa = (o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
+      var conN = function (n) {
+        return laminaImprimible(res, Object.assign({}, o, {
+          escala: piso, pliegoOff: apagadasYa.concat(candidatos.slice(0, n)) }));
+      };
+      var cabeConN = function (n) {
+        d.open(); d.write(conN(n)); d.close();
+        var r2 = d.querySelector('.rej'), m2 = d.querySelector('.rejilla');
+        if (!r2 || !m2) return true;
+        return r2.getBoundingClientRect().height <= m2.getBoundingClientRect().height + 1;
+      };
+      var bajoN = 0, altoN = candidatos.length, elegido = null;
+      while (bajoN <= altoN) {
+        var med = Math.floor((bajoN + altoN) / 2);
+        if (cabeConN(med)) { elegido = med; altoN = med - 1; } else { bajoN = med + 1; }
+      }
+      if (elegido === null) {
+        /* Ni apagándolas todas: es un sector con más mapas que papel. Se
+           vuelve al comportamiento viejo —el mínimo absoluto— porque una hoja
+           chiquita se lee y una vacía no. */
+        S.pliegoFuera = candidatos.slice();
+        return laminaImprimible(res, Object.assign({}, o, { escala: 0.4 }));
+      }
+      S.pliegoFuera = candidatos.slice(0, elegido);
+      return conN(elegido);
     } catch (e) {
       return html;
     } finally {
@@ -9257,7 +9418,7 @@
            y decir «no cabe» de una lámina que después sale entera sería
            mentirle a quien la está armando; y esconderle que se compuso al
            82 % también, porque eso es lo que va a ver en el papel. */
-        var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal });
+        var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
         var escala = escalaDeLamina(html);
         var d = marco.contentDocument;
         d.open(); d.write(html); d.close();
@@ -9287,7 +9448,8 @@
               sobraMM: sobra > 2 ? Math.round(sobra / 3.7795) : 0,
               cajas: dd.querySelectorAll('.caja').length,
               bandas: dd.querySelectorAll('.banda').length,
-              escala: escala
+              escala: escala,
+              fuera: (S.pliegoFuera || []).slice()
             });
           } catch (e) { terminar({ error: 'No se pudo medir en este navegador.' }); }
         }, 700);
@@ -9318,6 +9480,40 @@
         '<button type="button" data-pcr="pliego-nada" class="pcr-mini">' + ico('apagar', 16) +
           'Dejar solo el plano</button>' +
       '</div>' +
+      /* ── El tamaño de la letra ────────────────────────────────────────
+         Va ACÁ, con los interruptores de las cajas, y no en el bloque de
+         exportar: es la misma decisión —cuánto entra en la hoja— vista por el
+         otro lado, y separarlas haría que alguien apagara ocho cajas sin
+         entender por qué le sobraba sitio. */
+      '<p class="pcr-lab">El tamaño de la letra</p>' +
+      '<p class="pcr-pista">Medido sobre el papel: hasta ahora la hoja se encogía sin suelo hasta ' +
+      'que todo cupiera, y con treinta cajas eso deja la letra en <b>1,3 mm</b> —tres puntos y ' +
+      'pico—, que no se lee ni de cerca. No hay ajuste que lo arregle: o entra todo, o se lee. ' +
+      'Elegí de qué lado ceder; lo que no quepa <b>sigue entero en el informe en hojas</b>.</p>' +
+      '<div class="pcr-capas pcr-letras">' +
+        LETRAS_PLIEGO.map(function (l) {
+          var on = l.id === (S.pliegoLetra || 'todo');
+          return '<button type="button" class="pcr-capa' + (on ? ' on' : '') +
+            '" data-pcr="pliego-letra" data-c="' + esc(l.id) + '"' +
+            ' aria-pressed="' + (on ? 'true' : 'false') + '">' +
+            '<i style="background:' + (on ? '#0A6F9E' : '#C7D3DD') + '"></i>' +
+            '<span><b>' + esc(l.t) + ' · ' + esc(l.mm) + ' mm</b>' +
+              '<small>' + esc(l.pista) + '</small></span>' +
+          '</button>';
+        }).join('') +
+      '</div>' +
+      /* Cuáles se quedaron fuera por el tamaño elegido. Se dice con nombre y
+         apellido: «no cupieron nueve» sin decir cuáles es la misma sorpresa
+         que había antes, solo que anunciada. */
+      ((S.pliegoFuera || []).length
+        ? '<p class="pcr-conc">A <b>' + esc(letraDePliego().mm) + ' mm</b> de letra no cabían <b>' +
+          S.pliegoFuera.length + '</b> caja' + (S.pliegoFuera.length === 1 ? '' : 's') +
+          ', así que la última lámina salió sin ' +
+          conComaY(S.pliegoFuera.map(function (id) {
+            var c = lista.filter(function (x) { return x.id === id; })[0];
+            return c ? c.t : id;
+          })) + '. Están todas en el informe en hojas.</p>'
+        : '') +
       grupos.map(function (g) {
         var suyas = lista.filter(function (c) { return c.g === g; });
         if (!suyas.length) return '';
@@ -9402,8 +9598,13 @@
                    que la letra sale al 82 % y decidir si prefiere apagar una
                    caja y que salga entera. */
                 (cabe.escala && cabe.escala < 0.995
-                  ? ' Se compuso al <b>' + Math.round(cabe.escala * 100) + '%</b> para que ' +
-                    'cerrara; apagá alguna caja si la querés a tamaño natural.'
+                  ? ' La letra sale a <b>' + mmDeLetra(cabe.escala) + ' mm</b>' +
+                    (cabe.escala < 0.55 ? ' —eso es letra de lupa: subí el tamaño acá arriba—' : '') +
+                    '.'
+                  : ' La letra sale a tamaño natural: <b>' + mmDeLetra(1) + ' mm</b>.') +
+                ((cabe.fuera || []).length
+                  ? ' A ese tamaño se dejaron fuera <b>' + cabe.fuera.length + '</b> caja' +
+                    (cabe.fuera.length === 1 ? '' : 's') + ', que están en el informe en hojas.'
                   : '') +
                 '</p>'
               : '<p class="pcr-conc pcr-cabe-no">No cabe ' +
@@ -16496,7 +16697,20 @@
       el.id = 'pcr-volver';
       el.type = 'button';
       el.className = 'pcr-volver';
-      el.addEventListener('click', function () {
+      el.addEventListener('click', function (ev) {
+        /* Plegarlo. El aviso vive encima del mapa y estorba justo cuando se
+           está haciendo otra cosa —«así no molesta cuando entre en otras
+           cosas»—, pero borrarlo del todo devolvería el problema que vino a
+           resolver: con la hoja cerrada, el análisis sigue en memoria y sin
+           esto no hay una sola señal de que exista.
+
+           Plegado no desaparece: queda el disco con el icono, en el mismo
+           sitio, y un toque lo vuelve a abrir. Y se recuerda, porque quien lo
+           plegó no quiere volver a plegarlo cada vez que cierra la hoja. */
+        if (S.volverPlegado) { ponerPlegado(false); return; }
+        if (ev && ev.target && ev.target.closest && ev.target.closest('[data-plegar]')) {
+          ponerPlegado(true); return;
+        }
         /* Sin análisis en memoria, el botón TRAE el de hace un rato antes de
            abrir: es lo que se está pidiendo al tocarlo. */
         if (!S.resultado) {
@@ -16543,12 +16757,23 @@
     return f;
   }
 
+  var LLAVE_PLEGADO = 'pcr_volver_plegado';
+  function ponerPlegado(x) {
+    S.volverPlegado = !!x;
+    try { localStorage.setItem(LLAVE_PLEGADO, x ? '1' : '0'); } catch (e) {}
+    pintarVolver();
+  }
+  (function () {
+    try { S.volverPlegado = localStorage.getItem(LLAVE_PLEGADO) === '1'; } catch (e) {}
+  })();
+
   function pintarVolver() {
     var el = volverBtn();
     var fuera = !S.abierto && !!window.urbisProCityActivo;
     var reciente = fuera ? fichaRecienViva() : null;
     var hay = fuera && (!!S.resultado || !!reciente);
     el.hidden = !hay;
+    el.classList.toggle('pcr-volver-plegada', !!S.volverPlegado);
     if (!hay) return;
     if (!S.resultado && reciente) {
       var med = [];
@@ -16559,8 +16784,10 @@
         '<span><b>Seguir donde quedaste</b>' +
         '<small>' + esc(reciente.nombre || 'Sector sin nombre') + ' · ' +
         (reciente.total || 0) + ' usos' + (med.length ? ', con ' + esc(med.join(', ')) : '') +
-        '</small></span>';
-      el.setAttribute('aria-label', 'Seguir con el sector que estabas analizando');
+        '</small></span>' + asaPlegar();
+      el.setAttribute('aria-label', S.volverPlegado
+        ? 'Abrir el aviso del sector que estabas analizando'
+        : 'Seguir con el sector que estabas analizando');
       return;
     }
     var st = (S.resultado.stats) || {};
@@ -16571,8 +16798,18 @@
       (S.resultado.meta && S.resultado.meta.forma === 'poligono'
         ? esc(formatearArea(S.resultado.meta.areaM2) || 'área dibujada')
         : (S.radioM >= 1000 ? (S.radioM / 1000) + ' km' : S.radioM + ' m')) +
-      '</small></span>';
-    el.setAttribute('aria-label', 'Volver al análisis del sector, sin repetirlo');
+      '</small></span>' + asaPlegar();
+    el.setAttribute('aria-label', S.volverPlegado
+      ? 'Abrir el aviso del análisis del sector'
+      : 'Volver al análisis del sector, sin repetirlo');
+  }
+
+  /* El asa. Plegado no se pinta: el disco entero ES el asa, y meterle un
+     segundo blanco de toque de dieciséis píxeles dentro de uno de cuarenta
+     es la forma de que ninguno de los dos se acierte con el pulgar. */
+  function asaPlegar() {
+    return S.volverPlegado ? ''
+      : '<i class="pcr-volver-asa" data-plegar="1" role="presentation">' + ico('chevron', 14) + '</i>';
   }
 
   function cerrar() {
@@ -17172,6 +17409,10 @@
           indices: f.indices || null,
           pliegoOff: f.pliegoOff || [],
           pliegoMapasOff: f.pliegoMapasOff || [],
+          /* Las fichas de antes de v743 no guardan el tamaño de letra. Se les
+             da «cabe todo», que es como se compusieron: reimprimir una lámina
+             vieja con la letra nueva le quitaría cajas que sí tenía. */
+          letra: f.pliegoLetra || 'todo',
           horizontal: name === 'lamina-h'
         }),
         function (m) { S.avisoPestana = m; repintar(); });
@@ -17294,7 +17535,11 @@
         hay: !!S.resultado,
         // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
         // puede distinguir un análisis que falló de otro que ni empezó.
-        consultando: !!S.cargando
+        consultando: !!S.cargando,
+        // La composición del pliego: el tamaño de letra elegido y las cajas
+        // que ese tamaño dejó fuera en la última lámina que se armó.
+        pliegoLetra: S.pliegoLetra || 'todo',
+        pliegoFuera: (S.pliegoFuera || []).slice()
       };
     }
   };
