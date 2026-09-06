@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v753-el-edificio-piso-por-piso';
+const URBIS_CACHE = 'urbis-v754-seguimiento-0906';
 const URBIS_ASSETS = [
   './',
   './index.html',

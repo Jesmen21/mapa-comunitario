@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-05",
-  "proximaActualizacion": "2026-09-06",
+  "actualizado": "2026-09-06",
+  "proximaActualizacion": "2026-09-07",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -63,6 +63,52 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-06",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Un operativo militar contra disidencias de las Farc en El Peñol, Nariño, deja siete muertos; los medios difieren sobre si hubo capturados o heridos",
+      "detalle": "Unidades de la Fuerza de Despliegue Rápido No. 2 se enfrentaron en la tarde del 4 de septiembre con hombres armados del frente Franco Benavides, estructura del Estado Mayor Central de las disidencias de las Farc, en zona rural de El Peñol (Nariño). El presidente Abelardo de la Espriella informó el resultado el 6 de septiembre al reportar los últimos operativos militares: siete presuntos integrantes de esa estructura murieron en la confrontación. En el lugar se incautaron un fusil M4, una pistola, cuatro proveedores, ocho artefactos explosivos artesanales y 946 cartuchos de distintos calibres.",
+      "contrapunto": "El resultado del operativo se conoce por versiones oficiales que no coinciden entre sí en un punto: Semana reportó que, además de los siete muertos, cinco personas fueron capturadas, mientras que Infobae y La FM señalaron que doce resultaron heridas. Ninguno de los dos datos ha sido conciliado públicamente por el Ministerio de Defensa o el Ejército.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Semana · De la Espriella informó sobre últimos operativos militares: siete disidentes de las Farc murieron y otros cinco fueron capturados en Nariño",
+          "u": "https://www.semana.com/politica/articulo/de-la-espriella-informo-sobre-ultimos-operativos-militares-siete-disidentes-de-las-farc-murieron-y-otros-cinco-fueron-capturados-en-narino/202624/"
+        },
+        {
+          "n": "Infobae · 7 presuntos integrantes de las disidencias de las Farc fueron abatidos y 12 resultaron heridos en operativo en Nariño",
+          "u": "https://www.infobae.com/colombia/2026/09/06/7-presuntos-integrantes-de-las-disidencias-de-las-farc-fueron-abatidos-y-12-resultaron-heridos-en-operativo-en-narino/"
+        },
+        {
+          "n": "La FM · Operación militar en Nariño deja siete disidentes abatidos y doce heridos",
+          "u": "https://www.lafm.com.co/orden-publico/siete-criminales-abatidos-y-doce-heridos-en-narino-410055"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-05",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno difunde un balance de seguridad a un mes de la posesión: 14.422 capturas, 43.684 kg de droga incautada y 1.485 armas retiradas desde el 7 de agosto",
+      "detalle": "El presidente Abelardo de la Espriella presentó el 5 de septiembre un balance acumulado de la Fuerza Pública desde su posesión el 7 de agosto: 14.422 capturas, 43.684 kilogramos de droga incautada (entre ellos 551 kg de cocaína en las últimas 24 horas), 1.485 armas de fuego retiradas y 1.320,9 hectáreas de coca erradicadas. El Gobierno reportó además, solo en las 24 horas previas, 24 capturas, una entrega a la justicia, un integrante de estructuras criminales dado de baja, 7 armas y 1.012 municiones incautadas y 8 artefactos explosivos hallados, dentro de 28 golpes operacionales que incluyeron ocho cabecillas dados de baja y once capturados.",
+      "contrapunto": "Las cifras provienen enteramente del propio Gobierno y no han sido objeto de una auditoría independiente ni de una verificación cruzada por organismos de control o academia citada en la prensa; varios medios se limitaron a reproducir el comunicado oficial.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Semana · De la Espriella entrega balance de la Fuerza Pública: 14.422 capturas y más de 43.000 kilos de droga incautados desde el 7 de agosto",
+          "u": "https://www.semana.com/politica/articulo/de-la-espriella-entrega-balance-de-la-fuerza-publica-14422-capturas-y-mas-de-43000-kilos-de-droga-incautados-desde-el-7-de-agosto/202617/"
+        },
+        {
+          "n": "El País (Cali) · De la Espriella entrega balance de seguridad en lo que va de su gobierno",
+          "u": "https://www.elpais.com.co/politica/de-la-espriella-hace-balance-de-su-politica-de-seguridad-desde-que-asumio-la-presidencia-no-nos-van-a-doblegar-0536.html"
+        },
+        {
+          "n": "Infobae · Presidente De la Espriella 'sacó pecho' por resultados en lucha contra el narcotráfico y grupos armados ilegales: hasta le crearon sitio web",
+          "u": "https://www.infobae.com/colombia/2026/09/05/presidente-de-la-espriella-saco-pecho-por-resultados-en-lucha-contra-el-narcotrafico-y-grupos-armados-ilegales-hasta-le-crearon-sitio-web/"
+        }
+      ]
+    },
     {
       "fecha": "2026-09-04",
       "precision": "exacta",
