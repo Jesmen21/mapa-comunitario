@@ -197,8 +197,15 @@ for (let i = 0; i < 40; i++) {
     if (b) { b.click(); await esperar(900); }
     const v = document.getElementById('pcr-volver');
     const rc = v ? v.getBoundingClientRect() : null;
+    /* Y de dónde arranca el mapa. Se lleva bien lejos del sector a propósito:
+       es lo que pasa de verdad —se mira otro barrio, o el navegador devuelve
+       la pestaña en el sitio por defecto— y es lo que hacía que volver
+       obligara a buscar el análisis moviendo el mapa con el dedo. */
+    window.map.setView([7.8939 + 0.05, -72.5078 - 0.05], 14); await esperar(500);
+    const cAntes = window.map.getCenter();
     return { hay: !!v, oculto: v ? v.hidden : true, txt: v ? (v.textContent || '').trim() : '',
       caja: rc ? Math.round(rc.width) + 'x' + Math.round(rc.height) : '-',
+      centroMapa: { lat: cAntes.lat, lng: cAntes.lng },
       // El mapa arranca vacío: es lo que hace que parezca que se perdió todo.
       hoja: !!document.querySelector('#pcr-hoja.pcr-visible') };
   });
@@ -210,12 +217,71 @@ for (let i = 0; i < 40; i++) {
   r.trasTocar = await pg.evaluate(() => {
     const R = window.URBIS_PC_RECON, e = R.estado ? R.estado() : {};
     const t = ((document.getElementById('pcr-hoja') || {}).textContent || '');
+    /* Dónde quedó mirando el mapa. Lo que se comprueba no es que se haya
+       centrado en un punto sino que el ÁREA entera quepa en pantalla: un
+       sector de 900 m centrado al zoom que hubiera puesto deja al estudiante
+       viendo media manzana. */
+    const m = window.map, cd = m.getCenter(), caja = m.getBounds();
+    const fx = (R.leerFichas() || [])[0] || {};
+    /* El borde del sector, sea cual sea su forma: los vértices si se dibujó
+       un área, y los cuatro rumbos del radio si se analizó en círculo. */
+    const borde = (fx.poligono && fx.poligono.length >= 3)
+      ? fx.poligono.slice()
+      : (function () {
+          const c0 = e.centro, rad = e.radioM || fx.radioM || 0;
+          if (!c0 || !rad) return [];
+          const dLat = rad / 110540;
+          const dLng = rad / (111320 * Math.cos(c0.lat * Math.PI / 180));
+          return [{ lat: c0.lat - dLat, lng: c0.lng }, { lat: c0.lat + dLat, lng: c0.lng },
+                  { lat: c0.lat, lng: c0.lng - dLng }, { lat: c0.lat, lng: c0.lng + dLng }];
+        })();
     return { hay: !!e.hay, forma: e.forma, vertices: e.vertices,
+      centroMapa: { lat: cd.lat, lng: cd.lng },
+      centroSector: e.centro ? { lat: e.centro.lat, lng: e.centro.lng } : null,
+      /* Dónde cae el sector EN LA PANTALLA. El centro geométrico del mapa no
+         sirve para juzgarlo: la hoja tapa la mitad de abajo, así que encuadrar
+         bien significa dejar el sector en la banda que se ve, y eso corre el
+         centro del mapa hacia el sur a propósito. */
+      enPantalla: (function () {
+        if (!e.centro) return null;
+        const p = m.latLngToContainerPoint([e.centro.lat, e.centro.lng]);
+        const h = document.querySelector('#pcr-hoja.pcr-visible');
+        const tapa = h ? h.getBoundingClientRect().top : m.getSize().y;
+        return { x: Math.round(p.x), y: Math.round(p.y),
+                 ancho: m.getSize().x, alto: m.getSize().y, tapa: Math.round(tapa) };
+      })(),
+      areaEnPantalla: borde.length >= 3 && borde.every(p => caja.contains([p.lat, p.lng])),
+      /* Y que no se haya ido al otro extremo: encuadrar de más deja el sector
+         como una mancha en medio de la ciudad. Ocupa al menos un tercio del
+         ancho de lo que se ve. */
+      ocupa: (function () {
+        if (borde.length < 3) return 0;
+        const lngs = borde.map(p => p.lng);
+        const anchoSector = Math.max(...lngs) - Math.min(...lngs);
+        const anchoVista = caja.getEast() - caja.getWest();
+        return anchoVista > 0 ? Math.round(100 * anchoSector / anchoVista) : 0;
+      })(),
       // Los usos se leen de la ficha en pantalla: es lo que ve quien vuelve.
       usos: (t.match(/(\d+)\s*usos? registrados/) || [])[1] || '0',
       hoja: !!document.querySelector('#pcr-hoja.pcr-visible'),
       texto: t.slice(0, 120) };
   });
+  /* Y con la hoja bajada, que es como se mira el mapa: el sector tiene que
+     quedar en la franja que se ve, no debajo del panel. */
+  r.trasEncoger = await pg.evaluate(async () => {
+    const esperar = ms => new Promise(x => setTimeout(x, ms));
+    const R = window.URBIS_PC_RECON, m = window.map;
+    try { R.encogerDePrueba(); } catch (e) {}
+    await esperar(600);
+    const e = R.estado ? R.estado() : {};
+    if (!e.centro) return null;
+    const p = m.latLngToContainerPoint([e.centro.lat, e.centro.lng]);
+    const h = document.querySelector('#pcr-hoja.pcr-visible');
+    const tapa = h ? h.getBoundingClientRect().top : m.getSize().y;
+    return { x: Math.round(p.x), y: Math.round(p.y), ancho: m.getSize().x,
+             alto: m.getSize().y, tapa: Math.round(tapa) };
+  });
+
   r.err = err;
   await pg.close(); await b.close();
 
@@ -265,6 +331,26 @@ for (let i = 0; i < 40; i++) {
     (r.trasTocar || {}).hay === true && (r.trasTocar || {}).usos === '40',
     (r.trasTocar || {}).usos + ' usos · ' + (r.trasTocar || {}).forma);
   T('y abre la hoja donde se estaba', (r.trasTocar || {}).hoja === true);
+  /* Y lleva el mapa al sector. «Me toca moverme manualmente hasta el lugar
+     del análisis»: volvía todo menos la vista. */
+  const metros = (a, b) => {
+    if (!a || !b) return Infinity;
+    const R2 = 6371000, r2 = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * r2;
+    const dLng = (b.lng - a.lng) * r2 * Math.cos((a.lat + b.lat) / 2 * r2);
+    return Math.round(Math.sqrt(dLat * dLat + dLng * dLng) * R2);
+  };
+  const lejos = metros((r.trasCaerse || {}).centroMapa, (r.trasTocar || {}).centroSector);
+  const cerca = metros((r.trasTocar || {}).centroMapa, (r.trasTocar || {}).centroSector);
+  T('el mapa estaba lejos del sector antes de tocarlo', lejos > 3000, lejos + ' m');
+  T('y al volver se encuadra en él', cerca < lejos / 4, 'de ' + lejos + ' m a ' + cerca + ' m');
+  T('con el área entera dentro de la pantalla', (r.trasTocar || {}).areaEnPantalla === true);
+  const EP = r.trasEncoger || {};
+  T('y el sector a la vista con la hoja bajada, no debajo del panel',
+    EP.y > 0 && EP.y < EP.tapa && EP.x > 0 && EP.x < EP.ancho,
+    'el centro cae en y=' + EP.y + ' de ' + EP.alto + ', la hoja empieza en ' + EP.tapa);
+  T('y ocupándola, no como una mancha en medio de la ciudad',
+    (r.trasTocar || {}).ocupa >= 33, (r.trasTocar || {}).ocupa + '% del ancho de la vista');
 
   console.log('');
   T('sin errores de JavaScript', (r.err || []).length === 0, (r.err || []).join(' | ') || 'ninguno');

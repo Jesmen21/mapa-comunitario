@@ -5653,6 +5653,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (reanudarFicha(fF)) {
           S.aviso = 'Listo, seguimos con «' + (fF.nombre || 'el sector') + '». Si necesitás ' +
                     'llenos y vacíos o sombras, volvé a medir el trazado.';
+          enfocarSector();
         } else {
           S.error = 'Esa ficha no guarda el área: no se puede reanudar.';
         }
@@ -17853,6 +17854,73 @@ function donaHTML(datos, colorDe, nombreDe) {
     return { lat: c.lat, lng: c.lng, alcanceM: Math.max(120, alcance) };
   }
 
+  /* Llevar el mapa al sector, encuadrado.
+
+     Pedido así: «cuando le dé volver donde estaba, quisiera que se enfoque
+     automáticamente la pantalla en esa ubicación, ya que me toca moverme
+     manualmente hasta el lugar del análisis». Pasaba en los dos caminos de
+     vuelta —el aviso flotante y la tarjeta «Seguir con este sector»—: volvía
+     el análisis entero, con sus puntos, su círculo y su lote, pero el mapa se
+     quedaba donde estuviera, que después de mirar otro barrio puede ser a
+     kilómetros. Volver y no ver nada es indistinguible de que no haya vuelto.
+
+     Se ENCUADRA el área y no se centra el punto: un sector de 900 m no cabe
+     al zoom que hubiera puesto, y centrar sin ajustar deja mirando media
+     manzana. El lote entra en el encuadre cuando lo hay, porque es lo que se
+     estaba mirando de cerca.
+
+     Y se deja sitio abajo, que es donde vive la hoja: encuadrar contra la
+     pantalla entera mete medio sector debajo del panel. El margen se limita a
+     poco menos de la mitad del alto, porque un relleno mayor que el propio
+     mapa deja a Leaflet sin sitio donde encajar nada. */
+  function enfocarSector(opts) {
+    var o = opts || {};
+    var m = mapa();
+    if (!m || typeof L === 'undefined' || typeof m.fitBounds !== 'function') return false;
+    var caja = null;
+    try {
+      if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
+        caja = L.latLngBounds(S.poligono.map(function (p) { return [p.lat, p.lng]; }));
+      } else {
+        /* El cuadrado que envuelve al círculo, a mano. `L.circle(...).getBounds()`
+           necesita que el círculo esté PUESTO en un mapa —mide el radio en
+           grados de longitud a esa latitud— y acá todavía no lo está, así que
+           por ahí no se encuadraba nada y el sector de radio se quedaba sin
+           enfoque, en silencio. */
+        var c = centroDeAnalisis();
+        if (c && isFinite(c.lat)) {
+          var rad = S.radioM || RADIO_POR_DEFECTO;
+          var dLat = rad / 110540;
+          var dLng = rad / (111320 * Math.max(0.15, Math.cos(c.lat * Math.PI / 180)));
+          caja = L.latLngBounds([c.lat - dLat, c.lng - dLng], [c.lat + dLat, c.lng + dLng]);
+        }
+      }
+      if (S.lote && S.lote.length >= 3) {
+        var cl = L.latLngBounds(S.lote.map(function (p) { return [p.lat, p.lng]; }));
+        caja = caja ? caja.extend(cl) : cl;
+      }
+      if (!caja || !caja.isValid()) return false;
+      var altoMapa = 0;
+      try { altoMapa = m.getSize().y || 0; } catch (e) { altoMapa = 0; }
+      /* El margen de abajo se mide contra la hoja ENCOGIDA y no contra la
+         desplegada. Desplegada tapa casi toda la pantalla —quedan ciento y
+         pico píxeles de mapa— y encuadrar contra esa franja deja el sector
+         apretado arriba y, en cuanto se baja la hoja para mirar, descentrado.
+         El sector se compone para la pantalla en la que se va a mirar, que es
+         la de la hoja bajada. */
+      var abajo = Math.max(20, Math.round(altoMapa * 0.30) || 20);
+      m.fitBounds(caja, {
+        paddingTopLeft: [20, 20],
+        paddingBottomRight: [20, abajo],
+        // Un lote de veinte metros no tiene por qué llevar el mapa al máximo
+        // acercamiento: a esa escala se pierde la calle que lo explica.
+        maxZoom: 18,
+        animate: o.animar !== false
+      });
+    } catch (e) { return false; }
+    return true;
+  }
+
   /* Soltar el ANÁLISIS y nada más: las cuentas eran de una huella que ya no
      está elegida. Lo que la persona puso a mano se queda, porque es del
      lugar. Es lo que hace el botón «Analizar otro sector», y lo que hace
@@ -18036,6 +18104,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           }
         }
         S.encogida = false; abrir();
+        // Y el mapa, al sector. Va DESPUÉS de abrir la hoja: el margen de
+        // abajo se mide sobre la hoja ya desplegada.
+        enfocarSector();
       });
       document.body.appendChild(el);
     }
@@ -18811,6 +18882,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Lo contado en campo piso por piso, dentro del sector: para comprobarlo
     // sin leer el HTML de la ficha.
     alturasDeCampo: alturasDeCampo,
+    // Llevar el mapa al sector que está en pantalla. Se expone porque la
+    // pestaña «Sector» reanuda por su cuenta, y para poder comprobar desde
+    // fuera que el encuadre es el del área y no el sitio donde quedó el mapa.
+    enfocarSector: enfocarSector,
     // Abrir una pestaña de la ficha por su nombre.
     verPestana: function (id) {
       if (!PESTANAS.some(function (p) { return p.id === id; })) return false;

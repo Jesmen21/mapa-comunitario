@@ -207,7 +207,22 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
 
     const bR=H().querySelector('[data-pcr="reanudar"]');
     o.hayBoton=!!bR;
+    /* Con el mapa lejos, que es de donde se vuelve: se estuvo mirando otro
+       barrio, o el navegador devolvió la pestaña en el sitio por defecto. */
+    window.map.setView([C.lat+0.05, C.lng-0.05], 14); await esperar(400);
     if(bR){ bR.click(); await esperar(1500); }
+    /* Que quepa entero no basta para decir que se encuadró: desde un zoom
+       lejano cabe media ciudad, el sector incluido, y se ve como una mancha.
+       Lo que se mide es cuánto de la pantalla ocupa. */
+    o.encuadrado=(function(){
+      const caja=window.map.getBounds();
+      const pol=(((window.URBIS_PC_RECON.leerFichas()||[])[0]||{}).poligono)||[];
+      if(pol.length<3) return null;
+      const lngs=pol.map(p=>p.lng);
+      const ancho=caja.getEast()-caja.getWest();
+      return { dentro: pol.every(p=>caja.contains([p.lat,p.lng])),
+               ocupa: ancho>0 ? Math.round(100*(Math.max(...lngs)-Math.min(...lngs))/ancho) : 0 };
+    })();
     const abrir=async()=>{ const a=H().querySelector('[data-pcr="agrandar"]');
       if(a){ a.click(); await esperar(400); } };
     await abrir();
@@ -296,6 +311,14 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   T('el clima', despues.tieneClima===true);
   T('la amenaza sísmica', despues.tieneAmenaza===true);
   T('el lote, dibujado en el mapa', despues.loteEnMapa>=1, despues.loteEnMapa+' polígono(s)');
+  /* Y la vista: seguir con un sector guardado deja el área en pantalla. Con un
+     área dibujada el encuadre ya venía de Pro City, que ajusta la vista al
+     cerrar el polígono; esta aserción lo fija para que no se pierda. El
+     sector de RADIO no pasa por ahí y volvía sin encuadre: eso se comprueba
+     en tsegundoplano, que es donde se vuelve con el aviso flotante. */
+  const ENC=despues.encuadrado||{};
+  T('y el mapa encuadrado en el sector, sin buscarlo a mano',
+    ENC.dentro===true && ENC.ocupa>=33, 'el área ocupa el '+ENC.ocupa+'% del ancho de la vista');
   T('y los usos, otra vez pintados sobre el mapa',
     despues.puntosEnMapa>0 && despues.puntosEnMapa>=despues.puntosGuardados,
     despues.puntosEnMapa+' puntos en el mapa de '+despues.puntosGuardados+' guardados');
