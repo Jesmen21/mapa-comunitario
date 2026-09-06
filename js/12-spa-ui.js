@@ -679,7 +679,14 @@
     // con posiciones fijas y meterlas en medio correría los índices de todo lo
     // ya mapeado. En un registro viejo estas casillas no existen y se leen como
     // "sin registrar", que es la verdad.
-    let fichaEscritaEnEsteGuardado = false;
+    /* Qué casillas de la ficha del edificio escribió este formulario. Al
+       editar, la descripción se rearma desde el formulario, así que toda
+       casilla que esta pantalla no pregunta llega vacía y hay que traerla
+       del registro original. Con un solo «se escribió la ficha» no
+       alcanzaba: el formulario de Pro City escribe los pisos y no pregunta
+       materialidad ni época, y editar ahí un punto levantado con el
+       formulario ciudadano las borraba las dos. */
+    const fichaSlotsEscritos = [];
     (function guardarFichaEdificio(){
         const EDIF = window.URBIS_EDIFICIO;
         if (!EDIF) return;
@@ -701,17 +708,29 @@
         // índice suelto dejaría "undefined" en medio de la cadena.
         const tope = Math.max(ref.idxOtroTexto, ref.idxUsosPorPiso || 0);
         for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
-        d[ref.idxMaterialidad] = matSel || EDIF.SIN_REGISTRAR;
-        d[ref.idxPisos] = (isFinite(pisosSel) && pisosSel > 0) ? String(Math.min(pisosSel, 60)) : '';
-        d[ref.idxPlantaBaja] = selPB ? String(selPB.value || '').replace(/\|/g, '-') : '';
-        d[ref.idxEpoca] = selEp ? String(selEp.value || '').replace(/\|/g, '-') : '';
-        d[ref.idxOtroTexto] = insOtro ? String(insOtro.value || '').replace(/\|/g, '-').slice(0, 120) : '';
-        // Piso por piso, en su casilla del final. Sin pisos no hay plantas.
-        if (ref.idxUsosPorPiso != null && typeof EDIF.leerUsosPorPisoDelFormulario === 'function') {
-            d[ref.idxUsosPorPiso] = EDIF.codificarPisos(EDIF.leerUsosPorPisoDelFormulario(document)).replace(/\|/g, '-');
+        /* SOLO se escribe el campo cuyo control está en pantalla. Los dos
+           formularios que llegan hasta acá no preguntan lo mismo: el
+           ciudadano trae la ficha entera y el de Pro City solo los pisos y
+           qué hay en cada planta. Escribir los cinco campos siempre —como se
+           hacía— significaba que editar en Pro City un punto que ya traía
+           materialidad y época las dejaba en blanco: un dato levantado en
+           campo perdido por abrir otra pantalla. */
+        const escribir = function (idx, valor) {
+            if (idx == null) return;
+            d[idx] = valor; fichaSlotsEscritos.push(idx);
+        };
+        if (selMat) escribir(ref.idxMaterialidad, matSel || EDIF.SIN_REGISTRAR);
+        if (insPisos) escribir(ref.idxPisos, (isFinite(pisosSel) && pisosSel > 0) ? String(Math.min(pisosSel, 60)) : '');
+        if (selPB) escribir(ref.idxPlantaBaja, String(selPB.value || '').replace(/\|/g, '-'));
+        if (selEp) escribir(ref.idxEpoca, String(selEp.value || '').replace(/\|/g, '-'));
+        if (insOtro) escribir(ref.idxOtroTexto, String(insOtro.value || '').replace(/\|/g, '-').slice(0, 120));
+        // Piso por piso, en su casilla del final. Sin el campo de pisos en
+        // pantalla no hay nada que escribir acá tampoco.
+        if (insPisos && ref.idxUsosPorPiso != null && typeof EDIF.leerUsosPorPisoDelFormulario === 'function') {
+            escribir(ref.idxUsosPorPiso,
+                EDIF.codificarPisos(EDIF.leerUsosPorPisoDelFormulario(document)).replace(/\|/g, '-'));
         }
         descripcionFinal = d.join(' | ');
-        fichaEscritaEnEsteGuardado = true;
     })();
     // ── ¿Hubo gente herida? ───────────────────────────────────────────────
     // Se guarda DESPUÉS del bloque temporal y de la ficha del edificio, en su
@@ -757,15 +776,18 @@
         if(!_vicActivo) {
             conservar.push(S.victimas != null ? S.victimas : base + 13);
         }
-        // La ficha del edificio solo se conserva si esta edición NO la escribió;
-        // si el formulario la traía, lo que puso el usuario manda.
-        if(!fichaEscritaEnEsteGuardado) {
-            [S.edificioMaterialidad, S.edificioPisos, S.edificioPlantaBaja,
-             S.edificioEpoca, S.edificioOtroTexto].forEach(function(idx, k){
-                conservar.push(idx != null ? idx : base + 5 + k);
-            });
-            conservar.push(S.edificioUsosPorPiso != null ? S.edificioUsosPorPiso : base + 14);
-        }
+        /* La ficha del edificio, casilla por casilla: manda lo que el usuario
+           acaba de poner en las que este formulario SÍ pregunta, y se conserva
+           lo guardado en las demás. Antes era todo o nada, y como el
+           formulario de Pro City solo pregunta los pisos, editar ahí borraba
+           la materialidad y la época que alguien había levantado en la calle. */
+        [S.edificioMaterialidad, S.edificioPisos, S.edificioPlantaBaja,
+         S.edificioEpoca, S.edificioOtroTexto].forEach(function(idx, k){
+            const i2 = idx != null ? idx : base + 5 + k;
+            if(fichaSlotsEscritos.indexOf(i2) < 0) conservar.push(i2);
+        });
+        const iPlantas = S.edificioUsosPorPiso != null ? S.edificioUsosPorPiso : base + 14;
+        if(fichaSlotsEscritos.indexOf(iPlantas) < 0) conservar.push(iPlantas);
         conservar.forEach(function(idx){ if(dOriginal[idx]) dFinal[idx] = dOriginal[idx]; });
         descripcionFinal = dFinal.join(' | ');
     }

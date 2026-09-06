@@ -985,13 +985,27 @@
      calculamos alturas»—. Cuenta solo los puntos que son un edificio (por
      categoría del reporte o por uso de la Matriz de Pro City) y solo los que
      traen los pisos: un edificio sin contar no es un edificio de un piso. */
-  function alturasDeCampo() {
+  /* La lista, uno por uno y CON su sitio: el mapa de alturas necesita saber
+     dónde está cada edificio, no solo cuántos hay de cada altura. */
+  /* Se recuerda lo calculado DENTRO de un mismo repintado y solo dentro de
+     él. La ficha, el mapa de alturas, el informe y la síntesis piden lo
+     mismo tres o cuatro veces seguidas, y esto recorre todos los puntos del
+     dispositivo partiendo cada descripción: en un teléfono con dos mil
+     puntos mapeados eso se siente al desplazar. Guardar el resultado más
+     allá del repintado sería peor que lento: después de editar un edificio
+     la ficha mostraría lo de antes, y nadie lo notaría. */
+  var memoCampo = { llave: '', valor: null };
+  function edificiosDeCampo() {
     var EDIF = window.URBIS_EDIFICIO;
-    if (!EDIF || !S.resultado || typeof EDIF.leer !== 'function') return null;
+    if (!EDIF || !S.resultado || typeof EDIF.leer !== 'function') return [];
     var pts = puntosDelCurso();
-    if (!pts.length) return null;
-    var edificios = 0, conPisos = 0, suma = 0, maximo = 0, mixtos = 0;
-    var porNivel = { '1': 0, '2': 0, '3': 0, '+3': 0 }, combos = {}, plantas = {};
+    /* La llave lleva el repintado Y cuántos puntos hay: la lámina y el
+       informe se arman fuera de `pintar`, así que sin lo segundo un punto
+       publicado entre medias no se vería en el papel. */
+    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
+    if (memoCampo.llave === llave && memoCampo.valor) return memoCampo.valor;
+    if (!pts.length) { memoCampo = { llave: llave, valor: [] }; return []; }
+    var salida = [];
     pts.forEach(function (p) {
       var lat = parseFloat(String(p.lat || '').replace(',', '.'));
       var lng = parseFloat(String(p.lng || '').replace(',', '.'));
@@ -1003,21 +1017,37 @@
                     typeof EDIF.esUsoDeEdificio === 'function' && EDIF.esUsoDeEdificio(uso));
       if (!esEdif) return;
       try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
-      edificios++;
       var f = EDIF.leer(p.descripcion);
-      if (!f.pisosRegistrados) return;
-      conPisos++; suma += f.pisos; if (f.pisos > maximo) maximo = f.pisos;
-      porNivel[f.pisos >= 4 ? '+3' : String(f.pisos)]++;
-      if (f.mezcla && f.mezcla.mixto) {
-        mixtos++;
-        combos[f.mezcla.resumen] = (combos[f.mezcla.resumen] || 0) + 1;
-      }
-      (f.usosPorPiso || []).forEach(function (x) { plantas[x.uso] = (plantas[x.uso] || 0) + 1; });
+      salida.push({ lat: lat, lng: lng, nombre: cabeza,
+        pisos: f.pisosRegistrados ? f.pisos : null,
+        plantas: (f.usosPorPiso || []).length,
+        mixto: !!(f.mezcla && f.mezcla.mixto),
+        resumen: (f.mezcla && f.mezcla.resumen) || '',
+        usosPorPiso: f.usosPorPiso || [] });
+    });
+    memoCampo = { llave: llave, valor: salida };
+    return salida;
+  }
+  function alturasDeCampo() {
+    var lista = edificiosDeCampo();
+    if (!lista.length) return null;
+    var conPisos = 0, suma = 0, maximo = 0, mixtos = 0, sinPlantas = 0;
+    var porNivel = { '1': 0, '2': 0, '3': 0, '+3': 0 }, combos = {}, plantas = {};
+    lista.forEach(function (e) {
+      if (e.pisos == null) return;
+      conPisos++; suma += e.pisos; if (e.pisos > maximo) maximo = e.pisos;
+      porNivel[e.pisos >= 4 ? '+3' : String(e.pisos)]++;
+      if (e.mixto) { mixtos++; combos[e.resumen] = (combos[e.resumen] || 0) + 1; }
+      /* Un edificio con los pisos contados pero sin decir qué hay en cada
+         planta es media ficha, y es justo lo que ahora se puede terminar de
+         levantar: se cuenta aparte para poder pedirlo. */
+      if (!e.plantas) sinPlantas++;
+      e.usosPorPiso.forEach(function (x) { plantas[x.uso] = (plantas[x.uso] || 0) + 1; });
     });
     if (!conPisos) return null;
     var ETQ = { '1': 'Un piso', '2': 'Dos pisos', '3': 'Tres pisos', '+3': 'Cuatro o más' };
     return {
-      edificios: edificios, conPisos: conPisos,
+      edificios: lista.length, conPisos: conPisos, sinPlantas: sinPlantas,
       media: Math.round(10 * suma / conPisos) / 10, maximo: maximo, mixtos: mixtos,
       niveles: ['1', '2', '3', '+3'].filter(function (k) { return porNivel[k]; }).map(function (k) {
         return { id: k, etiqueta: ETQ[k], edificios: porNivel[k], pct: Math.round(100 * porNivel[k] / conPisos) };
@@ -1041,7 +1071,11 @@
                 return x.resumen.toLowerCase() + (x.n > 1 ? ' (' + x.n + ')' : '');
               }).join('; ')
             : '') + '.'
-        : (c.plantas.length ? ' Ninguno mezcla usos entre plantas.' : ''));
+        : (c.plantas.length ? ' Ninguno mezcla usos entre plantas.' : '')) +
+      (c.sinPlantas
+        ? ' A <b>' + c.sinPlantas + '</b> le' + (c.sinPlantas === 1 ? '' : 's') +
+          ' falta decir qué hay en cada planta.'
+        : '');
   }
 
   /* Compara dos listas de puntos ya clasificados y reparte en cuatro cajas.
@@ -6306,6 +6340,9 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function pintar() {
     var h = hoja();
+    // Cada repintado es un instante nuevo: lo que se calculó en el anterior
+    // ya no vale. Ver `memoCampo`.
+    S.tickPintado = (S.tickPintado || 0) + 1;
     pintarVolver();
     // La ficha y la comparación se ven enteras: son para leer, no para
     // manipular el mapa.
@@ -9442,8 +9479,17 @@ function donaHTML(datos, colorDe, nombreDe) {
                  listo: !!((st.hitos || []).some(function (h) { return h.lat != null; })),
                  dato: 'numerados y con su nombre', falta: 'no hay hitos registrados' });
     lista.push({ id: 'alturas', t: 'Alturas de lo construido',
-                 listo: !!((S.trzPisos || []).filter(function (x) { return x != null; }).length >= 3),
-                 dato: 'cada huella con el tono de sus pisos', falta: 'medí el trazado' });
+                 /* Dos maneras de tenerlo: midiendo el trazado, que trae las
+                    huellas de OpenStreetMap, o contando los pisos en la
+                    calle. La segunda es la que de verdad describe un barrio
+                    colombiano, donde casi nadie registró la altura. */
+                 listo: !!((S.trzPisos || []).filter(function (x) { return x != null; }).length >= 3) ||
+                        (function () {
+                          try { return edificiosDeCampo().some(function (e) { return e.pisos != null; }); }
+                          catch (e) { return false; }
+                        })(),
+                 dato: 'cada huella con el tono de sus pisos, y lo contado en campo en rombo',
+                 falta: 'medí el trazado o contá los pisos en la calle' });
     lista.push({ id: 'masa', t: 'Susceptibilidad por pendiente',
                  listo: !!S.terRejilla, dato: 'los rangos de la guía, del modelo de elevación',
                  falta: 'medí el terreno' });
@@ -9792,28 +9838,52 @@ function donaHTML(datos, colorDe, nombreDe) {
     var huellasA = (o.huellas !== undefined ? o.huellas : S.trzHuellas) || [];
     var pisosA = (o.pisos !== undefined ? o.pisos : S.trzPisos) || [];
     var conPisos = pisosA.filter(function (x) { return x != null; }).length;
-    if (huellasA.length && conPisos >= 3) {
+    /* Y lo contado en campo, edificio por edificio. Va como PUNTO y no como
+       huella porque un punto mapeado no tiene planta dibujada: lo que se
+       sabe es dónde está y cuánto levanta. Con el mismo tono que las
+       huellas, para que las dos fuentes se lean en la misma escala. Sin
+       esto, un curso que contó cuarenta edificios en la calle veía el mapa
+       de alturas exactamente igual que antes de salir. */
+    var edCampo = (function () {
+      try { return edificiosDeCampo().filter(function (e) { return e.pisos != null; }); }
+      catch (e) { return []; }
+    })();
+    if ((huellasA.length && conPisos >= 3) || edCampo.length) {
       var COLOR_PISOS = function (n) {
         if (n == null) return '#C9D3DC';
         if (n <= 1) return '#BFE3F7'; if (n <= 2) return '#5BB4E5';
         if (n <= 3) return '#0A6F9E'; return '#0B3A57';
       };
+      var hayHuellas = huellasA.length && conPisos >= 3;
       mapas.push({
         id: 'alturas', titulo: 'Alturas de lo construido', grupo: grupoDeMapa('alturas'),
-        svg: mini({ poligonos: huellasA.map(function (an, i) {
-          return { pts: an, relleno: COLOR_PISOS(pisosA[i]), opacidad: 0.9, borde: '#0F1F2E', ancho: 0.2 };
-        }) }),
+        svg: mini({
+          poligonos: hayHuellas ? huellasA.map(function (an, i) {
+            return { pts: an, relleno: COLOR_PISOS(pisosA[i]), opacidad: 0.9, borde: '#0F1F2E', ancho: 0.2 };
+          }) : [],
+          /* Los contados en campo van en rombo, como el resto de lo que
+             levantó el curso en este plano: en una lámina fotocopiada el
+             color no distingue nada y la forma sí. */
+          destacados: edCampo.map(function (e) {
+            return { lat: e.lat, lng: e.lng, color: COLOR_PISOS(e.pisos) };
+          })
+        }),
         /* Solo los tonos que el dibujo pinta de verdad: una convención que
            nombra un color que no está manda a buscarlo. */
         conv: (function () {
           var usados = {};
-          pisosA.slice(0, huellasA.length).forEach(function (n) { usados[COLOR_PISOS(n)] = 1; });
-          return [{ c: '#BFE3F7', t: '1 piso', f: 'area' }, { c: '#5BB4E5', t: '2 pisos', f: 'area' },
-                  { c: '#0A6F9E', t: '3 pisos', f: 'area' }, { c: '#0B3A57', t: '4 o más', f: 'area' },
-                  { c: '#C9D3DC', t: 'Sin altura registrada', f: 'area' }]
+          if (hayHuellas) pisosA.slice(0, huellasA.length).forEach(function (n) { usados[COLOR_PISOS(n)] = 1; });
+          edCampo.forEach(function (e) { usados[COLOR_PISOS(e.pisos)] = 1; });
+          var escala = [{ c: '#BFE3F7', t: '1 piso', f: 'area' }, { c: '#5BB4E5', t: '2 pisos', f: 'area' },
+                        { c: '#0A6F9E', t: '3 pisos', f: 'area' }, { c: '#0B3A57', t: '4 o más', f: 'area' },
+                        { c: '#C9D3DC', t: 'Sin altura registrada', f: 'area' }]
             .filter(function (c) { return usados[c.c]; });
+          if (edCampo.length) escala.push({ c: '#0F1F2E', t: 'Contado en campo (rombo)', f: 'punto' });
+          return escala;
         })(),
-        pie: conPisos + ' de ' + huellasA.length + ' edificios traen la altura registrada'
+        pie: [hayHuellas ? conPisos + ' de ' + huellasA.length + ' edificios traen la altura registrada' : '',
+              edCampo.length ? edCampo.length + ' contados en campo, piso por piso' : '']
+          .filter(Boolean).join(' · ')
       });
     }
 
@@ -10863,6 +10933,31 @@ function donaHTML(datos, colorDe, nombreDe) {
       T('Dibujar el lote: sin él el análisis es del sector y no del proyecto', 'sin lote');
     }
 
+    /* ── Lo que se contó en la calle, edificio por edificio ────────────
+       Es la única medición que no viene de un servidor: alguien se paró
+       enfrente y contó los pisos. Entra a la síntesis porque cambia lo que
+       se puede afirmar del sector —la mezcla de usos en altura no se ve en
+       ningún dato abierto— y porque lo que falta de ella es una tarea de
+       campo concreta, con su número. */
+    var camp = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
+    if (camp) {
+      if (camp.mixtos && camp.mixtos / camp.conPisos >= 0.3)
+        F('Los edificios mezclan usos por planta: comercio abajo y vivienda arriba, contado en campo',
+          camp.mixtos + ' de ' + camp.conPisos + ' edificios');
+      else if (camp.conPisos >= 5 && !camp.mixtos)
+        C('Ningún edificio contado mezcla usos entre plantas: el sector es de una sola cosa por edificio',
+          camp.conPisos + ' edificios contados');
+      if (camp.media >= 4)
+        F('Se construye en altura: la media contada en campo pasa de cuatro pisos',
+          conComa(camp.media) + ' pisos de media');
+      if (camp.sinPlantas)
+        T('Terminar la ficha de los edificios ya contados: falta decir qué hay en cada planta',
+          camp.sinPlantas + ' sin sus plantas');
+      if (camp.edificios > camp.conPisos)
+        T('Contar los pisos de lo que ya está mapeado en el sector',
+          (camp.edificios - camp.conPisos) + ' edificios sin altura');
+    }
+
     /* ── Y el aviso que ninguna medición da ─────────────────────────────
        Una síntesis con dos renglones en contra y ninguno a favor no es un
        sector sin problemas: es un sector sin medir. Decirlo es más honesto
@@ -11598,7 +11693,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var ahora = Date.now(), DIA = 86400000;
     var porAutor = {}, porUso = {};
     var hoy = 0, semana = 0, conFicha = 0, sinNada = 0, edificios = 0;
-    var faltaPisos = 0, faltaMaterial = 0, faltaEpoca = 0;
+    var faltaPisos = 0, faltaMaterial = 0, faltaEpoca = 0, faltaPlantas = 0;
 
     pts.forEach(function (p) {
       var quien = (AUT && AUT.de ? AUT.de(p.descripcion).nombre : '') || 'Sin nombre';
@@ -11631,6 +11726,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (falta.pisos) faltaPisos++;
         if (falta.materialidad) faltaMaterial++;
         if (falta.epoca) faltaEpoca++;
+        /* Las plantas: con los pisos contados pero sin decir qué hay en cada
+           uno, la ficha está a medias. Se cuenta aparte de «sin pisos»
+           porque es otra salida a la calle: la primera se hace de lejos, la
+           segunda hay que hacerla parado enfrente. */
+        if (!falta.pisos) {
+          var fp = EDIF.leer(p.descripcion);
+          if (!((fp.usosPorPiso || []).length)) faltaPlantas++;
+        }
         if (!falta.pisos && !falta.materialidad && !falta.epoca) { conFicha++; a.conFicha++; }
         else if (falta.pisos && falta.materialidad && falta.epoca) sinNada++;
       }
@@ -11654,7 +11757,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       total: pts.length, hoy: hoy, semana: semana,
       autores: autores, usos: usos, sectores: sectores,
       edificios: edificios, conFicha: conFicha, sinNada: sinNada,
-      faltaPisos: faltaPisos, faltaMaterial: faltaMaterial, faltaEpoca: faltaEpoca
+      faltaPisos: faltaPisos, faltaMaterial: faltaMaterial, faltaEpoca: faltaEpoca,
+      faltaPlantas: faltaPlantas
     };
   }
 
@@ -11725,10 +11829,16 @@ function donaHTML(datos, colorDe, nombreDe) {
             '<div class="pcr-kpi"><b>' + Math.round(100 * r.conFicha / r.edificios) + '%</b>' +
               '<small>completas de ' + r.edificios + '</small></div>' +
             '<div class="pcr-kpi"><b>' + r.faltaPisos + '</b><small>sin pisos</small></div>' +
+            '<div class="pcr-kpi"><b>' + r.faltaPlantas + '</b><small>sin sus plantas</small></div>' +
             '<div class="pcr-kpi"><b>' + r.faltaEpoca + '</b><small>sin época</small></div>' +
           '</div>' +
           '<p class="pcr-pista">Sin pisos no hay alturas ni perfil de calle; sin época no hay lectura ' +
-          'de vulnerabilidad. Son los dos campos que más rinden y los que más se saltan.</p>'
+          'de vulnerabilidad. Son los dos campos que más rinden y los que más se saltan.' +
+          (r.faltaPlantas
+            ? ' Y a <b>' + r.faltaPlantas + '</b> edificio' + (r.faltaPlantas === 1 ? '' : 's') +
+              ' con los pisos ya contados le falta decir qué hay en cada planta: eso es lo que ' +
+              'separa una torre de oficinas de una con local abajo.'
+            : '') + '</p>'
         : '') +
 
       (r.sectores.length

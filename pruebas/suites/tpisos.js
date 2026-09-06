@@ -196,6 +196,9 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
       let pedido = {};
       try { pedido = JSON.parse(r.request().postData() || '{}'); } catch (e) {}
       if (pedido.action === 'db_write' && pedido.fila) { filas.push(pedido.fila); }
+      if (pedido.action === 'db_update' && pedido.set) {
+        filas.forEach(fl => { if (String(fl[pedido.col]) === String(pedido.value)) Object.assign(fl, pedido.set); });
+      }
       const cuerpo = pedido.action === 'db_read' ? { ok: true, data: filas } : { ok: true, data: [] };
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cuerpo) });
     }
@@ -229,6 +232,39 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     const sel = () => panel ? [...panel.querySelectorAll('select.ins-uso-piso')] : [];
     o.plantas = sel().length;
     o.defecto = sel().map(s => s.value).join('|');
+    /* ── Cómo se ve en el teléfono ─────────────────────────────────────
+       Esta prueba corre a 412 px, que es el ancho del celular donde se
+       mapea, así que puede medirlo de verdad. Dos cosas se rompieron acá y
+       solo se vieron mirando la captura: los desplegables salían tinta sobre
+       tinta —los estilos de formulario de la aplicación pintan todo campo de
+       oscuro y llevan !important— y una torre de doce pisos estiraba el
+       panel hasta empujar el botón de guardar bien lejos. */
+    const contrasteDe = (el) => {
+      const cs = getComputedStyle(el);
+      const lum = (c) => {
+        const m = String(c).match(/\d+(\.\d+)?/g) || [255, 255, 255];
+        const v = m.slice(0, 3).map(x => { const n = Number(x) / 255;
+          return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4); });
+        return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+      };
+      const a = lum(cs.backgroundColor), b = lum(cs.webkitTextFillColor || cs.color);
+      return Math.round(100 * (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) / 100;
+    };
+    const selPiso = panel && panel.querySelector('select.ins-uso-piso');
+    o.contraste = selPiso ? contrasteDe(selPiso) : 0;
+    o.altoFila = (function () { const fl = selPiso && selPiso.closest('.edif-piso');
+      return fl ? Math.round(fl.getBoundingClientRect().height) : 0; })();
+    if (ip) { ip.value = '12'; ip.dispatchEvent(new Event('input', { bubbles: true })); await esperar(250); }
+    o.torre = (function () {
+      const lista = panel && panel.querySelector('.edif-pisos');
+      if (!lista) return null;
+      return { filas: panel.querySelectorAll('select.ins-uso-piso').length,
+        alto: Math.round(lista.getBoundingClientRect().height), contenido: lista.scrollHeight,
+        panel: panel.scrollHeight, ventana: window.innerHeight };
+    })();
+    if (ip) { ip.value = '2'; ip.dispatchEvent(new Event('input', { bubbles: true })); await esperar(250); }
+    o.vuelveADos = panel ? panel.querySelectorAll('select.ins-uso-piso').length : 0;
+
     const s1 = panel && panel.querySelector('select.ins-uso-piso[data-piso="1"]');
     if (s1) { s1.value = 'Comercio'; s1.dispatchEvent(new Event('change', { bubbles: true })); await esperar(150); }
     o.resumen = ((panel && panel.querySelector('#ins-pisos-resumen')) || {}).textContent || '';
@@ -251,8 +287,84 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
       o.leidoMixto = f.mezcla.mixto; o.leidoResumen = f.mezcla.resumen;
     }
 
-    // Y el sector analizado lo cuenta. El punto quedó en memoria como
-    // cualquier reporte recién publicado.
+    /* ── Editar lo mapeado ─────────────────────────────────────────────
+       Se toca el punto en el mapa, se abre su ficha y se edita. Tiene que
+       volver TODO lo guardado: los pisos y el uso de cada planta. Un
+       formulario de edición que vuelve en blanco no es editar, es volver a
+       mapear encima. */
+    const marcadorDe = (lat) => {
+      let hallado = null;
+      try {
+        window.map.eachLayer(l => {
+          if (hallado || !l || !l.getLatLng || !l.fire) return;
+          if (Math.abs(l.getLatLng().lat - lat) < 1e-6) hallado = l;
+        });
+      } catch (e) {}
+      return hallado;
+    };
+    const m1 = marcadorDe(C.lat);
+    o.hayMarcador = !!m1;
+    if (m1) { m1.fire('click', { latlng: { lat: C.lat, lng: C.lng } }); await esperar(600); }
+    o.hayFichaPunto = !!q('[data-u52-call="procity-sel-edit"]');
+    await clic('[data-u52-call="procity-sel-edit"]', 900);
+    const panelEd = q('#u52-quick-report-panel');
+    const ipEd = panelEd && panelEd.querySelector('#ins-pisos');
+    o.edPisos = ipEd ? ipEd.value : '';
+    o.edPlantas = panelEd ? [...panelEd.querySelectorAll('select.ins-uso-piso')].map(x => x.value).join('|') : '';
+    o.edEsEdicion = /Actualizar en Pro City/.test((panelEd && panelEd.textContent) || '');
+
+    /* Y editar no puede BORRAR lo que esta pantalla no pregunta. El punto de
+       abajo trae materialidad y época levantadas con el formulario
+       ciudadano; se abre en Pro City —que solo pregunta pisos y plantas— se
+       cambia la altura y se guarda. Las dos tienen que seguir ahí: perder un
+       dato de campo por abrir otra pantalla es la peor clase de pérdida,
+       porque nadie se entera. */
+    const EDIF2 = window.URBIS_EDIFICIO, SL2 = window.URBIS_SLOTS;
+    const MATERIAL = 'Concreto reforzado (pórticos o muros)', EPOCA = '2010 o posterior (NSR-10)';
+    const latOtro = C.lat + 0.0004;
+    const dOtro = String(((typeof globalData !== 'undefined' && globalData) || [])
+      .filter(x => Math.abs(parseFloat(x.lat) - C.lat) < 1e-6)[0].descripcion).split(' | ');
+    dOtro[0] = 'Residencial · Casa de tres o más pisos';
+    dOtro[SL2.edificioMaterialidad] = MATERIAL;
+    dOtro[SL2.edificioEpoca] = EPOCA;
+    dOtro[SL2.edificioPisos] = '3';
+    dOtro[SL2.edificioUsosPorPiso] = '';
+    await window.urbisGuardarFila({ tipo: '🗺️ Matriz de Usos', lat: String(latOtro), lng: String(C.lng),
+      descripcion: dOtro.join(' | '), fecha: new Date().toISOString() });
+    if (typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos();
+    await esperar(1800);
+    const m2 = marcadorDe(latOtro);
+    o.hayOtro = !!m2;
+    if (m2) { m2.fire('click', { latlng: { lat: latOtro, lng: C.lng } }); await esperar(600); }
+    await clic('[data-u52-call="procity-sel-edit"]', 900);
+    const panelEd2 = q('#u52-quick-report-panel');
+    const ip2 = panelEd2 && panelEd2.querySelector('#ins-pisos');
+    o.otroPisos = ip2 ? ip2.value : '';
+    const s2 = panelEd2 && panelEd2.querySelector('select.ins-uso-piso[data-piso="1"]');
+    if (s2) { s2.value = 'Comercio'; s2.dispatchEvent(new Event('change', { bubbles: true })); await esperar(150); }
+    const dir2 = panelEd2 && panelEd2.querySelector('#ins-direccion');
+    if (dir2) dir2.value = 'Calle 8 con avenida 3';
+    await clic('[data-u52-call="procity-publish"]', 2500);
+    const tras = ((typeof window.urbisDatosVisibles === 'function' ? window.urbisDatosVisibles() : []) || [])
+      .filter(x => Math.abs(parseFloat(x.lat) - latOtro) < 1e-6)[0];
+    o.trasEditar = tras ? (function () {
+      const fi = EDIF2.leer(tras.descripcion);
+      const dd = String(tras.descripcion).split(' | ');
+      return { material: dd[SL2.edificioMaterialidad], epoca: dd[SL2.edificioEpoca],
+        pisos: fi.pisos, plantas: EDIF2.codificarPisos(fi.usosPorPiso) };
+    })() : null;
+
+    /* Y el sector analizado lo cuenta. Se espera a que el mapa termine de
+       refrescarse: publicar dispara una recarga de los puntos a los dos
+       segundos, y sin esperarla la ficha contaba un edificio y el pliego
+       —armado después— contaba dos. La prueba medía la carrera, no el
+       resultado. */
+    for (let i = 0; i < 40; i++) {
+      const n = ((typeof window.urbisDatosVisibles === 'function' ? window.urbisDatosVisibles() : []) || [])
+        .filter(x => /Matriz de Usos/.test(String(x.tipo || ''))).length;
+      if (n >= 2) break;
+      await esperar(300);
+    }
     const A = window.URBIS_PC_ANALISIS, R = window.URBIS_PC_RECON;
     A.iniciarDibujo(); POL.forEach(p => A.agregarPunto(p.lat, p.lng)); A.agregarPunto(POL[0].lat, POL[0].lng);
     R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
@@ -280,22 +392,75 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   T('se llega a la ficha del tipo', r2.manual && r2.grupo && r2.uso && r2.tipo);
   T('pregunta los pisos, prellenados desde el nombre del tipo', r2.hayPisos && r2.pisosPre === '2', r2.pisosPre + ' pisos');
   T('una planta por piso, prellenada con vivienda', r2.plantas === 2 && r2.defecto === 'Vivienda|Vivienda', r2.defecto);
+  T('los desplegables se leen: no son tinta sobre tinta', r2.contraste >= 4.5,
+    'contraste ' + r2.contraste + ':1');
+  T('y cada planta ocupa un renglón, no un bloque', r2.altoFila > 0 && r2.altoFila <= 56,
+    r2.altoFila + ' px de alto');
+  /* Una torre de doce pisos: la lista se recorre por dentro en vez de
+     estirar el panel hasta que el botón de guardar quede a media pantalla de
+     distancia. */
+  const tr = r2.torre;
+  T('una torre de doce pisos no estira el panel: la lista se recorre por dentro',
+    !!tr && tr.filas === 12 && tr.alto < tr.contenido && tr.alto <= tr.ventana * 0.45,
+    tr ? tr.filas + ' plantas · lista ' + tr.alto + ' de ' + tr.contenido + ' px · panel ' + tr.panel : 'no hay lista');
+  T('y al volver a dos pisos vuelven dos plantas', r2.vuelveADos === 2, r2.vuelveADos + ' plantas');
   T('con tienda abajo, lo dice antes de guardar', /Edificio mixto · Comercio abajo, vivienda arriba/.test(r2.resumen), r2.resumen);
   T('se guarda en su casilla del registro', r2.guardo && r2.slotPisos === '2' && r2.slotPlantas === '1:Comercio;2:Vivienda',
     'pisos «' + r2.slotPisos + '» · plantas «' + r2.slotPlantas + '»');
   T('y al leerlo vuelve como mixto', r2.leidoMixto === true && r2.leidoResumen === 'Comercio abajo, vivienda arriba', r2.leidoResumen);
 
+  console.log('\n  -- editar lo mapeado --');
+  T('el punto se puede tocar en el mapa y abre su ficha', r2.hayMarcador && r2.hayFichaPunto);
+  T('al editarlo vuelven los pisos y el uso de cada planta',
+    r2.edEsEdicion && r2.edPisos === '2' && r2.edPlantas === 'Vivienda|Comercio',
+    r2.edPisos + ' pisos · plantas ' + (r2.edPlantas || '(vacías)'));
+  const te = r2.trasEditar;
+  T('y editar en Pro City no borra la materialidad ni la época del punto',
+    !!te && /Concreto reforzado/.test(te.material || '') && /NSR-10/.test(te.epoca || ''),
+    te ? 'material «' + te.material + '» · época «' + te.epoca + '»' : 'no se pudo editar');
+  T('mientras lo que sí pregunta queda guardado',
+    !!te && te.pisos === 3 && te.plantas === '1:Comercio;2-3:Vivienda',
+    te ? te.pisos + ' pisos · ' + te.plantas : 'nada');
+
   console.log('\n  -- y el sector analizado lo cuenta --');
   const c = r2.campo;
-  T('el análisis encuentra el edificio contado en campo', !!c && c.conPisos === 1 && c.maximo === 2,
-    c ? c.conPisos + ' con pisos · máximo ' + c.maximo : 'nada');
-  T('como mixto, con su combinación', !!c && c.mixtos === 1 && c.combinaciones[0].resumen === 'Comercio abajo, vivienda arriba',
+  T('el análisis encuentra los edificios contados en campo',
+    !!c && c.edificios === 2 && c.conPisos === 2 && c.maximo === 3,
+    c ? c.conPisos + ' con pisos de ' + c.edificios + ' · máximo ' + c.maximo : 'nada');
+  T('los dos como mixtos, con su combinación',
+    !!c && c.mixtos === 2 && c.combinaciones[0].resumen === 'Comercio abajo, vivienda arriba' && c.combinaciones[0].n === 2,
     c ? JSON.stringify(c.combinaciones) : 'nada');
+  /* Y el mapa: lo contado en campo va en rombo sobre el plano, con el tono
+     de sus pisos. Sin esto, un curso que contó cuarenta edificios veía el
+     mapa de alturas igual que antes de salir a la calle. */
+  const mapaAlt = ((r2.lamina || '').split('<section class="caja')
+    .filter(x => /^ mapa-caja/.test(x) && /<h2>Alturas de lo construido( · el mapa)?<\/h2>/.test(x))[0]) || '';
+  const rombos = (mapaAlt.match(/<path d="M[\d.]+ [\d.]+L[\d.]+ [\d.]+L[\d.]+ [\d.]+L[\d.]+ [\d.]+Z" fill="#(5BB4E5|0A6F9E)"/g) || []).length;
+  T('el mapa de alturas los dibuja, con el tono de sus pisos', rombos === 2, rombos + ' rombos');
+  T('y lo dice en sus convenciones y en el pie',
+    /Contado en campo \(rombo\)/.test(mapaAlt) && /2 contados en campo, piso por piso/.test(mapaAlt),
+    (mapaAlt.match(/\d+ contados en campo[^<]*/) || ['no lo dice'])[0]);
   T('la ficha en pantalla lo muestra', /Contado en campo, piso por piso/.test(r2.ficha || '') && /Levantado en campo/.test(r2.ficha || ''));
   const cajaAlt = ((r2.lamina || '').split('<section class="caja').filter(x => /<h2>Alturas de lo construido<\/h2>/.test(x))[0]) || '';
-  T('el pliego trae la caja de alturas con lo contado en campo', /class="lee campo">Levantado en campo/.test(cajaAlt) && /1<\/b> de uso mixto: comercio abajo, vivienda arriba/.test(cajaAlt),
-    cajaAlt ? (cajaAlt.match(/Levantado en campo[^<]*<b>\d+<\/b>[^.]*\./) || ['sin frase'])[0].replace(/<[^>]+>/g, '') : 'sin caja');
+  /* Los dos edificios del sector —el mapeado y el editado— llevan tienda
+     abajo, así que los dos son mixtos y la frase lo dice con su combinación. */
+  T('el pliego trae la caja de alturas con lo contado en campo',
+    /class="lee campo">Levantado en campo/.test(cajaAlt) &&
+    /<b>2<\/b> edificios con los pisos contados/.test(cajaAlt) &&
+    /<b>2<\/b> de uso mixto: comercio abajo, vivienda arriba/.test(cajaAlt),
+    cajaAlt ? (cajaAlt.match(/Levantado en campo[\s\S]*?<\/p>/) || ['sin frase'])[0].replace(/<[^>]+>/g, '') : 'sin caja');
   T('y el informe en hojas también', /<h3>Contado en campo, piso por piso<\/h3>/.test(r2.informe || '') && /Qué hay en las plantas/.test(r2.informe || ''));
+
+  /* Y llega a la síntesis, que es donde se leen las conclusiones. Lo mixto
+     contado en campo no sale de ningún dato abierto: es lo que el curso
+     agregó al sector, y por eso vale como fortaleza. */
+  console.log('\n  -- y llega a la síntesis del sector --');
+  const cuad = (c) => ((r2.lamina || '').match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>')) || [''])[0];
+  T('la mezcla de usos por planta entra como fortaleza',
+    /mezclan usos por planta/.test(cuad('ok')),
+    (cuad('ok').match(/<span>[^<]*mezclan usos por planta[^<]*/) || ['no está'])[0].replace('<span>', ''));
+  T('con el número que la sostiene', /2 de 2 edificios/.test(cuad('ok')),
+    (cuad('ok').match(/\d+ de \d+ edificios/) || ['sin número'])[0]);
 
   console.log('');
   T('sin errores de JavaScript', err.filter(e => !/L is not defined|Unexpected end/.test(e)).length === 0, err.slice(0, 2).join(' / ') || 'ninguno');

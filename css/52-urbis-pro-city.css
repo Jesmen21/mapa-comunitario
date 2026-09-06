@@ -745,18 +745,31 @@
     font-size:.7rem; font-weight:850; color:var(--pc-sky-ink); -webkit-text-fill-color:var(--pc-sky-ink);
     text-transform:uppercase; letter-spacing:.04em;
   }
+  /* Con !important, y no por costumbre: los estilos de formulario de la
+     aplicación pintan todo campo con fondo oscuro y llevan !important. Sin
+     esto, en el teléfono los desplegables de cada planta salían tinta sobre
+     tinta y no se leía cuál era el uso elegido. Se vio en una captura a
+     412 px, que es el ancho real del celular donde se mapea. */
   #urbis-mobile-app .u52-procity-edificio input[type="number"],
   #urbis-mobile-app .u52-procity-edificio select{
-    width:100%; border:0; border-radius:14px; background:#fff; color:#173f75; -webkit-text-fill-color:#173f75;
-    font-size:.8rem; font-weight:800; padding:10px 12px; box-shadow:inset 0 0 0 1px rgba(207,224,236,.72);
-    outline:none; appearance:auto;
+    width:100% !important; border:0 !important; border-radius:12px !important;
+    background:#fff !important; color:#173f75 !important; -webkit-text-fill-color:#173f75 !important;
+    font-size:.78rem !important; font-weight:800 !important; padding:8px 10px !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.72) !important;
+    outline:none !important; appearance:auto !important; min-height:0 !important;
   }
-  #urbis-mobile-app .u52-procity-edificio .edif-pisos{ display:grid; gap:6px; }
+  /* La lista de plantas, compacta y con su propio desplazamiento: una torre
+     de diez pisos son diez renglones, y a la altura de antes empujaban el
+     botón de guardar fuera de la pantalla. Ahora la lista se recorre por
+     dentro y el botón se queda donde el pulgar lo espera. */
+  #urbis-mobile-app .u52-procity-edificio .edif-pisos{
+    display:grid; gap:4px; max-height:38vh; overflow-y:auto; padding-right:2px;
+  }
   #urbis-mobile-app .u52-procity-edificio .edif-piso{
-    display:grid; grid-template-columns:minmax(78px,auto) 1fr; align-items:center; gap:8px;
+    display:grid; grid-template-columns:minmax(64px,auto) 1fr; align-items:center; gap:6px;
   }
   #urbis-mobile-app .u52-procity-edificio .edif-piso label{
-    font-size:.7rem; font-weight:850; color:var(--pc-ink); -webkit-text-fill-color:var(--pc-ink);
+    font-size:.68rem; font-weight:850; color:var(--pc-ink); -webkit-text-fill-color:var(--pc-ink);
   }
   #urbis-mobile-app .u52-procity-edificio .edif-resumen{
     font-size:.72rem; font-weight:850; color:var(--pc-lav-deep); -webkit-text-fill-color:var(--pc-lav-deep); min-height:1em;
