@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v743-la-letra-del-pliego-la-elige-quien-lo-arma';
+const URBIS_CACHE = 'urbis-v744-el-historial-satelital-con-la-direccion-correcta';
 const URBIS_ASSETS = [
   './',
   './index.html',

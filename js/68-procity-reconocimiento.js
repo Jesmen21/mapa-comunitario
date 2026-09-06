@@ -14413,16 +14413,27 @@
       '<b>medir</b>: lo que se calcula no es una forma sino una proporción sobre miles de ' +
       'píxeles. La corta arranca en <b>2014</b> en alta resolución y sirve para <b>mirar</b>.</p>';
 
+    /* Las fotos van PRIMERO, y el orden es una confesión: la serie de alta
+       resolución está comprobada contra el servicio de verdad —la prueba
+       intercepta la red y verifica qué se pide y a dónde— y la de Landsat no.
+       Se escribió siguiendo la forma documentada de su API, pero desde donde
+       se programa la red no llega a ese dominio y no hay manera de
+       confirmarlo. Ofrecer primero la que se sabe que anda, y decir de la
+       otra que está en prueba, es lo honesto mientras siga así. */
     var botones = '<div class="pcr-llevar">' +
-      '<button type="button" data-pcr="evolucion" class="pcr-mini pcr-llevar-b"' +
-        (cargando ? ' disabled' : '') + '>' + ico('crecer', 16) +
-        (cargando === 'landsat' ? 'Trayendo…' : (L ? 'Rehacer desde 1984' : 'Medir desde 1984')) +
-      '</button>' +
-      '<button type="button" data-pcr="evolucion-alta" class="pcr-mini"' +
+      '<button type="button" data-pcr="evolucion-alta" class="pcr-mini pcr-llevar-b"' +
         (cargando ? ' disabled' : '') + '>' + ico('ojo', 16) +
         (cargando === 'wayback' ? 'Trayendo…' : (W ? 'Rehacer las fotos' : 'Ver las fotos desde 2014')) +
       '</button>' +
+      '<button type="button" data-pcr="evolucion" class="pcr-mini"' +
+        (cargando ? ' disabled' : '') + '>' + ico('crecer', 16) +
+        (cargando === 'landsat' ? 'Trayendo…' : (L ? 'Rehacer desde 1984' : 'Medir desde 1984')) +
+      '</button>' +
     '</div>' +
+    (L ? '' : '<p class="pcr-pista">Las fotos desde 2014 salen del mismo proveedor que la foto ' +
+      'de hoy y están comprobadas. La medición desde 1984 pide otro catálogo —el de Landsat— y ' +
+      '<b>todavía no se ha podido confirmar contra el servicio</b>: si falla, la ficha dice qué ' +
+      'contestó el servidor en vez de encogerse de hombros.</p>') +
     (cargando ? '<p class="pcr-conc" id="pcr-evo-estado">' + esc(S.evoAviso || 'Trayendo…') + '</p>' : '') +
     (S.evoAviso && !cargando ? '<p class="pcr-error">' + esc(S.evoAviso) + '</p>' : '');
 
@@ -14434,9 +14445,16 @@
     var EV = window.URBIS_EVOLUCION;
     var buenos = s2.pasos.filter(function (p) { return p.ok && p.medida; });
     if (!buenos.length) {
-      return '<p class="pcr-ojo">No se pudo leer ninguna imagen de la serie larga. ' +
-        'Puede ser el servicio, puede ser la conexión: no quiere decir que el sitio no haya ' +
-        'cambiado.</p>';
+      /* Y POR QUÉ no se pudo. «Puede ser el servicio, puede ser la conexión»
+         es lo que se decía antes, y con eso no se arregla nada: el fallo
+         llegó en una captura y hubo que adivinar. El motivo lo devuelve cada
+         año que falló, y el diagnóstico dice en qué paso y con qué código. */
+      var porQue = (s2.pasos || []).map(function (p) { return p.error; })
+        .filter(function (x, i, a) { return x && a.indexOf(x) === i; });
+      return '<p class="pcr-ojo">No se pudo leer ninguna imagen de la serie larga.' +
+        (porQue.length ? ' El servicio dijo: <b>' + esc(porQue.join(' · ')) + '</b>.' : '') +
+        ' No quiere decir que el sitio no haya cambiado.</p>' +
+        detalleDelFallo();
     }
     var conc = EV.conclusion(s2) || [];
     var maxV = buenos.reduce(function (m, p) { return Math.max(m, p.medida.verde); }, 1);
@@ -14476,6 +14494,19 @@
       'nubes se marca y no entra en la conclusión.</p>';
   }
 
+  /* El parte técnico de la última tanda. Va plegado porque no es para leer:
+     es para copiarlo y mandarlo cuando algo falla en un teléfono ajeno, que
+     es exactamente lo que no se pudo hacer la primera vez. */
+  function detalleDelFallo() {
+    var EV = window.URBIS_EVOLUCION;
+    var d = (EV && typeof EV.diagnostico === 'function') ? EV.diagnostico() : [];
+    if (!d.length) return '';
+    return '<details class="pcr-detalle"><summary>Qué contestó el servicio</summary>' +
+      '<pre class="pcr-plano">' + esc(d.map(function (x) {
+        return [x.paso, x.anio, x.estado || x.error || ''].filter(Boolean).join(' · ');
+      }).join('\n')) + '</pre></details>';
+  }
+
   function serieCorta(s2) {
     if (!s2) return '';
     var buenos = s2.pasos.filter(function (p) { return p.ok; });
@@ -14483,13 +14514,22 @@
     return '<p class="pcr-lab">Desde 2014, en alta resolución</p>' +
       '<div class="pcr-evo-tira pcr-evo-alta">' +
         buenos.map(function (p) {
-          return '<figure class="pcr-evo-p">' +
-            '<img src="' + p.imagen + '" alt="El sector en ' + p.anio + '" loading="lazy">' +
-            '<figcaption>' + p.anio + '</figcaption>' +
+          /* La fecha DE LA IMAGEN, no el año que se pidió. Esri publica por
+             entregas fechadas, no por años: rotular «2016» una estampa de
+             diciembre de 2015 sería inventarse el dato justo en la caja que
+             existe para comparar años. */
+          return '<figure class="pcr-evo-p' + (p.sustituto ? ' pcr-evo-dudoso' : '') + '">' +
+            '<img src="' + p.imagen + '" alt="El sector en ' + (p.anioReal || p.anio) +
+              '" loading="lazy">' +
+            '<figcaption>' + (p.anioReal || p.anio) + '</figcaption>' +
+            (p.fecha ? '<small>' + esc(p.fecha) + '</small>' : '') +
           '</figure>';
         }).join('') +
       '</div>' +
-      '<p class="pcr-pista">Acá NO hay porcentajes a propósito. Son de otro sensor y otro ' +
+      '<p class="pcr-pista">Debajo de cada estampa va la <b>fecha de la entrega</b> de la que ' +
+      'salió, no el año que se pidió: el proveedor publica por entregas fechadas y no por años, ' +
+      'y rotular con un año que no es sería inventar el dato justo donde se comparan años. ' +
+      'Acá NO hay porcentajes a propósito. Son de otro sensor y otro ' +
       'procesamiento que la serie larga, y ponerles un número al lado invitaría a compararlos ' +
       'con los de arriba, que es justo lo que no se puede hacer. Estas son para mirar: qué se ' +
       'construyó, qué se taló, por dónde iba el agua.</p>';

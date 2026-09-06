@@ -50,9 +50,9 @@
      acá y en ningún otro sitio. */
   var FUENTES = {
     /* Landsat por el catálogo abierto de Microsoft Planetary Computer, que
-       sirve Collection 2 completa —Landsat 4 a 9, 1982 en adelante,
-       global— y tiene un renderizador que devuelve PNG, que es lo único
-       que un navegador puede leer píxel a píxel.
+       sirve Collection 2 completa —Landsat 4 a 9, 1982 en adelante, global—
+       sin llave y con un renderizador que devuelve PNG, que es lo único que
+       un navegador puede leer píxel a píxel.
 
        `modo: 'indice'` quiere decir que el PNG NO es una foto en color sino
        un índice en escala de grises: el valor del píxel mapea linealmente al
@@ -73,22 +73,257 @@
     }
   };
 
-  /* La URL de una imagen. Se deja SUSTITUIBLE —`window.URBIS_EVOLUCION_URL`—
-     por dos razones que no son de estilo: probar esto sin red, y poder
-     corregir un endpoint desde fuera si cambia, sin tocar el módulo. */
-  function urlDe(fuenteId, anio, caja, tam) {
+  /* ── Las entregas de Wayback ───────────────────────────────────────────
+     Esri no publica una imagen «de 2016»: publica ENTREGAS con fecha, cada
+     una con su número, y cada entrega es un mosaico de teselas. No hay
+     ningún parámetro `año` ni ningún endpoint que recorte un rectángulo: lo
+     único que existe es la tesela.
+
+     Eso es lo que estaba mal. La primera versión de este módulo pedía
+     `.../World_Imagery/MapServer/export?bbox=…&anio=2016`, que es un
+     endpoint que no existe en ese servidor y un parámetro que no existe en
+     ningún sitio. Se escribió de memoria porque desde donde se programa no
+     se alcanza el servicio, y se avisó entonces de que hacía falta probarlo
+     en un teléfono. Se probó y no funcionaba: de ahí salió esto.
+
+     La tabla es la ÚLTIMA entrega de cada año, sacada del índice que publica
+     Esri (`waybackconfig.json`). Va escrita acá y no se pide en caliente por
+     dos razones: una entrega vieja no cambia nunca, y una serie de doce años
+     no puede depender de que un archivo de configuración conteste. Lo que sí
+     se hace, en segundo plano y sin bloquear nada, es refrescarla: así el
+     año en curso mejora solo según Esri va publicando. */
+  var ENTREGAS = {
+    2014: { r: 5844,  f: '2014-12-30' },
+    2015: { r: 28163, f: '2015-12-16' },
+    2016: { r: 18966, f: '2016-12-20' },
+    2017: { r: 25521, f: '2017-11-16' },
+    2018: { r: 23448, f: '2018-12-14' },
+    2019: { r: 4756,  f: '2019-12-12' },
+    2020: { r: 29260, f: '2020-12-16' },
+    2021: { r: 26120, f: '2021-12-21' },
+    2022: { r: 45134, f: '2022-12-14' },
+    2023: { r: 56102, f: '2023-12-07' },
+    2024: { r: 16453, f: '2024-12-12' },
+    2025: { r: 13192, f: '2025-12-18' },
+    2026: { r: 26334, f: '2026-08-05' }
+  };
+  var CONFIG_WAYBACK =
+    'https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json';
+  var TESELA_WAYBACK =
+    'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/' +
+    'default028mm/MapServer/tile/{r}/{z}/{y}/{x}';
+
+  var refrescando = null;
+  function refrescarEntregas() {
+    if (refrescando) return refrescando;
+    if (typeof fetch !== 'function') return Promise.resolve(ENTREGAS);
+    refrescando = fetch(CONFIG_WAYBACK, { mode: 'cors' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d) return ENTREGAS;
+        Object.keys(d).forEach(function (num) {
+          var t = (d[num] && d[num].itemTitle) || '';
+          var m = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (!m) return;
+          var a = m[1];
+          if (!ENTREGAS[a] || m[0] > ENTREGAS[a].f) ENTREGAS[a] = { r: Number(num), f: m[0] };
+        });
+        return ENTREGAS;
+      })
+      .catch(function () { return ENTREGAS; });
+    return refrescando;
+  }
+
+  /* La entrega que le toca a un año. Si ese año no existe —alguien pide 2013
+     o el año que viene— se usa la más cercana y se dice cuál, porque
+     enseñarle a alguien una foto de 2014 rotulada «2013» es mentir. */
+  function entregaDe(anio) {
+    if (ENTREGAS[anio]) return { anio: anio, r: ENTREGAS[anio].r, fecha: ENTREGAS[anio].f };
+    var anios = Object.keys(ENTREGAS).map(Number).sort(function (a, b) { return a - b; });
+    if (!anios.length) return null;
+    var cerca = anios.reduce(function (mejor, a) {
+      return Math.abs(a - anio) < Math.abs(mejor - anio) ? a : mejor;
+    }, anios[0]);
+    return { anio: cerca, r: ENTREGAS[cerca].r, fecha: ENTREGAS[cerca].f, sustituto: true };
+  }
+
+  /* ── De grados a teselas ───────────────────────────────────────────────
+     Mercator web, que es la proyección en la que están todas las teselas del
+     mundo. `mercX` y `mercY` devuelven la posición en el mundo entero, de 0
+     a 1; multiplicada por 256·2^z da el píxel. */
+  function mercX(lng) { return (lng + 180) / 360; }
+  function mercY(lat) {
+    var r = Math.max(-85.05112878, Math.min(85.05112878, lat)) * Math.PI / 180;
+    return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2;
+  }
+
+  /* El zoom al que el sector mide aproximadamente `tam` píxeles. Se redondea
+     hacia ARRIBA —más detalle del pedido y se recorta— porque al revés la
+     imagen saldría interpolada, y una foto ampliada por software no es una
+     foto de más resolución: es la misma con los bordes blandos. */
+  function zoomPara(caja, tam) {
+    var dx = Math.abs(mercX(caja.e) - mercX(caja.o));
+    if (!(dx > 0)) return 16;
+    var z = Math.ceil(Math.log(tam / (256 * dx)) / Math.LN2);
+    return Math.max(1, Math.min(19, z));
+  }
+
+  function teselaImagen(url, msTope) {
+    return new Promise(function (listo, falla) {
+      var im = new Image();
+      im.crossOrigin = 'anonymous';
+      var reloj = setTimeout(function () { falla(new Error('la tesela tardó demasiado')); },
+                             msTope || 20000);
+      im.onerror = function () { clearTimeout(reloj); falla(new Error('no se pudo descargar la tesela')); };
+      im.onload = function () { clearTimeout(reloj); listo(im); };
+      im.src = url;
+    });
+  }
+
+  /* Traer el sector de una entrega de Wayback: se bajan las teselas que lo
+     cubren, se pegan y se recorta la caja. Con el zoom elegido son entre una
+     y cuatro; el tope existe para que una caja rarísima no dispare cien
+     descargas en un teléfono. */
+  var TOPE_TESELAS = 16;
+  function traerWayback(anio, caja, tam, msTope) {
+    var ent = entregaDe(anio);
+    if (!ent) return Promise.reject(new Error('no hay entrega de Wayback para ' + anio));
+    var z = zoomPara(caja, tam), mundo = 256 * Math.pow(2, z);
+    var px0 = mercX(caja.o) * mundo, px1 = mercX(caja.e) * mundo;
+    var py0 = mercY(caja.n) * mundo, py1 = mercY(caja.s) * mundo;
+    var tx0 = Math.floor(px0 / 256), tx1 = Math.floor((px1 - 0.001) / 256);
+    var ty0 = Math.floor(py0 / 256), ty1 = Math.floor((py1 - 0.001) / 256);
+    var anchoT = tx1 - tx0 + 1, altoT = ty1 - ty0 + 1;
+    if (anchoT * altoT > TOPE_TESELAS) {
+      return Promise.reject(new Error('el sector pide ' + (anchoT * altoT) + ' teselas'));
+    }
+    var pedidos = [];
+    for (var ty = ty0; ty <= ty1; ty++) {
+      for (var tx = tx0; tx <= tx1; tx++) {
+        (function (x, y) {
+          var u = TESELA_WAYBACK.replace('{r}', ent.r).replace('{z}', z)
+                                .replace('{y}', y).replace('{x}', x);
+          pedidos.push(teselaImagen(u, msTope).then(function (im) {
+            return { im: im, dx: (x - tx0) * 256, dy: (y - ty0) * 256 };
+          }));
+        })(tx, ty);
+      }
+    }
+    return Promise.all(pedidos).then(function (trozos) {
+      var grande = document.createElement('canvas');
+      grande.width = anchoT * 256; grande.height = altoT * 256;
+      var gx = grande.getContext('2d');
+      trozos.forEach(function (t) { gx.drawImage(t.im, t.dx, t.dy); });
+      var cv = document.createElement('canvas');
+      cv.width = tam; cv.height = tam;
+      var cx = cv.getContext('2d');
+      cx.drawImage(grande, px0 - tx0 * 256, py0 - ty0 * 256,
+                   Math.max(1, px1 - px0), Math.max(1, py1 - py0), 0, 0, tam, tam);
+      grande.width = grande.height = 1;
+      try {
+        return { datos: cx.getImageData(0, 0, tam, tam).data, tam: tam, lienzo: cv,
+                 url: cv.toDataURL('image/png'), fecha: ent.fecha,
+                 anioReal: ent.anio, sustituto: !!ent.sustituto, zoom: z };
+      } catch (e) {
+        throw new Error('el navegador bloqueó la lectura de la imagen (CORS)');
+      }
+    });
+  }
+
+  /* ── Landsat, por el Planetary Computer ────────────────────────────────
+     Son DOS peticiones y no una, y ahí estaba el otro error: primero se
+     REGISTRA una búsqueda —qué colección, qué años, cuánta nube se tolera— y
+     el servidor devuelve un identificador; con ese identificador se pide el
+     recorte. No hay ninguna URL que acepte un año suelto.
+
+     Esta parte NO se ha podido comprobar contra el servicio: desde donde se
+     programa la red no llega a ese dominio. Está escrita siguiendo la forma
+     documentada de la API y, a diferencia de la anterior, deja constancia de
+     en qué paso falla y con qué código —`ultimoDiagnostico()`—, para que un
+     fallo en un teléfono se pueda leer en vez de adivinar. */
+  var PC = 'https://planetarycomputer.microsoft.com/api/data/v1';
+  var diagnostico = [];
+  function anota(x) {
+    diagnostico.push(Object.assign({ cuando: new Date().toISOString() }, x));
+    if (diagnostico.length > 40) diagnostico.shift();
+  }
+
+  var busquedas = {};
+  function registrarBusqueda(anio, caja) {
+    var llave = anio + ':' + Math.round(caja.latC * 1000) + ',' + Math.round(caja.lngC * 1000);
+    if (busquedas[llave]) return busquedas[llave];
+    var cuerpo = {
+      collections: ['landsat-c2-l2'],
+      datetime: anio + '-01-01T00:00:00Z/' + anio + '-12-31T23:59:59Z',
+      bbox: [caja.o, caja.s, caja.e, caja.n],
+      // Menos de un tercio de nube: por encima de eso la escena mide la nube
+      // y no el suelo, y la serie mentiría con cara de dato.
+      query: { 'eo:cloud_cover': { lt: 30 } },
+      // La más limpia primero, que es la que el mosaico va a usar arriba.
+      sortby: [{ field: 'eo:cloud_cover', direction: 'asc' }]
+    };
+    busquedas[llave] = fetch(PC + '/mosaic/register', {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo)
+    }).then(function (r) {
+      if (!r.ok) {
+        anota({ paso: 'registrar', anio: anio, estado: r.status });
+        throw new Error('el catálogo no aceptó la búsqueda (' + r.status + ')');
+      }
+      return r.json();
+    }).then(function (j) {
+      var id = j && (j.searchid || j.searchId || j.id);
+      if (!id) {
+        anota({ paso: 'registrar', anio: anio, estado: 'sin identificador',
+                cuerpo: JSON.stringify(j).slice(0, 200) });
+        throw new Error('el catálogo no devolvió identificador de búsqueda');
+      }
+      anota({ paso: 'registrar', anio: anio, estado: 'ok', id: String(id).slice(0, 12) });
+      return id;
+    }).catch(function (e) {
+      delete busquedas[llave];   // que un fallo no se quede pegado para siempre
+      anota({ paso: 'registrar', anio: anio, error: (e && e.message) || 'falló' });
+      throw e;
+    });
+    return busquedas[llave];
+  }
+
+  function traerLandsat(anio, caja, tam, msTope) {
+    return registrarBusqueda(anio, caja).then(function (id) {
+      /* El recorte, con el NDVI calculado en el servidor: (nir08 − red) /
+         (nir08 + red), reescalado de −1..1 a 0..255. Se pide PNG porque es
+         lo único que un navegador sabe leer píxel a píxel. */
+      var url = PC + '/mosaic/' + id + '/crop/' +
+        [caja.o, caja.s, caja.e, caja.n].join(',') + '.png' +
+        '?width=' + tam + '&height=' + tam +
+        '&expression=' + encodeURIComponent('(nir08-red)/(nir08+red)') +
+        '&rescale=-1,1&asset_as_band=true';
+      return traerImagen(url, tam, msTope).then(function (img) {
+        anota({ paso: 'recorte', anio: anio, estado: 'ok' });
+        return img;
+      }, function (e) {
+        anota({ paso: 'recorte', anio: anio, error: (e && e.message) || 'falló' });
+        throw e;
+      });
+    });
+  }
+
+  /* ── Traer el sector de un año ─────────────────────────────────────────
+     El punto único por donde este módulo habla con la red. Se deja
+     sustituible entero —`window.URBIS_EVOLUCION_TRAER`— y no solo la URL:
+     Wayback pega varias teselas y Landsat hace dos peticiones, así que una
+     sola dirección ya no describe lo que pasa. `URBIS_EVOLUCION_URL` sigue
+     funcionando para lo que sí es una imagen suelta. */
+  function traerDe(fuenteId, anio, caja, tam, msTope) {
+    if (typeof window.URBIS_EVOLUCION_TRAER === 'function') {
+      return Promise.resolve(window.URBIS_EVOLUCION_TRAER(fuenteId, anio, caja, tam));
+    }
     if (typeof window.URBIS_EVOLUCION_URL === 'function') {
-      return window.URBIS_EVOLUCION_URL(fuenteId, anio, caja, tam);
+      return traerImagen(window.URBIS_EVOLUCION_URL(fuenteId, anio, caja, tam), tam, msTope);
     }
-    var bbox = [caja.o, caja.s, caja.e, caja.n].join(',');
-    if (fuenteId === 'wayback') {
-      return 'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/export' +
-        '?bbox=' + bbox + '&bboxSR=4326&imageSR=3857&size=' + tam + ',' + tam +
-        '&format=png&transparent=false&f=image&anio=' + anio;
-    }
-    return 'https://planetarycomputer.microsoft.com/api/data/v1/mosaic/crop' +
-      '?bbox=' + bbox + '&width=' + tam + '&height=' + tam +
-      '&expression=(nir08-red)/(nir08%2Bred)&rescale=-1,1&format=png&year=' + anio;
+    if (fuenteId === 'wayback') return traerWayback(anio, caja, tam, msTope);
+    return traerLandsat(anio, caja, tam, msTope);
   }
 
   /* ── Traer una imagen y poder leerle los píxeles ───────────────────────
@@ -220,7 +455,7 @@
     return anios.reduce(function (cadena, anio, i) {
       return cadena.then(function () {
         avisar('Trayendo ' + anio + '… (' + (i + 1) + ' de ' + anios.length + ')');
-        return traerImagen(urlDe(fuente.id, anio, caja, tam), tam, o.msTope)
+        return traerDe(fuente.id, anio, caja, tam, o.msTope)
           .then(function (img) {
             var hueco = huecoDe(img);
             var med = fuente.modo === 'indice' ? medirIndice(img, fuente.rango) : null;
@@ -228,7 +463,15 @@
                          // Con más de la mitad sin dato, la proporción se
                          // calcula sobre una muestra que no representa nada.
                          fiable: hueco < 50,
-                         medida: med, imagen: img.url });
+                         medida: med, imagen: img.url,
+                         /* Qué se trajo de verdad. Wayback publica por
+                            entregas con fecha, no por años: si el año pedido
+                            no tiene entrega se usa la más cercana, y eso hay
+                            que poder decirlo debajo de la estampa en vez de
+                            rotularla con un año que no es. */
+                         fecha: img.fecha || null,
+                         anioReal: img.anioReal || anio,
+                         sustituto: !!img.sustituto });
           }, function (e) {
             pasos.push({ anio: anio, ok: false, error: (e && e.message) || 'no se pudo' });
           });
@@ -311,7 +554,16 @@
 
   window.URBIS_EVOLUCION = {
     FUENTES: FUENTES,
-    urlDe: urlDe,
+    ENTREGAS: ENTREGAS,
+    entregaDe: entregaDe,
+    refrescarEntregas: refrescarEntregas,
+    zoomPara: zoomPara,
+    traerDe: traerDe,
+    /* Qué pasó en la última tanda, paso por paso y con el código que devolvió
+       el servidor. Es lo que convierte «no se pudo leer ninguna imagen» en
+       algo que se puede arreglar: sin esto, un fallo en un teléfono ajeno es
+       una adivinanza. */
+    diagnostico: function () { return diagnostico.slice(); },
     cajaDe: cajaDe,
     aniosDe: aniosDe,
     medirIndice: medirIndice,

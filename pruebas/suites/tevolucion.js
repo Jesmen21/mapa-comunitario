@@ -27,6 +27,34 @@ const E = require('../entorno.js');
    se puede hacer sin salida a internet.                                     */
 const { chromium } = require(E.MODULOS + '/playwright-core');
 const fs = require('fs');
+const zlib = require('zlib');
+/* Un PNG cuadrado de un color, hecho a mano. Hace falta uno DE VERDAD —no un
+   pixel transparente ni un SVG— porque lo que se está probando es que las
+   teselas se peguen y se recorten bien, y para eso el navegador tiene que
+   poder decodificarlas y el lienzo leerlas. */
+function pngLiso(n, r, g, b) {
+  const fila = Buffer.alloc(1 + n * 3);
+  for (let i = 0; i < n; i++) { fila[1 + i * 3] = r; fila[2 + i * 3] = g; fila[3 + i * 3] = b; }
+  const cruda = Buffer.concat(Array.from({ length: n }, () => fila));
+  const trozo = (tipo, datos) => {
+    const largo = Buffer.alloc(4); largo.writeUInt32BE(datos.length);
+    const cuerpo = Buffer.concat([Buffer.from(tipo, 'ascii'), datos]);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(cuerpo) >>> 0);
+    return Buffer.concat([largo, cuerpo, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(n, 0); ihdr.writeUInt32BE(n, 4);
+  ihdr[8] = 8; ihdr[9] = 2; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    trozo('IHDR', ihdr), trozo('IDAT', zlib.deflateSync(cruda)), trozo('IEND', Buffer.alloc(0))]);
+}
+const TABLA_CRC = (() => { const t = new Int32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c; }
+  return t; })();
+function crc32(buf) { let c = -1;
+  for (let i = 0; i < buf.length; i++) c = TABLA_CRC[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return c ^ -1; }
 const S = E.TRABAJO, LEAFLET = S + 'node_modules/leaflet/dist/';
 const C = { lat: 7.8939, lng: -72.5078 }, L = 0.004;
 const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - L },
@@ -54,6 +82,25 @@ for (let i = 0; i < 30; i++) {
     } catch (e) {}
   });
   await ctx.route('**', r => /localhost:(8199|8787)/.test(r.request().url()) ? r.continue() : r.abort());
+  /* ── El servicio de verdad, apuntado ────────────────────────────────
+     Esta es la parte que faltaba y por la que el historial no funcionaba en
+     la calle: el adaptador se escribió de memoria y NADIE comprobó nunca la
+     dirección que pedía. La primera versión llamaba a
+     `.../World_Imagery/MapServer/export?bbox=…&anio=2016`, que en ese
+     servidor no existe, y la prueba no lo veía porque sustituía el adaptador
+     entero por imágenes de mentira.
+
+     Ahora se deja correr el adaptador REAL y se intercepta la red: se apunta
+     cada dirección pedida y se contesta con una tesela hecha a mano. Así se
+     comprueba lo único que no se podía comprobar —qué se pide y a dónde— sin
+     depender de que Esri conteste. */
+  const teselasPedidas = [];
+  await ctx.route(/wayback\.maptiles\.arcgis\.com/, r => {
+    teselasPedidas.push(r.request().url());
+    r.fulfill({ status: 200, contentType: 'image/png',
+                headers: { 'Access-Control-Allow-Origin': '*' },
+                body: pngLiso(256, 60, 110, 70) });
+  });
   await ctx.route(/unpkg\.com/, r => { const u = r.request().url();
     r.fulfill({ status: 200, contentType: u.endsWith('.css') ? 'text/css' : 'text/javascript',
       body: fs.readFileSync(LEAFLET + (u.endsWith('.css') ? 'leaflet.css' : 'leaflet.js'), 'utf8') }); });
@@ -238,6 +285,33 @@ for (let i = 0; i < 30; i++) {
     return o;
   }, { C, POL });
 
+  /* ── El adaptador REAL, sin sustituir ─────────────────────────────────
+     Segunda vuelta: se quita el sustituto y se deja que el módulo arme las
+     direcciones él solo. Lo que se mira es qué pide —el patrón de tesela y
+     el número de entrega que le toca a cada año— y que con eso sepa pegar y
+     recortar una imagen legible. */
+  r.real = await pg.evaluate(async (D) => {
+    const { POL } = D, o = {};
+    const EV = window.URBIS_EVOLUCION;
+    if (!EV) return { sinModulo: true };
+    delete window.URBIS_EVOLUCION_URL;
+    delete window.URBIS_EVOLUCION_TRAER;
+    o.entrega2016 = EV.entregaDe(2016);
+    o.entrega2020 = EV.entregaDe(2020);
+    // Un año sin entrega: tiene que dar el más cercano y DECIR que lo es.
+    o.entrega2005 = EV.entregaDe(2005);
+    const caja = EV.cajaDe(POL);
+    o.zoom = EV.zoomPara(caja, 256);
+    try {
+      const s2 = await EV.serie({ fuente: 'wayback', caja: caja, anios: [2016, 2020], tam: 64 });
+      o.pasos = (s2.pasos || []).map(p => ({ anio: p.anio, ok: !!p.ok, fecha: p.fecha || null,
+                                             error: p.error || null,
+                                             pinta: !!(p.imagen && p.imagen.length > 200) }));
+    } catch (e) { o.error = String(e && e.message); }
+    return o;
+  }, { C, POL });
+  r.teselas = teselasPedidas.slice();
+
   r.err = err.filter(e => !/L is not defined|Unexpected end/.test(e));
   await pg.close(); await b.close();
 
@@ -327,6 +401,41 @@ for (let i = 0; i < 30; i++) {
      en total: guardarlas se comería la salida entera de un curso. */
   T('y SIN las imágenes, que son megas', G.conImagen === 0 && G.pesoKB < 40,
     G.conImagen + ' con imagen · ' + G.pesoKB + ' KB');
+
+  /* ── Lo que se le pide al servicio de verdad ──────────────────────────
+     Esto es lo que no existía y por lo que el historial no funcionaba en un
+     teléfono: la prueba sustituía el adaptador entero, así que la dirección
+     inventada nunca se miraba. */
+  console.log('\n  -- lo que se le pide de verdad al servicio --');
+  const RR = r.real || {};
+  T('la entrega de 2016 es la que publica Esri, no un año suelto',
+    RR.entrega2016 && RR.entrega2016.r === 18966 && /^2016-/.test(RR.entrega2016.fecha),
+    RR.entrega2016 ? RR.entrega2016.r + ' · ' + RR.entrega2016.fecha : 'no hay');
+  T('y la de 2020 también', RR.entrega2020 && RR.entrega2020.r === 29260,
+    RR.entrega2020 ? String(RR.entrega2020.r) : 'no hay');
+  /* Antes de 2014 no hay mosaico de alta resolución. Devolver la entrega más
+     cercana está bien; rotularla con el año pedido, no. */
+  T('un año sin entrega usa la más cercana y lo dice',
+    RR.entrega2005 && RR.entrega2005.sustituto === true && RR.entrega2005.anio === 2014,
+    RR.entrega2005 ? RR.entrega2005.anio + (RR.entrega2005.sustituto ? ' (sustituta)' : '') : 'no hay');
+  const TS = r.teselas || [];
+  T('pide teselas WMTS y no un recorte que no existe',
+    TS.length > 0 && TS.every(u => /\/World_Imagery\/WMTS\/1\.0\.0\/default028mm\/MapServer\/tile\/\d+\/\d+\/\d+\/\d+/.test(u)),
+    TS.length + ' teselas · ' + (TS[0] || 'ninguna').replace(/^https:\/\/[^/]+/, ''));
+  T('nunca el endpoint inventado de la primera versión',
+    !TS.some(u => /\/export\?/.test(u) || /[?&]anio=/.test(u)),
+    TS.filter(u => /export\?|anio=/.test(u)).join(' ') || 'ninguna');
+  T('con el número de entrega del año pedido',
+    TS.some(u => u.indexOf('/tile/18966/') >= 0) && TS.some(u => u.indexOf('/tile/29260/') >= 0),
+    [...new Set(TS.map(u => (u.match(/\/tile\/(\d+)\//) || [])[1]))].join(' · '));
+  T('y con eso arma una imagen que se puede leer',
+    (RR.pasos || []).length === 2 && (RR.pasos || []).every(p => p.ok && p.pinta),
+    (RR.pasos || []).map(p => p.anio + ':' + (p.ok ? 'ok' : p.error)).join(' · '));
+  T('cada estampa sabe de qué fecha es, no solo de qué año',
+    (RR.pasos || []).every(p => /^\d{4}-\d{2}-\d{2}$/.test(p.fecha || '')),
+    (RR.pasos || []).map(p => p.fecha).join(' · '));
+  T('y el zoom deja el sector a la escala pedida, no al mundo entero',
+    RR.zoom >= 12 && RR.zoom <= 19, 'zoom ' + RR.zoom);
 
   console.log('');
   T('sin errores de JavaScript', r.err.length === 0, r.err.join(' | ') || 'ninguno');
