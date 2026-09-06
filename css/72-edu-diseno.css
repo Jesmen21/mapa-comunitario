@@ -1789,6 +1789,11 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
    aplicación de teléfono. */
 .pcr-hoja .pcr-tabs, .pcr-pestana .pcr-tabs{
   position:sticky; top:0; z-index:6;
+  /* `flex:0 0 auto`: el cuerpo de la hoja es un flex en columna, y sin esto
+     la barra se deja aplastar a media altura por lo que viene debajo —los
+     chips salían cortados por la mitad—. Es la misma trampa que ya se cazó
+     con la tira de fotos y con las barras de edad. */
+  flex:0 0 auto;
   display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
   margin:2px -14px 10px; padding:8px 14px;
   background:var(--edu-ground); box-shadow:0 6px 12px -10px rgba(15,31,46,.5);

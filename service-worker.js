@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v758-la-ficha-en-pestanas';
+const URBIS_CACHE = 'urbis-v759-la-barra-de-pestanas-entera';
 const URBIS_ASSETS = [
   './',
   './index.html',
