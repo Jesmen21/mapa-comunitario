@@ -877,6 +877,9 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 
 /* Alturas: una fila por número de niveles. */
+/* Lo contado en campo piso por piso va debajo de lo de OpenStreetMap, con
+   su rótulo y un poco de aire: son dos fuentes y se leen como dos. */
+.pcr-hoja .pcr-campo-pisos, .pcr-pestana .pcr-campo-pisos{ margin-top:12px; padding-top:10px; border-top:1px dashed var(--edu-line); }
 .pcr-hoja .pcr-niveles, .pcr-pestana .pcr-niveles{
   display:flex; flex-direction:column; gap:7px; margin:4px 0 10px; flex:0 0 auto;
 }

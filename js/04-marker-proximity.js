@@ -220,6 +220,12 @@
     const otroTexto = (d[base + 4] || '').trim();
     const crudos = [mat, pbCruda, epocaCruda];
     const V = V0;
+    /* Piso por piso. Si el estudiante repartió los usos por planta y no
+       escribió el número de pisos, el número es cuántas plantas repartió:
+       no se le puede pedir que lo diga dos veces. */
+    const usosPorPiso = (V0 && V0.leerPisos) ? V0.leerPisos(d[URBIS_SLOTS.edificioUsosPorPiso]) : [];
+    const pisosDeUsos = usosPorPiso.length ? usosPorPiso[usosPorPiso.length - 1].piso : 0;
+    const pisosFinal = (isFinite(pisosCrudo) && pisosCrudo > 0) ? pisos : (pisosDeUsos || pisos);
     return {
       materialidad: mat && mat !== 'undefined' ? mat : MATERIALIDAD_NA,
       // Utilizable para cálculo: '' en cuanto sea "sin registrar", "no se sabe"
@@ -228,8 +234,10 @@
       noSeSabe: crudos.filter(v => V && v === V.NO_SE_SABE).length,
       otros: crudos.filter(v => V && v === V.OTRO).length,
       otroTexto: otroTexto && otroTexto !== 'undefined' ? otroTexto : '',
-      pisos: pisos,
-      pisosRegistrados: isFinite(pisosCrudo) && pisosCrudo > 0,
+      pisos: pisosFinal,
+      pisosRegistrados: (isFinite(pisosCrudo) && pisosCrudo > 0) || pisosDeUsos > 0,
+      usosPorPiso: usosPorPiso,
+      mezcla: (V0 && V0.mezclaDe) ? V0.mezclaDe(usosPorPiso) : { pisos: 0, usos: [], mixto: false, resumen: '' },
       plantaBaja: plantaBaja,
       // null = no se registró, y entonces el análisis se comporta como siempre.
       // Distinguirlo de `false` importa: "no lo miramos" no es "no hay frente".
@@ -241,7 +249,8 @@
       idxPisos: URBIS_SLOTS.edificioPisos,
       idxPlantaBaja: URBIS_SLOTS.edificioPlantaBaja,
       idxEpoca: URBIS_SLOTS.edificioEpoca,
-      idxOtroTexto: URBIS_SLOTS.edificioOtroTexto
+      idxOtroTexto: URBIS_SLOTS.edificioOtroTexto,
+      idxUsosPorPiso: URBIS_SLOTS.edificioUsosPorPiso
     };
   }
 
@@ -837,7 +846,10 @@
     validaciones:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 10, // ¿sigue vigente?
     carpetaProCity:       BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 11,
     denuncias:            BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 12, // moderación
-    victimas:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 13  // heridos/fallecidos
+    victimas:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 13, // heridos/fallecidos
+    // El edificio piso por piso: "1:Comercio;2-3:Vivienda". Al final, como
+    // toda casilla nueva; el vocabulario y su lectura viven en js/03b.
+    edificioUsosPorPiso:  BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 14
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta

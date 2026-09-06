@@ -735,6 +735,39 @@
   #urbis-mobile-app .u52-procity-mode .u52-quick-report-form textarea:focus{
     box-shadow:inset 0 0 0 2px rgba(107,112,224,.55) !important;
   }
+  /* El edificio piso por piso: el número de pisos y un desplegable por
+     planta, del último piso al primero, como se mira un edificio. */
+  #urbis-mobile-app .u52-procity-edificio{
+    display:grid; gap:7px; padding:11px 12px; border-radius:18px;
+    background:var(--pc-sky-1); box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-edificio > label{
+    font-size:.7rem; font-weight:850; color:var(--pc-sky-ink); -webkit-text-fill-color:var(--pc-sky-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #urbis-mobile-app .u52-procity-edificio input[type="number"],
+  #urbis-mobile-app .u52-procity-edificio select{
+    width:100%; border:0; border-radius:14px; background:#fff; color:#173f75; -webkit-text-fill-color:#173f75;
+    font-size:.8rem; font-weight:800; padding:10px 12px; box-shadow:inset 0 0 0 1px rgba(207,224,236,.72);
+    outline:none; appearance:auto;
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-pisos{ display:grid; gap:6px; }
+  #urbis-mobile-app .u52-procity-edificio .edif-piso{
+    display:grid; grid-template-columns:minmax(78px,auto) 1fr; align-items:center; gap:8px;
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-piso label{
+    font-size:.7rem; font-weight:850; color:var(--pc-ink); -webkit-text-fill-color:var(--pc-ink);
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-resumen{
+    font-size:.72rem; font-weight:850; color:var(--pc-lav-deep); -webkit-text-fill-color:var(--pc-lav-deep); min-height:1em;
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-resumen.es-mixto:before{
+    content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;
+    background:#6366f1; vertical-align:middle;
+  }
+  #urbis-mobile-app .u52-procity-edificio .u52-procity-edificio-pista{
+    font-size:.66rem; line-height:1.35; color:#607389; -webkit-text-fill-color:#607389;
+  }
   #urbis-mobile-app .u52-procity-mode .u52-quick-photo{
     background:var(--pc-sky-1) !important; color:var(--pc-lav-deep) !important;
     -webkit-text-fill-color:var(--pc-lav-deep) !important;

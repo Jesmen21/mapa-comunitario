@@ -75,6 +75,12 @@
           }
           if (fi.epoca) reg.epoca = fi.epoca;
           if (fi.vulnerabilidad) reg.vulnerabilidad = fi.vulnerabilidad.nivel;
+          // Piso por piso, y si el edificio es mixto. Como texto, por la
+          // misma razón que los usos: el DBF no admite listas.
+          if (fi.usosPorPiso && fi.usosPorPiso.length) {
+            reg.usos_por_piso = fi.usosPorPiso.map(x => 'piso ' + x.piso + ': ' + x.uso).join('; ');
+            reg.mixto = fi.mezcla && fi.mezcla.mixto ? 'si' : 'no';
+          }
           const marcados = EDIF.usosMarcados(p.descripcion);
           if (marcados.length) {
             // Como texto separado por ';' y no como lista: el DBF de un

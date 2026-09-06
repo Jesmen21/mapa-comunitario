@@ -235,6 +235,11 @@
         padding: 12px; margin-top: 10px; margin-bottom: 4px; }
     .form-section-edificio select,
     .form-section-edificio input[type="number"] { width: 100%; box-sizing: border-box; }
+    .form-section-edificio .edif-pisos { display: grid; gap: 6px; margin-top: 8px; }
+    .form-section-edificio .edif-piso { display: grid; grid-template-columns: minmax(84px, auto) 1fr; align-items: center; gap: 8px; }
+    .form-section-edificio .edif-piso label { font-size: 0.7rem; color: var(--cyan); }
+    .form-section-edificio .edif-resumen { color: #c9d6ff; font-weight: 700; min-height: 1em; }
+    .form-section-edificio .edif-resumen.es-mixto:before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: #6366f1; vertical-align: middle; }
     .edificio-hint { font-size: 0.68rem; line-height: 1.35; color: #9fb3c8;
         margin-top: 8px; }
 

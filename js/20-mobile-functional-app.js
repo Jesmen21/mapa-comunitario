@@ -5127,6 +5127,37 @@
     const usoParteSel = partesLabelSel[0] || '';
     const tituloSel = tipoParteSel || usoParteSel || label;
     const subSel = tipoParteSel ? usoParteSel : proCity.dim;
+    /* El edificio piso por piso. Se pidió mapeando: «la mayoría son por
+       edificios y dentro hay diferentes usos: primer piso tienda y segundo
+       vivienda; así marcamos el piso y así calculamos alturas». Solo para
+       los usos de la Matriz que son un edificio —un parque no tiene pisos—,
+       con los pisos prellenados desde el nombre del tipo («Casa de dos
+       pisos») y cada planta con el uso del punto; en un mixto declarado, el
+       local abajo y lo otro arriba. Al editar vuelve lo guardado. */
+    const EDIF_PC = window.URBIS_EDIFICIO || null;
+    let htmlEdificio = '';
+    let defectoPiso = null;
+    if(proCity.dim === MATRIZ_USOS_KEY && EDIF_PC && typeof EDIF_PC.htmlUsosPorPiso === 'function' && EDIF_PC.esUsoDeEdificio(usoParteSel)){
+      defectoPiso = function(p){ return EDIF_PC.usoPisoPorDefecto(usoParteSel, p); };
+      let pisosPre = EDIF_PC.pisosDelNombre(tipoParteSel) || 1;
+      let usosPre = [];
+      if(editando){
+        const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
+        if(dp){
+          const fi = EDIF_PC.leer(dp.descripcion);
+          if(fi.pisosRegistrados) pisosPre = fi.pisos;
+          usosPre = fi.usosPorPiso || [];
+        }
+      }
+      htmlEdificio = `
+        <div class="u52-procity-edificio">
+          <label for="ins-pisos">¿Cuántos pisos tiene?</label>
+          <input id="ins-pisos" type="number" inputmode="numeric" min="1" max="60" step="1" value="${pisosPre}">
+          <div id="ins-pisos-usos" class="edif-pisos">${EDIF_PC.htmlUsosPorPiso(pisosPre, usosPre, defectoPiso)}</div>
+          <small id="ins-pisos-resumen" class="edif-resumen"></small>
+          <small class="u52-procity-edificio-pista">Qué hay en cada planta. Tienda abajo y vivienda arriba es un edificio mixto, y así entra al análisis y a las alturas del sector.</small>
+        </div>`;
+    }
     panel.innerHTML = `
       <div class="u52-quick-report-head u52-procity-panel-head">
         <button type="button" data-u52-call="procity-back" aria-label="Volver">‹</button>
@@ -5144,6 +5175,7 @@
         <select id="sel-estado" hidden><option value="Bueno" selected>Bueno</option></select>
         <select id="sel-mat" hidden><option value="N/A" selected>N/A</option></select>
         <input id="ins-foto" type="hidden" value="">
+        ${htmlEdificio}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
         ${bloqueFotoHTML('ins-foto-file', '📷 Foto de referencia (opcional)')}
@@ -5151,6 +5183,9 @@
       </div>`;
     panel.classList.add('u52-procity-mode');
     panel.hidden = false;
+    if(htmlEdificio && EDIF_PC && typeof EDIF_PC.activarUsosPorPiso === 'function'){
+      try{ EDIF_PC.activarUsosPorPiso(panel, defectoPiso); }catch(e){}
+    }
   }
 
   function ensureCommunityChooser(){

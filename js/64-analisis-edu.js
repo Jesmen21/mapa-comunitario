@@ -251,7 +251,28 @@
     // 1/8 a cada uno, porque es un solo sitio pequeño haciendo varias cosas. Y
     // una torre de 12 pisos con un solo uso da 12, que es la diferencia entre
     // una casa y una torre que el análisis antes no veía.
-    const intensidad = ficha.pisos / subs.length;
+    let intensidad = ficha.pisos / subs.length;
+    let intensidadDe = function () { return intensidad; };
+
+    /* Y cuando el estudiante dijo qué hay en CADA planta, se reparte por
+       planta y no por igual: tienda abajo y dos pisos de vivienda arriba es
+       un comercio de intensidad 1 y una vivienda de intensidad 2, no un
+       «mixto» de tres. La cabecera del punto se mantiene como uso nominal
+       solo si ninguna planta la cubre. */
+    const porPlanta = (ficha.usosPorPiso || []);
+    if (porPlanta.length && EDIF && typeof EDIF.subDeUsoPiso === 'function') {
+      const cuenta = {};
+      porPlanta.forEach(function (x) {
+        const sub = EDIF.subDeUsoPiso(x.uso);
+        if (sub) cuenta[sub] = (cuenta[sub] || 0) + 1;
+      });
+      const subsPlanta = Object.keys(cuenta);
+      if (subsPlanta.length) {
+        subs.length = 0;
+        subsPlanta.forEach(function (s2) { subs.push(s2); });
+        intensidadDe = function (sub) { return cuenta[sub] || 1; };
+      }
+    }
 
     return subs.map(function (sub, k) {
       return {
@@ -259,10 +280,11 @@
         tags: (function(){
           const t = {
             'urbis:sub': sub,
-            'urbis:intensidad': String(intensidad),
+            'urbis:intensidad': String(intensidadDe(sub)),
             'building:levels': String(ficha.pisos),
             name: et.cabeza
           };
+          if (ficha.mezcla && ficha.mezcla.mixto) t['urbis:mixto'] = 'si';
           // Solo se marca cuando el estudiante lo registró. Si no lo miró, el
           // análisis se comporta como siempre: "no lo sabemos" no es "no hay
           // frente activo", y dar por muerta una fachada no observada sería

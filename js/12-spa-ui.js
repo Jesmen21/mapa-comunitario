@@ -682,12 +682,16 @@
     let fichaEscritaEnEsteGuardado = false;
     (function guardarFichaEdificio(){
         const EDIF = window.URBIS_EDIFICIO;
-        if (!EDIF || !EDIF.esCategoriaEdificio(cat)) return;
+        if (!EDIF) return;
         const selMat = document.getElementById('sel-materialidad');
         const insPisos = document.getElementById('ins-pisos');
         const selPB = document.getElementById('sel-planta-baja');
         const selEp = document.getElementById('sel-epoca');
         const insOtro = document.getElementById('ins-otro-edificio');
+        /* Pro City no es una «categoría de edificio» —su categoría es la
+           Matriz de Usos entera— pero su ficha trae los pisos cuando el uso
+           es un edificio: si el campo está, se guarda. */
+        if (!EDIF.esCategoriaEdificio(cat) && !insPisos) return;
         if (!selMat && !insPisos && !selPB && !selEp && !insOtro) return;
         const d = String(descripcionFinal).split(' | ');
         const ref = EDIF.leer(descripcionFinal);
@@ -695,12 +699,17 @@
         const pisosSel = insPisos ? parseInt(insPisos.value, 10) : NaN;
         // Se rellena todo hueco intermedio: si el registro venía corto, un
         // índice suelto dejaría "undefined" en medio de la cadena.
-        for (let k = 0; k < ref.idxOtroTexto; k++) if (d[k] === undefined) d[k] = '';
+        const tope = Math.max(ref.idxOtroTexto, ref.idxUsosPorPiso || 0);
+        for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
         d[ref.idxMaterialidad] = matSel || EDIF.SIN_REGISTRAR;
         d[ref.idxPisos] = (isFinite(pisosSel) && pisosSel > 0) ? String(Math.min(pisosSel, 60)) : '';
         d[ref.idxPlantaBaja] = selPB ? String(selPB.value || '').replace(/\|/g, '-') : '';
         d[ref.idxEpoca] = selEp ? String(selEp.value || '').replace(/\|/g, '-') : '';
         d[ref.idxOtroTexto] = insOtro ? String(insOtro.value || '').replace(/\|/g, '-').slice(0, 120) : '';
+        // Piso por piso, en su casilla del final. Sin pisos no hay plantas.
+        if (ref.idxUsosPorPiso != null && typeof EDIF.leerUsosPorPisoDelFormulario === 'function') {
+            d[ref.idxUsosPorPiso] = EDIF.codificarPisos(EDIF.leerUsosPorPisoDelFormulario(document)).replace(/\|/g, '-');
+        }
         descripcionFinal = d.join(' | ');
         fichaEscritaEnEsteGuardado = true;
     })();
@@ -755,6 +764,7 @@
              S.edificioEpoca, S.edificioOtroTexto].forEach(function(idx, k){
                 conservar.push(idx != null ? idx : base + 5 + k);
             });
+            conservar.push(S.edificioUsosPorPiso != null ? S.edificioUsosPorPiso : base + 14);
         }
         conservar.forEach(function(idx){ if(dOriginal[idx]) dFinal[idx] = dOriginal[idx]; });
         descripcionFinal = dFinal.join(' | ');

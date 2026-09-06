@@ -979,6 +979,71 @@
     } catch (e) { return []; }
   }
 
+  /* Lo que el curso levantó edificio por edificio DENTRO del sector: cuántos
+     pisos y qué hay en cada planta. Es la altura que OpenStreetMap casi
+     nunca trae y la que se pidió mapear —«así marcamos el piso y así
+     calculamos alturas»—. Cuenta solo los puntos que son un edificio (por
+     categoría del reporte o por uso de la Matriz de Pro City) y solo los que
+     traen los pisos: un edificio sin contar no es un edificio de un piso. */
+  function alturasDeCampo() {
+    var EDIF = window.URBIS_EDIFICIO;
+    if (!EDIF || !S.resultado || typeof EDIF.leer !== 'function') return null;
+    var pts = puntosDelCurso();
+    if (!pts.length) return null;
+    var edificios = 0, conPisos = 0, suma = 0, maximo = 0, mixtos = 0;
+    var porNivel = { '1': 0, '2': 0, '3': 0, '+3': 0 }, combos = {}, plantas = {};
+    pts.forEach(function (p) {
+      var lat = parseFloat(String(p.lat || '').replace(',', '.'));
+      var lng = parseFloat(String(p.lng || '').replace(',', '.'));
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var cabeza = String(p.descripcion || '').split(' | ')[0] || '';
+      var uso = (cabeza.split('·')[0] || '').trim();
+      var esEdif = (typeof EDIF.esCategoriaEdificio === 'function' && EDIF.esCategoriaEdificio(p.tipo)) ||
+                   (/Matriz de Usos/.test(String(p.tipo || '')) &&
+                    typeof EDIF.esUsoDeEdificio === 'function' && EDIF.esUsoDeEdificio(uso));
+      if (!esEdif) return;
+      try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
+      edificios++;
+      var f = EDIF.leer(p.descripcion);
+      if (!f.pisosRegistrados) return;
+      conPisos++; suma += f.pisos; if (f.pisos > maximo) maximo = f.pisos;
+      porNivel[f.pisos >= 4 ? '+3' : String(f.pisos)]++;
+      if (f.mezcla && f.mezcla.mixto) {
+        mixtos++;
+        combos[f.mezcla.resumen] = (combos[f.mezcla.resumen] || 0) + 1;
+      }
+      (f.usosPorPiso || []).forEach(function (x) { plantas[x.uso] = (plantas[x.uso] || 0) + 1; });
+    });
+    if (!conPisos) return null;
+    var ETQ = { '1': 'Un piso', '2': 'Dos pisos', '3': 'Tres pisos', '+3': 'Cuatro o más' };
+    return {
+      edificios: edificios, conPisos: conPisos,
+      media: Math.round(10 * suma / conPisos) / 10, maximo: maximo, mixtos: mixtos,
+      niveles: ['1', '2', '3', '+3'].filter(function (k) { return porNivel[k]; }).map(function (k) {
+        return { id: k, etiqueta: ETQ[k], edificios: porNivel[k], pct: Math.round(100 * porNivel[k] / conPisos) };
+      }),
+      combinaciones: Object.keys(combos).map(function (k) { return { resumen: k, n: combos[k] }; })
+        .sort(function (a, b) { return b.n - a.n; }),
+      plantas: Object.keys(plantas).map(function (k) { return { uso: k, n: plantas[k] }; })
+        .sort(function (a, b) { return b.n - a.n; })
+    };
+  }
+  /* La frase, una sola para la ficha, el pliego y el informe. */
+  function fraseAlturasCampo(c) {
+    if (!c) return '';
+    return 'Levantado en campo: <b>' + c.conPisos + '</b> edificio' + (c.conPisos === 1 ? '' : 's') +
+      ' con los pisos contados' + (c.edificios > c.conPisos ? ' (de ' + c.edificios + ' mapeados en el sector)' : '') +
+      ', <b>' + conComa(c.media) + '</b> pisos de media, el más alto de <b>' + c.maximo + '</b>.' +
+      (c.mixtos
+        ? ' <b>' + c.mixtos + '</b> de uso mixto' +
+          (c.combinaciones.length
+            ? ': ' + c.combinaciones.slice(0, 3).map(function (x) {
+                return x.resumen.toLowerCase() + (x.n > 1 ? ' (' + x.n + ')' : '');
+              }).join('; ')
+            : '') + '.'
+        : (c.plantas.length ? ' Ninguno mezcla usos entre plantas.' : ''));
+  }
+
   /* Compara dos listas de puntos ya clasificados y reparte en cuatro cajas.
      Es geometría pura y no toca red ni pantalla: se exporta para poder
      comprobarla sin montar la aplicación. */
@@ -2077,11 +2142,25 @@
 
   function alturasImpresas(st) {
     var a = st.alturas;
-    if (!a || !a.edificios) return '';
+    var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
+    var campo = c
+      ? '<h3>Contado en campo, piso por piso</h3><table>' +
+        c.niveles.map(function (x) {
+          return '<tr><td>' + esc(x.etiqueta) + '</td><td class="n">' + x.edificios + ' · ' + x.pct + '%</td></tr>';
+        }).join('') +
+        (c.plantas.length
+          ? '<tr><td colspan="2"><b>Qué hay en las plantas</b></td></tr>' +
+            c.plantas.map(function (x) {
+              return '<tr><td>' + esc(x.uso) + '</td><td class="n">' + x.n + ' planta' + (x.n === 1 ? '' : 's') + '</td></tr>';
+            }).join('')
+          : '') +
+        '</table><p class="pie">' + fraseAlturasCampo(c) + '</p>'
+      : '';
+    if (!a || !a.edificios) return c ? '<h2>Alturas de lo construido</h2>' + campo : '';
     if (!a.conDato) {
       return '<h2>Alturas de lo construido</h2><p>' + a.edificios + ' edificio' +
         (a.edificios === 1 ? '' : 's') + ' en el área, ninguno con su número de pisos ' +
-        'registrado en OpenStreetMap. Contar niveles es tarea de campo.</p>';
+        'registrado en OpenStreetMap. Contar niveles es tarea de campo.</p>' + campo;
     }
     return '<h2>Alturas de lo construido</h2><table>' +
       a.niveles.map(function (x) {
@@ -2090,7 +2169,7 @@
       '</table><p class="pie">' + a.conDato + ' de ' + a.edificios +
       ' edificios traen la altura (' + a.cobertura + '%); el más alto tiene ' + a.maximo + ' pisos.' +
       (a.cobertura < 60 ? ' Los porcentajes describen esa muestra, no el sector completo.' : '') +
-      '</p>';
+      '</p>' + campo;
   }
 
   function hitosImpresos(st) {
@@ -3188,14 +3267,27 @@ function donaHTML(datos, colorDe, nombreDe) {
       caja('Alturas de lo construido',
       (function () {
       var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
-      if (!a || !a.conDato) return '';
+      var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
+      if ((!a || !a.conDato) && !c) return '';
       var TONO = { '1': '#BFE3F7', '2': '#5BB4E5', '3': '#0A6F9E', '+3': '#0B3A57' };
-      return barras(a.niveles, function (x) { return x.etiqueta; },
-      function (x) { return x.pct + '%'; }, function (x) { return x.pct; },
-      function (x) { return TONO[String(x.id || x.nivel || x.k || '')] ||
-        (/más|\+/i.test(x.etiqueta) ? TONO['+3'] : (TONO[(x.etiqueta || '').charAt(0)] || '#0A6F9E')); }) +
-      '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
-      'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>';
+      var tono = function (x) { return TONO[String(x.id || x.nivel || x.k || '')] ||
+        (/más|\+/i.test(x.etiqueta) ? TONO['+3'] : (TONO[(x.etiqueta || '').charAt(0)] || '#0A6F9E')); };
+      var deOsm = (a && a.conDato)
+      ? barras(a.niveles, function (x) { return x.etiqueta; },
+        function (x) { return x.pct + '%'; }, function (x) { return x.pct; }, tono) +
+        '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
+        'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>'
+      : '';
+      /* Y lo contado en campo, piso por piso: cuando OpenStreetMap no trae
+      nada, es la única altura que hay; cuando trae, es la que se midió de
+      verdad y va debajo, con su nombre. */
+      var deCampo = c
+      ? (deOsm ? '<p class="lee-min">Contado en campo, piso por piso</p>' : '') +
+        barras(c.niveles, function (x) { return x.etiqueta; },
+        function (x) { return x.edificios; }, function (x) { return x.pct; }, tono) +
+        '<p class="lee campo">' + fraseAlturasCampo(c) + '</p>'
+      : '';
+      return deOsm + deCampo;
       })(), 'g3') +
       
       caja('Llenos y vacíos',
@@ -7304,13 +7396,28 @@ function donaHTML(datos, colorDe, nombreDe) {
     var t = S.trazado && S.trazado.alturas;
     var deTrazado = !!(t && t.edificios > ((a && a.edificios) || 0));
     if (deTrazado) a = t;
-    if (!a || !a.edificios) return '';
+    /* Lo contado en campo, piso por piso. Va al final del bloque, y cuando
+       OpenStreetMap no trae ninguna altura es lo único que hay para mostrar. */
+    var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
+    var campo = c
+      ? '<div class="pcr-campo-pisos"><p class="pcr-lab">Contado en campo, piso por piso</p>' +
+        '<div class="pcr-niveles">' +
+          c.niveles.map(function (x) {
+            var mayorC = c.niveles.reduce(function (m, y) { return Math.max(m, y.edificios); }, 0) || 1;
+            return '<div class="pcr-nivel">' +
+              '<span class="pcr-nivel-nom">' + esc(x.etiqueta) + '</span>' +
+              '<span class="pcr-nivel-barra"><i style="width:' + Math.round(100 * x.edificios / mayorC) + '%"></i></span>' +
+              '<span class="pcr-nivel-n">' + x.edificios + '<em>' + x.pct + '%</em></span></div>';
+          }).join('') +
+        '</div><p class="pcr-conc">' + fraseAlturasCampo(c) + '</p></div>'
+      : '';
+    if (!a || !a.edificios) return c ? h4('crecer', 'Alturas de lo construido') + campo : '';
     if (!a.conDato) {
       return h4('crecer', 'Alturas de lo construido') +
         '<p class="pcr-pista">Se encontraron <b>' + a.edificios + '</b> edificio' +
         (a.edificios === 1 ? '' : 's') + ' en el área, pero ninguno tiene registrado ' +
         'su número de pisos en OpenStreetMap. <b>Es una tarea de campo:</b> contar niveles ' +
-        'es de lo más rápido de levantar y de lo que más falta.</p>';
+        'es de lo más rápido de levantar y de lo que más falta.</p>' + campo;
     }
     var mayor = a.niveles.reduce(function (m, x) { return Math.max(m, x.edificios); }, 0) || 1;
     return h4('crecer', 'Alturas de lo construido') +
@@ -7340,7 +7447,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       (deTrazado
         ? ''
         : '<p class="pcr-pista">Este conteo deja fuera los edificios mapeados sin decir de qué son, ' +
-          'que suelen ser la mayoría. <b>Midiendo el trazado del sector</b> se cuentan todos.</p>');
+          'que suelen ser la mayoría. <b>Midiendo el trazado del sector</b> se cuentan todos.</p>') +
+      campo;
   }
 
   /* Hitos y nodos. Los núcleos dicen dónde se concentra la actividad; los
@@ -18360,6 +18468,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     comparacionComoTexto: comparacionComoTexto,
     datosDeComparacion: datosDeComparacion,
     leerFichas: leerFichas,
+    // Lo contado en campo piso por piso, dentro del sector: para comprobarlo
+    // sin leer el HTML de la ficha.
+    alturasDeCampo: alturasDeCampo,
     guardarFicha: guardarFicha,
     /* El respaldo de la salida entera: armarlo y volver a traerlo son
        funciones puras sobre una lista, así que se comprueban sin depender de

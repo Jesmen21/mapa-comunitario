@@ -49,6 +49,9 @@
           <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:10px;">2 · ¿CUÁNTOS PISOS TIENE?</label>
           <input type="number" id="ins-pisos" min="1" max="60" step="1" value="${pisosVal}" placeholder="Ej: 1 para una casa, 12 para una torre">
           <div class="edificio-hint">La altura cambia el peso del edificio en el análisis: una torre de 12 pisos aloja y mueve mucha más gente que una casa de uno, aunque el uso sea el mismo.</div>
+          <div id="ins-pisos-usos" class="edif-pisos">${EDIF.htmlUsosPorPiso ? EDIF.htmlUsosPorPiso(pisosVal, fichaEdif.usosPorPiso, function (p) { return EDIF.usoPisoDeCategoria(dim); }) : ''}</div>
+          <div id="ins-pisos-resumen" class="edificio-hint edif-resumen"></div>
+          <div class="edificio-hint">Al poner los pisos aparece una casilla por planta: qué hay en cada una. Tienda abajo y vivienda arriba es un edificio <b>mixto</b>, y así lo cuenta el análisis.</div>
           <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:12px;">3 · ¿QUÉ HAY A NIVEL DE CALLE?</label>
           <select id="sel-planta-baja">${optsPB}</select>
           <div class="edificio-hint">Lo que se ve al pasar caminando por el frente. Un edificio con las tiendas en el tercer piso y un portón abajo atrae gente igual, pero no hace calle.</div>
@@ -149,6 +152,14 @@
         <button class="btn-save" onclick="enviarDatosDesdeFormulario(this)">GUARDAR REPORTE</button>
         <button class="btn-cancelar" onclick="cancelarRegistro()">❌ CANCELAR</button>
       </div>`;
+
+    // El edificio piso por piso: al cambiar el número de pisos se rearma la
+    // lista de plantas conservando lo ya elegido.
+    try {
+        if (esEdificio && EDIF && typeof EDIF.activarUsosPorPiso === 'function') {
+            EDIF.activarUsosPorPiso(_contenedorForm, function (p) { return EDIF.usoPisoDeCategoria(dim); });
+        }
+    } catch(e) {}
 
     // Conectar el bloque de víctimas y seguir el desplegable: si se cambia
     // "Accidente de tránsito" por "Congestión", la pregunta sobra y se
