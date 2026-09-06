@@ -1215,3 +1215,26 @@
    cuenta. Esconderlo dejaría una serie con un salto sin explicación. */
 .pcr-evo-dudoso img{ opacity:.55; border-style:dashed; }
 .pcr-evo-dudoso figcaption{ color:#8a94a0; }
+
+/* ── Qué es cada color de la red vial ────────────────────────────────────
+   La capa de jerarquía pinta seis colores sobre el mapa y su leyenda solo
+   estaba en el pliego impreso: en el teléfono se veía una maraña sin nombre.
+   Llegó preguntado —«qué es la línea verde, qué es la naranja»—. */
+.pcr-leyvial{ display:flex; flex-wrap:wrap; gap:6px 12px; margin:2px 0 6px; }
+.pcr-leyv{ display:inline-flex; align-items:center; gap:6px; font-size:.76rem; color:#3B4A5A; }
+.pcr-leyv i{ width:18px; height:4px; border-radius:2px; flex:0 0 auto; }
+.pcr-leyv b{ font-weight:700; color:#233748; }
+.pcr-leyv em{ font-style:normal; color:#6B7A8A; font-variant-numeric:tabular-nums; }
+.pcr-leyv-no{ opacity:.45; }
+
+/* Por dónde pasa el transporte: la vía, con el color de su jerarquía en el
+   canto, y cuántas paradas tiene. */
+.pcr-ejes{ display:flex; flex-direction:column; gap:4px; margin:2px 0 6px; }
+.pcr-eje{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding:6px 10px 6px 12px; border-radius:8px; background:#F3F8FB;
+  border-left:4px solid var(--via,#0A6F9E);
+}
+.pcr-eje-nom{ font-size:.82rem; font-weight:700; color:#233748; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pcr-eje-n{ font-size:.74rem; color:#5a6472; flex:0 0 auto; font-variant-numeric:tabular-nums; }

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v746-el-historial-diagramado-en-los-dos-documentos';
+const URBIS_CACHE = 'urbis-v747-movilidad-con-nombre-y-dibujos-a-lo-ancho';
 const URBIS_ASSETS = [
   './',
   './index.html',

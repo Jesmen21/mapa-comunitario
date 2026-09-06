@@ -2691,16 +2691,31 @@
       'Lo que falta levantar':             ['campo', 'lista'],
       'Síntesis del sector':               ['cierre', 'documento']
     };
+    /* Las cuatro cajas de dibujo —el lote, el clima, el asoleamiento, la
+       amenaza— llevan una marca propia. Se pidieron «igual de grande a los
+       mapas» y la primera respuesta fue darles dos columnas como a un
+       recuadro de mapa: sacó la hoja del papel, 93 mm en la parada con la
+       rejilla ya en su mínimo, y además era la respuesta a la pregunta
+       equivocada.
+
+       Lo que las hacía pequeñas no era el ancho de la caja sino que el dibujo
+       no la llenaba —ver la nota de `.dib`—: la caja medía lo mismo que un
+       recuadro de mapa y el dibujo se quedaba en los 240 píxeles del SVG.
+       Arreglado eso, una caja de dibujo es exactamente igual de grande que un
+       mapa, que es lo que se pidió, y el papel no cuesta ni un milímetro
+       más. La marca se queda porque es lo que la prueba mide. */
+    var CAJAS_DIBUJO = ['El lote a intervenir', 'El clima', 'Asoleamiento', 'La amenaza sísmica'];
     function caja(titulo, cuerpo, clase) {
       if (!cuerpo) return '';
       if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
+      var ancha = CAJAS_DIBUJO.indexOf(titulo) !== -1 ? ' caja-dibujo' : '';
       var cara = CARA[titulo] || ['sitio', 'info'];
       var fam = FAMILIAS[cara[0]] || FAMILIAS.sitio;
       /* Las cajas con clase propia —el plano, la banda de mapas, la síntesis—
          conservan su `class` exacta: hay suites que la leen literal, y no es
          un capricho: es la promesa de que la estructura del pliego se puede
          procesar. Su tinte va por esa misma clase en la hoja de estilo. */
-      return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + '">' +
+      return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + ancha + '">' +
         '<h2>' + esc(titulo) + '</h2>' +
         '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
         cuerpo + '</section>';
@@ -4258,8 +4273,8 @@
       '.evo-p{ margin:0; flex:0 0 auto; text-align:center }' +
       '.evo-p img{ display:block; width:22mm; height:22mm; object-fit:cover;' +
         'border-radius:1.5mm; border:.3mm solid #DBE5EC; image-rendering:pixelated }' +
-      '.evo-p figcaption{ font-size:2.6mm; font-weight:800; color:#233748 }' +
-      '.evo-p small{ font-size:2.4mm; color:#6B7A8A }' +
+      '.evo-p figcaption{ font-size:2.9mm; font-weight:800; color:#233748 }' +
+      '.evo-p small{ font-size:2.7mm; color:#6B7A8A }' +
       /* Las fotos de alta resolución van más grandes que las estampas de
          Landsat, y no por gusto: aquéllas son para MEDIR —una proporción
          sobre miles de píxeles, que se lee en la cifra de al lado— y éstas
@@ -4294,7 +4309,7 @@
       '.caja{ --tinte:#0A6F9E; --suave:#E8F4FA; position:relative; border:.35mm solid #E3EAF0;' +
         'border-top:1.4mm solid var(--tinte); border-radius:3mm; padding:3.4mm 3.6mm 3.4mm; background:#fff;' +
         'display:flex; flex-direction:column; gap:2mm; overflow:hidden }' +
-      '.caja h2{ margin:0 12mm 0 0; font-size:3.2mm; letter-spacing:.14em; text-transform:uppercase;' +
+      '.caja h2{ margin:0 12mm 0 0; font-size:3.6mm; letter-spacing:.14em; text-transform:uppercase;' +
         'color:var(--tinte); font-weight:800; padding-bottom:1.6mm; border-bottom:.3mm solid var(--suave) }' +
       /* El distintivo con el icono, arriba a la derecha. Se coloca desde acá
          para que el h2 siga siendo lo primero de la caja. */
@@ -4344,12 +4359,35 @@
          solo para que un dibujo cuadrado en una caja muy ancha no se lleve
          media hoja; lo que reparte el papel cuando falta es la reducción de la
          hoja entera, que se mide, y no un número escrito acá a ojo. */
-      '.dib{ background:#F7FAFC; border-radius:2mm; padding:3mm; margin:0 auto }' +
-      '.dib svg{ display:block; width:100%; height:auto; max-height:' +
-        (horiz ? 165 : 200) + 'mm }' +
+      /* `align-self:stretch` y NO `margin:0 auto`. La caja es un contenedor
+         flex en columna, y en uno de esos los márgenes automáticos del eje
+         transversal encogen al hijo a su tamaño natural en vez de centrarlo
+         estirado: el dibujo se quedaba en los 240 píxeles del SVG y dejaba el
+         resto de la caja en blanco. No se notaba mientras las cajas eran
+         angostas —240 era casi todo el ancho— y saltó a la vista al pedir
+         estos cuatro dibujos «igual de grande a los mapas»: la caja se hizo
+         el doble y el dibujo se quedó igual. */
+      '.dib{ background:#F7FAFC; border-radius:2mm; padding:3mm; margin:0; align-self:stretch }' +
+      /* El techo de alto es el MISMO que el de un recuadro de mapa, y ahí está
+         la otra mitad de «igual de grande a los mapas». Un dibujo cuadrado en
+         una caja del doble de ancho crece también el doble de alto, y cuatro
+         de esos sacaron la hoja del papel —31 mm en la acostada, 93 en la
+         parada, con la rejilla ya en su mínimo—. Con el techo del mapa, el
+         dibujo ancho y bajo llena el ancho y el cuadrado se planta a la
+         altura de un mapa y se centra: ninguno se lleva media hoja. */
+      /* El techo de alto de un dibujo, en milímetros de papel. Es lo que
+         impide que un dibujo cuadrado, ahora que por fin llena el ancho de su
+         caja, crezca también a lo alto y saque la hoja del papel: con el
+         techo viejo —200 mm, o sea ninguno— se pasaba 42 mm con la rejilla ya
+         en su mínimo. Noventa está MEDIDO, no elegido: es el mayor de los que
+         probé con el que la hoja cierra, y deja los dibujos a la altura de un
+         recuadro de mapa, que es como se pidieron. Un dibujo ancho y bajo
+         —el año de lluvia, la curva de amenaza— ni lo toca. */
+      '.dib svg{ display:block; width:100%; height:auto; margin:0 auto; max-height:' +
+        (horiz ? 90 : 108) + 'mm }' +
       /* La trama de llenos y vacíos es la excepción: es una muestra del patrón
          al lado de sus cifras, no un plano, y a 90 mm sería una cortina. */
-      '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto }' +
+      '.dib-chico{ max-width:30mm; margin:0; flex:0 0 auto; align-self:center }' +
       '.dib-chico svg{ width:100%; height:auto; max-height:30mm }' +
       '.dib-par{ display:flex; align-items:center; gap:5mm }' +
       '.corte{ background:#F7FAFC; border-radius:2mm; padding:2mm; margin:1.5mm 0 }' +
@@ -4363,7 +4401,7 @@
       '.dib-par .kpis{ flex:1 }' +
       '.plano svg{ display:block; width:100%; height:auto }' +
       '.conv{ display:flex; flex-wrap:wrap; gap:2mm 5mm; margin-top:2mm }' +
-      '.cv{ font-size:3mm; color:#3B4A5A; display:inline-flex; align-items:center; gap:1.5mm }' +
+      '.cv{ font-size:3.3mm; color:#3B4A5A; display:inline-flex; align-items:center; gap:1.5mm }' +
       '.cv i{ width:2.6mm; height:2.6mm; border-radius:50%; display:inline-block }' +
       '.cv i.rombo{ border-radius:0; transform:rotate(45deg); background:#34CCFE;' +
         'box-shadow:0 0 0 .25mm #0F1F2E }' +
@@ -4376,7 +4414,7 @@
       '.cv i.mu-punteado{ background:none !important; width:4.6mm; height:0;' +
         'border-top:.9mm dashed #12202e; border-radius:0 }' +
       '.conv-mp{ gap:1.2mm 3.5mm; margin:1.5mm 0 0 }' +
-      '.conv-mp .cv{ font-size:2.7mm }' +
+      '.conv-mp .cv{ font-size:3mm }' +
       '.mapa-caja .mp-pie{ margin-top:1mm }' +
       // Cifras grandes
       '.kpis{ display:flex; gap:4mm; flex-wrap:wrap }' +
@@ -4384,21 +4422,21 @@
       '.k b{ display:block; font-size:7.4mm; line-height:1; font-weight:800; letter-spacing:-.025em; color:#0A6F9E;' +
         'font-variant-numeric:tabular-nums }' +
       '.k{ padding-left:2.4mm; border-left:.7mm solid var(--suave,#E8F4FA) }' +
-      '.k small{ display:block; font-size:2.6mm; color:#6B7A8A; margin-top:.8mm; line-height:1.25 }' +
-      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3mm; padding:1mm 0;' +
+      '.k small{ display:block; font-size:2.9mm; color:#6B7A8A; margin-top:.8mm; line-height:1.25 }' +
+      '.f{ display:flex; justify-content:space-between; gap:3mm; font-size:3.4mm; padding:1mm 0;' +
         'border-bottom:.25mm solid #EEF3F7 }' +
       '.f span{ color:#3B4A5A } .f b{ color:#0F1F2E; font-variant-numeric:tabular-nums }' +
       '.barras{ display:flex; flex-direction:column; gap:1.8mm }' +
-      '.b{ display:grid; grid-template-columns:26mm 1fr 14mm; align-items:center; gap:2mm; font-size:3mm }' +
+      '.b{ display:grid; grid-template-columns:28mm 1fr 15mm; align-items:center; gap:2mm; font-size:3.4mm }' +
       '.b span{ color:#3B4A5A } ' +
       '.b i{ display:block; height:2.6mm; border-radius:2mm; background:#EEF3F7 }' +
       '.b u{ display:block; height:100%; border-radius:2mm; background:#0A6F9E; text-decoration:none }' +
       '.b b{ text-align:right; color:#0F1F2E; font-variant-numeric:tabular-nums }' +
-      '.nota{ font-size:2.6mm; color:#6B7A8A; line-height:1.4 }' +
-      '.lee{ font-size:3mm; color:#0F1F2E; line-height:1.4; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
+      '.nota{ font-size:2.9mm; color:#6B7A8A; line-height:1.45 }' +
+      '.lee{ font-size:3.4mm; color:#0F1F2E; line-height:1.45; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
       '.cobb{ display:flex; height:3.5mm; border-radius:1mm; overflow:hidden; margin:0 0 2mm }' +
       '.cobb i{ display:block; height:100% }' +
-      '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
+      '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3.4mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
       '.perf{ display:grid; grid-template-columns:1fr; gap:3mm; align-items:start }' +
       '.perf-dib{ background:#F3F8FB; border-radius:2mm; padding:3mm }' +
@@ -7138,6 +7176,134 @@
      es el número y el nombre —que es como la gente las llama—, no el
      recorrido: dibujarlo pediría traer la ruta completa de punta a punta, y
      lo que un análisis necesita saber es CUÁNTAS y CUÁLES pasan por acá. */
+  /* ── Qué es cada color de la red vial ──────────────────────────────────
+     Llegó como pregunta y es la pregunta correcta: «qué es la línea verde,
+     qué es la línea amarilla, qué es la línea naranja». La capa de jerarquía
+     pinta seis colores sobre el mapa y hasta ahora la única leyenda estaba en
+     el pliego impreso. Quien enciende la capa en el teléfono veía una maraña
+     de colores sin nombre, que es lo mismo que no verla.
+
+     Va con los kilómetros de cada clase cuando el trazado está medido: el
+     color dice QUÉ es y el número dice CUÁNTO hay, y las dos juntas son la
+     lectura —«este sector es todo local, con una sola arterial al norte»—. */
+  function leyendaVial(vias) {
+    var red = redPorJerarquia(vias || S.trzVias);
+    var hay = red.length;
+    return '<p class="pcr-lab">Qué es cada color de la red</p>' +
+      '<div class="pcr-leyvial">' +
+      JERARQUIA_VIAL.map(function (j) {
+        var suya = red.filter(function (x) { return x.id === j.id; })[0];
+        if (hay && !suya) return '';
+        return '<span class="pcr-leyv' + (hay && !suya ? ' pcr-leyv-no' : '') + '">' +
+          '<i style="background:' + j.color + '"></i>' +
+          '<b>' + esc(j.etq) + '</b>' +
+          (suya ? '<em>' + conComa(suya.km) + ' km</em>' : '') +
+        '</span>';
+      }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">' +
+      (hay
+        ? 'Los kilómetros son los de este sector, medidos sobre el trazado. La troncal y la ' +
+          'principal son las que traen gente de fuera; la local es la que se camina.'
+        : 'Medí el trazado para ver la red pintada sobre el mapa y saber cuánto hay de cada clase.') +
+      '</p>';
+  }
+
+  /* ── Por dónde pasa el transporte ──────────────────────────────────────
+     «Hacer más detallado el análisis de movilidad, por dónde pasa el
+     transporte público si es que pasa en esa zona».
+
+     La lista de rutas dice CUÁLES sirven al sector y no dónde paran, que es
+     la mitad que hace falta para proyectar: no es lo mismo tener el paradero
+     en la esquina del lote que a seiscientos metros. Acá se cruzan las dos
+     cosas que ya están medidas —las paradas, que vienen con coordenada, y las
+     vías con nombre del trazado— y sale por qué calles pasa: la vía con
+     nombre más cercana a cada parada, agrupadas.
+
+     El corte a 60 m no es redondo por gusto: una parada se pone en el andén,
+     así que a más de esa distancia de un eje ya no es «esa calle» sino la
+     siguiente, y decir lo contrario mandaría a alguien a esperar el bus donde
+     no para. Las que no caen cerca de ninguna vía con nombre se cuentan
+     aparte, porque son justamente las que hay que ir a verificar. */
+  function porDondePasa(res) {
+    var pois = (res && res.pois) || [];
+    var paradas = pois.filter(function (p) {
+      return p.sub === 'parada_bus' && p.lat != null && p.lng != null;
+    });
+    if (!paradas.length) return null;
+    var vias = (S.trzVias || []).filter(function (v) {
+      return v.nombre && v.pts && v.pts.length >= 2;
+    });
+    var TOPE_M = 60;
+    var porVia = {}, sueltas = 0;
+    paradas.forEach(function (pa) {
+      var mejor = null, mejorD = Infinity;
+      vias.forEach(function (v) {
+        var d = distanciaAPolilinea(pa, v.pts);
+        if (d < mejorD) { mejorD = d; mejor = v; }
+      });
+      if (mejor && mejorD <= TOPE_M) {
+        var k = mejor.nombre;
+        if (!porVia[k]) porVia[k] = { nombre: k, n: 0, clase: mejor.clase };
+        porVia[k].n++;
+      } else { sueltas++; }
+    });
+    var lista = Object.keys(porVia).map(function (k) { return porVia[k]; })
+      .sort(function (a, b) { return b.n - a.n; });
+    return { total: paradas.length, ejes: lista, sueltas: sueltas,
+             conVias: vias.length > 0 };
+  }
+
+  /* Distancia de un punto a una polilínea, en metros. Se proyecta sobre cada
+     tramo y se toma la menor: medir contra los vértices sueltos daría la
+     distancia al poste de la esquina y no a la calle. */
+  function distanciaAPolilinea(pt, pts) {
+    var kx = Math.cos(pt.lat * Math.PI / 180) * 111320, ky = 110540;
+    var px = pt.lng * kx, py = pt.lat * ky, mejor = Infinity;
+    for (var i = 1; i < pts.length; i++) {
+      var ax = pts[i - 1].lng * kx, ay = pts[i - 1].lat * ky;
+      var bx = pts[i].lng * kx, by = pts[i].lat * ky;
+      var dx = bx - ax, dy = by - ay, largo = dx * dx + dy * dy;
+      var t = largo > 0 ? ((px - ax) * dx + (py - ay) * dy) / largo : 0;
+      t = Math.max(0, Math.min(1, t));
+      var qx = ax + t * dx, qy = ay + t * dy;
+      var d = Math.sqrt((px - qx) * (px - qx) + (py - qy) * (py - qy));
+      if (d < mejor) mejor = d;
+    }
+    return mejor;
+  }
+
+  function bloquePorDonde(res) {
+    var pd = porDondePasa(res);
+    if (!pd) return '';
+    if (!pd.conVias) {
+      return '<p class="pcr-pista">Hay <b>' + pd.total + '</b> parada' +
+        (pd.total === 1 ? '' : 's') + ' en el área. Para saber por qué calles pasan hay que ' +
+        '<b>medir el trazado</b>: sin los ejes con nombre no hay contra qué cruzarlas.</p>';
+    }
+    if (!pd.ejes.length) {
+      return '<p class="pcr-pista">Las <b>' + pd.total + '</b> parada' +
+        (pd.total === 1 ? '' : 's') + ' del área no caen sobre ninguna vía con nombre registrado. ' +
+        'Anotar en qué calle está cada paradero es tarea de campo, y de las que más sirven.</p>';
+    }
+    return '<p class="pcr-lab">Por dónde pasa el transporte</p>' +
+      '<div class="pcr-ejes">' +
+        pd.ejes.slice(0, 6).map(function (e) {
+          var j = jerarquiaVialDe(e.clase);
+          return '<div class="pcr-eje" style="--via:' + (j ? j.color : '#0A6F9E') + '">' +
+            '<span class="pcr-eje-nom">' + esc(e.nombre) + '</span>' +
+            '<span class="pcr-eje-n">' + e.n + ' parada' + (e.n === 1 ? '' : 's') + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<p class="pcr-pista">Cada parada se asignó a la vía con nombre más cercana, hasta 60 m: ' +
+      'un paradero se pone en el andén, y más lejos de eso ya es otra calle. ' +
+      (pd.sueltas
+        ? '<b>' + pd.sueltas + '</b> parada' + (pd.sueltas === 1 ? ' no cae' : 's no caen') +
+          ' cerca de ninguna vía con nombre: ahí hay que ir a mirar en qué calle están.'
+        : 'Todas cayeron sobre una vía con nombre.') + '</p>';
+  }
+
   function bloqueRutas(mv) {
     var rutas = (mv && mv.rutas) || [];
     if (!rutas.length) {
@@ -9336,11 +9502,11 @@
      de fábrica habría empezado a tirar cajas por su cuenta, que es justo lo
      contrario de lo que se pidió antes: «no me dejes mapas a un lado». */
   var LETRAS_PLIEGO = [
-    { id: 'todo',   t: 'Cabe todo',     piso: 0.40, mm: '1,3', sacrifica: false,
+    { id: 'todo',   t: 'Cabe todo',     piso: 0.40, mm: '1,4', sacrifica: false,
       pista: 'entran todas, letra de lupa' },
-    { id: 'media',  t: 'Equilibrio',    piso: 0.62, mm: '1,9', sacrifica: true,
+    { id: 'media',  t: 'Equilibrio',    piso: 0.62, mm: '2,1', sacrifica: true,
       pista: 'se lee de cerca, cabe casi todo' },
-    { id: 'grande', t: 'Se lee de pie', piso: 0.80, mm: '2,4', sacrifica: true,
+    { id: 'grande', t: 'Se lee de pie', piso: 0.80, mm: '2,7', sacrifica: true,
       pista: 'para colgar, con menos cajas' }
   ];
   /* De la escala de composición a milímetros de letra sobre el papel. El
@@ -9348,7 +9514,12 @@
      la letra que sale es el producto. Decir «se compuso al 82 %» no le sirve
      a nadie —¿el 82 % de qué?—; decir «la letra sale a 2,5 mm» se compara con
      una regla. */
-  var CUERPO_MM = 3;
+  /* El cuerpo de las cajas del pliego, en milímetros de papel. Es el número
+     con el que la ficha traduce la escala de composición a «la letra sale a
+     X mm», así que tiene que seguir al estilo: subió de 3 a 3,4 cuando se
+     pidió la letra «un poquito más grande», y si se vuelve a tocar allá hay
+     que tocarlo acá o la ficha empieza a prometer un tamaño que no es. */
+  var CUERPO_MM = 3.4;
   function mmDeLetra(escala) {
     return conComa(Math.round(CUERPO_MM * (escala || 1) * 10) / 10);
   }
@@ -14418,7 +14589,9 @@
         ? '<p class="pcr-pista">Sin paradas de bus registradas. Si en la calle sí las hay, ubicarlas es una tarea concreta para la salida.</p>'
         : '') +
       bloqueFlujo(mv) +
-      bloqueRutas(mv);
+      leyendaVial() +
+      bloqueRutas(mv) +
+      bloquePorDonde(S.resultado);
   }
 
   /* ── Quién pasa por acá: a pie o en carro ─────────────────────────────

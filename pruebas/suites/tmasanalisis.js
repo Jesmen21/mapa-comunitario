@@ -274,6 +274,8 @@ const CAPAS_IDEAM = [
     o.cobertura = !!R.cobertura();
     await abrir();
 
+    o.hoja = txt(H());
+
     // ── El papel.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina = capturado; capturado = '';
@@ -555,6 +557,35 @@ const CAPAS_IDEAM = [
      salió. La cuenta va al pie de los dos documentos, y en un solo lugar del
      código: el día que cambie no puede quedar un PDF viejo mandando a un
      perfil que ya no existe. */
+  /* ── La movilidad, con nombre ────────────────────────────────────────
+     Dos cosas que se pidieron mirando la aplicación en la calle:
+
+       · «Qué es la línea verde, qué es la línea amarilla, qué es la línea
+         naranja». La capa de jerarquía pinta seis colores sobre el mapa y su
+         leyenda solo existía en el pliego impreso: quien la encendía en el
+         teléfono veía una maraña sin nombre.
+       · «Por dónde pasa el transporte público, si es que pasa». La lista de
+         rutas decía cuáles sirven al sector y no dónde paran, que es la mitad
+         que hace falta para proyectar: no es lo mismo el paradero en la
+         esquina del lote que a seiscientos metros. */
+  console.log('\n  -- la movilidad, con nombre --');
+  const FICHA = r.hoja || '';
+  T('la ficha dice qué es cada color de la red',
+    /Qué es cada color de la red/.test(FICHA) &&
+    /Troncal/.test(FICHA) && /Secundaria/.test(FICHA),
+    (FICHA.match(/Qué es cada color de la red[^]{0,120}/) || ['no lo dice'])[0].slice(0, 110));
+  T('con los kilómetros de cada clase, medidos en este sector',
+    (FICHA.match(/\d+,\d+ km/g) || []).length >= 3,
+    (FICHA.match(/(Troncal|Principal|Secundaria|Colectora|Local)[^·]{0,14}km/g) || []).join(' · ').slice(0, 120));
+  T('y por dónde pasa el transporte, con la calle y sus paradas',
+    /Por dónde pasa el transporte/.test(FICHA) && /\d+ paradas?/.test(FICHA),
+    (FICHA.match(/Por dónde pasa el transporte[^]{0,120}/) || ['no lo dice'])[0].slice(0, 110));
+  /* El corte de 60 m es la mitad del dato: sin él, «pasa por esta calle»
+     sería «pasa por la calle que le tocó más cerca», que puede estar a
+     trescientos metros. */
+  T('diciendo hasta qué distancia se le asigna una parada a una calle',
+    /hasta 60 m/.test(FICHA), (FICHA.match(/hasta 60 m[^.]*/) || ['no lo dice'])[0].slice(0, 90));
+
   console.log('\n  -- las redes de URBIS, al pie --');
   /* Cada perfil con su logo y separado del otro. La frase corrida —«Instagram
      y TikTok @urbis_co»— se leía en el pliego impreso como una línea más de

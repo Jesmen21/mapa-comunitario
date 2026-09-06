@@ -288,6 +288,30 @@ const geo = [
             ocupa: cajas.reduce((a, c) => a +
               Math.max(1, Math.round((c.offsetWidth + hueco) / unidad)), 0) };
         }),
+        /* Las cuatro cajas cuyo contenido principal es un DIBUJO —la carta
+           solar, la curva de amenaza, el año de lluvia, el plano del predio—
+           se pidieron «igual de grande a los mapas». Se mide el ancho de su
+           dibujo contra el de un recuadro de mapa: es la comparación que se
+           pidió, y la única que no depende de a qué escala cerró la hoja. */
+        dibujosAnchos: [...document.querySelectorAll('.caja-dibujo')].map(c => ({
+          t: ((c.querySelector('h2') || {}).textContent || '?'),
+          ancho: Math.round(c.getBoundingClientRect().width),
+          dibujo: (function () { const d = c.querySelector('.dib svg, .plano svg');
+            return d ? Math.round(d.getBoundingClientRect().width) : 0; })(),
+          caja2: (function () { const d = c.querySelector('.dib, .plano');
+            return d ? Math.round(d.getBoundingClientRect().width) : 0; })(),
+          svgCS: (function () { const d = c.querySelector('.dib svg, .plano svg');
+            if (!d) return '-'; const g = getComputedStyle(d);
+            return g.width + '/' + g.maxWidth + ' vb:' + (d.getAttribute('viewBox') || '-') +
+              ' attr:' + (d.getAttribute('width') || '-'); })()
+        })),
+        anchoMapa: (function () { const m = document.querySelector('.mapa-caja');
+          return m ? Math.round(m.getBoundingClientRect().width) : 0; })(),
+        anchoNormal: (function () {
+          const c = [...document.querySelectorAll('.caja')].filter(x =>
+            !x.classList.contains('caja-dibujo') && !x.classList.contains('mapa-caja') &&
+            !x.classList.contains('plano-hero') && !x.classList.contains('sintesis-pie'))[0];
+          return c ? Math.round(c.getBoundingClientRect().width) : 0; })(),
         recortadas: [...document.querySelectorAll('.caja')]
           .filter(c => c.scrollHeight > c.clientHeight + 2)
           .map(c => ((c.querySelector('h2') || {}).textContent || '?')),
@@ -432,8 +456,40 @@ const geo = [
      «cabe todo» siga sin tirar ninguna, que es lo que se pidió antes —«no me
      dejes mapas a un lado»— y por eso es lo de fábrica. */
   const escalaDe = h => Number(((h || '').match(/transform:scale\(([\d.]+)\)/) || [0, 1])[1]);
-  const letraMM = h => Number((3 * escalaDe(h)).toFixed(2));
+  /* El cuerpo de las cajas del pliego, en milímetros: tiene que seguir al
+     estilo. Subió a 3,4 cuando se pidió la letra «un poquito más grande», y
+     si vuelve a moverse allá hay que moverlo acá o la prueba mide con una
+     regla vieja. */
+  const CUERPO_MM = 3.4;
+  const letraMM = h => Number((CUERPO_MM * escalaDe(h)).toFixed(2));
   const cajasDe = h => (h || '').split('<section class="caja').length - 1;
+  /* ── Los dibujos, al ancho de un mapa ────────────────────────────────
+     «Donde dice el lote, el gráfico hágalo igual de grande a los mapas», y lo
+     mismo del clima, el asoleamiento y la amenaza sísmica. Las cuatro tienen
+     algo en común: son las únicas cajas de cifras cuyo contenido principal es
+     un dibujo, y un dibujo en una columna de sesenta milímetros es una
+     estampilla. Las de tablas y barras no lo necesitan. */
+  [['acostada 90 × 60', HZ], ['parada 60 × 90', V]].forEach(([nom, o]) => {
+    if (!o) return;
+    console.log('\n  -- ' + nom + ': los cuatro dibujos, al ancho de un mapa --');
+    const D = o.dibujosAnchos || [];
+    const QUIENES = ['El lote a intervenir', 'El clima', 'Asoleamiento', 'La amenaza sísmica'];
+    /* Las que se midieron en este sector. El clima y la amenaza sísmica no
+       se piden en esta suite, así que sus cajas no existen: exigirlas sería
+       comprobar el guion de la prueba y no el reparto del papel. */
+    const enHoja = D.map(x => x.t);
+    T('las de dibujo van a lo ancho', enHoja.length >= 2 &&
+      enHoja.every(t => QUIENES.indexOf(t) >= 0), enHoja.join(' · ') || 'ninguna');
+    const conDibujo = D.filter(x => x.dibujo > 0);
+    /* Y que el dibujo LLENE la caja. Ensanchar el recuadro y dejar el dibujo
+       del tamaño de antes es no haber hecho nada, y es exactamente lo que
+       pasaba: en un contenedor flex de columna, `margin:0 auto` encoge al
+       hijo a su tamaño natural. */
+    T('y el dibujo de dentro la llena, no se queda de su tamaño natural',
+      conDibujo.length > 0 && conDibujo.every(x => x.dibujo >= x.ancho * 0.8),
+      conDibujo.map(x => x.t + ' ' + x.dibujo + '/' + x.ancho).join(' · ') || 'ninguna trae dibujo');
+  });
+
   console.log('\n  -- el tamaño de la letra lo elige quien arma la lámina --');
   T('están los tres tamaños', r.hayBotones === 3, r.hayBotones + ' de 3');
   T('con «se lee de pie» la letra sale más grande de verdad',
