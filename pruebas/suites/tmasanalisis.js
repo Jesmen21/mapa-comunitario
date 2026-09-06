@@ -245,6 +245,35 @@ const CAPAS_IDEAM = [
     o.formasSinVias = formas();
     await abrir();
 
+    /* ── La foto satelital, de mentira ─────────────────────────────────
+       Acá no se mide el clasificador —tiene su propia suite—: lo único que
+       hace falta es que el estado quede con una cobertura leída, que es lo
+       que las dos hojas tienen que saber contar. Sin esto, la caja de
+       cobertura del pliego no sale y la comprobación pasaría sola. */
+    const pinta = (c1, c2) => {
+      const cv = document.createElement('canvas'); cv.width = 200; cv.height = 140;
+      const x = cv.getContext('2d');
+      for (let i = 0; i < 200; i += 10) for (let j = 0; j < 140; j += 10) {
+        x.fillStyle = ((i + j) / 10) % 2 ? c1 : c2; x.fillRect(i, j, 10, 10);
+      }
+      return cv.toDataURL('image/png');
+    };
+    A.analizarRaster = function (avisar) {
+      if (avisar) avisar('leyendo');
+      return Promise.resolve({ pixeles: 40000, malla: '200 × 200', mPorPx: 5,
+        imagen: pinta('#5a7f4a', '#8b8f7a'),
+        overlayImagen: pinta('#22c55e', '#94a3b8'),
+        overlayLimites: [[C.lat - 0.006, C.lng - 0.006], [C.lat + 0.006, C.lng + 0.006]],
+        clases: [{ id: 'verde', etq: 'Vegetación viva', color: '#22c55e', pct: 38, m2: 9000, fiable: true },
+                 { id: 'construido', etq: 'Superficie dura gris', color: '#94a3b8', pct: 44, m2: 10400, fiable: true },
+                 { id: 'agua', etq: 'Agua', color: '#3b82f6', pct: 3, m2: 700, fiable: true },
+                 { id: 'suelo', etq: 'Suelo desnudo', color: '#a16207', pct: 15, m2: 3500, fiable: false }] });
+    };
+    const bcob = H().querySelector('[data-pcr="cobertura"]');
+    if (bcob) { bcob.click(); await esperar(1600); }
+    o.cobertura = !!R.cobertura();
+    await abrir();
+
     // ── El papel.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina = capturado; capturado = '';
@@ -418,6 +447,81 @@ const CAPAS_IDEAM = [
      nueva tiene que aparecer en los dos, o alguien tiene que venir acá y
      escribir por qué no. */
   console.log('\n  -- los dos documentos dicen lo mismo --');
+  /* ── El inventario de v739 ──────────────────────────────────────────
+     Se volvió a listar bloque por bloque lo que sale en la ficha contra lo
+     que sale en cada documento, y quedaban seis mediciones que la pantalla
+     mostraba y el papel no —o mostraba en uno solo—. Ninguna es un cálculo
+     nuevo: los seis números ya venían en la respuesta y ya se pintaban.
+
+       · CUÁNTA GENTE: el pliego llevaba el total suelto en «El sitio» y el
+         informe no llevaba nada. Sin el año del censo al lado, un total de
+         habitantes no se sabe si es conteo o pronóstico.
+       · QUÉ MANDA: el reparto por PESO de los usos —distinto del conteo por
+         categoría— solo estaba en el informe.
+       · LA CALLE COMERCIAL y CÓMO CAMBIA AL ALEJARSE: en ninguno de los dos.
+       · DÓNDE SE CONCENTRA: en ninguno de los dos.
+       · LA COBERTURA DEL SUELO: en el informe sí; en el pliego no, y encima
+         la caja de «Verde y agua» mandaba a leerla —«dice cuánto verde hay
+         de verdad»—, o sea que la lámina prometía una caja que no existía. */
+  const secDe = t => (PDF.split('<h2>')
+    .filter(x => x.indexOf(t + '</h2>') === 0)[0] || '');
+
+  console.log('\n  -- cuánta gente vive acá, con su año --');
+  const CG = cajaDe('Quién vive acá'), SG = secDe('Cuánta gente vive acá');
+  T('el informe trae la sección', !!SG);
+  T('con el conteo del censo y su año', /Contadas por el censo de 20\d\d/.test(SG),
+    (SG.match(/Contadas por el censo de \d+<\/td><td class="n">[\d.,]+/) || ['no lo dice'])[0]);
+  T('y la proyección marcada como proyección',
+    /Proyectadas a/.test(SG) && /no es un dato contado/.test(SG));
+  T('el pliego dice lo mismo', /Contadas por el censo de 20\d\d/.test(CG) &&
+    /Proyectadas a/.test(CG), (CG.match(/Contadas por el censo de \d+<\/span><b>[\d.,]+/) || ['no lo dice'])[0]);
+  T('y no confunde un conteo con un pronóstico',
+    /no es un dato contado/.test(CG), (CG.match(/Un pronóstico[^<]*/) || ['no lo advierte'])[0]);
+
+  console.log('\n  -- qué manda en el sector, por peso --');
+  const QM = cajaDe('Qué manda en el sector');
+  T('el pliego trae su caja', !!QM);
+  T('con el uso que predomina y su porcentaje', /Predomina <b>[^<]+<\/b> con el \d+%/.test(QM),
+    (QM.match(/Predomina <b>[^<]+<\/b> con el \d+%/) || ['no lo dice'])[0]);
+  T('y la mezcla se calcula sobre ESTE reparto, no sobre el conteo de puntos',
+    /Mezcla de usos/.test(QM) && !/Mezcla de usos/.test(cajaDe('Qué hay, por categoría')),
+    'en «qué manda»: ' + (/Mezcla de usos/.test(QM) ? 'sí' : 'NO') +
+    ' · duplicada en «por categoría»: ' + (/Mezcla de usos/.test(cajaDe('Qué hay, por categoría')) ? 'SÍ' : 'no'));
+
+  console.log('\n  -- dónde está la calle comercial --');
+  const NC = cajaDe('Dónde está la calle comercial'), NS = secDe('Dónde está la calle comercial');
+  T('el pliego trae su caja', !!NC);
+  T('el informe trae su sección', !!NS);
+  T('con cuántos locales y a qué distancia', /\d+ locales/.test(NC) && /\d+ m/.test(NC),
+    (NC.match(/\d+ locales · [^<]*/) || ['no lo dice'])[0]);
+  T('y los dos cuentan los mismos núcleos',
+    (NC.match(/\d+ locales/g) || []).length === (NS.match(/\d+ locales/g) || []).length,
+    'pliego ' + (NC.match(/\d+ locales/g) || []).length +
+    ' · informe ' + (NS.match(/\d+ locales/g) || []).length);
+
+  console.log('\n  -- cómo cambia al alejarse, y hacia dónde --');
+  const AN = cajaDe('Cómo cambia al alejarse'), AS = secDe('Cómo cambia al alejarse');
+  T('el pliego trae su caja', !!AN);
+  T('el informe trae su sección', !!AS);
+  T('con los anillos y de dónde se miden',
+    /un grupo por anillo/.test(AN) && /un grupo por anillo/.test(AS));
+  T('y el rumbo que concentra, que no salía en ningún papel',
+    /reúne <b>\d+ de \d+<\/b>/.test(AN) && /reúne <b>\d+ de \d+<\/b>/.test(PDF),
+    (AN.match(/La mitad <b>[^<]+<\/b> reúne <b>\d+ de \d+/) || ['no lo dice'])[0]);
+
+  console.log('\n  -- la cobertura del suelo, en el pliego --');
+  const CB = cajaDe('Cobertura del suelo');
+  T('la foto quedó leída', r.cobertura === true);
+  T('el pliego trae su caja', !!CB);
+  T('con los porcentajes de la foto', /Vegetación viva<\/span><b>38%/.test(CB),
+    (CB.match(/Vegetación viva<\/span><b>[^<]*/) || ['no lo dice'])[0]);
+  T('y dice que no depende de que alguien lo haya mapeado',
+    /No depende de que alguien lo haya mapeado/.test(CB));
+  T('que es justo lo que «Verde y agua» promete que dirá',
+    /caja de cobertura del suelo dice cuánto verde hay de verdad/.test(cajaDe('Verde y agua')) && !!CB);
+  T('va en la banda ambiental, con el resto del suelo',
+    /banda-ambiental[^]*?<h2>Cobertura del suelo<\/h2>/.test(LAM.replace(/\n/g, '')));
+
   const EN_LOS_DOS = [
     ['la inundación', /La inundación/, /La inundación/],
     ['cómo se llega', /Cómo se llega/, /Cómo funciona el sector/],
@@ -428,7 +532,17 @@ const CAPAS_IDEAM = [
     ['la infraestructura', /Infraestructura de servicios/, /Infraestructura de servicios/],
     ['quién vive acá', /Quién vive acá/, /Quién vive acá/],
     ['la cuadra', /La cuadra del lote/, /La cuadra del lote/],
-    ['de dónde salieron los índices', /nadie anotó de dónde/, /nadie anotó de dónde/]
+    ['de dónde salieron los índices', /nadie anotó de dónde/, /nadie anotó de dónde/],
+    /* Las de v739. La cobertura entra en la lista con la salvedad de que en
+       el informe se llama «Cobertura del suelo (foto satelital)»: es la misma
+       medición con el rótulo largo, y por eso el patrón del informe pide el
+       encabezado y no el texto suelto. */
+    ['cuánta gente vive acá', /Contadas por el censo de/, /Cuánta gente vive acá/],
+    ['qué manda en el sector', /Qué manda en el sector/, /Cómo funciona el sector/],
+    ['la calle comercial', /Dónde está la calle comercial/, /Dónde está la calle comercial/],
+    ['cómo cambia al alejarse', /Cómo cambia al alejarse/, /Cómo cambia al alejarse/],
+    ['dónde se concentra', /Es el lado más activo/, /Es el lado más activo/],
+    ['la cobertura del suelo', /<h2>Cobertura del suelo<\/h2>/, /<h2>Cobertura del suelo \(foto satelital\)<\/h2>/]
   ];
   EN_LOS_DOS.forEach(([nombre, enPliego, enInforme]) => {
     const p1 = enPliego.test(LAM), p2 = enInforme.test(PDF);

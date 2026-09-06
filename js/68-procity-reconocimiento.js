@@ -1238,6 +1238,104 @@
       'reparto de quien vive acá, no de quien pasa.</p>';
   }
 
+  /* ── Cuánta gente vive acá ─────────────────────────────────────────────
+     `demografiaImpresa` cuenta CÓMO está repartida la gente —sexo, edades—
+     pero no CUÁNTA hay. El conteo del censo, la proyección a hoy y el
+     pronóstico salían en la ficha y en ningún documento: el pliego llevaba
+     el número suelto en «El sitio» y el informe no llevaba nada. Es la
+     primera cifra que pide un jurado —«¿para cuánta gente proyectás?»— y no
+     se podía citar.
+
+     La proyección va marcada como tal en la misma tabla. Un conteo y un
+     pronóstico no son la misma clase de dato, y ponerlos juntos sin decirlo
+     es lo que hace que después alguien defienda una cifra inventada. */
+  function poblacionImpresa(st) {
+    if (!st) return '';
+    var hay = st.poblacionCenso || st.poblacionProyectada || st.poblacionEstimada;
+    if (!hay) return '';
+    var n = function (x) { return Number(x).toLocaleString('es-CO'); };
+    var censal = !!st.poblacionCenso;
+    return '<h2>Cuánta gente vive acá</h2><table>' +
+      (st.poblacionCenso
+        ? '<tr><td>Contadas por el censo de ' + (st.censoAnio || '—') + '</td><td class="n">' +
+          n(st.poblacionCenso) + '</td></tr>'
+        : '') +
+      (st.poblacionProyectada
+        ? '<tr><td>Proyectadas a ' + (st.anioProyeccion || 'hoy') + '</td><td class="n">' +
+          n(st.poblacionProyectada) + '</td></tr>'
+        : '<tr><td>Estimadas por densidad</td><td class="n">' + n(st.poblacionEstimada) + '</td></tr>') +
+      (st.crecimientoPct != null
+        ? '<tr><td>Crecimiento desde el censo</td><td class="n">+' + conComa(st.crecimientoPct) + '%</td></tr>'
+        : '') +
+      (st.tasaAnualDane != null
+        ? '<tr><td>Tasa anual del DANE</td><td class="n">' +
+          conComa(Number((st.tasaAnualDane * 100).toFixed(2))) + '%</td></tr>'
+        : '') +
+      (st.viviendasCenso
+        ? '<tr><td>Viviendas</td><td class="n">' + n(st.viviendasCenso) + '</td></tr>'
+        : '') +
+      (st.estrato && st.estrato.predominante
+        ? '<tr><td>Estrato predominante</td><td class="n">' + esc(String(st.estrato.predominante)) +
+          (st.estrato.minimo !== st.estrato.maximo
+            ? ' (de ' + st.estrato.minimo + ' a ' + st.estrato.maximo + ')' : '') + '</td></tr>'
+        : '') +
+      '</table>' +
+      '<p class="pie">' +
+      (censal
+        ? 'El conteo es censo del DANE por manzana; lo demás es proyección con su tasa de ' +
+          'crecimiento. <b>El pronóstico no es un dato contado.</b>'
+        : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no ' +
+          'un dato observado.') +
+      (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') + '</p>';
+  }
+
+  /* ── Dónde está la calle comercial ─────────────────────────────────────
+     Los núcleos: no cuántos comercios hay —eso ya lo dice «por categoría»—
+     sino dónde se juntan. Un jurado que ve «38 locales a 120 m al oriente»
+     entiende de qué lado se abre el proyecto; el mismo número repartido por
+     todo el sector no dice nada. */
+  function nucleosImpresos(st) {
+    var ns = (st && st.nucleos) || [];
+    if (!ns.length) return '';
+    return '<h2>Dónde está la calle comercial</h2><table class="ancha">' +
+      ns.map(function (x, i) {
+        return '<tr><td>' + (i + 1) + '. ' + esc(x.rubroDominante || 'comercio') +
+          ((x.nombres || []).length ? ' — ' + esc(x.nombres.join(', ')) : '') +
+          '</td><td class="n">' + x.n + ' locales</td>' +
+          '<td class="n">' + x.distM + ' m</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="pie">Grupos de comercios que están juntos, con la distancia al centro del área. ' +
+      'Es dónde se juntan, no cuántos hay: eso es lo que le da vida a una calle.</p>';
+  }
+
+  /* ── Cómo cambia al alejarse ───────────────────────────────────────────
+     Un total no dice si las cosas están pegadas o desperdigadas. Los anillos
+     sí, y de paso reparten la salida a campo: un grupo por anillo. Estaba en
+     la ficha desde el principio y no llegaba a ningún documento, que es
+     justamente donde hace falta —el reparto se imprime y se recorta—. */
+  function anillosImpresos(st, esPol) {
+    var an = ((st && st.anillos) || []).filter(function (a) { return a.n > 0; });
+    if (an.length < 2) return '';
+    var primero = an[0];
+    return '<h2>Cómo cambia al alejarse</h2><table class="ancha">' +
+      an.map(function (a) {
+        return '<tr><td>' + esc(a.etiqueta) +
+          ((a.ejemplos || []).length
+            ? '<br><span class="ej">' + a.ejemplos.map(function (e) {
+                return esc(e.nombre) + ' (' + e.distM + ' m)';
+              }).join(' · ') + '</span>'
+            : '') +
+          '</td><td class="n">' + a.n + '</td></tr>';
+      }).join('') + '</table>' +
+      (primero && primero.n / Math.max(1, st.total) >= 0.5
+        ? '<p>Más de la mitad de lo registrado está <b>' + esc(primero.etiqueta) +
+          '</b>. Es un sector concentrado: se recorre a pie sin problema.</p>'
+        : '') +
+      '<p class="pie">Distancia medida desde el ' +
+      (esPol ? 'centro del área dibujada' : 'centro del círculo') +
+      '. Sirve para repartir el trabajo: un grupo por anillo.</p>';
+  }
+
   function inundacionImpresa(inu) {
     if (!inu || inu.sinDato) return '';
     if (!inu.cobertura) {
@@ -2319,10 +2417,24 @@
        «El cuadrado que estás analizando más grande, y no sobrealargarlo de
        más» es exactamente esto. */
     var pesoPlano = proporcionDelSector >= 1.25 ? 3 : 2;
-    /* Acostado, la banda del plano comparte la fila con la de los mapas —seis
-       de diez columnas para ellos— y el plano se queda con tres de las
-       cuatro que restan. */
-    var anchoFila = horiz ? 10 : 6;
+    /* Cuántas columnas vale una fila del pliego. Acostado, la banda del plano
+       comparte la fila con la del análisis ambiental y el plano se queda con
+       tres de las cuatro columnas de la suya.
+
+       Doce y no diez, y el número está MEDIDO. Con diez, las cajas nuevas de
+       v739 empujaron dos bandas fuera de la fila que compartían —el ambiental
+       dejó de caber con la ubicación, la morfología con lo demográfico— y la
+       hoja acostada pasó de cinco filas a seis: 36 mm de más con la rejilla ya
+       compuesta en su mínimo, o sea recortada por la impresora. Con doce las
+       dos parejas vuelven a caber, la hoja cierra con 2 mm de sobra y, de
+       paso, los recuadros del mapa suben de 68 a 73 mm de alto: al encogerse
+       menos la hoja, todo lo que hay dentro se ve más grande.
+
+       El margen es de dos milímetros, así que la próxima medición que entre
+       vuelve a sacar la hoja de la hoja. No es un descuido: la prueba de
+       `tpliegogrande` mide el desborde con la rejilla ya reducida y falla en
+       cuanto pasa, que es exactamente como se descubrió esto. */
+    var anchoFila = horiz ? 12 : 6;
     var anchoBanda1 = ((horiz ? 900 : 600) - 40) * ((pesoPlano + (conSitio ? 1 : 0)) / (horiz && mapas.length ? anchoFila : (pesoPlano + (conSitio ? 1 : 0))));
     var anchoPlanoMM = Math.round((anchoBanda1 - (conSitio ? 4 : 0)) *
                                   (conSitio ? pesoPlano / (pesoPlano + 1) : 1)) - 8;
@@ -2444,6 +2556,10 @@
       'Infraestructura de servicios':      ['suelo', 'industria'],
       'Cómo cambió el sitio':              ['suelo', 'reloj'],
       'Quién vive acá':                    ['sitio', 'poblacion'],
+      'Qué manda en el sector':             ['sitio', 'estadistica'],
+      'Dónde está la calle comercial':      ['sitio', 'comercio'],
+      'Cómo cambia al alejarse':            ['sitio', 'anillos'],
+      'Cobertura del suelo':                ['suelo', 'satelite'],
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
       'La sombra que arrojás':             ['proyecto', 'destello'],
@@ -2677,17 +2793,90 @@
       .filter(function (x) { return x.n > 0 && x.id !== 'otro'; })
       .sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
       if (!filas.length) return '';
-      var m = st.mezcla;
       return barras(filas, function (x) { return sinEmoji(nombreGrupo(x.id)); },
-      function (x) { return x.n; }, function (x) { return x.n; }) +
-      // El índice de mezcla cierra la caja: es la cifra que resume
-      // este reparto en una sola palabra defendible.
+      function (x) { return x.n; }, function (x) { return x.n; });
+      })(), 'g3') +
+
+      /* ── Qué manda en el sector ───────────────────────────────────────
+         CUÁNTOS puntos hay de cada categoría —la caja de arriba— y QUÉ USO
+         pesa más no son lo mismo: quince locales de comercio son quince
+         puntos y una manzana de vivienda es uno, y sin embargo el sector es
+         residencial. El reparto por peso salía en la ficha y en el informe
+         en hojas, y en el pliego no: quien defendía la lámina no tenía de
+         dónde leer «acá manda la vivienda».
+
+         La mezcla se mudó acá desde la caja de categorías. Se calcula sobre
+         ESTOS pesos, no sobre aquellos conteos, y tenerla debajo del reparto
+         del que sale es lo que la hace comprobable de un vistazo. */
+      caja('Qué manda en el sector',
+      (function () {
+      var up = st.usoPredominante;
+      if (!up) return '';
+      var filas = Object.keys(up)
+      .map(function (k) { return { id: k, n: up[k] || 0 }; })
+      .filter(function (x) { return x.n > 0; })
+      .sort(function (a, b) { return b.n - a.n; });
+      if (!filas.length) return '';
+      var top = filas[0], m = st.mezcla;
+      return '<p class="lee">Predomina <b>' +
+      esc(sinEmoji(NOMBRE_USO[top.id] || top.id)) + '</b> con el ' + top.n +
+      '% del peso de los usos.</p>' +
+      barras(filas, function (x) { return sinEmoji(NOMBRE_USO[x.id] || x.id); },
+      function (x) { return x.n + '%'; }, function (x) { return x.n; }) +
       (m && m.usos
       ? fila('Mezcla de usos', String(m.indice).replace('.', ',') + ' · ' + esc(m.nivel)) +
-      '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. ' +
-      'Se mide sobre lo mapeado, y en OpenStreetMap la vivienda está peor registrada ' +
-      'que el comercio.</p>'
-      : '');
+      '<p class="nota">0 = un solo uso manda · 1 = los siete repartidos por igual. Acá da ' +
+      String(m.indice).replace('.', ',') + ' con ' + m.usos + ' de ' + m.maximo + ' usos ' +
+      'presentes. Se mide sobre lo mapeado, y en OpenStreetMap la vivienda está peor ' +
+      'registrada que el comercio.</p>'
+      : '<p class="nota">El porcentaje pesa lo que representa cada cosa: una zona ' +
+      'residencial completa pesa más que un solo local.</p>');
+      })(), 'g3') +
+
+      /* ── Dónde está la calle comercial ────────────────────────────────
+         Los núcleos: no cuántos comercios hay sino dónde se juntan, que es
+         lo que hace que una calle tenga vida. Es de las que deciden por qué
+         lado se abre el proyecto, y no llegaba a ningún documento. */
+      caja('Dónde está la calle comercial',
+      (function () {
+      var ns = st.nucleos || [];
+      if (!ns.length) return '';
+      return ns.slice(0, 5).map(function (x, i) {
+      return '<div class="hit"><i>' + (i + 1) + '</i><span>' +
+      x.n + ' locales · ' + esc(x.rubroDominante || 'comercio') +
+      ((x.nombres || []).length ? '<br>' + esc(x.nombres.join(', ')) : '') +
+      '</span><u>' + x.distM + ' m</u></div>';
+      }).join('') +
+      '<p class="nota">Grupos de comercios que están juntos, con la distancia al centro ' +
+      'del área. Es dónde se juntan, no cuántos hay.</p>';
+      })(), 'g3') +
+
+      /* ── Cómo cambia al alejarse ──────────────────────────────────────
+         Un total no dice si las cosas están pegadas o desperdigadas; los
+         anillos sí. Cierra con el rumbo que concentra —la otra mitad de la
+         misma pregunta: a qué distancia está lo que hay, y hacia qué lado—.
+         Las dos salían en la ficha y en ninguna hoja imprimible. */
+      caja('Cómo cambia al alejarse',
+      (function () {
+      var an = (st.anillos || []).filter(function (a) { return a.n > 0; });
+      var z = zonasL;
+      var conc = (z && z.concentracion)
+      ? '<p class="lee">La mitad <b>' + esc(z.concentracion.rumbo.nombre) + '</b> reúne <b>' +
+      z.concentracion.n + ' de ' + z.total + '</b> (' + z.concentracion.pct + '%). Es el lado ' +
+      'más activo según los datos.</p>'
+      : '';
+      if (an.length < 2) return conc;
+      var primero = an[0];
+      return barras(an, function (a) { return a.etiqueta; },
+      function (a) { return a.n; }, function (a) { return a.n; }) +
+      (primero.n / Math.max(1, st.total) >= 0.5
+      ? '<p class="lee">Más de la mitad de lo registrado está <b>' + esc(primero.etiqueta) +
+      '</b>: es un sector concentrado, se recorre a pie sin problema.</p>'
+      : '') +
+      conc +
+      '<p class="nota">Distancia medida desde el ' +
+      (esPol ? 'centro del área dibujada' : 'centro del círculo') +
+      '. Sirve para repartir el trabajo: un grupo por anillo.</p>';
       })(), 'g3') +
       
       caja('Hitos y nodos',
@@ -2961,7 +3150,35 @@
       var d = st.demografia;
       if (!d || !d.totalSexo) return '';
       var tramos = (d.tramos || []).filter(function (t) { return (t.personas || 0) > 0; });
-      return '<div class="kpis">' +
+      /* CUÁNTA gente, antes de cómo está repartida. El pliego llevaba el
+         número suelto en «El sitio» y ahí no se puede citar: sin el año del
+         censo al lado, un total de habitantes no se sabe si es un conteo o un
+         pronóstico, y las dos cosas se defienden distinto. Acá van los tres
+         momentos —contado, proyectado a hoy, pronosticado— con su año, y el
+         pronóstico va rotulado como tal. */
+      var mil = function (x) { return Number(x).toLocaleString('es-CO'); };
+      var pobl =
+      (st.poblacionCenso
+      ? fila('Contadas por el censo de ' + (st.censoAnio || '—'), mil(st.poblacionCenso))
+      : '') +
+      (st.poblacionProyectada
+      ? fila('Proyectadas a ' + (st.anioProyeccion || 'hoy'), mil(st.poblacionProyectada))
+      : (st.poblacionEstimada
+      ? fila('Estimadas por densidad', mil(st.poblacionEstimada)) : '')) +
+      (st.crecimientoPct != null
+      ? fila('Crecimiento desde el censo', '+' + conComa(st.crecimientoPct) + '%') : '') +
+      (st.tasaAnualDane != null
+      ? fila('Tasa anual del DANE', conComa(Number((st.tasaAnualDane * 100).toFixed(2))) + '%') : '') +
+      (st.estrato && st.estrato.predominante
+      ? fila('Estrato predominante', esc(String(st.estrato.predominante)) +
+      (st.estrato.minimo !== st.estrato.maximo
+      ? ' (de ' + st.estrato.minimo + ' a ' + st.estrato.maximo + ')' : ''))
+      : '');
+      return pobl +
+      (pobl && st.poblacionCenso
+      ? '<p class="nota">El conteo es censo; lo que sigue es proyección con la tasa del ' +
+      'DANE. Un pronóstico no es un dato contado.</p>' : '') +
+      '<div class="kpis">' +
       '<div class="k"><b>' + conComa(d.pctMujeres || 0) + '%</b><small>mujeres</small></div>' +
       '<div class="k"><b>' + conComa(d.pctHombres || 0) + '%</b><small>hombres</small></div>' +
       (d.envejecimiento != null
@@ -3114,6 +3331,34 @@
       '<p class="nota">Contado sobre lo que OpenStreetMap tiene registrado con nombre. La ' +
       'caja de cobertura del suelo dice cuánto verde hay de verdad, lo haya registrado ' +
       'alguien o no.</p>';
+      })(), 'g3') +
+
+      /* ── Cobertura del suelo ──────────────────────────────────────────
+         Lo único de la lámina que no depende de que alguien haya mapeado
+         nada: se lee de la foto satelital, píxel por píxel. La caja de
+         «Verde y agua» llevaba desde el principio una nota que mandaba a
+         leer ésta —«dice cuánto verde hay de verdad»— y ésta no estaba en el
+         pliego: la promesa quedaba sin cumplir en el papel, y el porcentaje
+         de vegetación, que es el número que un jurado pide primero cuando se
+         habla de ambiente, había que buscarlo en el celular. */
+      caja('Cobertura del suelo',
+      (function () {
+      var c = o.cobertura !== undefined ? o.cobertura : S.cobertura;
+      if (!c || !c.clases || !c.clases.length) return '';
+      var orden = c.clases.slice().sort(function (a, b) { return b.pct - a.pct; })
+      .filter(function (x) { return x.pct > 0; });
+      if (!orden.length) return '';
+      return '<div class="cobb">' + orden.map(function (x) {
+      return '<i style="width:' + x.pct + '%;background:' + esc(String(x.color)) + '"></i>';
+      }).join('') + '</div>' +
+      orden.map(function (x) {
+      return fila(x.etq, x.pct + '% · ' + Math.round(x.m2).toLocaleString('es-CO') + ' m²');
+      }).join('') +
+      '<p class="nota">Medido sobre ' + esc(String(c.malla || '')) + ' píxeles de la foto ' +
+      'satelital, a ' + (c.mPorPx || '?') + ' m por píxel.' +
+      (c.grueso ? ' A esta escala la lectura es de masas, no de elementos sueltos.' : '') +
+      (c.pctAmbiguo > 25 ? ' Un ' + c.pctAmbiguo + '% quedó en tonos cálidos no separables.' : '') +
+      ' No depende de que alguien lo haya mapeado.</p>';
       })(), 'g3') +
 
       caja('Espacio público efectivo',
@@ -3482,18 +3727,19 @@
         que: 'dónde queda · cuánto mide · el plano del sector',
         cajas: ['Plano del sector', 'El sitio'] },
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
-        que: 'relieve · clima · sol · amenaza · inundación · verde · espacio público',
+        que: 'relieve · clima · sol · amenaza · inundación · verde · cobertura · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'La inundación', 'Verde y agua',
                 'El ruido del tránsito', 'Infraestructura de servicios',
-                'Cómo cambió el sitio', 'Espacio público efectivo'] },
+                'Cómo cambió el sitio', 'Cobertura del suelo', 'Espacio público efectivo'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
                 'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
-        que: 'qué hay · dónde · hitos y nodos',
-        cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Hitos y nodos'] },
+        que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
+        cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Qué manda en el sector',
+                'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
         que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
@@ -3945,6 +4191,8 @@
       '.b b{ text-align:right; color:#0F1F2E; font-variant-numeric:tabular-nums }' +
       '.nota{ font-size:2.6mm; color:#6B7A8A; line-height:1.4 }' +
       '.lee{ font-size:3mm; color:#0F1F2E; line-height:1.4; border-left:.8mm solid #34CCFE; padding-left:3mm }' +
+      '.cobb{ display:flex; height:3.5mm; border-radius:1mm; overflow:hidden; margin:0 0 2mm }' +
+      '.cobb i{ display:block; height:100% }' +
       '.hit{ display:grid; grid-template-columns:6mm 1fr auto; gap:2mm; align-items:baseline; font-size:3mm;' +
         'padding:1mm 0; border-bottom:.25mm solid #EEF3F7 }' +
       '.perf{ display:grid; grid-template-columns:1fr; gap:3mm; align-items:start }' +
@@ -4106,6 +4354,11 @@
       '.cob{display:flex;height:12px;border-radius:3px;overflow:hidden;max-width:340px;margin:2px 0 8px}' +
       '.cob i{display:block;height:100%}' +
       '.pie{color:#5a6472;font-size:11px;margin:5px 0 0}' +
+      /* Dos de las tablas nuevas llevan tres columnas —los núcleos, los
+         anillos— y a 340 mm la última quedaba partida en dos renglones. */
+      'table.ancha{max-width:460px}' +
+      'table.ancha td.n{width:auto;white-space:nowrap;padding-left:12px}' +
+      '.ej{color:#5a6472;font-size:11px}' +
       /* Los dibujos traen su propio color en los atributos: acá solo se les
          pone un ancho de columna para que no salgan a tamaño de pantalla. */
       '.dib{margin:6px 0 8px;max-width:340px}' +
@@ -4209,7 +4462,10 @@
       sombraProyectoImpresa(o.sombraProyecto !== undefined ? o.sombraProyecto
         : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })()) +
       evolucionImpresa(o.evo !== undefined ? o.evo : S.evo) +
+      poblacionImpresa(st) +
       demografiaImpresa(st) +
+      nucleosImpresos(st) +
+      anillosImpresos(st, meta.forma === 'poligono') +
       cuadraImpresa(o.cuadra !== undefined ? o.cuadra
         : (function () { try { return laCuadraDelLote(); } catch (e) { return null; } })()) +
 
@@ -4219,7 +4475,16 @@
       (function () {
         var rosa = rosaDeLoMapeado(zonas);
         return rosa ? '<div class="dib">' + rosa + '</div>' : '';
-      })() + tareas +
+      })() +
+      /* Hacia dónde mira el sector. La rosa lo dibuja, pero la frase es lo
+         que se cita: «la mitad oriental reúne 84 de 130». Solo sale si de
+         verdad hay un lado que domina —señalar «el mayor» en un reparto
+         parejo sería inventar un patrón que no existe—. */
+      (zonas.concentracion
+        ? '<p>La mitad <b>' + esc(zonas.concentracion.rumbo.nombre) + '</b> reúne <b>' +
+          zonas.concentracion.n + ' de ' + zonas.total + '</b> (' + zonas.concentracion.pct +
+          '%). Es el lado más activo según los datos.</p>'
+        : '') + tareas +
 
       /* El plan y la lista con nombres son la razón de imprimir esto: el
          diagnóstico se lee en el celular, pero el reparto se recorta y se le
@@ -7929,6 +8194,30 @@
         dato: st.demografia && st.demografia.tramoDominanteEtq
           ? 'sobre todo ' + String(st.demografia.tramoDominanteEtq).toLowerCase()
           : 'edades y sexo del censo' },
+      { id: 'que-manda-en-el-sector', t: 'Qué manda en el sector', g: 'Lo que hay',
+        listo: !!(st.usoPredominante && Object.keys(st.usoPredominante)
+                  .some(function (k) { return st.usoPredominante[k] > 0; })),
+        falta: 'no hay usos con peso en el área',
+        dato: (function () {
+          var up = st.usoPredominante;
+          if (!up) return 'el reparto por peso y la mezcla';
+          var k = Object.keys(up).sort(function (x, y) { return up[y] - up[x]; })[0];
+          return k ? sinEmoji(NOMBRE_USO[k] || k).toLowerCase() + ' con el ' + up[k] + '%'
+                   : 'el reparto por peso y la mezcla';
+        })() },
+      { id: 'donde-esta-la-calle-comercial', t: 'Dónde está la calle comercial', g: 'Lo que hay',
+        listo: !!(st.nucleos && st.nucleos.length),
+        falta: 'no hay comercios agrupados en el área',
+        dato: ((st.nucleos || []).length) + ' núcleos de comercio' },
+      /* La caja sale con los anillos O con el rumbo que concentra: son dos
+         respuestas a la misma pregunta —dónde está lo que hay— y cualquiera
+         de las dos llena la caja sola. Pedir las dos la escondía en sectores
+         con los usos repartidos parejo, que es justo donde el reparto por
+         distancia es lo único que dice algo. */
+      { id: 'como-cambia-al-alejarse', t: 'Cómo cambia al alejarse', g: 'Lo que hay',
+        listo: (st.anillos || []).filter(function (x) { return x.n > 0; }).length >= 2 ||
+               !!(res && res.pois && res.pois.length),
+        falta: 'analizá el sector', dato: 'anillos de distancia y el lado más activo' },
       { id: 'hitos-y-nodos', t: 'Hitos y nodos', g: 'Lo que hay',
         listo: !!(st.hitos && st.hitos.length), falta: 'no hay hitos registrados',
         dato: ((st.hitos || []).length) + ' hitos' },
@@ -8014,6 +8303,14 @@
           var a = res && res.stats && res.stats.ambiente;
           return a ? (a.parques || 0) + ' parques · ' + (a.cuerposAgua || 0) + ' de agua'
                    : 'parques, agua y manchas de verde';
+        })() },
+      { id: 'cobertura-del-suelo', t: 'Cobertura del suelo', g: 'El suelo',
+        listo: !!(S.cobertura && S.cobertura.clases && S.cobertura.clases.length),
+        falta: 'leé la foto satelital',
+        dato: (function () {
+          var c = S.cobertura && S.cobertura.clases;
+          var v = c && c.filter(function (x) { return x.id === 'verde'; })[0];
+          return v ? v.pct + '% de vegetación viva' : 'lo que dice la foto, no el mapeo';
         })() },
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
         falta: 'analizá el sector', dato: 'la carta solar del sitio' },
