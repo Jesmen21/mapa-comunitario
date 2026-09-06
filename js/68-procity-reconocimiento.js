@@ -1984,6 +1984,27 @@
       'El recorrido completo no se dibuja.</p>';
   }
 
+  /* Por dónde pasa, impreso. Va aparte de las rutas y no dentro: aquéllas
+     salen de OpenStreetMap y éstas se calculan cruzando las paradas con las
+     vías con nombre del trazado, así que un sector puede tener lo uno sin lo
+     otro. Y sale aunque no haya ninguna ruta registrada, que es el caso
+     frecuente acá: las paradas sí están mapeadas y las rutas casi nunca. */
+  function porDondeImpreso(res) {
+    var pd = (function () { try { return porDondePasa(res); } catch (e) { return null; } })();
+    if (!pd || !pd.ejes.length) return '';
+    return '<h2>Por dónde pasa el transporte</h2><table>' +
+      pd.ejes.slice(0, 8).map(function (e) {
+        return '<tr><td>' + esc(e.nombre) + '</td><td class="n">' + e.n + ' parada' +
+          (e.n === 1 ? '' : 's') + '</td></tr>';
+      }).join('') + '</table>' +
+      '<p class="pie">Cada una de las ' + pd.total + ' paradas del área se asignó a la vía con ' +
+      'nombre más cercana, hasta 60 m: un paradero se pone en el andén, y más lejos de eso ya es ' +
+      'otra calle.' +
+      (pd.sueltas ? ' ' + pd.sueltas + ' no ' + (pd.sueltas === 1 ? 'cae' : 'caen') +
+        ' cerca de ninguna vía con nombre: ahí hay que ir a mirar en qué calle están.' : '') +
+      '</p>';
+  }
+
   function ubicacionImpresa(ubic) {
     if (!ubic) return '';
     var filas = [['País', ubic.pais], ['Departamento', ubic.departamento], ['Municipio', ubic.ciudad],
@@ -3279,6 +3300,23 @@
       (fl.vidaNocturna ? ' Y sigue viva de noche.' : '') +
       '</p>'
       : '') +
+      /* Por dónde pasa el transporte, también en el papel. Nació en la ficha
+         y se quedó ahí una versión: es una medición nueva, y la regla de la
+         casa es que entra en los dos documentos o en ninguno. Un paradero a
+         seiscientos metros y uno en la esquina cambian el proyecto, y eso hay
+         que poder defenderlo colgado en la pared. */
+      (function () {
+      var pd = porDondePasa(res);
+      if (!pd || !pd.ejes.length) return '';
+      return '<p class="lee">Por dónde pasa el transporte</p>' +
+      pd.ejes.slice(0, 5).map(function (e) {
+      return fila(e.nombre, e.n + ' parada' + (e.n === 1 ? '' : 's'));
+      }).join('') +
+      '<p class="nota">Cada parada se asignó a la vía con nombre más cercana, hasta 60 m: un ' +
+      'paradero se pone en el andén, y más lejos de eso ya es otra calle.' +
+      (pd.sueltas ? ' ' + pd.sueltas + ' no ' + (pd.sueltas === 1 ? 'cae' : 'caen') +
+      ' cerca de ninguna vía con nombre.' : '') + '</p>';
+      })() +
       '<p class="nota">La facilidad para llegar y la exposición al tránsito son índices de 0 a ' +
       '100 armados con la jerarquía de las vías cercanas y su distancia. El flujo es una ' +
       'estimación a partir de los usos y de los corredores, no un aforo.</p>';
@@ -4733,6 +4771,7 @@
       determinantesImpresas(st) +
       sintesisImpresa(res) +
       rutasImpresas(st) +
+      porDondeImpreso(res) +
       solImpreso(meta) +
       hitosImpresos(st) +
       coberturaImpresa(o.cobertura !== undefined ? o.cobertura : S.cobertura) +

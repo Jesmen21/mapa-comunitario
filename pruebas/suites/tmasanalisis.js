@@ -544,7 +544,12 @@ const CAPAS_IDEAM = [
     ['la calle comercial', /Dónde está la calle comercial/, /Dónde está la calle comercial/],
     ['cómo cambia al alejarse', /Cómo cambia al alejarse/, /Cómo cambia al alejarse/],
     ['dónde se concentra', /Es el lado más activo/, /Es el lado más activo/],
-    ['la cobertura del suelo', /<h2>Cobertura del suelo<\/h2>/, /<h2>Cobertura del suelo \(foto satelital\)<\/h2>/]
+    ['la cobertura del suelo', /<h2>Cobertura del suelo<\/h2>/, /<h2>Cobertura del suelo \(foto satelital\)<\/h2>/],
+    /* La de v748. Nació en la ficha y se quedó ahí una versión entera: es una
+       medición nueva y la regla es la misma de siempre. Un paradero a
+       seiscientos metros y uno en la esquina cambian el proyecto, y eso hay
+       que poder defenderlo colgado en la pared. */
+    ['por dónde pasa el transporte', /Por dónde pasa el transporte/, /Por dónde pasa el transporte/]
   ];
   EN_LOS_DOS.forEach(([nombre, enPliego, enInforme]) => {
     const p1 = enPliego.test(LAM), p2 = enInforme.test(PDF);
