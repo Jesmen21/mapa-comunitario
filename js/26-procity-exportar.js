@@ -427,6 +427,11 @@
     const FICHA_KML = [
       ['materialidad',   'Material'],
       ['pisos',          'Pisos'],
+      // Qué hay en cada planta, y si el edificio mezcla usos. Es lo que
+      // distingue una torre de oficinas de una con local abajo, y hasta acá
+      // se quedaba dentro de la aplicación.
+      ['usos_por_piso',  'Piso por piso'],
+      ['mixto',          'Uso mixto'],
       ['planta_baja',    'A nivel de calle'],
       ['epoca',          'Época'],
       ['vulnerabilidad', 'Vulnerabilidad potencial'],
@@ -717,6 +722,15 @@
     const capas = [['AREA_ANALISIS', 5]];
     const anota = (n, c) => { if (!capas.some(x => x[0] === n)) capas.push([n, c]); };
     d.puntos.forEach(p => anota('PTS_' + p.gid.toUpperCase(), ACI[p.gid] || 7));
+    /* Y una capa por altura, con su color: apagando el resto queda el mapa de
+       lo alto del sector, que es como se mira un plano en CAD. Se declaran
+       acá, con las demás, y no al dibujar: una capa que solo existe porque
+       una entidad la nombra se abre sin color y sin sitio en la lista. */
+    const capaAltura = n => n >= 4 ? 'PTS_ALTURA_4MAS' : 'PTS_ALTURA_' + n;
+    d.puntos.forEach(function (p) {
+      const n = Number(p.pisos) || 0;
+      if (n > 0) anota(capaAltura(n), n >= 4 ? 1 : (n >= 3 ? 30 : 5));
+    });
     d.cobertura.forEach(c => anota('COBERTURA_' + c.clase.toUpperCase(), ACI_CLASE[c.clase] || 7));
     if (d.geo) anota('GEOMETRIA_' + d.geo.tipo.toUpperCase(), 1);
     anota('URBIS_INFO', 7);
@@ -764,11 +778,30 @@
     }
 
     // Cada punto mapeado, en la capa de su categoría, con su nombre al lado.
+    /* Cada punto mapeado, en la capa de su categoría, con su rótulo al lado.
+       El DXF no tiene tabla de atributos —un POINT es un punto y nada más—,
+       así que lo que se sabe del edificio viaja en el TEXTO: los pisos y, si
+       mezcla usos, la palabra. Es lo único que un plano de AutoCAD puede
+       leer sin abrir otra cosa.
+
+       Y los edificios contados van además a su propia capa por altura, que
+       es como se trabaja en CAD: se apaga todo menos PTS_ALTURA_4MAS y queda
+       el mapa de lo alto del sector. */
     d.puntos.forEach(function (p) {
       const q = proj(p), capa = 'PTS_' + p.gid.toUpperCase();
+      const pisos = Number(p.pisos) || 0;
       s += par(0,'POINT') + par(8, capa) + par(10, q.x.toFixed(3)) + par(20, q.y.toFixed(3)) + par(30, 0);
+      const rotulo = String(p.nombre).slice(0, 60) +
+        (pisos > 0 ? ' · ' + pisos + 'p' : '') +
+        (p.mixto === 'si' ? ' · mixto' : '');
       s += par(0,'TEXT') + par(8, capa) + par(10, (q.x + 1.5).toFixed(3)) + par(20, q.y.toFixed(3)) +
-           par(30, 0) + par(40, 2.5) + par(1, String(p.nombre).slice(0, 60));
+           par(30, 0) + par(40, 2.5) + par(1, rotulo);
+      // El mismo punto, repetido en su capa de altura: en CAD una entidad
+      // vive en una sola capa, así que aislar «lo alto» pide su propia copia.
+      if (pisos > 0) {
+        s += par(0,'POINT') + par(8, capaAltura(pisos)) +
+             par(10, q.x.toFixed(3)) + par(20, q.y.toFixed(3)) + par(30, 0);
+      }
     });
 
     // Un texto con el sistema de coordenadas, dentro del propio dibujo: el DXF
@@ -823,6 +856,11 @@
       const props = { capa:'puntos', nombre:p.nombre, categoria:p.grupo, gid:p.gid };
       ['materialidad','pisos','planta_baja','frente_activo','epoca','vulnerabilidad',
        'usos','n_usos',
+       /* El edificio piso por piso. Se calculaban en `puntosProCityDentro` y
+          se perdían acá: esta lista es blanca, y lo que no está en ella no
+          llega al archivo. Un levantamiento de plantas que no sale del
+          teléfono no le sirve a nadie. */
+       'usos_por_piso','mixto',
        // Y los del reconocimiento, que es lo que permite filtrar por rubro o
        // por distancia en QGIS sin volver a la aplicación.
        'uso','dist_m','fuente'].forEach(function (k) {
@@ -908,8 +946,11 @@
         d.puntos.map(function (p) {
           const col = (d.colores && d.colores[p.gid]) ||
                       (ctx && ctx.colorGrupo && ctx.colorGrupo[p.gid]) || '#6b70e0';
+          const detalle = (Number(p.pisos) > 0 ? ' · ' + p.pisos + ' pisos' : '') +
+                          (p.mixto === 'si' ? ' · mixto' : '') +
+                          (p.usos_por_piso ? ' · ' + p.usos_por_piso : '');
           return '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="1.6" fill="' + col + '">' +
-                 '<title>' + esc(p.nombre + ' · ' + p.grupo) + '</title></circle>';
+                 '<title>' + esc(p.nombre + ' · ' + p.grupo + detalle) + '</title></circle>';
         }).join('') + '</g>';
     }
 
@@ -991,6 +1032,17 @@
       'Superficie: ' + ha + ' ha (' + Math.round(d.areaM2).toLocaleString('es-CO') + ' m²)',
       'Perímetro: ' + Math.round(d.perimetroM) + ' m',
       'Puntos mapeados: ' + d.puntos.length,
+      /* Lo levantado piso por piso, dicho en el propio paquete: quien abre
+         esto en una oficina no estuvo en la calle y no tiene por qué saber
+         que el archivo trae las plantas. */
+      (function () {
+        const con = d.puntos.filter(p => Number(p.pisos) > 0);
+        if (!con.length) return 'Edificios con pisos contados: ninguno';
+        const mix = con.filter(p => p.mixto === 'si').length;
+        const plantas = con.reduce((n, p) => n + Number(p.pisos), 0);
+        return 'Edificios con pisos contados: ' + con.length + ' · ' + plantas +
+               ' plantas' + (mix ? ' · ' + mix + ' de uso mixto' : '');
+      })(),
       d.geo ? 'Geometría: ' + d.geo.nombre + ' sobre ' + d.geo.filtro : 'Geometría: ninguna activa',
       d.cobertura.length ? 'Cobertura: ' + d.cobertura.length + ' polígonos vectorizados'
                          : 'Cobertura: no se analizó',
@@ -1004,6 +1056,12 @@
       '                clavadas sobre el terreno (nacen apagadas).',
       '',
       'cad/area.dxf    AutoCAD y afines. TODO en vectores, por capas, en metros.',
+      '                Cada punto lleva su rótulo con los pisos («· 5p») y la',
+      '                palabra «mixto» si mezcla usos entre plantas; el DXF no',
+      '                tiene tabla de atributos, así que el texto es donde cabe.',
+      '                Los edificios contados van repetidos en capas por altura',
+      '                (PTS_ALTURA_1 … PTS_ALTURA_4MAS): apagando el resto queda',
+      '                el mapa de lo alto del sector.',
       '                Coordenadas UTM zona ' + proj.zona + proj.hemisferio + ' WGS84 — EPSG:' + proj.epsg + '.',
       '                Al abrirlo, 1 unidad = 1 metro y el dibujo cae en su sitio',
       '                real del mundo, así que se le puede superponer cartografía',
@@ -1017,6 +1075,10 @@
       'area.geojson    QGIS, ArcGIS, Python, web. WGS84 (CRS84). Cada elemento',
       '                lleva sus atributos: clase de cobertura, área en m²,',
       '                categoría del punto, filtro con que se generó la geometría.',
+      '                De cada edificio levantado en campo: material, época,',
+      '                pisos, qué hay en cada planta (usos_por_piso) y si es',
+      '                mixto. Con eso se puede pintar el sector por altura o por',
+      '                mezcla de usos sin volver a la aplicación.',
       '',
       'satelital.png   La foto que se clasificó, ya sin velo de bruma.',
       'satelital.pgw   Su archivo de mundo EN GRADOS: arrastra el PNG a QGIS y cae',
