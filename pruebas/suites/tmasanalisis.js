@@ -550,6 +550,23 @@ const CAPAS_IDEAM = [
       'pliego: ' + (p1 ? 'sí' : 'NO') + ' · informe: ' + (p2 ? 'sí' : 'NO'));
   });
 
+  /* ── Las redes, en todo lo que se imprime ───────────────────────────
+     Un pliego colgado en una entrega lo mira gente que no sabe de dónde
+     salió. La cuenta va al pie de los dos documentos, y en un solo lugar del
+     código: el día que cambie no puede quedar un PDF viejo mandando a un
+     perfil que ya no existe. */
+  console.log('\n  -- las redes de URBIS, al pie --');
+  T('el pliego las lleva', /@urbis_co/.test(LAM),
+    (LAM.match(/Instagram y TikTok @urbis_co/) || ['no están'])[0]);
+  T('y van en el pie, no perdidas en una caja',
+    /<footer class="pie">[^]*@urbis_co[^]*<\/footer>/.test(LAM.replace(/\n/g, '')));
+  T('a la derecha, con las fuentes', /text-align:right"[^]*?@urbis_co/.test(LAM.replace(/\n/g, '')));
+  T('el informe en hojas también', /@urbis_co/.test(PDF),
+    (PDF.match(/class="redes">[^<]*/) || ['no están'])[0]);
+  T('y las dos dicen exactamente lo mismo',
+    (LAM.match(/Instagram y TikTok @urbis_co/g) || []).length === 1 &&
+    (PDF.match(/Instagram y TikTok @urbis_co/g) || []).length === 1);
+
   console.log('\n  -- y todo viaja con la ficha --');
   T('la inundación queda archivada', (r.guardado || {}).inundacion === true);
   T('y el flujo también', (r.guardado || {}).flujo === true,

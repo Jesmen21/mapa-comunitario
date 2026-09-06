@@ -2198,6 +2198,13 @@
     return true;
   }
 
+  /* Las redes de URBIS, para el pie de todo lo que se imprime. Van acá y no
+     escritas cuatro veces: el día que cambie una cuenta se cambia una línea y
+     no se queda un documento viejo mandando a un perfil que ya no existe.
+     Instagram y TikTok llevan el mismo nombre, así que se dice una sola vez
+     en vez de repetir la arroba. */
+  var REDES_URBIS = 'Instagram y TikTok @urbis_co';
+
   function laminaImprimible(res, opts) {
     var o = opts || {};
     /* Las cajas apagadas viajan por `opts` para que una ficha guardada se
@@ -3844,7 +3851,23 @@
       });
       var salida = filas.map(function (f) {
         return '<div class="fila">' + f.bandas.map(function (bd) {
-          var cols = Math.min(bd.peso, ANCHO_FILA);
+          /* Cuántas columnas tiene la banda por dentro. Lo normal es una por
+             caja, hasta lo que la banda ocupe de la fila.
+
+             Cuando NO caben en un renglón, las columnas se reparten para que
+             los renglones queden parejos en vez de dejar el último casi
+             vacío. Llegó mirando el pliego parado de v739: el análisis
+             ambiental pasó a siete cajas para seis columnas, así que la
+             séptima —la cobertura del suelo— se caía sola al renglón de
+             abajo con cinco columnas de blanco al lado. Siete en dos
+             renglones no son seis y una: son cuatro y tres, y de paso cada
+             caja queda más ancha, que es donde el texto deja de partirse. */
+          var enFila = Math.min(bd.peso, ANCHO_FILA);
+          var cols = enFila;
+          if (bd.cajas.length > enFila) {
+            var renglones = Math.ceil(bd.cajas.length / enFila);
+            cols = Math.ceil(bd.cajas.length / renglones);
+          }
           return '<div class="banda banda-' + bd.g.id + (bd.cajas.length === 1 ? ' sola' : '') +
               '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
             '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
@@ -4267,6 +4290,7 @@
       '.pie{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
         'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
       '.pie b{ color:#075E88 }' +
+      '.pie .redes{ display:block; margin-top:1.5mm; font-size:3.1mm; letter-spacing:.04em }' +
       '</style></head><body><div class="hoja">' +
 
       '<header class="cab">' +
@@ -4291,7 +4315,8 @@
         '<div style="max-width:120mm;text-align:right">Usos y vías de OpenStreetMap · población del DANE' +
           (ter ? ' · relieve ' + esc(ter.fuente || '') : '') +
           (cli ? ' · clima ' + esc(cli.fuente || '') : '') +
-          '. Esto no es el sector: es lo que estas fuentes saben de él.</div>' +
+          '. Esto no es el sector: es lo que estas fuentes saben de él.' +
+          '<b class="redes">' + esc(REDES_URBIS) + '</b></div>' +
       '</footer>' +
       '</div></body></html>';
   }
@@ -4353,6 +4378,10 @@
       'table.plan em{color:#5a6472;font-style:normal;font-size:11.5px}' +
       '.cob{display:flex;height:12px;border-radius:3px;overflow:hidden;max-width:340px;margin:2px 0 8px}' +
       '.cob i{display:block;height:100%}' +
+      /* Las redes, al pie: a la derecha y separadas por una raya fina, para
+         que se lean como firma y no como una línea más del informe. */
+      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
+        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
       '.pie{color:#5a6472;font-size:11px;margin:5px 0 0}' +
       /* Dos de las tablas nuevas llevan tres columnas —los núcleos, los
          anillos— y a 340 mm la última quedaba partida en dos renglones. */
@@ -4500,6 +4529,7 @@
       '<p class="nota"><b>Esto no es el sector: es lo que OpenStreetMap sabe del sector.</b> ' +
       'Los datos los pone gente voluntaria, así que están incompletos y a veces desactualizados. ' +
       'Sirve para llegar con una idea formada, no para reemplazar la salida a campo.</p>' +
+      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
       '</body></html>';
   }
 
@@ -10211,6 +10241,10 @@
       'th,td{border-bottom:1px solid #E3EAF0;padding:6px 8px;text-align:left}' +
       'thead th{background:#F3F8FB;color:#0A6F9E;font-size:11px;text-transform:uppercase;letter-spacing:.08em}' +
       'td.n{text-align:right;font-variant-numeric:tabular-nums}' +
+      /* Las redes, al pie: a la derecha y separadas por una raya fina, para
+         que se lean como firma y no como una línea más del informe. */
+      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
+        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
       'p.pie{color:#6B7A8A;margin-top:14px;font-size:11px}' +
       '</style></head><body>' +
       '<h1>Sectores lado a lado</h1>' +
@@ -10220,7 +10254,9 @@
       '</tr></thead><tbody>' + filas + '</tbody></table>' +
       '<p class="pie">La raya es <b>sin dato</b>, no cero: ese sector no midió eso. En densidad, ' +
       'suelo construido y relación altura/ancho no hay un mejor: depende de qué se quiera del ' +
-      'sector.</p></body></html>';
+      'sector.</p>' +
+      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
+      '</body></html>';
   }
 
 
@@ -15649,6 +15685,10 @@
       '.check li:before{content:"☐  ";color:#9aa7b4}' +
       '.nota{margin-top:24px;padding:10px 12px;background:#f4f7fa;border:1px solid #e2e8f0;' +
         'border-radius:6px;font-size:11.5px;color:#4a5568}' +
+      /* Las redes, al pie: a la derecha y separadas por una raya fina, para
+         que se lean como firma y no como una línea más del informe. */
+      '.redes{text-align:right;margin-top:18px;padding-top:8px;border-top:1px solid #c7e7f7;' +
+        'color:#075E88;font-size:11px;letter-spacing:.04em}' +
       '</style></head><body>' +
       '<h1>Antes y después' + (f.nombre ? ' · ' + esc(f.nombre) : '') + '</h1>' +
       '<p class="sub">URBIS Pro City · ' + esc(new Date().toLocaleString('es-CO')) +
@@ -15680,6 +15720,7 @@
       '<p class="nota"><b>Qué enseña este cuadro.</b> Ninguna de las dos listas es «la verdad». ' +
       'OpenStreetMap tiene lo que alguien alguna vez mapeó; el curso tiene lo que alcanzó a caminar. ' +
       'La diferencia entre las dos es, precisamente, el valor del trabajo de campo.</p>' +
+      '<p class="redes">URBIS · urbispro.city · ' + esc(REDES_URBIS) + '</p>' +
       '</body></html>';
   }
 

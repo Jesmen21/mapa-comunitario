@@ -231,6 +231,30 @@ const geo = [
       })();
       return {
         ancho: hoja.clientWidth, papel: hoja.clientHeight, pide: pide, escala: esc,
+        /* La rejilla de cada banda: columnas, renglones y cuántas de esas
+           celdas ocupa de verdad su contenido. No alcanza con contar cajas:
+           el plano vale por varias columnas y la síntesis por la fila
+           entera, así que lo que se mide es el ANCHO de cada caja en
+           columnas —redondeando sobre el ancho de la primera pista y el
+           hueco entre ellas—, que es lo mismo que hace el navegador. */
+        bandas: [...document.querySelectorAll('.banda')].map(b => {
+          const cuerpo = b.querySelector('.bcuerpo'), cs = getComputedStyle(cuerpo);
+          const pistas = cs.gridTemplateColumns.split(/\s+/).filter(Boolean).map(parseFloat);
+          const hueco = parseFloat(cs.columnGap) || 0;
+          const unidad = (pistas[0] || 1) + hueco;
+          const cajas = [...cuerpo.querySelectorAll(':scope > section.caja')];
+          return { t: ((b.querySelector('h3') || {}).textContent || '?'),
+            n: cajas.length,
+            cols: pistas.length,
+            renglones: cs.gridTemplateRows.split(/\s+/).filter(Boolean).length,
+            /* `offsetWidth` y NO `getBoundingClientRect`: la rejilla va con un
+               `transform: scale()` para que la hoja cierre, y el rectángulo
+               lo cuenta mientras que las pistas de la grilla vienen sin
+               escalar. Mezclarlos daba anchos multiplicados por la escala y
+               la síntesis, que ocupa la fila entera, medía tres columnas. */
+            ocupa: cajas.reduce((a, c) => a +
+              Math.max(1, Math.round((c.offsetWidth + hueco) / unidad)), 0) };
+        }),
         recortadas: [...document.querySelectorAll('.caja')]
           .filter(c => c.scrollHeight > c.clientHeight + 2)
           .map(c => ((c.querySelector('h2') || {}).textContent || '?')),
@@ -280,6 +304,23 @@ const geo = [
     /* La hoja no crece y el contenido de un sector bien trabajado se pasa:
        se compone más chica hasta cerrar, y lo que se comprueba es que CIERRE.
        Se mide la rejilla ya reducida, no el tamaño sin reducir. */
+    /* Los renglones de cada banda, parejos. Una banda con siete cajas para
+       seis columnas dejaba la séptima sola con cinco columnas de blanco al
+       lado —le pasó a «Cobertura del suelo» en el pliego parado de v739, y
+       se ve de lejos en una lámina de 60 × 90—. Repartidas en cuatro y tres
+       no sobra casi nada, y la regla que lo dice es aritmética: si las
+       columnas se eligen como `ceil(cajas / renglones)`, las celdas que
+       quedan vacías son SIEMPRE menos que los renglones. Cualquier reparto
+       que deje más huecos que renglones es un renglón desbalanceado. */
+    const flojas = (o.bandas || [])
+      .map(b => Object.assign({ huecos: b.cols * b.renglones - b.ocupa }, b))
+      .filter(b => b.huecos >= b.renglones);
+    T('ninguna banda deja un renglón casi vacío',
+      flojas.length === 0,
+      flojas.map(b => b.t + ' (' + b.n + ' cajas ocupan ' + b.ocupa + ' de ' +
+        (b.cols * b.renglones) + ' celdas · ' + b.huecos + ' huecos en ' +
+        b.renglones + ' renglones)').join(' · ') || 'todas parejas');
+
     T('el contenido cabe en la hoja, no la desborda',
       o.pide <= o.papel + 2, (o.pide <= o.papel + 2
         ? 'sobran ' + mm(o.papel - o.pide) + ' mm'
