@@ -320,23 +320,26 @@ const geo=[
      no el mapa oficial de amenaza. */
   console.log('\n  -- movimientos en masa, por la pendiente del terreno --');
   const MASA = cajaLam('Susceptibilidad por pendiente');
-  const celdasDe = c => (MASA.match(new RegExp('fill="' + c + '"', 'g')) || []).length;
   T('el pliego trae el mapa de susceptibilidad por pendiente', !!MASA);
-  T('con las celdas en los rangos medio y alto, no en «baja»',
-    celdasDe('#F6E27F') + celdasDe('#F59E0B') >= 20 && celdasDe('#D9F2E3') === 0,
-    'baja ' + celdasDe('#D9F2E3') + ' · media ' + celdasDe('#F6E27F') + ' · alta ' + celdasDe('#F59E0B') +
-    ' · muy alta ' + celdasDe('#B91C1C'));
+  /* Píxel a píxel, no una celda por cota: el mapa es un raster dentro del
+     recuadro —como el de cobertura— y lo que dice cada rango se lee de su
+     tabla de convenciones, que sale del mismo reparto que pintó la imagen. */
+  T('pintado píxel a píxel, como raster, y no una celda por cota',
+    /<image href="data:image\/png/.test(MASA) && !/fill="#(D9F2E3|F6E27F|F59E0B|B91C1C)"/.test(MASA));
+  const conv = (MASA.match(/(Baja|Media|Alta|Muy alta) · [^·]* · \d+(\.\d)?%<\/span>/g) || [])
+    .map(x => ({ r: x.split(' · ')[0], pct: parseFloat(x.split(' · ')[2]) }));
+  const pctDe = q => (conv.filter(c => c.r === q)[0] || { pct: 0 }).pct;
+  T('en los rangos medio y alto, no en «baja»',
+    pctDe('Media') + pctDe('Alta') >= 99 && pctDe('Baja') === 0 && pctDe('Muy alta') === 0,
+    conv.map(c => c.r + ' ' + c.pct + '%').join(' · ') || 'sin tabla');
   /* Las convenciones nombran solo los rangos que el dibujo pinta —en esta
      rampa, medio y alto— y cada uno con su porcentaje. Una entrada «Baja»
-     con 0 % mandaría a buscar un verde que no está. */
-  const rangosConv = (MASA.match(/(Baja|Media|Alta|Muy alta) · [^·]* · \d+%<\/span>/g) || [])
-    .map(x => x.split(' · ')[0]);
-  /* La rampa es pareja —15 % en todas partes—, así que cae entera en «Alta»
-     y la tabla trae esa sola entrada: la que está pintada. */
+     con 0 % mandaría a buscar un verde que no está; y entre todas tienen que
+     sumar el sector entero. */
   T('con los rangos que pinta, cada uno con su porcentaje, y sin nombrar los que no pinta',
-    rangosConv.length >= 1 && rangosConv.indexOf('Baja') < 0 && rangosConv.indexOf('Alta') >= 0 &&
-    rangosConv.length === new Set(MASA.match(/fill="#(D9F2E3|F6E27F|F59E0B|B91C1C)"/g) || []).size,
-    rangosConv.join(' | ') || 'sin tabla');
+    conv.length >= 1 && conv.every(c => c.pct > 0) && conv.some(c => c.r === 'Alta') &&
+    conv.reduce((a, c) => a + c.pct, 0) >= 99.5 && conv.reduce((a, c) => a + c.pct, 0) <= 100.5,
+    conv.map(c => c.r + ' ' + c.pct + '%').join(' | ') || 'sin tabla');
   T('y dice que no es el mapa oficial de amenaza', /no es el mapa oficial de amenaza/.test(MASA));
   T('el informe en hojas lo trae también', /<figcaption>Susceptibilidad por pendiente<\/figcaption>/.test(r.pdf || ''));
 

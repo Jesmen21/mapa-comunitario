@@ -2495,37 +2495,78 @@
     { id: 'alta',    etq: 'Alta',     rango: '15 a 30 %', hasta: 30,      color: '#F59E0B' },
     { id: 'muyalta', etq: 'Muy alta', rango: '> 30 %',   hasta: Infinity, color: '#B91C1C' }
   ];
-  function susceptibilidadPendiente(R) {
+  /* La pendiente, píxel a píxel. La rejilla de cotas tiene 18 × 18 puntos
+     —una cota cada cincuenta metros en un sector de un kilómetro— y el mapa
+     se pintaba una celda por punto: dieciocho bloques de lado, «píxeles» de
+     medio centímetro en el papel que no dejaban ver por dónde baja el agua.
+     Se pidió así: «los píxeles de la pendiente, más finos».
+
+     La pendiente se sigue calculando en cada cota, como antes —diferencias
+     centradas con las cuatro vecinas—; lo que cambia es que entre una cota y
+     la siguiente ya no hay un escalón sino una transición: el valor se
+     interpola bilineal entre las cuatro cotas que rodean cada píxel y ahí se
+     clasifica. Las franjas de cada rango salen con su forma —curvas donde la
+     ladera cambia de a poco— y no en bloques. Los datos no son más que los
+     que son; lo que deja de hacer el dibujo es inventar un borde recto donde
+     no lo hay. El reparto de porcentajes se cuenta sobre los mismos píxeles,
+     para que el mapa y sus números sean la misma cosa. */
+  function rasterDePendiente(R, px) {
     if (!R || !R.limites || !R.z || R.filas < 3 || R.columnas < 3) return null;
     var L = R.limites, F = R.filas, C = R.columnas;
-    var dLat = (L.maxLat - L.minLat) / (F - 1), dLng = (L.maxLng - L.minLng) / (C - 1);
     var latM = (L.maxLat + L.minLat) / 2;
-    var pasoY = dLat * 110540, pasoX = dLng * 111320 * Math.cos(latM * Math.PI / 180);
+    var anchoM = (L.maxLng - L.minLng) * 111320 * Math.cos(latM * Math.PI / 180);
+    var altoM = (L.maxLat - L.minLat) * 110540;
+    if (!(anchoM > 0) || !(altoM > 0)) return null;
+    var pasoX = anchoM / (C - 1), pasoY = altoM / (F - 1);
     var z = function (f, c) { var v = R.z[f * C + c]; return v == null ? null : Number(v); };
-    var celdas = [], cuenta = { baja: 0, media: 0, alta: 0, muyalta: 0 }, n = 0;
+    // La pendiente en cada cota, en por ciento; null donde falta una vecina.
+    var sN = new Array(F * C);
     for (var f = 0; f < F; f++) {
       for (var c = 0; c < C; c++) {
-        var z0 = z(f, c); if (z0 == null) continue;
+        var z0 = z(f, c);
         var zn = z(Math.max(0, f - 1), c), zs = z(Math.min(F - 1, f + 1), c);
         var zo = z(f, Math.max(0, c - 1)), ze = z(f, Math.min(C - 1, c + 1));
-        if (zn == null || zs == null || zo == null || ze == null) continue;
+        if (z0 == null || zn == null || zs == null || zo == null || ze == null) { sN[f * C + c] = null; continue; }
         var dzdy = (zn - zs) / (pasoY * (f === 0 || f === F - 1 ? 1 : 2));
         var dzdx = (ze - zo) / (pasoX * (c === 0 || c === C - 1 ? 1 : 2));
-        var pend = Math.sqrt(dzdx * dzdx + dzdy * dzdy) * 100;
-        var r2 = RANGOS_PENDIENTE.filter(function (x) { return pend < x.hasta; })[0] ||
-                 RANGOS_PENDIENTE[RANGOS_PENDIENTE.length - 1];
-        cuenta[r2.id]++; n++;
-        var lat0 = L.maxLat - dLat * (f - 0.5), lat1 = L.maxLat - dLat * (f + 0.5);
-        var lng0 = L.minLng + dLng * (c - 0.5), lng1 = L.minLng + dLng * (c + 0.5);
-        celdas.push({ pts: [{ lat: lat0, lng: lng0 }, { lat: lat0, lng: lng1 },
-                            { lat: lat1, lng: lng1 }, { lat: lat1, lng: lng0 }],
-                      color: r2.color, rango: r2.id, pendiente: Math.round(pend * 10) / 10 });
+        sN[f * C + c] = Math.sqrt(dzdx * dzdx + dzdy * dzdy) * 100;
+      }
+    }
+    var W = px || 240, H = Math.max(2, Math.round(W * altoM / anchoM));
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    var cx = cv.getContext('2d');
+    var im = cx.createImageData(W, H), d = im.data;
+    var RGB = {};
+    RANGOS_PENDIENTE.forEach(function (r2) {
+      RGB[r2.id] = [parseInt(r2.color.slice(1, 3), 16), parseInt(r2.color.slice(3, 5), 16),
+                    parseInt(r2.color.slice(5, 7), 16)];
+    });
+    var cuenta = { baja: 0, media: 0, alta: 0, muyalta: 0 }, n = 0;
+    for (var j = 0; j < H; j++) {
+      // La fila 0 de la rejilla es el norte (maxLat): arriba del raster.
+      var fy = (j + 0.5) / H * (F - 1), f0 = Math.min(F - 2, Math.floor(fy)), ty = fy - f0;
+      for (var i = 0; i < W; i++) {
+        var fx = (i + 0.5) / W * (C - 1), c0 = Math.min(C - 2, Math.floor(fx)), tx = fx - c0;
+        var k = (j * W + i) * 4;
+        var s00 = sN[f0 * C + c0], s01 = sN[f0 * C + c0 + 1];
+        var s10 = sN[(f0 + 1) * C + c0], s11 = sN[(f0 + 1) * C + c0 + 1];
+        if (s00 == null || s01 == null || s10 == null || s11 == null) { d[k + 3] = 0; continue; }
+        var pend = (1 - ty) * ((1 - tx) * s00 + tx * s01) + ty * ((1 - tx) * s10 + tx * s11);
+        var id = pend < 7 ? 'baja' : pend < 15 ? 'media' : pend < 30 ? 'alta' : 'muyalta';
+        cuenta[id]++; n++;
+        var rgb = RGB[id];
+        d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = 255;
       }
     }
     if (!n) return null;
+    cx.putImageData(im, 0, 0);
     var reparto = {};
-    Object.keys(cuenta).forEach(function (k) { reparto[k] = Math.round(1000 * cuenta[k] / n) / 10; });
-    return { celdas: celdas, reparto: reparto, n: n };
+    Object.keys(cuenta).forEach(function (k2) { reparto[k2] = Math.round(1000 * cuenta[k2] / n) / 10; });
+    return { url: cv.toDataURL('image/png'), ancho: W, alto: H,
+             limites: [[L.minLat, L.minLng], [L.maxLat, L.maxLng]],
+             reparto: reparto, n: n,
+             rangos: RANGOS_PENDIENTE.filter(function (r2) { return cuenta[r2.id] > 0; })
+               .map(function (r2) { return r2.id; }) };
   }
 
   /* El color de cada tipo de uso del suelo —vivienda, comercio, institucional…—
@@ -10266,15 +10307,14 @@ function donaHTML(datos, colorDe, nombreDe) {
        por pendiente, no amenaza calificada— para no vestir de dato oficial
        un cálculo del sitio. */
     var RJ = o.terrenoRejilla !== undefined ? o.terrenoRejilla : S.terRejilla;
-    var susc = (function () { try { return susceptibilidadPendiente(RJ); } catch (e) { return null; } })();
-    if (susc && susc.celdas.length) {
+    var susc = (function () { try { return rasterDePendiente(RJ, 240); } catch (e) { return null; } })();
+    if (susc && susc.n) {
       mapas.push({
         id: 'masa', titulo: 'Susceptibilidad por pendiente', grupo: grupoDeMapa('masa'),
-        svg: mini({ poligonos: susc.celdas.map(function (c) {
-          return { pts: c.pts, relleno: c.color, opacidad: 0.78, borde: 'none' };
-        }) }),
+        // Un raster y no una celda por cota: ver `rasterDePendiente`.
+        svg: mini({ imagen: { url: susc.url, limites: susc.limites, opacidad: 0.78 } }),
         conv: RANGOS_PENDIENTE.filter(function (r2) {
-          return susc.celdas.some(function (c) { return c.rango === r2.id; });
+          return susc.rangos.indexOf(r2.id) >= 0;
         }).map(function (r2) {
           var q = susc.reparto[r2.id] || 0;
           return { c: r2.color, t: r2.etq + ' · ' + r2.rango + ' · ' + q + '%', f: 'area' };
@@ -19937,6 +19977,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Cuántas huellas trajo el trazado: para comprobar que un multipolígono
     // entra con sus anillos sin contar rayas del mapa que no son huellas.
     huellasDePrueba: function () { return (S.trzHuellas || []).length; },
+    // La pendiente píxel a píxel, sobre una rejilla cualquiera: para poder
+    // comprobar el reparto contra una superficie de la que se sabe la respuesta.
+    rasterDePendiente: rasterDePendiente,
     // Bajar la hoja por el mismo camino que el dedo, para poder comprobar que
     // con la hoja abajo el círculo del sector analizado no sigue al mapa.
     encogerDePrueba: function () { alternarHoja(true); },

@@ -232,6 +232,41 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     o.letrasTrasQuitar = document.querySelectorAll('.pcr-corte-letra').length;
     function S_cortesPuestos(){ return document.querySelectorAll('.pcr-corte-letra').length>0; }
 
+    /* ── La pendiente, píxel a píxel ─────────────────────────────────
+       «Los píxeles de la pendiente, más finos.» Se comprueba contra una
+       superficie de la que se sabe la respuesta: un cuenco z = k·r², cuya
+       pendiente es 2k·r y cuyas franjas son círculos. La referencia es la
+       pendiente verdadera en una malla fina; el raster tiene que darle a
+       cada rango su área, cosa que dieciocho celdas por lado no podían. */
+    o.cuenco = (function () {
+      const F = 18, Cc = 18;
+      const kx = 1 / (111320 * Math.cos(C.lat * Math.PI / 180)), ky = 1 / 110540;
+      const lim = { minLat: C.lat - 500 * ky, maxLat: C.lat + 500 * ky, minLng: C.lng - 500 * kx, maxLng: C.lng + 500 * kx };
+      const k = 0.0004, z = [];
+      for (let f = 0; f < F; f++) for (let c = 0; c < Cc; c++) {
+        const y = -500 + 1000 * f / (F - 1), x = -500 + 1000 * c / (Cc - 1);
+        z.push(k * (x * x + y * y));
+      }
+      const ras = R.rasterDePendiente({ filas: F, columnas: Cc, limites: lim, z: z }, 200);
+      const cu = { baja: 0, media: 0, alta: 0, muyalta: 0 }; let n = 0;
+      for (let j = 0; j < 400; j++) for (let i = 0; i < 400; i++) {
+        const x = -500 + 1000 * (i + .5) / 400, y = -500 + 1000 * (j + .5) / 400;
+        const s2 = 2 * k * Math.hypot(x, y) * 100;
+        cu[s2 < 7 ? 'baja' : s2 < 15 ? 'media' : s2 < 30 ? 'alta' : 'muyalta']++; n++;
+      }
+      const ver = {}; Object.keys(cu).forEach(q => { ver[q] = Math.round(1000 * cu[q] / n) / 10; });
+      return ras ? { reparto: ras.reparto, verdad: ver, ancho: ras.ancho, alto: ras.alto,
+                     png: /^data:image\/png/.test(ras.url) } : null;
+    })();
+
+    // Y en el pliego: el mapa de pendiente es ese raster, no celdas.
+    let capturado = ''; window.AIA_INFORME = window.AIA_INFORME || {};
+    window.AIA_INFORME.abrirVentanaImpresion = function (h) { capturado = h; };
+    abrirHoja();
+    const bl = H.querySelector('[data-pcr="lamina-ver"]'); if (bl) { bl.click(); await esperar(1200); }
+    o.lamina = capturado; capturado = '';
+    abrirHoja();
+
     // Guardar y reabrir
     const bg=[...H.querySelectorAll('button')].filter(b=>/Guardar/i.test(b.textContent||''))[0];
     if(bg){ window.prompt=()=>'Sector con ladera'; bg.click(); await esperar(500); }
@@ -363,6 +398,20 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   P('el segundo corte es la D', r.letras2==='CD', r.letras2);
   P('se pueden quitar de a uno, y la letra libre se reutiliza',
     r.letrasTrasBorrar==='D', 'quedó: '+r.letrasTrasBorrar);
+
+  console.log('\n  -- la pendiente, píxel a píxel --');
+  const CU = r.cuenco || {}, rep = CU.reparto || {}, ver = CU.verdad || {};
+  P('el raster sale del tamaño pedido, como PNG',
+    CU.png === true && CU.ancho === 200 && CU.alto >= 195 && CU.alto <= 205, CU.ancho + '×' + CU.alto);
+  P('y le da a cada rango su área, a menos de punto y medio de la verdad',
+    ['baja','media','alta','muyalta'].every(q => Math.abs((rep[q] || 0) - (ver[q] || 0)) <= 1.5),
+    ['baja','media','alta','muyalta'].map(q => q + ' ' + rep[q] + '/' + ver[q]).join(' · '));
+  const secMasa = (r.lamina || '').split('<section class="caja').filter(x => /Susceptibilidad por pendiente/.test(x))[0] || '';
+  P('el pliego trae el mapa de pendiente como raster, no como celdas',
+    /<image href="data:image\/png/.test(secMasa) && (secMasa.match(/<polygon/g) || []).length <= 8,
+    secMasa ? ((secMasa.match(/<polygon/g) || []).length + ' polígonos') : 'no está el mapa');
+  P('y con la ladera del doble, todo el sector en pendiente media',
+    /Media · 7 a 15 % · 100%/.test(secMasa), (secMasa.match(/(Baja|Media|Alta|Muy alta) · [^<]*%/g) || []).join(' · '));
 
   console.log('');
   P('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');
