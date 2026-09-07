@@ -120,6 +120,48 @@ Cinco segundos entre consultas, y lo rechaza sin avisar bonito. Cualquier
 cadena que pida dos cosas seguidas tiene que esperar. En las pruebas eso son
 los `await esperar(5200)` que parecen de más y no lo son.
 
+## El módulo presidencial: qué mueve el veredicto
+
+Lo escribe una rutina diaria y lo lee cualquier sesión, así que las reglas
+van acá y no solo en el texto de la rutina —ese se edita en la web y no
+siempre se puede llegar a él—.
+
+`assets/data/seguimiento-presidencial.json` alimenta una ficha del gobernante
+que **se calcula sola**: no hay veredicto escrito en el JSON, sale de contar.
+Cuatro cuentas ponen cada una un techo y manda el PEOR de los cuatro.
+
+| Cuenta | Qué la baja |
+|---|---|
+| Casos de corrupción confirmados | 1 → «Poco fiable» · 2 → «Nada fiable» |
+| Casos en investigación | 1 → «Dudosa» · 2 → «Poco fiable» |
+| Cambios de postura contados | 1 → «Fiable» · 2 → «Dudosa» · 3+ → «Poco fiable» |
+| Registro verificado por terceros | <85 %, <70 %, <50 %, un peldaño cada vez |
+
+Es decir: **un caso mal clasificado cambia en público el juicio sobre una
+persona real.** De ahí que `casos.lista` tenga cuatro estados y que cada uno
+exija su prueba:
+
+* `confirmado` — fallo, sanción, documento oficial o reconocimiento del
+  implicado, con quién lo confirmó escrito al lado. Si hay duda, no lo es.
+* `en-investigacion` — una autoridad abrió proceso, con radicado o fecha de
+  apertura. Una denuncia radicada que nadie abrió todavía **no** es esto.
+* `senalamiento` — lo dice un medio o un actor político y ninguna autoridad
+  se pronunció. Se ve, con su etiqueta, y no pesa. Es el estado por defecto.
+* `por-documentar` — nombrado sin hecho ni fuente. Ni se pinta ni pesa.
+
+Tres cosas que es fácil hacer mal:
+
+* **Las denuncias del propio Gobierno contra la administración anterior NO
+  son casos suyos.** Van a la línea de tiempo, categoría `corrupcion`.
+  Meterlas en `casos` invierte el sentido del módulo.
+* Un caso que avanza **se actualiza**, no se duplica. Uno que se cae **baja
+  de estado**, no se borra: borrar es esconder.
+* `tipoFuente` vacío no es neutral. Es una de las cuatro cuentas, así que
+  dejarlo en blanco mueve el veredicto igual, solo que sin querer.
+
+`revisar.js` comprueba que los estados sean de los cuatro conocidos y que
+ningún caso que pese vaya sin quién, fecha y fuentes.
+
 ## Las pruebas se aprietan, no se aflojan
 
 Cuando una falla por un cambio legítimo, se hace más precisa: se busca por la
