@@ -34,7 +34,14 @@ const RAIZ = E.RAIZ;
 
   // ── El manifiesto y los iconos, antes de abrir nada ──────────────────
   const man = JSON.parse(fs.readFileSync(path.join(RAIZ, 'manifest-reportes.json'), 'utf8'));
-  chk(/Reportes y Eventos/i.test(man.name), 'el manifiesto se llama por lo que hace: "' + man.name + '"');
+  /* El rótulo del lanzador. Va comprobado como IGUALDAD entre los tres sitios
+     donde aparece, no contra un texto fijo: el nombre puede cambiar cuando el
+     dueño quiera, lo que no puede es cambiar en uno solo. Pasó de camino: el
+     APK se estaba armando con un nombre y el manifiesto declaraba otro, así
+     que la misma app se llamaba distinto según se instalara desde la tienda o
+     desde el navegador. */
+  chk(man.name === man.short_name && man.name === 'URBIS_CO',
+      'el manifiesto y el nombre corto dicen lo mismo: "' + man.name + '" / "' + man.short_name + '"');
   chk(man.scope === '/', 'y su alcance cubre todo el sitio (' + man.scope + ')');
   chk(man.start_url === '/reportes.html', 'pero arranca en la app ligera (' + man.start_url + ')');
   chk(man.display === 'standalone', 'se abre sin barra de navegador');
@@ -100,7 +107,8 @@ const RAIZ = E.RAIZ;
     };
   });
   chk(carcasa.hayMapa && carcasa.hayBoton, 'la app ligera abre con su mapa y su botón de reportar');
-  chk(/Reportes y Eventos/.test(carcasa.titulo), 'y se llama por lo que hace: "' + carcasa.titulo + '"');
+  chk(carcasa.titulo.indexOf(man.short_name) === 0,
+      'y la página abre con ese mismo nombre por delante: "' + carcasa.titulo + '"');
   chk(carcasa.puertas.join(',') === 'mapa,eventos,social,aldia',
       'tiene las cuatro puertas: ' + carcasa.puertas.join(' · '));
   chk(/780|78\d|7[89]\d|\d{3,}/.test(carcasa.version) && !/597/.test(carcasa.version),

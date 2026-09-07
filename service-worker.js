@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v780-una-sola-app-cuatro-puertas';
+const URBIS_CACHE = 'urbis-v781-un-solo-nombre';
 const URBIS_ASSETS = [
   './',
   './index.html',
