@@ -50,6 +50,12 @@ const RAIZ = E.RAIZ;
       (faltan.length ? ': ' + faltan.join(', ') : ' (' + man.icons.length + ')'));
   chk((man.icons || []).some(i => /maskable/.test(i.purpose || '')),
       'hay icono maskable, que es el que Android recorta');
+  /* El de 1024 es el que pide la App Store, y sin él el empaquetador de iOS
+     agranda el de 512: el icono de la tienda sale borroso y Apple lo rechaza
+     por calidad antes de mirar la app. Va en el manifiesto, no suelto, para
+     que PWABuilder lo encuentre solo. */
+  chk((man.icons || []).some(i => String(i.sizes) === '1024x1024'),
+      'y el de 1024, que es el que pide la App Store para iPhone');
   const medida = (rel) => {
     const b = fs.readFileSync(path.join(RAIZ, rel));
     return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
