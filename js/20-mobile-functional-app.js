@@ -5924,6 +5924,42 @@
     iniciarHistorial();
   }
 
+  /* ── Entrar directo a una pantalla ────────────────────────────────────
+     La app ligera de reportes (reportes.html) manda a Eventos y a Social, que
+     viven acá dentro. Sin esto llegaría a la portada y habría que buscar el
+     módulo a mano — y en una app instalada, con su propio icono, eso se siente
+     como si el botón no hubiera hecho nada.
+
+     La dirección se lee como `index.html#/pantalla/events`. Dos cuidados:
+     una pantalla que no existe se ignora en vez de dejar la app en blanco, y
+     mientras la puerta esté puesta —la pantalla de entrada— no se salta a
+     nada: mandar a Social a quien no ha entrado es dejarlo en una pantalla
+     vacía sin saber por qué. Por eso se reintenta un rato: la sesión guardada
+     tarda en resolverse, y el destino se abre cuando ya se puede. */
+  function pantallaPedidaEnLaDireccion(){
+    var m = String(location.hash || '').match(/^#\/pantalla\/([a-z0-9-]+)$/i);
+    return m ? m[1].toLowerCase() : '';
+  }
+  function abrirPantallaPedida(){
+    var pedida = pantallaPedidaEnLaDireccion();
+    if(!pedida) return true;                                  // nada que hacer
+    if(!screens().some(function(s){ return s.dataset.u52Screen === pedida; })) return true;
+    var puerta = app.querySelector('[data-u52-screen="login"]');
+    if(puerta && puerta.classList.contains('active')) return false;   // todavía no
+    show(pedida);
+    return true;
+  }
+  window.urbisIrAPantalla = function(pantalla){
+    try{ show(String(pantalla || 'home')); return true; }catch(e){ return false; }
+  };
+  window.addEventListener('hashchange', abrirPantallaPedida);
+  (function esperarLaPuerta(){
+    var intentos = 0;
+    var t = setInterval(function(){
+      if(abrirPantallaPedida() || ++intentos > 20) clearInterval(t);
+    }, 400);
+  })();
+
   document.addEventListener('DOMContentLoaded', u52RefreshAiaModule);
   setTimeout(u52RefreshAiaModule, 1500); // la sesión/roles pueden cargar tarde
   window.addEventListener('storage', u52RefreshAiaModule);

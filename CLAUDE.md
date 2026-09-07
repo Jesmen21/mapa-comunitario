@@ -25,10 +25,11 @@ Nunca `--force` sobre `main`. Si el empujón se rechaza, se fusiona.
 Se desarrolla en `main-r3g781`. Al terminar, `merge --ff-only` a `main` y se
 suben las dos. Nada de trabajar directo sobre `main`.
 
-## La versión va en cinco archivos
+## La versión va en siete archivos
 
 `service-worker.js`, `index.html` (incluido `window.URBIS_APP_VERSION`),
-`css/main.css`, `analisis-ia.html`, `seguimiento.html`.
+`css/main.css`, `analisis-ia.html`, `seguimiento.html`, y los dos de la app
+ligera: `reportes.html` y `sw-reportes.js`.
 
 Tienen que llevar exactamente el mismo texto. Es lo que rompe la caché del
 navegador: con uno desactualizado, un teléfono se queda con la mitad de la
@@ -37,10 +38,14 @@ cambian de una vez:
 
 ```bash
 sed -i 's/682-lo-que-sea/683-lo-nuevo/g' \
-  service-worker.js index.html css/main.css analisis-ia.html seguimiento.html
+  service-worker.js index.html css/main.css analisis-ia.html seguimiento.html \
+  reportes.html sw-reportes.js
 ```
 
-`node pruebas/revisar.js` comprueba que las cinco coincidan.
+`node pruebas/revisar.js` comprueba que los siete coincidan. Los dos últimos
+entraron en la v780: llevaban desde la 597 congelados, y como la app ligera
+comparte archivos con la grande, pedirlos con una versión vieja rompe las dos
+de maneras distintas.
 
 ## Las pruebas
 

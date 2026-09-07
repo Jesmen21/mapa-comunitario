@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>URBIS Reportes</title>
+<title>URBIS Reportes y Eventos</title>
 <meta name="theme-color" content="#1E7A4B">
-<link rel="manifest" href="manifest-reportes.json?v=597-terremoto-registro">
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+<meta name="description" content="Reporta lo que pasa en tu ciudad, mira los eventos del barrio, la comunidad y qué hace el Gobierno.">
+<link rel="manifest" href="manifest-reportes.json?v=780-una-sola-app-cuatro-puertas">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/reportes/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/reportes/icon-180.png">
 
 <!-- Solo el CSS que el mapa y el formulario necesitan. La app completa importa
      34 hojas; aquí entran tres. -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="css/00-brand-urbis.css?v=597-terremoto-registro">
-<link rel="stylesheet" href="css/01-base-layout.css?v=597-terremoto-registro">
+<link rel="stylesheet" href="css/00-brand-urbis.css?v=780-una-sola-app-cuatro-puertas">
+<link rel="stylesheet" href="css/01-base-layout.css?v=780-una-sola-app-cuatro-puertas">
 
 <style>
 /* ── Carcasa de URBIS Reportes ────────────────────────────────────────────
@@ -30,9 +31,10 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 #rp-nav{ position:fixed; left:0; right:0; bottom:0; height:92px; display:flex;
   background:#fff; border-top:1px solid #dfe7ee; z-index:1200;
   padding-bottom:env(safe-area-inset-bottom); }
-#rp-nav button{ flex:1; border:0; background:none; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:5px; font-size:.82rem;
-  color:#4a5a6a; font-weight:600; cursor:pointer; }
+#rp-nav button{ flex:1; min-width:0; border:0; background:none; display:flex;
+  flex-direction:column; align-items:center; justify-content:center; gap:5px;
+  font-size:.76rem; color:#4a5a6a; font-weight:600; cursor:pointer;
+  padding:0 2px; }
 #rp-nav button b{ font-size:1.6rem; font-weight:400; line-height:1; }
 #rp-nav button.on{ color:#1E7A4B; }
 
@@ -69,7 +71,8 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 <nav id="rp-nav">
   <button type="button" class="on" data-rp="mapa"><b>🗺️</b>Mapa</button>
   <button type="button" data-rp="eventos"><b>🎪</b>Eventos</button>
-  <button type="button" data-rp="aldia"><b>📰</b>Al día</button>
+  <button type="button" data-rp="social"><b>👥</b>Social</button>
+  <button type="button" data-rp="aldia"><b>🏛️</b>Gobierno</button>
 </nav>
 
 <!-- El formulario de reporte se pinta aquí. Mismos ids que la app completa. -->
@@ -79,23 +82,23 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="js/00-config.js?v=597-terremoto-registro"></script>
-<script src="js/02-auth-roles.js?v=597-terremoto-registro"></script>
-<script src="js/03-map-data-config.js?v=597-terremoto-registro"></script>
-<script src="js/03b-edificio-vocabulario.js?v=597-terremoto-registro"></script>
-<script src="js/03c-reportes-rapidos.js?v=597-terremoto-registro"></script>
-<script src="js/04-marker-proximity.js?v=597-terremoto-registro"></script>
-<script src="js/05-helpers-temporal-security.js?v=597-terremoto-registro"></script>
-<script src="js/11-report-form.js?v=597-terremoto-registro"></script>
-<script src="js/12-spa-ui.js?v=597-terremoto-registro"></script>
-<script src="js/13b-duplicados.js?v=597-terremoto-registro"></script>
-<script src="js/13c-denuncias.js?v=597-terremoto-registro"></script>
-<script src="js/13d-mis-reportes-noti.js?v=597-terremoto-registro"></script>
-<script src="js/13e-nivel2.js?v=597-terremoto-registro"></script>
-<script src="js/13f-victimas.js?v=597-terremoto-registro"></script>
-<script src="js/13g-config-admin.js?v=597-terremoto-registro"></script>
-<script src="js/13h-permisos.js?v=597-terremoto-registro"></script>
-<script src="js/13i-vitrina.js?v=597-terremoto-registro"></script>
-<script src="js/80-reportes-shell.js?v=597-terremoto-registro"></script>
+<script src="js/00-config.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/02-auth-roles.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/03-map-data-config.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/03b-edificio-vocabulario.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/03c-reportes-rapidos.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/04-marker-proximity.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/05-helpers-temporal-security.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/11-report-form.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/12-spa-ui.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13b-duplicados.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13c-denuncias.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13d-mis-reportes-noti.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13e-nivel2.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13f-victimas.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13g-config-admin.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13h-permisos.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/13i-vitrina.js?v=780-una-sola-app-cuatro-puertas"></script>
+<script src="js/80-reportes-shell.js?v=780-una-sola-app-cuatro-puertas"></script>
 </body>
 </html>

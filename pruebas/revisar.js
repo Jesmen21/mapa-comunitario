@@ -17,7 +17,8 @@
         función, y un `catch` vacío escondía la primera.
      4. Las reglas de clasificación son el producto. Que no vuelvan al
         navegador por descuido.
-     5. El token de versión va en cinco archivos. Si uno se queda viejo, los
+     5. El token de versión va en siete archivos —los cinco de la app grande
+        más los dos de la app ligera de reportes—. Si uno se queda viejo, los
         navegadores sirven una mezcla de dos versiones. */
 'use strict';
 
@@ -345,15 +346,25 @@ console.log('\n  -- las reglas siguen del lado del servidor --');
 // ── 5. el token de versión, el mismo en los cinco archivos ───────────────
 console.log('\n  -- la versión --');
 {
-  const CINCO = ['service-worker.js', 'index.html', 'css/main.css', 'analisis-ia.html', 'seguimiento.html'];
+  /* Siete, no cinco. `reportes.html` y su service worker quedaron fuera de
+     esta lista cuando se creó la app ligera, y su versión se quedó congelada
+     en la 597 durante casi doscientas tandas: un teléfono que hubiera abierto
+     esa app alguna vez seguía sirviéndose los mismos js/12 y js/05 que
+     descargó entonces, porque la dirección con la que los pide no cambiaba.
+     La app ligera y la grande comparten archivos; si una los pide con una
+     versión vieja, las dos se rompen de maneras distintas y difíciles de
+     explicar. */
+  const ARCHIVOS = ['service-worker.js', 'index.html', 'css/main.css', 'analisis-ia.html',
+                    'seguimiento.html', 'reportes.html', 'sw-reportes.js'];
   const tokens = new Map();
-  CINCO.forEach(f => {
+  ARCHIVOS.forEach(f => {
     const t = leer(f);
-    const m = f === 'service-worker.js' ? t.match(/urbis-v([\w-]+)/) : t.match(/[?&]v=([\w-]+)/);
+    const m = /^sw-|^service-worker/.test(f) ? t.match(/urbis-(?:reportes-)?v([\w-]+)/)
+                                            : t.match(/[?&]v=([\w-]+)/);
     tokens.set(f, m ? m[1] : '(ninguno)');
   });
   const distintos = [...new Set(tokens.values())];
-  comprobar('los cinco archivos llevan la misma versión',
+  comprobar('los siete archivos llevan la misma versión',
     distintos.length === 1,
     distintos.length === 1 ? distintos[0]
       : [...tokens].map(([f, v]) => f + '=' + v).join('  '));

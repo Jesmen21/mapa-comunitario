@@ -104,13 +104,25 @@
       });
     }
 
-    // Navegación. Eventos y "Al día" viven en páginas propias que ya existen;
-    // no se reimplementan aquí.
+    /* Navegación. Los cuatro destinos existen ya y NO se reimplementan aquí:
+       eventos y social son pantallas de la app completa —se entra directo a
+       ellas por la dirección, sin pasar por la portada—, y el seguimiento
+       presidencial es su propia página.
+
+       Esto es lo que convierte la carcasa en una app de verdad y no en un
+       formulario suelto: se abre liviana en el mapa, que es a lo que entra la
+       mayoría, y lo pesado se carga solo si alguien va a buscarlo. Las cuatro
+       páginas están dentro del alcance del manifiesto, así que en el teléfono
+       se ven como una sola aplicación, sin barra de navegador en medio. */
+    const DESTINOS = {
+      eventos: 'index.html#/pantalla/events',
+      social:  'index.html#/pantalla/social',
+      aldia:   'seguimiento.html'
+    };
     document.querySelectorAll('#rp-nav button').forEach(function(b){
       b.addEventListener('click', function(){
         const destino = b.getAttribute('data-rp');
-        if (destino === 'aldia') { location.href = 'seguimiento.html'; return; }
-        if (destino === 'eventos') { aviso('Los eventos llegan en la próxima versión.'); return; }
+        if (DESTINOS[destino]) { location.href = DESTINOS[destino]; return; }
         document.querySelectorAll('#rp-nav button').forEach(x => x.classList.remove('on'));
         b.classList.add('on');
       });

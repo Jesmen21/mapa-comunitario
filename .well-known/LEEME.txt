@@ -14,6 +14,24 @@ se sube, y en unos minutos Android deja de mostrar la barra.
 package_name tiene que ser EXACTAMENTE el que se escribió en PWABuilder.
 Si allá se puso otro, cambiarlo también acá.
 
+LAS APLICACIONES QUE HAY
+────────────────────────
+  city.urbispro.app         URBIS completo
+  city.urbispro.educativo   URBIS educativo
+  city.urbispro.empresas    URBIS empresarial
+  city.urbispro.reportes    URBIS Reportes y Eventos  ← pendiente de firma
+
+La última se arma desde https://urbispro.city/manifest-reportes.json, no
+desde el manifiesto de la raíz. Arranca en /reportes.html —el mapa ligero
+con el botón de reportar— y su alcance es todo el sitio, para que Eventos,
+Social y el Seguimiento Presidencial se abran DENTRO de la app y no en una
+pestaña del navegador. Su icono es el amarillo (assets/icons/reportes/).
+
+Su huella todavía no está en assetlinks.json: hay una entrada con la huella
+en cero, a la espera. Mientras esté así, esa app abre con la barra del
+navegador encima. En cuanto PWABuilder entregue el paquete, se reemplazan
+los ceros por la huella real y se sube.
+
 CÓMO SE COMPRUEBA
 ─────────────────
   https://urbispro.city/.well-known/assetlinks.json
