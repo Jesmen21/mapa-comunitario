@@ -517,11 +517,12 @@ console.log('\n  -- la ficha del gobernante --');
   const lista = ((d.casos || {}).lista) || [];
   const ESTADOS = ['confirmado', 'en-investigacion', 'senalamiento', 'por-documentar'];
   const malos = lista.filter(c => !ESTADOS.includes(c.estado)).map(c => c.id + ':' + c.estado);
-  const cojos = lista.filter(c => c.estado === 'confirmado' && (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)).map(c => c.id);
+  const cojos = lista.filter(c => (c.estado === 'confirmado' || c.estado === 'en-investigacion') &&
+    (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)).map(c => c.id);
   comprobar('los casos de corrupción llevan un estado probatorio conocido',
     malos.length === 0, malos.length ? malos.join(', ') : lista.length + ' casos');
-  comprobar('y ningún confirmado va sin quién lo confirmó, fecha y fuentes',
-    cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún confirmado cojo');
+  comprobar('y ningún caso que pese (confirmado o en investigación) va sin quién, fecha y fuentes',
+    cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso que pese va cojo');
 }
 
 console.log('\n  -- un nombre, una cosa --');

@@ -80,13 +80,15 @@ const server = http.createServer((req, res) => {
   esperado.visibles = esperado.confirmados + esperado.enInvestigacion + esperado.senalamientos;
   // El veredicto, rehecho aquí con la MISMA regla escrita aparte.
   const techo = {
-    casos: n => n >= 2 ? 4 : n >= 1 ? 3 : 0,
+    // Confirmados: uno → poco fiable, dos → nada fiable. En investigación
+    // (desde la v792 también pesan): uno → dudosa, dos → poco fiable.
+    casos: (conf, inv) => Math.max(conf >= 2 ? 4 : conf >= 1 ? 3 : 0, inv >= 2 ? 3 : inv >= 1 ? 2 : 0),
     palabra: n => n >= 3 ? 3 : n >= 2 ? 2 : n >= 1 ? 1 : 0,
     claridad: p => p == null ? 0 : p < 50 ? 3 : p < 70 ? 2 : p < 85 ? 1 : 0
   };
   const IDS = ['inquebrantable', 'fiable', 'dudosa', 'poco-fiable', 'nada-fiable'];
   esperado.veredicto = (esperado.revisados < 3 || esperado.hechos < 20) ? 'sin-datos'
-    : IDS[Math.max(techo.casos(esperado.confirmados), techo.palabra(esperado.contadas), techo.claridad(esperado.pct))];
+    : IDS[Math.max(techo.casos(esperado.confirmados, esperado.enInvestigacion), techo.palabra(esperado.contadas), techo.claridad(esperado.pct))];
 
   await new Promise(r => server.listen(0, r));
   const base = 'http://127.0.0.1:' + server.address().port;
@@ -138,8 +140,9 @@ const server = http.createServer((req, res) => {
     chk(portada.muroDespues && portada.arribaDelTitulo, 'lo último publicado va justo debajo, y el título después');
     chk(!portada.botonViejo, 'el botón viejo de acceso a la ficha ya no está');
     chk(portada.anchoPct >= 95, 'ocupa el ancho de la columna (' + portada.anchoPct + '%)');
-    chk(/casos? confirmados?/.test(portada.cuentas) && /cambios? de postura/.test(portada.cuentas) && /% verificado|sin verificación/.test(portada.cuentas),
-        'enseña las tres cuentas que producen el veredicto');
+    chk(/casos? confirmados?/.test(portada.cuentas) && /en investigación/.test(portada.cuentas) &&
+        /cambios? de postura/.test(portada.cuentas) && /% verificado|sin verificación/.test(portada.cuentas),
+        'enseña las cuentas que producen el veredicto, con los casos en investigación');
     chk(portada.tamVeredicto >= portada.masGrande - 0.5,
         'el veredicto es el texto más grande de la portada (' + portada.tamVeredicto + ' px)');
     chk(portada.secs[0] === '00 Ficha del gobernante' && portada.secs[1] === '01 Contradicciones' &&
@@ -245,7 +248,11 @@ const server = http.createServer((req, res) => {
       unConfirmado: Vm(mixto90, limpio, [caso('confirmado')]),
       dosConfirmados: Vm(mixto90, limpio, [caso('confirmado'), caso('confirmado')]),
       // Lo no confirmado NO mueve el veredicto.
-      soloSenalamientos: Vm(mixto90, limpio, [caso('senalamiento'), caso('senalamiento'), caso('en-investigacion'), caso('por-documentar')]),
+      soloSenalamientos: Vm(mixto90, limpio, [caso('senalamiento'), caso('senalamiento'), caso('por-documentar')]),
+      // Un caso EN INVESTIGACIÓN ya pesa: uno → dudosa; dos → poco fiable. Menos que un confirmado.
+      unaInvestigacion: Vm(mixto90, limpio, [caso('en-investigacion')]),
+      dosInvestigaciones: Vm(mixto90, limpio, [caso('en-investigacion'), caso('en-investigacion')]),
+      confirmadoMandaSobreInv: Vm(mixto90, limpio, [caso('confirmado'), caso('en-investigacion')]),
       // El peor de tres: un cambio (fiable) + 60 % (dudosa) → dudosa, no un promedio.
       peorDeTres: Vm(mixto(24, 16), limpio.concat([cx('documentada')])),
       // Registro corto: no alcanza para calificar a nadie.
@@ -324,7 +331,10 @@ const server = http.createServer((req, res) => {
   chk(p.unConfirmado === 'poco-fiable', 'UN caso de corrupción confirmado, con todo lo demás limpio → poco fiable (' + p.unConfirmado + ')');
   chk(p.dosConfirmados === 'nada-fiable', 'dos confirmados → nada fiable (' + p.dosConfirmados + ')');
   chk(p.soloSenalamientos === 'inquebrantable',
-      'señalamientos, investigaciones y por-documentar NO mueven el veredicto (' + p.soloSenalamientos + ')');
+      'señalamientos y por-documentar NO mueven el veredicto (' + p.soloSenalamientos + ')');
+  chk(p.unaInvestigacion === 'dudosa', 'un caso EN INVESTIGACIÓN por una autoridad ya baja a dudosa (' + p.unaInvestigacion + ')');
+  chk(p.dosInvestigaciones === 'poco-fiable', 'dos en investigación → poco fiable (' + p.dosInvestigaciones + ')');
+  chk(p.confirmadoMandaSobreInv === 'poco-fiable', 'un confirmado más uno en investigación: manda el confirmado (' + p.confirmadoMandaSobreInv + ')');
   chk(p.peorDeTres === 'dudosa', 'el veredicto es el peor de los tres techos, no un promedio (' + p.peorDeTres + ')');
   chk(p.pocosHechos === 'sin-datos', 'con cuatro hechos no se califica a nadie (' + p.pocosHechos + ')');
   chk(p.pocosCasos === 'sin-datos', 'ni con un solo caso de postura revisado (' + p.pocosCasos + ')');
@@ -372,8 +382,10 @@ const server = http.createServer((req, res) => {
   chk(/No cuenta: .*desmentida/.test(r.txt), 'dice por qué un caso desmentido no cuenta');
   chk(/No cuenta: .*hipocresía|No cuenta: .*no es señalamiento/.test(r.txt),
       'y por qué el caso marcado en el registro tampoco');
-  chk(/No pesa en el veredicto/.test(r.txt) || esperado.visibles === esperado.confirmados,
-      'cada caso no confirmado dice que no pesa');
+  chk(esperado.senalamientos === 0 || /No pesa en el veredicto/.test(r.txt),
+      'cada señalamiento dice que no pesa');
+  chk(esperado.enInvestigacion === 0 || /Pesa en el veredicto, menos que un confirmado/.test(r.txt),
+      'y cada caso en investigación dice que pesa, menos que un confirmado');
   chk(r.escalera.length === 5 && r.escalera.filter(x => /\*$/.test(x)).length === 1,
       'la escalera marca un solo peldaño de cinco: ' + r.escalera.join(' · '));
   chk(/peor de los tres techos/.test(r.txt), 'dice en la cara que el veredicto es el peor de tres techos');

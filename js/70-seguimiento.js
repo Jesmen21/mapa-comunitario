@@ -1234,25 +1234,39 @@
     { id: 'fiable', t: 'Fiable',
       d: 'Sin casos confirmados. Como mucho un cambio de postura contado, o entre 70 y 84 % del registro verificado.' },
     { id: 'dudosa', t: 'Dudosa',
-      d: 'Sin casos confirmados. Dos cambios de postura contados, o entre 50 y 69 % del registro verificado.' },
+      d: 'Sin casos confirmados. Un caso de corrupción en investigación; o dos cambios de postura contados; o entre 50 y 69 % del registro verificado.' },
     { id: 'poco-fiable', t: 'Poco fiable',
-      d: 'Un caso de corrupción confirmado; o tres o más cambios de postura contados; o menos del 50 % del registro verificado.' },
+      d: 'Un caso de corrupción confirmado; o dos o más en investigación; o tres o más cambios de postura contados; o menos del 50 % del registro verificado.' },
     { id: 'nada-fiable', t: 'Nada fiable',
       d: 'Dos o más casos de corrupción confirmados.' }
   ];
   // Los tres techos. Cada función devuelve el PEOR peldaño que esa cuenta
   // permite; ninguna puede subir lo que otra bajó.
+  //
+  // Los casos de corrupción pesan por su estado probatorio, y desde la v792
+  // también los que están EN PROCESO: un caso en investigación por una
+  // autoridad ya baja a «dudosa»; dos o más, a «poco fiable». Pesan menos
+  // que un confirmado (uno: «poco fiable»; dos: «nada fiable») porque una
+  // investigación abierta no es un fallo, pero no se espera a que se
+  // resuelva para que cuente. Un señalamiento —un medio o un actor político,
+  // sin autoridad detrás— se muestra y no pesa.
   var TECHOS = {
-    casos:    { t: 'Casos de corrupción confirmados', f: function (n)   { return n >= 2 ? 4 : n >= 1 ? 3 : 0; } },
+    casos:    { t: 'Casos de corrupción (confirmados y en investigación)',
+                f: function (conf, inv) {
+                  var porConf = conf >= 2 ? 4 : conf >= 1 ? 3 : 0;
+                  var porInv  = inv  >= 2 ? 3 : inv  >= 1 ? 2 : 0;
+                  return Math.max(porConf, porInv);
+                } },
     palabra:  { t: 'Cambios de postura contados',     f: function (n)   { return n >= 3 ? 3 : n >= 2 ? 2 : n >= 1 ? 1 : 0; } },
     claridad: { t: 'Registro verificado por terceros', f: function (pct) { return pct == null ? 0 : pct < 50 ? 3 : pct < 70 ? 2 : pct < 85 ? 1 : 0; } }
   };
-  // El estado probatorio de un caso de corrupción. Solo `confirmado` pesa.
+  // El estado probatorio de un caso de corrupción. Pesan `confirmado` y
+  // `en-investigacion` (este, menos); un señalamiento no.
   var ESTADOS_CASO = {
     'confirmado':       { t: 'Confirmado',       cls: 'conf', pesa: true,
                           d: 'Hay fallo, sanción, documento oficial o reconocimiento del propio implicado.' },
-    'en-investigacion': { t: 'En investigación', cls: 'inv',  pesa: false,
-                          d: 'Hay proceso abierto por una autoridad. Se muestra; no pesa hasta que se resuelva.' },
+    'en-investigacion': { t: 'En investigación', cls: 'inv',  pesa: true,
+                          d: 'Hay proceso abierto por una autoridad. Pesa, menos que un confirmado: uno baja a «dudosa», dos a «poco fiable».' },
     'senalamiento':     { t: 'Señalamiento',     cls: 'sen',  pesa: false,
                           d: 'Lo dice un medio o un actor político; ninguna autoridad se ha pronunciado. Se muestra; no pesa.' },
     'por-documentar':   { t: 'Por documentar',   cls: 'pend', pesa: false, oculto: true,
@@ -1419,7 +1433,9 @@
 
     // Los tres techos y el peor de ellos.
     var techos = {
-      casos:    { i: TECHOS.casos.f(casos.confirmados),  n: casos.confirmados, t: TECHOS.casos.t },
+      casos:    { i: TECHOS.casos.f(casos.confirmados, casos.enInvestigacion),
+                  n: casos.confirmados + casos.enInvestigacion, t: TECHOS.casos.t,
+                  detalle: casos.confirmados + ' conf. · ' + casos.enInvestigacion + ' en inv.' },
       palabra:  { i: TECHOS.palabra.f(palabra.contadas), n: palabra.contadas,  t: TECHOS.palabra.t },
       claridad: { i: TECHOS.claridad.f(claridad.pct),    n: claridad.pct,      t: TECHOS.claridad.t }
     };
@@ -1547,6 +1563,7 @@
   // veredicto en la placa: se entiende de un vistazo por qué dice lo que dice.
   function cuentasDe(f) {
     return plural(f.casos.confirmados, 'caso confirmado', 'casos confirmados') + ' · ' +
+           f.casos.enInvestigacion + ' en investigación · ' +
            plural(f.palabra.contadas, 'cambio de postura', 'cambios de postura') + ' · ' +
            (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % verificado');
   }
@@ -1616,9 +1633,10 @@
     }
     // El motivo, en minúscula y sin el «se muestra; no pesa» que ya dice la frase.
     var motivo = est.d.replace(/\.?\s*Se muestra; no pesa.*$/, '.');
-    art.appendChild(el('p', 'sp-fi-cc-pesa', est.pesa
-      ? 'Pesa en el veredicto.'
-      : 'No pesa en el veredicto: ' + motivo.charAt(0).toLowerCase() + motivo.slice(1)));
+    art.appendChild(el('p', 'sp-fi-cc-pesa', !est.pesa
+      ? 'No pesa en el veredicto: ' + motivo.charAt(0).toLowerCase() + motivo.slice(1)
+      : (c.estado === 'confirmado' ? 'Pesa en el veredicto.'
+         : 'Pesa en el veredicto, menos que un confirmado: no se espera a que la investigación se resuelva.')));
     var fl = el('div', 'sp-fuentes');
     pintarFuentes(fl, c.fuentes || []);
     art.appendChild(fl);
@@ -1685,7 +1703,7 @@
       var t = f.techos[k];
       var li = el('li', 'sp-fi-techo' + (f.manda.indexOf(k) !== -1 ? ' manda' : ''));
       li.appendChild(el('span', 'sp-fi-techo-t', t.t));
-      li.appendChild(el('b', null, k === 'claridad' ? (t.n == null ? '—' : t.n + ' %') : String(t.n)));
+      li.appendChild(el('b', null, k === 'claridad' ? (t.n == null ? '—' : t.n + ' %') : (t.detalle || String(t.n))));
       li.appendChild(el('span', 'sp-fi-techo-p', '→ como mucho «' + ESCALERA[t.i].t + '»'));
       tl.appendChild(li);
     });
@@ -1698,8 +1716,9 @@
 
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',
-      'Atribuidos al gobernante o a su gobierno, con su estado probatorio. Solo lo confirmado pesa; ' +
-      'lo demás se muestra con su etiqueta y no mueve el veredicto. Las denuncias del Gobierno ' +
+      'Atribuidos al gobernante o a su gobierno, con su estado probatorio. Pesan los confirmados y, ' +
+      'menos, los que una autoridad tiene en investigación; un señalamiento se muestra con su etiqueta ' +
+      'y no mueve el veredicto. Las denuncias del Gobierno ' +
       'contra la administración anterior no son casos suyos: están en la línea de tiempo.');
     var grupos = [
       { k: 'confirmado', t: 'Confirmados', n: f.casos.confirmados },
@@ -1807,7 +1826,7 @@
     met.appendChild(el('p', 'sp-fi-mide',
       'El veredicto es el peor de los tres techos: no hay promedio ni compensación. Hacen falta al menos ' +
       FICHA_MIN_CASOS + ' casos de postura revisados y ' + FICHA_MIN_HECHOS + ' hechos registrados; ' +
-      'con menos se dice «sin datos suficientes». Un caso de corrupción pesa solo si está confirmado; ' +
+      'con menos se dice «sin datos suficientes». Un caso de corrupción pesa si está confirmado o si una autoridad lo tiene en investigación (menos); un señalamiento no; ' +
       'una contradicción, solo si está documentada con las dos declaraciones y el registro no la marcó como no contada; ' +
       'lo desmentido nunca suma en contra.'));
 
