@@ -169,10 +169,10 @@ function refEsperada(col) {
     const kpis = Array.from(document.querySelectorAll('#aia-kpis .aia-kpi')).map(k => ({
       valor: (k.querySelector('b') || {}).textContent || '',
       etq: (k.querySelector('small') || {}).textContent || '',
-      ref: (k.querySelector('.aia-kpi-ref em') || {}).textContent || '',
+      ref: (k.querySelector('.urb-ref em') || {}).textContent || '',
       // Se lee a la defensiva: contra el código anterior nada de esto existe,
       // y una suite que revienta no reporta, solo se cae.
-      marca: ((k.querySelector('.aia-kpi-riel i') || {}).style || {}).left || ''
+      marca: ((k.querySelector('.urb-ref-riel i') || {}).style || {}).left || ''
     }));
     const comp = document.getElementById('aia-composicion') || document.createElement('div');
     const tramos = Array.from(comp.querySelectorAll('.aia-comp-tramo')).map(t => ({
@@ -180,10 +180,10 @@ function refEsperada(col) {
       ancho: parseFloat(t.style.width),
       color: getComputedStyle(t).backgroundColor
     }));
-    const minis = Array.from(document.querySelectorAll('.aia-anillo-mini')).map(f => ({
+    const minis = Array.from(document.querySelectorAll('.urb-anillo-mini')).map(f => ({
       titulo: (f.querySelector('figcaption') || {}).textContent || '',
       cifra: ((f.querySelector('b') || {}).textContent || '').replace(/\/ha$/, ''),
-      forma: (f.querySelector('.aia-anillo-forma') || {}).textContent || '',
+      forma: (f.querySelector('.urb-anillo-forma') || {}).textContent || '',
       trazos: f.querySelectorAll('path').length,
       marcaActual: f.querySelectorAll('circle').length
     }));
@@ -277,7 +277,7 @@ function refEsperada(col) {
   // Con uno o dos, «por encima de 1 de 2» es ruido con forma de dato.
   const B = await abrir(GUARDADOS.slice(2));
   const pocos = await B.pg.evaluate(() => ({
-    refs: document.querySelectorAll('#aia-kpis .aia-kpi-ref').length,
+    refs: document.querySelectorAll('#aia-kpis .urb-ref').length,
     kpis: document.querySelectorAll('#aia-kpis .aia-kpi').length
   }));
   console.log('\n── Con solo dos análisis guardados ─────────────────');

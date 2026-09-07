@@ -86,17 +86,74 @@
       '</div>';
   }
 
+  /* ── Los sectores que el curso ya levantó ──────────────────────────────
+     Un «18/100 de flujo a pie» solo no le dice nada a un estudiante: no
+     sabe si 18 es poco o es lo normal en su ciudad. Comparado con los
+     sectores que él mismo ya analizó, sí. Las fichas del modo educativo
+     viven en `pcr_fichas_v1` (js/68) con el `stats` aligerado, que ya trae
+     todo lo que estos cuatro KPI necesitan.
+
+     La cuenta —y el mínimo de tres para comparar— está en js/57, compartida
+     con el análisis de empresas: la misma vara para los dos. */
+  const FICHAS_KEY = 'pcr_fichas_v1';
+
+  function fichasDelCurso(){
+    try { const f = JSON.parse(localStorage.getItem(FICHAS_KEY) || '[]'); return Array.isArray(f) ? f : []; }
+    catch(e) { return []; }
+  }
+
+  function refEdu(saca, actual){
+    if (!window.URBIS_REFERENCIA) return '';
+    const otros = [];
+    fichasDelCurso().forEach(fi => {
+      let v;
+      try { v = saca(fi.stats || {}); } catch(e) { v = null; }
+      if (typeof v === 'number' && isFinite(v)) otros.push(v);
+    });
+    return window.URBIS_REFERENCIA.html(otros, actual);
+  }
+
   function kpis(r){
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
-    const caja = (n, t, sub) => '<div class="edu-kpi"><b>' + n + '</b><span>' + t + '</span>' +
-      (sub ? '<em>' + esc(sub) + '</em>' : '') + '</div>';
+    const caja = (n, t, sub, ref) => '<div class="edu-kpi"><b>' + n + '</b><span>' + t + '</span>' +
+      (sub ? '<em>' + esc(sub) + '</em>' : '') + (ref || '') + '</div>';
+    const flujoDe = k => x => ((x.movilidad || {}).flujo || {})[k];
     return '<div class="edu-kpis">' +
       caja(miles(s.poblacionEstimada), 'Habitantes',
            s.poblacionProyectada ? 'DANE ' + s.censoAnio + ' → ' + s.anioProyeccion
-                                 : (s.poblacionEsCensal ? 'DANE ' + s.censoAnio : 'estimado')) +
-      caja((f.peatonal || 0) + '/100', 'Flujo a pie', f.nivelPeatonal || '—') +
-      caja((f.vehicular || 0) + '/100', 'Flujo vehicular', f.nivelVehicular || '—') +
-      caja(miles(s.total), 'Usos leídos', 'en el radio') +
+                                 : (s.poblacionEsCensal ? 'DANE ' + s.censoAnio : 'estimado'),
+           refEdu(x => x.poblacionEstimada, s.poblacionEstimada)) +
+      caja((f.peatonal || 0) + '/100', 'Flujo a pie', f.nivelPeatonal || '—',
+           refEdu(flujoDe('peatonal'), f.peatonal)) +
+      caja((f.vehicular || 0) + '/100', 'Flujo vehicular', f.nivelVehicular || '—',
+           refEdu(flujoDe('vehicular'), f.vehicular)) +
+      caja(miles(s.total), 'Usos leídos', 'en el radio',
+           refEdu(x => x.total, s.total)) +
+      '</div>';
+  }
+
+  /* ── El entorno según la distancia ─────────────────────────────────────
+     El motor ya devolvía estos anillos en el modo educativo; simplemente
+     nadie los pintaba. El dibujo es el mismo de js/58 que usa el análisis
+     de empresas, y la tabla va debajo con los números exactos.
+
+     Para un curso esta es de las lecturas más útiles del módulo: dice si el
+     sitio que mapearon es un núcleo o un borde, y eso no se ve caminando. */
+  function bloqueAnillos(r){
+    const m = r.multiRadio;
+    if (!m || !m.anillos || m.anillos.length < 2 || !window.URBIS_ANILLOS) return '';
+    const etq = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
+    return '<div class="edu-caja">' +
+      '<h4>🎯 El entorno según la distancia</h4>' +
+      window.URBIS_ANILLOS.grafico(m) +
+      '<table class="edu-tbl-radios"><tr><th>Radio</th><th>Usos</th><th>Usos/ha</th>' +
+      '<th>Comercio</th><th>Equip.</th><th>Hab. est.</th></tr>' +
+      m.anillos.map(a => '<tr' + (a.esAnalizado ? ' class="act"' : '') + '>' +
+        '<td>' + etq(a.radioM) + '</td><td>' + miles(a.total) + '</td>' +
+        '<td>' + a.densidadPorHa + '</td><td>' + miles(a.comercio) + '</td>' +
+        '<td>' + miles(a.equipamientos) + '</td><td>' + miles(a.poblacionEstimada) + '</td></tr>').join('') +
+      '</table>' +
+      (m.lectura ? '<p class="edu-nota">' + esc(m.lectura) + '</p>' : '') +
       '</div>';
   }
 
@@ -367,7 +424,8 @@
       const r = await window.URBIS_EDU.analizar(centro, radioM, null);
       ultimo = r;
       cont.innerHTML = bloqueBase(r) + kpis(r) + bloquePoblacion(r) + bloqueFlujo(r) +
-                       bloqueCalor(r) + bloqueComposicion(r) + bloqueEdificacion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
+                       bloqueCalor(r) + bloqueComposicion(r) + bloqueAnillos(r) +
+                       bloqueEdificacion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
                        '</div>';

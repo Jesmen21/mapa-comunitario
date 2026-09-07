@@ -423,16 +423,29 @@
     // Censo y proyección: esto NO depende de lo que el curso haya mapeado,
     // viene del DANE. Es la mitad del análisis que siempre está completa, y
     // por eso conviene que los estudiantes la vean incluso con pocos puntos.
-    let dane = null, ubicacion = null;
+    let dane = null, ubicacion = null, danePorRadio = {};
     try {
       if (window.AIA_DATOS && window.AIA_DATOS.ubicacionDe) {
         ubicacion = await window.AIA_DATOS.ubicacionDe(centro.lat, centro.lng);
       }
     } catch(e) { ubicacion = null; }
+    /* El censo se pide para el radio analizado Y para los de la comparativa.
+       El motor devuelve el sector medido en varios anillos —lo que se dibuja
+       en «el entorno según la distancia»— y sin censo por anillo cada uno cae
+       a la estimación heurística: la línea de habitantes por hectárea diría
+       una cosa y el KPI de arriba otra, sacadas de fuentes distintas, sin que
+       nada lo avise. Si el servicio no responde, `dane` queda en null y el
+       motor usa su estimación de siempre: el análisis nunca se bloquea. */
+    const municipio = (ubicacion && ubicacion.ciudad) || '';
+    const radiosDane = ((window.AIA_MOTOR && window.AIA_MOTOR.RADIOS_COMPARATIVA) || [])
+      .filter(r => r < radioM).concat([radioM])
+      .filter((r, i, a) => a.indexOf(r) === i);
     try {
       if (window.AIA_DATOS && window.AIA_DATOS.consultarDANE) {
-        dane = await window.AIA_DATOS.consultarDANE(
-          centro.lat, centro.lng, radioM, (ubicacion && ubicacion.ciudad) || '');
+        const res = await Promise.all(radiosDane.map(r =>
+          window.AIA_DATOS.consultarDANE(centro.lat, centro.lng, r, municipio).catch(() => null)));
+        radiosDane.forEach((r, i) => { if (res[i]) danePorRadio[r] = res[i]; });
+        dane = danePorRadio[radioM] || null;
       }
     } catch(e) { dane = null; }
 
@@ -440,6 +453,7 @@
       elementos: reunido.elementos, radioM: radioM, centro: centro,
       tipoEstudio: 'completo', proyectoId: proyectoId || null,
       direccionAprox: (ubicacion && ubicacion.ciudad) || '', dane: dane,
+      danePorRadio: danePorRadio,
       caminabilidad: reunido.caminabilidad
     });
     resultado.edu = {

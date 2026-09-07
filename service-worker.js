@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v801-el-numero-con-su-referencia';
+const URBIS_CACHE = 'urbis-v802-el-curso-tambien-compara';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,8 @@ const URBIS_ASSETS = [
   './assets/data/seguimiento-petro.json',
   './assets/data/alertas-urbis.json',
   './css/60-analisis-ia.css',
+  './js/57-referencia.js',
+  './js/58-anillos.js',
   './js/59-analisis-ia-catalogo.js',
   './js/67-analisis-cliente.js',
   './js/61-analisis-ia-datos.js',

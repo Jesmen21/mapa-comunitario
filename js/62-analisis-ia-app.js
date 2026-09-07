@@ -1746,90 +1746,15 @@
 
   // Comparativa multi-radio (Fase 3). Sale de los mismos datos ya descargados,
   // así que no cuesta ninguna consulta adicional.
-  /* Los anillos, dibujados.
-     Era el dato más analítico que produce el motor —cómo cambia el entorno
-     al alejarse— y se leía como hoja de cálculo. Cada métrica va en su
-     propio gráfico pequeño, porque comparten el eje del radio pero no la
-     escala: usos son cientos, usos/ha son decenas y habitantes son miles;
-     ponerlos en un solo eje aplasta tres de las cuatro líneas contra el
-     suelo y no se lee ninguna.
-
-     Lo que hay que ver de un vistazo es la FORMA, no el número: si una
-     densidad baja al alejarse, el lote está en un núcleo; si sube, está en
-     un borde y lo denso queda afuera. El número exacto sigue en la tabla,
-     debajo, que es donde se consulta y no donde se mira. */
-  function chispaAnillos(anillos, valorDe, color){
-    const vals = anillos.map(valorDe);
-    if (vals.some(v => !isFinite(v))) return '';
-    const min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
-    const rango = Math.max(1e-9, max - min);
-    const W = 100, H = 30;
-    const px = i => anillos.length < 2 ? W / 2 : (i / (anillos.length - 1)) * W;
-    const py = v => H - ((v - min) / rango) * (H - 6) - 3;
-    const linea = vals.map((v, i) => (i ? 'L' : 'M') + px(i).toFixed(2) + ' ' + py(v).toFixed(2)).join(' ');
-    const area = linea + ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
-    // El anillo analizado se marca: es el que el usuario pidió, y sin él la
-    // curva no dice respecto a qué se está leyendo el resto.
-    const iAct = anillos.findIndex(a => a.esAnalizado);
-    return '<svg class="aia-anillo-chispa" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
-      '<path d="' + area + '" fill="' + color + '" opacity=".16"/>' +
-      '<path d="' + linea + '" fill="none" stroke="' + color + '" stroke-width="1.6" ' +
-      'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
-      (iAct >= 0 ? '<circle cx="' + px(iAct).toFixed(2) + '" cy="' + py(vals[iAct]).toFixed(2) +
-                   '" r="2.4" fill="' + color + '" stroke="var(--aia-bg)" stroke-width="1"/>' : '') +
-      '</svg>';
-  }
-
-  function lecturaForma(anillos, valorDe){
-    const v = anillos.map(valorDe);
-    if (v.length < 2 || v.some(x => !isFinite(x))) return '';
-    const primero = v[0], ultimo = v[v.length - 1];
-    if (!primero) return '';
-    const cambio = Math.round(((ultimo - primero) / primero) * 100);
-    if (Math.abs(cambio) < 12) return 'se mantiene';
-    return cambio < 0 ? 'baja al alejarse' : 'sube al alejarse';
-  }
-
-  function graficoAnillos(m){
-    const A = m.anillos;
-    const haDe = a => Math.max(0.01, (Math.PI * a.radioM * a.radioM) / 10000);
-    const METRICAS = [
-      { t: 'Usos por hectárea', c: '#22d3ee', f: a => Number(a.densidadPorHa) || 0, u: '/ha' },
-      { t: 'Comercio por ha',   c: '#e5484d', f: a => (a.comercio || 0) / haDe(a), u: '/ha' },
-      { t: 'Equipamientos por ha', c: '#3b82f6', f: a => (a.equipamientos || 0) / haDe(a), u: '/ha' },
-      { t: 'Habitantes por ha', c: '#22c55e', f: a => (a.poblacionEstimada || 0) / haDe(a), u: '/ha' }
-    ];
-    /* Una densidad de 0,115 equipamientos por hectárea redondeada a un
-       decimal es «0,1», que no distingue 0,05 de 0,14: el dato se pierde
-       justo en el rango donde más importa, el de las cosas escasas. La
-       precisión sigue a la magnitud. */
-    const n1 = x => x >= 100 ? Math.round(x)
-                  : x >= 1   ? Math.round(x * 10) / 10
-                             : Math.round(x * 100) / 100;
-    const etqR = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
-    return '<div class="aia-anillos-grid">' +
-      METRICAS.map(M => {
-        const chispa = chispaAnillos(A, M.f, M.c);
-        if (!chispa) return '';
-        const act = A.find(a => a.esAnalizado) || A[A.length - 1];
-        return '<figure class="aia-anillo-mini">' +
-          '<figcaption>' + M.t + '</figcaption>' +
-          chispa +
-          '<b>' + n1(M.f(act)) + '<small>' + M.u + '</small></b>' +
-          '<small class="aia-anillo-forma">' + (lecturaForma(A, M.f) || '') + '</small>' +
-          '</figure>';
-      }).join('') +
-      '</div>' +
-      '<p class="aia-anillos-eje"><span>' + etqR(A[0].radioM) + '</span>' +
-      '<span>distancia desde el lote</span><span>' + etqR(A[A.length - 1].radioM) + '</span></p>';
-  }
-
   function bloqueMultiRadio(r){
     const m = r.multiRadio;
     if (!m || !m.anillos || m.anillos.length < 2) return '';
     const etq = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
     return '<h3>🎯 El entorno según la distancia</h3>' +
-      graficoAnillos(m) +
+      // El dibujo lo hace js/58, que también lo pinta en el modo educativo:
+      // el mismo gráfico en dos módulos con dos copias es la manera segura
+      // de que una se quede atrás.
+      (window.URBIS_ANILLOS ? window.URBIS_ANILLOS.grafico(m) : '') +
       '<table class="aia-tbl-radios"><tr><th>Radio</th><th>Usos</th><th>Usos/ha</th>' +
       '<th>Comercio</th><th>Equip.</th><th>Hab. est.</th></tr>' +
       m.anillos.map(a => '<tr' + (a.esAnalizado ? ' class="act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
@@ -1843,45 +1768,25 @@
   }
 
   /* ── La referencia ────────────────────────────────────────────────────
-     «38 usos por hectárea» no dice nada solo. Dice algo comparado con los
-     sectores que ESTE usuario ya levantó: los tiene guardados, salen de su
-     propio trabajo y son la única referencia honesta que hay a la mano —no
-     hay una tabla nacional de densidades de sector que se pueda citar—.
-
-     Por eso la referencia dice de cuántos análisis sale y no se muestra con
-     menos de tres: con uno o dos, la «posición» sería ruido con forma de
-     dato. Y compara contra los guardados EXCLUYENDO el actual si ya estaba
-     guardado, para que un sector no se compare consigo mismo. */
-  const REF_MINIMO = 3;
-
-  function valoresGuardados(saca){
+     La cuenta vive en js/57 y la comparte con el modo educativo. Acá queda
+     solo de dónde salen los valores, que es lo único propio de este módulo:
+     los análisis que el usuario guardó, menos el que está mirando. Si un
+     sector entrara en su propia referencia, siempre empataría consigo mismo
+     y se correría un puesto hacia arriba sin que nada lo dijera. */
+  function valoresGuardados(saca, idExcluir){
     const out = [];
     leerGuardados().forEach(g => {
+      if (g.id === idExcluir) return;
       let v;
       try { v = saca(g.resultado); } catch(e) { v = null; }
-      if (typeof v === 'number' && isFinite(v)) out.push({ id: g.id, nombre: g.nombre, v: v });
+      if (typeof v === 'number' && isFinite(v)) out.push(v);
     });
     return out;
   }
 
   function referencia(saca, valorActual, idActual){
-    if (typeof valorActual !== 'number' || !isFinite(valorActual)) return '';
-    const otros = valoresGuardados(saca).filter(x => x.id !== idActual);
-    if (otros.length < REF_MINIMO) return '';
-    const vals = otros.map(x => x.v).sort((a, b) => a - b);
-    const min = vals[0], max = vals[vals.length - 1];
-    const debajo = vals.filter(v => v < valorActual).length;
-    // La barra ubica el valor actual dentro del rango de lo ya levantado.
-    // Si se sale del rango, se pega al extremo y el texto lo dice: quedarse
-    // callado ahí sería lo mismo que mentir con un 0 % o un 100 %.
-    const rango = max - min;
-    const pct = rango <= 0 ? 50 : Math.max(0, Math.min(100, ((valorActual - min) / rango) * 100));
-    const texto = valorActual > max ? 'el más alto de tus ' + (otros.length + 1)
-                : valorActual < min ? 'el más bajo de tus ' + (otros.length + 1)
-                : 'por encima de ' + debajo + ' de ' + otros.length;
-    return '<span class="aia-kpi-ref" title="Comparado con tus ' + otros.length + ' análisis guardados">' +
-      '<span class="aia-kpi-riel"><i style="left:' + pct.toFixed(1) + '%"></i></span>' +
-      '<em>' + texto + '</em></span>';
+    if (!window.URBIS_REFERENCIA) return '';
+    return window.URBIS_REFERENCIA.html(valoresGuardados(saca, idActual), valorActual);
   }
 
   function etiquetaSub(k){

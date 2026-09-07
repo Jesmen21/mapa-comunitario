@@ -101,6 +101,17 @@ const server = http.createServer((req, res) => {
        guarda ese marco vuelve a ejecutar esto a mitad de la prueba. */
     if (window.top !== window) return;
     try { localStorage.setItem('urbis_licencia_analisis', 'URBIS1.deprueba.deprueba'); } catch (e) {}
+    /* Tres sectores que el curso ya levantó, para que los KPI tengan contra
+       qué compararse. Van con cifras deliberadamente bajas: lo que el curso
+       analiza en esta prueba tiene que salir por encima de las tres, y así
+       la referencia no puede pasar por casualidad. */
+    try {
+      localStorage.setItem('pcr_fichas_v1', JSON.stringify([1, 2, 3].map(function (i) {
+        return { id: 'f' + i, ts: '2026-09-0' + i + 'T12:00:00.000Z', nombre: 'Sector ' + i,
+                 stats: { total: i, densidadPorHa: i, poblacionEstimada: i * 10,
+                          movilidad: { flujo: { peatonal: i, vehicular: i } } } };
+      })));
+    } catch (e) {}
   });
   await pg.goto(base + '/index.html', { waitUntil: 'load' });
   await pg.waitForFunction(() => !!(window.URBIS_EDU && window.AIA_MOTOR), { timeout: 20000 });
@@ -291,7 +302,26 @@ const server = http.createServer((req, res) => {
       // El aviso de sobre-qué-se-analiza tiene que ir ANTES de las cifras.
       posAviso: c.innerHTML.indexOf('edu-base'),
       posKpis: c.innerHTML.indexOf('edu-kpis'),
-      hayInforme: !!document.getElementById('edu-analisis-informe')
+      hayInforme: !!document.getElementById('edu-analisis-informe'),
+      // Los anillos y la referencia de los KPI, desde la v802.
+      refs: Array.from(c.querySelectorAll('.edu-kpi')).map(k => ({
+        etq: (k.querySelector('span') || {}).textContent || '',
+        ref: (k.querySelector('.urb-ref em') || {}).textContent || ''
+      })),
+      anillos: {
+        minis: Array.from(c.querySelectorAll('.urb-anillo-mini')).map(f =>
+          ((f.querySelector('figcaption') || {}).textContent || '') + ' → ' +
+          ((f.querySelector('.urb-anillo-forma') || {}).textContent || '')),
+        trazos: c.querySelectorAll('.urb-anillo-chispa path').length,
+        filas: c.querySelectorAll('.edu-tbl-radios tr').length,
+        actual: c.querySelectorAll('.edu-tbl-radios tr.act').length
+      },
+      // Los anillos que devolvió el motor, para cotejar contra lo pintado.
+      nAnillos: u && u.multiRadio ? (u.multiRadio.anillos || []).length : 0,
+      // Que el censo por anillo llegó: sin `danePorRadio` los anillos caen a
+      // la heurística y el KPI de habitantes contradice la tabla.
+      pobPorAnillo: u && u.multiRadio
+        ? (u.multiRadio.anillos || []).map(a => a.poblacionEstimada) : []
     };
   });
 
@@ -376,6 +406,41 @@ const server = http.createServer((req, res) => {
       'y lo dice con todas las letras: es un ejercicio, no un diagnóstico');
   chk(/Mapeen más cuadras/.test(pocos.txt),
       'con la salida concreta: mapear más y volver a analizar');
+
+  // ── El entorno según la distancia (v802) ──────────────────────────────
+  // El motor ya devolvía estos anillos en el modo educativo desde siempre;
+  // simplemente nadie los pintaba. Para un curso es de las lecturas más
+  // útiles: dice si el sitio que mapearon es un núcleo o un borde, y eso
+  // caminando no se ve.
+  console.log('\n── El entorno según la distancia ───────────────────────────────');
+  console.log('  anillos del motor: ' + r.nAnillos + ' · habitantes por anillo: ' + r.pobPorAnillo.join(' / '));
+  r.anillos.minis.forEach(m => console.log('  ' + m));
+  chk(r.nAnillos >= 2, 'el motor devuelve el sector medido en varios anillos (' + r.nAnillos + ')');
+  chk(r.anillos.minis.length === 4,
+      'y el panel del curso los dibuja, uno por métrica (' + r.anillos.minis.length + ')');
+  chk(r.anillos.trazos >= 8, 'cada gráfico con su área y su línea (' + r.anillos.trazos + ' trazos)');
+  chk(r.anillos.filas === r.nAnillos + 1,
+      'la tabla con los números exactos va debajo (' + r.anillos.filas + ' filas)');
+  chk(r.anillos.actual === 1, 'con el radio analizado marcado, y solo uno');
+  chk(r.anillos.minis.every(m => /baja al alejarse|sube al alejarse|se mantiene/.test(m)),
+      'y cada uno dice en palabras qué forma tiene, que es lo que se lee en un teléfono');
+  // El censo por anillo: si `danePorRadio` no llegara, los anillos caerían a
+  // la estimación heurística y la tabla contradiría el KPI de habitantes.
+  chk(r.pobPorAnillo.length >= 2 && r.pobPorAnillo.every(v => typeof v === 'number' && v >= 0),
+      'cada anillo trae su población, no un hueco (' + r.pobPorAnillo.join('/') + ')');
+
+  // ── Un número con su referencia (v802) ────────────────────────────────
+  console.log('\n── Los KPI y su referencia ────────────────────────────────────');
+  r.refs.forEach(k => console.log('  ' + k.etq + (k.ref ? '   → ' + k.ref : '   (sin referencia)')));
+  const refDe = t => (r.refs.find(k => k.etq.indexOf(t) === 0) || {}).ref;
+  chk(r.refs.length === 4, 'los cuatro KPI del curso siguen ahí (' + r.refs.length + ')');
+  chk(['Habitantes', 'Flujo a pie', 'Flujo vehicular', 'Usos leídos']
+        .every(t => /de 3$|de tus /.test(refDe(t) || '')),
+      'los cuatro se comparan contra los sectores que el curso ya levantó');
+  // Las tres fichas sembradas llevan cifras mínimas a propósito: si la
+  // referencia comparara contra otra cosa —o no comparara— esto no saldría.
+  chk(refDe('Habitantes') === 'el más alto de tus 4',
+      'y la comparación es de verdad, no un texto fijo (' + refDe('Habitantes') + ')');
 
   const ajenos = errores.filter(e => !/Unexpected end of input/.test(e));
   chk(ajenos.length === 0,
