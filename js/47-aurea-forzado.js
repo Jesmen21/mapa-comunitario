@@ -33,7 +33,7 @@
         tipoLow.indexOf('permiso') !== -1 || tipoLow.indexOf('avatar') !== -1 ||
         tipoLow.indexOf('chat') !== -1 || tipoLow.indexOf('peticion') !== -1 ||
         tipoLow.indexOf('emprendimiento') !== -1 || tipoLow.indexOf('portafolio') !== -1 ||
-        tipoLow.indexOf('logo urbis') !== -1) return false;
+        tipoLow.indexOf('logo urbis') !== -1 || tipoLow.indexOf('premio urbis') !== -1) return false;
     var d = String(p.descripcion || '').split(' | ');
     var itemLow = _quitarAc(d[0]);
     var descLow = _quitarAc(p.descripcion);

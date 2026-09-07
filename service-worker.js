@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v792-lo-en-proceso-pesa';
+const URBIS_CACHE = 'urbis-v793-el-premio-llega';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -88,6 +88,7 @@ const URBIS_ASSETS = [
   './js/13g-config-admin.js',
   './js/13h-permisos.js',
   './js/13i-vitrina.js',
+  './js/13j-premio.js',
   './js/13-landing-metrics.js',
   './js/47-aurea-forzado.js',
   './js/50-alerta-forzado.js',
@@ -102,6 +103,7 @@ const URBIS_ASSETS = [
   './js/49-urbis-analisis.js',
   './css/46-runner-strava.css',
   './css/47-aurea-menu.css',
+  './css/48-premio.css',
   './css/48-runner-stats.css',
   './css/49-urbis-analisis.css',
   './css/51-cute-theme-pc.css',

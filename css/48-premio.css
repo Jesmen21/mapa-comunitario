@@ -1,0 +1,182 @@
+/* ==========================================================================
+   URBIS · EL PREMIO DE LOS JUEGOS URBIS (css/48) · va con js/13j
+   --------------------------------------------------------------------------
+   Tres superficies, un solo lenguaje —el dorado del evento premium—:
+   · el HUB del evento (fondo oscuro): el premio es la cifra grande y el botón
+     de jugar queda fijo abajo, al alcance del pulgar;
+   · la tarjeta del evento premium en la lista de Eventos (oscura sobre lista
+     clara, para que se distinga de un evento de barrio);
+   · los avisos de premio en la campanita y el banner del chat (claros, con
+     el ámbar solo en lo que se toca).
+   El dorado se gasta en UNA cosa por superficie: el premio, o el botón.
+   ========================================================================== */
+
+/* ── Hub premium: proporción y el celeste ───────────────────────────────
+   Fondo de noche azul con un halo celeste arriba —de donde nace el premio—
+   y el premio respirando luz. El celeste es el del logo de URBIS (#34CCFE). */
+body #urbis-mobile-app .u52-screen.u52-aurea-screen,
+body #urbis-mobile-app .u52-screen.u52-aurea-screen .u52-content,
+#urbis-mobile-app .u52-aurea-screen #u52-aurea-content,
+body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen{
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(52,204,254,.34), rgba(52,204,254,0) 60%),
+    linear-gradient(165deg,#04121F 0%,#072A45 55%,#04121F 100%) !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-hero{ padding:6px 4px 10px; }
+#urbis-mobile-app .u52-aurea-screen .ah-prize.ah-prize-grande{
+  display:grid; gap:2px; justify-items:center; max-width:none;
+  margin:14px auto 0; padding:16px 18px 14px; border-radius:18px;
+  background:linear-gradient(160deg,rgba(159,235,255,.16),rgba(14,165,233,.06));
+  border:1.5px solid rgba(52,204,254,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.35);
+}
+#urbis-mobile-app .u52-aurea-screen .ah-prize-grande small{
+  font-size:.66rem !important; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
+  color:#7FB6D1 !important; -webkit-text-fill-color:#7FB6D1 !important;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-prize-grande b{
+  font-size:clamp(1.7rem, 8vw, 2.4rem) !important; line-height:1.05; font-weight:900;
+  color:#34CCFE !important; -webkit-text-fill-color:#34CCFE !important;
+  text-shadow:0 0 22px rgba(52,204,254,.45); letter-spacing:-.02em; text-align:center; text-wrap:balance;
+}
+#urbis-mobile-app .u52-aurea-screen .ah-prize-grande span{ margin:6px 0 0; }
+@media (prefers-reduced-motion:no-preference){
+  #urbis-mobile-app .u52-aurea-screen .ah-prize.ah-prize-grande{ animation:premioRespira 3.2s ease-in-out infinite; }
+}
+@keyframes premioRespira{
+  0%,100%{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.35), 0 0 0 0 rgba(52,204,254,0); }
+  50%    { box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.35), 0 0 34px 6px rgba(52,204,254,.28); }
+}
+#urbis-mobile-app .u52-aurea-screen .ah-meta{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:12px; }
+#urbis-mobile-app .u52-aurea-screen .ah-chip{
+  font-size:.74rem; font-weight:800; color:#DDF2FA; -webkit-text-fill-color:#DDF2FA;
+  background:rgba(127,227,255,.08); border:1px solid rgba(52,204,254,.22);
+  padding:6px 10px; border-radius:999px; white-space:nowrap;
+}
+/* El botón de jugar, siempre a la vista: el pie se pega al borde de abajo
+   del área que scrollea, con un degradado que lo separa de la tabla. */
+#urbis-mobile-app .u52-aurea-screen .ah-foot{
+  position:sticky; bottom:0; z-index:2; margin:16px -16px 0;
+  padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,rgba(42,29,6,0) 0%,#072A45 26%);
+}
+
+/* El bloque del ganador / del pago en el hub (evento terminado) */
+.premio-hub{
+  display:grid; gap:6px; padding:14px 16px; margin-bottom:12px; border-radius:16px;
+  background:rgba(127,227,255,.08); border:1px solid rgba(52,204,254,.3); color:#DDF2FA;
+}
+.premio-hub b{ font-size:1rem; font-weight:900; color:#F2FCFF; -webkit-text-fill-color:#F2FCFF; }
+.premio-hub small{ font-size:.8rem; line-height:1.4; color:#A9D4E8; -webkit-text-fill-color:#A9D4E8; }
+.premio-hub-gana{ background:linear-gradient(135deg,rgba(159,235,255,.24),rgba(52,204,254,.1)); border-color:#34CCFE; }
+.premio-hub.premio-estado-ok{ border-color:#4ADE80; }
+.premio-hub-btn{ margin-top:6px; width:100%; }
+.premio-btn-oro{
+  border:none; border-radius:14px; padding:13px 14px; font-weight:900; font-size:.92rem; cursor:pointer;
+  background:linear-gradient(135deg,#34CCFE,#0EA5E9); color:#062A3D !important; -webkit-text-fill-color:#062A3D;
+  box-shadow:0 6px 18px rgba(14,165,233,.4);
+}
+.premio-btn-oro:active{ transform:scale(.98); }
+
+/* ── El estado, en píldora (sirve en claro y en oscuro) ─────────────────── */
+/* Con id delante: css/29 pinta todo `em` de una tarjeta de aviso en verde
+   agua (.u52-noti-card em) y le ganaba a la clase sola. */
+.premio-estado,
+#urbis-mobile-app .u52-noti-card .premio-estado{
+  display:inline-flex; margin-top:6px; font-style:normal; font-weight:900; font-size:.68rem;
+  letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px;
+  background:#DFF5FF; color:#0B5E86 !important; -webkit-text-fill-color:#0B5E86 !important;
+}
+.premio-estado.premio-estado-pago,
+#urbis-mobile-app .u52-noti-card .premio-estado.premio-estado-pago{ background:#E0F2FE; color:#075985 !important; -webkit-text-fill-color:#075985 !important; }
+.premio-estado.premio-estado-ok,
+#urbis-mobile-app .u52-noti-card .premio-estado.premio-estado-ok{ background:#DCFCE7; color:#166534 !important; -webkit-text-fill-color:#166534 !important; }
+
+/* ── La tarjeta de premio en la campanita ───────────────────────────────── */
+#urbis-mobile-app .u52-noti-card.premio{
+  background:linear-gradient(135deg,#EAF9FF,#CFF1FF);
+  box-shadow:0 12px 28px rgba(14,165,233,.2), inset 0 0 0 1.5px #7FD8F5;
+}
+#urbis-mobile-app .u52-noti-card.premio > span{ background:linear-gradient(135deg,#9FEBFF,#34CCFE); }
+#urbis-mobile-app .u52-noti-card.premio b{ color:#0B3B57 !important; -webkit-text-fill-color:#0B3B57 !important; }
+#urbis-mobile-app .u52-noti-card.premio small{ color:#12628A !important; -webkit-text-fill-color:#12628A !important; }
+#urbis-mobile-app .u52-noti-card.premio-pagar{ box-shadow:0 12px 28px rgba(14,165,233,.3), inset 0 0 0 2px #0EA5E9; }
+#urbis-mobile-app .u52-noti-card.premio .premio-alerta{
+  grid-column:1 / -1; margin:0; color:#9A3412 !important; -webkit-text-fill-color:#9A3412 !important; font-weight:800;
+}
+#urbis-mobile-app .u52-noti-card.premio .u52-noti-actions button{
+  background:#FFFFFF; color:#0B3B57; box-shadow:inset 0 0 0 1.5px #7FD8F5; min-height:44px;
+}
+#urbis-mobile-app .u52-noti-card.premio .u52-noti-actions button.premio-btn-oro{
+  background:linear-gradient(135deg,#34CCFE,#0EA5E9); color:#062A3D; box-shadow:none;
+}
+#urbis-mobile-app .u52-noti-card.premio .u52-noti-actions button.ghost{
+  background:transparent; color:#0B5E86; box-shadow:inset 0 0 0 1px #9FD9F0;
+}
+#urbis-mobile-app .u52-noti-card.premio .premio-acciones-3{ grid-template-columns:1fr 1fr; }
+#urbis-mobile-app .u52-noti-card.premio .premio-acciones-3 button:first-child{ grid-column:1 / -1; }
+
+/* ── El banner del chat del premio ──────────────────────────────────────── */
+.premio-chat-banner{
+  display:flex; align-items:center; gap:10px; padding:10px 14px; flex-shrink:0;
+  background:linear-gradient(135deg,#EAF9FF,#CFF1FF); border-bottom:1.5px solid #7FD8F5; color:#0B3B57;
+}
+.premio-chat-banner > div{ flex:1; min-width:0; }
+.premio-chat-ico{ font-size:1.4rem; line-height:1; }
+/* color Y fill: un -webkit-text-fill-color global dejaba el texto del banner
+   casi blanco sobre el crema. */
+.premio-chat-banner b{ display:block; font-size:.9rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#0B3B57; -webkit-text-fill-color:#0B3B57; }
+.premio-chat-banner small{ display:block; font-size:.74rem; line-height:1.35; color:#12628A; -webkit-text-fill-color:#12628A; }
+.premio-chat-banner.premio-estado-ok b{ color:#14532D; -webkit-text-fill-color:#14532D; }
+.premio-chat-btn{
+  border:none; border-radius:12px; padding:9px 12px; font-weight:900; font-size:.78rem; cursor:pointer;
+  background:linear-gradient(135deg,#34CCFE,#0EA5E9); color:#062A3D; white-space:nowrap; flex:0 0 auto;
+}
+.premio-chat-banner.premio-estado-ok{ background:linear-gradient(135deg,#ECFDF5,#D1FAE5); border-color:#86EFAC; color:#14532D; }
+.premio-chat-banner.premio-estado-ok small{ color:#166534; -webkit-text-fill-color:#166534; }
+
+/* ── La tarjeta del evento premium en la lista de Eventos ───────────────── */
+#urbis-mobile-app .ev-movil-card.ev-premium-evento{
+  display:grid; gap:10px; padding:14px;
+  background:
+    radial-gradient(90% 60% at 100% 0%, rgba(52,204,254,.32), rgba(52,204,254,0) 60%),
+    linear-gradient(160deg,#072A45,#04121F); color:#DDF2FA;
+  border:1.5px solid rgba(52,204,254,.55);
+  box-shadow:0 10px 26px rgba(52,204,254,.22), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+#urbis-mobile-app .ev-movil-card.ev-premium-evento.ev-arch{ opacity:1; border-style:solid; filter:saturate(.7); }
+#urbis-mobile-app .ev-premium-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+#urbis-mobile-app .ev-premium-badge{
+  font-size:.62rem; font-weight:900; letter-spacing:.06em; color:#04202F; -webkit-text-fill-color:#04202F;
+  background:linear-gradient(135deg,#9FEBFF,#34CCFE); padding:4px 10px; border-radius:999px;
+}
+#urbis-mobile-app .ev-premium-tiempo{ font-size:.76rem; font-weight:800; color:#9CC9E0; -webkit-text-fill-color:#9CC9E0; }
+#urbis-mobile-app .ev-premium-titulo{
+  margin:0; font-size:1.12rem; font-weight:900; line-height:1.25;
+  color:#F2FCFF; -webkit-text-fill-color:#F2FCFF; text-wrap:balance;
+}
+#urbis-mobile-app .ev-premium-premio{ display:grid; justify-items:start; gap:1px; }
+#urbis-mobile-app .ev-premium-premio small{
+  font-size:.64rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
+  color:#7FB6D1; -webkit-text-fill-color:#7FB6D1;
+}
+#urbis-mobile-app .ev-premium-premio b{
+  font-size:1.7rem; line-height:1.05; font-weight:900; letter-spacing:-.02em;
+  color:#34CCFE; -webkit-text-fill-color:#34CCFE; text-shadow:0 0 18px rgba(52,204,254,.4);
+}
+#urbis-mobile-app .ev-premium-premio span{
+  font-size:.6rem; font-weight:900; letter-spacing:.3px; margin-top:5px; padding:2px 7px; border-radius:8px;
+  background:#0EA5E9; color:#04202F; -webkit-text-fill-color:#04202F;
+}
+#urbis-mobile-app .ev-premium-detalle{ margin:0; font-size:.84rem; line-height:1.45; color:#CFE7F2; -webkit-text-fill-color:#CFE7F2; }
+#urbis-mobile-app .ev-premium-meta{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.76rem; font-weight:700; color:#A9D4E8; -webkit-text-fill-color:#A9D4E8; }
+#urbis-mobile-app .ev-premium-cta{
+  width:100%; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:.95rem; cursor:pointer;
+  background:linear-gradient(135deg,#34CCFE,#0EA5E9); color:#062A3D; -webkit-text-fill-color:#062A3D;
+  box-shadow:0 6px 18px rgba(14,165,233,.4);
+}
+#urbis-mobile-app .ev-premium-cta:active{ transform:scale(.98); }
+
+@media (prefers-reduced-motion:reduce){
+  .premio-btn-oro:active, #urbis-mobile-app .ev-premium-cta:active{ transform:none; }
+}

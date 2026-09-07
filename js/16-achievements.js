@@ -223,7 +223,10 @@
       approvedPlaces: places.size,
       approvedByKind,
       distanceKm: Number(local.distanceKm || 0),
-      runKm: Number(local.runKm || 0)
+      runKm: Number(local.runKm || 0),
+      // Premios de Juegos URBIS que ya me pagaron (js/13j). Antes esta cifra
+      // no la ponía nadie y «Campeón 50K» no se podía ganar.
+      prizeWins: (typeof window.urbisPremiosGanados === 'function') ? window.urbisPremiosGanados() : 0
     };
   }
 

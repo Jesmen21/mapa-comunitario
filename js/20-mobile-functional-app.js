@@ -1131,6 +1131,8 @@
       return;
     }
     list.innerHTML = arr.map(n => {
+      // El premio de los Juegos URBIS (js/13j): ganaste / por pagar / estado.
+      if(n.type === 'premio' && typeof window.urbisTarjetaPremioHTML === 'function') return window.urbisTarjetaPremioHTML(n);
       if(n.type === 'friend_request'){
         const u = n.user || {};
         const name = esc(u.display_name || firstTwoNames(u.nombres || u.nombre_completo || 'Usuario URBIS'));
@@ -1272,8 +1274,12 @@
         // estaba esperando saber.
         const mios = buildMisReportesNotifications();
         _misReportesToast(mios);
-        const all = mios.concat(premiumNotis, notifications);
-        setNotiBadge(mios.length + notifications.length + _aureaBadgeNuevos(premiumNotis));
+        // Y antes que todo, el premio: quien ganó tiene que reclamarlo y quien
+        // administra tiene que pagarlo (js/13j). Un premio por pagar cuenta en
+        // la campanita mientras esté pendiente: es una tarea, no una noticia.
+        const prem = (typeof window.urbisNotificacionesPremio === 'function') ? window.urbisNotificacionesPremio() : { lista: [], nuevos: 0 };
+        const all = prem.lista.concat(mios, premiumNotis, notifications);
+        setNotiBadge(prem.nuevos + mios.length + notifications.length + _aureaBadgeNuevos(premiumNotis));
         renderNotifications(all);
       }
     }catch(e){
@@ -1426,7 +1432,7 @@
     // unos segundos encima del módulo educativo.
     try{ if(typeof window.urbisRenderAlertasForzado === 'function') window.urbisRenderAlertasForzado(); }catch(e){}
     if(screen === 'home' || screen === 'sport' || screen === 'progress' || screen === 'profile' || screen === 'avatar' || screen === 'social' || screen === 'notifications') { renderRealStates(); refreshAvatarUI(); }
-    if(screen === 'notifications'){ try{ _aureaMarkSeen(buildPremiumEventNotifications().map(n => n.id)); }catch(e){} } // al abrir noti, los eventos premium dejan de contar en el badge (pero siguen listados)
+    if(screen === 'notifications'){ try{ _aureaMarkSeen(buildPremiumEventNotifications().map(n => n.id)); }catch(e){} try{ if(typeof window.urbisPremioMarcarVistos === 'function') window.urbisPremioMarcarVistos(); }catch(e){} } // al abrir noti, los eventos premium dejan de contar en el badge (pero siguen listados)
     if(screen === 'home' || screen === 'social' || screen === 'notifications') setTimeout(loadNotifications, 120);
     if(screen === 'social' || screen === 'profile') setTimeout(refreshSocialProfile, 80);
     if(screen === 'social') setTimeout(function(){ try{ if(typeof window.urbisRefrescarInbox==='function') window.urbisRefrescarInbox(window.urbisActualizarBadgeChat); }catch(e){} }, 150);

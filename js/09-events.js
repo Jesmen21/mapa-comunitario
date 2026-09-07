@@ -328,7 +328,12 @@
       // sin esta condición, una hoja sin reportes era un ciclo sin fin.
       if((!Array.isArray(globalData) || !globalData.length) && !window.urbisPuntosCargados){ try{ if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos(); }catch(e){} }
       const adminHTML = _seccionAdminEventos();
+      // Los eventos premium (se juega por dinero) van primero; el resto, del
+      // más nuevo al más viejo.
+      const esPremiumEv = p => { try{ return typeof window.urbisEsEventoAurea === 'function' && window.urbisEsEventoAurea(p); }catch(e){ return false; } };
       const eventos = datosEventosUrbis().filter(p => !obtenerMetaTemporal(p).archivado).sort((a,b) => {
+          const pa = esPremiumEv(a) ? 1 : 0, pb = esPremiumEv(b) ? 1 : 0;
+          if(pa !== pb) return pb - pa;
           const ma = obtenerMetaTemporal(a).creado.getTime(), mb = obtenerMetaTemporal(b).creado.getTime();
           return mb - ma;
       });
@@ -337,6 +342,14 @@
           return;
       }
       cont.innerHTML = _misEventosLinkHTML + adminHTML + '<div class="ev-movil-list">' + eventos.map(p => {
+          // El evento premium tiene su propia tarjeta (js/13j): premio en
+          // grande, cuenta regresiva, quién va ganando y el botón de entrar.
+          // Con la tarjeta genérica salía "Fecha por confirmar · Hora por
+          // confirmar", porque sus notas no llevan esas etiquetas.
+          if(typeof window.urbisTarjetaEventoPremiumHTML === 'function'){
+              const premiumHTML = window.urbisTarjetaEventoPremiumHTML(p);
+              if(premiumHTML) return premiumHTML;
+          }
           const ev = parseEvento(p);
           const icon = iconoEvento(ev.tipo);
           const lat = String(p.lat);

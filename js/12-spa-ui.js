@@ -912,8 +912,11 @@
     // Filas especiales (no son reportes): se identifican por el TEXTO del tipo
     // (no por el emoji, que se corrompe a mojibake al guardarse en el Sheet).
     const tipoTxt = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('logo urbis')!==-1 || t.indexOf('social rush')!==-1; };
+    const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('logo urbis')!==-1 || t.indexOf('social rush')!==-1 || t.indexOf('premio urbis')!==-1; };
     window.urbisRushSocial  = raw.filter(p => tipoTxt(p).indexOf('social rush') !== -1);
+    // Los reclamos de premio de los Juegos URBIS (js/13j): filas compartidas
+    // que cada teléfono administrador convierte en un aviso. No se pintan.
+    window.urbisPremiosFilas = raw.filter(p => tipoTxt(p).indexOf('premio urbis') !== -1);
     window.urbisComentarios = raw.filter(p => tipoTxt(p).indexOf('comentario') !== -1);
     // Las peticiones al administrador salen de globalData (no son reportes y
     // no se pintan), así que necesitan su propio cajón: si no, el buzón del
@@ -2481,9 +2484,13 @@
     else if(miPos) miRow = '<div class="am-me"><span class="am-me-lbl">TU POSICIÓN</span><span class="am-me-pos">#'+miPos+'</span><span class="am-me-user">@'+_escJuego(yoLogin)+'</span><span class="am-me-pts">'+miPts+' pts</span></div>';
     else miRow = '<div class="am-me am-me-out"><span class="am-me-lbl">TU POSICIÓN</span><span>Aún no compites · ¡juega para entrar!</span></div>';
     let accion;
-    if(terminado) accion = lista.length
-      ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
-      : '<div class="am-winner">Evento finalizado sin participantes.</div>';
+    // Terminado: quién ganó y, si soy yo, cómo reclamo; si soy admin, cómo
+    // se paga. Lo arma js/13j sobre la misma tabla que se ve aquí.
+    if(terminado) accion =
+      ((typeof window.urbisBloqueGanadorHTML === 'function') ? window.urbisBloqueGanadorHTML(ctx, lista) : '') +
+      (lista.length
+        ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
+        : '<div class="am-winner">Evento finalizado sin participantes.</div>');
     // Un solo punto de entrada al juego. Antes había dos botones que hacían lo
     // mismo —la tarjeta del medio y este— y competían entre sí; queda el de
     // abajo, que es el que cierra la pantalla, con la descripción del reto
@@ -2495,12 +2502,18 @@
     const gameCard = '';
 
     cont.innerHTML =
+      // El premio es la cifra grande: es lo que se juega. Lo demás —cuándo
+      // termina, cuántos compiten, mi mejor— va en una fila de fichas debajo,
+      // en vez de competir con el premio a golpe de tamaño (css/48).
       '<div class="ah-hero">'+
         '<div class="ah-badge">✨ JUEGOS URBIS · PREMIUM</div>'+
         '<div class="ah-evtitle">'+_escJuego(titulo)+'</div>'+
-        '<div class="ah-prize">🥇 El <b>#1</b> se lleva <b>'+_escJuego(premio)+'</b><span>dinero real</span></div>'+
-        (fin ? '<div class="ah-end">'+(terminado?'🏁 Evento finalizado':'⏳ Termina')+': <b>'+_escJuego(fin)+'</b></div>' : '')+
-        '<div class="ah-record"><span>'+best+'</span><small>TU MEJOR EN EL EVENTO</small></div>'+
+        '<div class="ah-prize ah-prize-grande"><small>El #1 se lleva</small><b>'+_escJuego(premio)+'</b><span>dinero real</span></div>'+
+        '<div class="ah-meta">'+
+          (fin ? '<span class="ah-chip">'+(terminado?'🏁 Terminó':'⏳ Termina')+' '+_escJuego(fin)+'</span>' : '')+
+          '<span class="ah-chip">👥 '+lista.length+(lista.length===1?' jugador':' jugadores')+'</span>'+
+          '<span class="ah-chip">⚡ Tu mejor: '+best+'</span>'+
+        '</div>'+
       '</div>'+
       gameCard+
       '<div class="ah-board"><b class="ah-board-title">🏆 Top jugadores</b>'+boardInner+'</div>'+
@@ -2651,6 +2664,13 @@
         '<button id="urbis-chat-send" style="background:#00B68D;border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.2rem;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(0,182,141,.4);">➤</button>'+
       '</div>';
     document.body.appendChild(ov);
+    // Si entre los dos hay un premio de por medio (js/13j), el chat lo dice
+    // arriba: evento, premio y estado. Es lo que lo hace "el chat del premio"
+    // y no una conversación cualquiera.
+    try{
+      var bnPremio = (typeof window.urbisChatBannerPremio === 'function') ? window.urbisChatBannerPremio(usuario) : '';
+      if(bnPremio){ var wrapB = document.createElement('div'); wrapB.innerHTML = bnPremio; if(wrapB.firstElementChild) ov.firstElementChild.insertAdjacentElement('afterend', wrapB.firstElementChild); }
+    }catch(e){}
     var hilo = ov.querySelector('#urbis-chat-hilo');
     var input = ov.querySelector('#urbis-chat-input');
     var sendBtn = ov.querySelector('#urbis-chat-send');
