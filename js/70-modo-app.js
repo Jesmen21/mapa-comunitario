@@ -50,6 +50,66 @@
     educativo: { modulos: ['procity'], abre: 'procity-open-map' }
   };
 
+  /* La identidad que se lleva el TELÉFONO al instalar.
+     ────────────────────────────────────────────────────────────────────────
+     En Android da igual: el APK ya viene con su nombre y su icono, y el
+     navegador lee el manifiesto. En iPhone no hay APK — se instala desde
+     Safari con «Añadir a pantalla de inicio»— y ahí iOS copia lo que
+     encuentra en la CABECERA de la página que está abierta en ese momento:
+     el `apple-touch-icon` y el `apple-mobile-web-app-title`.
+
+     Como las dos apps son la misma página, index.html declara una sola
+     identidad —la de URBIS— y quien instalaba el modo ciudadano terminaba
+     con el icono celeste y el nombre «URBIS», no con la gota amarilla de
+     URBIS_CO. En Android nunca se notó porque ahí manda el manifiesto.
+
+     Aquí se cambia la cabecera en cuanto se sabe el modo, que es mucho antes
+     de que nadie pueda tocar el botón de Compartir. Se cambia también el
+     manifiesto, para que un Chrome que entre con el parámetro ofrezca
+     instalar URBIS_CO y no la aplicación completa.
+
+     El modo educativo no tiene juego de iconos propio: su APK ya está
+     firmado con el suyo y nadie instala Pro City desde Safari. Si algún día
+     lo necesita, es añadirle una `identidad` aquí. */
+  var IDENTIDADES = {
+    ciudadano: {
+      nombre: 'URBIS_CO',
+      titulo: 'URBIS_CO · reportes y eventos',
+      manifiesto: 'manifest-reportes.json',
+      icono: 'assets/icons/reportes/icon-192.png',
+      iconoApple: 'assets/icons/reportes/icon-180.png',
+      tema: '#1E7A4B'
+    }
+  };
+
+  function ponerIdentidad(id) {
+    if (!id) return;
+    var cab = document.head; if (!cab) return;
+    // Se crea la etiqueta si no estuviera: una cabecera recortada no puede
+    // dejar la app instalada sin icono.
+    function meta(nombre, valor) {
+      var m = cab.querySelector('meta[name="' + nombre + '"]');
+      if (!m) { m = document.createElement('meta'); m.setAttribute('name', nombre); cab.appendChild(m); }
+      m.setAttribute('content', valor);
+    }
+    function enlace(rel, href) {
+      var l = cab.querySelector('link[rel="' + rel + '"]');
+      if (!l) { l = document.createElement('link'); l.setAttribute('rel', rel); cab.appendChild(l); }
+      // El parámetro de versión que llevan los demás recursos NO se copia:
+      // iOS guarda esta dirección tal cual dentro del icono instalado, y una
+      // versión vieja pegada ahí sobrevive a la aplicación entera.
+      l.setAttribute('href', href);
+    }
+    meta('apple-mobile-web-app-title', id.nombre);
+    meta('theme-color', id.tema);
+    enlace('apple-touch-icon', id.iconoApple);
+    enlace('icon', id.icono);
+    enlace('manifest', id.manifiesto);
+    // Safari propone el título de la página como nombre del icono cuando no
+    // hay etiqueta de Apple; con las dos puestas, coinciden.
+    try { document.title = id.titulo; } catch (e) {}
+  }
+
   function modoPedido() {
     try {
       var m = new URLSearchParams(location.search).get('app');
@@ -58,6 +118,11 @@
   }
 
   var MODO = modoPedido();
+
+  /* Cuanto antes: la cabecera tiene que estar puesta mucho antes de que
+     alguien toque Compartir, y no depende de que el resto de la aplicación
+     haya arrancado. */
+  ponerIdentidad(IDENTIDADES[MODO]);
 
   /* Sin parámetro NO se sale: la aplicación completa también quiere los
      iconos del sistema. Lo que sigue atado al modo es lo que cambia QUÉ hay

@@ -134,10 +134,32 @@ const RAIZ = E.RAIZ;
       // …y nada de la carcasa.
       rastroDeCarcasa: !!(document.getElementById('rp-nav') || document.getElementById('rp-reportar') ||
                           document.getElementById('rp-top')),
-      titulo: document.title
+      titulo: document.title,
+      /* Lo que se lleva un iPhone al instalar desde Safari: iOS copia el
+         icono y el nombre de la CABECERA de la página abierta, no del
+         manifiesto. Con una sola identidad en index.html, quien instalaba
+         el modo ciudadano terminaba con el icono celeste de URBIS. */
+      apple: (document.querySelector('link[rel="apple-touch-icon"]') || {}).getAttribute
+        ? document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href') : '',
+      nombreApple: (document.querySelector('meta[name="apple-mobile-web-app-title"]') || {}).getAttribute
+        ? document.querySelector('meta[name="apple-mobile-web-app-title"]').getAttribute('content') : '',
+      manifiesto: (document.querySelector('link[rel="manifest"]') || {}).getAttribute
+        ? document.querySelector('link[rel="manifest"]').getAttribute('href') : '',
+      tema: (document.querySelector('meta[name="theme-color"]') || {}).getAttribute
+        ? document.querySelector('meta[name="theme-color"]').getAttribute('content') : ''
     };
   });
   chk(/\/index\.html/.test(llegada.url), 'la dirección grabada en el APK termina en index.html (' + llegada.url + ')');
+  console.log('\n── Lo que se instala en un iPhone ──────────────────');
+  console.log('  ' + llegada.nombreApple + ' · ' + llegada.apple + ' · ' + llegada.manifiesto);
+  chk(llegada.nombreApple === 'URBIS_CO',
+      'en modo ciudadano, Safari instala con el nombre URBIS_CO (' + llegada.nombreApple + ')');
+  chk(/reportes\/icon-180\.png$/.test(llegada.apple),
+      'y con la gota amarilla, no el icono celeste de URBIS (' + llegada.apple + ')');
+  chk(/manifest-reportes\.json$/.test(llegada.manifiesto),
+      'y el manifiesto que ofrece instalar es el de URBIS_CO (' + llegada.manifiesto + ')');
+  chk(llegada.tema === '#1E7A4B', 'con su color de barra (' + llegada.tema + ')');
+  chk(/URBIS_CO/.test(llegada.titulo), 'el título de la página también dice URBIS_CO (' + llegada.titulo + ')');
   chk(/\?x=1/.test(llegada.url) && /app=ciudadano/.test(llegada.url) && /#\/pantalla\/events/.test(llegada.url),
       'y conserva lo que traía la dirección, más el modo: ' + llegada.url.replace(/^.*index\.html/, 'index.html'));
   chk(llegada.barraDeLaApp, 'lo que se abre es la aplicación de verdad, con su barra de abajo');
