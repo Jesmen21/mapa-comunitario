@@ -1,7 +1,37 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-04",
+  "actualizado": "2026-09-07",
   "alertas": [
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en Ábrego — más de 3.000 hectáreas, 5-6 de septiembre de 2026, Norte de Santander",
+      "lat": 8.0819,
+      "lng": -73.2208,
+      "desde": "2026-09-05",
+      "expira": "2026-09-14",
+      "lineas": [
+        "📅 Comenzó el sábado 5 de septiembre de 2026 en la parte alta de la vereda Monte Redondo y, impulsado por vientos fuertes, avanzó la noche del domingo 6 de septiembre hacia el perímetro urbano de Ábrego (hora de Colombia). Sigue activo.",
+        "📊 Más de 3.000 hectáreas de vegetación, bosque y fuentes hídricas consumidas. Algunas familias fueron evacuadas preventivamente por el avance de las llamas y el humo; el Ministerio del Interior pidió refuerzo de los Bomberos de Ocaña y apoyo aéreo, insuficiente hasta ahora la respuesta terrestre.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Dirección Nacional de Bomberos de Colombia y el Ministerio del Interior. No es un reporte ciudadano."
+      ],
+      "fuente": "Dirección Nacional de Bomberos de Colombia / Ministerio del Interior / prensa nacional (El Tiempo, Infobae)",
+      "url": "https://www.eltiempo.com/colombia/otras-ciudades/voraz-incendio-forestal-en-abrego-norte-de-santander-avanza-hacia-sectores-poblados-y-obliga-a-reforzar-la-respuesta-de-los-organismos-de-socorro-3584085"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en Guabinas — Cerro El Gordo y Dapa, 6 de septiembre de 2026, Yumbo, Valle del Cauca",
+      "lat": 3.5611,
+      "lng": -76.5569,
+      "desde": "2026-09-06",
+      "expira": "2026-09-13",
+      "lineas": [
+        "📅 Se reportó la noche del domingo 6 de septiembre de 2026, hacia las 4:45 p. m. (hora de Colombia), en el sector de Guabinas, entre el Cerro El Gordo y el corregimiento de Dapa, zona rural de Yumbo. Sigue activo.",
+        "📊 Cerca de 150 hectáreas de cobertura vegetal afectadas, con parte del corredor biológico de la Cordillera Occidental comprometido. Más de 30 familias evacuadas preventivamente hacia el coliseo municipal de Yumbo; la UNGRD solicitó apoyo aéreo por la dificultad de acceso terrestre.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Cuerpo de Bomberos de Yumbo y la UNGRD. No es un reporte ciudadano."
+      ],
+      "fuente": "Cuerpo de Bomberos de Yumbo / UNGRD / prensa regional (El Tiempo, Semana, El País)",
+      "url": "https://www.eltiempo.com/colombia/otras-ciudades/grave-incendio-forestal-afecta-zona-montanosa-de-guabinas-y-mantiene-operativo-de-emergencia-en-yumbo-valle-del-cauca-3584073"
+    },
     {
       "tipo": "Zona de inundación activa",
       "titulo": "Emergencia por lluvias e inundaciones en el Meta — 29 municipios afectados, 3 de septiembre de 2026",
