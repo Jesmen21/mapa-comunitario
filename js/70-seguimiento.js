@@ -400,6 +400,7 @@
     });
 
     pintarAccesoMuro();
+    pintarAccesoFicha();
 
     var cuenta = { timeline: nHechos, extranjera: hechosExtranjeros().length,
                    contradicciones: nCx, foda: nFoda, temas: nTemas,
@@ -1377,6 +1378,33 @@
       c.appendChild(b);
     }
     return c;
+  }
+
+  /* Acceso desde la portada. Enseña el veredicto y su regla en una línea: si
+     hubiera que entrar para saber de qué se trata, sería un botón más. */
+  function pintarAccesoFicha() {
+    var b = $('sp-acceso-ficha'); if (!b) return;
+    var f = fichaHasta(null);
+    vaciar(b);
+    b.hidden = false;
+    b.className = 'sp-acceso-ficha sp-fi-v-' + f.veredicto.id;
+    var iniciales = String(D.presidente || '?').split(/\s+/)
+      .filter(function (w) { return w.length > 2; }).slice(0, 2)
+      .map(function (w) { return w[0].toUpperCase(); }).join('');
+    var sello = el('span', 'sp-fi-sello sp-fi-sello-s', iniciales);
+    sello.setAttribute('aria-hidden', 'true');
+    b.appendChild(sello);
+    var mid = el('span', 'sp-af-body');
+    mid.appendChild(el('span', 'sp-af-eyebrow', 'Ficha del gobernante'));
+    mid.appendChild(el('span', 'sp-af-vered', 'Fiabilidad de la palabra: ' + f.veredicto.t));
+    mid.appendChild(el('span', 'sp-af-det',
+      f.palabra.contadas + ' de ' + f.palabra.revisados + ' casos de postura contados · ' +
+      (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % del registro verificado')));
+    b.appendChild(mid);
+    var go = el('span', 'sp-sec-go');
+    go.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+    b.appendChild(go);
+    b.onclick = function () { ir({ v: 'ficha' }); };
   }
 
   function pintarFicha() {

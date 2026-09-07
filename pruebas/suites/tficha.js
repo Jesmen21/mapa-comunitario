@@ -80,6 +80,43 @@ const server = http.createServer((req, res) => {
     return route.fulfill({ status: 200, body: '' });
   });
 
+  /* Primero la PORTADA: la ficha existía pero estaba de quinta en la lista de
+     secciones, debajo de las gráficas y de las cifras. Quien entra pregunta
+     «¿quién gobierna y qué tal va?», y esa respuesta no puede estar a cuatro
+     pantallas de scroll. */
+  await pg.goto(base + '/seguimiento.html', { waitUntil: 'load' });
+  await pg.waitForTimeout(1100);
+  const portada = await pg.evaluate(() => {
+    const b = document.getElementById('sp-acceso-ficha');
+    if (!b || b.hidden) return { hay: false };
+    const home = document.querySelector('[data-view="home"]');
+    const graf = document.getElementById('sp-hero-graf');
+    const nav = document.getElementById('sp-secciones');
+    const r = b.getBoundingClientRect();
+    return { hay: true, txt: b.innerText.replace(/\n/g, ' · '),
+             arribaDeGraficas: !!graf && r.top < graf.getBoundingClientRect().top,
+             arribaDeSecciones: !!nav && r.top < nav.getBoundingClientRect().top,
+             anchoPct: Math.round(100 * r.width / home.getBoundingClientRect().width) };
+  });
+  chk(portada.hay, 'la portada del módulo trae el acceso a la ficha');
+  if (portada.hay) {
+    console.log('\n── El acceso en la portada ─────────────────────────');
+    console.log('  ' + portada.txt);
+    chk(portada.arribaDeGraficas && portada.arribaDeSecciones,
+        'y va arriba: antes de las gráficas y de la lista de secciones');
+    chk(/Fiabilidad de la palabra/.test(portada.txt),
+        'enseña el veredicto sin tener que entrar');
+    chk(/casos de postura contados/.test(portada.txt) && /% del registro verificado/.test(portada.txt),
+        'con las dos cuentas que lo sostienen');
+    chk(portada.anchoPct >= 95, 'ocupando el ancho de la columna (' + portada.anchoPct + '%)');
+    // Y que lleve de verdad a la ficha.
+    await pg.evaluate(() => document.getElementById('sp-acceso-ficha').click());
+    await pg.waitForTimeout(500);
+    const fue = await pg.evaluate(() => (document.querySelector('.sp-view.on') || {}).getAttribute
+      ? document.querySelector('.sp-view.on').getAttribute('data-view') : '');
+    chk(fue === 'ficha', 'y al tocarlo se abre la ficha (' + fue + ')');
+  }
+
   // Enlace profundo: la ficha tiene que abrir sola, no solo si se navega.
   await pg.goto(base + '/seguimiento.html#/ficha-del-gobernante', { waitUntil: 'load' });
   await pg.waitForTimeout(1100);
