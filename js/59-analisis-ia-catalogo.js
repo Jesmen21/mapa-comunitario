@@ -37,6 +37,18 @@
       otro:'#FF00AA'
     };
 
+  /* El uso predominante es una taxonomía MÁS GRUESA que los grupos: no son
+     las mismas categorías y por eso no pueden compartir GRUPO_COLOR. Vive
+     acá y no en el sitio donde se dibuja porque se pinta en tres lugares
+     —la pantalla, el PNG del informe y el pliego— y tenerla escrita tres
+     veces ya había hecho que una copia se ordenara distinto que las otras. */
+  const USO_PRED_COLOR = {
+      residencial:'#ff8a4a', comercial:'#e5484d', institucional:'#3b82f6',
+      servicios:'#14b8a6', industrial:'#8b6f47', mixto:'#6366f1',
+      ambiental:'#22c55e'
+    };
+  const USO_PRED_NEUTRO = '#94a3b8';
+
   const TAXONOMIA = [
       // Salud
       { sub:'drogueria',       nombre:'Droguería',            grupo:'salud',        icono:'💊' },
@@ -255,5 +267,5 @@
     { id:'oficina_indefinida', nombre:'Oficina (por definir)', icono:'🔍💼', generico:true }
   ];
 
-  window.AIA_CATALOGO = { TAXONOMIA, GRUPOS, GRUPO_COLOR, USOS_PROGRAMA };
+  window.AIA_CATALOGO = { TAXONOMIA, GRUPOS, GRUPO_COLOR, USO_PRED_COLOR, USO_PRED_NEUTRO, USOS_PROGRAMA };
 })();

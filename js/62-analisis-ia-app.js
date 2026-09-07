@@ -25,7 +25,11 @@
     usosMixto: [],           // [{id,nombre,icono,esCustom,...}]
     config: {},              // configuración del edificio
     ultimosElementos: null,  // POIs crudos de Overpass, en memoria para recalcular sin red
-    tabActiva: 'nuevo'        // 'nuevo' | 'guardados'
+    tabActiva: 'nuevo',       // 'nuevo' | 'guardados'
+    // Cuál de los guardados es el que está en pantalla, si es que se abrió
+    // uno. Sirve para que la referencia de los KPIs no compare un sector
+    // contra sí mismo y le diga al usuario que está «por encima» de él.
+    idGuardadoActual: null
   };
 
   const $ = id => document.getElementById(id);
@@ -707,6 +711,7 @@
     });
     $('aia-btn-nuevo').addEventListener('click', () => {
       S.resultado = null;
+      S.idGuardadoActual = null;   // análisis nuevo: no es ninguno de los guardados
       S.capaPOIs.clearLayers();
       // El nombre es del proyecto anterior: si no se limpia, el siguiente
       // análisis (de otro lote) hereda por accidente el nombre equivocado.
@@ -894,6 +899,7 @@
     const edif = edificacionDeManuales(S.lote, S.radioM);
     if (edif) resultado.campo = { edificacion: edif };
     S.resultado = resultado;
+    S.idGuardadoActual = null;   // análisis nuevo: no es ninguno de los guardados
     pintarPOIs(resultado.pois);
     renderResultados(resultado);
   }
@@ -1030,6 +1036,7 @@
       const edifRe = edificacionDeManuales(S.lote, S.radioM);
       if (edifRe) resultado.campo = { edificacion: edifRe };
       S.resultado = resultado;
+      S.idGuardadoActual = null;   // análisis nuevo: no es ninguno de los guardados
       pintarPOIs(resultado.pois);
       renderResultados(resultado);
       mostrarOrigenAnalisis();
@@ -1158,19 +1165,26 @@
     $('aia-res-titulo').innerHTML = '<b>' + escHTML(r.meta.proyectoNombre) + '</b> · ' + r.meta.radioM + ' m' +
       (r.meta.direccionAprox ? '<br><small>' + escHTML(r.meta.direccionAprox) + '</small>' : '');
 
+    const idActual = S.idGuardadoActual || null;
+    const ref = (saca, v) => referencia(saca, v, idActual);
     $('aia-kpis').innerHTML =
       kpi(s.poblacionEstimada.toLocaleString('es-CO'),
           s.poblacionProyectada
             ? 'Habitantes (' + s.anioProyeccion + ', proyectado)'
-            : (s.poblacionEsCensal ? 'Habitantes (DANE ' + s.censoAnio + ')' : 'Población estimada')) +
+            : (s.poblacionEsCensal ? 'Habitantes (DANE ' + s.censoAnio + ')' : 'Población estimada'),
+          null, ref(x => x.stats.poblacionEstimada, s.poblacionEstimada)) +
       (s.estrato ? kpi('E' + s.estrato.predominante,
           s.estrato.minimo === s.estrato.maximo ? 'Estrato' : 'Estrato (' + s.estrato.minimo + '–' + s.estrato.maximo + ')',
           '#FABD0A') : '') +
       (s.personasPorVivienda ? kpi(s.personasPorVivienda, 'Personas por vivienda') : '') +
-      kpi(s.total, 'Usos identificados') +
-      kpi(s.densidadPorHa, 'Usos por hectárea') +
-      kpi(s.movilidad.nViasArterias, 'Vías arterias') +
-      kpi(s.movilidad.paradasBus, 'Paradas transporte') +
+      kpi(s.total, 'Usos identificados', null,
+          ref(x => x.stats.total, s.total)) +
+      kpi(s.densidadPorHa, 'Usos por hectárea', null,
+          ref(x => x.stats.densidadPorHa, s.densidadPorHa)) +
+      kpi(s.movilidad.nViasArterias, 'Vías arterias', null,
+          ref(x => x.stats.movilidad.nViasArterias, s.movilidad.nViasArterias)) +
+      kpi(s.movilidad.paradasBus, 'Paradas transporte', null,
+          ref(x => x.stats.movilidad.paradasBus, s.movilidad.paradasBus)) +
       ((s.porGrupo.otro || 0) > 0 ? kpi(s.porGrupo.otro, 'Usos por definir', '#FF00AA') : '');
 
     // Viabilidad o ranking
@@ -1266,9 +1280,11 @@
 
     renderFlujo(r);
     renderIndicadores(r);
+    renderAnillos(r);
     renderCharts(r);
 
     // Tarjetas por grupo
+    $('aia-composicion').innerHTML = bloqueComposicion(r);
     $('aia-tarjetas-categorias').innerHTML = Object.keys(G).filter(g => (s.porGrupo[g] || 0) > 0)
       .sort((a, b) => (s.porGrupo[b] || 0) - (s.porGrupo[a] || 0))
       .map(g => '<div class="aia-cat-card" style="--col:' + C[g] + '">' +
@@ -1551,6 +1567,19 @@
   }
 
   // ── Indicadores urbanos (Fase 2) ────────────────────────────────────────
+  /* Los anillos se pintan en su propio contenedor.
+     Estaban metidos dentro del bloque de indicadores, que empieza con
+     `if (!i) return;`: bastaba que el motor no devolviera indicadores para
+     que el gráfico más analítico del módulo desapareciera sin decir nada,
+     por un dato que no tiene que ver con él. */
+  function renderAnillos(r){
+    const cont = $('aia-anillos');
+    if (!cont) return;
+    const html = bloqueMultiRadio(r);
+    cont.hidden = !html;
+    cont.innerHTML = html;
+  }
+
   function renderIndicadores(r){
     const i = r.indicadores;
     const cont = $('aia-indicadores');
@@ -1709,7 +1738,6 @@
       (i.estacionalidad.notas.length ? '<h3>📅 Estacionalidad</h3><ul class="aia-ind-lista">' +
         i.estacionalidad.notas.map(t => '<li>' + escHTML(t) + '</li>').join('') + '</ul>' : '') +
 
-      bloqueMultiRadio(r) +
 
       '<details class="aia-ind-externo"><summary>⚪ Datos que requieren fuente externa (' + i.requiereFuenteExterna.length + ')</summary>' +
       '<ul class="aia-ind-lista">' + i.requiereFuenteExterna.map(t => '<li>' + escHTML(t) + '</li>').join('') + '</ul>' +
@@ -1718,11 +1746,90 @@
 
   // Comparativa multi-radio (Fase 3). Sale de los mismos datos ya descargados,
   // así que no cuesta ninguna consulta adicional.
+  /* Los anillos, dibujados.
+     Era el dato más analítico que produce el motor —cómo cambia el entorno
+     al alejarse— y se leía como hoja de cálculo. Cada métrica va en su
+     propio gráfico pequeño, porque comparten el eje del radio pero no la
+     escala: usos son cientos, usos/ha son decenas y habitantes son miles;
+     ponerlos en un solo eje aplasta tres de las cuatro líneas contra el
+     suelo y no se lee ninguna.
+
+     Lo que hay que ver de un vistazo es la FORMA, no el número: si una
+     densidad baja al alejarse, el lote está en un núcleo; si sube, está en
+     un borde y lo denso queda afuera. El número exacto sigue en la tabla,
+     debajo, que es donde se consulta y no donde se mira. */
+  function chispaAnillos(anillos, valorDe, color){
+    const vals = anillos.map(valorDe);
+    if (vals.some(v => !isFinite(v))) return '';
+    const min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    const rango = Math.max(1e-9, max - min);
+    const W = 100, H = 30;
+    const px = i => anillos.length < 2 ? W / 2 : (i / (anillos.length - 1)) * W;
+    const py = v => H - ((v - min) / rango) * (H - 6) - 3;
+    const linea = vals.map((v, i) => (i ? 'L' : 'M') + px(i).toFixed(2) + ' ' + py(v).toFixed(2)).join(' ');
+    const area = linea + ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
+    // El anillo analizado se marca: es el que el usuario pidió, y sin él la
+    // curva no dice respecto a qué se está leyendo el resto.
+    const iAct = anillos.findIndex(a => a.esAnalizado);
+    return '<svg class="aia-anillo-chispa" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="' + area + '" fill="' + color + '" opacity=".16"/>' +
+      '<path d="' + linea + '" fill="none" stroke="' + color + '" stroke-width="1.6" ' +
+      'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
+      (iAct >= 0 ? '<circle cx="' + px(iAct).toFixed(2) + '" cy="' + py(vals[iAct]).toFixed(2) +
+                   '" r="2.4" fill="' + color + '" stroke="var(--aia-bg)" stroke-width="1"/>' : '') +
+      '</svg>';
+  }
+
+  function lecturaForma(anillos, valorDe){
+    const v = anillos.map(valorDe);
+    if (v.length < 2 || v.some(x => !isFinite(x))) return '';
+    const primero = v[0], ultimo = v[v.length - 1];
+    if (!primero) return '';
+    const cambio = Math.round(((ultimo - primero) / primero) * 100);
+    if (Math.abs(cambio) < 12) return 'se mantiene';
+    return cambio < 0 ? 'baja al alejarse' : 'sube al alejarse';
+  }
+
+  function graficoAnillos(m){
+    const A = m.anillos;
+    const haDe = a => Math.max(0.01, (Math.PI * a.radioM * a.radioM) / 10000);
+    const METRICAS = [
+      { t: 'Usos por hectárea', c: '#22d3ee', f: a => Number(a.densidadPorHa) || 0, u: '/ha' },
+      { t: 'Comercio por ha',   c: '#e5484d', f: a => (a.comercio || 0) / haDe(a), u: '/ha' },
+      { t: 'Equipamientos por ha', c: '#3b82f6', f: a => (a.equipamientos || 0) / haDe(a), u: '/ha' },
+      { t: 'Habitantes por ha', c: '#22c55e', f: a => (a.poblacionEstimada || 0) / haDe(a), u: '/ha' }
+    ];
+    /* Una densidad de 0,115 equipamientos por hectárea redondeada a un
+       decimal es «0,1», que no distingue 0,05 de 0,14: el dato se pierde
+       justo en el rango donde más importa, el de las cosas escasas. La
+       precisión sigue a la magnitud. */
+    const n1 = x => x >= 100 ? Math.round(x)
+                  : x >= 1   ? Math.round(x * 10) / 10
+                             : Math.round(x * 100) / 100;
+    const etqR = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
+    return '<div class="aia-anillos-grid">' +
+      METRICAS.map(M => {
+        const chispa = chispaAnillos(A, M.f, M.c);
+        if (!chispa) return '';
+        const act = A.find(a => a.esAnalizado) || A[A.length - 1];
+        return '<figure class="aia-anillo-mini">' +
+          '<figcaption>' + M.t + '</figcaption>' +
+          chispa +
+          '<b>' + n1(M.f(act)) + '<small>' + M.u + '</small></b>' +
+          '<small class="aia-anillo-forma">' + (lecturaForma(A, M.f) || '') + '</small>' +
+          '</figure>';
+      }).join('') +
+      '</div>' +
+      '<p class="aia-anillos-eje"><span>' + etqR(A[0].radioM) + '</span>' +
+      '<span>distancia desde el lote</span><span>' + etqR(A[A.length - 1].radioM) + '</span></p>';
+  }
+
   function bloqueMultiRadio(r){
     const m = r.multiRadio;
     if (!m || !m.anillos || m.anillos.length < 2) return '';
     const etq = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
     return '<h3>🎯 El entorno según la distancia</h3>' +
+      graficoAnillos(m) +
       '<table class="aia-tbl-radios"><tr><th>Radio</th><th>Usos</th><th>Usos/ha</th>' +
       '<th>Comercio</th><th>Equip.</th><th>Hab. est.</th></tr>' +
       m.anillos.map(a => '<tr' + (a.esAnalizado ? ' class="act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
@@ -1731,70 +1838,132 @@
       '</table><p class="aia-radio-lectura">' + escHTML(m.lectura) + '</p>';
   }
 
-  function kpi(valor, etiqueta, color){
-    return '<div class="aia-kpi"' + (color ? ' style="border-color:' + color + '"' : '') + '><b' + (color ? ' style="color:' + color + '"' : '') + '>' + valor + '</b><small>' + etiqueta + '</small></div>';
+  function kpi(valor, etiqueta, color, referencia){
+    return '<div class="aia-kpi"' + (color ? ' style="border-color:' + color + '"' : '') + '><b' + (color ? ' style="color:' + color + '"' : '') + '>' + valor + '</b><small>' + etiqueta + '</small>' + (referencia || '') + '</div>';
+  }
+
+  /* ── La referencia ────────────────────────────────────────────────────
+     «38 usos por hectárea» no dice nada solo. Dice algo comparado con los
+     sectores que ESTE usuario ya levantó: los tiene guardados, salen de su
+     propio trabajo y son la única referencia honesta que hay a la mano —no
+     hay una tabla nacional de densidades de sector que se pueda citar—.
+
+     Por eso la referencia dice de cuántos análisis sale y no se muestra con
+     menos de tres: con uno o dos, la «posición» sería ruido con forma de
+     dato. Y compara contra los guardados EXCLUYENDO el actual si ya estaba
+     guardado, para que un sector no se compare consigo mismo. */
+  const REF_MINIMO = 3;
+
+  function valoresGuardados(saca){
+    const out = [];
+    leerGuardados().forEach(g => {
+      let v;
+      try { v = saca(g.resultado); } catch(e) { v = null; }
+      if (typeof v === 'number' && isFinite(v)) out.push({ id: g.id, nombre: g.nombre, v: v });
+    });
+    return out;
+  }
+
+  function referencia(saca, valorActual, idActual){
+    if (typeof valorActual !== 'number' || !isFinite(valorActual)) return '';
+    const otros = valoresGuardados(saca).filter(x => x.id !== idActual);
+    if (otros.length < REF_MINIMO) return '';
+    const vals = otros.map(x => x.v).sort((a, b) => a - b);
+    const min = vals[0], max = vals[vals.length - 1];
+    const debajo = vals.filter(v => v < valorActual).length;
+    // La barra ubica el valor actual dentro del rango de lo ya levantado.
+    // Si se sale del rango, se pega al extremo y el texto lo dice: quedarse
+    // callado ahí sería lo mismo que mentir con un 0 % o un 100 %.
+    const rango = max - min;
+    const pct = rango <= 0 ? 50 : Math.max(0, Math.min(100, ((valorActual - min) / rango) * 100));
+    const texto = valorActual > max ? 'el más alto de tus ' + (otros.length + 1)
+                : valorActual < min ? 'el más bajo de tus ' + (otros.length + 1)
+                : 'por encima de ' + debajo + ' de ' + otros.length;
+    return '<span class="aia-kpi-ref" title="Comparado con tus ' + otros.length + ' análisis guardados">' +
+      '<span class="aia-kpi-riel"><i style="left:' + pct.toFixed(1) + '%"></i></span>' +
+      '<em>' + texto + '</em></span>';
   }
 
   function etiquetaSub(k){
     return { demanda:'Demanda', competencia:'Competencia', complementarios:'Complementarios', movilidad:'Movilidad', entorno:'Entorno' }[k] || k;
   }
 
+  /* La tinta de los gráficos sale del MISMO sitio que la del resto de la
+     pantalla: las variables del CSS. Antes estaba escrita a mano —'#e2e8f0',
+     'rgba(255,255,255,.06)'— y cualquier cambio de tema dejaba los ejes de
+     un color que ya no existía en ninguna otra parte. */
+  function tintaGrafico(){
+    const cs = getComputedStyle(document.documentElement);
+    const v = (n, alt) => (cs.getPropertyValue(n) || '').trim() || alt;
+    return {
+      txt:   v('--aia-texto',  '#f1f5f9'),
+      txt2:  v('--aia-texto2', '#cbd5e1'),
+      rejilla: 'rgba(255,255,255,.06)',
+      fondo: v('--aia-bg',     '#0b1220')
+    };
+  }
+
+  /* Los grupos con datos, SIEMPRE de mayor a menor. El orden del catálogo no
+     dice nada sobre el sector; el tamaño sí, y era el único orden que la
+     pantalla no usaba mientras el PNG del informe sí. */
+  function gruposOrdenados(s){
+    const G = window.AIA_MOTOR.GRUPOS;
+    return Object.keys(G).filter(g => (s.porGrupo[g] || 0) > 0)
+      .sort((a, b) => s.porGrupo[b] - s.porGrupo[a]);
+  }
+
+  /* La composición del sector, en una sola barra apilada.
+     Antes era un donut de hasta siete porciones: nadie compara la quinta
+     porción con la sexta en un anillo. Apiladas comparten una sola línea
+     base, se leen en orden y ocupan la mitad del alto en un teléfono. */
+  function bloqueComposicion(r){
+    const up = (r.stats || {}).usoPredominante || {};
+    const C = window.AIA_MOTOR.USO_PRED_COLOR || {};
+    const NEUTRO = window.AIA_MOTOR.USO_PRED_NEUTRO || '#94a3b8';
+    const claves = Object.keys(up).filter(k => up[k] > 0).sort((a, b) => up[b] - up[a]);
+    if (!claves.length) return '';
+    const nombre = k => k[0].toUpperCase() + k.slice(1);
+    return '<h3>🧱 De qué está hecho el sector</h3>' +
+      '<div class="aia-comp-barra">' +
+      claves.map(k => '<span class="aia-comp-tramo" data-uso="' + escHTML(k) + '"' +
+        ' style="width:' + up[k] + '%;background:' + (C[k] || NEUTRO) + '"' +
+        ' title="' + nombre(k) + ' ' + up[k] + '%"></span>').join('') +
+      '</div>' +
+      '<ul class="aia-comp-leyenda">' +
+      claves.map(k => '<li><i style="background:' + (C[k] || NEUTRO) + '"></i>' +
+        '<b>' + nombre(k) + '</b><span>' + up[k] + '%</span></li>').join('') +
+      '</ul>';
+  }
+
   function renderCharts(r){
     const s = r.stats;
     const G = window.AIA_MOTOR.GRUPOS, C = window.AIA_MOTOR.GRUPO_COLOR;
-    const gruposConDatos = Object.keys(G).filter(g => (s.porGrupo[g] || 0) > 0);
-    const opBase = {
-      responsive: true,
-      plugins: { legend: { labels: { color: '#e2e8f0', font: { size: 11 } } } }
-    };
+    const t = tintaGrafico();
+    const grupos = gruposOrdenados(s);
 
     destruirChart('barras');
     S.charts.barras = new Chart($('aia-chart-barras'), {
       type: 'bar',
       data: {
-        labels: gruposConDatos.map(g => G[g].i + ' ' + G[g].t.split(' ')[0]),
-        datasets: [{ label: 'Usos', data: gruposConDatos.map(g => s.porGrupo[g]), backgroundColor: gruposConDatos.map(g => C[g]) }]
+        labels: grupos.map(g => G[g].i + ' ' + G[g].t.split(' ')[0]),
+        datasets: [{ label: 'Usos', data: grupos.map(g => s.porGrupo[g]), backgroundColor: grupos.map(g => C[g]) }]
       },
-      options: Object.assign({}, opBase, {
+      options: {
+        responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#cbd5e1', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.06)' } },
-          y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,.06)' } }
+          x: { ticks: { color: t.txt2, font: { size: 10 } }, grid: { color: t.rejilla } },
+          y: { ticks: { color: t.txt2 }, grid: { color: t.rejilla } }
         }
-      })
+      }
     });
 
+    // El donut y el radar salieron. El radar dibujaba EXACTAMENTE los mismos
+    // números que las barras —porGrupo—, y sobre conteos absolutos su área no
+    // significa nada: basta cambiar el orden de los ejes para que la figura
+    // cambie de forma. El donut lo reemplaza la barra apilada de arriba.
     destruirChart('donut');
-    const up = s.usoPredominante;
-    const upKeys = Object.keys(up).filter(k => up[k] > 0);
-    const upColores = { residencial:'#ff8a4a', comercial:'#e5484d', institucional:'#3b82f6', servicios:'#14b8a6', industrial:'#8b6f47', mixto:'#6366f1', ambiental:'#22c55e' };
-    S.charts.donut = new Chart($('aia-chart-donut'), {
-      type: 'doughnut',
-      data: {
-        labels: upKeys.map(k => k[0].toUpperCase() + k.slice(1) + ' ' + up[k] + '%'),
-        datasets: [{ data: upKeys.map(k => up[k]), backgroundColor: upKeys.map(k => upColores[k]), borderColor: '#0b1220', borderWidth: 2 }]
-      },
-      options: Object.assign({}, opBase, { cutout: '58%' })
-    });
-
     destruirChart('radar');
-    S.charts.radar = new Chart($('aia-chart-radar'), {
-      type: 'radar',
-      data: {
-        labels: gruposConDatos.map(g => G[g].t.split(' ')[0]),
-        datasets: [{
-          label: 'Usos por grupo', data: gruposConDatos.map(g => s.porGrupo[g]),
-          backgroundColor: 'rgba(34,211,238,.25)', borderColor: '#22d3ee', pointBackgroundColor: '#22d3ee'
-        }]
-      },
-      options: Object.assign({}, opBase, {
-        scales: { r: {
-          ticks: { color: '#94a3b8', backdropColor: 'transparent' },
-          grid: { color: 'rgba(255,255,255,.12)' }, angleLines: { color: 'rgba(255,255,255,.12)' },
-          pointLabels: { color: '#e2e8f0', font: { size: 10 } }
-        } }
-      })
-    });
   }
 
   function destruirChart(nombre){
@@ -1825,6 +1994,8 @@
       modo: S.modo, usosMixto: S.usosMixto, config: S.config, resultado: S.resultado
     });
     escribirGuardados(guardados);
+    S.idGuardadoActual = guardados[guardados.length - 1].id;
+    renderResultados(S.resultado);   // la referencia se recalcula: ya hay uno más
     alert('✅ Análisis guardado. Búscalo en la pestaña "Mis análisis".');
   }
 
@@ -1877,6 +2048,7 @@
     const g = leerGuardados().find(x => x.id === id);
     if (!g) return;
     S.resultado = g.resultado;
+    S.idGuardadoActual = g.id;
     S.lote = { lat: g.lat, lng: g.lng };
     S.radioM = g.radioM;
     S.modo = g.modo;
@@ -1965,12 +2137,13 @@
 
     const up = s.usoPredominante;
     const upKeys = Object.keys(up).filter(k => up[k] > 0).sort((a, b) => up[b] - up[a]);
-    const upColores = { residencial:'#ff8a4a', comercial:'#e5484d', institucional:'#3b82f6', servicios:'#14b8a6', industrial:'#8b6f47', mixto:'#6366f1', ambiental:'#22c55e' };
+    const upColores = window.AIA_MOTOR.USO_PRED_COLOR || {};
+    const upNeutro = window.AIA_MOTOR.USO_PRED_NEUTRO || '#94a3b8';
     out.donut = render({
       type: 'doughnut',
       data: {
         labels: upKeys.map(k => k[0].toUpperCase() + k.slice(1) + ' (' + up[k] + '%)'),
-        datasets: [{ data: upKeys.map(k => up[k]), backgroundColor: upKeys.map(k => upColores[k] || '#94a3b8'), borderColor: t.chartFondo, borderWidth: 2 }]
+        datasets: [{ data: upKeys.map(k => up[k]), backgroundColor: upKeys.map(k => upColores[k] || upNeutro), borderColor: t.chartFondo, borderWidth: 2 }]
       },
       options: {
         responsive: false, animation: false, devicePixelRatio: 2, cutout: '58%',

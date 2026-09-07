@@ -224,6 +224,62 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 .aia-kpi b{ display:block; font-size:1.15rem; color:var(--aia-texto); }
 .aia-kpi small{ display:block; color:var(--aia-texto2); font-size:.62rem; margin-top:2px; }
 
+/* La referencia: dónde cae este sector entre los que el propio usuario ya
+   levantó. Un riel con el rango de lo guardado y una marca en el valor de
+   hoy; debajo, en palabras, porque una marca sola no se lee en un teléfono. */
+.aia-kpi-ref{ display:block; margin-top:6px; }
+.aia-kpi-riel{
+  display:block; position:relative; height:3px; border-radius:2px;
+  background:rgba(255,255,255,.12);
+}
+.aia-kpi-riel i{
+  position:absolute; top:50%; width:7px; height:7px; border-radius:50%;
+  background:var(--aia-acento); transform:translate(-50%,-50%);
+}
+.aia-kpi-ref em{
+  display:block; margin-top:3px; font-style:normal;
+  font-size:.55rem; line-height:1.25; color:var(--aia-texto2);
+}
+
+/* De qué está hecho el sector: una sola barra apilada en vez de un donut de
+   siete porciones. Comparten línea base, así que se comparan de verdad. */
+.aia-comp-barra{
+  display:flex; width:100%; height:26px; border-radius:8px; overflow:hidden;
+  border:1px solid var(--aia-borde); background:var(--aia-card);
+}
+.aia-comp-tramo{ display:block; height:100%; min-width:2px; }
+.aia-comp-leyenda{
+  list-style:none; margin:8px 0 0; padding:0;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:4px 10px;
+}
+.aia-comp-leyenda li{ display:flex; align-items:center; gap:6px; font-size:.68rem; color:var(--aia-texto2); }
+.aia-comp-leyenda i{ flex:0 0 auto; width:10px; height:10px; border-radius:3px; }
+.aia-comp-leyenda b{ color:var(--aia-texto); font-weight:600; }
+.aia-comp-leyenda span{ margin-left:auto; font-variant-numeric:tabular-nums; }
+
+/* Los anillos dibujados: cuatro gráficos pequeños con el mismo eje de radio
+   y escala propia cada uno. Lo que se mira es la forma; el número exacto
+   sigue en la tabla de abajo. */
+.aia-anillos-grid{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:8px 0 4px;
+}
+.aia-anillo-mini{
+  margin:0; padding:8px 10px 7px;
+  background:var(--aia-card); border:1px solid var(--aia-borde); border-radius:12px;
+}
+.aia-anillo-mini figcaption{
+  font-size:.58rem; letter-spacing:.03em; text-transform:uppercase;
+  color:var(--aia-texto2);
+}
+.aia-anillo-chispa{ display:block; width:100%; height:30px; margin:4px 0 2px; overflow:visible; }
+.aia-anillo-mini b{ font-size:.95rem; color:var(--aia-texto); font-variant-numeric:tabular-nums; }
+.aia-anillo-mini b small{ font-size:.55rem; color:var(--aia-texto2); margin-left:2px; }
+.aia-anillo-forma{ display:block; font-size:.55rem; color:var(--aia-texto2); margin-top:1px; }
+.aia-anillos-eje{
+  display:flex; justify-content:space-between; align-items:baseline;
+  margin:0 2px 10px; font-size:.55rem; color:var(--aia-texto2);
+}
+
 /* Score gauge */
 .aia-score-wrap{ display:flex; gap:14px; align-items:center; margin-bottom:10px; }
 .aia-gauge{
