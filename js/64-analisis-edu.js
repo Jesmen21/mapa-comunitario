@@ -467,8 +467,43 @@
     return resultado;
   }
 
+  /* ── Qué forma tiene la traza ──────────────────────────────────────────
+     Va aparte del análisis y a botón, no automático, por dos razones que no
+     son de comodidad:
+
+     · Overpass no acepta dos consultas seguidas: hay cinco segundos de
+       espera entre una y otra. Encadenarla al análisis obligaría a esperar
+       con la pantalla en blanco por un dato que no todos los ejercicios
+       piden.
+
+     · Y esto NO depende de lo que el curso haya mapeado. La forma de la
+       traza sale de las calles que ya están en OpenStreetMap, así que un
+       curso que levantó ocho puntos recibe la misma respuesta que uno que
+       levantó cuatrocientos. Merece decirse en pantalla: es de las pocas
+       cosas del módulo que no mejora mapeando más. */
+  async function forma(centro, radioM){
+    if (!window.AIA_DATOS || !window.AIA_DATOS.consultarVias) {
+      throw new Error('Falta el módulo de datos. Recargá la aplicación.');
+    }
+    if (!window.AIA_REMOTO || !window.AIA_REMOTO.trazado) {
+      throw new Error('El servidor de análisis no está configurado en este navegador.');
+    }
+    const vias = await window.AIA_DATOS.consultarVias(centro.lat, centro.lng, radioM);
+    const trz = await window.AIA_REMOTO.trazado({
+      elementos: vias || [], radioM: radioM, centro: { lat: centro.lat, lng: centro.lng }
+    });
+    return {
+      morfologia: (trz && trz.morfologia) || null,
+      vias: (trz && trz.vias) || null,
+      // Cuántas calles sostienen la respuesta. Sin esto, «ortogonal» sacado
+      // de seis calles se lee igual que sacado de trescientas.
+      nVias: (vias || []).length
+    };
+  }
+
   window.URBIS_EDU = {
     analizar: analizar,
+    forma: forma,
     puntoAElemento: puntoAElemento,
     // Es donde el estado del andén se separa de los elementos y se convierte
     // en caminabilidad: se expone para poder comprobarlo sin montar la app.

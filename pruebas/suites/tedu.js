@@ -185,6 +185,31 @@ const server = http.createServer((req, res) => {
                advertenciaProyeccion: 'La tasa es MUNICIPAL.' };
     };
     window.AIA_DATOS.ubicacionDe = async () => ({ ciudad: 'Cúcuta', departamento: 'Norte de Santander' });
+
+    /* Las calles del sector, para «¿qué forma tiene la traza?». Se sirve un
+       DAMERO de calles cada 100 m, partido cada 50 m como llega de
+       OpenStreetMap: así se sabe qué tiene que contestar el motor. La
+       clasificación en sí la prueba `tforma` con las cinco formas; acá lo
+       que se comprueba es la cadena completa —botón, consulta, motor,
+       pantalla— y que lo que se pinta sea lo que el motor devolvió. */
+    window.__viasPedidas = 0;
+    window.AIA_DATOS.consultarVias = async (lat, lng, radioM) => {
+      window.__viasPedidas++;
+      const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(lat * Math.PI / 180));
+      const P = (dx, dy) => ({ lat: lat + GLAT(dy), lng: lng + GLNG(dx) });
+      const partir = (a, b) => { const out = [];
+        for (let k = 0; k <= 24; k++) out.push({ lat: a.lat + (b.lat - a.lat) * k / 24,
+                                                 lng: a.lng + (b.lng - a.lng) * k / 24 });
+        return out; };
+      const els = []; let id = 1;
+      for (let i = -6; i <= 6; i++) {
+        els.push({ type:'way', id:id++, tags:{ highway:'residential', name:'Calle ' + i },
+                   geometry: partir(P(-600, i*100), P(600, i*100)) });
+        els.push({ type:'way', id:id++, tags:{ highway:'residential', name:'Carrera ' + i },
+                   geometry: partir(P(i*100, -600), P(i*100, 600)) });
+      }
+      return els;
+    };
   });
 
   const ok = [], fallo = [];
@@ -441,6 +466,50 @@ const server = http.createServer((req, res) => {
   // referencia comparara contra otra cosa —o no comparara— esto no saldría.
   chk(refDe('Habitantes') === 'el más alto de tus 4',
       'y la comparación es de verdad, no un texto fijo (' + refDe('Habitantes') + ')');
+
+  // ── ¿Qué forma tiene la traza? (v803) ─────────────────────────────────
+  // Lo pedía el profesor con la infografía de morfología urbana en la mano.
+  // Va a botón y no automático: Overpass no acepta dos consultas seguidas, y
+  // esto NO depende de lo que el curso haya mapeado.
+  const hayBoton = await pg.evaluate(() => !!document.getElementById('edu-forma-btn'));
+  chk(hayBoton, 'el análisis ofrece reconocer la forma de la traza, a botón');
+  chk(await pg.evaluate(() => window.__viasPedidas === 0),
+      'y no baja las calles hasta que se lo piden');
+
+  if (hayBoton) {
+    await pg.evaluate(() => document.getElementById('edu-forma-btn').click());
+    await pg.waitForFunction(() => {
+      const c = document.getElementById('edu-forma');
+      return c && !document.getElementById('edu-forma-btn');
+    }, { timeout: 25000 }).catch(() => {});
+    const fm = await pg.evaluate(() => {
+      const c = document.getElementById('edu-forma') || document.createElement('div');
+      return {
+        nombre: (c.querySelector('.edu-forma-cabeza b') || {}).textContent || '',
+        sub: (c.querySelector('.edu-forma-cabeza small') || {}).textContent || '',
+        porque: (c.querySelector('.edu-forma-porque') || {}).textContent || '',
+        ojo: (c.querySelector('.edu-forma-ojo') || {}).textContent || '',
+        txt: c.innerText,
+        pedidas: window.__viasPedidas
+      };
+    });
+    console.log('\n── La forma de la traza ───────────────────────────────────────');
+    console.log('  ' + fm.nombre + '  ·  ' + fm.sub);
+    console.log('  ' + fm.porque);
+    chk(fm.pedidas === 1, 'al tocarlo baja las calles una sola vez (' + fm.pedidas + ')');
+    chk(fm.nombre === 'Ortogonal',
+        'y reconoce el damero que se le sirvió (' + fm.nombre + ')');
+    chk(/26 calles/.test(fm.sub),
+        'diciendo sobre cuántas calles lo dice (' + fm.sub + ')');
+    chk(/orden|direcciones/.test(fm.porque) && fm.porque.length > 25,
+        'con la medida que lo decidió y no solo la etiqueta');
+    chk(/dentro del radio analizado/.test(fm.ojo),
+        'y con la advertencia de que describe el radio, no la ciudad');
+    // La frase que evita que un curso salga a caminar creyendo que va a
+    // cambiar esta etiqueta.
+    chk(/no de lo que ustedes mapearon|no cambia si mapean más/.test(fm.txt),
+        'dice que esta lectura no depende de lo que el curso mapeó');
+  }
 
   const ajenos = errores.filter(e => !/Unexpected end of input/.test(e));
   chk(ajenos.length === 0,

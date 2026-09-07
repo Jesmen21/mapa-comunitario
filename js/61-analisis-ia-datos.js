@@ -236,6 +236,26 @@
          enteras, y en el mapa salían sin construir. */
       ');out geom 12000;';
   }
+  /* ── Solo las vías ───────────────────────────────────────────────────
+     La consulta de trazado trae edificios, agua y espacio público porque el
+     modo Pro City los necesita para los llenos y vacíos. Para preguntar QUÉ
+     FORMA tiene la traza sobran todos: la morfología sale del rumbo de las
+     calles y de nada más.
+
+     Vale la pena tener las dos. Un curso analiza desde un teléfono con datos
+     móviles, y bajarse las huellas de todos los edificios de 500 m a la
+     redonda —hasta doce mil elementos— para leer una etiqueta que dice
+     «ortogonal» sería cobrarle al estudiante un megabyte por una palabra. */
+  function construirQueryViasCon(a){
+    return '[out:json][timeout:60];(' +
+      'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|pedestrian)$"]' + a + ';' +
+      ');out geom 6000;';
+  }
+  function consultarVias(lat, lng, radioM, forzar){
+    return traer('vias|' + claveCache(lat, lng, radioM),
+                 construirQueryViasCon('(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')'), forzar);
+  }
+
   function consultarTrazado(lat, lng, radioM, forzar){
     return traer('trz|' + claveCache(lat, lng, radioM),
                  construirQueryTrazadoCon('(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')'), forzar);
@@ -820,7 +840,7 @@
 
   window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
-                       consultarTrazado, consultarTrazadoPoligono,
+                       consultarTrazado, consultarTrazadoPoligono, consultarVias,
                        consultarElevacion, rejillaDe, consultarClima,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

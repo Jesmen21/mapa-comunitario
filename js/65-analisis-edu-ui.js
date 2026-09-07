@@ -426,11 +426,17 @@
       cont.innerHTML = bloqueBase(r) + kpis(r) + bloquePoblacion(r) + bloqueFlujo(r) +
                        bloqueCalor(r) + bloqueComposicion(r) + bloqueAnillos(r) +
                        bloqueEdificacion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
+                       '<div class="edu-caja" id="edu-forma"><h4>🔷 ¿Qué forma tiene la traza?</h4>' +
+                         '<p class="edu-nota">Ortogonal, radial, media naranja, lineal o plato roto — medido con el rumbo ' +
+                         'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
+                         '<button type="button" id="edu-forma-btn">🔷 Reconocer la traza</button></div>' +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
                        '</div>';
       const bi = $('edu-analisis-informe');
       if (bi) bi.addEventListener('click', abrirInforme);
+      const bf = $('edu-forma-btn');
+      if (bf) bf.addEventListener('click', () => reconocerForma(centro, radioM));
       try { if (typeof urbisEvaluateAchievements === 'function') urbisEvaluateAchievements('analisis-edu'); } catch(e) {}
     } catch(err) {
       cont.innerHTML = '<p class="edu-nota">No se pudo completar el análisis: ' +
@@ -439,6 +445,60 @@
       if (btn) { btn.disabled = false; btn.textContent = '📊 Analizar lo que mapeamos'; }
     }
   }
+
+  /* ── La forma de la traza ───────────────────────────────────────────────
+     Las cinco de los manuales de morfología urbana. El motor las decide con
+     el rumbo de cada calle: la concentración de direcciones, cuántos metros
+     corren a lo largo del radio desde el centro y cuántos lo cruzan, en
+     cuántos sectores del abanico hay vías y qué tan estirado está el tejido.
+
+     Se muestra el POR QUÉ junto a la etiqueta. Un estudiante que solo lee
+     «Plato roto» aprende una palabra; uno que lee «ninguna dirección ordena
+     el trazado, índice de orden 0,03 sobre 1» aprende a mirar un plano. */
+  const FORMA_ICONO = { ortogonal: '▦', radial: '◎', mediaNaranja: '◐', lineal: '▤', platoRoto: '✳' };
+
+  function bloqueForma(f, nVias, vias){
+    if (!f) {
+      return '<p class="edu-nota">No hay calles con forma suficiente en este radio para describir la traza. ' +
+             'Suele pasar en zonas rurales o donde OpenStreetMap todavía no tiene las vías dibujadas.</p>';
+    }
+    const km = vias && vias.kmTotal ? vias.kmTotal : null;
+    return '<div class="edu-forma-cabeza">' +
+        '<span class="edu-forma-ico">' + (FORMA_ICONO[f.id] || '◇') + '</span>' +
+        '<div><b>' + esc(f.nombre) + '</b>' +
+        '<small>' + nVias + ' calles' + (km ? ' · ' + km + ' km de vía' : '') + '</small></div>' +
+      '</div>' +
+      '<p class="edu-forma-que">' + esc(f.descripcion) + '</p>' +
+      '<p class="edu-forma-porque"><b>Por qué: </b>' + esc(f.porque) + '</p>' +
+      '<p class="edu-nota edu-forma-ojo">⚠️ ' + esc(f.advertencia) + '</p>' +
+      /* Que esto NO dependa de lo que mapearon es información, no una
+         disculpa: en todo el resto del módulo la respuesta mejora mapeando
+         más, y acá no. Si no se dice, un curso puede salir a caminar
+         creyendo que va a cambiar esta etiqueta. */
+      '<p class="edu-nota">Esta lectura sale de las calles que ya están en OpenStreetMap, ' +
+      'no de lo que ustedes mapearon: es la única parte del análisis que no cambia si mapean más.</p>';
+  }
+
+  async function reconocerForma(centro, radioM){
+    const caja = $('edu-forma');
+    if (!caja) return;
+    const btn = $('edu-forma-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Leyendo las calles…'; }
+    try {
+      const f = await window.URBIS_EDU.forma(centro, radioM);
+      ultimaForma = f;
+      caja.innerHTML = '<h4>🔷 ¿Qué forma tiene la traza?</h4>' +
+        bloqueForma((f.morfologia || {}).forma, f.nVias, f.vias);
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔷 Reconocer la traza'; }
+      const p = document.createElement('p');
+      p.className = 'edu-nota';
+      p.textContent = 'No se pudo leer la traza: ' + ((err && err.message) || err);
+      caja.appendChild(p);
+    }
+  }
+
+  let ultimaForma = null;
 
   // El mismo informe de cuatro hojas que reciben las empresas. Que un curso
   // pueda producirlo con su propio levantamiento es justamente el punto.
