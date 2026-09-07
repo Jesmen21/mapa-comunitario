@@ -536,6 +536,25 @@ console.log('\n  -- la ficha del gobernante --');
     malos.length === 0, malos.length ? malos.join(', ') : nCasos + ' casos en ' + REGISTROS.length + ' registros');
   comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
     cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
+
+  /* La nota de cobertura del registro cerrado dice tres números a mano —cuántos
+     hechos hay, cuántos caen dentro del mandato y cuántos después—. Es la única
+     prosa del módulo que afirma cifras sin contarlas, y basta agregar una
+     entrada para que quede mintiendo. Acá se recuenta. */
+  {
+    const pe = JSON.parse(leer('assets/data/seguimiento-petro.json'));
+    const tot = (pe.entradas || []).length;
+    const dentro = (pe.entradas || []).filter(e => e.fecha && e.fecha <= pe.entrega).length;
+    const dice = (pe.cobertura || '').match(/\d+/g) || [];
+    const esperado = [String(tot), String(dentro), String(tot - dentro), String(dentro)];
+    const cuadra = esperado.every(n => dice.includes(n)) &&
+      new RegExp('son ' + tot + ' hechos').test(pe.cobertura || '') &&
+      new RegExp('solo los ' + dentro + ' que ocurrieron').test(pe.cobertura || '') &&
+      new RegExp('los ' + (tot - dentro) + ' posteriores').test(pe.cobertura || '');
+    comprobar('la nota de cobertura del registro cerrado dice los números que de verdad tiene',
+      cuadra, cuadra ? tot + ' hechos · ' + dentro + ' dentro del mandato · ' + (tot - dentro) + ' después'
+                     : 'la nota dice ' + dice.join('/') + ' y el registro tiene ' + esperado.join('/'));
+  }
 }
 
 console.log('\n  -- un nombre, una cosa --');
