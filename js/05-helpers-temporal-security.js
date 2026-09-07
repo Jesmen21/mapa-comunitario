@@ -7,6 +7,24 @@
       });
   }
 
+  /* Un texto que va DENTRO de un manejador escrito en un atributo:
+     onclick="algo('AQUÍ')". Son dos escapes y hacen falta los dos —el de
+     JavaScript para que una comilla no cierre la cadena, y el de HTML para
+     que unas comillas dobles no cierren el atributo—: con uno solo la salida
+     sigue siendo inyectable por el otro lado.
+
+     Vive acá, con `limpiarHTML`, porque lo necesitan varios módulos y ya
+     había dos versiones sueltas que no escapaban lo mismo: una en el mapa,
+     completa, y otra en la interfaz que solo escapaba las comillas dobles,
+     así que la latitud de un reporte —que llega como TEXTO desde la hoja y
+     pasa el `parseFloat` aunque lleve código detrás— cerraba la cadena en
+     los botones de «¿este reporte sigue vigente?». */
+  function limpiarJSEnAtributo(valor) {
+      const js = String(valor ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return limpiarHTML ? js.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                             .replace(/>/g, '&gt;').replace(/"/g, '&quot;') : js;
+  }
+
   function normalizarTexto(valor, fallback = '') {
       const texto = String(valor ?? '').trim();
       return texto === '' ? fallback : texto;

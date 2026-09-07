@@ -224,7 +224,7 @@
 
       const b = (accion, clase, texto) =>
         '<button type="button" class="' + clase + (v.miVoto === accion ? ' uv-elegido' : '') +
-        '" onclick="validarReporteCiudadano(\'' + esc(lat) + '\', \'' + accion + '\', this)">' + texto + '</button>';
+        '" onclick="validarReporteCiudadano(\'' + limpiarJSEnAtributo(lat) + '\', \'' + accion + '\', this)">' + texto + '</button>';
 
       return '<div class="urbis-vigencia' + (v.hayQuePreguntar ? ' uv-preguntando' : '') + '">' +
         '<div class="uv-head">¿Este reporte sigue vigente?</div>' + sub +
@@ -939,10 +939,24 @@
         if(String(p.lat||'').toLowerCase().indexOf('avatar') === 0) return { lng:String(p.descripcion||''), descripcion:String(p.fecha||'') };
         return null;
       }).filter(Boolean);
-      globalData = raw.filter(p => !esMeta(p)).map(p => {
-          if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
-          return p;
-      });
+      /* Una fila rota no puede dejar el mapa vacío. Esto era un `map` sin red:
+         bastaba UNA fila nula o sin descripción —la hoja las produce cuando
+         una escritura se corta a la mitad— para que reventara la línea de
+         arriba, el `catch` del final se lo tragara y `globalData` se quedara
+         como estaba, casi siempre vacío. En pantalla eso no se ve como un
+         error: se ve como un barrio sin un solo reporte, que es justo la
+         confusión que este archivo ya evita al LEER —«un mapa vacío por error
+         se ve idéntico a un barrio sin reportes»— y que al PINTAR seguía
+         abierta. Ahora la fila que no se puede leer se salta y las demás
+         entran. */
+      let rotas = 0;
+      globalData = raw.filter(p => p && !esMeta(p)).map(p => {
+          try {
+            if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
+            return p;
+          } catch(e){ rotas++; return null; }
+      }).filter(Boolean);
+      if(rotas) console.warn('[urbis] ' + rotas + ' fila(s) ilegibles en la hoja: se saltaron y el resto del mapa se pintó.');
       return archivarReportesExpirados(globalData).then(() => globalData);
     })
     .then(() => {

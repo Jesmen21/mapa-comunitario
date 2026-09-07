@@ -113,10 +113,23 @@
       Object.values(capas).forEach(l => l.clearLayers());
       (window.urbisDBRead ? window.urbisDBRead() : Promise.resolve([]))
       .then(data => {
-        globalData = Array.isArray(data) ? data.map(p => {
-            if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
-            return p;
-        }) : [];
+        /* La misma red que en js/12, y por la misma razón: UNA fila nula o
+           ilegible —las que deja una escritura cortada a la mitad— reventaba
+           este `map`, el `catch` del final se lo tragaba y `globalData` se
+           quedaba vacío. En pantalla eso no se ve como un error: se ve como
+           una ciudad sin un solo reporte.
+
+           Hay dos copias de esta carga —esta sustituye a la de js/12 para
+           poder actualizar las métricas de la portada— y la guarda tiene que
+           estar en las dos mientras sigan siendo dos. */
+        let rotasPortada = 0;
+        globalData = Array.isArray(data) ? data.filter(p => p).map(p => {
+            try {
+              if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
+              return p;
+            } catch(e){ rotasPortada++; return null; }
+        }).filter(Boolean) : [];
+        if(rotasPortada) console.warn('[urbis] ' + rotasPortada + ' fila(s) ilegibles en la hoja: se saltaron y el resto del mapa se pintó.');
         actualizarMetricasPortada(globalData);
         return archivarReportesExpirados(globalData).then(() => globalData);
       })

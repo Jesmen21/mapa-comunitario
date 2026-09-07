@@ -339,20 +339,27 @@
     let creadorRol = rolRaw === 'citizen' ? 'Ciudadano' : (rolRaw === 'edu' ? 'Universidad' : (rolRaw === 'gov' ? 'Funcionario/JAC' : 'Administrador'));
     let metaTemporalPopup = obtenerMetaTemporal(p);
     const mostrarEstadoPopup = !SIN_ESTADO.has(p.tipo);
-    let tagValidacion = estadoValidacion === "Pendiente" ? "⚠️ Por validar" : (mostrarEstadoPopup ? `Estado: ${d[3] || 'N/A'}` : '');
+    let tagValidacion = estadoValidacion === "Pendiente" ? "⚠️ Por validar" : (mostrarEstadoPopup ? `Estado: ${limpiarHTML(d[3] || 'N/A')}` : '');
     if(metaTemporalPopup.temporal) tagValidacion += metaTemporalPopup.archivado ? ' · Archivado' : ` · Expira ${formatearFechaHora(metaTemporalPopup.expira)}`;
     let likeBadge = likes > 0 ? `<span class="badge-like">👍 ${likes}</span>` : '';
-    let fotoMiniPopup = (fotoURLPopup && fotoURLPopup !== 'N/A' && fotoURLPopup.trim()) ? `<img class="popup-foto-big" src="${fotoURLPopup}" alt="Evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">` : '';
-    let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${d[2]}</div>` : '';
+    let fotoMiniPopup = (fotoURLPopup && fotoURLPopup !== 'N/A' && fotoURLPopup.trim()) ? `<img class="popup-foto-big" src="${limpiarHTML(fotoURLPopup)}" alt="Evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">` : '';
+    /* La nota del reporte la escribe una persona y va DENTRO del HTML del
+       globo: sin escaparla, un reporte con `<img src=x onerror=…>` en las
+       notas ejecuta código en el navegador de todo el que lo abra, y el
+       token de sesión vive en `localStorage`. Se escapa acá, donde entra al
+       documento, y no al guardarla: lo que se guarda es lo que la persona
+       escribió, y el mismo texto sale también al PDF y a las exportaciones,
+       donde escapado sobraría. */
+    let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
 
     // Botones de dueño dentro del popup (en móvil el popup ES el detalle visible).
     let popupOwnerBtns = '';
     try {
       if(typeof esAutorDelReporte === 'function' && esAutorDelReporte(p)) {
         popupOwnerBtns = `<div class="popup-owner-actions">
-          <button class="po-edit" onclick="window.urbisEditarReporteMovil ? window.urbisEditarReporteMovil('${p.lat}') : (window.prepararEdicion && window.prepararEdicion('${p.lat}'))">✏️ Editar</button>
-          <button class="po-move" onclick="window.urbisIniciarMoverReporte && window.urbisIniciarMoverReporte('${p.lat}','${p.lng}')">📍 Mover</button>
-          <button class="po-del" onclick="window.eliminarPunto && window.eliminarPunto('${p.lat}')">🗑️ Eliminar</button>
+          <button class="po-edit" onclick="window.urbisEditarReporteMovil ? window.urbisEditarReporteMovil('${_escJsAttr(p.lat)}') : (window.prepararEdicion && window.prepararEdicion('${_escJsAttr(p.lat)}'))">✏️ Editar</button>
+          <button class="po-move" onclick="window.urbisIniciarMoverReporte && window.urbisIniciarMoverReporte('${_escJsAttr(p.lat)}','${_escJsAttr(p.lng)}')">📍 Mover</button>
+          <button class="po-del" onclick="window.eliminarPunto && window.eliminarPunto('${_escJsAttr(p.lat)}')">🗑️ Eliminar</button>
         </div>`;
       }
     } catch(e){}
@@ -397,7 +404,7 @@
     let nComent = 0;
     try { nComent = (typeof window.urbisContarComentarios === 'function') ? window.urbisContarComentarios(p.lat) : 0; } catch(e){}
     const tituloComent = String(d[1] || d[0] || 'Reporte').replace(/'/g, '’').replace(/"/g, '');
-    const popupComentarBtn = `<button class="po-coment" onclick="window.urbisAbrirComentarios && window.urbisAbrirComentarios('${p.lat}', '${tituloComent}')">💬 Comentar${nComent ? ' (' + nComent + ')' : ''}</button>`;
+    const popupComentarBtn = `<button class="po-coment" onclick="window.urbisAbrirComentarios && window.urbisAbrirComentarios('${_escJsAttr(p.lat)}', '${tituloComent}')">💬 Comentar${nComent ? ' (' + nComent + ')' : ''}</button>`;
 
     // Denunciar y el aviso de moderación. Van en el popup y en el detalle: el
     // popup es lo primero (y a veces lo único) que abre quien pasa por encima
@@ -430,16 +437,16 @@
       let archivarAureaBtn = '';
       try {
         if(typeof esAutorDelReporte === 'function' && esAutorDelReporte(p)) {
-          archivarAureaBtn = `<button class="cp-archivar-aurea" onclick="window.urbisArchivarEventoAurea && window.urbisArchivarEventoAurea('${p.lat}')">📦 Archivar evento</button>`;
+          archivarAureaBtn = `<button class="cp-archivar-aurea" onclick="window.urbisArchivarEventoAurea && window.urbisArchivarEventoAurea('${_escJsAttr(p.lat)}')">📦 Archivar evento</button>`;
         }
       } catch(e){}
       marker.bindPopup(`
         <div class="coliseo-popup">
           <div class="cp-badge">✨ JUEGOS URBIS · PREMIUM</div>
-          <div class="cp-title">${d[1] || 'Juegos URBIS'}</div>
-          <div class="cp-prize">🏆 El #1 se lleva <b>${premio}</b> <small>(dinero real)</small></div>
-          <div class="cp-desc">📜 ${detalleP}</div>
-          ${finP ? `<div class="cp-end">${terminado ? '🏁 Evento finalizado' : '⏳ Termina'}: <b>${finP}</b></div>` : ''}
+          <div class="cp-title">${limpiarHTML(d[1] || 'Juegos URBIS')}</div>
+          <div class="cp-prize">🏆 El #1 se lleva <b>${limpiarHTML(premio)}</b> <small>(dinero real)</small></div>
+          <div class="cp-desc">📜 ${limpiarHTML(detalleP)}</div>
+          ${finP ? `<div class="cp-end">${terminado ? '🏁 Evento finalizado' : '⏳ Termina'}: <b>${limpiarHTML(finP)}</b></div>` : ''}
           <div class="cp-note">${terminado ? 'Este evento ya terminó. Mira el ranking final 👇' : 'Solo se compite desde aquí. El ganador será contactado por URBIS (chat/notificación) para enviarle el dinero. 🏦'}</div>
           ${botonPremium}
           <button class="cp-play cp-practica" onclick="window.UrbisMobileAppV58 && window.UrbisMobileAppV58.show('games')">🕹️ Practicar gratis en el arcade</button>
@@ -456,15 +463,15 @@
       // sin forma de cerrarlo.
     } else {
       marker.bindPopup(`
-        <div class="popup-header" style="color:${markerColor}">${p.tipo}</div>
+        <div class="popup-header" style="color:${markerColor}">${limpiarHTML(p.tipo)}</div>
         ${avisoModeracion}
-        <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${d[1] || d[0]} ${likeBadge}</span>
+        <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[1] || d[0])} ${likeBadge}</span>
         ${fotoMiniPopup}
         ${descPopup}
         ${victimasHTML}
         ${tagValidacion ? `<span class="popup-state">${tagValidacion}</span>` : ''}
         ${frescuraPopup}
-        <div class="popup-author">👤 <b>${creadorNombre}</b></div>
+        <div class="popup-author">👤 <b>${limpiarHTML(creadorNombre)}</b></div>
         ${popupComentarBtn}
         ${popupDenunciarBtn}
         ${popupOwnerBtns}
@@ -549,7 +556,7 @@
     
     let fotoHTML = (fotoURL && fotoURL !== "N/A" && fotoURL.trim() !== "")
       ? `<figure class="foto-evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.querySelector('img').src)">
-           <img src="${fotoURL}" class="foto-preview-big" alt="Evidencia">
+           <img src="${limpiarHTML(fotoURL)}" class="foto-preview-big" alt="Evidencia">
            <figcaption>📷 Toca para ampliar</figcaption>
          </figure>`
       : '';
@@ -583,10 +590,10 @@
 
     let botonesHTML = `
         ${avisoModDetalle}
-        <button class="btn-edit" style="background:#b8ebe6;color:#000;" onclick="iniciarRutaHacia('${p.lat}', '${p.lng}')">🧭 IR A ESTE PUNTO</button>
+        <button class="btn-edit" style="background:#b8ebe6;color:#000;" onclick="iniciarRutaHacia('${_escJsAttr(p.lat)}', '${_escJsAttr(p.lng)}')">🧭 IR A ESTE PUNTO</button>
         ${vigenciaHTML}
         ${botonDenunciarDetalle}
-        <button class="btn-like" onclick="darLike('${p.lat}', this)">${likeButtonText}</button>
+        <button class="btn-like" onclick="darLike('${_escJsAttr(p.lat)}', this)">${likeButtonText}</button>
         <button class="btn-cancelar" onclick="cancelarRegistro()">VOLVER AL MAPA</button>
     `;
 
@@ -596,9 +603,9 @@
             <div class="owner-actions">
                 <small>Este reporte fue creado por ti.</small>
                 <div class="owner-actions-btns">
-                  <button class="btn-owner-edit" onclick="prepararEdicion('${p.lat}')">✏️ Editar</button>
-                  <button class="btn-owner-move" onclick="window.urbisIniciarMoverReporte('${p.lat}','${p.lng}')">📍 Mover</button>
-                  <button class="btn-owner-del" onclick="eliminarPunto('${p.lat}')">🗑️ Eliminar</button>
+                  <button class="btn-owner-edit" onclick="prepararEdicion('${_escJsAttr(p.lat)}')">✏️ Editar</button>
+                  <button class="btn-owner-move" onclick="window.urbisIniciarMoverReporte('${_escJsAttr(p.lat)}','${_escJsAttr(p.lng)}')">📍 Mover</button>
+                  <button class="btn-owner-del" onclick="eliminarPunto('${_escJsAttr(p.lat)}')">🗑️ Eliminar</button>
                 </div>
             </div>
         ` + botonesHTML;
@@ -610,18 +617,25 @@
         // la tabla de reportes se lee en abierto y publicarlos ahí era regalar
         // el padrón. Para un caso que lo exija de verdad, están en la cuenta
         // del usuario, dentro de la hoja de cálculo, que solo abre el dueño.
+        /* Un reporte anterior a v574 todavía trae la cédula y el correo del
+           autor en su fila, y hasta acá se pintaban en pantalla. Ya no: el rol
+           de administrador se decide en el navegador —sale del objeto de
+           sesión guardado en `localStorage`, que cualquiera edita desde la
+           consola—, así que esto no era «solo para el administrador», era
+           para cualquiera que dijera serlo. Se avisa de que la fila los trae,
+           sin mostrarlos, que es lo que hace falta para ir a limpiarla. */
         const _identidadVieja = (correoVal && correoVal !== 'No registrado') || (cedulaVal && cedulaVal !== 'No registrada');
         datosPrivadosHTML = `
         <div class="private-data">
-            🔒 Autor: <b>${creadorNombre}</b><br>
+            🔒 Autor: <b>${limpiarHTML(creadorNombre)}</b><br>
             ${_identidadVieja
-              ? `<span style="opacity:.85">Reporte antiguo · Cédula: ${cedulaVal} | Correo: ${correoVal}</span><br>`
+              ? `<span style="opacity:.85">⚠️ Reporte antiguo: su fila todavía guarda cédula y correo del autor. No se muestran acá; hay que limpiar esas columnas en la hoja.</span><br>`
               : ''}
             <span style="font-size:.68rem; opacity:.8;">Los datos de identidad no se guardan en el reporte. Están en la cuenta del usuario, dentro de la hoja de URBIS.</span>
         </div>`;
         
         if(estadoValidacion === "Pendiente") {
-            botonesHTML = `<button class="btn-approve" onclick="aprobarPunto('${p.lat}', this)">✅ APROBAR REPORTE</button>` + botonesHTML;
+            botonesHTML = `<button class="btn-approve" onclick="aprobarPunto('${_escJsAttr(p.lat)}', this)">✅ APROBAR REPORTE</button>` + botonesHTML;
         }
         // Moderación: el moderador ve el contenido denunciado (por eso
         // visibleParaRol no se lo esconde) y decide aquí mismo. Devolverlo al
@@ -637,17 +651,17 @@
                     <b>🚩 ${_md.total} denuncia${_md.total === 1 ? '' : 's'}${_md.oculto ? ' · escondido del mapa' : ''}</b>
                     <ul>${_lista}</ul>
                     <div class="um-btns">
-                      <button class="um-restaurar" onclick="window.urbisModerarDesdeDetalle('${p.lat}','restaurar', this)">✅ Devolver al mapa</button>
-                      <button class="um-ocultar" onclick="window.urbisModerarDesdeDetalle('${p.lat}','ocultar', this)">🚫 Mantener escondido</button>
+                      <button class="um-restaurar" onclick="window.urbisModerarDesdeDetalle('${_escJsAttr(p.lat)}','restaurar', this)">✅ Devolver al mapa</button>
+                      <button class="um-ocultar" onclick="window.urbisModerarDesdeDetalle('${_escJsAttr(p.lat)}','ocultar', this)">🚫 Mantener escondido</button>
                     </div>
                   </div>` + botonesHTML;
             }
         } catch(e){}
         botonesHTML = `
             <div class="owner-actions-btns" style="margin-bottom:6px;">
-              <button class="btn-owner-edit" onclick="prepararEdicion('${p.lat}')">✏️ Editar</button>
-              <button class="btn-owner-move" onclick="window.urbisIniciarMoverReporte('${p.lat}','${p.lng}')">📍 Mover</button>
-              <button class="btn-owner-del" onclick="eliminarPunto('${p.lat}')">🗑️ Eliminar</button>
+              <button class="btn-owner-edit" onclick="prepararEdicion('${_escJsAttr(p.lat)}')">✏️ Editar</button>
+              <button class="btn-owner-move" onclick="window.urbisIniciarMoverReporte('${_escJsAttr(p.lat)}','${_escJsAttr(p.lng)}')">📍 Mover</button>
+              <button class="btn-owner-del" onclick="eliminarPunto('${_escJsAttr(p.lat)}')">🗑️ Eliminar</button>
             </div>
         ` + botonesHTML;
     }
@@ -664,13 +678,13 @@
           const _grave = _vd.fallecidosSabidos && _vd.fallecidos !== '0';
           victimasDetalleHTML = `<div class="detalle-victimas${_grave ? ' detalle-victimas-grave' : ''}">` +
             `<b>${_grave ? '🕯️ Hubo víctimas mortales' : '🚑 Personas afectadas'}</b>` +
-            `<span>${_vd.resumen}</span>` +
+            `<span>${limpiarHTML(_vd.resumen)}</span>` +
             `<small>Dato reportado por la comunidad, sin verificación oficial.</small></div>`;
         }
       }
     } catch(e){}
 
-    let tituloEstado = estadoValidacion === "Pendiente" ? `<span class="status-tag st-pendiente">EN REVISIÓN</span>` : (mostrarEstadoDet ? `<span class="status-tag ${stClass}">${d[3] || 'N/A'}</span>` : '');
+    let tituloEstado = estadoValidacion === "Pendiente" ? `<span class="status-tag st-pendiente">EN REVISIÓN</span>` : (mostrarEstadoDet ? `<span class="status-tag ${stClass}">${limpiarHTML(d[3] || 'N/A')}</span>` : '');
     let popularBadge = likes >= 5 ? `<span class="badge-like" style="background:var(--fuchsia); color:white; box-shadow:0 0 8px var(--fuchsia);">🔥 Reporte Comunitario Popular</span>` : '';
     let ownerBadge = etiquetaPropietarioReporte(p);
     let metaTemporalDetalle = obtenerMetaTemporal(p);
@@ -681,7 +695,7 @@
     let temporalHTML = metaTemporalDetalle.temporal ? `<div style="margin-top:8px;"><span class="ttl-pill ${metaTemporalDetalle.archivado ? 'ttl-archived' : 'ttl-active'}">${metaTemporalDetalle.archivado ? 'ARCHIVADO' : 'TEMPORAL ACTIVO'}</span><span style="font-size:.72rem;color:#aeb6c2;"> Creado: ${formatearFechaHora(metaTemporalDetalle.creado)}${_trLabel} · Expira: ${formatearFechaHora(metaTemporalDetalle.expira)}</span></div>` : `<div style="margin-top:8px;"><span class="ttl-pill ttl-active">PERMANENTE</span><span style="font-size:.72rem;color:#aeb6c2;"> Creado: ${formatearFechaHora(metaTemporalDetalle.creado)}${_trLabel}</span></div>`;
 
     document.getElementById('info-content').innerHTML = `
-      <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${d[1] || d[0]}</span> ${tituloEstado}</div>
+      <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(d[1] || d[0])}</span> ${tituloEstado}</div>
       <div class="form-section">
         
         ${alertaValidacionHTML}
@@ -689,16 +703,16 @@
         
         <div class="alert-autor">
             <span style="font-size:0.7rem; color:#aaa;">👤 AUTOR DEL REPORTE:</span><br>
-            <b style="color:#fff;">${creadorNombre}</b> <span style="font-size:0.7rem; color:var(--cyan);">(${creadorRol})</span><br>
-            <span style="font-size:0.75rem; color:#ccc;">📍 Barrio: ${barrioVal}</span>
+            <b style="color:#fff;">${limpiarHTML(creadorNombre)}</b> <span style="font-size:0.7rem; color:var(--cyan);">(${creadorRol})</span><br>
+            <span style="font-size:0.75rem; color:#ccc;">📍 Barrio: ${limpiarHTML(barrioVal)}</span>
             <div style="margin-top:5px;">${popularBadge} ${ownerBadge}</div>
             ${temporalHTML}
             ${datosPrivadosHTML}
         </div>
 
         <label style="font-size:0.7rem; color:var(--cyan);">CLASIFICACIÓN TÉCNICA:</label>
-        <div style="color:#fff; font-weight:bold; font-size:1.1rem; display:flex; align-items:center; gap:8px;">${construirBadgeIcono(p.tipo, d[0])}<span>${p.tipo} - ${d[0]}</span></div>
-        <p style="font-size:0.9rem; color:#ccc; margin-top:10px; background:#1a1a1a; padding:10px; border-radius:4px; border-left: 3px solid var(--cyan);">${d[2] || 'Sin notas.'}</p>
+        <div style="color:#fff; font-weight:bold; font-size:1.1rem; display:flex; align-items:center; gap:8px;">${construirBadgeIcono(p.tipo, d[0])}<span>${limpiarHTML(p.tipo)} - ${limpiarHTML(d[0])}</span></div>
+        <p style="font-size:0.9rem; color:#ccc; margin-top:10px; background:#1a1a1a; padding:10px; border-radius:4px; border-left: 3px solid var(--cyan);">${limpiarHTML(d[2] || 'Sin notas.')}</p>
         
         ${fotoHTML}
 
@@ -720,8 +734,11 @@
     document.getElementById('dashboard-section').style.display = 'block';
   };
 
-  // Escapa un texto para insertarlo dentro de un atributo onclick="...('texto')".
-  function _escJsAttr(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+  /* El escapado de los manejadores vive en js/05, con el de HTML: hacían
+     falta en varios módulos y había dos versiones que no escapaban lo mismo.
+     Ver `limpiarJSEnAtributo`. Se conserva el nombre corto porque lo usan
+     quince botones de este archivo. */
+  function _escJsAttr(s) { return limpiarJSEnAtributo(s); }
 
   // Categoría/alerta elegida desde CUALQUIERA de los dos paneles (Alertas o
   // Mapeo Técnico) ANTES de tocar el mapa: flujo "elijo qué quiero reportar ->
