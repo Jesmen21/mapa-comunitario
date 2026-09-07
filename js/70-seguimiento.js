@@ -126,7 +126,8 @@
     foda:            { n: '03', c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' },
     temas:           { n: '04', c: '#06405A', m: '#0A5678', t: 'Temas de fondo',   d: 'Contexto que no pertenece a una fecha concreta.' },
     indicadores:     { n: '05', c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' },
-    extranjera:      { n: '07', c: '#0F6E62', m: '#2AA391', t: 'Participación extranjera', d: 'Hechos documentados donde interviene un actor de fuera.' }
+    extranjera:      { n: '07', c: '#0F6E62', m: '#2AA391', t: 'Participación extranjera', d: 'Hechos documentados donde interviene un actor de fuera.' },
+    ficha:           { n: '08', c: '#6B4B16', m: '#A67C2E', t: 'Ficha del gobernante', d: 'Rasgos y fiabilidad, contados sobre el registro.' }
   };
   var ICONOS = {
     extranjera:      '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>',
@@ -134,7 +135,8 @@
     contradicciones: '<path d="M8 4v11"/><path d="M5 12l3 3 3-3"/><path d="M16 20V9"/><path d="M13 12l3-3 3 3"/>',
     foda:            '<path d="M4 20V10M10 20V4M16 20v-7M22 20h-2"/><path d="M2 20h20"/>',
     temas:           '<path d="M4 6h16M4 12h16M4 18h10"/>',
-    indicadores:     '<path d="M3 17l5-6 4 4 6-8"/><path d="M15 7h4v4"/>'
+    indicadores:     '<path d="M3 17l5-6 4 4 6-8"/><path d="M15 7h4v4"/>',
+    ficha:           '<path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 8.7l5.4-.8z"/>'
   };
   function pintarSeccion(nodo, v) {
     var s = SECS[v]; if (!s) return;
@@ -189,7 +191,7 @@
       case 'home': return null;
       case 'hoy': case 'balance':
       case 'timeline': case 'contradicciones': case 'foda': case 'temas': case 'indicadores':
-      case 'extranjera':
+      case 'extranjera': case 'ficha':
         return { v: 'home' };
       case 'lista': return { v: 'timeline' };
       // Desde el muro se entra a un hecho sin pasar por la lista de temas: el
@@ -216,6 +218,7 @@
       case 'temas': return '#/temas-de-fondo';
       case 'indicadores': return '#/indicadores';
       case 'extranjera': return '#/participacion-extranjera';
+      case 'ficha': return '#/ficha-del-gobernante';
       case 'tema': return '#/tema/' + r.i;
       default: return '#/';
     }
@@ -241,6 +244,7 @@
       case 'temas-de-fondo': return { v: 'temas' };
       case 'indicadores':    return { v: 'indicadores' };
       case 'participacion-extranjera': return { v: 'extranjera' };
+      case 'ficha-del-gobernante': return { v: 'ficha' };
       case 'tema':           return { v: 'tema', i: +partes[1] || 0 };
       default:               return { v: 'home' };
     }
@@ -272,6 +276,7 @@
       case 'temas': return 'Temas de fondo';
       case 'indicadores': return 'Indicadores';
       case 'extranjera': return 'Participación extranjera';
+      case 'ficha': return 'Ficha del gobernante';
       case 'tema': return (D.transversales[r.i] || {}).titulo || 'Tema';
       default: return '';
     }
@@ -332,6 +337,7 @@
     if (r.v === 'tema') pintarTemaFondo(r.i);
     if (r.v === 'indicadores') pintarIndicadores();
     if (r.v === 'extranjera') pintarExtranjera();
+    if (r.v === 'ficha') pintarFicha();
 
     // La cabecera de cada vista toma el color de su sección
     var vh = document.querySelector('.sp-view.on .sp-vhead');
@@ -397,9 +403,9 @@
 
     var cuenta = { timeline: nHechos, extranjera: hechosExtranjeros().length,
                    contradicciones: nCx, foda: nFoda, temas: nTemas,
-                   indicadores: null, balance: null };
+                   indicadores: null, balance: null, ficha: null };
     var nav = vaciar($('sp-secciones'));
-    ['timeline', 'extranjera', 'contradicciones', 'foda', 'temas', 'indicadores', 'balance'].forEach(function (v) {
+    ['timeline', 'extranjera', 'contradicciones', 'foda', 'ficha', 'temas', 'indicadores', 'balance'].forEach(function (v) {
       var s = SECS[v];
       var b = el('button', 'sp-sec'); b.type = 'button';
       pintarSeccion(b, v);
@@ -1167,6 +1173,391 @@
       d.appendChild(el('p', null, x.d || ''));
       cont.appendChild(d);
     });
+  }
+
+  /* ══ LA FICHA DEL GOBERNANTE ═══════════════════════════════════════════════
+     Pedido: una ficha de personaje al estilo de los generales de Rome: Total
+     War —rasgos, y un nivel de fiabilidad que se mueva con lo que va haciendo—.
+
+     El estilo se toma prestado; el contenido, no. En un juego la fiabilidad es
+     un número que decide el diseñador. Acá se trata de una persona real, así
+     que la ficha no puede tener ni una cifra que no salga de contar el
+     registro. De ahí las tres reglas de esta sección:
+
+     · NADA se escribe a mano aquí. Cada medida es una cuenta sobre lo que ya
+       está en el JSON —hechos, su naturaleza declarada, casos de
+       contradicción, FODA—. Por eso se actualiza sola: cuando la revisión de
+       cada seis horas agrega un hecho, la ficha cambia en la siguiente carga,
+       sin que nadie toque código.
+     · Cada medida dice QUÉ MIDE DE VERDAD. «Claridad» no mide honestidad:
+       mide cuánto de lo registrado quedó verificado por terceros y cuánto
+       quedó en versiones enfrentadas. Confundir las dos cosas es el error que
+       convierte un tablero en una calumnia con estética de tablero.
+     · El veredicto lleva su regla impresa al lado, y debajo van los casos que
+       lo forman, con nombre. Si alguien no está de acuerdo, puede ver
+       exactamente qué se contó y discutirlo.
+
+     Un cambio de postura no es una mentira. Por eso el seguimiento le pone
+     `matiz` a cada caso, y por eso un caso puede llevar `cuenta:false`: queda
+     registrado y visible, pero no suma al veredicto — la conversión religiosa
+     es el ejemplo, y el propio registro dice que no es señalamiento de
+     hipocresía. La decisión de no contarlo está a la vista, no escondida.  */
+
+  // Debajo de esto no hay veredicto que dar: se dice «sin datos suficientes»,
+  // que es la respuesta honesta cuando el registro todavía es corto.
+  var FICHA_MIN_CASOS = 3;
+  var FICHA_MIN_HECHOS = 20;
+
+  var ESCALERA = [
+    { id: 'entredicho', t: 'En entredicho', d: 'Tres o más cambios de postura contados, o menos de la mitad del registro verificado.' },
+    { id: 'reparos',    t: 'Con reparos',   d: 'Uno o dos cambios de postura contados, o menos del 70 % verificado.' },
+    { id: 'sostiene',   t: 'Se sostiene',   d: 'Ningún cambio de postura contado y 70 % o más del registro verificado.' }
+  ];
+
+  function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
+
+  // Un caso pesa en el veredicto si el registro lo dio por documentado y no
+  // lleva `cuenta:false`. Lo segundo es del dato, no del código: quien
+  // documenta el caso es quien sabe si es un giro de discurso o un asunto
+  // personal que no dice nada sobre su palabra.
+  function casoCuenta(c) { return c.estado === 'documentada' && c.cuenta !== false; }
+
+  function hechosDelMandato(dd, corte) {
+    var desde = dd.posesion || '';
+    return (dd.entradas || []).filter(function (e) {
+      if (!e.fecha) return false;
+      if (desde && e.fecha < desde) return false;
+      return corte ? e.fecha <= corte : true;
+    });
+  }
+
+  /* La ficha entera, calculada. Dos parámetros y ninguna lectura de fuera:
+     `dd` es el registro y `corte` permite rehacerla con lo que había en una
+     fecha pasada, que es como se dibuja la serie de abajo —la misma función,
+     no una copia con otras reglas—. Que sea pura es lo que permite probarla
+     con registros de mentira: se le pasa uno con tres cambios de postura y
+     tiene que decir «en entredicho», sin tocar el JSON de verdad. */
+  function fichaDe(dd, corte) {
+    if (!dd) dd = {};
+    var ent = hechosDelMandato(dd, corte);
+    var cx = casosDeCx(dd);
+
+    var palabra = { revisados: cx.length, contadas: 0, noCuentan: 0, tension: 0, desmentidas: 0, casos: [] };
+    cx.forEach(function (c, i) {
+      if (c.estado === 'documentada') {
+        if (casoCuenta(c)) { palabra.contadas++; palabra.casos.push({ c: c, i: i, pesa: true }); }
+        else { palabra.noCuentan++; palabra.casos.push({ c: c, i: i, pesa: false }); }
+      } else if (c.estado === 'tension') { palabra.tension++; palabra.casos.push({ c: c, i: i, pesa: false }); }
+      else if (c.estado === 'desmentida') { palabra.desmentidas++; palabra.casos.push({ c: c, i: i, pesa: false }); }
+    });
+
+    var claridad = { conTipo: 0, verificado: 0, disputado: 0, declaracion: 0, sinTipo: 0, pct: null };
+    ent.forEach(function (e) {
+      var t = e.tipoFuente || '';
+      if (t === 'verificado') { claridad.verificado++; claridad.conTipo++; }
+      else if (t === 'disputado') { claridad.disputado++; claridad.conTipo++; }
+      else if (t === 'declaracion') { claridad.declaracion++; claridad.conTipo++; }
+      else claridad.sinTipo++;
+    });
+    if (claridad.conTipo) claridad.pct = Math.round(100 * claridad.verificado / claridad.conTipo);
+
+    var hasta = corte || (new Date()).toISOString().slice(0, 10);
+    var dias = Math.max(1, Math.round(
+      (new Date(hasta + 'T00:00:00') - new Date((dd.posesion || hasta) + 'T00:00:00')) / 86400000));
+    var ritmo = { hechos: ent.length, dias: dias, porSemana: Math.round(10 * 7 * ent.length / dias) / 10 };
+
+    var porCat = {};
+    ent.forEach(function (e) { porCat[e.categoria] = (porCat[e.categoria] || 0) + 1; });
+    var alcance = {
+      activos: Object.keys(porCat).length,
+      total: Object.keys(dd.categorias || {}).length,
+      top: Object.keys(porCat).map(function (k) { return { k: k, n: porCat[k] }; })
+        .sort(function (a, b) { return b.n - a.n; }).slice(0, 3)
+    };
+
+    var v;
+    if (palabra.revisados < FICHA_MIN_CASOS || ritmo.hechos < FICHA_MIN_HECHOS) {
+      v = { id: 'sin-datos', t: 'Sin datos suficientes',
+            d: 'Hacen falta al menos ' + FICHA_MIN_CASOS + ' casos de postura revisados y ' +
+               FICHA_MIN_HECHOS + ' hechos registrados. Todavía no los hay.' };
+    } else if (palabra.contadas >= 3 || (claridad.pct != null && claridad.pct < 50)) {
+      v = ESCALERA[0];
+    } else if (palabra.contadas >= 1 || (claridad.pct != null && claridad.pct < 70)) {
+      v = ESCALERA[1];
+    } else {
+      v = ESCALERA[2];
+    }
+
+    return { corte: hasta, palabra: palabra, claridad: claridad, ritmo: ritmo,
+             alcance: alcance, veredicto: v };
+  }
+
+  function fichaHasta(corte) { return fichaDe(D, corte); }
+
+  // La serie: la misma ficha rehecha semana a semana desde la posesión. Es lo
+  // que contesta «¿va mejorando o empeorando?» sin que nadie lo opine.
+  //
+  // Con una salvedad que se dice en pantalla y no se disimula: los casos de
+  // contradicción NO llevan fecha en el registro, así que en esta serie no se
+  // mueven. Lo que se mueve es lo fechado —los hechos y su verificación—.
+  function serieFicha() {
+    var desde = D.posesion; if (!desde) return [];
+    var t0 = new Date(desde + 'T00:00:00').getTime();
+    var hoy = Date.now();
+    var out = [];
+    for (var t = t0 + 7 * 86400000; t <= hoy + 6 * 86400000; t += 7 * 86400000) {
+      var parcial = t > hoy;
+      var iso = new Date(parcial ? hoy : t).toISOString().slice(0, 10);
+      var f = fichaHasta(iso);
+      out.push({ corte: iso, hechos: f.ritmo.hechos, pct: f.claridad.pct,
+                 nuevos: 0, parcial: parcial, veredicto: f.veredicto.id });
+      if (parcial) break;
+    }
+    out.forEach(function (p, i) { p.nuevos = p.hechos - (i ? out[i - 1].hechos : 0); });
+    return out;
+  }
+
+  /* Se publica la función PURA además de la que lee el registro cargado: es
+     lo que deja comprobar la escalera del veredicto contra registros armados
+     a mano, sin tener que inventar hechos en el JSON público. */
+  window.URBIS_SEG_FICHA = { calcular: fichaHasta, calcularCon: fichaDe,
+                             serie: serieFicha, escalera: ESCALERA,
+                             minimos: { casos: FICHA_MIN_CASOS, hechos: FICHA_MIN_HECHOS } };
+
+  // ── Piezas de dibujo ──────────────────────────────────────────────────────
+  // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
+  // tramo es cero no se dibuja, y el total va escrito al lado.
+  function barraCuentas(tramos) {
+    var total = tramos.reduce(function (a, b) { return a + b.n; }, 0);
+    var b = el('div', 'sp-fi-barra');
+    b.setAttribute('role', 'img');
+    b.setAttribute('aria-label', tramos.filter(function (x) { return x.n; })
+      .map(function (x) { return x.n + ' ' + x.t; }).join(', ') || 'sin datos');
+    if (!total) { b.appendChild(el('span', 'sp-fi-tramo sp-fi-vacio')); return b; }
+    tramos.forEach(function (x) {
+      if (!x.n) return;
+      var s = el('span', 'sp-fi-tramo sp-fi-c-' + x.c);
+      s.style.flexGrow = String(x.n);
+      s.title = x.n + ' · ' + x.t;
+      b.appendChild(s);
+    });
+    return b;
+  }
+
+  // Con `t1` se escribe el singular. Sin esto la leyenda dice «1 documentados
+  // que no cuentan», y una ficha que no sabe contar hasta uno no invita a
+  // creerle el resto de las cuentas.
+  function leyendaCuentas(tramos) {
+    var l = el('div', 'sp-fi-leg');
+    tramos.forEach(function (x) {
+      if (!x.n && x.ocultarEnCero) return;
+      var i = el('span', 'sp-fi-legit');
+      i.appendChild(el('i', 'sp-fi-pt sp-fi-c-' + x.c));
+      i.appendChild(el('b', null, String(x.n)));
+      i.appendChild(el('span', null, (x.n === 1 && x.t1) ? x.t1 : x.t));
+      l.appendChild(i);
+    });
+    return l;
+  }
+
+  function medida(o) {
+    var c = el('section', 'sp-fi-medida');
+    var h = el('header', 'sp-fi-medh');
+    h.appendChild(el('h3', null, o.nombre));
+    h.appendChild(el('span', 'sp-fi-cifra', o.cifra));
+    c.appendChild(h);
+    c.appendChild(el('p', 'sp-fi-mide', o.mide));
+    c.appendChild(barraCuentas(o.tramos));
+    c.appendChild(leyendaCuentas(o.tramos));
+    if (o.ir) {
+      var b = el('button', 'sp-fi-ver'); b.type = 'button';
+      b.appendChild(el('span', null, o.irTxt || 'Ver la evidencia'));
+      b.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+      b.addEventListener('click', function () { ir(o.ir); });
+      c.appendChild(b);
+    }
+    return c;
+  }
+
+  function pintarFicha() {
+    var f = fichaHasta(null);
+    var cont = vaciar($('sp-ficha'));
+
+    // ── Placa ────────────────────────────────────────────────────────────
+    // Sin retrato: no se usa la cara de una persona real como si fuera la
+    // miniatura de un personaje. Va un sello con sus iniciales.
+    var placa = el('div', 'sp-fi-placa');
+    var iniciales = String(D.presidente || '?').split(/\s+/)
+      .filter(function (w) { return w.length > 2; }).slice(0, 2)
+      .map(function (w) { return w[0].toUpperCase(); }).join('');
+    var sello = el('div', 'sp-fi-sello', iniciales);
+    sello.setAttribute('aria-hidden', 'true');
+    placa.appendChild(sello);
+    var pt = el('div', 'sp-fi-placat');
+    pt.appendChild(el('p', 'sp-fi-cargo', 'Presidente de la República · ' + (D.periodo || '')));
+    pt.appendChild(el('h2', null, D.presidente || '—'));
+    pt.appendChild(el('p', 'sp-fi-dias', 'Día ' + diasDesde(D.posesion) + ' de gobierno · ' +
+      f.ritmo.hechos + ' hechos registrados desde la posesión'));
+    placa.appendChild(pt);
+    cont.appendChild(placa);
+
+    // ── Veredicto ────────────────────────────────────────────────────────
+    var ver = el('section', 'sp-fi-ver-box sp-fi-v-' + f.veredicto.id);
+    ver.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad de la palabra'));
+    ver.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
+    var esc = el('div', 'sp-fi-esc');
+    esc.setAttribute('aria-label', 'Escalera: ' + ESCALERA.map(function (x) { return x.t; }).join(', '));
+    ESCALERA.forEach(function (x) {
+      var p = el('span', 'sp-fi-paso' + (x.id === f.veredicto.id ? ' on' : ''), x.t);
+      p.title = x.d;
+      esc.appendChild(p);
+    });
+    ver.appendChild(esc);
+    ver.appendChild(el('p', 'sp-fi-vregla', f.veredicto.d));
+    ver.appendChild(el('p', 'sp-fi-vnota',
+      'No mide honestidad ni intención: mide dos cosas contables — cuántos cambios de postura ' +
+      'quedaron documentados, y qué parte del registro está verificada por terceros. ' +
+      'Se recalcula sola cada vez que entra un hecho nuevo.'));
+    cont.appendChild(ver);
+
+    // ── Los casos que forman el veredicto ────────────────────────────────
+    if (f.palabra.casos.length) {
+      var lc = el('section', 'sp-fi-casos');
+      lc.appendChild(el('h3', null, 'Qué se contó, caso por caso'));
+      f.palabra.casos.forEach(function (o) {
+        var it = el('button', 'sp-fi-caso' + (o.pesa ? ' pesa' : '')); it.type = 'button';
+        it.appendChild(el('span', 'sp-fi-marca', o.pesa ? '●' : '○'));
+        var m = el('span', 'sp-fi-casot');
+        m.appendChild(el('b', null, o.c.tema || 'Caso'));
+        m.appendChild(el('span', 'sp-fi-casod', o.pesa
+          ? 'Cuenta: cambio de postura documentado.'
+          : (o.c.estado === 'desmentida' ? 'No cuenta: la acusación fue desmentida por los verificadores.'
+            : o.c.estado === 'tension' ? 'No cuenta: es una tensión interna del programa, no dos frases opuestas.'
+            : 'No cuenta: el registro lo documenta, pero anotó que no es señalamiento de hipocresía.')));
+        it.appendChild(m);
+        it.addEventListener('click', function () { ir({ v: 'contradicciones' }); });
+        lc.appendChild(it);
+      });
+      cont.appendChild(lc);
+    }
+
+    // ── Las cuatro medidas ───────────────────────────────────────────────
+    var meds = el('div', 'sp-fi-meds');
+    meds.appendChild(medida({
+      nombre: 'Palabra',
+      cifra: f.palabra.contadas + ' de ' + f.palabra.revisados,
+      mide: 'De los casos donde el seguimiento pudo comparar lo que dijo antes con lo que dice ahora, cuántos quedaron documentados como cambio.',
+      tramos: [
+        { c: 'mal', n: f.palabra.contadas,    t: 'cambios contados', t1: 'cambio contado' },
+        { c: 'med', n: f.palabra.tension,     t: 'en tensión' },
+        { c: 'gris', n: f.palabra.noCuentan,  t: 'documentados que no cuentan', t1: 'documentado que no cuenta' },
+        { c: 'ok',  n: f.palabra.desmentidas, t: 'acusaciones desmentidas', t1: 'acusación desmentida' }
+      ],
+      ir: { v: 'contradicciones' }, irTxt: 'Ver los casos con sus dos fuentes'
+    }));
+    meds.appendChild(medida({
+      nombre: 'Claridad',
+      cifra: (f.claridad.pct == null ? '—' : f.claridad.pct + ' %'),
+      mide: 'De lo registrado con naturaleza declarada, qué parte confirmaron varios medios y qué parte quedó en versiones enfrentadas o en una sola voz. Mide el registro, no la intención.',
+      tramos: [
+        { c: 'ok',  n: f.claridad.verificado,  t: 'verificados', t1: 'verificado' },
+        { c: 'med', n: f.claridad.disputado,   t: 'disputados', t1: 'disputado' },
+        { c: 'mal', n: f.claridad.declaracion, t: 'de una sola voz' },
+        { c: 'gris', n: f.claridad.sinTipo,    t: 'sin naturaleza declarada' }
+      ],
+      ir: { v: 'lista', tema: 'todos' }, irTxt: 'Ver la línea de tiempo'
+    }));
+    meds.appendChild(medida({
+      nombre: 'Ritmo',
+      cifra: String(f.ritmo.porSemana).replace('.', ',') + ' / semana',
+      mide: 'Hechos registrados por semana desde la posesión. Mide actividad que llega a los medios, no aciertos: un gobierno muy activo puede estarlo en la dirección equivocada.',
+      tramos: [{ c: 'act', n: f.ritmo.hechos, t: 'hechos en ' + f.ritmo.dias + ' días', t1: 'hecho en ' + f.ritmo.dias + ' días' }],
+      ir: { v: 'timeline' }, irTxt: 'Ver por temas'
+    }));
+    meds.appendChild(medida({
+      nombre: 'Frentes',
+      cifra: f.alcance.activos + ' de ' + f.alcance.total,
+      mide: 'En cuántos de los frentes que sigue el módulo hay al menos un hecho. Dice en cuántos terrenos está actuando a la vez.',
+      tramos: f.alcance.top.map(function (x, i) {
+        return { c: ['act', 'med', 'gris'][i], n: x.n, t: cat(x.k).nombre };
+      }).concat([{ c: 'gris2', n: f.ritmo.hechos - f.alcance.top.reduce(function (a, b) { return a + b.n; }, 0), t: 'los demás frentes' }]),
+      ir: { v: 'timeline' }, irTxt: 'Ver por temas'
+    }));
+    cont.appendChild(meds);
+
+    // ── Rasgos ───────────────────────────────────────────────────────────
+    // Salen del FODA, que es donde el seguimiento ya escribe su lectura con la
+    // evidencia detrás. Repetir el ejercicio acá sería inventar una segunda
+    // opinión sin registro que la sostenga.
+    var fo = D.foda || {};
+    var rasgos = el('section', 'sp-fi-rasgos');
+    rasgos.appendChild(el('h3', null, 'Rasgos'));
+    rasgos.appendChild(el('p', 'sp-fi-mide',
+      'Los rasgos no se calculan: son los puntos del FODA, que es donde el seguimiento escribe su ' +
+      'lectura con el hecho documentado detrás. Cambian cuando cambia el FODA.'));
+    [{ k: 'fortalezas', c: 'fav', t: 'A favor' }, { k: 'debilidades', c: 'con', t: 'En contra' }]
+      .forEach(function (g) {
+        (fo[g.k] || []).forEach(function (x) {
+          var r = el('article', 'sp-fi-rasgo sp-fi-r-' + g.c);
+          var hd = el('header');
+          hd.appendChild(el('span', 'sp-fi-rsigno', g.c === 'fav' ? '+' : '−'));
+          hd.appendChild(el('b', null, x.t || ''));
+          r.appendChild(hd);
+          r.appendChild(el('p', null, x.d || ''));
+          rasgos.appendChild(r);
+        });
+      });
+    var verFoda = el('button', 'sp-fi-ver'); verFoda.type = 'button';
+    verFoda.appendChild(el('span', null, 'Ver el FODA completo'));
+    verFoda.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+    verFoda.addEventListener('click', function () { ir({ v: 'foda' }); });
+    rasgos.appendChild(verFoda);
+    cont.appendChild(rasgos);
+
+    // ── Cómo se ha movido ────────────────────────────────────────────────
+    var serie = serieFicha();
+    if (serie.length) {
+      var ev = el('section', 'sp-fi-serie');
+      ev.appendChild(el('h3', null, 'Cómo se ha movido'));
+      ev.appendChild(el('p', 'sp-fi-mide',
+        'La misma ficha rehecha semana a semana. Las barras son los hechos nuevos de cada semana; ' +
+        'la línea de abajo, la parte verificada del registro acumulado. Los casos de postura no ' +
+        'llevan fecha en el registro, así que en esta serie no se mueven: lo que se mueve es lo fechado.'));
+      var maxN = serie.reduce(function (a, p) { return Math.max(a, p.nuevos); }, 1);
+      var g = el('div', 'sp-fi-graf');
+      serie.forEach(function (p) {
+        var col = el('div', 'sp-fi-col' + (p.parcial ? ' parcial' : ''));
+        col.title = fechaCorta(p.corte) + ' · ' + p.nuevos + ' hechos nuevos · ' +
+                    (p.pct == null ? 'sin verificación declarada' : p.pct + ' % verificado') +
+                    (p.parcial ? ' · semana todavía en curso' : '');
+        var bar = el('span', 'sp-fi-bar');
+        bar.style.height = Math.max(3, Math.round(100 * p.nuevos / maxN)) + '%';
+        col.appendChild(bar);
+        col.appendChild(el('span', 'sp-fi-pct', p.pct == null ? '—' : p.pct + '%'));
+        /* La última columna casi siempre es una semana a medias. Sin decirlo,
+           su barra corta se lee como una caída de actividad que no ocurrió. */
+        col.appendChild(el('span', 'sp-fi-sem', p.parcial ? 'en curso'
+          : fechaCorta(p.corte).replace(/ \d{4}$/, '')));
+        g.appendChild(col);
+      });
+      ev.appendChild(g);
+      cont.appendChild(ev);
+    }
+
+    // ── Lo que esta ficha NO dice ────────────────────────────────────────
+    var lim = el('section', 'sp-fi-limites');
+    lim.appendChild(el('h3', null, 'Lo que esta ficha no dice'));
+    var ul = el('ul');
+    [
+      'No es una nota de gestión. Nada de lo que se cuenta aquí mide si una decisión fue buena para el país.',
+      'No mide honestidad. Mide constancia del discurso y verificabilidad del registro, que son otra cosa.',
+      'Depende del registro: si un hecho no está documentado con fuente, para esta ficha no existe. Cubre desde la posesión, no la vida anterior de la persona.',
+      'Una acusación desmentida no suma en contra. Se deja a la vista, marcada como desmentida.'
+    ].forEach(function (t) { ul.appendChild(el('li', null, t)); });
+    lim.appendChild(ul);
+    lim.appendChild(el('p', 'sp-fi-mide', 'Última actualización del registro: ' +
+      fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION + '.'));
+    cont.appendChild(lim);
   }
 
   // ── Temas de fondo ────────────────────────────────────────────────────────

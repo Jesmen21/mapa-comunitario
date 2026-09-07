@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v776-el-viento-tiene-nombre';
+const URBIS_CACHE = 'urbis-v777-la-ficha-se-cuenta-sola';
 const URBIS_ASSETS = [
   './',
   './index.html',

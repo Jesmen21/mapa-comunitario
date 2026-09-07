@@ -1261,3 +1261,149 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-ext-item h3{ margin:0 0 6px; font-size:16px; line-height:1.35; color:var(--sp-tinta,#0C3B5E) }
 .sp-ext-item-fuente{ margin:0; font-size:13px; color:var(--sp-tinta-suave,#456B87) }
 .sp-ext-item-contra{ margin:6px 0 0; font-size:13px; color:#8A5D12 }
+
+/* ── Ficha del gobernante ────────────────────────────────────────────────
+   La estética viene de las fichas de personaje de los juegos de estrategia:
+   placa oscura con filete dorado, sello, y los rasgos en tarjetas. Lo que NO
+   se copia es la ligereza: debajo de la placa todo vuelve al lenguaje del
+   módulo —tarjeta clara, tipografía del sistema, cifras tabulares— porque lo
+   que se está mostrando son cuentas sobre una persona real, no atributos de
+   un general de mentiras. El dorado se usa una vez, en la placa; si se
+   repartiera por toda la sección, la ficha pasaría a leerse como un juego. */
+.sp-ficha{ display:grid; gap:18px; }
+
+.sp-fi-placa{
+  display:flex; align-items:center; gap:18px; padding:22px 24px;
+  background:linear-gradient(160deg,#26313F 0%,#1B2430 60%,#161E28 100%);
+  border:1px solid #3A4756; border-radius:var(--r);
+  box-shadow:inset 0 0 0 1px rgba(217,180,106,.28), var(--sombra);
+  color:#EAF0F6;
+}
+.sp-fi-sello{
+  flex:0 0 auto; width:62px; height:62px; border-radius:50%;
+  display:grid; place-items:center; font-size:22px; font-weight:700; letter-spacing:.5px;
+  color:#D9B46A; background:rgba(217,180,106,.08);
+  border:1px solid rgba(217,180,106,.55); box-shadow:inset 0 0 0 3px rgba(217,180,106,.14);
+}
+.sp-fi-placat{ min-width:0; }
+.sp-fi-placa h2{ margin:2px 0 4px; font-size:1.35rem; line-height:1.2; color:#fff; }
+.sp-fi-cargo{
+  margin:0; font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:#D9B46A;
+}
+.sp-fi-dias{ margin:0; font-size:.85rem; color:#AFBCC9; font-variant-numeric:tabular-nums; }
+
+/* El veredicto: el dato más delicado de la sección, así que va con su regla
+   pegada debajo y no como un titular suelto. */
+.sp-fi-ver-box{
+  padding:20px 22px; background:var(--sup); border:1px solid var(--linea);
+  border-left:4px solid var(--ink-2); border-radius:var(--r-s);
+}
+.sp-fi-v-sostiene{ border-left-color:var(--celeste-mark); }
+.sp-fi-v-reparos{ border-left-color:var(--ambar); }
+.sp-fi-v-entredicho{ border-left-color:var(--rojo); }
+.sp-fi-v-sin-datos{ border-left-color:var(--linea); }
+.sp-fi-vlabel{
+  margin:0; font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-2);
+}
+.sp-fi-vval{ margin:2px 0 12px; font-size:1.5rem; font-weight:700; color:var(--petroleo); line-height:1.15; }
+.sp-fi-esc{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.sp-fi-paso{
+  font-size:.78rem; font-weight:600; padding:5px 11px; border-radius:999px;
+  border:1px solid var(--linea); color:var(--ink-2); background:var(--marfil);
+}
+.sp-fi-paso.on{ border-color:var(--petroleo); background:var(--petroleo); color:#fff; }
+.sp-fi-vregla{ margin:0 0 10px; font-size:.88rem; line-height:1.55; color:var(--ink); }
+.sp-fi-vnota{ margin:0; font-size:.82rem; line-height:1.55; color:var(--ink-2); }
+
+/* Caso por caso: sin esto el veredicto sería un número sin cara. */
+.sp-fi-casos{ display:grid; gap:8px; }
+.sp-fi-casos h3{ margin:0 0 2px; font-size:.95rem; color:var(--petroleo); }
+.sp-fi-caso{
+  display:flex; gap:12px; align-items:flex-start; width:100%; text-align:left; cursor:pointer;
+  padding:12px 14px; background:var(--sup); border:1px solid var(--linea);
+  border-radius:var(--r-s); font:inherit; color:inherit;
+}
+.sp-fi-caso:hover{ border-color:var(--petroleo-2); }
+.sp-fi-caso:focus-visible{ outline:2px solid var(--verde); outline-offset:2px; }
+.sp-fi-marca{ flex:0 0 auto; font-size:.8rem; line-height:1.5; color:var(--linea); }
+.sp-fi-caso.pesa .sp-fi-marca{ color:var(--rojo); }
+.sp-fi-casot{ min-width:0; }
+.sp-fi-casot b{ display:block; font-size:.9rem; font-weight:600; color:var(--petroleo); }
+.sp-fi-casod{ display:block; font-size:.82rem; line-height:1.5; color:var(--ink-2); margin-top:2px; }
+
+/* Las cuatro medidas */
+.sp-fi-meds{ display:grid; gap:12px; }
+@media (min-width:720px){ .sp-fi-meds{ grid-template-columns:1fr 1fr; } }
+/* La tarjeta se llama `medida` y no `med`: `sp-fi-med` era también el tramo
+   ámbar de las barras, y el punto de la leyenda salía en blanco sobre blanco
+   —«10 disputados» sin su color— porque la regla de la tarjeta lo pisaba. */
+.sp-fi-medida{
+  padding:16px 18px; background:var(--sup); border:1px solid var(--linea); border-radius:var(--r-s);
+}
+.sp-fi-medh{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.sp-fi-medh h3{ margin:0; font-size:.95rem; color:var(--petroleo); }
+.sp-fi-cifra{ font-size:1.05rem; font-weight:700; color:var(--petroleo); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.sp-fi-mide{ margin:6px 0 12px; font-size:.82rem; line-height:1.55; color:var(--ink-2); }
+
+/* La barra: cada tramo crece con su CUENTA. No hay porcentaje redondeado que
+   pueda hacer parecer más grande un tramo de dos casos. */
+.sp-fi-barra{ display:flex; height:10px; border-radius:999px; overflow:hidden; background:var(--linea-2); }
+.sp-fi-tramo{ display:block; min-width:3px; }
+.sp-fi-c-ok{ background:var(--celeste-mark); }
+.sp-fi-c-med{ background:var(--ambar); }
+.sp-fi-c-mal{ background:var(--rojo); }
+.sp-fi-c-act{ background:var(--petroleo-2); }
+.sp-fi-c-gris{ background:#B9C3CA; }
+.sp-fi-c-gris2{ background:#DDE3E7; }
+.sp-fi-vacio{ flex:1; background:var(--linea-2); }
+.sp-fi-leg{ display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:10px; }
+.sp-fi-legit{ display:inline-flex; align-items:center; gap:5px; font-size:.79rem; color:var(--ink-2); }
+.sp-fi-legit b{ font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.sp-fi-pt{ width:9px; height:9px; border-radius:3px; display:inline-block; }
+.sp-fi-ver{
+  display:inline-flex; align-items:center; gap:6px; margin-top:12px; padding:0;
+  background:none; border:0; cursor:pointer; font:inherit;
+  font-size:.82rem; font-weight:600; color:var(--celeste-hi);
+}
+.sp-fi-ver svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+.sp-fi-ver:hover{ text-decoration:underline; }
+
+/* Rasgos */
+.sp-fi-rasgos{ display:grid; gap:10px; }
+.sp-fi-rasgos h3{ margin:0; font-size:.95rem; color:var(--petroleo); }
+.sp-fi-rasgo{
+  padding:14px 16px; background:var(--sup); border:1px solid var(--linea);
+  border-left:3px solid var(--linea); border-radius:var(--r-s);
+}
+.sp-fi-rasgo header{ display:flex; align-items:baseline; gap:8px; }
+.sp-fi-rasgo b{ font-size:.92rem; font-weight:600; color:var(--petroleo); }
+.sp-fi-rasgo p{ margin:5px 0 0; font-size:.86rem; line-height:1.56; color:var(--ink-2); }
+.sp-fi-rsigno{ font-weight:700; font-size:1rem; line-height:1; }
+.sp-fi-r-fav{ border-left-color:var(--celeste-mark); }
+.sp-fi-r-fav .sp-fi-rsigno{ color:var(--celeste-hi); }
+.sp-fi-r-con{ border-left-color:var(--ambar); }
+.sp-fi-r-con .sp-fi-rsigno{ color:var(--amarillo-hi); }
+
+/* Serie semanal */
+.sp-fi-serie{ padding:16px 18px; background:var(--sup); border:1px solid var(--linea); border-radius:var(--r-s); }
+.sp-fi-serie h3{ margin:0; font-size:.95rem; color:var(--petroleo); }
+.sp-fi-graf{ display:flex; align-items:flex-end; gap:8px; overflow-x:auto; padding-bottom:4px; }
+.sp-fi-col{ flex:1 0 46px; display:flex; flex-direction:column; align-items:center; height:132px; justify-content:flex-end; }
+.sp-fi-bar{ width:100%; max-width:34px; background:var(--celeste-mark); border-radius:4px 4px 0 0; }
+.sp-fi-pct{ font-size:.72rem; font-weight:700; color:var(--petroleo); margin-top:6px; font-variant-numeric:tabular-nums; }
+.sp-fi-sem{ font-size:.68rem; color:var(--ink-2); white-space:nowrap; }
+.sp-fi-col.parcial .sp-fi-bar{
+  background:repeating-linear-gradient(45deg,#9FC7DC 0 4px,#CFE2EC 4px 8px);
+}
+.sp-fi-col.parcial .sp-fi-sem{ font-style:italic; }
+
+/* Los límites, que son parte de la ficha y no letra chica */
+.sp-fi-limites{
+  padding:16px 18px; background:var(--marfil); border:1px solid var(--linea);
+  border-radius:var(--r-s);
+}
+.sp-fi-limites h3{ margin:0 0 8px; font-size:.95rem; color:var(--petroleo); }
+.sp-fi-limites ul{ margin:0 0 10px; padding-left:20px; display:grid; gap:7px; }
+.sp-fi-limites li{ font-size:.85rem; line-height:1.55; color:var(--ink-2); }

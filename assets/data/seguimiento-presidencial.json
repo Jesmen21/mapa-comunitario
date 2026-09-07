@@ -2749,10 +2749,11 @@
     }
   },
   "contradicciones": {
-    "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento.",
+    "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento. Un caso puede llevar 'cuenta': false: queda registrado y visible, pero NO suma al veredicto de fiabilidad de la Ficha del gobernante. Se usa cuando el propio matiz dice que el giro no habla de su palabra —una conversión religiosa, por ejemplo—. La ficha muestra esos casos igual, marcados como no contados y con el motivo, para que la decisión esté a la vista y no escondida en el código.",
     "casos": [
       {
         "estado": "documentada",
+        "cuenta": false,
         "tema": "Religión: de ateo declarado a activista religioso",
         "antes": "Durante años se declaró ateo. En una entrevista de 2017, al preguntarle por qué se casó por la Iglesia siendo ateo, respondió: “Uno hace estupideces y bobadas por amor”. También dijo: “No creía en nada raro ni diferente, no creía en nada que la razón no pudiera explicar”.",
         "despues": "Hoy se define cristiano católico y activista religioso. Sitúa su conversión hace cinco o seis años, tras la muerte de su prima Beatriz: dice haber sentido en el funeral una paz inexplicable, “un abrazo invisible”.",
