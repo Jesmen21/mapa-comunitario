@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v788-cada-quien-a-lo-suyo';
+const URBIS_CACHE = 'urbis-v789-cada-quien-a-lo-suyo';
 const URBIS_ASSETS = [
   './',
   './index.html',

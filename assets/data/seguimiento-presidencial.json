@@ -74,6 +74,52 @@
   },
   "entradas": [
     {
+      "fecha": "2026-09-07",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "De la Espriella reúne en Quibdó a diez de los empresarios más grandes del país para definir el plan de reconstrucción del Chocó",
+      "detalle": "El presidente encabezó en Quibdó una cumbre con representantes del sector empresarial para coordinar la reconstrucción del Chocó tras el terremoto de magnitud 7,4 del 10 de agosto. Confirmaron su participación, entre otros, Jaime y Gabriel Gilinski, Alejandro Santo Domingo, Luis Carlos Sarmiento, Fuad Char, Juan Carlos Mora, César Caicedo, Miguel Cortés y Christian Daes, junto con representantes de la Organización Ardila Lülle y de Nubank. El encuentro buscó instalar mesas técnicas de trabajo conjunto entre el Gobierno y el sector privado; entre las prioridades presentadas por la administración departamental figura un plan de emergencia para las cerca de 6.000 viviendas que quedaron totalmente destruidas en el territorio, además de compromisos en acueductos, colegios y centros de salud.",
+      "contrapunto": "Es un anuncio de coordinación y de mesas de trabajo; a la fecha no se han hecho públicas cifras vinculantes de inversión ni cronogramas concretos por parte de los empresarios convocados, ni una verificación independiente de su cumplimiento.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · 10 grandes empresarios de Colombia llegarán a Chocó junto a Abelardo de la Espriella para definir un plan de reconstrucción",
+          "u": "https://www.infobae.com/colombia/2026/09/07/10-grandes-empresarios-de-colombia-llegaran-a-choco-junto-a-abelardo-de-la-espriella-para-definir-un-plan-de-reconstruccion/"
+        },
+        {
+          "n": "La República · Esta es la comitiva de empresarios que acompañará a De la Espriella en su visita a Chocó",
+          "u": "https://www.larepublica.co/empresas/esta-es-la-comitiva-de-empresarios-que-acompanara-a-de-la-espriella-en-su-visita-a-choco-4475860"
+        },
+        {
+          "n": "La Razón · Presidente De La Espriella se reunirá con empresarios en Quibdó este lunes para definir la reconstrucción tras el terremoto",
+          "u": "https://larazon.co/presidente-de-la-espriella-se-reunira-con-empresarios-en-quibdo-este-lunes-para-definir-la-reconstruccion-tras-el-terremoto/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-06",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "De la Espriella advierte a quienes dispararon en el funeral de alias 'Bendito Menor': «así terminarán los que no se sometan»",
+      "detalle": "Videos del sepelio en La Guajira de Naín Andrés Pérez Toncel, alias 'Bendito Menor', cabecilla de las Autodefensas Conquistadores de la Sierra Nevada dado de baja el 4 de septiembre, mostraron a hombres armados disparando al aire durante el funeral como despliegue de intimidación hacia las comunidades. El presidente reaccionó públicamente ordenando a la Fuerza Pública identificar y perseguir a quienes escoltaron el sepelio con disparos: «Están advertidos, miserables», dijo, y advirtió que quien siguiera ese camino «terminará como él».",
+      "contrapunto": "La frase se suma al mismo estilo de mano dura que ya había generado críticas de organizaciones de derechos humanos —documentadas en esta cronología a propósito de la Operación Azarías en Guaviare—: anunciar el resultado antes de cualquier proceso judicial reabre el debate sobre medir el éxito de la seguridad en bajas y no en capturas o condenas. Hasta la fecha no se ha reportado ninguna detención derivada específicamente de esta orden.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · «Están advertidos, miserables»: Abelardo de la Espriella ordena ir por los hombres armados que escoltaron el funeral de Bendito Menor en La Guajira",
+          "u": "https://www.infobae.com/colombia/2026/09/06/estan-advertidos-miserables-abelardo-de-la-espriella-ordena-ir-por-los-hombres-armados-que-escoltaron-el-funeral-de-bendito-menor-en-la-guajira/"
+        },
+        {
+          "n": "El Tiempo · Presidente Abelardo De La Espriella advierte a quienes despidieron con disparos a alias Bendito Menor: 'Terminarán como él'",
+          "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/presidente-abelardo-de-la-espriella-advierte-a-quienes-despidieron-con-disparos-a-alias-bendito-menor-terminaran-como-el-3584006"
+        },
+        {
+          "n": "El País (Cali) · Presidente De La Espriella tras operativo contra 'Bendito menor': «así terminarán los que no se sometan, los que infundan terror»",
+          "u": "https://www.elpais.com.co/judicial/presidente-de-la-espriella-tras-operativo-contra-bendito-menor-asi-terminaran-los-que-no-se-sometan-los-que-infundan-terror-0438.html"
+        }
+      ]
+    },
+    {
       "fecha": "2026-09-01",
       "precision": "aproximada",
       "categoria": "gobierno",
