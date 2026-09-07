@@ -5,7 +5,7 @@
   "posesion": "2022-08-07",
   "entrega": "2026-08-07",
   "cerrado": true,
-  "cobertura": "Este registro NO es exhaustivo: son 27 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 22 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 5 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 22, no sobre todo lo que pasó en el cuatrienio.",
+  "cobertura": "Este registro NO es exhaustivo: son 32 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 25 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 25, no sobre todo lo que pasó en el cuatrienio.",
   "actualizado": "2026-09-07",
   "categorias": {
     "gobierno": {
@@ -538,6 +538,101 @@
         {
           "n": "Pulzo · resumen de la entrevista",
           "u": "https://www.pulzo.com/nacion/sandra-ortiz-salpico-gustavo-petro-caso-corrupcion-ungrd-PP5294218"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-03-24",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "Comparte en su cuenta un deepfake de un noticiero de Telemundo",
+      "detalle": "En la cuenta de X del presidente se publicó un video que simulaba un informe de Telemundo, con las imágenes de los presentadores y el logo del canal alterados y el audio y los gestos editados para fabricar un contenido que el medio nunca emitió. Los verificadores lo desmintieron el 24 de marzo de 2026.",
+      "contrapunto": "No es un bulo que le hicieron: es uno que él difundió desde su propia cuenta. Va en el registro por la misma razón que van los que le inventaron a él.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "ColombiaCheck · el deepfake de Telemundo que compartió",
+          "u": "https://www.colombiacheck.com/chequeos/gustavo-petro-compartio-un-deepfake-del-noticiero-telemundo"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-05-15",
+      "precision": "aproximada",
+      "categoria": "informacion",
+      "titulo": "Una cuenta desinformadora inventa cifras de Invamer para inflar la aprobación de su gobierno",
+      "detalle": "Una cuenta en X publicó porcentajes de entre 54 % y 70 % de percepción positiva sobre la gestión de Petro, atribuidos a una encuesta de Invamer hecha entre el 15 y el 24 de abril de 2026. Ninguna de las cifras tenía respaldo en el estudio original y, en la mayoría de los casos, la pregunta que citaban ni siquiera existía.",
+      "contrapunto": "Este bulo va A FAVOR suyo, no en contra. Está en el registro para que la sección de desinformación no se lea en una sola dirección: si solo se publicara lo que le inventaron para dañarlo, el registro sería una defensa, no un registro.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "ColombiaCheck · las cifras de Invamer que nadie midió",
+          "u": "https://colombiacheck.com/chequeos/cuenta-desinformadora-inventa-preguntas-y-exagera-resultados-de-invamer-sobre-la-gestion"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-06-03",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "Un tribunal remite a la Comisión de Acusación un caso en su contra por presunto desacato a una medida cautelar sobre sus denuncias de fraude",
+      "detalle": "El proceso, abierto por sus denuncias de fraude electoral pese a una medida cautelar que le ordenaba abstenerse, fue remitido a la Comisión de Acusación de la Cámara de Representantes, que es el único órgano competente para investigar a un presidente en Colombia. La Registraduría había desmontado uno por uno sus señalamientos, y la Misión de Observación Electoral respaldó a la Registraduría: no hubo fraude. Uno de los documentos que él usó para denunciar había sido modificado por alguien ajeno a la entidad.",
+      "contrapunto": "La remisión a la Comisión de Acusación no es una imputación ni una condena: ese órgano archiva la enorme mayoría de lo que le llega, y esa inefectividad es un reproche al Congreso, no una prueba contra el señalado.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · el tribunal remite el caso a la Comisión de Acusación",
+          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-remitio-a-la-comision-de-acusacion-un-caso-contra-petro-por-presunto-desacato-a-medida-cautelar-sobre-denuncias-de-fraude-electoral/"
+        },
+        {
+          "n": "El Colombiano · la Registraduría desmonta uno por uno los señalamientos",
+          "u": "https://www.elcolombiano.com/especiales/elecciones-2026/gustavo-petro-resultados-elecciones-registraduria-desmiente-senalamientos-fraude-IP37297870"
+        },
+        {
+          "n": "El Colombiano · el documento que usó había sido modificado por un externo",
+          "u": "https://www.elcolombiano.com/colombia/gustavo-petro-denuncia-fraude-elecciones-2026-con-documento-registraduria-modificado-KB37362190"
+        },
+        {
+          "n": "La Silla Vacía · cómo fabrica las narrativas de fraude",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/asi-fabrica-petro-narrativas-infundadas-sobre-fraude-electoral/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-23",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "El fiscal general niega haber ordenado quitarle delitos a Nicolás Petro: «La acusación por lavado de activos y enriquecimiento ilícito se mantiene»",
+      "detalle": "Un día después de que la exfiscal del caso denunciara presiones para retirar el delito de lavado, la Fiscalía respondió que la acusación contra Nicolás Petro se mantiene intacta y calificó lo dicho por la exfiscal Lucy Laborde como «conjeturas, rumores, creencias falsas o interpretaciones subjetivas sin sustento».",
+      "contrapunto": "Las dos versiones están en el registro y ninguna está probada: la denuncia de la exfiscal y el desmentido de la Fiscalía. La entrada del 22 de agosto trae la primera; esta trae la segunda, porque publicar solo la acusación y no la respuesta es tomar partido sin decirlo.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "El País · la Fiscalía desmiente a la exfiscal Laborde",
+          "u": "https://www.elpais.com.co/politica/fiscalia-desmiente-acusaciones-de-la-exfiscal-lucy-laborde-sobre-supuestas-presiones-para-favorecer-a-nicolas-petro-2326.html"
+        },
+        {
+          "n": "Radio Santa Fe · el fiscal general lo niega",
+          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-05",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "titulo": "Ya como expresidente, pregunta por qué no hubo capturas en el operativo de Riohacha: «¿Existe en nuestra Constitución la pena de muerte?»",
+      "detalle": "Sobre el operativo del comando Lobos de la Dijín en Riohacha, en el que murieron alias 'Bendito Menor', su pareja Rosa Angélica Tarazona y dos hombres de su seguridad sin un solo capturado, Petro escribió: «por qué si hay cuatro personas en una casa y esta rodeada completamente por la Policía Nacional, por qué tienen que morir las cuatro personas encerradas en la casa (…) ¿Existe en nuestra Constitución la pena de muerte?».",
+      "contrapunto": "La pregunta es legítima y ninguna autoridad la ha respondido. También es cierto que la hace quien gobernó cuatro años con ese mismo grupo armado creciendo en La Guajira y con la Paz Total sin cerrar; el hecho está fuera de su mandato y por eso no pesa en el veredicto sobre su gobierno.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Infobae · lo que preguntó Petro sobre el operativo",
+          "u": "https://www.infobae.com/colombia/2026/09/05/muerte-de-bendito-menor-petro-cuestiono-a-la-policia-nacional-tras-operativo-que-ordeno-de-la-espriella-que-me-explique/"
+        },
+        {
+          "n": "El País · cómo fue el operativo y los cuatro cuerpos",
+          "u": "https://www.elpais.com.co/judicial/bendito-menor-asi-fue-el-operativo-que-termino-con-cuatro-cuerpos-en-un-batallon-de-riohacha-esto-se-sabe-0429.html"
         }
       ]
     }

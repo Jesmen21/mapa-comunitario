@@ -2773,6 +2773,60 @@
           "u": "https://www.infobae.com/colombia/2026/09/03/estos-fueron-algunos-de-los-principales-aportantes-a-la-campana-de-abelardo-de-la-espriella-en-segunda-vuelta-varios-terminaron-con-cargos-en-el-gobierno/"
         }
       ]
+    },
+    {
+      "fecha": "2026-09-02",
+      "precision": "aproximada",
+      "categoria": "corrupcion",
+      "titulo": "El Gobierno revoca 60 contratos de última hora del Ministerio de la Igualdad en liquidación y radica 13 denuncias más",
+      "detalle": "Tras la orden de congelar la contratación de última hora, el Gobierno revocó los 60 últimos contratos que firmó el Ministerio de la Igualdad, en liquidación, y radicó 13 denuncias por presuntas irregularidades en esa contratación. También encendió alertas por contratos sin sustento en Cancillería y el Dapre, y pidió a la Procuraduría actuar sobre un contrato millonario del Sena. Un funcionario perdió el puesto por el hallazgo. Antes, en enero, ya se había denunciado que Fonigualdad destinó más de 70.000 millones de pesos a contratos con una sola empresa, Laborando S.A.S., para vincular a más de 3.300 personas entre septiembre de 2025 y mayo de 2026.",
+      "contrapunto": "Son denuncias del Gobierno actual contra la administración anterior: URBIS las registra como hechos, no como casos de corrupción del gobernante actual. Ninguna autoridad ha resuelto todavía si hubo irregularidad; revocar un contrato es una decisión administrativa, no un fallo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Cambio · los 60 contratos revocados y qué encontró el Gobierno",
+          "u": "https://cambiocolombia.com/pais/articulo/2026/9/gobierno-revoco-ultimos-60-contratos-que-firmo-el-minigualdad-liquidado-de-petro-que-encontro"
+        },
+        {
+          "n": "El Espectador · alertas por contratos sin sustento en Minigualdad, Cancillería y Dapre",
+          "u": "https://www.elespectador.com/politica/gobierno-de-la-espriella-prende-alerta-por-contratos-sin-sustento-en-minigualdad-cancilleria-y-dapre-noticias-hoy/"
+        },
+        {
+          "n": "Semana · el contrato del Sena que pasó a la Procuraduría",
+          "u": "https://www.semana.com/politica/articulo/encienden-alarmas-por-millonario-contrato-en-el-sena-gobierno-entrante-pide-actuacion-de-la-procuraduria/202657/"
+        },
+        {
+          "n": "Semana · el hallazgo en MinIgualdad y el funcionario removido",
+          "u": "https://www.semana.com/politica/articulo/escandaloso-hallazgo-en-minigualdad-de-petro-le-costo-el-puesto-a-funcionario-gobierno-destapo-millonaria-contratitis-de-ultima-hora/202640/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-05",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "«¿Existe en nuestra Constitución la pena de muerte?»: Petro pregunta por qué murieron los cuatro en una casa rodeada y no hubo una sola captura",
+      "detalle": "Un día después del operativo del comando Lobos de la Dijín en el barrio Los Olivos de Riohacha, el expresidente Gustavo Petro pidió explicaciones a la Policía Nacional: «Que me explique la Policía Nacional por qué si hay cuatro personas en una casa y esta rodeada completamente por la Policía Nacional, por qué tienen que morir las cuatro personas encerradas en la casa. La operación de Riohacha no tenía como prioridad capturar los bandidos sino matarlos, ¿por qué? ¿Existe en nuestra Constitución la pena de muerte? ¿Por qué no se priorizó la vida, y en primer lugar la de las mujeres en el lugar de los hechos?». La pregunta apunta a los cuatro muertos —Naín Andrés Pérez Toncel, su pareja Rosa Angélica Tarazona y dos hombres de su seguridad— y a que no hubo ningún capturado.",
+      "contrapunto": "El Gobierno presentó el operativo como uno de sus principales resultados y el presidente lo respaldó públicamente; la Fuerza Pública lo describió como un enfrentamiento, no como una ejecución, y el objetivo era un cabecilla señalado de homicidio, extorsión, reclutamiento de menores y desplazamiento forzado. Nada de eso responde la pregunta de fondo, y nada la confirma: ninguna autoridad —ni la Procuraduría, ni la Fiscalía, ni la Justicia Penal Militar— ha abierto proceso conocido por este operativo, así que URBIS lo registra como una pregunta pública sin resolver, no como un hallazgo. Quien la hace tampoco llega sin historia: es el expresidente cuyo propio gobierno cerró con la Paz Total incumplida y con este mismo grupo armado creciendo en La Guajira.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · las preguntas de Petro sobre el operativo que ordenó De la Espriella",
+          "u": "https://www.infobae.com/colombia/2026/09/05/muerte-de-bendito-menor-petro-cuestiono-a-la-policia-nacional-tras-operativo-que-ordeno-de-la-espriella-que-me-explique/"
+        },
+        {
+          "n": "El País · cómo fue el operativo y los cuatro cuerpos",
+          "u": "https://www.elpais.com.co/judicial/bendito-menor-asi-fue-el-operativo-que-termino-con-cuatro-cuerpos-en-un-batallon-de-riohacha-esto-se-sabe-0429.html"
+        },
+        {
+          "n": "Pulzo · el cuestionamiento y la polémica",
+          "u": "https://www.pulzo.com/nacion/polemica-en-riohacha-petro-cuestiona-operativo-que-dejo-muerto-a-bendito-menor-PP5294344A"
+        },
+        {
+          "n": "Vanguardia · en imágenes, el operativo",
+          "u": "https://www.vanguardia.com/colombia/2026/09/04/en-imagenes-asi-fue-el-operativo-en-el-que-murio-alias-bendito-menor-en-riohacha/"
+        }
+      ]
     }
   ],
   "balances": [
@@ -3238,24 +3292,49 @@
             "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-revelo-cuales-son-las-mentiras-que-han-dicho-de-sus-propuestas-subsidios-salario-minimo-y-pensiones/202619/"
           }
         ]
+      },
+      {
+        "estado": "documentada",
+        "tema": "«Los nunca contra los de siempre»: prometió gobernar sin los políticos de siempre y les dio la mayor cuota del gabinete",
+        "antes": "Fue el eje de su campaña, dicho por él y publicado por su propio movimiento: «Nosotros somos los nunca. Los que nunca hemos vivido de la teta del Estado, los que nunca nos hemos robado un peso, los que nunca nos rendimos ni nos quedamos en la queja. Los que nunca hemos hecho politiquería». Y: «A Colombia no la sacan adelante los de siempre; la transformación viene con los nunca». La noche del triunfo lo repitió: «Vencimos a los de siempre».",
+        "despues": "El gabinete que nombró el día de la posesión, por el Decreto 1136, le dio a Cambio Radical la mayor cuota burocrática: el Ministerio del Interior (Rodrigo Lara, dos veces senador de ese partido), el de Transporte (Elsa Noguera, exgobernadora del Atlántico y exministra de Vivienda de Santos, cercana al clan Char) y el ICA (Lina María Garrido). El vicepresidente, José Manuel Restrepo, fue ministro de Comercio y de Hacienda de Iván Duque. La Silla Vacía ya había documentado durante la campaña la presencia de «los políticos de siempre» en su equipo.",
+        "matiz": "Nombrar políticos con trayectoria no es un delito ni es corrupción, y no se registra como tal: acá no se juzga el gabinete, se mide la distancia entre lo que prometió y lo que hizo cuatro meses después. La contradicción tampoco la construyó URBIS: la documentaron Cambio, El Colombiano, La Silla Vacía y Río Grande antes y después de la posesión, con nombres y carteras. Este caso estaba desde la v791 en la lista de casos de corrupción como «por documentar», y era el lugar equivocado: no es un caso de corrupción, es un cambio de postura. Acá sí cuenta.",
+        "fuentes": [
+          {
+            "n": "Defensores de la Patria · la promesa, en su propio movimiento",
+            "u": "https://defensoresdelapatria.com/de-la-espriella-a-colombia-no-la-sacan-adelante-los-de-siempre-la-transformacion-viene-con-los-nunca/"
+          },
+          {
+            "n": "La Silla Vacía · los políticos «de siempre» en su campaña",
+            "u": "https://www.lasillavacia.com/silla-nacional/los-politicos-de-siempre-en-la-campana-de-abelardo-de-la-espriella/"
+          },
+          {
+            "n": "El Colombiano · el dilema entre «los nunca» y «los de siempre» al armar el gabinete",
+            "u": "https://www.elcolombiano.com/colombia/abelardo-de-la-espriella-ministros-gabinete-gobierno-HO38274355"
+          },
+          {
+            "n": "Cambio · «Los nunca» ya perdieron con De la Espriella",
+            "u": "https://cambiocolombia.com/puntos-de-vista/articulo/2026/7/los-nunca-ya-perdieron-con-de-la-espriella"
+          },
+          {
+            "n": "Cambio · radiografía del gabinete que nombró",
+            "u": "https://cambiocolombia.com/poder/articulo/2026/8/radiografia-del-gabinete-de-de-la-espriella-cumplio-su-promesa-de-reducir-el-bogocentrismo"
+          },
+          {
+            "n": "Infobae · los 18 ministros y sus perfiles",
+            "u": "https://www.infobae.com/colombia/2026/08/03/asi-esta-conformado-el-gabinete-de-abelardo-de-la-espriella-quienes-son-los-18-ministros-y-sus-perfiles/"
+          },
+          {
+            "n": "Río Grande · «los nunca» terminaron convertidos en «los de siempre»",
+            "u": "https://www.riogrande.com.co/2026/07/19/los-nunca-terminaron-convertidos-en-los-de-siempre/"
+          }
+        ]
       }
     ]
   },
   "casos": {
     "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · archivado: una autoridad lo revisó y lo cerró sin hallazgo; se muestra con su etiqueta y no pesa. Un caso archivado NO se cuenta como señalamiento: leer igual lo que nadie ha mirado y lo que una autoridad ya miró y cerró es injusto con el señalado, y el registro publica lo que lo favorece con la misma letra que lo que no. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos.",
     "lista": [
-      {
-        "id": "los-nunca",
-        "titulo": "",
-        "estado": "por-documentar",
-        "queSeConfirmo": "",
-        "quienLoConfirmo": "",
-        "fecha": "",
-        "monto": null,
-        "implicados": [],
-        "fuentes": [],
-        "_pendiente": "El dueño del registro lo nombró como «los Nunca» (así escrito) y lo dio por confirmado. URBIS no encontró en el registro ningún hecho con ese nombre y no lo buscó fuera: hay que llenar titulo, queSeConfirmo, quienLoConfirmo, fecha y fuentes, y solo entonces pasarlo a 'confirmado'."
-      },
       {
         "id": "fundacion-primera-dama",
         "titulo": "La fundación de la primera dama, creada un mes antes de la posesión, encabeza los canales de donación del terremoto",

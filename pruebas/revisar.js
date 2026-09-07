@@ -537,6 +537,30 @@ console.log('\n  -- la ficha del gobernante --');
   comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
     cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
 
+  /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
+     declaraciones documentadas. Con una sola no es un cambio de postura, es
+     una postura — y como cada cambio contado baja un peldaño, dejar entrar
+     una a medias mueve en público el juicio sobre una persona con medio
+     expediente. Se revisa en los dos registros, y también la fuente: una
+     contradicción sin enlace no se puede comprobar. */
+  {
+    const flojas = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      const cx = ((JSON.parse(leer(ruta)).contradicciones || {}).casos) || [];
+      cx.forEach((c, i) => {
+        if (c.estado !== 'documentada' || c.cuenta === false) return;
+        const falta = [];
+        if (!(c.antes || '').trim()) falta.push('antes');
+        if (!(c.despues || '').trim()) falta.push('despues');
+        if (!(c.fuentes || []).length) falta.push('fuentes');
+        if (falta.length) flojas.push(quien + '/' + (c.tema || ('#' + i)).slice(0, 40) + ' sin ' + falta.join(' ni '));
+      });
+    });
+    comprobar('toda contradicción que CUENTA trae las dos declaraciones y su fuente',
+      flojas.length === 0, flojas.length ? flojas.join(' · ') : 'ninguna cuenta con medio expediente');
+  }
+
   /* La nota de cobertura del registro cerrado dice tres números a mano —cuántos
      hechos hay, cuántos caen dentro del mandato y cuántos después—. Es la única
      prosa del módulo que afirma cifras sin contarlas, y basta agregar una
