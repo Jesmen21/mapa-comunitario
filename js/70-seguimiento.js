@@ -1278,10 +1278,12 @@
                           d: 'Hay proceso abierto por una autoridad. Pesa, menos que un confirmado: uno baja a «dudosa», dos a «poco fiable».' },
     'senalamiento':     { t: 'Señalamiento',     cls: 'sen',  pesa: false,
                           d: 'Lo dice un medio o un actor político; ninguna autoridad se ha pronunciado. Se muestra; no pesa.' },
+    'archivado':        { t: 'Archivado sin hallazgo', cls: 'arch', pesa: false,
+                          d: 'Una autoridad lo revisó y lo cerró sin encontrar mérito. Se muestra; no pesa.' },
     'por-documentar':   { t: 'Por documentar',   cls: 'pend', pesa: false, oculto: true,
                           d: 'Nombrado pero todavía sin hecho ni fuente. No se muestra ni pesa.' }
   };
-  var ORDEN_CASO = { 'confirmado': 0, 'en-investigacion': 1, 'senalamiento': 2, 'por-documentar': 3 };
+  var ORDEN_CASO = { 'confirmado': 0, 'en-investigacion': 1, 'senalamiento': 2, 'archivado': 3, 'por-documentar': 4 };
 
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
@@ -1398,7 +1400,7 @@
 
     // Casos de corrupción con estado probatorio. Los sin fecha o posteriores
     // al corte no entran a la serie; los `por-documentar` nunca se pintan.
-    var casos = { confirmados: 0, enInvestigacion: 0, senalamientos: 0, porDocumentar: 0, lista: [] };
+    var casos = { confirmados: 0, enInvestigacion: 0, senalamientos: 0, archivados: 0, porDocumentar: 0, lista: [] };
     casosDeCorrupcion(dd).forEach(function (c, i) {
       var est = ESTADOS_CASO[c.estado];
       if (!est) return;
@@ -1406,6 +1408,7 @@
       if (corte && (!c.fecha || c.fecha > corte)) return;
       if (c.estado === 'confirmado') casos.confirmados++;
       else if (c.estado === 'en-investigacion') casos.enInvestigacion++;
+      else if (c.estado === 'archivado') casos.archivados++;
       else casos.senalamientos++;
       casos.lista.push({ c: c, i: i, pesa: est.pesa });
     });
@@ -1625,8 +1628,13 @@
     var c = o.c, est = ESTADOS_CASO[c.estado];
     var art = el('article', 'sp-fi-cc sp-fi-cc-' + est.cls + (o.pesa ? ' pesa' : ''));
     var head = el('header', 'sp-fi-cc-head');
-    head.appendChild(tag(est.cls === 'conf' ? 'no' : (est.cls === 'inv' ? 'dis' : 'dec'), est.t, est.d));
-    if (c.fecha) head.appendChild(el('span', 'sp-fi-cc-fecha', fechaCorta(c.fecha)));
+    head.appendChild(tag(est.cls === 'conf' ? 'no' : (est.cls === 'inv' ? 'dis' : (est.cls === 'arch' ? 'ok' : 'dec')), est.t, est.d));
+    // `fecha` siempre existe porque ordena y recorta la serie. Cuando la fuente
+    // no da el día —«archivado en 2021»— el registro pone el texto real en
+    // `fechaTexto` y eso es lo que se lee: inventar un 1 de enero en pantalla
+    // sería afirmar un dato que nadie tiene.
+    if (c.fechaTexto) head.appendChild(el('span', 'sp-fi-cc-fecha', c.fechaTexto));
+    else if (c.fecha) head.appendChild(el('span', 'sp-fi-cc-fecha', fechaCorta(c.fecha)));
     art.appendChild(head);
     art.appendChild(el('h4', null, c.titulo || ''));
     if (c.queSeConfirmo) {
@@ -1897,13 +1905,14 @@
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',
       'Atribuidos al gobernante o a su gobierno, con su estado probatorio. Pesan los confirmados y, ' +
-      'menos, los que una autoridad tiene en investigación; un señalamiento se muestra con su etiqueta ' +
-      'y no mueve el veredicto. Las denuncias del Gobierno ' +
+      'menos, los que una autoridad tiene en investigación; un señalamiento y un caso que una autoridad ' +
+      'ya archivó se muestran con su etiqueta y no mueven el veredicto. Las denuncias del Gobierno ' +
       'contra la administración anterior no son casos suyos: están en la línea de tiempo.');
     var grupos = [
       { k: 'confirmado', t: 'Confirmados', n: f.casos.confirmados },
       { k: 'en-investigacion', t: 'En investigación', n: f.casos.enInvestigacion },
-      { k: 'senalamiento', t: 'Señalamientos', n: f.casos.senalamientos }
+      { k: 'senalamiento', t: 'Señalamientos', n: f.casos.senalamientos },
+      { k: 'archivado', t: 'Archivados sin hallazgo', n: f.casos.archivados }
     ];
     var hayCasos = false;
     grupos.forEach(function (g) {

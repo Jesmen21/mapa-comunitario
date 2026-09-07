@@ -138,7 +138,7 @@ Cuatro cuentas ponen cada una un techo y manda el PEOR de los cuatro.
 | Registro verificado por terceros | <85 %, <70 %, <50 %, un peldaño cada vez |
 
 Es decir: **un caso mal clasificado cambia en público el juicio sobre una
-persona real.** De ahí que `casos.lista` tenga cuatro estados y que cada uno
+persona real.** De ahí que `casos.lista` tenga cinco estados y que cada uno
 exija su prueba:
 
 * `confirmado` — fallo, sanción, documento oficial o reconocimiento del
@@ -147,6 +147,12 @@ exija su prueba:
   apertura. Una denuncia radicada que nadie abrió todavía **no** es esto.
 * `senalamiento` — lo dice un medio o un actor político y ninguna autoridad
   se pronunció. Se ve, con su etiqueta, y no pesa. Es el estado por defecto.
+* `archivado` — una autoridad lo miró y lo cerró sin hallazgo, con la orden de
+  archivo o la preclusión citada. Se ve, con etiqueta verde, y no pesa. **No
+  se cuenta como señalamiento**: leer igual lo que nadie ha revisado y lo que
+  una autoridad ya revisó y cerró es injusto con el señalado. Un registro que
+  solo publica lo que acusa no es un registro; el desenlace que exonera
+  circula mucho menos que la acusación y por eso hay que escribirlo.
 * `por-documentar` — nombrado sin hecho ni fuente. Ni se pinta ni pesa.
 
 Tres cosas que es fácil hacer mal:
@@ -159,8 +165,13 @@ Tres cosas que es fácil hacer mal:
 * `tipoFuente` vacío no es neutral. Es una de las cuatro cuentas, así que
   dejarlo en blanco mueve el veredicto igual, solo que sin querer.
 
-`revisar.js` comprueba que los estados sean de los cuatro conocidos y que
-ningún caso que pese vaya sin quién, fecha y fuentes.
+`revisar.js` comprueba **en los dos registros** —el del gobernante actual y
+el de Gustavo Petro— que los estados sean de los cinco conocidos y que ningún
+caso con consecuencia (confirmado, en investigación o archivado) vaya sin
+quién, fecha y fuentes. Los dos, porque la misma vara mide a los dos: aflojarla
+en un registro sería la manera silenciosa de inclinar la comparación. Y un
+archivado también exige papel: una exoneración sin fuente es tan falsa como
+una acusación sin fuente.
 
 ## Las pruebas se aprietan, no se aflojan
 

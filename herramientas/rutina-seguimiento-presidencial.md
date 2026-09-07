@@ -39,11 +39,12 @@ Agregar los hechos de LAS ÚLTIMAS 24-48 HORAS y actualizar las fechas de contro
 ## LOS CASOS DE CORRUPCIÓN — `casos.lista`
 Sección hermana de `contradicciones`. Es lo primero que ve el lector en la ficha, y lo único que puede tumbar el veredicto de golpe. Cada caso lleva `id`, `titulo`, `estado`, `queSeConfirmo`, `quienLoConfirmo`, `fecha`, `monto` (o null), `implicados` y `fuentes`.
 
-Los cuatro estados, y qué exige cada uno:
+Los cinco estados, y qué exige cada uno:
 
   · `confirmado` — hay fallo judicial, sanción de un organismo de control, documento oficial o reconocimiento del propio implicado. Nombralo en `quienLoConfirmo`. **PESA AL MÁXIMO.** Si dudás, no es confirmado.
   · `en-investigacion` — una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte) abrió proceso. Poné la autoridad en `quienLoConfirmo` y el número de radicado o la fecha de apertura en `queSeConfirmo`. **PESA, menos.** Una denuncia radicada que la autoridad todavía no abrió NO es esto: es un señalamiento.
   · `senalamiento` — lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. Se muestra con su etiqueta y NO mueve el veredicto. Es el estado por defecto cuando dudes.
+  · `archivado` — una autoridad lo revisó y lo cerró sin hallazgo: orden de archivo, preclusión, resolución que cierra la actuación. Citala en `quienLoConfirmo` y contá en `queSeConfirmo` qué dijo. Se muestra con etiqueta verde y NO pesa. **No es lo mismo que un señalamiento** y no se cuenta como tal: uno es una acusación que nadie ha revisado, el otro es una acusación que ya se cayó. Buscá activamente estos desenlaces: la acusación siempre circula más que el archivo, y publicar solo la mitad que acusa es hacerle daño a una persona real.
   · `por-documentar` — alguien lo nombró pero todavía no hay hecho ni fuente. No se pinta y no pesa.
 
 Reglas que no se negocian:
@@ -51,7 +52,7 @@ Reglas que no se negocian:
   · **Un caso solo SUBE de estado con la fuente que lo sostiene.** Que un medio insista no convierte un señalamiento en investigación; que haya investigación no lo convierte en confirmado.
   · **Las denuncias que hace el propio Gobierno contra la administración anterior NO van acá.** Eso es un hecho de la categoría `corrupcion` de la línea de tiempo, no un caso suyo. Confundirlos invierte el sentido del módulo.
   · Si un caso que ya está en la lista avanza (se abrió proceso, salió fallo, lo archivaron), **actualizá el que existe** con su fuente nueva: no agregues uno repetido.
-  · Si un caso se cae —la autoridad archivó, el verificador lo desmintió—, bajalo de estado y dejá dicho en `queSeConfirmo` qué pasó. No lo borres: borrar es esconder.
+  · Si un caso se cae —la autoridad archivó, el verificador lo desmintió—, pasalo a `archivado` con la orden de archivo como fuente y dejá dicho en `queSeConfirmo` qué pasó. No lo borres: borrar es esconder, y tampoco lo dejes en `senalamiento`, que es esconder el desenlace.
 
 ## LAS CONTRADICCIONES — `contradicciones.casos`
 Solo si tenés LAS DOS declaraciones documentadas (`antes` y `despues`), cada una con su fuente. Estados: `documentada`, `tension`, `desmentida`. Un caso puede llevar `"cuenta": false`: queda visible pero no suma al veredicto, y se usa cuando el propio `matiz` dice que el giro no habla de su palabra (una conversión religiosa, por ejemplo). Si lo usás, explicá el motivo en `matiz`.

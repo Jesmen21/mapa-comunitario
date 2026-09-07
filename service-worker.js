@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v797-la-misma-regla-para-los-dos';
+const URBIS_CACHE = 'urbis-v798-el-archivo-tambien-es-registro';
 const URBIS_ASSETS = [
   './',
   './index.html',

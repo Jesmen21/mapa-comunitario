@@ -73,11 +73,12 @@ const server = http.createServer((req, res) => {
     confirmados: corr.filter(c => c.estado === 'confirmado').length,
     enInvestigacion: corr.filter(c => c.estado === 'en-investigacion').length,
     senalamientos: corr.filter(c => c.estado === 'senalamiento').length,
+    archivados: corr.filter(c => c.estado === 'archivado').length,
     porDocumentar: corr.filter(c => c.estado === 'por-documentar').length
   };
   esperado.conTipo = esperado.verificado + esperado.disputado + esperado.declaracion;
   esperado.pct = esperado.conTipo ? Math.round(100 * esperado.verificado / esperado.conTipo) : null;
-  esperado.visibles = esperado.confirmados + esperado.enInvestigacion + esperado.senalamientos;
+  esperado.visibles = esperado.confirmados + esperado.enInvestigacion + esperado.senalamientos + esperado.archivados;
   // El veredicto, rehecho aquí con la MISMA regla escrita aparte.
   const techo = {
     // Confirmados: uno → poco fiable, dos → nada fiable. En investigación
@@ -178,7 +179,16 @@ const server = http.createServer((req, res) => {
       o.cxPintados = caja.querySelectorAll('.sp-fi-caso').length;
       o.cxPesan = caja.querySelectorAll('.sp-fi-caso.pesa').length;
       o.ccPintados = caja.querySelectorAll('.sp-fi-cc').length;
-      ['conf', 'inv', 'sen', 'pend'].forEach(k => { o.ccPorEstado[k] = caja.querySelectorAll('.sp-fi-cc-' + k).length; });
+      ['conf', 'inv', 'sen', 'arch', 'pend'].forEach(k => { o.ccPorEstado[k] = caja.querySelectorAll('.sp-fi-cc-' + k).length; });
+    // La etiqueta del archivado, leída en su propia tarjeta: el CSS la pone en
+    // mayúsculas, así que se compara en minúsculas y por la tarjeta, no por el
+    // texto de toda la hoja.
+    o.tagsArch = Array.from(caja.querySelectorAll('.sp-fi-cc-arch .sp-tag'))
+      .map(x => (x.className + '|' + x.textContent).toLowerCase());
+    // La fecha que se lee en cada tarjeta, para cotejarla contra el registro.
+    o.fechasCC = Array.from(caja.querySelectorAll('.sp-fi-cc')).map(x =>
+      ((x.querySelector('h4') || {}).textContent || '').slice(0, 30) + ' → ' +
+      ((x.querySelector('.sp-fi-cc-fecha') || {}).textContent || ''));
       o.escalera = Array.from(caja.querySelectorAll('.sp-fi-paso')).map(x => x.textContent + (x.classList.contains('on') ? '*' : ''));
       // El orden de lectura, por la CABECERA de cada sección.
       const y = sel => { const n = caja.querySelector(sel); return n ? n.getBoundingClientRect().top + window.scrollY : null; };
@@ -186,6 +196,7 @@ const server = http.createServer((req, res) => {
       o.orden = { placa: y('.sp-fi-placa'), casos: cab('Casos de corrupción'), cx: cab('Contradicciones'),
                   rasgos: cab('Rasgos'), serie: cab('Cómo va'), metodo: cab('Método'),
                   conf: y('.sp-fi-cc-conf'), inv: y('.sp-fi-cc-inv'), sen: y('.sp-fi-cc-sen'),
+                  arch: y('.sp-fi-cc-arch'),
                   cxPesa: y('.sp-fi-caso.pesa'), cxNoPesa: y('.sp-fi-caso:not(.pesa)') };
       o.puntosSinColor = Array.from(caja.querySelectorAll('.sp-fi-pt')).filter(x => {
         const bg = getComputedStyle(x).backgroundColor;
@@ -215,7 +226,8 @@ const server = http.createServer((req, res) => {
             contadas: f.palabra.contadas, desmentidas: f.palabra.desmentidas,
             noCuentan: f.palabra.noCuentan, frentes: f.alcance.activos,
             confirmados: f.casos.confirmados, enInvestigacion: f.casos.enInvestigacion,
-            senalamientos: f.casos.senalamientos, porDocumentar: f.casos.porDocumentar,
+            senalamientos: f.casos.senalamientos, archivados: f.casos.archivados,
+            porDocumentar: f.casos.porDocumentar,
             veredicto: f.veredicto.id, manda: f.manda, rasgos: f.rasgos.map(x => x.id) };
     const s = api.serie();
     o.acumulaCreciendo = s.every((p, i) => !i || p.hechos >= s[i - 1].hechos);
@@ -251,6 +263,9 @@ const server = http.createServer((req, res) => {
       dosConfirmados: Vm(mixto90, limpio, [caso('confirmado'), caso('confirmado')]),
       // Lo no confirmado NO mueve el veredicto.
       soloSenalamientos: Vm(mixto90, limpio, [caso('senalamiento'), caso('senalamiento'), caso('por-documentar')]),
+      // Un caso que una autoridad ya archivó sin hallazgo tampoco mueve nada:
+      // se muestra porque es parte del expediente, y exonera, no acusa.
+      soloArchivados: Vm(mixto90, limpio, [caso('archivado'), caso('archivado'), caso('archivado')]),
       // Un caso EN INVESTIGACIÓN ya pesa: uno → dudosa; dos → poco fiable. Menos que un confirmado.
       unaInvestigacion: Vm(mixto90, limpio, [caso('en-investigacion')]),
       dosInvestigaciones: Vm(mixto90, limpio, [caso('en-investigacion'), caso('en-investigacion')]),
@@ -314,7 +329,8 @@ const server = http.createServer((req, res) => {
    ['cambios que cuentan', 'contadas'], ['acusaciones desmentidas', 'desmentidas'],
    ['documentados que no cuentan', 'noCuentan'], ['frentes con hechos', 'frentes'],
    ['casos confirmados', 'confirmados'], ['casos en investigación', 'enInvestigacion'],
-   ['señalamientos', 'senalamientos'], ['casos por documentar', 'porDocumentar'],
+   ['señalamientos', 'senalamientos'], ['casos archivados', 'archivados'],
+   ['casos por documentar', 'porDocumentar'],
    ['el veredicto', 'veredicto']
   ].forEach(([nombre, k]) => {
     chk(f[k] === esperado[k], 'coincide ' + nombre + ' (ficha ' + f[k] + ' · recuento ' + esperado[k] + ')');
@@ -325,6 +341,8 @@ const server = http.createServer((req, res) => {
       'los cinco peldaños, de mejor a peor: ' + (r.escaleraApi || []).join(' › '));
   const p = r.pruebas || {};
   chk(p.inquebrantable === 'inquebrantable', 'limpio al 90 % y sin cambios → inquebrantable (' + p.inquebrantable + ')');
+  chk(p.soloArchivados === 'inquebrantable',
+      'tres casos archivados sin hallazgo NO bajan el veredicto (' + p.soloArchivados + ')');
   chk(p.unCambio === 'fiable', 'un cambio de postura → como mucho fiable (' + p.unCambio + ')');
   chk(p.dosCambios === 'dudosa', 'dos → dudosa (' + p.dosCambios + ')');
   chk(p.tresCambios === 'poco-fiable', 'tres → poco fiable (' + p.tresCambios + ')');
@@ -386,6 +404,24 @@ const server = http.createServer((req, res) => {
       'y por qué el caso marcado en el registro tampoco');
   chk(esperado.senalamientos === 0 || /No pesa en el veredicto/.test(r.txt),
       'cada señalamiento dice que no pesa');
+  // El cuarto estado. Un caso que una autoridad miró y cerró no se lee igual
+  // que uno que nadie ha mirado: se pinta aparte, se cuenta aparte y dice en
+  // pantalla que lo cerraron sin mérito. Contarlo como señalamiento sería
+  // dejar viva en la ficha una acusación que ya se cayó.
+  chk(r.ccPorEstado.arch === esperado.archivados,
+      'los casos archivados salen con su propio riel (' + r.ccPorEstado.arch + ' de ' + esperado.archivados + ')');
+  chk((r.tagsArch || []).length === esperado.archivados &&
+      (r.tagsArch || []).every(t => /sp-tag-ok/.test(t) && /archivado sin hallazgo/.test(t)),
+      'y cada uno con la etiqueta verde que dice que una autoridad lo cerró (' + (r.tagsArch || []).length + ')');
+  chk(esperado.archivados === 0 || /revis[óo] y lo cerr[óo] sin encontrar m[ée]rito/.test(r.txt),
+      'cada archivado explica por qué no pesa');
+  chk(od.arch == null || od.sen == null || od.sen < od.arch,
+      'y van al final: lo que sigue abierto se lee antes que lo que ya se cerró');
+  // Un caso cuya fuente no da el día no puede enseñar un día en pantalla.
+  const conTexto = corr.filter(c => c.fechaTexto);
+  chk(conTexto.every(c => (r.fechasCC || []).some(f =>
+        f.startsWith(c.titulo.slice(0, 30)) && f.endsWith('→ ' + c.fechaTexto))),
+      'un caso sin día publicado enseña el texto de su fuente, no un 1 de enero inventado (' + conTexto.length + ')');
   chk(esperado.enInvestigacion === 0 || /Pesa en el veredicto, menos que un confirmado/.test(r.txt),
       'y cada caso en investigación dice que pesa, menos que un confirmado');
   chk(r.escalera.length === 5 && r.escalera.filter(x => /\*$/.test(x)).length === 1,

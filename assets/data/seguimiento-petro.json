@@ -517,6 +517,29 @@
           "u": "https://www.elcolombiano.com/colombia/icetex-esmad-acp-y-promesas-incumplidas-de-petro-JH19785518"
         }
       ]
+    },
+    {
+      "fecha": "2026-09-06",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "Sandra Ortiz dice que Petro pudo saber del saqueo de la UNGRD; el vicepresidente del Senado sostiene lo contrario el mismo día",
+      "detalle": "Sandra Ortiz, exconsejera presidencial para las Regiones y procesada en el caso, dijo en entrevista con la revista Cambio que el presidente sabía: «Solo puedo decir que allá no se movía nada sin que el presidente supiera. Nadie hacía nada. Yo no tomaba una decisión sin que él lo supiera». Ese mismo día el vicepresidente del Senado sostuvo lo contrario: que el desfalco ocurrió «a espaldas» de Petro. Ninguna autoridad ha formulado cargos contra Petro por la UNGRD.",
+      "contrapunto": "Las dos afirmaciones son del mismo día y ninguna trae prueba nueva: una viene de una procesada que ya denunció presiones de la Fiscalía para incriminar a ministros, la otra de un aliado político. URBIS las registra como versiones enfrentadas, no como hallazgo.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · lo que dijo Sandra Ortiz",
+          "u": "https://www.infobae.com/colombia/2026/09/06/sandra-ortiz-senalo-una-posible-complicidad-de-gustavo-petro-en-caso-ungrd-alla-no-se-movia-nada-sin-que-el-presidente-supiera/"
+        },
+        {
+          "n": "Infobae · el vicepresidente del Senado dice lo contrario el mismo día",
+          "u": "https://www.infobae.com/colombia/2026/09/06/vicepresidente-del-senado-aseguro-que-el-desfalco-en-la-ungrd-ocurrio-a-espaldas-de-gustavo-petro-la-verdad-debe-salir-a-la-luz/"
+        },
+        {
+          "n": "Pulzo · resumen de la entrevista",
+          "u": "https://www.pulzo.com/nacion/sandra-ortiz-salpico-gustavo-petro-caso-corrupcion-ungrd-PP5294218"
+        }
+      ]
     }
   ],
   "casos": {
@@ -597,6 +620,108 @@
           {
             "n": "Infobae · el tribunal deberá resolver más de 800 apelaciones",
             "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-superior-de-barranquilla-debera-resolver-mas-de-800-apelaciones-antes-de-iniciar-el-juicio-contra-nicolas-petro/"
+          }
+        ]
+      },
+      {
+        "id": "name-calle-ungrd",
+        "titulo": "Los presidentes del Senado y de la Cámara, llamados a juicio por recibir 4.000 millones de la UNGRD a cambio de sacar adelante las reformas",
+        "estado": "en-investigacion",
+        "queSeConfirmo": "La Sala de Instrucción de la Corte Suprema los acusó formalmente el 11 de septiembre de 2025 y la Sala Primaria los llamó a juicio por cohecho impropio y peculado por apropiación en favor de terceros agravado. Según la acusación, Iván Name recibió 3.000 millones y Andrés Calle 1.000 millones salidos de contratos de la UNGRD para facilitar el trámite y la aprobación de las reformas del Gobierno. No hay condena: los dos se declararon inocentes y llaman el caso una invención de Olmedo López y Sneyder Pinilla. Siguen presos en La Picota y la Corte les negó la libertad en abril y de nuevo el 28 de julio de 2026; la audiencia preparatoria se fijó para el 5 de marzo de 2026.",
+        "quienLoConfirmo": "Corte Suprema de Justicia · Sala de Instrucción (acusación) y Sala Primaria de Juzgamiento (llamado a juicio).",
+        "fecha": "2025-09-11",
+        "monto": "4.000 millones de pesos (3.000 a Name, 1.000 a Calle)",
+        "implicados": [
+          "Iván Name (expresidente del Senado)",
+          "Andrés Calle (expresidente de la Cámara)"
+        ],
+        "_nota": "Gustavo Petro no está acusado en este proceso. Entra a su registro porque, según la acusación, los sobornos se pagaron para aprobar SUS reformas y con dinero de una entidad de SU gobierno. Quién ordenó pagarlos es justamente lo que el juicio no ha resuelto, y por eso el caso está en investigación y no confirmado.",
+        "fuentes": [
+          {
+            "n": "Infobae · la acusación de la Corte Suprema",
+            "u": "https://www.infobae.com/colombia/2025/09/11/ivan-name-y-andres-calle-recibieron-sobornos-para-facilitar-tramite-y-aprobacion-de-reformas-del-gobierno-petro-confirma-acusacion-de-la-corte-suprema/"
+          },
+          {
+            "n": "Semana · la Corte los llama a juicio",
+            "u": "https://www.semana.com/nacion/articulo/corte-suprema-llama-a-juicio-a-ivan-name-y-andres-calle-por-el-escandalo-de-corrupcion-en-la-ungrd/202557/"
+          },
+          {
+            "n": "Infobae · fecha de la audiencia preparatoria",
+            "u": "https://www.infobae.com/colombia/2026/02/27/corrupcion-en-la-ungrd-corte-suprema-fijo-fecha-para-audiencia-preparatoria-de-juicio-contra-ivan-name-y-andres-calle/"
+          },
+          {
+            "n": "El Tiempo · siguen presos, pero la Corte les concede pruebas nuevas",
+            "u": "https://www.eltiempo.com/justicia/cortes/corte-suprema-mantiene-a-ivan-name-y-andres-calle-en-prision-pero-les-concede-nuevas-pruebas-para-el-juicio-por-el-saqueo-a-la-ungrd-3574418"
+          },
+          {
+            "n": "El Heraldo · la Corte ratifica la detención en julio de 2026",
+            "u": "https://www.elheraldo.co/colombia/2026/07/28/caso-ungrd-ivan-name-y-andres-calle-seguiran-en-la-carcel-por-decision-de-la-corte/"
+          }
+        ]
+      },
+      {
+        "id": "sandra-ortiz",
+        "titulo": "Sandra Ortiz, consejera presidencial para las Regiones, procesada por servir de puente en la entrega de dinero de la UNGRD",
+        "estado": "en-investigacion",
+        "queSeConfirmo": "La Fiscalía la acusa de lavado de activos y tráfico de influencias sobre servidor público. Estuvo privada de la libertad desde el 18 de diciembre de 2024 y el 11 de mayo de 2026 el Juzgado 35 de control de garantías ordenó su libertad inmediata por vencimiento de términos: pasaron 329 días hábiles desde la acusación sin que empezara el juicio oral, por encima del límite legal de 240. La libertad no cierra el proceso ni la absuelve; el juicio sigue pendiente. Ortiz sostiene que la Fiscalía la presionó para incriminar a ministros del Gobierno.",
+        "quienLoConfirmo": "Fiscalía General de la Nación (acusación) · Juzgado 35 de control de garantías de Bogotá (libertad por vencimiento de términos, 11 de mayo de 2026).",
+        "fecha": "2026-05-11",
+        "monto": null,
+        "implicados": [
+          "Sandra Ortiz (exconsejera presidencial para las Regiones)"
+        ],
+        "fuentes": [
+          {
+            "n": "El Tiempo · el juez la deja en libertad por vencimiento de términos",
+            "u": "https://www.eltiempo.com/justicia/delitos/juez-dejo-en-libertad-por-vencimiento-de-terminos-a-sandra-ortiz-acusada-por-el-escandalo-de-corrupcion-de-la-ungrd-3554773"
+          },
+          {
+            "n": "El Espectador · qué significa el vencimiento de términos aquí",
+            "u": "https://www.elespectador.com/judicial/sandra-ortiz-queda-en-libertad-por-vencimiento-de-terminos-en-escandalo-de-la-ungrd/"
+          },
+          {
+            "n": "Infobae · la cuarta solicitud de libertad y lo que ella alega",
+            "u": "https://www.infobae.com/colombia/2026/05/08/sandra-ortiz-pidio-nuevamente-su-libertad-por-vencimiento-de-terminos-por-caso-ungrd-quiero-que-el-pais-conozca-todo-lo-que-ha-pasado/"
+          },
+          {
+            "n": "Semana · el detalle de la decisión",
+            "u": "https://www.semana.com/nacion/articulo/sandra-ortiz-acusada-por-el-escandalo-de-corrupcion-en-la-ungrd-quedo-en-libertad-por-vencimiento-de-terminos/202629/"
+          }
+        ]
+      },
+      {
+        "id": "papa-pitufo-campana",
+        "titulo": "Los 500 millones de «Papá Pitufo» que, según la denuncia, entraron a la campaña Petro Presidente 2022",
+        "estado": "en-investigacion",
+        "queSeConfirmo": "El 12 de febrero de 2025 la Fiscalía anunció que abría investigación por posible financiación irregular de la campaña de 2022 con 500 millones de pesos en efectivo del contrabandista Diego Marín, alias Papá Pitufo, entregados a través de Xavier Vendrell, asesor cercano de la campaña. El caso está en la Fiscalía 295 de Delitos contra la Administración Pública. No hay cargos formulados contra Petro ni contra la campaña. Petro lo niega —«siguen mintiendo»— y una versión sostiene que Vendrell se quedó con el dinero y nunca llegó a la campaña. Lo que sí está judicializado es Marín, acusado de cohecho y concierto para delinquir, con circular roja de Interpol y a la espera de extradición desde Portugal.",
+        "quienLoConfirmo": "Fiscalía General de la Nación · Fiscalía 295 de Delitos contra la Administración Pública, investigación anunciada el 12 de febrero de 2025.",
+        "fecha": "2025-02-12",
+        "monto": "500 millones de pesos",
+        "implicados": [
+          "Diego Marín, alias «Papá Pitufo»",
+          "Xavier Vendrell (asesor de la campaña de 2022)"
+        ],
+        "_nota": "Pesa como investigación y no como confirmado porque no hay imputación ni fallo sobre la campaña. Que el dinero saliera de Marín y que Vendrell lo recibiera es lo denunciado; que llegara a la campaña es lo que la Fiscalía investiga.",
+        "fuentes": [
+          {
+            "n": "Infobae · la Fiscalía anuncia la investigación",
+            "u": "https://www.infobae.com/colombia/2025/02/12/fiscalia-inicia-la-investigacion-por-posible-financiacion-irregular-en-la-campana-de-gustavo-petro-por-parte-de-alias-papa-pitufo/"
+          },
+          {
+            "n": "La Silla Vacía · las claves de la infiltración",
+            "u": "https://www.lasillavacia.com/silla-nacional/claves-de-la-infiltracion-de-papa-pitufo-a-la-campana-petro/"
+          },
+          {
+            "n": "Infobae · Petro responde: «siguen mintiendo»",
+            "u": "https://www.infobae.com/colombia/2025/02/12/petro-defendio-su-campana-presidencial-ante-presunto-ingreso-de-dinero-de-alias-papa-pitufo-siguen-mintiendo/"
+          },
+          {
+            "n": "El Colombiano · la versión de que Vendrell se quedó con el dinero",
+            "u": "https://www.elcolombiano.com/colombia/xavier-vendrell-se-robo-los-500-millones-campana-petro-presidente-EA35243711"
+          },
+          {
+            "n": "El Colombiano · quién es Diego Marín",
+            "u": "https://www.elcolombiano.com/colombia/quien-es-diego-marin-alias-papa-pitufo-el-zar-del-contrabando-intento-poner-dinero-campana-gustavo-petro-LH26569345"
           }
         ]
       }

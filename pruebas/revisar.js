@@ -511,18 +511,31 @@ console.log('\n  -- la ficha del gobernante --');
   comprobar('todo tamaño de letra del módulo sale de la escala --t-N',
     sueltos.length === 0, sueltos.length ? sueltos.slice(0, 5).join(' · ') : (cuerpo.match(/font-size:var\(--t-\d\)/g) || []).length + ' tamaños, todos de la escala');
 
-  /* El JSON y su sección de casos: estados solo los cuatro conocidos, y un
-     caso 'confirmado' sin quién lo confirmó ni fuentes no puede pesar. */
-  const d = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
-  const lista = ((d.casos || {}).lista) || [];
-  const ESTADOS = ['confirmado', 'en-investigacion', 'senalamiento', 'por-documentar'];
-  const malos = lista.filter(c => !ESTADOS.includes(c.estado)).map(c => c.id + ':' + c.estado);
-  const cojos = lista.filter(c => (c.estado === 'confirmado' || c.estado === 'en-investigacion') &&
-    (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)).map(c => c.id);
-  comprobar('los casos de corrupción llevan un estado probatorio conocido',
-    malos.length === 0, malos.length ? malos.join(', ') : lista.length + ' casos');
-  comprobar('y ningún caso que pese (confirmado o en investigación) va sin quién, fecha y fuentes',
-    cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso que pese va cojo');
+  /* Los DOS registros y su sección de casos: estados solo los cinco conocidos,
+     y un caso que pese sin quién lo confirmó, fecha ni fuentes no puede pesar.
+     Se revisan los dos porque la misma regla mide a los dos gobernantes: un
+     registro con la vara floja sería la manera silenciosa de inclinar la
+     comparación. Y un 'archivado' también exige quién archivó y con qué
+     fuente: no pesa, pero exonera, y una exoneración sin papel es igual de
+     falsa que una acusación sin papel. */
+  const ESTADOS = ['confirmado', 'en-investigacion', 'senalamiento', 'archivado', 'por-documentar'];
+  const REGISTROS = ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'];
+  const malos = [], cojos = [];
+  let nCasos = 0;
+  REGISTROS.forEach((ruta) => {
+    const quien = ruta.split('-').pop().replace('.json', '');
+    const lista = ((JSON.parse(leer(ruta)).casos || {}).lista) || [];
+    nCasos += lista.length;
+    lista.forEach((c) => {
+      if (!ESTADOS.includes(c.estado)) malos.push(quien + '/' + c.id + ':' + c.estado);
+      const conPeso = c.estado === 'confirmado' || c.estado === 'en-investigacion' || c.estado === 'archivado';
+      if (conPeso && (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)) cojos.push(quien + '/' + c.id);
+    });
+  });
+  comprobar('los casos de corrupción de los dos registros llevan un estado probatorio conocido',
+    malos.length === 0, malos.length ? malos.join(', ') : nCasos + ' casos en ' + REGISTROS.length + ' registros');
+  comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
+    cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
 }
 
 console.log('\n  -- un nombre, una cosa --');

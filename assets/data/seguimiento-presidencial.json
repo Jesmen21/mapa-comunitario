@@ -2716,6 +2716,63 @@
           "u": "https://www.elcolombiano.com/especiales/elecciones-2026/habla-abelardo-de-la-espriella-cne-revocar-candidatura-firmas-falsas-DN36083303"
         }
       ]
+    },
+    {
+      "fecha": "2026-08-18",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "El Gobierno suspende la programación de las 20 emisoras de paz y la FLIP alerta",
+      "detalle": "Las 20 emisoras de paz, creadas por el Acuerdo de 2016 en municipios afectados por el conflicto, pasaron a emitir solo música desde el 18 de agosto. La Fundación para la Libertad de Prensa alertó por la suspensión. El Gobierno sostuvo que bajo la administración anterior se habían vuelto un «aparato de propaganda»; el senador Enrique Gómez las llamó «altavoces oficiales de las Farc para adoctrinar regiones».",
+      "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Espectador · la alerta de la FLIP",
+          "u": "https://www.elespectador.com/judicial/flip-alerta-por-suspension-temporal-de-20-emisoras-de-paz-en-gobierno-de-la-espriella/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-06",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "Las emisoras de paz vuelven como «Emisoras de la Reconciliación» y las acusan de politizadas: tres programas llevan las palabras de la campaña",
+      "detalle": "El 7 de septiembre 16 de las 20 emisoras retomaron programación con nuevo nombre y nueva parrilla. Los críticos señalan que los programas usan «Patria» y «Milagro», las dos palabras del relato religioso de la campaña presidencial: uno de ellos se llama «Milagro en el Campo» y va de 6 a 7 de la mañana. Iván Cepeda anunció una tutela contra el Ministerio de las TIC y RTVC por la suspensión de las 20 emisoras.",
+      "contrapunto": "El Gobierno responde que la parrilla anterior también era política y que el cambio corrige eso. La objeción de fondo no es a quién le toca el turno, sino a que una emisora pública lleve el vocabulario de una campaña.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · la parrilla nueva y las palabras de la campaña",
+          "u": "https://www.infobae.com/colombia/2026/09/06/nueva-polemica-del-gobierno-de-de-la-espriella-con-las-emisoras-de-paz-aseguran-que-las-habria-politizado-con-nuevo-nombre-y-programas/"
+        },
+        {
+          "n": "La Silla Vacía · el regreso como Emisoras de la Reconciliación",
+          "u": "https://www.lasillavacia.com/en-vivo/emisoras-de-paz-vuelven-el-lunes-seran-emisoras-de-la-reconciliacion/"
+        },
+        {
+          "n": "El País · la tutela que anuncia Cepeda",
+          "u": "https://www.elpais.com.co/politica/ivan-cepeda-anuncia-tutela-contra-el-gobierno-de-abelardo-de-la-espriella-por-presunta-censura-a-las-emisoras-de-paz-2154.html"
+        },
+        {
+          "n": "Pulzo · cuántas volvieron y con qué programación",
+          "u": "https://www.pulzo.com/nacion/emisoras-de-reconciliacion-en-colombia-regreso-programacion-y-suspension-tras-acuerdo-de-paz-PP5293565A"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "Varios de los principales aportantes de la campaña en segunda vuelta terminaron con cargos en el Gobierno",
+      "detalle": "Una revisión de los reportes de financiación de la segunda vuelta muestra que varios de quienes más aportaron a la campaña ocupan hoy cargos en la administración. Aportar a una campaña es legal y ocupar un cargo después no es delito; el registro anota la coincidencia porque es la que el elector no puede ver en ningún informe oficial junto.",
+      "contrapunto": "No hay norma que lo prohíba ni denuncia formal por esto. Lo que hace exigible el dato es el propio discurso del Gobierno contra el cruce entre plata y puestos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · quiénes aportaron y qué cargo tienen",
+          "u": "https://www.infobae.com/colombia/2026/09/03/estos-fueron-algunos-de-los-principales-aportantes-a-la-campana-de-abelardo-de-la-espriella-en-segunda-vuelta-varios-terminaron-con-cargos-en-el-gobierno/"
+        }
+      ]
     }
   ],
   "balances": [
@@ -3185,7 +3242,7 @@
     ]
   },
   "casos": {
-    "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos.",
+    "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · archivado: una autoridad lo revisó y lo cerró sin hallazgo; se muestra con su etiqueta y no pesa. Un caso archivado NO se cuenta como señalamiento: leer igual lo que nadie ha mirado y lo que una autoridad ya miró y cerró es injusto con el señalado, y el registro publica lo que lo favorece con la misma letra que lo que no. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos.",
     "lista": [
       {
         "id": "los-nunca",
@@ -3268,6 +3325,85 @@
           {
             "n": "BluRadio · no reporta cónyuge en su declaración de renta",
             "u": "https://www.bluradio.com/nacion/de-la-espriella-no-reporta-conyuge-en-su-declaracion-de-renta-tiene-patrimonio-de-10-272-millones-rg10"
+          }
+        ]
+      },
+      {
+        "id": "nova-soportes",
+        "titulo": "La campaña le pagó 1.299 millones a Nova Soporte Integral, una empresa liquidada durante tres años y reactivada semanas antes de la primera vuelta",
+        "estado": "senalamiento",
+        "queSeConfirmo": "Nada todavía. Una investigación de la revista Cambio documentó que la campaña reportó pagos por 1.299 millones de pesos a Nova Soporte Integral por transporte y logística —344 de ellos ya en segunda vuelta, por tiquetes, alojamiento y transporte terrestre—, y que la empresa llevaba tres años liquidada, reapareció y cambió de nombre en la Cámara de Comercio de Bogotá en febrero de 2026, sin historial de facturación, sin presencia pública verificable y con un representante legal que figura como estudiante universitario y clasificado como vulnerable en el Sisbén. La campaña lo negó —«ultrajante e infamante»— y pidió rectificación, pero no aportó contratos, facturas detalladas ni pruebas de los servicios prestados.",
+        "quienLoConfirmo": "Ninguna autoridad. El Consejo Nacional Electoral no ha abierto actuación por este contrato pese a las peticiones que se le hicieron; la Asociación Colombiana de Medios respaldó el trabajo periodístico.",
+        "fecha": "2026-06-16",
+        "monto": "1.299 millones de pesos",
+        "implicados": [
+          "Campaña presidencial Defensores de la Patria",
+          "Nova Soporte Integral S.A.S."
+        ],
+        "fuentes": [
+          {
+            "n": "Infobae · los 1.299 millones a una empresa sin trayectoria",
+            "u": "https://www.infobae.com/colombia/2026/06/16/la-campana-de-abelardo-de-la-espriella-habria-destinado-1299-millones-a-una-empresa-sin-trayectoria/"
+          },
+          {
+            "n": "Infobae · la campaña lo niega y pide rectificación",
+            "u": "https://www.infobae.com/colombia/2026/06/16/campana-de-abelardo-de-la-espriella-nego-senalamientos-sobre-millonarios-pagos-a-una-empresa-fantasma-ultrajante-e-infamante/"
+          },
+          {
+            "n": "Cambio · los 344 millones de la segunda vuelta",
+            "u": "https://cambiocolombia.com/poder/articulo/2026/7/campana-de-abelardo-de-la-espriella-le-pago-344-millones-en-segunda-vuelta-a-la-cuestionada-empresa-nova-soporte"
+          }
+        ]
+      },
+      {
+        "id": "lavado-tuso-sierra",
+        "titulo": "Lavado de activos y enriquecimiento ilícito por el dinero de «El Tuso» Sierra: la Fiscalía lo archivó sin encontrar mérito",
+        "estado": "archivado",
+        "queSeConfirmo": "Que no hubo hallazgo. La Corte Suprema pidió investigarlo por lavado de activos y enriquecimiento ilícito a partir del testimonio del narcotraficante Juan Carlos «El Tuso» Sierra, que dijo haberle pagado una suma alta para entrar al proceso de Justicia y Paz. La Fiscalía Sexta Especializada precluyó a su favor a finales de 2014 y el proceso quedó archivado en 2021. La Fiscalía 13 Especializada dejó escrito que «no existe evidencia o elemento material probatorio del cual se pueda inferir la comisión de los delitos de lavado de activos o enriquecimiento ilícito».",
+        "quienLoConfirmo": "Fiscalía General de la Nación · preclusión de 2014 y orden de archivo de 2021, bajo el fiscal general Francisco Barbosa.",
+        "fecha": "2021-01-01",
+        "monto": null,
+        "implicados": [
+          "Abelardo de la Espriella"
+        ],
+        "_nota": "Este caso está en el registro porque lo favorece, no porque lo señale. La acusación circuló durante años y sigue circulando; el desenlace —una autoridad que miró y cerró— circula mucho menos. Un registro que solo publica lo que acusa no es un registro.",
+        "fuentes": [
+          {
+            "n": "El Colombiano · la Corte pide investigarlo y el proceso se archiva",
+            "u": "https://www.elcolombiano.com/historico/corte-pidio-investigar-a-abelardo-de-la-espriella-por-enriquecimiento-ilicito-LXEC_293800"
+          },
+          {
+            "n": "El Colombiano · la Fiscalía archiva la investigación por lavado",
+            "u": "https://www.elcolombiano.com/colombia/fiscalia-archivo-investigacion-por-presunto-lavado-de-activos-a-abelardo-de-la-espriella-DD26610030"
+          },
+          {
+            "n": "CasaMacondo · la reconstrucción del expediente",
+            "u": "https://casamacondo.co/investigacion/abelardo-de-la-espriella-fiscalia/"
+          }
+        ],
+        "_fechaAprox": "Las fuentes fechan el archivo en 2021 sin día. `fecha` usa el 1 de enero de ese año solo para ordenar y recortar la serie; en pantalla se lee `fechaTexto`, que dice «2021» y no afirma un día que nadie publicó.",
+        "fechaTexto": "2021"
+      },
+      {
+        "id": "soborno-testigo",
+        "titulo": "Oferta de soborno a un testigo: la Corte Suprema ordenó investigarlo y la Fiscalía archivó por no encontrar prueba que lo vinculara",
+        "estado": "archivado",
+        "queSeConfirmo": "Que no hubo hallazgo. Una columna de Daniel Coronell reveló en febrero de 2026 una resolución de la Sala Penal de la Corte Suprema que ordenaba investigarlo por una presunta oferta de soborno a un testigo. Su defensa publicó entonces la orden de archivo de la Fiscalía, que dice: «En el presente caso, como se evidencia en el memorial de orden de archivo, no existe prueba que vincule a ABELARDO DE LA ESPRIELLA OTERO con la presunta comisión del delito de soborno».",
+        "quienLoConfirmo": "Fiscalía General de la Nación · orden de archivo, publicada por la defensa tras la columna del 22 de febrero de 2026.",
+        "fecha": "2026-02-24",
+        "monto": null,
+        "implicados": [
+          "Abelardo de la Espriella"
+        ],
+        "_nota": "La orden de la Corte de investigar y el archivo de la Fiscalía son hechos distintos y los dos están documentados. Gustavo Bolívar leyó el archivo como impunidad —«la justicia nunca lo toca»—; esa lectura es una opinión y no cambia el estado probatorio, que es archivado.",
+        "fuentes": [
+          {
+            "n": "Infobae · la defensa publica la orden de archivo",
+            "u": "https://www.infobae.com/colombia/2026/02/24/defensa-de-abelardo-de-la-espriella-revelo-pruebas-tras-senalamientos-por-presunto-soborno-y-solicito-rectificacion/"
+          },
+          {
+            "n": "Infobae · la lectura contraria, de Gustavo Bolívar",
+            "u": "https://www.infobae.com/colombia/2026/02/22/gustavo-bolivar-arremetio-contra-abelardo-de-la-espriella-por-investigacion-de-supuesto-soborno-la-justicia-nunca-lo-toca/"
           }
         ]
       }

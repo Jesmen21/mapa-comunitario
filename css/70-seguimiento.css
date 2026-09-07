@@ -1479,12 +1479,17 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-fi-grupo-conf .sp-fi-grupo-t{ color:var(--rojo); }
 .sp-fi-grupo-inv .sp-fi-grupo-t{ color:var(--amarillo-hi); }
+.sp-fi-grupo-arch .sp-fi-grupo-t{ color:#0E7C5A; }
 .sp-fi-cc{
   padding:14px 16px; background:var(--marfil); border:1px solid var(--linea);
   border-left:4px solid #B9C3CA; border-radius:var(--r-s); display:grid; gap:6px;
 }
 .sp-fi-cc-conf{ border-left-color:var(--rojo); background:#FFF7F6; }
 .sp-fi-cc-inv{ border-left-color:var(--ambar); }
+/* Archivado: verde de cerrado. Un caso que una autoridad revisó y cerró sin
+   hallazgo no se pinta igual que uno que nadie ha mirado; leerlos iguales es
+   injusto con el señalado. */
+.sp-fi-cc-arch{ border-left-color:#0E7C5A; background:#F4FBF8; }
 .sp-fi-cc-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .sp-fi-cc-fecha{ font-size:var(--t-9); color:var(--ink-2); font-variant-numeric:tabular-nums; }
 .sp-fi-cc h4{ margin:0; font-size:var(--t-5); line-height:1.3; color:var(--petroleo); letter-spacing:-.01em; }
