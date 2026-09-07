@@ -6,6 +6,8 @@
      `?app=` con el que arrancó el APK. Acá solo se pregunta antes de abrir
      una pantalla o de atender una llamada; sin modo, todo pasa. */
   function pantallaPermitida(p){
+    // La vitrina, además, es por invitación: la ve quien tiene el permiso.
+    if(p === 'vitrina' && typeof window.urbisPuedeVerVitrina === 'function' && !window.urbisPuedeVerVitrina()) return false;
     return (typeof window.urbisPantallaPermitida === 'function') ? window.urbisPantallaPermitida(p) : true;
   }
   function llamadaPermitida(c){

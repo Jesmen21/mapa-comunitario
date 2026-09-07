@@ -41,6 +41,7 @@
       pantallas: ['login', 'auth-login', 'home',
                   'map', 'timeline', 'alerts',            // reportar y mis reportes
                   'events', 'mis-eventos', 'aurea',       // eventos
+                  'vitrina',                              // emprendimientos (además, por invitación)
                   'social', 'notifications', 'profile', 'avatar',
                   'games'],
       // Pro City entra por llamadas (data-u52-call), no por pantalla.

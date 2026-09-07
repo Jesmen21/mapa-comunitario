@@ -36,6 +36,25 @@
    Y quién decide qué se VE: el estado. `borrador` no pinta, `visible` sí.
    Crear deja el negocio en borrador a propósito — publicarlo en el mapa es
    una decisión aparte, que es lo que se pidió: "yo autorizo si se ve".
+
+   Quién entra al MÓDULO (7 de septiembre de 2026)
+   ───────────────────────────────────────────────
+   La tarjeta del inicio y la pantalla del directorio son POR INVITACIÓN: las
+   ve quien tiene el permiso `vitrina` —los administradores y a quien el
+   dueño se lo delegue—. El dueño de URBIS lo pidió así para esta etapa: él
+   crea cada emprendimiento y le entrega el control a la persona del negocio;
+   más adelante cualquiera podrá publicar el suyo.
+
+   «Entregar el control» son dos cosas, y las dos hacen falta: el negocio
+   guarda `duenio` (el usuario que lo administra) y esa persona recibe el
+   permiso `vitrina`, porque sin él el servidor le rechaza cualquier
+   escritura. Con las dos, al entrar ve SOLO su emprendimiento y puede editar
+   su ficha y su portafolio; crear, publicar, pausar y borrar siguen siendo
+   del administrador. El servidor, hoy, no distingue un negocio de otro —mira
+   el permiso, no el dueño—; ese recorte es del cliente y así queda dicho.
+
+   Lo que SÍ sigue siendo público: la gota en el mapa y su ficha al tocarla.
+   Eso es el escaparate; sin público, la vitrina no tiene razón de ser.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -256,6 +275,25 @@
     try { return typeof window.urbisPuede === 'function' && window.urbisPuede('vitrina'); }
     catch (e) { return false; }
   }
+  function esAdmin() {
+    try { return typeof window.urbisEsAdmin === 'function' && !!window.urbisEsAdmin(); } catch (e) { return false; }
+  }
+  function usuarioActual() {
+    try { return String((typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || '').trim().replace(/^@/, '').toLowerCase(); }
+    catch (e) { return ''; }
+  }
+  // Ver el módulo = tener el permiso. Es la misma llave que exige el servidor
+  // para escribir, así que no se le enseña una puerta a quien no la puede abrir.
+  function puedeVer() { return puedo(); }
+  window.urbisPuedeVerVitrina = puedeVer;
+  function misNegocios() {
+    const yo = usuarioActual();
+    return yo ? negocios().filter(function (n) { return n.duenio === yo; }) : [];
+  }
+  // Lo que ve cada uno en el mostrador: el administrador, todo; el delegado,
+  // lo suyo. Un delegado sin emprendimiento asignado ve la lista vacía y por
+  // qué está vacía.
+  function negociosDelMostrador() { return esAdmin() ? negocios() : misNegocios(); }
   function nuevoId() { return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
   // ── Leer y escribir el sobre ─────────────────────────────────────────────
@@ -276,6 +314,9 @@
       // ninguno guardado: heredan el dorado de siempre en vez de salir grises.
       color: String(o.color || COLOR_POR_DEFECTO),
       estado: String(o.estado || 'borrador'), fila: p,
+      // Quien administra este emprendimiento (usuario, sin @). Vacío = nadie
+      // todavía: solo el administrador lo toca.
+      duenio: String(o.duenio || '').trim().replace(/^@/, '').toLowerCase(),
       logo: (function () { const l = logoDe(String(o.id || '')); return l ? l.url : ''; })()
     };
   }
@@ -283,7 +324,8 @@
     return PREFIJO + encodeURIComponent(JSON.stringify({
       id: n.id, nombre: n.nombre, emoji: n.emoji, lema: n.lema, descripcion: n.descripcion,
       telefono: n.telefono, whatsapp: n.whatsapp, direccion: n.direccion,
-      horario: n.horario, color: n.color || COLOR_POR_DEFECTO, estado: n.estado
+      horario: n.horario, color: n.color || COLOR_POR_DEFECTO, estado: n.estado,
+      duenio: String(n.duenio || '').trim().replace(/^@/, '').toLowerCase()
     }));
   }
   /* Producto del portafolio. La promoción y el precio anterior se AÑADEN al
@@ -533,28 +575,43 @@
       return;
     }
     function listado() {
-      const arr = negocios();
+      const admin = esAdmin();
+      const arr = negociosDelMostrador();
       cont.innerHTML =
-        '<button type="button" class="ucfg-primario uvit-nuevo">＋ Nuevo emprendimiento</button>' +
+        (admin ? '<button type="button" class="ucfg-primario uvit-nuevo">＋ Nuevo emprendimiento</button>' : '') +
+        '<div class="uvit-aviso" hidden></div>' +
         (arr.length ? arr.map(function (n, i) {
           return '<div class="uadm-item uvit-fila" data-i="' + i + '">' +
             '<div class="uadm-txt"><b>' + esc(n.emoji) + ' ' + esc(n.nombre) +
               (n.estado === 'visible' ? ' <span class="uvit-al-aire">en el mapa</span>' : ' <span class="uvit-borrador">' + (n.estado === 'pausado' ? 'pausado' : 'borrador') + '</span>') + '</b>' +
-            '<small>' + esc(n.lema || n.direccion || '') + ' · ' + itemsDe(n.id).length + ' producto(s)</small></div>' +
+            '<small>' + esc(n.lema || n.direccion || '') + ' · ' + itemsDe(n.id).length + ' producto(s)' +
+              (admin && n.duenio ? ' · lo administra @' + esc(n.duenio) : '') + '</small></div>' +
             '<div class="uadm-btns">' +
-              '<button type="button" class="uadm-ok" data-acc="' + (n.estado === 'visible' ? 'pausar' : 'publicar') + '">' +
-                (n.estado === 'visible' ? 'Pausar' : 'Mostrar en el mapa') + '</button>' +
+              /* Publicar, pausar y borrar son del administrador: es él quien
+                 responde por lo que sale con el sello de URBIS. El delegado
+                 edita su ficha y su portafolio, y lo demás lo pide. */
+              (admin
+                ? '<button type="button" class="uadm-ok" data-acc="' + (n.estado === 'visible' ? 'pausar' : 'publicar') + '">' +
+                    (n.estado === 'visible' ? 'Pausar' : 'Mostrar en el mapa') + '</button>'
+                : '') +
               '<button type="button" class="uadm-ver" data-acc="editar">Editar</button>' +
-              '<button type="button" class="uadm-del" data-acc="borrar-negocio">Eliminar</button>' +
+              (admin ? '<button type="button" class="uadm-del" data-acc="borrar-negocio">Eliminar</button>' : '') +
             '</div></div>';
-        }).join('') : '<div class="uadm-vacio">Todavía no hay emprendimientos. Crea el primero.</div>');
+        }).join('')
+        : (admin
+            ? '<div class="uadm-vacio">Todavía no hay emprendimientos. Crea el primero.</div>'
+            : '<div class="uadm-vacio">El administrador de URBIS todavía no te ha asignado un emprendimiento. ' +
+              'Cuando lo haga, aparecerá aquí para que lo edites.</div>'));
 
-      cont.querySelector('.uvit-nuevo').addEventListener('click', function () { formulario(null); });
+      const nuevo = cont.querySelector('.uvit-nuevo');
+      if (nuevo) nuevo.addEventListener('click', function () { formulario(null); });
       cont.querySelectorAll('[data-acc]').forEach(function (b) {
         b.addEventListener('click', async function () {
-          const n = negocios()[parseInt(b.closest('.uvit-fila').getAttribute('data-i'), 10)];
+          const n = negociosDelMostrador()[parseInt(b.closest('.uvit-fila').getAttribute('data-i'), 10)];
           if (!n) return;
           const acc = b.getAttribute('data-acc');
+          // Aunque un botón se colara, el delegado solo edita lo suyo.
+          if (!admin && (acc !== 'editar' || n.duenio !== usuarioActual())) return;
           if (acc === 'editar') { formulario(n); return; }
           if (acc === 'borrar-negocio') {
             if (!confirm('¿Eliminar “' + n.nombre + '” y todo su portafolio?\n\nNo se puede deshacer.')) return;
@@ -586,8 +643,9 @@
     // ── Alta y edición ──────────────────────────────────────────────────
     function formulario(n) {
       const editando = !!n;
+      const admin = esAdmin();
       const v = n || { id: nuevoId(), nombre:'', emoji:'🛍️', lema:'', descripcion:'',
-                       telefono:'', whatsapp:'', direccion:'', horario:'', estado:'borrador' };
+                       telefono:'', whatsapp:'', direccion:'', horario:'', estado:'borrador', duenio:'' };
       cont.innerHTML =
         '<button type="button" class="uvit-volver">← Volver a la lista</button>' +
         '<div class="uvit-form">' +
@@ -630,6 +688,14 @@
           '<input id="uvit-dir" maxlength="90" value="' + esc(v.direccion) + '" placeholder="Cra 5 #12-34, barrio Atalaya">' +
           '<label>Horario</label>' +
           '<input id="uvit-hora" maxlength="60" value="' + esc(v.horario) + '" placeholder="Lun–Sáb 9am–7pm">' +
+          (admin
+            ? '<label>Usuario que lo administra <small>(opcional)</small></label>' +
+              '<input id="uvit-duenio" maxlength="40" autocapitalize="off" autocomplete="off" value="' + esc(v.duenio || '') + '" placeholder="usuario de URBIS, sin @">' +
+              '<small class="uvit-duenio-nota">Podrá editar la ficha y el portafolio de este emprendimiento. ' +
+              'Publicarlo, pausarlo o borrarlo sigue siendo decisión tuya. Para que pueda guardar necesita ' +
+              'además el permiso «Administrar la vitrina»: si eres la cuenta dueña de URBIS se le da solo al guardar; ' +
+              'si no, dáselo en Panel → Equipo.</small>'
+            : '') +
           (editando ? '' :
             '<label>¿Dónde queda?</label>' +
             '<div class="uvit-ubic">' +
@@ -773,8 +839,36 @@
           whatsapp: cont.querySelector('#uvit-wa').value.trim() || cont.querySelector('#uvit-tel').value.trim(),
           direccion: cont.querySelector('#uvit-dir').value.trim(),
           horario: cont.querySelector('#uvit-hora').value.trim(),
-          estado: v.estado, fila: v.fila
+          estado: v.estado, fila: v.fila,
+          // El delegado no ve el campo y conserva al dueño que ya tenía.
+          duenio: admin && cont.querySelector('#uvit-duenio')
+            ? cont.querySelector('#uvit-duenio').value.trim().replace(/^@/, '').toLowerCase()
+            : String(v.duenio || '')
         };
+      }
+
+      /* Al asignar dueño, la otra mitad del control: el permiso. Solo la
+         cuenta dueña de URBIS puede darlo; un administrador que no lo sea
+         recibe la indicación de dónde hacerlo. Nunca se calla: un dueño sin
+         permiso es un botón que falla. */
+      function entregarControl(d) {
+        const aviso = cont.querySelector('.uvit-aviso');
+        const decir = function (t) { if (aviso) { aviso.textContent = t; aviso.hidden = false; } };
+        if (!admin || !d.duenio) return Promise.resolve();
+        if (!(typeof window.urbisEsDuenoUrbis === 'function' && window.urbisEsDuenoUrbis())) {
+          decir('Guardado. @' + d.duenio + ' queda como quien lo administra; para que pueda editar, ' +
+                'el dueño de URBIS tiene que darle el permiso «Administrar la vitrina» en Panel → Equipo.');
+          return Promise.resolve();
+        }
+        if (typeof window.urbisDarPermiso !== 'function') return Promise.resolve();
+        return window.urbisDarPermiso(d.duenio, 'vitrina').then(function (r) {
+          decir(r && r.ya
+            ? 'Guardado. @' + (r.usuario || d.duenio) + ' ya tenía el permiso de vitrina: puede editar este emprendimiento.'
+            : 'Guardado. @' + (r && r.usuario || d.duenio) + ' recibió el permiso de vitrina y ya puede editar este emprendimiento.');
+        }).catch(function (e) {
+          decir('Guardado, pero no se pudo dar el permiso a @' + d.duenio + ': ' + (e && e.message || e) +
+                '. Dáselo en Panel → Equipo.');
+        });
       }
 
       cont.querySelector('#uvit-guardar').addEventListener('click', async function () {
@@ -792,6 +886,7 @@
             (window.urbisVitrina = window.urbisVitrina || []).push(fila);
           }
           render(); listado();
+          entregarControl(d);
         } catch (e) {
           btn.disabled = false; btn.textContent = editando ? 'Guardar cambios' : 'Crear (queda en borrador)';
           err.textContent = 'No se pudo guardar: ' + (e.message || e); err.hidden = false;
@@ -958,9 +1053,13 @@
     ov.innerHTML =
       '<div class="urbis-cfg urbis-cfg-largo uvit-mostrador" role="dialog" aria-modal="true">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
-        '<h3>🛍️ Emprendimientos URBIS</h3>' +
-        '<p class="ucfg-sub">Tu mostrador: crea la ficha de cada negocio, arma su ' +
-        'portafolio y decide cuáles se ven en el mapa.</p>' +
+        (esAdmin()
+          ? '<h3>🛍️ Emprendimientos URBIS</h3>' +
+            '<p class="ucfg-sub">Tu mostrador: crea la ficha de cada negocio, arma su ' +
+            'portafolio, decide cuáles se ven en el mapa y quién administra cada uno.</p>'
+          : '<h3>🛍️ Mi emprendimiento</h3>' +
+            '<p class="ucfg-sub">Edita la ficha y el portafolio del emprendimiento que URBIS te asignó. ' +
+            'Publicarlo o pausarlo lo decide el administrador.</p>') +
         '<div class="uvit-mostrador-cuerpo"></div>' +
       '</div>';
     document.body.appendChild(ov);
@@ -971,7 +1070,11 @@
 
   // ── El módulo del inicio: la puerta grande de la vitrina ─────────────────
   /* La gota del mapa es el descubrimiento casual; esta tarjeta es la entrada
-     a propósito. Sale en "Módulos principales" PARA TODO EL MUNDO — esconderla
+     a propósito. Salía en "Módulos principales" para todo el mundo; desde el
+     7 de septiembre de 2026 es por invitación (ver la cabecera del archivo:
+     el dueño de URBIS crea cada emprendimiento y entrega su control). Lo que
+     sigue público es la gota y su ficha. El texto de abajo se conserva porque
+     explica por qué la gota no se esconde nunca: esconderla
      dejaría la promoción de los negocios sin público, que es su razón de ser.
      Lo que sí es solo del equipo es el botón de administrar, adentro.
 
@@ -980,15 +1083,24 @@
      a mano desaparecería. */
   function montarModuloInicio() {
     const grid = document.querySelector('.u52-grid-primary');
-    if (!grid || grid.querySelector('[data-u52-go="vitrina"]')) return;
+    if (!grid) return;
+    const existente = grid.querySelector('[data-u52-go="vitrina"]');
+    /* Por invitación: sin el permiso, la tarjeta no existe —y si existía de
+       una sesión anterior, se quita—. Este vigía corre al cambiar el DOM, así
+       que iniciar sesión como administrador la hace aparecer sin recargar. */
+    if (!puedeVer()) { if (existente) existente.remove(); return; }
+    if (existente) return;
     const b = document.createElement('button');
     b.className = 'u52-module vitrina u52-jac-module';
     b.setAttribute('data-u52-go', 'vitrina');
     /* "Emprendimientos URBIS" es el nombre bueno: "del barrio" sonaba a
        clasificado de esquina, y lo que aquí se publica lleva el respaldo de
        URBIS encima. Como "Emprendimientos" es una palabra más ancha que la
-       casilla, css/55 le deja partirse con guion en vez de desbordar. */
-    b.innerHTML = '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Emprendimientos URBIS</small>';
+       casilla, css/55 le deja partirse con guion en vez de desbordar. Al
+       delegado se le dice lo suyo: «Mi emprendimiento». */
+    b.innerHTML = esAdmin()
+      ? '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Emprendimientos URBIS</small>'
+      : '<span class="uvit-mod-ico">🛍️</span><b>Vitrina</b><small>Mi emprendimiento</small>';
     const eventos = grid.querySelector('[data-u52-go="events"]');
     if (eventos && eventos.nextSibling) grid.insertBefore(b, eventos.nextSibling);
     else grid.appendChild(b);
@@ -1018,7 +1130,7 @@
       '<p class="uvit-dir-intro">Emprendimientos que URBIS conoce y respalda. ' +
       'Toca uno para ver qué ofrece y escribirle directo.</p>' +
       (puedo()
-        ? '<button type="button" class="uvit-dir-admin">🛠️ Administrar la vitrina</button>'
+        ? '<button type="button" class="uvit-dir-admin">' + (esAdmin() ? '🛠️ Administrar la vitrina' : '🛠️ Mi emprendimiento') + '</button>'
         : '') +
       (arr.length ? arr.map(function (n, i) {
         const wa = linkWhatsApp(n.whatsapp || n.telefono, n.nombre);

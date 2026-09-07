@@ -119,6 +119,25 @@
     }).catch(function () { return window.urbisPermisos(); });
   };
 
+  /* Dar UN permiso a una persona, sin quitarle los que ya tiene. Lo usa la
+     vitrina cuando el administrador le entrega un emprendimiento a alguien:
+     el servidor exige el permiso `vitrina` para escribir esas filas, así que
+     «darle el control» sin el permiso sería darle un botón que falla. Solo el
+     dueño reparte; si quien asigna no lo es, el que llama tiene que decirlo. */
+  window.urbisDarPermiso = function (usuario, permiso) {
+    if (!window.urbisEsDuenoUrbis()) return Promise.reject(new Error('Solo el dueño de URBIS reparte permisos.'));
+    if (ORDEN.indexOf(permiso) === -1) return Promise.reject(new Error('Permiso desconocido: ' + permiso));
+    const u = String(usuario || '').trim().replace(/^@/, '');
+    if (!u) return Promise.reject(new Error('Falta el usuario.'));
+    return api({ action:'perm_find', identificador: u }).then(function (out) {
+      const p = out.persona || {};
+      const tiene = (p.permisos || []).slice();
+      if (tiene.indexOf(permiso) !== -1) return { ya: true, usuario: p.usuario || u };
+      return api({ action:'perm_set', identificador: p.usuario || u, permisos: tiene.concat([permiso]) })
+        .then(function () { return { ya: false, usuario: p.usuario || u }; });
+    });
+  };
+
   // ── La pestaña de equipo, dentro del panel de administración ─────────────
   window.urbisPintarEquipo = function (contenedor) {
     if (!window.urbisEsDuenoUrbis()) {

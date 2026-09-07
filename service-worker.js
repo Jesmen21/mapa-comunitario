@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v785-urbis-co-es-el-modo-ciudadano';
+const URBIS_CACHE = 'urbis-v786-la-vitrina-por-invitacion';
 const URBIS_ASSETS = [
   './',
   './index.html',

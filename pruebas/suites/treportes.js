@@ -178,7 +178,13 @@ const RAIZ = E.RAIZ;
     const visible = el => !!el && getComputedStyle(el).display !== 'none';
     const o = { marca: document.documentElement.getAttribute('data-urbis-modo'),
                 quedan: {}, fuera: {}, rotulos: [...document.querySelectorAll('.u52-k-section-label')].map(x => x.textContent.trim()) };
-    ['map', 'events', 'vitrina', 'social', 'games', 'seguimiento'].forEach(c => { o.quedan[c] = visible(card(c)); });
+    ['map', 'events', 'social', 'games', 'seguimiento'].forEach(c => { o.quedan[c] = visible(card(c)); });
+    /* La Vitrina tiene DOS puertas y esta suite mira a una ciudadana sin
+       permiso: el modo ciudadano sí la incluye, pero el módulo es por
+       invitación (js/13i), así que su tarjeta no está. Quien la tiene es
+       cosa de `tvitrina`. */
+    o.modoPermiteVitrina = typeof window.urbisPantallaPermitida === 'function' ? window.urbisPantallaPermitida('vitrina') : null;
+    o.vitrinaSinPermiso = !card('vitrina');
     // Quitadas del DOM, no escondidas: js/70 las poda para que tampoco
     // reciban foco ni las lea un lector de pantalla.
     ['sport', 'procity', 'aia', 'mascotas', 'mobility'].forEach(c => { o.fuera[c] = !card(c); });
@@ -196,7 +202,9 @@ const RAIZ = E.RAIZ;
   });
   chk(modo.marca === 'ciudadano', 'la app sabe que está en modo ciudadano (' + modo.marca + ')');
   const quedan = Object.keys(modo.quedan).filter(k => modo.quedan[k]);
-  chk(quedan.length === 6, 'en la portada quedan los seis módulos: ' + quedan.join(', '));
+  chk(quedan.length === 5, 'en la portada quedan sus módulos: ' + quedan.join(', '));
+  chk(modo.modoPermiteVitrina === true && modo.vitrinaSinPermiso === true,
+      'la Vitrina la permite el modo, pero sin el permiso no aparece: es por invitación');
   const sobran = Object.keys(modo.fuera).filter(k => !modo.fuera[k]);
   chk(sobran.length === 0, 'y el resto se quitó del inicio' +
       (sobran.length ? ' — siguen: ' + sobran.join(', ') : ': Rush, Pro City, Empresas, Mascotas, Movilidad'));
