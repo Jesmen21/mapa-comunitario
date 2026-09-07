@@ -68,6 +68,16 @@ function resultado(nombre, total, densidadPorHa, poblacionEstimada, nViasArteria
       poblacionEsCensal: false,
       poblacionProyectada: false,
       movilidad: { nViasArterias: nViasArterias, paradasBus: paradasBus, flujo: null },
+      /* El horario declarado, tal como lo devuelve el motor. Nueve de
+         dieciséis usos con horario legible, uno ilegible, seis sin nada:
+         los porcentajes tienen que salir sobre los NUEVE y no sobre los
+         dieciséis, que es la única manera de que la cifra signifique algo. */
+      horarios: { total: 16, conDato: 9, ilegible: 1, sinDato: 6, cobertura: 56,
+                  siempre: 2, deNoche: 5, sabado: 7, domingo: 6, soloEntreSemana: 2,
+                  pct: { siempre: 22, deNoche: 56, sabado: 78, domingo: 67, soloEntreSemana: 22 },
+                  suficiente: true, ejemplos24h: ['Droguería La 7', 'Estación Terpel'],
+                  lectura: 'La calle sigue viva de noche: 56 % de los locales con horario cierra después de las 8 p.m.',
+                  notaIlegible: '1 horario declarado no se pudo leer y queda fuera de la cuenta.' },
       // Siete categorías a propósito: es el peor caso del donut que se quitó.
       usoPredominante: { residencial: 38, comercial: 27, servicios: 12,
                          institucional: 9, mixto: 7, industrial: 5, ambiental: 2 },
@@ -203,6 +213,19 @@ function refEsperada(col) {
       hayBarras: !!cv('aia-chart-barras'),
       barras: barras,
       hayTablaRadios: !!document.querySelector('.aia-tbl-radios'),
+      horarios: (function(){
+        const c = document.getElementById('aia-flujo') || document.createElement('div');
+        return {
+          cobertura: (c.querySelector('.urb-cobertura') || {}).textContent || '',
+          filas: Array.from(c.querySelectorAll('.urb-horarios li')).map(li => ({
+            etq: (li.querySelector('span') || {}).textContent || '',
+            n: (li.querySelector('em') || {}).textContent || '',
+            pct: (li.querySelector('small') || {}).textContent || '',
+            ancho: ((li.querySelector('i b') || {}).style || {}).width || ''
+          })),
+          txt: c.innerText
+        };
+      })(),
       txt: document.getElementById('aia-tab-nuevo').innerText
     };
   });
@@ -262,6 +285,37 @@ function refEsperada(col) {
   const cifra = t => (r.minis.find(m => m.titulo.indexOf(t) === 0) || {}).cifra;
   chk(/^0\.1[0-9]$/.test(cifra('Equipamientos')),
       'una densidad menor que 1 no se redondea hasta perderse (' + cifra('Equipamientos') + ')');
+
+  /* ── El horario declarado (v804) ───────────────────────────────────────
+     `opening_hours` llegaba en los datos desde siempre y nadie lo leía. Las
+     franjas que ya existían son una ESTIMACIÓN por tipo de uso; esto es lo
+     que dice el letrero, y las dos juntas son la mitad del ejercicio. */
+  const H = r.horarios;
+  console.log('\n── Lo que dice el letrero ──────────────────────────');
+  console.log('  ' + H.cobertura);
+  H.filas.forEach(f => console.log('  ' + f.etq.padEnd(30) + f.n.padStart(3) + '  ' + f.pct));
+  chk(/9 de 16/.test(H.cobertura) && /56 %/.test(H.cobertura),
+      'la cobertura va primero: cuántos declaran horario de cuántos (' + H.cobertura.slice(0, 40) + ')');
+  const filaDe = t => H.filas.find(f => f.etq.indexOf(t) === 0) || {};
+  chk(filaDe('Abren después').n === '5' && filaDe('Abren después').pct === '56%',
+      'el porcentaje sale sobre los que declaran, no sobre el sector (5 de 9 = 56 %, no 31 %)');
+  chk(filaDe('Abren domingo').n === '6' && filaDe('Solo de lunes').n === '2',
+      'domingo y solo-entre-semana salen con su cuenta');
+  chk(filaDe('Abren 24 horas').n === '2' && /Droguería La 7/.test(H.txt),
+      'los de 24 horas se cuentan y se nombran');
+  chk(filaDe('Abren después').ancho === '56%',
+      'y la barra mide el porcentaje, no el conteo (' + filaDe('Abren después').ancho + ')');
+  chk(/no se pudo leer/.test(H.txt),
+      'el horario que el lector no entendió se declara en vez de callarse');
+  chk(/declarado en el mapa/.test(H.txt),
+      'y va rotulado como declarado, para no confundirlo con las franjas estimadas');
+  /* Este análisis de prueba NO trae flujo —`movilidad.flujo` es null— y el
+     bloque sale igual. No es un detalle del fixture: el horario y el flujo
+     son datos distintos, y hasta la v804 el bloque colgaba del `if (!f)
+     return` de renderFlujo, así que un sector sin flujo perdía también sus
+     horarios por un dato que no tiene que ver con ellos. */
+  chk(H.filas.length >= 4,
+      'y sale aunque el análisis no traiga flujo: son dos datos distintos (' + H.filas.length + ' filas)');
 
   console.log('\n── Lo que se quitó ─────────────────────────────────');
   chk(!r.hayRadar, 'el radar que repetía las barras ya no está');

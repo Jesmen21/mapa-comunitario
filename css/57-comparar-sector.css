@@ -99,3 +99,29 @@
    porque es la frase que evita que un ejercicio se convierta en una
    afirmación sobre Cúcuta que el sector no sostiene. */
 .edu-forma-ojo{ color:#f5b942 !important; opacity:1 !important; }
+
+/* ── El horario declarado ────────────────────────────────────────────────
+   Va debajo de las barras de franjas, que son una ESTIMACIÓN por tipo de
+   uso. Esto es lo que dice el letrero. Están juntas a propósito: cuando no
+   coinciden, la pregunta que se abre vale más que cualquiera de las dos
+   cifras sueltas. La cobertura va primero y destacada — sin ella, «el 50 %
+   abre de noche» pueden ser tres locales de doscientos. */
+.urb-cobertura, .edu-cobertura{
+  margin:4px 0 8px; padding:6px 9px; font-size:.66rem; line-height:1.45;
+  background:rgba(34,211,238,.10); border-left:3px solid #22d3ee; border-radius:0 8px 8px 0;
+}
+.urb-cobertura b, .edu-cobertura b{ font-size:.78rem; }
+.urb-horarios, .edu-horarios{ list-style:none; margin:0 0 6px; padding:0; display:grid; gap:5px; }
+.urb-horarios li, .edu-horarios li{ display:flex; align-items:center; gap:8px; font-size:.66rem; }
+.urb-horarios li>span, .edu-horarios li>span{ flex:0 0 44%; opacity:.85; }
+.urb-horarios li i, .edu-horarios li i{
+  flex:1; height:7px; border-radius:4px; background:rgba(255,255,255,.10); overflow:hidden;
+}
+.urb-horarios li i b, .edu-horarios li i b{ display:block; height:100%; background:#22d3ee; }
+.urb-horarios li em, .edu-horarios li em{ font-style:normal; font-weight:700; min-width:22px; text-align:right;
+  font-variant-numeric:tabular-nums; }
+.urb-horarios li small, .edu-horarios li small{ opacity:.6; min-width:32px; text-align:right;
+  font-variant-numeric:tabular-nums; }
+/* El rótulo que distingue lo estimado de lo declarado: la distinción es el
+   dato, así que no puede ir del mismo color que el resto del título. */
+.edu-caja h4 em, .aia-flujo-sub em{ font-style:normal; font-weight:400; font-size:.62rem; opacity:.65; }

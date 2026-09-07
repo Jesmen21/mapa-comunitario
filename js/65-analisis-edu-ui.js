@@ -231,7 +231,12 @@
 
   function bloqueFlujo(r){
     const f = (r.stats.movilidad && r.stats.movilidad.flujo) || {};
-    if (!f.franjas) return '';
+    // Sin flujo no hay franjas, pero el horario declarado sigue existiendo:
+    // son datos distintos y de fuentes distintas.
+    if (!f.franjas) {
+      const h = bloqueHorarios(r);
+      return h ? '<div class="edu-caja">' + h + '</div>' : '';
+    }
     const hora = (etq, v) => '<div class="edu-hora"><small>' + etq + '</small>' +
       '<i><b style="width:' + (v || 0) + '%"></b></i><span>' + (v || 0) + '</span></div>';
     const gen = (f.generadores || []).slice(0, 6);
@@ -262,11 +267,54 @@
           (f.comercioSinFrente === 1 ? 'cuenta' : 'cuentan') + ' como vitrina.</p>'
         : '') +
       bloqueAnden(f) +
-      '<h4 class="sep">🕐 A qué horas</h4>' +
+      '<h4 class="sep">🕐 A qué horas · <em>estimado por tipo de uso</em></h4>' +
       '<div class="edu-horas">' + hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) +
         hora('Tarde', f.franjas.tarde) + hora('Noche', f.franjas.noche) + '</div>' +
       (f.vidaNocturna ? '<p class="edu-nota">🌙 La zona sigue viva de noche.</p>' : '') +
+      bloqueHorarios(r) +
       '</div>';
+  }
+
+  /* ── El horario declarado ───────────────────────────────────────────────
+     Las barras de arriba son una ESTIMACIÓN: el motor supone que un bar pesa
+     de noche y una papelería de día. Esto de acá es otra cosa —lo que dice
+     el letrero, leído de `opening_hours`— y va justo debajo a propósito.
+
+     Que las dos lecturas convivan es la mitad del ejercicio: cuando no
+     coinciden, la pregunta «¿por qué el sector parece nocturno por sus usos
+     y cierra a las seis?» es mejor que cualquiera de las dos cifras sueltas.
+
+     La cobertura va PRIMERO y en grande. Con seis locales de doscientos
+     declarando horario, «el 50 % abre de noche» son tres locales, y sin la
+     cobertura al lado esa frase miente sin decir una sola palabra falsa. */
+  function bloqueHorarios(r){
+    const h = (r.stats || {}).horarios;
+    if (!h || !h.total) return '';
+    const fila = (etq, n, pct) => '<li><span>' + etq + '</span>' +
+      '<i><b style="width:' + (pct || 0) + '%"></b></i>' +
+      '<em>' + n + '</em><small>' + (pct || 0) + '%</small></li>';
+    if (!h.conDato) {
+      return '<h4 class="sep">🌙 Y según el letrero</h4>' +
+        '<p class="edu-nota">' + esc(h.lectura) + '</p>';
+    }
+    return '<h4 class="sep">🌙 Y según el letrero · <em>declarado en el mapa</em></h4>' +
+      '<p class="edu-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario · ' +
+        h.cobertura + ' % de cobertura' + (h.suficiente ? '' : ' — muy poco para concluir') + '</p>' +
+      '<ul class="edu-horarios">' +
+        fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
+        fila('Abren sábado', h.sabado, h.pct.sabado) +
+        fila('Abren domingo', h.domingo, h.pct.domingo) +
+        fila('Solo de lunes a viernes', h.soloEntreSemana, h.pct.soloEntreSemana) +
+        (h.siempre ? fila('Abren 24 horas', h.siempre, h.pct.siempre) : '') +
+      '</ul>' +
+      (h.siempre && h.ejemplos24h.length
+        ? '<p class="edu-nota">24 h: ' + h.ejemplos24h.map(esc).join(' · ') + '</p>' : '') +
+      '<p class="edu-nota">' + esc(h.lectura) + '</p>' +
+      (h.notaIlegible ? '<p class="edu-nota">' + esc(h.notaIlegible) + '</p>' : '') +
+      (h.sinDato
+        ? '<p class="edu-nota">Faltan ' + h.sinDato + ' por anotar. El horario se levanta en campo leyendo el letrero, ' +
+          'y es de lo que más rápido cambia la lectura de un sector.</p>'
+        : '');
   }
 
   function bloqueCalor(r){

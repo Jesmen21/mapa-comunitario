@@ -1399,12 +1399,57 @@
         : '');
   }
 
+  /* ── El horario declarado ───────────────────────────────────────────────
+     Las franjas de arriba son una ESTIMACIÓN: el motor reparte el flujo
+     suponiendo que un bar pesa de noche y una papelería de día. Esto es otra
+     cosa —lo que dice el letrero, leído de `opening_hours`, que llegaba en
+     los datos desde siempre y nadie miraba— y va justo debajo a propósito.
+
+     Cuando las dos no coinciden, la pregunta que se abre vale más que
+     cualquiera de las dos cifras sueltas.
+
+     La cobertura va primero. Con seis locales de doscientos declarando
+     horario, «el 50 % abre de noche» son tres locales, y sin la cobertura al
+     lado esa frase miente sin decir una sola palabra falsa. */
+  function bloqueHorarios(r){
+    const h = (r.stats || {}).horarios;
+    if (!h || !h.total) return '';
+    const fila = (etq, n, pct) => '<li><span>' + etq + '</span>' +
+      '<i><b style="width:' + (pct || 0) + '%"></b></i>' +
+      '<em>' + n + '</em><small>' + (pct || 0) + '%</small></li>';
+    if (!h.conDato) {
+      return '<h4 class="aia-flujo-sub">🌙 Lo que dice el letrero</h4>' +
+        '<p class="aia-flujo-nota">' + escHTML(h.lectura) + '</p>';
+    }
+    return '<h4 class="aia-flujo-sub">🌙 Lo que dice el letrero <em>· declarado en el mapa</em></h4>' +
+      '<p class="urb-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario · ' +
+        h.cobertura + ' % de cobertura' + (h.suficiente ? '' : ' — muy poco para concluir') + '</p>' +
+      '<ul class="urb-horarios">' +
+        fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
+        fila('Abren sábado', h.sabado, h.pct.sabado) +
+        fila('Abren domingo', h.domingo, h.pct.domingo) +
+        fila('Solo de lunes a viernes', h.soloEntreSemana, h.pct.soloEntreSemana) +
+        (h.siempre ? fila('Abren 24 horas', h.siempre, h.pct.siempre) : '') +
+      '</ul>' +
+      (h.siempre && h.ejemplos24h.length
+        ? '<p class="aia-flujo-nota">24 h: ' + h.ejemplos24h.map(escHTML).join(' · ') + '</p>' : '') +
+      '<p class="aia-flujo-nota">' + escHTML(h.lectura) + '</p>' +
+      (h.notaIlegible ? '<p class="aia-flujo-nota">' + escHTML(h.notaIlegible) + '</p>' : '');
+  }
+
   function renderFlujo(r){
     const cont = $('aia-flujo');
     if (!cont) return;
     const f = r.stats.movilidad && r.stats.movilidad.flujo;
-    cont.hidden = !f;
-    if (!f) return;
+    /* El horario declarado NO depende del flujo: son dos datos distintos y
+       de fuentes distintas. Cuando el motor no devuelve flujo —un sector sin
+       usos que atraigan gente— el bloque de horarios tiene que salir igual;
+       colgarlo del `if (!f) return` lo hacía desaparecer por un dato que no
+       tiene que ver con él. Es el mismo acoplamiento que tenían los anillos
+       dentro de indicadores. */
+    const soloHorarios = bloqueHorarios(r);
+    cont.hidden = !f && !soloHorarios;
+    if (!f) { cont.innerHTML = soloHorarios; return; }
 
     const col = v => v >= 70 ? '#4ade80' : v >= 50 ? '#22d3ee' : v >= 30 ? '#f5b942' : '#f87171';
     const medidor = (etq, ico, v, nivel) =>
@@ -1510,6 +1555,7 @@
         ? '<p class="aia-flujo-lectura">🌙 <b>La zona sigue viva de noche.</b> Es un dato de negocio, ' +
           'no un detalle: cambia el horario de apertura y hasta el formato del local.</p>'
         : '') +
+      bloqueHorarios(r) +
       mapasCalor +
       // Tránsito y combustible: rangos de orden de magnitud, no aforos.
       (function(){
