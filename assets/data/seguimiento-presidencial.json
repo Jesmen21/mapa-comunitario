@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-06",
-  "proximaActualizacion": "2026-09-07",
+  "actualizado": "2026-09-07",
+  "proximaActualizacion": "2026-09-08",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -60,9 +60,240 @@
       "nombre": "Legitimidad electoral",
       "icono": "⚖️",
       "color": "#0f766e"
+    },
+    "servicios": {
+      "nombre": "Servicios públicos y bolsillo",
+      "icono": "💡",
+      "color": "#0369A1"
+    },
+    "informacion": {
+      "nombre": "Desinformación y discurso público",
+      "icono": "📣",
+      "color": "#BE185D"
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-01",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Petro dice que «se desplomó» la incautación de cocaína frente a su gobierno; las cifras dan una caída, pero ni de 280 ni desde 1.000 toneladas",
+      "detalle": "La FM publicó el primer balance de seguridad del Gobierno, del 7 al 30 de agosto: 30 abatidos, 774 capturados y más de 20 mil kilos de droga incautada, con 11 laboratorios y 103 de pasta base destruidos. El expresidente Gustavo Petro respondió en X citando esa nota: «pueden poner que en el periodo del 7 al 30 de agosto se incautó 20 toneladas de cocaína, eso da 280 toneladas por año. Habíamos llegado al ritmo de 1.000 toneladas de cocaína incautadas por año. Se desplomó la incautación de cocaína respecto a mi gobierno».\n\nLo que hay de cada lado, con fuente. Del Gobierno actual: los 20 mil kilos del balance del 7 al 30 de agosto; 12 mil kilos de cocaína reportados el 23 de agosto; 4.687 kilos de cocaína en una sola operación internacional entre el 11 y el 30 de agosto (Zeus Arcano III, 30 países y 17 agencias); y un balance posterior con más de 14 mil capturas y 43 toneladas de droga. Del gobierno anterior: 746 toneladas de cocaína en 2023 y 889 en 2024 —un 20 % más—, más de 1.700 toneladas en sus dos primeros años según la propia Presidencia, y más de 3.000 toneladas en todo el periodo, según el informe de empalme de julio de 2026.",
+      "contrapunto": "Tres reparos a la cuenta, y ninguno de los tres la desmiente del todo.\n\nEl primero es de unidades: el balance habla de 20 mil kilos de DROGA —cocaína, marihuana, base—, y el trino los convierte en 20 toneladas de COCAÍNA. Son cosas distintas, y la cifra de cocaína que el propio Gobierno reportó para una ventana casi igual fue menor: 12 toneladas hasta el 23 de agosto.\n\nEl segundo es de método: multiplicar 24 días por 15 para sacar un año no funciona con incautaciones, porque llegan a golpes. En ese mismo periodo, una sola operación aportó 4,7 toneladas: casi la cuarta parte del total. Tres semanas no son una tendencia.\n\nEl tercero es de la línea de base: las 1.000 toneladas por año no aparecen en ningún registro público. El mejor año documentado del gobierno Petro fueron 889 toneladas (2024), y el promedio de su periodo está alrededor de 750 al año. La cifra que usa para compararse es más alta que su propio récord.\n\nDicho todo eso, la dirección que señala sí se sostiene con los números disponibles: 25 toneladas de droga al mes en el arranque están por debajo de las cerca de 65 toneladas mensuales de cocaína del promedio anterior. Lo que no se puede sostener todavía es la magnitud, ni llamarlo tendencia con tres semanas.\n\nY un reparo que vale para los dos gobiernos: la tonelada incautada es un mal marcador de éxito. La Silla Vacía calificó de engañoso el logro de Petro en esta materia porque la producción creció más rápido que la capacidad de incautar, y en 2023 se incautó el porcentaje más bajo de la cocaína producida en el país. Un gobierno puede incautar más y estar perdiendo, y al revés.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "La FM · Primer balance de seguridad de Abelardo De la Espriella: 30 abatidos, 774 capturados y más de 20 mil kilos de droga incautada",
+          "u": "https://www.lafm.com.co/orden-publico/primer-balance-seguridad-abelardo-de-la-espriella-colombia-409268"
+        },
+        {
+          "n": "Cuenta de X de Gustavo Petro (@petrogustavo), donde publicó la comparación",
+          "u": "https://x.com/petrogustavo"
+        },
+        {
+          "n": "Infobae · De la Espriella reporta más de 12.000 kilos de cocaína incautados desde el 7 de agosto",
+          "u": "https://www.infobae.com/colombia/2026/08/23/abelardo-de-la-espriella-reporta-mas-de-12000-kilos-de-cocaina-incautados-desde-el-7-de-agosto/"
+        },
+        {
+          "n": "Infobae · De la Espriella confirmó incautación de 4,6 toneladas de cocaína tras operativo internacional de 30 países",
+          "u": "https://www.infobae.com/colombia/2026/08/31/abelardo-de-la-espriella-confirmo-incautacion-de-46-toneladas-de-cocaina-y-8-capturas-tras-operativo-internacional-30-paises-y-17-agencias/"
+        },
+        {
+          "n": "La FM · Balance posterior: más de 14 mil capturas y 43 toneladas de droga incautada",
+          "u": "https://www.lafm.com.co/orden-publico/abelardo-espriella-balance-seguridad-narcotrafico-capturas-colombia-409995"
+        },
+        {
+          "n": "Infobae · Colombia incautó más de 3.000 toneladas de cocaína durante el Gobierno de Petro (informe de empalme, julio de 2026)",
+          "u": "https://www.infobae.com/america/agencias/2026/07/23/colombia-incauto-mas-de-3000-toneladas-de-cocaina-durante-el-gobierno-de-petro/"
+        },
+        {
+          "n": "Presidencia de la República · Gobierno reporta la incautación de más de 1.700 toneladas de cocaína en los últimos dos años",
+          "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-reporta-la-incautacion-de-mas-1700-toneladas-de-cocaina-en-los-ultimos-dos-anos-241113.aspx"
+        },
+        {
+          "n": "El Tiempo · Más incautaciones, pero en rojo la erradicación y con la producción disparada: balance de la política de drogas del gobierno Petro",
+          "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/record-en-incautaciones-pero-en-rojo-en-erradicacion-y-con-la-produccion-de-cocaina-disparada-balance-de-la-politica-de-drogas-del-gobierno-petro-3576616"
+        },
+        {
+          "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones de cocaína es engañoso",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-06",
+      "precision": "exacta",
+      "categoria": "servicios",
+      "titulo": "De la Espriella confirma el recargo a quien no ahorre energía: «Buscamos evitar incrementos desbordados»",
+      "detalle": "Al reportar las medidas por el fenómeno de El Niño, el presidente confirmó públicamente el cobro adicional a los usuarios que superen su meta de consumo. Con esa frase el Gobierno enmarca el recargo como una medida para evitar un alza mayor de la tarifa más adelante: la lógica es que si la demanda no baja durante la sequía, el precio de la energía en bolsa sube y eso sí termina en el recibo de todos.",
+      "contrapunto": "Es la explicación del Gobierno sobre su propia medida, y todavía no hay forma de comprobarla: para saber si el recargo evitó un alza mayor haría falta ver cómo se comporta el precio de bolsa en los próximos meses. Lo que sí se puede decir hoy es que el recargo llega antes que el ahorro prometido: el cobro por exceso empieza de inmediato y el reconocimiento a quien ahorre se liquida después.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella confirmó el castigo que habrá para los que no ahorren energía durante el fenómeno de El Niño",
+          "u": "https://www.infobae.com/colombia/2026/09/06/de-la-espriella-confirmo-el-castigo-que-habra-para-los-que-no-ahorren-energia-durante-el-fenomeno-de-el-nino-buscamos-evitar-incrementos-desbordados/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-03",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "La misión electoral de la Unión Europea avala las elecciones y descarta el «voto fusil», pero advierte que la desinformación creció",
+      "detalle": "La Misión de Observación Electoral de la Unión Europea presentó su informe final sobre las elecciones de 2026. Su conclusión general es que fueron pacíficas, transparentes y bien gestionadas, y que «más allá de la retórica polarizadora de la campaña y de las presiones impuestas por la desinformación, el Estado de derecho y la democracia siguen siendo sólidos». Preguntado por las denuncias de «voto fusil» —presión de grupos armados para favorecer a un candidato—, el jefe de la misión, Esteban González Pons, dijo que no encontraron evidencia de que eso hubiera afectado el resultado. El informe sí registra que la desinformación aumentó y que persistieron las narrativas de fraude, y por eso incluye 15 recomendaciones, entre ellas legislar sobre las redes sociales y obligar a las plataformas a revelar quién contrata publicidad política. Al día siguiente, el 4 de septiembre, el expresidente Petro respondió al informe: «Lo que sí hubo fue miles de votos robots».",
+      "contrapunto": "El informe corta en dos direcciones y conviene leerlo entero antes de citarlo. A quien sostiene que las elecciones fueron fraudulentas, le quita el argumento del voto armado. A quien sostiene que no hubo ningún problema, le deja escrito que la desinformación creció y que las reglas de la publicidad política en redes se quedaron cortas. Ninguna de las dos mitades cancela a la otra.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · No hubo «voto fusil» en las elecciones de 2026 en Colombia, aseguró la Misión de Observación Electoral de la Unión Europea",
+          "u": "https://www.infobae.com/colombia/2026/09/03/no-hubo-voto-fusil-en-las-elecciones-de-2026-en-colombia-aseguro-la-mision-de-observacion-electoral-de-la-union-europea/"
+        },
+        {
+          "n": "La FM · «Injerencia de grupos armados no afectó el resultado de las elecciones»: Misión de la UE sobre voto fusil",
+          "u": "https://www.lafm.com.co/politica/elecciones-colombia-mision-union-europea-injerencia-grupos-armados-no-afecto-elecciones-voto-fusil-409823"
+        },
+        {
+          "n": "El Tiempo · Las 15 recomendaciones de la Unión Europea para fortalecer el sistema electoral colombiano",
+          "u": "https://www.eltiempo.com/politica/gobierno/las-15-recomendaciones-de-la-union-europea-para-fortalecer-el-sistema-electoral-colombiano-3583430"
+        },
+        {
+          "n": "El Nuevo Siglo · Misión de la UE ratifica transparencia de comicios en Colombia",
+          "u": "https://www.elnuevosiglo.com.co/nacion/mision-de-la-ue-ratifica-transparencia-de-comicios-en-colombia"
+        },
+        {
+          "n": "Servicio Europeo de Acción Exterior · Ficha de la MOE UE Colombia 2026 (PDF)",
+          "u": "https://www.eeas.europa.eu/sites/default/files/2026/documents/FACT%20SHEET%20MOE%20UE%20Colombia%202026.pdf"
+        },
+        {
+          "n": "Infobae · Petro se refirió al informe: «Lo que sí hubo fue miles de votos robots»",
+          "u": "https://www.infobae.com/colombia/2026/09/04/petro-se-refirio-a-informe-de-la-mision-de-observacion-electoral-de-la-union-europea-que-nego-la-existencia-del-voto-fusil-en-las-elecciones-lo-que-si-hubo-fue-miles-de-votos-robots/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-01",
+      "precision": "exacta",
+      "categoria": "servicios",
+      "titulo": "Arranca el programa de ahorro de la CREG: desde este mes el recibo de la luz puede traer un recargo por consumir de más",
+      "detalle": "La Comisión de Regulación de Energía y Gas puso en marcha un programa temporal de incentivos al uso eficiente de la energía, creado por la Resolución CREG 101 120 de 2026 y con fecha de inicio corrida al 1 de septiembre por la Resolución CREG 101 126 de 2026. Nace por el fenómeno de El Niño 2026-2027 y por el riesgo de desabastecimiento con hidrología baja, y está previsto inicialmente para seis meses. Funciona así: a cada usuario se le calcula una meta individual de consumo a partir de su propio historial de los últimos doce meses. Quien se pase de esa meta en más del 10 % paga un recargo, y solo sobre los kilovatios-hora que estén por encima de ese margen: 30 % adicional para estratos 1, 2 y 3; 50 % para estratos 4, 5 y 6; y 70 % para comercios e industria. Al otro lado, quien ahorre recibe un reconocimiento: el recaudo no entra al patrimonio de las comercializadoras, sino que se destina a premiar a los usuarios que bajen su consumo.",
+      "contrapunto": "Esto NO es un alza general de la tarifa, y la diferencia importa porque es lo que se está confundiendo. El precio del kilovatio se sigue calculando con la fórmula mensual de la CREG, que ya se movía antes por generación, transmisión, pérdidas y restricciones. Lo que aparece es un cobro nuevo, condicionado al consumo de cada casa: muchos recibos de septiembre van a llegar más caros sin que haya subido el kilovatio, y otros van a llegar iguales o con reconocimiento. Dos advertencias razonables que se han hecho: la meta se calcula sobre el historial propio, así que un hogar que ya era austero tiene menos margen para recortar que uno que gastaba mucho; y a la fecha no está publicado cómo se resuelven los casos en que el historial no representa el consumo real —una casa que estrenó nevera, un enfermo con equipo médico, una familia que creció—.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Gestor normativo CREG · Resolución CREG 101 120 de 2026 (texto oficial)",
+          "u": "https://gestornormativo.creg.gov.co/gestor/entorno/docs/originales/Resoluci%C3%B3n_CREG_101_120_2026/"
+        },
+        {
+          "n": "EPM · Programa de ahorro establecido por la CREG (Resolución 101 120 de 2026)",
+          "u": "https://www.epm.com.co/clientesyusuarios/resolucion-creg-101-120-2026/"
+        },
+        {
+          "n": "El País · Gobierno activa programa de ahorro de energía ante la llegada del fenómeno de El Niño: arranca este 1 de septiembre",
+          "u": "https://www.elpais.com.co/colombia/gobierno-activa-programa-de-ahorro-de-energia-ante-llegada-del-fenomeno-del-nino-arranca-este-1-de-septiembre-3111.html"
+        },
+        {
+          "n": "El Heraldo · Para enfrentar los efectos del fenómeno de El Niño, este martes empieza el programa de ahorro de energía",
+          "u": "https://www.elheraldo.co/atlantico/2026/08/31/para-enfrentar-los-efectos-del-fenomeno-de-el-nino-este-martes-empieza-programa-de-ahorro-de-energia/"
+        },
+        {
+          "n": "Bloomberg Línea · Recargo en la factura de energía en Colombia desde septiembre: así funciona el nuevo plan de ahorro de la CREG",
+          "u": "https://www.bloomberglinea.com/latinoamerica/colombia/recargo-en-la-factura-de-energia-en-colombia-desde-septiembre-asi-funciona-el-nuevo-plan-de-ahorro-de-la-creg/"
+        },
+        {
+          "n": "El Universal · ¿Le cobrarán más por la luz? Así funcionará el nuevo programa de ahorro de energía de la CREG",
+          "u": "https://www.eluniversal.com.co/colombia/2026/09/01/le-cobraran-mas-por-la-luz-asi-funcionara-el-nuevo-programa-de-ahorro-de-energia-de-la-creg/"
+        },
+        {
+          "n": "Infobae · Habrá cobros adicionales a los que se excedan en el consumo de energía: la medida cambiará la factura desde septiembre",
+          "u": "https://www.infobae.com/colombia/2026/09/01/habra-cobros-adicionales-a-los-que-se-excedan-en-el-consumo-de-energia-la-medida-cambiara-la-factura-desde-septiembre/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-29",
+      "precision": "exacta",
+      "categoria": "servicios",
+      "titulo": "El Gobierno congela el precio de la gasolina y el ACPM en septiembre tras el terremoto",
+      "detalle": "Los ministerios de Hacienda y de Minas y Energía decidieron de manera conjunta no aumentar los precios de referencia de la gasolina corriente ni del ACPM durante septiembre. La medida se anunció el sábado 29 de agosto y se tomó después del terremoto del 10 de agosto, con el argumento de aliviar el bolsillo de los hogares afectados y evitar que un alza del combustible se traslade al costo de transportar alimentos, medicamentos y ayuda humanitaria. El ACPM queda sin cambios en las 13 ciudades de referencia, con un promedio de 11.320 pesos por galón; en gasolina corriente la única ciudad con variación es Cúcuta, con una reducción de 4 pesos. El Gobierno estima que, con los supuestos actuales de precios de biocombustibles y tasa de cambio, la decisión implicará un ahorro para los usuarios cercano a 152.600 millones de pesos al cierre de 2026.",
+      "contrapunto": "Congelar no es bajar, y tampoco es gratis. El precio interno se mantiene por debajo del de paridad internacional a costa del Fondo de Estabilización de Precios de los Combustibles, que es dinero público: si el barril o el dólar suben, el diferencial se acumula y alguien lo paga después, sea el presupuesto o el propio consumidor cuando el precio se descongele. Es un alivio real hoy y una cuenta abierta hacia adelante; el registro se queda pendiente de si se publica cuánto acumula el FEPC con esta decisión.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Gobierno congela precio de la gasolina y el ACPM en septiembre tras terremoto: así quedarán en las principales ciudades",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/gobierno-congela-precio-de-la-gasolina-y-el-acpm-en-septiembre-tras-terremoto-asi-quedaran-en-las-principales-ciudades-3582135"
+        },
+        {
+          "n": "Portafolio · Gasolina y ACPM no subirán en septiembre: Gobierno congela precios tras terremoto en Colombia",
+          "u": "https://www.portafolio.co/energia/gasolina-y-acpm-no-subiran-en-septiembre-gobierno-congela-precios-tras-terremoto-en-colombia-501441"
+        },
+        {
+          "n": "El Colombiano · Gasolina y ACPM no subirán en septiembre: ¿cuánto le costará al país congelar los precios?",
+          "u": "https://www.elcolombiano.com/negocios/precios-gasolina-acpm-fepc-subsidios-GG40466880"
+        },
+        {
+          "n": "Infobae · Gobierno nacional frenó el aumento del precio de la gasolina y el ACPM durante septiembre",
+          "u": "https://www.infobae.com/colombia/2026/08/30/gobierno-nacional-freno-el-aumento-del-precio-de-la-gasolina-y-el-acpm-durante-septiembre-asi-quedaran-los-costos/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-27",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "Petro pide investigar penalmente una red de bots que, según él, alteró las elecciones, y pide anularlas si se prueba",
+      "detalle": "El expresidente Gustavo Petro pidió a la justicia abrir investigación penal contra los activistas de derecha Fernando Cerimedo y Javier Negre, a quienes señala de construir una «matriz de mentiras» en América Latina que habría alterado el resultado de la segunda vuelta del 21 de junio. Sostiene que dos millones de bots y perfiles falsos, operados por granjas automatizadas desde varios puntos —menciona uno que dice haber entregado al director de la Policía y que en Medellín no se habría querido controlar, y otro en Miami—, manipularon a los votantes colombianos. Afirma que información forense del teléfono de Cerimedo revelaría su relación con funcionarios colombianos, y extiende el señalamiento a procesos electorales en Honduras, El Salvador, Ecuador, Perú, Chile, México, Brasil y Argentina. Su conclusión: si se prueba que se manipuló el voto, «las elecciones en Colombia deberían anularse». No es su primera denuncia en esta línea: el 27 de mayo pidió al CNE investigar bots vinculados a la campaña de De la Espriella, y el 4 de julio, siendo presidente, anunció denuncias penales y civiles por una red de desinformación en su contra.",
+      "contrapunto": "Es una acusación, no un hecho probado, y así se publica. Petro no ha presentado públicamente la evidencia de los dos millones de bots ni ha detallado qué estructuras concretas estarían detrás, y ninguna autoridad ha establecido esa manipulación. Pesa además en contra el informe de la Misión de Observación Electoral de la Unión Europea del 3 de septiembre, que concluyó que las elecciones fueron transparentes y bien gestionadas. Lo que ese mismo informe sí respalda es la preocupación de fondo: la desinformación creció y la publicidad política en redes está sin reglas. Que el fenómeno exista no prueba que cambiara el resultado, y ese es exactamente el salto que no se puede dar.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "NODAL · Gustavo Petro pide investigar el papel de Fernando Cerimedo en las últimas elecciones presidenciales",
+          "u": "https://www.nodal.am/2026/08/gustavo-petro-pide-investigar-el-papel-de-fernando-cerimedo-en-las-ultimas-elecciones-presidenciales/"
+        },
+        {
+          "n": "La Jornada · Más acusaciones contra Cerimedo por injerencia electoral en Colombia y Honduras",
+          "u": "https://www.jornada.com.mx/noticia/2026/08/28/mundo/mas-acusaciones-contra-cerimedo-por-injerencia-electoral-en-colombia-y-honduras"
+        },
+        {
+          "n": "Infobae · Petro pidió al CNE investigar denuncia sobre presunta alteración de sondeos y algoritmos con bots vinculados a la campaña de De la Espriella (27 de mayo)",
+          "u": "https://www.infobae.com/colombia/2026/05/27/petro-pidio-al-cne-investigar-denuncia-sobre-presunta-alteracion-de-sondeos-y-algoritmos-con-bots-vinculados-a-la-campana-de-abelardo-de-la-espriella/"
+        },
+        {
+          "n": "El País · Petro pidió al CNE investigar bots vinculados a la campaña de Abelardo de la Espriella",
+          "u": "https://www.elpais.com.co/politica/gustavo-petro-pidio-al-cne-investigar-bots-vinculados-a-la-campana-de-abelardo-de-la-espriella-2732.html"
+        },
+        {
+          "n": "Presidencia de la República · Presidente Petro anuncia denuncias penales y civiles por red de desinformación en su contra (4 de julio)",
+          "u": "https://www.presidencia.gov.co/prensa/Paginas/Presidente-Petro-anuncia-denuncias-penales-y-civiles-por-red-de-desinformacion-en-su-contra-260703.aspx"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-02-11",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "«Destripar a la izquierda»: explica la frase con la que hizo campaña y dice que no hay que tomarla literal",
+      "detalle": "En campaña, De la Espriella declaró que iba a «destripar» y erradicar a la izquierda radical, una frase que repitió y que se volvió marca de su discurso. El 11 de febrero explicó públicamente a qué se refería: dijo que sus palabras no deben tomarse literalmente, que su propuesta es erradicar los movimientos radicales usando los recursos que da la ley, y agregó «yo sé usar el lenguaje» y que si a alguien le mortifica, no lo volvería a decir. Su fórmula vicepresidencial, José Manuel Restrepo, defendió después la frase diciendo que apunta a confrontar ideas progresistas y no a promover violencia. La frase tuvo eco en las dos direcciones: el entonces presidente Petro respondió el 30 de julio de 2025 llamando a movilizarse con un «si no nos unimos, nos destripan», y el escritor Juan Gabriel Vásquez la citó al hablar de la tendencia a admirar a quien incita violencia contra otros.",
+      "contrapunto": "Acá no se afirma que la frase sea un llamado a la violencia: él dijo expresamente que no lo es, y esa aclaración va incluida. Lo que queda registrado es un hecho comprobable —el lenguaje que eligió, y que sostuvo durante meses— porque es una de las piezas del clima político que muchos describen hoy, y porque la respuesta de su rival usó la misma palabra. Una frase de campaña no predice actos de gobierno; para eso está el resto de la línea de tiempo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Abelardo de la Espriella explicó a qué se refería con que va a «destripar» a la izquierda radical: «Yo sé usar el lenguaje»",
+          "u": "https://www.infobae.com/colombia/2026/02/11/abelardo-de-la-espriella-explico-por-que-usa-la-palabra-destripar-para-referirse-a-la-izquierda-si-les-mortifica-no-lo-vuelvo-a-decir/"
+        },
+        {
+          "n": "Cambio · La fórmula vicepresidencial de De la Espriella responde por el polémico «destripar a la izquierda»",
+          "u": "https://cambiocolombia.com/personajes/articulo/2026/6/formula-vicepresidencial-de-abelardo-de-la-espriella-responde-por-el-polemico-destripar-a-la-izquierda"
+        },
+        {
+          "n": "Semana · «Abelardo de la Espriella llama a destripar a la izquierda»: el escritor Juan Gabriel Vásquez habla sobre el ambiente electoral en Colombia",
+          "u": "https://www.semana.com/gente/articulo/abelardo-de-la-espriella-llama-a-destripar-a-la-izquierda-el-escritor-juan-gabriel-vasquez-habla-sobre-el-ambiente-electoral-en-colombia/202606/"
+        },
+        {
+          "n": "Infobae · Petro contraatacó tras las declaraciones de De la Espriella: «Si no nos unimos, nos destripan» (30 de julio de 2025)",
+          "u": "https://www.infobae.com/colombia/2025/07/30/petro-contraataco-tras-las-fuertes-declaraciones-de-abelardo-de-la-espriella-y-adelanto-nueva-movilizacion-si-no-nos-unimos-nos-destripan/"
+        }
+      ]
+    },
     {
       "fecha": "2026-09-06",
       "precision": "exacta",
@@ -2746,6 +2977,41 @@
           "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
         }
       ]
+    },
+    "cocaina": {
+      "titulo": "Cocaína incautada al año",
+      "unidad": "toneladas",
+      "formato": "entero",
+      "sentido": "neutro",
+      "color": "#7C2D12",
+      "leyenda": "Años completos, para que la comparación sea entre iguales. El gobierno actual todavía no tiene un año cerrado: sus balances son de semanas y no caben en esta serie sin deformarla, así que no se dibujan. Y una advertencia que vale para todos los gobiernos: más toneladas no es automáticamente mejor política. La Silla Vacía calificó de engañoso el logro de Petro en esta materia porque la producción creció más rápido que la capacidad de incautar.",
+      "puntos": [
+        {
+          "f": "2023-12-31",
+          "v": 746,
+          "e": "2023"
+        },
+        {
+          "f": "2024-12-31",
+          "v": 889,
+          "e": "2024, el año más alto registrado",
+          "hito": true
+        }
+      ],
+      "fuentes": [
+        {
+          "n": "Infobae · Colombia incautó más de 3.000 toneladas de cocaína durante el Gobierno de Petro",
+          "u": "https://www.infobae.com/america/agencias/2026/07/23/colombia-incauto-mas-de-3000-toneladas-de-cocaina-durante-el-gobierno-de-petro/"
+        },
+        {
+          "n": "El Tiempo · Balance de la política de drogas del gobierno Petro",
+          "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/record-en-incautaciones-pero-en-rojo-en-erradicacion-y-con-la-produccion-de-cocaina-disparada-balance-de-la-politica-de-drogas-del-gobierno-petro-3576616"
+        },
+        {
+          "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones de cocaína es engañoso",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+        }
+      ]
     }
   },
   "contradicciones": {
@@ -3038,6 +3304,37 @@
       "detalle": "Las estructuras criminales pasaron de 15.120 integrantes en diciembre de 2022 a 28.802 en julio de 2026. El Clan del Golfo pasó de 253 a 392 municipios, el ELN de 189 a 231 y las disidencias de las FARC de 230 a 299.",
       "fuente": "El Tiempo",
       "url": "https://www.eltiempo.com/amp/politica/abelardo-de-la-espriella/colombia-cambia-de-rumbo-la-agenda-y-los-retos-del-arranque-del-gobierno-de-abelardo-de-la-espriella-3577057"
+    },
+    {
+      "categoria": "informacion",
+      "titulo": "El clima político: qué está documentado, qué es percepción y cómo leer los medios que lo cuentan",
+      "detalle": "«Desde que ganó, el país está desequilibrado» es de las frases que más se oyen. Es una percepción legítima y muy extendida, y precisamente por eso conviene separar qué parte de ella tiene respaldo documentado y qué parte no lo tiene todavía.\n\nDOCUMENTADO. El lenguaje de confrontación existió y él lo sostuvo: «destripar» a la izquierda fue una frase de campaña, repetida, que después aclaró diciendo que no había que tomarla literal y que se refería a usar los recursos de la ley (11 de febrero de 2026). La respuesta de su rival usó la misma palabra. La desinformación creció durante la campaña: no lo dice un partido, lo dice el informe final de la Misión de Observación Electoral de la Unión Europea del 3 de septiembre de 2026, que por eso recomienda legislar sobre redes sociales y obligar a las plataformas a revelar quién paga publicidad política. Y hay decisiones judiciales que frenaron parcialmente una política de gobierno: los jueces que ordenaron abstenerse de bombardear cuando haya información de presencia de menores reclutados.\n\nNO DOCUMENTADO. Que una red de bots haya cambiado el resultado electoral. Es la denuncia del expresidente Petro —dos millones de bots, granjas automatizadas, nombres propios— y hasta hoy no ha presentado públicamente la evidencia ni ninguna autoridad la ha establecido. El mismo informe europeo que confirma el problema de desinformación concluye que las elecciones fueron transparentes y bien gestionadas. Registrar la denuncia no es respaldarla.\n\nNO SE PUEDE AFIRMAR. Que exista una relación de causa entre el discurso de campaña y hechos de violencia concretos. Para sostener algo así harían falta casos con víctima, fecha y una investigación que establezca el vínculo, no una sensación de ambiente. Este seguimiento no lo va a afirmar mientras no lo tenga.\n\nCÓMO LEER LOS MEDIOS QUE CUENTAN ESTO. Buena parte de lo que circula sobre el Gobierno viene de medios con línea política declarada, en las dos direcciones: los que lo llaman fascista antes de describir lo que hizo, y los que le celebran cada decreto sin mirarlo. Canal Red y su programa La Base —con Pablo Iglesias, Inna Afinogenova y otros— son un ejemplo del primer tipo: han dedicado varios programas a Colombia y al Gobierno, entre ellos uno sobre el «Bloque de Defensa para la Seguridad Urbana» bajo el título «Paramilitarismo 2.0». Ese debate concreto —si el Bloque abre o no la puerta al paramilitarismo— está registrado en la línea de tiempo con fuentes colombianas de ambos lados, que es donde puede verificarse. Este módulo no cita a un medio de opinión como prueba de un hecho, en ninguna de las dos orillas: la opinión se lee sabiendo de quién es, y el hecho se comprueba en la fuente primaria —el decreto, la resolución, la sentencia, el informe—. Esa es toda la diferencia entre informarse y elegir bando antes de mirar.",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella explicó a qué se refería con «destripar» a la izquierda radical",
+          "u": "https://www.infobae.com/colombia/2026/02/11/abelardo-de-la-espriella-explico-por-que-usa-la-palabra-destripar-para-referirse-a-la-izquierda-si-les-mortifica-no-lo-vuelvo-a-decir/"
+        },
+        {
+          "n": "Servicio Europeo de Acción Exterior · Ficha de la MOE UE Colombia 2026 (PDF)",
+          "u": "https://www.eeas.europa.eu/sites/default/files/2026/documents/FACT%20SHEET%20MOE%20UE%20Colombia%202026.pdf"
+        },
+        {
+          "n": "El Tiempo · Las 15 recomendaciones de la Unión Europea para fortalecer el sistema electoral colombiano",
+          "u": "https://www.eltiempo.com/politica/gobierno/las-15-recomendaciones-de-la-union-europea-para-fortalecer-el-sistema-electoral-colombiano-3583430"
+        },
+        {
+          "n": "NODAL · Petro pide investigar el papel de Fernando Cerimedo en las últimas elecciones presidenciales",
+          "u": "https://www.nodal.am/2026/08/gustavo-petro-pide-investigar-el-papel-de-fernando-cerimedo-en-las-ultimas-elecciones-presidenciales/"
+        },
+        {
+          "n": "La Base Latam 1x210 · «Paramilitarismo 2.0 en Colombia: De la Espriella alarma con nueva doctrina» (Canal Red)",
+          "u": "https://www.youtube.com/watch?v=5FapLjC2cnI"
+        },
+        {
+          "n": "RTVC · La Base llega a Señal Colombia",
+          "u": "https://www.rtvcnoticias.com/colombia/la-base-llega-senal-colombia-rtvc"
+        }
+      ]
     }
   ]
 }

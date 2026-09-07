@@ -180,6 +180,142 @@ const server = http.createServer((req, res) => {
   chk(!!nombram && nombram.titulo !== (nueva && nueva.titulo),
       'no se confunde con los 11 decretos de nombramientos del 21 de agosto');
 
+  // ── Servicios públicos y bolsillo ────────────────────────────────────
+  // Lo que la gente siente primero es el recibo, y es también donde más
+  // rápido se deforma un dato: «subió la luz» y «hay un cobro nuevo si te
+  // pasas de tu meta» no son lo mismo, y el registro no puede dejar que se
+  // confundan — sería publicar el bulo con el sello de URBIS encima.
+  chk(!!(d.categorias || {}).servicios, 'existe la categoría de servicios públicos y bolsillo');
+  const luz = d.entradas.find(e => /programa de ahorro de la CREG/i.test(e.titulo));
+  chk(!!luz, 'está la entrada del recargo en el recibo de la luz');
+  if (luz) {
+    chk(luz.categoria === 'servicios', 'va en servicios públicos (' + luz.categoria + ')');
+    chk(/101 120/.test(luz.detalle) && /101 126/.test(luz.detalle),
+        'nombra las dos resoluciones: la que crea el programa y la que corrió la fecha');
+    chk(/30 %/.test(luz.detalle) && /50 %/.test(luz.detalle) && /70 %/.test(luz.detalle),
+        'trae los tres porcentajes de recargo por estrato');
+    chk(/10 %/.test(luz.detalle) && /por encima/.test(luz.detalle),
+        'dice que el recargo va SOLO sobre lo que pase del margen, no sobre todo el consumo');
+    // Lo esencial: no repetir el titular que circula.
+    chk(/NO es un alza general de la tarifa/i.test(luz.contrapunto || ''),
+        'aclara que no es un alza general de la tarifa');
+    chk(/reconocimiento|premiar/i.test(luz.detalle),
+        'y que la otra mitad del programa es el reconocimiento a quien ahorre');
+    chk((luz.fuentes || []).some(f => /creg\.gov\.co/.test(f.u)),
+        'cita el texto oficial de la resolución, no solo la prensa');
+  }
+  const gas = d.entradas.find(e => /congela el precio de la gasolina/i.test(e.titulo));
+  chk(!!gas, 'está la entrada del congelamiento de la gasolina');
+  if (gas) {
+    chk(/Congelar no es bajar/i.test(gas.contrapunto || ''),
+        'dice que congelar no es bajar');
+    chk(/FEPC|Fondo de Estabilización/.test(gas.contrapunto || ''),
+        'y nombra quién absorbe el diferencial (el FEPC)');
+    chk(/Cúcuta/.test(gas.detalle), 'aterriza el dato en Cúcuta, que es de donde es quien lee');
+  }
+
+  // ── Desinformación y discurso público ────────────────────────────────
+  // La sección más delicada del módulo: acá se registra lo que unos dicen de
+  // otros. La regla es la de siempre y se comprueba entrada por entrada — una
+  // acusación se publica COMO acusación, con lo que la sostiene y con lo que
+  // la contradice.
+  chk(!!(d.categorias || {}).informacion, 'existe la categoría de desinformación y discurso público');
+  const bots = d.entradas.find(e => /red de bots/i.test(e.titulo));
+  chk(!!bots, 'está la denuncia de la red de bots');
+  if (bots) {
+    chk(bots.tipoFuente === 'declaracion',
+        'va como declaración, no como hecho probado (es "' + bots.tipoFuente + '")');
+    chk(/no ha presentado públicamente la evidencia/i.test(bots.contrapunto || ''),
+        'el contrapunto dice que la evidencia no se ha presentado');
+    chk(/Misión de Observación Electoral de la Unión Europea/.test(bots.contrapunto || ''),
+        'y confronta la denuncia con el informe de los observadores');
+    chk(!/alteró las elecciones\.|manipuló a los votantes\./.test(bots.detalle || ''),
+        'el detalle no da por probada la manipulación');
+    chk(/según él|sostiene que|afirma que/i.test(bots.detalle + bots.titulo),
+        'y atribuye la afirmación a quien la hace');
+  }
+  const moe = d.entradas.find(e => /misión electoral de la Unión Europea/i.test(e.titulo));
+  chk(!!moe, 'está el informe de la misión electoral europea');
+  if (moe) {
+    // Media verdad en las dos direcciones: el informe sirve para dos cosas
+    // opuestas y publicar solo la mitad que conviene sería el error.
+    chk(/voto fusil/i.test(moe.detalle) && /desinformación aumentó/i.test(moe.detalle),
+        'trae las dos mitades: descarta el voto fusil Y dice que la desinformación creció');
+    chk(/15 recomendaciones/.test(moe.detalle), 'y las recomendaciones que dejó');
+    chk(/Ninguna de las dos mitades cancela a la otra/i.test(moe.contrapunto || ''),
+        'y avisa de que no se puede citar solo la mitad que conviene');
+  }
+  const destripar = d.entradas.find(e => /destripar/i.test(e.titulo));
+  chk(!!destripar, 'está la frase de campaña sobre «destripar»');
+  if (destripar) {
+    // Publicar la frase sin su aclaración sería descontextualizar a propósito.
+    chk(/no deben tomarse literalmente|no hay que tomarla literal|recursos que da la ley/i.test(destripar.detalle),
+        'incluye su propia aclaración, no solo la frase');
+    chk(/no se afirma que la frase sea un llamado a la violencia/i.test(destripar.contrapunto || ''),
+        'y dice expresamente que el registro no afirma que sea un llamado a la violencia');
+    chk(/Petro/.test(destripar.detalle), 'recoge también que la respuesta usó la misma palabra');
+  }
+
+  // ── La comparación de incautaciones ──────────────────────────────────
+  // Una comparación de cifras entre dos gobiernos es donde más fácil se
+  // miente sin decir una sola mentira: basta elegir el periodo, la unidad y
+  // la línea de base que convienen. Acá se comprueba que estén los tres
+  // reparos, porque sin ellos el registro estaría amplificando una cuenta
+  // que no se sostiene — venga de quien venga.
+  const coca = d.entradas.find(e => /incautación de cocaína/i.test(e.titulo));
+  chk(!!coca, 'está la comparación de incautaciones de cocaína');
+  if (coca) {
+    chk(coca.tipoFuente === 'disputado',
+        'va como disputado: son dos versiones y nadie las ha dirimido (es "' + coca.tipoFuente + '")');
+    // Las dos orillas, con número.
+    chk(/20 mil kilos/.test(coca.detalle) && /12 mil kilos/.test(coca.detalle) &&
+        /4\.687/.test(coca.detalle),
+        'trae las cifras del gobierno actual, incluida la de una sola operación');
+    chk(/746/.test(coca.detalle) && /889/.test(coca.detalle) && /3\.000/.test(coca.detalle),
+        'y las del gobierno anterior, con años completos');
+    // Los tres reparos.
+    chk(/DROGA/.test(coca.contrapunto || '') && /COCAÍNA/.test(coca.contrapunto || ''),
+        'advierte que el balance dice droga y el trino dice cocaína');
+    chk(/24 días/.test(coca.contrapunto || '') && /Tres semanas no son una tendencia/.test(coca.contrapunto || ''),
+        'advierte que no se puede extrapolar tres semanas a un año');
+    chk(/1\.000 toneladas por año no aparecen en ningún registro público/.test(coca.contrapunto || ''),
+        'y corrige la línea de base: las 1.000 toneladas no están documentadas');
+    // Y lo que es justo para el otro lado: la dirección sí se sostiene.
+    chk(/la dirección que señala sí se sostiene/i.test(coca.contrapunto || ''),
+        'pero reconoce que la dirección de la caída sí se sostiene con los datos');
+    chk(/La Silla Vacía/.test(coca.contrapunto || '') &&
+        (coca.fuentes || []).some(f => /lasillavacia/.test(f.u)),
+        'y cita al verificador que ya había calificado esa cifra');
+    chk(!/se desplomó la incautación\./i.test(coca.detalle || '') ||
+        /respondió en X|trino/i.test(coca.detalle || ''),
+        'la frase del desplome va atribuida a quien la dijo, no como conclusión propia');
+  }
+  const serieCoca = (d.indicadores || {}).cocaina;
+  chk(!!serieCoca, 'y la serie de cocaína incautada por año está en indicadores');
+  if (serieCoca) {
+    // Mezclar un año completo con tres semanas en la misma gráfica sería
+    // dibujar la mentira que el contrapunto acaba de desmontar.
+    chk((serieCoca.puntos || []).every(x => /-12-31$/.test(x.f)),
+        'solo lleva años cerrados, para comparar entre iguales');
+    chk(/no tiene un año cerrado/.test(serieCoca.leyenda || ''),
+        'y dice por qué el gobierno actual todavía no aparece');
+    chk(serieCoca.sentido === 'neutro' && /no es automáticamente mejor política/.test(serieCoca.leyenda || ''),
+        'y avisa de que más toneladas no es automáticamente mejor política');
+  }
+
+  // ── El tema de fondo del clima político ──────────────────────────────
+  const clima = (d.transversales || []).find(t => /clima político/i.test(t.titulo));
+  chk(!!clima, 'está el tema de fondo sobre el clima político');
+  if (clima) {
+    chk(/DOCUMENTADO/.test(clima.detalle) && /NO DOCUMENTADO/.test(clima.detalle) &&
+        /NO SE PUEDE AFIRMAR/.test(clima.detalle),
+        'separa lo documentado, lo no documentado y lo que no se puede afirmar');
+    chk(/en las dos direcciones/i.test(clima.detalle),
+        'y advierte de los medios con línea declarada en las DOS orillas, no en una');
+    chk(/no cita a un medio de opinión como prueba/i.test(clima.detalle),
+        'deja escrito que un medio de opinión no es prueba de un hecho');
+  }
+
   // ── Y que se vea ─────────────────────────────────────────────────────
   await new Promise(r => server.listen(0, r));
   const base = 'http://127.0.0.1:' + server.address().port;

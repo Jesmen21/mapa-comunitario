@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v777-la-ficha-se-cuenta-sola';
+const URBIS_CACHE = 'urbis-v778-el-recibo-y-el-ruido';
 const URBIS_ASSETS = [
   './',
   './index.html',
