@@ -17,33 +17,9 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "city.urbispro.app",
-      "sha256_cert_fingerprints": [
-        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-CIUDADANO"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "city.urbispro.empresas",
-      "sha256_cert_fingerprints": [
-        "REEMPLAZAR-CON-LA-HUELLA-SHA256-DEL-APK-EMPRESARIAL"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
       "package_name": "city.urbispro.reportes",
       "sha256_cert_fingerprints": [
-        "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+        "F5:27:A4:31:F4:0F:3A:D4:32:BB:0C:92:98:81:90:B5:31:06:B2:8A:4A:8E:A7:F5:4E:0F:85:A7:2C:69:AF:AC"
       ]
     }
   }

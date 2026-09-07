@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v781-un-solo-nombre';
+const URBIS_CACHE = 'urbis-v782-la-app-y-el-dominio-son-lo-mismo';
 const URBIS_ASSETS = [
   './',
   './index.html',

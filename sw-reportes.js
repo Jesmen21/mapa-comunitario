@@ -1,7 +1,7 @@
 /* Service worker de URBIS Reportes.
    Caché propia y separada de la app completa: instalar la app ligera no debe
    arrastrar los 2,1 MB de la grande, que es justamente lo que se quiere evitar. */
-const CACHE = 'urbis-reportes-v781-un-solo-nombre';
+const CACHE = 'urbis-reportes-v782-la-app-y-el-dominio-son-lo-mismo';
 const ASSETS = [
   './reportes.html',
   './manifest-reportes.json',

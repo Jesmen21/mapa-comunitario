@@ -16,10 +16,29 @@ Si allá se puso otro, cambiarlo también acá.
 
 LAS APLICACIONES QUE HAY
 ────────────────────────
-  city.urbispro.app         URBIS completo
+Firmadas y declaradas en assetlinks.json:
+
   city.urbispro.educativo   URBIS educativo
+  city.urbispro.reportes    URBIS_CO · Reportes y Eventos
+
+PENDIENTES, y por eso NO están en el archivo:
+
+  city.urbispro.app         URBIS completo
   city.urbispro.empresas    URBIS empresarial
-  city.urbispro.reportes    URBIS Reportes y Eventos  ← pendiente de firma
+
+Esos dos estuvieron declarados durante meses con una huella de mentira
+—el texto «REEMPLAZAR-CON-LA-HUELLA…»—. Una huella falsa no es lo mismo que
+no estar: Android no la puede emparejar con nada, así que la app abre con la
+barra del navegador encima igual que si no existiera la entrada, pero el
+archivo parecía completo y nadie volvió a mirarlo.
+
+Se retiraron. Este archivo declara apps que existen y están firmadas; una
+reserva escrita por adelantado no cumple ninguna función y esconde el estado
+real. Cuando se firme cualquiera de las dos, se agrega su entrada con la
+huella verdadera y listo.
+
+`node pruebas/revisar.js` comprueba que toda entrada de este archivo lleve una
+huella con forma de huella: 32 pares hexadecimales separados por dos puntos.
 
 La última se arma desde https://urbispro.city/manifest-reportes.json, no
 desde el manifiesto de la raíz. Arranca en /reportes.html —el mapa ligero
@@ -27,10 +46,7 @@ con el botón de reportar— y su alcance es todo el sitio, para que Eventos,
 Social y el Seguimiento Presidencial se abran DENTRO de la app y no en una
 pestaña del navegador. Su icono es el amarillo (assets/icons/reportes/).
 
-Su huella todavía no está en assetlinks.json: hay una entrada con la huella
-en cero, a la espera. Mientras esté así, esa app abre con la barra del
-navegador encima. En cuanto PWABuilder entregue el paquete, se reemplazan
-los ceros por la huella real y se sube.
+Su huella ya está puesta, así que abre sin barra de navegador.
 
 CÓMO SE COMPRUEBA
 ─────────────────

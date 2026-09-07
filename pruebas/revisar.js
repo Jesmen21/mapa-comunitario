@@ -343,6 +343,31 @@ console.log('\n  -- las reglas siguen del lado del servidor --');
     !/\bm\s*:\s*\{/.test(cat), 'js/59');
 }
 
+// ── 4b. las huellas de firma de las apps de Android ──────────────────────
+/* `assetlinks.json` es lo que le dice a Android que una app y este dominio son
+   la misma cosa. Con una huella de mentira —el hueco que se deja al registrar
+   un paquete antes de firmarlo— la app se instala y funciona, pero abre con la
+   barra del navegador encima. Nadie recibe un error: simplemente se ve como
+   una página web metida en un icono, que es justo lo que un APK viene a
+   evitar. Por eso se comprueba acá, donde sí se ve. */
+console.log('\n  -- las apps de Android --');
+{
+  const al = JSON.parse(leer('.well-known/assetlinks.json'));
+  const HUELLA = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/;
+  const filas = al.map(x => ({
+    p: (x.target || {}).package_name || '(sin paquete)',
+    h: ((x.target || {}).sha256_cert_fingerprints || [])[0] || ''
+  }));
+  comprobar('el JSON de enlace de activos es una lista de paquetes',
+    filas.length > 0 && filas.every(f => f.p !== '(sin paquete)'),
+    filas.map(f => f.p).join(', '));
+  const sinFirmar = filas.filter(f => !HUELLA.test(f.h));
+  comprobar('todas las apps declaradas tienen su huella real',
+    sinFirmar.length === 0,
+    sinFirmar.length ? sinFirmar.map(f => f.p + ' (' + (f.h.slice(0, 24) || 'vacía') + ')').join(' · ')
+                     : filas.length + ' paquetes firmados');
+}
+
 // ── 5. el token de versión, el mismo en los cinco archivos ───────────────
 console.log('\n  -- la versión --');
 {
