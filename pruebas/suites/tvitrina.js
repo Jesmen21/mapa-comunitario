@@ -19,7 +19,13 @@ const E = require('../entorno.js');
    · El administrador: la tarjeta, el mostrador completo, el campo de quién
      lo administra, y al asignarlo desde la cuenta dueña de URBIS se le da
      el permiso por la API — porque sin él el servidor le rechazaría cada
-     escritura, y un dueño sin permiso es un botón que falla.               */
+     escritura, y un dueño sin permiso es un botón que falla.
+
+   Y el portero, que es lo que de verdad recorta: esconder botones ordena la
+   pantalla y no impide nada. Se comprueba SIN pasar por la pantalla —
+   preguntando por cada emprendimiento, y forzando un guardado sobre uno
+   ajeno— porque entre listar y guardar puede cambiar la sesión, recargarse
+   la lista o quedar un formulario abierto de antes.                        */
 const { chromium } = require(E.MODULOS + '/playwright-core');
 const fs = require('fs');
 const S = E.TRABAJO;
@@ -220,6 +226,55 @@ const FILAS = [
         'al guardar, el sobre lleva al dueño normalizado, sin @ ni mayúsculas (' + (r.guardado && r.guardado.duenio) + ')');
     chk(r.permisoDado === 'juanita:vitrina', 'y desde la cuenta dueña se le da el permiso de vitrina (' + r.permisoDado + ')');
     chk(/recibió el permiso/.test(r.aviso), 'y se lo dice al administrador: "' + r.aviso.slice(0, 80) + '…"');
+    errores.push(...err); await ctx.close();
+  }
+
+  // ── 4 · El portero, sin pasar por la pantalla ────────────────────────
+  console.log('\n── El portero de las escrituras ───────────────────');
+  {
+    const { ctx, pg, err } = await abrirCon({ usuario: 'vecina', rol: 'citizen', permisos: 'vitrina', session_token: 't', active: true, verified: true });
+    const r = await pg.evaluate(async () => {
+      const esperar = ms => new Promise(x => setTimeout(x, ms));
+      const o = {};
+      const p = window.urbisPuedeEditarEmprendimiento;
+      o.hayPortero = typeof p === 'function';
+      if (!o.hayPortero) return o;
+      o.suyo = p('a1');
+      o.ajeno = p('b2');
+      o.inventado = p('no-existe');
+      /* Y el camino de escritura, forzado: se abre el formulario de LO SUYO
+         —permitido— y se le cambia la sesión por debajo, como si hubiera
+         quedado abierto de otra persona. Guardar no puede escribir. */
+      window.urbisAbrirVitrinaAdmin();
+      await esperar(500);
+      const m = document.getElementById('urbis-vitrina-admin');
+      const editar = m && m.querySelector('[data-acc="editar"]');
+      if (!editar) { o.sinEditar = true; return o; }
+      editar.click();
+      await esperar(400);
+      let escribio = false;
+      window.urbisDBUpdate = function () { escribio = true; return Promise.resolve({ ok: true }); };
+      try {
+        const k = 'urbis_auth_session_v1';
+        const ses = JSON.parse(localStorage.getItem(k));
+        ses.usuario = 'otra';
+        localStorage.setItem(k, JSON.stringify(ses));
+        if (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') window.URBIS_AUTH.readSession();
+      } catch (e) { o.errSesion = e.message; }
+      o.ahoraSuyo = p('a1');
+      const guardar = m.querySelector('#uvit-guardar'); if (guardar) guardar.click();
+      await esperar(600);
+      o.escribio = escribio;
+      o.error = (m.querySelector('.ucfg-error') || {}).textContent || '';
+      return o;
+    });
+    chk(r.hayPortero, 'el módulo publica de quién es cada emprendimiento');
+    chk(r.suyo === true && r.ajeno === false,
+        'la dueña puede editar el suyo y no el ajeno (suyo ' + r.suyo + ' · ajeno ' + r.ajeno + ')');
+    chk(r.inventado === false, 'y un id inventado no abre nada (' + r.inventado + ')');
+    chk(r.ahoraSuyo === false, 'al cambiar de usuario, ese emprendimiento deja de ser suyo');
+    chk(r.escribio === false, 'y guardar NO escribe: el portero está en la escritura, no en el botón');
+    chk(/no es tuyo/i.test(r.error || ''), 'lo dice con nombre: "' + (r.error || '(sin mensaje)').slice(0, 60) + '"');
     errores.push(...err); await ctx.close();
   }
 

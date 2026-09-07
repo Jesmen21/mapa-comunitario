@@ -294,6 +294,37 @@
   // lo suyo. Un delegado sin emprendimiento asignado ve la lista vacía y por
   // qué está vacía.
   function negociosDelMostrador() { return esAdmin() ? negocios() : misNegocios(); }
+
+  /* ── Un solo portero para TODA escritura del módulo ──────────────────
+     Esconder botones ORDENA la pantalla; no impide nada. Entre el listado y
+     el guardado pasan cosas: se recarga la lista, cambia la sesión, un
+     formulario queda abierto de antes. Así que cada camino que escribe
+     pregunta aquí, y el que no puede recibe un error con nombre en vez de
+     una escritura silenciosa sobre el negocio de otra persona.
+
+     Esto sigue siendo del CLIENTE: el servidor mira el permiso `vitrina` y
+     no distingue un emprendimiento de otro. Mientras eso no cambie en el
+     Apps Script, este portero es lo que hay — y por eso está en un solo
+     sitio, para que el día que el servidor lo haga, sea evidente qué se
+     puede quitar. */
+  function puedoEditar(n) {
+    if (!puedo()) return false;
+    if (esAdmin()) return true;
+    const yo = usuarioActual();
+    return !!yo && !!n && n.duenio === yo;
+  }
+  function exigirEditar(n) {
+    if (!puedoEditar(n)) throw new Error('Este emprendimiento no es tuyo: solo lo edita quien URBIS designó.');
+  }
+  function exigirAdmin(accion) {
+    if (!esAdmin()) throw new Error('Solo el administrador de URBIS puede ' + accion + '.');
+  }
+  /* Se publica la pregunta, no el portero: otro módulo puede querer saber si
+     enseñar un atajo, y las pruebas comprueban el recorte sin depender de
+     qué botones haya pintados en ese momento. */
+  window.urbisPuedeEditarEmprendimiento = function (id) {
+    return puedoEditar(negocios().find(function (x) { return x.id === String(id || ''); }));
+  };
   function nuevoId() { return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
   // ── Leer y escribir el sobre ─────────────────────────────────────────────
@@ -556,6 +587,7 @@
 
   // ── Guardado (solo con el permiso `vitrina`; el servidor lo re-exige) ────
   function guardarNegocio(n, lat, lng) {
+    try { exigirAdmin('crear un emprendimiento'); } catch (e) { return Promise.reject(e); }
     const desc = sobreDe(n);
     if (desc.length > MAX_CELDA) return Promise.reject(new Error('La ficha quedó demasiado larga.'));
     if (typeof window.urbisGuardarFila !== 'function') return Promise.reject(new Error('Sin conexión con URBIS.'));
@@ -564,6 +596,7 @@
     });
   }
   function actualizarNegocio(n) {
+    try { exigirEditar(n); } catch (e) { return Promise.reject(e); }
     return window.urbisDBUpdate('descripcion', n.fila.descripcion, { descripcion: sobreDe(n) })
       .then(function (r) { n.fila.descripcion = sobreDe(n); return r; });
   }
@@ -617,6 +650,7 @@
             if (!confirm('¿Eliminar “' + n.nombre + '” y todo su portafolio?\n\nNo se puede deshacer.')) return;
             b.disabled = true; b.textContent = '…';
             try {
+              exigirAdmin('eliminar un emprendimiento');
               await window.urbisDBDelete('descripcion', n.fila.descripcion);
               // El portafolio cuelga del id del negocio: se va con él, para no
               // dejar fotos huérfanas ocupando hoja.
@@ -633,6 +667,8 @@
           // publicar / pausar: el interruptor con el que el administrador
           // AUTORIZA que el negocio salga junto a los reportes y eventos.
           b.disabled = true; b.textContent = '…';
+          try { exigirAdmin('publicar o pausar un emprendimiento'); }
+          catch (e) { b.disabled = false; alert(e.message); listado(); return; }
           n.estado = (acc === 'publicar') ? 'visible' : 'pausado';
           try { await actualizarNegocio(n); render(); listado(); }
           catch (e) { b.disabled = false; alert('No se pudo: ' + (e.message || e)); listado(); }
@@ -642,6 +678,10 @@
 
     // ── Alta y edición ──────────────────────────────────────────────────
     function formulario(n) {
+      // Ni siquiera se abre: un formulario que se puede llenar y no se puede
+      // guardar es peor que no dejar entrar.
+      if (n && !puedoEditar(n)) { listado(); return; }
+      if (!n && !esAdmin()) { listado(); return; }
       const editando = !!n;
       const admin = esAdmin();
       const v = n || { id: nuevoId(), nombre:'', emoji:'🛍️', lema:'', descripcion:'',
@@ -914,6 +954,7 @@
           const txt = cont.querySelector('#uvit-logo-txt');
           txt.textContent = 'Procesando…';
           try {
+            exigirEditar(v);
             const url = await comprimirLogo(f);
             // Un negocio tiene UN logo: si ya había, se reemplaza en vez de
             // acumular filas que nadie volvería a mirar.
@@ -943,6 +984,7 @@
           if (!l || !confirm('¿Quitar el logo? La gota volverá a mostrar el emoji.')) return;
           quitar.disabled = true;
           try {
+            exigirEditar(v);
             await window.urbisDBDelete('descripcion', l.fila.descripcion);
             window.urbisVitrinaLogos = (window.urbisVitrinaLogos || [])
               .filter(function (x) { return x !== l.fila; });
@@ -973,6 +1015,7 @@
               if (!x || !confirm('¿Quitar “' + x.nombre + '” del portafolio?')) return;
               b.disabled = true;
               try {
+                exigirEditar(v);
                 await window.urbisDBDelete('descripcion', x.fila.descripcion);
                 window.urbisVitrinaItems = (window.urbisVitrinaItems || []).filter(function (f) { return f !== x.fila; });
                 pintarItems();
@@ -1020,6 +1063,7 @@
                                   promo: promo, antes: antes });
           }
           try {
+            exigirEditar(v);
             await window.urbisGuardarFila({ tipo: TIPO_ITEM, lat: v.id, lng: '0', descripcion: desc, fecha: new Date().toISOString() });
             (window.urbisVitrinaItems = window.urbisVitrinaItems || []).push({ tipo: TIPO_ITEM, lat: v.id, lng: '0', descripcion: desc });
             ['#uvit-inombre','#uvit-idesc','#uvit-iprecio','#uvit-iantes','#uvit-ipromo']
