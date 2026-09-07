@@ -1350,13 +1350,73 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-placa-btn:hover .sp-placa-pie{ text-decoration:underline; }
 
 /* La ficha: una columna en teléfono; desde 900 px la placa y el veredicto se
-   quedan fijos a la izquierda y lo polémico se desplaza a la derecha. */
-.sp-ficha{ display:grid; gap:22px; align-items:start; }
+   quedan fijos a la izquierda y lo polémico se desplaza a la derecha.
+   La rejilla es un hijo y no la sección entera, porque encima van las
+   pestañas y esas ocupan el ancho completo. */
+.sp-ficha{ display:grid; gap:18px; align-items:start; }
+.sp-fi-rejilla{ display:grid; gap:22px; align-items:start; }
 .sp-fi-izq, .sp-fi-der{ display:grid; gap:16px; min-width:0; }
 @media (min-width:900px){
-  .sp-ficha{ grid-template-columns:minmax(300px,360px) minmax(0,1fr); gap:32px; }
+  .sp-fi-rejilla{ grid-template-columns:minmax(300px,360px) minmax(0,1fr); gap:32px; }
   .sp-fi-izq{ position:sticky; top:calc(var(--bar) + 20px); }
 }
+
+/* ── Las dos pestañas: la ficha y la comparación ────────────────────────── */
+.sp-cmp-tabs{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.sp-cmp-tab{
+  display:grid; gap:2px; text-align:left; padding:12px 14px; cursor:pointer; font:inherit;
+  background:var(--sup); border:1px solid var(--linea); border-bottom:3px solid var(--linea);
+  border-radius:var(--r-s); color:var(--ink-2); min-width:0;
+}
+.sp-cmp-tab b{ font-size:var(--t-7); font-weight:700; color:var(--petroleo); line-height:1.2; }
+.sp-cmp-tab small{ font-size:var(--t-9); line-height:1.35; }
+.sp-cmp-tab.on{ border-bottom-color:var(--celeste-mark); background:var(--celeste-suave); color:var(--ink); }
+.sp-cmp-tab:hover{ border-color:var(--petroleo-2); }
+.sp-cmp-tab:focus-visible{ outline:2px solid var(--verde); outline-offset:2px; }
+
+/* ── La tabla comparativa ───────────────────────────────────────────────── */
+.sp-cmp{ display:grid; gap:16px; }
+.sp-cmp-lista{ display:grid; gap:12px; }
+.sp-cmp-fila{
+  display:grid; gap:10px; padding:16px 18px; background:var(--sup);
+  border:1px solid var(--linea); border-left:4px solid var(--linea); border-radius:var(--r-s);
+}
+/* El riel celeste marca las pocas filas que SÍ se pueden comparar hoy. */
+.sp-cmp-fila.sp-cmp-comparable{ border-left-color:var(--celeste-mark); }
+.sp-cmp-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.sp-cmp-head h4{ margin:0; font-size:var(--t-5); color:var(--petroleo); }
+.sp-cmp-unidad{ font-size:var(--t-9); color:var(--ink-2); }
+.sp-cmp-par{ display:grid; gap:10px; }
+@media (min-width:640px){ .sp-cmp-par{ grid-template-columns:1fr 1fr; gap:14px; } }
+.sp-cmp-lado{ display:grid; gap:2px; padding:12px 14px; border-radius:10px; background:var(--marfil); min-width:0; }
+.sp-cmp-lado > b{ font-size:var(--t-8); font-weight:700; color:var(--ink); }
+.sp-cmp-periodo{ font-size:var(--t-9); color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.sp-cmp-valor{
+  margin:6px 0 4px; display:flex; align-items:baseline; gap:7px; flex-wrap:wrap;
+  font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.sp-cmp-valor b{ font-size:var(--t-3); font-weight:900; color:var(--petroleo); letter-spacing:-.02em; }
+.sp-cmp-ini{ font-size:var(--t-6); color:var(--ink-2); }
+.sp-cmp-flecha{ font-size:var(--t-7); color:var(--ink-2); }
+.sp-cmp-lado small{ font-size:var(--t-8); line-height:1.45; color:var(--ink-2); }
+.sp-cmp-ahora{ background:var(--celeste-suave); }
+.sp-cmp-aviso{
+  margin:0; font-size:var(--t-9); font-weight:600; color:var(--amarillo-hi);
+  background:#FFF8E8; border-radius:8px; padding:7px 10px;
+}
+.sp-cmp-lectura{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink); }
+
+/* ── Lo que se dijo y era falso ─────────────────────────────────────────── */
+.sp-cmp-desinfo{ display:grid; gap:14px; }
+.sp-cmp-bloque{ display:grid; gap:10px; padding:14px 16px; border-radius:var(--r-s); background:var(--marfil); }
+.sp-cmp-bloque h4{ margin:0; font-size:var(--t-6); color:var(--petroleo); }
+.sp-cmp-bloque > p{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); }
+/* Las dos listas llevan el mismo peso a propósito: una no anula a la otra. */
+.sp-cmp-contra{ border-left:3px solid var(--celeste-mark); }
+.sp-cmp-suya{ border-left:3px solid var(--ambar); }
+.sp-cmp-bulo{ display:grid; gap:4px; padding:12px 14px; background:var(--sup); border:1px solid var(--linea); border-radius:10px; }
+.sp-cmp-bulo b{ font-size:var(--t-7); color:var(--petroleo); }
+.sp-cmp-bulo p{ margin:0; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
 
 /* El veredicto y su regla, pegados a la placa */
 .sp-fi-ver-box{

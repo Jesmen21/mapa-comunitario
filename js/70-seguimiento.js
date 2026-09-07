@@ -1676,13 +1676,150 @@
     return s;
   }
 
+  /* ── La pestaña de al lado: cómo fue Petro y cómo va De la Espriella ──────
+     Pedido del dueño. Se hizo tabla de cifras y NO una segunda ficha con
+     veredicto, y la razón se dice en pantalla: la escalera está pensada para
+     un mandato en curso, con casos que se mueven; aplicarla a uno cerrado
+     compararía cuatro años contra unas semanas y el resultado sería una
+     cifra con aire de sentencia. Acá cada fila lleva su fuente y dice si es
+     comparable o no; donde no lo es, se escribe por qué en vez de rellenar
+     con una estimación. */
+  function comparacion() { return (D && D.comparacion) || null; }
+
+  function filaComparativa(fila, cmp) {
+    var art = el('article', 'sp-cmp-fila' + (fila.comparable ? ' sp-cmp-comparable' : ''));
+    var h = el('header', 'sp-cmp-head');
+    h.appendChild(el('h4', null, fila.titulo));
+    h.appendChild(el('span', 'sp-cmp-unidad', fila.unidad));
+    art.appendChild(h);
+
+    var par = el('div', 'sp-cmp-par');
+    var a = el('div', 'sp-cmp-lado sp-cmp-antes');
+    a.appendChild(el('b', null, cmp.predecesor.nombre));
+    a.appendChild(el('span', 'sp-cmp-periodo', cmp.predecesor.periodo));
+    var va = el('p', 'sp-cmp-valor');
+    if (fila.petro.inicio && fila.petro.inicio !== '—') {
+      va.appendChild(el('span', 'sp-cmp-ini', fila.petro.inicio));
+      va.appendChild(el('span', 'sp-cmp-flecha', '→'));
+    }
+    va.appendChild(el('b', null, fila.petro.fin));
+    a.appendChild(va);
+    a.appendChild(el('small', null, fila.petro.texto));
+    par.appendChild(a);
+
+    var b = el('div', 'sp-cmp-lado sp-cmp-ahora');
+    b.appendChild(el('b', null, cmp.actual.nombre));
+    b.appendChild(el('span', 'sp-cmp-periodo', cmp.actual.periodo));
+    var vb = el('p', 'sp-cmp-valor');
+    vb.appendChild(el('b', null, fila.ahora.valor));
+    b.appendChild(vb);
+    b.appendChild(el('small', null, fila.ahora.texto));
+    par.appendChild(b);
+    art.appendChild(par);
+
+    if (!fila.comparable) {
+      art.appendChild(el('p', 'sp-cmp-aviso', 'Todavía no se pueden comparar: el gobierno actual no tiene un periodo cerrado de esta cifra.'));
+    }
+    art.appendChild(el('p', 'sp-cmp-lectura', fila.lectura));
+    var fl = el('div', 'sp-fuentes');
+    pintarFuentes(fl, fila.fuentes || []);
+    art.appendChild(fl);
+    return art;
+  }
+
+  function pintarComparacion(cont) {
+    var cmp = comparacion();
+    vaciar(cont);
+    if (!cmp) { cont.appendChild(el('p', 'sp-fi-nada', 'Todavía no hay comparación cargada.')); return; }
+
+    var av = el('div', 'sp-interp');
+    av.appendChild(el('b', null, 'Cuatro años contra unas semanas'));
+    av.appendChild(el('p', null, cmp._nota));
+    cont.appendChild(av);
+
+    var lista = el('div', 'sp-cmp-lista');
+    (cmp.filas || []).forEach(function (f) { lista.appendChild(filaComparativa(f, cmp)); });
+    cont.appendChild(lista);
+
+    // ── Lo que se dijo y era falso, en las dos direcciones ────────────────
+    var di = cmp.desinformacion;
+    if (di) {
+      var s = seccionFicha('sp-cmp-desinfo', 'Lo que se dijo y era falso', di._nota);
+      var c1 = el('div', 'sp-cmp-bloque sp-cmp-contra');
+      c1.appendChild(el('h4', null, di.contra.titulo));
+      (di.contra.casos || []).forEach(function (x) {
+        var it = el('article', 'sp-cmp-bulo');
+        it.appendChild(el('b', null, x.t));
+        it.appendChild(el('p', null, x.d));
+        var f1 = el('div', 'sp-fuentes');
+        pintarFuentes(f1, [{ n: 'La Silla Vacía · Detector de Mentiras', u: x.u }]);
+        it.appendChild(f1);
+        c1.appendChild(it);
+      });
+      s.appendChild(c1);
+
+      var c2 = el('div', 'sp-cmp-bloque sp-cmp-suya');
+      c2.appendChild(el('h4', null, di.suya.titulo));
+      c2.appendChild(el('p', null, di.suya.resumen));
+      var f2 = el('div', 'sp-fuentes');
+      pintarFuentes(f2, [{ n: 'La Silla Vacía · el manual de desinformación de Gustavo Petro', u: di.suya.u }]);
+      c2.appendChild(f2);
+      s.appendChild(c2);
+      cont.appendChild(s);
+    }
+  }
+
+  /* Las dos pestañas de la sección: la ficha del gobernante actual y la
+     comparación con el anterior. Se recuerda cuál estaba abierta mientras
+     dure la visita, pero no se guarda: al volver mañana se entra por la
+     ficha, que es lo que el módulo promete en la portada. */
+  var pestanaFicha = 'ficha';
+
+  function pintarPestanas(cont) {
+    var cmp = comparacion();
+    if (!cmp) return null;
+    var nav = el('nav', 'sp-cmp-tabs');
+    nav.setAttribute('role', 'tablist');
+    nav.setAttribute('aria-label', 'Ficha del gobernante y comparación');
+    [{ id: 'ficha', t: D.presidente || 'El gobernante', d: 'Fiabilidad, casos y rasgos' },
+     { id: 'comparacion', t: 'Cómo fue y cómo va', d: cmp.predecesor.nombre + ' vs. ' + cmp.actual.nombre }
+    ].forEach(function (p) {
+      var b = el('button', 'sp-cmp-tab' + (p.id === pestanaFicha ? ' on' : ''));
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', p.id === pestanaFicha ? 'true' : 'false');
+      b.appendChild(el('b', null, p.t));
+      b.appendChild(el('small', null, p.d));
+      b.addEventListener('click', function () {
+        if (pestanaFicha === p.id) return;
+        pestanaFicha = p.id;
+        pintarFicha();
+        try { cont.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
+      });
+      nav.appendChild(b);
+    });
+    return nav;
+  }
+
   function pintarFicha() {
     var f = fichaHasta(null);
     var cont = vaciar($('sp-ficha'));
+
+    var tabs = pintarPestanas(cont);
+    if (tabs) cont.appendChild(tabs);
+    if (tabs && pestanaFicha === 'comparacion') {
+      var caja = el('div', 'sp-cmp');
+      cont.appendChild(caja);
+      pintarComparacion(caja);
+      return;
+    }
+
     var izq = el('div', 'sp-fi-izq');
     var der = el('div', 'sp-fi-der');
-    cont.appendChild(izq);
-    cont.appendChild(der);
+    var rejilla = el('div', 'sp-fi-rejilla');
+    rejilla.appendChild(izq);
+    rejilla.appendChild(der);
+    cont.appendChild(rejilla);
 
     // ── 1 · Placa y veredicto ──────────────────────────────────────────────
     izq.appendChild(placaDe(f));

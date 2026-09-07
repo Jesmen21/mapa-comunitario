@@ -397,6 +397,59 @@ const server = http.createServer((req, res) => {
   chk(r.serie.n >= 3 && r.serie.ultimaEnCurso,
       'la serie marca la semana en curso, que siempre va a medias (' + r.serie.n + ' columnas)');
   chk(r.acumulaCreciendo, 'y el acumulado de la serie nunca baja');
+  /* ── La pestaña de al lado: cómo fue Petro y cómo va De la Espriella ────
+     Es una tabla de cifras, NO una segunda ficha con veredicto: la escalera
+     está pensada para un mandato en curso y aplicarla a uno cerrado
+     compararía cuatro años contra unas semanas.
+
+     La aserción que de verdad importa es la última: el bloque de
+     desinformación tiene que mostrar las DOS direcciones —lo que le
+     inventaron y lo que él difundió—. Sin eso, la pestaña deja de ser un
+     registro y pasa a ser una defensa, y entonces tampoco se le puede creer
+     a la ficha del gobernante actual: sería la misma pantalla midiendo a uno
+     con cuentas y al otro con adjetivos. */
+  console.log('\n── Cómo fue y cómo va ──────────────────────────────');
+  const cmpD = (D.comparacion || {});
+  const esperadasFilas = (cmpD.filas || []).length;
+  const cmp = await pg.evaluate(() => {
+    const tabs = Array.from(document.querySelectorAll('.sp-cmp-tab'));
+    if (tabs.length < 2) return { tabs: tabs.length };
+    tabs[1].click();
+    const caja = document.getElementById('sp-ficha');
+    const filas = Array.from(caja.querySelectorAll('.sp-cmp-fila'));
+    return {
+      tabs: tabs.length,
+      rotulos: tabs.map(t => t.innerText.replace(/\n/g, ' · ')),
+      activa: (caja.querySelector('.sp-cmp-tab.on') || {}).innerText || '',
+      filas: filas.length,
+      sinFuente: filas.filter(f => !f.querySelector('.sp-fuentes a[href^="https"]')).length,
+      avisos: caja.querySelectorAll('.sp-cmp-aviso').length,
+      comparables: caja.querySelectorAll('.sp-cmp-fila.sp-cmp-comparable').length,
+      contra: caja.querySelectorAll('.sp-cmp-contra .sp-cmp-bulo').length,
+      haySuya: !!caja.querySelector('.sp-cmp-suya'),
+      // Ninguna ficha ni peldaño para el anterior: acá no se juzga, se cuenta.
+      sinVeredicto: !caja.querySelector('.sp-fi-placa') && !caja.querySelector('.sp-fi-paso'),
+      txt: caja.innerText
+    };
+  });
+  console.log('  ' + (cmp.rotulos || []).join('  |  '));
+  console.log('  ' + cmp.filas + ' filas · ' + cmp.comparables + ' comparables · ' + cmp.avisos + ' con aviso');
+  chk(cmp.tabs === 2, 'la ficha tiene dos pestañas: el gobernante y la comparación (' + cmp.tabs + ')');
+  chk(/Gustavo Petro/.test((cmp.rotulos || []).join(' ')), 'la segunda nombra al gobierno anterior');
+  chk(cmp.filas === esperadasFilas && esperadasFilas >= 6,
+      'la tabla trae todas las filas del registro (' + cmp.filas + ' de ' + esperadasFilas + ')');
+  chk(cmp.sinFuente === 0, 'y cada fila lleva su fuente con enlace (' + cmp.sinFuente + ' sin ella)');
+  chk(cmp.avisos === esperadasFilas - cmp.comparables && cmp.avisos > 0,
+      'las filas que todavía no se pueden comparar lo dicen en pantalla (' + cmp.avisos + ')');
+  chk(/dólar|TRM/i.test(cmp.txt) && /4\.337/.test(cmp.txt) && /3\.099/.test(cmp.txt),
+      'el dólar va con las dos cifras: cómo lo recibió y cómo está hoy');
+  chk(/64 %|deuda/i.test(cmp.txt) && /1,7 %/.test(cmp.txt),
+      'y también lo que no favorece al gobierno anterior: deuda y caída del crecimiento');
+  chk(cmp.sinVeredicto, 'la comparación NO le pone veredicto ni peldaño al gobierno anterior');
+  chk(cmp.contra >= 2 && cmp.haySuya,
+      'la desinformación se muestra en las DOS direcciones: lo que le inventaron y lo que difundió (' + cmp.contra + ' bulos + su propio registro)');
+  chk(/159|126/.test(cmp.txt), 'con la cuenta de los verificadores sobre él, no solo la de sus atacantes');
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await b.close(); server.close();

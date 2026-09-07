@@ -3273,6 +3273,253 @@
       }
     ]
   },
+  "comparacion": {
+    "_nota": "Cómo fue el gobierno anterior y cómo va el actual, con las mismas cifras y las mismas fuentes. Advertencia que vale para toda la tabla y que la pantalla repite: Gustavo Petro tiene cuatro años cerrados y Abelardo de la Espriella lleva semanas. Donde no hay dato comparable se dice, y no se estima. Tampoco se atribuye a un gobierno lo que mueven el precio del petróleo, las tasas de la Reserva Federal o el ciclo mundial: acá se registra qué pasó, no quién lo causó.",
+    "predecesor": {
+      "nombre": "Gustavo Petro",
+      "periodo": "2022 – 2026",
+      "posesion": "2022-08-07",
+      "entrega": "2026-08-07"
+    },
+    "actual": {
+      "nombre": "Abelardo de la Espriella",
+      "periodo": "2026 – 2030",
+      "posesion": "2026-08-07"
+    },
+    "filas": [
+      {
+        "id": "dolar",
+        "titulo": "El dólar (TRM)",
+        "unidad": "pesos por dólar",
+        "sentido": "bajaMejor",
+        "comparable": true,
+        "petro": {
+          "inicio": "4.337",
+          "fin": "3.157",
+          "texto": "De 4.337 el día de su posesión a menos de 3.200 al entregar"
+        },
+        "ahora": {
+          "valor": "3.099",
+          "texto": "19 de agosto de 2026, mínimo en más de siete años"
+        },
+        "lectura": "Bajó con Petro, y sigue bajando en las primeras semanas del gobierno nuevo. Con un pico de por medio: en noviembre de 2022 tocó 5.061, el máximo histórico.",
+        "fuentes": [
+          {
+            "n": "Semana · la TRM tras la posesión de Petro",
+            "u": "https://www.semana.com/economia/macroeconomia/articulo/asi-esta-el-dolar-en-colombia-la-trm-que-regira-este-lunes-tras-posesion-de-petro/202243/"
+          },
+          {
+            "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
+            "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200"
+          }
+        ]
+      },
+      {
+        "id": "salario",
+        "titulo": "Salario mínimo",
+        "unidad": "pesos al mes",
+        "sentido": "subeMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "1.000.000",
+          "fin": "2.000.000",
+          "texto": "De un millón en 2022 a dos millones en 2026, contando el auxilio de transporte"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "El de 2027 se negocia en diciembre: todavía no le corresponde"
+        },
+        "lectura": "El alza de 2026 fue de 23,7 % sobre el total, la mayor del periodo. En términos nominales el acumulado supera el 42 % frente a una inflación acumulada cercana al 28 %; el propio Petro calculó 18,7 % de aumento real. Los gremios advirtieron presión sobre precios y empleo formal.",
+        "fuentes": [
+          {
+            "n": "El Colombiano · Petro decreta alza de 23,78 % para 2026",
+            "u": "https://www.elcolombiano.com/negocios/salario-minimo-2026-colombia-alza-23-por-ciento-petro-decreto-HB32119718"
+          },
+          {
+            "n": "CNN · el alza y las críticas de empresarios y comerciantes",
+            "u": "https://cnnespanol.cnn.com/2025/12/30/colombia/gobierno-sube-salario-minimo-2026-efe"
+          }
+        ]
+      },
+      {
+        "id": "inflacion",
+        "titulo": "Inflación",
+        "unidad": "% anual",
+        "sentido": "bajaMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "13,1 %",
+          "fin": "4,8 %",
+          "texto": "Del pico de 13,1 % a 4,8 % en 2025"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "Un mes no da una cifra anual"
+        },
+        "lectura": "Es la mejora más clara del periodo. La proyección para 2027 vuelve a subir, a 5,9 %, en parte por el alza del salario mínimo.",
+        "fuentes": [
+          {
+            "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
+            "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+          }
+        ]
+      },
+      {
+        "id": "desempleo",
+        "titulo": "Desempleo",
+        "unidad": "% de la fuerza laboral",
+        "sentido": "bajaMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "—",
+          "fin": "8,1 %",
+          "texto": "Cerró en 8,1 %, el más bajo del siglo"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "Sin dato propio todavía"
+        },
+        "lectura": "El dato más favorable que deja el gobierno anterior. Al lado hay uno que lo matiza: la proporción de trabajadores que gana menos de un salario mínimo subió de 45,2 % en 2024 a 48,9 % en 2025.",
+        "fuentes": [
+          {
+            "n": "CEPR · desempleo y mercado laboral",
+            "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+          },
+          {
+            "n": "Fedesarrollo · casi la mitad gana menos de un mínimo",
+            "u": "https://www.fedesarrollo.org.co/noticias/casi-la-mitad-de-los-trabajadores-en-colombia-gana-menos-de-un-salario-minimo"
+          }
+        ]
+      },
+      {
+        "id": "pobreza",
+        "titulo": "Pobreza monetaria",
+        "unidad": "% de la población",
+        "sentido": "bajaMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "—",
+          "fin": "28,0 %",
+          "texto": "28,0 % en 2025; extrema, 9,6 %"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "El DANE mide por año cerrado"
+        },
+        "lectura": "Bajó, y también la multidimensional. En personas: 17,5 millones en 2023 y 16,2 millones en 2024. La pobreza extrema pasó de 11,7 % en 2024 a 9,6 % en 2025.",
+        "fuentes": [
+          {
+            "n": "DANE · pobreza monetaria 2025",
+            "u": "https://www.dane.gov.co/files/operaciones/PM/bol-PM-2025.pdf"
+          },
+          {
+            "n": "DANE · serie histórica de pobreza monetaria",
+            "u": "https://www.dane.gov.co/index.php/estadisticas-por-tema/pobreza-y-condiciones-de-vida/pobreza-monetaria"
+          }
+        ]
+      },
+      {
+        "id": "crecimiento",
+        "titulo": "Crecimiento del PIB",
+        "unidad": "% anual",
+        "sentido": "subeMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "7,3 %",
+          "fin": "1,7 %",
+          "texto": "De 7,3 % en 2022 a 1,7 % proyectado para 2026"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "Sin trimestre propio todavía"
+        },
+        "lectura": "Acá la cifra no acompaña el relato. El crecimiento bajó a lo largo del periodo. Petro se adjudicó un 3,5 % del DANE en agosto de 2026, que es una lectura trimestral y no la del año: las dos cosas pueden ser ciertas a la vez y conviene no confundirlas.",
+        "fuentes": [
+          {
+            "n": "El Colombiano · balance de la economía y retos para De la Espriella",
+            "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          },
+          {
+            "n": "Infobae · Petro se adjudicó el crecimiento de 3,5 % del DANE",
+            "u": "https://www.infobae.com/colombia/2026/08/18/petro-se-adjudico-el-merito-por-el-crecimiento-de-la-economia-colombiana-en-un-35-segun-el-dane-en-mi-gobierno/"
+          }
+        ]
+      },
+      {
+        "id": "deuda",
+        "titulo": "Deuda y déficit",
+        "unidad": "% del PIB",
+        "sentido": "bajaMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "—",
+          "fin": "64 % / 7 %",
+          "texto": "Deuda pública por encima del 64 % del PIB y déficit fiscal cercano al 7 %"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "Hereda esas cuentas"
+        },
+        "lectura": "Es el pasivo del balance. Menos pobreza y menos desempleo, pero un país más endeudado y con menos margen fiscal, que es justo lo que recibe el gobierno actual.",
+        "fuentes": [
+          {
+            "n": "Expansión · Petro deja menos pobreza pero una Colombia más endeudada",
+            "u": "https://expansion.mx/mundo/2026/05/27/petro-deja-menos-pobreza-pero-una-colombia-mas-endeudada"
+          },
+          {
+            "n": "El Colombiano · la deuda preocupa",
+            "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          }
+        ]
+      },
+      {
+        "id": "cocaina",
+        "titulo": "Cocaína incautada",
+        "unidad": "toneladas al año",
+        "sentido": "subeMejor",
+        "comparable": false,
+        "petro": {
+          "inicio": "746",
+          "fin": "889",
+          "texto": "746 toneladas en 2023 y 889 en 2024, el año más alto registrado"
+        },
+        "ahora": {
+          "valor": "—",
+          "texto": "Solo balances de semanas, que no caben en una serie anual"
+        },
+        "lectura": "Petro dijo que con el gobierno nuevo «se desplomó» la incautación. La caída existe, pero ni desde 1.000 ni hacia 280 toneladas: extrapolar un mes a un año deforma el dato. Y más toneladas no es automáticamente mejor: puede significar más producción.",
+        "fuentes": [
+          {
+            "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones es engañoso",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+          }
+        ]
+      }
+    ],
+    "desinformacion": {
+      "_nota": "El dueño del registro planteó que Petro fue el presidente más atacado con falsedades. Acá va lo que se puede sostener con verificadores, en las dos direcciones: lo que le inventaron y lo que él mismo difundió. Ninguna de las dos listas anula a la otra.",
+      "contra": {
+        "titulo": "Falsedades que circularon CONTRA él y los verificadores tumbaron",
+        "casos": [
+          {
+            "t": "El alias «Cacas»",
+            "d": "Se le atribuyó un alias de guerrilla que no aparece en ningún expediente. La Silla Vacía lo calificó falso, y la mentira revivió varias veces.",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/detector-revive-la-mentira-que-atribuye-a-petro-el-alias-falso-de-cacas/"
+          },
+          {
+            "t": "«Dijo que él es Dios»",
+            "d": "Circuló un montaje con una supuesta entrevista. Ni Petro lo dijo ni Caracol Radio lo publicó.",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/detector-de-nuevo-petro-no-dijo-en-una-entrevista-que-el-es-dios/"
+          }
+        ]
+      },
+      "suya": {
+        "titulo": "Y lo que difundió él",
+        "resumen": "La Silla Vacía lo verificó 159 veces en cuatro años y halló desinformación en 126: 56 falsas, 44 engañosas y 18 debatibles. El 73 % salió de su cuenta de X y el 23,7 % de discursos públicos. Salud fue el tema más chequeado.",
+        "u": "https://www.lasillavacia.com/detector-de-mentiras/el-manual-de-desinformacion-de-gustavo-petro/"
+      }
+    }
+  },
   "foda": {
     "_nota": "A diferencia de la línea de tiempo (hechos), esto es INTERPRETACIÓN. Cada punto se apoya en un hecho ya documentado arriba, pero la lectura es opinable.",
     "fortalezas": [
