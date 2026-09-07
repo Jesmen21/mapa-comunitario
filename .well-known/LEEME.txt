@@ -42,11 +42,16 @@ huella con forma de huella: 32 pares hexadecimales separados por dos puntos.
 
 URBIS_CO se arma desde https://urbispro.city/reportes.html (que enlaza
 manifest-reportes.json, no el manifiesto de la raíz). Su icono es el
-amarillo (assets/icons/reportes/) y abre LA MISMA aplicación que la web:
-reportes.html solo redirige a index.html. Esa redirección no se puede
-quitar: el APK firmado lleva /reportes.html grabada como dirección de
-arranque. Su alcance es todo el sitio, así que el seguimiento presidencial
-y el resto se abren dentro de la app.
+amarillo (assets/icons/reportes/) y abre LA MISMA aplicación que la web en
+MODO CIUDADANO: reportes.html solo redirige a index.html?app=ciudadano, y
+con ese parámetro js/70-modo-app.js deja en el inicio Reportar, Eventos,
+Vitrina, Social, Minijuegos y Seguimiento, y bloquea la entrada al resto.
+La redirección no se puede quitar: el APK firmado lleva /reportes.html
+grabada como dirección de arranque.
+
+URBIS_CO ES la app ciudadana. El manifest-ciudadano.json que había —mismo
+modo, otro nombre y otro icono— se retiró para que no hubiera dos
+manifiestos reclamando el mismo modo.
 
 Su huella ya está puesta, así que abre sin barra de navegador.
 

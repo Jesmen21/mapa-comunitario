@@ -989,6 +989,15 @@
       return archivarReportesExpirados(globalData).then(() => globalData);
     })
     .then(() => {
+      /* Constancia de que una carga TERMINÓ, aunque haya vuelto vacía. Tres
+         pantallas —Eventos, Mis reportes, Mis eventos— recargan los puntos
+         cuando ven globalData vacío, y esta misma cadena las vuelve a pintar
+         al terminar: con una hoja sin reportes eso era un ciclo sin fin —
+         cargar → pintar → «está vacío, cargo» → cargar…— que reconstruía las
+         tres gráficas por vuelta y dejó el hilo bloqueado más de dos minutos.
+         Con la constancia, «vacío» deja de confundirse con «todavía no
+         cargó», que es la única razón válida para volver a pedir. */
+      window.urbisPuntosCargados = true;
       const visibles = datosVisiblesActuales();
       pintarPuntos(visibles);
       actualizarGraficos(visibles);
@@ -1049,7 +1058,8 @@
     if(filtro) _misReportesFiltro = filtro;
     const cont = document.getElementById('u52-timeline-content');
     if(!cont) return;
-    if(!Array.isArray(globalData) || !globalData.length){ try{ cargarPuntos(); }catch(e){} }
+    // Solo si NUNCA ha cargado: una hoja vacía no es una carga pendiente.
+    if((!Array.isArray(globalData) || !globalData.length) && !window.urbisPuntosCargados){ try{ cargarPuntos(); }catch(e){} }
 
     // Reportes = todo lo mío EXCEPTO eventos (esos viven en "Mis eventos") Y
     // EXCEPTO lo georreferenciado en URBIS Pro City (esos viven en su propio
@@ -1158,7 +1168,8 @@
     if(filtro) _misEventosFiltro = filtro;
     const cont = document.getElementById('u52-miseventos-content');
     if(!cont) return;
-    if(!Array.isArray(globalData) || !globalData.length){ try{ cargarPuntos(); }catch(e){} }
+    // Solo si NUNCA ha cargado: una hoja vacía no es una carga pendiente.
+    if((!Array.isArray(globalData) || !globalData.length) && !window.urbisPuntosCargados){ try{ cargarPuntos(); }catch(e){} }
 
     const mios = (Array.isArray(globalData) ? globalData : []).filter(p => {
       try{

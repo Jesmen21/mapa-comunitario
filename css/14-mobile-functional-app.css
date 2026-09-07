@@ -562,3 +562,17 @@
 #urbis-mobile-app .u52-anon input{ width:20px; height:20px; flex:0 0 20px; margin-top:1px; accent-color:#1d6fb8; }
 #urbis-mobile-app .u52-anon b{ display:block; font-size:.85rem; color:#17324d; }
 #urbis-mobile-app .u52-anon small{ display:block; font-size:.74rem; color:#4a6480; line-height:1.4; margin-top:2px; }
+
+
+/* ── El aviso de «ese módulo no está en esta app» ────────────────────────
+   Lo enseña js/20 cuando, en un modo recortado (js/70-modo-app.js), algo
+   intenta abrir una pantalla que no es de ese APK. */
+#urbis-modo-aviso{
+  position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(12px); z-index:10020;
+  max-width:min(92vw,420px); padding:10px 16px; border-radius:999px;
+  background:rgba(7,21,15,.94); color:#fff; font-size:.86rem; font-weight:700;
+  box-shadow:0 10px 26px rgba(0,0,0,.28); opacity:0; pointer-events:none;
+  transition:opacity .18s, transform .18s;
+}
+#urbis-modo-aviso.ver{ opacity:1; transform:translateX(-50%) translateY(0); }

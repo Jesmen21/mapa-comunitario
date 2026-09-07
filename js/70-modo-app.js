@@ -5,9 +5,16 @@
    sitios ni tres copias del código: basta con que cada APK arranque en una
    dirección distinta y que la aplicación sepa en cuál está.
 
-     · /?app=ciudadano    → reportes, eventos, social, seguimiento
+     · /?app=ciudadano    → URBIS_CO: reportar, eventos, vitrina, social,
+                            minijuegos y seguimiento presidencial
      · /?app=educativo    → Pro City y nada más
      · /analisis-ia.html  → empresarial (ya vive en su propia página)
+
+   El APK de URBIS_CO (city.urbispro.reportes) entra por reportes.html, que
+   redirige a index.html?app=ciudadano. Ese es el modo ciudadano; no hay
+   otro. Y como el parámetro es la única memoria del modo, los enlaces que
+   salen de la página —el seguimiento— tienen que llevarlo, y la vuelta
+   también: si se pierde, la app instalada aparece completa.
 
    El modo se lee de la URL y NO se guarda. Es a propósito: los tres APK
    comparten el almacenamiento de Chrome —mismo dominio—, así que guardarlo
@@ -21,8 +28,24 @@
 (function () {
   'use strict';
 
+  /* `modulos` son las tarjetas del inicio que se quedan; `pantallas`, las
+     que se pueden abrir. Lo segundo es lo que convierte esconder en prohibir:
+     una tarjeta quitada no impide llegar por una dirección o por un botón
+     que quedó en otra pantalla. Si un modo no declara `pantallas`, abre
+     cualquiera —es el caso del educativo, que arranca dentro de Pro City y
+     no se pidió recortar—. URBIS Rush salió de la lista ciudadana el 7 de
+     septiembre por pedido del dueño; la Vitrina y los Minijuegos se quedan. */
   var MODOS = {
-    ciudadano: { modulos: ['map', 'events', 'social', 'games', 'sport', 'seguimiento'] },
+    ciudadano: {
+      modulos: ['map', 'events', 'vitrina', 'social', 'games', 'seguimiento'],
+      pantallas: ['login', 'auth-login', 'home',
+                  'map', 'timeline', 'alerts',            // reportar y mis reportes
+                  'events', 'mis-eventos', 'aurea',       // eventos
+                  'social', 'notifications', 'profile', 'avatar',
+                  'games'],
+      // Pro City entra por llamadas (data-u52-call), no por pantalla.
+      llamadasFuera: /^(procity-|pca-)/
+    },
     educativo: { modulos: ['procity'], abre: 'procity-open-map' }
   };
 
@@ -51,6 +74,28 @@
 
   var conf = MODO ? MODOS[MODO] : null;
 
+  /* Lo que la aplicación consulta antes de abrir algo. js/20 llama a estas
+     dos desde show() y desde el despachador de clics; sin modo, todo pasa. */
+  window.urbisPantallaPermitida = function (pantalla) {
+    if (!conf || !conf.pantallas) return true;
+    return conf.pantallas.indexOf(String(pantalla || '')) !== -1;
+  };
+  window.urbisLlamadaPermitida = function (llamada) {
+    if (!conf || !conf.llamadasFuera) return true;
+    return !conf.llamadasFuera.test(String(llamada || ''));
+  };
+
+  /* El parámetro es la única memoria del modo, así que viaja en los enlaces
+     que salen de la página. El seguimiento presidencial es el único hoy. */
+  function llevarModoALosEnlaces() {
+    if (!MODO) return;
+    document.querySelectorAll('.u52-module.seguimiento').forEach(function (b) {
+      if (b.getAttribute('data-u70-enlace')) return;
+      b.setAttribute('onclick', "location.href='seguimiento.html?app=" + MODO + "'");
+      b.setAttribute('data-u70-enlace', '1');
+    });
+  }
+
   /* Las tarjetas del inicio que no son de este modo se quitan del DOM, no se
      esconden con CSS: una tarjeta invisible sigue recibiendo el foco del
      teclado y sigue leyéndose en un lector de pantalla, y el estudiante
@@ -62,9 +107,14 @@
       var suyo = conf.modulos.some(function (m) { return b.classList.contains(m); });
       if (!suyo) { b.remove(); quitadas++; }
     });
-    // Las rejillas que quedaron vacías se van con ellas.
+    // Las rejillas que quedaron vacías se van con ellas, y el rótulo de
+    // sección que las anunciaba también: un «✦ Módulo UrbisProCity» sin nada
+    // debajo es una promesa rota en la primera pantalla.
     document.querySelectorAll('.u52-grid').forEach(function (g) {
-      if (!g.querySelector('.u52-module')) g.remove();
+      if (g.querySelector('.u52-module')) return;
+      var rotulo = g.previousElementSibling;
+      if (rotulo && rotulo.classList.contains('u52-k-section-label')) rotulo.remove();
+      g.remove();
     });
     return quitadas;
   }
@@ -259,6 +309,7 @@
   function revisar() {
     pendiente = false;
     podarInicio();
+    llevarModoALosEnlaces();
     ponerSalida();
     // Idempotente: lo ya vestido se salta. Se repite porque el perfil se
     // repinta y otros módulos le añaden filas después (Configuración).

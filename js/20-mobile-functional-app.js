@@ -1,5 +1,25 @@
 (function(){
   const app = document.getElementById('urbis-mobile-app');
+
+  /* ── El modo de aplicación ─────────────────────────────────────────────
+     Qué se puede abrir lo decide js/70-modo-app.js según el parámetro
+     `?app=` con el que arrancó el APK. Acá solo se pregunta antes de abrir
+     una pantalla o de atender una llamada; sin modo, todo pasa. */
+  function pantallaPermitida(p){
+    return (typeof window.urbisPantallaPermitida === 'function') ? window.urbisPantallaPermitida(p) : true;
+  }
+  function llamadaPermitida(c){
+    return (typeof window.urbisLlamadaPermitida === 'function') ? window.urbisLlamadaPermitida(c) : true;
+  }
+  function avisoModo(texto){
+    let n = document.getElementById('urbis-modo-aviso');
+    if (!n) {
+      n = document.createElement('div'); n.id = 'urbis-modo-aviso'; n.setAttribute('role', 'status');
+      document.body.appendChild(n);
+    }
+    n.textContent = texto; n.classList.add('ver');
+    clearTimeout(n._t); n._t = setTimeout(() => n.classList.remove('ver'), 2600);
+  }
   if(!app) return;
 
   const STORAGE_KEY = 'urbis_mobile_runner_history_v56';
@@ -1342,6 +1362,9 @@
     }catch(e){}
   }
   function show(screen, push=true){
+    // En un modo recortado, una pantalla fuera de la lista no se abre: ni
+    // desde un botón que haya quedado visible, ni desde una dirección.
+    if(!pantallaPermitida(screen)){ avisoModo('Ese módulo no está en esta app.'); return false; }
     if(screen !== 'map') { hideCommunityChooser(false); hideQuickReportPanel(); }
     screens().forEach(s => s.classList.toggle('active', s.dataset.u52Screen === screen));
     app.querySelectorAll('.u52-bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.u52Go === screen));
@@ -5808,6 +5831,11 @@
     const call=ev.target.closest('[data-u52-call]');
     if(call){
       const c=call.dataset.u52Call;
+      if(!llamadaPermitida(c)){
+        ev.preventDefault(); ev.stopPropagation();
+        avisoModo('Ese módulo no está en esta app.');
+        return;
+      }
       const modulo = call.closest('.u52-module');
       if(modulo){
         // Mismo "pop" cute + sonidito que los módulos con data-u52-go (ej. Pro
@@ -5942,19 +5970,29 @@
     var pedida = pantallaPedidaEnLaDireccion();
     if(!pedida) return true;                                  // nada que hacer
     if(!screens().some(function(s){ return s.dataset.u52Screen === pedida; })) return true;
+    if(!pantallaPermitida(pedida)) return true;               // fuera de esta app: se ignora
     var puerta = app.querySelector('[data-u52-screen="login"]');
     if(puerta && puerta.classList.contains('active')) return false;   // todavía no
     show(pedida);
     return true;
   }
   window.urbisIrAPantalla = function(pantalla){
-    try{ show(String(pantalla || 'home')); return true; }catch(e){ return false; }
+    try{ return show(String(pantalla || 'home')) !== false; }catch(e){ return false; }
   };
   window.addEventListener('hashchange', abrirPantallaPedida);
   (function esperarLaPuerta(){
     var intentos = 0;
     var t = setInterval(function(){
-      if(abrirPantallaPedida() || ++intentos > 20) clearInterval(t);
+      /* El contador avanza SIEMPRE, pase lo que pase adentro. Con `if(abrir()
+         || ++intentos > 20)`, una excepción dentro de show() saltaba el
+         incremento y el reintento quedaba girando cada 400 ms para siempre:
+         cada vuelta recargaba los puntos y reconstruía las gráficas, y el
+         hilo se quedó bloqueado más de dos minutos. */
+      intentos++;
+      var listo = false;
+      try { listo = abrirPantallaPedida(); }
+      catch (e) { console.warn('[urbis] la pantalla pedida por la dirección no se pudo abrir:', e && e.message); listo = true; }
+      if(listo || intentos > 20) clearInterval(t);
     }, 400);
   })();
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>URBIS_CO</title>
 <meta name="theme-color" content="#1E7A4B">
-<link rel="manifest" href="manifest-reportes.json?v=784-la-app-es-la-web">
+<link rel="manifest" href="manifest-reportes.json?v=785-urbis-co-es-el-modo-ciudadano">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/reportes/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icons/reportes/icon-180.png">
 <!--
@@ -23,11 +23,16 @@
   Se conservan el manifiesto y el icono amarillo para que PWABuilder pueda
   volver a empaquetar desde esta misma dirección.
 -->
-<script>location.replace('index.html' + location.search + location.hash);</script>
+<script>
+  // La entrada del APK lleva el modo: index.html?app=ciudadano. Con él,
+  // js/70-modo-app.js quita del inicio y bloquea lo que no es de esta app.
+  var q = location.search ? location.search + '&app=ciudadano' : '?app=ciudadano';
+  location.replace('index.html' + q + location.hash);
+</script>
 <!-- El meta refresh va SOLO sin JavaScript. Con los dos activos son dos
      navegaciones compitiendo por la misma página, y el navegador aborta la
      primera a mitad de camino. -->
-<noscript><meta http-equiv="refresh" content="0; url=index.html"></noscript>
+<noscript><meta http-equiv="refresh" content="0; url=index.html?app=ciudadano"></noscript>
 <style>html,body{margin:0;height:100%;background:#FABD0A}</style>
 </head>
 <body></body>

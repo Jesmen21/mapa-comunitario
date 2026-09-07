@@ -315,7 +315,13 @@
 
   $('sp-back').addEventListener('click', function () {
     var p = padreDe(ruta);
-    if (p) ir(p); else location.href = 'index.html';
+    if (p) { ir(p); return; }
+    /* De vuelta a la aplicación, con el modo con el que se entró: el APK de
+       URBIS_CO llega acá como seguimiento.html?app=ciudadano, y si la vuelta
+       fuera a index.html a secas, la app instalada aparecería completa. */
+    var modo = '';
+    try { modo = new URLSearchParams(location.search).get('app') || ''; } catch (e) {}
+    location.href = 'index.html' + (/^[a-z_]+$/.test(modo) ? '?app=' + modo : '');
   });
 
   // ══ VISTAS ════════════════════════════════════════════════════════════════

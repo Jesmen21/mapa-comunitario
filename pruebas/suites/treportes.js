@@ -37,7 +37,8 @@ const RAIZ = E.RAIZ;
   const man = JSON.parse(fs.readFileSync(path.join(RAIZ, 'manifest-reportes.json'), 'utf8'));
   chk(man.name === man.short_name && man.name === 'URBIS_CO',
       'el manifiesto y el nombre corto dicen lo mismo: "' + man.name + '" / "' + man.short_name + '"');
-  chk(man.start_url === '/index.html', 'arranca en la aplicación de verdad (' + man.start_url + ')');
+  chk(man.start_url === '/index.html?app=ciudadano',
+      'arranca en la aplicación de verdad y en modo ciudadano (' + man.start_url + ')');
   chk(man.scope === '/', 'y su alcance cubre todo el sitio (' + man.scope + ')');
   chk(man.display === 'standalone', 'se abre sin barra de navegador');
   chk(man.background_color === '#FABD0A',
@@ -76,9 +77,14 @@ const RAIZ = E.RAIZ;
     await ctx.route(/basemaps\.cartocdn\.com|arcgisonline\.com|maptiles\.arcgis\.com|mt\d\.google\.com\/vt/,
       r => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from(
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') }));
-    await ctx.route(/script\.google\.com/, r => r.fulfill({ status: 200,
-      contentType: 'application/json', body: '{"ok":true,"data":[]}' }));
+    await ctx.route(/script\.google\.com/, r => {
+      lecturas++;
+      r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"data":[]}' });
+    });
   };
+  /* La hoja simulada vuelve VACÍA a propósito: es el caso de una ciudad
+     recién estrenada, y era el que hacía girar la app sin fin. */
+  let lecturas = 0;
   const movil = { serviceWorkers: 'block', timezoneId: 'America/Bogota', locale: 'es-CO',
                   viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true };
 
@@ -102,8 +108,13 @@ const RAIZ = E.RAIZ;
      destino. `goto` solo espera la primera, así que después se espera a la
      dirección final; si no, la prueba mira una página que ya no está. */
   const irPorLaEntrada = async (sufijo) => {
+    /* Por about:blank primero: si la pestaña ya estaba en index.html, la
+       espera por la dirección final se daría por satisfecha con la página
+       ANTERIOR y la prueba miraría un documento que estaba por destruirse. */
+    await pg.goto('about:blank');
     await pg.goto(E.ESTATICO + '/reportes.html' + sufijo, { waitUntil: 'commit' }).catch(() => {});
     await pg.waitForURL(/\/index\.html/, { timeout: 20000 }).catch(() => {});
+    await E.esperarLaApp(pg, 30000).catch(() => {});
   };
   await irPorLaEntrada('?x=1#/pantalla/events');
   await pg.waitForTimeout(4500);
@@ -121,12 +132,29 @@ const RAIZ = E.RAIZ;
     };
   });
   chk(/\/index\.html/.test(llegada.url), 'la dirección grabada en el APK termina en index.html (' + llegada.url + ')');
-  chk(/\?x=1/.test(llegada.url) && /#\/pantalla\/events/.test(llegada.url),
-      'y conserva lo que traía la dirección: consulta y pantalla pedida');
+  chk(/\?x=1/.test(llegada.url) && /app=ciudadano/.test(llegada.url) && /#\/pantalla\/events/.test(llegada.url),
+      'y conserva lo que traía la dirección, más el modo: ' + llegada.url.replace(/^.*index\.html/, 'index.html'));
   chk(llegada.barraDeLaApp, 'lo que se abre es la aplicación de verdad, con su barra de abajo');
   chk(!llegada.rastroDeCarcasa, 'y no queda rastro de la carcasa ligera');
   chk(llegada.pantalla === 'events',
       'la pantalla pedida por la dirección se abre directo (' + llegada.pantalla + ')');
+
+  /* ── Una hoja vacía no puede poner la app a girar ──────────────────
+     Eventos recargaba los puntos al ver globalData vacío, y la carga, al
+     terminar, volvía a pintar Eventos: cargar → pintar → «vacío, cargo» →
+     cargar… Tres gráficas reconstruidas por vuelta; el hilo quedó bloqueado
+     más de dos minutos. Se mide en frío: cuántas lecturas de la hoja hay en
+     cinco segundos con Eventos abierto, y si el hilo sigue contestando. */
+  const antesLecturas = lecturas;
+  const t0 = Date.now();
+  const respondio = await Promise.race([
+    pg.evaluate(() => new Promise(r => setTimeout(() => r(true), 5000))),
+    new Promise(r => setTimeout(() => r(false), 9000))
+  ]);
+  const nuevas = lecturas - antesLecturas;
+  chk(respondio === true, 'con Eventos abierto y la hoja vacía, el hilo sigue respondiendo (' +
+      (Date.now() - t0) + ' ms para una espera de 5 s)');
+  chk(nuevas <= 3, 'y no se encadenan recargas: ' + nuevas + ' lectura(s) de la hoja en cinco segundos');
 
   // Sin nada en la dirección: la app tal cual, como en la web.
   await irPorLaEntrada('');
@@ -139,17 +167,64 @@ const RAIZ = E.RAIZ;
   chk(normal.cuantas === 1 && /^(home|login)$/.test(normal.pantalla),
       'sin pantalla pedida abre donde abre la web: portada o entrada (' + normal.pantalla + ')');
 
-  // Una pantalla que no existe no puede dejar la app en blanco.
-  await pg.goto(E.ESTATICO + '/index.html#/pantalla/no-existe', { waitUntil: 'domcontentloaded' });
-  await pg.waitForTimeout(3000);
-  const inventada = await pg.evaluate(() => {
-    const v = document.querySelector('.u52-screen.active');
-    return { vista: v ? v.getAttribute('data-u52-screen') : '(ninguna)',
-             cuantas: document.querySelectorAll('.u52-screen.active').length };
+  /* ── El recorte de URBIS_CO: el modo ciudadano ─────────────────────
+     La misma app, con seis módulos. Lo hace js/70-modo-app.js a partir del
+     parámetro ?app=ciudadano con el que entra el APK. Se comprueba lo que
+     QUEDA en la portada y lo que se PUEDE abrir, que son dos cosas:
+     esconder sin bloquear sería cosmética. */
+  console.log('\n── El recorte de URBIS_CO (modo ciudadano) ─────────');
+  const modo = await pg.evaluate(() => {
+    const card = cls => document.querySelector('.u52-module.' + cls);
+    const visible = el => !!el && getComputedStyle(el).display !== 'none';
+    const o = { marca: document.documentElement.getAttribute('data-urbis-modo'),
+                quedan: {}, fuera: {}, rotulos: [...document.querySelectorAll('.u52-k-section-label')].map(x => x.textContent.trim()) };
+    ['map', 'events', 'vitrina', 'social', 'games', 'seguimiento'].forEach(c => { o.quedan[c] = visible(card(c)); });
+    // Quitadas del DOM, no escondidas: js/70 las poda para que tampoco
+    // reciban foco ni las lea un lector de pantalla.
+    ['sport', 'procity', 'aia', 'mascotas', 'mobility'].forEach(c => { o.fuera[c] = !card(c); });
+    o.enlaceSeguimiento = (card('seguimiento') || {}).getAttribute ? card('seguimiento').getAttribute('onclick') : '';
+    // Y la entrada, bloqueada.
+    const activa = () => document.querySelector('.u52-screen.active').getAttribute('data-u52-screen');
+    o.antes = activa();
+    o.rushDevuelve = window.urbisIrAPantalla('sport');
+    o.rushPantalla = activa();
+    o.avisoTexto = (document.getElementById('urbis-modo-aviso') || {}).textContent || '';
+    o.juegosDevuelve = window.urbisIrAPantalla('games');
+    o.juegosPantalla = activa();
+    window.urbisIrAPantalla('home');
+    return o;
   });
-  chk(inventada.cuantas === 1 && inventada.vista !== '(ninguna)',
-      'una pantalla inventada en la dirección se ignora, no deja la app en blanco (' + inventada.vista + ')');
-  await ctx.close();
+  chk(modo.marca === 'ciudadano', 'la app sabe que está en modo ciudadano (' + modo.marca + ')');
+  const quedan = Object.keys(modo.quedan).filter(k => modo.quedan[k]);
+  chk(quedan.length === 6, 'en la portada quedan los seis módulos: ' + quedan.join(', '));
+  const sobran = Object.keys(modo.fuera).filter(k => !modo.fuera[k]);
+  chk(sobran.length === 0, 'y el resto se quitó del inicio' +
+      (sobran.length ? ' — siguen: ' + sobran.join(', ') : ': Rush, Pro City, Empresas, Mascotas, Movilidad'));
+  chk(!modo.rotulos.some(r => /ProCity|desarrollo/i.test(r)),
+      'sin rótulos de secciones vacías (' + modo.rotulos.join(' · ') + ')');
+  chk(/seguimiento\.html\?app=ciudadano/.test(modo.enlaceSeguimiento || ''),
+      'la tarjeta de Seguimiento lleva el modo en el enlace, para no perderlo al salir');
+  chk(modo.rushDevuelve === false && modo.rushPantalla === modo.antes,
+      'pedir URBIS Rush no abre nada: se queda en ' + modo.rushPantalla);
+  chk(/no está en esta app/i.test(modo.avisoTexto), 'y lo dice: "' + modo.avisoTexto + '"');
+  chk(modo.juegosDevuelve === true && modo.juegosPantalla === 'games',
+      'pero los Minijuegos sí abren (' + modo.juegosPantalla + ')');
+
+  // Por dirección tampoco, y el modo sigue en la dirección.
+  await pg.goto(E.ESTATICO + '/index.html?app=ciudadano#/pantalla/sport', { waitUntil: 'domcontentloaded' });
+  await E.esperarLaApp(pg, 30000).catch(() => {});
+  await pg.waitForTimeout(2500);
+  const porDireccion = await pg.evaluate(() =>
+    (document.querySelector('.u52-screen.active') || { getAttribute: () => '' }).getAttribute('data-u52-screen'));
+  chk(porDireccion !== 'sport', 'ni por dirección: #/pantalla/sport se queda en ' + porDireccion);
+
+  // Y la vuelta desde el seguimiento conserva el modo.
+  await pg.goto(E.ESTATICO + '/seguimiento.html?app=ciudadano', { waitUntil: 'load' });
+  await pg.waitForTimeout(1200);
+  await pg.evaluate(() => document.getElementById('sp-back').click());
+  await pg.waitForURL(/index\.html/, { timeout: 15000 }).catch(() => {});
+  const vuelta = await pg.evaluate(() => location.search);
+  chk(/app=ciudadano/.test(vuelta), 'al volver del seguimiento el modo sigue en la dirección (' + vuelta + ')');
 
   // Sin sesión: el atajo NO salta la pantalla de entrada.
   const ctx2 = await b.newContext(movil);
@@ -163,6 +238,16 @@ const RAIZ = E.RAIZ;
   });
   chk(sinSesion === 'login',
       'sin sesión, el atajo NO salta la pantalla de entrada (se quedó en ' + sinSesion + ')');
+  /* La web no se recorta. Esta pestaña entró por index.html sin la marca —
+     como entra cualquiera desde el navegador— y tiene que traer todo. */
+  const web = await pg2.evaluate(() => ({
+    marca: document.documentElement.getAttribute('data-urbis-modo'),
+    rushExiste: !!document.querySelector('.u52-module.sport'),
+    procityExiste: !!document.querySelector('.u52-module.procity'),
+    abreRush: typeof window.urbisPantallaPermitida === 'function' ? window.urbisPantallaPermitida('sport') : null
+  }));
+  chk(!web.marca && web.rushExiste && web.procityExiste && web.abreRush === true,
+      'la web, entrando por index.html sin parámetro, sigue completa: Rush y Pro City en su sitio');
   await ctx2.close();
 
   await b.close();

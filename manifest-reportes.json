@@ -4,8 +4,8 @@
   "description": "URBIS para Cúcuta: reporta lo que pasa en tu ciudad, los eventos del barrio, la comunidad y qué hace el Gobierno.",
   "lang": "es-CO",
   "dir": "ltr",
-  "id": "/urbis-co",
-  "start_url": "/index.html",
+  "id": "/?app=ciudadano",
+  "start_url": "/index.html?app=ciudadano",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -64,7 +64,7 @@
     {
       "name": "Reportar algo",
       "short_name": "Reportar",
-      "url": "/index.html",
+      "url": "/index.html?app=ciudadano",
       "icons": [
         {
           "src": "assets/icons/reportes/icon-192.png",
@@ -75,7 +75,7 @@
     {
       "name": "Qué hace el Gobierno",
       "short_name": "Gobierno",
-      "url": "/seguimiento.html",
+      "url": "/seguimiento.html?app=ciudadano",
       "icons": [
         {
           "src": "assets/icons/reportes/icon-192.png",

@@ -324,7 +324,9 @@
   window.urbisRenderEventosMovil = function(){
       const cont = document.getElementById('u52-eventos-content');
       if(!cont) return;
-      if(!Array.isArray(globalData) || !globalData.length){ try{ if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos(); }catch(e){} }
+      // Solo si NUNCA ha cargado. La carga, al terminar, vuelve a llamar acá:
+      // sin esta condición, una hoja sin reportes era un ciclo sin fin.
+      if((!Array.isArray(globalData) || !globalData.length) && !window.urbisPuntosCargados){ try{ if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos(); }catch(e){} }
       const adminHTML = _seccionAdminEventos();
       const eventos = datosEventosUrbis().filter(p => !obtenerMetaTemporal(p).archivado).sort((a,b) => {
           const ma = obtenerMetaTemporal(a).creado.getTime(), mb = obtenerMetaTemporal(b).creado.getTime();
