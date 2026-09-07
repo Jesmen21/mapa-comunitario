@@ -424,6 +424,45 @@ console.log('\n  -- la versión --');
                           : (anterior || '(sin anterior)') + ' → ' + decl);
     }
   } catch (e) { /* sin git, no se puede comparar: no es motivo para fallar */ }
+
+  /* Y que la versión no CHOQUE con la que ya está publicada.
+
+     Pasó hoy: dos sesiones trabajando a la vez llamaron v788 a sus tandas.
+     Ninguna hizo nada mal —cada una miró el último commit de SU rama y sumó
+     uno— y el choque solo se vio al fusionar, con siete archivos en
+     conflicto por una sola cosa: el número.
+
+     La otra sesión escribe en `main` varias veces al día, así que basta con
+     mirar la referencia de `origin/main` que ya está en el disco. No se hace
+     `git fetch` acá a propósito: una comprobación estática que sale a la red
+     se cuelga cuando no hay señal y deja de correrse. Si la referencia está
+     vieja, esto no ve el choque —lo verá el `git fetch` de antes de subir—,
+     pero cuando sí lo ve, lo dice antes de que cueste una fusión.
+
+     El choque es el mismo número con OTRO nombre. Que coincidan número y
+     nombre no es un choque: es que esta tanda ya está publicada, que es el
+     estado normal justo después de subir. Y un número menor que el publicado
+     tampoco se deja pasar: sería salir con una versión que los teléfonos ya
+     descartaron por vieja. */
+  try {
+    const cp = require('child_process');
+    const enGit = (orden) => cp.execSync(orden, { cwd: RAIZ, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString().trim();
+    const numeroDe = (t) => { const m = String(t || '').match(/^(\d+)/); return m ? parseInt(m[1], 10) : null; };
+    const publicada = (enGit('git show origin/main:service-worker.js').match(/urbis-v([\w-]+)/) || [])[1];
+    const nMio = numeroDe(distintos[0]);
+    const nSuyo = numeroDe(publicada);
+    if (nMio != null && nSuyo != null) {
+      const choca = (nMio === nSuyo && publicada !== distintos[0]) || nMio < nSuyo;
+      comprobar('y no choca con la versión ya publicada en origin/main',
+        !choca,
+        !choca
+          ? (nMio === nSuyo ? 'esta tanda ya está publicada · ' + publicada
+                            : 'publicada ' + publicada + ' · esta ' + distintos[0])
+          : 'origin/main ya va en ' + publicada + ' y esta es ' + distintos[0] +
+            ' — sube por encima de las dos antes de fusionar');
+    }
+  } catch (e) { /* sin origin/main a mano (clon nuevo, sin remoto): no aplica */ }
 }
 
 // ── 8. dos cosas distintas con el mismo nombre en `window` ───────────────

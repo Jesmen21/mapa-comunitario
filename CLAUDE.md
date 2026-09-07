@@ -20,6 +20,29 @@ de una tanda pueden haber entrado dos versiones más.
 
 Nunca `--force` sobre `main`. Si el empujón se rechaza, se fusiona.
 
+### Cuando las dos tandas se llaman igual
+
+Pasó el 7 de septiembre de 2026: las dos sesiones llamaron v788 a lo suyo.
+Ninguna hizo nada mal —cada una miró el último commit de su rama y sumó uno—
+y el choque salió al fusionar, con los siete archivos de versión en conflicto
+por una sola cosa: el número.
+
+Se resuelve **subiendo por encima de las dos**, nunca bajando la propia: para
+la caché de un teléfono, una versión que no sube es una versión que no
+existe, y quien ya tenga la del otro no se enteraría del cambio.
+
+```bash
+git diff <base> origin/main -- <los siete>   # comprobar que solo cambió el token
+git checkout --ours -- <los siete> && git add <los siete>
+sed -i 's/788-lo-mio/789-lo-mio/g' <los siete>
+```
+
+`revisar.js` lo avisa antes, comparando con la referencia de `origin/main`
+que ya está en el disco: mismo número con otro nombre, o número menor que el
+publicado. No hace `git fetch` —una comprobación estática que sale a la red
+se cuelga sin señal—, así que ve el choque solo si se trajo lo de arriba
+antes. Razón de más para el `git fetch` del principio.
+
 ## Las ramas
 
 Se desarrolla en `main-r3g781`. Al terminar, `merge --ff-only` a `main` y se
