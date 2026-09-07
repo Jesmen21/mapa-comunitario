@@ -892,6 +892,64 @@
     }
   }
 
+  /* ── El reparto de lo que devuelve la hoja ────────────────────────────
+     Una sola tabla trae los reportes Y las filas que no son reportes:
+     comentarios, avatares, la vitrina, las peticiones al administrador, las
+     ubicaciones, las relaciones, los puntajes. Cada cosa a su cajón, y lo
+     que queda —los reportes— es lo que se pinta.
+
+     Esto vivía dentro de `cargarPuntos` y llevaba tiempo sin ejecutarse: la
+     portada (js/13) SUSTITUYE `cargarPuntos` por una copia suya para poder
+     actualizar sus métricas, y esa copia se quedó sin el reparto. El efecto
+     no se veía en el mapa —los reportes salían igual— sino en lo que se
+     alimenta de los cajones: la vitrina y los avatares se leían siempre
+     vacíos, y el buzón de peticiones del panel de administración también,
+     que es justo el fallo que este archivo ya decía haber arreglado.
+
+     Por eso ahora es una función con nombre, y la copia de la portada llama
+     a la de acá en vez de repetirla. */
+  function repartirFilasMeta(raw) {
+    // Filas especiales (no son reportes): se identifican por el TEXTO del tipo
+    // (no por el emoji, que se corrompe a mojibake al guardarse en el Sheet).
+    const tipoTxt = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('logo urbis')!==-1 || t.indexOf('social rush')!==-1; };
+    window.urbisRushSocial  = raw.filter(p => tipoTxt(p).indexOf('social rush') !== -1);
+    window.urbisComentarios = raw.filter(p => tipoTxt(p).indexOf('comentario') !== -1);
+    // Las peticiones al administrador salen de globalData (no son reportes y
+    // no se pintan), así que necesitan su propio cajón: si no, el buzón del
+    // panel de administración se vería siempre vacío.
+    window.urbisPeticiones  = raw.filter(p => tipoTxt(p).indexOf('peticion') !== -1);
+    // La vitrina se aparta por la razón CONTRARIA a las demás filas meta: sí
+    // se pinta, pero la pinta su propio módulo (js/13i). Si pasara por
+    // pintarPuntos, el motor de vigencia trataría el negocio como un reporte
+    // y lo archivaría a los días.
+    window.urbisVitrina      = raw.filter(p => tipoTxt(p).indexOf('emprendimiento') !== -1);
+    window.urbisVitrinaItems = raw.filter(p => tipoTxt(p).indexOf('portafolio') !== -1);
+    // "logo urbis" completo, no "logo" a secas: un futuro "Diálogo
+    // ciudadano" contiene esas cuatro letras y se colaría aquí.
+    window.urbisVitrinaLogos = raw.filter(p => tipoTxt(p).indexOf('logo urbis') !== -1);
+    window.urbisUbicaciones  = raw.filter(p => tipoTxt(p).indexOf('ubicacion') !== -1);
+    window.urbisRelaciones   = raw.filter(p => tipoTxt(p).indexOf('relacion') !== -1);
+    window.urbisPuntajes     = raw.filter(p => tipoTxt(p).indexOf('puntaje') !== -1);
+    /* Las filas de permisos van a `urbisPermisosFilas` y NO a
+       `urbisPermisos`: ese nombre lo ocupa una FUNCIÓN —js/13h— que
+       devuelve los permisos de quien está usando la aplicación, y seis
+       sitios la llaman. Asignarle un array la borraba: el reparto llevaba
+       años sin ejecutarse (ver `repartirFilasMeta`) y por eso la colisión
+       no se había notado. */
+    window.urbisPermisosFilas = raw.filter(p => tipoTxt(p).indexOf('permiso') !== -1);
+    // Avatares: normalizamos a { lng:usuario, descripcion:avatarId } y toleramos
+    // las filas CORRIDAS por el bug de SheetDB (tipo vacío, lat="avatar_x",
+    // descripcion=usuario, fecha=avatarId). Así el avatar SIEMPRE se lee.
+    window.urbisAvatares = raw.map(p => {
+      if(!p) return null;
+      if(tipoTxt(p).indexOf('avatar') !== -1) return { lng:String(p.lng||''), descripcion:String(p.descripcion||'') };
+      if(String(p.lat||'').toLowerCase().indexOf('avatar') === 0) return { lng:String(p.descripcion||''), descripcion:String(p.fecha||'') };
+      return null;
+    }).filter(Boolean);
+    return raw.filter(p => p && !esMeta(p));
+  }
+
   function cargarPuntos() {
     // Al iniciar sesión solo se llena window.userRole; sincronizamos el scope
     // compartido para que el mapa no quede vacío.
@@ -900,45 +958,16 @@
     }
     if (userRole === '' && !window.userRole) return;
     Object.values(capas).forEach(l => l.clearLayers());
-    window.urbisDBRead()
+    /* Se DEVUELVE la cadena: la portada (js/13) encadena sus métricas
+       después, en vez de repetir toda esta carga por su cuenta. */
+    return window.urbisDBRead()
     .then(data => {
       const raw = Array.isArray(data) ? data : [];
       // Defensa: algunas conexiones de SheetDB devuelven lat/lng con COMA decimal
       // ("7,8828" en vez de "7.8828"), lo que rompería parseFloat y descolocaría el
       // mapa. Normalizamos coma→punto en sitio (inofensivo si ya viene con punto).
       raw.forEach(p => { if(p){ if(p.lat!=null) p.lat = String(p.lat).replace(',', '.'); if(p.lng!=null) p.lng = String(p.lng).replace(',', '.'); } });
-      // Filas especiales (no son reportes): se identifican por el TEXTO del tipo
-      // (no por el emoji, que se corrompe a mojibake al guardarse en el Sheet).
-      const tipoTxt = p => String((p && p.tipo) || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const esMeta = p => { const t = tipoTxt(p); return t.indexOf('comentario')!==-1 || t.indexOf('ubicacion')!==-1 || t.indexOf('relacion')!==-1 || t.indexOf('puntaje')!==-1 || t.indexOf('permiso')!==-1 || t.indexOf('avatar')!==-1 || t.indexOf('chat')!==-1 || t.indexOf('peticion')!==-1 || t.indexOf('emprendimiento')!==-1 || t.indexOf('portafolio')!==-1 || t.indexOf('logo urbis')!==-1 || t.indexOf('social rush')!==-1; };
-      window.urbisRushSocial  = raw.filter(p => tipoTxt(p).indexOf('social rush') !== -1);
-      window.urbisComentarios = raw.filter(p => tipoTxt(p).indexOf('comentario') !== -1);
-      // Las peticiones al administrador salen de globalData (no son reportes y
-      // no se pintan), así que necesitan su propio cajón: si no, el buzón del
-      // panel de administración se vería siempre vacío.
-      window.urbisPeticiones  = raw.filter(p => tipoTxt(p).indexOf('peticion') !== -1);
-      // La vitrina se aparta por la razón CONTRARIA a las demás filas meta: sí
-      // se pinta, pero la pinta su propio módulo (js/13i). Si pasara por
-      // pintarPuntos, el motor de vigencia trataría el negocio como un reporte
-      // y lo archivaría a los días.
-      window.urbisVitrina      = raw.filter(p => tipoTxt(p).indexOf('emprendimiento') !== -1);
-      window.urbisVitrinaItems = raw.filter(p => tipoTxt(p).indexOf('portafolio') !== -1);
-      // "logo urbis" completo, no "logo" a secas: un futuro "Diálogo
-      // ciudadano" contiene esas cuatro letras y se colaría aquí.
-      window.urbisVitrinaLogos = raw.filter(p => tipoTxt(p).indexOf('logo urbis') !== -1);
-      window.urbisUbicaciones  = raw.filter(p => tipoTxt(p).indexOf('ubicacion') !== -1);
-      window.urbisRelaciones   = raw.filter(p => tipoTxt(p).indexOf('relacion') !== -1);
-      window.urbisPuntajes     = raw.filter(p => tipoTxt(p).indexOf('puntaje') !== -1);
-      window.urbisPermisos     = raw.filter(p => tipoTxt(p).indexOf('permiso') !== -1);
-      // Avatares: normalizamos a { lng:usuario, descripcion:avatarId } y toleramos
-      // las filas CORRIDAS por el bug de SheetDB (tipo vacío, lat="avatar_x",
-      // descripcion=usuario, fecha=avatarId). Así el avatar SIEMPRE se lee.
-      window.urbisAvatares = raw.map(p => {
-        if(!p) return null;
-        if(tipoTxt(p).indexOf('avatar') !== -1) return { lng:String(p.lng||''), descripcion:String(p.descripcion||'') };
-        if(String(p.lat||'').toLowerCase().indexOf('avatar') === 0) return { lng:String(p.descripcion||''), descripcion:String(p.fecha||'') };
-        return null;
-      }).filter(Boolean);
+      const soloReportes = repartirFilasMeta(raw);
       /* Una fila rota no puede dejar el mapa vacío. Esto era un `map` sin red:
          bastaba UNA fila nula o sin descripción —la hoja las produce cuando
          una escritura se corta a la mitad— para que reventara la línea de
@@ -950,7 +979,7 @@
          abierta. Ahora la fila que no se puede leer se salta y las demás
          entran. */
       let rotas = 0;
-      globalData = raw.filter(p => p && !esMeta(p)).map(p => {
+      globalData = soloReportes.map(p => {
           try {
             if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
             return p;
@@ -981,7 +1010,7 @@
       manejarError('cargar puntos', error);
     });
   }
-  window.urbisCargarPuntos = function(){ try{ cargarPuntos(); }catch(e){} };
+  window.urbisCargarPuntos = function(){ try{ return cargarPuntos(); }catch(e){} };
 
   // ══════════════════════════════════════════════════════════════════════════
   // MIS REPORTES / LÍNEA DE TIEMPO (móvil) — vive en scope compartido para usar

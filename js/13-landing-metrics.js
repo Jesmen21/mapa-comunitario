@@ -104,46 +104,29 @@
   };
   window.mostrarCajaAdmin = mostrarCajaAdmin;
 
+  /* La portada necesita sus métricas después de cada carga, y para eso este
+     archivo SUSTITUÍA `cargarPuntos` por una copia entera de la carga. La
+     copia envejeció: se quedó sin el reparto de las filas que no son
+     reportes, así que con ella al mando la vitrina, los avatares y el buzón
+     de peticiones del administrador se leían siempre vacíos —cada uno mira
+     su cajón y nadie los llenaba—, y `globalData` cargaba además con filas
+     que no se pintan.
+
+     Ahora no hay copia: se llama a la de siempre y se encadenan las métricas
+     cuando termina. Una carga, un sitio donde arreglarla. */
   const __urbisCargarPuntosOriginal = cargarPuntos;
   cargarPuntos = function() {
       if (userRole === '') {
           cargarMetricasPortadaInicial();
           return;
       }
-      Object.values(capas).forEach(l => l.clearLayers());
-      (window.urbisDBRead ? window.urbisDBRead() : Promise.resolve([]))
-      .then(data => {
-        /* La misma red que en js/12, y por la misma razón: UNA fila nula o
-           ilegible —las que deja una escritura cortada a la mitad— reventaba
-           este `map`, el `catch` del final se lo tragaba y `globalData` se
-           quedaba vacío. En pantalla eso no se ve como un error: se ve como
-           una ciudad sin un solo reporte.
-
-           Hay dos copias de esta carga —esta sustituye a la de js/12 para
-           poder actualizar las métricas de la portada— y la guarda tiene que
-           estar en las dos mientras sigan siendo dos. */
-        let rotasPortada = 0;
-        globalData = Array.isArray(data) ? data.filter(p => p).map(p => {
-            try {
-              if(p.descripcion) p.descripcion = asegurarCamposTemporales(p.descripcion, p.tipo, String(p.descripcion).split(' | ')[0], parseFechaReporte(p));
-              return p;
-            } catch(e){ rotasPortada++; return null; }
-        }).filter(Boolean) : [];
-        if(rotasPortada) console.warn('[urbis] ' + rotasPortada + ' fila(s) ilegibles en la hoja: se saltaron y el resto del mapa se pintó.');
-        actualizarMetricasPortada(globalData);
-        return archivarReportesExpirados(globalData).then(() => globalData);
-      })
-      .then(() => {
-        const visibles = datosVisiblesActuales();
-        actualizarMetricasPortada(globalData);
-        pintarPuntos(visibles);
-        actualizarGraficos(visibles);
-        actualizarPanelAdmin();
-        if(typeof renderEventosUrbis === 'function') renderEventosUrbis();
-        analizarZonasCiudadanas(visibles, false);
-        renderTimeline();
-      })
-      .catch(error => manejarError("cargar puntos", error));
+      const hecho = __urbisCargarPuntosOriginal();
+      const metricas = () => { try { actualizarMetricasPortada(globalData); } catch (e) {} };
+      // `then` si devolvió promesa —lo hace— y por si acaso también sin ella:
+      // una portada sin métricas es un cero grande en la primera pantalla.
+      if (hecho && typeof hecho.then === 'function') return hecho.then(metricas, metricas);
+      metricas();
+      return hecho;
   };
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v772-lo-que-escribe-una-persona-no-es-codigo';
+const URBIS_CACHE = 'urbis-v773-una-sola-carga-de-puntos';
 const URBIS_ASSETS = [
   './',
   './index.html',
