@@ -34,9 +34,18 @@ const ahora = new Date().toISOString();
    acento a propósito. */
 const META = [
   { tipo: '💬 Comentario', lat: '7.8940', lng: '-72.5079', descripcion: 'c | hola vecino |', fecha: ahora },
-  { tipo: '🧑 Avatar', lat: '7.8941', lng: 'quiensea', descripcion: 'skin7', fecha: ahora },
+  /* El avatar va con el usuario en `lng` y la figura en la descripción, que
+     es como lo guarda la aplicación. La figura tiene que llamarse
+     `avatar_algo`: los dos sitios que la leen validan el nombre antes de
+     pedir la imagen, así que una figura con otro nombre no se pinta. */
+  { tipo: '🧑 Avatar', lat: '7.8941', lng: 'urbisadmin', descripcion: 'avatar_7', fecha: ahora },
   { tipo: '📨 Petición', lat: '7.8942', lng: '-72.5080', descripcion: 'pet | quiero ser JAC |', fecha: ahora },
-  { tipo: '🏪 Emprendimiento', lat: '7.8943', lng: '-72.5081', descripcion: 'e | Tienda La Playa |', fecha: ahora },
+  /* Un negocio de la vitrina, en su formato de verdad: un sobre con el tipo
+     que le corresponde y los datos dentro, y `visible`, que es el único
+     estado que se pinta. El nombre lleva una carga adentro porque lo escribe
+     una persona y va al mapa y a la ficha del negocio. */
+  { tipo: '🛍️ Emprendimiento URBIS', lat: '7.8943', lng: '-72.5081',
+    descripcion: "VITRINA_URBIS:%7B%22id%22%3A%20%22n1%22%2C%20%22nombre%22%3A%20%22%3Cimg%20src%3Dx%20onerror%3D%5C%22window.__v1%3D1%5C%22%3ETienda%20La%20Playa%22%2C%20%22emoji%22%3A%20%22%F0%9F%9B%92%22%2C%20%22lema%22%3A%20%22La%20tienda%20del%20barrio%22%2C%20%22descripcion%22%3A%20%22Abarrotes%20y%20minutos%22%2C%20%22telefono%22%3A%20%223001112233%22%2C%20%22whatsapp%22%3A%20%223001112233%22%2C%20%22direccion%22%3A%20%22Calle%209%20%233-20%22%2C%20%22horario%22%3A%20%228%20a%208%22%2C%20%22color%22%3A%20%22%23E5B300%22%2C%20%22estado%22%3A%20%22visible%22%7D", fecha: ahora },
   { tipo: '📍 Ubicación', lat: '7.8944', lng: '-72.5082', descripcion: 'u | mi casa |', fecha: ahora },
   /* El formato REAL que escribe «otorgar permiso»: usuario y permiso
      separados por tildes, no por barras. */
@@ -132,6 +141,40 @@ const META = [
     });
     o.visibles = (window.urbisDatosVisibles && window.urbisDatosVisibles() || []).length;
 
+    /* ── Lo que volvió, se ve ─────────────────────────────────────────
+       El negocio no basta con que llegue a su cajón: tiene que salir en el
+       mapa. Y su nombre lo escribe una persona. */
+    try { if (window.urbisRenderVitrina) window.urbisRenderVitrina(); } catch (e) { o.errVitrina = String(e.message); }
+    await esperar(700);
+    /* La gota de la vitrina lleva el emoji del negocio, no su nombre: se
+       cuenta por su clase, que es lo que la hace reconocible en el mapa. */
+    o.marcadorNegocio = (function () {
+      let n = 0;
+      try {
+        window.map.eachLayer(l => {
+          const ic = l && l.options && l.options.icon && l.options.icon.options;
+          if (ic && (/urbis-vitrina-root/.test(String(ic.className || '')) ||
+                     /uvit-pin/.test(String(ic.html || '')))) n++;
+        });
+      } catch (e) {}
+      return n;
+    })();
+    // Y su ficha, que es donde sale el nombre que escribió una persona.
+    try { if (window.urbisAbrirVitrina) window.urbisAbrirVitrina('n1'); } catch (e) { o.errFicha = String(e.message); }
+    await esperar(700);
+    o.negocioHTML = (document.body.innerHTML.match(/[^<>]{0,50}Tienda La Playa/) || [''])[0];
+    o.negocioTexto = (document.body.textContent || '').indexOf('Tienda La Playa') >= 0;
+    /* El avatar: los dos sitios que lo pintan viven en pantallas sociales que
+       piden datos de amistades, así que acá se comprueba la BÚSQUEDA que
+       hacen —por usuario, con el nombre de figura validado— y no su HTML. */
+    o.avatarBuscado = (function () {
+      const key = 'urbisadmin';
+      const fila = (window.urbisAvatares || []).find(r => String(r.lng || '').toLowerCase() === key);
+      const id = fila ? String(fila.descripcion || '').trim() : '';
+      return { hallada: !!fila, id: id, valida: /^avatar[-_][a-z0-9-]+$/i.test(id) };
+    })();
+    o.banderaNegocio = !!window.__v1;
+
     /* ── Los permisos concedidos ──────────────────────────────────────
        Las filas de permisos y la función que dice qué puede hacer quien usa
        la aplicación compartían el nombre `urbisPermisos`, y ganaba la
@@ -184,7 +227,7 @@ const META = [
   T('el negocio, en la vitrina', cj.vitrina === 1, String(cj.vitrina));
   T('la ubicación, en el suyo', cj.ubicaciones === 1, String(cj.ubicaciones));
   T('y el avatar, normalizado a usuario y figura',
-    cj.avatares === 1 && !!r.avatar && r.avatar.lng === 'quiensea' && r.avatar.descripcion === 'skin7',
+    cj.avatares === 1 && !!r.avatar && r.avatar.lng === 'urbisadmin' && r.avatar.descripcion === 'avatar_7',
     JSON.stringify(r.avatar));
 
   console.log('\n  -- el nombre que se disputaban --');
@@ -205,6 +248,26 @@ const META = [
     (r.metricas || []).join(' · ') || 'sin tarjetas');
   T('y el contador total cuenta el reporte',
     (r.mini || []).some(x => /^total:\s*1$/.test(x)), (r.mini || []).join(' · '));
+
+  /* ── Y se ve, no solo se carga ───────────────────────────────────────
+     La vitrina y los avatares llevaban tiempo leyéndose vacíos porque nadie
+     llenaba sus cajones. Que el cajón tenga la fila es la mitad; la otra es
+     que el negocio salga en el mapa y que la figura del avatar se pueda
+     encontrar por su usuario. */
+  console.log('\n  -- lo que volvió, se ve --');
+  T('el negocio de la vitrina sale en el mapa, con su gota',
+    r.marcadorNegocio === 1, r.marcadorNegocio + ' gota(s) · ' + (r.errVitrina || 'sin error'));
+  T('y su ficha se abre con el nombre del negocio',
+    r.negocioTexto === true, (r.negocioHTML || 'no aparece').slice(0, 60) + ' · ' + (r.errFicha || 'sin error'));
+  /* Su nombre lo escribe una persona: sale como texto, con sus signos, y no
+     como una etiqueta que el navegador ejecute. */
+  T('y su nombre sale como texto, sin ejecutar lo que traiga',
+    r.banderaNegocio === false && /&lt;img|Tienda La Playa/.test(r.negocioHTML || '') &&
+    !/<img src=x onerror/.test(r.negocioHTML || ''),
+    (r.negocioHTML || 'no aparece').slice(0, 70));
+  T('y la figura del avatar se encuentra por su usuario',
+    !!r.avatarBuscado && r.avatarBuscado.hallada && r.avatarBuscado.valida,
+    JSON.stringify(r.avatarBuscado));
 
   console.log('\n  -- los permisos concedidos, que se llamaban igual que otra cosa --');
   T('la lista de permisos concedidos se lee, y trae al de la fila',
