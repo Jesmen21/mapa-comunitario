@@ -96,14 +96,33 @@ const RAIZ = E.RAIZ;
 
   const carcasa = await pg.evaluate(() => {
     const btns = [...document.querySelectorAll('#rp-nav button')];
+    const boton = document.getElementById('rp-reportar');
+    const rb = boton ? boton.getBoundingClientRect() : null;
+    const attr = document.querySelector('.leaflet-control-attribution');
+    const ra = attr ? attr.getBoundingClientRect() : null;
     return {
       titulo: document.title,
       puertas: btns.map(x => x.getAttribute('data-rp')),
       rotulos: btns.map(x => x.textContent.trim()),
-      hayBoton: !!document.getElementById('rp-reportar'),
+      hayBoton: !!boton,
       hayMapa: !!(window.map || window.urbisMap),
-      // La versión con la que pide los archivos compartidos: estaba congelada.
-      version: (document.querySelector('script[src*="js/80"]') || {}).src || ''
+      version: (document.querySelector('script[src*="js/80"]') || {}).src || '',
+      /* ── El acabado ──────────────────────────────────────────────
+         La carcasa se escribió antes que el diseño de la app grande y se
+         quedó con barra blanca y emojis del sistema. Instalada al lado de
+         la grande parecían dos productos, y el de peor acabado era este. */
+      hayTop: !!document.getElementById('rp-top'),
+      navFondo: (() => { const n = document.getElementById('rp-nav');
+        return n ? getComputedStyle(n).backgroundImage : ''; })(),
+      // Iconos propios, no emoji del sistema: el emoji lo dibuja el teléfono
+      // y cambia de forma y de color en cada marca.
+      iconos: [...document.querySelectorAll('#rp-nav img')]
+        .map(i => ({ src: i.getAttribute('src'), ancho: i.naturalWidth })),
+      // El rótulo del botón, en UNA línea.
+      botonAlto: rb ? Math.round(rb.height) : 0,
+      // Y que la atribución de Leaflet no quede debajo del botón.
+      seTapan: !!(ra && rb) && !(ra.right < rb.left || ra.left > rb.right ||
+                                ra.bottom < rb.top || ra.top > rb.bottom)
     };
   });
   chk(carcasa.hayMapa && carcasa.hayBoton, 'la app ligera abre con su mapa y su botón de reportar');
@@ -113,6 +132,20 @@ const RAIZ = E.RAIZ;
       'tiene las cuatro puertas: ' + carcasa.puertas.join(' · '));
   chk(/780|78\d|7[89]\d|\d{3,}/.test(carcasa.version) && !/597/.test(carcasa.version),
       'y ya no pide los archivos compartidos con la versión 597 congelada');
+
+  console.log('\n── El acabado, que era el reclamo ──────────────────');
+  chk(carcasa.hayTop, 'tiene barra de marca arriba, no un mapa desnudo');
+  chk(/gradient/.test(carcasa.navFondo),
+      'la barra de abajo usa el cristal oscuro de la app grande, no el blanco de antes');
+  chk(carcasa.iconos.length === 4 && carcasa.iconos.every(i => i.ancho > 0),
+      'los cuatro destinos llevan icono propio y todos cargan (' +
+      carcasa.iconos.filter(i => i.ancho > 0).length + '/' + carcasa.iconos.length + ')');
+  /* 68 px es dos líneas de este cuerpo con su relleno. En un teléfono
+     estrecho el rótulo se partía en dos y la pastilla quedaba como un sello
+     torcido encima del mapa. */
+  chk(carcasa.botonAlto > 0 && carcasa.botonAlto < 68,
+      'el botón de reportar cabe en una línea (' + carcasa.botonAlto + ' px de alto)');
+  chk(!carcasa.seTapan, 'y la atribución del mapa no le queda debajo');
 
   // Cada puerta, tocada de verdad.
   const irY = async (dato) => {

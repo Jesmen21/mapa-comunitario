@@ -1,7 +1,7 @@
 /* Service worker de URBIS Reportes.
    Caché propia y separada de la app completa: instalar la app ligera no debe
    arrastrar los 2,1 MB de la grande, que es justamente lo que se quiere evitar. */
-const CACHE = 'urbis-reportes-v782-la-app-y-el-dominio-son-lo-mismo';
+const CACHE = 'urbis-reportes-v783-la-carcasa-con-la-piel-de-la-casa';
 const ASSETS = [
   './reportes.html',
   './manifest-reportes.json',
@@ -25,8 +25,15 @@ const ASSETS = [
   './js/13h-permisos.js',
   './js/13i-vitrina.js',
   './js/80-reportes-shell.js',
+  './assets/icons/reportes/icon-96.png',
   './assets/icons/reportes/icon-192.png',
-  './assets/icons/reportes/icon-512.png'
+  './assets/icons/reportes/icon-512.png',
+  // Los iconos de la barra de abajo. Sin ellos en la caché, la app abierta
+  // sin señal muestra cuatro huecos donde deberían ir los destinos.
+  './assets/icons/urbis-map.png',
+  './assets/icons/urbis-events.svg',
+  './assets/icons/urbis-colombia.png',
+  './assets/brand/social.png'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => null));
