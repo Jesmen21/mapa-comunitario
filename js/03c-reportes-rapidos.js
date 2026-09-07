@@ -127,6 +127,15 @@
         // comunidad necesita ver activa por días, no por horas.
         ['wildfire','🔥🌲','Incendio forestal','🌪️ Desastres Naturales y Clima'],
         ['storm','⛈️','Tormenta','🌪️ Desastres Naturales y Clima'],
+        // El vendaval NO es la tormenta. Aquí no llueve: es viento seco que
+        // levanta tejas de zinc, tumba árboles y postes y destecha casas en
+        // cuestión de minutos, y después escampa. Quien lo vivió lo busca por
+        // su nombre —«vendaval», «vientos fuertes»— y hasta ahora tenía que
+        // elegir «Tormenta», que le pone al mapa un fenómeno distinto y con
+        // vigencia de dos días. Sus consecuencias ya tienen ítem propio y no
+        // se duplican aquí: el árbol caído, el poste caído, el cable en la vía
+        // y el «Daño a propiedad» de la casa destechada.
+        ['windstorm','🌬️','Vendaval / vientos fuertes','🌪️ Desastres Naturales y Clima'],
         ['tsunami-wave','🌊','Tsunami','🌪️ Desastres Naturales y Clima'],
         ['geological-damage','⛰️','Daño geológico','⛰️ Riesgos del Terreno'],
         ['river-rising','🌊','Nivel de río en aumento / riesgo de creciente','🌪️ Desastres Naturales y Clima'],
@@ -222,6 +231,7 @@
     'flood-road',           // inundación en vía
     'overflow',             // desbordamiento
     'storm',                // tormenta
+    'windstorm',            // vendaval
     'earthquake'            // sismo
   ]);
 
@@ -302,6 +312,13 @@
     'tsunami':                                      { emoji:'🌊', horas:168 },
     'ciclon':                                       { emoji:'🌀', horas:168 },
     'tormenta':                                     { emoji:'⛈️', horas:48 },
+    // Doce horas, la mitad que «riesgo por lluvia» y la cuarta parte de una
+    // tormenta: un vendaval pasa en minutos y para la tarde ya no hay viento.
+    // Lo que queda —el techo, el poste, el árbol— se reporta por su lado y
+    // dura lo suyo. Dejarlo en el mapa dos días sería anunciar un peligro que
+    // ya no está, y eso desgasta la credibilidad de todas las demás alertas.
+    'vendaval / vientos fuertes':                   { emoji:'🌬️', horas:12 },
+    'vendaval':                                     { emoji:'🌬️', horas:12 },
     'inundacion en via':                            { emoji:'🌊', horas:72 },
     'zona de inundacion activa':                    { emoji:'🌊', horas:72 },
     'desbordamiento de arroyo o canal':             { emoji:'🌊', horas:72 },

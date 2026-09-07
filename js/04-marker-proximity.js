@@ -523,7 +523,7 @@
     // coloquial de un sismo fuerte, no hay umbral oficial que los separe. Tener
     // los dos como opciones distintas obligaba al ciudadano a elegir entre
     // sinónimos, así que van en un único ítem y la magnitud la aporta el dato.
-    "🌪️ Desastres Naturales y Clima": { icon: "🌪️", desc: "Sismos, ciclones, tormentas, tsunamis, derrumbes", color: "#5b21b6", shape: "diamond", items: ["Sismo / Terremoto", "Ciclón", "Tormenta", "Tsunami", "Derrumbe"] },
+    "🌪️ Desastres Naturales y Clima": { icon: "🌪️", desc: "Sismos, ciclones, tormentas, vendavales, tsunamis, derrumbes", color: "#5b21b6", shape: "diamond", items: ["Sismo / Terremoto", "Ciclón", "Tormenta", "Vendaval / vientos fuertes", "Tsunami", "Derrumbe"] },
     "⛰️ Riesgos del Terreno": { icon: "⛰️", desc: "Inestabilidad del suelo y daño geológico", color: "#78350f", shape: "diamond", items: ["Daño geológico"] }
   };
 
