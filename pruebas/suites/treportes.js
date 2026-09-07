@@ -1,26 +1,27 @@
 const E = require('../entorno.js');
-/* La app ligera: una sola aplicación con cuatro puertas.
+/* URBIS_CO: el APK abre la misma aplicación que la web.
 
-   `reportes.html` existe para quien solo quiere avisar de un hueco: abre el
-   mapa con un botón grande y no carga los 48 scripts de la app completa. Lo
-   que faltaba era el resto de la casa — eventos, la comunidad y el
-   seguimiento presidencial— sin volver a la app pesada por la puerta grande.
+   Hubo una carcasa ligera en reportes.html —su propia barra, sus propios
+   botones— y llegó a ser la puerta del APK. Se retiró: la interfaz la diseñó
+   el dueño una vez, para la web, y una app instalada tiene que enseñar esa y
+   no una segunda inventada al lado. A los módulos se entra por Inicio.
 
    Lo que vigila esta suite:
 
-   · Que las cuatro puertas existan y lleven a donde dicen. Un botón que no
-     hace nada, en una app instalada con su propio icono, se siente como si
-     la app estuviera rota.
-   · Que entrar por dirección a una pantalla de la app grande FUNCIONE, y que
-     no salte la puerta: mandar a Social a quien no ha entrado lo deja en una
-     pantalla vacía sin explicación.
-   · Que el manifiesto tenga alcance para las tres páginas. Con el alcance
-     viejo —solo `/reportes.html`— tocar «Gobierno» abría el navegador encima
-     de la app, con su barra de direcciones: la delata como página web y
-     rompe la ilusión por la que existe un APK.
-   · Y que los iconos existan, sean cuadrados, del tamaño que declaran y
-     lleven el amarillo de la marca — el maskable con su margen, porque
-     Android recorta.                                                       */
+   · Que /reportes.html siga existiendo y lleve a index.html. No es opcional:
+     el APK firmado lleva esa dirección GRABADA como arranque; si la página
+     desaparece, la app instalada abre un 404.
+   · Que lo que se abre sea la aplicación de verdad —la pantalla de entrada o
+     la portada, con su barra de abajo de siempre— y nada de la carcasa.
+   · Que el manifiesto del APK arranque en index.html, con alcance en todo el
+     sitio y con su icono amarillo, cada uno del tamaño que declara.
+   · Que el service worker viejo de la carcasa sea uno de RETIRO: se da de
+     baja y no intercepta nada. Compartía alcance con el de la aplicación, y
+     un teléfono que hubiera abierto las dos páginas alternaba entre dos
+     cachés.
+   · Y que entrar por dirección a una pantalla —#/pantalla/social— funcione,
+     sin saltar la puerta cuando no hay sesión y sin dejar la app en blanco
+     con una pantalla inventada.                                            */
 const { chromium } = require(E.MODULOS + '/playwright-core');
 const fs = require('fs');
 const path = require('path');
@@ -32,18 +33,12 @@ const RAIZ = E.RAIZ;
   const ok = [], fallo = [];
   const chk = (c, t) => (c ? ok : fallo).push(t);
 
-  // ── El manifiesto y los iconos, antes de abrir nada ──────────────────
+  // ── El manifiesto, los iconos y el service worker, antes de abrir nada ─
   const man = JSON.parse(fs.readFileSync(path.join(RAIZ, 'manifest-reportes.json'), 'utf8'));
-  /* El rótulo del lanzador. Va comprobado como IGUALDAD entre los tres sitios
-     donde aparece, no contra un texto fijo: el nombre puede cambiar cuando el
-     dueño quiera, lo que no puede es cambiar en uno solo. Pasó de camino: el
-     APK se estaba armando con un nombre y el manifiesto declaraba otro, así
-     que la misma app se llamaba distinto según se instalara desde la tienda o
-     desde el navegador. */
   chk(man.name === man.short_name && man.name === 'URBIS_CO',
       'el manifiesto y el nombre corto dicen lo mismo: "' + man.name + '" / "' + man.short_name + '"');
+  chk(man.start_url === '/index.html', 'arranca en la aplicación de verdad (' + man.start_url + ')');
   chk(man.scope === '/', 'y su alcance cubre todo el sitio (' + man.scope + ')');
-  chk(man.start_url === '/reportes.html', 'pero arranca en la app ligera (' + man.start_url + ')');
   chk(man.display === 'standalone', 'se abre sin barra de navegador');
   chk(man.background_color === '#FABD0A',
       'el fondo de la pantalla de arranque es el amarillo del icono (' + man.background_color + ')');
@@ -52,9 +47,8 @@ const RAIZ = E.RAIZ;
   const faltan = (man.icons || []).map(i => i.src).filter(u => !cabe(u));
   chk(faltan.length === 0, 'todos los iconos declarados existen' +
       (faltan.length ? ': ' + faltan.join(', ') : ' (' + man.icons.length + ')'));
-  const maskables = (man.icons || []).filter(i => /maskable/.test(i.purpose || ''));
-  chk(maskables.length >= 1, 'hay icono maskable, que es el que Android recorta (' + maskables.length + ')');
-  // Las medidas y el color, leyendo el PNG: la cabecera IHDR trae ancho y alto.
+  chk((man.icons || []).some(i => /maskable/.test(i.purpose || '')),
+      'hay icono maskable, que es el que Android recorta');
   const medida = (rel) => {
     const b = fs.readFileSync(path.join(RAIZ, rel));
     return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
@@ -65,10 +59,31 @@ const RAIZ = E.RAIZ;
   }).map(i => i.src + ' dice ' + i.sizes);
   chk(malas.length === 0, 'y cada uno mide lo que declara' + (malas.length ? ': ' + malas.join(', ') : ''));
 
+  const sw = fs.readFileSync(path.join(RAIZ, 'sw-reportes.js'), 'utf8');
+  chk(/registration\.unregister\(\)/.test(sw), 'el service worker viejo de la carcasa se da de baja solo');
+  chk(!/addEventListener\(\s*['"]fetch['"]/.test(sw), 'y no intercepta peticiones: no puede servir nada viejo');
+  chk(!fs.existsSync(path.join(RAIZ, 'js/80-reportes-shell.js')), 'la carcasa ligera ya no está en el repositorio');
+
   // ── Y que se vea ─────────────────────────────────────────────────────
   const b = await chromium.launch({ executablePath: E.CHROMIUM, args: ['--no-sandbox'] });
-  const ctx = await b.newContext({ serviceWorkers: 'block', timezoneId: 'America/Bogota', locale: 'es-CO',
-    viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
+  const rutas = async (ctx) => {
+    await ctx.route('**', r => /localhost:(8199|8787)/.test(r.request().url()) ? r.continue() : r.abort());
+    await ctx.route(/unpkg\.com/, r => { const u = r.request().url();
+      r.fulfill({ status: 200, contentType: u.endsWith('.css') ? 'text/css' : 'text/javascript',
+        body: fs.readFileSync(LEAFLET + (u.endsWith('.css') ? 'leaflet.css' : 'leaflet.js'), 'utf8') }); });
+    await ctx.route(/cdn\.jsdelivr\.net/, r => r.fulfill({ status: 200, contentType: 'text/javascript',
+      body: fs.readFileSync(S + 'node_modules/chart.js/dist/chart.umd.js', 'utf8') }));
+    await ctx.route(/basemaps\.cartocdn\.com|arcgisonline\.com|maptiles\.arcgis\.com|mt\d\.google\.com\/vt/,
+      r => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') }));
+    await ctx.route(/script\.google\.com/, r => r.fulfill({ status: 200,
+      contentType: 'application/json', body: '{"ok":true,"data":[]}' }));
+  };
+  const movil = { serviceWorkers: 'block', timezoneId: 'America/Bogota', locale: 'es-CO',
+                  viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true };
+
+  // Con sesión, como el teléfono del dueño.
+  const ctx = await b.newContext(movil);
   await ctx.addInitScript(() => {
     if (window.top !== window) return;
     try {
@@ -77,127 +92,52 @@ const RAIZ = E.RAIZ;
       localStorage.setItem('urbisUserRole', 'citizen');
     } catch (e) {}
   });
-  await ctx.route('**', r => /localhost:(8199|8787)/.test(r.request().url()) ? r.continue() : r.abort());
-  await ctx.route(/unpkg\.com/, r => { const u = r.request().url();
-    r.fulfill({ status: 200, contentType: u.endsWith('.css') ? 'text/css' : 'text/javascript',
-      body: fs.readFileSync(LEAFLET + (u.endsWith('.css') ? 'leaflet.css' : 'leaflet.js'), 'utf8') }); });
-  await ctx.route(/cdn\.jsdelivr\.net/, r => r.fulfill({ status: 200, contentType: 'text/javascript',
-    body: fs.readFileSync(S + 'node_modules/chart.js/dist/chart.umd.js', 'utf8') }));
-  await ctx.route(/basemaps\.cartocdn\.com|arcgisonline\.com|maptiles\.arcgis\.com|mt\d\.google\.com\/vt/,
-    r => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') }));
-  await ctx.route(/script\.google\.com/, r => r.fulfill({ status: 200,
-    contentType: 'application/json', body: '{"ok":true,"data":[]}' }));
-
+  await rutas(ctx);
   const pg = await ctx.newPage();
   const err = []; pg.on('pageerror', e => err.push(String(e.message).slice(0, 140)));
-  await pg.goto(E.ESTATICO + '/reportes.html', { waitUntil: 'domcontentloaded' });
-  await pg.waitForTimeout(3000);
 
-  const carcasa = await pg.evaluate(() => {
-    const btns = [...document.querySelectorAll('#rp-nav button')];
-    const boton = document.getElementById('rp-reportar');
-    const rb = boton ? boton.getBoundingClientRect() : null;
-    const attr = document.querySelector('.leaflet-control-attribution');
-    const ra = attr ? attr.getBoundingClientRect() : null;
+  /* La dirección grabada en el APK. Se entra por ahí y se mira dónde se
+     termina y qué se ve. */
+  /* Una página que redirige son DOS navegaciones: la de la página y la del
+     destino. `goto` solo espera la primera, así que después se espera a la
+     dirección final; si no, la prueba mira una página que ya no está. */
+  const irPorLaEntrada = async (sufijo) => {
+    await pg.goto(E.ESTATICO + '/reportes.html' + sufijo, { waitUntil: 'commit' }).catch(() => {});
+    await pg.waitForURL(/\/index\.html/, { timeout: 20000 }).catch(() => {});
+  };
+  await irPorLaEntrada('?x=1#/pantalla/events');
+  await pg.waitForTimeout(4500);
+  const llegada = await pg.evaluate(() => {
+    const activa = document.querySelector('.u52-screen.active');
     return {
-      titulo: document.title,
-      puertas: btns.map(x => x.getAttribute('data-rp')),
-      rotulos: btns.map(x => x.textContent.trim()),
-      hayBoton: !!boton,
-      hayMapa: !!(window.map || window.urbisMap),
-      version: (document.querySelector('script[src*="js/80"]') || {}).src || '',
-      /* ── El acabado ──────────────────────────────────────────────
-         La carcasa se escribió antes que el diseño de la app grande y se
-         quedó con barra blanca y emojis del sistema. Instalada al lado de
-         la grande parecían dos productos, y el de peor acabado era este. */
-      hayTop: !!document.getElementById('rp-top'),
-      navFondo: (() => { const n = document.getElementById('rp-nav');
-        return n ? getComputedStyle(n).backgroundImage : ''; })(),
-      // Iconos propios, no emoji del sistema: el emoji lo dibuja el teléfono
-      // y cambia de forma y de color en cada marca.
-      iconos: [...document.querySelectorAll('#rp-nav img')]
-        .map(i => ({ src: i.getAttribute('src'), ancho: i.naturalWidth })),
-      // El rótulo del botón, en UNA línea.
-      botonAlto: rb ? Math.round(rb.height) : 0,
-      // Y que la atribución de Leaflet no quede debajo del botón.
-      seTapan: !!(ra && rb) && !(ra.right < rb.left || ra.left > rb.right ||
-                                ra.bottom < rb.top || ra.top > rb.bottom)
+      url: location.pathname + location.search + location.hash,
+      pantalla: activa ? activa.getAttribute('data-u52-screen') : '(ninguna)',
+      // Lo de la app de verdad…
+      barraDeLaApp: !!document.querySelector('.u52-bottom-nav'),
+      // …y nada de la carcasa.
+      rastroDeCarcasa: !!(document.getElementById('rp-nav') || document.getElementById('rp-reportar') ||
+                          document.getElementById('rp-top')),
+      titulo: document.title
     };
   });
-  chk(carcasa.hayMapa && carcasa.hayBoton, 'la app ligera abre con su mapa y su botón de reportar');
-  chk(carcasa.titulo.indexOf(man.short_name) === 0,
-      'y la página abre con ese mismo nombre por delante: "' + carcasa.titulo + '"');
-  chk(carcasa.puertas.join(',') === 'mapa,eventos,social,aldia',
-      'tiene las cuatro puertas: ' + carcasa.puertas.join(' · '));
-  chk(/780|78\d|7[89]\d|\d{3,}/.test(carcasa.version) && !/597/.test(carcasa.version),
-      'y ya no pide los archivos compartidos con la versión 597 congelada');
+  chk(/\/index\.html/.test(llegada.url), 'la dirección grabada en el APK termina en index.html (' + llegada.url + ')');
+  chk(/\?x=1/.test(llegada.url) && /#\/pantalla\/events/.test(llegada.url),
+      'y conserva lo que traía la dirección: consulta y pantalla pedida');
+  chk(llegada.barraDeLaApp, 'lo que se abre es la aplicación de verdad, con su barra de abajo');
+  chk(!llegada.rastroDeCarcasa, 'y no queda rastro de la carcasa ligera');
+  chk(llegada.pantalla === 'events',
+      'la pantalla pedida por la dirección se abre directo (' + llegada.pantalla + ')');
 
-  console.log('\n── El acabado, que era el reclamo ──────────────────');
-  chk(carcasa.hayTop, 'tiene barra de marca arriba, no un mapa desnudo');
-  chk(/gradient/.test(carcasa.navFondo),
-      'la barra de abajo usa el cristal oscuro de la app grande, no el blanco de antes');
-  chk(carcasa.iconos.length === 4 && carcasa.iconos.every(i => i.ancho > 0),
-      'los cuatro destinos llevan icono propio y todos cargan (' +
-      carcasa.iconos.filter(i => i.ancho > 0).length + '/' + carcasa.iconos.length + ')');
-  /* 68 px es dos líneas de este cuerpo con su relleno. En un teléfono
-     estrecho el rótulo se partía en dos y la pastilla quedaba como un sello
-     torcido encima del mapa. */
-  chk(carcasa.botonAlto > 0 && carcasa.botonAlto < 68,
-      'el botón de reportar cabe en una línea (' + carcasa.botonAlto + ' px de alto)');
-  chk(!carcasa.seTapan, 'y la atribución del mapa no le queda debajo');
-
-  // Cada puerta, tocada de verdad.
-  const irY = async (dato) => {
-    await pg.goto(E.ESTATICO + '/reportes.html', { waitUntil: 'domcontentloaded' });
-    await pg.waitForTimeout(2200);
-    /* Si la puerta no existe, se dice y se sigue. Una suite que revienta
-       cuando falta lo que comprueba no informa: solo se cae. */
-    const hay = await pg.evaluate(d => {
-      const b = document.querySelector('#rp-nav button[data-rp="' + d + '"]');
-      if (!b) return false;
-      b.click(); return true;
-    }, dato);
-    if (!hay) return { url: '(no existe la puerta ' + dato + ')', vista: '' };
-    await pg.waitForTimeout(3200);
-    return pg.evaluate(() => {
-      const v = document.querySelector('.sp-view.on') || document.querySelector('.u52-screen.active');
-      return { url: location.pathname + location.hash,
-               vista: v ? (v.getAttribute('data-view') || v.getAttribute('data-u52-screen')) : '' };
-    });
-  };
-  const gob = await irY('aldia');
-  chk(/seguimiento\.html/.test(gob.url), '«Gobierno» abre el seguimiento presidencial (' + gob.url + ')');
-
-  const eventos = await irY('eventos');
-  chk(/index\.html#\/pantalla\/events/.test(eventos.url),
-      '«Eventos» pide esa pantalla por la dirección (' + eventos.url + ')');
-  chk(eventos.vista === 'events',
-      'y la app grande abre DIRECTO en Eventos, no en la portada (' + eventos.vista + ')');
-
-  const social = await irY('social');
-  chk(social.vista === 'social',
-      '«Social» abre directo en la comunidad (' + social.vista + ')');
-
-  // La puerta cerrada: sin sesión, el atajo NO salta la pantalla de entrada.
-  const ctx2 = await b.newContext({ serviceWorkers: 'block', viewport: { width: 412, height: 915 },
-                                    isMobile: true, hasTouch: true });
-  await ctx2.route('**', r => /localhost:(8199|8787)/.test(r.request().url()) ? r.continue() : r.abort());
-  await ctx2.route(/unpkg\.com/, r => { const u = r.request().url();
-    r.fulfill({ status: 200, contentType: u.endsWith('.css') ? 'text/css' : 'text/javascript',
-      body: fs.readFileSync(LEAFLET + (u.endsWith('.css') ? 'leaflet.css' : 'leaflet.js'), 'utf8') }); });
-  await ctx2.route(/cdn\.jsdelivr\.net|script\.google\.com|basemaps|arcgisonline|maptiles|mt\d\.google/,
-    r => r.fulfill({ status: 200, body: '' }));
-  const pg2 = await ctx2.newPage();
-  await pg2.goto(E.ESTATICO + '/index.html#/pantalla/social', { waitUntil: 'domcontentloaded' });
-  await pg2.waitForTimeout(5000);
-  const sinSesion = await pg2.evaluate(() => {
-    const v = document.querySelector('.u52-screen.active');
-    return v ? v.getAttribute('data-u52-screen') : '';
+  // Sin nada en la dirección: la app tal cual, como en la web.
+  await irPorLaEntrada('');
+  await pg.waitForTimeout(4000);
+  const normal = await pg.evaluate(() => {
+    const activa = document.querySelector('.u52-screen.active');
+    return { pantalla: activa ? activa.getAttribute('data-u52-screen') : '(ninguna)',
+             cuantas: document.querySelectorAll('.u52-screen.active').length };
   });
-  chk(sinSesion === 'login',
-      'sin sesión, el atajo NO salta la pantalla de entrada (se quedó en ' + sinSesion + ')');
-  await ctx2.close();
+  chk(normal.cuantas === 1 && /^(home|login)$/.test(normal.pantalla),
+      'sin pantalla pedida abre donde abre la web: portada o entrada (' + normal.pantalla + ')');
 
   // Una pantalla que no existe no puede dejar la app en blanco.
   await pg.goto(E.ESTATICO + '/index.html#/pantalla/no-existe', { waitUntil: 'domcontentloaded' });
@@ -209,6 +149,21 @@ const RAIZ = E.RAIZ;
   });
   chk(inventada.cuantas === 1 && inventada.vista !== '(ninguna)',
       'una pantalla inventada en la dirección se ignora, no deja la app en blanco (' + inventada.vista + ')');
+  await ctx.close();
+
+  // Sin sesión: el atajo NO salta la pantalla de entrada.
+  const ctx2 = await b.newContext(movil);
+  await rutas(ctx2);
+  const pg2 = await ctx2.newPage();
+  await pg2.goto(E.ESTATICO + '/index.html#/pantalla/social', { waitUntil: 'domcontentloaded' });
+  await pg2.waitForTimeout(5000);
+  const sinSesion = await pg2.evaluate(() => {
+    const v = document.querySelector('.u52-screen.active');
+    return v ? v.getAttribute('data-u52-screen') : '';
+  });
+  chk(sinSesion === 'login',
+      'sin sesión, el atajo NO salta la pantalla de entrada (se quedó en ' + sinSesion + ')');
+  await ctx2.close();
 
   await b.close();
   const errFin = err.filter(e => !/L is not defined|Unexpected end/.test(e));

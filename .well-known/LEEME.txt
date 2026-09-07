@@ -40,11 +40,13 @@ huella verdadera y listo.
 `node pruebas/revisar.js` comprueba que toda entrada de este archivo lleve una
 huella con forma de huella: 32 pares hexadecimales separados por dos puntos.
 
-La última se arma desde https://urbispro.city/manifest-reportes.json, no
-desde el manifiesto de la raíz. Arranca en /reportes.html —el mapa ligero
-con el botón de reportar— y su alcance es todo el sitio, para que Eventos,
-Social y el Seguimiento Presidencial se abran DENTRO de la app y no en una
-pestaña del navegador. Su icono es el amarillo (assets/icons/reportes/).
+URBIS_CO se arma desde https://urbispro.city/reportes.html (que enlaza
+manifest-reportes.json, no el manifiesto de la raíz). Su icono es el
+amarillo (assets/icons/reportes/) y abre LA MISMA aplicación que la web:
+reportes.html solo redirige a index.html. Esa redirección no se puede
+quitar: el APK firmado lleva /reportes.html grabada como dirección de
+arranque. Su alcance es todo el sitio, así que el seguimiento presidencial
+y el resto se abren dentro de la app.
 
 Su huella ya está puesta, así que abre sin barra de navegador.
 

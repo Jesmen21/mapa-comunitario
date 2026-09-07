@@ -5925,10 +5925,8 @@
   }
 
   /* ── Entrar directo a una pantalla ────────────────────────────────────
-     La app ligera de reportes (reportes.html) manda a Eventos y a Social, que
-     viven acá dentro. Sin esto llegaría a la portada y habría que buscar el
-     módulo a mano — y en una app instalada, con su propio icono, eso se siente
-     como si el botón no hubiera hecho nada.
+     Un enlace puede pedir una pantalla concreta —un aviso que lleve a Eventos,
+     un acceso directo del icono que abra Social— sin pasar por la portada.
 
      La dirección se lee como `index.html#/pantalla/events`. Dos cuidados:
      una pantalla que no existe se ignora en vez de dejar la app en blanco, y

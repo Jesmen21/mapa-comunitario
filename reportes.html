@@ -2,147 +2,33 @@
 <html lang="es-CO">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>URBIS_CO · Reportes y Eventos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>URBIS_CO</title>
 <meta name="theme-color" content="#1E7A4B">
-<meta name="description" content="Reporta lo que pasa en tu ciudad, mira los eventos del barrio, la comunidad y qué hace el Gobierno.">
-<link rel="manifest" href="manifest-reportes.json?v=783-la-carcasa-con-la-piel-de-la-casa">
+<link rel="manifest" href="manifest-reportes.json?v=784-la-app-es-la-web">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/reportes/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icons/reportes/icon-180.png">
+<!--
+  Esta página existe por una sola razón: el APK de URBIS_CO (city.urbispro.reportes)
+  se firmó con /reportes.html como dirección de arranque, y esa dirección va
+  grabada dentro del paquete. Si la página desapareciera, la app instalada
+  abriría un 404.
 
-<!-- Solo el CSS que el mapa y el formulario necesitan. La app completa importa
-     34 hojas; aquí entran tres. -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="css/00-brand-urbis.css?v=783-la-carcasa-con-la-piel-de-la-casa">
-<link rel="stylesheet" href="css/01-base-layout.css?v=783-la-carcasa-con-la-piel-de-la-casa">
+  Lo que abre es la aplicación de verdad —index.html, la misma que la web—.
+  Aquí hubo una carcasa ligera con su propia barra y sus propios botones; se
+  retiró porque la interfaz la diseñó el dueño una vez, para la web, y el APK
+  tiene que enseñar esa y no otra. A los módulos —social, seguimiento
+  presidencial— se entra por Inicio, como siempre.
 
-<style>
-/* ── Carcasa de URBIS Reportes ────────────────────────────────────────────
-   Pensada para quien se pierde en la app completa: el mapa ocupa todo, hay
-   UN botón grande y nada más compitiendo por la atención. Sin menús, sin
-   pestañas ocultas, sin gestos que haya que descubrir. */
-*{ box-sizing:border-box; }
-html,body{ margin:0; padding:0; height:100%; overflow:hidden;
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-/* ── La misma piel que la app grande ──────────────────────────────────────
-   Esta carcasa se escribió antes que el diseño de la aplicación y se quedó
-   con barra blanca y emojis del sistema: instalada al lado de la grande,
-   parecían dos productos distintos, y el de peor acabado era este. Ahora las
-   dos barras —arriba y abajo— usan el mismo cristal oscuro, los mismos
-   iconos propios y el mismo verde de acento que css/14. */
-#map{ position:fixed; top:0; bottom:0; left:0; right:0; width:100%; }
-
-/* Barra de arriba: la marca. Sin esto el mapa arranca desnudo bajo la barra
-   de estado y no hay nada que diga qué aplicación es. */
-#rp-top{ position:fixed; top:0; left:0; right:0; z-index:1200;
-  height:calc(56px + env(safe-area-inset-top,0px));
-  padding:env(safe-area-inset-top,0px) 16px 0;
-  display:flex; align-items:center; gap:10px;
-  background:linear-gradient(180deg,rgba(2,7,5,.92),rgba(3,12,9,.62));
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
-#rp-top img{ width:30px; height:30px; border-radius:8px; }
-#rp-top b{ color:#fff; font-size:1rem; font-weight:800; letter-spacing:.02em; }
-#rp-top small{ color:#a7bdb0; font-size:.72rem; margin-left:auto; font-weight:600; }
-
-/* Los controles de Leaflet, debajo de la barra y a la escala de la grande. */
-.leaflet-control-zoom{ margin-top:calc(70px + env(safe-area-inset-top,0px)) !important;
-  margin-left:14px !important; transform:scale(.92); transform-origin:top left; }
-/* La atribución vive en la esquina de abajo, que aquí está ocupada por la
-   barra y por el botón. Se sube justo encima de la barra y el botón se sube
-   por encima de ella: cada uno en su franja, sin que ninguno tape al otro. */
-.leaflet-control-attribution{ margin-bottom:calc(84px + env(safe-area-inset-bottom,0px)) !important;
-  opacity:.72; transform:scale(.86); transform-origin:bottom right; }
-
-/* Barra inferior: cuatro destinos. Los rótulos van escritos, no solo el
-   icono — un icono suelto obliga a adivinar, y aquí adivinar es la falla. */
-#rp-nav{ position:fixed; left:0; right:0; bottom:0; z-index:1200; display:flex;
-  align-items:center; height:calc(76px + env(safe-area-inset-bottom,0px));
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));
-  background:linear-gradient(180deg,rgba(3,12,9,.82),rgba(2,7,5,.98));
-  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-  border-top:1px solid rgba(255,255,255,.08); }
-#rp-nav button{ flex:1; min-width:0; border:0; background:none; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:4px; padding:6px 2px; border-radius:16px;
-  font-size:.60rem; font-weight:800; color:#b8c9bf; }
-#rp-nav button img, #rp-nav button b{ width:26px; height:26px; display:block;
-  font-size:1.35rem; font-weight:400; line-height:26px; }
-#rp-nav button span{ white-space:nowrap; }
-#rp-nav button.on{ color:#77ff65; }
-#rp-nav button.on img{ filter:drop-shadow(0 0 6px rgba(119,255,101,.55)); }
-
-/* El botón de reportar: flotante y siempre visible. Es la única acción de
-   esta app, así que no comparte espacio con nada. En UNA sola línea: en un
-   teléfono estrecho el rótulo se partía en dos y la pastilla quedaba como un
-   sello torcido encima del mapa. Tinta oscura sobre el verde claro, que es
-   donde el blanco pierde contraste. */
-#rp-reportar{ position:fixed; left:50%; transform:translateX(-50%);
-  bottom:calc(124px + env(safe-area-inset-bottom,0px)); z-index:1250;
-  border:0; border-radius:999px; padding:14px 26px; white-space:nowrap;
-  background:linear-gradient(135deg,#7cff35,#1a9f38); color:#06210f;
-  font-size:1.02rem; font-weight:900; letter-spacing:.01em;
-  box-shadow:0 12px 26px rgba(51,220,74,.35); cursor:pointer; }
-#rp-reportar:active{ transform:translateX(-50%) scale(.97); }
-
-/* Hoja donde se abre el formulario. Reutiliza #info-content, que es el
-   contenedor que ya esperan js/11 y js/12: así el formulario de reportes es
-   literalmente el mismo, sin una segunda copia que se desincronice. */
-#sidebar{ position:fixed; inset:0; z-index:1400; background:#0f1720;
-  overflow-y:auto; -webkit-overflow-scrolling:touch; display:none; }
-#sidebar.abierto{ display:block; }
-#rp-cerrar{ position:sticky; top:0; width:100%; border:0; background:#0f1720;
-  color:#fff; font-size:1rem; padding:14px; text-align:left; cursor:pointer; }
-
-#rp-aviso{ position:fixed; left:12px; right:12px; bottom:196px; z-index:1300;
-  background:#fff; border-radius:14px; padding:14px 16px; font-size:.9rem;
-  color:#31404f; box-shadow:0 6px 20px rgba(0,0,0,.18); display:none; }
-#rp-aviso.ver{ display:block; }
-</style>
+  Se conservan el manifiesto y el icono amarillo para que PWABuilder pueda
+  volver a empaquetar desde esta misma dirección.
+-->
+<script>location.replace('index.html' + location.search + location.hash);</script>
+<!-- El meta refresh va SOLO sin JavaScript. Con los dos activos son dos
+     navegaciones compitiendo por la misma página, y el navegador aborta la
+     primera a mitad de camino. -->
+<noscript><meta http-equiv="refresh" content="0; url=index.html"></noscript>
+<style>html,body{margin:0;height:100%;background:#FABD0A}</style>
 </head>
-<body>
-
-<div id="map"></div>
-
-<header id="rp-top">
-  <img src="assets/icons/reportes/icon-96.png" alt="">
-  <b>URBIS_CO</b>
-  <small>Cúcuta</small>
-</header>
-
-<button id="rp-reportar" type="button">Reportar algo</button>
-<div id="rp-aviso"></div>
-
-<nav id="rp-nav">
-  <button type="button" class="on" data-rp="mapa"><img src="assets/icons/urbis-map.png" alt=""><span>Mapa</span></button>
-  <button type="button" data-rp="eventos"><img src="assets/icons/urbis-events.svg" alt=""><span>Eventos</span></button>
-  <button type="button" data-rp="social"><img src="assets/brand/social.png" alt=""><span>Social</span></button>
-  <button type="button" data-rp="aldia"><img src="assets/icons/urbis-colombia.png" alt=""><span>Gobierno</span></button>
-</nav>
-
-<!-- El formulario de reporte se pinta aquí. Mismos ids que la app completa. -->
-<div id="sidebar">
-  <button id="rp-cerrar" type="button">✕ Cerrar</button>
-  <div id="info-content"></div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="js/00-config.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/02-auth-roles.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/03-map-data-config.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/03b-edificio-vocabulario.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/03c-reportes-rapidos.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/04-marker-proximity.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/05-helpers-temporal-security.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/11-report-form.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/12-spa-ui.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13b-duplicados.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13c-denuncias.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13d-mis-reportes-noti.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13e-nivel2.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13f-victimas.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13g-config-admin.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13h-permisos.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/13i-vitrina.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-<script src="js/80-reportes-shell.js?v=783-la-carcasa-con-la-piel-de-la-casa"></script>
-</body>
+<body></body>
 </html>

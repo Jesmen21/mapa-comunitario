@@ -1,61 +1,26 @@
-/* Service worker de URBIS Reportes.
-   Caché propia y separada de la app completa: instalar la app ligera no debe
-   arrastrar los 2,1 MB de la grande, que es justamente lo que se quiere evitar. */
-const CACHE = 'urbis-reportes-v783-la-carcasa-con-la-piel-de-la-casa';
-const ASSETS = [
-  './reportes.html',
-  './manifest-reportes.json',
-  './css/00-brand-urbis.css',
-  './css/01-base-layout.css',
-  './js/00-config.js',
-  './js/02-auth-roles.js',
-  './js/03-map-data-config.js',
-  './js/03b-edificio-vocabulario.js',
-  './js/03c-reportes-rapidos.js',
-  './js/04-marker-proximity.js',
-  './js/05-helpers-temporal-security.js',
-  './js/11-report-form.js',
-  './js/12-spa-ui.js',
-  './js/13b-duplicados.js',
-  './js/13c-denuncias.js',
-  './js/13d-mis-reportes-noti.js',
-  './js/13e-nivel2.js',
-  './js/13f-victimas.js',
-  './js/13g-config-admin.js',
-  './js/13h-permisos.js',
-  './js/13i-vitrina.js',
-  './js/80-reportes-shell.js',
-  './assets/icons/reportes/icon-96.png',
-  './assets/icons/reportes/icon-192.png',
-  './assets/icons/reportes/icon-512.png',
-  // Los iconos de la barra de abajo. Sin ellos en la caché, la app abierta
-  // sin señal muestra cuatro huecos donde deberían ir los destinos.
-  './assets/icons/urbis-map.png',
-  './assets/icons/urbis-events.svg',
-  './assets/icons/urbis-colombia.png',
-  './assets/brand/social.png'
-];
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => null));
-  self.skipWaiting();
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks =>
-    Promise.all(ks.filter(k => k.startsWith('urbis-reportes-') && k !== CACHE)
-                  .map(k => caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  // Red primero para los datos (siempre queremos lo último que reportó la
-  // comunidad); caché primero para lo que no cambia.
-  e.respondWith(
-    fetch(e.request).then(r => {
-      if (r && r.ok && e.request.url.startsWith(self.location.origin)) {
-        const copia = r.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copia)).catch(() => null);
-      }
-      return r;
-    }).catch(() => caches.match(e.request))
-  );
+/* Service worker de RETIRO de la app ligera de reportes.
+
+   Hasta la v783, reportes.html registraba este archivo con su propia caché y
+   —esto es lo grave— con el MISMO alcance ("/") que el service worker de la
+   aplicación completa: registrar uno sustituía al otro, y un teléfono que
+   hubiera abierto las dos páginas iba alternando entre dos cachés según cuál
+   fue la última. Ahora reportes.html solo redirige a index.html y no
+   registra nada.
+
+   Pero los teléfonos que YA lo tenían registrado lo conservan hasta que el
+   archivo cambie. Este es ese cambio: al activarse borra sus cachés, se da de
+   baja a sí mismo y recarga las ventanas que controlaba, para que la próxima
+   carga la atienda el service worker de la aplicación. No tiene manejador de
+   fetch a propósito: un service worker que no intercepta nada no puede servir
+   nada viejo. */
+const CACHE = 'urbis-reportes-v784-la-app-es-la-web';   // solo para el revisor de versión
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil((async function () {
+    const claves = await caches.keys();
+    await Promise.all(claves.filter(k => k.startsWith('urbis-reportes-')).map(k => caches.delete(k)));
+    await self.registration.unregister();
+    const ventanas = await self.clients.matchAll({ type: 'window' });
+    ventanas.forEach(function (v) { try { v.navigate(v.url); } catch (err) {} });
+  })());
 });

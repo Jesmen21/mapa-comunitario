@@ -28,8 +28,10 @@ suben las dos. Nada de trabajar directo sobre `main`.
 ## La versión va en siete archivos
 
 `service-worker.js`, `index.html` (incluido `window.URBIS_APP_VERSION`),
-`css/main.css`, `analisis-ia.html`, `seguimiento.html`, y los dos de la app
-ligera: `reportes.html` y `sw-reportes.js`.
+`css/main.css`, `analisis-ia.html`, `seguimiento.html`, y los dos de la
+entrada del APK URBIS_CO: `reportes.html` (que solo redirige a `index.html`;
+el APK la lleva grabada como dirección de arranque y no se puede quitar) y
+`sw-reportes.js` (un service worker de retiro que se da de baja solo).
 
 Tienen que llevar exactamente el mismo texto. Es lo que rompe la caché del
 navegador: con uno desactualizado, un teléfono se queda con la mitad de la
@@ -43,9 +45,9 @@ sed -i 's/682-lo-que-sea/683-lo-nuevo/g' \
 ```
 
 `node pruebas/revisar.js` comprueba que los siete coincidan. Los dos últimos
-entraron en la v780: llevaban desde la 597 congelados, y como la app ligera
-comparte archivos con la grande, pedirlos con una versión vieja rompe las dos
-de maneras distintas.
+entraron en la v780, cuando todavía eran una app ligera aparte: llevaban
+desde la 597 congelados. En la v784 la app ligera se retiró —el APK abre la
+misma interfaz que la web— y quedan como entrada y como retiro.
 
 ## Las pruebas
 
