@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=790-dos-tandas-un-numero">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=791-el-perfil-primero">
 </head>
 <body>
 
@@ -35,9 +35,12 @@
 
   <!-- ══ 1. PORTADA ══════════════════════════════════════════════════════ -->
   <section class="sp-view" data-view="home" aria-labelledby="sp-h1">
-    <!-- Lo último publicado va PRIMERO, antes del título y de las gráficas.
-         Quien abre el módulo viene a saber qué pasó, no a leer de qué se
-         trata el módulo: eso ya lo sabe, y si no, sigue estando justo debajo. -->
+    <!-- El módulo abre en el perfil del gobernante: la placa con el veredicto
+         de fiabilidad y las tres cuentas que lo producen es lo PRIMERO. Quien
+         entra pregunta «¿quién gobierna y qué tal va?», y esa es la respuesta
+         corta; tocarla abre la ficha completa. Debajo, lo último publicado;
+         y solo después el título del módulo, que ya se sabe de qué trata. -->
+    <div id="sp-hero-ficha"></div>
     <div id="sp-acceso-muro"></div>
 
     <div class="sp-lede">
@@ -47,13 +50,6 @@
          posiciones del gobierno. Cada hecho lleva su fecha real y el enlace a la fuente.</p>
       <p class="sp-who"><span id="sp-presi">—</span> <em id="sp-periodo"></em></p>
     </div>
-
-    <!-- La ficha del gobernante, arriba y con su veredicto a la vista. Estaba
-         de quinta en la lista de secciones, debajo de las gráficas y de las
-         cifras: existía, pero había que ir a buscarla. Quien entra al módulo
-         pregunta primero «¿quién gobierna y qué tal va?», y esa es justamente
-         la respuesta corta. -->
-    <button type="button" class="sp-acceso-ficha" id="sp-acceso-ficha" hidden></button>
 
     <!-- Las gráficas van primero: es lo que la gente viene a mirar, y se leen
          de un vistazo sin tener que entrar a ninguna sección. -->
@@ -71,7 +67,7 @@
        solo quiere saber qué pasó hoy sin tener que elegir una categoría. -->
   <section class="sp-view" data-view="hoy" aria-labelledby="sp-hoy-h">
     <header class="sp-vhead" id="sp-hoy-head">
-      <p class="sp-vnum">00</p>
+      <p class="sp-vnum">02</p>
       <h2 id="sp-hoy-h">Al día</h2>
       <p class="sp-vdek">Todo lo registrado, del más reciente al más antiguo.
          Cada tarjeta lleva su color de tema y su fuente.</p>
@@ -86,7 +82,7 @@
   <!-- ══ 1c. BALANCE DEL PERIODO ═════════════════════════════════════════ -->
   <section class="sp-view" data-view="balance" aria-labelledby="sp-bal-h">
     <header class="sp-vhead" id="sp-bal-head">
-      <p class="sp-vnum">06</p>
+      <p class="sp-vnum">04</p>
       <h2 id="sp-bal-h">Balance del periodo</h2>
       <p class="sp-vdek">Qué patrón se repite cuando se miran todos los hechos juntos.</p>
     </header>
@@ -96,7 +92,7 @@
   <!-- ══ 2. LÍNEA DE TIEMPO · elegir tema ════════════════════════════════ -->
   <section class="sp-view" data-view="timeline" aria-labelledby="sp-tl-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">01</p>
+      <p class="sp-vnum">03</p>
       <h2 id="sp-tl-h">Línea de tiempo</h2>
       <p class="sp-vdek">Hechos y decisiones documentadas, agrupados por tema. Elige uno para leerlo.</p>
     </header>
@@ -109,6 +105,7 @@
       <div>
         <p class="sp-vnum" id="sp-lista-cat">Tema</p>
         <h2 id="sp-lista-h">—</h2>
+        <p class="sp-vdek">Los hechos de este tema, del más reciente al más antiguo; dentro del mismo día, lo más polémico primero.</p>
       </div>
       <div class="sp-controls">
         <div class="sp-combo" id="sp-combo"></div>
@@ -151,7 +148,7 @@
   <!-- ══ 5. CONTRADICCIONES ══════════════════════════════════════════════ -->
   <section class="sp-view" data-view="contradicciones" aria-labelledby="sp-cx-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">02</p>
+      <p class="sp-vnum">01</p>
       <h2 id="sp-cx-h">Contradicciones</h2>
       <p class="sp-vdek">Cambios de postura y posiciones en tensión. Cada caso muestra lo que se dijo
          antes y lo que se dice ahora, con las dos fuentes. También se incluyen las acusaciones que
@@ -163,7 +160,7 @@
   <!-- ══ 7. PARTICIPACIÓN EXTRANJERA ═════════════════════════════════════ -->
   <section class="sp-view" data-view="extranjera" aria-labelledby="sp-ext-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">07</p>
+      <p class="sp-vnum">05</p>
       <h2 id="sp-ext-h">Participación extranjera</h2>
       <p class="sp-vdek">Hechos documentados en los que interviene un actor de fuera del país:
          gobiernos, empresas, organismos u operadores políticos. Es un recuento de lo que está
@@ -176,7 +173,7 @@
   <!-- ══ 6. BALANCE FODA ═════════════════════════════════════════════════ -->
   <section class="sp-view" data-view="foda" aria-labelledby="sp-foda-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">03</p>
+      <p class="sp-vnum">08</p>
       <h2 id="sp-foda-h">Balance FODA</h2>
       <p class="sp-vdek">
         <span class="sp-tag sp-tag-interp">Interpretación</span>
@@ -191,14 +188,15 @@
   <!-- ══ 8. FICHA DEL GOBERNANTE ═════════════════════════════════════════ -->
   <section class="sp-view" data-view="ficha" aria-labelledby="sp-fi-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">08</p>
+      <p class="sp-vnum">00</p>
       <h2 id="sp-fi-h">Ficha del gobernante</h2>
       <p class="sp-vdek">
         <span class="sp-tag sp-tag-interp">Interpretación</span>
-        Una ficha de personaje, con el registro como única fuente: cada medida es una cuenta sobre
-        los hechos ya publicados, y cada regla está impresa al lado del resultado. Se recalcula sola
-        cuando entra un hecho nuevo. No mide honestidad ni acierto de gobierno — mide lo que se
-        puede contar.
+        Una ficha de personaje, con el registro como única fuente. Primero lo que pesa: los casos de
+        corrupción con su estado probatorio; después las contradicciones; después los rasgos, que
+        salen de cuentas con umbral. El veredicto es el peor de tres techos y lleva su regla al lado.
+        Se recalcula solo cuando entra un hecho nuevo. No mide honestidad ni acierto de gobierno —
+        mide lo que se puede contar.
       </p>
     </header>
     <div class="sp-ficha" id="sp-ficha"></div>
@@ -207,7 +205,7 @@
   <!-- ══ 7. TEMAS DE FONDO ═══════════════════════════════════════════════ -->
   <section class="sp-view" data-view="temas" aria-labelledby="sp-tf-h">
     <header class="sp-vhead">
-      <p class="sp-vnum">04</p>
+      <p class="sp-vnum">07</p>
       <h2 id="sp-tf-h">Temas de fondo</h2>
       <p class="sp-vdek">Contexto que ayuda a entender la gestión y que no pertenece a una fecha concreta.</p>
     </header>
@@ -217,7 +215,7 @@
   <!-- ══ 9. INDICADORES (gráficas) ═══════════════════════════════════════ -->
   <section class="sp-view" data-view="indicadores" aria-labelledby="sp-ind-h">
     <header class="sp-vhead" id="sp-ind-head">
-      <p class="sp-vnum">05</p>
+      <p class="sp-vnum">06</p>
       <h2 id="sp-ind-h">Indicadores</h2>
       <p class="sp-vdek">Las cifras que se pueden medir y seguir en el tiempo. Cada serie lleva su fuente,
          y donde un dato no está publicado se dice, no se estima.</p>
@@ -314,6 +312,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=790-dos-tandas-un-numero"></script>
+<script src="js/70-seguimiento.js?v=791-el-perfil-primero"></script>
 </body>
 </html>

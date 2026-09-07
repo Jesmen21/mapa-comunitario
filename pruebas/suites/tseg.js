@@ -357,6 +357,10 @@ const server = http.createServer((req, res) => {
     return {
       posicion: hijos.indexOf(caja),
       total: hijos.length,
+      // Desde la v791 el módulo abre en el perfil: la placa del gobernante va
+      // primero y lo último publicado, justo debajo.
+      primero: (hijos[0] || {}).id || '',
+      placaPrimero: !!(hijos[0] && hijos[0].querySelector && hijos[0].querySelector('.sp-fi-placa .sp-fi-vval')),
       // Ancho respecto a la columna: "una ventana muy corta" era el reclamo.
       anchoPct: Math.round(100 * rCaja.width / home.getBoundingClientRect().width),
       alto: Math.round(rCaja.height),
@@ -380,7 +384,9 @@ const server = http.createServer((req, res) => {
   console.log('  ' + aldia.tema + ' · ' + aldia.fecha + ' · ' + aldia.semana);
 
   chk(!!aldia, 'la portada trae el bloque de lo último publicado');
-  chk(aldia.posicion === 0, 'y es lo PRIMERO de la portada (va ' + (aldia.posicion + 1) + 'º)');
+  chk(aldia.placaPrimero && aldia.primero === 'sp-hero-ficha',
+      'lo primero de la portada es la placa del gobernante con su veredicto (' + aldia.primero + ')');
+  chk(aldia.posicion === 1, 'y lo último publicado va justo debajo (va ' + (aldia.posicion + 1) + 'º)');
   chk(aldia.arribaDelTitulo && aldia.arribaDeGraficas,
       'por encima del título del módulo y de las gráficas');
   chk(aldia.anchoPct >= 95, 'ocupa el ancho completo de la columna (' + aldia.anchoPct + '%)');

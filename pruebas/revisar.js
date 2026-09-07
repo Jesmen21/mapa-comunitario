@@ -481,6 +481,49 @@ console.log('\n  -- la versión --');
 
    Se comprueba lo que se puede leer sin ejecutar nada: que ningún nombre de
    `window` se asigne como función en un archivo y como lista en otro. */
+console.log('\n  -- la ficha del gobernante --');
+{
+  /* La escalera de fiabilidad se rehizo en la v791: cinco peldaños por cómo
+     se ha mostrado, sin el intermedio de gracia. Los ids viejos no pueden
+     quedar en ningún archivo servido: uno que sobreviva en una clase CSS o
+     en una comparación deja una rama muerta que nadie ve fallar. Se buscan
+     como identificadores —entre comillas o en la clase sp-fi-v-—, no como
+     palabra suelta: «reparos» sigue siendo un campo legítimo de los
+     indicadores y «sostiene» una palabra del castellano. */
+  const viejos = /'(entredicho|reparos|sostiene)'|"(entredicho|reparos|sostiene)"|sp-fi-v-(entredicho|reparos|sostiene)\b/g;
+  const servidos = ['js/70-seguimiento.js', 'css/70-seguimiento.css', 'seguimiento.html'];
+  const restos = [];
+  servidos.forEach(f => {
+    leer(f).split('\n').forEach((l, i) => { if (viejos.test(l)) restos.push(f + ':' + (i + 1)); viejos.lastIndex = 0; });
+  });
+  comprobar('los peldaños viejos de la escalera no sobreviven en lo servido',
+    restos.length === 0, restos.length ? restos.join(', ') : servidos.length + ' archivos revisados');
+
+  /* Una sola escala tipográfica: todo font-size del módulo sale de --t-1…--t-9.
+     Un tamaño suelto es el primero de una segunda escala. */
+  const css = leer('css/70-seguimiento.css');
+  const cuerpo = css.slice(css.indexOf('*{ box-sizing'));
+  const sueltos = [];
+  cuerpo.split('\n').forEach((l, i) => {
+    const m = /font-size:\s*(?!var\(--t-\d\))([^;}]+)/.exec(l);
+    if (m) sueltos.push((i + 1) + ' → ' + m[1].trim());
+  });
+  comprobar('todo tamaño de letra del módulo sale de la escala --t-N',
+    sueltos.length === 0, sueltos.length ? sueltos.slice(0, 5).join(' · ') : (cuerpo.match(/font-size:var\(--t-\d\)/g) || []).length + ' tamaños, todos de la escala');
+
+  /* El JSON y su sección de casos: estados solo los cuatro conocidos, y un
+     caso 'confirmado' sin quién lo confirmó ni fuentes no puede pesar. */
+  const d = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+  const lista = ((d.casos || {}).lista) || [];
+  const ESTADOS = ['confirmado', 'en-investigacion', 'senalamiento', 'por-documentar'];
+  const malos = lista.filter(c => !ESTADOS.includes(c.estado)).map(c => c.id + ':' + c.estado);
+  const cojos = lista.filter(c => c.estado === 'confirmado' && (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)).map(c => c.id);
+  comprobar('los casos de corrupción llevan un estado probatorio conocido',
+    malos.length === 0, malos.length ? malos.join(', ') : lista.length + ' casos');
+  comprobar('y ningún confirmado va sin quién lo confirmó, fecha y fuentes',
+    cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún confirmado cojo');
+}
+
 console.log('\n  -- un nombre, una cosa --');
 {
   const ASIG = /\bwindow\.([A-Za-z_$][\w$]*)\s*(?<![=!<>])=(?!=)\s*(.*)/;

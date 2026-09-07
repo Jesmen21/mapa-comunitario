@@ -3061,7 +3061,7 @@
     }
   },
   "contradicciones": {
-    "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento. Un caso puede llevar 'cuenta': false: queda registrado y visible, pero NO suma al veredicto de fiabilidad de la Ficha del gobernante. Se usa cuando el propio matiz dice que el giro no habla de su palabra —una conversión religiosa, por ejemplo—. La ficha muestra esos casos igual, marcados como no contados y con el motivo, para que la decisión esté a la vista y no escondida en el código.",
+    "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento. Un caso puede llevar 'cuenta': false: queda registrado y visible, pero NO suma al veredicto de fiabilidad de la Ficha del gobernante. Se usa cuando el propio matiz dice que el giro no habla de su palabra —una conversión religiosa, por ejemplo—. La ficha muestra esos casos igual, marcados como no contados y con el motivo, para que la decisión esté a la vista y no escondida en el código. Los casos de CORRUPCIÓN no van aquí sino en 'casos', con su estado probatorio: una contradicción es una palabra contra otra; un caso es un hecho contra la ley.",
     "casos": [
       {
         "estado": "documentada",
@@ -3179,6 +3179,95 @@
           {
             "n": "Semana · lo que dice sobre subsidios, mínimo y pensiones",
             "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-revelo-cuales-son-las-mentiras-que-han-dicho-de-sus-propuestas-subsidios-salario-minimo-y-pensiones/202619/"
+          }
+        ]
+      }
+    ]
+  },
+  "casos": {
+    "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Solo 'confirmado' pesa en la ficha del gobernante; los demás se muestran con su etiqueta y no mueven el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad, con número o fecha de apertura en el registro. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos.",
+    "lista": [
+      {
+        "id": "los-nunca",
+        "titulo": "",
+        "estado": "por-documentar",
+        "queSeConfirmo": "",
+        "quienLoConfirmo": "",
+        "fecha": "",
+        "monto": null,
+        "implicados": [],
+        "fuentes": [],
+        "_pendiente": "El dueño del registro lo nombró como «los Nunca» (así escrito) y lo dio por confirmado. URBIS no encontró en el registro ningún hecho con ese nombre y no lo buscó fuera: hay que llenar titulo, queSeConfirmo, quienLoConfirmo, fecha y fuentes, y solo entonces pasarlo a 'confirmado'."
+      },
+      {
+        "id": "fundacion-primera-dama",
+        "titulo": "La fundación de la primera dama, creada un mes antes de la posesión, encabeza los canales de donación del terremoto",
+        "estado": "senalamiento",
+        "queSeConfirmo": "Nada todavía. Una investigación periodística documentó que la Fundación Colombia Luz y Sonrisas, con la primera dama como representante legal y constituida el 7 de julio de 2026, aparece primera entre las tres organizaciones habilitadas para recibir donaciones en dinero; no hay hallazgo de desvío ni pronunciamiento de ningún organismo de control.",
+        "quienLoConfirmo": "Ninguna autoridad. Lo publicó Cuestión Pública; URBIS no encontró denuncia formal ante Contraloría, Procuraduría o Fiscalía.",
+        "fecha": "2026-08-20",
+        "monto": null,
+        "implicados": [
+          "Ana Lucía Pineda (primera dama)"
+        ],
+        "fuentes": [
+          {
+            "n": "Cuestión Pública · la investigación original",
+            "u": "https://cuestionpublica.com/ayudas-que-recoge-la-primera-dama-van-a-parar-a-su-propia-fundacion/"
+          },
+          {
+            "n": "Publimetro · resumen de la investigación",
+            "u": "https://www.publimetro.co/noticias/2026/08/21/investigacion-pone-la-lupa-sobre-ana-lucia-pineda-su-fundacion-estaria-recibiendo-donaciones-del-terremoto/"
+          },
+          {
+            "n": "Colombia.com · Petro cuestiona el envío de ayudas a la fundación",
+            "u": "https://www.colombia.com/actualidad/nacionales/gustavo-petro-cuestiona-ayudas-humanitarias-de-la-primera-dama-597116"
+          },
+          {
+            "n": "Chicanoticias · la primera dama responde a las críticas",
+            "u": "https://www.chicanoticias.com/2026/08/21/ana-lu-criticas-su-fundacion/"
+          },
+          {
+            "n": "El Tiempo · cómo funciona la campaña Colombia, un solo corazón",
+            "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/colombia-un-solo-corazon-asi-puede-donar-a-la-campana-liderada-por-la-primera-dama-para-ayudar-a-los-damnificados-por-el-terremoto-3577595"
+          },
+          {
+            "n": "Portafolio · así funciona la campaña y sus ayudas entregadas",
+            "u": "https://www.portafolio.co/economia/gobierno/colombia-un-solo-corazon-asi-funciona-la-campana-liderada-por-la-primera-dama-y-estas-son-sus-ayudas-entregadas-500491"
+          }
+        ]
+      },
+      {
+        "id": "declaracion-conflicto-intereses",
+        "titulo": "La declaración de conflicto de intereses del presidente no registra cónyuge ni las empresas de su actividad privada anterior",
+        "estado": "senalamiento",
+        "queSeConfirmo": "Nada todavía. Varios medios señalaron que la declaración de bienes y conflicto de intereses presentada el 24 de agosto omite el cónyuge y sociedades como De la Espriella Abogados, Ron Defensor o el restaurante Místico; la Presidencia no ha explicado las omisiones y ningún organismo de control ha abierto actuación conocida.",
+        "quienLoConfirmo": "Ninguna autoridad. Lo señalaron Cambio, BluRadio y El Espectador sobre el documento público.",
+        "fecha": "2026-08-24",
+        "monto": null,
+        "implicados": [
+          "Abelardo de la Espriella"
+        ],
+        "fuentes": [
+          {
+            "n": "El Tiempo · desglose de la primera declaración de renta",
+            "u": "https://www.eltiempo.com/datos/esta-es-la-primera-declaracion-de-renta-de-abelardo-de-la-espriella-como-presidente-de-colombia-desglose-del-documento-3580741"
+          },
+          {
+            "n": "Cambio · negó estar casado y declaró cero propiedades",
+            "u": "https://cambiocolombia.com/poder/articulo/2026/8/primicia-la-primera-declaracion-de-renta-de-de-la-espriella-como-presidente-nego-estar-casado-declaro-cero-propiedades-y-un-patrimonio-millonario"
+          },
+          {
+            "n": "El Espectador · propiedades, deudas y patrimonio reportado",
+            "u": "https://www.elespectador.com/politica/estas-son-las-propiedades-deudas-y-patrimonio-que-reporto-de-la-espriella-como-presidente-noticias-hoy/"
+          },
+          {
+            "n": "Infobae · movimientos reportados al asumir el cargo",
+            "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-presento-su-primera-declaracion-de-renta-como-presidente-estos-fueron-los-movimientos-que-reporto-al-asumir-el-cargo/"
+          },
+          {
+            "n": "BluRadio · no reporta cónyuge en su declaración de renta",
+            "u": "https://www.bluradio.com/nacion/de-la-espriella-no-reporta-conyuge-en-su-declaracion-de-renta-tiene-patrimonio-de-10-272-millones-rg10"
           }
         ]
       }
