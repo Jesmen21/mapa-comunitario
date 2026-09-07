@@ -390,5 +390,55 @@ console.log('\n  -- la versión --');
   } catch (e) { /* sin git, no se puede comparar: no es motivo para fallar */ }
 }
 
+// ── 8. dos cosas distintas con el mismo nombre en `window` ───────────────
+/* Los módulos de URBIS son scripts sueltos que se hablan por `window`, y el
+   orden de carga decide quién gana. Un mismo nombre usado para dos cosas no
+   da error en ninguna parte: el segundo pisa al primero y lo que lo lee se
+   encuentra con algo que no esperaba.
+
+   Pasó de verdad y tardó meses en verse. `window.urbisPermisos` era, en un
+   archivo, la FUNCIÓN que dice qué puede hacer quien usa la aplicación y, en
+   otro, la LISTA de permisos concedidos. Ganaba la función, así que dar un
+   permiso guardaba la fila en la hoja y después decía que no se había
+   podido —`.push` sobre una función—, y comprobar si alguien tenía permiso
+   especial lanzaba. En pantalla parecía otra cosa: «no se pudo dar
+   permiso».
+
+   Se comprueba lo que se puede leer sin ejecutar nada: que ningún nombre de
+   `window` se asigne como función en un archivo y como lista en otro. */
+console.log('\n  -- un nombre, una cosa --');
+{
+  const ASIG = /\bwindow\.([A-Za-z_$][\w$]*)\s*(?<![=!<>])=(?!=)\s*(.*)/;
+  const forma = (resto) => {
+    const t = resto.trim();
+    if (/^(function\b|async\b|\([^)]*\)\s*=>)/.test(t)) return 'función';
+    if (t.startsWith('[')) return 'lista';
+    if (/^[\w$.()\[\]]+\.(filter|map|slice|concat)\(/.test(t)) return 'lista';
+    return null;   // lo demás no se puede clasificar leyendo una línea
+  };
+  const donde = {};
+  fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).sort().forEach(f => {
+    leer('js/' + f).split('\n').forEach((l, i) => {
+      if (/^\s*(\/\/|\*|\/\*)/.test(l)) return;
+      const m = ASIG.exec(l);
+      if (!m) return;
+      const cual = forma(m[2]);
+      if (!cual) return;
+      (donde[m[1]] = donde[m[1]] || []).push({ archivo: f, linea: i + 1, forma: cual });
+    });
+  });
+  const chocan = Object.keys(donde).filter(n => {
+    const formas = new Set(donde[n].map(x => x.forma));
+    const archivos = new Set(donde[n].map(x => x.archivo));
+    return formas.size > 1 && archivos.size > 1;
+  });
+  comprobar('ningún nombre de window es función en un archivo y lista en otro',
+    chocan.length === 0,
+    chocan.length
+      ? chocan.map(n => 'window.' + n + ' (' +
+          donde[n].map(x => x.archivo + ':' + x.linea + ' ' + x.forma).join(' · ') + ')').join(' | ')
+      : Object.keys(donde).length + ' nombres revisados');
+}
+
 console.log('\n  ' + (fallos ? fallos + ' comprobaciones fallaron' : 'todas las comprobaciones pasaron') + '\n');
 process.exit(fallos ? 1 : 0);

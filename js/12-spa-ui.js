@@ -2733,7 +2733,16 @@
   // ════════════════════════════════════════════════════════════════════════
   // ADMIN URBIS (cuenta exclusiva del dueño) + EVENTO ESPECIAL "SOL SOLIDARIO"
   // ════════════════════════════════════════════════════════════════════════
-  window.urbisPermisos = window.urbisPermisos || [];
+  /* Las FILAS de permisos concedidos, que no son lo mismo que los permisos
+     de quien está usando la aplicación: eso lo responde `urbisPermisos()`,
+     la función de js/13h, que lee la sesión. Los tres sitios de acá abajo
+     leían ese nombre esperando una lista y, desde que existe la función,
+     hacían `.some`, `.forEach` y `.push` sobre ella: comprobar si alguien
+     tenía permiso especial lanzaba, y dar un permiso guardaba la fila en la
+     hoja y después decía que no se había podido. Las filas tienen su propio
+     nombre —el mismo con el que las reparte la carga— y el que se disputaban
+     queda para la función. */
+  window.urbisPermisosFilas = window.urbisPermisosFilas || [];
   function _adminUser(){ return String((window.URBIS_CONFIG && window.URBIS_CONFIG.ADMIN_USER) || 'urbisadmin').toLowerCase(); }
   // Ser admin depende de la SESIÓN que devolvió el servidor, no de una marca
   // local. Antes, sin sesión, se respetaba el flag de localStorage: bastaba
@@ -2869,7 +2878,7 @@
 
   function urbisTienePermisoEspecial(usuario){
     const u = String(usuario||'').trim().toLowerCase(); if(!u) return false;
-    return (window.urbisPermisos||[]).some(p => {
+    return (window.urbisPermisosFilas||[]).some(p => {
       const parts = _metaSplit(p.descripcion);
       return (parts[0]||'').trim().toLowerCase() === u && (parts[1]||'').toLowerCase().indexOf('especial') !== -1;
     });
@@ -2884,7 +2893,7 @@
   };
   window.urbisListaPermisos = function(){
     const set = {};
-    (window.urbisPermisos||[]).forEach(p => { const u = (_metaSplit(p.descripcion)[0]||'').trim(); if(u) set[u.toLowerCase()] = u; });
+    (window.urbisPermisosFilas||[]).forEach(p => { const u = (_metaSplit(p.descripcion)[0]||'').trim(); if(u) set[u.toLowerCase()] = u; });
     return Object.values(set);
   };
   window.urbisOtorgarPermiso = function(usuario, cb){
@@ -2894,7 +2903,7 @@
     if(urbisTienePermisoEspecial(u)){ alert('@' + u + ' ya tiene permiso de evento especial.'); if(cb) cb(); return; }
     const fila = { tipo:'🔑 Permiso', lat:'0', lng:'0', descripcion: u + '~~~evento_especial', fecha:new Date().toISOString() };
     window.urbisGuardarFila(fila)
-      .then(()=>{ (window.urbisPermisos = window.urbisPermisos||[]).push(fila); alert('✅ Permiso de evento especial otorgado a @' + u); if(cb) cb(); })
+      .then(()=>{ (window.urbisPermisosFilas = window.urbisPermisosFilas||[]).push(fila); alert('✅ Permiso de evento especial otorgado a @' + u); if(cb) cb(); })
       .catch(err=> alert('No se pudo dar permiso: ' + (err && err.message || err)));
   };
 

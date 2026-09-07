@@ -38,7 +38,9 @@ const META = [
   { tipo: '📨 Petición', lat: '7.8942', lng: '-72.5080', descripcion: 'pet | quiero ser JAC |', fecha: ahora },
   { tipo: '🏪 Emprendimiento', lat: '7.8943', lng: '-72.5081', descripcion: 'e | Tienda La Playa |', fecha: ahora },
   { tipo: '📍 Ubicación', lat: '7.8944', lng: '-72.5082', descripcion: 'u | mi casa |', fecha: ahora },
-  { tipo: '🔑 Permiso', lat: '7.8945', lng: '-72.5083', descripcion: 'perm | publicar |', fecha: ahora }
+  /* El formato REAL que escribe «otorgar permiso»: usuario y permiso
+     separados por tildes, no por barras. */
+  { tipo: '🔑 Permiso', lat: '7.8945', lng: '-72.5083', descripcion: 'pepito~~~evento_especial', fecha: ahora }
 ];
 
 (async () => {
@@ -48,8 +50,8 @@ const META = [
   await ctx.addInitScript(() => {
     if (window.top !== window) return;
     try {
-      localStorage.setItem('urbis_auth_session_v1', JSON.stringify({ usuario: 'vecina', rol: 'citizen',
-        session_token: 't', active: true, verified: true }));
+      localStorage.setItem('urbis_auth_session_v1', JSON.stringify({ usuario: 'urbisadmin', rol: 'admin',
+        es_admin: true, permisos: 'moderar', session_token: 't', active: true, verified: true }));
       localStorage.removeItem('urbis_db_cache_v1');
     } catch (e) {}
   });
@@ -129,6 +131,37 @@ const META = [
       return k + ':' + (el ? (el.textContent || '').trim() : '—');
     });
     o.visibles = (window.urbisDatosVisibles && window.urbisDatosVisibles() || []).length;
+
+    /* ── Los permisos concedidos ──────────────────────────────────────
+       Las filas de permisos y la función que dice qué puede hacer quien usa
+       la aplicación compartían el nombre `urbisPermisos`, y ganaba la
+       función: los tres sitios que esperaban una lista hacían `.some`,
+       `.forEach` y `.push` sobre ella. */
+    o.lista = (function () {
+      try { return window.urbisListaPermisos(); } catch (e) { return 'ERROR ' + e.message; }
+    })();
+    o.puedeCrear = (function () {
+      try { return typeof window.urbisPuedeCrearEspecial(); } catch (e) { return 'ERROR ' + e.message; }
+    })();
+    o.misPermisos = (function () {
+      try { return window.urbisPermisos(); } catch (e) { return 'ERROR ' + e.message; }
+    })();
+    /* Y dar uno nuevo: la fila se guarda y la aplicación tiene que decir que
+       sí. Antes guardaba la fila y a continuación decía que no se había
+       podido, porque el `.push` reventaba DESPUÉS de escribir en la hoja. */
+    o.avisos = [];
+    const alertaAntes = window.alert;
+    window.alert = m => o.avisos.push(String(m));
+    const guardarAntes = window.urbisGuardarFila;
+    let filaGuardada = null;
+    window.urbisGuardarFila = f => { filaGuardada = f; return Promise.resolve({ ok: true }); };
+    try { window.urbisOtorgarPermiso('juanita'); } catch (e) { o.avisos.push('LANZÓ ' + e.message); }
+    await esperar(400);
+    window.alert = alertaAntes; window.urbisGuardarFila = guardarAntes;
+    o.filaGuardada = filaGuardada ? String(filaGuardada.descripcion || '') : null;
+    o.listaTrasDar = (function () {
+      try { return window.urbisListaPermisos(); } catch (e) { return 'ERROR ' + e.message; }
+    })();
     return o;
   }, { C });
 
@@ -172,6 +205,22 @@ const META = [
     (r.metricas || []).join(' · ') || 'sin tarjetas');
   T('y el contador total cuenta el reporte',
     (r.mini || []).some(x => /^total:\s*1$/.test(x)), (r.mini || []).join(' · '));
+
+  console.log('\n  -- los permisos concedidos, que se llamaban igual que otra cosa --');
+  T('la lista de permisos concedidos se lee, y trae al de la fila',
+    Array.isArray(r.lista) && r.lista.indexOf('pepito') >= 0, JSON.stringify(r.lista));
+  T('preguntar si alguien puede crear el evento especial ya no lanza',
+    r.puedeCrear === 'boolean', String(r.puedeCrear));
+  T('y los permisos de quien usa la aplicación siguen respondiendo aparte',
+    Array.isArray(r.misPermisos) && r.misPermisos.indexOf('moderar') >= 0, JSON.stringify(r.misPermisos));
+  T('dar un permiso guarda la fila con su formato',
+    /^juanita~~~evento_especial$/.test(r.filaGuardada || ''), r.filaGuardada || 'no se guardó');
+  T('y lo dice: antes guardaba y a continuación decía que no se pudo',
+    (r.avisos || []).some(a => /Permiso de evento especial otorgado/.test(a)) &&
+    !(r.avisos || []).some(a => /No se pudo|LANZÓ/.test(a)),
+    (r.avisos || []).join(' · ') || 'sin avisos');
+  T('y el concedido queda en la lista, sin recargar',
+    Array.isArray(r.listaTrasDar) && r.listaTrasDar.indexOf('juanita') >= 0, JSON.stringify(r.listaTrasDar));
 
   console.log('');
   const errFin = err.filter(e => !/L is not defined|Unexpected end/.test(e));
