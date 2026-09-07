@@ -175,15 +175,33 @@
         '</div>';
     }
 
+    /* Quien tiene el permiso de vitrina administra emprendimientos concretos,
+       y eso no se ve en la lista de permisos: dice «Administrar la vitrina»
+       igual tenga tres negocios o ninguno. El caso que importa es el segundo
+       —pasa solo, cambiándole el dueño a un negocio— y sin decirlo queda una
+       persona con la llave y nada que abrir. */
+    function queAdministra(usuario) {
+      if (typeof window.urbisEmprendimientosDe !== 'function') return '';
+      const suyos = window.urbisEmprendimientosDe(usuario);
+      if (suyos.length) {
+        return '<small class="uper-negocios">🛍️ ' +
+          suyos.map(function (n) { return esc(n.nombre || n.id); }).join(' · ') + '</small>';
+      }
+      return '<small class="uper-negocios uper-sin-negocio">🛍️ Sin emprendimiento asignado</small>';
+    }
+
     function cargarEquipo() {
       api({ action:'perm_list' }).then(function (out) {
         const eq = out.equipo || [];
         lista.innerHTML = eq.length
           ? eq.map(function (p) {
+              const permisos = p.permisos || [];
               return '<div class="uper-miembro" data-usuario="' + esc(p.usuario) + '">' +
                 '<div><b>@' + esc(p.usuario) + '</b><small>' +
-                (p.permisos || []).map(function (id) { return ETIQUETAS[id].titulo; }).join(' · ') +
-                '</small></div><button type="button" class="uper-editar">Cambiar</button></div>';
+                permisos.map(function (id) { return ETIQUETAS[id].titulo; }).join(' · ') +
+                '</small>' +
+                (permisos.indexOf('vitrina') !== -1 ? queAdministra(p.usuario) : '') +
+                '</div><button type="button" class="uper-editar">Cambiar</button></div>';
             }).join('')
           : '<div class="uper-nadie">Todavía no le has dado permisos a nadie.</div>';
       }).catch(function (e) {

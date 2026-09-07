@@ -229,6 +229,55 @@ const FILAS = [
     errores.push(...err); await ctx.close();
   }
 
+  // ── 3b · El delegado entra a lo suyo, no al escaparate ───────────────
+  console.log('\n── El delegado, de una a su negocio ───────────────');
+  {
+    const { ctx, pg, err } = await abrirCon({ usuario: 'vecina', rol: 'citizen', permisos: 'vitrina', session_token: 't', active: true, verified: true });
+    const r = await pg.evaluate(async () => {
+      const esperar = ms => new Promise(x => setTimeout(x, ms));
+      const o = {};
+      // Como una persona: tocar la tarjeta del inicio.
+      const card = document.querySelector('.u52-module.vitrina');
+      o.hayCard = !!card;
+      if (card) card.click();
+      await esperar(1400);
+      const m = document.getElementById('urbis-vitrina-admin');
+      o.mostrador = !!m;
+      o.filas = m ? [...m.querySelectorAll('.uvit-fila .uadm-txt b')].map(x => x.textContent.trim()) : [];
+      // Y no se le vuelve a abrir encima si lo cierra para mirar el directorio.
+      const cerrar = m && m.querySelector('.ucfg-x');
+      if (cerrar) cerrar.click();
+      await esperar(400);
+      window.urbisIrAPantalla('home'); await esperar(200);
+      const card2 = document.querySelector('.u52-module.vitrina'); if (card2) card2.click();
+      await esperar(1200);
+      o.reabre = !!document.getElementById('urbis-vitrina-admin');
+      return o;
+    });
+    chk(r.hayCard && r.mostrador, 'al tocar la tarjeta se abre su mostrador, sin pasar por el escaparate');
+    chk(r.filas.length === 1 && /Don Luis/.test(r.filas[0] || ''), 'con su emprendimiento dentro: ' + r.filas.join(' · '));
+    chk(r.reabre === false, 'y si lo cierra para mirar el directorio, no se le abre encima otra vez');
+    errores.push(...err); await ctx.close();
+  }
+
+  // ── 3c · Y el administrador ve quién administra qué ──────────────────
+  console.log('\n── Quién administra qué ───────────────────────────');
+  {
+    const { ctx, pg, err } = await abrirCon({ usuario: 'urbisadmin', rol: 'admin', es_admin: true, es_dueno: true,
+      correo: 'urbisprocity@gmail.com', permisos: 'vitrina', session_token: 't', active: true, verified: true });
+    const r = await pg.evaluate(() => ({
+      hay: typeof window.urbisEmprendimientosDe === 'function',
+      deVecina: typeof window.urbisEmprendimientosDe === 'function' ? window.urbisEmprendimientosDe('@Vecina') : null,
+      deNadie: typeof window.urbisEmprendimientosDe === 'function' ? window.urbisEmprendimientosDe('juanita') : null
+    }));
+    chk(r.hay, 'el módulo dice qué emprendimientos administra una persona');
+    chk(!!r.deVecina && r.deVecina.length === 1 && /Don Luis/.test(r.deVecina[0].nombre),
+        'de la dueña, el suyo — y lo encuentra escrito con @ y mayúsculas (' + JSON.stringify(r.deVecina) + ')');
+    chk(!!r.deNadie && r.deNadie.length === 0,
+        'y de quien no administra ninguno, la lista vacía: es el caso que hay que poder decir');
+    errores.push(...err); await ctx.close();
+  }
+
   // ── 4 · El portero, sin pasar por la pantalla ────────────────────────
   console.log('\n── El portero de las escrituras ───────────────────');
   {

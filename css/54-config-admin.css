@@ -324,6 +324,13 @@
 .uper-miembro>div{ flex:1; min-width:0; }
 .uper-miembro b{ display:block; font-size:.84rem; color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E; }
 .uper-miembro small{ display:block; font-size:.7rem; line-height:1.35; margin-top:2px; overflow-wrap:anywhere; }
+/* Qué emprendimientos administra quien tiene el permiso de vitrina. La línea
+   va aparte de la lista de permisos y en su color, porque contesta otra
+   pregunta: no QUÉ puede hacer, sino SOBRE QUÉ. Y en ámbar cuando no
+   administra ninguno — una llave sin puerta es lo que hay que ver. */
+.uper-negocios{ margin-top:4px !important; font-weight:700;
+  color:#0369A1 !important; -webkit-text-fill-color:#0369A1; }
+.uper-sin-negocio{ color:#8A5D12 !important; -webkit-text-fill-color:#8A5D12; }
 .uper-miembro button{
   flex:0 0 auto; padding:8px 13px; border:0; border-radius:10px; cursor:pointer;
   background:rgba(56,189,248,.18); color:#0369A1 !important; -webkit-text-fill-color:#0369A1;

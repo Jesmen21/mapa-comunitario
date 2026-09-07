@@ -325,6 +325,16 @@
   window.urbisPuedeEditarEmprendimiento = function (id) {
     return puedoEditar(negocios().find(function (x) { return x.id === String(id || ''); }));
   };
+  /* Qué administra cada persona. Lo pregunta el reparto de permisos (js/13h)
+     para poder decirlo junto a su nombre: alguien con el permiso de vitrina y
+     ningún emprendimiento asignado es un caso que, si no se dice, no se ve —
+     y pasa solo, cambiando de dueño un negocio. */
+  window.urbisEmprendimientosDe = function (usuario) {
+    const u = String(usuario || '').trim().replace(/^@/, '').toLowerCase();
+    if (!u) return [];
+    return negocios().filter(function (n) { return n.duenio === u; })
+      .map(function (n) { return { id: n.id, nombre: n.nombre, estado: n.estado }; });
+  };
   function nuevoId() { return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
   // ── Leer y escribir el sobre ─────────────────────────────────────────────
@@ -1207,11 +1217,25 @@
   }
   window.urbisPintarDirectorioVitrina = pintarDirectorio;
 
+  /* El delegado no viene a vitrinear: viene a su negocio. Al entrar al
+     módulo, si no es administrador y tiene emprendimiento asignado, se le
+     abre su mostrador de una. El directorio sigue ahí —el botón de volver
+     lo deja atrás— pero no es lo que ve primero quien tiene trabajo que
+     hacer. Una sola vez por visita: si cierra el mostrador para mirar el
+     directorio, no se le vuelve a abrir encima. */
+  let _yaAbrioLoSuyo = false;
+  function abrirLoSuyoSiToca() {
+    if (_yaAbrioLoSuyo || esAdmin() || !puedo()) return;
+    if (!misNegocios().length) return;
+    _yaAbrioLoSuyo = true;
+    try { window.urbisAbrirVitrinaAdmin(); } catch (e) {}
+  }
+
   // Al entrar al módulo se repinta: los datos pueden haber llegado después
   // de que la pantalla se montara.
   document.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('[data-u52-go="vitrina"]')) {
-      setTimeout(pintarDirectorio, 260);
+      setTimeout(function () { pintarDirectorio(); abrirLoSuyoSiToca(); }, 260);
     }
   });
 
