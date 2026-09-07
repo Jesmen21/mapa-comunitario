@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v786-la-vitrina-por-invitacion';
+const URBIS_CACHE = 'urbis-v787-abrego-y-guabinas-en-llamas';
 const URBIS_ASSETS = [
   './',
   './index.html',
