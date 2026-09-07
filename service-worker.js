@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v787-el-portero-de-la-vitrina';
+const URBIS_CACHE = 'urbis-v788-diez-empresarios-en-quibdo';
 const URBIS_ASSETS = [
   './',
   './index.html',
