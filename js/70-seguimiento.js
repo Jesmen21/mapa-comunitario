@@ -11,6 +11,11 @@
   'use strict';
 
   var D = null;                 // datos del JSON
+  /* El registro CERRADO del gobierno anterior (assets/data/seguimiento-petro.json).
+     Vive aparte porque no cambia: la rutina diaria no lo toca y así su diff no
+     engorda. Se carga en segundo plano, después del registro vivo, y si no
+     llega la pestaña lo dice en vez de quedarse en blanco. */
+  var DA = null;
   var ruta = { v: 'home' };     // vista actual
   var filtro = { tema: 'todos', tipo: 'todos' };
   var fodaSel = 'fortalezas';
@@ -57,8 +62,12 @@
     var t = new Date(iso + 'T00:00:00').getTime();
     return isNaN(t) ? 0 : Math.max(0, Math.floor((Date.now() - t) / 86400000));
   }
-  function cat(id) {
-    return (D.categorias && D.categorias[id]) || { nombre: id, icono: '•' };
+  /* El registro del gobierno anterior trae sus propias categorías —Paz Total,
+     Reformas— que no existen en el vivo. Sin el segundo parámetro, la ficha
+     del anterior mostraría el identificador crudo en vez del nombre. */
+  function cat(id, reg) {
+    var c = (reg || D).categorias;
+    return (c && c[id]) || (D.categorias && D.categorias[id]) || { nombre: id, icono: '•' };
   }
   function fuentesDe(e) {
     if (Array.isArray(e.fuentes) && e.fuentes.length) return e.fuentes;
@@ -1572,16 +1581,21 @@
      ficha) y arriba de la ficha. Sin retrato: no se usa la cara de una
      persona real como si fuera la miniatura de un personaje. Va un sello con
      sus iniciales. El veredicto es el texto más grande del módulo. */
-  function placaDe(f) {
-    var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id);
+  function placaDe(f, reg) {
+    reg = reg || D;
+    var cerrado = !!reg.cerrado;
+    var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id + (cerrado ? ' sp-fi-placa-cerrada' : ''));
     var cab = el('div', 'sp-fi-placa-cab');
-    var sello = el('div', 'sp-fi-sello', inicialesDe(D.presidente));
+    var sello = el('div', 'sp-fi-sello', inicialesDe(reg.presidente));
     sello.setAttribute('aria-hidden', 'true');
     cab.appendChild(sello);
     var pt = el('div', 'sp-fi-placat');
-    pt.appendChild(el('p', 'sp-fi-cargo', 'Presidente de la República · ' + (D.periodo || '')));
-    pt.appendChild(el('p', 'sp-fi-nombre', D.presidente || '—'));
-    pt.appendChild(el('p', 'sp-fi-dias', 'Día ' + diasDesde(D.posesion) + ' de gobierno · ' +
+    pt.appendChild(el('p', 'sp-fi-cargo',
+      (cerrado ? 'Gobierno anterior · ' : 'Presidente de la República · ') + (reg.periodo || '')));
+    pt.appendChild(el('p', 'sp-fi-nombre', reg.presidente || '—'));
+    pt.appendChild(el('p', 'sp-fi-dias', (cerrado
+        ? 'Mandato terminado el ' + fechaCorta(reg.entrega) + ' · '
+        : 'Día ' + diasDesde(reg.posesion) + ' de gobierno · ') +
       plural(f.ritmo.hechos, 'hecho registrado', 'hechos registrados')));
     cab.appendChild(pt);
     placa.appendChild(cab);
@@ -1782,7 +1796,8 @@
     nav.setAttribute('role', 'tablist');
     nav.setAttribute('aria-label', 'Ficha del gobernante y comparación');
     [{ id: 'ficha', t: D.presidente || 'El gobernante', d: 'Fiabilidad, casos y rasgos' },
-     { id: 'comparacion', t: 'Cómo fue y cómo va', d: cmp.predecesor.nombre + ' vs. ' + cmp.actual.nombre }
+     { id: 'anterior', t: cmp.predecesor.nombre, d: 'La misma ficha, el gobierno anterior' },
+     { id: 'comparacion', t: 'Cómo fue y cómo va', d: 'Las cifras, lado a lado' }
     ].forEach(function (p) {
       var b = el('button', 'sp-cmp-tab' + (p.id === pestanaFicha ? ' on' : ''));
       b.type = 'button';
@@ -1802,16 +1817,44 @@
   }
 
   function pintarFicha() {
-    var f = fichaHasta(null);
     var cont = vaciar($('sp-ficha'));
-
     var tabs = pintarPestanas(cont);
     if (tabs) cont.appendChild(tabs);
+
     if (tabs && pestanaFicha === 'comparacion') {
       var caja = el('div', 'sp-cmp');
       cont.appendChild(caja);
       pintarComparacion(caja);
       return;
+    }
+
+    /* La MISMA función de cálculo para los dos registros: fichaDe es pura y
+       recibe el registro, así que el gobierno anterior no se mide con una
+       copia con otras reglas. Que sea la misma es justo lo que hace válida
+       la comparación —y también lo que obliga al aviso de abajo—. */
+    var reg = (pestanaFicha === 'anterior') ? DA : D;
+    if (pestanaFicha === 'anterior' && !reg) {
+      cont.appendChild(el('p', 'sp-fi-nada', 'No se pudo cargar el registro del gobierno anterior. Vuelve a entrar en un momento.'));
+      return;
+    }
+    var f = fichaDe(reg, reg.cerrado ? reg.entrega : null);
+
+    /* El aviso que no se puede quitar. Los dos veredictos salen de la misma
+       regla, pero no del mismo tiempo: cuatro años dan margen para que una
+       denuncia llegue a fallo y se vuelva un caso «confirmado»; un mes, no.
+       Poner los dos peldaños uno al lado del otro favorece SIEMPRE al
+       gobierno más joven, y eso hay que decirlo donde se lee el peldaño, no
+       en una nota al pie. */
+    if (reg.cerrado) {
+      var av = el('div', 'sp-interp sp-fi-aviso-tiempo');
+      av.appendChild(el('b', null, 'Este peldaño no se compara de frente con el otro'));
+      av.appendChild(el('p', null,
+        'Los dos salen de la misma regla, pero no del mismo tiempo. Un mandato de cuatro años le da margen a una ' +
+        'denuncia para llegar a fallo y convertirse en un caso confirmado, que es lo que más pesa; uno de semanas, no. ' +
+        'Comparar los dos peldaños de frente favorece siempre al gobierno más joven. Para comparar de verdad están las ' +
+        'cifras de la pestaña de al lado.'));
+      if (reg.cobertura) av.appendChild(el('p', 'sp-fi-mide', reg.cobertura));
+      cont.appendChild(av);
     }
 
     var izq = el('div', 'sp-fi-izq');
@@ -1822,7 +1865,7 @@
     cont.appendChild(rejilla);
 
     // ── 1 · Placa y veredicto ──────────────────────────────────────────────
-    izq.appendChild(placaDe(f));
+    izq.appendChild(placaDe(f, reg));
 
     var ver = el('section', 'sp-fi-ver-box sp-fi-v-' + f.veredicto.id);
     var esc = el('div', 'sp-fi-esc');
@@ -1922,7 +1965,10 @@
     der.appendChild(sr);
 
     // ── 5 · Cómo va ────────────────────────────────────────────────────────
-    var serie = serieFicha();
+    /* La serie semanal solo tiene sentido en un mandato EN CURSO: en uno
+       cerrado de cuatro años serían más de doscientas columnas y la pregunta
+       que contesta —«¿va mejorando?»— ya no aplica. */
+    var serie = reg.cerrado ? [] : serieFicha();
     if (serie.length) {
       var ev = seccionFicha('sp-fi-serie', 'Cómo va',
         'La misma ficha rehecha semana a semana. Las barras son los hechos nuevos de cada semana; ' +
@@ -2004,7 +2050,7 @@
       cifra: f.alcance.activos + ' de ' + f.alcance.total,
       mide: 'En cuántos de los frentes que sigue el módulo hay al menos un hecho.',
       tramos: f.alcance.top.map(function (x, i) {
-        return { c: ['act', 'med', 'gris'][i], n: x.n, t: cat(x.k).nombre };
+        return { c: ['act', 'med', 'gris'][i], n: x.n, t: cat(x.k, reg).nombre };
       }).concat([{ c: 'gris2', n: f.ritmo.hechos - f.alcance.top.reduce(function (a, b) { return a + b.n; }, 0), t: 'los demás frentes' }]),
       ir: { v: 'timeline' }, irTxt: 'Ver por temas'
     }));
@@ -2018,8 +2064,9 @@
       'Una acusación desmentida no suma en contra. Se deja a la vista, marcada como desmentida.'
     ].forEach(function (t) { ul.appendChild(el('li', null, t)); });
     met.appendChild(ul);
-    met.appendChild(el('p', 'sp-fi-mide', 'Última actualización del registro: ' +
-      fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION + '.'));
+    met.appendChild(el('p', 'sp-fi-mide', reg.cerrado
+      ? 'Registro cerrado el ' + fechaLarga(reg.entrega) + '. No se actualiza: el mandato terminó.'
+      : 'Última actualización del registro: ' + fechaLarga(reg.actualizado) + ' · ' + CADENCIA_REVISION + '.'));
     der.appendChild(met);
   }
 
@@ -2756,6 +2803,15 @@
       pintarHome();
       pintarHeroGrafica();
       aplicar(hashARuta(location.hash));
+      // El anterior, después: nada de lo que se ve al abrir depende de él.
+      fetch('assets/data/seguimiento-petro.json?v=' + Date.now())
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (a) {
+          if (!a) return;
+          DA = a;
+          try { if (pestanaFicha !== 'ficha' || document.querySelector('.sp-cmp-tab')) pintarFicha(); } catch (e) {}
+        })
+        .catch(function () {});
     })
     .catch(function (e) {
       $('sp-loading').hidden = true;

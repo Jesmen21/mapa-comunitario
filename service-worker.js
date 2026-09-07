@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v796-como-fue-y-como-va';
+const URBIS_CACHE = 'urbis-v797-la-misma-regla-para-los-dos';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const URBIS_ASSETS = [
   './css/70-seguimiento.css',
   './js/70-seguimiento.js',
   './assets/data/seguimiento-presidencial.json',
+  './assets/data/seguimiento-petro.json',
   './assets/data/alertas-urbis.json',
   './css/60-analisis-ia.css',
   './js/59-analisis-ia-catalogo.js',

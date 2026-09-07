@@ -1,0 +1,696 @@
+{
+  "_comentario": "URBIS · Seguimiento Presidencial · EL GOBIERNO ANTERIOR. Registro cerrado del mandato de Gustavo Petro (2022–2026), con la MISMA estructura y las MISMAS reglas que el del gobierno actual, para que la ficha se calcule con la misma función y no con una copia con otras reglas. Vive en su propio archivo porque es un registro cerrado: no lo toca la rutina diaria y no engorda el diff del que sí se actualiza. Lee CLAUDE.md antes de editarlo.",
+  "presidente": "Gustavo Petro",
+  "periodo": "2022 – 2026",
+  "posesion": "2022-08-07",
+  "entrega": "2026-08-07",
+  "cerrado": true,
+  "cobertura": "Este registro NO es exhaustivo: son 26 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 22 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los cuatro posteriores —lo que dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 22, no sobre todo lo que pasó en el cuatrienio.",
+  "actualizado": "2026-09-07",
+  "categorias": {
+    "gobierno": {
+      "nombre": "Gobierno y decretos",
+      "icono": "🏛️",
+      "color": "#1E7A4B"
+    },
+    "reformas": {
+      "nombre": "Reformas",
+      "icono": "📜",
+      "color": "#7c3aed"
+    },
+    "economia": {
+      "nombre": "Economía",
+      "icono": "📉",
+      "color": "#0369A1"
+    },
+    "seguridad": {
+      "nombre": "Seguridad",
+      "icono": "🛡️",
+      "color": "#b45309"
+    },
+    "paz": {
+      "nombre": "Paz Total",
+      "icono": "🕊️",
+      "color": "#0F6E62"
+    },
+    "corrupcion": {
+      "nombre": "Corrupción y contratación",
+      "icono": "🔎",
+      "color": "#dc2626"
+    },
+    "legitimidad": {
+      "nombre": "Legitimidad institucional",
+      "icono": "⚖️",
+      "color": "#0f766e"
+    },
+    "informacion": {
+      "nombre": "Desinformación y discurso público",
+      "icono": "📣",
+      "color": "#BE185D"
+    },
+    "ambiente": {
+      "nombre": "Ambiente y energía",
+      "icono": "🌿",
+      "color": "#15803d"
+    }
+  },
+  "entradas": [
+    {
+      "fecha": "2026-08-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Entrega la Presidencia a Abelardo de la Espriella tras cuatro años de mandato",
+      "detalle": "Gustavo Petro terminó el 7 de agosto de 2026 el periodo que había empezado el 7 de agosto de 2022, el primero de un presidente de izquierda en la historia de Colombia. Entregó con el dólar por debajo de 3.200 pesos, desempleo de 8,1 %, inflación de 4,8 % y pobreza monetaria de 28,0 %; y con deuda pública por encima del 64 % del PIB, déficit fiscal cercano al 7 % y el crecimiento en 1,7 % proyectado.",
+      "contrapunto": "El mismo balance se lee de dos maneras según qué mitad se mire, y las dos mitades son ciertas: mejoraron empleo, inflación y pobreza; empeoraron crecimiento, deuda y margen fiscal.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Colombiano · balance de la economía y retos para De la Espriella",
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+        },
+        {
+          "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
+          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-04-29",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "El CNE confirma la sanción a la campaña Petro Presidente 2022 por violar los topes de gastos",
+      "detalle": "El Consejo Nacional Electoral ratificó, con seis votos contra dos, la sanción contra la campaña presidencial de 2022 por superar los topes legales de gasto en más de 5.300 millones de pesos: 3.700 millones no reportados en primera vuelta y 1.600 en segunda. Identificó aportes irregulares de sindicatos como Fecode y la USO y de la empresa Ingenial Media. Sancionó al gerente de campaña Ricardo Roa, a la tesorera Lucy Aydee Mogollón y a la auditora María Lucy Soto, y ordenó copias a la Fiscalía y a la Comisión de Investigación y Acusación de la Cámara.",
+      "contrapunto": "La sanción recae sobre la campaña y sobre tres de sus responsables, no sobre el presidente en persona: al ser jefe de Estado, quien puede investigarlo es la Comisión de Acusación de la Cámara, a la que el CNE envió copias. Su defensa sostuvo que el CNE no tenía competencia para investigar a un presidente en ejercicio.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · el CNE confirmó la sanción a la campaña Petro Presidente 2022",
+          "u": "https://www.infobae.com/colombia/2026/04/29/cne-confirmo-sancion-a-la-campana-petro-presidente-2022-por-violar-los-topes-de-gastos-electorales/"
+        },
+        {
+          "n": "El Colombiano · el CNE ratifica la sanción por violación de topes",
+          "u": "https://www.elcolombiano.com/colombia/cne-ratifica-sancion-campana-petro-presidente-2022-violacion-topes-electorales-AG35991122"
+        },
+        {
+          "n": "Portafolio · la campaña sí excedió los topes",
+          "u": "https://www.portafolio.co/economia/gobierno/campana-de-petro-si-excedio-topes-cne-ratifica-sancion-por-violacion-de-limites-492983"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-01",
+      "precision": "aproximada",
+      "categoria": "paz",
+      "titulo": "La Paz Total cierra el cuatrienio con 29.000 integrantes de grupos armados y sin acuerdos firmados",
+      "detalle": "La Fundación Ideas para la Paz publicó en agosto de 2026 su balance de los cuatro años de la política de Paz Total: los grupos armados pasaron a sumar cerca de 29.000 integrantes, y la FIP concluyó que la política dejó más costos que ganancias, con ceses al fuego sin verificación robusta y alivios judiciales sin condiciones exigibles.",
+      "contrapunto": "El Gobierno destacó cuatro logros de desescalamiento: menos homicidios en Putumayo y Nariño, la baja en el Valle de Aburrá, la tregua entre Shottas y Espartanos en Buenaventura y la destrucción de material de guerra por parte de Comuneros del Sur y el CNEB. La propia FIP matiza esos avances: en Putumayo y Nariño coincidieron con más gobernanza armada, y la caída en el Valle de Aburrá venía de años antes.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "FIP · el costo de negociar mal: 29 mil integrantes de grupos armados",
+          "u": "https://ideaspaz.org/publicaciones/investigaciones-analisis/2026-08/el-costo-de-negociar-mal-29-mil-integrantes-de-grupos-armados-entre-disputas-y-gobernanzas-criminales"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-04-29",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "titulo": "Asocapitales alerta por el deterioro de la seguridad en las principales ciudades",
+      "detalle": "El informe de la Asociación Colombiana de Ciudades Capitales concluyó que la Paz Total entregó beneficios jurídicos sin exigir medidas reales de seguridad. Registró que 2025 fue el año más violento de la última década con 14.038 homicidios; 13.417 casos de extorsión; 701 secuestros, el nivel más alto en diez años y un alza de 124 %; y más de 88.100 personas desplazadas, la cifra más alta en 18 años. Añadió que el 93 % de los homicidios queda impune y que once alcaldes de ciudades capitales fueron amenazados entre 2024 y 2026.",
+      "contrapunto": "El informe también señala un déficit estructural de pie de fuerza que no nació en este gobierno: Bogotá opera con 31 % menos policías de lo que recomiendan los estándares internacionales.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Asocapitales · informe sobre la Paz Total",
+          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf"
+        },
+        {
+          "n": "El Colombiano · la Paz Total no evidencia resultados consistentes",
+          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523"
+        },
+        {
+          "n": "Infobae · Asocapitales alertó por los resultados de la Paz Total",
+          "u": "https://www.infobae.com/colombia/2026/04/29/asocapitales-alerto-por-resultados-de-la-paz-total-en-las-principales-ciudades-del-pais-revelo-preocupante-deterioro-en-la-seguridad/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-07-01",
+      "precision": "aproximada",
+      "categoria": "seguridad",
+      "titulo": "Homicidios y secuestro bajan en el primer semestre de 2026 en Cundinamarca",
+      "detalle": "Cambio reportó que en el primer semestre de 2026 los homicidios bajaron 9,2 % y el secuestro cayó 70 % en Cundinamarca, un dato en dirección contraria a la tendencia nacional de 2025.",
+      "contrapunto": "Es un dato departamental y de medio año: no contradice por sí solo el balance nacional del cuatrienio, que fue de deterioro.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Cambio · homicidios y secuestro en el primer semestre de 2026",
+          "u": "https://cambiocolombia.com/pais/articulo/2026/7/homicidios-bajaron-92-por-ciento-y-el-secuestro-cayo-70-por-ciento-en-cundinamarca-durante-el-primer-semestre-de-2026"
+        }
+      ]
+    },
+    {
+      "fecha": "2025-12-30",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Decreta el salario mínimo de 2026 con el alza más alta del periodo: 23,78 %",
+      "detalle": "El Gobierno fijó por decreto el salario mínimo de 2026 con un alza de 23,78 % que, sumando el auxilio de transporte, llevó el ingreso mínimo a dos millones de pesos. Petro lo defendió con el concepto de «salario mínimo vital familiar» y sostuvo que, descontada la inflación, el aumento real del periodo fue de 18,7 %.",
+      "contrapunto": "Empresarios y comerciantes advirtieron presión sobre la inflación y sobre el empleo formal. La proyección de inflación para 2027 subió a 5,9 %, en parte por esta decisión.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Colombiano · Petro decreta alza de 23,78 % para 2026",
+          "u": "https://www.elcolombiano.com/negocios/salario-minimo-2026-colombia-alza-23-por-ciento-petro-decreto-HB32119718"
+        },
+        {
+          "n": "CNN · el alza y las críticas de empresarios y comerciantes",
+          "u": "https://cnnespanol.cnn.com/2025/12/30/colombia/gobierno-sube-salario-minimo-2026-efe"
+        }
+      ]
+    },
+    {
+      "fecha": "2025-06-25",
+      "precision": "exacta",
+      "categoria": "reformas",
+      "titulo": "Sanciona la reforma laboral",
+      "detalle": "La reforma laboral quedó sancionada el 25 de junio de 2025. Entre sus cambios: recargo nocturno desde las 7:00 p. m., pago del dominical y festivo al 100 % de forma gradual —80 % en 2025, 90 % en 2026 y 100 % en 2027—, formalización del trabajo doméstico con jornada de ocho horas, y obligación de las plataformas digitales de reparto de aportar a la seguridad social de sus repartidores.",
+      "contrapunto": "Los gremios advirtieron que el aumento de costos laborales podía frenar la formalización, que es justo lo que la reforma buscaba ampliar.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Radio Nacional · balance de medidas para los trabajadores",
+          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores"
+        },
+        {
+          "n": "LexLatin · el legado laboral que deberán resolver los candidatos",
+          "u": "https://lexlatin.com/reportajes/reforma-laboral-seguridad-social-colombia-candidatos-petro"
+        }
+      ]
+    },
+    {
+      "fecha": "2024-07-16",
+      "precision": "exacta",
+      "categoria": "reformas",
+      "titulo": "Sanciona la reforma pensional, la Ley 2381",
+      "detalle": "Petro sancionó la reforma pensional en la Plaza de Bolívar el 16 de julio de 2024. Transformó el sistema en un esquema de cuatro pilares, con el objetivo de ampliar la cobertura de protección en la vejez desde cerca del 24 % hasta un 87 % proyectado para 2052.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Canal Trece · principales hitos y reformas del gobierno Petro",
+          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/"
+        },
+        {
+          "n": "Radio Nacional · reformas laboral y pensional",
+          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-06-01",
+      "precision": "aproximada",
+      "categoria": "reformas",
+      "titulo": "La Corte Constitucional avala la mayor parte de la reforma pensional y fija su arranque para abril de 2027",
+      "detalle": "La Corte Constitucional revisó la reforma pensional y avaló la mayoría de sus artículos, tras haberla devuelto antes al Congreso por vicios de trámite. Su entrada en vigor quedó fijada para abril de 2027, ya bajo el gobierno siguiente.",
+      "contrapunto": "La reforma insignia del gobierno empieza a aplicarse cuando él ya no está: quien la ejecuta y responde por sus efectos es la administración siguiente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Pulzo · la Corte avala la reforma pensional y fija abril de 2027",
+          "u": "https://www.pulzo.com/economia/reforma-pensional-de-gustavo-petro-corte-constitucional-avala-cambios-clave-en-colombia-PP5284944A"
+        },
+        {
+          "n": "Yahoo Noticias · la Corte avala la reforma pensional",
+          "u": "https://es-us.noticias.yahoo.com/corte-colombia-avala-reforma-pensional-020700935.html"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-07-25",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "La pobreza multidimensional baja a un dígito por primera vez en la historia del país",
+      "detalle": "El alza sostenida del salario real llevó la pobreza multidimensional a 9,9 % en 2025, la primera vez que ese indicador queda por debajo del 10 % en la historia de Colombia, con 793.000 personas menos en pobreza en un año. La pobreza monetaria quedó en 28,0 % y la extrema en 9,6 %.",
+      "contrapunto": "Al lado de esa mejora hay un dato que la matiza: la proporción de trabajadores que gana menos de un salario mínimo subió de 45,2 % en 2024 a 48,9 % en 2025.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "DANE · pobreza monetaria 2025",
+          "u": "https://www.dane.gov.co/files/operaciones/PM/bol-PM-2025.pdf"
+        },
+        {
+          "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-01-31",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "El empleo rural llega a 4,8 millones de ocupados, el nivel más alto para un enero desde 2001",
+      "detalle": "El empleo en el sector rural alcanzó 4,8 millones de personas ocupadas en enero de 2026, la cifra más alta para ese mes en 25 años. El desempleo nacional cerró el periodo en 8,1 %, el más bajo del siglo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-18",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "Se adjudica el crecimiento de 3,5 % que reportó el DANE",
+      "detalle": "Tras conocerse el dato del DANE, Petro atribuyó a su gobierno un crecimiento de 3,5 % de la economía colombiana. La cifra corresponde a una lectura trimestral y no al año: el crecimiento proyectado para 2026 es de 1,7 %, tras haber sido de 7,3 % en 2022.",
+      "contrapunto": "Las dos cifras pueden ser ciertas a la vez: un trimestre bueno dentro de un año flojo. Presentar la trimestral como la del periodo es lo que la vuelve engañosa.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · Petro se adjudicó el crecimiento de 3,5 % del DANE",
+          "u": "https://www.infobae.com/colombia/2026/08/18/petro-se-adjudico-el-merito-por-el-crecimiento-de-la-economia-colombiana-en-un-35-segun-el-dane-en-mi-gobierno/"
+        },
+        {
+          "n": "El Colombiano · balance de la economía y retos para De la Espriella",
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-01",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "Dice que «se desplomó» la incautación de cocaína con el gobierno siguiente",
+      "detalle": "Petro respondió en X al primer balance de seguridad del gobierno de De la Espriella y sostuvo que la incautación de cocaína «se desplomó», extrapolando las 20 toneladas de tres semanas a 280 al año y comparándolas con un ritmo de 1.000 toneladas anuales que atribuyó a su gobierno.",
+      "contrapunto": "La caída existe, pero ni desde 1.000 ni hacia 280 toneladas: extrapolar tres semanas a un año deforma el dato. El Detector de La Silla Vacía ya había calificado de engañoso el propio logro de Petro en incautaciones. Y más toneladas incautadas no es automáticamente mejor: también puede significar más producción.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones es engañoso",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-22",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "La fiscal del caso de su hijo denuncia presiones para retirar el delito de lavado de activos",
+      "detalle": "La exfiscal Lucy Laborde denunció que se le ordenó retirar el delito de lavado de activos del proceso contra Nicolás Petro y que fue apartada tras negarse. La Fiscal General negó haber dado esa orden y sostuvo que la acusación por lavado de activos y enriquecimiento ilícito se mantiene. Petro respondió públicamente a la denuncia.",
+      "contrapunto": "Es la palabra de una exfiscal contra la de la Fiscal General. Ningún organismo se ha pronunciado sobre quién dice la verdad, y la acusación contra Nicolás Petro sigue en pie con los dos delitos.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · Petro respondió a la denuncia de la exfiscal Laborde",
+          "u": "https://www.infobae.com/colombia/2026/08/22/petro-respondio-a-lucy-laborde-por-denunciar-presiones-para-evitar-que-imputaran-el-delito-de-lavado-de-activos-a-su-hijo-nicolas-petro/"
+        },
+        {
+          "n": "Radio Santa Fe · la Fiscal General niega haber ordenado eliminar delitos",
+          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-06-03",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "El juicio contra Nicolás Petro queda en pausa a la espera de más de 800 apelaciones",
+      "detalle": "El Juzgado Segundo Penal cerró la etapa preparatoria del proceso contra Nicolás Petro el 2 de junio de 2026, pero el inicio del juicio oral quedó condicionado a que el Tribunal Superior de Barranquilla resuelva más de 800 apelaciones de pruebas presentadas por la Fiscalía, la defensa y la Procuraduría.",
+      "contrapunto": "Nicolás Petro se declaró inocente de los dos cargos. Acusación no es condena: al cierre del mandato de su padre no había fallo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · el tribunal deberá resolver más de 800 apelaciones",
+          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-superior-de-barranquilla-debera-resolver-mas-de-800-apelaciones-antes-de-iniciar-el-juicio-contra-nicolas-petro/"
+        },
+        {
+          "n": "El Tiempo · por qué el caso no ha avanzado a juicio",
+          "u": "https://www.eltiempo.com/justicia/delitos/nicolas-petro-por-que-el-caso-contra-el-exdiputado-por-supuesto-lavado-de-activos-no-ha-avanzado-a-juicio-3580628"
+        }
+      ]
+    },
+    {
+      "fecha": "2024-12-30",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "La Procuraduría destituye e inhabilita a los responsables del caso de los carrotanques de la UNGRD",
+      "detalle": "La Procuraduría destituyó e inhabilitó al exdirector de la UNGRD Olmedo López y al exsubdirector Sneyder Pinilla por el sobrecosto en la compra de 80 carrotanques para La Guajira. En segunda instancia confirmó las sanciones: 18 años de inhabilidad para López y 20 para Pinilla. La Contraloría emitió además fallo de responsabilidad fiscal. Según la investigación, se aprobaron pagos con sobrecostos superiores a 16.000 millones de pesos, más del 54 % por encima del valor de mercado, y se certificó como satisfactoria la entrega de vehículos que nunca cumplieron su función de llevar agua.",
+      "contrapunto": "Las sanciones recaen sobre funcionarios de su gobierno, no sobre el presidente. El escándalo salpicó además al Congreso por presuntos pagos a cambio de apoyo a las reformas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Procuraduría · confirma la sanción a Olmedo López y Sneyder Pinilla",
+          "u": "https://www.procuraduria.gov.co/Pages/procuraduria-confirmo-sancion-olmedo-lopez-sneyder-pinilla-sobrecostos-adquisicion-carrotanques.aspx"
+        },
+        {
+          "n": "Semana · la Contraloría emitió fallo por los 80 carrotanques",
+          "u": "https://www.semana.com/nacion/articulo/corrupcion-en-la-ungrd-contraloria-emitio-fallo-contra-olmedo-lopez-y-sneyder-pinilla-por-la-compra-de-80-carrotanques-para-la-guajira/202611/"
+        },
+        {
+          "n": "Cambio · la Procuraduría ratifica las sanciones",
+          "u": "https://cambiocolombia.com/poder/olmedo-lopez-snedyer-pinilla-procuraduria-ratifica-sancion-escandalo-carrotanques"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-07-21",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "Cierra la puerta al fracking y anuncia un proyecto para prohibirlo",
+      "detalle": "Petro insistió en julio de 2026 en que recurrir al fracking «es un inmenso error», y sostuvo que aplicarlo aumenta la pobreza y destruye el empleo. Anunció un proyecto de ley para prohibirlo en Colombia.",
+      "contrapunto": "Es una posición sostenida durante todo el mandato y coherente con su campaña. Lo que quedó sin resolver es de dónde saldrían los ingresos que hoy aporta el petróleo, que es la objeción central de sus críticos.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Infobae · Petro le cierra la puerta al fracking",
+          "u": "https://www.infobae.com/colombia/2026/07/21/gustavo-petro-le-cierra-la-puerta-al-fracking-insiste-en-que-es-un-inmenso-error-y-que-aplicarlo-aumenta-la-pobreza-y-destruye-el-empleo/"
+        }
+      ]
+    },
+    {
+      "fecha": "2024-04-26",
+      "precision": "aproximada",
+      "categoria": "legitimidad",
+      "titulo": "Propone una Asamblea Constituyente y luego dice que no cambiaría la Constitución",
+      "detalle": "Petro planteó convocar una Asamblea Nacional Constituyente. Ante las críticas sostuvo que no sería para cambiar la Constitución sino para implementarla y hacerla cumplir. La representante Catherine Juvinao calificó el mensaje de «cantinflesco» y preguntó si tenía en la cabeza «una insurrección».",
+      "contrapunto": "La constituyente nunca se convocó. Sus defensores sostienen que la propuesta era una forma de presionar al Congreso por las reformas estancadas; sus críticos, que ponía en duda el compromiso con la Constitución de 1991 que él mismo ayudó a escribir.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "CNN · por qué la propuesta de constituyente tiene pocas posibilidades",
+          "u": "https://cnnespanol.cnn.com/2024/04/26/petro-asamblea-constituyente-posibilidades-analisis-orix/amp/"
+        },
+        {
+          "n": "Semana · Juvinao califica de «cantinflesco» el mensaje sobre la constituyente",
+          "u": "https://www.semana.com/politica/articulo/catherine-juvinao-dijo-que-mensaje-de-petro-sobre-constituyente-es-cantinflesco-pregunto-si-tiene-en-la-cabeza-una-insurreccion/202421/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-05-01",
+      "precision": "aproximada",
+      "categoria": "legitimidad",
+      "titulo": "Insiste en una narrativa de fraude electoral sin sustento, según los verificadores",
+      "detalle": "El Detector de Mentiras de La Silla Vacía revisó las afirmaciones de Petro sobre fraude electoral y concluyó que insistía en esa narrativa sin sustento, mezclando medias verdades con exageraciones y afirmaciones falsas.",
+      "contrapunto": "Es el mismo tipo de afirmación que él denuncia cuando viene de otros: poner en duda un resultado electoral sin pruebas verificables.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "La Silla Vacía · Detector: Petro insiste en narrativa de fraude electoral sin sustento",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/detector-petro-insiste-en-narrativa-de-fraude-electoral-sin-sustento/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-15",
+      "precision": "aproximada",
+      "categoria": "informacion",
+      "titulo": "Los verificadores cierran el cuatrienio con 159 chequeos y 126 casos de desinformación suya",
+      "detalle": "La Silla Vacía verificó a Petro 159 veces durante sus cuatro años de gobierno y halló desinformación en al menos 126: 56 falsas, 44 engañosas y 18 debatibles. El 73 % salió de su cuenta de X y el 23,7 % de discursos públicos. Salud fue el tema más chequeado, con 22 verificaciones.",
+      "contrapunto": "El mismo equipo que registró estas 126 también desmintió falsedades que circularon contra él. Las dos cosas constan y ninguna anula a la otra.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "La Silla Vacía · el manual de desinformación de Gustavo Petro",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/el-manual-de-desinformacion-de-gustavo-petro/"
+        }
+      ]
+    },
+    {
+      "fecha": "2022-11-05",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El dólar toca su máximo histórico, 5.061 pesos, tres meses después de la posesión",
+      "detalle": "El 5 de noviembre de 2022 la TRM llegó a 5.061,21 pesos, el máximo histórico. Petro había recibido el país con el dólar en 4.337,28 el día de su posesión. Cuatro años después lo entregó por debajo de 3.200.",
+      "contrapunto": "El alza de 2022 la explicaron sobre todo factores externos —temor a recesión en Estados Unidos y subida de tasas de los bancos centrales—, igual que la baja posterior. La TRM acompaña a la gestión, no se le puede atribuir sola.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Semana · la TRM tras la posesión de Petro",
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/asi-esta-el-dolar-en-colombia-la-trm-que-regira-este-lunes-tras-posesion-de-petro/202243/"
+        },
+        {
+          "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
+          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-05-27",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Cierra con menos pobreza y un país más endeudado",
+      "detalle": "El balance del cuatrienio muestra deuda pública por encima del 64 % del PIB y déficit fiscal cercano al 7 %, junto con la caída de la pobreza y del desempleo. El crecimiento pasó de 7,3 % en 2022 a 1,7 % proyectado para 2026, y la inflación de un pico de 13,1 % a 4,8 % en 2025.",
+      "contrapunto": "Es el resumen del periodo y también su discusión: si el gasto que redujo la pobreza justificaba el deterioro fiscal que hereda el gobierno siguiente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Expansión · Petro deja menos pobreza pero una Colombia más endeudada",
+          "u": "https://expansion.mx/mundo/2026/05/27/petro-deja-menos-pobreza-pero-una-colombia-mas-endeudada"
+        },
+        {
+          "n": "El Colombiano · balance de la economía y retos para De la Espriella",
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+        }
+      ]
+    },
+    {
+      "fecha": "2023-01-01",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "La inflación llega a su pico de 13,1 %",
+      "detalle": "La inflación anual alcanzó 13,1 %, el nivel más alto del periodo, antes de iniciar una caída sostenida que la llevó a 4,8 % en 2025.",
+      "contrapunto": "El pico coincidió con el choque inflacionario mundial posterior a la pandemia y a la invasión de Ucrania: la subida y la bajada acompañan un ciclo que no es solo colombiano.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-02-01",
+      "precision": "aproximada",
+      "categoria": "seguridad",
+      "titulo": "2025 cierra como el año más violento de la última década",
+      "detalle": "Los registros de 2025 muestran 14.038 homicidios, la cifra más alta en diez años, junto a 13.417 casos de extorsión y 701 secuestros, un alza de 124 % frente al nivel de una década atrás. El desplazamiento forzado superó las 88.100 personas, lo más alto en 18 años.",
+      "contrapunto": "Es el dato que más pesa contra el balance del gobierno. Sus defensores lo atribuyen a la recomposición de los grupos armados tras el acuerdo de 2016 y a la expansión del narcotráfico mundial; sus críticos, al debilitamiento de la presión operativa durante los ceses al fuego.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Asocapitales · informe sobre la Paz Total",
+          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf"
+        },
+        {
+          "n": "El Colombiano · la Paz Total no evidencia resultados consistentes",
+          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523"
+        }
+      ]
+    },
+    {
+      "fecha": "2022-08-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Se posesiona como el primer presidente de izquierda de la historia de Colombia",
+      "detalle": "Gustavo Petro asumió la Presidencia el 7 de agosto de 2022, tras ganar la segunda vuelta. Llegó con un programa de reformas —pensional, laboral, de salud— y con la política de Paz Total como eje de seguridad.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Canal Trece · principales hitos y reformas del gobierno Petro",
+          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/"
+        }
+      ]
+    },
+    {
+      "fecha": "2022-10-01",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Cinco promesas se desinflan en los primeros seis meses",
+      "detalle": "En sus primeros meses el Gobierno no desmontó el ESMAD ni congeló el precio del ACPM, dos compromisos anunciados en campaña, entre otras promesas que quedaron sin cumplirse en ese plazo.",
+      "contrapunto": "El ESMAD sí fue transformado más adelante en la Unidad de Diálogo y Mantenimiento del Orden. Lo que no ocurrió fue el desmonte en el plazo prometido.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Colombiano · Icetex, ESMAD, ACPM y promesas incumplidas",
+          "u": "https://www.elcolombiano.com/colombia/icetex-esmad-acp-y-promesas-incumplidas-de-petro-JH19785518"
+        }
+      ]
+    }
+  ],
+  "casos": {
+    "_nota": "Casos de corrupción atribuidos a Gustavo Petro, a su gobierno o a su campaña, con el MISMO estado probatorio que se le exige al gobierno actual. Una precisión que la ficha repite y que importa: ninguno de estos fallos es una condena penal contra Petro en persona. Son sanciones de organismos de control contra funcionarios de su gobierno y contra su campaña, y un proceso penal contra su hijo. Se registran acá porque la regla dice «del gobernante O DE SU GOBIERNO», y la misma regla se le aplicó al actual.",
+    "lista": [
+      {
+        "id": "ungrd-carrotanques",
+        "titulo": "Carrotanques de la UNGRD: sobrecostos de más de 16.000 millones para La Guajira",
+        "estado": "confirmado",
+        "queSeConfirmo": "La Procuraduría destituyó e inhabilitó a los dos responsables y confirmó las sanciones en segunda instancia: 18 años de inhabilidad para el exdirector Olmedo López y 20 para el exsubdirector Sneyder Pinilla. La Contraloría emitió fallo de responsabilidad fiscal. Se aprobaron pagos con sobrecostos superiores a 16.000 millones de pesos, más del 54 % por encima del valor de mercado, y se certificó como satisfactoria la entrega de vehículos que nunca llevaron agua.",
+        "quienLoConfirmo": "Procuraduría General de la Nación (fallo de segunda instancia) y Contraloría General de la República (fallo de responsabilidad fiscal)",
+        "fecha": "2024-12-30",
+        "monto": "más de 16.000 millones de pesos en sobrecostos",
+        "implicados": [
+          "Olmedo López (exdirector de la UNGRD)",
+          "Sneyder Pinilla (exsubdirector)",
+          "Víctor Andrés Meza"
+        ],
+        "fuentes": [
+          {
+            "n": "Procuraduría · confirma la sanción por los sobrecostos",
+            "u": "https://www.procuraduria.gov.co/Pages/procuraduria-confirmo-sancion-olmedo-lopez-sneyder-pinilla-sobrecostos-adquisicion-carrotanques.aspx"
+          },
+          {
+            "n": "Semana · la Contraloría emitió fallo por los 80 carrotanques",
+            "u": "https://www.semana.com/nacion/articulo/corrupcion-en-la-ungrd-contraloria-emitio-fallo-contra-olmedo-lopez-y-sneyder-pinilla-por-la-compra-de-80-carrotanques-para-la-guajira/202611/"
+          },
+          {
+            "n": "El Tiempo · destituyen e inhabilitan a tres exfuncionarios",
+            "u": "https://www.eltiempo.com/justicia/destituyen-e-inhabilitan-a-tres-exfuncionarios-de-la-ungrd-por-millonario-sobrecosto-en-carrotanques-para-la-guajira-3413331"
+          }
+        ]
+      },
+      {
+        "id": "cne-topes-campana",
+        "titulo": "La campaña Petro Presidente 2022 superó los topes de gasto en más de 5.300 millones",
+        "estado": "confirmado",
+        "queSeConfirmo": "El Consejo Nacional Electoral ratificó la sanción con seis votos contra dos: la campaña excedió los topes legales en más de 5.300 millones de pesos —3.700 millones no reportados en primera vuelta y 1.600 en segunda— y recibió aportes irregulares de Fecode, la USO e Ingenial Media. El CNE ordenó copias a la Fiscalía sobre el gerente de campaña y a la Comisión de Investigación y Acusación de la Cámara.",
+        "quienLoConfirmo": "Consejo Nacional Electoral (decisión ratificada el 29 de abril de 2026)",
+        "fecha": "2026-04-29",
+        "monto": "más de 5.300 millones de pesos por encima del tope",
+        "implicados": [
+          "Ricardo Roa (gerente de campaña)",
+          "Lucy Aydee Mogollón (tesorera)",
+          "María Lucy Soto (auditora)"
+        ],
+        "fuentes": [
+          {
+            "n": "Infobae · el CNE confirmó la sanción a la campaña",
+            "u": "https://www.infobae.com/colombia/2026/04/29/cne-confirmo-sancion-a-la-campana-petro-presidente-2022-por-violar-los-topes-de-gastos-electorales/"
+          },
+          {
+            "n": "El Colombiano · el CNE ratifica la sanción",
+            "u": "https://www.elcolombiano.com/colombia/cne-ratifica-sancion-campana-petro-presidente-2022-violacion-topes-electorales-AG35991122"
+          },
+          {
+            "n": "Portafolio · la campaña sí excedió los topes",
+            "u": "https://www.portafolio.co/economia/gobierno/campana-de-petro-si-excedio-topes-cne-ratifica-sancion-por-violacion-de-limites-492983"
+          }
+        ]
+      },
+      {
+        "id": "nicolas-petro",
+        "titulo": "Nicolás Petro, acusado por lavado de activos y enriquecimiento ilícito con dinero de la campaña de 2022",
+        "estado": "en-investigacion",
+        "queSeConfirmo": "La Fiscalía lo acusó formalmente el 11 de enero de 2024 por enriquecimiento ilícito de servidor público y lavado de activos. La etapa preparatoria se cerró el 2 de junio de 2026 y el juicio oral quedó a la espera de que el Tribunal Superior de Barranquilla resuelva más de 800 apelaciones de pruebas. Se declaró inocente de los dos cargos. No hay fallo.",
+        "quienLoConfirmo": "Fiscalía General de la Nación (acusación) y Juzgado Segundo Penal de Barranquilla (etapa preparatoria cerrada)",
+        "fecha": "2024-01-11",
+        "monto": null,
+        "implicados": [
+          "Nicolás Petro Burgos (hijo del presidente, exdiputado del Atlántico)"
+        ],
+        "fuentes": [
+          {
+            "n": "El Tiempo · acusado por lavado de activos y enriquecimiento ilícito",
+            "u": "https://www.eltiempo.com/justicia/delitos/nicolas-petro-audiencia-de-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-843530"
+          },
+          {
+            "n": "Infobae · el tribunal deberá resolver más de 800 apelaciones",
+            "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-superior-de-barranquilla-debera-resolver-mas-de-800-apelaciones-antes-de-iniciar-el-juicio-contra-nicolas-petro/"
+          }
+        ]
+      }
+    ]
+  },
+  "contradicciones": {
+    "_nota": "Cambios de postura con las DOS declaraciones documentadas, y acusaciones que los verificadores desmintieron. Un caso con «cuenta»: false queda visible pero no suma al veredicto. Las desmentidas nunca suman en contra: están acá justamente porque eran falsas.",
+    "casos": [
+      {
+        "estado": "documentada",
+        "tema": "Constituyente: de defender la Constitución de 1991 a proponer cambiarla",
+        "antes": "Se comprometió en 2018 y en 2022 a respetar la Constitución de 1991 —que él ayudó a escribir como constituyente— y a no convocar una asamblea constituyente.",
+        "despues": "En 2024 propuso convocar una Asamblea Nacional Constituyente y, ante las críticas, sostuvo que no sería para cambiar la Constitución sino para implementarla.",
+        "matiz": "La constituyente nunca se convocó. Sus defensores la leen como presión política sobre un Congreso que le había frenado las reformas; sus críticos, como una promesa rota. El giro está documentado con las dos declaraciones.",
+        "fuentes": [
+          {
+            "n": "CNN · por qué la propuesta de constituyente tenía pocas posibilidades",
+            "u": "https://cnnespanol.cnn.com/2024/04/26/petro-asamblea-constituyente-posibilidades-analisis-orix/amp/"
+          },
+          {
+            "n": "Semana · Juvinao califica de «cantinflesco» el mensaje sobre la constituyente",
+            "u": "https://www.semana.com/politica/articulo/catherine-juvinao-dijo-que-mensaje-de-petro-sobre-constituyente-es-cantinflesco-pregunto-si-tiene-en-la-cabeza-una-insurreccion/202421/"
+          }
+        ]
+      },
+      {
+        "estado": "documentada",
+        "tema": "ESMAD: del desmonte prometido al escuadrón que siguió operando",
+        "antes": "Prometió en campaña desmontar el ESMAD, señalado por los abusos durante el paro nacional de 2021.",
+        "despues": "En los primeros seis meses de gobierno el ESMAD no se desmontó y siguió operando; más adelante fue transformado, no eliminado.",
+        "matiz": "El cuerpo sí cambió de nombre y de doctrina, pasando a Unidad de Diálogo y Mantenimiento del Orden. Lo que no ocurrió fue el desmonte que se prometió, ni en el plazo anunciado.",
+        "fuentes": [
+          {
+            "n": "El Colombiano · Icetex, ESMAD, ACPM y promesas incumplidas",
+            "u": "https://www.elcolombiano.com/colombia/icetex-esmad-acp-y-promesas-incumplidas-de-petro-JH19785518"
+          }
+        ]
+      },
+      {
+        "estado": "documentada",
+        "tema": "Incautación de cocaína: del logro propio al «desplome» ajeno",
+        "antes": "Presentó como logro de su gobierno haber llegado a un ritmo de 1.000 toneladas de cocaína incautadas al año.",
+        "despues": "Usó esa misma cifra en septiembre de 2026 para decir que con el gobierno siguiente la incautación «se desplomó», extrapolando tres semanas a un año entero.",
+        "matiz": "El Detector de La Silla Vacía ya había calificado de engañoso su logro en incautaciones antes de que lo usara como vara para medir al sucesor. La caída existe; la magnitud que él le puso, no.",
+        "fuentes": [
+          {
+            "n": "La Silla Vacía · Detector: el logro en incautaciones es engañoso",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+          }
+        ]
+      },
+      {
+        "estado": "tension",
+        "tema": "Reducir la pobreza y sanear las cuentas a la vez",
+        "antes": "El programa prometía reducir la pobreza y la desigualdad con más gasto social.",
+        "despues": "La pobreza monetaria y la multidimensional bajaron, pero el periodo cerró con deuda por encima del 64 % del PIB y déficit cercano al 7 %.",
+        "matiz": "No es una contradicción de discurso sino una tensión del programa: las dos cosas se cumplieron en direcciones opuestas. Por eso queda registrada como tensión y no cuenta para el veredicto.",
+        "fuentes": [
+          {
+            "n": "Expansión · menos pobreza pero una Colombia más endeudada",
+            "u": "https://expansion.mx/mundo/2026/05/27/petro-deja-menos-pobreza-pero-una-colombia-mas-endeudada"
+          },
+          {
+            "n": "El Colombiano · balance de la economía y retos para De la Espriella",
+            "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          }
+        ]
+      },
+      {
+        "estado": "desmentida",
+        "tema": "«Tuvo el alias de guerrillero “Cacas”»",
+        "antes": "Circuló en redes que Petro había usado el alias «Cacas» durante su militancia en el M-19.",
+        "despues": "La Silla Vacía verificó que ese alias no aparece en ningún expediente y calificó la afirmación de falsa. La mentira revivió varias veces durante el periodo.",
+        "matiz": "Es uno de los bulos más repetidos en su contra. No suma en contra en el veredicto: está acá porque era falso.",
+        "fuentes": [
+          {
+            "n": "La Silla Vacía · Detector: revive la mentira del alias «Cacas»",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/detector-revive-la-mentira-que-atribuye-a-petro-el-alias-falso-de-cacas/"
+          }
+        ]
+      },
+      {
+        "estado": "desmentida",
+        "tema": "«Dijo en una entrevista que él es Dios»",
+        "antes": "Circuló un montaje con una supuesta entrevista en la que Petro se comparaba con Dios, atribuida a Caracol Radio.",
+        "despues": "La Silla Vacía verificó que ni Petro lo dijo ni Caracol Radio publicó esa entrevista. Falso.",
+        "matiz": "Volvió a circular en más de una ocasión, siempre desmentido.",
+        "fuentes": [
+          {
+            "n": "La Silla Vacía · Detector: Petro no dijo que él es Dios",
+            "u": "https://www.lasillavacia.com/detector-de-mentiras/falso/detector-de-nuevo-petro-no-dijo-en-una-entrevista-que-el-es-dios/"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -87,6 +87,8 @@ const server = http.createServer((req, res) => {
     claridad: p => p == null ? 0 : p < 50 ? 3 : p < 70 ? 2 : p < 85 ? 1 : 0
   };
   const IDS = ['inquebrantable', 'fiable', 'dudosa', 'poco-fiable', 'nada-fiable'];
+  const ESCALERA_T = { 'inquebrantable': 'Confiabilidad inquebrantable', 'fiable': 'Fiable',
+                       'dudosa': 'Dudosa', 'poco-fiable': 'Poco fiable', 'nada-fiable': 'Nada fiable' };
   esperado.veredicto = (esperado.revisados < 3 || esperado.hechos < 20) ? 'sin-datos'
     : IDS[Math.max(techo.casos(esperado.confirmados, esperado.enInvestigacion), techo.palabra(esperado.contadas), techo.claridad(esperado.pct))];
 
@@ -397,6 +399,57 @@ const server = http.createServer((req, res) => {
   chk(r.serie.n >= 3 && r.serie.ultimaEnCurso,
       'la serie marca la semana en curso, que siempre va a medias (' + r.serie.n + ' columnas)');
   chk(r.acumulaCreciendo, 'y el acumulado de la serie nunca baja');
+  /* ── La ficha del gobierno anterior, con la MISMA regla ─────────────────
+     Se mide con `fichaDe`, la misma función pura, y por eso su veredicto es
+     comparable en método aunque no en tiempo. Las dos aserciones que
+     importan: que el peldaño salga de contar y no esté escrito a mano, y que
+     la pantalla lleve el aviso de que cuatro años y un mes no se comparan de
+     frente. Sin ese aviso el módulo estaría afirmando algo que sus propias
+     cifras no sostienen. */
+  console.log('\n── La ficha del gobierno anterior ──────────────────');
+  const DA = JSON.parse(fs.readFileSync(REPO + '/assets/data/seguimiento-petro.json', 'utf8'));
+  const enMandato = (DA.entradas || []).filter(e => e.fecha >= DA.posesion && e.fecha <= DA.entrega);
+  const espAnt = {
+    confirmados: ((DA.casos || {}).lista || []).filter(c => c.estado === 'confirmado').length,
+    contadas: ((DA.contradicciones || {}).casos || []).filter(c => c.estado === 'documentada' && c.cuenta !== false).length,
+    verif: enMandato.filter(e => e.tipoFuente === 'verificado').length,
+    conTipo: enMandato.filter(e => e.tipoFuente).length
+  };
+  espAnt.pct = Math.round(100 * espAnt.verif / espAnt.conTipo);
+  espAnt.veredicto = IDS[Math.max(techo.casos(espAnt.confirmados, 0), techo.palabra(espAnt.contadas), techo.claridad(espAnt.pct))];
+  const ant = await pg.evaluate(() => {
+    const tabs = Array.from(document.querySelectorAll('.sp-cmp-tab'));
+    const i = tabs.findIndex(t => /Petro/.test(t.innerText));
+    if (i < 0) return { hay: false, tabs: tabs.length };
+    tabs[i].click();
+    const c = document.getElementById('sp-ficha');
+    return {
+      hay: true, tabs: tabs.length,
+      nombre: (c.querySelector('.sp-fi-nombre') || {}).textContent || '',
+      veredicto: (c.querySelector('.sp-fi-vval') || {}).textContent || '',
+      cuentas: (c.querySelector('.sp-fi-cuentas') || {}).textContent || '',
+      aviso: (c.querySelector('.sp-fi-aviso-tiempo') || {}).innerText || '',
+      confirmados: c.querySelectorAll('.sp-fi-cc-conf').length,
+      desmentidas: Array.from(c.querySelectorAll('.sp-fi-caso')).filter(x => /desmentid/i.test(x.innerText)).length,
+      serie: c.querySelectorAll('.sp-fi-col').length,
+      txt: c.innerText
+    };
+  });
+  console.log('  ' + ant.nombre + ' → ' + ant.veredicto + ' · ' + ant.cuentas);
+  chk(ant.tabs === 3, 'la ficha tiene tres pestañas: el actual, el anterior y la comparación (' + ant.tabs + ')');
+  chk(ant.hay && /Gustavo Petro/.test(ant.nombre), 'la segunda abre la ficha del gobierno anterior');
+  chk(ant.veredicto === ESCALERA_T[espAnt.veredicto],
+      'su peldaño sale de contar con la misma regla, no escrito a mano (' + ant.veredicto + ' · recuento ' + espAnt.veredicto + ')');
+  chk(new RegExp(espAnt.confirmados + ' casos? confirmados?').test(ant.cuentas) && new RegExp(espAnt.pct + ' % verificado').test(ant.cuentas),
+      'y sus cuentas coinciden con el registro (' + ant.cuentas + ')');
+  chk(ant.confirmados === espAnt.confirmados && espAnt.confirmados > 0,
+      'los casos confirmados del gobierno anterior se pintan como tales (' + ant.confirmados + ')');
+  chk(ant.desmentidas >= 2, 'las acusaciones desmentidas contra él están y se marcan como no contadas (' + ant.desmentidas + ')');
+  chk(/no se compara de frente/i.test(ant.aviso) && /cuatro años/i.test(ant.aviso),
+      'y la pantalla avisa que cuatro años y unas semanas no se comparan de frente');
+  chk(/no es exhaustivo/i.test(ant.aviso), 'y dice que el registro del anterior no es exhaustivo');
+  chk(ant.serie === 0, 'no se dibuja la serie semanal de un mandato cerrado (' + ant.serie + ' columnas)');
+
   /* ── La pestaña de al lado: cómo fue Petro y cómo va De la Espriella ────
      Es una tabla de cifras, NO una segunda ficha con veredicto: la escalera
      está pensada para un mandato en curso y aplicarla a uno cerrado
@@ -413,8 +466,9 @@ const server = http.createServer((req, res) => {
   const esperadasFilas = (cmpD.filas || []).length;
   const cmp = await pg.evaluate(() => {
     const tabs = Array.from(document.querySelectorAll('.sp-cmp-tab'));
-    if (tabs.length < 2) return { tabs: tabs.length };
-    tabs[1].click();
+    const i = tabs.findIndex(t => /Cómo fue/.test(t.innerText));
+    if (i < 0) return { tabs: tabs.length };
+    tabs[i].click();
     const caja = document.getElementById('sp-ficha');
     const filas = Array.from(caja.querySelectorAll('.sp-cmp-fila'));
     return {
@@ -434,7 +488,7 @@ const server = http.createServer((req, res) => {
   });
   console.log('  ' + (cmp.rotulos || []).join('  |  '));
   console.log('  ' + cmp.filas + ' filas · ' + cmp.comparables + ' comparables · ' + cmp.avisos + ' con aviso');
-  chk(cmp.tabs === 2, 'la ficha tiene dos pestañas: el gobernante y la comparación (' + cmp.tabs + ')');
+  chk(cmp.tabs === 3, 'la comparación sigue accesible desde su pestaña (' + cmp.tabs + ' pestañas)');
   chk(/Gustavo Petro/.test((cmp.rotulos || []).join(' ')), 'la segunda nombra al gobierno anterior');
   chk(cmp.filas === esperadasFilas && esperadasFilas >= 6,
       'la tabla trae todas las filas del registro (' + cmp.filas + ' de ' + esperadasFilas + ')');
