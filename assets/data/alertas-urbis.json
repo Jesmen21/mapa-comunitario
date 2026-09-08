@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-04",
+  "actualizado": "2026-09-08",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -8,7 +8,7 @@
       "lat": 3.568,
       "lng": -73.784,
       "desde": "2026-09-03",
-      "expira": "2026-09-08",
+      "expira": "2026-09-13",
       "lineas": [
         "📅 La emergencia se agravó el 3 de septiembre de 2026: la Gobernación del Meta pidió ayuda urgente a la UNGRD y, ese mismo día, un helicóptero Black Hawk de la Fuerza Aeroespacial rescató por cable a tres personas, dos de ellas adultas mayores, aisladas por la creciente del río Ariari en zona rural de El Castillo.",
         "📊 Balance acumulado de la temporada de lluvias en el Meta: 8.471 familias afectadas y 2.615 sin vivienda en 29 municipios; 259 viviendas destruidas y 1.237 averiadas; 95,1 km de vías afectadas y 27 puentes o estructuras hidráulicas comprometidos. El río Upía se mantiene en alerta roja por su nivel, y Cubarral, El Dorado y El Castillo siguen con la conexión terrestre interrumpida.",
@@ -50,6 +50,21 @@
       ],
       "fuente": "SGC / prensa nacional (El Espectador, Noticias Caracol, Vanguardia)",
       "url": "https://www.elespectador.com/ciencia/temblor-hoy-sismo-de-51-con-epicentro-en-santander-sacude-varias-regiones-de-colombia/"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en Ábrego — más de 3.000 hectáreas afectadas, 5 de septiembre de 2026, Norte de Santander",
+      "lat": 8.0807,
+      "lng": -73.2205,
+      "desde": "2026-09-05",
+      "expira": "2026-09-15",
+      "lineas": [
+        "📅 Inició el sábado 5 de septiembre de 2026 en la vereda Berlín, sector Monte Redondo; para la noche del domingo 6 de septiembre las llamas avanzaban hacia sectores cercanos al casco urbano de Ábrego, Norte de Santander, y el fuego sigue activo.",
+        "📊 Más de 3.000 hectáreas de vegetación consumidas, con propagación también hacia el sector Brisas del Tarra. Bomberos Voluntarios de Ábrego y Defensa Civil, reforzados con Bomberos de Ocaña, solicitaron apoyo aéreo ante el avance de las llamas favorecido por fuertes vientos; varias familias evacuaron preventivamente por el fuego y el humo.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Norte de Santander y prensa nacional (El Tiempo, Infobae, Semana). No es un reporte ciudadano."
+      ],
+      "fuente": "Gobernación de Norte de Santander / El Tiempo / Infobae",
+      "url": "https://www.infobae.com/colombia/2026/09/07/incendio-forestal-en-abrego-norte-de-santander-avanza-hacia-zonas-pobladas-reportan-mas-de-3000-hectareas-afectadas/"
     }
   ]
 }
