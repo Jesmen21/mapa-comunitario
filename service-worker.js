@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v809-la-poblacion-de-paso';
+const URBIS_CACHE = 'urbis-v810-la-lectura-del-curso';
 const URBIS_ASSETS = [
   './',
   './index.html',

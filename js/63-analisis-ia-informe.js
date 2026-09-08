@@ -1419,6 +1419,99 @@
 
   // Cabecera y pie iguales en todas las hojas: la numeración "n/N" es lo único
   // que cambia, y es lo que permite reconocer una hoja suelta si se imprime.
+  // ══ Los bloques propios del informe del curso ═══════════════════════════
+
+  /* Sobre qué se analizó: cuántos puntos mapeó el curso y cuántos leyó el
+     motor. Va de primero por la misma razón que en el panel: un estudiante
+     que lee «flujo 18/100» antes de saber que salió de ocho puntos lo lee
+     como un hecho del barrio. */
+  function bloqueBaseInforme(r){
+    const e = r.edu;
+    if (!e) return '';
+    const pocos = (e.leidos || 0) < 25;
+    const faltan = Object.keys(e.sinTraducir || {});
+    return '<div class="base-edu' + (pocos ? ' flojo' : '') + '">' +
+      '<b>' + (pocos ? '⚠ ' : '✓ ') + 'Este análisis se hizo con ' + (e.leidos || 0).toLocaleString('es-CO') +
+        ((e.leidos || 0) === 1 ? ' punto' : ' puntos') + ' que el curso mapeó' +
+        (e.puntosDelCurso > e.leidos ? ' (de ' + e.puntosDelCurso.toLocaleString('es-CO') + ' en el radio; el resto son reportes de situaciones, no usos del suelo)' : '') + '.</b>' +
+      '<p>' + (pocos
+        ? 'Con tan pocos puntos el resultado es un ejercicio, no un diagnóstico: el sector tiene más de lo que se alcanzó a mapear. ' +
+          'La población del DANE, en cambio, está completa siempre.'
+        : 'Suficientes puntos para que las cifras empiecen a ser estables. La población del DANE no depende de lo mapeado.') +
+        (faltan.length ? ' ' + faltan.length + (faltan.length === 1 ? ' etiqueta' : ' etiquetas') + ' del curso no se supieron traducir a la Matriz de Usos: ' +
+          faltan.slice(0, 5).map(esc).join(', ') + (faltan.length > 5 ? '…' : '') + '.' : '') +
+      '</p></div>';
+  }
+
+  /* Cómo leer las cifras: definiciones y no ventas. Es lo que se enseña. */
+  function bloqueComoLeerEdu(r){
+    const s = r.stats;
+    const filas = [
+      ['Habitantes', s.poblacionProyectada
+        ? 'lo que contó el DANE en ' + s.censoAnio + ', traído a ' + s.anioProyeccion + ' con la tasa del municipio.'
+        : (s.poblacionEsCensal ? 'lo que contó el DANE; no una estimación.' : 'una estimación; el censo no respondió.')],
+      ['Flujo a pie / en carro', 'de 0 a 100: cuánta gente mueve el entorno, estimado por el tipo de cada uso. No es un aforo.'],
+      ['Usos por hectárea', 'cuántas actividades hay por cada 100 × 100 m. Sirve para comparar sectores de distinto tamaño.'],
+      ['Los anillos', 'el mismo dato a 300 m, 500 m y 1 km. Si la densidad baja al alejarse, el punto es un centro; si sube, un borde.'],
+      ['El mapa de calor', 'dónde se concentra el movimiento dentro del radio, contra su propio máximo. Dice dónde, no cuánto.'],
+      ['El horario del letrero', 'lo declarado en la puerta, distinto de lo estimado por tipo de uso. Cuando no coinciden, ahí hay una pregunta.']
+    ];
+    return '<div class="tarjeta"><h2>Cómo leer estas cifras</h2><div class="leer">' +
+      filas.map(f => '<div><b>' + esc(f[0]) + '</b><small>' + esc(f[1]) + '</small></div>').join('') +
+      '</div></div>';
+  }
+
+  /* Lo que el análisis dejó abierto: sale de js/64, que lo calcula del
+     resultado. Si el curso ya lo levantó, no aparece. */
+  function bloqueFaltaInforme(r){
+    const F = (window.URBIS_EDU && window.URBIS_EDU.faltantes) ? window.URBIS_EDU.faltantes(r) : [];
+    return '<div class="tarjeta"><h2>Qué falta por levantar</h2>' +
+      (F.length
+        ? '<ul class="falta">' + F.slice(0, 7).map(f => '<li><b>' + esc(f.t) + (f.n ? ' <em>' + f.n + '</em>' : '') + '</b>' +
+            '<small>' + esc(f.d) + '</small></li>').join('') + '</ul>'
+        : '<p class="nota-pie">Nada pendiente: el curso levantó todo lo que el análisis sabe pedir.</p>') +
+      '</div>';
+  }
+
+  /* La lectura del curso: las cajas que el grupo escribió, con el título y
+     la pregunta de js/64. Solo las que tienen texto; si el grupo no escribió
+     ninguna de las pedidas acá, se deja la pregunta a la vista, que es la
+     manera de que el informe impreso siga pidiendo la respuesta. */
+  function bloqueLecturasInforme(r, ids){
+    const L = (window.URBIS_EDU && window.URBIS_EDU.LECTURAS) || [];
+    const textos = r.lecturas || {};
+    const defs = ids.map(id => L.find(l => l.id === id) || { id, t: id, p: '' });
+    const conTexto = defs.filter(d => (textos[d.id] || '').trim());
+    const esGeneral = ids.length === 1 && ids[0] === 'general';
+    if (!conTexto.length) {
+      if (!esGeneral) return '';
+      return '<div class="lectura lectura-vacia"><b>El grupo no escribió su conclusión todavía.</b>' +
+        '<p>' + esc(defs[0].p) + '</p><div class="lectura-lineas"></div></div>';
+    }
+    return '<div class="lecturas' + (esGeneral ? ' lectura-general' : '') + '">' +
+      conTexto.map(d => '<div class="lectura"><b>' + esc(d.t) + '</b>' +
+        '<p>' + esc(textos[d.id]) + '</p></div>').join('') +
+      '</div>';
+  }
+
+  /* La forma de la traza, si el curso la pidió. */
+  function bloqueFormaInforme(r){
+    const f = r.formaEdu && r.formaEdu.morfologia && r.formaEdu.morfologia.forma;
+    if (!f) {
+      return '<div class="tarjeta"><h2>La forma de la traza</h2><p class="nota-pie">' +
+        (r.formaEdu ? 'Sin calles suficientes en el radio para describir la traza.'
+                    : 'No se pidió. Está a un botón en el panel del curso: ortogonal, radial, media naranja, lineal o plato roto, medido con las calles.') +
+        '</p></div>';
+    }
+    const n = r.formaEdu.nVias || 0;
+    return '<div class="tarjeta"><h2>La forma de la traza</h2>' +
+      '<p class="forma-nombre">' + esc(f.nombre) + ' <em>· ' + n + ' calles</em></p>' +
+      '<p class="nota-pie">' + esc(f.descripcion || '') + '</p>' +
+      '<p class="nota-pie"><b>Por qué:</b> ' + esc(f.porque || '') + '</p>' +
+      (f.advertencia ? '<p class="nota-pie forma-ojo">' + esc(f.advertencia) + '</p>' : '') +
+      '</div>';
+  }
+
   function cabecera(titulo, rotulo, sub, fecha, n){
     return '<header>' +
       '<img class="logo" src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">' +
@@ -1429,9 +1522,9 @@
       '</header>';
   }
 
-  function pie(n, r, autor){
+  function pie(n, r, autor, edu){
     return '<footer><span>Página ' + n + ' de ' + N_HOJAS + ' · ' + (autor ? esc(autor) + ' · ' : '') +
-      '<b>URBIS</b> · Urbis para Empresas &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span>' +
+      '<b>URBIS</b> · ' + (edu ? 'Modo educativo' : 'Urbis para Empresas') + ' &nbsp;·&nbsp; @urbis_co &nbsp;·&nbsp; urbisprocity@gmail.com</span>' +
       '<span>Fuentes: ' +
       (r.stats.poblacionEsCensal ? 'Censo DANE ' + r.stats.censoAnio + ' · ' : '') +
       (r.stats.poblacionProyectada ? 'Proyecciones de población DANE · ' : '') +
@@ -1454,6 +1547,171 @@
     const anchoMM = horizontal ? 263 : 200, altoMM = horizontal ? 200 : 263;
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const chart = (src, t) => src ? '<div class="chart"><h3>' + t + '</h3><img src="' + src + '"></div>' : '';
+    const edu = !!opciones.educativo;
+
+    function cuerpoEmpresa(){ return [
+// ══ HOJA 1 · la conclusión y lo que el cliente necesita para decidir ══
+'<div class="hoja"><div class="contenido">',
+
+cabecera(titulo, 'Análisis del entorno · URBIS', ubicacionTxt, fecha, 1),
+
+seccion(1, 'Lectura ejecutiva', 'la historia que conviene contar al cliente'),
+bloqueEjecutivo(r),
+
+seccion(2, 'Los 6 datos que explican el sitio', ''),
+seisDatos(r),
+
+seccion(3, 'Qué está pasando alrededor', 'entorno inmediato y oportunidad'),
+'<div class="fila tres">',
+  '<div>', bloqueMapa(r, horizontal), '</div>',
+  '<div>', bloqueOportunidad(r), '</div>',
+  '<div>', bloqueComoLeer(r), '</div>',
+'</div>',
+
+seccion(4, 'Lo más importante para el cliente', 'flujo + implicación comercial'),
+bloqueClave(r),
+
+pie(1, r, autor),
+'</div></div>',
+
+// ══ HOJA 2 · cómo se mueve el entorno y qué lo activa ══
+'<div class="hoja"><div class="contenido">',
+
+cabecera(titulo, 'Datos y estadísticas del sector', 'movilidad, actividad y alcance', fecha, 2),
+
+seccion(5, 'Cómo se mueve el entorno', 'del tránsito a la oportunidad'),
+'<div class="fila dos-13">',
+  '<div>', bloqueViabilidadDetalle(r), '</div>',
+  '<div>', bloqueMovilidad(r), '</div>',
+'</div>',
+
+seccion(6, 'Qué trae gente a pie y qué se lo lleva', 'lo que suma y lo que resta en el andén'),
+bloqueTraeGente(r),
+franjaTransito(r),
+bloqueAnillosComp(r),
+
+pie(2, r, autor),
+'</div></div>',
+
+// ══ HOJA 3 · dónde está el movimiento, no cuánto ══
+// Hoja propia porque los tres mapas necesitan tamaño para leerse: metidos en
+// una columna de otra hoja se convierten en tres estampillas de colores.
+'<div class="hoja"><div class="contenido">',
+
+cabecera(titulo, 'Mapas de calor de movilidad', 'dónde se concentra el tránsito dentro del radio', fecha, 3),
+
+seccion(7, 'Dónde está el movimiento', 'el mismo cálculo, repartido sobre el terreno'),
+bloqueMapaCalor(r),
+
+'<div class="fila dos" style="margin-top:8px">',
+  '<div>', bloqueAtraeVehiculo(r), '</div>',
+  '<div>', bloqueVocacion(r), '</div>',
+'</div>',
+
+pie(3, r, autor),
+'</div></div>',
+
+// ══ HOJA 4 · composición, población y la lectura FODA ══
+'<div class="hoja"><div class="contenido">',
+
+cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y lectura FODA', fecha, 4),
+
+seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
+'<div class="fila dos">',
+  '<div>', bloqueComposicion(r), bloquePoblacion(r), '</div>',
+  '<div>', bloqueIndicadoresFilas(r), '</div>',
+'</div>',
+
+(fichaCampo(r) ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
+(fichaCampo(r) ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
+         '<div>' + bloqueCaminabilidadEdu(r) + '</div></div>' : ''),
+
+seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
+bloqueRadios(r),
+bloqueHorariosInforme(r),
+bloqueContextoInforme(r),
+
+seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
+bloqueFodaAncho(r),
+'<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
+  'prefactibilidad financiera antes de avanzar a diseño.</div>',
+
+pie(4, r, autor),
+'</div></div>',
+
+'</div>',
+    ].join(''); }
+
+    /* ── El informe del curso ─────────────────────────────────────────────
+       Las mismas cuatro hojas, sin el negocio: ni viabilidad del proyecto,
+       ni «lo más importante para el cliente», ni el POT como siguiente
+       paso. En su lugar: sobre qué se analizó, qué falta por levantar, y
+       la lectura del curso, que va de primera porque es lo que se evalúa. */
+    function cuerpoEdu(){ return [
+'<div class="hoja"><div class="contenido">',
+cabecera(titulo, 'Análisis del sector · ejercicio del curso', ubicacionTxt, fecha, 1),
+seccion(1, 'Sobre qué se analizó', 'lo que el curso mapeó, antes de las cifras'),
+bloqueBaseInforme(r),
+seccion(2, 'Los 6 datos que describen el sitio', ''),
+seisDatos(r),
+seccion(3, 'Qué hay alrededor', 'el sector, cómo leer las cifras y qué falta'),
+'<div class="fila tres">',
+  '<div>', bloqueMapa(r, horizontal), '</div>',
+  '<div>', bloqueComoLeerEdu(r), '</div>',
+  '<div>', bloqueFaltaInforme(r), '</div>',
+'</div>',
+seccion(4, 'La lectura del curso', 'lo que el grupo concluyó después de caminar el sector'),
+bloqueLecturasInforme(r, ['general']),
+bloqueLecturasInforme(r, ['base', 'poblacion', 'flujo', 'calor', 'composicion', 'anillos', 'edificacion', 'forma', 'contexto', 'foda']),
+pie(1, r, autor, true),
+'</div></div>',
+
+'<div class="hoja"><div class="contenido">',
+cabecera(titulo, 'Cómo se mueve el sector', 'flujo, horarios y lo que trae gente', fecha, 2),
+seccion(5, 'Cómo se mueve el sector', 'del tránsito a la vida de la calle'),
+'<div class="fila dos">',
+  '<div>', bloqueMovilidad(r), '</div>',
+  '<div>', bloqueHorariosInforme(r) || bloqueClave(r), '</div>',
+'</div>',
+seccion(6, 'Qué trae gente a pie y qué se lo lleva', 'lo que suma y lo que resta en el andén'),
+bloqueTraeGente(r),
+franjaTransito(r),
+bloqueAnillosComp(r),
+pie(2, r, autor, true),
+'</div></div>',
+
+'<div class="hoja"><div class="contenido">',
+cabecera(titulo, 'Dónde está el movimiento y en qué ciudad', 'mapas de calor, forma de la traza y contexto', fecha, 3),
+seccion(7, 'Dónde está el movimiento', 'mapas de calor: a pie de día, a pie de noche, en vehículo'),
+bloqueMapaCalor(r),
+'<div class="fila tres" style="margin-top:8px">',
+  '<div>', bloqueAtraeVehiculo(r), '</div>',
+  '<div>', bloqueVocacion(r), '</div>',
+  '<div>', bloqueFormaInforme(r), '</div>',
+'</div>',
+bloqueContextoInforme(r),
+pie(3, r, autor, true),
+'</div></div>',
+
+'<div class="hoja"><div class="contenido">',
+cabecera(titulo, 'De qué está hecho el sector', 'composición, población, campo y contexto', fecha, 4),
+seccion(8, 'De qué está hecho el sector', 'estructura urbana en ' + radioTxt),
+'<div class="fila dos">',
+  '<div>', bloqueComposicion(r), bloquePoblacion(r), '</div>',
+  '<div>', bloqueIndicadoresFilas(r), '</div>',
+'</div>',
+(fichaCampo(r) ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
+(fichaCampo(r) ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
+         '<div>' + bloqueCaminabilidadEdu(r) + '</div></div>' : ''),
+seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
+bloqueRadios(r),
+seccion(fichaCampo(r) ? 11 : 10, 'FODA del sector', 'qué favorece, qué exige y qué revisar'),
+bloqueFodaAncho(r),
+'<div class="paso">SIGUIENTE PASO · Mapear lo que falta, volver a analizar y comparar con esta versión: ' +
+  'el cambio entre las dos es el aprendizaje.</div>',
+pie(4, r, autor, true),
+'</div></div>',
+    ].join(''); }
 
     return [
 // El <base> es imprescindible: el informe se abre en una ventana nueva con
@@ -1682,6 +1940,22 @@
   'margin:0 1px 4px;font-size:5.6px;color:', T.txt3, '}',
 
 '.tbl-horarios{width:100%;border-collapse:collapse;margin-top:2px}',
+/* El informe del curso */
+'.base-edu{border:1px solid ', T.borde, ';border-left:4px solid ', T.acento, ';border-radius:6px;padding:6px 9px;margin-bottom:4px;background:', T.suave, '}',
+'.base-edu.flojo{border-left-color:', T.warn, '}',
+'.base-edu b{font-size:8.4px;display:block;margin-bottom:2px}.base-edu p{font-size:7.2px;line-height:1.45;color:', T.txt2, '}',
+'.falta{list-style:none;margin:0;padding:0}.falta li{padding:3px 0;border-bottom:1px solid ', T.linea, '}',
+'.falta li b{display:block;font-size:7.4px}.falta li b em{font-style:normal;color:', T.warn, ';margin-left:3px}',
+'.falta li small{display:block;font-size:6.6px;line-height:1.4;color:', T.txt2, '}',
+'.lecturas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-top:4px}',
+'.lectura{border:1px dashed ', T.warn, ';border-radius:6px;padding:6px 9px;background:', T.hoja, '}',
+'.lectura b{display:block;font-size:7.6px;color:', T.tinta, ';margin-bottom:2px}',
+'.lectura p{font-size:7.6px;line-height:1.5;color:', T.tinta, ';white-space:pre-wrap}',
+'.lectura-general .lectura p{font-size:8.6px;line-height:1.55}',
+'.lectura-vacia p{color:', T.txt2, ';font-style:italic}',
+'.lectura-lineas{height:34px;margin-top:6px;background:repeating-linear-gradient(to bottom,transparent 0 10px,', T.linea, ' 10px 11px)}',
+'.forma-nombre{font-size:10px;font-weight:900;margin:0 0 2px}.forma-nombre em{font-style:normal;font-weight:400;font-size:7px;color:', T.txt3, '}',
+'.forma-ojo{color:#B45309 !important}',
 '.ctx-migas{font-size:7.6px;color:', T.tinta, ';font-weight:700;margin:0 0 3px}',
 '.ctx-sub{font-size:7px;font-weight:800;color:', T.tinta, ';margin:4px 0 1px;text-transform:uppercase;letter-spacing:.3px}',
 '.ctx-rutas{margin:0;padding:0 0 0 10px;font-size:6.8px;color:', T.txt2, ';columns:2;column-gap:8px}',
@@ -1983,96 +2257,7 @@
 '.fila.dos-13{grid-template-columns:1fr 1.3fr}',
 '</style></head><body><div id="marco">',
 
-// ══ HOJA 1 · la conclusión y lo que el cliente necesita para decidir ══
-'<div class="hoja"><div class="contenido">',
-
-cabecera(titulo, 'Análisis del entorno · URBIS', ubicacionTxt, fecha, 1),
-
-seccion(1, 'Lectura ejecutiva', 'la historia que conviene contar al cliente'),
-bloqueEjecutivo(r),
-
-seccion(2, 'Los 6 datos que explican el sitio', ''),
-seisDatos(r),
-
-seccion(3, 'Qué está pasando alrededor', 'entorno inmediato y oportunidad'),
-'<div class="fila tres">',
-  '<div>', bloqueMapa(r, horizontal), '</div>',
-  '<div>', bloqueOportunidad(r), '</div>',
-  '<div>', bloqueComoLeer(r), '</div>',
-'</div>',
-
-seccion(4, 'Lo más importante para el cliente', 'flujo + implicación comercial'),
-bloqueClave(r),
-
-pie(1, r, autor),
-'</div></div>',
-
-// ══ HOJA 2 · cómo se mueve el entorno y qué lo activa ══
-'<div class="hoja"><div class="contenido">',
-
-cabecera(titulo, 'Datos y estadísticas del sector', 'movilidad, actividad y alcance', fecha, 2),
-
-seccion(5, 'Cómo se mueve el entorno', 'del tránsito a la oportunidad'),
-'<div class="fila dos-13">',
-  '<div>', bloqueViabilidadDetalle(r), '</div>',
-  '<div>', bloqueMovilidad(r), '</div>',
-'</div>',
-
-seccion(6, 'Qué trae gente a pie y qué se lo lleva', 'lo que suma y lo que resta en el andén'),
-bloqueTraeGente(r),
-franjaTransito(r),
-bloqueAnillosComp(r),
-
-pie(2, r, autor),
-'</div></div>',
-
-// ══ HOJA 3 · dónde está el movimiento, no cuánto ══
-// Hoja propia porque los tres mapas necesitan tamaño para leerse: metidos en
-// una columna de otra hoja se convierten en tres estampillas de colores.
-'<div class="hoja"><div class="contenido">',
-
-cabecera(titulo, 'Mapas de calor de movilidad', 'dónde se concentra el tránsito dentro del radio', fecha, 3),
-
-seccion(7, 'Dónde está el movimiento', 'el mismo cálculo, repartido sobre el terreno'),
-bloqueMapaCalor(r),
-
-'<div class="fila dos" style="margin-top:8px">',
-  '<div>', bloqueAtraeVehiculo(r), '</div>',
-  '<div>', bloqueVocacion(r), '</div>',
-'</div>',
-
-pie(3, r, autor),
-'</div></div>',
-
-// ══ HOJA 4 · composición, población y la lectura FODA ══
-'<div class="hoja"><div class="contenido">',
-
-cabecera(titulo, 'Datos y estadísticas del sector', 'composición, población y lectura FODA', fecha, 4),
-
-seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt),
-'<div class="fila dos">',
-  '<div>', bloqueComposicion(r), bloquePoblacion(r), '</div>',
-  '<div>', bloqueIndicadoresFilas(r), '</div>',
-'</div>',
-
-(fichaCampo(r) ? seccion(9, 'Lo levantado en campo', 'ficha del edificio y estado del andén') : ''),
-(fichaCampo(r) ? '<div class="fila dos"><div>' + bloqueEdificacionEdu(r) + '</div>' +
-         '<div>' + bloqueCaminabilidadEdu(r) + '</div></div>' : ''),
-
-seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
-bloqueRadios(r),
-bloqueHorariosInforme(r),
-bloqueContextoInforme(r),
-
-seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
-bloqueFodaAncho(r),
-'<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
-  'prefactibilidad financiera antes de avanzar a diseño.</div>',
-
-pie(4, r, autor),
-'</div></div>',
-
-'</div>',
+(edu ? cuerpoEdu() : cuerpoEmpresa()),
 // Auto-diagramación: ajusta el contenido para LLENAR exactamente una hoja
 // (lo encoge si sobra y lo agranda si falta, así no quedan espacios en
 // blanco), y en pantalla encaja la hoja completa en el ancho disponible.

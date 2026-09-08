@@ -443,6 +443,85 @@
       '<div class="edu-foda">' + html + '</div></div>';
   }
 
+  /* ── La lectura del curso ─────────────────────────────────────────────
+     Una caja plegada debajo de cada bloque, con la pregunta que lo abre. Se
+     guarda mientras se escribe, por centro y radio, para que sobreviva a
+     «volver a analizar»: si mapear más borrara lo escrito, nadie escribiría
+     hasta el final, y al final es cuando ya se olvidó lo que se vio. */
+  const LECTURAS_KEY = 'edu_lecturas_v1';
+  let claveLecturas = '';
+  function claveDe(centro, radioM){
+    return (centro ? centro.lat.toFixed(4) + ',' + centro.lng.toFixed(4) : '?') + '|' + radioM;
+  }
+  function leerLecturasGuardadas(){
+    try { return JSON.parse(localStorage.getItem(LECTURAS_KEY) || '{}') || {}; } catch(e) { return {}; }
+  }
+  function lecturasDe(clave){
+    return (leerLecturasGuardadas()[clave] || {}).textos || {};
+  }
+  function guardarLectura(clave, id, texto){
+    try {
+      const todo = leerLecturasGuardadas();
+      const reg = todo[clave] || { textos: {} };
+      reg.textos[id] = texto;
+      reg.ts = new Date().toISOString();
+      todo[clave] = reg;
+      localStorage.setItem(LECTURAS_KEY, JSON.stringify(todo));
+    } catch(e) {}
+  }
+  function lecturaDef(id){
+    return ((window.URBIS_EDU || {}).LECTURAS || []).find(l => l.id === id) || { id, t: id, p: '' };
+  }
+  function cajaLectura(id, previas){
+    const L = lecturaDef(id), texto = (previas || {})[id] || '';
+    return '<details class="edu-lectura"' + (texto ? ' open' : '') + '>' +
+      '<summary>✍️ Su lectura · <em>' + esc(L.t) + '</em>' + (texto ? ' <b>✓</b>' : '') + '</summary>' +
+      '<p class="edu-nota">' + esc(L.p) + '</p>' +
+      '<textarea data-lectura="' + esc(id) + '" rows="3" placeholder="Escriban acá lo que concluyen. Se guarda solo.">' +
+        esc(texto) + '</textarea></details>';
+  }
+  // Envuelve un bloque con su caja de lectura debajo. Si el bloque no salió
+  // (sin datos), la caja tampoco: no se pregunta por lo que no se mostró.
+  function conLectura(html, id, previas){
+    return html ? html + cajaLectura(id, previas) : '';
+  }
+  function bloqueConclusion(previas){
+    return '<div class="edu-caja edu-conclusion" id="edu-conclusion">' +
+      '<h4>✍️ Conclusión del grupo</h4>' +
+      '<p class="edu-nota">Lo que el análisis no puede escribir por ustedes. Va de primero en el informe.</p>' +
+      '<textarea data-lectura="general" rows="5" placeholder="' + esc(lecturaDef('general').p) + '">' +
+        esc((previas || {}).general || '') + '</textarea>' +
+      '</div>';
+  }
+  /* Lo escrito ahora mismo, leído de las cajas: es lo que viaja al informe. */
+  function lecturasActuales(){
+    const cont = $('edu-analisis-salida'), out = {};
+    if (!cont) return out;
+    cont.querySelectorAll('textarea[data-lectura]').forEach(t => {
+      const v = (t.value || '').trim();
+      if (v) out[t.getAttribute('data-lectura')] = v;
+    });
+    return out;
+  }
+  function engancharLecturas(cont){
+    // Un temporizador POR caja: con uno solo, escribir en dos cajas seguidas
+    // cancelaba el guardado de la primera.
+    const timers = {};
+    cont.addEventListener('input', ev => {
+      const ta = ev.target.closest('textarea[data-lectura]');
+      if (!ta) return;
+      const id = ta.getAttribute('data-lectura'), v = ta.value;
+      const sum = ta.closest('details') && ta.closest('details').querySelector('summary b');
+      if (ta.closest('details')) {
+        if (v.trim() && !sum) ta.closest('details').querySelector('summary').insertAdjacentHTML('beforeend', ' <b>✓</b>');
+        if (!v.trim() && sum) sum.remove();
+      }
+      clearTimeout(timers[id]);
+      timers[id] = setTimeout(() => guardarLectura(claveLecturas, id, v), 400);
+      if (ultimo) ultimo.lecturas = lecturasActuales();
+    });
+  }
+
   // ── Orquestación ────────────────────────────────────────────────────────
   function centroActual(){
     try {
@@ -467,9 +546,17 @@
     try {
       const r = await window.URBIS_EDU.analizar(centro, radioM, null);
       ultimo = r;
-      cont.innerHTML = bloqueBase(r) + kpis(r) + bloquePoblacion(r) + bloqueFlujo(r) +
-                       bloqueCalor(r) + bloqueComposicion(r) + bloqueAnillos(r) +
-                       bloqueEdificacion(r) + bloqueOportunidades(r) + bloqueFoda(r) +
+      claveLecturas = claveDe(centro, radioM);
+      const previas = lecturasDe(claveLecturas);
+      r.lecturas = Object.assign({}, previas);
+      cont.innerHTML = conLectura(bloqueBase(r), 'base', previas) + kpis(r) +
+                       conLectura(bloquePoblacion(r), 'poblacion', previas) +
+                       conLectura(bloqueFlujo(r), 'flujo', previas) +
+                       conLectura(bloqueCalor(r), 'calor', previas) +
+                       conLectura(bloqueComposicion(r), 'composicion', previas) +
+                       conLectura(bloqueAnillos(r), 'anillos', previas) +
+                       conLectura(bloqueEdificacion(r), 'edificacion', previas) +
+                       bloqueOportunidades(r) + conLectura(bloqueFoda(r), 'foda', previas) +
                        '<div class="edu-caja" id="edu-forma"><h4>🔷 ¿Qué forma tiene la traza?</h4>' +
                          '<p class="edu-nota">Ortogonal, radial, media naranja, lineal o plato roto — medido con el rumbo ' +
                          'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
@@ -479,9 +566,12 @@
                          'queda la frontera y cuánto alojamiento de paso hay. Sale de OpenStreetMap, no de lo que ' +
                          'mapearon. Se pide aparte porque es otra consulta.</p>' +
                          '<button type="button" id="edu-contexto-btn">🧭 Consultar el contexto</button></div>' +
+                       cajaLectura('contexto', previas) +
+                       bloqueConclusion(previas) +
                        '<div class="edu-acciones">' +
-                         '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
+                         '<button type="button" id="edu-analisis-informe">📄 Ver informe del curso</button>' +
                        '</div>';
+      engancharLecturas(cont);
       const bi = $('edu-analisis-informe');
       if (bi) bi.addEventListener('click', abrirInforme);
       const bf = $('edu-forma-btn');
@@ -561,8 +651,10 @@
     try {
       const f = await window.URBIS_EDU.forma(centro, radioM);
       ultimaForma = f;
+      if (ultimo) ultimo.formaEdu = f;     // para el informe
       caja.innerHTML = '<h4>🔷 ¿Qué forma tiene la traza?</h4>' +
         bloqueForma((f.morfologia || {}).forma, f.nVias, f.vias);
+      caja.insertAdjacentHTML('afterend', cajaLectura('forma', lecturasDe(claveLecturas)));
     } catch(err) {
       if (btn) { btn.disabled = false; btn.textContent = '🔷 Reconocer la traza'; }
       const p = document.createElement('p');
@@ -678,8 +770,10 @@
   function abrirInforme(){
     if (!ultimo || !window.AIA_INFORME) return;
     try {
+      ultimo.lecturas = lecturasActuales();
       const html = window.AIA_INFORME.construirHTMLEjecutivo(
-        ultimo, {}, { estilo: 'institucional', horizontal: true,
+        ultimo, {}, { estilo: 'institucional', horizontal: true, educativo: true,
+                      titulo: 'Análisis del sector',
                       autor: 'Ejercicio educativo · URBIS' });
       const w = window.open('', '_blank');
       if (!w) { alert('El navegador bloqueó la ventana del informe.'); return; }
@@ -698,6 +792,7 @@
 
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
                           mostrarCalor: mostrarCalor, bloqueContexto: bloqueContexto,
+                          lecturas: lecturasActuales,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();

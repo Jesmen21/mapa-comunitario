@@ -37,6 +37,9 @@ const REPO = process.env.REPO || E.RAIZ;
   await pg.addScriptTag({ content: guionDelMotor() });
   await pg.addScriptTag({ path: REPO + '/js/56-calor.js' });
   await pg.addScriptTag({ path: REPO + '/js/58-anillos.js' });
+  // El informe del curso lee de js/64 los títulos de las lecturas y lo que
+  // falta por levantar: la cadena real, no una copia.
+  await pg.addScriptTag({ path: REPO + '/js/64-analisis-edu.js' });
   await pg.addScriptTag({ path: REPO + '/js/63-analisis-ia-informe.js' });
 
   const datos = await pg.evaluate(() => {
@@ -131,8 +134,25 @@ const REPO = process.env.REPO || E.RAIZ;
       umbralFronteraM: 3000, fuente: 'OpenStreetMap'
     };
     const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
+    /* El informe del curso (v810): el mismo resultado con lo que trae el
+       modo educativo —sobre qué se analizó, la forma pedida y lo escrito
+       por el grupo— tiene que caber en sus cuatro hojas igual que el de
+       empresas. */
+    const rE = Object.assign({}, rP, {
+      edu: { puntosDelCurso: 62, leidos: 48, sinTraducir: { 'Uso Inventado': 2 },
+             edificacion: { total: 12, conEpoca: 10, conMaterial: 9, evaluables: 10,
+                            porEpoca: { '1984 – 2010': 6, '1950 – 1983': 3, 'Después de 2010': 1 },
+                            porMaterial: { 'Ladrillo': 7, 'Bloque': 2 }, alta: 1, media: 4, baja: 5,
+                            anteriores1984: 3, patrimonio: 0, enObra: 1, noSeSabe: 2, otros: 0, textosOtro: [] } },
+      formaEdu: { nVias: 26, morfologia: { forma: { id: 'ortogonal', nombre: 'Ortogonal', descripcion: 'Calles que se cruzan en ángulo recto: el damero.',
+                  porque: 'El 71 % de los metros de vía corre en dos direcciones perpendiculares (índice de orden 0,62).',
+                  advertencia: 'Describe la traza dentro del radio analizado, no la ciudad entera.' } } },
+      lecturas: { general: 'Es un barrio de borde: mucha vivienda, poco comercio y una sola vía que lo conecta. Lo que más se nota es la falta de andén.',
+                  flujo: 'Vimos más gente a las 6 p.m. que al mediodía.', foda: 'Quitaríamos la debilidad del parqueo: nadie llega en carro.' }
+    });
+    const htmlEdu = window.AIA_INFORME.construirHTMLEjecutivo(rE, {}, { estilo:'institucional', horizontal:true, educativo:true, titulo:'Análisis del sector', autor:'Ejercicio educativo · URBIS' });
 
-    return { html, htmlPesado, flujo: r.stats.movilidad.flujo,
+    return { html, htmlPesado, htmlEdu, flujo: r.stats.movilidad.flujo,
              pois: (r.pois||[]).length, poisPesado: (rP.pois||[]).length, centro,
              horarios: rP.stats.horarios, multiRadio: rP.multiRadio };
   });
@@ -560,6 +580,46 @@ const REPO = process.env.REPO || E.RAIZ;
       'las tres capas señalan su punto más activo sobre el plano');
   chk(/noche/i.test(pesado.calor.map(c => c.titulo).join(' ')),
       'una de las capas es la de la noche');
+
+  // ── El informe del curso ───────────────────────────────────────────
+  const pgE = await ctx.newPage();
+  pgE.on('pageerror', e => errores.push('curso: ' + e.message));
+  await pgE.route('**/*', route => {
+    const u = route.request().url();
+    if (u.startsWith('data:') || u.startsWith('about:')) return route.continue();
+    return route.fulfill({ status: 200, body: '' });
+  });
+  await pgE.setViewportSize({ width: 1400, height: 1000 });
+  await pgE.setContent(datos.htmlEdu, { waitUntil: 'load' });
+  await pgE.waitForTimeout(1200);
+  const EDU = await pgE.evaluate(() => {
+    const hojas = Array.from(document.querySelectorAll('.hoja')).map(h => {
+      const c = h.querySelector('.contenido');
+      const esc = c ? (parseFloat((c.style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1]) || 1) : 1;
+      const crudo = c ? c.scrollHeight : 0;
+      return { alto: h.clientHeight, real: Math.round(crudo * esc), escala: esc };
+    });
+    const t = document.body.textContent.replace(/\s+/g, ' ');
+    const lecturas = Array.from(document.querySelectorAll('.lectura')).map(l => (l.querySelector('b') || {}).textContent || '');
+    return { hojas, t, lecturas,
+             secciones: Array.from(document.querySelectorAll('.sec b')).map(b => b.textContent) };
+  });
+  console.log('\n── El informe del curso ─────────────────────');
+  EDU.hojas.forEach((h, i) => console.log('  hoja ' + (i+1) + ': caben ' + h.alto + ' · ocupa ' + h.real +
+    ' (× ' + h.escala.toFixed(3) + ')' + (h.real > h.alto + 2 ? '  ⚠️ SE DESBORDA' : '  ok')));
+  console.log('  secciones: ' + EDU.secciones.join(' · '));
+  chk(EDU.hojas.length === 4 && EDU.hojas.every(h => h.real <= h.alto + 2), 'las cuatro hojas del informe del curso caben sin desbordarse');
+  chk(EDU.hojas.every(h => h.escala >= 0.7), 'y sin encoger la letra hasta lo ilegible (' + EDU.hojas.map(h => h.escala.toFixed(2)).join(', ') + ')');
+  chk(!/VIABILIDAD DEL PROYECTO/.test(EDU.t) && !/POT/.test(EDU.t), 'sin viabilidad del proyecto ni POT');
+  chk(/48 puntos que el curso mapeó/.test(EDU.t), 'abre con los puntos que el curso mapeó');
+  chk(EDU.lecturas.indexOf('Conclusión del grupo') >= 0 && /barrio de borde/.test(EDU.t) && /nadie llega en carro/.test(EDU.t),
+      'lleva la conclusión del grupo y sus lecturas por bloque (' + EDU.lecturas.join(', ') + ')');
+  chk(/Ortogonal/.test(EDU.t) && /índice de orden/.test(EDU.t), 'y la forma de la traza que el curso pidió, con su porqué');
+  chk(/Qué falta por levantar/.test(EDU.t) && /Anotar el horario del letrero/.test(EDU.t), 'y qué falta por levantar, calculado del resultado');
+  // Las hojas del curso, para revisarlas a ojo.
+  const hojasE = await pgE.$$('.hoja');
+  for (let i = 0; i < hojasE.length; i++) await hojasE[i].screenshot({ path: '/tmp/hojaE' + (i+1) + '.png' });
+  await pgE.close();
 
   // ── El sector en su contexto ────────────────────────────────────────
   console.log('\n── El sector en su contexto ─────────────────────');

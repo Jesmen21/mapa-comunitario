@@ -1,107 +1,107 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=809-la-poblacion-de-paso");
-@import url("./00-brand-urbis.css?v=809-la-poblacion-de-paso");
+@import url("./00-app-shell.css?v=810-la-lectura-del-curso");
+@import url("./00-brand-urbis.css?v=810-la-lectura-del-curso");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=809-la-poblacion-de-paso");
-@import url("./02-map-tools-routing.css?v=809-la-poblacion-de-paso");
-@import url("./03-basemap-and-panels.css?v=809-la-poblacion-de-paso");
-@import url("./04-automap-markers-performance.css?v=809-la-poblacion-de-paso");
-@import url("./05-clusters.css?v=809-la-poblacion-de-paso");
-@import url("./06-landing.css?v=809-la-poblacion-de-paso");
-@import url("./07-mobile-advanced.css?v=809-la-poblacion-de-paso");
+@import url("./01-base-layout.css?v=810-la-lectura-del-curso");
+@import url("./02-map-tools-routing.css?v=810-la-lectura-del-curso");
+@import url("./03-basemap-and-panels.css?v=810-la-lectura-del-curso");
+@import url("./04-automap-markers-performance.css?v=810-la-lectura-del-curso");
+@import url("./05-clusters.css?v=810-la-lectura-del-curso");
+@import url("./06-landing.css?v=810-la-lectura-del-curso");
+@import url("./07-mobile-advanced.css?v=810-la-lectura-del-curso");
 
-@import url("./08-role-accessibility.css?v=809-la-poblacion-de-paso");
-@import url("./09-achievements.css?v=809-la-poblacion-de-paso");
+@import url("./08-role-accessibility.css?v=810-la-lectura-del-curso");
+@import url("./09-achievements.css?v=810-la-lectura-del-curso");
 
-@import url("./10-sport.css?v=809-la-poblacion-de-paso");
+@import url("./10-sport.css?v=810-la-lectura-del-curso");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=809-la-poblacion-de-paso");
+@import url("./57-comparar-sector.css?v=810-la-lectura-del-curso");
 
-@import url("./99-contrast-fix.css?v=809-la-poblacion-de-paso");
+@import url("./99-contrast-fix.css?v=810-la-lectura-del-curso");
 
-@import url("12-module-access.css?v=809-la-poblacion-de-paso");
+@import url("12-module-access.css?v=810-la-lectura-del-curso");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=809-la-poblacion-de-paso");
+@import url("./14-mobile-functional-app.css?v=810-la-lectura-del-curso");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=809-la-poblacion-de-paso");
+@import url("./16-mobility-clean-traffic.css?v=810-la-lectura-del-curso");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=809-la-poblacion-de-paso');
+@import url('./28-mobile-kawaii-entry.css?v=810-la-lectura-del-curso');
 
-@import url('./29-mobile-kawaii-platform.css?v=809-la-poblacion-de-paso');
+@import url('./29-mobile-kawaii-platform.css?v=810-la-lectura-del-curso');
 
-@import url('./30-zoom-marker-optimizer.css?v=809-la-poblacion-de-paso');
+@import url('./30-zoom-marker-optimizer.css?v=810-la-lectura-del-curso');
 
-@import url('./36-mobility-static-search.css?v=809-la-poblacion-de-paso');
+@import url('./36-mobility-static-search.css?v=810-la-lectura-del-curso');
 
 
-@import url('./41-email-registration-auth.css?v=809-la-poblacion-de-paso');
+@import url('./41-email-registration-auth.css?v=810-la-lectura-del-curso');
 
-@import url('./42-turquoise-refresh.css?v=809-la-poblacion-de-paso');
+@import url('./42-turquoise-refresh.css?v=810-la-lectura-del-curso');
 
-@import url('./43-clean-user-entry.css?v=809-la-poblacion-de-paso');
+@import url('./43-clean-user-entry.css?v=810-la-lectura-del-curso');
 
-@import url('./44-mobile-auth-onboarding.css?v=809-la-poblacion-de-paso');
+@import url('./44-mobile-auth-onboarding.css?v=810-la-lectura-del-curso');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=809-la-poblacion-de-paso');
+@import url('./45-mascotas-fundacion.css?v=810-la-lectura-del-curso');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=809-la-poblacion-de-paso');
+@import url('./46-runner-strava.css?v=810-la-lectura-del-curso');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=809-la-poblacion-de-paso');
-@import url('./48-premio.css?v=809-la-poblacion-de-paso');
+@import url('./47-aurea-menu.css?v=810-la-lectura-del-curso');
+@import url('./48-premio.css?v=810-la-lectura-del-curso');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=809-la-poblacion-de-paso');
+@import url('./48-runner-stats.css?v=810-la-lectura-del-curso');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=809-la-poblacion-de-paso');
+@import url('./49-urbis-analisis.css?v=810-la-lectura-del-curso');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=809-la-poblacion-de-paso');
+@import url('./99-mobile-clean-core.css?v=810-la-lectura-del-curso');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=809-la-poblacion-de-paso');
+@import url('./99-safe-destination-dot.css?v=810-la-lectura-del-curso');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=809-la-poblacion-de-paso');
+@import url('./51-cute-theme-pc.css?v=810-la-lectura-del-curso');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=809-la-poblacion-de-paso');
+@import url('./52-urbis-pro-city.css?v=810-la-lectura-del-curso');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=809-la-poblacion-de-paso');
-@import url('./68-procity-reconocimiento.css?v=809-la-poblacion-de-paso');
-@import url('./69-licencia.css?v=809-la-poblacion-de-paso');
+@import url('./24-procity-analisis.css?v=810-la-lectura-del-curso');
+@import url('./68-procity-reconocimiento.css?v=810-la-lectura-del-curso');
+@import url('./69-licencia.css?v=810-la-lectura-del-curso');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=809-la-poblacion-de-paso');
+@import url('./53-auth-celeste.css?v=810-la-lectura-del-curso');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=809-la-poblacion-de-paso');
+@import url('./54-config-admin.css?v=810-la-lectura-del-curso');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=809-la-poblacion-de-paso');
+@import url('./55-vitrina.css?v=810-la-lectura-del-curso');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=809-la-poblacion-de-paso');
+@import url('./70-modo-app.css?v=810-la-lectura-del-curso');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=809-la-poblacion-de-paso');
+@import url('./72-edu-diseno.css?v=810-la-lectura-del-curso');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */
@@ -218,6 +218,23 @@
 .edu-foda-col h5{ margin:0 0 4px; font-size:.68rem; }
 .edu-foda-col ul{ margin:0; padding-left:15px; font-size:.66rem; line-height:1.4; opacity:.88; }
 .edu-foda-col li{ margin-bottom:3px; }
+
+/* La lectura del curso: una caja plegada bajo cada bloque, y la conclusión
+   abierta al final. Se distingue del análisis por el borde punteado: lo que
+   escribe el curso no es lo que dice el motor. */
+.edu-lectura{ margin:-4px 0 12px; padding:6px 9px; border:1px dashed rgba(245,185,66,.5); border-radius:0 0 10px 10px; }
+.edu-lectura summary{ cursor:pointer; font-size:.68rem; font-weight:700; color:#f5b942; }
+.edu-lectura summary em{ font-style:normal; font-weight:400; opacity:.85; }
+.edu-lectura summary b{ color:#4ade80; }
+.edu-lectura .edu-nota{ margin:4px 0 5px; }
+.edu-lectura textarea, .edu-conclusion textarea{
+  width:100%; box-sizing:border-box; resize:vertical; font:inherit; font-size:.72rem; line-height:1.45;
+  padding:7px 8px; border-radius:8px; color:inherit;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.15);
+}
+.edu-lectura textarea:focus, .edu-conclusion textarea:focus{ outline:none; border-color:#f5b942; }
+.edu-conclusion{ border-color:rgba(245,185,66,.5); background:rgba(245,185,66,.06); }
+.edu-conclusion h4{ color:#f5b942; }
 
 /* El sector en su contexto: migas del país al barrio, rutas con su color,
    y la lectura de la frontera con un color por grado —fuerte, lejano,

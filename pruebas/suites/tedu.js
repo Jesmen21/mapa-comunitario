@@ -763,6 +763,99 @@ const server = http.createServer((req, res) => {
   chk(SINALOJ.total === 0 && /No dice que no haya población de paso/.test(SINALOJ.lectura || ''),
       'sin alojamiento mapeado, dice que el mapa no lo ve, no que no exista');
 
+  /* ── La lectura del curso y el informe propio del curso (v810) ────────
+     El módulo da las cifras; la conclusión la escribe el curso. Las cajas
+     tienen que estar bajo cada bloque, guardarse solas y sobrevivir a
+     «volver a analizar». Y el informe tiene que ser el del curso: sin la
+     viabilidad del proyecto ni el POT, con lo que el grupo escribió. */
+  console.log('\n── La lectura del curso ──────────────────────────────────────');
+  const LE = await pg.evaluate(() => {
+    const c = document.getElementById('edu-analisis-salida');
+    const cajas = Array.from(c.querySelectorAll('textarea[data-lectura]')).map(t => t.getAttribute('data-lectura'));
+    // Escribir en dos cajas, como lo haría el grupo.
+    const pon = (id, txt) => {
+      const t = c.querySelector('textarea[data-lectura="' + id + '"]');
+      if (!t) return false;
+      t.value = txt; t.dispatchEvent(new Event('input', { bubbles: true })); return true;
+    };
+    const ok1 = pon('general', 'Es un barrio de borde: mucha vivienda, poco comercio y una sola vía que lo conecta.');
+    const ok2 = pon('flujo', 'Vimos más gente a las 6 p.m. que al mediodía, al revés de lo que estima el análisis.');
+    return { cajas, ok1, ok2,
+             conclusionPrimero: !!document.getElementById('edu-conclusion'),
+             posConclusion: c.innerHTML.indexOf('edu-conclusion'), posInforme: c.innerHTML.indexOf('edu-analisis-informe'),
+             preguntaGeneral: ((document.querySelector('#edu-conclusion textarea') || {}).placeholder || ''),
+             botonInforme: (document.getElementById('edu-analisis-informe') || {}).textContent || '' };
+  });
+  console.log('  cajas: ' + LE.cajas.join(', '));
+  chk(LE.cajas.length >= 9 && ['general', 'base', 'poblacion', 'flujo', 'calor', 'composicion', 'anillos', 'foda', 'contexto'].every(k => LE.cajas.indexOf(k) >= 0),
+      'hay una caja «Su lectura» bajo cada bloque y la conclusión del grupo (' + LE.cajas.length + ')');
+  chk(LE.conclusionPrimero && LE.posConclusion < LE.posInforme, 'la conclusión del grupo va antes del botón del informe');
+  chk(/tres frases/.test(LE.preguntaGeneral), 'cada caja abre con su pregunta guía');
+  chk(/informe del curso/i.test(LE.botonInforme), 'el botón ya no ofrece «el informe completo» sino el del curso');
+  await pg.waitForTimeout(600);   // el guardado va con un pequeño retraso
+  const GU = await pg.evaluate(() => {
+    let g = {};
+    try { g = JSON.parse(localStorage.getItem('edu_lecturas_v1') || '{}'); } catch (e) {}
+    const claves = Object.keys(g);
+    const textos = claves.length ? (g[claves[0]].textos || {}) : {};
+    return { claves, textos, enUltimo: (window.URBIS_EDU_UI.ultimo || {}).lecturas || {} };
+  });
+  chk(GU.claves.length === 1 && /^7\.9168,-72\.4727\|500$/.test(GU.claves[0]),
+      'lo escrito se guarda solo, por centro y radio (' + GU.claves[0] + ')');
+  chk(/barrio de borde/.test(GU.textos.general || '') && /6 p\.m\./.test(GU.textos.flujo || ''),
+      'con el texto de cada caja');
+  chk(/barrio de borde/.test(GU.enUltimo.general || ''), 'y queda en el resultado para el informe');
+
+  // El informe del curso, construido desde el resultado con lo escrito.
+  const INF = await pg.evaluate(() => {
+    const u = window.URBIS_EDU_UI.ultimo;
+    // A la defensiva: contra el panel anterior no existen ni las lecturas ni `faltantes`.
+    if (!window.URBIS_EDU_UI.lecturas || !window.URBIS_EDU.faltantes) return { faltantes: [] };
+    u.lecturas = window.URBIS_EDU_UI.lecturas();
+    const edu = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true, educativo: true, titulo: 'Análisis del sector', autor: 'Ejercicio educativo · URBIS' });
+    const emp = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true });
+    const txt = h => { const d = document.createElement('div'); d.innerHTML = h.replace(/^[\s\S]*<body>/, ''); return d.textContent.replace(/\s+/g, ' '); };
+    const te = txt(edu), tm = txt(emp);
+    const faltantes = window.URBIS_EDU.faltantes(u).map(f => f.id);
+    return { te: te.slice(0, 200), hojasEdu: (edu.match(/class="hoja"/g) || []).length,
+             sinViabilidad: !/VIABILIDAD DEL PROYECTO/.test(te) && !/POT/.test(te) && !/para el cliente/i.test(te),
+             // El de empresas conserva su marco de negocio (el POT y «el cliente»);
+             // la viabilidad solo sale cuando el motor la calcula, y acá no.
+             empresaSigue: /POT/.test(tm) && /para el cliente/i.test(tm) && /Urbis para Empresas/.test(tm),
+             tieneBase: /Sobre qué se analizó/.test(te) && /puntos que el curso mapeó/.test(te),
+             tieneLectura: /La lectura del curso/.test(te) && /barrio de borde/.test(te) && /6 p\.m\./.test(te),
+             tieneFalta: /Qué falta por levantar/.test(te), faltantes,
+             pieEdu: /Modo educativo/.test(te) && !/Urbis para Empresas/.test(te),
+             comoLeer: /Cómo leer estas cifras/.test(te) && /No es un aforo/.test(te),
+             pasoEdu: /volver a analizar y comparar/.test(te) };
+  });
+  console.log('  faltantes: ' + INF.faltantes.join(', '));
+  chk(INF.hojasEdu === 4, 'el informe del curso tiene sus cuatro hojas (' + INF.hojasEdu + ')');
+  chk(INF.sinViabilidad, 'sin viabilidad del proyecto, sin POT y sin «el cliente»: no es un informe de negocio');
+  chk(INF.empresaSigue, 'y el de empresas sigue siendo el de empresas');
+  chk(INF.tieneBase, 'abre con sobre qué se analizó: los puntos que el curso mapeó');
+  chk(INF.tieneLectura, 'lleva la lectura del curso con lo que el grupo escribió');
+  chk(INF.tieneFalta && INF.faltantes.indexOf('horarios') >= 0 && INF.faltantes.indexOf('lectura') < 0,
+      'y qué falta por levantar, calculado del resultado: piden horarios y ya no piden la lectura');
+  chk(INF.comoLeer, 'explica cómo leer las cifras, como definiciones y no como ventas');
+  chk(INF.pieEdu && INF.pasoEdu, 'con el pie del modo educativo y el paso siguiente del curso: mapear más y comparar');
+
+  // Volver a analizar NO borra lo escrito.
+  await pg.evaluate(() => { const b = document.getElementById('edu-analisis-btn'); if (b) b.click(); });
+  await pg.waitForFunction(() => /edu-kpis/.test((document.getElementById('edu-analisis-salida') || {}).innerHTML || ''), { timeout: 30000 });
+  await pg.waitForTimeout(300);
+  const RE = await pg.evaluate(() => {
+    const ta = document.querySelector('textarea[data-lectura="flujo"]');
+    return {
+      general: (document.querySelector('#edu-conclusion textarea') || {}).value || '',
+      flujo: ta ? ta.value : '',
+      abierta: !!(ta && ta.closest('details') && ta.closest('details').open)
+    };
+  });
+  chk(/barrio de borde/.test(RE.general) && /6 p\.m\./.test(RE.flujo), 'volver a analizar el mismo centro conserva lo escrito');
+  chk(RE.abierta, 'y la caja con texto vuelve abierta, para que se vea que ya se escribió');
+
+
   }
 
   const ajenos = errores.filter(e => !/Unexpected end of input/.test(e));

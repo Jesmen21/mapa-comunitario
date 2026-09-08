@@ -632,8 +632,88 @@
     return leerContexto({ lat: centro.lat, lng: centro.lng }, els || []);
   }
 
+  /* ── La lectura del curso ─────────────────────────────────────────────
+     El módulo da las cifras; la conclusión la escribe el curso. Estas son
+     las cajas, una por bloque, con la pregunta que las abre. Viven acá y no
+     en el panel porque el informe (js/63) las lee con el mismo orden y los
+     mismos títulos: una lista, dos lectores. */
+  const LECTURAS = [
+    { id: 'general',     t: 'Conclusión del grupo',
+      p: '¿Qué es este sector, en tres frases? ¿Qué lo caracteriza, qué le falta y qué cambiarían?' },
+    { id: 'base',        t: 'Sobre lo que mapearon',
+      p: '¿Qué cuadras quedaron sin recorrer? ¿Qué creen que falta en el mapa y por qué?' },
+    { id: 'poblacion',   t: 'La población',
+      p: '¿La cifra del censo se parece a lo que vieron en la calle? ¿Quién vive y quién solo pasa?' },
+    { id: 'flujo',       t: 'El movimiento',
+      p: '¿A qué hora vieron más gente? ¿Coincide con lo que estima el análisis y con los letreros?' },
+    { id: 'calor',       t: 'Dónde está el movimiento',
+      p: '¿La esquina más activa del mapa de calor es la que ustedes sintieron más activa? Si no, ¿qué la explica?' },
+    { id: 'composicion', t: 'De qué está hecho el sector',
+      p: '¿Qué uso manda? ¿Qué falta que uno esperaría encontrar en un barrio así?' },
+    { id: 'anillos',     t: 'El entorno al alejarse',
+      p: '¿El sector es un centro o un borde? ¿Qué pasa con la densidad al alejarse del punto?' },
+    { id: 'edificacion', t: 'Lo construido',
+      p: '¿De cuándo son las casas? ¿Qué edificios merecen que alguien los mire con más cuidado?' },
+    { id: 'forma',       t: 'La forma de la traza',
+      p: '¿Se camina bien? ¿La forma de las calles ayuda o estorba para llegar a las cosas?' },
+    { id: 'contexto',    t: 'El sector en la ciudad',
+      p: '¿Cómo se llega y cómo se sale? ¿La frontera y la población de paso se notan en la cuadra?' },
+    { id: 'foda',        t: 'Su propio FODA',
+      p: '¿Qué del FODA del análisis quitarían o agregarían después de caminar el sector?' }
+  ];
+
+  /* Lo que el análisis dejó abierto y se resuelve caminando. Sale del
+     resultado y no de una lista fija: si el curso ya anotó los horarios, esa
+     tarea no aparece. Lo leen el informe (js/63) y la hoja de campo. */
+  function faltantes(r){
+    const out = [];
+    if (!r) return out;
+    const e = r.edu || {}, s = r.stats || {}, h = s.horarios || {}, ed = e.edificacion || {};
+    if ((e.leidos || 0) < 25) {
+      out.push({ id: 'puntos', t: 'Mapear más cuadras',
+        d: 'Con ' + (e.leidos || 0) + ' puntos el análisis es un ejercicio. Cada cuadra nueva que entre mueve las cifras: recorran las que faltan dentro del radio.' });
+    }
+    if (h.total && h.sinDato) {
+      out.push({ id: 'horarios', t: 'Anotar el horario del letrero', n: h.sinDato,
+        d: h.sinDato + (h.sinDato === 1 ? ' uso sin horario' : ' usos sin horario') + '. Se lee en la puerta: días y horas de apertura, y si abre de noche o el domingo.' });
+    }
+    const sinFicha = Math.max(0, (e.leidos || 0) - (ed.total || 0));
+    if (sinFicha > 0) {
+      out.push({ id: 'edificacion', t: 'Levantar la ficha del edificio', n: sinFicha,
+        d: sinFicha + (sinFicha === 1 ? ' punto sin ficha' : ' puntos sin ficha') + ': pisos, época aparente, estado de la fachada y si tiene frente activo o ciego.' });
+    }
+    const sinTraducir = Object.keys(e.sinTraducir || {});
+    if (sinTraducir.length) {
+      out.push({ id: 'etiquetas', t: 'Revisar las etiquetas que no se supieron leer', n: sinTraducir.length,
+        d: sinTraducir.slice(0, 6).join(', ') + (sinTraducir.length > 6 ? '…' : '') + '. Anótenlas con lo que son de verdad y se agregan a la traducción.' });
+    }
+    if (!r.contexto) {
+      out.push({ id: 'contexto', t: 'Consultar el contexto del sector',
+        d: 'Comuna y barrio, busetas, frontera y alojamiento de paso: está a un botón en el panel y entra al informe.' });
+    } else {
+      const c = r.contexto;
+      if (!(c.rutas || []).length) out.push({ id: 'busetas', t: 'Contar las busetas que pasan',
+        d: 'El mapa no tiene rutas acá. Anoten número, destino y cada cuánto pasan, en la parada más usada.' });
+      if (c.binacional && c.binacional.grado !== 'ninguno') out.push({ id: 'binacional', t: 'Leer el flujo binacional en la calle',
+        d: 'Casas de cambio y cambistas en vía, comercio de paso, y de dónde viene la clientela según dos o tres locales.' });
+      if (c.flotante && !c.flotante.dePaso) out.push({ id: 'flotante', t: 'Buscar la población de paso que el mapa no ve',
+        d: 'Letreros de «se arrienda pieza», pagadiarios y residencias sin nombre. Cuántos por cuadra.' });
+    }
+    if (!r.formaEdu) {
+      out.push({ id: 'forma', t: 'Reconocer la forma de la traza',
+        d: 'Está a un botón en el panel: ortogonal, radial, lineal o plato roto, medido con las calles.' });
+    }
+    if (!(r.lecturas && Object.keys(r.lecturas).some(k => (r.lecturas[k] || '').trim()))) {
+      out.push({ id: 'lectura', t: 'Escribir la lectura del curso',
+        d: 'Las cajas «Su lectura» de cada bloque están vacías. El informe las lleva, y es lo que se evalúa.' });
+    }
+    return out;
+  }
+
   window.URBIS_EDU = {
     analizar: analizar,
+    LECTURAS: LECTURAS,
+    faltantes: faltantes,
     contexto: contexto,
     leerContexto: leerContexto,
     forma: forma,
