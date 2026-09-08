@@ -728,6 +728,14 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 /* El aviso de que el puntaje NO llegó al servidor. Va en ámbar de alerta y
    no en el amarillo del marcador: es lo contrario de una buena noticia, y en
    un evento con premio confundir los dos sale caro. */
+/* Los intentos que quedan. En el celeste de la marca mientras haya, en ámbar
+   cuando se acaben: es un dato del juego, no una alarma, salvo al final. */
+#urbis-game-tap .gt-intentos {
+  margin-top:8px; font-size:.82rem; font-weight:700; color:#7FE3FF;
+}
+#urbis-game-tap .gt-intentos.agotado { color:#FDE68A; }
+#urbis-game-tap .gt-again[disabled] { opacity:.5; cursor:default; }
+
 #urbis-game-tap .gt-guardado {
   margin-top:8px; padding:7px 10px; border-radius:9px; font-size:.8rem; line-height:1.4;
   background:rgba(180,83,9,.18); border:1px solid rgba(245,158,11,.55); color:#FDE68A;

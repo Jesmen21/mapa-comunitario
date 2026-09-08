@@ -51,6 +51,7 @@
   const K_LB = 'urbis_premio_lb_';
   const K_VISTOS = 'urbis_premio_vistos_v1';
   const K_AVISADOS = 'urbis_premio_avisados_v1';
+  const K_POS = 'urbis_premio_pos_v1';   // mi último puesto conocido por evento
 
   const ESTADOS = {
     'reclamado': { t: 'Reclamado',  cls: 'rec', d: 'El ganador pidió su premio. Falta que un administrador lo atienda.' },
@@ -159,7 +160,9 @@
     const c = tablaCache(juegoId);
     if (c && Array.isArray(c.tabla) && (Date.now() - (c.t || 0)) < LB_TTL_MS) return c.tabla;
     if (!enVuelo[juegoId]) {
-      enVuelo[juegoId] = api({ action: 'leaderboard', juego: juegoId, limit: 5 })
+      // Veinte y no cinco: con cinco no se sabe en qué puesto voy, y el aviso
+      // de «te pasaron» necesita mi posición, no solo quién va de líder.
+      enVuelo[juegoId] = api({ action: 'leaderboard', juego: juegoId, limit: 20 })
         .then(out => {
           const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : [];
           guardarJSON(K_LB + juegoId, { t: Date.now(), tabla: tabla });
@@ -202,6 +205,52 @@
     }, 250);
   }
 
+  /* ── «Te pasaron» ─────────────────────────────────────────────────────
+     Hasta acá, uno jugaba, veía su puesto, y no volvía a saber nada hasta
+     que el evento terminaba. Si alguien lo superaba el martes, se enteraba
+     el viernes —cuando ya no había nada que hacer—. En una competencia por
+     dinero eso es perder al jugador y perder la partida que habría vuelto a
+     jugar.
+
+     El puesto se guarda por evento y se compara con el de la última vez. Si
+     bajó, se avisa. No se avisa al subir: quedar mejor ya se ve al jugar, y
+     un aviso por cada movimiento sería ruido.
+
+     La primera vez que aparezco en una tabla NO avisa: solo anota. Si no,
+     entrar a un evento donde ya hay gente arriba se leería como «te
+     pasaron», y a nadie lo pasaron todavía.
+
+     El retraso es de hasta media hora, que es lo que dura la caché de la
+     tabla. Se dice acá para que nadie lo lea como tiempo real.            */
+  function puestos() { return leerJSON(K_POS, {}) || {}; }
+  function guardarPuesto(juegoId, pos) { const m = puestos(); m[juegoId] = pos; guardarJSON(K_POS, m); }
+  function ordinal(n) { return n + (n === 1 ? '°' : '°'); }
+  function miPuesto(tabla, u) {
+    const i = tabla.findIndex(r => mismo(r.usuario, u));
+    // Fuera de los veinte que se piden: se sabe que voy peor que el último,
+    // no exactamente dónde. Decir «21°» sería inventar una cifra.
+    return i >= 0 ? { pos: i + 1, exacto: true } : { pos: tabla.length + 1, exacto: false };
+  }
+  function avisosDeAdelantamiento(u, meter) {
+    eventosPremium().filter(e => !e.terminado).forEach(ev => {
+      const t = tablaDe(ev.juegoId);
+      if (!t || !t.length) return;                 // todavía cargando, o nadie ha jugado
+      const antes = puestos()[ev.juegoId];
+      const m = miPuesto(t, u);
+      // Nunca he jugado este evento: ni aviso ni anotación.
+      if (antes == null && !m.exacto) return;
+      guardarPuesto(ev.juegoId, m.pos);
+      if (antes == null || m.pos <= antes) return; // primera vez, o subí: nada que decir
+      const queda = restante(ev.expira);
+      const donde = m.exacto ? ('vas ' + ordinal(m.pos)) : ('te saliste del top ' + t.length);
+      meter({ type: 'premio', sub: 'pasado', id: 'premio_pasado_' + ev.juegoId + '_' + m.pos, ev: ev,
+              pos: m.pos, antes: antes,
+              titulo: '📉 Te pasaron en «' + ev.titulo + '»',
+              mensaje: 'Ibas ' + ordinal(antes) + ' y ' + donde + '. ' +
+                       (queda ? queda + '. ' : '') + 'Todavía puedes recuperarlo.' });
+    });
+  }
+
   // ── Los avisos ───────────────────────────────────────────────────────────
   // Devuelve { lista, nuevos }. `nuevos` es lo que cuenta la campanita: para
   // el ganador, lo que no ha visto; para el administrador, cada premio por
@@ -213,6 +262,8 @@
     const lista = [];
     let nuevos = 0;
     const meter = (n) => { lista.push(n); if (n.sub === 'pagar') nuevos++; else if (!v.has(n.id)) nuevos++; avisar(n); };
+
+    avisosDeAdelantamiento(u, meter);
 
     terminadosRecientes().forEach(ev => {
       const g = ganadorDe(ev.juegoId);
@@ -289,6 +340,12 @@
         boton('chat', '💬 Chat con @' + esc(rec.ganador), { con: rec.ganador, juego: juego }, 'premio-btn-oro') +
         (puedeAtender ? boton('atender', '✋ Atender', { desc: desc }, '') : boton('pagado', '✅ Marcar pagado', { desc: desc }, '')) +
         boton('ranking', 'Ranking', { juego: juego, titulo: titulo }, 'ghost') + '</div>';
+    } else if (n.sub === 'pasado') {
+      /* Un aviso de que te pasaron sin un botón para volver a jugar es una
+         mala noticia y nada más. El de jugar va primero. */
+      acciones = '<div class="u52-noti-actions premio-acciones">' +
+        boton('jugar', '⚡ Recuperar el puesto', { juego: juego, titulo: titulo }, 'premio-btn-oro') +
+        boton('ranking', 'Ver ranking', { juego: juego, titulo: titulo }, 'ghost') + '</div>';
     } else if (n.sub === 'termino') {
       acciones = '<div class="u52-noti-actions premio-acciones">' +
         boton('chat', '💬 Escribir a @' + esc(n.ganador.usuario), { con: n.ganador.usuario, juego: juego }, 'premio-btn-oro') +
@@ -380,6 +437,7 @@
     else if (a === 'chat') abrirChat(ds.premioCon);
     else if (a === 'atender') { b.disabled = true; window.urbisAtenderPremio(ds.premioDesc).then(ok => { if (!ok) b.disabled = false; }); }
     else if (a === 'pagado') { if (confirm('¿Ya enviaste el premio? Se marcará como pagado y se le avisará al ganador por el chat.')) { b.disabled = true; window.urbisMarcarPremioPagado(ds.premioDesc).then(ok => { if (!ok) b.disabled = false; }); } }
+    else if (a === 'jugar') { try { if (typeof window.urbisJugarAurea === 'function') window.urbisJugarAurea(ds.premioJuego, ds.premioTitulo); } catch (e) {} }
     else if (a === 'ranking') { try { if (typeof window.urbisVerGanadorAurea === 'function') window.urbisVerGanadorAurea(ds.premioJuego, ds.premioTitulo); } catch (e) {} }
     else if (a === 'abrir') { try { if (typeof window.urbisAbrirAureaModulo === 'function') window.urbisAbrirAureaModulo(ds.premioJuego, ds.premioTitulo, ds.premioPremio, ds.premioFin, ds.premioTerminado === '1'); } catch (e) {} }
   }, true);

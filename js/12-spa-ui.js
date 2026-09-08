@@ -2114,6 +2114,22 @@
     if(yo && local > (m[yo] || 0)) m[yo] = local;
     return Object.keys(m).map(u => ({ usuario:u, puntos:m[u] })).sort((a,b) => b.puntos - a.puntos);
   }
+  /* Los intentos que quedan, recordados por evento SOLO para poder decirlo
+     en pantalla antes de jugar. El tope lo aplica el servidor y punto: un
+     límite que el navegador se aplica a sí mismo se salta borrando el
+     almacenamiento del teléfono, que es lo mismo que no tenerlo. Acá el dato
+     es una cortesía, no un candado — por eso perderlo no rompe nada. */
+  const K_INTENTOS = 'urbis_intentos_';
+  function urbisGuardarIntentos(juegoId, restantes){
+    try{ localStorage.setItem(K_INTENTOS + juegoId, String(restantes)); }catch(e){}
+  }
+  window.urbisIntentosRestantes = function(juegoId){
+    try{
+      const v = localStorage.getItem(K_INTENTOS + juegoId);
+      return v === null ? null : (parseInt(v, 10) || 0);
+    }catch(e){ return null; }
+  };
+
   window.urbisGuardarPuntaje = function(score, juegoId){
     score = parseInt(score,10) || 0;
     juegoId = juegoId || URBIS_JUEGO_ACTUAL;
@@ -2135,8 +2151,13 @@
       window.urbisUltimoPuntajeError = '';
       window.urbisPuntajeEnVuelo = _juegoAPI({ action:'set_puntaje', juego:juegoId, puntos:best })
         .then(out => {
+          // El servidor manda cuántos intentos quedan; se guardan para poder
+          // decirlo ANTES de la siguiente partida. Es una pista para la
+          // pantalla: el tope de verdad lo aplica el servidor.
+          if(out && out.restantes != null) urbisGuardarIntentos(juegoId, out.restantes);
           if(out && out.ok === false){
             window.urbisUltimoPuntajeError = out.message || 'El servidor no aceptó el puntaje.';
+            if(out.error === 'intentos') urbisGuardarIntentos(juegoId, 0);
             return;
           }
           try{ if(esLibre && typeof window.urbisRenderGamesHub === 'function' && document.getElementById('u52-games-content')) window.urbisRenderGamesHub(); }catch(e){}
@@ -2312,6 +2333,7 @@
             <div class="gt-premium-badge">✨ ${_escJuego(titulo)}</div>
             <span class="gt-result-score">${score}</span><small>puntos en esta partida</small>
             <div class="gt-total">Tu mejor en el evento: <b>${best}</b></div>
+            <div class="gt-intentos" id="gt-intentos" hidden></div>
             <div class="gt-guardado" id="gt-guardado" hidden></div>
             <div class="gt-aurea-board" id="gt-aurea-board">⏳ Cargando tabla del evento…</div>
             <div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">✕ Salir</button></div></div>`;
@@ -2324,6 +2346,20 @@
               g.hidden = false;
               g.textContent = '⚠️ ' + window.urbisUltimoPuntajeError;
             }
+            // Cuántos intentos quedan, y el botón de repetir apagado si no
+            // queda ninguno: ofrecer «Otra vez» sabiendo que no va a contar
+            // es hacerle perder treinta segundos al jugador.
+            const quedan = window.urbisIntentosRestantes(juegoId);
+            const otra = arena.querySelector('.gt-again');
+            const ic = arena.querySelector('#gt-intentos');
+            if(ic && quedan !== null){
+              ic.hidden = false;
+              ic.textContent = quedan > 0
+                ? '🎯 Te ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos') + ' en este evento'
+                : '🎯 Sin intentos. Cuenta el mejor puntaje que hiciste.';
+              ic.classList.toggle('agotado', quedan === 0);
+            }
+            if(otra && quedan === 0){ otra.disabled = true; otra.textContent = '🎯 Sin intentos'; }
           });
           _juegoAPI({ action:'leaderboard', juego:juegoId, limit:20 })
             .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = arena.querySelector('#gt-aurea-board'); if(el){ el.innerHTML = _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId); } })
@@ -2397,6 +2433,15 @@
   window.urbisJugarAurea = function(juegoId, titulo){
     if(!juegoId){ alert('Evento no válido.'); return; }
     if(!(window.urbisUsuarioActual && window.urbisUsuarioActual())){ alert('Inicia sesión para competir por el premio del evento de Juegos URBIS.'); return; }
+    /* Se corta ACÁ, antes de jugar, y no después: enterarse de que la partida
+       no contaba cuando ya se jugaron los treinta segundos es la peor manera
+       de decirlo. El servidor la rechazaría igual —ese es el candado—, pero
+       entonces el jugador ya habría jugado para nada. */
+    const quedan = window.urbisIntentosRestantes(juegoId);
+    if(quedan === 0){
+      alert('Ya usaste tus intentos en este evento.\n\nEl puntaje que cuenta es el mejor de los que hiciste.');
+      return;
+    }
     window.urbisJuegoTap(juegoId, { premium:true, titulo: titulo || 'Juegos URBIS' });
   };
   // Ver el GANADOR / tabla del evento de Juegos URBIS (cuando ya terminó, o en cualquier momento).

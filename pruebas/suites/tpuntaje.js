@@ -65,7 +65,7 @@ const GS = CANDIDATOS.find(f => { try { return fs.statSync(f).isFile(); } catch 
      subida de arranque del arcade sí puede fallar callada, porque se
      reintenta sola al volver a abrirlo, y prohibirla ahí sería exigir un
      aviso que no le sirve a nadie. */
-  const guardaPartida = (j12.match(/action:'set_puntaje', juego:juegoId, puntos:best \}\)[\s\S]{0,700}?\.catch\([^\n]*\);/) || [''])[0];
+  const guardaPartida = (j12.match(/action:'set_puntaje', juego:juegoId, puntos:best \}\)[\s\S]{0,1400}?\.catch\([^\n]*\);/) || [''])[0];
   chk(guardaPartida.length > 0, 'la llamada que guarda la partida se puede leer entera');
   chk(/urbisUltimoPuntajeError/.test(guardaPartida) && !/\.catch\(\(\)\s*=>\s*\{\}\)/.test(guardaPartida),
       'un puntaje rechazado deja el motivo escrito en vez de perderse en un catch vacío');
