@@ -126,6 +126,8 @@ const REPO = process.env.REPO || E.RAIZ;
       paso: { nombre: 'Puente Internacional Simón Bolívar', distM: 1798, rumbo: 'el oriente' },
       cambio: [{ nombre: 'Cambios El Puente', tipo: 'bureau_de_change', distM: 150 }],
       binacional: { grado: 'fuerte', lectura: 'El paso de frontera queda a 1,8 km hacia el oriente: a esa distancia el comercio pendular suele ordenar la cuadra.' },
+      flotante: { total: 4, dePaso: 3, porTipo: { hostel: 2, albergue: 1, hotel: 1 },
+                  lectura: '3 alojamientos de paso en el radio: es la huella visible de una población flotante.' },
       umbralFronteraM: 3000, fuente: 'OpenStreetMap'
     };
     const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
@@ -569,6 +571,7 @@ const REPO = process.env.REPO || E.RAIZ;
       'con las busetas que paran en el radio y su empresa');
   chk(/no la oferta completa/.test(CX.txt), 'diciendo que es lo mapeado, no la oferta real');
   chk(/1,8 km hacia el oriente/.test(CX.txt) && /Simón Bolívar/.test(CX.txt), 'y la lectura de la frontera con su paso y distancia');
+  chk(/población flotante/.test(CX.txt), 'y la de la población de paso');
 
   // ── Radio de importancia y competencia con nombre ──────────────────
   console.log('\n── Radio de importancia ─────────────────────────');

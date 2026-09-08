@@ -273,7 +273,9 @@
        mismo truco que la consulta del entorno—, más las paradas mismas;
      · lo binacional: el paso de frontera más cercano hasta 15 km, que es
        una etiqueta rarísima y por eso se puede buscar tan lejos sin costo,
-       y las casas de cambio y giros dentro del radio.
+       y las casas de cambio y giros dentro del radio;
+     · el alojamiento de paso —hoteles, hostales, residencias, albergues—
+       que es la huella visible de la población flotante.
 
      Va en una sola consulta porque Overpass no acepta dos seguidas y esto
      se pide a botón: cuatro botones serían veinte segundos de espera. */
@@ -287,7 +289,12 @@
       '.paradas out 300;' +
       'rel(bn.paradas)["route"~"^(bus|minibus|share_taxi|trolleybus)$"];out tags 80;' +
       'nwr["barrier"="border_control"](around:15000,' + lat + ',' + lng + ');out center tags 20;' +
-      'nwr["amenity"~"^(bureau_de_change|money_transfer)$"]' + a + ';out center tags 60;';
+      'nwr["amenity"~"^(bureau_de_change|money_transfer)$"]' + a + ';out center tags 60;' +
+      // Alojamiento de paso: hoteles, hostales, residencias y albergues. Es
+      // lo más cerca que el mapa abierto llega a la población flotante; los
+      // pagadiarios y las piezas en arriendo no están en ningún mapa.
+      'nwr["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"]' + a + ';out center tags 80;' +
+      'nwr["amenity"="social_facility"]' + a + ';out center tags 30;';
   }
   function consultarContexto(lat, lng, radioM, forzar){
     return traer('ctx|' + claveCache(lat, lng, radioM), construirQueryContexto(lat, lng, radioM), forzar);

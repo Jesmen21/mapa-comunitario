@@ -1368,6 +1368,7 @@
         (c.paso ? '' : '') + '</p>' +
       ((c.cambio || []).length ? '<p class="nota-pie">Casas de cambio y giros en el radio: ' + c.cambio.length + '.</p>' : '') +
       (c.paso ? '<p class="nota-pie">Paso más cercano: ' + esc(c.paso.nombre) + ', a ' + km(c.paso.distM) + ' km.</p>' : '') +
+      (c.flotante ? '<p class="ctx-sub">Población de paso</p><p class="nota-pie">' + esc(c.flotante.lectura) + '</p>' : '') +
       '</div>';
   }
 

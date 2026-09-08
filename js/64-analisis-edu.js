@@ -526,11 +526,13 @@
   // que se camina en media hora largo o se hace en una buseta corta: más
   // allá el paso existe, pero no ordena el comercio de la cuadra.
   const FRONTERA_CERCA_M = 3000;
+  const ALOJ_NOMBRE = { hotel: 'Hotel', hostel: 'Hostal', guest_house: 'Residencia', motel: 'Motel',
+                        apartment: 'Apartamento turístico', albergue: 'Albergue' };
 
   function leerContexto(centro, elementos){
     const M = window.AIA_MOTOR;
     const dist = (p) => M && M.haversineM ? Math.round(M.haversineM(centro, p)) : 0;
-    const limites = [], barrios = [], paradas = [], rutasVistas = {}, rutas = [], pasos = [], cambio = [];
+    const limites = [], barrios = [], paradas = [], rutasVistas = {}, rutas = [], pasos = [], cambio = [], alojamiento = [];
     (elementos || []).forEach(el => {
       const t = el.tags || {};
       if (el.type === 'relation' && t.boundary === 'administrative') {
@@ -561,12 +563,22 @@
       if (/^(bureau_de_change|money_transfer)$/.test(String(t.amenity || ''))) {
         cambio.push({ nombre: t.name || (t.amenity === 'money_transfer' ? 'Giros' : 'Casa de cambio'),
                       tipo: t.amenity, distM: dist(p) });
+        return;
+      }
+      const tur = String(t.tourism || '');
+      if (/^(hotel|hostel|guest_house|motel|apartment)$/.test(tur) || t.amenity === 'social_facility') {
+        const tipo = t.amenity === 'social_facility' ? 'albergue' : tur;
+        alojamiento.push({ nombre: t.name || ALOJ_NOMBRE[tipo] || 'Alojamiento', tipo, distM: dist(p) });
       }
     });
     limites.sort((a, b) => a.nivel - b.nivel);
     barrios.sort((a, b) => a.distM - b.distM);
     pasos.sort((a, b) => a.distM - b.distM);
     cambio.sort((a, b) => a.distM - b.distM);
+    alojamiento.sort((a, b) => a.distM - b.distM);
+    // Cuántos de cada tipo, para decir «3 hostales y 1 albergue» y no una lista.
+    const porTipo = {};
+    alojamiento.forEach(x => { porTipo[x.tipo] = (porTipo[x.tipo] || 0) + 1; });
     rutas.sort((a, b) => (a.ref || a.nombre).localeCompare(b.ref || b.nombre, 'es', { numeric: true }));
     const paso = pasos[0] || null;
     const km = m => (m / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 });
@@ -590,8 +602,25 @@
                            ' en el radio, que es una pista de flujo binacional que vale la pena mirar en campo.'
                          : 'Sin casas de cambio en el radio, no hay señal de flujo binacional acá.') };
     }
+    // Lo que un albergue o un hostal barato dicen de un sector —población de
+    // paso, migrante o pendular— no lo dice un hotel de negocios. Se separa
+    // lo «de paso» (hostal, residencia, albergue) de lo demás.
+    const dePaso = alojamiento.filter(x => /^(hostel|guest_house|albergue)$/.test(x.tipo)).length;
+    const flotante = {
+      total: alojamiento.length, dePaso, porTipo,
+      lectura: !alojamiento.length
+        ? 'No hay hoteles, hostales ni albergues mapeados en el radio. No dice que no haya población de paso: ' +
+          'los pagadiarios, las residencias y las piezas en arriendo casi nunca están en el mapa. Se cuentan en la calle.'
+        : (dePaso >= 2
+            ? dePaso + ' alojamientos de paso (hostales, residencias o albergues) en el radio: es la huella visible ' +
+              'de una población flotante. En campo, cuenten además los letreros de «se arrienda pieza» y los pagadiarios.'
+            : alojamiento.length + (alojamiento.length === 1 ? ' alojamiento mapeado' : ' alojamientos mapeados') +
+              ' en el radio' + (dePaso ? ', ' + dePaso + ' de paso' : ', ninguno de paso') +
+              '. Poca señal de población flotante en el mapa; la que haya se ve en los letreros de arriendo por pieza.')
+    };
     return { limites, barrios: barrios.slice(0, 8), paradas: paradas.length, rutas, pasos: pasos.slice(0, 3),
-             paso, cambio, binacional, umbralFronteraM: FRONTERA_CERCA_M,
+             paso, cambio, binacional, alojamiento: alojamiento.slice(0, 12), flotante,
+             umbralFronteraM: FRONTERA_CERCA_M,
              fuente: 'OpenStreetMap', consultado: new Date().toISOString() };
   }
 

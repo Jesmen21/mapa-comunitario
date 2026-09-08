@@ -475,9 +475,9 @@
                          'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
                          '<button type="button" id="edu-forma-btn">🔷 Reconocer la traza</button></div>' +
                        '<div class="edu-caja" id="edu-contexto"><h4>🧭 El sector en su contexto</h4>' +
-                         '<p class="edu-nota">Comuna y barrio, rutas de buseta que paran cerca, y qué tan cerca ' +
-                         'queda la frontera. Sale de OpenStreetMap, no de lo que mapearon. Se pide aparte porque ' +
-                         'es otra consulta.</p>' +
+                         '<p class="edu-nota">Comuna y barrio, rutas de buseta que paran cerca, qué tan cerca ' +
+                         'queda la frontera y cuánto alojamiento de paso hay. Sale de OpenStreetMap, no de lo que ' +
+                         'mapearon. Se pide aparte porque es otra consulta.</p>' +
                          '<button type="button" id="edu-contexto-btn">🧭 Consultar el contexto</button></div>' +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
@@ -638,6 +638,16 @@
       html += '<p class="edu-nota">Para leer el flujo binacional en campo: cuenten casas de cambio y cambistas en la vía, ' +
         'comercio de paso (maletas, remesas, recargas), y pregunten en dos o tres locales de dónde viene la clientela ' +
         'y a qué hora. Eso es lo que distingue una cuadra de frontera de una cuadra cerca de la frontera.</p>';
+    }
+    // La población de paso.
+    if (c.flotante) {
+      const f = c.flotante;
+      const ALOJ = { hotel: 'hotel', hostel: 'hostal', guest_house: 'residencia', motel: 'motel',
+                     apartment: 'apartamento turístico', albergue: 'albergue' };
+      const partes = Object.keys(f.porTipo || {}).map(k => f.porTipo[k] + ' ' + (ALOJ[k] || k) + (f.porTipo[k] === 1 ? '' : (ALOJ[k] || k).endsWith('l') ? 'es' : 's'));
+      html += '<h4 class="sep">🛏️ Población de paso</h4>' +
+        '<p class="edu-flotante edu-flotante-' + (f.dePaso >= 2 ? 'si' : f.total ? 'poco' : 'no') + '">' + esc(f.lectura) + '</p>' +
+        (partes.length ? '<p class="edu-nota"><b>Mapeado:</b> ' + esc(partes.join(', ')) + '.</p>' : '');
     }
     html += '<p class="edu-nota">Todo esto sale de OpenStreetMap, no de lo que mapearon: es la única parte del análisis ' +
       'que no cambia si mapean más. El umbral de «frontera cerca» es ' + km(c.umbralFronteraM) + ' km: ' +

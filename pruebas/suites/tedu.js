@@ -239,6 +239,11 @@ const server = http.createServer((req, res) => {
         R(34, { type: 'route', route: 'share_taxi', name: 'Colectivo La Parada' }),
         N(51, { amenity: 'bureau_de_change', name: 'Cambios El Puente' }, 150, -40),
         N(52, { amenity: 'money_transfer', name: 'Giros Ya' }, -60, 220),
+        // Alojamiento: dos hostales y un albergue (de paso), un hotel (no).
+        N(61, { tourism: 'hostel', name: 'Hostal El Caminante' }, 90, 90),
+        N(62, { tourism: 'hostel' }, -300, 40),
+        N(63, { amenity: 'social_facility', 'social_facility': 'shelter', name: 'Albergue Divina Providencia' }, 200, -200),
+        N(64, { tourism: 'hotel', name: 'Hotel Casino Internacional' }, 400, 100),
         { type: 'node', id: 99, lat: lat, lon: lng }
       ];
       if (!window.__contextoSinFrontera) {
@@ -700,6 +705,7 @@ const server = http.createServer((req, res) => {
       colores: Array.from(caja.querySelectorAll('.edu-rutas li i')).map(i => i.style.background),
       grado: (caja.querySelector('.edu-bina') || { className: '' }).className,
       paso: c.paso, cambio: (c.cambio || []).length, paradas: c.paradas, barrios: c.barrios,
+      flotante: c.flotante || null,
       enUltimo: !!u.contexto
     };
   });
@@ -725,6 +731,14 @@ const server = http.createServer((req, res) => {
   chk(/Otros pasos: Puente Francisco de Paula Santander/.test(CX.txt), 'y nombra el otro paso, más lejos');
   chk(/no de lo que mapearon/.test(CX.txt), 'dice que esto sale de OpenStreetMap y no de su levantamiento');
   chk(CX.enUltimo, 'y queda en el resultado, para que el informe lo lleve');
+  // La población de paso (v809): lo de paso se separa del hotel de negocios.
+  const FL = CX.flotante || {};
+  console.log('  alojamiento: ' + JSON.stringify(FL.porTipo) + ' · de paso ' + FL.dePaso);
+  chk(FL.total === 4 && FL.dePaso === 3, 'cuenta el alojamiento del radio y separa el de paso del hotel (' + FL.total + ' / ' + FL.dePaso + ')');
+  chk(/3 alojamientos de paso/.test(CX.txt) && /huella visible/.test(CX.txt),
+      'con tres de paso lo lee como huella de población flotante');
+  chk(/se arrienda pieza/.test(CX.txt), 'y manda a contar en campo lo que el mapa no ve: la pieza en arriendo y el pagadiario');
+  chk(/2 hostales, 1 albergue, 1 hotel|2 hostales.*1 hotel/.test(CX.txt), 'diciendo qué hay mapeado, por tipo');
 
   // Sin frontera cerca: la lectura tiene que cambiar de grado, no callarse.
   const SIN = await pg.evaluate(async () => {
@@ -740,6 +754,14 @@ const server = http.createServer((req, res) => {
       'sin paso a menos de 15 km, dice que lo binacional no es un rasgo del sector');
   chk(/edu-bina-ninguno/.test(SIN.html) && !/Para leer el flujo binacional/.test(SIN.html),
       'y no manda a contar casas de cambio donde no hay frontera que las explique');
+  // Sin alojamiento mapeado: dice que no está en el mapa, no que no exista.
+  const SINALOJ = await pg.evaluate(() => {
+    if (!window.URBIS_EDU || !window.URBIS_EDU.leerContexto) return {};
+    const c = window.URBIS_EDU.leerContexto({ lat: 7.9168, lng: -72.4727 }, []);
+    return c.flotante || {};
+  });
+  chk(SINALOJ.total === 0 && /No dice que no haya población de paso/.test(SINALOJ.lectura || ''),
+      'sin alojamiento mapeado, dice que el mapa no lo ve, no que no exista');
 
   }
 
