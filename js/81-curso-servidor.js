@@ -92,8 +92,19 @@
   function normCurso(s) {
     return sinTildes(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
   }
+  /* El nombre del autor, normalizado EXACTAMENTE como lo hace el servidor.
+     No es una copia por comodidad: es la firma con la que el Apps Script
+     decide si esta entrega es tuya, comparando el campo 0 de la descripción
+     contra el usuario de la sesión. Su `normUser_` NO quita las tildes, las
+     BORRA —«Peña» queda en «pea», no en «pena»—, porque la ñ y las vocales
+     acentuadas no están en su lista de caracteres permitidos. Quitarlas
+     «bien» acá produciría una firma que no coincide con la suya: el servidor
+     negaría la corrección por «no eres el autor», y cada vez que el grupo
+     corrigiera se crearía una fila nueva en vez de reescribir la suya. Sin
+     un solo mensaje de error. */
   function normUsuario(s) {
-    return sinTildes(s).trim().replace(/\s+/g, '.').replace(/[^a-z0-9._-]/g, '');
+    return String(s == null ? '' : s).trim().toLowerCase()
+      .replace(/\s+/g, '.').replace(/[^a-z0-9._-]/g, '');
   }
   /* Una firma corta y estable del sector (FNV-1a). No es criptografía: solo
      tiene que caber en el `tipo` y no chocar entre los sectores de un curso. */
