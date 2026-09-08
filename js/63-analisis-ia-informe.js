@@ -200,46 +200,10 @@
   // tres capas reparten el MISMO cálculo sobre la malla del motor y lo pintan
   // encima del mapa, para poder señalar la esquina en vez de describirla.
   //
-  // Se dibuja en un lienzo de 26×26 —el tamaño real del dato— y se reescala
-  // con suavizado. Pintar 676 divs por capa haría el PDF tres veces más
-  // pesado y no añadiría ni un dato: la malla no tiene más resolución.
-  const RAMPAS = {
-    // A pie: de verde (poco) a rojo (mucho). Vehicular en azul-morado para
-    // que las dos capas no se confundan al verlas una al lado de la otra.
-    peaton:  [[0,[ 32,140, 90, 0]], [.25,[120,190, 60,110]], [.5,[245,205, 60,165]],
-              [.75,[240,140, 40,200]], [1,[214, 40, 40,225]]],
-    vehiculo:[[0,[ 30, 90,170, 0]], [.25,[ 70,130,220,110]], [.5,[110,110,225,165]],
-              [.75,[150, 70,205,200]], [1,[120, 20,150,225]]]
-  };
-  function colorRampa(ramp, t){
-    for (let i = 1; i < ramp.length; i++) {
-      if (t <= ramp[i][0]) {
-        const a = ramp[i-1], b = ramp[i];
-        const k = (t - a[0]) / (b[0] - a[0] || 1);
-        return [0,1,2,3].map(c => Math.round(a[1][c] + (b[1][c] - a[1][c]) * k));
-      }
-    }
-    return ramp[ramp.length-1][1];
-  }
+  // El dibujo sale de js/56, el mismo que usan la pantalla de empresas y el
+  // panel del curso: una sola rampa de colores para el papel y la pantalla.
   function pngCalor(capa, n, tipo){
-    try {
-      const c = document.createElement('canvas'); c.width = n; c.height = n;
-      const ctx = c.getContext('2d');
-      const img = ctx.createImageData(n, n);
-      const ramp = RAMPAS[tipo] || RAMPAS.peaton;
-      for (let k = 0; k < n * n; k++) {
-        const v = capa[k], px = k * 4;
-        if (v == null || v < 0) { img.data[px + 3] = 0; continue; }
-        const col = colorRampa(ramp, Math.max(0, Math.min(1, v / 100)));
-        img.data[px] = col[0]; img.data[px+1] = col[1]; img.data[px+2] = col[2]; img.data[px+3] = col[3];
-      }
-      ctx.putImageData(img, 0, 0);
-      const g = document.createElement('canvas'); g.width = g.height = 260;
-      const gx = g.getContext('2d');
-      gx.imageSmoothingEnabled = true; gx.imageSmoothingQuality = 'high';
-      gx.drawImage(c, 0, 0, 260, 260);
-      return g.toDataURL('image/png');
-    } catch (e) { return ''; }
+    return window.URBIS_CALOR ? window.URBIS_CALOR.png(capa, n, tipo, 260) : '';
   }
 
   function panelCalor(r, capa, foco, titulo, sub, tipo){

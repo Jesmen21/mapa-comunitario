@@ -317,21 +317,12 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden;
 }
 .aia-calor-lienzo{ position:relative; }
 .aia-calor-panel img,
-.aia-calor-vacio{
+.aia-calor-panel-vacio{
   display:block; width:100%; aspect-ratio:1/1; border-radius:10px;
   background:var(--aia-card); border:1px solid var(--aia-borde);
 }
-/* La cruz marca el lote: el centro exacto de la malla, que es donde se hizo
-   el análisis. Sin ella el mapa es una mancha sin punto de referencia. Se
-   ancla al lienzo y no a la figura, que lleva el título encima. */
-.aia-calor-centro{
-  position:absolute; left:50%; top:50%; width:13px; height:13px;
-  margin:-6.5px 0 0 -6.5px; pointer-events:none;
-  background:
-    linear-gradient(to right, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
-    linear-gradient(to bottom, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
-  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.9));
-}
+/* La cruz del lote y el punto del foco vienen de css/57 (`.urb-calor-*`),
+   comunes con el panel del curso. */
 .aia-calor-panel small{
   display:block; font-size:.6rem; color:var(--aia-texto2); line-height:1.35; margin-top:4px;
 }

@@ -12,6 +12,7 @@
   const S = {
     map: null, capaBase: null, satelite: true,
     marcadorLote: null, circuloRadio: null, capaPOIs: null,
+    calor: null,           // el controlador del calor sobre el mapa (js/56)
     lote: null,            // {lat, lng}
     radioM: 500,
     tipoEstudio: 'completo',
@@ -713,6 +714,7 @@
       S.resultado = null;
       S.idGuardadoActual = null;   // análisis nuevo: no es ninguno de los guardados
       S.capaPOIs.clearLayers();
+      mostrarCalor('', false);      // y el calor del anterior se va con él
       // El nombre es del proyecto anterior: si no se limpia, el siguiente
       // análisis (de otro lote) hereda por accidente el nombre equivocado.
       const nombreInput = $('aia-nombre-proyecto');
@@ -1301,44 +1303,54 @@
   // El informe en PDF ya traía este bloque, pero quien decide dónde poner una
   // cafetería lo hace mirando la pantalla, no exportando un PDF. Va en la app
   // con la misma lectura para que no haya que interpretar dos cosas distintas.
-  // ── Mapa de calor: la malla del motor pintada como imagen ──────────────
-  // Se dibuja en un lienzo del tamaño REAL del dato (26×26) y se reescala con
-  // suavizado. Pintar 676 divs por capa recargaría el móvil sin añadir ni un
-  // dato: la malla no tiene más resolución de la que tiene.
-  const RAMPAS_CALOR = {
-    peaton:  [[0,[ 32,140, 90, 0]], [.25,[120,190, 60,110]], [.5,[245,205, 60,170]],
-              [.75,[240,140, 40,205]], [1,[214, 40, 40,230]]],
-    vehiculo:[[0,[ 30, 90,170, 0]], [.25,[ 70,130,220,110]], [.5,[110,110,225,170]],
-              [.75,[150, 70,205,205]], [1,[120, 20,150,230]]]
-  };
-  function pngCalorApp(capa, n, tipo){
-    try {
-      const ramp = RAMPAS_CALOR[tipo] || RAMPAS_CALOR.peaton;
-      const mezcla = t => {
-        for (let i = 1; i < ramp.length; i++) {
-          if (t <= ramp[i][0]) {
-            const a = ramp[i-1], b = ramp[i], k = (t - a[0]) / (b[0] - a[0] || 1);
-            return [0,1,2,3].map(c => Math.round(a[1][c] + (b[1][c] - a[1][c]) * k));
-          }
-        }
-        return ramp[ramp.length-1][1];
+  // ── Mapa de calor ────────────────────────────────────────────────────
+  // El dibujo, la leyenda y la capa sobre el mapa vienen de js/56, común a
+  // los tres módulos que pintan calor. Acá solo se decide dónde va en la
+  // hoja y qué pasa al tocarlo: la capa se pone sobre el mapa del lote.
+  const CAL = () => window.URBIS_CALOR || null;
+  function calorEnMapa(){
+    if (S.calor) return S.calor;
+    try { if (S.map && CAL()) S.calor = CAL().enMapa(S.map); } catch (e) { S.calor = null; }
+    return S.calor;
+  }
+  function mostrarCalor(id, encuadrar){
+    const mc = S.resultado && S.resultado.stats && S.resultado.stats.movilidad &&
+               S.resultado.stats.movilidad.flujo && S.resultado.stats.movilidad.flujo.mapaCalor;
+    const ctl = calorEnMapa();
+    if (!ctl) return false;
+    let puesta = false;
+    if (id && mc) {
+      /* La hoja tapa la parte de abajo del mapa: si se encuadra al centro
+         del contenedor, el sector cae debajo de la hoja y no se ve nada.
+         El margen inferior es la altura de la hoja. */
+      const sheet = $('aia-sheet');
+      const hs = sheet && !esDesktop() ? Math.round(sheet.getBoundingClientRect().height) : 0;
+      const ARRIBA = 72;   // la cabecera
+      /* «Cabe en lo que se ve» tiene que descontar la hoja: para Leaflet el
+         mapa entero está a la vista, pero la mitad de abajo está tapada. */
+      const cabe = (m, lim) => {
+        try {
+          const sw = m.latLngToContainerPoint(lim[0]), ne = m.latLngToContainerPoint(lim[1]), t = m.getSize();
+          return sw.x >= 0 && ne.x <= t.x && ne.y >= ARRIBA && sw.y <= t.y - hs;
+        } catch (e) { return true; }
       };
-      const c = document.createElement('canvas'); c.width = c.height = n;
-      const ctx = c.getContext('2d');
-      const img = ctx.createImageData(n, n);
-      for (let k = 0; k < n * n; k++) {
-        const v = capa[k], px = k * 4;
-        if (v == null || v < 0) { img.data[px + 3] = 0; continue; }
-        const col = mezcla(Math.max(0, Math.min(1, v / 100)));
-        img.data[px] = col[0]; img.data[px+1] = col[1]; img.data[px+2] = col[2]; img.data[px+3] = col[3];
-      }
-      ctx.putImageData(img, 0, 0);
-      const g = document.createElement('canvas'); g.width = g.height = 240;
-      const gx = g.getContext('2d');
-      gx.imageSmoothingEnabled = true; gx.imageSmoothingQuality = 'high';
-      gx.drawImage(c, 0, 0, 240, 240);
-      return g.toDataURL('image/png');
-    } catch (e) { return ''; }
+      puesta = ctl.mostrar(mc, id, {
+        encuadrar: encuadrar === undefined || encuadrar === 'auto' ? (m, lim) => !cabe(m, lim) : encuadrar,
+        ajuste: { paddingTopLeft: [16, ARRIBA], paddingBottomRight: [16, hs + 16], maxZoom: 17 }
+      });
+    } else ctl.quitar();
+    const act = puesta ? id : '';
+    const caja = $('aia-flujo');
+    if (caja) {
+      caja.querySelectorAll('[data-capa]').forEach(el => {
+        const es = !!act && el.getAttribute('data-capa') === act;
+        el.classList.toggle('act', es);
+        if (el.tagName === 'BUTTON' && el.getAttribute('data-capa') !== '') el.setAttribute('aria-pressed', es ? 'true' : 'false');
+      });
+      const q = caja.querySelector('.urb-calor-botones .quitar');
+      if (q) q.hidden = !act;
+    }
+    return puesta;
   }
 
   // ── Quiénes son los competidores ────────────────────────────────────────
@@ -1505,26 +1517,14 @@
     // importa: pegado al gimnasio pasa gente que 300 m más allá no pasa.
     // Estas tres capas reparten el mismo cálculo sobre la malla del motor.
     const mapasCalor = (function(){
-      const mc = f.mapaCalor;
-      if (!mc) return '';
-      const panel = (capa, foco, titulo, sub, tipo) => {
-        const png = pngCalorApp(capa, mc.n, tipo);
-        return '<figure class="aia-calor-panel">' +
-          '<figcaption>' + escHTML(titulo) + '<em>' + escHTML(sub) + '</em></figcaption>' +
-          '<div class="aia-calor-lienzo">' +
-            (png ? '<img src="' + png + '" alt="' + escHTML(titulo) + '">'
-                 : '<div class="aia-calor-vacio"></div>') +
-            '<i class="aia-calor-centro"></i>' +
-          '</div>' +
-          '<small>' + (foco ? escHTML(foco.texto) : 'sin actividad suficiente') + '</small>' +
-          '</figure>';
-      };
+      const mc = f.mapaCalor, K = CAL();
+      if (!mc || !K) return '';
       return '<h4 class="aia-flujo-sub">Dónde está el movimiento</h4>' +
-        '<div class="aia-calor">' +
-          panel(mc.peatonalDia, mc.focoDia, 'A pie · día', 'mañana a tarde', 'peaton') +
-          panel(mc.peatonalNoche, mc.focoNoche, 'A pie · noche', 'después de las 7 p.m.', 'peaton') +
-          panel(mc.vehicular, mc.focoVehicular, 'En vehículo', 'vías y atractores', 'vehiculo') +
-        '</div>' +
+        '<p class="aia-flujo-nota">Tocá una capa para verla sobre el mapa. El punto grande es el ' +
+          'sitio más activo de esa capa.</p>' +
+        '<div class="aia-calor">' + K.miniaturas(mc, 'aia-calor-panel', 'dia') + '</div>' +
+        K.botones('dia') +
+        K.leyenda() +
         '<p class="aia-flujo-nota">La cruz es el lote. Cada capa se colorea contra su propio ' +
           'máximo: dice DÓNDE se concentra el movimiento dentro del radio, no cuánto.' +
           (mc.fiable ? '' : ' Con pocos puntos mapeados es indicativo: conviene contrastarlo en campo.') +
@@ -1585,6 +1585,20 @@
       // buena por un hueco de datos.
       (f.avisoDatos ? '<p class="aia-flujo-aviso">⚠️ ' + escHTML(f.avisoDatos) + '</p>' : '') +
       '<p class="aia-flujo-nota">Potencial de flujo estimado a partir de los usos del entorno y la malla vial. No es un aforo: no hay conteo de personas ni de vehículos. Los carros por día y los litros al mes son rangos de orden de magnitud según la jerarquía de la vía y el número de estaciones — no son mediciones ni cifras de ventas. Sirve para comparar ubicaciones entre sí y para dimensionar el formato, no para proyectar ventas.</p>';
+    /* El calor sobre el mapa: la capa de día apenas se pinta el bloque, y
+       las otras dos —o quitarla— a un toque. Solo encuadra si el cuadrado
+       del calor no cabe en la franja de mapa que la hoja deja ver. */
+    if (f.mapaCalor) {
+      cont.addEventListener('click', ev => {
+        const el = ev.target.closest('[data-capa]');
+        if (el && cont.contains(el)) mostrarCalor(el.getAttribute('data-capa'), true);
+      });
+      /* Un poco después: la hoja termina de cambiar de altura tras pintar
+         los resultados, y hasta entonces no se sabe cuánto mapa tapa. */
+      setTimeout(() => { if (S.resultado === r) mostrarCalor('dia', 'auto'); }, 450);
+    } else {
+      mostrarCalor('', false);
+    }
   }
 
   // ── Tabla completa de puntos ─────────────────────────────────────────────
@@ -2192,6 +2206,7 @@
     get lote(){ return S.lote; },
     get resultado(){ return S.resultado; },
     get ultimoResultado(){ return S.resultado && S.resultado.stats; },
+    get calor(){ return S.calor; },            // el calor sobre el mapa, para las pruebas
     get usosManuales(){ return leerUsosManuales(); }
   };
 

@@ -125,3 +125,53 @@
 /* El rótulo que distingue lo estimado de lo declarado: la distinción es el
    dato, así que no puede ir del mismo color que el resto del título. */
 .edu-caja h4 em, .aia-flujo-sub em{ font-style:normal; font-weight:400; font-size:.62rem; opacity:.65; }
+
+/* ── El calor: miniaturas, botones, leyenda y la capa sobre el mapa ─────
+   Lo que va igual en el panel del curso y en el de empresas. Cada panel
+   conserva el tamaño y el borde de sus miniaturas en su propia hoja
+   (`.edu-calor`, `.aia-calor-panel`); acá van el punto del foco, la cruz
+   del centro, la marca de «esta es la que está puesta» y los controles. */
+figure[data-capa]{ cursor:pointer; border-radius:11px; outline:2px solid transparent; outline-offset:2px;
+  transition:outline-color .15s; }
+figure[data-capa]:focus-visible{ outline-color:#22d3ee; }
+figure[data-capa].act img, figure[data-capa].act .edu-calor-vacio, figure[data-capa].act .aia-calor-panel-vacio{
+  box-shadow:0 0 0 2px #22d3ee;
+}
+figure[data-capa] figcaption em{
+  display:block; font-style:normal; font-weight:400; font-size:.56rem; opacity:.7;
+}
+/* La cruz marca el punto analizado: sin ella el mapa es una mancha sin
+   referencia. Se ancla al lienzo, no a la figura, que lleva título encima. */
+.urb-calor-centro{
+  position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px;
+  pointer-events:none;
+  background:
+    linear-gradient(to right, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
+    linear-gradient(to bottom, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.9));
+}
+/* El punto más activo, en la celda que dijo el motor: el mismo sitio que
+   describe la frase de abajo, para que dibujo y texto hablen de lo mismo. */
+.urb-calor-foco{
+  position:absolute; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%;
+  background:#fff; border:2px solid #111; box-sizing:border-box; pointer-events:none;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.7);
+}
+.urb-calor-botones{
+  display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin:8px 0 6px; font-size:.62rem;
+}
+.urb-calor-botones>span{ opacity:.75; margin-right:2px; }
+.urb-calor-botones button{
+  padding:4px 9px; border-radius:999px; font-size:.62rem; font-weight:600; cursor:pointer;
+  background:rgba(255,255,255,.06); color:inherit; border:1px solid rgba(255,255,255,.18);
+}
+.urb-calor-botones button.act{ background:rgba(34,211,238,.18); border-color:#22d3ee; color:#22d3ee; }
+.urb-calor-botones button.quitar{ margin-left:auto; border-style:dashed; opacity:.85; }
+.urb-calor-leyendas{ display:grid; gap:4px; margin:4px 0 6px; }
+.urb-calor-leyenda{ display:flex; align-items:center; gap:6px; font-size:.56rem; opacity:.85; }
+.urb-calor-leyenda i{ flex:1; height:7px; border-radius:4px; border:1px solid rgba(255,255,255,.15); }
+/* Sobre el mapa: la capa no captura el toque —el mapa sigue siendo el mapa—
+   y se reescala con suavizado, que para 26 celdas es lo que se lee como
+   calor y no como un tablero de ajedrez. */
+.leaflet-image-layer.urb-calor-capa{ pointer-events:none; image-rendering:auto; }
+.urb-calor-tip{ font-size:.7rem; }

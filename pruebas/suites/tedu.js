@@ -22,15 +22,30 @@ window.L = (function(){
                        getLatLng(){return {lat:0,lng:0};}, openPopup(){return this;},
                        closePopup(){return this;}, setContent(){return this;},
                        bringToFront(){return this;}, getElement(){return null;},
-                       setIcon(){return this;}, setOpacity(){return this;}, setZIndexOffset(){return this;} });
+                       setIcon(){return this;}, setOpacity(){return this;}, setZIndexOffset(){return this;},
+                       getTooltip(){ return { getContent: () => this.__tip || '' }; } });
+  /* Lo que el calor pone sobre el mapa se graba, porque es lo que la prueba
+     mira: qué imagen, con qué límites, y si la anterior se quitó. */
+  const grabar = (k, v) => { (window[k] = window[k] || []).push(v); };
+  const imageOverlay = (url, bounds, opts) => {
+    const c = cap(); c.__url = url; c.__bounds = bounds; c.__opts = opts || {};
+    c.getBounds = () => bounds; grabar('__calorCapas', c); return c;
+  };
+  const circleMarker = (ll, opts) => {
+    const c = cap(); c.__ll = ll; c.__opts = opts || {};
+    c.bindTooltip = function (t) { this.__tip = t; return this; };
+    if (opts && /urb-calor-marca/.test(opts.className || '')) grabar('__calorMarcas', c);
+    return c;
+  };
   const mapa = () => ({ setView(){return this;}, on(){return this;}, off(){return this;}, once(){return this;},
-                        addLayer(){return this;}, removeLayer(){return this;}, hasLayer(){return false;},
-                        fitBounds(){return this;}, invalidateSize(){return this;}, getZoom(){return 16;},
+                        addLayer(){return this;}, removeLayer(l){ grabar('__quitadas', l); return this; }, hasLayer(){return false;},
+                        fitBounds(b){ grabar('__encuadres', b); return this; }, invalidateSize(){return this;}, getZoom(){return 16;},
                         getCenter(){return {lat:7.9168,lng:-72.4727};}, getContainer(){return document.body;},
                         eachLayer(){}, getSize(){return {x:360,y:640};}, panTo(){return this;},
                         flyTo(){return this;}, setZoom(){return this;}, addControl(){return this;},
                         removeControl(){return this;}, whenReady(f){ if(f) f(); return this; },
-                        getBounds(){return {};}, distance(){return 0;}, remove(){return this;},
+                        // «contains» responde lo que la prueba decida: es la regla del encuadre.
+                        getBounds(){return { contains: () => window.__cabeEnPantalla !== false };}, distance(){return 0;}, remove(){return this;},
                         latLngToContainerPoint(){return {x:0,y:0};},
                         containerPointToLatLng(){return {lat:0,lng:0};},
                         getPanes(){return {};}, createPane(){return document.createElement('div');},
@@ -38,7 +53,8 @@ window.L = (function(){
                         scrollWheelZoom:{enable(){},disable(){}}, doubleClickZoom:{enable(){},disable(){}},
                         boxZoom:{enable(){},disable(){}}, keyboard:{enable(){},disable(){}} });
   const L = { map: mapa, tileLayer: cap, layerGroup: cap, featureGroup: cap, marker: cap,
-              circle: cap, circleMarker: cap, polygon: cap, polyline: cap, rectangle: cap,
+              circle: cap, circleMarker: circleMarker, imageOverlay: imageOverlay,
+              polygon: cap, polyline: cap, rectangle: cap,
               divIcon: ()=>({}), icon: ()=>({}), latLngBounds: a=>a,
               latLng:(a,b)=>({lat:a,lng:b}), point:(a,b)=>({x:a,y:b}),
               geoJSON: cap, markerClusterGroup: cap,
@@ -290,16 +306,20 @@ const server = http.createServer((req, res) => {
     const u = window.URBIS_EDU_UI.ultimo;
     const c = document.getElementById('edu-analisis-salida');
     const capas = Array.from(c.querySelectorAll('.edu-calor')).map(p => {
-      const img = p.querySelector('img'), cruz = p.querySelector('.cruz');
+      const img = p.querySelector('img'), cruz = p.querySelector('.urb-calor-centro');
       let centrada = false;
       if (img && cruz) {
         const ri = img.getBoundingClientRect(), rc = cruz.getBoundingClientRect();
         centrada = Math.abs((rc.left + rc.width/2) - (ri.left + ri.width/2)) < 1.5 &&
                    Math.abs((rc.top + rc.height/2) - (ri.top + ri.height/2)) < 1.5;
       }
-      return { t: p.querySelector('figcaption').textContent.trim(),
+      // A la defensiva: contra el panel anterior no hay foco ni `data-capa`,
+      // y una suite que revienta no reporta, solo se cae.
+      const foco = p.querySelector('.urb-calor-foco');
+      return { t: (p.querySelector('figcaption').firstChild || {}).textContent || '',
                pinta: !!(img && /^data:image\/png/.test(img.getAttribute('src')||'')),
-               centrada };
+               centrada, capa: p.getAttribute('data-capa') || '',
+               foco: foco ? { left: foco.style.left, top: foco.style.top } : null };
     });
     return {
       salida: (document.getElementById('edu-analisis-salida')||{}).innerHTML ?
@@ -321,6 +341,28 @@ const server = http.createServer((req, res) => {
       foda: u && ((u.foda.fortalezas||[]).length + (u.foda.debilidades||[]).length +
                   (u.foda.oportunidades||[]).length + (u.foda.riesgos||[]).length),
       capas,
+      /* El calor sobre el mapa del curso, apenas termina el análisis. */
+      calor: (function () {
+        const mc = u && u.stats.movilidad && u.stats.movilidad.flujo && u.stats.movilidad.flujo.mapaCalor;
+        const K = window.URBIS_CALOR, ctl = (window.URBIS_EDU_UI || {}).calor;
+        const puestas = window.__calorCapas || [], ultima = puestas[puestas.length - 1];
+        const marcas = window.__calorMarcas || [], marca = marcas[marcas.length - 1];
+        const centro = map.getCenter();
+        return {
+          hayModulo: !!K, n: mc ? mc.n : 0, radioM: mc ? mc.radioM : 0,
+          focoDia: mc && mc.focoDia ? { i: mc.focoDia.i, j: mc.focoDia.j, texto: mc.focoDia.texto } : null,
+          puestas: puestas.length, activa: ctl ? ctl.activa : '',
+          url: ultima ? String(ultima.__url).slice(0, 15) : '',
+          limites: ultima ? ultima.__bounds : null,
+          limitesModulo: (K && mc) ? K.limites(mc) : null,
+          centroMapa: { lat: centro.lat, lng: centro.lng },
+          encuadres: (window.__encuadres || []).length,
+          tip: marca ? marca.__tip : '',
+          botonAct: (c.querySelector('.urb-calor-botones button.act') || {}).textContent || '',
+          quitarVisible: !!(c.querySelector('.urb-calor-botones .quitar') && !c.querySelector('.urb-calor-botones .quitar').hidden),
+          leyendas: c.querySelectorAll('.urb-calor-leyenda i').length
+        };
+      })(),
       txt: c.innerText,
       frentesCorregidos: u && u.stats.movilidad.flujo.frentesCorregidos,
       edificacion: u && (u.edu||{}).edificacion,
@@ -400,6 +442,86 @@ const server = http.createServer((req, res) => {
       'los tres mapas de calor se pintan');
   chk(r.capas.every(c => c.centrada),
       'con la cruz del punto analizado centrada en cada capa');
+
+  /* ── El calor sobre el mapa (v807) ───────────────────────────────────
+     Hasta la v806 el calor eran tres cuadritos en el panel: se veía DÓNDE
+     dentro del cuadrado, no sobre qué calle. Ahora la capa se pone sobre
+     el mapa del curso, en el sitio exacto que mide. */
+  console.log('\n── El calor sobre el mapa ────────────────────────────────────');
+  const K = r.calor;
+  console.log('  capas puestas: ' + K.puestas + ' · activa: ' + K.activa + ' · límites: ' + JSON.stringify(K.limites));
+  chk(K.hayModulo, 'el módulo compartido del calor (js/56) está cargado en la página del curso');
+  chk(r.capas.map(c => c.capa).join(',') === 'dia,noche,vehiculo',
+      'cada miniatura sabe qué capa es y se puede tocar');
+  // Se compara como número: el navegador devuelve «75%» donde se escribió «75.0%».
+  const fd = K.focoDia, f0 = r.capas[0].foco;
+  chk(!!(fd && f0 && Math.abs(parseFloat(f0.left) - (fd.i + .5) / K.n * 100) < 0.1 &&
+                     Math.abs(parseFloat(f0.top) - (fd.j + .5) / K.n * 100) < 0.1),
+      'y marca el punto más activo en la celda que dijo el motor (' + JSON.stringify(f0) + ')');
+  chk(K.puestas === 1 && K.activa === 'dia' && /^data:image\/png/.test(K.url),
+      'al terminar el análisis, la capa de día queda puesta sobre el mapa sin pedirla');
+  // El cuadrado que cubre la malla: lado 2·radio, centrado en el punto analizado.
+  const lim = K.limites;
+  const ladoNS = lim ? Math.round((lim[1][0] - lim[0][0]) * 110540) : 0;
+  const ladoEO = lim ? Math.round((lim[1][1] - lim[0][1]) * 111320 * Math.cos(K.centroMapa.lat * Math.PI / 180)) : 0;
+  const centrado = lim && Math.abs((lim[0][0] + lim[1][0]) / 2 - K.centroMapa.lat) < 1e-7 &&
+                          Math.abs((lim[0][1] + lim[1][1]) / 2 - K.centroMapa.lng) < 1e-7;
+  chk(ladoNS === 2 * K.radioM && ladoEO === 2 * K.radioM,
+      'la capa cubre exactamente el cuadrado que mide la malla: ' + ladoNS + ' × ' + ladoEO + ' m para un radio de ' + K.radioM);
+  chk(!!centrado, 'centrado en el punto que analizaron');
+  chk(JSON.stringify(lim) === JSON.stringify(K.limitesModulo),
+      'y son los límites que calcula el módulo, no otros');
+  chk(K.encuadres === 0, 'sin mover el mapa al terminar cuando el cuadrado cabe en pantalla: el estudiante lo puso donde lo quería');
+  // La otra mitad de la regla: si NO cabe —se analizó muy de cerca— sí encuadra.
+  const encuadraSiNoCabe = await pg.evaluate(() => {
+    const antes = (window.__encuadres || []).length;
+    window.__cabeEnPantalla = false;
+    try { window.URBIS_EDU_UI.mostrarCalor('dia'); } catch (e) {}
+    window.__cabeEnPantalla = true;
+    return (window.__encuadres || []).length - antes;
+  });
+  chk(encuadraSiNoCabe === 1, 'pero si el cuadrado del calor no cabe en pantalla, sí lo encuadra');
+  chk(!!(fd && K.tip && K.tip.indexOf(fd.texto) >= 0),
+      'el punto más activo va sobre el mapa con su frase (' + K.tip + ')');
+  chk(/día/.test(K.botonAct) && K.quitarVisible, 'el botón de la capa puesta se ve marcado y aparece «Quitar»');
+  chk(K.leyendas === 2, 'con la leyenda de las dos rampas, a pie y en vehículo');
+
+  // Cambiar de capa reemplaza, no apila; quitar deja el mapa limpio.
+  const cambio = await pg.evaluate(() => {
+    const c = document.getElementById('edu-analisis-salida');
+    // A la defensiva: contra el panel anterior no hay botones ni controlador,
+    // y una suite que revienta no reporta, solo se cae.
+    const toca = sel => { const el = c.querySelector(sel); if (el) el.click(); return !!el; };
+    const activa = () => ((window.URBIS_EDU_UI || {}).calor || {}).activa || '';
+    const antes = (window.__calorCapas || []).length, antesEnc = (window.__encuadres || []).length;
+    toca('.urb-calor-botones button[data-capa="vehiculo"]');
+    const capas = window.__calorCapas || [], quitadas = window.__quitadas || [];
+    const veh = { puestas: capas.length - antes, activa: activa(),
+                  quitoAnterior: quitadas.indexOf(capas[antes - 1]) >= 0,
+                  encuadro: (window.__encuadres || []).length - antesEnc,
+                  act: Array.from(c.querySelectorAll('[data-capa].act')).map(e => e.getAttribute('data-capa')) };
+    toca('.urb-calor-botones .quitar');
+    const q = c.querySelector('.urb-calor-botones .quitar');
+    const fuera = { activa: activa(),
+                    quitoVeh: (window.__quitadas || []).indexOf(capas[capas.length - 1]) >= 0,
+                    act: c.querySelectorAll('[data-capa].act').length,
+                    quitarVisible: !!(q && !q.hidden) };
+    // Tocar la miniatura también la pone. El número se toma ANTES del toque:
+    // `capas` es el mismo arreglo que el stub va llenando.
+    const antesNoche = capas.length;
+    toca('figure[data-capa="noche"]');
+    const noche = { activa: activa(), puestas: (window.__calorCapas || []).length - antesNoche };
+    return { veh, fuera, noche };
+  });
+  chk(cambio.veh.puestas === 1 && cambio.veh.activa === 'vehiculo' && cambio.veh.quitoAnterior,
+      'cambiar a «En vehículo» reemplaza la capa de día, no la apila');
+  chk(cambio.veh.encuadro === 1, 'y al pedirla a mano sí encuadra el mapa en el sector');
+  chk(cambio.veh.act.length === 2 && cambio.veh.act.every(a => a === 'vehiculo'),
+      'miniatura y botón marcan la misma capa puesta');
+  chk(cambio.fuera.activa === '' && cambio.fuera.quitoVeh && cambio.fuera.act === 0 && !cambio.fuera.quitarVisible,
+      '«Quitar» limpia el mapa y el panel, y se esconde');
+  chk(cambio.noche.activa === 'noche' && cambio.noche.puestas === 1,
+      'tocar la miniatura de la noche la pone sobre el mapa');
   chk((r.rubros || []).length >= 3, 'composición del sector por rubro');
   chk(!(r.rubros || []).some(x => /baldio_obra/.test(x)),
       'sin el alias `baldio_obra`, que no es un uso y salía como fila sin nombre');

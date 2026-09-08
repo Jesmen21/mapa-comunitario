@@ -35,6 +35,7 @@ const REPO = process.env.REPO || E.RAIZ;
      corre en la API— y el informe se sigue leyendo del repo público, que es
      donde vive. */
   await pg.addScriptTag({ content: guionDelMotor() });
+  await pg.addScriptTag({ path: REPO + '/js/56-calor.js' });
   await pg.addScriptTag({ path: REPO + '/js/58-anillos.js' });
   await pg.addScriptTag({ path: REPO + '/js/63-analisis-ia-informe.js' });
 

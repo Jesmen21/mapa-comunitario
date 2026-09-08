@@ -15,43 +15,18 @@
 
   let ultimo = null;
 
-  // ── Mapa de calor: la malla del motor, pintada ──────────────────────────
-  // Mismo criterio que en el modo empresas: se dibuja al tamaño real del dato
-  // (26×26) y se reescala con suavizado, en vez de soltar 676 divs por capa.
-  const RAMPAS = {
-    peaton:  [[0,[ 32,140, 90, 0]], [.25,[120,190, 60,110]], [.5,[245,205, 60,170]],
-              [.75,[240,140, 40,205]], [1,[214, 40, 40,230]]],
-    vehiculo:[[0,[ 30, 90,170, 0]], [.25,[ 70,130,220,110]], [.5,[110,110,225,170]],
-              [.75,[150, 70,205,205]], [1,[120, 20,150,230]]]
-  };
-  function pngCalor(capa, n, tipo){
+  /* ── Mapa de calor ──────────────────────────────────────────────────────
+     El dibujo, la leyenda y la capa sobre el mapa vienen de js/56, que
+     comparten los tres módulos que pintan calor. Acá solo se decide dónde
+     va y qué pasa al tocarlo. */
+  const CAL = () => window.URBIS_CALOR || null;
+  let calorMapa = null;          // el controlador sobre el mapa del curso
+  function calorEnMapa(){
+    if (calorMapa) return calorMapa;
     try {
-      const ramp = RAMPAS[tipo] || RAMPAS.peaton;
-      const mezcla = t => {
-        for (let i = 1; i < ramp.length; i++) {
-          if (t <= ramp[i][0]) {
-            const a = ramp[i-1], b = ramp[i], k = (t - a[0]) / (b[0] - a[0] || 1);
-            return [0,1,2,3].map(c => Math.round(a[1][c] + (b[1][c] - a[1][c]) * k));
-          }
-        }
-        return ramp[ramp.length-1][1];
-      };
-      const c = document.createElement('canvas'); c.width = c.height = n;
-      const ctx = c.getContext('2d');
-      const img = ctx.createImageData(n, n);
-      for (let k = 0; k < n * n; k++) {
-        const v = capa[k], px = k * 4;
-        if (v == null || v < 0) { img.data[px + 3] = 0; continue; }
-        const col = mezcla(Math.max(0, Math.min(1, v / 100)));
-        img.data[px] = col[0]; img.data[px+1] = col[1]; img.data[px+2] = col[2]; img.data[px+3] = col[3];
-      }
-      ctx.putImageData(img, 0, 0);
-      const g = document.createElement('canvas'); g.width = g.height = 240;
-      const gx = g.getContext('2d');
-      gx.imageSmoothingEnabled = true; gx.imageSmoothingQuality = 'high';
-      gx.drawImage(c, 0, 0, 240, 240);
-      return g.toDataURL('image/png');
-    } catch(e) { return ''; }
+      if (typeof map !== 'undefined' && map && CAL()) calorMapa = CAL().enMapa(map);
+    } catch(e) { calorMapa = null; }
+    return calorMapa;
   }
 
   // ── Bloques ─────────────────────────────────────────────────────────────
@@ -319,26 +294,46 @@
 
   function bloqueCalor(r){
     const mc = (r.stats.movilidad && r.stats.movilidad.flujo || {}).mapaCalor;
-    if (!mc) return '';
-    const panel = (capa, foco, titulo, tipo) => {
-      const png = pngCalor(capa, mc.n, tipo);
-      return '<figure class="edu-calor"><figcaption>' + esc(titulo) + '</figcaption>' +
-        '<div class="edu-calor-lienzo">' +
-          (png ? '<img src="' + png + '" alt="' + esc(titulo) + '">' : '<div class="vacio"></div>') +
-          '<i class="cruz"></i></div>' +
-        '<small>' + (foco ? esc(foco.texto) : 'sin actividad suficiente') + '</small></figure>';
-    };
-    return '<div class="edu-caja">' +
+    const K = CAL();
+    if (!mc || !K) return '';
+    return '<div class="edu-caja" id="edu-calor">' +
       '<h4>🔥 Dónde está el movimiento</h4>' +
-      '<div class="edu-calores">' +
-        panel(mc.peatonalDia, mc.focoDia, 'A pie · día', 'peaton') +
-        panel(mc.peatonalNoche, mc.focoNoche, 'A pie · noche', 'peaton') +
-        panel(mc.vehicular, mc.focoVehicular, 'En vehículo', 'vehiculo') +
-      '</div>' +
+      '<p class="edu-nota">Toquen una capa para verla sobre el mapa, encima de las calles que ' +
+        'caminaron. El punto grande es el sitio más activo de esa capa.</p>' +
+      '<div class="edu-calores">' + K.miniaturas(mc, 'edu-calor', 'dia') + '</div>' +
+      K.botones('dia') +
+      K.leyenda() +
       '<p class="edu-nota">La cruz es el punto que analizaron. Cada capa se colorea contra su ' +
-      'propio máximo: dice <b>dónde</b> se concentra el movimiento, no cuánto.' +
-      (mc.fiable ? '' : ' Con pocos puntos es apenas indicativo.') + '</p>' +
+      'propio máximo: dice <b>dónde</b> se concentra el movimiento, no cuánto. ' +
+      'El cálculo suma los usos que atraen gente y resta los que rompen el recorrido ' +
+      '(bodegas, lotes, locales cerrados).' +
+      (mc.fiable ? '' : ' Con pocos puntos es apenas indicativo: conviene contrastarlo caminando.') + '</p>' +
       '</div>';
+  }
+
+  /* Pone (o quita) una capa sobre el mapa del curso y marca en el panel
+     cuál está puesta. `id` vacío quita. Se llama al terminar el análisis
+     —con la capa de día— y con cada toque. */
+  function mostrarCalor(id, encuadrar){
+    const mc = ultimo && ultimo.stats.movilidad && ultimo.stats.movilidad.flujo &&
+               ultimo.stats.movilidad.flujo.mapaCalor;
+    const ctl = calorEnMapa();
+    if (!ctl) return false;
+    let puesta = false;
+    if (id && mc) puesta = ctl.mostrar(mc, id, { encuadrar: encuadrar === undefined ? 'auto' : encuadrar });
+    else ctl.quitar();
+    const act = puesta ? id : '';
+    const caja = $('edu-calor');
+    if (caja) {
+      caja.querySelectorAll('[data-capa]').forEach(el => {
+        const es = !!act && el.getAttribute('data-capa') === act;
+        el.classList.toggle('act', es);
+        if (el.tagName === 'BUTTON' && el.getAttribute('data-capa') !== '') el.setAttribute('aria-pressed', es ? 'true' : 'false');
+      });
+      const q = caja.querySelector('.urb-calor-botones .quitar');
+      if (q) q.hidden = !act;
+    }
+    return puesta;
   }
 
   // ── Antigüedad del tejido construido ──────────────────────────────────
@@ -468,6 +463,7 @@
     const btn = $('edu-analisis-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Analizando…'; }
     cont.innerHTML = '<p class="edu-nota">Leyendo lo que mapearon y consultando el censo…</p>';
+    mostrarCalor('', false);
     try {
       const r = await window.URBIS_EDU.analizar(centro, radioM, null);
       ultimo = r;
@@ -485,6 +481,29 @@
       if (bi) bi.addEventListener('click', abrirInforme);
       const bf = $('edu-forma-btn');
       if (bf) bf.addEventListener('click', () => reconocerForma(centro, radioM));
+      /* El calor sobre el mapa: la capa de día apenas termina, sin pedirla,
+         porque es la respuesta a «¿por dónde se mueve la gente acá?» y
+         el mapa está justo detrás del panel. Las otras dos, y quitarla,
+         a un toque. Al terminar solo se mueve el mapa si el cuadrado del
+         calor no cabe entero en pantalla: si cabe, el estudiante lo puso
+         donde lo quería y se queda. */
+      const cc = $('edu-calor');
+      if (cc) {
+        cc.addEventListener('click', ev => {
+          const el = ev.target.closest('[data-capa]');
+          if (!el || !cc.contains(el)) return;
+          mostrarCalor(el.getAttribute('data-capa'), true);
+        });
+        cc.addEventListener('keydown', ev => {
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          const el = ev.target.closest('figure[data-capa]');
+          if (!el) return;
+          ev.preventDefault(); mostrarCalor(el.getAttribute('data-capa'), true);
+        });
+        mostrarCalor('dia', 'auto');
+      } else {
+        mostrarCalor('', false);
+      }
       try { if (typeof urbisEvaluateAchievements === 'function') urbisEvaluateAchievements('analisis-edu'); } catch(e) {}
     } catch(err) {
       cont.innerHTML = '<p class="edu-nota">No se pudo completar el análisis: ' +
@@ -572,5 +591,7 @@
   else init();
 
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
+                          mostrarCalor: mostrarCalor,
+                          get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();

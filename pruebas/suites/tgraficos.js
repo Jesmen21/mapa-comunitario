@@ -53,6 +53,51 @@ function anillo(radioM, densidadPorHa, comercio, equipamientos, poblacionEstimad
            esAnalizado: !!esAnalizado };
 }
 
+/* ── Una malla de calor dibujada a mano ──────────────────────────────────
+   Las tres capas del que se abre: de día un foco al NORORIENTE (celda 19,6),
+   de noche uno al SUROCCIDENTE (celda 8,18), y en vehículo una franja
+   horizontal por el medio. La capa se pinta sobre el mapa y la prueba mira
+   que caiga en el cuadrado que mide la malla y que el foco marcado sea la
+   celda del máximo — no que «salga una mancha». */
+const N_CALOR = 26, RADIO_CALOR = 500;
+function mallaCalor() {
+  const paso = 2 * RADIO_CALOR / N_CALOR;
+  const mLat = 110540, mLng = 111320 * Math.cos(C.lat * Math.PI / 180);
+  const capa = f => {
+    const a = new Array(N_CALOR * N_CALOR).fill(-1);
+    for (let j = 0; j < N_CALOR; j++) for (let i = 0; i < N_CALOR; i++) {
+      const cx = -RADIO_CALOR + (i + .5) * paso, cy = RADIO_CALOR - (j + .5) * paso;
+      if (Math.hypot(cx, cy) > RADIO_CALOR) continue;
+      a[j * N_CALOR + i] = Math.round(Math.max(0, Math.min(100, f(i, j))));
+    }
+    return a;
+  };
+  const foco = (i, j) => {
+    const cx = -RADIO_CALOR + (i + .5) * paso, cy = RADIO_CALOR - (j + .5) * paso;
+    return { i, j, valor: 100, distM: Math.round(Math.hypot(cx, cy)),
+             lat: C.lat + cy / mLat, lng: C.lng + cx / mLng,
+             texto: 'a unos ' + Math.round(Math.hypot(cx, cy)) + ' m hacia ' + (j < 13 ? 'el nororiente' : 'el suroccidente') };
+  };
+  const mancha = (i0, j0) => (i, j) => 100 * Math.exp(-((i - i0) ** 2 + (j - j0) ** 2) / 18);
+  return {
+    n: N_CALOR, radioM: RADIO_CALOR, paso: Math.round(paso), centro: { lat: C.lat, lng: C.lng },
+    peatonalDia: capa(mancha(19, 6)), peatonalNoche: capa(mancha(8, 18)),
+    vehicular: capa((i, j) => 100 * Math.exp(-((j - 12.5) ** 2) / 4)),
+    focoDia: foco(19, 6), focoNoche: foco(8, 18), focoVehicular: foco(13, 12),
+    fiable: true
+  };
+}
+function flujoDePrueba() {
+  return {
+    peatonal: 62, vehicular: 41, nivelPeatonal: 'Alto', nivelVehicular: 'Medio', dominante: 'peatonal',
+    franjaFuerte: 'mediodía', parqueaderos: 1, parqueoProbable: [], consejoUbicacion: '',
+    franjas: { manana: 55, mediodia: 80, tarde: 70, noche: 35 }, vidaNocturna: false,
+    generadores: [], penalizadores: [], generadoresVehiculo: [], trafico: null,
+    sumaBruta: 0, restaPeaton: 0, avisoDatos: '', frentesCorregidos: 0,
+    mapaCalor: mallaCalor()
+  };
+}
+
 function resultado(nombre, total, densidadPorHa, poblacionEstimada, nViasArterias, paradasBus) {
   return {
     modo: 'simple',
@@ -67,7 +112,9 @@ function resultado(nombre, total, densidadPorHa, poblacionEstimada, nViasArteria
       poblacionEstimada: poblacionEstimada,
       poblacionEsCensal: false,
       poblacionProyectada: false,
-      movilidad: { nViasArterias: nViasArterias, paradasBus: paradasBus, flujo: null },
+      movilidad: { nViasArterias: nViasArterias, paradasBus: paradasBus,
+                   // Solo el que se abre trae flujo: es el que se mira en el mapa.
+                   flujo: nombre === ABIERTO ? flujoDePrueba() : null },
       /* El horario declarado, tal como lo devuelve el motor. Nueve de
          dieciséis usos con horario legible, uno ilegible, seis sin nada:
          los porcentajes tienen que salir sobre los NUEVE y no sobre los
@@ -323,6 +370,82 @@ function refEsperada(col) {
       'las barras siguen, con los seis grupos con datos');
   chk(r.barras && r.barras.every((v, i) => !i || r.barras[i - 1] >= v),
       'y ahora ordenadas de mayor a menor: ' + (r.barras || []).join(' ≥ '));
+
+  /* ── El calor sobre el mapa del lote (v807) ─────────────────────────
+     Acá Leaflet es el de verdad: se mira la capa de imagen en el DOM del
+     mapa, sus límites y la marca del foco, y que cambiar de capa reemplace
+     en vez de apilar. */
+  const HC = await A.pg.evaluate(() => {
+    const mapa = document.getElementById('aia-map');
+    const flujo = document.getElementById('aia-flujo');
+    const K = window.URBIS_CALOR, app = window.AIA_APP || {};
+    const mc = ((((app.resultado || {}).stats || {}).movilidad || {}).flujo || {}).mapaCalor;
+    const capasDom = () => mapa.querySelectorAll('.leaflet-image-layer.urb-calor-capa').length;
+    const marcasDom = () => mapa.querySelectorAll('path.urb-calor-marca').length;
+    const lee = () => {
+      const ctl = app.calor;
+      const b = ctl && ctl.capa ? ctl.capa.getBounds() : null;
+      return {
+        capas: capasDom(), marcas: marcasDom(), activa: ctl ? ctl.activa : '',
+        limites: b ? [[b.getSouth(), b.getWest()], [b.getNorth(), b.getEast()]] : null,
+        src: ctl && ctl.capa && ctl.capa.getElement ? String((ctl.capa.getElement() || {}).src || '').slice(0, 15) : '',
+        tip: ctl && ctl.marca && ctl.marca.getTooltip ? String(ctl.marca.getTooltip().getContent()) : '',
+        act: Array.from(flujo.querySelectorAll('[data-capa].act')).map(e => e.getAttribute('data-capa')),
+        quitarVisible: !!(flujo.querySelector('.urb-calor-botones .quitar') && !flujo.querySelector('.urb-calor-botones .quitar').hidden)
+      };
+    };
+    const minis = Array.from(flujo.querySelectorAll('figure[data-capa]')).map(f => ({
+      capa: f.getAttribute('data-capa'),
+      pinta: /^data:image\/png/.test((f.querySelector('img') || {}).getAttribute ? (f.querySelector('img').getAttribute('src') || '') : ''),
+      foco: f.querySelector('.urb-calor-foco') ? f.querySelector('.urb-calor-foco').style.left + ' ' + f.querySelector('.urb-calor-foco').style.top : ''
+    }));
+    const inicio = lee();
+    const btn = id => flujo.querySelector('.urb-calor-botones button[data-capa="' + id + '"]');
+    btn('vehiculo') && btn('vehiculo').click();
+    const veh = lee();
+    const q = flujo.querySelector('.urb-calor-botones .quitar'); q && q.click();
+    const fuera = lee();
+    const fig = flujo.querySelector('figure[data-capa="noche"]'); fig && fig.click();
+    const noche = lee();
+    // La hoja compartida (css/57) tiene que estar cargada en ESTA página:
+    // hasta la v806 no se enlazaba, y la referencia y los anillos salían
+    // sin estilo. Se mira una medida que solo pone esa hoja.
+    const riel = document.querySelector('#aia-kpis .urb-ref-riel');
+    return { hayModulo: !!K, mc: mc ? { n: mc.n, radioM: mc.radioM, focoDia: mc.focoDia } : null,
+             limitesModulo: K && mc ? K.limites(mc) : null,
+             minis, inicio, veh, fuera, noche,
+             rielAlto: riel ? getComputedStyle(riel).height : '' };
+  });
+  console.log('\n── El calor sobre el mapa ─────────────────────────');
+  console.log('  al abrir: ' + JSON.stringify(HC.inicio));
+  chk(HC.hayModulo, 'el módulo compartido del calor (js/56) está cargado');
+  chk(HC.minis.map(m => m.capa).join(',') === 'dia,noche,vehiculo' && HC.minis.every(m => m.pinta),
+      'las tres miniaturas se pintan y saben qué capa son');
+  // Se compara como número: el navegador devuelve «75%» donde se escribió «75.0%».
+  // A la defensiva: contra la pantalla anterior no hay miniaturas con `data-capa`.
+  const mini0 = HC.minis[0] || {};
+  const focoPct = (mini0.foco || '').split(' ').map(parseFloat);
+  chk(HC.mc && Math.abs(focoPct[0] - (HC.mc.focoDia.i + .5) / HC.mc.n * 100) < 0.1 &&
+               Math.abs(focoPct[1] - (HC.mc.focoDia.j + .5) / HC.mc.n * 100) < 0.1,
+      'el foco de la miniatura está en la celda del máximo (' + (mini0.foco || 'sin foco') + ')');
+  chk(HC.inicio.capas === 1 && HC.inicio.activa === 'dia' && /^data:image\/png/.test(HC.inicio.src),
+      'al abrir el análisis la capa de día ya está sobre el mapa del lote');
+  const lim = HC.inicio.limites;
+  const ladoNS = lim ? Math.round((lim[1][0] - lim[0][0]) * 110540) : 0;
+  const ladoEO = lim ? Math.round((lim[1][1] - lim[0][1]) * 111320 * Math.cos(C.lat * Math.PI / 180)) : 0;
+  chk(HC.mc && ladoNS === 2 * HC.mc.radioM && ladoEO === 2 * HC.mc.radioM,
+      'cubre el cuadrado exacto que mide la malla: ' + ladoNS + ' × ' + ladoEO + ' m');
+  chk(lim && Math.abs((lim[0][0] + lim[1][0]) / 2 - C.lat) < 1e-6 && Math.abs((lim[0][1] + lim[1][1]) / 2 - C.lng) < 1e-6,
+      'centrado en el lote');
+  chk(HC.inicio.marcas === 1 && HC.mc && HC.inicio.tip.indexOf(HC.mc.focoDia.texto) >= 0,
+      'el punto más activo va sobre el mapa con su frase (' + HC.inicio.tip + ')');
+  chk(HC.inicio.act.length === 2 && HC.inicio.quitarVisible, 'miniatura y botón marcan la capa puesta, y «Quitar» se ve');
+  chk(HC.veh.capas === 1 && HC.veh.marcas === 1 && HC.veh.activa === 'vehiculo' && HC.veh.src !== '' ,
+      'cambiar a «En vehículo» reemplaza la capa: sigue habiendo UNA sobre el mapa');
+  chk(HC.fuera.capas === 0 && HC.fuera.marcas === 0 && HC.fuera.activa === '' && HC.fuera.act.length === 0 && !HC.fuera.quitarVisible,
+      '«Quitar» deja el mapa sin capa ni marca, y el panel sin nada marcado');
+  chk(HC.noche.capas === 1 && HC.noche.activa === 'noche', 'tocar la miniatura de la noche la pone sobre el mapa');
+  chk(HC.rielAlto === '3px', 'la hoja compartida (css/57) llega a esta página: el riel de la referencia mide lo que dice (' + HC.rielAlto + ')');
 
   chk(A.errores.length === 0, 'sin errores de página' + (A.errores.length ? ': ' + A.errores[0] : ''));
   await A.pg.close();

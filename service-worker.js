@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v806-el-papel-alcanza-a-la-pantalla';
+const URBIS_CACHE = 'urbis-v807-el-calor-sobre-el-mapa';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,8 @@ const URBIS_ASSETS = [
   './assets/data/seguimiento-petro.json',
   './assets/data/alertas-urbis.json',
   './css/60-analisis-ia.css',
+  './css/57-comparar-sector.css',
+  './js/56-calor.js',
   './js/57-referencia.js',
   './js/58-anillos.js',
   './js/59-analisis-ia-catalogo.js',

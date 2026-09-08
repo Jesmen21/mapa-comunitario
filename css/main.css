@@ -1,107 +1,107 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./00-brand-urbis.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./00-app-shell.css?v=807-el-calor-sobre-el-mapa");
+@import url("./00-brand-urbis.css?v=807-el-calor-sobre-el-mapa");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./02-map-tools-routing.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./03-basemap-and-panels.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./04-automap-markers-performance.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./05-clusters.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./06-landing.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./07-mobile-advanced.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./01-base-layout.css?v=807-el-calor-sobre-el-mapa");
+@import url("./02-map-tools-routing.css?v=807-el-calor-sobre-el-mapa");
+@import url("./03-basemap-and-panels.css?v=807-el-calor-sobre-el-mapa");
+@import url("./04-automap-markers-performance.css?v=807-el-calor-sobre-el-mapa");
+@import url("./05-clusters.css?v=807-el-calor-sobre-el-mapa");
+@import url("./06-landing.css?v=807-el-calor-sobre-el-mapa");
+@import url("./07-mobile-advanced.css?v=807-el-calor-sobre-el-mapa");
 
-@import url("./08-role-accessibility.css?v=806-el-papel-alcanza-a-la-pantalla");
-@import url("./09-achievements.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./08-role-accessibility.css?v=807-el-calor-sobre-el-mapa");
+@import url("./09-achievements.css?v=807-el-calor-sobre-el-mapa");
 
-@import url("./10-sport.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./10-sport.css?v=807-el-calor-sobre-el-mapa");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./57-comparar-sector.css?v=807-el-calor-sobre-el-mapa");
 
-@import url("./99-contrast-fix.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./99-contrast-fix.css?v=807-el-calor-sobre-el-mapa");
 
-@import url("12-module-access.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("12-module-access.css?v=807-el-calor-sobre-el-mapa");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./14-mobile-functional-app.css?v=807-el-calor-sobre-el-mapa");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=806-el-papel-alcanza-a-la-pantalla");
+@import url("./16-mobility-clean-traffic.css?v=807-el-calor-sobre-el-mapa");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./28-mobile-kawaii-entry.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./29-mobile-kawaii-platform.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./29-mobile-kawaii-platform.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./30-zoom-marker-optimizer.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./30-zoom-marker-optimizer.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./36-mobility-static-search.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./36-mobility-static-search.css?v=807-el-calor-sobre-el-mapa');
 
 
-@import url('./41-email-registration-auth.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./41-email-registration-auth.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./42-turquoise-refresh.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./42-turquoise-refresh.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./43-clean-user-entry.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./43-clean-user-entry.css?v=807-el-calor-sobre-el-mapa');
 
-@import url('./44-mobile-auth-onboarding.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./44-mobile-auth-onboarding.css?v=807-el-calor-sobre-el-mapa');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./45-mascotas-fundacion.css?v=807-el-calor-sobre-el-mapa');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./46-runner-strava.css?v=807-el-calor-sobre-el-mapa');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=806-el-papel-alcanza-a-la-pantalla');
-@import url('./48-premio.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./47-aurea-menu.css?v=807-el-calor-sobre-el-mapa');
+@import url('./48-premio.css?v=807-el-calor-sobre-el-mapa');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./48-runner-stats.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./49-urbis-analisis.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./99-mobile-clean-core.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./99-safe-destination-dot.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./51-cute-theme-pc.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./52-urbis-pro-city.css?v=807-el-calor-sobre-el-mapa');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=806-el-papel-alcanza-a-la-pantalla');
-@import url('./68-procity-reconocimiento.css?v=806-el-papel-alcanza-a-la-pantalla');
-@import url('./69-licencia.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./24-procity-analisis.css?v=807-el-calor-sobre-el-mapa');
+@import url('./68-procity-reconocimiento.css?v=807-el-calor-sobre-el-mapa');
+@import url('./69-licencia.css?v=807-el-calor-sobre-el-mapa');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./53-auth-celeste.css?v=807-el-calor-sobre-el-mapa');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./54-config-admin.css?v=807-el-calor-sobre-el-mapa');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./55-vitrina.css?v=807-el-calor-sobre-el-mapa');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./70-modo-app.css?v=807-el-calor-sobre-el-mapa');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=806-el-papel-alcanza-a-la-pantalla');
+@import url('./72-edu-diseno.css?v=807-el-calor-sobre-el-mapa');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */
@@ -190,20 +190,12 @@
 .edu-calor{ margin:0; min-width:0; }
 .edu-calor figcaption{ font-size:.62rem; font-weight:600; margin-bottom:3px; }
 .edu-calor-lienzo{ position:relative; }
-.edu-calor img, .edu-calor .vacio{
+.edu-calor img, .edu-calor-vacio{
   display:block; width:100%; aspect-ratio:1/1; border-radius:9px;
   background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
 }
-/* La cruz marca el punto analizado: sin ella el mapa es una mancha sin
-   referencia. Se ancla al lienzo, no a la figura, que lleva título encima. */
-.edu-calor .cruz{
-  position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px;
-  pointer-events:none;
-  background:
-    linear-gradient(to right, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
-    linear-gradient(to bottom, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
-  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.9));
-}
+/* La cruz del centro y el punto del foco vienen de css/57 (`.urb-calor-*`),
+   comunes con el panel de empresas. */
 .edu-calor small{ display:block; font-size:.57rem; opacity:.75; line-height:1.3; margin-top:3px; }
 
 .edu-barras{ list-style:none; margin:0; padding:0; }
