@@ -2081,9 +2081,22 @@
   // id de la tabla del minijuego actual. Se cambió 'arcade'→'reflejos1' para ARRANCAR LIMPIO:
   // la tabla vieja guardaba puntajes SUMADOS (bug). La nueva guarda el MEJOR puntaje por partida.
   const URBIS_JUEGO_ACTUAL = 'reflejos1';
+  /* El token de sesión viaja en TODA llamada del juego. Antes no viajaba en
+     ninguna, y `set_puntaje` escribía el `usuario` y los `puntos` que llegaran
+     en el cuerpo: con la consola abierta, cualquiera se ponía 999.999 puntos
+     en un evento que reparte dinero real, y encima podía ponérselos a nombre
+     de otro. Ahora el servidor saca el usuario del token y el cuerpo ya no
+     decide quién puntúa. */
   function _juegoAPI(payload){
-    if(window.URBIS_AUTH && typeof window.URBIS_AUTH.socialAPI === 'function') return window.URBIS_AUTH.socialAPI(payload);
-    return Promise.reject(new Error('Auth no disponible'));
+    if(!(window.URBIS_AUTH && typeof window.URBIS_AUTH.socialAPI === 'function')) {
+      return Promise.reject(new Error('Auth no disponible'));
+    }
+    let token = '';
+    try{
+      const ses = (typeof window.URBIS_AUTH.readSession === 'function') ? window.URBIS_AUTH.readSession() : null;
+      token = (ses && ses.session_token) || '';
+    }catch(e){}
+    return window.URBIS_AUTH.socialAPI(Object.assign({ session_token: token }, payload));
   }
   function _escJuego(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   // El puntaje que cuenta es el MEJOR de una sola partida (no la suma de partidas).
@@ -2114,9 +2127,21 @@
     const usuario = window.urbisUsuarioActual ? window.urbisUsuarioActual() : '';
     if(usuario){
       // Backend (Apps Script, puntajes_urbis): envía el MEJOR; el backend ya hace Math.max.
-      _juegoAPI({ action:'set_puntaje', usuario:usuario, juego:juegoId, puntos:best })
-        .then(()=>{ try{ if(esLibre && typeof window.urbisRenderGamesHub === 'function' && document.getElementById('u52-games-content')) window.urbisRenderGamesHub(); }catch(e){} })
-        .catch(()=>{});
+      /* El puntaje ya no se guarda «a la buena de Dios». Si el servidor lo
+         rechaza —sesión vencida, sin token— el jugador tiene que enterarse:
+         en un evento con premio, creer que tu partida quedó registrada cuando
+         no quedó es peor que perderla. `window.urbisUltimoPuntajeError` lo
+         deja escrito para que la pantalla de resultado lo muestre. */
+      window.urbisUltimoPuntajeError = '';
+      window.urbisPuntajeEnVuelo = _juegoAPI({ action:'set_puntaje', juego:juegoId, puntos:best })
+        .then(out => {
+          if(out && out.ok === false){
+            window.urbisUltimoPuntajeError = out.message || 'El servidor no aceptó el puntaje.';
+            return;
+          }
+          try{ if(esLibre && typeof window.urbisRenderGamesHub === 'function' && document.getElementById('u52-games-content')) window.urbisRenderGamesHub(); }catch(e){}
+        })
+        .catch(err => { window.urbisUltimoPuntajeError = 'No se pudo guardar el puntaje: ' + ((err && err.message) || err); });
       // Solo el juego LIBRE refleja en la tabla local del arcade (la premium se trae aparte).
       if(esLibre){
         window.urbisLeaderboardData = window.urbisLeaderboardData || [];
@@ -2148,7 +2173,10 @@
       let cloud = 0;
       (window.urbisLeaderboardData||[]).forEach(p => { if(String(p.usuario||'').toLowerCase() === yo.toLowerCase()){ const v = parseInt(p.puntos,10)||0; if(v>cloud) cloud=v; } });
       if(local <= cloud) return;
-      _juegoAPI({ action:'set_puntaje', usuario:yo, juego:URBIS_JUEGO_ACTUAL, puntos:local }).catch(()=>{});
+      // El usuario ya no viaja: lo pone el servidor leyendo el token. Esta
+      // subida es de arranque y sí puede fallar en silencio —se reintenta al
+      // abrir el arcade otra vez—, pero mandarla firmada es obligatorio.
+      _juegoAPI({ action:'set_puntaje', juego:URBIS_JUEGO_ACTUAL, puntos:local }).catch(()=>{});
     }catch(e){}
   }
   function _pintarArcade(cont){
@@ -2284,10 +2312,21 @@
             <div class="gt-premium-badge">✨ ${_escJuego(titulo)}</div>
             <span class="gt-result-score">${score}</span><small>puntos en esta partida</small>
             <div class="gt-total">Tu mejor en el evento: <b>${best}</b></div>
+            <div class="gt-guardado" id="gt-guardado" hidden></div>
             <div class="gt-aurea-board" id="gt-aurea-board">⏳ Cargando tabla del evento…</div>
             <div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">✕ Salir</button></div></div>`;
+          /* Si el puntaje no llegó al servidor, se dice ACÁ y no en silencio.
+             En un evento con premio, creer que tu partida quedó registrada
+             cuando no quedó es peor que haberla perdido. */
+          Promise.resolve(window.urbisPuntajeEnVuelo).catch(()=>{}).then(()=>{
+            const g = arena.querySelector('#gt-guardado');
+            if(g && window.urbisUltimoPuntajeError){
+              g.hidden = false;
+              g.textContent = '⚠️ ' + window.urbisUltimoPuntajeError;
+            }
+          });
           _juegoAPI({ action:'leaderboard', juego:juegoId, limit:20 })
-            .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = arena.querySelector('#gt-aurea-board'); if(el) el.innerHTML = _aureaBoardHTML(tabla); })
+            .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = arena.querySelector('#gt-aurea-board'); if(el){ el.innerHTML = _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId); } })
             .catch(()=>{ const el = arena.querySelector('#gt-aurea-board'); if(el) el.textContent = 'No se pudo cargar la tabla del evento.'; });
         } else {
           arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${score}</span><small>puntos en esta partida</small><div class="gt-total">Tu récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
@@ -2302,14 +2341,58 @@
   // JUEGO PREMIUM "Juegos URBIS": MISMO juego, pero TABLA SEPARADA por evento (no toca
   // la del juego libre). Solo se entra desde la gota de agua del mapa. El #1 gana dinero.
   // ════════════════════════════════════════════════════════════════════════
-  function _aureaBoardHTML(tabla){
+  /* La tabla. Para un ADMINISTRADOR cada renglón trae una ✏️: es la única
+     manera de limpiar una tabla envenenada, porque `set_puntaje` nunca baja
+     un puntaje —un mejor personal no debe caer por una partida mala— y por
+     tanto un número falso que haya entrado antes de la firma se queda ahí
+     para siempre. Sin este botón, un evento contaminado no se arregla: se
+     abandona. El candado de verdad está en el servidor, que exige sesión de
+     administrador; esto solo es dónde tocarlo. */
+  function _aureaBoardHTML(tabla, juegoId){
     const yo = (window.urbisUsuarioActual ? window.urbisUsuarioActual() : '').toLowerCase();
+    const admin = (typeof window.urbisEsAdmin === 'function') && window.urbisEsAdmin();
     if(!tabla || !tabla.length) return '<div class="gt-aurea-empty">Aún no hay puntajes. ¡Sé el primero del evento! 🏆</div>';
     return '<div class="gt-aurea-title">🏆 Ranking del evento</div>' + tabla.slice(0,20).map((r,i)=>{
       const mio = String(r.usuario||'').toLowerCase() === yo;
-      return '<div class="gt-aurea-row'+(i===0?' top1':'')+(mio?' me':'')+'"><span class="gt-aurea-pos">'+(i+1)+'</span><span class="gt-aurea-user">@'+_escJuego(r.usuario)+'</span><span class="gt-aurea-pts">'+(parseInt(r.puntos,10)||0)+'</span></div>';
+      const corregir = (admin && juegoId)
+        ? '<button type="button" class="gt-aurea-fix" title="Corregir este puntaje" data-u="'+_escJuego(r.usuario)+'" data-j="'+_escJuego(juegoId)+'">✏️</button>' : '';
+      return '<div class="gt-aurea-row'+(i===0?' top1':'')+(mio?' me':'')+'"><span class="gt-aurea-pos">'+(i+1)+'</span><span class="gt-aurea-user">@'+_escJuego(r.usuario)+'</span><span class="gt-aurea-pts">'+(parseInt(r.puntos,10)||0)+'</span>'+corregir+'</div>';
     }).join('');
   }
+  /* Corregir un puntaje. Lo pide y lo manda; quien decide si se puede es el
+     servidor, que comprueba contra el token que quien pide es administrador.
+     Preguntarlo acá sería una cortesía, no un candado. */
+  window.urbisCorregirPuntaje = function(usuario, juegoId, alTerminar){
+    if(!usuario || !juegoId) return;
+    const v = prompt('✏️ Corregir el puntaje de @' + usuario + ' en este evento.\n\n' +
+      'Escribe el puntaje correcto, o BORRAR para quitarlo de la tabla:', '0');
+    if(v === null) return;
+    const borrar = /^borrar$/i.test(String(v).trim());
+    const puntos = borrar ? -1 : (parseInt(v, 10) || 0);
+    if(!borrar && String(v).trim() !== String(puntos)){ alert('Escribe un número, o la palabra BORRAR.'); return; }
+    _juegoAPI({ action:'ajustar_puntaje', usuario:usuario, juego:juegoId, puntos:puntos, borrar:borrar })
+      .then(out => {
+        if(!out || out.ok === false) throw new Error((out && out.message) || 'No se pudo corregir.');
+        alert(out.borrada ? '🗑️ Puntaje de @' + usuario + ' borrado de la tabla.'
+                          : '✅ Puntaje de @' + usuario + ' fijado en ' + (out.puntos != null ? out.puntos : puntos) + '.');
+        try{ localStorage.removeItem('urbis_premio_lb_' + juegoId); }catch(e){}
+        if(typeof alTerminar === 'function') alTerminar();
+      })
+      .catch(err => alert('No se pudo corregir: ' + ((err && err.message) || err)));
+  };
+  // Un solo oyente por tabla: los renglones se repintan enteros y con un
+  // oyente por botón se acumularían con cada repintado.
+  function _engancharFix(caja, juegoId, alTerminar){
+    if(!caja || caja._fixOn) return;
+    caja._fixOn = true;
+    caja.addEventListener('click', ev => {
+      const b = ev.target.closest('.gt-aurea-fix');
+      if(!b || !caja.contains(b)) return;
+      ev.preventDefault(); ev.stopPropagation();
+      window.urbisCorregirPuntaje(b.getAttribute('data-u'), b.getAttribute('data-j') || juegoId, alTerminar);
+    });
+  }
+
   // Entrar a JUGAR el evento de Juegos URBIS (premium). Solo se llama desde la gota de agua del mapa.
   window.urbisJugarAurea = function(juegoId, titulo){
     if(!juegoId){ alert('Evento no válido.'); return; }
@@ -2324,7 +2407,7 @@
     document.body.appendChild(ov);
     ov.querySelector('.gt-close').onclick = () => { try{ ov.remove(); }catch(e){} };
     _juegoAPI({ action:'leaderboard', juego:juegoId, limit:20 })
-      .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = ov.querySelector('#gt-aurea-board2'); if(!el) return; el.innerHTML = (tabla.length ? '<div class="gt-winner">🥇 Ganador: <b>@'+_escJuego(tabla[0].usuario)+'</b> · '+(parseInt(tabla[0].puntos,10)||0)+' pts</div>' : '') + _aureaBoardHTML(tabla); })
+      .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = ov.querySelector('#gt-aurea-board2'); if(!el) return; el.innerHTML = (tabla.length ? '<div class="gt-winner">🥇 Ganador: <b>@'+_escJuego(tabla[0].usuario)+'</b> · '+(parseInt(tabla[0].puntos,10)||0)+' pts</div>' : '') + _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId, () => { try{ ov.remove(); }catch(e){} window.urbisVerGanadorAurea(juegoId, titulo); }); })
       .catch(()=>{ const el = ov.querySelector('#gt-aurea-board2'); if(el) el.textContent = 'No se pudo cargar la tabla.'; });
   };
 

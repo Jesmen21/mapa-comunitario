@@ -725,6 +725,13 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 #urbis-game-tap .gt-result-score { font-size:4rem; font-weight:900; color:#27e6c4; text-shadow:0 0 24px rgba(39,230,196,.7); line-height:1; }
 #urbis-game-tap .gt-result small { color:#9fb6c9; }
 #urbis-game-tap .gt-total { margin-top:8px; color:#ffd166; font-size:.95rem; }
+/* El aviso de que el puntaje NO llegó al servidor. Va en ámbar de alerta y
+   no en el amarillo del marcador: es lo contrario de una buena noticia, y en
+   un evento con premio confundir los dos sale caro. */
+#urbis-game-tap .gt-guardado {
+  margin-top:8px; padding:7px 10px; border-radius:9px; font-size:.8rem; line-height:1.4;
+  background:rgba(180,83,9,.18); border:1px solid rgba(245,158,11,.55); color:#FDE68A;
+}
 #urbis-game-tap .gt-result-btns { display:flex; gap:10px; margin-top:18px; }
 #urbis-game-tap .gt-result-btns button { border:none; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer; }
 #urbis-game-tap .gt-again { background:#27e6c4; color:#05231d; }
@@ -882,6 +889,13 @@ body.urbis-zoom-hide-markers .urbis-alerta .al-img{ width:46px !important; heigh
 #urbis-game-tap .gt-aurea-user { flex:1; min-width:0; color:#eaf2fb; font-weight:700; font-size:.86rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 #urbis-game-tap .gt-aurea-pts { font-weight:900; color:#27e6c4; }
 #urbis-game-tap .gt-aurea-empty { text-align:center; color:#86AFC4; font-size:.84rem; padding:18px 8px; }
+/* La ✏️ de corregir un puntaje. Solo la ve un administrador, y va discreta:
+   es una herramienta de arreglo, no una acción del juego. */
+#urbis-game-tap .gt-aurea-fix {
+  flex:0 0 auto; margin-left:6px; background:none; border:none; cursor:pointer;
+  font-size:.85rem; line-height:1; padding:2px 4px; opacity:.55;
+}
+#urbis-game-tap .gt-aurea-fix:hover, #urbis-game-tap .gt-aurea-fix:focus-visible { opacity:1; }
 #urbis-game-tap .gt-winner { text-align:center; font-size:1rem; font-weight:800; color:#7FE3FF; margin-bottom:12px; background:rgba(52,204,254,.1); padding:10px 12px; border-radius:14px; }
 .coliseo-popup .cp-aurea { background:linear-gradient(135deg,#7FE3FF,#0EA5E9) !important; color:#04202F !important; font-weight:900 !important; }
 .coliseo-popup .cp-practica { background:rgba(255,255,255,.14) !important; color:#E6FAFF !important; }

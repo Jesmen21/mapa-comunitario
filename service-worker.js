@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v820-la-firma-del-autor-como-la-lee-el-servidor';
+const URBIS_CACHE = 'urbis-v821-el-puntaje-se-firma';
 const URBIS_ASSETS = [
   './',
   './index.html',
