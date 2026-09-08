@@ -651,6 +651,32 @@ console.log('\n  -- el trabajo del curso --');
             'index.html y service-worker.js');
 }
 
+console.log('\n  -- el ritmo del juego --');
+{
+  const j12 = leer('js/12-spa-ui.js');
+  /* El arcade LIBRE tiene que seguir contando monedas. Su tabla lleva años
+     guardando conteos; si alguien «unifica» el marcador para no repetir
+     código, todos los récords viejos quedan al lado de puntajes veinte veces
+     mayores y la tabla deja de significar nada, sin un solo error a la
+     vista. El interruptor es `const RITMO = premium`. */
+  comprobar('el ritmo es solo del evento premium, no del arcade libre',
+            /const RITMO = premium;/.test(j12), 'js/12-spa-ui.js');
+  /* Sin castigo al fallar, «más rápido = más monedas» premia machacar la
+     pantalla, que es lo contrario del ritmo que se buscaba. */
+  comprobar('fallar y dejar escapar una moneda rompen la racha',
+            /romperRacha\('fallo'/.test(j12) && /romperRacha\('escape'/.test(j12),
+            'js/12-spa-ui.js');
+  /* Redondear CADA moneda tira la resolución que este cambio vino a comprar:
+     se midió, y cuatro partidas al mismo ritmo daban 329 clavado. Se suma con
+     decimales y se redondea una sola vez, al guardar. */
+  comprobar('los puntos se suman con decimales y se redondean una sola vez',
+            /const pts = Math\.max\(0\.5, PUNTOS_BASE \* m \* bono\);/.test(j12) &&
+            /const puntos = Math\.round\(score\);/.test(j12),
+            'js/12-spa-ui.js');
+  comprobar('y lo que viaja al servidor es el entero, no el decimal',
+            /urbisGuardarPuntaje\(puntos, juegoId\)/.test(j12), 'js/12-spa-ui.js');
+}
+
 console.log('\n  -- el calendario del evento premium --');
 {
   const cal = leer('css/82-calendario.css');

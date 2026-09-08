@@ -725,6 +725,57 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 #urbis-game-tap .gt-result-score { font-size:4rem; font-weight:900; color:#27e6c4; text-shadow:0 0 24px rgba(39,230,196,.7); line-height:1; }
 #urbis-game-tap .gt-result small { color:#9fb6c9; }
 #urbis-game-tap .gt-total { margin-top:8px; color:#ffd166; font-size:.95rem; }
+
+/* ── El ritmo: multiplicador, números que vuelan y monedas que se escapan ──
+   Tres avisos que tienen que leerse SIN dejar de mirar las monedas, así que
+   van por color y por tamaño, no por texto. El multiplicador arriba, junto
+   al marcador; el número que sube desde donde se tocó; y la moneda que se
+   va, apagándose hacia afuera. */
+#urbis-game-tap .gt-mult{
+  font-weight:900; font-size:1rem; color:#9CC9E0; min-width:44px; text-align:center;
+  transition:color .18s ease, transform .18s ease;
+}
+#urbis-game-tap .gt-mult.media{ color:#7FE3FF; transform:scale(1.06); }
+#urbis-game-tap .gt-mult.alta{ color:#FABD0A; transform:scale(1.14); text-shadow:0 0 10px rgba(250,189,10,.55); }
+
+#urbis-game-tap .gt-vuela{
+  position:absolute; z-index:5; pointer-events:none; transform:translate(-50%,-50%);
+  font-weight:900; font-size:1.05rem; color:#CFE7F2; text-shadow:0 2px 6px rgba(0,0,0,.6);
+  animation:gtVuela .75s cubic-bezier(.2,.7,.2,1) forwards;
+}
+#urbis-game-tap .gt-vuela.media{ color:#7FE3FF; font-size:1.15rem; }
+#urbis-game-tap .gt-vuela.alta{ color:#FABD0A; font-size:1.3rem; }
+#urbis-game-tap .gt-vuela.mal{ color:#F87171; font-size:1.1rem; }
+@keyframes gtVuela{
+  0%{ opacity:0; transform:translate(-50%,-50%) scale(.7); }
+  18%{ opacity:1; transform:translate(-50%,-62%) scale(1.1); }
+  100%{ opacity:0; transform:translate(-50%,-140%) scale(1); }
+}
+
+/* La moneda que se escapa: se apaga, no estalla. Estallar es la recompensa
+   de haberla agarrado, y usar el mismo gesto para las dos cosas enseñaría lo
+   contrario de lo que pasó. */
+#urbis-game-tap .gt-coin.gt-fuga{
+  animation:gtFuga .26s ease-in forwards; pointer-events:none;
+}
+@keyframes gtFuga{ to{ opacity:0; transform:scale(.55); filter:grayscale(1); } }
+
+/* Cuánto le queda a la moneda, dicho con un aro que se cierra. Sin esto, que
+   se escapen se siente arbitrario. */
+#urbis-game-tap .gt-coin{ --gt-vida:2200ms; }
+
+#urbis-game-tap .gt-ritmo{
+  display:flex; justify-content:center; gap:16px; margin-top:10px; flex-wrap:wrap;
+}
+#urbis-game-tap .gt-ritmo span{
+  display:flex; flex-direction:column; align-items:center; font-size:.66rem;
+  color:#9CC9E0; line-height:1.3; max-width:92px; text-align:center;
+}
+#urbis-game-tap .gt-ritmo b{ font-size:1.15rem; color:#7FE3FF; font-weight:900; }
+
+@media (prefers-reduced-motion:reduce){
+  #urbis-game-tap .gt-vuela, #urbis-game-tap .gt-coin.gt-fuga{ animation-duration:.01ms; }
+}
 /* El aviso de que el puntaje NO llegó al servidor. Va en ámbar de alerta y
    no en el amarillo del marcador: es lo contrario de una buena noticia, y en
    un evento con premio confundir los dos sale caro. */

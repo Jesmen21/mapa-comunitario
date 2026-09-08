@@ -2278,12 +2278,13 @@
     const ov = document.createElement('div');
     ov.id = 'urbis-game-tap'; ov.className = 'gt-enter' + (premium ? ' gt-premium' : '');
     ov.innerHTML = `
-      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ JUEGOS URBIS</span>' : ''}<span class="gt-score">⚡ 0</span><span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
+      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ JUEGOS URBIS</span>' : ''}<span class="gt-score">⚡ 0</span>${premium ? '<span class="gt-mult">×1,0</span>' : ''}<span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
       <div class="gt-arena"></div>
-      <div class="gt-msg">${premium ? '🏆 <b>'+_escJuego(titulo)+'</b> · ¡toca los rayos, el #1 gana el premio!' : '¡Toca los rayos lo más rápido que puedas! ⚡'}</div>`;
+      <div class="gt-msg">${premium ? '🏆 <b>'+_escJuego(titulo)+'</b> · rápido y seguidas suman más · fallar rompe la racha' : '¡Toca los rayos lo más rápido que puedas! ⚡'}</div>`;
     document.body.appendChild(ov);
     setTimeout(()=>{ try{ ov.classList.remove('gt-enter'); }catch(e){} }, 360); // animación de ingreso
     const scoreEl = ov.querySelector('.gt-score'), timeEl = ov.querySelector('.gt-time');
+    const multEl = ov.querySelector('.gt-mult');
     const arena = ov.querySelector('.gt-arena');
     const cerrar = () => { jugando = false; if(intervalo) clearInterval(intervalo); try{ ov.remove(); }catch(e){} };
     ov.querySelector('.gt-close').onclick = cerrar;
@@ -2296,20 +2297,152 @@
       return { x: 4 + Math.floor(Math.random()*w), y: 4 + Math.floor(Math.random()*h) };
     }
     function vivas(){ return arena.querySelectorAll('.gt-coin:not(.gt-pop)').length; }
-    // FLUJO CONTINUO: siempre debe haber 'objetivo' monedas vivas (varía 1-3). En cuanto recoges
-    // una, otra aparece YA en posición aleatoria — sin pausas ni esperar a que se vacíen todas.
+
+    /* ── RITMO, RACHA Y MULTIPLICADOR (solo en evento premium) ───────────
+       El puntaje era el NÚMERO DE MONEDAS. En treinta segundos todo el mundo
+       cae entre sesenta y ciento diez, o sea unos cincuenta valores posibles:
+       con veinte jugadores, dos coincidiendo no es mala suerte, es
+       aritmética. Y un empate en una competencia que reparte dinero se
+       resuelve hoy por el orden de las filas en una hoja de cálculo, que no
+       se le puede explicar a nadie.
+
+       No se arregla haciendo el juego «más variado»: por variado que sea, un
+       conteo sigue siendo un conteo. Se arregla haciendo que el puntaje
+       CARGUE EL RITMO adentro. Tres piezas que se sostienen entre ellas:
+
+       1 · El ritmo manda cuántas monedas hay. Se miran las agarradas en los
+           últimos cuatro segundos: rápido, salen hasta cinco y reaparecen
+           casi al instante; lento, salen una o dos y con calma. Cada partida
+           toma la forma de quien la juega.
+
+       2 · Cada moneda vale según la RACHA: ×1 al empezar, +0,1 por moneda
+           seguida, hasta ×3. Una moneda vale entre 10 y 30 puntos.
+
+       3 · La racha se rompe al fallar —tocar donde no hay moneda— o al dejar
+           que una se escape. Esta pieza NO es un adorno: sin ella, «más
+           rápido = más monedas» premia machacar la pantalla a lo loco, que es
+           exactamente lo contrario del ritmo. Con la racha en juego hay que
+           ser preciso, no frenético.
+
+       El resultado ya no depende de cuántas agarró sino de DÓNDE se le rompió
+       cada racha, y eso son miles de valores en vez de cincuenta. No hace
+       imposible el empate: lo hace raro. La regla de siempre —gana quien más
+       puntos tenga— sigue siendo el respaldo.
+
+       El ARCADE LIBRE se queda como estaba, a propósito: su tabla lleva años
+       guardando conteos, y cambiar la escala convertiría todos los récords
+       viejos en cifras ridículas al lado de las nuevas. Las tablas de los
+       eventos son de un evento cada una y arrancan vacías. */
+    const RITMO = premium;
+    const VENTANA_RITMO_MS = 4000;   // sobre cuánto se mide «rápido» o «lento»
+    const VIDA_MONEDA_MS = 2200;     // lo que aguanta una moneda antes de escaparse
+    const MULT_MAX = 3, MULT_PASO = 0.1, PUNTOS_BASE = 10;
+    /* Cuánto suma agarrarla RÁPIDO. Sin esto, dos jugadores limpios —uno
+       veloz y uno tranquilo— que agarren las mismas monedas sacan
+       exactamente lo mismo, porque la racha solo cuenta cuántas seguidas
+       van, no a qué velocidad. Se probó y salió 333 contra 333: el empate
+       volvía justo entre los que juegan bien, que son los que importan.
+
+       Con esto, cada moneda vale según lo que se tardó en verla: al
+       instante, ×1,8; en el último suspiro antes de que se escape, ×1,0. Y
+       como el tiempo de reacción es continuo y distinto en cada moneda, la
+       suma de noventa monedas casi nunca cae dos veces en el mismo número.
+       Ahí es donde de verdad se mueren los empates. */
+    const BONO_VELOZ_MAX = 0.8;
+
+    let racha = 0, mult = 1, mejorRacha = 0, fallos = 0, escapadas = 0;
+    const golpes = [];   // marcas de tiempo de las monedas agarradas
+
+    function multActual(){ return Math.min(MULT_MAX, 1 + racha * MULT_PASO); }
+    function ritmoReciente(){
+      const corte = Date.now() - VENTANA_RITMO_MS;
+      while(golpes.length && golpes[0] < corte) golpes.shift();
+      return golpes.length;
+    }
+    /* Cuántas monedas quiere el ritmo actual. Sin ritmo (arcade libre) se
+       conserva el vaivén de siempre, 1 a 3 al azar. */
+    function objetivoDelRitmo(){
+      if(!RITMO) return 1 + Math.floor(Math.random()*3);
+      const r = ritmoReciente();
+      if(r <= 1) return 1;
+      if(r <= 5) return 2;
+      if(r <= 10) return 3;
+      if(r <= 16) return 4;
+      return 5;
+    }
+    function pintarMarcador(){
+      scoreEl.textContent = '⚡ ' + Math.round(score);
+      if(!RITMO || !multEl) return;
+      const m = multActual();
+      multEl.textContent = '×' + (Math.round(m*10)/10).toLocaleString('es-CO', { minimumFractionDigits:1 });
+      multEl.className = 'gt-mult' + (m >= 2.5 ? ' alta' : m >= 1.6 ? ' media' : '');
+    }
+    /* El número que sube desde la moneda. Sin esto el multiplicador es una
+       regla escondida: se ve el marcador saltar de 10 en 10 o de 30 en 30 y
+       no se entiende por qué. */
+    function volar(x, y, texto, clase){
+      if(!RITMO) return;
+      const f = document.createElement('span');
+      f.className = 'gt-vuela' + (clase ? ' ' + clase : '');
+      f.textContent = texto;
+      f.style.left = x + 'px'; f.style.top = y + 'px';
+      arena.appendChild(f);
+      setTimeout(()=>{ try{ f.remove(); }catch(e){} }, 750);
+    }
+    function romperRacha(motivo, x, y){
+      if(!RITMO || !jugando) return;
+      if(motivo === 'fallo') fallos++; else escapadas++;
+      if(racha > mejorRacha) mejorRacha = racha;
+      if(racha > 0 && x != null) volar(x, y, '✕', 'mal');
+      racha = 0;
+      pintarMarcador();
+    }
+
     let objetivo = 3;
-    function reponer(){ let g = 0; while(jugando && vivas() < objetivo && g++ < 6) crearCoin(); }
+    function reponer(){ let g = 0; while(jugando && vivas() < objetivo && g++ < 8) crearCoin(); }
     function golpe(coin){
       if(!jugando || coin._done) return;
       coin._done = true;
-      score++; scoreEl.textContent = '⚡ ' + score;
+      if(coin._vence){ clearTimeout(coin._vence); coin._vence = null; }
+      if(RITMO){
+        const m = multActual();
+        // Lo que se tardó desde que la moneda apareció, en fracción de su vida.
+        const dt = coin._nace ? (Date.now() - coin._nace) : 0;
+        const bono = 1 + BONO_VELOZ_MAX * Math.max(0, 1 - (dt / VIDA_MONEDA_MS));
+        /* Se suma CON DECIMALES y se redondea una sola vez, al final.
+           Redondear cada moneda tiraba justo la resolución que este cambio
+           venía a comprar: se probó con cuatro partidas jugadas al mismo
+           ritmo exacto y las cuatro dieron 329. Guardando las fracciones, la
+           diferencia de unas milésimas en cada reacción sobrevive hasta el
+           total, que es donde tiene que notarse. */
+        const pts = Math.max(0.5, PUNTOS_BASE * m * bono);
+        score += pts;
+        racha++;
+        if(racha > mejorRacha) mejorRacha = racha;
+        golpes.push(Date.now());
+        objetivo = objetivoDelRitmo();
+        volar(parseInt(coin.style.left,10) + COIN/2, parseInt(coin.style.top,10),
+              '+' + Math.round(pts), m >= 2.5 ? 'alta' : m >= 1.6 ? 'media' : '');
+      } else {
+        score++;
+        if(Math.random() < 0.22) objetivo = 1 + Math.floor(Math.random()*3); // a ratos cambia (1-3)
+      }
+      pintarMarcador();
       _urbisSonidoMoneda();
       coin.classList.add('gt-pop');                       // estalla (visual)
       setTimeout(()=>{ try{ coin.remove(); }catch(e){} }, 200);
       // Repone de INMEDIATO (no espera la animación de salida): la moneda recogida ya no cuenta
       // en vivas() porque es .gt-pop, así que crearCoin() la reemplaza al instante.
-      if(Math.random() < 0.22) objetivo = 1 + Math.floor(Math.random()*3); // a ratos cambia (1-3)
+      reponer();
+    }
+    function escapa(coin){
+      if(!jugando || coin._done) return;
+      coin._done = true;
+      const x = parseInt(coin.style.left,10) + COIN/2, y = parseInt(coin.style.top,10);
+      coin.classList.add('gt-fuga');
+      setTimeout(()=>{ try{ coin.remove(); }catch(e){} }, 260);
+      romperRacha('escape', x, y);
+      objetivo = objetivoDelRitmo();
       reponer();
     }
     function crearCoin(){
@@ -2323,21 +2456,50 @@
       c.addEventListener('pointerdown', fn, { passive:false });
       c.addEventListener('touchstart', fn, { passive:false });
       c.addEventListener('mousedown', fn);
+      // Una moneda que espera para siempre no castiga la lentitud: el ritmo
+      // solo significa algo si dejarlas pasar cuesta.
+      if(RITMO){
+        c._nace = Date.now();
+        c.style.setProperty('--gt-vida', VIDA_MONEDA_MS + 'ms');
+        c._vence = setTimeout(() => escapa(c), VIDA_MONEDA_MS);
+      }
       arena.appendChild(c);
     }
-    // Arranque: aparecen 1-3 monedas y a partir de ahí el flujo se mantiene solo.
-    objetivo = 1 + Math.floor(Math.random()*3);
+    /* Tocar donde NO hay moneda rompe la racha. El oyente va en la arena y
+       no en la moneda: los toques de la moneda paran su propagación, así que
+       acá solo llegan los que fallaron de verdad. */
+    if(RITMO){
+      const fallar = (e) => {
+        if(!jugando) return;
+        if(e && e.target && e.target.closest && e.target.closest('.gt-coin')) return;
+        const r = arena.getBoundingClientRect();
+        const px = (e && e.clientX != null) ? e.clientX - r.left : 0;
+        const py = (e && e.clientY != null) ? e.clientY - r.top : 0;
+        romperRacha('fallo', px, py);
+      };
+      arena.addEventListener('pointerdown', fallar, { passive:true });
+    }
+    // Arranque: el ritmo todavía no existe, así que empieza con dos.
+    objetivo = RITMO ? 2 : (1 + Math.floor(Math.random()*3));
     setTimeout(reponer, 80);
     intervalo = setInterval(() => {
       tiempo--; timeEl.textContent = '⏱️ ' + tiempo;
       if(tiempo <= 8) timeEl.classList.add('gt-time-low');
       if(tiempo <= 0){
         clearInterval(intervalo); jugando = false;
-        const best = window.urbisGuardarPuntaje ? window.urbisGuardarPuntaje(score, juegoId) : score;
+        // El puntaje viaja REDONDEADO: la hoja guarda enteros, y mandar decimales
+        // dejaría que el servidor los truncara sin avisar.
+        const puntos = Math.round(score);
+        const best = window.urbisGuardarPuntaje ? window.urbisGuardarPuntaje(puntos, juegoId) : puntos;
         if(premium){
           arena.innerHTML = `<div class="gt-result">
             <div class="gt-premium-badge">✨ ${_escJuego(titulo)}</div>
-            <span class="gt-result-score">${score}</span><small>puntos en esta partida</small>
+            <span class="gt-result-score">${puntos}</span><small>puntos en esta partida</small>
+            <div class="gt-ritmo">
+              <span><b>${mejorRacha}</b>racha más larga</span>
+              <span><b>×${(Math.round(Math.min(3, 1 + mejorRacha*0.1)*10)/10).toLocaleString('es-CO',{minimumFractionDigits:1})}</b>multiplicador máximo</span>
+              <span><b>${fallos + escapadas}</b>${(fallos + escapadas) === 1 ? 'racha rota' : 'rachas rotas'}</span>
+            </div>
             <div class="gt-total">Tu mejor en el evento: <b>${best}</b></div>
             <div class="gt-intentos" id="gt-intentos" hidden></div>
             <div class="gt-guardado" id="gt-guardado" hidden></div>
@@ -2371,7 +2533,7 @@
             .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = arena.querySelector('#gt-aurea-board'); if(el){ el.innerHTML = _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId); } })
             .catch(()=>{ const el = arena.querySelector('#gt-aurea-board'); if(el) el.textContent = 'No se pudo cargar la tabla del evento.'; });
         } else {
-          arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${score}</span><small>puntos en esta partida</small><div class="gt-total">Tu récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
+          arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${puntos}</span><small>puntos en esta partida</small><div class="gt-total">Tu récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
         }
         arena.querySelector('.gt-again').onclick = () => { cerrar(); window.urbisJuegoTap(juegoId, opts); };
         arena.querySelector('.gt-exit').onclick  = () => { cerrar(); if(!premium && window.urbisRenderGamesHub) window.urbisRenderGamesHub(); if(premium && typeof window.urbisAureaMenuRefrescar === 'function') window.urbisAureaMenuRefrescar(); };
