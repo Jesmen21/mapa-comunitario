@@ -306,12 +306,25 @@
         '<path d="M19.5 42 Q24 46 28.5 42" stroke="#0C4A6E" stroke-width="1.9" fill="none" stroke-linecap="round"/>'+
         '<circle cx="14.5" cy="41" r="2" fill="#ff9bb0" opacity=".5"/><circle cx="33.5" cy="41" r="2" fill="#ff9bb0" opacity=".5"/>'+
       '</svg>';
-      const html = `<div class="urbis-aurea" style="position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;">`+
+      /* La GOTA, no el logo cuadrado. `urbis-logo.png` es el icono de la
+         aplicación: la gota blanca de la marca sobre un cuadrado celeste que
+         allí es el fondo del icono y acá era un recuadro de color pegado
+         encima de la foto satelital, «fuera de lugar» con esas palabras.
+
+         `urbis-gota.png` es EL MISMO archivo con el fondo recortado píxel a
+         píxel —relleno por difusión desde el borde, que se lleva el celeste
+         del marco y deja intacto el de la U porque la gota lo encierra— y
+         recortado a su contenido. No es un redibujo: la forma es la del
+         original, que es la condición que este proyecto le puso a su marca.
+
+         Se ancla ABAJO y no al centro: una gota de georreferencia señala con
+         la punta, y centrarla la deja apuntando a medio metro de donde es. */
+      const html = `<div class="urbis-aurea" style="position:relative;width:68px;height:78px;display:flex;align-items:flex-start;justify-content:center;">`+
         `<span class="au-ring"></span><span class="au-ring au-ring2"></span><span class="au-glow"></span>`+
-        `<img class="au-img" src="assets/brand/urbis-logo.png" alt="Juegos URBIS" style="position:relative;z-index:3;width:56px;height:56px;display:block;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(3,105,161,.5));" onerror="this.onerror=null;this.style.display='none';var s=this.parentNode.querySelector('.au-svg');if(s){s.style.display='block';}">`+
+        `<img class="au-img" src="assets/brand/urbis-gota.png" alt="Juegos URBIS" style="position:relative;z-index:3;width:60px;height:69px;display:block;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(3,105,161,.55)) drop-shadow(0 0 2px rgba(3,105,161,.9));" onerror="this.onerror=null;this.style.display='none';var s=this.parentNode.querySelector('.au-svg');if(s){s.style.display='block';}">`+
         `<span class="au-svg" style="position:relative;z-index:3;width:50px;height:58px;display:none;filter:drop-shadow(0 5px 9px rgba(3,105,161,.5));">${_aureaSVG}</span>`+
       `</div>`;
-      marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,68], iconAnchor:[34,34], popupAnchor:[0,-34] }), zIndexOffset: 2000 });
+      marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,78], iconAnchor:[34,74], popupAnchor:[0,-70] }), zIndexOffset: 2000 });
     } else if (iconoWaze) {
       marker = L.marker([lat, lng], { icon: marcarConflicto(marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d), p, d) });
     } else {

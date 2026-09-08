@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v822-tres-intentos-y-el-aviso-de-que-te-pasaron';
+const URBIS_CACHE = 'urbis-v823-la-gota-en-vez-del-cuadrado';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ const URBIS_ASSETS = [
   './js/66-analisis-remoto.js',
   './manifest.json',
   './assets/brand/urbis-logo.png',
+  './assets/brand/urbis-gota.png',
   './assets/brand/llegada.png',
   './assets/brand/welcome-illustration.jpg',
   './assets/brand/aurea.png',

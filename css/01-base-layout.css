@@ -774,6 +774,12 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 .urbis-aurea .au-glow{ position:absolute; left:50%; top:50%; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%; background:radial-gradient(circle, rgba(56,189,248,.52), rgba(14,165,233,.24) 60%, transparent 72%); filter:blur(2px); pointer-events:none; z-index:1; animation:urbisColPulse 1.6s ease-in-out infinite; }
 .urbis-aurea .au-ring{ position:absolute; left:50%; top:50%; width:40px; height:40px; margin:-20px 0 0 -20px; border-radius:50%; border:3px solid rgba(56,189,248,.82); pointer-events:none; z-index:2; animation:aureaSonar 1.9s ease-out infinite; }
 .urbis-aurea .au-ring.au-ring2{ animation-delay:.95s; border-color:rgba(125,211,252,.66); }
+/* El sonar late alrededor de la PUNTA de la gota, no del centro del dibujo:
+   una gota de georreferencia señala con la punta, y un anillo centrado en la
+   barriga late a medio metro de donde de verdad está el evento. 88,5 % es la
+   altura de la punta dentro del marcador (69 px de 78). */
+.urbis-coliseo-root .urbis-aurea .au-ring{ top:88.5%; margin-top:-20px; }
+.urbis-coliseo-root .urbis-aurea .au-glow{ top:88.5%; margin-top:-23px; }
 @keyframes aureaSonar { 0%{ transform:scale(.45); opacity:.9; } 100%{ transform:scale(2.5); opacity:0; } }
 @media (prefers-reduced-motion:reduce){ .urbis-aurea .au-ring, .urbis-aurea .au-glow, .urbis-aurea .au-img, .urbis-aurea .au-svg{ animation:none; } }
 
