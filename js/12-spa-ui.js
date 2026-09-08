@@ -2264,6 +2264,12 @@
       o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.2);
     }catch(e){}
   }
+  /* El rótulo de arriba dice solo «JUEGOS URBIS». Llevaba «· POR DINERO»
+     pegado, y con el marcador y el cronómetro al lado dejaba la franja
+     hablando de plata mientras el jugador está jugando. Cuánto se lleva el
+     #1 se dice donde toca decidir —la tarjeta del evento y el hub, con la
+     cifra al lado—, no encima de la partida. Se pidió así: «arriba quita
+     donde dice la palabra dinero, solo deja eventos urbis». */
   window.urbisJuegoTap = function(juegoId, opts){
     opts = opts || {};
     const premium = !!opts.premium;
@@ -2272,7 +2278,7 @@
     const ov = document.createElement('div');
     ov.id = 'urbis-game-tap'; ov.className = 'gt-enter' + (premium ? ' gt-premium' : '');
     ov.innerHTML = `
-      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ JUEGOS URBIS · POR DINERO</span>' : ''}<span class="gt-score">⚡ 0</span><span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
+      <div class="gt-top">${premium ? '<span class="gt-premium-tag">✨ JUEGOS URBIS</span>' : ''}<span class="gt-score">⚡ 0</span><span class="gt-time">⏱️ 30</span><button class="gt-close" aria-label="Salir">×</button></div>
       <div class="gt-arena"></div>
       <div class="gt-msg">${premium ? '🏆 <b>'+_escJuego(titulo)+'</b> · ¡toca los rayos, el #1 gana el premio!' : '¡Toca los rayos lo más rápido que puedas! ⚡'}</div>`;
     document.body.appendChild(ov);
