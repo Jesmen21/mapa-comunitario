@@ -581,6 +581,22 @@ console.log('\n  -- la ficha del gobernante --');
   }
 }
 
+/* ── La presencia: nadie comparte en silencio ─────────────────────────
+   Hasta la v811 un «radar» llamaba urbisCompartirUbicacion(true) cada 45 s
+   desde cualquier pantalla de mapa. Si vuelve a aparecer una llamada así
+   en lo servido, esto lo dice antes de que llegue a un teléfono. */
+console.log('\n  -- la presencia --');
+{
+  const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f));
+  const silenciosos = servidos.filter(f => /urbisCompartirUbicacion\(\s*true\s*\)|_urbisActualizarRadar\s*\(/.test(leer('js/' + f)));
+  comprobar('ningún archivo servido comparte la ubicación en silencio', silenciosos.length === 0,
+            silenciosos.length ? 'lo hacen: ' + silenciosos.join(', ') : servidos.length + ' archivos revisados');
+  const idx = leer('index.html'), sw = leer('service-worker.js');
+  comprobar('el módulo de presencia (js/78) está enlazado y en la precaché',
+            /js\/78-presencia\.js\?v=/.test(idx) && /'\.\/js\/78-presencia\.js'/.test(sw) && /'\.\/css\/78-presencia\.css'/.test(sw),
+            'index.html y service-worker.js');
+}
+
 console.log('\n  -- un nombre, una cosa --');
 {
   const ASIG = /\bwindow\.([A-Za-z_$][\w$]*)\s*(?<![=!<>])=(?!=)\s*(.*)/;

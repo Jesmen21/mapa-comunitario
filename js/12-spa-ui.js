@@ -1464,7 +1464,6 @@
   // ════════════════════════════════════════════════════════════════════════
   window.urbisUbicaciones = window.urbisUbicaciones || [];
   window.urbisRelaciones  = window.urbisRelaciones  || [];
-  let _urbisContactosLayer = null;
 
   // Resuelve el usuario actual desde la sesión; si está vacío, usa el override
   // local que el usuario puede definir manualmente (sesiones viejas sin usuario).
@@ -1522,30 +1521,18 @@
     const d = Math.floor(h/24); return `hace ${d} día${d>1?'s':''}`;
   }
 
+  /* Compartir la ubicación es un INTERRUPTOR (js/78), con duración y con
+     apagado escrito. La versión anterior aceptaba `silencioso` y la
+     llamaba un radar cada 45 s desde cualquier pantalla de mapa: eso ya no
+     existe. Con `silencioso` esta función no hace nada, a propósito. */
   window.urbisCompartirUbicacion = function(silencioso){
-    const usuario = silencioso ? urbisMiUsuario() : urbisAsegurarUsuario();
-    if(!usuario){ if(!silencioso) alert('Necesitas definir tu usuario para compartir tu ubicación.'); return; }
-    if(!navigator.geolocation){ if(!silencioso) alert('Tu dispositivo no permite GPS.'); return; }
-    navigator.geolocation.getCurrentPosition(function(pos){
-      const lat = pos.coords.latitude.toFixed(7), lng = pos.coords.longitude.toFixed(7);
-      const fecha = new Date().toISOString();
-      // Life360: cada usuario tiene UNA sola fila viva con un 'tipo' único y corto.
-      // Actualizamos por 'tipo' (valores cortos) y NO por 'descripcion' (que guarda
-      // reportes larguísimos y rompe el motor fnmatch de SheetDB con error 400).
-      const tipoGps = 'ubicacion_' + String(usuario).toLowerCase().replace(/[^a-z0-9._-]/g,'');
-      const fila = { tipo: tipoGps, lat, lng, descripcion:String(usuario), fecha };
-      window.urbisDBUpdate('tipo', tipoGps, { lat, lng, fecha, descripcion:String(usuario) }).then(res => {
-        // Update por 'tipo' único SIEMPRE acierta tras el primer write: sin duplicados.
-        if(!res || (!res.updated && res.ok !== true) || res.updated === 0){
-          window.urbisGuardarFila(fila).catch(()=>{});
-        }
-        // Cache local: un único registro por usuario.
-        window.urbisUbicaciones = window.urbisUbicaciones || [];
-        const idx = window.urbisUbicaciones.findIndex(u => String(u.descripcion||'').toLowerCase() === usuario.toLowerCase());
-        if(idx >= 0) window.urbisUbicaciones[idx] = fila; else window.urbisUbicaciones.push(fila);
-        if(!silencioso) alert('✅ Tu ubicación se compartió con tus contactos.');
-      }).catch(()=>{ if(!silencioso) alert('No se pudo compartir la ubicación.'); });
-    }, function(){ if(!silencioso) alert('No se pudo obtener tu GPS. Activa la ubicación.'); }, { enableHighAccuracy:true, timeout:9000 });
+    if(silencioso) return;
+    const P = window.URBIS_PRESENCIA;
+    if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
+    if(P.estadoCompartir().activo){ alert('Ya estás compartiendo tu ubicación. En Amigos puedes apagarlo.'); return; }
+    const r = P.compartir(60);
+    if(!r.ok){ alert(r.motivo || 'No se pudo empezar a compartir.'); return; }
+    alert('📡 Compartiendo tu ubicación con tus amigos durante 1 hora. En Amigos puedes cambiar la duración o apagarlo.');
   };
 
   window.urbisAgregarContacto = function(usuario, relacion, cb){
@@ -1618,34 +1605,39 @@
     // Solo mostrar si ambas partes tienen la relación (mutual).
     return Object.keys(out).filter(k => back[k]).filter(k => relacion === 'todos' || outRel[k] === relacion).map(k => out[k]);
   }
+  // La fila lleva ahora «usuario~~~precisión~~~estado»; se compara el
+  // primer tramo, así las filas viejas (solo usuario) siguen valiendo.
   function urbisUbicacionDe(usuario){
     const u = String(usuario||'').toLowerCase();
     let mejor = null;
     (window.urbisUbicaciones||[]).forEach(p => {
-      if(String(p.descripcion||'').toLowerCase() === u && (!mejor || new Date(p.fecha||0) > new Date(mejor.fecha||0))) mejor = p;
+      if((_metaSplit(p.descripcion)[0]||'').trim().toLowerCase() === u && (!mejor || new Date(p.fecha||0) > new Date(mejor.fecha||0))) mejor = p;
     });
     return mejor;
   }
+  // Qué se dice de un contacto en la lista: en línea, hace cuánto, apagado.
+  function _estadoContacto(u){
+    const P = window.URBIS_PRESENCIA;
+    if(!u) return { txt:'Sin ubicación compartida', dot:'off' };
+    const r = P ? P.leerFila(u) : null;
+    if(r && r.estado === 'off') return { txt:'Dejó de compartir', dot:'off' };
+    const ms = Date.now() - new Date(u.fecha||0).getTime();
+    const activo = ms < 5*60000, reciente = ms < 60*60000;
+    return { txt: activo ? 'En línea' : _haceCuanto(u.fecha), dot: activo ? 'on' : (reciente ? 'recent' : 'off') };
+  }
 
   window.urbisVerContactosEnMapa = function(relacion){
-    const contactos = urbisMisContactos(relacion);
     try{ if(window.UrbisMobileAppV58 && typeof window.UrbisMobileAppV58.show === 'function') window.UrbisMobileAppV58.show('map'); }catch(e){}
     setTimeout(()=>{
-      try{
-        if(!_urbisContactosLayer) _urbisContactosLayer = L.layerGroup().addTo(map); else _urbisContactosLayer.clearLayers();
-        const pts = [];
-        contactos.forEach(c => {
-          const u = urbisUbicacionDe(c); if(!u) return;
-          const la = parseFloat(u.lat), ln = parseFloat(u.lng); if(isNaN(la)||isNaN(ln)) return;
-          const activo = (Date.now() - new Date(u.fecha||0).getTime()) < 5*60000;
-          const color = activo ? '#16a34a' : '#9aa6b8';
-          const m = L.circleMarker([la, ln], { radius:12, color:'#fff', weight:3, fillColor:color, fillOpacity:.95 }).addTo(_urbisContactosLayer);
-          m.bindPopup(`<b>@${c}</b><br>${activo ? '🟢 En línea ahora' : '⚪ ' + _haceCuanto(u.fecha)}`);
-          pts.push([la, ln]);
-        });
-        if(pts.length) map.fitBounds(pts, { padding:[60,60], maxZoom:16 });
-        else alert('Ninguno de tus ' + (relacion==='familia'?'familiares':'amigos') + ' ha compartido su ubicación todavía.');
-      }catch(e){}
+      const P = window.URBIS_PRESENCIA;
+      if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
+      const lista = P.ver();
+      if(!lista.some(a => a.visible)){
+        const motivos = lista.slice(0, 4).map(a => '@' + a.usuario + ': ' + a.motivo).join('\n');
+        alert(lista.length
+          ? 'Ninguno de tus amigos está compartiendo su ubicación ahora.\n' + motivos
+          : 'Todavía no tienes amigos mutuos en URBIS.');
+      }
     }, 250);
   };
 
@@ -1716,11 +1708,8 @@
     }
     const filaContacto = (c) => {
       const u = urbisUbicacionDe(c);
-      const ms = u ? (Date.now() - new Date(u.fecha||0).getTime()) : Infinity;
-      const activo = ms < 5*60000;
-      const reciente = ms < 60*60000;
-      const estado = !u ? 'Sin ubicación' : (activo ? 'En línea' : _haceCuanto(u.fecha));
-      const dot = activo ? 'on' : (reciente ? 'recent' : 'off');
+      const est = _estadoContacto(u);
+      const estado = est.txt, dot = est.dot;
       return '<div class="amigo-row" data-amigo-usuario="' + c + '">' +
         '<button type="button" class="amigo-tap" onclick="window.urbisVerPerfilAmigo&&window.urbisVerPerfilAmigo(\'' + c + '\')">' +
           '<span class="amigo-av" style="background:none;overflow:hidden;">' + _avatarHtmlAmigo(c) + '<i class="amigo-dot ' + dot + '"></i></span>' +
@@ -2007,16 +1996,13 @@
     }
   };
   window.urbisVerContactoEnMapa = function(usuario){
-    const u = urbisUbicacionDe(usuario); if(!u){ alert('Ese contacto no ha compartido ubicación.'); return; }
     try{ if(window.UrbisMobileAppV58 && typeof window.UrbisMobileAppV58.show === 'function') window.UrbisMobileAppV58.show('map'); }catch(e){}
-    setTimeout(()=>{ try{
-      if(!_urbisContactosLayer) _urbisContactosLayer = L.layerGroup().addTo(map); else _urbisContactosLayer.clearLayers();
-      const la = parseFloat(u.lat), ln = parseFloat(u.lng);
-      const activo = (Date.now() - new Date(u.fecha||0).getTime()) < 5*60000;
-      L.circleMarker([la, ln], { radius:13, color:'#fff', weight:3, fillColor: activo?'#16a34a':'#9aa6b8', fillOpacity:.95 }).addTo(_urbisContactosLayer)
-        .bindPopup(`<b>@${usuario}</b><br>${activo ? '🟢 En línea' : '⚪ ' + _haceCuanto(u.fecha)}`).openPopup();
-      map.setView([la, ln], 16);
-    }catch(e){} }, 250);
+    setTimeout(()=>{
+      const P = window.URBIS_PRESENCIA;
+      if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
+      const r = P.verUno(usuario);
+      if(!r.ok) alert('@' + usuario + ': ' + (r.motivo || 'no está compartiendo su ubicación'));
+    }, 250);
   };
 
   // ── Pestaña "En línea": todos los contactos aceptados ordenados por estado ──
@@ -2037,12 +2023,11 @@
     const ahora = Date.now();
     const filaOnline = (c) => {
       const u = urbisUbicacionDe(c);
-      const ms = u ? (ahora - new Date(u.fecha||0).getTime()) : Infinity;
-      const activo = ms < 5*60000;
-      const reciente = ms < 60*60000;
+      const est = _estadoContacto(u);
+      const activo = est.dot === 'on', reciente = est.dot !== 'off';
       const inicial = (String(c)[0]||'?').toUpperCase();
-      const estado = !u ? 'Sin ubicación compartida' : (activo ? 'En línea ahora' : _haceCuanto(u.fecha));
-      const dot = activo ? 'on' : (reciente ? 'recent' : 'off');
+      const estado = activo ? 'En línea ahora' : est.txt;
+      const dot = est.dot;
       return { activo, reciente, html: `<div class="ct-row" onclick="window.urbisVerContactoEnMapa && window.urbisVerContactoEnMapa('${c}')">
         <span class="ct-av" style="background:${_colorAvatar(c)}">${inicial}<i class="ct-dot ${dot}"></i></span>
         <span class="ct-meta"><b>@${c}</b><small>${estado}</small></span>
@@ -2053,53 +2038,18 @@
     cont.innerHTML = filas.map(f => f.html).join('');
   };
 
-  // ── Radar: pinta contactos en el mapa y comparte mi ubicación silenciosamente ──
-  let _urbisRadarTimer = null;
+  // ── Lo que era el «radar» ────────────────────────────────────────────
+  // Arrancaba con cualquier pantalla de mapa, compartía el GPS en silencio
+  // cada 45 s y pintaba a TODOS los que alguna vez compartieron, con la
+  // fila que hubiera. Ahora solo retoma el interruptor si la persona lo
+  // dejó encendido y no venció (js/78). No pinta nada: la capa de amigos
+  // se enciende desde Amigos › Ver en mapa.
   window.urbisIniciarRadarContactos = function(){
-    _urbisActualizarRadar();
-    if(_urbisRadarTimer) return; // ya corriendo
-    _urbisRadarTimer = setInterval(_urbisActualizarRadar, 45000);
+    try{ if(window.URBIS_PRESENCIA) window.URBIS_PRESENCIA.reanudar(); }catch(e){}
   };
-  // Detiene el radar y limpia los marcadores de contactos (p. ej. en modo Runner,
-  // para no compartir/mostrar ubicaciones mientras corres).
   window.urbisDetenerRadarContactos = function(){
-    try{ if(_urbisRadarTimer){ clearInterval(_urbisRadarTimer); _urbisRadarTimer = null; } }catch(e){}
-    try{ if(_urbisContactosLayer) _urbisContactosLayer.clearLayers(); }catch(e){}
+    try{ if(window.URBIS_PRESENCIA) window.URBIS_PRESENCIA.quitar(); }catch(e){}
   };
-  function _urbisActualizarRadar(){
-    // Compartir mi posición en silencio (PATCH, sin crear duplicados).
-    try{ if(typeof window.urbisCompartirUbicacion === 'function') window.urbisCompartirUbicacion(true); }catch(e){}
-    // Pintar UN marcador por contacto (el más reciente).
-    try{
-      if(typeof map === 'undefined') return;
-      if(!_urbisContactosLayer) _urbisContactosLayer = L.layerGroup().addTo(map);
-      else _urbisContactosLayer.clearLayers();
-      const ahora = Date.now();
-      const mejores = {};
-      (window.urbisUbicaciones || []).forEach(u => {
-        const key = String(u.descripcion || '').trim().toLowerCase();
-        if(!key) return;
-        if(!mejores[key] || new Date(u.fecha||0) > new Date(mejores[key].fecha||0)) mejores[key] = u;
-      });
-      Object.values(mejores).forEach(u => {
-        const usuario = String(u.descripcion || '').trim();
-        const yo = window.urbisUsuarioActual ? window.urbisUsuarioActual() : '';
-        if(!usuario || usuario.toLowerCase() === yo.toLowerCase()) return;
-        const la = parseFloat(u.lat), ln = parseFloat(u.lng);
-        if(!la || !ln) return;
-        const activo = (ahora - new Date(u.fecha||0).getTime()) < 5*60000;
-        const color = activo ? '#16a34a' : '#9aa6b8';
-        const inicial = (usuario[0]||'?').toUpperCase();
-        const icon = L.divIcon({
-          className: '',
-          html: `<div class="urbis-contact-dot" style="background:${color}">${inicial}</div>`,
-          iconSize: [28, 28], iconAnchor: [14, 14]
-        });
-        L.marker([la, ln], { icon, zIndexOffset: 500 }).addTo(_urbisContactosLayer)
-          .bindPopup(`<b>@${usuario}</b><br>${activo ? '🟢 En línea' : '⚪ ' + _haceCuanto(u.fecha)}`);
-      });
-    }catch(e){}
-  }
 
   // ════════════════════════════════════════════════════════════════════════
   // URBIS ARCADE — Tabla de líderes GLOBAL en el backend Apps Script (hoja

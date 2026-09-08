@@ -1,0 +1,51 @@
+/* URBIS · presencia (css/78)
+   El marcador del amigo lleva su avatar y un anillo con la frescura: verde
+   si está en línea (menos de 5 min), ámbar si es de la última hora, gris si
+   es de hoy. El círculo de precisión va aparte, en la capa vectorial. */
+.urb-pres-marca{
+  width:38px; height:38px; border-radius:50%; overflow:hidden; background:#fff;
+  border:3px solid #9aa6b8; box-shadow:0 2px 8px rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:#334155;
+}
+.urb-pres-marca img{ width:100%; height:100%; object-fit:cover; display:block; }
+.urb-pres-marca.f-vivo{ border-color:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.25), 0 2px 8px rgba(0,0,0,.35); }
+.urb-pres-marca.f-reciente{ border-color:#f59e0b; }
+.urb-pres-marca.f-viejo{ border-color:#9aa6b8; filter:saturate(.6); }
+.urb-pres-pop{ display:grid; gap:2px; min-width:150px; font-size:.8rem; }
+.urb-pres-pop b{ font-size:.9rem; }
+.urb-pres-pop span.f-vivo{ color:#16a34a; font-weight:700; }
+.urb-pres-pop span.f-reciente{ color:#b45309; font-weight:700; }
+.urb-pres-pop small{ opacity:.75; }
+.urb-pres-pop a{ margin-top:4px; font-weight:700; color:#0e7490; }
+/* La ficha flotante sobre el mapa: quiénes están, y quiénes no y por qué. */
+.urb-pres-chip{
+  position:absolute; left:10px; top:calc(env(safe-area-inset-top, 0px) + 78px); z-index:1200;
+  max-width:min(300px, calc(100% - 20px)); background:rgba(255,255,255,.96); color:#0f172a;
+  border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,.25); padding:8px 10px; font-size:.74rem;
+}
+.urb-pres-chip[hidden]{ display:none; }
+.urb-pres-chip-cab{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.urb-pres-chip-cab b{ font-size:.78rem; }
+.urb-pres-chip-cab button{ border:none; background:#e2e8f0; width:24px; height:24px; border-radius:50%; cursor:pointer; font-weight:700; }
+.urb-pres-chip ul{ list-style:none; margin:6px 0 0; padding:0; display:grid; gap:3px; }
+.urb-pres-chip li button{
+  width:100%; text-align:left; border:none; background:#f1f5f9; border-radius:8px; padding:5px 8px; cursor:pointer;
+  display:flex; align-items:center; gap:6px; font-size:.74rem; color:inherit;
+}
+.urb-pres-chip li button i{ width:9px; height:9px; border-radius:50%; background:#9aa6b8; flex:0 0 auto; }
+.urb-pres-chip li button i.f-vivo{ background:#16a34a; } .urb-pres-chip li button i.f-reciente{ background:#f59e0b; }
+.urb-pres-chip li button small{ margin-left:auto; opacity:.65; }
+.urb-pres-chip p{ margin:6px 0 0; font-size:.68rem; opacity:.8; line-height:1.4; }
+.urb-pres-chip p.urb-pres-yo{ color:#b45309; opacity:1; }
+/* La tarjeta del interruptor en Amigos. */
+.urb-pres-tarjeta{ border:1px solid #cbd5e1; }
+.urb-pres-tarjeta.on{ border-color:#16a34a; background:#f0fdf4; }
+.urb-pres-tarjeta-cab{ display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
+.urb-pres-tarjeta-cab>span{ font-size:1.4rem; line-height:1; }
+.urb-pres-tarjeta-cab b{ display:block; font-size:.9rem; }
+.urb-pres-tarjeta-cab small{ display:block; font-size:.72rem; opacity:.75; line-height:1.4; margin-top:2px; }
+.urb-pres-duraciones{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.urb-pres-duraciones button{
+  padding:8px 4px; border-radius:9px; border:1px solid #94a3b8; background:#fff; font-weight:700; font-size:.74rem; cursor:pointer; color:#0f172a;
+}
+.urb-pres-duraciones button:last-child{ border-style:dashed; }

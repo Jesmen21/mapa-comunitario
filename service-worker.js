@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v811-antes-y-despues';
+const URBIS_CACHE = 'urbis-v812-donde-estan-mis-amigos';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -123,6 +123,8 @@ const URBIS_ASSETS = [
   './js/26-procity-exportar.js',
   './js/26-procity-diagnostico.js',
   './js/20-mobile-functional-app.js',
+  './js/78-presencia.js',
+  './css/78-presencia.css',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',
   './js/23-contextual-mobility-ui.js',
