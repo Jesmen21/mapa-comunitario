@@ -102,6 +102,75 @@
       return esAutorDelReporte(p);
   }
 
+  /* ------------------------------------------------------------------
+     El portero de la foto (v829)
+
+     Un reporte se publica en cuanto se envía —el texto, el sitio, la
+     categoría— pero su FOTOGRAFÍA no. La foto es lo que puede arruinar a
+     alguien: sale una cara, una placa, la puerta de una casa, y una vez
+     está en el mapa ya la vio todo el barrio. Así que espera a que un
+     moderador la mire, y de paso a que compruebe que quien la subió se
+     registró con una cédula real.
+
+     Quién la ve mientras espera:
+       · el moderador (admin/JAC), porque su trabajo es justamente mirarla;
+       · su propio autor, para que sepa que la foto sí subió y no la
+         vuelva a mandar tres veces creyendo que se perdió;
+       · nadie más — a los demás se les dice que está en revisión, que es
+         distinto de que no haya foto.
+
+     Lo que esto NO es: la dirección de la foto sigue estando en la fila,
+     y la hoja se lee en abierto. Esto es un portero de PUBLICACIÓN —lo
+     que URBIS enseña— no un secreto. Esconderla de verdad exige subirla
+     a otro sitio y eso es otra tanda; decirlo acá para que nadie confíe
+     en lo que esto no hace. */
+  /* `urlConocida` es para quien YA sabe dónde está su foto. La fila de un
+     reporte la guarda en `BASE_OFFSET`, pero la de un evento comunitario la
+     guarda en `d[5]` o `d[6]` según su formato (js/09). Sin este parámetro,
+     preguntar por un evento devolvía «no hay foto» y quien llamara se la
+     escondía entera: no es que estuviera en revisión, es que el portero
+     estaba mirando la casilla equivocada. El estado de aprobación sí es el
+     mismo para toda fila, y es lo único que el portero decide. */
+  function urbisFotoDeReporte(p, urlConocida) {
+      const vacia = { hay:false, url:'', publicada:false, puedeVerla:false, enRevision:false, esModerador:false };
+      try {
+          if(!p || !p.descripcion) return vacia;
+          const d = String(p.descripcion).split(' | ');
+          const url = String((urlConocida !== undefined && urlConocida !== null ? urlConocida : d[BASE_OFFSET]) || '').trim();
+          const hay = !!url && url !== 'N/A';
+          if(!hay) return vacia;
+          // Sin estado escrito, el reporte es de los de antes del portero:
+          // se trata como aprobado. Volver invisibles hacia atrás miles de
+          // fotos que llevan meses publicadas no es moderar, es romper.
+          const estado = String(d[BASE_OFFSET + 1] || 'Aprobado').trim();
+          const publicada = estado !== 'Pendiente';
+          const esModerador = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
+              || urbisIdentidadActual().rol === 'gov';
+          // `esAutorDelReporte` le dice que sí al admin, así que el "o" de
+          // abajo no distingue autor de moderador; no hace falta que lo
+          // distinga: los dos pueden verla.
+          const suya = (typeof esAutorDelReporte === 'function') && esAutorDelReporte(p);
+          const puedeVerla = publicada || esModerador || suya;
+          return { hay:true, url, publicada, puedeVerla, enRevision: !publicada, esModerador };
+      } catch(e){ return vacia; }
+  }
+
+  /* El hueco que queda cuando la foto no se enseña. Tiene que decir que
+     HAY foto y que está en revisión: un espacio en blanco se lee como
+     "este reporte no trajo pruebas", que es lo contrario de lo que pasa. */
+  function urbisAvisoFotoEnRevision(info) {
+      if(!info || !info.enRevision) return '';
+      const suyaOModerador = info.puedeVerla;
+      return `<div class="foto-en-revision${suyaOModerador ? ' foto-en-revision-previa' : ''}">
+          <span class="fer-icono">🔍</span>
+          <span class="fer-texto">${suyaOModerador
+            ? 'Foto en revisión: solo la ves tú y el moderador. Se publica cuando un administrador la apruebe.'
+            : 'Este reporte trae una foto que aún está en revisión. Se publica cuando un administrador la apruebe.'}</span>
+        </div>`;
+  }
+  window.urbisFotoDeReporte = urbisFotoDeReporte;
+  window.urbisAvisoFotoEnRevision = urbisAvisoFotoEnRevision;
+
   function etiquetaPropietarioReporte(p) {
       return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">TU REPORTE</span>' : '';
   }

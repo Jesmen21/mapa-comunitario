@@ -355,9 +355,22 @@
           const lat = String(p.lat);
           // La foto va completa (object-fit:contain en el CSS): una foto de
           // evento suele ser vertical y recortarla escondía justo el cartel.
-          const fotoHTML = ev.foto
-            ? `<img class="ev-movil-foto" src="${escaparHTML(ev.foto)}" alt="Foto de ${escaparHTML(ev.titulo)}" loading="lazy" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">`
-            : '';
+          // El mismo portero del mapa (js/05): un evento cuya fila está
+          // Pendiente enseña su tarjeta pero no su foto hasta que un
+          // moderador la apruebe. Aquí se lee del reporte `p`, no de `ev`,
+          // porque el estado vive en la fila y no en las notas.
+          let fotoHTML = '';
+          try {
+            // La foto del evento se le PASA al portero: en la fila de un
+            // evento no vive donde vive la de un reporte, y el portero solo
+            // tiene que decidir si ya se puede publicar.
+            const _fe = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p, ev.foto) : null;
+            if(!_fe) fotoHTML = ev.foto ? `<img class="ev-movil-foto" src="${escaparHTML(ev.foto)}" alt="Foto de ${escaparHTML(ev.titulo)}" loading="lazy" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">` : '';
+            else {
+              if(ev.foto && _fe.puedeVerla) fotoHTML = `<img class="ev-movil-foto" src="${escaparHTML(ev.foto)}" alt="Foto de ${escaparHTML(ev.titulo)}" loading="lazy" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">`;
+              if(ev.foto && _fe.enRevision && typeof window.urbisAvisoFotoEnRevision === 'function') fotoHTML += window.urbisAvisoFotoEnRevision(_fe);
+            }
+          } catch(e){}
           const descHTML = ev.detalle
             ? `<p class="ev-movil-desc">${escaparHTML(ev.detalle)}</p>` : '';
           const restante = _restanteTexto(ev.expira);

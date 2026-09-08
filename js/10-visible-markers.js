@@ -326,9 +326,9 @@
       `</div>`;
       marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'urbis-coliseo-root', html, iconSize:[68,78], iconAnchor:[34,74], popupAnchor:[0,-70] }), zIndexOffset: 2000 });
     } else if (iconoWaze) {
-      marker = L.marker([lat, lng], { icon: marcarConflicto(marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d), p, d) });
+      marker = L.marker([lat, lng], { icon: marcarPorAprobar(marcarConflicto(marcarLuto(crearIconoWaze(iconoWaze, dimKey, d[0]), p, d), p, d), p, d) });
     } else {
-      marker = L.marker([lat, lng], { icon: marcarConflicto(marcarLuto(crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]), p, d), p, d) });
+      marker = L.marker([lat, lng], { icon: marcarPorAprobar(marcarConflicto(marcarLuto(crearIconoCategoriaGenerica(config.shape, markerColor, opacity, emojiReporte, dimKey, d[0]), p, d), p, d), p, d) });
     }
     // Un reporte con fallecidos tiene que verse ANTES de abrirlo: el marcador
     // late en rojo. Si hay que tocarlo para enterarse, en un mapa con veinte
@@ -355,7 +355,22 @@
     let tagValidacion = estadoValidacion === "Pendiente" ? "⚠️ Por validar" : (mostrarEstadoPopup ? `Estado: ${limpiarHTML(d[3] || 'N/A')}` : '');
     if(metaTemporalPopup.temporal) tagValidacion += metaTemporalPopup.archivado ? ' · Archivado' : ` · Expira ${formatearFechaHora(metaTemporalPopup.expira)}`;
     let likeBadge = likes > 0 ? `<span class="badge-like">👍 ${likes}</span>` : '';
-    let fotoMiniPopup = (fotoURLPopup && fotoURLPopup !== 'N/A' && fotoURLPopup.trim()) ? `<img class="popup-foto-big" src="${limpiarHTML(fotoURLPopup)}" alt="Evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">` : '';
+    /* La foto pasa por el portero (js/05): si el reporte está Pendiente, el
+       texto se publica y la foto no —salvo para el moderador y para quien la
+       subió—. Lo que se enseña en su lugar dice que hay foto y que está en
+       revisión, que no es lo mismo que no haber traído ninguna. */
+    let fotoMiniPopup = '';
+    try {
+      const _fp = (typeof window.urbisFotoDeReporte === 'function')
+        ? window.urbisFotoDeReporte(p)
+        : { hay: !!(fotoURLPopup && fotoURLPopup !== 'N/A' && fotoURLPopup.trim()), url: String(fotoURLPopup || '').trim(), puedeVerla: true, enRevision: false };
+      if(_fp.hay && _fp.puedeVerla) {
+        fotoMiniPopup = `<img class="popup-foto-big${_fp.enRevision ? ' popup-foto-en-revision' : ''}" src="${limpiarHTML(_fp.url)}" alt="Evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">`;
+      }
+      if(_fp.hay && _fp.enRevision && typeof window.urbisAvisoFotoEnRevision === 'function') {
+        fotoMiniPopup += window.urbisAvisoFotoEnRevision(_fp);
+      }
+    } catch(e){}
     /* La nota del reporte la escribe una persona y va DENTRO del HTML del
        globo: sin escaparla, un reporte con `<img src=x onerror=…>` en las
        notas ejecuta código en el navegador de todo el que lo abra, y el
@@ -374,6 +389,36 @@
           <button class="po-move" onclick="window.urbisIniciarMoverReporte && window.urbisIniciarMoverReporte('${_escJsAttr(p.lat)}','${_escJsAttr(p.lng)}')">📍 Mover</button>
           <button class="po-del" onclick="window.eliminarPunto && window.eliminarPunto('${_escJsAttr(p.lat)}')">🗑️ Eliminar</button>
         </div>`;
+      }
+    } catch(e){}
+
+    /* Aprobar sin salir del mapa (v829).
+
+       Antes, la única forma de aprobar un reporte era abrir el panel de
+       configuración y su lista, o entrar al detalle. Las dos esconden lo
+       único que el moderador necesita para decidir: DÓNDE está el reporte.
+       Un hueco "en la 45 con 30" solo se juzga viéndolo en su cuadra.
+       Ahora se aprueba desde el globo, con el mapa detrás.
+
+       Se construye solo si quien mira es admin/JAC (esta reja), y el CSS
+       lo esconde si el rol del `body` cambia después (la otra reja: los
+       globos ya dibujados no se rehacen al cambiar de sesión).
+
+       La nota de al lado no es adorno: lo que se aprueba es la foto de una
+       persona, y con ella que su cédula se comprobó. Un botón verde solo,
+       sin decir qué afirma, se aprieta sin mirar. */
+    let popupAdminBtns = '';
+    try {
+      const _esMod = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
+        || (typeof urbisIdentidadActual === 'function' && urbisIdentidadActual().rol === 'gov');
+      if(_esMod && estadoValidacion === 'Pendiente') {
+        const _tieneFoto = !!(fotoURLPopup && fotoURLPopup !== 'N/A' && String(fotoURLPopup).trim());
+        popupAdminBtns = `<div class="popup-admin-actions">
+          <button class="pa-aprobar" onclick="window.aprobarPunto && window.aprobarPunto('${_escJsAttr(p.lat)}', this)">✅ Aprobar reporte</button>
+        </div>
+        <div class="popup-admin-nota">${_tieneFoto
+          ? 'Al aprobar se publica también la foto. Antes de aprobar, comprueba en la cuenta del autor que su cédula es real; si no lo es, no apruebes y pídele que la corrija.'
+          : 'Este reporte no trae foto. Aprobar solo lo saca de «por validar».'}</div>`;
       }
     } catch(e){}
 
@@ -466,6 +511,7 @@
           ${popupComentarBtn}
           ${popupDenunciarBtn}
           ${archivarAureaBtn}
+          ${popupAdminBtns}
           ${popupOwnerBtns}
         </div>
       `, { maxWidth: 300, minWidth: 250, className: 'urbis-popup urbis-coliseo-popup' });
@@ -487,6 +533,7 @@
         <div class="popup-author">👤 <b>${limpiarHTML(creadorNombre)}</b></div>
         ${popupComentarBtn}
         ${popupDenunciarBtn}
+        ${popupAdminBtns}
         ${popupOwnerBtns}
     `, { maxWidth: 280, minWidth: 230, className: 'urbis-popup' });
     }
@@ -517,6 +564,39 @@
       const o = icono && icono.options;
       if(!o) return icono;
       o.className = (o.className || '') + ' urbis-luto';
+    } catch(e){}
+    return icono;
+  }
+
+  /* El distintivo de «falta por aprobar» (v829).
+
+     El marcador de un reporte pendiente ya sale ámbar, pero ámbar es un
+     color: al lado de las categorías que son ámbar de nacimiento no dice
+     nada. El moderador necesita ver SU COLA DE TRABAJO desde el mapa, sin
+     abrir globo por globo a ver cuál está pendiente.
+
+     La clase se pone siempre que el reporte esté Pendiente; quién la ve lo
+     decide el CSS con `body[data-role]`. Es a propósito: el rol cambia sin
+     recargar el mapa, y si esto decidiera aquí quién lo ve, un moderador
+     que acaba de entrar tendría que redibujar los marcadores para ver su
+     cola. Además, la cola de trabajo de otro solo estorba al ciudadano —a
+     él ya se lo dice la etiqueta «Por validar» dentro del globo. */
+  function marcarPorAprobar(icono, p, d) {
+    try {
+      const estado = String((d && d[BASE_OFFSET + 1]) || 'Aprobado').trim();
+      if(estado !== 'Pendiente') return icono;
+      const o = icono && icono.options;
+      if(!o) return icono;
+      o.className = (o.className || '') + ' urbis-por-aprobar';
+      /* El sello es un elemento de verdad, no un `::after` del icono.
+         `urbis-luto` ya se quedó con el `::before` y el `::after` del mismo
+         elemento (su halo y su onda), y un reporte pendiente CON fallecidos
+         existe: si los dos pelearan por el mismo pseudo-elemento, ganaría
+         uno y el otro desaparecería sin avisar. Un hijo más no le quita el
+         sitio a nadie. */
+      if(typeof o.html === 'string' && o.html.indexOf('urbis-sello-aprobar') === -1) {
+        o.html = '<span class="urbis-sello-aprobar" aria-hidden="true">⏳</span>' + o.html;
+      }
     } catch(e){}
     return icono;
   }
@@ -567,12 +647,24 @@
 
     document.getElementById('dashboard-section').style.display = 'none'; 
     
-    let fotoHTML = (fotoURL && fotoURL !== "N/A" && fotoURL.trim() !== "")
-      ? `<figure class="foto-evidencia" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.querySelector('img').src)">
-           <img src="${limpiarHTML(fotoURL)}" class="foto-preview-big" alt="Evidencia">
-           <figcaption>📷 Toca para ampliar</figcaption>
-         </figure>`
-      : '';
+    // Mismo portero que en el globo (js/05): un reporte Pendiente publica su
+    // texto pero no su foto. El moderador la ve —tiene que verla para poder
+    // aprobarla— con el sello de que todavía no está publicada.
+    let fotoHTML = '';
+    try {
+      const _fd = (typeof window.urbisFotoDeReporte === 'function')
+        ? window.urbisFotoDeReporte(p)
+        : { hay: !!(fotoURL && fotoURL !== "N/A" && fotoURL.trim() !== ""), url: String(fotoURL || '').trim(), puedeVerla: true, enRevision: false };
+      if(_fd.hay && _fd.puedeVerla) {
+        fotoHTML = `<figure class="foto-evidencia${_fd.enRevision ? ' foto-evidencia-en-revision' : ''}" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.querySelector('img').src)">
+           <img src="${limpiarHTML(_fd.url)}" class="foto-preview-big" alt="Evidencia">
+           <figcaption>${_fd.enRevision ? '🔍 Sin publicar todavía · toca para ampliar' : '📷 Toca para ampliar'}</figcaption>
+         </figure>`;
+      }
+      if(_fd.hay && _fd.enRevision && typeof window.urbisAvisoFotoEnRevision === 'function') {
+        fotoHTML += window.urbisAvisoFotoEnRevision(_fd);
+      }
+    } catch(e){}
 
     let usosActivosHTML = '';
     for(let j=0; j<todosLosUsos.length; j++) {
@@ -648,7 +740,16 @@
         </div>`;
         
         if(estadoValidacion === "Pendiente") {
-            botonesHTML = `<button class="btn-approve" onclick="aprobarPunto('${_escJsAttr(p.lat)}', this)">✅ APROBAR REPORTE</button>` + botonesHTML;
+            // La misma advertencia que en el globo: lo que se aprueba no es
+            // "un punto", es la foto de una persona y, con ella, que su
+            // cédula se comprobó. Un botón verde a secas se aprieta sin
+            // mirar, y de ahí sale publicar la foto de alguien que se
+            // registró con una cédula inventada.
+            const _hayFoto = !!(fotoURL && fotoURL !== 'N/A' && String(fotoURL).trim());
+            botonesHTML = `<button class="btn-approve" onclick="aprobarPunto('${_escJsAttr(p.lat)}', this)">✅ APROBAR REPORTE</button>
+            <div class="popup-admin-nota nota-aprobar-detalle">${_hayFoto
+              ? 'Al aprobar se publica también la foto. Antes, comprueba en la cuenta del autor que su cédula es real; si no lo es, no apruebes y pídele que la corrija.'
+              : 'Este reporte no trae foto. Aprobar solo lo saca de «por validar».'}</div>` + botonesHTML;
         }
         // Moderación: el moderador ve el contenido denunciado (por eso
         // visibleParaRol no se lo esconde) y decide aquí mismo. Devolverlo al

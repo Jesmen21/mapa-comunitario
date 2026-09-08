@@ -1,0 +1,114 @@
+/* URBIS · moderación de la foto y cola de aprobación (v829)
+   Tres cosas viven acá:
+     1. el hueco que deja una foto que todavía no se publica;
+     2. el sello sobre la foto que sí ve el moderador (para que no la
+        confunda con una ya publicada);
+     3. el distintivo «falta por aprobar» encima del marcador y el botón
+        de aprobar dentro del globo — los dos SOLO para admin/JAC.
+
+   La reja de rol se escribe en el CSS con `body[data-role]` además de en
+   el JS. El JS decide el rol al dibujar el marcador; si alguien cambia de
+   sesión sin recargar, los globos ya construidos se quedarían con el
+   botón puesto. Con la reja del CSS, ese botón desaparece en cuanto
+   `aplicarPermisosRolActual` cambia el atributo del body, sin redibujar
+   nada. Son dos rejas para lo mismo a propósito: ninguna sola cubre los
+   dos momentos. */
+
+.foto-en-revision{
+  display:flex; align-items:flex-start; gap:8px;
+  margin:10px 0 4px; padding:9px 11px;
+  border-radius:0 10px 10px 0;
+  border-left:3px solid #ff9f43;
+  background:rgba(255,159,67,.12);
+  font-size:.7rem; line-height:1.45;
+}
+.foto-en-revision .fer-icono{ font-size:.95rem; line-height:1.2; flex:0 0 auto; }
+.foto-en-revision .fer-texto{ flex:1 1 auto; }
+/* Cuando quien mira SÍ ve la foto (su autor o el moderador), el aviso es
+   una nota al pie de la foto, no una alarma: no está tapando nada. */
+.foto-en-revision-previa{
+  border-left-color:#22d3ee;
+  background:rgba(34,211,238,.10);
+}
+
+/* La foto que ve el moderador antes de aprobarla va rayada y en ámbar:
+   tiene que ser IMPOSIBLE confundir "la estoy revisando" con "ya está
+   publicada", porque de esa confusión sale aprobar sin mirar. */
+.popup-foto-en-revision,
+.foto-evidencia-en-revision img{
+  border:2px dashed #ff9f43 !important;
+  box-shadow:0 0 0 3px rgba(255,159,67,.14) !important;
+}
+.foto-evidencia-en-revision figcaption{
+  background:rgba(255,159,67,.92) !important;
+  color:#2b1600 !important;
+  font-weight:700;
+}
+
+/* ---- El botón de aprobar dentro del globo ---- */
+.popup-admin-actions{ display:none; }
+body[data-role="admin"] .popup-admin-actions,
+body[data-role="gov"] .popup-admin-actions{
+  display:flex; gap:6px; margin-top:8px;
+}
+.popup-admin-actions button{
+  flex:1 1 auto; padding:9px 10px; border:none; border-radius:9px;
+  cursor:pointer; font-size:.72rem; font-weight:800; letter-spacing:.2px;
+}
+.popup-admin-actions .pa-aprobar{ background:#16c47f; color:#04231a; }
+.popup-admin-actions .pa-aprobar:disabled{ opacity:.6; cursor:default; }
+.popup-admin-actions .pa-ver{ background:rgba(255,255,255,.14); color:#e8f7ff; }
+/* La nota de qué se está aprobando. El moderador no aprueba "un punto":
+   aprueba la foto de alguien y, con ella, que esa persona se registró con
+   una cédula que él comprobó. Decirlo al lado del botón es lo único que
+   convierte el clic en una decisión y no en un trámite. */
+.popup-admin-nota{
+  display:none;
+  margin-top:6px; padding:7px 9px; border-radius:8px;
+  background:rgba(255,159,67,.12); border-left:3px solid #ff9f43;
+  font-size:.63rem; line-height:1.4; opacity:.95;
+}
+body[data-role="admin"] .popup-admin-nota,
+body[data-role="gov"] .popup-admin-nota{ display:block; }
+
+/* ---- El distintivo encima del marcador ---- */
+/* Solo para el moderador: para el resto, un reporte por aprobar ya se
+   distingue por el color ámbar del marcador y por su etiqueta dentro del
+   globo. Encima del icono es una COLA DE TRABAJO, y una cola de trabajo
+   ajena solo estorba.
+
+   Nada de `position:relative` en el icono: Leaflet lo posiciona en
+   `absolute` y sobrescribirlo lo despega de su coordenada. Ya es el bloque
+   contenedor del sello, que va dentro. Sí hace falta `overflow:visible`,
+   como en `urbis-luto`, para que el sello pueda salirse del recuadro. */
+.leaflet-marker-icon.urbis-por-aprobar{ overflow:visible; }
+.urbis-sello-aprobar{
+  position:absolute; top:-7px; right:-7px;
+  width:19px; height:19px; border-radius:50%;
+  display:none; align-items:center; justify-content:center;
+  font-size:10px; line-height:1;
+  background:#ff9f43; color:#2b1600;
+  border:2px solid #10222c;
+  box-shadow:0 2px 6px rgba(0,0,0,.45);
+  z-index:6; pointer-events:none;
+}
+body[data-role="admin"] .urbis-sello-aprobar,
+body[data-role="gov"] .urbis-sello-aprobar{
+  display:flex;
+  animation:urbisPorAprobarLatido 2.2s ease-in-out infinite;
+}
+@keyframes urbisPorAprobarLatido{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.18); }
+}
+/* Quien pidió no moverse: el latido es un aviso, no una condición para
+   ver la cola. Se apaga el movimiento y el sello se queda. */
+@media (prefers-reduced-motion: reduce){
+  body[data-role="admin"] .urbis-sello-aprobar,
+  body[data-role="gov"] .urbis-sello-aprobar{ animation:none; }
+}
+
+/* En el detalle la advertencia no depende del rol del `body`: ese bloque solo
+   lo construye la rama de administrador de `mostrarDetalles`, y esconderlo
+   por CSS lo dejaría invisible justo para quien tiene que leerlo. */
+.popup-admin-nota.nota-aprobar-detalle{ display:block; margin:6px 0 10px; }

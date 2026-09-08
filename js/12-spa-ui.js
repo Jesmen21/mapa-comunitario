@@ -290,18 +290,27 @@
       });
   };
 
+  /* Aprobar tiene ahora DOS puertas —el detalle y el globo del mapa— y el
+     botón no se llama igual en las dos. Antes, al fallar, esto le escribía
+     al botón "✅ APROBAR REPORTE" viniera de donde viniera: desde el globo
+     dejaba un botón ancho con el texto del otro sitio. Se guarda la
+     etiqueta que traía y se devuelve esa. Y `btn` puede no venir (una
+     aprobación en lote no tiene botón), así que nada de tocarlo a ciegas. */
   window.aprobarPunto = function(lat, btn) {
       const punto = buscarPuntoPorLat(lat);
       if(!punto) { alert("No se encontró el reporte para aprobar."); return; }
       let d = punto.descripcion.split(' | ');
       d[BASE_OFFSET + 1] = "Aprobado"; 
       let descripcionFinal = d.join(' | ');
-      
-      btn.innerText = "⏳ APROBANDO...";
-      btn.style.opacity = '0.6';
-      btn.disabled = true;
-      
-      window.urbisDBUpdate('lat', lat, { descripcion: descripcionFinal })
+
+      const etiquetaOriginal = btn ? btn.innerHTML : '';
+      if(btn) {
+        btn.innerHTML = "⏳ APROBANDO...";
+        btn.style.opacity = '0.6';
+        btn.disabled = true;
+      }
+
+      return window.urbisDBUpdate('lat', lat, { descripcion: descripcionFinal })
       .then(() => {
           playSuccessSound();
           if(typeof urbisOnReportApproved === 'function') urbisOnReportApproved(punto);
@@ -309,9 +318,11 @@
           cargarPuntos();
       })
       .catch(error => {
-          btn.disabled = false;
-          btn.innerText = "✅ APROBAR REPORTE";
-          btn.style.opacity = '1';
+          if(btn) {
+            btn.disabled = false;
+            btn.innerHTML = etiquetaOriginal;
+            btn.style.opacity = '1';
+          }
           manejarError("aprobar reporte", error);
       });
   };

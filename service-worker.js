@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v828-los-trece-botones-de-volver-en-blanco';
+const URBIS_CACHE = 'urbis-v829-la-foto-espera-aprobacion';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -130,6 +130,7 @@ const URBIS_ASSETS = [
   './css/81-curso-servidor.css',
   './js/82-calendario.js',
   './css/82-calendario.css',
+  './css/83-moderacion-foto.css',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',
   './js/23-contextual-mobility-ui.js',
