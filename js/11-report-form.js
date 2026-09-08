@@ -42,6 +42,13 @@
         const epActual = fichaEdif.epoca || 'Sin registrar';
         const optsEp = (EDIF.EPOCA || []).map(v =>
             `<option value="${v}" ${v === epActual ? 'selected' : ''}>${v}</option>`).join('');
+        /* El horario del letrero. Se pregunta acá y no en la sub-clasificación
+           porque es lo último que se anota parado frente a la puerta, después
+           de mirar el edificio entero. */
+        const hor = EDIF.leerHorarioGuardado ? EDIF.leerHorarioGuardado(fichaEdif.horario) : { dias: 'Sin registrar', abre: '', cierra: '' };
+        const optsDias = (EDIF.DIAS_HORARIO || []).map(v =>
+            `<option value="${v}" ${v === hor.dias ? 'selected' : ''}>${v}</option>`).join('');
+        const pideHoras = !!(hor.dias && hor.dias !== 'Sin registrar' && hor.dias !== 'No se sabe' && hor.dias !== 'Abierto 24 horas');
         htmlEdificio = `
         <div class="form-section-edificio">
           <label style="font-size:0.7rem; color:var(--cyan); display:block;">1 · ¿DE QUÉ ESTÁ HECHO? (MATERIALIDAD)</label>
@@ -58,6 +65,14 @@
           <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:12px;">4 · ¿DE QUÉ ÉPOCA ES?</label>
           <select id="sel-epoca">${optsEp}</select>
           <div class="edificio-hint">Los cortes son los de la norma sismo resistente: el primer código colombiano es de 1984, después de Popayán. Junto con el material, dice qué construcciones merecen que alguien vaya a mirarlas en serio.</div>
+          <label style="font-size:0.7rem; color:var(--cyan); display:block; margin-top:12px;">5 · ¿A QUÉ HORAS ABRE? (LO QUE DICE EL LETRERO)</label>
+          <select id="sel-horario-dias">${optsDias}</select>
+          <div id="ins-horario-horas" class="edif-horas"${pideHoras ? '' : ' hidden'}>
+            <label>Abre <input type="time" id="ins-horario-abre" value="${hor.abre}"></label>
+            <label>Cierra <input type="time" id="ins-horario-cierra" value="${hor.cierra}"></label>
+          </div>
+          ${hor.crudo ? `<div class="edificio-hint">Este punto ya trae un horario que no compuso este formulario: <b>${String(hor.crudo).replace(/[<>&"]/g, '')}</b>. Se conserva tal cual mientras no elijas otra cosa acá.</div>` : ''}
+          <div class="edificio-hint">Lo que dice el letrero, no lo que uno supone por el tipo de negocio. El análisis estima las horas fuertes por el uso; esto es el dato de verdad, y cuando los dos no coinciden esa diferencia es el hallazgo. Si cierra después de medianoche, poné la hora de cierre igual: 18:00 a 02:00 se entiende.</div>
           <input type="text" id="ins-otro-edificio" value="${(fichaEdif.otroTexto || '').replace(/"/g, '&quot;')}" placeholder="Si marcaste «Otro», descríbelo aquí">
           <div class="edificio-hint">Ninguna de estas preguntas es obligatoria. Si el dato no se puede determinar desde la calle marca <b>No se sabe</b>, y si existe pero no está en la lista marca <b>Otro</b> y descríbelo: así entra en la próxima versión de la lista. Elegir «lo más parecido» para salir del paso mete un dato falso que después nadie distingue de uno bueno.</div>
         </div>`;
@@ -156,6 +171,9 @@
     // El edificio piso por piso: al cambiar el número de pisos se rearma la
     // lista de plantas conservando lo ya elegido.
     try {
+        if (esEdificio && EDIF && typeof EDIF.activarHorario === 'function') {
+            try { EDIF.activarHorario(_contenedorForm); } catch (e) {}
+        }
         if (esEdificio && EDIF && typeof EDIF.activarUsosPorPiso === 'function') {
             EDIF.activarUsosPorPiso(_contenedorForm, function (p) { return EDIF.usoPisoDeCategoria(dim); });
         }

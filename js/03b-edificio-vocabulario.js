@@ -432,6 +432,22 @@
     }
     return out;
   }
+  /* Las dos horas solo se piden cuando hacen falta. «Abierto 24 horas» y
+     «No se sabe» son respuestas completas por sí solas; dejar dos casillas
+     de hora encendidas al lado invita a llenarlas y a contradecir lo que se
+     acaba de elegir. */
+  function activarHorario(raiz){
+    const R = raiz || document;
+    const sel = R.querySelector('#sel-horario-dias'), horas = R.querySelector('#ins-horario-horas');
+    if (!sel || !horas) return;
+    const refrescar = function () {
+      const v = String(sel.value || '');
+      horas.hidden = (v === 'Sin registrar' || v === 'No se sabe' || v === 'Abierto 24 horas');
+    };
+    sel.addEventListener('change', refrescar);
+    refrescar();
+  }
+
   function activarUsosPorPiso(raiz, defectoDe){
     const R = raiz || document;
     const insPisos = R.querySelector('#ins-pisos'), cont = R.querySelector('#ins-pisos-usos');
@@ -487,6 +503,85 @@
     decir();
   }
 
+  /* ── El horario del letrero ────────────────────────────────────────────
+     El análisis ya leía `opening_hours` de OpenStreetMap y le decía al curso
+     «anotá el horario del letrero», pero no había dónde escribirlo: la hoja
+     de campo pedía un dato que la aplicación no sabía recibir.
+
+     Se guarda EN EL FORMATO DE OpenStreetMap («Mo-Sa 08:00-20:00», «24/7»),
+     no en uno propio. Dos razones, y las dos importan más que la comodidad
+     de inventarse un formato:
+
+     · el motor ya tiene un lector para esas cadenas, probado cadena por
+       cadena en `thorarios`, así que lo anotado en la calle se cuenta con la
+       MISMA vara que lo que ya estaba en el mapa, sin código nuevo y sin
+       volver a desplegar el servidor;
+     · y si algún día el curso quiere devolverle a OpenStreetMap lo que
+       levantó, el dato ya está en el idioma en que se sube.
+
+     El estudiante no ve nada de eso: elige los días de una lista y pone dos
+     horas. La traducción vive acá. */
+  const DIAS_HORARIO = [
+    'Sin registrar',
+    'Todos los días',
+    'Lunes a sábado',
+    'Lunes a viernes',
+    'Solo fines de semana',
+    'Abierto 24 horas',
+    'No se sabe'
+  ];
+  const DIAS_A_OSM = {
+    'Todos los días': 'Mo-Su',
+    'Lunes a sábado': 'Mo-Sa',
+    'Lunes a viernes': 'Mo-Fr',
+    'Solo fines de semana': 'Sa-Su'
+  };
+  const OSM_A_DIAS = {};
+  Object.keys(DIAS_A_OSM).forEach(function (k) { OSM_A_DIAS[DIAS_A_OSM[k]] = k; });
+  const HORA_OK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+  /* Los días y las dos horas, convertidos a la cadena de OpenStreetMap. Si
+     falta una hora no se escribe nada: media respuesta daría un horario
+     falso con la misma pinta de exacto que uno bueno, que es justo lo que el
+     lector del motor se niega a hacer con las cadenas que no entiende. */
+  function codificarHorario(dias, abre, cierra) {
+    const d = String(dias || '').trim();
+    if (d === 'Abierto 24 horas') return '24/7';
+    const cod = DIAS_A_OSM[d];
+    if (!cod) return '';
+    const a = String(abre || '').trim(), c = String(cierra || '').trim();
+    if (!HORA_OK.test(a) || !HORA_OK.test(c)) return '';
+    // Cerrar a la misma hora que se abre no es un horario, es un error de
+    // dedo. Cerrar ANTES sí vale: es el bar que cierra a las 2 de la mañana.
+    if (a === c) return '';
+    return cod + ' ' + a + '-' + c;
+  }
+
+  /* La vuelta, para que el formulario reabra con lo que ya se anotó. Una
+     cadena que no compusimos nosotros —traída de OpenStreetMap o escrita a
+     mano— vuelve como `crudo`: se muestra tal cual y no se pisa. */
+  function leerHorarioGuardado(texto) {
+    const t = String(texto || '').trim();
+    if (!t) return { dias: 'Sin registrar', abre: '', cierra: '', crudo: '' };
+    if (t === '24/7') return { dias: 'Abierto 24 horas', abre: '', cierra: '', crudo: '' };
+    if (t === 'No se sabe') return { dias: 'No se sabe', abre: '', cierra: '', crudo: '' };
+    const m = t.match(/^(Mo-Su|Mo-Sa|Mo-Fr|Sa-Su)\s+(\d\d:\d\d)-(\d\d:\d\d)$/);
+    if (m) return { dias: OSM_A_DIAS[m[1]] || 'Sin registrar', abre: m[2], cierra: m[3], crudo: '' };
+    return { dias: 'Sin registrar', abre: '', cierra: '', crudo: t };
+  }
+
+  /* Cómo se lee en pantalla, en castellano. El dato guardado es la cadena de
+     OpenStreetMap; nadie tiene por qué leer «Mo-Sa» en la ficha de su punto. */
+  function horarioEnPalabras(texto) {
+    const h = leerHorarioGuardado(texto);
+    if (h.crudo) return h.crudo;
+    if (h.dias === 'Abierto 24 horas') return 'Abierto 24 horas';
+    if (!h.abre || !h.cierra) return '';
+    const cruzaMedianoche = h.cierra < h.abre;
+    return h.dias.toLowerCase().replace(/^./, function (c) { return c.toUpperCase(); }) +
+      ', de ' + h.abre + ' a ' + h.cierra + (cruzaMedianoche ? ' del día siguiente' : '');
+  }
+
   // Se expone lo que no depende del registro. js/04 añade después `leer`,
   // `usosMarcados` y `esCategoriaEdificio` sobre este mismo objeto.
   window.URBIS_EDIFICIO = Object.assign(window.URBIS_EDIFICIO || {}, {
@@ -512,8 +607,14 @@
     esUsoDeEdificio: esUsoDeEdificio,
     usoPisoPorDefecto: usoPisoPorDefecto,
     usoPisoDeCategoria: usoPisoDeCategoria,
+    // El horario del letrero, en el formato de OpenStreetMap.
+    DIAS_HORARIO: DIAS_HORARIO,
+    codificarHorario: codificarHorario,
+    leerHorarioGuardado: leerHorarioGuardado,
+    horarioEnPalabras: horarioEnPalabras,
     htmlUsosPorPiso: htmlUsosPorPiso,
     leerUsosPorPisoDelFormulario: leerUsosPorPisoDelFormulario,
-    activarUsosPorPiso: activarUsosPorPiso
+    activarUsosPorPiso: activarUsosPorPiso,
+    activarHorario: activarHorario
   });
 })();

@@ -299,6 +299,14 @@
             name: et.cabeza
           };
           if (ficha.mezcla && ficha.mezcla.mixto) t['urbis:mixto'] = 'si';
+          /* El horario que el curso anotó del letrero viaja como
+             `opening_hours`, la misma etiqueta con la que llega el de
+             OpenStreetMap. Así lo lee el MISMO lector del motor y entra a la
+             misma cuenta de cobertura: lo levantado en campo y lo que ya
+             estaba en el mapa se miden con una sola vara. Solo en el primer
+             elemento del punto, para no contar cuatro veces el horario de un
+             edificio de cuatro usos. */
+          if (ficha.horario && k === 0) t.opening_hours = ficha.horario;
           // Solo se marca cuando el estudiante lo registró. Si no lo miró, el
           // análisis se comporta como siempre: "no lo sabemos" no es "no hay
           // frente activo", y dar por muerta una fachada no observada sería
@@ -334,7 +342,11 @@
                    // sabe" y cuántas dijo "otro". Lo segundo es una lista de
                    // trabajo, no un fallo: son los valores que el vocabulario
                    // todavía no tiene.
-                   noSeSabe: 0, otros: 0, textosOtro: [] };
+                   noSeSabe: 0, otros: 0, textosOtro: [],
+                   // Cuántos horarios anotó el curso del letrero. El motor
+                   // cuenta TODOS los que declaran horario; esto dice cuántos
+                   // de esos los consiguieron caminando.
+                   conHorario: 0 };
     (datos || []).forEach(function (p, i) {
       const lat = parseFloat(String(p && p.lat || '').replace(',', '.'));
       const lng = parseFloat(String(p && p.lng || '').replace(',', '.'));
@@ -360,7 +372,7 @@
       const EDIF = window.URBIS_EDIFICIO;
       if (EDIF) {
         const ficha = EDIF.leer(p.descripcion);
-        const tieneAlgo = ficha.epoca || ficha.pisosRegistrados ||
+        const tieneAlgo = ficha.epoca || ficha.pisosRegistrados || ficha.horario ||
                           ficha.materialidad !== EDIF.SIN_REGISTRAR;
         if (tieneAlgo || ficha.noSeSabe || ficha.otros) {
           edif.total++;
@@ -370,6 +382,7 @@
             edif.textosOtro.push(ficha.otroTexto);
           }
           if (ficha.enObra) edif.enObra++;
+          if (ficha.horario) edif.conHorario++;
           if (ficha.epoca) {
             edif.conEpoca++;
             edif.porEpoca[ficha.epoca] = (edif.porEpoca[ficha.epoca] || 0) + 1;
@@ -812,7 +825,7 @@
     }
     if (h.total && h.sinDato) {
       out.push({ id: 'horarios', t: 'Anotar el horario del letrero', n: h.sinDato,
-        d: h.sinDato + (h.sinDato === 1 ? ' uso sin horario' : ' usos sin horario') + '. Se lee en la puerta: días y horas de apertura, y si abre de noche o el domingo.' });
+        d: h.sinDato + (h.sinDato === 1 ? ' uso sin horario' : ' usos sin horario') + '. Se lee en la puerta y se anota en la ficha del punto, en «¿A qué horas abre?»: días, hora de apertura y de cierre.' });
     }
     const sinFicha = Math.max(0, (e.leidos || 0) - (ed.total || 0));
     if (sinFicha > 0) {

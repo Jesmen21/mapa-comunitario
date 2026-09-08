@@ -1616,6 +1616,11 @@
        de hoy sería fechar con el reloj del lector un dato que puede llevar
        semanas quieto. */
     if (reg.actualizado) firma.appendChild(el('span', 'sp-fi-firma-f', fechaCorta(reg.actualizado)));
+    /* La dirección, debajo del nombre. Estas fichas circulan como capturas
+       de pantalla, y una captura sin dirección no se puede seguir: quien la
+       ve no tiene cómo llegar al registro completo, ni a las fuentes de cada
+       caso. Es el único renglón de la ficha que no habla del gobernante. */
+    firma.appendChild(el('span', 'sp-fi-firma-w', 'urbispro.city'));
     placa.appendChild(firma);
 
     var cab = el('div', 'sp-fi-placa-cab');

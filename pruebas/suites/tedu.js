@@ -864,7 +864,7 @@ const server = http.createServer((req, res) => {
     const t = document.querySelector('#edu-comparar-salida .edu-tbl-comp');
     const filas = t ? Array.from(t.querySelectorAll('tbody tr')).map(tr => ({ cls: tr.className, t: tr.cells[0].textContent, este: tr.cells[1].textContent.trim(), otro: tr.cells[3].textContent.trim() })) : [];
     const u = window.URBIS_EDU_UI.ultimo;
-    const html = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true, educativo: true });
+    const html = window.AIA_INFORME.construirHTMLEjecutivo(u, { estilo: 'institucional', horizontal: true, educativo: true });
     return { opciones, cabOtro: t ? t.querySelector('th.otro').textContent : '', filas,
              lectura: (document.querySelector('#edu-comparar-salida .edu-comp-lectura') || {}).textContent || '',
              enUltimo: !!(u.comparacion && u.comparacion.filas), enInforme: /Comparado con Sector 2/.test(html) && /tbl-comp/.test(html) };
@@ -934,12 +934,17 @@ const server = http.createServer((req, res) => {
     // A la defensiva: contra el panel anterior no existen ni las lecturas ni `faltantes`.
     if (!window.URBIS_EDU_UI.lecturas || !window.URBIS_EDU.faltantes) return { faltantes: [] };
     u.lecturas = window.URBIS_EDU_UI.lecturas();
-    const edu = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true, educativo: true, titulo: 'Análisis del sector', autor: 'Ejercicio educativo · URBIS' });
-    const emp = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true });
+    u.referencias = window.URBIS_EDU_UI.referencias ? window.URBIS_EDU_UI.referencias(u) : null;
+    const edu = window.AIA_INFORME.construirHTMLEjecutivo(u, { estilo: 'institucional', horizontal: true, educativo: true, titulo: 'Análisis del sector', autor: 'Ejercicio educativo · URBIS' });
+    const emp = window.AIA_INFORME.construirHTMLEjecutivo(u, { estilo: 'institucional', horizontal: true });
     const txt = h => { const d = document.createElement('div'); d.innerHTML = h.replace(/^[\s\S]*<body>/, ''); return d.textContent.replace(/\s+/g, ' '); };
     const te = txt(edu), tm = txt(emp);
     const faltantes = window.URBIS_EDU.faltantes(u).map(f => f.id);
+    const cuentaRefs = h => (h.match(/class="dato-ref"/g) || []).length;
+    const textoRefs = h => { const d = document.createElement('div'); d.innerHTML = h.replace(/^[\s\S]*<body>/, '');
+      return Array.from(d.querySelectorAll('.dato-ref')).map(x => x.textContent).join(' · '); };
     return { te: te.slice(0, 200), hojasEdu: (edu.match(/class="hoja"/g) || []).length,
+             refsEdu: cuentaRefs(edu), refsEmp: cuentaRefs(emp), refsTxt: textoRefs(edu),
              sinViabilidad: !/VIABILIDAD DEL PROYECTO/.test(te) && !/POT/.test(te) && !/para el cliente/i.test(te),
              // El de empresas conserva su marco de negocio (el POT y «el cliente»);
              // la viabilidad solo sale cuando el motor la calcula, y acá no.
@@ -960,6 +965,13 @@ const server = http.createServer((req, res) => {
   chk(INF.tieneFalta && INF.faltantes.indexOf('horarios') >= 0 && INF.faltantes.indexOf('lectura') < 0,
       'y qué falta por levantar, calculado del resultado: piden horarios y ya no piden la lectura');
   chk(INF.comoLeer, 'explica cómo leer las cifras, como definiciones y no como ventas');
+  /* La referencia contra los sectores que el curso ya levantó (v815). En el
+     informe del CURSO sí, porque comparar es la lección; en el de empresas
+     no, porque esa misma frase le contaría al cliente cuántos análisis tiene
+     hechos el analista y dónde queda el suyo entre ellos. */
+  chk(INF.refsEdu >= 3 && /de tus 4|por encima de/.test(INF.te + INF.refsTxt),
+      'los seis datos del informe del curso llevan su referencia contra los sectores ya levantados (' + INF.refsEdu + ')');
+  chk(INF.refsEmp === 0, 'y el informe de empresas no la lleva: no le cuenta al cliente el archivo del analista');
   chk(INF.pieEdu && INF.pasoEdu, 'con el pie del modo educativo y el paso siguiente del curso: mapear más y comparar');
 
   // Volver a analizar NO borra lo escrito.

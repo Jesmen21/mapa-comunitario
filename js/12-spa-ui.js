@@ -695,18 +695,19 @@
         const selPB = document.getElementById('sel-planta-baja');
         const selEp = document.getElementById('sel-epoca');
         const insOtro = document.getElementById('ins-otro-edificio');
+        const selHorDias = document.getElementById('sel-horario-dias');
         /* Pro City no es una «categoría de edificio» —su categoría es la
            Matriz de Usos entera— pero su ficha trae los pisos cuando el uso
            es un edificio: si el campo está, se guarda. */
         if (!EDIF.esCategoriaEdificio(cat) && !insPisos) return;
-        if (!selMat && !insPisos && !selPB && !selEp && !insOtro) return;
+        if (!selMat && !insPisos && !selPB && !selEp && !insOtro && !selHorDias) return;
         const d = String(descripcionFinal).split(' | ');
         const ref = EDIF.leer(descripcionFinal);
         const matSel = selMat ? String(selMat.value || '').replace(/\|/g, '-') : '';
         const pisosSel = insPisos ? parseInt(insPisos.value, 10) : NaN;
         // Se rellena todo hueco intermedio: si el registro venía corto, un
         // índice suelto dejaría "undefined" en medio de la cadena.
-        const tope = Math.max(ref.idxOtroTexto, ref.idxUsosPorPiso || 0);
+        const tope = Math.max(ref.idxOtroTexto, ref.idxUsosPorPiso || 0, ref.idxHorario || 0);
         for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
         /* SOLO se escribe el campo cuyo control está en pantalla. Los dos
            formularios que llegan hasta acá no preguntan lo mismo: el
@@ -724,6 +725,26 @@
         if (selPB) escribir(ref.idxPlantaBaja, String(selPB.value || '').replace(/\|/g, '-'));
         if (selEp) escribir(ref.idxEpoca, String(selEp.value || '').replace(/\|/g, '-'));
         if (insOtro) escribir(ref.idxOtroTexto, String(insOtro.value || '').replace(/\|/g, '-').slice(0, 120));
+        /* El horario del letrero. Se guarda ya traducido al formato de
+           OpenStreetMap, para que el motor lo cuente con el mismo lector que
+           lo que ya venía del mapa. «No se sabe» se guarda como tal: es una
+           respuesta, y distinta de no haber mirado. Un horario a medias
+           —días sin horas— no se escribe: `codificarHorario` devuelve vacío
+           y eso deja la casilla limpia en vez de a medio llenar. */
+        if (selHorDias && ref.idxHorario != null) {
+            const dias = String(selHorDias.value || '').trim();
+            if (dias === 'No se sabe') escribir(ref.idxHorario, 'No se sabe');
+            else if (dias === 'Sin registrar') escribir(ref.idxHorario, '');
+            else {
+                const abre = (document.getElementById('ins-horario-abre') || {}).value || '';
+                const cierra = (document.getElementById('ins-horario-cierra') || {}).value || '';
+                const cod = EDIF.codificarHorario ? EDIF.codificarHorario(dias, abre, cierra) : '';
+                // Sin horas válidas no se pisa lo que ya hubiera: quien abrió
+                // el formulario sin tocar este campo no debería perder el
+                // horario que otro anotó en campo.
+                if (cod) escribir(ref.idxHorario, cod.replace(/\|/g, '-'));
+            }
+        }
         // Piso por piso, en su casilla del final. Sin el campo de pisos en
         // pantalla no hay nada que escribir acá tampoco.
         if (insPisos && ref.idxUsosPorPiso != null && typeof EDIF.leerUsosPorPisoDelFormulario === 'function') {

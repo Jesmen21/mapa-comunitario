@@ -2055,70 +2055,11 @@
   // Las gráficas se rasterizan a PNG, así que no heredan el CSS del informe:
   // hay que pintarlas con los colores del estilo elegido o, en el estilo
   // oscuro, quedarían con texto gris sobre fondo negro.
-  function capturarChartsClaro(estilo){
-    const r = S.resultado;
-    if (!r || typeof Chart === 'undefined') return {};
-    const E = (window.AIA_INFORME && window.AIA_INFORME.ESTILOS) || {};
-    const t = E[estilo] || E.institucional ||
-      { chartTxt:'#2f3f4e', chartTxt2:'#5a6a7a', chartGrid:'#eef2f6', chartFondo:'#ffffff' };
-    const G = window.AIA_MOTOR.GRUPOS, C = window.AIA_MOTOR.GRUPO_COLOR, s = r.stats;
-    const out = {};
-
-    const render = (cfg, w, h) => {
-      try {
-        const cv = document.createElement('canvas');
-        cv.width = w; cv.height = h;
-        const ch = new Chart(cv, cfg);
-        // El canvas es transparente: se pinta el fondo blanco por debajo
-        // para que el PNG no salga con fondo negro al imprimir.
-        const ctx = cv.getContext('2d');
-        ctx.save();
-        ctx.globalCompositeOperation = 'destination-over';
-        ctx.fillStyle = t.chartFondo;
-        ctx.fillRect(0, 0, cv.width, cv.height);
-        ctx.restore();
-        const url = cv.toDataURL('image/png');
-        ch.destroy();
-        return url;
-      } catch(e) { return ''; }
-    };
-
-    const grupos = Object.keys(G).filter(g => (s.porGrupo[g] || 0) > 0)
-      .sort((a, b) => s.porGrupo[b] - s.porGrupo[a]);
-
-    out.barras = render({
-      type: 'bar',
-      data: { labels: grupos.map(g => G[g].t), datasets: [{ data: grupos.map(g => s.porGrupo[g]), backgroundColor: grupos.map(g => C[g]), borderRadius: 3 }] },
-      options: {
-        indexAxis: 'y', responsive: false, animation: false, devicePixelRatio: 2,
-        layout: { padding: 8 },
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: t.chartTxt2, font: { size: 15 } }, grid: { color: t.chartGrid }, border: { display: false } },
-          y: { ticks: { color: t.chartTxt, font: { size: 15 } }, grid: { display: false }, border: { display: false } }
-        }
-      }
-    }, 1200, 430);
-
-    const up = s.usoPredominante;
-    const upKeys = Object.keys(up).filter(k => up[k] > 0).sort((a, b) => up[b] - up[a]);
-    const upColores = window.AIA_MOTOR.USO_PRED_COLOR || {};
-    const upNeutro = window.AIA_MOTOR.USO_PRED_NEUTRO || '#94a3b8';
-    out.donut = render({
-      type: 'doughnut',
-      data: {
-        labels: upKeys.map(k => k[0].toUpperCase() + k.slice(1) + ' (' + up[k] + '%)'),
-        datasets: [{ data: upKeys.map(k => up[k]), backgroundColor: upKeys.map(k => upColores[k] || upNeutro), borderColor: t.chartFondo, borderWidth: 2 }]
-      },
-      options: {
-        responsive: false, animation: false, devicePixelRatio: 2, cutout: '58%',
-        layout: { padding: 8 },
-        plugins: { legend: { position: 'right', labels: { color: t.chartTxt, font: { size: 15 }, boxWidth: 13, padding: 8 } } }
-      }
-    }, 1200, 400);
-
-    return out;
-  }
+  /* Acá vivía `capturarChartsClaro`: fabricaba un PNG de cada gráfico y se
+     lo pasaba al informe. El informe dejó de leerlos cuando los gráficos
+     pasaron a dibujarse en la propia hoja, en SVG, que se imprime nítido a
+     cualquier tamaño. Quedó fabricando imágenes que nadie miraba y cobrando
+     un segundo largo en cada exportación. */
 
   // ── Exportar PDF con previsualización (Paso A → Paso B) ─────────────────
   function initExportar(){
@@ -2157,7 +2098,7 @@
           orientacion, estilo, autor: $('aia-exp-autor').value.trim(),
           ubicacion: S.ubicacion
         };
-        const html = window.AIA_INFORME.construirHTMLEjecutivo(S.resultado, capturarChartsClaro(estilo), opciones);
+        const html = window.AIA_INFORME.construirHTMLEjecutivo(S.resultado, opciones);
         $('aia-exportar-iframe').srcdoc = html;
         $('aia-exportar-form').hidden = true;
         $('aia-exportar-preview').hidden = false;

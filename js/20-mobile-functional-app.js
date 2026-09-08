@@ -5215,6 +5215,9 @@
       </div>`;
     panel.classList.add('u52-procity-mode');
     panel.hidden = false;
+    if(htmlEdificio && EDIF_PC && typeof EDIF_PC.activarHorario === 'function'){
+      try{ EDIF_PC.activarHorario(panel); }catch(e){}
+    }
     if(htmlEdificio && EDIF_PC && typeof EDIF_PC.activarUsosPorPiso === 'function'){
       try{ EDIF_PC.activarUsosPorPiso(panel, defectoPiso); }catch(e){}
     }

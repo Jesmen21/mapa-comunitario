@@ -90,9 +90,9 @@ async function pedirAlMotor(cuerpo) {
       noSeSabe:0, otros:0, textosOtro:[] } };
 
     const opt = { estilo:'institucional', horizontal:true, autor:'Ejercicio educativo · URBIS' };
-    return { edu: I.construirHTMLEjecutivo(rEdu, {}, opt),
-             emp: I.construirHTMLEjecutivo(rEmp, {}, opt),
-             empFicha: I.construirHTMLEjecutivo(rEmpFicha, {}, opt) };
+    return { edu: I.construirHTMLEjecutivo(rEdu, opt),
+             emp: I.construirHTMLEjecutivo(rEmp, opt),
+             empFicha: I.construirHTMLEjecutivo(rEmpFicha, opt) };
   }, ANALISIS);
 
   const ok=[],fallo=[]; const chk=(c,t)=>(c?ok:fallo).push(t);

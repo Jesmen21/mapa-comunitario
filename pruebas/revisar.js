@@ -585,6 +585,26 @@ console.log('\n  -- la ficha del gobernante --');
    Hasta la v811 un «radar» llamaba urbisCompartirUbicacion(true) cada 45 s
    desde cualquier pantalla de mapa. Si vuelve a aparecer una llamada así
    en lo servido, esto lo dice antes de que llegue a un teléfono. */
+/* ── El informe no fabrica imágenes que nadie mira ────────────────────
+   `capturarChartsClaro` convertía cada gráfico en un PNG y se lo pasaba al
+   informe en un parámetro `chartsPNG`. El informe dejó de leerlo cuando los
+   gráficos pasaron a dibujarse en la propia hoja, en SVG. Quedó cobrando un
+   segundo largo en cada exportación a cambio de nada, y eso no se ve: el
+   PDF sale igual de bien. Por eso lo vigila una comprobación y no un ojo. */
+console.log('\n  -- el informe --');
+{
+  const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f));
+  /* Se buscan las FORMAS DE CÓDIGO —una llamada, un parámetro, un uso— y no
+     el nombre suelto: los comentarios que explican por qué se quitó son
+     justamente lo que evita que alguien lo reponga sin saber, y una regla
+     que los prohibiera empujaría a borrar la explicación. */
+  const RASTRO = /function\s+capturarChartsClaro|capturarChartsClaro\s*\(|chartsPNG\s*(=[^=]|\)|\.|\|\|)|,\s*chartsPNG/;
+  const conPNG = servidos.filter(f => RASTRO.test(leer('js/' + f)));
+  comprobar('el informe no fabrica imágenes de los gráficos que luego no lee',
+            conPNG.length === 0,
+            conPNG.length ? 'todavía lo hacen: ' + conPNG.join(', ') : servidos.length + ' archivos revisados');
+}
+
 console.log('\n  -- la presencia --');
 {
   const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f));

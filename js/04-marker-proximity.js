@@ -224,6 +224,13 @@
        escribió el número de pisos, el número es cuántas plantas repartió:
        no se le puede pedir que lo diga dos veces. */
     const usosPorPiso = (V0 && V0.leerPisos) ? V0.leerPisos(d[URBIS_SLOTS.edificioUsosPorPiso]) : [];
+    /* El horario declarado. Se guarda ya en el formato de OpenStreetMap, así
+       que se devuelve tal cual: quien lo necesite en castellano tiene
+       `horarioEnPalabras` en js/03b, y el análisis lo pasa al motor sin
+       tocarlo. «No se sabe» no es un horario y no viaja como tal. */
+    const horarioCrudo = String(d[URBIS_SLOTS.edificioHorario] || '').trim();
+    const horario = (!horarioCrudo || horarioCrudo === 'undefined' ||
+                     horarioCrudo === 'No se sabe' || horarioCrudo === 'Sin registrar') ? '' : horarioCrudo;
     const pisosDeUsos = usosPorPiso.length ? usosPorPiso[usosPorPiso.length - 1].piso : 0;
     const pisosFinal = (isFinite(pisosCrudo) && pisosCrudo > 0) ? pisos : (pisosDeUsos || pisos);
     return {
@@ -243,9 +250,11 @@
       // Distinguirlo de `false` importa: "no lo miramos" no es "no hay frente".
       frenteActivo: plantaBaja ? !esFrenteMuertoVoc(plantaBaja) : null,
       epoca: epoca,
+      horario: horario,
       enObra: epoca === 'En construcción',
       vulnerabilidad: vulnerabilidadDe(valorUtil(mat), epoca),
       idxMaterialidad: URBIS_SLOTS.edificioMaterialidad,
+      idxHorario: URBIS_SLOTS.edificioHorario,
       idxPisos: URBIS_SLOTS.edificioPisos,
       idxPlantaBaja: URBIS_SLOTS.edificioPlantaBaja,
       idxEpoca: URBIS_SLOTS.edificioEpoca,
@@ -849,7 +858,11 @@
     victimas:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 13, // heridos/fallecidos
     // El edificio piso por piso: "1:Comercio;2-3:Vivienda". Al final, como
     // toda casilla nueva; el vocabulario y su lectura viven en js/03b.
-    edificioUsosPorPiso:  BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 14
+    edificioUsosPorPiso:  BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 14,
+    /* El horario del letrero, en el formato de OpenStreetMap («Mo-Sa
+       08:00-20:00»). Al final, como toda casilla nueva; el vocabulario y su
+       traducción viven en js/03b. */
+    edificioHorario:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 15
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta

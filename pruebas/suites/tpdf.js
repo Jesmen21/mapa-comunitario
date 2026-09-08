@@ -76,7 +76,7 @@ const REPO = process.env.REPO || E.RAIZ;
                                      tipoEstudio:'comercial', proyectoId:'cafe_paso',
                                      direccionAprox:'Prados del Este, Cúcuta' });
     window.__r = r;
-    const html = window.AIA_INFORME.construirHTMLEjecutivo(r, {}, { estilo:'institucional', horizontal:true });
+    const html = window.AIA_INFORME.construirHTMLEjecutivo(r, { estilo:'institucional', horizontal:true });
 
     // El caso que reporto el usuario: radio 1 km, 512 usos, estudio completo.
     // Es el que dispara la franja roja de "contenido extenso".
@@ -136,7 +136,7 @@ const REPO = process.env.REPO || E.RAIZ;
       terreno: { lectura: 'Terreno suave: pendiente media de 8,0 %, 80 m de desnivel dentro del radio, y cae hacia el oriente.' },
       umbralFronteraM: 3000, fuente: 'OpenStreetMap'
     };
-    const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
+    const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, { estilo:'institucional', horizontal:true });
     /* El informe del curso (v810): el mismo resultado con lo que trae el
        modo educativo —sobre qué se analizó, la forma pedida y lo escrito
        por el grupo— tiene que caber en sus cuatro hojas igual que el de
@@ -159,7 +159,7 @@ const REPO = process.env.REPO || E.RAIZ;
       lecturas: { general: 'Es un barrio de borde: mucha vivienda, poco comercio y una sola vía que lo conecta. Lo que más se nota es la falta de andén.',
                   flujo: 'Vimos más gente a las 6 p.m. que al mediodía.', foda: 'Quitaríamos la debilidad del parqueo: nadie llega en carro.' }
     });
-    const htmlEdu = window.AIA_INFORME.construirHTMLEjecutivo(rE, {}, { estilo:'institucional', horizontal:true, educativo:true, titulo:'Análisis del sector', autor:'Ejercicio educativo · URBIS' });
+    const htmlEdu = window.AIA_INFORME.construirHTMLEjecutivo(rE, { estilo:'institucional', horizontal:true, educativo:true, titulo:'Análisis del sector', autor:'Ejercicio educativo · URBIS' });
 
     return { html, htmlPesado, htmlEdu, flujo: r.stats.movilidad.flujo,
              pois: (r.pois||[]).length, poisPesado: (rP.pois||[]).length, centro,

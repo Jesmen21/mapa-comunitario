@@ -236,6 +236,13 @@
     .form-section-edificio select,
     .form-section-edificio input[type="number"] { width: 100%; box-sizing: border-box; }
     .form-section-edificio .edif-pisos { display: grid; gap: 6px; margin-top: 8px; }
+    /* Las dos horas del letrero, una al lado de la otra: se llenan juntas,
+       parado frente a la puerta, y separarlas en dos filas hace que la
+       segunda parezca opcional. */
+    .form-section-edificio .edif-horas { display: flex; gap: 10px; margin-top: 8px; }
+    .form-section-edificio .edif-horas label { flex: 1; font-size: .72rem; display: block; }
+    .form-section-edificio .edif-horas input { width: 100%; margin-top: 3px; }
+    .form-section-edificio .edif-horas[hidden] { display: none; }
     .form-section-edificio .edif-piso { display: grid; grid-template-columns: minmax(84px, auto) 1fr; align-items: start; gap: 8px; }
     .form-section-edificio .edif-piso label { font-size: 0.7rem; color: var(--cyan); padding-top: 8px; }
     .form-section-edificio .edif-usos { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px; }

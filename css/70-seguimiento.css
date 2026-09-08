@@ -1331,6 +1331,15 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-9); font-weight:700; letter-spacing:.07em; text-transform:uppercase;
   color:#7FD8F7;
 }
+/* La dirección, pegada al nombre y en un tono más bajo: tiene que poder
+   leerse en una captura compartida sin competirle a la firma. El punto que
+   la separa va en CSS y no en el texto, para que quien copie la ficha se
+   lleve «URBIS_CO» y «urbispro.city» como dos cosas y no como una frase. */
+.sp-fi-firma-w{
+  font-size:var(--t-9); color:#8FA6B4; letter-spacing:.02em;
+}
+.sp-fi-firma-w::before{ content:'·'; margin:0 6px 0 2px; opacity:.55; }
+
 /* La fecha, al otro extremo: es la del registro, no la del día en que se
    mira, y sin ella una captura de hoy se lee igual dentro de un año. */
 .sp-fi-firma-f{

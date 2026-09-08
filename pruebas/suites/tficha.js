@@ -185,11 +185,17 @@ const server = http.createServer((req, res) => {
         const img = fi && fi.querySelector('img');
         const t = fi && fi.querySelector('.sp-fi-firma-t');
         const fe = fi && fi.querySelector('.sp-fi-firma-f');
+        const w = fi && fi.querySelector('.sp-fi-firma-w');
         const cargo = caja.querySelector('.sp-fi-cargo');
         o.firma = {
           hay: !!fi,
           texto: t ? t.textContent : '',
           fecha: fe ? fe.textContent : '',
+          // A la defensiva: contra la ficha anterior este renglón no existe.
+          web: w ? w.textContent.trim() : '',
+          // Y el punto que la separa del nombre lo pone el CSS: quien copia
+          // el texto de la ficha se lleva dos cosas y no una frase pegada.
+          webTexto: fi ? (fi.textContent || '') : '',
           logoCargo: !!(img && img.complete && img.naturalWidth > 0),
           // Arriba del cargo: es de quien analiza, no del analizado.
           antesDelCargo: !!(fi && cargo &&
@@ -462,6 +468,13 @@ const server = http.createServer((req, res) => {
       'la placa dice quién la analizó (' + (FI.texto || 'sin firma') + ')');
   chk(FI.logoCargo, 'con el logo de URBIS cargado de verdad, no una ruta rota');
   chk(FI.antesDelCargo, 'y va ARRIBA del cargo: es de quien analiza, no del analizado');
+  /* Y dónde buscarla. Estas fichas circulan como capturas: sin la dirección,
+     quien la ve no tiene cómo llegar al registro ni a las fuentes de cada
+     caso, que es donde el módulo se juega la credibilidad. */
+  chk(FI.web === 'urbispro.city',
+      'y la dirección, para que una captura compartida se pueda seguir (' + (FI.web || 'no está') + ')');
+  chk(!/URBIS_COurbispro/.test((FI.webTexto || '').replace(/\s+/g, '')),
+      'con el separador puesto por CSS: copiar la firma no pega el nombre con la dirección');
   // La fecha es la del REGISTRO. Sin ella, la captura de hoy se lee dentro
   // de un año como si fuera de hoy, y el veredicto se calcula contando
   // hechos que se acumulan cada día.

@@ -765,6 +765,19 @@
   #urbis-mobile-app .u52-procity-edificio .edif-pisos{
     display:grid; gap:4px; max-height:38vh; overflow-y:auto; padding-right:2px;
   }
+  /* Las dos horas del letrero, en la misma fila y con el tipo de la ficha:
+     acá el formulario es blanco y hereda otro color de texto que el del
+     mapa, y sin esto las horas salían casi invisibles sobre el fondo. */
+  #urbis-mobile-app .u52-procity-edificio .edif-horas{
+    display:flex; gap:8px; margin-top:6px;
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-horas label{
+    flex:1; font-size:.68rem; font-weight:850; color:var(--pc-ink); -webkit-text-fill-color:var(--pc-ink);
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-horas input{
+    width:100%; margin-top:3px;
+  }
+  #urbis-mobile-app .u52-procity-edificio .edif-horas[hidden]{ display:none; }
   #urbis-mobile-app .u52-procity-edificio .edif-piso{
     display:grid; grid-template-columns:minmax(64px,auto) 1fr; align-items:start; gap:6px;
   }

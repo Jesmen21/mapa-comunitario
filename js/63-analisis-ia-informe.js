@@ -941,7 +941,11 @@
   }
 
   // ── 2. Los seis datos que explican el sitio ─────────────────────────────
-  function seisDatos(r){
+  /* `edu` decide si van las referencias. No se mira `r.referencias` a secas:
+     el mismo resultado puede exportarse en los dos informes, y entonces la
+     comparación contra el archivo del analista se colaría en el que va al
+     cliente. Quién puede verla es una decisión del informe, no del dato. */
+  function seisDatos(r, edu){
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const cajas = [
@@ -964,9 +968,17 @@
       { n: s.movilidad.paradasBus, t: 'Paradas de transporte',
         s: 'identificadas', c: s.movilidad.paradasBus > 0 ? T.acento : T.bad }
     ];
-    return '<div class="seis">' + cajas.map(c =>
-      '<div class="dato"><b style="color:' + c.c + '">' + c.n + '</b>' +
-      '<span>' + esc(c.t) + '</span><small>' + esc(c.s) + '</small></div>').join('') + '</div>';
+    /* La referencia contra los sectores que el curso ya levantó, cuando el
+       informe es el del curso y hay al menos tres con qué comparar. Un
+       «18/100 de flujo» solo no le dice nada a un estudiante: no sabe si 18
+       es poco o es lo normal en su ciudad. */
+    const refs = edu ? (r.referencias || null) : null;
+    return '<div class="seis">' + cajas.map(c => {
+      const ref = refs ? refs[c.t] : '';
+      return '<div class="dato"><b style="color:' + c.c + '">' + c.n + '</b>' +
+        '<span>' + esc(c.t) + '</span><small>' + esc(c.s) + '</small>' +
+        (ref ? '<i class="dato-ref">' + esc(ref) + '</i>' : '') + '</div>';
+    }).join('') + '</div>';
   }
 
   // ── 3. Oportunidad urbana ───────────────────────────────────────────────
@@ -1553,8 +1565,12 @@
       'OpenStreetMap · evaluación heurística URBIS</span></footer>';
   }
 
-  function construirHTMLEjecutivo(r, chartsPNG, opciones){
-    chartsPNG = chartsPNG || {};
+  /* Recibía un tercer parámetro `chartsPNG` con imágenes de los gráficos.
+     Nadie lo leía desde que los gráficos se dibujan en la hoja: se quitó
+     junto con la función que las fabricaba (js/62). Las llamadas viejas de
+     tres argumentos siguen funcionando —el segundo se ignoraba igual— pero
+     ninguna queda en el repositorio. */
+  function construirHTMLEjecutivo(r, opciones){
     opciones = opciones || {};
     // El estilo se fija ANTES de armar nada: tanto el CSS como los bloques
     // leen `T`, y se evalúan en orden dentro del mismo arreglo de plantilla.
@@ -1568,7 +1584,6 @@
 
     const anchoMM = horizontal ? 263 : 200, altoMM = horizontal ? 200 : 263;
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
-    const chart = (src, t) => src ? '<div class="chart"><h3>' + t + '</h3><img src="' + src + '"></div>' : '';
     const edu = !!opciones.educativo;
 
     function cuerpoEmpresa(){ return [
@@ -1675,7 +1690,7 @@ cabecera(titulo, 'Análisis del sector · ejercicio del curso', ubicacionTxt, fe
 seccion(1, 'Sobre qué se analizó', 'lo que el curso mapeó, antes de las cifras'),
 bloqueBaseInforme(r),
 seccion(2, 'Los 6 datos que describen el sitio', ''),
-seisDatos(r),
+seisDatos(r, true),
 seccion(3, 'Qué hay alrededor', 'el sector, cómo leer las cifras y qué falta'),
 '<div class="fila tres">',
   '<div>', bloqueMapa(r, horizontal), '</div>',
@@ -1964,6 +1979,7 @@ pie(4, r, autor, true),
 
 '.tbl-horarios{width:100%;border-collapse:collapse;margin-top:2px}',
 /* El informe del curso */
+'.dato-ref{display:block;font-style:normal;font-size:6.4px;line-height:1.3;margin-top:2px;color:', T.acento, '}',
 '.base-edu{border:1px solid ', T.borde, ';border-left:4px solid ', T.acento, ';border-radius:6px;padding:6px 9px;margin-bottom:4px;background:', T.suave, '}',
 '.base-edu.flojo{border-left-color:', T.warn, '}',
 '.base-edu b{font-size:8.4px;display:block;margin-bottom:2px}.base-edu p{font-size:7.2px;line-height:1.45;color:', T.txt2, '}',
@@ -2490,8 +2506,8 @@ gruposOrdenados.map(seccion).join(''),
     }
   }
 
-  function generar(r, chartsPNG, opciones){
-    abrirVentanaImpresion(construirHTMLEjecutivo(r, chartsPNG, opciones));
+  function generar(r, opciones){
+    abrirVentanaImpresion(construirHTMLEjecutivo(r, opciones));
   }
 
   window.AIA_INFORME = {

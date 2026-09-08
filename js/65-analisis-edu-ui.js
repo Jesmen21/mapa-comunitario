@@ -88,6 +88,32 @@
     return window.URBIS_REFERENCIA.html(otros, actual);
   }
 
+  /* El texto de la referencia de cada cifra, sin el dibujo: el informe lo
+     imprime como una línea y no como un riel. Mismas cuentas que la pantalla
+     —js/57, mínimo de tres para comparar— porque es la misma vara. */
+  function referenciasDelCurso(r){
+    const R = window.URBIS_REFERENCIA;
+    if (!R || !r) return null;
+    const s = r.stats || {}, f = (s.movilidad && s.movilidad.flujo) || {};
+    const de = (saca, actual) => {
+      const otros = [];
+      fichasDelCurso().forEach(fi => {
+        let v; try { v = saca(fi.stats || {}); } catch(e) { v = null; }
+        if (typeof v === 'number' && isFinite(v)) otros.push(v);
+      });
+      const c = R.calcular(otros, actual);
+      return c ? c.texto : '';
+    };
+    const flujoDe = k => x => ((x.movilidad || {}).flujo || {})[k];
+    const out = {
+      Habitantes: de(x => x.poblacionEstimada, s.poblacionEstimada),
+      'Flujo peatonal': de(flujoDe('peatonal'), f.peatonal),
+      'Flujo vehicular': de(flujoDe('vehicular'), f.vehicular),
+      'Usos identificados': de(x => x.total, s.total)
+    };
+    return Object.keys(out).some(k => out[k]) ? out : null;
+  }
+
   function kpis(r){
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
     const caja = (n, t, sub, ref) => '<div class="edu-kpi"><b>' + n + '</b><span>' + t + '</span>' +
@@ -998,8 +1024,13 @@
     if (!ultimo || !window.AIA_INFORME) return;
     try {
       ultimo.lecturas = lecturasActuales();
+      /* La referencia de cada cifra contra los sectores que el curso ya
+         levantó. Va al informe DEL CURSO y no al de empresas: acá comparar
+         es la lección, y allá esa misma frase le contaría al cliente cuántos
+         análisis tiene hechos el analista y dónde queda el suyo entre ellos. */
+      ultimo.referencias = referenciasDelCurso(ultimo);
       const html = window.AIA_INFORME.construirHTMLEjecutivo(
-        ultimo, {}, { estilo: 'institucional', horizontal: true, educativo: true,
+        ultimo, { estilo: 'institucional', horizontal: true, educativo: true,
                       titulo: 'Análisis del sector',
                       autor: 'Ejercicio educativo · URBIS' });
       const w = window.open('', '_blank');
@@ -1020,6 +1051,7 @@
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
                           mostrarCalor: mostrarCalor, bloqueContexto: bloqueContexto,
                           lecturas: lecturasActuales, hojaCampoHTML: hojaCampoHTML,
+                          referencias: referenciasDelCurso,
                           candidatosComparar: candidatosComparar,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
