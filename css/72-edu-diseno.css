@@ -716,7 +716,19 @@ body.u52-real-map.urbis-dibujando-area #urbis-mobile-app .u52-jac-mapcentric .u5
 }
 #urbis-mobile-app .u65-avatar-open span{ color:#fff !important; -webkit-text-fill-color:#fff !important; }
 #urbis-mobile-app .u52-profile-copy-id > span:first-child{ font-size:0 !important; display:grid; place-items:center; }
-#urbis-mobile-app .u52-topbar [data-u52-back]{ font-size:0 !important; display:grid; place-items:center; }
+/* El texto del botón de volver se apaga SOLO si hay un dibujo que lo
+   reemplace. La regla llevaba `font-size:0` a secas, esperando un SVG que se
+   inyectó en tres botones y en los otros trece no: en el mapa, en eventos, en
+   notificaciones, en Juegos URBIS y en nueve pantallas más, el botón de
+   retroceder era un cuadro con borde y NADA adentro. No parece un botón
+   apagado: parece un botón roto, y nadie lo toca.
+
+   Con `:has(svg)` la regla solo se aplica donde de verdad hay icono. Y si
+   algún navegador viejo no entendiera `:has`, la regla entera se descarta y
+   vuelve a verse la flecha de texto — que es exactamente lo que se quiere
+   cuando no hay dibujo. El fallo cae del lado bueno. */
+#urbis-mobile-app .u52-topbar [data-u52-back]{ display:grid; place-items:center; }
+#urbis-mobile-app .u52-topbar [data-u52-back]:has(svg){ font-size:0 !important; }
 #urbis-mobile-app .u52-topbar [data-u52-back] svg{ display:block; }
 /* La barra de la cabecera del mapa, vestida: los tres botones con trazo. */
 .u52-mapcentric-round[data-u52-back] svg,

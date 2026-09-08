@@ -1,24 +1,33 @@
 const E = require('../entorno.js');
-/* EL BOTÓN DE VOLVER, QUE SE VEÍA VACÍO (js/20)
+/* EL BOTÓN DE VOLVER, QUE SE VEÍA VACÍO (js/20, css/72)
 
-   El botón de volver del módulo de Juegos URBIS salía como un cuadro con
-   borde y NADA adentro. Dicho así: «el cuadro icono de arriba para
-   retroceder sale vacio».
+   El botón de volver salía como un cuadro con borde y NADA adentro. Dicho
+   así: «el cuadro icono de arriba para retroceder sale vacio».
 
-   No era el color ni el tamaño: era la flecha. De los dieciséis botones de
-   volver de la aplicación, catorce llevaban «←» (U+2190) y dos —el de
-   Juegos URBIS y el del arcade— llevaban «◄» (U+25C4), un carácter del
-   bloque de figuras geométricas que la fuente del sistema en Android no
-   trae. Sin glifo no hay dibujo, y en vez del recuadro de reemplazo se pinta
-   el vacío: el botón parece roto y nadie sabe que se puede tocar.
+   La primera vez se buscó la causa en el CARÁCTER: dos de los dieciséis
+   botones llevaban «◄» (U+25C4) en vez de «←», y ese sí es un carácter que
+   la fuente del sistema en Android no siempre trae. Se igualaron los
+   dieciséis, se probó cargando la hoja del módulo (css/47), dio verde… y el
+   botón seguía saliendo en blanco en el teléfono.
 
-   Esta suite fija las dos mitades:
+   La causa era otra, y estaba en OTRA hoja. La capa de diseño del modo
+   educativo apagaba el texto de TODO botón de volver:
 
-   · TODOS los botones de volver usan la misma flecha. Dos maneras de decir
-     «atrás» no es variedad, es la puerta por la que entró este fallo;
-   · y esa flecha DEJA TINTA al pintarse. Comprobar el carácter no basta:
-     una fuente sin el glifo pasa esa prueba y deja al usuario mirando un
-     cuadro vacío igual. Acá se cuentan los píxeles.                      */
+       #urbis-mobile-app .u52-topbar [data-u52-back]{ font-size:0 !important; }
+
+   esperando un SVG que se inyectó en tres botones y en los otros TRECE nunca
+   llegó: el mapa, eventos, notificaciones, alertas, deportes, social, la
+   línea de tiempo, Juegos URBIS… trece cuadros con borde y nada adentro. No
+   parecen botones apagados: parecen rotos, y nadie los toca.
+
+   De ahí las dos lecciones que esta suite fija:
+
+   · el texto solo se apaga donde HAY un dibujo que lo reemplace (`:has(svg)`);
+   · y se mide sobre la PÁGINA COMPLETA, no sobre la hoja de un módulo. Una
+     comprobación de estilo que carga una hoja suelta no comprueba estilo:
+     comprueba una intención. El estilo es lo que gana en la cascada con todas
+     las hojas puestas — que es exactamente lo que esta suite no vio la
+     primera vez.                                                          */
 const { chromium } = require(E.MODULOS + '/playwright-core');
 const fs = require('fs');
 const REPO = process.env.REPO || E.RAIZ;
@@ -41,43 +50,71 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(j20.indexOf('◄') === -1,
       'no queda ni un «◄» (U+25C4) en la aplicación: es el que salía en blanco');
 
-  // ── 2 · Y de verdad deja tinta ─────────────────────────────────────────
+  /* ── 2 · Y de verdad se dibujan, en la PÁGINA COMPLETA ────────────────
+     Esta suite ya existió una vez cargando solo la hoja del módulo
+     (css/47), y dio verde mientras el botón seguía saliendo en blanco en el
+     teléfono. La causa estaba en OTRA hoja: la capa de diseño del modo
+     educativo apagaba el texto de todo botón de volver con
+     `font-size:0 !important`, esperando un SVG que se inyectó en tres
+     botones y en los otros trece nunca llegó.
+
+     Una comprobación de estilo que carga una hoja suelta no comprueba
+     estilo: comprueba una intención. El estilo es lo que gana en la cascada
+     con TODAS las hojas puestas, así que se abre la página de verdad y se
+     miden los dieciséis botones. */
   const b = await chromium.launch({ executablePath: E.CHROMIUM, args: ['--no-sandbox'] });
-  const ctx = await b.newContext({ viewport: { width: 300, height: 200 } });
+  const ctx = await b.newContext({ viewport: { width: 420, height: 760 } });
   const pg = await ctx.newPage();
   const errores = [];
   pg.on('pageerror', e => errores.push(String(e.message).slice(0, 160)));
-  await pg.setContent('<style>' + fs.readFileSync(REPO + '/css/47-aurea-menu.css', 'utf8') +
-    'body{margin:0;background:#04121F}</style>' +
-    '<div id="urbis-mobile-app"><header class="u52-topbar u52-aurea-top">' +
-    '<button class="u52-aurea-back" data-u52-back aria-label="Volver">←</button>' +
-    '<button class="u52-aurea-back" id="vacio" aria-label="Vacío"></button>' +
-    '</header></div>');
-  const tinta = await pg.evaluate(async () => {
+  /* Leaflet se sirve desde una CDN que este entorno no alcanza, y sin él
+     js/03 revienta en la primera línea y arrastra a media aplicación:
+     `dimensiones`, `map`, `BASE_OFFSET`… una cascada de errores que no son
+     del sitio. Se sirve la copia local en su lugar, para que la página cargue
+     como carga en un teléfono y cualquier error que quede SÍ sea suyo. */
+  const LEAFLET = (E.TRABAJO || '') + 'node_modules/leaflet/dist/';
+  await pg.route('**/leaflet*.js', r => r.fulfill({ contentType: 'application/javascript',
+    body: fs.readFileSync(LEAFLET + 'leaflet.js', 'utf8') }));
+  await pg.route('**/leaflet*.css', r => r.fulfill({ contentType: 'text/css',
+    body: fs.readFileSync(LEAFLET + 'leaflet.css', 'utf8') }));
+  await pg.goto('http://localhost:8199/index.html', { waitUntil: 'load' });
+  await pg.waitForTimeout(1800);
+  const botones = await pg.evaluate(async () => {
     await document.fonts.ready;
-    const medir = (el) => {
-      const r = el.getBoundingClientRect();
-      return { w: r.width, h: r.height };
-    };
-    // Rango del texto: si el glifo no existe, el navegador no dibuja nada y
-    // el rectángulo del texto sale sin ancho.
-    const anchoDe = (el) => {
-      const t = el.firstChild;
-      if (!t || t.nodeType !== 3) return 0;
-      const r = document.createRange();
-      r.selectNodeContents(el);
-      const b = r.getBoundingClientRect();
-      return Math.round(b.width);
-    };
-    const btn = document.querySelector('.u52-aurea-back');
-    return { caja: medir(btn), anchoFlecha: anchoDe(btn), anchoVacio: anchoDe(document.getElementById('vacio')) };
+    /* Se lee el ESTILO CALCULADO y no el rectángulo dibujado. Las pantallas
+       están ocultas hasta que se abren, y forzarlas visibles a todas a la vez
+       crea un estado que la aplicación nunca tiene —se probó, y disparó
+       código de otras pantallas—. El defecto que se persigue no necesita
+       dibujo: es un tamaño de letra en cero sin dibujo que lo reemplace, y
+       eso se lee igual con el elemento oculto. */
+    return [...document.querySelectorAll('#urbis-mobile-app [data-u52-back]')].map(x => {
+      const p = x.closest('[data-u52-screen]');
+      const cs = getComputedStyle(x);
+      return { pantalla: p ? p.getAttribute('data-u52-screen') : '—',
+               fs: parseFloat(cs.fontSize) || 0,
+               svg: !!x.querySelector('svg'),
+               texto: (x.textContent || '').trim(),
+               w: parseFloat(cs.width) || 0, h: parseFloat(cs.height) || 0 };
+    });
   });
-  chk(tinta.caja.w > 30 && tinta.caja.h > 30,
-      'el botón mide lo que debe (' + Math.round(tinta.caja.w) + '×' + Math.round(tinta.caja.h) + ')');
-  chk(tinta.anchoFlecha > 4,
-      'la flecha ocupa ancho de verdad: se está dibujando (' + tinta.anchoFlecha + ' px)');
-  chk(tinta.anchoVacio === 0,
-      'y un botón sin nada dentro mide cero: la comprobación distingue lo lleno de lo vacío');
+  chk(botones.length >= 10, 'se encontraron los botones de volver en la página real (' + botones.length + ')');
+  /* Un botón «vale» si tiene un dibujo O si su texto ocupa ancho. Cuadro con
+     borde y nada adentro no es un botón apagado: parece roto, y nadie lo
+     toca. */
+  const ciegos = botones.filter(x => !x.svg && (x.fs < 4 || !x.texto));
+  chk(ciegos.length === 0,
+      'ninguno sale vacío' + (ciegos.length ? ': ' + ciegos.map(x => x.pantalla).join(', ') : ' (' + botones.length + ' revisados)'));
+  const chicos = botones.filter(x => x.w > 0 && (x.w < 28 || x.h < 28));
+  chk(chicos.length === 0,
+      'y todos son bastante grandes para tocarlos con el dedo' +
+      (chicos.length ? ': ' + chicos.map(x => x.pantalla + ' ' + x.w + '×' + x.h).join(', ') : ''));
+  /* La regla que los apagaba sigue existiendo, y debe: donde SÍ hay dibujo,
+     el texto sobra. Lo que no puede volver es apagarlo a ciegas. */
+  const css72 = fs.readFileSync(REPO + '/css/72-edu-diseno.css', 'utf8');
+  chk(/\[data-u52-back\]:has\(svg\)\{ font-size:0/.test(css72),
+      'el texto solo se apaga donde hay un dibujo que lo reemplace');
+  chk(!/\[data-u52-back\]\{ font-size:0/.test(css72),
+      'y ya no se apaga a ciegas');
 
   // ── 3 · El rótulo de la partida no habla de plata ──────────────────────
   /* Con el marcador y el cronómetro al lado, «· POR DINERO» dejaba la franja
