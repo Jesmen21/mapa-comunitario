@@ -1,107 +1,107 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=810-la-lectura-del-curso");
-@import url("./00-brand-urbis.css?v=810-la-lectura-del-curso");
+@import url("./00-app-shell.css?v=811-antes-y-despues");
+@import url("./00-brand-urbis.css?v=811-antes-y-despues");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=810-la-lectura-del-curso");
-@import url("./02-map-tools-routing.css?v=810-la-lectura-del-curso");
-@import url("./03-basemap-and-panels.css?v=810-la-lectura-del-curso");
-@import url("./04-automap-markers-performance.css?v=810-la-lectura-del-curso");
-@import url("./05-clusters.css?v=810-la-lectura-del-curso");
-@import url("./06-landing.css?v=810-la-lectura-del-curso");
-@import url("./07-mobile-advanced.css?v=810-la-lectura-del-curso");
+@import url("./01-base-layout.css?v=811-antes-y-despues");
+@import url("./02-map-tools-routing.css?v=811-antes-y-despues");
+@import url("./03-basemap-and-panels.css?v=811-antes-y-despues");
+@import url("./04-automap-markers-performance.css?v=811-antes-y-despues");
+@import url("./05-clusters.css?v=811-antes-y-despues");
+@import url("./06-landing.css?v=811-antes-y-despues");
+@import url("./07-mobile-advanced.css?v=811-antes-y-despues");
 
-@import url("./08-role-accessibility.css?v=810-la-lectura-del-curso");
-@import url("./09-achievements.css?v=810-la-lectura-del-curso");
+@import url("./08-role-accessibility.css?v=811-antes-y-despues");
+@import url("./09-achievements.css?v=811-antes-y-despues");
 
-@import url("./10-sport.css?v=810-la-lectura-del-curso");
+@import url("./10-sport.css?v=811-antes-y-despues");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=810-la-lectura-del-curso");
+@import url("./57-comparar-sector.css?v=811-antes-y-despues");
 
-@import url("./99-contrast-fix.css?v=810-la-lectura-del-curso");
+@import url("./99-contrast-fix.css?v=811-antes-y-despues");
 
-@import url("12-module-access.css?v=810-la-lectura-del-curso");
+@import url("12-module-access.css?v=811-antes-y-despues");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=810-la-lectura-del-curso");
+@import url("./14-mobile-functional-app.css?v=811-antes-y-despues");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=810-la-lectura-del-curso");
+@import url("./16-mobility-clean-traffic.css?v=811-antes-y-despues");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=810-la-lectura-del-curso');
+@import url('./28-mobile-kawaii-entry.css?v=811-antes-y-despues');
 
-@import url('./29-mobile-kawaii-platform.css?v=810-la-lectura-del-curso');
+@import url('./29-mobile-kawaii-platform.css?v=811-antes-y-despues');
 
-@import url('./30-zoom-marker-optimizer.css?v=810-la-lectura-del-curso');
+@import url('./30-zoom-marker-optimizer.css?v=811-antes-y-despues');
 
-@import url('./36-mobility-static-search.css?v=810-la-lectura-del-curso');
+@import url('./36-mobility-static-search.css?v=811-antes-y-despues');
 
 
-@import url('./41-email-registration-auth.css?v=810-la-lectura-del-curso');
+@import url('./41-email-registration-auth.css?v=811-antes-y-despues');
 
-@import url('./42-turquoise-refresh.css?v=810-la-lectura-del-curso');
+@import url('./42-turquoise-refresh.css?v=811-antes-y-despues');
 
-@import url('./43-clean-user-entry.css?v=810-la-lectura-del-curso');
+@import url('./43-clean-user-entry.css?v=811-antes-y-despues');
 
-@import url('./44-mobile-auth-onboarding.css?v=810-la-lectura-del-curso');
+@import url('./44-mobile-auth-onboarding.css?v=811-antes-y-despues');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=810-la-lectura-del-curso');
+@import url('./45-mascotas-fundacion.css?v=811-antes-y-despues');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=810-la-lectura-del-curso');
+@import url('./46-runner-strava.css?v=811-antes-y-despues');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=810-la-lectura-del-curso');
-@import url('./48-premio.css?v=810-la-lectura-del-curso');
+@import url('./47-aurea-menu.css?v=811-antes-y-despues');
+@import url('./48-premio.css?v=811-antes-y-despues');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=810-la-lectura-del-curso');
+@import url('./48-runner-stats.css?v=811-antes-y-despues');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=810-la-lectura-del-curso');
+@import url('./49-urbis-analisis.css?v=811-antes-y-despues');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=810-la-lectura-del-curso');
+@import url('./99-mobile-clean-core.css?v=811-antes-y-despues');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=810-la-lectura-del-curso');
+@import url('./99-safe-destination-dot.css?v=811-antes-y-despues');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=810-la-lectura-del-curso');
+@import url('./51-cute-theme-pc.css?v=811-antes-y-despues');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=810-la-lectura-del-curso');
+@import url('./52-urbis-pro-city.css?v=811-antes-y-despues');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=810-la-lectura-del-curso');
-@import url('./68-procity-reconocimiento.css?v=810-la-lectura-del-curso');
-@import url('./69-licencia.css?v=810-la-lectura-del-curso');
+@import url('./24-procity-analisis.css?v=811-antes-y-despues');
+@import url('./68-procity-reconocimiento.css?v=811-antes-y-despues');
+@import url('./69-licencia.css?v=811-antes-y-despues');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=810-la-lectura-del-curso');
+@import url('./53-auth-celeste.css?v=811-antes-y-despues');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=810-la-lectura-del-curso');
+@import url('./54-config-admin.css?v=811-antes-y-despues');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=810-la-lectura-del-curso');
+@import url('./55-vitrina.css?v=811-antes-y-despues');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=810-la-lectura-del-curso');
+@import url('./70-modo-app.css?v=811-antes-y-despues');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=810-la-lectura-del-curso');
+@import url('./72-edu-diseno.css?v=811-antes-y-despues');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */
@@ -218,6 +218,23 @@
 .edu-foda-col h5{ margin:0 0 4px; font-size:.68rem; }
 .edu-foda-col ul{ margin:0; padding-left:15px; font-size:.66rem; line-height:1.4; opacity:.88; }
 .edu-foda-col li{ margin-bottom:3px; }
+
+/* Antes y después: lo que se movió desde el análisis anterior, verde lo
+   que subió y rojo lo que bajó, salvo en lo que cuenta problemas. */
+.edu-cambios{ border-color:rgba(74,222,128,.4); }
+.edu-cambios.quieto{ border-color:rgba(255,255,255,.12); }
+.edu-cambios h4 em{ font-style:normal; font-weight:400; font-size:.62rem; opacity:.65; }
+.edu-cambios-lectura{ margin:0 0 6px; font-size:.72rem; line-height:1.5; }
+.edu-cambios-lista{ list-style:none; margin:0 0 4px; padding:0; display:grid; gap:3px; }
+.edu-cambios-lista li{ display:flex; align-items:baseline; gap:6px; font-size:.68rem; }
+.edu-cambios-lista li span{ flex:1; min-width:0; opacity:.9; }
+.edu-cambios-lista li small{ opacity:.6; font-variant-numeric:tabular-nums; }
+.edu-cambios-lista li i{ font-style:normal; opacity:.5; }
+.edu-cambios-lista li b{ font-variant-numeric:tabular-nums; }
+.edu-cambios-lista li em{ font-style:normal; font-weight:700; min-width:34px; text-align:right; font-variant-numeric:tabular-nums; }
+.edu-cambios-lista li.mas em{ color:#4ade80; }
+.edu-cambios-lista li.menos em{ color:#f87171; }
+.edu-acciones button.sec{ margin-top:6px; background:rgba(245,185,66,.14); color:#f5b942; border:1px solid rgba(245,185,66,.45); }
 
 /* La lectura del curso: una caja plegada bajo cada bloque, y la conclusión
    abierta al final. Se distingue del análisis por el borde punteado: lo que

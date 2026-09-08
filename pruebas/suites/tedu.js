@@ -582,6 +582,13 @@ const server = http.createServer((req, res) => {
   chk(/NO depende de lo que mapearon/i.test(r.txt),
       'y aclara que la población sí está completa, venga o no de su trabajo');
 
+  /* ── Antes y después (v811) ──────────────────────────────────────────
+     El primer análisis de un centro no tiene con qué compararse. El
+     segundo, sí: acá se quitan puntos a propósito, y el bloque tiene que
+     decir cuántos se fueron y qué cifras se movieron con ellos. */
+  const sinPrevio = await pg.evaluate(() => !!document.getElementById('edu-cambios'));
+  chk(!sinPrevio, 'el primer análisis de un centro no inventa un «qué cambió»');
+
   // Con pocos puntos, el módulo tiene que decir que es un ejercicio.
   await pg.evaluate(() => {
     window.__eduDatos = window.__eduDatos.slice(0, 6);
@@ -590,8 +597,32 @@ const server = http.createServer((req, res) => {
   await pg.waitForTimeout(2500);
   const pocos = await pg.evaluate(() => {
     const c = document.getElementById('edu-analisis-salida');
-    return { flojo: !!c.querySelector('.edu-base.flojo'), txt: c.innerText };
+    const cb = document.getElementById('edu-cambios');
+    return { flojo: !!c.querySelector('.edu-base.flojo'), txt: c.innerText,
+             cambios: cb ? {
+               txt: cb.innerText, quieto: cb.classList.contains('quieto'),
+               filas: Array.from(cb.querySelectorAll('.edu-cambios-lista li')).map(li => ({
+                 t: li.querySelector('span').textContent, antes: li.querySelector('small').textContent,
+                 ahora: li.querySelector('b').textContent, delta: li.querySelector('em').textContent, cls: li.className })),
+               // Va después de la base y antes de los KPI.
+               posBase: c.innerHTML.indexOf('edu-base'), posCambios: c.innerHTML.indexOf('edu-cambios'), posKpis: c.innerHTML.indexOf('edu-kpis')
+             } : null,
+             enResultado: !!((window.URBIS_EDU_UI.ultimo || {}).cambios) };
   });
+  console.log('\n── Antes y después ───────────────────────────────────────────');
+  if (pocos.cambios) pocos.cambios.filas.forEach(f => console.log('  ' + f.t + ': ' + f.antes + ' → ' + f.ahora + ' (' + f.delta + ')'));
+  const CB = pocos.cambios || { filas: [], txt: '' };
+  const fPuntos = CB.filas.find(f => /Puntos que entraron/.test(f.t)) || {};
+  chk(!!pocos.cambios && !CB.quieto, 'el segundo análisis del mismo centro trae «qué cambió desde la vez anterior»');
+  chk(CB.posBase >= 0 && CB.posBase < CB.posCambios && CB.posCambios < CB.posKpis, 'y va justo después de sobre-qué-se-analizó, antes de las cifras');
+  chk(fPuntos.ahora === '6' && parseInt(fPuntos.antes, 10) > 40 && /menos/.test(fPuntos.cls || ''),
+      'cuenta los puntos que se fueron (' + fPuntos.antes + ' → ' + fPuntos.ahora + ') y los pinta como baja');
+  chk(CB.filas.length >= 3 && CB.filas.some(f => /Usos leídos/.test(f.t)),
+      'y las cifras que se movieron con ellos (' + CB.filas.length + ')');
+  chk(/puntos menos que la vez anterior/.test(CB.txt) && /revisen el radio o el centro/.test(CB.txt),
+      'con la lectura del caso: si no los borraron a propósito, revisar el recorte');
+  chk(/La población no cambió/.test(CB.txt), 'y aclara que la población no se mueve mapeando: viene del DANE');
+  chk(pocos.enResultado, 'los cambios quedan en el resultado, para el informe');
   console.log('\n  con 6 puntos → aviso de ejercicio: ' + (pocos.flojo ? 'sí' : 'NO'));
   chk(pocos.flojo, 'con pocos puntos el aviso cambia a advertencia');
   chk(/un ejercicio, no un diagn/.test(pocos.txt),
@@ -854,6 +885,51 @@ const server = http.createServer((req, res) => {
   });
   chk(/barrio de borde/.test(RE.general) && /6 p\.m\./.test(RE.flujo), 'volver a analizar el mismo centro conserva lo escrito');
   chk(RE.abierta, 'y la caja con texto vuelve abierta, para que se vea que ya se escribió');
+  const QUIETO = await pg.evaluate(() => {
+    const cb = document.getElementById('edu-cambios');
+    return { hay: !!cb, quieto: !!(cb && cb.classList.contains('quieto')), txt: cb ? cb.innerText : '' };
+  });
+  chk(QUIETO.hay && QUIETO.quieto && /Nada cambió desde la vez anterior/.test(QUIETO.txt),
+      'volver a analizar sin mapear más lo dice: nada cambió, mapeen antes de volver a analizar');
+
+  /* ── La hoja de campo (v811) ──────────────────────────────────────────
+     Lo que el análisis dejó abierto, como tablas en blanco para la calle.
+     Sale de `faltantes`, así que no pide lo que ya está anotado. */
+  console.log('\n── La hoja de campo ──────────────────────────────────────────');
+  const HC = await pg.evaluate(() => {
+    const UI = window.URBIS_EDU_UI;
+    if (!UI.hojaCampoHTML) return { sinFuncion: true };
+    const html = UI.hojaCampoHTML();
+    const d = document.createElement('div'); d.innerHTML = html.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '');
+    const F = window.URBIS_EDU.faltantes(UI.ultimo);
+    return {
+      boton: !!document.getElementById('edu-hoja-campo'),
+      titulo: (d.querySelector('h1') || {}).textContent || '',
+      tareas: Array.from(d.querySelectorAll('.tarea h2')).map(h => h.firstChild.textContent.trim()),
+      tablas: d.querySelectorAll('.tarea table').length,
+      cabHorario: Array.from(d.querySelectorAll('.tarea th')).map(t => t.textContent),
+      filasHorario: (function(){ const t = Array.from(d.querySelectorAll('.tarea')).find(x => /horario/.test(x.querySelector('h2').textContent)); return t ? t.querySelectorAll('tbody tr').length : 0; })(),
+      enApp: Array.from(d.querySelectorAll('.app li b')).map(b => b.textContent),
+      preguntas: d.querySelectorAll('.volver li').length,
+      txt: d.textContent.replace(/\s+/g, ' '),
+      faltantesCalle: F.filter(f => !/^(contexto|forma|lectura)$/.test(f.id)).map(f => f.t),
+      faltantesApp: F.filter(f => /^(contexto|forma|lectura)$/.test(f.id)).map(f => f.t)
+    };
+  });
+  console.log('  tareas en la calle: ' + (HC.tareas || []).join(' · '));
+  console.log('  al volver, en la app: ' + (HC.enApp || []).join(' · '));
+  chk(HC.boton, 'el panel ofrece la hoja de campo junto al informe');
+  chk(/Hoja de campo/.test(HC.titulo || ''), 'la hoja se titula como tal y dice de qué sector es');
+  chk(!!HC.tareas && HC.tareas.length === HC.faltantesCalle.length && HC.tareas.every((t, i) => t === HC.faltantesCalle[i]),
+      'trae una tabla por tarea de campo pendiente, las mismas que calcula el análisis (' + (HC.tareas || []).length + ')');
+  chk(HC.tablas === (HC.tareas || []).length && HC.filasHorario >= 10,
+      'cada tarea con su tabla en blanco para anotar en la calle (' + HC.filasHorario + ' filas para horarios)');
+  chk((HC.cabHorario || []).indexOf('Abre') >= 0 && (HC.cabHorario || []).indexOf('¿Después de 8 p.m.?') >= 0,
+      'y las columnas de lo que hay que anotar, no una tabla genérica');
+  chk(!!HC.enApp && HC.enApp.length === HC.faltantesApp.length,
+      'lo que se hace en la app y no en la calle va aparte (' + (HC.enApp || []).length + ')');
+  chk(HC.preguntas >= 9 && /El movimiento/.test(HC.txt || ''), 'y cierra con las preguntas de la lectura del curso, para pensarlas caminando');
+  chk(!/Escribir la lectura del curso/.test((HC.tareas || []).join(' ')), 'sin pedir en la calle lo que el grupo ya escribió');
 
 
   }

@@ -1440,7 +1440,15 @@
         : 'Suficientes puntos para que las cifras empiecen a ser estables. La población del DANE no depende de lo mapeado.') +
         (faltan.length ? ' ' + faltan.length + (faltan.length === 1 ? ' etiqueta' : ' etiquetas') + ' del curso no se supieron traducir a la Matriz de Usos: ' +
           faltan.slice(0, 5).map(esc).join(', ') + (faltan.length > 5 ? '…' : '') + '.' : '') +
-      '</p></div>';
+      '</p>' +
+      // Qué cambió desde el análisis anterior, si lo hubo: es la prueba de
+      // que mapear más mueve las cifras, y va junto a la advertencia.
+      (r.cambios && r.cambios.lista && r.cambios.lista.length
+        ? '<p class="base-cambios"><b>Desde el análisis anterior' +
+            (r.cambios.desde ? ' (' + new Date(r.cambios.desde).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) + ')' : '') + ':</b> ' +
+            r.cambios.lista.slice(0, 6).map(c => esc(c.t.toLowerCase()) + ' ' + esc(c.antes) + ' → ' + esc(c.ahora)).join(' · ') + '.</p>'
+        : '') +
+      '</div>';
   }
 
   /* Cómo leer las cifras: definiciones y no ventas. Es lo que se enseña. */
@@ -1944,6 +1952,7 @@ pie(4, r, autor, true),
 '.base-edu{border:1px solid ', T.borde, ';border-left:4px solid ', T.acento, ';border-radius:6px;padding:6px 9px;margin-bottom:4px;background:', T.suave, '}',
 '.base-edu.flojo{border-left-color:', T.warn, '}',
 '.base-edu b{font-size:8.4px;display:block;margin-bottom:2px}.base-edu p{font-size:7.2px;line-height:1.45;color:', T.txt2, '}',
+'.base-edu .base-cambios{margin-top:3px;color:', T.tinta, '}.base-edu .base-cambios b{display:inline;font-size:7.2px}',
 '.falta{list-style:none;margin:0;padding:0}.falta li{padding:3px 0;border-bottom:1px solid ', T.linea, '}',
 '.falta li b{display:block;font-size:7.4px}.falta li b em{font-style:normal;color:', T.warn, ';margin-left:3px}',
 '.falta li small{display:block;font-size:6.6px;line-height:1.4;color:', T.txt2, '}',
@@ -2473,6 +2482,9 @@ gruposOrdenados.map(seccion).join(''),
     construirHTMLEjecutivo, construirHTMLListado,
     // Alias de compatibilidad (js/62 llamaba construirHTML).
     construirHTML: construirHTMLEjecutivo,
+    // El mapa estático y su zoom, para la hoja de campo del curso (js/65):
+    // el mismo encuadre que el informe, sin repetir la cuenta.
+    calcZoom, urlMapaEstatico,
     // Estilos del informe (Fase 4): la app los lee para pintar el selector y
     // para generar las gráficas con los colores del estilo elegido.
     ESTILOS

@@ -522,6 +522,123 @@
     });
   }
 
+  /* ── Antes y después ─────────────────────────────────────────────────
+     El resumen del análisis anterior del mismo centro y radio se guarda
+     aparte de las lecturas: es poco, y compararlo es lo que cierra el ciclo
+     que el módulo propone («mapeen más y vuelvan a analizar»). */
+  const PREVIOS_KEY = 'edu_analisis_previos_v1';
+  function leerPrevios(){
+    try { return JSON.parse(localStorage.getItem(PREVIOS_KEY) || '{}') || {}; } catch(e) { return {}; }
+  }
+  function previoDe(clave){ return leerPrevios()[clave] || null; }
+  function guardarPrevio(clave, resumen){
+    try { const t = leerPrevios(); t[clave] = resumen; localStorage.setItem(PREVIOS_KEY, JSON.stringify(t)); } catch(e) {}
+  }
+  function bloqueCambios(c){
+    if (!c) return '';
+    const fecha = c.desde ? new Date(c.desde).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    const filas = c.lista.map(x =>
+      '<li class="' + (x.mejora ? 'mas' : 'menos') + '"><span>' + esc(x.t) + '</span>' +
+      '<small>' + esc(x.antes) + '</small><i>→</i><b>' + esc(x.ahora) + '</b><em>' + esc(x.delta) + '</em></li>').join('');
+    return '<div class="edu-caja edu-cambios' + (c.lista.length ? '' : ' quieto') + '" id="edu-cambios">' +
+      '<h4>🔁 Qué cambió desde la vez anterior' + (fecha ? ' <em>· ' + esc(fecha) + '</em>' : '') + '</h4>' +
+      '<p class="edu-cambios-lectura">' + esc(c.lectura) + '</p>' +
+      (filas ? '<ul class="edu-cambios-lista">' + filas + '</ul>' : '') +
+      '<p class="edu-nota">' + esc(c.notaPoblacion) + '</p>' +
+      '</div>';
+  }
+
+  /* ── La hoja de campo ────────────────────────────────────────────────
+     Lo que el análisis dejó abierto, convertido en una hoja para llevar a
+     la calle: una tabla en blanco por tarea, con las columnas de lo que hay
+     que anotar, y el plano del radio arriba. Se imprime desde el navegador.
+     Sale de `faltantes(r)`, así que si el curso ya anotó los horarios, esa
+     tabla no aparece. */
+  const TABLAS_CAMPO = {
+    puntos:      { cols: ['Cuadra recorrida', 'Usos contados', 'Observaciones'], filas: 10 },
+    horarios:    { cols: ['Local o uso', 'Días', 'Abre', 'Cierra', '¿Domingo?', '¿Después de 8 p.m.?'], filas: 14 },
+    edificacion: { cols: ['Punto o dirección', 'Pisos', 'Época aparente', 'Material', 'Fachada activa / ciega', 'Estado'], filas: 12 },
+    etiquetas:   { cols: ['Etiqueta que se usó', 'Qué es en realidad', 'Cuántos'], filas: 6 },
+    busetas:     { cols: ['N.º de ruta', 'Destino que dice el letrero', 'Cada cuánto pasa', 'Hora', 'Parada'], filas: 10 },
+    binacional:  { cols: ['Casa de cambio o cambista', 'Dónde', 'Hora', '¿De dónde viene la clientela?'], filas: 8 },
+    flotante:    { cols: ['Cuadra', '«Se arrienda pieza»', 'Pagadiarios', 'Residencias'], filas: 8 }
+  };
+  const EN_LA_APP = { contexto: true, forma: true, lectura: true };
+  function hojaCampoHTML(r){
+    r = r || ultimo;
+    if (!r || !window.URBIS_EDU || !window.URBIS_EDU.faltantes) return '';
+    const F = window.URBIS_EDU.faltantes(r);
+    const enCalle = F.filter(f => !EN_LA_APP[f.id]), enApp = F.filter(f => EN_LA_APP[f.id]);
+    const m = r.meta || {};
+    const radioTxt = m.radioM >= 1000 ? (m.radioM / 1000) + ' km' : m.radioM + ' m';
+    let mapa = '';
+    try {
+      const I = window.AIA_INFORME;
+      if (I && I.calcZoom && I.urlMapaEstatico && m.lat) {
+        const z = I.calcZoom(m.lat, m.radioM, 320), url = I.urlMapaEstatico(m, 640, 320, z.z);
+        const pct = (z.radioPx / 320 * 200).toFixed(1);
+        mapa = url ? '<div class="mapa"><img src="' + url + '" alt="Plano del sector">' +
+          '<i class="radio" style="width:' + (z.radioPx / 640 * 200).toFixed(1) + '%;height:' + pct + '%"></i><i class="cruz"></i></div>' : '';
+      }
+    } catch(e) { mapa = ''; }
+    const tabla = f => {
+      const T = TABLAS_CAMPO[f.id] || { cols: ['Qué', 'Dónde', 'Observaciones'], filas: 8 };
+      const fila = '<tr>' + T.cols.map(() => '<td></td>').join('') + '</tr>';
+      return '<section class="tarea">' +
+        '<h2>' + esc(f.t) + (f.n ? ' <em>' + f.n + '</em>' : '') + '</h2>' +
+        '<p>' + esc(f.d) + '</p>' +
+        '<table><thead><tr>' + T.cols.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead>' +
+        '<tbody>' + Array.from({ length: T.filas }, () => fila).join('') + '</tbody></table>' +
+        '</section>';
+    };
+    const L = (window.URBIS_EDU.LECTURAS || []).filter(l => l.id !== 'general');
+    const fecha = new Date().toLocaleDateString('es-CO', { dateStyle: 'long' });
+    return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><base href="' + location.href + '">' +
+      '<title>Hoja de campo · URBIS</title><style>' +
+      '@page{size:letter portrait;margin:12mm}*{box-sizing:border-box}' +
+      'body{font-family:"Segoe UI",Arial,sans-serif;color:#111;margin:0;padding:14px 18px;font-size:11px;line-height:1.4}' +
+      'header{display:flex;align-items:center;gap:12px;border-bottom:2px solid #0e7490;padding-bottom:8px;margin-bottom:10px}' +
+      'header img{width:34px;height:34px}header h1{font-size:18px;margin:0}header p{margin:2px 0 0;color:#555;font-size:11px}' +
+      '.datos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}' +
+      '.datos div{border:1px solid #cfd8dc;border-radius:6px;padding:5px 8px}.datos b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#555}' +
+      '.datos span{display:block;min-height:14px;border-bottom:1px dotted #999}' +
+      '.mapa{position:relative;width:100%;aspect-ratio:2/1;border:1px solid #cfd8dc;border-radius:6px;overflow:hidden;margin:6px 0 10px}' +
+      '.mapa img{width:100%;height:100%;object-fit:cover;display:block}' +
+      '.mapa .radio{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #0e7490;border-radius:50%;box-shadow:0 0 0 2000px rgba(255,255,255,.35)}' +
+      '.mapa .cruz{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;background:linear-gradient(#c0392b,#c0392b) center/2px 100% no-repeat,linear-gradient(#c0392b,#c0392b) center/100% 2px no-repeat}' +
+      '.tarea{break-inside:avoid;margin:0 0 14px}.tarea h2{font-size:13px;margin:0 0 2px;color:#0e7490}.tarea h2 em{font-style:normal;color:#b45309;font-size:11px}' +
+      '.tarea p{margin:0 0 5px;color:#444}' +
+      'table{width:100%;border-collapse:collapse}th{font-size:9px;text-transform:uppercase;letter-spacing:.3px;text-align:left;padding:3px 5px;border-bottom:1.5px solid #333;color:#333}' +
+      'td{height:22px;border-bottom:1px solid #bbb;padding:0 5px}' +
+      '.app{border:1px dashed #0e7490;border-radius:6px;padding:7px 10px;margin:10px 0}.app h2{font-size:12px;margin:0 0 3px}.app li{margin:2px 0}' +
+      '.volver{border:1px dashed #b45309;border-radius:6px;padding:7px 10px;margin:10px 0}.volver h2{font-size:12px;margin:0 0 3px;color:#b45309}' +
+      '.volver li{margin:3px 0}.volver b{display:block}.volver span{color:#444}' +
+      'footer{margin-top:12px;font-size:9px;color:#666;border-top:1px solid #ccc;padding-top:5px}' +
+      '@media print{body{padding:0}}' +
+      '</style></head><body>' +
+      '<header><img src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">' +
+        '<div><h1>Hoja de campo · ' + esc(((r.edu || {}).ciudad) || m.direccionAprox || 'el sector') + '</h1>' +
+        '<p>Radio de ' + radioTxt + ' alrededor de ' + (m.lat ? m.lat.toFixed(5) + ', ' + m.lng.toFixed(5) : 'el centro del mapa') +
+        ' · generada el ' + esc(fecha) + ' a partir de ' + ((r.edu || {}).leidos || 0) + ' puntos ya mapeados</p></div></header>' +
+      '<div class="datos"><div><b>Grupo</b><span></span></div><div><b>Fecha y hora de salida</b><span></span></div><div><b>Clima</b><span></span></div></div>' +
+      mapa +
+      (enCalle.length ? enCalle.map(tabla).join('')
+        : '<section class="tarea"><h2>Nada pendiente en la calle</h2><p>El análisis no dejó tareas de campo abiertas. Caminen igual: la hoja de atrás es para lo que el mapa no pregunta.</p></section>') +
+      (enApp.length ? '<div class="app"><h2>Al volver, en la aplicación</h2><ul>' +
+          enApp.map(f => '<li><b>' + esc(f.t) + '.</b> ' + esc(f.d) + '</li>').join('') + '</ul></div>' : '') +
+      '<div class="volver"><h2>Y para escribir la lectura del curso, mientras caminan</h2><ul>' +
+        L.map(l => '<li><b>' + esc(l.t) + '</b><span>' + esc(l.p) + '</span></li>').join('') + '</ul></div>' +
+      '<footer>URBIS · modo educativo · esta hoja sale del análisis del sector: lo que ya está anotado no se vuelve a pedir.</footer>' +
+      '</body></html>';
+  }
+  function abrirHojaCampo(){
+    const html = hojaCampoHTML(ultimo);
+    if (!html) return;
+    const w = window.open('', '_blank');
+    if (!w) { alert('El navegador bloqueó la ventana de la hoja de campo.'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+
   // ── Orquestación ────────────────────────────────────────────────────────
   function centroActual(){
     try {
@@ -549,7 +666,11 @@
       claveLecturas = claveDe(centro, radioM);
       const previas = lecturasDe(claveLecturas);
       r.lecturas = Object.assign({}, previas);
-      cont.innerHTML = conLectura(bloqueBase(r), 'base', previas) + kpis(r) +
+      // Antes y después: contra el análisis anterior del mismo centro y radio.
+      const previo = previoDe(claveLecturas), resumenAhora = window.URBIS_EDU.resumen(r);
+      r.cambios = previo ? window.URBIS_EDU.cambios(previo, resumenAhora) : null;
+      guardarPrevio(claveLecturas, resumenAhora);
+      cont.innerHTML = conLectura(bloqueBase(r), 'base', previas) + bloqueCambios(r.cambios) + kpis(r) +
                        conLectura(bloquePoblacion(r), 'poblacion', previas) +
                        conLectura(bloqueFlujo(r), 'flujo', previas) +
                        conLectura(bloqueCalor(r), 'calor', previas) +
@@ -570,8 +691,11 @@
                        bloqueConclusion(previas) +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe del curso</button>' +
+                         '<button type="button" id="edu-hoja-campo" class="sec">📝 Hoja de campo · lo que falta por levantar</button>' +
                        '</div>';
       engancharLecturas(cont);
+      const bh = $('edu-hoja-campo');
+      if (bh) bh.addEventListener('click', abrirHojaCampo);
       const bi = $('edu-analisis-informe');
       if (bi) bi.addEventListener('click', abrirInforme);
       const bf = $('edu-forma-btn');
@@ -792,7 +916,7 @@
 
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
                           mostrarCalor: mostrarCalor, bloqueContexto: bloqueContexto,
-                          lecturas: lecturasActuales,
+                          lecturas: lecturasActuales, hojaCampoHTML: hojaCampoHTML,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();

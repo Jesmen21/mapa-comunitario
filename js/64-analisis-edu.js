@@ -710,8 +710,69 @@
     return out;
   }
 
+  /* ── Antes y después ─────────────────────────────────────────────────
+     Todo el módulo dice «mapeen más y vuelvan a analizar», y hasta la v810
+     nada mostraba qué cambió. El resumen es lo poco que hace falta guardar
+     del análisis anterior para compararlo; los cambios son la lista de lo
+     que se movió, con la razón cuando se sabe. La población NO entra a la
+     comparación como cambio del curso: viene del DANE y no se mueve
+     mapeando; si cambia es porque cambió el radio o el censo. */
+  const COMPARABLES = [
+    { id: 'leidos',      t: 'Puntos que entraron al análisis', f: r => (r.edu || {}).leidos || 0, ent: true },
+    { id: 'total',       t: 'Usos leídos',                    f: r => (r.stats || {}).total || 0, ent: true },
+    { id: 'densidad',    t: 'Usos por hectárea',               f: r => Number((r.stats || {}).densidadPorHa) || 0, dec: 1 },
+    { id: 'peatonal',    t: 'Flujo a pie',                     f: r => ((((r.stats || {}).movilidad || {}).flujo) || {}).peatonal || 0, ent: true, sufijo: '/100' },
+    { id: 'vehicular',   t: 'Flujo vehicular',                 f: r => ((((r.stats || {}).movilidad || {}).flujo) || {}).vehicular || 0, ent: true, sufijo: '/100' },
+    { id: 'noche',       t: 'Franja de noche',                 f: r => (((((r.stats || {}).movilidad || {}).flujo) || {}).franjas || {}).noche || 0, ent: true },
+    { id: 'rubros',      t: 'Rubros distintos',                f: r => ((r.stats || {}).rubros || []).length, ent: true },
+    { id: 'conHorario',  t: 'Usos con horario anotado',        f: r => ((r.stats || {}).horarios || {}).conDato || 0, ent: true },
+    { id: 'fichas',      t: 'Edificios con ficha',             f: r => (((r.edu || {}).edificacion) || {}).total || 0, ent: true },
+    { id: 'sinTraducir', t: 'Etiquetas sin traducir',          f: r => Object.keys((r.edu || {}).sinTraducir || {}).length, ent: true, malo: true }
+  ];
+  function resumen(r){
+    const out = { ts: new Date().toISOString(), poblacion: (r.stats || {}).poblacionEstimada || 0 };
+    COMPARABLES.forEach(c => { out[c.id] = c.f(r); });
+    return out;
+  }
+  function cambios(antes, ahora){
+    if (!antes || !ahora) return null;
+    const lista = [];
+    COMPARABLES.forEach(c => {
+      const a = Number(antes[c.id]) || 0, b = Number(ahora[c.id]) || 0;
+      const d = b - a;
+      if (Math.abs(d) < (c.dec ? 0.05 : 0.5)) return;
+      const fmt = v => c.dec ? v.toLocaleString('es-CO', { maximumFractionDigits: c.dec, minimumFractionDigits: c.dec }) : String(Math.round(v));
+      lista.push({ id: c.id, t: c.t, antes: fmt(a) + (c.sufijo || ''), ahora: fmt(b) + (c.sufijo || ''),
+                   delta: (d > 0 ? '+' : '−') + fmt(Math.abs(d)),
+                   // Subir es bueno salvo en lo que cuenta problemas.
+                   mejora: c.malo ? d < 0 : d > 0 });
+    });
+    const dPuntos = (Number(ahora.leidos) || 0) - (Number(antes.leidos) || 0);
+    const pobCambio = Math.abs((ahora.poblacion || 0) - (antes.poblacion || 0)) > 0.5;
+    let lectura;
+    if (!lista.length) {
+      lectura = 'Nada cambió desde la vez anterior: mismos puntos, mismas cifras. Mapeen más cuadras antes de volver a analizar; el cambio es lo que enseña.';
+    } else if (dPuntos > 0) {
+      lectura = 'Entraron ' + dPuntos + (dPuntos === 1 ? ' punto nuevo' : ' puntos nuevos') + ' y con ellos se movieron ' + lista.length +
+        (lista.length === 1 ? ' cifra' : ' cifras') + '. Eso es lo que hace mapear: el sector no cambió, cambió cuánto de él se ve.';
+    } else if (dPuntos < 0) {
+      lectura = 'Hay ' + Math.abs(dPuntos) + ' puntos menos que la vez anterior. Si no los borraron a propósito, revisen el radio o el centro del mapa: ' +
+        'comparar dos recortes distintos no dice nada del sector.';
+    } else {
+      lectura = 'Mismos puntos, pero ' + lista.length + (lista.length === 1 ? ' cifra cambió' : ' cifras cambiaron') +
+        ': editaron lo ya mapeado (horarios, fichas, etiquetas). Eso también es levantamiento.';
+    }
+    return { desde: antes.ts, lista, dPuntos, lectura,
+             notaPoblacion: pobCambio
+               ? 'La población también cambió (' + Math.round(antes.poblacion).toLocaleString('es-CO') + ' → ' + Math.round(ahora.poblacion).toLocaleString('es-CO') + '): eso no lo hizo el curso, viene del DANE. Cambió el radio, el centro o el censo.'
+               : 'La población no cambió: viene del DANE y no se mueve mapeando.' };
+  }
+
   window.URBIS_EDU = {
     analizar: analizar,
+    resumen: resumen,
+    cambios: cambios,
+    COMPARABLES: COMPARABLES,
     LECTURAS: LECTURAS,
     faltantes: faltantes,
     contexto: contexto,
