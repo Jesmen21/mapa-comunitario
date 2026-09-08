@@ -683,9 +683,9 @@
                          'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
                          '<button type="button" id="edu-forma-btn">🔷 Reconocer la traza</button></div>' +
                        '<div class="edu-caja" id="edu-contexto"><h4>🧭 El sector en su contexto</h4>' +
-                         '<p class="edu-nota">Comuna y barrio, rutas de buseta que paran cerca, qué tan cerca ' +
-                         'queda la frontera y cuánto alojamiento de paso hay. Sale de OpenStreetMap, no de lo que ' +
-                         'mapearon. Se pide aparte porque es otra consulta.</p>' +
+                         '<p class="edu-nota">Comuna y barrio, busetas, frontera, alojamiento de paso, colegio y salud a pie, ' +
+                         'espacio público por habitante, pendiente y quebradas. Sale de OpenStreetMap y del modelo de ' +
+                         'terreno, no de lo que mapearon. Se pide aparte porque es otra consulta.</p>' +
                          '<button type="button" id="edu-contexto-btn">🧭 Consultar el contexto</button></div>' +
                        cajaLectura('contexto', previas) +
                        bloqueConclusion(previas) +
@@ -855,6 +855,47 @@
         'comercio de paso (maletas, remesas, recargas), y pregunten en dos o tres locales de dónde viene la clientela ' +
         'y a qué hora. Eso es lo que distingue una cuadra de frontera de una cuadra cerca de la frontera.</p>';
     }
+    // A distancia de caminata.
+    if (c.caminata) {
+      const k = c.caminata;
+      const fila = (ico, etq, e) => '<li>' + ico + ' <span>' + etq + '</span>' +
+        (e ? '<b>' + e.min + ' min</b><small>' + esc(e.nombre) + ' · ' + mDe(e.distM) + ' hacia ' + esc(e.rumbo) + '</small>'
+           : '<b>—</b><small>sin ' + etq.toLowerCase() + ' mapeado a menos de 1,5 km</small>') + '</li>';
+      html += '<h4 class="sep">🚶 A distancia de caminata</h4>' +
+        '<ul class="edu-caminata">' + fila('🏫', 'Colegio', k.colegio) + fila('🏥', 'Salud', k.salud) + fila('🌳', 'Parque', k.parque) + '</ul>' +
+        '<p class="edu-nota">Minutos a paso de ciudad (80 m por minuto), en línea recta: el camino real es más largo. ' +
+        'Un colegio a más de 15 minutos es un colegio al que se va en buseta.</p>';
+    }
+    // Espacio público por habitante.
+    if (c.espacioPublico) {
+      const e = c.espacioPublico;
+      html += '<h4 class="sep">🌳 Espacio público por habitante</h4>';
+      if (e.m2PorHab != null) {
+        html += '<div class="edu-ep"><b>' + e.m2PorHab.toLocaleString('es-CO') + '<small> m²/hab</small></b>' +
+          '<div class="edu-ep-barra"><i style="width:' + Math.min(100, e.pctDeMeta) + '%"></i><em style="left:100%">meta ' + e.meta + '</em></div></div>';
+      }
+      html += '<p class="edu-nota">' + esc(e.lectura) + '</p>' +
+        (e.n ? '<p class="edu-nota"><b>Contado:</b> ' + e.parques.slice(0, 5).map(q => esc(q.nombre) + ' <em>(' + q.m2.toLocaleString('es-CO') + ' m²)</em>').join(' · ') +
+               (e.n > 5 ? ' …' : '') + '. Los polígonos entran enteros aunque asomen fuera del radio.</p>' : '');
+    }
+    // Terreno y agua.
+    if (c.terreno || (c.agua && c.agua.cercano)) {
+      html += '<h4 class="sep">⛰️ Terreno y agua</h4>';
+      if (c.terreno) {
+        const t = c.terreno;
+        html += '<div class="edu-terreno"><span><b>' + t.pendientePct.toLocaleString('es-CO') + ' %</b><small>pendiente media</small></span>' +
+          '<span><b>' + t.desnivelM + ' m</b><small>de desnivel</small></span>' +
+          '<span><b>' + esc(t.cae.replace(/^el /, '')) + '</b><small>hacia donde cae</small></span></div>' +
+          '<p class="edu-terreno-lectura' + (t.haciaElAgua ? ' ojo' : '') + '">' + esc(t.lectura) + '</p>' +
+          '<p class="edu-nota">' + esc(t.nota) + '</p>';
+      } else if (c.agua && c.agua.cercano) {
+        html += '<p class="edu-nota">El cauce más cercano, ' + esc(c.agua.cercano.nombre) + ', pasa a ' + mDe(c.agua.cercano.distM) + ' hacia ' + esc(c.agua.cercano.rumbo) +
+          '. La altura del terreno no respondió esta vez.</p>';
+      }
+      if (c.agua && c.agua.cauces.length > 1) {
+        html += '<p class="edu-nota"><b>Otros cauces en el radio:</b> ' + c.agua.cauces.slice(1).map(q => esc(q.nombre) + ' <em>(' + mDe(q.distM) + ')</em>').join(' · ') + '</p>';
+      }
+    }
     // La población de paso.
     if (c.flotante) {
       const f = c.flotante;
@@ -877,7 +918,7 @@
     const btn = $('edu-contexto-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Consultando…'; }
     try {
-      const c = await window.URBIS_EDU.contexto(centro, radioM);
+      const c = await window.URBIS_EDU.contexto(centro, radioM, ultimo && ultimo.stats && ultimo.stats.poblacionEstimada);
       if (ultimo) ultimo.contexto = c;      // para el informe
       caja.innerHTML = '<h4>🧭 El sector en su contexto</h4>' + bloqueContexto(c);
     } catch(err) {

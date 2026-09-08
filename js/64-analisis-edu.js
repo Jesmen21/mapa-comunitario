@@ -528,11 +528,23 @@
   const FRONTERA_CERCA_M = 3000;
   const ALOJ_NOMBRE = { hotel: 'Hotel', hostel: 'Hostal', guest_house: 'Residencia', motel: 'Motel',
                         apartment: 'Apartamento turístico', albergue: 'Albergue' };
+  const EQUIP_NOMBRE = { school: 'Colegio', kindergarten: 'Jardín infantil', college: 'Instituto', university: 'Universidad',
+                         hospital: 'Hospital', clinic: 'Clínica', doctors: 'Consultorio', health_post: 'Puesto de salud',
+                         park: 'Parque', garden: 'Jardín', playground: 'Parque infantil' };
+  // A pie, a paso de ciudad: 80 m por minuto (4,8 km/h).
+  const PASO_M_MIN = 80;
+  // La meta colombiana de espacio público efectivo: 15 m² por habitante
+  // (Decreto 1504 de 1998). Se pone al lado del número porque sola la
+  // cifra no dice si es mucho o poco.
+  const META_EP_M2_HAB = 15;
 
-  function leerContexto(centro, elementos){
+  function leerContexto(centro, elementos, poblacion){
     const M = window.AIA_MOTOR;
     const dist = (p) => M && M.haversineM ? Math.round(M.haversineM(centro, p)) : 0;
     const limites = [], barrios = [], paradas = [], rutasVistas = {}, rutas = [], pasos = [], cambio = [], alojamiento = [];
+    const equip = { colegio: [], salud: [], parque: [] }, parques = [], aguas = [];
+    const mLat = 110540, mLng = 111320 * Math.cos(centro.lat * Math.PI / 180);
+    const aMetros = q => ({ x: (q.lng - centro.lng) * mLng, y: (q.lat - centro.lat) * mLat });
     (elementos || []).forEach(el => {
       const t = el.tags || {};
       if (el.type === 'relation' && t.boundary === 'administrative') {
@@ -551,9 +563,37 @@
                      color: String(t.colour || t.color || '').trim(), tipo: String(t.route) });
         return;
       }
+      // Los polígonos y trazos llegan con `geometry` y sin centro propio.
+      if (Array.isArray(el.geometry) && el.geometry.length >= 2) {
+        const pts = el.geometry.map(g => ({ lat: g.lat, lng: g.lon != null ? g.lon : g.lng })).filter(g => Number.isFinite(g.lat) && Number.isFinite(g.lng));
+        if (String(t.waterway || '')) {
+          let min = Infinity, cerca = null;
+          pts.forEach(q => { const d = dist(q); if (d < min) { min = d; cerca = q; } });
+          if (cerca) aguas.push({ nombre: t.name || ({ river: 'Río sin nombre', stream: 'Quebrada sin nombre', canal: 'Canal sin nombre', drain: 'Canal de drenaje', ditch: 'Zanja' })[t.waterway] || 'Cauce',
+                                  tipo: t.waterway, distM: Math.round(min), rumbo: rumboHacia(centro, cerca) });
+          return;
+        }
+        if (/^(park|garden|playground|pitch)$/.test(String(t.leisure || '')) || t.landuse === 'recreation_ground') {
+          const cerrado = pts.length >= 4 && Math.abs(pts[0].lat - pts[pts.length - 1].lat) < 1e-9 && Math.abs(pts[0].lng - pts[pts.length - 1].lng) < 1e-9;
+          if (!cerrado) return;
+          // Área por la fórmula del cordón, en metros proyectados alrededor del centro.
+          const m2 = Math.abs(pts.slice(0, -1).reduce((acc, q, i, arr) => {
+            const a = aMetros(q), b = aMetros(arr[(i + 1) % arr.length]);
+            return acc + (a.x * b.y - b.x * a.y);
+          }, 0) / 2);
+          const cx = pts.reduce((a, q) => a + q.lat, 0) / pts.length, cy = pts.reduce((a, q) => a + q.lng, 0) / pts.length;
+          parques.push({ nombre: t.name || (t.leisure === 'pitch' ? 'Cancha' : t.leisure === 'playground' ? 'Parque infantil' : 'Parque sin nombre'),
+                         tipo: t.leisure || t.landuse, m2: Math.round(m2), distM: dist({ lat: cx, lng: cy }) });
+          return;
+        }
+      }
       const p = posDe(el);
       if (!p) return;
       if (t.highway === 'bus_stop') { paradas.push({ nombre: t.name || '', distM: dist(p) }); return; }
+      const am = String(t.amenity || ''), le = String(t.leisure || '');
+      if (/^(school|kindergarten|college|university)$/.test(am)) { equip.colegio.push({ nombre: t.name || EQUIP_NOMBRE[am] || 'Colegio', tipo: am, distM: dist(p), rumbo: rumboHacia(centro, p) }); return; }
+      if (/^(hospital|clinic|doctors|health_post)$/.test(am)) { equip.salud.push({ nombre: t.name || EQUIP_NOMBRE[am] || 'Centro de salud', tipo: am, distM: dist(p), rumbo: rumboHacia(centro, p) }); return; }
+      if (/^(park|garden|playground)$/.test(le) && !Array.isArray(el.geometry)) { equip.parque.push({ nombre: t.name || EQUIP_NOMBRE[le] || 'Parque', tipo: le, distM: dist(p), rumbo: rumboHacia(centro, p) }); return; }
       if (/^(neighbourhood|quarter|suburb)$/.test(String(t.place || '')) && t.name) {
         barrios.push({ nombre: t.name, distM: dist(p), rumbo: rumboHacia(centro, p) }); return;
       }
@@ -618,18 +658,115 @@
               ' en el radio' + (dePaso ? ', ' + dePaso + ' de paso' : ', ninguno de paso') +
               '. Poca señal de población flotante en el mapa; la que haya se ve en los letreros de arriendo por pieza.')
     };
+    // El más cercano de cada equipamiento, con sus minutos a pie.
+    Object.keys(equip).forEach(k => equip[k].sort((a, b) => a.distM - b.distM));
+    const masCercano = k => {
+      const e = equip[k][0];
+      return e ? Object.assign({}, e, { min: Math.max(1, Math.round(e.distM / PASO_M_MIN)) }) : null;
+    };
+    const caminata = {
+      colegio: masCercano('colegio'), salud: masCercano('salud'), parque: masCercano('parque'),
+      cuantos: { colegio: equip.colegio.length, salud: equip.salud.length, parque: equip.parque.length },
+      hastaM: 1500,
+      lectura: (function () {
+        const partes = [];
+        const f = (k, etq) => { const e = masCercano(k); partes.push(e ? etq + ' a ' + e.min + ' min (' + e.distM + ' m)' : 'sin ' + etq.toLowerCase() + ' mapeado a menos de 1,5 km'); };
+        f('colegio', 'Colegio'); f('salud', 'Salud'); f('parque', 'Parque');
+        return partes.join(' · ');
+      })()
+    };
+    // Espacio público por habitante: el área de los parques del radio sobre la
+    // población. Los polígonos entran enteros aunque asomen fuera del radio;
+    // se dice.
+    parques.sort((a, b) => b.m2 - a.m2);
+    const m2Total = parques.reduce((a, q) => a + q.m2, 0);
+    const habitantes = Number(poblacion) || 0;
+    const m2Hab = habitantes > 0 ? m2Total / habitantes : null;
+    const espacioPublico = {
+      parques: parques.slice(0, 10), n: parques.length, m2: m2Total, habitantes,
+      m2PorHab: m2Hab == null ? null : Math.round(m2Hab * 100) / 100, meta: META_EP_M2_HAB,
+      pctDeMeta: m2Hab == null ? null : Math.round(100 * m2Hab / META_EP_M2_HAB),
+      lectura: !parques.length
+        ? 'No hay parques ni canchas dibujados como polígono en el radio. Si los hay, no están medidos en el mapa: midan el más cercano en pasos.'
+        : m2Hab == null
+          ? parques.length + ' espacios públicos suman ' + Math.round(m2Total).toLocaleString('es-CO') + ' m², pero no hay población para dividir.'
+          : (Math.round(m2Hab * 100) / 100).toLocaleString('es-CO') + ' m² de espacio público por habitante, contra la meta de ' + META_EP_M2_HAB + ' m² (' +
+            Math.round(100 * m2Hab / META_EP_M2_HAB) + ' % de la meta). ' +
+            (m2Hab < 3 ? 'Muy por debajo: es el déficit típico de los barrios densos.' : m2Hab < META_EP_M2_HAB ? 'Por debajo de la meta, como casi toda la ciudad.' : 'Cumple la meta: es raro, y vale la pena decir por qué.')
+    };
+    aguas.sort((a, b) => a.distM - b.distM);
     return { limites, barrios: barrios.slice(0, 8), paradas: paradas.length, rutas, pasos: pasos.slice(0, 3),
              paso, cambio, binacional, alojamiento: alojamiento.slice(0, 12), flotante,
+             caminata, espacioPublico, agua: { cauces: aguas.slice(0, 5), cercano: aguas[0] || null },
              umbralFronteraM: FRONTERA_CERCA_M,
              fuente: 'OpenStreetMap', consultado: new Date().toISOString() };
   }
 
-  async function contexto(centro, radioM){
+  /* ── El terreno ───────────────────────────────────────────────────────
+     Una rejilla de 5 × 5 alturas sobre el radio —25 puntos, que es poco
+     para la cuota del servicio— y sobre ella un plano ajustado por mínimos
+     cuadrados: su inclinación es la pendiente media y su dirección de
+     bajada, hacia dónde corre el agua. El modelo tiene 90 m de resolución:
+     describe el sector, no la cota de una esquina, y el bloque lo dice. */
+  function rejillaTerreno(centro, radioM, n){
+    const pts = [];
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const fx = (i / (n - 1)) * 2 - 1, fy = (j / (n - 1)) * 2 - 1;
+      pts.push({ lat: centro.lat + fy * radioM / 110540, lng: centro.lng + fx * radioM / (111320 * Math.cos(centro.lat * Math.PI / 180)), fx, fy });
+    }
+    return pts;
+  }
+  function leerTerreno(centro, radioM, pts, alturas, aguaCercana){
+    const z = (alturas || []).map(Number);
+    if (!pts || z.length !== pts.length || z.some(v => !isFinite(v))) return null;
+    // Plano z = a·x + b·y + c, con x hacia el oriente y y hacia el norte, en metros.
+    const X = pts.map(p => p.fx * radioM), Y = pts.map(p => p.fy * radioM);
+    const n = z.length, mx = X.reduce((a, v) => a + v, 0) / n, my = Y.reduce((a, v) => a + v, 0) / n, mz = z.reduce((a, v) => a + v, 0) / n;
+    let sxx = 0, syy = 0, sxy = 0, sxz = 0, syz = 0;
+    for (let i = 0; i < n; i++) { const dx = X[i] - mx, dy = Y[i] - my, dz = z[i] - mz; sxx += dx * dx; syy += dy * dy; sxy += dx * dy; sxz += dx * dz; syz += dy * dz; }
+    const det = sxx * syy - sxy * sxy;
+    if (!det) return null;
+    const a = (sxz * syy - syz * sxy) / det, b = (syz * sxx - sxz * sxy) / det;
+    const pendiente = Math.sqrt(a * a + b * b) * 100;                 // %
+    // Hacia dónde BAJA: el sentido contrario al gradiente.
+    const rumboBaja = (Math.atan2(-a, -b) * 180 / Math.PI + 360) % 360;
+    const RUMBOS = ['el norte', 'el nororiente', 'el oriente', 'el suroriente', 'el sur', 'el suroccidente', 'el occidente', 'el noroccidente'];
+    const cae = RUMBOS[Math.round(rumboBaja / 45) % 8];
+    const min = Math.min.apply(null, z), max = Math.max.apply(null, z);
+    const grado = pendiente < 5 ? 'llano' : pendiente < 12 ? 'suave' : pendiente < 25 ? 'fuerte' : 'muy fuerte';
+    // ¿El agua corre hacia la quebrada? Si la bajada apunta a menos de 45°
+    // del cauce más cercano, en lluvia la calle es su canal.
+    let haciaElAgua = false;
+    if (aguaCercana && aguaCercana.rumbo) {
+      const idx = RUMBOS.indexOf(aguaCercana.rumbo);
+      const dif = Math.abs(((rumboBaja - idx * 45) + 540) % 360 - 180);
+      haciaElAgua = idx >= 0 && dif <= 45;
+    }
+    const lectura = 'Terreno ' + grado + ': pendiente media de ' + pendiente.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' %, ' + Math.round(max - min) + ' m de desnivel dentro del radio' +
+      (pendiente >= 2 ? ', y cae hacia ' + cae + '.' : '; casi no tiene hacia dónde caer.') +
+      (aguaCercana ? ' El cauce más cercano, ' + aguaCercana.nombre + ', pasa a ' + aguaCercana.distM + ' m hacia ' + aguaCercana.rumbo + '.' +
+        (haciaElAgua ? ' El terreno baja hacia él: en lluvia fuerte, las calles de ese lado son su canal. Es la primera pregunta de riesgo del sector.' : '')
+        : ' No hay quebradas ni canales dibujados en el radio.');
+    return { pendientePct: Math.round(pendiente * 10) / 10, grado, cae, rumboBaja: Math.round(rumboBaja), desnivelM: Math.round(max - min),
+             minM: Math.round(min), maxM: Math.round(max), haciaElAgua, puntos: n, lectura,
+             nota: 'La altura sale de un modelo de 90 m de resolución: describe el sector, no la cota de una esquina.' };
+  }
+
+  async function contexto(centro, radioM, poblacion){
     if (!window.AIA_DATOS || !window.AIA_DATOS.consultarContexto) {
       throw new Error('Falta el módulo de datos. Recargá la aplicación.');
     }
-    const els = await window.AIA_DATOS.consultarContexto(centro.lat, centro.lng, radioM);
-    return leerContexto({ lat: centro.lat, lng: centro.lng }, els || []);
+    const c0 = { lat: centro.lat, lng: centro.lng };
+    const pts = rejillaTerreno(c0, radioM, 5);
+    // Overpass y el servicio de alturas son servicios distintos: van a la vez.
+    // Si la altura falla, el contexto sale igual, sin terreno.
+    const [els, alturas] = await Promise.all([
+      window.AIA_DATOS.consultarContexto(centro.lat, centro.lng, radioM),
+      (window.AIA_DATOS.consultarElevacion ? window.AIA_DATOS.consultarElevacion(pts) : Promise.resolve(null)).catch(() => null)
+    ]);
+    const c = leerContexto(c0, els || [], poblacion);
+    c.terreno = leerTerreno(c0, radioM, pts, alturas, c.agua && c.agua.cercano);
+    return c;
   }
 
   /* ── La lectura del curso ─────────────────────────────────────────────
@@ -696,6 +833,8 @@
         d: 'El mapa no tiene rutas acá. Anoten número, destino y cada cuánto pasan, en la parada más usada.' });
       if (c.binacional && c.binacional.grado !== 'ninguno') out.push({ id: 'binacional', t: 'Leer el flujo binacional en la calle',
         d: 'Casas de cambio y cambistas en vía, comercio de paso, y de dónde viene la clientela según dos o tres locales.' });
+      if (c.espacioPublico && !c.espacioPublico.n) out.push({ id: 'parque', t: 'Medir el parque o la cancha más cercana',
+        d: 'No hay espacio público dibujado en el radio. Midan el más cercano en pasos (largo × ancho) y anoten si se usa y a qué hora.' });
       if (c.flotante && !c.flotante.dePaso) out.push({ id: 'flotante', t: 'Buscar la población de paso que el mapa no ve',
         d: 'Letreros de «se arrienda pieza», pagadiarios y residencias sin nombre. Cuántos por cuadra.' });
     }
@@ -777,6 +916,7 @@
     faltantes: faltantes,
     contexto: contexto,
     leerContexto: leerContexto,
+    leerTerreno: leerTerreno, rejillaTerreno: rejillaTerreno,
     forma: forma,
     puntoAElemento: puntoAElemento,
     // Es donde el estado del andén se separa de los elementos y se convierte

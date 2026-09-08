@@ -244,6 +244,16 @@ const server = http.createServer((req, res) => {
         N(62, { tourism: 'hostel' }, -300, 40),
         N(63, { amenity: 'social_facility', 'social_facility': 'shelter', name: 'Albergue Divina Providencia' }, 200, -200),
         N(64, { tourism: 'hotel', name: 'Hotel Casino Internacional' }, 400, 100),
+        // A pie: colegio a 300 m al oriente, hospital a 1,2 km al norte, parque a ~224 m.
+        N(71, { amenity: 'school', name: 'Colegio Sagrado Corazón' }, 300, 0),
+        N(72, { amenity: 'hospital', name: 'Hospital Erasmo Meoz' }, 0, 1200),
+        N(73, { leisure: 'park', name: 'Parque Colón' }, -200, 100),
+        // El mismo parque como polígono: un cuadrado de 100 × 100 m = 10 000 m².
+        { type: 'way', id: 81, tags: { leisure: 'park', name: 'Parque Colón' },
+          geometry: [[-250, 50], [-150, 50], [-150, 150], [-250, 150], [-250, 50]].map(q => ({ lat: lat + GLAT(q[1]), lon: lng + GLNG(q[0]) })) },
+        // Una quebrada que corre de sur a norte a 250 m al oriente.
+        { type: 'way', id: 82, tags: { waterway: 'stream', name: 'Quebrada La Ceiba' },
+          geometry: [[250, -400], [250, 0], [250, 400]].map(q => ({ lat: lat + GLAT(q[1]), lon: lng + GLNG(q[0]) })) },
         { type: 'node', id: 99, lat: lat, lon: lng }
       ];
       if (!window.__contextoSinFrontera) {
@@ -251,6 +261,16 @@ const server = http.createServer((req, res) => {
         els.push(N(42, { barrier: 'border_control', name: 'Puente Francisco de Paula Santander' }, 3000, 8500));
       }
       return els;
+    };
+
+    /* El terreno: un plano que baja hacia el ORIENTE al 8 %, es decir hacia
+       la quebrada. Con eso la lectura tiene que decir que el agua corre
+       hacia ella. */
+    window.__elevPedida = 0;
+    window.AIA_DATOS.consultarElevacion = async (pts) => {
+      window.__elevPedida++;
+      const lng0 = -72.4727, lat0 = 7.9168;
+      return pts.map(p => 300 - 0.08 * ((p.lng - lng0) * 111320 * Math.cos(lat0 * Math.PI / 180)));
     };
 
     window.__viasPedidas = 0;
@@ -737,6 +757,8 @@ const server = http.createServer((req, res) => {
       grado: (caja.querySelector('.edu-bina') || { className: '' }).className,
       paso: c.paso, cambio: (c.cambio || []).length, paradas: c.paradas, barrios: c.barrios,
       flotante: c.flotante || null,
+      caminata: c.caminata || null, ep: c.espacioPublico || null, terreno: c.terreno || null, agua: c.agua || null,
+      elevPedida: window.__elevPedida,
       enUltimo: !!u.contexto
     };
   });
@@ -793,6 +815,41 @@ const server = http.createServer((req, res) => {
   });
   chk(SINALOJ.total === 0 && /No dice que no haya población de paso/.test(SINALOJ.lectura || ''),
       'sin alojamiento mapeado, dice que el mapa no lo ve, no que no exista');
+
+  /* ── A pie, espacio público, terreno y agua (v813) ───────────────────── */
+  console.log('\n── A pie, espacio público, terreno y agua ─────────────────────');
+  const KM = CX.caminata || {}, EP = CX.ep || {}, TE = CX.terreno || {}, AG = CX.agua || {};
+  console.log('  ' + (KM.lectura || '(sin caminata)'));
+  console.log('  ' + (EP.lectura || '(sin espacio público)'));
+  console.log('  ' + (TE.lectura || '(sin terreno)'));
+  chk(!!(KM.colegio && KM.colegio.min === 4 && KM.colegio.distM >= 298 && KM.colegio.distM <= 302 && /Sagrado/.test(KM.colegio.nombre)),
+      'el colegio más cercano, con sus minutos a pie (' + (KM.colegio || {}).min + ' min, ' + (KM.colegio || {}).distM + ' m)');
+  chk(!!(KM.salud && KM.salud.min === 15 && /oriente|norte/.test(KM.salud.rumbo)), 'y la salud, aunque quede fuera del radio: se busca hasta 1,5 km (' + (KM.salud || {}).min + ' min)');
+  chk(!!(KM.parque && KM.parque.min === 3), 'y el parque (' + (KM.parque || {}).min + ' min)');
+  chk(/Colegio\s*4 min/.test(CX.txt) && /300 m hacia el oriente/.test(CX.txt) && /80 m por minuto/.test(CX.txt),
+      'el panel lo dice en minutos, con distancia y rumbo, y explica el paso con que se midió');
+  chk(EP.n === 1 && EP.m2 >= 9900 && EP.m2 <= 10100, 'mide el área del parque con su polígono (' + EP.m2 + ' m²)');
+  chk(EP.habitantes > 0 && EP.m2PorHab != null && Math.abs(EP.m2PorHab - EP.m2 / EP.habitantes) < 0.01 && EP.meta === 15,
+      'y la divide por la población del censo, contra la meta de 15 m² (' + EP.m2PorHab + ' m²/hab, ' + EP.pctDeMeta + ' % de la meta)');
+  chk(/Muy por debajo/.test(EP.lectura || '') && /m²\/hab/.test(CX.txt), 'con la lectura del déficit y la barra contra la meta en pantalla');
+  chk(CX.elevPedida === 1 && TE.puntos === 25, 'pide la altura una sola vez, en una rejilla de 25 puntos');
+  chk(TE.pendientePct >= 7.5 && TE.pendientePct <= 8.5 && TE.grado === 'suave' && TE.cae === 'el oriente',
+      'lee la pendiente del plano y hacia dónde cae (' + TE.pendientePct + ' %, hacia ' + TE.cae + ')');
+  chk(!!(AG.cercano && AG.cercano.distM >= 248 && AG.cercano.distM <= 252 && AG.cercano.rumbo === 'el oriente' && /La Ceiba/.test(AG.cercano.nombre)),
+      'la quebrada más cercana, a su distancia y rumbo (' + (AG.cercano || {}).distM + ' m hacia ' + (AG.cercano || {}).rumbo + ')');
+  chk(TE.haciaElAgua === true && /su canal/.test(TE.lectura || '') && /primera pregunta de riesgo/.test(TE.lectura || ''),
+      'y como el terreno baja hacia ella, lo dice: en lluvia esas calles son su canal');
+  chk(/90 m de resolución/.test(CX.txt), 'aclarando la resolución del modelo de terreno');
+  // Sin alturas, o desalineadas, no se inventa terreno.
+  const SINTERRENO = await pg.evaluate(() => {
+    if (!window.URBIS_EDU.leerTerreno) return {};
+    const c = { lat: 7.9168, lng: -72.4727 }, pts = window.URBIS_EDU.rejillaTerreno(c, 500, 5);
+    return { corto: window.URBIS_EDU.leerTerreno(c, 500, pts, pts.slice(0, 20).map(() => 300), null),
+             plano: window.URBIS_EDU.leerTerreno(c, 500, pts, pts.map(() => 300), null) };
+  });
+  chk(SINTERRENO.corto === null, 'con menos alturas que puntos no se inventa un terreno');
+  chk(!!(SINTERRENO.plano && SINTERRENO.plano.grado === 'llano' && /casi no tiene hacia dónde caer/.test(SINTERRENO.plano.lectura)),
+      'y un terreno plano se dice plano, sin rumbo de caída');
 
   /* ── La lectura del curso y el informe propio del curso (v810) ────────
      El módulo da las cifras; la conclusión la escribe el curso. Las cajas

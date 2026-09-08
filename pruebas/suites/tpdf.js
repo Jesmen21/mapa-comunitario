@@ -131,6 +131,9 @@ const REPO = process.env.REPO || E.RAIZ;
       binacional: { grado: 'fuerte', lectura: 'El paso de frontera queda a 1,8 km hacia el oriente: a esa distancia el comercio pendular suele ordenar la cuadra.' },
       flotante: { total: 4, dePaso: 3, porTipo: { hostel: 2, albergue: 1, hotel: 1 },
                   lectura: '3 alojamientos de paso en el radio: es la huella visible de una población flotante.' },
+      caminata: { lectura: 'Colegio a 4 min (300 m) · Salud a 15 min (1200 m) · Parque a 3 min (224 m)' },
+      espacioPublico: { lectura: '0,98 m² de espacio público por habitante, contra la meta de 15 m² (7 % de la meta). Muy por debajo.' },
+      terreno: { lectura: 'Terreno suave: pendiente media de 8,0 %, 80 m de desnivel dentro del radio, y cae hacia el oriente.' },
       umbralFronteraM: 3000, fuente: 'OpenStreetMap'
     };
     const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
@@ -637,6 +640,8 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(/no la oferta completa/.test(CX.txt), 'diciendo que es lo mapeado, no la oferta real');
   chk(/1,8 km hacia el oriente/.test(CX.txt) && /Simón Bolívar/.test(CX.txt), 'y la lectura de la frontera con su paso y distancia');
   chk(/población flotante/.test(CX.txt), 'y la de la población de paso');
+  chk(/Colegio a 4 min/.test(CX.txt) && /meta de 15 m²/.test(CX.txt) && /pendiente media/.test(CX.txt),
+      'y lo que se camina, el espacio público y el terreno (v813)');
 
   // ── Radio de importancia y competencia con nombre ──────────────────
   console.log('\n── Radio de importancia ─────────────────────────');

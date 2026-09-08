@@ -1369,6 +1369,9 @@
       ((c.cambio || []).length ? '<p class="nota-pie">Casas de cambio y giros en el radio: ' + c.cambio.length + '.</p>' : '') +
       (c.paso ? '<p class="nota-pie">Paso más cercano: ' + esc(c.paso.nombre) + ', a ' + km(c.paso.distM) + ' km.</p>' : '') +
       (c.flotante ? '<p class="ctx-sub">Población de paso</p><p class="nota-pie">' + esc(c.flotante.lectura) + '</p>' : '') +
+      (c.caminata ? '<p class="ctx-sub">A distancia de caminata</p><p class="nota-pie">' + esc(c.caminata.lectura) + '.</p>' : '') +
+      (c.espacioPublico ? '<p class="ctx-sub">Espacio público</p><p class="nota-pie">' + esc(c.espacioPublico.lectura) + '</p>' : '') +
+      (c.terreno ? '<p class="ctx-sub">Terreno y agua</p><p class="nota-pie">' + esc(c.terreno.lectura) + '</p>' : '') +
       '</div>';
   }
 
@@ -1615,6 +1618,7 @@ bloqueMapaCalor(r),
   '<div>', bloqueAtraeVehiculo(r), '</div>',
   '<div>', bloqueVocacion(r), '</div>',
 '</div>',
+bloqueContextoInforme(r),
 
 pie(3, r, autor),
 '</div></div>',
@@ -1637,7 +1641,6 @@ seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt)
 seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 bloqueHorariosInforme(r),
-bloqueContextoInforme(r),
 
 seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),

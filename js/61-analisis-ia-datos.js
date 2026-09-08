@@ -275,7 +275,10 @@
        una etiqueta rarísima y por eso se puede buscar tan lejos sin costo,
        y las casas de cambio y giros dentro del radio;
      · el alojamiento de paso —hoteles, hostales, residencias, albergues—
-       que es la huella visible de la población flotante.
+       que es la huella visible de la población flotante;
+     · el colegio, el centro de salud y el parque más cercanos hasta 1,5 km,
+       los parques del radio con su polígono para medirles el área, y las
+       quebradas y canales con su trazo.
 
      Va en una sola consulta porque Overpass no acepta dos seguidas y esto
      se pide a botón: cuatro botones serían veinte segundos de espera. */
@@ -294,7 +297,21 @@
       // lo más cerca que el mapa abierto llega a la población flotante; los
       // pagadiarios y las piezas en arriendo no están en ningún mapa.
       'nwr["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"]' + a + ';out center tags 80;' +
-      'nwr["amenity"="social_facility"]' + a + ';out center tags 30;';
+      'nwr["amenity"="social_facility"]' + a + ';out center tags 30;' +
+      // Equipamientos a distancia de caminata: colegio, salud y parque más
+      // cercanos. Se buscan hasta 1,5 km, más allá del radio, porque «el más
+      // cercano» dentro de 500 m puede no existir y la respuesta útil es a
+      // cuántos minutos queda el que sí hay.
+      'nwr["amenity"~"^(school|kindergarten|college|university)$"](around:1500,' + lat + ',' + lng + ');out center tags 60;' +
+      'nwr["amenity"~"^(hospital|clinic|doctors|health_post)$"](around:1500,' + lat + ',' + lng + ');out center tags 40;' +
+      'nwr["leisure"~"^(park|garden|playground)$"](around:1500,' + lat + ',' + lng + ');out center tags 60;' +
+      // Espacio público del radio CON geometría, para medirle el área: es
+      // lo único de esta consulta que pide polígonos, y son pocos.
+      'way["leisure"~"^(park|garden|playground|pitch)$"]' + a + ';out geom 60;' +
+      'way["landuse"="recreation_ground"]' + a + ';out geom 20;' +
+      // El agua: quebradas y canales con su trazo, para saber a qué distancia
+      // pasa la más cercana y hacia dónde.
+      'way["waterway"~"^(river|stream|canal|drain|ditch)$"]' + a + ';out geom 40;';
   }
   function consultarContexto(lat, lng, radioM, forzar){
     return traer('ctx|' + claveCache(lat, lng, radioM), construirQueryContexto(lat, lng, radioM), forzar);
