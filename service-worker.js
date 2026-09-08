@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v815-humo-en-la-loma';
+const URBIS_CACHE = 'urbis-v816-Barranquilla-y-la-mina';
 const URBIS_ASSETS = [
   './',
   './index.html',

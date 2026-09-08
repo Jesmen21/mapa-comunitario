@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-09-07",
-  "proximaActualizacion": "2026-09-08",
+  "actualizado": "2026-09-08",
+  "proximaActualizacion": "2026-09-09",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,79 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-09-08",
+      "precision": "exacta",
+      "categoria": "eeuu",
+      "titulo": "Marco Rubio se reúne con De la Espriella en Barranquilla y firman memorandos sobre energía nuclear civil y minerales críticos",
+      "detalle": "El secretario de Estado de EE. UU., Marco Rubio, llegó el 8 de septiembre a Barranquilla para reunirse con el presidente De la Espriella en la sede alterna de la Presidencia en el Batallón Paraíso, en su primera visita de alto nivel desde la posesión del 7 de agosto. A las 3:25 p. m. ambos gobiernos firmaron memorandos de entendimiento sobre cooperación estratégica en energía nuclear civil y en minerales críticos, con la participación del canciller Omar Bula Escobar. La agenda incluyó también la cooperación contra el narcotráfico —un mes después de que el secretario de Guerra de EE. UU., Pete Hegseth, afirmara que De la Espriella autorizó operaciones militares conjuntas contra el narcotráfico en territorio colombiano y que Colombia se sumó a la Coalición Contra los Cárteles de las Américas (A3C)—, la reconstrucción tras el terremoto del 10 de agosto y el pedido colombiano de suspender temporalmente el arancel del 12,5 % que EE. UU. impone a algunos productos del país. Al término del encuentro hubo una rueda de prensa conjunta.",
+      "contrapunto": "El senador Iván Cepeda cuestionó los acuerdos y afirmó que cualquier compromiso que genere obligaciones para el país debe pasar por el Congreso y, en su caso, por la Corte Constitucional; acusó además a Rubio y a Trump de haber intervenido «directa y abiertamente» a favor de De la Espriella durante la campaña, y advirtió que los pactos podrían comprometer la riqueza minera y energética del país. Hasta la fecha no se ha publicado el texto completo de los memorandos ni el trámite que seguirán ante el Congreso.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Colombia y EE. UU. buscan sellar nuevo rumbo de la relación con encuentro entre el presidente Abelardo De La Espriella y Marco Rubio",
+          "u": "https://www.eltiempo.com/politica/gobierno/colombia-y-ee-uu-buscan-sellar-nuevo-rumbo-de-la-relacion-con-encuentro-entre-el-presidente-abelardo-de-la-espriella-y-marco-rubio-3584257"
+        },
+        {
+          "n": "El País (Cali) · Marco Rubio aterriza este martes en Barranquilla para su reunión con Abelardo de la Espriella; estos son los detalles",
+          "u": "https://www.elpais.com.co/politica/marco-rubio-aterriza-este-martes-en-barranquilla-para-su-reunion-con-abelardo-de-la-espriella-estos-son-los-detalles-0846.html"
+        },
+        {
+          "n": "Semana · Seguridad, narcotráfico y comercio: los puntos clave de la agenda entre el Gobierno de De La Espriella y el secretario de Estado de EE. UU.",
+          "u": "https://www.semana.com/politica/articulo/seguridad-narcotrafico-y-comercio-los-puntos-clave-de-la-agenda-entre-el-gobierno-de-de-la-espriella-y-el-secretario-de-estado-de-los-ee-uu/202609/"
+        },
+        {
+          "n": "Infobae · Iván Cepeda cuestionó los posibles acuerdos entre Marco Rubio y Abelardo de la Espriella: «Deberá ser aprobado por el Congreso»",
+          "u": "https://www.infobae.com/colombia/2026/09/08/ivan-cepeda-cuestiono-posibles-acuerdos-entre-marco-rubio-y-abelardo-de-la-espriella-debera-ser-aprobado-por-el-congreso/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-07",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El Gobierno confirma que el presupuesto de 2027 será de $634,95 billones, el más alto de la historia, y descarta subir impuestos por iniciativa propia",
+      "detalle": "El ministro de Hacienda, Miguel Gómez Martínez, confirmó la tarde del 7 de septiembre que el proyecto de Presupuesto General de la Nación para 2027 se mantendrá en $634,95 billones (29,9 % del PIB), unos $88 billones más que el de 2026 ($546,9 billones) y el más alto en la historia del país. El Gobierno insistió en que no subirá impuestos por iniciativa propia y en que buscará ajustar el propio presupuesto antes que pedirles a los colombianos que asuman una carga tributaria mayor.",
+      "contrapunto": "El presupuesto radicado por el Gobierno Petro en julio fue devuelto por el Congreso en agosto por errores de forma, y análisis económicos citados por la prensa —entre ellos El Colombiano y Semana— señalan que, tal como está formulado, deja partidas de pensiones, salud, salarios y subsidios a combustibles desfinanciadas, además de advertir sobre deuda récord y menor inversión. Con el monto sostenido y sin nuevos impuestos anunciados, el Gobierno no ha explicado en detalle de dónde saldrán los recursos adicionales frente a 2026.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Gobierno De la Espriella insiste en tener el presupuesto más alto de la historia de Colombia: empieza a definirse si habrá o no más impuestos",
+          "u": "https://www.infobae.com/colombia/2026/09/08/gobierno-de-la-espriella-insiste-en-tener-el-presupuesto-mas-alto-de-la-historia-de-colombia-empieza-a-definirse-si-habra-o-no-mas-impuestos/"
+        },
+        {
+          "n": "El Colombiano · Presupuesto 2027: deuda récord, más gasto y menos inversión, las alertas de los expertos",
+          "u": "https://www.elcolombiano.com/negocios/presupuesto-2027-de-la-espriella-deuda-gasto-deficit-fiscal-CO40395878"
+        },
+        {
+          "n": "Semana · Presupuesto 2027 radicado por el Gobierno De La Espriella: pensiones, salud, salarios y subsidios a combustibles, desfinanciados",
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/presupuesto-2027-radicado-por-el-gobierno-de-la-espriella-pensiones-salud-salarios-y-subsidios-a-combustibles-desfinanciados/202641/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Un soldado muere y dos resultan heridos por la activación de un campo minado en la vía Panamericana, en límites de Cauca y Nariño",
+      "detalle": "La mañana del 7 de septiembre, en jurisdicción de Mercaderes (Cauca), cerca del límite con Nariño, un artefacto explosivo activado en la vía Panamericana mató al soldado profesional José Manuel López Villada e hirió a Yeison Andrés Garzón Moreno y Emerson Otálvaro Rico, quienes recibieron atención médica. El presidente De la Espriella se pronunció sobre el hecho y anunció la orden de capturar a los responsables; en una verificación posterior de la zona fue capturado en flagrancia, en Taminango (Nariño), un hombre señalado de estar relacionado con la instalación del artefacto.",
+      "contrapunto": "La atribución del hecho a una disidencia de las antiguas Farc, recogida por algunos medios, es por ahora la versión preliminar de las autoridades tras una sola captura en flagrancia; no hay, hasta la fecha, una imputación formal ni una verificación independiente de a qué estructura pertenecen el o los responsables.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Presidente De La Espriella se pronunció tras explosión de campo minado en vía Panamericana que dejó soldado muerto y dos heridos: 'He dado la orden'",
+          "u": "https://www.eltiempo.com/politica/gobierno/presidente-de-la-espriella-se-pronuncio-tras-explosion-de-campo-minado-en-via-panamericana-que-dejo-soldado-muerto-y-dos-heridos-he-dado-la-orden-3584286"
+        },
+        {
+          "n": "Semana · Soldado murió tras activación de campo minado en la vía Panamericana; Abelardo De La Espriella ordenó ir tras los responsables",
+          "u": "https://www.semana.com/nacion/articulo/soldado-murio-tras-activacion-de-campo-minado-en-la-via-panamericana-abelardo-de-la-espriella-ordeno-ir-tras-los-responsables/202628/"
+        },
+        {
+          "n": "La FM · Soldado murió tras la activación de un campo minado en la vía Panamericana",
+          "u": "https://www.lafm.com.co/orden-publico/soldado-murio-campo-minado-via-panamericana-cauca-410216"
+        }
+      ]
+    },
     {
       "fecha": "2026-09-07",
       "precision": "exacta",
