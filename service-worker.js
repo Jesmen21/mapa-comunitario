@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v824-la-flecha-que-se-veia-y-la-franja-sin-plata';
+const URBIS_CACHE = 'urbis-v825-la-cifra-basta';
 const URBIS_ASSETS = [
   './',
   './index.html',

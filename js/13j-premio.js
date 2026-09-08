@@ -510,7 +510,7 @@
       '<div class="ev-premium-top"><span class="ev-premium-badge">✨ JUEGOS URBIS · PREMIUM</span>' +
         '<span class="ev-premium-tiempo">' + esc(ev.terminado ? '🏁 Terminado' : '⏳ ' + (restante(ev.expira) || ev.fin)) + '</span></div>' +
       '<h3 class="ev-premium-titulo">' + esc(ev.titulo) + '</h3>' +
-      '<div class="ev-premium-premio"><small>El #1 se lleva</small><b>' + esc(ev.premio) + '</b><span>dinero real</span></div>' +
+      '<div class="ev-premium-premio"><small>El #1 se lleva</small><b>' + esc(ev.premio) + '</b></div>' +
       (ev.detalle ? '<p class="ev-premium-detalle">' + esc(ev.detalle) + '</p>' : '') +
       '<div class="ev-premium-meta">' +
         (lider ? '<span>🥇 @' + esc(lider.usuario) + ' · ' + (parseInt(lider.puntos, 10) || 0) + ' pts</span>' : '<span>🥇 Nadie ha jugado todavía</span>') +

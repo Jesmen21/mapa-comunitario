@@ -1209,13 +1209,13 @@
         const titulo = (d[1] && d[1].trim()) ? d[1].trim() : 'Juegos URBIS';
         const notas = String(d[2]||'');
         const mPremio = notas.match(/Premio:\s*([^·|]+)/i);
-        const premio = mPremio ? mPremio[1].trim() : 'un premio en dinero real';
+        const premio = mPremio ? mPremio[1].trim() : 'el premio del evento';
         const latDigits = String(p.lat).replace(/[^0-9]/g,'');
         let fin = '';
         const mFin = notas.match(/termina\s*([^·|]+)/i);
         if(mFin) fin = mFin[1].trim();
         else if(expira){ try{ if(typeof formatearFechaHora === 'function') fin = formatearFechaHora(expira); }catch(e){} }
-        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Juegos URBIS Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+' (dinero real). ¡Toca para jugar!', juegoId:'aurea_'+latDigits, titulo:titulo, premio:premio, fin:fin });
+        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Juegos URBIS Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+'. ¡Toca para jugar!', juegoId:'aurea_'+latDigits, titulo:titulo, premio:premio, fin:fin });
       }catch(e){}
     });
     return out;
@@ -2188,7 +2188,7 @@
       panel.innerHTML = `
         <div class="u52-quick-report-head">
           <button type="button" data-u52-call="quick-event-back" aria-label="Volver">‹</button>
-          <div><b>✨ Juegos URBIS</b><small>Evento premium · premio en dinero real</small></div>
+          <div><b>✨ Juegos URBIS</b><small>Evento premium · el #1 se lleva el premio</small></div>
           <button type="button" data-u52-call="quick-event-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-quick-report-selected u52-coliseo-selected"><span>✨</span><div><b>Competencia premium</b><small>El #1 se lleva el premio</small></div></div>

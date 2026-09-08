@@ -164,10 +164,6 @@ body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen{
   font-size:1.7rem; line-height:1.05; font-weight:900; letter-spacing:-.02em;
   color:#34CCFE; -webkit-text-fill-color:#34CCFE; text-shadow:0 0 18px rgba(52,204,254,.4);
 }
-#urbis-mobile-app .ev-premium-premio span{
-  font-size:.6rem; font-weight:900; letter-spacing:.3px; margin-top:5px; padding:2px 7px; border-radius:8px;
-  background:#0EA5E9; color:#04202F; -webkit-text-fill-color:#04202F;
-}
 #urbis-mobile-app .ev-premium-detalle{ margin:0; font-size:.84rem; line-height:1.45; color:#CFE7F2; -webkit-text-fill-color:#CFE7F2; }
 #urbis-mobile-app .ev-premium-meta{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.76rem; font-weight:700; color:#A9D4E8; -webkit-text-fill-color:#A9D4E8; }
 #urbis-mobile-app .ev-premium-cta{

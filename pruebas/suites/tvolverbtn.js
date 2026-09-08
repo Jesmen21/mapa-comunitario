@@ -90,10 +90,34 @@ const REPO = process.env.REPO || E.RAIZ;
       'la franja de la partida dice solo «JUEGOS URBIS»');
   chk(!/DINERO|dinero/.test(franja),
       'y no menciona el dinero encima del marcador y el cronómetro');
-  /* Pero SÍ donde se decide entrar: quitarlo de todas partes escondería lo
-     que el evento promete, que es lo contrario de lo que se pidió. */
-  chk(/ah-prize[\s\S]{0,200}?dinero real/.test(j12),
-      'el hub del evento sigue diciendo que el premio es dinero real: ahí es donde se decide competir');
+  /* Y de la interfaz ENTERA, no solo de la franja. Repetir «dinero real» en
+     el globo del mapa, en la tarjeta, en el héroe, en la tarjeta del juego y
+     en el aviso —cinco veces, con la cifra al lado cada vez— se lee como
+     insistir en que sí, que de verdad, que no es mentira. Se dijo así: «se
+     siente muy migajero». La cifra dice lo que hay que decir; el resto era
+     ansiedad. Lo que NO se toca son los comentarios del código, que explican
+     por qué la firma del puntaje importa: prohibir nombrarlo ahí empujaría a
+     borrar la explicación, que es la trampa de la v815. */
+  const SERVIDOS = ['js/09-events.js', 'js/10-visible-markers.js', 'js/12-spa-ui.js',
+                    'js/13j-premio.js', 'js/20-mobile-functional-app.js'];
+  const sinComentarios = (t) => t
+    .replace(/\/\*[\s\S]*?\*\//g, '')      // bloques
+    .replace(/^\s*\/\/.*$/gm, '');           // líneas
+  const conPlata = SERVIDOS.filter(f =>
+    /dinero real|POR DINERO|por dinero/.test(sinComentarios(fs.readFileSync(REPO + '/' + f, 'utf8'))));
+  chk(conPlata.length === 0,
+      'ningún texto de pantalla repite «dinero real»' + (conPlata.length ? ': ' + conPlata.join(', ') : ''));
+  /* Pero el premio SIGUE dicho donde se decide entrar: la cifra, con «El #1
+     se lleva» delante. Quitar eso también sería esconder lo que el evento
+     promete, que es lo contrario de lo que se pidió. */
+  chk(/El #1 se lleva/.test(j12) && /El #1 se lleva/.test(fs.readFileSync(REPO + '/js/13j-premio.js', 'utf8')),
+      'la cifra del premio sigue en el héroe y en la tarjeta del evento');
+  /* Y las reglas de estilo de la etiqueta que se quitó no se quedan
+     rondando: CSS muerto es CSS que alguien vuelve a usar sin saber. */
+  const css47 = fs.readFileSync(REPO + '/css/47-aurea-menu.css', 'utf8');
+  const css48 = fs.readFileSync(REPO + '/css/48-premio.css', 'utf8');
+  chk(!/\.ah-prize span\{/.test(css47) && !/\.ev-premium-premio span\{/.test(css48),
+      'y el estilo de la etiqueta que se quitó no quedó rondando en el CSS');
 
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 

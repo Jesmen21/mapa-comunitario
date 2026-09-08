@@ -457,7 +457,7 @@
         <div class="coliseo-popup">
           <div class="cp-badge">✨ JUEGOS URBIS · PREMIUM</div>
           <div class="cp-title">${limpiarHTML(d[1] || 'Juegos URBIS')}</div>
-          <div class="cp-prize">🏆 El #1 se lleva <b>${limpiarHTML(premio)}</b> <small>(dinero real)</small></div>
+          <div class="cp-prize">🏆 El #1 se lleva <b>${limpiarHTML(premio)}</b></div>
           <div class="cp-desc">📜 ${limpiarHTML(detalleP)}</div>
           ${finP ? `<div class="cp-end">${terminado ? '🏁 Evento finalizado' : '⏳ Termina'}: <b>${limpiarHTML(finP)}</b></div>` : ''}
           <div class="cp-note">${terminado ? 'Este evento ya terminó. Mira el ranking final 👇' : 'Solo se compite desde aquí. El ganador será contactado por URBIS (chat/notificación) para enviarle el dinero. 🏦'}</div>

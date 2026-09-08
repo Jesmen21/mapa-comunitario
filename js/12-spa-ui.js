@@ -2602,7 +2602,7 @@
     // encima para no perder esa información al quitar la tarjeta.
     else accion =
       '<div class="am-reto"><b>Reto de Reflejos · Juegos URBIS</b>' +
-      '<small>Toca los rayos lo más rápido · 30 s · por dinero real</small></div>' +
+      '<small>Toca los rayos lo más rápido · 30 s</small></div>' +
       '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
     const gameCard = '';
 
@@ -2613,7 +2613,7 @@
       '<div class="ah-hero">'+
         '<div class="ah-badge">✨ JUEGOS URBIS · PREMIUM</div>'+
         '<div class="ah-evtitle">'+_escJuego(titulo)+'</div>'+
-        '<div class="ah-prize ah-prize-grande"><small>El #1 se lleva</small><b>'+_escJuego(premio)+'</b><span>dinero real</span></div>'+
+        '<div class="ah-prize ah-prize-grande"><small>El #1 se lleva</small><b>'+_escJuego(premio)+'</b></div>'+
         '<div class="ah-meta">'+
           (fin ? '<span class="ah-chip">'+(terminado?'🏁 Terminó':'⏳ Termina')+' '+_escJuego(fin)+'</span>' : '')+
           '<span class="ah-chip">👥 '+lista.length+(lista.length===1?' jugador':' jugadores')+'</span>'+

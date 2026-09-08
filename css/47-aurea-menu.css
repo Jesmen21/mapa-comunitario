@@ -36,10 +36,6 @@ body #urbis-mobile-app .u52-screen.u52-aurea-screen .u52-content,
   font-size:.9rem; font-weight:700;
 }
 .u52-aurea-screen .ah-prize b{ color:#34CCFE; }
-.u52-aurea-screen .ah-prize span{
-  display:inline-block; background:#0EA5E9; color:#04202F; font-size:.6rem; font-weight:900;
-  padding:2px 7px; border-radius:8px; margin-left:6px; vertical-align:middle; letter-spacing:.3px;
-}
 .u52-aurea-screen .ah-end{ margin-top:8px; font-size:.8rem; color:#9CC9E0; font-weight:700; }
 .u52-aurea-screen .ah-end b{ color:#F2FCFF; }
 .u52-aurea-screen .ah-record{ margin-top:14px; }

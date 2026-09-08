@@ -296,7 +296,7 @@
       let html = '';
       if(puedeEspecial){
           html += `<div class="ev-premium-card">
-            <div class="ev-premium-head"><span class="ev-premium-ico"><img src="assets/brand/urbis-gota.png" alt="Juegos URBIS" width="26" height="30" style="object-fit:contain;display:block"></span><div><b>Juegos URBIS</b><small>Evento PREMIUM · competencia con premio en dinero real</small></div></div>
+            <div class="ev-premium-head"><span class="ev-premium-ico"><img src="assets/brand/urbis-gota.png" alt="Juegos URBIS" width="26" height="30" style="object-fit:contain;display:block"></span><div><b>Juegos URBIS</b><small>Evento PREMIUM · el #1 se lleva el premio</small></div></div>
             <button type="button" class="ev-sol-btn" onclick="window.urbisCrearEventoPremium && window.urbisCrearEventoPremium()">✨ Crear Juegos URBIS</button>
           </div>`;
       }
