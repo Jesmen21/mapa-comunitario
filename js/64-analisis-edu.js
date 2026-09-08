@@ -809,7 +809,9 @@
     { id: 'contexto',    t: 'El sector en la ciudad',
       p: '¿Cómo se llega y cómo se sale? ¿La frontera y la población de paso se notan en la cuadra?' },
     { id: 'foda',        t: 'Su propio FODA',
-      p: '¿Qué del FODA del análisis quitarían o agregarían después de caminar el sector?' }
+      p: '¿Qué del FODA del análisis quitarían o agregarían después de caminar el sector?' },
+    { id: 'ideas',       t: 'Qué proyecto proponen',
+      p: '¿Cuál de las ideas tomarían, y por qué esa? Escriban el encargo con sus palabras: qué resuelve, dónde va y a quién sirve.' }
   ];
 
   /* Lo que el análisis dejó abierto y se resuelve caminando. Sale del
@@ -881,6 +883,193 @@
     { id: 'fichas',      t: 'Edificios con ficha',             f: r => (((r.edu || {}).edificacion) || {}).total || 0, ent: true },
     { id: 'sinTraducir', t: 'Etiquetas sin traducir',          f: r => Object.keys((r.edu || {}).sinTraducir || {}).length, ent: true, malo: true }
   ];
+  /* ── El FODA, dicho para un curso ─────────────────────────────────────
+     El FODA lo escribe el motor, y el motor está escrito para quien va a
+     poner plata: habla de «competidores directos», de «mercado saturado» y
+     de «potencial de valorización». Los HALLAZGOS sirven igual en un taller
+     —que haya seis locales de lo mismo en el radio es un dato urbano, no
+     financiero—, pero dichos así se leen como un estudio de mercado y el
+     estudiante o los copia sin entenderlos o los descarta enteros.
+
+     Acá se reescriben, y solo eso: no se agrega ni se quita un hallazgo, no
+     se cambia el número, no se ablanda el juicio. Es un cambio de idioma,
+     no de contenido, y por eso vive en la aplicación y no en el motor: las
+     reglas de clasificación son las mismas para todos.
+
+     La lista va de la frase más larga a la más corta a propósito: si
+     «competidores» se cambiara antes que «competidores directos», la
+     segunda ya no existiría para cuando le tocara el turno. */
+  const FODA_EN_CURSO = [
+    [/Mercado saturado:/g, 'Ya hay mucho de lo mismo:'],
+    [/Competencia instalada:/g, 'Eso ya está resuelto en el sector:'],
+    [/\bcompetidores directos\b/g, 'locales que hacen exactamente lo mismo'],
+    [/\bcompetidores\b/g, 'locales del mismo tipo'],
+    [/\bdemanda cautiva\b/g, 'público que ya pasa por acá todos los días'],
+    [/potencial de valorización a mediano plazo/g,
+     'el sector se está transformando: lo que proyecten ahí va a convivir con obra'],
+    [/\bpotencial de valorización\b/g, 'sector en transformación'],
+    [/\btráfico peatonal garantizado\b/g, 'gente caminando a toda hora'],
+    [/\btráfico peatonal de trámites\b/g, 'gente que camina hasta acá a hacer una diligencia'],
+    [/\btráfico peatonal\b/g, 'gente caminando'],
+    [/\bmovimiento económico formal\b/g, 'actividad formal'],
+    [/población flotante de negocios y trámites/g,
+     'gente de paso: viene, resuelve algo y se va'],
+    [/muestra viabilidad baja de forma individual/g, 'se sostiene mal por sí solo'],
+    [/diversifica el riesgo del proyecto frente a cambios de mercado en un solo sector/g,
+     'evita que el proyecto dependa de una sola actividad'],
+    [/incertidumbre normativa/g, 'todavía no está claro qué se puede construir ahí'],
+    [/vacíos de oferta evidentes/g, 'huecos evidentes en lo que el sector ofrece'],
+    [/\bvacíos de oferta\b/g, 'huecos en lo que el sector ofrece'],
+    [/la ventaja del proyecto tendrá que construirse desde su propia propuesta, no desde el entorno/g,
+     'la fuerza del proyecto tendrá que salir de su propio diseño, no del entorno'],
+    [/obliga a diferenciar la propuesta/g, 'obliga a que el proyecto proponga algo que los otros no'],
+    [/el proyecto propuesto/g, 'el proyecto del taller'],
+    [/compatibilidad con el uso propuesto/g, 'compatibilidad con el uso que propongan'],
+    [/antes de diseñar/g, 'antes de dibujar nada'],
+    [/se recomienda verificación en campo/g, 'hay que ir a verificarlo caminando']
+  ];
+  function fodaEdu(foda){
+    const traducir = t => FODA_EN_CURSO.reduce((x, [re, a]) => x.replace(re, a), String(t == null ? '' : t));
+    const out = {};
+    ['fortalezas', 'debilidades', 'oportunidades', 'riesgos'].forEach(k => {
+      out[k] = ((foda || {})[k] || []).map(traducir);
+    });
+    return out;
+  }
+
+  /* ── Qué proyecto pediría este sector ─────────────────────────────────
+     Lo que el curso pidió y el FODA no da: un puente entre el diagnóstico y
+     el tablero de dibujo. Cada idea sale de UNA medición del propio
+     análisis, y por eso lleva tres partes que no se pueden separar:
+
+       · `porque`  — la medida que la motiva, con su número. Sin esto es una
+                     ocurrencia, y una ocurrencia no se defiende en una
+                     entrega.
+       · `disena`  — el encargo, escrito como encargo: qué resolver, no qué
+                     construir. Decirle a un estudiante «hagan un parque»
+                     es hacerle el ejercicio; decirle «al sector le faltan
+                     N m² de espacio público y hay M lotes vacíos» es
+                     dárselo.
+       · `campo`   — qué hay que ir a comprobar antes de creerle a la idea.
+                     Todas salen de datos abiertos o del censo, y ninguna
+                     sabe si en esa esquina ya hay una cancha de tierra
+                     donde el barrio juega todas las tardes.
+
+     Y una regla que las gobierna a todas: son PREGUNTAS, no veredictos. El
+     análisis no sabe qué debe construirse en un sector; sabe qué le falta
+     medido contra algo, y eso es lo que dice. */
+  const IDEAS_DISENO = [
+    { id: 'parque', ico: '🌳', t: 'Un lugar donde estar, no solo por donde pasar',
+      c: x => x.ctx && x.ctx.caminata && (!x.ctx.caminata.parque || x.ctx.caminata.parque.min > 15),
+      porque: x => x.ctx.caminata.parque
+        ? 'El parque más cercano queda a ' + x.ctx.caminata.parque.min + ' min a pie (' + x.ctx.caminata.parque.distM + ' m).'
+        : 'No hay ningún parque mapeado a menos de ' + (x.ctx.caminata.hastaM / 1000).toLocaleString('es-CO') + ' km.',
+      disena: 'Un sitio para quedarse dentro del radio: sombra, algo donde sentarse y una razón para llegar. ' +
+        'La pregunta de proyecto no es qué construir sino DÓNDE: qué esquina lo puede sostener sin robarle la cuadra a nadie.',
+      campo: '¿Hay una cancha de tierra, un atrio, un separador ancho donde la gente ya se sienta? Eso no está en el mapa y cambia la respuesta.' },
+
+    { id: 'ep', ico: '📐', t: 'Cuánto espacio público falta, en metros',
+      c: x => x.ctx && x.ctx.espacioPublico && x.ctx.espacioPublico.m2PorHab != null &&
+              x.ctx.espacioPublico.m2PorHab < x.ctx.espacioPublico.meta,
+      porque: x => x.ctx.espacioPublico.m2PorHab.toLocaleString('es-CO') + ' m² por habitante contra la meta de ' +
+        x.ctx.espacioPublico.meta + ' m² (' + x.ctx.espacioPublico.pctDeMeta + ' % de la meta), con ' +
+        x.ctx.espacioPublico.habitantes.toLocaleString('es-CO') + ' habitantes en el radio.',
+      disena: x => 'Para llegar a la meta harían falta unos ' +
+        Math.round((x.ctx.espacioPublico.meta - x.ctx.espacioPublico.m2PorHab) * x.ctx.espacioPublico.habitantes).toLocaleString('es-CO') +
+        ' m² más. Repártanlos: ¿un solo parque grande, o cinco de bolsillo a cinco minutos de cada casa? ' +
+        'Las dos respuestas son defendibles y dan proyectos distintos.',
+      campo: 'Midan a pasos el parque más cercano: los polígonos del mapa incluyen andenes y taludes que nadie usa.' },
+
+    { id: 'baldios', ico: '🧱', t: 'El suelo que está esperando',
+      c: x => (x.s.porSub && x.s.porSub.baldio_obra) >= 1,
+      porque: x => x.s.porSub.baldio_obra + (x.s.porSub.baldio_obra === 1 ? ' lote' : ' lotes') +
+        ' baldíos o en obra dentro del radio.',
+      disena: 'Es el suelo disponible del ejercicio, y ya está identificado. Antes de dibujar: ¿de quién es, qué tamaño tiene, ' +
+        'y qué le pide la cuadra que hay alrededor? Un proyecto que no responde a sus vecinos es un objeto, no arquitectura.',
+      campo: 'Vayan a los lotes: los baldíos del mapa a veces son una casa demolida el mes pasado, y a veces un parqueadero que lleva veinte años funcionando.' },
+
+    { id: 'noche', ico: '🌙', t: 'El sector se apaga',
+      c: x => { const f = ((x.s.movilidad || {}).flujo) || {}; const fr = f.franjas || {};
+                return fr.noche != null && fr.manana != null && fr.noche < fr.manana * 0.5; },
+      porque: x => { const fr = (((x.s.movilidad || {}).flujo) || {}).franjas || {};
+        return 'La franja de noche marca ' + fr.noche + ' contra ' + fr.manana + ' en la mañana: menos de la mitad.'; },
+      disena: 'Un sector que se vacía de noche es un sector inseguro de noche, y no se arregla con más luminarias. ' +
+        '¿Qué uso mantendría ojos en la calle después de las siete sin volverla una zona de rumba? Vivienda arriba del comercio, ' +
+        'un equipamiento con horario extendido, un antejardín que se usa.',
+      campo: 'Pasen a las 8 de la noche por la misma cuadra que caminaron de día. Es el ejercicio más corto y el que más cambia la propuesta.' },
+
+    { id: 'pendiente', ico: '⛰️', t: 'El proyecto tiene que bajar una montaña',
+      c: x => x.ctx && x.ctx.terreno && x.ctx.terreno.pendientePct >= 12,
+      porque: x => 'Terreno ' + x.ctx.terreno.grado + ': ' + x.ctx.terreno.pendientePct.toLocaleString('es-CO') +
+        ' % de pendiente media y ' + x.ctx.terreno.desnivelM + ' m de desnivel dentro del radio, cayendo hacia ' + x.ctx.terreno.cae + '.',
+      disena: 'Acá el recorrido ES el proyecto: escaleras, rampas, terrazas, medios niveles. Con esa pendiente, una rampa al 8 % ' +
+        'necesita más de doce veces el desnivel en desarrollo, así que la accesibilidad no es un detalle que se resuelve al final.',
+      campo: 'Suban la cuesta más empinada del sector y crónometrenla. Después pregúntense quién no puede hacer eso: eso es el programa.' },
+
+    { id: 'agua', ico: '💧', t: 'Primero el agua, después la fachada',
+      c: x => x.ctx && x.ctx.terreno && x.ctx.terreno.haciaElAgua,
+      porque: x => 'El terreno baja hacia ' + (((x.ctx.agua || {}).cercano || {}).nombre || 'el cauce más cercano') +
+        ', a ' + (((x.ctx.agua || {}).cercano || {}).distM || '?') + ' m: en lluvia fuerte las calles de ese lado son su canal.',
+      disena: 'La primera decisión del proyecto es por dónde corre el agua, no cómo se ve. Superficie que absorbe, ' +
+        'cota de piso por encima de la lámina, y qué pasa aguas abajo con lo que ustedes impermeabilicen.',
+      campo: 'Pregunten en el barrio hasta dónde llegó la última creciente. Se acuerdan con precisión, y ninguna base de datos lo tiene.' },
+
+    { id: 'equipamiento', ico: '🏥', t: 'Lo que hay que salir del barrio a buscar',
+      c: x => x.ctx && x.ctx.caminata &&
+              ((!x.ctx.caminata.salud || x.ctx.caminata.salud.min > 15) || (!x.ctx.caminata.colegio || x.ctx.caminata.colegio.min > 15)),
+      porque: x => { const d = (e, n) => e ? n + ' a ' + e.min + ' min' : 'sin ' + n.toLowerCase() + ' a menos de 1,5 km';
+        return d(x.ctx.caminata.salud, 'Salud') + ' · ' + d(x.ctx.caminata.colegio, 'Colegio') + '.'; },
+      disena: 'Un equipamiento de barrio es un proyecto pequeño con efecto grande, y es de los pocos que un curso puede ' +
+        'dimensionar con seriedad: la población del radio ya está contada arriba. ¿Cuántos usuarios tendría? ¿Cabe en los lotes que hay?',
+      campo: '¿A dónde va la gente hoy? Pregunten en tres tiendas: la respuesta dice si el déficit se siente o si ya lo resolvieron por otro lado.' },
+
+    { id: 'monouso', ico: '🧩', t: 'Un sector de una sola cosa',
+      c: x => (x.s.usoPredominante || {}).residencial >= 70 || (x.s.usoPredominante || {}).comercial >= 60,
+      porque: x => { const u = x.s.usoPredominante || {};
+        return u.residencial >= 70 ? u.residencial + ' % del uso es residencial.' : u.comercial + ' % del uso es comercial.'; },
+      disena: 'Todo de lo mismo significa que todo el mundo tiene que salir del sector para hacer el resto de su vida. ' +
+        '¿Qué se puede meter en la planta baja sin cambiarle la escala a la cuadra? La mezcla se diseña en el primer piso, no en el plano de usos.',
+      campo: 'Cuenten los primeros pisos ciegos de una cuadra entera. Ese número es el diagnóstico y también la oportunidad.' },
+
+    { id: 'llegar', ico: '🚌', t: 'Cómo se llega',
+      c: x => x.ctx && x.ctx.paradas === 0,
+      porque: x => '0 paradas de transporte público dentro del radio, contra ' +
+        (((x.ctx.rutas || []).length) || 'ninguna') + ' rutas de buseta reconocidas en el entorno.',
+      disena: 'Un proyecto al que solo se llega en carro excluye a la mayoría del barrio. ¿Por dónde entra el transporte? ' +
+        '¿Dónde se para de verdad la buseta, aunque no haya paradero dibujado?',
+      campo: 'Párense diez minutos en la esquina más transitada y anoten dónde se detienen las busetas. Casi nunca coincide con el mapa.' }
+  ];
+
+  /* Las ideas que hoy se pueden sostener, con la medida que las sostiene. Lo
+     que depende del contexto solo aparece si el curso ya lo consultó, y se
+     dice cuántas ideas están esperando esa consulta: una idea escondida sin
+     avisar se lee como una idea que no existe. */
+  function ideasDeDiseno(r){
+    const x = { s: (r && r.stats) || {}, ctx: (r && r.contexto) || null, r: r };
+    const salen = [], esperan = [];
+    IDEAS_DISENO.forEach(idea => {
+      let vale = false;
+      try { vale = !!idea.c(x); } catch(e) { vale = false; }
+      const necesitaCtx = /x\.ctx/.test(String(idea.c));
+      if (vale) {
+        const texto = v => (typeof v === 'function') ? v(x) : v;
+        salen.push({ id: idea.id, ico: idea.ico, t: idea.t,
+                     porque: texto(idea.porque), disena: texto(idea.disena), campo: texto(idea.campo) });
+      } else if (necesitaCtx && !x.ctx) {
+        esperan.push(idea.id);
+      }
+    });
+    return {
+      lista: salen,
+      esperandoContexto: esperan.length,
+      // Sin puntos suficientes, el silencio de las ideas no significa que el
+      // sector no tenga carencias: significa que todavía no se ve.
+      pocosPuntos: ((r && r.edu && r.edu.leidos) || 0) < 25,
+      nota: 'Cada idea sale de una medida del análisis, no de un catálogo. Son encargos para discutir, no respuestas: ' +
+            'el análisis sabe qué le falta al sector medido contra algo, no qué hay que construir ahí.'
+    };
+  }
+
   function resumen(r){
     const out = { ts: new Date().toISOString(), poblacion: (r.stats || {}).poblacionEstimada || 0 };
     COMPARABLES.forEach(c => { out[c.id] = c.f(r); });
@@ -977,6 +1166,7 @@
     analizar: analizar,
     comparar: comparar, normalizarSector: normalizarSector,
     resumen: resumen,
+    fodaEdu: fodaEdu, ideasDeDiseno: ideasDeDiseno,
     cambios: cambios,
     COMPARABLES: COMPARABLES,
     LECTURAS: LECTURAS,

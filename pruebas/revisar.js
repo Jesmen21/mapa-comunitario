@@ -617,6 +617,79 @@ console.log('\n  -- la presencia --');
             'index.html y service-worker.js');
 }
 
+console.log('\n  -- el trabajo del curso --');
+{
+  const curso = leer('js/81-curso-servidor.js');
+  /* El tipo de la fila TIENE que llevar «comentario». No es cosmética: es lo
+     único que hace que el servidor aplique la regla de autoría —la edita
+     quien la escribió, con su token— y que la aplicación no la pinte como un
+     punto del mapa (`esFilaMetaUrbis`, js/05). Con cualquier otro prefijo la
+     entrega se rechaza al corregirla y aparece como un marcador suelto en
+     mitad del sector, que es el fallo del que se salió en la v812. */
+  comprobar('la fila de una entrega se llama «comentario» (autoría y fuera del mapa)',
+            /var\s+PREFIJO\s*=\s*'comentario de curso '/.test(curso),
+            'js/81-curso-servidor.js');
+  const meta = leer('js/05-helpers-temporal-security.js');
+  comprobar('y «comentario» sigue en la lista que nunca se pinta',
+            /esFilaMetaUrbis[\s\S]{0,400}?indexOf\('comentario'\)/.test(meta),
+            'js/05-helpers-temporal-security.js');
+  /* El campo 2 es el ÚNICO que el servidor deja cambiar a un tercero (es donde
+     se denuncia un comentario ajeno). Si algún día la entrega guardara algo
+     ahí, cualquiera podría reescribírselo a un grupo sin ser su autor. */
+  comprobar('el campo denunciable de la descripción va vacío',
+            /\[carga\.autor,\s*carga\.curso,\s*'',\s*carga\.titulo,\s*codificar\(carga\)\]/.test(curso),
+            'js/81-curso-servidor.js');
+  /* Una entrega que el servidor recorta se pierde sin avisar. Por eso el
+     módulo mide antes y se niega, en vez de mandar y confiar. */
+  comprobar('una entrega demasiado grande se rechaza en vez de recortarse',
+            /b64\.length\s*>\s*TOPE_CARGA/.test(curso) && /ok:\s*false/.test(curso),
+            'js/81-curso-servidor.js');
+  const idx = leer('index.html'), sw = leer('service-worker.js');
+  comprobar('el módulo del curso (js/81) está enlazado y en la precaché',
+            /js\/81-curso-servidor\.js\?v=/.test(idx) && /'\.\/js\/81-curso-servidor\.js'/.test(sw) &&
+            /'\.\/css\/81-curso-servidor\.css'/.test(sw),
+            'index.html y service-worker.js');
+}
+
+console.log('\n  -- el FODA del curso --');
+{
+  const edu = leer('js/64-analisis-edu.js');
+  /* Traducir el FODA es cambiar el idioma, no el contenido. Y la tabla tiene
+     un orden que importa: si «competidores» se cambiara antes que
+     «competidores directos», la segunda ya no existiría cuando le tocara el
+     turno, y el texto del curso saldría a medio traducir. */
+  const m = edu.match(/const FODA_EN_CURSO = \[([\s\S]*?)\n  \];/);
+  comprobar('la tabla de traducción del FODA existe', !!m, 'js/64-analisis-edu.js');
+  if (m) {
+    const frases = [...m[1].matchAll(/\[\/([^/]+)\//g)].map(x => x[1]);
+    const malas = [];
+    frases.forEach((a, i) => {
+      frases.slice(i + 1).forEach(b => {
+        // b viene después de a y contiene a a: a se la comería antes.
+        if (b.length > a.length && b.indexOf(a) !== -1) malas.push(a + ' antes que ' + b);
+      });
+    });
+    comprobar('y ninguna regla corta se come a una larga que viene después',
+              malas.length === 0, malas.length ? malas[0] : frases.length + ' reglas');
+  }
+  /* Una idea de proyecto sin la medida que la sostiene es una ocurrencia
+     impresa con el logo de URBIS. Las tres partes van juntas o no van. */
+  const ideas = edu.match(/const IDEAS_DISENO = \[([\s\S]*?)\n  \];/);
+  const cuenta = (t, re) => (t.match(re) || []).length;
+  comprobar('cada idea de proyecto trae medida, encargo y trabajo de campo',
+            !!ideas && cuenta(ideas[1], /porque:/g) === cuenta(ideas[1], /\bid: '/g) &&
+            cuenta(ideas[1], /disena:/g) === cuenta(ideas[1], /\bid: '/g) &&
+            cuenta(ideas[1], /campo:/g) === cuenta(ideas[1], /\bid: '/g),
+            ideas ? cuenta(ideas[1], /\bid: '/g) + ' ideas' : 'no está la lista');
+  /* El informe del curso pide el FODA traducido; el de empresas, el del motor
+     tal cual. Si el educativo perdiera ese `true` volvería a imprimir «mercado
+     saturado» en una entrega de taller sin que nada lo avisara. */
+  const inf = leer('js/63-analisis-ia-informe.js');
+  comprobar('el informe del curso imprime el FODA traducido y el de empresas no',
+            /bloqueFodaAncho\(r, true\)/.test(inf) && /bloqueFodaAncho\(r\),/.test(inf),
+            'js/63-analisis-ia-informe.js');
+}
+
 console.log('\n  -- un nombre, una cosa --');
 {
   const ASIG = /\bwindow\.([A-Za-z_$][\w$]*)\s*(?<![=!<>])=(?!=)\s*(.*)/;

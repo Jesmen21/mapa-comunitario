@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v817-lo-que-dice-el-letrero-lo-escribe-el-curso';
+const URBIS_CACHE = 'urbis-v818-el-trabajo-del-curso-vive-en-el-servidor';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -125,6 +125,8 @@ const URBIS_ASSETS = [
   './js/20-mobile-functional-app.js',
   './js/78-presencia.js',
   './css/78-presencia.css',
+  './js/81-curso-servidor.js',
+  './css/81-curso-servidor.css',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',
   './js/23-contextual-mobility-ui.js',

@@ -1427,8 +1427,12 @@
   }
 
   // ── 9. FODA + siguiente paso ────────────────────────────────────────────
-  function bloqueFodaAncho(r){
-    const f = r.foda;
+  /* En el informe del CURSO el FODA va traducido (js/64): el motor lo escribe
+     para quien va a invertir, y en una entrega de taller «mercado saturado»
+     y «competidores directos» se leen como un estudio de mercado ajeno. Los
+     hallazgos y los números son los mismos; cambia el idioma. */
+  function bloqueFodaAncho(r, edu){
+    const f = (edu && window.URBIS_EDU && window.URBIS_EDU.fodaEdu) ? window.URBIS_EDU.fodaEdu(r.foda) : r.foda;
     const caja = (t, cls, items) => '<div class="foda ' + cls + '"><h3>' + t + '</h3><ul>' +
       (items && items.length ? items.slice(0, 3).map(x => '<li>' + esc(x) + '</li>').join('')
                              : '<li class="vacio">Sin hallazgos relevantes.</li>') + '</ul></div>';
@@ -1436,6 +1440,29 @@
       caja('FORTALEZAS', 'f', f.fortalezas) + caja('DEBILIDADES', 'd', f.debilidades) +
       caja('OPORTUNIDADES', 'o', f.oportunidades) + caja('RIESGOS', 'r', f.riesgos) +
       '</div>';
+  }
+
+  /* Las ideas de proyecto, en el informe del curso. Van TRES y no las nueve
+     que puede haber en pantalla: esta es la última hoja y ya lleva
+     composición, población, campo, radios y FODA. Tres encargos que caben y
+     se leen valen más que nueve apretados que nadie termina.
+
+     Cada una conserva la medida que la sostiene. Sin ella, un encargo
+     impreso se lee como una recomendación de URBIS, y URBIS no sabe qué hay
+     que construir en un sector: sabe qué le falta medido contra algo. */
+  function bloqueIdeasInforme(r){
+    if (!(window.URBIS_EDU && window.URBIS_EDU.ideasDeDiseno)) return '';
+    const d = window.URBIS_EDU.ideasDeDiseno(r);
+    if (!d.lista.length) return '';
+    return '<div class="ideas-proy"><h3>QUÉ PROYECTO PEDIRÍA ESTE SECTOR</h3>' +
+      '<p class="ideas-nota">Encargos para discutir en clase, cada uno con la medida que lo motiva. ' +
+      'No son una respuesta: el análisis sabe qué le falta al sector, no qué hay que construir ahí.</p>' +
+      '<div class="ideas-grid">' +
+      d.lista.slice(0, 3).map(i =>
+        '<div class="idea"><h4>' + esc(i.ico + ' ' + i.t) + '</h4>' +
+        '<p class="idea-medida">' + esc(i.porque) + '</p>' +
+        '<p>' + esc(i.disena) + '</p></div>').join('') +
+      '</div></div>';
   }
 
   // Cuántas hojas tiene el informe. Vive en una constante porque la
@@ -1699,7 +1726,7 @@ seccion(3, 'Qué hay alrededor', 'el sector, cómo leer las cifras y qué falta'
 '</div>',
 seccion(4, 'La lectura del curso', 'lo que el grupo concluyó después de caminar el sector'),
 bloqueLecturasInforme(r, ['general']),
-bloqueLecturasInforme(r, ['base', 'poblacion', 'flujo', 'calor', 'composicion', 'anillos', 'edificacion', 'forma', 'contexto', 'foda']),
+bloqueLecturasInforme(r, ['base', 'poblacion', 'flujo', 'calor', 'composicion', 'anillos', 'edificacion', 'forma', 'contexto', 'foda', 'ideas']),
 bloqueComparacionInforme(r),
 pie(1, r, autor, true),
 '</div></div>',
@@ -1744,7 +1771,8 @@ seccion(8, 'De qué está hecho el sector', 'estructura urbana en ' + radioTxt),
 seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 seccion(fichaCampo(r) ? 11 : 10, 'FODA del sector', 'qué favorece, qué exige y qué revisar'),
-bloqueFodaAncho(r),
+bloqueFodaAncho(r, true),
+bloqueIdeasInforme(r),
 '<div class="paso">SIGUIENTE PASO · Mapear lo que falta, volver a analizar y comparar con esta versión: ' +
   'el cambio entre las dos es el aprendizaje.</div>',
 pie(4, r, autor, true),
@@ -2290,6 +2318,17 @@ pie(4, r, autor, true),
 '.tbl-radios2 td{padding:5px 6px;border-bottom:1px solid ', T.linea, '}',
 '.tbl-radios2 tr.fila-act td{font-weight:900;background:', T.suave, '}',
 '.tbl-radios2 td:first-child{font-weight:800}',
+/* 9b · Qué proyecto pediría el sector (solo el informe del curso). La medida
+   va con el color del acento y en cursiva: es lo que separa un encargo
+   sostenido en un dato de una recomendación suelta. */
+'.ideas-proy{margin-top:7px}',
+'.ideas-proy h3{margin:0 0 2px;font-size:8.4px;letter-spacing:.5px;color:', T.cab1, '}',
+'.ideas-nota{margin:0 0 5px;font-size:7.2px;line-height:1.35;color:', T.txt3, '}',
+'.ideas-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}',
+'.idea{border:1px solid ', T.borde, ';border-radius:5px;padding:6px 7px;background:', T.suave, '}',
+'.idea h4{margin:0 0 3px;font-size:7.8px;line-height:1.25}',
+'.idea p{margin:0;font-size:7.2px;line-height:1.35}',
+'.idea-medida{margin:0 0 3px !important;font-style:italic;color:', T.cab1, '}',
 /* 9 · Siguiente paso */
 '.paso{margin-top:6px;background:', T.cab1, ';color:', T.cabTxt, ';border-radius:5px;',
 'padding:6px 10px;text-align:center;font-size:8px;font-weight:800;letter-spacing:.3px}',

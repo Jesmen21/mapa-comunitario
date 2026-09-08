@@ -454,8 +454,12 @@
       '</div>';
   }
 
+  /* El FODA del motor está escrito para quien va a invertir: los hallazgos
+     valen igual en un taller, el idioma no. `fodaEdu` (js/64) lo reescribe
+     sin tocar ni un número ni un juicio. La nota lo dice en pantalla: un
+     texto traducido que no avisa de que lo es se lee como original. */
   function bloqueFoda(r){
-    const f = r.foda || {};
+    const f = (window.URBIS_EDU && window.URBIS_EDU.fodaEdu) ? window.URBIS_EDU.fodaEdu(r.foda) : (r.foda || {});
     const col = (k, t, ico) => {
       const items = f[k] || [];
       if (!items.length) return '';
@@ -466,7 +470,41 @@
                  col('oportunidades','Oportunidades','🚀') + col('riesgos','Riesgos','🛑');
     if (!html) return '';
     return '<div class="edu-caja"><h4>🧭 Lectura FODA del sector</h4>' +
-      '<div class="edu-foda">' + html + '</div></div>';
+      '<div class="edu-foda">' + html + '</div>' +
+      '<p class="edu-nota">El análisis lo escribe midiendo el sector para quien va a invertir. ' +
+      'Acá está dicho para un taller: mismos hallazgos y mismos números, otro idioma.</p></div>';
+  }
+
+  /* ── Qué proyecto pediría este sector ─────────────────────────────────
+     El paso que faltaba entre el diagnóstico y el tablero. Cada idea llega
+     de js/64 con las tres partes juntas —la medida, el encargo y qué ir a
+     comprobar— y acá se pintan las tres: una idea sin su medida es una
+     ocurrencia, y sin el trabajo de campo que la puede tumbar es una
+     conclusión que el análisis no tiene con qué sostener. */
+  function bloqueIdeas(r){
+    if (!(window.URBIS_EDU && window.URBIS_EDU.ideasDeDiseno)) return '';
+    const d = window.URBIS_EDU.ideasDeDiseno(r);
+    const lista = d.lista.map(i =>
+      '<li><b>' + esc(i.ico) + ' ' + esc(i.t) + '</b>' +
+      '<em>' + esc(i.porque) + '</em>' +
+      '<span>' + esc(i.disena) + '</span>' +
+      '<small>👟 Antes de creerle: ' + esc(i.campo) + '</small></li>').join('');
+    const avisos = [];
+    if (d.esperandoContexto) {
+      avisos.push(d.esperandoContexto + (d.esperandoContexto === 1 ? ' idea más sale' : ' ideas más salen') +
+        ' del contexto del sector. Consúltenlo arriba y vuelvan a analizar.');
+    }
+    if (d.pocosPuntos) {
+      avisos.push('Con tan pocos puntos mapeados, que una carencia no aparezca acá no significa que el sector no la tenga: ' +
+        'significa que todavía no se ve.');
+    }
+    return '<div class="edu-caja edu-ideas" id="edu-ideas"><h4>🎯 Qué proyecto pediría este sector</h4>' +
+      '<p class="edu-nota">' + esc(d.nota) + '</p>' +
+      (lista ? '<ul class="edu-ideas-lista">' + lista + '</ul>'
+             : '<p class="edu-nota">Ninguna de las carencias que este análisis sabe medir aparece en el radio. ' +
+               'No quiere decir que el sector no tenga ninguna: quiere decir que hay que ir a buscarla caminando.</p>') +
+      (avisos.length ? '<p class="edu-nota">' + avisos.map(esc).join(' ') + '</p>' : '') +
+      '</div>';
   }
 
   /* ── La lectura del curso ─────────────────────────────────────────────
@@ -719,6 +757,107 @@
     w.document.open(); w.document.write(html); w.document.close();
   }
 
+  /* ── Entregar al curso ────────────────────────────────────────────────
+     El puente con js/81. Acá va SOLO la pantalla: el formato de la fila, la
+     firma del sector y las reglas del servidor viven allá, para que las
+     pruebas puedan tocarlas sin abrir el panel entero.
+
+     El aviso de arriba no es letra chica. Antes de esta versión, lo escrito
+     no salía del teléfono y por eso no había nada que advertir; a partir de
+     ahora sí sale, y el nombre del curso es la única llave. Decirlo con esas
+     palabras, antes del campo, es la diferencia entre entregar y publicar
+     sin saberlo. */
+  function bloqueCurso(){
+    if (!window.URBIS_CURSO) return '';
+    const c = window.URBIS_CURSO.curso();
+    return '<div class="edu-caja edu-curso" id="edu-curso">' +
+      '<h4>📤 Entregar al curso</h4>' +
+      '<p class="edu-aviso">Lo que escriben acá vive en <b>este</b> teléfono y nadie más lo ve. ' +
+      'Entregarlo lo guarda en el servidor, donde el profesor abre el trabajo de todos los grupos ' +
+      'desde un solo sitio. El nombre del curso es la <b>única llave</b>: quien lo sepa, lee lo entregado.</p>' +
+      '<label class="edu-curso-campo">Curso o grupo' +
+        '<input type="text" id="edu-curso-nombre" maxlength="60" placeholder="Taller 5B · UFPS" value="' + esc(c) + '"></label>' +
+      '<div class="edu-curso-btns">' +
+        '<button type="button" id="edu-curso-entregar">📤 Entregar</button>' +
+        '<button type="button" id="edu-curso-ver" class="sec">📚 Ver lo entregado</button>' +
+      '</div>' +
+      '<p class="edu-curso-msg" id="edu-curso-msg" role="status"></p>' +
+      '<div id="edu-curso-lista"></div></div>';
+  }
+  function nombreLectura(id){
+    const L = ((window.URBIS_EDU || {}).LECTURAS) || [];
+    const d = L.find(x => x.id === id);
+    return (d && d.t) || (id === 'general' ? 'Conclusión del grupo' : id);
+  }
+  function cifraCmp(c, v){
+    const n = Number(v) || 0;
+    return (c.dec ? n.toLocaleString('es-CO', { maximumFractionDigits: c.dec, minimumFractionDigits: c.dec })
+                  : String(Math.round(n))) + (c.sufijo || '');
+  }
+  function entregaHTML(e){
+    const fecha = e.ms ? new Date(e.ms).toLocaleString('es-CO', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'sin fecha';
+    const ids = Object.keys(e.lecturas || {});
+    const cuerpo = ids.length
+      ? '<dl>' + ids.map(k => '<dt>' + esc(nombreLectura(k)) + '</dt><dd>' + esc(String(e.lecturas[k])) + '</dd>').join('') + '</dl>'
+      : '<p class="edu-curso-vacio">La entrega llegó sin lecturas escritas.</p>';
+    const r = e.resumen || {};
+    const cifras = (((window.URBIS_EDU || {}).COMPARABLES) || [])
+      .filter(c => r[c.id] != null)
+      .map(c => '<span>' + esc(c.t) + ': ' + esc(cifraCmp(c, r[c.id])) + '</span>').join('');
+    return '<li><details class="edu-curso-entrega">' +
+      '<summary><b>' + esc(e.autor || 'sin firma') + '</b> · ' + esc(e.titulo || 'sector sin nombre') +
+        '<span>' + esc(fecha) + ' · ' + e.escritas + (e.escritas === 1 ? ' lectura escrita' : ' lecturas escritas') + '</span></summary>' +
+      cuerpo + (cifras ? '<div class="edu-curso-cifras">' + cifras + '</div>' : '') +
+      '</details></li>';
+  }
+  function msgCurso(texto, clase){
+    const m = $('edu-curso-msg');
+    if (!m) return;
+    m.className = 'edu-curso-msg' + (clase ? ' ' + clase : '');
+    m.textContent = texto || '';
+  }
+  function engancharCurso(cont, centro, radioM){
+    const C = window.URBIS_CURSO;
+    if (!C) return;
+    const campo = cont.querySelector('#edu-curso-nombre');
+    if (campo) campo.addEventListener('change', () => C.fijarCurso(campo.value));
+    const bEnt = cont.querySelector('#edu-curso-entregar');
+    if (bEnt) bEnt.addEventListener('click', async () => {
+      const nombre = campo ? campo.value : '';
+      C.fijarCurso(nombre);
+      bEnt.disabled = true; msgCurso('Entregando…', '');
+      try {
+        const out = await C.entregar(ultimo, lecturasActuales(), centro, radioM, nombre);
+        if (out && out.ok) msgCurso(out.actualizada
+          ? 'Entrega actualizada. El profesor ve la última versión, no las anteriores.'
+          : 'Entregado. Ya está en el servidor, a nombre del curso.', 'ok');
+        else msgCurso((out && out.message) || 'No se pudo entregar.', 'mal');
+      } catch(err) {
+        msgCurso('No se pudo entregar: ' + ((err && err.message) || err), 'mal');
+      }
+      bEnt.disabled = false;
+    });
+    const bVer = cont.querySelector('#edu-curso-ver');
+    if (bVer) bVer.addEventListener('click', async () => {
+      const nombre = campo ? campo.value : '';
+      C.fijarCurso(nombre);
+      const caja = cont.querySelector('#edu-curso-lista');
+      if (!C.normCurso(nombre)) { msgCurso('Escriban primero el nombre del curso.', 'mal'); return; }
+      bVer.disabled = true; msgCurso('Buscando lo entregado…', '');
+      try {
+        const lista = await C.traer(nombre);
+        msgCurso(lista.length
+          ? lista.length + (lista.length === 1 ? ' entrega' : ' entregas') + ' en «' + nombre.trim() + '».'
+          : 'Nadie ha entregado todavía en «' + nombre.trim() + '». Si el curso ya entregó, revisen que el nombre esté escrito igual.',
+          lista.length ? 'ok' : '');
+        if (caja) caja.innerHTML = lista.length ? '<ul class="edu-curso-lista">' + lista.map(entregaHTML).join('') + '</ul>' : '';
+      } catch(err) {
+        msgCurso('No se pudo leer lo entregado: ' + ((err && err.message) || err), 'mal');
+      }
+      bVer.disabled = false;
+    });
+  }
+
   // ── Orquestación ────────────────────────────────────────────────────────
   function centroActual(){
     try {
@@ -758,6 +897,7 @@
                        conLectura(bloqueAnillos(r), 'anillos', previas) +
                        conLectura(bloqueEdificacion(r), 'edificacion', previas) +
                        bloqueOportunidades(r) + conLectura(bloqueFoda(r), 'foda', previas) +
+                       conLectura(bloqueIdeas(r), 'ideas', previas) +
                        '<div class="edu-caja" id="edu-forma"><h4>🔷 ¿Qué forma tiene la traza?</h4>' +
                          '<p class="edu-nota">Ortogonal, radial, media naranja, lineal o plato roto — medido con el rumbo ' +
                          'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
@@ -769,12 +909,14 @@
                          '<button type="button" id="edu-contexto-btn">🧭 Consultar el contexto</button></div>' +
                        cajaLectura('contexto', previas) +
                        bloqueConclusion(previas) +
+                       bloqueCurso() +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe del curso</button>' +
                          '<button type="button" id="edu-hoja-campo" class="sec">📝 Hoja de campo · lo que falta por levantar</button>' +
                        '</div>';
       engancharLecturas(cont);
       engancharComparar(cont);
+      engancharCurso(cont, centro, radioM);
       const bh = $('edu-hoja-campo');
       if (bh) bh.addEventListener('click', abrirHojaCampo);
       const bi = $('edu-analisis-informe');
@@ -1053,6 +1195,8 @@
                           lecturas: lecturasActuales, hojaCampoHTML: hojaCampoHTML,
                           referencias: referenciasDelCurso,
                           candidatosComparar: candidatosComparar,
+                          entregaHTML: entregaHTML,
+                          bloqueIdeas: bloqueIdeas,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();

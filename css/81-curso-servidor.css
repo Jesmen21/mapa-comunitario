@@ -1,0 +1,60 @@
+/* URBIS · ENTREGAR AL CURSO (css/81) — el bloque de js/81 dentro del panel
+   educativo. Sigue el código de color que ya usa el modo: ámbar es lo que
+   ESCRIBE el curso (la caja de lectura, la conclusión), cian es lo que dice
+   el motor. Una entrega es lo primero, así que va en ámbar; el acuse de
+   recibo, en verde, que es el único sitio donde este bloque afirma algo. */
+
+.edu-curso{ border-color:rgba(245,185,66,.45); }
+.edu-curso h4{ color:#f5b942; }
+/* El aviso de que el nombre del curso es la única llave no es letra chica:
+   es la condición con la que se entrega, y se lee antes de escribir nada. */
+.edu-curso .edu-aviso{
+  margin:0 0 8px; padding:6px 8px; border-radius:8px; font-size:.66rem; line-height:1.45;
+  background:rgba(245,185,66,.1); border:1px solid rgba(245,185,66,.3);
+}
+.edu-curso .edu-aviso b{ color:#f5b942; }
+
+.edu-curso-campo{ display:block; font-size:.66rem; opacity:.85; margin-bottom:8px; }
+.edu-curso-campo input{
+  display:block; width:100%; box-sizing:border-box; margin-top:4px;
+  font:inherit; font-size:.75rem; padding:8px 9px; border-radius:8px; color:inherit;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.15);
+}
+.edu-curso-campo input:focus-visible{ outline:2px solid #f5b942; outline-offset:1px; }
+
+.edu-curso-btns{ display:flex; gap:7px; }
+.edu-curso-btns button{
+  flex:1; padding:9px 6px; border-radius:9px; cursor:pointer; font-size:.72rem; font-weight:600;
+  background:#f5b942; color:#2a1c00; border:none;
+}
+.edu-curso-btns button.sec{ background:rgba(245,185,66,.14); color:#f5b942; border:1px solid rgba(245,185,66,.45); }
+.edu-curso-btns button[disabled]{ opacity:.55; cursor:default; }
+
+.edu-curso-msg{ margin:8px 0 0; font-size:.68rem; line-height:1.45; }
+.edu-curso-msg.ok{ color:#4ade80; }
+.edu-curso-msg.mal{ color:#f87171; }
+
+/* La lista de lo entregado. Cada entrega es un plegable: cerrado dice de
+   quién es, de qué sector y de cuándo —lo que el profesor necesita para
+   pasar lista—; abierto, lo que el grupo escribió. */
+.edu-curso-lista{ list-style:none; margin:9px 0 0; padding:0; }
+.edu-curso-lista li{ margin:0 0 6px; }
+.edu-curso-entrega{
+  padding:6px 8px; border-radius:9px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12);
+}
+.edu-curso-entrega>summary{ cursor:pointer; font-size:.7rem; line-height:1.4; }
+.edu-curso-entrega>summary b{ color:#f5b942; }
+.edu-curso-entrega>summary span{ display:block; opacity:.75; font-size:.63rem; }
+.edu-curso-entrega>summary em{ font-style:normal; opacity:.6; }
+.edu-curso-entrega dl{ margin:7px 0 0; font-size:.69rem; line-height:1.45; }
+.edu-curso-entrega dt{ font-weight:700; color:#f5b942; margin-top:6px; }
+.edu-curso-entrega dd{ margin:2px 0 0; white-space:pre-wrap; }
+/* Las cifras de la entrega, para poder contrastar lo escrito con lo medido
+   sin abrir el informe. */
+.edu-curso-cifras{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.edu-curso-cifras span{
+  font-size:.6rem; padding:2px 7px; border-radius:999px;
+  background:rgba(34,211,238,.12); border:1px solid rgba(34,211,238,.35); color:#22d3ee;
+}
+.edu-curso-vacio{ margin:9px 0 0; font-size:.68rem; opacity:.8; line-height:1.45; }
