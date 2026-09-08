@@ -651,6 +651,39 @@ console.log('\n  -- el trabajo del curso --');
             'index.html y service-worker.js');
 }
 
+console.log('\n  -- el calendario del evento premium --');
+{
+  const cal = leer('css/82-calendario.css');
+  /* Encargo explícito: el calendario va en el celeste del compositor premium.
+     Se mide el color, no se confía en la palabra: verde es un hex donde el
+     canal verde manda con holgura sobre los otros dos. */
+  const verdes = (cal.match(/#[0-9a-fA-F]{6}/g) || []).filter(h => {
+    const r = parseInt(h.slice(1, 3), 16), g = parseInt(h.slice(3, 5), 16), b = parseInt(h.slice(5, 7), 16);
+    return g > r + 25 && g > b + 25;
+  });
+  comprobar('el calendario no trae ni un color verde', verdes.length === 0,
+            verdes.length ? verdes.join(', ') : 'celeste URBIS');
+  comprobar('y usa la paleta del compositor premium, no una propia',
+            ['#7FD8F5', '#0B5E86', '#0EA5E9'].every(c => cal.indexOf(c) !== -1),
+            'css/82-calendario.css');
+  /* Un <label> reenvía el clic a su primer control etiquetable. Los días del
+     calendario son <button>, que lo son, así que envolverlo en un <label>
+     hace que cada toque cuente dos veces y el rango se elija solo. Pasó, se
+     vio en pantalla, y por eso está escrito. */
+  const j20 = leer('js/20-mobile-functional-app.js');
+  comprobar('el calendario del compositor no va dentro de un <label>',
+            !/<label[^>]*u52-ev-fechas/.test(j20), 'js/20-mobile-functional-app.js');
+  /* Dos maneras de decir cuánto dura el evento acabarían contradiciéndose:
+     la que el usuario ve y la que el código lee. */
+  comprobar('el campo viejo de horas ya no existe en ningún archivo servido',
+            !/id="ev-horas"|#ev-horas/.test(j20), 'js/20-mobile-functional-app.js');
+  const idx = leer('index.html'), sw = leer('service-worker.js');
+  comprobar('el calendario (js/82) está enlazado y en la precaché',
+            /js\/82-calendario\.js\?v=/.test(idx) && /'\.\/js\/82-calendario\.js'/.test(sw) &&
+            /'\.\/css\/82-calendario\.css'/.test(sw),
+            'index.html y service-worker.js');
+}
+
 console.log('\n  -- el FODA del curso --');
 {
   const edu = leer('js/64-analisis-edu.js');

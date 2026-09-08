@@ -2915,28 +2915,51 @@
     const titulo = prompt('✨ Nombre del evento de Juegos URBIS (evento premium):', 'Juegos URBIS'); if(titulo === null) return;
     const premio = prompt('💰 Premio REAL para el ganador (ej: 100.000 COP):', ''); if(premio === null) return;
     const detalle = prompt('📜 ¿En qué consiste el juego? (descripción para los jugadores)', 'Reto de reflejos: el que más puntos haga gana el premio.'); if(detalle === null) return;
-    const horas = prompt('⏳ ¿En cuántas HORAS termina la competencia? (ej: 24)', '24'); if(horas === null) return;
-    const h = Math.max(1, parseInt(horas, 10) || 24);
-    if(!navigator.geolocation){ alert('Necesitas activar el GPS para ubicar el evento de Juegos URBIS.'); return; }
-    navigator.geolocation.getCurrentPosition(function(pos){
-      window.urbisCrearEventoPremiumEn(pos.coords.latitude.toFixed(7), pos.coords.longitude.toFixed(7), titulo, premio, detalle, h)
-        .then(()=>{ alert('✨ ¡Evento de Juegos URBIS creado! Brillará en el mapa. El ganador recibirá el premio real.'); })
-        .catch(err=> alert('No se pudo crear el evento de Juegos URBIS: ' + (err && err.message || err)));
-    }, function(){ alert('No se pudo obtener tu ubicación GPS.'); }, { enableHighAccuracy:true, timeout:9000 });
+    /* Antes acá había un `prompt` pidiendo «¿en cuántas HORAS termina?». Nadie
+       organiza un torneo pensando en horas: se piensa «del viernes al
+       domingo», y traducirlo a 72 obliga a abrir el calendario del teléfono y
+       contar. Un día de más o de menos en ese número cierra la competencia
+       antes de tiempo, y el premio es dinero real. Ahora se tocan los días
+       (js/82) y las horas las cuenta la máquina. */
+    const pedir = (window.URBIS_CALENDARIO && window.URBIS_CALENDARIO.pedirRango)
+      ? window.URBIS_CALENDARIO.pedirRango({ titulo:'📅 ¿Cuándo es la competencia?' })
+      : Promise.resolve({ horas: Math.max(1, parseInt(prompt('⏳ ¿En cuántas HORAS termina la competencia? (ej: 24)', '24') || '', 10) || 24), inicio:new Date(), fin:null });
+    pedir.then(function(rango){
+      if(!rango) return;                       // cancelaron el calendario
+      const h = Math.max(1, rango.horas || 24);
+      if(!navigator.geolocation){ alert('Necesitas activar el GPS para ubicar el evento de Juegos URBIS.'); return; }
+      navigator.geolocation.getCurrentPosition(function(pos){
+        window.urbisCrearEventoPremiumEn(pos.coords.latitude.toFixed(7), pos.coords.longitude.toFixed(7), titulo, premio, detalle, h, rango)
+          .then(()=>{ alert('✨ ¡Evento de Juegos URBIS creado! Brillará en el mapa. El ganador recibirá el premio real.'); })
+          .catch(err=> alert('No se pudo crear el evento de Juegos URBIS: ' + (err && err.message || err)));
+      }, function(){ alert('No se pudo obtener tu ubicación GPS.'); }, { enableHighAccuracy:true, timeout:9000 });
+    });
   };
   // Crea el evento de Juegos URBIS en un punto específico (usado por el compositor de eventos del mapa).
-  window.urbisCrearEventoPremiumEn = function(lat, lng, titulo, premio, detalle, horas){
+  /* `rango` es opcional y viene del calendario (js/82): {inicio, fin, horas}.
+     Sin él se comporta como siempre —arranca ahora y dura `horas`—, que es lo
+     que necesitan las llamadas viejas y el respaldo cuando el calendario no
+     cargó. Con él, el evento puede quedar PROGRAMADO: `visibleParaRol`
+     (js/05) solo pinta un temporal si `creado <= ahora <= expira`, así que
+     una fecha de creación futura ya lo esconde hasta su día. No hubo que
+     tocar el servidor: la capacidad estaba y no había cómo pedirla. */
+  window.urbisCrearEventoPremiumEn = function(lat, lng, titulo, premio, detalle, horas, rango){
     const h = Math.max(1, parseInt(horas, 10) || 24);
     const usuario = (window.urbisUsuarioActual && window.urbisUsuarioActual()) || 'urbis';
-    const fin = new Date(Date.now() + h * 3600000);
+    const arranca = (rango && rango.inicio) ? new Date(rango.inicio) : new Date();
+    const fin = new Date(arranca.getTime() + h * 3600000);
     const finTxt = fin.toLocaleString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     const clean = s => String(s||'').replace(/[|·]/g, '-');
-    const notas = `EVENTO_URBIS · PREMIUM · Premio: ${clean(premio) || 'a definir'} · Detalle: ${clean(detalle)} · Hora: termina ${finTxt} · Lugar: Juegos URBIS URBIS`;
+    // El jugador lee «del 12 al 15 de septiembre», no «termina 15 sep, 11:59».
+    const cuando = (rango && rango.fin && window.URBIS_CALENDARIO)
+      ? window.URBIS_CALENDARIO.textoRango(arranca, rango.fin)
+      : 'termina ' + finTxt;
+    const notas = `EVENTO_URBIS · PREMIUM · Premio: ${clean(premio) || 'a definir'} · Detalle: ${clean(detalle)} · Hora: ${clean(cuando)} · Lugar: Juegos URBIS URBIS`;
     const usos = []; for(var i=0;i<todosLosUsos.length;i++) usos.push('NO');
     const arr = ['✨ Juegos URBIS', clean(titulo) || 'Juegos URBIS', notas, 'Bueno', 'Activo', 'N/A']
       .concat(usos)
       .concat(['N/A', 'Aprobado', usuario, 'admin', 0, (window.userEmailGlobal || 'admin@urbis.com'), 'ADMIN', 'Comunidad']);
-    const descripcion = asegurarCamposTemporalesPersonalizados(arr.join(' | '), '🎪 Eventos Comunitarios', '✨ Juegos URBIS', new Date(), h, '✨');
+    const descripcion = asegurarCamposTemporalesPersonalizados(arr.join(' | '), '🎪 Eventos Comunitarios', '✨ Juegos URBIS', arranca, h, '✨');
     return window.urbisGuardarFila({ tipo:'🎪 Eventos Comunitarios', lat:String(lat), lng:String(lng), descripcion:descripcion, fecha:new Date().toISOString() })
       .then(res => { if(res && res.ok === false && res.status) throw new Error('HTTP ' + res.status); if(typeof playSuccessSound === 'function') playSuccessSound(); setTimeout(()=>{ try{ cargarPuntos(); }catch(e){} }, 700); return res; });
   };

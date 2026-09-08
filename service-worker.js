@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v818-el-trabajo-del-curso-vive-en-el-servidor';
+const URBIS_CACHE = 'urbis-v819-el-calendario-en-vez-de-contar-dias';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -127,6 +127,8 @@ const URBIS_ASSETS = [
   './css/78-presencia.css',
   './js/81-curso-servidor.js',
   './css/81-curso-servidor.css',
+  './js/82-calendario.js',
+  './css/82-calendario.css',
   './js/21-mobile-mobility-pro.js',
   './js/22-mobility-clean-traffic.js',
   './js/23-contextual-mobility-ui.js',

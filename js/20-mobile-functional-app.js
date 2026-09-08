@@ -2139,7 +2139,7 @@
     return base;
   }
 
-  let communityEventComposer = { activeSection:'deporte', selectedTypeId:'', panel:null };
+  let communityEventComposer = { activeSection:'deporte', selectedTypeId:'', panel:null, calendario:null };
 
   function ensureQuickEventPanel(){
     if(communityEventComposer.panel) return communityEventComposer.panel;
@@ -2196,10 +2196,17 @@
           <input id="ev-titulo-custom" type="text" maxlength="80" placeholder="Nombre del evento de Juegos URBIS *" value="Juegos URBIS">
           <input id="ev-premio" type="text" maxlength="60" placeholder="💰 Premio real (ej: 100.000 COP) *">
           <textarea id="ev-descripcion" maxlength="220" placeholder="📜 ¿En qué consiste el juego?">Reto de reflejos: el que más puntos haga, gana.</textarea>
-          <label class="u52-ev-horas"><span>⏳ Termina en (horas)</span><input id="ev-horas" type="number" min="1" max="720" value="24"></label>
+          <div class="u52-ev-fechas"><span>📅 ¿Cuándo es la competencia?</span><div id="ev-calendario"></div></div>
           <button type="button" class="u52-quick-publish u52-coliseo-publish" data-u52-call="quick-event-publish">✨ Publicar Juegos URBIS</button>
         </div>`;
       panel.hidden = false;
+      /* El calendario reemplaza al campo de horas. Se monta después de pintar
+         el panel porque necesita el contenedor ya en el documento, y el
+         controlador se guarda en el compositor: la selección vive en el
+         módulo, no en clases CSS que cualquiera puede cambiar por estética. */
+      communityEventComposer.calendario = (window.URBIS_CALENDARIO && window.URBIS_CALENDARIO.montar)
+        ? window.URBIS_CALENDARIO.montar(panel.querySelector('#ev-calendario'), { meses: 3 })
+        : null;
       return;
     }
     const isOtro = typeId === 'ev-otro';
@@ -2259,12 +2266,18 @@
       const titulo = (panel?.querySelector('#ev-titulo-custom')?.value || 'Juegos URBIS').trim();
       const premio = (panel?.querySelector('#ev-premio')?.value || '').trim();
       const detalle = (panel?.querySelector('#ev-descripcion')?.value || '').trim();
-      const horas = Math.max(1, parseInt(panel?.querySelector('#ev-horas')?.value, 10) || 24);
+      /* Del calendario salen las horas Y el día en que arranca. Sin el
+         calendario montado —una versión vieja en caché, un fallo al pintar—
+         se cae a 24 horas desde ahora, que es lo que hacía antes: mejor un
+         evento de un día que ningún evento. */
+      const rango = (communityEventComposer.calendario && communityEventComposer.calendario.valor())
+        || { horas: 24, inicio: new Date(), fin: null };
+      const horas = Math.max(1, rango.horas || 24);
       if(!premio){ alert('Indica el premio en dinero para el ganador.'); return; }
       try{
         btn.disabled = true; btn.innerText = 'Publicando...';
         if(typeof window.urbisCrearEventoPremiumEn === 'function'){
-          await window.urbisCrearEventoPremiumEn(String(point.lat), String(point.lng), titulo, premio, detalle, horas);
+          await window.urbisCrearEventoPremiumEn(String(point.lat), String(point.lng), titulo, premio, detalle, horas, rango);
         }
         if(typeof hideQuickEventPanel === 'function') hideQuickEventPanel();
         if(typeof window.urbisCargarPuntos === 'function') window.urbisCargarPuntos();
