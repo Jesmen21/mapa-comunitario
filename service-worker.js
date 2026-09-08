@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v826-el-ritmo-manda-el-juego';
+const URBIS_CACHE = 'urbis-v827-la-tabla-nueva-se-llena-sola';
 const URBIS_ASSETS = [
   './',
   './index.html',

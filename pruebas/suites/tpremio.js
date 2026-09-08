@@ -22,6 +22,7 @@ const E = require('../entorno.js');
    · Las filas de premio nunca llegan al mapa ni a «mis reportes».           */
 const { chromium } = require(E.MODULOS + '/playwright-core');
 const fs = require('fs');
+const REPO = process.env.REPO || E.RAIZ;
 
 // ── La hoja de mentira ────────────────────────────────────────────────────
 // Misma disposición que escribe urbisCrearEventoPremiumEn (js/12): 6 campos,
@@ -39,8 +40,17 @@ function eventoPremium(lat, lng, titulo, premio, creado, expira) {
 }
 const TERMINADO = eventoPremium('4.6101234', '-74.0700001', 'Reto Chapinero', '100.000 COP', hora(-50), hora(-26));
 const VIVO      = eventoPremium('4.6205678', '-74.0800002', 'Reto Usaquén',   '50.000 COP',  hora(-2),  hora(20));
-const JUEGO_TERMINADO = 'aurea_46101234';
-const JUEGO_VIVO = 'aurea_46205678';
+/* Los identificadores se piden a la MISMA función que usa la aplicación
+   (js/05), no se escriben a mano. Escritos a mano, esta suite se rompió
+   entera el día que el nombre pasó a llevar la escala del puntaje al final
+   —seis aserciones en rojo por una regla duplicada en la prueba—, que es
+   exactamente el fallo que la regla nueva de revisar.js persigue en el
+   código servido. La prueba no está exenta de sus propias reglas. */
+const ESCALA = (fs.readFileSync(REPO + '/js/05-helpers-temporal-security.js', 'utf8')
+  .match(/URBIS_ESCALA_JUEGO = '([^']*)'/) || [, ''])[1];
+const idDe = (lat) => 'aurea_' + String(lat).replace(/[^0-9]/g, '') + ESCALA;
+const JUEGO_TERMINADO = idDe('4.6101234');
+const JUEGO_VIVO = idDe('4.6205678');
 const reclamo = (ganador, estado, admin) => ({
   tipo: '🏆 Premio URBIS', lat: '0', lng: '0',
   descripcion: [ganador, JUEGO_TERMINADO, 'Reto Chapinero', '100.000 COP', estado, admin || '', new Date().toISOString(), '40 pts'].join('~~~'),

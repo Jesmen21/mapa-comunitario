@@ -437,7 +437,7 @@
       if(!finP){ try{ finP = formatearFechaHora(metaTemporalPopup.expira); }catch(e){} }
       // Cada Juegos URBIS tiene su PROPIA tabla de juego (id derivado de su ubicación),
       // separada del minijuego libre. Solo se entra a jugar premium desde esta gota.
-      const aureaJuegoId = 'aurea_' + String(p.lat).replace(/[^0-9]/g,'');
+      const aureaJuegoId = window.urbisJuegoIdDeEvento(p.lat);
       const tituloEsc = String(d[1] || 'Juegos URBIS').replace(/'/g, '’').replace(/"/g, '');
       const terminado = !!(metaTemporalPopup && metaTemporalPopup.archivado);
       const premioEsc = String(premio).replace(/'/g, '’').replace(/"/g, '');

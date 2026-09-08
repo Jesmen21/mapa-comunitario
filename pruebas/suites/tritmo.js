@@ -193,6 +193,37 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(sinMult, 'y no le sale multiplicador: su tabla lleva años en la escala vieja');
 
   await pg.evaluate(() => document.querySelectorAll('#urbis-game-tap').forEach(x => x.remove()));
+  /* ── 6 · La tabla nueva se llena sola ─────────────────────────────────
+     Los puntajes de la escala vieja NO se borran a mano: la escala nueva
+     estrena tabla y el ranking se llena a medida que la gente juega. Se pidió
+     así: «que se borre solo cuando se juegue otra vez y se actualice solo el
+     marcador».
+
+     Y no se arregla con el `Math.max` del servidor, que es lo que hay: se
+     midió, y una partida malísima en la escala nueva saca 82 puntos, POR
+     DEBAJO de un 91 viejo. Con las dos escalas en la misma tabla, el número
+     viejo puede sobrevivir y el marcador se queda mintiendo. */
+  const h05 = fs.readFileSync(REPO + '/js/05-helpers-temporal-security.js', 'utf8');
+  chk(/var URBIS_ESCALA_JUEGO = '_r2';/.test(h05),
+      'la escala del puntaje va marcada en el nombre de la tabla');
+  const ids = await pg.evaluate((src) => {
+    const m = src.match(/function urbisJuegoIdDeEvento\(lat\) \{[\s\S]*?\n  \}/);
+    if (!m) return null;
+    const f = new Function('URBIS_ESCALA_JUEGO', 'return (' + m[0].replace('function urbisJuegoIdDeEvento', 'function') + ')')('_r2');
+    return { a: f('7.8891234'), b: f(7.8891234), c: f(null) };
+  }, h05);
+  chk(ids && ids.a === ids.b,
+      'el mismo evento da el mismo nombre venga el lat como texto o como número');
+  chk(ids && /_r2$/.test(ids.a),
+      'y el nombre lleva la escala al final (' + (ids ? ids.a : '—') + ')');
+  /* Cinco archivos armaban ese nombre copiando la misma línea. Cinco copias
+     de una regla es una regla que un día deja de serlo. */
+  const COPIAS = ['js/10-visible-markers.js', 'js/12-spa-ui.js', 'js/13j-premio.js',
+                  'js/20-mobile-functional-app.js', 'js/47-aurea-forzado.js'];
+  const sueltos = COPIAS.filter(f => /'aurea_'\s*\+/.test(fs.readFileSync(REPO + '/' + f, 'utf8')));
+  chk(sueltos.length === 0,
+      'ningún archivo se arma el nombre por su cuenta' + (sueltos.length ? ': ' + sueltos.join(', ') : ''));
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await b.close();

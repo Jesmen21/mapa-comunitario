@@ -677,6 +677,31 @@ console.log('\n  -- el ritmo del juego --');
             /urbisGuardarPuntaje\(puntos, juegoId\)/.test(j12), 'js/12-spa-ui.js');
 }
 
+console.log('\n  -- una sola manera de nombrar la tabla del evento --');
+{
+  /* Cinco archivos armaban el identificador de la tabla copiando la misma
+     línea. Cinco copias de una regla es una regla que un día deja de serlo:
+     basta que alguien cambie una y ese archivo empiece a leer o escribir en
+     otra tabla, sin un solo error a la vista —el ranking simplemente sale
+     vacío o incompleto—.
+
+     El nombre lleva además la ESCALA del puntaje (`_r2`), que es lo que deja
+     atrás la tabla vieja sin borrar nada a mano cuando cambia cómo se
+     puntúa. */
+  const h05 = leer('js/05-helpers-temporal-security.js');
+  comprobar('el nombre de la tabla se arma en un solo sitio',
+            /function urbisJuegoIdDeEvento\(lat\)/.test(h05) &&
+            /window\.urbisJuegoIdDeEvento = urbisJuegoIdDeEvento;/.test(h05),
+            'js/05-helpers-temporal-security.js');
+  const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f) && f !== '05-helpers-temporal-security.js');
+  const copias = servidos.filter(f => /'aurea_'\s*\+/.test(leer('js/' + f)));
+  comprobar('y ningún otro archivo se lo arma por su cuenta',
+            copias.length === 0,
+            copias.length ? 'se lo arman: ' + copias.join(', ') : servidos.length + ' archivos revisados');
+  comprobar('la escala del puntaje va marcada en el nombre',
+            /URBIS_ESCALA_JUEGO = '_r\d+';/.test(h05), 'js/05-helpers-temporal-security.js');
+}
+
 console.log('\n  -- el calendario del evento premium --');
 {
   const cal = leer('css/82-calendario.css');

@@ -264,6 +264,38 @@
   }
   window.esFilaMetaUrbis = esFilaMetaUrbis;
 
+  /* ── El nombre de la tabla de un evento premium ───────────────────────
+     Cuatro archivos armaban este identificador por su cuenta —js/10, js/12,
+     js/13j, js/20 y js/47— con la misma línea copiada. Cinco copias de una
+     regla es una regla que un día deja de serlo: basta que alguien cambie
+     una.
+
+     El sufijo `_r2` marca la ESCALA del puntaje. Hasta la v825 el puntaje era
+     el número de monedas —cuarenta, noventa, ciento diez—; desde la v826 son
+     puntos con ritmo adentro, y una partida corriente saca entre trescientos
+     y mil quinientos. Las dos escalas en la misma tabla no se pueden
+     comparar: un noventa y uno viejo, que fue una buena partida, queda de
+     último para siempre al lado de puntajes que valen quince veces más.
+
+     Mezclarlas tampoco se arregla con `Math.max` en el servidor, que es lo
+     que hay: se midió, y una partida malísima en la escala nueva saca 82
+     puntos, POR DEBAJO de un 91 viejo. O sea que el número viejo puede
+     sobrevivir, y el marcador se queda mintiendo sin que nadie se entere.
+
+     Con el sufijo, la escala nueva estrena tabla: el ranking arranca vacío y
+     se llena solo, a medida que la gente juega. Nadie tiene que borrar nada a
+     mano. Es lo mismo que ya se hizo una vez con el arcade libre, cuando pasó
+     de «arcade» a «reflejos1» para dejar atrás una tabla que sumaba mal.
+
+     Si algún día vuelve a cambiar cómo se puntúa, se sube el número acá y en
+     ningún otro sitio. */
+  var URBIS_ESCALA_JUEGO = '_r2';
+  function urbisJuegoIdDeEvento(lat) {
+      return 'aurea_' + String(lat == null ? '' : lat).replace(/[^0-9]/g, '') + URBIS_ESCALA_JUEGO;
+  }
+  window.urbisJuegoIdDeEvento = urbisJuegoIdDeEvento;
+  window.URBIS_ESCALA_JUEGO = URBIS_ESCALA_JUEGO;
+
   function datosVisiblesActuales() {
       const corte = timelineLiveMode ? null : timelineSelectedTime;
       return globalData.filter(p => !esFilaMetaUrbis(p) && visibleParaRol(p, corte));

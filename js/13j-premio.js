@@ -132,7 +132,7 @@
     return {
       p: p,
       lat: String(p.lat),
-      juegoId: 'aurea_' + String(p.lat).replace(/[^0-9]/g, ''),
+      juegoId: window.urbisJuegoIdDeEvento(p.lat),
       titulo: String(d[1] || 'Juegos URBIS').trim(),
       premio: sacar(/Premio:\s*([^·|]+)/i, 'Premio sorpresa'),
       detalle: sacar(/Detalle:\s*([^·|]+)/i, ''),

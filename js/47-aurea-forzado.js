@@ -70,7 +70,7 @@
     } catch (e) {}
 
     window.urbisAbrirAureaModulo(
-      'aurea_' + String(p.lat).replace(/[^0-9]/g, ''),
+      window.urbisJuegoIdDeEvento(p.lat),
       String(d[1] || 'Juegos URBIS'),
       String(premio),
       String(fin || ''),

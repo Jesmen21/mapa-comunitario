@@ -1215,7 +1215,7 @@
         const mFin = notas.match(/termina\s*([^·|]+)/i);
         if(mFin) fin = mFin[1].trim();
         else if(expira){ try{ if(typeof formatearFechaHora === 'function') fin = formatearFechaHora(expira); }catch(e){} }
-        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Juegos URBIS Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+'. ¡Toca para jugar!', juegoId:'aurea_'+latDigits, titulo:titulo, premio:premio, fin:fin });
+        out.push({ id:'aurea_evt_'+latDigits, type:'evento_premium', title:'✨ ¡Juegos URBIS Premium!', message:'“'+titulo+'” ya está activo. Compite por '+premio+'. ¡Toca para jugar!', juegoId: window.urbisJuegoIdDeEvento(latDigits), titulo:titulo, premio:premio, fin:fin });
       }catch(e){}
     });
     return out;
