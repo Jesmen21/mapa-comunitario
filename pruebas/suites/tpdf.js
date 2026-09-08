@@ -113,6 +113,21 @@ const REPO = process.env.REPO || E.RAIZ;
                                               tasaAnual: 0.004437, anioProyeccion: 2026,
                                               fuenteProyeccion:'DANE · Proyecciones de población municipal 2020-2035',
                                               advertenciaProyeccion:'La tasa es MUNICIPAL.' } });
+    /* El contexto del sector (v808) tal como lo deja el panel del curso en
+       el resultado: si está, el informe lo lleva; si no, la caja no sale. */
+    rP.contexto = {
+      limites: [{ nivel: 2, tipo: 'país', nombre: 'Colombia' }, { nivel: 6, tipo: 'municipio', nombre: 'Cúcuta' },
+                { nivel: 9, tipo: 'comuna', nombre: 'Comuna 1' }, { nivel: 10, tipo: 'barrio', nombre: 'Barrio La Playa' }],
+      barrios: [{ nombre: 'El Callejón', distM: 420, rumbo: 'el nororiente' }],
+      paradas: 3,
+      rutas: [{ ref: '7', nombre: 'Ruta 7: Centro → Atalaya', operador: 'Cootranscúcuta', color: '#e5484d', tipo: 'bus' },
+              { ref: '12', nombre: 'Ruta 12: Centro → Aeropuerto', operador: '', color: '', tipo: 'bus' }],
+      pasos: [{ nombre: 'Puente Internacional Simón Bolívar', distM: 1798, rumbo: 'el oriente' }],
+      paso: { nombre: 'Puente Internacional Simón Bolívar', distM: 1798, rumbo: 'el oriente' },
+      cambio: [{ nombre: 'Cambios El Puente', tipo: 'bureau_de_change', distM: 150 }],
+      binacional: { grado: 'fuerte', lectura: 'El paso de frontera queda a 1,8 km hacia el oriente: a esa distancia el comercio pendular suele ordenar la cuadra.' },
+      umbralFronteraM: 3000, fuente: 'OpenStreetMap'
+    };
     const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
 
     return { html, htmlPesado, flujo: r.stats.movilidad.flujo,
@@ -401,6 +416,15 @@ const REPO = process.env.REPO || E.RAIZ;
                         dentro: r2.right <= padre.right + 1 && r2.bottom <= padre.bottom + 1,
                         alto: Math.round(r2.height) };
              })(),
+             // El sector en su contexto (v808). A la defensiva: contra el
+             // informe anterior la caja no existe.
+             ctx: (function(){
+               const migas = document.querySelector('.ctx-migas');
+               const caja = migas && migas.closest('.tarjeta');
+               return { hay: !!caja, migas: migas ? migas.textContent : '',
+                        rutas: document.querySelectorAll('.ctx-rutas li').length,
+                        txt: caja ? caja.textContent.replace(/\s+/g, ' ') : '' };
+             })(),
              calor: Array.from(document.querySelectorAll('.calor-panel')).map(function(pn){
                const wrap = pn.querySelector('.mapa-wrap');
                const capa = pn.querySelector('.calor-capa');
@@ -534,6 +558,17 @@ const REPO = process.env.REPO || E.RAIZ;
       'las tres capas señalan su punto más activo sobre el plano');
   chk(/noche/i.test(pesado.calor.map(c => c.titulo).join(' ')),
       'una de las capas es la de la noche');
+
+  // ── El sector en su contexto ────────────────────────────────────────
+  console.log('\n── El sector en su contexto ─────────────────────');
+  const CX = pesado.ctx || {};
+  console.log('  ' + (CX.migas || '(no aparece)') + ' · rutas ' + CX.rutas);
+  chk(CX.hay, 'cuando el resultado trae el contexto, el informe lo lleva');
+  chk(CX.migas === 'Colombia › Cúcuta › Comuna 1 › Barrio La Playa', 'del país al barrio, en ese orden');
+  chk(CX.rutas === 2 && /Ruta 7: Centro → Atalaya/.test(CX.txt) && /Cootranscúcuta/.test(CX.txt),
+      'con las busetas que paran en el radio y su empresa');
+  chk(/no la oferta completa/.test(CX.txt), 'diciendo que es lo mapeado, no la oferta real');
+  chk(/1,8 km hacia el oriente/.test(CX.txt) && /Simón Bolívar/.test(CX.txt), 'y la lectura de la frontera con su paso y distancia');
 
   // ── Radio de importancia y competencia con nombre ──────────────────
   console.log('\n── Radio de importancia ─────────────────────────');

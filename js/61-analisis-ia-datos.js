@@ -186,6 +186,11 @@
         const esRuta = el.type === 'relation' &&
           /^(bus|minibus|share_taxi|trolleybus)$/.test(String(el.tags.route || ''));
         if (esRuta) { limpios.push(el); return; }
+        /* Y los LÍMITES administrativos —comuna, barrio, municipio— que se
+           piden con `is_in`: una relación de límite tampoco tiene posición
+           propia, y se pide solo por sus etiquetas. Sin esto, el contexto
+           del sector llegaba sin comuna ni barrio. */
+        if (el.type === 'relation' && el.tags.boundary === 'administrative') { limpios.push(el); return; }
         /* Y los MULTIPOLÍGONOS con su geometría en los miembros: un centro
            comercial o un conjunto es una relación sin posición propia, y
            este descarte se los comía antes de que el trazado los viera. La
@@ -254,6 +259,38 @@
   function consultarVias(lat, lng, radioM, forzar){
     return traer('vias|' + claveCache(lat, lng, radioM),
                  construirQueryViasCon('(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')'), forzar);
+  }
+
+  /* ── El sector en su contexto ─────────────────────────────────────────
+     Una sola consulta liviana, sin geometría, con cuatro cosas que el
+     análisis del curso no puede sacar de lo que el curso mapeó:
+
+     · en qué límites administrativos cae el punto (país, departamento,
+       municipio, comuna, barrio): `is_in` devuelve las áreas que lo
+       contienen, y de ellas se piden solo las de tipo administrativo;
+     · los barrios nombrados alrededor (`place=neighbourhood|quarter`);
+     · las rutas de transporte que paran en el radio, por sus paradas —el
+       mismo truco que la consulta del entorno—, más las paradas mismas;
+     · lo binacional: el paso de frontera más cercano hasta 15 km, que es
+       una etiqueta rarísima y por eso se puede buscar tan lejos sin costo,
+       y las casas de cambio y giros dentro del radio.
+
+     Va en una sola consulta porque Overpass no acepta dos seguidas y esto
+     se pide a botón: cuatro botones serían veinte segundos de espera. */
+  function construirQueryContexto(lat, lng, radioM){
+    const a = '(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')';
+    return '[out:json][timeout:40];' +
+      'is_in(' + lat + ',' + lng + ')->.a;' +
+      'rel(pivot.a)["boundary"="administrative"];out tags;' +
+      'node["place"~"^(neighbourhood|quarter|suburb)$"]' + a + ';out 30;' +
+      'node["highway"="bus_stop"]' + a + '->.paradas;' +
+      '.paradas out 300;' +
+      'rel(bn.paradas)["route"~"^(bus|minibus|share_taxi|trolleybus)$"];out tags 80;' +
+      'nwr["barrier"="border_control"](around:15000,' + lat + ',' + lng + ');out center tags 20;' +
+      'nwr["amenity"~"^(bureau_de_change|money_transfer)$"]' + a + ';out center tags 60;';
+  }
+  function consultarContexto(lat, lng, radioM, forzar){
+    return traer('ctx|' + claveCache(lat, lng, radioM), construirQueryContexto(lat, lng, radioM), forzar);
   }
 
   function consultarTrazado(lat, lng, radioM, forzar){
@@ -840,7 +877,7 @@
 
   window.AIA_DATOS = { consultarEntorno, consultarEntornoPoligono,
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
-                       consultarTrazado, consultarTrazadoPoligono, consultarVias,
+                       consultarTrazado, consultarTrazadoPoligono, consultarVias, consultarContexto,
                        consultarElevacion, rejillaDe, consultarClima,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
 })();

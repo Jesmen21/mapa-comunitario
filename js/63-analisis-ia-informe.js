@@ -1344,6 +1344,33 @@
      de método: es lo que separa un dato de una cifra con cara de dato. Va
      primero y en la misma frase que el porcentaje, porque en papel nadie
      vuelve atrás a buscar la letra pequeña. */
+  /* El sector en su contexto: comuna y barrio, busetas y frontera. Solo
+     existe si se consultó (hoy, desde el panel del curso); el informe de
+     empresas no lo pide todavía y la caja simplemente no sale. */
+  function bloqueContextoInforme(r){
+    const c = r.contexto;
+    if (!c) return '';
+    const km = m => (m / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+    const migas = (c.limites || []).map(l => esc(l.nombre)).join(' › ');
+    const rutas = (c.rutas || []).slice(0, 12).map(x =>
+      '<li>' + (x.ref ? '<b>' + esc(x.ref) + '</b> ' : '') + esc(x.nombre || 'Ruta') +
+      (x.operador ? ' <em>' + esc(x.operador) + '</em>' : '') + '</li>').join('');
+    return '<div class="tarjeta"><h3 class="tarj-t">El sector en su contexto <em>· OpenStreetMap</em></h3>' +
+      (migas ? '<p class="ctx-migas">' + migas + '</p>' : '') +
+      ((c.barrios || []).length ? '<p class="nota-pie">Barrios nombrados cerca: ' +
+        c.barrios.slice(0, 5).map(b => esc(b.nombre)).join(', ') + '.</p>' : '') +
+      '<p class="ctx-sub">Busetas que paran en el radio</p>' +
+      (rutas ? '<ul class="ctx-rutas">' + rutas + '</ul>' +
+               '<p class="nota-pie">' + c.rutas.length + ' rutas en ' + c.paradas + ' paradas mapeadas; es lo subido a OpenStreetMap, no la oferta completa.</p>'
+             : '<p class="nota-pie">Sin rutas de buseta mapeadas en el radio.</p>') +
+      '<p class="ctx-sub">La frontera</p>' +
+      '<p class="nota-pie">' + esc((c.binacional || {}).lectura || '') +
+        (c.paso ? '' : '') + '</p>' +
+      ((c.cambio || []).length ? '<p class="nota-pie">Casas de cambio y giros en el radio: ' + c.cambio.length + '.</p>' : '') +
+      (c.paso ? '<p class="nota-pie">Paso más cercano: ' + esc(c.paso.nombre) + ', a ' + km(c.paso.distM) + ' km.</p>' : '') +
+      '</div>';
+  }
+
   function bloqueHorariosInforme(r){
     const h = (r.stats || {}).horarios;
     if (!h || !h.total) return '';
@@ -1654,6 +1681,10 @@
   'margin:0 1px 4px;font-size:5.6px;color:', T.txt3, '}',
 
 '.tbl-horarios{width:100%;border-collapse:collapse;margin-top:2px}',
+'.ctx-migas{font-size:7.6px;color:', T.tinta, ';font-weight:700;margin:0 0 3px}',
+'.ctx-sub{font-size:7px;font-weight:800;color:', T.tinta, ';margin:4px 0 1px;text-transform:uppercase;letter-spacing:.3px}',
+'.ctx-rutas{margin:0;padding:0 0 0 10px;font-size:6.8px;color:', T.txt2, ';columns:2;column-gap:8px}',
+'.ctx-rutas li{margin:0 0 1px;break-inside:avoid}.ctx-rutas b{color:', T.tinta, '}.ctx-rutas em{opacity:.75}',
 '.tbl-horarios td{padding:1.6px 3px;border:none;font-size:7.2px;vertical-align:middle}',
 '.tbl-horarios .ind-n{text-align:left;color:', T.txt2, ';width:44%}',
 '.tbl-horarios .hor-b{width:34%}',
@@ -2030,6 +2061,7 @@ seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt)
 seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
 bloqueHorariosInforme(r),
+bloqueContextoInforme(r),
 
 seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),

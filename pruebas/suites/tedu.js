@@ -208,6 +208,46 @@ const server = http.createServer((req, res) => {
        clasificación en sí la prueba `tforma` con las cinco formas; acá lo
        que se comprueba es la cadena completa —botón, consulta, motor,
        pantalla— y que lo que se pinta sea lo que el motor devolvió. */
+    /* El contexto del sector: lo que OpenStreetMap sabe del sitio y el
+       curso no mapeó. Se sirve un sector INVENTADO con todo lo que el lector
+       tiene que distinguir: cinco límites del país al barrio, dos barrios
+       nombrados, tres paradas, cuatro relaciones de ruta de las que dos son
+       la misma ruta (ida y vuelta), un paso de frontera a 1,8 km al oriente
+       y otro a 9 km, y dos casas de cambio. Y un elemento sin etiquetas,
+       que tiene que pasar de largo. */
+    window.__contextoPedido = 0;
+    window.__contextoSinFrontera = false;
+    window.AIA_DATOS.consultarContexto = async (lat, lng, radioM) => {
+      window.__contextoPedido++;
+      const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(lat * Math.PI / 180));
+      const N = (id, tags, dx, dy) => ({ type: 'node', id, lat: lat + GLAT(dy), lon: lng + GLNG(dx), tags });
+      const R = (id, tags) => ({ type: 'relation', id, tags });
+      const els = [
+        R(1, { boundary: 'administrative', admin_level: '10', name: 'Barrio La Playa' }),
+        R(2, { boundary: 'administrative', admin_level: '2', name: 'Colombia' }),
+        R(3, { boundary: 'administrative', admin_level: '6', name: 'Cúcuta' }),
+        R(4, { boundary: 'administrative', admin_level: '4', name: 'Norte de Santander' }),
+        R(5, { boundary: 'administrative', admin_level: '9', name: 'Comuna 1' }),
+        N(11, { place: 'neighbourhood', name: 'El Callejón' }, 300, 300),
+        N(12, { place: 'neighbourhood', name: 'La Playa' }, -120, 60),
+        N(21, { highway: 'bus_stop', name: 'Parada Diagonal' }, 80, 0),
+        N(22, { highway: 'bus_stop' }, -200, 150),
+        N(23, { highway: 'bus_stop' }, 40, -300),
+        R(31, { type: 'route', route: 'bus', ref: '7', name: 'Ruta 7: Centro → Atalaya', operator: 'Cootranscúcuta', colour: '#e5484d' }),
+        R(32, { type: 'route', route: 'bus', ref: '7', name: 'Ruta 7: Atalaya → Centro', operator: 'Cootranscúcuta', colour: '#e5484d' }),
+        R(33, { type: 'route', route: 'bus', ref: '12', name: 'Ruta 12: Centro → Aeropuerto' }),
+        R(34, { type: 'route', route: 'share_taxi', name: 'Colectivo La Parada' }),
+        N(51, { amenity: 'bureau_de_change', name: 'Cambios El Puente' }, 150, -40),
+        N(52, { amenity: 'money_transfer', name: 'Giros Ya' }, -60, 220),
+        { type: 'node', id: 99, lat: lat, lon: lng }
+      ];
+      if (!window.__contextoSinFrontera) {
+        els.push(N(41, { barrier: 'border_control', name: 'Puente Internacional Simón Bolívar' }, 1800, 0));
+        els.push(N(42, { barrier: 'border_control', name: 'Puente Francisco de Paula Santander' }, 3000, 8500));
+      }
+      return els;
+    };
+
     window.__viasPedidas = 0;
     window.AIA_DATOS.consultarVias = async (lat, lng, radioM) => {
       window.__viasPedidas++;
@@ -631,6 +671,76 @@ const server = http.createServer((req, res) => {
     // cambiar esta etiqueta.
     chk(/no de lo que ustedes mapearon|no cambia si mapean más/.test(fm.txt),
         'dice que esta lectura no depende de lo que el curso mapeó');
+
+  /* ── El sector en su contexto (v808) ──────────────────────────────────
+     Comuna y barrio, busetas y frontera: lo que el levantamiento del curso
+     no puede dar. A botón, como la forma, y por su propia consulta. */
+  console.log('\n── El sector en su contexto ──────────────────────────────────');
+  const ctxAntes = await pg.evaluate(() => ({
+    boton: !!document.getElementById('edu-contexto-btn'),
+    pedidos: window.__contextoPedido,
+    // A la defensiva: contra el panel anterior no existe ni la tarjeta.
+    caja: !!document.getElementById('edu-contexto')
+  }));
+  chk(ctxAntes.caja && ctxAntes.boton, 'el análisis ofrece consultar el contexto del sector, a botón');
+  chk(ctxAntes.pedidos === 0, 'y no lo consulta hasta que se lo piden');
+  const CX = await pg.evaluate(async () => {
+    const b = document.getElementById('edu-contexto-btn');
+    if (!b) return { sinBoton: true };
+    b.click();
+    await new Promise(r => setTimeout(r, 300));
+    const caja = document.getElementById('edu-contexto');
+    const u = window.URBIS_EDU_UI.ultimo || {};
+    const c = u.contexto || {};
+    return {
+      pedidos: window.__contextoPedido,
+      txt: caja.innerText,
+      migas: Array.from(caja.querySelectorAll('.edu-migas span')).map(e => e.lastChild.textContent),
+      rutas: Array.from(caja.querySelectorAll('.edu-rutas li')).map(li => ((li.querySelector('b') || {}).textContent || '') + '|' + ((li.querySelector('span') || {}).textContent || '')),
+      colores: Array.from(caja.querySelectorAll('.edu-rutas li i')).map(i => i.style.background),
+      grado: (caja.querySelector('.edu-bina') || { className: '' }).className,
+      paso: c.paso, cambio: (c.cambio || []).length, paradas: c.paradas, barrios: c.barrios,
+      enUltimo: !!u.contexto
+    };
+  });
+  console.log('  migas: ' + (CX.migas || []).join(' › '));
+  console.log('  rutas: ' + (CX.rutas || []).join(' · '));
+  console.log('  frontera: ' + JSON.stringify(CX.paso));
+  chk(CX.pedidos === 1, 'al tocarlo consulta una sola vez (' + CX.pedidos + ')');
+  chk((CX.migas || []).join('›') === 'Colombia›Norte de Santander›Cúcuta›Comuna 1›Barrio La Playa',
+      'los límites salen ordenados del país al barrio, no como llegaron');
+  chk(!!(CX.barrios && CX.barrios.length === 2 && CX.barrios[0].nombre === 'La Playa'),
+      'los barrios nombrados cerca, del más cercano al más lejano');
+  chk((CX.rutas || []).length === 3 && CX.rutas[0] === '7|Ruta 7: Centro → Atalaya',
+      'las rutas: ida y vuelta de la 7 son UNA ruta, y quedan tres (' + (CX.rutas || []).length + ')');
+  chk(!!(CX.colores && /229, 72, 77/.test(CX.colores[0])), 'con el color de la ruta cuando lo trae');
+  chk(CX.paradas === 3 && /3 rutas.*3 paradas/.test(CX.txt), 'y dice en cuántas paradas recogen (' + CX.paradas + ')');
+  chk(/no la oferta completa/.test(CX.txt), 'aclarando que es lo subido al mapa, no la oferta real');
+  chk(!!(CX.paso && CX.paso.distM >= 1795 && CX.paso.distM <= 1805 && /Simón Bolívar/.test(CX.paso.nombre)),
+      'el paso de frontera más cercano, con su distancia (' + (CX.paso || {}).distM + ' m)');
+  chk(/edu-bina-fuerte/.test(CX.grado) && /1,8 km hacia el oriente/.test(CX.txt),
+      'a 1,8 km la frontera se lee como rasgo fuerte del sector, con rumbo');
+  chk(CX.cambio === 2 && /2 casas de cambio o giros/.test(CX.txt),
+      'las casas de cambio y giros del radio se cuentan y confirman la lectura (' + CX.cambio + ')');
+  chk(/Otros pasos: Puente Francisco de Paula Santander/.test(CX.txt), 'y nombra el otro paso, más lejos');
+  chk(/no de lo que mapearon/.test(CX.txt), 'dice que esto sale de OpenStreetMap y no de su levantamiento');
+  chk(CX.enUltimo, 'y queda en el resultado, para que el informe lo lleve');
+
+  // Sin frontera cerca: la lectura tiene que cambiar de grado, no callarse.
+  const SIN = await pg.evaluate(async () => {
+    // A la defensiva: contra el módulo anterior no existe `contexto`.
+    if (!window.URBIS_EDU || !window.URBIS_EDU.contexto) return { grado: '', lectura: '', html: '' };
+    window.__contextoSinFrontera = true;
+    const c = await window.URBIS_EDU.contexto({ lat: 7.9168, lng: -72.4727 }, 500);
+    const html = window.URBIS_EDU_UI.bloqueContexto(c);
+    window.__contextoSinFrontera = false;
+    return { grado: c.binacional.grado, lectura: c.binacional.lectura, html };
+  });
+  chk(SIN.grado === 'ninguno' && /no es un rasgo de este sector/.test(SIN.lectura),
+      'sin paso a menos de 15 km, dice que lo binacional no es un rasgo del sector');
+  chk(/edu-bina-ninguno/.test(SIN.html) && !/Para leer el flujo binacional/.test(SIN.html),
+      'y no manda a contar casas de cambio donde no hay frontera que las explique');
+
   }
 
   const ajenos = errores.filter(e => !/Unexpected end of input/.test(e));

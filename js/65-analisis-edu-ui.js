@@ -474,6 +474,11 @@
                          '<p class="edu-nota">Ortogonal, radial, media naranja, lineal o plato roto — medido con el rumbo ' +
                          'de las calles, no a ojo. Se pide aparte porque baja las calles del sector.</p>' +
                          '<button type="button" id="edu-forma-btn">🔷 Reconocer la traza</button></div>' +
+                       '<div class="edu-caja" id="edu-contexto"><h4>🧭 El sector en su contexto</h4>' +
+                         '<p class="edu-nota">Comuna y barrio, rutas de buseta que paran cerca, y qué tan cerca ' +
+                         'queda la frontera. Sale de OpenStreetMap, no de lo que mapearon. Se pide aparte porque ' +
+                         'es otra consulta.</p>' +
+                         '<button type="button" id="edu-contexto-btn">🧭 Consultar el contexto</button></div>' +
                        '<div class="edu-acciones">' +
                          '<button type="button" id="edu-analisis-informe">📄 Ver informe completo</button>' +
                        '</div>';
@@ -481,6 +486,8 @@
       if (bi) bi.addEventListener('click', abrirInforme);
       const bf = $('edu-forma-btn');
       if (bf) bf.addEventListener('click', () => reconocerForma(centro, radioM));
+      const bc = $('edu-contexto-btn');
+      if (bc) bc.addEventListener('click', () => consultarContexto(centro, radioM));
       /* El calor sobre el mapa: la capa de día apenas termina, sin pedirla,
          porque es la respuesta a «¿por dónde se mueve la gente acá?» y
          el mapa está justo detrás del panel. Las otras dos, y quitarla,
@@ -567,6 +574,95 @@
 
   let ultimaForma = null;
 
+  /* ── El sector en su contexto ──────────────────────────────────────────
+     Lo que Daniel pidió para el ejercicio y que el levantamiento del curso
+     no puede dar: en qué comuna y barrio están, qué busetas pasan, y si la
+     frontera ordena o no la cuadra. Cada bloque dice de dónde sale y qué
+     falta: una lista de rutas de OpenStreetMap es lo que alguien subió, no
+     la oferta real, y el módulo lo dice para que el curso salga a
+     completarla en vez de creerla. */
+  function bloqueContexto(c){
+    const km = m => (m / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+    const mDe = m => m >= 1000 ? km(m) + ' km' : m + ' m';
+    let html = '';
+    // Dónde están: del país al barrio, como una ruta de migas.
+    if (c.limites.length) {
+      html += '<h4 class="sep">📍 Dónde están</h4>' +
+        '<p class="edu-migas">' + c.limites.map(l =>
+          '<span title="' + esc(l.tipo) + '"><small>' + esc(l.tipo) + '</small>' + esc(l.nombre) + '</span>').join('<i>›</i>') +
+        '</p>';
+      const hayComuna = c.limites.some(l => l.nivel === 9), hayBarrio = c.limites.some(l => l.nivel >= 10);
+      if (!hayComuna || !hayBarrio) {
+        html += '<p class="edu-nota">OpenStreetMap no tiene dibujado ' +
+          (!hayComuna && !hayBarrio ? 'la comuna ni el barrio' : !hayComuna ? 'la comuna' : 'el barrio') +
+          ' de este punto. ' + (c.barrios.length ? 'Los barrios nombrados más cerca están abajo.' : 'Averiguarlo en campo es parte del ejercicio.') + '</p>';
+      }
+    } else {
+      html += '<h4 class="sep">📍 Dónde están</h4>' +
+        '<p class="edu-nota">OpenStreetMap no devolvió ningún límite administrativo para este punto.</p>';
+    }
+    if (c.barrios.length) {
+      html += '<p class="edu-nota"><b>Barrios nombrados cerca:</b> ' + c.barrios.map(b =>
+        esc(b.nombre) + ' <em>(' + mDe(b.distM) + ' hacia ' + esc(b.rumbo) + ')</em>').join(' · ') + '</p>';
+    }
+    // Las busetas.
+    html += '<h4 class="sep">🚌 Qué busetas paran cerca</h4>';
+    if (c.rutas.length) {
+      html += '<ul class="edu-rutas">' + c.rutas.map(r =>
+        '<li>' + (r.color ? '<i style="background:' + esc(r.color) + '"></i>' : '<i></i>') +
+        (r.ref ? '<b>' + esc(r.ref) + '</b>' : '') +
+        '<span>' + esc(r.nombre || (r.tipo === 'share_taxi' ? 'Colectivo' : 'Ruta')) + '</span>' +
+        (r.operador ? '<small>' + esc(r.operador) + '</small>' : '') + '</li>').join('') + '</ul>' +
+        '<p class="edu-nota">' + c.rutas.length + (c.rutas.length === 1 ? ' ruta' : ' rutas') + ' que recogen en ' +
+          c.paradas + (c.paradas === 1 ? ' parada' : ' paradas') + ' dentro del radio, según lo que alguien subió a OpenStreetMap. ' +
+          'Es lo que está mapeado, no la oferta completa: en campo, anoten el número y el destino de las busetas que vean pasar.</p>';
+    } else {
+      html += '<p class="edu-nota">' + (c.paradas
+        ? 'Hay ' + c.paradas + (c.paradas === 1 ? ' parada mapeada' : ' paradas mapeadas') + ' pero ninguna ruta dibujada que las use. '
+        : 'No hay paradas ni rutas de buseta mapeadas en el radio. ') +
+        'No quiere decir que no pasen: quiere decir que nadie las ha subido. Contarlas —número, destino, cada cuánto— ' +
+        'es de lo más útil que el curso puede aportar.</p>';
+    }
+    // Lo binacional.
+    html += '<h4 class="sep">🌉 La frontera</h4>' +
+      '<p class="edu-bina edu-bina-' + c.binacional.grado + '">' + esc(c.binacional.lectura) + '</p>';
+    if (c.pasos.length > 1) {
+      html += '<p class="edu-nota">Otros pasos: ' + c.pasos.slice(1).map(p =>
+        esc(p.nombre) + ' <em>(' + km(p.distM) + ' km hacia ' + esc(p.rumbo) + ')</em>').join(' · ') + '</p>';
+    }
+    if (c.cambio.length) {
+      html += '<p class="edu-nota"><b>Casas de cambio y giros en el radio:</b> ' + c.cambio.slice(0, 6).map(x =>
+        esc(x.nombre) + ' <em>(' + mDe(x.distM) + ')</em>').join(' · ') + (c.cambio.length > 6 ? ' …' : '') + '</p>';
+    }
+    if (c.binacional.grado !== 'ninguno') {
+      html += '<p class="edu-nota">Para leer el flujo binacional en campo: cuenten casas de cambio y cambistas en la vía, ' +
+        'comercio de paso (maletas, remesas, recargas), y pregunten en dos o tres locales de dónde viene la clientela ' +
+        'y a qué hora. Eso es lo que distingue una cuadra de frontera de una cuadra cerca de la frontera.</p>';
+    }
+    html += '<p class="edu-nota">Todo esto sale de OpenStreetMap, no de lo que mapearon: es la única parte del análisis ' +
+      'que no cambia si mapean más. El umbral de «frontera cerca» es ' + km(c.umbralFronteraM) + ' km: ' +
+      'lo que se camina en media hora larga o se hace en una buseta corta.</p>';
+    return html;
+  }
+
+  async function consultarContexto(centro, radioM){
+    const caja = $('edu-contexto');
+    if (!caja) return;
+    const btn = $('edu-contexto-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Consultando…'; }
+    try {
+      const c = await window.URBIS_EDU.contexto(centro, radioM);
+      if (ultimo) ultimo.contexto = c;      // para el informe
+      caja.innerHTML = '<h4>🧭 El sector en su contexto</h4>' + bloqueContexto(c);
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '🧭 Consultar el contexto'; }
+      const p = document.createElement('p');
+      p.className = 'edu-nota';
+      p.textContent = 'No se pudo consultar el contexto: ' + ((err && err.message) || err);
+      caja.appendChild(p);
+    }
+  }
+
   // El mismo informe de cuatro hojas que reciben las empresas. Que un curso
   // pueda producirlo con su propio levantamiento es justamente el punto.
   function abrirInforme(){
@@ -591,7 +687,7 @@
   else init();
 
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
-                          mostrarCalor: mostrarCalor,
+                          mostrarCalor: mostrarCalor, bloqueContexto: bloqueContexto,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();

@@ -501,8 +501,112 @@
     };
   }
 
+  /* ── El sector en su contexto ──────────────────────────────────────────
+     Comuna y barrio, rutas de buseta, frontera y casas de cambio. Nada de
+     esto sale de lo que el curso mapeó: es lo que OpenStreetMap ya sabe del
+     sitio, y se lee acá —etiquetas, no reglas— porque no hay nada que
+     clasificar: una ruta es una ruta y un paso de frontera es un paso de
+     frontera. Lo que sí se decide acá, y se dice, es la LECTURA: qué tan
+     cerca tiene que estar la frontera para que lo binacional sea un rasgo
+     del sector y no un dato del mapa. */
+  const NIVEL_ADMIN = { 2: 'país', 4: 'departamento', 6: 'municipio', 7: 'localidad',
+                        8: 'corregimiento o localidad', 9: 'comuna', 10: 'barrio', 11: 'sector' };
+  const RUMBOS = ['el norte', 'el nororiente', 'el oriente', 'el suroriente',
+                  'el sur', 'el suroccidente', 'el occidente', 'el noroccidente'];
+  function rumboHacia(centro, p){
+    const dx = (p.lng - centro.lng) * Math.cos(centro.lat * Math.PI / 180), dy = p.lat - centro.lat;
+    return RUMBOS[Math.round(((Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360) / 45) % 8];
+  }
+  function posDe(el){
+    const lat = el.lat != null ? el.lat : (el.center && el.center.lat);
+    const lng = el.lon != null ? el.lon : (el.center && el.center.lon);
+    return (Number.isFinite(lat) && Number.isFinite(lng)) ? { lat, lng } : null;
+  }
+  // Hasta dónde la frontera es un rasgo del sector. Tres kilómetros es lo
+  // que se camina en media hora largo o se hace en una buseta corta: más
+  // allá el paso existe, pero no ordena el comercio de la cuadra.
+  const FRONTERA_CERCA_M = 3000;
+
+  function leerContexto(centro, elementos){
+    const M = window.AIA_MOTOR;
+    const dist = (p) => M && M.haversineM ? Math.round(M.haversineM(centro, p)) : 0;
+    const limites = [], barrios = [], paradas = [], rutasVistas = {}, rutas = [], pasos = [], cambio = [];
+    (elementos || []).forEach(el => {
+      const t = el.tags || {};
+      if (el.type === 'relation' && t.boundary === 'administrative') {
+        const n = parseInt(t.admin_level, 10);
+        if (t.name && Number.isFinite(n)) limites.push({ nivel: n, tipo: NIVEL_ADMIN[n] || ('nivel ' + n), nombre: t.name });
+        return;
+      }
+      if (el.type === 'relation' && /^(bus|minibus|share_taxi|trolleybus)$/.test(String(t.route || ''))) {
+        const ref = String(t.ref || '').trim(), nombre = String(t.name || '').trim();
+        if (!ref && !nombre) return;
+        // Ida y vuelta son la misma ruta: dos relaciones, UNA oferta.
+        const clave = (ref || nombre).toLowerCase();
+        if (rutasVistas[clave]) return;
+        rutasVistas[clave] = true;
+        rutas.push({ ref, nombre, operador: String(t.operator || '').trim(),
+                     color: String(t.colour || t.color || '').trim(), tipo: String(t.route) });
+        return;
+      }
+      const p = posDe(el);
+      if (!p) return;
+      if (t.highway === 'bus_stop') { paradas.push({ nombre: t.name || '', distM: dist(p) }); return; }
+      if (/^(neighbourhood|quarter|suburb)$/.test(String(t.place || '')) && t.name) {
+        barrios.push({ nombre: t.name, distM: dist(p), rumbo: rumboHacia(centro, p) }); return;
+      }
+      if (t.barrier === 'border_control') {
+        pasos.push({ nombre: t.name || 'Paso de frontera sin nombre', distM: dist(p), rumbo: rumboHacia(centro, p) }); return;
+      }
+      if (/^(bureau_de_change|money_transfer)$/.test(String(t.amenity || ''))) {
+        cambio.push({ nombre: t.name || (t.amenity === 'money_transfer' ? 'Giros' : 'Casa de cambio'),
+                      tipo: t.amenity, distM: dist(p) });
+      }
+    });
+    limites.sort((a, b) => a.nivel - b.nivel);
+    barrios.sort((a, b) => a.distM - b.distM);
+    pasos.sort((a, b) => a.distM - b.distM);
+    cambio.sort((a, b) => a.distM - b.distM);
+    rutas.sort((a, b) => (a.ref || a.nombre).localeCompare(b.ref || b.nombre, 'es', { numeric: true }));
+    const paso = pasos[0] || null;
+    const km = m => (m / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+    // La lectura de lo binacional, en palabras y con su umbral a la vista.
+    let binacional;
+    if (!paso) {
+      binacional = { grado: 'ninguno',
+        lectura: 'No hay ningún paso de frontera a menos de 15 km: lo binacional no es un rasgo de este sector.' };
+    } else if (paso.distM <= FRONTERA_CERCA_M) {
+      binacional = { grado: 'fuerte',
+        lectura: 'El paso de frontera queda a ' + km(paso.distM) + ' km hacia ' + paso.rumbo + ' (' + paso.nombre + '): ' +
+          'a esa distancia el comercio pendular y la población flotante suelen ordenar la cuadra. ' +
+          (cambio.length ? cambio.length + (cambio.length === 1 ? ' casa de cambio o giro mapeada' : ' casas de cambio o giros mapeados') +
+                           ' en el radio lo confirman.'
+                         : 'No hay casas de cambio mapeadas en el radio: si las ven en la calle, es de lo primero que vale la pena anotar.') };
+    } else {
+      binacional = { grado: 'lejano',
+        lectura: 'El paso de frontera más cercano queda a ' + km(paso.distM) + ' km hacia ' + paso.rumbo + ' (' + paso.nombre + '): ' +
+          'la frontera está en la ciudad, pero no en la cuadra. ' +
+          (cambio.length ? 'Aun así hay ' + cambio.length + (cambio.length === 1 ? ' casa de cambio o giro' : ' casas de cambio o giros') +
+                           ' en el radio, que es una pista de flujo binacional que vale la pena mirar en campo.'
+                         : 'Sin casas de cambio en el radio, no hay señal de flujo binacional acá.') };
+    }
+    return { limites, barrios: barrios.slice(0, 8), paradas: paradas.length, rutas, pasos: pasos.slice(0, 3),
+             paso, cambio, binacional, umbralFronteraM: FRONTERA_CERCA_M,
+             fuente: 'OpenStreetMap', consultado: new Date().toISOString() };
+  }
+
+  async function contexto(centro, radioM){
+    if (!window.AIA_DATOS || !window.AIA_DATOS.consultarContexto) {
+      throw new Error('Falta el módulo de datos. Recargá la aplicación.');
+    }
+    const els = await window.AIA_DATOS.consultarContexto(centro.lat, centro.lng, radioM);
+    return leerContexto({ lat: centro.lat, lng: centro.lng }, els || []);
+  }
+
   window.URBIS_EDU = {
     analizar: analizar,
+    contexto: contexto,
+    leerContexto: leerContexto,
     forma: forma,
     puntoAElemento: puntoAElemento,
     // Es donde el estado del andén se separa de los elementos y se convierte
