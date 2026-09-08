@@ -1923,8 +1923,38 @@
         '<tr><td>Tramo medio entre cruces</td><td class="n">' + (mo.tramoMedioM || 0) + ' m</td></tr>' +
         '<tr><td>Calles sin salida</td><td class="n">' + (mo.sinSalida || 0) + '</td></tr>' +
       '</table>' +
+      (function () {
+        var ff = frasesDeForma(mo);
+        if (!ff) return '';
+        return '<p class="pie"><b>' + esc(ff.nombre) + '.</b> ' + esc(ff.que) + '</p>' +
+               '<p class="pie">' + esc(ff.porque) + ' ' + esc(ff.ojo) + '</p>';
+      })() +
       '<p class="pie">' + esc(mo.lectura || '') + ' Orden de la traza: ' +
       String(mo.orden != null ? mo.orden : '—').replace('.', ',') + ' (0 = ninguna dirección manda, 1 = todas la misma).</p>';
+  }
+
+  /* ── La forma de la traza ────────────────────────────────────────────
+     El motor la reconoce desde la v803: ortogonal, radial, media naranja,
+     lineal o plato roto, con la medida que lo decidió. Acá se arma UNA sola
+     frase y la usan la lámina, la tarjeta, el panel y la exportación de
+     texto: escribirla cuatro veces era la manera segura de que una se
+     quedara con la versión vieja.
+
+     La advertencia viaja siempre con ella. Describe la traza dentro del
+     radio analizado y no la ciudad: el borde de una ciudad radial es una
+     cuadrícula, y en una lámina colgada en la pared esa frase es lo único
+     que impide que el rótulo se lea como una afirmación sobre Cúcuta. */
+  function frasesDeForma(mo) {
+    var f = mo && mo.forma;
+    if (!f) return null;
+    return {
+      nombre: f.nombre || '',
+      que: f.descripcion || '',
+      porque: f.porque || '',
+      ojo: f.advertencia || '',
+      // Una línea, para donde no cabe el bloque entero.
+      linea: 'Traza ' + String(f.nombre || '').toLowerCase() + '. ' + (f.porque || '')
+    };
   }
 
   function sintesisImpresa(res) {
@@ -3656,6 +3686,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
       fila('Vías', String(vi.kmTotal || 0).replace('.', ',') + ' km') +
       fila('Tramo medio entre cruces', (mo.tramoMedioM || 0) + ' m') +
+      (function () { var ff = frasesDeForma(mo); return ff ? fila('Forma de la traza', esc(ff.nombre)) : ''; })() +
       (mo.lectura ? '<p class="lee">' + esc(mo.lectura) + '</p>' : '');
       })(), 'g3') +
       
@@ -7433,6 +7464,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       L.push('  Total de vías: ' + tvi.kmTotal + ' km · en un sentido: ' + tvi.unSentidoPct + '%');
       L.push('  Intersecciones: ' + tmo.intersecciones + ' · tramo medio: ' + tmo.tramoMedioM + ' m · sin salida: ' + tmo.sinSalida);
       L.push('  ' + tmo.lectura);
+      (function () {
+        var ff = frasesDeForma(tmo);
+        if (!ff) return;
+        L.push('  Forma de la traza: ' + ff.nombre + ' — ' + ff.porque);
+        L.push('  ' + ff.ojo);
+      })();
       L.push('');
     }
     var rts = (st.movilidad && st.movilidad.rutas) || [];
@@ -9075,6 +9112,13 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<div class="pcr-lote-fila"><span>Calles sin salida</span><b>' + (mo.sinSalida || 0) + '</b></div>' +
         '</div>' +
       '</div>' +
+      (function () {
+        var ff = frasesDeForma(mo);
+        if (!ff) return '';
+        return '<p class="pcr-conc"><b>' + esc(ff.nombre) + '.</b> ' + esc(ff.que) + '</p>' +
+               '<p class="pcr-pista">' + esc(ff.porque) + '</p>' +
+               '<p class="pcr-pista pcr-ojo">⚠️ ' + esc(ff.ojo) + '</p>';
+      })() +
       '<p class="pcr-conc">' + esc(mo.lectura || '') + '</p>' +
       '<p class="pcr-pista">La rosa mide hacia dónde apuntan las calles, pesando cada una por su ' +
       'longitud. Dos pares de pétalos en cruz es una cuadrícula; una flor pareja, un tejido que ' +

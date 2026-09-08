@@ -1357,10 +1357,55 @@
       '<tr' + (a.esAnalizado ? ' class="fila-act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
       '<td>' + a.total + '</td><td>' + a.densidadPorHa + '</td><td>' + a.comercio + '</td>' +
       '<td>' + a.equipamientos + '</td><td>' + a.poblacionEstimada.toLocaleString('es-CO') + '</td></tr>').join('');
-    return '<div class="tarjeta"><table class="tbl-radios2">' +
+    /* El mismo dibujo de la pantalla, hecho por js/58. Se pinta ANTES de la
+       tabla: en una hoja impresa la forma se ve de lejos y la tabla se
+       consulta de cerca, así que el orden de lectura es ese y no al revés.
+       Va por hectárea, no en conteo crudo: un anillo de 1 km tiene once
+       veces la superficie de uno de 300 m, y un gráfico de conteos estaría
+       describiendo el tamaño del círculo en vez del barrio. */
+    const dibujo = (window.URBIS_ANILLOS && window.URBIS_ANILLOS.grafico)
+      ? window.URBIS_ANILLOS.grafico(m) : '';
+    return '<div class="tarjeta">' + dibujo +
+      '<table class="tbl-radios2">' +
       '<tr class="cab"><th>Radio</th><th>Usos</th><th>Usos/ha</th><th>Comercio</th>' +
       '<th>Equipam.</th><th>Hab. est.</th></tr>' + filas + '</table>' +
       '<p class="nota-pie">' + esc(m.lectura) + '</p></div>';
+  }
+
+  /* ── El horario declarado ───────────────────────────────────────────────
+     Las franjas del bloque de flujo son una ESTIMACIÓN por tipo de uso.
+     Esto es lo que dice el letrero, leído de `opening_hours`.
+
+     En un informe que se entrega a un cliente la cobertura no es un detalle
+     de método: es lo que separa un dato de una cifra con cara de dato. Va
+     primero y en la misma frase que el porcentaje, porque en papel nadie
+     vuelve atrás a buscar la letra pequeña. */
+  function bloqueHorariosInforme(r){
+    const h = (r.stats || {}).horarios;
+    if (!h || !h.total) return '';
+    if (!h.conDato) {
+      return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero</h3>' +
+        '<p class="nota-pie">' + esc(h.lectura) + '</p></div>';
+    }
+    const fila = (etq, n, pct) =>
+      '<tr><td class="ind-n">' + etq + '</td>' +
+      '<td class="hor-b"><i style="width:' + (pct || 0) + '%"></i></td>' +
+      '<td class="hor-n">' + n + '</td><td class="hor-p">' + (pct || 0) + ' %</td></tr>';
+    return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero ' +
+        '<em>· declarado en el mapa, no estimado</em></h3>' +
+      '<p class="hor-cob"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario ' +
+        '(' + h.cobertura + ' % de cobertura)' +
+        (h.suficiente ? '. Los porcentajes son sobre esos ' + h.conDato + '.'
+                      : ' — muy poco para describir el sector.') + '</p>' +
+      '<table class="tbl-horarios">' +
+        fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
+        fila('Abren sábado', h.sabado, h.pct.sabado) +
+        fila('Abren domingo', h.domingo, h.pct.domingo) +
+        fila('Solo de lunes a viernes', h.soloEntreSemana, h.pct.soloEntreSemana) +
+        (h.siempre ? fila('Abren 24 horas', h.siempre, h.pct.siempre) : '') +
+      '</table>' +
+      '<p class="nota-pie">' + esc(h.lectura) +
+        (h.notaIlegible ? ' ' + esc(h.notaIlegible) : '') + '</p></div>';
   }
 
   // ── 9. FODA + siguiente paso ────────────────────────────────────────────
@@ -1624,6 +1669,40 @@
 'letter-spacing:.3px;border-bottom:1px solid ', T.borde, '}',
 '.tbl-radios .fila-act td{background:', T.suave, ';font-weight:800;color:', T.acento, '}',
 '.radio-lectura{font-size:7.2px;color:', T.txt2, ';line-height:1.4;margin-top:4px}',
+
+/* Los anillos dibujados (js/58) y el horario declarado. Las clases son las
+   mismas de la pantalla, pero la hoja es CLARA: los grises de allá salen de
+   rgba blanco sobre fondo oscuro y acá se verían como manchas. Se repintan
+   con los tokens del estilo elegido, que es lo que hace que el informe salga
+   igual de bien en el institucional y en el premium oscuro. */
+'.urb-anillos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 3px}',
+'.urb-anillo-mini{margin:0;padding:4px 5px 3px;background:', T.suave,
+  ';border:1px solid ', T.borde, ';border-radius:4px}',
+'.urb-anillo-mini figcaption{font-size:5.6px;letter-spacing:.2px;text-transform:uppercase;color:', T.txt3, '}',
+'.urb-anillo-chispa{display:block;width:100%;height:18px;margin:2px 0 1px;overflow:visible}',
+/* El halo del punto sale del color de la HOJA, no de un azul oscuro fijo:
+   con el estilo premium el fondo es negro y un halo claro lo delataría. */
+'.urb-anillo-punto{stroke:', T.panel, ';stroke-width:1}',
+'.urb-anillo-mini b{font-size:8.4px;color:', T.tinta, ';font-variant-numeric:tabular-nums}',
+'.urb-anillo-mini b small{font-size:5.4px;color:', T.txt3, ';margin-left:1px}',
+'.urb-anillo-forma{display:block;font-size:5.6px;color:', T.txt2, ';margin-top:1px}',
+'.urb-anillos-eje{display:flex;justify-content:space-between;align-items:baseline;',
+  'margin:0 1px 4px;font-size:5.6px;color:', T.txt3, '}',
+
+'.tbl-horarios{width:100%;border-collapse:collapse;margin-top:2px}',
+'.tbl-horarios td{padding:1.6px 3px;border:none;font-size:7.2px;vertical-align:middle}',
+'.tbl-horarios .ind-n{text-align:left;color:', T.txt2, ';width:44%}',
+'.tbl-horarios .hor-b{width:34%}',
+'.tbl-horarios .hor-b i{display:block;height:5px;border-radius:3px;background:', T.acento, '}',
+'.tbl-horarios .hor-n{text-align:right;font-weight:800;color:', T.tinta, ';width:10%;font-variant-numeric:tabular-nums}',
+'.tbl-horarios .hor-p{text-align:right;color:', T.txt3, ';width:12%;font-variant-numeric:tabular-nums}',
+/* La cobertura, destacada: sin ella «el 50 % abre de noche» pueden ser tres
+   locales de doscientos, y en papel nadie vuelve a buscar la letra pequeña. */
+'.hor-cob{font-size:7.2px;color:', T.txt2, ';line-height:1.4;margin:0 0 3px;',
+  'padding:3px 5px;background:', T.suave2, ';border-left:2px solid ', T.acento, ';border-radius:0 3px 3px 0}',
+'.hor-cob b{color:', T.tinta, '}',
+'.tarj-t{font-size:8px;margin:0 0 3px;color:', T.tinta, ';font-weight:800}',
+'.tarj-t em{font-style:normal;font-weight:400;font-size:6.6px;color:', T.txt3, '}',
 '.tbl-vias td{padding:1.8px 3px;border:none;font-size:7.4px}',
 // Antes esta celda era nowrap con 96px y puntos suspensivos: "Avenida de La
 // Gran Colombia" salía cortada. Ahora parte en dos líneas en vez de recortar.
@@ -1986,6 +2065,7 @@ seccion(8, 'De qué está hecho el entorno', 'estructura urbana en ' + radioTxt)
 
 seccion(fichaCampo(r) ? 10 : 9, 'El entorno según la distancia', 'mismo dato, varios radios'),
 bloqueRadios(r),
+bloqueHorariosInforme(r),
 
 seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),

@@ -1238,3 +1238,9 @@
 .pcr-eje-nom{ font-size:.82rem; font-weight:700; color:#233748; min-width:0;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pcr-eje-n{ font-size:.74rem; color:#5a6472; flex:0 0 auto; font-variant-numeric:tabular-nums; }
+
+/* La advertencia de la forma de la traza: describe el radio analizado y no
+   la ciudad. En ámbar y no en el gris de las pistas, porque es la frase que
+   impide que un rótulo colgado en la pared se lea como una afirmación sobre
+   la ciudad entera. */
+.pcr-ojo{ color:#B45309; }

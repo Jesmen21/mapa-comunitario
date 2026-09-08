@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v805-la-placa-dice-quien-la-hizo';
+const URBIS_CACHE = 'urbis-v806-el-papel-alcanza-a-la-pantalla';
 const URBIS_ASSETS = [
   './',
   './index.html',

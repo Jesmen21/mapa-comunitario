@@ -35,6 +35,7 @@ const REPO = process.env.REPO || E.RAIZ;
      corre en la API— y el informe se sigue leyendo del repo público, que es
      donde vive. */
   await pg.addScriptTag({ content: guionDelMotor() });
+  await pg.addScriptTag({ path: REPO + '/js/58-anillos.js' });
   await pg.addScriptTag({ path: REPO + '/js/63-analisis-ia-informe.js' });
 
   const datos = await pg.evaluate(() => {
@@ -86,6 +87,17 @@ const REPO = process.env.REPO || E.RAIZ;
       const t = Object.assign({}, TIPOS[i % TIPOS.length], { name: 'Uso ' + i });
       pesado.push(el(t, 80 + (i % 40) * 22, (i * 37) % 360));
     }
+    /* Horarios declarados, para que el informe tenga qué imprimir en «lo que
+       dice el letrero». Diez cadenas: nueve que el lector entiende y una que
+       no. Con 512 usos la cobertura queda por debajo del mínimo, y eso es a
+       propósito: lo que se comprueba abajo es que el informe DIGA que es muy
+       poco en vez de soltar el porcentaje como si describiera el sector. */
+    ['24/7', '24/7', 'Mo-Su 06:00-22:00', 'Tu-Su 18:00-02:00', 'Mo-Su 00:00-24:00',
+     'Mo-Sa 07:00-19:00; Su 09:00-13:00', 'Mo-Sa 08:00-18:00', 'Mo-Fr 08:00-17:00',
+     'Mo-Fr 09:00-18:00', 'sunrise-sunset'].forEach((h, i) => {
+      pesado.push(el({ amenity: 'restaurant', name: 'Con horario ' + i, opening_hours: h },
+                     90 + i * 12, (i * 31) % 360));
+    });
     pesado.push(el({ highway:'trunk', name:'Anillo Vial Oriental' }, 70, 0));
     pesado.push(el({ highway:'primary', name:'Avenida 0' }, 120, 90));
     pesado.push(el({ highway:'secondary', name:'Calle 11' }, 150, 180));
@@ -103,7 +115,8 @@ const REPO = process.env.REPO || E.RAIZ;
     const htmlPesado = window.AIA_INFORME.construirHTMLEjecutivo(rP, {}, { estilo:'institucional', horizontal:true });
 
     return { html, htmlPesado, flujo: r.stats.movilidad.flujo,
-             pois: (r.pois||[]).length, poisPesado: (rP.pois||[]).length, centro };
+             pois: (r.pois||[]).length, poisPesado: (rP.pois||[]).length, centro,
+             horarios: rP.stats.horarios, multiRadio: rP.multiRadio };
   });
 
   fs.writeFileSync('/tmp/informe.html', datos.html);
@@ -313,13 +326,52 @@ const REPO = process.env.REPO || E.RAIZ;
           desbordanTarjeta.push((h.className || h.tagName) + ' se sale de .' + t.className.split(' ')[0]);
       });
     });
+    /* ── Lo nuevo del análisis de sector, en el PAPEL (v806) ────────────
+       Los anillos dibujados y el horario declarado existían en pantalla
+       desde la v801 y la v804, y el informe se había quedado atrás: el
+       cliente recibía un PDF con menos que la pantalla. */
+    const nuevo = (function () {
+      const minis = Array.from(document.querySelectorAll('.urb-anillo-mini'));
+      const horFilas = Array.from(document.querySelectorAll('.tbl-horarios tr'));
+      const cob = document.querySelector('.hor-cob');
+      const dentroDeTarjeta = el => !!(el && el.closest && el.closest('.tarjeta'));
+      // El color del texto de los minis: si el bloque se hubiera copiado con
+      // la paleta de la pantalla oscura, saldría gris claro sobre hoja
+      // blanca y en el papel no se vería nada.
+      const contraste = minis.map(f => {
+        const b = f.querySelector('b');
+        return b ? getComputedStyle(b).color : '';
+      });
+      return {
+        minis: minis.length,
+        trazos: document.querySelectorAll('.urb-anillo-chispa path').length,
+        eje: !!document.querySelector('.urb-anillos-eje'),
+        // El dibujo va ANTES de la tabla: la forma se ve de lejos, la tabla
+        // se consulta de cerca.
+        dibujoAntesDeTabla: (function () {
+          const g = document.querySelector('.urb-anillos-grid');
+          const t = document.querySelector('.tbl-radios2');
+          return !!(g && t && g.getBoundingClientRect().top < t.getBoundingClientRect().top);
+        })(),
+        minisEnTarjeta: minis.every(dentroDeTarjeta),
+        contraste: contraste,
+        horFilas: horFilas.length,
+        cobertura: cob ? cob.textContent : '',
+        horTxt: (function () {
+          const t = document.querySelector('.tbl-horarios');
+          const c = t && t.closest('.tarjeta');
+          return c ? c.innerText : '';
+        })()
+      };
+    })();
+
     const cabecerasCiegas = [];
     document.querySelectorAll('th').forEach(th => {
       const cs = getComputedStyle(th);
       if (cs.color.replace(/\s/g,'') === cs.backgroundColor.replace(/\s/g,''))
         cabecerasCiegas.push(th.textContent.trim().slice(0,20) || '(vacía)');
     });
-    return { arosPisados, desbordanTarjeta, cabecerasCiegas,
+    return { arosPisados, desbordanTarjeta, cabecerasCiegas, nuevo,
              secciones: Array.from(document.querySelectorAll('.sec b')).map(n => n.textContent.trim()),
              numeracion: Array.from(document.querySelectorAll('header .sub b')).map(n => n.textContent.trim()),
              horas: Array.from(document.querySelectorAll('.hf:not(.voc-fila) span')).map(n => n.textContent.trim()),
@@ -526,6 +578,40 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(!m.filasGen.some(f => { const p = f.split('/').map(x=>x.trim());
         return p.length > 1 && p[0] && p[0] === p[1]; }),
       'ninguna fila repite el nombre como si fuera su propio ejemplo');
+
+  /* ── Lo nuevo del análisis, en el PAPEL (v806) ─────────────────────────
+     Los anillos dibujados existían en pantalla desde la v801 y el horario
+     declarado desde la v804, y el informe se había quedado atrás: el cliente
+     recibía un PDF con menos que la pantalla. */
+  const N = pesado.nuevo || {};
+  console.log('\n── Los anillos, en el papel ─────────────────────');
+  console.log('  ' + N.minis + ' gráficos · ' + N.trazos + ' trazos · eje: ' + (N.eje ? 'sí' : 'no'));
+  chk(N.minis === 4, 'el informe dibuja los anillos, uno por métrica (' + N.minis + ')');
+  chk(N.trazos >= 8, 'cada uno con su área y su línea (' + N.trazos + ' trazos)');
+  chk(N.eje, 'con el eje de distancia rotulado');
+  chk(N.dibujoAntesDeTabla,
+      'y el dibujo va ANTES de la tabla: la forma se ve de lejos, la tabla se consulta de cerca');
+  chk(N.minisEnTarjeta, 'dentro de la tarjeta, sin salirse de la caja');
+  /* El color del texto de los minis. Si el bloque se hubiera copiado con la
+     paleta de la pantalla —gris claro sobre fondo oscuro— en la hoja blanca
+     del informe no se leería nada, y eso no lo detecta ninguna prueba que
+     solo mire si el elemento existe. */
+  chk((N.contraste || []).length > 0 &&
+      N.contraste.every(c => /^rgb/.test(c) && !/255,\s*255,\s*255/.test(c)),
+      'con tinta oscura sobre la hoja clara, no la paleta del panel oscuro');
+
+  console.log('\n── Lo que dice el letrero, en el papel ──────────');
+  console.log('  ' + (N.cobertura || '(sin bloque de horarios)'));
+  chk(N.horFilas >= 4, 'el informe imprime el horario declarado (' + N.horFilas + ' filas)');
+  chk(/de cobertura/.test(N.cobertura || ''),
+      'con la cobertura por delante y no en letra pequeña al final (' + (N.cobertura || '') + ')');
+  /* Con 522 usos y diez horarios la cobertura es del 2 %. Lo que se vigila
+     acá NO es el número: es que el informe se niegue a describir el sector
+     con él. En papel nadie vuelve atrás a buscar el matiz. */
+  chk(/muy poco para describir el sector/.test(N.horTxt || ''),
+      'y con poca cobertura se niega a concluir en vez de soltar el porcentaje igual');
+  chk(/no se pudo leer/.test(N.horTxt || ''),
+      'el horario que el lector no entendió se declara también en el papel');
 
   chk(errores.length === 0, 'el informe se arma sin errores' + (errores.length ? ': ' + errores[0] : ''));
 
