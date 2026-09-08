@@ -176,6 +176,27 @@ const server = http.createServer((req, res) => {
     o.txt = caja ? caja.innerText : '';
     if (caja) {
       o.rasgos = Array.from(caja.querySelectorAll('.sp-fi-rasgo')).map(x => x.innerText);
+      /* La firma de la placa. Se lee el logo CARGADO —naturalWidth— y no que
+         el `src` esté puesto: una ruta rota deja el atributo intacto y la
+         imagen invisible, que es justo el fallo que no se vería hasta que
+         alguien fotografía la placa. */
+      (function () {
+        const fi = caja.querySelector('.sp-fi-firma');
+        const img = fi && fi.querySelector('img');
+        const t = fi && fi.querySelector('.sp-fi-firma-t');
+        const fe = fi && fi.querySelector('.sp-fi-firma-f');
+        const cargo = caja.querySelector('.sp-fi-cargo');
+        o.firma = {
+          hay: !!fi,
+          texto: t ? t.textContent : '',
+          fecha: fe ? fe.textContent : '',
+          logoCargo: !!(img && img.complete && img.naturalWidth > 0),
+          // Arriba del cargo: es de quien analiza, no del analizado.
+          antesDelCargo: !!(fi && cargo &&
+            fi.getBoundingClientRect().top < cargo.getBoundingClientRect().top),
+          altoPx: fi ? Math.round(fi.getBoundingClientRect().height) : 0
+        };
+      })();
       o.cxPintados = caja.querySelectorAll('.sp-fi-caso').length;
       o.cxPesan = caja.querySelectorAll('.sp-fi-caso.pesa').length;
       o.ccPintados = caja.querySelectorAll('.sp-fi-cc').length;
@@ -429,6 +450,33 @@ const server = http.createServer((req, res) => {
   chk(/peor de los tres techos/.test(r.txt), 'dice en la cara que el veredicto es el peor de tres techos');
   chk(/No mide honestidad/.test(r.txt), 'y qué NO mide');
   chk(r.sinPeldanoViejo, 'ningún peldaño viejo (sostiene / reparos / entredicho) sobrevive en el DOM');
+  /* ── La firma de la placa ──────────────────────────────────────────────
+     Esta placa se fotografía y la captura circula sola: en un comentario de
+     Facebook, en un grupo, recortada. Un veredicto sobre una persona real
+     que anda por ahí sin decir quién lo hizo es lo contrario de lo que el
+     módulo defiende en todas sus otras frases. */
+  const FI = r.firma || {};
+  console.log('\n── La firma de la placa ────────────────────────────');
+  console.log('  ' + FI.texto + '   ' + FI.fecha);
+  chk(FI.hay && /URBIS_CO/i.test(FI.texto || ''),
+      'la placa dice quién la analizó (' + (FI.texto || 'sin firma') + ')');
+  chk(FI.logoCargo, 'con el logo de URBIS cargado de verdad, no una ruta rota');
+  chk(FI.antesDelCargo, 'y va ARRIBA del cargo: es de quien analiza, no del analizado');
+  // La fecha es la del REGISTRO. Sin ella, la captura de hoy se lee dentro
+  // de un año como si fuera de hoy, y el veredicto se calcula contando
+  // hechos que se acumulan cada día.
+  // Se rehace acá el mismo formato corto, para comparar contra el registro y
+  // no contra «que haya algo escrito»: lo que se vigila es que la fecha sea
+  // la del REGISTRO y no la del día en que alguien abre la aplicación.
+  const MESES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const cortaEsperada = (function (iso) {
+    const p = String(iso || '').split('-');
+    return p.length === 3 ? parseInt(p[2], 10) + ' ' + MESES_C[+p[1] - 1] + ' ' + p[0] : '';
+  })(D.actualizado);
+  chk(!!cortaEsperada && FI.fecha === cortaEsperada,
+      'y lleva la fecha del REGISTRO, no la del día en que se mira (' +
+      FI.fecha + ' · registro ' + cortaEsperada + ')');
+
   chk(r.minPx >= 13, 'ningún texto corrido baja de 13 px en teléfono (mínimo ' + r.minPx + ' px)');
   chk(r.puntos > 6 && r.puntosSinColor === 0,
       'todos los puntos de la leyenda tienen color (' + r.puntosSinColor + ' sin color de ' + r.puntos + ')');

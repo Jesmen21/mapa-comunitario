@@ -1588,6 +1588,36 @@
     reg = reg || D;
     var cerrado = !!reg.cerrado;
     var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id + (cerrado ? ' sp-fi-placa-cerrada' : ''));
+
+    /* ── La firma ────────────────────────────────────────────────────────
+       Esta placa se fotografía y la captura circula sola: en un comentario
+       de Facebook, en un grupo de WhatsApp, recortada. Sin la firma, un
+       veredicto sobre una persona real anda por ahí sin decir quién lo
+       hizo, y eso es lo contrario de lo que el módulo defiende en todas sus
+       otras frases.
+
+       La fecha va en la misma línea por lo mismo. La barra de arriba de la
+       aplicación la muestra, pero un recorte se la come; y un veredicto que
+       se calcula solo, contando hechos que se acumulan cada día, envejece.
+       Sin fecha, la captura de hoy se lee dentro de un año como si fuera de
+       hoy. */
+    var firma = el('div', 'sp-fi-firma');
+    var logo = el('img', 'sp-fi-firma-logo');
+    logo.src = 'assets/brand/urbis-logo.png';
+    logo.alt = '';
+    logo.setAttribute('aria-hidden', 'true');
+    logo.width = 20; logo.height = 20;
+    logo.loading = 'lazy';
+    firma.appendChild(logo);
+    firma.appendChild(el('span', 'sp-fi-firma-t', 'Analizado por URBIS_CO'));
+    /* La fecha es la del REGISTRO, no la del día en que se mira: lo que
+       fecha un veredicto es hasta cuándo llegaron los hechos que lo
+       produjeron. Si el registro no la trae, no se pinta ninguna — poner la
+       de hoy sería fechar con el reloj del lector un dato que puede llevar
+       semanas quieto. */
+    if (reg.actualizado) firma.appendChild(el('span', 'sp-fi-firma-f', fechaCorta(reg.actualizado)));
+    placa.appendChild(firma);
+
     var cab = el('div', 'sp-fi-placa-cab');
     var sello = el('div', 'sp-fi-sello', inicialesDe(reg.presidente));
     sello.setAttribute('aria-hidden', 'true');
