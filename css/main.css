@@ -1,108 +1,108 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./00-brand-urbis.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./00-app-shell.css?v=814-lado-a-lado");
+@import url("./00-brand-urbis.css?v=814-lado-a-lado");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./02-map-tools-routing.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./03-basemap-and-panels.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./04-automap-markers-performance.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./05-clusters.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./06-landing.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./07-mobile-advanced.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./01-base-layout.css?v=814-lado-a-lado");
+@import url("./02-map-tools-routing.css?v=814-lado-a-lado");
+@import url("./03-basemap-and-panels.css?v=814-lado-a-lado");
+@import url("./04-automap-markers-performance.css?v=814-lado-a-lado");
+@import url("./05-clusters.css?v=814-lado-a-lado");
+@import url("./06-landing.css?v=814-lado-a-lado");
+@import url("./07-mobile-advanced.css?v=814-lado-a-lado");
 
-@import url("./08-role-accessibility.css?v=813-a-pie-y-cuesta-abajo");
-@import url("./09-achievements.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./08-role-accessibility.css?v=814-lado-a-lado");
+@import url("./09-achievements.css?v=814-lado-a-lado");
 
-@import url("./10-sport.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./10-sport.css?v=814-lado-a-lado");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./57-comparar-sector.css?v=814-lado-a-lado");
 
-@import url("./99-contrast-fix.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./99-contrast-fix.css?v=814-lado-a-lado");
 
-@import url("12-module-access.css?v=813-a-pie-y-cuesta-abajo");
+@import url("12-module-access.css?v=814-lado-a-lado");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./14-mobile-functional-app.css?v=814-lado-a-lado");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=813-a-pie-y-cuesta-abajo");
+@import url("./16-mobility-clean-traffic.css?v=814-lado-a-lado");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./28-mobile-kawaii-entry.css?v=814-lado-a-lado');
 
-@import url('./29-mobile-kawaii-platform.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./29-mobile-kawaii-platform.css?v=814-lado-a-lado');
 
-@import url('./30-zoom-marker-optimizer.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./30-zoom-marker-optimizer.css?v=814-lado-a-lado');
 
-@import url('./36-mobility-static-search.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./36-mobility-static-search.css?v=814-lado-a-lado');
 
 
-@import url('./41-email-registration-auth.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./41-email-registration-auth.css?v=814-lado-a-lado');
 
-@import url('./42-turquoise-refresh.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./42-turquoise-refresh.css?v=814-lado-a-lado');
 
-@import url('./43-clean-user-entry.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./43-clean-user-entry.css?v=814-lado-a-lado');
 
-@import url('./44-mobile-auth-onboarding.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./44-mobile-auth-onboarding.css?v=814-lado-a-lado');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./45-mascotas-fundacion.css?v=814-lado-a-lado');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./46-runner-strava.css?v=814-lado-a-lado');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=813-a-pie-y-cuesta-abajo');
-@import url('./48-premio.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./47-aurea-menu.css?v=814-lado-a-lado');
+@import url('./48-premio.css?v=814-lado-a-lado');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./48-runner-stats.css?v=814-lado-a-lado');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./49-urbis-analisis.css?v=814-lado-a-lado');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./99-mobile-clean-core.css?v=814-lado-a-lado');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./99-safe-destination-dot.css?v=814-lado-a-lado');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./51-cute-theme-pc.css?v=814-lado-a-lado');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./52-urbis-pro-city.css?v=814-lado-a-lado');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=813-a-pie-y-cuesta-abajo');
-@import url('./68-procity-reconocimiento.css?v=813-a-pie-y-cuesta-abajo');
-@import url('./69-licencia.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./24-procity-analisis.css?v=814-lado-a-lado');
+@import url('./68-procity-reconocimiento.css?v=814-lado-a-lado');
+@import url('./69-licencia.css?v=814-lado-a-lado');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./53-auth-celeste.css?v=814-lado-a-lado');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./54-config-admin.css?v=814-lado-a-lado');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./55-vitrina.css?v=814-lado-a-lado');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./70-modo-app.css?v=814-lado-a-lado');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=813-a-pie-y-cuesta-abajo');
-@import url('./78-presencia.css?v=813-a-pie-y-cuesta-abajo');
+@import url('./72-edu-diseno.css?v=814-lado-a-lado');
+@import url('./78-presencia.css?v=814-lado-a-lado');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */
@@ -219,6 +219,21 @@
 .edu-foda-col h5{ margin:0 0 4px; font-size:.68rem; }
 .edu-foda-col ul{ margin:0; padding-left:15px; font-size:.66rem; line-height:1.4; opacity:.88; }
 .edu-foda-col li{ margin-bottom:3px; }
+
+/* Comparar con otro sector: dos columnas de cifras con una barra en medio
+   que reparte la suma; el triángulo marca quién queda arriba. */
+#edu-comparar-sel{ width:100%; padding:8px; border-radius:9px; font-size:.74rem; background:rgba(255,255,255,.06); color:inherit; border:1px solid rgba(255,255,255,.18); }
+.edu-tbl-comp{ width:100%; border-collapse:collapse; margin-top:8px; }
+.edu-tbl-comp th{ font-size:.58rem; text-transform:uppercase; letter-spacing:.3px; opacity:.75; padding:3px 4px; border-bottom:1px solid rgba(255,255,255,.12); }
+.edu-tbl-comp th.este{ color:#22d3ee; opacity:1; text-align:right; } .edu-tbl-comp th.otro{ color:#f5b942; opacity:1; text-align:left; }
+.edu-tbl-comp td{ font-size:.68rem; padding:4px; }
+.edu-tbl-comp td.n{ font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap; }
+.edu-tbl-comp td.este{ text-align:right; color:#22d3ee; } .edu-tbl-comp td.otro{ text-align:left; color:#f5b942; }
+.edu-tbl-comp td i{ font-style:normal; font-size:.55rem; }
+.edu-tbl-comp td.barra{ width:34%; }
+.edu-tbl-comp td.barra div{ height:7px; border-radius:4px; background:#f5b942; overflow:hidden; }
+.edu-tbl-comp td.barra i{ display:block; height:100%; background:#22d3ee; }
+.edu-comp-lectura{ margin:8px 0 0; font-size:.7rem; line-height:1.5; }
 
 /* Antes y después: lo que se movió desde el análisis anterior, verde lo
    que subió y rojo lo que bajó, salvo en lo que cuenta problemas. */

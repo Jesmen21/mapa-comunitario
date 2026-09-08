@@ -154,6 +154,8 @@ const REPO = process.env.REPO || E.RAIZ;
                  lista: [{ id: 'leidos', t: 'Puntos que entraron al análisis', antes: '36', ahora: '48', delta: '+12', mejora: true },
                          { id: 'densidad', t: 'Usos por hectárea', antes: '1,2', ahora: '1,7', delta: '+0,5', mejora: true }],
                  lectura: 'Entraron 12 puntos nuevos y con ellos se movieron 2 cifras.', notaPoblacion: 'La población no cambió.' },
+      comparacion: { otro: { nombre: 'La Ceiba' }, lectura: 'Este sector es más denso: 3 veces los usos por hectárea de La Ceiba.',
+                     filas: [{ t: 'Habitantes', este: '14.887', otro: '4.100', gana: 'este' }, { t: 'Usos por hectárea', este: '1,7', otro: '0,6', gana: 'este' }] },
       lecturas: { general: 'Es un barrio de borde: mucha vivienda, poco comercio y una sola vía que lo conecta. Lo que más se nota es la falta de andén.',
                   flujo: 'Vimos más gente a las 6 p.m. que al mediodía.', foda: 'Quitaríamos la debilidad del parqueo: nadie llega en carro.' }
     });
@@ -624,6 +626,7 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(/Ortogonal/.test(EDU.t) && /índice de orden/.test(EDU.t), 'y la forma de la traza que el curso pidió, con su porqué');
   chk(/Qué falta por levantar/.test(EDU.t) && /Anotar el horario del letrero/.test(EDU.t), 'y qué falta por levantar, calculado del resultado');
   chk(/Desde el análisis anterior/.test(EDU.t) && /36 → 48/.test(EDU.t), 'y qué cambió desde el análisis anterior, junto a la advertencia de los puntos (v811)');
+  chk(/Comparado con La Ceiba/.test(EDU.t) && /3 veces los usos por hectárea/.test(EDU.t), 'y la comparación con el otro sector que el grupo eligió (v814)');
   // Las hojas del curso, para revisarlas a ojo.
   const hojasE = await pgE.$$('.hoja');
   for (let i = 0; i < hojasE.length; i++) await hojasE[i].screenshot({ path: '/tmp/hojaE' + (i+1) + '.png' });

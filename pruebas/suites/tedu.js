@@ -851,6 +851,40 @@ const server = http.createServer((req, res) => {
   chk(!!(SINTERRENO.plano && SINTERRENO.plano.grado === 'llano' && /casi no tiene hacia dónde caer/.test(SINTERRENO.plano.lectura)),
       'y un terreno plano se dice plano, sin rumbo de caída');
 
+  /* ── Comparar con otro sector (v814) ─────────────────────────────────
+     Las tres fichas que el curso ya levantó (sembradas al inicio, con
+     cifras bajas) son los candidatos. El análisis anterior del MISMO
+     centro no se ofrece: para eso está «qué cambió». */
+  console.log('\n── Comparar con otro sector ───────────────────────────────────');
+  const CP = await pg.evaluate(() => {
+    const sel = document.getElementById('edu-comparar-sel');
+    if (!sel) return { sinSelect: true };
+    const opciones = Array.from(sel.options).map(o => o.textContent);
+    sel.value = 'ficha:f2'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    const t = document.querySelector('#edu-comparar-salida .edu-tbl-comp');
+    const filas = t ? Array.from(t.querySelectorAll('tbody tr')).map(tr => ({ cls: tr.className, t: tr.cells[0].textContent, este: tr.cells[1].textContent.trim(), otro: tr.cells[3].textContent.trim() })) : [];
+    const u = window.URBIS_EDU_UI.ultimo;
+    const html = window.AIA_INFORME.construirHTMLEjecutivo(u, {}, { estilo: 'institucional', horizontal: true, educativo: true });
+    return { opciones, cabOtro: t ? t.querySelector('th.otro').textContent : '', filas,
+             lectura: (document.querySelector('#edu-comparar-salida .edu-comp-lectura') || {}).textContent || '',
+             enUltimo: !!(u.comparacion && u.comparacion.filas), enInforme: /Comparado con Sector 2/.test(html) && /tbl-comp/.test(html) };
+  });
+  console.log('  opciones: ' + (CP.opciones || []).join(' | '));
+  (CP.filas || []).forEach(f => console.log('  ' + f.t + ': ' + f.este + ' vs ' + f.otro + ' (' + f.cls + ')'));
+  chk(!CP.sinSelect && CP.opciones.length === 4 && CP.opciones.some(o => /Sector 2/.test(o)), 'ofrece las fichas del curso para comparar (' + ((CP.opciones || []).length - 1) + ')');
+  chk(!(CP.opciones || []).some(o => /análisis anterior/.test(o)), 'y no ofrece el análisis anterior del mismo centro: para eso está «qué cambió»');
+  chk(CP.cabOtro === 'Sector 2' && (CP.filas || []).length === 5, 'elegir uno pinta las cinco cifras lado a lado');
+  // Quién queda arriba se comprueba contra los números de la propia fila:
+  // con seis puntos este sector pierde en densidad y en flujo vehicular,
+  // y la marca tiene que decirlo así, no «este» por defecto.
+  const num = t => parseFloat(String(t).replace(/\./g, '').replace(',', '.'));
+  const marcaBien = (CP.filas || []).every(f => { const a = num(f.este), b = num(f.otro); return (a > b && /g-este/.test(f.cls)) || (a < b && /g-otro/.test(f.cls)) || (a === b && /g-empate/.test(f.cls)); });
+  chk(marcaBien && (CP.filas || []).some(f => /g-otro/.test(f.cls)) && (CP.filas || []).some(f => /g-este/.test(f.cls)),
+      'con quién queda arriba en cada fila, según los números: acá gana uno en unas y el otro en otras');
+  chk(/más denso/.test(CP.lectura) && /Sector 2/.test(CP.lectura) && /Densidad y flujo se comparan/.test(CP.lectura),
+      'y una lectura en palabras que aclara qué se compara y qué depende del radio');
+  chk(CP.enUltimo && CP.enInforme, 'la comparación queda en el resultado y el informe del curso la lleva');
+
   /* ── La lectura del curso y el informe propio del curso (v810) ────────
      El módulo da las cifras; la conclusión la escribe el curso. Las cajas
      tienen que estar bajo cada bloque, guardarse solas y sobrevivir a

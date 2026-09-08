@@ -1375,6 +1375,17 @@
       '</div>';
   }
 
+  /* Comparado con otro sector del curso, si el grupo eligió uno. */
+  function bloqueComparacionInforme(r){
+    const c = r.comparacion;
+    if (!c || !c.filas) return '';
+    return '<div class="tarjeta"><h3 class="tarj-t">Comparado con ' + esc(c.otro.nombre) + '</h3>' +
+      '<table class="tbl-comp"><thead><tr><th></th><th class="n">Este sector</th><th class="n">' + esc(c.otro.nombre) + '</th></tr></thead><tbody>' +
+      c.filas.map(f => '<tr><td>' + esc(f.t) + '</td><td class="n' + (f.gana === 'este' ? ' g' : '') + '">' + esc(f.este) + '</td>' +
+                       '<td class="n' + (f.gana === 'otro' ? ' g' : '') + '">' + esc(f.otro) + '</td></tr>').join('') +
+      '</tbody></table><p class="nota-pie">' + esc(c.lectura) + '</p></div>';
+  }
+
   function bloqueHorariosInforme(r){
     const h = (r.stats || {}).horarios;
     if (!h || !h.total) return '';
@@ -1674,6 +1685,7 @@ seccion(3, 'Qué hay alrededor', 'el sector, cómo leer las cifras y qué falta'
 seccion(4, 'La lectura del curso', 'lo que el grupo concluyó después de caminar el sector'),
 bloqueLecturasInforme(r, ['general']),
 bloqueLecturasInforme(r, ['base', 'poblacion', 'flujo', 'calor', 'composicion', 'anillos', 'edificacion', 'forma', 'contexto', 'foda']),
+bloqueComparacionInforme(r),
 pie(1, r, autor, true),
 '</div></div>',
 
@@ -1968,6 +1980,8 @@ pie(4, r, autor, true),
 '.lectura-lineas{height:34px;margin-top:6px;background:repeating-linear-gradient(to bottom,transparent 0 10px,', T.linea, ' 10px 11px)}',
 '.forma-nombre{font-size:10px;font-weight:900;margin:0 0 2px}.forma-nombre em{font-style:normal;font-weight:400;font-size:7px;color:', T.txt3, '}',
 '.forma-ojo{color:#B45309 !important}',
+'.tbl-comp{width:100%;border-collapse:collapse;font-size:7.4px}.tbl-comp th{text-align:left;font-size:6.8px;text-transform:uppercase;letter-spacing:.3px;color:', T.cab1, ';padding:3px 5px;border-bottom:1px solid ', T.borde, '}',
+'.tbl-comp td{padding:3px 5px;border-bottom:1px solid ', T.linea, '}.tbl-comp .n{text-align:right;font-variant-numeric:tabular-nums}.tbl-comp td.g{font-weight:900;color:', T.tinta, '}',
 '.ctx-migas{font-size:7.6px;color:', T.tinta, ';font-weight:700;margin:0 0 3px}',
 '.ctx-sub{font-size:7px;font-weight:800;color:', T.tinta, ';margin:4px 0 1px;text-transform:uppercase;letter-spacing:.3px}',
 '.ctx-rutas{margin:0;padding:0 0 0 10px;font-size:6.8px;color:', T.txt2, ';columns:2;column-gap:8px}',

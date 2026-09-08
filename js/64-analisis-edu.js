@@ -907,8 +907,62 @@
                : 'La población no cambió: viene del DANE y no se mueve mapeando.' };
   }
 
+  /* ── Comparar dos sectores ───────────────────────────────────────────
+     Dos resúmenes, una tabla: las cinco cifras que se comparan entre
+     sectores de distinto tamaño (por eso usos por hectárea y no usos), con
+     quién queda arriba en cada una y una lectura en palabras. El otro
+     sector puede ser una ficha del curso (pcr_fichas_v1) o un análisis
+     anterior de otro centro; los dos se normalizan antes de entrar acá. */
+  const COMPARAR_METRICAS = [
+    { id: 'poblacion', t: 'Habitantes',        dec: 0 },
+    { id: 'total',     t: 'Usos leídos',       dec: 0 },
+    { id: 'densidad',  t: 'Usos por hectárea', dec: 1 },
+    { id: 'peatonal',  t: 'Flujo a pie',       dec: 0, sufijo: '/100' },
+    { id: 'vehicular', t: 'Flujo vehicular',   dec: 0, sufijo: '/100' }
+  ];
+  function normalizarSector(x){
+    if (!x) return null;
+    // Una ficha del curso trae `stats`; un resumen de análisis trae las cifras planas.
+    const st = x.stats || null;
+    const fl = st && st.movilidad && st.movilidad.flujo || {};
+    return {
+      nombre: x.nombre || x.clave || 'Otro sector', fecha: x.ts || x.fechaISO || '',
+      poblacion: Number(st ? st.poblacionEstimada : x.poblacion) || 0,
+      total: Number(st ? st.total : x.total) || 0,
+      densidad: Number(st ? st.densidadPorHa : x.densidad) || 0,
+      peatonal: Number(st ? fl.peatonal : x.peatonal) || 0,
+      vehicular: Number(st ? fl.vehicular : x.vehicular) || 0
+    };
+  }
+  function comparar(este, otro){
+    const A = normalizarSector(este), B = normalizarSector(otro);
+    if (!A || !B) return null;
+    const fmt = (v, m) => v.toLocaleString('es-CO', { maximumFractionDigits: m.dec, minimumFractionDigits: m.dec }) + (m.sufijo || '');
+    const filas = COMPARAR_METRICAS.map(m => {
+      const a = A[m.id], b = B[m.id];
+      const razon = b > 0 ? a / b : (a > 0 ? Infinity : 1);
+      return { id: m.id, t: m.t, este: fmt(a, m), otro: fmt(b, m), a, b,
+               gana: Math.abs(a - b) < 1e-9 ? 'empate' : a > b ? 'este' : 'otro',
+               razon: isFinite(razon) ? Math.round(razon * 10) / 10 : null,
+               // Para la barra: la parte de este sector sobre la suma.
+               pct: (a + b) > 0 ? Math.round(100 * a / (a + b)) : 50 };
+    });
+    const dens = filas.find(f => f.id === 'densidad'), pea = filas.find(f => f.id === 'peatonal'), pob = filas.find(f => f.id === 'poblacion');
+    const veces = f => f.razon == null ? '' : f.razon >= 1 ? f.razon.toLocaleString('es-CO') + ' veces' : 'un ' + Math.round(100 * f.razon) + ' %';
+    let lectura = '';
+    if (dens.gana === 'este' && dens.razon != null) lectura += 'Este sector es más denso: ' + veces(dens) + ' los usos por hectárea de ' + B.nombre + '. ';
+    else if (dens.gana === 'otro') lectura += B.nombre + ' es más denso: aquí hay ' + (dens.razon != null ? veces(dens) : 'menos') + ' de sus usos por hectárea. ';
+    else lectura += 'Los dos tienen la misma densidad de usos. ';
+    if (pea.gana !== 'empate') lectura += (pea.gana === 'este' ? 'Y mueve más gente a pie' : 'Pero ' + B.nombre + ' mueve más gente a pie') +
+      ' (' + pea.este + ' contra ' + pea.otro + '). ';
+    if (pob.gana !== 'empate') lectura += (pob.gana === 'este' ? 'Con más habitantes en el radio' : 'Con menos habitantes en el radio') + ' (' + pob.este + ' contra ' + pob.otro + '). ';
+    lectura += 'Densidad y flujo se comparan; los usos leídos y la población dependen también del radio y de cuánto se mapeó.';
+    return { este: A, otro: B, filas, lectura };
+  }
+
   window.URBIS_EDU = {
     analizar: analizar,
+    comparar: comparar, normalizarSector: normalizarSector,
     resumen: resumen,
     cambios: cambios,
     COMPARABLES: COMPARABLES,

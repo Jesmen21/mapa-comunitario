@@ -548,6 +548,60 @@
       '</div>';
   }
 
+  /* ── Comparar con otro sector ─────────────────────────────────────────
+     Los candidatos: las fichas que el curso guardó (pcr_fichas_v1) y los
+     análisis anteriores de OTROS centros (edu_analisis_previos_v1). El
+     mismo centro no se ofrece: para eso está «qué cambió». */
+  function candidatosComparar(){
+    const out = [];
+    fichasDelCurso().forEach(f => {
+      if (f && f.stats) out.push({ id: 'ficha:' + (f.id || f.nombre), nombre: f.nombre || 'Sector sin nombre', ts: f.ts, origen: 'ficha', datos: f });
+    });
+    const previos = leerPrevios();
+    Object.keys(previos).forEach(k => {
+      if (k === claveLecturas) return;
+      const r = previos[k];
+      const nombre = (r && r.nombre) || ('Análisis en ' + k.replace('|', ' · ') + ' m');
+      out.push({ id: 'previo:' + k, nombre, ts: r && r.ts, origen: 'previo', datos: Object.assign({ nombre, clave: k }, r) });
+    });
+    return out;
+  }
+  function bloqueComparar(){
+    const c = candidatosComparar();
+    return '<div class="edu-caja" id="edu-comparar"><h4>⚖️ Comparar con otro sector</h4>' +
+      (c.length
+        ? '<p class="edu-nota">Este sector, al lado de uno que el curso ya levantó. Se comparan densidad y flujo, que no dependen del tamaño del radio.</p>' +
+          '<select id="edu-comparar-sel"><option value="">Elegir un sector…</option>' +
+            c.map(x => '<option value="' + esc(x.id) + '">' + esc(x.nombre) + (x.ts ? ' · ' + new Date(x.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : '') +
+                       (x.origen === 'previo' ? ' (análisis anterior)' : '') + '</option>').join('') +
+          '</select><div id="edu-comparar-salida"></div>'
+        : '<p class="edu-nota">Todavía no hay otro sector con qué comparar. Cuando el curso analice otro centro, o guarde una ficha en Pro City, aparece acá.</p>') +
+      '</div>';
+  }
+  function renderComparacion(cmp){
+    if (!cmp) return '';
+    const fila = f => '<tr class="g-' + f.gana + '"><td>' + esc(f.t) + '</td>' +
+      '<td class="n este">' + esc(f.este) + (f.gana === 'este' ? ' <i>▲</i>' : '') + '</td>' +
+      '<td class="barra"><div><i style="width:' + f.pct + '%"></i></div></td>' +
+      '<td class="n otro">' + esc(f.otro) + (f.gana === 'otro' ? ' <i>▲</i>' : '') + '</td></tr>';
+    return '<table class="edu-tbl-comp"><thead><tr><th></th><th class="este">Este sector</th><th></th><th class="otro">' + esc(cmp.otro.nombre) + '</th></tr></thead>' +
+      '<tbody>' + cmp.filas.map(fila).join('') + '</tbody></table>' +
+      '<p class="edu-comp-lectura">' + esc(cmp.lectura) + '</p>';
+  }
+  function engancharComparar(cont){
+    const sel = cont.querySelector('#edu-comparar-sel');
+    if (!sel) return;
+    sel.addEventListener('change', () => {
+      const salida = cont.querySelector('#edu-comparar-salida');
+      const x = candidatosComparar().find(c => c.id === sel.value);
+      if (!x || !ultimo) { salida.innerHTML = ''; if (ultimo) ultimo.comparacion = null; return; }
+      const este = Object.assign({ nombre: 'Este sector' }, window.URBIS_EDU.resumen(ultimo));
+      const cmp = window.URBIS_EDU.comparar(este, x.datos);
+      ultimo.comparacion = cmp;
+      salida.innerHTML = renderComparacion(cmp);
+    });
+  }
+
   /* ── La hoja de campo ────────────────────────────────────────────────
      Lo que el análisis dejó abierto, convertido en una hoja para llevar a
      la calle: una tabla en blanco por tarea, con las columnas de lo que hay
@@ -670,7 +724,7 @@
       const previo = previoDe(claveLecturas), resumenAhora = window.URBIS_EDU.resumen(r);
       r.cambios = previo ? window.URBIS_EDU.cambios(previo, resumenAhora) : null;
       guardarPrevio(claveLecturas, resumenAhora);
-      cont.innerHTML = conLectura(bloqueBase(r), 'base', previas) + bloqueCambios(r.cambios) + kpis(r) +
+      cont.innerHTML = conLectura(bloqueBase(r), 'base', previas) + bloqueCambios(r.cambios) + kpis(r) + bloqueComparar() +
                        conLectura(bloquePoblacion(r), 'poblacion', previas) +
                        conLectura(bloqueFlujo(r), 'flujo', previas) +
                        conLectura(bloqueCalor(r), 'calor', previas) +
@@ -694,6 +748,7 @@
                          '<button type="button" id="edu-hoja-campo" class="sec">📝 Hoja de campo · lo que falta por levantar</button>' +
                        '</div>';
       engancharLecturas(cont);
+      engancharComparar(cont);
       const bh = $('edu-hoja-campo');
       if (bh) bh.addEventListener('click', abrirHojaCampo);
       const bi = $('edu-analisis-informe');
@@ -920,6 +975,13 @@
     try {
       const c = await window.URBIS_EDU.contexto(centro, radioM, ultimo && ultimo.stats && ultimo.stats.poblacionEstimada);
       if (ultimo) ultimo.contexto = c;      // para el informe
+      // El análisis guardado toma nombre del barrio: así la lista de
+      // «comparar con otro sector» dice «Barrio La Playa» y no unas coordenadas.
+      try {
+        const barrio = (c.limites || []).filter(l => l.nivel >= 9).pop();
+        const prev = previoDe(claveLecturas);
+        if (barrio && prev) { prev.nombre = barrio.nombre; guardarPrevio(claveLecturas, prev); }
+      } catch(e) {}
       caja.innerHTML = '<h4>🧭 El sector en su contexto</h4>' + bloqueContexto(c);
     } catch(err) {
       if (btn) { btn.disabled = false; btn.textContent = '🧭 Consultar el contexto'; }
@@ -958,6 +1020,7 @@
   window.URBIS_EDU_UI = { ejecutar: ejecutar, abrirInforme: abrirInforme,
                           mostrarCalor: mostrarCalor, bloqueContexto: bloqueContexto,
                           lecturas: lecturasActuales, hojaCampoHTML: hojaCampoHTML,
+                          candidatosComparar: candidatosComparar,
                           get calor(){ return calorMapa; },
                           get ultimo(){ return ultimo; } };
 })();
