@@ -537,12 +537,19 @@ console.log('\n  -- la ficha del gobernante --');
   comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
     cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
 
-  /* El `tipoFuente` en blanco NO es neutral: «registro verificado por
-     terceros» es una de las cuatro cuentas que fijan el veredicto de la
-     ficha, y una entrada sin tipo baja el porcentaje igual que una
-     disputada. O sea que olvidarlo mueve en público el juicio sobre una
-     persona sin que nadie lo haya decidido — el peor modo de moverlo,
-     porque no queda ni el rastro de una decisión.
+  /* CORRECCIÓN de lo que decía acá ayer, que era falso y conviene dejar
+     escrito para que nadie lo vuelva a suponer: una entrada sin tipo NO
+     baja el porcentaje de «registro verificado». La ficha lo calcula sobre
+     las entradas que SÍ declaran naturaleza —`100 * verificado / conTipo`,
+     js/70— así que las que están en blanco quedan FUERA de la cuenta, no
+     dentro del denominador.
+
+     Lo que sí pasa es otra cosa, y es la que este trinquete cuida: una
+     entrada sin tipo es una entrada de la que no se decidió nada, y si el
+     registro se llena de ellas el porcentaje empieza a hablar de una parte
+     cada vez más chica del registro sin decirlo. Un 100 % sobre tres
+     hechos de cien no es un registro verificado: es un registro sin
+     revisar con una cifra bonita encima.
 
      No se exige cero de golpe: hay entradas viejas sin clasificar y
      ponerles un tipo a ciegas sería inventar la verificación que falta.
@@ -559,10 +566,30 @@ console.log('\n  -- la ficha del gobernante --');
       if (!String(e.tipoFuente || '').trim()) sinTipo.push(quien + '/' + (e.fecha || '?'));
     });
   });
-  comprobar('ninguna entrada nueva se queda sin tipo de fuente (el blanco mueve el veredicto sin decirlo)',
+  comprobar('ninguna entrada nueva se queda sin tipo de fuente (el porcentaje hablaría de una parte cada vez más chica)',
     sinTipo.length <= TECHO_SIN_TIPO,
     sinTipo.length + ' sin clasificar, techo ' + TECHO_SIN_TIPO +
     (sinTipo.length > TECHO_SIN_TIPO ? ' · sobran: ' + sinTipo.slice(TECHO_SIN_TIPO).join(', ') : ' · solo puede bajar'));
+
+  /* Y la lista de pendientes tiene que decir la verdad sobre sí misma. Una
+     lista de deudas que se queda vieja es peor que no tenerla: alguien
+     documenta una entrada, la lista sigue diciendo diecinueve, y nadie
+     vuelve a mirarla porque «ya estaba revisada». Los tres números —las
+     entradas en blanco, lo que la lista dice tener, y el techo— tienen que
+     ser el mismo, o algo se movió sin avisar. */
+  {
+    const reg = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const pend = reg._pendientesFuente || {};
+    const enLista = ((pend.lista) || []).length;
+    const dice = pend.cuantas;
+    const enBlanco = ((reg.entradas) || []).filter((e) => !String(e.tipoFuente || '').trim()).length;
+    comprobar('la lista de entradas por documentar cuadra con las que de verdad están en blanco',
+      enLista === enBlanco && dice === enBlanco && enBlanco === TECHO_SIN_TIPO,
+      'lista ' + enLista + ' · dice ' + dice + ' · en blanco ' + enBlanco + ' · techo ' + TECHO_SIN_TIPO);
+    const sinQue = ((pend.lista) || []).filter((x) => !String(x.queFalta || '').trim()).length;
+    comprobar('y cada pendiente dice QUÉ documento u organismo lo cerraría',
+      sinQue === 0, sinQue ? sinQue + ' sin decir qué falta' : 'las ' + enLista + ' dicen qué falta');
+  }
 
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es

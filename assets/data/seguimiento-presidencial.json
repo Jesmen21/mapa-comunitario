@@ -4166,5 +4166,106 @@
     }
    ]
   }
- ]
+ ],
+ "_pendientesFuente": {
+  "_nota": "Las entradas más viejas del registro (4 al 17 de agosto) se escribieron sin citar fuente. No están «sin clasificar»: están SIN DOCUMENTAR, y son cosas distintas. Importa saber qué hace y qué NO hace ese vacío: la ficha calcula el «registro verificado» sobre las entradas que SÍ declaran naturaleza, así que estas no bajan el porcentaje —quedan fuera de la cuenta—. Ponerles un tipo sin fuente sería peor que dejarlas: metería 19 hechos al denominador sin sumar ninguno al numerador, y la ficha bajaría de 72 % a 61 % castigando al gobernante por una deuda nuestra. Y marcarlas «verificado» sin fuente sería fabricar la verificación, que es el mismo pecado en la otra dirección. Así que se quedan como están, a la vista, con el nombre del organismo o el documento que las cerraría. Cada una que se documente sube el porcentaje de verdad: con las 19 cerradas, 76 %. Al cerrar una, ponerle su tipoFuente, sus fuentes, y bajar en uno el TECHO_SIN_TIPO de pruebas/revisar.js.",
+  "cuantas": 19,
+  "lista": [
+   {
+    "fecha": "2026-08-17",
+    "titulo": "Nuevo descuadre por el terremoto: “Nos vamos a endeudar”",
+    "queFalta": "Ministerio de Hacienda · anuncio de endeudamiento y su monto (rueda de prensa o comunicado)"
+   },
+   {
+    "fecha": "2026-08-16",
+    "titulo": "Colombia reconoce la soberanía israelí sobre los Altos del Golán",
+    "queFalta": "Cancillería · comunicado del reconocimiento; y la reacción de la ONU, que es la que lo disputa"
+   },
+   {
+    "fecha": "2026-08-15",
+    "titulo": "Estados Unidos anuncia un paquete de seguridad de USD 1.000 millones para Colombia",
+    "queFalta": "Departamento de Estado o Embajada de EE. UU. en Bogotá · anuncio del paquete de USD 1.000 millones"
+   },
+   {
+    "fecha": "2026-08-13",
+    "titulo": "El Banco Mundial desembolsa USD 200 millones para la emergencia",
+    "queFalta": "Banco Mundial · comunicado del desembolso de USD 200 millones"
+   },
+   {
+    "fecha": "2026-08-13",
+    "titulo": "El BID activa USD 300 millones adicionales",
+    "queFalta": "Banco Mundial · comunicado del desembolso de USD 200 millones"
+   },
+   {
+    "fecha": "2026-08-13",
+    "titulo": "Anuncia emergencia económica por el terremoto",
+    "queFalta": "Decreto de emergencia económica · número y Diario Oficial"
+   },
+   {
+    "fecha": "2026-08-12",
+    "titulo": "Hegseth anuncia desde Panamá que Colombia autorizó operaciones militares conjuntas en su territorio",
+    "queFalta": "Departamento de Defensa de EE. UU. · declaración de Hegseth desde Panamá, y la respuesta del Gobierno colombiano"
+   },
+   {
+    "fecha": "2026-08-12",
+    "titulo": "Colombia entra a la coalición contra los carteles; Medellín será sede regional",
+    "queFalta": "Departamento de Defensa de EE. UU. · declaración de Hegseth desde Panamá, y la respuesta del Gobierno colombiano"
+   },
+   {
+    "fecha": "2026-08-11",
+    "titulo": "Decreto 1171: declara desastre nacional en 12 departamentos",
+    "queFalta": "Decreto 1171 de 2026 · Diario Oficial (declaratoria de desastre nacional en 12 departamentos)"
+   },
+   {
+    "fecha": "2026-08-10",
+    "titulo": "Terremoto de magnitud 7,4 con epicentro en Chocó, a menos de 72 horas de asumir",
+    "queFalta": "Servicio Geológico Colombiano · magnitud y EPICENTRO. Resuelve además la discrepancia con el dossier, que sostiene que el epicentro NO fue Chocó"
+   },
+   {
+    "fecha": "2026-08-07",
+    "titulo": "Restablece relaciones con Israel y retira la demanda por genocidio en Gaza",
+    "queFalta": "Cancillería · restablecimiento de relaciones; y Corte Internacional de Justicia · retiro de la demanda"
+   },
+   {
+    "fecha": "2026-08-07",
+    "titulo": "Colombia queda como eje de la ofensiva militar de Trump contra el narcotráfico en la región",
+    "queFalta": "Fuente primaria del hecho: el organismo que lo emitió o el documento con su número"
+   },
+   {
+    "fecha": "2026-08-07",
+    "titulo": "Ordena congelar la contratación de última hora en el Ministerio de la Igualdad",
+    "queFalta": "Ministerio de la Igualdad o Presidencia · la orden de congelar la contratación"
+   },
+   {
+    "fecha": "2026-08-07",
+    "titulo": "Expide 6 decretos en su primer día (1133 a 1138)",
+    "queFalta": "Diario Oficial · decretos 1133 a 1138 del 7 de agosto de 2026"
+   },
+   {
+    "fecha": "2026-08-07",
+    "titulo": "Toma posesión en la Universidad Santiago de Cali",
+    "queFalta": "Diario Oficial · decretos 1133 a 1138 del 7 de agosto de 2026"
+   },
+   {
+    "fecha": "2026-08-06",
+    "titulo": "Decreto 1012: suspende por 15 días los requisitos de meritocracia para cargos de libre nombramiento",
+    "queFalta": "Decreto 1012 de 2026 · Diario Oficial (suspensión de requisitos de meritocracia por 15 días)"
+   },
+   {
+    "fecha": "2026-08-05",
+    "titulo": "Denuncia irregularidades por más de $370.000 millones ante Fiscalía, Contraloría y Procuraduría",
+    "queFalta": "Fiscalía, Contraloría y Procuraduría · radicados de las denuncias por $370.000 millones"
+   },
+   {
+    "fecha": "2026-08-05",
+    "titulo": "Piden investigar un contrato directo de la UNP por $24.800 millones",
+    "queFalta": "Fiscalía, Contraloría y Procuraduría · radicados de las denuncias por $370.000 millones"
+   },
+   {
+    "fecha": "2026-08-04",
+    "titulo": "Choque por contratos millonarios del Invías para La Guajira",
+    "queFalta": "Invías · los contratos de La Guajira, con número y valor"
+   }
+  ]
+ }
 }
