@@ -792,36 +792,44 @@
     // Ya pasó con la carpeta cooperativa de Pro City, que se desvinculaba sola
     // al corregir una foto.
     if(isEdit && dOriginal.length) {
-        let dFinal = descripcionFinal.split(' | ');
+        /* ── Qué sobrevive a una edición (v837) ───────────────────────────
+           Esto era una LISTA DE LO QUE SE CONSERVA, y esa forma de escribirlo
+           tenía el fallo al revés: la casilla que nadie se acordara de meter
+           en la lista se BORRABA, sin aviso, la primera vez que su dueño
+           editara el reporte. No es hipotético: cuando se escribió esto se
+           estaban perdiendo ya dos —el horario del letrero (v815, casilla
+           66) y la petición de corrección de un moderador (v835, casilla
+           67)—. La segunda es peor de lo que parece: a la persona se le pide
+           que corrija y edite, y editar borraba justo la petición.
+
+           Ahora se dice lo contrario, que es lo único que se sabe de verdad:
+           EL FORMULARIO MANDA EN LAS CASILLAS QUE ESCRIBIÓ, y en todas las
+           demás manda lo que ya había. Olvidar una casilla nueva pasa de
+           destruir un dato a conservarlo de más —visible y arreglable— que
+           es el lado bueno donde equivocarse.
+
+           Lo que el formulario escribe son dos cosas y nada más: la cabecera
+           del reporte (0 … BASE_OFFSET+7: categoría, título, notas, estado,
+           usos, foto, aprobación, autor, rol, apoyos, barrio) y las casillas
+           de la ficha del edificio que ESTE formulario preguntó —el de Pro
+           City solo pregunta los pisos, así que editar ahí ya no borra la
+           materialidad que alguien levantó en la calle—. Las víctimas se
+           suman a esa cuenta solo si la pregunta estaba en pantalla. */
+        const dFinal = descripcionFinal.split(' | ');
         const base = BASE_OFFSET + TIMELINE_EXTRA_OFFSET;
         const S = window.URBIS_SLOTS || {};
-        // Bloque temporal (0-4) + validaciones y carpeta: nunca vienen del
-        // formulario, así que siempre se conservan.
-        const conservar = [base, base+1, base+2, base+3, base+4];
-        conservar.push(S.validaciones != null ? S.validaciones : base + 10);
-        conservar.push(S.carpetaProCity != null ? S.carpetaProCity : base + 11);
-        conservar.push(S.denuncias != null ? S.denuncias : base + 12);
-        // Las víctimas solo se conservan si esta edición NO trae la pregunta
-        // activa; si la trae, manda lo que acaba de responder el usuario.
+        const escribeElFormulario = new Set();
+        for(let i = 0; i <= BASE_OFFSET + 7; i++) escribeElFormulario.add(i);
+        fichaSlotsEscritos.forEach(function(i){ escribeElFormulario.add(i); });
         const _vicActivo = (typeof window.urbisFormularioVictimasActivo === 'function')
             && window.urbisFormularioVictimasActivo(document);
-        if(!_vicActivo) {
-            conservar.push(S.victimas != null ? S.victimas : base + 13);
-        }
-        /* La ficha del edificio, casilla por casilla: manda lo que el usuario
-           acaba de poner en las que este formulario SÍ pregunta, y se conserva
-           lo guardado en las demás. Antes era todo o nada, y como el
-           formulario de Pro City solo pregunta los pisos, editar ahí borraba
-           la materialidad y la época que alguien había levantado en la calle. */
-        [S.edificioMaterialidad, S.edificioPisos, S.edificioPlantaBaja,
-         S.edificioEpoca, S.edificioOtroTexto].forEach(function(idx, k){
-            const i2 = idx != null ? idx : base + 5 + k;
-            if(fichaSlotsEscritos.indexOf(i2) < 0) conservar.push(i2);
-        });
-        const iPlantas = S.edificioUsosPorPiso != null ? S.edificioUsosPorPiso : base + 14;
-        if(fichaSlotsEscritos.indexOf(iPlantas) < 0) conservar.push(iPlantas);
-        conservar.forEach(function(idx){ if(dOriginal[idx]) dFinal[idx] = dOriginal[idx]; });
-        descripcionFinal = dFinal.join(' | ');
+        if(_vicActivo) escribeElFormulario.add(S.victimas != null ? S.victimas : base + 13);
+
+        // La fusión vive en js/05 con nombre propio: una regla sobre el
+        // registro que solo existe dentro de esta función no se puede
+        // comprobar sin media aplicación en pie, y lo que no se comprueba es
+        // exactamente lo que se rompió.
+        descripcionFinal = window.urbisFusionarEdicion(dOriginal, dFinal, escribeElFormulario).join(' | ');
     }
     
     btn.innerText = "⏳ Publicando...";

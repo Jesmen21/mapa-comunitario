@@ -349,6 +349,38 @@
   window.urbisNovedadReporte = urbisNovedadReporte;
   window.urbisMarcarReporteVisto = urbisMarcarReporteVisto;
 
+  /* ── Qué sobrevive a una edición (v837) ────────────────────────────────
+     Esto vivía suelto dentro de `guardarPunto` como una LISTA DE LO QUE SE
+     CONSERVA, y esa forma de escribirlo tenía el fallo al revés: la casilla
+     que nadie se acordara de meter en la lista se BORRABA, sin aviso, la
+     primera vez que su dueño editara el reporte. No era hipotético —se
+     estaban perdiendo ya dos: el horario del letrero (v815) y la petición de
+     corrección de un moderador (v835)—. La segunda es la peor: a la persona
+     se le pide que corrija y edite, y editar borraba justo la petición.
+
+     La regla, dicha al derecho: EL FORMULARIO MANDA EN LAS CASILLAS QUE
+     ESCRIBIÓ, y en las demás manda lo que ya había. Olvidar una casilla
+     nueva pasa de destruir un dato a conservarlo de más —visible y
+     arreglable—, que es el lado bueno donde equivocarse.
+
+     Vive acá y no dentro del guardado porque una regla sobre el registro que
+     solo existe dentro de la función que guarda no se puede comprobar sin
+     media aplicación en pie; y lo que no se comprueba es exactamente lo que
+     se rompió. */
+  function urbisFusionarEdicion(dOriginal, dNueva, escritas) {
+      const orig = Array.isArray(dOriginal) ? dOriginal : [];
+      const nueva = Array.isArray(dNueva) ? dNueva : [];
+      const manda = (escritas instanceof Set) ? escritas : new Set(escritas || []);
+      const largo = Math.max(orig.length, nueva.length);
+      const salida = [];
+      for(let i = 0; i < largo; i++) {
+          if(manda.has(i)) salida[i] = nueva[i] != null ? nueva[i] : '';
+          else salida[i] = orig[i] != null ? orig[i] : (nueva[i] != null ? nueva[i] : '');
+      }
+      return salida;
+  }
+  window.urbisFusionarEdicion = urbisFusionarEdicion;
+
   function etiquetaPropietarioReporte(p) {
       return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">TU REPORTE</span>' : '';
   }

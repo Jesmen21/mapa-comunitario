@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v836-la-peticion-se-apaga-al-aprobar';
+const URBIS_CACHE = 'urbis-v837-editar-ya-no-borra-casillas';
 const URBIS_ASSETS = [
   './',
   './index.html',
