@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v831-el-panel-de-aprobar-cabe-en-la-pantalla';
+const URBIS_CACHE = 'urbis-v832-sin-confirmar-solo-el-icono-y-la-categoria';
 const URBIS_ASSETS = [
   './',
   './index.html',

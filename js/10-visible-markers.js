@@ -209,6 +209,14 @@
   function crearMarcadorUrbano(lat, lng, dimKey, p) {
     const d = p.descripcion.split(' | ');
     const estadoValidacion = d[BASE_OFFSET + 1] || "Aprobado"; 
+    /* Qué se puede publicar de este reporte, decidido UNA vez y arriba del
+       todo (js/05, v832). Se calculaba más abajo y el título libre se
+       colaba antes, dentro del botón de denunciar, que lo lleva en su
+       `onclick`: la caja del aviso salía bien y la acusación viajaba en un
+       atributo. Lo encontró la prueba buscando el nombre propio en TODO lo
+       pintado, no mirando si existía el aviso. */
+    const _vis = (typeof window.urbisVisibilidadReporte === 'function')
+      ? window.urbisVisibilidadReporte(p) : { verDetalle: true, enRevision: false };
     
     const config = dimensiones[dimKey] || { color: "#ffffff", shape: "circle" };
     let marker;
@@ -461,7 +469,9 @@
     // Botón de comentarios (para TODOS: comentar reportes/eventos de otros).
     let nComent = 0;
     try { nComent = (typeof window.urbisContarComentarios === 'function') ? window.urbisContarComentarios(p.lat) : 0; } catch(e){}
-    const tituloComent = String(d[1] || d[0] || 'Reporte').replace(/'/g, '’').replace(/"/g, '');
+    // El título que viaja a comentarios y denuncias respeta el mismo
+    // portero: sin confirmar va la categoría, no lo que tecleó nadie.
+    const tituloComent = String((_vis.verDetalle ? (d[1] || d[0]) : (d[0] || p.tipo)) || 'Reporte').replace(/'/g, '’').replace(/"/g, '');
     const popupComentarBtn = `<button class="po-coment" onclick="window.urbisAbrirComentarios && window.urbisAbrirComentarios('${_escJsAttr(p.lat)}', '${tituloComent}')">💬 Comentar${nComent ? ' (' + nComent + ')' : ''}</button>`;
 
     // Denunciar y el aviso de moderación. Van en el popup y en el detalle: el
@@ -521,6 +531,27 @@
       // Leaflet queda anclado al marcador y en móvil se salía de la pantalla
       // sin forma de cerrarlo.
     } else {
+      /* Un reporte que nadie ha confirmado enseña el icono, la CATEGORÍA y
+         el aviso de que está sin confirmar. Nada más (js/05, v832): el
+         título y la nota son texto libre —«mataron a Fulano, fue el hijo
+         del vecino» cabe ahí— y las víctimas son una afirmación de hecho
+         sobre algo que quizá nadie vio. El punto en el mapa sí se queda:
+         sirve para no pasar por ahí esta noche, y avisa de un sitio en vez
+         de acusar a una persona. */
+      if(!_vis.verDetalle) {
+        marker.bindPopup(`
+          <div class="popup-header" style="color:${markerColor}">${limpiarHTML(p.tipo)}</div>
+          <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[0] || p.tipo)}</span>
+          <div class="popup-sin-confirmar">
+            <b>⏳ Sin confirmar</b>
+            <span>Alguien reportó esto acá y un administrador todavía no lo ha revisado.
+            Los detalles —lo que se escribió y la foto— se publican cuando se confirme.</span>
+          </div>
+          ${frescuraPopup}
+          ${popupDenunciarBtn}
+          ${popupAdminBtns}
+      `, { maxWidth: 280, minWidth: 230, className: 'urbis-popup urbis-popup-sin-confirmar' });
+      } else {
       marker.bindPopup(`
         <div class="popup-header" style="color:${markerColor}">${limpiarHTML(p.tipo)}</div>
         ${avisoModeracion}
@@ -536,6 +567,7 @@
         ${popupAdminBtns}
         ${popupOwnerBtns}
     `, { maxWidth: 280, minWidth: 230, className: 'urbis-popup' });
+      }
     }
     
     marker.on('click', function(e) {
@@ -808,16 +840,40 @@
     const _trLabel = _trCreado ? ` <span style="font-size:.7rem;color:#00b89e;font-weight:700;">(${_trCreado})</span>` : '';
     let temporalHTML = metaTemporalDetalle.temporal ? `<div style="margin-top:8px;"><span class="ttl-pill ${metaTemporalDetalle.archivado ? 'ttl-archived' : 'ttl-active'}">${metaTemporalDetalle.archivado ? 'ARCHIVADO' : 'TEMPORAL ACTIVO'}</span><span style="font-size:.72rem;color:#aeb6c2;"> Creado: ${formatearFechaHora(metaTemporalDetalle.creado)}${_trLabel} · Expira: ${formatearFechaHora(metaTemporalDetalle.expira)}</span></div>` : `<div style="margin-top:8px;"><span class="ttl-pill ttl-active">PERMANENTE</span><span style="font-size:.72rem;color:#aeb6c2;"> Creado: ${formatearFechaHora(metaTemporalDetalle.creado)}${_trLabel}</span></div>`;
 
+    /* Lo mismo que en el globo (js/05, v832): sin confirmar sale el icono y
+       la categoría —que se elige de una lista de URBIS, así que no puede
+       llevar un nombre propio dentro— y nada más. El título y la nota son
+       texto libre, las víctimas son una afirmación de hecho, y el nombre de
+       quien reportó, debajo de una denuncia sin confirmar en un mapa
+       público, señala justo a quien se atrevió a contarlo.
+
+       Se calcula acá arriba, en variables, en vez de partir la plantilla en
+       dos: una plantilla duplicada se arregla en una mitad y no en la otra,
+       y esa mitad olvidada sería la que enseña de más. */
+    const _visD = (typeof window.urbisVisibilidadReporte === 'function')
+      ? window.urbisVisibilidadReporte(p) : { verDetalle: true, enRevision: false };
+    const _tituloDet   = _visD.verDetalle ? (d[1] || d[0]) : (d[0] || p.tipo);
+    const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
+                                          : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';
+    const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
+    const _rolDet      = _visD.verDetalle ? creadorRol : 'sin confirmar';
+    const _victimasDet = _visD.verDetalle ? victimasDetalleHTML : '';
+    const _avisoDet    = _visD.verDetalle ? alertaValidacionHTML : `
+        <div class="detalle-sin-confirmar">
+          <b>⏳ Sin confirmar</b>
+          <span>Alguien reportó esto acá y un administrador todavía no lo ha revisado. Se ve el punto y su categoría; los detalles —lo que se escribió, la foto y quién lo reportó— se publican cuando se confirme.</span>
+        </div>`;
+
     document.getElementById('info-content').innerHTML = `
-      <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(d[1] || d[0])}</span> ${tituloEstado}</div>
+      <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(_tituloDet)}</span> ${tituloEstado}</div>
       <div class="form-section">
         
-        ${alertaValidacionHTML}
-        ${victimasDetalleHTML}
+        ${_avisoDet}
+        ${_victimasDet}
         
         <div class="alert-autor">
             <span style="font-size:0.7rem; color:#aaa;">👤 AUTOR DEL REPORTE:</span><br>
-            <b style="color:#fff;">${limpiarHTML(creadorNombre)}</b> <span style="font-size:0.7rem; color:var(--cyan);">(${creadorRol})</span><br>
+            <b style="color:#fff;">${limpiarHTML(_autorDet)}</b> <span style="font-size:0.7rem; color:var(--cyan);">(${_rolDet})</span><br>
             <span style="font-size:0.75rem; color:#ccc;">📍 Barrio: ${limpiarHTML(barrioVal)}</span>
             <div style="margin-top:5px;">${popularBadge} ${ownerBadge}</div>
             ${temporalHTML}
@@ -826,7 +882,7 @@
 
         <label style="font-size:0.7rem; color:var(--cyan);">CLASIFICACIÓN TÉCNICA:</label>
         <div style="color:#fff; font-weight:bold; font-size:1.1rem; display:flex; align-items:center; gap:8px;">${construirBadgeIcono(p.tipo, d[0])}<span>${limpiarHTML(p.tipo)} - ${limpiarHTML(d[0])}</span></div>
-        <p style="font-size:0.9rem; color:#ccc; margin-top:10px; background:#1a1a1a; padding:10px; border-radius:4px; border-left: 3px solid var(--cyan);">${limpiarHTML(d[2] || 'Sin notas.')}</p>
+        <p style="font-size:0.9rem; color:#ccc; margin-top:10px; background:#1a1a1a; padding:10px; border-radius:4px; border-left: 3px solid ${_visD.verDetalle ? 'var(--cyan)' : '#ff9f43'};">${limpiarHTML(_notaDet)}</p>
         
         ${fotoHTML}
 

@@ -179,8 +179,16 @@ const REPO = process.env.REPO || E.RAIZ;
   if (g) {
     chk(!/class="popup-foto-big/.test(g.html),
         'el ciudadano NO recibe la etiqueta de la foto en el globo de un reporte pendiente');
-    chk(/foto-en-revision/.test(g.html),
-        'pero sí le dice que hay una foto en revisión: un hueco en blanco se lee como «no trajo pruebas»');
+    /* En la v829 esto se comprobaba buscando el bloque `foto-en-revision`.
+       La v832 ensanchó el portero: al ciudadano ya no se le esconde solo la
+       foto sino todo el detalle, y el aviso que recibe es el de «sin
+       confirmar», que nombra la foto dentro. La intención que esta línea
+       defiende no cambió —hay que DECIRLE que se está guardando algo, un
+       hueco en blanco se lee como «no trajo pruebas»— así que se comprueba
+       la intención y no el nombre de la caja: que haya un aviso y que
+       nombre la foto. */
+    chk(/(foto-en-revision|popup-sin-confirmar)/.test(g.html) && /foto/i.test(g.html),
+        'pero sí le dice que hay una foto guardada hasta que se revise: un hueco en blanco se lee como «no trajo pruebas»');
     chk(!/popup-admin-actions/.test(g.html),
         'y no le sale el botón de aprobar');
     // La dirección de la foto tampoco se escribe en el globo: esconder la

@@ -131,6 +131,61 @@
      escondía entera: no es que estuviera en revisión, es que el portero
      estaba mirando la casilla equivocada. El estado de aprobación sí es el
      mismo para toda fila, y es lo único que el portero decide. */
+  /* ── Qué se publica de un reporte que nadie ha confirmado (v832) ──────
+     La v829 guardó la FOTO hasta que un moderador la aprobara. Faltaba lo
+     de al lado, que es lo que de verdad puede arruinar a alguien: el texto.
+
+     Una foto de una esquina no acusa a nadie. «Aquí mataron a Fulano, fue
+     el hijo del vecino de la 32» sí, y esa frase la escribe cualquiera en
+     treinta segundos, sale publicada al instante y la lee el barrio entero
+     mientras un administrador duerme. La foto era la puerta chica; la nota
+     es la grande.
+
+     Así que mientras el reporte está Pendiente, al público le llega solo:
+       · el icono y la CATEGORÍA. Esa se elige de una lista cerrada de
+         URBIS, no la escribe nadie, así que no puede llevar un nombre
+         propio dentro;
+       · y el aviso de que está sin confirmar.
+
+     Esperan a la aprobación, y por la misma razón cada uno:
+       · el título, que es texto libre («Mataron a Juan Pérez» cabe ahí);
+       · la nota;
+       · las víctimas, que son una afirmación de hecho sobre algo que quizá
+         nadie vio;
+       · y quién lo reportó. Ese no es por privacidad del acusado sino por
+         seguridad del que reporta: poner nombre y apellido debajo de una
+         denuncia de homicidio sin confirmar, en un mapa público, es
+         señalar a la persona que se atrevió a contarlo.
+
+     Lo que NO se guarda es el punto en el mapa. Un icono de hecho violento
+     en una esquina sigue sirviendo para no pasar por ahí esta noche, que es
+     para lo que la gente abre URBIS; y esa parte no acusa a una persona,
+     avisa de un sitio. Guardarla también convertiría la moderación en
+     censura del aviso.
+
+     Lo ven completo, desde el primer segundo: el moderador —para poder
+     aprobarlo— y quien lo escribió —para saber que se envió bien—. */
+  function urbisVisibilidadReporte(p) {
+      const cerrado = { publicado:true, enRevision:false, esModerador:false, verDetalle:true };
+      try {
+          if(!p || !p.descripcion) return cerrado;
+          const d = String(p.descripcion).split(' | ');
+          // Sin estado escrito, es un reporte de antes del portero: publicado.
+          // Esconder hacia atrás lo que lleva meses a la vista no es moderar.
+          const publicado = String(d[BASE_OFFSET + 1] || 'Aprobado').trim() !== 'Pendiente';
+          const esModerador = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
+              || urbisIdentidadActual().rol === 'gov';
+          const suyo = (typeof esAutorDelReporte === 'function') && esAutorDelReporte(p);
+          return {
+              publicado: publicado,
+              enRevision: !publicado,
+              esModerador: esModerador,
+              verDetalle: publicado || esModerador || suyo
+          };
+      } catch(e){ return cerrado; }
+  }
+  window.urbisVisibilidadReporte = urbisVisibilidadReporte;
+
   function urbisFotoDeReporte(p, urlConocida) {
       const vacia = { hay:false, url:'', publicada:false, puedeVerla:false, enRevision:false, esModerador:false };
       try {
@@ -143,15 +198,18 @@
           // se trata como aprobado. Volver invisibles hacia atrás miles de
           // fotos que llevan meses publicadas no es moderar, es romper.
           const estado = String(d[BASE_OFFSET + 1] || 'Aprobado').trim();
-          const publicada = estado !== 'Pendiente';
-          const esModerador = (typeof window.urbisEsAdmin === 'function' && window.urbisEsAdmin())
-              || urbisIdentidadActual().rol === 'gov';
-          // `esAutorDelReporte` le dice que sí al admin, así que el "o" de
-          // abajo no distingue autor de moderador; no hace falta que lo
-          // distinga: los dos pueden verla.
-          const suya = (typeof esAutorDelReporte === 'function') && esAutorDelReporte(p);
-          const puedeVerla = publicada || esModerador || suya;
-          return { hay:true, url, publicada, puedeVerla, enRevision: !publicada, esModerador };
+          /* Quién puede ver la foto lo decide el mismo sitio que decide
+             quién puede ver el resto del reporte (v832): dos porteros con
+             criterios que se pueden separar terminan enseñando la nota y
+             escondiendo la foto, o al revés. `estado` se sigue leyendo acá
+             solo para el caso de la foto de un evento, que llega por
+             `urlConocida` y cuya fila puede no ser la misma. */
+          const v = urbisVisibilidadReporte(p);
+          const publicada = v.publicado && estado !== 'Pendiente';
+          return { hay:true, url, publicada,
+                   puedeVerla: publicada || v.verDetalle,
+                   enRevision: !publicada,
+                   esModerador: v.esModerador };
       } catch(e){ return vacia; }
   }
 
