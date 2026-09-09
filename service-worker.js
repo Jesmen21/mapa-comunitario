@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v830-el-ranking-no-se-abre-en-blanco';
+const URBIS_CACHE = 'urbis-v831-el-panel-de-aprobar-cabe-en-la-pantalla';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -408,8 +408,13 @@
         '</div>' +
       '</div>';
     document.body.appendChild(ov);
-    ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
-    ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+    /* Cerrar el panel tiene que llevarse los mapas que estuvieran abiertos.
+       Quitar el overlay del documento no apaga un Leaflet: sus oyentes de
+       tamaño y de teselas siguen ahí, y el panel se abre y se cierra muchas
+       veces en una tanda de moderación. */
+    function cerrarPanel() { cerrarMapasVivos(); ov.remove(); }
+    ov.querySelector('.ucfg-x').addEventListener('click', cerrarPanel);
+    ov.addEventListener('click', function (e) { if (e.target === ov) cerrarPanel(); });
 
     const lista = ov.querySelector('.uadm-lista');
     const menu = ov.querySelector('.uadm-menu');
@@ -426,11 +431,25 @@
     }
     function volverAlMenu() {
       detalle.hidden = true; menu.hidden = false;
+      cerrarMapasVivos();
       lista.innerHTML = '';
     }
     ov.querySelector('.uadm-volver').addEventListener('click', volverAlMenu);
 
     function vacio(txt) { return '<div class="uadm-vacio">✅ ' + txt + '</div>'; }
+    /* Un mapa plegado se DESTRUYE, no se esconde: un Leaflet escondido sigue
+       vivo, con sus oyentes y sus teselas. Con una bandeja de veinte
+       reportes eso es veinte mapas corriendo detrás de una lista. */
+    function cerrarMiniMapa(caja) {
+      if (!caja) return;
+      try { if (caja._mapa && typeof caja._mapa.remove === 'function') caja._mapa.remove(); } catch (e) {}
+      caja._mapa = null;
+      caja.innerHTML = '';
+      caja.hidden = true;
+    }
+    function cerrarMapasVivos() {
+      try { ov.querySelectorAll('.uadm-apr-mapa').forEach(cerrarMiniMapa); } catch (e) {}
+    }
     // El botón de eliminar solo se dibuja si esa persona lo tiene: el
     // servidor lo rechazaría igual, pero ofrecerlo y que falle es peor.
     const btnBorrar = puedo('eliminar')
@@ -438,19 +457,83 @@
 
     function pintar() {
       if (pestana === 'aprobar') {
+        /* La ficha de aprobar, rehecha (v831).
+
+           Antes cada renglón traía el título y tres botones, y para decidir
+           había que salir del panel con «Ver»: eso abría el detalle, que en
+           un reporte largo ocupa más de una pantalla. Se dijo así: «a veces
+           el reporte es tan largo que ocupa más de la pantalla completa…
+           toca acomodarse mucho».
+
+           Lo que decide una aprobación son tres cosas, y ninguna necesita
+           irse a otra pantalla:
+             · la FOTO —que desde la v829 es justamente lo que se está
+               autorizando a publicar—, en miniatura y con su aro ámbar;
+             · la NOTA, recortada a tres renglones. Una nota de veinte
+               renglones no se lee entera para aprobar: se lee para saber
+               si hay algo raro, y si lo hay se despliega ahí mismo;
+             · DÓNDE QUEDA. Un hueco «en la 45 con 30» solo se juzga
+               viéndolo en su cuadra, así que el mapa se abre DENTRO de la
+               ficha, no en otra pantalla.
+
+           La regla de la que cuelga todo: una ficha no puede ser más alta
+           que la pantalla. Todo lo que puede crecer —la nota, el mapa— está
+           plegado hasta que alguien lo pida. */
         const arr = window.urbisReportesPorAprobar();
-        lista.innerHTML = arr.length ? arr.map(function (p) {
-          const d = String(p.descripcion || '').split(' | ');
-          const base = baseOffset();
-          return '<div class="uadm-item" data-lat="' + esc(p.lat) + '">' +
-            '<div class="uadm-txt"><b>' + esc(tituloDe(p)) + '</b>' +
-            '<small>' + esc(p.tipo) + ' · @' + esc(d[base + 2] || 'anónimo') + '</small></div>' +
-            '<div class="uadm-btns">' +
-              '<button type="button" class="uadm-ver" data-acc="ver">Ver</button>' +
-              '<button type="button" class="uadm-ok" data-acc="aprobar">Aprobar</button>' +
-              btnBorrar +
-            '</div></div>';
-        }).join('') : vacio('No hay reportes esperando aprobación.');
+        const base = baseOffset();
+        lista.innerHTML = arr.length ? (
+          '<div class="uadm-apr-cuenta">' + arr.length +
+            (arr.length === 1 ? ' reporte esperando' : ' reportes esperando') + '</div>' +
+          arr.map(function (p) {
+            const d = String(p.descripcion || '').split(' | ');
+            const autor = d[base + 2] || 'anónimo';
+            const barrio = d[base + 7] || '';
+            const nota = (d[2] && d[2] !== 'N/A') ? d[2] : '';
+            // La foto pasa por el mismo portero del mapa (js/05). El
+            // moderador la ve —es su trabajo— pero marcada como todavía sin
+            // publicar, para que no la confunda con una ya aprobada.
+            let foto = null;
+            try { foto = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null; } catch (e) {}
+            const hayFoto = !!(foto && foto.hay && foto.puedeVerla);
+            let cuando = '';
+            try {
+              if (typeof window.urbisVigenciaReporte === 'function' && typeof window.urbisHaceCuanto === 'function') {
+                const vg = window.urbisVigenciaReporte(p);
+                if (vg && vg.dias != null) cuando = ' · ' + window.urbisHaceCuanto(vg.dias);
+              }
+            } catch (e) {}
+            return '<div class="uadm-item uadm-apr" data-lat="' + esc(p.lat) + '" data-lng="' + esc(p.lng) + '">' +
+              '<div class="uadm-apr-cab">' +
+                (hayFoto
+                  ? '<img class="uadm-apr-foto" src="' + esc(foto.url) + '" alt="Foto del reporte" loading="lazy" data-acc="foto">'
+                  : '<div class="uadm-apr-foto uadm-apr-sinfoto">sin<br>foto</div>') +
+                '<div class="uadm-apr-quien">' +
+                  '<b>' + esc(tituloDe(p)) + '</b>' +
+                  '<small>' + esc(p.tipo) + ' · @' + esc(autor) + esc(cuando) + '</small>' +
+                  (barrio ? '<small class="uadm-apr-donde">📍 ' + esc(barrio) + '</small>' : '') +
+                '</div>' +
+              '</div>' +
+              (nota ? '<div class="uadm-apr-nota" data-nota>' + esc(nota) + '</div>' +
+                      '<button type="button" class="uadm-apr-mas" data-acc="mas" hidden>Ver la nota completa</button>' : '') +
+              (hayFoto ? '<div class="uadm-apr-avisofoto">🔍 Al aprobar se publica esta foto. Antes, comprueba en la cuenta de @' +
+                          esc(autor) + ' que su cédula es real; si no lo es, no apruebes y pídele que la corrija.</div>' : '') +
+              '<div class="uadm-apr-mapa" hidden></div>' +
+              '<div class="uadm-btns uadm-apr-acc">' +
+                '<button type="button" class="uadm-ok" data-acc="aprobar">✅ Aprobar</button>' +
+                '<button type="button" class="uadm-mapa" data-acc="mapa">📍 Dónde queda</button>' +
+                '<button type="button" class="uadm-ver" data-acc="ver">🔎 Abrir</button>' +
+                btnBorrar +
+              '</div></div>';
+          }).join('')
+        ) : vacio('No hay reportes esperando aprobación.');
+        /* El «ver más» solo aparece si la nota REALMENTE se cortó. Ponerlo
+           siempre enseña a no hacerle caso, y entonces deja de avisar
+           cuando de verdad hay texto escondido. Se mide después de pintar,
+           que es cuando el navegador ya sabe cuánto ocupa. */
+        lista.querySelectorAll('[data-nota]').forEach(function (n) {
+          const mas = n.parentNode.querySelector('.uadm-apr-mas');
+          if (mas && n.scrollHeight > n.clientHeight + 2) mas.hidden = false;
+        });
 
       } else if (pestana === 'denuncias') {
         const arr = window.urbisContenidoDenunciado();
@@ -506,7 +589,96 @@
       const lat = item.getAttribute('data-lat');
       const p = lat && typeof buscarPuntoPorLat === 'function' ? buscarPuntoPorLat(lat) : null;
 
-      if (acc === 'ver') { ov.remove(); if (typeof window.urbisAbrirReportePorLat === 'function') window.urbisAbrirReportePorLat(lat); return; }
+      if (acc === 'ver') { cerrarPanel(); if (typeof window.urbisAbrirReportePorLat === 'function') window.urbisAbrirReportePorLat(lat); return; }
+
+      // Desplegar la nota larga AQUÍ. Antes había que salir del panel para
+      // leerla entera y volver a entrar para aprobar.
+      if (acc === 'mas') {
+        const n = item.querySelector('[data-nota]');
+        if (!n) return;
+        const abierta = n.classList.toggle('abierta');
+        btn.textContent = abierta ? 'Recortar la nota' : 'Ver la nota completa';
+        // Lo mismo en el otro sentido: una cosa desplegada a la vez.
+        if (abierta) {
+          const cajaM = item.querySelector('.uadm-apr-mapa');
+          if (cajaM && !cajaM.hidden) {
+            cerrarMiniMapa(cajaM);
+            const bm = item.querySelector('[data-acc="mapa"]');
+            if (bm) bm.textContent = '📍 Dónde queda';
+          }
+        }
+        return;
+      }
+
+      // La foto, en grande, sin salir del panel.
+      if (acc === 'foto') {
+        if (typeof window.urbisAbrirFotoFull === 'function') window.urbisAbrirFotoFull(btn.getAttribute('src'));
+        return;
+      }
+
+      /* El mapa DENTRO de la ficha. Es la mitad del criterio para aprobar
+         —un hueco «en la 45 con 30» solo se juzga viéndolo en su cuadra— y
+         antes obligaba a cerrar el panel, mirar, y volver a abrirlo para el
+         siguiente. Se crea al pedirlo y se destruye al plegarlo: veinte
+         mapas de Leaflet vivos en una lista dejan el teléfono inservible.
+         Y solo uno abierto a la vez, por lo mismo y porque con dos abiertos
+         la ficha vuelve a ser más alta que la pantalla. */
+      if (acc === 'mapa') {
+        const caja = item.querySelector('.uadm-apr-mapa');
+        if (!caja) return;
+        if (!caja.hidden) { cerrarMiniMapa(caja); btn.textContent = '📍 Dónde queda'; return; }
+        lista.querySelectorAll('.uadm-apr-mapa').forEach(function (otra) {
+          if (otra !== caja && !otra.hidden) {
+            cerrarMiniMapa(otra);
+            const b = otra.parentNode.querySelector('[data-acc="mapa"]');
+            if (b) b.textContent = '📍 Dónde queda';
+          }
+        });
+        /* Con la nota desplegada Y el mapa abierto, la ficha vuelve a pasar
+           de la pantalla —medido: 775 píxeles en una de 640—, que es
+           exactamente el defecto que esta pantalla venía a arreglar. Así
+           que en una ficha se despliega UNA cosa a la vez. La nota no
+           desaparece: vuelve a sus tres renglones, que es lo que se lee
+           para decidir. */
+        const notaAbierta = item.querySelector('[data-nota].abierta');
+        if (notaAbierta) {
+          notaAbierta.classList.remove('abierta');
+          const bm = item.querySelector('.uadm-apr-mas');
+          if (bm) bm.textContent = 'Ver la nota completa';
+        }
+        const la = parseFloat(item.getAttribute('data-lat'));
+        const ln = parseFloat(item.getAttribute('data-lng'));
+        caja.hidden = false;
+        btn.textContent = '📍 Ocultar el mapa';
+        if (typeof L === 'undefined' || !isFinite(la) || !isFinite(ln)) {
+          // Sin Leaflet o sin coordenadas no se inventa un mapa: se dice.
+          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Usa «Abrir» para verlo en el mapa grande.</div>';
+          return;
+        }
+        try {
+          /* Leaflet convierte en `.leaflet-container` el elemento que se le
+             entrega. Si se le entrega la caja, la caja pasa a llevar esa
+             clase — y las hojas 99 esconden cualquier `.leaflet-container`
+             fuera del modo mapa, así que la caja entera desaparecía y
+             quedaba un hueco en blanco. Se le da un hijo: la caja conserva
+             sus propios estilos y la excepción del CSS apunta al hijo. */
+          const dentro = document.createElement('div');
+          caja.appendChild(dentro);
+          const m = L.map(dentro, { attributionControl:false, zoomControl:false, dragging:false,
+                                  scrollWheelZoom:false, doubleClickZoom:false, touchZoom:false,
+                                  keyboard:false, tap:false }).setView([la, ln], 17);
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                      { maxZoom: 20 }).addTo(m);
+          L.circleMarker([la, ln], { radius:9, color:'#ff9f43', weight:3, fillColor:'#ff9f43', fillOpacity:.55 }).addTo(m);
+          caja._mapa = m;
+          // El contenedor acaba de aparecer: sin esto Leaflet lo midió con
+          // altura cero y pinta un mapa gris.
+          setTimeout(function () { try { m.invalidateSize(); } catch (e) {} }, 60);
+        } catch (e) {
+          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Usa «Abrir» para verlo en el mapa grande.</div>';
+        }
+        return;
+      }
 
       if (acc === 'aprobar') {
         /* No se llama a `aprobarPunto`: esa función no devuelve promesa —el
@@ -518,15 +690,22 @@
         const d = String(p.descripcion || '').split(' | ');
         d[base + 1] = 'Aprobado';
         const nueva = d.join(' | ');
+        // Se guarda la etiqueta que traía y se devuelve esa: escribir
+        // «Aprobar» a secas al fallar dejaba el botón con otro texto del que
+        // tenía. Es el mismo defecto que se corrigió en js/12 en la v829.
+        const etiqueta = btn.textContent;
         btn.disabled = true; btn.textContent = '…';
         try {
           await window.urbisDBUpdate('lat', lat, { descripcion: nueva });
           p.descripcion = nueva;
+          // El mapa de esta ficha se destruye antes de quitarla: si la ficha
+          // se va con el Leaflet dentro, el mapa queda vivo sin dueño.
+          cerrarMiniMapa(item.querySelector('.uadm-apr-mapa'));
           item.remove();
           if (!lista.querySelector('.uadm-item')) pintar();
           try { if (typeof cargarPuntos === 'function') cargarPuntos(); } catch (e) {}
         } catch (e) {
-          btn.disabled = false; btn.textContent = 'Aprobar';
+          btn.disabled = false; btn.textContent = etiqueta;
           alert('No se pudo aprobar: ' + ((e && e.message) || e));
         }
         return;

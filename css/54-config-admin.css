@@ -477,3 +477,116 @@
 @media (max-width:340px){
   .u52-foto-ops{ grid-template-columns:1fr; }
 }
+
+/* ── La ficha de aprobar (v831) ───────────────────────────────────────────
+   Se rehízo porque para decidir había que salir del panel, y el detalle de
+   un reporte largo ocupa más de una pantalla: «toca acomodarse mucho».
+
+   La regla de la que cuelga todo el bloque: UNA FICHA NO PUEDE SER MÁS ALTA
+   QUE LA PANTALLA. Todo lo que puede crecer sin medida —la nota que escribió
+   el ciudadano, el mapa— está plegado hasta que alguien lo pida, y de mapas
+   solo hay uno abierto a la vez. Si esto se afloja, vuelve el defecto que se
+   está arreglando. */
+.uadm-apr{ flex-direction:column; align-items:stretch; gap:0; }
+.uadm-apr-cuenta{
+  margin:0 2px 9px; font-size:.74rem; font-weight:800;
+  color:#456B87 !important; -webkit-text-fill-color:#456B87;
+}
+.uadm-apr-cab{ display:flex; align-items:flex-start; gap:11px; }
+/* La foto es lo primero y lo más grande de la cabecera: desde la v829 es
+   justamente lo que se está autorizando a publicar. El aro ámbar dice que
+   todavía no lo está — es el mismo ámbar de «por validar» en el mapa. */
+.uadm-apr-foto{
+  flex:0 0 auto; width:76px; height:76px; border-radius:12px; object-fit:cover;
+  border:2px dashed #ff9f43; background:rgba(255,159,67,.10); cursor:zoom-in;
+}
+.uadm-apr-sinfoto{
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  border-style:solid; border-color:rgba(56,189,248,.30); background:rgba(56,189,248,.06);
+  font-size:.62rem; font-weight:800; line-height:1.25; cursor:default;
+  color:#6C8EA6 !important; -webkit-text-fill-color:#6C8EA6;
+}
+.uadm-apr-quien{ flex:1; min-width:0; }
+.uadm-apr-quien b{
+  display:block; font-size:.86rem; font-weight:850; line-height:1.3;
+  color:#0C3B5E !important; -webkit-text-fill-color:#0C3B5E;
+  /* Un título de cuatro renglones empuja todo lo demás fuera de la pantalla. */
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.uadm-apr-quien small{
+  display:block; margin-top:3px; font-size:.69rem; line-height:1.35;
+  color:#456B87 !important; -webkit-text-fill-color:#456B87; overflow-wrap:anywhere;
+}
+.uadm-apr-donde{ font-weight:700; }
+
+/* La nota, a tres renglones. No se lee entera para aprobar: se lee para
+   saber si hay algo raro, y si lo hay se despliega aquí mismo. Desplegada
+   tiene tope y scrollea DENTRO de sí misma, para que una nota de cien
+   renglones no vuelva a estirar la ficha. */
+.uadm-apr-nota{
+  margin-top:9px; padding:8px 10px; border-radius:10px;
+  background:rgba(56,189,248,.07); border:1px solid rgba(56,189,248,.18);
+  font-size:.77rem; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere;
+  color:#134B6E !important; -webkit-text-fill-color:#134B6E;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.uadm-apr-nota.abierta{
+  display:block; max-height:38vh; overflow-y:auto; -webkit-line-clamp:none;
+}
+.uadm-apr-mas{
+  margin-top:5px; padding:4px 0; border:0; background:none; cursor:pointer;
+  font-size:.71rem; font-weight:800; text-decoration:underline;
+  color:#0369A1 !important; -webkit-text-fill-color:#0369A1;
+}
+.uadm-apr-avisofoto{
+  margin-top:8px; padding:7px 9px; border-radius:0 9px 9px 0;
+  border-left:3px solid #ff9f43; background:rgba(255,159,67,.10);
+  font-size:.66rem; line-height:1.45; font-weight:600;
+  color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06;
+}
+
+/* El mapa, dentro de la ficha. Alto fijo: es para reconocer la cuadra, no
+   para navegar — para eso está «Abrir». */
+.uadm-apr-mapa{ margin-top:9px; height:150px; border-radius:12px; overflow:hidden; border:1px solid rgba(56,189,248,.28); }
+.uadm-apr-mapa .leaflet-container{ height:100%; width:100%; background:#eaf4fa; }
+/* LA EXCEPCIÓN, y por qué existe.
+
+   `css/99-mobile-clean-core.css` y `css/99-mobile-home-reset.css` esconden
+   CUALQUIER `.leaflet-container` mientras el cuerpo no esté en modo mapa o
+   movilidad, con `display:none !important`. Está bien que lo hagan: es lo
+   que evita que un mapa suelto aparezca encima de la pantalla de inicio, y
+   costó arreglarlo en su día.
+
+   Pero «cualquiera» incluye este, que se dibuja a propósito dentro de la
+   ficha de aprobar y sin el cual hay que volver a salir del panel para ver
+   dónde queda el reporte — que es justo el problema que la v831 arregla.
+   Sin esta línea el mapa se crea, se le pide su tamaño, y no se ve: un
+   hueco de 150 píxeles en blanco.
+
+   Se abre la excepción por el sitio más estrecho posible: SOLO dentro de
+   este panel y SOLO dentro de la caja del mapa de una ficha de aprobar. El
+   `#` gana a las dos reglas generales por especificidad, no por orden de
+   carga, así que no depende de en qué orden se importen las hojas. Lo que
+   esas reglas protegen —que no salga un mapa donde no se pidió— sigue
+   protegido en todo lo demás. */
+#urbis-admin-overlay .uadm-apr-mapa .leaflet-container{
+  display:block !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+.uadm-apr-mapa-no{
+  display:flex; align-items:center; justify-content:center; height:100%; padding:10px;
+  text-align:center; font-size:.72rem; font-weight:700; line-height:1.4;
+  color:#6C8EA6 !important; -webkit-text-fill-color:#6C8EA6;
+}
+
+/* Los botones en fila que se envuelve, no en columna: en la ficha nueva
+   caben a lo ancho, y aprobar —que es lo que se viene a hacer— va primero
+   y ocupa toda la primera línea para no tocarlo por error al buscar otro. */
+.uadm-apr-acc{ flex-direction:row; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.uadm-apr-acc button{ flex:1 1 auto; padding:9px 10px; }
+.uadm-apr-acc .uadm-ok{ flex:1 1 100%; }
+.uadm-apr-acc .uadm-mapa{
+  background:rgba(255,159,67,.16);
+  color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06;
+}
