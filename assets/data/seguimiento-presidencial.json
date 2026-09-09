@@ -4,7 +4,7 @@
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
  "actualizado": "2026-09-09",
- "proximaActualizacion": "2026-09-09",
+ "proximaActualizacion": "2026-09-10",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,98 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-08",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella firma el decreto 1368 y levanta la suspensión general de los permisos de porte de armas de fuego",
+   "detalle": "El presidente firmó el decreto 1368 del 8 de septiembre de 2026, que deroga los decretos 2362 de 2018 y 1482 de 2025 y levanta la suspensión general que pesaba sobre los permisos de porte de armas de fuego en el país. El Gobierno mantiene los requisitos, filtros, controles y autorizaciones individuales previstos en el Decreto Ley 2535 de 1993; lo que elimina es el trámite adicional de autorización especial que debían surtir los titulares de un permiso mientras duró la suspensión general. El decreto entra a regir al día siguiente de su publicación en el Diario Oficial. Como sustento, el Gobierno citó cifras de armas incautadas por la Fuerza Pública: 15.700 entre el 1 de enero y el 3 de septiembre de 2026, de las cuales 14.179 estarían relacionadas con delitos.",
+   "contrapunto": "La senadora del Pacto Histórico Esmeralda Hernández anunció una demanda de nulidad por inconstitucionalidad ante el propio Consejo de Estado, al considerar que la medida flexibiliza el monopolio estatal de las armas y calificarla de «sumamente peligrosa»: «armar a la ciudadanía no va a mejorar la seguridad, al contrario, puede desencadenar más violencia», dijo, y advirtió que en un país con altos niveles de intolerancia cualquier discusión cotidiana podría escalar a un enfrentamiento armado. El senador Iván Cepeda calificó la decisión de «no es el camino para proteger la vida». El Gobierno insiste en que el decreto no autoriza el porte libre ni crea derechos nuevos, solo retira un trámite adicional sobre permisos ya vigentes.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Portafolio · De La Espriella firma decreto que levanta suspensión de permisos para el porte de armas de fuego",
+     "u": "https://www.portafolio.co/economia/gobierno/de-la-espriella-firma-decreto-que-levanta-suspension-de-permisos-para-el-porte-de-armas-de-fuego-502047"
+    },
+    {
+     "n": "El Tiempo · Reacciones en el Congreso al decreto que levanta la suspensión general al porte de armas: oposición demandará la medida",
+     "u": "https://www.eltiempo.com/politica/congreso/reacciones-en-el-congreso-al-decreto-que-levanta-la-suspension-general-al-porte-de-armas-oposicion-demandara-la-medida-del-gobierno-de-la-espriella-3584508"
+    },
+    {
+     "n": "Infobae · Senadora del Pacto Histórico anunció que demandará decreto de Abelardo de la Espriella: «Una medida sumamente peligrosa»",
+     "u": "https://www.infobae.com/colombia/2026/09/08/senadora-del-pacto-historico-anuncio-que-demandara-decreto-de-abelardo-de-la-espriella-que-pretende-legalizar-el-porte-de-armas-en-colombia-una-medida-sumamente-peligrosa/"
+    },
+    {
+     "n": "Infobae · Iván Cepeda hizo advertencia por decreto sobre porte de armas: «No es el camino para proteger la vida»",
+     "u": "https://www.infobae.com/colombia/2026/09/08/ivan-cepeda-hizo-advertencia-por-decreto-sobre-porte-de-armas-que-firmo-de-la-espriella-no-es-el-camino-para-proteger-la-vida/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-08",
+   "precision": "exacta",
+   "categoria": "exterior",
+   "titulo": "De la Espriella ofrece a Rubio cooperación «para garantizar» la estabilidad en Venezuela",
+   "detalle": "En la rueda de prensa conjunta con Marco Rubio en Barranquilla, De la Espriella dijo que Colombia participará «responsablemente» junto con EE. UU. en los esfuerzos por garantizar la estabilidad regional y que profundizará la cooperación fronteriza, migratoria y de seguridad con Venezuela: «Nuestro interés, señor secretario, es contribuir a que cualquier evolución produzca estabilidad, institucionalidad y seguridad, evitando cualquier problema». Señaló que lo que ocurre en Venezuela tiene consecuencias directas para Colombia en seguridad, migración, narcotráfico, contrabando, organizaciones armadas y energía.",
+   "contrapunto": "El senador Iván Cepeda había calificado la visita de Rubio, en general, como un «acto de entrega de aspectos estratégicos de nuestra soberanía». El ofrecimiento sobre Venezuela se hizo en el mismo encuentro donde se habló de una eventual base militar de EE. UU. en Colombia, sin que el Gobierno precisara en qué consistiría en la práctica esa cooperación de seguridad ni qué papel tendría Colombia frente a la política de EE. UU. hacia Venezuela.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae (agencias) · De la Espriella dice a Rubio que colaborará «para garantizar» la estabilidad en Venezuela",
+     "u": "https://www.infobae.com/america/agencias/2026/09/08/de-la-espriella-dice-a-rubio-que-colaborara-para-garantizar-la-estabilidad-en-venezuela/"
+    },
+    {
+     "n": "El Comercio (Perú) · Abelardo de la Espriella dice a Marco Rubio que colaborará «para garantizar» la estabilidad en Venezuela",
+     "u": "https://elcomercio.pe/mundo/eeuu/abelardo-de-la-espriella-dice-a-marco-rubio-que-colaborara-para-garantizar-la-estabilidad-en-venezuela-colombia-estados-unidos-ultimas-noticia/"
+    },
+    {
+     "n": "La Patilla · De la Espriella ofreció a Rubio cooperación «para garantizar» la estabilidad en Venezuela",
+     "u": "https://lapatilla.com/2026/09/08/de-la-espriella-ofrecio-a-rubio-cooperacion-para-garantizar-la-estabilidad-en-venezuela/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-08",
+   "precision": "exacta",
+   "categoria": "eeuu",
+   "titulo": "Marco Rubio deja abierta la posibilidad de una base militar de EE. UU. en Colombia",
+   "detalle": "En la misma rueda de prensa en Barranquilla, Rubio respondió a una pregunta sobre una eventual base militar estadounidense en el país: dijo que Washington no puede instalar una base de forma unilateral, que cualquier iniciativa tendría que partir de una solicitud de Colombia y ser luego evaluada por autoridades de ambos países, y que «hay que estudiar si eso es viable», precisando que en muchos casos esas bases son conjuntas. Añadió que, de formalizarse una propuesta colombiana, el Gobierno de EE. UU. también tendría que someterla a una evaluación logística, presupuestal, operativa y de seguridad.",
+   "contrapunto": "Las declaraciones de Rubio no implican que exista una base aprobada ni un acuerdo en curso para instalar tropas estadounidenses en Colombia: por su propia descripción, es una posibilidad que dependería de que el Gobierno colombiano la solicite primero y de que ambos países la evalúen. No hay, hasta la fecha, ningún anuncio oficial de ubicación ni de negociación formal, así que este registro no mapea ningún sitio.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · ¿Habrá bases militares de Estados Unidos en Colombia? Marco Rubio respondió tras reunión con De La Espriella",
+     "u": "https://www.eltiempo.com/mundo/eeuu-y-canada/habra-bases-militares-de-estados-unidos-en-colombia-secretario-de-estado-marco-rubio-respondio-tras-reunion-con-presidente-de-la-espriella-3584614"
+    },
+    {
+     "n": "Semana · Estados Unidos no descarta una base militar en Colombia: Marco Rubio revela detalles de la cooperación en seguridad",
+     "u": "https://www.semana.com/politica/articulo/estados-unidos-no-descarta-una-base-militar-en-colombia-marco-rubio-revela-detalles-de-la-cooperacion-en-seguridad/202636/"
+    },
+    {
+     "n": "Pulzo · «Hay que estudiarlo»: Marco Rubio dejó la puerta abierta para poner base militar de EE. UU. en Colombia",
+     "u": "https://www.pulzo.com/nacion/marco-rubio-hablo-poner-base-militar-eeuu-colombia-PP5296724"
+    },
+    {
+     "n": "Infobae · Marco Rubio dejó abierta la posibilidad de instalar una base militar de Estados Unidos en Colombia",
+     "u": "https://www.infobae.com/colombia/2026/09/09/marco-rubio-dejo-abierta-la-posibilidad-de-instalar-una-base-militar-de-estados-unidos-en-colombia-tras-reunion-con-abelardo-de-la-espriella/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-07",
+   "precision": "exacta",
+   "categoria": "eeuu",
+   "titulo": "El Consejo de Estado certifica que no hay ninguna solicitud del Gobierno sobre tránsito de tropas extranjeras",
+   "detalle": "A raíz de una petición de la ONG Temblores, que preguntó si el Gobierno había pedido el concepto previo que exige la Constitución antes de que EE. UU. realizara las operaciones militares conjuntas anunciadas en agosto por el entonces secretario de Guerra de EE. UU., Pete Hegseth, el Consejo de Estado revisó sus registros institucionales entre el 7 de agosto y el 7 de septiembre de 2026 y certificó textualmente que «no se encontraron solicitudes dirigidas a esta Corporación mediante las cuales se haya requerido la emisión de concepto en relación con el ingreso, tránsito, permanencia o participación de tropas extranjeras en territorio colombiano, ni específicamente respecto de eventuales operaciones militares conjuntas entre Colombia y los Estados Unidos de América». El artículo 237.3 de la Constitución exige ese concepto previo de la Sala Plena del Consejo de Estado para el tránsito de tropas extranjeras o el estacionamiento y tránsito de buques y aeronaves de guerra extranjeros, salvo que el Senado esté en receso, caso en el que el presidente puede autorizarlo con concepto previo del mismo tribunal; ninguna de las dos vías se activó.",
+   "contrapunto": "El propio Consejo de Estado precisó que la presencia de personal militar extranjero en el marco de acuerdos de cooperación internacional —limitada a asistencia técnica, asesoría, intercambio de experiencia, entrenamiento o fortalecimiento de capacidades, sin participación en operaciones militares, ejercicio de mando o porte de armas— no constituye por sí sola tránsito de tropas extranjeras, lo que deja abierto que el Gobierno sostenga que lo hecho hasta ahora con Washington encaja en esa categoría y no en la que exige su aval previo. Hasta la fecha esta certificación solo la ha reportado un medio, sin corroboración adicional encontrada, y no hay una respuesta pública del Gobierno.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "Cambio · De la Espriella no ha pedido aval para operaciones militares conjuntas con EE.UU.: Consejo de Estado",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/9/de-la-espriella-no-consulto-al-consejo-de-estado-sobre-operaciones-conjuntas-con-estados-unidos-esto-dice-el-tribunal"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-08",
    "precision": "exacta",
