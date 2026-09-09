@@ -537,6 +537,33 @@ console.log('\n  -- la ficha del gobernante --');
   comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
     cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
 
+  /* El `tipoFuente` en blanco NO es neutral: «registro verificado por
+     terceros» es una de las cuatro cuentas que fijan el veredicto de la
+     ficha, y una entrada sin tipo baja el porcentaje igual que una
+     disputada. O sea que olvidarlo mueve en público el juicio sobre una
+     persona sin que nadie lo haya decidido — el peor modo de moverlo,
+     porque no queda ni el rastro de una decisión.
+
+     No se exige cero de golpe: hay entradas viejas sin clasificar y
+     ponerles un tipo a ciegas sería inventar la verificación que falta.
+     Se pone un TRINQUETE: el número de hoy es el techo y solo puede bajar.
+     Toda entrada nueva nace con su tipo, y las viejas se van clasificando
+     cuando alguien las mire de verdad. Si este número sube, alguien añadió
+     una entrada sin decidir de qué fuente es, y esta comprobación lo dice
+     antes de que llegue al teléfono de nadie. */
+  const TECHO_SIN_TIPO = 19;
+  const sinTipo = [];
+  REGISTROS.forEach((ruta) => {
+    const quien = ruta.split('-').pop().replace('.json', '');
+    ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+      if (!String(e.tipoFuente || '').trim()) sinTipo.push(quien + '/' + (e.fecha || '?'));
+    });
+  });
+  comprobar('ninguna entrada nueva se queda sin tipo de fuente (el blanco mueve el veredicto sin decirlo)',
+    sinTipo.length <= TECHO_SIN_TIPO,
+    sinTipo.length + ' sin clasificar, techo ' + TECHO_SIN_TIPO +
+    (sinTipo.length > TECHO_SIN_TIPO ? ' · sobran: ' + sinTipo.slice(TECHO_SIN_TIPO).join(', ') : ' · solo puede bajar'));
+
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es
      una postura — y como cada cambio contado baja un peldaño, dejar entrar

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v837-editar-ya-no-borra-casillas';
+const URBIS_CACHE = 'urbis-v838-el-modulo-presidencial-con-el-dossier';
 const URBIS_ASSETS = [
   './',
   './index.html',
