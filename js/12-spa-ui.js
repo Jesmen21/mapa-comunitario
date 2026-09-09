@@ -1162,12 +1162,24 @@
            queda esperando para siempre sin que su autor sepa por qué. */
         let pedido = { pedida:false, texto:'', fecha:null };
         try { if(typeof window.urbisLeerCorreccion === 'function') pedido = window.urbisLeerCorreccion(p); }catch(e){}
-        const pedidoHTML = pedido.pedida ? `<div class="mis-rep-pedido">
+        /* «Ya lo publicaron»: el final del ciclo, que estaba abierto (v836).
+           Se enteraba uno mirando el mapa algún día. Verde y arriba, como la
+           petición de corrección es ámbar y arriba: son las dos únicas cosas
+           de esta lista que le dicen algo NUEVO a la persona. */
+        let nuevo = { nueva:false };
+        try { if(typeof window.urbisNovedadReporte === 'function') nuevo = window.urbisNovedadReporte(p); }catch(e){}
+        const nuevoHTML = nuevo.nueva ? `<div class="mis-rep-aprobado">
+            <b>✅ Ya está publicado</b>
+            <span>Un administrador revisó este reporte. Ahora se ve completo en el mapa, con su foto y sus detalles. Gracias por reportarlo.</span>
+            <button onclick="window.urbisMarcarReporteVisto && window.urbisMarcarReporteVisto('${p.lat}'); window.urbisRenderMisReportes && window.urbisRenderMisReportes();">Entendido</button>
+          </div>` : '';
+        const pedidoHTML = pedido.vigente ? `<div class="mis-rep-pedido">
             <b>✋ Te piden corregir algo antes de publicarlo</b>
             <span>${escaparHTML(pedido.texto)}</span>
             <button onclick="window.urbisEditarReporteMovil ? window.urbisEditarReporteMovil('${p.lat}') : (window.prepararEdicion && window.prepararEdicion('${p.lat}'))">✏️ Corregir ahora</button>
           </div>` : '';
-        return `<div class="mis-rep-card ${est.cls}${pedido.pedida ? ' mis-rep-con-pedido' : ''}">
+        return `<div class="mis-rep-card ${est.cls}${pedido.vigente ? ' mis-rep-con-pedido' : ''}${nuevo.nueva ? ' mis-rep-recien' : ''}">
+          ${nuevoHTML}
           ${pedidoHTML}
           <div class="mis-rep-top">
             ${icono}

@@ -173,3 +173,25 @@ body[data-role="gov"] .urbis-sello-aprobar{
   background:rgba(255,159,67,.20);
   color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06;
 }
+
+/* ── «Ya está publicado» (v836) ───────────────────────────────────────────
+   El final del ciclo de moderación, que estaba abierto: se reportaba, se
+   esperaba, y si lo aprobaban uno se enteraba mirando el mapa algún día.
+   Verde y arriba de la tarjeta, en el mismo sitio donde la petición de
+   corrección va en ámbar: son las dos únicas cosas de esa lista que le
+   dicen algo NUEVO a la persona, y tienen que leerse antes que nada. */
+.mis-rep-aprobado{
+  display:block; margin:0 0 10px; padding:11px 13px;
+  border-radius:0 12px 12px 0; border-left:4px solid #16c47f;
+  background:rgba(22,196,127,.13);
+  font-size:.78rem; line-height:1.5;
+  color:#0A5A3C !important; -webkit-text-fill-color:#0A5A3C;
+}
+.mis-rep-aprobado b{ display:block; margin-bottom:5px; font-size:.82rem; }
+.mis-rep-aprobado span{ display:block; }
+.mis-rep-aprobado button{
+  margin-top:9px; padding:8px 13px; border:0; border-radius:10px; cursor:pointer;
+  background:#16c47f; color:#04231a !important; -webkit-text-fill-color:#04231a;
+  font-size:.75rem; font-weight:800;
+}
+.mis-rep-card.mis-rep-recien{ border-color:#16c47f !important; }

@@ -865,7 +865,9 @@
     try {
       if(typeof window.urbisLeerCorreccion === 'function' && _visD.verDetalle) {
         const _pc = window.urbisLeerCorreccion(p);
-        if(_pc.pedida) _pedidoDet = `<div class="detalle-pedido">
+        // `vigente`, no `pedida`: un reporte ya publicado no le pide nada a
+        // nadie, y lo ve cualquiera.
+        if(_pc.vigente) _pedidoDet = `<div class="detalle-pedido">
             <b>✋ Te piden corregir algo antes de publicarlo</b>
             <span>${limpiarHTML(_pc.texto)}</span>
           </div>`;

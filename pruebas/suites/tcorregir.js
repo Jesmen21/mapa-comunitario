@@ -156,6 +156,39 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(dMod !== null && /Te piden corregir/.test(dMod),
       'el moderador sí la ve: le hace falta para saber si ya se pidió');
 
+  /* ── El defecto que se escapó en la v835 ──────────────────────────────
+     La petición se seguía enseñando DESPUÉS de aprobar el reporte. Y como
+     un reporte aprobado lo ve cualquiera, el barrio entero leía lo que un
+     moderador le había dicho a una persona: «revisa tu cédula». Dos cosas
+     mal a la vez —decir algo falso, porque ya está publicado, y airear una
+     conversación privada—.
+
+     Se escapó porque la suite de la v835 probaba el reporte PENDIENTE, que
+     es el estado para el que estaba diseñado, y no el de después. De ahí
+     estas tres líneas: el mismo reporte, ya aprobado, mirado por los tres.
+     Un aviso hay que probarlo también en el estado en el que tiene que
+     CALLARSE. */
+  const yaAprobado = { lat: 6.2518, lng: -75.5636, tipo: '🚨 Alertas y Riesgos Urbanos',
+                       descripcion: conPeticion.descripcion.split(' | ')
+                         .map((v, i) => (i === BASE + 1 ? 'Aprobado' : v)).join(' | ') };
+  await conRol('citizen', 'Otra Persona');
+  const apVecino = await detalle(yaAprobado);
+  chk(apVecino !== null && !/Te piden corregir/.test(apVecino),
+      'aprobado el reporte, un vecino NO lee lo que el moderador le pidió a su autor');
+  await conRol('citizen', AUTOR);
+  const apAutor = await detalle(yaAprobado);
+  chk(apAutor !== null && !/Te piden corregir/.test(apAutor),
+      'y su propio autor tampoco: ya se publicó, no le están pidiendo nada');
+  await conRol('admin', 'Moderadora');
+  const apMod = await detalle(yaAprobado);
+  chk(apMod !== null && !/Te piden corregir/.test(apMod),
+      'ni el moderador en la ficha pública: lo que ya se pidió lo ve en su bandeja, no encima del reporte');
+  /* Y la regla vive en UN sitio. Repartida por las pantallas, una se queda
+     sin ella —fue exactamente lo que pasó— y esa es la que enseña de más. */
+  const j05 = fs.readFileSync(REPO + '/js/05-helpers-temporal-security.js', 'utf8');
+  chk(/vigente:\s*!publicado/.test(j05),
+      'quién puede ver la petición lo decide el lector, no cada pantalla por su cuenta');
+
   // ── 6. Y en «Mis reportes», que es donde la va a encontrar ────────────
   const enMisReportes = await pg.evaluate(async (q) => {
     if (typeof window.urbisRenderMisReportes !== 'function') return null;

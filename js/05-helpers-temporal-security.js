@@ -248,10 +248,11 @@
      Lo que NO hace: publicar. El reporte sigue Pendiente. Pedir una
      corrección es justamente decir «esto todavía no». */
   function urbisLeerCorreccion(p) {
-      const vacia = { pedida:false, texto:'', fecha:null };
+      const vacia = { pedida:false, vigente:false, texto:'', fecha:null };
       try {
           if(!p || !p.descripcion) return vacia;
-          const cruda = String(String(p.descripcion).split(' | ')[URBIS_SLOTS.correccionPedida] || '').trim();
+          const campos = String(p.descripcion).split(' | ');
+          const cruda = String(campos[URBIS_SLOTS.correccionPedida] || '').trim();
           if(!cruda) return vacia;
           // «fechaISO~~~texto». Una fila vieja o a medias puede traer solo el
           // texto: se lee igual y sin fecha, en vez de no leerse.
@@ -259,7 +260,19 @@
           const hayFecha = partes.length > 1 && !isNaN(new Date(partes[0]).getTime());
           const texto = (hayFecha ? partes.slice(1).join('~~~') : cruda).trim();
           if(!texto) return vacia;
-          return { pedida:true, texto: texto, fecha: hayFecha ? new Date(partes[0]) : null };
+          /* `pedida` es que existe; `vigente` es que TODAVÍA HAY QUE HACERLE
+             CASO. Son dos cosas distintas y confundirlas costó un defecto:
+             en la v835 el aviso «te piden corregir algo antes de publicarlo»
+             se seguía enseñando después de aprobar el reporte —y como un
+             reporte aprobado lo ve cualquiera, el barrio entero leía lo que
+             un moderador le había dicho a una persona—. Se apaga al
+             publicarse, y la regla vive acá y no en cada pantalla: repartida
+             en tres sitios, uno se queda sin ella, y ese es el que enseña de
+             más. El moderador sigue viendo por `pedida` lo que ya se pidió,
+             que es lo que necesita para no pedirlo dos veces. */
+          const publicado = String(campos[BASE_OFFSET + 1] || 'Aprobado').trim() !== 'Pendiente';
+          return { pedida:true, vigente: !publicado, texto: texto,
+                   fecha: hayFecha ? new Date(partes[0]) : null };
       } catch(e){ return vacia; }
   }
   /* Escribe la petición en la fila y devuelve la descripción nueva. No la
@@ -277,6 +290,64 @@
   }
   window.urbisLeerCorreccion = urbisLeerCorreccion;
   window.urbisEscribirCorreccion = urbisEscribirCorreccion;
+
+  /* ── Enterarse de que te aprobaron el reporte (v836) ───────────────────
+     El ciclo de moderación tenía el final abierto. Se reportaba, se
+     esperaba, y si un moderador aprobaba… no pasaba nada visible: el
+     reporte simplemente aparecía completo en el mapa algún día. Quien
+     reportó no se entera de que le hicieron caso, y esa es justo la señal
+     que hace que alguien vuelva a reportar. Peor con lo de la v835: si le
+     pidieron corregir algo, corrigió, y se lo aprobaron, nadie se lo dijo.
+
+     Se guarda EN ESTE TELÉFONO el último estado que su dueño vio de cada
+     reporte suyo, y se compara. No hace falta tocar el servidor.
+
+     Dos decisiones que evitan que esto se vuelva ruido:
+       · si no hay nada guardado, no se avisa nada: se anota y ya. Sin esto,
+         la primera vez que alguien abre la lista tras esta versión le
+         saldrían diez avisos de reportes viejos;
+       · el aviso se queda hasta que la persona lo cierra. Uno que
+         desaparece al repintar la pantalla es un aviso que la mitad de la
+         gente no llega a leer. */
+  var URBIS_VISTOS_K = 'urbis_reportes_vistos_v1';
+  function _vistos() {
+      try { return JSON.parse(localStorage.getItem(URBIS_VISTOS_K) || '{}') || {}; }
+      catch(e){ return {}; }
+  }
+  function _guardarVistos(m) {
+      try { localStorage.setItem(URBIS_VISTOS_K, JSON.stringify(m)); } catch(e){}
+  }
+  function _estadoDe(p) {
+      try { return String(String(p.descripcion || '').split(' | ')[BASE_OFFSET + 1] || 'Aprobado').trim() || 'Aprobado'; }
+      catch(e){ return 'Aprobado'; }
+  }
+  function urbisNovedadReporte(p) {
+      const nada = { nueva:false, estado:'' };
+      try {
+          if(!p || p.lat == null) return nada;
+          const estado = _estadoDe(p);
+          const m = _vistos();
+          const antes = m[String(p.lat)];
+          if(antes === undefined) { m[String(p.lat)] = estado; _guardarVistos(m); return nada; }
+          if(antes === estado) return nada;
+          // Solo se celebra el paso a publicado. Volver a «Pendiente» ya se
+          // cuenta con la petición de corrección, que dice QUÉ arreglar; un
+          // segundo aviso diciendo solo «cambió» no añade nada.
+          if(antes === 'Pendiente' && estado !== 'Pendiente') return { nueva:true, estado: estado };
+          m[String(p.lat)] = estado; _guardarVistos(m);
+          return nada;
+      } catch(e){ return nada; }
+  }
+  function urbisMarcarReporteVisto(lat) {
+      try {
+          const p = (typeof buscarPuntoPorLat === 'function') ? buscarPuntoPorLat(lat) : null;
+          const m = _vistos();
+          m[String(lat)] = p ? _estadoDe(p) : 'Aprobado';
+          _guardarVistos(m);
+      } catch(e){}
+  }
+  window.urbisNovedadReporte = urbisNovedadReporte;
+  window.urbisMarcarReporteVisto = urbisMarcarReporteVisto;
 
   function etiquetaPropietarioReporte(p) {
       return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">TU REPORTE</span>' : '';
