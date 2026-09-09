@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-08",
+  "actualizado": "2026-09-09",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -53,18 +53,48 @@
     },
     {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en Ábrego — más de 3.000 hectáreas afectadas, 5 de septiembre de 2026, Norte de Santander",
+      "titulo": "Incendio forestal en Ábrego — controlado y extinguido, 5-8 de septiembre de 2026, Norte de Santander",
       "lat": 8.0807,
       "lng": -73.2205,
       "desde": "2026-09-05",
-      "expira": "2026-09-15",
+      "expira": "2026-09-11",
       "lineas": [
-        "📅 Inició el sábado 5 de septiembre de 2026 en la vereda Berlín, sector Monte Redondo; para la noche del domingo 6 de septiembre las llamas avanzaban hacia sectores cercanos al casco urbano de Ábrego, Norte de Santander, y el fuego sigue activo.",
-        "📊 Más de 3.000 hectáreas de vegetación consumidas, con propagación también hacia el sector Brisas del Tarra. Bomberos Voluntarios de Ábrego y Defensa Civil, reforzados con Bomberos de Ocaña, solicitaron apoyo aéreo ante el avance de las llamas favorecido por fuertes vientos; varias familias evacuaron preventivamente por el fuego y el humo.",
+        "📅 Inició el sábado 5 de septiembre de 2026 en la vereda Berlín, sector Monte Redondo; para la noche del domingo 6 de septiembre las llamas avanzaban hacia sectores cercanos al casco urbano de Ábrego, Norte de Santander. Tras tres días de labores conjuntas, el incendio quedó controlado y extinguido en su totalidad el 8 de septiembre de 2026, según confirmó el alcalde de Ábrego, Huber Darío Sánchez Ortega.",
+        "📊 Más de 3.000 hectáreas de vegetación consumidas, con daños en redes de acueducto y en cultivos; el sector turístico El Mirador quedó destruido por completo. Afectó también las veredas Paramillo, La Estancia, El Chorro, Oroque, Monte Redondo y Brisas del Tarra. Bomberos Voluntarios de Ábrego y Defensa Civil, reforzados con Bomberos de Ocaña, recibieron apoyo aéreo ante el avance de las llamas favorecido por fuertes vientos; varias familias evacuaron preventivamente por el fuego y el humo. Las autoridades adelantan la caracterización de familias y daños afectados.",
         "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Norte de Santander y prensa nacional (El Tiempo, Infobae, Semana). No es un reporte ciudadano."
       ],
-      "fuente": "Gobernación de Norte de Santander / El Tiempo / Infobae",
-      "url": "https://www.infobae.com/colombia/2026/09/07/incendio-forestal-en-abrego-norte-de-santander-avanza-hacia-zonas-pobladas-reportan-mas-de-3000-hectareas-afectadas/"
+      "fuente": "Gobernación de Norte de Santander / Alcaldía de Ábrego / El Tiempo / Infobae",
+      "url": "https://www.infobae.com/america/agencias/2026/09/08/extinguido-el-incendio-forestal-que-ha-arrasado-3000-hectareas-en-el-norte-de-colombia/"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendios forestales en el Tolima — calamidad pública departamental, más de 50.000 hectáreas afectadas, 8 de septiembre de 2026",
+      "lat": 4.4389,
+      "lng": -75.2322,
+      "desde": "2026-08-13",
+      "expira": "2026-09-16",
+      "lineas": [
+        "📅 El Consejo Departamental de Gestión del Riesgo del Tolima declaró calamidad pública el 13 de agosto de 2026 por los incendios forestales que afectan al departamento; el presidente Abelardo De la Espriella oficializó la declaratoria de calamidad pública y desastre nacional el 27 de agosto. Al 8 de septiembre de 2026 la emergencia seguía activa, con siete incendios forestales activos en el departamento según el balance oficial de la UNGRD.",
+        "📊 Según un sobrevuelo de la Fuerza Aeroespacial Colombiana citado por la UNGRD (balance del 8 de septiembre, 6:30 a. m.), más de 50.000 hectáreas afectadas en 23 municipios y 507 veredas del Tolima; 2.650 productores agropecuarios afectados, pérdidas estimadas en $134.000 millones de pesos y 163.000 animales en riesgo.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD y la Gobernación del Tolima. No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Ibagué, capital del departamento; el hecho afecta a numerosos municipios del Tolima, no solo a Ibagué."
+      ],
+      "fuente": "UNGRD / Gobernación del Tolima / Fuerza Aeroespacial Colombiana",
+      "url": "https://tolima.gov.co/noticias/10190-se-declara-la-calamidad-publica-en-el-tolima-ante-emergencia-por-incendios"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en el sector Guabinas — reactivado, más de 30 familias evacuadas, 6-8 de septiembre de 2026, Yumbo, Valle del Cauca",
+      "lat": 3.5833,
+      "lng": -76.4972,
+      "desde": "2026-09-06",
+      "expira": "2026-09-16",
+      "lineas": [
+        "📅 El incendio se originó la tarde del domingo 6 de septiembre de 2026 en el sector Guabinas (Cerro Gordo), zona montañosa de Yumbo, Valle del Cauca; se reactivó en la tarde del martes 8 de septiembre pese a los avances previos de control, y seguía activo el 9 de septiembre.",
+        "📊 Entre 120 y 445 hectáreas de vegetación afectadas según los reportes: la cifra menor corresponde a versiones iniciales de organismos de socorro, mientras que el alcalde de Yumbo, Alexander Ruiz, indicó que el fuego ya había consumido más de 445 hectáreas tras la reactivación. Más de 30 familias fueron evacuadas preventivamente y alojadas con ayuda humanitaria en el coliseo municipal de Yumbo; más de 60 bomberos de Yumbo y Cali, con apoyo aéreo (sistema Bambi Bucket) de la Fuerza Aeroespacial Colombiana, trabajan en la zona.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Yumbo y prensa regional (El País, El Tiempo, Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Yumbo; el incendio se ubica en la zona montañosa del sector Guabinas."
+      ],
+      "fuente": "Alcaldía de Yumbo / Bomberos Yumbo y Cali / El País / El Tiempo / Pulzo",
+      "url": "https://www.elpais.com.co/valle/grave-incendio-forestal-se-presenta-en-zona-montanosa-del-sector-guabinas-en-yumbo-valle-del-cauca-0632.html"
     }
   ]
 }
