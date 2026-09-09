@@ -2540,9 +2540,29 @@
             }
             if(otra && quedan === 0){ otra.disabled = true; otra.textContent = '🎯 Sin intentos'; }
           });
+          /* La tabla que se ve al terminar la partida sale de la misma
+             caché compartida: si la red falla justo ahí —que es cuando más
+             ganas hay de mirar el ranking— se enseña la última vista en vez
+             de un renglón de error, diciendo que es la última vista. */
           _juegoAPI({ action:'leaderboard', juego:juegoId, limit:20 })
-            .then(out => { const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : []; const el = arena.querySelector('#gt-aurea-board'); if(el){ el.innerHTML = _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId); } })
-            .catch(()=>{ const el = arena.querySelector('#gt-aurea-board'); if(el) el.textContent = 'No se pudo cargar la tabla del evento.'; });
+            .then(out => {
+              const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : [];
+              window.urbisTablaEventoGuardar(juegoId, tabla);
+              const el = arena.querySelector('#gt-aurea-board');
+              if(el){ el.innerHTML = _aureaBoardHTML(tabla, juegoId); _engancharFix(el, juegoId); }
+            })
+            .catch(()=>{
+              const el = arena.querySelector('#gt-aurea-board');
+              if(!el) return;
+              const g = window.urbisTablaEventoLeer(juegoId);
+              if(g && g.tabla.length){
+                el.innerHTML = '<div class="gt-aurea-vieja">🕗 Sin conexión. Este es el ranking visto ' + _aureaHaceCuanto(g.cuando) + '; tu puntaje sí quedó guardado.</div>' +
+                               _aureaBoardHTML(g.tabla, juegoId);
+                _engancharFix(el, juegoId);
+              } else {
+                el.textContent = 'No se pudo cargar la tabla del evento. Tu puntaje sí quedó guardado.';
+              }
+            });
         } else {
           arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${puntos}</span><small>puntos en esta partida</small><div class="gt-total">Tu récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
         }
@@ -2639,6 +2659,56 @@
   // Pantalla intermedia entre la gota del mapa y el juego: podio top-3 (oro/plata/
   // bronce), lista de posiciones, fila fija con TU posición y botón "¡Jugar ahora!".
   // Incluye mi mejor local aunque la nube aún no lo tenga (para verme siempre).
+  /* ── La última tabla vista, guardada ──────────────────────────────────
+     Entrar a un evento y encontrarlo VACÍO —«Libre / Libre / Libre», «1
+     jugador»— cuando uno ya jugó y sabe que hay más gente es la peor
+     primera impresión posible de un evento que reparte dinero: parece que
+     se perdieron los puntajes. No se habían perdido; es que el módulo se
+     abría con la tabla en cero y esperaba a que contestara el servidor.
+     En un teléfono con señal regular eso son dos segundos de podio vacío,
+     y sin señal se queda vacío para siempre, sin decir por qué.
+
+     Así que se abre con la ÚLTIMA TABLA VISTA y se reemplaza cuando llega
+     la del servidor.
+
+     Es la misma caché que ya llevaba el módulo del premio (js/13j) —misma
+     llave, misma forma {t, tabla}—, no una segunda: dos cachés del mismo
+     ranking terminan enseñando dos rankings distintos en dos pantallas de
+     la misma aplicación, y en un evento con dinero de por medio eso es una
+     acusación de que alguien hizo trampa.
+
+     Dos límites, porque esto es dinero:
+       · lo guardado se enseña ETIQUETADO («visto hace X»), nunca como si
+         acabara de llegar del servidor;
+       · un evento TERMINADO no proclama ganador desde la caché. Decir
+         quién ganó es la única frase de esta pantalla que no admite «más o
+         menos»: o lo confirma el servidor, o no se dice. */
+  const _AUREA_LB_K = 'urbis_premio_lb_';
+  window.urbisTablaEventoLeer = function(juegoId){
+    if(!juegoId) return null;
+    try{
+      const c = JSON.parse(localStorage.getItem(_AUREA_LB_K + juegoId) || 'null');
+      if(!c || !Array.isArray(c.tabla)) return null;
+      return { tabla: c.tabla, cuando: parseInt(c.t, 10) || 0 };
+    }catch(e){ return null; }
+  };
+  window.urbisTablaEventoGuardar = function(juegoId, tabla){
+    if(!juegoId || !Array.isArray(tabla)) return;
+    try{ localStorage.setItem(_AUREA_LB_K + juegoId, JSON.stringify({ t: Date.now(), tabla: tabla })); }catch(e){}
+  };
+  // «hace un momento / hace 5 min / hace 2 h / hace 3 días». Sin precisión
+  // falsa: lo que importa es si lo que se ve es de hace un rato o de ayer.
+  function _aureaHaceCuanto(ms){
+    if(!ms) return '';
+    const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if(s < 90) return 'hace un momento';
+    const m = Math.round(s / 60);
+    if(m < 60) return 'hace ' + m + ' min';
+    const h = Math.round(m / 60);
+    if(h < 36) return 'hace ' + h + ' h';
+    return 'hace ' + Math.round(h / 24) + ' días';
+  }
+
   function _aureaTablaConYo(tabla, juegoId){
     const m = {};
     (Array.isArray(tabla) ? tabla : []).forEach(p => {
@@ -2716,7 +2786,13 @@
       fin: fin || '',
       terminado: !!terminado
     };
-    window.__urbisAureaTabla = []; // se llena al traer la tabla de la nube
+    // Se abre con la última tabla vista, no en cero: así el podio nunca
+    // aparece vacío en un evento que ya se jugó. La del servidor la
+    // reemplaza en cuanto llegue.
+    const _guardada = window.urbisTablaEventoLeer(juegoId);
+    window.__urbisAureaTabla = (_guardada && _guardada.tabla) ? _guardada.tabla : [];
+    window.__urbisAureaTablaEstado = _guardada ? 'guardada' : 'cargando';
+    window.__urbisAureaTablaCuando = _guardada ? _guardada.cuando : 0;
     try{
       if(window.UrbisMobileAppV58 && typeof window.UrbisMobileAppV58.show === 'function'){
         window.UrbisMobileAppV58.show('aurea');
@@ -2731,7 +2807,7 @@
 
   // Pinta el contenido del MÓDULO premium dentro de #u52-aurea-content:
   // héroe (premio + tu mejor), tarjeta de juego, podio top-3, lista y tu posición fija.
-  function _pintarAureaHub(cont, ctx, tabla){
+  function _pintarAureaHub(cont, ctx, tabla, estado, cuando){
     const juegoId = ctx.juegoId, titulo = ctx.titulo, premio = ctx.premio, fin = ctx.fin, terminado = ctx.terminado;
     const yoLogin = (window.urbisUsuarioActual && window.urbisUsuarioActual()) || '';
     const yo = yoLogin.toLowerCase();
@@ -2742,7 +2818,14 @@
     const medallas = ['oro','plata','bronce'], emos = ['🥇','🥈','🥉'];
     let boardInner;
     if(!lista.length){
-      boardInner = '<div class="ah-empty-board">Aún no hay jugadores.<br>¡Sé el primero del evento! 🏆</div>';
+      /* Un podio vacío es una AFIRMACIÓN: «nadie ha jugado». Mientras se
+         está trayendo la tabla esa afirmación es falsa, y si la red falló
+         no se sabe. Cada caso dice lo suyo. */
+      boardInner = estado === 'cargando'
+        ? '<div class="ah-empty-board ah-board-cargando">Trayendo el ranking del evento…</div>'
+        : estado === 'sinred'
+          ? '<div class="ah-empty-board ah-board-sinred">No se pudo traer el ranking del evento.<br>Revisa la señal y vuelve a entrar; tus puntos están guardados en el servidor.</div>'
+          : '<div class="ah-empty-board">Aún no hay jugadores.<br>¡Sé el primero del evento! 🏆</div>';
     } else {
       const podio = '<div class="am-podium">' + [1,0,2].map(slot => {
         const r = lista[slot];
@@ -2762,13 +2845,22 @@
     else if(miPos) miRow = '<div class="am-me"><span class="am-me-lbl">TU POSICIÓN</span><span class="am-me-pos">#'+miPos+'</span><span class="am-me-user">@'+_escJuego(yoLogin)+'</span><span class="am-me-pts">'+miPts+' pts</span></div>';
     else miRow = '<div class="am-me am-me-out"><span class="am-me-lbl">TU POSICIÓN</span><span>Aún no compites · ¡juega para entrar!</span></div>';
     let accion;
-    // Terminado: quién ganó y, si soy yo, cómo reclamo; si soy admin, cómo
-    // se paga. Lo arma js/13j sobre la misma tabla que se ve aquí.
-    if(terminado) accion =
-      ((typeof window.urbisBloqueGanadorHTML === 'function') ? window.urbisBloqueGanadorHTML(ctx, lista) : '') +
-      (lista.length
-        ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
-        : '<div class="am-winner">Evento finalizado sin participantes.</div>');
+    /* Terminado: quién ganó y, si soy yo, cómo reclamo; si soy admin, cómo
+       se paga. Lo arma js/13j sobre la misma tabla que se ve aquí.
+
+       Pero SOLO si la tabla la confirmó el servidor. Proclamar un ganador
+       desde lo que quedó guardado en este teléfono sería nombrar a alguien
+       —y con él, a quién cobra— con datos que pueden ser de ayer y que
+       además cualquiera puede editar a mano en el navegador. Todo lo demás
+       de esta pantalla admite estar un poco viejo; esta frase no. */
+    if(terminado) accion = (estado === 'fresca')
+      ? ((typeof window.urbisBloqueGanadorHTML === 'function') ? window.urbisBloqueGanadorHTML(ctx, lista) : '') +
+        (lista.length
+          ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
+          : '<div class="am-winner">Evento finalizado sin participantes.</div>')
+      : (estado === 'sinred'
+          ? '<div class="am-winner am-winner-espera">🏁 Evento finalizado. No se pudo confirmar el resultado con el servidor: vuelve a entrar con señal para ver quién ganó.</div>'
+          : '<div class="am-winner am-winner-espera">🏁 Evento finalizado. Confirmando el resultado con el servidor…</div>');
     // Un solo punto de entrada al juego. Antes había dos botones que hacían lo
     // mismo —la tarjeta del medio y este— y competían entre sí; queda el de
     // abajo, que es el que cierra la pantalla, con la descripción del reto
@@ -2778,6 +2870,14 @@
       '<small>Toca los rayos lo más rápido · 30 s</small></div>' +
       '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
     const gameCard = '';
+
+    /* Lo guardado se enseña DICIENDO que es lo guardado. Un ranking viejo
+       presentado como si acabara de llegar es peor que no enseñarlo: quien
+       lo mire va a creer que ese es el puesto en el que está ahora. */
+    const _chipFrescura =
+      estado === 'guardada' ? '<span class="ah-chip ah-chip-vieja">🕗 Visto '+_aureaHaceCuanto(cuando)+' · actualizando…</span>' :
+      estado === 'sinred' && lista.length ? '<span class="ah-chip ah-chip-vieja">🕗 Visto '+_aureaHaceCuanto(cuando)+' · sin conexión</span>' :
+      '';
 
     cont.innerHTML =
       // El premio es la cifra grande: es lo que se juega. Lo demás —cuándo
@@ -2791,6 +2891,7 @@
           (fin ? '<span class="ah-chip">'+(terminado?'🏁 Terminó':'⏳ Termina')+' '+_escJuego(fin)+'</span>' : '')+
           '<span class="ah-chip">👥 '+lista.length+(lista.length===1?' jugador':' jugadores')+'</span>'+
           '<span class="ah-chip">⚡ Tu mejor: '+best+'</span>'+
+          _chipFrescura+
         '</div>'+
       '</div>'+
       gameCard+
@@ -2809,15 +2910,33 @@
       cont.innerHTML = '<div class="ah-empty">✨ Abre un <b>Juegos URBIS</b> tocando el logo de URBIS en el mapa para competir aquí.</div>';
       return;
     }
-    _pintarAureaHub(cont, ctx, window.__urbisAureaTabla || []); // pinta YA con lo que haya
+    // Si no se guardó estado (se entró por otra puerta), se deduce: con
+    // filas es que vienen de la caché; sin filas, que aún no hay nada.
+    if(!window.__urbisAureaTablaEstado){
+      const g = window.urbisTablaEventoLeer(ctx.juegoId);
+      if(g){ window.__urbisAureaTabla = g.tabla; window.__urbisAureaTablaEstado = 'guardada'; window.__urbisAureaTablaCuando = g.cuando; }
+      else { window.__urbisAureaTablaEstado = 'cargando'; }
+    }
+    _pintarAureaHub(cont, ctx, window.__urbisAureaTabla || [],
+                    window.__urbisAureaTablaEstado, window.__urbisAureaTablaCuando);
     _juegoAPI({ action:'leaderboard', juego:ctx.juegoId, limit:50 })
       .then(out => {
         const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : [];
         window.__urbisAureaTabla = tabla;
+        window.__urbisAureaTablaEstado = 'fresca';
+        window.urbisTablaEventoGuardar(ctx.juegoId, tabla);
         const c = document.getElementById('u52-aurea-content');
-        if(c) _pintarAureaHub(c, window.__urbisAureaCtx || ctx, tabla);
+        if(c) _pintarAureaHub(c, window.__urbisAureaCtx || ctx, tabla, 'fresca', Date.now());
       })
-      .catch(()=>{});
+      .catch(()=>{
+        /* Se falla en voz alta y sin borrar lo que ya se veía. Tragarse el
+           error dejaba el podio vacío para siempre y sin explicación: el
+           jugador concluye que le borraron los puntos. */
+        window.__urbisAureaTablaEstado = 'sinred';
+        const c = document.getElementById('u52-aurea-content');
+        if(c) _pintarAureaHub(c, window.__urbisAureaCtx || ctx, window.__urbisAureaTabla || [],
+                              'sinred', window.__urbisAureaTablaCuando);
+      });
   };
   // El juego premium, al salir, re-pinta el módulo con el ranking actualizado.
   window.urbisAureaMenuRefrescar = window.urbisRenderAureaHub;

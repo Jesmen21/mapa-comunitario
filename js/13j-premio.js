@@ -153,7 +153,18 @@
   }
 
   const enVuelo = {};
-  function tablaCache(juegoId) { return leerJSON(K_LB + juegoId, null); }
+  /* Un solo guardián de esta caché. La lee y la escribe js/12 (que es quien
+     pide la tabla al servidor); acá se usa la misma llave a través de sus
+     funciones, no una copia. Dos módulos guardando por su cuenta el mismo
+     ranking terminan enseñando dos rankings distintos en dos pantallas de
+     la misma aplicación, y en un evento con dinero eso parece trampa. */
+  function tablaCache(juegoId) {
+    if (typeof window.urbisTablaEventoLeer === 'function') {
+      const g = window.urbisTablaEventoLeer(juegoId);
+      return g ? { t: g.cuando, tabla: g.tabla } : null;
+    }
+    return leerJSON(K_LB + juegoId, null);
+  }
   // La tabla del servidor, con caché de media hora. Si todavía no llegó,
   // devuelve null y la pide; al llegar, rehace los avisos.
   function tablaDe(juegoId) {
@@ -165,7 +176,8 @@
       enVuelo[juegoId] = api({ action: 'leaderboard', juego: juegoId, limit: 20 })
         .then(out => {
           const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : [];
-          guardarJSON(K_LB + juegoId, { t: Date.now(), tabla: tabla });
+          if (typeof window.urbisTablaEventoGuardar === 'function') window.urbisTablaEventoGuardar(juegoId, tabla);
+          else guardarJSON(K_LB + juegoId, { t: Date.now(), tabla: tabla });
           recargarAvisos();
         })
         .catch(() => {})

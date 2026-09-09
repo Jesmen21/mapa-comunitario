@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v829-la-foto-espera-aprobacion';
+const URBIS_CACHE = 'urbis-v830-el-ranking-no-se-abre-en-blanco';
 const URBIS_ASSETS = [
   './',
   './index.html',

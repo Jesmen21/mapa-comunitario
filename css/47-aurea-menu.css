@@ -391,3 +391,29 @@ body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen.aurea-entrando{
     animation:none !important;
   }
 }
+
+/* ── Frescura del ranking (v830) ──────────────────────────────────────────
+   El módulo se abre con la última tabla vista para que el podio no aparezca
+   vacío en un evento que ya se jugó. Lo guardado se enseña DICIENDO que es
+   lo guardado: un ranking de ayer presentado como si acabara de llegar hace
+   que alguien crea que ese es el puesto en el que va ahora, y este evento
+   reparte dinero. La ficha es ámbar, del mismo color con el que URBIS marca
+   en todas partes «esto todavía no está confirmado». */
+#urbis-mobile-app .u52-aurea-screen .ah-chip.ah-chip-vieja{
+  color:#FFD9A8; -webkit-text-fill-color:#FFD9A8;
+  background:rgba(255,159,67,.12); border-color:rgba(255,159,67,.38);
+}
+.u52-aurea-screen .ah-board-cargando{ color:#7FE3FF; }
+.u52-aurea-screen .ah-board-sinred{ color:#FFD9A8; }
+/* Evento terminado sin confirmar: se dice que terminó, NO quién ganó. Esa
+   frase es la única de esta pantalla que no admite estar un poco vieja. */
+.u52-aurea-screen .am-winner-espera{
+  background:rgba(255,159,67,.10); border:1px solid rgba(255,159,67,.32);
+  color:#FFE3C2; font-weight:700; line-height:1.45;
+}
+/* La misma advertencia, en la tabla que sale al terminar la partida. */
+.gt-aurea-vieja{
+  margin:0 0 8px; padding:7px 10px; border-radius:0 9px 9px 0;
+  border-left:3px solid #ff9f43; background:rgba(255,159,67,.12);
+  color:#FFE3C2; font-size:.7rem; line-height:1.45; font-weight:600;
+}
