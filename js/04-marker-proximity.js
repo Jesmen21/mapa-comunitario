@@ -862,7 +862,15 @@
     /* El horario del letrero, en el formato de OpenStreetMap («Mo-Sa
        08:00-20:00»). Al final, como toda casilla nueva; el vocabulario y su
        traducción viven en js/03b. */
-    edificioHorario:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 15
+    edificioHorario:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 15,
+    /* Lo que un moderador le pide corregir al autor antes de aprobar su
+       reporte: «no pudimos verificar tu cédula», «la foto no deja ver el
+       hecho». Vive en la fila y no en un chat porque la fila es lo único que
+       el autor tiene seguro delante cuando abre SU reporte —el nombre que se
+       guarda de él es su nombre, no necesariamente su usuario, así que un
+       mensaje directo no siempre llegaría—. Al final, como toda casilla
+       nueva; se lee y se escribe desde js/05. */
+    correccionPedida:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 16
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta

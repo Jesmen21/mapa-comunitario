@@ -704,7 +704,18 @@ body #urbis-mobile-app .u52-screen.u52-games-screen #u52-games-content { backgro
 #urbis-mobile-app .ug-th-pos { width:26px; flex:0 0 auto; text-align:center; }
 #urbis-mobile-app .ug-th-user { flex:1 1 auto; }
 #urbis-mobile-app .ug-th-pts { flex:0 0 auto; min-width:48px; text-align:right; }
-#urbis-game-tap { position:fixed; inset:0; z-index:2147483600; background:radial-gradient(circle at 50% 0%, #15224a, #070b18); display:flex; flex-direction:column; }
+/* La cancha termina donde termina la pantalla, no donde termina el documento.
+   `inset:0` mide en iOS el viewport de DISEÑO, que incluye la franja que la
+   barra del navegador tapa: las monedas que caían ahí quedaban debajo de la
+   barra y el toque se lo llevaba el navegador. `--gt-alto` lo pone el JS con
+   el viewport VISUAL (js/12) y se refresca cuando la barra aparece o se
+   esconde; `100dvh` es el respaldo para navegadores que no den esa medida, y
+   `100vh` el respaldo del respaldo, en ese orden a propósito. */
+#urbis-game-tap { position:fixed; inset:0 0 auto 0; height:100vh; height:100dvh; height:var(--gt-alto, 100dvh); z-index:2147483600; background:radial-gradient(circle at 50% 0%, #15224a, #070b18); display:flex; flex-direction:column;
+  /* Y que el toque no se lo lleve el desplazamiento de la página: en iOS un
+     toque que el navegador interpreta como el comienzo de un arrastre no
+     llega al botón. */
+  touch-action:none; overscroll-behavior:contain; }
 #urbis-game-tap .gt-top { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; }
 #urbis-game-tap .gt-score { font-size:1.3rem; font-weight:900; color:#27e6c4; text-shadow:0 0 10px rgba(39,230,196,.6); }
 #urbis-game-tap .gt-time { font-size:1.1rem; font-weight:800; color:#ffd166; }

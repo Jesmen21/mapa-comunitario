@@ -495,6 +495,8 @@
             let foto = null;
             try { foto = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null; } catch (e) {}
             const hayFoto = !!(foto && foto.hay && foto.puedeVerla);
+            let correccion = { pedida:false, texto:'', fecha:null };
+            try { if(typeof window.urbisLeerCorreccion === 'function') correccion = window.urbisLeerCorreccion(p); } catch (e) {}
             let cuando = '';
             try {
               if (typeof window.urbisVigenciaReporte === 'function' && typeof window.urbisHaceCuanto === 'function') {
@@ -517,9 +519,23 @@
                       '<button type="button" class="uadm-apr-mas" data-acc="mas" hidden>Ver la nota completa</button>' : '') +
               (hayFoto ? '<div class="uadm-apr-avisofoto">🔍 Al aprobar se publica esta foto. Antes, comprueba en la cuenta de @' +
                           esc(autor) + ' que su cédula es real; si no lo es, no apruebes y pídele que la corrija.</div>' : '') +
+              // Si ya se le pidió algo, se dice — con la fecha. Sin esto, dos
+              // moderadores le piden lo mismo dos veces, o el mismo lo repite
+              // una semana después sin acordarse.
+              (correccion.pedida
+                ? '<div class="uadm-apr-pedido">✋ Ya se le pidió corregir' +
+                  (correccion.fecha ? ' el ' + esc(correccion.fecha.toLocaleDateString('es-CO', { day:'numeric', month:'short' })) : '') +
+                  ': <i>' + esc(correccion.texto) + '</i></div>'
+                : '') +
               '<div class="uadm-apr-mapa" hidden></div>' +
               '<div class="uadm-btns uadm-apr-acc">' +
                 '<button type="button" class="uadm-ok" data-acc="aprobar">✅ Aprobar</button>' +
+                // Etiqueta corta a propósito: con «✋ Pedir corrección» los
+                // cuatro botones se iban a tres líneas y la ficha pasaba de
+                // la pantalla —medido: 657 en una de 640—, que es justo la
+                // garantía que esta pantalla tiene que cumplir (v831).
+                '<button type="button" class="uadm-corregir" data-acc="corregir">' +
+                  (correccion.pedida ? '✋ Pedir otra' : '✋ Corregir') + '</button>' +
                 '<button type="button" class="uadm-mapa" data-acc="mapa">📍 Dónde queda</button>' +
                 '<button type="button" class="uadm-ver" data-acc="ver">🔎 Abrir</button>' +
                 btnBorrar +
@@ -676,6 +692,33 @@
           setTimeout(function () { try { m.invalidateSize(); } catch (e) {} }, 60);
         } catch (e) {
           caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Usa «Abrir» para verlo en el mapa grande.</div>';
+        }
+        return;
+      }
+
+      /* Pedir corrección: la puerta del medio. Aprobar publica algo sin
+         verificar; eliminar borra el reporte de alguien sin decirle por qué,
+         y esa persona vuelve a mandarlo igual. Esto le dice QUÉ arreglar y
+         deja el reporte donde está: pendiente, sin publicar. */
+      if (acc === 'corregir') {
+        if (!p) { alert('No se encontró el reporte.'); return; }
+        const yaPedido = (typeof window.urbisLeerCorreccion === 'function') ? window.urbisLeerCorreccion(p) : { texto: '' };
+        const sugerida = yaPedido.texto ||
+          'No pudimos verificar tu cédula. Revisa que el número esté bien escrito en tu cuenta y avísanos; mientras tanto tu reporte se ve en el mapa, pero sin la foto ni los detalles.';
+        const texto = prompt('✋ ¿Qué necesita corregir esta persona?\n\nLo va a leer en «Mis reportes», sobre este reporte. El reporte NO se publica: sigue esperando.', sugerida);
+        if (texto === null) return;
+        if (!String(texto).trim()) { alert('Escribe qué hay que corregir, o cancela.'); return; }
+        const etiquetaC = btn.textContent;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const nueva = window.urbisEscribirCorreccion(p, texto);
+          await window.urbisDBUpdate('lat', lat, { descripcion: nueva });
+          p.descripcion = nueva;
+          pintar();
+          alert('✅ Listo. La persona lo verá en «Mis reportes», sobre este reporte.\n\nEl reporte sigue sin publicar hasta que lo apruebes.');
+        } catch (e) {
+          btn.disabled = false; btn.textContent = etiquetaC;
+          alert('No se pudo guardar la petición: ' + ((e && e.message) || e));
         }
         return;
       }

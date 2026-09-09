@@ -1156,7 +1156,19 @@
         const tieneFoto = fotoURL && fotoURL !== 'N/A' && String(fotoURL).trim();
         const lat = p.lat;
         const archivado = est.key === 'archivado';
-        return `<div class="mis-rep-card ${est.cls}">
+        /* Lo que un moderador le pidió corregir (v835). Va ARRIBA de todo en
+           la tarjeta y en ámbar: es lo único de esta pantalla que le pide
+           algo a la persona, y si se pierde entre los botones el reporte se
+           queda esperando para siempre sin que su autor sepa por qué. */
+        let pedido = { pedida:false, texto:'', fecha:null };
+        try { if(typeof window.urbisLeerCorreccion === 'function') pedido = window.urbisLeerCorreccion(p); }catch(e){}
+        const pedidoHTML = pedido.pedida ? `<div class="mis-rep-pedido">
+            <b>✋ Te piden corregir algo antes de publicarlo</b>
+            <span>${escaparHTML(pedido.texto)}</span>
+            <button onclick="window.urbisEditarReporteMovil ? window.urbisEditarReporteMovil('${p.lat}') : (window.prepararEdicion && window.prepararEdicion('${p.lat}'))">✏️ Corregir ahora</button>
+          </div>` : '';
+        return `<div class="mis-rep-card ${est.cls}${pedido.pedida ? ' mis-rep-con-pedido' : ''}">
+          ${pedidoHTML}
           <div class="mis-rep-top">
             ${icono}
             <div class="mis-rep-info">
@@ -2293,11 +2305,55 @@
       <div class="gt-arena"></div>
       <div class="gt-msg">${premium ? '🏆 <b>'+_escJuego(titulo)+'</b> · rápido y seguidas suman más · fallar rompe la racha' : '¡Toca los rayos lo más rápido que puedas! ⚡'}</div>`;
     document.body.appendChild(ov);
+    /* ── Que la cancha termine donde termina la pantalla (v835) ──────────
+       Un jugador de iPhone, desde el navegador, dijo que «no le oprimía
+       bien» las monedas. No era su dedo ni su conexión: la pantalla del
+       juego es `position:fixed; inset:0`, y en iOS eso mide el viewport de
+       DISEÑO, que incluye la franja que la barra de herramientas del
+       navegador tapa por encima. Las monedas que caían en esos últimos
+       ochenta píxeles se dibujaban DEBAJO de la barra: se veían a medias o
+       no se veían, y el toque se lo llevaba el navegador, no la moneda. En
+       un juego que reparte dinero, eso es perder puntos por el teléfono
+       que uno tenga.
+
+       Se mide el viewport VISUAL —lo que de verdad se ve— y con eso se fija
+       el alto. Y se vuelve a medir cuando cambia: en iOS la barra se
+       esconde y reaparece al desplazarse, en mitad de la partida. */
+    let _visualOn = null;
+    function ajustarAlto(){
+      try {
+        const vv = window.visualViewport;
+        const alto = (vv && vv.height) ? vv.height : window.innerHeight;
+        if(alto > 0) ov.style.setProperty('--gt-alto', alto + 'px');
+      } catch(e){}
+    }
+    ajustarAlto();
+    try {
+      if(window.visualViewport){
+        _visualOn = ajustarAlto;
+        window.visualViewport.addEventListener('resize', _visualOn);
+        window.visualViewport.addEventListener('scroll', _visualOn);
+      }
+    } catch(e){}
     setTimeout(()=>{ try{ ov.classList.remove('gt-enter'); }catch(e){} }, 360); // animación de ingreso
     const scoreEl = ov.querySelector('.gt-score'), timeEl = ov.querySelector('.gt-time');
     const multEl = ov.querySelector('.gt-mult');
     const arena = ov.querySelector('.gt-arena');
-    const cerrar = () => { jugando = false; if(intervalo) clearInterval(intervalo); try{ ov.remove(); }catch(e){} };
+    const cerrar = () => {
+      jugando = false;
+      if(intervalo) clearInterval(intervalo);
+      // Los oyentes del viewport se quitan al salir: viven en `window`, no
+      // en la pantalla del juego, así que quitar la pantalla no se los
+      // lleva, y se acumularían uno por partida.
+      try {
+        if(_visualOn && window.visualViewport){
+          window.visualViewport.removeEventListener('resize', _visualOn);
+          window.visualViewport.removeEventListener('scroll', _visualOn);
+        }
+      } catch(e){}
+      _visualOn = null;
+      try{ ov.remove(); }catch(e){}
+    };
     ov.querySelector('.gt-close').onclick = cerrar;
     // "despierta" el audio con el primer toque (requisito de móviles)
     try{ if(window._urbisGameAC && window._urbisGameAC.state === 'suspended') window._urbisGameAC.resume(); }catch(e){}

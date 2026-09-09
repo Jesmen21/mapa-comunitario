@@ -858,6 +858,19 @@
     const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
     const _rolDet      = _visD.verDetalle ? creadorRol : 'sin confirmar';
     const _victimasDet = _visD.verDetalle ? victimasDetalleHTML : '';
+    /* Y en su propio detalle, para quien entra por el mapa y no por «Mis
+       reportes». Solo lo ve quien puede ver el detalle —su autor y el
+       moderador—, que es exactamente quien tiene algo que hacer con esto. */
+    let _pedidoDet = '';
+    try {
+      if(typeof window.urbisLeerCorreccion === 'function' && _visD.verDetalle) {
+        const _pc = window.urbisLeerCorreccion(p);
+        if(_pc.pedida) _pedidoDet = `<div class="detalle-pedido">
+            <b>✋ Te piden corregir algo antes de publicarlo</b>
+            <span>${limpiarHTML(_pc.texto)}</span>
+          </div>`;
+      }
+    } catch(e){}
     const _avisoDet    = _visD.verDetalle ? alertaValidacionHTML : `
         <div class="detalle-sin-confirmar">
           <b>⏳ Sin confirmar</b>
@@ -868,6 +881,7 @@
       <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(_tituloDet)}</span> ${tituloEstado}</div>
       <div class="form-section">
         
+        ${_pedidoDet}
         ${_avisoDet}
         ${_victimasDet}
         

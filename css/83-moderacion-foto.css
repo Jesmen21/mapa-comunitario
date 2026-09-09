@@ -133,3 +133,43 @@ body[data-role="gov"] .urbis-sello-aprobar{
   color:#FFE3C2 !important; -webkit-text-fill-color:#FFE3C2;
 }
 .detalle-sin-confirmar b{ display:block; margin-bottom:4px; font-size:.85rem; }
+
+/* ── Pedir corrección (v835) ──────────────────────────────────────────────
+   Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
+   Va arriba de la tarjeta y del detalle: es lo único de esas pantallas que
+   le PIDE algo a la persona, y si se pierde entre los botones el reporte se
+   queda esperando para siempre sin que su autor sepa por qué. */
+.mis-rep-pedido,
+.detalle-pedido{
+  display:block; margin:0 0 10px; padding:11px 13px;
+  border-radius:0 12px 12px 0; border-left:4px solid #ff9f43;
+  background:rgba(255,159,67,.13);
+  font-size:.78rem; line-height:1.5;
+}
+.mis-rep-pedido b,
+.detalle-pedido b{ display:block; margin-bottom:5px; font-size:.82rem; }
+.mis-rep-pedido span,
+.detalle-pedido span{ display:block; }
+.detalle-pedido{ color:#FFE3C2 !important; -webkit-text-fill-color:#FFE3C2; }
+.mis-rep-pedido{ color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06; }
+.mis-rep-pedido button{
+  margin-top:9px; padding:8px 13px; border:0; border-radius:10px; cursor:pointer;
+  background:#ff9f43; color:#2b1600 !important; -webkit-text-fill-color:#2b1600;
+  font-size:.75rem; font-weight:800;
+}
+/* La tarjeta entera se marca: en una lista de diez reportes, el que espera
+   algo de mí tiene que distinguirse antes de leer ninguno. */
+.mis-rep-card.mis-rep-con-pedido{ border-color:#ff9f43 !important; }
+
+/* En la bandeja del moderador: lo que ya se pidió, para no pedirlo dos
+   veces. Dos moderadores sobre la misma cola es el caso normal. */
+.uadm-apr-pedido{
+  margin-top:8px; padding:7px 9px; border-radius:0 9px 9px 0;
+  border-left:3px solid #ff9f43; background:rgba(255,159,67,.10);
+  font-size:.68rem; line-height:1.45;
+  color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06;
+}
+.uadm-apr-acc .uadm-corregir{
+  background:rgba(255,159,67,.20);
+  color:#8A4B06 !important; -webkit-text-fill-color:#8A4B06;
+}

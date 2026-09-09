@@ -530,8 +530,12 @@
   color:#134B6E !important; -webkit-text-fill-color:#134B6E;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
+/* 30vh y no 38: al entrar el botón de «Corregir» (v835) la fila de acciones
+   creció y la ficha desplegada se pasaba de la pantalla. El tope de la nota
+   es lo que se cede, porque tres renglones más de nota no cambian una
+   decisión y una ficha que no cabe sí. */
 .uadm-apr-nota.abierta{
-  display:block; max-height:38vh; overflow-y:auto; -webkit-line-clamp:none;
+  display:block; max-height:30vh; overflow-y:auto; -webkit-line-clamp:none;
 }
 .uadm-apr-mas{
   margin-top:5px; padding:4px 0; border:0; background:none; cursor:pointer;

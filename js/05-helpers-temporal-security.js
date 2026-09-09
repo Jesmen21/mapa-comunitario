@@ -229,6 +229,55 @@
   window.urbisFotoDeReporte = urbisFotoDeReporte;
   window.urbisAvisoFotoEnRevision = urbisAvisoFotoEnRevision;
 
+  /* ── Pedir corrección (v835) ───────────────────────────────────────────
+     Faltaba la otra mitad de lo que se pidió junto al portero de la foto:
+     «si la cédula es falsa, se le dice a la persona que la corrija».
+
+     Hasta acá el moderador solo podía aprobar o eliminar. Eliminar no es
+     decirle nada a nadie: el reporte desaparece, la persona no se entera de
+     por qué, y la próxima vez vuelve a mandarlo igual. Aprobar sin verificar
+     es publicar la foto de alguien que se registró con una cédula inventada.
+     Faltaba la puerta del medio.
+
+     Dónde vive el mensaje: EN LA FILA DEL REPORTE, no en un chat. De quien
+     reporta se guarda su nombre, no necesariamente su usuario, así que un
+     mensaje directo no siempre llegaría — y un aviso que a veces no llega es
+     peor que ninguno, porque el moderador cree que ya avisó. En la fila
+     siempre está: la persona abre su reporte y lo lee.
+
+     Lo que NO hace: publicar. El reporte sigue Pendiente. Pedir una
+     corrección es justamente decir «esto todavía no». */
+  function urbisLeerCorreccion(p) {
+      const vacia = { pedida:false, texto:'', fecha:null };
+      try {
+          if(!p || !p.descripcion) return vacia;
+          const cruda = String(String(p.descripcion).split(' | ')[URBIS_SLOTS.correccionPedida] || '').trim();
+          if(!cruda) return vacia;
+          // «fechaISO~~~texto». Una fila vieja o a medias puede traer solo el
+          // texto: se lee igual y sin fecha, en vez de no leerse.
+          const partes = cruda.split('~~~');
+          const hayFecha = partes.length > 1 && !isNaN(new Date(partes[0]).getTime());
+          const texto = (hayFecha ? partes.slice(1).join('~~~') : cruda).trim();
+          if(!texto) return vacia;
+          return { pedida:true, texto: texto, fecha: hayFecha ? new Date(partes[0]) : null };
+      } catch(e){ return vacia; }
+  }
+  /* Escribe la petición en la fila y devuelve la descripción nueva. No la
+     guarda: quien llama decide cuándo hablar con el servidor y qué hacer si
+     falla. Las barras se cambian por guiones —la barra es el separador de la
+     fila, igual que en la nota del ciudadano (js/12)— y los `~~~` también,
+     que son el separador de este campo. */
+  function urbisEscribirCorreccion(p, texto) {
+      const d = String((p && p.descripcion) || '').split(' | ');
+      const limpio = String(texto == null ? '' : texto)
+          .replace(/\|/g, '-').replace(/~~~/g, '-').trim().slice(0, 400);
+      while(d.length <= URBIS_SLOTS.correccionPedida) d.push('');
+      d[URBIS_SLOTS.correccionPedida] = limpio ? (new Date().toISOString() + '~~~' + limpio) : '';
+      return d.join(' | ');
+  }
+  window.urbisLeerCorreccion = urbisLeerCorreccion;
+  window.urbisEscribirCorreccion = urbisEscribirCorreccion;
+
   function etiquetaPropietarioReporte(p) {
       return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">TU REPORTE</span>' : '';
   }
