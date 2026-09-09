@@ -174,6 +174,91 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(vacio.vis === 0 && vacio.avisoVisible,
       'y si no hay nadie con ese nombre lo dice, en vez de dejar la lista en blanco');
 
+  /* ── 4b. Buscar a uno de los TRES PRIMEROS ────────────────────────────
+     El defecto que esto vigila (v843): el filtro solo recorría `#am-list`,
+     que es la lista DESDE EL PUESTO 4. Buscar al campeón —que está pintado
+     arriba, con su medalla de oro— dejaba cero renglones y sacaba el cartel
+     «Nadie con ese nombre en este evento».
+
+     Es una frase falsa sobre una persona que sí está compitiendo, en la
+     pantalla donde se reparte el premio: quien la lea concluye que al que
+     buscaba lo sacaron del evento, o que su propio puesto no cuenta. Se
+     comprueba sobre el CAMPEÓN, que es el caso más grave, y se comprueba
+     que el cartel siga saliendo cuando de verdad no hay nadie (arriba). */
+  if (hayBuscador) { await pg.fill('#am-buscar-input', 'jug0001'); await pg.waitForTimeout(200); }
+  const campeon = await pg.evaluate(() => {
+    const c = document.getElementById('u52-aurea-content');
+    const nada = c.querySelector('#am-list .am-sin-resultado');
+    const arriba = c.querySelector('#am-list .am-en-podio');
+    const oro = [...c.querySelectorAll('.am-pod')].find(p => (p.getAttribute('data-u') || '') === 'jug0001');
+    return {
+      filasVis: [...c.querySelectorAll('#am-list .am-row')].filter(f => !f.hidden).length,
+      mentira: !!(nada && !nada.hidden),
+      // El podio se ve siempre: es la forma de la pantalla y esconderlo
+      // haría saltar todo lo de abajo a cada tecla.
+      oroVisible: !!(oro && oro.offsetParent !== null),
+      oroMarcado: !!(oro && oro.classList.contains('am-pod-hit')),
+      // Se cuentan los que el filtro PUEDE mirar. Sin esto, «todos los
+      // demás están apagados» sale cierto sobre una lista vacía: la versión
+      // anterior no marcaba el podio y la aserción pasaba sin medir nada.
+      podioBuscable: c.querySelectorAll('.am-pod[data-u]').length,
+      otrosApagados: [...c.querySelectorAll('.am-pod[data-u]')]
+        .filter(p => p.getAttribute('data-u') !== 'jug0001')
+        .every(p => p.classList.contains('am-pod-off')),
+      aviso: arriba && !arriba.hidden ? arriba.textContent.replace(/\s+/g, ' ').trim() : ''
+    };
+  });
+  chk(!campeon.mentira,
+      'buscar al campeón NO contesta «Nadie con ese nombre en este evento»: está compitiendo y se ve arriba');
+  chk(campeon.oroVisible && campeon.oroMarcado,
+      'su puesto en el podio queda encendido, no escondido: el podio es la forma de la pantalla');
+  chk(campeon.podioBuscable === 3 && campeon.otrosApagados,
+      'los tres del podio son buscables y los otros dos se apagan, para que se distinga cuál coincidió'
+      + ' (buscables: ' + campeon.podioBuscable + ' de 3)');
+  chk(/#1/.test(campeon.aviso) && /jug0001/.test(campeon.aviso),
+      'donde iría la lista se dice DÓNDE está y EN QUÉ PUESTO (' + (campeon.aviso || 'no se dijo nada') + ')');
+  chk(campeon.filasVis === 0,
+      'sin inventarle un renglón en la lista de abajo, que empieza en el 4');
+
+  /* Y al limpiar, la pantalla vuelve entera: el podio sin apagados y la
+     lista completa. Un resaltado que se queda pegado se lee como que el
+     ranking cambió. */
+  if (hayBuscador) { await pg.fill('#am-buscar-input', ''); await pg.waitForTimeout(200); }
+  const limpio = await pg.evaluate(() => {
+    const c = document.getElementById('u52-aurea-content');
+    return {
+      buscables: c.querySelectorAll('.am-pod[data-u]').length,
+      apagados: c.querySelectorAll('.am-pod.am-pod-off, .am-pod.am-pod-hit').length,
+      filas: [...c.querySelectorAll('#am-list .am-row')].filter(f => !f.hidden).length,
+      avisos: [...c.querySelectorAll('#am-list .am-en-podio, #am-list .am-sin-resultado')].filter(x => !x.hidden).length
+    };
+  });
+  chk(limpio.buscables === 3 && limpio.apagados === 0 && limpio.avisos === 0,
+      'al borrar la búsqueda no queda ni un resaltado pegado: eso se leería como que el ranking cambió');
+  chk(limpio.filas === N - 3,
+      'y vuelve la tabla entera (' + limpio.filas + ' renglones)');
+
+  /* Un nombre con comilla no puede romper la pantalla. El valor del
+     buscador se vuelve a pintar dentro de un atributo cada vez que llega la
+     tabla del servidor, así que una comilla sin escapar cerraba el atributo
+     y lo de después se leía como más atributos. */
+  if (hayBuscador) {
+    await pg.fill('#am-buscar-input', 'a" onfocus="window.__roto=1');
+    await pg.waitForTimeout(150);
+    await pg.evaluate(() => window.urbisRenderAureaHub());
+    await pg.waitForTimeout(700);
+  }
+  const comilla = await pg.evaluate(() => ({
+    roto: !!window.__roto,
+    valor: (document.getElementById('am-buscar-input') || {}).value || '',
+    sigue: !!document.querySelector('#u52-aurea-content .am-podium')
+  }));
+  chk(!comilla.roto && comilla.sigue,
+      'un nombre con comillas en el buscador no se cuela como atributo al repintar');
+  chk(comilla.valor.indexOf('onfocus') !== -1,
+      'y lo tecleado sobrevive al repintado tal cual se escribió');
+  if (hayBuscador) { await pg.fill('#am-buscar-input', ''); await pg.waitForTimeout(200); }
+
   // ── 5. El botón que salta a mi puesto ──────────────────────────────────
   const salto = await pg.evaluate(async () => {
     const b = document.getElementById('am-ir-a-mi');

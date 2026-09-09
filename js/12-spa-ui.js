@@ -2142,6 +2142,10 @@
     return window.URBIS_AUTH.socialAPI(Object.assign({ session_token: token }, payload));
   }
   function _escJuego(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  /* Dentro de un atributo hay que escapar además la comilla: un nombre de
+     usuario con `"` cerraría el atributo y lo que siguiera se leería como
+     más atributos. `_escJuego` no la escapa porque nació para texto. */
+  function _escAtr(s){ return _escJuego(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
   // El puntaje que cuenta es el MEJOR de una sola partida (no la suma de partidas).
   function urbisPuntosLocales(){ return parseInt(localStorage.getItem('urbis_game_tap_best')||'0',10) || 0; }
   function urbisLeaderboard(){
@@ -2908,11 +2912,22 @@
           ? '<div class="ah-empty-board ah-board-sinred">No se pudo traer el ranking del evento.<br>Revisa la señal y vuelve a entrar; tus puntos están guardados en el servidor.</div>'
           : '<div class="ah-empty-board">Aún no hay jugadores.<br>¡Sé el primero del evento! 🏆</div>';
     } else {
+      /* Los tres del podio llevan su nombre y su puesto EN EL RENGLÓN
+         (data-u / data-pos). No es adorno: el buscador de abajo tiene que
+         poder mirarlos. Los tres primeros no están en `#am-list`, así que
+         un filtro que solo recorriera esa lista contesta «Nadie con ese
+         nombre en este evento» sobre alguien que está pintado justo
+         arriba, con su medalla. En la pantalla donde se reparte dinero esa
+         frase es la más grave que se puede decir por descuido. */
       const podio = '<div class="am-podium">' + [1,0,2].map(slot => {
         const r = lista[slot];
         if(!r) return '<div class="am-pod am-pod-empty"><div class="am-pod-medal">'+emos[slot]+'</div><div class="am-pod-user">Libre</div></div>';
         const mio = r.usuario.toLowerCase() === yo;
-        return '<div class="am-pod am-'+medallas[slot]+(mio?' me':'')+'"><div class="am-pod-medal">'+emos[slot]+'</div><div class="am-pod-user">@'+_escJuego(r.usuario)+'</div><div class="am-pod-pts">'+r.puntos+'<small>pts</small></div></div>';
+        return '<div class="am-pod am-'+medallas[slot]+(mio?' me':'')+'"' +
+               ' data-u="'+_escAtr(String(r.usuario||'').toLowerCase())+'"' +
+               ' data-uname="'+_escAtr(r.usuario)+'"' +
+               ' data-pos="'+(slot+1)+'">' +
+               '<div class="am-pod-medal">'+emos[slot]+'</div><div class="am-pod-user">@'+_escJuego(r.usuario)+'</div><div class="am-pod-pts">'+r.puntos+'<small>pts</small></div></div>';
       }).join('') + '</div>';
       /* La tabla completa del evento en curso (v834).
 
@@ -2941,17 +2956,18 @@
         '</div>' +
         (lista.length > 12
           ? '<div class="am-buscar">' +
-              '<input type="search" id="am-buscar-input" placeholder="Buscar jugador…" autocomplete="off" value="' + _escJuego(_aureaFiltro) + '">' +
+              '<input type="search" id="am-buscar-input" placeholder="Buscar jugador…" autocomplete="off" value="' + _escAtr(_aureaFiltro) + '">' +
               (miPos > 3 ? '<button type="button" id="am-ir-a-mi">Ir a mi puesto</button>' : '') +
             '</div>'
           : '') +
         '<div class="am-list" id="am-list">' + resto.map((r,i) => {
           const mio = r.usuario.toLowerCase() === yo;
-          return '<div class="am-row'+(mio?' me':'')+'" data-u="'+_escJuego(String(r.usuario||'').toLowerCase())+'">' +
+          return '<div class="am-row'+(mio?' me':'')+'" data-u="'+_escAtr(String(r.usuario||'').toLowerCase())+'">' +
                  '<span class="am-pos">'+(i+4)+'</span>' +
                  '<span class="am-user">@'+_escJuego(r.usuario)+'</span>' +
                  '<span class="am-pts">'+r.puntos+'</span></div>';
         }).join('') +
+        '<div class="am-en-podio" hidden></div>' +
         '<div class="am-sin-resultado" hidden>Nadie con ese nombre en este evento.</div>' +
         '</div>'
       ) : '';
@@ -3023,18 +3039,42 @@
        con mil renglones, se nota el tirón. */
     const caja = cont.querySelector('#am-list');
     const busc = cont.querySelector('#am-buscar-input');
+    const podios = [...cont.querySelectorAll('.am-podium .am-pod[data-u]')];
     const aplicarFiltro = () => {
-      if(!caja) return;
       const q = String((busc && busc.value) || '').trim().toLowerCase();
       _aureaFiltro = q;
+      /* Primero el podio. Al que coincide se le enciende el marco; a los
+         otros dos se les baja el brillo, pero NO se esconden: el podio es
+         la forma de esta pantalla y quitarlo hace saltar todo lo de abajo
+         a cada tecla. */
+      let arribaEsta = null;
+      podios.forEach(p => {
+        const cabe = !q || (p.getAttribute('data-u') || '').indexOf(q) !== -1;
+        p.classList.toggle('am-pod-hit', !!q && cabe);
+        p.classList.toggle('am-pod-off', !!q && !cabe);
+        if(q && cabe){
+          const pos = parseInt(p.getAttribute('data-pos'), 10) || 99;
+          if(!arribaEsta || pos < arribaEsta.pos) arribaEsta = { pos: pos, nombre: p.getAttribute('data-uname') || '' };
+        }
+      });
       let vistos = 0;
-      caja.querySelectorAll('.am-row').forEach(fila => {
+      if(caja) caja.querySelectorAll('.am-row').forEach(fila => {
         const cabe = !q || (fila.getAttribute('data-u') || '').indexOf(q) !== -1;
         fila.hidden = !cabe;
         if(cabe) vistos++;
       });
-      const nada = caja.querySelector('.am-sin-resultado');
-      if(nada) nada.hidden = !(q && vistos === 0);
+      /* «Nadie con ese nombre» solo cuando de verdad no hay nadie, podio
+         incluido. Si está arriba, se dice DÓNDE está y en qué puesto: al
+         que busca le sirve el número, no un «mira arriba». */
+      const nada = caja && caja.querySelector('.am-sin-resultado');
+      const arriba = caja && caja.querySelector('.am-en-podio');
+      if(nada) nada.hidden = !(q && vistos === 0 && !arribaEsta);
+      if(arriba){
+        if(q && vistos === 0 && arribaEsta){
+          arriba.innerHTML = '☝️ <b>@' + _escJuego(arribaEsta.nombre) + '</b> va de <b>#' + arribaEsta.pos + '</b>: está en el podio, aquí arriba.';
+          arriba.hidden = false;
+        }else arriba.hidden = true;
+      }
     };
     if(busc){
       busc.addEventListener('input', aplicarFiltro);

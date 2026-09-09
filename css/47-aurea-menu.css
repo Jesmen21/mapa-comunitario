@@ -453,6 +453,22 @@ body.urbis-aurea-full #urbis-mobile-app .u52-aurea-screen.aurea-entrando{
 .u52-aurea-screen .am-sin-resultado{
   padding:16px 12px; text-align:center; font-size:.8rem; font-weight:700; color:#A9D4E8;
 }
+/* Buscar mirando también el podio (v843). Al que coincide se le enciende el
+   marco; a los otros dos se les baja el brillo sin esconderlos, porque el
+   podio es la forma de la pantalla y quitarlo hace saltar todo lo de abajo
+   a cada tecla. */
+.u52-aurea-screen .am-pod{ transition:opacity .15s ease, filter .15s ease; }
+.u52-aurea-screen .am-pod.am-pod-hit{ outline:3px solid #27e6c4; outline-offset:2px; }
+.u52-aurea-screen .am-pod.am-pod-off{ opacity:.32; filter:saturate(.35); }
+.u52-aurea-screen .am-en-podio{
+  padding:14px 12px; text-align:center; font-size:.8rem; font-weight:700;
+  color:#CFF6EE; background:rgba(39,230,196,.12);
+  border:1px solid rgba(39,230,196,.35); border-radius:12px; line-height:1.45;
+}
+.u52-aurea-screen .am-en-podio b{ color:#27e6c4; }
+@media (prefers-reduced-motion: reduce){
+  .u52-aurea-screen .am-pod{ transition:none; }
+}
 /* Al saltar a mi puesto, un destello: entre mil renglones iguales, llegar
    ahí sin que nada cambie se lee como que el botón no hizo nada. */
 @keyframes amDestello{

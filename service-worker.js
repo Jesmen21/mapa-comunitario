@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v842-la-cifra-de-la-ficha-con-su-denominador';
+const URBIS_CACHE = 'urbis-v843-buscar-al-campeon-en-su-podio';
 const URBIS_ASSETS = [
   './',
   './index.html',
