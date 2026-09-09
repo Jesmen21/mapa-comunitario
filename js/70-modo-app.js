@@ -117,7 +117,72 @@
     } catch (e) { return ''; }
   }
 
+  /* ── Recordar el modo, pero solo si la aplicación está INSTALADA ───────
+     El parámetro era la única memoria del modo, y eso deja un agujero en
+     iPhone: allí no hay APK —se instala desde Safari con «Añadir a pantalla
+     de inicio»— y si una navegación pierde el parámetro, URBIS_CO se abre
+     como la aplicación completa. La persona instaló la gota amarilla y le
+     aparece Pro City.
+
+     Guardarlo a secas era lo que NO se podía hacer, y sigue sin poderse:
+     los tres APK de Android comparten el almacenamiento de Chrome —mismo
+     dominio—, así que un modo guardado haría que abrir el educativo dejara
+     al ciudadano abriendo Pro City. De ahí las dos reglas:
+
+       1. EL PARÁMETRO MANDA SIEMPRE. Si viene en la URL, se usa y se
+          reescribe lo guardado. Los tres APK arrancan con el suyo, así que
+          cada uno corrige la memoria al abrir y ninguno hereda la del otro.
+       2. Lo guardado solo se lee si la aplicación corre INSTALADA (pantalla
+          completa, sin barra del navegador). Es la única señal fiable de
+          «esto se instaló como URBIS_CO». En una pestaña normal
+          `urbispro.city` sigue abriendo la aplicación entera, que es lo que
+          la web tiene que hacer.
+
+     Sigue sin ser una barrera de seguridad y sigue sin pretenderlo: quien
+     escriba la dirección sin parámetro en una pestaña ve todo, igual que
+     antes. Esto arregla un accidente, no cierra una puerta. */
+  var LLAVE_MODO = 'urbis_modo_app_v1';
+
+  function estaInstalada() {
+    try {
+      // iOS marca las apps de pantalla de inicio con `navigator.standalone`;
+      // el resto (Android/escritorio, y iOS moderno) con display-mode.
+      if (window.navigator && window.navigator.standalone === true) return true;
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+      if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) return true;
+      if (window.matchMedia && window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function modoRecordado() {
+    try {
+      var m = localStorage.getItem(LLAVE_MODO);
+      return (m && MODOS[m]) ? m : '';
+    } catch (e) { return ''; }
+  }
+  function recordarModo(m) {
+    try { if (m && MODOS[m]) localStorage.setItem(LLAVE_MODO, m); } catch (e) {}
+  }
+
   var MODO = modoPedido();
+  if (MODO) {
+    recordarModo(MODO);
+  } else if (estaInstalada()) {
+    MODO = modoRecordado();
+    /* Recuperado el modo, se le devuelve el parámetro a la dirección. No es
+       cosmética: la aplicación es de una sola página y el parámetro es lo
+       que sobrevive a un recargue o a compartir la pantalla actual. Con
+       `replaceState` no hay navegación ni una entrada más en el historial
+       —el botón de atrás sigue haciendo lo que la persona espera—. */
+    if (MODO) {
+      try {
+        var q = new URLSearchParams(location.search);
+        q.set('app', MODO);
+        history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
+      } catch (e) {}
+    }
+  }
 
   /* Cuanto antes: la cabecera tiene que estar puesta mucho antes de que
      alguien toque Compartir, y no depende de que el resto de la aplicación

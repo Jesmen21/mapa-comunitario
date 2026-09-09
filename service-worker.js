@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v832-sin-confirmar-solo-el-icono-y-la-categoria';
+const URBIS_CACHE = 'urbis-v834-la-tabla-completa-del-evento';
 const URBIS_ASSETS = [
   './',
   './index.html',

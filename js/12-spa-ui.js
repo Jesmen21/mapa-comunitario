@@ -2807,6 +2807,11 @@
 
   // Pinta el contenido del MÓDULO premium dentro de #u52-aurea-content:
   // héroe (premio + tu mejor), tarjeta de juego, podio top-3, lista y tu posición fija.
+  /* Lo que se escribió en el buscador sobrevive al repintado. La pantalla
+     se pinta al menos dos veces —primero con la tabla guardada, luego con la
+     del servidor (v830)—, y sin esto lo tecleado se borraba solo justo
+     cuando llegaba la tabla buena. */
+  let _aureaFiltro = '';
   function _pintarAureaHub(cont, ctx, tabla, estado, cuando){
     const juegoId = ctx.juegoId, titulo = ctx.titulo, premio = ctx.premio, fin = ctx.fin, terminado = ctx.terminado;
     const yoLogin = (window.urbisUsuarioActual && window.urbisUsuarioActual()) || '';
@@ -2833,11 +2838,47 @@
         const mio = r.usuario.toLowerCase() === yo;
         return '<div class="am-pod am-'+medallas[slot]+(mio?' me':'')+'"><div class="am-pod-medal">'+emos[slot]+'</div><div class="am-pod-user">@'+_escJuego(r.usuario)+'</div><div class="am-pod-pts">'+r.puntos+'<small>pts</small></div></div>';
       }).join('') + '</div>';
+      /* La tabla completa del evento en curso (v834).
+
+         Debajo del podio va TODA la gente que ha jugado este evento, no una
+         punta. Si compiten mil, son mil renglones con su puesto: quien va de
+         737 tiene derecho a verse: es de las pocas cosas que hacen que
+         alguien vuelva a jugar mañana.
+
+         Con mil renglones aparecen dos problemas que no existen con veinte,
+         y los dos se resuelven acá:
+           · pintarlos todos de golpe traba un teléfono. `content-visibility`
+             en el CSS hace que el navegador no dibuje los que están fuera de
+             la pantalla, sin trocear la lista a mano ni inventar un scroll
+             virtual que se desincroniza;
+           · encontrarse entre mil es imposible a dedo. De ahí el buscador y
+             el botón que salta a mi renglón.
+
+         El puesto se calcula ANTES de filtrar y viaja en el renglón: si se
+         numerara lo que queda tras buscar, el 737 se leería «3» y esa es
+         justo la cifra por la que la gente abre esta pantalla. */
       const resto = lista.slice(3);
-      const filas = resto.length ? '<div class="am-list">' + resto.map((r,i) => {
-        const mio = r.usuario.toLowerCase() === yo;
-        return '<div class="am-row'+(mio?' me':'')+'"><span class="am-pos">'+(i+4)+'</span><span class="am-user">@'+_escJuego(r.usuario)+'</span><span class="am-pts">'+r.puntos+'</span></div>';
-      }).join('') + '</div>' : '';
+      const filas = resto.length ? (
+        '<div class="am-list-cab">' +
+          '<b>Tabla del evento</b>' +
+          '<span>' + lista.length + (lista.length === 1 ? ' jugador' : ' jugadores') + '</span>' +
+        '</div>' +
+        (lista.length > 12
+          ? '<div class="am-buscar">' +
+              '<input type="search" id="am-buscar-input" placeholder="Buscar jugador…" autocomplete="off" value="' + _escJuego(_aureaFiltro) + '">' +
+              (miPos > 3 ? '<button type="button" id="am-ir-a-mi">Ir a mi puesto</button>' : '') +
+            '</div>'
+          : '') +
+        '<div class="am-list" id="am-list">' + resto.map((r,i) => {
+          const mio = r.usuario.toLowerCase() === yo;
+          return '<div class="am-row'+(mio?' me':'')+'" data-u="'+_escJuego(String(r.usuario||'').toLowerCase())+'">' +
+                 '<span class="am-pos">'+(i+4)+'</span>' +
+                 '<span class="am-user">@'+_escJuego(r.usuario)+'</span>' +
+                 '<span class="am-pts">'+r.puntos+'</span></div>';
+        }).join('') +
+        '<div class="am-sin-resultado" hidden>Nadie con ese nombre en este evento.</div>' +
+        '</div>'
+      ) : '';
       boardInner = podio + filas;
     }
     let miRow;
@@ -2900,6 +2941,38 @@
 
     const jugar = () => { if(window.urbisJugarAurea) window.urbisJugarAurea(juegoId, titulo); };
     const pc = cont.querySelector('#ah-play'); if(pc) pc.onclick = jugar;
+
+    /* Buscar entre mil: se esconden y se enseñan renglones ya pintados en
+       vez de rehacer la lista. Rehacerla en cada tecla pierde el scroll y,
+       con mil renglones, se nota el tirón. */
+    const caja = cont.querySelector('#am-list');
+    const busc = cont.querySelector('#am-buscar-input');
+    const aplicarFiltro = () => {
+      if(!caja) return;
+      const q = String((busc && busc.value) || '').trim().toLowerCase();
+      _aureaFiltro = q;
+      let vistos = 0;
+      caja.querySelectorAll('.am-row').forEach(fila => {
+        const cabe = !q || (fila.getAttribute('data-u') || '').indexOf(q) !== -1;
+        fila.hidden = !cabe;
+        if(cabe) vistos++;
+      });
+      const nada = caja.querySelector('.am-sin-resultado');
+      if(nada) nada.hidden = !(q && vistos === 0);
+    };
+    if(busc){
+      busc.addEventListener('input', aplicarFiltro);
+      if(_aureaFiltro) aplicarFiltro();
+    }
+    const irAMi = cont.querySelector('#am-ir-a-mi');
+    if(irAMi) irAMi.onclick = () => {
+      // Se limpia el filtro primero: saltar a un renglón escondido no lleva
+      // a ninguna parte y parece que el botón no hace nada.
+      if(busc && busc.value){ busc.value = ''; aplicarFiltro(); }
+      const mia = cont.querySelector('.am-row.me');
+      if(mia && mia.scrollIntoView) mia.scrollIntoView({ block:'center', behavior:'smooth' });
+      if(mia){ mia.classList.remove('am-destello'); void mia.offsetWidth; mia.classList.add('am-destello'); }
+    };
   }
   // Render del MÓDULO premium (lo llama show('aurea') y el juego al salir).
   window.urbisRenderAureaHub = function(){
@@ -2919,7 +2992,9 @@
     }
     _pintarAureaHub(cont, ctx, window.__urbisAureaTabla || [],
                     window.__urbisAureaTablaEstado, window.__urbisAureaTablaCuando);
-    _juegoAPI({ action:'leaderboard', juego:ctx.juegoId, limit:50 })
+    /* Mil y no cincuenta: con cincuenta, quien va de 737 no existía en esta
+       pantalla. Lo que llegue de menos es lo que haya jugado el evento. */
+    _juegoAPI({ action:'leaderboard', juego:ctx.juegoId, limit:1000 })
       .then(out => {
         const tabla = (out && out.ok && Array.isArray(out.tabla)) ? out.tabla : [];
         window.__urbisAureaTabla = tabla;
