@@ -1496,8 +1496,11 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-fi-techo b{ color:var(--ink); font-weight:700; }
 .sp-fi-techo-p{ grid-column:1 / -1; font-size:var(--t-8); }
+/* El denominador del porcentaje, debajo del techo que fija. Este módulo le
+   reprocha a otras cifras andar sin denominador; la suya no puede. */
+.sp-fi-techo-den{ grid-column:1 / -1; font-size:var(--t-9); opacity:.78; }
 .sp-fi-techo.manda{ background:color-mix(in srgb, var(--vc-claro,var(--ink-2)) 10%, var(--sup)); color:var(--ink); }
-.sp-fi-techo.manda b, .sp-fi-techo.manda .sp-fi-techo-p{ color:var(--vc-claro,var(--ink)); }
+.sp-fi-techo.manda b, .sp-fi-techo.manda .sp-fi-techo-p, .sp-fi-techo.manda .sp-fi-techo-den{ color:var(--vc-claro,var(--ink)); }
 .sp-fi-vnota{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); }
 
 /* Las secciones de la ficha: misma cabecera todas */

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v841-el-choque-de-versiones-resuelto-por-encima';
+const URBIS_CACHE = 'urbis-v842-la-cifra-de-la-ficha-con-su-denominador';
 const URBIS_ASSETS = [
   './',
   './index.html',

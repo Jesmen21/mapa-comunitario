@@ -172,6 +172,27 @@ const server = http.createServer((req, res) => {
 
     o.vista = (document.querySelector('.sp-view.on') || {}).getAttribute
       ? document.querySelector('.sp-view.on').getAttribute('data-view') : '';
+    /* El DENOMINADOR de la claridad, leído de la placa (v842). Este módulo
+       le reprocha a otras cifras andar sin denominador —el 62 % de firmas
+       anuladas dice lo contrario de lo que pasó hasta que uno se entera de
+       que a TODOS les anularon entre el 40 % y el 68 %—, así que su propia
+       cifra principal, la que decide el veredicto sobre una persona, no
+       puede salir sola. Un 100 % sobre tres hechos de cien no es un
+       registro verificado: es un registro sin revisar con una cifra bonita
+       encima, y desde la placa había que poder distinguirlos. */
+    (function () {
+      const filas = Array.from(document.querySelectorAll('#sp-ficha .sp-fi-techo'));
+      const cl = filas.filter(x => /verificado/i.test(x.textContent))[0];
+      const den = cl ? cl.querySelector('.sp-fi-techo-den') : null;
+      o.claridad = {
+        hayFila: !!cl,
+        texto: cl ? cl.innerText.replace(/\s+/g, ' ').trim() : '',
+        hayDen: !!den,
+        den: den ? den.textContent.replace(/\s+/g, ' ').trim() : '',
+        // Visible de verdad, no solo presente en el DOM.
+        visible: !!(den && getComputedStyle(den).display !== 'none' && den.offsetHeight > 0)
+      };
+    })();
     const caja = document.getElementById('sp-ficha');
     o.txt = caja ? caja.innerText : '';
     if (caja) {
@@ -454,6 +475,26 @@ const server = http.createServer((req, res) => {
   chk(r.escalera.length === 5 && r.escalera.filter(x => /\*$/.test(x)).length === 1,
       'la escalera marca un solo peldaño de cinco: ' + r.escalera.join(' · '));
   chk(/peor de los tres techos/.test(r.txt), 'dice en la cara que el veredicto es el peor de tres techos');
+
+  // ── El denominador de la cifra que decide el veredicto ─────────────────
+  const cl = r.claridad || {};
+  chk(!!cl.hayFila, 'la placa trae la fila del registro verificado');
+  chk(!!(cl.hayDen && cl.visible),
+      'y su porcentaje NO sale solo: lleva el denominador a la vista' +
+      (cl.hayDen ? '' : ' (no hay .sp-fi-techo-den)'));
+  chk(/\d+\s+de\s+\d+\s+hechos/.test(cl.den),
+      'dice de cuántos hechos sale el porcentaje (' + (cl.den || 'sin denominador') + ')');
+  /* Y los que quedan FUERA de la cuenta también se dicen. Es la parte que
+     más fácil se calla: un registro con la mitad de sus hechos sin
+     clasificar puede enseñar un porcentaje altísimo y no significar nada. */
+  chk(/fuera de la cuenta/.test(cl.den) || !/sin declarar/.test(cl.den),
+      'y cuando hay hechos sin naturaleza declarada, dice que quedaron fuera de la cuenta');
+  // El número de la placa y su denominador tienen que ser el mismo cálculo,
+  // no dos cuentas distintas que casualmente coinciden hoy.
+  const mPct = cl.texto.match(/(\d+)\s*%/);
+  const mDen = cl.den.match(/(\d+)\s+de\s+(\d+)/);
+  chk(!!(mPct && mDen && Math.round(100 * (+mDen[1]) / (+mDen[2])) === +mPct[1]),
+      'y el porcentaje cuadra con su propio denominador (' + (mPct ? mPct[1] : '?') + ' % · ' + (cl.den || '—') + ')');
   chk(/No mide honestidad/.test(r.txt), 'y qué NO mide');
   chk(r.sinPeldanoViejo, 'ningún peldaño viejo (sostiene / reparos / entredicho) sobrevive en el DOM');
   /* ── La firma de la placa ──────────────────────────────────────────────

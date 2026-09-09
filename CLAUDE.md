@@ -20,6 +20,30 @@ de una tanda pueden haber entrado dos versiones más.
 
 Nunca `--force` sobre `main`. Si el empujón se rechaza, se fusiona.
 
+### Una fusión que falla y no se nota
+
+Pasó el 9 de septiembre de 2026 y costó una versión publicada por debajo
+de la que ya estaba en la calle. `git merge` con cambios sin guardar en el
+árbol **aborta**, pero su PRIMERA línea dice `Updating a914a88..609550e`,
+que parece que funcionó; el error viene después. Encadenado con `;` —o
+mirando solo `| tail -1`— la tanda siguió como si se hubiera traído lo de
+arriba, y se publicó una v839 cuando ya había una v840 afuera.
+
+Dos reglas que lo evitan:
+
+```bash
+git fetch origin && git merge origin/main --no-edit   # con &&, no con ;
+git log --oneline -1                                   # ¿está el commit de arriba en la historia?
+```
+
+Es decir: encadenar con `&&`, y **comprobar la historia, no el mensaje**.
+Si el commit de `origin/main` no aparece en `git log`, la fusión no
+ocurrió, diga lo que diga la primera línea.
+
+Lo cazó `revisar.js` con la comprobación de que la versión no choque con
+la publicada. Sin ella se habría subido con el número por debajo, que para
+la caché de un teléfono es una versión que no existe.
+
 ### Cuando las dos tandas se llaman igual
 
 Pasó el 7 de septiembre de 2026: las dos sesiones llamaron v788 a lo suyo.

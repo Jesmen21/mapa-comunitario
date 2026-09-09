@@ -1928,6 +1928,24 @@
       li.appendChild(el('span', 'sp-fi-techo-t', t.t));
       li.appendChild(el('b', null, k === 'claridad' ? (t.n == null ? '—' : t.n + ' %') : (t.detalle || String(t.n))));
       li.appendChild(el('span', 'sp-fi-techo-p', '→ como mucho «' + ESCALERA[t.i].t + '»'));
+      /* El denominador de la claridad, escrito al lado del porcentaje.
+
+         Este módulo le reprocha a otras cifras andar sin denominador —el
+         62 % de firmas anuladas de un candidato dice lo contrario de lo que
+         pasó hasta que uno se entera de que a TODOS les anularon entre el 40
+         y el 68 %—. Y su propia cifra principal, la que decide el veredicto
+         sobre una persona, salía sola: «72 %», sin decir de cuántos hechos
+         ni cuántos quedaron fuera de la cuenta. Un 100 % sobre tres hechos
+         de cien no es un registro verificado; es un registro sin revisar con
+         una cifra bonita encima, y desde la placa no había forma de
+         distinguirlos.
+
+         La misma vara para uno mismo que para lo que se mide. */
+      if (k === 'claridad' && f.claridad && f.claridad.conTipo) {
+        var det = f.claridad.verificado + ' de ' + f.claridad.conTipo + ' hechos con naturaleza declarada';
+        if (f.claridad.sinTipo) det += ' · ' + f.claridad.sinTipo + ' sin declarar, fuera de la cuenta';
+        li.appendChild(el('span', 'sp-fi-techo-den', det));
+      }
       tl.appendChild(li);
     });
     ver.appendChild(tl);
