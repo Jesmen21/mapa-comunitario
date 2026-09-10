@@ -239,7 +239,7 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
             cajaW: c.offsetWidth };
         }),
         /* La capa de método de cada caja y de cada mapa: las cinco etiquetas. */
-        metodos: [...document.querySelectorAll('.caja:not(.caja-campo)')].map(c => ({
+        metodos: [...document.querySelectorAll('.caja:not(.caja-campo):not(.caja-vacio)')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?',
           etiquetas: [...c.querySelectorAll(':scope > .metodo i')].map(i => i.textContent),
           texto: ((c.querySelector(':scope > .metodo') || {}).textContent || '') })),
@@ -261,12 +261,27 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           const r = p.querySelector('.renglones');
           return { alto: r ? mm(rect(r).height) : 0, texto: p.textContent.replace(/\s+/g, ' ') };
         })(),
+        vacios: [...document.querySelectorAll('.caja-vacio')].map(c => ({
+          t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height), w: c.offsetWidth,
+          tag: (c.querySelector('.vacio-tag') || {}).textContent || '',
+          falta: (c.querySelector('.vacio-falta') || {}).textContent || '',
+          hay: (c.querySelector('.vacio-hay') || {}).textContent || '',
+          renglon: !!c.querySelector('.renglones'), texto: c.textContent })),
+        cruces: [...document.querySelectorAll('.sintesis-pie .cruce')].map(c => ({
+          k: (c.querySelector('.cv-k') || {}).textContent || '', v: (c.querySelector('.cv-v') || {}).textContent || '',
+          l: (c.querySelector('.cv-l') || {}).textContent || '' })),
+        decisiones: [...document.querySelectorAll('.banda-ambiental .caja .decide')].map(d => ({
+          t: (d.closest('.caja').querySelector('h2') || {}).textContent || '?', texto: d.textContent })),
         campo: [...document.querySelectorAll('.caja-campo')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height),
           casillas: c.querySelectorAll('.cf').length, renglones: !!c.querySelector('.renglones'),
           instruccion: (c.querySelector('.lee') || {}).textContent || '' })),
+        // La pista nominal: la rejilla en medias columnas (16 parada, 24 acostada).
+        unidad: rej.offsetWidth / (document.querySelector('.hoja').offsetWidth > document.querySelector('.hoja').offsetHeight ? 24 : 16),
         cifras: [...document.querySelectorAll('.caja-cifra')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', w: c.offsetWidth,
+          // La caja entera vecina en la misma banda, si la hay: una baldosa vale la mitad.
+          vecina: (function () { const v = [...c.parentElement.querySelectorAll(':scope > .caja:not(.caja-cifra):not(.mapa-caja):not(.plano-hero):not(.caja-doble):not(.caja-alta)')][0]; return v ? v.offsetWidth : 0; })(),
           // Un dibujo de verdad, no el icono de la esquina, que también es svg.
           svg: !!c.querySelector('.dib, .mp-dib, .plano, .perf, .camina, .b, .evo-tira'),
           recortada: c.scrollHeight > c.clientHeight + 2 })),
@@ -369,9 +384,18 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('y la ficha del sitio, que abre la hoja al lado del plano, no',
       nombres.indexOf('El sitio') === -1 && oc.cifras.every(c => !c.svg),
       oc.cifras.filter(c => c.svg).map(c => c.t).join(' · ') || 'ninguna con dibujo');
-    T('cuatro caben en el ancho del mapa de análisis más angosto',
-      oc.cifras.length >= 2 && !!mapaChico && oc.cifras.every(c => 4 * c.w <= mapaChico.cajaW * 1.04),
-      oc.cifras.length ? Math.round(Math.max.apply(null, oc.cifras.map(c => c.w)) / (mapaChico ? mapaChico.cajaW : 1) * 100) + '% del ancho del mapa cada una' : '');
+    /* «Cuatro en el ancho de un mapa» se mide sobre la pista: una baldosa
+       es UNA pista donde una caja son dos, y un mapa de análisis mide al
+       menos cuatro. Lo que mide cada baldosa en el papel depende de la
+       banda en que cayó —las de una banda sola en su fila se estiran—, así
+       que se comprueba la pista nominal contra el mapa más angosto y, en
+       cada banda con caja vecina, que la baldosa valga la mitad. */
+    T('cuatro pistas caben en el ancho del mapa de análisis más angosto',
+      oc.cifras.length >= 2 && !!mapaChico && 4 * oc.unidad <= mapaChico.cajaW * 1.04,
+      Math.round(4 * oc.unidad) + ' px de cuatro pistas contra ' + (mapaChico ? mapaChico.cajaW : 0) + ' del mapa');
+    T('y cada baldosa vale la mitad de la caja entera de su banda',
+      oc.cifras.filter(c => c.vecina).length >= 1 && oc.cifras.filter(c => c.vecina).every(c => c.w <= c.vecina * 0.55),
+      oc.cifras.filter(c => c.vecina).map(c => c.t.split(' ')[0] + ' ' + Math.round(100 * c.w / c.vecina) + '%').join(' · ') || 'ninguna con vecina');
     T('y ninguna se recorta por dentro', oc.cifras.every(c => !c.recortada),
       oc.cifras.filter(c => c.recortada).map(c => c.t).join(' · ') || 'ninguna');
 
@@ -463,6 +487,60 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       (nom !== 'parada' || o.campo.length === 3) && o.campo.every(c => c.alto >= 45 && c.instruccion.length >= 40 && (c.casillas >= 3 || c.renglones)),
       o.campo.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + (c.casillas || 'r')).join(' · ') || 'ninguno impreso');
   });
+
+  /* ── Tanda 3 (v849): los vacíos obligatorios y los cruces ──────────── */
+  console.log('\n  -- los cinco vacíos obligatorios, impresos aunque no haya dato --');
+  const VACIOS = [
+    ['Riesgo oficial', /POT|Decreto 1807/],
+    ['Servicios públicos', /DANE|empresa prestadora/],
+    ['Norma urbana', /POT|curaduría/],
+    ['Movilidad real', /secretaría de movilidad|empresa de transporte/],
+    ['Información legal del predio', /tradición y libertad|IGAC|catastro/]
+  ];
+  [['parada', V, true], ['acostada', HZ, false], ['completa', VC, true]].forEach(([nom, o, exige]) => {
+    if (!o) return;
+    const nombres = o.vacios.map(v => v.t);
+    T(nom + (exige ? ': los cinco están impresos' : ': los que están, están enteros'),
+      exige ? VACIOS.every(([t]) => nombres.indexOf(t) >= 0) : true, nombres.join(' · ') || 'ninguno');
+    const IDS_VACIO = ['riesgo-oficial', 'servicios-publicos', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
+    const fueraDe = nom === 'acostada' ? (r.fuera || []) : (r.fueraV || []);
+    /* Acostada pueden haber cedido (con 300 mm menos de alto); entonces
+       tienen que estar declarados, los cinco, por su nombre. */
+    T(nom + ': cada uno dice «sin dato oficial disponible», nombra la fuente que haría falta y qué es lo que sí hay' + (exige ? '' : ', o está declarado fuera'),
+      o.vacios.length > 0
+        ? o.vacios.every(v => /^Sin dato oficial disponible$/.test(v.tag.trim()) && /Haría falta/.test(v.falta) &&
+            (VACIOS.filter(([t]) => t === v.t)[0] || [null, /./])[1].test(v.falta) && /Lo que hay no es eso/.test(v.hay) && v.renglon)
+        : (!exige && IDS_VACIO.every(id => fueraDe.indexOf(id) >= 0)),
+      o.vacios.length ? o.vacios.map(v => v.t.split(' ')[0] + ':' + ((VACIOS.filter(([t]) => t === v.t)[0] || [null, /./])[1].test(v.falta) ? 'fuente' : 'SIN FUENTE')).join(' · ')
+                      : 'ninguno impreso · declarados: ' + IDS_VACIO.filter(id => fueraDe.indexOf(id) >= 0).length + ' de 5');
+    T(nom + ': ninguno deduce el riesgo de la pendiente ni dice «sin datos»',
+      o.vacios.every(v => !/sin datos/i.test(v.texto)) && o.vacios.filter(v => /Riesgo/.test(v.t)).every(v => /no se deduce de la pendiente/.test(v.texto)));
+  });
+
+  console.log('\n  -- lo que dicen juntas las cifras --');
+  const CR = (VC.cruces || []);
+  const CLAVES = ['Cobertura de equipamientos', 'Espacio público', 'Potencial edificatorio', 'Mezcla de usos', 'Continuidad del tejido',
+                  'Suelo disponible', 'Presión de crecimiento', 'Dependencia de acceso', 'Tamaño y forma de predios', 'Comparación con la ciudad', 'Horizonte temporal'];
+  T('los once cruces están en el cierre, cada uno con valor y lectura',
+    CLAVES.every(k => CR.some(c => c.k === k)) && CR.every(c => c.v.trim().length >= 6 && c.l.trim().length >= 25),
+    CR.length + ' cruces · faltan: ' + (CLAVES.filter(k => !CR.some(c => c.k === k)).join(', ') || 'ninguno'));
+  const cobEq = CR.filter(c => c.k === 'Cobertura de equipamientos')[0] || { v: '', l: '' };
+  T('la cobertura de equipamientos se cuenta en personas servidas y lejos', /hab\. servidos/.test(cobEq.v) && /lejos/.test(cobEq.v), cobEq.v.slice(0, 90));
+  T('el potencial edificatorio dice que la altura permitida no tiene dato oficial y no lo inventa',
+    /altura permitida: sin dato oficial/.test((CR.filter(c => c.k === 'Potencial edificatorio')[0] || { v: '' }).v));
+  T('y la mezcla de usos cierra en decisión de diseño',
+    /primer piso|vivienda|planta baja/.test((CR.filter(c => c.k === 'Mezcla de usos')[0] || { l: '' }).l));
+  T('la presión de crecimiento dice que la serie no está leída cuando no lo está, en vez de callar',
+    /serie satelital no leída|puntos de verde|estable/.test((CR.filter(c => c.k === 'Presión de crecimiento')[0] || { v: '', l: '' }).v + ' ' + (CR.filter(c => c.k === 'Presión de crecimiento')[0] || { l: '' }).l));
+
+  console.log('\n  -- cada dato ambiental cierra en una decisión --');
+  const DEC = VC.decisiones || [];
+  T('al menos cuatro cajas ambientales de la hoja completa cierran con «→ decisión»',
+    DEC.length >= 4 && DEC.every(d => /^→ /.test(d.texto.trim()) && d.texto.trim().length >= 40),
+    DEC.map(d => d.t.split(' ').slice(0, 2).join(' ')).join(' · ') || 'ninguna');
+  T('la de la cobertura del suelo habla de permeabilidad o de calor, salida de su propio número',
+    DEC.some(d => /Cobertura del suelo/.test(d.t) && /permeab|calor/.test(d.texto)),
+    DEC.map(d => d.t + ': ' + d.texto.slice(0, 40)).join(' | '));
 
   console.log('\n  -- lo que cede queda dicho --');
   // El identificador con el que la ficha declara una caja: su título en minúsculas, sin tildes, con guiones.

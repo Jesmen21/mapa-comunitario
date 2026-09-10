@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v848-lamina-educativa-metodo-radio-y-campo';
+const URBIS_CACHE = 'urbis-v849-lamina-educativa-vacios-y-cruces';
 const URBIS_ASSETS = [
   './',
   './index.html',

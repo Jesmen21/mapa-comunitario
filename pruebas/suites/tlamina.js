@@ -246,11 +246,11 @@ function climaSimulado(){
       cajas:[...document.querySelectorAll('.caja')]
         .filter(c=>c.scrollHeight>c.clientHeight+2)
         .map(c=>(c.querySelector('h2')||{}).textContent||'?'),
-      papel:h?h.clientHeight:0, rej:rej?rej.clientHeight:0,
-      /* Lo usado de la rejilla es hasta dónde baja la última caja, no la suma
-         de los altos: las cajas de una misma fila se sumarían tres veces. */
-      usado:rej?[...rej.children].reduce((a,c)=>Math.max(a,c.getBoundingClientRect().bottom),0)
-                 - rej.getBoundingClientRect().top : 0 };
+      /* El papel disponible es el marco que recorta (`.rejilla`) y lo usado
+         es lo que la rejilla ya reducida ocupa de él: con `clientHeight` la
+         reducción no se cuenta y una hoja llena parecía medio vacía. */
+      papel:h?h.clientHeight:0, rej:(function(){ const m=document.querySelector('.rejilla'); return m?m.getBoundingClientRect().height:0; })(),
+      usado:rej?rej.getBoundingClientRect().height:0 };
   });
   await medidorH.close();
 

@@ -482,6 +482,7 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     const bl = H && H.querySelector('[data-pcr="lamina-ver"]');
     if (bl) { bl.click(); await esperar(900); }
     o.lamina = capturado; capturado = '';
+    o.laminaCompleta = window.URBIS_PC_RECON.laminaA({}); o.fuera = ((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
     const ag2 = H && H.querySelector('[data-pcr="agrandar"]'); if (ag2 && H.classList.contains('pcr-encogida')) { ag2.click(); await esperar(300); }
     const bi = H && H.querySelector('[data-pcr="imprimir"]');
     if (bi) { bi.click(); await esperar(900); }
@@ -561,7 +562,12 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
     /Contado en campo \(rombo\)/.test(mapaAlt) && /2 contados en campo, piso por piso/.test(mapaAlt),
     (mapaAlt.match(/\d+ contados en campo[^<]*/) || ['no lo dice'])[0]);
   T('la ficha en pantalla lo muestra', /Contado en campo, piso por piso/.test(r2.ficha || '') && /Levantado en campo/.test(r2.ficha || ''));
-  const cajaAlt = ((r2.lamina || '').split('<section class="caja').filter(x => /<h2>Alturas de lo construido<\/h2>/.test(x))[0]) || '';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA y
+     aparte se exige que la impresa la traiga o la declare fuera. */
+  const cajaAlt = ((r2.laminaCompleta || r2.lamina || '').split('<section class="caja').filter(x => /<h2>Alturas de lo construido<\/h2>/.test(x))[0]) || '';
+  T('la lámina impresa trae la caja de alturas, o la declara fuera por su nombre',
+    /<h2>Alturas de lo construido<\/h2>/.test(r2.lamina || '') || (r2.fuera || []).indexOf('alturas-de-lo-construido') >= 0);
   /* Los dos edificios del sector —el mapeado y el editado— llevan tienda
      abajo, así que los dos son mixtos y la frase lo dice con su combinación. */
   T('el pliego trae la caja de alturas con lo contado en campo',

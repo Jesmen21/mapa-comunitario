@@ -247,7 +247,8 @@ const geo=[
      sostienen solas: un mapa de curvas al lado de la caja del terreno dice
      algo, y el mismo mapa a treinta centímetros en una tira con otros ocho
      es un recuadro que hay que ir a buscar. */
-  T('los mapas van en cajas propias, no en una tira', figuras(LAM) >= 4,
+  /* Tres figuras no ceden nunca: la foto, la cobertura y todos los usos. */
+  T('los mapas van en cajas propias, no en una tira', figuras(LAM) >= 3,
     figuras(LAM) + ' cajas de mapa');
   T('cada una dice a qué banda pertenece',
     figuras(LAM) > 0 && conBanda(LAM).length === figuras(LAM),
@@ -258,7 +259,7 @@ const geo=[
   T('la cobertura va con lo ambiental', enBanda('Cobertura del suelo', 'ambiental'));
   T('la foto va con la ubicación', enBanda('La foto satelital', 'ubicacion'));
   T('los usos van con lo demográfico', enBanda('Todos los usos', 'demografico'));
-  T('los llenos van con la morfología', enBanda('Llenos y vacíos', 'forma'));
+  T('los llenos van con la morfología, o quedaron declarados fuera', enBanda('Llenos y vacíos', 'forma') || (r.fuera||[]).indexOf('llenos')>=0);
   T('cada caja tiene su título y su pie',
     (LAM.match(/<div class="mp-dib">/g)||[]).length===figuras(LAM) &&
     (LAM.match(/<small class="mp-pie">/g)||[]).length===figuras(LAM),
@@ -383,7 +384,7 @@ const geo=[
      declarado en la ficha —tantos como la diferencia, por lo menos—. */
   const fueraMapas=(r.fuera||[]).filter(id=>!/^[a-z-]+$/.test(id) || /^(vias|caminar|hitos|sombras|ruido|llega|anillos|comercial|alturas|llenos|cobertura|curvas|masa|agua|estratos|sombra-proyecto|caminata|acuerdos|intangible)$/.test(id));
   T('los del pliego están todos en el informe, y los que cedieron están declarados',
-    figuras(LAM) >= 4 && figuras(PDF) >= figuras(LAM) &&
+    figuras(LAM) >= 3 && figuras(PDF) >= figuras(LAM) &&
     titulos(LAM).every(t => titulos(PDF).indexOf(t) >= 0) &&
     fueraMapas.length >= figuras(PDF) - figuras(LAM) - 2,
     figuras(PDF)+' en el PDF y '+figuras(LAM)+' en el pliego · declarados fuera: '+fueraMapas.length+' · ' +

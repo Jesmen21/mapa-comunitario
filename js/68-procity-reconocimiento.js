@@ -3328,6 +3328,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       'Percepción del lugar':              ['campo', 'lapiz'],
       'Lo que no cambia':                  ['campo', 'lapiz'],
       'Voces de quien vive acá':           ['campo', 'lapiz'],
+      'Riesgo oficial':                    ['campo', 'info'],
+      'Servicios públicos':                ['campo', 'info'],
+      'Norma urbana':                      ['campo', 'info'],
+      'Movilidad real':                    ['campo', 'info'],
+      'Información legal del predio':      ['campo', 'info'],
       'Lo que falta levantar':             ['campo', 'lista'],
       'Síntesis del sector':               ['cierre', 'documento']
     };
@@ -3364,6 +3369,56 @@ function donaHTML(datos, colorDe, nombreDe) {
        de antes y papel blanco a los lados. A dos por dos el plano crece de
        verdad y las cuatro cajas de la norma se apilan al lado. */
     var CAJAS_ALTAS = ['El lote a intervenir'];
+    /* ── Banda 02: cada dato ambiental cierra en decisión ─────────────
+       Se pidió que en la banda ambiental «cada dato se cierre en una
+       decisión de diseño». Una línea por caja, salida de su propio número;
+       si el número no da para decidir, no se escribe nada. */
+    var DECIDE = {
+      'El terreno': function () {
+        var pe = ter && ter.pendiente;
+        if (!pe || pe.media == null) return '';
+        return pe.media >= 12 ? 'escalonar el proyecto con la ladera, con plataformas y muros cortos, y sacar el agua por gravedad'
+             : pe.media >= 5 ? 'aprovechar el desnivel para separar accesos y niveles sin rampas largas'
+             : 'terreno plano: el drenaje hay que dibujarlo, porque el agua no se va sola';
+      },
+      'El clima': function () {
+        var tt = cli && cli.temperatura;
+        if (!tt || tt.media == null) return '';
+        return tt.media >= 26 ? 'sombra en todo recorrido exterior, aleros, ventilación cruzada y la fachada oeste ciega o protegida'
+             : tt.media <= 14 ? 'captar sol en los espacios de estar y cortar el viento frío' : 'clima templado: la orientación decide el confort, no el equipo';
+      },
+      'Asoleamiento': function () { return 'los espacios de estar al norte y al sur; el poniente para servicios, escaleras y muros ciegos'; },
+      'La sombra de los vecinos': function () { return 'los patios y las ventanas principales donde no llega la sombra de las 15 h'; },
+      'La amenaza sísmica': function () {
+        var am = S.amenaza;
+        return am && am.nivel ? 'estructura NSR-10 para amenaza ' + String(am.nivel).toLowerCase() + ': planta regular, sin pisos blandos ni columnas cortas' : '';
+      },
+      'La inundación': function () {
+        var inu = S.inundacion;
+        if (!inu || inu.sinDato) return '';
+        return inu.cobertura && inu.trPeor != null ? 'primer piso levantado sobre la cota de la mancha, sin sótanos habitables, y confirmar con el mapa oficial'
+             : 'fuera de las manchas registradas: confirmar con el mapa oficial antes de fiarse';
+      },
+      'Verde y agua': function () { return 'conservar la ronda y conectar el verde existente: el proyecto no abre un parque, lo continúa'; },
+      'El ruido del tránsito': function () {
+        var rd = null; try { rd = ruidoDelLote(); } catch (e) {}
+        if (!rd || rd.dB == null) return '';
+        return rd.dB >= 65 ? 'dormitorios al interior o al patio; a la vía, servicios, comercio y fachada con masa'
+                           : 'ruido dentro del límite: la fachada a la vía puede ser la de vivir';
+      },
+      'Cobertura del suelo': function () {
+        var cb = null; try { cb = o2Cobertura(); } catch (e) {}
+        if (!cb || cb.duro == null) return '';
+        return cb.duro >= 60 ? 'techos claros, suelo permeable y árboles de sombra: el sector ya es una isla de calor'
+                             : 'mantener la permeabilidad que hay: cada patio pavimentado la pierde';
+      },
+      'Espacio público efectivo': function () {
+        var e2 = trz && trz.espacio, hab2 = Number(st.poblacionEstimada || 0);
+        if (!e2 || !e2.piezas || !hab2) return '';
+        return e2.areaM2 / hab2 < (e2.metaM2Hab || 15) ? 'ceder primer piso libre y esquina como plaza: es la brecha más barata de cerrar desde un predio'
+                                                        : 'cuidar el espacio público que hay: el proyecto le da frente y ojos, no lo tapa';
+      }
+    };
     function caja(titulo, cuerpo, clase) {
       if (!cuerpo) return '';
       if (apagadas.indexOf(slugPliego(titulo)) !== -1) return '';
@@ -3381,7 +3436,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Sin dibujo, sin barras, sin listas largas y con poco texto: cifras,
          un par de renglones y su nota. La ficha del sitio queda fuera: abre
          la primera banda al lado del plano y no es una cifra suelta. */
-      var esCifra = !/^(g\d|)$/.test(clase || '') ? false : !ancha && titulo !== 'El sitio' &&
+      var esCifra = !/^(g\d|)( caja-vacio)?$/.test(clase || '') ? false : !ancha && titulo !== 'El sitio' &&
         !/<svg|class="b"|class="dib|<table|class="hit|class="perf|class="camina|class="evo|class="cobb|class="conv|class="fa"|class="de"/.test(cuerpo) &&
         textoPlano.length <= 420;
       if (esCifra) {
@@ -3397,11 +3452,25 @@ function donaHTML(datos, colorDe, nombreDe) {
          procesar. Su tinte va por esa misma clase en la hoja de estilo. */
       /* La capa de método, al pie de cada caja. Los paneles de campo no la
          llevan: son del estudiante, y su método es caminar. */
-      var metodo = /caja-campo/.test(clase || '') ? '' : metodoDe(titulo, hoyTxt);
+      var metodo = /caja-campo|caja-vacio/.test(clase || '') ? '' : metodoDe(titulo, hoyTxt);
+      var decide = '';
+      if (DECIDE[titulo]) {
+        try { var dd = DECIDE[titulo](); if (dd) decide = '<p class="decide">→ ' + esc(dd) + '</p>'; } catch (e) { decide = ''; }
+      }
       return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + ancha + '">' +
         '<h2>' + esc(titulo) + '</h2>' +
         '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
-        cuerpo + metodo + '</section>';
+        cuerpo + decide + metodo + '</section>';
+    }
+    /* Un panel de VACÍO OBLIGATORIO (§2 del pliego educativo): el dato que
+       no hay se imprime igual, diciendo que no hay, qué fuente haría falta
+       y qué es lo que sí hay —que no es eso—. Nunca en blanco, nunca una
+       suposición. Con un renglón para escribir el dato cuando se consiga. */
+    function panelVacio(hariaFalta, loQueHay) {
+      return '<p class="vacio-tag">Sin dato oficial disponible</p>' +
+        '<p class="vacio-falta"><b>Haría falta</b> ' + esc(hariaFalta) + '</p>' +
+        (loQueHay ? '<p class="vacio-hay"><b>Lo que hay no es eso</b> ' + esc(loQueHay) + '</p>' : '') +
+        '<div class="renglones" style="--n:1"></div>';
     }
     /* Un panel de campo: la instrucción y renglones o casillas en blanco,
        con alto de papel fijo para que quepa la letra a mano. */
@@ -4613,6 +4682,33 @@ function donaHTML(datos, colorDe, nombreDe) {
          banda del trabajo de campo, no como anexo, y ceden los últimos
          entre las cajas: una lámina sin la voz de quien vive ahí es una
          lámina sobre un sector deshabitado. */
+      /* ── Los cinco vacíos obligatorios ────────────────────────────────
+         Riesgo oficial, servicios públicos, norma urbana, movilidad real e
+         información legal del predio: lo que un jurado pregunta y ningún
+         dato abierto trae. Van en la banda de su tema, como baldosas, y no
+         ceden nunca. */
+      caja('Riesgo oficial',
+        panelVacio('la clasificación de amenaza y riesgo del POT vigente (Decreto 1807 de 2014), con su fecha y su escala, de la Secretaría de Planeación del municipio.',
+          (ter ? 'la pendiente medida' : 'ninguna pendiente medida') + (S.amenaza ? ', la zona sísmica del SGC' : '') + (S.inundacion && !S.inundacion.sinDato ? ' y las manchas del IDEAM' : '') +
+          ': insumos, no la clasificación oficial. El riesgo no se deduce de la pendiente.'),
+        'g3 caja-vacio') +
+      caja('Servicios públicos',
+        panelVacio('cobertura y continuidad de acueducto, alcantarillado, energía, gas e internet por manzana: cuadro de servicios del CNPV 2018 del DANE o la empresa prestadora.',
+          (function () { var inf = null; try { inf = infraDeServicios(res); } catch (e) {} return (inf ? inf.n + ' objetos de infraestructura registrados en OpenStreetMap' : 'ninguna infraestructura registrada') + ': presencia, no cobertura.'; })()),
+        'g3 caja-vacio') +
+      caja('Norma urbana',
+        panelVacio('uso permitido, índices de ocupación y construcción, altura máxima, aislamientos y cesiones: la ficha normativa del POT o un concepto de la curaduría urbana.',
+          (function () { var ix = loteA && (loteA.indices || (loteA.queCabe && loteA.queCabe.indices)); return ix && (ix.ocupacion || ix.construccion) ? 'índices declarados por quien analiza (ocupación ' + conComa(ix.ocupacion || '—') + ', construcción ' + conComa(ix.construccion || '—') + '): supuestos, no norma.' : 'ningún índice: lo que cabe en el lote está sin norma.'; })()),
+        'g3 caja-vacio') +
+      caja('Movilidad real',
+        panelVacio('rutas y paraderos oficiales con frecuencias y aforos: la secretaría de movilidad o la empresa de transporte.',
+          (function () { var mv = st.movilidad || {}; return (mv.paradasBus != null ? mv.paradasBus + ' paradas y ' + (mv.rutas || []).length + ' rutas registradas en OpenStreetMap, por voluntarios' : 'sin paradas ni rutas registradas') + (cam ? '; la isócrona a pie por la red de calles sí está medida.' : '; la isócrona a pie pide medir el trazado.'); })()),
+        'g3 caja-vacio') +
+      caja('Información legal del predio',
+        panelVacio('matrícula inmobiliaria y certificado de tradición y libertad (Superintendencia de Notariado y Registro), cédula catastral y área oficial (IGAC o catastro municipal), afectaciones y servidumbres.',
+          loteA ? 'un polígono dibujado a mano de ' + Math.round(loteA.areaM2).toLocaleString('es-CO') + ' m²: no es el linde legal.' : 'ningún lote dibujado.'),
+        'g3 caja-vacio') +
+
       caja('Percepción del lugar',
         panelCampo('A la hora que fuiste, con los cinco sentidos: anotá día y hora, y lo que estas cifras no ven.',
           ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde te sentiste a gusto, y dónde no']),
@@ -4743,10 +4839,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
                 'La sombra que arrojás', 'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
-        pregunta: '¿Qué se comprobó en la calle y qué falta por levantar?',
-        que: 'lo intangible · lo levantado · lo que falta',
+        pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
+        que: 'lo intangible · lo levantado · lo que falta · los datos oficiales que no hay',
+        /* Los cinco vacíos obligatorios van acá y no en su banda de tema: son
+           datos por CONSEGUIR, como los paneles de campo, y en su banda de
+           tema desplazaban al mapa de cobertura del núcleo. Medido. */
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar',
-                'Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá'] },
+                'Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá',
+                'Riesgo oficial', 'Servicios públicos', 'Norma urbana', 'Movilidad real', 'Información legal del predio'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre',
         pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
@@ -5238,6 +5338,12 @@ function donaHTML(datos, colorDe, nombreDe) {
              de cobertura va junto al raster porque separada confundía. */
           (m.extra || '') +
           '<small class="mp-pie">' + esc(m.pie) + '</small>' +
+          /* La cobertura no tiene caja de cifras cuando su raster está en la
+             hoja —la barra va debajo del mapa—, así que su decisión de
+             diseño va acá, en el mapa. */
+          (m.id === 'cobertura' && DECIDE['Cobertura del suelo']
+            ? (function () { try { var dd = DECIDE['Cobertura del suelo'](); return dd ? '<p class="decide">→ ' + esc(dd) + '</p>' : ''; } catch (e) { return ''; } })()
+            : '') +
           metodoDe(m.comp ? 'calor:categoria' : m.id, hoyTxt) +
         '</section>';
     }).join('');
@@ -5267,7 +5373,15 @@ function donaHTML(datos, colorDe, nombreDe) {
             try { pu = propuestasDeUso(res); } catch (e) { pu = null; }
             if (!pu || !pu.propuestas.length) return '';
             var fmtN = function (n) { return Number(n).toLocaleString('es-CO'); };
-            return '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
+            var cruces = [];
+            try { cruces = crucesDelSector(res); } catch (e9) { cruces = []; }
+            return (cruces.length
+              ? '<p class="lee">Lo que dicen juntas las cifras</p><div class="cruces">' +
+                cruces.map(function (c) {
+                  return '<div class="cruce"><i class="cv-k">' + esc(c.k) + '</i><b class="cv-v">' + esc(c.v) + '</b><small class="cv-l">' + esc(c.l) + '</small></div>';
+                }).join('') + '</div>'
+              : '') +
+              '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
                 '</b>, ordenadas por necesidad medida y factibilidad del predio</p>' +
               '<div class="props">' +
                 pu.propuestas.map(function (p, i) {
@@ -5441,6 +5555,20 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.cf{ display:grid; grid-template-columns:minmax(0,38%) 1fr; gap:2mm; align-items:end; font-size:3mm; color:#5A6472 }' +
       '.cf i{ display:block; height:calc(7.5mm / var(--k, 1)); border-bottom:.35mm solid #9AA9B8 }' +
       '.caja-campo{ background:#FCFBFF }' +
+      // Los vacíos obligatorios: ámbar y borde a trazos, para que se vean como lo que son.
+      '.caja-vacio{ --tinte:#B45309; --suave:#FFF4E5; border-style:dashed; border-color:#F0C27A; background:#FFFBF3 }' +
+      '.vacio-tag{ margin:0 0 1.2mm; font-size:2.6mm; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#B45309 }' +
+      '.vacio-falta, .vacio-hay{ margin:0 0 1mm; font-size:2.8mm; line-height:1.32; color:#0F1F2E }' +
+      '.vacio-falta b, .vacio-hay b{ display:block; font-size:2.3mm; letter-spacing:.12em; text-transform:uppercase; color:#6B7A8A }' +
+      '.caja-vacio .renglones{ margin-top:1.2mm }' +
+      // La decisión de diseño que cierra cada dato ambiental.
+      '.decide{ margin:1.6mm 0 0; padding:1.2mm 2.4mm; font-size:2.9mm; line-height:1.32; color:#0F1F2E; background:var(--suave); border-radius:1.5mm; font-weight:600 }' +
+      // Los cruces del cierre.
+      '.cruces{ display:grid; grid-template-columns:repeat(' + (horiz ? 4 : 3) + ',minmax(0,1fr)); gap:1.8mm; margin:1.5mm 0 2.5mm }' +
+      '.cruce{ padding:1.4mm 2mm; border:.3mm solid #E3EAF0; border-radius:1.5mm; background:#fff; display:flex; flex-direction:column; gap:.4mm }' +
+      '.cv-k{ font-style:normal; font-size:2.3mm; letter-spacing:.12em; text-transform:uppercase; color:var(--tinte); font-weight:800 }' +
+      '.cv-v{ font-size:3mm; line-height:1.25 }' +
+      '.cv-l{ font-size:2.6mm; line-height:1.3; color:#5A6472 }' +
       '.caja-campo .lee{ border-left-color:var(--tinte) }' +
       // La lectura propia y la bibliografía, en el cierre.
       '.propia{ margin-top:3mm; padding-top:2.5mm; border-top:.3mm solid #E3EAF0 }' +
@@ -10221,7 +10349,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'lo-que-no-cambia', t: 'Lo que no cambia', g: 'El trabajo del curso',
         listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
       { id: 'voces-de-quien-vive-aca', t: 'Voces de quien vive acá', g: 'El trabajo del curso',
-        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' }
+        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+      /* Los cinco vacíos obligatorios: siempre listos, porque decir que no
+         hay dato es parte del análisis. */
+      { id: 'riesgo-oficial', t: 'Riesgo oficial', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'servicios-publicos', t: 'Servicios públicos', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'norma-urbana', t: 'Norma urbana', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'movilidad-real', t: 'Movilidad real', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'informacion-legal-del-predio', t: 'Información legal del predio', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' }
     ];
     var off = S.pliegoOff || [];
     /* Qué consigue cada caja gris. Se pidió así: «las cajas grises que salen
@@ -11537,6 +11672,9 @@ function donaHTML(datos, colorDe, nombreDe) {
   /* Los paneles de campo: en blanco, para la calle. Ceden los últimos entre
      las cajas, con las baldosas de cifra. */
   var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];
+  /* Los cinco vacíos obligatorios (v849): baldosas que no ceden en ningún
+     formato. Decir «sin dato oficial» es parte del análisis. */
+  var PANELES_DE_VACIO = ['riesgo-oficial', 'servicios-publicos', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
   var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
                         'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
                         'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];
@@ -11560,7 +11698,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     var protegeCampo = !(o && o.horizontal);
     return lista.filter(function (c) {
       return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1 &&
-        !(hayLote && c.id === 'el-lote-a-intervenir') && !(protegeCampo && PANELES_DE_CAMPO.indexOf(c.id) !== -1);
+        !(hayLote && c.id === 'el-lote-a-intervenir') &&
+        !(protegeCampo && (PANELES_DE_CAMPO.indexOf(c.id) !== -1 || PANELES_DE_VACIO.indexOf(c.id) !== -1));
     }).map(function (c) { return c.id; }).reverse();
   }
 
@@ -11668,7 +11807,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Las baldosas de cifra —media columna, cuatro renglones— son lo más
          barato de conservar y lo que más dice por milímetro: caen las
          últimas entre las cajas. La composición anotó cuáles son. */
-      var cifras = ((o._memo && o._memo.cifras) || []).concat(o.horizontal ? PANELES_DE_CAMPO : []);
+      var cifras = ((o._memo && o._memo.cifras) || []).concat(o.horizontal ? PANELES_DE_CAMPO.concat(PANELES_DE_VACIO) : []);
       candidatos = candidatos.filter(function (c) { return cifras.indexOf(c) === -1; })
         .concat(candidatos.filter(function (c) { return cifras.indexOf(c) !== -1; }));
       var apagadasYa = (o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
@@ -12259,7 +12398,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Dónde falta mapear': { f: 'usos por rumbo desde el centro; rumbo vacío = sin registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ningún rumbo vacío', e: 'un rumbo vacío puede ser un predio grande, no falta de mapeo' },
     'Lo que falta levantar': { f: 'registros sin altura, sin nombre o sin categoría', fu: 'OpenStreetMap, hoy', c: 'alta', r: 'cero pendientes', e: 'ninguno: es una lista' },
     'Lo intangible': { f: 'marcas de percepción del curso por tipo y su cruce con el lote', fu: 'levantamiento del curso', c: 'testimonio, no medición', r: 'ninguna: es cualitativo', e: 'depende de quién caminó y cuándo' },
-    'Síntesis del sector': { f: 'necesidad = déficit medido (0 a 100); factibilidad = puntos por lote, acceso, servicios e inundación', fu: 'esta misma lámina', c: 'la de cada medición; la norma no está', r: 'URBIS recomienda, quien proyecta decide', e: 'sin POT ninguna factibilidad pasa de media' },
+    'Síntesis del sector': { f: 'once cruces entre cajas; necesidad = déficit medido (0 a 100); factibilidad = puntos por lote, acceso, servicios e inundación', fu: 'esta misma lámina', c: 'la de cada medición; la norma no está', r: 'URBIS recomienda, quien proyecta decide', e: 'sin POT ninguna factibilidad pasa de media' },
     'Plano del sector': { f: 'usos mapeados y huellas sobre el polígono, a escala', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ninguna: es el plano base', e: 'lo que no está mapeado no está dibujado' },
     'La foto satelital': { f: 'la imagen cruda del sector, sin clasificar', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'alta como imagen, sin fecha', r: 'ninguna', e: 'puede tener años; comparar con «Cómo cambió el sitio»' },
     'calor:todos': { f: 'densidad de usos por núcleo (kernel) sobre todos los registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'dónde se junta lo que hay', e: 'un sector submapeado se ve vacío' },
@@ -12336,6 +12475,130 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? Math.round(Math.sqrt((Number(meta.areaM2) || 0) / Math.PI))
       : Math.round(Number(meta.radioM) || 0);
     return { radio: radio, equivalente: meta.forma === 'poligono', filas: filas, cambia: cambia };
+  }
+
+  /* ── Lo que dicen juntas las cifras (§3 del pliego educativo) ─────────
+     Once cruces que ninguna caja hace sola: cada uno con su valor y una
+     lectura que cierra en decisión. Solo sobre lo medido; lo que no está,
+     lo dice —«sin dato oficial», «sin serie leída»— y nombra qué haría
+     falta, que es lo contrario de rellenar. */
+  function crucesDelSector(res) {
+    var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
+    var trz = S.trazado, hab = Number(st.poblacionEstimada || 0);
+    var num = function (x) { return String(x).replace('.', ','); };
+    var fmt = function (n) { return Math.round(Number(n)).toLocaleString('es-CO'); };
+    var filas = [];
+    var F = function (k, v, l) { filas.push({ k: k, v: v, l: l }); };
+
+    // 1 · Cobertura de equipamientos: gente servida y gente lejos, por tipo.
+    var ac = st.accesibilidad;
+    if (ac && (ac.categorias || []).length && hab > 0) {
+      var peor = ac.categorias.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; });
+      F('Cobertura de equipamientos',
+        peor.slice(0, 2).map(function (c) {
+          return c.etiqueta + ': ' + fmt(hab * c.pctCubierto / 100) + ' hab. servidos · ' + fmt(hab * c.pctSinCubrir / 100) + ' lejos';
+        }).join(' · '),
+        'lo que más gente deja lejos a pie es ' + String(peor[0].etiqueta).toLowerCase() + ': ahí va el primer equipamiento');
+    } else {
+      F('Cobertura de equipamientos', ac ? 'sin población censal para contar servidos' : 'sin medir',
+        'con el censo por manzana la cobertura se cuenta en personas, no en hectáreas');
+    }
+
+    // 2 · Espacio público: la brecha, en metros y en gente.
+    var e = trz && trz.espacio;
+    if (e && e.piezas && hab > 0) {
+      var meta15 = e.metaM2Hab || 15, porHab = e.areaM2 / hab;
+      F('Espacio público', num(Math.round(porHab * 10) / 10) + ' m²/hab frente a ' + meta15,
+        porHab >= meta15 ? 'cumple la meta: el proyecto no tiene que ceder plaza, sino cuidarla'
+          : 'faltan ' + fmt((meta15 - porHab) * hab) + ' m²: ' + fmt(hab - e.areaM2 / meta15) + ' personas sin su cuota; el primer piso libre es la respuesta más barata');
+    } else {
+      F('Espacio público', e && !e.piezas ? 'ningún parque con polígono' : 'sin medir', 'dibujar el polígono de cada parque es lo que vuelve esto una cifra');
+    }
+
+    // 3 · Potencial edificatorio: lo construido contra lo permitido.
+    var camp = null; try { camp = alturasDeCampo(); } catch (e1) {}
+    var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
+    var mediaPisos = camp && camp.media ? camp.media : (al && al.media ? al.media : null);
+    F('Potencial edificatorio',
+      (mediaPisos ? num(mediaPisos) + ' pisos de media construidos' : 'altura construida sin registrar') + ' · altura permitida: sin dato oficial',
+      'sin la norma el potencial no se calcula; lo construido alrededor es la única referencia, y hay que decirlo');
+
+    // 4 · Mezcla de usos: dormitorio, mixto o sin residentes.
+    var up = st.usoPredominante || {};
+    var kViv = Object.keys(up).filter(function (k) { return /vivienda|residenc/i.test(k); })[0];
+    var viv = kViv ? Number(up[kViv] || 0) : null;
+    if (viv != null) {
+      F('Mezcla de usos', 'vivienda ' + viv + ' % de lo registrado',
+        viv >= 80 ? 'sector dormitorio: el proyecto pone comercio y servicios en primer piso o repite el problema'
+          : viv < 30 ? 'sector sin residentes: traer vivienda es lo que le da vida después de las seis'
+          : 'mezcla de barrio: el proyecto la continúa con usos en planta baja');
+    } else {
+      F('Mezcla de usos', 'sin peso de vivienda calculado', 'medir usos por edificio en campo es lo que lo destapa');
+    }
+
+    // 5 · Continuidad del tejido.
+    var cu = null; try { cu = laCuadraDelLote(); } catch (e2) {}
+    var ll = trz && trz.llenos;
+    if (cu && cu.pctLleno != null) {
+      F('Continuidad del tejido', cu.pctLleno + ' % del frente de la cuadra con fachada',
+        cu.pctLleno >= 70 ? 'frente continuo: el proyecto se alinea al paramento y no lo rompe' : 'frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un retroceso');
+    } else if (ll && ll.pctLleno != null) {
+      F('Continuidad del tejido', num(ll.pctLleno) + ' % del suelo construido (sin lote dibujado)',
+        'con el lote dibujado se mide el frente de su cuadra, que es lo que el proyecto continúa o rompe');
+    } else {
+      F('Continuidad del tejido', 'sin trazado medido', 'medir el trazado da los llenos; el lote da la cuadra');
+    }
+
+    // 6 · Suelo disponible real.
+    if (ll && ll.pctVacio != null && meta.areaM2) {
+      var libreHa = Math.round(meta.areaM2 * ll.pctVacio / 100 / 10000 * 10) / 10;
+      F('Suelo disponible', num(ll.pctVacio) + ' % libre · unas ' + num(libreHa) + ' ha brutas',
+        'brutas: incluyen vías, patios y afectaciones; el suelo de verdad disponible sale del catastro, sin dato oficial');
+    } else {
+      F('Suelo disponible', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
+    }
+
+    // 7 · Presión de crecimiento: el verde que se fue.
+    var ev = S.evo || {}, W = ev.wayback, t = W && W.tendencia;
+    if (t && t.verdeDesde != null && t.verdeHasta != null) {
+      var dv = Math.round((t.verdeHasta - t.verdeDesde) * 10) / 10;
+      F('Presión de crecimiento', 'verde del ' + num(t.verdeDesde) + ' % en ' + t.desde + ' al ' + num(t.verdeHasta) + ' % en ' + t.hasta,
+        dv < -5 ? 'perdió ' + num(-dv) + ' puntos de verde: el sector se está llenando y el proyecto compite por lo último libre'
+          : dv > 5 ? 'ganó verde: presión baja o abandono; mirarlo en la calle' : 'estable en una década: presión baja');
+    } else {
+      F('Presión de crecimiento', 'serie satelital no leída', 'leer la evolución (2014 a hoy) es lo que mide la presión');
+    }
+
+    // 8 · Dependencia de acceso.
+    var redJ = [];
+    try { redJ = redPorJerarquia(S.trzVias); } catch (e3) { redJ = []; }
+    if (redJ.length) {
+      var kmT = redJ.reduce(function (a, j) { return a + j.metros; }, 0) / 1000;
+      var mayores = redJ.filter(function (j) { return /^(troncal|principal|secundaria)$/.test(j.id); });
+      var kmM = mayores.reduce(function (a, j) { return a + j.metros; }, 0) / 1000;
+      var mv = st.movilidad || {};
+      var nArt = mv.nViasArterias != null ? mv.nViasArterias : mayores.length;
+      F('Dependencia de acceso', nArt + ' vía' + (nArt === 1 ? '' : 's') + ' de jerarquía mayor · ' + Math.round(100 * kmM / Math.max(kmT, 0.01)) + ' % de la red',
+        nArt <= 1 ? 'una sola entrada: si se cierra, el sector queda aislado; el proyecto no debe cargarla más'
+          : 'varias entradas: el acceso no depende de una calle');
+    } else {
+      F('Dependencia de acceso', 'sin red vial medida', 'medir el trazado trae la jerarquía de la red');
+    }
+
+    // 9 · Tamaño y forma de predios.
+    var la = null; try { la = analisisDelLote(); } catch (e4) {}
+    F('Tamaño y forma de predios', 'sin dato oficial (catastro IGAC o municipal)' + (la ? ' · el lote: ' + fmt(la.areaM2) + ' m², ' + (la.frentes || []).length + ' frente' + ((la.frentes || []).length === 1 ? '' : 's') : ''),
+      'sin la manzana catastral no se sabe si el lote es típico o excepcional en su cuadra');
+
+    // 10 · Comparación con la ciudad.
+    F('Comparación con la ciudad', 'sin cifra municipal comparable en esta hoja',
+      'la comparación que sí hay es contra los sectores del curso, en la ficha; la de la ciudad pide el POT o el observatorio local');
+
+    // 11 · Horizonte temporal.
+    F('Horizonte temporal', (t ? 'medido de ' + t.desde + ' a ' + t.hasta : 'una sola foto: hoy') + ' · a 10 años: sin proyección del sector',
+      'la proyección DANE es del municipio, no del barrio: el proyecto se diseña para la gente de hoy y el suelo que quede');
+
+    return filas;
   }
 
   var USOS_TIPICOS = [

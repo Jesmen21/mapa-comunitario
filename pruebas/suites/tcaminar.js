@@ -119,6 +119,7 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
     const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(400); }
     o.lamina=lamina;
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
 
     const bg=[...H().querySelectorAll('button')].filter(b=>/Guardar ficha/i.test(b.textContent||''))[0];
     if(bg){ bg.click(); await esperar(600); }
@@ -138,7 +139,10 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const P=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const B=r.bloque||'', LAM=r.lamina||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA y
+     aparte se exige que la impresa la traiga o la declare fuera. */
+  const B=r.bloque||'', LAM=r.laminaCompleta||r.lamina||'', LAMI=r.lamina||'';
   const fila=re=>(r.filas||[]).filter(f=>re.test(f.nom))[0]||null;
 
   console.log('\n  -- las cuatro cosas que se miden --');
@@ -174,6 +178,8 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
 
   console.log('\n  -- llega a todas partes --');
   P('la lámina trae la banda', /A distancia de caminar<\/h2>/.test(LAM));
+  P('y la impresa la trae, o la declara fuera por su nombre',
+    /A distancia de caminar<\/h2>/.test(LAMI) || (r.fuera||[]).indexOf('a-distancia-de-caminar')>=0);
   P('con los cuatro porcentajes', (LAM.match(/class="cm"/g)||[]).length===4,
     (LAM.match(/class="cm"/g)||[]).length+' columnas');
   P('el sector guardado no lo pierde', r.enGuardada);

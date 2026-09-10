@@ -351,10 +351,28 @@ entonces «está, o está declarado fuera», nunca «están todos».
   educativo); acostada ceden los últimos entre las cajas, porque con ellos
   intocables la letra bajaba al 34 %.
 
-Pendiente de la tanda siguiente del mismo pliego de instrucciones: los
-cinco paneles de vacío obligatorio (riesgo oficial, servicios públicos,
-norma urbana, movilidad real, información legal del predio) y los análisis
-cruzados (§2 y §3).
+### Los vacíos obligatorios y los cruces (v849)
+
+* **Cinco paneles de vacío obligatorio** (`PANELES_DE_VACIO`): riesgo
+  oficial, servicios públicos, norma urbana, movilidad real e información
+  legal del predio. Se imprimen siempre, como baldosas ámbar a trazos, con
+  «Sin dato oficial disponible», la fuente que haría falta y qué es lo que
+  sí hay (y por qué no es eso). Nunca en blanco, nunca una suposición: el
+  riesgo no se deduce de la pendiente. Van en la banda del trabajo de
+  campo —son datos por conseguir— porque en su banda de tema desplazaban
+  al mapa de cobertura del núcleo. Parada no ceden; acostada ceden con los
+  de campo.
+* **Lo que dicen juntas las cifras** (`crucesDelSector`): once cruces en
+  el cierre, antes de las propuestas, cada uno con valor y una lectura que
+  cierra en decisión. Lo que no está medido lo dice («sin dato oficial»,
+  «serie satelital no leída») y nombra qué haría falta.
+* **Cada dato ambiental cierra en decisión** (`DECIDE` en la
+  composición): una línea «→ …» al pie de las cajas ambientales, salida de
+  su propio número; la de la cobertura va en su mapa, porque con el raster
+  en la hoja la caja no existe.
+
+Con esto quedan hechas las seis secciones del pliego de instrucciones del
+módulo educativo (v847 a v849).
 
 ## Las pruebas se aprietan, no se aflojan
 
