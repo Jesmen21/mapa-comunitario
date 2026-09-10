@@ -2885,6 +2885,9 @@ function donaHTML(datos, colorDe, nombreDe) {
        Un pliego al 40 % es la señal de que sobran capas para este papel, no un
        pliego roto. */
     var escalaHoja = Math.max(0.3, Math.min(1, Number(o.escala) || 1));
+    // La fecha de la consulta, para la capa de método: OpenStreetMap y el
+    // clima se leen en vivo y su fecha es la de hoy.
+    var hoyTxt = (function () { try { return new Date().toLocaleDateString('es-CO'); } catch (e) { return 'hoy'; } })();
     /* Cuántos lados del lote se enumeran antes de pasar al reparto. Acostada
        la hoja tiene 300 mm menos de alto, así que aguanta menos renglones.
        Ver el porqué entero donde se usan, en la caja del lote. */
@@ -3322,6 +3325,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       'Qué le pide el sitio al proyecto':  ['proyecto', 'plan'],
       'Lo intangible':                     ['campo', 'ojo'],
       'Lo levantado en campo':             ['campo', 'campo'],
+      'Percepción del lugar':              ['campo', 'lapiz'],
+      'Lo que no cambia':                  ['campo', 'lapiz'],
+      'Voces de quien vive acá':           ['campo', 'lapiz'],
       'Lo que falta levantar':             ['campo', 'lista'],
       'Síntesis del sector':               ['cierre', 'documento']
     };
@@ -3389,10 +3395,24 @@ function donaHTML(datos, colorDe, nombreDe) {
          conservan su `class` exacta: hay suites que la leen literal, y no es
          un capricho: es la promesa de que la estructura del pliego se puede
          procesar. Su tinte va por esa misma clase en la hoja de estilo. */
+      /* La capa de método, al pie de cada caja. Los paneles de campo no la
+         llevan: son del estudiante, y su método es caminar. */
+      var metodo = /caja-campo/.test(clase || '') ? '' : metodoDe(titulo, hoyTxt);
       return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + ancha + '">' +
         '<h2>' + esc(titulo) + '</h2>' +
         '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
-        cuerpo + '</section>';
+        cuerpo + metodo + '</section>';
+    }
+    /* Un panel de campo: la instrucción y renglones o casillas en blanco,
+       con alto de papel fijo para que quepa la letra a mano. */
+    function panelCampo(instruccion, filas, renglones) {
+      return '<p class="lee">' + esc(instruccion) + '</p>' +
+        (filas && filas.length
+          ? '<div class="campo-filas">' + filas.map(function (f) {
+              return '<div class="cf"><span>' + esc(f) + '</span><i></i></div>';
+            }).join('') + '</div>'
+          : '') +
+        (renglones ? '<div class="renglones" style="--n:' + renglones + '"></div>' : '');
     }
     function fila(etq, val) {
       return val === null || val === undefined || val === ''
@@ -3468,7 +3488,28 @@ function donaHTML(datos, colorDe, nombreDe) {
       (st.poblacionEstimada ? fila('Población', Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
       (st.viviendasCenso ? fila('Viviendas', Number(st.viviendasCenso).toLocaleString('es-CO')) : '') +
       (st.estrato && st.estrato.predominante
-      ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : ''),
+      ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : '') +
+      /* El radio de análisis lo elige quien analiza, y la hoja lo dice; y
+         al lado, la misma esquina leída a 500, 800 y 1.000 m. Si lo que
+         manda cambia con el radio, la conclusión es del radio y no del
+         sector: eso es lo que un jurado pregunta y lo que hay que saber
+         defender. */
+      (function () {
+        var cr; try { cr = comparacionDeRadios(res); } catch (e) { cr = null; }
+        if (!cr) return '';
+        return '<div class="radios">' +
+          '<p class="lee">Radio de análisis: <b>' + cr.radio.toLocaleString('es-CO') + ' m</b>, definido por quien analiza' +
+            (cr.equivalente ? ' (área dibujada; es el radio equivalente)' : '') + '.</p>' +
+          '<table class="rad"><tr><th>Radio</th><th>Usos</th><th>Por ha</th><th>Manda</th></tr>' +
+            cr.filas.map(function (x) {
+              return '<tr' + (x.r === cr.radio ? ' class="el"' : '') + '><td>' + x.r + ' m</td><td>' + x.n + '</td><td>' +
+                conComa(x.porHa) + '</td><td>' + esc(x.manda) + (x.pct ? ' · ' + x.pct + ' %' : '') + '</td></tr>';
+            }).join('') + '</table>' +
+          '<p class="nota">' + (cr.cambia
+            ? 'Lo que manda cambia con el radio: la conclusión depende del radio elegido, y hay que decirlo.'
+            : 'Lo que manda no cambia con el radio: la lectura se sostiene a las tres escalas.') + '</p>' +
+        '</div>';
+      })(),
       'g2') +
       
       caja('El lote a intervenir',
@@ -4566,6 +4607,25 @@ function donaHTML(datos, colorDe, nombreDe) {
       ninguna consulta, y por eso lleva el nombre de quien caminó: en una
       lámina colgada, la diferencia entre un dato y un testimonio tiene que
       poder leerse sin preguntar. */
+      /* ── Los paneles de campo (§6 del pliego educativo) ──────────────
+         Tres paneles en blanco, para llenar a mano en la calle: lo que la
+         lámina no puede medir y el jurado sí pregunta. Van integrados en la
+         banda del trabajo de campo, no como anexo, y ceden los últimos
+         entre las cajas: una lámina sin la voz de quien vive ahí es una
+         lámina sobre un sector deshabitado. */
+      caja('Percepción del lugar',
+        panelCampo('A la hora que fuiste, con los cinco sentidos: anotá día y hora, y lo que estas cifras no ven.',
+          ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde te sentiste a gusto, y dónde no']),
+        'fam-campo caja-campo') +
+      caja('Lo que no cambia',
+        panelCampo('Permanencias: lo que lleva décadas ahí y el barrio defendería —un árbol, una tienda, una esquina, una fiesta—. Nada de esto está en los datos.',
+          null, 5),
+        'fam-campo caja-campo') +
+      caja('Voces de quien vive acá',
+        panelCampo('Tres frases textuales de residentes, con iniciales, edad y años en el barrio. Preguntá qué falta y qué sobra.',
+          ['«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá']),
+        'fam-campo caja-campo') +
+
       caja('Lo intangible',
       (function () {
       var IT2 = window.URBIS_INTANGIBLE;
@@ -4685,7 +4745,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
         pregunta: '¿Qué se comprobó en la calle y qué falta por levantar?',
         que: 'lo intangible · lo levantado · lo que falta',
-        cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] },
+        cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar',
+                'Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre',
         pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
@@ -4821,7 +4882,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length, sv = (cmp.sinVerificar || []).length;
               return nv + ' usos nuevos encontrados en la calle, ' + ds + ' discrepancias con el mapa y ' + sv + ' registros sin verificar.';
             }
-            return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar.';
+            return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar, y trae tres paneles para llenar a mano en la calle.';
           case 'sintesis':
             return 'Cinco propuestas ordenadas por necesidad medida y factibilidad del predio. URBIS recomienda; el estudiante y el jurado deciden.';
           default:
@@ -5177,6 +5238,7 @@ function donaHTML(datos, colorDe, nombreDe) {
              de cobertura va junto al raster porque separada confundía. */
           (m.extra || '') +
           '<small class="mp-pie">' + esc(m.pie) + '</small>' +
+          metodoDe(m.comp ? 'calor:categoria' : m.id, hoyTxt) +
         '</section>';
     }).join('');
     var cajaSintesis =
@@ -5226,7 +5288,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                 'acceso y los servicios registrados permiten' + (pu.hayLote ? '' : ', juzgado sobre el sector porque no hay lote dibujado') +
                 '. La norma urbana no está consultada: ninguna propuesta sube de factibilidad media hasta que se lea. ' +
                 'URBIS recomienda; el estudiante y el jurado deciden.' +
-                (pu.poblacion ? ' Población de referencia: ' + fmtN(pu.poblacion) + ' hab.' : '') + '</small>';
+                (pu.poblacion ? ' Población de referencia: ' + fmtN(pu.poblacion) + ' hab.' : '') + '</small>' +
+              /* El espacio de la lectura propia: la parte de la lámina que
+                 URBIS no puede hacer, a mano y con renglones. */
+              '<div class="propia"><b>Tu lectura</b>' +
+                '<small>¿Con cuál de las cinco te quedás, y qué viste en la calle que estas cifras no ven? ' +
+                'Escribilo acá, a mano: es la parte de la lámina que URBIS no puede hacer.</small>' +
+                '<div class="renglones" style="--n:3"></div></div>';
           })(), 'sintesis-pie');
     var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis);
     cajasHTML = agrupado.html;
@@ -5343,18 +5411,45 @@ function donaHTML(datos, colorDe, nombreDe) {
         'font-size:2.6mm; margin-right:2mm }' +
       // Las cinco propuestas del cierre.
       '.props{ display:flex; flex-direction:column; gap:2mm; margin-top:2mm }' +
-      '.pu{ display:grid; grid-template-columns:9mm minmax(0,1fr) ' + (horiz ? '58mm 78mm' : '52mm 66mm') + ';' +
-        'gap:1mm 3.5mm; align-items:center; padding:2mm 3mm; border:.3mm solid #E3EAF0; border-radius:2mm; background:#fff }' +
-      '.pu-n{ font-size:7mm; line-height:1; font-weight:800; color:var(--tinte) }' +
-      '.pu-uso{ display:block; font-size:4.2mm; line-height:1.15; font-weight:800 }' +
-      '.pu-razon{ display:block; font-size:3mm; line-height:1.3; color:#5A6472; margin-top:.6mm }' +
-      '.pu-ind{ display:flex; flex-direction:column; gap:.3mm; font-size:2.9mm; line-height:1.3; min-width:0 }' +
+      '.pu{ display:grid; grid-template-columns:8mm minmax(0,1fr) ' + (horiz ? '58mm 84mm' : '50mm 70mm') + ';' +
+        'gap:.6mm 3mm; align-items:center; padding:1.4mm 2.5mm; border:.3mm solid #E3EAF0; border-radius:2mm; background:#fff }' +
+      '.pu-n{ font-size:6mm; line-height:1; font-weight:800; color:var(--tinte) }' +
+      '.pu-uso{ display:block; font-size:3.8mm; line-height:1.12; font-weight:800 }' +
+      '.pu-razon{ display:block; font-size:2.8mm; line-height:1.28; color:#5A6472; margin-top:.5mm }' +
+      '.pu-ind{ display:flex; flex-direction:column; gap:.2mm; font-size:2.7mm; line-height:1.28; min-width:0 }' +
       '.pu-ind i{ font-style:normal; font-size:2.4mm; letter-spacing:.16em; text-transform:uppercase; color:#6B7A8A }' +
       '.pu-ind b{ font-size:3.8mm; text-transform:capitalize }' +
       '.pu-ind small{ color:#5A6472 }' +
       '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
       '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
       '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
+      // La capa de método, al pie de cada caja y de cada mapa.
+      '.metodo{ margin-top:1.6mm; padding-top:1.2mm; border-top:.3mm dashed #D5DEE6; font-size:2.3mm; line-height:1.28; color:#5A6472 }' +
+      '.metodo i{ font-style:normal; font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-size:2.1mm; color:var(--tinte); margin:0 .8mm 0 1.8mm }' +
+      '.metodo i:first-child{ margin-left:0 }' +
+      '.caja-cifra .metodo{ font-size:2.3mm }' +
+      // El radio elegible, en la ficha del sitio.
+      '.radios{ margin-top:2mm }' +
+      '.rad{ width:100%; border-collapse:collapse; font-size:3mm; margin:1.5mm 0 }' +
+      '.rad th{ text-align:left; font-size:2.4mm; letter-spacing:.14em; text-transform:uppercase; color:#6B7A8A; padding:.6mm 1mm; border-bottom:.3mm solid #E3EAF0 }' +
+      '.rad td{ padding:.8mm 1mm; border-bottom:.3mm solid #EEF3F7 }' +
+      '.rad tr.el td{ font-weight:800; color:var(--tinte) }' +
+      // Renglones y casillas para escribir a mano: alto de papel fijo.
+      '.renglones{ height:calc(var(--n, 4) * 7mm / var(--k, 1)); margin-top:2mm;' +
+        'background:repeating-linear-gradient(to bottom, transparent 0, transparent calc(7mm / var(--k, 1) - .3mm), #C9D4DE calc(7mm / var(--k, 1) - .3mm), #C9D4DE calc(7mm / var(--k, 1))) }' +
+      '.campo-filas{ display:flex; flex-direction:column; gap:1.5mm; margin-top:2mm }' +
+      '.cf{ display:grid; grid-template-columns:minmax(0,38%) 1fr; gap:2mm; align-items:end; font-size:3mm; color:#5A6472 }' +
+      '.cf i{ display:block; height:calc(7.5mm / var(--k, 1)); border-bottom:.35mm solid #9AA9B8 }' +
+      '.caja-campo{ background:#FCFBFF }' +
+      '.caja-campo .lee{ border-left-color:var(--tinte) }' +
+      // La lectura propia y la bibliografía, en el cierre.
+      '.propia{ margin-top:3mm; padding-top:2.5mm; border-top:.3mm solid #E3EAF0 }' +
+      '.propia b{ display:block; font-size:3.4mm; letter-spacing:.1em; text-transform:uppercase; color:var(--tinte) }' +
+      '.propia small{ display:block; font-size:3mm; line-height:1.4; color:#5A6472; margin-top:.8mm }' +
+      '.pie .biblio{ margin:0 0 2.5mm; font-size:2.3mm; line-height:1.3; color:#6B7A8A }' +
+      '.pie .biblio b{ display:block; font-size:2.5mm; letter-spacing:.14em; text-transform:uppercase; color:#075E88; margin-bottom:.8mm }' +
+      '.pie .biblio ol{ margin:0; padding-left:4mm; columns:' + (horiz ? 4 : 3) + '; column-gap:6mm }' +
+      '.pie .biblio li{ break-inside:avoid; margin-bottom:.5mm }' +
       /* La caja de un mapa: dos columnas de su banda, el dibujo llenándola y
          el pie debajo. Ocupa dos porque un mapa al ancho de una caja de
          cifras es del tamaño que tenía en la tira que se quitó, y de eso se
@@ -5659,7 +5754,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pcr-rosa-petalos path{ fill:#34CCFE; fill-opacity:.55; stroke:#0A6F9E; stroke-width:.5 }' +
       '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
       // El pie se va al fondo del papel aunque el contenido termine antes.
-      '.pie{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;' +
+      '.pie-linea{ display:flex; justify-content:space-between; align-items:flex-end; gap:6mm }' +
+      '.pie{ margin-top:auto; display:block;' +
         'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
       '.pie b{ color:#075E88 }' +
       '.pie .redes{ display:flex; justify-content:flex-end; gap:6mm; margin-top:2mm }' +
@@ -5691,6 +5787,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="rejilla"><div class="rej">' + cajasHTML + '</div></div>' +
 
       '<footer class="pie">' +
+        /* La bibliografía, al pie de la hoja: las normas y los autores de los
+           que sale cada comparación. Al pie y no en el cierre, porque el
+           cierre es la conclusión y esto es su respaldo; y porque acá no
+           compite con las cajas por el papel de la rejilla. */
+        '<div class="biblio"><b>Bibliografía y fuentes</b><ol>' +
+          BIBLIOGRAFIA.map(function (b) { return '<li>' + esc(b.replace(/\bhoy\b/g, hoyTxt)) + '</li>'; }).join('') +
+        '</ol></div>' +
+        '<div class="pie-linea">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
         /* Solo las redes. Las fuentes —OpenStreetMap, el DANE, el relieve,
@@ -5698,6 +5802,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            redes sociales de URBIS». Siguen en el informe en hojas, que es
            donde se cita. */
         '<div style="text-align:right"><span class="redes">' + pieRedes(3.4, 'mm') + '</span></div>' +
+        '</div>' +
       '</footer>' +
       '</div></body></html>';
   }
@@ -10109,7 +10214,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'donde-falta-mapear', t: 'Dónde falta mapear', g: 'El trabajo del curso',
         listo: !!res, falta: 'analizá el sector', dato: 'la rosa de los rumbos' },
       { id: 'lo-que-falta-levantar', t: 'Lo que falta levantar', g: 'El trabajo del curso',
-        listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' }
+        listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' },
+      /* Los tres paneles de campo: siempre listos, porque se llenan a mano. */
+      { id: 'percepcion-del-lugar', t: 'Percepción del lugar', g: 'El trabajo del curso',
+        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+      { id: 'lo-que-no-cambia', t: 'Lo que no cambia', g: 'El trabajo del curso',
+        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+      { id: 'voces-de-quien-vive-aca', t: 'Voces de quien vive acá', g: 'El trabajo del curso',
+        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' }
     ];
     var off = S.pliegoOff || [];
     /* Qué consigue cada caja gris. Se pidió así: «las cajas grises que salen
@@ -11055,6 +11167,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? { lat: Number(meta.lat), lng: Number(meta.lng) } : null;
     var viasN = (o.vias !== undefined ? o.vias : S.trzVias) || [];
     var origenN = (lote && lote.length >= 3) ? centroideDe(lote) : centroM;
+    // El radio de análisis: el elegido, o el equivalente del área dibujada.
+    var radioAn = meta.forma === 'poligono'
+      ? Math.round(Math.sqrt((Number(meta.areaM2) || 0) / Math.PI))
+      : Math.round(Number(meta.radioM) || 0);
 
     // ── Cómo se llega: la vía principal en rojo, las arterias y las paradas.
     var mvN = st.movilidad || null;
@@ -11137,11 +11253,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (nCa) {
         mapas.push({
           id: 'caminar', titulo: 'A distancia de caminar', grupo: grupoDeMapa('caminar'),
+          /* El radio de análisis, superpuesto al camino por la calle: la
+             diferencia entre el círculo y lo que de verdad se alcanza es lo
+             que la traza le quita al radio, y se pidió verlo junto. */
           svg: mini({ lineas: linCa, rotulos: rotCa,
+                      poligonos: radioAn > 0 ? [{ pts: anilloDe(origenN, radioAn, 64), relleno: '#0A6F9E', opacidad: 0.04, borde: '#0A6F9E', ancho: 1 }] : [],
                       destacados: [{ lat: origenN.lat, lng: origenN.lng, color: '#FFD54F' }] }),
-          conv: convCa.concat([{ c: '#FFD54F', t: (lote && lote.length >= 3) ? 'El lote' : 'El centro del sector', f: 'punto' }]),
+          conv: convCa.concat([{ c: '#FFD54F', t: (lote && lote.length >= 3) ? 'El lote' : 'El centro del sector', f: 'punto' }])
+            .concat(radioAn > 0 ? [{ c: '#0A6F9E', t: 'Radio de análisis · ' + radioAn.toLocaleString('es-CO') + ' m, en línea recta', f: 'area' }] : []),
           pie: 'el más cercano de cada cosa' +
-               (porCalle ? ', y el camino por la calle' : ', en línea recta: medí el trazado para verlo por la calle')
+               (porCalle ? ', y el camino por la calle' : ', en línea recta: medí el trazado para verlo por la calle') +
+               (radioAn > 0 ? ' · el círculo es el radio de análisis: lo que queda fuera del camino y dentro del círculo es lo que la traza le quita' : '')
         });
       }
     }
@@ -11412,6 +11534,9 @@ function donaHTML(datos, colorDe, nombreDe) {
      sale primero. Las categorías de uso —los de comparación— van temprano:
      son chicos y se leen al lado del grande, pero el grande ya dice lo
      esencial. */
+  /* Los paneles de campo: en blanco, para la calle. Ceden los últimos entre
+     las cajas, con las baldosas de cifra. */
+  var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];
   var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
                         'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
                         'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];
@@ -11424,9 +11549,18 @@ function donaHTML(datos, colorDe, nombreDe) {
        cierre nombran. Con los mapas a 120 mm (v847) las cajas del final de
        la lista eran las primeras en ceder, y la del lote estaba al final. */
     var hayLote = !!(S.lote && S.lote.length >= 3);
+    /* Y los tres paneles de campo (v848): en blanco, para la calle. Se
+       pidieron «integrados, no como anexo», y un panel que cede ante un
+       mapa no está integrado. Lo que ceda antes que ellos es un mapa del
+       núcleo, y eso está bien: la voz de quien vive ahí vale más que el
+       tercer mapa. */
+    /* Parada, que es el formato del pliego educativo. Acostada tiene 300 mm
+       menos de alto y con los paneles intocables la letra bajaba al 34 %:
+       ahí ceden, los últimos entre las cajas. */
+    var protegeCampo = !(o && o.horizontal);
     return lista.filter(function (c) {
       return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1 &&
-        !(hayLote && c.id === 'el-lote-a-intervenir');
+        !(hayLote && c.id === 'el-lote-a-intervenir') && !(protegeCampo && PANELES_DE_CAMPO.indexOf(c.id) !== -1);
     }).map(function (c) { return c.id; }).reverse();
   }
 
@@ -11534,7 +11668,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Las baldosas de cifra —media columna, cuatro renglones— son lo más
          barato de conservar y lo que más dice por milímetro: caen las
          últimas entre las cajas. La composición anotó cuáles son. */
-      var cifras = (o._memo && o._memo.cifras) || [];
+      var cifras = ((o._memo && o._memo.cifras) || []).concat(o.horizontal ? PANELES_DE_CAMPO : []);
       candidatos = candidatos.filter(function (c) { return cifras.indexOf(c) === -1; })
         .concat(candidatos.filter(function (c) { return cifras.indexOf(c) !== -1; }));
       var apagadasYa = (o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
@@ -12077,6 +12211,133 @@ function donaHTML(datos, colorDe, nombreDe) {
      lo dicen —«lo medido no muestra déficit»— en vez de inventar una. Las
      áreas típicas son órdenes de magnitud de programa, no norma: un puesto
      de salud de barrio, un jardín, una plaza. */
+  /* ── La capa de MÉTODO de cada panel ────────────────────────────────
+     Se pidió con estas palabras: «cada panel tiene dos capas, RESULTADO y
+     MÉTODO: la fórmula, la fuente con fecha y confiabilidad, la referencia
+     contra la que se compara y el error típico». Un panel que se ve bien y
+     no enseña no sirve, y lo que enseña es esto: de dónde salió el número,
+     cuánto creerle y contra qué leerlo.
+
+     Cada entrada es honesta hasta donde el dato lo permite. «hoy» se
+     reemplaza al componer por la fecha de la consulta: OpenStreetMap y
+     Open-Meteo se leen en vivo, así que la fecha del dato es la del día.
+     Las claves son los títulos de las cajas y los identificadores de los
+     mapas; lo que no tenga entrada recibe el aviso genérico y NO una
+     fuente inventada. */
+  var METODO_PANEL = {
+    'El sitio': { f: 'usos registrados dentro del área; densidad = usos ÷ hectáreas', fu: 'OpenStreetMap vía Overpass, hoy; el área, medida sobre el dibujo', c: 'media: depende de cuánto se haya mapeado', r: 'los sectores del curso y de la ciudad, en la ficha', e: '±20 % por usos sin mapear' },
+    'Qué hay, por categoría': { f: 'conteo por categoría del catálogo URBIS sobre las etiquetas de OpenStreetMap', fu: 'OpenStreetMap, hoy', c: 'media', r: 'un barrio mixto: vivienda entre 60 y 80 % de lo registrado', e: 'etiquetas mal puestas o duplicadas, ±10 %' },
+    'Qué manda en el sector': { f: 'peso por categoría con el área típica de cada uso; mezcla = entropía normalizada', fu: 'OpenStreetMap, hoy; pesos del motor URBIS', c: 'media', r: 'mezcla ≥ 0,55 alta · < 0,35 baja (Jacobs, 1961)', e: 'el peso es del motor, no medido predio a predio' },
+    'Dónde está la calle comercial': { f: 'núcleos de tres o más comercios a menos de 60 m entre sí', fu: 'OpenStreetMap, hoy', c: 'media', r: 'una calle comercial de barrio: 10 a 30 locales por cuadra', e: 'el comercio de garaje y el informal no están en el mapa' },
+    'Cómo cambia al alejarse': { f: 'usos por anillo de distancia al centro, en línea recta', fu: 'OpenStreetMap, hoy', c: 'media', r: 'anillos de 0–200, 200–500 y 500–1.000 m', e: 'la línea recta no es el camino: ±30 % en tiempo real' },
+    'Hitos y nodos': { f: 'puntos con nombre y peso de uso (culto, educación, salud, parques) y cruces de vías mayores', fu: 'OpenStreetMap, hoy', c: 'media', r: 'Lynch (1960): hitos, nodos, sendas', e: 'un hito de la memoria del barrio puede no tener etiqueta' },
+    'Quién vive acá': { f: 'suma de la población de las manzanas censales dentro del área; pirámide por tramos', fu: 'DANE, CNPV 2018, manzanas (Esri Colombia Living Atlas)', c: 'alta en el total, media en el reparto', r: 'proyección DANE 2024 del municipio', e: 'manzanas cortadas por el borde: ±10 %' },
+    'A distancia de caminar': { f: '% del área a menos de X minutos a pie de cada tipo; radio recto = minutos × 80 m', fu: 'OpenStreetMap, hoy; 4,8 km/h (Gehl, 2010)', c: 'media', r: 'cobertura ≥ 80 % del área', e: 'la traza real alarga: ver «Hasta dónde se camina»' },
+    'Hasta dónde se camina desde el lote': { f: 'recorrido por la red de calles (camino más corto) a 80 m por minuto desde el lote', fu: 'red vial de OpenStreetMap, hoy', c: 'media-alta', r: 'isócronas de 5, 10 y 15 minutos', e: 'sin andenes ni semáforos en la cuenta: ±2 min' },
+    'Cómo se llega': { f: 'vías por jerarquía, paradas y rutas registradas; vía principal más cercana', fu: 'OpenStreetMap, hoy', c: 'media-baja en transporte: las rutas están poco mapeadas', r: 'una parada por cada 1.500 habitantes', e: 'las rutas informales no aparecen' },
+    'El perfil de la calle': { f: 'ancho de vía (carriles × 3,3 m más andenes) contra la altura media construida; relación alto/ancho', fu: 'OpenStreetMap, hoy; alturas del trazado o contadas en campo', c: 'media', r: 'relación 1:1 a 1:2, calle contenida (Gehl, 2010)', e: 'anchos estimados por carriles: ±2 m' },
+    'Llenos y vacíos': { f: 'área de las huellas de edificios ÷ área del sector', fu: 'OpenStreetMap, hoy', c: 'media: depende de las huellas dibujadas', r: 'ocupación de suelo de 40 a 60 % en barrio consolidado', e: 'cada huella que falta baja el lleno' },
+    'Alturas de lo construido': { f: 'pisos por edificio (building:levels) o contados en campo; media y reparto', fu: 'OpenStreetMap, hoy; conteo del curso', c: 'baja en OpenStreetMap, alta si se contó en campo', r: 'altura máxima del POT: sin dato oficial', e: 'la mayoría de los edificios no trae altura registrada' },
+    'El terreno': { f: 'cotas en malla sobre el área; pendiente = desnivel ÷ distancia; cortes topográficos', fu: 'Copernicus DEM GLO-90 vía Open-Meteo Elevation', c: 'media: celda de 90 m', r: 'pendiente < 5 % plana · > 12 % fuerte', e: '±5 m en cota; suaviza los cambios bruscos' },
+    'El clima': { f: 'medias históricas de temperatura, lluvia y viento en el punto', fu: 'Open-Meteo, archivo climático', c: 'media-alta', r: 'confort entre 18 y 26 °C', e: 'el microclima del sector no se mide: ±2 °C' },
+    'Asoleamiento': { f: 'posición del sol por fecha y hora (azimut y altura) sobre las orientaciones del lote', fu: 'cálculo astronómico para la latitud del sitio', c: 'alta', r: 'en el trópico la fachada al poniente es la crítica', e: 'sin obstrucciones: ver «La sombra de los vecinos»' },
+    'La sombra de los vecinos': { f: 'proyección de las huellas vecinas con su altura a las 9, 12 y 15 h', fu: 'OpenStreetMap, hoy; sol calculado', c: 'media', r: 'la sombra de las 15 h manda el confort de la tarde', e: 'altura que falta = sombra que falta' },
+    'La amenaza sísmica': { f: 'zona de amenaza y coeficientes Aa y Av del municipio', fu: 'Servicio Geológico Colombiano; NSR-10 (2010), tabla A.2.3-2', c: 'alta como dato municipal', r: 'la microzonificación local, si existe', e: 'es del municipio, no del lote' },
+    'La inundación': { f: 'cruce del sitio con las manchas de inundación por periodo de retorno', fu: 'IDEAM, zonas susceptibles de inundación', c: 'media: escala 1:100.000', r: 'periodo de retorno de 100 años', e: 'no reemplaza el estudio de detalle del POT' },
+    'Verde y agua': { f: 'cuerpos de agua, parques y verde natural registrados, con nombre', fu: 'OpenStreetMap, hoy', c: 'media', r: 'cobertura verde ≥ 30 % del sector', e: 'el verde privado no aparece' },
+    'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
+    'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
+    'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
+    'Espacio público efectivo': { f: 'área de parques y plazas con polígono ÷ habitantes', fu: 'OpenStreetMap, hoy; población DANE 2018', c: 'media', r: '15 m²/hab: Decreto 1504 de 1998, compilado en el 1077 de 2015', e: 'un parque sin polígono no cuenta' },
+    'Cómo cambió el sitio': { f: 'la misma vista año a año; el verde, medido sobre cada imagen', fu: 'Microsoft Planetary Computer: Sentinel-2 y Landsat', c: 'media', r: 'una década, de 2014 a hoy', e: 'nubes y estación mueven el verde: ±10 %' },
+    'El lote a intervenir': { f: 'área, perímetro, frentes por vía y exposición solar por lado', fu: 'el polígono dibujado; vías de OpenStreetMap', c: 'alta en geometría, media en frentes', r: 'lote mínimo del POT: sin dato oficial', e: '±3 % de área por el trazo a mano' },
+    'La cuadra del lote': { f: 'continuidad del frente construido 120 m a cada lado del lote', fu: 'huellas de OpenStreetMap, hoy', c: 'media', r: 'frente continuo ≥ 70 %', e: 'una huella que falta se lee como vacío' },
+    'Qué cabe en el lote': { f: 'área × índices de ocupación y de construcción declarados', fu: 'índices puestos por quien analiza; el POT no está consultado', c: 'baja hasta leer la norma', r: 'IO 0,6 a 0,7 · IC 2 a 3 en barrio consolidado', e: 'sin aislamientos ni cesiones de la norma' },
+    'La sombra que arrojás': { f: 'sombra del volumen permitido a las 9, 12 y 15 h sobre los vecinos', fu: 'sol calculado; alturas de OpenStreetMap', c: 'media', r: 'ningún vecino en sombra al mediodía', e: 'depende de los índices declarados' },
+    'Qué le pide el sitio al proyecto': { f: 'determinantes derivadas de las mediciones de esta hoja', fu: 'esta misma lámina', c: 'la de cada medición', r: 'determinantes, no propuestas', e: 'no reemplaza la norma ni el estudio de suelos' },
+    'Lo levantado en campo': { f: 'lo mapeado por el curso contra OpenStreetMap: mismo sitio a menos de 40 m y misma categoría', fu: 'levantamiento del curso; OpenStreetMap, hoy', c: 'alta en lo verificado', r: 'coincidencia ≥ 80 %', e: 'el mismo sitio con otro nombre se lee como discrepancia' },
+    'Dónde falta mapear': { f: 'usos por rumbo desde el centro; rumbo vacío = sin registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ningún rumbo vacío', e: 'un rumbo vacío puede ser un predio grande, no falta de mapeo' },
+    'Lo que falta levantar': { f: 'registros sin altura, sin nombre o sin categoría', fu: 'OpenStreetMap, hoy', c: 'alta', r: 'cero pendientes', e: 'ninguno: es una lista' },
+    'Lo intangible': { f: 'marcas de percepción del curso por tipo y su cruce con el lote', fu: 'levantamiento del curso', c: 'testimonio, no medición', r: 'ninguna: es cualitativo', e: 'depende de quién caminó y cuándo' },
+    'Síntesis del sector': { f: 'necesidad = déficit medido (0 a 100); factibilidad = puntos por lote, acceso, servicios e inundación', fu: 'esta misma lámina', c: 'la de cada medición; la norma no está', r: 'URBIS recomienda, quien proyecta decide', e: 'sin POT ninguna factibilidad pasa de media' },
+    'Plano del sector': { f: 'usos mapeados y huellas sobre el polígono, a escala', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ninguna: es el plano base', e: 'lo que no está mapeado no está dibujado' },
+    'La foto satelital': { f: 'la imagen cruda del sector, sin clasificar', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'alta como imagen, sin fecha', r: 'ninguna', e: 'puede tener años; comparar con «Cómo cambió el sitio»' },
+    'calor:todos': { f: 'densidad de usos por núcleo (kernel) sobre todos los registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'dónde se junta lo que hay', e: 'un sector submapeado se ve vacío' },
+    'calor:categoria': { f: 'la misma densidad, solo con los usos de esa categoría', fu: 'OpenStreetMap, hoy', c: 'media', r: 'el mapa grande de al lado', e: 'pocos puntos = manchas engañosas' },
+    'estratos': { f: 'estrato socioeconómico por manzana', fu: 'DANE, estratificación por manzana', c: 'media: el estrato es del inmueble, no de la gente', r: 'reparto de estratos del municipio', e: 'manzanas sin dato quedan en gris' },
+    'masa': { f: 'susceptibilidad por rangos de pendiente del terreno medido', fu: 'Copernicus DEM GLO-90; rangos del Servicio Geológico Colombiano', c: 'media', r: 'el mapa municipal de movimientos en masa', e: 'la pendiente no es toda la amenaza: falta el suelo' },
+    'curvas': { f: 'curvas de nivel interpoladas de la malla de cotas', fu: 'Copernicus DEM GLO-90 vía Open-Meteo Elevation', c: 'media', r: 'la plancha del IGAC', e: 'celda de 90 m: suaviza el relieve' },
+    'vias': { f: 'jerarquía de cada vía según su etiqueta highway', fu: 'OpenStreetMap, hoy', c: 'alta en las mayores, media en las locales', r: 'la jerarquía vial del POT', e: 'vías sin etiqueta salen como locales' },
+    'llega': { f: 'la vía principal más cercana, las arterias y las paradas registradas', fu: 'OpenStreetMap, hoy', c: 'media-baja en transporte', r: 'una parada por cada 1.500 habitantes', e: 'rutas informales no aparecen' },
+    'caminar': { f: 'el más cercano de cada tipo y el camino por la calle; el radio de análisis, superpuesto', fu: 'OpenStreetMap, hoy', c: 'media', r: 'radio recto contra isócrona: la diferencia es la traza', e: 'sin andenes ni semáforos en la cuenta' },
+    'llenos': { f: 'huellas de edificios en negro sobre el sector', fu: 'OpenStreetMap, hoy', c: 'media', r: 'la plancha catastral', e: 'huellas faltantes' },
+    'alturas': { f: 'huellas con tono por número de pisos', fu: 'OpenStreetMap, hoy; conteo del curso', c: 'baja sin conteo de campo', r: 'la altura máxima del POT', e: 'huellas sin altura' },
+    'hitos': { f: 'hitos y nodos con su número y nombre', fu: 'OpenStreetMap, hoy', c: 'media', r: 'Lynch (1960)', e: 'hitos sin etiqueta' },
+    'comercial': { f: 'los locales y los núcleos de comercio', fu: 'OpenStreetMap, hoy', c: 'media', r: 'una calle comercial de barrio', e: 'comercio informal ausente' },
+    'anillos': { f: 'anillos de distancia al centro con los usos de cada uno', fu: 'OpenStreetMap, hoy', c: 'media', r: 'anillos de 200, 500 y 1.000 m', e: 'línea recta, no camino' },
+    'agua': { f: 'cuerpos de agua, parques y verde natural con su forma', fu: 'OpenStreetMap, hoy', c: 'media', r: 'la ronda hídrica del POT', e: 'quebradas canalizadas suelen faltar' },
+    'ruido': { f: 'nivel estimado por vía y distancia sobre el plano', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A), Resolución 627 de 2006', e: '±5 dB(A)' },
+    'sombras': { f: 'sombras de los vecinos a tres horas', fu: 'OpenStreetMap, hoy; sol calculado', c: 'media', r: 'la sombra de las 15 h', e: 'alturas faltantes' },
+    'sombra-proyecto': { f: 'sombra del volumen permitido a tres horas', fu: 'sol calculado; índices declarados', c: 'media', r: 'vecinos sin sombra al mediodía', e: 'índices sin norma' },
+    'intangible': { f: 'marcas de percepción del curso sobre el plano', fu: 'levantamiento del curso', c: 'testimonio', r: 'ninguna', e: 'depende de quién caminó' },
+    'acuerdos': { f: 'acuerdos y desacuerdos entre quienes marcaron', fu: 'levantamiento del curso', c: 'testimonio', r: 'ninguna', e: 'pocas marcas, poco acuerdo' },
+    'caminata': { f: 'tramos de calle alcanzados a 5, 10 y 15 minutos desde el lote', fu: 'red vial de OpenStreetMap, hoy', c: 'media-alta', r: 'isócronas', e: '±2 min' },
+    'cobertura': { f: 'clasificación píxel a píxel de la foto satelital', fu: 'Esri World Imagery', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: '±8 %' },
+    'foto': { f: 'la imagen cruda', fu: 'Esri World Imagery; sin fecha publicada', c: 'alta como imagen', r: 'ninguna', e: 'puede tener años' }
+  };
+  var METODO_GENERICO = { f: 'método no descrito todavía en esta hoja', fu: 'las fuentes de la bibliografía', c: 'la de su fuente', r: 'ver la ficha en pantalla', e: 'no estimado' };
+  function metodoDe(clave, hoyTxt) {
+    var m = METODO_PANEL[clave] || METODO_GENERICO;
+    var f = function (t) { return esc(String(t).replace(/\bhoy\b/g, hoyTxt || 'hoy')); };
+    return '<div class="metodo"><i>Fórmula</i>' + f(m.f) + '<i>Fuente</i>' + f(m.fu) +
+      '<i>Confiabilidad</i>' + f(m.c) + '<i>Referencia</i>' + f(m.r) + '<i>Error típico</i>' + f(m.e) + '</div>';
+  }
+
+  /* ── La bibliografía de la lámina ────────────────────────────────────
+     Lo que de verdad se usó: las normas contra las que se compara y los
+     autores de los que salen los conceptos. Nada que no esté en la hoja. */
+  var BIBLIOGRAFIA = [
+    'OpenStreetMap contributors. Datos abiertos bajo licencia ODbL, consultados vía Overpass API el hoy.',
+    'DANE. Censo Nacional de Población y Vivienda 2018, geografía por manzanas (servicio Esri Colombia Living Atlas); proyecciones de población municipal.',
+    'Decreto 1504 de 1998, compilado en el Decreto 1077 de 2015: espacio público efectivo de 15 m² por habitante.',
+    'NSR-10, Reglamento Colombiano de Construcción Sismo Resistente (Ley 400 de 1997; Decreto 926 de 2010), tabla A.2.3-2; zonas de amenaza del Servicio Geológico Colombiano.',
+    'IDEAM. Zonas susceptibles de inundación, servicio geográfico.',
+    'Resolución 627 de 2006, Ministerio de Ambiente: estándares máximos de ruido ambiental.',
+    'Ley 388 de 1997, ordenamiento territorial: el Plan de Ordenamiento Territorial del municipio es la norma urbana que esta hoja no consulta.',
+    'Copernicus DEM GLO-90 (ESA), servido por Open-Meteo Elevation API; Open-Meteo, archivo climático.',
+    'Esri World Imagery; Microsoft Planetary Computer (Sentinel-2, Landsat) para la serie temporal.',
+    'Lynch, K. (1960). The Image of the City. MIT Press: hitos, nodos, sendas, bordes y barrios.',
+    'Jacobs, J. (1961). The Death and Life of Great American Cities. Random House: mezcla de usos y ojos en la calle.',
+    'Gehl, J. (2010). Cities for People. Island Press: la escala humana y los 5 km/h del peatón.'
+  ];
+
+  /* ── El radio elegible, leído a tres radios ──────────────────────────
+     Se pidió que la lámina dijera «radio de análisis: 800 m, definido por
+     el estudiante» y comparara 500, 800 y 1.000: la misma esquina leída a
+     tres radios enseña si la conclusión es del sector o del radio. Se
+     cuenta sobre los usos registrados, en línea recta desde el centro. */
+  function comparacionDeRadios(res) {
+    var st = (res && res.stats) || {}, meta = (res && res.meta) || {}, pois = (res && res.pois) || [];
+    if (meta.lat == null || meta.lng == null) return null;
+    var centro = { lat: Number(meta.lat), lng: Number(meta.lng) };
+    var CAT = window.AIA_CATALOGO || {}, G = CAT.GRUPOS || {};
+    var filas = [500, 800, 1000].map(function (r) {
+      var dentro = pois.filter(function (p) { return p.lat != null && haversineM(centro, { lat: p.lat, lng: p.lng }) <= r; });
+      var porG = {};
+      dentro.forEach(function (p) { if (p.grupo && p.grupo !== 'otro') porG[p.grupo] = (porG[p.grupo] || 0) + 1; });
+      var k = Object.keys(porG).sort(function (a, b) { return porG[b] - porG[a]; })[0];
+      var ha = Math.PI * r * r / 10000;
+      return { r: r, n: dentro.length, porHa: Math.round(10 * dentro.length / ha) / 10,
+               manda: k ? sinEmoji((G[k] && (G[k].t || G[k].nombre)) || k) : '—',
+               pct: k ? Math.round(100 * porG[k] / dentro.length) : 0 };
+    });
+    var cambia = filas.some(function (x) { return x.manda !== filas[0].manda; });
+    var radio = meta.forma === 'poligono'
+      ? Math.round(Math.sqrt((Number(meta.areaM2) || 0) / Math.PI))
+      : Math.round(Number(meta.radioM) || 0);
+    return { radio: radio, equivalente: meta.forma === 'poligono', filas: filas, cambia: cambia };
+  }
+
   var USOS_TIPICOS = [
     { id: 'salud',      uso: 'Puesto o centro de salud de barrio',        m2: 800,  clave: /salud|hospital|cl[ií]nic|m[eé]dic|farmac/i },
     { id: 'educacion',  uso: 'Jardín infantil o colegio de barrio',        m2: 1500, clave: /educa|colegio|escuela|jard[ií]n/i },
@@ -20758,7 +21019,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     propuestasDeUso: function (res) { return propuestasDeUso(res || S.resultado); },
     /* La lámina compuesta a una escala dada, sin la búsqueda: para medir
        qué pasa a cada escala sin montar la ficha. */
-    laminaA: function (o) { return laminaImprimible(S.resultado, o || {}); },
+    laminaA: function (o) { return S.resultado ? laminaImprimible(S.resultado, o || {}) : ''; },
     categoriasQueCambian: function (tope) {
       var r = S.resultado || {};
       return categoriasQueCambian(r.stats || {}, r.pois || [], tope || 2);

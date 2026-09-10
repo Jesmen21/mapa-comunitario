@@ -147,7 +147,11 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
     const bla=H().querySelector('[data-pcr="lamina-ver"]'); if(bla){ bla.click(); await esperar(900); }
     window.AIA_INFORME.abrirVentanaImpresion=orig;
     o.laminaConEscala=/Sol de la tarde sobre cada lado, del rojo al azul/.test(capturado);
-    o.laminaNiveles=(capturado.match(/sol-punto/g)||[]).length;
+    /* Los lados con su nivel de sol se cuentan EN EL PLANO ACOTADO del lote
+       —cada lado es un trazo con el color de su nivel—, no en los puntos
+       `sol-punto` de otras cajas: esos eran los decibeles del ruido, y la
+       cuenta pasaba por casualidad mientras esa caja cupiera en la hoja. */
+    o.laminaNiveles=(((capturado.match(/<svg class="pcr-plano-lote"[\s\S]*?<\/svg>/)||[''])[0]).match(/stroke-linecap="butt"/g)||[]).length;
 
     // ── 3 · Las curvas: intervalo más fino, y a elegir.
     await abrir();

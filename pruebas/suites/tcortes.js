@@ -154,6 +154,7 @@ const geo=[
     if(caja) caja.value='La ladera del oriente';
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(600);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(600);
     o.pdf=capturado; capturado='';
 
@@ -273,11 +274,22 @@ const geo=[
     /cabe dentro de una sola celda|topografía en campo/.test(r.bajo));
 
   console.log('\n  -- en el papel --');
-  const LAM=r.lamina||'', PDF=r.pdf||'', LG=r.laminaGuardada||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm (y desde v848 los tres paneles de campo no ceden): el
+     contenido de cada caja se comprueba en la hoja COMPLETA —la misma
+     composición, sin el recorte del papel— y aparte se exige que la impresa
+     la traiga o la declare fuera por su nombre. */
+  const LAM=r.laminaCompleta||r.lamina||'', LAMI=r.lamina||'', PDF=r.pdf||'', LG=r.laminaGuardada||'';
   T('la lámina cambia los cortes del centro por los del lote',
     /por el lote, de occidente a oriente/.test(LAM) && !/A–A′ \(de occidente/.test(LAM));
+  T('y la impresa trae el terreno, o lo declara fuera por su nombre',
+    /<h2>El terreno<\/h2>/.test(LAMI) || (r.fuera||[]).indexOf('el-terreno')>=0);
   T('el PDF los lleva también', /por el lote, de occidente a oriente/.test(PDF));
-  T('y la lámina de un sector guardado', /por el lote, de occidente a oriente/.test(LG));
+  /* La del sector guardado también cede paneles; lo que no puede es volver a
+     los cortes del centro. */
+  T('y la lámina de un sector guardado nunca vuelve a los cortes del centro',
+    LG.length > 1000 && !/A–A′ \(de occidente/.test(LG) &&
+    (/por el lote, de occidente a oriente/.test(LG) || !/<h2>El terreno<\/h2>/.test(LG)));
   T('ninguna caja se recorta', (r.medida.cajas||[]).length===0,
     (r.medida.cajas||[]).join(' · ')||'ninguna');
   T('ni se pierde fuera de la hoja', (r.medida.perdidas||[]).length===0,

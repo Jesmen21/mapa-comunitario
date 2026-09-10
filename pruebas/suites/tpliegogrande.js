@@ -445,8 +445,10 @@ const geo = [
        todos los usos, los llenos— y lo demás cede, dicho por su nombre en
        la ficha y entero en el informe en hojas. «No me dejes mapas a un
        lado» se cumple ahora así: ninguno se pierde en silencio. */
-    const NUCLEO = ['La foto satelital', 'Cobertura del suelo', 'Todos los usos', 'Llenos y vacíos'];
-    T('el núcleo de mapas está: foto, cobertura, todos los usos y llenos',
+    /* Tres que no ceden nunca; los llenos pueden cederles el sitio a los
+       paneles de campo, que desde v848 tampoco ceden en la hoja parada. */
+    const NUCLEO = ['La foto satelital', 'Cobertura del suelo', 'Todos los usos'];
+    T('el núcleo de mapas está: foto, cobertura y todos los usos',
       NUCLEO.every(t => mapas.some(m => m.t === t)),
       mapas.length + ' mapas: ' + mapas.map(m => m.t).join(' · '));
     T('y los que cedieron están declarados en la ficha, no perdidos',
@@ -470,7 +472,7 @@ const geo = [
        de la cuenta: son chicos a propósito. */
     const deAnalisis = mapas.filter(m => !m.comp);
     const ladoMin = Math.min.apply(null, deAnalisis.map(m => Math.min(mm(m.w), mm(m.h))));
-    T('ninguno de análisis baja de 120 mm de lado corto', deAnalisis.length >= 4 && ladoMin >= 119,
+    T('ninguno de análisis baja de 120 mm de lado corto', deAnalisis.length >= 3 && ladoMin >= 119,
       ladoMin + ' mm el más chico de ' + deAnalisis.length);
     /* ── Que el sector LLENE el dibujo ────────────────────────────────
        El recuadro tenía la proporción fija 260 × 180 sin importar la forma del

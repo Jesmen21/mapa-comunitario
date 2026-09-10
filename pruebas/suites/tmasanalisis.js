@@ -619,7 +619,7 @@ const CAPAS_IDEAM = [
      Cada una se exige en el documento donde se pidió y, si es una medición,
      en los dos. */
   console.log('\n  -- lo que se pidió con el pliego real en la mano --');
-  const cajaLam = t => (LAM.split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const cajaLam = t => (LC.split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
   const CUAD = ['Fortalezas', 'Oportunidades', 'Debilidades', 'Amenazas'];
   /* La FODA salió del pliego en v847 —cierra con cinco propuestas de uso—
      y vive en la ficha y en el informe: se lee en el informe, por cuadrante. */
@@ -636,8 +636,8 @@ const CAPAS_IDEAM = [
     amenazas.join(' | ').slice(0, 160) || '(amenazas vacías)');
 
   const dona = h => (h.match(/<svg class="dona"/g) || []).length;
-  T('el gráfico de usos por categoría —la dona— en los dos', dona(LAM) >= 1 && dona(PDF) >= 1,
-    'pliego ' + dona(LAM) + ' · informe ' + dona(PDF));
+  T('el gráfico de usos por categoría —la dona— en los dos', dona(LC) >= 1 && dona(PDF) >= 1,
+    'pliego ' + dona(LC) + ' · informe ' + dona(PDF));
   const QH = cajaLam('Qué hay, por categoría');
   T('con una leyenda que es a la vez la tabla de convenciones de los usos',
     /Convenciones de los mapas de usos/.test(QH) && (QH.match(/class="cv"/g) || []).length >= 3,

@@ -329,9 +329,31 @@ Lo mide `tlaminaedu.js` en milímetros de papel, y las suites del pliego
 (`tpliegogrande`, `tmapas`, `tpliego`, `tlamina`, `tsintesis`) exigen desde
 entonces «está, o está declarado fuera», nunca «están todos».
 
-Pendiente de las tandas siguientes del mismo pliego de instrucciones: la
-capa de método por panel, el radio elegible y la bibliografía (§5), los
-paneles de campo (§6), los cinco paneles de vacío obligatorio y los análisis
+### La capa educativa (v848)
+
+* **Método en cada panel.** `METODO_PANEL` en `js/68`, con clave por título
+  de caja o identificador de mapa: fórmula, fuente (con «hoy» reemplazado
+  por la fecha de la consulta), confiabilidad, referencia y error típico.
+  Lo que no tenga entrada recibe `METODO_GENERICO` —«método no descrito
+  todavía»— y nunca una fuente inventada; `tlaminaedu` exige que ninguna
+  caja lo lleve. Una caja nueva necesita su entrada.
+* **Radio elegible.** La ficha del sitio dice «Radio de análisis: N m,
+  definido por quien analiza» (el equivalente si el área es un polígono) y
+  lee la misma esquina a 500, 800 y 1.000 m (`comparacionDeRadios`). El
+  mapa de lo que se alcanza a pie lleva el radio recto superpuesto a la
+  isócrona.
+* **Bibliografía** (`BIBLIOGRAFIA`) al pie de la hoja, no en el cierre:
+  solo normas y autores que la hoja usa de verdad.
+* **Lectura propia**: renglones en blanco al final de las cinco propuestas.
+* **Paneles de campo** (`PANELES_DE_CAMPO`): «Percepción del lugar», «Lo
+  que no cambia» y «Voces de quien vive acá», en blanco, en la banda del
+  trabajo de campo. **Parada no ceden nunca** (es el formato del pliego
+  educativo); acostada ceden los últimos entre las cajas, porque con ellos
+  intocables la letra bajaba al 34 %.
+
+Pendiente de la tanda siguiente del mismo pliego de instrucciones: los
+cinco paneles de vacío obligatorio (riesgo oficial, servicios públicos,
+norma urbana, movilidad real, información legal del predio) y los análisis
 cruzados (§2 y §3).
 
 ## Las pruebas se aprietan, no se aflojan

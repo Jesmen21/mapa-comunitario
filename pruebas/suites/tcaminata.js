@@ -331,11 +331,19 @@ const geo=[
 
   console.log('\n  -- en el papel --');
   const LAM=r.lamina||'', PDF=r.pdf||'';
-  T('la lámina trae la caja del recorrido', /Hasta dónde se camina desde el lote/.test(LAM));
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm (y desde v848 los tres paneles de campo no ceden): el
+     contenido de cada caja se comprueba en la hoja COMPLETA —la misma
+     composición, sin el recorte del papel— y aparte se exige que la impresa
+     la traiga o la declare fuera por su nombre. */
+  const LC=r.laminaCompleta||LAM;
+  T('la lámina trae la caja del recorrido', /Hasta dónde se camina desde el lote/.test(LC));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /Hasta dónde se camina desde el lote/.test(LAM) || (r.fuera||[]).indexOf('hasta-donde-se-camina-desde-el-lote')>=0);
   T('con los tres anillos y sus metros',
-    /5 minutos/.test(LAM) && /400 m de recorrido por las calles/.test(LAM));
+    /5 minutos/.test(LC) && /400 m de recorrido por las calles/.test(LC));
   T('y dice cuántos parecían estar cerca en línea recta',
-    /en línea recta parecían/.test(LAM) || /la línea recta no engañaba/.test(LAM));
+    /en línea recta parecían/.test(LC) || /la línea recta no engañaba/.test(LC));
   T('el PDF también lo trae', /<h2>Hasta dónde se llega caminando<\/h2>/.test(PDF));
   T('y con sus salvedades', /No sabe si hay andén, dónde cruzar ni si la cuadra sube/.test(PDF));
 

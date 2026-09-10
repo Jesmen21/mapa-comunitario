@@ -243,6 +243,7 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     await abrir();
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     await abrir();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf=capturado; capturado='';
@@ -263,7 +264,12 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const LAM=r.lamina||'', PDF=r.pdf||'', F=r.ficha||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm (y desde v848 los tres paneles de campo no ceden): el
+     contenido de cada caja se comprueba en la hoja COMPLETA —la misma
+     composición, sin el recorte del papel— y aparte se exige que la impresa
+     la traiga o la declare fuera por su nombre. */
+  const LAM=r.laminaCompleta||r.lamina||'', LAMI=r.lamina||'', PDF=r.pdf||'', F=r.ficha||'';
 
   console.log('\n  -- las tres consultas --');
   T('el módulo está cargado', r.hayModulo===true);
@@ -349,6 +355,9 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     r.dibujo.etq);
   T('la lámina la lleva también',
     /<h2>La amenaza sísmica<\/h2>/.test(LAM) && /años de periodo de retorno/.test(LAM));
+  T('y la impresa trae la amenaza y la inundación, o las declara fuera por su nombre',
+    (/<h2>La amenaza sísmica<\/h2>/.test(LAMI) || (r.fuera||[]).indexOf('la-amenaza-sismica')>=0) &&
+    (/<h2>La inundación<\/h2>/.test(LAMI) || (r.fuera||[]).indexOf('la-inundacion')>=0));
 
   console.log('\n  -- cómo se siente, en palabras --');
   /* «Aa = 0,35» no le dice nada a alguien de primer año; «se siente fuerte,

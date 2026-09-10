@@ -238,6 +238,33 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
             comp: c.classList.contains('mapa-comp'), w: mm(rb.width), h: mm(rb.height),
             cajaW: c.offsetWidth };
         }),
+        /* La capa de método de cada caja y de cada mapa: las cinco etiquetas. */
+        metodos: [...document.querySelectorAll('.caja:not(.caja-campo)')].map(c => ({
+          t: (c.querySelector('h2') || {}).textContent || '?',
+          etiquetas: [...c.querySelectorAll(':scope > .metodo i')].map(i => i.textContent),
+          texto: ((c.querySelector(':scope > .metodo') || {}).textContent || '') })),
+        radios: (function () {
+          const r = document.querySelector('.radios'); if (!r) return null;
+          return { texto: r.textContent.replace(/\s+/g, ' '), filas: r.querySelectorAll('.rad tr').length - 1,
+                   elegido: !!r.querySelector('.rad tr.el') };
+        })(),
+        caminar: (function () {
+          const c = document.querySelector('.mapa-caja[data-m="caminar"]'); if (!c) return null;
+          return { conv: ((c.querySelector('.conv-mp') || {}).textContent || '').replace(/\s+/g, ' '),
+                   pie: (c.querySelector('.mp-pie') || {}).textContent || '',
+                   poligonos: c.querySelectorAll('.mp-dib svg polygon, .mp-dib svg path[fill-opacity]').length };
+        })(),
+        biblio: { n: document.querySelectorAll('.pie .biblio li').length,
+                  texto: ((document.querySelector('.pie .biblio') || {}).textContent || '').replace(/\s+/g, ' ') },
+        propia: (function () {
+          const p = document.querySelector('.sintesis-pie .propia'); if (!p) return null;
+          const r = p.querySelector('.renglones');
+          return { alto: r ? mm(rect(r).height) : 0, texto: p.textContent.replace(/\s+/g, ' ') };
+        })(),
+        campo: [...document.querySelectorAll('.caja-campo')].map(c => ({
+          t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height),
+          casillas: c.querySelectorAll('.cf').length, renglones: !!c.querySelector('.renglones'),
+          instruccion: (c.querySelector('.lee') || {}).textContent || '' })),
         cifras: [...document.querySelectorAll('.caja-cifra')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', w: c.offsetWidth,
           // Un dibujo de verdad, no el icono de la esquina, que también es svg.
@@ -276,6 +303,9 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   };
   const V = await medir(r.v, 2268, 3402);
   const HZ = await medir(r.h, 3402, 2268);
+  // La hoja completa —la misma composición, sin el recorte del papel—: donde
+  // se comprueba lo que es propiedad de la composición y no de lo que cupo.
+  const VC = await medir(r.completa, 2268, 3402);
   await pg.close(); await b.close();
   fs.writeFileSync(S + 'lamina-edu-v.html', r.v || '', 'utf8');
   fs.writeFileSync(S + 'lamina-edu-h.html', r.h || '', 'utf8');
@@ -294,10 +324,13 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     const analisis = o.mapas.filter(m => !m.comp), comp = o.mapas.filter(m => m.comp);
     const menor = m => Math.min(m.w, m.h);
     const chicos = analisis.filter(m => menor(m) < 119.5);
-    T('hay mapas de análisis que medir, y varios', analisis.length >= 5,
+    /* Cuatro figuras no ceden nunca: la foto, el plano, la cobertura y el
+       mapa de todos los usos. Desde v848 los paneles de campo tampoco, y el
+       tercer mapa del núcleo puede cederles el sitio. */
+    T('hay mapas de análisis que medir: al menos las cuatro figuras que no ceden', analisis.length >= 4,
       analisis.length + ' de análisis · ' + comp.length + ' de comparación');
     T('ninguno de análisis baja de 120 mm de lado corto, con la hoja ya reducida',
-      analisis.length >= 5 && chicos.length === 0,
+      analisis.length >= 4 && chicos.length === 0,
       chicos.length ? chicos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
                     : 'el más chico ' + Math.min.apply(null, analisis.map(menor)) + ' mm · compuesta al ' + Math.round(o.escala * 100) + '%');
     T('y la hoja cierra igual: no se desborda',
@@ -316,8 +349,12 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       (todos ? menor(todos) : 0) + ' mm contra ' + cat.map(m => menor(m)).join(' · '));
 
     console.log('\n  -- ' + nom + ': baldosas de cifra --');
-    const mapaChico = analisis.slice().sort((a, b) => a.cajaW - b.cajaW)[0];
-    const nombres = o.cifras.map(c => c.t);
+    /* Sobre la hoja COMPLETA: qué caja es baldosa y cuánto mide es cosa de
+       la composición; si la impresa la trae o la declara lo comprueba el
+       invariante de abajo. */
+    const oc = VC || o;
+    const mapaChico = oc.mapas.filter(m => !m.comp).slice().sort((a, b) => a.cajaW - b.cajaW)[0];
+    const nombres = oc.cifras.map(c => c.t);
     /* Las dos cajas de puras cifras de este sector, por su nombre: la regla
        se prueba sobre cajas concretas y no sobre «alguna». El espacio
        público —tres cifras, el parque y la meta— y el verde y el agua. La de
@@ -330,13 +367,13 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('y la de infraestructura, con su advertencia larga, no',
       nombres.indexOf('Infraestructura de servicios') === -1);
     T('y la ficha del sitio, que abre la hoja al lado del plano, no',
-      nombres.indexOf('El sitio') === -1 && o.cifras.every(c => !c.svg),
-      o.cifras.filter(c => c.svg).map(c => c.t).join(' · ') || 'ninguna con dibujo');
+      nombres.indexOf('El sitio') === -1 && oc.cifras.every(c => !c.svg),
+      oc.cifras.filter(c => c.svg).map(c => c.t).join(' · ') || 'ninguna con dibujo');
     T('cuatro caben en el ancho del mapa de análisis más angosto',
-      o.cifras.length >= 2 && !!mapaChico && o.cifras.every(c => 4 * c.w <= mapaChico.cajaW * 1.04),
-      o.cifras.length ? Math.round(Math.max.apply(null, o.cifras.map(c => c.w)) / (mapaChico ? mapaChico.cajaW : 1) * 100) + '% del ancho del mapa cada una' : '');
-    T('y ninguna se recorta por dentro', o.cifras.every(c => !c.recortada),
-      o.cifras.filter(c => c.recortada).map(c => c.t).join(' · ') || 'ninguna');
+      oc.cifras.length >= 2 && !!mapaChico && oc.cifras.every(c => 4 * c.w <= mapaChico.cajaW * 1.04),
+      oc.cifras.length ? Math.round(Math.max.apply(null, oc.cifras.map(c => c.w)) / (mapaChico ? mapaChico.cajaW : 1) * 100) + '% del ancho del mapa cada una' : '');
+    T('y ninguna se recorta por dentro', oc.cifras.every(c => !c.recortada),
+      oc.cifras.filter(c => c.recortada).map(c => c.t).join(' · ') || 'ninguna');
 
     console.log('\n  -- ' + nom + ': cada banda pregunta y concluye --');
     const sinP = o.bandas.filter(b => !/^¿.+\?$/.test(b.pregunta.trim()));
@@ -372,6 +409,59 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       c.sobra <= 6 && !c.recortada, 'sobran ' + c.sobra + ' mm' + (c.recortada ? ' · RECORTADA' : ''));
     T('la primera propuesta impresa es la primera calculada',
       !!r.propuestas && c.filas[0].uso === r.propuestas.propuestas[0].uso, c.filas[0].uso);
+  });
+
+  /* ── Tanda 2 (v848): la capa educativa y los paneles de campo ─────── */
+  console.log('\n  -- cada panel dice su método --');
+  const ETQ = ['Fórmula', 'Fuente', 'Confiabilidad', 'Referencia', 'Error típico'];
+  const sinMetodo = (VC.metodos || []).filter(m => !ETQ.every(e => m.etiquetas.indexOf(e) >= 0));
+  T('todas las cajas y los mapas de la hoja completa llevan las cinco etiquetas del método',
+    (VC.metodos || []).length >= 20 && sinMetodo.length === 0,
+    (VC.metodos || []).length + ' paneles' + (sinMetodo.length ? ' · sin método: ' + sinMetodo.map(m => m.t).join(', ') : ''));
+  const genericos = (VC.metodos || []).filter(m => /método no descrito todavía/.test(m.texto));
+  T('y ninguno con el aviso genérico: cada uno tiene su fórmula y su fuente escritas',
+    genericos.length === 0, genericos.map(m => m.t).join(' · ') || 'todos descritos');
+  T('la fuente lleva la fecha de la consulta cuando el dato se lee en vivo',
+    (VC.metodos || []).some(m => /OpenStreetMap[^·]*\d{1,2}\/\d{1,2}\/\d{4}/.test(m.texto)),
+    (((VC.metodos || []).filter(m => /OpenStreetMap/.test(m.texto))[0] || {}).texto || 'ninguno con fecha').slice(0, 120));
+  T('y el ruido dice que no es una medición, con su límite normativo',
+    (VC.metodos || []).some(m => /ruido/i.test(m.t) && /no es una medición/.test(m.texto) && /627 de 2006/.test(m.texto)));
+
+  console.log('\n  -- el radio lo elige quien analiza, y se lee a tres radios --');
+  T('la ficha del sitio dice el radio de análisis y quién lo definió',
+    !!VC.radios && /Radio de análisis: [\d.]+ m, definido por quien analiza/.test(VC.radios.texto),
+    VC.radios ? VC.radios.texto.slice(0, 90) : 'sin bloque');
+  T('con las tres lecturas, 500, 800 y 1.000 m, y la conclusión de si cambia lo que manda',
+    !!VC.radios && VC.radios.filas === 3 && /500 m/.test(VC.radios.texto) && /1000 m/.test(VC.radios.texto) &&
+    /(cambia con el radio|no cambia con el radio)/.test(VC.radios.texto),
+    VC.radios ? VC.radios.filas + ' filas' : '');
+  T('el mapa de lo que se alcanza a pie lleva el radio recto superpuesto a la isócrona',
+    !!VC.caminar && /Radio de análisis · [\d.]+ m/.test(VC.caminar.conv) && /la traza le quita/.test(VC.caminar.pie) && VC.caminar.poligonos >= 1,
+    VC.caminar ? VC.caminar.poligonos + ' polígonos · ' + VC.caminar.conv.slice(-60) : 'sin mapa');
+
+  console.log('\n  -- bibliografía, lectura propia y paneles de campo --');
+  [['parada', V, r.fueraV || []], ['acostada', HZ, r.fuera || []]].forEach(([nom, o, fuera]) => {
+    if (!o) return;
+    T(nom + ': la bibliografía va al pie, con normas y autores',
+      o.biblio.n >= 10 && /OpenStreetMap/.test(o.biblio.texto) && /DANE/.test(o.biblio.texto) && /NSR-10/.test(o.biblio.texto) &&
+      /1077 de 2015/.test(o.biblio.texto) && /Lynch/.test(o.biblio.texto) && /Jacobs/.test(o.biblio.texto) && /Gehl/.test(o.biblio.texto) &&
+      /Ley 388 de 1997/.test(o.biblio.texto),
+      o.biblio.n + ' entradas');
+    T(nom + ': el cierre deja renglones para la lectura propia, de al menos 18 mm de papel',
+      !!o.propia && o.propia.alto >= 18 && /Tu lectura/.test(o.propia.texto) && /a mano/.test(o.propia.texto),
+      o.propia ? o.propia.alto + ' mm' : 'sin espacio');
+    const nombresCampo = o.campo.map(c => c.t);
+    const PANELES = ['Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá'];
+    const IDS_PANEL = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];
+    /* Parada —el formato del pliego educativo— los tres paneles no ceden.
+       Acostada, con 300 mm menos, ceden los últimos y quedan declarados. */
+    T(nom + (nom === 'parada' ? ': los tres paneles de campo están impresos, integrados en su banda' : ': los paneles de campo están impresos o declarados fuera'),
+      nom === 'parada' ? PANELES.every(x => nombresCampo.indexOf(x) >= 0)
+                       : PANELES.every((x, i) => nombresCampo.indexOf(x) >= 0 || fuera.indexOf(IDS_PANEL[i]) >= 0),
+      nombresCampo.join(' · ') || 'ninguno impreso');
+    T(nom + ': cada uno impreso trae su instrucción y sitio para escribir, de al menos 45 mm de papel',
+      (nom !== 'parada' || o.campo.length === 3) && o.campo.every(c => c.alto >= 45 && c.instruccion.length >= 40 && (c.casillas >= 3 || c.renglones)),
+      o.campo.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + (c.casillas || 'r')).join(' · ') || 'ninguno impreso');
   });
 
   console.log('\n  -- lo que cede queda dicho --');

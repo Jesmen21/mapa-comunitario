@@ -157,6 +157,7 @@ function climaSimulado(){
     if(caja) caja.value='La Playa, entre calles 8 y 12';
     bLam().click(); await esperar(400);
     o.html=capturado; capturado='';
+    o.htmlCompleta=window.URBIS_PC_RECON.laminaA({}); o.fueraV=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
 
     /* ── Y la lámina de un sector GUARDADO. Para que la prueba valga de algo
        hay que ensuciar el estado primero: se guarda la ficha, se analiza OTRO
@@ -290,7 +291,12 @@ function climaSimulado(){
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const P=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const h=r.html||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm (y desde v848 los tres paneles de campo no ceden): el
+     contenido de cada caja se comprueba en la hoja COMPLETA —la misma
+     composición, sin el recorte del papel— y aparte se exige que la impresa
+     la traiga o la declare fuera por su nombre. */
+  const hImp=r.html||'', h=r.htmlCompleta||hImp;
   /* Con atributos después de la clase: los llenos y vacíos, las alturas y
      los hitos son ahora la caja de SU mapa —el contexto va debajo del
      dibujo—, y una caja de mapa lleva `data-g` y `data-p`. */
@@ -400,10 +406,19 @@ function climaSimulado(){
   /* El pie lleva las redes y nada más: las fuentes se pidieron fuera del
      pliego —«ocúltela, solo deja las redes sociales»— y siguen en el informe
      en hojas, que es donde se cita. */
-  const pie=(h.match(/<footer class="pie">[\s\S]*?<\/footer>/)||[''])[0];
+  const pie=(hImp.match(/<footer class="pie">[\s\S]*?<\/footer>/)||[''])[0];
   P('el pie lleva las redes de URBIS', /urbispro\.city/.test(pie) && /@urbis_co/.test(pie));
-  P('y no la lista de fuentes, que va en el informe',
-    !/OpenStreetMap/.test(pie) && !/DANE/.test(pie) && !/no es el sector/.test(pie));
+  /* Se pidió quitar la lista de fuentes del pie («ocúltela, solo deja las
+     redes»); la lámina educativa (v848) trae en su lugar una BIBLIOGRAFÍA:
+     normas y autores citados, no la tabla de descargos de antes. */
+  P('y en vez de la tabla de fuentes de antes, la bibliografía: normas y autores',
+    /Bibliografía y fuentes/.test(pie) && /OpenStreetMap/.test(pie) && /Lynch/.test(pie) && /NSR-10/.test(pie) && !/no es el sector/.test(pie));
+  /* Y la impresa: lo que la hoja completa trae y ella no, está declarado. */
+  // Cada panel por el identificador con que la ficha lo declara: los mapas por su `data-m`, las cajas por su título en guiones.
+  const slug2=t=>t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ · el mapa$/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const panelesDe2=x=>(x.match(/<section class="caja[^"]*"[^>]*><h2>[^<]+<\/h2>/g)||[]).map(t=>{ const m=t.match(/data-m="([^"]+)"/); return m?m[1]:slug2((t.match(/<h2>([^<]+)/)||[])[1]||''); });
+  const perdidas2=panelesDe2(h).filter(id=>panelesDe2(hImp).indexOf(id)<0 && (r.fueraV||[]).indexOf(id)<0);
+  P('nada de la hoja completa falta en la impresa sin declararse', perdidas2.length===0, perdidas2.join(' · ')||'todo dicho');
   /* Y el contexto de la morfología, debajo de su mapa y no en una caja al
      lado: «sería mejor poner el contexto de cada uno debajo de los mapas». */
   const mapaLlenos=(h.split('<section class="caja').filter(x=>/^ mapa-caja/.test(x) && /<h2>Llenos y vacíos<\/h2>/.test(x))[0])||'';

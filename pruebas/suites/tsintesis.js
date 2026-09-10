@@ -199,6 +199,7 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
     const bl=H().querySelector('[data-pcr="lamina-ver"]');
     if(bl){ bl.click(); await esperar(500); }
     o.lamina=lamina;
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({});
     const bi=H().querySelector('[data-pcr="imprimir"]');
     if(bi){ bi.click(); await esperar(700); }
     o.pdf=lamina;
@@ -290,7 +291,9 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
      se imprimía el dominante en una fila. Va la rosa, en la caja del clima
      del pliego y en el bloque del clima del informe. */
   console.log('\n  -- la rosa de los vientos, en la caja del clima --');
-  const cajaClima = (LAM.split('<section class="caja').filter(x=>/<h2>El clima<\/h2>/.test(x))[0])||'';
+  /* Sobre la hoja completa: en la impresa el clima cede ante los mapas de
+     120 mm (v847) y queda declarado. */
+  const cajaClima = ((r2.laminaCompleta||LAM).split('<section class="caja').filter(x=>/<h2>El clima<\/h2>/.test(x))[0])||'';
   P('la caja del clima del pliego trae la rosa', /<div class="dib dib-rosa"><svg class="pcr-rosa-rumbos"/.test(cajaClima),
     cajaClima ? (/pcr-rosa-rumbos/.test(cajaClima)?'con rosa':'sin rosa') : 'no hay caja de clima');
   P('con los ocho rumbos dibujados', (cajaClima.match(/<path d="M100 100 L/g)||[]).length===8,

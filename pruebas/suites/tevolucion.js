@@ -353,6 +353,7 @@ for (let i = 0; i < 30; i++) {
     // ── El papel: los DOS documentos, que es donde se pidió que salieran.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(1200);
     o.lamina = capturado; capturado = '';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(1200);
     o.pdf = capturado; capturado = '';
 
@@ -414,7 +415,12 @@ for (let i = 0; i < 30; i++) {
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
-  const LAM = r.lamina || '';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm (y desde v848 los tres paneles de campo no ceden): el
+     contenido de cada caja se comprueba en la hoja COMPLETA —la misma
+     composición, sin el recorte del papel— y aparte se exige que la impresa
+     la traiga o la declare fuera por su nombre. */
+  const LAM = r.laminaCompleta || r.lamina || '', LAMI = r.lamina || '';
   const cajaDe = t => (LAM.split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
 
@@ -520,6 +526,8 @@ for (let i = 0; i < 30; i++) {
   const PDF = r.pdf || '';
   const secPDF = (PDF.split('<h2>').filter(x => x.indexOf('Cómo cambió el sitio</h2>') === 0)[0] || '');
   T('la lámina trae su caja', !!EV);
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /<h2>Cómo cambió el sitio<\/h2>/.test(LAMI) || (r.fuera || []).indexOf('como-cambio-el-sitio') >= 0);
   /* Solo las fotos: «solo HD desde 2014, sin la Landsat rayada de 2004, y
      el verde medido sobre las HD». Las estampas de la caja son las de alta
      resolución —una por año pedido— con su porcentaje debajo, los dos
@@ -550,7 +558,7 @@ for (let i = 0; i < 30; i++) {
      tiempo». La caja ocupa la fila entera de su banda y las fotos se
      reparten ese ancho —cinco fotos de más de diez centímetros—, en vez de
      un tamaño fijo de estampilla. */
-  const cajaEvo = ((r.lamina || '').split('<section class="caja')
+  const cajaEvo = ((r.laminaCompleta || r.lamina || '').split('<section class="caja')
       .filter(x => /<h2>Cómo cambió el sitio<\/h2>/.test(x))[0]) || '';
   T('el pliego trae también la tira de fotos, en una caja de fila entera',
     /class="evo-tira evo-alta"/.test(EV) && /^[^>]*caja-fila/.test(cajaEvo),

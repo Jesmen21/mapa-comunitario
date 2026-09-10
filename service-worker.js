@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v847-lamina-educativa-mapas-de-doce-centimetros';
+const URBIS_CACHE = 'urbis-v848-lamina-educativa-metodo-radio-y-campo';
 const URBIS_ASSETS = [
   './',
   './index.html',
