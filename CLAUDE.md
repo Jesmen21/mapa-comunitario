@@ -197,6 +197,98 @@ en un registro sería la manera silenciosa de inclinar la comparación. Y un
 archivado también exige papel: una exoneración sin fuente es tan falsa como
 una acusación sin fuente.
 
+## Visión Territorial: la cuarta puerta, aparte
+
+El sexto módulo (v844): déficits de equipamientos, prioridades y propuestas
+para alcaldes, gobernadores y presidentes. **URBIS recomienda, el humano
+decide**: ninguna pantalla ni texto dice que el sistema decide. Todo texto
+que genera va en tres tiempos —qué encontró, qué recomienda, qué pasa si no
+se hace— y solo sobre datos que tiene.
+
+### Hereda la interfaz y no comparte nada más
+
+Es una página propia, `vision-territorial.html`, con `js/90-vt-app.js`,
+`css/90-vt.css`, `sw-vt.js` (ámbito `/vision-territorial`) y
+`manifest-gobierno.json`. Comparte con `index.html` exactamente dos archivos
+de solo lectura: `js/00-config.js` y `js/71-iconos-urbis.js`. **Nada de
+js/05, js/12 ni js/20; nada del Apps Script; nada del campo `descripcion`
+separado por ` | `.** Sus claves de almacenamiento llevan `urbis_vt_`; su
+único global es `window.VT`. `revisar.js` vigila cada una de estas cosas en
+el bloque «Visión Territorial, aparte», y `tvision.js` comprueba en el
+navegador que desde `?app=educativo` ninguna pantalla suya existe y que un
+reporte ciudadano nunca aparece como propuesta.
+
+`?app=gobierno` está declarado en `js/70` con `pantallas: []` y una
+`pagina`: si alguien llega con ese parámetro a `index.html`, se lo lleva a
+su página antes de pintar nada.
+
+### Los datos viven en Postgres/PostGIS, no en la hoja
+
+Esquema, motor y rutas están en el repositorio privado del motor, carpeta
+`vt/`:
+
+| Archivo | Qué es |
+|---|---|
+| `vt/esquema.sql` | 13 tablas, PostGIS 4326, uuid, DANE como llave, RLS en todas |
+| `vt/roles.sql` | `vt_migrador` (dueño) y `vt_app` (el servidor, NOBYPASSRLS, sin DELETE) |
+| `vt/analisis.js` | el motor de déficit por radio; umbrales leídos de la tabla |
+| `vt/rutas.js` | `/vt/*`; ninguna respuesta trae pesos ni umbrales |
+| `vt/semilla.js` | Cúcuta, El Zulia y Bogotá con datos **de desarrollo**, marcados |
+| `vt/probar-vt.js` · `vt/probar-rutas.js` | las pruebas de la base y de las rutas |
+
+Tres reglas del esquema que cuesta recordar:
+
+* **La RLS filtra por el territorio de la sesión**, que el servidor pone por
+  transacción (`set_config('vt.territorio', …, true)`). Sin ese ajuste una
+  consulta devuelve cero filas: es el fallo seguro. `FORCE` aplica también al
+  dueño, así que una función `SECURITY DEFINER` no cruza territorios; lo
+  poco que cruza (el ranking) vive en `vt.ranking_cache`, una tabla que por
+  construcción solo tiene agregados.
+* **Nada se borra.** `vt_app` no tiene DELETE, y un disparador lo rechaza
+  incluso al superusuario. Se pone `retirado_en`. Por eso la unicidad del
+  código DANE es entre territorios *activos* (índice parcial).
+* **Los umbrales no se editan**: se retira la fila y se inserta otra con
+  fecha y autor. Cada corrida guarda una COPIA de los que usó.
+
+El rol `sistema` es del propio servidor (crear territorios, catálogos,
+umbrales generales, retirar propuestas viejas, anotar errores) y **no se
+puede emitir por licencia**. Un administrador municipal no puede tocar un
+umbral general: solo los de su territorio.
+
+### Cómo se prueba en local
+
+```bash
+# una vez: Postgres 16 + PostGIS, base y roles
+su postgres -c "psql -f vt/roles.sql"    # desde el repositorio del motor
+su postgres -c "psql -c 'CREATE DATABASE urbis_vt_pruebas OWNER vt_migrador'"
+su postgres -c "psql -d urbis_vt_pruebas -c 'CREATE EXTENSION postgis; CREATE EXTENSION pgcrypto;'"
+VT_DATABASE_URL_MIGRADOR=postgres://vt_migrador:vt_migrador_local@127.0.0.1:5432/urbis_vt_pruebas \
+  node vt/migrar.js && node vt/semilla.js
+node vt/probar-vt.js && node vt/probar-rutas.js
+```
+
+El motor de 8787 necesita `VT_DATABASE_URL` (la de `vt_app`) y un
+`URBIS_SECRETO` de pruebas para firmar licencias con territorio; el script
+de reinicio de la sesión los exporta. Una licencia entra al módulo solo si
+lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
+
+### Lo que falta, y se dice en pantalla
+
+* **Supabase real.** El esquema está escrito para Supabase (roles, RLS,
+  PostGIS) pero el proyecto no existe todavía: hay que crearlo, correr
+  `roles.sql` como `postgres`, `migrar.js` como `vt_migrador`, y poner
+  `VT_DATABASE_URL` en el servidor. **Nunca la llave `service_role`**: salta
+  la RLS y la volvería decorativa.
+* **Isócronas por malla vial** (Tobler): no hay malla cargada. El método
+  declarado es `radio_recto` y cada corrida lo dice.
+* **Espacio público en m²/hab**: hace falta el polígono de cada parque.
+* **Exportación PDF con marca de agua en el servidor**, cuentas por entidad
+  con contraseña de nuevo al aprobar (hoy se confirma escribiendo APROBAR),
+  ciclo de aprendizaje anual, SECOP.
+* Los tres territorios cargados son **de desarrollo**: manzanas sintéticas,
+  equipamientos de demostración. La única cifra real es la población de
+  Cúcuta (ancla DANE 2024). La pantalla lo avisa en amarillo.
+
 ## Las pruebas se aprietan, no se aflojan
 
 Cuando una falla por un cambio legítimo, se hace más precisa: se busca por la

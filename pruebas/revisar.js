@@ -369,6 +369,86 @@ console.log('\n  -- las apps de Android --');
 }
 
 // ── 5. el token de versión, el mismo en los cinco archivos ───────────────
+console.log('\n  -- Visión Territorial, aparte --');
+{
+  /* El sexto módulo hereda la interfaz y no comparte nada más. Estas
+     comprobaciones son la regla de aislamiento hecha código: si alguien
+     enlaza js/12 en su página «para reusar una función», o guarda algo bajo
+     una clave que ya usa otro módulo, esto lo ve antes que un usuario. */
+  const pag = leer('vision-territorial.html');
+  const scripts = [...pag.matchAll(/<script src="([^"?]+)/g)].map(m => m[1]);
+  const permitidos = /^(https:\/\/unpkg\.com\/leaflet|js\/00-config\.js|js\/71-iconos-urbis\.js|js\/90-vt-app\.js)/;
+  const ajenos = scripts.filter(x => !permitidos.test(x));
+  comprobar('vision-territorial.html no carga ningún módulo de index',
+    scripts.length >= 3 && ajenos.length === 0, ajenos.length ? 'también: ' + ajenos.join(', ') : scripts.length + ' scripts, todos suyos');
+
+  const vt = leer('js/90-vt-app.js');
+  comprobar('js/90 no habla con el Apps Script ni toca la sesión ni los datos de los reportes',
+    !/script\.google|socialAPI|URBIS_AUTH|urbis_auth_session|globalData|URBIS_SLOTS|BASE_OFFSET/.test(vt), 'js/90-vt-app.js');
+  const literales = [...vt.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(['"])([^'"]+)\1/g)].map(m => m[2]);
+  const ls = (vt.match(/var LS = \{([^}]+)\}/) || [])[1] || '';
+  const enLS = [...ls.matchAll(/'([^']+)'/g)].map(m => m[1]);
+  const claves = literales.concat(enLS);
+  const ajenas = claves.filter(k => k.indexOf('urbis_vt_') !== 0);
+  comprobar('todas sus claves de almacenamiento llevan el prefijo urbis_vt_',
+    claves.length >= 3 && ajenas.length === 0, ajenas.length ? 'sin prefijo: ' + ajenas.join(', ') : claves.length + ' claves');
+  comprobar('un solo nombre global, el espacio del módulo (window.VT)',
+    (vt.match(/window\.([A-Za-z_$][\w$]*)\s*=/g) || []).every(x => /window\.VT\s*=/.test(x)), 'js/90-vt-app.js');
+
+  /* Umbrales, pesos y llaves: nunca en el navegador. Es lo que se vende, y
+     la misma regla que ya protege al clasificador del motor de empresas. */
+  const servidos = [];
+  (function recorrer(dir) {
+    fs.readdirSync(R(dir), { withFileTypes: true }).forEach(e => {
+      if (['servidor', 'pruebas', '.git', 'node_modules', 'assets', 'herramientas'].indexOf(e.name) !== -1) return;
+      const rel = dir ? dir + '/' + e.name : e.name;
+      if (e.isDirectory()) recorrer(rel);
+      else if (/\.(js|html|css|json)$/.test(e.name)) servidos.push(rel);
+    });
+  })('');
+  const LLAVES = /service_role|SUPABASE_SERVICE|VT_DATABASE_URL|vt_app:|vt_migrador/;
+  const UMBRALES = /peso_poblacion|peso_urgencia|peso_costo|urgencia_seguridad|costo_m2|m2_referencia|edad_verificacion_dias|cobertura_malla_min/;
+  const conLlave = servidos.filter(f => LLAVES.test(leer(f)));
+  const conUmbral = servidos.filter(f => UMBRALES.test(leer(f)));
+  comprobar('ningún archivo servido trae la llave de la base ni sus roles',
+    conLlave.length === 0, conLlave.length ? conLlave.join(', ') : servidos.length + ' archivos revisados');
+  comprobar('ningún archivo servido trae las claves de umbrales ni de pesos',
+    conUmbral.length === 0, conUmbral.length ? conUmbral.join(', ') : servidos.length + ' archivos revisados');
+  comprobar('el esquema y el motor de Visión Territorial no están en el repositorio público',
+    !fs.existsSync(R('vt')) && servidos.every(f => !/CREATE POLICY|ST_ClusterDBSCAN|enTerritorio\(/.test(leer(f))), 'carpeta vt/ ausente');
+
+  // Ámbito propio: service worker y manifiesto suyos, y lo precargado existe.
+  const sw = leer('sw-vt.js');
+  const listados = [...new Set([...sw.matchAll(/['"](\.\/[^'"\s]+\.(?:html|js|css|json|png))['"]/g)].map(m => m[1]))];
+  const faltan = listados.filter(f => !fs.existsSync(R(f.replace(/^\.\//, ''))));
+  const locales = scripts.filter(x => !/^https?:/.test(x)).concat([...pag.matchAll(/href="(css\/[^"?]+)/g)].map(m => m[1]));
+  const sinCache = locales.filter(f => !sw.includes('./' + f));
+  comprobar('todo lo que sw-vt.js precarga existe, y todo lo local que la página carga está precargado',
+    faltan.length === 0 && sinCache.length === 0, (faltan.length ? 'FALTAN: ' + faltan.join(', ') + ' ' : '') + (sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(', ') : listados.length + ' archivos'));
+  comprobar('se registra con su propio ámbito y no toca el del sitio',
+    /register\(\s*'sw-vt\.js[^)]*scope:\s*'\/vision-territorial'/.test(vt)
+    // Los ARCHIVOS, no la palabra: el token de versión puede llevarla.
+    && !/vision-territorial\.html|sw-vt\.js|90-vt-app|90-vt\.css|manifest-gobierno/.test(leer('service-worker.js')), 'scope /vision-territorial');
+  let man = null; try { man = JSON.parse(leer('manifest-gobierno.json')); } catch (e) {}
+  comprobar('el manifiesto propio arranca en su página, en su ámbito y con su icono',
+    !!man && man.start_url === '/vision-territorial.html' && man.scope === '/vision-territorial'
+    && Array.isArray(man.icons) && man.icons.length >= 2 && man.icons.every(i => /gobierno\//.test(i.src) && fs.existsSync(R(i.src))), 'manifest-gobierno.json');
+
+  // La cuarta puerta: declarada en js/70, sin pantallas de index y con su página.
+  const m70 = leer('js/70-modo-app.js');
+  comprobar('js/70 declara el modo gobierno sin pantallas de index y con su página',
+    /gobierno:\s*\{[^}]*pantallas:\s*\[\][^}]*pagina:\s*'vision-territorial\.html'/.test(m70), 'js/70-modo-app.js');
+
+  // Iconos de línea, nunca emojis: en el módulo no hay ni uno.
+  const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
+  comprobar('ni un emoji en el módulo (js/90, css/90, la página)',
+    !EMOJI.test(vt) && !EMOJI.test(leer('css/90-vt.css')) && !EMOJI.test(pag), '3 archivos');
+
+  // La regla rectora, escrita donde se lee: URBIS recomienda, el humano decide.
+  comprobar('la regla rectora está en el código y en la pantalla',
+    /URBIS recomienda, el humano decide/.test(vt) && /pondera y muestra/.test(vt), 'js/90-vt-app.js');
+}
+
 console.log('\n  -- la versión --');
 {
   /* Siete, no cinco. `reportes.html` y su service worker quedaron fuera de
@@ -379,17 +459,22 @@ console.log('\n  -- la versión --');
      La app ligera y la grande comparten archivos; si una los pide con una
      versión vieja, las dos se rompen de maneras distintas y difíciles de
      explicar. */
+  /* Nueve desde la v844: Visión Territorial es una página aparte con su
+     propio service worker (vision-territorial.html y sw-vt.js), y los dos
+     tienen que subir con los demás. Un service worker propio con versión
+     vieja serviría una cáscara de hace meses a un alcalde. */
   const ARCHIVOS = ['service-worker.js', 'index.html', 'css/main.css', 'analisis-ia.html',
-                    'seguimiento.html', 'reportes.html', 'sw-reportes.js'];
+                    'seguimiento.html', 'reportes.html', 'sw-reportes.js',
+                    'vision-territorial.html', 'sw-vt.js'];
   const tokens = new Map();
   ARCHIVOS.forEach(f => {
     const t = leer(f);
-    const m = /^sw-|^service-worker/.test(f) ? t.match(/urbis-(?:reportes-)?v([\w-]+)/)
+    const m = /^sw-|^service-worker/.test(f) ? t.match(/urbis-(?:reportes-|vt-)?v([\w-]+)/)
                                             : t.match(/[?&]v=([\w-]+)/);
     tokens.set(f, m ? m[1] : '(ninguno)');
   });
   const distintos = [...new Set(tokens.values())];
-  comprobar('los siete archivos llevan la misma versión',
+  comprobar('los nueve archivos llevan la misma versión',
     distintos.length === 1,
     distintos.length === 1 ? distintos[0]
       : [...tokens].map(([f, v]) => f + '=' + v).join('  '));

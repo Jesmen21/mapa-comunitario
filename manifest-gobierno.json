@@ -1,0 +1,22 @@
+{
+  "id": "/vision-territorial.html",
+  "name": "URBIS Visión Territorial",
+  "short_name": "Visión Territorial",
+  "description": "Capa de decisión urbanística: déficits de equipamientos, prioridades y propuestas con justificación técnica. URBIS recomienda, el humano decide.",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "start_url": "/vision-territorial.html",
+  "scope": "/vision-territorial",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060D1A",
+  "theme_color": "#060D1A",
+  "prefer_related_applications": false,
+  "categories": ["government", "productivity", "utilities"],
+  "icons": [
+    { "src": "assets/icons/gobierno/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/gobierno/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/gobierno/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/gobierno/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

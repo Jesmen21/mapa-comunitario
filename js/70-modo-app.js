@@ -47,7 +47,15 @@
       // Pro City entra por llamadas (data-u52-call), no por pantalla.
       llamadasFuera: /^(procity-|pca-)/
     },
-    educativo: { modulos: ['procity'], abre: 'procity-open-map' }
+    educativo: { modulos: ['procity'], abre: 'procity-open-map' },
+    /* Visión Territorial (gobierno). No es una lista de pantallas de esta
+       página: es OTRA página, vision-territorial.html, con su propio
+       service worker y sin ninguno de los 83 módulos de acá. Aquí se
+       declara para que `?app=gobierno` exista como cuarta puerta y para
+       que, si alguien llega con ese parámetro a index.html, se lo lleve a
+       su página en vez de enseñarle la aplicación entera. `pantallas: []`
+       deja claro que NINGUNA pantalla de index es suya. */
+    gobierno: { modulos: [], pantallas: [], pagina: 'vision-territorial.html' }
   };
 
   /* La identidad que se lleva el TELÉFONO al instalar.
@@ -166,6 +174,13 @@
   }
 
   var MODO = modoPedido();
+  /* La cuarta puerta se va a su página antes de pintar nada. `replace`, no
+     `href`: el atrás del teléfono no tiene que volver a una index.html que
+     lo mandaría otra vez para allá. */
+  if (MODO && MODOS[MODO].pagina) {
+    try { location.replace(MODOS[MODO].pagina + location.hash); } catch (e) {}
+    return;
+  }
   if (MODO) {
     recordarModo(MODO);
   } else if (estaInstalada()) {
@@ -208,6 +223,10 @@
   /* Lo que la aplicación consulta antes de abrir algo. js/20 llama a estas
      dos desde show() y desde el despachador de clics; sin modo, todo pasa. */
   window.urbisPantallaPermitida = function (pantalla) {
+    // Las pantallas de Visión Territorial (vt-*) no existen en esta página,
+    // en NINGÚN modo: se rechazan por regla, no por ausencia. Así un botón
+    // o una dirección que las pida falla igual en el educativo y en el completo.
+    if (/^vt-/.test(String(pantalla || ''))) return false;
     if (!conf || !conf.pantallas) return true;
     return conf.pantallas.indexOf(String(pantalla || '')) !== -1;
   };
