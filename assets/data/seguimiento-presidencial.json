@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-09",
- "proximaActualizacion": "2026-09-10",
+ "actualizado": "2026-09-10",
+ "proximaActualizacion": "2026-09-11",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,112 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-09",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Un juzgado laboral de Bogotá ordena a la Presidencia retirar las publicaciones de De la Espriella junto a cadáveres de las operaciones Azarías y Centinela de la Patria",
+   "detalle": "El Juzgado Catorce Laboral del Circuito de Bogotá ordenó, como medida cautelar dentro de una acción de tutela presentada por el representante a la Cámara Santiago Osorio (Alianza Verde), que la Presidencia de la República y el Departamento Administrativo de la Presidencia (Dapre) retiren de sus redes sociales oficiales las publicaciones en las que el presidente Abelardo de la Espriella aparece junto a cadáveres de presuntos integrantes de grupos armados dados de baja en operaciones militares. Las publicaciones cuestionadas, difundidas el 2 y el 4 de septiembre, corresponden a los resultados de las operaciones Azarías (Miraflores, Guaviare) y Centinela de la Patria (La Guajira). El fallo, del 9 de septiembre, da a la Presidencia dos días para ejercer su derecho de defensa, por lo que la medida no es una decisión de fondo sobre la tutela.",
+   "contrapunto": "Osorio sustentó la tutela en un posible riesgo para los derechos fundamentales de niños, niñas y adolescentes que pudieran ver el contenido. Críticos citados por la prensa señalan además que la exposición pública de cadáveres podría entrar en tensión con principios del Derecho Internacional Humanitario, que prohíben el trato ofensivo o la instrumentalización con fines propagandísticos de personas muertas en combate. Es una medida cautelar, no una condena ni una decisión definitiva, y la Presidencia todavía no ha agotado su derecho de defensa.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El País (Cali) · Juez ordena retirar publicaciones de Abelardo de la Espriella con imágenes de cadáveres tras operativos militares",
+     "u": "https://www.elpais.com.co/judicial/juez-ordena-retirar-publicaciones-de-abelardo-de-la-espriella-con-imagenes-de-cadaveres-tras-operativos-militares-0949.html"
+    },
+    {
+     "n": "El Espectador · Ordenan a Presidencia y Dapre retirar imágenes de De la Espriella caminando entre cadáveres",
+     "u": "https://www.elespectador.com/judicial/ordenan-a-presidencia-y-dapre-retirar-imagenes-de-de-la-espriella-caminando-entre-cadaveres/"
+    },
+    {
+     "n": "Infobae · Juzgado ordenó al gobierno de Abelardo de la Espriella ocultar publicaciones de cadáveres de criminales abatidos: tiene un día para cumplir",
+     "u": "https://www.infobae.com/colombia/2026/09/09/juzgado-ordeno-al-gobierno-de-aberlardo-de-la-espriella-ocultar-publicaciones-de-cadaveres-de-criminales-abatidos-tiene-un-dia-para-cumplir/"
+    },
+    {
+     "n": "Infobae (agencias) · Un juez ordena a De la Espriella retirar publicaciones en las que aparece entre cadáveres",
+     "u": "https://www.infobae.com/america/agencias/2026/09/10/un-juez-ordena-a-de-la-espriella-retirar-publicaciones-en-las-que-aparece-entre-cadaveres/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-09",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella firma el decreto 1373 y asigna al vicepresidente José Manuel Restrepo funciones de coordinación en modernización del Estado, energía e inversión",
+   "detalle": "El presidente firmó el 9 de septiembre el decreto 1373, que asigna al vicepresidente José Manuel Restrepo una misión general de coordinación interinstitucional e intersectorial de iniciativas de interés nacional en modernización del Estado, educación, recursos estratégicos, seguridad energética, crecimiento económico, competitividad, inversión nacional y extranjera, e inserción estratégica de Colombia en el contexto internacional. Entre las tareas específicas figuran coordinar la implementación de las llamadas «Semanas Milagro» para promover la integración del país con economías extranjeras y la estrategia «Talento ColombIA», orientada a cerrar brechas de formación en inteligencia artificial y economía del conocimiento. El decreto faculta al vicepresidente para expedir instrucciones, circulares o documentos que considere necesarios para cumplir las misiones asignadas.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Gobierno de De La Espriella definió funciones del vicepresidente José Manuel Restrepo: estabilidad macroeconómica, inversión y seguridad energética",
+     "u": "https://www.eltiempo.com/politica/gobierno/gobierno-de-de-la-espriella-definio-funciones-del-vicepresidente-jose-manuel-restrepo-estabilidad-macroeconomica-inversion-y-seguridad-energetica-3584964"
+    },
+    {
+     "n": "El Espectador · De la Espriella asignó al vicepresidente Restrepo nuevas funciones: se publicó decreto",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-asigno-al-vicepresidente-restrepo-funciones-decreto-habla-de-semanas-milagro-y-reduccion-del-estado/"
+    },
+    {
+     "n": "Valora Analitik · De la Espriella amplía funciones al vicepresidente Restrepo: coordinará energía, inversión, IA y crecimiento económico",
+     "u": "https://www.valoraanalitik.com/de-la-espriella-amplia-funciones-al-vicepresidente-restrepo-coordinara-energia-inversion-ia-y-crecimiento-economico/"
+    },
+    {
+     "n": "Semana · Abelardo De La Espriella definió las funciones del vicepresidente José Manuel Restrepo: de esto se encargará",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-definio-las-funciones-del-vicepresidente-jose-manuel-restrepo-de-esto-se-encargara/202611/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-09",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno reporta 70 extradiciones firmadas en los primeros 32 días de mandato",
+   "detalle": "El presidente Abelardo de la Espriella anunció el 9 de septiembre que, con las firmadas ese día, completó 70 extradiciones en 32 días de gobierno: «una de mis secciones favoritas», dijo, y agregó: «vamos a seguir firmando, no vamos a parar un segundo». El secretario jurídico de la Presidencia, Andrés Barreto, entregó el reporte junto con el presidente. El ministro de Justicia, Iván Cancino, señaló que el trámite continúa «sin parar, en colaboración con la Corte Suprema de Justicia y con todos los Estados requirentes dentro del marco legal constitucional». La cifra se suma al reporte de 41 extradiciones firmadas hasta el 28 de agosto.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El País (Cali) · Gobierno de Abelardo De La Espriella reportó 70 extradiciones en sus primeros 32 días de administración",
+     "u": "https://www.elpais.com.co/politica/gobierno-de-abelardo-de-la-espriella-reporto-70-extradiciones-en-sus-primeros-32-dias-de-administracion-0951.html"
+    },
+    {
+     "n": "El Espectador · Gobierno De la Espriella anuncia que ha firmado 70 extradiciones en 32 días de mandato",
+     "u": "https://www.elespectador.com/judicial/gobierno-de-la-espriella-anuncia-que-ha-firmado-70-extradiciones-en-32-dias-de-mandato/"
+    },
+    {
+     "n": "Semana · En apenas 32 días de Gobierno, De La Espriella firmó 70 extradiciones: «Una de mis secciones favoritas»",
+     "u": "https://www.semana.com/politica/articulo/en-apenas-32-dias-de-gobierno-de-la-espriella-firmo-70-extradiciones-una-de-mis-secciones-favoritas/202650/"
+    },
+    {
+     "n": "Infobae (agencias) · De la Espriella eleva a 70 las extradiciones firmadas en sus primeros días como presidente de Colombia",
+     "u": "https://www.infobae.com/america/agencias/2026/09/10/de-la-espriella-eleva-a-70-las-extradiciones-firmadas-en-sus-primeros-dias-como-presidente-de-colombia/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-09",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "Tras seis horas de consejo de ministros, el Gobierno firma 11 decretos de reconstrucción por el terremoto y crea el Fondo Patria Milagro",
+   "detalle": "El presidente encabezó el 9 de septiembre un consejo de ministros de cerca de seis horas dedicado a la reconstrucción tras el terremoto del 10 de agosto, al cabo del cual se firmaron 11 decretos dentro del marco de la emergencia económica, social y ecológica declarada por el decreto 1261. Entre las medidas: la creación del Fondo Patria Milagro, que canalizará donaciones internacionales y aportes privados para la reconstrucción y que dirigirá el empresario Jaime Andrés Uribe, con el modelo del Fondo para la Reconstrucción del Eje Cafetero (Forec) de 1999 como referencia; el uso excepcional y por una sola vez de recursos del Fonpet —destinados a pensiones territoriales— para que los gobiernos locales financien procesos de reconstrucción; el uso de recursos del Fondes para reparar infraestructura eléctrica afectada; y la autorización para que la actividad académica se desarrolle temporalmente en espacios distintos a las sedes oficiales cuando estas hayan sufrido daños considerables. El Gobierno había ajustado antes el decreto de emergencia para excluir a Putumayo e incluir a Caquetá y Santander, con lo que la cobertura llegó a 16 departamentos y 496 municipios.",
+   "contrapunto": "Los decretos expedidos bajo un estado de excepción del artículo 215 de la Constitución están sujetos a control automático de constitucionalidad por la Corte Constitucional y a control político del Congreso; a la fecha de esta entrada no se ha reportado un pronunciamiento de la Corte sobre estos 11 decretos en particular, y el Gobierno no ha publicado un monto total consolidado de los recursos que movilizará el Fondo Patria Milagro.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Espectador · De la Espriella firmó 11 decretos para reconstrucción: los anuncios del consejo de ministros",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-firmo-11-decretos-para-reconstruccion-por-terremoto-estos-fueron-los-anuncios-tras-consejo-de-ministros/"
+    },
+    {
+     "n": "Infobae · Gobierno firma 11 decretos para atender emergencia por terremoto en 16 departamentos",
+     "u": "https://www.infobae.com/colombia/2026/09/10/gobierno-firma-11-decretos-para-atender-emergencia-por-terremoto-en-16-departamentos/"
+    },
+    {
+     "n": "El Universal (Cartagena) · De la Espriella firmó 11 nuevos decretos para recuperación y reconstrucción tras terremoto",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/10/de-la-espriella-firmo-11-nuevos-decretos-para-recuperacion-y-reconstruccion-tras-terremoto/"
+    },
+    {
+     "n": "Semana · Presidente anunció 11 nuevos decretos para la reconstrucción tras el terremoto en Colombia",
+     "u": "https://www.semana.com/politica/articulo/presidente-anuncio-11-nuevos-decretos-para-la-reconstruccion-tras-el-terremoto-en-colombia/202648/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-08",
    "precision": "exacta",

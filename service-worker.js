@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v845-barrido-de-alertas-del-9-de-septiembre';
+const URBIS_CACHE = 'urbis-v846-seguimiento-presidencial-del-9-de-septiembre';
 const URBIS_ASSETS = [
   './',
   './index.html',
