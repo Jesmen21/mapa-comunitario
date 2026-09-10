@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v844-vision-territorial-la-cuarta-puerta';
+const URBIS_CACHE = 'urbis-v845-barrido-de-alertas-del-9-de-septiembre';
 const URBIS_ASSETS = [
   './',
   './index.html',
