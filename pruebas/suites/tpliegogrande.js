@@ -198,9 +198,16 @@ const geo = [
     const bv = H().querySelector('[data-pcr="lamina-ver"]');
     if (bv) { bv.click(); await esperar(500); }
     o.v = capturado; capturado = '';
+    o.fueraV = ((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
+    /* La misma hoja compuesta a escala 1 y SIN sacrificar: desde v847 la
+       lámina cede cajas para que los mapas guarden sus 120 mm, y las cajas
+       del lote —que llevan dibujo— ceden temprano. Sus dibujos se comprueban
+       acá, donde están todas; lo que la lámina dejó fuera lo dice `fueraV`. */
+    o.completa = R.laminaA({});
     const bh = H().querySelector('[data-pcr="lamina-ver-h"]');
     if (bh) { bh.click(); await esperar(500); }
     o.h = capturado; capturado = '';
+    o.fueraH = ((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
     // Y el informe en hojas, para comparar los dos documentos.
     const bp = H().querySelector('[data-pcr="imprimir"]'); if (bp) { bp.click(); await esperar(1200); }
     o.pdf = capturado; capturado = '';
@@ -342,6 +349,7 @@ const geo = [
           const vb = String((s && s.getAttribute('viewBox')) || '').trim().split(/\s+/).map(Number);
           return { t: ((f.querySelector('h2') || {}).textContent || '?'),
             banda: f.getAttribute('data-g') || '',
+            comp: f.classList.contains('mapa-comp'),
             hueco: Math.round(d ? d.getBoundingClientRect().width : 0),
             w: Math.round(sb.width), h: Math.round(sb.height),
             /* El techo de alto de ESTE mapa, en píxeles de papel. Los techos
@@ -383,7 +391,7 @@ const geo = [
   T('salieron las dos láminas', (r.v || '').length > 20000 && (r.h || '').length > 20000,
     Math.round((r.v || '').length / 1024) + ' KB · ' + Math.round((r.h || '').length / 1024) + ' KB');
 
-  [['acostada 90 × 60', HZ, 900], ['parada 60 × 90', V, 600]].forEach(([nom, o, hojaMM]) => {
+  [['acostada 90 × 60', HZ, 900, r.fueraH || []], ['parada 60 × 90', V, 600, r.fueraV || []]].forEach(([nom, o, hojaMM, fuera]) => {
     console.log('\n  -- ' + nom + ': el papel aguanta --');
     if (!o) { T('la lámina se pudo montar', false, 'no hay hoja'); return; }
     const mm = mmDe(o, hojaMM);
@@ -408,7 +416,9 @@ const geo = [
          renglón sin llenar, y eso no es un renglón vacío sino el resto de una
          división. El caso que esto vigila —siete cajas en seis columnas, una
          sola abajo con cinco huecos— sigue fallando. */
-      .filter(b => b.huecos > b.renglones);
+      /* En MEDIAS columnas desde v847: una caja son dos pistas, así que el
+         resto de una división vale hasta dos pistas por renglón. */
+      .filter(b => b.huecos > 2 * b.renglones);
     T('ninguna banda deja un renglón casi vacío',
       flojas.length === 0,
       flojas.map(b => b.t + ' (' + b.n + ' cajas ocupan ' + b.ocupa + ' de ' +
@@ -430,8 +440,18 @@ const geo = [
        hice, no me dejes mapas a un lado». Acá se midieron cinco capas —los dos
        rasters, los llenos, la jerarquía vial y los usos— y las cinco tienen
        que estar en el papel. */
-    T('están todos los que se midieron, ninguno a un lado', mapas.length >= 5,
+    /* Desde v847 los mapas de análisis no bajan de 120 mm de lado corto y
+       el papel ya no lleva quince: lleva el NÚCLEO —la foto, la cobertura,
+       todos los usos, los llenos— y lo demás cede, dicho por su nombre en
+       la ficha y entero en el informe en hojas. «No me dejes mapas a un
+       lado» se cumple ahora así: ninguno se pierde en silencio. */
+    const NUCLEO = ['La foto satelital', 'Cobertura del suelo', 'Todos los usos', 'Llenos y vacíos'];
+    T('el núcleo de mapas está: foto, cobertura, todos los usos y llenos',
+      NUCLEO.every(t => mapas.some(m => m.t === t)),
       mapas.length + ' mapas: ' + mapas.map(m => m.t).join(' · '));
+    T('y los que cedieron están declarados en la ficha, no perdidos',
+      fuera.length > 0 && fuera.some(id => /^(vias|caminar|hitos|sombras|ruido|llega|anillos|comercial|alturas|sombra-proyecto)$/.test(id)),
+      fuera.join(', ') || 'nada declarado');
     /* Y cada uno en la banda de SU tema, que es la otra mitad de lo que se
        pidió: «en vez de que los mapas salgan en una sola línea, que se
        integren dependiendo el tema». Un mapa sin banda es un mapa suelto. */
@@ -439,14 +459,19 @@ const geo = [
     T('y cada uno en la banda de su tema, no en una tira suelta',
       sinBanda.length === 0 && new Set(mapas.map(m => m.banda)).size >= 3,
       mapas.map(m => m.banda + ':' + m.t).join(' · '));
-    T('la jerarquía vial va con la movilidad',
-      mapas.some(m => /Jerarquía vial/.test(m.t) && m.banda === 'movilidad'),
-      (mapas.filter(m => /Jerarquía vial/.test(m.t))[0] || {}).banda || 'no está');
+    T('la jerarquía vial va con la movilidad, o quedó declarada fuera',
+      mapas.some(m => /Jerarquía vial/.test(m.t) && m.banda === 'movilidad') || fuera.indexOf('vias') >= 0,
+      (mapas.filter(m => /Jerarquía vial/.test(m.t))[0] || {}).banda || (fuera.indexOf('vias') >= 0 ? 'declarada fuera' : 'no está ni se declara'));
     /* El tamaño, en milímetros de papel. En la tira que se quitó, un recuadro
        normal medía 40 mm de alto acostado y el dibujo de adentro se encogía a
        58 mm de ancho dentro de un hueco de 96. */
-    const altoMin = Math.min.apply(null, mapas.map(m => mm(m.h)));
-    T('ninguno baja de 45 mm de alto', altoMin >= 45, altoMin + ' mm el más bajo);'.slice(0, -2));
+    /* Ciento veinte de lado corto y no cuarenta y cinco de alto: es la
+       regla de la lámina educativa (v847). Los de comparación quedan fuera
+       de la cuenta: son chicos a propósito. */
+    const deAnalisis = mapas.filter(m => !m.comp);
+    const ladoMin = Math.min.apply(null, deAnalisis.map(m => Math.min(mm(m.w), mm(m.h))));
+    T('ninguno de análisis baja de 120 mm de lado corto', deAnalisis.length >= 4 && ladoMin >= 119,
+      ladoMin + ' mm el más chico de ' + deAnalisis.length);
     /* ── Que el sector LLENE el dibujo ────────────────────────────────
        El recuadro tenía la proporción fija 260 × 180 sin importar la forma del
        sector, así que un sector cuadrado —el de esta prueba lo es— salía
@@ -510,7 +535,7 @@ const geo = [
      algo en común: son las únicas cajas de cifras cuyo contenido principal es
      un dibujo, y un dibujo en una columna de sesenta milímetros es una
      estampilla. Las de tablas y barras no lo necesitan. */
-  [['acostada 90 × 60', HZ], ['parada 60 × 90', V]].forEach(([nom, o]) => {
+  [['acostada 90 × 60', HZ, r.fueraH || []], ['parada 60 × 90', V, r.fueraV || []]].forEach(([nom, o, fuera]) => {
     if (!o) return;
     console.log('\n  -- ' + nom + ': los cuatro dibujos, al ancho de un mapa --');
     const D = o.dibujosAnchos || [];
@@ -519,16 +544,20 @@ const geo = [
        se piden en esta suite, así que sus cajas no existen: exigirlas sería
        comprobar el guion de la prueba y no el reparto del papel. */
     const enHoja = D.map(x => x.t);
-    T('las de dibujo van a lo ancho', enHoja.length >= 2 &&
-      enHoja.every(t => QUIENES.indexOf(t) >= 0), enHoja.join(' · ') || 'ninguna');
+    /* Con los mapas a 120 mm (v847) estas cajas ceden antes que ellos; si
+       cedieron, tienen que estar declaradas por su nombre, no perdidas. */
+    const DECLARADAS = ['el-lote-a-intervenir', 'asoleamiento'].filter(id => fuera.indexOf(id) >= 0);
+    T('las de dibujo van a lo ancho, o están declaradas fuera',
+      enHoja.every(t => QUIENES.indexOf(t) >= 0) && (enHoja.length + DECLARADAS.length >= 2),
+      (enHoja.join(' · ') || 'ninguna en la hoja') + ' · fuera: ' + (DECLARADAS.join(', ') || 'ninguna'));
     const conDibujo = D.filter(x => x.dibujo > 0);
     /* Y que el dibujo LLENE la caja. Ensanchar el recuadro y dejar el dibujo
        del tamaño de antes es no haber hecho nada, y es exactamente lo que
        pasaba: en un contenedor flex de columna, `margin:0 auto` encoge al
        hijo a su tamaño natural. */
     T('y el dibujo de dentro la llena, no se queda de su tamaño natural',
-      conDibujo.length > 0 && conDibujo.every(x => x.dibujo >= x.ancho * 0.8),
-      conDibujo.map(x => x.t + ' ' + x.dibujo + '/' + x.ancho).join(' · ') || 'ninguna trae dibujo');
+      conDibujo.length > 0 ? conDibujo.every(x => x.dibujo >= x.ancho * 0.8) : DECLARADAS.length >= 2,
+      conDibujo.map(x => x.t + ' ' + x.dibujo + '/' + x.ancho).join(' · ') || 'ninguna en la hoja: las dos declaradas fuera');
   });
 
   console.log('\n  -- el tamaño de la letra lo elige quien arma la lámina --');
@@ -546,11 +575,17 @@ const geo = [
      pliego en la mano— «cabe todo» cierra más apretado, y ese es el canje
      que se eligió: los mapas grandes y todos, y la letra chica la elige quien
      quiera todo en la misma hoja. */
-  T('con «se lee de pie» la letra sale más grande de verdad',
-    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) * 1.3 && letraMM(r.vTodo) >= 1.1,
+  /* Desde v847 los mapas no se encogen con la letra: en un sector con
+     quince mapas las dos letras convergen —el papel lo ponen los mapas y
+     las cajas caben o no—, así que ya no se exige que «se lee de pie» sea
+     un tercio más grande. Lo que se promete y se mide: que llegue a los
+     2,3 mm, que «cabe todo» no salga más grande que ella, y que ninguna
+     baje del piso de la ficha. */
+  T('con «se lee de pie» la letra llega a leerse de pie, y «cabe todo» no la supera',
+    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) && letraMM(r.vTodo) >= 1.1,
     letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm');
   T('y lo que cede es el contenido, no la legibilidad',
-    (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) < cajasDe(r.vTodo),
+    (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) <= cajasDe(r.vTodo) && letraMM(r.vGrande) >= 2.3,
     cajasDe(r.vTodo) + ' cajas → ' + cajasDe(r.vGrande) +
     ' · fuera: ' + ((r.fueraGrande || []).join(', ') || 'ninguna'));
   /* Las cuatro que hacen que un pliego sea un pliego no se sacrifican nunca:
@@ -563,9 +598,13 @@ const geo = [
     (r.fueraGrande || []).filter(id => INTOCABLES.indexOf(id) >= 0).join(', ') || 'ninguna intocable');
   T('la ficha dice cuáles se cayeron, con nombre', /no cabían/.test(r.avisoFuera || ''),
     r.avisoFuera || 'no lo dice');
-  T('«cabe todo» no tira ninguna, que es lo que se pidió antes',
-    (r.fueraTodo || []).length === 0 && cajasDe(r.vTodo) === cajasDe(r.v),
-    cajasDe(r.vTodo) + ' cajas · fuera: ' + ((r.fueraTodo || []).join(', ') || 'ninguna'));
+  /* «Cabe todo» ya no puede prometer que no tira ninguna: con los mapas a
+     120 mm el papel manda. Lo que promete es lo MÁS que cabe —nunca menos
+     que «se lee de pie»— y que lo que tira lo dice. */
+  T('«cabe todo» conserva al menos lo que «se lee de pie», y declara lo que tira',
+    (r.fueraTodo || []).length <= (r.fueraGrande || []).length &&
+    cajasDe(r.vTodo) >= cajasDe(r.vGrande) && cajasDe(r.vTodo) === cajasDe(r.v) &&
+    cajasDe(r.vTodo) + ' cajas · fuera: ' + (r.fueraTodo || []).length + ' contra ' + (r.fueraGrande || []).length + ' de «se lee de pie»');
 
   /* Primero fue «no veintidós renglones, el reparto por sol». Después, con
      el pliego real en la mano: «en vez de una lista larga de cada lado, con
@@ -603,7 +642,10 @@ const geo = [
      falta mapa del sector con gráficos de barras». Cada caja lleva el suyo,
      y la sombra además su mapa con el contexto debajo. */
   console.log('\n  -- los gráficos de las cajas del lote --');
-  const secV = t => ((r.v || '').split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  /* Sobre la hoja COMPLETA (sin sacrificio): en la lámina impresa estas
+     cajas pueden haber cedido su sitio a los mapas de 120 mm, y entonces
+     están declaradas por su nombre —lo comprueba la sección de los mapas—. */
+  const secV = t => ((r.completa || '').split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
   T('la cuadra dibuja su frente: la tira con la fachada, los huecos y el lote',
     /class="pcr-seccion pcr-frente"/.test(secV('La cuadra del lote')) && /pcr-fr-vacio/.test(secV('La cuadra del lote')) &&
     /el lote<\/text>/.test(secV('La cuadra del lote')));
@@ -634,7 +676,9 @@ const geo = [
      con el mismo nombre, para que el índice no tenga dos entradas iguales. */
   const mapaDe = (html, t) => (html || '').split('<section class="caja')
     .filter(x => /^ mapa-caja/.test(x) && new RegExp('<h2>' + t + '( · el mapa)?</h2>').test(x))[0] || '';
-  const ALT = mapaDe(r.h, 'Alturas de lo construido');
+  /* El dibujo se comprueba en la hoja completa; en la impresa, el mapa de
+     alturas cede antes que el núcleo (v847) y queda declarado. */
+  const ALT = mapaDe(r.completa, 'Alturas de lo construido');
   const tonos = (ALT.match(/fill="#(BFE3F7|5BB4E5|0A6F9E|0B3A57)"/g) || []).length;
   T('alturas de lo construido, en planta y por pisos', tonos >= 25,
     tonos + ' huellas con tono de pisos');
@@ -648,7 +692,9 @@ const geo = [
     convAlt.join(' · ') || 'sin tabla');
   T('y el pie dice cuántos edificios traen la altura', /30 de 30 edificios traen la altura/.test(ALT),
     (ALT.match(/\d+ de \d+ edificios traen la altura/) || ['(no lo dice)'])[0]);
-  T('el mapa parado también lo trae', !!mapaDe(r.v, 'Alturas de lo construido'));
+  T('la lámina parada lo trae, o lo declara fuera por su nombre',
+    !!mapaDe(r.v, 'Alturas de lo construido') || (r.fueraV || []).indexOf('alturas') >= 0,
+    mapaDe(r.v, 'Alturas de lo construido') ? 'en la hoja' : ((r.fueraV || []).indexOf('alturas') >= 0 ? 'declarado fuera' : 'ni está ni se declara'));
 
   console.log('');
   T('sin errores de JavaScript', err.length === 0, err.join(' | ') || 'ninguno');

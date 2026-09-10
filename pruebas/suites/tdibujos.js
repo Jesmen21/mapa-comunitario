@@ -164,8 +164,10 @@ const geo=[
     const asaD2=H().querySelector('[data-pcr="agrandar"]'); if(asaD2){ asaD2.click(); await esperar(400); }
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(500);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(500);
     o.laminaH=capturado; capturado='';
+    o.fueraH=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(500);
     o.pdf=capturado; capturado='';
 
@@ -289,19 +291,32 @@ const geo=[
   T('y dice qué son, para quien no la ve', /de cada cien/.test(r.trama.etq||''), r.trama.etq);
 
   console.log('\n  -- y en el papel --');
-  const LAM=r.lamina||'', LH=r.laminaH||'', PDF=r.pdf||'', LG=r.laminaGuardada||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const LAM=r.lamina||'', LC=r.laminaCompleta||LAM, LH=r.laminaH||'', PDF=r.pdf||'', LG=r.laminaGuardada||'';
   T('la lámina lleva los cuatro dibujos',
-    /pcr-carta/.test(LAM) && /pcr-rosa-rumbos/.test(LAM) && /pcr-plano-lote/.test(LAM) && /pcr-trama/.test(LAM),
+    /pcr-carta/.test(LC) && /pcr-rosa-rumbos/.test(LC) && /pcr-plano-lote/.test(LC) && /pcr-trama/.test(LC),
     ['carta','rosa','plano','trama'].filter((x,i)=>
-      [/pcr-carta/,/pcr-rosa-rumbos/,/pcr-plano-lote/,/pcr-trama/][i].test(LAM)).join(' '));
+      [/pcr-carta/,/pcr-rosa-rumbos/,/pcr-plano-lote/,/pcr-trama/][i].test(LC)).join(' '));
+  /* Quién lleva cada dibujo: la rosa de rumbos la dibujan el clima y «dónde
+     falta mapear» —en este sector, la segunda—. */
+  const DUENA={ 'pcr-carta':['asoleamiento'], 'pcr-rosa-rumbos':['el-clima','donde-falta-mapear'],
+                'pcr-plano-lote':['el-lote-a-intervenir'], 'pcr-trama':['llenos-y-vacios'] };
+  const declarado=c=>DUENA[c].some(id=>(r.fuera||[]).indexOf(id)>=0);
+  T('y la impresa lleva cada uno, o declara fuera su caja por su nombre',
+    Object.keys(DUENA).every(c=>LAM.indexOf(c)>=0 || declarado(c)),
+    Object.keys(DUENA).map(c=>c.replace('pcr-','')+': '+(LAM.indexOf(c)>=0?'en la hoja':declarado(c)?'declarado':'PERDIDO')).join(' · '));
   T('con su propia caja de «dónde falta mapear», cuando se enciende',
-    /Dónde falta mapear/.test(LAM));
+    /Dónde falta mapear/.test(LC) && (/Dónde falta mapear/.test(LAM) || (r.fuera||[]).indexOf('donde-falta-mapear')>=0));
   /* Y la otra cara: de entrada NO está. Sin esta comprobación, el día que
      alguien la vuelva a encender por defecto nadie se entera. */
   T('que de entrada no está, porque un pliego presenta lo que existe',
     !/Dónde falta mapear/.test(r.laminaDeEntrada||''));
-  T('el pliego acostado también', r.medidaH.dibujos===r.medidaV.dibujos,
-    r.medidaH.dibujos+' vs '+r.medidaV.dibujos);
+  T('el pliego acostado también, o declara lo que no le cupo',
+    r.medidaH.dibujos<=r.medidaV.dibujos && (r.medidaH.dibujos===r.medidaV.dibujos || (r.fueraH||[]).length>0),
+    r.medidaH.dibujos+' vs '+r.medidaV.dibujos+' · fuera acostada: '+(r.fueraH||[]).length);
   T('el PDF también',
     /pcr-carta/.test(PDF) && /pcr-rosa-rumbos/.test(PDF) && /pcr-plano-lote/.test(PDF) && /pcr-trama/.test(PDF));
   T('y la lámina de un sector guardado', /pcr-plano-lote/.test(LG) && /pcr-carta/.test(LG));

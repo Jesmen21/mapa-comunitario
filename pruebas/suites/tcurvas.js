@@ -207,6 +207,7 @@ const geo=[
     if(caja) caja.value='La rampa del oriente';
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(700);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(700);
     o.pdf=capturado; capturado='';
     return o;
@@ -288,7 +289,11 @@ const geo=[
      Lo que se comprueba es el DIBUJO, no la frase: las trazas punteadas y la
      letra en cada punta, en el plano del sector y en el recuadro de curvas,
      que son los dos sitios donde alguien va a buscarlas. */
-  const cajaLam = t => ((r.lamina || '').split('<section class="caja')
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const cajaLam = t => ((r.laminaCompleta || r.lamina || '').split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
   console.log('\n  -- por dónde se cortó, en el plano --');
   const PLANO = cajaLam('Plano del sector'), CURVAS = cajaLam('Curvas de nivel');
@@ -321,6 +326,9 @@ const geo=[
   console.log('\n  -- movimientos en masa, por la pendiente del terreno --');
   const MASA = cajaLam('Susceptibilidad por pendiente');
   T('el pliego trae el mapa de susceptibilidad por pendiente', !!MASA);
+  T('y la lámina impresa trae los dos mapas, o los declara fuera por su nombre',
+    ['curvas', 'masa'].every(id => new RegExp('data-m="' + id + '"').test(r.lamina || '') || (r.fuera || []).indexOf(id) >= 0),
+    ['curvas', 'masa'].map(id => id + ': ' + (new RegExp('data-m="' + id + '"').test(r.lamina || '') ? 'en la hoja' : (r.fuera || []).indexOf(id) >= 0 ? 'declarado' : 'PERDIDO')).join(' · '));
   /* Píxel a píxel, no una celda por cota: el mapa es un raster dentro del
      recuadro —como el de cobertura— y lo que dice cada rango se lee de su
      tabla de convenciones, que sale del mismo reparto que pintó la imagen. */
@@ -380,7 +388,9 @@ const geo=[
   const LAM=r.lamina||'', PDF=r.pdf||'';
   T('la lámina dibuja las curvas dentro del plano del sector',
     /stroke="#B08050"/.test(LAM) || /stroke="#8A5A20"/.test(LAM));
-  T('y trae la caja de sombras', /La sombra de los vecinos/.test(LAM) && /pcr-sombras/.test(LAM));
+  T('y trae la caja de sombras', /La sombra de los vecinos/.test(r.laminaCompleta || LAM) && /pcr-sombras/.test(r.laminaCompleta || LAM));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /La sombra de los vecinos/.test(LAM) || (r.fuera || []).indexOf('la-sombra-de-los-vecinos') >= 0);
   T('el PDF también', /La sombra de los vecinos sobre el lote/.test(PDF) && /pcr-sombras/.test(PDF));
   T('y anota el intervalo de las curvas', /Curvas de nivel cada \d+ m/.test(PDF));
   T('ninguna caja se recorta', (r.medida.cajas||[]).length===0,

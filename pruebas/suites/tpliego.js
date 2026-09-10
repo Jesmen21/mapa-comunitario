@@ -120,7 +120,11 @@ const geo=[
       if(a){ a.click(); await esperar(450); } };
     const lamina=async()=>{ await abrir();
       H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
-      const h=capturado; capturado=''; return h; };
+      const h=capturado; capturado='';
+      // Lo que esa composición dejó fuera, por identificador: desde v847 la
+      // hoja cede paneles para que los mapas guarden sus 120 mm, y lo dice.
+      o.fueras=(o.fueras||[]).concat([[]]); o.fueras[o.fueras.length-1]=((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
+      return h; };
     /* Las cajas de CIFRAS del papel. Los mapas no cuentan —son otra lista,
        la de los recuadros— salvo cuando llevan dentro el contexto de su caja:
        los llenos y vacíos, las alturas y los hitos van debajo de su mapa, y
@@ -216,6 +220,7 @@ const geo=[
     o.enPapel3=titulos(L3);
     await abrir();
     H().querySelector('[data-pcr="pliego-todo"]').click(); await esperar(400); await abrir();
+    o.invTodo=inventario();
     const L4=await lamina();
     o.enPapel4=titulos(L4);
     o.bandaEnPapel4=mapasDelPapel(L4);
@@ -279,8 +284,15 @@ const geo=[
      peor que no hacerla, porque el estudiante no tiene cómo enterarse. */
   const prometidasQueFaltan=inv.filter(c=>c.listo && c.on && c.id!=='los-mapas-del-sector')
     .filter(c=>papel.indexOf(c.titulo)===-1).map(c=>c.titulo);
-  T('todo lo que el inventario da por listo sale en la lámina',
-    prometidasQueFaltan.length===0, prometidasQueFaltan.join(' · ')||'ninguna falta');
+  /* Desde v847 la hoja cede paneles para que los mapas guarden sus 120 mm:
+     lo prometido sale, o queda DECLARADO por su identificador en la ficha.
+     Prometer y no imprimir sin decirlo es lo que esta prueba impide. */
+  const F=(r.fueras||[]);
+  const declarada=(t,i)=>{ const c=inv.filter(x=>x.titulo===t)[0]; return !!c && (F[i]||[]).indexOf(c.id)>=0; };
+  T('todo lo que el inventario da por listo sale en la lámina, o queda declarado fuera',
+    prometidasQueFaltan.every(t=>declarada(t,0)),
+    (prometidasQueFaltan.filter(t=>!declarada(t,0)).join(' · ')||'ninguna se pierde en silencio') +
+    ' · fuera: ' + prometidasQueFaltan.length);
   const grisesQueSalen=inv.filter(c=>!c.listo)
     .filter(c=>papel.indexOf(c.titulo)>=0).map(c=>c.titulo);
   T('y nada de lo gris se cuela',
@@ -293,8 +305,12 @@ const geo=[
      el tamaño con el que se compone la hoja, no la lista. */
   const mapasProm=(r.invMapas||[]).filter(m=>m.listo && m.on)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)===-1).map(m=>m.titulo);
-  T('y lo que da por puesto aparece de verdad, sin dejar ninguno a un lado',
-    r.hayBanda===true && mapasProm.length===0, mapasProm.join(' · ')||'ninguno falta');
+  const mapaDeclarado=t=>{ const m=(r.invMapas||[]).filter(x=>x.titulo===t)[0]; return !!m && (F[0]||[]).indexOf(m.id)>=0; };
+  T('y lo que da por puesto aparece de verdad, o queda declarado fuera',
+    r.hayBanda===true && mapasProm.every(mapaDeclarado) && (r.bandaEnPapel||[]).indexOf('Todos los usos')>=0 &&
+    (r.bandaEnPapel||[]).length + mapasProm.length === (r.invMapas||[]).filter(m=>m.listo && m.on).length,
+    (mapasProm.filter(t=>!mapaDeclarado(t)).join(' · ')||'ninguno se pierde en silencio') +
+    ' · en papel: ' + (r.bandaEnPapel||[]).length + ' · fuera: ' + mapasProm.length);
   const mapasGrises=(r.invMapas||[]).filter(m=>!m.listo)
     .filter(m=>(r.bandaEnPapel||[]).indexOf(m.titulo)>=0).map(m=>m.titulo);
   T('sin colar los grises', mapasGrises.length===0, mapasGrises.join(' · ')||'ninguno');
@@ -305,9 +321,14 @@ const geo=[
   T('y ninguna sale en el papel',
     nombresApagados.every(t=>(r.enPapel2||[]).indexOf(t)===-1),
     nombresApagados.filter(t=>(r.enPapel2||[]).indexOf(t)>=0).join(' · ')||'ninguna');
-  T('el resto sigue estando',
-    (r.enPapel2||[]).length===(r.enPapel||[]).length-3,
-    (r.enPapel||[]).length+' → '+(r.enPapel2||[]).length+' cajas');
+  /* Apagar tres libera papel, y la hoja puede recomponerse: lo que se
+     comprueba es que ninguna OTRA caja desaparezca en silencio —las que ya
+     no están son las tres apagadas o están declaradas—. */
+  const desaparecidas=(r.enPapel||[]).filter(t=>(r.enPapel2||[]).indexOf(t)===-1 && nombresApagados.indexOf(t)===-1);
+  T('el resto sigue estando, o queda declarado',
+    desaparecidas.every(t=>declarada(t,1)),
+    (r.enPapel||[]).length+' → '+(r.enPapel2||[]).length+' cajas · ' +
+    (desaparecidas.filter(t=>!declarada(t,1)).join(' · ')||'ninguna se pierde en silencio'));
   T('el interruptor queda apagado en la ficha',
     (r.invTrasApagar||[]).filter(c=>(r.apagadas||[]).indexOf(c.id)>=0).every(c=>!c.on));
   const tituloMapaOff=((r.invMapas||[]).filter(m=>m.id===r.mapaApagado)[0]||{}).titulo;
@@ -324,12 +345,14 @@ const geo=[
      había y que trae las dos que empezaban fuera. */
   const volvieron = ['Dónde falta mapear','Lo que falta levantar']
     .filter(t => (r.enPapel4||[]).indexOf(t) >= 0);
-  T('y «poner todo» devuelve la lámina entera, incluso lo que nace apagado',
-    (r.enPapel4||[]).length >= (r.enPapel||[]).length &&
-    (r.bandaEnPapel4||[]).length===(r.bandaEnPapel||[]).length &&
-    volvieron.length === 2,
+  const encendidas=(r.invTodo||[]).filter(c=>['donde-falta-mapear','lo-que-falta-levantar'].indexOf(c.id)>=0 && c.on).length;
+  const perdidas4=(r.enPapel||[]).filter(t=>(r.enPapel4||[]).indexOf(t)===-1 && !declarada(t,3));
+  T('y «poner todo» enciende todo, incluso lo que nace apagado, y lo que no cabe queda declarado',
+    encendidas===2 && perdidas4.length===0 &&
+    (r.bandaEnPapel4||[]).length>=(r.bandaEnPapel||[]).length &&
+    ['Dónde falta mapear','Lo que falta levantar'].every(t=>(r.enPapel4||[]).indexOf(t)>=0 || declarada(t,3)),
     (r.enPapel4||[]).length+' cajas contra '+(r.enPapel||[]).length+' de entrada · ' +
-    (r.bandaEnPapel4||[]).length+' recuadros · volvieron: '+(volvieron.join(', ')||'ninguna'));
+    (r.bandaEnPapel4||[]).length+' recuadros · encendidas: '+encendidas+' · volvieron: '+(volvieron.join(', ')||'ninguna, declaradas'));
 
   console.log('\n  -- el PDF es el archivo, no la composición --');
   T('se apagó el terreno en el pliego', r.terrenoFueraDelPliego===true);

@@ -174,8 +174,10 @@ const geo=[
     if(caja) caja.value='El callejón El Retiro';
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(500);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(500);
     o.laminaH=capturado; capturado='';
+    o.fueraH=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(500);
     o.pdf=capturado; capturado='';
 
@@ -357,9 +359,12 @@ const geo=[
   console.log('\n  -- el mismo pliego, acostado --');
   const LH=r.laminaH||'', DH=r.desbordesH||{};
   T('el papel es de 90 × 60 cm', /@page\{ size:900mm 600mm; margin:0 \}/.test(LH));
-  T('y trae exactamente las mismas cajas',
-    (LH.match(/<section class="caja/g)||[]).length===(LAM.match(/<section class="caja/g)||[]).length,
-    (LH.match(/<section class="caja/g)||[]).length+' vs '+(LAM.match(/<section class="caja/g)||[]).length);
+  /* Acostada hay 300 mm menos y, desde v847, los mapas no ceden tamaño:
+     trae las cajas del vertical o menos, y las que faltan están declaradas. */
+  const tit=h=>(h.match(/<section class="caja[^"]*"[^>]*><h2>([^<]+)<\/h2>/g)||[]).map(x=>x.replace(/.*<h2>/,'').replace('</h2>',''));
+  T('y trae las cajas del vertical, o menos y declaradas',
+    tit(LH).length>0 && tit(LH).every(t=>tit(LAM).indexOf(t)>=0) && tit(LH).length+(r.fueraH||[]).length>=tit(LAM).length,
+    tit(LH).length+' de '+tit(LAM).length+' · fuera: '+(r.fueraH||[]).length);
   /* La hoja se organiza en BANDAS de ancho completo, una por categoría, con
      su número y su título, y las cajas de cada una en fila debajo. Fue
      columnas de periódico —que llenan parejo pero mezclan los temas— hasta

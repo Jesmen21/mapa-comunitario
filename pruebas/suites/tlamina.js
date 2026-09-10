@@ -137,6 +137,7 @@ function climaSimulado(){
        cajas que repartir, que es justo cuando el plano se puede pasar. */
     H().querySelector('[data-pcr="lamina-ver-h"]').click(); await esperar(300);
     o.peladaH=capturado; capturado='';
+    o.fueraH=((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
 
     // ── Ahora las tres mediciones de la tanda B
     const medir=async(acc, sel)=>{
@@ -303,8 +304,14 @@ function climaSimulado(){
   console.log('\n  -- el mismo pliego acostado, con un sector sin medir --');
   const DH=r.desbordesH||{};
   P('sale en 90 × 60', /@page\{ size:900mm 600mm; margin:0 \}/.test(r.peladaH||''));
-  P('con las mismas cajas que el vertical',
-    (r.peladaH||'').match(/<section class="caja/g).length===(r.pelada||'').match(/<section class="caja/g).length);
+  /* Acostada hay 300 mm menos de alto y, desde v847, los mapas no ceden
+     tamaño: lo que no cabe cede y se declara. Las cajas de la acostada son
+     un subconjunto de las de la parada, y la diferencia está dicha. */
+  const titulosDe=h=>(h.match(/<section class="caja[^"]*"[^>]*><h2>([^<]+)<\/h2>/g)||[]).map(x=>x.replace(/.*<h2>/,'').replace('</h2>',''));
+  const tV=titulosDe(r.pelada||''), tH=titulosDe(r.peladaH||'');
+  P('con las cajas del vertical, o menos y declaradas',
+    tH.length>0 && tH.every(t=>tV.indexOf(t)>=0) && tH.length+(r.fueraH||[]).length>=tV.length,
+    tH.length+' de '+tV.length+' · fuera: '+((r.fueraH||[]).join(', ')||'ninguna'));
   P('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');
   P('ni se pierde fuera de la hoja', (DH.perdidas||[]).length===0,
     (DH.perdidas||[]).join(' · ')||'ninguna');

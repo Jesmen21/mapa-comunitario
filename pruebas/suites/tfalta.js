@@ -192,6 +192,7 @@ const geo=[
     const asaF2=H().querySelector('[data-pcr="agrandar"]'); if(asaF2){ asaF2.click(); await esperar(400); }
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(700);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(700);
     o.pdf=capturado; capturado='';
     const bCopiar=[...H().querySelectorAll('button')].filter(b=>/Copiar/i.test(b.textContent||''))[0];
@@ -280,12 +281,18 @@ const geo=[
   T('numeradas de 1 en adelante', items[0].n==='1' && items[items.length-1].n===String(items.length));
 
   console.log('\n  -- y viaja a donde se necesita --');
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
   T('la lámina trae su propia caja cuando se enciende',
-    /Lo que falta levantar/.test(r.lamina||''));
+    /Lo que falta levantar/.test(r.laminaCompleta||''));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /Lo que falta levantar/.test(r.lamina||'') || (r.fuera||[]).indexOf('lo-que-falta-levantar')>=0);
   T('y de entrada no la trae, porque un pliego presenta lo que existe',
     !/Lo que falta levantar/.test(r.laminaDeEntrada||'') &&
     !/Dónde falta mapear/.test(r.laminaDeEntrada||''));
-  T('con la etiqueta de OpenStreetMap a la vista', /building:levels/.test(r.lamina||''));
+  T('con la etiqueta de OpenStreetMap a la vista', /building:levels/.test(r.laminaCompleta||''));
   T('el PDF también', /Lo que falta para que esto hable/.test(r.pdf||''));
   T('y el texto que se copia la lleva',
     /LO QUE FALTA LEVANTAR/.test(r.texto||'') || r.texto==='' ,

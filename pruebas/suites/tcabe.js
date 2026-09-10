@@ -272,6 +272,7 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
     // ── El papel.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     await abrir();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf=capturado; capturado='';
@@ -350,7 +351,11 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const LAM=r.lamina||'', PDF=r.pdf||'', F=r.conLote||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const LAM=r.lamina||'', LC=r.laminaCompleta||LAM, PDF=r.pdf||'', F=r.conLote||'';
   const kpi=q=>((r.kpis||[]).filter(k=>k.indexOf(q)>=0)[0]||'');
   /* En es-CO el separador de miles es el punto, así que «2.014» pasado por
      Number() da 2,014 y no dos mil catorce. Se quita antes de convertir: sin
@@ -374,7 +379,7 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
   T('va ARRIBA de las cifras, no al pie', r.advertenciaArriba===true);
   T('avisa de que el área tras aislamientos es aproximada',
     /es aproximada/.test(F) && /perímetro/.test(F));
-  T('la lámina la lleva', /los puso quien hizo la lámina/.test(LAM) && /POT/.test(LAM));
+  T('la lámina la lleva', /los puso quien hizo la lámina/.test(LC) && /POT/.test(LC));
   T('y el PDF también, antes de la tabla',
     /los puso a mano quien hizo el informe/.test(PDF) &&
     PDF.indexOf('los puso a mano') < PDF.indexOf('Índice de ocupación'));
@@ -447,7 +452,9 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
 
   console.log('\n  -- en el resto de la aplicación --');
   T('la lámina trae la caja con sus cifras',
-    /<h2>Qué cabe en el lote<\/h2>/.test(LAM) && /m² construibles/.test(LAM));
+    /<h2>Qué cabe en el lote<\/h2>/.test(LC) && /m² construibles/.test(LC));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /<h2>Qué cabe en el lote<\/h2>/.test(LAM) || (r.fuera||[]).indexOf('que-cabe-en-el-lote')>=0);
   T('el PDF trae la tabla entera',
     /<h2>Qué cabe en el lote<\/h2>/.test(PDF) && /Área libre de aislamientos/.test(PDF));
   T('el pliego la ofrece', !!r.enElPliego && r.enElPliego.gris===false);

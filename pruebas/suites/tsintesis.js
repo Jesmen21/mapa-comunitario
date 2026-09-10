@@ -256,51 +256,33 @@ let PADRON=SOLO;   // se cambia entre las dos vueltas
   console.log('\n  -- llega a la lámina --');
   const LAM=r2.lamina||'';
   P('la lámina cierra con la síntesis', /Síntesis del sector<\/h2>/.test(LAM));
-  /* Se pidió «la matriz FODA» por su nombre, y en el pliego real no salía
-     ninguna síntesis —se había recortado por abajo—. Cuatro cuadrantes con su
-     nombre, en la ficha y en los dos documentos. */
+  /* La FODA salió de la lámina y se quedó en la ficha y en el informe en
+     hojas: el cierre del pliego son ahora cinco propuestas de uso, con
+     necesidad y factibilidad, que `tlaminaedu` mide en papel. Acá se
+     comprueba que la matriz sigue entera donde quedó, que el pliego no la
+     repite, y que lo interno y lo externo siguen sin mezclarse. */
   const CUAD=['Fortalezas','Oportunidades','Debilidades','Amenazas'];
-  P('como matriz FODA, con los cuatro cuadrantes',
-    /Matriz FODA del sector/.test(LAM) && CUAD.every(c=>new RegExp('<h3>'+c+'<small>').test(LAM)),
-    CUAD.filter(c=>new RegExp('<h3>'+c+'<small>').test(LAM)).join(' · ')||'ninguno');
-  P('la ficha en pantalla trae los mismos cuatro', (r2.cuadrantesEnFicha||[]).length===4,
+  P('la lámina ya no trae la matriz: cierra con cinco propuestas de uso',
+    !/Matriz FODA del sector/.test(LAM) && (LAM.match(/<div class="pu /g)||[]).length===5 && /Recomendación de uso/.test(LAM),
+    (LAM.match(/<div class="pu /g)||[]).length+' propuestas' + (/Matriz FODA del sector/.test(LAM)?' y todavía la matriz':''));
+  P('la ficha en pantalla trae los cuatro cuadrantes', (r2.cuadrantesEnFicha||[]).length===4,
     (r2.cuadrantesEnFicha||[]).map(t=>t.split(' ')[0]).join(' · ')||'ninguno');
   P('y el informe en hojas también',
     /<h3>Matriz FODA<\/h3>/.test(r2.pdf||'') && CUAD.every(c=>new RegExp('<b>'+c+' · ').test(r2.pdf||'')));
-  const colSint = c => (LAM.match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>'))||[''])[0];
+  /* Cada cuadrante del informe, por filas: desde su cabecera hasta la del
+     siguiente o el final de la tabla. */
+  const filaPdf = c => (((r2.pdf||'').split(/<tr><td colspan="2"><b>/).filter(x=>x.indexOf(c+' · ')===0)[0])||'').split('</table>')[0];
   P('la ladera fuerte es debilidad, no amenaza: lo interno y lo externo no se mezclan',
-    /Pendiente fuerte/.test(colSint('no')) && !/Pendiente fuerte/.test(colSint('riesgo')),
-    'debilidades: ' + (/Pendiente fuerte/.test(colSint('no'))?'sí':'no') + ' · amenazas: ' + (/Pendiente fuerte/.test(colSint('riesgo'))?'SÍ':'no'));
-  /* Siete por columna, y antes eran cuatro. Se subió el tope porque se pidió
-     —«mejorar el sistema FODA porque argumenta muy poquitas cosas»— y porque
-     el corte de cuatro se había decidido cuando la síntesis sacaba ocho o
-     nueve frases en total; ahora saca el doble y cortar en cuatro tiraba
-     justo las de la red vial, la cobertura y el lote.
-
-     Se comprueban los dos lados. Que no pase de siete: una columna de quince
-     viñetas no la lee nadie frente a un pliego. Y que cuando corta lo DIGA:
-     resumir es quedarse con siete y avisar que hay más; esconder es quedarse
-     con siete y callarse, que es lo mismo que se ve y no es lo mismo que se
-     hace. */
-  const viñetas = c => colSint(c).split('class="sx"').length - 1;
-  const CLASES=['ok','tarea','no','riesgo'];
-  P('y como mucho siete por cuadrante',
-    CLASES.every(c => viñetas(c) <= 7),
-    CLASES.map(c => c + ':' + viñetas(c)).join(' · '));
-  /* Y si corta, que lo diga —y solo si corta—. El aviso se compara contra la
-     lista COMPLETA, no contra lo que se ve: mirando solo el papel, siete
-     viñetas sin aviso pueden ser siete de siete o siete de doce, y son cosas
-     distintas. Con la lista al lado, la comprobación es exacta en los dos
-     sentidos: nada se esconde y no se avisa de nada que no falte. */
+    /Pendiente fuerte/.test(filaPdf('Debilidades')) && !/Pendiente fuerte/.test(filaPdf('Amenazas')),
+    'debilidades: ' + (/Pendiente fuerte/.test(filaPdf('Debilidades'))?'sí':'no') + ' · amenazas: ' + (/Pendiente fuerte/.test(filaPdf('Amenazas'))?'SÍ':'no'));
+  /* El informe no corta: lo que la ficha lista, el papel lo trae entero.
+     Es el documento que no tiene que caber en un pliego. */
   const LISTA = r2.foda || { ok: [], tarea: [], no: [], riesgo: [] };
-  const marca = c => (colSint(c).match(/sx-mas"><span>y (\d+) más/) || [])[1];
-  P('y si corta, dice cuántas dejó fuera —y solo si corta—',
-    CLASES.every(c => {
-      const sobran = Math.max(0, (LISTA[c]||[]).length - 7);
-      return sobran ? Number(marca(c)) === sobran : marca(c) === undefined;
-    }),
-    CLASES.map(c => c + ': ' + (LISTA[c]||[]).length + ' → ' +
-      viñetas(c) + (marca(c) ? ' +' + marca(c) : '')).join(' · '));
+  const enPdf = { ok:'Fortalezas', tarea:'Oportunidades', no:'Debilidades', riesgo:'Amenazas' };
+  const filasDe = c => (filaPdf(enPdf[c]).match(/<tr><td>/g)||[]).length;
+  P('el informe trae la lista completa de cada cuadrante, sin cortar',
+    Object.keys(enPdf).every(c => filasDe(c) >= (LISTA[c]||[]).length) && Object.keys(enPdf).some(c => (LISTA[c]||[]).length >= 3),
+    Object.keys(enPdf).map(c => c+':'+(LISTA[c]||[]).length+'→'+filasDe(c)).join(' · '));
 
   /* ── La rosa de los vientos, en la caja del clima ─────────────────
      «En el PDF falta el gráfico de la dirección de los vientos, en el mismo

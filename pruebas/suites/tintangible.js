@@ -294,6 +294,7 @@ const RECORRIDO=[
     if(nom) nom.value='El recorrido de la tarde';
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf=capturado; capturado='';
 
@@ -343,7 +344,11 @@ const RECORRIDO=[
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
   let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
-  const LAM=r.lamina||'', PDF=r.pdf||'';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const LAM=r.lamina||'', LC=r.laminaCompleta||LAM, PDF=r.pdf||'';
 
   console.log('\n  -- el lápiz --');
   T('el módulo está cargado', r.hayModulo===true);
@@ -423,18 +428,20 @@ const RECORRIDO=[
     (r.contraste||{}).marcador >= 4.5, (r.contraste||{}).marcador + ':1');
 
   console.log('\n  -- en el papel --');
-  T('la lámina trae la caja', /<h2>Lo intangible<\/h2>/.test(LAM));
+  T('la lámina trae la caja', /<h2>Lo intangible<\/h2>/.test(LC));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /<h2>Lo intangible<\/h2>/.test(LAM) || (r.fuera||[]).indexOf('lo-intangible')>=0);
   T('con el recuento por tipo y la conclusión del lote',
-    /marcas de lo que no se mide/.test(LAM) && /El lote cae dentro de/.test(LAM));
+    /marcas de lo que no se mide/.test(LC) && /El lote cae dentro de/.test(LC));
   T('y dice que es un testimonio, no una medición',
-    /no es una medición/.test(LAM) && /quien caminó/.test(LAM));
+    /no es una medición/.test(LC) && /quien caminó/.test(LC));
   /* El mapa va en la banda de su tema —trabajo de campo—, y como se llama
      igual que la caja de cifras del mismo tema, el rótulo dice de qué se
      trata: dos cajas con el mismo nombre, una al lado de la otra y una con un
      dibujo adentro, hacen dudar de si es la misma repetida. */
   T('el mapa de lo intangible entra en la banda de trabajo de campo',
-    /<section class="caja mapa-caja[^>]*data-g="campo"[^>]*><h2>Lo intangible · el mapa<\/h2>/.test(LAM),
-    ((LAM.match(/<section class="caja mapa-caja[^>]*><h2>[^<]*/g)||[])
+    /<section class="caja mapa-caja[^>]*data-g="campo"[^>]*><h2>Lo intangible · el mapa<\/h2>/.test(LC),
+    ((LC.match(/<section class="caja mapa-caja[^>]*><h2>[^<]*/g)||[])
       .map(x=>x.replace(/.*<h2>/,''))).join(' · ')||'ningún mapa');
   T('el PDF trae la sección', /<h2>Lo intangible<\/h2>/.test(PDF));
   T('con los desacuerdos aparte', /Donde no coinciden la percepción y el conteo/.test(PDF));

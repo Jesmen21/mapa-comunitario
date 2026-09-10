@@ -176,6 +176,7 @@ const geo=[
     // pasa por acá, y lo que esta prueba lee es la hoja.
     btn('lamina-ver').click(); await esperar(900);
     o.lamina=capturado; capturado='';
+    o.fuera=((window.URBIS_PC_RECON.estado() || {}).pliegoFuera || []).slice();
     btn('imprimir').click(); await esperar(900);
     o.pdf=capturado; capturado='';
     return o;
@@ -266,9 +267,14 @@ const geo=[
      salieran grandes, y la tumbó el uso real: «veo 10 mapas en el último
      análisis que hice, no me dejes mapas a un lado». Lo que cede para que
      quepan es el tamaño al que se compone la hoja, no la lista. */
-  T('los de calor por categoría no se quedan fuera',
-    titulos(LAM).filter(t=>/ropa|comida|educa|comerc/i.test(t)).length>=2,
-    titulos(LAM).join(' · '));
+  /* Desde v847: UN mapa grande de usos y, como mucho, dos chicos de
+     comparación —los que cambian la conclusión—. Ceden antes que las cajas
+     de análisis, y si ceden quedan declarados en la ficha. */
+  const comps=(LAM.match(/<section class="caja mapa-caja mapa-comp/g)||[]).length;
+  const compsFuera=(r.fuera||[]).filter(id=>/^calor:/.test(id));
+  T('los de categoría son como mucho dos de comparación, y si cedieron están declarados',
+    comps<=2 && (comps>=1 || compsFuera.length>=1),
+    comps+' en la hoja · fuera: '+(compsFuera.join(', ')||'ninguno'));
   T('y el mapa que ubica —todos los usos— está',
     titulos(LAM).indexOf('Todos los usos')>=0, titulos(LAM).join(' · '));
   T('y el rubro de un solo local no se gana un recuadro',
@@ -330,17 +336,22 @@ const geo=[
     .filter(x => x.sobran.length);
   T('y ninguna nombra un color que el mapa no pinta', mienten.length === 0,
     mienten.map(x => x.t + ' (' + x.sobran.join(', ') + ')').join(' · ') || 'todas dicen la verdad');
-  const vial = cajasMapa(LAM).filter(x => /Jerarquía vial/.test(tituloDe(x)))[0] || '';
+  /* La jerarquía vial y las sombras ceden en el pliego desde v847 (mapas a
+     120 mm); su tabla de convenciones se lee donde estén: en la lámina si
+     quedaron, y si no, en el informe en hojas, que las trae todas. */
+  const figuraPdf = re => (PDF.split('<figure class="mp').filter(x => re.test(x))[0] || '');
+  const vial = cajasMapa(LAM).filter(x => /Jerarquía vial/.test(tituloDe(x)))[0] || figuraPdf(/Jerarquía vial/);
   /* Cuántas jerarquías salgan depende del sector: acá lo que se pide es que
      haya una muestra por cada una NOMBRADA con sus kilómetros, sin inventar
      categorías que el sector no tiene. */
   T('la jerarquía vial dice qué color es cada categoría, con sus kilómetros',
     muestrasDe(vial).length >= 2 &&
-    muestrasDe(vial).length === (vial.match(/ km<\/span>/g) || []).length &&
+    // En la lámina la etiqueta va en un `span`; en el informe, en el `li`.
+    muestrasDe(vial).length === (vial.match(/ km<\/(span|li)>/g) || []).length &&
     new Set(muestrasDe(vial)).size === muestrasDe(vial).length,
     muestrasDe(vial).length + ' muestras · ' +
     (vial.match(/>([A-ZÁÉÍÓÚ][^<·]*) · [\d,]+ km</g) || []).map(x => x.slice(1).split(' ·')[0]).join(', '));
-  const somb = cajasMapa(LAM).filter(x => /sombra de los vecinos · el mapa/i.test(tituloDe(x)))[0] || '';
+  const somb = cajasMapa(LAM).filter(x => /sombra de los vecinos · el mapa/i.test(tituloDe(x)))[0] || figuraPdf(/sombra de los vecinos/i);
   T('y las sombras, qué mancha es de qué hora',
     /9:00 ·/.test(somb) && /15:00 ·/.test(somb), muestrasDe(somb).length + ' muestras');
   T('la muestra lleva la forma del dato, no siempre un punto',
@@ -348,8 +359,8 @@ const geo=[
     ['punto', 'linea', 'area', 'punteado'].filter(f => LAM.indexOf('mu-' + f) >= 0).join(' · '));
   /* Con el `> 0` delante: sin él, «cero tablas acá y cero allá» pasaba, que
      es exactamente el estado que esta suite viene a impedir. */
-  T('el informe en hojas trae las mismas tablas',
-    conTabla.length > 0 && (PDF.match(/class="cv-l"/g) || []).length === conTabla.length,
+  T('el informe en hojas trae las tablas del pliego, y las de lo que cedió',
+    conTabla.length > 0 && (PDF.match(/class="cv-l"/g) || []).length >= conTabla.length + compsFuera.length,
     (PDF.match(/class="cv-l"/g) || []).length + ' en el informe · ' + conTabla.length + ' en el pliego');
 
   console.log('\n  -- la banda en el PDF --');
@@ -367,11 +378,16 @@ const geo=[
      los distingue es CÓMO los presentan —el PDF en una tira, hoja tras hoja;
      el pliego repartidos por tema y con la hoja compuesta más chica—, no
      cuáles traen. */
-  T('con los mismos que el pliego, sin dejar ninguno a un lado',
-    figuras(PDF) === figuras(LAM) &&
-    titulos(LAM).every(t => titulos(PDF).indexOf(t) >= 0),
-    figuras(PDF)+' en el PDF y '+figuras(LAM)+' en el pliego · ' +
-    (titulos(LAM).filter(t => titulos(PDF).indexOf(t) < 0).join(' · ') || 'los mismos'));
+  /* El pliego trae el núcleo a 120 mm y el informe los trae todos: cada
+     mapa del pliego está en el informe, y lo que el pliego dejó fuera está
+     declarado en la ficha —tantos como la diferencia, por lo menos—. */
+  const fueraMapas=(r.fuera||[]).filter(id=>!/^[a-z-]+$/.test(id) || /^(vias|caminar|hitos|sombras|ruido|llega|anillos|comercial|alturas|llenos|cobertura|curvas|masa|agua|estratos|sombra-proyecto|caminata|acuerdos|intangible)$/.test(id));
+  T('los del pliego están todos en el informe, y los que cedieron están declarados',
+    figuras(LAM) >= 4 && figuras(PDF) >= figuras(LAM) &&
+    titulos(LAM).every(t => titulos(PDF).indexOf(t) >= 0) &&
+    fueraMapas.length >= figuras(PDF) - figuras(LAM) - 2,
+    figuras(PDF)+' en el PDF y '+figuras(LAM)+' en el pliego · declarados fuera: '+fueraMapas.length+' · ' +
+    (titulos(LAM).filter(t => titulos(PDF).indexOf(t) < 0).join(' · ') || 'los del pliego están todos'));
   T('los de grano fino primeros y al doble', grandes(PDF)===3 &&
     titulos(PDF)[0]==='Cobertura del suelo', titulos(PDF).slice(0,3).join(' · '));
   T('y la hoja sabe darles ese doble',

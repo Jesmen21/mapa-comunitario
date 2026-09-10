@@ -265,6 +265,7 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
     abrirHoja();
     const bl = H.querySelector('[data-pcr="lamina-ver"]'); if (bl) { bl.click(); await esperar(1200); }
     o.lamina = capturado; capturado = '';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     abrirHoja();
 
     // Guardar y reabrir
@@ -406,7 +407,13 @@ function cotaDe(lng){ return RAMPA.z0 + (RAMPA.z1-RAMPA.z0)*((lng-RAMPA.lng0)/(R
   P('y le da a cada rango su área, a menos de punto y medio de la verdad',
     ['baja','media','alta','muyalta'].every(q => Math.abs((rep[q] || 0) - (ver[q] || 0)) <= 1.5),
     ['baja','media','alta','muyalta'].map(q => q + ' ' + rep[q] + '/' + ver[q]).join(' · '));
-  const secMasa = (r.lamina || '').split('<section class="caja').filter(x => /Susceptibilidad por pendiente/.test(x))[0] || '';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const secMasa = (r.laminaCompleta || r.lamina || '').split('<section class="caja').filter(x => /Susceptibilidad por pendiente/.test(x))[0] || '';
+  P('la lámina impresa trae el mapa de pendiente, o lo declara fuera por su nombre',
+    /data-m="masa"/.test(r.lamina || '') || (r.fuera || []).indexOf('masa') >= 0);
   P('el pliego trae el mapa de pendiente como raster, no como celdas',
     /<image href="data:image\/png/.test(secMasa) && (secMasa.match(/<polygon/g) || []).length <= 8,
     secMasa ? ((secMasa.match(/<polygon/g) || []).length + ' polígonos') : 'no está el mapa');

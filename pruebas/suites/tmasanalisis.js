@@ -279,6 +279,7 @@ const CAPAS_IDEAM = [
     // ── El papel.
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(900);
     o.lamina = capturado; capturado = '';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     await abrir();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf = capturado; capturado = '';
@@ -300,14 +301,20 @@ const CAPAS_IDEAM = [
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
-  const LAM = r.lamina || '', PDF = r.pdf || '';
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const LAM = r.lamina || '', LC = r.laminaCompleta || LAM, PDF = r.pdf || '';
   // El cuerpo de una caja de la lámina, para no confundir su texto con el de
   // la caja de al lado.
-  const cajaDe = t => (LAM.split('<section class="caja')
+  const cajaDe = t => (LC.split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
 
   console.log('\n  -- 1 · la inundación llega al pliego --');
   T('la lámina trae su caja', !!cajaDe('La inundación'));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /<h2>La inundación<\/h2>/.test(LAM) || (r.fuera || []).indexOf('la-inundacion') >= 0);
   T('y dice en qué mancha cae y cada cuánto se inunda',
     /100<\/b><small>años de retorno/.test(cajaDe('La inundación')) &&
     /se inunda/.test(cajaDe('La inundación')),
@@ -315,7 +322,7 @@ const CAPAS_IDEAM = [
   T('con la salvedad, que es la mitad del dato',
     /no es un certificado/.test(cajaDe('La inundación')));
   T('y va en la banda ambiental, con el resto del riesgo',
-    /banda-ambiental[^]*?<h2>La inundación<\/h2>/.test(LAM.replace(/\n/g, '')));
+    /banda-ambiental[^]*?<h2>La inundación<\/h2>/.test(LC.replace(/\n/g, '')));
 
   console.log('\n  -- 2 · cómo se llega, con cifras --');
   const CL = cajaDe('Cómo se llega');
@@ -329,7 +336,9 @@ const CAPAS_IDEAM = [
   T('y los dos índices, que antes solo salían en el informe en hojas',
     /facilidad para llegar \/100/.test(CL) && /exposición al tránsito \/100/.test(CL));
   T('va en la banda de movilidad, con la red y la calle',
-    /banda-movilidad[^]*?<h2>Cómo se llega<\/h2>/.test(LAM.replace(/\n/g, '')));
+    /banda-movilidad[^]*?<h2>Cómo se llega<\/h2>/.test(LC.replace(/\n/g, '')));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /<h2>Cómo se llega<\/h2>/.test(LAM) || (r.fuera || []).indexOf('como-se-llega') >= 0);
 
   console.log('\n  -- 3 · el flujo, que no salía en ninguna parte --');
   T('sale en la ficha en pantalla', r.flujoEnFicha === true,
@@ -398,8 +407,14 @@ const CAPAS_IDEAM = [
      Seis cajas que hablaban de dónde están las cosas tienen ahora su
      recuadro, con el contexto debajo del dibujo y sus convenciones. */
   console.log('\n  -- los índices con su mapa --');
-  const mapaCon = t => (LAM.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) &&
+  /* Sobre la hoja completa: en la impresa estos seis mapas ceden temprano
+     ante los de 120 mm (v847) y quedan declarados por su identificador. */
+  const mapaCon = t => (LC.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) &&
     new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const IDS = ['llega', 'caminar', 'agua', 'ruido', 'comercial', 'anillos'];
+  T('en la impresa, cada uno de los seis está o queda declarado fuera',
+    IDS.every(id => new RegExp('data-m="' + id + '"').test(LAM) || (r.fuera || []).indexOf(id) >= 0),
+    IDS.map(id => id + ': ' + (new RegExp('data-m="' + id + '"').test(LAM) ? 'en la hoja' : (r.fuera || []).indexOf(id) >= 0 ? 'declarado' : 'PERDIDO')).join(' · '));
   const muestras = x => (x.match(/class="mu mu-[a-z]+"/g) || []).length;
   [['Cómo se llega', /Vía principal: /], ['A distancia de caminar', /1 · Colegio o jardín|1 · Servicio de salud|1 · Parque o cancha|1 · Dónde mercar/],
    ['Verde y agua', /Parque o zona verde · \d+|Cuerpo de agua · \d+|Verde natural · \d+/],
@@ -577,11 +592,24 @@ const CAPAS_IDEAM = [
        que poder defenderlo colgado en la pared. */
     ['por dónde pasa el transporte', /Por dónde pasa el transporte/, /Por dónde pasa el transporte/]
   ];
+  /* «En el pliego» es la hoja completa: la impresa cede paneles ante los
+     mapas de 120 mm (v847), y lo que cede se comprueba abajo, panel por
+     panel, contra lo declarado. */
   EN_LOS_DOS.forEach(([nombre, enPliego, enInforme]) => {
-    const p1 = enPliego.test(LAM), p2 = enInforme.test(PDF);
+    const p1 = enPliego.test(LC), p2 = enInforme.test(PDF);
     T(nombre + ', en el pliego y en el informe', p1 && p2,
       'pliego: ' + (p1 ? 'sí' : 'NO') + ' · informe: ' + (p2 ? 'sí' : 'NO'));
   });
+
+  // El identificador con el que la ficha declara una caja: su título en minúsculas, sin tildes, con guiones.
+  const slugDe = t => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ · el mapa$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const panelesDe = h => (h.match(/<section class="caja[^"]*"[^>]*><h2>[^<]+<\/h2>/g) || []).map(x => {
+    const m = x.match(/data-m="([^"]+)"/); return m ? m[1] : slugDe((x.match(/<h2>([^<]+)/) || [])[1] || ''); });
+  const perdidos = panelesDe(LC).filter(id => panelesDe(LAM).indexOf(id) < 0 && (r.fuera || []).indexOf(id) < 0);
+  T('nada de la hoja completa falta en la impresa sin estar declarado por su nombre',
+    panelesDe(LC).length > panelesDe(LAM).length && perdidos.length === 0,
+    panelesDe(LC).length + ' paneles compuestos · ' + panelesDe(LAM).length + ' impresos · ' + (r.fuera || []).length + ' declarados' +
+    (perdidos.length ? ' · PERDIDOS: ' + perdidos.join(', ') : ''));
 
   /* ── Lo que se pidió con el pliego real en la mano ──────────────────
      Una lista numerada, mirando el PDF de un sector de Cúcuta: faltaba la
@@ -593,15 +621,18 @@ const CAPAS_IDEAM = [
   console.log('\n  -- lo que se pidió con el pliego real en la mano --');
   const cajaLam = t => (LAM.split('<section class="caja').filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
   const CUAD = ['Fortalezas', 'Oportunidades', 'Debilidades', 'Amenazas'];
-  T('la matriz FODA, con sus cuatro cuadrantes, en el pliego',
-    /Matriz FODA del sector/.test(LAM) && CUAD.every(c => new RegExp('<h3>' + c + '<small>').test(LAM)),
-    CUAD.filter(c => new RegExp('<h3>' + c + '<small>').test(LAM)).join(' · ') || 'ninguno');
-  T('y en el informe', /<h3>Matriz FODA<\/h3>/.test(PDF) && CUAD.every(c => new RegExp('<b>' + c + ' · ').test(PDF)));
+  /* La FODA salió del pliego en v847 —cierra con cinco propuestas de uso—
+     y vive en la ficha y en el informe: se lee en el informe, por cuadrante. */
+  T('el pliego cierra con cinco propuestas de uso, no con la matriz',
+    !/Matriz FODA del sector/.test(LC) && (LC.match(/<div class="pu /g) || []).length === 5,
+    (LC.match(/<div class="pu /g) || []).length + ' propuestas');
+  T('y la matriz, con sus cuatro cuadrantes, en el informe', /<h3>Matriz FODA<\/h3>/.test(PDF) && CUAD.every(c => new RegExp('<b>' + c + ' · ').test(PDF)));
   /* La inundación y el ruido son cosas que le VIENEN al sector: amenazas.
      Esta suite las mide, así que el cuadrante no puede salir vacío. */
-  const amenazas = ((LAM.match(/<div class="sn riesgo">[\s\S]*?<\/div><\/div>/) || [''])[0].match(/<span>[^<]*/g) || []).map(x => x.slice(6));
+  const cuadrantePdf = t => ((PDF.split(/<tr><td colspan="2"><b>/).filter(x => x.indexOf(t + ' · ') === 0)[0]) || '').split('</table>')[0];
+  const amenazas = (cuadrantePdf('Amenazas').match(/<tr><td>[^<]*/g) || []).map(x => x.slice(8));
   T('la inundación medida cae en amenazas, no en debilidades', amenazas.some(a => /inunda/i.test(a)) &&
-    !((LAM.match(/<div class="sn no">[\s\S]*?<\/div><\/div>/) || [''])[0]).match(/inunda/i),
+    !/inunda/i.test(cuadrantePdf('Debilidades')),
     amenazas.join(' | ').slice(0, 160) || '(amenazas vacías)');
 
   const dona = h => (h.match(/<svg class="dona"/g) || []).length;
@@ -627,9 +658,10 @@ const CAPAS_IDEAM = [
     (QV.match(/<u style="width:\d+%;background:#/g) || []).length + ' barras de edad');
 
   /* El mapa de hitos y nodos, con los nombres al lado del punto. */
-  const HN = (LAM.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) && /<h2>Hitos y nodos( · el mapa)?<\/h2>/.test(x))[0] || '');
+  const HN = (LC.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) && /<h2>Hitos y nodos( · el mapa)?<\/h2>/.test(x))[0] || '');
   const rotulos = (HN.match(/paint-order="stroke"/g) || []).length;
   T('un mapa exclusivo de hitos y nodos', !!HN);
+  T('que la impresa trae, o declara fuera por su nombre', /data-m="hitos"/.test(LAM) || (r.fuera || []).indexOf('hitos') >= 0);
   T('con el número y el nombre al lado de cada punto', rotulos >= 3 && /Colegio \d/.test(HN),
     rotulos + ' rótulos');
   T('y los parques con nombre, en verde', /fill="#16A34A"/.test(HN) && /Parque \d/.test(HN),

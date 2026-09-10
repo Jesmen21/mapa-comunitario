@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v846-seguimiento-presidencial-del-9-de-septiembre';
+const URBIS_CACHE = 'urbis-v847-lamina-educativa-mapas-de-doce-centimetros';
 const URBIS_ASSETS = [
   './',
   './index.html',

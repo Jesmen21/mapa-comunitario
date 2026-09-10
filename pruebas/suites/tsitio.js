@@ -174,6 +174,7 @@ const geo=[
     if(caja) caja.value='La rampa del oriente';
     H().querySelector('[data-pcr="lamina-ver"]').click(); await esperar(700);
     o.lamina=capturado; capturado='';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(700);
     o.pdf=capturado; capturado='';
     return o;
@@ -260,10 +261,16 @@ const geo=[
     /la respuesta es el proyecto/i.test(r.deter));
 
   console.log('\n  -- y viaja al papel --');
-  T('la lámina trae su caja', /Qué le pide el sitio al proyecto/.test(r.lamina||''));
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  T('la lámina trae su caja', /Qué le pide el sitio al proyecto/.test(r.laminaCompleta||''));
+  T('y la impresa la trae, o la declara fuera por su nombre',
+    /Qué le pide el sitio al proyecto/.test(r.lamina||'') || (r.fuera||[]).indexOf('que-le-pide-el-sitio-al-proyecto')>=0);
   T('el PDF también', /Qué le pide el sitio al proyecto/.test(r.pdf||''));
   T('con la misma advertencia',
-    /no dice qué construir|Determinantes, no propuestas/i.test((r.lamina||'')+(r.pdf||'')));
+    /no dice qué construir|Determinantes, no propuestas/i.test((r.laminaCompleta||'')+(r.pdf||'')));
   T('ninguna caja se recorta', (r.medida.cajas||[]).length===0,
     (r.medida.cajas||[]).join(' · ')||'ninguna');
   T('ni se pierde fuera de la hoja', (r.medida.perdidas||[]).length===0,

@@ -592,10 +592,14 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
      contado en campo no sale de ningún dato abierto: es lo que el curso
      agregó al sector, y por eso vale como fortaleza. */
   console.log('\n  -- y llega a la síntesis del sector --');
-  const cuad = (c) => ((r2.lamina || '').match(new RegExp('<div class="sn ' + c + '">[\\s\\S]*?<\\/div><\\/div>')) || [''])[0];
+  /* La FODA salió de la lámina en v847 —el cierre son cinco propuestas— y
+     se quedó en la ficha y en el informe en hojas: se lee en el informe,
+     por cuadrante, desde su cabecera hasta el final de la tabla. */
+  const cuadrante = (t) => (((r2.informe || '').split(/<tr><td colspan="2"><b>/).filter(x => x.indexOf(t + ' · ') === 0)[0]) || '').split('</table>')[0];
+  const cuad = (c) => cuadrante({ ok: 'Fortalezas', tarea: 'Oportunidades', no: 'Debilidades', riesgo: 'Amenazas' }[c] || c);
   T('la mezcla de usos por planta entra como fortaleza',
     /mezclan usos por planta/.test(cuad('ok')),
-    (cuad('ok').match(/<span>[^<]*mezclan usos por planta[^<]*/) || ['no está'])[0].replace('<span>', ''));
+    (cuad('ok').match(/<td>[^<]*mezclan usos por planta[^<]*/) || ['no está'])[0].replace('<td>', ''));
   T('con el número que la sostiene', /2 de 2 edificios/.test(cuad('ok')),
     (cuad('ok').match(/\d+ de \d+ edificios/) || ['sin número'])[0]);
 

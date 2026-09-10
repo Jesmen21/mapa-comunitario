@@ -2957,7 +2957,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     })();
     var mapas = (function () {
       try {
-        return mapasDelPliego(res, {
+        /* `o._memo` lo pone `laminaQueQuepa`: compone la misma hoja hasta
+           cuarenta veces buscando escala y cajas, y los mapas —lo más caro
+           de la hoja— no cambian entre una pasada y otra. Sin memoria, cada
+           sondeo proyectaba de nuevo los cientos de puntos de diez mapas. */
+        if (o._memo && o._memo.mapas) {
+          return o._memo.mapas.filter(function (m) { return mapasApagados.indexOf(m.id) === -1; });
+        }
+        var todos = mapasDelPliego(res, {
           // El ancho ya no se manda: lo pone la proporción del sector, dentro
           // de `mapasDelPliego`. Ver la nota de ahí.
           h: horiz ? 180 : 200,
@@ -2965,8 +2972,13 @@ function donaHTML(datos, colorDe, nombreDe) {
           estratos: o.estratos, huellas: huellas, curvas: curvasL,
           sombras: sombrasL, caminata: cam,
           intangible: o.intangible !== undefined ? o.intangible : S.intangible,
-          maxCategorias: horiz ? 5 : 6
-        }).filter(function (m) { return mapasApagados.indexOf(m.id) === -1; });
+          /* Un mapa grande de todos los usos y, como mucho, dos chicos de
+             comparación: los que cambian la conclusión. Ver
+             `categoriasQueCambian`. */
+          maxCategorias: 2
+        });
+        if (o._memo) o._memo.mapas = todos;
+        return todos.filter(function (m) { return mapasApagados.indexOf(m.id) === -1; });
       } catch (e) { return []; }
     })();
     if (apagadas.indexOf('los-mapas-del-sector') !== -1) mapas = [];
@@ -3060,6 +3072,24 @@ function donaHTML(datos, colorDe, nombreDe) {
     var TOPE = horiz
       ? { mapa: 82, mapa2: 92, mapa3: 105, plano: 110, dib: 52, dibAlto: 84, corte: 38, rosa: 40, foto: 58 }
       : { mapa: 110, mapa2: 130, mapa3: 160, plano: 160, dib: 80, dibAlto: 140, corte: 55, rosa: 55, foto: 90 };
+    /* ── El piso de los mapas: 120 mm de lado corto, y nunca menos ──────
+       Llegó con la lámina educativa: «un mapa por debajo de 12 cm de lado
+       corto no se lee de pie; si no cabe, se quita otro panel, no se
+       encoge el mapa». Los techos de arriba se medían para que la hoja
+       cerrara; ahora tienen un suelo que no negocia. Lo que cede cuando no
+       cabe lo decide `laminaQueQuepa`: apaga cajas y mapas, en ese orden.
+
+       Los mapas de COMPARACIÓN —las categorías de uso al lado del mapa
+       grande— son la excepción declarada: van chicos a propósito, al lado
+       del grande, porque su trabajo es compararse y no leerse solos. */
+    /* Y el techo baja al piso más un margen: con el lado corto asegurado
+       por el ancho, un mapa de 160 mm de alto no se lee mejor que uno de
+       130 y cuesta 30 mm de papel por mapa, que multiplicados por diez son
+       la fila de cajas que se cae. El plano conserva su alto: es la figura
+       de la lámina. */
+    TOPE.mapa = TOPE.mapa2 = TOPE.mapa3 = MIN_MAPA_MM + 10;
+    TOPE.plano = Math.max(TOPE.plano, MIN_MAPA_MM);
+    TOPE.comp = horiz ? 60 : 70;
     var altoMapaMM = TOPE.mapa;
 
     /* El plano comparte su banda con la ficha del sitio: ocupa tres de cuatro
@@ -3107,6 +3137,33 @@ function donaHTML(datos, colorDe, nombreDe) {
        `tpliegogrande` mide el desborde con la rejilla ya reducida y falla en
        cuanto pasa, que es exactamente como se descubrió esto. */
     var anchoFila = horiz ? 12 : 8;
+    /* Cuántas columnas necesita un mapa para que su lado corto llegue a los
+       120 mm SIN encogerse: el ancho de una columna en papel, contra el
+       piso multiplicado por la proporción del sector —un sector ancho
+       necesita más ancho para que el ALTO llegue al piso—. Dos columnas en
+       un sector cuadrado, hasta cuatro en uno de proporción 1,9. */
+    /* Y con la ESCALA de composición dentro de la cuenta: la hoja se reduce
+       entera para cerrar, y un mapa de dos columnas compuesto para escala 1
+       mide 89 mm cuando la hoja sale al 62 %. Se vio en la primera pasada
+       de esta regla: la única forma de guardar los 120 mm era apagar todas
+       las cajas de texto y quedarse con los mapas solos. Compuesto para la
+       escala que le toca, el mapa pide más columnas cuanto más se reduce la
+       hoja y en el papel mide siempre lo mismo; lo que se encoge es la
+       letra, que es lo que se pidió. Por eso `laminaQueQuepa` vuelve a
+       componer en cada sondeo de escala en vez de reducir la misma hoja. */
+    var colMM = ((horiz ? 900 : 600) - 40) / anchoFila * escalaHoja;
+    var pesoMinMapa = Math.min(anchoFila,
+      Math.max(2, Math.ceil(MIN_MAPA_MM * Math.max(1, proporcionDelSector) / colMM)));
+    /* El alto de un mapa de análisis, en papel, no se mueve con la escala:
+       ni al 30 % baja de su techo. Los demás dibujos sí ceden desde el
+       suelo de «Equilibrio», como siempre. */
+    var papelMapa = function (mm) { return 'calc(' + mm + 'mm / var(--k, 1))'; };
+    Object.keys(PESO_MAPA).forEach(function (k) { PESO_MAPA[k] = Math.max(PESO_MAPA[k], pesoMinMapa); });
+    /* El mapa de todos los usos es EL mapa grande de la banda demográfica:
+       las ocho manchas por categoría que había se volvieron una grande y
+       dos chicas de comparación, y la grande se lleva el ancho que antes se
+       repartían las ocho. */
+    PESO_MAPA['calor:todos'] = Math.max(pesoMinMapa, horiz ? 4 : 3);
     /* La primera banda: la foto, el plano y la ficha del sitio. El ancho del
        plano en el papel sale de cuántas columnas de la fila se lleva su
        banda y de cuántas de esas son suyas; con eso se compone el dibujo a la
@@ -3308,6 +3365,24 @@ function donaHTML(datos, colorDe, nombreDe) {
                   (CAJAS_DOBLES.indexOf(titulo) !== -1 ? ' caja-doble' : '') +
                   (CAJAS_ALTAS.indexOf(titulo) !== -1 ? ' caja-alta' : '') +
                   (CAJAS_FILA.indexOf(titulo) !== -1 ? ' caja-fila' : '');
+      /* Baldosa de cifra: una caja cuyo cuerpo es una o dos cifras y un
+         par de renglones, sin dibujo ni barra ni lista. Vale media columna:
+         se pidió que «una cifra suelta sea una baldosa chica, cuatro en el
+         ancho de un mapa», y que el ancho lo pusiera el tipo de contenido y
+         no una rejilla pareja. Se reconoce por lo que trae y no por una
+         lista de títulos, para que una caja que crezca deje de serlo sola. */
+      var textoPlano = String(cuerpo).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      /* Sin dibujo, sin barras, sin listas largas y con poco texto: cifras,
+         un par de renglones y su nota. La ficha del sitio queda fuera: abre
+         la primera banda al lado del plano y no es una cifra suelta. */
+      var esCifra = !/^(g\d|)$/.test(clase || '') ? false : !ancha && titulo !== 'El sitio' &&
+        !/<svg|class="b"|class="dib|<table|class="hit|class="perf|class="camina|class="evo|class="cobb|class="conv|class="fa"|class="de"/.test(cuerpo) &&
+        textoPlano.length <= 420;
+      if (esCifra) {
+        ancha += ' caja-cifra';
+        // Se anota para `laminaQueQuepa`: las baldosas son lo último que cede.
+        if (o._memo) (o._memo.cifras = o._memo.cifras || []).push(slugPliego(titulo));
+      }
       var cara = CARA[titulo] || ['sitio', 'info'];
       var fam = FAMILIAS[cara[0]] || FAMILIAS.sitio;
       /* Las cajas con clase propia —el plano, la banda de mapas, la síntesis—
@@ -4567,9 +4642,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        con títulos». */
     var GRUPOS = [
       { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio',
+        pregunta: '¿Dónde queda el sector, cuánto mide y qué hay dibujado en él?',
         que: 'dónde queda · cuánto mide · el plano del sector',
         cajas: ['Plano del sector', 'El sitio'] },
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
+        pregunta: '¿Qué le pone el suelo, el clima y el agua al proyecto antes de dibujar nada?',
         que: 'relieve · clima · sol · amenaza · inundación · verde · cobertura · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
                 'La amenaza sísmica', 'La inundación', 'Verde y agua',
@@ -4583,27 +4660,34 @@ function donaHTML(datos, colorDe, nombreDe) {
          fila es la hoja. Acostada sigue dentro del ambiental a dos columnas,
          que es lo que la hoja de 600 mm de alto paga. */
       { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo',
+        pregunta: '¿Hacia dónde viene moviéndose el sector, y a qué ritmo?',
         que: 'las fotos desde 2014 · lo medido desde 1984',
         cajas: horiz ? [] : ['Cómo cambió el sitio'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
+        pregunta: '¿Cómo se llega, por dónde se entra y qué se alcanza a pie?',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
                 'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
+        pregunta: '¿Quién vive acá, qué uso manda y dónde se concentra lo que hay?',
         que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
         cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Qué manda en el sector',
                 'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
+        pregunta: '¿Qué tan lleno está el sector y a qué altura se construye?',
         que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
       { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
+        pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
                 'La sombra que arrojás', 'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
+        pregunta: '¿Qué se comprobó en la calle y qué falta por levantar?',
         que: 'lo intangible · lo levantado · lo que falta',
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre',
+        pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
         cajas: ['Síntesis del sector'] }
     ];
@@ -4615,7 +4699,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        lado de las cajas de cifras del mismo tema, que valen una, el dibujo se
        lleva el doble de ancho. Con una sola columna quedaba igual de chico
        que en la tira que se quitó, y no habríamos arreglado nada. */
-    var pesoDeMapaEnBanda = proporcionDelSector >= 1.25 ? 2 : 1;
+    var pesoDeMapaEnBanda = Math.max(pesoMinMapa, proporcionDelSector >= 1.25 ? 2 : 1);
     /* Cuántas columnas de la fila ocupa cada caja. El plano vale por varias
        —es la figura de la lámina— y la síntesis ocupa casi la fila entera. El
        resto vale una. */
@@ -4633,7 +4717,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        darle escala sin costarle alto a la hoja. */
     var PESO = { 'Plano del sector': pesoPlano,
                  'El sitio': pesoSitio,
-                 'Síntesis del sector': horiz ? 7 : ANCHO_FILA,
+                 /* A fila entera también acostada: con siete de doce
+                    compartía fila y quedaban 50 mm de papel muerto debajo
+                    de las cinco propuestas. La síntesis mide lo que su
+                    contenido, y sola en su fila es la única forma de que
+                    la fila mida eso. */
+                 'Síntesis del sector': ANCHO_FILA,
                  'Cómo cambió el sitio': horiz ? 2 : ANCHO_FILA,
                  'El terreno': PESO_MAPA.curvas,
                  'El lote a intervenir': 2 };
@@ -4649,6 +4738,99 @@ function donaHTML(datos, colorDe, nombreDe) {
        bandas de ancho completo, y tampoco hace falta: dos títulos en la
        misma línea siguen siendo dos títulos, y las cajas siguen debajo del
        suyo. Cada banda ocupa de la fila la parte que le toca por sus cajas. */
+    /* ── La conclusión de cada banda ─────────────────────────────────
+       Una o dos líneas por banda, salidas de los mismos números que ya
+       están en sus cajas —no se calcula nada nuevo acá— y solo de lo que se
+       midió: una banda sin mediciones dice eso, no inventa. Es la parte de
+       la capa educativa que va en la estructura: la pregunta arriba, la
+       respuesta abajo, y en medio las cajas que la sostienen. */
+    function conclusionDeBanda(id) {
+      var num = function (x) { return String(x).replace('.', ','); };
+      var fmt = function (n) { return Number(n).toLocaleString('es-CO'); };
+      var partes = [];
+      try {
+        switch (id) {
+          case 'ubicacion':
+            return (esPol ? 'Área dibujada de ' + (formatearArea(meta.areaM2) || '') : 'Radio de ' + meta.radioM + ' m') +
+              ' con ' + fmt(st.total || 0) + ' usos registrados' +
+              (st.densidadPorHa != null ? ', ' + num(st.densidadPorHa) + ' por hectárea' : '') +
+              '. El plano es la referencia de todo lo que sigue: cada mapa recorta este mismo sector.';
+          case 'ambiental':
+            if (ter && ter.pendiente && ter.pendiente.media != null)
+              partes.push('pendiente media del ' + num(ter.pendiente.media) + ' %' +
+                (ter.pendiente.media >= 12 ? ', fuerte' : ter.pendiente.media < 5 ? ', terreno plano' : ''));
+            if (cli && cli.temperatura && cli.temperatura.media != null)
+              partes.push(num(cli.temperatura.media) + ' °C de media' + (cli.temperatura.media >= 26 ? ': la sombra es diseño' : ''));
+            if (trz && trz.espacio) {
+              var hab0 = Number(st.poblacionEstimada || 0);
+              if (hab0 > 0 && trz.espacio.piezas)
+                partes.push(num(Math.round(10 * trz.espacio.areaM2 / hab0) / 10) + ' m²/hab de espacio público frente a la meta de ' +
+                  (trz.espacio.metaM2Hab || 15));
+              else if (!trz.espacio.piezas) partes.push('sin parques ni plazas con forma registrada');
+            }
+            var cb = null; try { cb = o2Cobertura(); } catch (e0) {}
+            if (cb && cb.verde != null) partes.push(num(cb.verde) + ' % de vegetación viva en la foto');
+            return partes.length
+              ? 'Lo que el sitio le pone al proyecto: ' + partes.join(' · ') + '.'
+              : 'Sin terreno, clima ni foto leída, la banda muestra lo poco que hay y no alcanza para una conclusión propia.';
+          case 'tiempo':
+            return 'Las estampas comparan el mismo encuadre año a año: lo que cambió de color es lo que se construyó, se taló o se pavimentó. Leer la dirección del cambio es tarea de quien proyecta.';
+          case 'movilidad':
+            var ac = st.accesibilidad, mv = st.movilidad;
+            if (ac && (ac.categorias || []).length) {
+              var bien = ac.categorias.filter(function (c) { return c.pctCubierto >= 80; }).length;
+              partes.push(bien + ' de ' + ac.categorias.length + ' coberturas básicas pasan del 80 % a pie');
+            }
+            if (mv && mv.viaPrincipal && mv.viaPrincipal.nombre)
+              partes.push('se entra por la ' + mv.viaPrincipal.nombre +
+                (mv.viaPrincipal.distM != null ? ', a ' + Math.round(mv.viaPrincipal.distM) + ' m' : ''));
+            if (mv && mv.paradasBus != null) partes.push(mv.paradasBus + ' paradas de transporte público registradas');
+            return partes.length ? partes.join(' · ') + '.'
+              : 'La red se ve en el mapa; sin coberturas ni vía principal medidas no hay conclusión que sostener.';
+          case 'demografico':
+            var hab = Number(st.poblacionEstimada || 0);
+            if (hab > 0) partes.push('unas ' + fmt(hab) + ' personas');
+            var up = st.usoPredominante || {};
+            var k0 = Object.keys(up).sort(function (x, y) { return up[y] - up[x]; })[0];
+            if (k0 && up[k0] > 0) {
+              partes.push('manda ' + sinEmoji(NOMBRE_USO[k0] || k0).toLowerCase() + ' con el ' + up[k0] + ' %' +
+                ((/vivienda|residencial/i.test(k0) && up[k0] >= 80) ? ': sector dormitorio' : ''));
+            }
+            if (st.mezcla && st.mezcla.usos >= 1)
+              partes.push('mezcla ' + (st.mezcla.indice >= 0.55 ? 'alta' : st.mezcla.indice < 0.35 ? 'baja' : 'media') +
+                ' (índice ' + num(st.mezcla.indice) + ')');
+            return partes.length ? partes.join(' · ') + '.' : 'Sin censo ni usos clasificados no hay lectura demográfica que hacer.';
+          case 'forma':
+            var ll = trz && trz.llenos;
+            if (ll && ll.pctLleno != null) partes.push(num(ll.pctLleno) + ' % del suelo construido');
+            var al = (trz && trz.alturas) || st.alturas, camp = null;
+            try { camp = alturasDeCampo(); } catch (e1) {}
+            if (camp && camp.media) partes.push(num(camp.media) + ' pisos de media, contados en campo');
+            else if (al && al.media) partes.push(num(al.media) + ' pisos de media registrados');
+            var mo = trz && trz.morfologia;
+            if (mo && mo.orden != null) partes.push('traza ' + (mo.orden >= 0.35 && mo.perpendicular ? 'en cuadrícula' : mo.orden < 0.18 ? 'irregular' : 'mixta'));
+            return partes.length ? partes.join(' · ') + '.' : 'Sin trazado medido, la morfología queda en el dibujo y no en la cifra.';
+          case 'lote':
+            if (loteA)
+              return 'Lote de ' + fmt(loteA.areaM2) + ' m² con ' + (loteA.frentes || []).length + ' frente' +
+                ((loteA.frentes || []).length === 1 ? '' : 's') + (loteA.esquinero ? ', esquinero' : '') +
+                '. Norma urbana sin dato oficial: lo que cabe está calculado sin índices ni aislamientos, y eso lo cambia todo.';
+            return 'Sin lote dibujado esta banda describe el sector; dibujarlo es lo que convierte el análisis en proyecto.';
+          case 'campo':
+            if (cmp) {
+              var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length, sv = (cmp.sinVerificar || []).length;
+              return nv + ' usos nuevos encontrados en la calle, ' + ds + ' discrepancias con el mapa y ' + sv + ' registros sin verificar.';
+            }
+            return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar.';
+          case 'sintesis':
+            return 'Cinco propuestas ordenadas por necesidad medida y factibilidad del predio. URBIS recomienda; el estudiante y el jurado deciden.';
+          default:
+            return 'Mediciones que todavía no tienen banda propia.';
+        }
+      } catch (e) {
+        return 'Las cajas de arriba traen la medición; la conclusión no se pudo redactar.';
+      }
+    }
     function agruparCajas(html) {
       var trozos = html.split(/(?=<section class="caja)/).filter(function (t) { return t.indexOf('<section') === 0; });
       var porTitulo = {}, porGrupo = {};
@@ -4742,14 +4924,23 @@ function donaHTML(datos, colorDe, nombreDe) {
             var p = t.match(/ data-p="(\d+)"/);
             return p ? Number(p[1]) : (/mapa-ancho/.test(t) ? 2 : 1);
           }
+          /* Una baldosa de cifra vale MEDIA columna: cuatro caben en el
+             ancho de un mapa de dos, que es la proporción que se pidió. La
+             rejilla se escribe en medias columnas —ver `repeat` abajo—. */
+          if (/^<section class="caja [^"]*caja-cifra/.test(t)) return 0.5;
           var m = t.match(/<h2>([^<]*)<\/h2>/);
           return pesoDe(m ? m[1] : '');
         };
         var celdas = 0, celdasAncho = 0, conMapa = false, deDos = 0, deUna = 0;
+        /* En MEDIAS columnas: lo que ocupa a lo ancho lo alto —mapas, plano,
+           cajas altas—, lo que ocupa un renglón, y si entre lo de un renglón
+           hay cajas enteras, que necesitan dos pistas seguidas. */
+        var uAltas = 0, uCajas = 0, hayCajaEntera = false;
         bd.cajas.forEach(function (t) {
           var an = anchoDe(t);
           var alto = (esMapa(t) || /plano-hero/.test(t) || /^<section class="caja[^"]*caja-alta/.test(t)) ? 2 : 1;
-          if (alto === 2) { conMapa = true; deDos++; } else { deUna++; }
+          if (alto === 2) { conMapa = true; deDos++; uAltas += an * 2; }
+          else { deUna++; uCajas += an * 2; if (an >= 1) hayCajaEntera = true; }
           celdas += an * alto; celdasAncho += an;
         });
         bd.celdasAncho = celdasAncho;
@@ -4765,7 +4956,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           var reng = Math.max(1, Math.ceil(celdasAncho / ANCHO_FILA));
           bd.renglones = reng;
           bd.sinApilar = true;
-          bd.cols = Math.max(1, Math.ceil(celdasAncho / reng));
+          bd.cols = Math.max(0.5, Math.ceil(2 * celdasAncho / reng) / 2);
           bd.peso = bd.cols;
           return;
         }
@@ -4783,7 +4974,19 @@ function donaHTML(datos, colorDe, nombreDe) {
           renglones = Math.ceil(celdas / ANCHO_FILA);
         }
         bd.renglones = renglones;
-        bd.cols = Math.max(1, Math.ceil(celdas / renglones));
+        if (renglones === 2) {
+          /* Dos renglones: lo alto ocupa los dos y las cajas se reparten en
+             dos filas al lado. Las pistas para las cajas se redondean a
+             CAJAS ENTERAS: con tres cajas de dos pistas y tres pistas por
+             renglón, la tercera caja se caía a un tercer renglón debajo de
+             la primera y dejaba un hueco del tamaño del mapa. Se vio en la
+             hoja acostada con el mapa de todos los usos y tres cajas. */
+          var porRenglon = Math.ceil(uCajas / 2);
+          if (hayCajaEntera && porRenglon % 2) porRenglon++;
+          bd.cols = Math.max(0.5, (uAltas + porRenglon) / 2);
+        } else {
+          bd.cols = Math.max(0.5, Math.ceil(2 * celdas / renglones) / 2);
+        }
         bd.peso = bd.cols;
       });
       /* Un mapa cuyo grupo no existe en la lámina —porque no se midió nada de
@@ -4870,9 +5073,18 @@ function donaHTML(datos, colorDe, nombreDe) {
               '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
             '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
               '<small>' + esc(bd.g.que) + '</small></div>' +
+            /* La pregunta que la banda responde, antes de las cajas, y la
+               conclusión —una o dos líneas, salidas de los mismos números
+               que las cajas— después. Es la capa educativa en su forma más
+               corta: un panel que se ve bien y no enseña, no sirve. */
+            '<p class="b-pregunta">' + esc(bd.g.pregunta || '¿Qué dice este tema del sector?') + '</p>' +
+            /* Medias columnas: `cols` puede traer un ,5 por las baldosas de
+               cifra, así que la rejilla se escribe al doble y cada caja
+               ocupa dos pistas, la baldosa una y el mapa el doble de su peso. */
             '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
-              '" style="grid-template-columns:repeat(' + cols + ',minmax(0,1fr))">' +
+              '" style="grid-template-columns:repeat(' + Math.max(1, Math.round(cols * 2)) + ',minmax(0,1fr))">' +
               bd.cajas.join('') + '</div>' +
+            '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>' +
           '</div>';
         }).join('') + '</div>';
       }).join('');
@@ -4944,11 +5156,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       var titulo = titulosDeCaja.indexOf(m.titulo) >= 0 ? m.titulo + ' · el mapa' : m.titulo;
       /* Las columnas que se lleva, escritas en la caja: la banda las lee de
          ahí para repartir, y la hoja de estilo para el `span`. */
-      var peso = PESO_MAPA[m.id] || (mapaAncho ? 2 : 1);
-      return '<section class="caja mapa-caja' + (mapaAncho && !PESO_MAPA[m.id] ? ' mapa-ancho' : '') +
-          (PESO_MAPA[m.id] ? ' mapa-p' + peso : '') +
+      /* Un mapa de análisis pesa al menos lo que su piso de 120 mm pide;
+         uno de comparación pesa una columna y lo dice en su clase, que es
+         lo que `laminaQueQuepa` lee para no exigirle el piso. `data-m` es
+         su identificador: la prueba lo necesita para saber cuál es cuál
+         sin adivinarlo por el título. */
+      var peso = m.comp ? 1 : (PESO_MAPA[m.id] || pesoMinMapa);
+      return '<section class="caja mapa-caja' + (m.comp ? ' mapa-comp' : ' mapa-p' + peso) +
           ' fam-' + (GRUPO_FAM[m.grupo] || 'sitio') +
-          '" data-g="' + esc(m.grupo || 'mapas') + '" data-p="' + peso + '">' +
+          '" data-g="' + esc(m.grupo || 'mapas') + '" data-p="' + peso + '" data-m="' + esc(m.id) + '">' +
           '<h2>' + esc(titulo) + '</h2>' +
           '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
           '<div class="mp-dib">' + m.svg + '</div>' +
@@ -4971,44 +5187,46 @@ function donaHTML(datos, colorDe, nombreDe) {
          más— y sus tres listas se leen mejor en tres columnas anchas. */
       caja('Síntesis del sector',
           (function () {
-            var sn = sintesisDelSector(res);
-            if (!sn.favor.length && !sn.contra.length && !sn.falta.length) return '';
-            /* Siete por columna, y antes eran cuatro. Se subió porque se pidió
-               —«mejorar el sistema FODA porque argumenta muy poquitas cosas»—
-               y porque el corte de cuatro se decidió cuando la síntesis sacaba
-               ocho o nueve frases en total; ahora saca el doble y cortar en
-               cuatro tiraba justo las de la red vial, la cobertura y el lote,
-               que son las que un jurado pregunta.
+            /* La FODA se fue de la lámina y se quedó en la ficha y en el
+               informe en hojas. Se pidió con estas palabras: «reemplazar la
+               DOFA genérica por una RECOMENDACIÓN DE USO: cinco propuestas
+               ordenadas, cada una con su indicador de necesidad y de
+               factibilidad, una línea compacta, la razón explícita y el
+               lote concreto». Un jurado lee primero el cierre, y un cierre
+               que dice «fortaleza: traza en cuadrícula» no le dice qué
+               hacer con el predio; uno que dice «1 · puesto de salud ·
+               necesidad alta · factibilidad media · porque el 62 % del
+               sector queda a más de 10 minutos» sí.
 
-               Siete y no todas: una columna de quince viñetas no la lee nadie
-               de pie frente a un pliego. Las que no entran están en la ficha,
-               en pantalla, donde se puede bajar con el dedo. Y se dice cuántas
-               quedaron, que es la diferencia entre resumir y esconder. */
-            var TOPE_SINTESIS = 7;
-            /* La MATRIZ FODA, en sus cuatro cuadrantes. Antes eran tres
-               columnas —a favor, en contra, falta levantar— y se pidió la
-               matriz por su nombre, «muy importante». Fortalezas y
-               debilidades son lo interno del sector; oportunidades y
-               amenazas lo que le viene de afuera, y lo que falta levantar va
-               con las oportunidades: es información que el proyecto todavía
-               puede ganar. */
-            var col = function (q, lista) {
-              var mas = Math.max(0, lista.length - TOPE_SINTESIS);
-              return '<div class="sn ' + q.clase + '"><h3>' + esc(q.t) + '<small>' + esc(q.que) + '</small></h3>' +
-                (lista.length
-                  ? lista.slice(0, TOPE_SINTESIS).map(function (x) {
-                      return '<div class="sx' + (x.tarea ? ' sx-tarea' : '') + '"><span>' + esc(x.texto) + '</span>' +
-                        '<small>' + esc(x.dato) + '</small></div>';
-                    }).join('') +
-                    (mas ? '<div class="sx sx-mas"><span>y ' + mas + ' más en la ficha</span></div>' : '')
-                  : '<div class="sx"><span>—</span></div>') +
-                '</div>';
-            };
-            var fd = sn.foda;
-            return '<p class="lee">Matriz FODA del sector</p>' +
-              '<div class="foda">' +
-                FODA_CUADRANTES.map(function (q) { return col(q, fd[q.id] || []); }).join('') +
-              '</div>';
+               URBIS recomienda, quien proyecta decide: la nota de abajo lo
+               dice en la hoja, y la norma urbana —que no está consultada—
+               tapa cualquier factibilidad alta. */
+            var pu;
+            try { pu = propuestasDeUso(res); } catch (e) { pu = null; }
+            if (!pu || !pu.propuestas.length) return '';
+            var fmtN = function (n) { return Number(n).toLocaleString('es-CO'); };
+            return '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
+                '</b>, ordenadas por necesidad medida y factibilidad del predio</p>' +
+              '<div class="props">' +
+                pu.propuestas.map(function (p, i) {
+                  return '<div class="pu n-' + p.necesidad + ' f-' + p.factibilidad +
+                      '" data-nec="' + p.nec + '" data-fac="' + p.fac + '">' +
+                    '<b class="pu-n">' + (i + 1) + '</b>' +
+                    '<div class="pu-t"><span class="pu-uso">' + esc(p.uso) + '</span>' +
+                      '<small class="pu-razon">' + esc(p.razon) + '</small></div>' +
+                    '<span class="pu-ind pu-nec"><i>Necesidad</i><b>' + esc(p.necesidad) + '</b>' +
+                      '<small>' + esc(p.necTexto) + '</small></span>' +
+                    '<span class="pu-ind pu-fac"><i>Factibilidad</i><b>' + esc(p.factibilidad) + '</b>' +
+                      '<small>' + esc(p.facTexto) + '</small></span>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+              '<small class="props-nota">Necesidad: lo que falta según lo medido en este sector —coberturas a pie, ' +
+                'espacio público por habitante, mezcla de usos, transporte—. Factibilidad: lo que el predio, su ' +
+                'acceso y los servicios registrados permiten' + (pu.hayLote ? '' : ', juzgado sobre el sector porque no hay lote dibujado') +
+                '. La norma urbana no está consultada: ninguna propuesta sube de factibilidad media hasta que se lea. ' +
+                'URBIS recomienda; el estudiante y el jurado deciden.' +
+                (pu.poblacion ? ' Población de referencia: ' + fmtN(pu.poblacion) + ' hab.' : '') + '</small>';
           })(), 'sintesis-pie');
     var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis);
     cajasHTML = agrupado.html;
@@ -5043,6 +5261,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.tit h1{ margin:1mm 0 2mm; font-size:11.5mm; line-height:1.05; letter-spacing:-.02em; font-weight:800; color:#fff }' +
       '.tit .sub{ font-size:3.6mm; color:#D6EEF8; line-height:1.4 }' +
       '.tit .cad{ font-size:3.2mm; color:#9FD8F0; margin-top:1.5mm }' +
+      '.tit .lee-asi{ font-size:3.1mm; line-height:1.4; color:#D6EEF8; margin-top:2mm; max-width:190mm }' +
+      '.tit .lee-asi b{ color:#34CCFE }' +
       // Las bandas
       /* La hoja es una pila de FILAS, y cada fila una o más BANDAS con su
          cabecera —número, título, qué trae— y sus cajas en una rejilla de
@@ -5099,8 +5319,42 @@ function donaHTML(datos, colorDe, nombreDe) {
          banda: se esconde y la caja queda como el cuerpo de su banda. */
       '.banda.sola .caja>h2, .banda.sola .caja>.ic{ display:none }' +
       '.banda.sola .caja{ border-top-width:.35mm; padding-top:3.4mm }' +
-      '.plano-hero{ grid-column:span ' + pesoPlano + ' }' +
-      '.sintesis-pie{ grid-column:1 / -1 }' +
+      /* Medias columnas: la rejilla de cada banda se escribe al doble de
+         pistas, una caja vale dos, una baldosa de cifra una y un mapa el
+         doble de su peso. Es lo que permite «cuatro cifras en el ancho de
+         un mapa» sin partir la aritmética de las bandas. */
+      '.caja{ grid-column:span 2 }' +
+      '.caja-cifra{ grid-column:span 1 }' +
+      '.plano-hero{ grid-column:span ' + (pesoPlano * 2) + ' }' +
+      /* La síntesis mide lo que su contenido mide: si comparte fila con una
+         banda más alta, no se estira para rellenar. */
+      '.sintesis-pie{ grid-column:1 / -1; align-self:start }' +
+      // Baldosa de cifra: título corto, sin icono, letra del número igual.
+      '.caja-cifra{ padding:2.8mm 3mm 3mm }' +
+      '.caja-cifra>h2{ font-size:2.9mm; letter-spacing:.08em; margin-right:0 }' +
+      '.caja-cifra>.ic{ display:none }' +
+      '.caja-cifra .kpis{ flex-direction:column; gap:1.5mm }' +
+      '.caja-cifra .nota, .caja-cifra .lee{ font-size:2.8mm; line-height:1.3 }' +
+      // La pregunta de la banda y su conclusión.
+      '.b-pregunta{ margin:-1mm 0 0; font-size:3.4mm; line-height:1.3; color:#0F1F2E; font-weight:600 }' +
+      '.b-cierre{ margin:0; font-size:3.3mm; line-height:1.38; color:#0F1F2E; border-left:1mm solid var(--tinte);' +
+        'background:var(--suave); padding:1.8mm 3mm; border-radius:0 2mm 2mm 0 }' +
+      '.b-cierre b{ display:inline-block; color:var(--tinte); text-transform:uppercase; letter-spacing:.14em;' +
+        'font-size:2.6mm; margin-right:2mm }' +
+      // Las cinco propuestas del cierre.
+      '.props{ display:flex; flex-direction:column; gap:2mm; margin-top:2mm }' +
+      '.pu{ display:grid; grid-template-columns:9mm minmax(0,1fr) ' + (horiz ? '58mm 78mm' : '52mm 66mm') + ';' +
+        'gap:1mm 3.5mm; align-items:center; padding:2mm 3mm; border:.3mm solid #E3EAF0; border-radius:2mm; background:#fff }' +
+      '.pu-n{ font-size:7mm; line-height:1; font-weight:800; color:var(--tinte) }' +
+      '.pu-uso{ display:block; font-size:4.2mm; line-height:1.15; font-weight:800 }' +
+      '.pu-razon{ display:block; font-size:3mm; line-height:1.3; color:#5A6472; margin-top:.6mm }' +
+      '.pu-ind{ display:flex; flex-direction:column; gap:.3mm; font-size:2.9mm; line-height:1.3; min-width:0 }' +
+      '.pu-ind i{ font-style:normal; font-size:2.4mm; letter-spacing:.16em; text-transform:uppercase; color:#6B7A8A }' +
+      '.pu-ind b{ font-size:3.8mm; text-transform:capitalize }' +
+      '.pu-ind small{ color:#5A6472 }' +
+      '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
+      '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
+      '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
       /* La caja de un mapa: dos columnas de su banda, el dibujo llenándola y
          el pie debajo. Ocupa dos porque un mapa al ancho de una caja de
          cifras es del tamaño que tenía en la tira que se quitó, y de eso se
@@ -5136,11 +5390,12 @@ function donaHTML(datos, colorDe, nombreDe) {
          conclusión— va en dos columnas debajo de las fotos, para que la
          fila no sea una tira de fotos con medio metro de texto debajo. */
       '.caja-fila .evo-cuerpo{ display:grid; grid-template-columns:1fr 1fr; gap:4mm 8mm; align-items:start }' +
-      '.caja-doble{ grid-column:span 2 }' +
+      '.caja-doble{ grid-column:span 4 }' +
       '.evo-dudoso img{ opacity:.55; border-style:dashed }' +
-      '.mapa-caja{ grid-column:span 1 }' +
-      '.mapa-caja.mapa-ancho{ grid-column:span 2 }' +
-      [2, 3, 4, 5, 6].map(function (n) { return '.mapa-caja.mapa-p' + n + '{ grid-column:span ' + n + ' }'; }).join('') +
+      '.mapa-caja{ grid-column:span 2 }' +
+      '.mapa-caja.mapa-ancho{ grid-column:span 4 }' +
+      '.mapa-caja.mapa-comp{ grid-column:span 2 }' +
+      [2, 3, 4, 5, 6, 7, 8].map(function (n) { return '.mapa-caja.mapa-p' + n + '{ grid-column:span ' + (2 * n) + ' }'; }).join('') +
       '.caja-fila{ grid-column:1 / -1 }' +
       /* El contexto que se fundió con su mapa: separado del dibujo por una
          regla fina, y con el mismo cuerpo que tendría en su caja. */
@@ -5153,9 +5408,11 @@ function donaHTML(datos, colorDe, nombreDe) {
          el ancho es llenar la caja, sin franjas a los lados y sin deformar
          nada. El techo es lo único que impide que un mapa en una banda muy
          ancha se lleve media hoja de alto. */
-      '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' + papel(TOPE.mapa) + ' }' +
-      '.mapa-p2 .mp-dib svg{ max-height:' + papel(TOPE.mapa2) + ' }' +
-      '.mapa-p3 .mp-dib svg, .mapa-p4 .mp-dib svg{ max-height:' + papel(TOPE.mapa3) + ' }' +
+      '.mp-dib svg{ display:block; width:100%; height:auto; max-height:' + papelMapa(TOPE.mapa) + ' }' +
+      '.mapa-p2 .mp-dib svg{ max-height:' + papelMapa(TOPE.mapa2) + ' }' +
+      '.mapa-p3 .mp-dib svg, .mapa-p4 .mp-dib svg, .mapa-p5 .mp-dib svg, .mapa-p6 .mp-dib svg, ' +
+        '.mapa-p7 .mp-dib svg, .mapa-p8 .mp-dib svg{ max-height:' + papelMapa(TOPE.mapa3) + ' }' +
+      '.mapa-comp .mp-dib svg{ max-height:' + papel(TOPE.comp) + ' }' +
       '.mp-pie{ font-size:2.7mm; color:#5A6472; line-height:1.35 }' +
       /* Una banda de un solo mapa —un tema del que solo se midió el dibujo—
          no puede esconder su título como hacen las de una sola caja: el
@@ -5205,7 +5462,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          la caja sin deformar nada; el techo de alto es lo único que impide
          que un plano cuadrado en una caja ancha se lleve media hoja. */
       '.plano-cuerpo{ width:100%; margin:0 auto }' +
-      '.plano-cuerpo svg{ display:block; width:100%; height:auto; max-height:' + papel(TOPE.plano + 10) + ' }' +
+      '.plano-cuerpo svg{ display:block; width:100%; height:auto; max-height:' + papelMapa(TOPE.plano + 10) + ' }' +
       /* Los dibujos de js/74 traen su propio color y su propio viewBox: acá
          solo se les da la caja y un techo de alto, que es lo único que puede
          desbordar una hoja que no crece. */
@@ -5420,6 +5677,13 @@ function donaHTML(datos, colorDe, nombreDe) {
             (meta.perimetroM ? ' · perímetro ' + esc(formatearLargo(meta.perimetroM)) : '') +
             ' · ' + (st.total || 0) + ' usos registrados' +
           '</div>' +
+          /* La jerarquía de lectura, explícita: se pidió que la lámina
+             dijera por dónde se lee y no que se adivinara. */
+          '<div class="lee-asi"><b>Cómo se lee.</b> Por bandas numeradas, 01 → ' +
+            (agrupado.grupos < 10 ? '0' : '') + agrupado.grupos +
+            ': cada una abre con la pregunta que responde y cierra con su conclusión; ' +
+            'el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad. ' +
+            'URBIS recomienda, quien proyecta decide.</div>' +
           (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
         '</div>' +
       '</header>' +
@@ -10036,12 +10300,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (pois.length) {
       lista.push({ id: 'calor:todos', t: 'Todos los usos', listo: true,
                    dato: pois.length + ' usos' });
-      Object.keys(st.porGrupo || {})
-        .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
-        .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
-        .sort(function (a, b) { return b.n - a.n; })
-        .slice(0, 6)
-        .forEach(function (g) {
+      categoriasQueCambian(st, pois, 2).forEach(function (g) {
           lista.push({ id: 'calor:' + g.id,
                        t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id),
                        listo: true, dato: g.n + ' usos' });
@@ -10289,6 +10548,65 @@ function donaHTML(datos, colorDe, nombreDe) {
      —los usos—, después el suelo, y al final lo que le pasa al lote. Con una
      excepción al final: los dos rasters se adelantan al primer puesto y
      salen al doble de ancho. */
+  /* ── Qué categorías de uso merecen su propio mapa ──────────────────
+     Eran hasta seis manchas de calor, una por categoría con tres usos o
+     más, y en la lámina educativa se pidió lo contrario: «un solo mapa
+     grande de usos y mapas pequeños de comparación SOLO para las categorías
+     que cambian la conclusión». Dos cambian la conclusión de la banda:
+
+       · la que MANDA, porque decide si el sector es de una sola cosa; y
+       · la más CONCENTRADA —la que tiene la mayor parte de sus puntos en
+         una sola cuadra—, porque es la que dibuja una calle o un núcleo
+         que el mapa de todos disimula.
+
+     Si ninguna se concentra, entra la segunda en peso: con la primera dice
+     si hay mezcla o no. Cada una lleva escrita su razón, que va al pie del
+     mapa: un mapa de comparación sin decir qué compara es decoración. Con
+     `tope` mayor —el informe en hojas pide seis— las demás entran por peso,
+     y lo dicen. La concentración se mide en celdas de unos 150 m, que es
+     una cuadra larga. */
+  function categoriasQueCambian(st, pois, tope) {
+    var grupos = Object.keys((st && st.porGrupo) || {})
+      .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
+      .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
+      .sort(function (a, b) { return b.n - a.n; });
+    if (!grupos.length) return [];
+    var total = grupos.reduce(function (a, g) { return a + g.n; }, 0) || 1;
+    var pct = function (g) { return Math.round(100 * g.n / total); };
+    var concentracion = function (g) {
+      var suyos = (pois || []).filter(function (p) { return p.grupo === g.id && p.lat != null; });
+      if (suyos.length < 3) return 0;
+      var kLat = 150 / 111320, celdas = {}, max = 0;
+      suyos.forEach(function (p) {
+        var kLng = 150 / (111320 * Math.cos(Number(p.lat) * Math.PI / 180) || 1);
+        var k = Math.floor(Number(p.lat) / kLat) + ':' + Math.floor(Number(p.lng) / kLng);
+        celdas[k] = (celdas[k] || 0) + 1;
+        if (celdas[k] > max) max = celdas[k];
+      });
+      return Math.round(100 * max / suyos.length);
+    };
+    var manda = grupos[0];
+    manda.razon = 'manda en el sector: ' + pct(manda) + ' % de lo clasificado';
+    var salida = [manda];
+    if (tope > 1 && grupos.length > 1) {
+      var conc = grupos.slice(1).map(function (g) { return { g: g, c: concentracion(g) }; })
+        .sort(function (a, b) { return b.c - a.c; })[0];
+      if (conc && conc.c >= 25) {
+        conc.g.razon = 'la más concentrada: ' + conc.c + ' % de sus puntos en una sola cuadra';
+        salida.push(conc.g);
+      } else {
+        grupos[1].razon = 'la segunda en peso, ' + pct(grupos[1]) + ' %: con la primera dice si hay mezcla';
+        salida.push(grupos[1]);
+      }
+    }
+    grupos.forEach(function (g) {
+      if (salida.length >= tope || salida.indexOf(g) !== -1) return;
+      g.razon = pct(g) + ' % de lo clasificado';
+      salida.push(g);
+    });
+    return salida.slice(0, tope);
+  }
+
   function mapasDelPliego(res, opts) {
     var o = opts || {};
     var A = window.URBIS_PC_ANALISIS;
@@ -10359,11 +10677,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         conv: grupoDeUsos(st, 6),
         pie: pois.length + ' usos registrados, con el color de su categoría'
       });
-      var grupos = Object.keys(st.porGrupo || {})
-        .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
-        .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
-        .sort(function (a, b) { return b.n - a.n; })
-        .slice(0, o.maxCategorias || 6);
+      var grupos = categoriasQueCambian(st, pois, o.maxCategorias || 2);
       grupos.forEach(function (g) {
         var suyos = pois.filter(function (p) { return p.grupo === g.id; });
         if (!suyos.length) return;
@@ -10376,7 +10690,8 @@ function donaHTML(datos, colorDe, nombreDe) {
                       }), radioPunto: 1.6 }),
           conv: [{ c: COL[g.id] || '#94a3b8',
                    t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id) + ' · ' + g.n }],
-          pie: g.n + ' usos · dónde se concentra'
+          comp: true,
+          pie: g.n + ' usos · ' + g.razon
         });
       });
     }
@@ -11042,6 +11357,10 @@ function donaHTML(datos, colorDe, nombreDe) {
      otras lo que cede es el contenido. Sin esa distinción, elegir el tamaño
      de fábrica habría empezado a tirar cajas por su cuenta, que es justo lo
      contrario de lo que se pidió antes: «no me dejes mapas a un lado». */
+  /* El lado corto mínimo de un mapa de análisis en la lámina, en milímetros
+     de papel. Lo usan la composición —para darle columnas— y la medición
+     —para no aceptar una escala que lo baje—. */
+  var MIN_MAPA_MM = 120;
   var LETRAS_PLIEGO = [
     /* Piso 0,30 y, si ni así, se apagan cajas y se dice cuáles. Antes el
        piso era 0,40 sin sacrificio y lo que no cabía se RECORTABA en silencio
@@ -11089,17 +11408,30 @@ function donaHTML(datos, colorDe, nombreDe) {
      quien arma la hoja: lo del cierre pesa menos que lo del sitio. */
   var PLIEGO_INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio',
                            'sintesis-del-sector'];
+  /* Los mapas, del más prescindible al más necesario. Lo que no esté acá
+     sale primero. Las categorías de uso —los de comparación— van temprano:
+     son chicos y se leen al lado del grande, pero el grande ya dice lo
+     esencial. */
+  var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
+                        'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
+                        'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];
   function ordenDeSacrificio(res, o) {
     var off = (o && o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
     var lista;
     try { lista = cajasDelPliego(res) || []; } catch (e) { return []; }
+    /* Y el lote, cuando está dibujado: es el predio donde se va a proponer,
+       lo primero que un jurado pregunta y lo que las cinco propuestas del
+       cierre nombran. Con los mapas a 120 mm (v847) las cajas del final de
+       la lista eran las primeras en ceder, y la del lote estaba al final. */
+    var hayLote = !!(S.lote && S.lote.length >= 3);
     return lista.filter(function (c) {
-      return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1;
+      return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1 &&
+        !(hayLote && c.id === 'el-lote-a-intervenir');
     }).map(function (c) { return c.id; }).reverse();
   }
 
   function laminaQueQuepa(res, opts) {
-    var o = opts || {};
+    var o = Object.assign({}, opts || {}, { _memo: {} });
     var html;
     try { html = laminaImprimible(res, o); } catch (e) { return ''; }
     if (typeof document === 'undefined' || !document.body) return html;
@@ -11112,51 +11444,83 @@ function donaHTML(datos, colorDe, nombreDe) {
       document.body.appendChild(marco);
       var d = marco.contentDocument;
       if (!d) return html;
-      d.open(); d.write(html); d.close();
-      var rej = d.querySelector('.rej'), marcoR = d.querySelector('.rejilla');
-      if (!rej || !marcoR) return html;
-      var cabeEn = marcoR.getBoundingClientRect().height;
-      if (!(cabeEn > 0)) return html;
-      /* Se mide con `getBoundingClientRect`, que SÍ cuenta la reducción, y no
-         con `offsetHeight`, que devuelve el tamaño sin reducir: con el segundo
-         la medida no cambiaría por más que se encogiera y la búsqueda se iría
-         siempre al mínimo. */
-      var mide = function (k) {
-        /* `--k` va con la reducción: los techos de los dibujos están en
-           milímetros de papel y la deshacen con esta variable, así que
-           medir sin moverla sería medir una hoja que no es la que sale. */
-        rej.style.setProperty('--k', String(k >= 1 ? 1 : k));
-        if (k >= 1) { rej.style.transform = ''; rej.style.width = ''; }
-        else {
-          rej.style.transformOrigin = 'top left';
-          rej.style.transform = 'scale(' + k + ')';
-          rej.style.width = (Math.round(1000 / k) / 10) + '%';
-        }
-        return rej.getBoundingClientRect().height <= cabeEn + 1;
-      };
-      if (mide(1)) { S.pliegoFuera = []; return html; }
+      var PX_MM = 3.7795275;
       var piso = pisoDeLetra(o.letra);
-      var bajo = piso, alto = 1, mejor = null;
-      for (var i = 0; i < 7; i++) {
-        var k = Math.round((bajo + alto) / 2 * 1000) / 1000;
-        if (mide(k)) { mejor = k; bajo = k; } else { alto = k; }
-      }
-      if (mejor) { S.pliegoFuera = []; return laminaImprimible(res, Object.assign({}, o, { escala: mejor })); }
+      /* ── El piso de los mapas ───────────────────────────────────────
+         Un mapa de análisis no baja de 120 mm de lado corto en el papel;
+         si a la escala que cierra la hoja alguno queda por debajo, la hoja
+         NO se acepta y se pasa a apagar paneles, que es lo que se pidió:
+         «si no cabe, se quita otro panel, no se encoge el mapa». Se mide
+         con el rectángulo ya reducido, que es lo que sale de la impresora.
+         Los mapas de comparación —`mapa-comp`— están fuera de la cuenta a
+         propósito: son chicos por diseño. */
+      var menorLadoDeMapas = function () {
+        var min = Infinity;
+        var lista = d.querySelectorAll('.mapa-caja:not(.mapa-comp) .mp-dib svg, .plano-cuerpo svg');
+        for (var i = 0; i < lista.length; i++) {
+          var r = lista[i].getBoundingClientRect();
+          var lado = Math.min(r.width, r.height) / PX_MM;
+          if (lado > 0 && lado < min) min = lado;
+        }
+        return min;
+      };
+      /* Monta una hoja compuesta a la escala `k` y dice si la rejilla cabe
+         y si los mapas guardan su piso. Cada sondeo COMPONE de nuevo, no
+         reduce la misma hoja: el ancho de los mapas depende de la escala
+         —ver `pesoMinMapa`— y una hoja compuesta para 1 y reducida al 60 %
+         no es la hoja que saldría compuesta al 60 %. Los mapas van
+         memorizados en `o._memo`, así que volver a componer es barato.
 
-      /* Ni al piso cabe. Antes se mandaba el mínimo igual y la rejilla, que
-         recorta, se comía lo que sobraba sin decir nada: la hoja salía de la
-         impresora con tres cajas menos y nadie se enteraba hasta verla
-         colgada.
+         Se mide con `getBoundingClientRect`, que SÍ cuenta la reducción, y
+         no con `offsetHeight`, que devuelve el tamaño sin reducir. */
+      var prueba = function (opciones, k) {
+        var h = laminaImprimible(res, Object.assign({}, o, opciones, { escala: k }));
+        d.open(); d.write(h); d.close();
+        var rej = d.querySelector('.rej'), marcoR = d.querySelector('.rejilla');
+        if (!rej || !marcoR) return { sinMedir: true, html: h };
+        var cabeEn = marcoR.getBoundingClientRect().height;
+        if (!(cabeEn > 0)) return { sinMedir: true, html: h };
+        return { cabe: rej.getBoundingClientRect().height <= cabeEn + 1,
+                 mapas: menorLadoDeMapas() >= MIN_MAPA_MM - 0.5, html: h };
+      };
+      /* La mayor escala, entre el piso y 1, a la que la hoja cierra con los
+         mapas enteros. Bisección de seis pasos: precisión de un 1 %. */
+      var ajustar = function (opciones, pasos) {
+        var a1 = prueba(opciones, 1);
+        if (a1.sinMedir) return { k: 1, ok: true, html: a1.html, sinMedir: true };
+        if (a1.cabe && a1.mapas) return { k: 1, ok: true, html: a1.html };
+        var bajo = piso, alto = 1, mejor = null;
+        for (var i = 0; i < (pasos || 6); i++) {
+          var k = Math.round((bajo + alto) / 2 * 1000) / 1000;
+          var r = prueba(opciones, k);
+          if (r.cabe && r.mapas) { mejor = { k: k, ok: true, html: r.html }; bajo = k; } else { alto = k; }
+        }
+        if (!mejor) {
+          var rp = prueba(opciones, piso);
+          if (rp.cabe && rp.mapas) return { k: piso, ok: true, html: rp.html };
+          return { k: null, ok: false };
+        }
+        return mejor;
+      };
+      var primera = ajustar({}, 6);
+      if (primera.sinMedir) return html;
+      if (primera.ok) { S.pliegoFuera = []; return primera.html; }
 
-         Ahora el tamaño de letra manda. Si a ese tamaño no cabe todo, lo que
-         cede es el CONTENIDO y no la legibilidad: se apagan cajas —de las
-         prescindibles y empezando por el final— hasta que la hoja cierre, y
-         se deja dicho cuáles fueron. Están todas en el informe en hojas, que
-         es el documento que no tiene que caber en un pliego.
+      /* Ni al piso cabe con los mapas enteros. Antes se mandaba el mínimo
+         igual y la rejilla, que recorta, se comía lo que sobraba sin decir
+         nada: la hoja salía de la impresora con tres cajas menos y nadie se
+         enteraba hasta verla colgada.
 
-         Se busca el número de cajas a apagar por bisección y no de a una: al
-         mínimo son treinta y tres renderizados de una lámina con diez mapas,
-         y eso en un teléfono es medio minuto de pantalla congelada. */
+         Ahora el tamaño de letra y el de los mapas mandan. Si a ese tamaño
+         no cabe todo, lo que cede es el CONTENIDO y no la legibilidad: se
+         apagan paneles —de los prescindibles y empezando por el final—
+         hasta que la hoja cierre, y se deja dicho cuáles fueron. Están
+         todos en el informe en hojas, que es el documento que no tiene que
+         caber en un pliego.
+
+         Se busca el número de paneles a apagar por bisección y no de a uno,
+         y con cada número se vuelve a buscar la escala: apagar un panel no
+         es solo caber, es caber con letra más grande. */
       /* «Cabe todo» no apaga nada: se manda el mínimo y ya, que es lo que se
          hacía antes de v743. Una hoja compuesta chiquita se lee con esfuerzo;
          una a la que le faltan cajas que alguien encendió a mano es una
@@ -11167,48 +11531,89 @@ function donaHTML(datos, colorDe, nombreDe) {
         return laminaImprimible(res, Object.assign({}, o, { escala: piso }));
       }
       var candidatos = ordenDeSacrificio(res, o);
+      /* Las baldosas de cifra —media columna, cuatro renglones— son lo más
+         barato de conservar y lo que más dice por milímetro: caen las
+         últimas entre las cajas. La composición anotó cuáles son. */
+      var cifras = (o._memo && o._memo.cifras) || [];
+      candidatos = candidatos.filter(function (c) { return cifras.indexOf(c) === -1; })
+        .concat(candidatos.filter(function (c) { return cifras.indexOf(c) !== -1; }));
       var apagadasYa = (o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
-      /* Y después de las cajas, los MAPAS, del último al primero. Con
-         dieciocho recuadros a tamaño de papel, «se lee de pie» no cerraba ni
-         apagando las treinta cajas, y caía al mínimo de siempre: letra de
-         1,4 mm con todas las cajas fuera, que es lo peor de los dos mundos.
-         Los mapas ceden después de las cifras y en orden inverso al de la
-         lámina —los últimos son los que se añadieron por último—, y nunca la
-         foto ni el plano de todos los usos, que son los que ubican. */
+      /* Los MAPAS ceden entreverados con las cajas, y no todos después de
+         todas. Con los mapas a tamaño fijo de papel, un mapa vale lo que
+         doce cajas de cifras: apagar treinta cajas antes de tocar un mapa
+         dejaba una hoja de puros mapas con una caja de texto, que es lo que
+         salió en la primera pasada de esta regla. Dos cajas por cada mapa,
+         del último al primero, y nunca la foto ni el plano de todos los
+         usos, que son los que ubican. */
       var mapasYa = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || []) : (S.pliegoMapasOff || []));
       var candMapas = [];
       try {
         candMapas = mapasDisponibles(res).filter(function (m) {
           return m.listo && mapasYa.indexOf(m.id) === -1 && m.id !== 'foto' && m.id !== 'calor:todos';
-        }).map(function (m) { return m.id; }).reverse();
+        }).map(function (m) { return m.id; });
       } catch (e) { candMapas = []; }
-      var todosLosCandidatos = candidatos.concat(candMapas);
-      var conN = function (n) {
-        var offC = candidatos.slice(0, Math.min(n, candidatos.length));
-        var offM = candMapas.slice(0, Math.max(0, n - candidatos.length));
-        return laminaImprimible(res, Object.assign({}, o, {
-          escala: piso, pliegoOff: apagadasYa.concat(offC), pliegoMapasOff: mapasYa.concat(offM) }));
+      /* En qué orden ceden los mapas: los primeros de la lista son los
+         primeros en salir. Un mapa de análisis a 120 mm vale lo que quince
+         cajas de cifras, y un sector bien trabajado trae quince mapas para
+         un papel que aguanta siete: los que sobran del NÚCLEO salen antes
+         que cualquier caja, porque una lámina con doce mapas y sin texto no
+         analiza nada; después las cajas, del final al principio; y el núcleo
+         —cobertura, llenos, alturas, jerarquía vial, lo que se alcanza a
+         pie— solo cuando ya no queda otra cosa. */
+      var pos = function (id) {
+        var i = PRIORIDAD_MAPA.indexOf(String(id).indexOf('calor:') === 0 ? 'calor:categoria' : id);
+        return i === -1 ? -1 : i;
       };
+      candMapas.sort(function (a, b) { return pos(a) - pos(b); });
+      /* El núcleo son DOS mapas de análisis —con el de todos los usos, la
+         foto y el plano, que no ceden nunca, son cinco figuras— y los de
+         comparación, que son chicos y acompañan al grande. Se midió: con
+         mapas de 120 mm, un pliego parado lleva la fila del plano, dos
+         filas de mapas y la síntesis, y nada más; proteger cuatro mapas
+         dejaba la hoja sin una sola caja de texto, y una lámina que no
+         explica no enseña. Lo que no quepa está en el informe en hojas y
+         la ficha dice cuál fue. */
+      var NUCLEO = 2;
+      var comps = candMapas.filter(function (m) { return String(m).indexOf('calor:') === 0; });
+      var analisis = candMapas.filter(function (m) { return String(m).indexOf('calor:') !== 0; });
+      var sobrantes = analisis.slice(0, Math.max(0, analisis.length - NUCLEO));
+      var nucleo = analisis.slice(Math.max(0, analisis.length - NUCLEO));
+      /* Los de comparación ceden antes que las cajas: acompañan al grande,
+         y en la hoja acostada los dos juntos valen lo que cuatro baldosas
+         de análisis. */
+      var orden = sobrantes.map(function (m) { return { mapa: m }; })
+        .concat(comps.map(function (m) { return { mapa: m }; }))
+        .concat(candidatos.map(function (c) { return { caja: c }; }))
+        .concat(nucleo.map(function (m) { return { mapa: m }; }));
+      var todosLosCandidatos = orden.map(function (x) { return x.caja || x.mapa; });
+      var opcionesConN = function (n) {
+        var parte = orden.slice(0, n);
+        return {
+          pliegoOff: apagadasYa.concat(parte.filter(function (x) { return x.caja; }).map(function (x) { return x.caja; })),
+          pliegoMapasOff: mapasYa.concat(parte.filter(function (x) { return x.mapa; }).map(function (x) { return x.mapa; }))
+        };
+      };
+      var medidos = {};
       var cabeConN = function (n) {
-        d.open(); d.write(conN(n)); d.close();
-        var r2 = d.querySelector('.rej'), m2 = d.querySelector('.rejilla');
-        if (!r2 || !m2) return true;
-        return r2.getBoundingClientRect().height <= m2.getBoundingClientRect().height + 1;
+        var r = ajustar(opcionesConN(n), 4);
+        medidos[n] = r;
+        return !!(r.sinMedir || r.ok);
       };
-      var bajoN = 0, altoN = todosLosCandidatos.length, elegido = null;
+      var bajoN = 0, altoN = orden.length, elegido = null;
       while (bajoN <= altoN) {
         var med = Math.floor((bajoN + altoN) / 2);
         if (cabeConN(med)) { elegido = med; altoN = med - 1; } else { bajoN = med + 1; }
       }
       if (elegido === null) {
-        /* Ni apagándolas todas: es un sector con más mapas que papel. Se
+        /* Ni apagándolo todo: es un sector con más mapas que papel. Se
            vuelve al comportamiento viejo —el mínimo absoluto— porque una hoja
            chiquita se lee y una vacía no. */
         S.pliegoFuera = todosLosCandidatos.slice();
         return laminaImprimible(res, Object.assign({}, o, { escala: 0.4 }));
       }
       S.pliegoFuera = todosLosCandidatos.slice(0, elegido);
-      return conN(elegido);
+      return medidos[elegido].html ||
+        laminaImprimible(res, Object.assign({}, o, opcionesConN(elegido), { escala: medidos[elegido].k || piso }));
     } catch (e) {
       return html;
     } finally {
@@ -11649,6 +12054,161 @@ function donaHTML(datos, colorDe, nombreDe) {
     var verde = de('verde'), duro = de('construido'), agua = de('agua');
     if (verde == null && duro == null) return null;
     return { verde: verde, duro: duro, agua: agua };
+  }
+
+  /* ── Recomendación de uso: cinco propuestas, ordenadas ────────────────
+     El cierre de la lámina educativa. Cada propuesta cruza dos cosas que se
+     miden aparte y se leen juntas:
+
+       · NECESIDAD — lo que falta según lo medido en el sector: el
+         porcentaje sin cubrir a pie de cada equipamiento, la brecha de
+         espacio público contra la meta nacional, la mezcla (un sector con
+         el 80 % de vivienda es un sector dormitorio), el transporte.
+       · FACTIBILIDAD — lo que el predio y su acceso permiten: el área del
+         lote contra el área típica del uso, los frentes, la vía principal,
+         la infraestructura de servicios registrada (presencia, no
+         cobertura) y la inundación. La NORMA URBANA no está consultada, y
+         por eso ninguna factibilidad sube de «media»: sin uso permitido no
+         hay «alta» que valga, y decirlo es la única forma honesta de
+         proponer sin haber leído el POT.
+
+     Son siempre cinco, ordenadas por necesidad y después por factibilidad.
+     Cuando lo medido no muestra cinco carencias, las que completan la lista
+     lo dicen —«lo medido no muestra déficit»— en vez de inventar una. Las
+     áreas típicas son órdenes de magnitud de programa, no norma: un puesto
+     de salud de barrio, un jardín, una plaza. */
+  var USOS_TIPICOS = [
+    { id: 'salud',      uso: 'Puesto o centro de salud de barrio',        m2: 800,  clave: /salud|hospital|cl[ií]nic|m[eé]dic|farmac/i },
+    { id: 'educacion',  uso: 'Jardín infantil o colegio de barrio',        m2: 1500, clave: /educa|colegio|escuela|jard[ií]n/i },
+    { id: 'parque',     uso: 'Parque o plaza de barrio',                   m2: 400,  clave: /parque|plaza|recrea|verde|espacio p/i },
+    { id: 'comercio',   uso: 'Comercio y servicios de proximidad',         m2: 200,  clave: /comercio|mercado|tienda|abasto|compra/i },
+    { id: 'cultura',    uso: 'Equipamiento cultural o comunitario',        m2: 600,  clave: /cultur|bibliot|comunit|casa de/i },
+    { id: 'deporte',    uso: 'Cancha o escenario deportivo',               m2: 1200, clave: /deport|cancha/i },
+    { id: 'vivienda',   uso: 'Vivienda de altura media con comercio abajo', m2: 300,  clave: /vivienda|residenc/i },
+    { id: 'transporte', uso: 'Paradero o punto de transporte público',     m2: 300,  clave: /transporte|paradero|bus/i }
+  ];
+  function propuestasDeUso(res) {
+    var st = (res && res.stats) || {};
+    var hab = Number(st.poblacionEstimada || 0);
+    var trz = S.trazado, e = trz && trz.espacio;
+    var la = null, infra = null;
+    try { la = analisisDelLote(); } catch (e1) { la = null; }
+    try { infra = infraDeServicios(res); } catch (e2) { infra = null; }
+    var mv = st.movilidad || null;
+    var num = function (x) { return String(x).replace('.', ','); };
+    var fmt = function (n) { return Math.round(Number(n)).toLocaleString('es-CO'); };
+    var tipo = function (id) { return USOS_TIPICOS.filter(function (t) { return t.id === id; })[0]; };
+    var cand = {};
+    var pon = function (id, nec, necTexto, razon) {
+      var t = tipo(id);
+      if (!t) return;
+      nec = Math.max(0, Math.min(100, Math.round(nec)));
+      if (cand[id] && cand[id].nec >= nec) return;
+      cand[id] = { id: id, uso: t.uso, m2: t.m2, nec: nec, necTexto: necTexto, razon: razon };
+    };
+
+    // 1 · Lo que falta a distancia de caminar, por tipo de equipamiento.
+    var ac = st.accesibilidad;
+    ((ac && ac.categorias) || []).forEach(function (c) {
+      var t = USOS_TIPICOS.filter(function (u) { return u.clave.test(String(c.etiqueta || '')); })[0];
+      if (!t) return;
+      var sin = Number(c.pctSinCubrir || 0);
+      pon(t.id, sin,
+        num(sin) + ' % del sector a más de ' + c.minutos + ' min de ' + String(c.etiqueta).toLowerCase() +
+          (hab > 0 && sin > 0 ? ' · ' + fmt(hab * sin / 100) + ' hab. lejos' : ''),
+        sin >= 50 ? 'más de la mitad del sector no lo alcanza caminando: es la carencia más directa que un predio resuelve'
+                  : 'la cobertura a pie es la primera cuenta de un equipamiento de barrio');
+    });
+
+    // 2 · El espacio público, contra la meta nacional.
+    if (e) {
+      var metaM2 = e.metaM2Hab || 15;
+      if (!e.piezas) {
+        pon('parque', 70, 'sin parques ni plazas con forma registrada en el sector',
+          'un sector sin espacio público registrado empieza por ahí; si existe y no está dibujado, dibujarlo baja esta necesidad');
+      } else if (hab > 0) {
+        var porHab = e.areaM2 / hab;
+        var brecha = Math.max(0, 1 - porHab / metaM2) * 100;
+        pon('parque', brecha,
+          num(Math.round(porHab * 10) / 10) + ' m²/hab frente a la meta de ' + metaM2 +
+            (porHab < metaM2 ? ' · faltan ' + fmt((metaM2 - porHab) * hab) + ' m²' : ' · meta cumplida'),
+          porHab < metaM2 / 2 ? 'la brecha contra la meta del Decreto 1077 de 2015 es de más de la mitad'
+                              : 'se mide contra los 15 m²/hab de la meta nacional');
+      }
+    }
+
+    // 3 · La mezcla: sector dormitorio o sector sin residentes.
+    var up = st.usoPredominante || {};
+    var kViv = Object.keys(up).filter(function (k) { return /vivienda|residenc/i.test(k); })[0];
+    var viv = kViv ? Number(up[kViv] || 0) : 0;
+    if (viv >= 80)
+      pon('comercio', viv, 'la vivienda pesa el ' + viv + ' %: sector dormitorio, se vacía de día',
+        'sin comercio de barrio cada compra es un viaje; un primer piso activo cambia la calle entera');
+    else if (kViv && viv < 30 && (st.total || 0) >= 20)
+      pon('vivienda', 60 + (30 - viv), 'la vivienda pesa solo el ' + viv + ' %: el sector se vacía de noche',
+        'traer residentes es lo que sostiene el comercio después de las seis y la seguridad de la calle');
+
+    // 4 · El transporte público.
+    if (mv && mv.paradasBus === 0)
+      pon('transporte', 55, 'sin paradas de transporte público registradas en el sector',
+        'es el uso más barato con más gente servida, y condiciona todos los demás');
+    else if (mv && mv.paradasBus > 0 && hab > 0 && hab / mv.paradasBus > 1500)
+      pon('transporte', 45, fmt(hab / mv.paradasBus) + ' hab. por parada',
+        'más de 1.500 personas por parada es una parada que no alcanza');
+
+    // 5 · Lo cultural y comunitario, si no hay nada de eso entre lo clasificado.
+    var pg = st.porGrupo || {};
+    var clasificados = Object.keys(pg).filter(function (k) { return k !== 'otro'; })
+      .reduce(function (a, k) { return a + (pg[k] || 0); }, 0);
+    if (clasificados >= 20 && !Object.keys(pg).some(function (k) { return /cultur|educa/i.test(k) && pg[k] > 0; }))
+      pon('cultura', 40, 'ningún uso cultural ni educativo entre ' + clasificados + ' clasificados',
+        'un sector sin dónde reunirse fuera de la casa y la tienda tiene esa carencia aunque nadie la mida');
+
+    // Completar a cinco, diciendo que lo medido no sostiene la necesidad.
+    ['parque', 'comercio', 'vivienda', 'cultura', 'educacion', 'salud', 'deporte', 'transporte'].forEach(function (id) {
+      if (!cand[id]) pon(id, 8, 'lo medido no muestra déficit: necesidad baja',
+        'entra para completar la comparación de cinco; no es una carencia medida');
+    });
+
+    /* La factibilidad, uso por uso. Puntos por lo que el predio y el acceso
+       dan; la norma sin consultar tapa el «alta». */
+    var inu = S.inundacion;
+    var factibilidad = function (c) {
+      var pts = 0, por = [];
+      if (la) {
+        if (la.areaM2 >= c.m2) { pts += 2; por.push('lote de ' + fmt(la.areaM2) + ' m² para ' + fmt(c.m2) + ' típicos'); }
+        else if (la.areaM2 >= c.m2 * 0.6) { pts += 1; por.push('lote de ' + fmt(la.areaM2) + ' m², justo para ' + fmt(c.m2) + ' típicos'); }
+        else { pts -= 1; por.push('lote de ' + fmt(la.areaM2) + ' m², corto para ' + fmt(c.m2) + ' típicos'); }
+        var nf = (la.frentes || []).length;
+        if (la.esquinero) { pts += 1; por.push('esquinero, ' + nf + ' frentes'); }
+        else if (nf === 1) por.push('un solo frente');
+        else por.push('sin frente a calle registrada');
+      } else {
+        por.push('sin lote dibujado: se juzga el sector');
+      }
+      if (mv && mv.viaPrincipal && mv.viaPrincipal.distM != null && mv.viaPrincipal.distM <= 300) {
+        pts += 1; por.push('vía principal a ' + Math.round(mv.viaPrincipal.distM) + ' m');
+      }
+      if (infra && infra.n) { pts += 1; por.push(infra.n + ' piezas de servicios registradas (presencia, no cobertura)'); }
+      if (inu && inu.cobertura && inu.trPeor != null) { pts -= 1; por.push('dentro de una mancha de inundación'); }
+      por.push('norma urbana: sin dato oficial');
+      var nivel = pts >= 3 ? 'alta' : pts >= 1 ? 'media' : 'baja';
+      if (nivel === 'alta') { nivel = 'media'; por[por.length - 1] = 'alta si la norma lo permite: sin dato oficial'; }
+      return { nivel: nivel, pts: pts, texto: por.join(' · ') };
+    };
+
+    var lista = Object.keys(cand).map(function (id) {
+      var c = cand[id], f = factibilidad(c);
+      c.necesidad = c.nec >= 50 ? 'alta' : c.nec >= 25 ? 'media' : 'baja';
+      c.factibilidad = f.nivel; c.fac = f.pts; c.facTexto = f.texto;
+      return c;
+    }).sort(function (a, b) { return (b.nec - a.nec) || (b.fac - a.fac) || (a.id < b.id ? -1 : 1); }).slice(0, 5);
+
+    var objeto = la
+      ? 'el lote de ' + fmt(la.areaM2) + ' m²' +
+        ((la.frentes || [])[0] && la.frentes[0].via ? ' sobre la ' + la.frentes[0].via : '')
+      : 'el sector, sin lote dibujado';
+    return { propuestas: lista, objeto: objeto, hayLote: !!la, poblacion: hab > 0 ? Math.round(hab) : null };
   }
 
   function sintesisDelSector(res) {
@@ -20194,6 +20754,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Se exponen para poder comprobarlos sin montar la app entera: el reparto
     // por rumbos es la parte que decide a dónde se manda a un estudiante.
     zonasSinDatos: zonasSinDatos,
+    // El cierre de la lámina educativa, para comprobarlo sin montar la hoja.
+    propuestasDeUso: function (res) { return propuestasDeUso(res || S.resultado); },
+    /* La lámina compuesta a una escala dada, sin la búsqueda: para medir
+       qué pasa a cada escala sin montar la ficha. */
+    laminaA: function (o) { return laminaImprimible(S.resultado, o || {}); },
+    categoriasQueCambian: function (tope) {
+      var r = S.resultado || {};
+      return categoriasQueCambian(r.stats || {}, r.pois || [], tope || 2);
+    },
     compararListas: compararListas,
     /* El archivo para JOSM y la lista de correcciones: geometría y texto, sin
        red ni pantalla, así que se comprueban sin montar la aplicación. */

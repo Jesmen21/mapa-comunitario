@@ -289,6 +289,51 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   equipamientos de demostración. La única cifra real es la población de
   Cúcuta (ancla DANE 2024). La pantalla lo avisa en amarillo.
 
+## La lámina educativa: mapas de 12 cm y paneles que ceden
+
+Desde la v847 el pliego de 60 × 90 sigue una regla que cambia cómo se
+compone y qué esperan las pruebas: **un mapa de análisis no baja de 120 mm
+de lado corto en el papel, nunca; si no cabe, cede otro panel**. Lo que se
+dijo antes —«no me dejes mapas a un lado»— se cumple de otra forma: nada se
+pierde en silencio. Lo que cede queda en `S.pliegoFuera` (la ficha lo dice)
+y entero en el informe en hojas.
+
+Cómo funciona, en `js/68`:
+
+* `MIN_MAPA_MM = 120`. El ancho de un mapa en columnas sale de la escala a
+  la que se compone (`pesoMinMapa` usa `escalaHoja`), y su alto en papel no
+  se mueve con la escala (`papelMapa`). Por eso `laminaQueQuepa` **vuelve a
+  componer en cada sondeo de escala** en vez de reducir la misma hoja; los
+  mapas van memorizados en `o._memo` para que salga barato.
+* Orden de sacrificio: mapas sobrantes (`PRIORIDAD_MAPA`, los primeros
+  salen primero) → mapas de comparación → cajas (las **baldosas de cifra**
+  al final) → el núcleo de dos mapas. La foto, el plano y el de todos los
+  usos no ceden nunca. Medido: un pliego parado lleva la fila del plano,
+  dos filas de mapas y la síntesis, y nada más.
+* Usos del suelo: **un** mapa grande (`calor:todos`) y como mucho dos
+  chicos de comparación, `mapa-comp`, elegidos por
+  `categoriasQueCambian` (la que manda y la más concentrada), con la razón
+  en el pie. El informe en hojas sigue pidiendo seis.
+* La rejilla de cada banda va en **medias columnas**: una caja son dos
+  pistas, una baldosa de cifra (`caja-cifra`, cajas de cifras sin dibujo
+  y con poco texto) una, un mapa el doble de su peso.
+* Cada banda lleva su **pregunta** (`GRUPOS[].pregunta`) y su
+  **conclusión** (`conclusionDeBanda`), y la cabecera dice cómo se lee.
+* El cierre ya no es la FODA: son **cinco propuestas de uso**
+  (`propuestasDeUso`), ordenadas por necesidad medida y factibilidad del
+  predio, con la norma urbana declarada «sin dato oficial» —ninguna sube de
+  factibilidad media hasta que se lea el POT—. La FODA sigue en la ficha y
+  en el informe. URBIS recomienda, quien proyecta decide.
+
+Lo mide `tlaminaedu.js` en milímetros de papel, y las suites del pliego
+(`tpliegogrande`, `tmapas`, `tpliego`, `tlamina`, `tsintesis`) exigen desde
+entonces «está, o está declarado fuera», nunca «están todos».
+
+Pendiente de las tandas siguientes del mismo pliego de instrucciones: la
+capa de método por panel, el radio elegible y la bibliografía (§5), los
+paneles de campo (§6), los cinco paneles de vacío obligatorio y los análisis
+cruzados (§2 y §3).
+
 ## Las pruebas se aprietan, no se aflojan
 
 Cuando una falla por un cambio legítimo, se hace más precisa: se busca por la

@@ -517,7 +517,9 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   const sinD=(LA.cajas||[]).filter(x=>(LD.cajas||[]).indexOf(x)<0);
   const sinA=(LD.cajas||[]).filter(x=>(LA.cajas||[]).indexOf(x)<0);
   T('la lámina trae las mismas cajas, una por una',
-    (LA.cajas||[]).length>=25 && sinD.length===0 && sinA.length===0,
+    /* Doce y no veinticinco: desde v847 el papel lleva menos cajas —los
+       mapas guardan sus 120 mm— y lo que se compara es que sean LAS MISMAS. */
+    (LA.cajas||[]).length>=12 && sinD.length===0 && sinA.length===0,
     (LA.cajas||[]).length+' cajas en vivo · '+(LD.cajas||[]).length+' al reanudar' +
     (sinD.length?' · faltan: '+sinD.join(', '):'')+(sinA.length?' · sobran: '+sinA.join(', '):''));
   T('y el mismo inventario de recuadros, listos y grises',

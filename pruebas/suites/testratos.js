@@ -181,6 +181,7 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     const bLam = h.querySelector('[data-pcr="lamina-ver"]');
     if (bLam) { bLam.click(); await new Promise(r=>setTimeout(r,900)); }
     o.lamina = capturado; capturado = '';
+    o.laminaCompleta=window.URBIS_PC_RECON.laminaA({}); o.fuera=((window.URBIS_PC_RECON.estado()||{}).pliegoFuera||[]).slice();
     const asa2 = h.querySelector('[data-pcr="agrandar"]');
     if (asa2 && h.classList.contains('pcr-encogida')) { asa2.click(); await new Promise(r=>setTimeout(r,500)); }
     const bImp = h.querySelector('[data-pcr="imprimir"]');
@@ -257,10 +258,16 @@ const manzanas={features:['Uno','Dos','Tres','Sin Estrato'].map((e,i)=>({
     (r.textoTrasEstratos||'').split('\n').filter(l=>/manzanas/.test(l))[0]);
 
   console.log('\n  -- y en el papel --');
-  const mapaEstr = ((r.lamina||'').split('<section class="caja')
+  /* Desde v847 la lámina impresa cede paneles para que los mapas guarden
+     sus 120 mm; el contenido de la caja se comprueba en la hoja COMPLETA
+     —la misma composición, sin el recorte del papel— y aparte se exige que
+     la impresa la traiga o la declare fuera por su nombre. */
+  const mapaEstr = ((r.laminaCompleta||r.lamina||'').split('<section class="caja')
     .filter(x=>/^ mapa-caja/.test(x) && /<h2>Manzanas por estrato<\/h2>/.test(x))[0])||'';
   const conv = (mapaEstr.match(/mu-area" style="[^"]*"><\/i>[^<]*/g)||[]).map(x=>x.split('</i>')[1]);
   P('el pliego trae el mapa de manzanas por estrato', !!mapaEstr);
+  P('y la lámina impresa lo trae, o lo declara fuera por su nombre',
+    /data-m="estratos"/.test(r.lamina||'') || (r.fuera||[]).indexOf('estratos')>=0);
   P('con las manzanas pintadas', (mapaEstr.match(/<path d="M[^"]*Z" fill="#/g)||[]).length >= 3,
     (mapaEstr.match(/<path d="M[^"]*Z" fill="#/g)||[]).length+' manzanas');
   P('y un color por estrato en las convenciones, no uno por manzana',
