@@ -5,10 +5,17 @@ const E = require('../entorno.js');
    de 60 × 90 que un estudiante entrega a un jurado— y esta suite mide la
    primera tanda, con estas reglas escritas:
 
-     · «Un mapa: mínimo 12 cm de lado corto, NUNCA menos. Si no cabe, se
-        quita otro panel, no se encoge el mapa.»
-     · «Los ocho mapas de usos: UN mapa grande y mapas pequeños de
-        comparación solo para las categorías que cambian la conclusión.»
+     · «Un mapa: lo más grande que dé el papel, y ESTÁN TODOS.» Lo pidió
+        dos veces: «no me dejes mapas a un lado» y, con el pliego impreso
+        de la v849 en la mano, «me quitó todos los mapas que tanto me
+        gustaban, las de alturas; que se muestren todos los mapas que antes
+        salían». Entre v847 y v849 un piso de 120 mm por mapa apagaba
+        paneles hasta dejar cinco de quince; desde v850 los mapas se
+        encogen con la hoja y ninguno se cae.
+     · «Los dos principales, del mismo tamaño»: la foto satelital y el
+        plano del sector, mismas columnas y mismo alto en el papel.
+     · «Los mapas de calor por categoría, todos»: uno por cada uso con
+        peso —comercio, institucional, salud, cultura—, no dos de muestra.
      · «Una cifra suelta es una baldosa chica: cuatro caben en el ancho de
         un mapa.»
      · «Antes de cada banda, una línea con la pregunta que responde; al
@@ -235,7 +242,7 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         mapas: [...document.querySelectorAll('.mapa-caja, .plano-hero')].map(c => {
           const s = svgDe(c), rb = s ? rect(s) : { width: 0, height: 0 };
           return { id: c.getAttribute('data-m') || 'plano', t: (c.querySelector('h2') || {}).textContent || '?',
-            comp: c.classList.contains('mapa-comp'), w: mm(rb.width), h: mm(rb.height),
+            w: mm(rb.width), h: mm(rb.height),
             cajaW: c.offsetWidth };
         }),
         /* La capa de método de cada caja y de cada mapa: las cinco etiquetas. */
@@ -334,33 +341,55 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   console.log('  · quedó fuera de la última: ' + ((r.fuera || []).join(', ') || 'nada'));
 
   [['parada 60 × 90', V], ['acostada 90 × 60', HZ]].forEach(([nom, o]) => {
-    console.log('\n  -- ' + nom + ': los mapas no bajan de 120 mm --');
+    console.log('\n  -- ' + nom + ': están TODOS los mapas --');
     if (!o) { T('la lámina se pudo montar', false); return; }
-    const analisis = o.mapas.filter(m => !m.comp), comp = o.mapas.filter(m => m.comp);
+    const analisis = o.mapas;
     const menor = m => Math.min(m.w, m.h);
-    const chicos = analisis.filter(m => menor(m) < 119.5);
-    /* Cuatro figuras no ceden nunca: la foto, el plano, la cobertura y el
-       mapa de todos los usos. Desde v848 los paneles de campo tampoco, y el
-       tercer mapa del núcleo puede cederles el sitio. */
-    T('hay mapas de análisis que medir: al menos las cuatro figuras que no ceden', analisis.length >= 4,
-      analisis.length + ' de análisis · ' + comp.length + ' de comparación');
-    T('ninguno de análisis baja de 120 mm de lado corto, con la hoja ya reducida',
-      analisis.length >= 4 && chicos.length === 0,
-      chicos.length ? chicos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
-                    : 'el más chico ' + Math.min.apply(null, analisis.map(menor)) + ' mm · compuesta al ' + Math.round(o.escala * 100) + '%');
+    /* Los que el sector midió, por su identificador. En la v849 impresa
+       salieron cinco: la foto, el plano, la cobertura, los llenos y todos
+       los usos. Los otros diez —las alturas entre ellos— los apagaba el
+       piso de 120 mm. */
+    const DEBEN = ['foto', 'plano', 'cobertura', 'llenos', 'alturas', 'vias', 'hitos',
+                   'caminar', 'llega', 'comercial', 'anillos', 'ruido', 'sombras',
+                   'sombra-proyecto', 'calor:todos'];
+    const hay = analisis.map(m => m.id);
+    const faltan = DEBEN.filter(id => hay.indexOf(id) < 0);
+    T('están los quince que este sector mide, ninguno a un lado', faltan.length === 0,
+      hay.length + ' mapas · faltan: ' + (faltan.join(', ') || 'ninguno'));
+    /* Y ninguno reducido a una estampilla: 45 mm de alto de papel es el
+       piso histórico, el que separa un mapa de un icono. */
+    const bajos = analisis.filter(m => m.h < 45);
+    T('y ninguno queda de estampilla: 45 mm de alto como mínimo, con la hoja ya reducida',
+      analisis.length >= 10 && bajos.length === 0,
+      bajos.length ? bajos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
+                   : 'el más bajo ' + Math.min.apply(null, analisis.map(m => m.h)) + ' mm · compuesta al ' + Math.round(o.escala * 100) + '%');
     T('y la hoja cierra igual: no se desborda',
       o.pide <= o.papel + 2, o.pide + ' de ' + o.papel + ' mm');
 
-    console.log('\n  -- ' + nom + ': un mapa grande de usos y los de comparación --');
+    console.log('\n  -- ' + nom + ': los dos principales, del mismo tamaño --');
+    const foto = o.mapas.filter(m => m.id === 'foto')[0];
+    const plano = o.mapas.filter(m => m.id === 'plano')[0];
+    T('la foto satelital y el plano del sector están los dos', !!foto && !!plano);
+    T('y miden lo mismo: ni uno más grande que el otro',
+      !!foto && !!plano && Math.abs(foto.w - plano.w) <= 3 && Math.abs(foto.h - plano.h) <= 3,
+      foto && plano ? foto.w + '×' + foto.h + ' contra ' + plano.w + '×' + plano.h + ' mm' : 'falta uno');
+    T('y son los más grandes de la hoja: nada de análisis les gana de alto',
+      !!foto && analisis.every(m => m.h <= foto.h + 1),
+      foto ? foto.h + ' mm contra ' + Math.max.apply(null, analisis.map(m => m.h)) + ' del mayor de los demás' : '-');
+
+    console.log('\n  -- ' + nom + ': un mapa de calor por cada uso con peso --');
     const todos = o.mapas.filter(m => m.id === 'calor:todos')[0];
     const cat = o.mapas.filter(m => /^calor:/.test(m.id) && m.id !== 'calor:todos');
-    T('el de todos los usos está y es de análisis, no de comparación', !!todos && !todos.comp);
-    /* Como mucho dos; en la hoja acostada pueden haber cedido su sitio a
-       las cajas de análisis, y eso está bien: ceden antes que ellas. */
-    T('los de categoría son como mucho dos, y van marcados como comparación',
-      cat.length <= 2 && cat.every(m => m.comp), cat.map(m => m.t).join(' · ') || 'ninguno');
-    T('y el grande es de verdad más grande que cada uno de ellos',
-      !!todos && (cat.length === 0 || cat.every(m => menor(todos) >= 1.5 * menor(m))),
+    T('el de todos los usos está', !!todos);
+    /* Cuatro categorías tiene este sector con tres usos o más, y las cuatro
+       llevan mapa: comercio, institucional, salud y cultura. «Me encantaban
+       esos mapas de calor de varios mapas dependiendo los usos y lo
+       institucional» — el institucional por su nombre. */
+    T('cada categoría con peso lleva el suyo, el institucional entre ellas',
+      cat.length >= 4 && cat.some(m => /institucional/i.test(m.id)),
+      cat.map(m => m.t).join(' · ') || 'ninguno');
+    T('y el de todos los usos sigue siendo el grande de la banda',
+      !!todos && cat.every(m => menor(todos) >= menor(m)),
       (todos ? menor(todos) : 0) + ' mm contra ' + cat.map(m => menor(m)).join(' · '));
 
     console.log('\n  -- ' + nom + ': baldosas de cifra --');
@@ -368,7 +397,12 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
        la composición; si la impresa la trae o la declara lo comprueba el
        invariante de abajo. */
     const oc = VC || o;
-    const mapaChico = oc.mapas.filter(m => !m.comp).slice().sort((a, b) => a.cajaW - b.cajaW)[0];
+    /* Contra un mapa de DOS columnas —el de todos los usos, la cobertura,
+       los llenos—, que es «un mapa» en la frase que se pidió. Los de una
+       columna valen dos pistas y no cuatro. */
+    const anchos = ['calor:todos', 'cobertura', 'llenos', 'alturas'];
+    const mapaChico = oc.mapas.filter(m => anchos.indexOf(m.id) >= 0)
+      .slice().sort((a, b) => a.cajaW - b.cajaW)[0];
     const nombres = oc.cifras.map(c => c.t);
     /* Las dos cajas de puras cifras de este sector, por su nombre: la regla
        se prueba sobre cajas concretas y no sobre «alguna». El espacio
@@ -549,9 +583,20 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     const m = x.match(/data-m="([^"]+)"/); return m ? m[1] : slugDe((x.match(/<h2>([^<]+)/) || [])[1] || ''); });
   const compuestos = panelesDe(r.completa || ''), impresos = panelesDe(r.v || '');
   const perdidos = compuestos.filter(id => impresos.indexOf(id) < 0 && (r.fueraV || []).indexOf(id) < 0);
-  T('la hoja completa trae más paneles que la impresa: el papel cedió algo', compuestos.length > impresos.length,
-    compuestos.length + ' compuestos · ' + impresos.length + ' impresos');
-  T('y nada de lo que cedió falta sin estar declarado por su nombre', perdidos.length === 0 && (r.fueraV || []).length >= compuestos.length - impresos.length,
+  /* Desde v850 el canje cambió de lado: lo que cede son PANELES DE TEXTO
+     y nunca un mapa. Entre v847 y v849 era al revés —los mapas se
+     apagaban para guardarse sus 120 mm— y de ahí vino la queja. Los mapas
+     tienen su propia lista, `pliegoMapasOff`; que ninguno esté en la de
+     fuera es la comprobación de que la regla nueva se cumple. */
+  const IDS_MAPA = ['foto', 'cobertura', 'llenos', 'alturas', 'vias', 'hitos', 'caminar', 'llega',
+                    'comercial', 'anillos', 'ruido', 'sombras', 'sombra-proyecto', 'curvas', 'masa',
+                    'agua', 'estratos', 'caminata', 'acuerdos', 'intangible'];
+  const mapasFuera = (r.fueraV || []).filter(id => IDS_MAPA.indexOf(id) >= 0 || /^calor:/.test(id));
+  T('la hoja de fábrica no sacrifica ni un mapa: lo que cede es texto',
+    mapasFuera.length === 0,
+    'fuera: ' + ((r.fueraV || []).join(', ') || 'nada') +
+    (mapasFuera.length ? ' · MAPAS CEDIDOS: ' + mapasFuera.join(', ') : ''));
+  T('y nada de lo que cediera faltaría sin estar declarado por su nombre', perdidos.length === 0,
     (r.fueraV || []).length + ' declarados' + (perdidos.length ? ' · PERDIDOS: ' + perdidos.join(', ') : ''));
 
   console.log('\n  -- las categorías que cambian la conclusión --');

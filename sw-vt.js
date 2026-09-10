@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v849-lamina-educativa-vacios-y-cruces';
+const VT_CACHE = 'urbis-vt-v850-todos-los-mapas-vuelven';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

@@ -440,19 +440,15 @@ const geo = [
        hice, no me dejes mapas a un lado». Acá se midieron cinco capas —los dos
        rasters, los llenos, la jerarquía vial y los usos— y las cinco tienen
        que estar en el papel. */
-    /* Desde v847 los mapas de análisis no bajan de 120 mm de lado corto y
-       el papel ya no lleva quince: lleva el NÚCLEO —la foto, la cobertura,
-       todos los usos, los llenos— y lo demás cede, dicho por su nombre en
-       la ficha y entero en el informe en hojas. «No me dejes mapas a un
-       lado» se cumple ahora así: ninguno se pierde en silencio. */
-    /* Tres que no ceden nunca; los llenos pueden cederles el sitio a los
-       paneles de campo, que desde v848 tampoco ceden en la hoja parada. */
-    const NUCLEO = ['La foto satelital', 'Cobertura del suelo', 'Todos los usos'];
-    T('el núcleo de mapas está: foto, cobertura y todos los usos',
-      NUCLEO.every(t => mapas.some(m => m.t === t)),
+    /* Entre v847 y v849 el papel no llevó quince sino cinco: un piso de
+       120 mm por mapa apagaba el resto. Se deshizo en v850 con el pliego
+       impreso en la mano —«me quitó todos los mapas que tanto me gustaban,
+       las de alturas; que se muestren todos los mapas que antes salían»—:
+       los mapas vuelven a encogerse con la hoja y están TODOS. */
+    T('están todos los que se midieron, ninguno a un lado', mapas.length >= 10,
       mapas.length + ' mapas: ' + mapas.map(m => m.t).join(' · '));
-    T('y los que cedieron están declarados en la ficha, no perdidos',
-      fuera.length > 0 && fuera.some(id => /^(vias|caminar|hitos|sombras|ruido|llega|anillos|comercial|alturas|sombra-proyecto)$/.test(id)),
+    T('y la hoja de fábrica no declaró ninguno fuera: no hizo falta',
+      fuera.filter(id => /^(vias|caminar|hitos|sombras|ruido|llega|anillos|comercial|alturas|llenos|cobertura|sombra-proyecto)$/.test(id)).length === 0,
       fuera.join(', ') || 'nada declarado');
     /* Y cada uno en la banda de SU tema, que es la otra mitad de lo que se
        pidió: «en vez de que los mapas salgan en una sola línea, que se
@@ -461,19 +457,22 @@ const geo = [
     T('y cada uno en la banda de su tema, no en una tira suelta',
       sinBanda.length === 0 && new Set(mapas.map(m => m.banda)).size >= 3,
       mapas.map(m => m.banda + ':' + m.t).join(' · '));
-    T('la jerarquía vial va con la movilidad, o quedó declarada fuera',
-      mapas.some(m => /Jerarquía vial/.test(m.t) && m.banda === 'movilidad') || fuera.indexOf('vias') >= 0,
-      (mapas.filter(m => /Jerarquía vial/.test(m.t))[0] || {}).banda || (fuera.indexOf('vias') >= 0 ? 'declarada fuera' : 'no está ni se declara'));
+    T('la jerarquía vial va con la movilidad',
+      mapas.some(m => /Jerarquía vial/.test(m.t) && m.banda === 'movilidad'),
+      (mapas.filter(m => /Jerarquía vial/.test(m.t))[0] || {}).banda || 'no está');
+    /* Y las alturas, que se echaron de menos por su nombre. */
+    T('y las alturas de lo construido están, con la morfología',
+      mapas.some(m => /Alturas de lo construido/.test(m.t) && m.banda === 'forma'),
+      (mapas.filter(m => /Alturas/.test(m.t))[0] || {}).banda || 'no está');
     /* El tamaño, en milímetros de papel. En la tira que se quitó, un recuadro
        normal medía 40 mm de alto acostado y el dibujo de adentro se encogía a
        58 mm de ancho dentro de un hueco de 96. */
-    /* Ciento veinte de lado corto y no cuarenta y cinco de alto: es la
-       regla de la lámina educativa (v847). Los de comparación quedan fuera
-       de la cuenta: son chicos a propósito. */
-    const deAnalisis = mapas.filter(m => !m.comp);
-    const ladoMin = Math.min.apply(null, deAnalisis.map(m => Math.min(mm(m.w), mm(m.h))));
-    T('ninguno de análisis baja de 120 mm de lado corto', deAnalisis.length >= 3 && ladoMin >= 119,
-      ladoMin + ' mm el más chico de ' + deAnalisis.length);
+    /* Cuarenta y cinco de alto, que es el piso histórico: lo que separa un
+       mapa de un icono. El piso de 120 mm de lado corto de v847 costaba
+       diez mapas y se deshizo en v850. */
+    const altoMin = Math.min.apply(null, mapas.map(m => mm(m.h)));
+    T('ninguno baja de 45 mm de alto', mapas.length >= 10 && altoMin >= 45,
+      altoMin + ' mm el más bajo de ' + mapas.length);
     /* ── Que el sector LLENE el dibujo ────────────────────────────────
        El recuadro tenía la proporción fija 260 × 180 sin importar la forma del
        sector, así que un sector cuadrado —el de esta prueba lo es— salía
@@ -528,7 +527,7 @@ const geo = [
      estilo. Subió a 3,4 cuando se pidió la letra «un poquito más grande», y
      si vuelve a moverse allá hay que moverlo acá o la prueba mide con una
      regla vieja. */
-  const CUERPO_MM = 3.4;
+  const CUERPO_MM = 3.6;
   const letraMM = h => Number((CUERPO_MM * escalaDe(h)).toFixed(2));
   const cajasDe = h => (h || '').split('<section class="caja').length - 1;
   /* ── Los dibujos, al ancho de un mapa ────────────────────────────────
@@ -583,9 +582,15 @@ const geo = [
      un tercio más grande. Lo que se promete y se mide: que llegue a los
      2,3 mm, que «cabe todo» no salga más grande que ella, y que ninguna
      baje del piso de la ficha. */
-  T('con «se lee de pie» la letra llega a leerse de pie, y «cabe todo» no la supera',
-    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) && letraMM(r.vTodo) >= 1.1,
-    letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm');
+  /* El piso de «cabe todo» es el suyo por definición: el cuerpo de las
+     cajas —3,6 mm— por el 30 % al que la hoja no baja nunca, que es lo que
+     la ficha anuncia redondeado a 1,1 mm. Se escribe como el producto y no
+     como el número redondo para que mueva con el estilo y no al revés. */
+  const PISO_TODO = 0.30;
+  T('con «se lee de pie» la letra llega a leerse de pie, y «cabe todo» no la supera ni baja de su piso',
+    letraMM(r.vGrande) >= 2.3 && letraMM(r.vGrande) >= letraMM(r.vTodo) &&
+    letraMM(r.vTodo) >= CUERPO_MM * PISO_TODO - 0.005,
+    letraMM(r.vTodo) + ' mm → ' + letraMM(r.vGrande) + ' mm · piso ' + (CUERPO_MM * PISO_TODO).toFixed(2));
   T('y lo que cede es el contenido, no la legibilidad',
     (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) <= cajasDe(r.vTodo) && letraMM(r.vGrande) >= 2.3,
     cajasDe(r.vTodo) + ' cajas → ' + cajasDe(r.vGrande) +
@@ -605,8 +610,9 @@ const geo = [
      que «se lee de pie»— y que lo que tira lo dice. */
   T('«cabe todo» conserva al menos lo que «se lee de pie», y declara lo que tira',
     (r.fueraTodo || []).length <= (r.fueraGrande || []).length &&
-    cajasDe(r.vTodo) >= cajasDe(r.vGrande) && cajasDe(r.vTodo) === cajasDe(r.v) &&
-    cajasDe(r.vTodo) + ' cajas · fuera: ' + (r.fueraTodo || []).length + ' contra ' + (r.fueraGrande || []).length + ' de «se lee de pie»');
+    cajasDe(r.vTodo) >= cajasDe(r.vGrande) && cajasDe(r.vTodo) === cajasDe(r.v),
+    cajasDe(r.vTodo) + ' cajas contra ' + cajasDe(r.v) + ' de la de fábrica · fuera: ' +
+    (r.fueraTodo || []).length + ' contra ' + (r.fueraGrande || []).length + ' de «se lee de pie»');
 
   /* Primero fue «no veintidós renglones, el reparto por sol». Después, con
      el pliego real en la mano: «en vez de una lista larga de cada lado, con

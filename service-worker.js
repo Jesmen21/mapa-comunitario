@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v849-lamina-educativa-vacios-y-cruces';
+const URBIS_CACHE = 'urbis-v850-todos-los-mapas-vuelven';
 const URBIS_ASSETS = [
   './',
   './index.html',

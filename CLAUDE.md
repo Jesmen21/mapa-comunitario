@@ -289,34 +289,57 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   equipamientos de demostración. La única cifra real es la población de
   Cúcuta (ancla DANE 2024). La pantalla lo avisa en amarillo.
 
-## La lámina educativa: mapas de 12 cm y paneles que ceden
+## La lámina educativa: todos los mapas, y lo que cede es texto
 
-Desde la v847 el pliego de 60 × 90 sigue una regla que cambia cómo se
-compone y qué esperan las pruebas: **un mapa de análisis no baja de 120 mm
-de lado corto en el papel, nunca; si no cabe, cede otro panel**. Lo que se
-dijo antes —«no me dejes mapas a un lado»— se cumple de otra forma: nada se
-pierde en silencio. Lo que cede queda en `S.pliegoFuera` (la ficha lo dice)
-y entero en el informe en hojas.
+Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de
+lado corto por mapa**, y para guardarlo apagaba paneles. El pliego real que
+salió de ahí traía cinco mapas de quince: sin los de calor por categoría,
+sin hitos y nodos, sin alturas. La corrección llegó con ese PDF en la mano
+—«me quitó todos los mapas que tanto me gustaban, las de alturas; que se
+muestren todos los mapas que antes salían»— y **la v850 cambió el canje de
+lado**:
+
+* Los mapas **están todos** y se encogen con la hoja, como todo lo demás.
+* Lo que cede cuando no cabe son **los paneles de texto**, y queda dicho:
+  `S.pliegoFuera` (la ficha lo nombra) y entero en el informe en hojas.
+* Los mapas ceden **los últimos**, y nunca la foto ni el de todos los usos.
 
 Cómo funciona, en `js/68`:
 
-* `MIN_MAPA_MM = 120`. El ancho de un mapa en columnas sale de la escala a
-  la que se compone (`pesoMinMapa` usa `escalaHoja`), y su alto en papel no
-  se mueve con la escala (`papelMapa`). Por eso `laminaQueQuepa` **vuelve a
-  componer en cada sondeo de escala** en vez de reducir la misma hoja; los
-  mapas van memorizados en `o._memo` para que salga barato.
-* Orden de sacrificio: mapas sobrantes (`PRIORIDAD_MAPA`, los primeros
-  salen primero) → mapas de comparación → cajas (las **baldosas de cifra**
-  al final) → el núcleo de dos mapas. La foto, el plano y el de todos los
-  usos no ceden nunca. Medido: un pliego parado lleva la fila del plano,
-  dos filas de mapas y la síntesis, y nada más.
-* Usos del suelo: **un** mapa grande (`calor:todos`) y como mucho dos
-  chicos de comparación, `mapa-comp`, elegidos por
-  `categoriasQueCambian` (la que manda y la más concentrada), con la razón
-  en el pie. El informe en hojas sigue pidiendo seis.
+* **Suelo propio para los dibujos de mapa**: `papelMapa` usa
+  `max(var(--k), 0.5)` donde el resto usa `papel` con 0,62. Por debajo del
+  50 % de composición un mapa baja la mitad de rápido que la letra; con el
+  suelo común, una hoja acostada al 30 % dejaba mapas de 40 mm de alto, que
+  es un icono. Los techos son los de siempre (`TOPE`).
+* **La foto satelital y el plano del sector miden lo mismo** (se pidió así:
+  «veo uno más grande que otro, para que los dos queden del mismo tamaño»):
+  mismas columnas (`pesoPlano` y `PESO_MAPA.foto`, 3,5 parado y 4 acostado),
+  el mismo techo de alto y el mismo recuadro a la proporción del sector —al
+  plano se le quitó el margen del 15 % que la foto no tenía—. La foto lleva
+  clase propia, `mapa-foto`, porque su peso no es un número entero de clase.
+* **Usos del suelo**: el mapa grande (`calor:todos`) y **una mancha de calor
+  por cada categoría** con tres usos o más, hasta seis parado y cinco
+  acostado. `categoriasQueCambian` sigue existiendo, pero ahora solo escribe
+  la razón en el pie de las dos que cambian la conclusión.
+* **El orden de sacrificio depende del tamaño de letra**, porque depende de
+  para qué se sacrifica:
+  * «Cabe todo» sacrifica para que quepa → primero las cajas (las **baldosas
+    de cifra** al final), después los mapas. Los tres paneles de campo y los
+    cinco vacíos no ceden en la hoja parada.
+  * «Equilibrio» y «Se lee de pie» sacrifican para que se LEA → primero los
+    mapas que sobran del núcleo de cuatro (`PRIORIDAD_MAPA`), después las
+    cajas —los paneles de campo y de vacío incluidos—, y el núcleo al final.
+    Además las dos figuras protagonistas bajan al techo de un mapa de dos
+    columnas. Sin esto, «Se lee de pie» no cerraba ni con todo apagado y
+    caía al mínimo de 1,4 mm, que es lo contrario de lo que promete.
+* `laminaQueQuepa` vuelve a **reducir la misma hoja** para medir, en vez de
+  recomponerla en cada sondeo: con los mapas encogiéndose otra vez, reducir
+  es medir, y es siete veces más barato.
 * La rejilla de cada banda va en **medias columnas**: una caja son dos
-  pistas, una baldosa de cifra (`caja-cifra`, cajas de cifras sin dibujo
-  y con poco texto) una, un mapa el doble de su peso.
+  pistas, una baldosa de cifra una, un mapa el doble de su peso. En una
+  banda donde mandan los mapas, las pistas por renglón se redondean a
+  **número par**: con once, cada renglón dejaba una suelta y la grilla se
+  partía en un renglón de más.
 * Cada banda lleva su **pregunta** (`GRUPOS[].pregunta`) y su
   **conclusión** (`conclusionDeBanda`), y la cabecera dice cómo se lee.
 * El cierre ya no es la FODA: son **cinco propuestas de uso**
@@ -325,9 +348,12 @@ Cómo funciona, en `js/68`:
   factibilidad media hasta que se lea el POT—. La FODA sigue en la ficha y
   en el informe. URBIS recomienda, quien proyecta decide.
 
-Lo mide `tlaminaedu.js` en milímetros de papel, y las suites del pliego
-(`tpliegogrande`, `tmapas`, `tpliego`, `tlamina`, `tsintesis`) exigen desde
-entonces «está, o está declarado fuera», nunca «están todos».
+Lo mide `tlaminaedu.js` en milímetros de papel: que estén los quince mapas
+del sector de prueba, que ninguno baje de 45 mm de alto, que la foto y el
+plano midan lo mismo y que **ningún mapa aparezca en la lista de lo que
+cedió**. Las demás suites del pliego (`tpliegogrande`, `tmapas`, `tpliego`,
+`tlamina`, `tsintesis`) siguen aceptando «está, o está declarado fuera»
+para las cajas de texto, que son las que ceden.
 
 ### La capa educativa (v848)
 
@@ -347,9 +373,11 @@ entonces «está, o está declarado fuera», nunca «están todos».
 * **Lectura propia**: renglones en blanco al final de las cinco propuestas.
 * **Paneles de campo** (`PANELES_DE_CAMPO`): «Percepción del lugar», «Lo
   que no cambia» y «Voces de quien vive acá», en blanco, en la banda del
-  trabajo de campo. **Parada no ceden nunca** (es el formato del pliego
+  trabajo de campo. **Parada no ceden** (es el formato del pliego
   educativo); acostada ceden los últimos entre las cajas, porque con ellos
-  intocables la letra bajaba al 34 %.
+  intocables la letra bajaba al 34 %. Y ceden en los dos formatos cuando se
+  pidió letra grande: «Se lee de pie» es justamente la petición de menos
+  paneles a cambio de leerlos de lejos.
 
 ### Los vacíos obligatorios y los cruces (v849)
 
@@ -360,8 +388,8 @@ entonces «está, o está declarado fuera», nunca «están todos».
   sí hay (y por qué no es eso). Nunca en blanco, nunca una suposición: el
   riesgo no se deduce de la pendiente. Van en la banda del trabajo de
   campo —son datos por conseguir— porque en su banda de tema desplazaban
-  al mapa de cobertura del núcleo. Parada no ceden; acostada ceden con los
-  de campo.
+  al mapa de cobertura del núcleo. Parada no ceden; acostada, y con letra
+  grande en cualquier formato, ceden con los de campo.
 * **Lo que dicen juntas las cifras** (`crucesDelSector`): once cruces en
   el cierre, antes de las propuestas, cada uno con valor y una lectura que
   cierra en decisión. Lo que no está medido lo dice («sin dato oficial»,

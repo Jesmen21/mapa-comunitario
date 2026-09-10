@@ -268,14 +268,15 @@ const geo=[
      salieran grandes, y la tumbó el uso real: «veo 10 mapas en el último
      análisis que hice, no me dejes mapas a un lado». Lo que cede para que
      quepan es el tamaño al que se compone la hoja, no la lista. */
-  /* Desde v847: UN mapa grande de usos y, como mucho, dos chicos de
-     comparación —los que cambian la conclusión—. Ceden antes que las cajas
-     de análisis, y si ceden quedan declarados en la ficha. */
-  const comps=(LAM.match(/<section class="caja mapa-caja mapa-comp/g)||[]).length;
+  /* Y los de calor por categoría, uno por cada uso con peso. v847 los había
+     reducido a dos chicos de comparación; volvieron en v850 pedidos por su
+     nombre: «me encantaban esos mapas de calor de varios mapas dependiendo
+     los usos y lo institucional». */
+  const cats=(LAM.match(/data-m="calor:(?!todos)[^"]+"/g)||[]).length;
   const compsFuera=(r.fuera||[]).filter(id=>/^calor:/.test(id));
-  T('los de categoría son como mucho dos de comparación, y si cedieron están declarados',
-    comps<=2 && (comps>=1 || compsFuera.length>=1),
-    comps+' en la hoja · fuera: '+(compsFuera.join(', ')||'ninguno'));
+  T('cada categoría con peso lleva su mapa de calor, no dos de muestra',
+    cats>=2 && compsFuera.length===0,
+    cats+' de categoría en la hoja · fuera: '+(compsFuera.join(', ')||'ninguno'));
   T('y el mapa que ubica —todos los usos— está',
     titulos(LAM).indexOf('Todos los usos')>=0, titulos(LAM).join(' · '));
   T('y el rubro de un solo local no se gana un recuadro',
