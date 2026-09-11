@@ -999,6 +999,14 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       (QV.texto.match(/El grupo más numeroso es[^.]*\./) || [''])[0].slice(0, 80));
     T('con el índice de envejecimiento',
       /índice de envejecimiento/.test(QV.texto), QV.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* El ESTRATO, que hasta la v866 no salía en ninguna prueba: la ruta del
+       DANE devolvía la consulta agrupada vacía, `distribucionEstrato` daba
+       null y la línea no se imprimía. Se pide con su RANGO y no solo con el
+       predominante: un sector de 2 a 4 no se lee igual que uno todo 3, y el
+       promedio solo se los come. */
+    T('y el estrato predominante con el rango que de verdad hay',
+      /Estrato predominante/.test(QV.texto) && /de 2 a 4/.test(QV.texto),
+      (QV.texto.match(/Estrato predominante[^<]{0,30}/) || ['sin estrato'])[0]);
   }
 
   console.log('\n  -- la hoja no se contradice a sí misma --');
@@ -1024,7 +1032,23 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       niega: t => /no qué ruta para en cada una/.test(t) },
     { que: 'las manzanas cerradas',
       mide: t => /manzanas no se dedujeron/.test(t),
-      niega: t => /El módulo de arriba se deduce/.test(t) }
+      niega: t => /El módulo de arriba se deduce/.test(t) },
+    /* El par que la v865 debía agregar y no agregó: midió escolaridad y
+       alfabetismo del censo y dejó la tabla con los cuatro pares de la v864.
+       OJO con el alcance: la hoja sigue diciendo, con razón, que le falta «el
+       estrato y la escolaridad DE LA CIUDAD» —esa es otra escala y otra
+       tabla del DANE—, así que la negación tiene que ser la del SECTOR. */
+    { que: 'lo que el censo trae además de sexo y edad',
+      mide: t => /Contado sobre \d+ campos? de la capa/.test(t),
+      niega: t => /(censo|módulo)[^.]{0,40}no (trae|lee)[^.]{0,40}(escolarid|hogares|alfabet|etnia)/i.test(t) ||
+                  /(escolarid\w*|hogares)[^.]{0,60}no (está|están) en (el|este) censo/i.test(t) },
+    /* El estrato nunca se declaró ausente en la HOJA —se declaró en
+       CLAUDE.md, y de eso se ocupa `revisar.js` desde la v866—. Va igual:
+       cuesta tres líneas y tapa el camino por el que llegaron las otras
+       cuatro, que fue escribir la carencia de memoria. */
+    { que: 'el estrato del sector',
+      mide: t => /Estrato predominante/.test(t),
+      niega: t => /(el )?estrato[^.]{0,40}(sin dato|no se conoce|no lo trae)/i.test(t) }
   ];
   const textoB = (r.soloB || '') + (r.soloA || '');
   const plano = textoB.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');

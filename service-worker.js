@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v865-el-censo-se-pregunta-que-trae';
+const URBIS_CACHE = 'urbis-v866-la-lista-viva';
 const URBIS_ASSETS = [
   './',
   './index.html',

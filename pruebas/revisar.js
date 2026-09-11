@@ -947,5 +947,92 @@ console.log('\n  -- un nombre, una cosa --');
       : Object.keys(donde).length + ' nombres revisados');
 }
 
+// ── la lista viva del pliego no da por faltante lo que ya se mide ────────
+/* Cinco veces se declaró ausente algo que estaba medido. Cuatro dentro de la
+   hoja —la isócrona, el ancho de vía, las rutas, la cifra municipal—, y la
+   quinta en CLAUDE.md, que siguió pidiendo «las rutas dibujadas, los
+   estratos, la escolaridad y las isócronas por malla vial» varias tandas
+   después de que las cuatro existieran. `tdoslaminas` persigue la clase
+   dentro de la hoja desde la v864; acá se persigue dentro de la bitácora,
+   que es lo que lee la sesión siguiente para decidir qué hacer.
+
+   El intento obvio —buscar frases que nieguen— ya falló cuatro veces: hay
+   que acertarle a la redacción, y la redacción cambia. Así que la trampa se
+   pone en otro sitio. Cada renglón de la lista que TOQUE un tema del que ya
+   se mide algo tiene que llevar su cláusula `ya: …` diciendo qué se mide. Eso
+   no depende de adivinar cómo se escribió la negación: la cláusula está o no
+   está, y se ve de lejos.
+
+   La PRUEBA de que algo está medido es una marca en el código servido, no una
+   creencia: si la marca desaparece porque se quitó la capacidad, la capacidad
+   deja de exigir su cláusula y el renglón vuelve a ser legítimo. */
+console.log('\n  -- la lista viva del pliego educativo --');
+{
+  const md = leer('CLAUDE.md');
+  const m = /<!-- LISTA-VIVA-PLIEGO -->([\s\S]*?)<!-- \/LISTA-VIVA-PLIEGO -->/.exec(md);
+  comprobar('la lista viva está delimitada en CLAUDE.md', !!m,
+    m ? 'entre los dos marcadores' : 'faltan los marcadores LISTA-VIVA-PLIEGO');
+  if (m) {
+    const j68 = leer('js/68-procity-reconocimiento.js');
+    const j61 = leer('js/61-analisis-ia-datos.js');
+    /* Cada capacidad: cómo se nombra su tema en la lista, y qué marca del
+       código servido demuestra que está medida. */
+    const CAPACIDADES = [
+      { t: 'la isócrona a pie por la malla',   tema: /isócrona|se alcanza a pie/i,
+        prueba: () => /caminataDesdeLote/.test(j68) },
+      { t: 'las rutas que paran en el sector', tema: /\brutas?\b/i,
+        prueba: () => /Las rutas que paran acá/.test(j68) },
+      { t: 'la manzana cerrada',               tema: /manzana/i,
+        prueba: () => /planoDeManzanas/.test(j68) },
+      { t: 'la población del municipio',       tema: /municipio|de la ciudad/i,
+        prueba: () => /poblacionMunicipio/.test(j68) },
+      { t: 'el estrato del sector',            tema: /estrato/i,
+        prueba: () => /estratoManzana/.test(j61) },
+      { t: 'lo que el censo trae además',      tema: /escolarid|hogares|alfabet|etnia/i,
+        prueba: () => /censoAmpliado/.test(j61) && /censoAmpliado/.test(j68) },
+      { t: 'el ancho de vía',                  tema: /ancho de (la )?vía|andén|anden/i,
+        prueba: () => /coberturaAncho/.test(j68) },
+      { t: 'la pirámide del sector',           tema: /pirámide|edades/i,
+        prueba: () => /tramoDominante/.test(j68) }
+    ];
+    // Un renglón es una viñeta de primer nivel; lo que le cuelga indentado es
+    // suyo, así que se corta por el siguiente «* » a comienzo de línea.
+    const renglones = m[1].split(/\n(?=\* )/).map(x => x.trim()).filter(Boolean);
+    comprobar('la lista viva tiene renglones que leer', renglones.length > 0,
+      renglones.length + ' renglones');
+    const sinYa = [];
+    CAPACIDADES.forEach(c => {
+      if (!c.prueba()) return;            // no está medida: nada que exigir
+      renglones.forEach((r, i) => {
+        if (!c.tema.test(r)) return;
+        if (/`ya:/.test(r)) return;
+        sinYa.push('renglón ' + (i + 1) + ' toca ' + c.t + ' sin decir qué ya se mide');
+      });
+    });
+    comprobar('ningún renglón toca algo ya medido sin su cláusula «ya:»',
+      sinYa.length === 0,
+      sinYa.length ? sinYa.join(' | ') : renglones.length + ' renglones contra ' +
+        CAPACIDADES.filter(c => c.prueba()).length + ' capacidades medidas');
+    /* Y la cláusula no puede ser un adorno vacío: si dice `ya:` tiene que
+       decir algo. Un `ya:` en blanco pasaría la comprobación de arriba
+       dejando el renglón tan mentiroso como estaba. */
+    const vacias = renglones
+      .map((r, i) => ({ i: i + 1, ya: (r.match(/`ya:([^`]*)`/) || [])[1] }))
+      .filter(x => x.ya !== undefined && x.ya.trim().length < 20);
+    comprobar('ninguna cláusula «ya:» está vacía o es de relleno',
+      vacias.length === 0,
+      vacias.length ? vacias.map(x => 'renglón ' + x.i).join(', ')
+                    : renglones.filter(r => /`ya:/.test(r)).length + ' cláusulas con contenido');
+    /* Las marcas del código que sostienen todo esto: si alguna se renombra,
+       la capacidad se daría por no medida en silencio y la lista podría
+       volver a pedirla. Que se note acá y no dentro de dos tandas. */
+    const perdidas = CAPACIDADES.filter(c => !c.prueba()).map(c => c.t);
+    comprobar('las marcas de capacidad siguen en el código servido',
+      perdidas.length === 0,
+      perdidas.length ? 'sin marca: ' + perdidas.join(', ')
+                      : CAPACIDADES.length + ' capacidades con su marca');
+  }
+}
+
 console.log('\n  ' + (fallos ? fallos + ' comprobaciones fallaron' : 'todas las comprobaciones pasaron') + '\n');
 process.exit(fallos ? 1 : 0);

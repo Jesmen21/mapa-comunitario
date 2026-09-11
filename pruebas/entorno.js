@@ -85,6 +85,24 @@ const PIRAMIDE = [
    código. */
 const CENSO = { poblacion: 3045, manzanas: 42, viviendas: 880, pctMujeres: 51.1, estrato: 3 };
 
+/* El reparto por ESTRATO de las manzanas del sector. Iba vacío: la ruta
+   devolvía `features: []` para esa consulta, así que `distribucionEstrato`
+   daba null y el pliego no imprimía «Estrato predominante» en ninguna prueba
+   —ni el rango, que para quien comercializa dice más que el promedio—. Es el
+   mismo hallazgo de la v862: el sector de mentira era más pobre que uno real,
+   y lo que ninguna comprobación miraba se quedó sin construir.
+
+   Las manzanas suman exactamente `CENSO.manzanas`, y «Sin Estrato» está a
+   propósito: es lo que el DANE le pone al suelo industrial, dotacional y a
+   los lotes, y el código lo cuenta aparte. Un reparto sin esa fila dejaría
+   esa rama sin ejercitar. */
+const ESTRATOS = [
+  { etiqueta: 'Dos', manzanas: 8 },
+  { etiqueta: 'Tres', manzanas: 20 },
+  { etiqueta: 'Cuatro', manzanas: 11 },
+  { etiqueta: 'Sin Estrato', manzanas: 3 }
+];
+
 /* Los campos que la capa del censo DECLARA. Desde la v865 la aplicación se
    los pregunta (`?f=json`) en vez de suponer qué trae, así que el doble
    tiene que saber contestar esa pregunta: si no, el módulo cree que no pudo
@@ -112,6 +130,17 @@ const REPARTO_CAMPOS = {
   ESCOLARIDAD_NINGUNA: 62, ESCOLARIDAD_PRIMARIA: 288, ESCOLARIDAD_SECUNDARIA: 431,
   ESCOLARIDAD_SUPERIOR: 219, ALFABETISMO_SI: 938, ALFABETISMO_NO: 62
 };
+
+/* La consulta AGRUPADA por estrato: Esri devuelve un rasgo por grupo, no uno
+   solo. Se contesta aparte de `atributosDane`, que arma un rasgo único. */
+function rasgosEstrato(url, censo) {
+  const u = new URL(url, 'http://x');
+  if (!/ESTRATO_PREDOMINANTE/.test(u.searchParams.get('groupByFieldsForStatistics') || '')) return null;
+  const lista = (censo && censo.estratos) || ESTRATOS;
+  return lista.map(function (e) {
+    return { attributes: { ESTRATO_PREDOMINANTE: e.etiqueta, N: e.manzanas } };
+  });
+}
 
 function atributosDane(url, censo) {
   const c = Object.assign({}, CENSO, censo || {});
@@ -161,8 +190,11 @@ async function rutaDane(ctx, censo) {
       return r.fulfill({ status: 200, contentType: 'application/json',
         body: JSON.stringify(cs === null ? { error: { code: 500 } } : { fields: cs }) });
     }
+    const porEstrato = rasgosEstrato(r.request().url(), censo);
     const cuerpo = (censo && censo.vacio)
       ? { features: [] }
+      : porEstrato
+      ? { features: porEstrato }
       : (function () {
           const at = atributosDane(r.request().url(), censo);
           // Sin agregados pedidos es la consulta de manzanas con geometría:
@@ -177,6 +209,8 @@ module.exports = {
   esperarLaApp: esperarLaApp,
   rutaDane: rutaDane,
   atributosDane: atributosDane,
+  rasgosEstrato: rasgosEstrato,
+  ESTRATOS: ESTRATOS,
   CAMPOS_DANE: CAMPOS_DANE,
   CENSO: CENSO,
   RAIZ: RAIZ,

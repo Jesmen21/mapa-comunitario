@@ -638,15 +638,10 @@ Probado contra casos de respuesta conocida antes de conectarlo: retícula de
 mismas 9 (no inventa una cara); una sola calle y una cruz → 0; un triángulo
 cerrado → 1 de 16.000 m².
 
-**Lo que falta del pliego de instrucciones** (tandas siguientes): de la A, el
-tamaño y forma de cada predio —pide catastro—;
-de la B, la pirámide del sector sobrepuesta a la de la ciudad —hace falta el
-CNPV agregado por municipio, que la consulta por manzana no trae—, los
-hogares por tipo, la escolaridad, y los estratos y la vulnerabilidad con los
-barrios nombrados; y de la movilidad, las rutas dibujadas, el aforo de hora
-pico, los perfiles acotados y las isócronas por malla vial. Cada una está
-declarada en su panel con la tabla que la resolvería: lo que falta se pide
-por su nombre, no se estima.
+Lo que al pliego de instrucciones todavía le falta no se lista acá: vive en
+**la lista viva**, al final de estas secciones, porque una lista de carencias
+escrita en el medio de una bitácora envejece sin que nadie la mire — y esta
+envejeció.
 
 ### Declarar faltando algo que sí está medido (v861)
 
@@ -792,6 +787,58 @@ es el tercer estado y no el que la suite quiere medir. La capa por omisión
 trae escolaridad y alfabetismo y **no** trae hogares ni etnia, así que una
 sola corrida ejercita los dos caminos: el que cuenta y el que declara la
 ausencia con la lista de campos como prueba.
+
+## La lista viva: lo que al pliego educativo todavía le falta (v866)
+
+Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
+isócrona, el ancho de vía, las rutas, la cifra municipal— y la quinta acá
+mismo, en la bitácora: la sección de la v860 seguía pidiendo «las rutas
+dibujadas, los estratos, la escolaridad y las isócronas por malla vial»
+cuando las cuatro estaban medidas. `tdoslaminas` persigue la clase dentro de
+la hoja desde la v864; **dentro de la documentación no la perseguía nadie**,
+y la documentación es lo que lee la sesión siguiente para decidir qué hacer.
+
+Por eso la lista tiene ahora una FORMA que una comprobación puede leer, y
+`revisar.js` la lee. Cada renglón es:
+
+```
+* **Lo que falta** — la fuente que lo resolvería. `ya: lo que de este mismo tema SÍ está medido`
+```
+
+La cláusula `ya:` no es cortesía: es la regla. **Un renglón que toque un tema
+del que ya se mide algo tiene que decir qué se mide**, y `revisar.js` falla si
+no lo dice. Así la trampa deja de depender de acertarle a la redacción de una
+negación —que fue lo que falló cuatro veces— y pasa a depender de una cosa
+que se ve a simple vista: la cláusula está o no está.
+
+<!-- LISTA-VIVA-PLIEGO -->
+* **El predio: tamaño y forma de cada lote** — cartografía catastral del IGAC
+  o del catastro municipal. `ya: la manzana cerrada por las vías mapeadas, que no es el lindero catastral`
+* **La pirámide de edades de la ciudad**, para sobreponerla a la del sector —
+  el CNPV 2018 agregado por municipio; la consulta por manzana no lo trae.
+  `ya: la pirámide del sector por tramos de edad, y la población del municipio proyectada al mismo año`
+* **La densidad de la ciudad** — el área urbana del municipio (IGAC o el POT).
+  `ya: la densidad del sector en habitantes por hectárea`
+* **El recorrido de cada ruta y su frecuencia** — un GTFS, o el cuadro de la
+  secretaría de tránsito. `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector`
+* **El aforo de hora pico** — un conteo en campo o el de la secretaría, con su
+  fecha. `ya: el flujo modelado a partir de los usos y la jerarquía, rotulado como modelado y no como contado`
+* **El perfil acotado de la calle**: andenes, antejardines, arborización — se
+  levanta en campo. `ya: el ancho de vía leído de width con su cobertura, y qué parte de la red no tiene dato de andén`
+* **La vulnerabilidad por manzana** — no hay fuente abierta a esa escala.
+  `ya: el estrato predominante con su mínimo y su máximo y su mapa por manzana, y el nombre del barrio y la comuna del geocodificador`
+* **Comprobar los nombres de campo del censo contra el servicio real** — desde
+  la máquina de desarrollo el proxy bloquea `ags.esri.co`.
+  `ya: escolaridad, hogares, alfabetismo y etnia no se suponen: se le preguntan a la capa, y lo que no expone se declara con su lista de campos`
+* **Los cinco vacíos obligatorios** — riesgo oficial, servicios públicos,
+  norma urbana del POT, movilidad real e información legal del predio. Cada uno
+  pide su entidad y ninguno se deduce.
+<!-- /LISTA-VIVA-PLIEGO -->
+
+**Una tanda que mida algo que estaba en esta lista hace dos cosas**: mueve el
+renglón a su cláusula `ya:` —o lo borra, si no quedó nada del tema— y agrega
+su par a la tabla `PARES` de `tdoslaminas`. La v865 hizo lo primero a medias y
+se saltó lo segundo; por eso lo segundo está escrito acá y comprobado allá.
 
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
@@ -945,6 +992,24 @@ andén no se sabe en el 100 % de la red» en todas las versiones, siempre, sin
 que nada lo mirara. Ahora se reparten por jerarquía como en un barrio real
 —troncales y principales con ancho y andén; locales en un solo sentido y
 muchas sin andén— y salen 31,1 % y 51,8 %.
+
+### El estrato, que tampoco se ejercitaba (v866)
+
+La ruta del DANE contestaba `features: []` a la consulta AGRUPADA por estrato
+—la que lleva `groupByFieldsForStatistics`—, así que `distribucionEstrato`
+devolvía null y **el pliego no imprimía «Estrato predominante» en ninguna
+prueba**: ni el peldaño ni el rango. Salió a la luz al agregarle su par a
+`PARES`: el par pasaba diciendo «no la mide en este sector», que es el peor
+verde que hay, porque parece una comprobación y no comprueba nada.
+
+El reparto del doble suma exactamente `CENSO.manzanas` y **lleva una fila
+«Sin Estrato» a propósito**: es lo que el DANE le pone al suelo industrial,
+dotacional y a los lotes, y el código la cuenta aparte. Un reparto sin esa
+fila dejaría esa rama sin ejercitar, que es exactamente cómo empezó esto.
+
+Lo que sigue sin fixture es la consulta de **polígonos** por estrato —la que
+pinta el mapa de manzanas—: pide geometría y cambiaría el recuento de mapas
+de `tlaminaedu`. Queda dicho acá en vez de a medio hacer.
 
 **Lo que sigue a oscuras, y por qué.** La rama `anchoDe === 'width'` no se
 ejercita: el motor elige por mayoría de vías, y para que gane `width` habría
