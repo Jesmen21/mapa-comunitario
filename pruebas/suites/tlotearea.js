@@ -262,9 +262,17 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     (r.conLote.match(/[\d.,]+ m² · \d esquinas/)||['no lo dice'])[0]);
 
   console.log('\n  -- el radio se ajusta a mano --');
-  T('hay un deslizador de 100 m a 2 km', !!r.rango && r.rango.min==='100' && r.rango.max==='2000',
+  /* Hasta la v850 el tope era 2 km, y ahí estaba media causa del fallo que
+     trajo la v851: el radio grande que se quería usar era justo el que la
+     consulta no aguantaba. Ahora llega a 8 km —«ayúdame a ajustar para al
+     menos poner 8 kilómetros de radio»— y la consulta se escala con el área
+     para sostenerlo; eso lo mide `tconsulta`. Acá se mide el control: que
+     el recorrido entero esté disponible, no solo que exista la barra. */
+  T('hay un deslizador que va de 100 m a 8 km', !!r.rango && r.rango.min==='100' && r.rango.max==='8000',
     JSON.stringify(r.rango));
   T('de 50 en 50 metros', !!r.rango && r.rango.paso==='50');
+  T('y arranca en un radio de barrio, no en el tope', !!r.rango && Number(r.rango.valor) <= 1000,
+    (r.rango||{}).valor + ' m de fábrica');
   const c2=(r.trasMover.circulos||[])[0];
   T('moverlo mueve el círculo del mapa', !!c2 && Math.round(c2.r)===800,
     c2?Math.round(c2.r)+' m':'no hay círculo');

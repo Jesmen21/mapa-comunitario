@@ -29,7 +29,12 @@
 (function () {
   'use strict';
 
-  var RADIOS = [250, 500, 1000];
+  /* Los atajos de radio. Hasta la v850 el tope era 1 km acá y 2 km en la
+     barra; se pidió llegar a 8 «para poder analizar toda una ciudad».
+     Con la consulta escalada por área —ver `escalaDeConsulta` en js/61—
+     un radio grande ya no vuelve vacío: vuelve más lento, y si le falta
+     una capa lo dice. */
+  var RADIOS = [250, 500, 1000, 2000, 4000, 8000];
   var RADIO_POR_DEFECTO = 500;
 
   // Ocho rumbos, no cuatro: «andá al noreste» es una instrucción que un
@@ -6212,16 +6217,30 @@ function donaHTML(datos, colorDe, nombreDe) {
   // el color de su categoría y, debajo, las manzanas por estrato.
   var capaPuntos = null, capaEstratos = null, capaLlenos = null;
 
+  /* Cuántos puntos se DIBUJAN. No es un límite del análisis —el motor los
+     cuenta todos y las cifras salen de todos—, sino del dibujo: con el radio
+     a ocho kilómetros (v851) un sector céntrico trae más de diez mil usos, y
+     diez mil círculos con su globo dejan un teléfono de gama media clavado
+     medio minuto. Se pintan los más CERCANOS al centro, que son los que se
+     están mirando, y la hoja dice cuántos de cuántos. */
+  var TOPE_PUNTOS_MAPA = 4000;
+
   function pintarPuntos(pois) {
     var m = mapa();
     if (!m || typeof L === 'undefined') return 0;
     if (capaPuntos) { try { m.removeLayer(capaPuntos); } catch (e) {} capaPuntos = null; }
     if (!pois || !pois.length) return 0;
 
+    var lista = pois;
+    if (pois.length > TOPE_PUNTOS_MAPA) {
+      lista = pois.slice().sort(function (a, b) {
+        return (a.distM == null ? 1e12 : a.distM) - (b.distM == null ? 1e12 : b.distM);
+      }).slice(0, TOPE_PUNTOS_MAPA);
+    }
     capaPuntos = L.layerGroup().addTo(m);
     var CAT = window.AIA_CATALOGO || {};
     var G = CAT.GRUPOS || {};
-    pois.forEach(function (p) {
+    lista.forEach(function (p) {
       if (p.lat == null || p.lng == null) return;
       var g = G[p.grupo] || {};
       // Los que no se pudieron clasificar salen más grandes: son la tarea de
@@ -6239,7 +6258,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         (sinCategoria ? '<br><em>Sin categoría: verificar en campo</em>' : '')
       ).addTo(capaPuntos);
     });
-    return pois.length;
+    return lista.length;
   }
 
   /* Las capas que esta hoja pone sobre el mapa. Se declaran juntas y arriba
@@ -7295,7 +7314,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           '</div>' +
           (cL
             ? '<div class="pcr-rango-fila">' +
-                '<input type="range" class="pcr-rango" data-pcr="radio-rango" min="100" max="2000" ' +
+                '<input type="range" class="pcr-rango" data-pcr="radio-rango" min="100" max="8000" ' +
                   'step="50" value="' + S.radioM + '" aria-label="Radio alrededor del lote, en metros">' +
                 '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
               '</div>' +
@@ -7691,12 +7710,16 @@ function donaHTML(datos, colorDe, nombreDe) {
               '<label class="pcr-lab" for="pcr-radio-rango">Cuánto alrededor del lote</label>' +
               '<div class="pcr-rango-fila">' +
                 '<input type="range" id="pcr-radio-rango" class="pcr-rango" data-pcr="radio-rango" ' +
-                  'min="100" max="2000" step="50" value="' + S.radioM + '" ' +
+                  'min="100" max="8000" step="50" value="' + S.radioM + '" ' +
                   'aria-label="Radio alrededor del lote, en metros">' +
                 '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
               '</div>' +
-              '<small class="pcr-pista">De 100 m a 2 km desde el centro del lote. El círculo azul del ' +
-              'mapa se mueve con el control; el lote queda encima, en amarillo.</small>' +
+              '<small class="pcr-pista">De 100 m a 8 km desde el centro del lote. El círculo azul del ' +
+              'mapa se mueve con el control; el lote queda encima, en amarillo.' +
+              (S.radioM > 3000
+                ? ' <b>A este radio la consulta tarda más</b> —hasta tres minutos— y puede venir ' +
+                  'sin las capas de uso del suelo: si eso pasa, se dice al terminar.'
+                : '') + '</small>' +
             '</div>';
         })()
       : esPol
@@ -19225,7 +19248,17 @@ function donaHTML(datos, colorDe, nombreDe) {
 
         // Lo que se ve en el mapa detrás de esta hoja.
         h4('mapa', 'En el mapa') +
-        '<p class="pcr-pista">' + (S.puntosEnMapa || 0) + ' puntos pintados con el color de su categoría. ' +
+        '<p class="pcr-pista">' + (S.puntosEnMapa || 0) + ' puntos pintados con el color de su categoría' +
+        (function () {
+          /* Cuando el sector trae más de los que se dibujan, se dice de
+             cuántos: si no, «4.000 puntos» se lee como el total del sector
+             y no lo es. Las cifras del análisis salen de todos. */
+          var n = (S.resultado && S.resultado.pois && S.resultado.pois.length) || 0;
+          return n > (S.puntosEnMapa || 0)
+            ? ', de ' + Number(n).toLocaleString('es-CO') + ' encontrados: se dibujan los más cercanos al centro para que el ' +
+              'mapa siga respondiendo, y el análisis los cuenta todos'
+            : '';
+        })() + '. ' +
         'Cerrá esta hoja para verlos; tocá uno para saber qué es.</p>' +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="estratos" class="pcr-mini pcr-llevar-b"' +
@@ -19513,6 +19546,20 @@ function donaHTML(datos, colorDe, nombreDe) {
       var elementos = esPol
         ? await window.AIA_DATOS.consultarEntornoPoligono(S.poligono)
         : await window.AIA_DATOS.consultarEntorno(ejeConsulta.lat, ejeConsulta.lng, S.radioM);
+      /* ── Lo que la consulta no alcanzó a traer, dicho ────────────────
+         La lista viene con una nota pegada cuando le faltó algo: que se
+         consultó en ligero por el tamaño del área, que el servidor cortó a
+         mitad, o que se llegó al tope de elementos. Sin esto, un análisis
+         al que le falta una capa se presenta igual que uno completo, que
+         es exactamente el fallo que trajo esta versión: un sector de dos
+         kilómetros en el centro de Cúcuta salía con CERO usos y la
+         pantalla no decía nada. */
+      if (elementos && elementos.aviso) S.aviso = elementos.aviso;
+      else if (elementos && !elementos.length) {
+        S.aviso = 'La consulta terminó bien y no encontró ni un uso registrado en esta área. ' +
+          'Si a la vista hay comercio o equipamientos, es que todavía no están en OpenStreetMap: ' +
+          'eso es un hallazgo del análisis, y es justo lo que sale a mapear el curso.';
+      }
 
       // El censo NO depende de lo que OpenStreetMap tenga mapeado: viene del
       // DANE. Es la mitad del análisis que siempre está completa, y por eso

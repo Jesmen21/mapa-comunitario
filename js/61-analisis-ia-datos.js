@@ -25,8 +25,60 @@
        (poly:"7.89 -72.50 7.90 -72.51")  un área dibujada
      Por eso no hace falta traer un rectángulo y recortarlo después: se le
      pide exactamente el área, y viaja menos. */
-  function construirQueryCon(a){
-    return '[out:json][timeout:25];(' +
+  /* ── Las capas de ÁREA, que son las que pesan ──────────────────────
+     Uso del suelo, edificios con uso declarado, vegetación y agua. Sobre
+     un sector de barrio no se notan; sobre doscientos kilómetros cuadrados
+     son decenas de miles de polígonos que Overpass tiene que recorrer y
+     centrar uno por uno, y son las que hacen que la consulta no termine.
+
+     Por eso van aparte: son las primeras que se sueltan cuando el área es
+     grande, y lo que queda —lo que tiene puerta a la calle— sigue siendo
+     el mapa de usos. Cuando se sueltan, la respuesta lo dice; ver `traer`. */
+  function capasDeArea(a){
+    return 'nwr["landuse"]' + a + ';' +
+      'nwr["building"]["building"!="yes"]' + a + ';' +
+      'nwr["natural"~"^(water|wetland|wood|scrub|grassland)$"]' + a + ';' +
+      'way["waterway"~"^(river|stream|canal)$"]' + a + ';';
+  }
+  /* Cuánto aguanta una consulta, según los kilómetros cuadrados que cubre.
+     Estaba fijo en veinticinco segundos y tres mil elementos, medido para
+     un sector de barrio, y ahí nació el fallo que trajo esto: a dos
+     kilómetros de radio —12,6 km²— la consulta se pasaba de los
+     veinticinco segundos, Overpass contestaba 200 con la lista vacía y la
+     aplicación lo leía como «este sector no tiene ni un uso».
+
+     El corte del CLIENTE va por encima del del servidor a propósito: con
+     los cuarenta segundos fijos de antes, una consulta a la que el
+     servidor le daba noventa se abortaba acá a los cuarenta y nunca podía
+     terminar. */
+  function escalaDeConsulta(areaKm2){
+    const a = Math.max(0.05, Number(areaKm2) || 0.05);
+    const segundos = a <= 5 ? 60 : a <= 30 ? 90 : 180;
+    const tope = a <= 5 ? 3000 : a <= 30 ? 8000 : 14000;
+    /* Por encima de cincuenta kilómetros cuadrados —un radio de cuatro
+       kilómetros— la pesada no es que tarde: es que no termina. Se pide
+       directamente la ligera en vez de gastar tres minutos para caer en
+       ella de todos modos. */
+    return { segundos: segundos, tope: tope, areaKm2: a,
+             ligera: a > 50, corteMs: (segundos + 20) * 1000 };
+  }
+  /* Los kilómetros cuadrados de un trazo, por exceso esférico. Hace falta
+     acá porque un área dibujada no trae radio con el que medir su peso. */
+  function areaKm2De(pts){
+    try {
+      if (!Array.isArray(pts) || pts.length < 3) return 0;
+      const R = 6371008.8, rad = Math.PI / 180;
+      let acc = 0;
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i], q = pts[(i + 1) % pts.length];
+        acc += (q.lng - p.lng) * rad * (2 + Math.sin(p.lat * rad) + Math.sin(q.lat * rad));
+      }
+      return Math.abs(acc * R * R / 2) / 1e6;
+    } catch(e) { return 0; }
+  }
+  function construirQueryCon(a, op){
+    const o = op || {};
+    return '[out:json][timeout:' + (o.segundos || 60) + '];(' +
       'nwr["amenity"]' + a + ';' +
       'nwr["shop"]' + a + ';' +
       'nwr["leisure"]' + a + ';' +
@@ -37,14 +89,11 @@
       'nwr["tourism"]' + a + ';' +
       'nwr["healthcare"]' + a + ';' +
       'nwr["office"]' + a + ';' +
-      'nwr["landuse"]' + a + ';' +
-      'nwr["building"]["building"!="yes"]' + a + ';' +
+      (o.ligera ? '' : capasDeArea(a)) +
       'way["highway"~"^(trunk|primary|secondary|tertiary|cycleway)$"]' + a + ';' +
       'node["highway"="bus_stop"]' + a + ';' +
       'node["public_transport"]' + a + ';' +
-      'nwr["natural"~"^(water|wetland|wood|scrub|grassland)$"]' + a + ';' +
-      'way["waterway"~"^(river|stream|canal)$"]' + a + ';' +
-      ');out center tags 3000;' +
+      ');out center tags ' + (o.tope || 3000) + ';' +
       // Segunda salida en la misma consulta: las rutas de transporte público
       // que recogen en alguna parada del área. Van sin geometría —solo sus
       // etiquetas— porque lo que se muestra es el nombre y el color, no el
@@ -72,9 +121,6 @@
     const lista = p.map(v => v.lat.toFixed(6) + ' ' + v.lng.toFixed(6)).join(' ');
     return '(poly:"' + lista + '")';
   }
-  function construirQueryPoligono(pts){
-    return construirQueryCon(filtroPoligono(pts));
-  }
 
   function claveCache(lat, lng, radioM){
     return lat.toFixed(4) + ',' + lng.toFixed(4) + ',' + Math.round(radioM);
@@ -91,16 +137,16 @@
     try {
       const all = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
       const hit = all.find(e => e.k === clave);
-      if (hit && (Date.now() - hit.t) < CACHE_TTL_MS) return hit.d;
+      if (hit && (Date.now() - hit.t) < CACHE_TTL_MS) return conAviso(hit.d, hit.a);
     } catch(e) {}
     return null;
   }
 
-  function guardarCache(clave, datos){
+  function guardarCache(clave, datos, aviso){
     try {
       let all = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
       all = all.filter(e => e.k !== clave && (Date.now() - e.t) < CACHE_TTL_MS);
-      all.push({ k: clave, t: Date.now(), d: datos });
+      all.push({ k: clave, t: Date.now(), d: datos, a: aviso || '' });
       while (all.length > CACHE_MAX) all.shift();
       localStorage.setItem(CACHE_KEY, JSON.stringify(all));
     } catch(e) {
@@ -121,7 +167,27 @@
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
-      return json.elements || [];
+      const elementos = json.elements || [];
+      /* ── El aviso que venía ignorándose ───────────────────────────
+         Overpass NO contesta con un código de error cuando se queda sin
+         tiempo o sin memoria: contesta 200, con la lista vacía y una
+         línea `remark` explicando por qué. Acá solo se miraba el código,
+         así que un «se me acabó el tiempo» entraba como un sector sin un
+         solo uso, se guardaba en el caché y se servía igual durante
+         veinticuatro horas. Un sector de dos kilómetros con cuarenta y
+         cinco mil habitantes salía con cero usos y nadie avisaba.
+
+         Con lista vacía es un fallo y se trata como tal. Con lista llena
+         es una respuesta PARCIAL —le alcanzó para parte—, y entonces se
+         queda lo que trajo y se dice que está incompleta. */
+      const remark = String(json.remark || '').trim();
+      if (remark && !elementos.length) {
+        const err = new Error('Overpass no alcanzó a responder: ' + remark);
+        err.overpass = remark;
+        throw err;
+      }
+      if (remark) elementos.parcial = remark;
+      return elementos;
     } finally {
       clearTimeout(timer);
     }
@@ -138,7 +204,19 @@
      que eso se recibe y todo lo demás se comparte. Cuando esto estaba
      duplicado, el reintento contra el espejo existía en un camino y no en el
      otro, y fallaba solo el que menos se usaba. */
-  async function traer(clave, query, forzar){
+  /* Una nota pegada a la lista: qué le faltó a esta respuesta. Va como
+     propiedad y no como elemento para que quien la recorre no la vea, y
+     viaja también por el caché. La lee `js/68` para decirlo en la ficha. */
+  function conAviso(lista, aviso){
+    try {
+      if (aviso) Object.defineProperty(lista, 'aviso',
+        { value: aviso, enumerable: false, configurable: true, writable: true });
+    } catch(e) {}
+    return lista;
+  }
+
+  async function traer(clave, query, forzar, op){
+    const o = op || {};
     const cacheado = forzar ? null : leerCache(clave);
     if (cacheado) return cacheado;
 
@@ -155,19 +233,67 @@
       // recupera solo en segundos; reintentarlo es más confiable que un
       // espejo que puede estar caído por completo. Tres intentos en total:
       // principal → principal (tras 3s) → espejo (tras 3s más).
-      let elementos, ultimoError;
+      const corte = o.corteMs || 40000;
+      let elementos, ultimoError, aviso = '';
       const intentos = [
-        () => fetchOverpass(OVERPASS_PRINCIPAL, query, 40000),
-        () => fetchOverpass(OVERPASS_PRINCIPAL, query, 40000),
-        () => fetchOverpass(OVERPASS_ESPEJO, query, 25000)
+        () => fetchOverpass(OVERPASS_PRINCIPAL, query, corte),
+        () => fetchOverpass(OVERPASS_PRINCIPAL, query, corte),
+        () => fetchOverpass(OVERPASS_ESPEJO, query, corte)
       ];
       for (let i = 0; i < intentos.length; i++) {
         if (i > 0) await new Promise(r => setTimeout(r, 3000));
         try { elementos = await intentos[i](); ultimoError = null; break; }
-        catch(e) { ultimoError = e; }
+        catch(e) {
+          ultimoError = e;
+          /* Un `remark` no es un bache de red: es «esta consulta es
+             demasiado cara para mí». Repetirla igual dos veces más, con sus
+             esperas, son tres minutos para el mismo no. Se sale del bucle y
+             se va directo al respaldo ligero, que es lo único que puede
+             cambiar la respuesta. Los reintentos siguen para lo que sí es
+             un bache: un 504, una conexión cortada, el espejo. */
+          if (e && e.overpass) break;
+        }
+      }
+      /* ── El respaldo ligero ──────────────────────────────────────────
+         Si la consulta completa no alcanzó, se pide otra vez SIN las capas
+         de área —ver `capasDeArea`—, que son las que la vuelven pesada. Lo
+         que vuelve son los usos con puerta a la calle: el mapa que se
+         quería ver, sin el uso del suelo ni la vegetación. Y se dice, acá
+         y en la ficha, porque un análisis al que le falta una capa no
+         puede presentarse como completo. */
+      if (ultimoError && o.alternativa) {
+        try {
+          await new Promise(r => setTimeout(r, 3000));
+          elementos = await fetchOverpass(OVERPASS_PRINCIPAL, o.alternativa.query,
+                                          o.alternativa.corteMs || corte);
+          ultimoError = null;
+          aviso = o.alternativa.aviso || '';
+        } catch(e) { ultimoError = e; }
       }
       if (ultimoError) {
-        throw new Error('El servicio de datos abiertos está saturado. Espera un minuto y vuelve a intentar.');
+        throw new Error(ultimoError.overpass
+          ? 'La consulta no alcanzó a terminar en el servidor de datos abiertos: el área ' +
+            'es muy grande para lo que hay mapeado ahí. Probá con un radio menor.'
+          : 'El servicio de datos abiertos está saturado. Espera un minuto y vuelve a intentar.');
+      }
+      if (elementos && elementos.parcial) {
+        aviso = aviso || 'La respuesta llegó incompleta: el servidor de datos abiertos se quedó ' +
+                         'sin tiempo a mitad de la consulta. Lo que se ve es una parte del sector.';
+      }
+      if (o.ligera && !aviso) {
+        aviso = o.avisoLigera || '';
+      }
+      /* Y si la respuesta llegó TOPADA, se dice. Overpass corta en el
+         número que se le pide y no avisa de nada: la lista llega completa
+         a ojos de quien la recibe, solo que es la primera parte. Sin esta
+         línea, «1.240 usos · 98 por hectárea» de un sector topado es una
+         cifra inventada con cara de medición. */
+      const tope = o.escala && o.escala.tope;
+      if (tope && elementos && elementos.length >= tope) {
+        aviso = (aviso ? aviso + ' ' : '') +
+          'La consulta llegó al tope de ' + tope + ' elementos: en este sector hay más de lo ' +
+          'que se alcanzó a traer, así que las cifras son un mínimo. Para contarlo todo, ' +
+          'analizá por partes con un radio menor.';
       }
       /* Dedup por type+id y descarte de lo que no se puede situar.
          La excepción son las RUTAS de transporte: una relación de ruta no
@@ -206,8 +332,14 @@
         if (lat2 == null || lng2 == null) return;
         limpios.push(el);
       });
-      guardarCache(clave, limpios);
-      return limpios;
+      /* Un vacío NO se guarda. Un sector sin nada mapeado es un resultado
+         legítimo y se muestra como tal, pero guardarlo es apostar a que el
+         vacío era de verdad: si vino de una consulta que no alcanzó —y esa
+         es la causa habitual—, el cero se quedaba servido veinticuatro
+         horas y volver a analizar no lo arreglaba. Repetir una consulta
+         cuesta unos segundos; publicar un cero falso cuesta el análisis. */
+      if (limpios.length) guardarCache(clave, limpios, aviso);
+      return conAviso(limpios, aviso);
     } finally {
       enVuelo = false;
     }
@@ -522,8 +654,36 @@
     return salida;
   }
 
+  /* El aviso de lo que falta cuando se consultó en ligero, escrito una
+     sola vez: lo usan las dos puertas de entrada. */
+  const AVISO_LIGERA = 'El área es grande, así que se consultaron solo los usos con puerta a la ' +
+    'calle: no se leyeron los polígonos de uso del suelo, vegetación ni agua. Para tenerlos, ' +
+    'analizá con un radio menor.';
+
+  function opcionesDeConsulta(a, areaKm2){
+    const e = escalaDeConsulta(areaKm2);
+    return {
+      corteMs: e.corteMs,
+      ligera: e.ligera,
+      avisoLigera: AVISO_LIGERA,
+      escala: e,
+      /* El respaldo solo tiene sentido si la primera NO era ya la ligera. */
+      alternativa: e.ligera ? null : {
+        query: construirQueryCon(a, { segundos: e.segundos, tope: e.tope, ligera: true }),
+        corteMs: e.corteMs,
+        aviso: AVISO_LIGERA
+      }
+    };
+  }
+
   function consultarEntorno(lat, lng, radioM, forzar){
-    return traer(claveCache(lat, lng, radioM), construirQuery(lat, lng, radioM), forzar);
+    const a = '(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')';
+    const areaKm2 = Math.PI * Math.pow(Math.max(0, Number(radioM) || 0) / 1000, 2);
+    const op = opcionesDeConsulta(a, areaKm2);
+    return traer(claveCache(lat, lng, radioM),
+                 construirQueryCon(a, { segundos: op.escala.segundos, tope: op.escala.tope,
+                                        ligera: op.escala.ligera }),
+                 forzar, op);
   }
 
   /* Lo mismo, para un área dibujada a mano. `pts` son los vértices en el
@@ -532,7 +692,12 @@
     if (!Array.isArray(pts) || pts.length < 3) {
       return Promise.reject(new Error('El área necesita al menos 3 puntos.'));
     }
-    return traer(claveCachePoligono(pts), construirQueryPoligono(pts), forzar);
+    const a = filtroPoligono(pts);
+    const op = opcionesDeConsulta(a, areaKm2De(pts));
+    return traer(claveCachePoligono(pts),
+                 construirQueryCon(a, { segundos: op.escala.segundos, tope: op.escala.tope,
+                                        ligera: op.escala.ligera }),
+                 forzar, op);
   }
 
 

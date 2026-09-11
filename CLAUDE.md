@@ -144,6 +144,55 @@ Cinco segundos entre consultas, y lo rechaza sin avisar bonito. Cualquier
 cadena que pida dos cosas seguidas tiene que esperar. En las pruebas eso son
 los `await esperar(5200)` que parecen de más y no lo son.
 
+### Overpass avisa de sus fallos DENTRO de una respuesta correcta
+
+La que más caro costó, y no se vio en meses. Cuando Overpass se queda sin
+tiempo o sin memoria **no contesta con un código de error**: contesta 200,
+con `elements: []` y una línea `remark` explicando por qué.
+
+```json
+{"version":0.6,"remark":"runtime error: Query timed out ...","elements":[]}
+```
+
+`fetchOverpass` solo miraba `res.ok`, así que eso entraba como un sector sin
+un solo uso. Y peor: se **guardaba en el caché**, que dura 24 horas, así que
+volver a analizar el mismo sector devolvía el mismo cero sin salir a la red.
+Llegó en capturas (v851): un radio de 2 km sobre el centro de Cúcuta con
+«Todos los usos 0» mientras la ficha decía 45.877 habitantes, y dos minutos
+después un sector de 400 m al lado con 870 usos. «Al parecer al hacer un
+análisis grande se buguea y dice que no había nada.»
+
+Cuatro reglas, todas en `js/61`:
+
+* **Un `remark` con la lista vacía es un fallo**, y el error dice qué pasó.
+  Con la lista llena es una respuesta PARCIAL: se queda lo que trajo y se
+  avisa.
+* **Un vacío no se guarda en el caché.** Un sector sin nada mapeado es un
+  resultado legítimo y se muestra, pero guardarlo es apostar a que el vacío
+  era de verdad. Repetir la consulta cuesta segundos; publicar un cero falso
+  cuesta el análisis.
+* **La consulta se escala con el área** (`escalaDeConsulta`): 60 s y 3.000
+  elementos hasta 5 km², 90 s y 8.000 hasta 30 km², 180 s y 14.000 por
+  encima. El corte del CLIENTE va siempre por encima del del servidor: con
+  los 40 s fijos de antes, una consulta a la que el servidor le daba 90 se
+  abortaba a los 40 y no podía terminar nunca.
+* **Las capas de ÁREA** —`landuse`, `building`, `natural`, `waterway`— son
+  las que revientan un radio grande: sobre 200 km² son decenas de miles de
+  polígonos que hay que centrar uno por uno. Van en `capasDeArea`, aparte.
+  Por encima de 50 km² la consulta sale directamente sin ellas; por debajo,
+  son el respaldo si la completa no alcanza. Cuando se sueltan **se dice**,
+  y el aviso llega a la ficha: un análisis al que le falta una capa no
+  puede presentarse como completo.
+
+El aviso viaja como propiedad `aviso` pegada a la lista de elementos —no
+como elemento, para que quien la recorre no lo vea— y también por el caché.
+Lo lee `js/68` y lo pinta en `S.aviso`.
+
+Con esto el radio llega a **8 km** (`RADIOS` y las dos barras de `js/68`).
+Lo mide `tconsulta.js`, contra un Overpass de mentira al que se le puede
+pedir que se ponga de mal humor: es la única forma de provocar un tiempo
+agotado sin depender de cómo esté el servidor de verdad hoy.
+
 ## El módulo presidencial: qué mueve el veredicto
 
 Lo escribe una rutina diaria y lo lee cualquier sesión, así que las reglas

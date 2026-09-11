@@ -1482,7 +1482,17 @@
     var t0 = new Date(desde + 'T00:00:00').getTime();
     var hoy = Date.now();
     var out = [];
-    for (var t = t0 + 7 * 86400000; t <= hoy + 6 * 86400000; t += 7 * 86400000) {
+    /* El tope va a SIETE días y no a seis, y la diferencia se ve un día de
+       cada siete. Con seis, cuando hoy cae justo en un borde de semana
+       —(hoy − posesión) múltiplo de 7— la última vuelta pedía `t_último + 7`
+       contra un tope de `hoy + 6`, no entraba, y la serie se quedaba SIN la
+       columna en curso: la ficha pública perdía la semana que está corriendo
+       y nadie lo notaba hasta el día siguiente. Pasó el 11 de septiembre de
+       2026, a las cinco semanas exactas de la posesión, y lo cazó `tficha`
+       con «la serie marca la semana en curso». Con siete, el borde siguiente
+       siempre cabe, y el `break` de abajo sigue impidiendo que entre más de
+       una columna a medias. */
+    for (var t = t0 + 7 * 86400000; t <= hoy + 7 * 86400000; t += 7 * 86400000) {
       var parcial = t > hoy;
       var iso = new Date(parcial ? hoy : t).toISOString().slice(0, 10);
       var f = fichaHasta(iso);

@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v850-todos-los-mapas-vuelven';
+const VT_CACHE = 'urbis-vt-v851-la-consulta-aguanta-el-radio-grande';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

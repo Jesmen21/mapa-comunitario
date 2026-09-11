@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v850-todos-los-mapas-vuelven';
+const URBIS_CACHE = 'urbis-v851-la-consulta-aguanta-el-radio-grande';
 const URBIS_ASSETS = [
   './',
   './index.html',
