@@ -63,17 +63,31 @@ const edif = (dx, dy, w2, h2, pisos) => ({ type: 'way', id: gid++,
   tags: { building: 'yes', 'building:levels': String(pisos) },
   geometry: [P(dx, dy), P(dx + w2, dy), P(dx + w2, dy + h2), P(dx, dy + h2), P(dx, dy)]
     .map(p => ({ lat: p.lat, lon: p.lng })) });
+/* Las calles de la retícula COMPARTEN el vértice donde se cruzan. El motor
+   cuenta una intersección donde dos vías tocan el mismo nodo, y Overpass solo
+   lista los vértices propios de cada vía: dos líneas que se cruzan en el
+   plano pero no comparten vértice no son un cruce para nadie. Sin esto el
+   sector de prueba salía con cuatro intersecciones y 5.766 m de tramo medio
+   —una supermanzana de casi seis kilómetros de lado—, así que la continuidad
+   del tejido se estaba midiendo sobre una malla que no existe.
+   Las EO van cada 200 m y las NS cada 100: 7 × 13 nodos compartidos. */
+const EO = [-600, -400, -200, 0, 200, 400, 600];      // y de las horizontales
+const NS = Array.from({ length: 13 }, (_, i) => -600 + i * 100);  // x de las verticales
+const horizontal = y => NS.map(x => P(x, y));
+const vertical = x => EO.map(y => P(x, y));
 const geo = [
+  /* La troncal va en diagonal y por eso NO comparte vértices con la retícula:
+     es la vía que la atraviesa, y así se comporta en el conteo. */
   via('Autopista Nacional', 'trunk', [P(-600, -500), P(-100, 0), P(600, 500)]),
-  via('Avenida 1', 'primary', [P(-600, 200), P(0, 200), P(600, 200)]),
-  via('Avenida 3', 'primary', [P(-300, -600), P(-300, 0), P(-300, 600)]),
-  via('Calle 8', 'secondary', [P(-600, -200), P(0, -200), P(600, -200)]),
-  via('Calle 12', 'secondary', [P(200, -600), P(200, 0), P(200, 600)]),
-  via('Carrera 5', 'tertiary', [P(-600, 400), P(600, 400)]),
-  via('Carrera 9', 'tertiary', [P(-500, -400), P(500, -400)])
+  via('Avenida 1', 'primary', horizontal(200)),
+  via('Avenida 3', 'primary', vertical(-300)),
+  via('Calle 8', 'secondary', horizontal(-200)),
+  via('Calle 12', 'secondary', vertical(200)),
+  via('Carrera 5', 'tertiary', horizontal(400)),
+  via('Carrera 9', 'tertiary', horizontal(-400))
 ].concat(
   Array.from({ length: 12 }, (_, i) => via('Calle interior ' + i, 'residential',
-    [P(-600 + i * 100, -600), P(-600 + i * 100, 600)])),
+    vertical(-600 + i * 100))),
   Array.from({ length: 6 }, (_, i) => via('Sendero ' + i, 'footway',
     [P(-400, -500 + i * 180), P(400, -500 + i * 180)])),
   Array.from({ length: 30 }, (_, i) => edif(-560 + (i % 10) * 115,
@@ -307,10 +321,19 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
               columnas: [...c.querySelectorAll('table.rad th')].map(x => x.textContent.trim()),
               filas: [...c.querySelectorAll('table.rad tr')].slice(1)
                 .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
-              banda: (c.closest('.banda') || {}).className || ''
+              banda: (c.closest('.banda') || {}).className || '',
+              cuadros: [...c.querySelectorAll('.grano svg g')].map(g => {
+                const r = g.querySelector('rect'), t = [...g.querySelectorAll('text')];
+                return { lado: Number(r.getAttribute('width')),
+                         metros: Number((t[0] || {}).textContent.replace(/[^\d]/g, '')) || 0,
+                         etq: ((t[1] || {}).textContent || '').trim(),
+                         trazos: !!r.getAttribute('stroke-dasharray') };
+              })
             };
           };
           return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
+                   tejido: dame(/Continuidad del tejido/),
+                   grano: dame(/El grano: manzana y predio/),
                    ciudad: dame(/El sector dentro de la ciudad/),
                    fuera: dame(/Quién queda por fuera/),
                    mueve: dame(/Cómo se mueve el sector/) };
@@ -688,6 +711,84 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       /está MODELADO|modelado/.test(MV.texto) && /no contado/.test(MV.texto),
       (MV.texto.match(/El aforo de hora pico[^.]*\./) || [''])[0].slice(0, 120));
   }
+
+  console.log('\n  -- la continuidad del tejido --');
+  /* Dos sectores con el mismo porcentaje construido pueden tener uno el
+     triple de cruces que el otro, y eso no se ve en la foto: es lo que
+     separa un barrio que se camina de uno que solo se atraviesa. */
+  const TJ = (A.paneles || {}).tejido;
+  T('el panel está, y en la lámina A', !!TJ && !(B.paneles || {}).tejido);
+  if (TJ) {
+    T('mide los cruces por km² y el tramo medio entre ellos',
+      TJ.kpis.length >= 2 && /cruces por km²/.test(TJ.texto) && /m entre cruces/.test(TJ.texto),
+      TJ.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* Sin el umbral al lado, «87 cruces» no significa nada: una cifra sin
+       su referencia no es un dato, es un número. */
+    T('y la cifra va con su referencia, no suelta',
+      /por debajo de <b>100<\/b>|por debajo de 100/.test(TJ.texto) &&
+      /150/.test(TJ.texto) && /caminable/.test(TJ.texto),
+      (TJ.texto.match(/La referencia:[^.]*/) || ['no hay referencia'])[0].slice(0, 120));
+    T('y cierra en un juicio, no en el número',
+      /trama fina|trama continua|trama gruesa|trama de supermanzana/.test(TJ.texto),
+      (TJ.texto.match(/esto es una [^.]*/) || [''])[0].slice(0, 90));
+    /* Y el límite de lo que se contó: un barrio a medio mapear sale con
+       menos cruces de los que tiene, no con los que tiene. */
+    /* Ningún porcentaje de esta caja puede pasar de 100. Suena obvio y no lo
+       es: los fondos de saco y los cruces son conjuntos DISJUNTOS —el motor
+       cuenta cruce el nodo que tocan dos vías y sin salida el que toca una
+       sola—, así que dividir unos por otros daba «750 % de los cruces no
+       tienen salida». En un sector normal habría salido un número creíble y
+       nadie lo habría mirado dos veces. */
+    const pcts = (TJ.texto.match(/(\d+(?:,\d+)?)\s*%/g) || [])
+      .map(x => Number(x.replace('%', '').replace(',', '.').trim()));
+    T('y ningún porcentaje suyo se pasa de 100',
+      pcts.every(x => x <= 100), pcts.join(' % · ') + ' %');
+    T('dice que lo contado depende de cuánto esté mapeado el barrio',
+      /a medio mapear sale con menos cruces de los que tiene/.test(TJ.texto),
+      TJ.texto.slice(-140));
+  }
+
+  console.log('\n  -- el grano: la manzana medida y el predio que no está --');
+  const GR = (A.paneles || {}).grano;
+  T('el panel está, y en la lámina A', !!GR && !(B.paneles || {}).grano);
+  if (GR) {
+    T('dibuja el módulo del sector contra dos referencias',
+      GR.cuadros.length === 3 && /Este sector/.test(GR.cuadros.map(c => c.etq).join(' ')),
+      GR.cuadros.map(c => c.etq + ' ' + c.metros + ' m').join(' · '));
+    /* Lo único que hace honesta la comparación: los tres a la MISMA escala.
+       Dibujarlos del mismo tamaño con la cifra al pie sería mentir sin
+       escribir una palabra falsa, y un diagrama puede hacer eso. */
+    const esc2 = GR.cuadros.filter(c => c.metros > 0)
+      .map(c => c.lado / Math.sqrt(c.metros));
+    T('y los tres van a la misma escala, no del mismo tamaño',
+      esc2.length === 3 && esc2.every(x => Math.abs(x - esc2[0]) < 0.02) &&
+      new Set(GR.cuadros.map(c => Math.round(c.lado))).size > 1,
+      GR.cuadros.map(c => c.metros + ' m → ' + Math.round(c.lado * 10) / 10).join(' · '));
+    T('el del sector va lleno y las dos referencias a trazos',
+      GR.cuadros.filter(c => c.trazos).length === 2 && !GR.cuadros[0].trazos,
+      GR.cuadros.map(c => c.etq + (c.trazos ? ' (trazos)' : ' (lleno)')).join(' · '));
+    T('y la hoja dice por qué están a la misma escala',
+      /MISMA escala/.test(GR.texto) && /mentir sin escribir/.test(GR.texto),
+      GR.texto.slice(0, 0) + (GR.texto.match(/Los tres cuadrados[^.]*\./) || [''])[0].slice(0, 110));
+    /* El predio NO está, y de eso depende quién puede construir qué: se
+       declara, con el catastro nombrado, y se dice por qué una huella de
+       edificio no es un lote. */
+    T('el predio se declara sin dato, con el catastro nombrado',
+      GR.vacios.some(x => /predio.*sin dato oficial/i.test(x)) &&
+      /IGAC|catastro municipal/.test(GR.falta.join(' ')),
+      GR.vacios.join(' | '));
+    T('y explica por qué una huella de edificio no es un predio',
+      /HUELLAS DE EDIFICIO/.test(GR.texto) && /no son predios/.test(GR.texto) &&
+      /tres construcciones o ninguna/.test(GR.texto),
+      (GR.falta.filter(x => /HUELLAS/.test(x))[0] || '').slice(0, 130));
+    T('y que la manzana dibujada se deduce, no se delimita',
+      /se deduce del tramo medio/.test(GR.texto) && /no del contorno dibujado/.test(GR.texto),
+      (GR.falta.filter(x => /delimitada/.test(x))[0] || '').slice(0, 130));
+  }
+  /* Las dos son del sector, y van en la banda de morfología de la A. */
+  T('las dos van en la banda de morfología',
+    !!TJ && !!GR && /banda-forma/.test(TJ.banda) && /banda-forma/.test(GR.banda),
+    [TJ, GR].filter(Boolean).map(x => (x.banda.match(/banda-[a-z]+/) || [''])[0]).join(' · '));
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
 

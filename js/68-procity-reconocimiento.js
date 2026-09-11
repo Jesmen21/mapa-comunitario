@@ -2859,6 +2859,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        decirlo es el error que la tabla de escalas existe para evitar. */
     'El sector dentro de la ciudad': 'municipio',
     'Quién queda por fuera': 'sector', 'Cómo se mueve el sector': 'sector',
+    'Continuidad del tejido': 'sector', 'El grano: manzana y predio': 'sector',
     'Suelo disponible real': 'sector', 'Potencial edificatorio': 'sector',
     // Lo que se levanta en la calle: se levanta acá, en el sector.
     'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
@@ -4045,6 +4046,91 @@ function donaHTML(datos, colorDe, nombreDe) {
       return deOsm + deCampo;
       })(), 'g3') +
       
+      /* ── Continuidad del tejido ────────────────────────────────────────
+         Cuántas veces se puede doblar. Es la medida que separa un barrio que
+         se camina de uno que solo se atraviesa en carro, y no se ve en la
+         foto: dos sectores con el mismo porcentaje construido pueden tener
+         uno el triple de cruces que el otro. */
+      caja('Continuidad del tejido',
+      (function () {
+      if (!trz || !trz.morfologia) return '';
+      var mo = trz.morfologia, vi = trz.vias || {};
+      if (!mo.intersecciones) return '';
+      /* La referencia es de manual y va escrita: por debajo de 100 cruces
+         por km² el tejido ya no es caminable, y por encima de 150 es un
+         damero fino. Sin el umbral al lado, «87 cruces» no significa nada. */
+      var porKm2 = Number(mo.porKm2) || 0;
+      var juicio = porKm2 >= 150 ? 'trama fina, de las que se caminan'
+                 : porKm2 >= 100 ? 'trama continua, en el rango caminable'
+                 : porKm2 >= 60  ? 'trama gruesa: se atraviesa más de lo que se recorre'
+                                 : 'trama de supermanzana: hay que rodear para llegar al frente';
+      /* Un remate de calle es un cruce O un fondo de saco: los dos conjuntos
+         son DISJUNTOS —el motor cuenta cruce el nodo que tocan dos vías y
+         sin salida el que toca una sola—, así que el denominador es la suma
+         de los dos y no las intersecciones. Dividiendo por las
+         intersecciones salía «750 % de los cruces no tienen salida», que es
+         una frase que no quiere decir nada y que en un sector normal habría
+         pasado por un número creíble. */
+      var sinSalida = Number(mo.sinSalida) || 0;
+      var remates = (Number(mo.intersecciones) || 0) + sinSalida;
+      var pctCiego = remates ? Math.round(100 * sinSalida / remates) : 0;
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + porKm2 + '</b><small>cruces por km²</small></div>' +
+        '<div class="k"><b>' + (mo.tramoMedioM || 0) + '</b><small>m entre cruces</small></div>' +
+        (sinSalida ? '<div class="k"><b>' + sinSalida + '</b><small>calles sin salida</small></div>' : '') +
+        '</div>' +
+        fila('Intersecciones contadas', mo.intersecciones) +
+        fila('Densidad de vía', conComa(vi.kmPorHa || 0) + ' km por hectárea') +
+        '<p class="lee">Con <b>' + porKm2 + ' cruces por km²</b>, esto es una <b>' + juicio + '</b>. ' +
+        'La referencia: por debajo de <b>100</b> el tejido deja de ser caminable y por encima de ' +
+        '<b>150</b> es un damero fino' +
+        (pctCiego >= 10
+          ? ', y acá <b>' + pctCiego + ' %</b> de los remates de calle son fondo de saco, que es lo que ' +
+            'obliga a rodear'
+          : '') + '.</p>' +
+        '<p class="nota">Se cuenta sobre las vías que OpenStreetMap trae en el sector: un barrio a ' +
+        'medio mapear sale con menos cruces de los que tiene, no con los que tiene. ' +
+        (vi.sinNombre ? vi.sinNombre + ' de ' + (vi.vias || 0) + ' vías llegan sin nombre.' : '') + '</p>';
+      })(), 'g3') +
+
+      /* ── El grano ──────────────────────────────────────────────────────
+         El tamaño de la pieza con la que está hecho el sector. El módulo de
+         manzana sale del trazado; el PREDIO no, y eso se dice: sin catastro
+         no hay manera de saber cuántos lotes hay dentro de una manzana, y
+         de eso depende quién puede construir qué. */
+      caja('El grano: manzana y predio',
+      (function () {
+      if (!trz) return '';
+      var mo = trz.morfologia || {}, ll = trz.llenos || {};
+      var g = granoDeManzana(mo);
+      var huella = (ll.conGeometria && ll.areaConstruidaM2)
+        ? Math.round(ll.areaConstruidaM2 / ll.conGeometria) : null;
+      if (!g && huella == null) return '';
+      return (g ? '<div class="grano">' + g.svg + '</div>' : '') +
+        (g ? '<p class="nota">Los tres cuadrados están a la MISMA escala: el del sector es el ' +
+             'módulo que su propio trazado demuestra, y los dos a trazos son referencias de ' +
+             'manual. Dibujarlos del mismo tamaño con la cifra al pie sería mentir sin escribir ' +
+             'una palabra falsa.</p>' : '') +
+        (huella != null
+          ? fila('Huella construida media', huella.toLocaleString('es-CO') + ' m²') +
+            fila('Edificios con forma medida', (ll.conGeometria || 0) + ' de ' + (ll.edificios || 0))
+          : '') +
+        (g
+          ? '<p class="lee">La manzana de este sector mide del orden de <b>' + g.lado + ' m</b> de ' +
+            'lado. Es el dato que decide si una propuesta puede abrir un paso nuevo o tiene que ' +
+            'entrar por donde ya se entra.</p>'
+          : '') +
+        '<p class="vacio-tag">El predio: sin dato oficial disponible</p>' +
+        '<p class="vacio-falta"><b>Haría falta</b> la cartografía catastral del IGAC o del catastro ' +
+        'municipal, con los linderos de cada lote. Lo que hay acá son HUELLAS DE EDIFICIO de ' +
+        'OpenStreetMap, que no son predios: un lote puede tener tres construcciones o ninguna, y de ' +
+        'cuántos lotes tiene una manzana depende quién puede construir qué.</p>' +
+        '<p class="vacio-falta"><b>Y la manzana delimitada de verdad.</b> El módulo de arriba se ' +
+        'deduce del tramo medio entre cruces, no del contorno dibujado de cada manzana: para ' +
+        'delimitarlas haría falta el catastro, o cerrar los polígonos de la malla vial, que esta ' +
+        'versión todavía no hace.</p>';
+      })(), 'g3') +
+
       caja('Llenos y vacíos',
       (function () {
       if (!trz || !trz.llenos) return '';
@@ -5182,7 +5268,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma', hoja: 'A',
         pregunta: '¿Qué tan lleno está el sector y a qué altura se construye?',
         que: 'llenos y vacíos · alturas',
-        cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
+        cajas: ['Llenos y vacíos', 'Alturas de lo construido',
+                'Continuidad del tejido', 'El grano: manzana y predio'] },
       { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto', hoja: 'A',
         pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
@@ -6410,6 +6497,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       // El pie se va al fondo del papel aunque el contenido termine antes.
       /* El rótulo de escala, pegado al título y en letra de dato: se lee al
          mismo tiempo que la cifra, que es cuando hace falta. */
+      '.grano{ background:#F3F8FB; border-radius:1.5mm; padding:2mm 1.5mm; margin-bottom:1.6mm }' +
+      '.grano svg{ display:block; width:100%; height:auto; max-height:' + papel(30) + ' }' +
       '.escalera{ background:#F3F8FB; border-radius:1.5mm; padding:2mm 1.5mm; margin-bottom:1.6mm }' +
       '.escalera svg{ display:block; width:100%; height:auto; max-height:' + papel(26) + ' }' +
       '.escala-dato{ display:inline-block; margin:.6mm 0 0; padding:.3mm 1.4mm; border-radius:1mm;' +
@@ -10831,6 +10920,15 @@ function donaHTML(datos, colorDe, nombreDe) {
          dentro: la composición decía una cosa y el papel otra. En un barrio
          colombiano casi nadie registró la altura en OpenStreetMap, así que la
          de campo es justamente la que hay. */
+      { id: 'continuidad-del-tejido', t: 'Continuidad del tejido', g: 'El suelo',
+        listo: !!(trz && trz.morfologia && trz.morfologia.intersecciones),
+        falta: 'medí el trazado para contar los cruces',
+        dato: 'cruces por km² y tramo medio' },
+      { id: 'el-grano-manzana-y-predio', t: 'El grano: manzana y predio', g: 'El suelo',
+        listo: !!(trz && ((trz.morfologia && trz.morfologia.tramoMedioM) ||
+                          (trz.llenos && trz.llenos.conGeometria))),
+        falta: 'medí el trazado para tener la malla y las huellas',
+        dato: 'el módulo de manzana, y el predio declarado sin dato' },
       { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
         listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato) ||
                   (function () { try { return !!alturasDeCampo(); } catch (e) { return false; } })()),
@@ -11018,6 +11116,8 @@ function donaHTML(datos, colorDe, nombreDe) {
          de la lámina B no llevan acción: no dependen de una medición que se
          pueda disparar desde acá sino del censo, que ya se consultó. */
       'como-se-mueve-el-sector': trz ? null : 'trazado',
+      'continuidad-del-tejido': trz ? null : 'trazado',
+      'el-grano-manzana-y-predio': trz ? null : 'trazado',
       'suelo-disponible-real': trz ? null : 'trazado',
       'llenos-y-vacios': trz ? null : 'trazado',
       'el-perfil-de-la-calle': trz ? null : 'trazado',
@@ -13065,6 +13165,18 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
     'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
     'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
+    'Continuidad del tejido': {
+      f: 'intersecciones de la malla vial dentro del área, divididas por su superficie en km²; tramo medio = metros de vía / intersecciones',
+      fu: 'OpenStreetMap, hoy',
+      c: 'media: depende de cuánto esté mapeado el barrio',
+      r: '100 cruces/km² es el piso de un tejido caminable; 150 o más, damero fino (Marshall, 2005)',
+      e: 'un barrio a medio mapear sale con menos cruces de los que tiene' },
+    'El grano: manzana y predio': {
+      f: 'módulo de manzana deducido del tramo medio entre cruces; huella media = área construida / edificios con geometría',
+      fu: 'OpenStreetMap, hoy',
+      c: 'media en la manzana, baja en la huella: solo cuentan los edificios que traen forma',
+      r: 'manzana de 80 a 120 m en el damero fundacional colombiano',
+      e: 'no son predios: un lote puede traer tres construcciones o ninguna' },
     'El sector dentro de la ciudad': {
       f: 'población del sector dividida por la del municipio, las dos proyectadas al mismo año con la misma tasa',
       fu: 'DANE, CNPV 2018 por manzana y proyecciones municipales 2020-2035 (post-COVID), consultado hoy',
@@ -13251,6 +13363,51 @@ function donaHTML(datos, colorDe, nombreDe) {
       cadena: niveles.filter(function (x) { return x.v; })
         .map(function (x) { return x.v; }).join(' › '),
       sinNombre: niveles.filter(function (x) { return !x.v; }).map(function (x) { return x.t; })
+    };
+  }
+
+  /* ── El grano de la manzana, dibujado a escala ──────────────────────
+     El tramo medio entre cruces es el lado del módulo de manzana que el
+     trazado demuestra. Dibujarlo al lado de dos referencias de manual —el
+     damero del centro histórico colombiano, de 80 m, y la supermanzana de
+     borde, de 200 m— convierte una cifra en algo que se ve: 240 m de tramo
+     no es «un número alto», es una manzana en la que no se puede atravesar.
+
+     Los tres cuadrados van a la MISMA escala, que es lo único que hace
+     honesta la comparación: dibujarlos del mismo tamaño con la cifra al pie
+     sería exactamente la mentira que un diagrama puede contar sin decir una
+     palabra falsa. */
+  var GRANO_REF = [
+    { m: 80,  t: 'Damero de centro', c: '#7FB98B' },
+    { m: 200, t: 'Supermanzana',     c: '#D99A6C' }
+  ];
+  function granoDeManzana(mo) {
+    var lado = Math.round(Number(mo && mo.tramoMedioM) || 0);
+    if (!lado) return null;
+    var todos = [{ m: lado, t: 'Este sector', c: '#0A6F9E', mio: true }].concat(GRANO_REF);
+    var mayor = Math.max.apply(null, todos.map(function (x) { return x.m; }));
+    var LADO = 34, GAP = 7, H = LADO + 9;
+    var ancho = todos.length * LADO + (todos.length - 1) * GAP;
+    var cuadros = todos.map(function (x, i) {
+      var l = LADO * Math.sqrt(x.m / mayor);   // área proporcional al cuadrado del lado
+      var dx = i * (LADO + GAP);
+      return '<g transform="translate(' + dx + ',0)">' +
+        '<rect x="' + ((LADO - l) / 2) + '" y="' + (LADO - l) + '" width="' + l + '" height="' + l + '"' +
+          ' fill="' + (x.mio ? x.c : 'none') + '" fill-opacity="' + (x.mio ? 0.22 : 0) + '"' +
+          ' stroke="' + x.c + '" stroke-width="' + (x.mio ? 1.4 : 0.9) + '"' +
+          (x.mio ? '' : ' stroke-dasharray="2 1.5"') + '/>' +
+        '<text x="' + (LADO / 2) + '" y="' + (LADO + 4) + '" text-anchor="middle" font-size="3.2"' +
+          ' fill="' + (x.mio ? '#075E88' : '#6B7A8A') + '" font-weight="' + (x.mio ? 700 : 500) + '">' +
+          x.m + ' m</text>' +
+        '<text x="' + (LADO / 2) + '" y="' + (LADO + 8) + '" text-anchor="middle" font-size="2.7"' +
+          ' fill="#6B7A8A">' + esc(x.t) + '</text>' +
+        '</g>';
+    }).join('');
+    return {
+      lado: lado,
+      svg: '<svg viewBox="0 0 ' + ancho + ' ' + H + '" width="100%" role="img"' +
+        ' aria-label="El módulo de manzana del sector contra dos referencias, los tres a la misma escala">' +
+        cuadros + '</svg>'
     };
   }
 

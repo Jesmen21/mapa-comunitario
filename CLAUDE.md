@@ -555,15 +555,62 @@ sector lleno de avenidas con nombre se analizaba como si no tuviera ninguna.
 La suite pasaba igual porque hasta ahora nada miraba esa lista. Las vías van
 en las DOS respuestas y llevan `center`, como en `tmasanalisis`.
 
+### La morfología del tejido (v859)
+
+Dos paneles en la banda de morfología de la lámina A. Los dos miden lo que no
+se ve en la foto: dos sectores con el mismo porcentaje construido pueden
+tener uno el triple de cruces que el otro.
+
+* **«Continuidad del tejido»** — cruces por km², tramo medio entre ellos y
+  fondos de saco, **con el umbral escrito al lado**: por debajo de 100
+  cruces/km² el tejido deja de ser caminable y por encima de 150 es un damero
+  fino (Marshall, 2005). Una cifra sin su referencia no es un dato, es un
+  número. Cierra en un juicio —«trama fina», «trama de supermanzana»—, no en
+  el número, y dice que un barrio a medio mapear sale con menos cruces de los
+  que tiene, no con los que tiene.
+* **«El grano: manzana y predio»** — el módulo de manzana que el trazado
+  demuestra, **dibujado a escala contra dos referencias** (damero de centro
+  de 80 m, supermanzana de 200 m). Los tres cuadrados van a la misma escala y
+  la hoja lo dice: dibujarlos del mismo tamaño con la cifra al pie sería
+  mentir sin escribir una palabra falsa, que es lo que un diagrama puede
+  hacer. El **predio va declarado sin dato** —pide catastro del IGAC o
+  municipal— y se explica por qué una huella de OpenStreetMap no es un lote:
+  un predio puede traer tres construcciones o ninguna, y de cuántos lotes
+  tiene una manzana depende quién puede construir qué.
+
+#### Un porcentaje que se pasó de 100
+
+Los **cruces y los fondos de saco son conjuntos disjuntos**: el motor cuenta
+cruce el nodo que tocan dos vías (`cruces[k] >= 2`) y sin salida el que toca
+una sola (`extremos[k] === 1 && cruces[k] === 1`). Dividir unos por otros dio
+«750 % de los cruces no tienen salida». El denominador es la suma de los dos
+—los remates de calle—, no las intersecciones. Lo que asusta no es el error
+sino que **en un sector normal habría salido un número creíble** y nadie lo
+habría mirado dos veces; salió a la vista solo porque el sector de prueba era
+degenerado. `tdoslaminas` comprueba ahora que ningún porcentaje del panel
+pase de 100.
+
+#### Un sector de prueba sin una sola esquina
+
+Las calles del sector de `tdoslaminas` se cruzaban en el plano pero **no
+compartían vértice**, y el motor cuenta una intersección donde dos vías tocan
+el mismo nodo. Overpass solo lista los vértices propios de cada vía, así que
+la retícula tenía cuatro intersecciones y 5.766 m de tramo medio: una
+supermanzana de casi seis kilómetros de lado. La continuidad del tejido se
+estaba midiendo sobre una malla que no existe. Las calles de la retícula
+comparten ahora el vértice donde se cruzan (7 × 13 nodos), y el sector sale
+con 31 cruces/km² y 423 m de tramo, que son cifras de barrio.
+
 **Lo que falta del pliego de instrucciones** (tandas siguientes): de la A, la
-continuidad del tejido, el tamaño y forma de predios y la morfología de malla
-delimitada en el plano; de la B, la pirámide del sector sobrepuesta a la de
-la ciudad —hace falta el CNPV agregado por municipio, que la consulta por
-manzana no trae—, los hogares por tipo, la escolaridad, y los estratos y la
-vulnerabilidad con los barrios nombrados; y de la movilidad, las rutas
-dibujadas, el aforo de hora pico, los perfiles acotados y las isócronas por
-malla vial. Cada una está declarada en su panel con la tabla que la
-resolvería: lo que falta se pide por su nombre, no se estima.
+manzana **delimitada** de verdad —pide el catastro, o cerrar los polígonos de
+la malla vial, que esta versión no hace— y el tamaño y forma de cada predio;
+de la B, la pirámide del sector sobrepuesta a la de la ciudad —hace falta el
+CNPV agregado por municipio, que la consulta por manzana no trae—, los
+hogares por tipo, la escolaridad, y los estratos y la vulnerabilidad con los
+barrios nombrados; y de la movilidad, las rutas dibujadas, el aforo de hora
+pico, los perfiles acotados y las isócronas por malla vial. Cada una está
+declarada en su panel con la tabla que la resolvería: lo que falta se pide
+por su nombre, no se estima.
 
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
