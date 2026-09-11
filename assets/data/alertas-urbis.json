@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-10",
+  "actualizado": "2026-09-11",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -34,21 +34,6 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / UNGRD",
       "url": "https://www.sgc.gov.co/detallesismo/SGC2026pxhbxc/resumen"
-    },
-    {
-      "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en Ábrego — controlado y extinguido, 5-8 de septiembre de 2026, Norte de Santander",
-      "lat": 8.0807,
-      "lng": -73.2205,
-      "desde": "2026-09-05",
-      "expira": "2026-09-11",
-      "lineas": [
-        "📅 Inició el sábado 5 de septiembre de 2026 en la vereda Berlín, sector Monte Redondo; para la noche del domingo 6 de septiembre las llamas avanzaban hacia sectores cercanos al casco urbano de Ábrego, Norte de Santander. Tras tres días de labores conjuntas, el incendio quedó controlado y extinguido en su totalidad el 8 de septiembre de 2026, según confirmó el alcalde de Ábrego, Huber Darío Sánchez Ortega.",
-        "📊 Más de 3.000 hectáreas de vegetación consumidas, con daños en redes de acueducto y en cultivos; el sector turístico El Mirador quedó destruido por completo. Afectó también las veredas Paramillo, La Estancia, El Chorro, Oroque, Monte Redondo y Brisas del Tarra. Bomberos Voluntarios de Ábrego y Defensa Civil, reforzados con Bomberos de Ocaña, recibieron apoyo aéreo ante el avance de las llamas favorecido por fuertes vientos; varias familias evacuaron preventivamente por el fuego y el humo. Las autoridades adelantan la caracterización de familias y daños afectados.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Norte de Santander y prensa nacional (El Tiempo, Infobae, Semana). No es un reporte ciudadano."
-      ],
-      "fuente": "Gobernación de Norte de Santander / Alcaldía de Ábrego / El Tiempo / Infobae",
-      "url": "https://www.infobae.com/america/agencias/2026/09/08/extinguido-el-incendio-forestal-que-ha-arrasado-3000-hectareas-en-el-norte-de-colombia/"
     },
     {
       "tipo": "Incendio forestal",
