@@ -4102,6 +4102,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (function () {
       if (!trz) return '';
       var mo = trz.morfologia || {}, ll = trz.llenos || {};
+      var mz = mo.manzanas || null;
       var g = granoDeManzana(mo);
       var huella = (ll.conGeometria && ll.areaConstruidaM2)
         ? Math.round(ll.areaConstruidaM2 / ll.conGeometria) : null;
@@ -4117,18 +4118,55 @@ function donaHTML(datos, colorDe, nombreDe) {
           : '') +
         (g
           ? '<p class="lee">La manzana de este sector mide del orden de <b>' + g.lado + ' m</b> de ' +
-            'lado. Es el dato que decide si una propuesta puede abrir un paso nuevo o tiene que ' +
-            'entrar por donde ya se entra.</p>'
+            'lado' + (g.medido ? '' : ', deducidos del tramo medio entre cruces') + '. Es el dato que ' +
+            'decide si una propuesta puede abrir un paso nuevo o tiene que entrar por donde ya se ' +
+            'entra.</p>'
           : '') +
+        /* Las manzanas CERRADAS: el contorno real de cada cara de la malla.
+           Es la diferencia entre «la manzana mide del orden de 120 m» y ver
+           que las de este sector son alargadas, o que hay una del triple que
+           las demás porque ahí no entró ninguna calle. */
+        (function () {
+          if (!mz || !mz.n) return '';
+          var pl = planoDeManzanas(mz, meta);
+          return (pl ? '<div class="manzanas">' + pl + '</div>' : '') +
+            fila('Manzanas cerradas', mz.n +
+              (mz.poligonos && mz.poligonos.length < mz.n
+                ? ' (se dibujan las ' + mz.poligonos.length + ' mayores)' : '')) +
+            fila('Área mediana', esc(formatearM2(mz.areaMedianaM2))) +
+            fila('Área media', esc(formatearM2(mz.areaMediaM2))) +
+            '<p class="lee">Estas <b>' + mz.n + '</b> manzanas no se dedujeron: se <b>cerraron</b> ' +
+            'recorriendo la malla de calles, cara por cara. La mediana es de <b>' +
+            esc(formatearM2(mz.areaMedianaM2)) + '</b>, equivalente a un cuadrado de <b>' +
+            (mz.ladoEquivalenteM || 0) + ' m</b> de lado. La media y la mediana separadas dicen si el ' +
+            'sector es parejo o si hay una manzana grande que jala el promedio.</p>' +
+            ((mz.descartadas && (mz.descartadas.ruido || mz.descartadas.abiertas))
+              ? '<p class="nota">Se descartaron <b>' + (mz.descartadas.ruido || 0) + '</b> caras ' +
+                'diminutas —ruido del mapeo, dos vías que casi se tocan— y <b>' +
+                (mz.descartadas.abiertas || 0) + '</b> mayores que media área analizada, que aparecen ' +
+                'cuando el borde del sector corta la malla y deja el contorno abierto. Una «manzana» ' +
+                'de media ciudad no es una manzana.</p>'
+              : '');
+        })() +
         '<p class="vacio-tag">El predio: sin dato oficial disponible</p>' +
         '<p class="vacio-falta"><b>Haría falta</b> la cartografía catastral del IGAC o del catastro ' +
         'municipal, con los linderos de cada lote. Lo que hay acá son HUELLAS DE EDIFICIO de ' +
         'OpenStreetMap, que no son predios: un lote puede tener tres construcciones o ninguna, y de ' +
         'cuántos lotes tiene una manzana depende quién puede construir qué.</p>' +
-        '<p class="vacio-falta"><b>Y la manzana delimitada de verdad.</b> El módulo de arriba se ' +
-        'deduce del tramo medio entre cruces, no del contorno dibujado de cada manzana: para ' +
-        'delimitarlas haría falta el catastro, o cerrar los polígonos de la malla vial, que esta ' +
-        'versión todavía no hace.</p>';
+        /* Y lo que la manzana cerrada NO es: el lindero catastral. Se parece
+           y no es lo mismo, y la diferencia es justo la que se paga en una
+           curaduría. */
+        (mz && mz.n
+          ? '<p class="vacio-falta"><b>La manzana cerrada no es el lindero catastral.</b> Es la cara ' +
+            'que dejan las vías mapeadas: donde falte una calle por mapear, dos manzanas salen como ' +
+            'una; donde haya un pasaje peatonal mapeado como vía, una sale partida en dos. Para el ' +
+            'lindero que vale en una curaduría sigue haciendo falta el catastro.</p>'
+          : '<p class="vacio-falta"><b>Y la manzana delimitada.</b> ' +
+            (mz && mz.motivo
+              ? 'No se pudo cerrar ninguna cara de la malla: ' + esc(mz.motivo) + '. '
+              : '') +
+            'El módulo de arriba se deduce del tramo medio entre cruces, no del contorno de cada ' +
+            'manzana.</p>');
       })(), 'g3') +
 
       caja('Llenos y vacíos',
@@ -6497,6 +6535,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       // El pie se va al fondo del papel aunque el contenido termine antes.
       /* El rótulo de escala, pegado al título y en letra de dato: se lee al
          mismo tiempo que la cifra, que es cuando hace falta. */
+      '.manzanas{ background:#F3F8FB; border-radius:1.5mm; padding:1.5mm; margin:1.6mm 0 }' +
+      '.manzanas svg{ display:block; width:100%; height:auto; max-height:' + papel(46) + ' }' +
       '.grano{ background:#F3F8FB; border-radius:1.5mm; padding:2mm 1.5mm; margin-bottom:1.6mm }' +
       '.grano svg{ display:block; width:100%; height:auto; max-height:' + papel(30) + ' }' +
       '.escalera{ background:#F3F8FB; border-radius:1.5mm; padding:2mm 1.5mm; margin-bottom:1.6mm }' +
@@ -13172,11 +13212,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       r: '100 cruces/km² es el piso de un tejido caminable; 150 o más, damero fino (Marshall, 2005)',
       e: 'un barrio a medio mapear sale con menos cruces de los que tiene' },
     'El grano: manzana y predio': {
-      f: 'módulo de manzana deducido del tramo medio entre cruces; huella media = área construida / edificios con geometría',
+      f: 'manzanas cerradas recorriendo las caras del grafo de calles (regla de la mano izquierda); área mediana y su cuadrado equivalente. Sin caras cerradas, el módulo se deduce del tramo medio entre cruces',
       fu: 'OpenStreetMap, hoy',
-      c: 'media en la manzana, baja en la huella: solo cuentan los edificios que traen forma',
+      c: 'alta donde la malla está mapeada completa; la cara que dejan las vías no es el lindero catastral',
       r: 'manzana de 80 a 120 m en el damero fundacional colombiano',
-      e: 'no son predios: un lote puede traer tres construcciones o ninguna' },
+      e: 'una calle sin mapear une dos manzanas en una; un pasaje mapeado como vía parte una en dos' },
     'El sector dentro de la ciudad': {
       f: 'población del sector dividida por la del municipio, las dos proyectadas al mismo año con la misma tasa',
       fu: 'DANE, CNPV 2018 por manzana y proyecciones municipales 2020-2035 (post-COVID), consultado hoy',
@@ -13382,7 +13422,17 @@ function donaHTML(datos, colorDe, nombreDe) {
     { m: 200, t: 'Supermanzana',     c: '#D99A6C' }
   ];
   function granoDeManzana(mo) {
-    var lado = Math.round(Number(mo && mo.tramoMedioM) || 0);
+    /* Desde la v860 el lado sale de las manzanas CERRADAS —el lado del
+       cuadrado de la misma área que la manzana mediana— y no del tramo medio
+       entre cruces. Son dos cosas distintas y la hoja las distingue: el
+       tramo medio es una deducción («las calles se cruzan cada 120 m, luego
+       la manzana medirá eso»), y la mediana de las caras cerradas es una
+       medición. Cuando no se pudo cerrar ninguna cara se usa la deducción y
+       se dice que lo es. */
+    var mz = (mo && mo.manzanas) || null;
+    var medido = !!(mz && mz.n && mz.ladoEquivalenteM);
+    var lado = medido ? Math.round(mz.ladoEquivalenteM)
+                      : Math.round(Number(mo && mo.tramoMedioM) || 0);
     if (!lado) return null;
     var todos = [{ m: lado, t: 'Este sector', c: '#0A6F9E', mio: true }].concat(GRANO_REF);
     var mayor = Math.max.apply(null, todos.map(function (x) { return x.m; }));
@@ -13404,11 +13454,51 @@ function donaHTML(datos, colorDe, nombreDe) {
         '</g>';
     }).join('');
     return {
-      lado: lado,
+      lado: lado, medido: medido,
       svg: '<svg viewBox="0 0 ' + ancho + ' ' + H + '" width="100%" role="img"' +
         ' aria-label="El módulo de manzana del sector contra dos referencias, los tres a la misma escala">' +
         cuadros + '</svg>'
     };
+  }
+
+  /* ── Las manzanas cerradas, dibujadas ───────────────────────────────
+     El contorno real de cada cara de la malla, a escala y en su sitio. Es
+     la diferencia entre decir «la manzana mide del orden de 120 m» y
+     enseñar que las de este sector son alargadas, o que hay una del triple
+     que las demás porque ahí no entró ninguna calle. */
+  function planoDeManzanas(mz, meta) {
+    var pol = (mz && mz.poligonos) || [];
+    if (!pol.length || meta.lat == null) return null;
+    var pts = [];
+    pol.forEach(function (m) { (m.anillo || []).forEach(function (p) { pts.push(p); }); });
+    if (pts.length < 3) return null;
+    var lats = pts.map(function (p) { return Number(p.lat); });
+    var lngs = pts.map(function (p) { return Number(p.lng); });
+    var y0 = Math.min.apply(null, lats), y1 = Math.max.apply(null, lats);
+    var x0 = Math.min.apply(null, lngs), x1 = Math.max.apply(null, lngs);
+    var kx = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
+    var an = Math.max(1e-9, (x1 - x0) * kx), al = Math.max(1e-9, y1 - y0);
+    var W = 100, H = Math.max(40, Math.min(100, Math.round(100 * al / an)));
+    var k = Math.min((W - 4) / an, (H - 4) / al);
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    var aM = pol.map(function (m) { return m.areaM2; });
+    var maxA = Math.max.apply(null, aM), minA = Math.min.apply(null, aM);
+    var caras = pol.map(function (m) {
+      var d = (m.anillo || []).map(function (p, i) {
+        var x = W / 2 + ((Number(p.lng) - cx) * kx) * k;
+        var y = H / 2 - (Number(p.lat) - cy) * k;
+        return (i ? 'L' : 'M') + Math.round(x * 10) / 10 + ' ' + Math.round(y * 10) / 10;
+      }).join(' ') + ' Z';
+      /* El tono dice el tamaño: la manzana más grande del sector se ve de
+         un vistazo, y es la que suele contar algo —un predio sin partir,
+         un equipamiento, un vacío—. */
+      var t = maxA > minA ? (m.areaM2 - minA) / (maxA - minA) : 0;
+      return '<path d="' + d + '" fill="#0A6F9E" fill-opacity="' +
+        (Math.round((0.12 + 0.5 * t) * 100) / 100) + '" stroke="#075E88" stroke-width="0.5"/>';
+    }).join('');
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img"' +
+      ' aria-label="Las manzanas del sector, cerradas a partir de la malla vial; el tono indica el tamaño">' +
+      caras + '</svg>';
   }
 
   function comparacionDeRadios(res) {

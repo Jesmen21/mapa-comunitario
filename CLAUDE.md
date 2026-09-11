@@ -601,9 +601,45 @@ estaba midiendo sobre una malla que no existe. Las calles de la retícula
 comparten ahora el vértice donde se cruzan (7 × 13 nodos), y el sector sale
 con 31 cruces/km² y 423 m de tramo, que son cifras de barrio.
 
-**Lo que falta del pliego de instrucciones** (tandas siguientes): de la A, la
-manzana **delimitada** de verdad —pide el catastro, o cerrar los polígonos de
-la malla vial, que esta versión no hace— y el tamaño y forma de cada predio;
+### La manzana, cerrada de verdad (v860)
+
+Hasta la v859 el tamaño de manzana se **deducía** del tramo medio entre cruces
+y la hoja lo decía. Ahora se **cierra**: `manzanas` en `trazado.morfologia`
+recorre el grafo de calles con la **regla de la mano izquierda** —parado en
+una arista dirigida, en el nodo de llegada se toma siempre el giro más a la
+izquierda; al volver al punto de partida se cerró una cara— y cada cara
+acotada por vías es una manzana. El panel «El grano» las dibuja una por una,
+con el tono según el tamaño, y da área mediana, media y el lado del cuadrado
+equivalente.
+
+Tres cosas del método:
+
+* **La cara de AFUERA sale igual y hay que descartarla**: es la única que da
+  la vuelta al revés, así que se reconoce por el signo de su área firmada.
+* **Dos clases de cara no son manzanas y también salen**: las diminutas (bajo
+  150 m², ruido del mapeo — dos vías que casi se tocan) y las mayores que
+  media área analizada, que aparecen cuando el borde del sector corta la
+  malla y deja el contorno abierto. Las dos se filtran y **se cuentan**: un
+  sector del que se cerraron tres manzanas de cuarenta no puede presentarse
+  como medido.
+* **Las aristas se recogen en el MISMO recorrido que ya cuenta los nodos.**
+  Una segunda pasada con su propio criterio de «dentro» daría un grafo
+  parecido pero distinto, y las manzanas no coincidirían con los cruces
+  contados.
+
+Y lo que la manzana cerrada **no** es: el lindero catastral. Es la cara que
+dejan las vías mapeadas — donde falte una calle por mapear, dos manzanas
+salen como una; donde haya un pasaje peatonal mapeado como vía, una sale
+partida en dos. Para el lindero que vale en una curaduría sigue haciendo
+falta el catastro, y el panel lo dice.
+
+Probado contra casos de respuesta conocida antes de conectarlo: retícula de
+4 × 4 calles → 9 manzanas de 10.000 m²; con un fondo de saco dentro → las
+mismas 9 (no inventa una cara); una sola calle y una cruz → 0; un triángulo
+cerrado → 1 de 16.000 m².
+
+**Lo que falta del pliego de instrucciones** (tandas siguientes): de la A, el
+tamaño y forma de cada predio —pide catastro—;
 de la B, la pirámide del sector sobrepuesta a la de la ciudad —hace falta el
 CNPV agregado por municipio, que la consulta por manzana no trae—, los
 hogares por tipo, la escolaridad, y los estratos y la vulnerabilidad con los

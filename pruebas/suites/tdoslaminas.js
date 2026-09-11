@@ -322,6 +322,7 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
               filas: [...c.querySelectorAll('table.rad tr')].slice(1)
                 .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
               banda: (c.closest('.banda') || {}).className || '',
+              caras: [...c.querySelectorAll('.manzanas svg path')].length,
               cuadros: [...c.querySelectorAll('.grano svg g')].map(g => {
                 const r = g.querySelector('rect'), t = [...g.querySelectorAll('text')];
                 return { lado: Number(r.getAttribute('width')),
@@ -781,14 +782,70 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       /HUELLAS DE EDIFICIO/.test(GR.texto) && /no son predios/.test(GR.texto) &&
       /tres construcciones o ninguna/.test(GR.texto),
       (GR.falta.filter(x => /HUELLAS/.test(x))[0] || '').slice(0, 130));
-    T('y que la manzana dibujada se deduce, no se delimita',
-      /se deduce del tramo medio/.test(GR.texto) && /no del contorno dibujado/.test(GR.texto),
-      (GR.falta.filter(x => /delimitada/.test(x))[0] || '').slice(0, 130));
+    /* Hasta la v859 acá se comprobaba que la hoja dijera «la manzana se
+       DEDUCE, no se delimita», que era la verdad entonces. La v860 la
+       delimita, así que la comprobación se aprieta en vez de borrarse: la
+       hoja tiene que decir CUÁL de las dos cosas hizo, y decirlo bien. Una
+       caja que dijera «se cerraron» sin haber cerrado ninguna, o «se deduce»
+       teniendo treinta cerradas, estaría mintiendo en direcciones opuestas y
+       las dos importan. */
+    /* Se mira la DECLARACIÓN de la caja —lo que promete al lector— y no el
+       texto entero: la ficha de método describe las dos ramas a propósito
+       («sin caras cerradas, el módulo se deduce del tramo medio»), y buscar
+       ahí daría un falso positivo eterno. */
+    const cerro = /manzanas no se dedujeron/.test(GR.texto);
+    const dice = GR.falta.join(' ');
+    T('la hoja dice cuál de las dos hizo, y coincide con lo que hay',
+      cerro ? (GR.caras > 0 && /no es el lindero catastral/.test(dice) &&
+               !/El módulo de arriba se deduce/.test(dice))
+            : (GR.caras === 0 && /El módulo de arriba se deduce/.test(dice)),
+      cerro ? 'cerró manzanas y lo dice · ' + GR.caras + ' dibujadas'
+            : 'no pudo cerrar ninguna y lo dice');
   }
   /* Las dos son del sector, y van en la banda de morfología de la A. */
   T('las dos van en la banda de morfología',
     !!TJ && !!GR && /banda-forma/.test(TJ.banda) && /banda-forma/.test(GR.banda),
     [TJ, GR].filter(Boolean).map(x => (x.banda.match(/banda-[a-z]+/) || [''])[0]).join(' · '));
+
+  console.log('\n  -- la manzana, cerrada y no deducida (v860) --');
+  /* Hasta la v859 el tamaño de manzana se DEDUCÍA del tramo medio entre
+     cruces y la hoja lo decía. Cerrando las caras del grafo de calles deja
+     de ser una deducción: cada cara acotada por vías es una manzana, y se
+     puede medir una por una y dibujarla. */
+  if (GR) {
+    T('el sector trae sus manzanas cerradas, con la cuenta',
+      /Manzanas cerradas/.test(GR.texto) && /Área mediana/.test(GR.texto) &&
+      /Área media/.test(GR.texto),
+      (GR.texto.match(/Manzanas cerradas\s*\d+/) || ['no las trae'])[0]);
+    /* Nueve manzanas tiene la retícula del sector de prueba: 7 líneas
+       este-oeste por 13 norte-sur dejan 6 × 12 caras, menos las que el
+       borde deja abiertas. Lo que importa es que sean VARIAS y que se
+       dibujen, no el número exacto. */
+    T('y las dibuja, una por una',
+      GR.caras >= 4, GR.caras + ' caras dibujadas');
+    T('la lectura dice que se cerraron, no que se dedujeron',
+      /no se dedujeron/.test(GR.texto) && /se <b>cerraron<\/b>|se cerraron/.test(GR.texto) &&
+      /recorriendo la malla/.test(GR.texto),
+      (GR.texto.match(/Estas \d+ manzanas[^.]*\./) || [''])[0].slice(0, 110));
+    /* Media y mediana separadas: si el sector tiene una manzana enorme, el
+       promedio miente y la mediana no. Imprimir solo una de las dos es
+       perder justo la información que las dos juntas dan. */
+    T('y separa la media de la mediana, que es lo que dice si el sector es parejo',
+      /media y la mediana separadas/.test(GR.texto),
+      GR.texto.slice(-60));
+    /* Y el aviso que impide confundirla con un lindero: la cara que dejan
+       las vías se parece a una manzana catastral y no es lo mismo. */
+    T('avisa de que la manzana cerrada no es el lindero catastral',
+      GR.falta.some(x => /no es el lindero catastral/.test(x)) &&
+      /falte una calle por mapear, dos manzanas salen como una/.test(GR.falta.join(' ')),
+      (GR.falta.filter(x => /lindero/.test(x))[0] || 'no lo dice').slice(0, 140));
+    /* Y el módulo comparado ya no sale del tramo medio: sale de la mediana
+       medida, así que la frase «deducidos del tramo medio» tiene que haber
+       desaparecido de esta hoja. */
+    T('el módulo comparado sale ya de lo medido, no del tramo medio',
+      !/deducidos del tramo medio/.test(GR.texto),
+      (GR.texto.match(/mide del orden de[^.]*\./) || [''])[0].slice(0, 90));
+  }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
 

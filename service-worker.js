@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v859-el-grano-y-la-continuidad';
+const URBIS_CACHE = 'urbis-v860-la-manzana-cerrada';
 const URBIS_ASSETS = [
   './',
   './index.html',
