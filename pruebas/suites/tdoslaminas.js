@@ -703,11 +703,38 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       MV.filas.slice(0, 3).map(f => f.join(' · ')).join(' | '));
     /* Lo que el plano NO tiene, dicho por su nombre. El flujo es MODELADO y
        decirlo importa: un aforo y un modelo no se defienden igual. */
-    T('declara que las rutas, el aforo y los perfiles todavía no están',
+    T('declara que las rutas, el aforo y el perfil acotado todavía no están',
       MV.falta.length >= 3 && /rutas de transporte/i.test(MV.falta.join(' ')) &&
       /aforo de hora pico/i.test(MV.falta.join(' ')) &&
-      /perfiles viales acotados/i.test(MV.falta.join(' ')),
+      /perfil acotado|ancho de las vías/i.test(MV.falta.join(' ')),
       MV.falta.map(x => x.slice(0, 40)).join(' | '));
+    /* ── Y NO declara faltando lo que sí tiene ────────────────────────
+       La v858 puso la isócrona por malla en la lista de lo que falta, y no
+       faltaba: se calcula con Dijkstra sobre el grafo de calles desde el
+       lote, 5/10/15 min, y se pintan los tramos que se alcanzan. Declarar
+       ausente algo medido es peor que un dato de menos: en un módulo que se
+       sostiene sobre sus declaraciones, enseña a desconfiar de las que sí
+       son ciertas. Con el lote dibujado —que es el caso de esta prueba— la
+       isócrona no puede aparecer entre las carencias. */
+    T('y NO declara faltando la isócrona, que sí está medida',
+      !/isócronas? por (la )?malla/i.test(MV.falta.join(' ')) &&
+      !/se alcanza a pie se mide en línea recta/i.test(MV.texto),
+      MV.falta.map(x => x.slice(0, 46)).join(' | '));
+    /* Y dice cuál de las dos distancias es cuál, porque en esta lámina
+       conviven: la del lote va por las calles, la cobertura del sector en
+       línea recta. Leerlas como si fueran lo mismo es el error que el panel
+       existe para evitar. */
+    T('y distingue la distancia por calles de la de línea recta',
+      /medido caminando por las calles/.test(MV.texto) &&
+      /en línea recta/.test(MV.texto) && /200 m puede estar a 600 m de camino/.test(MV.texto),
+      (MV.texto.match(/Ojo con las dos distancias[^.]*\./) || ['no lo distingue'])[0].slice(0, 120));
+    /* El ancho tampoco se declara mal: sale de `width` cuando OpenStreetMap
+       lo trae y de los carriles cuando no, y la hoja dice cuál de los dos
+       usó y sobre qué parte de la red hay dato. */
+    T('el ancho dice de dónde sale y qué parte de la red cubre',
+      /(etiqueta de ancho de OpenStreetMap|contar carriles)/.test(MV.falta.join(' ')) &&
+      /% de los metros de vía/.test(MV.falta.join(' ')),
+      (MV.falta.filter(x => /ancho de acá sale/.test(x))[0] || 'no lo dice').slice(0, 130));
     T('y que el flujo que imprime está modelado, no contado',
       /está MODELADO|modelado/.test(MV.texto) && /no contado/.test(MV.texto),
       (MV.texto.match(/El aforo de hora pico[^.]*\./) || [''])[0].slice(0, 120));

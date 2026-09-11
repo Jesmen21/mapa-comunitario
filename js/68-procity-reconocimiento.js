@@ -4522,10 +4522,52 @@ function donaHTML(datos, colorDe, nombreDe) {
         'está MODELADO a partir de los usos y de la jerarquía de las vías, no contado: para ' +
         'decir cuántos vehículos pasan a las 7 de la mañana haría falta un aforo en campo o el ' +
         'conteo de la secretaría, con su fecha.</p>' +
-        '<p class="vacio-falta"><b>Los perfiles viales acotados y las isócronas por malla.</b> ' +
-        'Los anchos de acá se estiman por número de carriles y lo que se alcanza a pie se mide ' +
-        'en línea recta; para acotar un perfil haría falta medirlo en campo, y para la isócrona ' +
-        'real, la malla vial con sus sentidos.</p>';
+        /* El ancho de vía: de dónde sale de verdad. Decir «se estiman por
+           número de carriles» era falso a medias —OpenStreetMap trae `width`
+           en parte de la red y el motor la lee—, y el módulo sabe EXACTAMENTE
+           sobre qué parte de los metros tiene dato. Esa cobertura es la mitad
+           del dato: un ancho medio sacado de tres calles de cien parece el
+           del sector y no lo es. */
+        (function () {
+          var pf = trz && trz.perfil;
+          if (!pf || pf.anchoMedioM == null) {
+            return '<p class="vacio-falta"><b>El ancho de las vías.</b> Ninguna vía del sector ' +
+              'trae ancho ni número de carriles en OpenStreetMap, así que no hay perfil que ' +
+              'acotar. Se mide en campo, con cinta, de fachada a fachada.</p>';
+          }
+          return '<p class="vacio-falta"><b>El perfil acotado, medido en campo.</b> El ancho de ' +
+            'acá sale de <b>' + (pf.anchoDe === 'width' ? 'la etiqueta de ancho de OpenStreetMap'
+                                                        : 'contar carriles, a 3 m cada uno') +
+            '</b> y cubre el <b>' + (pf.coberturaAncho || 0) + ' %</b> de los metros de vía: del ' +
+            'resto no hay dato. Y es ancho de CALZADA, no de fachada a fachada' +
+            (pf.anden && pf.anden.sinDatoPct != null
+              ? ' —del andén no se sabe en el ' + conComa(pf.anden.sinDatoPct) + ' % de la red—'
+              : '') + '. Para acotar un perfil con sus andenes, antejardines y arborización hay ' +
+            'que medirlo en la calle.</p>';
+        })() +
+        /* La isócrona NO va en esta lista, y esto es una corrección: la
+           v858 la declaró faltante y no lo estaba. Se calcula recorriendo el
+           grafo de calles con Dijkstra desde el lote —5, 10 y 15 minutos— y
+           se pintan los tramos que se alcanzan. Declarar como ausente algo
+           que sí está medido es el mismo error que dar por bueno lo que no
+           se midió, y en un módulo que se sostiene sobre sus declaraciones
+           es peor: enseña a desconfiar de las que sí son ciertas.
+
+           Lo que va dicho es OTRA cosa, y es la que de verdad confunde: en
+           esta misma lámina conviven las dos maneras de medir distancia. */
+        (function () {
+          if (cam && cam.anillos && cam.anillos.length) {
+            return '<p class="lee">Ojo con las dos distancias de esta lámina: lo que se alcanza ' +
+              '<b>desde el lote</b> está medido caminando por las calles (' +
+              cam.anillos.map(function (x) { return x.minutos + ' min'; }).join(', ') +
+              '), pero la cobertura de equipamientos del sector se mide <b>en línea recta</b>. ' +
+              'Por eso la primera da menos que la segunda: una manzana que en el mapa está a ' +
+              '200 m puede estar a 600 m de camino.</p>';
+          }
+          return '<p class="vacio-falta"><b>La isócrona por la malla.</b> Se calcula recorriendo ' +
+            'las calles desde el lote, así que hace falta <b>dibujar el lote</b>; sin él, lo que ' +
+            'esta lámina dice de distancias está medido en línea recta, que siempre da de más.</p>';
+        })();
       })(), 'g5') +
 
       caja('Cómo se llega',
@@ -13230,11 +13272,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       r: 'cobertura universal a 15 minutos a pie (DNP, CONPES de equipamientos)',
       e: 'supone densidad pareja dentro del sector; con la gente concentrada puede errar mucho' },
     'Cómo se mueve el sector': {
-      f: 'largo y jerarquía de las vías del trazado; porcentaje de metros en un solo sentido',
+      f: 'largo y jerarquía de las vías del trazado; porcentaje de metros en un solo sentido; ancho de calzada de la etiqueta width, o de carriles a 3 m cuando no está',
       fu: 'OpenStreetMap, hoy',
       c: 'alta en el trazado, baja en los nombres: depende de quién haya mapeado el barrio',
       r: 'no hay estándar único; se lee contra la jerarquía declarada en el POT',
-      e: 'vías sin nombre y sin sentido registrado no se cuentan como tales' },
+      e: 'vías sin nombre y sin sentido registrado no se cuentan como tales; el ancho cubre solo la parte de la red que trae el dato' },
     'Dónde queda, escala por escala': {
       f: 'la cadena de límites administrativos que contienen al punto, del país al barrio',
       fu: 'OpenStreetMap vía geocodificación inversa (LocationIQ), hoy',

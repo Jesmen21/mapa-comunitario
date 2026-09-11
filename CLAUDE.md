@@ -648,6 +648,41 @@ pico, los perfiles acotados y las isócronas por malla vial. Cada una está
 declarada en su panel con la tabla que la resolvería: lo que falta se pide
 por su nombre, no se estima.
 
+### Declarar faltando algo que sí está medido (v861)
+
+La v858 puso en la lista de carencias de «Cómo se mueve el sector» esto:
+«lo que se alcanza a pie se mide en línea recta; para la isócrona real, la
+malla vial con sus sentidos». **Es falso.** `caminataDesdeLote` recorre el
+grafo de calles con Dijkstra —montón binario, enganche al nodo más cercano
+con tope de 100 m, anillos de 5, 10 y 15 minutos— y pinta los tramos que se
+alcanzan. La isócrona por malla existe desde antes, y otra línea de la misma
+lámina lo decía bien: «la isócrona a pie por la red de calles sí está
+medida». El archivo se contradecía consigo mismo.
+
+**Declarar ausente algo medido es peor que un dato de menos.** En un módulo
+que se sostiene sobre sus declaraciones, enseña a desconfiar de las que sí
+son ciertas: si esta carencia era mentira, ¿por qué creerle a las otras
+cinco?
+
+Lo que sí había que decir es otra cosa, y es la que de verdad confunde:
+**en esta lámina conviven las dos maneras de medir distancia.** Lo que se
+alcanza desde el LOTE va por las calles; la cobertura de equipamientos del
+SECTOR —«Quién queda por fuera», «A distancia de caminar»— va en línea
+recta, porque se mide sobre una rejilla de puntos y no desde un origen. Una
+manzana que en el mapa está a 200 m puede estar a 600 m de camino, así que
+las dos cifras no son comparables y ahora la hoja lo advierte.
+
+De paso, la segunda imprecisión de la misma frase: **el ancho de vía no «se
+estima por número de carriles»**. El motor lee la etiqueta `width` de
+OpenStreetMap donde está y cae a `lanes` × 3 m donde no, y sabe sobre qué
+parte de los metros tiene dato (`perfil.anchoDe`, `perfil.coberturaAncho`).
+Eso es lo que se imprime, con su cobertura: un ancho medio sacado de tres
+calles de cien parece el del sector y no lo es. Lo que sigue faltando es el
+perfil ACOTADO —andenes, antejardines, arborización—, que se mide en campo.
+
+`tdoslaminas` comprueba ahora las dos direcciones: que las carencias reales
+estén declaradas **y que ninguna declare faltando lo que sí está medido**.
+
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
 Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de
