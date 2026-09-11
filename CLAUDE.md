@@ -332,16 +332,20 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   `roles.sql` como `postgres`, `migrar.js` como `vt_migrador`, y poner
   `VT_DATABASE_URL` en el servidor. **Nunca la llave `service_role`**: salta
   la RLS y la volvería decorativa.
-* **Isócronas por malla vial** (Tobler): no hay malla cargada. El método
-  declarado es `radio_recto` y cada corrida lo dice.
-* **Espacio público en m²/hab**: hace falta el polígono de cada parque.
-* **Exportación PDF con marca de agua en el servidor**, cuentas por entidad
-  con contraseña de nuevo al aprobar (hoy se confirma escribiendo APROBAR),
-  ciclo de aprendizaje anual, SECOP.
-* Los tres territorios cargados son **de desarrollo**: manzanas sintéticas,
-  equipamientos de demostración. La única cifra real es la población de
-  Cúcuta (ancla DANE 2024). Toda pantalla con cifras lo avisa en amarillo
-  —ver «El aviso viaja con la cifra» más abajo—.
+<!-- LISTA-VIVA-VT -->
+* **Isócronas por malla vial** (Tobler) — no hay malla cargada en el esquema,
+  y toda corrida escribe `radio_recto`. `ya: el método va declarado como «radio recto · isócrona pendiente» en el tablero, en la hoja de déficit, en la ficha de propuesta y al evaluar una idea`
+* **Espacio público en m²/hab** — hace falta el polígono de cada parque; con
+  puntos solo se mide el radio. `ya: la cobertura por radio del espacio público, y el resultado se declara «pendiente» con esa razón escrita dentro`
+* **Exportación PDF con marca de agua en el servidor** — no hay exportación
+  ninguna todavía.
+* **Cuentas por entidad con contraseña de nuevo al aprobar** — hoy la
+  credencial es la del equipo. `ya: se confirma escribiendo APROBAR, queda escrito con nombre, rol y hora, y el propio diálogo dice en pantalla que la contraseña llega con las cuentas por entidad`
+* **Ciclo de aprendizaje anual y SECOP** — sin empezar.
+* **Los tres territorios cargados son de desarrollo** — manzanas sintéticas y
+  equipamientos de demostración; la única cifra real es la población de Cúcuta
+  (ancla DANE 2024). `ya: toda respuesta con cifras trae su aviso y toda pantalla lo pinta en amarillo, desde la v867`
+<!-- /LISTA-VIVA-VT -->
 
 ### El aviso viaja con la cifra, no con la pantalla (v867)
 
@@ -879,6 +883,34 @@ que se ve a simple vista: la cláusula está o no está.
 renglón a su cláusula `ya:` —o lo borra, si no quedó nada del tema— y agrega
 su par a la tabla `PARES` de `tdoslaminas`. La v865 hizo lo primero a medias y
 se saltó lo segundo; por eso lo segundo está escrito acá y comprobado allá.
+
+### Hay más de una lista viva (v868)
+
+Visión Territorial tiene la suya, marcada `LISTA-VIVA-VT`. Sus cinco
+carencias se auditaron una por una contra el código antes de marcarlas y
+**salieron honestas**: no hay tabla de malla vial en el esquema y toda corrida
+escribe `radio_recto`; el espacio público se declara «pendiente» dentro del
+propio resultado con la razón escrita; no hay exportación PDF de ninguna
+clase; y el diálogo de aprobar dice **en pantalla** que la contraseña llega
+con las cuentas por entidad.
+
+Se marcó igual, y esa es la razón de fondo: **una lista honesta se vuelve
+vieja la primera vez que alguien implementa algo**, y ese es el fallo que
+nadie ve — es exactamente como se estropeó la del pliego. La lista de VT no
+estaba mal; estaba sin guardar.
+
+La comprobación de `revisar.js` recorre ahora **todas** las listas marcadas,
+cada una con su propia tabla de capacidades, en vez de tener una dentro. Y la
+primera comprobación de todas es que **no haya en CLAUDE.md un bloque marcado
+que la tabla no conozca**: un módulo nuevo que escriba su lista y se olvide de
+registrarla tendría una lista sin vigilar, que es peor que no tenerla, porque
+parece vigilada.
+
+Demostrada contra tres fallos distintos: el texto de VT de antes (dos
+renglones tocando algo medido sin decirlo), un bloque marcado sin tabla, y una
+marca de capacidad renombrada —`S.avisoDatos` → otro nombre—, que dejaría la
+capacidad por no medida en silencio y permitiría que la lista volviera a
+pedirla.
 
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
