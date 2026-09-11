@@ -13714,12 +13714,46 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     // 9 · Tamaño y forma de predios.
     var la = null; try { la = analisisDelLote(); } catch (e4) {}
-    F('Tamaño y forma de predios', 'sin dato oficial (catastro IGAC o municipal)' + (la ? ' · el lote: ' + fmt(la.areaM2) + ' m², ' + (la.frentes || []).length + ' frente' + ((la.frentes || []).length === 1 ? '' : 's') : ''),
-      'sin la manzana catastral no se sabe si el lote es típico o excepcional en su cuadra');
+    /* El PREDIO sigue sin dato —eso pide catastro—, pero desde la v860 la
+       MANZANA sí está medida: se cierra recorriendo la malla de calles. Con
+       el área de la manzana mediana y el área del lote se puede decir qué
+       fracción de manzana ocupa el lote, que es la mitad de la pregunta. */
+    var mzC = (trz && trz.morfologia && trz.morfologia.manzanas) || null;
+    F('Tamaño y forma de predios',
+      'el predio: sin dato oficial (catastro IGAC o municipal)' +
+      (la ? ' · el lote: ' + fmt(la.areaM2) + ' m², ' + (la.frentes || []).length + ' frente' + ((la.frentes || []).length === 1 ? '' : 's') : '') +
+      (mzC && mzC.areaMedianaM2 ? ' · la manzana mediana del sector: ' + fmt(mzC.areaMedianaM2) + ' m²' : ''),
+      (la && mzC && mzC.areaMedianaM2)
+        ? 'el lote ocupa cerca del ' + Math.round(100 * la.areaM2 / mzC.areaMedianaM2) + ' % de una ' +
+          'manzana mediana de acá; cuántos predios tiene esa manzana sigue pidiendo el catastro, y ' +
+          'de eso depende con cuántos vecinos hay que negociar'
+        : 'sin la manzana catastral no se sabe si el lote es típico o excepcional en su cuadra');
 
-    // 10 · Comparación con la ciudad.
-    F('Comparación con la ciudad', 'sin cifra municipal comparable en esta hoja',
-      'la comparación que sí hay es contra los sectores del curso, en la ficha; la de la ciudad pide el POT o el observatorio local');
+    /* 10 · Comparación con la ciudad.
+       Este cruce decía «sin cifra municipal comparable en esta hoja» y era
+       verdad hasta la v858, que puso en la lámina B justamente esa cifra:
+       «El sector dentro de la ciudad», con la población del municipio de la
+       misma serie del DANE. El cruce se quedó viejo y la hoja pasó a
+       contradecirse a sí misma —un panel comparando, y el cierre diciendo
+       que no hay con qué—. Un cruce que declara una ausencia tiene que
+       mirar si sigue siendo cierta. */
+    (function () {
+      var pobCiudad = Number(st.poblacionMunicipio || 0);
+      var nombreCiudad = st.municipioNombre || (ubic && ubic.ciudad) || 'el municipio';
+      if (pobCiudad > 0 && hab > 0) {
+        var pctCiudad = Math.round(10000 * hab / pobCiudad) / 100;
+        F('Comparación con la ciudad',
+          num(pctCiudad) + ' % de ' + nombreCiudad + ' vive en este sector',
+          'la población sí se compara, y las dos cifras son del mismo año y la misma serie del ' +
+          'DANE; lo que todavía no se compara es la estructura de edades, el estrato y la ' +
+          'densidad, que piden las tablas municipales');
+      } else {
+        F('Comparación con la ciudad', 'sin cifra municipal comparable en esta hoja',
+          'este municipio no está en la tabla de proyecciones del repositorio, así que no hay ' +
+          'población de ciudad contra la cual medir; la comparación que sí hay es contra los ' +
+          'sectores del curso, en la ficha');
+      }
+    })();
 
     // 11 · Horizonte temporal.
     F('Horizonte temporal', (t ? 'medido de ' + t.desde + ' a ' + t.hasta : 'una sola foto: hoy') + ' · a 10 años: sin proyección del sector',

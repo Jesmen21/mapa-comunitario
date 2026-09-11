@@ -292,6 +292,11 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           t: ((c.querySelector('h2') || {}).textContent || '').trim(),
           e: c.getAttribute('data-escala') || '',
           rotulo: ((c.querySelector('h2 .escala-dato') || {}).textContent || '').trim() })),
+        /* Los once cruces del cierre, con su valor y su lectura. Se leen para
+           poder comprobar que ninguno declara ausente algo que otra caja de
+           la MISMA hoja está imprimiendo. */
+        cruces: [...h.querySelectorAll('.cruces li, .cruce')].map(x =>
+          x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
         coherencia: (function () {
           const c = [...h.querySelectorAll('.caja')].filter(x =>
             /Coherencia de las cifras/.test((x.querySelector('h2') || {}).textContent || ''))[0];
@@ -994,6 +999,40 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('con el índice de envejecimiento',
       /índice de envejecimiento/.test(QV.texto), QV.kpis.map(x => x.v + ' ' + x.r).join(' · '));
   }
+
+  console.log('\n  -- la hoja no se contradice a sí misma --');
+  /* El cruce «Comparación con la ciudad» decía «sin cifra municipal
+     comparable en esta hoja» y era verdad hasta la v858, que puso en la
+     lámina B justamente esa cifra. El cruce se quedó viejo y la hoja pasó a
+     contradecirse: un panel comparando con el municipio, y el cierre de la
+     misma hoja diciendo que no hay con qué.
+
+     Es la cuarta declaración de ausencia que resulta falsa, y la primera por
+     quedarse vieja en vez de nacer mal. Así que la comprobación no persigue
+     ese cruce: persigue la CLASE. Para cada cosa que la hoja mide, se
+     comprueba que ningún texto de la misma hoja la dé por ausente. */
+  const PARES = [
+    { que: 'la cifra municipal',
+      mide: t => /% de .* vive acá|Población de .*\(proyectada/.test(t),
+      niega: t => /sin cifra municipal comparable/.test(t) },
+    { que: 'la isócrona por la malla',
+      mide: t => /medido caminando por las calles/.test(t),
+      niega: t => /isócronas? por (la )?malla|se alcanza a pie se mide en línea recta/i.test(t) },
+    { que: 'las rutas que paran en el sector',
+      mide: t => /Las rutas que paran acá/.test(t),
+      niega: t => /no qué ruta para en cada una/.test(t) },
+    { que: 'las manzanas cerradas',
+      mide: t => /manzanas no se dedujeron/.test(t),
+      niega: t => /El módulo de arriba se deduce/.test(t) }
+  ];
+  const textoB = (r.soloB || '') + (r.soloA || '');
+  const plano = textoB.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+  PARES.forEach(p => {
+    const lo = p.mide(plano);
+    T('si la hoja mide ' + p.que + ', ningún texto suyo la da por ausente',
+      !lo || !p.niega(plano),
+      lo ? (p.niega(plano) ? 'LA MIDE Y LA NIEGA' : 'la mide, y no la niega') : 'no la mide en este sector');
+  });
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
 

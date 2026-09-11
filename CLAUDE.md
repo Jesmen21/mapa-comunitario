@@ -718,6 +718,38 @@ añadiendo la consulta que ya existía. Lo salvó probarlo contra el motor con
 tres relaciones de mentira antes de tocar nada. **Una sospecha sobre datos se
 comprueba corriendo el código, no leyéndolo.**
 
+### La hoja no se contradice a sí misma (v864)
+
+Auditados los once cruces del cierre y los siete chequeos de coherencia. Los
+siete chequeos salieron honestos: el censo que este módulo lee de verdad no
+trae hogares, jefatura, nacimientos ni empleo, y cada uno nombra la tabla que
+faltaría. De los cruces, uno estaba mal.
+
+«Comparación con la ciudad» decía **«sin cifra municipal comparable en esta
+hoja»**, y era verdad hasta la v858 — que puso en la lámina B justamente esa
+cifra. El cruce se quedó viejo y la hoja pasó a contradecirse: un panel
+comparando con el municipio y el cierre de la misma hoja diciendo que no hay
+con qué.
+
+Es la **cuarta** declaración de ausencia falsa, y la primera por quedarse
+vieja en vez de nacer mal. Las otras tres (isócrona, ancho de vía, rutas)
+nacieron mal en la v858; esta nació bien y la dejó obsoleta una tanda
+posterior. Son dos fallos distintos y el segundo va a repetirse cada vez que
+una tanda mida algo que antes faltaba.
+
+Por eso la comprobación no persigue ese cruce, **persigue la clase**:
+`tdoslaminas` lleva una tabla de pares «lo que la hoja mide / el texto que lo
+daría por ausente», y falla si una hoja hace las dos cosas. Hoy cubre la
+cifra municipal, la isócrona por malla, las rutas y las manzanas cerradas.
+**Una tanda que mida algo que antes se declaraba faltante agrega su par acá**
+— es más barato que volver a encontrarlo leyendo.
+
+De paso, el cruce de predios: el PREDIO sigue sin dato —eso pide catastro—
+pero desde la v860 la MANZANA está medida, así que ahora dice qué fracción de
+una manzana mediana ocupa el lote, y deja la pregunta que sigue abierta:
+cuántos predios tiene esa manzana, que es de cuántos vecinos hay que
+negociar.
+
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
 Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de
