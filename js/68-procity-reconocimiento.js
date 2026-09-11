@@ -2854,6 +2854,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Cómo cambió el sitio': 'sector', 'La inundación': 'sector', 'Síntesis del sector': 'sector',
     'Infraestructura de servicios': 'sector', 'Quién vive acá': 'sector',
     'Coherencia de las cifras': 'sector', 'Dónde queda, escala por escala': 'sector',
+    /* La comparación con la ciudad se mide a escala de MUNICIPIO: es la
+       cifra de la ciudad entera, no la del sector, y leerlas juntas sin
+       decirlo es el error que la tabla de escalas existe para evitar. */
+    'El sector dentro de la ciudad': 'municipio',
+    'Quién queda por fuera': 'sector', 'Cómo se mueve el sector': 'sector',
     'Suelo disponible real': 'sector', 'Potencial edificatorio': 'sector',
     // Lo que se levanta en la calle: se levanta acá, en el sector.
     'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
@@ -4254,6 +4259,151 @@ function donaHTML(datos, colorDe, nombreDe) {
          día está viva y si sigue viva de noche. Es lo que decide el formato
          de un proyecto —a qué se abre, dónde entra, a qué hora sirve— y
          estaba dentro de la respuesta del servidor sin que nadie la leyera. */
+      /* ── El sector dentro de la ciudad (§2.2 del pliego) ───────────────
+         La comparación obligatoria. «1.200 habitantes» no dice nada hasta
+         que se sabe si eso es el 0,2 % o el 12 % de la ciudad, y un jurado
+         que no conoce el municipio no puede juzgar una cifra suelta. La
+         referencia sale de la MISMA serie del DANE con la que se proyecta la
+         población del sector, así que las dos cifras son del mismo año y de
+         la misma fuente: comparar un censo de 2018 con una proyección de hoy
+         sería fabricar una diferencia que no existe. */
+      caja('El sector dentro de la ciudad',
+      (function () {
+      var hab = Number(st.poblacionProyectada || st.poblacionEstimada || 0);
+      var ciudad = Number(st.poblacionMunicipio || 0);
+      var nombre = st.municipioNombre || (ubic && ubic.ciudad) || '';
+      var mil = function (x) { return Math.round(Number(x)).toLocaleString('es-CO'); };
+      var haM2 = (Number(meta.areaM2) || 0) / 10000;
+      var dens = haM2 > 0 && hab ? Math.round(10 * hab / haM2) / 10 : null;
+      /* Lo que SÍ se puede comparar hoy, y lo que no. La lista de lo que no
+         no es relleno: cada línea nombra la tabla que lo resolvería, que es
+         la diferencia entre «no se sabe» y «nadie fue a buscarlo». */
+      var faltan = [
+        ['La estructura de edades de la ciudad',
+         'el CNPV 2018 agregado por municipio; el módulo lee el censo por manzana ' +
+         'y esa consulta no trae el total municipal'],
+        ['La densidad de la ciudad',
+         'el área urbana del municipio (IGAC o el POT): sin ella, los ' +
+         (dens != null ? conComa(dens) + ' hab/ha' : 'habitantes por hectárea') +
+         ' del sector no tienen contra qué medirse'],
+        ['El estrato y la escolaridad de la ciudad',
+         'las tablas municipales del DANE, que se consultan aparte del censo por manzana']
+      ];
+      if (!ciudad) {
+        return '<p class="vacio-tag">Sin referencia de ciudad para comparar</p>' +
+          '<p class="vacio-falta"><b>Haría falta</b> que ' +
+          (nombre ? '<b>' + esc(nombre) + '</b>' : 'este municipio') +
+          ' esté en la tabla de proyecciones del DANE que trae el repositorio ' +
+          '(<i>assets/data/dane-proyecciones.json</i>). Sin esa fila no se compara: ' +
+          'aplicarle a un municipio la cifra del vecino es peor que no comparar.</p>' +
+          '<p class="lee">El sector tiene <b>' + mil(hab) + '</b> habitantes' +
+          (dens != null ? ' y <b>' + conComa(dens) + '</b> por hectárea' : '') +
+          ', y esta lámina no puede decir si eso es mucho o poco acá.</p>';
+      }
+      var pct = Math.round(10000 * hab / ciudad) / 100;
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + conComa(pct) + '%</b><small>de ' + esc(nombre) + ' vive acá</small></div>' +
+        '<div class="k"><b>' + mil(hab) + '</b><small>en el sector</small></div>' +
+        '</div>' +
+        fila('Población de ' + esc(nombre), mil(ciudad) +
+          (st.anioProyeccion ? ' (proyectada a ' + st.anioProyeccion + ')' : '')) +
+        (dens != null ? fila('Densidad del sector', conComa(dens) + ' hab/ha') : '') +
+        '<p class="lee">Uno de cada <b>' + mil(Math.max(1, Math.round(ciudad / Math.max(1, hab)))) +
+        '</b> habitantes de ' + esc(nombre) + ' vive en este sector. Las dos cifras salen de la ' +
+        'misma serie del DANE y del mismo año: comparar el censo de 2018 con una proyección de hoy ' +
+        'fabricaría una diferencia que no existe.</p>' +
+        '<p class="vacio-tag">Lo que todavía no se puede comparar con la ciudad</p>' +
+        faltan.map(function (f) {
+          return '<p class="vacio-falta"><b>' + esc(f[0]) + '.</b> Haría falta ' + f[1] + '.</p>';
+        }).join('');
+      })(), 'g3') +
+
+      /* ── Quién queda por fuera ─────────────────────────────────────────
+         La cobertura de equipamientos estaba en porcentaje del ÁREA, y un
+         porcentaje de área no se puede llevar a una mesa: «el 38 % del
+         sector no tiene un colegio a diez minutos» no es lo mismo que
+         «cuatrocientas personas no lo tienen». La segunda se discute; la
+         primera se mira y se pasa de página. */
+      caja('Quién queda por fuera',
+      (function () {
+      var ac = st.accesibilidad;
+      var hab = Number(st.poblacionProyectada || st.poblacionEstimada || 0);
+      if (!ac || !(ac.categorias || []).length || !hab) return '';
+      var mil = function (x) { return Math.round(Number(x)).toLocaleString('es-CO'); };
+      var filas = ac.categorias.slice().sort(function (a, b) {
+        return a.pctCubierto - b.pctCubierto;
+      });
+      var peor = filas[0];
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + mil(hab * (peor.pctSinCubrir || 0) / 100) + '</b>' +
+        '<small>sin ' + esc(String(peor.etiqueta).toLowerCase()) + ' a ' + peor.minutos +
+        ' min</small></div>' +
+        '</div>' +
+        '<table class="rad"><tr><th>Equipamiento</th><th>A pie</th><th>Servidas</th><th>NO servidas</th></tr>' +
+        filas.map(function (c) {
+          var fuera = hab * (c.pctSinCubrir || 0) / 100;
+          return '<tr' + (c.id === peor.id ? ' class="el"' : '') + '><td>' + esc(c.etiqueta) + '</td><td>' +
+            c.minutos + ' min</td><td>' + mil(hab - fuera) + '</td><td>' + mil(fuera) + '</td></tr>';
+        }).join('') + '</table>' +
+        '<p class="lee">La peor cubierta es <b>' + esc(String(peor.etiqueta).toLowerCase()) +
+        '</b>: <b>' + mil(hab * (peor.pctSinCubrir || 0) / 100) + ' personas</b> no la alcanzan ' +
+        'caminando ' + peor.minutos + ' minutos. Es el déficit que el sector puede nombrar ' +
+        'con una cifra, no con un color en un mapa.</p>' +
+        /* El supuesto, dicho. Sin esta línea la cifra parece contada, y no lo
+           es: es la del sector repartida sobre su superficie. */
+        '<p class="nota"><b>Cómo se reparte.</b> La cobertura se mide sobre ' + (ac.muestras || 0) +
+        ' puntos repartidos por el área, así que pasar de «% del área» a «personas» ' +
+        '<b>reparte la población del sector por igual sobre su superficie</b>. Si la gente vive ' +
+        'concentrada justo en la mitad que sí tiene colegio, la cifra sobra; si vive en la que no, ' +
+        'falta. Para afinarlo haría falta la población por manzana cruzada con cada radio.</p>';
+      })(), 'g3') +
+
+      /* ── Cómo se mueve el sector ───────────────────────────────────────
+         La banda de movilidad tenía la facilidad de llegar y el flujo, pero
+         no la red: qué vías son, cómo se llaman, de qué jerarquía y cuántas
+         van en un solo sentido. Un plano de movilidad sin las vías nombradas
+         es un plano que no se puede discutir en una mesa. */
+      caja('Cómo se mueve el sector',
+      (function () {
+      var mv = st.movilidad;
+      var vi = trz && trz.vias;
+      if (!mv && !vi) return '';
+      var arterias = ((mv && mv.viasArterias) || []).filter(function (v) { return v.nombre; });
+      return (vi
+        ? '<div class="kpis">' +
+          '<div class="k"><b>' + conComa(vi.kmTotal || 0) + '</b><small>km de vía</small></div>' +
+          '<div class="k"><b>' + conComa(vi.kmPorHa || 0) + '</b><small>km por hectárea</small></div>' +
+          '<div class="k"><b>' + conComa(vi.unSentidoPct || 0) + '%</b><small>en un solo sentido</small></div>' +
+          '</div>'
+        : '') +
+        (arterias.length
+        ? '<p class="lee-min">Las vías que estructuran el sector</p>' +
+          '<table class="rad"><tr><th>Vía</th><th>Jerarquía</th><th>Distancia</th></tr>' +
+          arterias.slice(0, 6).map(function (v) {
+            return '<tr><td>' + esc(v.nombre) + '</td><td>' + esc(v.jerarquia || v.tipo || 'vía') +
+              '</td><td>' + (v.distM != null ? Math.round(v.distM) + ' m' : '—') + '</td></tr>';
+          }).join('') + '</table>'
+        : '<p class="nota">Ninguna vía arteria del sector trae nombre en OpenStreetMap. ' +
+          'No es que no las haya: es que nadie las nombró todavía, y eso se levanta en campo.</p>') +
+        (vi && vi.sinNombre
+        ? fila('Vías sin nombre registrado', vi.sinNombre + ' de ' + (vi.vias || 0))
+        : '') +
+        (mv ? fila('Paradas de transporte', mv.paradasBus || 0) +
+              fila('Tramos de ciclorruta', mv.ciclorrutas || 0) : '') +
+        '<p class="vacio-tag">Lo que este plano de movilidad todavía no tiene</p>' +
+        '<p class="vacio-falta"><b>Las rutas de transporte, dibujadas y con su nombre.</b> ' +
+        'Haría falta el GTFS o el cuadro de rutas de la secretaría de tránsito del municipio: ' +
+        'OpenStreetMap trae las paradas, no qué ruta para en cada una.</p>' +
+        '<p class="vacio-falta"><b>El aforo de hora pico.</b> El flujo que imprime esta lámina ' +
+        'está MODELADO a partir de los usos y de la jerarquía de las vías, no contado: para ' +
+        'decir cuántos vehículos pasan a las 7 de la mañana haría falta un aforo en campo o el ' +
+        'conteo de la secretaría, con su fecha.</p>' +
+        '<p class="vacio-falta"><b>Los perfiles viales acotados y las isócronas por malla.</b> ' +
+        'Los anchos de acá se estiman por número de carriles y lo que se alcanza a pie se mide ' +
+        'en línea recta; para acotar un perfil haría falta medirlo en campo, y para la isócrona ' +
+        'real, la malla vial con sus sentidos.</p>';
+      })(), 'g5') +
+
       caja('Cómo se llega',
       (function () {
       var mv = st.movilidad;
@@ -5021,12 +5171,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover', hoja: 'B',
         pregunta: '¿Cómo se llega, por dónde se entra y qué se alcanza a pie?',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
-        cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
-                'Hasta dónde se camina desde el lote'] },
+        cajas: ['Cómo se llega', 'Cómo se mueve el sector', 'El perfil de la calle',
+                'A distancia de caminar', 'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio', hoja: 'B',
         pregunta: '¿Quién vive acá, qué uso manda y dónde se concentra lo que hay?',
         que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
-        cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Qué manda en el sector',
+        cajas: ['Quién vive acá', 'El sector dentro de la ciudad', 'Quién queda por fuera',
+                'Qué hay, por categoría', 'Qué manda en el sector',
                 'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma', hoja: 'A',
         pregunta: '¿Qué tan lleno está el sector y a qué altura se construye?',
@@ -10623,6 +10774,20 @@ function donaHTML(datos, colorDe, nombreDe) {
         listo: Object.keys(st.porGrupo || {}).some(function (k) {
           return k !== 'otro' && st.porGrupo[k] > 0; }),
         falta: 'no hay usos clasificados', dato: (st.total || 0) + ' usos' },
+      /* Las tres de la lámina B. Entran al inventario el mismo día que entran
+         al papel: una caja que el pliego imprime y esta lista no conoce no se
+         puede apagar desde ningún sitio (v857). */
+      { id: 'el-sector-dentro-de-la-ciudad', t: 'El sector dentro de la ciudad', g: 'Lo que hay',
+        /* La misma condición que la caja: sin población del sector no hay
+           nada que comparar. Sin la de la CIUDAD sí se pinta, porque decir
+           que falta la referencia es parte del análisis. */
+        listo: !!(st.poblacionProyectada || st.poblacionEstimada),
+        falta: 'analizá el sector', dato: st.poblacionMunicipio
+          ? 'contra ' + (st.municipioNombre || 'el municipio') : 'sin referencia de ciudad' },
+      { id: 'quien-queda-por-fuera', t: 'Quién queda por fuera', g: 'Lo que hay',
+        listo: !!(st.accesibilidad && (st.accesibilidad.categorias || []).length &&
+                  (st.poblacionProyectada || st.poblacionEstimada)),
+        falta: 'analizá el sector', dato: 'personas servidas y no servidas' },
       { id: 'quien-vive-aca', t: 'Quién vive acá', g: 'Lo que hay',
         listo: !!(st.demografia && st.demografia.totalSexo),
         falta: 'el censo no tiene reparto por edades acá',
@@ -10693,6 +10858,10 @@ function donaHTML(datos, colorDe, nombreDe) {
           return (m.nViasArterias || 0) + ' corredores · ' + (m.paradasBus || 0) + ' paradas' +
                  (f && f !== 'ninguno' ? ' · flujo ' + f : '');
         })() },
+      { id: 'como-se-mueve-el-sector', t: 'Cómo se mueve el sector', g: 'Cómo se mueve',
+        listo: !!((trz && trz.vias) || (st.movilidad && (st.movilidad.viasArterias || []).length)),
+        falta: 'medí el trazado para tener la red de vías',
+        dato: 'la red, con las vías nombradas' },
       { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
         listo: !!(trz && trz.perfil), falta: 'medí el trazado', dato: 'la sección tipo' },
       /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una
@@ -10845,6 +11014,10 @@ function donaHTML(datos, colorDe, nombreDe) {
          caja gris sin acción es un botón apagado con «medí el trazado» al
          lado, que es justo lo que se pidió quitar. */
       'potencial-edificatorio': trz ? null : 'trazado',
+      /* La red de vías sale del trazado igual que las alturas. Las otras dos
+         de la lámina B no llevan acción: no dependen de una medición que se
+         pueda disparar desde acá sino del censo, que ya se consultó. */
+      'como-se-mueve-el-sector': trz ? null : 'trazado',
       'suelo-disponible-real': trz ? null : 'trazado',
       'llenos-y-vacios': trz ? null : 'trazado',
       'el-perfil-de-la-calle': trz ? null : 'trazado',
@@ -12892,6 +13065,24 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
     'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
     'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
+    'El sector dentro de la ciudad': {
+      f: 'población del sector dividida por la del municipio, las dos proyectadas al mismo año con la misma tasa',
+      fu: 'DANE, CNPV 2018 por manzana y proyecciones municipales 2020-2035 (post-COVID), consultado hoy',
+      c: 'alta en el total municipal, media en el del sector',
+      r: 'no hay estándar: es una proporción, se lee contra el tamaño del municipio',
+      e: 'manzanas cortadas por el borde del sector: ±10 %' },
+    'Quién queda por fuera': {
+      f: 'población del sector × porcentaje del área que NO alcanza el equipamiento caminando su radio',
+      fu: 'OpenStreetMap, hoy; población del DANE proyectada',
+      c: 'media: el reparto de la gente sobre el área es un supuesto, no una medición',
+      r: 'cobertura universal a 15 minutos a pie (DNP, CONPES de equipamientos)',
+      e: 'supone densidad pareja dentro del sector; con la gente concentrada puede errar mucho' },
+    'Cómo se mueve el sector': {
+      f: 'largo y jerarquía de las vías del trazado; porcentaje de metros en un solo sentido',
+      fu: 'OpenStreetMap, hoy',
+      c: 'alta en el trazado, baja en los nombres: depende de quién haya mapeado el barrio',
+      r: 'no hay estándar único; se lee contra la jerarquía declarada en el POT',
+      e: 'vías sin nombre y sin sentido registrado no se cuentan como tales' },
     'Dónde queda, escala por escala': {
       f: 'la cadena de límites administrativos que contienen al punto, del país al barrio',
       fu: 'OpenStreetMap vía geocodificación inversa (LocationIQ), hoy',

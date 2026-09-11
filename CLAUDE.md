@@ -508,15 +508,62 @@ papel: eran pruebas que medían otra cosa de la que decían medir.
   sin haberle quitado nada a las figuras de la otra. «La foto y el plano son
   los más grandes» se comprueba **dentro de la hoja A**, que es donde están.
 
-**Lo que falta del pliego de instrucciones** (tandas siguientes): de las
-reglas transversales, la comparación obligatoria con la ciudad y la fuente
-con tabla y fecha de consulta; de la A, la continuidad del tejido, el tamaño
-y forma de predios y la morfología de malla delimitada en el plano; y la B
-entera —pirámide sobrepuesta a la de la ciudad, hogares por tipo, escolaridad,
-estratos y vulnerabilidad con los barrios nombrados, cobertura de
-equipamientos en personas NO servidas, y la banda de movilidad con vías y
-rutas nombradas, sentidos, flujo con hora pico, perfiles acotados e
-isócronas superpuestas al radio.
+### Los paneles de la lámina B (v858)
+
+* **«El sector dentro de la ciudad»** — la comparación obligatoria (§2.2).
+  «1.200 habitantes» no dice nada hasta saber si eso es el 0,2 % o el 12 % de
+  la ciudad. La referencia sale de la **misma serie del DANE** con la que se
+  proyecta la población del sector (`dane-proyecciones.json`, anclas
+  municipales), así que las dos cifras son del mismo año y de la misma
+  fuente: comparar un censo de 2018 contra una proyección de hoy fabricaría
+  una diferencia que no existe. Si el municipio **no está en la tabla**, la
+  caja no compara: lo dice y nombra el archivo que le falta. Aplicarle a un
+  municipio la cifra del vecino es peor que no comparar. Va rotulada como
+  escala **municipio**, que es lo que es.
+* **«Quién queda por fuera»** — la cobertura de equipamientos en PERSONAS.
+  «El 38 % del área no tiene colegio a diez minutos» se mira y se pasa de
+  página; «cuatrocientas personas no lo tienen» se discute. La tabla separa
+  servidas de no servidas por equipamiento, y **el supuesto va dicho**: pasar
+  de porcentaje de área a personas reparte la población del sector por igual
+  sobre su superficie, y si la gente vive concentrada justo donde sí hay
+  colegio, la cifra sobra. Afinarlo pide la población por manzana cruzada con
+  cada radio.
+* **«Cómo se mueve el sector»** — la red: kilómetros, densidad, porcentaje en
+  un solo sentido y **las vías arterias con su nombre y su jerarquía**. Un
+  plano de movilidad sin vías nombradas no se puede discutir en una mesa:
+  «la vía principal» no es una vía, es una categoría. Declara lo que no
+  tiene: las rutas de transporte (pide GTFS o el cuadro de la secretaría —OSM
+  trae las paradas, no qué ruta para en cada una), el aforo de hora pico (el
+  flujo que imprime está **modelado** a partir de los usos y la jerarquía, no
+  contado) y los perfiles acotados e isócronas por malla.
+
+#### La población del municipio viaja desde js/61
+
+`proyeccionDe` devuelve ahora también `poblacionHoy`, proyectada desde el
+ancla **más reciente** —no desde el censo: es la cifra que el DANE ya
+corrigió— con la misma tasa. Va por `consultarDANE` → `dane` → el motor la
+deja pasar a `stats` (`municipioNombre`, `poblacionMunicipio`) sin calcular
+ni corregir nada. Tocar eso obliga a `node construir.js` y a **reiniciar el
+servidor**.
+
+#### Una suite que le sirve al motor menos de lo que sirve Overpass
+
+`tdoslaminas` le devolvía a la consulta de USOS solo los POI, sin las vías.
+Pero la consulta de usos real pide `out center` y de ahí saca el motor los
+corredores arteriales, las paradas y el flujo: sirviéndole solo los POI, un
+sector lleno de avenidas con nombre se analizaba como si no tuviera ninguna.
+La suite pasaba igual porque hasta ahora nada miraba esa lista. Las vías van
+en las DOS respuestas y llevan `center`, como en `tmasanalisis`.
+
+**Lo que falta del pliego de instrucciones** (tandas siguientes): de la A, la
+continuidad del tejido, el tamaño y forma de predios y la morfología de malla
+delimitada en el plano; de la B, la pirámide del sector sobrepuesta a la de
+la ciudad —hace falta el CNPV agregado por municipio, que la consulta por
+manzana no trae—, los hogares por tipo, la escolaridad, y los estratos y la
+vulnerabilidad con los barrios nombrados; y de la movilidad, las rutas
+dibujadas, el aforo de hora pico, los perfiles acotados y las isócronas por
+malla vial. Cada una está declarada en su panel con la tabla que la
+resolvería: lo que falta se pide por su nombre, no se estima.
 
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 

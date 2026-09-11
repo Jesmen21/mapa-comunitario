@@ -971,7 +971,23 @@
     if (!m) return null;
     const tasa = window.AIA_MOTOR.tasaAnualDe(m.anclas);
     if (tasa == null) return null;
+    /* Y la población del MUNICIPIO al año en curso, de las mismas anclas y con
+       la misma tasa con la que se proyecta la del sector. Sin ella el pliego
+       no puede comparar el sector con su ciudad, que es la regla que más
+       barato cuesta romper: «1.200 habitantes» no dice nada hasta que se sabe
+       si eso es el 0,2 % o el 12 % de la ciudad. Se proyecta desde el ancla
+       MÁS RECIENTE, no desde el censo: es la cifra que el DANE ya corrigió. */
+    const orden = (m.anclas || []).slice().sort((x, y) => x.anio - y.anio);
+    const ultima = orden[orden.length - 1] || null;
+    const anioHoy = new Date().getFullYear();
+    const poblacionHoy = ultima
+      ? window.AIA_MOTOR.proyectarPoblacion(ultima.poblacion, ultima.anio, anioHoy, tasa)
+      : null;
     return { tasaAnual: tasa, municipio: m.nombre,
+             divipola: m.divipola || '',
+             poblacionHoy: poblacionHoy, anioPoblacion: anioHoy,
+             anclaAnio: ultima ? ultima.anio : null,
+             anclaPoblacion: ultima ? ultima.poblacion : null,
              fuente: tabla.fuente, url: tabla.url, advertencia: tabla.advertencia };
   }
 
@@ -1062,6 +1078,14 @@
       // Si el municipio no está en la tabla, van en null y el análisis sigue
       // trabajando con el censo tal cual, diciéndolo.
       tasaAnual: proy ? proy.tasaAnual : null,
+      /* La ciudad a la que pertenece el sector, con su población proyectada:
+         es la referencia contra la que el pliego compara. Va en null cuando
+         el municipio no está en la tabla, y entonces la lámina lo DICE en vez
+         de comparar contra la ciudad de al lado. */
+      municipioNombre: proy ? proy.municipio : '',
+      municipioDivipola: proy ? proy.divipola : '',
+      poblacionMunicipio: proy ? proy.poblacionHoy : null,
+      anclaMunicipioAnio: proy ? proy.anclaAnio : null,
       anioProyeccion: new Date().getFullYear(),
       fuenteProyeccion: proy ? proy.fuente : '',
       urlProyeccion: proy ? proy.url : '',

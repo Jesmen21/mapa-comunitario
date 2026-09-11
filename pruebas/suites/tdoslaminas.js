@@ -50,8 +50,14 @@ const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
 const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(C.lat * Math.PI / 180));
 const P = (dx, dy) => ({ lat: C.lat + GLAT(dy), lng: C.lng + GLNG(dx) });
 let gid = 90000;
+/* Con `center` además de `geometry`: la consulta de usos pide las vías con
+   `out center` y de ahí saca el motor los corredores arteriales y su
+   distancia al lote. Sin el centro, un sector lleno de avenidas con nombre
+   se analiza como si no tuviera ninguna, y la banda de movilidad queda sin
+   una sola vía que nombrar. */
 const via = (nombre, clase, pts) => ({ type: 'way', id: gid++,
   tags: { highway: clase, name: nombre, lanes: '2' },
+  center: { lat: pts[Math.floor(pts.length / 2)].lat, lon: pts[Math.floor(pts.length / 2)].lng },
   geometry: pts.map(p => ({ lat: p.lat, lon: p.lng })) });
 const edif = (dx, dy, w2, h2, pisos) => ({ type: 'way', id: gid++,
   tags: { building: 'yes', 'building:levels': String(pisos) },
@@ -118,7 +124,11 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     // La consulta con geometría trae calles y edificios; la de usos, los POI.
     const q = (r.request().postData() || '') + r.request().url();
     r.fulfill({ status: 200, contentType: 'application/json',
-      body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos }) });
+      /* La consulta de usos también trae las VÍAS, con su centro: de ahí
+         salen los corredores arteriales, las paradas y el flujo. Sirviéndole
+         solo los POI, el sector se analizaba como si no tuviera una sola
+         avenida con nombre y la banda de movilidad no tenía nada que nombrar. */
+      body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos.concat(geo) }) });
   });
   await ctx.route(/ags\.esri\.co/, r => r.fulfill({ status: 200, contentType: 'application/json',
     body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) }));
@@ -293,10 +303,17 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
                 v: ((x.querySelector('b') || {}).textContent || '').trim(),
                 r: ((x.querySelector('small') || {}).textContent || '').trim() })),
               vacios: [...c.querySelectorAll('.vacio-tag')].map(x => x.textContent.trim()),
-              falta: [...c.querySelectorAll('.vacio-falta')].map(x => x.textContent.replace(/\s+/g, ' ').trim())
+              falta: [...c.querySelectorAll('.vacio-falta')].map(x => x.textContent.replace(/\s+/g, ' ').trim()),
+              columnas: [...c.querySelectorAll('table.rad th')].map(x => x.textContent.trim()),
+              filas: [...c.querySelectorAll('table.rad tr')].slice(1)
+                .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
+              banda: (c.closest('.banda') || {}).className || ''
             };
           };
-          return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/) };
+          return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
+                   ciudad: dame(/El sector dentro de la ciudad/),
+                   fuera: dame(/Quién queda por fuera/),
+                   mueve: dame(/Cómo se mueve el sector/) };
         })(),
         biblio: h.querySelectorAll('.pie .biblio li').length,
         propuestas: h.querySelectorAll('.sintesis-pie .pu').length,
@@ -570,6 +587,106 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       SU.falta.map(x => x.slice(0, 40)).join(' | '));
     T('y por qué el agua vista del satélite no es la ronda',
       /es suelo seco con restricción/.test(SU.texto), SU.falta.join(' ').slice(0, 140));
+  }
+
+  console.log('\n  -- el sector, comparado con su ciudad --');
+  /* «1.200 habitantes» no dice nada hasta que se sabe si eso es el 0,2 % o
+     el 12 % de la ciudad. La comparación es obligatoria (§2.2) y va en la
+     lámina B, que es la de la gente. */
+  const CD = (B.paneles || {}).ciudad;
+  T('el panel de comparación está, y en la lámina B', !!CD && !(A.paneles || {}).ciudad);
+  if (CD) {
+    T('dice qué parte de la ciudad vive en el sector',
+      /% de .*vive acá|vive acá/.test(CD.kpis.map(x => x.r).join(' ')) &&
+      CD.kpis.some(x => /%$/.test(x.v)),
+      CD.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    T('y nombra la ciudad y su población, con el año de la proyección',
+      /Cúcuta/.test(CD.texto) && /proyectada a \d{4}/.test(CD.texto),
+      (CD.texto.match(/Población de [^·]*/) || ['no lo dice'])[0].slice(0, 80));
+    /* Las dos cifras del mismo año y de la misma serie: comparar un censo de
+       2018 contra una proyección de hoy fabrica una diferencia que no
+       existe, y es el error que esta caja tiene que evitar y decir. */
+    T('y declara que las dos salen de la misma serie y del mismo año',
+      /misma serie del DANE y del mismo año/.test(CD.texto), CD.texto.slice(-150));
+    /* Lo que NO se puede comparar todavía va dicho, con la tabla que lo
+       resolvería: es la diferencia entre «no se sabe» y «nadie fue a
+       buscarlo». */
+    T('y dice qué comparaciones todavía no puede hacer, con su fuente',
+      CD.vacios.some(x => /todavía no se puede comparar/.test(x)) &&
+      CD.falta.length >= 3 && CD.falta.every(x => /[Hh]aría falta/.test(x)),
+      CD.falta.map(x => x.slice(0, 38)).join(' | '));
+    T('entre ellas la estructura de edades y la densidad de la ciudad',
+      /estructura de edades de la ciudad/i.test(CD.falta.join(' ')) &&
+      /densidad de la ciudad/i.test(CD.falta.join(' ')));
+  }
+  /* Y la escala: es una cifra de MUNICIPIO impresa al lado de las del
+     sector, que es exactamente el error que la tabla de escalas evita. */
+  const escalaB = t => (B.escalas.filter(x => x.t === t)[0] || {}).e || 'no está';
+  T('la comparación con la ciudad va rotulada como municipio',
+    escalaB('El sector dentro de la ciudad') === 'municipio',
+    escalaB('El sector dentro de la ciudad'));
+  /* Y las otras dos no: son del sector. Si todo se rotulara igual, el
+     rótulo no estaría diciendo nada. */
+  T('y las otras dos de la lámina B siguen siendo del sector',
+    escalaB('Quién queda por fuera') === 'sector' &&
+    escalaB('Cómo se mueve el sector') === 'sector',
+    escalaB('Quién queda por fuera') + ' · ' + escalaB('Cómo se mueve el sector'));
+
+  console.log('\n  -- la cobertura, en personas y no en porcentaje de área --');
+  /* «El 38 % del sector no tiene colegio a diez minutos» se mira y se pasa
+     de página; «cuatrocientas personas no lo tienen» se discute. */
+  const QF = (B.paneles || {}).fuera;
+  T('el panel está, y en la lámina B', !!QF && !(A.paneles || {}).fuera);
+  if (QF) {
+    T('la tabla separa servidas de NO servidas',
+      QF.columnas.indexOf('Servidas') >= 0 && QF.columnas.indexOf('NO servidas') >= 0 &&
+      QF.columnas.indexOf('A pie') >= 0, QF.columnas.join(' | '));
+    T('con una fila por equipamiento y su radio en minutos',
+      QF.filas.length >= 3 && QF.filas.every(f => /\d+ min/.test(f[1])),
+      QF.filas.slice(0, 3).map(f => f[0] + ' ' + f[1] + ': ' + f[2] + '/' + f[3]).join(' · '));
+    /* Servidas más no servidas es la población del sector: si no suman, una
+       de las dos columnas está midiendo otra cosa. */
+    const num = x => Number(String(x).replace(/\./g, '').replace(/[^\d]/g, '')) || 0;
+    const sumas = QF.filas.map(f => num(f[2]) + num(f[3]));
+    T('y las dos columnas suman siempre la misma población',
+      sumas.length >= 3 && sumas.every(x => Math.abs(x - sumas[0]) <= 2),
+      [...new Set(sumas)].join(' · '));
+    T('la peor cubierta se nombra con su cifra de personas',
+      /La peor cubierta es/.test(QF.texto) && /personas<\/b> no la alcanzan|personas no la alcanzan/.test(QF.texto),
+      (QF.texto.match(/La peor cubierta es[^.]*/) || [''])[0].slice(0, 110));
+    /* El supuesto, dicho. Sin esta línea la cifra parece contada y no lo es:
+       es la del sector repartida por igual sobre su superficie. */
+    T('y el supuesto del reparto va dicho, no escondido',
+      /reparte la población del sector por igual sobre su superficie/.test(QF.texto) &&
+      /población por manzana/.test(QF.texto), QF.texto.slice(-170));
+  }
+
+  console.log('\n  -- la red de vías, con sus nombres --');
+  /* Un plano de movilidad sin las vías nombradas no se puede discutir en una
+     mesa: «la vía principal» no es una vía, es una categoría. */
+  const MV = (B.paneles || {}).mueve;
+  T('el panel está, y en la banda de movilidad de la lámina B',
+    !!MV && /banda-movilidad/.test((MV || {}).banda || '') && !(A.paneles || {}).mueve,
+    MV ? (MV.banda.match(/banda-[a-z]+/) || [''])[0] : 'no está');
+  if (MV) {
+    T('mide la red: kilómetros, densidad y cuánto va en un solo sentido',
+      MV.kpis.length >= 3 && /km de vía/.test(MV.texto) &&
+      /km por hectárea/.test(MV.texto) && /en un solo sentido/.test(MV.texto),
+      MV.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    T('y nombra las vías que estructuran el sector, con su jerarquía',
+      MV.columnas.indexOf('Vía') >= 0 && MV.columnas.indexOf('Jerarquía') >= 0 &&
+      MV.filas.length >= 2 && MV.filas.some(f => /Autopista|Avenida|Calle|Carrera/.test(f[0])),
+      MV.filas.slice(0, 3).map(f => f.join(' · ')).join(' | '));
+    /* Lo que el plano NO tiene, dicho por su nombre. El flujo es MODELADO y
+       decirlo importa: un aforo y un modelo no se defienden igual. */
+    T('declara que las rutas, el aforo y los perfiles todavía no están',
+      MV.falta.length >= 3 && /rutas de transporte/i.test(MV.falta.join(' ')) &&
+      /aforo de hora pico/i.test(MV.falta.join(' ')) &&
+      /perfiles viales acotados/i.test(MV.falta.join(' ')),
+      MV.falta.map(x => x.slice(0, 40)).join(' | '));
+    T('y que el flujo que imprime está modelado, no contado',
+      /está MODELADO|modelado/.test(MV.texto) && /no contado/.test(MV.texto),
+      (MV.texto.match(/El aforo de hora pico[^.]*\./) || [''])[0].slice(0, 120));
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
