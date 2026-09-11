@@ -441,7 +441,11 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       sinP.map(b => b.t).join(' · ') || o.bandas[0].pregunta);
     T('y todas cierran con una conclusión de al menos una línea', o.bandas.length >= 5 && sinC.length === 0,
       sinC.map(b => b.t).join(' · ') || (o.bandas[o.bandas.length - 2] || {}).cierre.slice(0, 90));
-    T('la cabecera dice cómo se lee la hoja', /Cómo se lee/.test(o.leeAsi) && /01 → \d\d/.test(o.leeAsi) && /decide/.test(o.leeAsi),
+    /* «URBIS recomienda, quien proyecta decide» se mudó del «cómo se lee» a
+       su propio bloque de NEUTRALIDAD (v853), que es donde el pliego de
+       instrucciones lo pide y donde se lee como la regla que es. Así que se
+       busca cada cosa donde vive, que además es más preciso. */
+    T('la cabecera dice cómo se lee la hoja', /Cómo se lee/.test(o.leeAsi) && /01 → \d\d/.test(o.leeAsi),
       o.leeAsi.slice(0, 80));
 
     console.log('\n  -- ' + nom + ': el cierre son cinco propuestas --');

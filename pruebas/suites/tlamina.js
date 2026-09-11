@@ -321,7 +321,11 @@ function climaSimulado(){
   P('ninguna caja se recorta', (DH.cajas||[]).length===0, (DH.cajas||[]).join(' · ')||'ninguna');
   P('ni se pierde fuera de la hoja', (DH.perdidas||[]).length===0,
     (DH.perdidas||[]).join(' · ')||'ninguna');
-  P('y el plano llena el papel en vez de dejar una banda blanca',
+  /* Desde la v853 el pliego son dos hojas y esta mide la PRIMERA, la A. Con
+     la mitad de las bandas en la B le sobraba papel, y una hoja a la que le
+     sobra papel crece hasta llenarlo —`TOPE_CRECER`—: por eso el umbral no
+     se aflojó, se dejó donde estaba y lo que cambió fue la composición. */
+  P('y la hoja llena el papel en vez de dejar una banda blanca',
     DH.rej>0 && DH.usado > DH.rej*0.55, Math.round(100*(DH.usado||0)/(DH.rej||1))+'% del alto usado');
 
   console.log('\n  -- el papel --');
@@ -406,13 +410,24 @@ function climaSimulado(){
   /* El pie lleva las redes y nada más: las fuentes se pidieron fuera del
      pliego —«ocúltela, solo deja las redes sociales»— y siguen en el informe
      en hojas, que es donde se cita. */
-  const pie=(hImp.match(/<footer class="pie">[\s\S]*?<\/footer>/)||[''])[0];
+  /* TODOS los pies del documento: desde la v853 el pliego son dos láminas y
+     la bibliografía va al pie de la B, no al de la A —es la de las dos, y
+     repetirla gasta en la A el papel de dos columnas para decir lo mismo—.
+     Con el primer pie a secas esto medía la lámina equivocada. */
+  const pies=(hImp.match(/<footer class="pie">[\s\S]*?<\/footer>/g)||['']);
+  const pie=pies.join('');
+  const pieA=pies[0]||'';
   P('el pie lleva las redes de URBIS', /urbispro\.city/.test(pie) && /@urbis_co/.test(pie));
   /* Se pidió quitar la lista de fuentes del pie («ocúltela, solo deja las
      redes»); la lámina educativa (v848) trae en su lugar una BIBLIOGRAFÍA:
      normas y autores citados, no la tabla de descargos de antes. */
   P('y en vez de la tabla de fuentes de antes, la bibliografía: normas y autores',
     /Bibliografía y fuentes/.test(pie) && /OpenStreetMap/.test(pie) && /Lynch/.test(pie) && /NSR-10/.test(pie) && !/no es el sector/.test(pie));
+  /* Y va UNA vez, al pie de la lámina B. Que esté en el documento no basta:
+     lo que se pidió es que no se repita en las dos. */
+  P('y va una sola vez, al pie de la lámina B',
+    (pie.match(/Bibliografía y fuentes/g)||[]).length===1 && !/Bibliografía y fuentes/.test(pieA),
+    pies.length+' pies · '+((pie.match(/Bibliografía y fuentes/g)||[]).length)+' bibliografías');
   /* Y la impresa: lo que la hoja completa trae y ella no, está declarado. */
   // Cada panel por el identificador con que la ficha lo declara: los mapas por su `data-m`, las cajas por su título en guiones.
   const slug2=t=>t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ · el mapa$/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');

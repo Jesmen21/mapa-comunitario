@@ -606,8 +606,15 @@ const CAPAS_IDEAM = [
   const panelesDe = h => (h.match(/<section class="caja[^"]*"[^>]*><h2>[^<]+<\/h2>/g) || []).map(x => {
     const m = x.match(/data-m="([^"]+)"/); return m ? m[1] : slugDe((x.match(/<h2>([^<]+)/) || [])[1] || ''); });
   const perdidos = panelesDe(LC).filter(id => panelesDe(LAM).indexOf(id) < 0 && (r.fuera || []).indexOf(id) < 0);
+  /* El invariante es que nada se pierda EN SILENCIO. Que además se perdiera
+     algo era una propiedad de la lámina única, que no tenía papel para todo;
+     con el pliego partido en dos (v853) caben los cuarenta y tres paneles y
+     exigir una pérdida sería exigir un defecto. Lo que se aprieta en su
+     lugar: la impresa trae TODOS los compuestos, o los que falten están
+     declarados por su nombre. */
   T('nada de la hoja completa falta en la impresa sin estar declarado por su nombre',
-    panelesDe(LC).length > panelesDe(LAM).length && perdidos.length === 0,
+    panelesDe(LC).length > 0 && perdidos.length === 0 &&
+    panelesDe(LAM).length + (r.fuera || []).length >= panelesDe(LC).length,
     panelesDe(LC).length + ' paneles compuestos · ' + panelesDe(LAM).length + ' impresos · ' + (r.fuera || []).length + ' declarados' +
     (perdidos.length ? ' · PERDIDOS: ' + perdidos.join(', ') : ''));
 
@@ -710,10 +717,15 @@ const CAPAS_IDEAM = [
      PDF se arma metiendo el HTML dentro de un SVG, y una imagen de fuera se
      queda en blanco sin avisar. */
   const perfiles = h => (h.match(/<span class="red">/g) || []).length;
+  /* Cada lámina del pliego lleva su propio pie, así que desde la v853 las
+     cuentas del pie se hacen POR HOJA y no sobre el documento entero: dos
+     hojas con sus dos perfiles son cuatro, y cuatro está bien. */
+  const hojasDe = h => String(h).split('<div class="hoja"').slice(1);
   const logos = h => ({ instagram: /<circle cx="17\.5" cy="6\.6"/.test(h),
                         tiktok: /d="M15\.9 2\.2h2\.9/.test(h) });
-  T('el pliego lleva los dos perfiles, separados', perfiles(LAM) === 2,
-    perfiles(LAM) + ' perfiles · ' + (LAM.match(/@urbis_co/g) || []).length + ' veces la cuenta');
+  T('cada lámina del pliego lleva los dos perfiles, separados',
+    hojasDe(LAM).length >= 1 && hojasDe(LAM).every(x => perfiles(x) === 2),
+    hojasDe(LAM).length + ' hojas · ' + hojasDe(LAM).map(perfiles).join(' y ') + ' perfiles');
   T('cada uno con el logo de su red', logos(LAM).instagram && logos(LAM).tiktok,
     JSON.stringify(logos(LAM)));
   T('y van en el pie, no perdidas en una caja',
@@ -721,8 +733,13 @@ const CAPAS_IDEAM = [
   T('a la derecha, con las fuentes', /text-align:right"[^]*?@urbis_co/.test(LAM.replace(/\n/g, '')));
   T('el informe en hojas lleva los mismos dos', perfiles(PDF) === 2 &&
     logos(PDF).instagram && logos(PDF).tiktok, perfiles(PDF) + ' perfiles');
+  /* Dentro de cada muestra y no a lo largo del documento: con dos hojas, un
+     `class="red"` de la primera y un `<img>` de la segunda —las estampas de
+     la serie temporal— quedaban emparejados por el comodín y la prueba
+     denunciaba un logo traído de fuera que no existía. */
+  const conImagen = h => /<span class="red">(?:(?!<\/span>)[\s\S])*?<img/.test(h);
   T('sin imágenes traídas de fuera, que el PDF dejaría en blanco',
-    !/<img[^>]*class="red|class="red"[^]*?<img/.test(LAM) &&
+    !conImagen(LAM) && !conImagen(PDF) &&
     !/(src|href)="https?:[^"]*(instagram|tiktok)/i.test(LAM + PDF));
 
   console.log('\n  -- y todo viaja con la ficha --');

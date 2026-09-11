@@ -342,6 +342,72 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   equipamientos de demostración. La única cifra real es la población de
   Cúcuta (ancla DANE 2024). La pantalla lo avisa en amarillo.
 
+## El pliego educativo son DOS láminas (v853)
+
+El módulo educativo entrega **dos hojas de 60 × 90 vertical**, no una:
+
+| | Responde |
+|---|---|
+| **Lámina A** · sitio y medio físico | ¿Qué es este lugar y qué condiciones físicas manda el terreno? |
+| **Lámina B** · gente, usos y movilidad | ¿Quién vive acá, qué le falta y cómo se mueve? |
+
+Cada banda declara la suya con el campo `hoja` en `GRUPOS`. En la A van la
+ubicación, el análisis ambiental, **riesgo y servicios** —banda propia desde
+esta versión, separada del ambiental: una amenaza declarada no es una
+condición de diseño, es una restricción—, la morfología urbana y el lote con
+su norma. En la B van la demografía y los usos, la movilidad, el trabajo de
+campo y el cierre de cinco propuestas.
+
+Tres cosas que cuesta recordar:
+
+* **`laminaDoble` arma el documento de dos páginas.** Ajusta cada hoja por
+  separado —tienen contenidos distintos y no tienen por qué cerrar a la
+  misma escala— y después mete el CUERPO de la B en el documento de la A.
+  Se pega el cuerpo y no el documento entero porque las dos comparten la
+  hoja de estilo: los pesos, los techos y la rejilla salen del mismo
+  resultado y de la misma orientación.
+* **La escala viaja en el elemento `.rej`, no en una regla.** Con las dos
+  láminas en un documento, un `.rej{transform:scale(…)}` valdría para las
+  dos y la primera le impondría su tamaño a la segunda.
+* **Al componer una hoja se DESCARTAN las cajas de la otra**, marcándolas
+  como ya puestas. Sin eso caían todas en «Otras mediciones», la bolsa que
+  existe para que una caja nueva no se pierda en silencio.
+
+### Una hoja a la que le sobra papel CRECE
+
+`laminaQueQuepa` ya no se detiene en el 100 %: si la hoja cabe entera y
+sobra papel, busca por bisección la mayor escala que siga cabiendo, hasta
+`TOPE_CRECER` (1,6). Lo destapó el corte: la lámina A acostada cerraba al
+100 % dejando el 56 % del papel en blanco, porque la mitad de las bandas se
+habían ido a la B. Medio pliego vacío no es aire, es una hoja a medio
+terminar. Los techos de los dibujos están en milímetros de papel y los
+deshace `--k`, así que crecer no deforma nada: lo que crece es la letra.
+
+### La regla de neutralidad, impresa
+
+Las dos láminas imprimen, en la cabecera, que el análisis se hizo **sin
+propósito declarado**: se mide qué le hace falta al sector, no se justifica
+un proyecto ya decidido. Va en la hoja y no solo en el instructivo del curso
+porque es la regla que un estudiante rompe sin darse cuenta, y escrita en la
+lámina cualquiera puede reclamarle que la cumpla.
+
+La bibliografía va al pie de la **B** y no se repite en la A: es la de las
+dos, y repetirla gasta en la lámina del sitio el papel de dos columnas para
+decir lo mismo.
+
+Lo mide `tdoslaminas.js`: que salgan dos hojas de 60 × 90, que cada una diga
+cuál es y qué pregunta responde, que lo de una no aparezca en la otra, que
+ninguna deje el papel a medio llenar y que ninguna mande cajas a «Otras
+mediciones».
+
+**Lo que falta del pliego de instrucciones** (tandas siguientes): las reglas
+transversales de dato —escala rotulada, comparación con la ciudad, fuente con
+tabla y fecha, los siete chequeos de coherencia impresos en rojo—, los
+paneles nuevos de la A —escalas anidadas, continuidad del tejido, potencial
+edificatorio, suelo disponible real— y los de la B —pirámide sobrepuesta a la
+de la ciudad, cobertura de equipamientos en personas no servidas, y la banda
+de movilidad con vías y rutas nombradas, perfiles acotados e isócronas.
+
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
 Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de

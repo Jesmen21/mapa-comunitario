@@ -2468,7 +2468,7 @@
   function bajarPliegoPDF(horizontal, alAvisar) {
     var P = window.URBIS_PLIEGO_PDF;
     // Ajustada al papel antes de dibujarla: ver `laminaQueQuepa`.
-    var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
+    var html = laminaDoble(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
     if (!P || !P.disponible()) {
       // Sin lo que hace falta, se cae al camino de siempre en vez de dejar
       // a alguien sin lámina.
@@ -2819,6 +2819,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       });
   }
 
+  /* Las dos láminas del pliego educativo (v853), con la pregunta que cada
+     una responde. El pliego de instrucciones las define así, y la pregunta
+     se imprime en la cabecera: una lámina que no dice qué contesta obliga a
+     leerla entera para saber si sirve. */
+  var LAMINAS = {
+    A: { id: 'A', t: 'Sitio y medio físico',
+         pregunta: '¿Qué es este lugar y qué condiciones físicas manda el terreno?' },
+    B: { id: 'B', t: 'Gente, usos y movilidad',
+         pregunta: '¿Quién vive acá, qué le falta y cómo se mueve?' }
+  };
+
   function laminaImprimible(res, opts) {
     var o = opts || {};
     /* Las cajas apagadas viajan por `opts` para que una ficha guardada se
@@ -2889,7 +2900,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        ve. Y se dice: la ficha avisa a qué tamaño se compuso antes de imprimir.
        Un pliego al 40 % es la señal de que sobran capas para este papel, no un
        pliego roto. */
-    var escalaHoja = Math.max(0.3, Math.min(1, Number(o.escala) || 1));
+    var escalaHoja = Math.max(0.3, Math.min(TOPE_CRECER, Number(o.escala) || 1));
+    // Cuál de las dos láminas se está componiendo. Sin `hoja`, la de siempre:
+    // una sola hoja con todo, que es lo que usan el informe y las pruebas
+    // que miden la composición completa.
+    var LAMINA = LAMINAS[o.hoja] || null;
     // La fecha de la consulta, para la capa de método: OpenStreetMap y el
     // clima se leen en vivo y su fecha es la de hoy.
     var hoyTxt = (function () { try { return new Date().toLocaleDateString('es-CO'); } catch (e) { return 'hoy'; } })();
@@ -4794,48 +4809,57 @@ function donaHTML(datos, colorDe, nombreDe) {
        que se pidió con una lámina en la mano: «organizada horizontalmente,
        con títulos». */
     var GRUPOS = [
-      { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio',
+      { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio', hoja: 'A',
         pregunta: '¿Dónde queda el sector, cuánto mide y qué hay dibujado en él?',
         que: 'dónde queda · cuánto mide · el plano del sector',
         cajas: ['Plano del sector', 'El sitio'] },
-      { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo',
+      { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo', hoja: 'A',
         pregunta: '¿Qué le pone el suelo, el clima y el agua al proyecto antes de dibujar nada?',
-        que: 'relieve · clima · sol · amenaza · inundación · verde · cobertura · espacio público',
+        que: 'relieve · clima · sol · viento · ruido · verde · cobertura · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
-                'La amenaza sísmica', 'La inundación', 'Verde y agua',
-                'El ruido del tránsito', 'Infraestructura de servicios']
+                'Verde y agua', 'El ruido del tránsito']
                 .concat(horiz ? ['Cómo cambió el sitio'] : [])
                 .concat(['Cobertura del suelo', 'Espacio público efectivo']) },
+      /* ── Riesgo y servicios, banda propia (v853) ──────────────────────
+         Estaban dentro del ambiental, y son otra pregunta: el ambiental dice
+         qué le pone el sitio al proyecto, y esto dice qué puede impedirlo y
+         con qué se cuenta. El pliego de instrucciones las separa (A2 y A3) y
+         tiene razón: una amenaza declarada por una autoridad no es una
+         condición de diseño, es una restricción. */
+      { id: 'riesgo', titulo: 'Riesgo y servicios', fam: 'suelo', hoja: 'A',
+        pregunta: '¿Qué amenaza declarada tiene este suelo y con qué servicios se cuenta?',
+        que: 'sismo · inundación · lo que llega por tubería y por cable',
+        cajas: ['La amenaza sísmica', 'La inundación', 'Infraestructura de servicios'] },
       /* La línea de tiempo, banda propia y de fila entera. Dentro del
          ambiental, «fila entera» era la fila de ESA banda, y cuando el
          ambiental compartía fila con la ubicación eso eran tres columnas:
          cinco fotos en 200 mm. Como banda aparte con el peso de la fila, la
          fila es la hoja. Acostada sigue dentro del ambiental a dos columnas,
          que es lo que la hoja de 600 mm de alto paga. */
-      { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo',
+      { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo', hoja: 'A',
         pregunta: '¿Hacia dónde viene moviéndose el sector, y a qué ritmo?',
         que: 'las fotos desde 2014 · lo medido desde 1984',
         cajas: horiz ? [] : ['Cómo cambió el sitio'] },
-      { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover',
+      { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover', hoja: 'B',
         pregunta: '¿Cómo se llega, por dónde se entra y qué se alcanza a pie?',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'El perfil de la calle', 'A distancia de caminar',
                 'Hasta dónde se camina desde el lote'] },
-      { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio',
+      { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio', hoja: 'B',
         pregunta: '¿Quién vive acá, qué uso manda y dónde se concentra lo que hay?',
         que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
         cajas: ['Quién vive acá', 'Qué hay, por categoría', 'Qué manda en el sector',
                 'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
-      { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma',
+      { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma', hoja: 'A',
         pregunta: '¿Qué tan lleno está el sector y a qué altura se construye?',
         que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido'] },
-      { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto',
+      { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto', hoja: 'A',
         pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
                 'La sombra que arrojás', 'Qué le pide el sitio al proyecto'] },
-      { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo',
+      { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo', hoja: 'B',
         pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
         que: 'lo intangible · lo levantado · lo que falta · los datos oficiales que no hay',
         /* Los cinco vacíos obligatorios van acá y no en su banda de tema: son
@@ -4844,7 +4868,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar',
                 'Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá',
                 'Riesgo oficial', 'Servicios públicos', 'Norma urbana', 'Movilidad real', 'Información legal del predio'] },
-      { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre',
+      { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre', hoja: 'B',
         pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
         cajas: ['Síntesis del sector'] }
@@ -5044,8 +5068,30 @@ function donaHTML(datos, colorDe, nombreDe) {
           .replace(/<\/section>$/, '<div class="mp-ctx">' + cuerpo + '</div></section>');
         delete porTitulo[tt];
       });
+      /* ── De qué hoja es cada banda (v853) ───────────────────────────
+         El pliego se parte en dos láminas de 60 × 90: la A es el sitio y el
+         medio físico, la B es la gente, los usos y la movilidad. Cada banda
+         declara la suya en `GRUPOS`.
+
+         Las cajas de la OTRA hoja se descartan acá a propósito, y hay que
+         hacerlo explícito: abajo, lo que no reclamó ninguna banda cae en
+         «Otras mediciones» para que nada se pierda en silencio. Sin marcar
+         las ajenas como ya puestas, componer la lámina A metía las quince
+         cajas de la B en esa bolsa, que es exactamente lo contrario de
+         partir el pliego. */
       var puestas = {}, bandas = [], indice = [];
-      GRUPOS.forEach(function (g) {
+      var HOJA = (o.hoja === 'A' || o.hoja === 'B') ? o.hoja : null;
+      var deOtraHoja = {};
+      var mias = GRUPOS;
+      if (HOJA) {
+        mias = GRUPOS.filter(function (g) { return (g.hoja || 'A') === HOJA; });
+        GRUPOS.forEach(function (g) {
+          if ((g.hoja || 'A') === HOJA) return;
+          deOtraHoja[g.id] = true;
+          (g.cajas || []).forEach(function (tt) { puestas[tt] = true; delete porTitulo[tt]; });
+        });
+      }
+      mias.forEach(function (g) {
         var suyas = [], peso = 0;
         /* Los mapas de la banda van PRIMEROS, antes de las cifras del tema.
            Es el orden en que se lee una lámina de arquitectura: el ojo entra
@@ -5158,6 +5204,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          ese tema— no puede desaparecer en silencio: va con las sueltas. */
       Object.keys(porGrupo).forEach(function (gid) {
         if (GRUPOS.some(function (g) { return g.id === gid; })) return;
+        if (deOtraHoja[gid]) return;
         (porGrupo[gid] || []).forEach(function (t) {
           (porTitulo['(mapa suelto)'] || (porTitulo['(mapa suelto)'] = [])).push(t);
         });
@@ -5480,11 +5527,12 @@ function donaHTML(datos, colorDe, nombreDe) {
          reducir—, así que la rejilla va dentro de un marco que sí lo ocupa y
          que recorta lo que sobre. */
       '.rejilla{ flex:1 1 auto; min-height:0; overflow:hidden }' +
-      '.rej{ display:flex; flex-direction:column; gap:' + (horiz ? 3.5 : 5) + 'mm; --k:' + escalaHoja +
-        (escalaHoja < 1
-          ? '; transform:scale(' + escalaHoja + '); transform-origin:top left;' +
-            ' width:' + Math.round(1000 / escalaHoja) / 10 + '%'
-          : '') + ' }' +
+      /* La reducción NO va acá: va en el propio elemento, como estilo en
+         línea. Con las dos láminas en un mismo documento (v853) cada una
+         cierra a su escala, y una regla `.rej{transform:scale(…)}` valdría
+         para las dos: la que se compusiera primero le impondría su tamaño a
+         la otra. En el elemento, cada hoja lleva el suyo. */
+      '.rej{ display:flex; flex-direction:column; gap:' + (horiz ? 3.5 : 5) + 'mm }' +
       '.fila{ display:flex; gap:' + (horiz ? 6 : 7) + 'mm; align-items:stretch }' +
       '.banda{ min-width:0; display:flex; flex-direction:column; gap:2.4mm }' +
       /* La cabecera de banda: el número en el color del tema, el título en
@@ -5890,6 +5938,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pcr-rosa-petalos path{ fill:#34CCFE; fill-opacity:.55; stroke:#0A6F9E; stroke-width:.5 }' +
       '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
       // El pie se va al fondo del papel aunque el contenido termine antes.
+      '.que-responde{ margin-top:1.6mm; font-size:3.4mm; color:#075E88 }' +
+      '.que-responde b{ color:#0A6F9E }' +
+      '.neutral{ margin-top:1.6mm; font-size:2.9mm; line-height:1.35; color:#5A6472;' +
+        'border-left:.8mm solid #34CCFE; padding-left:2.4mm }' +
+      '.neutral b{ color:#075E88 }' +
+      /* Las dos láminas en un documento: cada una ocupa su papel y la
+         segunda empieza en página nueva. */
+      '.hoja + .hoja{ page-break-before:always; break-before:page }' +
       '.pie-linea{ display:flex; justify-content:space-between; align-items:flex-end; gap:6mm }' +
       '.pie{ margin-top:auto; display:block;' +
         'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
@@ -5897,12 +5953,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pie .redes{ display:flex; justify-content:flex-end; gap:6mm; margin-top:2mm }' +
       '.pie .red{ display:inline-flex; align-items:center; gap:1.4mm; color:#075E88 }' +
       '.pie .red b{ font-size:3.1mm; letter-spacing:.04em }' +
-      '</style></head><body><div class="hoja">' +
+      '</style></head><body><div class="hoja" data-hoja="' + (LAMINA ? LAMINA.id : 'U') + '">' +
 
       '<header class="cab">' +
         '<div class="marca">' + marcaURBIS(15) + '<b>URBIS</b><small>Pro City</small></div>' +
         '<div class="tit">' +
-          '<div class="ey">Análisis urbano · reconocimiento del sector</div>' +
+          '<div class="ey">' + (LAMINA
+            ? 'Lámina ' + LAMINA.id + ' de 2 · ' + esc(LAMINA.t)
+            : 'Análisis urbano · reconocimiento del sector') + '</div>' +
           '<h1>' + esc(nombre || (ubic && ubic.barrio) || 'Sector analizado') + '</h1>' +
           '<div class="sub">' +
             (esPol ? 'Área dibujada de ' + esc(formatearArea(meta.areaM2) || '') : 'Radio de ' + meta.radioM + ' m') +
@@ -5911,25 +5969,47 @@ function donaHTML(datos, colorDe, nombreDe) {
           '</div>' +
           /* La jerarquía de lectura, explícita: se pidió que la lámina
              dijera por dónde se lee y no que se adivinara. */
+          (LAMINA ? '<div class="que-responde"><b>Esta lámina responde:</b> ' +
+                    esc(LAMINA.pregunta) + '</div>' : '') +
           '<div class="lee-asi"><b>Cómo se lee.</b> Por bandas numeradas, 01 → ' +
             (agrupado.grupos < 10 ? '0' : '') + agrupado.grupos +
-            ': cada una abre con la pregunta que responde y cierra con su conclusión; ' +
-            'el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad. ' +
+            ': cada una abre con la pregunta que responde y cierra con su conclusión' +
+            (LAMINA && LAMINA.id === 'B'
+              ? '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad'
+              : LAMINA ? '' : '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad') +
+            '.</div>' +
+          /* ── La regla de neutralidad, impresa ──────────────────────────
+             Va en la hoja y no solo en el instructivo del curso, porque es
+             la regla que el estudiante rompe sin darse cuenta: llega con el
+             proyecto decidido y usa el análisis para justificarlo. Escrita
+             en la lámina, quien la mire puede reclamarle que la cumpla. */
+          '<div class="neutral"><b>Sin propósito declarado.</b> Este análisis se hizo sin decidir ' +
+            'antes qué construir: lo que se mide es qué le hace falta al sector. Un análisis que ' +
+            'empieza con el proyecto puesto deja de analizar y pasa a justificar. ' +
             'URBIS recomienda, quien proyecta decide.</div>' +
           (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
         '</div>' +
       '</header>' +
 
-      '<div class="rejilla"><div class="rej">' + cajasHTML + '</div></div>' +
+      '<div class="rejilla"><div class="rej" style="--k:' + escalaHoja +
+        (escalaHoja !== 1
+          ? ';transform:scale(' + escalaHoja + ');transform-origin:top left;' +
+            'width:' + Math.round(1000 / escalaHoja) / 10 + '%'
+          : '') + '">' + cajasHTML + '</div></div>' +
 
       '<footer class="pie">' +
         /* La bibliografía, al pie de la hoja: las normas y los autores de los
            que sale cada comparación. Al pie y no en el cierre, porque el
            cierre es la conclusión y esto es su respaldo; y porque acá no
            compite con las cajas por el papel de la rejilla. */
-        '<div class="biblio"><b>Bibliografía y fuentes</b><ol>' +
-          BIBLIOGRAFIA.map(function (b) { return '<li>' + esc(b.replace(/\bhoy\b/g, hoyTxt)) + '</li>'; }).join('') +
-        '</ol></div>' +
+        /* Solo al pie de la B —o de la hoja única, cuando se compone sin
+           partir—: es la bibliografía de las DOS, y repetirla en la A es
+           gastar en la lámina del sitio el papel de dos columnas para decir
+           dos veces lo mismo. */
+        (LAMINA && LAMINA.id === 'A' ? '' :
+          '<div class="biblio"><b>Bibliografía y fuentes</b><ol>' +
+            BIBLIOGRAFIA.map(function (b) { return '<li>' + esc(b.replace(/\bhoy\b/g, hoyTxt)) + '</li>'; }).join('') +
+          '</ol></div>') +
         '<div class="pie-linea">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
@@ -6607,7 +6687,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var cajaV = document.getElementById('pcr-nombre');
         S.nombreGuardado = cajaV ? String(cajaV.value || '').trim() : S.nombreGuardado;
         var fueraAntes = (S.pliegoFuera || []).length;
-        abrirImpresion(laminaQueQuepa(S.resultado, { horizontal: acc === 'lamina-ver-h',
+        abrirImpresion(laminaDoble(S.resultado, { horizontal: acc === 'lamina-ver-h',
           letra: S.pliegoLetra }),
                        function (m) { S.aviso = m; pintar(); });
         /* Armar la lámina es lo que averigua qué cajas no cupieron al tamaño
@@ -11675,6 +11755,20 @@ function donaHTML(datos, colorDe, nombreDe) {
      pidió la letra «un poquito más grande», y si se vuelve a tocar allá hay
      que tocarlo acá o la ficha empieza a prometer un tamaño que no es. */
   var CUERPO_MM = 3.6;
+  /* ── Hasta dónde puede CRECER una hoja a la que le sobra papel ───────
+     Llegó con el pliego partido en dos (v853): la lámina A acostada cerraba
+     al 100 % y dejaba más de la mitad del papel en blanco, porque la mitad
+     de las bandas se habían ido a la B. Medio pliego vacío no es aire: es
+     una hoja a medio terminar, y en un pliego de 60 × 90 se ve de lejos.
+
+     Así que la búsqueda de escala ya no se detiene en 1: si cabe entera,
+     sigue subiendo hasta llenar el papel. Los techos de los dibujos están
+     en milímetros de PAPEL y los deshace `--k`, así que crecer no deforma
+     nada; lo que crece de verdad es la letra, que es lo que se quería.
+
+     El tope es 1,6 y no el infinito: por encima, una lámina con pocas cajas
+     saldría con letra de cartel de feria, que es el ridículo contrario. */
+  var TOPE_CRECER = 1.6;
   function mmDeLetra(escala) {
     return conComa(Math.round(CUERPO_MM * (escala || 1) * 10) / 10);
   }
@@ -11770,11 +11864,13 @@ function donaHTML(datos, colorDe, nombreDe) {
          papel. Con los mapas encogiéndose con la hoja otra vez (v850),
          reducir es medir, y es siete veces más barato. */
       var mide = function (k) {
-        /* `--k` va con la reducción: los techos de los dibujos están en
+        /* `--k` va con la escala: los techos de los dibujos están en
            milímetros de papel y la deshacen con esta variable, así que
-           medir sin moverla sería medir una hoja que no es la que sale. */
-        rej.style.setProperty('--k', String(k >= 1 ? 1 : k));
-        if (k >= 1) { rej.style.transform = ''; rej.style.width = ''; }
+           medir sin moverla sería medir una hoja que no es la que sale.
+           Y va también cuando la hoja CRECE —`k` mayor que 1—, que desde
+           la v853 es un caso normal y no una imposibilidad. */
+        rej.style.setProperty('--k', String(k));
+        if (k === 1) { rej.style.transform = ''; rej.style.width = ''; }
         else {
           rej.style.transformOrigin = 'top left';
           rej.style.transform = 'scale(' + k + ')';
@@ -11782,7 +11878,20 @@ function donaHTML(datos, colorDe, nombreDe) {
         }
         return rej.getBoundingClientRect().height <= cabeEn + 1;
       };
-      if (mide(1)) { S.pliegoFuera = []; return html; }
+      if (mide(1)) {
+        /* Cabe entera. Queda ver cuánto papel sobra: si sobra, se crece
+           hasta llenarlo. Bisección de seis pasos entre 1 y el tope, igual
+           que la de reducir pero para el otro lado. */
+        S.pliegoFuera = [];
+        var bajoC = 1, altoC = TOPE_CRECER, mejorC = 1;
+        for (var c = 0; c < 6; c++) {
+          var kc = Math.round((bajoC + altoC) / 2 * 1000) / 1000;
+          if (mide(kc)) { mejorC = kc; bajoC = kc; } else { altoC = kc; }
+        }
+        return mejorC > 1.01
+          ? laminaImprimible(res, Object.assign({}, o, { escala: mejorC }))
+          : html;
+      }
       var piso = pisoDeLetra(o.letra);
       var bajo = piso, alto = 1, mejor = null;
       for (var i = 0; i < 7; i++) {
@@ -11893,6 +12002,37 @@ function donaHTML(datos, colorDe, nombreDe) {
       try { if (marco) marco.remove(); } catch (e2) {}
     }
   }
+  /* ── Las dos láminas, en un documento de dos páginas (v853) ─────────
+     El pliego educativo son DOS hojas de 60 × 90: la A es el sitio y el
+     medio físico, la B es la gente, los usos y la movilidad. Cada una se
+     ajusta a su propio papel —tienen contenidos distintos y no tienen por
+     qué cerrar a la misma escala—, y después la B se mete en el documento
+     de la A como segunda página.
+
+     Se pega el CUERPO y no el documento entero porque las dos comparten la
+     hoja de estilo: los pesos, los techos y la rejilla salen del mismo
+     resultado y de la misma orientación, así que son idénticas. Lo único
+     que cambia entre hojas es la reducción, y por eso desde esta versión
+     viaja en el propio elemento `.rej` y no en una regla. */
+  function laminaDoble(res, opts) {
+    var o = opts || {};
+    var fuera = [];
+    var hojaA = laminaQueQuepa(res, Object.assign({}, o, { hoja: 'A' }));
+    fuera = fuera.concat(S.pliegoFuera || []);
+    var hojaB = laminaQueQuepa(res, Object.assign({}, o, { hoja: 'B' }));
+    /* Lo que cedió en CADA hoja, junto: la ficha nombra los paneles que no
+       cupieron sin que haya que preguntarle a cuál de las dos le faltó. */
+    S.pliegoFuera = fuera.concat(S.pliegoFuera || []);
+    if (!hojaA) return hojaB || '';
+    if (!hojaB) return hojaA;
+    var cuerpoB = (String(hojaB).match(/<div class="hoja"[\s\S]*<\/div>(?=\s*<\/body>)/) || [''])[0];
+    if (!cuerpoB) return hojaA;
+    /* Con función de reemplazo y no con cadena: el cuerpo de la B lleva las
+       imágenes en base64 y los dibujos en SVG, y ahí un `$&` suelto haría
+       que el navegador se comiera medio pliego. */
+    return String(hojaA).replace('</body>', function () { return cuerpoB + '</body>'; });
+  }
+
   /* Cuánto se redujo la última que se armó. Lo usa la ficha para decirlo, que
      es lo que evita que quien la cuelga descubra en el papel que la letra
      salió al 80 %. */
@@ -11923,7 +12063,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            y decir «no cabe» de una lámina que después sale entera sería
            mentirle a quien la está armando; y esconderle que se compuso al
            82 % también, porque eso es lo que va a ver en el papel. */
-        var html = laminaQueQuepa(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
+        var html = laminaDoble(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
         var escala = escalaDeLamina(html);
         var d = marco.contentDocument;
         d.open(); d.write(html); d.close();
@@ -21237,7 +21377,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          lámina y me sale la opción de PDF/imprimir». Son dos sitios que
          hacen lo mismo y tenían que hacerlo igual. */
       bajarPliegoDeFicha(f, name === 'lamina-h',
-        laminaQueQuepa(comoResultado(f), {
+        laminaDoble(comoResultado(f), {
           nombre: f.nombre || '',
           trazado: f.trazado || null, terreno: f.terreno || null,
           clima: f.clima || null, campo: f.campo || null, huellas: null,
@@ -21307,6 +21447,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* La lámina compuesta a una escala dada, sin la búsqueda: para medir
        qué pasa a cada escala sin montar la ficha. */
     laminaA: function (o) { return S.resultado ? laminaImprimible(S.resultado, o || {}) : ''; },
+    // Las dos láminas del pliego educativo, ya ajustadas al papel (v853).
+    laminaDoble: function (o) { return S.resultado ? laminaDoble(S.resultado, o || {}) : ''; },
     categoriasQueCambian: function (tope) {
       var r = S.resultado || {};
       return categoriasQueCambian(r.stats || {}, r.pois || [], tope || 2);
