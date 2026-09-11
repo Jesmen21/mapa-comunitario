@@ -245,6 +245,8 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           return { id: c.getAttribute('data-m') || 'plano', t: (c.querySelector('h2') || {}).textContent || '?',
             w: mm(rb.width), h: mm(rb.height),
             banda: bd ? ((bd.querySelector('h3') || {}).textContent || '').trim() : '',
+            hoja: (c.closest('.hoja') || {}).getAttribute
+              ? c.closest('.hoja').getAttribute('data-hoja') : '',
             peso: Number(c.getAttribute('data-p')) || 1,
             cajaW: c.offsetWidth };
         }),
@@ -378,9 +380,28 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('y miden lo mismo: ni uno más grande que el otro',
       !!foto && !!plano && Math.abs(foto.w - plano.w) <= 3 && Math.abs(foto.h - plano.h) <= 3,
       foto && plano ? foto.w + '×' + foto.h + ' contra ' + plano.w + '×' + plano.h + ' mm' : 'falta uno');
-    T('y son los más grandes de la hoja: nada de análisis les gana de alto',
-      !!foto && analisis.every(m => m.h <= foto.h + 1),
-      foto ? foto.h + ' mm contra ' + Math.max.apply(null, analisis.map(m => m.h)) + ' del mayor de los demás' : '-');
+    /* Los más grandes DE SU HOJA, y la comparación se hace dentro de una
+       sola. Desde que el pliego son dos láminas (v853) cada hoja se ajusta
+       por su cuenta —tienen contenidos distintos y no tienen por qué cerrar
+       a la misma escala—, así que un mapa de la B medido en milímetros de
+       papel se compara con el de la A como si fueran la misma hoja y no lo
+       son: la B compuesta más suelta da mapas más altos sin que ninguno le
+       haya quitado nada a las dos figuras de la A. Comparar entre hojas
+       pasaba por suerte mientras las dos escalas andaban cerca. */
+    const deSuHoja = analisis.filter(m => m.hoja === (foto || {}).hoja);
+    T('y son los más grandes de su hoja: nada de análisis les gana de alto',
+      !!foto && deSuHoja.length >= 3 && deSuHoja.every(m => m.h <= foto.h + 1),
+      foto ? 'hoja ' + (foto.hoja || '?') + ': ' + foto.h + ' mm contra ' +
+        deSuHoja.slice().sort((a, b) => b.h - a.h).slice(0, 3)
+          .map(m => m.id + ' ' + m.w + '×' + m.h).join(' · ') : '-');
+    /* Y la otra hoja no se queda sin comprobar: ahí manda el mapa de todos
+       los usos, que es su figura, y ninguno de los demás le gana. */
+    const otra = analisis.filter(m => m.hoja && m.hoja !== (foto || {}).hoja);
+    const jefeOtra = otra.slice().sort((a, b) => b.h - a.h)[0];
+    T('y en la otra hoja manda el mapa de todos los usos',
+      !otra.length || (jefeOtra && jefeOtra.id === 'calor:todos'),
+      otra.length ? 'hoja ' + jefeOtra.hoja + ': ' + jefeOtra.id + ' ' + jefeOtra.h + ' mm'
+                  : 'una sola hoja');
 
     console.log('\n  -- ' + nom + ': un mapa de calor por cada uso con peso --');
     const todos = o.mapas.filter(m => m.id === 'calor:todos')[0];

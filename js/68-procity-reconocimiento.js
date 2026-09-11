@@ -2853,7 +2853,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Lo levantado en campo': 'sector', 'Lo que falta levantar': 'sector', 'Lo intangible': 'sector',
     'Cómo cambió el sitio': 'sector', 'La inundación': 'sector', 'Síntesis del sector': 'sector',
     'Infraestructura de servicios': 'sector', 'Quién vive acá': 'sector',
-    'Coherencia de las cifras': 'sector',
+    'Coherencia de las cifras': 'sector', 'Dónde queda, escala por escala': 'sector',
+    'Suelo disponible real': 'sector', 'Potencial edificatorio': 'sector',
     // Lo que se levanta en la calle: se levanta acá, en el sector.
     'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
     'Voces de quien vive acá': 'sector', 'Movilidad real': 'sector', 'Riesgo oficial': 'sector',
@@ -3648,9 +3649,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         return '<div class="radios">' +
           '<p class="lee">Radio de análisis: <b>' + cr.radio.toLocaleString('es-CO') + ' m</b>, definido por quien analiza' +
             (cr.equivalente ? ' (área dibujada; es el radio equivalente)' : '') + '.</p>' +
-          '<table class="rad"><tr><th>Radio</th><th>Usos</th><th>Por ha</th><th>Manda</th></tr>' +
+          '<table class="rad"><tr><th>Radio</th><th>Usos</th><th>Equipamientos</th><th>Por ha</th><th>Manda</th></tr>' +
             cr.filas.map(function (x) {
               return '<tr' + (x.r === cr.radio ? ' class="el"' : '') + '><td>' + x.r + ' m</td><td>' + x.n + '</td><td>' +
+                x.eq + '</td><td>' +
                 conComa(x.porHa) + '</td><td>' + esc(x.manda) + (x.pct ? ' · ' + x.pct + ' %' : '') + '</td></tr>';
             }).join('') + '</table>' +
           '<p class="nota">' + (cr.cambia
@@ -3660,6 +3662,115 @@ function donaHTML(datos, colorDe, nombreDe) {
       })(),
       'g2') +
       
+      caja('Dónde queda, escala por escala',
+      (function () {
+      var ea = escalasAnidadas(res, ubic);
+      if (!ea) return '';
+      return '<div class="escalera">' + ea.svg + '</div>' +
+        '<p class="lee">' + esc(ea.cadena) + '</p>' +
+        (ea.sinNombre.length
+          ? '<p class="nota">Sin nombre en el geocodificador: ' + esc(ea.sinNombre.join(', ')) +
+            '. Se deja el marco vacío en vez de rellenarlo con una suposición.</p>'
+          : '') +
+        '<p class="nota">Los cuatro marcos de la izquierda son <b>esquemáticos</b>: ubican, no miden. ' +
+        'Este módulo no descarga los límites de país, departamento, municipio ni comuna. ' +
+        'Lo real son los nombres y la última silueta, que es el área analizada dibujada a escala.</p>';
+      })(), 'g1') +
+
+      caja('Potencial edificatorio',
+      (function () {
+      var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
+      if (!al || !al.conDato) return '';
+      /* Lo contado en campo trae su media exacta. Lo de OpenStreetMap no:
+         trae los edificios repartidos en cuatro cajones —1, 2, 3 y «cuatro
+         o más»—, así que de ahí no sale una media, sale un PISO de media:
+         el cajón de arriba se cuenta como cuatro y los que tengan diez
+         suman cuatro igual. Se calcula y se dice que es un mínimo; darla
+         por exacta sería inventar una cifra sobre un cajón. */
+      var aproximada = false;
+      var media = al.media != null ? al.media
+        : ((al.niveles || []).length ? (function () {
+            var suma = 0, n = 0;
+            (al.niveles || []).forEach(function (x) {
+              /* La misma lista viene con dos nombres de clave: el motor la
+                 arma con `nivel` —en stats y en el trazado— y lo contado en
+                 campo con `id`. Leer solo uno deja la media en una raya, que
+                 no se ve como error: se ve como «no hay dato». */
+              var k = String(x.nivel || x.id || ''), c = Number(x.edificios) || 0;
+              var pisos = k === '+3' ? 4 : Number(k) || 0;
+              if (!pisos || !c) return;
+              if (k === '+3') aproximada = true;
+              suma += pisos * c; n += c;
+            });
+            return n ? Math.round(10 * suma / n) / 10 : null;
+          })() : null);
+      var max = al.maximo || 0;
+      /* La brecha contra lo que el PROPIO sector demuestra que se puede
+         construir. No es el potencial normativo —para eso hay que leer el
+         POT, y no está— pero es una cota inferior medida: si en esta manzana
+         hay un edificio de seis pisos, seis pisos caben acá. */
+      var brecha = (media != null && max > media) ? Math.round(10 * (max - media)) / 10 : null;
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + (media != null ? String(media).replace('.', ',') : '—') + '</b><small>pisos de media' +
+          (aproximada ? ', al menos' : '') + '</small></div>' +
+        '<div class="k"><b>' + (max || '—') + '</b><small>el más alto</small></div>' +
+        '</div>' +
+        fila('Edificios con altura registrada', al.conDato + ' de ' + (al.edificios || al.conDato)) +
+        '<p class="vacio-tag">Altura permitida: sin dato oficial disponible</p>' +
+        '<p class="vacio-falta"><b>Haría falta</b> la ficha normativa del POT vigente para este ' +
+        'polígono, en la curaduría o la secretaría de planeación del municipio.</p>' +
+        (max
+          ? '<p class="lee">Sin la norma no se puede decir cuánto potencial queda sin usar. Lo que sí ' +
+            'está medido es una <b>cota por abajo</b>: acá ya hay en pie un edificio de <b>' + max +
+            ' pisos</b>, así que ' + max + ' pisos caben en este sector. Es lo que el propio sector ' +
+            'demuestra que cabe, no lo que la norma permita' +
+            (brecha != null
+              ? '; entre esa altura y lo que se construye de media hay <b>' +
+                String(brecha).replace('.', ',') + ' pisos</b> de diferencia'
+              : '') + '.' +
+            (aproximada
+              ? ' La media va con «al menos» porque OpenStreetMap reparte los edificios en cuatro ' +
+                'cajones y el de arriba agrupa todo lo de cuatro pisos o más: uno de diez se ' +
+                'cuenta como cuatro igual que uno de cuatro.'
+              : '') + '</p>'
+          : '<p class="lee">Sin la norma y sin ninguna altura registrada, no hay con qué acotar el ' +
+            'potencial: haría falta contar los pisos en campo.</p>');
+      })(), 'g4') +
+
+      caja('Suelo disponible real',
+      (function () {
+      var ll = trz && trz.llenos;
+      var areaM2 = Number(meta.areaM2) || 0;
+      if (!ll || ll.pctVacio == null || !areaM2) return '';
+      var vacio = areaM2 * (Number(ll.pctVacio) || 0) / 100;
+      var cobA = o.cobertura !== undefined ? o.cobertura : S.cobertura;
+      var pctAgua = (function () {
+        var c = ((cobA && cobA.clases) || []).filter(function (x) { return x.id === 'agua'; })[0];
+        return c ? Number(c.pct) || 0 : null;
+      })();
+      var agua = pctAgua != null ? areaM2 * pctAgua / 100 : null;
+      var libre = agua != null ? Math.max(0, vacio - agua) : vacio;
+      var pend = ter && ter.pendiente && ter.pendiente.media;
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + formatearArea(libre) + '</b><small>suelo libre contado</small></div>' +
+        '</div>' +
+        fila('Suelo sin construir', esc(formatearArea(vacio))) +
+        (agua != null ? fila('Menos la superficie de agua', '− ' + esc(formatearArea(agua))) : '') +
+        '<p class="lee">Es el suelo sin construir al que se le descontó lo que se pudo descontar. ' +
+        'No es suelo urbanizable: es lo que queda por mirar en campo.</p>' +
+        '<p class="vacio-tag">Dos descuentos que NO se pudieron hacer</p>' +
+        '<p class="vacio-falta"><b>La ronda hídrica.</b> Haría falta el acuerdo municipal que fija el ' +
+        'ancho de la ronda de cada cauce; acá solo está la superficie de agua vista desde el satélite, ' +
+        'que no es lo mismo: la ronda es suelo seco con restricción.</p>' +
+        '<p class="vacio-falta"><b>La pendiente no urbanizable y la amenaza.</b> ' +
+        (pend != null
+          ? 'La pendiente media del sector es del ' + conComa(pend) + ' %, pero una media no dice ' +
+            'cuánta superficie pasa del umbral: haría falta el modelo de elevación por celda y el ' +
+            'umbral del POT.'
+          : 'Haría falta el modelo de elevación por celda y el umbral que fije el POT.') +
+        ' La amenaza, del mapa oficial de riesgo del municipio.</p>';
+      })(), 'g4') +
+
       caja('El lote a intervenir',
       (function () {
       if (!loteA) return '';
@@ -4879,7 +4990,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio', hoja: 'A',
         pregunta: '¿Dónde queda el sector, cuánto mide y qué hay dibujado en él?',
         que: 'dónde queda · cuánto mide · el plano del sector',
-        cajas: ['Plano del sector', 'El sitio'] },
+        cajas: ['Plano del sector', 'El sitio', 'Dónde queda, escala por escala'] },
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo', hoja: 'A',
         pregunta: '¿Qué le pone el suelo, el clima y el agua al proyecto antes de dibujar nada?',
         que: 'relieve · clima · sol · viento · ruido · verde · cobertura · espacio público',
@@ -4925,7 +5036,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
-                'La sombra que arrojás', 'Qué le pide el sitio al proyecto'] },
+                'La sombra que arrojás', 'Potencial edificatorio', 'Suelo disponible real',
+                'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo', hoja: 'B',
         pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
         que: 'lo intangible · lo levantado · lo que falta · los datos oficiales que no hay',
@@ -6147,6 +6259,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       // El pie se va al fondo del papel aunque el contenido termine antes.
       /* El rótulo de escala, pegado al título y en letra de dato: se lee al
          mismo tiempo que la cifra, que es cuando hace falta. */
+      '.escalera{ background:#F3F8FB; border-radius:1.5mm; padding:2mm 1.5mm; margin-bottom:1.6mm }' +
+      '.escalera svg{ display:block; width:100%; height:auto; max-height:' + papel(26) + ' }' +
       '.escala-dato{ display:inline-block; margin:.6mm 0 0; padding:.3mm 1.4mm; border-radius:1mm;' +
         'background:#E8F4FA; color:#075E88; font-size:2.4mm; font-weight:700;' +
         'letter-spacing:.04em; text-transform:uppercase; align-self:flex-start }' +
@@ -10491,6 +10605,20 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       { id: 'el-sitio', t: 'El sitio', g: 'Lo que hay', listo: !!res,
         falta: 'analizá el sector', dato: 'las cifras de arriba' },
+      /* Una caja que el pliego imprime y este inventario no conoce no se
+         puede apagar: ni desde la ficha ni desde «dejar solo el plano», que
+         apaga recorriendo justamente esta lista. Se nota tarde y de la peor
+         manera —pidiendo una hoja limpia y recibiendo media lámina—, así
+         que una caja nueva entra acá el mismo día que entra al papel. */
+      { id: 'donde-queda-escala-por-escala', t: 'Dónde queda, escala por escala',
+        /* La misma condición que usa la caja: al menos un nombre
+           administrativo de verdad. Con los cinco marcos vacíos no ubica. */
+        g: 'Lo que hay', listo: (function () {
+          var u = (res && res.ubicacion) || null;
+          return !!(u && (u.pais || u.departamento || u.ciudad || u.comuna));
+        })(),
+        falta: 'el geocodificador no devolvió los nombres',
+        dato: 'las cinco escalas, de país a sector' },
       { id: 'que-hay-por-categoria', t: 'Qué hay, por categoría', g: 'Lo que hay',
         listo: Object.keys(st.porGrupo || {}).some(function (k) {
           return k !== 'otro' && st.porGrupo[k] > 0; }),
@@ -10636,6 +10764,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
         falta: 'analizá el sector', dato: 'la carta solar del sitio' },
 
+      { id: 'potencial-edificatorio', t: 'Potencial edificatorio', g: 'El suelo',
+        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
+        falta: 'medí el trazado: ningún edificio trae la altura registrada',
+        dato: 'lo construido, y la norma declarada sin dato' },
+      { id: 'suelo-disponible-real', t: 'Suelo disponible real', g: 'El suelo',
+        listo: !!(trz && trz.llenos && trz.llenos.pctVacio != null),
+        falta: 'medí el trazado para saber cuánto está construido',
+        dato: 'lo sin construir, menos el agua' },
       { id: 'el-lote-a-intervenir', t: 'El lote a intervenir', g: 'El lote', listo: hayLote,
         falta: 'marcá el lote', dato: 'medidas y frentes' },
       { id: 'que-cabe-en-el-lote', t: 'Qué cabe en el lote', g: 'El lote',
@@ -10705,6 +10841,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     var loteYTrazado = !hayLote ? 'lote-dibujar' : (!trz ? 'trazado' : null);
     var PIDE = {
       'alturas-de-lo-construido': trz ? null : 'trazado',
+      /* Las dos del potencial salen del trazado igual que las alturas: una
+         caja gris sin acción es un botón apagado con «medí el trazado» al
+         lado, que es justo lo que se pidió quitar. */
+      'potencial-edificatorio': trz ? null : 'trazado',
+      'suelo-disponible-real': trz ? null : 'trazado',
       'llenos-y-vacios': trz ? null : 'trazado',
       'el-perfil-de-la-calle': trz ? null : 'trazado',
       'espacio-publico-efectivo': trz ? null : 'trazado',
@@ -12751,6 +12892,27 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
     'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
     'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
+    'Dónde queda, escala por escala': {
+      f: 'la cadena de límites administrativos que contienen al punto, del país al barrio',
+      fu: 'OpenStreetMap vía geocodificación inversa (LocationIQ), hoy',
+      c: 'alta para los nombres; los cuatro marcos exteriores son esquemáticos y no miden nada',
+      r: 'la división político-administrativa del DANE',
+      e: 'leer los marcos dibujados como si fueran los límites reales. Ubican, no miden' },
+    'Potencial edificatorio': {
+      f: 'altura media construida y altura máxima construida, contadas sobre los edificios con ' +
+         'número de pisos registrado; la brecha entre las dos es la cota inferior del potencial',
+      fu: 'OpenStreetMap (building:levels), hoy, más lo contado en campo por el curso',
+      c: 'baja a media: depende de cuántos edificios tengan los pisos registrados',
+      r: 'la altura máxima del POT, que no se ha leído y por eso el potencial normativo no se calcula',
+      e: 'presentar la brecha contra lo construido como si fuera el potencial normativo. No lo es: ' +
+         'es lo que el propio sector demuestra que cabe' },
+    'Suelo disponible real': {
+      f: 'suelo sin construir (área × % vacío) menos la superficie de agua clasificada sobre la foto',
+      fu: 'huellas de OpenStreetMap, hoy; agua de la clasificación del raster satelital',
+      c: 'media: el % vacío depende de cuántos edificios estén mapeados',
+      r: 'el suelo urbanizable que fije el POT, que no se ha leído',
+      e: 'llamarlo suelo urbanizable. No se le pudieron descontar la ronda hídrica, la pendiente ' +
+         'por encima del umbral ni la amenaza, y las tres restan' },
     'Coherencia de las cifras': {
       f: 'siete comprobaciones cruzadas entre cifras de la misma lámina; cada una compara dos ' +
          'números que tienen que cuadrar (suma de porcentajes = 100, personas ÷ viviendas en ' +
@@ -12828,6 +12990,79 @@ function donaHTML(datos, colorDe, nombreDe) {
      el estudiante» y comparara 500, 800 y 1.000: la misma esquina leída a
      tres radios enseña si la conclusión es del sector o del radio. Se
      cuenta sobre los usos registrados, en línea recta desde el centro. */
+  /* ── Dónde queda, escala por escala (§3 A1 del pliego) ──────────────
+     Cinco siluetas en fila —país, departamento, municipio, comuna, sector—
+     con la última resaltada. Sirve para una cosa concreta: un jurado que no
+     conoce la ciudad no sabe si el sector que está mirando es el centro o un
+     borde, y la cadena de escalas se lo dice en un vistazo.
+
+     Los cuatro primeros marcos son ESQUEMÁTICOS y la lámina lo dice: no son
+     los límites reales de Colombia, del departamento ni del municipio, que
+     este módulo no descarga. Lo real son los NOMBRES —salen del geocodificador—
+     y la última silueta, que es el área analizada dibujada de verdad. Pintar
+     un contorno inventado y no advertirlo sería exactamente lo que el pliego
+     prohíbe: presentar una suposición como un dato. */
+  function escalasAnidadas(res, ubic) {
+    var meta = (res && res.meta) || {};
+    var u = ubic || {};
+    var niveles = [
+      { t: 'País', v: u.pais },
+      { t: 'Departamento', v: u.departamento },
+      { t: 'Municipio', v: u.ciudad },
+      { t: 'Comuna', v: u.comuna },
+      { t: 'Sector', v: u.barrio || 'el área analizada' }
+    ];
+    if (!niveles.slice(0, 4).filter(function (x) { return x.v; }).length) return null;
+    var W = 44, H = 34, GAP = 6, n = niveles.length;
+    var ancho = n * W + (n - 1) * GAP;
+    /* La silueta del sector: el trazo real, encajado en su casilla. Si se
+       analizó por radio es un círculo, que también es su forma real. */
+    var pts = (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3)
+      ? meta.poligono : null;
+    var silueta = (function () {
+      if (!pts) return '<circle cx="' + (W / 2) + '" cy="' + (H / 2 - 1) + '" r="9"' +
+        ' fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
+      var lats = pts.map(function (p) { return +p.lat; });
+      var lngs = pts.map(function (p) { return +p.lng; });
+      var y0 = Math.min.apply(null, lats), y1 = Math.max.apply(null, lats);
+      var x0 = Math.min.apply(null, lngs), x1 = Math.max.apply(null, lngs);
+      var kx = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
+      var an = Math.max(1e-9, (x1 - x0) * kx), al = Math.max(1e-9, y1 - y0);
+      var k = Math.min(22 / an, 18 / al);
+      var d = pts.map(function (p, i) {
+        var x = W / 2 + ((+p.lng - (x0 + x1) / 2) * kx) * k;
+        var y = (H / 2 - 1) - ((+p.lat - (y0 + y1) / 2)) * k;
+        return (i ? 'L' : 'M') + Math.round(x * 10) / 10 + ' ' + Math.round(y * 10) / 10;
+      }).join(' ') + ' Z';
+      return '<path d="' + d + '" fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
+    })();
+    var casillas = niveles.map(function (x, i) {
+      var dx = i * (W + GAP), ultimo = i === n - 1;
+      return '<g transform="translate(' + dx + ',0)">' +
+        '<rect x=".6" y=".6" width="' + (W - 1.2) + '" height="' + (H - 1.2) + '" rx="2.5"' +
+          ' fill="' + (ultimo ? '#E8F4FA' : '#F6F9FB') + '"' +
+          ' stroke="' + (ultimo ? '#0A6F9E' : '#C9D6E0') + '"' +
+          ' stroke-width="' + (ultimo ? 1.6 : 0.8) + '"' +
+          (ultimo ? '' : ' stroke-dasharray="2 1.6"') + '/>' +
+        /* Los marcos de fuera llevan un contorno genérico —no es el mapa de
+           nadie— y el de dentro, el trazo real del sector. */
+        (ultimo ? silueta
+                : '<rect x="' + (W / 2 - 11) + '" y="' + (H / 2 - 10) + '" width="22" height="18" rx="2"' +
+                  ' fill="none" stroke="#C9D6E0" stroke-width="1" stroke-dasharray="2 1.6"/>') +
+        '<text x="' + (W / 2) + '" y="' + (H - 3) + '" text-anchor="middle"' +
+          ' font-size="3.4" fill="' + (ultimo ? '#075E88' : '#6B7A8A') + '"' +
+          ' font-weight="' + (ultimo ? 700 : 500) + '">' + esc(x.t) + '</text>' +
+        '</g>';
+    }).join('');
+    return {
+      svg: '<svg viewBox="0 0 ' + ancho + ' ' + H + '" width="100%" role="img"' +
+        ' aria-label="Las cinco escalas, de país a sector">' + casillas + '</svg>',
+      cadena: niveles.filter(function (x) { return x.v; })
+        .map(function (x) { return x.v; }).join(' › '),
+      sinNombre: niveles.filter(function (x) { return !x.v; }).map(function (x) { return x.t; })
+    };
+  }
+
   function comparacionDeRadios(res) {
     var st = (res && res.stats) || {}, meta = (res && res.meta) || {}, pois = (res && res.pois) || [];
     if (meta.lat == null || meta.lng == null) return null;
@@ -12839,7 +13074,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       dentro.forEach(function (p) { if (p.grupo && p.grupo !== 'otro') porG[p.grupo] = (porG[p.grupo] || 0) + 1; });
       var k = Object.keys(porG).sort(function (a, b) { return porG[b] - porG[a]; })[0];
       var ha = Math.PI * r * r / 10000;
-      return { r: r, n: dentro.length, porHa: Math.round(10 * dentro.length / ha) / 10,
+      /* Cuántos EQUIPAMIENTOS entran en cada radio, además de cuántos usos
+         (§3 A1 del pliego). No es lo mismo y la diferencia es la que decide:
+         un radio con doscientos usos y ningún colegio no es un radio servido.
+         Cuentan salud, cultura y educación, e institucional; el comercio y la
+         vivienda no son equipamiento por más que sean la mayoría. */
+      var EQ = ['salud', 'cultura', 'institucional'];
+      var eq = dentro.filter(function (p) { return EQ.indexOf(p.grupo) >= 0; }).length;
+      return { r: r, n: dentro.length, eq: eq, porHa: Math.round(10 * dentro.length / ha) / 10,
                manda: k ? sinEmoji((G[k] && (G[k].t || G[k].nombre)) || k) : '—',
                pct: k ? Math.round(100 * porG[k] / dentro.length) : 0 };
     });

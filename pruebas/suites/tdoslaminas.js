@@ -246,6 +246,58 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
                      texto: li.textContent.replace(/\s+/g, ' ').trim(),
                      rojo: getComputedStyle(li).color })) };
         })(),
+        /* Las cinco escalas anidadas: cuántos marcos, cómo se rotulan, y
+           cuáles van a trazos. Los cuatro de fuera TIENEN que ir a trazos:
+           son esquemáticos, no son los límites de nadie. */
+        escalera: (function () {
+          const c = [...h.querySelectorAll('.caja')].filter(x =>
+            /Dónde queda, escala por escala/.test((x.querySelector('h2') || {}).textContent || ''))[0];
+          if (!c) return null;
+          const svg = c.querySelector('.escalera svg');
+          const marcos = svg ? [...svg.querySelectorAll('g')] : [];
+          return {
+            marcos: marcos.length,
+            rotulos: marcos.map(g => ((g.querySelector('text') || {}).textContent || '').trim()),
+            aTrazos: marcos.filter(g => {
+              const r = g.querySelector('rect');
+              return r && r.getAttribute('stroke-dasharray');
+            }).length,
+            /* el último lleva el trazo REAL del área analizada: polígono o
+               círculo, no un contorno genérico */
+            ultimoReal: !!(marcos.length && marcos[marcos.length - 1].querySelector('path, circle')),
+            anchoMm: svg ? mm(svg.getBoundingClientRect().width) : 0,
+            altoMm: svg ? mm(svg.getBoundingClientRect().height) : 0,
+            texto: c.textContent.replace(/\s+/g, ' ').trim()
+          };
+        })(),
+        /* La tabla de los tres radios: sus columnas y sus filas. */
+        radios: (function () {
+          const t = h.querySelector('table.rad');
+          if (!t) return null;
+          return {
+            columnas: [...t.querySelectorAll('th')].map(x => x.textContent.trim()),
+            filas: [...t.querySelectorAll('tr')].slice(1).map(tr =>
+              [...tr.querySelectorAll('td')].map(x => x.textContent.trim()))
+          };
+        })(),
+        /* Los dos paneles nuevos del lote: lo que miden y lo que declaran
+           que NO pudieron medir. */
+        paneles: (function () {
+          const dame = re => {
+            const c = [...h.querySelectorAll('.caja')].filter(x =>
+              re.test((x.querySelector('h2') || {}).textContent || ''))[0];
+            if (!c) return null;
+            return {
+              texto: c.textContent.replace(/\s+/g, ' ').trim(),
+              kpis: [...c.querySelectorAll('.kpis .k')].map(x => ({
+                v: ((x.querySelector('b') || {}).textContent || '').trim(),
+                r: ((x.querySelector('small') || {}).textContent || '').trim() })),
+              vacios: [...c.querySelectorAll('.vacio-tag')].map(x => x.textContent.trim()),
+              falta: [...c.querySelectorAll('.vacio-falta')].map(x => x.textContent.replace(/\s+/g, ' ').trim())
+            };
+          };
+          return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/) };
+        })(),
         biblio: h.querySelectorAll('.pie .biblio li').length,
         propuestas: h.querySelectorAll('.sintesis-pie .pu').length,
         plano: !!h.querySelector('.plano-hero')
@@ -411,6 +463,113 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       sinDato.length + ' sin dato');
     T('y ninguno se presenta como aprobado sin haberse corrido',
       CO.filas.filter(f => f.estado === 'pasa').every(f => !/sin dato|haría falta/i.test(f.texto)));
+  }
+
+  console.log('\n  -- dónde queda, escala por escala --');
+  /* Un jurado que no conoce la ciudad no sabe si el sector que mira es el
+     centro o un borde. La cadena de cinco escalas se lo dice de un vistazo,
+     y a la vez tiene que confesar que los cuatro marcos de fuera no son
+     los límites reales de nada: este módulo no los descarga. */
+  const EL = A.escalera;
+  T('la cadena de escalas está, y en la lámina A', !!EL && !B.escalera);
+  if (EL) {
+    T('son cinco marcos: país, departamento, municipio, comuna, sector',
+      EL.marcos === 5, EL.marcos + ' marcos');
+    T('y cada uno va rotulado con su escala',
+      ['País', 'Departamento', 'Municipio', 'Comuna', 'Sector']
+        .every((x, i) => EL.rotulos[i] === x), EL.rotulos.join(' › '));
+    T('los cuatro de fuera van a trazos, porque son esquemáticos',
+      EL.aTrazos === 4, EL.aTrazos + ' a trazos de ' + EL.marcos);
+    T('y el último lleva el trazo real del área analizada',
+      EL.ultimoReal === true);
+    /* La advertencia no es un detalle de estilo: pintar un contorno
+       inventado sin decirlo es presentar una suposición como un dato, que
+       es justo lo que el pliego prohíbe. */
+    T('la hoja declara que los cuatro marcos ubican y no miden',
+      /esquemáticos/.test(EL.texto) && /ubican, no miden/.test(EL.texto) &&
+      /no descarga los límites/.test(EL.texto), EL.texto.slice(-170));
+    T('y nombra los cinco niveles de verdad, con el geocodificador',
+      /Colombia/.test(EL.texto) && /Norte de Santander|Santander/.test(EL.texto),
+      (EL.texto.match(/[^.]*›[^.]*/) || [''])[0].slice(0, 110));
+    T('el dibujo ocupa papel de verdad, no un icono',
+      EL.anchoMm >= 45 && EL.altoMm >= 8, EL.anchoMm + ' × ' + EL.altoMm + ' mm');
+  }
+
+  console.log('\n  -- los tres radios cuentan EQUIPAMIENTOS, no solo usos --');
+  /* Doscientos usos y ningún colegio no es un radio servido: usos y
+     equipamientos son cuentas distintas y la tabla tiene que separarlas. */
+  const RD = A.radios;
+  T('la tabla de radios está', !!RD, RD ? RD.filas.length + ' filas' : 'no está');
+  if (RD) {
+    T('y trae su columna de equipamientos, aparte de la de usos',
+      RD.columnas.indexOf('Equipamientos') > RD.columnas.indexOf('Usos') &&
+      RD.columnas.indexOf('Usos') >= 0, RD.columnas.join(' | '));
+    T('son los tres radios, con su cuenta cada uno',
+      RD.filas.length === 3 && RD.filas.every(f => /^\d+$/.test(f[2])),
+      RD.filas.map(f => f[0] + ': ' + f[1] + ' usos, ' + f[2] + ' eq').join(' · '));
+    /* Y no es la misma cifra con otro nombre: el equipamiento es un
+       subconjunto, así que nunca puede pasar del total de usos. */
+    T('el equipamiento nunca pasa del total de usos del mismo radio',
+      RD.filas.every(f => Number(f[2]) <= Number(f[1])),
+      RD.filas.map(f => f[2] + '/' + f[1]).join(' · '));
+  }
+
+  console.log('\n  -- potencial edificatorio y suelo disponible --');
+  const PT = (A.paneles || {}).potencial, SU = (A.paneles || {}).suelo;
+  T('los dos paneles están, y en la lámina A',
+    !!PT && !!SU && !(B.paneles || {}).potencial && !(B.paneles || {}).suelo);
+  if (PT) {
+    T('el potencial mide lo construido: media y el más alto',
+      PT.kpis.length >= 2 && /pisos de media/.test(PT.texto) && /el más alto/.test(PT.texto),
+      PT.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* Y las dos cifras son NÚMEROS. Una raya en el sitio de la media es el
+       fallo silencioso de este panel: el dato de OpenStreetMap llega
+       repartido en cajones (`niveles`) y no trae media hecha, así que hay
+       que calcularla. Una raya no se ve como error, se ve como «no hay». */
+    T('y las dos son cifras, no una raya',
+      PT.kpis.slice(0, 2).every(x => /^[\d.,]+$/.test(x.v)),
+      PT.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* El cajón de arriba de OpenStreetMap es «cuatro o más», así que un
+       edificio de diez suma cuatro: la media que sale de ahí es un piso,
+       no una media. Se da, y se dice que es un mínimo. */
+    T('la media salida de los cajones se declara como mínimo',
+      /pisos de media, al menos/.test(PT.texto) &&
+      /agrupa todo lo de cuatro pisos o más/.test(PT.texto),
+      (PT.kpis[0] || {}).r);
+    /* Lo que NO se puede decir sin el POT no se estima: se declara. */
+    T('y declara que la altura permitida no la tiene',
+      PT.vacios.some(x => /Altura permitida: sin dato oficial/.test(x)), PT.vacios.join(' | '));
+    T('nombrando la ficha normativa del POT como lo que haría falta',
+      PT.falta.some(x => /ficha normativa del POT/.test(x) && /curaduría|planeación/.test(x)),
+      PT.falta.join(' | ').slice(0, 130));
+    /* La brecha medida sí se puede dar, y se da por lo que es: una cota
+       por abajo, no el potencial normativo. */
+    T('lo que sí da es una cota por abajo, dicha como tal',
+      /cota por\s*abajo/.test(PT.texto) && /el propio sector demuestra que cabe/.test(PT.texto),
+      PT.texto.slice(-120));
+  }
+  if (SU) {
+    T('el suelo disponible parte de lo sin construir y descuenta el agua',
+      /Suelo sin construir/.test(SU.texto) && /Menos la superficie de agua/.test(SU.texto),
+      SU.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* El salto de «sin construir» a «urbanizable» es el error caro de este
+       panel: se cuenta lo vacío desde el satélite y se lee como suelo donde
+       se puede construir. La cifra se rotula por lo que es y la hoja niega
+       el salto con todas las letras. */
+    T('y no lo llama urbanizable: ni en el rótulo de la cifra ni en el texto',
+      SU.kpis.every(x => !/urbanizable/i.test(x.r)) &&
+      /No es suelo urbanizable/.test(SU.texto) &&
+      /queda por mirar en campo/.test(SU.texto),
+      SU.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* Los dos descuentos que faltan son los que cambiarían la cifra, así
+       que van dichos uno por uno con su fuente. */
+    T('dice cuáles son los dos descuentos que NO pudo hacer',
+      SU.vacios.some(x => /NO se pudieron hacer/.test(x)) &&
+      SU.falta.some(x => /ronda hídrica/i.test(x)) &&
+      SU.falta.some(x => /pendiente/i.test(x) && /amenaza/i.test(x)),
+      SU.falta.map(x => x.slice(0, 40)).join(' | '));
+    T('y por qué el agua vista del satélite no es la ronda',
+      /es suelo seco con restricción/.test(SU.texto), SU.falta.join(' ').slice(0, 140));
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');

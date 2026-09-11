@@ -310,6 +310,19 @@ const CAPAS_IDEAM = [
   // la caja de al lado.
   const cajaDe = t => (LC.split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  /* En QUÉ banda cayó una caja. Se mide partiendo por las bandas y mirando
+     dentro de cada trozo, no buscando «banda-x» en cualquier parte de la
+     hoja antes del título: el orden de las bandas lo decide el reparto por
+     filas —una banda ligera se adelanta cuando la siguiente no cabe—, así
+     que un patrón de prefijo casa con la primera banda que aparezca y no
+     con la que contiene la caja. Pasaba por suerte y dejó de pasar en
+     cuanto el reparto cambió. */
+  const bandaDe = t => {
+    const h = LC.replace(/\n/g, '');
+    const trozo = h.split('<div class="banda banda-')
+      .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0];
+    return trozo ? (trozo.match(/^[a-z0-9-]+/) || [''])[0] : '';
+  };
 
   console.log('\n  -- 1 · la inundación llega al pliego --');
   T('la lámina trae su caja', !!cajaDe('La inundación'));
@@ -321,8 +334,10 @@ const CAPAS_IDEAM = [
     (cajaDe('La inundación').match(/mancha de <b>\d+ años<\/b>[^<]*/) || ['no lo dice'])[0]);
   T('con la salvedad, que es la mitad del dato',
     /no es un certificado/.test(cajaDe('La inundación')));
-  T('y va en la banda ambiental, con el resto del riesgo',
-    /banda-ambiental[^]*?<h2>La inundación<\/h2>/.test(LC.replace(/\n/g, '')));
+  /* Desde la v853 la amenaza tiene banda propia: una amenaza declarada no
+     es una condición de diseño, es una restricción. La inundación va ahí. */
+  T('y va en la banda del riesgo, no entre las condiciones ambientales',
+    bandaDe('La inundación') === 'riesgo', bandaDe('La inundación') || 'en ninguna banda');
 
   console.log('\n  -- 2 · cómo se llega, con cifras --');
   const CL = cajaDe('Cómo se llega');
@@ -336,7 +351,7 @@ const CAPAS_IDEAM = [
   T('y los dos índices, que antes solo salían en el informe en hojas',
     /facilidad para llegar \/100/.test(CL) && /exposición al tránsito \/100/.test(CL));
   T('va en la banda de movilidad, con la red y la calle',
-    /banda-movilidad[^]*?<h2>Cómo se llega<\/h2>/.test(LC.replace(/\n/g, '')));
+    bandaDe('Cómo se llega') === 'movilidad', bandaDe('Cómo se llega') || 'en ninguna banda');
   T('y la impresa la trae, o la declara fuera por su nombre',
     /<h2>Cómo se llega<\/h2>/.test(LAM) || (r.fuera || []).indexOf('como-se-llega') >= 0);
 

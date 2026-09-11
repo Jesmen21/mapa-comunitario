@@ -436,13 +436,87 @@ cuál es y qué pregunta responde, que lo de una no aparezca en la otra, que
 ninguna deje el papel a medio llenar y que ninguna mande cajas a «Otras
 mediciones».
 
-**Lo que falta del pliego de instrucciones** (tandas siguientes): las reglas
-transversales de dato —escala rotulada, comparación con la ciudad, fuente con
-tabla y fecha, los siete chequeos de coherencia impresos en rojo—, los
-paneles nuevos de la A —escalas anidadas, continuidad del tejido, potencial
-edificatorio, suelo disponible real— y los de la B —pirámide sobrepuesta a la
-de la ciudad, cobertura de equipamientos en personas no servidas, y la banda
-de movilidad con vías y rutas nombradas, perfiles acotados e isócronas.
+### Los paneles de la lámina A (v857)
+
+Tres cosas nuevas en la hoja del sitio, y las tres existen para lo mismo: no
+dejar que el lector rellene con una suposición lo que el módulo no midió.
+
+* **«Dónde queda, escala por escala»** (`escalasAnidadas`): cinco siluetas en
+  fila —país, departamento, municipio, comuna, sector— con la última
+  resaltada. Un jurado que no conoce la ciudad no sabe si el sector que mira
+  es el centro o un borde. Los **cuatro marcos de fuera van a trazos y la
+  hoja dice que son esquemáticos**: este módulo no descarga los límites de
+  Colombia, del departamento ni de la comuna. Lo real son los nombres —salen
+  del geocodificador— y la última silueta, que es el área analizada dibujada
+  a escala: el polígono si se dibujó, el círculo si se analizó por radio.
+  Pintar un contorno inventado sin advertirlo sería exactamente lo que el
+  pliego prohíbe.
+* **La tabla de los tres radios cuenta EQUIPAMIENTOS aparte de usos.**
+  Doscientos usos y ningún colegio no es un radio servido. Cuentan salud,
+  cultura e institucional; el comercio y la vivienda no son equipamiento por
+  más que sean la mayoría.
+* **«Potencial edificatorio» y «Suelo disponible real»**, los dos con su
+  vacío declarado. El primero mide lo construido y dice que la altura
+  permitida **no la tiene**: haría falta la ficha normativa del POT. Lo que
+  sí da es una cota por abajo —si acá ya hay un edificio de siete pisos,
+  siete pisos caben— y la nombra como tal, que no es el potencial normativo.
+  El segundo parte del suelo sin construir, le descuenta el agua vista desde
+  el satélite y **no lo llama urbanizable**: nombra los dos descuentos que no
+  pudo hacer —la ronda hídrica, que es suelo seco con restricción y no la
+  lámina de agua; la pendiente no urbanizable y la amenaza— con la fuente que
+  haría falta para cada uno.
+
+#### La misma lista con dos nombres de clave
+
+Costó una tarde y no se veía. El reparto de alturas por cajones llega con la
+clave `nivel` cuando lo arma el motor —en `stats.alturas` y en
+`trazado.alturas`, los dos— y con la clave `id` cuando sale de
+`alturasDeCampo`, en `js/68`. Un panel nuevo que leyera solo `x.id` imprimía
+la media de pisos como una raya, **y una raya no se ve como un error: se ve
+como «no hay dato»**. Se leen las dos: `String(x.nivel || x.id || '')`.
+
+De paso, la media que sale de esos cajones **no es una media**: el de arriba
+agrupa todo lo de cuatro pisos o más, así que un edificio de diez suma cuatro
+igual que uno de cuatro. Se calcula, se imprime con «al menos» y la hoja
+explica por qué. Darla por exacta sería inventar precisión sobre un cajón.
+
+#### Una caja nueva entra en DOS sitios
+
+`cajasDelPliego` es el inventario: lo que no está ahí no se puede apagar, ni
+desde la ficha ni desde «dejar solo el plano», que apaga recorriendo esa
+lista. Una caja que el pliego imprime y el inventario no conoce se nota tarde
+y de la peor manera —pidiendo una hoja limpia y recibiendo media lámina—. La
+condición `listo` tiene que ser **la misma** que usa la caja para devolver
+vacío; `tpliego` comprueba justamente que no se separen.
+
+#### Dos cosas que se miden por hoja, no por documento
+
+Las dos salieron de comprobaciones que pasaban por suerte y dejaron de pasar
+en cuanto entraron tres cajas nuevas. Ninguna de las dos era un fallo del
+papel: eran pruebas que medían otra cosa de la que decían medir.
+
+* **El orden de las bandas lo decide el reparto por filas.** Cuando la
+  siguiente banda no cabe en la fila, se busca una de más adelante que sí
+  quepa, y el orden de lectura cambia. Así que `banda-x[^]*?<h2>Título</h2>`
+  —«el título viene después de banda-x en el documento»— casa con la primera
+  banda que aparezca, no con la que contiene la caja. Se mide partiendo por
+  `<div class="banda banda-` y mirando **dentro** del trozo.
+* **Cada lámina se ajusta a SU escala.** La A y la B cierran con `--k`
+  distintos —0,36 y 0,63 en el sector de prueba— porque tienen contenidos
+  distintos. Entonces los milímetros de papel de un mapa de la B no se
+  comparan con los de la A: la hoja compuesta más suelta da mapas más altos
+  sin haberle quitado nada a las figuras de la otra. «La foto y el plano son
+  los más grandes» se comprueba **dentro de la hoja A**, que es donde están.
+
+**Lo que falta del pliego de instrucciones** (tandas siguientes): de las
+reglas transversales, la comparación obligatoria con la ciudad y la fuente
+con tabla y fecha de consulta; de la A, la continuidad del tejido, el tamaño
+y forma de predios y la morfología de malla delimitada en el plano; y la B
+entera —pirámide sobrepuesta a la de la ciudad, hogares por tipo, escolaridad,
+estratos y vulnerabilidad con los barrios nombrados, cobertura de
+equipamientos en personas NO servidas, y la banda de movilidad con vías y
+rutas nombradas, sentidos, flujo con hora pico, perfiles acotados e
+isócronas superpuestas al radio.
 
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
