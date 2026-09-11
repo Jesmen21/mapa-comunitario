@@ -373,6 +373,7 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           };
           return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
                    quien: dame(/Quién vive acá/),
+                   censo: dame(/Lo que el censo trae además/),
                    tejido: dame(/Continuidad del tejido/),
                    grano: dame(/El grano: manzana y predio/),
                    ciudad: dame(/El sector dentro de la ciudad/),
@@ -1033,6 +1034,47 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       !lo || !p.niega(plano),
       lo ? (p.niega(plano) ? 'LA MIDE Y LA NIEGA' : 'la mide, y no la niega') : 'no la mide en este sector');
   });
+
+  console.log('\n  -- el censo se pregunta qué trae (v865) --');
+  /* Escolaridad y hogares se venían dando por ausentes sin haberlo
+     comprobado: el módulo pedía los veintitrés campos que conoce y de ahí
+     concluía que el censo «no trae» lo demás. Ahora le pregunta a la capa
+     por su lista de campos y separa TRES estados, que significan cosas
+     distintas y no se pueden confundir. */
+  const CE = (B.paneles || {}).censo;
+  T('el panel está, y en la lámina B', !!CE && !(A.paneles || {}).censo);
+  if (CE) {
+    /* La capa del sector de prueba declara escolaridad y alfabetismo, y no
+       declara hogares ni etnia: así una sola corrida ejercita los dos
+       caminos. */
+    T('cuenta los bloques que la capa sí declara',
+      /Nivel educativo/.test(CE.texto) && /Alfabetismo/.test(CE.texto) &&
+      CE.barras.length >= 4,
+      CE.barras.slice(0, 4).join(' | ').slice(0, 120));
+    /* Y dice con qué campo los contó: sin eso, la cifra no se puede
+       rastrear hasta la fuente. */
+    T('y nombra el campo de la capa con el que los contó',
+      /ESCOLARIDAD_/.test(CE.texto) && /sumados por el radio analizado/.test(CE.texto),
+      (CE.texto.match(/Contado sobre[^.]*\./) || [''])[0].slice(0, 130));
+    /* Lo que la capa NO expone se declara con la evidencia: cuántos campos
+       tiene y cómo se llaman. Es una afirmación que cualquiera puede
+       comprobar abriendo la misma capa, no una suposición. */
+    T('lo que la capa no expone va declarado con la lista de campos como prueba',
+      CE.vacios.some(x => /no expone/.test(x)) &&
+      /Hogares por tipo/.test(CE.falta.join(' ')) &&
+      /declara <b>\d+<\/b>|declara \d+/.test(CE.falta.join(' ')),
+      (CE.falta[0] || 'no lo declara').slice(0, 150));
+    T('y da una muestra de los nombres, para poder mirarlos',
+      /los numéricos empiezan por/.test(CE.falta.join(' ')) &&
+      /SEXO_M|ESCOLARIDAD/.test(CE.falta.join(' ')),
+      (CE.falta.join(' ').match(/empiezan por [^.]*/) || [''])[0].slice(0, 110));
+    /* Y lo más importante de los tres estados: «no se pudo preguntar» no se
+       imprime cuando SÍ se preguntó. Confundirlo con «no lo tiene» sería
+       exactamente la mentira que este panel existe para no decir. */
+    T('y no dice que no pudo preguntar, porque sí preguntó',
+      !/No se pudo preguntar/.test(CE.texto),
+      CE.vacios.join(' | ').slice(0, 90));
+  }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
 

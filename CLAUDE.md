@@ -750,6 +750,49 @@ una manzana mediana ocupa el lote, y deja la pregunta que sigue abierta:
 cuántos predios tiene esa manzana, que es de cuántos vecinos hay que
 negociar.
 
+### El censo se pregunta qué trae (v865)
+
+Escolaridad, hogares, alfabetismo y pertenencia étnica estaban en la lista de
+«lo que falta» del pliego, y esa lista salía de un razonamiento que nadie
+comprobó: el módulo pide los veintitrés campos que conoce —sexo y los
+veintiún tramos de edad— y de ahí se concluía que el censo **no trae** lo
+demás. Es un negativo sobre datos que nunca se miraron, la misma forma de las
+cuatro carencias falsas anteriores.
+
+ArcGIS publica la lista de campos de cada capa en su raíz (`?f=json`).
+`camposDeCapa` la pregunta una vez por sesión y `censoAmpliado` busca ahí,
+por patrón, los cuatro bloques. **Tres estados, separados a propósito porque
+significan cosas distintas:**
+
+| Estado | Qué imprime |
+|---|---|
+| La capa lo trae | Las barras, **con el nombre del campo** que se sumó |
+| La capa no lo expone | Lo declara **con la lista de campos como prueba**: cuántos declara y una muestra de nombres |
+| No se pudo preguntar | Lo dice, y aclara que **no es lo mismo que no tenerlo** |
+
+El segundo estado es el que cambia la naturaleza de la afirmación: «la capa
+declara 9 campos y ninguno corresponde a hogares» es **verificable** —
+cualquiera abre el mismo enlace y lo lee—, mientras que «el censo no trae
+hogares» era una creencia. Y la muestra de nombres está ahí para que, si el
+campo existe con otro nombre del esperado, se vea en la lámina y se corrija
+el patrón en vez de quedar en silencio.
+
+**Lo que esto NO resuelve, y hay que decirlo:** los nombres de campo que
+busca (`ESCOLARID`, `NIVEL_EDUC`, `HOGAR`, `ALFABET`, `ETNIA`…) son un
+patrón, no una lectura del servicio real — desde la máquina de desarrollo el
+proxy bloquea `ags.esri.co`, así que **no se pudo comprobar contra la capa de
+verdad**. Si el DANE los deletrea de otra forma, el bloque saldrá como «la
+capa no lo expone» **con la lista de nombres al lado**, y ahí se ve cuál es
+el patrón que falta. Ese es justamente el diseño: fallar visible y con la
+evidencia, no en silencio.
+
+De paso, `E.rutaDane` contesta ahora también **los metadatos** —la capa sin
+`/query`—, porque sin eso el módulo cree que no pudo preguntar y lo dice, que
+es el tercer estado y no el que la suite quiere medir. La capa por omisión
+trae escolaridad y alfabetismo y **no** trae hogares ni etnia, así que una
+sola corrida ejercita los dos caminos: el que cuenta y el que declara la
+ausencia con la lista de campos como prueba.
+
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
 Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de

@@ -2860,6 +2860,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El sector dentro de la ciudad': 'municipio',
     'Quién queda por fuera': 'sector', 'Cómo se mueve el sector': 'sector',
     'Continuidad del tejido': 'sector', 'El grano: manzana y predio': 'sector',
+    'Lo que el censo trae además': 'sector',
     'Suelo disponible real': 'sector', 'Potencial edificatorio': 'sector',
     // Lo que se levanta en la calle: se levanta acá, en el sector.
     'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
@@ -4391,6 +4392,65 @@ function donaHTML(datos, colorDe, nombreDe) {
          población del sector, así que las dos cifras son del mismo año y de
          la misma fuente: comparar un censo de 2018 con una proyección de hoy
          sería fabricar una diferencia que no existe. */
+      /* ── Lo que el censo trae además ────────────────────────────────
+         Escolaridad, hogares, alfabetismo y pertenencia étnica: cuatro
+         bloques que el pliego pide y que este módulo no leía. No los leía
+         porque pedía los veintitrés campos que conoce —sexo y los veintiún
+         tramos de edad— y de ahí se concluía que el censo «no trae» lo
+         demás. Era un negativo sobre datos que nadie miró.
+
+         Ahora se le pregunta a la capa qué campos declara (`?f=json`) y se
+         buscan ahí por patrón. Tres estados, separados a propósito porque
+         significan cosas distintas:
+           · está y se cuenta, con el nombre del campo que se usó;
+           · la capa expone N campos y ninguno es ese —comprobable por
+             cualquiera abriendo el mismo enlace—;
+           · no se pudo preguntar, que NO es lo mismo que no está. */
+      caja('Lo que el censo trae además',
+      (function () {
+      var ca = st.censoAmpliado;
+      if (!ca) {
+        return '<p class="vacio-tag">No se pudo preguntar qué trae la capa del censo</p>' +
+          '<p class="vacio-falta">La lista de campos de la capa del DANE no se pudo leer en esta ' +
+          'corrida —sin señal, o el servicio no contestó—. <b>No quiere decir que no traiga ' +
+          'escolaridad ni hogares:</b> quiere decir que no se preguntó. Repetir el análisis con ' +
+          'conexión lo resuelve.</p>';
+      }
+      if (ca.sinPreguntar) {
+        return '<p class="vacio-tag">No se pudo preguntar qué trae la capa del censo</p>' +
+          '<p class="vacio-falta">Se intentó leer la lista de campos y el servicio no contestó. ' +
+          '<b>No es lo mismo que no tenerlos</b>, y por eso no se dice que falten.</p>';
+      }
+      var hay = (ca.bloques || []), no = (ca.sinCampo || []);
+      return (hay.length
+        ? hay.map(function (b) {
+            return '<p class="lee-min">' + esc(b.t) + '</p>' +
+              barras(b.filas.slice(0, 6), function (x) { return x.etiqueta; },
+                function (x) { return Number(x.n).toLocaleString('es-CO') + ' · ' + conComa(x.pct) + '%'; },
+                function (x) { return x.n; },
+                function () { return '#0A6F9E'; }) +
+              '<p class="nota">Contado sobre ' + b.filas.length + ' campo' +
+              (b.filas.length === 1 ? '' : 's') + ' de la capa (' +
+              esc(b.filas.slice(0, 3).map(function (x) { return x.campo; }).join(', ')) +
+              (b.filas.length > 3 ? '…' : '') + '), sumados por el radio analizado.</p>';
+          }).join('')
+        : '') +
+        (no.length
+        ? '<p class="vacio-tag">Lo que esta capa del censo no expone</p>' +
+          '<p class="vacio-falta"><b>' + esc(no.map(function (x) { return x.t; }).join(', ')) + '.</b> ' +
+          'Se le preguntó a la capa por su lista de campos' +
+          (ca.campos ? ' —declara <b>' + ca.campos + '</b>— ' : ' ') +
+          'y ninguno corresponde. No es una suposición: cualquiera puede abrir la misma capa y ' +
+          'leer sus campos' +
+          (ca.muestra && ca.muestra.length
+            ? '; los numéricos empiezan por <i>' + esc(ca.muestra.slice(0, 6).join(', ')) + '</i>'
+            : '') +
+          '. Para estos bloques haría falta el CNPV 2018 por hogar o las tablas municipales del ' +
+          'DANE, que se publican aparte del censo por manzana.</p>'
+        : '') +
+        (!hay.length && !no.length ? '<p class="nota">La capa no declaró campos numéricos.</p>' : '');
+      })(), 'g3') +
+
       caja('El sector dentro de la ciudad',
       (function () {
       var hab = Number(st.poblacionProyectada || st.poblacionEstimada || 0);
@@ -5374,7 +5434,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio', hoja: 'B',
         pregunta: '¿Quién vive acá, qué uso manda y dónde se concentra lo que hay?',
         que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
-        cajas: ['Quién vive acá', 'El sector dentro de la ciudad', 'Quién queda por fuera',
+        cajas: ['Quién vive acá', 'Lo que el censo trae además',
+                'El sector dentro de la ciudad', 'Quién queda por fuera',
                 'Qué hay, por categoría', 'Qué manda en el sector',
                 'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma', hoja: 'A',
@@ -10980,6 +11041,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Las tres de la lámina B. Entran al inventario el mismo día que entran
          al papel: una caja que el pliego imprime y esta lista no conoce no se
          puede apagar desde ningún sitio (v857). */
+      { id: 'lo-que-el-censo-trae-ademas', t: 'Lo que el censo trae además', g: 'Lo que hay',
+        listo: !!res, falta: 'analizá el sector',
+        dato: 'escolaridad y hogares, si la capa los trae' },
       { id: 'el-sector-dentro-de-la-ciudad', t: 'El sector dentro de la ciudad', g: 'Lo que hay',
         /* La misma condición que la caja: sin población del sector no hay
            nada que comparar. Sin la de la CIUDAD sí se pinta, porque decir
@@ -13291,6 +13355,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       c: 'alta donde la malla está mapeada completa; la cara que dejan las vías no es el lindero catastral',
       r: 'manzana de 80 a 120 m en el damero fundacional colombiano',
       e: 'una calle sin mapear une dos manzanas en una; un pasaje mapeado como vía parte una en dos' },
+    'Lo que el censo trae además': {
+      f: 'se lee la lista de campos que la capa del censo declara y se buscan por patrón los de escolaridad, hogares, alfabetismo y etnia; los que existen se suman por el radio',
+      fu: 'DANE, CNPV 2018 por manzana (Esri Colombia Living Atlas): sus propios metadatos, consultados hoy',
+      c: 'alta en lo que cuenta; lo que no aparece se declara con la lista de campos como prueba',
+      r: 'no hay estándar: es el contenido de la fuente, no una medición del sector',
+      e: 'un campo con otro nombre del esperado se leería como ausente; por eso se imprime la muestra de nombres' },
     'El sector dentro de la ciudad': {
       f: 'población del sector dividida por la del municipio, las dos proyectadas al mismo año con la misma tasa',
       fu: 'DANE, CNPV 2018 por manzana y proyecciones municipales 2020-2035 (post-COVID), consultado hoy',

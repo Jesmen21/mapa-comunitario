@@ -845,6 +845,91 @@
     return { total: Math.round(a.TOTAL), unidades: a.N || 0 };
   }
 
+  /* ── Qué trae de verdad la capa del censo ───────────────────────────
+     Este módulo pide veintitrés campos —sexo y los veintiún tramos de edad—
+     porque son los que conoce. De ahí a decir «el censo no trae escolaridad
+     ni hogares» hay un salto que nadie comprobó: es un negativo sobre datos
+     que nunca se miraron, y ya costó tres carencias falsas en la lámina.
+
+     ArcGIS publica la lista de campos de cada capa en su raíz (`?f=json`).
+     Preguntarla cuesta una petición por sesión y convierte «supongo que no
+     está» en «la capa expone estos N campos y ninguno se llama así», que es
+     una afirmación que cualquiera puede verificar abriendo el mismo enlace.
+
+     Si la consulta de metadatos falla —sin señal, o el servicio caído— se
+     devuelve null y quien lo lee tiene que decir que NO PUDO PREGUNTAR, que
+     no es lo mismo que «no está». */
+  let camposCache;
+  async function camposDeCapa(urlQuery){
+    if (camposCache !== undefined) return camposCache;
+    const base = String(urlQuery || '').replace(/\/query\s*$/, '');
+    try {
+      const d = await consultaDANE(base, new URLSearchParams({ f: 'json' }), 15000);
+      camposCache = (d && Array.isArray(d.fields))
+        ? d.fields.map(f => ({ nombre: String(f.name || ''), alias: String(f.alias || ''),
+                               tipo: String(f.type || '') }))
+        : null;
+    } catch(e) { camposCache = null; }
+    return camposCache;
+  }
+
+  /* Los cuatro bloques del censo que el pliego pide y este módulo no lee:
+     escolaridad, hogares, alfabetismo y pertenencia étnica. De cada uno se
+     sabe CÓMO SE LLAMA la idea, no cómo la deletrea el DANE, así que se
+     busca por patrón entre los campos que la capa declaró. Un patrón que no
+     casa no inventa nada: deja el bloque sin dato y con la evidencia al
+     lado. */
+  const BLOQUES_CENSO = [
+    { id:'escolaridad', t:'Nivel educativo',      re:/(ESCOLARID|NIVEL_EDUC|EDUCAC)/i },
+    { id:'hogares',     t:'Hogares por tipo',     re:/HOGAR/i },
+    { id:'alfabetismo', t:'Alfabetismo',          re:/(ALFABET|LEE_Y_ESCRIB|SABE_LEER)/i },
+    { id:'etnia',       t:'Pertenencia étnica',   re:/(ETNIA|ETNIC|PERTENENC)/i }
+  ];
+  const TIPOS_NUM = /Integer|Double|Single|SmallInteger/i;
+
+  /* Suma por radio los campos que la capa sí tiene, bloque por bloque.
+     Devuelve tres cosas distintas y no las mezcla:
+       · `bloques`   — lo que se pudo contar, con el nombre del campo usado
+       · `sinCampo`  — la idea existe en el pliego y la capa no la expone
+       · `sinPreguntar` — no se pudo leer la lista de campos (sin señal) */
+  async function censoAmpliado(lat, lng, radioM){
+    const campos = await camposDeCapa(DANE_CAPAS.personasManzana);
+    if (!campos) return { sinPreguntar: true, bloques: [], sinCampo: [] };
+    const numericos = campos.filter(f => TIPOS_NUM.test(f.tipo));
+    const bloques = [], sinCampo = [];
+    const pedir = [];
+    BLOQUES_CENSO.forEach(b => {
+      const suyos = numericos.filter(f => b.re.test(f.nombre) || b.re.test(f.alias));
+      if (!suyos.length) { sinCampo.push({ id:b.id, t:b.t }); return; }
+      // El servicio corta por número de estadísticas: se piden las primeras.
+      suyos.slice(0, 12).forEach((f, i) => pedir.push({ bloque:b, campo:f, salida:'B' + b.id.slice(0,3).toUpperCase() + i }));
+    });
+    if (!pedir.length) {
+      return { bloques: [], sinCampo: sinCampo, campos: campos.length,
+               muestra: numericos.slice(0, 12).map(f => f.nombre) };
+    }
+    const p = paramsRadio(lat, lng, radioM);
+    p.set('outStatistics', JSON.stringify(pedir.map(x => ({
+      statisticType:'sum', onStatisticField: x.campo.nombre, outStatisticFieldName: x.salida }))));
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p);
+    const at = d && d.features && d.features[0] && d.features[0].attributes;
+    if (!at) return { sinPreguntar: true, bloques: [], sinCampo: sinCampo };
+    BLOQUES_CENSO.forEach(b => {
+      const mios = pedir.filter(x => x.bloque.id === b.id);
+      if (!mios.length) return;
+      const filas = mios.map(x => ({
+        campo: x.campo.nombre, etiqueta: x.campo.alias || x.campo.nombre,
+        n: Math.round(Number(at[x.salida]) || 0) })).filter(x => x.n > 0);
+      if (!filas.length) { sinCampo.push({ id:b.id, t:b.t, vacio:true }); return; }
+      const total = filas.reduce((s2, x) => s2 + x.n, 0);
+      filas.sort((x, y) => y.n - x.n);
+      bloques.push({ id:b.id, t:b.t, total: total,
+        filas: filas.map(x => Object.assign({}, x, { pct: Math.round(1000 * x.n / total) / 10 })) });
+    });
+    return { bloques: bloques, sinCampo: sinCampo, campos: campos.length,
+             muestra: numericos.slice(0, 12).map(f => f.nombre) };
+  }
+
   // Estructura demográfica: sexo y edad del censo.
   // OJO con el nombre de los campos: SEXO_M son MUJERES y SEXO_H son HOMBRES
   // (verificado contra el total municipal: 52,3% M, coherente con la cifra
@@ -1055,6 +1140,11 @@
     }
     if (!poblacion) return null;
 
+    // Tampoco bloquea: si la capa no contesta sus metadatos, se sigue sin
+    // los bloques ampliados y quien lo lea dirá que no se pudo preguntar.
+    let ampliado = null;
+    try { ampliado = await censoAmpliado(lat, lng, radioM); } catch(e) { ampliado = null; }
+
     // No bloquea nada: sin tabla o sin municipio, el análisis usa el censo.
     let proy = null;
     try { proy = await proyeccionDe(municipio); } catch(e) { proy = null; }
@@ -1072,6 +1162,10 @@
       // Igual que las viviendas: la demografía es de la capa de manzana, así
       // que no se entrega si la población terminó saliendo del sector.
       demografia: (fuente === 'manzana') ? demo : null,
+      /* Lo que la capa trae además de sexo y edad, preguntándoselo a ella.
+         Va con lo que NO tiene y con lo que no se pudo preguntar, separados:
+         son tres estados distintos y juntarlos sería el error de siempre. */
+      censoAmpliado: (fuente === 'manzana') ? ampliado : null,
       censo: 2018,
       etiquetaFuente: 'Censo DANE 2018 · ' + (fuente === 'manzana' ? 'manzana censal' : 'sector censal'),
       // Con esto el motor puede traer el conteo de 2018 hasta el año en curso.
@@ -1101,5 +1195,6 @@
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarTrazado, consultarTrazadoPoligono, consultarVias, consultarContexto,
                        consultarElevacion, rejillaDe, consultarClima,
-                       consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR };
+                       consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR,
+                       camposDeCapa, censoAmpliado, BLOQUES_CENSO };
 })();

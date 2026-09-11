@@ -1,111 +1,111 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=864-la-hoja-no-se-contradice");
-@import url("./00-brand-urbis.css?v=864-la-hoja-no-se-contradice");
+@import url("./00-app-shell.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./00-brand-urbis.css?v=865-el-censo-se-pregunta-que-trae");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=864-la-hoja-no-se-contradice");
-@import url("./02-map-tools-routing.css?v=864-la-hoja-no-se-contradice");
-@import url("./03-basemap-and-panels.css?v=864-la-hoja-no-se-contradice");
-@import url("./04-automap-markers-performance.css?v=864-la-hoja-no-se-contradice");
-@import url("./05-clusters.css?v=864-la-hoja-no-se-contradice");
-@import url("./06-landing.css?v=864-la-hoja-no-se-contradice");
-@import url("./07-mobile-advanced.css?v=864-la-hoja-no-se-contradice");
+@import url("./01-base-layout.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./02-map-tools-routing.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./03-basemap-and-panels.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./04-automap-markers-performance.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./05-clusters.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./06-landing.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./07-mobile-advanced.css?v=865-el-censo-se-pregunta-que-trae");
 
-@import url("./08-role-accessibility.css?v=864-la-hoja-no-se-contradice");
-@import url("./09-achievements.css?v=864-la-hoja-no-se-contradice");
+@import url("./08-role-accessibility.css?v=865-el-censo-se-pregunta-que-trae");
+@import url("./09-achievements.css?v=865-el-censo-se-pregunta-que-trae");
 
-@import url("./10-sport.css?v=864-la-hoja-no-se-contradice");
+@import url("./10-sport.css?v=865-el-censo-se-pregunta-que-trae");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=864-la-hoja-no-se-contradice");
+@import url("./57-comparar-sector.css?v=865-el-censo-se-pregunta-que-trae");
 
-@import url("./99-contrast-fix.css?v=864-la-hoja-no-se-contradice");
+@import url("./99-contrast-fix.css?v=865-el-censo-se-pregunta-que-trae");
 
-@import url("12-module-access.css?v=864-la-hoja-no-se-contradice");
+@import url("12-module-access.css?v=865-el-censo-se-pregunta-que-trae");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=864-la-hoja-no-se-contradice");
+@import url("./14-mobile-functional-app.css?v=865-el-censo-se-pregunta-que-trae");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=864-la-hoja-no-se-contradice");
+@import url("./16-mobility-clean-traffic.css?v=865-el-censo-se-pregunta-que-trae");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=864-la-hoja-no-se-contradice');
+@import url('./28-mobile-kawaii-entry.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./29-mobile-kawaii-platform.css?v=864-la-hoja-no-se-contradice');
+@import url('./29-mobile-kawaii-platform.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./30-zoom-marker-optimizer.css?v=864-la-hoja-no-se-contradice');
+@import url('./30-zoom-marker-optimizer.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./36-mobility-static-search.css?v=864-la-hoja-no-se-contradice');
+@import url('./36-mobility-static-search.css?v=865-el-censo-se-pregunta-que-trae');
 
 
-@import url('./41-email-registration-auth.css?v=864-la-hoja-no-se-contradice');
+@import url('./41-email-registration-auth.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./42-turquoise-refresh.css?v=864-la-hoja-no-se-contradice');
+@import url('./42-turquoise-refresh.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./43-clean-user-entry.css?v=864-la-hoja-no-se-contradice');
+@import url('./43-clean-user-entry.css?v=865-el-censo-se-pregunta-que-trae');
 
-@import url('./44-mobile-auth-onboarding.css?v=864-la-hoja-no-se-contradice');
+@import url('./44-mobile-auth-onboarding.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=864-la-hoja-no-se-contradice');
+@import url('./45-mascotas-fundacion.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=864-la-hoja-no-se-contradice');
+@import url('./46-runner-strava.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=864-la-hoja-no-se-contradice');
-@import url('./48-premio.css?v=864-la-hoja-no-se-contradice');
+@import url('./47-aurea-menu.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./48-premio.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=864-la-hoja-no-se-contradice');
+@import url('./48-runner-stats.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=864-la-hoja-no-se-contradice');
+@import url('./49-urbis-analisis.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=864-la-hoja-no-se-contradice');
+@import url('./99-mobile-clean-core.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=864-la-hoja-no-se-contradice');
+@import url('./99-safe-destination-dot.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=864-la-hoja-no-se-contradice');
+@import url('./51-cute-theme-pc.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=864-la-hoja-no-se-contradice');
+@import url('./52-urbis-pro-city.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=864-la-hoja-no-se-contradice');
-@import url('./68-procity-reconocimiento.css?v=864-la-hoja-no-se-contradice');
-@import url('./69-licencia.css?v=864-la-hoja-no-se-contradice');
+@import url('./24-procity-analisis.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./68-procity-reconocimiento.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./69-licencia.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=864-la-hoja-no-se-contradice');
+@import url('./53-auth-celeste.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=864-la-hoja-no-se-contradice');
+@import url('./54-config-admin.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=864-la-hoja-no-se-contradice');
+@import url('./55-vitrina.css?v=865-el-censo-se-pregunta-que-trae');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=864-la-hoja-no-se-contradice');
+@import url('./70-modo-app.css?v=865-el-censo-se-pregunta-que-trae');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=864-la-hoja-no-se-contradice');
-@import url('./78-presencia.css?v=864-la-hoja-no-se-contradice');
-@import url('./81-curso-servidor.css?v=864-la-hoja-no-se-contradice');
-@import url('./82-calendario.css?v=864-la-hoja-no-se-contradice');
-@import url('./83-moderacion-foto.css?v=864-la-hoja-no-se-contradice');
+@import url('./72-edu-diseno.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./78-presencia.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./81-curso-servidor.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./82-calendario.css?v=865-el-censo-se-pregunta-que-trae');
+@import url('./83-moderacion-foto.css?v=865-el-censo-se-pregunta-que-trae');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */

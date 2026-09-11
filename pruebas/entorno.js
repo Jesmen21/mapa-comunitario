@@ -85,6 +85,34 @@ const PIRAMIDE = [
    código. */
 const CENSO = { poblacion: 3045, manzanas: 42, viviendas: 880, pctMujeres: 51.1, estrato: 3 };
 
+/* Los campos que la capa del censo DECLARA. Desde la v865 la aplicación se
+   los pregunta (`?f=json`) en vez de suponer qué trae, así que el doble
+   tiene que saber contestar esa pregunta: si no, el módulo cree que no pudo
+   preguntar y lo dice, que es un tercer estado distinto de «no lo tiene».
+
+   Por omisión se devuelve una capa CON escolaridad y alfabetismo y SIN
+   hogares ni etnia: así una sola corrida ejercita los dos caminos —el que
+   cuenta y el que declara la ausencia con la lista de campos como prueba—.
+   `camposDane: []` simula una capa pelada y `camposDane: null`, un servicio
+   que no contesta sus metadatos. */
+const CAMPOS_DANE = [
+  { name: 'OBJECTID', alias: 'OBJECTID', type: 'esriFieldTypeOID' },
+  { name: 'SEXO_M', alias: 'Mujeres', type: 'esriFieldTypeInteger' },
+  { name: 'SEXO_H', alias: 'Hombres', type: 'esriFieldTypeInteger' },
+  { name: 'ESCOLARIDAD_NINGUNA', alias: 'Sin nivel educativo', type: 'esriFieldTypeInteger' },
+  { name: 'ESCOLARIDAD_PRIMARIA', alias: 'Primaria', type: 'esriFieldTypeInteger' },
+  { name: 'ESCOLARIDAD_SECUNDARIA', alias: 'Secundaria', type: 'esriFieldTypeInteger' },
+  { name: 'ESCOLARIDAD_SUPERIOR', alias: 'Superior o posgrado', type: 'esriFieldTypeInteger' },
+  { name: 'ALFABETISMO_SI', alias: 'Sabe leer y escribir', type: 'esriFieldTypeInteger' },
+  { name: 'ALFABETISMO_NO', alias: 'No sabe leer ni escribir', type: 'esriFieldTypeInteger' }
+];
+/* Cuánta gente cae en cada uno, en tanto por mil, para que cuadre con la
+   población igual que la pirámide. */
+const REPARTO_CAMPOS = {
+  ESCOLARIDAD_NINGUNA: 62, ESCOLARIDAD_PRIMARIA: 288, ESCOLARIDAD_SECUNDARIA: 431,
+  ESCOLARIDAD_SUPERIOR: 219, ALFABETISMO_SI: 938, ALFABETISMO_NO: 62
+};
+
 function atributosDane(url, censo) {
   const c = Object.assign({}, CENSO, censo || {});
   const u = new URL(url, 'http://x');
@@ -108,6 +136,7 @@ function atributosDane(url, censo) {
     else if (k === 'N') out[k] = c.manzanas;
     else if (k === 'MUJ') out[k] = mujeres;
     else if (k === 'HOM') out[k] = c.poblacion - mujeres;
+    else if (REPARTO_CAMPOS[de] != null) out[k] = Math.round(c.poblacion * REPARTO_CAMPOS[de] / 1000);
     else if (/^EDAD_/.test(de)) {
       const t = de.replace(/^EDAD_/, '');
       const fila = PIRAMIDE.filter(function (x) { return x[0] === t; })[0];
@@ -123,6 +152,15 @@ function atributosDane(url, censo) {
    Para el caso de «el censo no cubre acá», `{ vacio: true }`. */
 async function rutaDane(ctx, censo) {
   await ctx.route(/ags\.esri\.co/, function (r) {
+    /* La consulta de METADATOS: la capa sin `/query`, con `f=json`. Va
+       primero porque no lleva `outStatistics`, y sin atenderla acá caería en
+       la rama de agregados y devolvería un objeto vacío, que el módulo leería
+       como «no se pudo preguntar» —otro estado, otra cosa—. */
+    if (!/\/query/.test(r.request().url())) {
+      const cs = (censo && censo.camposDane !== undefined) ? censo.camposDane : CAMPOS_DANE;
+      return r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify(cs === null ? { error: { code: 500 } } : { fields: cs }) });
+    }
     const cuerpo = (censo && censo.vacio)
       ? { features: [] }
       : (function () {
@@ -139,6 +177,7 @@ module.exports = {
   esperarLaApp: esperarLaApp,
   rutaDane: rutaDane,
   atributosDane: atributosDane,
+  CAMPOS_DANE: CAMPOS_DANE,
   CENSO: CENSO,
   RAIZ: RAIZ,
   TRABAJO: TRABAJO.replace(/\/*$/, '/'),
