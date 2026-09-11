@@ -178,7 +178,10 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         clases: [{ id: 'verde', etq: 'Vegetación viva', color: '#22c55e', pct: 38, m2: 9000, fiable: true },
                  { id: 'construido', etq: 'Superficie dura gris', color: '#94a3b8', pct: 44, m2: 10400, fiable: true },
                  { id: 'agua', etq: 'Agua', color: '#3b82f6', pct: 3, m2: 700, fiable: true },
-                 { id: 'suelo', etq: 'Suelo desnudo', color: '#a16207', pct: 15, m2: 3500, fiable: false }] });
+                 /* 38 + 44 + 3 + 10 = 95, no 100, A PROPÓSITO: es lo que
+                    dispara el quinto chequeo de coherencia y permite medir
+                    que un fallo se IMPRIME en vez de corregirse solo. */
+                 { id: 'suelo', etq: 'Suelo desnudo', color: '#a16207', pct: 10, m2: 3500, fiable: false }] });
     };
     const bcob = H().querySelector('[data-pcr="cobertura"]');
     if (bcob) { bcob.click(); await esperar(1600); }
@@ -191,7 +194,12 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     o.doc = capturado; capturado = '';
     o.fuera = ((R.estado() || {}).pliegoFuera || []).slice();
     // Y cada hoja por separado, para poder pedirle a cada una lo suyo.
-    o.soloA = R.laminaA({ hoja: 'A' });
+    /* La A suelta se pide CON clima: la caja del clima es la que prueba que
+       un dato de ciudad no se rotula como del sector, y en este banco no hay
+       servidor de clima al que consultarle. Se inyecta por opciones, que es
+       para lo que `laminaA` las acepta. */
+    o.soloA = R.laminaA({ hoja: 'A',
+      clima: { temperatura: { media: 27.4, max: 33, min: 21 }, lluvia: { anual: 1180 }, viento: {} } });
     o.soloB = R.laminaA({ hoja: 'B' });
     return o;
   }, { C, POL, LOTE });
@@ -224,6 +232,20 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         altoPapel: mm(h.getBoundingClientRect().height),
         bandas: [...h.querySelectorAll('.banda h3')].map(x => x.textContent.replace(/\s+/g, ' ').trim()),
         cajas: [...h.querySelectorAll('.caja h2')].map(x => x.textContent.trim()),
+        escalas: [...h.querySelectorAll('.caja')].map(c => ({
+          t: ((c.querySelector('h2') || {}).textContent || '').trim(),
+          e: c.getAttribute('data-escala') || '',
+          rotulo: ((c.querySelector('h2 .escala-dato') || {}).textContent || '').trim() })),
+        coherencia: (function () {
+          const c = [...h.querySelectorAll('.caja')].filter(x =>
+            /Coherencia de las cifras/.test((x.querySelector('h2') || {}).textContent || ''))[0];
+          if (!c) return null;
+          return { lee: (c.querySelector('.lee') || {}).textContent || '',
+                   filas: [...c.querySelectorAll('.coh li')].map(li => ({
+                     estado: (li.className.match(/coh-([a-z-]+)/) || [0, ''])[1],
+                     texto: li.textContent.replace(/\s+/g, ' ').trim(),
+                     rojo: getComputedStyle(li).color })) };
+        })(),
         biblio: h.querySelectorAll('.pie .biblio li').length,
         propuestas: h.querySelectorAll('.sintesis-pie .pu').length,
         plano: !!h.querySelector('.plano-hero')
@@ -232,6 +254,15 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   });
   await m.close();
   await pg.close(); await b.close();
+  /* Las dos láminas, guardadas: cuando una comprobación de diagramación
+     falla, mirarlas con el navegador dice en un minuto lo que adivinar no
+     dice en media hora. */
+  try {
+    const fs2 = require('fs');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-dos.html', r.doc || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-solo-a.html', r.soloA || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-solo-b.html', r.soloB || '', 'utf8');
+  } catch (e) {}
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
@@ -321,6 +352,66 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     />Movilidad</.test(r.soloB || '') && !traeElPlano(r.soloB),
     traeElPlano(r.soloB) ? 'la B se trajo el plano' : 'sin plano, como debe ser');
   T('y la A suelta sí lo trae', traeElPlano(r.soloA));
+
+  console.log('\n  -- cada cifra dice a qué escala está medida (v854) --');
+  const todas = A.escalas.concat(B.escalas);
+  const sinDeclarar = todas.filter(x => x.e === 'sin-declarar' || /sin declarar/i.test(x.rotulo));
+  T('todas las cajas de las dos láminas declaran su escala', todas.length > 20 && sinDeclarar.length === 0,
+    sinDeclarar.length ? 'sin declarar: ' + sinDeclarar.map(x => x.t.replace(/\s+\S+$/, '')).join(' · ')
+                       : todas.length + ' cajas, todas rotuladas');
+  const CONOCIDAS = ['predio', 'sector', 'comuna', 'ciudad', 'municipio', 'departamento'];
+  T('y usan escalas de la lista, no inventadas', todas.every(x => CONOCIDAS.indexOf(x.e) >= 0),
+    [...new Set(todas.map(x => x.e))].join(' · '));
+  /* Lo que importa de verdad: que lo que NO es del sector no se lea como si
+     lo fuera. El clima sale de una celda de decenas de kilómetros y la
+     zonificación sísmica va por municipio. */
+  const escalaDe = t => (todas.filter(x => new RegExp('^' + t).test(x.t))[0] || {}).e || 'no está';
+  T('y lo medido sobre el lote va como PREDIO, no como sector',
+    escalaDe('El lote a intervenir') === 'predio', escalaDe('El lote a intervenir'));
+  T('mientras un mapa del área analizada va como SECTOR',
+    escalaDe('Cobertura del suelo') === 'sector', escalaDe('Cobertura del suelo'));
+  /* La prueba de fuego de la regla: el clima NO es del sector. Sale de una
+     celda de reanálisis de decenas de kilómetros, y puesto al lado del área
+     del lote se lee como si fuera de ahí. En la A suelta, que se pide con
+     clima inyectado porque este banco no tiene servidor de clima. */
+  const escalaEn = (h, t) => {
+    const re = new RegExp('data-escala="([a-z-]+)"[^>]*>\\s*<h2>' + t + '<');
+    const m = String(h || '').match(re);
+    return m ? m[1] : 'no está';
+  };
+  T('y el clima, que es de una celda que cubre media ciudad, va como CIUDAD',
+    escalaEn(r.soloA, 'El clima') === 'ciudad', escalaEn(r.soloA, 'El clima'));
+  T('la lámina distingue al menos tres escalas, no rotula todo igual',
+    new Set(todas.map(x => x.e)).size >= 2 && new Set(todas.map(x => x.e)).has('predio'),
+    [...new Set(todas.map(x => x.e))].join(' · '));
+
+  console.log('\n  -- los siete chequeos de coherencia, impresos --');
+  const CO = B.coherencia;
+  T('el panel de coherencia está, y en la lámina B', !!CO && !A.coherencia);
+  if (CO) {
+    T('trae los siete chequeos', CO.filas.length === 7, CO.filas.length + ' chequeos');
+    /* El que se puede correr y FALLA con este sector: la cobertura del suelo
+       del fixture suma 95 y no 100. Tiene que salir impreso y en rojo. */
+    const falla = CO.filas.filter(f => f.estado === 'falla');
+    T('el chequeo que falla se imprime, no se corrige en silencio',
+      falla.length >= 1 && /suman 100/.test(falla.map(f => f.texto).join(' ')),
+      falla.map(f => f.texto.slice(0, 70)).join(' | ') || 'ninguno marcado como fallo');
+    T('y dice la cifra real que encontró, no la que debería ser',
+      falla.some(f => /95/.test(f.texto)), falla.map(f => f.texto.slice(0, 90)).join(' | '));
+    T('en rojo, para que se vea de lejos',
+      falla.every(f => /rgb\(180, 35, 24\)/.test(f.rojo)), falla.map(f => f.rojo).join(' · '));
+    T('y la cabecera del panel avisa de cuántos fallan',
+      /falla|fallan/.test(CO.lee), CO.lee.slice(0, 90));
+    /* Los que no se pueden correr no se dan por buenos: dicen por qué y
+       nombran la fuente que haría falta. Es la regla de los vacíos
+       declarados, aplicada a los chequeos. */
+    const sinDato = CO.filas.filter(f => f.estado === 'sin-dato');
+    T('los que no se pueden correr lo dicen y nombran qué haría falta',
+      sinDato.length >= 3 && sinDato.every(f => /haría falta|no se está leyendo|no consulta|por ciudad/i.test(f.texto)),
+      sinDato.length + ' sin dato');
+    T('y ninguno se presenta como aprobado sin haberse corrido',
+      CO.filas.filter(f => f.estado === 'pasa').every(f => !/sin dato|haría falta/i.test(f.texto)));
+  }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
 

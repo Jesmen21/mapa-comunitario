@@ -383,6 +383,42 @@ habían ido a la B. Medio pliego vacío no es aire, es una hoja a medio
 terminar. Los techos de los dibujos están en milímetros de papel y los
 deshace `--k`, así que crecer no deforma nada: lo que crece es la letra.
 
+### La escala de cada cifra, y los siete chequeos (v854)
+
+**Cada panel declara a qué escala está medido**, con `ESCALA_PANEL` en
+`js/68`: predio, sector, comuna, ciudad, municipio o departamento. Es el
+error más caro de un análisis urbano y no se ve: la temperatura media
+impresa al lado del área del lote no es la del lote, es la de una celda de
+reanálisis que cubre media ciudad, y leídas juntas parecen la misma cosa.
+Un panel sin entrada en la tabla imprime «escala sin declarar» en rojo:
+callar deja que el lector suponga que es del sector.
+
+**El rótulo va FUERA del `<h2>`.** Dentro parecía más limpio y rompió media
+lámina: el título de cada caja se extrae en seis sitios con
+`<h2>([^<]+)</h2>` —el reparto por bandas, el peso de cada caja, lo que se
+declara fuera, tres suites—, y con una etiqueta adentro ese patrón deja de
+casar. El síntoma no fue un error sino algo peor: las cajas dejaron de
+reconocerse, se fueron todas a «Otras mediciones» y las de una lámina
+aparecieron en la otra. **El `<h2>` de una caja lleva texto y nada más.**
+
+**Los siete chequeos de coherencia** (`chequeosDeCoherencia`) se corren
+antes de imprimir y el resultado se IMPRIME, en el panel «Coherencia de las
+cifras» al cierre de la lámina B. Lo que falla sale en rojo con la cifra
+real que encontró: *nunca se corrige en silencio*. Los que no se pueden
+correr —jefes de hogar, tipos de hogar, nacimientos, empleo: el censo que
+se lee da población y viviendas por manzana, no hogares— se imprimen como
+«sin dato para comprobarlo» y nombran la fuente que haría falta, igual que
+los vacíos obligatorios de la v849. Darlos por buenos sería mentir por
+omisión.
+
+El séptimo compara lo que cita el cierre contra lo que dice el panel. Ojo
+con su extracción: los dos sitios imprimen la medición y la referencia con
+la misma unidad y a un palmo una de otra —«6,1 m² por habitante … la meta
+nacional son 15 m² por habitante» en el panel, «6,1 m²/hab frente a 15» en
+el cierre—, así que pescar el primer «m²/hab» agarraba la medición en un
+sitio y el estándar en el otro. Se descarta lo que venga detrás de «meta»,
+«falta» o «frente a».
+
 ### La regla de neutralidad, impresa
 
 Las dos láminas imprimen, en la cabecera, que el análisis se hizo **sin

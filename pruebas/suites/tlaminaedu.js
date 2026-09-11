@@ -241,8 +241,11 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         pide: mm(rect(rej).height), papel: mm(rect(marco).height),
         mapas: [...document.querySelectorAll('.mapa-caja, .plano-hero')].map(c => {
           const s = svgDe(c), rb = s ? rect(s) : { width: 0, height: 0 };
+          const bd = c.closest('.banda');
           return { id: c.getAttribute('data-m') || 'plano', t: (c.querySelector('h2') || {}).textContent || '?',
             w: mm(rb.width), h: mm(rb.height),
+            banda: bd ? ((bd.querySelector('h3') || {}).textContent || '').trim() : '',
+            peso: Number(c.getAttribute('data-p')) || 1,
             cajaW: c.offsetWidth };
         }),
         /* La capa de método de cada caja y de cada mapa: las cinco etiquetas. */
@@ -287,6 +290,8 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         unidad: rej.offsetWidth / (document.querySelector('.hoja').offsetWidth > document.querySelector('.hoja').offsetHeight ? 24 : 16),
         cifras: [...document.querySelectorAll('.caja-cifra')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', w: c.offsetWidth,
+          banda: (function () { const b = c.closest('.banda');
+            return b ? ((b.querySelector('h3') || {}).textContent || '').trim() : ''; })(),
           // La caja entera vecina en la misma banda, si la hay: una baldosa vale la mitad.
           vecina: (function () { const v = [...c.parentElement.querySelectorAll(':scope > .caja:not(.caja-cifra):not(.mapa-caja):not(.plano-hero):not(.caja-doble):not(.caja-alta)')][0]; return v ? v.offsetWidth : 0; })(),
           // Un dibujo de verdad, no el icono de la esquina, que también es svg.
@@ -424,9 +429,42 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
        banda en que cayó —las de una banda sola en su fila se estiran—, así
        que se comprueba la pista nominal contra el mapa más angosto y, en
        cada banda con caja vecina, que la baldosa valga la mitad. */
-    T('cuatro pistas caben en el ancho del mapa de análisis más angosto',
-      oc.cifras.length >= 2 && !!mapaChico && 4 * oc.unidad <= mapaChico.cajaW * 1.04,
-      Math.round(4 * oc.unidad) + ' px de cuatro pistas contra ' + (mapaChico ? mapaChico.cajaW : 0) + ' del mapa');
+    /* «Cuatro baldosas en el ancho de un mapa» es una regla DENTRO de una
+       banda: la baldosa y el mapa que se comparan comparten rejilla. Medirla
+       contra la pista nominal de la hoja entera funcionaba por casualidad y
+       se cayó en cuanto una banda nueva cambió el reparto de las filas: una
+       banda estrecha tiene pistas estrechas, y su mapa es más angosto que
+       cuatro pistas de la hoja sin que nada esté mal. Se mide donde vive la
+       regla: en cada banda que tenga las dos cosas. */
+    const porBanda = {};
+    const meter = (k, tipo, x) => {
+      porBanda[k] = porBanda[k] || { cifras: [], mapas: [] };
+      porBanda[k][tipo].push(x);
+    };
+    oc.cifras.forEach(c => meter(c.banda, 'cifras', c));
+    oc.mapas.forEach(m => meter(m.banda, 'mapas', m));
+    const mixtas = Object.keys(porBanda).filter(k => porBanda[k].cifras.length && porBanda[k].mapas.length);
+    const anchoDe = (k, tipo) => Math.min.apply(null, porBanda[k][tipo].map(x => tipo === 'cifras' ? x.w : x.cajaW));
+    /* Dos reglas, y son distintas. La primera es la del pliego —«caben
+       cuatro baldosas en el ancho de un mapa»— y aplica al mapa de ANÁLISIS,
+       el que pesa dos columnas o más: un mapa de una columna es él mismo un
+       mapa chico. La segunda es la regla general de §1.1, que sí aplica a
+       todos: un dato suelto y un mapa no pueden ocupar lo mismo. */
+    const anchoMapa = (k, minPeso) => {
+      const ms = porBanda[k].mapas.filter(m => m.peso >= minPeso);
+      return ms.length ? Math.min.apply(null, ms.map(m => m.cajaW)) : 0;
+    };
+    const grandes = mixtas.filter(k => anchoMapa(k, 2) > 0);
+    const estrechas = grandes.filter(k => 4 * anchoDe(k, 'cifras') > anchoMapa(k, 2) * 1.08);
+    T('en cada banda, cuatro baldosas caben en el ancho de su mapa de análisis',
+      grandes.length >= 1 && estrechas.length === 0,
+      grandes.map(k => k.split(' ')[0] + ' ' + Math.round(4 * anchoDe(k, 'cifras')) +
+        '/' + anchoMapa(k, 2)).join(' · ') || 'ninguna banda tiene baldosa y mapa de dos columnas');
+    const igualadas = mixtas.filter(k => anchoDe(k, 'mapas') < anchoDe(k, 'cifras') * 1.9);
+    T('y ningún mapa ocupa lo mismo que una cifra suelta',
+      igualadas.length === 0,
+      igualadas.map(k => k.split(' ')[0] + ': mapa ' + anchoDe(k, 'mapas') +
+        ' contra baldosa ' + anchoDe(k, 'cifras')).join(' · ') || 'todos al menos al doble');
     T('y cada baldosa vale la mitad de la caja entera de su banda',
       oc.cifras.filter(c => c.vecina).length >= 1 && oc.cifras.filter(c => c.vecina).every(c => c.w <= c.vecina * 0.55),
       oc.cifras.filter(c => c.vecina).map(c => c.t.split(' ')[0] + ' ' + Math.round(100 * c.w / c.vecina) + '%').join(' · ') || 'ninguna con vecina');

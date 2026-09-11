@@ -2819,6 +2819,56 @@ function donaHTML(datos, colorDe, nombreDe) {
       });
   }
 
+  /* ── A qué ESCALA está medida cada cifra (v854) ─────────────────────
+     El pliego de instrucciones lo pide con todas las letras: «cada cifra se
+     rotula con su escala. Prohibido presentar una cifra de ciudad como si
+     fuera del sector». Es el error más caro de un análisis urbano, porque no
+     se ve: la temperatura media que se imprime al lado del área del lote no
+     es la del lote, es la de una celda de reanálisis que cubre media ciudad,
+     y leídas juntas parecen la misma cosa.
+
+     Se declara por panel y no por dato suelto porque un panel mide UNA cosa
+     a UNA escala; el que mezcle dos tiene un problema anterior al rótulo.
+
+     Además de las cuatro que nombra el pliego —sector, comuna, ciudad,
+     departamento— hacen falta dos: PREDIO, para lo que se midió sobre el
+     lote dibujado y no sobre el sector, y MUNICIPIO, que es la escala de la
+     zonificación sísmica. Rotular un dato de predio como «sector» sería
+     exactamente el error que la regla viene a impedir, solo que en la otra
+     dirección. */
+  var ESCALA_PANEL = {
+    // Lo medido sobre el LOTE dibujado.
+    'El lote a intervenir': 'predio', 'La cuadra del lote': 'predio',
+    'Qué cabe en el lote': 'predio', 'La sombra que arrojás': 'predio',
+    'Qué le pide el sitio al proyecto': 'predio', 'Información legal del predio': 'predio',
+    'Norma urbana': 'predio', 'Hasta dónde se camina desde el lote': 'predio',
+    // Lo medido dentro del área analizada.
+    'El sitio': 'sector', 'Plano del sector': 'sector', 'Qué hay, por categoría': 'sector',
+    'Qué manda en el sector': 'sector', 'Dónde está la calle comercial': 'sector',
+    'Hitos y nodos': 'sector', 'Llenos y vacíos': 'sector', 'Alturas de lo construido': 'sector',
+    'Cobertura del suelo': 'sector', 'Verde y agua': 'sector', 'Espacio público efectivo': 'sector',
+    'El terreno': 'sector', 'La sombra de los vecinos': 'sector', 'El ruido del tránsito': 'sector',
+    'Cómo se llega': 'sector', 'El perfil de la calle': 'sector', 'A distancia de caminar': 'sector',
+    'Cómo cambia al alejarse': 'sector', 'Dónde falta mapear': 'sector',
+    'Lo levantado en campo': 'sector', 'Lo que falta levantar': 'sector', 'Lo intangible': 'sector',
+    'Cómo cambió el sitio': 'sector', 'La inundación': 'sector', 'Síntesis del sector': 'sector',
+    'Infraestructura de servicios': 'sector', 'Quién vive acá': 'sector',
+    'Coherencia de las cifras': 'sector',
+    // Lo que se levanta en la calle: se levanta acá, en el sector.
+    'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
+    'Voces de quien vive acá': 'sector', 'Movilidad real': 'sector', 'Riesgo oficial': 'sector',
+    'Servicios públicos': 'sector',
+    /* Y lo que NO es del sector aunque se imprima a su lado. El clima sale
+       de una celda de reanálisis de decenas de kilómetros y el sol, de la
+       latitud: las dos son de ciudad, no de este lote. La zonificación
+       sísmica de la NSR-10 va por municipio. */
+    'El clima': 'ciudad', 'Asoleamiento': 'ciudad', 'La amenaza sísmica': 'municipio'
+  };
+  var ESCALA_TEXTO = {
+    predio: 'Predio', sector: 'Sector', comuna: 'Comuna',
+    ciudad: 'Ciudad', municipio: 'Municipio', departamento: 'Departamento'
+  };
+
   /* Las dos láminas del pliego educativo (v853), con la pregunta que cada
      una responde. El pliego de instrucciones las define así, y la pregunta
      se imprime en la cabecera: una lámina que no dice qué contesta obliga a
@@ -3469,8 +3519,25 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (DECIDE[titulo]) {
         try { var dd = DECIDE[titulo](); if (dd) decide = '<p class="decide">→ ' + esc(dd) + '</p>'; } catch (e) { decide = ''; }
       }
-      return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + ancha + '">' +
-        '<h2>' + esc(titulo) + '</h2>' +
+      /* El rótulo de escala. Un panel sin entrada en `ESCALA_PANEL` lo dice
+         —«escala sin declarar»— en vez de callarse: callar es dejar que el
+         lector suponga que es del sector, que es justo lo que la regla
+         prohíbe. Una caja nueva necesita su entrada, igual que necesita la
+         del método. */
+      var esc0 = ESCALA_PANEL[titulo];
+      /* El rótulo va FUERA del `<h2>`, pegado debajo. Dentro parecía más
+         limpio y rompió media lámina: el título de cada caja se extrae en
+         seis sitios con `<h2>([^<]+)</h2>` —el reparto por bandas, el peso
+         de cada caja, lo que se declara fuera, tres suites—, y con una
+         etiqueta adentro ese patrón deja de casar. El síntoma no fue un
+         error sino algo peor: las cajas dejaron de reconocerse, se fueron
+         todas a «Otras mediciones» y las de una lámina aparecieron en la
+         otra. La regla: el `<h2>` de una caja lleva texto y nada más. */
+      var rotulo = '<p class="escala-dato' + (esc0 ? '' : ' escala-sin') + '">' +
+        esc(esc0 ? ESCALA_TEXTO[esc0] : 'escala sin declarar') + '</p>';
+      return '<section class="caja ' + (clase ? clase : 'fam-' + cara[0]) + ancha +
+        '" data-escala="' + esc(esc0 || 'sin-declarar') + '">' +
+        '<h2>' + esc(titulo) + '</h2>' + rotulo +
         '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
         cuerpo + decide + metodo + '</section>';
     }
@@ -4868,6 +4935,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         cajas: ['Lo intangible', 'Lo levantado en campo', 'Dónde falta mapear', 'Lo que falta levantar',
                 'Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá',
                 'Riesgo oficial', 'Servicios públicos', 'Norma urbana', 'Movilidad real', 'Información legal del predio'] },
+      /* La auditoría de las cifras, ANTES del cierre y en banda propia. En
+         la banda de la síntesis la hacía crecer: la fila mide lo que su caja
+         más alta, y la síntesis volvía a tener medio palmo de papel muerto
+         debajo, que es justo lo que el pliego prohíbe —«la síntesis se
+         reduce a lo que ocupe su contenido»—. Y de paso se lee mejor: primero
+         se comprueba que los números no se contradicen, después se concluye. */
+      { id: 'coherencia', titulo: 'Coherencia de las cifras', fam: 'cierre', hoja: 'B',
+        pregunta: '¿Las cifras de esta lámina se contradicen entre sí?',
+        que: 'los siete chequeos, con lo que falla impreso',
+        cajas: ['Coherencia de las cifras'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre', hoja: 'B',
         pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
@@ -5376,10 +5453,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       var clasePeso = m.id === 'foto' ? ' mapa-foto'
         : PESO_MAPA[m.id] ? ' mapa-p' + peso
         : mapaAncho ? ' mapa-ancho' : '';
+      /* Un mapa del sector está medido a escala de SECTOR: es el área
+         analizada dibujada. Lo declara como cualquier otra caja (v854), y
+         el rótulo va fuera del `<h2>` por la misma razón que allá. */
       return '<section class="caja mapa-caja' + clasePeso +
           ' fam-' + (GRUPO_FAM[m.grupo] || 'sitio') +
-          '" data-g="' + esc(m.grupo || 'mapas') + '" data-p="' + peso + '" data-m="' + esc(m.id) + '">' +
+          '" data-g="' + esc(m.grupo || 'mapas') + '" data-p="' + peso + '" data-m="' + esc(m.id) +
+          '" data-escala="sector">' +
           '<h2>' + esc(titulo) + '</h2>' +
+          '<p class="escala-dato">Sector</p>' +
           '<span class="ic" aria-hidden="true">' + ico(cara[1], 22) + '</span>' +
           '<div class="mp-dib">' + m.svg + '</div>' +
           /* Las convenciones, debajo del dibujo y encima del pie. Ese orden
@@ -5400,6 +5482,103 @@ function donaHTML(datos, colorDe, nombreDe) {
           metodoDe(/^calor:(?!todos)/.test(String(m.id)) ? 'calor:categoria' : m.id, hoyTxt) +
         '</section>';
     }).join('');
+    /* ── Los siete chequeos de coherencia (§2.4 del pliego) ────────────
+       Se corren antes de imprimir y el resultado se IMPRIME: «si un chequeo
+       falla, imprimir la advertencia en la lámina. Nunca corregir en
+       silencio». Un análisis que se corrige solo y no lo cuenta es un
+       análisis que no se puede auditar, y en una lámina que se defiende
+       delante de un jurado eso vale más que la cifra.
+
+       Tres de los siete no se pueden correr todavía porque el dato que
+       compararían no se está leyendo: en vez de darlos por buenos —que es
+       mentir por omisión— se imprimen como «sin dato para comprobarlo» y
+       nombran la fuente que haría falta, igual que los vacíos obligatorios
+       de la v849. */
+    function chequeosDeCoherencia(textoPaneles, textoSintesis) {
+      var out = [];
+      var pon = function (t, estado, dicho) { out.push({ t: t, estado: estado, dicho: dicho }); };
+      var num = function (x) { return Number(String(x).replace(/\./g, '').replace(',', '.')); };
+
+      // 1 · Jefes de hogar contra hogares.
+      pon('Jefes de hogar ≤ número de hogares', 'sin-dato',
+          'el censo que se lee da población y viviendas por manzana, no hogares ni jefatura. ' +
+          'Haría falta el CNPV 2018 del DANE por hogar.');
+      // 2 · Las categorías de hogar suman hogares, no personas.
+      pon('Las categorías de hogar suman el total de HOGARES, no de personas', 'sin-dato',
+          'no se está leyendo el reparto de hogares por tipo. Es el error clásico de este cuadro: ' +
+          'sumar unipersonal + monoparental + biparental y comparar el total contra la POBLACIÓN.');
+      // 3 · Nacimientos contra el tamaño del sector.
+      pon('Nacimientos del periodo coherentes con el tamaño del sector', 'sin-dato',
+          'haría falta la estadística vital del DANE por área, que este módulo no consulta.');
+      // 4 · Desempleados contra la población económicamente activa.
+      pon('Desempleados ≤ población económicamente activa', 'sin-dato',
+          'el mercado laboral del DANE se publica por ciudad, no por sector: una cifra de ciudad ' +
+          'puesta acá sería justo lo que prohíbe la regla de la escala.');
+
+      // 5 · Los porcentajes de una torta suman 100.
+      var cobHoja = (o.cobertura !== undefined ? o.cobertura : S.cobertura) || null;
+      var clases = (cobHoja && cobHoja.clases) || [];
+      if (clases.length) {
+        var suma = clases.reduce(function (a, c) { return a + (Number(c.pct) || 0); }, 0);
+        pon('Los porcentajes de la cobertura del suelo suman 100 %',
+            Math.abs(suma - 100) <= 1 ? 'pasa' : 'falla',
+            'suman ' + (Math.round(suma * 10) / 10) + ' %' +
+            (Math.abs(suma - 100) <= 1 ? '' : ': la clasificación dejó píxeles sin repartir o los contó dos veces'));
+      } else {
+        pon('Los porcentajes de la cobertura del suelo suman 100 %', 'sin-dato',
+            'la cobertura del suelo no se ha leído en este sector.');
+      }
+
+      // 6 · Unidades consistentes: personas, viviendas y hogares no son lo mismo.
+      var pv = Number(st.personasPorVivienda) || 0;
+      if (pv > 0) {
+        pon('Personas y viviendas son unidades distintas, y su razón es plausible',
+            (pv >= 1.5 && pv <= 8) ? 'pasa' : 'falla',
+            (Math.round(pv * 100) / 100) + ' personas por vivienda' +
+            (pv >= 1.5 && pv <= 8 ? '' : ': fuera del rango creíble, casi siempre por sumar personas donde iban viviendas'));
+      } else {
+        pon('Personas y viviendas son unidades distintas, y su razón es plausible', 'sin-dato',
+            'el censo no devolvió viviendas para esta área.');
+      }
+
+      // 7 · Lo que cita el cierre es lo que dice el panel.
+      /* La cifra MEDIDA y no la meta. Las dos se imprimen con la misma
+         unidad y a un palmo una de otra —«6,1 m²/hab frente a la meta de 15
+         m²/hab»—, así que pescar el primer «m²/hab» del texto agarraba el
+         estándar en un sitio y la medición en el otro, y el chequeo
+         denunciaba una divergencia que no existía. Se ancla en «frente a»,
+         que es lo que separa lo medido de la referencia en los dos sitios. */
+      /* La cifra MEDIDA, no la referencia. Los dos sitios imprimen las dos
+         con la misma unidad y a un palmo una de otra —el panel dice «6,1 m²
+         por habitante … la meta nacional son 15 m² por habitante», el cierre
+         «6,1 m²/hab frente a 15»—, así que pescar el primer «m²/hab» del
+         texto agarraba la medición en un sitio y el estándar en el otro, y
+         el chequeo denunciaba una divergencia que no existía. Se descarta lo
+         que venga detrás de «meta», «falta» o «frente a», que es como se
+         nombra la referencia en los dos. */
+      var saca = function (t) {
+        var txt = String(t || '').replace(/<[^>]+>/g, ' ');
+        var re = /([\d.]+,?\d*)\s*m²\s*(?:\/hab|por habitante)/g, m;
+        while ((m = re.exec(txt))) {
+          var antes = txt.slice(Math.max(0, m.index - 34), m.index);
+          if (/meta|falta|frente a\s*$/i.test(antes)) continue;
+          return num(m[1]);
+        }
+        return null;
+      };
+      var enPanel = saca(textoPaneles), enCierre = saca(textoSintesis);
+      if (enPanel != null && enCierre != null) {
+        pon('El espacio público que cita el cierre es el del panel',
+            Math.abs(enPanel - enCierre) <= 0.15 ? 'pasa' : 'falla',
+            'panel ' + enPanel + ' m²/hab · cierre ' + enCierre + ' m²/hab' +
+            (Math.abs(enPanel - enCierre) <= 0.15 ? '' : ': dos cuentas distintas de la misma cosa en la misma lámina'));
+      } else {
+        pon('El espacio público que cita el cierre es el del panel', 'sin-dato',
+            'no hay parques con polígono en el área, así que la cifra no se calcula en ninguno de los dos sitios.');
+      }
+      return out;
+    }
+
     var cajaSintesis =
       /* La síntesis cierra la hoja a todo el ancho, fuera de las columnas.
          Adentro era la última en entrar y la primera en no caber: quince
@@ -5463,7 +5642,35 @@ function donaHTML(datos, colorDe, nombreDe) {
                 'Escribilo acá, a mano: es la parte de la lámina que URBIS no puede hacer.</small>' +
                 '<div class="renglones" style="--n:3"></div></div>';
           })(), 'sintesis-pie');
-    var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis);
+    /* El panel de coherencia se arma AL FINAL, cuando ya existen el texto de
+       los paneles y el del cierre: el séptimo chequeo compara lo que dice
+       uno con lo que dice el otro, y para eso tienen que estar escritos. */
+    var cajaCoherencia = (function () {
+      var lista;
+      try { lista = chequeosDeCoherencia(cajasHTML, cajaSintesis); } catch (e) { return ''; }
+      if (!lista || !lista.length) return '';
+      var fallan = lista.filter(function (x) { return x.estado === 'falla'; }).length;
+      var sinDato = lista.filter(function (x) { return x.estado === 'sin-dato'; }).length;
+      /* La marca de estado se DIBUJA con la hoja de estilo, no con un
+         glifo: los signos de visto y de cruz cuentan como emoji, y el
+         pliego no lleva ni uno —se comprueba en `tlamina`—. Un cuadrito de
+         color con su palabra al lado se lee igual de rápido y además
+         sobrevive a una fotocopia en blanco y negro, donde el color no
+         distingue pero la palabra sí. */
+      var ICONO = { pasa: 'pasa', falla: 'falla', 'sin-dato': 'sin dato' };
+      return caja('Coherencia de las cifras',
+        '<p class="lee">' + (fallan
+          ? '<b>' + fallan + (fallan === 1 ? ' chequeo falla' : ' chequeos fallan') + '.</b> ' +
+            'Lo que falla está impreso: no se corrigió en silencio.'
+          : 'Los chequeos que se pueden correr con lo que hay, pasan.') +
+          ' ' + sinDato + ' de ' + lista.length + ' no se pueden correr todavía y dicen por qué.</p>' +
+        '<ul class="coh">' + lista.map(function (x) {
+          return '<li class="coh-' + x.estado + '"><b><i class="coh-mk"></i>' + ICONO[x.estado] + '</b>' +
+            '<span><i>' + esc(x.t) + '</i>' + (x.dicho ? ' · ' + esc(x.dicho) : '') + '</span></li>';
+        }).join('') + '</ul>');
+    })();
+
+    var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis + cajaCoherencia);
     cajasHTML = agrupado.html;
 
     var hoy = new Date();
@@ -5938,6 +6145,23 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pcr-rosa-petalos path{ fill:#34CCFE; fill-opacity:.55; stroke:#0A6F9E; stroke-width:.5 }' +
       '.pcr-rosa-n{ fill:#6B7A8A; font-size:9px; font-weight:700; text-anchor:middle }' +
       // El pie se va al fondo del papel aunque el contenido termine antes.
+      /* El rótulo de escala, pegado al título y en letra de dato: se lee al
+         mismo tiempo que la cifra, que es cuando hace falta. */
+      '.escala-dato{ display:inline-block; margin:.6mm 0 0; padding:.3mm 1.4mm; border-radius:1mm;' +
+        'background:#E8F4FA; color:#075E88; font-size:2.4mm; font-weight:700;' +
+        'letter-spacing:.04em; text-transform:uppercase; align-self:flex-start }' +
+      '.escala-sin{ background:#FDECEC; color:#B42318 }' +
+      '.coh{ list-style:none; margin:1.6mm 0 0; padding:0; display:flex; flex-direction:column; gap:1.2mm }' +
+      '.coh li{ display:flex; gap:1.8mm; align-items:baseline; font-size:2.8mm; line-height:1.3 }' +
+      '.coh li b{ font-size:2.5mm; flex:0 0 auto; display:inline-flex; align-items:center; gap:1mm;' +
+        'text-transform:uppercase; letter-spacing:.04em; min-width:14mm }' +
+      '.coh-mk{ display:inline-block; width:2.2mm; height:2.2mm; border-radius:.5mm; background:currentColor }' +
+      '.coh li i{ font-style:normal; font-weight:700; color:#12202E }' +
+      '.coh-pasa b{ color:#1B8A5A }' +
+      '.coh-falla{ color:#B42318 }' +
+      '.coh-falla b, .coh-falla i{ color:#B42318 }' +
+      '.coh-sin-dato{ color:#8A6D3B }' +
+      '.coh-sin-dato b, .coh-sin-dato i{ color:#8A6D3B }' +
       '.que-responde{ margin-top:1.6mm; font-size:3.4mm; color:#075E88 }' +
       '.que-responde b{ color:#0A6F9E }' +
       '.neutral{ margin-top:1.6mm; font-size:2.9mm; line-height:1.35; color:#5A6472;' +
@@ -12527,6 +12751,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
     'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
     'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
+    'Coherencia de las cifras': {
+      f: 'siete comprobaciones cruzadas entre cifras de la misma lámina; cada una compara dos ' +
+         'números que tienen que cuadrar (suma de porcentajes = 100, personas ÷ viviendas en ' +
+         'rango creíble, lo que cita el cierre = lo que dice el panel)',
+      fu: 'las propias cifras de esta lámina, calculadas hoy',
+      c: 'alta: no depende de ninguna fuente externa, solo de que la lámina no se contradiga',
+      r: 'el chequeo de consistencia que cualquier jurado hace a mano antes de creerle a un cuadro',
+      e: 'dar por bueno un chequeo que no se pudo correr. Acá se declara «sin dato» y se nombra ' +
+         'la fuente que haría falta' },
     'Espacio público efectivo': { f: 'área de parques y plazas con polígono ÷ habitantes', fu: 'OpenStreetMap, hoy; población DANE 2018', c: 'media', r: '15 m²/hab: Decreto 1504 de 1998, compilado en el 1077 de 2015', e: 'un parque sin polígono no cuenta' },
     'Cómo cambió el sitio': { f: 'la misma vista año a año; el verde, medido sobre cada imagen', fu: 'Microsoft Planetary Computer: Sentinel-2 y Landsat', c: 'media', r: 'una década, de 2014 a hoy', e: 'nubes y estación mueven el verde: ±10 %' },
     'El lote a intervenir': { f: 'área, perímetro, frentes por vía y exposición solar por lado', fu: 'el polígono dibujado; vías de OpenStreetMap', c: 'alta en geometría, media en frentes', r: 'lote mínimo del POT: sin dato oficial', e: '±3 % de área por el trazo a mano' },
