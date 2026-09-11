@@ -185,6 +185,42 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
   chk(ficha.tiempos === 3, 'la ficha habla en tres tiempos');
   chk(ficha.botones.some(b => /Aprobar/.test(b)) && ficha.botones.some(b => /Descartar/.test(b)), 'el gobernante ve Aprobar y Descartar (' + ficha.botones.join(' · ') + ')');
   chk(/estimación preliminar/i.test(ficha.costo), 'el costo va etiquetado «estimación preliminar»');
+
+  /* ── el aviso de origen viaja con la CIFRA, no con la pantalla ──────────
+     Hasta la v866 el aviso «datos de desarrollo» solo se pintaba en el
+     Tablero. La hoja de déficit —la que se imprime y sale del edificio— daba
+     «N personas a más de M m», declaraba su método y su fecha de corte, y no
+     decía que las manzanas fueran sintéticas. Declarar parte de la
+     procedencia y callar esa parte es peor que no declarar nada: la hoja se
+     lee como plenamente fundada.
+
+     Se recorren TODAS las pantallas que imprimen cifras, no una: el fallo
+     de antes fue exactamente que una sola lo llevaba, y una comprobación
+     sobre esa una habría pasado en verde todo el tiempo. */
+  const PANTALLAS = [
+    ['el tablero',            () => VT.ir('tablero'),   '#vt-tablero'],
+    ['la hoja de déficit',    () => VT.ir('mapa'),      '#vt-hoja-cuerpo'],
+    ['la lista de propuestas',() => VT.ir('propuestas'),'#vt-propuestas'],
+    ['la ficha de propuesta', null,                     '#vt-propuesta']
+  ];
+  const sinAviso = [];
+  for (const [nombre, ir, sel] of PANTALLAS) {
+    if (ir) { await A.pg.evaluate(ir); } else { await A.pg.evaluate(i => VT.ir('propuesta', i), props.id); }
+    await esperar(A.pg, 900);
+    const lleva = await A.pg.evaluate(sel2 => {
+      const c = document.querySelector(sel2);
+      if (!c) return 'sin contenedor';
+      const a = c.querySelector('.vt-aviso-datos');
+      return a ? (/desarrollo/i.test(a.textContent) ? true : 'aviso sin la palabra') : 'sin aviso';
+    }, sel);
+    if (lleva !== true) sinAviso.push(nombre + ' (' + lleva + ')');
+  }
+  chk(sinAviso.length === 0,
+    'toda pantalla con cifras avisa que son datos de desarrollo, no solo el tablero' +
+    (sinAviso.length ? ' — falta en ' + sinAviso.join(', ') : ' (' + PANTALLAS.length + ' pantallas)'));
+  // Se vuelve a la ficha, que es donde seguía la suite.
+  await A.pg.evaluate(i => VT.ir('propuesta', i), props.id);
+  await A.pg.waitForFunction(() => document.querySelectorAll('#vt-propuesta .vt-tiempo').length === 3, null, { timeout: 20000 }).catch(() => {});
   // Descartar exige motivo: el botón de confirmar no se habilita con menos de 10 caracteres.
   await A.pg.click('[data-vt-accion="descartar"]'); await esperar(A.pg, 300);
   await A.pg.fill('#vt-motivo', 'corto'); await esperar(A.pg, 100);

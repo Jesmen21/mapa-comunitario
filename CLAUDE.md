@@ -340,7 +340,47 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   ciclo de aprendizaje anual, SECOP.
 * Los tres territorios cargados son **de desarrollo**: manzanas sintéticas,
   equipamientos de demostración. La única cifra real es la población de
-  Cúcuta (ancla DANE 2024). La pantalla lo avisa en amarillo.
+  Cúcuta (ancla DANE 2024). Toda pantalla con cifras lo avisa en amarillo
+  —ver «El aviso viaja con la cifra» más abajo—.
+
+### El aviso viaja con la cifra, no con la pantalla (v867)
+
+Hasta la v866 el aviso «datos de desarrollo» lo mandaba **solo**
+`/vt/tablero` y lo pintaba **solo** `pintarTablero`. Entonces la hoja de
+déficit —la que se imprime y sale del edificio— decía «4.200 personas a más
+de 500 m», declaraba su método (`radio recto · isócrona pendiente`) y su
+fecha de corte, y **no decía que las manzanas fueran sintéticas**. La ficha
+de propuesta, que es donde se aprueba una obra, tampoco.
+
+**Declarar parte de la procedencia y callar esa parte es peor que no declarar
+nada**: una hoja que nombra su método y su fecha se lee como plenamente
+fundada. El aviso vivía en la pantalla de la que venías, no en el papel que
+te llevabas.
+
+Se arregló en los dos puntos por donde pasa TODO, no ruta por ruta ni
+pantalla por pantalla:
+
+* **Motor** — `enviar`, en `vt/rutas.js`, le pega `aviso_datos` a toda
+  respuesta 200 con `ok`. El territorio se lee una vez por petición y se
+  reparte (antes `/vt/sesion` y `/vt/tablero` lo pedían por su cuenta, así
+  que para esas dos no cuesta nada). El texto del aviso vive en
+  `avisoDeOrigen`, en un solo sitio: estaba escrito dentro de la ruta del
+  tablero, y dos copias de una advertencia se separan.
+* **Cliente** — `pedir` recoge `aviso_datos` de cualquier respuesta en
+  `S.avisoDatos`, y `pintarHoja` lo antepone. Las dos pantallas que no pasan
+  por `pintarHoja` —la lista de propuestas y la ficha— lo llevan explícito,
+  y por eso `tvision` las recorre una por una.
+
+**Una ruta o una pantalla nueva lo hereda sin que su autor se acuerde**, que
+es lo único que impide que esto vuelva a pasar: el fallo no fue que alguien
+decidiera callarlo, fue que había que acordarse cuatro veces.
+
+Lo miden las dos suites, y las dos recorren TODAS las superficies:
+`probar-rutas.js` comprueba que déficits, equipamientos y evaluar lleven el
+aviso, y `tvision` que lo pinten las cuatro pantallas. Demostradas contra la
+v866: tres rutas sin aviso y tres pantallas sin aviso. Una comprobación que
+mirara solo el tablero habría pasado en verde todo el tiempo — que es
+exactamente lo que pasó durante veintitrés versiones.
 
 ## El pliego educativo son DOS láminas (v853)
 

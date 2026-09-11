@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v866-la-lista-viva';
+const URBIS_CACHE = 'urbis-v867-el-aviso-viaja-con-la-cifra';
 const URBIS_ASSETS = [
   './',
   './index.html',

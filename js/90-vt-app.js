@@ -37,7 +37,10 @@
   var S = {
     pantalla: 'acceso', ses: null, tablero: null, propuestas: null, equipamientos: null, deficits: {},
     tipo: 'colegio_primaria', vistaLista: false, evaluando: false, sinRed: false, propuestaId: null,
-    sondeo: null, mapa: null, capas: null, fichaMapa: null, swEsperando: null, zonaViva: null
+    sondeo: null, mapa: null, capas: null, fichaMapa: null, swEsperando: null, zonaViva: null,
+    // El origen de los datos del territorio, recogido de cualquier respuesta
+    // del servidor y pintado en toda pantalla que imprima una cifra.
+    avisoDatos: null
   };
   var TIEMPO_TOPE = 25000;
 
@@ -107,6 +110,11 @@
       .then(function (r) { return r.text().then(function (tx) { var j = null; try { j = JSON.parse(tx); } catch (e) {} return { codigo: r.status, cuerpo: j || { ok: false, error: 'Respuesta ilegible' } }; }); })
       .then(function (r) {
         S.sinRed = false; pintarSinRed();
+        /* El aviso de origen se recoge de CUALQUIER respuesta, acá, y no en
+           cada pantalla. El servidor lo pega en todas desde la v867; guardarlo
+           en un solo sitio es lo que permite que una pantalla nueva lo pinte
+           sin que su autor se acuerde. */
+        if (r.cuerpo && r.cuerpo.aviso_datos !== undefined) S.avisoDatos = r.cuerpo.aviso_datos || null;
         if (r.codigo >= 200 && r.codigo < 300) return r.cuerpo;
         var e = new Error((r.cuerpo && r.cuerpo.error) || ('Error ' + r.codigo)); e.codigo = r.codigo; e.cuerpo = r.cuerpo; throw e;
       })
@@ -484,7 +492,19 @@
     h += '<div class="vt-acciones"><button type="button" class="vt-btn sutil" data-vt-accion="lista">' + ico('lista', 16) + ' Ver como lista</button><button type="button" class="vt-btn sutil" data-vt-ir="propuestas">' + ico('plan', 16) + ' Propuestas</button></div>';
     pintarHoja(h);
   }
-  function pintarHoja(html) { var c = $('vt-hoja-cuerpo'); if (c) c.innerHTML = html; }
+  /* La hoja es lo que se imprime y sale del edificio. Hasta la v866 daba
+     «N personas a más de M m» con su método y su fecha de corte y SIN decir
+     que las manzanas fueran sintéticas: el aviso vivía en el Tablero, o sea
+     en la pantalla de la que venías, no en el papel que te llevabas.
+     Declarar parte de la procedencia y callar esa parte es peor que no
+     declarar nada, porque la hoja se lee como plenamente fundada.
+
+     Va acá y no en cada `pintarDeficits`/`pintarPropuesta` por lo mismo que
+     en el servidor: una pantalla nueva lo hereda sin acordarse. */
+  function pintarHoja(html) {
+    var c = $('vt-hoja-cuerpo'); if (!c) return;
+    c.innerHTML = avisoDatos(S.avisoDatos) + html;
+  }
   function abrirHoja(abierta) { var h = $('vt-hoja'); if (h) h.setAttribute('data-abierta', abierta ? '1' : '0'); }
 
   function pintarPropuestasEnMapa() {
@@ -587,6 +607,10 @@
     var pend = lista.filter(function (p) { return p.estado === 'propuesta'; });
     var hist = lista.filter(function (p) { return p.estado !== 'propuesta'; }).sort(function (a, b) { return new Date(b.decidido_en || 0) - new Date(a.decidido_en || 0); });
     var h = '<h1 class="vt-h1">Propuestas</h1><p class="vt-sub">Ordenadas por prioridad. URBIS pondera y muestra; la decisión —y su firma— es de la persona.</p>';
+    /* Esta pantalla no pasa por `pintarHoja` —pinta en su propio contenedor—,
+       así que el aviso va explícito. Es la excepción, y por eso `tvision`
+       comprueba las pantallas una por una y no solo la hoja. */
+    h += avisoDatos(S.avisoDatos);
     if (tCache) h += '<div class="vt-chips">' + chipCache(tCache) + '</div>';
     if (!lista.length) {
       h += estado('vacio', { icono: 'plan', titulo: 'Todavía no hay propuestas', html: 'Una propuesta nace de una <b>mancha</b>: manzanas seguidas donde la gente queda a más del radio de caminata de un equipamiento público. ' + (S.tablero && S.tablero.analisis ? 'El último análisis no encontró ninguna con gente suficiente.' : 'Aparecen con el primer análisis del territorio.'), accion: (puede('analizar') && !(S.tablero && S.tablero.en_curso)) ? 'analizar' : null, accionTexto: 'Correr análisis' });
@@ -629,6 +653,10 @@
     var h = '<button type="button" class="vt-enlace" data-vt-ir="propuestas" style="display:inline-flex;align-items:center;gap:6px">' + ico('atras', 16) + ' Propuestas</button>';
     h += '<h1 class="vt-h1">' + esc(p.tipo_nombre) + '</h1><p class="vt-sub">' + esc(p.categoria_nombre) + ' · <span class="vt-estado-chip">' + esc(p.estado.replace('_', ' ')) + '</span>' + (p.decidido_por ? ' · ' + esc(p.decidido_por) + ' · ' + esc(fecha(p.decidido_en, true)) : '') + '</p>';
     if (tCache) h += '<div class="vt-chips">' + chipCache(tCache) + '</div>';
+    /* La ficha que se firma. Tampoco pasa por `pintarHoja`, y es la pantalla
+       donde más caro sale callarlo: acá se aprueba una obra con un número de
+       población beneficiada al lado. */
+    h += avisoDatos(S.avisoDatos);
     h += '<div class="vt-columnas"><div>';
     h += '<div id="vt-ficha-mapa" aria-label="Zona apta"></div>';
     h += '<div class="vt-card">' + tresTiempos(d.encontro, d.recomienda, p.si_no_se_hace) + '</div>';
