@@ -49,8 +49,97 @@ async function esperarLaApp(pg, msTope) {
   await pg.waitForTimeout(400);
 }
 
+/* ── El DANE de mentira, que contesta como el de verdad ─────────────────
+   Cada suite se armaba su propia respuesta del censo, y casi todas la
+   resolvían con `{ TOTAL: 3045, N: 42 }`. Eso alcanza para la población del
+   sector y para nada más: la consulta de demografía pide `SEXO_M`, `SEXO_H` y
+   los veintiún tramos de edad, y al no venir ninguno `demografia()` devuelve
+   null. Resultado: **el panel «Quién vive acá» —la pirámide, el reparto por
+   sexo, el índice de envejecimiento— no se dibujaba en ninguna prueba del
+   pliego**, y lo que no se dibuja no se mide. Cincuenta y siete suites
+   analizaban un sector sin una sola persona con edad.
+
+   La clave de que esto sea un doble FIEL y no otro atajo: el servicio de Esri
+   contesta SOLO los campos que la consulta pidió, en `outStatistics`. Acá se
+   hace igual —se lee la consulta y se responde a la medida—, así que una
+   petición mal armada por la aplicación sigue saliendo vacía, como saldría
+   contra el servicio real. Un doble que contesta de más esconde justo el
+   fallo que hay que ver. */
+const PIRAMIDE = [
+  /* Reparto por edad de un sector urbano colombiano corriente, en tanto por
+     mil de la población: base ancha que se adelgaza, con el escalón de los
+     veinte a los treinta y cuatro que dejan la migración y el estudio. Suma
+     1.000; lo que sobre por redondeo se le da al tramo mayor. */
+  ['0_4', 72], ['5_9', 76], ['10_14', 78], ['15_19', 82], ['20_24', 88],
+  ['25_29', 85], ['30_34', 78], ['35_39', 71], ['40_44', 64], ['45_49', 58],
+  ['50_54', 53], ['55_59', 46], ['60_64', 38], ['65_69', 29], ['70_74', 22],
+  ['75_79', 15], ['80_84', 9], ['85_89', 4], ['90_94', 2], ['95_99', 1],
+  ['100_O_MAS', 29]
+];
+
+/* El sector de censo por omisión. Se puede pisar entero desde la suite: lo
+   que importa es que los campos existan y sean coherentes entre sí —la suma
+   de los tramos tiene que dar la población, y mujeres más hombres también—,
+   porque hay comprobaciones de coherencia en la lámina que justamente miran
+   eso y con cifras inventadas a mano fallarían por el fixture y no por el
+   código. */
+const CENSO = { poblacion: 3045, manzanas: 42, viviendas: 880, pctMujeres: 51.1, estrato: 3 };
+
+function atributosDane(url, censo) {
+  const c = Object.assign({}, CENSO, censo || {});
+  const u = new URL(url, 'http://x');
+  const crudo = u.searchParams.get('outStatistics');
+  const campos = u.searchParams.get('outFields') || '';
+  // La consulta de manzanas con su estrato: trae geometría, no agregados.
+  if (/ESTRATO_PREDOMINANTE/.test(campos)) return null;
+  if (!crudo) return {};
+  let piden;
+  try { piden = JSON.parse(crudo); } catch (e) { return {}; }
+  // La capa de VIVIENDAS pide el mismo `TOTAL` que la de personas; lo que
+  // cambia es de qué capa se pide. Sin esto, un sector salía con tantas
+  // viviendas como habitantes y la razón personas/vivienda daba 1,0 —que es
+  // uno de los siete chequeos de coherencia de la lámina—.
+  const esVivienda = /viviendas/i.test(u.pathname);
+  const mujeres = Math.round(c.poblacion * c.pctMujeres / 100);
+  const out = {};
+  piden.forEach(function (p) {
+    const k = p.outStatisticFieldName, de = String(p.onStatisticField || '');
+    if (k === 'TOTAL') out[k] = esVivienda ? c.viviendas : c.poblacion;
+    else if (k === 'N') out[k] = c.manzanas;
+    else if (k === 'MUJ') out[k] = mujeres;
+    else if (k === 'HOM') out[k] = c.poblacion - mujeres;
+    else if (/^EDAD_/.test(de)) {
+      const t = de.replace(/^EDAD_/, '');
+      const fila = PIRAMIDE.filter(function (x) { return x[0] === t; })[0];
+      out[k] = fila ? Math.round(c.poblacion * fila[1] / 1000) : 0;
+    } else out[k] = 0;
+  });
+  return out;
+}
+
+/* Instala la ruta en el contexto de Playwright. Una línea por suite:
+     await E.rutaDane(ctx);                 // el sector por omisión
+     await E.rutaDane(ctx, { poblacion: 12000, pctMujeres: 53 });
+   Para el caso de «el censo no cubre acá», `{ vacio: true }`. */
+async function rutaDane(ctx, censo) {
+  await ctx.route(/ags\.esri\.co/, function (r) {
+    const cuerpo = (censo && censo.vacio)
+      ? { features: [] }
+      : (function () {
+          const at = atributosDane(r.request().url(), censo);
+          // Sin agregados pedidos es la consulta de manzanas con geometría:
+          // se contesta sin rasgos, que es lo que hacía el mock de antes.
+          return at === null ? { features: [] } : { features: [{ attributes: at }] };
+        })();
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cuerpo) });
+  });
+}
+
 module.exports = {
   esperarLaApp: esperarLaApp,
+  rutaDane: rutaDane,
+  atributosDane: atributosDane,
+  CENSO: CENSO,
   RAIZ: RAIZ,
   TRABAJO: TRABAJO.replace(/\/*$/, '/'),
   MODULOS: process.env.URBIS_PRUEBAS_MODULOS || path.join(TRABAJO, 'node_modules'),

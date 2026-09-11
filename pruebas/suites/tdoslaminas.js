@@ -55,8 +55,24 @@ let gid = 90000;
    distancia al lote. Sin el centro, un sector lleno de avenidas con nombre
    se analiza como si no tuviera ninguna, y la banda de movilidad queda sin
    una sola vía que nombrar. */
+/* Las etiquetas que el motor LEE de una vía y que este sector no traía:
+   `oneway`, `width` y `sidewalk`. Sin ellas tres caminos del motor no se
+   ejecutaban nunca —el porcentaje en un solo sentido salía 0 siempre, el
+   ancho se sacaba de carriles siempre, y del andén no se sabía nada nunca—,
+   así que la lámina imprimía esas tres cosas sin que ninguna prueba las
+   mirara. Se reparten por jerarquía, como en un barrio de verdad: las
+   troncales y principales traen ancho medido y andén; las locales van en un
+   solo sentido y muchas sin andén registrado. */
+const ETQ_VIA = (clase, i) => {
+  const t = { highway: clase, lanes: clase === 'trunk' ? '4' : clase === 'primary' ? '3' : '2' };
+  if (clase === 'trunk' || clase === 'primary') { t.width = clase === 'trunk' ? '18' : '12'; t.sidewalk = 'both'; }
+  else if (clase === 'secondary') { t.sidewalk = 'both'; }
+  else if (clase === 'residential') { if (i % 2) t.oneway = 'yes'; if (i % 3 === 0) t.sidewalk = 'no'; }
+  return t;
+};
+let nVia = 0;
 const via = (nombre, clase, pts) => ({ type: 'way', id: gid++,
-  tags: { highway: clase, name: nombre, lanes: '2' },
+  tags: Object.assign({ name: nombre }, ETQ_VIA(clase, nVia++)),
   center: { lat: pts[Math.floor(pts.length / 2)].lat, lon: pts[Math.floor(pts.length / 2)].lng },
   geometry: pts.map(p => ({ lat: p.lat, lon: p.lng })) });
 const edif = (dx, dy, w2, h2, pisos) => ({ type: 'way', id: gid++,
@@ -144,8 +160,12 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
          avenida con nombre y la banda de movilidad no tenía nada que nombrar. */
       body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos.concat(geo) }) });
   });
-  await ctx.route(/ags\.esri\.co/, r => r.fulfill({ status: 200, contentType: 'application/json',
-    body: JSON.stringify({ features: [{ attributes: { TOTAL: 3045, N: 42 } }] }) }));
+  /* El censo, con el doble compartido: contesta SEXO y los veintiún tramos de
+     edad además de la población, que es lo que la consulta pide de verdad.
+     Con `{TOTAL, N}` a secas —lo que había acá— `demografia()` devolvía null y
+     el panel «Quién vive acá» no se dibujaba: la pirámide de la lámina B
+     llevaba versiones sin medirse. */
+  await E.rutaDane(ctx);
   await ctx.route(/elevation/, r => { const u = new URL(r.request().url());
     const lngs = (u.searchParams.get('locations') || '').split('|');
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ elevation: lngs.map(cotaDe) }) }); });
@@ -322,6 +342,8 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
               filas: [...c.querySelectorAll('table.rad tr')].slice(1)
                 .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
               banda: (c.closest('.banda') || {}).className || '',
+              barras: [...c.querySelectorAll('.barras > .b')].map(x =>
+                x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
               caras: [...c.querySelectorAll('.manzanas svg path')].length,
               cuadros: [...c.querySelectorAll('.grano svg g')].map(g => {
                 const r = g.querySelector('rect'), t = [...g.querySelectorAll('text')];
@@ -333,6 +355,7 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
             };
           };
           return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
+                   quien: dame(/Quién vive acá/),
                    tejido: dame(/Continuidad del tejido/),
                    grano: dame(/El grano: manzana y predio/),
                    ciudad: dame(/El sector dentro de la ciudad/),
@@ -731,6 +754,24 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     /* El ancho tampoco se declara mal: sale de `width` cuando OpenStreetMap
        lo trae y de los carriles cuando no, y la hoja dice cuál de los dos
        usó y sobre qué parte de la red hay dato. */
+    /* Tres etiquetas que el motor lee y que el sector de prueba no traía
+       hasta la v862: `oneway`, `sidewalk` y `width`. Sin ellas la lámina
+       imprimía «0 % en un solo sentido» y «del andén no se sabe en el 100 %»
+       en todas las versiones, siempre, y ninguna prueba lo miraba. */
+    T('el sentido único se mide de verdad, no sale 0 por no traer la etiqueta',
+      (function () {
+        const k = MV.kpis.filter(x => /un solo sentido/.test(x.r))[0];
+        const v = k ? Number(String(k.v).replace('%', '').replace(',', '.')) : 0;
+        return v > 0 && v < 100;
+      })(),
+      (MV.kpis.filter(x => /un solo sentido/.test(x.r))[0] || {}).v || 'no está');
+    T('y del andén se sabe en parte de la red, no en ninguna',
+      (function () {
+        const m = MV.falta.join(' ').match(/andén no se sabe en el ([\d,]+) %/);
+        const v = m ? Number(m[1].replace(',', '.')) : 100;
+        return v > 0 && v < 100;
+      })(),
+      (MV.falta.join(' ').match(/andén no se sabe en el [\d,]+ %/) || ['sin dato de andén'])[0]);
     T('el ancho dice de dónde sale y qué parte de la red cubre',
       /(etiqueta de ancho de OpenStreetMap|contar carriles)/.test(MV.falta.join(' ')) &&
       /% de los metros de vía/.test(MV.falta.join(' ')),
@@ -872,6 +913,51 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('el módulo comparado sale ya de lo medido, no del tramo medio',
       !/deducidos del tramo medio/.test(GR.texto),
       (GR.texto.match(/mide del orden de[^.]*\./) || [''])[0].slice(0, 90));
+  }
+
+  console.log('\n  -- la pirámide, que hasta ahora no se dibujaba en ninguna prueba --');
+  /* El censo de este sector llega por el doble compartido (`E.rutaDane`), que
+     contesta SEXO y los veintiún tramos de edad además de la población. Con
+     el mock de antes —`{TOTAL, N}` a secas— `demografia()` devolvía null y
+     esta caja no se pintaba: la pirámide de la lámina B llevaba versiones
+     entrando sin que nada la midiera. */
+  const QV = (B.paneles || {}).quien;
+  T('el panel de quién vive acá está, y en la lámina B', !!QV && !(A.paneles || {}).quien);
+  if (QV) {
+    T('separa el conteo del censo de la proyección a hoy',
+      /Contadas por el censo de 2018/.test(QV.texto) && /Proyectadas a \d{4}/.test(QV.texto) &&
+      /Un pronóstico no es un dato contado/.test(QV.texto),
+      (QV.texto.match(/Contadas por el censo de \d+\s*[\d.]+/) || [''])[0]);
+    /* Se leen las baldosas, no el texto plano: la cifra va en <b> y el rótulo
+       en <small>, así que al aplanar quedan pegadas («51,1%mujeres») y un
+       patrón con espacio no casa nunca. */
+    T('reparte por sexo, y los dos porcentajes suman 100',
+      (function () {
+        const n = r2 => Number(String(r2).replace('%', '').replace(',', '.'));
+        const m = QV.kpis.filter(x => /mujeres/.test(x.r))[0];
+        const h = QV.kpis.filter(x => /hombres/.test(x.r))[0];
+        return !!m && !!h && Math.abs(n(m.v) + n(h.v) - 100) < 0.2;
+      })(),
+      QV.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* Los cinco tramos de edad, que son los que hacen la pirámide. Sin ellos
+       la caja salía con las cifras de población y nada más. */
+    T('y trae los cinco tramos de edad',
+      QV.barras.length >= 5 &&
+      /0 a 14 años/.test(QV.texto) && /65 años o más/.test(QV.texto),
+      QV.barras.slice(0, 5).join(' | ').slice(0, 120));
+    /* Y los porcentajes de los tramos suman 100: si no, uno de los tramos se
+       está contando dos veces o falta. */
+    T('cuyos porcentajes suman 100',
+      (function () {
+        const p = (QV.texto.match(/·\s*(\d+)%/g) || []).map(x => Number(x.replace(/[^\d]/g, '')));
+        return p.length >= 5 && Math.abs(p.reduce((a2, b2) => a2 + b2, 0) - 100) <= 2;
+      })(),
+      (QV.texto.match(/·\s*\d+%/g) || []).join(' ') || 'sin porcentajes');
+    T('y dice cuál es el grupo que manda, con su consecuencia',
+      /El grupo más numeroso es/.test(QV.texto) && /decide el programa/.test(QV.texto),
+      (QV.texto.match(/El grupo más numeroso es[^.]*\./) || [''])[0].slice(0, 80));
+    T('con el índice de envejecimiento',
+      /índice de envejecimiento/.test(QV.texto), QV.kpis.map(x => x.v + ' ' + x.r).join(' · '));
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');

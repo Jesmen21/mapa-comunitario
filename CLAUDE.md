@@ -796,6 +796,52 @@ para las cajas de texto, que son las que ceden.
 Con esto quedan hechas las seis secciones del pliego de instrucciones del
 módulo educativo (v847 a v849).
 
+## El sector de prueba tiene que parecerse a uno de verdad (v862)
+
+Tres tandas seguidas encontraron que una suite medía menos de lo que decía, y
+siempre por lo mismo: **el sector de mentira era más pobre que uno real.** Se
+fue armando pieza a pieza para cada cosa nueva, y lo que ninguna comprobación
+miraba se quedó sin construir. Esta tanda lo revisó de frente.
+
+### El doble del DANE, compartido y fiel
+
+`E.rutaDane(ctx, censo)` en `pruebas/entorno.js`. Antes cada suite se armaba
+su respuesta del censo y casi todas la resolvían con `{ TOTAL: 3045, N: 42 }`.
+Eso alcanza para la población y para nada más: la consulta de demografía pide
+`SEXO_M`, `SEXO_H` y los **veintiún** tramos de edad, y al no venir ninguno
+`demografia()` devuelve null. Resultado: **el panel «Quién vive acá» —la
+pirámide, el reparto por sexo, el índice de envejecimiento— no se dibujaba en
+ninguna prueba del pliego.** Entró en la v853 y llevaba nueve versiones sin
+que nada lo mirara.
+
+Dos cosas lo hacen un doble fiel y no otro atajo:
+
+* **Contesta solo lo que la consulta pidió**, leyendo `outStatistics`, que es
+  como responde Esri. Un doble que contesta de más esconde justo el fallo que
+  hay que ver: una consulta mal armada por la aplicación seguiría saliendo
+  vacía contra el servicio real y acá también.
+* **Las cifras cuadran entre sí**: los veintiún tramos suman exactamente la
+  población, mujeres más hombres también, y la capa de VIVIENDAS devuelve un
+  número distinto del de personas. Ese último detalle importaba: con `TOTAL`
+  igual en las dos capas, el sector salía con 1,0 personas por vivienda y el
+  chequeo de coherencia de la lámina lo marcaba en rojo. **Fallaba por el
+  fixture, no por el código**, y la suite estaba asertando sobre ese fallo.
+
+### Tres etiquetas de vía que no se ejercitaban
+
+El motor lee `oneway`, `width` y `sidewalk` de cada vía. El sector de prueba
+solo traía `lanes`, así que la lámina imprimía «0 % en un solo sentido» y «del
+andén no se sabe en el 100 % de la red» en todas las versiones, siempre, sin
+que nada lo mirara. Ahora se reparten por jerarquía como en un barrio real
+—troncales y principales con ancho y andén; locales en un solo sentido y
+muchas sin andén— y salen 31,1 % y 51,8 %.
+
+**Lo que sigue a oscuras, y por qué.** La rama `anchoDe === 'width'` no se
+ejercita: el motor elige por mayoría de vías, y para que gane `width` habría
+que darle ancho mapeado a casi todas las calles, que es un sector que en
+Colombia no existe. Antes que inventar un barrio falso para iluminar una
+rama, se deja dicho acá.
+
 ## Las pruebas se aprietan, no se aflojan
 
 Cuando una falla por un cambio legítimo, se hace más precisa: se busca por la

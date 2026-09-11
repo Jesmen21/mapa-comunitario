@@ -86,8 +86,11 @@ function climaSimulado(){
     r.fulfill({status:200,contentType:'application/json',
       body:JSON.stringify({elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos})});
   });
-  await ctx.route(/ags\.esri\.co/, r=>r.fulfill({status:200,contentType:'application/json',
-    body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
+  /* El censo, con el doble compartido: contesta SEXO y los veintiún tramos de
+     edad además de la población, que es lo que la consulta pide de verdad.
+     Con `{TOTAL, N}` a secas `demografia()` devolvía null y el panel «Quién
+     vive acá» no se dibujaba en ninguna prueba del pliego. */
+  await E.rutaDane(ctx);
   await ctx.route(/archive-api\.open-meteo\.com/, r=>{
     const d=climaSimulado();
     r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
