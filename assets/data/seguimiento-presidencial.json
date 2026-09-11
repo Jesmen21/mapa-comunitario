@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-10",
- "proximaActualizacion": "2026-09-11",
+ "actualizado": "2026-09-11",
+ "proximaActualizacion": "2026-09-12",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,98 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Ejército captura en flagrancia a cuatro presuntos integrantes del frente ‘6 de Diciembre’ del ELN en Maicao, La Guajira, con 114 millones de pesos en efectivo",
+   "detalle": "El viernes 11 de septiembre el Ejército capturó en flagrancia, en la vereda Aracachón, jurisdicción de Maicao (La Guajira), a cuatro presuntos integrantes del frente ‘6 de Diciembre’ del ELN. En el operativo se incautaron dos fusiles, dos armas cortas, 151 cartuchos, seis proveedores, equipos de comunicación, celulares, insumos logísticos y 114 millones de pesos en efectivo. El presidente Abelardo de la Espriella anunció la captura y cuestionó públicamente el origen y el destino de ese dinero.",
+   "contrapunto": "Se trata de una versión oficial del Ejército y de la Presidencia; los capturados son ‘presuntos’ integrantes y no hay, a la fecha de este registro, un fallo judicial que establezca su responsabilidad. Solo dos medios (Semana y La Razón) reportaron el hecho con el mismo detalle; no se encontró cobertura independiente en otros medios nacionales de referencia.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana · Caen cuatro presuntos integrantes del ELN en La Guajira: estos detalles entregó el presidente Abelardo De La Espriella",
+     "u": "https://www.semana.com/nacion/articulo/caen-cuatro-presuntos-integrantes-del-eln-en-la-guajira-estos-detalles-entrego-el-presidente-abelardo-de-la-espriella/202612/"
+    },
+    {
+     "n": "La Razón · Ejército capturó en flagrancia a cuatro integrantes del ELN en operativo en La Guajira",
+     "u": "https://larazon.co/ejercito-capturo-en-flagrancia-a-cuatro-integrantes-del-eln-en-operativo-en-la-guajira/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-10",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Fuerzas de seguridad capturan en Cauca a alias ‘El Flaco’, señalado cabecilla del ELN en el Macizo Colombiano",
+   "detalle": "En la madrugada del 10 de septiembre, en el municipio de La Sierra (Cauca), fuerzas de seguridad capturaron a dos presuntos integrantes del ELN, entre ellos alias ‘El Flaco’, señalado por el Gobierno como cabecilla de una comisión del frente Manuel Vásquez Castaño, vinculado a extorsión, secuestro y reclutamiento forzado en el Macizo Colombiano. Se incautaron un fusil, cuatro armas cortas, 829 cartuchos, dos granadas de fragmentación y ocho detonadores eléctricos. El presidente Abelardo de la Espriella anunció la captura.",
+   "contrapunto": "La señalización de ‘El Flaco’ como cabecilla proviene de inteligencia militar y policial y de la versión del Gobierno; se trata de un presunto responsable, sin que a la fecha de este registro exista un proceso judicial concluido.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · De la Espriella anuncia captura de alias 'El Flaco', señalado cabecilla del ELN en Cauca",
+     "u": "https://www.infobae.com/colombia/2026/09/11/de-la-espriella-anuncia-captura-de-alias-el-flaco-senalado-cabecilla-del-eln-en-cauca/"
+    },
+    {
+     "n": "Semana · Abelardo de la Espriella confirmó la captura de alias 'El Flaco', cabecilla del ELN: 'No van a tener un minuto de tranquilidad'",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-confirmo-la-captura-de-alias-el-flaco-cabecilla-del-eln-no-van-a-tener-un-minuto-de-tranquilidad/202649/"
+    },
+    {
+     "n": "Infobae (agencias) · Colombia anuncia la captura de un alto cargo del ELN en una operación en el departamento de Cauca",
+     "u": "https://www.infobae.com/america/agencias/2026/09/11/colombia-anuncia-la-captura-de-un-alto-cargo-del-eln-en-una-operacion-en-el-departamento-de-cauca/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-10",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Colombia deporta a los primeros migrantes venezolanos bajo la orden de expulsión de irregulares que delincan",
+   "detalle": "El 10 de septiembre se reportó la detención, cerca de Medellín, de que serían los primeros migrantes venezolanos expulsados de Colombia bajo la orden dada por el presidente Abelardo de la Espriella en el consejo de seguridad del 23 de agosto, que instruyó priorizar la deportación de migrantes irregulares que cometan delitos. En Colombia residen cerca de 2,8 millones de personas venezolanas, de las cuales se estima que unas 847.000 están en situación irregular, entre ellas cerca de 193.000 niños, niñas y adolescentes.",
+   "contrapunto": "La Defensora del Pueblo había cuestionado la medida el 9 de septiembre, señalando que los migrantes ‘también tienen derechos’ y que Colombia es el primer país receptor de población venezolana migrante. La condición de ‘primeros expulsados’ bajo esta política proviene de la cobertura periodística inicial del caso y no de un balance oficial consolidado del Gobierno.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "Infobae · Estos serían los primeros venezolanos expulsados de Colombia tras la orden de Abelardo de la Espriella: fueron detenidos cerca a Medellín",
+     "u": "https://www.infobae.com/colombia/2026/09/10/estos-serian-los-primeros-venezolanos-expulsados-de-colombia-tras-la-orden-de-abelardo-de-la-espriella-fueron-detenidos-cerca-a-medellin/"
+    },
+    {
+     "n": "Infobae · Defensora del Pueblo criticó a Abelardo de la Espriella por impulsar la deportación de migrantes irregulares de Colombia: ‘también tienen derechos’",
+     "u": "https://www.infobae.com/colombia/2026/09/09/defensora-del-pueblo-critico-a-abelardo-de-la-espriella-por-impulsar-la-deportacion-de-migrantes-irregulares-de-colombia-tambien-tienen-derechos/"
+    },
+    {
+     "n": "La FM · Abelardo de la Espriella: deportar a migrantes irregulares que cometan delitos",
+     "u": "https://www.lafm.com.co/politica/abelardo-de-la-espriella-deportar-migrantes-irregulares-cometer-delitos-408811"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-10",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Una jueza de familia de Bogotá ratifica la orden de suspender bombardeos en zonas donde pueda haber menores reclutados por grupos armados",
+   "detalle": "La jueza 34 de Familia de Bogotá confirmó, dentro de una acción de tutela admitida el 3 de septiembre, la medida cautelar que ordena a las Fuerzas Militares suspender los bombardeos en zonas donde exista información cierta, objetiva o razonable de presencia de menores de edad reclutados por grupos armados. La medida había sido impugnada por el presidente Abelardo de la Espriella, los ministros de Defensa e Interior y la cúpula militar. Es la segunda decisión judicial de este tipo en pocos días: el 5 de septiembre un juez penal de San José del Guaviare ya había ordenado una suspensión similar para operaciones en el Guaviare. El antecedente inmediato es la muerte de tres menores de edad en el bombardeo de la Operación Amón contra el frente de alias Calarcá, en El Retorno (Guaviare), el 27 de agosto.",
+   "contrapunto": "El Gobierno y la cúpula militar impugnaron la medida por considerar que limita la capacidad operativa de la Fuerza Pública frente a estructuras armadas que, según denuncian, usan menores como escudo o los vinculan por la fuerza; la decisión de la jueza es una ratificación dentro del trámite de tutela, no un fallo definitivo en segunda instancia ante un tribunal superior.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Espectador · Confirman orden a De la Espriella de suspender bombardeos en zonas donde pueda haber menores",
+     "u": "https://www.elespectador.com/judicial/confirman-orden-a-de-la-espriella-de-suspender-bombardeos-en-zonas-donde-pueda-haber-menores/"
+    },
+    {
+     "n": "El Colombiano · Juez frena a De la Espriella: deberá suspender bombardeos donde haya riesgo de menores",
+     "u": "https://www.elcolombiano.com/colombia/juez-frena-de-la-espriella-suspender-bombardeos-menores-riesgo-MD40705768"
+    },
+    {
+     "n": "Semana · Juez le ordenó al Gobierno de Abelardo de la Espriella suspender bombardeos en lugares donde exista información de presencia de menores",
+     "u": "https://www.semana.com/nacion/articulo/juez-le-ordeno-al-gobierno-de-abelardo-de-la-espriella-suspender-bombardeos-en-lugares-donde-exista-informacion-de-presencia-de-menores/202645/"
+    },
+    {
+     "n": "Pulzo · Jueza ratifica suspensión de bombardeos militares en zonas con presencia de menores",
+     "u": "https://www.pulzo.com/nacion/bogota-jueza-ratifica-suspension-de-bombardeos-militares-en-zonas-con-presencia-de-menores-PP5299233A"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-09",
    "precision": "exacta",
