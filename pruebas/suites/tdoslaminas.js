@@ -118,6 +118,18 @@ const geo = [
 geo.push({ type: 'way', id: gid++, tags: { leisure: 'park', name: 'Parque La Playa' },
   geometry: [P(-250, -150), P(-90, -150), P(-90, -30), P(-250, -30), P(-250, -150)]
     .map(p => ({ lat: p.lat, lon: p.lng })) });
+/* Las RUTAS de transporte, que el sector no traía. La consulta de usos las
+   pide —`rel(bn.paradas)["route"…]`, las relaciones que recogen en alguna
+   parada del área— y el motor las cuenta deduplicando ida y vuelta, pero sin
+   una sola relación en el sector de prueba ese camino no se ejecutaba nunca
+   y `movilidad.rutas` salía vacío en todas las versiones. Van tres: dos
+   distintas y la vuelta de una, para que la deduplicación se ejercite. */
+usos.push({ type: 'relation', id: 7001,
+  tags: { route: 'bus', ref: '12', name: 'Ruta 12 · Centro–La Playa', operator: 'Cootransunidos' } });
+usos.push({ type: 'relation', id: 7002,
+  tags: { route: 'bus', ref: '7', name: 'Ruta 7 · Atalaya–Centro', operator: 'Cootransunidos' } });
+usos.push({ type: 'relation', id: 7003,
+  tags: { route: 'bus', ref: '12', name: 'Ruta 12 · La Playa–Centro (vuelta)' } });
 usos.push({ type: 'node', id: 3001, lat: C.lat + 0.002, lon: C.lng - 0.0015,
   tags: { name: 'Subestación La Playa', power: 'substation' } });
 usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
@@ -726,11 +738,34 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       MV.filas.slice(0, 3).map(f => f.join(' · ')).join(' | '));
     /* Lo que el plano NO tiene, dicho por su nombre. El flujo es MODELADO y
        decirlo importa: un aforo y un modelo no se defienden igual. */
-    T('declara que las rutas, el aforo y el perfil acotado todavía no están',
-      MV.falta.length >= 3 && /rutas de transporte/i.test(MV.falta.join(' ')) &&
+    T('declara que el recorrido, el aforo y el perfil acotado todavía no están',
+      MV.falta.length >= 3 && /recorrido de las rutas/i.test(MV.falta.join(' ')) &&
       /aforo de hora pico/i.test(MV.falta.join(' ')) &&
       /perfil acotado|ancho de las vías/i.test(MV.falta.join(' ')),
       MV.falta.map(x => x.slice(0, 40)).join(' | '));
+    /* Las rutas que paran en el sector, CON SU NOMBRE. La consulta de usos
+       las pide y el informe en hojas ya las imprimía; esta lámina las
+       declaraba faltantes hasta la v863. */
+    T('nombra las rutas que paran en el sector',
+      MV.columnas.indexOf('Ruta') >= 0 &&
+      MV.filas.some(f => /Ruta 12|Ruta 7/.test(f.join(' '))),
+      MV.filas.filter(f => /Ruta/.test(f.join(' '))).map(f => f.join(' · ')).join(' | ').slice(0, 120));
+    /* Y la ida y la vuelta de una misma ruta cuentan como UNA: contarlas dos
+       veces exageraría la oferta de transporte del sector. */
+    T('y la ida y la vuelta de una misma ruta cuentan como una',
+      (function () {
+        const refs = MV.filas.map(f => f[0]).filter(x => /^\d+$/.test(x));
+        return refs.length === new Set(refs).size && refs.length >= 2;
+      })(),
+      MV.filas.map(f => f[0]).filter(x => /^\d+$/.test(x)).join(' · '));
+    /* Y la carencia YA NO dice que OpenStreetMap no sepa qué ruta para en
+       cada parada, porque sí lo sabe: lo que falta es el recorrido —se pide
+       sin geometría a propósito— y la frecuencia. */
+    T('y no vuelve a decir que OSM no sabe qué ruta para en cada parada',
+      !/no qué ruta para en cada una/.test(MV.texto) &&
+      /sin.{0,3}geometría/.test(MV.falta.join(' ')) &&
+      /cada cuánto pasan/.test(MV.falta.join(' ')),
+      (MV.falta.filter(x => /recorrido de las rutas/.test(x))[0] || '').slice(0, 150));
     /* ── Y NO declara faltando lo que sí tiene ────────────────────────
        La v858 puso la isócrona por malla en la lista de lo que falta, y no
        faltaba: se calcula con Dijkstra sobre el grafo de calles desde el

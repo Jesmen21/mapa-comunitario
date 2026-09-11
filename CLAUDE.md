@@ -683,6 +683,41 @@ perfil ACOTADO —andenes, antejardines, arborización—, que se mide en campo.
 `tdoslaminas` comprueba ahora las dos direcciones: que las carencias reales
 estén declaradas **y que ninguna declare faltando lo que sí está medido**.
 
+### Las rutas sí están, y era la tercera vez (v863)
+
+Auditando los cinco vacíos obligatorios uno por uno contra el código, cuatro
+resultaron honestos —riesgo oficial, servicios públicos, norma urbana e
+información legal del predio declaran bien lo que no tienen y lo que sí—. El
+quinto destapó, otra vez, una carencia declarada que no lo era.
+
+«Cómo se mueve el sector» decía: «Las rutas de transporte, dibujadas y con su
+nombre. Haría falta el GTFS… **OpenStreetMap trae las paradas, no qué ruta
+para en cada una**». Falso: la consulta de usos pide
+`rel(bn.paradas)["route"~"^(bus|minibus|share_taxi|trolleybus)$"]` —las
+relaciones de transporte que recogen en alguna parada del área—, la limpieza
+de `js/61` las preserva a propósito, el motor las deduplica por ida y vuelta,
+y **el informe en hojas ya las imprimía con su nombre**. Solo la lámina las
+daba por ausentes.
+
+Ahora la lámina las nombra —ruta, nombre y tipo— y la carencia dice lo que de
+verdad falta: el **recorrido** (se piden sin geometría a propósito: traer el
+trazado entero de cada una costaría la consulta) y la **frecuencia**, que
+OpenStreetMap casi nunca lleva.
+
+#### Tres carencias falsas, todas de la misma tanda
+
+La isócrona (v861), el ancho de vía (v861) y las rutas (v863) se declararon
+faltantes en la v858, y las tres estaban medidas. **El patrón: se escribieron
+mirando lo que a una herramienta así suele faltarle, en vez de leer lo que
+ESTA mide.** Antes de declarar que algo falta hay que buscarlo en el código,
+no recordarlo.
+
+Y una advertencia de método, por si sirve: en esta misma tanda sospeché que
+`movilidad.rutas` estaba siempre vacío y estuve a punto de «arreglarlo»
+añadiendo la consulta que ya existía. Lo salvó probarlo contra el motor con
+tres relaciones de mentira antes de tocar nada. **Una sospecha sobre datos se
+comprueba corriendo el código, no leyéndolo.**
+
 ## La lámina educativa: todos los mapas, y lo que cede es texto
 
 Entre la v847 y la v849 el pliego de 60 × 90 tuvo un piso de **120 mm de

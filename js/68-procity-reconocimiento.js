@@ -4514,10 +4514,42 @@ function donaHTML(datos, colorDe, nombreDe) {
         : '') +
         (mv ? fila('Paradas de transporte', mv.paradasBus || 0) +
               fila('Tramos de ciclorruta', mv.ciclorrutas || 0) : '') +
+        /* Las rutas que paran en el sector, CON SU NOMBRE. La consulta las
+           pide —`rel(bn.paradas)["route"…]`, las relaciones de transporte que
+           recogen en alguna parada del área— y el informe en hojas ya las
+           imprimía; esta lámina las declaraba faltantes. Es la tercera vez
+           que una carencia declarada resulta ser falsa, y las tres se
+           escribieron mirando lo que a una herramienta así suele faltarle en
+           vez de leer lo que esta mide. */
+        (function () {
+          var rt = (mv && mv.rutas) || [];
+          if (!rt.length) return '';
+          return '<p class="lee-min">Las rutas que paran acá</p>' +
+            '<table class="rad"><tr><th>Ruta</th><th>Nombre</th><th>Tipo</th></tr>' +
+            rt.slice(0, 8).map(function (x) {
+              return '<tr><td>' + esc(x.ref || '—') + '</td><td>' +
+                esc(x.nombre || 'sin nombre registrado') + '</td><td>' +
+                esc(x.tipo || 'bus') + '</td></tr>';
+            }).join('') + '</table>' +
+            (rt.length > 8 ? '<p class="nota">Y ' + (rt.length - 8) + ' más.</p>' : '');
+        })() +
         '<p class="vacio-tag">Lo que este plano de movilidad todavía no tiene</p>' +
-        '<p class="vacio-falta"><b>Las rutas de transporte, dibujadas y con su nombre.</b> ' +
-        'Haría falta el GTFS o el cuadro de rutas de la secretaría de tránsito del municipio: ' +
-        'OpenStreetMap trae las paradas, no qué ruta para en cada una.</p>' +
+        /* Lo que de verdad falta de las rutas, ahora que los nombres sí
+           están: el TRAZADO —se piden sin geometría a propósito, traer el
+           recorrido entero de cada una costaría la consulta— y la
+           frecuencia, que OpenStreetMap casi nunca lleva. */
+        (function () {
+          var rt = (mv && mv.rutas) || [];
+          return '<p class="vacio-falta"><b>El recorrido de las rutas y su frecuencia.</b> ' +
+            (rt.length
+              ? 'Los nombres de las <b>' + rt.length + '</b> rutas que paran acá sí están ' +
+                '—OpenStreetMap dice qué ruta recoge en cada parada—, pero se piden <b>sin ' +
+                'geometría</b>: dibujar el recorrido entero de cada una costaría la consulta. '
+              : 'Ninguna ruta registrada en OpenStreetMap recoge en las paradas de este sector; ' +
+                'no dice que no pasen busetas, dice que nadie las mapeó. ') +
+            'Y cada cuánto pasan no está en ninguna parte: haría falta el cuadro de rutas de la ' +
+            'secretaría de tránsito del municipio, o un GTFS si el municipio lo publica.</p>';
+        })() +
         '<p class="vacio-falta"><b>El aforo de hora pico.</b> El flujo que imprime esta lámina ' +
         'está MODELADO a partir de los usos y de la jerarquía de las vías, no contado: para ' +
         'decir cuántos vehículos pasan a las 7 de la mañana haría falta un aforo en campo o el ' +
@@ -13272,7 +13304,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       r: 'cobertura universal a 15 minutos a pie (DNP, CONPES de equipamientos)',
       e: 'supone densidad pareja dentro del sector; con la gente concentrada puede errar mucho' },
     'Cómo se mueve el sector': {
-      f: 'largo y jerarquía de las vías del trazado; porcentaje de metros en un solo sentido; ancho de calzada de la etiqueta width, o de carriles a 3 m cuando no está',
+      f: 'largo y jerarquía de las vías del trazado; porcentaje de metros en un solo sentido; ancho de calzada de la etiqueta width, o de carriles a 3 m cuando no está; rutas = relaciones de transporte que recogen en alguna parada del área, sin su recorrido',
       fu: 'OpenStreetMap, hoy',
       c: 'alta en el trazado, baja en los nombres: depende de quién haya mapeado el barrio',
       r: 'no hay estándar único; se lee contra la jerarquía declarada en el POT',
