@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v851-la-consulta-aguanta-el-radio-grande';
+const URBIS_CACHE = 'urbis-v852-el-cero-guardado-no-se-sirve';
 const URBIS_ASSETS = [
   './',
   './index.html',

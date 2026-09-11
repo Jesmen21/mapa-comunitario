@@ -169,6 +169,19 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
 
     await window.__modo('tope');
     o.topada = await pedir(300, true);
+    await esperar(5300);
+
+    /* ── El cero que ya está guardado en el teléfono ──────────────────
+       El arreglo impide guardar vacíos nuevos, pero los viejos siguen en
+       el aparato de quien sufrió el fallo. Se planta uno a mano, con la
+       misma clave que usa la consulta, y se comprueba que NO se sirva. */
+    await window.__modo('ok');
+    const clave = C.lat.toFixed(4) + ',' + C.lng.toFixed(4) + ',' + 1700;
+    try {
+      localStorage.setItem('aia_overpass_cache_v1',
+        JSON.stringify([{ k: clave, t: Date.now(), d: [], a: '' }]));
+    } catch (e) {}
+    o.envenenado = await pedir(1700, false);
     return o;
   }, { C });
 
@@ -267,6 +280,13 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
   T('al llegar al tope avisa de que las cifras son un mínimo',
     A.topada.ok && /tope/.test(A.topada.aviso || '') && /mínimo/.test(A.topada.aviso || ''),
     (A.topada.aviso || 'sin aviso').slice(0, 90));
+
+  /* El caso de quien ya tenía el cero guardado: sin esto, el arreglo sirve
+     para los teléfonos nuevos y no para el que reportó el fallo. */
+  T('un cero guardado de antes no se sirve: se vuelve a consultar',
+    A.envenenado.ok && A.envenenado.n === 30 && (A.envenenado.consultas || []).length >= 1,
+    A.envenenado.ok ? A.envenenado.n + ' usos con ' + (A.envenenado.consultas || []).length + ' consulta nueva'
+                    : 'falló: ' + A.envenenado.error);
 
   console.log('\n  -- el radio llega a 8 km --');
   T('la barra del radio llega a 8.000 m', B.barraMax === 8000, B.barraMax + ' m');

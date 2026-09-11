@@ -167,10 +167,14 @@ Cuatro reglas, todas en `js/61`:
 * **Un `remark` con la lista vacía es un fallo**, y el error dice qué pasó.
   Con la lista llena es una respuesta PARCIAL: se queda lo que trajo y se
   avisa.
-* **Un vacío no se guarda en el caché.** Un sector sin nada mapeado es un
-  resultado legítimo y se muestra, pero guardarlo es apostar a que el vacío
-  era de verdad. Repetir la consulta cuesta segundos; publicar un cero falso
-  cuesta el análisis.
+* **Un vacío no se guarda en el caché, y uno guardado no se sirve.** Un
+  sector sin nada mapeado es un resultado legítimo y se muestra, pero
+  guardarlo es apostar a que el vacío era de verdad. Repetir la consulta
+  cuesta segundos; publicar un cero falso cuesta el análisis. Las dos mitades
+  hacen falta: no guardar arregla los teléfonos nuevos, y `leerCache`
+  ignorando la lista vacía arregla el de quien ya sufrió el fallo y lo lleva
+  guardado (v852). Sin la segunda, el arreglo servía para todos menos para
+  quien lo reportó.
 * **La consulta se escala con el área** (`escalaDeConsulta`): 60 s y 3.000
   elementos hasta 5 km², 90 s y 8.000 hasta 30 km², 180 s y 14.000 por
   encima. El corte del CLIENTE va siempre por encima del del servidor: con

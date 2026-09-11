@@ -137,6 +137,15 @@
     try {
       const all = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
       const hit = all.find(e => e.k === clave);
+      /* ── Un vacío guardado NO se sirve, ni aunque esté en fecha ──────
+         Desde la v851 no se guardan, pero los que quedaron de antes siguen
+         en el teléfono hasta veinticuatro horas: son los ceros que dejó el
+         fallo del `remark`, y servirlos sería arreglar el fallo para todo
+         el mundo menos para quien lo sufrió. Un sector de verdad vacío
+         vuelve a consultarse y vuelve a salir vacío, y eso cuesta unos
+         segundos; un cero falso servido de la memoria cuesta el análisis
+         y no hay manera de pedirle a la aplicación que lo reintente. */
+      if (hit && Array.isArray(hit.d) && !hit.d.length) return null;
       if (hit && (Date.now() - hit.t) < CACHE_TTL_MS) return conAviso(hit.d, hit.a);
     } catch(e) {}
     return null;
