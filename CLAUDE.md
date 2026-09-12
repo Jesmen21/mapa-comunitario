@@ -261,6 +261,45 @@ Bajar más pide o medir contra el Overpass real, que desde acá no se puede, o
 avisar en pantalla en qué va la espera, que sigue diciendo «Consultando…» sin
 más.
 
+### La barra de espera, y por qué no llega al 100 % (v870)
+
+Pedido en la misma conversación del fallo anterior: «deberías dejarme como una
+barrita y ver si está cargando o no». El botón decía «Consultando…» y nada
+más, y una consulta grande puede tardar dos minutos: **desde afuera no se
+distingue una espera larga de un cuelgue**, que es exactamente por qué el
+reporte decía «se demora mucho y se cayó».
+
+* `js/61` avisa de cada paso por `AIA_DATOS.alPaso`, y el aviso lleva el
+  **presupuesto** de ese paso —los milisegundos que como mucho va a esperar—.
+  Eso es lo que permite una barra que avanza contra un tope conocido en vez de
+  inventarse un ritmo. Los pasos son los reales: `usos`, `reintento`,
+  `respaldo`, `usos-ligera`.
+* El aviso es opcional y **no puede tumbar una consulta**: si la función
+  revienta, se traga el error. Un adorno de la pantalla no puede costar un
+  análisis.
+
+**La barra no llega nunca al 100 % mientras espera.** Se queda en el 96 %, y
+si el paso se pasa de su presupuesto lo dice con letras —«va en 138 s, más de
+lo previsto»— en vez de sentarse llena. Una barra llena que sigue esperando es
+una mentira, y es la misma regla que el resto del proyecto: no se pinta una
+precisión que no se tiene. El rayado que se mueve dice «sigue viva» aunque el
+ancho no cambie, que es justo lo que pasa cuando un paso se pasa.
+
+Dos cosas de implementación que cuesta recordar:
+
+* **Se repinta tocando SOLO los nodos de la barra**, no llamando a `pintar()`.
+  Recomponer la hoja entera cuatro veces por segundo mientras se espera es lo
+  que convierte una espera en un teléfono caliente.
+* **El latido se para en el `finally`, salga bien o mal.** Un `setInterval` que
+  sobrevive al error se queda tocando el DOM para siempre, y eso no se ve: se
+  nota en la batería dos horas después.
+
+Y una del sitio: la barra se busca en el DOCUMENTO, no dentro de `hojaEl()`.
+Sale en tres sitios —la hoja, el panel del lote y el del sector— y buscarla
+solo en uno la dejaba muerta en los otros dos. Lo cazó la prueba con un
+`H is not defined`, que era yo usando un ayudante de las suites dentro del
+módulo.
+
 ## El módulo presidencial: qué mueve el veredicto
 
 Lo escribe una rutina diaria y lo lee cualquier sesión, así que las reglas

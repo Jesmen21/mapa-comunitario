@@ -206,7 +206,16 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
        mide es la DECISIÓN —cuántas veces se pidió la pesada—, no el reloj. */
     try { localStorage.removeItem('urbis_overpass_techo_v1'); } catch (e) {}
     await window.__modo('colgado');
+    /* ── La barra dice en qué va (v870) ──────────────────────────────
+       «Deberías dejarme como una barrita y ver si está cargando o no.»
+       Se apunta a los pasos que informa js/61 mientras la consulta se
+       cuelga: es la única manera de comprobar que la espera habla. */
+    o.pasos = [];
+    window.AIA_DATOS.alPaso = function (p) {
+      o.pasos.push({ id: p.id, etq: p.etq, presupuestoMs: p.presupuestoMs });
+    };
     o.colgado = await pedir(2000, true, 2500);
+    window.AIA_DATOS.alPaso = null;
     o.techoTrasColgado = window.AIA_DATOS.techoAprendido();
     await esperar(5300);
 
@@ -265,7 +274,21 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
 
     await esperar(5300);
     await window.__modo('remark');
-    await R.analizar(); await esperar(900);
+    /* La barra, mientras carga de verdad. Se mira SIN esperar a que
+       termine: el punto es justamente que se vea durante la espera, que es
+       cuando el botón mudo no decía nada. */
+    const enCurso = R.analizar();
+    await esperar(700);
+    const caja = H() && H().querySelector('.pcr-espera-caja');
+    const relleno = H() && H().querySelector('[data-pcr="espera-relleno"]');
+    o.barraSeVe = !!caja;
+    o.barraTexto = ((H() || document).querySelector('[data-pcr="espera-texto"]') || {}).textContent || '';
+    o.barraPct = relleno ? parseFloat(String(relleno.style.width).replace('%', '')) : -1;
+    o.barraViva = !!(caja && caja.getAttribute('aria-live'));
+    // Y ahora sí se espera a que termine: lo de arriba se miró a mitad de
+    // vuelo a propósito, que es cuando la barra tiene sentido.
+    try { await enCurso; } catch (e) {}
+    await esperar(900);
     const hoja = H() ? H().textContent : '';
     o.error = ((H() || document).querySelector('.pcr-error') || {}).textContent || '';
     o.diceCero = /Todos los usos\s*0\b/.test(hoja) || /\b0\s*usos registrados/.test(hoja);
@@ -306,6 +329,38 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
     (A.agotada.consultas || []).length >= 2 && esLigera((A.agotada.consultas || []).slice(-1)[0]),
     (A.agotada.consultas || []).length + ' consultas, la última ' +
       (esLigera((A.agotada.consultas || []).slice(-1)[0] || '') ? 'ligera' : 'pesada'));
+
+  console.log('\n  -- la barra se ve mientras carga (v870) --');
+  T('mientras consulta hay una barra a la vista, no solo «Consultando…»',
+    B.barraSeVe === true, B.barraSeVe ? 'la caja de espera está' : 'no se pintó');
+  T('y dice en qué paso va y cuántos segundos lleva',
+    /\d+\s*s/.test(B.barraTexto || '') && (B.barraTexto || '').length > 12,
+    (B.barraTexto || 'sin texto').slice(0, 90));
+  /* La regla de la casa, aplicada a un adorno: una barra llena que sigue
+     esperando es una mentira. Se queda por debajo del 100 % a propósito. */
+  T('y NUNCA llega al 100 % mientras espera: una barra llena que espera miente',
+    B.barraPct >= 0 && B.barraPct <= 96, B.barraPct + '%');
+  T('un lector de pantalla también se entera de que sigue viva',
+    B.barraViva === true, B.barraViva ? 'aria-live puesto' : 'sin aria-live');
+
+  console.log('\n  -- la barra dice en qué va la espera (v870) --');
+  /* El botón decía «Consultando…» y nada más, y una consulta grande puede
+     tardar dos minutos: desde afuera no se distingue una espera larga de un
+     cuelgue. Ahora js/61 avisa de cada paso CON SU PRESUPUESTO, que es lo
+     que permite pintar una barra que avanza contra un tope conocido en vez
+     de inventarse un ritmo. */
+  T('avisa de cada paso de la espera, no solo al final',
+    (A.pasos || []).length >= 2,
+    (A.pasos || []).map(x => x.id).join(' → ') || 'ninguno');
+  T('el primer paso es la consulta de usos, con su presupuesto en ms',
+    !!(A.pasos || [])[0] && /^usos/.test(A.pasos[0].id) && A.pasos[0].presupuestoMs > 0,
+    (A.pasos || [])[0] ? A.pasos[0].id + ' · ' + A.pasos[0].presupuestoMs + ' ms' : 'sin pasos');
+  T('y cuando cae al respaldo lo DICE, en vez de seguir mudo',
+    (A.pasos || []).some(x => x.id === 'respaldo' && /ligera/.test(x.etq || '')),
+    (A.pasos || []).map(x => x.etq).join(' | ').slice(0, 110) || 'sin pasos');
+  T('cada paso trae su presupuesto: sin él la barra tendría que inventarse el ritmo',
+    (A.pasos || []).length > 0 && (A.pasos || []).every(x => x.presupuestoMs > 0),
+    (A.pasos || []).map(x => x.presupuestoMs).join(', ') || 'sin pasos');
 
   console.log('\n  -- un servidor que no contesta se pide UNA vez (v869) --');
   /* El fallo de la captura del 12 de septiembre de 2026. Un `remark` rompía

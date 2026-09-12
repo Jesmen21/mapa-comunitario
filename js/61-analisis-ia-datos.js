@@ -300,6 +300,23 @@
     return lista;
   }
 
+  /* ── En qué va la espera ────────────────────────────────────────────
+     La consulta de usos puede tardar dos minutos largos y el botón decía
+     «Consultando…» y nada más: desde afuera no hay manera de saber si sigue
+     viva o si se colgó. Quien la llama puede poner aquí una función y se le
+     avisa en cada paso, con el PRESUPUESTO de ese paso —los milisegundos que
+     como mucho va a esperar—, que es lo que permite pintar una barra que no
+     miente: avanza contra un tope conocido en vez de inventarse un ritmo.
+
+     Es opcional y no puede tumbar una consulta: si la función revienta, se
+     traga el error. Un adorno de la pantalla no puede costar un análisis. */
+  let alPaso = null;
+  function avisarPaso(id, etq, presupuestoMs){
+    if (typeof alPaso !== 'function') return;
+    try { alPaso({ id: id, etq: etq, presupuestoMs: presupuestoMs || 0, desde: Date.now() }); }
+    catch(e) {}
+  }
+
   async function traer(clave, query, forzar, op){
     const o = op || {};
     const cacheado = forzar ? null : leerCache(clave);
@@ -319,6 +336,9 @@
       // espejo que puede estar caído por completo. Tres intentos en total:
       // principal → principal (tras 3s) → espejo (tras 3s más).
       const corte = o.corteMs || 40000;
+      avisarPaso(o.ligera ? 'usos-ligera' : 'usos',
+                 o.ligera ? 'Consultando los usos con puerta a la calle'
+                          : 'Consultando los usos del sector', corte);
       let elementos, ultimoError, aviso = '';
       const intentos = [
         () => fetchOverpass(OVERPASS_PRINCIPAL, query, corte),
@@ -326,7 +346,10 @@
         () => fetchOverpass(OVERPASS_ESPEJO, query, corte)
       ];
       for (let i = 0; i < intentos.length; i++) {
-        if (i > 0) await new Promise(r => setTimeout(r, 3000));
+        if (i > 0) {
+          avisarPaso('reintento', 'El servidor no contestó: reintentando', 3000 + corte);
+          await new Promise(r => setTimeout(r, 3000));
+        }
         try { elementos = await intentos[i](); ultimoError = null; break; }
         catch(e) {
           ultimoError = e;
@@ -364,6 +387,8 @@
           aprenderTecho(o.escala && o.escala.areaKm2);
         }
         try {
+          avisarPaso('respaldo', 'La consulta completa no alcanzó: probando la ligera',
+                     3000 + (o.alternativa.corteMs || corte));
           await new Promise(r => setTimeout(r, 3000));
           elementos = await fetchOverpass(OVERPASS_PRINCIPAL, o.alternativa.query,
                                           o.alternativa.corteMs || corte);
@@ -1312,5 +1337,8 @@
                        /* El techo aprendido, a la vista: lo lee la ficha para
                           poder decir por qué salió en ligero, y las pruebas
                           para comprobar que se aprende y se olvida. */
-                       techoAprendido, aprenderTecho, olvidarTecho };
+                       techoAprendido, aprenderTecho, olvidarTecho,
+                       /* `AIA_DATOS.alPaso = fn` para saber en qué va la
+                          espera. Se pone y se quita; null lo apaga. */
+                       set alPaso(f){ alPaso = f; }, get alPaso(){ return alPaso; } };
 })();

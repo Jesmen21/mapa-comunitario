@@ -73,6 +73,35 @@
 .pcr-pista{ margin:0; font-size:.74rem; color:#6b7684; line-height:1.45; }
 .pcr-espera{ text-align:center; }
 
+/* La barra de espera. La consulta de un área grande puede tardar dos minutos
+   y el botón solo decía «Consultando…»: desde afuera no se distingue una
+   espera larga de un cuelgue. La barra avanza contra el presupuesto real del
+   paso —lo informa js/61— y NUNCA llega al 100 % mientras espera: una barra
+   llena que sigue esperando es una mentira. */
+.pcr-espera-caja{ display:flex; flex-direction:column; gap:5px; margin-top:2px; }
+.pcr-espera-barra{
+  height:5px; border-radius:99px; background:#e6ebf1; overflow:hidden;
+}
+.pcr-espera-barra > i{
+  display:block; height:100%; width:0; border-radius:99px;
+  background:linear-gradient(90deg,#0A6F9E,#37A6D9);
+  transition:width .4s linear;
+}
+/* Un rayado que se mueve: dice «sigue viva» aunque el ancho no cambie,
+   que es justo lo que pasa cuando un paso se pasa de su presupuesto. */
+.pcr-espera-barra > i::after{
+  content:''; display:block; height:100%;
+  background-image:linear-gradient(90deg,rgba(255,255,255,.35) 25%,transparent 25%,
+    transparent 50%,rgba(255,255,255,.35) 50%,rgba(255,255,255,.35) 75%,transparent 75%);
+  background-size:14px 100%;
+  animation:pcr-espera-anda 1s linear infinite;
+}
+@keyframes pcr-espera-anda{ from{ background-position:0 0 } to{ background-position:14px 0 } }
+@media (prefers-reduced-motion: reduce){
+  .pcr-espera-barra > i::after{ animation:none }
+  .pcr-espera-barra > i{ transition:none }
+}
+
 /* Radio o área dibujada. Van juntos y del mismo tamaño porque son dos formas
    igual de válidas de decir «este pedazo de ciudad», no una principal y una
    alternativa. */

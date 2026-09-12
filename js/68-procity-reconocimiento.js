@@ -1038,6 +1038,74 @@
 
      Ahora es una sola función y se calcula al usarla, no se guarda. Tres
      lugares no pueden discrepar si solo hay uno. */
+  /* ── La barra de espera ─────────────────────────────────────────────
+     El botón decía «Consultando…» y nada más, y la consulta de un área
+     grande puede tardar dos minutos: desde afuera no hay manera de saber si
+     sigue viva o si se colgó. Reportado el 12 de septiembre de 2026 —«se
+     demora mucho y se cayó la plataforma»—; lo primero era cierto y lo
+     segundo no se podía distinguir de lo primero.
+
+     La barra avanza contra el PRESUPUESTO que informa `js/61` —los
+     milisegundos que como mucho va a esperar ese paso—, no contra un ritmo
+     inventado. Y **no llega nunca al 100 % mientras espera**: una barra
+     llena que sigue esperando es una mentira, y este proyecto no las pinta.
+     Se queda en el 96 % y, si se pasa del presupuesto, lo dice con letras.
+
+     Se repinta sola cada 400 ms tocando SOLO los dos nodos de la barra, no
+     llamando a `pintar()`: recomponer la hoja entera cuatro veces por
+     segundo mientras se espera es lo que convierte una espera en un
+     teléfono caliente. */
+  var TOPE_BARRA = 0.96;
+  function pasoDeEspera(p) {
+    S.paso = p || null;
+    refrescarBarra();
+  }
+  function textoDelPaso() {
+    var p = S.paso;
+    if (!p) return 'Consultando…';
+    var seg = Math.floor((Date.now() - p.desde) / 1000);
+    var tope = Math.round((p.presupuestoMs || 0) / 1000);
+    if (tope && seg > tope) {
+      return p.etq + ' · va en ' + seg + ' s, más de lo previsto';
+    }
+    return p.etq + ' · ' + seg + ' s' + (tope ? ' de hasta ' + tope : '');
+  }
+  function fraccionDelPaso() {
+    var p = S.paso;
+    if (!p || !(p.presupuestoMs > 0)) return 0;
+    return Math.min(TOPE_BARRA, (Date.now() - p.desde) / p.presupuestoMs);
+  }
+  function refrescarBarra() {
+    /* Se busca en el documento y no dentro de la hoja: la barra sale en tres
+       sitios —la hoja, el panel del lote y el del sector— y `hojaEl()` solo
+       conoce uno. Se refrescan todas las que haya. */
+    var rellenos = document.querySelectorAll('[data-pcr="espera-relleno"]');
+    var textos = document.querySelectorAll('[data-pcr="espera-texto"]');
+    var ancho = Math.round(fraccionDelPaso() * 100) + '%';
+    var dice = textoDelPaso();
+    Array.prototype.forEach.call(rellenos, function (x) { x.style.width = ancho; });
+    Array.prototype.forEach.call(textos, function (x) { x.textContent = dice; });
+  }
+  var latidoBarra = null;
+  function arrancarBarra() {
+    if (latidoBarra) return;
+    latidoBarra = setInterval(refrescarBarra, 400);
+  }
+  function pararBarra() {
+    if (latidoBarra) { clearInterval(latidoBarra); latidoBarra = null; }
+    S.paso = null;
+  }
+  /* El HTML de la barra, uno solo para los tres sitios donde estaba repetido
+     el «Consultando…». Con `aria-live` para que un lector de pantalla
+     también se entere de que sigue viva. */
+  function barraDeEspera() {
+    return '<div class="pcr-espera-caja" role="status" aria-live="polite">' +
+      '<div class="pcr-espera-barra"><i data-pcr="espera-relleno" style="width:' +
+        Math.round(fraccionDelPaso() * 100) + '%"></i></div>' +
+      '<p class="pcr-pista pcr-espera" data-pcr="espera-texto">' + esc(textoDelPaso()) + '</p>' +
+      '</div>';
+  }
+
   function centroDeAnalisis() {
     if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
       return centroideDe(S.poligono);
@@ -8157,7 +8225,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             : '<button type="button" data-pcr="lote-dibujar" class="pcr-principal pcr-lote-btn">' +
                 ico('lapiz') + 'Marcar el lote en el mapa</button>') +
           (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
-          (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
+          (S.cargando ? barraDeEspera() : '') +
         '</div>';
     }
 
@@ -8193,7 +8261,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>') +
 
         (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
-        (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar.</p>' : '') +
+        (S.cargando ? barraDeEspera() : '') +
       '</div>';
   }
 
@@ -8596,7 +8664,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
           (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') +
         '</button>' +
-        (S.cargando ? '<p class="pcr-pista pcr-espera">La primera consulta del día puede tardar. No cierres esta hoja.</p>' : '') +
+        (S.cargando ? barraDeEspera() : '') +
 
         htmlGuardadas() +
       '</div>';
@@ -20763,6 +20831,13 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     S.cargando = true; S.error = ''; S.aviso = ''; S.textoPlano = '';
     quitarDelMapa(); S.estratos = null; S.puntosEnMapa = 0;
+    /* La barra arranca ANTES de la primera consulta y con su primer paso ya
+       puesto: si se pintara vacía y se llenara al llegar el aviso de `js/61`,
+       el primer segundo —el más sospechoso, el de «¿arrancó o no?»— sería
+       justo el que no dice nada. */
+    pasoDeEspera({ id: 'arranque', etq: 'Preparando la consulta', presupuestoMs: 3000, desde: Date.now() });
+    if (window.AIA_DATOS) window.AIA_DATOS.alPaso = pasoDeEspera;
+    arrancarBarra();
     pintar();
     try {
       var esPol = S.forma === 'poligono';
@@ -20854,6 +20929,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       S.error = (e && e.message) || 'No se pudo consultar el sector.';
     }
     S.cargando = false;
+    /* El latido se para SIEMPRE, salga bien o mal: un `setInterval` que
+       sobrevive al error se queda tocando el DOM cada 400 ms para siempre,
+       y eso no se ve — se nota en la batería del teléfono dos horas
+       después. Y se suelta el aviso, que apunta a esta pantalla. */
+    pararBarra();
+    if (window.AIA_DATOS) window.AIA_DATOS.alPaso = null;
     // Con resultado, la hoja se abre sola: ya no hay nada que ubicar en el
     // mapa y sí mucho que leer.
     if (S.resultado) {
