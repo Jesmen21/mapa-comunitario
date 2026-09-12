@@ -51,6 +51,62 @@
      los cuarenta segundos fijos de antes, una consulta a la que el
      servidor le daba noventa se abortaba acá a los cuarenta y nunca podía
      terminar. */
+  /* ── El techo de la consulta completa, APRENDIDO ────────────────────
+     El corte de 50 km² para soltar las capas de área era un número puesto a
+     ojo, y en una ciudad densa se queda largo: reportado el 12 de septiembre
+     de 2026 con un lote de 92 ha y 2 km de radio —12,57 km², bien por debajo
+     del corte— la completa no terminaba nunca. `building` y `landuse` de doce
+     kilómetros cuadrados de Cúcuta son decenas de miles de polígonos que hay
+     que centrar uno por uno.
+
+     Poner otro número a ojo sería repetir el error. Se APRENDE: cuando la
+     completa se cae —por tiempo o porque el servidor dice que es muy cara— se
+     recuerda el área en la que se cayó, y a partir de ahí un área igual o
+     mayor sale directo en ligera. Es una medición de este teléfono contra el
+     Overpass de hoy, que es lo único que de verdad decide si alcanza. */
+  const LS_TECHO = 'urbis_overpass_techo_v1';
+  /* CADUCA a las 24 horas, igual que el caché de las consultas, y por la
+     misma razón: lo aprendido no es «esta área es grande» —eso no cambia—
+     sino «el Overpass de hoy no alcanza», y eso cambia con la carga del
+     servidor. Sin caducidad el techo es AUTOCONFIRMANTE: una vez puesto, la
+     pesada no se vuelve a intentar nunca, así que jamás llega la prueba de
+     que ya alcanzaría. Un mal día de Overpass dejaría el teléfono en ligero
+     para siempre y nadie sabría por qué. */
+  const TECHO_DURA_MS = 24 * 60 * 60 * 1000;
+  function techoAprendido(){
+    try {
+      const g = JSON.parse(localStorage.getItem(LS_TECHO) || 'null');
+      if (!g || !(Number(g.km2) > 0)) return Infinity;
+      if (Date.now() - (Number(g.t) || 0) > TECHO_DURA_MS) return Infinity;
+      return Number(g.km2);
+    } catch(e) { return Infinity; }
+  }
+  /* Y se DESAPRENDE. Un techo que solo baja es una trampa: si Overpass tuvo
+     un mal día, este teléfono se quedaría analizando en ligero para siempre y
+     nadie sabría por qué. Cuando la completa SÍ alcanza en un área igual o
+     mayor que el techo guardado, el techo estaba mal y se borra. */
+  function olvidarTecho(areaKm2){
+    const a = Number(areaKm2) || 0;
+    try { if (a > 0 && a >= techoAprendido()) localStorage.removeItem(LS_TECHO); } catch(e) {}
+  }
+  function aprenderTecho(areaKm2){
+    const a = Number(areaKm2) || 0;
+    if (!(a > 0)) return;
+    try {
+      const antes = techoAprendido();
+      /* Se guarda el MENOR que falló: si a 12 km² no alcanzó, a 20 tampoco.
+         Y se redondea hacia ABAJO. Con `round` los 12,566 km² del sector que
+         reportó esto se guardaban como 12,57, y la MISMA consulta volvía a
+         quedar por debajo del techo que ella misma acababa de poner: se
+         intentaba la pesada otra vez. Lo cazó la prueba de la segunda
+         llamada, no la lectura. */
+      if (a < antes) {
+        localStorage.setItem(LS_TECHO, JSON.stringify({
+          km2: Math.floor(a * 100) / 100, t: Date.now() }));
+      }
+    } catch(e) {}
+  }
+
   function escalaDeConsulta(areaKm2){
     const a = Math.max(0.05, Number(areaKm2) || 0.05);
     const segundos = a <= 5 ? 60 : a <= 30 ? 90 : 180;
@@ -59,8 +115,14 @@
        kilómetros— la pesada no es que tarde: es que no termina. Se pide
        directamente la ligera en vez de gastar tres minutos para caer en
        ella de todos modos. */
+    /* Se sale en ligera si el área pasa el corte fijo O el techo aprendido.
+       El fijo se queda como red de seguridad para el primer análisis de un
+       teléfono, que todavía no ha aprendido nada. */
+    const techo = techoAprendido();
     return { segundos: segundos, tope: tope, areaKm2: a,
-             ligera: a > 50, corteMs: (segundos + 20) * 1000 };
+             ligera: a > 50 || a >= techo,
+             porTecho: a < 50 && a >= techo, techo: techo,
+             corteMs: (segundos + 20) * 1000 };
   }
   /* Los kilómetros cuadrados de un trazo, por exceso esférico. Hace falta
      acá porque un área dibujada no trae radio con el que medir su peso. */
@@ -166,7 +228,13 @@
 
   async function fetchOverpass(endpoint, query, timeoutMs){
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs || 40000);
+    /* Se anota que el corte fue NUESTRO. `fetch` lanza el mismo `AbortError`
+       para un aborto por tiempo que para uno pedido a mano, y sin esta marca
+       quien lo recibe no puede distinguir «la consulta es muy cara» de «se
+       cortó la conexión». Esa confusión costó siete minutos de espera:
+       ver el bucle de intentos en `traer`. */
+    let porTiempo = false;
+    const timer = setTimeout(() => { porTiempo = true; ctrl.abort(); }, timeoutMs || 40000);
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -197,6 +265,14 @@
       }
       if (remark) elementos.parcial = remark;
       return elementos;
+    } catch(e) {
+      if (porTiempo) {
+        const err = new Error('La consulta pasó de ' + Math.round((timeoutMs || 40000) / 1000) +
+                              ' segundos y se cortó desde acá.');
+        err.porTiempo = true;
+        throw err;
+      }
+      throw e;
     } finally {
       clearTimeout(timer);
     }
@@ -260,7 +336,17 @@
              se va directo al respaldo ligero, que es lo único que puede
              cambiar la respuesta. Los reintentos siguen para lo que sí es
              un bache: un 504, una conexión cortada, el espejo. */
-          if (e && e.overpass) break;
+          /* Y un corte por TIEMPO es la misma respuesta dicha de otra
+             manera. Acá solo rompía el `remark`, así que un aborto nuestro
+             se reintentaba como si fuera un bache: la misma consulta pesada,
+             contra el mismo servidor, dos veces más. Nunca podía cambiar el
+             resultado, y sumaba 110 + 3 + 110 + 3 + 110 segundos antes de
+             llegar al respaldo — siete minutos y medio de «Consultando…»
+             con el botón mudo. Reportado el 12 de septiembre de 2026.
+
+             Los reintentos siguen para lo que sí es un bache: un 504, una
+             conexión cortada, el espejo. Eso sí cambia entre intentos. */
+          if (e && (e.overpass || e.porTiempo)) break;
         }
       }
       /* ── El respaldo ligero ──────────────────────────────────────────
@@ -271,6 +357,12 @@
          y en la ficha, porque un análisis al que le falta una capa no
          puede presentarse como completo. */
       if (ultimoError && o.alternativa) {
+        /* Se cayó la completa: este teléfono ya sabe que a esta área no le
+           alcanza, y el próximo análisis de un área igual o mayor sale
+           directo en ligera en vez de gastar otros dos minutos. */
+        if (ultimoError.overpass || ultimoError.porTiempo) {
+          aprenderTecho(o.escala && o.escala.areaKm2);
+        }
         try {
           await new Promise(r => setTimeout(r, 3000));
           elementos = await fetchOverpass(OVERPASS_PRINCIPAL, o.alternativa.query,
@@ -285,12 +377,24 @@
             'es muy grande para lo que hay mapeado ahí. Probá con un radio menor.'
           : 'El servicio de datos abiertos está saturado. Espera un minuto y vuelve a intentar.');
       }
+      /* La completa alcanzó: si había un techo por debajo de esta área,
+         estaba equivocado. Va acá y no en el `catch` de arriba a propósito —
+         solo cuenta como prueba el caso en que se pidió la PESADA y llegó. */
+      if (!o.ligera && !aviso && o.escala) olvidarTecho(o.escala.areaKm2);
       if (elementos && elementos.parcial) {
         aviso = aviso || 'La respuesta llegó incompleta: el servidor de datos abiertos se quedó ' +
                          'sin tiempo a mitad de la consulta. Lo que se ve es una parte del sector.';
       }
       if (o.ligera && !aviso) {
-        aviso = o.avisoLigera || '';
+        /* Si se salió en ligera porque este teléfono YA vio caerse la
+           completa a esta área, se dice así y no como una regla de tamaño:
+           son dos cosas distintas y la segunda es comprobable. */
+        aviso = (o.escala && o.escala.porTecho)
+          ? 'En un análisis anterior la consulta completa no alcanzó a terminar en un área de ' +
+            'este tamaño, así que esta salió directamente en modo ligero: se leyeron los usos con ' +
+            'puerta a la calle, no los polígonos de uso del suelo, vegetación ni agua. Para ' +
+            'tenerlos, analizá con un radio menor.'
+          : (o.avisoLigera || '');
       }
       /* Y si la respuesta llegó TOPADA, se dice. Overpass corta en el
          número que se le pide y no avisa de nada: la lista llega completa
@@ -669,8 +773,16 @@
     'calle: no se leyeron los polígonos de uso del suelo, vegetación ni agua. Para tenerlos, ' +
     'analizá con un radio menor.';
 
-  function opcionesDeConsulta(a, areaKm2){
+  /* `corteMsMax` acota el corte del cliente por debajo del que sale del área.
+     No es un ajuste de pruebas: es para quien no puede esperar los dos
+     minutos largos que puede tardar un área grande —una pantalla con su
+     propio presupuesto de espera— y prefiere caer al respaldo ligero antes.
+     Nunca lo sube: el corte del cliente tiene que seguir por encima del del
+     servidor, que es la regla que evita abortar una consulta que iba a
+     contestar. */
+  function opcionesDeConsulta(a, areaKm2, corteMsMax){
     const e = escalaDeConsulta(areaKm2);
+    if (corteMsMax > 0 && corteMsMax < e.corteMs) e.corteMs = corteMsMax;
     return {
       corteMs: e.corteMs,
       ligera: e.ligera,
@@ -685,10 +797,10 @@
     };
   }
 
-  function consultarEntorno(lat, lng, radioM, forzar){
+  function consultarEntorno(lat, lng, radioM, forzar, corteMsMax){
     const a = '(around:' + Math.round(radioM) + ',' + lat + ',' + lng + ')';
     const areaKm2 = Math.PI * Math.pow(Math.max(0, Number(radioM) || 0) / 1000, 2);
-    const op = opcionesDeConsulta(a, areaKm2);
+    const op = opcionesDeConsulta(a, areaKm2, corteMsMax);
     return traer(claveCache(lat, lng, radioM),
                  construirQueryCon(a, { segundos: op.escala.segundos, tope: op.escala.tope,
                                         ligera: op.escala.ligera }),
@@ -697,12 +809,12 @@
 
   /* Lo mismo, para un área dibujada a mano. `pts` son los vértices en el
      orden del trazo, como los guarda Pro City. */
-  function consultarEntornoPoligono(pts, forzar){
+  function consultarEntornoPoligono(pts, forzar, corteMsMax){
     if (!Array.isArray(pts) || pts.length < 3) {
       return Promise.reject(new Error('El área necesita al menos 3 puntos.'));
     }
     const a = filtroPoligono(pts);
-    const op = opcionesDeConsulta(a, areaKm2De(pts));
+    const op = opcionesDeConsulta(a, areaKm2De(pts), corteMsMax);
     return traer(claveCachePoligono(pts),
                  construirQueryCon(a, { segundos: op.escala.segundos, tope: op.escala.tope,
                                         ligera: op.escala.ligera }),
@@ -1196,5 +1308,9 @@
                        consultarTrazado, consultarTrazadoPoligono, consultarVias, consultarContexto,
                        consultarElevacion, rejillaDe, consultarClima,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR,
-                       camposDeCapa, censoAmpliado, BLOQUES_CENSO };
+                       camposDeCapa, censoAmpliado, BLOQUES_CENSO,
+                       /* El techo aprendido, a la vista: lo lee la ficha para
+                          poder decir por qué salió en ligero, y las pruebas
+                          para comprobar que se aprende y se olvida. */
+                       techoAprendido, aprenderTecho, olvidarTecho };
 })();

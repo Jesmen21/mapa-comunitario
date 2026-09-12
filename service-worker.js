@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v868-mas-de-una-lista-viva';
+const URBIS_CACHE = 'urbis-v869-un-corte-por-tiempo-no-se-reintenta';
 const URBIS_ASSETS = [
   './',
   './index.html',

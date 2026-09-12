@@ -197,6 +197,70 @@ Lo mide `tconsulta.js`, contra un Overpass de mentira al que se le puede
 pedir que se ponga de mal humor: es la única forma de provocar un tiempo
 agotado sin depender de cómo esté el servidor de verdad hoy.
 
+### Un corte por tiempo no se reintenta (v869)
+
+Llegó en captura el 12 de septiembre de 2026: un lote de 92 ha con 2 km de
+radio se quedaba en «Consultando…» y la aplicación se caía. El área —12,57
+km²— está **por debajo** del corte de 50 km² que suelta las capas de área, así
+que la consulta salía completa, con `building` y `landuse` de doce kilómetros
+cuadrados de Cúcuta.
+
+Pero el tamaño no era el fallo. El fallo era el bucle de intentos:
+
+* Un `remark` rompe el bucle —«esta consulta es demasiado cara»—, pero un
+  **aborto por tiempo del cliente no llevaba ninguna marca**: `fetch` lanza el
+  mismo `AbortError` para un corte nuestro que para una conexión cortada. Así
+  que se reintentaba la MISMA consulta pesada contra el MISMO servidor:
+  110 + 3 + 110 + 3 + 110 + 3 + 110 ≈ **siete minutos y medio** antes de llegar
+  al respaldo ligero. Nunca podía cambiar la respuesta.
+* `fetchOverpass` marca ahora `err.porTiempo`, y el bucle rompe con las dos:
+  son la misma respuesta dicha de otra manera. Los reintentos se quedan para
+  lo que sí es un bache —un 504, una conexión cortada, el espejo—, que es lo
+  único que cambia entre intentos.
+
+**El tope de elementos no protege de esto.** Es un límite de `out`: acota la
+SALIDA, no el trabajo del servidor. Overpass construye la unión entera antes de
+aplicarlo, así que subir el tiempo o bajar el tope no evita que una consulta
+cara no termine.
+
+#### El techo se aprende, no se adivina
+
+El corte de 50 km² estaba puesto a ojo y en una ciudad densa se queda largo.
+Poner otro número a ojo sería repetir el error, y desde acá no se puede medir:
+el proxy de la máquina de desarrollo bloquea Overpass. Así que se **aprende**:
+cuando la completa se cae —por tiempo o por `remark`— se guarda el área en la
+que se cayó (`urbis_overpass_techo_v1`), y a partir de ahí un área igual o
+mayor sale directo en ligera, diciéndolo con esas palabras y no como una regla
+de tamaño.
+
+Dos cosas que costaron una vuelta, las dos cazadas por la prueba y no leyendo:
+
+* **Se redondea hacia ABAJO.** Con `round`, los 12,566 km² del sector que
+  reportó esto se guardaban como 12,57 y la MISMA consulta quedaba por debajo
+  del techo que ella misma acababa de poner: se intentaba la pesada otra vez.
+* **El techo CADUCA a las 24 h**, igual que el caché. Sin caducidad es
+  autoconfirmante: una vez puesto, la pesada no se vuelve a intentar nunca, así
+  que jamás llega la prueba de que ya alcanzaría, y un mal día de Overpass
+  dejaría el teléfono en ligero para siempre sin que nadie supiera por qué.
+  Cuando caduca y la completa vuelve a alcanzar, el techo se borra.
+
+#### El doble no sabía colgarse
+
+`tconsulta` tenía modo `remark` y no tenía modo **colgado**, y por eso esto
+llegó a producción: el camino del aborto por tiempo no se ejercitaba en
+ninguna prueba. Ahora la pesada nunca resuelve y la ligera contesta, que es
+exactamente el sector de la captura. Se mide la DECISIÓN —cuántas veces se
+pidió la pesada—, no el reloj: el corte del cliente se acota con
+`corteMsMax`, un parámetro de verdad de `consultarEntorno` para quien no puede
+esperar dos minutos, no una puerta trasera de pruebas.
+
+**Lo que esto NO arregla, y hay que decirlo:** el primer análisis de un área
+pesada sigue costando unos dos minutos —110 s de la completa que no alcanza,
+más la ligera—. Lo que se quitó son los cinco minutos de reintentos inútiles.
+Bajar más pide o medir contra el Overpass real, que desde acá no se puede, o
+avisar en pantalla en qué va la espera, que sigue diciendo «Consultando…» sin
+más.
+
 ## El módulo presidencial: qué mueve el veredicto
 
 Lo escribe una rutina diaria y lo lee cualquier sesión, así que las reglas

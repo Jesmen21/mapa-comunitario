@@ -109,6 +109,16 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
   await ctx.route(/overpass/, r => {
     const q = legible(r.request().postData() || '');
     pedidos.push(q);
+    /* El modo que faltaba, y por eso el fallo llegó a producción: un
+       servidor que NO CONTESTA. Overpass devolviendo `remark` estaba
+       cubierto; colgado no, y son cosas distintas — el `remark` rompe el
+       bucle de intentos y el aborto por tiempo no lo rompía, así que la
+       misma consulta pesada se pedía tres veces. Acá la pesada se cuelga y
+       la ligera contesta, que es exactamente el sector que lo reportó. */
+    if (modo === 'colgado') {
+      if (esLigera(q)) return json(r, usos(30));
+      return new Promise(function () {});   // nunca resuelve: que corte el cliente
+    }
     if (modo === 'remark') return json(r, REMARK);
     // El caso real: la pesada no alcanza y la ligera sí. Es exactamente lo
     // que pasa en un sector grande y bien mapeado.
@@ -131,10 +141,10 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
     const { C } = D, o = {};
     const esperar = ms => new Promise(x => setTimeout(x, ms));
     const antes = async () => (await window.__pedidos()).length;
-    const pedir = async (radio, forzar) => {
+    const pedir = async (radio, forzar, corteMsMax) => {
       const i = await antes();
       try {
-        const l = await window.AIA_DATOS.consultarEntorno(C.lat, C.lng, radio, forzar);
+        const l = await window.AIA_DATOS.consultarEntorno(C.lat, C.lng, radio, forzar, corteMsMax);
         const todos = await window.__pedidos();
         return { ok: true, n: l.length, aviso: l.aviso || '', consultas: todos.slice(i) };
       } catch (e) {
@@ -182,6 +192,43 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
         JSON.stringify([{ k: clave, t: Date.now(), d: [], a: '' }]));
     } catch (e) {}
     o.envenenado = await pedir(1700, false);
+    await esperar(5300);
+
+    /* ── El servidor que no contesta ────────────────────────────────────
+       Reportado el 12 de septiembre de 2026 con una captura: un lote de 92
+       ha con 2 km de radio se quedaba en «Consultando…» y se caía. El
+       `remark` estaba cubierto; un servidor COLGADO no, y ahí estaba el
+       fallo — un aborto por tiempo no llevaba la marca que rompe el bucle
+       de intentos, así que la misma consulta pesada se pedía tres veces:
+       110 + 3 + 110 + 3 + 110 + 3 + 110 ≈ siete minutos y medio.
+
+       Se acota el corte del cliente para no esperarlos de verdad; lo que se
+       mide es la DECISIÓN —cuántas veces se pidió la pesada—, no el reloj. */
+    try { localStorage.removeItem('urbis_overpass_techo_v1'); } catch (e) {}
+    await window.__modo('colgado');
+    o.colgado = await pedir(2000, true, 2500);
+    o.techoTrasColgado = window.AIA_DATOS.techoAprendido();
+    await esperar(5300);
+
+    /* Y la segunda vez ya no se intenta la pesada: este teléfono aprendió
+       que a esta área no le alcanza. */
+    o.segunda = await pedir(2000, true, 2500);
+    await esperar(5300);
+
+    /* El techo CADUCA a las 24 h, y esa caducidad es lo único que permite
+       desaprenderlo: mientras está puesto, la pesada no se vuelve a intentar,
+       así que nunca llegaría la prueba de que ya alcanza. Se envejece el
+       guardado a mano —dos días— y se comprueba que vuelve a intentarla. */
+    try {
+      const g = JSON.parse(localStorage.getItem('urbis_overpass_techo_v1') || '{}');
+      g.t = Date.now() - 48 * 60 * 60 * 1000;
+      localStorage.setItem('urbis_overpass_techo_v1', JSON.stringify(g));
+    } catch (e) {}
+    o.techoCaducado = window.AIA_DATOS.techoAprendido();
+
+    await window.__modo('ok');
+    o.tras = await pedir(2000, true, 2500);
+    o.techoFinal = window.AIA_DATOS.techoAprendido();
     return o;
   }, { C });
 
@@ -259,6 +306,45 @@ const topeDe = q => Number((String(q).match(/out center tags (\d+)/) || [0, 0])[
     (A.agotada.consultas || []).length >= 2 && esLigera((A.agotada.consultas || []).slice(-1)[0]),
     (A.agotada.consultas || []).length + ' consultas, la última ' +
       (esLigera((A.agotada.consultas || []).slice(-1)[0] || '') ? 'ligera' : 'pesada'));
+
+  console.log('\n  -- un servidor que no contesta se pide UNA vez (v869) --');
+  /* El fallo de la captura del 12 de septiembre de 2026. Un `remark` rompía
+     el bucle de intentos; un corte por tiempo no, así que la misma consulta
+     pesada iba tres veces contra el mismo servidor —110 + 3 + 110 + 3 + 110—
+     antes de llegar al respaldo. Nunca podía cambiar la respuesta: lo único
+     que cambiaba era que el usuario esperaba siete minutos y medio. */
+  const pesadasColgado = (A.colgado.consultas || []).filter(q => !esLigera(q));
+  T('la consulta pesada que se cuelga se pide UNA sola vez, no tres',
+    pesadasColgado.length === 1,
+    pesadasColgado.length + ' pesadas de ' + (A.colgado.consultas || []).length + ' consultas');
+  T('y se cae al respaldo ligero, que sí contesta',
+    A.colgado.ok === true && A.colgado.n > 0 && esLigera((A.colgado.consultas || []).slice(-1)[0] || ''),
+    A.colgado.ok ? A.colgado.n + ' usos por la ligera' : 'falló: ' + (A.colgado.error || ''));
+  T('el aviso dice que faltan las capas de área, no se presenta como completo',
+    /uso del suelo/.test(A.colgado.aviso || ''), (A.colgado.aviso || 'sin aviso').slice(0, 90));
+
+  /* Y el techo se APRENDE en vez de adivinarse: el corte de 50 km² estaba
+     puesto a ojo y en Cúcuta se queda largo —el sector que lo reportó eran
+     12,57 km²—. Poner otro número a ojo sería repetir el error. */
+  T('aprende que a esta área no le alcanza la completa',
+    A.techoTrasColgado > 0 && A.techoTrasColgado < 50,
+    'techo aprendido: ' + A.techoTrasColgado + ' km²');
+  const pesadasSegunda = (A.segunda.consultas || []).filter(q => !esLigera(q));
+  T('así que la segunda vez no vuelve a intentar la pesada',
+    pesadasSegunda.length === 0 && A.segunda.ok === true,
+    pesadasSegunda.length + ' pesadas · ' + (A.segunda.consultas || []).length + ' consultas');
+  T('y lo dice como lo que es —lo aprendido—, no como una regla de tamaño',
+    /análisis anterior/.test(A.segunda.aviso || ''), (A.segunda.aviso || 'sin aviso').slice(0, 90));
+  /* Un techo que solo baja es una trampa: si Overpass tuvo un mal día, este
+     teléfono se quedaría en ligero para siempre y nadie sabría por qué. */
+  T('el techo CADUCA a las 24 horas: es lo que aprendió del Overpass de ayer',
+    !isFinite(A.techoCaducado),
+    isFinite(A.techoCaducado) ? 'seguía en ' + A.techoCaducado + ' km²' : 'caducado, como debe');
+  const pesadasTras = (A.tras.consultas || []).filter(q => !esLigera(q));
+  T('caducado, vuelve a intentar la pesada y el techo se DESAPRENDE',
+    A.tras.ok === true && pesadasTras.length === 1 && !isFinite(A.techoFinal),
+    pesadasTras.length + ' pesadas · techo final: ' +
+      (isFinite(A.techoFinal) ? A.techoFinal + ' km²' : 'ninguno, olvidado'));
 
   console.log('\n  -- cuando la pesada no alcanza, la ligera salva el análisis --');
   T('vuelve con los usos, no con las manos vacías', A.respaldo.ok && A.respaldo.n === 30,
