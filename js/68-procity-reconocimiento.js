@@ -5734,10 +5734,22 @@ function donaHTML(datos, colorDe, nombreDe) {
               if (hab0 > 0 && trz.espacio.piezas)
                 partes.push(num(Math.round(10 * trz.espacio.areaM2 / hab0) / 10) + ' m²/hab de espacio público frente a la meta de ' +
                   (trz.espacio.metaM2Hab || 15));
-              else if (!trz.espacio.piezas) partes.push('sin parques ni plazas con forma registrada');
+              /* No cierra en juicio: una capa vacía no es una conclusión, y
+                 esta línea es lo que la banda le deja leído al jurado. */
+              else if (!trz.espacio.piezas) partes.push('ningún parque ni plaza con forma dibujada, que es un dato del mapa y no del sector');
             }
             var cb = null; try { cb = o2Cobertura(); } catch (e0) {}
-            if (cb && cb.verde != null) partes.push(num(cb.verde) + ' % de vegetación viva en la foto');
+            /* §13 · Con un cuarto de la foto en tonos que el clasificador no
+               puede separar, «N % de vegetación viva» no es una medición del
+               sector: es una medición de los tres cuartos que sí se pudieron
+               leer, presentada como si fuera del todo. Se dice lo uno o lo
+               otro, nunca el número a secas. */
+            var amb = cb ? Number(cb.pctAmbiguo || 0) : 0;
+            if (cb && cb.verde != null && amb <= 25)
+              partes.push(num(cb.verde) + ' % de vegetación viva en la foto');
+            else if (cb && cb.verde != null)
+              partes.push(num(cb.verde) + ' % de vegetación viva sobre el ' + num(100 - amb) +
+                ' % de la foto que se pudo clasificar, no sobre el sector entero');
             return partes.length
               ? 'Lo que el sitio le pone al proyecto: ' + partes.join(' · ') + '.'
               : 'Sin terreno, clima ni foto leída, la banda muestra lo poco que hay y no alcanza para una conclusión propia.';
@@ -5746,13 +5758,26 @@ function donaHTML(datos, colorDe, nombreDe) {
           case 'movilidad':
             var ac = st.accesibilidad, mv = st.movilidad;
             if (ac && (ac.categorias || []).length) {
-              var bien = ac.categorias.filter(function (c) { return c.pctCubierto >= 80; }).length;
-              partes.push(bien + ' de ' + ac.categorias.length + ' coberturas básicas pasan del 80 % a pie');
+              /* Solo se cuentan las clases que tienen al menos un
+                 equipamiento mapeado: una clase vacía da 0 % cubierto y
+                 arrastraba el marcador hacia abajo como si se hubiera
+                 medido que nadie la alcanza. */
+              var conDato = ac.categorias.filter(function (c) { return Number(c.puntos) > 0; });
+              var vacias = ac.categorias.length - conDato.length;
+              if (conDato.length) {
+                var bien = conDato.filter(function (c) { return c.pctCubierto >= 80; }).length;
+                partes.push(bien + ' de ' + conDato.length + ' coberturas básicas pasan del 80 % a pie' +
+                  (vacias ? ' (otras ' + vacias + ' sin un solo equipamiento mapeado: no se cuentan)' : ''));
+              } else {
+                partes.push('ninguna de las ' + ac.categorias.length + ' clases de equipamiento tiene un punto mapeado: ' +
+                  'la cobertura a pie no se puede calcular todavía');
+              }
             }
             if (mv && mv.viaPrincipal && mv.viaPrincipal.nombre)
               partes.push('se entra por la ' + mv.viaPrincipal.nombre +
                 (mv.viaPrincipal.distM != null ? ', a ' + Math.round(mv.viaPrincipal.distM) + ' m' : ''));
-            if (mv && mv.paradasBus != null) partes.push(mv.paradasBus + ' paradas de transporte público registradas');
+            if (mv && mv.paradasBus > 0) partes.push(mv.paradasBus + ' paradas de transporte público registradas');
+            else if (mv && mv.paradasBus === 0) partes.push('ninguna parada mapeada, que no es lo mismo que ninguna parada');
             return partes.length ? partes.join(' · ') + '.'
               : 'La red se ve en el mapa; sin coberturas ni vía principal medidas no hay conclusión que sostener.';
           case 'demografico':
@@ -6338,6 +6363,25 @@ function donaHTML(datos, colorDe, nombreDe) {
                   '</div>';
                 }).join('') +
               '</div>' +
+              /* ── Lo que hay que ir a comprobar (§5, v875) ──────────────
+                 Va JUSTO DEBAJO de las cinco y antes de la nota, que es
+                 donde se lee: son las carencias que la hoja NO pudo medir
+                 porque la capa venía vacía, y que antes salían mezcladas
+                 entre las propuestas como si estuvieran medidas. Cada una
+                 dice qué comprobar, por qué no se pudo, y cómo se resuelve
+                 — una tarea, no una recomendación. */
+              ((pu.verificar || []).length
+                ? '<div class="verificar"><p class="lee">Antes de proponer, comprobá esto ' +
+                  '<b>' + (pu.verificar || []).length + '</b>: no entró en las cinco porque no está medido</p>' +
+                  (pu.verificar || []).map(function (v) {
+                    return '<div class="vf"><b class="vf-q">' + esc(v.que) + '</b>' +
+                      '<small class="vf-p">Por qué no se pudo medir: ' + esc(v.porque) + '</small>' +
+                      '<small class="vf-c">Cómo se resuelve: ' + esc(v.como) + '</small></div>';
+                  }).join('') +
+                  '<small class="vf-nota">Una capa vacía en OpenStreetMap no es un sector sin eso: ' +
+                  'es un sector sin mapear. Ninguna de estas líneas sostiene una propuesta hasta que ' +
+                  'alguien vaya y lo compruebe, y por eso están acá y no arriba.</small></div>'
+                : '') +
               '<small class="props-nota">Necesidad: lo que falta según lo medido en este sector —coberturas a pie, ' +
                 'espacio público por habitante, mezcla de usos, transporte—. Factibilidad: lo que el predio, su ' +
                 'acceso y los servicios registrados permiten' + (pu.hayLote ? '' : ', juzgado sobre el sector porque no hay lote dibujado') +
@@ -6507,6 +6551,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
       '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
       '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
+      /* Lo que hay que ir a comprobar: ámbar y a trazos, el mismo código
+         visual que los cinco vacíos obligatorios de la v849. Es deliberado —
+         las dos cosas son lo mismo dicho en dos sitios: un dato que no está,
+         dibujado como lo que es y no como una medición. */
+      '.verificar{ grid-column:1 / -1; margin-top:3mm; padding:2.5mm 3mm; border:0.4mm dashed #C98A16;' +
+        ' border-radius:1.5mm; background:#FFFBF2 }' +
+      '.verificar .lee{ margin:0 0 1.5mm; color:#8A5D06 }' +
+      '.vf{ margin-bottom:2mm; padding-left:2.5mm; border-left:0.6mm solid #E7B54A }' +
+      '.vf-q{ display:block; font-size:3.1mm; line-height:1.25; color:#3A2A06 }' +
+      '.vf-p, .vf-c{ display:block; font-size:2.6mm; line-height:1.3; color:#6B5520 }' +
+      '.vf-nota{ display:block; margin-top:1.5mm; font-size:2.6mm; line-height:1.3; color:#8A5D06 }' +
       // La capa de método, al pie de cada caja y de cada mapa.
       '.metodo{ margin-top:1.6mm; padding-top:1.2mm; border-top:.3mm dashed #D5DEE6; font-size:2.3mm; line-height:1.28; color:#5A6472 }' +
       '.metodo i{ font-style:normal; font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-size:2.1mm; color:var(--tinte); margin:0 .8mm 0 1.8mm }' +
@@ -13973,13 +14028,30 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     // 1 · Cobertura de equipamientos: gente servida y gente lejos, por tipo.
     var ac = st.accesibilidad;
-    if (ac && (ac.categorias || []).length && hab > 0) {
-      var peor = ac.categorias.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; });
+    /* §5 (v875): este cruce cerraba en decisión —«ahí va el primer
+       equipamiento»— sobre clases que podían no tener un solo punto mapeado.
+       «Colegio: 0 servidos · 3.155 lejos» con cero colegios en la capa no es
+       una cobertura: son tres mil personas inventadas por un mapa vacío, y
+       es la clase de cifra que se cita en una sustentación. Solo entran las
+       clases con al menos un punto; las vacías se nombran aparte y no
+       deciden nada. */
+    var acCon = ((ac && ac.categorias) || []).filter(function (c) { return Number(c.puntos) > 0; });
+    var acSin = ((ac && ac.categorias) || []).filter(function (c) { return !Number(c.puntos); });
+    var colaSin = acSin.length
+      ? ' · sin un punto mapeado: ' + acSin.map(function (c) { return String(c.etiqueta).toLowerCase(); }).join(', ')
+      : '';
+    if (acCon.length && hab > 0) {
+      var peor = acCon.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; });
       F('Cobertura de equipamientos',
         peor.slice(0, 2).map(function (c) {
           return c.etiqueta + ': ' + fmt(hab * c.pctCubierto / 100) + ' hab. servidos · ' + fmt(hab * c.pctSinCubrir / 100) + ' lejos';
-        }).join(' · '),
-        'lo que más gente deja lejos a pie es ' + String(peor[0].etiqueta).toLowerCase() + ': ahí va el primer equipamiento');
+        }).join(' · ') + colaSin,
+        'de lo que SÍ está mapeado, lo que más gente deja lejos a pie es ' +
+          String(peor[0].etiqueta).toLowerCase() + ': ahí va el primer equipamiento' +
+          (acSin.length ? '. Las clases sin un punto mapeado no entran en esta cuenta: primero hay que ir a ver si existen' : ''));
+    } else if (acSin.length) {
+      F('Cobertura de equipamientos', 'ninguna clase con un punto mapeado',
+        'con la capa vacía no hay cobertura que contar: recorrer el sector es el paso anterior a cualquier propuesta de equipamiento');
     } else {
       F('Cobertura de equipamientos', ac ? 'sin población censal para contar servidos' : 'sin medir',
         'con el censo por manzana la cobertura se cuenta en personas, no en hectáreas');
@@ -14138,6 +14210,27 @@ function donaHTML(datos, colorDe, nombreDe) {
     var fmt = function (n) { return Math.round(Number(n)).toLocaleString('es-CO'); };
     var tipo = function (id) { return USOS_TIPICOS.filter(function (t) { return t.id === id; })[0]; };
     var cand = {};
+    /* ── Lo que NO puede sostener una propuesta (§5, v875) ───────────────
+       La regla dura: **ningún indicador que salga de una ausencia de MAPEO
+       alimenta una propuesta, una conclusión de banda ni una síntesis.**
+
+       «Cero parques» y «cero parques dibujados en OpenStreetMap» son cosas
+       distintas, y la lámina las estaba imprimiendo iguales: un sector con
+       tres canchas sin mapear salía con «necesidad alta de parque · 70» como
+       si alguien hubiera medido que no las hay. Es el salto lógico más caro
+       de la hoja porque **no se ve**: la cifra es correcta —nadie mapeó
+       nada— y la conclusión es falsa.
+
+       No se resuelve bajándole la necesidad: si de verdad no hay parques, la
+       necesidad ES alta, y taparla sería cambiar un error por otro. Se
+       resuelve sacándola de las propuestas y poniéndola donde le corresponde:
+       en lo que hay que ir a COMPROBAR antes de proponer. Una propuesta es
+       una recomendación; esto es una tarea, y la diferencia es quién tiene
+       que hacer algo a continuación. */
+    var verificar = [];
+    var aVerificar = function (que, porque, comoSeResuelve) {
+      verificar.push({ que: que, porque: porque, como: comoSeResuelve });
+    };
     var pon = function (id, nec, necTexto, razon) {
       var t = tipo(id);
       if (!t) return;
@@ -14152,6 +14245,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       var t = USOS_TIPICOS.filter(function (u) { return u.clave.test(String(c.etiqueta || '')); })[0];
       if (!t) return;
       var sin = Number(c.pctSinCubrir || 0);
+      /* CERO de esa clase mapeados en el sector da 100 % sin cubrir, y eso no
+         es una cobertura medida: es una capa vacía. Con uno solo mapeado la
+         cifra ya mide algo —hay un colegio y tanto del sector le queda
+         lejos—, que es una frase distinta y defendible. */
+      if (!Number(c.puntos)) {
+        aVerificar('si hay ' + String(c.etiqueta).toLowerCase() + ' en el sector',
+          'ninguno aparece mapeado, así que el «' + num(sin) + ' % sin cubrir» no mide la cobertura: ' +
+            'mide que la capa está vacía',
+          'recorrer el sector o mirar el directorio de la secretaría; con uno solo mapeado la cobertura ya se puede calcular');
+        return;
+      }
       pon(t.id, sin,
         num(sin) + ' % del sector a más de ' + c.minutos + ' min de ' + String(c.etiqueta).toLowerCase() +
           (hab > 0 && sin > 0 ? ' · ' + fmt(hab * sin / 100) + ' hab. lejos' : ''),
@@ -14163,8 +14267,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (e) {
       var metaM2 = e.metaM2Hab || 15;
       if (!e.piezas) {
-        pon('parque', 70, 'sin parques ni plazas con forma registrada en el sector',
-          'un sector sin espacio público registrado empieza por ahí; si existe y no está dibujado, dibujarlo baja esta necesidad');
+        /* Antes de la v875 esto ponía «necesidad 70» —alta— sobre un parque.
+           «Sin parques con forma REGISTRADA» es exactamente una capa vacía:
+           una cancha de barrio sin dibujar en OpenStreetMap es el caso
+           corriente en Colombia, no la excepción. */
+        aVerificar('si el sector tiene parques, canchas o plazas',
+          'ninguno tiene forma dibujada en OpenStreetMap, y el espacio público se mide sobre el polígono: ' +
+            'sin forma no hay área, y sin área no hay m² por habitante',
+          'dibujarlos en OpenStreetMap, o levantar su contorno en campo; con eso la brecha contra los 15 m²/hab del Decreto 1077 se calcula sola');
       } else if (hab > 0) {
         var porHab = e.areaM2 / hab;
         var brecha = Math.max(0, 1 - porHab / metaM2) * 100;
@@ -14189,8 +14299,12 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     // 4 · El transporte público.
     if (mv && mv.paradasBus === 0)
-      pon('transporte', 55, 'sin paradas de transporte público registradas en el sector',
-        'es el uso más barato con más gente servida, y condiciona todos los demás');
+      /* Lo mismo: en Cúcuta los paraderos de barrio casi nunca están en
+         OpenStreetMap, y eso no quiere decir que no pasen buses. */
+      aVerificar('por dónde pasa el transporte público',
+        'no hay ninguna parada mapeada en el sector, que en un barrio colombiano es lo normal ' +
+          'y no quiere decir que no pasen rutas',
+        'preguntar en la calle qué rutas paran y dónde, o pedir el cuadro de la secretaría de tránsito');
     else if (mv && mv.paradasBus > 0 && hab > 0 && hab / mv.paradasBus > 1500)
       pon('transporte', 45, fmt(hab / mv.paradasBus) + ' hab. por parada',
         'más de 1.500 personas por parada es una parada que no alcanza');
@@ -14201,7 +14315,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       .reduce(function (a, k) { return a + (pg[k] || 0); }, 0);
     if (clasificados >= 20 && !Object.keys(pg).some(function (k) { return /cultur|educa/i.test(k) && pg[k] > 0; }))
       pon('cultura', 40, 'ningún uso cultural ni educativo entre ' + clasificados + ' clasificados',
-        'un sector sin dónde reunirse fuera de la casa y la tienda tiene esa carencia aunque nadie la mida');
+        'entre lo que está clasificado no aparece ningún sitio de reunión que no sea la casa o la tienda; ' +
+        'con veinte usos o más clasificados eso ya dice algo del sector, aunque un salón comunal sin mapear no cuente');
 
     // Completar a cinco, diciendo que lo medido no sostiene la necesidad.
     ['parque', 'comercio', 'vivienda', 'cultura', 'educacion', 'salud', 'deporte', 'transporte'].forEach(function (id) {
@@ -14254,7 +14369,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? 'el lote de ' + fmt(la.areaM2) + ' m²' +
         ((la.frentes || [])[0] && la.frentes[0].via ? ' sobre la ' + la.frentes[0].via : '')
       : 'el sector, sin lote dibujado';
-    return { propuestas: lista, objeto: objeto, hayLote: !!la, poblacion: hab > 0 ? Math.round(hab) : null };
+    return { propuestas: lista, objeto: objeto, hayLote: !!la,
+             poblacion: hab > 0 ? Math.round(hab) : null,
+             // Lo que quedó fuera de las cinco por venir de una capa vacía.
+             verificar: verificar };
   }
 
   function sintesisDelSector(res) {
@@ -14282,7 +14400,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     // ── Cuánto hay
     if (st.densidadPorHa != null) {
       if (st.densidadPorHa >= 12) F('Actividad concentrada, se recorre a pie', num(st.densidadPorHa) + ' usos por hectárea');
-      else if (st.densidadPorHa < 3) C('Muy poca actividad registrada por hectárea', num(st.densidadPorHa) + ' por ha');
+      /* Por debajo de tres usos por hectárea no se puede separar «sector
+         vacío» de «sector sin mapear», y las dos cosas piden lo contrario:
+         una es una debilidad del sitio, la otra es trabajo pendiente. Se
+         dice lo que se sabe —la densidad de lo REGISTRADO— y se manda a
+         comprobar, en vez de fallar el juicio. */
+      else if (st.densidadPorHa < 3)
+        T('Recorrer el sector antes de leer esta densidad: ' + num(st.densidadPorHa) + ' usos por hectárea ' +
+          'registrados pueden ser un sector de veras vacío o uno sin mapear, y de lejos se ven igual',
+          num(st.densidadPorHa) + ' usos por ha registrados');
     }
 
     // ── Espacio público
@@ -14292,8 +14418,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       var meta1504 = e.metaM2Hab || 15;
       var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
       if (!e.piezas) {
-        C('Sin parques ni plazas con forma registrada en el área', '0 m² de espacio público');
-        T('Dibujar los parques y canchas que sí existen: sin el polígono no hay metros cuadrados', 'espacio público');
+        /* §5 (v875): esto era una DEBILIDAD del sector —«Sin parques ni
+           plazas»— y es una capa vacía. En una FODA, una debilidad es algo
+           que el sector tiene mal; que nadie haya dibujado sus canchas no es
+           un defecto del sector, es un defecto del mapa. Se queda solo como
+           tarea, que es lo que ya era la línea de abajo y lo único cierto de
+           las dos. */
+        T('Comprobar si hay parques, canchas o plazas y dibujarlos: sin el polígono no hay metros cuadrados, ' +
+          'y hasta que los haya el espacio público de este sector no está medido ni a favor ni en contra',
+          'espacio público sin medir');
       } else if (porHab != null && porHab < meta1504 / 2) {
         C('Espacio público muy por debajo de la meta nacional', num(porHab) + ' de ' + meta1504 + ' m²/hab');
       } else if (porHab != null && porHab >= meta1504) {
@@ -14304,9 +14437,20 @@ function donaHTML(datos, colorDe, nombreDe) {
     // ── Cobertura de equipamientos
     var ac = st.accesibilidad;
     if (ac && (ac.categorias || []).length) {
-      var peor = ac.categorias.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; })[0];
-      var todas = ac.categorias.every(function (c) { return c.pctCubierto >= 80; });
-      if (todas) F('Todo lo básico queda a distancia de caminar', 'las cuatro coberturas sobre 80%');
+      /* Solo las clases con al menos un equipamiento mapeado sostienen un
+         juicio: una clase vacía da 0 % cubierto y entraba como la peor de
+         todas, convirtiendo «nadie mapeó los colegios» en «falta educación a
+         distancia de caminar». */
+      var conDato = ac.categorias.filter(function (c) { return Number(c.puntos) > 0; });
+      var sinDato = ac.categorias.filter(function (c) { return !Number(c.puntos); });
+      sinDato.forEach(function (c) {
+        T('Comprobar si hay ' + c.etiqueta.toLowerCase() + ' en el sector: no aparece ninguno mapeado, ' +
+          'así que su cobertura no está medida', 'cobertura de ' + c.etiqueta.toLowerCase() + ' sin medir');
+      });
+      var peor = conDato.slice().sort(function (a, b) { return a.pctCubierto - b.pctCubierto; })[0];
+      var todas = conDato.length === ac.categorias.length &&
+                  conDato.every(function (c) { return c.pctCubierto >= 80; });
+      if (todas) F('Todo lo básico queda a distancia de caminar', 'las ' + conDato.length + ' coberturas sobre 80%');
       else if (peor && peor.pctCubierto < 50) {
         C('Falta ' + peor.etiqueta.toLowerCase() + ' a distancia de caminar',
           num(peor.pctCubierto) + '% del área cubierta' +
@@ -14318,7 +14462,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     var mv = st.movilidad;
     if (mv) {
       if ((mv.rutas || []).length) F('Pasa transporte público por el área', (mv.rutas || []).length + ' rutas registradas', 'ext');
-      else if (mv.paradasBus === 0) C('Sin paradas de transporte público registradas', '0 paradas', 'ext');
+      /* §5 (v875): cero paradas MAPEADAS entraba como amenaza externa —«Sin
+         paradas de transporte público»— sobre un barrio donde seguramente
+         pasan tres rutas que nadie dibujó. Es tarea, no amenaza. */
+      else if (mv.paradasBus === 0)
+        T('Preguntar en la calle qué rutas pasan y dónde paran: no hay ninguna parada mapeada, ' +
+          'que en un barrio colombiano no quiere decir que no pasen buses',
+          'transporte público sin medir');
       if (mv.nViasArterias > 0) F('Conectado a la malla arterial de la ciudad', mv.nViasArterias + ' vías principales', 'ext');
       if (mv.viaPrincipal && mv.viaPrincipal.nombre)
         F('La ' + mv.viaPrincipal.nombre + ' es la puerta del sector: por ahí llega quien no vive acá',
@@ -22839,6 +22989,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     zonasSinDatos: zonasSinDatos,
     // El cierre de la lámina educativa, para comprobarlo sin montar la hoja.
     propuestasDeUso: function (res) { return propuestasDeUso(res || S.resultado); },
+    // La FODA, por el mismo motivo y con la misma forma: es donde una capa
+    // vacía entraba como debilidad del sector, y eso se comprueba sobre la
+    // estructura, no pescando frases en el HTML de la hoja.
+    sintesisDelSector: function (res) { return sintesisDelSector(res || S.resultado); },
     /* La lámina compuesta a una escala dada, sin la búsqueda: para medir
        qué pasa a cada escala sin montar la ficha. */
     laminaA: function (o) { return S.resultado ? laminaImprimible(S.resultado, o || {}) : ''; },
@@ -23008,7 +23162,19 @@ function donaHTML(datos, colorDe, nombreDe) {
         lote: (S.lote || []).slice(),
         poligono: (S.poligono || []).slice(),
         trazoId: S.trazoId || null,
-        trazoAviso: S.trazoAviso || ''
+        trazoAviso: S.trazoAviso || '',
+        /* Cuántos equipamientos de cada clase hay MAPEADOS. Es el
+           discriminante entre «no hay colegio» y «nadie mapeó el colegio»,
+           así que una prueba sobre esa distinción tiene que poder leerlo —y
+           si un día el sector de prueba dejara de ser pobre, esto lo diría
+           en vez de dejar la comprobación pasando sola. */
+        accesibilidad: (function () {
+          var ac = S.resultado && S.resultado.stats && S.resultado.stats.accesibilidad;
+          return { categorias: ((ac && ac.categorias) || []).map(function (c) {
+            return { id: c.id, etiqueta: c.etiqueta, puntos: c.puntos,
+                     pctCubierto: c.pctCubierto, pctSinCubrir: c.pctSinCubrir };
+          }) };
+        })()
       };
     }
   };

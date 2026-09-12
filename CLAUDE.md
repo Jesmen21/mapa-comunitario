@@ -1073,6 +1073,99 @@ que el terminal entre haría falta distinguirlo de la parada, que es otra
 tanda. El comentario equivocado alcanzó a quedar escrito en el archivo antes
 de mirarlo; es la misma regla de la v863 dicha para el motor.
 
+## Un dato no mapeado no genera propuesta (v875)
+
+El pliego de ajustes lo llamó **«el error más grave de la lámina»**, y lo era.
+Hasta la v874 la hoja imprimía, sobre un barrio a medio mapear:
+
+> parque · necesidad **ALTA** · «sin parques ni plazas con forma registrada»
+> Colegio o jardín: **0 hab. servidos · 3.155 lejos** — «ahí va el primer
+> equipamiento»
+
+Tres mil personas «lejos del colegio» en un sector donde nadie había mapeado
+un colegio. **La cifra era correcta y la conclusión era falsa**, que es la
+forma más cara de equivocarse porque no se ve: cero polígonos de espacio
+público en OpenStreetMap es un hecho comprobable, y «este sector necesita un
+parque» es una recomendación de proyecto. Entre las dos hay un salto que la
+hoja daba sola.
+
+**Cero mapeados y cero existentes son cosas distintas.** En un barrio
+colombiano corriente los paraderos no están en OpenStreetMap y las canchas no
+tienen polígono: es el caso normal, no el raro.
+
+### No se arregla bajándole la necesidad
+
+La primera idea —topar la necesidad, como la factibilidad se topa en «media»
+sin norma— es **falsa por el otro lado**: si de verdad no hay parques, la
+necesidad ES alta, y taparla cambia un error por otro. Un módulo que se
+sostiene sobre sus declaraciones no puede resolver una exageración con una
+mentira más pequeña.
+
+Lo que sí distingue los dos casos es **quién tiene que hacer algo a
+continuación**. Una propuesta es una recomendación para quien proyecta; esto
+es una tarea para quien analiza. Así que el indicador sale de las cinco y
+entra en un panel propio, **«Antes de proponer, comprobá esto»**, con tres
+cosas por renglón: qué comprobar, por qué no se pudo medir, y cómo se
+resuelve. Va en ámbar y a trazos, el mismo código visual que los cinco vacíos
+obligatorios de la v849 — son lo mismo dicho en dos sitios.
+
+### El discriminante ya existía y nadie lo miraba
+
+`accesibilidad.categorias[].puntos` —cuántos equipamientos de esa clase hay
+mapeados— lo devuelve el motor desde siempre. Con `puntos === 0` el
+`pctSinCubrir` sale 100 y no mide una cobertura: mide una capa vacía. Con uno
+solo mapeado la cifra ya dice algo defendible —hay un colegio y tanto del
+sector le queda lejos—, que es una frase distinta. **No hizo falta tocar el
+motor**, solo dejar de leer el 100 % como si fuera una medición.
+
+### Los SEIS sitios, no los tres del reporte
+
+El pliego nombraba la propuesta, la conclusión de banda y la síntesis. Al
+correr la suite nueva aparecieron tres más del mismo molde, y esa es la razón
+de tener el caso como sector de prueba y no como lista de parches:
+
+| Dónde | Qué decía | Qué dice |
+|---|---|---|
+| Propuestas | «parque · necesidad alta» | va al panel de comprobar |
+| Propuestas | «100 % a más de 5 min de colegio» | va al panel de comprobar |
+| Conclusión de banda | «sin parques con forma registrada» | «…que es un dato del mapa y no del sector» |
+| FODA · debilidad | «Sin parques ni plazas» | tarea, no debilidad |
+| FODA · amenaza | «Sin paradas de transporte público» | tarea, no amenaza |
+| FODA · debilidad | «Muy poca actividad registrada por hectárea» | tarea: bajo 3 usos/ha, un sector vacío y uno sin mapear se ven igual |
+| Cruce del cierre | «Colegio: 0 servidos · 3.155 lejos» | solo las clases con un punto mapeado; las vacías se nombran y no deciden |
+
+### §13 · la cobertura sin clasificar
+
+La conclusión de la banda ambiental citaba «N % de vegetación viva en la
+foto» sin mirar `pctAmbiguo`. Con un cuarto del raster en tonos cálidos que
+el clasificador no separa, ese número no es del sector: es de los tres
+cuartos que se pudieron leer, presentado como si fuera del todo. Por encima
+del 25 % la frase lo dice entera o no se dice.
+
+### `tsinmapear.js` · el otro sector real
+
+Suite propia, y a propósito: el sector de `tdoslaminas` está **bien
+mapeado** —parque con forma, tres rutas, paradas, equipamientos—, así que
+estas ramas no se ejercitan ahí y la comprobación pasaría por no tener nada
+que rechazar. Es la lección de la v874 escrita como suite.
+
+El sector nuevo es el otro caso real: 180 usos de comercio y vivienda —corre
+el análisis entero, no es «sector vacío»—, ningún colegio, ninguna salud,
+ningún parque con forma, ninguna parada. Y **ejercita las dos ramas**: el
+comercio sí tiene 60 puntos mapeados, así que la cobertura medida también
+corre y se ve que la hoja sabe distinguir, en vez de que simplemente calle.
+
+Demostrada contra la v874: nueve aserciones en rojo, con «100 % del sector a
+más de 5 min de colegio o jardín · 3.155 hab. lejos» impreso en las
+propuestas y «Colegio o jardín: 0 hab. servidos» en el cierre.
+
+Y una del método de demostrar: `git stash` del archivo entero también se
+lleva lo que la suite necesita para LEER —`R.sintesisDelSector`, el
+`accesibilidad` de `estado()`—, así que dos de esas nueve fallan por «la
+función no existe» y no por el defecto. Las que valen son las que enseñan el
+texto viejo. Una demostración por stash completo es tosca; sirve cuando el
+texto viejo sale impreso en el fallo, como acá.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
