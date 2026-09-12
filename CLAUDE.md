@@ -982,6 +982,97 @@ trae escolaridad y alfabetismo y **no** trae hogares ni etnia, así que una
 sola corrida ejercita los dos caminos: el que cuenta y el que declara la
 ausencia con la lista de campos como prueba.
 
+## Los defectos de impresión (v874)
+
+Cuatro cosas que salieron impresas en el pliego real del 12 de septiembre de
+2026 y que ninguna suite miraba. **Ninguna es un error de cálculo**: las
+cuatro son cifras correctas dichas de una manera que no se puede leer, y por
+eso ninguna comprobación de datos las veía. Una hoja que se imprime a 60 × 90
+y se cuelga en una pared se lee a la primera o no se lee.
+
+* **Una razón grande se dice en VECES.** «El lote ocupa cerca del 15978 % de
+  una manzana mediana» es aritméticamente cierto y no significa nada: pasado
+  cierto punto el porcentaje deja de ser una proporción y pasa a ser un número
+  largo. Por encima del 300 % —que es donde el castellano cambia de forma
+  solo: «el triple» se dice, «el 300 %» ya se calcula— `razonLegible` lo dice
+  en veces.
+* **La concordancia.** «1 piezas de servicios registradas.» Un texto generado
+  que no concuerda se lee como un descuido de quien firma la hoja, no de quien
+  la programó.
+* **El nombre de campo no es una etiqueta.** Salieron impresos
+  `NIVEL_EDUC_ESP_MAES_DOC` y `GRUPO_ETNICO_PALANQUERO` —con la falta de
+  ortografía incluida, es palenquero— como rótulos de barra. Un nombre de
+  columna es el identificador con el que se rastrea el dato y su sitio es el
+  pie de fuente, donde sigue. `etiquetaDeCampo` en `js/61` usa el alias de la
+  capa cuando lo hay y, cuando no, fabrica una etiqueta legible: quita el
+  prefijo del bloque, separa las palabras y desata las abreviaturas conocidas
+  (`ABREVIA`). **Lo que no puede desatar lo deja en minúsculas**: ilegible es
+  mejor que inventado.
+* **Un motel no es un hito.** De nueve hitos impresos, TRES eran moteles. Un
+  hito urbano es un referente de ORIENTACIÓN COLECTIVA: aquello por lo que
+  alguien explica cómo llegar. `alto_impacto` deja de ser categoría de hito en
+  el motor y los ocho usos que la alimentaban —industria, bodega, gasolinera,
+  hotel, bar, funerario, salón de eventos y transporte— **siguen contando como
+  USOS**, que es donde les corresponde. Obliga a `node construir.js` y a
+  **reiniciar el servidor**.
+
+De paso sale la **pertenencia étnica** del censo ampliado (entró en la v865):
+en el sector de la corrida real el 98,5 % contestó «ninguno», así que el
+bloque gastaba una banda entera para no decir nada. No es que el dato no
+exista ni que no importe — es que a esa escala no discrimina.
+
+### El sector de prueba tenía que poder equivocarse
+
+Las cuatro comprobaciones habrían pasado en verde contra el código viejo, y
+cada una por la misma razón: **el sector de prueba era demasiado bueno.** Es
+la tercera vez que pasa (v862, v866, y esta), así que vale la pena el patrón:
+una comprobación sobre un defecto solo sirve si el material de prueba puede
+producir ese defecto.
+
+* **Los usos de alto impacto no existían en el sector.** «Ningún hito es un
+  motel» se cumplía porque no había moteles. Ahora hay cinco, con nombre
+  propio —`nombrePropio` es el primer filtro de la lista, así que un motel
+  anónimo tampoco habría ejercitado nada—: antes de esta versión, tres
+  ganaban puesto en la lista de nueve.
+* **Todos los campos del censo traían alias escrito a mano**, así que la rama
+  que fabrica la etiqueta no se ejercitaba. Ahora dos campos vienen como
+  vienen muchos de verdad: uno con el alias repitiendo el nombre —lo que hace
+  ArcGIS cuando nadie escribió una etiqueta— y otro sin alias ninguno.
+* **El sector tenía DOS piezas de infraestructura**, así que siempre imprimía
+  «2 piezas» y la rama del singular no se ejercitaba en ninguna prueba — que
+  es exactamente cómo llegó a producción «1 piezas». Queda una; la lista de
+  varias, con su orden por distancia y el tanque de agua, la cubre
+  `tmasanalisis`, que trae tres.
+
+La comprobación de la concordancia **persigue la clase**: en toda la hoja, un
+«1» no puede ir seguido de un plural. Y valió la pena en el acto — encontró un
+SEGUNDO sitio que el reporte no nombraba, «1 objetos de infraestructura
+registrados» en el panel de servicios públicos. La lista de invariables
+(`análisis`, `país`, `mes`, `bus`…) está para las palabras que en castellano
+acaban en -s en singular; si aparece una nueva se agrega ahí y se ve por qué.
+
+Dos cosas de las pruebas que cuesta recordar:
+
+* **`.hit` la comparten dos cajas**: los hitos y los núcleos de «Dónde está la
+  calle comercial». `querySelectorAll('.hit')` a secas devuelve las dos listas
+  mezcladas, y un núcleo llamado como un motel habría hecho fallar la
+  comprobación de los hitos por un motivo falso. Se busca dentro de la caja.
+* **`correr.js` recorta su salida** a las líneas de alrededor de un fallo. Con
+  cinco aserciones nuevas fallando en sitios distintos de la suite, enseñaba
+  dos y las otras tres parecían estar pasando. Para ver una demostración
+  entera se corre la suite directamente: `node pruebas/suites/tdoslaminas.js`.
+
+### Una sospecha sobre el motor se comprueba leyendo el motor
+
+Estuve a punto de rescatar `transporte` como hito institucional, razonando
+que el terminal de transporte sí es un hito de ciudad. **No es eso**: en este
+motor `transporte` son parqueaderos, taxis y alquiler de vehículos, y el
+terminal cae en `parada_bus` junto con cada paradero. Un parqueadero no
+orienta a nadie, y convertir `parada_bus` en hito metería los paraderos. Para
+que el terminal entre haría falta distinguirlo de la parada, que es otra
+tanda. El comentario equivocado alcanzó a quedar escrito en el archivo antes
+de mirarlo; es la misma regla de la v863 dicha para el motor.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -1023,7 +1114,13 @@ que se ve a simple vista: la cláusula está o no está.
   `ya: el estrato predominante con su mínimo y su máximo y su mapa por manzana, y el nombre del barrio y la comuna del geocodificador`
 * **Comprobar los nombres de campo del censo contra el servicio real** — desde
   la máquina de desarrollo el proxy bloquea `ags.esri.co`.
-  `ya: escolaridad, hogares, alfabetismo y etnia no se suponen: se le preguntan a la capa, y lo que no expone se declara con su lista de campos`
+  `ya: escolaridad, hogares y alfabetismo no se suponen: se le preguntan a la capa, y lo que no expone se declara con su lista de campos`
+* **La pertenencia étnica del sector, si alguna vez discrimina algo** — la
+  capa del censo por manzana, preguntada como los demás bloques. Se retiró de
+  la lámina en la v874 porque en el sector real el 98,5 % contestó «ninguno»
+  y el bloque gastaba una banda para no decir nada; en un municipio con
+  resguardo o consejo comunitario diría mucho.
+  `ya: el bloque está escrito y probado —entra volviendo a poner su renglón en BLOQUES_CENSO—, y la capa se pregunta igual para los otros tres`
 * **Los cinco vacíos obligatorios** — riesgo oficial, servicios públicos,
   norma urbana del POT, movilidad real e información legal del predio. Cada uno
   pide su entidad y ninguno se deduce.

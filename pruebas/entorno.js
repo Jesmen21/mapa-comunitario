@@ -122,13 +122,26 @@ const CAMPOS_DANE = [
   { name: 'ESCOLARIDAD_SECUNDARIA', alias: 'Secundaria', type: 'esriFieldTypeInteger' },
   { name: 'ESCOLARIDAD_SUPERIOR', alias: 'Superior o posgrado', type: 'esriFieldTypeInteger' },
   { name: 'ALFABETISMO_SI', alias: 'Sabe leer y escribir', type: 'esriFieldTypeInteger' },
-  { name: 'ALFABETISMO_NO', alias: 'No sabe leer ni escribir', type: 'esriFieldTypeInteger' }
+  { name: 'ALFABETISMO_NO', alias: 'No sabe leer ni escribir', type: 'esriFieldTypeInteger' },
+  /* DOS CAMPOS SIN ETIQUETA USABLE, que es como vienen muchos de verdad: uno
+     con el alias repitiendo el nombre —lo que hace ArcGIS cuando nadie
+     escribió una etiqueta— y otro sin alias ninguno. Entraron en la v874.
+
+     Hasta acá todos los campos del doble traían alias escrito a mano, así que
+     la aplicación nunca tenía que fabricar una etiqueta: la rama que la
+     fabrica no se ejercitaba, y en la capa real —donde sí hay campos así—
+     salió impreso `NIVEL_EDUC_ESP_MAES_DOC` como rótulo de una barra. El
+     doble tiene que poder equivocarse igual que el servicio. */
+  { name: 'NIVEL_EDUC_ESP_MAES_DOC', alias: 'NIVEL_EDUC_ESP_MAES_DOC', type: 'esriFieldTypeInteger' },
+  { name: 'ALFABETISMO_SIN_INFO', type: 'esriFieldTypeInteger' }
 ];
 /* Cuánta gente cae en cada uno, en tanto por mil, para que cuadre con la
-   población igual que la pirámide. */
+   población igual que la pirámide. Cada bloque suma mil por su cuenta: los
+   dos campos nuevos salen de lo que tenían sus vecinos, no se añaden encima. */
 const REPARTO_CAMPOS = {
   ESCOLARIDAD_NINGUNA: 62, ESCOLARIDAD_PRIMARIA: 288, ESCOLARIDAD_SECUNDARIA: 431,
-  ESCOLARIDAD_SUPERIOR: 219, ALFABETISMO_SI: 938, ALFABETISMO_NO: 62
+  ESCOLARIDAD_SUPERIOR: 180, NIVEL_EDUC_ESP_MAES_DOC: 39,
+  ALFABETISMO_SI: 930, ALFABETISMO_NO: 62, ALFABETISMO_SIN_INFO: 8
 };
 
 /* La consulta AGRUPADA por estrato: Esri devuelve un rasgo por grupo, no uno

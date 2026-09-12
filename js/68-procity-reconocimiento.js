@@ -1205,6 +1205,25 @@
       '</div>';
   }
 
+  /* ── Una razón grande se dice en VECES, no en porcentaje ─────────────
+     Salió en la revisión del pliego: «el lote ocupa cerca del 15978 % de una
+     manzana mediana». Es aritméticamente cierto y no se entiende: pasado
+     cierto punto el porcentaje deja de ser una proporción legible y pasa a
+     ser un número largo. Ciento sesenta VECES se lee de un golpe.
+
+     El corte en 300 % es el del pliego de ajustes, y es donde el castellano
+     cambia de forma solo: «el triple» se dice, «el 300 %» ya se calcula. */
+  function razonLegible(parte, todo) {
+    var t = Number(todo) || 0, p = Number(parte) || 0;
+    if (!(t > 0)) return 'sin manzana con la que compararlo';
+    var pct = 100 * p / t;
+    if (pct > 300) {
+      var veces = p / t;
+      return 'mide ' + conComa(Math.round(veces * 10) / 10) + ' veces el área';
+    }
+    return 'ocupa cerca del ' + Math.round(pct) + ' %';
+  }
+
   function centroDeAnalisis() {
     if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
       return centroideDe(S.poligono);
@@ -5459,7 +5478,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'g3 caja-vacio') +
       caja('Servicios públicos',
         panelVacio('cobertura y continuidad de acueducto, alcantarillado, energía, gas e internet por manzana: cuadro de servicios del CNPV 2018 del DANE o la empresa prestadora.',
-          (function () { var inf = null; try { inf = infraDeServicios(res); } catch (e) {} return (inf ? inf.n + ' objetos de infraestructura registrados en OpenStreetMap' : 'ninguna infraestructura registrada') + ': presencia, no cobertura.'; })()),
+          (function () { var inf = null; try { inf = infraDeServicios(res); } catch (e) {} return (inf ? inf.n + (inf.n === 1 ? ' objeto de infraestructura registrado' : ' objetos de infraestructura registrados') + ' en OpenStreetMap' : 'ninguna infraestructura registrada') + ': presencia, no cobertura.'; })()),
         'g3 caja-vacio') +
       caja('Norma urbana',
         panelVacio('uso permitido, índices de ocupación y construcción, altura máxima, aislamientos y cesiones: la ficha normativa del POT o un concepto de la curaduría urbana.',
@@ -14059,7 +14078,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (la ? ' · el lote: ' + fmt(la.areaM2) + ' m², ' + (la.frentes || []).length + ' frente' + ((la.frentes || []).length === 1 ? '' : 's') : '') +
       (mzC && mzC.areaMedianaM2 ? ' · la manzana mediana del sector: ' + fmt(mzC.areaMedianaM2) + ' m²' : ''),
       (la && mzC && mzC.areaMedianaM2)
-        ? 'el lote ocupa cerca del ' + Math.round(100 * la.areaM2 / mzC.areaMedianaM2) + ' % de una ' +
+        ? 'el lote ' + razonLegible(la.areaM2, mzC.areaMedianaM2) + ' de una ' +
           'manzana mediana de acá; cuántos predios tiene esa manzana sigue pidiendo el catastro, y ' +
           'de eso depende con cuántos vecinos hay que negociar'
         : 'sin la manzana catastral no se sabe si el lote es típico o excepcional en su cuadra');
@@ -14209,7 +14228,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (mv && mv.viaPrincipal && mv.viaPrincipal.distM != null && mv.viaPrincipal.distM <= 300) {
         pts += 1; por.push('vía principal a ' + Math.round(mv.viaPrincipal.distM) + ' m');
       }
-      if (infra && infra.n) { pts += 1; por.push(infra.n + ' piezas de servicios registradas (presencia, no cobertura)'); }
+      if (infra && infra.n) {
+        pts += 1;
+        // «1 piezas registradas» salió impreso. Un texto generado que no
+        // concuerda se lee como un descuido de quien lo firma, no de quien
+        // lo programó.
+        por.push(infra.n + (infra.n === 1 ? ' pieza de servicios registrada' : ' piezas de servicios registradas') +
+                 ' (presencia, no cobertura)');
+      }
       if (inu && inu.cobertura && inu.trPeor != null) { pts -= 1; por.push('dentro de una mancha de inundación'); }
       por.push('norma urbana: sin dato oficial');
       var nivel = pts >= 3 ? 'alta' : pts >= 1 ? 'media' : 'baja';

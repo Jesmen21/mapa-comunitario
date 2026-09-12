@@ -1019,9 +1019,51 @@
   const BLOQUES_CENSO = [
     { id:'escolaridad', t:'Nivel educativo',      re:/(ESCOLARID|NIVEL_EDUC|EDUCAC)/i },
     { id:'hogares',     t:'Hogares por tipo',     re:/HOGAR/i },
-    { id:'alfabetismo', t:'Alfabetismo',          re:/(ALFABET|LEE_Y_ESCRIB|SABE_LEER)/i },
-    { id:'etnia',       t:'Pertenencia étnica',   re:/(ETNIA|ETNIC|PERTENENC)/i }
+    { id:'alfabetismo', t:'Alfabetismo',          re:/(ALFABET|LEE_Y_ESCRIB|SABE_LEER)/i }
+    /* La PERTENENCIA ÉTNICA salió en la v865 y se retira en la v874, pedido
+       en la revisión del pliego: en el sector de la corrida real el 98,5 %
+       contestó «ninguno», así que el bloque ocupaba una banda entera para no
+       decir nada. No es que el dato no exista ni que no importe — es que a
+       esta escala no discrimina, y el espacio se necesita para lo que sí. */
   ];
+
+  /* ── Del nombre de campo a algo que se pueda leer ────────────────────
+     Salieron impresos `NIVEL_EDUC_ESP_MAES_DOC` y `GRUPO_ETNICO_PALANQUERO`
+     —con falta de ortografía incluida, es palenquero—. Un nombre de columna
+     de una base de datos no es una etiqueta: es el identificador con el que
+     se rastrea el dato, y su sitio es el pie de fuente.
+
+     La capa da un `alias` para casi todos, que es una etiqueta escrita por
+     una persona; cuando no lo da, se construye una legible a partir del
+     nombre: se le quita el prefijo del bloque, se separan las palabras y se
+     desatan las abreviaturas conocidas. Lo que no se puede desatar se deja
+     como está en minúsculas — ilegible es mejor que inventado. */
+  const ABREVIA = {
+    ESP: 'especialización', MAES: 'maestría', DOC: 'doctorado', UNIV: 'universitaria',
+    SEC: 'secundaria', PRIM: 'primaria', PREESC: 'preescolar', TEC: 'técnica',
+    TECN: 'tecnológica', NORM: 'normalista', NING: 'ninguno', SIN: 'sin',
+    // NIVEL y EDUC se desatan a NADA: el título del bloque ya dice «Nivel
+    // educativo», así que repetirlo en cada barra gasta el renglón en decir
+    // dos veces lo mismo. Lo que queda es lo que distingue una barra de otra.
+    INFO: 'información', EDUC: '', NIVEL: '', ESCOLARIDAD: '',
+    ALFABETISMO: '', HOGAR: 'hogar', HOGARES: 'hogares', SI: 'sí', NO: 'no'
+  };
+  function etiquetaDeCampo(nombre, alias, bloqueRe) {
+    const a = String(alias || '').trim();
+    // El alias de la capa es una etiqueta escrita por alguien: gana siempre,
+    // salvo que sea el mismo nombre crudo repetido.
+    if (a && a !== String(nombre) && !/^[A-Z0-9_]+$/.test(a)) return a;
+    let t = String(nombre || '').replace(/^[A-Z]+_/, function (pref) {
+      // Se quita el prefijo solo si es el del bloque: `ESCOLARIDAD_PRIMARIA`
+      // pierde el prefijo, `SIN_DATO` no.
+      return bloqueRe && bloqueRe.test(pref) ? '' : pref;
+    });
+    t = t.split('_').filter(Boolean)
+      .map(w => (ABREVIA[w.toUpperCase()] !== undefined ? ABREVIA[w.toUpperCase()] : w.toLowerCase()))
+      .filter(Boolean).join(' ').trim();
+    if (!t) t = String(nombre || '').toLowerCase();
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
   const TIPOS_NUM = /Integer|Double|Single|SmallInteger/i;
 
   /* Suma por radio los campos que la capa sí tiene, bloque por bloque.
@@ -1055,7 +1097,10 @@
       const mios = pedir.filter(x => x.bloque.id === b.id);
       if (!mios.length) return;
       const filas = mios.map(x => ({
-        campo: x.campo.nombre, etiqueta: x.campo.alias || x.campo.nombre,
+        // El nombre técnico viaja aparte, para el pie de fuente; lo que se
+        // pinta como etiqueta es siempre algo que se puede leer.
+        campo: x.campo.nombre,
+        etiqueta: etiquetaDeCampo(x.campo.nombre, x.campo.alias, b.re),
         n: Math.round(Number(at[x.salida]) || 0) })).filter(x => x.n > 0);
       if (!filas.length) { sinCampo.push({ id:b.id, t:b.t, vacio:true }); return; }
       const total = filas.reduce((s2, x) => s2 + x.n, 0);

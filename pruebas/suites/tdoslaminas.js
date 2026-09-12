@@ -111,10 +111,16 @@ const geo = [
 );
 
 /* Lo que este sector necesita para tener CIFRAS SUELTAS: un parque con
-   forma —el espacio público efectivo se mide sobre el polígono— y dos piezas
+   forma —el espacio público efectivo se mide sobre el polígono— y una pieza
    de infraestructura de servicios. Son las dos cajas de puras cifras que la
    lámina educativa convierte en baldosas; sin ellas la regla no tendría con
-   qué probarse en este sector, que es de comercio y calles. */
+   qué probarse en este sector, que es de comercio y calles.
+
+   UNA sola pieza, y a propósito, desde la v874: con dos, la hoja imprimía
+   siempre «2 piezas de servicios registradas» y la rama del SINGULAR no se
+   ejercitaba en ninguna prueba — que es como llegó a producción «1 piezas de
+   servicios registradas». La lista de varias piezas, con su orden por
+   distancia y el tanque de agua, la cubre `tmasanalisis`, que trae tres. */
 geo.push({ type: 'way', id: gid++, tags: { leisure: 'park', name: 'Parque La Playa' },
   geometry: [P(-250, -150), P(-90, -150), P(-90, -30), P(-250, -30), P(-250, -150)]
     .map(p => ({ lat: p.lat, lon: p.lng })) });
@@ -132,8 +138,26 @@ usos.push({ type: 'relation', id: 7003,
   tags: { route: 'bus', ref: '12', name: 'Ruta 12 · La Playa–Centro (vuelta)' } });
 usos.push({ type: 'node', id: 3001, lat: C.lat + 0.002, lon: C.lng - 0.0015,
   tags: { name: 'Subestación La Playa', power: 'substation' } });
-usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
-  tags: { name: 'Tanque del acueducto', man_made: 'water_tower' } });
+
+/* Los usos de ALTO IMPACTO, que el sector de prueba no traía y un corredor
+   de Cúcuta trae de sobra. Entraron en la v874 por el motivo de siempre: sin
+   ellos, «ningún hito es un motel» se cumple porque no hay moteles, que es el
+   peor verde que hay — parece una comprobación y no comprueba nada.
+
+   Los cinco llevan NOMBRE PROPIO a propósito: `nombrePropio` es el primer
+   filtro de la lista de hitos, así que un motel anónimo tampoco habría
+   ejercitado nada. Con nombre, antes de la v874 los cinco competían por los
+   seis puestos de la lista, y tres la ganaban. */
+usos.push({ type: 'node', id: 3101, lat: C.lat + 0.0012, lon: C.lng + 0.0011,
+  tags: { name: 'Motel Luna Azul', tourism: 'motel' } });
+usos.push({ type: 'node', id: 3102, lat: C.lat - 0.0013, lon: C.lng + 0.0014,
+  tags: { name: 'Bar La Esquina', amenity: 'bar' } });
+usos.push({ type: 'node', id: 3103, lat: C.lat + 0.0016, lon: C.lng - 0.0012,
+  tags: { name: 'Funeraria Los Olivos', shop: 'funeral_directors' } });
+usos.push({ type: 'node', id: 3104, lat: C.lat - 0.0011, lon: C.lng - 0.0016,
+  tags: { name: 'Estación Terpel La Playa', amenity: 'fuel' } });
+usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
+  tags: { name: 'Bodega Distribuidora del Norte', building: 'warehouse', landuse: 'industrial' } });
 
 (async () => {
   const b = await chromium.launch({ executablePath: E.CHROMIUM, args: ['--no-sandbox'] });
@@ -277,6 +301,10 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       })();
       return {
         id: h.getAttribute('data-hoja') || '?',
+        /* Todo lo que la hoja dice, en una sola tira. Las comprobaciones de
+           redacción —la concordancia, un plural donde va un singular— son
+           sobre la hoja entera y no sobre un panel. */
+        texto: h.textContent.replace(/\s+/g, ' ').trim(),
         eyebrow: (h.querySelector('.ey') || {}).textContent || '',
         responde: (h.querySelector('.que-responde') || {}).textContent || '',
         neutral: (h.querySelector('.neutral') || {}).textContent || '',
@@ -295,6 +323,24 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         /* Los once cruces del cierre, con su valor y su lectura. Se leen para
            poder comprobar que ninguno declara ausente algo que otra caja de
            la MISMA hoja está imprimiendo. */
+        /* Los HITOS impresos, con la categoría que el motor les puso. Se leen
+           por separado del texto porque la comprobación es sobre CADA UNO:
+           «ningún hito es de alto impacto» no se puede mirar en un párrafo.
+
+           Y se buscan DENTRO de su caja, no en la hoja: la clase `.hit` la
+           comparten los hitos y los núcleos de comercio de «Dónde está la
+           calle comercial», así que `querySelectorAll('.hit')` a secas
+           devolvía las dos listas mezcladas — y un núcleo llamado como un
+           motel habría hecho fallar la comprobación de los hitos. */
+        hitos: (function () {
+          const c = [...h.querySelectorAll('.caja')].find(x => {
+            const t = x.querySelector('h2');
+            return t && /^Hitos y nodos$/.test(t.textContent.trim());
+          });
+          return c ? [...c.querySelectorAll('.hit')].map(x => ({
+            nombre: ((x.querySelector('span') || {}).textContent || '').trim(),
+            cat: ((x.querySelector('u') || {}).textContent || '').trim() })) : [];
+        })(),
         cruces: [...h.querySelectorAll('.cruces li, .cruce')].map(x =>
           x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
         coherencia: (function () {
@@ -1098,6 +1144,101 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T('y no dice que no pudo preguntar, porque sí preguntó',
       !/No se pudo preguntar/.test(CE.texto),
       CE.vacios.join(' | ').slice(0, 90));
+  }
+
+  /* ── v874 · Los defectos de impresión ────────────────────────────────
+     Cuatro cosas que salieron impresas en el pliego real del 12 de septiembre
+     de 2026 y que ninguna comprobación miraba. Ninguna es un fallo de cálculo:
+     las cuatro son cifras correctas dichas de una manera que no se puede
+     leer, y por eso ninguna suite las veía. */
+  console.log('\n  -- lo que sale impreso se puede leer --');
+
+  /* 1 · Una razón grande se dice en VECES. «el lote ocupa cerca del 15978 %
+     de una manzana mediana» es cierto y no significa nada. En este sector el
+     lote mide 179.009 m² contra una manzana mediana de 20.000: 895 %, que es
+     justo el otro lado del corte de 300 % — así que la rama se ejercita. */
+  {
+    const PRE = [A, B].map(x => (x.cruces || []).join(' ')).join(' ');
+    const razon = (PRE.match(/el lote (mide [\d.,]+ veces el área|ocupa cerca del [\d.,]+ %)/) || [])[1] || '';
+    T('el cruce de predios compara el lote con la manzana medida', !!razon, razon || PRE.slice(0, 90));
+    /* La comprobación es sobre la FORMA, no sobre el número: pasado el 300 %
+       el porcentaje deja de ser legible, y da igual si mañana el sector de
+       prueba cambia de tamaño. */
+    const pct = Number((razon.match(/del ([\d.,]+) %/) || [])[1] || 0);
+    T('y si la razón se pasa del 300 % la dice en veces, no en por ciento',
+      !(pct > 300), razon);
+  }
+
+  /* 2 · La concordancia. «1 piezas de servicios registradas» se lee como un
+     descuido de quien firma la hoja. Se persigue la CLASE y no esa frase: en
+     toda la hoja, un «1» seguido de palabra no puede ir en plural. La lista
+     de invariables está para las que en castellano acaban en -s en singular;
+     si aparece una nueva, se agrega acá y se ve por qué. */
+  {
+    const INVARIABLES = /^(análisis|síntesis|crisis|dosis|tesis|país|mes|bus|gas|atlas|virus|campus|corpus|oasis|más|menos|jueves|lunes|martes|miércoles|viernes)$/;
+    const plural = [];
+    [A, B].forEach(h => {
+      const t = (h.texto || '').replace(/\s+/g, ' ');
+      let m; const re = /(?<![\d.,])1 ([a-záéíóúüñ]+)\b/g;
+      while ((m = re.exec(t))) {
+        if (/s$/.test(m[1]) && !INVARIABLES.test(m[1])) plural.push(m[0]);
+      }
+    });
+    T('ningún «1» de la hoja va seguido de un plural', plural.length === 0,
+      plural.slice(0, 4).join(' · ') || 'ninguno');
+  }
+
+  /* 3 · Los nombres de campo del censo. `NIVEL_EDUC_ESP_MAES_DOC` salió como
+     etiqueta de una barra. Un nombre de columna es el identificador con el
+     que se rastrea el dato y su sitio es el pie de fuente —donde sigue,
+     comprobado tres aserciones más arriba—, no el rótulo que se lee. */
+  {
+    const CE2 = B.paneles.censo;
+    if (!CE2 || !CE2.barras.length) {
+      T('el panel del censo trae barras que rotular', false, 'no hay panel del censo');
+    } else {
+      const crudas = CE2.barras.map(x => (x.match(/^[^\d]*/) || [''])[0].trim())
+        .filter(x => x && /^[A-Z0-9_]+$/.test(x));
+      T('ninguna barra del censo se rotula con el nombre crudo del campo',
+        crudas.length === 0, crudas.slice(0, 3).join(' · ') || 'ninguna');
+      /* Y la etiqueta tiene que decir algo, no ser el nombre en minúsculas.
+         Se busca a propósito una palabra que NINGÚN alias del doble trae:
+         «primaria» o «secundaria» las escribe la capa, así que comprobarlas
+         pasaría igual sin fabricar nada. «Especialización» y «maestría» solo
+         pueden salir de desatar `ESP` y `MAES`. */
+      T('y las abreviaturas quedan desatadas en la etiqueta',
+        /especializaci|maestr|doctorado|sin información/i.test(CE2.barras.join(' ')),
+        CE2.barras.slice(-3).join(' | ').slice(0, 130));
+    }
+  }
+
+  /* 4 · Los hitos. Tres de los nueve del pliego real eran moteles. Un hito es
+     un referente de orientación colectiva; un motel, un bar, una funeraria,
+     una bomba o una bodega no lo son — y siguen contando como USOS, que es
+     donde les corresponde. El sector de prueba trae los cinco con nombre
+     propio desde esta versión: sin ellos esta comprobación pasaría por no
+     tener nada que rechazar, que es el peor verde que hay. */
+  {
+    const hs = [...(A.hitos || []), ...(B.hitos || [])];
+    const ALTO = /Motel|Bar La Esquina|Funeraria|Terpel|Bodega/i;
+    const IMP = /alto impacto/i;
+    /* Que estén se comprueba por donde SÍ salen: la lectura de usos. La hoja
+       no imprime el nombre de cada punto —solo el de los hitos—, así que
+       buscarlos por nombre en el texto daría cero tanto si el sector los trae
+       como si no, y ese cero no distingue una cosa de la otra. Las dos
+       categorías son suyas y de nadie más: los 220 puntos genéricos son
+       farmacia, colegio, banco, restaurante y policía. */
+    const USOS = (A.texto + ' ' + B.texto).replace(/\s+/g, ' ');
+    T('el sector de prueba trae usos de alto impacto, y se cuentan como usos',
+      /Industria y logística [1-9]/.test(USOS) && /Vivienda y ocio [1-9]/.test(USOS),
+      (USOS.match(/Industria y logística \d+|Vivienda y ocio \d+/g) || []).join(' · ') ||
+        'si esto falla, las dos de abajo pasan por no tener qué rechazar');
+    T('y ninguno de ellos entra a la lista de hitos',
+      hs.length > 0 && !hs.some(h => ALTO.test(h.nombre)),
+      hs.map(h => h.nombre).join(' · ').slice(0, 120) || 'no hay hitos');
+    T('ni queda en pie la categoría «servicios de alto impacto»',
+      !hs.some(h => IMP.test(h.cat)),
+      hs.map(h => h.cat).join(' · ').slice(0, 110) || 'sin categorías');
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');

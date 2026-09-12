@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v871-guardar-el-trazo-solo';
+const URBIS_CACHE = 'urbis-v874-los-defectos-de-impresion';
 const URBIS_ASSETS = [
   './',
   './index.html',
