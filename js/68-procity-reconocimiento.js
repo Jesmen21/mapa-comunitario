@@ -77,6 +77,10 @@
     // pedirle al estudiante que recuerde cuál sirve para qué.
     forma: 'radio',
     poligono: null,
+    // De qué trazo guardado salió lo que se va a analizar, para enlazar la
+    // ficha y poder contar cuántos análisis lleva ese trazo.
+    trazoId: null,
+    trazoAviso: '',
     radioM: RADIO_POR_DEFECTO,
     centro: null,
     capa: null,
@@ -351,6 +355,96 @@
   // curso encontró. Por eso se guardan los puntos y no solo los totales.
   var FICHAS_KEY = 'pcr_fichas_v1';
   var MAX_FICHAS = 12;
+
+  /* ── Los TRAZOS, guardados solos ────────────────────────────────────
+     Pedido tal cual: «una opción de guardar el polígono que dibuje, pero
+     solo el polígono, sin análisis, para no tener que dibujarlo varias
+     veces… y después analizarlo las veces que yo quiera». Es el lugar
+     guardado de Google Earth: la forma es una cosa y lo que se midió sobre
+     ella es otra.
+
+     Van en su propio almacén y no dentro de las fichas, por tres razones
+     que se notan el día que no están:
+       · Un trazo es de coordenadas y pesa nada —unas décimas de kilobyte—;
+         una ficha es el trabajo de una tarde y pesa cientos. Meterlos juntos
+         haría que el recorte por cupo de `escribirFichas` se llevara trazos
+         por delante para hacer sitio a un análisis, y redibujar noventa y dos
+         hectáreas a mano en un teléfono no es algo que se le pida a nadie
+         dos veces.
+       · Un trazo se guarda ANTES de analizar, que es justo cuando todavía no
+         hay ficha ninguna que lo contenga.
+       · Un mismo trazo tiene MUCHOS análisis —esa es la petición entera—, así
+         que la forma no puede vivir dentro de uno de ellos. */
+  var TRAZOS_KEY = 'pcr_trazos_v1';
+  var MAX_TRAZOS = 40;
+
+  function leerTrazos() {
+    try { var t = JSON.parse(localStorage.getItem(TRAZOS_KEY) || '[]'); return Array.isArray(t) ? t : []; }
+    catch (e) { return []; }
+  }
+  function escribirTrazos(lista) {
+    try { localStorage.setItem(TRAZOS_KEY, JSON.stringify(lista)); return true; }
+    catch (e) { return false; }
+  }
+  /* Cuántos análisis se hicieron sobre cada trazo. Sale de las fichas, que
+     guardan de qué trazo salieron: es la cuenta que contesta «¿este ya lo
+     miré?» sin abrir nada. */
+  function analisisDeTrazo(id) {
+    if (!id) return 0;
+    return leerFichas().filter(function (f) { return f.trazoId === id; }).length;
+  }
+  /* El trazo que hay dibujado ahora mismo, sea el área del sector o el lote.
+     Devuelve null si no hay nada cerrado: el botón de guardar se apaga solo. */
+  function trazoALaVista() {
+    if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
+      return { forma: 'poligono', pts: S.poligono };
+    }
+    if (S.lote && S.lote.length >= 3) return { forma: 'lote', pts: S.lote };
+    return null;
+  }
+  function guardarTrazo(nombre) {
+    var t = trazoALaVista();
+    if (!t) return { ok: false, error: 'No hay ningún trazo cerrado para guardar.' };
+    var pts = t.pts.map(function (p) {
+      // Redondeado a seis decimales: once centímetros, más de lo que da un
+      // dedo en una pantalla. Guardar quince decimales solo abulta.
+      return { lat: Math.round(p.lat * 1e6) / 1e6, lng: Math.round(p.lng * 1e6) / 1e6 };
+    });
+    var lista = leerTrazos();
+    var reg = {
+      id: 'tz' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      nombre: String(nombre || '').trim().slice(0, 60),
+      ts: Date.now(), forma: t.forma, pts: pts,
+      areaM2: Math.round(areaM2De(pts)),
+      centro: centroideDe(pts)
+    };
+    lista.unshift(reg);
+    if (lista.length > MAX_TRAZOS) lista = lista.slice(0, MAX_TRAZOS);
+    if (!escribirTrazos(lista)) {
+      return { ok: false, error: 'No quedó espacio en el teléfono para guardar el trazo.' };
+    }
+    return { ok: true, id: reg.id };
+  }
+  function borrarTrazo(id) {
+    escribirTrazos(leerTrazos().filter(function (t) { return t.id !== id; }));
+  }
+  /* Volver a poner un trazo guardado sobre el mapa, listo para analizar. NO
+     analiza: el punto de la petición es separar las dos cosas. */
+  function usarTrazo(id) {
+    var t = leerTrazos().filter(function (x) { return x.id === id; })[0];
+    if (!t || !t.pts || t.pts.length < 3) return false;
+    var pts = t.pts.map(function (p) { return { lat: p.lat, lng: p.lng }; });
+    if (t.forma === 'lote') {
+      S.lote = pts; S.loteDibujando = false; S.loteAviso = '';
+    } else {
+      S.forma = 'poligono'; S.poligono = pts;
+    }
+    /* De qué trazo viene lo que se va a analizar, para que la ficha que
+       salga quede enlazada y la cuenta de análisis suba. */
+    S.trazoId = t.id;
+    S.centro = t.centro || centroideDe(pts);
+    return true;
+  }
 
   function leerFichas() {
     try { var f = JSON.parse(localStorage.getItem(FICHAS_KEY) || '[]'); return Array.isArray(f) ? f : []; }
@@ -735,6 +829,11 @@
         cuando: new Date().toISOString()
       } : null,
       forma: meta.forma || 'radio',
+      /* De qué trazo guardado salió. Es lo que permite que un mismo trazo
+         acumule varios análisis y que la lista de trazos pueda decir
+         «3 análisis» sin abrir ninguno. Vacío si se dibujó a mano y no se
+         guardó: no todo análisis viene de un trazo guardado. */
+      trazoId: S.trazoId || null,
       // Cómo se eligió el centro. Es una palabra y contesta la pregunta que
       // una captura de pantalla no podía contestar.
       centroDe: S.centroDeAnalizado || '',
@@ -7448,6 +7547,54 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'cerrar') { cerrar(); return; }
       if (acc === 'volver') { S.resultado = null; S.comparacion = null; S.aviso = ''; S.textoPlano = ''; pintar(); return; }
       if (acc === 'borrar-ficha') { borrarFicha(b.getAttribute('data-id')); pintar(); return; }
+
+      /* ── Los trazos: guardar la forma sola, y volver a usarla ───────── */
+      if (acc === 'guardar-trazo') {
+        var comoSeLlama = window.prompt('¿Cómo se llama este trazo?', '');
+        // Cancelar es cancelar: se guarda solo si respondió algo, aunque sea
+        // vacío. `null` es que cerró el cuadro.
+        if (comoSeLlama === null) return;
+        var r = guardarTrazo(comoSeLlama);
+        S.trazoAviso = r.ok
+          ? 'Trazo guardado. Lo tenés abajo, en «Trazos guardados».'
+          : (r.error || 'No se pudo guardar el trazo.');
+        if (r.ok) S.trazoId = r.id;
+        pintar();
+        return;
+      }
+      if (acc === 'usar-trazo') {
+        if (usarTrazo(b.getAttribute('data-id'))) {
+          /* El resultado que hubiera en memoria es de OTRA área: dejarlo a la
+             vista mientras el mapa ya enseña el trazo nuevo es el fallo que
+             `areaDelResultado` existe para no cometer. */
+          S.resultado = null; S.aviso = ''; S.error = '';
+          S.trazoAviso = 'Trazo puesto en el mapa. Cuando quieras, analizalo.';
+          /* Las dos: el círculo o el polígono del sector, y el lote amarillo
+             si el trazo era un lote. Cuál de las dos hace falta depende de la
+             forma, y llamarlas a las dos es más barato que acertar. */
+          pintarCirculo(); pintarLote();
+          /* Y el mapa va a donde está el trazo. Sin esto el trazo se pone
+             donde corresponde y la pantalla se queda mirando otra ciudad:
+             parece que el botón no hizo nada. */
+          (function () {
+            var pts = (S.lote && S.lote.length >= 3) ? S.lote : S.poligono;
+            var m = mapa();
+            if (!m || !pts || !pts.length || typeof L === 'undefined') return;
+            try {
+              m.fitBounds(L.latLngBounds(pts.map(function (p) { return [p.lat, p.lng]; })).pad(0.2));
+            } catch (e) {}
+          })();
+          seguirAlMapa(true);
+          pintar();
+        }
+        return;
+      }
+      if (acc === 'borrar-trazo') {
+        borrarTrazo(b.getAttribute('data-id'));
+        S.trazoAviso = '';
+        pintar();
+        return;
+      }
       if (acc === 'comparar') { comparar(b.getAttribute('data-id')); return; }
       /* Volver a ver un sector guardado, entero. El informe completo ya
          existe —lo arma `informeGuardado` con lo que la ficha trae, sin
@@ -8219,6 +8366,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                   'step="50" value="' + S.radioM + '" aria-label="Radio alrededor del lote, en metros">' +
                 '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
               '</div>' +
+              botonGuardarTrazo() +
               '<button type="button" data-pcr="analizar" class="pcr-principal"' +
                 (S.cargando ? ' disabled' : '') + '>' +
                 (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>'
@@ -8256,7 +8404,8 @@ function donaHTML(datos, colorDe, nombreDe) {
 
         (esPol && !hayPol
           ? '<button type="button" data-pcr="dibujar-area" class="pcr-principal">' + ico('lapiz') + 'Dibujar el área en el mapa</button>'
-          : '<button type="button" data-pcr="analizar" class="pcr-principal"' +
+          : botonGuardarTrazo() +
+              '<button type="button" data-pcr="analizar" class="pcr-principal"' +
               (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
               (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') + '</button>') +
 
@@ -8660,13 +8809,15 @@ function donaHTML(datos, colorDe, nombreDe) {
 
         (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
 
-        '<button type="button" data-pcr="analizar" class="pcr-principal"' +
+        botonGuardarTrazo() +
+              '<button type="button" data-pcr="analizar" class="pcr-principal"' +
           (S.cargando || !listoParaAnalizar() ? ' disabled' : '') + '>' +
           (S.cargando ? 'Consultando…' : ico('lupa') + 'Ver qué hay') +
         '</button>' +
         (S.cargando ? barraDeEspera() : '') +
 
         htmlGuardadas() +
+        htmlTrazos() +
       '</div>';
   }
 
@@ -8683,6 +8834,52 @@ function donaHTML(datos, colorDe, nombreDe) {
 
      Si no hay ninguna ficha no se muestra nada: un cajón vacío con un
      título encima solo ocupa pantalla. */
+  /* El botón de guardar el trazo. Sale solo cuando hay uno cerrado, y al
+     lado de «Ver qué hay» y no dentro de una pestaña: el momento en que uno
+     quiere guardar la forma es el mismo en que acaba de cerrarla, no diez
+     pantallas después. */
+  function botonGuardarTrazo() {
+    if (!trazoALaVista() || S.cargando) return '';
+    var yaEs = S.trazoId && leerTrazos().some(function (t) { return t.id === S.trazoId; });
+    return '<button type="button" data-pcr="guardar-trazo" class="pcr-mini pcr-guardar-trazo">' +
+      ico('guardar', 16) + (yaEs ? 'Guardar como otro trazo' : 'Guardar solo el trazo') + '</button>' +
+      (S.trazoAviso ? '<p class="pcr-pista pcr-trazo-aviso">' + esc(S.trazoAviso) + '</p>' : '');
+  }
+
+  /* La lista de trazos guardados. Aparte de la de reconocimientos: una
+     guarda FORMAS y la otra ANÁLISIS, y mezclarlas volvería a juntar lo que
+     la petición pedía separar. */
+  function htmlTrazos() {
+    var trazos = leerTrazos();
+    if (!trazos.length) return '';
+    return '<div class="pcr-guardadas pcr-trazos">' +
+      '<div class="pcr-guardadas-cab">' +
+        h4('lapiz', 'Trazos guardados') +
+      '</div>' +
+      '<p class="pcr-pista">Son solo las formas, sin análisis. Tocá una para ponerla otra vez ' +
+      'en el mapa y analizarla cuantas veces quieras: cada análisis se guarda aparte, arriba.</p>' +
+      trazos.map(function (t) {
+        var cuando = new Date(t.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+        var n = analisisDeTrazo(t.id);
+        return '<div class="pcr-guardada">' +
+          '<button type="button" class="pcr-guardada-ir" data-pcr="usar-trazo" data-id="' + esc(t.id) + '"' +
+            ' aria-label="Poner en el mapa el trazo ' + esc(t.nombre || cuando) + '">' +
+            miniaturaDeFicha({ forma: 'poligono', poligono: t.pts }) +
+            '<span class="pcr-guardada-t">' +
+              '<b>' + esc(t.nombre || cuando) + '</b>' +
+              (t.nombre ? '<em class="pcr-guardada-f">' + esc(cuando) + '</em>' : '') +
+              '<small>' + esc(formatearArea(t.areaM2)) + ' · ' +
+                (n ? n + ' análisis' : 'sin analizar todavía') + '</small>' +
+              '<em class="pcr-guardada-ver">' + ico('lupa', 13) + 'Poner en el mapa</em>' +
+            '</span>' +
+          '</button>' +
+          '<button type="button" data-pcr="borrar-trazo" data-id="' + esc(t.id) + '"' +
+            ' class="pcr-x pcr-x-mini" aria-label="Borrar trazo">' + ico('borrar', 16) + '</button>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
   function htmlGuardadas() {
     var fichas = leerFichas();
     if (!fichas.length) return '';
@@ -22776,7 +22973,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Las manzanas por estrato que hay en memoria, que son las que el
         // pliego dibuja y las que viajan con la ficha.
         estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,
-        estratosLeyenda: !!(S.estratos && S.estratos.leyenda)
+        estratosLeyenda: !!(S.estratos && S.estratos.leyenda),
+        /* El trazo que hay a la vista y de qué trazo guardado viene. Esto
+           es un objeto FABRICADO, no `S`: escribirle encima no cambia nada
+           —lo aprendí escribiendo una prueba que le ponía `lote = null` y se
+           quedaba esperando un efecto que nunca llegaba—. Se expone lo que
+           hace falta leer, y se lee. */
+        lote: (S.lote || []).slice(),
+        poligono: (S.poligono || []).slice(),
+        trazoId: S.trazoId || null,
+        trazoAviso: S.trazoAviso || ''
       };
     }
   };

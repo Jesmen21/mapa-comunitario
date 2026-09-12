@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v870-la-barra-de-espera';
+const URBIS_CACHE = 'urbis-v871-guardar-el-trazo-solo';
 const URBIS_ASSETS = [
   './',
   './index.html',

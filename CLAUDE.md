@@ -300,6 +300,53 @@ solo en uno la dejaba muerta en los otros dos. Lo cazó la prueba con un
 `H is not defined`, que era yo usando un ayudante de las suites dentro del
 módulo.
 
+### Guardar el TRAZO solo, sin análisis (v871)
+
+Pedido tal cual: «una opción de guardar el polígono que dibuje, pero solo el
+polígono, sin análisis, para no tener que dibujarlo varias veces… y después
+analizarlo las veces que yo quiera y se guarda nuevamente pero con el
+análisis, y así para hacer diferentes análisis». Es el lugar guardado de
+Google Earth: **la forma es una cosa y lo que se midió sobre ella es otra.**
+
+Los trazos viven en `pcr_trazos_v1`, **aparte de las fichas**, por tres
+razones que se notan el día que no están:
+
+* Un trazo es coordenadas y pesa unas décimas de kilobyte; una ficha es el
+  trabajo de una tarde y pesa cientos. Juntos, el recorte por cupo de
+  `escribirFichas` se llevaría trazos por delante para hacer sitio a un
+  análisis — y redibujar noventa y dos hectáreas a mano en un teléfono no se
+  le pide a nadie dos veces.
+* Un trazo se guarda **antes** de analizar, que es justo cuando todavía no hay
+  ninguna ficha que lo contenga.
+* Un mismo trazo tiene **muchos** análisis —esa es la petición entera—, así
+  que la forma no puede vivir dentro de uno de ellos.
+
+Cada ficha guarda de qué trazo salió (`trazoId`), que es lo que permite que la
+lista diga «3 análisis» sin abrir ninguno. Y las dos direcciones están
+comprobadas: borrar el trazo **no** borra los análisis que salieron de él, y
+analizar **no** duplica el trazo.
+
+#### `R.estado()` es un objeto fabricado, no `S`
+
+Costó media hora y una prueba que no fallaba por lo que decía. `estado()`
+construye un objeto nuevo con lo que expone, así que `R.estado().lote = null`
+escribe en una copia y no toca nada, y leer un campo que no expone da
+`undefined` — que en una aserción se ve igual que «la función no hizo su
+trabajo». La prueba parecía estar midiendo la función y estaba midiendo el
+accesor.
+
+Dos reglas: para CAMBIAR el estado desde una prueba se usa el botón de verdad
+—`lote-borrar`, no una asignación—, y lo que una prueba necesite leer se
+**agrega a `estado()`** en vez de alcanzarlo por un lado.
+
+#### Dónde vive cada lista, y por qué
+
+Las dos listas —reconocimientos y trazos— están en el panel de ANTES de
+analizar, no en la barra encogida ni en la ficha. La barra encogida existe
+para ver el mapa mientras se marca, y la ficha para leer el resultado:
+ninguna de las dos es donde uno va a buscar algo guardado. Con el análisis
+hecho se llega con «Analizar otro sector».
+
 ## El módulo presidencial: qué mueve el veredicto
 
 Lo escribe una rutina diaria y lo lee cualquier sesión, así que las reglas

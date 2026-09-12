@@ -73,6 +73,16 @@
 .pcr-pista{ margin:0; font-size:.74rem; color:#6b7684; line-height:1.45; }
 .pcr-espera{ text-align:center; }
 
+/* Guardar el trazo solo. Va con el botón de analizar y no dentro de una
+   pestaña: el momento en que uno quiere guardar la forma es el mismo en que
+   acaba de cerrarla. */
+.pcr-guardar-trazo{ width:100%; justify-content:center; margin-bottom:6px; }
+.pcr-trazo-aviso{ text-align:center; margin-top:4px; }
+/* La lista de trazos es la de reconocimientos con otra piel: son formas, no
+   análisis, y conviene que no se confundan de un vistazo. */
+.pcr-trazos .pcr-guardada-mini{ opacity:.85; }
+.pcr-trazos .pcr-guardada{ border-left:3px solid #F5A524; }
+
 /* La barra de espera. La consulta de un área grande puede tardar dos minutos
    y el botón solo decía «Consultando…»: desde afuera no se distingue una
    espera larga de un cuelgue. La barra avanza contra el presupuesto real del
