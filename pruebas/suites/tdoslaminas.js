@@ -596,7 +596,8 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   const CO = B.coherencia;
   T('el panel de coherencia está, y en la lámina B', !!CO && !A.coherencia);
   if (CO) {
-    T('trae los siete chequeos', CO.filas.length === 7, CO.filas.length + ' chequeos');
+    T('trae los siete de una lámina y los cinco cruzados (§6)', CO.filas.length === 12,
+      CO.filas.length + ' chequeos');
     /* El que se puede correr y FALLA con este sector: la cobertura del suelo
        del fixture suma 95 y no 100. Tiene que salir impreso y en rojo. */
     const falla = CO.filas.filter(f => f.estado === 'falla');
@@ -614,11 +615,66 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        declarados, aplicada a los chequeos. */
     const sinDato = CO.filas.filter(f => f.estado === 'sin-dato');
     T('los que no se pueden correr lo dicen y nombran qué haría falta',
-      sinDato.length >= 3 && sinDato.every(f => /haría falta|no se está leyendo|no consulta|por ciudad/i.test(f.texto)),
-      sinDato.length + ' sin dato');
+      sinDato.length >= 3 && sinDato.every(f => /haría falta|no se está leyendo|no consulta|por ciudad|no se pudo|no imprime|ninguna altura|sin llenos|una capa vacía|no hay parques/i.test(f.texto)),
+      sinDato.length + ' sin dato · ' + sinDato.map(f => f.texto.slice(0, 44)).join(' | '));
     T('y ninguno se presenta como aprobado sin haberse corrido',
       CO.filas.filter(f => f.estado === 'pasa').every(f => !/sin dato|haría falta/i.test(f.texto)));
   }
+
+  /* ── §6 · los chequeos que CRUZAN las dos láminas ───────────────────────
+     La contradicción que llegó impresa no la veía ninguno de los siete: la
+     lámina A decía «103 cruces por km², trama continua, en rango caminable»
+     y el cierre de la B, con el MISMO nombre, «0 % del frente de la cuadra
+     con fachada, frente roto». Las dos cifras eran correctas; lo que estaba
+     mal era que se llamaban igual.
+
+     Cada uno de los cinco se mide por lo que IMPRIME —los dos valores, con
+     su lámina— y no solo porque exista el renglón: un chequeo cruzado que
+     salga sin sus dos cifras no se puede resolver leyéndolo, que es para lo
+     único que existe.                                                      */
+  console.log('\n  -- §6 · los chequeos cruzan las dos láminas --');
+  if (CO) {
+    const cruz = CO.filas.filter(f => /las dos láminas|trama y el paramento|cabe dentro del sector/.test(f.texto));
+    T('el panel trae los cinco chequeos cruzados', cruz.length === 5,
+      cruz.length + ' cruzados · ' + cruz.map(f => f.texto.slice(8, 46)).join(' | '));
+    T('y cada uno imprime los DOS valores, no la conclusión sola',
+      cruz.every(f => /\(lámina A\)/.test(f.texto)) &&
+      cruz.filter(f => /\(lámina B\)/.test(f.texto)).length >= 3,
+      cruz.map(f => (/\(lámina A\)/.test(f.texto) ? 'A' : '·') + (/\(lámina B\)/.test(f.texto) ? 'B' : '·')).join(' '));
+    T('la cabecera del panel dice que los últimos cruzan las dos hojas',
+      /cruzan las DOS láminas/.test(B.texto), (B.texto.match(/cruzan las DOS[^.]{0,60}/) || ['-'])[0]);
+    T('y la banda pregunta por las dos, no por «esta lámina»',
+      /DOS láminas se contradicen/.test(B.texto) && !/cifras de esta lámina se contradicen/.test(B.texto + A.texto));
+    /* El error típico declarado del panel: dar por bueno un chequeo que no
+       se pudo correr. Sigue escrito, y con los cruzados es más fácil
+       saltárselo —cinco renglones nuevos, cinco maneras de callar—. */
+    T('el error típico sigue declarado: dar por bueno lo que no se corrió',
+      /dar por bueno un chequeo que no se pudo correr/i.test(B.texto));
+  }
+
+  /* Las cuatro divergencias REALES que el §6 destapó, cada una arreglada en
+     su sitio. Se comprueban por el resultado impreso y no por el código: es
+     lo que un jurado compara cuando pone las dos hojas una al lado de otra. */
+  console.log('\n  -- §6 · lo que las dos hojas ya no se contradicen --');
+  T('el cierre llama al frente de la cuadra «paramento», no «tejido»',
+    /Continuidad del paramento/.test(B.texto) && !/Continuidad del tejido/.test(B.texto),
+    (B.texto.match(/Continuidad del [a-zé]+/g) || []).join(' · ') || 'ninguna');
+  T('y «Continuidad del tejido» sigue siendo el panel de la A, con sus cruces',
+    /Continuidad del tejido/.test(A.texto) && /cruces por km²/.test(A.texto));
+  /* Y el rótulo dice la VERDAD de dónde sale: `poblacionEstimada` es la
+     proyectada cuando hay DANE, no el conteo censal —que vive aparte—, así
+     que llamarla «contada por el censo» sería cambiar una omisión por una
+     etiqueta falsa. La comprobación persigue las dos mitades. */
+  T('la población de la lámina A dice de dónde sale, así que no choca con la de la B',
+    /Población proyectada a \d{4}|Población del censo de \d{4}|Población estimada por densidad/.test(A.texto),
+    (A.texto.match(/Población (?:proyectada|del censo|estimada)[^0-9]{0,32}[\d.]+/) || ['-'])[0]);
+  T('y no la llama «contada por el censo» si es la proyectada',
+    !/Población contada por el censo/.test(A.texto));
+  T('el suelo disponible del cierre descuenta el agua, como el panel de la A',
+    /Suelo disponible real/.test(B.texto) && /descontada el agua/.test(B.texto),
+    (B.texto.match(/Suelo disponible real[^·]{0,60}/) || ['-'])[0]);
+  T('y no queda en el cierre el rótulo viejo de «ha brutas»',
+    !/ha brutas/.test(B.texto));
 
   console.log('\n  -- dónde queda, escala por escala --');
   /* Un jurado que no conoce la ciudad no sabe si el sector que mira es el

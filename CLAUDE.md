@@ -1452,6 +1452,136 @@ Una ficha guardada antes lleva apagado el id viejo, así que se acepta como
 sinónimo al leerla: quien apagó esa caja tiene que encontrarla como la dejó, y
 no reencendida por un cambio de redacción que él no pidió.
 
+## Las dos láminas no se contradicen entre sí (v879)
+
+§6 del pliego de ajustes, y llegó con la contradicción impresa en la mano:
+
+> Lámina A: «103 cruces por km², trama continua, en rango caminable».
+> Lámina B, cierre: «continuidad del tejido 0 % del frente de la cuadra con
+> fachada, frente roto».
+
+Las dos cifras eran **correctas** y medían **cosas distintas** —la malla de
+calles y la línea de fachada—. Lo que estaba mal era que se llamaban igual, y
+un jurado que pone las dos hojas una al lado de otra encuentra una
+contradicción donde hay dos mediciones. Los siete chequeos de la v854 no la
+vieron porque **comparan cifras de un mismo cálculo**, nunca una hoja contra
+la otra.
+
+### Cuatro divergencias reales, no una
+
+Auditando los dos documentos de frente salieron cuatro, todas del mismo molde
+—el mismo nombre, o la misma cantidad, con dos valores—:
+
+| Dónde | Qué pasaba |
+|---|---|
+| «Continuidad del tejido» | el panel de la A cuenta cruces por km²; el cruce del cierre medía el frente con fachada. Ahora el cruce se llama **«Continuidad del paramento»**, que es lo que mide |
+| «Suelo disponible» | el panel de la A descuenta la superficie de agua; el cruce del cierre daba el bruto, y el del cierre es el que se cita. Ahora hacen **la misma resta** |
+| «Potencial edificatorio» | el panel leía **solo** OpenStreetMap y el cruce prefería lo contado en campo: en un sector levantado, dos medias de pisos bajo el mismo nombre. Ahora las dos llaman a `mediaDePisos` |
+| «Población» | la caja «El sitio» imprimía el total **sin decir de dónde sale**, y la B lo imprime proyectado con su año. Ahora la A lo rotula |
+
+La tercera es la que más cuesta ver y la que peor envejece: **dos rutas de
+cálculo para la misma cantidad no divergen el día que se escriben, divergen
+la tanda siguiente**, cuando una de las dos mejora.
+
+#### El rótulo tenía que decir la verdad, no sonar bien
+
+Estuve a punto de rotular la población de «El sitio» como «contada por el
+censo de 2018». **Es falsa.** El motor hace `poblacionEstimada` igual a la
+proyectada cuando hay datos del DANE, y el conteo censal vive aparte en
+`poblacionCenso`. Habría cambiado una omisión por una etiqueta falsa, que es
+peor, y la comprobación habría pasado en verde encima.
+
+Lo salvó ir a leer `motor-reglas.js` en vez de deducirlo del nombre de la
+variable. Es la regla de la v863 otra vez: **una sospecha sobre datos se
+comprueba corriendo o leyendo el código, no recordándolo.** `tdoslaminas`
+persigue ahora las dos mitades: que el rótulo esté **y** que no diga «contada
+por el censo» cuando es la proyectada.
+
+### Los cinco cruzados se miden sobre el PAPEL, no sobre las variables
+
+`chequeosCruzados` recorre **el texto ya compuesto de las dos hojas**. Es a
+propósito: lo que hay que comprobar es lo que el lector ve, y un error de
+unidad, de redondeo o de rótulo no existe en las variables —existe en el
+papel—. Los cinco son los que el pliego nombra:
+
+* la trama (A) contra el paramento (B);
+* la población (B) contra la superficie y la densidad (A);
+* el suelo disponible (A) contra lo que cita el cierre (B);
+* la altura media construida (A) contra la del cierre (B);
+* la cobertura vegetal (A) contra el espacio público efectivo.
+
+Cuando dos se contradicen se imprimen **los dos valores lado a lado con la
+palabra CONTRADICCIÓN**, en caja roja a trazos, y la cabecera dice que
+**ninguno de los dos sostiene una conclusión** hasta que se resuelva cuál es
+el bueno. Bajarle el tono a uno para que cuadre sería la mentira más pequeña
+de las dos, y este módulo no la tiene permitida — es la misma decisión de la
+v875 con la necesidad topada.
+
+Tres cosas de implementación que costaron una vuelta cada una:
+
+* **Se busca DENTRO de la caja, no en la hoja entera.** Es la lección de la
+  v854: pescar el primer «m²/hab» del documento agarraba la medición en un
+  sitio y el estándar en el otro. `cajaEn` corta del `<h2>` al siguiente
+  `<section class="caja`, y `cruceEn` lee el cruce por su etiqueta.
+* **Los MAPAS entran en el reparto por hoja, no solo las cajas de texto.** La
+  cobertura del suelo lo obliga: cuando su raster va en la hoja, sus
+  porcentajes se imprimen debajo del mapa y la caja de cifras desaparece a
+  propósito. Mirando solo las cajas, el chequeo del verde decía «cobertura
+  sin clasificar» sobre una hoja que la traía impresa — **un «sin dato» falso,
+  que es la mitad mansa del error que este panel persigue.** Un mapa lleva su
+  banda escrita en `data-g` y por ahí se reparte; por el título no se puede,
+  porque un mapa se titula «X · el mapa» cuando comparte nombre con una caja.
+* **Dos maneras de escribir un número conviven en la hoja.**
+  `toLocaleString('es-CO')` pone el punto de MILES —«3.155» son tres mil— y
+  `toFixed` pone el punto DECIMAL —«9.2 ha» son nueve hectáreas y pico—. Un
+  solo lector para las dos convertía 9,2 ha en 92 y hacía fallar el cruce por
+  un error del lector, no de la hoja. Y el área viene en tres unidades según
+  su tamaño, así que buscar solo «ha» dejaba sin medir justo los sectores
+  grandes, que son los que más se contradicen.
+
+Y una de expresiones regulares que vale para cualquier ancla armada a mano:
+**el ancla va siempre en grupo**. `'…(km²|ha)\s*' + 'Perímetro|En metros'`
+no es lo que parece: el `|` parte el patrón ENTERO y la segunda rama casa
+sola, sin número delante. Devolvía null, y el chequeo salía «sin dato» por un
+error del lector.
+
+### La guarda del voseo pasaba por paridad, no por funcionar
+
+El hallazgo más caro de la tanda, y no era de la lámina. Al agregarle código a
+`js/68`, `revisar.js` denunció de golpe cinco voseos **en comentarios de
+siempre**. La guarda de la v878 no entiende las **expresiones regulares**, y
+`js/68` lleva desde hace años un `.replace(/"/g, '&quot;')`: el recorrido ve
+la comilla suelta, se cree dentro de una cadena, y a partir de ahí clasifica
+mal **treinta mil líneas**.
+
+**La v878 pasó en verde con ese error dentro.** No porque funcionara: porque
+la paridad de las comillas que venían después dejaba, de casualidad, los
+comentarios con voseo del lado de «cadena» —que la guarda tampoco mira—.
+Bastó agregar código con comillas a ese archivo para que la paridad cambiara.
+
+Una comprobación cuyo resultado depende de la paridad de las comillas de un
+archivo no está comprobando lo que dice, y **el arreglo no es correr la
+paridad de vuelta**: el recorrido entiende ahora las regex —una barra abre
+expresión cuando lo último visto no puede terminar una, que no es perfecto
+pero acierta en código como este—, no deja que una cadena de comillas cruce un
+salto de línea, y se comprueba **contra el caso que lo rompió**: una regex con
+una comilla dentro, midiendo dónde cae cada cosa y no que no reviente.
+
+Demostrada en las dos direcciones: un «vos» en una cadena de `js/78` sale
+denunciado con archivo y línea, y el del comentario de al lado no.
+
+### Demostrado contra la v878
+
+Nueve aserciones en rojo, con el texto viejo impreso: «Continuidad del
+tejido» en el cierre de la B, «ha brutas» donde la A ya descontaba el agua,
+siete chequeos donde tiene que haber doce, y ninguno con sus dos valores.
+
+Dos de las aserciones nuevas **no** fallan contra la v878, y es a propósito:
+que «Continuidad del tejido» siga siendo el panel de la A con sus cruces, y
+que el error típico declarado —«dar por bueno un chequeo que no se pudo
+correr»— siga escrito. Son guardas contra pasarse de renombrar y contra
+callar, no afirmaciones nuevas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

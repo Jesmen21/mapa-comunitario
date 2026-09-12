@@ -1503,6 +1503,51 @@
         .sort(function (a, b) { return b.n - a.n; })
     };
   }
+  /* ── La media de pisos, una sola cuenta para las dos láminas (v879) ──
+     El panel «Potencial edificatorio» de la lámina A la sacaba SOLO de
+     OpenStreetMap, y el cruce del cierre de la lámina B prefería la contada
+     en campo. En un sector con trabajo de campo las dos láminas imprimían
+     números distintos bajo el mismo nombre, que es exactamente la
+     contradicción que el §6 manda perseguir. Ahora la cuenta vive acá y las
+     dos la llaman.
+
+     De dónde sale importa y por eso viaja: lo contado en campo trae su media
+     exacta; lo de OpenStreetMap viene repartido en cuatro cajones —1, 2, 3 y
+     «cuatro o más»—, así que de ahí no sale una media sino un PISO de media,
+     y se dice con «al menos». Darla por exacta sería inventar precisión
+     sobre un cajón. */
+  function mediaDePisos(trz, st) {
+    var campo = null;
+    try { campo = alturasDeCampo(); } catch (e) { campo = null; }
+    var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : (st && st.alturas);
+    if (campo && campo.media != null) {
+      return { media: campo.media, aproximada: false, fuente: 'campo',
+               maximo: Math.max(Number(campo.maximo) || 0, (al && Number(al.maximo)) || 0),
+               al: al || null, campo: campo };
+    }
+    if (!al || !al.conDato) return null;
+    if (al.media != null) {
+      return { media: al.media, aproximada: false, fuente: 'osm',
+               maximo: Number(al.maximo) || 0, al: al, campo: null };
+    }
+    var suma = 0, n = 0, aprox = false;
+    (al.niveles || []).forEach(function (x) {
+      /* La misma lista llega con dos nombres de clave: el motor la arma con
+         `nivel` y lo contado en campo con `id`. Leer solo uno deja la media
+         en una raya, y una raya no se ve como error: se ve como «no hay
+         dato». (v857) */
+      var k = String(x.nivel || x.id || ''), c = Number(x.edificios) || 0;
+      var pisos = k === '+3' ? 4 : Number(k) || 0;
+      if (!pisos || !c) return;
+      if (k === '+3') aprox = true;
+      suma += pisos * c; n += c;
+    });
+    if (!n) return { media: null, aproximada: false, fuente: 'osm',
+                     maximo: Number(al.maximo) || 0, al: al, campo: null };
+    return { media: Math.round(10 * suma / n) / 10, aproximada: aprox, fuente: 'osm',
+             maximo: Number(al.maximo) || 0, al: al, campo: null };
+  }
+
   /* La frase, una sola para la ficha, el pliego y el informe. */
   function fraseAlturasCampo(c) {
     if (!c) return '';
@@ -3922,7 +3967,24 @@ function donaHTML(datos, colorDe, nombreDe) {
       fila('En metros cuadrados', esc(formatearM2(meta.areaM2))) +
       fila('Perímetro', esc(formatearLargo(meta.perimetroM))) +
       (esPol ? fila('Vértices', meta.vertices || 0) : fila('Radio', esc(formatearLargo(meta.radioM)))) +
-      (st.poblacionEstimada ? fila('Población', Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
+      /* La población, CON su procedencia. Suelta era un número de habitantes
+         del que no se sabe si es un conteo o un pronóstico, y las dos cosas
+         se defienden distinto; la lámina B imprime el mismo total diciendo de
+         dónde sale y la A no decía nada, así que un jurado que compara las
+         dos hojas no tiene con qué saber que es la misma cifra.
+
+         Y el rótulo tiene que decir la verdad: `poblacionEstimada` NO es el
+         conteo censal —el motor la hace igual a la proyectada cuando hay
+         datos del DANE, y el conteo vive aparte en `poblacionCenso`—. Ponerle
+         «contada por el censo» habría sido cambiar una omisión por una
+         etiqueta falsa, que es peor. (v879, §6) */
+      (st.poblacionEstimada
+        ? fila(st.poblacionProyectada
+                 ? 'Población proyectada a ' + (st.anioProyeccion || 'hoy')
+                 : st.poblacionEsCensal
+                 ? 'Población del censo de ' + (st.censoAnio || '—')
+                 : 'Población estimada por densidad',
+               Number(st.poblacionEstimada).toLocaleString('es-CO')) : '') +
       (st.viviendasCenso ? fila('Viviendas', Number(st.viviendasCenso).toLocaleString('es-CO')) : '') +
       (st.estrato && st.estrato.predominante
       ? fila('Estrato predominante', esc(String(st.estrato.predominante))) : '') +
@@ -3967,32 +4029,15 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       caja('Potencial edificatorio',
       (function () {
-      var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
-      if (!al || !al.conDato) return '';
-      /* Lo contado en campo trae su media exacta. Lo de OpenStreetMap no:
-         trae los edificios repartidos en cuatro cajones —1, 2, 3 y «cuatro
-         o más»—, así que de ahí no sale una media, sale un PISO de media:
-         el cajón de arriba se cuenta como cuatro y los que tengan diez
-         suman cuatro igual. Se calcula y se dice que es un mínimo; darla
-         por exacta sería inventar una cifra sobre un cajón. */
-      var aproximada = false;
-      var media = al.media != null ? al.media
-        : ((al.niveles || []).length ? (function () {
-            var suma = 0, n = 0;
-            (al.niveles || []).forEach(function (x) {
-              /* La misma lista viene con dos nombres de clave: el motor la
-                 arma con `nivel` —en stats y en el trazado— y lo contado en
-                 campo con `id`. Leer solo uno deja la media en una raya, que
-                 no se ve como error: se ve como «no hay dato». */
-              var k = String(x.nivel || x.id || ''), c = Number(x.edificios) || 0;
-              var pisos = k === '+3' ? 4 : Number(k) || 0;
-              if (!pisos || !c) return;
-              if (k === '+3') aproximada = true;
-              suma += pisos * c; n += c;
-            });
-            return n ? Math.round(10 * suma / n) / 10 : null;
-          })() : null);
-      var max = al.maximo || 0;
+      /* La media de pisos sale de `mediaDePisos`, que es la MISMA cuenta que
+         usa el cruce del cierre en la lámina B. Hasta la v878 este panel leía
+         solo OpenStreetMap y el cruce prefería lo contado en campo: en un
+         sector levantado, las dos láminas imprimían dos medias distintas bajo
+         el mismo nombre. */
+      var mp = mediaDePisos(trz, st);
+      if (!mp || !mp.al || !mp.al.conDato) return '';
+      var al = mp.al, media = mp.media, aproximada = mp.aproximada;
+      var max = mp.maximo || al.maximo || 0;
       /* La brecha contra lo que el PROPIO sector demuestra que se puede
          construir. No es el potencial normativo —para eso hay que leer el
          POT, y no está— pero es una cota inferior medida: si en esta manzana
@@ -5797,7 +5842,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          reduce a lo que ocupe su contenido»—. Y de paso se lee mejor: primero
          se comprueba que los números no se contradicen, después se concluye. */
       { id: 'coherencia', titulo: 'Coherencia de las cifras', fam: 'cierre', hoja: 'B',
-        pregunta: '¿Las cifras de esta lámina se contradicen entre sí?',
+        pregunta: '¿Las cifras de las DOS láminas se contradicen entre sí?',
         que: 'los siete chequeos, con lo que falla impreso',
         cajas: ['Coherencia de las cifras'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre', hoja: 'B',
@@ -5876,6 +5921,10 @@ function donaHTML(datos, colorDe, nombreDe) {
             if (cli && cli.temperatura && cli.temperatura.media != null)
               partes.push(num(cli.temperatura.media) + ' °C de media' + (cli.temperatura.media >= 26 ? ': la sombra es diseño' : ''));
             if (trz && trz.espacio) {
+              /* La MISMA población que usan el panel «Espacio público
+                 efectivo» y el cruce del cierre. Tres sitios imprimen los
+                 mismos m²/hab y basta que uno divida por otra cifra para que
+                 la hoja se contradiga sola. (v879, §6) */
               var hab0 = Number(st.poblacionEstimada || 0);
               if (hab0 > 0 && trz.espacio.piezas)
                 partes.push(num(Math.round(10 * trz.espacio.areaM2 / hab0) / 10) + ' m²/hab de espacio público frente a la meta de ' +
@@ -6396,6 +6445,304 @@ function donaHTML(datos, colorDe, nombreDe) {
        mentir por omisión— se imprimen como «sin dato para comprobarlo» y
        nombran la fuente que haría falta, igual que los vacíos obligatorios
        de la v849. */
+    /* Las cajas, repartidas por LÁMINA. `GRUPOS` dice de qué hoja es cada
+       banda y qué cajas lleva; de ahí sale, para cada título, en cuál de las
+       dos se imprime. Una caja que ninguna banda reclame cae en la B, que es
+       donde va la bolsa de «Otras mediciones».
+
+       Hace falta porque los chequeos cruzados comparan A contra B, y si la
+       comparación se hiciera sobre el documento entero no sabría distinguir
+       «la misma cifra dos veces en la misma hoja» —que es un cruce interno—
+       de «dos cifras distintas en las dos hojas», que es el fallo del §6. */
+    function repartirPorHoja(html) {
+      var deTitulo = {};
+      GRUPOS.forEach(function (g) {
+        (g.cajas || []).forEach(function (tt) { deTitulo[tt] = g.hoja || 'A'; });
+      });
+      var deBanda = {};
+      GRUPOS.forEach(function (g) { deBanda[g.id] = g.hoja || 'A'; });
+      var res = { A: '', B: '' };
+      var partes = String(html || '').split('<section class="caja');
+      partes.forEach(function (tr, i) {
+        if (!i && !/<h2>/.test(tr)) return;
+        var trozo = i ? '<section class="caja' + tr : tr;
+        /* Un MAPA lleva su banda escrita en `data-g`, y hay que leerla: por
+           el título no se puede, porque un mapa se titula «X · el mapa»
+           cuando comparte nombre con una caja. Las cajas de texto van por
+           título, que es lo que `GRUPOS` reparte. */
+        var g = /data-g="([^"]+)"/.exec(trozo);
+        var m = /<h2>([^<]+)<\/h2>/.exec(trozo);
+        var h = (g && deBanda[g[1]]) ||
+                (m && deTitulo[m[1]]) ||
+                (m && deTitulo[m[1].replace(/ · el mapa$/, '')]) || 'B';
+        res[h] += trozo;
+      });
+      return res;
+    }
+
+    /* ── §6 · Los chequeos CRUZADOS, entre las dos láminas ──────────────
+       Los siete de arriba comparan cifras dentro del mismo cálculo, y por
+       eso no vieron la contradicción que llegó impresa: la lámina A decía
+       «103 cruces por km², trama continua, en rango caminable» y el cierre
+       de la B, bajo el MISMO nombre —«continuidad del tejido»—, «0 % del
+       frente de la cuadra con fachada, frente roto». Las dos cifras eran
+       correctas y medían cosas distintas; lo que estaba mal era que se
+       llamaban igual, y un jurado que lee las dos hojas seguidas encuentra
+       una contradicción donde hay dos mediciones.
+
+       Estos cinco se corren sobre EL TEXTO YA COMPUESTO de las dos hojas,
+       no sobre las variables. Es a propósito: lo que hay que comprobar es
+       lo que el lector ve, y un error de unidad, de redondeo o de rótulo no
+       existe en las variables —existe en el papel—. La contrapartida es que
+       hay que anclar bien la extracción, y por eso se busca DENTRO de la
+       caja y no en la hoja entera: es la lección de la v854, cuando pescar
+       el primer «m²/hab» del documento agarraba la medición en un sitio y
+       el estándar en el otro.
+
+       Cuando dos indicadores se contradicen se imprimen los DOS valores uno
+       al lado del otro con la palabra CONTRADICCIÓN, y ninguno de los dos
+       sostiene una conclusión hasta que alguien la resuelva. Bajarle el
+       tono a uno para que cuadre sería la mentira más pequeña de las dos, y
+       este módulo no la tiene permitida. */
+    function chequeosCruzados(porHoja) {
+      var out = [];
+      var pon = function (t, estado, dicho, a, b) {
+        out.push({ t: t, estado: estado, dicho: dicho, a: a || '', b: b || '', cruzado: true });
+      };
+      var plano = function (h) {
+        return String(h || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+      };
+      /* DOS maneras de escribir un número conviven en la hoja y hay que
+         leerlas distinto, o la comprobación denuncia contradicciones que no
+         existen. `toLocaleString('es-CO')` pone el punto de MILES —«3.155»
+         son tres mil— y `toFixed` pone el punto DECIMAL —«9.2 ha» son nueve
+         hectáreas y pico—. Un solo parser para las dos convertía 9,2 ha en
+         92 ha y hacía fallar el cruce por un error del lector. */
+      var nMiles = function (x) {
+        if (x == null) return null;
+        var v = Number(String(x).replace(/\./g, '').replace(',', '.'));
+        return isFinite(v) ? v : null;
+      };
+      var nDec = function (x) {
+        if (x == null) return null;
+        var v = Number(String(x).replace(',', '.'));
+        return isFinite(v) ? v : null;
+      };
+      /* Un área impresa, en hectáreas, venga en m², ha o km². `formatearArea`
+         cambia de unidad según el tamaño, así que buscar solo «ha» deja sin
+         medir justo los sectores grandes — que son los que más se
+         contradicen. */
+      var haDe = function (txt, anclaRe) {
+        /* El ancla va SIEMPRE en grupo: sin los paréntesis, una alternativa
+           —«Perímetro|En metros»— parte el patrón entero y la segunda rama
+           casa sola, sin número delante. Devolvía null y el chequeo salía
+           «sin dato» por un error del lector, no de la hoja. */
+        var m = new RegExp('([\\d.,]+)\\s*(km²|ha|m²)' + (anclaRe ? '\\s*(?:' + anclaRe + ')' : ''))
+          .exec(String(txt || ''));
+        if (!m) return null;
+        var v = nDec(m[1]);
+        if (v == null) return null;
+        return m[2] === 'km²' ? v * 100 : m[2] === 'm²' ? v / 10000 : v;
+      };
+      /* El trozo de UNA caja, por su título. Las cajas son
+         `<section class="caja …"><h2>Título</h2>…</section>` y no se anidan,
+         así que el corte va del `<h2>` al siguiente `<section class="caja`. */
+      var cajaEn = function (html, titulo) {
+        var i = String(html || '').indexOf('<h2>' + titulo + '</h2>');
+        if (i < 0) return '';
+        var j = html.indexOf('<section class="caja', i);
+        return j < 0 ? html.slice(i) : html.slice(i, j);
+      };
+      /* Un cruce del cierre, por su etiqueta. Es el otro sitio donde la hoja
+         pone un número con nombre, y el que más se cita. */
+      var cruceEn = function (html, etq) {
+        var re = new RegExp('<i class="cv-k">' + etq.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                            '<\\/i><b class="cv-v">([^<]*)<\\/b>');
+        var m = re.exec(String(html || ''));
+        return m ? m[1] : null;
+      };
+      var A = porHoja.A || '', B = porHoja.B || '';
+
+      // X1 · Continuidad de la TRAMA (A) contra continuidad del PARAMENTO (B).
+      (function () {
+        var pa = cajaEn(A, 'Continuidad del tejido');
+        var mA = /(\d+(?:[.,]\d+)?)\s*cruces por km²/.exec(plano(pa));
+        var vB = cruceEn(B, 'Continuidad del paramento');
+        var viejo = cruceEn(B, 'Continuidad del tejido');
+        var dTrama = mA ? mA[1] + ' cruces por km² (lámina A)' : null;
+        var dPar = vB ? plano(vB) + ' (lámina B)' : null;
+        if (viejo != null) {
+          pon('La trama y el paramento no se llaman igual', 'contradice',
+              'el mismo nombre en las dos láminas para dos mediciones distintas: quien lee las ' +
+              'dos seguidas encuentra una contradicción que no existe',
+              dTrama || 'cruces por km² (lámina A)', 'Continuidad del tejido: ' + plano(viejo) + ' (lámina B)');
+          return;
+        }
+        if (!dTrama || !dPar) {
+          pon('La trama y el paramento no se llaman igual', 'sin-dato',
+              'una de las dos no se pudo medir en este sector: la trama pide vías mapeadas y el ' +
+              'paramento pide el lote dibujado.');
+          return;
+        }
+        pon('La trama y el paramento no se llaman igual', 'pasa',
+            'miden cosas distintas y por eso llevan nombres distintos: una malla fina con los ' +
+            'edificios retrocedidos es una combinación corriente, no un error',
+            dTrama, dPar);
+      })();
+
+      // X2 · Población (B) contra la superficie y la densidad (A).
+      (function () {
+        var sitio = plano(cajaEn(A, 'El sitio'));
+        var ciudad = plano(cajaEn(B, 'El sector dentro de la ciudad'));
+        /* El rótulo de la A dice de dónde sale la cifra; cualquiera de los
+           tres es el mismo total que la B imprime como habitantes del sector,
+           y esa es la identidad que se comprueba. */
+        var mA = /Población (?:proyectada a [^ ]+|del censo de [^ ]+|estimada por densidad) ([\d.]+)/.exec(sitio);
+        var mB = /El sector tiene ([\d.]+) habitantes|([\d.]+) en el sector/.exec(ciudad);
+        var habB = mB ? nMiles(mB[1] || mB[2]) : null;
+        var habA = mA ? nMiles(mA[1]) : null;
+        var area = haDe(sitio, '\\s*Perímetro|\\s*En metros');
+        var dens = /([\d.,]+) hab\/ha/.exec(ciudad);
+        if (habA == null || habB == null) {
+          pon('La población es la misma en las dos láminas', 'sin-dato',
+              'una de las dos hojas no imprime el total de habitantes en este sector.');
+          return;
+        }
+        var difere = Math.abs(habA - habB) > Math.max(1, habB * 0.005);
+        pon('La población es la misma en las dos láminas', difere ? 'contradice' : 'pasa',
+            difere
+              ? 'el mismo sector con dos totales de habitantes: o uno de los dos está sin su año, ' +
+                'o se está dividiendo por poblaciones distintas'
+              : 'el mismo total en las dos, y cada una dice de qué momento es' +
+                (area != null && dens ? ' · ' + String(Math.round(area * 10) / 10).replace('.', ',') +
+                  ' ha al ' + dens[1] + ' hab/ha' : ''),
+            Math.round(habA).toLocaleString('es-CO') + ' hab. (lámina A)',
+            Math.round(habB).toLocaleString('es-CO') + ' hab. (lámina B)');
+      })();
+
+      // X3 · Suelo disponible (A) contra lo que el cierre cita (B).
+      (function () {
+        var pa = plano(cajaEn(A, 'Suelo disponible real'));
+        var haA = haDe(pa, 'suelo libre contado');
+        var vB = cruceEn(B, 'Suelo disponible real');
+        var viejoB = cruceEn(B, 'Suelo disponible');
+        var haB = vB ? haDe(plano(vB), '') : null;
+        var usos = /([\d.]+) usos registrados/.exec(plano(cajaEn(A, 'El sitio')));
+        if (viejoB != null && vB == null) {
+          pon('El suelo disponible es el mismo en las dos láminas', 'contradice',
+              'el cierre lo cita con otro nombre y sin los descuentos que el panel sí hizo',
+              'Suelo disponible real (lámina A)', 'Suelo disponible: ' + plano(viejoB) + ' (lámina B)');
+          return;
+        }
+        if (haA == null || haB == null) {
+          pon('El suelo disponible es el mismo en las dos láminas', 'sin-dato',
+              'sin llenos y vacíos medidos no hay suelo libre que contar en ninguna de las dos.');
+          return;
+        }
+        /* La tolerancia es la del PAPEL, no la del cálculo: `formatearArea`
+           imprime km² con dos decimales, que son hectáreas enteras de
+           granularidad. Más apretada denunciaría el redondeo de la hoja;
+           más suelta dejaría pasar un descuento de agua de verdad. */
+        var difere = Math.abs(haA - haB) > Math.max(0.25, haB * 0.015);
+        pon('El suelo disponible es el mismo en las dos láminas', difere ? 'contradice' : 'pasa',
+            difere
+              ? 'dos hectáreas distintas de suelo libre: casi siempre es que una de las dos no ' +
+                'descontó el agua, y la del cierre es la que se cita'
+              : 'la misma resta en las dos' + (usos ? ' · sobre ese suelo hay ' + usos[1] + ' usos registrados' : ''),
+            String(Math.round(haA * 10) / 10).replace('.', ',') + ' ha (lámina A)',
+            String(Math.round(haB * 10) / 10).replace('.', ',') + ' ha (lámina B)');
+      })();
+
+      // X4 · La altura construida (B) contra el grano y la morfología (A).
+      (function () {
+        var pa = plano(cajaEn(A, 'Potencial edificatorio'));
+        var mA = /([\d.,]+)\s*pisos de media/.exec(pa);
+        var vB = cruceEn(B, 'Potencial edificatorio');
+        var mB = vB ? /([\d.,]+)\s*pisos de media/.exec(plano(vB)) : null;
+        var grano = plano(cajaEn(A, 'El grano: manzana y predio'));
+        var huella = /Huella construida media ([\d.,]+)\s*m²/.exec(grano);
+        if (!mA || !mB) {
+          pon('La altura media construida es la misma en las dos láminas', 'sin-dato',
+              'ninguna altura registrada ni contada en campo en este sector.');
+          return;
+        }
+        var a = nDec(mA[1]), b = nDec(mB[1]);
+        var difere = Math.abs(a - b) > 0.05;
+        pon('La altura media construida es la misma en las dos láminas', difere ? 'contradice' : 'pasa',
+            difere
+              ? 'dos medias de pisos para el mismo sector: una lee OpenStreetMap y la otra lo ' +
+                'contado en campo, y la hoja no dice cuál es cuál'
+              : 'la misma cuenta en las dos' +
+                (huella ? ' · sobre una huella construida media de ' + huella[1] + ' m²' : ''),
+            String(a).replace('.', ',') + ' pisos (lámina A)',
+            String(b).replace('.', ',') + ' pisos (lámina B)');
+      })();
+
+      // X5 · Cobertura vegetal (A) contra el espacio público efectivo (A y el cierre).
+      (function () {
+        /* La cobertura NO siempre es una caja: cuando el raster entra en la
+           hoja, la barra y sus porcentajes van debajo del mapa y la caja
+           desaparece a propósito —dos veces la misma medición a un palmo una
+           de otra es lo que confundía—. Así que el verde se busca en toda la
+           lámina A por su rótulo, que es único: «Vegetación viva N %». */
+        var mVerde = /Vegetaci[óo]n viva\s*([\d.,]+)\s*%/i.exec(plano(A));
+        var ep = plano(cajaEn(A, 'Espacio público efectivo'));
+        var mHa = /([\d.,]+)\s*hectáreas/.exec(ep);
+        var haSecA = haDe(plano(cajaEn(A, 'El sitio')), '\\s*Perímetro|\\s*En metros');
+        if (!mHa) {
+          pon('El espacio público cabe dentro del sector y no se confunde con el verde', 'sin-dato',
+              'ningún parque ni plaza con forma mapeada: una capa vacía no se puede cruzar con ' +
+              'la cobertura, y que esté vacía es un dato del mapa y no del sector.');
+          return;
+        }
+        var haEP = nDec(mHa[1]), haSec = haSecA;
+        var verde = mVerde ? nDec(mVerde[1]) : null;
+        var mPct = /([\d.,]+)\s*% del sector/.exec(ep);
+        /* Lo que de verdad se puede comprobar: las hectáreas de parque y el
+           porcentaje del sector que el mismo panel imprime tienen que ser la
+           misma medición dicha de dos maneras, y el área del sector sale de
+           la caja «El sitio», en la otra punta de la hoja. Si no cuadran, una
+           de las tres superficies está mal y ninguna de las tres sostiene una
+           conclusión. */
+        var esperado = (haSec != null && mPct) ? haSec * nDec(mPct[1]) / 100 : null;
+        /* La holgura tiene que cubrir el redondeo del PORCENTAJE impreso: va
+           con un decimal, así que en un sector grande media décima son varias
+           hectáreas. Sin ese término, una hoja correcta saldría denunciada
+           por su propio redondeo — y una CONTRADICCIÓN falsa es el peor
+           resultado posible acá: le dice a un jurado que no le crea a una
+           lámina que está bien. */
+        var holgura = esperado != null
+          ? Math.max(0.2, esperado * 0.08, (haSec || 0) * 0.001) : 0;
+        if (esperado != null && Math.abs(haEP - esperado) > holgura) {
+          pon('El espacio público cabe dentro del sector y no se confunde con el verde', 'contradice',
+              'las hectáreas de parque y el porcentaje del sector que el panel imprime no salen del ' +
+              'mismo área: con ' + String(Math.round(haSec * 10) / 10).replace('.', ',') +
+              ' ha de sector, ese porcentaje daría ' + String(Math.round(esperado * 10) / 10).replace('.', ','),
+              (verde != null ? verde + ' % de vegetación · ' : '') +
+              String(Math.round(haSec * 10) / 10).replace('.', ',') + ' ha de sector (lámina A)',
+              String(haEP).replace('.', ',') + ' ha de espacio público, el ' + mPct[1] + ' % del sector');
+          return;
+        }
+        if (haSec != null && haEP > haSec * 1.01) {
+          pon('El espacio público cabe dentro del sector y no se confunde con el verde', 'contradice',
+              'hay más hectáreas de parque que de sector: una de las dos superficies está mal medida',
+              (verde != null ? verde + ' % de vegetación · ' : '') +
+              String(Math.round(haSec * 10) / 10).replace('.', ',') + ' ha de sector',
+              String(haEP).replace('.', ',') + ' ha de espacio público');
+          return;
+        }
+        pon('El espacio público cabe dentro del sector y no se confunde con el verde', 'pasa',
+            'son dos cosas distintas y la hoja no las suma: el verde sale de clasificar la foto y ' +
+            'cubre patios y lotes privados; el espacio público sale de los polígonos mapeados de ' +
+            'parques y plazas, y una plaza dura no tiene una hoja',
+            (verde != null ? verde + ' % de vegetación en la foto (lámina A)' : 'cobertura sin clasificar'),
+            String(haEP).replace('.', ',') + ' ha de espacio público (lámina A)');
+      })();
+
+      return out;
+    }
+
     function chequeosDeCoherencia(textoPaneles, textoSintesis) {
       var out = [];
       var pon = function (t, estado, dicho) { out.push({ t: t, estado: estado, dicho: dicho }); };
@@ -6477,6 +6824,27 @@ function donaHTML(datos, colorDe, nombreDe) {
       } else {
         pon('El espacio público que cita el cierre es el del panel', 'sin-dato',
             'no hay parques con polígono en el área, así que la cifra no se calcula en ninguno de los dos sitios.');
+      }
+
+      /* Y los cruzados, que es donde el §6 pone el peso: la validación se
+         corre sobre el CONJUNTO de las dos láminas y al final, no hoja por
+         hoja. El cierre se cuenta con la B, que es donde se imprime. */
+      try {
+        /* Los MAPAS entran en el reparto, no solo las cajas de texto. La
+           cobertura del suelo es el caso que lo obliga: cuando su raster va
+           en la hoja, sus porcentajes se imprimen debajo del mapa y la caja
+           de cifras desaparece a propósito. Mirando solo las cajas, el
+           chequeo del verde decía «cobertura sin clasificar» sobre una hoja
+           que la traía impresa — un «sin dato» falso, que es la mitad mansa
+           del error que este panel persigue. */
+        var porHoja = repartirPorHoja(cajaPlano + cajaMapas + textoPaneles);
+        porHoja.B += String(textoSintesis || '');
+        out = out.concat(chequeosCruzados(porHoja));
+      } catch (eX) {
+        out.push({ t: 'Los chequeos entre las dos láminas', estado: 'sin-dato',
+          dicho: 'no se pudieron correr en esta composición (' + (eX && eX.message ? eX.message : 'error') +
+                 '). Se dice en vez de darlos por buenos: dar por bueno un chequeo que no se pudo ' +
+                 'correr es el error típico de este panel.', cruzado: true });
       }
       return out;
     }
@@ -6572,23 +6940,49 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!lista || !lista.length) return '';
       var fallan = lista.filter(function (x) { return x.estado === 'falla'; }).length;
       var sinDato = lista.filter(function (x) { return x.estado === 'sin-dato'; }).length;
+      var contra = lista.filter(function (x) { return x.estado === 'contradice'; }).length;
+      var cruzados = lista.filter(function (x) { return x.cruzado; }).length;
       /* La marca de estado se DIBUJA con la hoja de estilo, no con un
          glifo: los signos de visto y de cruz cuentan como emoji, y el
          pliego no lleva ni uno —se comprueba en `tlamina`—. Un cuadrito de
          color con su palabra al lado se lee igual de rápido y además
          sobrevive a una fotocopia en blanco y negro, donde el color no
          distingue pero la palabra sí. */
-      var ICONO = { pasa: 'pasa', falla: 'falla', 'sin-dato': 'sin dato' };
+      var ICONO = { pasa: 'pasa', falla: 'falla', 'sin-dato': 'sin dato', contradice: 'CONTRADICCIÓN' };
       return caja('Coherencia de las cifras',
-        '<p class="lee">' + (fallan
-          ? '<b>' + fallan + (fallan === 1 ? ' chequeo falla' : ' chequeos fallan') + '.</b> ' +
-            'Lo que falla está impreso: no se corrigió en silencio.'
+        /* La cabecera nombra las DOS cosas cuando pasan las dos. Contando
+           solo la contradicción, un chequeo fallado se quedaba sin avisar en
+           la primera línea, que es lo único que un jurado lee de este panel
+           antes de decidir si le cree a la hoja. */
+        '<p class="lee">' + ((contra || fallan)
+          ? (contra
+              ? '<b>' + contra + (contra === 1 ? ' contradicción entre las dos láminas' : ' contradicciones entre las dos láminas') + '.</b> ' +
+                'Los dos valores están impresos lado a lado y <b>ninguno de los dos sostiene una ' +
+                'conclusión</b> hasta que se resuelva cuál es el bueno.'
+              : '') +
+            (fallan
+              ? (contra ? ' Y ' : '') + '<b>' + fallan + (fallan === 1 ? ' chequeo falla' : ' chequeos fallan') + '.</b> ' +
+                'Lo que falla está impreso: no se corrigió en silencio.'
+              : '')
           : 'Los chequeos que se pueden correr con lo que hay, pasan.') +
           ' ' + sinDato + ' de ' + lista.length + ' no se pueden correr todavía y dicen por qué.</p>' +
         '<ul class="coh">' + lista.map(function (x) {
-          return '<li class="coh-' + x.estado + '"><b><i class="coh-mk"></i>' + ICONO[x.estado] + '</b>' +
-            '<span><i>' + esc(x.t) + '</i>' + (x.dicho ? ' · ' + esc(x.dicho) : '') + '</span></li>';
-        }).join('') + '</ul>');
+          return '<li class="coh-' + x.estado + (x.cruzado ? ' coh-cruz' : '') + '">' +
+            '<b><i class="coh-mk"></i>' + ICONO[x.estado] + '</b>' +
+            '<span><i>' + esc(x.t) + '</i>' + (x.dicho ? ' · ' + esc(x.dicho) : '') +
+            /* Los dos valores, uno al lado del otro y con su lámina. Es lo
+               que el §6 pide con esas palabras, y es lo único que le
+               permite a quien lee decidir cuál de los dos está mal: una
+               contradicción contada en prosa se lee y no se resuelve. */
+            ((x.a || x.b)
+              ? '<u class="coh-par"><em>' + esc(x.a || '—') + '</em><em>' + esc(x.b || '—') + '</em></u>'
+              : '') +
+            '</span></li>';
+        }).join('') + '</ul>' +
+        '<p class="nota">Los últimos <b>' + cruzados + '</b> cruzan las DOS láminas, no cifras de una ' +
+        'sola: es donde aparece la contradicción que ninguna hoja ve sola —la A diciendo una cosa y ' +
+        'el cierre de la B otra, con el mismo nombre—. Un chequeo que no se pudo correr se declara ' +
+        '«sin dato»: darlo por bueno es el error típico de este panel.</p>');
     })();
 
     var agrupado = agruparCajas(cajaPlano + cajaMapas + cajasHTML + cajaSintesis + cajaCoherencia);
@@ -7125,6 +7519,18 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.coh-falla b, .coh-falla i{ color:#B42318 }' +
       '.coh-sin-dato{ color:#8A6D3B }' +
       '.coh-sin-dato b, .coh-sin-dato i{ color:#8A6D3B }' +
+      /* La contradicción entre láminas pesa más que un chequeo fallado y se
+         ve distinto: caja roja a trazos, como los vacíos obligatorios van en
+         ámbar. Un renglón más entre otros veinte no se lee, y lo que este
+         dice es que dos cifras de la hoja no pueden ser las dos ciertas. */
+      '.coh-contradice{ color:#B42318; background:#FDECEC; border:.4mm dashed #B42318;' +
+        'border-radius:1mm; padding:1.4mm 1.8mm }' +
+      '.coh-contradice b, .coh-contradice i{ color:#B42318 }' +
+      '.coh-contradice b{ font-weight:800; min-width:24mm }' +
+      '.coh-par{ display:flex; gap:1.6mm; margin-top:1mm; text-decoration:none; flex-wrap:wrap }' +
+      '.coh-par em{ font-style:normal; font-weight:700; font-size:2.7mm; color:#12202E;' +
+        'background:#fff; border:.25mm solid #C9D4DE; border-radius:.8mm; padding:.6mm 1.4mm }' +
+      '.coh-contradice .coh-par em{ border-color:#B42318; color:#B42318 }' +
       '.que-responde{ margin-top:1.6mm; font-size:3.4mm; color:#075E88 }' +
       '.que-responde b{ color:#0A6F9E }' +
       '.neutral{ margin-top:1.6mm; font-size:2.9mm; line-height:1.35; color:#5A6472;' +
@@ -13981,11 +14387,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       e: 'llamarlo suelo urbanizable. No se le pudieron descontar la ronda hídrica, la pendiente ' +
          'por encima del umbral ni la amenaza, y las tres restan' },
     'Coherencia de las cifras': {
-      f: 'siete comprobaciones cruzadas entre cifras de la misma lámina; cada una compara dos ' +
-         'números que tienen que cuadrar (suma de porcentajes = 100, personas ÷ viviendas en ' +
-         'rango creíble, lo que cita el cierre = lo que dice el panel)',
-      fu: 'las propias cifras de esta lámina, calculadas hoy',
-      c: 'alta: no depende de ninguna fuente externa, solo de que la lámina no se contradiga',
+      f: 'doce comprobaciones: siete entre cifras de un mismo cálculo (suma de porcentajes = 100, ' +
+         'personas ÷ viviendas en rango creíble, lo que cita el cierre = lo que dice el panel) y ' +
+         'cinco CRUZANDO LAS DOS LÁMINAS sobre el texto ya compuesto —trama contra paramento, ' +
+         'población contra superficie y densidad, suelo disponible contra usos contados, altura ' +
+         'construida contra grano, cobertura vegetal contra espacio público—',
+      fu: 'las propias cifras de las dos láminas, leídas del papel y no de las variables, hoy',
+      c: 'alta: no depende de ninguna fuente externa, solo de que las dos hojas no se contradigan',
       r: 'el chequeo de consistencia que cualquier jurado hace a mano antes de creerle a un cuadro',
       e: 'dar por bueno un chequeo que no se pudo correr. Acá se declara «sin dato» y se nombra ' +
          'la fuente que haría falta' },
@@ -14317,11 +14725,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
 
     // 3 · Potencial edificatorio: lo construido contra lo permitido.
-    var camp = null; try { camp = alturasDeCampo(); } catch (e1) {}
-    var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
-    var mediaPisos = camp && camp.media ? camp.media : (al && al.media ? al.media : null);
+    /* La MISMA cuenta que imprime el panel de la lámina A. Iban por caminos
+       distintos —el panel solo OpenStreetMap, este cruce prefiriendo lo
+       contado en campo— y en un sector levantado las dos hojas daban dos
+       medias bajo el mismo nombre. (v879, §6) */
+    var mp3 = null; try { mp3 = mediaDePisos(trz, st); } catch (e1) { mp3 = null; }
+    var mediaPisos = mp3 ? mp3.media : null;
     F('Potencial edificatorio',
-      (mediaPisos ? num(mediaPisos) + ' pisos de media construidos' : 'altura construida sin registrar') + ' · altura permitida: sin dato oficial',
+      (mediaPisos ? num(mediaPisos) + (mp3 && mp3.aproximada ? ' pisos de media, al menos' : ' pisos de media construidos') : 'altura construida sin registrar') + ' · altura permitida: sin dato oficial',
       'sin la norma el potencial no se calcula; lo construido alrededor es la única referencia, y hay que decirlo');
 
     // 4 · Mezcla de usos: dormitorio, mixto o sin residentes.
@@ -14337,26 +14748,46 @@ function donaHTML(datos, colorDe, nombreDe) {
       F('Mezcla de usos', 'sin peso de vivienda calculado', 'medir usos por edificio en campo es lo que lo destapa');
     }
 
-    // 5 · Continuidad del tejido.
+    // 5 · Continuidad del PARAMENTO — no del tejido.
+    /* Se llamaba «Continuidad del tejido», que es el nombre del panel de la
+       lámina A, y ese panel mide otra cosa: cruces por km². Las dos frases
+       salieron impresas en el mismo pliego —«trama continua, en rango
+       caminable» en la A y «frente roto» en la B— y se leen como una
+       contradicción sin serlo: una malla fina con los edificios retrocedidos
+       es una combinación corriente. El fallo era el nombre compartido, y por
+       eso este cruce se llama por lo que mide: el paramento, que es la línea
+       de fachada de la cuadra. (v879, §6) */
     var cu = null; try { cu = laCuadraDelLote(); } catch (e2) {}
     var ll = trz && trz.llenos;
     if (cu && cu.pctLleno != null) {
-      F('Continuidad del tejido', cu.pctLleno + ' % del frente de la cuadra con fachada',
+      F('Continuidad del paramento', cu.pctLleno + ' % del frente de la cuadra con fachada',
         cu.pctLleno >= 70 ? 'frente continuo: el proyecto se alinea al paramento y no lo rompe' : 'frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un retroceso');
     } else if (ll && ll.pctLleno != null) {
-      F('Continuidad del tejido', num(ll.pctLleno) + ' % del suelo construido (sin lote dibujado)',
+      F('Continuidad del paramento', num(ll.pctLleno) + ' % del suelo construido (sin lote dibujado)',
         'con el lote dibujado se mide el frente de su cuadra, que es lo que el proyecto continúa o rompe');
     } else {
-      F('Continuidad del tejido', 'sin trazado medido', 'medir el trazado da los llenos; el lote da la cuadra');
+      F('Continuidad del paramento', 'sin trazado medido', 'medir el trazado da los llenos; el lote da la cuadra');
     }
 
     // 6 · Suelo disponible real.
+    /* La MISMA resta que el panel de la lámina A: el suelo sin construir
+       menos la superficie de agua vista desde el satélite. Este cruce se
+       quedaba en el bruto, así que las dos hojas imprimían dos hectáreas
+       distintas de «suelo disponible» y la del cierre —la que se lee al
+       final y la que se cita— era siempre la mayor. (v879, §6) */
     if (ll && ll.pctVacio != null && meta.areaM2) {
-      var libreHa = Math.round(meta.areaM2 * ll.pctVacio / 100 / 10000 * 10) / 10;
-      F('Suelo disponible', num(ll.pctVacio) + ' % libre · unas ' + num(libreHa) + ' ha brutas',
-        'brutas: incluyen vías, patios y afectaciones; el suelo de verdad disponible sale del catastro, sin dato oficial');
+      var vacioM2 = meta.areaM2 * ll.pctVacio / 100;
+      var aguaM2 = (function () {
+        var cb = null; try { cb = o2Cobertura(); } catch (e5) { cb = null; }
+        return (cb && cb.agua != null) ? meta.areaM2 * (Number(cb.agua) || 0) / 100 : null;
+      })();
+      var libreM2 = aguaM2 != null ? Math.max(0, vacioM2 - aguaM2) : vacioM2;
+      var libreHa = Math.round(libreM2 / 10000 * 10) / 10;
+      F('Suelo disponible real', num(ll.pctVacio) + ' % sin construir · unas ' + num(libreHa) + ' ha' +
+        (aguaM2 != null ? ' descontada el agua' : ' brutas'),
+        'no es suelo urbanizable: faltan por descontar la ronda hídrica, la pendiente no urbanizable y la amenaza, que piden el POT y el mapa oficial de riesgo');
     } else {
-      F('Suelo disponible', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
+      F('Suelo disponible real', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
     }
 
     // 7 · Presión de crecimiento: el verde que se fue.

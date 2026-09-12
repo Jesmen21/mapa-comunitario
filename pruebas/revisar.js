@@ -949,23 +949,66 @@ console.log('\n  -- el FODA del curso --');
     'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','guardalo','escribilo','ped\u00edsela','mirala','ponelo'];
 
 
+  /* ── Qué parte del archivo es comentario ────────────────────────────
+     Un recorrido con estados. Tiene que entender también las EXPRESIONES
+     REGULARES, y eso no es un refinamiento: `js/68` lleva desde siempre un
+     `.replace(/"/g, '&quot;')`, y un recorrido que no sepa que eso es una
+     regex ve la comilla suelta, se cree dentro de una cadena y a partir de
+     ahí clasifica mal el resto del archivo —treinta mil líneas—.
+
+     La v878 pasó en verde con ese error dentro. No porque funcionara: porque
+     la PARIDAD de las comillas que venían después dejaba, de casualidad, los
+     comentarios con voseo del lado de «cadena» —que la guarda tampoco mira—.
+     Bastó agregarle código con comillas a ese archivo para que la paridad
+     cambiara y salieran cinco denuncias contra comentarios de siempre. Una
+     comprobación que depende de la paridad de las comillas de un archivo no
+     está comprobando lo que dice. (v879)
+
+     Distinguir una regex de una división no tiene solución perfecta sin un
+     analizador de verdad, pero sí una regla que acierta en código como este:
+     una barra ABRE regex cuando lo último que se vio no puede terminar una
+     expresión —un operador, una coma, un paréntesis de apertura, `return`—.
+     Después de un nombre, un número o un paréntesis cerrado, divide.
+
+     Y una red de seguridad que acota cualquier despiste: una cadena de
+     comillas simples o dobles no cruza un salto de línea. Si llega uno, es
+     que el recorrido se perdió; se vuelve a código y el daño queda en esa
+     línea en vez de comerse el archivo. */
   function fueraDeComentario(txt) {
     const com = new Uint8Array(txt.length);
-    let i = 0, modo = 0;   // 0 código · 1 // · 2 /* */ · 3 '…' · 4 "…" · 5 `…`
+    const ANTES_REGEX = /[(,=:[!&|?{};+\-*%~^<>]$/;
+    let i = 0, modo = 0;   // 0 código · 1 // · 2 /* */ · 3 '…' · 4 "…" · 5 `…` · 6 /…/
+    let ultimo = '';       // último carácter significativo visto en código
     while (i < txt.length) {
       const c = txt[i], d = txt[i + 1];
       if (modo === 0) {
         if (c === '/' && d === '/') { modo = 1; com[i] = com[i + 1] = 1; i += 2; continue; }
         if (c === '/' && d === '*') { modo = 2; com[i] = com[i + 1] = 1; i += 2; continue; }
+        if (c === '/') {
+          const prev = txt.slice(Math.max(0, i - 12), i).replace(/\s+$/, '');
+          if (!prev || ANTES_REGEX.test(prev) || /\b(return|typeof|case|in|of|new|delete|void)$/.test(prev)) {
+            modo = 6; i++; continue;
+          }
+          ultimo = '/'; i++; continue;
+        }
         if (c === "'" ) { modo = 3; i++; continue; }
         if (c === '"' ) { modo = 4; i++; continue; }
         if (c === '`' ) { modo = 5; i++; continue; }
+        if (!/\s/.test(c)) ultimo = c;
         i++; continue;
       }
       if (modo === 1) { com[i] = 1; if (c === '\n') modo = 0; i++; continue; }
       if (modo === 2) { com[i] = 1; if (c === '*' && d === '/') { com[i + 1] = 1; modo = 0; i += 2; continue; } i++; continue; }
       if (c === '\\') { i += 2; continue; }
-      if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; i++; continue; }
+      if (modo === 6) {
+        /* Dentro de una clase `[...]` una barra no cierra la regex. */
+        if (c === '[') { while (i < txt.length && txt[i] !== ']') { if (txt[i] === '\\') i++; i++; } i++; continue; }
+        if (c === '/') { modo = 0; ultimo = ')'; i++; continue; }
+        if (c === '\n') { modo = 0; i++; continue; }
+        i++; continue;
+      }
+      if ((modo === 3 || modo === 4) && c === '\n') { modo = 0; i++; continue; }
+      if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; ultimo = c; i++; continue; }
       i++;
     }
     return com;
@@ -1000,6 +1043,23 @@ console.log('\n  -- el FODA del curso --');
      masivo vuelve a pasarle por encima— estas formas dejan de ser voseo y la
      guarda pasaría en verde sin vigilar nada. Es el peor verde que hay, y acá
      se ve a simple vista. */
+  /* El recorrido se comprueba contra un caso de respuesta conocida, y el
+     caso es el que lo rompió: una regex con una comilla dentro. Sin esto, el
+     recorrido puede volver a perderse y la guarda seguiría saliendo verde —
+     que es como pasó la v878. Se mide dónde cae cada cosa, no que no
+     reviente. */
+  (function () {
+    const M = 'var a = t.replace(/"/g, \'&quot;\');\n' +   // la regex que rompía todo
+              '/* un comentario con vos adentro */\n' +
+              'var b = \'aquí escribís vos\';\n';
+    const c = fueraDeComentario(M);
+    const iCom = M.indexOf('vos adentro'), iCad = M.indexOf('vos\';');
+    comprobar('el recorrido distingue una regex de una cadena, y comentario de código',
+      !!c[iCom] && !c[iCad],
+      'el «vos» del comentario ' + (c[iCom] ? 'queda tapado' : 'SE DENUNCIARÍA') +
+      ' y el de la cadena ' + (c[iCad] ? 'NO SE VERÍA' : 'se ve'));
+  })();
+
   const sigueSiendoVoseo = VOSEO.indexOf('vos') !== -1 &&
     VOSEO.filter(function (f) { return /[\u00e1\u00e9\u00ed]$/.test(f); }).length >= 30;
   comprobar('la lista de formas voseantes no se desvoseó a sí misma',

@@ -655,8 +655,15 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
 
   console.log('\n  -- lo que dicen juntas las cifras --');
   const CR = (VC.cruces || []);
-  const CLAVES = ['Cobertura de equipamientos', 'Espacio público', 'Potencial edificatorio', 'Mezcla de usos', 'Continuidad del tejido',
-                  'Suelo disponible', 'Presión de crecimiento', 'Dependencia de acceso', 'Tamaño y forma de predios', 'Comparación con la ciudad', 'Horizonte temporal'];
+  /* Dos claves cambiaron de nombre en la v879 (§6) y la prueba cita la
+     interfaz de AHORA, no la de antes: «Continuidad del tejido» es el panel
+     de la lámina A —cruces por km²— y este cruce mide el frente con fachada,
+     así que se llama «Continuidad del paramento»; y «Suelo disponible» pasó a
+     «Suelo disponible real» porque ahora hace la misma resta que el panel, con
+     el agua descontada. Compartir nombre midiendo otra cosa era la
+     contradicción que el §6 vino a cerrar. */
+  const CLAVES = ['Cobertura de equipamientos', 'Espacio público', 'Potencial edificatorio', 'Mezcla de usos', 'Continuidad del paramento',
+                  'Suelo disponible real', 'Presión de crecimiento', 'Dependencia de acceso', 'Tamaño y forma de predios', 'Comparación con la ciudad', 'Horizonte temporal'];
   T('los once cruces están en el cierre, cada uno con valor y lectura',
     CLAVES.every(k => CR.some(c => c.k === k)) && CR.every(c => c.v.trim().length >= 6 && c.l.trim().length >= 25),
     CR.length + ' cruces · faltan: ' + (CLAVES.filter(k => !CR.some(c => c.k === k)).join(', ') || 'ninguno'));
