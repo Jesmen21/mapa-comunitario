@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-11",
- "proximaActualizacion": "2026-09-12",
+ "actualizado": "2026-09-12",
+ "proximaActualizacion": "2026-09-13",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,92 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno cierra la mesa con el ELN y da por terminada toda la «paz total» heredada de Petro",
+   "detalle": "El presidente anunció el 11 de septiembre la firma de una resolución que revoca la designación de los voceros del Gobierno en la mesa de diálogo con el ELN —entre ellos Parmenio Cuéllar Bastidas, Álvaro Jiménez Millán, Feliciano Valencia y Gloria Cecilia Quiseno— y cierra además los espacios con el Estado Mayor de los Bloques del Magdalena Medio, el Frente Comuneros del Sur y la Coordinadora Nacional Bolivariana, junto con los espacios sociojurídicos en Medellín, Quibdó y Buenaventura. Con esto quedan cerradas todas las mesas de la «paz total» de Petro: las de disidencias de Calarcá, Comandos de la Frontera y las Autodefensas Conquistadoras de la Sierra Nevada se habían cerrado el 28 de agosto. De la Espriella declaró «se acabó la falsa paz» y que «en mi Gobierno los criminales no tendrán estatus político, tratamiento privilegiado ni impunidad», y su Gobierno cuestionó que esos procesos costaron cerca de $7.000 millones sin resultados verificables.",
+   "contrapunto": "Es la valoración del propio Gobierno sobre unos diálogos que no impulsó. El gobierno de Petro había defendido esas mismas mesas —incluida la del ELN— como una vía que redujo la violencia en varias regiones (ver la entrada del 28 de agosto de 2026). La mesa con el ELN, además, estaba suspendida por el propio ELN desde enero de 2025, antes de la posesión de De la Espriella, así que el cierre formal no interrumpió una negociación activa en curso.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Abelardo de la Espriella dio oficialmente por terminada la «falsa paz» de Gustavo Petro: «En mi gobierno los criminales no tendrán estatus político»",
+     "u": "https://www.infobae.com/colombia/2026/09/11/abelardo-de-la-espriella-dio-oficiamente-por-terminada-la-falsa-paz-de-gustavo-petro-en-mi-gobierno-los-criminales-no-tendran-estatus-politico/"
+    },
+    {
+     "n": "Semana · «Se acabó la falsa paz»: Abelardo De la Espriella anuncia el desmonte de los diálogos de paz con el ELN",
+     "u": "https://www.semana.com/politica/articulo/se-acabo-la-falsa-paz-abelardo-de-la-espriella-anuncia-el-desmonte-de-los-dialogos-de-paz-con-el-eln/202606/"
+    },
+    {
+     "n": "La Silla Vacía · Abelardo cierra la mesa con el ELN y confirma el fin de la paz total",
+     "u": "https://www.lasillavacia.com/en-vivo/abelardo-cierra-la-mesa-con-el-eln-y-confirma-el-fin-de-la-paz-total/"
+    },
+    {
+     "n": "El País (Cali) · Presidente Abelardo de la Espriella pone fin a designación de negociadores con el ELN y el Clan del Golfo",
+     "u": "https://www.elpais.com.co/colombia/presidente-abelardo-de-la-espriella-pone-fin-a-designacion-de-negociadores-con-el-eln-y-el-clan-del-golfo-0937.html"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno aplaza por decreto los concursos de mérito hasta 2027, entre ellos el de docentes con más de 28.000 vacantes, citando la emergencia del terremoto",
+   "detalle": "Mediante el Decreto 1384 de 2026, conocido el 11 de septiembre, el Gobierno ordenó el aplazamiento temporal de los concursos de mérito y los procesos de selección de empleo público, invocando la emergencia económica declarada tras el terremoto de magnitud 7,4 del 10 de agosto, para «proteger la igualdad de oportunidades» de aspirantes afectados. El aplazamiento puede extenderse hasta el 31 de diciembre de 2026 y los procesos se retomarían en 2027. Entre los afectados están el concurso docente (más de 28.000 vacantes, con inscripciones previstas entre noviembre y diciembre), los procesos de las Corporaciones Autónomas Regionales (más de 1.000 cargos) y los de entidades del orden nacional (más de 1.600 cargos). El decreto deja abierta la posibilidad de que una entidad continúe una etapa si demuestra, de forma motivada, que no hay entre los inscritos aspirantes domiciliados o afectados por la emergencia, y faculta a la Comisión Nacional del Servicio Civil (CNSC) para suspender o aplazar pruebas y otras etapas.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Gobierno de Abelardo de la Espriella anunció que se aplazan los concursos de mérito para vacantes de la Cnsc: esta es la razón",
+     "u": "https://www.infobae.com/colombia/2026/09/11/gobierno-de-abelardo-de-la-espriella-anuncio-que-se-aplazan-los-concursos-de-merito-para-vacantes-de-la-cnsc-esta-es-la-razon/"
+    },
+    {
+     "n": "LaFM · Gobierno de La Espriella anuncia cambios en los concursos de mérito en Colombia: así se frenarán los procesos",
+     "u": "https://www.lafm.com.co/actualidad/concursos-de-merito-colombia-aplazados-cambios-gobierno-abelardo-de-la-espriella-410618"
+    },
+    {
+     "n": "Cambio · Concursos de mérito en Colombia: Gobierno de Abelardo de la Espriella aplaza procesos hasta 2027",
+     "u": "https://cambiocolombia.com/pais/articulo/2026/9/gobierno-de-de-la-espriella-anuncia-cambios-en-concursos-de-merito-asi-se-modificaron-los-procesos"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "israel",
+   "titulo": "La Cancillería formaliza la exención de visa con Israel: colombianos entran solo con pasaporte, hasta 90 días",
+   "detalle": "El 11 de septiembre la Cancillería colombiana confirmó que quedó en firme, mediante la Resolución 12189 de 2026, el restablecimiento de la exención recíproca de visado con Israel para viajes de turismo, acordado a mediados de agosto entre los dos países tras el reinicio de relaciones bilaterales. A partir de septiembre de 2026 los colombianos con pasaporte ordinario vigente pueden ingresar a Israel sin tramitar visa, por estadías de hasta 90 días dentro de un período de 12 meses.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Cancillería confirmó nuevos beneficios para colombianos que viajen a Israel: a partir de septiembre de 2026 no necesitan visa",
+     "u": "https://www.infobae.com/colombia/2026/09/11/cancilleria-confirmo-nuevos-beneficios-para-colombianos-que-viajen-a-israel-a-partir-de-septiembre-de-2026-no-necesitan-visa/"
+    },
+    {
+     "n": "El Tiempo · Cancillería informó que ya quedó en firme la exención del visado con Israel: «colombianos podrán ingresar únicamente con su pasaporte»",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/cancilleria-informo-que-ya-quedo-en-firme-la-exencion-del-visado-con-israel-colombianos-podran-ingresar-unicamente-con-su-pasaporte-3585353"
+    },
+    {
+     "n": "El Espectador · Israel y Colombia restablecen exención de visa de turistas tras acuerdo de De la Espriella",
+     "u": "https://www.elespectador.com/mundo/mas-paises/israel-y-colombia-restablecen-exencion-de-visa-de-turistas-tras-acuerdo-de-de-la-espriella/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-10",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno difunde un nuevo balance de seguridad: 17.147 capturas, 75.613 kg de droga incautada y 1.761 armas retiradas desde el 7 de agosto",
+   "detalle": "El presidente Abelardo de la Espriella presentó el 10 de septiembre un nuevo balance acumulado de la Fuerza Pública desde su posesión el 7 de agosto: 17.147 capturas, 75.613 kilogramos de droga incautada y 1.761 armas de fuego retiradas de circulación, junto con 1.506,8 hectáreas de coca erradicadas.",
+   "contrapunto": "Las cifras provienen enteramente del propio Gobierno y no han sido objeto de una auditoría independiente ni de una verificación cruzada por organismos de control; varios medios se limitaron a reproducir el comunicado oficial. Esta es la tercera actualización del mismo indicador en cinco días (ver las entradas del 5 y el 7 de septiembre de 2026), la última de las cuales ya registró una discrepancia de 22 toneladas entre dos balances oficiales del mismo período.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "El Heraldo · De la Espriella presenta nuevo balance de operaciones: 17.147 capturas desde el 7 de agosto",
+     "u": "https://www.elheraldo.co/colombia/2026/09/10/de-la-espriella-presenta-nuevo-balance-de-operaciones-17147-capturas-desde-el-7-de-agosto/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-11",
    "precision": "exacta",

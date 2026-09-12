@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-11",
+  "actualizado": "2026-09-12",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -8,7 +8,7 @@
       "lat": 3.568,
       "lng": -73.784,
       "desde": "2026-09-03",
-      "expira": "2026-09-13",
+      "expira": "2026-09-17",
       "lineas": [
         "📅 La emergencia se agravó el 3 de septiembre de 2026: la Gobernación del Meta pidió ayuda urgente a la UNGRD y, ese mismo día, un helicóptero Black Hawk de la Fuerza Aeroespacial rescató por cable a tres personas, dos de ellas adultas mayores, aisladas por la creciente del río Ariari en zona rural de El Castillo.",
         "📊 Balance acumulado de la temporada de lluvias en el Meta: 8.471 familias afectadas y 2.615 sin vivienda en 29 municipios; 259 viviendas destruidas y 1.237 averiadas; 95,1 km de vías afectadas y 27 puentes o estructuras hidráulicas comprometidos. El río Upía se mantiene en alerta roja por su nivel, y Cubarral, El Dorado y El Castillo siguen con la conexión terrestre interrumpida.",
@@ -52,18 +52,49 @@
     },
     {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en el sector Guabinas — reactivado, más de 30 familias evacuadas, 6-9 de septiembre de 2026, Yumbo, Valle del Cauca",
+      "titulo": "Incendio forestal en el sector Guabinas — convertido en emergencia subterránea, 6-11 de septiembre de 2026, Yumbo, Valle del Cauca",
       "lat": 3.5833,
       "lng": -76.4972,
       "desde": "2026-09-06",
-      "expira": "2026-09-18",
+      "expira": "2026-09-19",
       "lineas": [
-        "📅 El incendio se originó la tarde del domingo 6 de septiembre de 2026 en el sector Guabinas (Cerro Gordo), zona montañosa de Yumbo, Valle del Cauca; se reactivó en la tarde del martes 8 de septiembre pese a los avances previos de control (cerca del 80 %), y las operaciones para contener los focos en los sectores de Dapa, Guabinas y Cerro Gordo seguían activas el 9 de septiembre.",
-        "📊 Más de 470 hectáreas de vegetación afectadas tras cuatro días de incendio, según los reportes de bomberos y de la Alcaldía de Yumbo. Más de 30 familias fueron evacuadas preventivamente y alojadas con ayuda humanitaria en el coliseo municipal de Yumbo; más de 60 bomberos de Yumbo y Cali, con apoyo aéreo (sistema Bambi Bucket) de la Fuerza Aeroespacial Colombiana, trabajan en la zona.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Yumbo y prensa regional (El País, El Tiempo, Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Yumbo; el incendio se ubica en la zona montañosa del sector Guabinas."
+        "📅 El incendio se originó la tarde del domingo 6 de septiembre de 2026 en el sector Guabinas (Cerro Gordo), zona montañosa de Yumbo, Valle del Cauca; se reactivó en la tarde del martes 8 de septiembre pese a los avances previos de control (cerca del 80 %). Tras varios días de trabajo, el fuego dejó de verse en superficie pero, según el subcomandante de Bomberos Yumbo, se mantiene activo bajo tierra, con riesgo de reaparecer.",
+        "📊 Más de 470 hectáreas de vegetación afectadas, según los reportes de bomberos y de la Alcaldía de Yumbo. Más de 30 familias fueron evacuadas preventivamente y alojadas con ayuda humanitaria en el coliseo municipal de Yumbo; la Fuerza Aeroespacial Colombiana reportó 70 descargas con más de 32.000 galones de agua y retardante desde un Bambi Bucket, junto con bomberos de Yumbo y Cali, para contener los focos visibles.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Yumbo, la Fuerza Aeroespacial Colombiana y prensa regional (El País, El Tiempo, Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Yumbo; el incendio se ubica en la zona montañosa del sector Guabinas."
       ],
-      "fuente": "Alcaldía de Yumbo / Bomberos Yumbo y Cali / El País / El Tiempo / Pulzo",
-      "url": "https://www.elpais.com.co/valle/grave-incendio-forestal-se-presenta-en-zona-montanosa-del-sector-guabinas-en-yumbo-valle-del-cauca-0632.html"
+      "fuente": "Alcaldía de Yumbo / Bomberos Yumbo y Cali / Fuerza Aeroespacial Colombiana / El País / El Tiempo / Pulzo",
+      "url": "https://www.pulzo.com/nacion/incendio-subterraneo-en-yumbo-autoridades-combaten-emergencia-en-bosque-seco-tropical-PP5299954A"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 4,5 — 11 de septiembre de 2026, Istmina, Chocó",
+      "lat": 4.42,
+      "lng": -76.72,
+      "desde": "2026-09-11",
+      "expira": "2026-09-25",
+      "lineas": [
+        "📅 Ocurrió el viernes 11 de septiembre de 2026 a las 11:42 a. m. (hora de Colombia).",
+        "📊 Magnitud 4,5 (algunos boletines iniciales hablaron de 4,3-4,4 antes de actualizarse) · profundidad 41 km · epicentro a unos 27 km del municipio de Sipí y 14 km de Istmina, Chocó (4,42° N / 76,72° O, Servicio Geológico Colombiano). Se sintió con fuerza en Quibdó, Cali, Buenaventura, Armenia, Pereira y Manizales, y provocó evacuaciones preventivas de edificaciones en el centro y sur de Cali y en el Área Metropolitana Centro Occidente (Armenia); no se reportaron heridos ni daños estructurales.",
+        "🌎 Un sismo posterior de magnitud 4,6 y profundidad 43 km, también con epicentro en Istmina, se registró a las 6:16 a. m. del sábado 12 de septiembre; se sintió en Risaralda, Valle del Cauca y Quindío, sin evacuaciones ni daños reportados. La zona forma parte de la actividad sísmica que sigue registrándose en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto, con epicentro distinto (San José del Palmar, a unos 80 km de Istmina).",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Espectador, El País, Pulzo, Infobae). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.elespectador.com/ciencia/temblor-de-magnitud-4-5-se-registro-en-choco-se-reportan-evacuaciones-en-varias-ciudades/"
+    },
+    {
+      "tipo": "Derrumbe o deslizamiento",
+      "titulo": "Derrumbe cierra la vía Cali–Buenaventura en el sector La Yolomba — 11 de septiembre de 2026, Dagua, Valle del Cauca",
+      "lat": 3.6458,
+      "lng": -76.6917,
+      "desde": "2026-09-11",
+      "expira": "2026-09-16",
+      "lineas": [
+        "📅 Ocurrió en la madrugada del viernes 11 de septiembre de 2026, en el sector La Yolomba (PR 69+000 de la Ruta 4001), zona rural de Dagua, Valle del Cauca.",
+        "📊 Cierre TOTAL de la vía Cali–Buenaventura por caída de piedras y material sobre la calzada, en una ladera que la Unión Vial Camino del Pacífico ya monitoreaba desde el terremoto del 10 de agosto; lluvias constantes en la zona dificultaron la movilidad y los trabajos de remoción. Es la única conexión terrestre entre Cali y el puerto de Buenaventura, por donde entra cerca del 60 % del abastecimiento del país.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Unión Vial Camino del Pacífico y prensa nacional (Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Dagua; el derrumbe se ubica en su zona rural, en el sector La Yolomba."
+      ],
+      "fuente": "Unión Vial Camino del Pacífico / Pulzo",
+      "url": "https://www.pulzo.com/nacion/cierre-total-de-la-via-cali-buenaventura-hoy-por-deslizamiento-en-la-yolomba-valle-del-cauca-PP5299771A"
     }
   ]
 }
