@@ -443,6 +443,10 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               banda: (c.closest('.banda') || {}).className || '',
               barras: [...c.querySelectorAll('.barras > .b')].map(x =>
                 x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
+              // El ANCHO de cada barra, no su texto: una comprobación sobre
+              // qué barra es la más larga tiene que mirar la barra.
+              anchoBarras: [...c.querySelectorAll('.barras > .b u')].map(x =>
+                parseFloat((x.getAttribute('style') || '').replace(/^.*width:\s*/, '')) || 0),
               // Los pares SECTOR | CIUDAD | DIFERENCIA de la comparación
               // contra la ciudad (§9): se leen como filas, no como texto
               // corrido, porque la comprobación es sobre cada uno.
@@ -458,7 +462,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               })
             };
           };
-          return { riesgo: dame(/^Riesgo oficial$/), norma: dame(/^Norma urbana$/),
+          return { alejarse: dame(/Cómo cambia al alejarse/), riesgo: dame(/^Riesgo oficial$/), norma: dame(/^Norma urbana$/),
                    legal: dame(/Información legal del predio/), movilidadReal: dame(/^Movilidad real$/),
                    servicios: dame(/^Servicios públicos$/),
                    potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
@@ -692,6 +696,60 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     (B.texto.match(/Suelo disponible real[^·]{0,60}/) || ['-'])[0]);
   T('y no queda en el cierre el rótulo viejo de «ha brutas»',
     !/ha brutas/.test(B.texto));
+
+  /* ── §14 · los anillos, de ancho constante y en densidad ────────────────
+     Los cortes eran [0, 200, 400, 700, radio]: cuatro anchos distintos, y el
+     último se comía el resto. Con 2.500 m de radio ese anillo medía 1.800 m y
+     salía impreso «400–700 m: 6 usos · 700–2.500 m: 2.637», que no dice nada
+     del sector — dice que un anillo tiene veinticinco veces el área del otro.
+
+     El sector de prueba lo demuestra solo: 76 usos en el primer anillo contra
+     105 en el segundo, pero 6/ha contra 2,8/ha. Contando, afuera hay más;
+     midiendo, adentro hay el doble. Esa inversión es la razón de la tanda, y
+     por eso se comprueba y no solo se mira. */
+  console.log('\n  -- §14 · los anillos se comparan por densidad --');
+  const AL = (A.paneles || {}).alejarse || (B.paneles || {}).alejarse;
+  T('el panel de anillos está', !!AL && (AL.barras || []).length >= 2,
+    AL ? (AL.barras || []).length + ' anillos' : 'no está');
+  if (AL) {
+    const anchos = (AL.barras || []).map(b => {
+      const m = /^(?:hasta (\d+)|(\d+)[–-](\d+)) m/.exec(b);
+      return m ? (m[1] ? Number(m[1]) : Number(m[3]) - Number(m[2])) : null;
+    }).filter(x => x != null);
+    const agrupados = (AL.barras || []).filter(b => /agrupado/.test(b)).length;
+    T('los anillos son de ancho constante, salvo los que se agruparon',
+      anchos.length >= 2 &&
+      new Set(anchos.filter((_, i) => !/agrupado/.test(AL.barras[i]))).size === 1,
+      anchos.join(' · ') + ' m · ' + agrupados + ' agrupado(s)');
+    T('y la hoja dice de cuánto es el paso',
+      /Anillos de \d+ m/.test(AL.texto), (AL.texto.match(/Anillos de [^.]{0,40}/) || ['no lo dice'])[0]);
+    T('cada anillo trae su densidad por hectárea, no solo el conteo',
+      (AL.barras || []).every(b => /[\d,]+\/ha/.test(b) && /\d+ usos/.test(b)),
+      (AL.barras || []).join(' | '));
+    /* La comprobación que de verdad importa: que la barra se DIBUJE por
+       densidad. Con el conteo, el segundo anillo del sector de prueba —105
+       usos contra 76— saldría más largo que el primero, y el primero tiene
+       más del doble de densidad. */
+    T('la barra más larga es la del anillo más denso, no la del que más cuenta',
+      (function () {
+        const dens = (AL.barras || []).map(b => Number((/([\d,]+)\/ha/.exec(b) || [0, '0'])[1].replace(',', '.')));
+        const cuenta = (AL.barras || []).map(b => Number((/(\d+) usos/.exec(b) || [0, '0'])[1]));
+        const iDens = dens.indexOf(Math.max.apply(null, dens));
+        const iCuenta = cuenta.indexOf(Math.max.apply(null, cuenta));
+        return iDens !== iCuenta && (AL.anchoBarras || [])[iDens] >= (AL.anchoBarras || [])[iCuenta];
+      })(),
+      'densidades ' + (AL.barras || []).map(b => (/([\d,]+)\/ha/.exec(b) || ['', '?'])[1]).join('/') +
+      ' · anchos ' + (AL.anchoBarras || []).join('/'));
+    T('y la conclusión se saca de la densidad, no del conteo',
+      /usos por hectárea|densidad es pareja|crece al alejarse/.test(AL.texto),
+      (AL.texto.match(/(La actividad|La densidad)[^.]{0,90}/) || ['sin conclusión'])[0]);
+    T('el pie explica por qué el conteo sube solo hacia afuera',
+      /más área que uno de adentro|contando sube solo/.test(AL.texto));
+    if (agrupados) {
+      T('y un anillo agrupado dice que lo está, y por qué',
+        /menos de 20 usos/.test(AL.texto), (AL.texto.match(/\d+ anillos? tra[ií]an?[^.]{0,70}/) || ['-'])[0]);
+    }
+  }
 
   /* ── §19 · un vacío que cierra en tarea, no en ausencia ────────────────
      Hasta la v879 estos paneles terminaban en «sin dato oficial», qué haría

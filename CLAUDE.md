@@ -1716,6 +1716,122 @@ que declara la ausencia con la lista de campos como prueba.
   final ya hacía. Es la regla de la v863 aplicada al arnés: **una sospecha se
   comprueba corriendo, no leyendo.**
 
+## Los anillos, de ancho constante y medidos en densidad (v881)
+
+§14 del pliego de ajustes. Los cortes del motor eran fijos:
+
+```js
+const CORTES = [0, 200, 400, 700, Math.max(701, radioM)];
+```
+
+Cuatro anchos distintos —200, 200, 300 y lo que sobre—, y el último se come el
+resto: con 2.500 m de radio mide 1.800 m. Impreso salía «400–700 m: 6 usos ·
+700–2.500 m: 2.637», que **no dice nada del sector**: dice que un anillo tiene
+veinticinco veces el área del otro.
+
+### Contar anillos es comparar áreas, no sectores
+
+Un anillo de r1 a r2 tiene área π(r2²−r1²). Aun con el ancho constante, el
+área **crece hacia afuera**: el anillo de 200 a 400 m tiene el triple que el
+de 0 a 200. Así que el conteo sube solo, siempre, en cualquier sector, y leerlo
+como «hacia afuera hay más actividad» es leer la geometría del anillo.
+
+Lo único comparable entre dos anillos es la **densidad**. En el sector de
+prueba la inversión sale sola y por eso es la aserción que manda:
+
+| Anillo | Usos | Por hectárea |
+|---|---|---|
+| hasta 200 m | 76 | **6,0** |
+| 200–400 m | 105 | 2,8 |
+| 400–750 m | 63 | 0,5 |
+
+**Contando, afuera hay más; midiendo, adentro hay el doble.** Hasta la v880 la
+barra más larga era la del segundo anillo — el que menos densidad tiene de los
+dos primeros.
+
+### El paso se elige, y se dice
+
+`PASOS = [200, 250, 500, 1000]`: el primero que deje ocho anillos o menos. Un
+sector de 750 m sale de 200 en 200; uno de 8 km, de 1.000. Va **impreso**
+—«Anillos de 200 m desde el centro»—, porque con el paso escrito dos láminas
+de radios distintos se pueden comparar y sin él no.
+
+### Un anillo flaco se junta con el siguiente, y lo dice
+
+Por debajo de **20 usos** un anillo no mide densidad, mide ruido: tres usos en
+una corona de 200 m dan una cifra que cambia de golpe si aparece un cuarto. Se
+junta con el que sigue y el resultado **lleva la marca `agrupado`** y la razón
+al pie. El último se pliega hacia **atrás**, porque no tiene siguiente — sin
+eso, un sector cuyo borde queda flaco imprimía un anillo de dos usos.
+
+Por eso la comprobación del ancho constante dice «salvo los que se agruparon»:
+un agrupado mide dos pasos y eso es correcto, no una excepción a la regla.
+
+### Agrupar no puede comerse el panel
+
+Lo cazó `tmasanalisis` y es el hallazgo que más vale de la tanda. Su sector
+tiene **47 usos**, así que con el paso de 200 m *todos* los anillos quedaban
+por debajo de veinte y la agrupación los fundía en **uno solo**. Los dos
+consumidores del dato —la sección del informe en hojas y el mapa de anillos—
+piden dos anillos para existir, así que el panel **desaparecía de la hoja
+entera**.
+
+**Perder el panel es peor que el anillo ruidoso que la agrupación viene a
+evitar.** Es la misma decisión de la v875 con la necesidad topada: no se
+arregla una exageración con una mentira más pequeña, ni un ruido con un
+silencio.
+
+Así que el paso **se elige por el radio y por los datos**: se prueba cada
+candidato de menor a mayor y se toma el primero que deje dos anillos o más.
+Si ninguno lo deja —un sector con muy poco mapeado—, se parte en dos mitades
+y **ahí no se agrupa**, porque agrupar es justamente lo que lo dejó en uno.
+Dos anillos de nueve usos cada uno, con su cifra a la vista, se juzgan solos;
+un panel ausente no se juzga.
+
+En el sector de `tmasanalisis` sale con paso de 250 m y dos anillos.
+
+**Y la comprobación vive ahí, no en `tdoslaminas`**: aquel sector es rico y
+nunca se agruparía entero, así que la aserción habría pasado sin tener nada
+que rechazar. Es la lección de la v874 otra vez — el material sobre el que se
+mide tiene que poder producir el fallo—, y esta vez no hizo falta empobrecer
+un fixture a propósito: ya había uno pobre, en otra suite.
+
+### Dos tropiezos de implementación
+
+* **Una propiedad puesta en el ARRAY desaparece.** `anillos.pasoM = paso` se
+  lee perfecto en el motor y `JSON.stringify` de un array **no serializa sus
+  propiedades**: llegaba `undefined` al navegador. Los `stats` cruzan
+  motor→cliente como JSON, así que lo que tenga que viajar va dentro de cada
+  elemento (`x.pasoM`), nunca colgado de la lista. Es primo del tropiezo de
+  `Object.assign` de la v877 y del de `R.estado()` de la v871: **las tres son
+  escribir en un sitio que no es el que se lee.**
+* **El radio equivalente de un polígono no es entero.** Salió impreso
+  «400–750.0842418048857 m». Se redondean los bordes a metros enteros **antes**
+  de calcular el área, para que la etiqueta y la densidad hablen del mismo
+  anillo.
+
+Y una de nombres: `const paso` ya existía en ese ámbito de `motor-reglas.js`,
+sesenta líneas más arriba. Obliga a `node construir.js` y a **reiniciar el
+servidor**.
+
+### Demostrado contra la v880
+
+Seis aserciones en rojo, con el texto viejo impreso: anchos `200 · 200 · 300`
+sin agrupar, ninguna densidad en la etiqueta, sin paso declarado, sin
+conclusión — y **la barra al 100 % en el segundo anillo**, el de 105 usos,
+mientras el primero tiene más del doble de densidad.
+
+Para demostrarlo hay que devolver **las dos mitades**: el `git stash` de
+`js/68` no toca `motor-reglas.js`, que vive en el otro repositorio, así que sin
+deshacer también allá —y sin `node construir.js` y reiniciar— se mide la hoja
+vieja contra el motor nuevo, que no es ninguna de las dos versiones.
+
+Y una de las pruebas: la aserción de que la barra más larga es la del anillo
+más denso tiene que **mirar la barra**. El lector de paneles sacaba solo el
+`textContent`, así que midiendo por el texto la comprobación habría pasado
+igual con las barras dibujadas por conteo. `anchoBarras` lee el ancho del `<u>`
+de cada una.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

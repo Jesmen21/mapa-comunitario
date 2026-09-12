@@ -566,6 +566,23 @@ const CAPAS_IDEAM = [
   T('y el rumbo que concentra, que no salía en ningún papel',
     /reúne <b>\d+ de \d+<\/b>/.test(AN) && /reúne <b>\d+ de \d+<\/b>/.test(PDF),
     (AN.match(/La mitad <b>[^<]+<\/b> reúne <b>\d+ de \d+/) || ['no lo dice'])[0]);
+  /* Este sector tiene POCOS usos —47—, y por eso es el que mide esto: la
+     agrupación de anillos flacos de la v881 se los comía todos en uno, y con
+     un anillo solo los dos consumidores —la sección del informe y el mapa—
+     se apagan y el panel DESAPARECE de la hoja. Perder el panel es peor que
+     el anillo ruidoso que la agrupación viene a evitar, así que el paso se
+     elige por los datos y nunca baja de dos anillos. Se comprueba acá y no
+     en `tdoslaminas` porque allá el sector es rico y nunca se agruparía
+     entero: una comprobación sobre un defecto necesita material que pueda
+     producirlo. */
+  /* La etiqueta de un anillo sale varias veces en la caja —la barra, la
+     convención del mapa, el rótulo— así que se cuentan las DISTINTAS. */
+  const ANL = [...new Set(AN.match(/(?:hasta \d+|\d+–\d+) m/g) || [])];
+  T('y son dos anillos o más, que uno solo no compara nada',
+    ANL.length >= 2, ANL.join(' · ') || 'ninguno');
+  T('cada uno con su densidad por hectárea, que es lo único comparable entre anillos',
+    (AN.match(/[\d,]+\/ha/g) || []).length >= ANL.length,
+    (AN.match(/[\d,]+\/ha/g) || []).join(' · ') || 'sin densidad');
 
   console.log('\n  -- la cobertura del suelo, en el pliego --');
   const CB = cajaDe('Cobertura del suelo');

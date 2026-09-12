@@ -517,7 +517,11 @@
       // Para la lista de campo y los anillos, que también se redibujan.
       rubros: (st.rubros || []).slice(0, 14),
       anillos: (st.anillos || []).map(function (a) {
+        /* `porHa`, `areaHa`, `pasoM` y `agrupado` viajan con la ficha guardada
+           (v881): sin ellos, un sector reanudado imprimía la tabla sin su
+           única columna comparable y sin decir de qué ancho son los anillos. */
         return { etiqueta: a.etiqueta, n: a.n, comercios: a.comercios, peso: a.peso,
+                 porHa: a.porHa, areaHa: a.areaHa, pasoM: a.pasoM, agrupado: a.agrupado,
                  ejemplos: (a.ejemplos || []).slice(0, 3) };
       })
     };
@@ -1978,27 +1982,60 @@
      sí, y de paso reparten la salida a campo: un grupo por anillo. Estaba en
      la ficha desde el principio y no llegaba a ningún documento, que es
      justamente donde hace falta —el reparto se imprime y se recorta—. */
+  /* ── §14 (v881) · la columna que se compara es la DENSIDAD ─────────────
+     La tabla imprimía el conteo de cada anillo, y los anillos tenían anchos
+     distintos: «400–700 m: 6 usos · 700–2.500 m: 2.637». Esa diferencia no es
+     del sector, es de que un anillo tenía veinticinco veces el área del otro.
+     Un anillo de r1 a r2 mide π(r2² − r1²), así que aun con ancho fijo el
+     área crece hacia afuera y el conteo sube solo.
+
+     Van las dos columnas: el conteo, porque es lo que se cuenta al salir a
+     campo, y los usos por hectárea, que es lo único comparable entre
+     anillos. La conclusión se saca de la densidad, no del conteo. */
   function anillosImpresos(st, esPol) {
     var an = ((st && st.anillos) || []).filter(function (a) { return a.n > 0; });
     if (an.length < 2) return '';
     var primero = an[0];
+    var paso = Number((an[0] || {}).pasoM) || 0;
+    var agrupados = an.filter(function (a) { return a.agrupado; }).length;
+    /* La comparación es del primer anillo contra el último: con densidades
+       iguales, el sector es igual de denso lejos que cerca, que es un dato y
+       no un defecto. Se dice en densidad, nunca en conteo. */
+    var ultimo = an[an.length - 1];
+    var cae = (primero.porHa && ultimo.porHa) ? primero.porHa / ultimo.porHa : null;
     return '<h2>Cómo cambia al alejarse</h2><table class="ancha">' +
+      '<tr><th>Anillo</th><th class="n">Usos</th><th class="n">Por ha</th></tr>' +
       an.map(function (a) {
         return '<tr><td>' + esc(a.etiqueta) +
+          (a.agrupado ? ' <i class="ag">agrupado</i>' : '') +
           ((a.ejemplos || []).length
             ? '<br><span class="ej">' + a.ejemplos.map(function (e) {
                 return esc(e.nombre) + ' (' + e.distM + ' m)';
               }).join(' · ') + '</span>'
             : '') +
-          '</td><td class="n">' + a.n + '</td></tr>';
+          '</td><td class="n">' + a.n + '</td>' +
+          '<td class="n">' + conComa(a.porHa != null ? a.porHa : 0) + '</td></tr>';
       }).join('') + '</table>' +
-      (primero && primero.n / Math.max(1, st.total) >= 0.5
-        ? '<p>Más de la mitad de lo registrado está <b>' + esc(primero.etiqueta) +
-          '</b>. Es un sector concentrado: se recorre a pie sin problema.</p>'
+      (cae != null
+        ? '<p>' + (cae >= 1.5
+            ? 'La actividad se concentra cerca: <b>' + conComa(Math.round(cae * 10) / 10) +
+              ' veces</b> más usos por hectárea en el primer anillo que en el último.'
+            : cae <= 0.67
+            ? 'La actividad <b>crece al alejarse</b>: el último anillo tiene más usos por ' +
+              'hectárea que el primero. El centro del análisis no es el centro de la actividad.'
+            : 'La densidad es pareja en todo el radio: no hay un núcleo, hay un tejido continuo.') +
+          '</p>'
         : '') +
-      '<p class="pie">Distancia medida desde el ' +
-      (esPol ? 'centro del área dibujada' : 'centro del círculo') +
-      '. Sirve para repartir el trabajo: un grupo por anillo.</p>';
+      '<p class="pie">Anillos de <b>' + (paso ? paso + ' m' : 'ancho constante') + '</b> desde el ' +
+      (esPol ? 'centro del área dibujada' : 'centro del círculo') + '. ' +
+      'La columna comparable es la de <b>usos por hectárea</b>: el conteo sube solo hacia afuera ' +
+      'porque el anillo tiene más área, no porque haya más actividad.' +
+      (agrupados
+        ? ' ' + agrupados + (agrupados === 1 ? ' anillo venía' : ' anillos venían') +
+          ' con menos de 20 usos y se ' + (agrupados === 1 ? 'juntó' : 'juntaron') +
+          ' con el siguiente: una densidad sobre tres o cuatro usos se mueve un tercio con uno más.'
+        : '') +
+      ' Sirve para repartir el trabajo: un grupo por anillo.</p>';
   }
 
   function inundacionImpresa(inu) {
@@ -4407,17 +4444,38 @@ function donaHTML(datos, colorDe, nombreDe) {
       'más activo según los datos.</p>'
       : '';
       if (an.length < 2) return conc;
-      var primero = an[0];
-      return barras(an, function (a) { return a.etiqueta; },
-      function (a) { return a.n; }, function (a) { return a.n; }) +
-      (primero.n / Math.max(1, st.total) >= 0.5
-      ? '<p class="lee">Más de la mitad de lo registrado está <b>' + esc(primero.etiqueta) +
-      '</b>: es un sector concentrado, se recorre a pie sin problema.</p>'
+      var primero = an[0], ultimo = an[an.length - 1];
+      var pasoA = Number(primero.pasoM) || 0;
+      var agrup = an.filter(function (a) { return a.agrupado; }).length;
+      /* §14 (v881) · Las barras se dibujan por DENSIDAD y no por conteo. Con
+         anillos de ancho constante el área crece hacia afuera —π(r2² − r1²)—,
+         así que una barra por conteo sube sola y dibuja una periferia activa
+         donde no la hay. El conteo se queda en la etiqueta, porque es lo que
+         se cuenta al salir a campo; lo que la barra COMPARA es la densidad. */
+      var cae = (primero.porHa && ultimo.porHa) ? primero.porHa / ultimo.porHa : null;
+      return barras(an, function (a) { return a.etiqueta + (a.agrupado ? ' ·agrupado' : ''); },
+      function (a) { return conComa(a.porHa || 0) + '/ha · ' + a.n + ' usos'; },
+      function (a) { return a.porHa || 0; }) +
+      (cae != null
+      ? '<p class="lee">' + (cae >= 1.5
+          ? 'La actividad se concentra cerca: <b>' + conComa(Math.round(cae * 10) / 10) +
+            ' veces</b> más usos por hectárea en el primer anillo que en el último.'
+          : cae <= 0.67
+          ? 'La actividad <b>crece al alejarse</b>: el último anillo tiene más usos por hectárea ' +
+            'que el primero. El centro del análisis no es el centro de la actividad.'
+          : 'La densidad es pareja en todo el radio: no hay un núcleo, hay un tejido continuo.') +
+        '</p>'
       : '') +
       conc +
-      '<p class="nota">Distancia medida desde el ' +
-      (esPol ? 'centro del área dibujada' : 'centro del círculo') +
-      '. Sirve para repartir el trabajo: un grupo por anillo.</p>';
+      '<p class="nota">Anillos de <b>' + (pasoA ? pasoA + ' m' : 'ancho constante') +
+      '</b> desde el ' + (esPol ? 'centro del área dibujada' : 'centro del círculo') +
+      '. La barra compara <b>usos por hectárea</b>, no el conteo: un anillo de afuera tiene más ' +
+      'área que uno de adentro, así que contando sube solo.' +
+      (agrup
+        ? ' ' + agrup + (agrup === 1 ? ' anillo traía' : ' anillos traían') + ' menos de 20 usos y se ' +
+          (agrup === 1 ? 'juntó' : 'juntaron') + ' con el siguiente.'
+        : '') +
+      ' Sirve para repartir el trabajo: un grupo por anillo.</p>';
       })(), 'g3') +
       
       caja('Hitos y nodos',
@@ -7700,6 +7758,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.coh-pasa b{ color:#1B8A5A }' +
       '.coh-falla{ color:#B42318 }' +
       '.coh-falla b, .coh-falla i{ color:#B42318 }' +
+      '.ag{ font-style:normal; font-size:2.2mm; letter-spacing:.08em; text-transform:uppercase;' +
+        'color:#8A6D3B; background:#FDF3E3; border-radius:.8mm; padding:.2mm 1mm; margin-left:1.2mm }' +
       '.coh-sin-dato{ color:#8A6D3B }' +
       '.coh-sin-dato b, .coh-sin-dato i{ color:#8A6D3B }' +
       /* La contradicción entre láminas pesa más que un chequeo fallado y se
