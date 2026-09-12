@@ -407,6 +407,11 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               banda: (c.closest('.banda') || {}).className || '',
               barras: [...c.querySelectorAll('.barras > .b')].map(x =>
                 x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
+              // Los pares SECTOR | CIUDAD | DIFERENCIA de la comparación
+              // contra la ciudad (§9): se leen como filas, no como texto
+              // corrido, porque la comprobación es sobre cada uno.
+              pares: [...c.querySelectorAll('.pares > .par:not(.par-cab)')].map(x =>
+                x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
               caras: [...c.querySelectorAll('.manzanas svg path')].length,
               cuadros: [...c.querySelectorAll('.grano svg g')].map(g => {
                 const r = g.querySelector('rect'), t = [...g.querySelectorAll('text')];
@@ -724,11 +729,37 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        buscarlo». */
     T('y dice qué comparaciones todavía no puede hacer, con su fuente',
       CD.vacios.some(x => /todavía no se puede comparar/.test(x)) &&
-      CD.falta.length >= 3 && CD.falta.every(x => /[Hh]aría falta/.test(x)),
+      CD.falta.length >= 2 && CD.falta.every(x => /[Hh]aría falta/.test(x)),
       CD.falta.map(x => x.slice(0, 38)).join(' | '));
-    T('entre ellas la estructura de edades y la densidad de la ciudad',
-      /estructura de edades de la ciudad/i.test(CD.falta.join(' ')) &&
-      /densidad de la ciudad/i.test(CD.falta.join(' ')));
+    /* Hasta la v875 estas dos líneas exigían que la hoja declarara faltando
+       «la estructura de edades» y «la densidad de la ciudad». La v876 las
+       MIDE —el mismo censo por manzana, corrido sobre el municipio entero en
+       una sola consulta— así que la comprobación se da vuelta: ahora lo que
+       tiene que fallar es declararlas ausentes. Es la clase de la v864 otra
+       vez, y por eso el par correspondiente entra en `PARES` más abajo. */
+    T('la pirámide del sector va SOBREPUESTA a la de la ciudad, no aparte',
+      /Pirámide del sector sobre la de/.test(CD.texto) && /Barra azul: el sector/.test(CD.texto),
+      (CD.texto.match(/Pirámide del sector[^.]{0,60}/) || ['no la sobrepone'])[0]);
+    T('y cada cifra se imprime como par sector · ciudad · diferencia',
+      CD.pares.length >= 3 && CD.pares.some(x => /hab\/ha/.test(x)) &&
+      CD.pares.some(x => /pp$|pp\b/.test(x)),
+      CD.pares.slice(0, 3).join(' | ').slice(0, 150));
+    /* La diferencia entre dos porcentajes va en PUNTOS porcentuales y la de
+       dos magnitudes en porcentaje relativo: «12 % contra 8 %» es +4 pp, no
+       +50 %, y confundirlas es de los errores que nadie revisa dos veces. */
+    T('y distingue puntos porcentuales de diferencia relativa',
+      /puntos porcentuales/.test(CD.texto) && /no se dividen/.test(CD.texto),
+      (CD.texto.match(/son puntos porcentuales[^.]{0,60}/) || ['no lo distingue'])[0]);
+    T('ya no declara faltando la pirámide ni la densidad de la ciudad',
+      !/estructura de edades de la ciudad/i.test(CD.falta.join(' ')) &&
+      !/La densidad de la ciudad/.test(CD.falta.join(' ')),
+      CD.falta.map(x => x.slice(0, 44)).join(' | ') || 'no declara nada');
+    /* Y lo que de verdad sigue faltando sí se declara: son de OTRA fuente
+       —OpenStreetMap sobre el municipio entero— y por eso no vienen con la
+       columna de la derecha. */
+    T('pero sí lo que pide una corrida municipal de OpenStreetMap',
+      /Espacio público, densidad de usos y cobertura de equipamientos/.test(CD.falta.join(' ')),
+      CD.falta.map(x => x.slice(0, 44)).join(' | '));
   }
   /* Y la escala: es una cifra de MUNICIPIO impresa al lado de las del
      sector, que es exactamente el error que la tabla de escalas evita. */
@@ -1094,7 +1125,20 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        cuatro, que fue escribir la carencia de memoria. */
     { que: 'el estrato del sector',
       mide: t => /Estrato predominante/.test(t),
-      niega: t => /(el )?estrato[^.]{0,40}(sin dato|no se conoce|no lo trae)/i.test(t) }
+      niega: t => /(el )?estrato[^.]{0,40}(sin dato|no se conoce|no lo trae)/i.test(t) },
+    /* §9 (v876): la pirámide y la densidad DE LA CIUDAD. Eran dos de las
+       tres carencias que el panel declaraba, y se midieron corriendo el mismo
+       censo por manzana sobre el municipio entero. El par va acá por la regla
+       de la v864 —una tanda que mide algo que se declaraba faltante agrega su
+       par—, que es justo lo que la v865 se saltó. */
+    { que: 'la pirámide de la ciudad, sobrepuesta a la del sector',
+      mide: t => /Pirámide del sector sobre la de/.test(t),
+      niega: t => /(estructura de edades|pirámide)[^.]{0,60}de la ciudad[^.]{0,60}(haría falta|no|falta)/i.test(t) ||
+                  /CNPV 2018 agregado por municipio/.test(t) },
+    { que: 'la densidad de la ciudad',
+      mide: t => /hab\/ha<\/b>\s*<b class="par-c">|par-c">[\d.,]+ hab\/ha/.test(t) ||
+                 /Densidad[^<]*<\/i><b class="par-s">/.test(t),
+      niega: t => /La densidad de la ciudad\.<\/b>/.test(t) }
   ];
   const textoB = (r.soloB || '') + (r.soloA || '');
   const plano = textoB.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');

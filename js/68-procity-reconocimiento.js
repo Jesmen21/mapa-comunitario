@@ -1224,6 +1224,96 @@
     return 'ocupa cerca del ' + Math.round(pct) + ' %';
   }
 
+  /* ── El par SECTOR | CIUDAD | DIFERENCIA (§9, v876) ───────────────────
+     El pliego: «cada indicador del sector se imprime en formato de par». Una
+     cifra suelta no se puede juzgar —«1.200 habitantes» no dice nada— y la
+     diferencia es lo que un jurado discute. Va como una fila de tres celdas
+     para que se lea en vertical toda la columna de diferencias de un golpe.
+
+     La diferencia se imprime en PUNTOS PORCENTUALES cuando las dos cifras ya
+     son porcentajes, y en porcentaje relativo cuando son magnitudes. Son
+     cosas distintas: «12 % contra 8 %» es +4 puntos, no +50 %, y confundirlas
+     es de los errores que nadie revisa dos veces. */
+  function parConCiudad(etq, valSector, valCiudad, unidad, esPct) {
+    var n = function (x) { return conComa(Math.round(Number(x) * 10) / 10); };
+    if (valCiudad == null || !isFinite(Number(valCiudad))) {
+      return '<div class="par sin"><i class="par-k">' + esc(etq) + '</i>' +
+        '<b class="par-s">' + (valSector == null ? '—' : n(valSector) + (unidad || '')) + '</b>' +
+        '<b class="par-c">sin dato</b><small class="par-d">no comparable</small></div>';
+    }
+    var vs = Number(valSector), vc = Number(valCiudad);
+    var dif, signo;
+    if (esPct) {
+      dif = Math.round((vs - vc) * 10) / 10;
+      signo = (dif > 0 ? '+' : '') + conComa(dif) + ' pp';
+    } else {
+      var rel = vc ? Math.round(1000 * (vs - vc) / vc) / 10 : null;
+      signo = rel == null ? '—' : (rel > 0 ? '+' : '') + conComa(rel) + ' %';
+      dif = rel;
+    }
+    var tono = dif == null ? '' : (Math.abs(dif) < (esPct ? 2 : 10) ? ' igual' : (dif > 0 ? ' mas' : ' menos'));
+    return '<div class="par' + tono + '"><i class="par-k">' + esc(etq) + '</i>' +
+      '<b class="par-s">' + n(vs) + (unidad || '') + '</b>' +
+      '<b class="par-c">' + n(vc) + (unidad || '') + '</b>' +
+      '<small class="par-d">' + signo + '</small></div>';
+  }
+  /* Por qué no hay columna de ciudad, con las mismas palabras que el estado
+     que llegó. Cada uno significa una cosa distinta y pide una acción
+     distinta: repetir con señal, corregir el patrón del campo, o nada. */
+  function razonSinCiudad(C) {
+    var e = (C && C.estado) || 'sin-respuesta';
+    if (e === 'sin-municipio')
+      return 'El municipio no está en la tabla de proyecciones del repositorio ' +
+        '(assets/data/dane-proyecciones.json), así que no hay contra qué comparar. ' +
+        'Aplicarle a un municipio la cifra del vecino es peor que no comparar.';
+    if (e === 'sin-preguntar')
+      return 'No se pudo leer la lista de campos de la capa del censo —sin señal, o el ' +
+        'servicio no contestó—. NO quiere decir que la comparación sea imposible: ' +
+        'quiere decir que no se preguntó. Repetir el análisis con conexión lo resuelve.';
+    if (e === 'sin-campo')
+      return 'La capa del censo declara ' + ((C && C.campos) || '?') + ' campos y ninguno es el ' +
+        'código de municipio' +
+        (C && C.muestra && C.muestra.length ? ' (empiezan por ' + C.muestra.slice(0, 6).join(', ') + ')' : '') +
+        '. No es una suposición: cualquiera abre la misma capa y lee sus campos. Si el DANE lo ' +
+        'deletrea de otra forma, ahí se ve cuál es el patrón que falta.';
+    return 'La capa no devolvió cifras para el código de este municipio' +
+      (C && C.campo ? ' con el campo ' + C.campo : '') + '. Repetir el análisis lo reintenta.';
+  }
+
+  /* Lo que sigue sin comparar, y por qué. La lista se ENCOGE a medida que la
+     referencia de ciudad trae cosas: un renglón que pide algo que ya está en
+     la columna de la derecha es la misma clase de mentira que perseguimos
+     desde la v861, dicha en el panel en vez de en la bitácora. */
+  function faltanDeCiudad(hayC, C, dens) {
+    var out = [];
+    if (!hayC || !C || C.densidadPorHa == null)
+      out.push(['La densidad de la ciudad',
+        'el área urbana del municipio (IGAC o el POT), o que la capa del censo publique ' +
+        'Shape__Area: sin ella, los ' + (dens != null ? conComa(dens) + ' hab/ha' : 'habitantes por hectárea') +
+        ' del sector no tienen contra qué medirse']);
+    if (!hayC || !C || !C.estrato)
+      out.push(['El estrato de la ciudad',
+        'que la capa de estrato por manzana conteste agrupada por municipio']);
+    if (!hayC || !C || !C.escolaridad)
+      out.push(['La escolaridad de la ciudad',
+        'que la capa del censo exponga los campos de nivel educativo, que son los mismos ' +
+        'que el sector ya usa']);
+    /* Estas tres piden una corrida de OpenStreetMap sobre el municipio
+       entero, que es otra cosa y por eso se nombra aparte. */
+    out.push(['Espacio público, densidad de usos y cobertura de equipamientos de la ciudad',
+      'correr el análisis de OpenStreetMap sobre el municipio entero y guardarlo, igual que ' +
+      'se guarda el censo: son de otra fuente y por eso no vienen con la columna de arriba']);
+    out.push(['Desempleo y cobertura de servicios',
+      'las tablas municipales del DANE, que se publican aparte del censo por manzana']);
+    return out;
+  }
+
+  function cabeceraPar(nombreCiudad) {
+    return '<div class="par par-cab"><i class="par-k">Indicador</i>' +
+      '<b class="par-s">Sector</b><b class="par-c">' + esc(nombreCiudad || 'Ciudad') + '</b>' +
+      '<small class="par-d">Diferencia</small></div>';
+  }
+
   function centroDeAnalisis() {
     if (S.forma === 'poligono' && S.poligono && S.poligono.length >= 3) {
       return centroideDe(S.poligono);
@@ -4648,17 +4738,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Lo que SÍ se puede comparar hoy, y lo que no. La lista de lo que no
          no es relleno: cada línea nombra la tabla que lo resolvería, que es
          la diferencia entre «no se sabe» y «nadie fue a buscarlo». */
-      var faltan = [
-        ['La estructura de edades de la ciudad',
-         'el CNPV 2018 agregado por municipio; el módulo lee el censo por manzana ' +
-         'y esa consulta no trae el total municipal'],
-        ['La densidad de la ciudad',
-         'el área urbana del municipio (IGAC o el POT): sin ella, los ' +
-         (dens != null ? conComa(dens) + ' hab/ha' : 'habitantes por hectárea') +
-         ' del sector no tienen contra qué medirse'],
-        ['El estrato y la escolaridad de la ciudad',
-         'las tablas municipales del DANE, que se consultan aparte del censo por manzana']
-      ];
+      /* La lista de lo que NO se puede comparar la arma `faltanDeCiudad`, y
+         se encoge sola a medida que la referencia de ciudad trae cosas. */
       if (!ciudad) {
         return '<p class="vacio-tag">Sin referencia de ciudad para comparar</p>' +
           '<p class="vacio-falta"><b>Haría falta</b> que ' +
@@ -4671,6 +4752,54 @@ function donaHTML(datos, colorDe, nombreDe) {
           ', y esta lámina no puede decir si eso es mucho o poco acá.</p>';
       }
       var pct = Math.round(10000 * hab / ciudad) / 100;
+      /* §9 · La referencia de ciudad, del MISMO censo por manzana que el
+         sector. Llega por `stats.ciudad` con su estado: no es null nunca,
+         porque «no se pudo preguntar» y «la capa no expone el código de
+         municipio» se imprimen distinto y un null los confundiría. */
+      var C = st.ciudad || null;
+      var hayC = C && C.estado === 'ok';
+      var demo = st.demografia || (st.dane && st.dane.demografia) || null;
+      var estrS = st.estratos || (st.dane && st.dane.estrato) || null;
+
+      /* Los pares. Solo entran los indicadores de los que HAY cifra de
+         ciudad: comparar contra un hueco no es comparar. */
+      var pares = [];
+      if (hayC) {
+        if (dens != null && C.densidadPorHa != null)
+          pares.push(parConCiudad('Densidad', dens, C.densidadPorHa, ' hab/ha', false));
+        if (demo && demo.pctMayores != null && C.tramos) {
+          var cMay = (C.tramos.filter(function (t) { return t.id === 'mayores'; })[0] || {}).pct;
+          var cNin = (C.tramos.filter(function (t) { return t.id === 'ninos'; })[0] || {}).pct;
+          if (cMay != null) pares.push(parConCiudad('65 años o más', demo.pctMayores, cMay, ' %', true));
+          if (cNin != null) pares.push(parConCiudad('Menores de 15', demo.pctNinos, cNin, ' %', true));
+        }
+        if (demo && demo.pctMujeres != null && C.mujeres != null && (C.mujeres + C.hombres) > 0)
+          pares.push(parConCiudad('Mujeres', demo.pctMujeres,
+            Math.round(1000 * C.mujeres / (C.mujeres + C.hombres)) / 10, ' %', true));
+      }
+
+      /* La pirámide del sector SOBREPUESTA a la de la ciudad, que es lo que
+         el pliego pide —«no en gráfico aparte»—: la silueta de la ciudad va
+         detrás, en gris, y la del sector encima. Así se lee de un golpe si
+         el sector es más viejo o más joven que su ciudad. */
+      var sobre = '';
+      if (hayC && demo && (demo.tramos || []).length && (C.tramos || []).length) {
+        var maxP = Math.max.apply(null, demo.tramos.map(function (t) { return t.pct; })
+          .concat(C.tramos.map(function (t) { return t.pct; })).concat([1]));
+        sobre = '<p class="lee-min">Pirámide del sector sobre la de ' + esc(nombre) + '</p>' +
+          '<div class="pir2">' + demo.tramos.map(function (t, i) {
+            var c = C.tramos[i] || { pct: 0 };
+            return '<div class="pir2-f"><i>' + esc(t.etiqueta) + '</i>' +
+              '<span class="pir2-b">' +
+                '<u class="pir2-c" style="width:' + Math.round(100 * c.pct / maxP) + '%"></u>' +
+                '<u class="pir2-s" style="width:' + Math.round(100 * t.pct / maxP) + '%"></u>' +
+              '</span><b>' + conComa(t.pct) + ' % · ' + conComa(c.pct) + ' %</b></div>';
+          }).join('') + '</div>' +
+          '<p class="nota">Barra azul: el sector. Barra gris de atrás: ' + esc(nombre) + '. ' +
+          'Los dos repartos salen de la misma capa del censo de 2018 y de los mismos ' +
+          'veintiún tramos de edad, así que la diferencia es del sector y no del método.</p>';
+      }
+
       return '<div class="kpis">' +
         '<div class="k"><b>' + conComa(pct) + '%</b><small>de ' + esc(nombre) + ' vive acá</small></div>' +
         '<div class="k"><b>' + mil(hab) + '</b><small>en el sector</small></div>' +
@@ -4678,12 +4807,24 @@ function donaHTML(datos, colorDe, nombreDe) {
         fila('Población de ' + esc(nombre), mil(ciudad) +
           (st.anioProyeccion ? ' (proyectada a ' + st.anioProyeccion + ')' : '')) +
         (dens != null ? fila('Densidad del sector', conComa(dens) + ' hab/ha') : '') +
+        (pares.length
+          ? '<p class="lee-min">Cada cifra contra la de la ciudad</p>' +
+            '<div class="pares">' + cabeceraPar(nombre) + pares.join('') + '</div>' +
+            '<p class="nota">La columna de ' + esc(nombre) + ' sale de correr el mismo censo por ' +
+            'manzana sobre el municipio entero' +
+            (C.manzanas ? ' (' + mil(C.manzanas) + ' manzanas censales)' : '') +
+            ', una sola vez y guardado. Las diferencias en <b>pp</b> son puntos porcentuales ' +
+            '—dos porcentajes se restan, no se dividen—; las demás son diferencia relativa.</p>'
+          : '') +
+        sobre +
         '<p class="lee">Uno de cada <b>' + mil(Math.max(1, Math.round(ciudad / Math.max(1, hab)))) +
         '</b> habitantes de ' + esc(nombre) + ' vive en este sector. Las dos cifras salen de la ' +
         'misma serie del DANE y del mismo año: comparar el censo de 2018 con una proyección de hoy ' +
         'fabricaría una diferencia que no existe.</p>' +
+        (hayC ? '' : '<p class="vacio-tag">Por qué no hay columna de ciudad</p>' +
+          '<p class="vacio-falta">' + esc(razonSinCiudad(C)) + '</p>') +
         '<p class="vacio-tag">Lo que todavía no se puede comparar con la ciudad</p>' +
-        faltan.map(function (f) {
+        faltanDeCiudad(hayC, C, dens).map(function (f) {
           return '<p class="vacio-falta"><b>' + esc(f[0]) + '.</b> Haría falta ' + f[1] + '.</p>';
         }).join('');
       })(), 'g3') +
@@ -6551,6 +6692,31 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
       '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
       '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
+      /* §9 · El par SECTOR | CIUDAD | DIFERENCIA. Cuatro columnas fijas para
+         que la de diferencia se lea en vertical de un golpe: es la columna
+         que un jurado recorre primero. */
+      '.pares{ display:flex; flex-direction:column; gap:0.6mm; margin-top:1.5mm }' +
+      '.par{ display:grid; grid-template-columns:1fr auto auto 15mm; gap:2mm; align-items:baseline;' +
+        ' padding:0.9mm 1.6mm; border-radius:0.8mm; background:#F4F7FA }' +
+      '.par-cab{ background:none; border-bottom:0.3mm solid #C9D6E2; border-radius:0; padding-bottom:0.5mm }' +
+      '.par-cab .par-s, .par-cab .par-c{ font-size:2.6mm; font-weight:600; color:#5A6472 }' +
+      '.par-k{ font-style:normal; font-size:2.9mm; color:#2B3A48 }' +
+      '.par-s{ font-size:3.2mm; color:#0A6F9E; font-variant-numeric:tabular-nums }' +
+      '.par-c{ font-size:3.2mm; color:#6B7684; font-variant-numeric:tabular-nums }' +
+      '.par-d{ font-size:2.8mm; text-align:right; font-variant-numeric:tabular-nums; color:#5A6472 }' +
+      '.par.mas .par-d{ color:#0B6E4F } .par.menos .par-d{ color:#A8401B }' +
+      '.par.igual .par-d{ color:#6B7684 } .par.sin .par-c, .par.sin .par-d{ color:#98A4B0 }' +
+      /* La pirámide del sector SOBRE la de la ciudad: la gris detrás, la
+         azul encima, las dos a la misma escala. Sobreponerlas es el pedido
+         —«no en gráfico aparte»— y es lo que deja ver de un vistazo si el
+         sector es más viejo o más joven que su ciudad. */
+      '.pir2{ display:flex; flex-direction:column; gap:0.8mm; margin-top:1.2mm }' +
+      '.pir2-f{ display:grid; grid-template-columns:22mm 1fr auto; gap:1.6mm; align-items:center }' +
+      '.pir2-f > i{ font-style:normal; font-size:2.7mm; color:#2B3A48 }' +
+      '.pir2-f > b{ font-size:2.6mm; color:#5A6472; font-variant-numeric:tabular-nums }' +
+      '.pir2-b{ position:relative; display:block; height:3.4mm; background:#EDF2F6; border-radius:0.6mm }' +
+      '.pir2-c{ position:absolute; left:0; top:0; height:100%; background:#C3CED8; border-radius:0.6mm }' +
+      '.pir2-s{ position:absolute; left:0; top:0.8mm; height:1.8mm; background:#0A6F9E; border-radius:0.5mm }' +
       /* Lo que hay que ir a comprobar: ámbar y a trazos, el mismo código
          visual que los cinco vacíos obligatorios de la v849. Es deliberado —
          las dos cosas son lo mismo dicho en dos sitios: un dato que no está,

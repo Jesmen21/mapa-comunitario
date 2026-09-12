@@ -1170,6 +1170,190 @@
     };
   }
 
+  /* ══ LA CIUDAD ENTERA, COMO REFERENCIA FIJA (§9, v876) ═══════════════
+     El pliego de ajustes: «solo se comparó el 9,67 % de población. Estrato,
+     escolaridad, densidad y pirámide no se compararon… Es justo donde el
+     análisis gana o pierde». Y da la solución: **correr el análisis del
+     municipio UNA vez y guardar esas cifras como referencia fija.**
+
+     Para la mitad que sale del censo no hace falta ni Overpass ni radicar
+     nada: es la MISMA capa del DANE que ya se consulta por radio, filtrada
+     por código de municipio en vez de por geometría. Una sola petición, y el
+     servidor agrega todas las manzanas censales del municipio.
+
+     El problema es que no sabemos cómo se llama el campo del código. Se
+     resuelve igual que la v865 y por la misma razón: **se le pregunta a la
+     capa** (`camposDeCapa`) y se busca por patrón. Si ninguno corresponde,
+     se declara con la lista de campos como prueba — nunca se supone.
+
+     Se guarda por municipio y dura 30 días: el censo de 2018 no cambia, pero
+     una caché eterna es una que nadie puede corregir. */
+  const LS_CIUDAD = 'urbis_censo_ciudad_v1';
+  const CIUDAD_DURA_MS = 30 * 24 * 60 * 60 * 1000;
+  // Cómo suele llamarse el código de municipio en las capas del DANE. El
+  // orden importa: el primero que case es el que se usa.
+  const CAMPO_MPIO = /^(COD_DANE_MPIO|MPIO_CDPMP|COD_MPIO|CODIGO_MPIO|DPTOMPIO|COD_DANE|MPIO_CCDGO)$/i;
+
+  function leerCiudad(divipola) {
+    try {
+      const g = JSON.parse(localStorage.getItem(LS_CIUDAD) || 'null');
+      if (!g || g.divipola !== String(divipola)) return null;
+      if (Date.now() - (Number(g.t) || 0) > CIUDAD_DURA_MS) return null;
+      return g.datos || null;
+    } catch (e) { return null; }
+  }
+  function guardarCiudad(divipola, datos) {
+    // Un vacío no se guarda, por la misma razón que un Overpass vacío no se
+    // guarda (v851): publicar un cero falso cuesta más que repetir la consulta.
+    if (!datos || !datos.poblacion) return;
+    try {
+      localStorage.setItem(LS_CIUDAD,
+        JSON.stringify({ divipola: String(divipola), t: Date.now(), datos: datos }));
+    } catch (e) {}
+  }
+
+  /* La referencia de la ciudad: población, pirámide, estrato, escolaridad y
+     el área censada. Devuelve SIEMPRE un objeto —nunca null— porque «no se
+     pudo» y «la capa no lo expone» son estados distintos que la lámina
+     imprime distinto, y un null los confunde en uno solo. */
+  async function censoCiudad(divipola, nombre) {
+    const dane = String(divipola || '').replace(/\D/g, '');
+    if (!dane) return { estado: 'sin-municipio', razon: 'el municipio no está en la tabla de proyecciones' };
+    const guardado = leerCiudad(dane);
+    if (guardado) return guardado;
+
+    const campos = await camposDeCapa(DANE_CAPAS.personasManzana);
+    if (!campos) {
+      return { estado: 'sin-preguntar',
+               razon: 'no se pudo leer la lista de campos de la capa del censo' };
+    }
+    const campo = (campos.filter(c => CAMPO_MPIO.test(String(c.nombre || '')))[0] || {}).nombre;
+    if (!campo) {
+      /* El estado que cambia la naturaleza de la afirmación: «la capa declara
+         N campos y ninguno es el código de municipio» lo comprueba cualquiera
+         abriendo el mismo enlace. */
+      return { estado: 'sin-campo', campos: campos.length,
+               muestra: campos.slice(0, 8).map(c => c.nombre),
+               razon: 'la capa no expone un campo de código de municipio' };
+    }
+
+    const stats = [
+      { statisticType:'sum',   onStatisticField:'SEXO_TOTAL', outStatisticFieldName:'TOTAL' },
+      { statisticType:'sum',   onStatisticField:'SEXO_M',     outStatisticFieldName:'MUJ' },
+      { statisticType:'sum',   onStatisticField:'SEXO_H',     outStatisticFieldName:'HOM' },
+      { statisticType:'count', onStatisticField:'OBJECTID',   outStatisticFieldName:'N' }
+    ].concat(EDADES.map(e => ({
+      statisticType:'sum', onStatisticField:'EDAD_' + e, outStatisticFieldName:'E' + e
+    })));
+    const p = new URLSearchParams();
+    p.set('where', campo + " = '" + dane + "'");
+    p.set('outStatistics', JSON.stringify(stats));
+    p.set('f', 'json');
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p, 45000);
+    const a = d && d.features && d.features[0] && d.features[0].attributes;
+    if (!a || !a.TOTAL) {
+      return { estado: 'sin-respuesta', campo: campo,
+               razon: 'la capa no devolvió cifras para el código ' + dane };
+    }
+
+    const tramos = TRAMOS.map(t => ({
+      id: t.id, etiqueta: t.etiqueta,
+      personas: t.campos.reduce((s2, c) => s2 + (a['E' + c] || 0), 0)
+    }));
+    const totalEdad = tramos.reduce((s2, t) => s2 + t.personas, 0) || 1;
+    tramos.forEach(t => { t.pct = Math.round(1000 * t.personas / totalEdad) / 10; });
+
+    /* El estrato y la escolaridad de la ciudad, por el mismo camino. No
+       bloquean: si una de las dos no contesta, la otra se compara igual y la
+       que falta se declara. */
+    let estrato = null, escolaridad = null, areaM2 = null;
+    try { estrato = await estratoCiudad(campo, dane); } catch (e) {}
+    try { escolaridad = await escolaridadCiudad(campo, dane); } catch (e) {}
+    try { areaM2 = await areaCensadaCiudad(campo, dane); } catch (e) {}
+
+    const out = {
+      estado: 'ok', divipola: dane, nombre: nombre || '', campo: campo,
+      poblacion: Math.round(a.TOTAL), manzanas: a.N || 0,
+      mujeres: a.MUJ || 0, hombres: a.HOM || 0,
+      tramos: tramos, totalEdad: totalEdad,
+      estrato: estrato, escolaridad: escolaridad,
+      /* El área CENSADA, que no es el perímetro urbano del POT: es la suma
+         del área de las manzanas censales urbanas. Sirve para una densidad
+         comparable con la del sector —las dos sobre manzana censal— y por eso
+         se nombra así y no «área urbana». */
+      areaCensadaM2: areaM2,
+      densidadPorHa: (areaM2 > 0) ? Math.round(10 * a.TOTAL / (areaM2 / 10000)) / 10 : null,
+      censo: 2018
+    };
+    guardarCiudad(dane, out);
+    return out;
+  }
+
+  async function estratoCiudad(campo, dane) {
+    const p = new URLSearchParams();
+    p.set('where', campo + " = '" + dane + "'");
+    p.set('groupByFieldsForStatistics', 'ESTRATO_PREDOMINANTE');
+    p.set('outStatistics', JSON.stringify([
+      { statisticType:'count', onStatisticField:'OBJECTID', outStatisticFieldName:'N' }
+    ]));
+    p.set('f', 'json');
+    const d = await consultaDANE(DANE_CAPAS.estratoManzana, p, 45000);
+    if (!d || !d.features || !d.features.length) return null;
+    const filas = d.features.map(f => ({
+      etiqueta: String((f.attributes || {}).ESTRATO_PREDOMINANTE || ''),
+      manzanas: Number((f.attributes || {}).N) || 0
+    })).filter(x => x.etiqueta && x.manzanas > 0);
+    if (!filas.length) return null;
+    const total = filas.reduce((s2, x) => s2 + x.manzanas, 0);
+    filas.forEach(x => { x.pct = Math.round(1000 * x.manzanas / total) / 10; });
+    return { filas: filas, manzanas: total };
+  }
+
+  async function escolaridadCiudad(campo, dane) {
+    const campos = await camposDeCapa(DANE_CAPAS.personasManzana);
+    if (!campos) return null;
+    const b = BLOQUES_CENSO.filter(x => x.id === 'escolaridad')[0];
+    if (!b) return null;
+    const mios = campos.filter(c => b.re.test(String(c.nombre || '')) && TIPOS_NUM.test(String(c.tipo || '')));
+    if (!mios.length) return null;
+    const p = new URLSearchParams();
+    p.set('where', campo + " = '" + dane + "'");
+    p.set('outStatistics', JSON.stringify(mios.map((c, i) => ({
+      statisticType:'sum', onStatisticField: c.nombre, outStatisticFieldName:'C' + i
+    }))));
+    p.set('f', 'json');
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p, 45000);
+    const a = d && d.features && d.features[0] && d.features[0].attributes;
+    if (!a) return null;
+    const filas = mios.map((c, i) => ({
+      campo: c.nombre, etiqueta: etiquetaDeCampo(c.nombre, c.alias, b.re),
+      n: Math.round(Number(a['C' + i]) || 0)
+    })).filter(x => x.n > 0);
+    if (!filas.length) return null;
+    const total = filas.reduce((s2, x) => s2 + x.n, 0);
+    filas.forEach(x => { x.pct = Math.round(1000 * x.n / total) / 10; });
+    return { filas: filas, total: total };
+  }
+
+  /* El área de las manzanas censales del municipio. ArcGIS publica
+     `Shape__Area` en metros cuadrados cuando la capa está en un sistema
+     proyectado; si no está, se devuelve null y la densidad de la ciudad se
+     declara sin dato en vez de inventarse un área. */
+  async function areaCensadaCiudad(campo, dane) {
+    const campos = await camposDeCapa(DANE_CAPAS.personasManzana);
+    const tieneArea = (campos || []).some(c => /^shape__area$/i.test(String(c.nombre || '')));
+    if (!tieneArea) return null;
+    const p = new URLSearchParams();
+    p.set('where', campo + " = '" + dane + "'");
+    p.set('outStatistics', JSON.stringify([
+      { statisticType:'sum', onStatisticField:'Shape__Area', outStatisticFieldName:'A' }
+    ]));
+    p.set('f', 'json');
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p, 45000);
+    const a = d && d.features && d.features[0] && d.features[0].attributes;
+    return (a && Number(a.A) > 0) ? Number(a.A) : null;
+  }
+
   async function distribucionEstrato(lat, lng, radioM){
     const p = paramsRadio(lat, lng, radioM);
     p.set('groupByFieldsForStatistics', 'ESTRATO_PREDOMINANTE');
@@ -1331,6 +1515,13 @@
     let proy = null;
     try { proy = await proyeccionDe(municipio); } catch(e) { proy = null; }
 
+    /* La ciudad entera como referencia (§9). Va DESPUÉS de la proyección
+       porque necesita el divipola, y no bloquea: si no contesta, la lámina
+       imprime el estado que sea y compara lo que pueda. */
+    let ciudad = null;
+    try { ciudad = await censoCiudad(proy ? proy.divipola : '', proy ? proy.municipio : ''); }
+    catch(e) { ciudad = { estado: 'sin-respuesta', razon: 'la consulta municipal falló' }; }
+
     return {
       poblacion: poblacion.total,
       unidades: poblacion.unidades,
@@ -1365,7 +1556,13 @@
       anioProyeccion: new Date().getFullYear(),
       fuenteProyeccion: proy ? proy.fuente : '',
       urlProyeccion: proy ? proy.url : '',
-      advertenciaProyeccion: proy ? proy.advertencia : ''
+      advertenciaProyeccion: proy ? proy.advertencia : '',
+      /* La ciudad entera, del mismo censo y por el mismo camino que el
+         sector: es lo que permite imprimir cada cifra como par
+         SECTOR | CIUDAD | DIFERENCIA en vez de suelta. Nunca es null —
+         trae su `estado`, porque «no se pudo preguntar» y «la capa no lo
+         expone» se imprimen distinto. */
+      ciudad: ciudad
     };
   }
 
@@ -1379,6 +1576,9 @@
                        consultarElevacion, rejillaDe, consultarClima,
                        consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR,
                        camposDeCapa, censoAmpliado, BLOQUES_CENSO,
+                       // La referencia de ciudad, a la vista para poder
+                       // comprobarla sin montar un análisis entero.
+                       censoCiudad,
                        /* El techo aprendido, a la vista: lo lee la ficha para
                           poder decir por qué salió en ligero, y las pruebas
                           para comprobar que se aprende y se olvida. */

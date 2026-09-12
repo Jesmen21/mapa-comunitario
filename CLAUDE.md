@@ -1166,6 +1166,101 @@ función no existe» y no por el defecto. Las que valen son las que enseñan el
 texto viejo. Una demostración por stash completo es tosca; sirve cuando el
 texto viejo sale impreso en el fallo, como acá.
 
+## La ciudad entera como referencia fija (v876)
+
+§9 del pliego de ajustes, y una de sus dos prioridades declaradas: «solo se
+comparó el 9,67 % de población. Estrato, escolaridad, densidad y pirámide no
+se compararon, y la lámina lo confiesa en tres líneas de "todavía no se puede
+comparar". **Es justo donde el análisis gana o pierde**».
+
+Tenía razón en lo de fondo: «1.200 habitantes» no se puede juzgar, y la
+diferencia contra la ciudad es lo que se discute en una mesa.
+
+### No hace falta radicar nada, ni pasar por Overpass
+
+La solución del pliego —«correr el análisis del municipio UNA vez y guardar
+esas cifras»— para la mitad que sale del censo es más barata de lo que
+parece: es **la misma capa del DANE** que ya se consulta por radio, filtrada
+por código de municipio en vez de por geometría. Una sola petición, y el
+servidor agrega las catorce mil manzanas censales del municipio.
+
+Lo que no se sabía es **cómo se llama el campo del código**. Se resuelve
+igual que la v865 y por la misma razón: se le pregunta a la capa
+(`camposDeCapa`) y se busca por patrón. Si ninguno corresponde, se declara
+con la lista de campos como prueba. Nunca se supone.
+
+`censoCiudad(divipola)` en `js/61` devuelve **siempre un objeto, nunca null**,
+con su `estado`: `ok`, `sin-municipio`, `sin-preguntar`, `sin-campo`,
+`sin-respuesta`. Son cinco cosas distintas que piden cinco acciones distintas
+—repetir con señal, corregir el patrón, o nada— y un null las juntaría en
+una. Se guarda por municipio y **dura 30 días**: el censo de 2018 no cambia,
+pero una caché eterna es una que nadie puede corregir.
+
+### El par, y por qué la diferencia se dice de dos maneras
+
+Cada cifra se imprime como `SECTOR | CIUDAD | DIFERENCIA`, en cuatro columnas
+fijas para que la de diferencia se lea en vertical de un golpe — es la
+columna que un jurado recorre primero.
+
+**La diferencia entre dos porcentajes va en PUNTOS porcentuales; la de dos
+magnitudes, en porcentaje relativo.** «12 % contra 8 %» es +4 pp, no +50 %, y
+confundirlas es de los errores que nadie revisa dos veces porque el número
+sale creíble. `parConCiudad` lo decide con su parámetro `esPct` y la hoja lo
+explica al pie.
+
+### La pirámide va SOBREPUESTA, no al lado
+
+El pliego lo pide con esas palabras: «sobrepuesta como silueta a la de la
+ciudad, no en gráfico aparte». La barra gris de la ciudad va detrás, la azul
+del sector encima, **las dos a la misma escala** — que es la misma regla de
+«El grano»: dos siluetas del mismo tamaño con la cifra al pie mentirían sin
+escribir una palabra falsa.
+
+### El área CENSADA no es el área urbana
+
+La densidad de la ciudad sale de `Shape__Area` sumada sobre sus manzanas
+censales. Eso **no** es el perímetro urbano del POT, y por eso se llama «área
+censada» y no «área urbana». Es lo que hace comparable la densidad del sector
+con la de la ciudad —las dos sobre manzana censal—, y el POT sigue en la
+lista viva para quien quiera la otra.
+
+### La lista de carencias se ENCOGE sola
+
+`faltanDeCiudad` arma la lista de lo que no se puede comparar mirando lo que
+la referencia trajo de verdad. Un renglón que pida algo que ya está en la
+columna de la derecha es la misma mentira de la v861 dicha en el panel en vez
+de en la bitácora, y acá no puede quedarse viejo porque no está escrito: se
+calcula.
+
+Lo que sí sigue faltando se nombra por lo que es: espacio público, densidad
+de usos y cobertura de equipamientos de la ciudad piden **una corrida de
+OpenStreetMap sobre el municipio entero**, que es otra fuente y otra tanda.
+
+### Dos comprobaciones que se dieron vuelta
+
+`tdoslaminas` exigía que la hoja **declarara faltando** «la estructura de
+edades» y «la densidad de la ciudad». Ahora las mide, así que las dos
+aserciones se invirtieron: lo que tiene que fallar es declararlas ausentes. Y
+**el par entra en `PARES`**, que es la regla de la v864 y justo lo que la
+v865 se saltó.
+
+### El doble del DANE tenía que saber contestar por municipio
+
+Otra vez la lección de la v874. `CAMPOS_DANE` no traía ni `COD_DANE_MPIO` ni
+`Shape__Area`, así que la consulta municipal no encontraba campo y la
+comparación entera se habría probado contra el estado «la capa no lo expone»
+— verde, y sin comparar nada.
+
+Ahora los trae, y `atributosCiudad` contesta con las cifras del municipio.
+**Deliberadamente distintas de las del sector**: 777.106 habitantes, 126,4
+hab/ha y una pirámide más vieja. Si el doble contestara lo mismo para el
+municipio que para el sector, todas las diferencias darían 0 % y una
+comprobación sobre la comparación pasaría sin comparar nada — que es la forma
+exacta de los verdes que este proyecto lleva tres tandas persiguiendo.
+
+En el sector de prueba sale: densidad 17,8 contra 126,4 hab/ha (−85,9 %),
+mayores +0,2 pp, menores de 15 +1,8 pp.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -1192,11 +1287,14 @@ que se ve a simple vista: la cláusula está o no está.
 <!-- LISTA-VIVA-PLIEGO -->
 * **El predio: tamaño y forma de cada lote** — cartografía catastral del IGAC
   o del catastro municipal. `ya: la manzana cerrada por las vías mapeadas, que no es el lindero catastral`
-* **La pirámide de edades de la ciudad**, para sobreponerla a la del sector —
-  el CNPV 2018 agregado por municipio; la consulta por manzana no lo trae.
-  `ya: la pirámide del sector por tramos de edad, y la población del municipio proyectada al mismo año`
-* **La densidad de la ciudad** — el área urbana del municipio (IGAC o el POT).
-  `ya: la densidad del sector en habitantes por hectárea`
+* **El espacio público, la densidad de usos y la cobertura de equipamientos DE
+  LA CIUDAD** — correr el análisis de OpenStreetMap sobre el municipio entero
+  y guardarlo, como se guarda el censo. Son de otra fuente que el censo y por
+  eso no vienen con la columna de ciudad.
+  `ya: la población, la densidad, la pirámide por tramos y el reparto por sexo del municipio, del mismo censo por manzana y en una sola consulta, impresos como par sector · ciudad · diferencia`
+* **El área URBANA del municipio** (IGAC o el POT), para una densidad contra
+  el perímetro y no contra lo censado.
+  `ya: la densidad de la ciudad sobre el área de sus manzanas censales, declarada con ese nombre y no como «área urbana»`
 * **El recorrido de cada ruta y su frecuencia** — un GTFS, o el cuadro de la
   secretaría de tránsito. `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector`
 * **El aforo de hora pico** — un conteo en campo o el de la secretaría, con su

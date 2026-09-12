@@ -133,8 +133,29 @@ const CAMPOS_DANE = [
      salió impreso `NIVEL_EDUC_ESP_MAES_DOC` como rótulo de una barra. El
      doble tiene que poder equivocarse igual que el servicio. */
   { name: 'NIVEL_EDUC_ESP_MAES_DOC', alias: 'NIVEL_EDUC_ESP_MAES_DOC', type: 'esriFieldTypeInteger' },
-  { name: 'ALFABETISMO_SIN_INFO', type: 'esriFieldTypeInteger' }
+  { name: 'ALFABETISMO_SIN_INFO', type: 'esriFieldTypeInteger' },
+  /* Los dos que hacen falta para la REFERENCIA DE CIUDAD (§9, v876): el
+     código de municipio, con el que se consulta el municipio entero en una
+     sola petición, y el área de la manzana, con la que sale su densidad.
+     Sin ellos la comparación contra la ciudad no se ejercita en ninguna
+     prueba, que es exactamente el agujero de la v874. */
+  { name: 'COD_DANE_MPIO', alias: 'Código DANE del municipio', type: 'esriFieldTypeString' },
+  { name: 'Shape__Area', alias: 'Shape__Area', type: 'esriFieldTypeDouble' }
 ];
+/* El municipio del sector de prueba: Cúcuta. Las cifras son las del doble,
+   no las reales, y son deliberadamente DISTINTAS de las del sector para que
+   una comparación que no compare nada se note. */
+const CIUDAD = {
+  divipola: '54001', poblacion: 777_106, manzanas: 14_820,
+  pctMujeres: 51.8, areaM2: 61_500_000,
+  // La ciudad es más vieja y menos infantil que el sector de prueba: si la
+  // pirámide sobrepuesta saliera idéntica, es que no se está comparando.
+  piramide: [['0_4', 62], ['5_9', 64], ['10_14', 66], ['15_19', 72], ['20_24', 84],
+             ['25_29', 82], ['30_34', 74], ['35_39', 66], ['40_44', 58], ['45_49', 54],
+             ['50_54', 52], ['55_59', 48], ['60_64', 42], ['65_69', 34], ['70_74', 26],
+             ['75_79', 18], ['80_84', 12], ['85_89', 6], ['90_94', 3], ['95_99', 1],
+             ['100_O_MAS', 1]]
+};
 /* Cuánta gente cae en cada uno, en tanto por mil, para que cuadre con la
    población igual que la pirámide. Cada bloque suma mil por su cuenta: los
    dos campos nuevos salen de lo que tenían sus vecinos, no se añaden encima. */
@@ -160,6 +181,15 @@ function atributosDane(url, censo) {
   const u = new URL(url, 'http://x');
   const crudo = u.searchParams.get('outStatistics');
   const campos = u.searchParams.get('outFields') || '';
+  /* LA CONSULTA MUNICIPAL (§9, v876): lleva `where` con el código DANE y NO
+     lleva geometría. Se contesta con las cifras de la ciudad, no con las del
+     sector — si contestara lo mismo, la columna «Ciudad» saldría igual que la
+     de «Sector», la diferencia daría 0 % en todo, y una comprobación sobre la
+     comparación pasaría sin comparar nada. */
+  const donde = u.searchParams.get('where') || '';
+  if (/COD_DANE_MPIO/.test(donde) && !u.searchParams.get('geometry')) {
+    return atributosCiudad(crudo, censo);
+  }
   // La consulta de manzanas con su estrato: trae geometría, no agregados.
   if (/ESTRATO_PREDOMINANTE/.test(campos)) return null;
   if (!crudo) return {};
@@ -183,6 +213,33 @@ function atributosDane(url, censo) {
       const t = de.replace(/^EDAD_/, '');
       const fila = PIRAMIDE.filter(function (x) { return x[0] === t; })[0];
       out[k] = fila ? Math.round(c.poblacion * fila[1] / 1000) : 0;
+    } else out[k] = 0;
+  });
+  return out;
+}
+
+/* La ciudad entera, con la misma forma con la que Esri contesta un agregado:
+   solo los campos que la consulta pidió, leyendo `outStatistics`. Un doble
+   que contesta de más esconde justo el fallo que hay que ver. */
+function atributosCiudad(crudo, censo) {
+  const C = (censo && censo.ciudad) || CIUDAD;
+  if (!crudo) return {};
+  let piden;
+  try { piden = JSON.parse(crudo); } catch (e) { return {}; }
+  const mujeres = Math.round(C.poblacion * C.pctMujeres / 100);
+  const out = {};
+  piden.forEach(function (p) {
+    const k = p.outStatisticFieldName, de = String(p.onStatisticField || '');
+    if (de === 'Shape__Area') out[k] = C.areaM2;
+    else if (k === 'TOTAL') out[k] = C.poblacion;
+    else if (k === 'N') out[k] = C.manzanas;
+    else if (k === 'MUJ') out[k] = mujeres;
+    else if (k === 'HOM') out[k] = C.poblacion - mujeres;
+    else if (REPARTO_CAMPOS[de] != null) out[k] = Math.round(C.poblacion * REPARTO_CAMPOS[de] / 1000);
+    else if (/^EDAD_/.test(de)) {
+      const t = de.replace(/^EDAD_/, '');
+      const fila = (C.piramide || []).filter(function (x) { return x[0] === t; })[0];
+      out[k] = fila ? Math.round(C.poblacion * fila[1] / 1000) : 0;
     } else out[k] = 0;
   });
   return out;
@@ -226,6 +283,9 @@ module.exports = {
   ESTRATOS: ESTRATOS,
   CAMPOS_DANE: CAMPOS_DANE,
   CENSO: CENSO,
+  // Las cifras del municipio del doble, para que una suite pueda comprobar
+  // la columna «Ciudad» contra el número exacto que ella misma sirvió.
+  CIUDAD: CIUDAD,
   RAIZ: RAIZ,
   TRABAJO: TRABAJO.replace(/\/*$/, '/'),
   MODULOS: process.env.URBIS_PRUEBAS_MODULOS || path.join(TRABAJO, 'node_modules'),
