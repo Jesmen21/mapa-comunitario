@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v871-guardar-el-trazo-solo';
+const URBIS_CACHE = 'urbis-v872-alertas-sismo-choco-derrumbe-valle';
 const URBIS_ASSETS = [
   './',
   './index.html',
