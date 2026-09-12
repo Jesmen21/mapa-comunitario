@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v872-alertas-sismo-choco-derrumbe-valle';
+const URBIS_CACHE = 'urbis-v873-seguimiento-fin-paz-total-eln';
 const URBIS_ASSETS = [
   './',
   './index.html',
