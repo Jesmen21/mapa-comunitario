@@ -663,7 +663,7 @@ const geo = [
   T('lo que cabe dibuja el lote con su huella y la torre por pisos',
     /class="pcr-seccion pcr-cabe-dib"/.test(secV('Qué cabe en el lote')) && /pcr-cb-huella/.test(secV('Qué cabe en el lote')) &&
     (secV('Qué cabe en el lote').match(/pcr-cb-piso/g) || []).length >= 1 && /viviendas<\/text>/.test(secV('Qué cabe en el lote')));
-  const SOM = secV('La sombra que arrojás');
+  const SOM = secV('La sombra que proyecta');
   T('la sombra que arroja tiene su mapa, con las manchas por hora y el contexto debajo',
     /^ mapa-caja/.test(SOM) && /<div class="mp-ctx">/.test(SOM) && (SOM.match(/fill-opacity="0\.3"/g) || []).length >= 2,
     SOM ? (SOM.match(/fill-opacity="0\.3"/g) || []).length + ' manchas' : 'sin caja');

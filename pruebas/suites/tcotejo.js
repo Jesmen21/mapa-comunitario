@@ -113,7 +113,7 @@ const FICHAS=[
     // Uno solo: no hay tabla, hay una pista.
     chips()[0].click(); await esperar(400);
     o.conUno={ tabla:!!document.querySelector('.pcr-cot-tabla'),
-               pista:/Elegí otro sector/.test(txt(document.querySelector('.pcr-pestana'))) };
+               pista:/Elija otro sector/.test(txt(document.querySelector('.pcr-pestana'))) };
 
     // Dos: la tabla.
     chips()[1].click(); await esperar(500);

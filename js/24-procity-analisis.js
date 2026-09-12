@@ -1464,7 +1464,7 @@
     const guardadas = areas.length ? (
       '<div class="pca-guardadas">' +
         '<div class="pca-sec"><span class="pca-sec-eyebrow">Tus áreas</span>' +
-          '<b>Áreas guardadas</b><small>Tocá una para volver a cargarla en el mapa.</small></div>' +
+          '<b>Áreas guardadas</b><small>Toque una para volver a cargarla en el mapa.</small></div>' +
         areas.map(a =>
           '<div class="pca-guardada pca-card-area">' +
             '<button type="button" class="pca-guardada-abrir" data-u52-call="pca-cargar" data-id="' + esc(a.id) + '">' +

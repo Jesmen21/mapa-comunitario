@@ -182,8 +182,8 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
          pie: al pie no la lee nadie, y es la diferencia entre una
          herramienta útil y una peligrosa. */
       const t=o.conLote;
-      return t.indexOf('Estos índices los ponés vos') >= 0 &&
-             t.indexOf('Estos índices los ponés vos') < t.indexOf('m² de huella');
+      return t.indexOf('Estos índices los pone usted') >= 0 &&
+             t.indexOf('Estos índices los pone usted') < t.indexOf('m² de huella');
     })();
 
     /* ── Lo de ejemplo y lo confirmado ──────────────────────────────────
@@ -367,14 +367,14 @@ const INT={"MUNICIPIO":"Cúcuta","ZONAS_AMENAZA_SISMICA_NSR_10":"Alta",
   console.log('\n  -- antes del lote --');
   T('el módulo está cargado', r.hayModulo===true);
   T('sin lote, invita en vez de calcular',
-    /Marcá el lote/.test(r.sinLote) && !/m² de huella/.test(r.sinLote));
+    /Marque el lote/.test(r.sinLote) && !/m² de huella/.test(r.sinLote));
 
   console.log('\n  -- la advertencia, que es la mitad de la tanda --');
   /* Hasta acá todo lo que decía la aplicación salía de una medición o de una
      norma nacional. Esta cuenta sale de siete números que escribe una
      persona: decirlo no es un descargo, es lo que la hace usable. */
   T('dice que los índices los pone el estudiante',
-    /Estos índices los ponés vos/.test(F) && /URBIS no los conoce/.test(F));
+    /Estos índices los pone usted/.test(F) && /URBIS no los conoce/.test(F));
   T('y que salen del POT del municipio', /POT del municipio/.test(F));
   T('va ARRIBA de las cifras, no al pie', r.advertenciaArriba===true);
   T('avisa de que el área tras aislamientos es aproximada',

@@ -399,7 +399,7 @@ const CAPAS_IDEAM = [
   T('con el límite de la norma colombiana a la vista', /627 de 2006/.test(RU));
 
   console.log('\n  -- 7 · la sombra que arroja el proyecto --');
-  const SO = cajaDe('La sombra que arrojás');
+  const SO = cajaDe('La sombra que proyecta');
   T('la lámina trae su caja', !!SO);
   T('con los pisos que permite la norma y la altura',
     /pisos que permite la norma/.test(SO) && /m de alto/.test(SO));
@@ -586,7 +586,7 @@ const CAPAS_IDEAM = [
     ['el flujo', /Flujo a pie contra en carro/, /Quién pasa: flujo a pie/],
     ['verde y agua', /Verde y agua/, /Verde y agua:/],
     ['el ruido', /El ruido del tránsito/, /El ruido del tránsito/],
-    ['la sombra que arrojás', /La sombra que arrojás/, /La sombra que arroja el proyecto/],
+    ['la sombra que proyecta', /La sombra que proyecta/, /La sombra que arroja el proyecto/],
     ['la infraestructura', /Infraestructura de servicios/, /Infraestructura de servicios/],
     ['quién vive acá', /Quién vive acá/, /Quién vive acá/],
     ['la cuadra', /La cuadra del lote/, /La cuadra del lote/],

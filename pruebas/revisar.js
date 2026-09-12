@@ -913,6 +913,103 @@ console.log('\n  -- el FODA del curso --');
             'js/63-analisis-ia-informe.js');
 }
 
+/* ── §7 · El idioma de lo que se imprime (v878) ──────────────────────────
+   El pliego de ajustes: «Eliminar el voseo argentino que apareció: "la sombra
+   que proyecta", "mida el trazado", "escríbalo acá", "con cuál te queda".»
+
+   Eran 253 casos en el texto que ve el usuario. Una tanda los saca; esta
+   comprobación es la que impide que vuelvan a entrar de a uno, que es como
+   entraron.
+
+   DOS TRAMPAS, las dos costaron un inventario falso antes de acertar:
+
+   1. **En JavaScript `\b` trata las vocales acentuadas como NO-palabra**, así
+      que `/\btocá\b/` casa DENTRO de «tocándolo» —el límite cae entre la «á»
+      y la «n»— y también dentro de «medía», «pedía» o «seguía», que son
+      imperfectos y no voseo. Los límites se ponen a mano, con una clase de
+      letras que incluya los acentos.
+   2. **Un comentario no es una cadena.** El voseo de un comentario lo lee
+      quien programa; el de una cadena sale impreso en una lámina de 60 × 90 y
+      lo lee un jurado. Se recorre el archivo marcando qué es comentario y se
+      busca solo fuera. Sin esa separación, la comprobación obligaría a
+      reescribir la bitácora entera del código para nada. */
+(function () {
+  const LETRA = /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/;
+  /* ⚠ ESTA LISTA ES LA ÚNICA DEL REPOSITORIO QUE DEBE LLEVAR VOSEO. ⚠
+     La v878 corrió su reemplazo masivo sobre `pruebas/` y se comió estas
+     mismas palabras —«tocá» pasó a «toque», «podés» a «puede»— dejando la
+     comprobación buscando las formas CORRECTAS: 4.731 falsos positivos y una
+     guarda que denunciaba justo lo que quería proteger. La comprobación de
+     autoconsistencia de abajo es la que impide que vuelva a pasar. */
+  const VOSEO = ['vos','ten\u00e9s','pod\u00e9s','quer\u00e9s','sab\u00e9s','llev\u00e1s','qued\u00e1s','arroj\u00e1s','mir\u00e1s',
+    'hac\u00e9s','ven\u00eds','dec\u00eds','pon\u00e9s','volv\u00e9s','segu\u00eds','coincid\u00eds','entr\u00e1s','le\u00e9s','cerr\u00e1s','sos',
+    'mir\u00e1','med\u00ed','escrib\u00ed','pon\u00e9','and\u00e1','ten\u00e9','hac\u00e9','fijate','eleg\u00ed','eleg\u00eds','dibuj\u00e1','toc\u00e1',
+    'marc\u00e1','prob\u00e1','sum\u00e1','agreg\u00e1','guard\u00e1','abr\u00ed','cerr\u00e1','busc\u00e1','cont\u00e1','anot\u00e1','compar\u00e1',
+    'revis\u00e1','us\u00e1','llen\u00e1','mov\u00e9','segu\u00ed','dej\u00e1','volv\u00e9','ped\u00ed','le\u00e9','cambi\u00e1','ampli\u00e1','acerc\u00e1',
+    'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','guardalo','escribilo','ped\u00edsela','mirala','ponelo'];
+
+
+  function fueraDeComentario(txt) {
+    const com = new Uint8Array(txt.length);
+    let i = 0, modo = 0;   // 0 código · 1 // · 2 /* */ · 3 '…' · 4 "…" · 5 `…`
+    while (i < txt.length) {
+      const c = txt[i], d = txt[i + 1];
+      if (modo === 0) {
+        if (c === '/' && d === '/') { modo = 1; com[i] = com[i + 1] = 1; i += 2; continue; }
+        if (c === '/' && d === '*') { modo = 2; com[i] = com[i + 1] = 1; i += 2; continue; }
+        if (c === "'" ) { modo = 3; i++; continue; }
+        if (c === '"' ) { modo = 4; i++; continue; }
+        if (c === '`' ) { modo = 5; i++; continue; }
+        i++; continue;
+      }
+      if (modo === 1) { com[i] = 1; if (c === '\n') modo = 0; i++; continue; }
+      if (modo === 2) { com[i] = 1; if (c === '*' && d === '/') { com[i + 1] = 1; modo = 0; i += 2; continue; } i++; continue; }
+      if (c === '\\') { i += 2; continue; }
+      if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; i++; continue; }
+      i++;
+    }
+    return com;
+  }
+
+  /* Todo lo que se sirve al navegador: los módulos de `js/` y las páginas.
+     Se listan del disco y no de una lista escrita, para que un archivo nuevo
+     quede vigilado sin que su autor se acuerde — que es la misma razón por la
+     que el aviso de origen de VT vive en `enviar` (v867). */
+  const archivos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
+
+  const hallados = [];
+  archivos.forEach(function (rel) {
+    let txt = '';
+    try { txt = leer(rel); } catch (e) { return; }
+    if (!txt) return;
+    const com = fueraDeComentario(txt), bajo = txt.toLowerCase();
+    VOSEO.forEach(function (f) {
+      let k = 0;
+      while ((k = bajo.indexOf(f, k)) !== -1) {
+        const antes = k > 0 ? txt[k - 1] : ' ', dsp = txt[k + f.length] || ' ';
+        if (!LETRA.test(antes) && !LETRA.test(dsp) && !com[k]) {
+          const linea = txt.slice(0, k).split('\n').length;
+          hallados.push(rel + ':' + linea + ' «' + txt.substr(k, f.length) + '»');
+        }
+        k += f.length;
+      }
+    });
+  });
+  /* La lista se defiende sola: si alguien la «corrige» —o un reemplazo
+     masivo vuelve a pasarle por encima— estas formas dejan de ser voseo y la
+     guarda pasaría en verde sin vigilar nada. Es el peor verde que hay, y acá
+     se ve a simple vista. */
+  const sigueSiendoVoseo = VOSEO.indexOf('vos') !== -1 &&
+    VOSEO.filter(function (f) { return /[\u00e1\u00e9\u00ed]$/.test(f); }).length >= 30;
+  comprobar('la lista de formas voseantes no se desvoseó a sí misma',
+    sigueSiendoVoseo,
+    VOSEO.filter(function (f) { return /[\u00e1\u00e9\u00ed]$/.test(f); }).length + ' formas con tilde final');
+  comprobar('ningún voseo en el texto que ve el usuario (§7)', hallados.length === 0,
+    hallados.length ? hallados.slice(0, 6).join(' · ') + (hallados.length > 6 ? ' …y ' + (hallados.length - 6) + ' más' : '')
+                    : 'revisados ' + archivos.length + ' archivos, solo fuera de comentarios');
+})();
+
 console.log('\n  -- un nombre, una cosa --');
 {
   const ASIG = /\bwindow\.([A-Za-z_$][\w$]*)\s*(?<![=!<>])=(?!=)\s*(.*)/;

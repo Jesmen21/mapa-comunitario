@@ -192,7 +192,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     const barra=document.getElementById('pcr-int-barra');
     o.barraVuelve=!!barra;
     const tb=barra?(barra.textContent||'').replace(/\s+/g,' '):'';
-    o.diceCuantas=/llevás 5/.test(tb);
+    o.diceCuantas=/lleva 5/.test(tb);
     o.loDice=/Se recuperó el trazo que estabas dibujando: 5 esquinas/.test(tb);
     await abrir();
     // Y al cerrarlo se convierte en marca, y el borrador desaparece.

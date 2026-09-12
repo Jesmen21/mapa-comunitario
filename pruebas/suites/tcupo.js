@@ -211,7 +211,7 @@ for(let a=0;a<14;a++){
     o.enElDisco=(function(){ try{ return ((R.leerFichas()||[])[0].intCurso||[]).length; }catch(e){ return -1; } })();
     const t=(H().textContent||'').replace(/\s+/g,' ').trim();
     o.avisa=/no hay espacio en este teléfono para guardar el sector/i.test(t);
-    o.diceQuéHacer=/se pierde si cerrás la aplicación/i.test(t) && /borrá sectores guardados/i.test(t);
+    o.diceQuéHacer=/se pierde si cierra la aplicación/i.test(t) && /borrá sectores guardados/i.test(t);
     /* El aviso de pérdida va arriba del todo: enterarse al pie de una hoja de
        tres pantallas, después de media hora de trabajo, no sirve de nada. */
     const cuerpo=H().querySelector('.pcr-cuerpo');

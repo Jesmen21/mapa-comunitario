@@ -57,7 +57,7 @@
     { id: 'olor', nombre: 'Huele mal', geom: 'punto',
       color: '#8A8A2B', ico: '≈',
       pregunta: '¿De dónde viene el olor, y a qué hora?',
-      porQue: 'El olor tiene foco y tiene viento. Marcá el foco; el rumbo lo ' +
+      porQue: 'El olor tiene foco y tiene viento. Marque el foco; el rumbo lo ' +
               'pone el análisis del clima.' },
     { id: 'basura', nombre: 'Se junta basura', geom: 'punto',
       color: '#6B4E2E', ico: '●',
@@ -264,7 +264,7 @@
             texto: 'Una zona marcada como insegura tiene ' + adentro.length + ' usos ' +
                    'registrados en ' + (Math.round(ha * 10) / 10) + ' ha (' +
                    Math.round(densidad) + ' por hectárea). Por el conteo debería ' +
-                   'sentirse acompañada y no se siente: mirá si los locales cierran ' +
+                   'sentirse acompañada y no se siente: mire si los locales cierran ' +
                    'temprano, si dan la espalda a la calle o si el problema es de noche.'
           });
         } else if (adentro.length === 0) {

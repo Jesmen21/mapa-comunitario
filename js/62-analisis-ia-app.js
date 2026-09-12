@@ -1520,7 +1520,7 @@
       const mc = f.mapaCalor, K = CAL();
       if (!mc || !K) return '';
       return '<h4 class="aia-flujo-sub">Dónde está el movimiento</h4>' +
-        '<p class="aia-flujo-nota">Tocá una capa para verla sobre el mapa. El punto grande es el ' +
+        '<p class="aia-flujo-nota">Toque una capa para verla sobre el mapa. El punto grande es el ' +
           'sitio más activo de esa capa.</p>' +
         '<div class="aia-calor">' + K.miniaturas(mc, 'aia-calor-panel', 'dia') + '</div>' +
         K.botones('dia') +

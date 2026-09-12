@@ -72,7 +72,7 @@
             <label>Cierra <input type="time" id="ins-horario-cierra" value="${hor.cierra}"></label>
           </div>
           ${hor.crudo ? `<div class="edificio-hint">Este punto ya trae un horario que no compuso este formulario: <b>${String(hor.crudo).replace(/[<>&"]/g, '')}</b>. Se conserva tal cual mientras no elijas otra cosa acá.</div>` : ''}
-          <div class="edificio-hint">Lo que dice el letrero, no lo que uno supone por el tipo de negocio. El análisis estima las horas fuertes por el uso; esto es el dato de verdad, y cuando los dos no coinciden esa diferencia es el hallazgo. Si cierra después de medianoche, poné la hora de cierre igual: 18:00 a 02:00 se entiende.</div>
+          <div class="edificio-hint">Lo que dice el letrero, no lo que uno supone por el tipo de negocio. El análisis estima las horas fuertes por el uso; esto es el dato de verdad, y cuando los dos no coinciden esa diferencia es el hallazgo. Si cierra después de medianoche, ponga la hora de cierre igual: 18:00 a 02:00 se entiende.</div>
           <input type="text" id="ins-otro-edificio" value="${(fichaEdif.otroTexto || '').replace(/"/g, '&quot;')}" placeholder="Si marcaste «Otro», descríbelo aquí">
           <div class="edificio-hint">Ninguna de estas preguntas es obligatoria. Si el dato no se puede determinar desde la calle marca <b>No se sabe</b>, y si existe pero no está en la lista marca <b>Otro</b> y descríbelo: así entra en la próxima versión de la lista. Elegir «lo más parecido» para salir del paso mete un dato falso que después nadie distingue de uno bueno.</div>
         </div>`;

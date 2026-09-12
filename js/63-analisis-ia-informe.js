@@ -2504,7 +2504,7 @@ gruposOrdenados.map(seccion).join(''),
         '</div>' +
         '<iframe title="Documento para imprimir" style="flex:1;border:0;background:#fff;width:100%"></iframe>' +
         '<p style="margin:0;padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));color:#b7cbd8;font-size:.72rem;line-height:1.35">' +
-          'En el teléfono, «Imprimir» abre el diálogo del sistema: ahí elegí <b>Guardar como PDF</b>. ' +
+          'En el teléfono, «Imprimir» abre el diálogo del sistema: ahí elija <b>Guardar como PDF</b>. ' +
           'Si no aparece, «Bajar el archivo» guarda la lámina como página web para abrirla en un computador.</p>';
       document.body.appendChild(caja);
       const marco = caja.querySelector('iframe');

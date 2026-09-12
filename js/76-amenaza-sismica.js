@@ -203,7 +203,7 @@
       })
       .catch(function (e) {
         if (e && e.name === 'AbortError') {
-          throw new Error('El servicio del SGC tardó demasiado. Volvé a intentarlo.');
+          throw new Error('El servicio del SGC tardó demasiado. Vuelva a intentarlo.');
         }
         throw e;
       })

@@ -1351,6 +1351,107 @@ ramas**, y sale «eje a 44°» en una y «repartido parejo» en las otras tres.
 Demostrada contra la v876: once aserciones en rojo, con los mapas de
 categoría midiendo 63 × 63 mm y el método repetido cuatro veces.
 
+## El idioma de lo que se imprime (v878)
+
+§7 del pliego de ajustes: «Eliminar el voseo argentino que apareció: "la
+sombra que arrojás", "medí el trazado", "escribilo acá", "con cuál te
+quedás"». Español de Colombia, tercera persona o imperativo neutro.
+
+Eran **253 casos en el texto que ve el usuario**. No es una cuestión de gusto:
+una lámina que se defiende ante un jurado colombiano y le habla de vos se lee
+como escrita por alguien de afuera, y eso le resta a todo lo demás.
+
+### Lo que se cambia y lo que no
+
+El alcance es **lo que sale impreso o en pantalla**, no los comentarios del
+código. El voseo de un comentario lo lee quien programa; el de una cadena lo
+lee un jurado en una hoja de 60 × 90. Obligar a reescribir la bitácora entera
+del código habría sido mucho ruido para ningún lector.
+
+De paso, «La sombra que **arrojás**» pasa a «La sombra que **proyecta**» —así
+lo pide el pliego— y ese título es clave de diccionario en ocho sitios
+(`METODO_PANEL`, `CARA`, `FUSIONAR`, `cajasDelPliego`, la caja, el mapa…), así
+que se cambia en todos a la vez o no se cambia. El **identificador** sigue
+siendo `la-sombra-que-arrojas`: un id no es texto, y cambiarlo rompería las
+fichas ya guardadas.
+
+### Dos trampas del detector, las dos costaron un inventario falso
+
+* **En JavaScript `\b` trata las vocales acentuadas como NO-palabra.** Así que
+  `/\btocá\b/` casa DENTRO de «tocándolo» —el límite cae entre la «á» y la
+  «n»— y lo mismo con «medía», «pedía», «seguía» o «elegía», que son
+  imperfectos y no voseo. El primer inventario dio 101 casos y la mitad eran
+  humo. Los límites se ponen a mano, con una clase de letras que incluya los
+  acentos.
+* **Un comentario no es una cadena**, y se parecen lo suficiente como para que
+  haga falta recorrer el archivo marcando cuál es cuál. Con eso el recuento
+  real quedó en 253 en texto y 8 en comentarios.
+
+### Lo que un reemplazo palabra a palabra no arregla
+
+Cinco frases quedaron torcidas y hubo que escribirlas a mano: «los pusiste
+vos» → «los **puso** usted» (el verbo también cambia de persona), «un punto
+que vos **marques**» → «que usted **marque**», «lo que **ves** aquí decide por
+vos», «creer que **coincidís con vos mismo**» → «que uno coincide consigo
+mismo», y «guardalo **vos**» → «guárdelo **a mano**», que es lo que de verdad
+se quiere decir.
+
+**Cambiar el pronombre no conjuga los verbos de alrededor.** Después de un
+reemplazo masivo hay que leer lo cambiado, no solo comprobar que compila.
+
+### La guarda, en `revisar.js`
+
+Una tanda saca los 253; la comprobación es lo que impide que vuelvan a entrar
+**de a uno**, que es como entraron. Recorre todo lo que se sirve al navegador
+—`js/` y las páginas, listados del disco y no de una lista escrita, para que
+un archivo nuevo quede vigilado sin que su autor se acuerde— y busca solo
+fuera de comentarios.
+
+Demostrada devolviendo un solo «vos» a `js/78`: la comprobación lo señala con
+archivo y línea.
+
+#### La guarda se comió su propia lista
+
+El reemplazo masivo se corrió también sobre `pruebas/`, y ahí adentro estaba
+la lista de formas que la guarda busca. Se desvoseó a sí misma —«tocá» pasó a
+«toque», «podés» a «puede»— y quedó **buscando las formas correctas** en los
+101 archivos servidos: **4.731 falsos positivos**, una guarda denunciando
+exactamente lo que existe para proteger.
+
+Fue ruidoso y por eso se vio en el acto. Lo que asusta es la otra mitad de la
+moneda: si el reemplazo hubiera **borrado** la lista en vez de traducirla, la
+comprobación habría salido en verde para siempre sin vigilar una sola palabra.
+
+Dos cosas, las dos baratas:
+
+* La lista se escribe con **escapes `\uXXXX`**, así que ningún reemplazo que
+  busque texto acentuado vuelve a encontrarla, y lleva su aviso encima: es la
+  única del repositorio que debe llevar voseo.
+* **Se defiende sola.** Una comprobación aparte exige que siga conteniendo
+  `vos` y al menos treinta formas terminadas en tilde. Una guarda que puede
+  quedarse vacía sin que nadie se entere no es una guarda: es un verde.
+
+Es el mismo patrón de la v868 con las listas vivas —una comprobación que no
+comprueba que ella misma sigue viva— y la misma lección de las cuatro tandas
+de fixtures pobres: **el material sobre el que se mide tiene que poder
+producir el fallo.** Acá el material es la propia lista.
+
+### Catorce suites se cayeron, y una de ellas tenía razón
+
+Trece citaban el texto viejo —«llevás N esquinas»— y se arreglaron con el
+mismo reemplazo: una prueba que cita la interfaz tiene que citar la de ahora.
+
+La catorceava era un fallo de verdad, y es el que la v857 dejó advertido.
+`caja()` apaga comparando `slugPliego(titulo)` contra la lista de apagadas, y
+el inventario declaraba `id: 'la-sombra-que-arrojas'`. Al cambiar el título,
+**el slug y el id se separaron** y «dejar solo el plano» ya no podía apagar
+esa caja. `tpliego` lo cazó.
+
+**El id de una caja es el slug de su título, y cambiar el título lo cambia.**
+Una ficha guardada antes lleva apagado el id viejo, así que se acepta como
+sinónimo al leerla: quien apagó esa caja tiene que encontrarla como la dejó, y
+no reencendida por un cambio de redacción que él no pidió.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

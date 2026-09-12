@@ -585,7 +585,7 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
 
   /* Y la caja cuenta como disponible al componer la lámina. En este sector
      OpenStreetMap no trae ni una altura: si solo mirara ese dato, la caja
-     saldría gris, sin poder encenderse ni apagarse y diciendo «medí el
+     saldría gris, sin poder encenderse ni apagarse y diciendo «mida el
      trazado», mientras el pliego la imprime con lo contado dentro. */
   const botonAlt = ((r2.ficha || '').match(/<button[^>]*data-c="alturas-de-lo-construido"[\s\S]*?<\/button>/) || [''])[0];
   T('la caja de alturas se puede componer con lo contado en campo',

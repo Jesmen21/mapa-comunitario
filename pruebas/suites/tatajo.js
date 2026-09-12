@@ -126,7 +126,7 @@ const geo = [
     o.pestanaAlEntrar = R.pestanaActual();
     o.grises = grises();
     o.pista = ((H().querySelector('.pcr-tab[data-tab="general"]') || H()).textContent || '')
-      .indexOf('tocá una y se hace ahí mismo') >= 0;
+      .indexOf('toque una y se hace ahí mismo') >= 0;
 
     /* Las capas del mapa, que son las primeras grises que se ven en General,
        llevan la misma regla que las cajas del pliego. */
@@ -194,7 +194,7 @@ const geo = [
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
   const g = r.grises || [];
-  const conAccion = g.filter(x => /^(medí|pedí|leé|marcá|compará|analizá)/.test(x.falta));
+  const conAccion = g.filter(x => /^(mida|pida|lea|marque|compare|analice)/.test(x.falta));
   const sinAccion = g.filter(x => /^(no hay|el censo|no queda)/.test(x.falta));
 
   console.log('\n  -- cada caja gris lleva lo que la consigue --');
@@ -202,8 +202,8 @@ const geo = [
   T('las que dependen de una medición traen su acción y siguen siendo botón',
     conAccion.length >= 8 && conAccion.every(x => x.pide && !x.disabled),
     conAccion.map(x => x.id + '→' + (x.pide || '∅') + (x.disabled ? ' (apagada)' : '')).join(' · '));
-  T('y dicen que se toca', conAccion.every(x => /tocá acá y/.test(x.falta)),
-    (conAccion.filter(x => !/tocá acá y/.test(x.falta)).map(x => x.id).join(', ') || 'todas'));
+  T('y dicen que se toca', conAccion.every(x => /toque acá y/.test(x.falta)),
+    (conAccion.filter(x => !/toque acá y/.test(x.falta)).map(x => x.id).join(', ') || 'todas'));
   T('la que no depende de medir sigue apagada, sin acción',
     sinAccion.length >= 1 && sinAccion.every(x => !x.pide && x.disabled),
     sinAccion.map(x => x.id + (x.pide ? '→' + x.pide : '') + (x.disabled ? '' : ' (prendida)')).join(' · ') || 'no hay ninguna');
@@ -221,7 +221,7 @@ const geo = [
   console.log('\n  -- las capas del mapa, con la misma regla --');
   const cg = r.capasGrises || [];
   T('las capas grises que dependen de medir traen su acción y siguen siendo botón',
-    cg.length >= 4 && cg.filter(x => /^(medí|marcá)/.test(x.falta)).every(x => x.pide && !x.disabled),
+    cg.length >= 4 && cg.filter(x => /^(mida|marque)/.test(x.falta)).every(x => x.pide && !x.disabled),
     cg.map(x => x.id + '→' + (x.pide || '∅') + (x.disabled ? ' (apagada)' : '')).join(' · '));
   T('las curvas de nivel piden el terreno; los llenos, el trazado',
     (cg.filter(x => x.id === 'curvas')[0] || {}).pide === 'terreno' &&

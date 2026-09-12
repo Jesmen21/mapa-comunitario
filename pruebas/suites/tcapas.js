@@ -298,7 +298,7 @@ const geo=[
   const grises=capas.filter(c=>c.gris);
   T('la cobertura está gris, que no se midió', !!capa('cobertura') && capa('cobertura').gris,
     capa('cobertura')?capa('cobertura').pie:'');
-  T('y dice qué falta para encenderla', grises.every(c=>/medí|marcá|analizá/.test(c.pie)),
+  T('y dice qué falta para encenderla', grises.every(c=>/mida|marque|analice/.test(c.pie)),
     grises.map(c=>c.pie).join(' · ')||'ninguna gris');
   T('las que sí están medidas no están grises',
     !!capa('curvas') && !capa('curvas').gris && !!capa('llenos') && !capa('llenos').gris);

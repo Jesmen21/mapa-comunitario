@@ -171,7 +171,7 @@ usos.push({type:'node',id:id++,lat:C.lat-L*0.9,lon:C.lng-L*0.9,tags:{shop:'super
 
   console.log('\n  -- las tres advertencias --');
   P('la distancia es en línea recta', /en línea recta/.test(B));
-  P('solo cuenta lo que está dentro del área', /dentro del área/.test(B) && /dibujá el área un poco más grande/.test(B));
+  P('solo cuenta lo que está dentro del área', /dentro del área/.test(B) && /dibuje el área un poco más grande/.test(B));
   P('y solo lo mapeado', /mapeado/.test(B));
   P('dice con cuántos puntos lo midió', /puntos repartidos por el área/.test(B),
     (B.match(/Distancia en línea recta desde \d+ puntos[^.]*\./)||['no lo dice'])[0]);

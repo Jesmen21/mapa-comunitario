@@ -986,7 +986,7 @@
     try { d = JSON.parse(String(texto || '')); }
     catch (e) { return { error: 'Ese archivo no es un respaldo de URBIS: no se pudo leer.' }; }
     if (!d || d.formato !== RESPALDO_FORMATO || !Array.isArray(d.fichas)) {
-      return { error: 'Ese archivo no es un respaldo de URBIS. Buscá el que dice «urbis-respaldo».' };
+      return { error: 'Ese archivo no es un respaldo de URBIS. Busque el que dice «urbis-respaldo».' };
     }
     var buenas = d.fichas.filter(function (f) { return f && f.id && f.stats; });
     if (!buenas.length) return { error: 'El respaldo no trae ningún sector con informe.' };
@@ -2780,7 +2780,7 @@
          hacía nada. Se dice qué falló y se deja la otra puerta a un toque,
          para que abrirla sea una decisión y no una sorpresa. */
       S.pdfError = 'No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
-        '. Podés abrir la vista de impresión, pero ahí el tamaño del papel lo elige el ' +
+        '. Puede abrir la vista de impresión, pero ahí el tamaño del papel lo elige el ' +
         'teléfono y el pliego sale encajado en una hoja carta.';
       if (alAvisar) alAvisar('');
       pintar();
@@ -2812,7 +2812,7 @@
     }).catch(function (e) {
       if (alAvisar) {
         alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
-                 '. Probá desde la ficha del sector, o imprimí desde un computador.');
+                 '. Pruebe desde la ficha del sector, o imprimí desde un computador.');
       }
     });
   }
@@ -2878,7 +2878,7 @@
     }).catch(function (e) {
       if (alAvisar) {
         alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
-                 '. Probá desde la ficha del sector, o imprimí desde un computador.');
+                 '. Pruebe desde la ficha del sector, o imprimí desde un computador.');
       }
     });
   }
@@ -3115,7 +3115,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   var ESCALA_PANEL = {
     // Lo medido sobre el LOTE dibujado.
     'El lote a intervenir': 'predio', 'La cuadra del lote': 'predio',
-    'Qué cabe en el lote': 'predio', 'La sombra que arrojás': 'predio',
+    'Qué cabe en el lote': 'predio', 'La sombra que proyecta': 'predio',
     'Qué le pide el sitio al proyecto': 'predio', 'Información legal del predio': 'predio',
     'Norma urbana': 'predio', 'Hasta dónde se camina desde el lote': 'predio',
     // Lo medido dentro del área analizada.
@@ -3665,7 +3665,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'Cobertura del suelo':                ['suelo', 'satelite'],
       'Cómo se llega':                     ['mover', 'bus'],
       'La sombra de los vecinos':          ['suelo', 'brujula'],
-      'La sombra que arrojás':             ['proyecto', 'destello'],
+      'La sombra que proyecta':             ['proyecto', 'destello'],
       'La cuadra del lote':                ['proyecto', 'via'],
       'A distancia de caminar':            ['mover', 'caminar'],
       'Hasta dónde se camina desde el lote': ['mover', 'ruta'],
@@ -5497,7 +5497,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          quién se lo tapa el lote, que es la pregunta que hace un jurado
          apenas ve la volumetría y que hasta ahora no tenía respuesta en
          ninguna parte de la aplicación. */
-      caja('La sombra que arrojás',
+      caja('La sombra que proyecta',
       (function () {
       var sp = o.sombraProyecto !== undefined ? o.sombraProyecto
              : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })();
@@ -5640,7 +5640,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'g3 caja-vacio') +
 
       caja('Percepción del lugar',
-        panelCampo('A la hora que fuiste, con los cinco sentidos: anotá día y hora, y lo que estas cifras no ven.',
+        panelCampo('A la hora que fuiste, con los cinco sentidos: anote día y hora, y lo que estas cifras no ven.',
           ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde te sentiste a gusto, y dónde no']),
         'fam-campo caja-campo') +
       caja('Lo que no cambia',
@@ -5779,7 +5779,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
-                'La sombra que arrojás', 'Potencial edificatorio', 'Suelo disponible real',
+                'La sombra que proyecta', 'Potencial edificatorio', 'Suelo disponible real',
                 'Qué le pide el sitio al proyecto'] },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo', hoja: 'B',
         pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
@@ -5998,7 +5998,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       var FUSIONAR = ['Llenos y vacíos', 'Alturas de lo construido', 'Hitos y nodos',
                       'Cómo se llega', 'A distancia de caminar', 'Verde y agua',
                       'El ruido del tránsito', 'Dónde está la calle comercial', 'Cómo cambia al alejarse',
-                      'La sombra que arrojás'];
+                      'La sombra que proyecta'];
       FUSIONAR.forEach(function (tt) {
         var texto = (porTitulo[tt] || [])[0];
         if (!texto) return;
@@ -6559,8 +6559,8 @@ function donaHTML(datos, colorDe, nombreDe) {
               /* El espacio de la lectura propia: la parte de la lámina que
                  URBIS no puede hacer, a mano y con renglones. */
               '<div class="propia"><b>Tu lectura</b>' +
-                '<small>¿Con cuál de las cinco te quedás, y qué viste en la calle que estas cifras no ven? ' +
-                'Escribilo acá, a mano: es la parte de la lámina que URBIS no puede hacer.</small>' +
+                '<small>¿Con cuál de las cinco te queda, y qué viste en la calle que estas cifras no ven? ' +
+                'Escríbalo acá, a mano: es la parte de la lámina que URBIS no puede hacer.</small>' +
                 '<div class="renglones" style="--n:3"></div></div>';
           })(), 'sintesis-pie');
     /* El panel de coherencia se arma AL FINAL, cuando ya existen el texto de
@@ -7596,7 +7596,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         return { ok: false, error: 'Falta el módulo de datos del DANE.' };
       }
       var eje = ejeActual();
-      if (!eje) return { ok: false, error: 'Primero elegí un sector.' };
+      if (!eje) return { ok: false, error: 'Primero elija un sector.' };
       var radio = S.forma === 'poligono' ? radioParaDane() : S.radioM;
       try { d = await window.AIA_DATOS.manzanasEstrato(eje.lat, eje.lng, radio); }
       catch (e) { return { ok: false, error: (e && e.message) || 'No se pudo cargar la estratificación.' }; }
@@ -7793,7 +7793,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!pide) return;
       if (pide === 'int-dibujar') {
         S.pestanaFicha = pestanaDe('int-dibujar');
-        S.intAviso = 'Elegí un lápiz y marcá en el mapa lo que viste en la calle.';
+        S.intAviso = 'Elija un lápiz y marque en el mapa lo que viste en la calle.';
         pintar(); return;
       }
       despachar(b, pide);
@@ -7823,7 +7823,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (comoSeLlama === null) return;
         var r = guardarTrazo(comoSeLlama);
         S.trazoAviso = r.ok
-          ? 'Trazo guardado. Lo tenés abajo, en «Trazos guardados».'
+          ? 'Trazo guardado. Lo tiene abajo, en «Trazos guardados».'
           : (r.error || 'No se pudo guardar el trazo.');
         if (r.ok) S.trazoId = r.id;
         pintar();
@@ -7939,7 +7939,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (!fF) { S.error = 'Esa ficha ya no está guardada.'; pintar(); return; }
         if (reanudarFicha(fF)) {
           S.aviso = 'Listo, seguimos con «' + (fF.nombre || 'el sector') + '». Si necesitás ' +
-                    'llenos y vacíos o sombras, volvé a medir el trazado.';
+                    'llenos y vacíos o sombras, vuelva a medir el trazado.';
           enfocarSector();
         } else {
           S.error = 'Esa ficha no guarda el área: no se puede reanudar.';
@@ -8098,7 +8098,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var puesto = pintarCortes(!S.cortesEnMapa);
         S.encogida = puesto;
         S.encogidaAMano = false;
-        if (!puesto && !S.cortesEnMapa) S.aviso = 'Este análisis no trae por dónde se cortó. Volvé a medir el terreno.';
+        if (!puesto && !S.cortesEnMapa) S.aviso = 'Este análisis no trae por dónde se cortó. Vuelva a medir el terreno.';
         pintar(); return;
       }
       if (acc === 'curvas-mapa') {
@@ -8216,7 +8216,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var pudo = descargarArchivo(construirOSM(S.campo),
           'urbis-' + (nom || 'sector').toLowerCase() + '.osm', 'application/xml;charset=utf-8');
         S.aviso = pudo
-          ? 'Archivo descargado. Se abre con JOSM: revisá punto por punto antes de subir.'
+          ? 'Archivo descargado. Se abre con JOSM: revise punto por punto antes de subir.'
           : 'No se pudo generar el archivo en este dispositivo.';
         pintar(); return;
       }
@@ -8237,7 +8237,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.enMapa = !S.enMapa;
         var pudo = verGuardadasEnMapa(S.enMapa);
         if (S.enMapa && !pudo) { S.enMapa = false; S.aviso = 'No hay reconocimientos que dibujar.'; }
-        else S.aviso = S.enMapa ? 'Áreas revisadas dibujadas en el mapa. Cerrá esta hoja para verlas.' : '';
+        else S.aviso = S.enMapa ? 'Áreas revisadas dibujadas en el mapa. Cierre esta hoja para verlas.' : '';
         pintar();
         return;
       }
@@ -8320,7 +8320,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var A2 = window.URBIS_PC_ANALISIS;
         var pol = (S.resultado && S.resultado.meta && S.resultado.meta.poligono) || S.poligono;
         if (!A2 || typeof A2.guardarAreaConNombre !== 'function' || !pol || pol.length < 3) {
-          S.aviso = 'Solo se puede guardar un área dibujada. Analizá por área y volvé a intentar.';
+          S.aviso = 'Solo se puede guardar un área dibujada. Analice por área y vuelva a intentar.';
           pintar(); return;
         }
         var caja3 = document.getElementById('pcr-nombre');
@@ -8329,7 +8329,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           // Sin nombre, la lista de áreas guardadas es una fila de fechas
           // idénticas. Acá sí se exige: el área se guarda para volver a
           // ELLA, y volver empieza por reconocerla.
-          S.aviso = 'Escribí arriba un nombre para el sector antes de guardar el área.';
+          S.aviso = 'Escriba arriba un nombre para el sector antes de guardar el área.';
           pintar();
           try { if (caja3) caja3.focus(); } catch (e) {}
           return;
@@ -8660,14 +8660,14 @@ function donaHTML(datos, colorDe, nombreDe) {
                 (hayPol ? '<small>' + (formatearArea(areaDelPoligono()) || '') + '</small>'
                         : '<small>todavía no hay ninguna</small>')
               : '<b>' + ico('radio', 16) + 'Un radio</b><small id="pcr-eco">' +
-                (S.centro ? S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5) : 'mové el mapa') +
+                (S.centro ? S.centro.lat.toFixed(5) + ', ' + S.centro.lng.toFixed(5) : 'mueva el mapa') +
                 '</small>') +
           '</div>' +
           '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Más opciones">⋯</button>' +
         '</div>' +
 
         (esPol ? '' : '<div class="pcr-radios pcr-radios-mini">' + radios + '</div>') +
-        (esPol ? '' : '<p class="pcr-pista pcr-mini-pista">Mové el mapa: el círculo sigue el centro.</p>') +
+        (esPol ? '' : '<p class="pcr-pista pcr-mini-pista">Mueva el mapa: el círculo sigue el centro.</p>') +
 
         (esPol && !hayPol
           ? '<button type="button" data-pcr="dibujar-area" class="pcr-principal">' + ico('lapiz') + 'Dibujar el área en el mapa</button>'
@@ -8863,9 +8863,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<div class="pcr-mini-fila">' +
             '<div class="pcr-mini-que">' +
               '<b>' + ico('lapiz', 16) + 'Marcando el lote</b>' +
-              '<small>' + (nL === 0 ? 'tocá las esquinas sobre el mapa'
-                        : nL < 3 ? 'llevás ' + nL + ' esquina' + (nL === 1 ? '' : 's')
-                        : 'llevás ' + nL + ' esquinas · tocá la primera para cerrar') +
+              '<small>' + (nL === 0 ? 'toque las esquinas sobre el mapa'
+                        : nL < 3 ? 'lleva ' + nL + ' esquina' + (nL === 1 ? '' : 's')
+                        : 'lleva ' + nL + ' esquinas · toque la primera para cerrar') +
               '</small>' +
             '</div>' +
           '</div>' +
@@ -9003,8 +9003,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (!c) {
             return '<div class="pcr-campo">' +
               '<label class="pcr-lab">El lote a intervenir</label>' +
-              '<p class="pcr-pista">Marcá en el mapa el terreno sobre el que vas a proponer algo. ' +
-              'Después elegís cuánto de su alrededor querés estudiar: el círculo azul sale ' +
+              '<p class="pcr-pista">Marque en el mapa el terreno sobre el que vas a proponer algo. ' +
+              'Después elige cuánto de su alrededor quiere estudiar: el círculo azul sale ' +
               'centrado en el lote.</p>' +
               '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-lote-btn">' +
                 ico('lapiz') + 'Marcar el lote en el mapa</button>' +
@@ -9123,7 +9123,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-guardadas-cab">' +
         h4('lapiz', 'Trazos guardados') +
       '</div>' +
-      '<p class="pcr-pista">Son solo las formas, sin análisis. Tocá una para ponerla otra vez ' +
+      '<p class="pcr-pista">Son solo las formas, sin análisis. Toque una para ponerla otra vez ' +
       'en el mapa y analizarla cuantas veces quieras: cada análisis se guarda aparte, arriba.</p>' +
       trazos.map(function (t) {
         var cuando = new Date(t.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
@@ -9158,10 +9158,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<button type="button" data-pcr="ver-mapa" class="pcr-mini">' +
           (S.enMapa ? ico('apagar') + 'Quitar del mapa' : ico('mapa') + 'Ver en el mapa') + '</button>' +
       '</div>' +
-      '<p class="pcr-pista">Tocá un sector para volver a ver su informe entero, con sus gráficas, ' +
+      '<p class="pcr-pista">Toque un sector para volver a ver su informe entero, con sus gráficas, ' +
       'sin repetir el análisis. ' +
       (hayCampo
-        ? 'Y después de la salida a campo, compará: vas a ver cuánto agregó el curso.'
+        ? 'Y después de la salida a campo, compare: vas a ver cuánto agregó el curso.'
         : 'Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.') +
       '</p>' +
       fichas.map(function (f) {
@@ -9758,7 +9758,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var TAX = (window.AIA_MOTOR && window.AIA_MOTOR.TAXONOMIA) || [];
     return '' +
       h4('calor', 'Mapas de calor') +
-      '<p class="pcr-pista">Elegí qué querés ver caliente. Podés <b>combinar varias</b> ' +
+      '<p class="pcr-pista">Elija qué quiere ver caliente. Puede <b>combinar varias</b> ' +
       'para encontrar dónde coinciden. Se pinta sobre el mapa: la hoja baja sola.</p>' +
       '<div class="pcr-calor-chips">' +
         chip('todos', 'Todos los usos', st.total || pois.length, null) +
@@ -10134,7 +10134,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (hay
         ? 'Los kilómetros son los de este sector, medidos sobre el trazado. La troncal y la ' +
           'principal son las que traen gente de fuera; la local es la que se camina.'
-        : 'Medí el trazado para ver la red pintada sobre el mapa y saber cuánto hay de cada clase.') +
+        : 'Mida el trazado para ver la red pintada sobre el mapa y saber cuánto hay de cada clase.') +
       '</p>';
   }
 
@@ -10563,7 +10563,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             var pe = S.terreno && S.terreno.pendiente;
             if (!pe || pe.media == null) {
               return '<p class="pcr-pista">Lo que sí se puede medir de este sitio es su ' +
-                'pendiente: medí el terreno y volvé acá.</p>';
+                'pendiente: mida el terreno y vuelva acá.</p>';
             }
             var m = Number(pe.media);
             return '<p class="pcr-pista">Del lote, lo que sí está medido es la pendiente: <b>' +
@@ -10812,7 +10812,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               (S.cortesEnMapa ? 'Quitar las líneas del mapa'
                               : 'Ver por dónde van los cortes') + '</button>' +
           '</div>'
-        : '<p class="pcr-pista">Este análisis no trae por dónde se cortó: volvé a medir el ' +
+        : '<p class="pcr-pista">Este análisis no trae por dónde se cortó: vuelva a medir el ' +
           'terreno y las líneas A–A′ y B–B′ se podrán ver sobre el mapa.</p>') +
       /* Cortar por donde uno diga. Los dos del motor van por el medio del
          rectángulo; un proyecto se corta por donde el terreno decide algo. */
@@ -10957,7 +10957,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           (dura != null
             ? 'La foto satelital dice que el <b>' + dura + '%</b> del área es superficie dura, calles ' +
               'incluidas: lo construido está <b>entre el ' + ll.pctLleno + '% y el ' + dura + '%</b>.'
-            : 'Leé la foto satelital y esta cifra se acota por arriba con la superficie dura que se ve.') +
+            : 'Lea la foto satelital y esta cifra se acota por arriba con la superficie dura que se ve.') +
           ' Para la lámina, lo honesto es dibujar los llenos calcando la foto, que es lo que se hace a ' +
           'mano, y usar este número como piso.</p>';
       })() +
@@ -11142,7 +11142,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Tres advertencias que cambian la lectura. La distancia se mide ' +
       '<b>en línea recta</b>: caminando siempre es más, porque hay manzanas y vías que no se ' +
       'cruzan. Solo cuenta lo que está <b>dentro del área</b>: un colegio a media cuadra por ' +
-      'fuera del borde no entra, así que si el equipamiento está justo afuera, dibujá el área ' +
+      'fuera del borde no entra, así que si el equipamiento está justo afuera, dibuje el área ' +
       'un poco más grande. Y solo cuenta lo <b>mapeado</b>. ' + esc(a.metodo || '') + '</p>';
   }
 
@@ -11544,14 +11544,14 @@ function donaHTML(datos, colorDe, nombreDe) {
                       catch (e) { return false; } }
     var lista = [
       { id: 'plano-del-sector', t: 'Plano del sector', g: 'La hoja', listo: !!res,
-        falta: 'analizá el sector', dato: 'el dibujo que manda' },
+        falta: 'analice el sector', dato: 'el dibujo que manda' },
       { id: 'los-mapas-del-sector', t: 'Los mapas del sector', g: 'La hoja',
-        listo: !!res, falta: 'analizá el sector', dato: 'la banda de recuadros' },
+        listo: !!res, falta: 'analice el sector', dato: 'la banda de recuadros' },
       { id: 'sintesis-del-sector', t: 'Síntesis del sector', g: 'La hoja', listo: !!res,
-        falta: 'analizá el sector', dato: 'a favor, en contra y qué falta' },
+        falta: 'analice el sector', dato: 'a favor, en contra y qué falta' },
 
       { id: 'el-sitio', t: 'El sitio', g: 'Lo que hay', listo: !!res,
-        falta: 'analizá el sector', dato: 'las cifras de arriba' },
+        falta: 'analice el sector', dato: 'las cifras de arriba' },
       /* Una caja que el pliego imprime y este inventario no conoce no se
          puede apagar: ni desde la ficha ni desde «dejar solo el plano», que
          apaga recorriendo justamente esta lista. Se nota tarde y de la peor
@@ -11574,19 +11574,19 @@ function donaHTML(datos, colorDe, nombreDe) {
          al papel: una caja que el pliego imprime y esta lista no conoce no se
          puede apagar desde ningún sitio (v857). */
       { id: 'lo-que-el-censo-trae-ademas', t: 'Lo que el censo trae además', g: 'Lo que hay',
-        listo: !!res, falta: 'analizá el sector',
+        listo: !!res, falta: 'analice el sector',
         dato: 'escolaridad y hogares, si la capa los trae' },
       { id: 'el-sector-dentro-de-la-ciudad', t: 'El sector dentro de la ciudad', g: 'Lo que hay',
         /* La misma condición que la caja: sin población del sector no hay
            nada que comparar. Sin la de la CIUDAD sí se pinta, porque decir
            que falta la referencia es parte del análisis. */
         listo: !!(st.poblacionProyectada || st.poblacionEstimada),
-        falta: 'analizá el sector', dato: st.poblacionMunicipio
+        falta: 'analice el sector', dato: st.poblacionMunicipio
           ? 'contra ' + (st.municipioNombre || 'el municipio') : 'sin referencia de ciudad' },
       { id: 'quien-queda-por-fuera', t: 'Quién queda por fuera', g: 'Lo que hay',
         listo: !!(st.accesibilidad && (st.accesibilidad.categorias || []).length &&
                   (st.poblacionProyectada || st.poblacionEstimada)),
-        falta: 'analizá el sector', dato: 'personas servidas y no servidas' },
+        falta: 'analice el sector', dato: 'personas servidas y no servidas' },
       { id: 'quien-vive-aca', t: 'Quién vive acá', g: 'Lo que hay',
         listo: !!(st.demografia && st.demografia.totalSexo),
         falta: 'el censo no tiene reparto por edades acá',
@@ -11616,33 +11616,33 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'como-cambia-al-alejarse', t: 'Cómo cambia al alejarse', g: 'Lo que hay',
         listo: (st.anillos || []).filter(function (x) { return x.n > 0; }).length >= 2 ||
                !!(res && res.pois && res.pois.length),
-        falta: 'analizá el sector', dato: 'anillos de distancia y el lado más activo' },
+        falta: 'analice el sector', dato: 'anillos de distancia y el lado más activo' },
       { id: 'hitos-y-nodos', t: 'Hitos y nodos', g: 'Lo que hay',
         listo: !!(st.hitos && st.hitos.length), falta: 'no hay hitos registrados',
         dato: ((st.hitos || []).length) + ' hitos' },
       { id: 'a-distancia-de-caminar', t: 'A distancia de caminar', g: 'Lo que hay',
-        listo: !!st.accesibilidad, falta: 'analizá el sector', dato: 'qué se alcanza a pie' },
+        listo: !!st.accesibilidad, falta: 'analice el sector', dato: 'qué se alcanza a pie' },
 
       /* Dos maneras de tener alturas, y durante un tiempo esta lista solo
          reconoció una. Un curso que contó cuarenta edificios en la calle veía
-         la caja en gris, con «medí el trazado» al lado y sin poder apagarla ni
+         la caja en gris, con «mida el trazado» al lado y sin poder apagarla ni
          encenderla, mientras el pliego la imprimía igual con lo contado
          dentro: la composición decía una cosa y el papel otra. En un barrio
          colombiano casi nadie registró la altura en OpenStreetMap, así que la
          de campo es justamente la que hay. */
       { id: 'continuidad-del-tejido', t: 'Continuidad del tejido', g: 'El suelo',
         listo: !!(trz && trz.morfologia && trz.morfologia.intersecciones),
-        falta: 'medí el trazado para contar los cruces',
+        falta: 'mida el trazado para contar los cruces',
         dato: 'cruces por km² y tramo medio' },
       { id: 'el-grano-manzana-y-predio', t: 'El grano: manzana y predio', g: 'El suelo',
         listo: !!(trz && ((trz.morfologia && trz.morfologia.tramoMedioM) ||
                           (trz.llenos && trz.llenos.conGeometria))),
-        falta: 'medí el trazado para tener la malla y las huellas',
+        falta: 'mida el trazado para tener la malla y las huellas',
         dato: 'el módulo de manzana, y el predio declarado sin dato' },
       { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
         listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato) ||
                   (function () { try { return !!alturasDeCampo(); } catch (e) { return false; } })()),
-        falta: 'medí el trazado o contá los pisos en la calle',
+        falta: 'mida el trazado o cuente los pisos en la calle',
         dato: (function () {
           var c; try { c = alturasDeCampo(); } catch (e) { c = null; }
           return c ? c.conPisos + ' edificios contados en campo' : 'cuántos pisos hay';
@@ -11653,12 +11653,12 @@ function donaHTML(datos, colorDe, nombreDe) {
          que ya se coló una vez con el espacio público. */
       { id: 'llenos-y-vacios', t: 'Llenos y vacíos', g: 'El suelo',
         listo: !!(trz && trz.llenos) && !trazadoSinDatos(trz),
-        falta: trz ? 'no hay nada mapeado en el sector' : 'medí el trazado',
+        falta: trz ? 'no hay nada mapeado en el sector' : 'mida el trazado',
         dato: trz && trz.llenos && !trazadoSinDatos(trz)
           ? trz.llenos.pctLleno + '% construido' : '' },
       { id: 'como-se-llega', t: 'Cómo se llega', g: 'Cómo se mueve',
         listo: !!(res && res.stats && res.stats.movilidad),
-        falta: 'analizá el sector',
+        falta: 'analice el sector',
         dato: (function () {
           var m = res && res.stats && res.stats.movilidad;
           if (!m) return 'corredores, buses y flujo';
@@ -11668,29 +11668,29 @@ function donaHTML(datos, colorDe, nombreDe) {
         })() },
       { id: 'como-se-mueve-el-sector', t: 'Cómo se mueve el sector', g: 'Cómo se mueve',
         listo: !!((trz && trz.vias) || (st.movilidad && (st.movilidad.viasArterias || []).length)),
-        falta: 'medí el trazado para tener la red de vías',
+        falta: 'mida el trazado para tener la red de vías',
         dato: 'la red, con las vías nombradas' },
       { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
-        listo: !!(trz && trz.perfil), falta: 'medí el trazado', dato: 'la sección tipo' },
+        listo: !!(trz && trz.perfil), falta: 'mida el trazado', dato: 'la sección tipo' },
       /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una
          pieza de espacio público con forma registrada. Un sector sin un solo
          parque mapeado tiene el objeto y no tiene la caja. */
       { id: 'espacio-publico-efectivo', t: 'Espacio público efectivo', g: 'El suelo',
         listo: !!(trz && trz.espacio && trz.espacio.piezas),
-        falta: 'medí el trazado; sin parques mapeados no hay qué medir',
+        falta: 'mida el trazado; sin parques mapeados no hay qué medir',
         dato: 'plazas y parques' },
       { id: 'el-terreno', t: 'El terreno', g: 'El suelo', listo: !!S.terreno,
-        falta: 'medí el terreno', dato: 'cotas, pendiente y cortes' },
+        falta: 'mida el terreno', dato: 'cotas, pendiente y cortes' },
       { id: 'el-clima', t: 'El clima', g: 'El suelo', listo: !!S.clima,
-        falta: 'pedí el clima', dato: 'temperatura, lluvia y viento' },
+        falta: 'pida el clima', dato: 'temperatura, lluvia y viento' },
       { id: 'la-amenaza-sismica', t: 'La amenaza sísmica', g: 'El suelo',
-        listo: !!S.amenaza, falta: 'pedí la amenaza sísmica',
+        listo: !!S.amenaza, falta: 'pida la amenaza sísmica',
         dato: S.amenaza ? ('amenaza ' + String(S.amenaza.nivel || '').toLowerCase() +
                            (S.amenaza.masa ? ' · y deslizamiento' : ''))
                         : 'Aa, Av, la curva y el deslizamiento' },
       { id: 'la-inundacion', t: 'La inundación', g: 'El suelo',
         listo: !!(S.inundacion && !S.inundacion.sinDato),
-        falta: 'pedí la amenaza: la inundación viene con ella',
+        falta: 'pida la amenaza: la inundación viene con ella',
         dato: S.inundacion && S.inundacion.nombre
           ? String(S.inundacion.nombre).toLowerCase()
           : 'las manchas del IDEAM' },
@@ -11699,7 +11699,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'como-cambio-el-sitio', t: 'Cómo cambió el sitio', g: 'El suelo',
         listo: !!(S.evo && S.evo.wayback && (S.evo.wayback.pasos || [])
                    .filter(function (p) { return p.ok && p.medida; }).length >= 2),
-        falta: 'pedí las fotos desde 2014',
+        falta: 'pida las fotos desde 2014',
         dato: (function () {
           var t = S.evo && S.evo.wayback && S.evo.wayback.tendencia;
           return t ? t.desde + ' → ' + t.hasta + ' · ' + (t.verde > 0 ? '+' : '') +
@@ -11716,7 +11716,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         listo: (function () {
           try { return !!ruidoDelLote(); } catch (e) { return false; }
         })(),
-        falta: 'medí el trazado: el ruido se estima desde las vías',
+        falta: 'mida el trazado: el ruido se estima desde las vías',
         dato: (function () {
           try { var r2 = ruidoDelLote(); return r2 ? conComa(r2.dB) + ' dB(A) · ' + r2.etq.toLowerCase()
                                                    : 'estimado desde la jerarquía vial'; }
@@ -11724,7 +11724,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         })() },
       { id: 'verde-y-agua', t: 'Verde y agua', g: 'El suelo',
         listo: !!(res && res.stats && res.stats.ambiente),
-        falta: 'analizá el sector',
+        falta: 'analice el sector',
         dato: (function () {
           var a = res && res.stats && res.stats.ambiente;
           return a ? (a.parques || 0) + ' parques · ' + (a.cuerposAgua || 0) + ' de agua'
@@ -11732,79 +11732,84 @@ function donaHTML(datos, colorDe, nombreDe) {
         })() },
       { id: 'cobertura-del-suelo', t: 'Cobertura del suelo', g: 'El suelo',
         listo: !!(S.cobertura && S.cobertura.clases && S.cobertura.clases.length),
-        falta: 'leé la foto satelital',
+        falta: 'lea la foto satelital',
         dato: (function () {
           var c = S.cobertura && S.cobertura.clases;
           var v = c && c.filter(function (x) { return x.id === 'verde'; })[0];
           return v ? v.pct + '% de vegetación viva' : 'lo que dice la foto, no el mapeo';
         })() },
       { id: 'asoleamiento', t: 'Asoleamiento', g: 'El suelo', listo: !!res,
-        falta: 'analizá el sector', dato: 'la carta solar del sitio' },
+        falta: 'analice el sector', dato: 'la carta solar del sitio' },
 
       { id: 'potencial-edificatorio', t: 'Potencial edificatorio', g: 'El suelo',
         listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
-        falta: 'medí el trazado: ningún edificio trae la altura registrada',
+        falta: 'mida el trazado: ningún edificio trae la altura registrada',
         dato: 'lo construido, y la norma declarada sin dato' },
       { id: 'suelo-disponible-real', t: 'Suelo disponible real', g: 'El suelo',
         listo: !!(trz && trz.llenos && trz.llenos.pctVacio != null),
-        falta: 'medí el trazado para saber cuánto está construido',
+        falta: 'mida el trazado para saber cuánto está construido',
         dato: 'lo sin construir, menos el agua' },
       { id: 'el-lote-a-intervenir', t: 'El lote a intervenir', g: 'El lote', listo: hayLote,
-        falta: 'marcá el lote', dato: 'medidas y frentes' },
+        falta: 'marque el lote', dato: 'medidas y frentes' },
       { id: 'que-cabe-en-el-lote', t: 'Qué cabe en el lote', g: 'El lote',
-        listo: hayLote, falta: 'marcá el lote',
+        listo: hayLote, falta: 'marque el lote',
         dato: 'huella, metros y viviendas' },
       { id: 'la-cuadra-del-lote', t: 'La cuadra del lote', g: 'El lote',
         listo: (function () {
           try { return !!laCuadraDelLote(); } catch (e) { return false; }
         })(),
-        falta: 'marcá el lote y medí el trazado',
+        falta: 'marque el lote y mida el trazado',
         dato: 'el frente al que da: fachada, huecos, esquinas y usos' },
-      { id: 'la-sombra-que-arrojas', t: 'La sombra que arrojás', g: 'El lote',
+      /* El id sale del SLUG del título, y por eso cambió con él en la v878:
+         `caja()` apaga comparando `slugPliego(titulo)` contra esta lista, así
+         que un id que no sea el slug del título deja la caja imposible de
+         apagar. Es exactamente el fallo que la v857 dejó advertido, y lo cazó
+         `tpliego` con «dejar solo el plano» dejando la sombra encendida. */
+      { id: 'la-sombra-que-proyecta', t: 'La sombra que proyecta', g: 'El lote',
         listo: (function () {
           try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.length); }
           catch (e) { return false; }
         })(),
-        falta: 'marcá el lote y medí el trazado',
+        falta: 'marque el lote y mida el trazado',
         dato: 'a quién le tapa el sol el volumen permitido' },
       { id: 'que-le-pide-el-sitio-al-proyecto', t: 'Qué le pide el sitio al proyecto',
-        g: 'El lote', listo: det(), falta: 'marcá el lote y medí algo más',
+        g: 'El lote', listo: det(), falta: 'marque el lote y mida algo más',
         dato: 'las determinantes' },
       { id: 'hasta-donde-se-camina-desde-el-lote', t: 'Hasta dónde se camina desde el lote',
         g: 'El lote', listo: !!(S.caminata && S.caminata.anillos),
-        falta: 'marcá el lote y medí el trazado', dato: '5, 10 y 15 min' },
+        falta: 'marque el lote y mida el trazado', dato: '5, 10 y 15 min' },
       { id: 'la-sombra-de-los-vecinos', t: 'La sombra de los vecinos', g: 'El lote',
-        listo: somb(), falta: 'marcá el lote y medí el trazado', dato: '9, 12 y 15 h' },
+        listo: somb(), falta: 'marque el lote y mida el trazado', dato: '9, 12 y 15 h' },
 
       { id: 'lo-intangible', t: 'Lo intangible', g: 'El trabajo del curso',
         listo: !!(S.intangible && S.intangible.length),
-        falta: 'marcá lo que viste en la calle',
+        falta: 'marque lo que viste en la calle',
         dato: (S.intangible || []).length + ' marcas' },
       { id: 'lo-levantado-en-campo', t: 'Lo levantado en campo', g: 'El trabajo del curso',
-        listo: !!S.campo, falta: 'compará con lo del curso', dato: 'lo que encontró la salida' },
+        listo: !!S.campo, falta: 'compare con lo del curso', dato: 'lo que encontró la salida' },
       { id: 'donde-falta-mapear', t: 'Dónde falta mapear', g: 'El trabajo del curso',
-        listo: !!res, falta: 'analizá el sector', dato: 'la rosa de los rumbos' },
+        listo: !!res, falta: 'analice el sector', dato: 'la rosa de los rumbos' },
       { id: 'lo-que-falta-levantar', t: 'Lo que falta levantar', g: 'El trabajo del curso',
         listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' },
       /* Los tres paneles de campo: siempre listos, porque se llenan a mano. */
       { id: 'percepcion-del-lugar', t: 'Percepción del lugar', g: 'El trabajo del curso',
-        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+        listo: !!res, falta: 'analice el sector', dato: 'en blanco, para llenar en la calle' },
       { id: 'lo-que-no-cambia', t: 'Lo que no cambia', g: 'El trabajo del curso',
-        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+        listo: !!res, falta: 'analice el sector', dato: 'en blanco, para llenar en la calle' },
       { id: 'voces-de-quien-vive-aca', t: 'Voces de quien vive acá', g: 'El trabajo del curso',
-        listo: !!res, falta: 'analizá el sector', dato: 'en blanco, para llenar en la calle' },
+        listo: !!res, falta: 'analice el sector', dato: 'en blanco, para llenar en la calle' },
       /* Los cinco vacíos obligatorios: siempre listos, porque decir que no
          hay dato es parte del análisis. */
-      { id: 'riesgo-oficial', t: 'Riesgo oficial', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
-      { id: 'servicios-publicos', t: 'Servicios públicos', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
-      { id: 'norma-urbana', t: 'Norma urbana', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
-      { id: 'movilidad-real', t: 'Movilidad real', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' },
-      { id: 'informacion-legal-del-predio', t: 'Información legal del predio', g: 'Lo que falta', listo: !!res, falta: 'analizá el sector', dato: 'sin dato oficial, dicho' }
+      { id: 'riesgo-oficial', t: 'Riesgo oficial', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'servicios-publicos', t: 'Servicios públicos', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'norma-urbana', t: 'Norma urbana', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'movilidad-real', t: 'Movilidad real', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
+      { id: 'informacion-legal-del-predio', t: 'Información legal del predio', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' }
     ];
     var off = S.pliegoOff || [];
     /* Qué consigue cada caja gris. Se pidió así: «las cajas grises que salen
        en el análisis que no se han hecho, que sean el acceso rápido para
-       analizar». Antes una caja gris era un botón apagado con «medí el
+       analizar». Antes una caja gris era un botón apagado con «mida el
        trazado» al lado: decía qué faltaba y obligaba a ir a buscarlo a otra
        pestaña. Ahora lleva la acción que la llena, y tocarla es tocar el
        botón que la mide. La llave es la MISMA acción del despachador de
@@ -11813,13 +11818,13 @@ function donaHTML(datos, colorDe, nombreDe) {
 
        Las que no tienen acción son las que no dependen de una medición sino
        del sitio: «no hay hitos registrados» no se arregla tocando nada. Y las
-       compuestas —«marcá el lote y medí el trazado»— piden lo PRIMERO que
+       compuestas —«marque el lote y mida el trazado»— piden lo PRIMERO que
        falta, en ese orden. */
     var loteYTrazado = !hayLote ? 'lote-dibujar' : (!trz ? 'trazado' : null);
     var PIDE = {
       'alturas-de-lo-construido': trz ? null : 'trazado',
       /* Las dos del potencial salen del trazado igual que las alturas: una
-         caja gris sin acción es un botón apagado con «medí el trazado» al
+         caja gris sin acción es un botón apagado con «mida el trazado» al
          lado, que es justo lo que se pidió quitar. */
       'potencial-edificatorio': trz ? null : 'trazado',
       /* La red de vías sale del trazado igual que las alturas. Las otras dos
@@ -11842,7 +11847,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'el-lote-a-intervenir': 'lote-dibujar',
       'que-cabe-en-el-lote': 'lote-dibujar',
       'la-cuadra-del-lote': loteYTrazado,
-      'la-sombra-que-arrojas': loteYTrazado,
+      'la-sombra-que-proyecta': loteYTrazado,
       'hasta-donde-se-camina-desde-el-lote': loteYTrazado,
       'la-sombra-de-los-vecinos': loteYTrazado,
       'que-le-pide-el-sitio-al-proyecto': !hayLote ? 'lote-dibujar' : (!trz ? 'trazado' : (!S.terreno ? 'terreno' : null)),
@@ -11854,7 +11859,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       c.esPol = esPol;
       if (c.listo) return;
       c.pide = PIDE[c.id] !== undefined ? PIDE[c.id]
-             : (c.falta === 'analizá el sector' ? 'analizar' : null);
+             : (c.falta === 'analice el sector' ? 'analizar' : null);
     });
     return lista;
   }
@@ -12009,13 +12014,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
     lista.push({ id: 'cobertura', t: 'Cobertura del suelo', pide: 'cobertura',
                  listo: !!(cob && cob.overlayImagen && cob.overlayLimites),
-                 dato: 'clasificada sobre la foto', falta: 'leé la foto satelital' });
+                 dato: 'clasificada sobre la foto', falta: 'lea la foto satelital' });
     lista.push({ id: 'foto', t: 'La foto satelital', pide: 'cobertura',
                  listo: !!(cob && cob.imagen && cob.overlayLimites),
-                 dato: 'la imagen cruda', falta: 'leé la foto satelital' });
+                 dato: 'la imagen cruda', falta: 'lea la foto satelital' });
     lista.push({ id: 'estratos', t: 'Manzanas por estrato', pide: 'estratos',
                  listo: !!(S.estratos && S.estratos.manzanas && S.estratos.manzanas.length),
-                 dato: 'del DANE', falta: 'poné los estratos en el mapa' });
+                 dato: 'del DANE', falta: 'ponga los estratos en el mapa' });
     lista.push({ id: 'hitos', t: 'Hitos y nodos',
                  listo: !!((st.hitos || []).some(function (h) { return h.lat != null; })),
                  dato: 'numerados y con su nombre', falta: 'no hay hitos registrados' });
@@ -12030,13 +12035,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                           catch (e) { return false; }
                         })(),
                  dato: 'cada huella con el tono de sus pisos, y lo contado en campo en rombo',
-                 falta: 'medí el trazado o contá los pisos en la calle' });
+                 falta: 'mida el trazado o cuente los pisos en la calle' });
     lista.push({ id: 'masa', t: 'Susceptibilidad por pendiente', pide: 'terreno',
                  listo: !!S.terRejilla, dato: 'los rangos de la guía, del modelo de elevación',
-                 falta: 'medí el terreno' });
+                 falta: 'mida el terreno' });
     lista.push({ id: 'llenos', t: 'Llenos y vacíos', pide: 'trazado',
                  listo: !!(S.trzHuellas && S.trzHuellas.length),
-                 dato: 'huellas de edificio', falta: 'medí el trazado' });
+                 dato: 'huellas de edificio', falta: 'mida el trazado' });
     lista.push({ id: 'vias', t: 'Jerarquía vial', pide: 'trazado',
                  listo: !!(S.trzVias && S.trzVias.length),
                  dato: (function () {
@@ -12044,29 +12049,29 @@ function donaHTML(datos, colorDe, nombreDe) {
                    return rj.length ? rj.map(function (j) { return j.etq.toLowerCase(); }).join(' · ')
                                     : 'la red por jerarquía';
                  })(),
-                 falta: 'medí el trazado' });
+                 falta: 'mida el trazado' });
     lista.push({ id: 'curvas', t: 'Curvas de nivel', pide: 'terreno',
                  listo: (function () {
                    try { var c = curvasDelTerreno(); return !!(c && c.curvas && c.curvas.length); }
                    catch (e) { return false; } })(),
-                 dato: 'del relieve', falta: 'medí el terreno' });
+                 dato: 'del relieve', falta: 'mida el terreno' });
     lista.push({ id: 'sombras', t: 'La sombra de los vecinos',
                  listo: (function () {
                    try { var x = sombrasDelLote(); return !!(x && x.horas && x.horas.length); }
                    catch (e) { return false; } })(),
-                 dato: '9, 12 y 15 h', falta: 'marcá el lote y medí el trazado' });
+                 dato: '9, 12 y 15 h', falta: 'marque el lote y mida el trazado' });
     lista.push({ id: 'caminata', t: 'Hasta dónde se camina',
                  listo: !!(S.caminata && S.caminata.tramos && S.caminata.tramos.length),
-                 dato: '5, 10 y 15 min', falta: 'marcá el lote y medí el trazado' });
+                 dato: '5, 10 y 15 min', falta: 'marque el lote y mida el trazado' });
     lista.push({ id: 'intangible', t: 'Lo intangible',
                  listo: !!(S.intangible && S.intangible.length),
                  dato: (S.intangible || []).length + ' marcas',
-                 falta: 'marcá lo que viste en la calle' });
+                 falta: 'marque lo que viste en la calle' });
     /* Los seis que les faltaban a sus cajas. */
     var mvD = st.movilidad || null;
     lista.push({ id: 'llega', t: 'Cómo se llega', pide: 'trazado',
                  listo: !!(mvD && ((S.trzVias && S.trzVias.length) || (mvD.tramosVia || []).length)),
-                 dato: 'la vía principal en rojo, las arterias y las paradas', falta: 'medí el trazado' });
+                 dato: 'la vía principal en rojo, las arterias y las paradas', falta: 'mida el trazado' });
     lista.push({ id: 'caminar', t: 'A distancia de caminar',
                  listo: !!(st.accesibilidad && (st.accesibilidad.categorias || []).some(function (c) { return c.puntos > 0; })),
                  dato: 'el más cercano de cada cosa y el camino', falta: 'no hay equipamientos registrados' });
@@ -12075,18 +12080,18 @@ function donaHTML(datos, colorDe, nombreDe) {
                  dato: 'cuáles son, con su nombre', falta: 'no hay agua ni verde registrados' });
     lista.push({ id: 'ruido', t: 'El ruido del tránsito', pide: 'trazado',
                  listo: (function () { try { return !!ruidoDelLote() && !!(S.trzVias && S.trzVias.length); } catch (e) { return false; } })(),
-                 dato: 'cada vía con lo que emite', falta: 'medí el trazado' });
+                 dato: 'cada vía con lo que emite', falta: 'mida el trazado' });
     lista.push({ id: 'comercial', t: 'Dónde está la calle comercial',
                  listo: !!((st.nucleos || []).length),
                  dato: 'los locales juntos y su calle en rojo', falta: 'no hay comercios agrupados en el área' });
-    lista.push({ id: 'sombra-proyecto', t: 'La sombra que arrojás',
+    lista.push({ id: 'sombra-proyecto', t: 'La sombra que proyecta',
                  listo: (function () { try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.some(function (h) { return !h.bajo; })); }
                                        catch (e) { return false; } })(),
                  dato: 'a quién le cae la sombra del volumen permitido, a las 9, 12 y 15',
-                 falta: 'marcá el lote y medí el trazado' });
+                 falta: 'marque el lote y mida el trazado' });
     lista.push({ id: 'anillos', t: 'Cómo cambia al alejarse',
                  listo: (st.anillos || []).filter(function (a) { return a.n > 0; }).length >= 2,
-                 dato: 'los anillos de distancia con lo que hay en cada uno', falta: 'analizá el sector' });
+                 dato: 'los anillos de distancia con lo que hay en cada uno', falta: 'analice el sector' });
     var off = S.pliegoMapasOff || [];
     lista.forEach(function (m) { m.on = off.indexOf(m.id) === -1; });
     /* El tema de cada uno, del mismo sitio del que lo saca el papel. Sin
@@ -12126,25 +12131,25 @@ function donaHTML(datos, colorDe, nombreDe) {
     var lista = [];
     lista.push({ id: 'calor:todos', grupo: 'Lo que hay', nombre: 'Todos los usos, en calor',
                  color: '#0A6F9E', on: S.calor.indexOf('todos') !== -1, listo: !!S.resultado,
-                 falta: 'analizá el sector' });
+                 falta: 'analice el sector' });
     grupos.forEach(function (g) {
       lista.push({ id: 'calor:g:' + g.id, grupo: 'Lo que hay',
                    nombre: (G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id,
                    dato: g.n + ' usos', color: COL[g.id] || '#94a3b8',
                    on: S.calor.indexOf('g:' + g.id) !== -1, listo: !!S.resultado,
-                   falta: 'analizá el sector' });
+                   falta: 'analice el sector' });
     });
 
     lista.push({ id: 'cobertura', grupo: 'El suelo', nombre: 'Cobertura del suelo',
                  dato: 'de la foto satelital', color: '#22c55e',
-                 on: !!S.cobEnMapa, listo: !!S.cobertura, falta: 'medí la cobertura' });
+                 on: !!S.cobEnMapa, listo: !!S.cobertura, falta: 'mida la cobertura' });
     lista.push({ id: 'estratos', grupo: 'El suelo', nombre: 'Manzanas por estrato',
                  dato: 'del DANE', color: '#8b5cf6',
-                 on: !!S.estratos, listo: !!S.resultado, falta: 'analizá el sector' });
+                 on: !!S.estratos, listo: !!S.resultado, falta: 'analice el sector' });
     lista.push({ id: 'llenos', grupo: 'El suelo', nombre: 'Llenos y vacíos',
                  dato: 'huellas de los edificios', color: '#3B4A5A',
                  on: !!S.llenosEnMapa, listo: !!(S.trzHuellas && S.trzHuellas.length),
-                 falta: 'medí el trazado' });
+                 falta: 'mida el trazado' });
     lista.push({ id: 'vias', grupo: 'Cómo se mueve', nombre: 'Jerarquía vial',
                  dato: (function () {
                    var rj = redPorJerarquia(S.trzVias);
@@ -12153,22 +12158,22 @@ function donaHTML(datos, colorDe, nombreDe) {
                  })(),
                  color: '#16A34A',
                  on: !!S.viasEnMapa, listo: !!(S.trzVias && S.trzVias.length),
-                 falta: 'medí el trazado' });
+                 falta: 'mida el trazado' });
     lista.push({ id: 'curvas', grupo: 'El suelo', nombre: 'Curvas de nivel',
                  dato: (S.curvas && S.curvas.intervalo ? 'cada ' + S.curvas.intervalo + ' m' : 'del relieve'),
                  color: '#8A5A20', on: !!S.curvasEnMapa, listo: !!S.terRejilla,
-                 falta: 'medí el terreno' });
+                 falta: 'mida el terreno' });
 
     lista.push({ id: 'sombras', grupo: 'El lote', nombre: 'La sombra de los vecinos',
                  dato: '9, 12 y 15 h', color: '#7C4DFF',
                  on: !!S.sombrasEnMapa,
                  listo: !!(S.lote && S.lote.length >= 3 && S.trzHuellas && S.trzHuellas.length),
-                 falta: 'marcá el lote y medí el trazado' });
+                 falta: 'marque el lote y mida el trazado' });
     lista.push({ id: 'caminata', grupo: 'El lote', nombre: 'Hasta dónde se camina',
                  dato: '5, 10 y 15 min', color: '#0A6F9E',
                  on: !!S.caminataEnMapa,
                  listo: !!(S.caminata && S.caminata.tramos && S.caminata.tramos.length),
-                 falta: 'marcá el lote y medí el trazado' });
+                 falta: 'marque el lote y mida el trazado' });
     /* Lo intangible es la única capa que no se enciende midiendo nada: se
        enciende caminando. Por eso lo que le falta no es una medición sino
        una salida a la calle, y así se lo dice. */
@@ -12178,7 +12183,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                    : 'lo que solo se ve caminando'),
                  color: '#E23D3D', on: !!S.intEnMapa,
                  listo: !!(S.intangible && S.intangible.length),
-                 falta: 'marcá lo que viste en la calle' });
+                 falta: 'marque lo que viste en la calle' });
     /* Lo que consigue cada capa gris: la misma regla que las cajas del
        pliego —ver `cajasDelPliego`— y la misma llave del despachador, para
        que tocar la capa apagada sea tocar el botón que la mide. Las capas
@@ -12195,7 +12200,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     lista.forEach(function (c) {
       if (c.listo) return;
       c.pide = PIDE_CAPA[c.id] !== undefined ? PIDE_CAPA[c.id]
-             : (c.falta === 'analizá el sector' ? 'analizar' : null);
+             : (c.falta === 'analice el sector' ? 'analizar' : null);
     });
     return lista;
   }
@@ -12861,7 +12866,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                     rotulos: rotVP ? [rotVP] : [] }),
         conv: convLl,
         pie: 'facilidad para llegar ' + (mvN.scoreAcceso || 0) + '/100 · exposición al tránsito ' +
-             (mvN.exposicion || 0) + '/100' + (viasN.length ? '' : ' · medí el trazado para ver las calles')
+             (mvN.exposicion || 0) + '/100' + (viasN.length ? '' : ' · mida el trazado para ver las calles')
       });
     }
 
@@ -12905,7 +12910,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           conv: convCa.concat([{ c: '#FFD54F', t: (lote && lote.length >= 3) ? 'El lote' : 'El centro del sector', f: 'punto' }])
             .concat(radioAn > 0 ? [{ c: '#0A6F9E', t: 'Radio de análisis · ' + radioAn.toLocaleString('es-CO') + ' m, en línea recta', f: 'area' }] : []),
           pie: 'el más cercano de cada cosa' +
-               (porCalle ? ', y el camino por la calle' : ', en línea recta: medí el trazado para verlo por la calle') +
+               (porCalle ? ', y el camino por la calle' : ', en línea recta: mida el trazado para verlo por la calle') +
                (radioAn > 0 ? ' · el círculo es el radio de análisis: lo que queda fuera del camino y dentro del círculo es lo que la traza le quita' : '')
         });
       }
@@ -12988,7 +12993,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           conv: [{ c: '#E5484D', t: 'Local de comercio', f: 'punto' }]
             .concat(lineasN.length ? [{ c: '#E5484D', t: 'La calle comercial: tramos con locales a los dos lados', f: 'linea' }] : []),
           pie: 'los grupos numerados como en la lista de abajo, del que más pesa al que menos' +
-               (viasN.length ? '' : ' · medí el trazado para ver la calle en rojo')
+               (viasN.length ? '' : ' · mida el trazado para ver la calle en rojo')
         });
       }
     }
@@ -13038,7 +13043,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         return an && an[0] && haversineM(spM.centro, an[0]) <= 160;
       });
       mapas.push({
-        id: 'sombra-proyecto', titulo: 'La sombra que arrojás', grupo: grupoDeMapa('sombra-proyecto'),
+        id: 'sombra-proyecto', titulo: 'La sombra que proyecta', grupo: grupoDeMapa('sombra-proyecto'),
         svg: mini({ poligonos: polisP, huellas: huellasCerca,
                     destacados: tocadosP.map(function (an) { return { lat: an[0].lat, lng: an[0].lng, color: '#E5484D' }; }) }),
         conv: spM.horas.filter(function (h) { return !h.bajo && h.sombra && h.sombra.length >= 3; }).map(function (h) {
@@ -13447,7 +13452,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         pintar(); listo(r);
       };
       var reloj = setTimeout(function () {
-        terminar({ error: 'La prueba tardó demasiado. Imprimí y mirá el papel.' });
+        terminar({ error: 'La prueba tardó demasiado. Imprimí y mire el papel.' });
       }, 9000);
       try {
         /* La misma que se va a imprimir: ajustada. Medir la de tamaño natural
@@ -13514,9 +13519,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cabe = S.pliegoCabe;
     return h4('plan', 'Armar el pliego') +
       '<p class="pcr-pista">Una lámina no se hace poniendo todo: se hace eligiendo. Hay <b>' +
-      listas.length + '</b> caja' + (listas.length === 1 ? '' : 's') + ' con qué llenarse y llevás <b>' +
+      listas.length + '</b> caja' + (listas.length === 1 ? '' : 's') + ' con qué llenarse y lleva <b>' +
       puestas.length + '</b> puesta' + (puestas.length === 1 ? '' : 's') + '. Las grises necesitan una ' +
-      'medición que todavía no está: <b>tocá una y se hace ahí mismo</b>. El PDF sale completo igual: ' +
+      'medición que todavía no está: <b>toque una y se hace ahí mismo</b>. El PDF sale completo igual: ' +
       'uno es la composición y el otro es el archivo.</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="pliego-todo" class="pcr-mini">' + ico('ok', 16) +
@@ -13533,7 +13538,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Medido sobre el papel: hasta ahora la hoja se encogía sin suelo hasta ' +
       'que todo cupiera, y con treinta cajas eso deja la letra en <b>1,3 mm</b> —tres puntos y ' +
       'pico—, que no se lee ni de cerca. No hay ajuste que lo arregle: o entra todo, o se lee. ' +
-      'Elegí de qué lado ceder; lo que no quepa <b>sigue entero en el informe en hojas</b>.</p>' +
+      'Elija de qué lado ceder; lo que no quepa <b>sigue entero en el informe en hojas</b>.</p>' +
       '<div class="pcr-capas pcr-letras">' +
         LETRAS_PLIEGO.map(function (l) {
           var on = l.id === (S.pliegoLetra || 'todo');
@@ -13580,7 +13585,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                 '<i style="background:' + (c.listo ? (c.on ? '#0A6F9E' : '#C7D3DD') : '#E2E8F0') + '"></i>' +
                 '<span><b>' + esc(c.t) + '</b>' +
                   '<small>' + esc(c.listo ? (c.dato || '') : c.falta) +
-                  (pide ? ' <em>· tocá acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
+                  (pide ? ' <em>· toque acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
                   '</small></span>' +
               '</button>';
             }).join('') +
@@ -13670,7 +13675,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                   : '') +
                 (cabe.sobraMM
                   ? 'El contenido se pasa <b>' + cabe.sobraMM + ' mm</b> del papel. ' : '') +
-                'Apagá una caja, o probá ' + (cabe.horizontal ? 'parado' : 'acostado') + '.</p>')
+                'Apagá una caja, o pruebe ' + (cabe.horizontal ? 'parado' : 'acostado') + '.</p>')
         : '');
   }
 
@@ -13693,7 +13698,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Todo lo que se puede poner sobre el mapa, en un solo sitio. Hay <b>' +
       listas + '</b> capa' + (listas === 1 ? '' : 's') + ' disponible' + (listas === 1 ? '' : 's') +
       ' y <b>' + puestas + '</b> puesta' + (puestas === 1 ? '' : 's') + '. Las grises necesitan una ' +
-      'medición que todavía no está: <b>tocá una y se hace ahí mismo</b>.</p>' +
+      'medición que todavía no está: <b>toque una y se hace ahí mismo</b>.</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="capas-todo" class="pcr-mini">' + ico('ok', 16) +
           'Encender todo</button>' +
@@ -13716,7 +13721,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                 '<i style="background:' + esc(c.color) + '"></i>' +
                 '<span><b>' + esc(c.nombre) + '</b>' +
                   '<small>' + esc(c.listo ? (c.dato || '') : c.falta) +
-                  (pide ? ' <em>· tocá acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
+                  (pide ? ' <em>· toque acá y ' + esc(VERBO_DE[pide] || 'se hace') + '</em>' : '') +
                   '</small></span>' +
               '</button>';
             }).join('') +
@@ -13765,7 +13770,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'completo. Lo que falte de acá en adelante se levanta caminando.</p>';
     }
     return h4('documento', 'Lo que hoy NO saldría en el pliego') +
-      '<p class="pcr-pista">Cada una de estas es una caja vacía en el PDF. Tocá el botón y se ' +
+      '<p class="pcr-pista">Cada una de estas es una caja vacía en el PDF. Toque el botón y se ' +
       'mide: la ficha salta sola a la pestaña donde aparece el resultado.</p>' +
       '<div class="pcr-pend">' +
         lista.map(function (x) {
@@ -13989,7 +13994,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El lote a intervenir': { f: 'área, perímetro, frentes por vía y exposición solar por lado', fu: 'el polígono dibujado; vías de OpenStreetMap', c: 'alta en geometría, media en frentes', r: 'lote mínimo del POT: sin dato oficial', e: '±3 % de área por el trazo a mano' },
     'La cuadra del lote': { f: 'continuidad del frente construido 120 m a cada lado del lote', fu: 'huellas de OpenStreetMap, hoy', c: 'media', r: 'frente continuo ≥ 70 %', e: 'una huella que falta se lee como vacío' },
     'Qué cabe en el lote': { f: 'área × índices de ocupación y de construcción declarados', fu: 'índices puestos por quien analiza; el POT no está consultado', c: 'baja hasta leer la norma', r: 'IO 0,6 a 0,7 · IC 2 a 3 en barrio consolidado', e: 'sin aislamientos ni cesiones de la norma' },
-    'La sombra que arrojás': { f: 'sombra del volumen permitido a las 9, 12 y 15 h sobre los vecinos', fu: 'sol calculado; alturas de OpenStreetMap', c: 'media', r: 'ningún vecino en sombra al mediodía', e: 'depende de los índices declarados' },
+    'La sombra que proyecta': { f: 'sombra del volumen permitido a las 9, 12 y 15 h sobre los vecinos', fu: 'sol calculado; alturas de OpenStreetMap', c: 'media', r: 'ningún vecino en sombra al mediodía', e: 'depende de los índices declarados' },
     'Qué le pide el sitio al proyecto': { f: 'determinantes derivadas de las mediciones de esta hoja', fu: 'esta misma lámina', c: 'la de cada medición', r: 'determinantes, no propuestas', e: 'no reemplaza la norma ni el estudio de suelos' },
     'Lo levantado en campo': { f: 'lo mapeado por el curso contra OpenStreetMap: mismo sitio a menos de 40 m y misma categoría', fu: 'levantamiento del curso; OpenStreetMap, hoy', c: 'alta en lo verificado', r: 'coincidencia ≥ 80 %', e: 'el mismo sitio con otro nombre se lee como discrepancia' },
     'Dónde falta mapear': { f: 'usos por rumbo desde el centro; rumbo vacío = sin registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ningún rumbo vacío', e: 'un rumbo vacío puede ser un predio grande, no falta de mapeo' },
@@ -15569,7 +15574,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var fs = fichasCotejadas();
     if (fs.length < 2) {
       return S.cotejo.length === 1
-        ? '<p class="pcr-pista pcr-cotejo-pista">Elegí <b>otro sector</b> para comparar con el que ' +
+        ? '<p class="pcr-pista pcr-cotejo-pista">Elija <b>otro sector</b> para comparar con el que ' +
           'marcaste. Se pueden poner hasta cuatro lado a lado.</p>'
         : '';
     }
@@ -15871,7 +15876,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               '</b> sectores analizados no tienen todavía un solo punto levantado. Ahí es donde hay ' +
               'que mandar gente.</p>'
             : '<p class="pcr-conc">Todos los sectores analizados tienen ya trabajo de campo adentro.</p>')
-        : '<p class="pcr-pista">Analizá y guardá sectores para ver qué parte de la ciudad tiene ya ' +
+        : '<p class="pcr-pista">Analice y guarde sectores para ver qué parte de la ciudad tiene ya ' +
           'trabajo de campo y cuál no.</p>') +
 
       '<div class="pcr-llevar">' +
@@ -16336,10 +16341,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     var n = (S.lote || []).length;
     el.innerHTML =
       '<div class="pcr-lote-t">' +
-        (n === 0 ? 'Tocá las esquinas del lote'
-                 : n < 3 ? 'Seguí tocando: llevás ' + n + ' esquina' + (n === 1 ? '' : 's') +
+        (n === 0 ? 'Toque las esquinas del lote'
+                 : n < 3 ? 'Siga tocando: lleva ' + n + ' esquina' + (n === 1 ? '' : 's') +
                            '. Una que salió mal se quita tocándola.'
-                         : 'Llevás ' + n + ' esquinas. Tocá la primera para cerrar, ' +
+                         : 'Lleva ' + n + ' esquinas. Toque la primera para cerrar, ' +
                            'o cualquier otra para quitarla.') +
       '</div>' +
       '<div class="pcr-lote-b">' +
@@ -16616,8 +16621,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!g) return;
     if (!g.ok) {
       var texto = (g.error || 'No se pudo guardar el sector.') +
-        ' Lo que hiciste sigue en pantalla, pero se pierde si cerrás la aplicación.' +
-        ' Exportá tu recorrido con «Compartir el mío» y borrá sectores guardados' +
+        ' Lo que hiciste sigue en pantalla, pero se pierde si cierra la aplicación.' +
+        ' Exporte tu recorrido con «Compartir el mío» y borrá sectores guardados' +
         ' desde la pestaña «Sector» para hacer sitio.';
       if (S.avisoGuardado !== texto) { S.avisoGuardado = texto; pintar(); }
       return;
@@ -16752,11 +16757,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-lote-t">' +
         '<i class="pcr-int-punto" style="background:' + esc(t.color) + '"></i>' +
         esc(t.nombre) + ' — ' +
-        (geom === 'punto' ? 'tocá el sitio exacto'
-          : n === 0 ? (geom === 'zona' ? 'tocá las esquinas de la zona' : 'tocá por dónde va la barrera')
-          : n < min ? 'llevás ' + n + ' de ' + min + ' — una que salió mal se quita tocándola'
-          : geom === 'zona' ? 'llevás ' + n + '. Tocá la primera para cerrar, o cualquier otra para quitarla.'
-                            : 'llevás ' + n + '. Tocá «Listo» cuando termines.') +
+        (geom === 'punto' ? 'toque el sitio exacto'
+          : n === 0 ? (geom === 'zona' ? 'toque las esquinas de la zona' : 'toque por dónde va la barrera')
+          : n < min ? 'lleva ' + n + ' de ' + min + ' — una que salió mal se quita tocándola'
+          : geom === 'zona' ? 'lleva ' + n + '. Toque la primera para cerrar, o cualquier otra para quitarla.'
+                            : 'lleva ' + n + '. Toque «Listo» cuando termines.') +
       '</div>' +
       '<div class="pcr-int-preg">' + esc(t.pregunta) + '</div>' +
       '<div class="pcr-lote-b">' +
@@ -17433,7 +17438,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!EV) { S.evoAviso = 'Falta el módulo de evolución. Recargá la app.'; pintar(); return; }
     var contorno = contornoDelSector();
     if (!contorno || contorno.length < 3) {
-      S.evoAviso = 'Primero analizá un sector.'; pintar(); return;
+      S.evoAviso = 'Primero analice un sector.'; pintar(); return;
     }
     var cual = fuente === 'wayback' ? 'wayback' : 'landsat';
     S.evoCargando = cual; S.evoAviso = 'Preparando…'; pintar();
@@ -18808,7 +18813,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var K = window.URBIS_CORTES;
     if (!K) { S.corteAviso = 'Falta el módulo de cortes. Recargá la app.'; pintar(); return; }
     if (!S.terRejilla) {
-      S.corteAviso = 'Primero medí el terreno: los cortes se sacan de sus cotas.';
+      S.corteAviso = 'Primero mida el terreno: los cortes se sacan de sus cotas.';
       pintar(); return;
     }
     var m = mapa();
@@ -18857,7 +18862,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'se sale del área donde se midieron las cotas.';
       pintar(); return;
     }
-    if (!ter) { S.corteAviso = 'Primero medí el terreno.'; pintar(); return; }
+    if (!ter) { S.corteAviso = 'Primero mida el terreno.'; pintar(); return; }
     ter.perfiles = previos.concat([nuevo]);
     S.corteAviso = '';
     S.aviso = 'Corte ' + nuevo.marca + '–' + nuevo.marcaFin + ' hecho, de ' +
@@ -18928,8 +18933,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     var n = (S.cortePts || []).length;
     el.innerHTML =
       '<div class="pcr-lote-t">' +
-        (n === 0 ? 'Tocá dónde EMPIEZA el corte'
-                 : 'Ahora tocá dónde TERMINA') +
+        (n === 0 ? 'Toque dónde EMPIEZA el corte'
+                 : 'Ahora toque dónde TERMINA') +
       '</div>' +
       '<div class="pcr-lote-b">' +
         '<button type="button" data-corte="cancelar">' + ico('cerrar', 16) + 'Cancelar</button>' +
@@ -19101,7 +19106,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'huele mal, dónde te quedarías un rato. Nada de eso está en ningún mapa, y es la mitad de ' +
         'lo que decide un proyecto.</p>' +
         (guardada ? '<p class="pcr-pista">Esta ficha se guardó sin marcas.</p>' : lapices) +
-        '<p class="pcr-conc">Elegí un lápiz y tocá el mapa. Se puede hacer sentado mirando la foto, ' +
+        '<p class="pcr-conc">Elija un lápiz y toque el mapa. Se puede hacer sentado mirando la foto, ' +
         'pero sirve de verdad recorriendo: son las preguntas que uno se hace caminando.</p>';
     }
 
@@ -19350,7 +19355,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (guardada) return '';
       return h4('crecer', 'Qué cabe en el lote') +
         '<p class="pcr-pista">Hasta acá todo mide el sitio. Esto es el primer paso del otro ' +
-        'lado: cuánto se puede construir ahí y cuánta gente cabe. <b>Marcá el lote</b> y se ' +
+        'lado: cuánto se puede construir ahí y cuánta gente cabe. <b>Marque el lote</b> y se ' +
         'llena.</p>';
     }
     var idx = S.indices || (S.indices = Q.porDefecto());
@@ -19377,7 +19382,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          y compartirla hacía dos cosas malas a la vez —pintaba esta
          advertencia como un error de encaje, y la prueba de si el pliego cabe
          la encontraba a ella en vez de a su resultado—. */
-      '<p class="pcr-conc pcr-ojo"><b>Estos índices los ponés vos.</b> Salen del POT del ' +
+      '<p class="pcr-conc pcr-ojo"><b>Estos índices los pone usted.</b> Salen del POT del ' +
       'municipio y URBIS no los conoce ni los verifica: acá solo se hace la cuenta con lo que ' +
       'escribas. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
       'es parte del ejercicio.</p>' +
@@ -19417,7 +19422,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           q.cruces.map(function (c) {
             return '<p class="pcr-conc pcr-cabe-cruce">' + esc(c.texto) + '</p>';
           }).join('')
-        : '<p class="pcr-pista">Todavía no hay con qué cruzarlo: medí el terreno, el trazado y ' +
+        : '<p class="pcr-pista">Todavía no hay con qué cruzarlo: mida el terreno, el trazado y ' +
           'la amenaza, y acá aparece qué le hace cada cosa a lo que cabe.</p>') +
       (guardada ? '' :
         '<div class="pcr-llevar">' +
@@ -19484,7 +19489,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         ((S.intCurso || []).length
           ? ''
           : '<p class="pcr-conc">Todavía es un solo recorrido: el tuyo. Con uno no hay acuerdo ' +
-            'posible, y creer que coincidís con vos mismo sería la peor lectura de todas.</p>') +
+            'posible, y creer que uno coincide consigo mismo sería la peor lectura de todas.</p>') +
         traer;
     }
 
@@ -19524,7 +19529,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!c) return '';
     if (c.sinVias) {
       return h4('caminar', 'Hasta dónde se llega caminando') +
-        '<p class="pcr-pista">Para caminar hace falta la forma de las calles: medí el <b>trazado del ' +
+        '<p class="pcr-pista">Para caminar hace falta la forma de las calles: mida el <b>trazado del ' +
         'sector</b> y este bloque se llena solo. Sin las calles, lo único que se puede medir es la ' +
         'línea recta, que siempre miente a favor.</p>';
     }
@@ -19575,7 +19580,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           '</div>' +
           (S.caminataEnMapa
             ? '<p class="pcr-pista">Azul oscuro, 5 minutos; celeste, 10; claro, 15. ' +
-              'Cerrá esta hoja para verlo.</p>'
+              'Cierre esta hoja para verlo.</p>'
             : '')
         : '') +
       '<p class="pcr-pista">El lote engancha a la calle más cercana, a <b>' + c.distanciaAlaCalleM +
@@ -19851,7 +19856,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>' +
       medidor('Presencia de verde', am.scoreVerde,
         (am.scoreVerde >= 55 ? 'Sector con verde a la mano.'
-         : am.scoreVerde >= 25 ? 'Verde escaso: mirá si el que hay está en uso o abandonado.'
+         : am.scoreVerde >= 25 ? 'Verde escaso: mire si el que hay está en uso o abandonado.'
          : 'Casi sin verde registrado. Contar los árboles de la calle es un levantamiento que cambia este número.'),
         '#22c55e') +
       bloqueCobertura();
@@ -19946,7 +19951,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       h4('lista', 'La lista para ir a verificar') +
       '<p class="pcr-tarea-intro">Esto es lo que OpenStreetMap dice que hay, <b>con nombre y apellido</b>. ' +
       (conNombre.length
-        ? 'Buscá cada uno en la calle: los que sigan abiertos se confirman, los que no, se corrigen. ' +
+        ? 'Busque cada uno en la calle: los que sigan abiertos se confirman, los que no, se corrigen. ' +
           'Lo que encuentres y no esté en esta lista es lo que el curso le agrega al mapa.'
         : 'Ninguno tiene nombre registrado: son puntos anónimos, así que la tarea es justamente ponerles nombre.') +
       '</p>' +
@@ -20182,7 +20187,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       S.cliAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
     }
     var eje = ejeDelSector();
-    if (!eje) { S.cliAviso = 'Primero elegí el área.'; pintar(); return; }
+    if (!eje) { S.cliAviso = 'Primero elija el área.'; pintar(); return; }
 
     S.cliCargando = true; S.cliAviso = 'Consultando el clima…';
     pintar();
@@ -20209,7 +20214,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!D || !D.consultarElevacion || !window.AIA_REMOTO || !window.AIA_REMOTO.terreno) {
       S.terAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
     }
-    if (!listoParaAnalizar()) { S.terAviso = 'Primero elegí el área.'; pintar(); return; }
+    if (!listoParaAnalizar()) { S.terAviso = 'Primero elija el área.'; pintar(); return; }
 
     var esPol = S.forma === 'poligono';
     S.terCargando = true; S.terAviso = 'Preparando la rejilla de alturas…';
@@ -20265,7 +20270,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       S.trzAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
     }
     var esPol = S.forma === 'poligono';
-    if (!listoParaAnalizar()) { S.trzAviso = 'Primero elegí el área.'; pintar(); return; }
+    if (!listoParaAnalizar()) { S.trzAviso = 'Primero elija el área.'; pintar(); return; }
 
     S.trzCargando = true; S.trzAviso = 'Trayendo la forma de las calles y los edificios…';
     pintar();
@@ -20482,7 +20487,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (est.foto
         ? ' Estás con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
           'navegador le reserva mucho más espacio del que ocupa, así que puede que no quepan ' +
-          'todas. Si solo necesitás ubicarte, cambiá a un mapa de dibujo antes de guardar.'
+          'todas. Si solo necesitás ubicarte, cambie a un mapa de dibujo antes de guardar.'
         : '') + '</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="teselas" class="pcr-mini pcr-llevar-b">' +
@@ -20509,7 +20514,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!SS || S.bajandoTeselas) return;
     var contorno = null;
     try { contorno = contornoDelSector(); } catch (e) {}
-    if (!contorno) { S.aviso = 'Primero analizá un sector.'; pintar(); return; }
+    if (!contorno) { S.aviso = 'Primero analice un sector.'; pintar(); return; }
     var pr = SS.guardar(contorno, 250, function (est) {
       /* Se repinta con lo que informa el guardador, no con un contador
          propio: si el navegador descarta la mitad por falta de espacio, la
@@ -20658,7 +20663,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (r) {
         S.aviso = r.mal.length
           ? 'Medido: ' + (r.ok.join(', ') || 'nada') + '. No se pudo con ' +
-            r.mal.join(', ') + '; probá esos de a uno.'
+            r.mal.join(', ') + '; pruebe esos de a uno.'
           : 'Listo: ' + r.ok.join(', ') + '.';
       }
       pintar();
@@ -20671,7 +20676,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!AM) { S.amenazaAviso = 'Falta el módulo de amenaza sísmica. Recargá la app.';
                pintar(); return; }
     var e = ejeDelSector();
-    if (!e || e.lat == null) { S.amenazaAviso = 'Primero analizá un sector.'; pintar(); return; }
+    if (!e || e.lat == null) { S.amenazaAviso = 'Primero analice un sector.'; pintar(); return; }
     S.amenazaCargando = true; S.amenazaAviso = ''; S.inundacionAviso = ''; pintar();
 
     /* El agua se pide junto con el sismo, por el mismo botón y en la misma
@@ -20716,7 +20721,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       pintar(); return;
     }
     var contorno = contornoDelSector();
-    if (!contorno) { S.cobAviso = 'Primero analizá un sector.'; pintar(); return; }
+    if (!contorno) { S.cobAviso = 'Primero analice un sector.'; pintar(); return; }
 
     S.cobCargando = true; S.cobAviso = 'Preparando la lectura de la foto…';
     pintar();
@@ -20782,7 +20787,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '. Medido sobre ' + (c.malla || '') + ' píxeles, a ' + (c.mPorPx || '?') + ' m por píxel.</p>' +
       (c.grueso
         ? '<p class="pcr-pista">A esta escala cada píxel cubre varios metros: la lectura es de <b>masas</b>, ' +
-          'no de árboles sueltos. Para leer elementos, analizá un sector más chico.</p>'
+          'no de árboles sueltos. Para leer elementos, analice un sector más chico.</p>'
         : '') +
       (c.pctAmbiguo > 25
         ? '<p class="pcr-pista">Un ' + c.pctAmbiguo + '% quedó en tonos cálidos que no se pueden separar ' +
@@ -20899,7 +20904,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'entregable de la salida.</p>'
         : '') +
       '<p class="pcr-pista">Ahora mismo se llevaría: <b>' + esc(trae) + '</b>.' +
-      (d.cobertura.length ? '' : ' Si leés la foto satelital antes de exportar, también van las manchas de verde.') +
+      (d.cobertura.length ? '' : ' Si lee la foto satelital antes de exportar, también van las manchas de verde.') +
       '</p>' +
       '<div class="pcr-exp-btns">' +
         '<button type="button" data-pcr="exp" data-f="paquete" class="pcr-mini pcr-exp-todo">' + ico('exportar') + 'Paquete completo (ZIP)</button>' +
@@ -21174,7 +21179,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               'mapa siga respondiendo, y el análisis los cuenta todos'
             : '';
         })() + '. ' +
-        'Cerrá esta hoja para verlos; tocá uno para saber qué es.</p>' +
+        'Cierre esta hoja para verlos; toque uno para saber qué es.</p>' +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="estratos" class="pcr-mini pcr-llevar-b"' +
             (S.cargandoEstratos ? ' disabled' : '') + '>' +
@@ -21205,8 +21210,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<b>Estos dos botones son los que sirven en el celular:</b> bajan un archivo que ya trae ' +
         'el tamaño del pliego escrito dentro, así que no hay que elegir papel en ninguna parte ' +
         '—se lleva el archivo al plotter y sale a 60 × 90—. Tarda unos segundos: la hoja se ' +
-        'dibuja entera antes de guardarse. Lo que no mediste no sale: medí el terreno, el clima ' +
-        'y el trazado antes si querés que aparezcan.</p>' +
+        'dibuja entera antes de guardarse. Lo que no mediste no sale: mida el terreno, el clima ' +
+        'y el trazado antes si quiere que aparezcan.</p>' +
         (S.pdfArmando
           ? '<p class="pcr-conc" id="pcr-pdf-estado">' + esc(S.pdfAviso || 'Dibujando la lámina…') + '</p>'
           : '') +
@@ -21227,10 +21232,10 @@ function donaHTML(datos, colorDe, nombreDe) {
            que hay que ir a buscar no es una advertencia. */
         '<p class="pcr-lab">Verla antes de bajarla</p>' +
         '<p class="pcr-pista">Esto la abre para mirarla. Si le das a imprimir desde ahí, ' +
-        'el pliego pasa por el <b>cuadro de impresión del sistema</b>: en un computador podés ' +
+        'el pliego pasa por el <b>cuadro de impresión del sistema</b>: en un computador puede ' +
         'escribir 60 × 90 cm a mano y sale con la letra en <b>vector</b>, más nítida; ' +
         '<b>en el teléfono ese cuadro solo tiene carta, oficio y tabloide</b> y encajará el ' +
-        'pliego en una hoja. Para imprimir desde el celular usá los botones de arriba: ' +
+        'pliego en una hoja. Para imprimir desde el celular use los botones de arriba: ' +
         'el archivo ya sale con el pliego escrito dentro y no hay que elegir papel.</p>' +
         '<div class="pcr-llevar">' +
           '<button type="button" data-pcr="lamina-ver" class="pcr-mini">' + ico('ojo', 16) +
@@ -21253,9 +21258,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? '<div class="pcr-llevar">' +
               '<button type="button" data-pcr="guardar-area" class="pcr-mini pcr-llevar-b">' + ico('area') + 'Guardar el área dibujada</button>' +
             '</div>' +
-            '<p class="pcr-pista">Queda guardada con el nombre de arriba. Después la volvés a cargar desde ' +
+            '<p class="pcr-pista">Queda guardada con el nombre de arriba. Después la vuelve a cargar desde ' +
             '<b>Análisis → Áreas guardadas</b> y ahí se le suman los mapeos que haga el curso.</p>'
-          : '<p class="pcr-pista">Para guardar el sector y volver a él sin redibujarlo, analizá por <b>área dibujada</b> en vez de por radio.</p>') +
+          : '<p class="pcr-pista">Para guardar el sector y volver a él sin redibujarlo, analice por <b>área dibujada</b> en vez de por radio.</p>') +
         (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
         (S.textoPlano ? '<textarea class="pcr-plano" readonly rows="8">' + esc(S.textoPlano) + '</textarea>' : '') +
 
@@ -21366,13 +21371,13 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<ul class="pcr-check">' +
           (sinCategoria
             ? '<li>Los <b>' + sinCategoria + '</b> punto' + (sinCategoria === 1 ? '' : 's') +
-              ' sin categoría: mirá qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
+              ' sin categoría: mire qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
             : '') +
           (subs.length
             ? '<li>Tomá una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
               '</b> y comprobá que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
             : '') +
-          '<li>Anotá lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
+          '<li>Anote lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
           (zonas.total === 0
             ? '<li>Este sector está entero sin mapear: cualquier cosa que levanten es información nueva.</li>'
             : '') +
@@ -21862,7 +21867,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         }).join('') +
         '<em>S/E = sin estrato (industrial, dotacional o lotes)</em></div>'
     };
-    S.aviso = 'Estratos pintados. Cerrá esta hoja para verlos.';
+    S.aviso = 'Estratos pintados. Cierre esta hoja para verlos.';
     pintar();
     try { guardarFichaViva(); } catch (e) {}
   }
@@ -21942,7 +21947,13 @@ function donaHTML(datos, colorDe, nombreDe) {
        mitad. */
     S.intCurso = (f.intCurso || []).slice();
     S.intUnion = null;
-    S.pliegoOff = (f.pliegoOff || []).slice();
+    /* Una ficha guardada antes de la v878 lleva apagada `la-sombra-que-arrojas`,
+       que era el slug del título viejo. Se acepta como sinónimo del nuevo: si
+       alguien apagó esa caja, la ficha tiene que volver a abrirse como la
+       dejó, y no reencendida por un cambio de redacción que él no pidió. */
+    S.pliegoOff = (f.pliegoOff || []).map(function (x) {
+      return x === 'la-sombra-que-arrojas' ? 'la-sombra-que-proyecta' : x;
+    });
     S.pliegoMapasOff = (f.pliegoMapasOff || []).slice();
     S.indices = f.indices || null;
     S.indicesPuestos = f.indicesPuestos || null;
@@ -22113,7 +22124,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     return '<div class="pcr-medir pcr-traba">' +
       '<p class="pcr-lab">Antes de cambiar de área</p>' +
       '<p class="pcr-conc">Este sector <b>no se pudo guardar</b> —no hay espacio en el teléfono— y ' +
-      'tiene ' + esc(listaEnTexto(piezas)) + '. Si seguís con el área nueva, eso se pierde: ' +
+      'tiene ' + esc(listaEnTexto(piezas)) + '. Si sigue con el área nueva, eso se pierde: ' +
       'no está archivado en ninguna parte.</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="int-exportar" class="pcr-mini pcr-llevar-b">' +
@@ -22121,7 +22132,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<button type="button" data-pcr="traba-descartar" class="pcr-mini">' +
           ico('borrar', 16) + 'Descartarlo y seguir</button>' +
       '</div>' +
-      '<p class="pcr-pista">También podés hacer sitio borrando sectores guardados desde la ' +
+      '<p class="pcr-pista">También puede hacer sitio borrando sectores guardados desde la ' +
       'pestaña «Sector» y volver a intentarlo.</p>' +
     '</div>';
   }
@@ -22366,7 +22377,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       S.aviso = 'Cambiaste de área, así que la hoja arranca de cero. ' +
         (comoSeLlamaba ? '«' + comoSeLlamaba + '»' : 'El sector anterior') +
         ' quedó guardado con ' + listaEnTexto(piezas) +
-        ': está en la pestaña «Sector», y con «Retomar» volvés a trabajarlo.';
+        ': está en la pestaña «Sector», y con «Retomar» vuelve a trabajarlo.';
     }
   }
 
@@ -22444,7 +22455,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (f) {
             if (reanudarFicha(f)) {
               S.aviso = 'Listo, seguimos con «' + (f.nombre || 'el sector') + '». Si necesitás ' +
-                        'llenos y vacíos o sombras, volvé a medir el trazado.';
+                        'llenos y vacíos o sombras, vuelva a medir el trazado.';
             } else {
               S.error = 'Ese sector no guarda el área: no se puede reanudar.';
             }
@@ -22658,7 +22669,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var idxAntes = S.indices, pusAntes = S.indicesPuestos, fteAntes = S.indicesFuente;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
-        'totales. Volvé a analizar el sector para tener el informe completo.</p>';
+        'totales. Vuelva a analizar el sector para tener el informe completo.</p>';
     }
     var esPol = f.forma === 'poligono';
     var z = f.zonas || null;
@@ -22867,7 +22878,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!fichas.length) {
       return '<div class="u52-empty-card"><span class="pcr-vacio-ico">' + ico('lupa', 26) + '</span><div>' +
         '<b>Todavía no analizaste ningún sector</b>' +
-        '<small>Con la lupa del mapa mirás qué hay en un sector antes de ir a mapearlo. ' +
+        '<small>Con la lupa del mapa mira qué hay en un sector antes de ir a mapearlo. ' +
         'Cada análisis queda guardado acá.</small></div></div>' +
         '<div class="pcr-pest-pie">' +
           '<button type="button" class="pcr-mini" data-u52-call="pcr-nuevo">' + ico('lupa', 16) + 'Analizar un sector</button>' +
@@ -22948,7 +22959,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                 '</div>' +
                 (f.forma !== 'poligono'
                   ? '<p class="pcr-pista">Este sector se analizó por radio, así que no hay un área que cargar. ' +
-                    'Analizá por <b>área dibujada</b> si querés que el análisis de los mapeos corra sobre el mismo trazo.</p>'
+                    'Analice por <b>área dibujada</b> si quiere que el análisis de los mapeos corra sobre el mismo trazo.</p>'
                   : '') +
               '</div>'
             : '') +
@@ -23120,9 +23131,9 @@ function donaHTML(datos, colorDe, nombreDe) {
         new Date().toISOString().slice(0, 10) + '.json', 'application/json');
       S.avisoPestana = listo
         ? ('Se bajaron ' + fichasR.length + ' sector' + (fichasR.length === 1 ? '' : 'es') +
-           ' en un archivo de ' + kb + ' KB. Guardalo fuera del teléfono: es la copia de la ' +
+           ' en un archivo de ' + kb + ' KB. Guárdelo fuera del teléfono: es la copia de la ' +
            'salida entera, con las marcas, los recorridos del curso y los lotes.')
-        : 'Este navegador no dejó bajar el archivo. Copiá el texto de abajo y guardalo vos.';
+        : 'Este navegador no dejó bajar el archivo. Copie el texto de abajo y guárdelo a mano.';
       if (!listo) S.textoPlano = paqR;
       repintar(); return true;
     }

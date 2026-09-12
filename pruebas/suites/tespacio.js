@@ -250,7 +250,7 @@ const M2_ESPERADOS=ESPERADO.reduce((a,e)=>a+e.w*e.h,0);   // 10.000 + 3.600 + 80
   P('la consulta del trazado trae también el espacio público', r.pidioEspacio);
   P('y antes de medirlo el bloque no está', r.antesNoEsta);
   P('aunque el pliego ya lo nombre, en gris y diciendo qué falta',
-    !!r.antesEnElPliego && r.antesEnElPliego.gris===true && /medí el trazado/.test(r.antesEnElPliego.pie),
+    !!r.antesEnElPliego && r.antesEnElPliego.gris===true && /mida el trazado/.test(r.antesEnElPliego.pie),
     r.antesEnElPliego?r.antesEnElPliego.pie:'no está en el inventario');
 
   console.log('\n  -- los metros cuadrados --');

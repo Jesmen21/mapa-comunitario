@@ -72,12 +72,12 @@
       donde: 'Secretaría de Planeación Municipal',
       trae: 'Trae de una vez el tratamiento, los índices de ocupación y construcción, ' +
             'la altura y los aislamientos: los seis primeros campos de acá.',
-      con: 'Llevá el número predial o la dirección exacta.' },
+      con: 'Lleve el número predial o la dirección exacta.' },
     { que: 'El plano de tratamientos urbanísticos y el de usos del suelo',
       donde: 'Secretaría de Planeación Municipal · cartografía del POT vigente',
       trae: 'Dice qué se puede hacer en el sector, que es distinto de cuánto. Un lote ' +
             'con índices generosos y uso restringido no admite lo que sale de la cuenta.',
-      con: 'Pedí la versión VIGENTE con su número de acuerdo y el año.' },
+      con: 'Pida la versión VIGENTE con su número de acuerdo y el año.' },
     { que: 'El mapa de amenaza por inundación del POT',
       donde: 'Secretaría de Planeación Municipal · componente de gestión del riesgo',
       trae: 'Es lo que URBIS no pudo darte: el IDEAM no modeló Cúcuta y su mapa nacional ' +
@@ -93,7 +93,7 @@
       donde: 'Secretaría de Planeación Municipal',
       trae: 'Si existe, MANDA sobre el Aa y el Av que URBIS te mostró, y puede duplicar ' +
             'la aceleración de diseño.',
-      con: 'Es una pregunta de sí o no; si la respuesta es sí, pedí el documento.' }
+      con: 'Es una pregunta de sí o no; si la respuesta es sí, pida el documento.' }
   ];
 
   function porDefecto() {
@@ -186,7 +186,7 @@
     }
 
     // ── Lo que hay que decir siempre ────────────────────────────────────
-    avisos.push('Los índices los pusiste vos y salen del POT del municipio: URBIS no los ' +
+    avisos.push('Los índices los puso usted y salen del POT del municipio: URBIS no los ' +
                 'conoce ni los verifica. Si están mal, esta cuenta está mal con la misma ' +
                 'cara de seguridad.');
     avisos.push('El área que queda después de los aislamientos es aproximada: se estima con ' +

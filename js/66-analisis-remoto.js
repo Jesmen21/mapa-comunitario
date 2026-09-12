@@ -73,7 +73,7 @@
 
   var MENSAJES = {
     ausente: {
-      edu:  'Falta la licencia del curso. Pedísela a tu profesor: es un enlace que la instala sola.',
+      edu:  'Falta la licencia del curso. Pídasela a tu profesor: es un enlace que la instala sola.',
       gen:  'Falta la licencia de URBIS, o no es válida.'
     },
     formato:  { edu: 'Esa licencia no tiene el formato correcto. Pedile el enlace a tu profesor.',
@@ -203,7 +203,7 @@
       return sinServidor(String((e && e.message) || e),
         'No se pudo conectar con el servidor de análisis. El informe se calcula ' +
         'allá, así que no hay forma de hacerlo en este dispositivo. Si el ' +
-        'servidor estaba dormido, volvé a intentar en un minuto.');
+        'servidor estaba dormido, vuelva a intentar en un minuto.');
     });
   }
 

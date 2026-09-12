@@ -388,7 +388,7 @@ for(let i=0;i<14;i++){ const a=i*26*Math.PI/180, d=(160+(i%3)*70)/111320;
     /suman 100,7%/.test(F),
     (F.match(/suman [\d,]+%/)||['no lo dice'])[0]);
   T('se cruza con la pendiente, que es lo único medido del sitio',
-    /medí el terreno y volvé acá/.test(F) || /lo que sí está medido es la pendiente/.test(F),
+    /mida el terreno y vuelva acá/.test(F) || /lo que sí está medido es la pendiente/.test(F),
     (F.match(/pendiente[^.]{0,60}\./)||['no lo cruza'])[0]);
   T('la lámina lo resume en una línea',
     /amenaza alta o muy alta por deslizamiento/.test(LAM));

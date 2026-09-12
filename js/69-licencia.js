@@ -111,7 +111,7 @@
         try {
           navigator.share({
             title: 'Licencia de URBIS',
-            text: 'Tocá este enlace para activar tu licencia de URBIS · ' +
+            text: 'Toque este enlace para activar tu licencia de URBIS · ' +
                   (S.emitida.cliente || '') + ' · vence ' + (S.emitida.vence || ''),
             url: en2
           }).catch(function () {});
@@ -348,8 +348,8 @@
 
         (S.emitiendo ? htmlEmisor() : '') +
 
-        '<p class="ulic-nota">La licencia se guarda <b>solo en este navegador</b>. Si entrás desde otro ' +
-        'dispositivo, tenés que pegarla ahí también. ' + (esEducativo()
+        '<p class="ulic-nota">La licencia se guarda <b>solo en este navegador</b>. Si entra desde otro ' +
+        'dispositivo, tiene que pegarla ahí también. ' + (esEducativo()
           ? 'No la publiques: es la del curso entero, y cualquiera que la tenga gasta el cupo de todas.'
           : 'No la compartas: cualquiera que la tenga consume tu cupo.') + '</p>' +
       '</div>';
@@ -378,11 +378,11 @@
     if (motivo === 'firma' || motivo === 'formato' || motivo === 'ilegible' || motivo === 'incompleta') {
       return '<p class="ulic-alerta">' + (edu
         ? 'Esa licencia no es válida. Puede que sea de un curso anterior: pedile el enlace nuevo a tu profesor.'
-        : 'Esa licencia no es válida. Revisá que la hayas pegado completa.') + '</p>';
+        : 'Esa licencia no es válida. Revise que la hayas pegado completa.') + '</p>';
     }
     if (motivo === 'ausente') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'Para analizar hace falta la licencia del curso. Tu profesor te pasa un <b>enlace</b> que la instala sola; también podés pegarla acá abajo.'
+        ? 'Para analizar hace falta la licencia del curso. Tu profesor te pasa un <b>enlace</b> que la instala sola; también puede pegarla acá abajo.'
         : 'Para analizar hace falta una licencia. Pegala acá abajo.') + '</p>';
     }
     if (motivo === 'instalada') {
@@ -400,10 +400,10 @@
     if (!t) return 'No se pudo comprobar la licencia.';
     if (/failed to fetch|networkerror|load failed|network request failed/i.test(t)) {
       return 'No se pudo hablar con el servidor de URBIS. Puede ser tu conexión, o que el ' +
-             'servidor esté despertando: esperá unos segundos y volvé a intentar.';
+             'servidor esté despertando: esperá unos segundos y vuelva a intentar.';
     }
     if (/abort|timeout|no respondió/i.test(t)) {
-      return 'El servidor de URBIS tardó demasiado en responder. Volvé a intentar en un momento.';
+      return 'El servidor de URBIS tardó demasiado en responder. Vuelva a intentar en un momento.';
     }
     return t;
   }

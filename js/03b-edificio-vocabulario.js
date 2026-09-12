@@ -505,7 +505,7 @@
 
   /* ── El horario del letrero ────────────────────────────────────────────
      El análisis ya leía `opening_hours` de OpenStreetMap y le decía al curso
-     «anotá el horario del letrero», pero no había dónde escribirlo: la hoja
+     «anote el horario del letrero», pero no había dónde escribirlo: la hoja
      de campo pedía un dato que la aplicación no sabía recibir.
 
      Se guarda EN EL FORMATO DE OpenStreetMap («Mo-Sa 08:00-20:00», «24/7»),

@@ -225,7 +225,7 @@ for(let i=0;i<40;i++){ const ang=i*9*Math.PI/180, d=(200+(i%6)*80)/111320;
     window.map.fire('click',{latlng:{lat:C.lat+0.0004,lng:C.lng+0.0004}});
     window.map.fire('click',{latlng:{lat:C.lat+0.0004,lng:C.lng-0.0004}});
     await esperar(400);
-    o.cuenta=/llevás 2 esquinas/.test(t());
+    o.cuenta=/lleva 2 esquinas/.test(t());
     // Y ahora la salida: tiene que abrir la ficha de verdad.
     const salir=H().querySelector('[data-pcr="lote-cancelar"]');
     if(salir){ salir.click(); await esperar(700); }

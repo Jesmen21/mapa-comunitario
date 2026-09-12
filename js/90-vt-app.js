@@ -266,7 +266,7 @@
     }).catch(function (e) {
       var g = deCache('tablero');
       if (g) { S.tablero = g.datos; pintarTablero(g.datos, g.t); return; }
-      c.innerHTML = estado('error', { titulo: 'No se pudo traer el tablero', html: esc(e.sinRed ? 'Sin conexión con el servidor de URBIS y sin nada guardado todavía de este territorio.' : e.message) + ' Revisá la señal y volvé a intentar.', accion: 'tablero' });
+      c.innerHTML = estado('error', { titulo: 'No se pudo traer el tablero', html: esc(e.sinRed ? 'Sin conexión con el servidor de URBIS y sin nada guardado todavía de este territorio.' : e.message) + ' Revise la señal y vuelva a intentar.', accion: 'tablero' });
     });
   }
 
@@ -561,7 +561,7 @@
     if (S.mapa) S.mapa.getContainer().style.cursor = 'crosshair';
     var lista = tiposDisponibles();
     pintarHoja('<div class="vt-hoja-titulo"><b>Evaluar una idea</b><span class="vt-chip aviso">modo consulta</span></div>' +
-      '<p class="vt-sub" style="margin:8px 0">Elegí el tipo de equipamiento y tocá el mapa donde lo pondrías. URBIS te dice a cuánta gente serviría, qué hay ya cerca y qué pasa si no se hace.</p>' +
+      '<p class="vt-sub" style="margin:8px 0">Elija el tipo de equipamiento y toque el mapa donde lo pondrías. URBIS te dice a cuánta gente serviría, qué hay ya cerca y qué pasa si no se hace.</p>' +
       '<select class="vt-select" id="vt-eval-tipo" aria-label="Tipo a evaluar">' + lista.map(function (t) { return '<option value="' + esc(t.tipo) + '"' + (t.tipo === S.tipo ? ' selected' : '') + '>' + esc(t.nombre) + '</option>'; }).join('') + '</select>');
     abrirHoja(true);
   }
@@ -722,7 +722,7 @@
   }
   function modalAprobar(id) {
     abrirModal('<h3>Aprobar esta propuesta</h3><p>Queda escrito con tu nombre, tu rol y la hora. Es la memoria de decisión del municipio y no se borra: si después se cae, se cierra con su motivo.</p>' +
-      '<p>Para confirmar, escribí <b>APROBAR</b>. <span style="color:var(--vt-tinta-3)">(La contraseña de nuevo llega con las cuentas por entidad; hoy la credencial es la de este equipo.)</span></p>' +
+      '<p>Para confirmar, escriba <b>APROBAR</b>. <span style="color:var(--vt-tinta-3)">(La contraseña de nuevo llega con las cuentas por entidad; hoy la credencial es la de este equipo.)</span></p>' +
       '<input type="text" id="vt-conf" autocomplete="off" placeholder="APROBAR">' +
       '<div class="vt-acciones"><button type="button" class="vt-btn primario" id="vt-conf-ok" disabled>Confirmar</button><button type="button" class="vt-btn sutil" data-vt-accion="cerrar-modal">Cancelar</button></div>',
       function (m) {
@@ -789,13 +789,13 @@
   }
   var AYUDA = {
     tablero: ['El tablero', 'La cifra grande es el índice de salud urbana: cobertura pública confirmada, ponderada por urgencia. Debajo, las cuatro categorías donde falta más y las tres propuestas que más pesan. Todo dato trae su fecha y su fuente; lo que no está, se dice.'],
-    mapa: ['El mapa', 'Las manchas rojas y ámbar son gente sin un equipamiento público del tipo elegido a distancia de caminata; no tienen borde porque el dato no lo tiene. Los iconos de línea son los equipamientos; solo las propuestas pulsan. «Evaluar idea» responde sobre un punto que vos marques.'],
+    mapa: ['El mapa', 'Las manchas rojas y ámbar son gente sin un equipamiento público del tipo elegido a distancia de caminata; no tienen borde porque el dato no lo tiene. Los iconos de línea son los equipamientos; solo las propuestas pulsan. «Evaluar idea» responde sobre un punto que usted marque.'],
     propuestas: ['Las propuestas', 'Cada una dice qué déficit resuelve, a cuánta gente beneficia y qué pasa si no se hace, con la opción de gestión antes que la obra. La prioridad viaja siempre con su versión neutra. Decidir deja escrito quién y por qué; nada se borra.'],
     propuesta: ['La ficha', 'La zona punteada es apta por población y distancia: el lote exacto lo escoge el municipio adentro. El costo es un rango por m² de obra pública, sin suelo. Aprobar es del gobernante; descartar exige motivo.']
   };
   function modalAyuda() {
     var a = AYUDA[S.pantalla] || AYUDA.tablero;
-    abrirModal('<h3>' + esc(a[0]) + '</h3><p>' + esc(a[1]) + '</p><p><b>URBIS recomienda, el humano decide.</b> Nada de lo que ves aquí decide por vos; pondera y muestra.</p><div class="vt-acciones"><button type="button" class="vt-btn primario" data-vt-accion="cerrar-modal">Entendido</button></div>');
+    abrirModal('<h3>' + esc(a[0]) + '</h3><p>' + esc(a[1]) + '</p><p><b>URBIS recomienda, el humano decide.</b> Nada de lo que ve aquí decide por usted; pondera y muestra.</p><div class="vt-acciones"><button type="button" class="vt-btn primario" data-vt-accion="cerrar-modal">Entendido</button></div>');
   }
 
   /* ── presentación ───────────────────────────────────────────────────────── */

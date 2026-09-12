@@ -123,7 +123,7 @@ const geo=[
 
     // ── Primero SIN el trazado medido: el bloque tiene que pedirlo.
     await dibujar();
-    o.sinCalles=/medí el trazado del sector/.test(txt(H()));
+    o.sinCalles=/mida el trazado del sector/.test(txt(H()));
     o.sinCifras=!/minutos de recorrido|m de recorrido/.test(txt(H()));
 
     // ── Ahora con las calles.

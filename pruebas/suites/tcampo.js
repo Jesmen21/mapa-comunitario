@@ -204,7 +204,7 @@ let mal=0; const T=(n,c,d)=>{ if(!ok(n,c,d)) mal++; };
     if(bc){ bc.click(); for(let i=0;i<25;i++){ await esperar(300);
       if(!/Consultando/.test(t())) break; } }
     await esperar(400); ag(); await esperar(300);
-    o.avisaSinRed=/no se pudo|sin conexión|sin señal|revisá tu conexión|Failed|error/i.test(t());
+    o.avisaSinRed=/no se pudo|sin conexión|sin señal|revise tu conexión|Failed|error/i.test(t());
     o.noInventaCeros=!/0 °C|0 mm al año/.test(t());
     return o;
   },{C});

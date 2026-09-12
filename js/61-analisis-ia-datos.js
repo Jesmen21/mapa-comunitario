@@ -399,7 +399,7 @@
       if (ultimoError) {
         throw new Error(ultimoError.overpass
           ? 'La consulta no alcanzó a terminar en el servidor de datos abiertos: el área ' +
-            'es muy grande para lo que hay mapeado ahí. Probá con un radio menor.'
+            'es muy grande para lo que hay mapeado ahí. Pruebe con un radio menor.'
           : 'El servicio de datos abiertos está saturado. Espera un minuto y vuelve a intentar.');
       }
       /* La completa alcanzó: si había un techo por debajo de esta área,
@@ -418,7 +418,7 @@
           ? 'En un análisis anterior la consulta completa no alcanzó a terminar en un área de ' +
             'este tamaño, así que esta salió directamente en modo ligero: se leyeron los usos con ' +
             'puerta a la calle, no los polígonos de uso del suelo, vegetación ni agua. Para ' +
-            'tenerlos, analizá con un radio menor.'
+            'tenerlos, analice con un radio menor.'
           : (o.avisoLigera || '');
       }
       /* Y si la respuesta llegó TOPADA, se dice. Overpass corta en el
@@ -431,7 +431,7 @@
         aviso = (aviso ? aviso + ' ' : '') +
           'La consulta llegó al tope de ' + tope + ' elementos: en este sector hay más de lo ' +
           'que se alcanzó a traer, así que las cifras son un mínimo. Para contarlo todo, ' +
-          'analizá por partes con un radio menor.';
+          'analice por partes con un radio menor.';
       }
       /* Dedup por type+id y descarte de lo que no se puede situar.
          La excepción son las RUTAS de transporte: una relación de ruta no
@@ -666,7 +666,7 @@
         throw new Error(ultimo === 'saturado'
           ? 'El servicio de altura del terreno está atendiendo demasiadas consultas ' +
             'ahora mismo. Es gratuito y tiene un cupo por hora. Esperá un par de minutos ' +
-            'y volvé a darle a «Medir el terreno»: lo demás del análisis ya está.'
+            'y vuelva a darle a «Medir el terreno»: lo demás del análisis ya está.'
           : 'No se pudo consultar la altura del terreno (' + ultimo + ').');
       }
       const lista = d && d.elevation;
@@ -796,7 +796,7 @@
      sola vez: lo usan las dos puertas de entrada. */
   const AVISO_LIGERA = 'El área es grande, así que se consultaron solo los usos con puerta a la ' +
     'calle: no se leyeron los polígonos de uso del suelo, vegetación ni agua. Para tenerlos, ' +
-    'analizá con un radio menor.';
+    'analice con un radio menor.';
 
   /* `corteMsMax` acota el corte del cliente por debajo del que sale del área.
      No es un ajuste de pruebas: es para quien no puede esperar los dos
