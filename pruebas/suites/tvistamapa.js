@@ -136,10 +136,21 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
     o.diceSolPorLado=/cuánto sol de la tarde recibe cada uno/.test(t);
     o.leyenda=[...H().querySelectorAll('.pcr-sol-leyenda span')].map(x=>(x.textContent||'').trim());
     o.niveles=[...H().querySelectorAll('.pcr-lado-sol')].map(x=>(x.textContent||'').replace(/\s+/g,' ').trim());
-    // En el mapa: un trazo por lado, con colores distintos.
+    /* En el mapa: un trazo por lado, con EL COLOR DE SU NIVEL. Lo que hay que
+       comparar es contra la ficha, que ya pinta el punto de cada lado con el
+       color de su nivel: si el mapa usa los mismos colores y uno por lado,
+       está pintando el nivel de cada lado y no uno solo para todos. */
     o.trazos=(function(){ const cols={}; let n=0;
-      window.map.eachLayer(function(l){ if(l instanceof L.Polyline && !(l instanceof L.Polygon) && l.options && l.options.weight===6){ n++; cols[l.options.color]=1; } });
-      return { n:n, colores:Object.keys(cols).length }; })();
+      window.map.eachLayer(function(l){ if(l instanceof L.Polyline && !(l instanceof L.Polygon) && l.options && l.options.weight===6){ n++; cols[String(l.options.color).toLowerCase()]=1; } });
+      const ficha={};
+      [...H().querySelectorAll('.pcr-lado-sol .pcr-sol-punto')].forEach(function(x){
+        const m=(x.getAttribute('style')||'').match(/background:\s*([^;]+)/);
+        if(m) ficha[m[1].trim().toLowerCase()]=1;
+      });
+      const cm=Object.keys(cols).sort(), cf=Object.keys(ficha).sort();
+      return { n:n, colores:cm.length, lados:[...H().querySelectorAll('.pcr-lado-sol')].length,
+               nivelesEnFicha:cf.length, mismos:cm.join(',')===cf.join(','),
+               mapa:cm.join(' '), enFicha:cf.join(' ') }; })();
     // Y en el plano de la lámina.
     let capturado=''; window.AIA_INFORME=window.AIA_INFORME||{};
     const orig=window.AIA_INFORME.abrirVentanaImpresion;
@@ -215,8 +226,26 @@ for(let i=0;i<40;i++){ const ox=(i%8-4)*0.0009, oy=(Math.floor(i/8)-2)*0.0012;
   T('y niveles distintos para lados que miran a lados distintos',
     (r.niveles||[]).some(x=>/sol pleno/.test(x)) && (r.niveles||[]).some(x=>/sin sol/.test(x)),
     (r.niveles||[]).join(' | '));
-  T('en el mapa, un trazo por lado con su color', r.trazos && r.trazos.n>=4 && r.trazos.colores>=3,
-    JSON.stringify(r.trazos));
+  /* Hasta la v874 esto pedía «al menos tres colores distintos», y eso es una
+     FECHA metida dentro de la comprobación: el nivel de cada lado se mide
+     contra el azimut de la puesta de HOY, así que cuántos niveles distintos
+     salen en un rectángulo norte-sur depende del día del año. Cerca del
+     equinoccio los cuatro lados caen en dos niveles y la suite se ponía roja
+     sin que nadie hubiera tocado nada — pasó el 12 de septiembre de 2026,
+     con la batería entera en verde menos esta.
+
+     Lo que de verdad hay que comprobar es lo que el título dice: un trazo por
+     lado, con EL COLOR DE SU NIVEL. Se mide contra la ficha, que pinta el
+     mismo dato: mismos colores y uno por lado. Si algún día el cálculo
+     volviera a pintar todos los lados iguales, la ficha también los pintaría
+     iguales y esta comprobación no lo vería — por eso la de arriba, que exige
+     un lado con «sol pleno» y otro «sin sol», se queda donde está: esa sí
+     mide que el cálculo mira hacia dónde mira cada lado. */
+  T('en el mapa, un trazo por lado', r.trazos && r.trazos.n === r.trazos.lados && r.trazos.n >= 4,
+    (r.trazos||{}).n + ' trazos para ' + (r.trazos||{}).lados + ' lados');
+  T('y cada uno con el color de su nivel, el mismo de la ficha',
+    r.trazos && r.trazos.mismos === true,
+    'mapa: ' + (r.trazos||{}).mapa + ' · ficha: ' + (r.trazos||{}).enFicha);
   T('y en el plano de la lámina, con su escala', r.laminaConEscala===true && r.laminaNiveles>=4,
     r.laminaNiveles+' lados con nivel');
 
