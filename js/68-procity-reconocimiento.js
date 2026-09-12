@@ -3335,7 +3335,12 @@ function donaHTML(datos, colorDe, nombreDe) {
              «me encantaban esos mapas de calor de varios mapas dependiendo
              los usos y lo institucional». Las dos que cambian la conclusión
              lo dicen en su pie —ver `categoriasQueCambian`—. */
-          maxCategorias: horiz ? 5 : 6
+          /* §4 (v877): «los ocho mapas de calor por categoría se conservan
+             todos: separados se lee la forma de cada uso, que en el mapa
+             combinado se pierde». El tope sube de seis a ocho parado y de
+             cinco a siete acostado — la banda crece, y el papel sale de los
+             paneles de texto, que es de donde el pliego dice que salga. */
+          maxCategorias: horiz ? 7 : 8
         });
         if (o._memo) o._memo.mapas = todos;
         return todos.filter(function (m) { return mapasApagados.indexOf(m.id) === -1; });
@@ -6315,6 +6320,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        del tamaño con dos franjas blancas a los lados. En una sola columna el
        mismo dibujo la llena de borde a borde y sale más grande. */
     var mapaAncho = proporcionDelSector >= 1.25;
+    /* Cuál de los mapas de categoría abre la fila: es el único que lleva el
+       párrafo de método de los ocho (§4, v877). Se busca acá y no dentro del
+       bucle porque el orden de `mapas` ya es el definitivo. */
+    var primerCalor = (mapas.filter(function (x) {
+      return /^calor:(?!todos)/.test(String(x.id));
+    })[0] || {}).id || '';
     var cajaMapas = mapas.map(function (m) {
       var cara = CARA['Los mapas del sector'] || ['sitio', 'capas'];
       var titulo = titulosDeCaja.indexOf(m.titulo) >= 0 ? m.titulo + ' · el mapa' : m.titulo;
@@ -6324,9 +6335,17 @@ function donaHTML(datos, colorDe, nombreDe) {
          ancho—. La foto lleva clase propia porque su peso, tres y medio,
          no es un número de clase. `data-m` es su identificador: la prueba
          lo necesita para saber cuál es cuál sin adivinarlo por el título. */
-      var peso = PESO_MAPA[m.id] || (mapaAncho ? 2 : 1);
+      /* §4 (v877) · Los mapas de CATEGORÍA suben a dos columnas. Iban a una,
+         que en la hoja de 60 cm son ocho o nueve centímetros con el círculo
+         del sector en siete: a esa escala la mancha se ve y el contorno no se
+         puede calcar, que es justo para lo que existe. El pliego lo pide por
+         su nombre —10 a 11 cm— y dice de dónde sale el papel: «esta banda
+         crece, no se reduce… si algo tiene que ceder espacio, que sean los
+         paneles de texto explicativo». */
+      var esCalorCat = /^calor:(?!todos)/.test(String(m.id));
+      var peso = PESO_MAPA[m.id] || (esCalorCat ? 2 : (mapaAncho ? 2 : 1));
       var clasePeso = m.id === 'foto' ? ' mapa-foto'
-        : PESO_MAPA[m.id] ? ' mapa-p' + peso
+        : (PESO_MAPA[m.id] || esCalorCat) ? ' mapa-p' + peso
         : mapaAncho ? ' mapa-ancho' : '';
       /* Un mapa del sector está medido a escala de SECTOR: es el área
          analizada dibujada. Lo declara como cualquier otra caja (v854), y
@@ -6354,7 +6373,15 @@ function donaHTML(datos, colorDe, nombreDe) {
           (m.id === 'cobertura' && DECIDE['Cobertura del suelo']
             ? (function () { try { var dd = DECIDE['Cobertura del suelo'](); return dd ? '<p class="decide">→ ' + esc(dd) + '</p>' : ''; } catch (e) { return ''; } })()
             : '') +
-          metodoDe(/^calor:(?!todos)/.test(String(m.id)) ? 'calor:categoria' : m.id, hoyTxt) +
+          /* §4 (v877) · El método de los mapas de CATEGORÍA se imprime una
+             sola vez para toda la fila, no repetido bajo cada uno: es
+             idéntico palabra por palabra en los ocho y solo cambia el
+             conteo, así que repetirlo gastaba ocho párrafos de la banda más
+             grande de la hoja en decir lo mismo. Va en el primero, que es
+             el que abre la fila; los demás llevan su pie y nada más. */
+          (/^calor:(?!todos)/.test(String(m.id)) && String(m.id) !== primerCalor
+            ? ''
+            : metodoDe(/^calor:(?!todos)/.test(String(m.id)) ? 'calor:categoria' : m.id, hoyTxt)) +
         '</section>';
     }).join('');
     /* ── Los siete chequeos de coherencia (§2.4 del pliego) ────────────
@@ -7322,7 +7349,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               estratos: o.estratos, curvas: o.curvas, sombras: o.sombras,
               caminata: o.caminata !== undefined ? o.caminata : S.caminata,
               intangible: o.intangible !== undefined ? o.intangible : S.intangible,
-              maxCategorias: 6 });
+              maxCategorias: 8 });
           } catch (e) { return []; }
         })();
         if (!mps.length) return '';
@@ -12323,9 +12350,18 @@ function donaHTML(datos, colorDe, nombreDe) {
     var H = o.h || 210;
     var W = Math.round(H * Math.max(0.7, Math.min(1.9, proporcionSector)));
     var base = { w: W, h: H, lote: (lote && lote.length >= 3) ? lote : null };
+    /* `Object.assign({}, base, extra)` arma un objeto NUEVO, así que lo que
+       la miniatura escriba de vuelta —las medidas de los contornos, desde la
+       v877— cae en la copia y no en `extra`. Es el mismo tropiezo que
+       `R.estado()` en la v871: un objeto fabricado no es el original.
+       Se devuelve lo medido copiándolo de vuelta a mano. */
     function mini(extra) {
-      try { return A.miniatura(forma, Object.assign({}, base, extra)) || ''; }
-      catch (e) { return ''; }
+      try {
+        var o2 = Object.assign({}, base, extra);
+        var svg = A.miniatura(forma, o2) || '';
+        if (extra && o2.calorMedido) extra.calorMedido = o2.calorMedido;
+        return svg;
+      } catch (e) { return ''; }
     }
     var pois = res.pois || [];
     var mapas = [];
@@ -12362,21 +12398,55 @@ function donaHTML(datos, colorDe, nombreDe) {
         .map(function (g) { return { id: g, n: st.porGrupo[g] || 0 }; })
         .filter(function (x) { return x.n >= 3 && x.id !== 'otro'; })
         .sort(function (a, b) { return b.n - a.n; })
-        .slice(0, o.maxCategorias || 6);
+        .slice(0, o.maxCategorias || 8);
+      /* §4 (v877) · Los dos umbrales de contorno. Se dicen en lo que el campo
+         cuenta de verdad —cuántos usos de esa categoría hay a menos del radio
+         del núcleo— y no en un porcentaje del máximo: un porcentaje cambia de
+         sector a sector y dos láminas no se pueden comparar entre sí. Así, en
+         cambio, «3 o más usos en 150 m» significa lo mismo en todas. */
+      var UMBRALES = [2, 4];
       grupos.forEach(function (g) {
         var suyos = pois.filter(function (p) { return p.grupo === g.id; });
         if (!suyos.length) return;
+        /* El objeto de opciones se guarda aparte porque la miniatura le
+           DEVUELVE las medidas por ahí: el área sobre cada umbral y el rumbo
+           del eje mayor salen de recorrer el campo, y volver a calcularlos
+           acá sería recorrerlo dos veces. */
+        var op = { calor: suyos, calorColor: COL[g.id] || '#94a3b8', calorRadio: 9,
+                   calorContornos: true, calorNiveles: UMBRALES,
+                   puntos: suyos.map(function (p) {
+                     return { lat: p.lat, lng: p.lng, color: COL[g.id] || '#94a3b8' };
+                   }), radioPunto: 1.6 };
+        var svg = mini(op);
+        var md = op.calorMedido || null;
+        var ha = function (m2) { return conComa(Math.round(m2 / 1000) / 10) + ' ha'; };
+        /* El pie de cada mapa, con lo que el pliego pide por su nombre: el
+           conteo, el área de la mancha en hectáreas y el rumbo del eje mayor.
+           El método NO va acá — es idéntico en los ocho y se imprime una sola
+           vez para toda la fila. */
+        var piezas = [g.n + ' usos'];
+        if (md && md.niveles && md.niveles[0] && md.niveles[0].areaM2 > 0)
+          piezas.push('mancha ' + ha(md.niveles[0].areaM2));
+        if (md && md.niveles && md.niveles[1] && md.niveles[1].areaM2 > 0)
+          piezas.push('núcleo ' + ha(md.niveles[1].areaM2));
+        if (md && md.eje) {
+          /* Una nube redonda no tiene rumbo, y darle uno sería inventar una
+             forma que no está. Se dice que es redonda, que también es un
+             dato: un uso repartido parejo no se lee igual que uno en
+             corredor. */
+          piezas.push(md.eje.redonda || md.eje.grados == null
+            ? 'sin eje dominante (repartido parejo)'
+            : 'eje a ' + md.eje.grados + '°');
+        }
         mapas.push({
           id: 'calor:' + g.id, grupo: grupoDeMapa('calor:' + g.id),
           titulo: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id),
-          svg: mini({ calor: suyos, calorColor: COL[g.id] || '#94a3b8', calorRadio: 9,
-                      puntos: suyos.map(function (p) {
-                        return { lat: p.lat, lng: p.lng, color: COL[g.id] || '#94a3b8' };
-                      }), radioPunto: 1.6 }),
+          svg: svg,
           conv: [{ c: COL[g.id] || '#94a3b8',
                    t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id) + ' · ' + g.n }],
           razon: razones[g.id] || '',
-          pie: g.n + ' usos · ' + (razones[g.id] || 'dónde se concentra')
+          medido: md,
+          pie: piezas.join(' · ')
         });
       });
     }
@@ -13929,7 +13999,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Plano del sector': { f: 'usos mapeados y huellas sobre el polígono, a escala', fu: 'OpenStreetMap, hoy', c: 'media', r: 'ninguna: es el plano base', e: 'lo que no está mapeado no está dibujado' },
     'La foto satelital': { f: 'la imagen cruda del sector, sin clasificar', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'alta como imagen, sin fecha', r: 'ninguna', e: 'puede tener años; comparar con «Cómo cambió el sitio»' },
     'calor:todos': { f: 'densidad de usos por núcleo (kernel) sobre todos los registros', fu: 'OpenStreetMap, hoy', c: 'media', r: 'dónde se junta lo que hay', e: 'un sector submapeado se ve vacío' },
-    'calor:categoria': { f: 'la misma densidad, solo con los usos de esa categoría', fu: 'OpenStreetMap, hoy', c: 'media', r: 'el mapa grande de al lado', e: 'pocos puntos = manchas engañosas' },
+    /* §4 (v877): este método vale para los OCHO mapas de categoría y se
+       imprime una sola vez, en el que abre la fila. De ahí que diga los dos
+       umbrales: moviendo el umbral cambia la forma del contorno, así que el
+       umbral es parte del dato y no una decisión de dibujo. */
+    'calor:categoria': { f: 'densidad de esa categoría: cuántos usos suyos hay a menos del radio del núcleo. Las dos líneas cerradas son isolíneas de ese conteo, como una curva de nivel — la delgada en 2 usos o más (borde) y la gruesa en 4 o más (núcleo duro). El área se cuenta sobre la rejilla del campo, no midiendo el polígono: una isolínea cortada por el borde del recuadro daría de menos',
+                         fu: 'OpenStreetMap, hoy', c: 'media',
+                         r: 'el mapa grande de al lado; el degradado no se puede calcar y la línea sí, así que dos personas que la calquen sacan el mismo polígono',
+                         e: 'pocos puntos = manchas engañosas; con menos de tres usos no se declara eje dominante' },
     'estratos': { f: 'estrato socioeconómico por manzana', fu: 'DANE, estratificación por manzana', c: 'media: el estrato es del inmueble, no de la gente', r: 'reparto de estratos del municipio', e: 'manzanas sin dato quedan en gris' },
     'masa': { f: 'susceptibilidad por rangos de pendiente del terreno medido', fu: 'Copernicus DEM GLO-90; rangos del Servicio Geológico Colombiano', c: 'media', r: 'el mapa municipal de movimientos en masa', e: 'la pendiente no es toda la amenaza: falta el suelo' },
     'curvas': { f: 'curvas de nivel interpoladas de la malla de cotas', fu: 'Copernicus DEM GLO-90 vía Open-Meteo Elevation', c: 'media', r: 'la plancha del IGAC', e: 'celda de 90 m: suaviza el relieve' },
@@ -20886,7 +20963,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     ].join('|');
     if (huella === tiraCache.huella) return tiraCache.mapas;
     var mapas;
-    try { mapas = mapasDelPliego(res, { h: 140, maxCategorias: 6 }) || []; }
+    try { mapas = mapasDelPliego(res, { h: 140, maxCategorias: 8 }) || []; }
     catch (e) { mapas = []; }
     tiraCache = { huella: huella, mapas: mapas };
     return mapas;

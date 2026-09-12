@@ -35,11 +35,33 @@ for (let i = 0; i < NL; i++) {
   LOTE.push({ lat: C.lat + Math.cos(a) * rr,
               lng: C.lng + Math.sin(a) * rr / Math.cos(C.lat * Math.PI / 180) });
 }
+/* Los usos del sector. Iban TODOS en un patrón circular parejo, y eso dejaba
+   una rama a oscuras que no se veía: el eje mayor de cada mancha (§4, v877)
+   salía «sin eje dominante» en las cuatro categorías, porque una nube redonda
+   no tiene rumbo. La comprobación del rumbo habría pasado sin comprobar nada.
+
+   Ahora las FARMACIAS van sobre un corredor —alineadas a lo largo de una
+   diagonal, como se alinean de verdad sobre la avenida— y las demás siguen
+   repartidas. Así el sector ejercita las dos ramas: una categoría con eje
+   medido y tres sin él, que también es un dato —un uso repartido parejo no
+   se lee igual que uno en corredor—. */
 const usos = [];
 for (let i = 0; i < 220; i++) {
+  const cual = ['pharmacy', 'school', 'bank', 'restaurant', 'police'][i % 5];
+  if (cual === 'pharmacy') {
+    // El corredor: a lo largo de una diagonal, con poca dispersión al través.
+    const t = (i / 5) / 44;                       // 0 a 1 a lo largo del eje
+    const largo = (-420 + t * 840) / 111320;      // 840 m de corredor
+    const ancho = (((i * 7) % 5) - 2) * 14 / 111320;
+    usos.push({ type: 'node', id: 2000 + i,
+      lat: C.lat + largo * 0.72 + ancho * 0.69,
+      lon: C.lng + (largo * 0.69 - ancho * 0.72) / Math.cos(C.lat * Math.PI / 180),
+      tags: { name: 'Sitio ' + i, amenity: cual } });
+    continue;
+  }
   const a = i * 11 * Math.PI / 180, d = (120 + (i % 7) * 70) / 111320;
   usos.push({ type: 'node', id: 2000 + i, lat: C.lat + Math.cos(a) * d, lon: C.lng + Math.sin(a) * d,
-    tags: { name: 'Sitio ' + i, amenity: ['pharmacy', 'school', 'bank', 'restaurant', 'police'][i % 5] } });
+    tags: { name: 'Sitio ' + i, amenity: cual } });
 }
 const cotaDe = ln => 300 + Math.round(40 * Math.sin(ln * 900));
 /* Calles con jerarquía de verdad, que es lo que pide el mapa de movilidad:
@@ -1283,6 +1305,58 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     T('ni queda en pie la categoría «servicios de alto impacto»',
       !hs.some(h => IMP.test(h.cat)),
       hs.map(h => h.cat).join(' · ').slice(0, 110) || 'sin categorías');
+  }
+
+  /* ── §4 · La banda de forma (v877) ───────────────────────────────────
+     «El degradado no se puede calcar; la línea sí. Con la línea, todos los
+     estudiantes trazan la misma geometría medida.» Eso convierte la banda de
+     usos —un inventario— en insumo de forma, que es lo que el pliego pide. */
+  console.log('\n  -- §4 · la mancha se puede calcar --');
+  {
+    const doc = String(r.doc || '');
+    const txtD = doc.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ');
+    /* Dos contornos por categoría, con grosor distinto: el delgado es el
+       borde y el grueso el núcleo duro. Se buscan por el grosor, que es lo
+       que los distingue en el papel. */
+    const borde = (doc.match(/stroke-linejoin="round" stroke-width="0\.7"/g) || []).length;
+    const nucleo = (doc.match(/stroke-linejoin="round" stroke-width="1\.5"/g) || []).length;
+    T('cada mancha lleva su contorno de borde, trazado donde el calor cruza el umbral',
+      borde >= 3, borde + ' contornos de borde');
+    T('y donde hay núcleo duro, su segunda línea más gruesa',
+      nucleo >= 1, nucleo + ' contornos de núcleo');
+    /* Los umbrales van IMPRESOS: moviendo el umbral cambia la forma, así que
+       el umbral es parte del dato y no una decisión de dibujo. */
+    T('los dos umbrales van escritos, con su valor',
+      /2 usos o más \(borde\)/.test(txtD) && /4 o más \(núcleo duro\)/.test(txtD),
+      (txtD.match(/la delgada en[^.]{0,70}/) || ['no los escribe'])[0]);
+    T('y la hoja explica por qué la línea y no solo el degradado',
+      /degradado no se puede calcar/.test(txtD),
+      (txtD.match(/degradado no se puede calcar[^.]{0,60}/) || ['no lo explica'])[0]);
+    /* Al pie de cada mapa: área de la mancha y rumbo del eje mayor. Un uso en
+       corredor y uno repartido parejo no se leen igual, y sin el rumbo esa
+       diferencia se queda en la impresión de quien mira. */
+    const pies = (txtD.match(/\d+ usos · mancha [\d.,]+ ha[^A-ZÁÉÍÓÚ]{0,90}/g) || []);
+    T('cada mapa dice el área de su mancha en hectáreas',
+      pies.length >= 3, pies.slice(0, 2).join(' | ').slice(0, 140));
+    T('y el rumbo de su eje mayor, o que no tiene eje dominante',
+      pies.length > 0 && pies.every(x => /eje a \d+°|sin eje dominante/.test(x)),
+      pies.slice(0, 2).join(' | ').slice(0, 150));
+    /* Y las DOS ramas se ejercitan: las farmacias del sector van sobre un
+       corredor, así que su mancha tiene rumbo; las demás están repartidas y
+       no. Sin una categoría alineada, «dice el rumbo o dice que no hay»
+       pasaría siempre por la segunda mitad y el cálculo del eje podría estar
+       roto sin que nada lo viera — la lección de la v874. */
+    T('una categoría en corredor da su rumbo en grados',
+      pies.some(x => /eje a \d+°/.test(x)),
+      (pies.filter(x => /eje a/.test(x))[0] || 'ninguna con eje').slice(0, 120));
+    T('y otra repartida pareja dice que no tiene eje, en vez de inventarle uno',
+      pies.some(x => /sin eje dominante/.test(x)),
+      (pies.filter(x => /sin eje/.test(x))[0] || 'ninguna sin eje').slice(0, 120));
+    /* Y el método, UNA vez para la fila: era idéntico bajo los ocho mapas,
+       palabra por palabra, en la banda más grande de la hoja. */
+    const veces = (txtD.match(/isolíneas de ese conteo/g) || []).length;
+    T('el método de la fila se imprime una sola vez, no bajo cada mapa',
+      veces === 1, veces + ' veces');
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');

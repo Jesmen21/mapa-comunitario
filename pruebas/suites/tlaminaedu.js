@@ -257,6 +257,11 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
         metodos: [...document.querySelectorAll('.caja:not(.caja-campo):not(.caja-vacio)')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?',
           etiquetas: [...c.querySelectorAll(':scope > .metodo i')].map(i => i.textContent),
+          /* Cuál es un mapa de CATEGORÍA de la banda de forma: desde la v877
+             los ocho comparten un solo párrafo de método, impreso en el que
+             abre la fila. `data-m` lo dice sin tener que adivinarlo por el
+             título, que cambia con el catálogo de usos. */
+          cal: /^calor:(?!todos)/.test(c.getAttribute('data-m') || ''),
           texto: ((c.querySelector(':scope > .metodo') || {}).textContent || '') })),
         radios: (function () {
           const r = document.querySelector('.radios'); if (!r) return null;
@@ -373,6 +378,19 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       analisis.length >= 10 && bajos.length === 0,
       bajos.length ? bajos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
                    : 'el más bajo ' + Math.min.apply(null, analisis.map(m => m.h)) + ' mm · compuesta al ' + Math.round(o.escala * 100) + '%');
+    /* §4 (v877) · La banda de forma. El pliego pide los mapas de categoría a
+       10-11 cm de lado: a los 8-9 cm que tenían, con el círculo del sector en
+       siete, la mancha se ve pero el CONTORNO no se puede calcar — y calcarlo
+       es para lo que existe. Se mide en milímetros de papel, con la hoja ya
+       reducida, que es lo único que vale para algo que se imprime. */
+    const cats = analisis.filter(m => /^calor:(?!todos)/.test(m.id));
+    T('la banda de forma trae sus mapas de categoría', cats.length >= 3,
+      cats.map(m => m.t).join(' · ') || 'ninguno');
+    const chicos = cats.filter(m => m.w < 95);
+    T('y cada uno mide 10 cm de lado o más, que es donde el contorno se puede calcar',
+      cats.length > 0 && chicos.length === 0,
+      chicos.length ? chicos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
+                    : 'el más angosto ' + Math.min.apply(null, cats.map(m => m.w)) + ' mm');
     T('y la hoja cierra igual: no se desborda',
       o.pide <= o.papel + 2, o.pide + ' de ' + o.papel + ' mm');
 
@@ -538,11 +556,29 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   /* ── Tanda 2 (v848): la capa educativa y los paneles de campo ─────── */
   console.log('\n  -- cada panel dice su método --');
   const ETQ = ['Fórmula', 'Fuente', 'Confiabilidad', 'Referencia', 'Error típico'];
-  const sinMetodo = (VC.metodos || []).filter(m => !ETQ.every(e => m.etiquetas.indexOf(e) >= 0));
-  T('todas las cajas y los mapas de la hoja completa llevan las cinco etiquetas del método',
+  /* §4 (v877) · Los mapas de categoría de la banda de forma son la única
+     excepción, y no es un aflojamiento: el párrafo de método es IDÉNTICO en
+     los ocho —cambia solo el conteo, que ya está en el pie de cada uno—, y
+     repetirlo gastaba ocho párrafos de la banda más grande de la hoja en
+     decir lo mismo. La regla de la v848 era que ninguna caja quede sin método
+     DECLARADO, no que se repita: así que la comprobación se hace más precisa,
+     no menos. La fila tiene que llevarlo exactamente una vez. */
+  const decal = (VC.metodos || []).filter(m => m.cal);
+  const conMet = m => ETQ.every(e => m.etiquetas.indexOf(e) >= 0);
+  const sinMetodo = (VC.metodos || []).filter(m => !m.cal && !conMet(m));
+  T('toda caja o mapa que no sea de la banda de forma lleva sus cinco etiquetas',
     (VC.metodos || []).length >= 20 && sinMetodo.length === 0,
     (VC.metodos || []).length + ' paneles' + (sinMetodo.length ? ' · sin método: ' + sinMetodo.map(m => m.t).join(', ') : ''));
-  const genericos = (VC.metodos || []).filter(m => /método no descrito todavía/.test(m.texto));
+  T('y la fila de mapas de categoría lo lleva UNA sola vez, no ocho',
+    decal.length >= 2 && decal.filter(conMet).length === 1,
+    decal.length + ' mapas de categoría · ' + decal.filter(conMet).length + ' con método');
+  /* Y el que lo lleva tiene que ser el PRIMERO de la fila: si cayera en el
+     último, el lector se encuentra ocho manchas sin saber cómo leerlas y el
+     método aparece cuando ya pasó de página. */
+  T('y es el primero de la fila el que lo trae',
+    decal.length >= 2 && conMet(decal[0]),
+    decal.map(m => m.t + (conMet(m) ? '✓' : '')).join(' · ').slice(0, 140));
+  const genericos = (VC.metodos || []).filter(m => !m.cal && /método no descrito todavía/.test(m.texto));
   T('y ninguno con el aviso genérico: cada uno tiene su fórmula y su fuente escritas',
     genericos.length === 0, genericos.map(m => m.t).join(' · ') || 'todos descritos');
   T('la fuente lleva la fecha de la consulta cuando el dato se lee en vivo',

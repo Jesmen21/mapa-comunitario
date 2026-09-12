@@ -974,6 +974,171 @@
 
      `forma` = { pts:[{lat,lng}] }  o  { centro:{lat,lng}, radioM }.
      `o.w/o.h` en px del viewBox (por defecto 120×84). */
+  /* ══ CONTORNOS DE UNA MANCHA DE CALOR (§4, v877) ═════════════════════
+     El pliego de ajustes: «el degradado no se puede calcar; la línea sí. Con
+     la línea, todos los estudiantes trazan la misma geometría medida».
+
+     Es la diferencia entre un mapa que se mira y uno que se usa. Un degradado
+     dice «acá hay más» y cada quien lo lee donde quiere; una línea cerrada
+     dice DÓNDE, y dos estudiantes que la calquen sacan el mismo polígono. Es
+     la misma idea de una curva de nivel, aplicada a la densidad de un uso.
+
+     El campo es el que el degradado ya dibuja, dicho en números: **cuántos
+     usos hay a menos de R metros de este punto**. Por eso el umbral se puede
+     imprimir en palabras que significan algo —«3 o más usos en 150 m»— en vez
+     de en un porcentaje del máximo, que cambia de sector a sector y no se
+     puede comparar entre láminas.
+
+     Se devuelven las isolíneas de DOS umbrales: el borde y el núcleo duro.
+     Y el área se cuenta por CELDAS sobre el umbral, no integrando el
+     polígono: una isolínea puede salir partida en varios trozos o cortada por
+     el borde del recuadro, y contar celdas da el área correcta igual. */
+  function campoDeCalor(puntos, X, Y, rc, W, H, paso) {
+    const nx = Math.ceil(W / paso) + 1, ny = Math.ceil(H / paso) + 1;
+    const g = new Float32Array(nx * ny);
+    const r2 = rc * rc;
+    const px = [], py = [];
+    puntos.forEach(p => {
+      if (p.lat == null || p.lng == null) return;
+      px.push(X(+p.lng)); py.push(Y(+p.lat));
+    });
+    for (let j = 0; j < ny; j++) {
+      const y = j * paso;
+      for (let i = 0; i < nx; i++) {
+        const x = i * paso;
+        let n = 0;
+        for (let k = 0; k < px.length; k++) {
+          const dx = px[k] - x, dy = py[k] - y;
+          if (dx * dx + dy * dy <= r2) n++;
+        }
+        g[j * nx + i] = n;
+      }
+    }
+    return { g: g, nx: nx, ny: ny, paso: paso };
+  }
+
+  /* Marching squares clásico. Devuelve segmentos sueltos y después los
+     encadena: para dibujarlos da igual, pero encadenados salen trazos largos
+     en vez de cientos de rayitas, y eso en un SVG que se imprime a 60 × 90 es
+     la diferencia entre una línea y un punteado. */
+  function isolinea(campo, nivel) {
+    const { g, nx, ny, paso } = campo;
+    const at = (i, j) => g[j * nx + i];
+    const segs = [];
+    const ip = (a, b, xa, xb) => {
+      const d = b - a;
+      return Math.abs(d) < 1e-9 ? xa : xa + (xb - xa) * (nivel - a) / d;
+    };
+    for (let j = 0; j < ny - 1; j++) {
+      for (let i = 0; i < nx - 1; i++) {
+        const x0 = i * paso, y0 = j * paso, x1 = x0 + paso, y1 = y0 + paso;
+        const a = at(i, j), b = at(i + 1, j), c = at(i + 1, j + 1), d = at(i, j + 1);
+        let idx = 0;
+        if (a >= nivel) idx |= 8;
+        if (b >= nivel) idx |= 4;
+        if (c >= nivel) idx |= 2;
+        if (d >= nivel) idx |= 1;
+        if (idx === 0 || idx === 15) continue;
+        const T = () => ({ x: ip(a, b, x0, x1), y: y0 });   // arriba
+        const R = () => ({ x: x1, y: ip(b, c, y0, y1) });   // derecha
+        const B = () => ({ x: ip(d, c, x0, x1), y: y1 });   // abajo
+        const L = () => ({ x: x0, y: ip(a, d, y0, y1) });   // izquierda
+        const push = (p, q) => segs.push([p, q]);
+        switch (idx) {
+          case 1: case 14: push(L(), B()); break;
+          case 2: case 13: push(B(), R()); break;
+          case 3: case 12: push(L(), R()); break;
+          case 4: case 11: push(T(), R()); break;
+          case 6: case 9:  push(T(), B()); break;
+          case 7: case 8:  push(L(), T()); break;
+          /* Las dos sillas de montar: el centro decide por dónde pasa la
+             línea. Sin esto, en un cuello entre dos núcleos la isolínea se
+             cruza consigo misma y el dibujo sale con una equis que no existe
+             en el terreno. */
+          case 5: {
+            const m = (a + b + c + d) / 4;
+            if (m >= nivel) { push(L(), T()); push(B(), R()); }
+            else { push(L(), B()); push(T(), R()); }
+            break;
+          }
+          case 10: {
+            const m2 = (a + b + c + d) / 4;
+            if (m2 >= nivel) { push(T(), R()); push(L(), B()); }
+            else { push(L(), T()); push(B(), R()); }
+            break;
+          }
+        }
+      }
+    }
+    // Encadenar: se busca el segmento que empieza donde termina el anterior.
+    const clave = p => Math.round(p.x * 10) + ':' + Math.round(p.y * 10);
+    const porInicio = {};
+    segs.forEach((sg, k) => {
+      const c0 = clave(sg[0]);
+      (porInicio[c0] || (porInicio[c0] = [])).push(k);
+    });
+    const usado = new Array(segs.length).fill(false);
+    const trazos = [];
+    for (let k = 0; k < segs.length; k++) {
+      if (usado[k]) continue;
+      usado[k] = true;
+      const linea = [segs[k][0], segs[k][1]];
+      let guardia = 0;
+      while (guardia++ < 5000) {
+        const cand = porInicio[clave(linea[linea.length - 1])] || [];
+        const sig = cand.filter(q => !usado[q])[0];
+        if (sig == null) break;
+        usado[sig] = true;
+        linea.push(segs[sig][1]);
+      }
+      if (linea.length >= 3) trazos.push(linea);
+    }
+    return trazos;
+  }
+
+  /* El área sobre el umbral, contando celdas: robusto aunque la isolínea
+     salga partida o cortada por el borde del recuadro. */
+  function areaSobre(campo, nivel) {
+    let n = 0;
+    for (let k = 0; k < campo.g.length; k++) if (campo.g[k] >= nivel) n++;
+    return n * campo.paso * campo.paso;   // en px²
+  }
+
+  /* La orientación dominante del eje mayor, por componentes principales de
+     los puntos. En grados desde el norte y en sentido horario, que es como se
+     lee un rumbo en un plano. Devuelve null con menos de tres puntos o con
+     una nube redonda —sin eje dominante, dar uno sería inventarlo—. */
+  function ejeMayor(puntos, X, Y) {
+    const xs = [], ys = [];
+    puntos.forEach(p => {
+      if (p.lat == null || p.lng == null) return;
+      xs.push(X(+p.lng)); ys.push(Y(+p.lat));
+    });
+    const n = xs.length;
+    if (n < 3) return null;
+    const mx = xs.reduce((s, v) => s + v, 0) / n, my = ys.reduce((s, v) => s + v, 0) / n;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - mx, dy = ys[i] - my;
+      sxx += dx * dx; syy += dy * dy; sxy += dx * dy;
+    }
+    sxx /= n; syy /= n; sxy /= n;
+    const tr = sxx + syy, det = sxx * syy - sxy * sxy;
+    const disc = Math.sqrt(Math.max(0, tr * tr / 4 - det));
+    const l1 = tr / 2 + disc, l2 = tr / 2 - disc;
+    if (l1 <= 1e-9) return null;
+    // Sin eje dominante no se declara uno: una nube redonda no tiene rumbo.
+    const razon = l2 > 1e-9 ? l1 / l2 : Infinity;
+    if (razon < 1.25) return { grados: null, razon: Math.round(razon * 100) / 100, redonda: true };
+    // Vector propio mayor. En SVG la Y crece hacia abajo, así que el norte
+    // es -Y: por eso el atan2 va con (-dy).
+    const vx = (Math.abs(sxy) > 1e-9) ? (l1 - syy) : 1;
+    const vy = (Math.abs(sxy) > 1e-9) ? sxy : 0;
+    let a = Math.atan2(vx, -vy) * 180 / Math.PI;
+    a = ((a % 180) + 180) % 180;   // un eje no tiene sentido: 0-180 basta
+    return { grados: Math.round(a), razon: Math.round(razon * 100) / 100, redonda: false };
+  }
+
   function miniaturaMapa(forma, o){
     o = o || {};
     const W = o.w || 120, H = o.h || 84, PAD = 10;
@@ -1057,6 +1222,35 @@
           return '<circle cx="' + X(+p.lng).toFixed(1) + '" cy="' + Y(+p.lat).toFixed(1) +
             '" r="' + rc + '"/>';
         }).join('') + '</g>';
+      /* §4 · Y encima, los CONTORNOS: la línea que sí se puede calcar. Van
+         solo cuando se piden (`o.calorContornos`) porque calcular el campo
+         cuesta, y no todos los mapas de calor de la aplicación lo necesitan:
+         en la lámina sí, en la miniatura de una ficha no. */
+      if (o.calorContornos) {
+        const niv = o.calorNiveles || [2, 5];
+        const paso = Math.max(1.5, rc / 4);
+        const campo = campoDeCalor(o.calor, X, Y, rc, W, H, paso);
+        const m2PorPx = Math.pow(111320 / esc, 2);
+        const medidas = [];
+        const capas = niv.map((nivel, k) => {
+          const trazos = isolinea(campo, nivel);
+          medidas.push({ nivel: nivel, areaM2: Math.round(areaSobre(campo, nivel) * m2PorPx) });
+          if (!trazos.length) return '';
+          return '<g fill="none" stroke="' + (o.calorColor || '#e5484d') + '" stroke-linejoin="round"' +
+            ' stroke-width="' + (k === 0 ? 0.7 : 1.5) + '" stroke-opacity="' + (k === 0 ? 0.75 : 1) + '">' +
+            trazos.map(l => '<path d="' + l.map((q, i) => (i ? 'L' : 'M') +
+              q.x.toFixed(1) + ' ' + q.y.toFixed(1)).join(' ') + '"/>').join('') + '</g>';
+        }).join('');
+        dentro += capas;
+        /* Las medidas viajan de vuelta por el objeto de opciones: quien pidió
+           el mapa necesita el área y el rumbo para el pie, y volver a
+           calcularlos afuera sería recorrer el campo dos veces. */
+        o.calorMedido = {
+          niveles: medidas,
+          radioM: Math.round(rc * 111320 / esc),
+          eje: ejeMayor(o.calor, X, Y)
+        };
+      }
     }
     /* Las curvas de nivel van DEBAJO de todo lo demás: son el terreno sobre el
        que está puesto el resto. Marrón claro, y las de cota redonda un poco

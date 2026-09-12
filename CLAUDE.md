@@ -1261,6 +1261,96 @@ exacta de los verdes que este proyecto lleva tres tandas persiguiendo.
 En el sector de prueba sale: densidad 17,8 contra 126,4 hab/ha (−85,9 %),
 mayores +0,2 pp, menores de 15 +1,8 pp.
 
+## La banda de forma: una mancha que se puede calcar (v877)
+
+§4 del pliego de ajustes, la otra prioridad declarada. La frase que lo
+resume: **«el degradado no se puede calcar; la línea sí. Con la línea, todos
+los estudiantes trazan la misma geometría medida.»**
+
+Es la diferencia entre un mapa que se mira y uno que se usa. Un degradado
+dice «acá hay más» y cada quien lo lee donde quiere; una línea cerrada dice
+DÓNDE, y dos personas que la calquen sacan el mismo polígono. Con eso la
+banda deja de ser un inventario de usos y pasa a ser insumo de forma.
+
+### Isolíneas de densidad, como una curva de nivel
+
+`campoDeCalor` + `isolinea` en `js/24`, marching squares clásico de dieciséis
+casos. El campo es **el que el degradado ya dibujaba, dicho en números**:
+cuántos usos de esa categoría hay a menos del radio del núcleo. Por eso el
+umbral se puede imprimir en palabras que significan algo —«2 usos o más»— en
+vez de en un porcentaje del máximo, que cambia de sector a sector y no deja
+comparar dos láminas entre sí.
+
+Dos contornos por categoría, con grosor distinto: el borde (2 usos) y el
+núcleo duro (4). **Los dos umbrales van impresos**, porque moviéndolos cambia
+la forma: el umbral es parte del dato, no una decisión de dibujo.
+
+Tres cosas del método que cuesta recordar:
+
+* **Las dos sillas de montar (casos 5 y 10) se resuelven por el centro.** Sin
+  eso, en un cuello entre dos núcleos la isolínea se cruza consigo misma y el
+  dibujo sale con una equis que no existe en el terreno.
+* **El área se cuenta por CELDAS sobre el umbral, no integrando el polígono.**
+  Una isolínea puede salir partida en varios trozos o cortada por el borde del
+  recuadro, y entonces el polígono da de menos; contar celdas da el área
+  correcta igual.
+* **Una nube redonda no tiene rumbo.** `ejeMayor` hace componentes
+  principales y, por debajo de una razón de 1,25 entre los dos ejes, **no
+  declara ninguno**: dice que está repartido parejo, que también es un dato.
+  Un uso en corredor y uno repartido no se leen igual, y darle rumbo a una
+  nube sería inventar una forma que no está.
+
+### `Object.assign({}, base, extra)` arma una copia
+
+Las medidas —el área de cada mancha y el rumbo— salen de recorrer el campo, y
+volver a calcularlas afuera sería recorrerlo dos veces. Así que la miniatura
+las escribe de vuelta en su objeto de opciones… que `mini()` fabricaba con
+`Object.assign({}, base, extra)`. **Un objeto nuevo, no el que se le pasó**,
+así que las medidas caían en la copia y el pie salía sin ellas.
+
+Es exactamente el tropiezo de `R.estado()` en la v871, en otro sitio. Vale la
+pena la regla general: **cuando algo tiene que volver, comprobar que el
+objeto que lo recibe es el mismo que se mandó.**
+
+### Los mapas de categoría, de 63 mm a 10 cm
+
+Medían **63 × 63 mm** —seis centímetros y pico, con el círculo del sector en
+siete— y a esa escala la mancha se ve pero el contorno no se puede calcar,
+que es justo para lo que existe. Suben a dos columnas. El papel sale de donde
+el pliego dice que salga: «esta banda crece, no se reduce… si algo tiene que
+ceder espacio, que sean los paneles de texto explicativo, nunca esos dos».
+
+Y el tope de categorías sube de seis a ocho parado (siete acostado), porque
+el pliego pide que **los ocho se conserven todos**: separados se lee la forma
+de cada uso, que en el mapa combinado se pierde.
+
+### El método de la fila, una vez y no ocho
+
+Iba repetido bajo cada mapa de categoría, palabra por palabra, cambiando solo
+el conteo: ocho párrafos idénticos en la banda más grande de la hoja. Ahora
+lo lleva el primero de la fila, que es el que la abre.
+
+**La comprobación de `tlaminaedu` se hizo más precisa, no más laxa.** Exigía
+las cinco etiquetas del método en TODA caja; ahora exige que la fila lo lleve
+**exactamente una vez** y que sea el primero — si cayera en el último, el
+lector se encuentra ocho manchas sin saber cómo leerlas y el método aparece
+cuando ya pasó de página. La regla de la v848 era que ninguna caja quede sin
+método declarado, no que se repita.
+
+### El sector de prueba no tenía una sola calle comercial
+
+Los 220 usos iban en un patrón circular parejo, así que **las cuatro
+categorías salían «sin eje dominante»** y la comprobación del rumbo pasaba
+por la mitad fácil: si el cálculo del eje estuviera roto, nadie se enteraría.
+Es la cuarta vez que aparece el mismo agujero (v862, v866, v874, y esta).
+
+Ahora las farmacias van sobre un corredor de 840 m, como se alinean de verdad
+sobre una avenida, y las demás siguen repartidas: el sector ejercita **las dos
+ramas**, y sale «eje a 44°» en una y «repartido parejo» en las otras tres.
+
+Demostrada contra la v876: once aserciones en rojo, con los mapas de
+categoría midiendo 63 × 63 mm y el método repetido cuatro veces.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
