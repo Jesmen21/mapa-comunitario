@@ -148,7 +148,7 @@
   async function guardarYComprobar() {
     var campo = document.getElementById('ulic-campo');
     var txt = campo ? String(campo.value || '').trim() : '';
-    if (!txt) { S.error = 'Pegá tu licencia en el campo de arriba.'; pintar(); return; }
+    if (!txt) { S.error = 'Pegue su licencia en el campo de arriba.'; pintar(); return; }
 
     S.comprobando = true; S.error = ''; pintar();
     try {
@@ -266,7 +266,7 @@
             '<textarea class="ulic-campo" readonly rows="3">' + esc(e.licencia) + '</textarea>' +
             '<button type="button" data-ulic="copiar-lic" class="ulic-quitar">' +
               (S.copiada ? ico('ok', 16) + 'copiada' : ico('copiar', 16) + 'Copiar la licencia') + '</button>' +
-            '<p class="ulic-pista">Apuntá el id <code>' + esc(e.id) + '</code>: es lo que se pone en ' +
+            '<p class="ulic-pista">Apunte el id <code>' + esc(e.id) + '</code>: es lo que se pone en ' +
             '<code>URBIS_REVOCADAS</code> el día que haya que anularla —si alguien la reenvía, se anula ' +
             'esa y se emite otra—.</p>' +
           '</div>'
@@ -400,7 +400,7 @@
     if (!t) return 'No se pudo comprobar la licencia.';
     if (/failed to fetch|networkerror|load failed|network request failed/i.test(t)) {
       return 'No se pudo hablar con el servidor de URBIS. Puede ser tu conexión, o que el ' +
-             'servidor esté despertando: esperá unos segundos y vuelva a intentar.';
+             'servidor esté despertando: espere unos segundos y vuelva a intentar.';
     }
     if (/abort|timeout|no respondió/i.test(t)) {
       return 'El servidor de URBIS tardó demasiado en responder. Vuelva a intentar en un momento.';

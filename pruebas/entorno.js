@@ -134,6 +134,17 @@ const CAMPOS_DANE = [
      doble tiene que poder equivocarse igual que el servicio. */
   { name: 'NIVEL_EDUC_ESP_MAES_DOC', alias: 'NIVEL_EDUC_ESP_MAES_DOC', type: 'esriFieldTypeInteger' },
   { name: 'ALFABETISMO_SIN_INFO', type: 'esriFieldTypeInteger' },
+  /* SERVICIOS PÚBLICOS (§19, v880). El censo por manzana los trae, y por eso
+     el panel deja de ser uno de los cinco vacíos obligatorios. El doble los
+     trae también o la rama nueva no se ejercitaría — y la vieja, la que
+     declara la ausencia con la lista de campos como prueba, se sigue
+     ejercitando con HOGARES, que esta capa no expone. Una sola corrida
+     recorre los dos caminos, que es como se armó el doble desde la v865. */
+  { name: 'ACUEDUCTO_SI', alias: 'Acueducto', type: 'esriFieldTypeInteger' },
+  { name: 'ALCANTARILLADO_SI', alias: 'Alcantarillado', type: 'esriFieldTypeInteger' },
+  { name: 'ENERGIA_SI', alias: 'Energía eléctrica', type: 'esriFieldTypeInteger' },
+  /* Y uno sin alias, como vienen muchos de verdad: la etiqueta se fabrica. */
+  { name: 'SERVICIO_GAS_NATURAL', type: 'esriFieldTypeInteger' },
   /* Los dos que hacen falta para la REFERENCIA DE CIUDAD (§9, v876): el
      código de municipio, con el que se consulta el municipio entero en una
      sola petición, y el área de la manzana, con la que sale su densidad.
@@ -162,7 +173,15 @@ const CIUDAD = {
 const REPARTO_CAMPOS = {
   ESCOLARIDAD_NINGUNA: 62, ESCOLARIDAD_PRIMARIA: 288, ESCOLARIDAD_SECUNDARIA: 431,
   ESCOLARIDAD_SUPERIOR: 180, NIVEL_EDUC_ESP_MAES_DOC: 39,
-  ALFABETISMO_SI: 930, ALFABETISMO_NO: 62, ALFABETISMO_SIN_INFO: 8
+  ALFABETISMO_SI: 930, ALFABETISMO_NO: 62, ALFABETISMO_SIN_INFO: 8,
+  /* Servicios públicos (v880). NO suman mil entre sí y no tienen por qué: no
+     son un reparto de la población en categorías excluyentes, son cuatro
+     coberturas independientes —una misma vivienda tiene acueducto Y energía—.
+     Las cifras son las de un barrio colombiano corriente: casi todo con
+     energía y acueducto, el alcantarillado un poco por debajo, y el gas
+     natural la mitad. Iguales las cuatro dejarían el panel sin nada que
+     decir. */
+  ACUEDUCTO_SI: 962, ALCANTARILLADO_SI: 908, ENERGIA_SI: 994, SERVICIO_GAS_NATURAL: 517
 };
 
 /* La consulta AGRUPADA por estrato: Esri devuelve un rasgo por grupo, no uno

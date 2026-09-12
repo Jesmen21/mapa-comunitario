@@ -128,8 +128,18 @@ const geo = [
     vertical(-600 + i * 100))),
   Array.from({ length: 6 }, (_, i) => via('Sendero ' + i, 'footway',
     [P(-400, -500 + i * 180), P(400, -500 + i * 180)])),
+  /* Las alturas, repartidas como en un barrio colombiano corriente y no como
+     una escalera pareja (§10, v880). Iban 3 + (i % 5) pisos, así que TODOS
+     caían en los dos cajones de arriba: la moda y la mediana daban lo mismo,
+     y el panel del potencial no podía enseñar lo que existe para enseñar
+     —que con la mayoría en un piso, la media describe un sector que no hay—.
+
+     El reparto de la corrida real: casi seis de cada diez de un piso, y unas
+     pocas torres. Con esto la media sale por encima de dos y la moda dice
+     «un piso», que es la diferencia que el pliego pide imprimir. */
   Array.from({ length: 30 }, (_, i) => edif(-560 + (i % 10) * 115,
-    -400 + Math.floor(i / 10) * 220, 60, 90, 3 + (i % 5)))
+    -400 + Math.floor(i / 10) * 220, 60, 90,
+    i < 17 ? 1 : i < 23 ? 2 : i < 27 ? 3 : [5, 7, 9][i - 27]))
 );
 
 /* Lo que este sector necesita para tener CIFRAS SUELTAS: un parque con
@@ -423,6 +433,10 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
                 r: ((x.querySelector('small') || {}).textContent || '').trim() })),
               vacios: [...c.querySelectorAll('.vacio-tag')].map(x => x.textContent.trim()),
               falta: [...c.querySelectorAll('.vacio-falta')].map(x => x.textContent.replace(/\s+/g, ' ').trim()),
+              // §19 (v880): el trámite con el que cada vacío deja de serlo.
+              tramite: [...c.querySelectorAll('.comoq > .cq')].map(x => ({
+                etq: ((x.querySelector('i') || {}).textContent || '').trim(),
+                val: ((x.querySelector('span') || {}).textContent || '').replace(/\s+/g, ' ').trim() })),
               columnas: [...c.querySelectorAll('table.rad th')].map(x => x.textContent.trim()),
               filas: [...c.querySelectorAll('table.rad tr')].slice(1)
                 .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
@@ -444,7 +458,10 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               })
             };
           };
-          return { potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
+          return { riesgo: dame(/^Riesgo oficial$/), norma: dame(/^Norma urbana$/),
+                   legal: dame(/Información legal del predio/), movilidadReal: dame(/^Movilidad real$/),
+                   servicios: dame(/^Servicios públicos$/),
+                   potencial: dame(/Potencial edificatorio/), suelo: dame(/Suelo disponible real/),
                    quien: dame(/Quién vive acá/),
                    censo: dame(/Lo que el censo trae además/),
                    tejido: dame(/Continuidad del tejido/),
@@ -676,6 +693,62 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   T('y no queda en el cierre el rótulo viejo de «ha brutas»',
     !/ha brutas/.test(B.texto));
 
+  /* ── §19 · un vacío que cierra en tarea, no en ausencia ────────────────
+     Hasta la v879 estos paneles terminaban en «sin dato oficial», qué haría
+     falta y por qué lo que hay no es eso. Todo cierto y todo inútil para
+     quien tiene que ir a buscarlo: nombrar el documento y callar el trámite
+     convierte un vacío en un muro. Se comprueba que los cuatro cierren con
+     los seis renglones, y que el «mientras llega» diga con qué advertencia
+     —un sustituto sin su límite escrito es un permiso para suponer—. */
+  console.log('\n  -- §19 · los vacíos cierran en cómo se consigue --');
+  /* Los cuatro van en la banda del trabajo de campo, que es de la lámina B:
+     son datos por CONSEGUIR, no mediciones del sitio. Se buscan en las dos
+     hojas igual, para que un cambio de banda no haga pasar la comprobación
+     por no encontrar nada. */
+  const conTramite = ['riesgo', 'norma', 'legal', 'movilidadReal']
+    .map(k => Object.assign({ k: k }, (A.paneles || {})[k] || (B.paneles || {})[k] || null))
+    .filter(x => x.texto);
+  T('los cuatro vacíos obligatorios traen su bloque «cómo se consigue»',
+    conTramite.length === 4 && conTramite.every(v => (v.tramite || []).length === 6),
+    conTramite.map(v => v.k + ':' + (v.tramite || []).length).join(' · ') || 'ninguno');
+  T('y cada uno dice ante quién, cómo se radica, qué llevar y cuánto tarda',
+    conTramite.length === 4 && conTramite.every(v => {
+      const e = (v.tramite || []).map(x => x.etq).join('|');
+      return /Ante quién/.test(e) && /Cómo/.test(e) && /Qué hay que llevar/.test(e) && /Cuánto tarda/.test(e);
+    }),
+    ((conTramite[0] || {}).tramite || []).map(x => x.etq).join(' · ') || 'sin trámite');
+  T('el «mientras llega» nombra un sustituto Y su límite, no un permiso para suponer',
+    conTramite.length === 4 && conTramite.every(v => {
+      const m = (v.tramite || []).filter(x => /Mientras/.test(x.etq))[0];
+      /* Un sustituto SIN su límite escrito es un permiso para suponer, que
+         es exactamente lo que el resto del módulo prohíbe. Las cuatro
+         maneras de acotarlo en castellano —«no», «nunca», «sin», «solo»—
+         valen; lo que no vale es nombrar el sustituto a secas. */
+      return m && m.val.length > 40 && /\b(no|nunca|sin|solo|s[óo]lo)\b/i.test(m.val);
+    }),
+    conTramite.map(v => ((v.tramite || []).filter(x => /Mientras/.test(x.etq))[0] || { val: '—' }).val.slice(0, 46)).join(' | '));
+  T('ningún trámite deja un renglón en blanco',
+    conTramite.every(v => (v.tramite || []).every(x => x.val && x.val.length >= 8)));
+
+  /* Servicios públicos SALE de los vacíos: el censo por manzana lo trae. */
+  console.log('\n  -- §19 · servicios públicos se llena con el censo --');
+  const SP = (A.paneles || {}).servicios || (B.paneles || {}).servicios;
+  T('servicios públicos ya no dice «sin dato oficial disponible»',
+    !!SP && !/Sin dato oficial disponible/.test(SP.texto),
+    SP ? (SP.vacios || []).join(' · ') || '(sin rótulo ámbar)' : 'el panel no está');
+  const spTxt = (A.texto + ' ' + B.texto);
+  T('imprime la cobertura por manzana del censo, con su fuente',
+    /CNPV 2018/.test(spTxt) && /(Acueducto|Alcantarillado|Energía)/.test(spTxt),
+    (spTxt.match(/Acueducto[^A-Z]{0,30}/) || ['no aparece'])[0]);
+  T('y dice que es cobertura declarada, no continuidad ni calidad',
+    /no continuidad ni calidad/.test(spTxt) && /seis horas al día/.test(spTxt));
+  T('la etiqueta de un campo sin alias sale legible, no con el nombre crudo',
+    /Gas natural/i.test(spTxt) && !/GAS_NATURAL_SI/.test(spTxt.replace(/\(.*?\)/g, '')),
+    (spTxt.match(/[Gg]as natural[^·]{0,24}/) || ['no aparece'])[0]);
+  T('y el bloque no se repite en «Lo que el censo trae además»',
+    (spTxt.match(/Acueducto/g) || []).length <= 2,
+    (spTxt.match(/Acueducto/g) || []).length + ' veces');
+
   console.log('\n  -- dónde queda, escala por escala --');
   /* Un jurado que no conoce la ciudad no sabe si el sector que mira es el
      centro o un borde. La cadena de cinco escalas se lo dice de un vistazo,
@@ -737,8 +810,15 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        fallo silencioso de este panel: el dato de OpenStreetMap llega
        repartido en cajones (`niveles`) y no trae media hecha, así que hay
        que calcularla. Una raya no se ve como error, se ve como «no hay». */
-    T('y las dos son cifras, no una raya',
-      PT.kpis.slice(0, 2).every(x => /^[\d.,]+$/.test(x.v)),
+    /* Se busca por su RÓTULO y no por su posición. Con la v880 el panel pasó
+       de dos cifras a cuatro baldosas —media, moda, mediana y máximo— y
+       `slice(0, 2)` medía lo que cayera primero en vez de lo que dice medir;
+       la moda es una etiqueta de cajón («Más de 3 niveles»), no un número, y
+       la comprobación la habría denunciado por serlo. Más precisa, no más
+       laxa: la media y el máximo siguen teniendo que ser cifras. */
+    const kpiDe = re => (PT.kpis.filter(x => re.test(x.r))[0] || { v: '' }).v;
+    T('la media y el más alto son cifras, no una raya',
+      /^[\d.,]+$/.test(kpiDe(/pisos de media/)) && /^[\d.,]+$/.test(kpiDe(/el más alto/)),
       PT.kpis.map(x => x.v + ' ' + x.r).join(' · '));
     /* El cajón de arriba de OpenStreetMap es «cuatro o más», así que un
        edificio de diez suma cuatro: la media que sale de ahí es un piso,
@@ -759,6 +839,38 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       /cota por\s*abajo/.test(PT.texto) && /el propio sector demuestra que cabe/.test(PT.texto),
       PT.texto.slice(-120));
   }
+  /* ── §10 · el potencial edificatorio deja de estar vacío ───────────────
+     El pliego lo llamó por su nombre: la norma no se consigue sin radicarla,
+     pero lo construido SÍ está medido y es lo que un jurado puede discutir.
+     Una media sola no lo cuenta —con la mayoría en un piso y unas torres
+     sueltas describe un sector que no existe—, así que van la moda y la
+     mediana, y el reparto entero. */
+  console.log('\n  -- §10 · el potencial se mide con lo construido --');
+  if (PT) {
+    T('además de la media, imprime la moda y la mediana',
+      /lo que más se repite/.test(PT.texto) && /parte el sector en dos/.test(PT.texto),
+      PT.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* Y el sector de prueba tiene que poder DEMOSTRARLO: con las alturas
+       repartidas parejo, moda y mediana dan lo mismo que la media y el panel
+       pasa sin enseñar para qué existe. Es la quinta vez que este proyecto se
+       tropieza con un material de prueba demasiado bueno (v862, v866, v874,
+       v877). Se fija acá para que no vuelva a degenerar en silencio. */
+    T('y el sector de prueba distingue moda de media, que es de lo que trata el panel',
+      /1 nivel/.test((PT.kpis.filter(x => /más se repite/.test(x.r))[0] || {}).v || '') &&
+      Number(((PT.kpis.filter(x => /pisos de media/.test(x.r))[0] || {}).v || '0').replace(',', '.')) > 1.4,
+      PT.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    T('y el reparto de alturas entero, con su porcentaje',
+      (PT.barras || []).length >= 2 && (PT.barras || []).every(b => /%/.test(b)),
+      (PT.barras || []).join(' | ') || 'sin barras');
+    T('declara qué parte del sector no tiene altura registrada',
+      /sin dato de altura el|Edificios con altura registrada/.test(PT.texto),
+      (PT.texto.match(/Edificios con altura registrada[^A-Z]{0,52}/) || ['no lo dice'])[0]);
+    T('y lleva la frase que impide leerlo como norma',
+      /Esto es lo que hay construido, no lo que la norma permite/.test(PT.texto) &&
+      /se solicita en la curaduría urbana/.test(PT.texto));
+  }
+
+
   if (SU) {
     T('el suelo disponible parte de lo sin construir y descuenta el agua',
       /Suelo sin construir/.test(SU.texto) && /Menos la superficie de agua/.test(SU.texto),

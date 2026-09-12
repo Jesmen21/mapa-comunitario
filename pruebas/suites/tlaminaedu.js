@@ -625,32 +625,39 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   });
 
   /* ── Tanda 3 (v849): los vacíos obligatorios y los cruces ──────────── */
-  console.log('\n  -- los cinco vacíos obligatorios, impresos aunque no haya dato --');
+  /* SERVICIOS PÚBLICOS salió de la lista en la v880 (§19): el censo por
+     manzana que este módulo ya consulta lo trae, así que el panel se llena en
+     vez de declararse vacío. Quedan CUATRO vacíos obligatorios — los que
+     ninguna capa abierta trae —, y el de servicios se comprueba aparte, por
+     lo que ahora sí imprime. */
+  console.log('\n  -- los cuatro vacíos obligatorios, impresos aunque no haya dato --');
   const VACIOS = [
     ['Riesgo oficial', /POT|Decreto 1807/],
-    ['Servicios públicos', /DANE|empresa prestadora/],
     ['Norma urbana', /POT|curaduría/],
     ['Movilidad real', /secretaría de movilidad|empresa de transporte/],
     ['Información legal del predio', /tradición y libertad|IGAC|catastro/]
   ];
   [['parada', V, true], ['acostada', HZ, false], ['completa', VC, true]].forEach(([nom, o, exige]) => {
     if (!o) return;
-    const nombres = o.vacios.map(v => v.t);
-    T(nom + (exige ? ': los cinco están impresos' : ': los que están, están enteros'),
+    /* Los servicios ya no son un vacío: si aparecen en `o.vacios` es porque
+       la capa no contestó, y eso se mide en su propio bloque más abajo. */
+    const soloVacios = o.vacios.filter(v => v.t !== 'Servicios públicos');
+    const nombres = soloVacios.map(v => v.t);
+    T(nom + (exige ? ': los cuatro están impresos' : ': los que están, están enteros'),
       exige ? VACIOS.every(([t]) => nombres.indexOf(t) >= 0) : true, nombres.join(' · ') || 'ninguno');
-    const IDS_VACIO = ['riesgo-oficial', 'servicios-publicos', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
+    const IDS_VACIO = ['riesgo-oficial', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
     const fueraDe = nom === 'acostada' ? (r.fuera || []) : (r.fueraV || []);
     /* Acostada pueden haber cedido (con 300 mm menos de alto); entonces
        tienen que estar declarados, los cinco, por su nombre. */
     T(nom + ': cada uno dice «sin dato oficial disponible», nombra la fuente que haría falta y qué es lo que sí hay' + (exige ? '' : ', o está declarado fuera'),
-      o.vacios.length > 0
-        ? o.vacios.every(v => /^Sin dato oficial disponible$/.test(v.tag.trim()) && /Haría falta/.test(v.falta) &&
+      soloVacios.length > 0
+        ? soloVacios.every(v => /^Sin dato oficial disponible$/.test(v.tag.trim()) && /Haría falta/.test(v.falta) &&
             (VACIOS.filter(([t]) => t === v.t)[0] || [null, /./])[1].test(v.falta) && /Lo que hay no es eso/.test(v.hay) && v.renglon)
         : (!exige && IDS_VACIO.every(id => fueraDe.indexOf(id) >= 0)),
-      o.vacios.length ? o.vacios.map(v => v.t.split(' ')[0] + ':' + ((VACIOS.filter(([t]) => t === v.t)[0] || [null, /./])[1].test(v.falta) ? 'fuente' : 'SIN FUENTE')).join(' · ')
-                      : 'ninguno impreso · declarados: ' + IDS_VACIO.filter(id => fueraDe.indexOf(id) >= 0).length + ' de 5');
+      soloVacios.length ? soloVacios.map(v => v.t.split(' ')[0] + ':' + ((VACIOS.filter(([t]) => t === v.t)[0] || [null, /./])[1].test(v.falta) ? 'fuente' : 'SIN FUENTE')).join(' · ')
+                      : 'ninguno impreso · declarados: ' + IDS_VACIO.filter(id => fueraDe.indexOf(id) >= 0).length + ' de 4');
     T(nom + ': ninguno deduce el riesgo de la pendiente ni dice «sin datos»',
-      o.vacios.every(v => !/sin datos/i.test(v.texto)) && o.vacios.filter(v => /Riesgo/.test(v.t)).every(v => /no se deduce de la pendiente/.test(v.texto)));
+      soloVacios.every(v => !/sin datos/i.test(v.texto)) && soloVacios.filter(v => /Riesgo/.test(v.t)).every(v => /no se deduce de la pendiente/.test(v.texto)));
   });
 
   console.log('\n  -- lo que dicen juntas las cifras --');

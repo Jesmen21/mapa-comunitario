@@ -195,7 +195,7 @@ const rectALatLng = r => [aLatLng(r.x, r.y), aLatLng(r.x + r.w, r.y),
   })();
   T('lo dice en vez de devolver un número', solo.ok === false && solo.motivo === 'pocasHuellas',
     solo.motivo || 'devolvió ' + solo.pct + '%');
-  T('y explica qué hacer', /Mida el trazado|mapeá/.test(solo.detalle || ''), solo.detalle || '');
+  T('y explica qué hacer', /Mida el trazado|mapee/.test(solo.detalle || ''), solo.detalle || '');
 
   console.log('');
   T('sin errores de JavaScript', errores.length === 0, errores.join(' | ') || 'ninguno');

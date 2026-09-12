@@ -1548,6 +1548,46 @@
              maximo: Number(al.maximo) || 0, al: al, campo: null };
   }
 
+  /* ── El reparto de alturas, con su moda y su mediana (§10, v880) ──────
+     Una media sola miente sobre un barrio colombiano corriente: con el 59 %
+     de un piso y unas torres sueltas, «2,3 pisos de media» describe un
+     sector que no existe. La MODA dice cómo es la mayoría y la MEDIANA por
+     dónde parte el sector en dos; juntas con el máximo son la referencia
+     real, que es lo que el pliego pide imprimir en vez de dejar el panel en
+     «sin dato oficial».
+
+     Las tres salen de los mismos cuatro cajones —1, 2, 3 y «cuatro o más»—,
+     así que se dicen como cajones y no como cifras exactas: el de arriba
+     agrupa todo lo de cuatro para arriba, y llamar «4» a la mediana de un
+     sector con torres de doce sería inventar precisión sobre una caja. */
+  function repartoDeAlturas(mp) {
+    if (!mp) return null;
+    var lista = (mp.campo && (mp.campo.niveles || []).length) ? mp.campo.niveles
+              : ((mp.al && mp.al.niveles) || []);
+    var filas = lista.map(function (x) {
+      var k = String(x.nivel || x.id || '');
+      return { k: k, etq: x.etiqueta || k, n: Number(x.edificios) || 0,
+               pisos: k === '+3' ? 4 : Number(k) || 0, abierto: k === '+3' };
+    }).filter(function (x) { return x.n > 0 && x.pisos; });
+    if (!filas.length) return null;
+    var total = filas.reduce(function (a, x) { return a + x.n; }, 0);
+    filas.forEach(function (x) { x.pct = Math.round(1000 * x.n / total) / 10; });
+    var orden = filas.slice().sort(function (a, b) { return a.pisos - b.pisos; });
+    var moda = filas.slice().sort(function (a, b) { return b.n - a.n; })[0];
+    /* La mediana es el cajón donde cae el edificio del medio. Se acumula en
+       orden de altura, no de frecuencia. */
+    var mitad = total / 2, acum = 0, mediana = orden[orden.length - 1];
+    for (var i = 0; i < orden.length; i++) {
+      acum += orden[i].n;
+      if (acum >= mitad) { mediana = orden[i]; break; }
+    }
+    var conDato = (mp.al && Number(mp.al.conDato)) || total;
+    var edificios = (mp.al && Number(mp.al.edificios)) || conDato;
+    return { filas: orden, total: total, moda: moda, mediana: mediana,
+             conDato: conDato, edificios: edificios,
+             pctSinDato: edificios > 0 ? Math.round(1000 * (edificios - conDato) / edificios) / 10 : 0 };
+  }
+
   /* La frase, una sola para la ficha, el pliego y el informe. */
   function fraseAlturasCampo(c) {
     if (!c) return '';
@@ -3879,10 +3919,43 @@ function donaHTML(datos, colorDe, nombreDe) {
        no hay se imprime igual, diciendo que no hay, qué fuente haría falta
        y qué es lo que sí hay —que no es eso—. Nunca en blanco, nunca una
        suposición. Con un renglón para escribir el dato cuando se consiga. */
-    function panelVacio(hariaFalta, loQueHay) {
+    /* ── Un vacío obligatorio, y CÓMO SE CONSIGUE (§19, v880) ────────────
+       Hasta la v879 estos paneles terminaban en la ausencia: «sin dato
+       oficial», qué haría falta, y por qué lo que hay no es eso. Todo cierto
+       y todo inútil para quien tiene que ir a buscarlo.
+
+       Un estudiante que lee «haría falta la ficha normativa del POT» no sabe
+       que eso se pide en la curaduría, que se radica con un derecho de
+       petición, que el término legal son quince días hábiles ni que hay que
+       llevar la matrícula inmobiliaria. Nombrar el documento y callar el
+       trámite convierte un vacío en un muro; con el trámite escrito es una
+       tarea de una tarde. Por eso cada panel cierra ahora con seis renglones
+       —qué se pide, ante quién, cómo, qué llevar, cuánto tarda, y qué se
+       puede usar mientras llega— y el último dice con qué advertencia.
+
+       El `mientras` no es un permiso para suponer: es un sustituto declarado,
+       con su límite escrito al lado. Es la misma regla del resto del módulo
+       dicha en el sitio donde más tienta saltársela. */
+    function comoSeConsigue(c) {
+      if (!c) return '';
+      var fila = function (etq, val) {
+        return val ? '<div class="cq"><i>' + esc(etq) + '</i><span>' + esc(val) + '</span></div>' : '';
+      };
+      return '<p class="vacio-tag vacio-tag-ok">Cómo se consigue</p>' +
+        '<div class="comoq">' +
+          fila('Qué se pide', c.que) +
+          fila('Ante quién', c.quien) +
+          fila('Cómo', c.como) +
+          fila('Qué hay que llevar', c.llevar) +
+          fila('Cuánto tarda', c.tarda) +
+          fila('Mientras llega', c.mientras) +
+        '</div>';
+    }
+    function panelVacio(hariaFalta, loQueHay, tramite) {
       return '<p class="vacio-tag">Sin dato oficial disponible</p>' +
         '<p class="vacio-falta"><b>Haría falta</b> ' + esc(hariaFalta) + '</p>' +
         (loQueHay ? '<p class="vacio-hay"><b>Lo que hay no es eso</b> ' + esc(loQueHay) + '</p>' : '') +
+        comoSeConsigue(tramite) +
         '<div class="renglones" style="--n:1"></div>';
     }
     /* Un panel de campo: la instrucción y renglones o casillas en blanco,
@@ -4043,12 +4116,34 @@ function donaHTML(datos, colorDe, nombreDe) {
          POT, y no está— pero es una cota inferior medida: si en esta manzana
          hay un edificio de seis pisos, seis pisos caben acá. */
       var brecha = (media != null && max > media) ? Math.round(10 * (max - media)) / 10 : null;
+      /* §10 · La altura CONSTRUIDA, presentada como la referencia real del
+         sector. El panel cerraba en «sin dato oficial» dos veces —altura
+         construida y altura permitida— y el pliego lo llamó por su nombre:
+         la norma no se consigue sin radicarla, pero lo construido SÍ está
+         medido y es lo que un jurado puede discutir. Una media sola no lo
+         cuenta: con la mayoría en un piso y unas torres sueltas, la moda y
+         la mediana dicen cómo es el sector y la media no. */
+      var rep = repartoDeAlturas(mp);
       return '<div class="kpis">' +
         '<div class="k"><b>' + (media != null ? String(media).replace('.', ',') : '—') + '</b><small>pisos de media' +
           (aproximada ? ', al menos' : '') + '</small></div>' +
+        (rep ? '<div class="k"><b>' + esc(rep.moda.etq) + '</b><small>lo que más se repite</small></div>' : '') +
+        (rep ? '<div class="k"><b>' + esc(rep.mediana.etq) + '</b><small>parte el sector en dos</small></div>' : '') +
         '<div class="k"><b>' + (max || '—') + '</b><small>el más alto</small></div>' +
         '</div>' +
-        fila('Edificios con altura registrada', al.conDato + ' de ' + (al.edificios || al.conDato)) +
+        (rep
+          ? barras(rep.filas, function (x) { return x.etq; },
+              function (x) { return x.n + ' · ' + conComa(x.pct) + '%'; },
+              function (x) { return x.pct; }, function () { return '#0A6F9E'; })
+          : '') +
+        fila('Edificios con altura registrada', al.conDato + ' de ' + (al.edificios || al.conDato) +
+          (rep && rep.pctSinDato > 0 ? ' · sin dato de altura el ' + conComa(rep.pctSinDato) + '%' : '')) +
+        /* El texto que el pliego pide literal. Va antes del vacío y no
+           después: es la frase que impide leer lo de arriba como si fuera
+           norma, y una advertencia después del hueco llega tarde. */
+        '<p class="lee"><b>Esto es lo que hay construido, no lo que la norma permite.</b> ' +
+        'La altura permitida la define la ficha normativa del POT y se solicita en la curaduría ' +
+        'urbana.</p>' +
         '<p class="vacio-tag">Altura permitida: sin dato oficial disponible</p>' +
         '<p class="vacio-falta"><b>Haría falta</b> la ficha normativa del POT vigente para este ' +
         'polígono, en la curaduría o la secretaría de planeación del municipio.</p>' +
@@ -4747,7 +4842,12 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<p class="vacio-falta">Se intentó leer la lista de campos y el servicio no contestó. ' +
           '<b>No es lo mismo que no tenerlos</b>, y por eso no se dice que falten.</p>';
       }
-      var hay = (ca.bloques || []), no = (ca.sinCampo || []);
+      /* Los servicios públicos salen de acá: tienen caja propia desde la
+         v880, y el mismo bloque impreso dos veces en la misma lámina es la
+         clase de repetición que el pliego prohíbe. */
+      var esServ = function (x) { return x.id === 'servicios'; };
+      var hay = (ca.bloques || []).filter(function (x) { return !esServ(x); });
+      var no = (ca.sinCampo || []).filter(function (x) { return !esServ(x); });
       return (hay.length
         ? hay.map(function (b) {
             return '<p class="lee-min">' + esc(b.t) + '</p>' +
@@ -5665,23 +5765,95 @@ function donaHTML(datos, colorDe, nombreDe) {
       caja('Riesgo oficial',
         panelVacio('la clasificación de amenaza y riesgo del POT vigente (Decreto 1807 de 2014), con su fecha y su escala, de la Secretaría de Planeación del municipio.',
           (ter ? 'la pendiente medida' : 'ninguna pendiente medida') + (S.amenaza ? ', la zona sísmica del SGC' : '') + (S.inundacion && !S.inundacion.sinDato ? ' y las manchas del IDEAM' : '') +
-          ': insumos, no la clasificación oficial. El riesgo no se deduce de la pendiente.'),
+          ': insumos, no la clasificación oficial. El riesgo no se deduce de la pendiente.',
+          { que: 'certificación de amenaza y riesgo del predio, o copia del mapa de amenazas del POT con su memoria técnica',
+            quien: 'Secretaría de Planeación municipal; en algunos municipios, la oficina de gestión del riesgo',
+            como: 'derecho de petición (artículo 23 de la Constitución) radicado en ventanilla o por el correo oficial',
+            llevar: 'dirección o cédula catastral del predio, y el nombre de quien pide',
+            tarda: '15 días hábiles el derecho de petición; un certificado de riesgo, hasta 30',
+            mientras: 'la pendiente medida y la zona sísmica del SGC, dichas como insumos y nunca como clasificación' }),
         'g3 caja-vacio') +
+      /* Servicios públicos SALE de los vacíos obligatorios (§19, v880). El
+         pliego lo pide con esas palabras —«el panel de servicios públicos ya
+         se puede llenar»— y tiene razón: la misma capa del censo por manzana
+         que este módulo ya consulta para población y escolaridad declara
+         también los servicios. Se le pregunta como a los demás bloques
+         (v865) y se imprime lo que conteste; lo que no exponga se declara
+         con su lista de campos como prueba, que es verificable, en vez de
+         «sin dato oficial», que era una creencia.
+
+         Sigue siendo una caja ámbar mientras la capa no conteste: lo que
+         cambió es que ahora hay a quién preguntarle. */
       caja('Servicios públicos',
-        panelVacio('cobertura y continuidad de acueducto, alcantarillado, energía, gas e internet por manzana: cuadro de servicios del CNPV 2018 del DANE o la empresa prestadora.',
-          (function () { var inf = null; try { inf = infraDeServicios(res); } catch (e) {} return (inf ? inf.n + (inf.n === 1 ? ' objeto de infraestructura registrado' : ' objetos de infraestructura registrados') + ' en OpenStreetMap' : 'ninguna infraestructura registrada') + ': presencia, no cobertura.'; })()),
+        (function () {
+          var ca2 = st.censoAmpliado || null;
+          var sv = ca2 && (ca2.bloques || []).filter(function (x) { return x.id === 'servicios'; })[0];
+          var inf = null; try { inf = infraDeServicios(res); } catch (e2) {}
+          var presencia = (inf ? inf.n + (inf.n === 1 ? ' objeto de infraestructura registrado' : ' objetos de infraestructura registrados') + ' en OpenStreetMap' : 'ninguna infraestructura registrada') + ': presencia, no cobertura.';
+          if (sv && sv.filas.length) {
+            return barras(sv.filas.slice(0, 6), function (x) { return x.etiqueta; },
+                function (x) { return Number(x.n).toLocaleString('es-CO') + ' · ' + conComa(x.pct) + '%'; },
+                function (x) { return x.n; }, function () { return '#0A6F9E'; }) +
+              '<p class="lee">Viviendas que declararon el servicio, por manzana censal dentro del ' +
+              'área, en el <b>CNPV 2018</b>. Es cobertura declarada, <b>no continuidad ni calidad</b>: ' +
+              'una manzana con acueducto puede tener agua seis horas al día, y eso el censo no lo ' +
+              'pregunta.</p>' +
+              '<p class="nota">Contado sobre ' + sv.filas.length + ' campo' + (sv.filas.length === 1 ? '' : 's') +
+              ' de la capa (' + esc(sv.filas.slice(0, 3).map(function (x) { return x.campo; }).join(', ')) +
+              (sv.filas.length > 3 ? '…' : '') + '), sumados por el radio analizado. En OpenStreetMap, ' +
+              'además, ' + esc(presencia) + '</p>';
+          }
+          var seLePreguntó = !!(ca2 && !ca2.sinPreguntar);
+          return '<p class="vacio-tag">' + (seLePreguntó
+              ? 'Lo que esta capa del censo no expone' : 'No se pudo preguntar por los servicios') + '</p>' +
+            '<p class="vacio-falta">' + (seLePreguntó
+              ? '<b>Cobertura de servicios públicos.</b> Se le preguntó a la capa del censo por su ' +
+                'lista de campos —declara ' + (ca2.campos || 0) + '— y ninguno corresponde a acueducto, ' +
+                'alcantarillado, energía, gas ni internet. No es una suposición: cualquiera abre el ' +
+                'mismo enlace y lo lee.' +
+                ((ca2.muestra || []).length ? ' Empiezan por ' + esc(ca2.muestra.slice(0, 6).join(', ')) + '.' : '')
+              : 'La lista de campos de la capa del DANE no se pudo leer en esta corrida. <b>No quiere ' +
+                'decir que el censo no traiga servicios:</b> quiere decir que no se preguntó.') + '</p>' +
+            '<p class="vacio-hay"><b>Lo que hay no es eso</b> ' + esc(presencia) + '</p>' +
+            comoSeConsigue({
+              que: 'cobertura y continuidad de acueducto, alcantarillado, energía, gas e internet por barrio',
+              quien: 'la empresa prestadora de cada servicio, o la Superintendencia de Servicios Públicos Domiciliarios',
+              como: 'derecho de petición a la empresa; la Superservicios publica además el SUI en línea',
+              llevar: 'nombre del barrio y código DANE del municipio',
+              tarda: '15 días hábiles',
+              mientras: 'el cuadro de servicios del CNPV 2018 por manzana, que da cobertura declarada pero no continuidad'
+            });
+        })(),
         'g3 caja-vacio') +
       caja('Norma urbana',
         panelVacio('uso permitido, índices de ocupación y construcción, altura máxima, aislamientos y cesiones: la ficha normativa del POT o un concepto de la curaduría urbana.',
-          (function () { var ix = loteA && (loteA.indices || (loteA.queCabe && loteA.queCabe.indices)); return ix && (ix.ocupacion || ix.construccion) ? 'índices declarados por quien analiza (ocupación ' + conComa(ix.ocupacion || '—') + ', construcción ' + conComa(ix.construccion || '—') + '): supuestos, no norma.' : 'ningún índice: lo que cabe en el lote está sin norma.'; })()),
+          (function () { var ix = loteA && (loteA.indices || (loteA.queCabe && loteA.queCabe.indices)); return ix && (ix.ocupacion || ix.construccion) ? 'índices declarados por quien analiza (ocupación ' + conComa(ix.ocupacion || '—') + ', construcción ' + conComa(ix.construccion || '—') + '): supuestos, no norma.' : 'ningún índice: lo que cabe en el lote está sin norma.'; })(),
+          { que: 'ficha normativa del predio, o concepto de norma urbanística',
+            quien: 'curaduría urbana del municipio; donde no hay curaduría, la Secretaría de Planeación',
+            como: 'solicitud de concepto de norma en la ventanilla de la curaduría; algunas la reciben en línea',
+            llevar: 'matrícula inmobiliaria o cédula catastral, dirección y plano de localización',
+            tarda: 'entre 5 y 15 días hábiles según el municipio; tiene costo en la mayoría de curadurías',
+            mientras: 'la altura construida alrededor, que es una cota medida de lo que cabe y NO lo que la norma permite' }),
         'g3 caja-vacio') +
       caja('Movilidad real',
         panelVacio('rutas y paraderos oficiales con frecuencias y aforos: la secretaría de movilidad o la empresa de transporte.',
-          (function () { var mv = st.movilidad || {}; return (mv.paradasBus != null ? mv.paradasBus + ' paradas y ' + (mv.rutas || []).length + ' rutas registradas en OpenStreetMap, por voluntarios' : 'sin paradas ni rutas registradas') + (cam ? '; la isócrona a pie por la red de calles sí está medida.' : '; la isócrona a pie pide medir el trazado.'); })()),
+          (function () { var mv = st.movilidad || {}; return (mv.paradasBus != null ? mv.paradasBus + ' paradas y ' + (mv.rutas || []).length + ' rutas registradas en OpenStreetMap, por voluntarios' : 'sin paradas ni rutas registradas') + (cam ? '; la isócrona a pie por la red de calles sí está medida.' : '; la isócrona a pie pide medir el trazado.'); })(),
+          { que: 'cuadro de rutas con recorrido y frecuencia, y los aforos de hora pico que tengan',
+            quien: 'Secretaría de Movilidad o de Tránsito del municipio; y la empresa operadora del transporte',
+            como: 'derecho de petición; si el municipio publica GTFS, se descarga sin pedir nada',
+            llevar: 'nada más que la solicitud; conviene nombrar las vías del sector',
+            tarda: '15 días hábiles',
+            mientras: 'las rutas que OpenStreetMap registra en las paradas del sector —nombre y tipo, sin recorrido ni frecuencia—' }),
         'g3 caja-vacio') +
       caja('Información legal del predio',
         panelVacio('matrícula inmobiliaria y certificado de tradición y libertad (Superintendencia de Notariado y Registro), cédula catastral y área oficial (IGAC o catastro municipal), afectaciones y servidumbres.',
-          loteA ? 'un polígono dibujado a mano de ' + Math.round(loteA.areaM2).toLocaleString('es-CO') + ' m²: no es el linde legal.' : 'ningún lote dibujado.'),
+          loteA ? 'un polígono dibujado a mano de ' + Math.round(loteA.areaM2).toLocaleString('es-CO') + ' m²: no es el linde legal.' : 'ningún lote dibujado.',
+          { que: 'certificado de tradición y libertad, y el boletín catastral del predio',
+            quien: 'Oficina de Registro de Instrumentos Públicos del círculo; el catastro del IGAC o el municipal',
+            como: 'el certificado se pide en línea en la ventanilla única de la SNR y llega por correo; el boletín, en la oficina de catastro',
+            llevar: 'número de matrícula inmobiliaria; si no se tiene, la dirección y la cédula del propietario',
+            tarda: 'el certificado, el mismo día o al siguiente; tiene costo. El boletín catastral, unos días',
+            mientras: 'el polígono dibujado a mano, que sirve para medir y NO para alegar un lindero' }),
         'g3 caja-vacio') +
 
       caja('Percepción del lugar',
@@ -5693,7 +5865,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           null, 5),
         'fam-campo caja-campo') +
       caja('Voces de quien vive acá',
-        panelCampo('Tres frases textuales de residentes, con iniciales, edad y años en el barrio. Preguntá qué falta y qué sobra.',
+        panelCampo('Tres frases textuales de residentes, con iniciales, edad y años en el barrio. Pregunte qué falta y qué sobra.',
           ['«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá']),
         'fam-campo caja-campo') +
 
@@ -6907,7 +7079,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                  dice qué comprobar, por qué no se pudo, y cómo se resuelve
                  — una tarea, no una recomendación. */
               ((pu.verificar || []).length
-                ? '<div class="verificar"><p class="lee">Antes de proponer, comprobá esto ' +
+                ? '<div class="verificar"><p class="lee">Antes de proponer, compruebe esto ' +
                   '<b>' + (pu.verificar || []).length + '</b>: no entró en las cinco porque no está medido</p>' +
                   (pu.verificar || []).map(function (v) {
                     return '<div class="vf"><b class="vf-q">' + esc(v.que) + '</b>' +
@@ -7172,6 +7344,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.vacio-tag{ margin:0 0 1.2mm; font-size:2.6mm; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:#B45309 }' +
       '.vacio-falta, .vacio-hay{ margin:0 0 1mm; font-size:2.8mm; line-height:1.32; color:#0F1F2E }' +
       '.vacio-falta b, .vacio-hay b{ display:block; font-size:2.3mm; letter-spacing:.12em; text-transform:uppercase; color:#6B7A8A }' +
+      /* «Cómo se consigue» (§19, v880). Va en VERDE y no en ámbar: el ámbar
+         de arriba dice «esto no lo tenemos» y esto dice «así se consigue».
+         Dos cosas distintas con el mismo color se leen como una sola, y la
+         segunda es la única del panel sobre la que alguien puede actuar. */
+      '.vacio-tag-ok{ color:#1B8A5A; margin-top:1.8mm }' +
+      '.comoq{ display:flex; flex-direction:column; gap:.9mm; margin:0 0 1mm;' +
+        'border-left:.6mm solid #1B8A5A; padding-left:2.2mm }' +
+      '.cq{ display:flex; gap:1.6mm; align-items:baseline; font-size:2.7mm; line-height:1.3 }' +
+      '.cq i{ flex:0 0 21mm; font-style:normal; font-size:2.2mm; letter-spacing:.1em;' +
+        'text-transform:uppercase; color:#1B8A5A; font-weight:800 }' +
+      '.cq span{ color:#0F1F2E }' +
       '.caja-vacio .renglones{ margin-top:1.2mm }' +
       // La decisión de diseño que cierra cada dato ambiental.
       '.decide{ margin:1.6mm 0 0; padding:1.2mm 2.4mm; font-size:2.9mm; line-height:1.32; color:#0F1F2E; background:var(--suave); border-radius:1.5mm; font-weight:600 }' +
@@ -10108,7 +10291,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var A = window.URBIS_PC_ANALISIS;
     if (!A || typeof A.calorExterno !== 'function') {
       S.calor = [];
-      S.aviso = 'El mapa de calor necesita el módulo de análisis por área. Recargá la app.';
+      S.aviso = 'El mapa de calor necesita el módulo de análisis por área. Recargue la app.';
       return;
     }
     var pts = puntosDeCalor();
@@ -14081,7 +14264,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                   : '') +
                 (cabe.sobraMM
                   ? 'El contenido se pasa <b>' + cabe.sobraMM + ' mm</b> del papel. ' : '') +
-                'Apagá una caja, o pruebe ' + (cabe.horizontal ? 'parado' : 'acostado') + '.</p>')
+                'Apague una caja, o pruebe ' + (cabe.horizontal ? 'parado' : 'acostado') + '.</p>')
         : '');
   }
 
@@ -17053,7 +17236,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!g.ok) {
       var texto = (g.error || 'No se pudo guardar el sector.') +
         ' Lo que hiciste sigue en pantalla, pero se pierde si cierra la aplicación.' +
-        ' Exporte tu recorrido con «Compartir el mío» y borrá sectores guardados' +
+        ' Exporte su recorrido con «Compartir el mío» y borre sectores guardados' +
         ' desde la pestaña «Sector» para hacer sitio.';
       if (S.avisoGuardado !== texto) { S.avisoGuardado = texto; pintar(); }
       return;
@@ -17866,7 +18049,7 @@ function donaHTML(datos, colorDe, nombreDe) {
      que dibuja un sector; quien quiere la evolución la pide. */
   function pedirEvolucion(fuente) {
     var EV = window.URBIS_EVOLUCION;
-    if (!EV) { S.evoAviso = 'Falta el módulo de evolución. Recargá la app.'; pintar(); return; }
+    if (!EV) { S.evoAviso = 'Falta el módulo de evolución. Recargue la app.'; pintar(); return; }
     var contorno = contornoDelSector();
     if (!contorno || contorno.length < 3) {
       S.evoAviso = 'Primero analice un sector.'; pintar(); return;
@@ -19242,7 +19425,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function iniciarCorte() {
     var K = window.URBIS_CORTES;
-    if (!K) { S.corteAviso = 'Falta el módulo de cortes. Recargá la app.'; pintar(); return; }
+    if (!K) { S.corteAviso = 'Falta el módulo de cortes. Recargue la app.'; pintar(); return; }
     if (!S.terRejilla) {
       S.corteAviso = 'Primero mida el terreno: los cortes se sacan de sus cotas.';
       pintar(); return;
@@ -19898,7 +20081,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     var traer = guardada
       ? '<p class="pcr-pista">Es lo que quedó archivado con este sector. Para traer más ' +
-        'recorridos o compartir el tuyo, retomá el sector desde la tarjeta de arriba.</p>'
+        'recorridos o compartir el suyo, retome el sector desde la tarjeta de arriba.</p>'
       : '<div class="pcr-llevar">' +
         (mios.length
           ? '<button type="button" data-pcr="int-exportar" class="pcr-mini pcr-llevar-b">' +
@@ -20035,7 +20218,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>' +
       medidor('Facilidad para llegar', mv.scoreAcceso, 
         (mv.scoreAcceso >= 60 ? 'Bien conectado: llega transporte y hay vías de peso.'
-         : mv.scoreAcceso >= 30 ? 'Conexión intermedia. Verificá en campo cómo llega la gente.'
+         : mv.scoreAcceso >= 30 ? 'Conexión intermedia. Verifique en campo cómo llega la gente.'
          : 'Poco conectado según OpenStreetMap. Suele faltar mapeo de rutas: buen dato para levantar.'),
         '#34CCFE') +
       medidor('Exposición al tránsito', mv.exposicion,
@@ -20615,7 +20798,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function analizarClima() {
     var D = window.AIA_DATOS;
     if (!D || !D.consultarClima || !window.AIA_REMOTO || !window.AIA_REMOTO.clima) {
-      S.cliAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+      S.cliAviso = 'Falta el módulo de datos. Recargue la app.'; pintar(); return;
     }
     var eje = ejeDelSector();
     if (!eje) { S.cliAviso = 'Primero elija el área.'; pintar(); return; }
@@ -20643,7 +20826,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function analizarTerreno() {
     var D = window.AIA_DATOS;
     if (!D || !D.consultarElevacion || !window.AIA_REMOTO || !window.AIA_REMOTO.terreno) {
-      S.terAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+      S.terAviso = 'Falta el módulo de datos. Recargue la app.'; pintar(); return;
     }
     if (!listoParaAnalizar()) { S.terAviso = 'Primero elija el área.'; pintar(); return; }
 
@@ -20698,7 +20881,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function analizarTrazado() {
     if (!window.AIA_DATOS || !window.AIA_REMOTO || !window.AIA_REMOTO.trazado) {
-      S.trzAviso = 'Falta el módulo de datos. Recargá la app.'; pintar(); return;
+      S.trzAviso = 'Falta el módulo de datos. Recargue la app.'; pintar(); return;
     }
     var esPol = S.forma === 'poligono';
     if (!listoParaAnalizar()) { S.trzAviso = 'Primero elija el área.'; pintar(); return; }
@@ -21104,7 +21287,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function pedirAmenaza() {
     var AM = window.URBIS_AMENAZA;
-    if (!AM) { S.amenazaAviso = 'Falta el módulo de amenaza sísmica. Recargá la app.';
+    if (!AM) { S.amenazaAviso = 'Falta el módulo de amenaza sísmica. Recargue la app.';
                pintar(); return; }
     var e = ejeDelSector();
     if (!e || e.lat == null) { S.amenazaAviso = 'Primero analice un sector.'; pintar(); return; }
@@ -21148,7 +21331,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function analizarCobertura() {
     var A = window.URBIS_PC_ANALISIS;
     if (!A || typeof A.analizarRaster !== 'function') {
-      S.cobAviso = 'Falta el módulo de análisis por área. Recargá la app.';
+      S.cobAviso = 'Falta el módulo de análisis por área. Recargue la app.';
       pintar(); return;
     }
     var contorno = contornoDelSector();
@@ -21805,8 +21988,8 @@ function donaHTML(datos, colorDe, nombreDe) {
               ' sin categoría: mire qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
             : '') +
           (subs.length
-            ? '<li>Tomá una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
-              '</b> y comprobá que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
+            ? '<li>Tome una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
+              '</b> y compruebe que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
             : '') +
           '<li>Anote lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
           (zonas.total === 0
@@ -23319,7 +23502,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     return '<div class="pcr-pestana">' +
       '<p class="pcr-pista">Cada sector que analizaste queda acá con su informe completo, ' +
-      'aunque cierres la app. Cargá el área para que los mapeos del curso se sumen a lo que ya se sabía.</p>' +
+      'aunque cierre la app. Cargue el área para que los mapeos del curso se sumen a lo que ya se sabía.</p>' +
       bloqueCurso() +
       bloqueCotejo() +
       fichas.map(function (f) {

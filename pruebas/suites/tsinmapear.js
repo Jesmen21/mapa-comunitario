@@ -226,7 +226,7 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
 
   console.log('\n  -- lo impreso lo dice con esas palabras --');
   T('la hoja trae el panel de lo que hay que comprobar',
-    /Antes de proponer, comprobá esto/.test(txt), 'panel presente');
+    /Antes de proponer, compruebe esto/.test(txt), 'panel presente');
   T('y explica que una capa vacía no es un sector sin eso',
     /capa vacía en OpenStreetMap no es un sector sin eso/.test(txt));
   /* La frase vieja era «N paradas de transporte público registradas» con N

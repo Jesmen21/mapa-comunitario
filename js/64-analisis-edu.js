@@ -496,7 +496,7 @@
        cosas del módulo que no mejora mapeando más. */
   async function forma(centro, radioM){
     if (!window.AIA_DATOS || !window.AIA_DATOS.consultarVias) {
-      throw new Error('Falta el módulo de datos. Recargá la aplicación.');
+      throw new Error('Falta el módulo de datos. Recargue la aplicación.');
     }
     if (!window.AIA_REMOTO || !window.AIA_REMOTO.trazado) {
       throw new Error('El servidor de análisis no está configurado en este navegador.');
@@ -767,7 +767,7 @@
 
   async function contexto(centro, radioM, poblacion){
     if (!window.AIA_DATOS || !window.AIA_DATOS.consultarContexto) {
-      throw new Error('Falta el módulo de datos. Recargá la aplicación.');
+      throw new Error('Falta el módulo de datos. Recargue la aplicación.');
     }
     const c0 = { lat: centro.lat, lng: centro.lng };
     const pts = rejillaTerreno(c0, radioM, 5);

@@ -1060,7 +1060,7 @@
     var ul = el('ul');
     [
       'Es un recuento de hechos que URBIS ya registró CON FUENTE. Cada uno se puede abrir y comprobar.',
-      'NO es un porcentaje de injerencia extranjera. Ese dato no existe: nadie lo publica y no hay forma honesta de calcularlo. Si algún día ves una cifra así en cualquier lado, preguntá de dónde salió el denominador.',
+      'NO es un porcentaje de injerencia extranjera. Ese dato no existe: nadie lo publica y no hay forma honesta de calcularlo. Si algún día ve una cifra así en cualquier lado, pregunte de dónde salió el denominador.',
       'Una denuncia no cuenta acá. Si alguien acusa a un operador extranjero de ofrecerle algo a un político, eso entra a la línea de tiempo como denuncia, con su fuente y su contrapunto, pero no suma a este recuento hasta que esté documentado.',
       'Que un hecho aparezca no significa que sea indebido. Un tratado, una visita oficial y una presión encubierta son cosas distintas: acá se listan, no se juzgan.'
     ].forEach(function (t) { ul.appendChild(el('li', null, t)); });

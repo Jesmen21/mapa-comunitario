@@ -253,7 +253,7 @@
       return { ok: false, motivo: 'pocasHuellas', pixelesTecho: nT, minimo: MINIMO,
         detalle: 'Con ' + (huellas.length || 0) + ' huella' + (huellas.length === 1 ? '' : 's') +
           ' mapeadas no hay de dónde aprender el color de los techos de este sector. ' +
-          'Mida el trazado, o mapeá unas cuantas casas y vuelva a intentarlo.' };
+          'Mida el trazado, o mapee unas cuantas casas y vuelva a intentarlo.' };
     }
 
     avisar('Comparando cada píxel con lo aprendido…');

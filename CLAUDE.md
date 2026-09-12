@@ -1582,6 +1582,140 @@ que el error típico declarado —«dar por bueno un chequeo que no se pudo
 correr»— siga escrito. Son guardas contra pasarse de renombrar y contra
 callar, no afirmaciones nuevas.
 
+## Un vacío que cierra en tarea, no en ausencia (v880)
+
+§19 y §10 del pliego de ajustes, y una tercera cosa que salió al medir antes
+de escribir.
+
+### La guarda del voseo era un vocabulario, y por eso fallaba abierto
+
+Antes de escribir seis paneles de prosa nueva convenía saber si la guarda de
+la v878 servía. **No servía.** Medidas las palabras terminadas en tilde del
+texto que se imprime, quedaban **veintisiete imperativos voseantes** que la
+lista nunca tuvo: «recargá» once veces, «pegá», «preguntá», «esperá»,
+«apuntá», «mapeá», «borrá», «apagá»… y uno lo había escrito yo mismo en la
+v875 —«comprobá esto»— dentro de la lámina que se imprime.
+
+Una lista de palabras prohibidas **solo caza lo que alguien se acordó de
+escribir en ella**. Es una guarda que falla ABIERTO, y eso en una guarda no
+es aceptable: el coste de un falso positivo es un renglón en una lista, y el
+de un falso negativo es la lámina impresa.
+
+Para las terminadas en **-á** la comprobación se dio vuelta: en vez de listar
+lo prohibido se lista lo PERMITIDO —los futuros de tercera persona, los
+topónimos, y «acá», «está», «quizá»— y se denuncia todo lo demás. Un
+imperativo voseante nuevo sale denunciado solo; un futuro nuevo cuesta un
+renglón y se ve en rojo hasta que alguien lo agregue.
+
+#### La regla estructural que parecía buena y era falsa
+
+Primero intenté deducirlo en vez de listarlo: «el futuro es el infinitivo MÁS
+á —aparecerá = aparecer + á—, así que quitándole la tilde queda algo acabado
+en -ar, -er o -ir». Es **falsa para los verbos cuya raíz termina en r**:
+«esperá» deja «esper», que acaba en «er», y se leía como futuro. Lo mismo
+mirá, pará, tirá, generá.
+
+Lo cazó la prueba de respuesta conocida antes de que entrara, y por eso esos
+cuatro están ahora DENTRO del caso de prueba: para que la idea no vuelva a
+parecer buena.
+
+#### Con -é y con -í no se puede, y decirlo importa más que tenerlo
+
+«Asistí a uno» es el nombre de un logro en `js/16` —pretérito de primera
+persona, perfectamente correcto— y «salí a un sitio abierto» en `js/20` es
+voseo. La misma forma, sentidos opuestos, y ninguna regla las separa sin un
+diccionario. Esas siguen una por una en la lista, y la lista dice por qué.
+
+### §19 · qué se pide, ante quién, y cuánto tarda
+
+Los paneles de vacío obligatorio terminaban en la ausencia: «sin dato
+oficial», qué haría falta, y por qué lo que hay no es eso. Todo cierto y todo
+inútil para quien tiene que ir a buscarlo. **Nombrar el documento y callar el
+trámite convierte un vacío en un muro**; con el trámite escrito es una tarea
+de una tarde.
+
+Cada uno cierra ahora con seis renglones —qué se pide, ante quién, cómo se
+radica, qué hay que llevar, cuánto tarda y qué se puede usar mientras llega—
+en **verde y no en ámbar**: el ámbar de arriba dice «esto no lo tenemos» y
+esto dice «así se consigue». Dos cosas distintas con el mismo color se leen
+como una sola, y la segunda es la única del panel sobre la que alguien puede
+actuar.
+
+El «mientras llega» **no es un permiso para suponer**: es un sustituto
+declarado con su límite escrito al lado —«la altura construida alrededor, que
+es una cota medida de lo que cabe y NO lo que la norma permite»—. La suite
+comprueba justamente eso: que ninguno nombre el sustituto a secas.
+
+#### Servicios públicos sale de la lista, y no hizo falta código nuevo
+
+El pliego lo pide con esas palabras —«el panel de servicios públicos ya se
+puede llenar»— y tiene razón: es la **misma capa del censo por manzana** que
+el módulo ya consulta para población y escolaridad.
+
+Entra como un bloque más de `BLOQUES_CENSO` y **no como una consulta aparte**,
+así que hereda los tres estados de la v865 sin volver a escribirlos: si la
+capa lo trae, se cuenta con el nombre del campo al lado; si no lo expone, se
+declara CON la lista de campos como prueba; si no se pudo preguntar, se dice
+que eso no es lo mismo que no tenerlo. Escribir un `serviciosDelCenso` aparte
+—que fue lo primero que hice— habría sido una segunda copia de una honestidad
+que ya existía, y dos copias de una advertencia se separan.
+
+Quedan **cuatro** vacíos obligatorios, no cinco.
+
+Y una del reparto: el bloque se descuenta de «Lo que el censo trae además»,
+porque el mismo cuadro impreso dos veces en la misma lámina es la repetición
+que el pliego prohíbe.
+
+### §10 · el potencial deja de estar vacío
+
+El panel cerraba en «sin dato oficial» dos veces —altura construida y altura
+permitida—. La norma no se consigue sin radicarla, pero **lo construido SÍ
+está medido**, y es lo que un jurado puede discutir.
+
+La media sola no lo cuenta: con la mayoría en un piso y unas torres sueltas,
+«1,8 pisos de media» describe un sector que no existe. Van la **moda** —cómo
+es la mayoría—, la **mediana** —por dónde parte el sector en dos—, el reparto
+entero con sus porcentajes, y qué parte del sector no tiene altura
+registrada. Las tres salen de los mismos cuatro cajones, así que **se dicen
+como cajones y no como cifras exactas**: llamar «4» a la mediana de un sector
+con torres de doce sería inventar precisión sobre una caja.
+
+Y la frase que el pliego pide literal, **antes del vacío y no después**: una
+advertencia que llega después del hueco llega tarde.
+
+> Esto es lo que hay construido, no lo que la norma permite. La altura
+> permitida la define la ficha normativa del POT y se solicita en la curaduría
+> urbana.
+
+### El sector de prueba no podía demostrar nada de esto
+
+Quinta vez (v862, v866, v874, v877, y esta). Los treinta edificios tenían
+`3 + (i % 5)` pisos, así que **todos caían en los dos cajones de arriba**: la
+moda y la mediana daban lo mismo que la media y el panel pasaba en verde sin
+enseñar para qué existe. Ahora se reparten como en la corrida real —casi seis
+de cada diez de un piso, y tres torres—, y sale media 1,8 contra moda «1
+nivel» y máximo 9, que es exactamente la diferencia que el pliego manda
+imprimir. Una aserción fija ese reparto para que no vuelva a degenerar.
+
+Lo mismo con el censo: el doble trae ahora cuatro campos de servicios —tres
+con alias y **uno sin**, como vienen muchos de verdad— y sigue sin traer
+hogares, así que una sola corrida recorre los dos caminos: el que cuenta y el
+que declara la ausencia con la lista de campos como prueba.
+
+### Dos lecturas mías equivocadas, las dos por medir mal
+
+* **`todo en verde` no era verde.** Grepeé la salida de la suite por
+  `✗|todo en verde|fallaron`, no salió nada, y lo leí como que había pasado.
+  No: la suite había reventado con un `ReferenceError` y no imprimió ninguna
+  de las tres cosas. **Una salida vacía no es una salida buena**, y una
+  comprobación que busca señales de fallo tiene que buscar también la señal
+  de éxito, o el silencio se lee como aprobación.
+* **`echo $?` después de un `| tail` mide el `tail`.** Estuve a punto de
+  «arreglar» `correr.js` creyendo que daba por buena una suite reventada.
+  Corriéndola sin tubería sale 1, que es lo correcto y lo que el `catch` del
+  final ya hacía. Es la regla de la v863 aplicada al arnés: **una sospecha se
+  comprueba corriendo, no leyendo.**
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -1633,9 +1767,10 @@ que se ve a simple vista: la cláusula está o no está.
   y el bloque gastaba una banda para no decir nada; en un municipio con
   resguardo o consejo comunitario diría mucho.
   `ya: el bloque está escrito y probado —entra volviendo a poner su renglón en BLOQUES_CENSO—, y la capa se pregunta igual para los otros tres`
-* **Los cinco vacíos obligatorios** — riesgo oficial, servicios públicos,
-  norma urbana del POT, movilidad real e información legal del predio. Cada uno
-  pide su entidad y ninguno se deduce.
+* **Los cuatro vacíos obligatorios** — riesgo oficial, norma urbana del POT,
+  movilidad real e información legal del predio. Cada uno pide su entidad y
+  ninguno se deduce; servicios públicos salió de la lista en la v880.
+  `ya: cada uno cierra con qué se pide, ante quién, cómo se radica, qué llevar, cuánto tarda y qué sirve mientras llega con su límite escrito`
 <!-- /LISTA-VIVA-PLIEGO -->
 
 **Una tanda que mida algo que estaba en esta lista hace dos cosas**: mueve el

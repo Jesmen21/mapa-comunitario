@@ -665,7 +665,7 @@
       if (!d) {
         throw new Error(ultimo === 'saturado'
           ? 'El servicio de altura del terreno está atendiendo demasiadas consultas ' +
-            'ahora mismo. Es gratuito y tiene un cupo por hora. Esperá un par de minutos ' +
+            'ahora mismo. Es gratuito y tiene un cupo por hora. Espere un par de minutos ' +
             'y vuelva a darle a «Medir el terreno»: lo demás del análisis ya está.'
           : 'No se pudo consultar la altura del terreno (' + ultimo + ').');
       }
@@ -1019,7 +1019,22 @@
   const BLOQUES_CENSO = [
     { id:'escolaridad', t:'Nivel educativo',      re:/(ESCOLARID|NIVEL_EDUC|EDUCAC)/i },
     { id:'hogares',     t:'Hogares por tipo',     re:/HOGAR/i },
-    { id:'alfabetismo', t:'Alfabetismo',          re:/(ALFABET|LEE_Y_ESCRIB|SABE_LEER)/i }
+    { id:'alfabetismo', t:'Alfabetismo',          re:/(ALFABET|LEE_Y_ESCRIB|SABE_LEER)/i },
+    /* SERVICIOS PÚBLICOS (§19, v880). El pliego de ajustes lo pide con esas
+       palabras —«el panel de servicios públicos ya se puede llenar»— y tiene
+       razón: es la MISMA capa por manzana que este módulo ya consulta para
+       población y escolaridad, y el CNPV pregunta por acueducto,
+       alcantarillado, energía, gas e internet vivienda por vivienda.
+
+       Entra como un bloque más y no como una consulta aparte, así que hereda
+       los tres estados de la v865 sin escribirlos otra vez: si la capa lo
+       trae se cuenta con el nombre del campo al lado; si no lo expone se
+       declara CON la lista de campos como prueba; y si no se pudo preguntar,
+       se dice que eso no es lo mismo que no tenerlo.
+
+       Deja de ser uno de los cinco vacíos obligatorios. Los otros cuatro
+       siguen, porque ninguna capa abierta los trae. */
+    { id:'servicios',   t:'Servicios públicos',   re:/(ACUEDUCT|ALCANTARILL|ENERG|GAS_|INTERNET|SERV_PUB|SERVICIO)/i }
     /* La PERTENENCIA ÉTNICA salió en la v865 y se retira en la v874, pedido
        en la revisión del pliego: en el sector de la corrida real el 98,5 %
        contestó «ninguno», así que el bloque ocupaba una banda entera para no
@@ -1046,7 +1061,13 @@
     // educativo», así que repetirlo en cada barra gasta el renglón en decir
     // dos veces lo mismo. Lo que queda es lo que distingue una barra de otra.
     INFO: 'información', EDUC: '', NIVEL: '', ESCOLARIDAD: '',
-    ALFABETISMO: '', HOGAR: 'hogar', HOGARES: 'hogares', SI: 'sí', NO: 'no'
+    ALFABETISMO: '', HOGAR: 'hogar', HOGARES: 'hogares', SI: 'sí', NO: 'no',
+    // Servicios públicos (v880): el DANE los abrevia y el pliego se imprime a
+    // dos metros. `SERVICIO` y `SERV` se desatan a nada por lo mismo que
+    // `NIVEL`: el título del panel ya lo dice.
+    ACUEDUCTO: 'acueducto', ALCANTARILLADO: 'alcantarillado', ENERGIA: 'energía',
+    GAS: 'gas', NATURAL: 'natural', INTERNET: 'internet', SERVICIO: '', SERVICIOS: '', SERV: '',
+    PUB: '', VIV: 'viviendas', CON: 'con', TIENE: 'con', DISPONE: 'con'
   };
   function etiquetaDeCampo(nombre, alias, bloqueRe) {
     const a = String(alias || '').trim();

@@ -83,7 +83,7 @@
       trae: 'Es lo que URBIS no pudo darte: el IDEAM no modeló Cúcuta y su mapa nacional ' +
             'no dibuja quebradas. Si el lote está en suelo de protección por amenaza, ' +
             'no hay cuenta de índices que valga.',
-      con: 'Preguntá también si hay estudio de detalle para esa comuna.' },
+      con: 'Pregunte también si hay estudio de detalle para esa comuna.' },
     { que: 'La cota de ronda del río Pamplonita',
       donde: 'CORPONOR · POMCA del Pamplonita',
       trae: 'CORPONOR levantó la ronda del tramo urbano. Es el dato bueno de agua para ' +

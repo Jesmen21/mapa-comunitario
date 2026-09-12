@@ -949,7 +949,59 @@ console.log('\n  -- el FODA del curso --');
     'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','guardalo','escribilo','ped\u00edsela','mirala','ponelo'];
 
 
-  /* ── Qué parte del archivo es comentario ────────────────────────────
+  /* ── El voseo terminado en -á: la guarda se da vuelta ──────────────────
+     La lista de formas de arriba es un VOCABULARIO, y un vocabulario solo
+     caza lo que alguien se acordó de escribir en él. La v880 midió el
+     agujero: quedaban VEINTISIETE imperativos voseantes impresos que la v878
+     no tenía en la lista —«recargá» once veces, «pegá», «preguntá»,
+     «esperá», «apuntá»— y uno lo había escrito yo mismo en la v875,
+     «comprobá esto», dentro de la lámina que se imprime. La guarda salía en
+     verde mientras tanto.
+
+     Para las terminadas en -á la comprobación se da vuelta: en vez de listar
+     lo prohibido, se lista lo PERMITIDO y se denuncia todo lo demás. Es la
+     diferencia entre fallar abierto y fallar cerrado, y en una guarda solo
+     una de las dos es aceptable: una palabra voseante nueva sale denunciada
+     sola, y un futuro nuevo —«completará»— cuesta un renglón en esta lista y
+     se ve en rojo hasta que alguien lo agregue. Un falso positivo cuesta una
+     línea; un falso negativo cuesta la lámina impresa.
+
+     Intenté antes la regla estructural —«el futuro es el infinitivo MÁS á,
+     así que quitándole la tilde queda un infinitivo»— y **es falsa** para los
+     verbos cuya raíz termina en r: «esperá» deja «esper», que acaba en «er»,
+     y se leía como futuro. Lo mismo mirá, pará, tirá, generá. La prueba de
+     respuesta conocida lo cazó antes de que entrara.
+
+     Con -é y con -í no se puede hacer ni lo uno ni lo otro, y decirlo importa
+     más que tenerlo: «Asistí a uno» es el nombre de un logro en `js/16`
+     —pretérito de primera persona, correcto— y «salí a un sitio abierto» en
+     `js/20` es voseo. Misma forma, sentidos opuestos. Esas siguen una por una
+     en la lista de arriba. */
+  /* Futuro de tercera persona: infinitivo + á. Correcto. */
+  const FUTURO_3A = ['aparecer\u00e1', 'avisar\u00e1', 'ayudar\u00e1', 'brillar\u00e1', 'cambiar\u00e1',
+    'conservar\u00e1', 'contar\u00e1', 'crecer\u00e1', 'depender\u00e1',
+    'desaparecer\u00e1', 'encajar\u00e1', 'enviar\u00e1', 'estar\u00e1', 'evaluar\u00e1',
+    'guardar\u00e1', 'marcar\u00e1', 'mostrar\u00e1', 'pedir\u00e1', 'pelear\u00e1',
+    'perder\u00e1', 'podr\u00e1', 'pondr\u00e1', 'quedar\u00e1', 'quitar\u00e1',
+    'realizar\u00e1', 'recibir\u00e1', 'recomendar\u00e1', 'renombrar\u00e1',
+    'seguir\u00e1', 'ser\u00e1', 'tendr\u00e1', 'usar\u00e1', 'validar\u00e1', 'ver\u00e1',
+    'volver\u00e1', 'habr\u00e1', 'har\u00e1', 'dir\u00e1', 'saldr\u00e1', 'vendr\u00e1',
+    'querr\u00e1', 'sabr\u00e1', 'cabr\u00e1', 'valdr\u00e1'];
+  /* Topónimos escritos en el repositorio. */
+  const TOPONIMOS_A = ['alcal\u00e1', 'bogot\u00e1', 'boyac\u00e1', 'cachir\u00e1', 'calarc\u00e1',
+    'caquet\u00e1', 'chinchin\u00e1', 'chiquinquir\u00e1', 'chitag\u00e1', 'engativ\u00e1',
+    'facatativ\u00e1', 'fusagasug\u00e1', 'tulu\u00e1', 'zipaquir\u00e1', 'panam\u00e1',
+    'canad\u00e1'];
+  /* Palabras corrientes, y el token del par [a-á] de una regex. */
+  const CORRIENTES_A = ['ac\u00e1', 'all\u00e1', 'est\u00e1', 'quiz\u00e1', 'sof\u00e1', 'ojal\u00e1',
+    'a\u00e1'];
+  function esVoseoEnA(p) {
+    if (p.length < 4 || p.charAt(p.length - 1) !== '\u00e1') return false;
+    return FUTURO_3A.indexOf(p) === -1 && TOPONIMOS_A.indexOf(p) === -1 &&
+           CORRIENTES_A.indexOf(p) === -1;
+  }
+
+    /* ── Qué parte del archivo es comentario ────────────────────────────
      Un recorrido con estados. Tiene que entender también las EXPRESIONES
      REGULARES, y eso no es un refinamiento: `js/68` lleva desde siempre un
      `.replace(/"/g, '&quot;')`, y un recorrido que no sepa que eso es una
@@ -1038,6 +1090,17 @@ console.log('\n  -- el FODA del curso --');
         k += f.length;
       }
     });
+    /* Y el barrido estructural de las terminadas en -á, que no depende de
+       que nadie se haya acordado de escribirlas en una lista. */
+    const reA = /[A-Za-z\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1]+\u00e1/g;
+    let mA;
+    while ((mA = reA.exec(txt))) {
+      const dsp = txt[mA.index + mA[0].length] || ' ';
+      if (LETRA.test(dsp) || com[mA.index]) continue;
+      if (!esVoseoEnA(mA[0].toLowerCase())) continue;
+      const linea = txt.slice(0, mA.index).split('\n').length;
+      hallados.push(rel + ':' + linea + ' \u00ab' + mA[0] + '\u00bb');
+    }
   });
   /* La lista se defiende sola: si alguien la «corrige» —o un reemplazo
      masivo vuelve a pasarle por encima— estas formas dejan de ser voseo y la
@@ -1058,6 +1121,30 @@ console.log('\n  -- el FODA del curso --');
       !!c[iCom] && !c[iCad],
       'el «vos» del comentario ' + (c[iCom] ? 'queda tapado' : 'SE DENUNCIARÍA') +
       ' y el de la cadena ' + (c[iCad] ? 'NO SE VERÍA' : 'se ve'));
+  })();
+
+  /* La regla de las -á, contra casos de respuesta conocida. Los tres grupos
+     tienen que separarse, y el tercero es el que importa: una lista de
+     vocabulario los habría dejado pasar a todos. */
+    (function () {
+    /* Los cuatro últimos son los que tumbaron la regla estructural: su raíz
+       termina en r, así que quitándoles la tilde queda algo acabado en -ar,
+       -er o -ir y se leían como futuro. Van acá para que esa idea no vuelva
+       a parecer buena. */
+    const VOSEANTES = ['recarg\u00e1', 'pregunt\u00e1', 'peg\u00e1', 'comprob\u00e1',
+      'apag\u00e1', 'borr\u00e1', 'retom\u00e1', 'verific\u00e1', 'mape\u00e1', 'apunt\u00e1', 'tom\u00e1',
+      'esper\u00e1', 'mir\u00e1', 'par\u00e1', 'gener\u00e1'];
+    const FUTUROS = ['aparecer\u00e1', 'ser\u00e1', 'validar\u00e1', 'podr\u00e1', 'tendr\u00e1',
+      'habr\u00e1', 'har\u00e1', 'dir\u00e1', 'pondr\u00e1', 'saldr\u00e1'];
+    const NOMBRES = ['bogot\u00e1', 'fusagasug\u00e1', 'ac\u00e1', 'est\u00e1', 'quiz\u00e1', 'sof\u00e1'];
+    const malV = VOSEANTES.filter(function (w) { return !esVoseoEnA(w); });
+    const malF = FUTUROS.filter(esVoseoEnA);
+    const malN = NOMBRES.filter(esVoseoEnA);
+    comprobar('la regla de las -á separa voseo, futuro y topónimo',
+      !malV.length && !malF.length && !malN.length,
+      malV.length || malF.length || malN.length
+        ? 'no caza ' + malV.join(', ') + ' · denuncia ' + malF.concat(malN).join(', ')
+        : VOSEANTES.length + ' voseantes cazados, ' + (FUTUROS.length + NOMBRES.length) + ' correctos respetados');
   })();
 
   const sigueSiendoVoseo = VOSEO.indexOf('vos') !== -1 &&

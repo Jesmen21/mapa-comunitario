@@ -220,7 +220,7 @@
       '<div class="vt-card">' +
         '<div class="vt-marca-grande"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><path d="M12 3.5V1.5"/></svg>' +
         '<b>Visión Territorial</b><small>URBIS · acceso con credencial de entidad</small></div>' +
-        '<p class="vt-sub">Esta herramienta es para entidades territoriales. Pegá la credencial que te entregó URBIS: lleva tu municipio y tu rol, y solo sirve en este equipo.</p>' +
+        '<p class="vt-sub">Esta herramienta es para entidades territoriales. Pegue la credencial que le entregó URBIS: lleva tu municipio y tu rol, y solo sirve en este equipo.</p>' +
         (mensaje ? '<p class="vt-chip critico" style="display:inline-flex;margin-bottom:10px">' + esc(mensaje) + '</p>' : '') +
         '<textarea id="vt-lic-input" placeholder="URBIS1.…" autocomplete="off" spellcheck="false">' + esc(licencia()) + '</textarea>' +
         '<div class="vt-acciones"><button type="button" class="vt-btn primario ancho" id="vt-lic-entrar">' + ico('llave', 18) + ' Entrar</button></div>' +
@@ -228,7 +228,7 @@
       '</div>';
     var b = $('vt-lic-entrar'); if (b) b.onclick = function () {
       var v = String(($('vt-lic-input') || {}).value || '').trim();
-      if (!v) { toast('Pegá la credencial primero.'); return; }
+      if (!v) { toast('Pegue la credencial primero.'); return; }
       try { localStorage.setItem(LS.licencia, v); } catch (e) {}
       b.disabled = true; b.textContent = 'Comprobando…';
       cargarSesion().then(function () { ir('tablero'); }).catch(function (e) { pintarAcceso(e.message); });
