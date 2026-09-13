@@ -1953,8 +1953,39 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-trazo-cab{
   display:flex; align-items:center; gap:8px; flex:0 0 auto;
 }
-.pcr-hoja .pcr-trazo-cab h4{ margin:0; }
-.pcr-hoja .pcr-volver{ flex:0 0 auto; }
+.pcr-hoja .pcr-trazo-cab h4{ margin:0; min-width:0; }
+/* `pcr-trazo-volver`, no `pcr-volver` (v893): aquella es la píldora flotante
+   de §18 —`position:fixed`, abajo a la izquierda— y reusarle el nombre sacó
+   este botón de la cabecera para dejarlo encima de la lista de análisis. Un
+   nombre de clase que ya existe significa lo que ya significaba. */
+/* Compacto, y sin pegarse al canto: a ras del borde el navegador recorta su
+   propio contorno redondeado y el botón se lee como si estuviera cortado.
+   Salió mirando la captura, no las medidas —la caja daba l=0 y eso no dice
+   que el borde no se vea—. */
+.pcr-hoja .pcr-trazo-volver{
+  flex:0 0 auto; margin-inline-start:2px;
+  padding:6px 12px 6px 9px; font-size:.86rem !important;
+}
+
+/* El botón de analizar: es lo único que se toca al final de esta ventana, y
+   tiene que verse sin leer. Grande —56 px, por encima de los 48 de una
+   acción principal corriente— y con el latido del amarillo, que es el mismo
+   recurso que ya usa el botón del lote cuando es la acción que toca. */
+.pcr-hoja .pcr-principal.pcr-trazo-ir{
+  min-height:56px; font-size:1.02rem !important; margin-top:2px;
+  background:linear-gradient(180deg,#1596CE,#0A6F9E) !important;
+  box-shadow:0 8px 20px rgba(10,111,158,.30);
+  animation:pcr-trazo-late 2.2s ease-out infinite;
+}
+.pcr-hoja .pcr-principal.pcr-trazo-ir .u-ico{ color:#fff; }
+.pcr-hoja .pcr-principal.pcr-trazo-ir:disabled{ animation:none; }
+@keyframes pcr-trazo-late{
+  0%,100%{ box-shadow:0 8px 20px rgba(10,111,158,.30), 0 0 0 0 rgba(52,204,254,.55); }
+  70%{ box-shadow:0 8px 20px rgba(10,111,158,.30), 0 0 0 12px rgba(52,204,254,0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .pcr-hoja .pcr-principal.pcr-trazo-ir{ animation:none; box-shadow:0 0 0 3px rgba(52,204,254,.45); }
+}
 
 /* La identidad del trazo: su miniatura y sus tres datos. Lo que un lector
    necesita para saber que abrió el que quería, y nada más. */

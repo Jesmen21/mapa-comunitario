@@ -3267,6 +3267,137 @@ Tres pasan a propósito y son guardas, no afirmaciones nuevas: que la barrita
 llegue a 8 km de 50 en 50 y que 2.500 sea alcanzable —el control ya era así,
 lo que faltaba era tenerlo para un trazo guardado— y que el centro no se mueva.
 
+## Cuatro defectos de la ventana del trazo, y dos nombres (v895)
+
+Llegaron en cuatro capturas al día siguiente de la v892. Son cuatro y **ninguno
+es de cálculo**: dos de estado y dos de nombres de clase. Auditados uno por uno
+antes de tocar nada, que es la regla de la v863, y la auditoría cambió la
+historia: lo que el reporte contaba como cuatro fallos resultó ser **uno que
+arrastraba a otro**.
+
+| Lo que se vio | La causa |
+|---|---|
+| El radio de 2,5 km centrado FUERA del lote | el rebote de abajo lo dejaba en el panel general, donde el círculo sigue al mapa por diseño |
+| «Me pasó otra ventana aparte… primero me retrocedió» | `trazo-analizar` borraba `S.trazoAbierto` ANTES de llamar a `analizar` |
+| «Tampoco salía el botón de analizar grande» | `pcr-btn` y `pcr-btn-ir` **no existen en ninguna hoja de estilo** |
+| «Volver» montado sobre «Análisis de este trazo» | `pcr-volver` **sí existe**: es la píldora flotante de §18, `position:fixed` |
+
+### Un nombre que no existía y otro que existía de más
+
+Son el mismo error visto por sus dos caras, y los dos los cometí en la misma
+tanda:
+
+* **Inventado.** `pcr-btn pcr-btn-ir` no estaba escrito en ninguna parte, así
+  que la acción principal de una pantalla entera salió como texto suelto de
+  **25 px de alto, sin fondo ni borde**. Un nombre de clase que no existe es
+  HTML válido: ni un error, ni una consola, nada.
+* **Reusado.** `pcr-volver` llevaba años siendo otra cosa —la píldora que
+  vuelve al análisis, clavada abajo a la izquierda con `z-index` 2.147.483.200—,
+  así que el botón de la cabecera se fue del encabezado a flotar encima de la
+  lista de análisis, sesenta píxeles más abajo.
+
+Es el tropiezo de `trazoDe` de la v892 —dos funciones con el mismo nombre—
+dicho en CSS, y la guarda de la v885 no lo alcanza: mira funciones de
+JavaScript.
+
+#### La guarda, y por qué no persigue «clase sin regla»
+
+La comprobación obvia —denunciar toda clase propia sin regla— da **28 casos** y
+casi todos son legítimos: un asidero para `querySelector`, o una etiqueta
+descriptiva sobre un SVG cuyos hijos sí se pintan. Una guarda con veintiocho
+excepciones es una lista que envejece hasta no significar nada.
+
+Lo que sí discrimina, y sin un solo falso positivo, es otra cosa: **un elemento
+en el que NINGUNA de sus clases tiene regla en ninguna hoja**. Ese elemento no
+lo pinta nada, y ese es el defecto. Quedan **13**, cada uno con su razón
+escrita al lado —es la forma de la guarda del voseo en -á de la v880: se lista
+lo permitido y se denuncia todo lo demás—. Demostrada devolviendo
+`pcr-btn pcr-btn-ir`: sale con archivo y línea.
+
+### El rebote era el defecto de verdad, y arrastraba al del centro
+
+Lo que parecían dos cosas era una. Al tocar «Analizar», el manejador cerraba la
+ventana y **entonces** consultaba, así que la hoja volvía al panel general y la
+barra de espera aparecía allá: «primero me retrocedió y después apareció esa
+ventana, y eso me enredó; que todo sea transitorio, que no salga en ventanas de
+la nada». Y una vez en el panel general, el círculo **sigue al mapa a
+propósito** —esa pantalla lo promete por escrito, «mueva el mapa: el círculo
+sigue el centro»—, de modo que cualquier arrastre lo sacaba del lote amarillo.
+
+Ahora la ventana se queda, la espera se pinta dentro de ella, y la cierra
+`analizar` cuando ya hay resultado —que es cuando lo que hay que ver es la
+ficha—. Y no se le cede a la barra encogida: `encoger` lleva `!S.trazoAbierto`.
+Una ventana, dos puertas escritas para salir.
+
+#### El ancla, y por qué se suelta en una puerta y no en la otra
+
+El centro de un trazo queda marcado `S.centroDe = 'trazo'`, y `alMoverElMapa`
+no lo mueve: **un trazo guardado es un SITIO, no una propuesta que se empuja
+arrastrando el mapa.** Pero «Solo ponerlo en el mapa» **lo suelta**, porque esa
+es la puerta explícita a trabajar sobre el mapa y el panel de destino promete
+justamente lo contrario. Clavarlo también ahí habría convertido esa promesa
+impresa en mentira — y el proyecto tiene una tanda entera (la v861) sobre lo
+que cuesta que una pantalla afirme lo que no hace.
+
+Por eso la suite mide **las dos ramas en la misma corrida**: soltado en el
+panel general el círculo sigue al mapa, y al reabrir el trazo el centro vuelve
+al trazo. Medir solo la primera habría pasado en verde clavando el centro en
+todas partes.
+
+**Y un origen nuevo entra en `ORIGEN_TEXTO` el mismo día que se inventa.** Sin
+su renglón, `comoSeEligioElCentro('trazo')` caía en el texto por omisión y la
+ficha imprimía «el centro del mapa, donde estaba la vista» sobre un centro que
+no salió del mapa. Es lo único de los cuatro que sale **en rojo contra la
+v892** por la vía del centro: el valor volvía bien por suerte y el rótulo se
+quedaba viejo. Declarar mal la procedencia es peor que no declararla, que es la
+regla de la v867.
+
+### Dos lecturas mías equivocadas, las dos por medir mal
+
+* **`estado()` no expone `cargando` ni `resultado`.** Escribí
+  `R.estado().cargando` y `.resultado` y las dos daban `undefined`, o sea rojo
+  por «la función no hizo su trabajo» cuando la función estaba bien. Los
+  nombres que el accesor expone son `consultando` y `hay`. **Es exactamente la
+  trampa que la v871 dejó escrita en este archivo, y volví a caer en ella.**
+* **La primera versión de la aserción de la espera esperaba 900 ms.** El
+  Overpass de mentira contesta al instante, así que medía el final y no la
+  espera. Se mide sin esperar nada: `analizar` pone la bandera y repinta antes
+  de su primer `await`.
+
+### La ventana del trazo no tiene asa, y por eso una aserción sobraba
+
+Escribí primero una aserción que bajaba la hoja con el dedo estando en la
+ventana del trazo y comprobaba que el centro no se moviera. **Pasaba también
+contra la v892**, y no porque el código estuviera bien: el arrastre de la hoja
+arranca solo desde el asa, y la ventana del trazo no dibuja la cabecera que la
+lleva. Estaba midiendo un gesto imposible.
+
+Es la undécima vez que aparece el mismo agujero (v862, v866, v874, v877, v880,
+v882, v884, v888, v889, v890, y esta) y la primera en que el material no era
+pobre sino **inalcanzable**. Se sustituyó por el camino que sí se puede
+recorrer —salir por «Solo ponerlo en el mapa», bajar la hoja, arrastrar lejos,
+reabrir el trazo— y la aserción del valor del centro se declara en la suite
+como lo que es: una **guarda**, como las de la v879, la v882 y la v890, no una
+afirmación que la v892 rompa.
+
+### Y se miró el papel
+
+Las medidas decían que «Volver» estaba en su cabecera y no dijeron que su
+contorno redondeado quedaba **recortado contra el canto** de la hoja: la caja
+daba `l=0`, que no es lo mismo que «se ve entero». Salió en la captura, como
+salieron los defectos de la v874, la v882, la v885 y la v887.
+
+### Demostrado contra la v892
+
+Cinco aserciones en rojo de catorce, con el texto viejo impreso: «ventana
+false» y «botones de radio sueltos: true» por el rebote, «el centro del mapa,
+donde estaba la vista» por el origen, «25 × 412 px» por el botón y «fixed ·
+botón en y=773, cabecera en y=380» por el solape.
+
+Y una de numeración: la otra sesión publicó una v893 y una v894 mientras esta
+tanda se escribía, así que esto es la **v895**. Se sube por encima de las dos,
+nunca bajando la propia — es la regla del 7 de septiembre.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

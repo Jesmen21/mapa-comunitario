@@ -194,11 +194,131 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
         /6B7A8A/i.test(l.options.color||'') && l.options.fill===false) n++; });
       return n; })();
 
+    /* ── 4c. El centro se queda EN EL TRAZO (v893).
+       Llegó en captura: «yo le dije que analizara dos punto cinco de radio,
+       pero no le hizo el medio del lote, lo hizo por fuera… El radio en el
+       centro del lote del polígono amarillo». La causa es de dos piezas y
+       las dos se ejercitan acá: bajar la hoja con el dedo armaba el
+       seguimiento del mapa, y desde ahí cualquier arrastre reescribía el
+       centro con el de la vista. Se mide el gesto entero —bajar y
+       arrastrar—, no la bandera. */
+    o.centroAntes=(function(){ const c=R.estado().centro; return c?{lat:c.lat,lng:c.lng}:null; })();
+    /* La ventana del trazo NO tiene asa —el arrastre de la hoja arranca solo
+       desde ahí—, así que el gesto de bajarla no se puede hacer estando en
+       ella. Lo que sí se puede, y es por donde se rompía, es el camino de
+       vuelta: se sale por «Solo ponerlo en el mapa», que es la puerta
+       explícita a trabajar sobre el mapa y arma el seguimiento; se baja la
+       hoja y se arrastra el mapa lejos, que en el panel general es lo que
+       debe hacer —el círculo sigue al centro, y así está escrito—; y se
+       vuelve a abrir el trazo.
+
+       Honestidad sobre lo que esta rama demuestra y lo que no: el VALOR del
+       centro vuelve bien también en la v892 —«agrandar» desarma el
+       seguimiento antes de reabrir—, así que esa aserción es una GUARDA,
+       como las que dejaron la v879, la v882 y la v890: cierta antes y que
+       tiene que seguir siéndolo. Lo que sí sale en rojo contra la v892 es la
+       de más abajo, la del origen declarado: el centro volvía al trazo y la
+       ficha seguía imprimiendo «el centro del mapa, donde estaba la vista»,
+       porque `centroDe` se quedaba viejo. El centro corrió con suerte; el
+       rótulo no, y un rótulo falso es el defecto que este módulo persigue
+       desde la v867.
+
+       Lo que de verdad sacaba el círculo del lote en la corrida del usuario
+       era el rebote: analizar lo devolvía al panel general —el defecto de
+       más abajo—, y ahí el círculo sigue al mapa por diseño y así está
+       escrito. Arreglado el rebote, ese camino deja de existir; el ancla
+       cubre el rótulo y cualquier otro camino que lo alcance. */
+    const bMapa=H().querySelector('[data-pcr="trazo-al-mapa"]');
+    if(bMapa){ bMapa.click(); await esperar(700); }
+    const asa=H().querySelector('[data-pcr="asa"]');
+    if(asa){ asa.click(); await esperar(600); }
+    /* Y en el panel general el círculo SÍ sigue al mapa: es lo que esa
+       pantalla promete por escrito, y clavarlo acá la volvería mentira. Se
+       comprueban las dos ramas en la misma corrida. */
+    window.map.panBy([260,220],{animate:false}); await esperar(800);
+    o.centroSueltoSigue=(function(){ const c=R.estado().centro; return c?{lat:c.lat,lng:c.lng}:null; })();
+    /* Se sube con «agrandar», que es el botón de la barra encogida: el asa
+       la baja, y la lista de trazos vive en la hoja entera. */
+    const bAgB=H().querySelector('[data-pcr="agrandar"]');
+    if(bAgB){ bAgB.click(); await esperar(700); }
+    const bUsarB=H().querySelector('[data-pcr="usar-trazo"]');
+    if(bUsarB){ bUsarB.click(); await esperar(900); }
+    /* Y la ventana del trazo no se deja cambiar por la barra encogida aunque
+       se venga de ella: «que todo sea transitorio, que no salga en ventanas
+       de la nada». */
+    o.trasBajar={ sigueLaVentana:!!H().querySelector('.pcr-trazo-vent'),
+                  barraEncogida:H().classList.contains('pcr-encogida') };
+    const bRadB=H().querySelector('[data-pcr="trazo-escala"][data-e="radio"]');
+    if(bRadB){ bRadB.click(); await esperar(700); }
+    const slB=H().querySelector('[data-pcr="radio-rango"]');
+    if(slB){ slB.value='2500'; slB.dispatchEvent(new Event('input',{bubbles:true}));
+             slB.dispatchEvent(new Event('change',{bubbles:true})); await esperar(700); }
+    o.centroTrasArrastrar=(function(){ const c=R.estado().centro; return c?{lat:c.lat,lng:c.lng}:null; })();
+
+    /* ── 4d. El botón de analizar, medido en píxeles de pantalla.
+       En la v892 llevaba `pcr-btn pcr-btn-ir`, dos clases que no existen en
+       ninguna hoja de estilo: salía como texto suelto de 25 px de alto y sin
+       fondo. «Tampoco salía el botón de analizar grande, botón azul grande
+       para analizar o amarillo grande, que alumbre». Se mide el ALTO y que
+       tenga fondo pintado, no que lleve tal o cual clase. */
+    o.botonAnalizar=(function(){
+      const b=H().querySelector('[data-pcr="trazo-analizar"]');
+      if(!b) return null;
+      const r=b.getBoundingClientRect(), cs=getComputedStyle(b);
+      const fondo=(cs.backgroundImage&&cs.backgroundImage!=='none')?cs.backgroundImage:cs.backgroundColor;
+      return { alto:Math.round(r.height), ancho:Math.round(r.width), fondo:fondo };
+    })();
+    /* ── 4e. «Volver» dentro de su cabecera, no flotando encima de la lista.
+       En la v892 se llamaba `pcr-volver`, que YA era la píldora flotante de
+       «Volver al análisis» —`position:fixed`, abajo a la izquierda—, así que
+       salía del encabezado y se montaba sobre «Análisis de este trazo». Se
+       mide la geometría: el botón cae dentro de la caja de su cabecera. */
+    o.volver=(function(){
+      const cab=H().querySelector('.pcr-trazo-cab');
+      const b=cab&&cab.querySelector('[data-pcr="trazo-cerrar"]');
+      if(!cab||!b) return null;
+      const rc=cab.getBoundingClientRect(), rb=b.getBoundingClientRect();
+      return { dentro: rb.top>=rc.top-2 && rb.bottom<=rc.bottom+2 &&
+                       rb.left>=rc.left-2 && rb.right<=rc.right+2,
+               posicion:getComputedStyle(b).position,
+               bTop:Math.round(rb.top), cabTop:Math.round(rc.top) };
+    })();
+
     // ── 5. Analizarlo DESDE la ventana, a 2,5 km. La ficha queda enlazada.
     const bAn=H().querySelector('[data-pcr="trazo-analizar"]');
     o.analizaDesdeVentana=!!bAn;
     if(bAn && !bAn.disabled){ bAn.click(); }
+    /* Mientras consulta, la espera se ve EN ESTA MISMA VENTANA (v893). En la
+       v892 el manejador borraba `trazoAbierto` antes de llamar a `analizar`,
+       así que la hoja retrocedía al panel general y la barra aparecía allá:
+       «primero me retrocedió y después apareció esa ventana, y eso me
+       enredó».
+
+       Se mide SIN ESPERAR NADA: `analizar` pone la bandera y repinta antes
+       de su primer `await`, y el Overpass de mentira contesta al instante.
+       Con los 900 ms que puse primero, la consulta ya había terminado y la
+       aserción medía el final, no la espera. */
+    o.mientras=(function(){
+      const v=H().querySelector('.pcr-trazo-vent'), e=R.estado();
+      return { sigueLaVentana:!!v, consultando:!!e.consultando,
+               barraDentro:!!(v&&v.querySelector('.pcr-espera-caja')),
+               panelGeneral:!!H().querySelector('[data-pcr="radio"]') };
+    })();
     await esperar(6000);
+    /* Y con el resultado puesto, la ventana ya cumplió: lo que hay que ver
+       es la ficha. `hay` y `consultando` son los nombres que `estado()`
+       EXPONE —no `resultado` ni `cargando`, que son los de `S`—: leer un
+       campo que el accesor no expone da `undefined`, y en una aserción eso
+       se ve igual que «la función no hizo su trabajo». Es la trampa que la
+       v871 dejó escrita, y volví a caer en ella. */
+    o.trasAnalizar={ ventana:!!H().querySelector('.pcr-trazo-vent'),
+                     hayFicha:!!R.estado().hay };
+    /* De dónde salió el centro, declarado. `origenDelCentro` devuelve ahora
+       'trazo', y sin su renglón en ORIGEN_TEXTO la ficha imprimía «el centro
+       del mapa, donde estaba la vista» sobre un centro que no salió del
+       mapa: declarar mal la procedencia es peor que no declararla. */
+    o.origen=(function(){ const t=(H().textContent||'').replace(/\s+/g,' ');
+      const m=t.match(/Se midió alrededor de ([^.(]+)/); return m?m[1].trim():''; })();
     o.metaDelRadio=(function(){ try{
       const f=JSON.parse(localStorage.getItem('pcr_fichas_v1')||'[]')[0]||{};
       /* En el primer nivel, que es donde `guardarFicha` los pone: dentro de
@@ -354,6 +474,86 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     !!r.hechos && r.hechos.length>=1 && /radio de 2,5 km/.test(r.hechos.join(' | ')),
     r.hechos?r.hechos.join(' | ').slice(0,110):'sin lista');
   T('y el botón de volver devuelve al panel de antes', r.volvioAlPanel===true);
+
+  /* ══ v893 · los cuatro defectos que llegaron en captura ════════════════
+     «El radio en el centro del lote del polígono amarillo. No por fuera, y
+     que quede ahí ese radio y por dentro del lote… que cuando carguen esa
+     misma ventana donde yo le dije analizar, pues, salga cargando, no que
+     además de otra ventana, porque eso se vuelve enredo… tampoco salía el
+     botón de analizar grande… que todo sea transitorio, que no salga en
+     ventanas de la nada.» */
+  console.log('\n  -- el centro se queda en el trazo --');
+  /* El centro de un trazo es un SITIO guardado, no una propuesta que se
+     empuja arrastrando el mapa. Se mide el gesto entero —bajar la hoja y
+     arrastrar—, que es como se rompía. */
+  /* La otra rama, y va primero porque es la que hace honesta a la primera:
+     soltado en el panel general, el círculo SÍ sigue al mapa. Sin esta
+     aserción, clavar el centro en todas partes pasaría en verde y dejaría
+     mintiendo al «mueva el mapa: el círculo sigue el centro» de esa
+     pantalla. */
+  T('soltado en el panel general, el círculo sí sigue al mapa',
+    !!r.centroSueltoSigue && !!r.centroAntes &&
+    (Math.abs(r.centroSueltoSigue.lat - r.centroAntes.lat) > 1e-5 ||
+     Math.abs(r.centroSueltoSigue.lng - r.centroAntes.lng) > 1e-5),
+    r.centroSueltoSigue
+      ? r.centroSueltoSigue.lat.toFixed(5)+', '+r.centroSueltoSigue.lng.toFixed(5) : 'sin centro');
+  T('pero volver a abrir el trazo devuelve el centro al trazo, no a la vista',
+    !!r.centroAntes && !!r.centroTrasArrastrar &&
+    Math.abs(r.centroAntes.lat - r.centroTrasArrastrar.lat) < 1e-9 &&
+    Math.abs(r.centroAntes.lng - r.centroTrasArrastrar.lng) < 1e-9,
+    r.centroAntes && r.centroTrasArrastrar
+      ? r.centroAntes.lat.toFixed(5)+','+r.centroAntes.lng.toFixed(5)+'  →  '+
+        r.centroTrasArrastrar.lat.toFixed(5)+','+r.centroTrasArrastrar.lng.toFixed(5)
+      : 'sin centro');
+  T('y el centro sigue siendo el del trazo, dentro del lote',
+    !!r.centroTrasArrastrar &&
+    Math.abs(r.centroTrasArrastrar.lat - C.lat) < 0.002 &&
+    Math.abs(r.centroTrasArrastrar.lng - C.lng) < 0.002,
+    r.centroTrasArrastrar
+      ? r.centroTrasArrastrar.lat.toFixed(4)+', '+r.centroTrasArrastrar.lng.toFixed(4) : 'sin centro');
+
+  console.log('\n  -- una ventana, y transitoria --');
+  T('volver a la ventana no la cambia por la barra encogida',
+    !!r.trasBajar && r.trasBajar.sigueLaVentana===true && r.trasBajar.barraEncogida===false,
+    r.trasBajar ? 'ventana '+r.trasBajar.sigueLaVentana+' · encogida '+r.trasBajar.barraEncogida : 'sin medir');
+  /* La mitad que más se notó: al analizar, la hoja retrocedía al panel
+     general y la espera salía allá. Se mira AL VUELO, mientras consulta. */
+  T('al analizar, la espera se ve en esta misma ventana',
+    !!r.mientras && r.mientras.consultando===true && r.mientras.sigueLaVentana===true &&
+    r.mientras.barraDentro===true,
+    r.mientras ? 'consultando '+r.mientras.consultando+' · ventana '+r.mientras.sigueLaVentana+
+                 ' · barra dentro '+r.mientras.barraDentro : 'sin medir');
+  T('y no retrocede al panel general mientras tanto',
+    !!r.mientras && r.mientras.panelGeneral===false,
+    r.mientras ? 'botones de radio sueltos: '+r.mientras.panelGeneral : 'sin medir');
+  /* Y al terminar sí cede: lo que hay que ver con el análisis hecho es la
+     ficha, no la pantalla desde la que se lanzó. */
+  T('con el análisis hecho, la ventana cede a la ficha',
+    !!r.trasAnalizar && r.trasAnalizar.ventana===false && r.trasAnalizar.hayFicha===true,
+    r.trasAnalizar ? 'ventana '+r.trasAnalizar.ventana+' · ficha '+r.trasAnalizar.hayFicha : 'sin medir');
+  /* Un origen nuevo sin su texto imprimía «el centro del mapa, donde estaba
+     la vista» sobre un centro que no salió del mapa. */
+  T('la ficha declara que el centro salió del trazo, no del mapa',
+    /trazo guardado/i.test(r.origen||'') && !/centro del mapa/i.test(r.origen||''),
+    r.origen||'no lo declara');
+
+  console.log('\n  -- el botón que hay que tocar se ve --');
+  /* Medido en píxeles de pantalla y no por su clase: en la v892 llevaba dos
+     clases que no existían en ninguna hoja de estilo y salía como texto
+     suelto de 25 px, sin fondo. */
+  T('el botón de analizar es grande: al menos 48 px de alto y a todo el ancho',
+    !!r.botonAnalizar && r.botonAnalizar.alto>=48 && r.botonAnalizar.ancho>=280,
+    r.botonAnalizar ? r.botonAnalizar.alto+' × '+r.botonAnalizar.ancho+' px' : 'no hay botón');
+  T('y tiene fondo pintado, no es texto suelto sobre el panel',
+    !!r.botonAnalizar && !/^(none|rgba\(0, 0, 0, 0\)|transparent)$/.test(r.botonAnalizar.fondo||''),
+    r.botonAnalizar ? String(r.botonAnalizar.fondo).slice(0,60) : 'no hay botón');
+  /* `pcr-volver` ya existía y era la píldora flotante de «Volver al
+     análisis»: reusarle el nombre sacó este botón del encabezado y lo dejó
+     montado sobre «Análisis de este trazo». Se mide la geometría. */
+  T('«Volver» va dentro de su cabecera, no flotando sobre la hoja',
+    !!r.volver && r.volver.dentro===true && r.volver.posicion!=='fixed',
+    r.volver ? r.volver.posicion+' · botón en y='+r.volver.bTop+', cabecera en y='+r.volver.cabTop
+             : 'sin cabecera');
 
   T('sin errores de JavaScript', err.length===0, err.join(' | ')||'ninguno');
   await b.close();

@@ -459,6 +459,14 @@
        salga quede enlazada y la cuenta de análisis suba. */
     S.trazoId = t.id;
     S.centro = t.centro || centroideDe(pts);
+    /* ANCLADO al trazo, y esa es la diferencia con un centro cualquiera.
+       Un trazo guardado es un SITIO al que se vuelve: su centro no es una
+       propuesta que se empuja arrastrando el mapa, es el punto que alguien
+       guardó. Sin esta marca, bajar la hoja para mirar el mapa armaba el
+       seguimiento —ver `alternarHoja`— y el círculo se iba detrás del dedo:
+       llegó en captura con el radio de 2,5 km puesto fuera del lote
+       amarillo, «no le hizo el medio del lote, lo hizo por fuera». */
+    S.centroDe = 'trazo';
     return true;
   }
 
@@ -1423,7 +1431,14 @@
     area: 'el área que dibujaste',
     lote: 'el lote que marcaste',
     mapa: 'el centro del mapa, donde estaba la vista',
-    ficha: 'el sector guardado que retomaste'
+    ficha: 'el sector guardado que retomaste',
+    /* Sin este renglón, un análisis lanzado desde la ventana de un trazo
+       imprimía «el centro del mapa, donde estaba la vista» —el texto por
+       omisión— sobre un centro que no salió del mapa. Declarar mal la
+       procedencia es peor que no declararla: la ficha se lee como fundada
+       en algo que no es. Un origen nuevo entra ACÁ el mismo día que se
+       inventa. */
+    trazo: 'el centro del trazo guardado que abriste'
   };
 
   function comoSeEligioElCentro(id) {
@@ -9414,6 +9429,7 @@ function donaHTML(datos, colorDe, nombreDe) {
              movido por otra cosa. */
           S.forma = 'radio';
           S.centro = t2.centro || centroideDe(t2.pts);
+          S.centroDe = 'trazo';
         } else {
           S.forma = 'poligono';
           S.poligono = t2.pts.map(function (q) { return { lat: q.lat, lng: q.lng }; });
@@ -9424,17 +9440,26 @@ function donaHTML(datos, colorDe, nombreDe) {
         return;
       }
       if (acc === 'trazo-al-mapa') {
+        /* Esta es la puerta explícita a trabajar sobre el mapa, así que acá
+           SE SUELTA el ancla del trazo: el panel general promete por escrito
+           «mueva el mapa: el círculo sigue el centro», y un centro clavado lo
+           convertiría en una promesa falsa. El ancla vale mientras la ventana
+           del trazo es la pantalla; quien sale por esta puerta pidió lo
+           contrario. */
         S.trazoAbierto = null;
+        S.centroDe = 'mapa';
         ponerTrazoEnMapa();
         seguirAlMapa(true);
         pintar();
         return;
       }
       if (acc === 'trazo-analizar') {
-        /* La ventana se cierra ANTES de analizar: lo que hay que ver cuando
-           termine es la ficha. `S.trazoId` no se toca —sigue diciendo de qué
-           trazo salió— y por eso la ficha queda enlazada y la cuenta sube. */
-        S.trazoAbierto = null;
+        /* La ventana se queda abierta (v893): la espera se ve DENTRO de ella,
+           que es lo que se pidió —«que cuando carguen esa misma ventana donde
+           yo le dije analizar, pues, salga cargando»—. La cierra `analizar`
+           cuando ya hay resultado, porque entonces lo que hay que ver es la
+           ficha. `S.trazoId` no se toca: sigue diciendo de qué trazo salió, y
+           por eso la ficha queda enlazada y la cuenta sube. */
         analizar();
         return;
       }
@@ -10097,7 +10122,16 @@ function donaHTML(datos, colorDe, nombreDe) {
        tocarse. Se leyó como «al navegar por el mapa salía este radio de
        más», y es peor que un dibujo suelto: son dos sitios distintos
        diciendo ser el mismo sector. */
-    if (!S.encogida || S.forma !== 'radio' || S.resultado) return;
+    /* Y un centro ANCLADO A UN TRAZO tampoco se mueve, por la misma razón
+       dicha del otro lado: no es una propuesta, es un sitio guardado. Se
+       suelta cuando alguien lo dice —«Solo ponerlo en el mapa», recentrar,
+       elegir otra forma—, nunca por arrastrar el mapa.
+
+       Lo alcanza el encuadre de `ponerTrazoEnMapa`: `fitBounds` dispara
+       `moveend` como cualquier arrastre, así que con el seguimiento armado
+       de una vuelta anterior el centro del trazo se cambiaba por el de la
+       vista encuadrada en el momento mismo de abrirlo. */
+    if (!S.encogida || S.forma !== 'radio' || S.resultado || S.centroDe === 'trazo') return;
     var m = mapa(); if (!m) return;
     var c = m.getCenter();
     S.centro = { lat: c.lat, lng: c.lng };
@@ -10295,8 +10329,16 @@ function donaHTML(datos, colorDe, nombreDe) {
        un gesto de la persona significaba que, con la ficha analizada y sin
        ninguna capa encendida, la hoja NO SE DEJABA BAJAR. Que es justo lo
        que alguien quiere hacer cuando quiere mirar el mapa. */
+    /* Y NUNCA con la ventana del trazo abierta (v893). Bajar la hoja con el
+       dedo la reemplazaba por la barra encogida —otro panel, con otros
+       controles— y el reporte lo dijo tal cual: «me pasó otra ventana
+       aparte… primero me retrocedió y después apareció esa ventana, y eso
+       me enredó; que todo sea transitorio, que no salga en ventanas de la
+       nada». La ventana del trazo es UNA ventana: se sale de ella por
+       «Volver» o por «Solo ponerlo en el mapa», que son dos puertas
+       escritas, no por un gesto que la cambia por otra cosa. */
     var encoger = S.loteDibujando ||
-                  (S.encogida && !S.comparacion &&
+                  (S.encogida && !S.comparacion && !S.trazoAbierto &&
                    (S.encogidaAMano || !S.resultado || hayCapa));
     h.classList.toggle('pcr-encogida', encoger);
     h.classList.toggle('pcr-minima', encoger && !!S.minima && !S.loteDibujando);
@@ -10353,8 +10395,10 @@ function donaHTML(datos, colorDe, nombreDe) {
                 : S.resultado    ? htmlFicha(S.resultado)
                 /* La ventana del trazo va DESPUÉS del resultado: con un
                    análisis recién hecho lo que hay que ver es la ficha, no la
-                   pantalla desde la que se lanzó. La cierra `trazo-analizar`
-                   igual, pero el orden lo deja dicho. */
+                   pantalla desde la que se lanzó. La cierra `analizar` al
+                   dejar el resultado puesto, y hasta ese momento la espera se
+                   pinta ACÁ DENTRO (v893): el usuario se queda donde tocó el
+                   botón y ve la barra avanzar ahí mismo. */
                 : S.trazoAbierto ? htmlTrazoAbierto(S.trazoAbierto)
                 : htmlAjustes();
 
@@ -10632,7 +10676,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     var hechos = analisisDelTrazo(id);
     return '<div class="pcr-trazo-vent">' +
       '<div class="pcr-trazo-cab">' +
-        '<button type="button" data-pcr="trazo-cerrar" class="pcr-mini pcr-volver">' +
+        /* `pcr-trazo-volver` y NO `pcr-volver`: esa clase ya existe y es la
+           píldora flotante de «Volver al análisis» (§18), con
+           `position:fixed` abajo a la izquierda. Reusarle el nombre sacó este
+           botón de la cabecera y lo dejó flotando encima de «Análisis de este
+           trazo», que es el solape que llegó en captura. Es la colisión de
+           `trazoDe` de la v892 dicha en CSS. */
+        '<button type="button" data-pcr="trazo-cerrar" class="pcr-mini pcr-trazo-volver">' +
           ico('atras', 16) + 'Volver</button>' +
         h4('lapiz', esc(t.nombre || ('Trazo del ' + cuando))) +
       '</div>' +
@@ -10694,9 +10744,26 @@ function donaHTML(datos, colorDe, nombreDe) {
             'sitio más amplio o más cerrado, elija «Un radio alrededor».</small>' +
           '</div>') +
 
-      '<button type="button" data-pcr="trazo-analizar" class="pcr-btn pcr-btn-ir">' +
-        ico('lupa', 18) + 'Analizar ' +
-        (porRadio ? 'a ' + textoRadio(S.radioM) + ' a la redonda' : 'el trazo tal cual') + '</button>' +
+      /* El botón grande, y con la clase que de verdad existe.
+         `pcr-btn pcr-btn-ir` no estaba en ninguna hoja de estilo —me las
+         inventé— así que salía como texto suelto de 25 px de alto sobre el
+         fondo del panel: «tampoco salía el botón de analizar grande, botón
+         azul grande para analizar o amarillo grande, que alumbre para saber
+         que ahí es donde tengo que darle». `pcr-principal` es la acción
+         principal de esta hoja desde siempre; `pcr-trazo-ir` la sube de
+         tamaño y le pone el latido, porque en esta ventana es lo único que
+         se toca al final.
+
+         Y mientras consulta se queda ACÁ, deshabilitado y con la barra
+         debajo: la espera se ve donde se tocó el botón. */
+      '<button type="button" data-pcr="trazo-analizar" class="pcr-principal pcr-trazo-ir"' +
+        (S.cargando ? ' disabled' : '') + '>' +
+        ico('lupa', 20) +
+        (S.cargando ? 'Consultando…'
+          : 'Analizar ' + (porRadio ? 'a ' + textoRadio(S.radioM) + ' a la redonda'
+                                    : 'el trazo tal cual')) + '</button>' +
+      (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
+      (S.cargando ? barraDeEspera() : '') +
 
       /* Lo que ya se hizo sobre este trazo, cada uno con SU escala. Es lo que
          convierte la ventana en el sitio donde vive un lugar guardado, y no
@@ -24101,6 +24168,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     // mapa y sí mucho que leer.
     if (S.resultado) {
       S.encogida = false; seguirAlMapa(false);
+      /* Y acá, no antes: la ventana del trazo acompañó la espera y ahora
+         cede a la ficha. Cerrarla al tocar el botón era lo que hacía
+         «retroceder» al panel general antes de empezar a consultar. */
+      S.trazoAbierto = null;
       /* Se guarda solo. Pedido explícito: «que lo que hice recientemente
          quede guardado ahí y no perderlo si me salgo de la pestaña». Un
          análisis cuesta una consulta a la red y varios segundos; perderlo por

@@ -257,6 +257,81 @@ console.log('\n  -- una función, un nombre --');
                   : fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).length + ' archivos revisados');
 }
 
+// ── 3e. una clase que no viste ninguna hoja de estilo ────────────────────
+/* Hermana de la de arriba, y su espejo. Aquella caza un nombre que YA EXISTE
+   y se reusa; esta caza un nombre que NO EXISTE y se inventa. Las dos son la
+   misma equivocación —dar por sabido lo que significa un nombre— y las dos
+   salieron el mismo día, de las capturas de la v892:
+
+   * `.pcr-volver` existía: es la píldora flotante de «Volver al análisis»,
+     `position:fixed` abajo a la izquierda. Reusarle el nombre al botón de la
+     cabecera de la ventana del trazo lo sacó del panel y lo dejó encima de
+     la lista de análisis. Eso lo caza la comprobación de duplicados, no esta.
+   * `.pcr-btn` y `.pcr-btn-ir` no existían en ninguna parte. Me las inventé
+     para el botón de analizar de esa misma ventana, así que la acción
+     principal de toda una pantalla salió como texto suelto de 25 px de alto,
+     sin fondo, sin borde. El reporte llegó así: «tampoco salía el botón de
+     analizar grande». Ningún error, en ninguna consola: un nombre de clase
+     que no existe es válido.
+
+   Lo que se denuncia NO es «esta clase no tiene regla»: eso es corriente y
+   legítimo —una clase puede ser un asidero para `querySelector`, o una
+   etiqueta descriptiva sobre un SVG cuyos hijos sí están pintados—. Lo que
+   se denuncia es un elemento en el que NINGUNA de sus clases tiene regla en
+   ninguna hoja: ese elemento no está pintado por nada, y ese es el defecto.
+
+   Los que hoy son así van en la lista de abajo, cada uno con su razón, que
+   es la forma de la guarda del voseo en -á de la v880: se lista lo PERMITIDO
+   y se denuncia todo lo demás. Uno nuevo cuesta un renglón y se ve en rojo
+   hasta que alguien lo escriba; uno nuevo que sea un defecto se ve igual. */
+console.log('\n  -- ningún elemento sin una sola clase pintada --');
+{
+  /* Asideros conocidos: elementos cuyas clases no pinta ninguna hoja a
+     propósito. La razón va escrita porque es lo que permite juzgar si el que
+     venga mañana pertenece acá o es un botón sin estilo. */
+  const ASIDEROS = {
+    'urbis-mobile-nav-btn': 'asidero de js/18 para encontrar los botones de la barra',
+    'u52-games-ico': 'hueco donde js/20 mete el SVG; lo pinta el contenedor',
+    'u52-procity-folder-pick-chk': 'la casilla de una fila ya pintada por su fila',
+    'u52-app': 'el contenedor de la app móvil, pintado por su id #urbis-mobile-app',
+    'pcr-detalle': '<details> nativo del navegador, sin estilo propio a propósito',
+    'pcr-tab': 'nombre partido por concatenación: la clase real es pcr-tab-b',
+    'pcr-carta': 'raíz de un SVG: lo que se pinta son sus trazos, no el marco',
+    'pcr-rosa-rumbos': 'raíz de un SVG, igual que la carta solar',
+    'pcr-plano-lote': 'raíz de un SVG, igual que la carta solar',
+    'pcr-corte': 'raíz de un SVG, igual que la carta solar',
+    'pcr-sombras': 'raíz de un SVG, igual que la carta solar',
+    'urbis-pliego-raiz': 'la raíz del pliego, que lleva su propia hoja incrustada',
+    'vt-fila-detalle': 'asidero de js/90 para leer data-sin; el texto lo pinta la fila'
+  };
+  const conRegla = new Set();
+  fs.readdirSync(R('css')).filter(f => f.endsWith('.css')).forEach(f => {
+    const s = leer('css/' + f).replace(/\/\*[\s\S]*?\*\//g, '');
+    let m; const re = /\.(-?[A-Za-z_][\w-]*)/g;
+    while ((m = re.exec(s)) !== null) conRegla.add(m[1]);
+  });
+  const PROPIA = /^(pcr|pca|vt|edu|u52|urbis)-/;
+  const pelados = [];
+  const archivos = fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter(f => f.endsWith('.html')));
+  archivos.forEach(f => {
+    const s = leer(f);
+    let m; const re = /class\s*=\s*(?:\\?["'])([^"'<>]*?)(?:\\?["'])/g;
+    while ((m = re.exec(s)) !== null) {
+      const cs = m[1].split(/\s+/).filter(c => c && !/[^\w-]/.test(c));
+      if (!cs.length || !cs.some(c => PROPIA.test(c))) continue;
+      if (cs.some(c => conRegla.has(c))) continue;
+      if (cs.every(c => ASIDEROS[c])) continue;
+      pelados.push(f + ':' + s.slice(0, m.index).split('\n').length + ' · ' + cs.join(' '));
+    }
+  });
+  comprobar('todo elemento con clase propia tiene al menos una con regla',
+    pelados.length === 0,
+    pelados.length ? pelados.slice(0, 6).join(' | ')
+                   : conRegla.size + ' clases con regla · ' +
+                     Object.keys(ASIDEROS).length + ' asideros declarados');
+}
+
 // ── 3c. los scripts sueltos de las páginas parsean ───────────────────────
 /* Un `<script>` escrito dentro del HTML que no cierre bien no rompe la página:
    el navegador descarta ESE bloque y sigue como si nada. Lo que había adentro
