@@ -2397,6 +2397,158 @@ lámina siga impresa, y que con los tres campos escritos no aparezca ningún
 «SIN NOMBRAR». Son guardas contra perder lo que ya estaba y contra pasarse de
 marcar, no afirmaciones nuevas.
 
+## Los tamaños se comprueban antes de exportar (v886)
+
+§21 del pliego de ajustes, y la única sección cuya respuesta honesta es un
+número que no cumple. Pide comprobar contra la hoja de 60 × 90: el mapa
+principal de cada banda a 12 cm, los de categoría a 10–11, **ninguno** por
+debajo de 8, y «si no cabe a 8 cm, no se imprime».
+
+### Primero medir, que es lo que no existía
+
+Antes de tocar nada se midieron los veinte mapas del pliego de prueba por su
+**lado menor** y en milímetros de papel, con la hoja ya compuesta. Eso último
+es la mitad del asunto: el mismo mapa que la hoja de estilo tapa a 110 mm sale
+impreso a **66** cuando la lámina cierra al 30 %, y es a 66 como se cuelga en
+la pared. Es la regla de la v854 —medir lo que la grilla hizo, no lo que se le
+pidió— aplicada al papel.
+
+Y por el lado MENOR, no por el alto: un mapa de 18 × 6 cm es una cinta. Ese
+detalle cambia el veredicto de nueve mapas.
+
+| | Lado menor medido |
+|---|---|
+| Movilidad (4 mapas) | 64,9 mm |
+| Ambiental: sombras, ruido | 65,4 mm |
+| Hitos, comercial, anillos | 75,3 mm |
+| Categorías de la banda de forma | 93,9 mm |
+| Cobertura, llenos, alturas, sombra | 91 mm |
+| Foto y plano | 112 mm |
+
+**Nueve de veinte por debajo de los 8 cm, y ninguno en los 12.**
+
+### Cinco geometrías probadas, y la que se quedó fue ninguna
+
+La parte que vale de esta tanda es la que NO entró. Se midieron cinco
+configuraciones contra la batería, no contra la intuición:
+
+| Qué se cambió | Lado menor mínimo | Qué costó |
+|---|---|---|
+| Suelo de mapa 0,5 → 0,75 | **56,8** mm (peor) | — |
+| Mapas a dos columnas | 66 mm | nada |
+| Dos columnas + techos a 150 | 90 mm | tres mapas |
+| Dos columnas + techos a 138 | 82,8 mm | los paneles de anillos y de hitos |
+| Suelo 0,4 + dos columnas | 82,5 mm | la banda de comparación y el censo |
+
+Dos cosas que costaron una vuelta cada una y no se deducen leyendo:
+
+* **Subir el suelo del mapa los hace más CHICOS.** El alto sale de
+  `techo / max(k, suelo)` y después todo se reduce por `k`: con la hoja al
+  30 %, un suelo de 0,75 da 44 mm donde uno de 0,5 da 66. La intuición
+  —«un suelo más alto protege al mapa»— está exactamente al revés.
+* **Para los mapas chicos manda el ANCHO, no el alto.** Medían 64,9 × 65,6:
+  el ancho es la columna, y la columna sale del reparto de la banda. Por eso
+  tocar los techos de alto no movía nada hasta duplicar también el ancho.
+
+La conclusión, medida y no supuesta: **cada milímetro por encima de ~66 cuesta
+un panel medido.** Con veinte mapas en dos hojas de 60 × 90, los 8 cm de §21
+no se alcanzan sin perder «Cómo cambia al alejarse» (la tanda entera de la
+v881), «Hitos y nodos», la comparación con la ciudad o el bloque del censo.
+
+### Por qué no se quita el mapa, que es la otra mitad de §21
+
+§21 dice «si no cabe a 8 cm, no se imprime». Ahí choca con una instrucción
+anterior del mismo lector, dicha dos veces y con el PDF delante: «que se
+muestren todos los mapas que antes salían» (v850). Y choca con la regla que
+este proyecto ya tomó dos veces: **perder el panel es peor que el defecto que
+se quería evitar** (v875 con la necesidad topada, v881 con los anillos
+agrupados).
+
+Entre quitar un mapa y publicarlo diciendo cuánto mide, se publica diciendo
+cuánto mide. La lámina pierde una promesa, no un dato, y quien la imprime
+tiene el número para decidir. **Callarlo sí era inaceptable, y es lo que
+pasaba hasta la v885**: la hoja salía con mapas de 6,5 cm y para saberlo había
+que medirlos con una regla sobre el pliego.
+
+Y la salida está escrita al lado del número: apagar paneles desde la ficha
+—que ya se puede— sube la escala de composición y con ella todos los mapas.
+Es una decisión de quien arma la lámina, no del programa.
+
+#### Se intentó automatizar y se deshizo
+
+La primera versión cedía texto sola, por bisección, hasta alcanzar los pisos.
+Funcionaba: la lámina A llegaba. Y se llevaba por delante la banda de riesgo,
+«Continuidad del tejido» y «El grano» —los dos paneles de la v859—. Lo cazó
+`tdoslaminas` con seis aserciones en rojo.
+
+Es el mismo error que la v882 cometió con la mudanza de «La sombra de los
+vecinos»: **un arreglo estructural hecho para callar una comprobación**. Se
+deshizo, y queda escrito acá por qué, para que la idea no vuelva a parecer
+buena.
+
+### Los dos niveles van separados, o la alarma se muere
+
+El renglón del pie dice las dos cosas y NO las pinta igual:
+
+* los **8 cm son el piso** —por debajo un mapa no se lee en la pared— y eso
+  sale en rojo;
+* los **12 y 10 son el objetivo** del pliego para el principal de cada banda y
+  para los de categoría. Quedarse corto ahí no hace ilegible nada: dice cómo
+  se repartió el papel.
+
+Juntarlos en un «cumple / no cumple» pintaría de rojo una hoja legible y
+enseñaría a ignorar el aviso, que es como muere una alarma. Es la misma
+decisión que la v880 tomó con el ámbar y el verde de los vacíos.
+
+### El principal de una banda no está en una lista
+
+Es el mapa de más peso que la banda tiene; con dos iguales, el primero. No hay
+una lista escrita a propósito: **una banda nueva hereda la regla sin que su
+autor se acuerde**, que es lo único que impidió que el aviso de origen (v867)
+volviera a perderse.
+
+### La medida se imprime sobre la hoja que se imprime
+
+El veredicto se calcula midiendo el documento ya maquetado, y ahí hay un
+círculo: para escribir la medida hay que componer la hoja, y componerla otra
+vez con la medida escrita cambiaría lo que se acaba de medir. Se resuelve
+dejando una **marca** en el pie y sustituyendo el texto en la cadena, sin
+volver a maquetar. `tdoslaminas` comprueba justamente eso: que la cifra
+impresa y la que sale de medir los mapas de ESA hoja no se separen en más de
+un milímetro. Un veredicto de otra maquetación sería una cifra correcta de una
+hoja que no es esta, que es la clase de error de la v879.
+
+### La acostada no se comprueba, y lo dice
+
+Los pisos están escritos «contra la hoja de 60 × 90». La acostada es de
+90 × 60, con 30 cm menos de alto, y su techo de foto son 58 mm — por debajo
+del piso, siempre. Aplicarle unos pisos que el pliego no pidió para ella daría
+un rojo permanente que no significa nada. Lo dice en la hoja, que es distinto
+de callarlo.
+
+### Una función que se quedó a medias de nombre
+
+`laminaQueQuepa` pasó a llamarse `laminaAjustada` —lo que siempre hizo: caber
+en su papel— y el nombre viejo es ahora el de la que además comprueba §21. Lo
+que sale a imprimir tiene que pasar por las dos cosas, y un nombre que se
+queda a medias se llama por error desde el sitio equivocado.
+
+### El piso de la suite, apretado contra lo medido
+
+`tlaminaedu` exigía 45 mm de ALTO. Este sector lo deja de tocar por veinte
+milímetros: **un piso que nadie roza no vigila nada**. Pasa a 55 mm de lado
+MENOR —que es lo que §21 mide— con dos milímetros de margen sobre lo que esa
+hoja da hoy. En `tdoslaminas` el piso equivalente son 60: cada lámina se
+ajusta a su propio papel desde la v853, y una hoja sola cierra más apretada
+que dos.
+
+### Demostrado contra la v885
+
+Seis aserciones en rojo de siete: sin veredicto impreso, sin cifra, «A dice
+null y mide 65,4», sin separar el piso del objetivo y sin el remedio escrito.
+La séptima —que ningún mapa baje de 60 mm— pasa contra las dos versiones a
+propósito: es una guarda contra encoger los mapas, no una afirmación nueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

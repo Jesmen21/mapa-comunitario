@@ -449,6 +449,18 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
         ubicAdm: (h.querySelector('.tit .ubic-adm') || {}).textContent || '',
         cifraHoja: (h.querySelector('.tit .cifra-hoja') || {}).textContent || '',
         alcance: (h.querySelector('.pie .alcance') || {}).textContent || '',
+        /* §21 (v886) · el veredicto de tamaños que la hoja imprime, y las
+           medidas de verdad para poder contrastarlo. Se comprueba que el
+           renglón dice la MISMA cifra que sale de medir los mapas: un
+           veredicto que no coincide con el papel es peor que ninguno. */
+        tamanos: (h.querySelector('.tamanos') || {}).textContent || '',
+        tamanosRojo: !!h.querySelector('.tamanos.corto'),
+        ladosMapa: [...h.querySelectorAll('.mapa-caja, .plano-hero')].map(c => {
+          const sv = c.querySelector('.mp-dib svg, .plano-cuerpo svg');
+          const r = sv ? sv.getBoundingClientRect() : { width: 0, height: 0 };
+          return { t: ((c.querySelector('h2') || {}).textContent || '').trim(),
+                   mm: mm(Math.min(r.width, r.height)) };
+        }).filter(x => x.mm > 0),
         leeAsi: (h.querySelector('.pie .lee-asi') || {}).textContent || '',
         /* Lo que queda en la CABECERA y lo que bajó al PIE. §2 pide
            que los tres párrafos de letra chica dejen de ocupar la
@@ -784,6 +796,57 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   T('ninguna cifra de cinco dígitos va impresa sin separador de miles',
     !buscar(A, SIN_MILES).length && !buscar(B, SIN_MILES).length,
     buscar(A, SIN_MILES).concat(buscar(B, SIN_MILES)).slice(0, 4).join(' · ') || 'ninguna');
+
+  console.log('\n  -- §21 · los tamaños, comprobados antes de exportar --');
+  /* El pliego pide comprobar los mínimos CONTRA la hoja de 60 × 90 antes de
+     exportar. Lo que hay que garantizar no es que se cumplan —se miden y se
+     ve que en un pliego de veinte mapas no todos llegan— sino que la hoja
+     diga cuánto mide de verdad: un mapa chico con su medida escrita se
+     discute, y uno sin ella hay que medirlo con una regla sobre el papel. */
+  T('las dos láminas imprimen el veredicto de tamaños',
+    /Tamaños de impresión comprobados/.test(A.tamanos) &&
+    /Tamaños de impresión comprobados/.test(B.tamanos),
+    A.tamanos.slice(0, 60));
+  T('y dice cuántos mapas midió y cuánto mide el más chico',
+    /\d+ mapas medidos/.test(A.tamanos) && /el más chico mide \d+(,\d+)? cm/.test(A.tamanos),
+    (A.tamanos.match(/\d+ mapas medidos[^;]*; el más chico mide [\d,]+ cm/) || ['—'])[0]);
+  /* Y la cifra que imprime es la que sale de medir los mapas de ESA hoja.
+     Un veredicto calculado sobre otra maquetación —la de antes de meterle el
+     propio renglón, por ejemplo— sería una cifra correcta de una hoja que no
+     es esta, que es la clase de error de la v879. */
+  const menorReal = h => Math.min.apply(null, h.ladosMapa.map(x => x.mm));
+  const menorDicho = h => {
+    const m = /el más chico mide ([\d,]+) cm/.exec(h.tamanos);
+    return m ? Number(m[1].replace(',', '.')) * 10 : null;
+  };
+  T('la medida que imprime es la de los mapas de esa misma hoja',
+    Math.abs(menorDicho(A) - menorReal(A)) <= 1 && Math.abs(menorDicho(B) - menorReal(B)) <= 1,
+    'A dice ' + menorDicho(A) + ' y mide ' + menorReal(A) +
+    ' · B dice ' + menorDicho(B) + ' y mide ' + menorReal(B) + ' mm');
+  /* Los dos niveles van SEPARADOS. El de 8 cm es el piso —por debajo un mapa
+     no se lee en la pared— y el de 12/10 es el objetivo de reparto de papel.
+     Pintarlos igual enseñaría a ignorar el aviso el día que sí haya un mapa
+     ilegible, que es como muere una alarma. */
+  T('separa el mínimo de 8 cm del objetivo de 12 y 10',
+    /mínimo de 8 cm/.test(A.tamanos) && /objetivo del pliego/.test(A.tamanos));
+  T('y solo se pinta en rojo cuando algo baja del mínimo, no cuando falta objetivo',
+    A.tamanosRojo === (menorReal(A) < 80) && B.tamanosRojo === (menorReal(B) < 80),
+    'A ' + (A.tamanosRojo ? 'rojo' : 'negro') + ' con ' + menorReal(A) + ' mm · ' +
+    'B ' + (B.tamanosRojo ? 'rojo' : 'negro') + ' con ' + menorReal(B) + ' mm');
+  /* Y lo que el pliego no consigue lo dice con el remedio al lado: crecer
+     cuesta paneles, y de quién es esa decisión. Sin esa frase, el número es
+     un reproche sin salida. */
+  T('cuando no alcanza el objetivo, dice qué cuesta alcanzarlo',
+    /(alcanzan el objetivo del pliego|objetivo del pliego —)/.test(A.tamanos) &&
+    (!/objetivo del pliego —/.test(A.tamanos) || /apagar paneles desde la ficha/.test(A.tamanos)),
+    (A.tamanos.match(/para que crezcan[^.]*\./) || ['alcanza el objetivo'])[0]);
+  /* El piso histórico, apretado contra lo medido: ningún mapa de esta hoja
+     baja de 60 mm. La aserción de `tlaminaedu` decía 45, que es un número
+     que este sector deja de tocar por veinte milímetros — y un piso que
+     nadie roza no vigila nada. */
+  T('ningún mapa de las dos hojas baja de 60 mm de lado menor',
+    menorReal(A) >= 60 && menorReal(B) >= 60,
+    'A ' + menorReal(A) + ' mm · B ' + menorReal(B) + ' mm');
 
   console.log('\n  -- el radio y la bibliografía --');
   /* §2 · el alcance sigue impreso en las dos, pero AL PIE: es procedencia

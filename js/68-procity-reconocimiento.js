@@ -8428,6 +8428,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pie-abajo > div b{ display:block; font-size:2.5mm; letter-spacing:.1em;' +
         'text-transform:uppercase; color:#075E88; margin-bottom:.6mm }' +
       '.pie-abajo .neutral{ border-left-color:#34CCFE }' +
+      '.tamanos{ font-size:2.5mm; line-height:1.35; color:#6B7A8A; margin:0 0 2.5mm }' +
+      '.tamanos b{ color:#075E88 }' +
+      '.tamanos.corto{ color:#B42318 }' +
+      '.tamanos.corto b{ color:#B42318 }' +
       /* Las dos láminas en un documento: cada una ocupa su papel y la
          segunda empieza en página nueva. */
       '.hoja + .hoja{ page-break-before:always; break-before:page }' +
@@ -8519,6 +8523,17 @@ function donaHTML(datos, colorDe, nombreDe) {
             ' · ' + (st.total || 0) + ' usos registrados · consultado el ' + esc(hoyTxt) + '.' +
             (cadena ? ' ' + esc(cadena) + '.' : '') + '</div>' +
         '</div>' +
+        /* §21 · el veredicto de tamaños, medido sobre ESTA hoja ya compuesta.
+           Se imprime siempre —cumpla o no—: un pliego que dice cuánto mide su
+           mapa más chico se puede discutir, y uno que lo calla obliga a
+           medirlo con una regla sobre el papel. Lo que falla sale en rojo,
+           igual que los chequeos de coherencia de la v854.
+
+           El texto entra DESPUÉS, por sustitución de la marca: medir es lo
+           último que se puede hacer —hace falta la hoja maquetada— y volver a
+           componerla para escribir la medida cambiaría justamente lo que se
+           acaba de medir. */
+        '<div class="tamanos">@@TAM@@</div>' +
         '<div class="pie-linea">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
@@ -14610,6 +14625,90 @@ function donaHTML(datos, colorDe, nombreDe) {
   var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
                         'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
                         'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];
+  /* ── §21 · los pisos de tamaño de mapa, comprobados antes de exportar ──
+     El pliego de ajustes los da en centímetros y sobre la hoja de 60 × 90:
+     el mapa principal de cada banda 12 cm, los de categoría de la banda de
+     forma 10–11, y **ninguno** por debajo de 8. Se miden sobre el LADO
+     MENOR, que es el que decide si un mapa se puede leer: uno de 18 × 6 cm
+     es una cinta, no un mapa.
+
+     Van en milímetros de papel y con la hoja YA compuesta, que es la única
+     medida que significa algo: un `max-height` de 110 mm en la hoja de
+     estilo sale a 66 mm cuando la lámina cierra al 30 %, y es a 66 mm como
+     se imprime. Es la misma regla de la v854 —medir lo que la grilla hizo,
+     no lo que se le pidió—. */
+  var MINIMOS_MAPA = { principal: 120, categoria: 100, piso: 80 };
+  /* El principal de una banda es el mapa de más peso que tiene; con dos
+     iguales, el primero. No hay una lista escrita de principales a
+     propósito: una banda nueva heredaría la regla sin que su autor se
+     acuerde, que es lo único que impidió que el aviso de origen (v867)
+     volviera a perderse. */
+  function principalesPorBanda(lista) {
+    var mejor = {};
+    lista.forEach(function (m) {
+      var g = m.g || '';
+      if (!mejor[g] || m.p > mejor[g].p) mejor[g] = m;
+    });
+    var out = {};
+    Object.keys(mejor).forEach(function (g) { out[g] = mejor[g].id; });
+    return out;
+  }
+  function pisoDeMapa(m, principales) {
+    if (/^calor:(?!todos)/.test(String(m.id))) return MINIMOS_MAPA.categoria;
+    return principales[m.g || ''] === m.id ? MINIMOS_MAPA.principal : MINIMOS_MAPA.piso;
+  }
+  var PX_POR_MM = 3.7795275;
+  /* Los mapas de un documento ya maquetado, con su lado menor en milímetros
+     de papel. Se lee el SVG y no la caja: la caja lleva el título, la leyenda
+     y el pie, y medirla daría por bueno un dibujo diminuto dentro de una caja
+     grande — que es exactamente el defecto que esto persigue. */
+  function mapasMedidos(d) {
+    var out = [];
+    var cajas = d.querySelectorAll('.mapa-caja, .plano-hero');
+    for (var i = 0; i < cajas.length; i++) {
+      var c = cajas[i];
+      var sv = c.querySelector('.mp-dib svg, .plano-cuerpo svg');
+      if (!sv) continue;
+      var r = sv.getBoundingClientRect();
+      if (!(r.width > 0 && r.height > 0)) continue;
+      out.push({
+        id: c.getAttribute('data-m') || 'plano',
+        t: ((c.querySelector('h2') || {}).textContent || '').trim(),
+        g: c.getAttribute('data-g') || '',
+        p: Number(c.getAttribute('data-p')) || 1,
+        mm: Math.round(Math.min(r.width, r.height) / PX_POR_MM * 10) / 10
+      });
+    }
+    return out;
+  }
+  /* El veredicto de §21 sobre un documento maquetado, con los dos niveles
+     SEPARADOS porque no significan lo mismo:
+
+     · los 8 cm son el PISO: por debajo, el mapa no se puede leer en la pared
+       y eso es un defecto de la hoja, en rojo;
+     · los 12 y los 10 son el OBJETIVO del pliego para el principal de cada
+       banda y para los de categoría. Quedarse corto ahí no hace ilegible
+       nada: dice cuánto papel le tocó a cada figura, que es lo que se
+       discute al decidir qué paneles entran.
+
+     Juntarlos en un solo «cumple / no cumple» pintaría de rojo una hoja
+     legible y enseñaría a ignorar el aviso, que es como muere una alarma. */
+  function veredictoDeTamanos(d) {
+    var lista = mapasMedidos(d);
+    if (!lista.length) return null;
+    var pr = principalesPorBanda(lista);
+    var corto = function (m, piso) { return { id: m.id, t: m.t, mm: m.mm, piso: piso }; };
+    var bajoPiso = [], bajoObjetivo = [];
+    lista.forEach(function (m) {
+      if (m.mm < MINIMOS_MAPA.piso) { bajoPiso.push(corto(m, MINIMOS_MAPA.piso)); return; }
+      var ob = pisoDeMapa(m, pr);
+      if (ob > MINIMOS_MAPA.piso && m.mm < ob) bajoObjetivo.push(corto(m, ob));
+    });
+    var pormm = function (a, b) { return a.mm - b.mm; };
+    return { n: lista.length, bajoPiso: bajoPiso.sort(pormm), bajoObjetivo: bajoObjetivo.sort(pormm),
+             menor: Math.min.apply(null, lista.map(function (m) { return m.mm; })) };
+  }
+
   function ordenDeSacrificio(res, o) {
     var off = (o && o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
     var lista;
@@ -14640,7 +14739,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     }).map(function (c) { return c.id; }).reverse();
   }
 
-  function laminaQueQuepa(res, opts) {
+  /* El ajuste de siempre: la hoja que cabe en su papel, con la reducción
+     buscada por bisección y, si no cierra ni al mínimo, las cajas que ceden
+     dichas por su nombre. Se llamaba `laminaQueQuepa` hasta la v885; desde
+     la v886 ese nombre es el de la función que además comprueba §21, porque
+     lo que sale a imprimir tiene que pasar por las dos cosas y un nombre
+     que se quede a medias se llama por error desde el sitio equivocado. */
+  function laminaAjustada(res, opts) {
     var o = Object.assign({}, opts || {}, { _memo: {} });
     var html;
     try { html = laminaImprimible(res, o); } catch (e) { return ''; }
@@ -14807,6 +14912,100 @@ function donaHTML(datos, colorDe, nombreDe) {
       try { if (marco) marco.remove(); } catch (e2) {}
     }
   }
+  /* ── §21 · comprobar los tamaños ANTES de exportar ──────────────────
+     El pliego de ajustes lo pide con esas palabras, y la comprobación solo
+     significa algo sobre la hoja MAQUETADA: el mismo mapa que la hoja de
+     estilo tapa a 110 mm de papel sale impreso a 66 cuando la lámina cierra
+     al 30 %, y es a 66 como se cuelga en la pared.
+
+     El remedio es el que §21 ordena, en su orden: «si un panel no cumple,
+     reducir la cantidad de paneles de esa banda antes que reducir el tamaño
+     del mapa». Así que lo que cede es TEXTO, que es además la decisión que
+     la v850 tomó con el pliego impreso en la mano.
+
+     Lo que NO se hace es la otra mitad de §21 —«si no cabe a 8 cm, no se
+     imprime»—. Ahí hay un choque con una instrucción anterior del mismo
+     lector, dicha dos veces y con el PDF delante: «que se muestren todos los
+     mapas que antes salían». Entre quitar un mapa y publicarlo diciendo
+     cuánto mide, se publica diciendo cuánto mide: la lámina pierde una
+     promesa y no un dato, y quien la imprime tiene el número para decidir.
+     Callarlo sí sería inaceptable, y es lo que pasaba hasta la v885. */
+  function medirTamanos(html) {
+    if (typeof document === 'undefined' || !document.body) return null;
+    var marco = null;
+    try {
+      marco = document.createElement('iframe');
+      marco.setAttribute('aria-hidden', 'true');
+      marco.style.cssText = 'position:fixed;left:-9999px;top:0;width:420px;height:600px;' +
+                            'border:0;visibility:hidden';
+      document.body.appendChild(marco);
+      var d = marco.contentDocument;
+      if (!d) return null;
+      d.open(); d.write(html); d.close();
+      return veredictoDeTamanos(d);
+    } catch (e) {
+      return null;
+    } finally {
+      try { if (marco) marco.remove(); } catch (e2) {}
+    }
+  }
+  /* El renglón que va al pie. Dice siempre un número —cuántos mapas se
+     midieron y cuánto mide el más chico— y después, en su orden, lo que no
+     llegó: primero el piso, que es el defecto, y después el objetivo, que es
+     una cuenta de reparto de papel. */
+  function textoDeTamanos(v, horiz) {
+    if (horiz) {
+      return '<b>Tamaños de impresión.</b> Los pisos del pliego —12 cm el mapa ' +
+        'principal de cada banda, 10 los de categoría, 8 cm ninguno por debajo— están ' +
+        'escritos contra la hoja vertical de 60 × 90. Esta es de 90 × 60, con 30 cm ' +
+        'menos de alto, así que no se comprueban contra ella.';
+    }
+    if (!v) return '<b>Tamaños de impresión.</b> No se pudieron medir en este navegador.';
+    var cm = function (mm) { return conComa(Math.round(mm) / 10) + ' cm'; };
+    var t = '<b>Tamaños de impresión comprobados.</b> ' + v.n + ' mapas medidos por su lado menor ' +
+      'sobre el papel ya compuesto; el más chico mide ' + cm(v.menor) + '. ';
+    t += v.bajoPiso.length
+      ? '<b>Por debajo del mínimo de 8 cm:</b> ' + v.bajoPiso.slice(0, 5).map(function (c) {
+          return esc(c.t) + ' ' + cm(c.mm); }).join(' · ') +
+        (v.bajoPiso.length > 5 ? ' y ' + (v.bajoPiso.length - 5) + ' más' : '') +
+        '. A ese tamaño un mapa no se lee en la pared. '
+      : 'Ninguno baja del mínimo de 8 cm. ';
+    t += v.bajoObjetivo.length
+      ? 'No alcanzan el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
+        'categoría—: ' + v.bajoObjetivo.slice(0, 5).map(function (c) {
+          return esc(c.t) + ' ' + cm(c.mm) + ' de ' + (c.piso / 10); }).join(' · ') +
+        (v.bajoObjetivo.length > 5 ? ' y ' + (v.bajoObjetivo.length - 5) + ' más' : '') +
+        '. Se imprimen igual y con su medida escrita: para que crezcan hay que apagar paneles ' +
+        'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.'
+      : 'Todos alcanzan el objetivo del pliego.';
+    return t;
+  }
+  function laminaQueQuepa(res, opts) {
+    var o = opts || {};
+    var html = laminaAjustada(res, o);
+    var marca = '@@TAM@@';
+    var poner = function (h, txt, rojo) {
+      return h.replace('<div class="tamanos">' + marca + '</div>',
+                       '<div class="tamanos' + (rojo ? ' corto' : '') + '">' + txt + '</div>')
+              .replace(marca, '');
+    };
+    /* Acostada no se comprueba: los pisos están escritos «contra la hoja de
+       60 × 90» y esta tiene 300 mm menos de alto. Se dice en la hoja, en vez
+       de aplicarle unos pisos que el pliego no pidió para ella. */
+    if (o.horizontal) {
+      S.pliegoTamanos = { aplica: false, bajoPiso: [], bajoObjetivo: [] };
+      return poner(html, textoDeTamanos(null, true), false);
+    }
+    var v = medirTamanos(html);
+    if (!v) { S.pliegoTamanos = null; return poner(html, textoDeTamanos(null, false), false); }
+    S.pliegoTamanos = { aplica: true, n: v.n, menor: v.menor,
+                        bajoPiso: v.bajoPiso, bajoObjetivo: v.bajoObjetivo };
+    /* Rojo solo cuando algo baja del PISO. El objetivo sin alcanzar es una
+       cuenta de reparto de papel, y pintarla de rojo enseñaría a ignorar el
+       aviso el día que sí haya un mapa ilegible. */
+    return poner(html, textoDeTamanos(v, false), v.bajoPiso.length > 0);
+  }
+
   /* ── Las dos láminas, en un documento de dos páginas (v853) ─────────
      El pliego educativo son DOS hojas de 60 × 90: la A es el sitio y el
      medio físico, la B es la gente, los usos y la movilidad. Cada una se

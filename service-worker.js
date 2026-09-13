@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v885-quien-firma-la-lamina';
+const URBIS_CACHE = 'urbis-v886-tamanos-comprobados';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -385,13 +385,20 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     const faltan = DEBEN.filter(id => hay.indexOf(id) < 0);
     T('están los quince que este sector mide, ninguno a un lado', faltan.length === 0,
       hay.length + ' mapas · faltan: ' + (faltan.join(', ') || 'ninguno'));
-    /* Y ninguno reducido a una estampilla: 45 mm de alto de papel es el
-       piso histórico, el que separa un mapa de un icono. */
-    const bajos = analisis.filter(m => m.h < 45);
-    T('y ninguno queda de estampilla: 45 mm de alto como mínimo, con la hoja ya reducida',
+    /* Y ninguno reducido a una estampilla. El piso era de 45 mm de ALTO y
+       este sector lo deja de tocar por veinte milímetros: un piso que nadie
+       roza no vigila nada. Desde la v886 se mide el LADO MENOR —que es el
+       que §21 mide y el que decide si un mapa se lee: uno de 18 × 6 cm es
+       una cinta— y se aprieta a 55 mm, que es lo que esta hoja da hoy con
+       dos milímetros de margen. Es una hoja SOLA y por eso queda más
+       apretada que las dos de `tdoslaminas`, que allí cierran en 65: cada
+       lámina se ajusta a su propio papel desde la v853. */
+    const lado = m => Math.min(m.w, m.h);
+    const bajos = analisis.filter(m => lado(m) < 55);
+    T('y ninguno queda de estampilla: 55 mm de lado menor, con la hoja ya reducida',
       analisis.length >= 10 && bajos.length === 0,
       bajos.length ? bajos.map(m => m.t + ' ' + m.w + '×' + m.h).join(' · ')
-                   : 'el más bajo ' + Math.min.apply(null, analisis.map(m => m.h)) + ' mm · compuesta al ' + Math.round(o.escala * 100) + '%');
+                   : 'el más chico ' + Math.min.apply(null, analisis.map(lado)) + ' mm de lado · compuesta al ' + Math.round(o.escala * 100) + '%');
     /* §4 (v877) · La banda de forma. El pliego pide los mapas de categoría a
        10-11 cm de lado: a los 8-9 cm que tenían, con el círculo del sector en
        siete, la mancha se ve pero el CONTORNO no se puede calcar — y calcarlo
