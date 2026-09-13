@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v890-escala-del-analisis';
+const URBIS_CACHE = 'urbis-v891-punto-decimal-y-tasa';
 const URBIS_ASSETS = [
   './',
   './index.html',

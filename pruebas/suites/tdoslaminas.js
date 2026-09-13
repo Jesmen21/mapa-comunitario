@@ -886,10 +886,24 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      trae tres —«1.234 ha» son mil doscientas—, así que el patrón no puede
      confundir las dos maneras de escribir un número que conviven en la hoja. */
   const buscar = (h, re) => h.trozos.reduce((a, t) => a.concat(String(t).match(re) || []), []);
-  const PUNTO_DEC = /\d\.\d{1,2}\s*(?:ha|km²)/g;
-  T('ninguna área impresa lleva punto decimal en vez de coma',
+  /* (v891) · la guarda de la v885 miraba solo las ÁREAS —«ha» y «km²»— y por
+     eso pasó en verde durante seis versiones con catorce cifras de punto
+     decimal impresas en el resto de la hoja: los grados de la carta solar
+     («85.9° al mediodía»), el porcentaje construido («9.2%»), las personas
+     por vivienda, la densidad de usos y el propio chequeo de coherencia
+     («panel 6.1 m²/hab»).
+
+     Una guarda acotada a la unidad en la que apareció el defecto solo caza
+     la unidad en la que apareció. Ahora persigue la clase entera: **ninguna
+     cifra de la hoja lleva punto decimal**, sea cual sea lo que venga
+     detrás. El acotado sigue donde tiene que estar —una o dos cifras tras el
+     punto, porque un separador de miles siempre trae tres—, y eso también
+     deja fuera las direcciones y los dominios, donde tras el punto van
+     letras. */
+  const PUNTO_DEC = /(?<![\d.,])\d+\.\d{1,2}(?![\d])/g;
+  T('ninguna cifra impresa lleva punto decimal en vez de coma',
     !buscar(A, PUNTO_DEC).length && !buscar(B, PUNTO_DEC).length,
-    buscar(A, PUNTO_DEC).concat(buscar(B, PUNTO_DEC)).slice(0, 4).join(' · ') || 'ninguna');
+    buscar(A, PUNTO_DEC).concat(buscar(B, PUNTO_DEC)).slice(0, 6).join(' · ') || 'ninguna');
 
   /* Y el separador de miles. Mismo molde: una cifra correcta que no se puede
      leer. Se persigue desde cinco dígitos porque por debajo caben los años,

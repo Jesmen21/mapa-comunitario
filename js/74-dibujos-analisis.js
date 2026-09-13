@@ -32,6 +32,13 @@
     });
   }
   function n1(x) { return Math.round(Number(x) * 10) / 10; }
+  /* Un GRADO que se lee, no una coordenada. `n1` sirve para las dos cosas y
+     tienen requisitos opuestos: el `d` de un `<path>` y el `x` de un `<text>`
+     necesitan el punto —así lo pide SVG— y un rótulo en castellano necesita
+     la coma. Tocar `n1` para arreglar «85.9°» habría roto en silencio todos
+     los trazados de este archivo, que son cincuenta y pico. Así que van
+     aparte, y solo los cuatro rótulos que un lector ve pasan por acá. */
+  function gr(x) { return String(n1(x)).replace('.', ','); }
 
   /* ── 1 · Carta solar ────────────────────────────────────────────────────
      La proyección es equidistante: el centro es el cenit, el borde es el
@@ -106,10 +113,10 @@
       return [
         { t: 'hoy · ' + mesDia(hoy), trazo: false, col: AMBAR, grueso: 3 },
         { t: a.solsticios && a.solsticios.masAlto
-            ? 'sol más alto · ' + mesDia(a.solsticios.masAlto.fecha) + ' · ' + n1(a.solsticios.masAlto.altura) + '°'
+            ? 'sol más alto · ' + mesDia(a.solsticios.masAlto.fecha) + ' · ' + gr(a.solsticios.masAlto.altura) + '°'
             : '', trazo: true, col: GRIS, grueso: 1 },
         { t: a.solsticios && a.solsticios.masBajo
-            ? 'sol más bajo · ' + mesDia(a.solsticios.masBajo.fecha) + ' · ' + n1(a.solsticios.masBajo.altura) + '°'
+            ? 'sol más bajo · ' + mesDia(a.solsticios.masBajo.fecha) + ' · ' + gr(a.solsticios.masBajo.altura) + '°'
             : '', trazo: true, col: GRIS, grueso: 1 },
         { t: eq ? 'equinoccio · ' + mesDia(eq) : '', trazo: false, col: GRIS, grueso: 1.4 }
       ].filter(function (f) { return f.t; }).map(function (f, i) {
@@ -172,8 +179,8 @@
       rotulo(cx + R + 8, cy + 3, 'E', 'middle', TINTA, 10) +
       rotulo(cx, cy + R + 13, 'S', 'middle', TINTA, 10) +
       rotulo(cx - R - 8, cy + 3, 'O', 'middle', ALERTA, 10) +
-      rotulo(cx, 12, 'Hoy · ' + n1(d.alturaMaxima) + '° al mediodía', 'middle', GRIS, 9) +
-      rotulo(cx, cy + R + 26, 'sale ' + n1(d.azimutSalida) + '° · se pone ' + n1(d.azimutPuesta) + '°',
+      rotulo(cx, 12, 'Hoy · ' + gr(d.alturaMaxima) + '° al mediodía', 'middle', GRIS, 9) +
+      rotulo(cx, cy + R + 26, 'sale ' + gr(d.azimutSalida) + '° · se pone ' + gr(d.azimutPuesta) + '°',
              'middle', GRIS, 8.5) +
       leyenda() +
       '</svg>';

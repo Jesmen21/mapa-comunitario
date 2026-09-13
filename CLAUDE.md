@@ -3090,6 +3090,91 @@ fixture, y contra la suite de la v889 lo que falla es la aserción vieja de
 los veintidós lados. La demostración de que valía la pena es el cruce del
 cierre, que pasa de «9 veces una manzana» a «el 14 % de una manzana».
 
+## El punto decimal no es de este idioma (v891)
+
+Hechas las veintiuna secciones del pliego de ajustes, esta tanda no sale de
+un reclamo sino de **leer el papel impreso**, que es el método que más
+defectos reales ha encontrado en este proyecto: la v874, la v882, la v885 y
+la v887 salieron todas de mirar la hoja y no el código.
+
+Compuestas las dos láminas y barridos sus 2.167 nodos de texto, salieron dos
+cosas, y la primera no es de redacción.
+
+### Una tasa impresa cien veces menor de lo que es
+
+En el panel de presión de crecimiento, sobre el papel:
+
+> +3,6 % desde el censo de 2018 · **0,004435050053115175 % al año**
+
+`tasaAnualDe`, en el motor, devuelve una **fracción** —`Math.pow(…) − 1`, o
+sea 0,004435 para un 0,44 % anual—. El informe en hojas lo sabía y hacía
+`* 100` con `toFixed(2)`; el panel de la v888 la pasaba tal cual por
+`conComa`. Dos defectos en la misma cifra, y el caro es el primero: **cien
+veces menor**, con el signo de porcentaje al lado. El segundo es de la clase
+de la v874 —dieciocho decimales en una hoja que se cuelga en una pared—.
+
+Es literalmente lo que la v879 dejó escrito: **«dos rutas de cálculo para la
+misma cantidad no divergen el día que se escriben, divergen la tanda
+siguiente»**. Acá divergieron a la tanda siguiente, y el que se equivocó fue
+el nuevo. Ahora hay una sola, `tasaAnualPct`, y las dos la llaman.
+
+### Catorce cifras con punto decimal, y una guarda que miraba una unidad
+
+La v885 puso una guarda contra «1.77 km²» y la acotó a las áreas —`ha` y
+`km²`—. **Una guarda acotada a la unidad en la que apareció el defecto solo
+caza la unidad en la que apareció**, y durante seis versiones pasó en verde
+con catorce cifras de punto decimal impresas en el resto de la hoja:
+
+| Dónde | Salía |
+|---|---|
+| Carta solar, leyenda y tabla | `Hoy · 85.9° al mediodía`, `sale 86° · se pone 273.9°`, `58.7° a 89.8°` |
+| Llenos y vacíos, KPI y pie | `9.2% construido`, `90.8% libre` |
+| «El sitio» | `1.4 por hectárea` |
+| Coherencia de las cifras | `3.5 personas por vivienda`, `panel 6.1 m²/hab` |
+
+La guarda persigue ahora la clase entera: **ninguna cifra de la hoja lleva
+punto decimal**, venga detrás lo que venga. El acotado que sí hace falta se
+queda donde estaba —una o dos cifras tras el punto, porque un separador de
+miles siempre trae tres—, y de paso deja fuera los dominios y las
+direcciones, donde tras el punto van letras.
+
+#### `n1` servía para dos cosas con requisitos opuestos
+
+La trampa de la tanda, y por poco. Los grados de la carta solar salen de
+`n1()` en `js/74`, que redondea a un decimal. Lo obvio era arreglar `n1` para
+que devolviera la coma — y habría **roto en silencio los cincuenta y pico
+trazados del archivo**: el `d` de un `<path>` y el `x` de un `<text>`
+necesitan el punto, así lo pide SVG, y `n1` se usa sobre todo para eso.
+
+De sus cuarenta y tantos usos, **solo cuatro son rótulos que un lector ve**.
+Esos pasan ahora por `gr()`, que es `n1` más la coma, y las coordenadas
+siguen con `n1`. Lo salvó mirar para qué se usaba antes de tocarla, que es la
+regla de la v863 dicha para un ayudante de tres líneas.
+
+### Lo que el barrido descartó, y por qué también vale
+
+Dos cosas que parecían defectos y no lo eran:
+
+* **«caben 7,1 veces»** lo marcó mi propio barrido como un «1» seguido de
+  plural. Es un falso positivo *del barrido*: en JavaScript `\b` cae entre la
+  coma y el «1». La guarda de concordancia del proyecto —la de la v874— ya lo
+  tenía resuelto con `(?<![\d.,])`, así que la que estaba mal era la mía. Es
+  la trampa de la v878 otra vez, y conviene que quede escrito que la guarda
+  buena la esquivó.
+* **Tres frases repetidas en las dos hojas** —la cabecera, la regla de
+  neutralidad y la conclusión de «Otras mediciones»— son una por lámina y
+  están así a propósito desde la v853.
+
+Comprobarlas costó dos minutos y evitó dos arreglos sin causa, que es lo que
+la v882 y la v886 pagaron por no hacerlo.
+
+### Demostrado contra la v890
+
+Una aserción en rojo que enseña seis de las catorce cifras con su punto:
+`1.4 · 85.9 · 273.9 · 89.8 · 58.7 · 85.9`. La tasa no tiene aserción propia
+porque la guarda de la clase ya la cazaba por los dieciocho decimales; lo que
+sí quedó es que las dos rutas son una sola, y eso se lee en el código.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -2502,7 +2502,7 @@
       (d ? '<div class="dib dib-ancho">' + d + '</div>' : '') +
       '<table>' +
         so.horas.map(function (h) {
-          return '<tr><td>A las ' + h.hora + ':00 · sol a ' + h.altitud + '°</td>' +
+          return '<tr><td>A las ' + h.hora + ':00 · sol a ' + conComa(h.altitud) + '°</td>' +
             '<td class="n">' + h.pctLote + '% del lote</td></tr>';
         }).join('') +
       '</table>' +
@@ -2617,7 +2617,7 @@
       (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="cob"><i style="width:' + ll.pctLleno + '%;background:#3B4A5A"></i>' +
       '<i style="width:' + ll.pctVacio + '%;background:#E6F7FE"></i></div>' +
-      '<p class="pie">Lleno ' + ll.pctLleno + '% · vacío ' + ll.pctVacio + '% · ' +
+      '<p class="pie">Lleno ' + conComa(ll.pctLleno) + ' % · vacío ' + conComa(ll.pctVacio) + ' % · ' +
       (ll.edificios || 0) + ' edificios' +
       (ll.sinGeometria ? ' (' + ll.sinGeometria + ' mapeados solo como punto, sin área)' : '') + '</p>' +
       '<table>' +
@@ -2865,7 +2865,7 @@
       '<tr><td>Frente sobre</td><td class="n">' + esc(cu.via || 'calle sin nombre') +
         (cu.jerarquia ? ' · ' + esc(cu.jerarquia.toLowerCase()) : '') + '</td></tr>' +
       '<tr><td>Tramo medido</td><td class="n">' + cu.largoM + ' m</td></tr>' +
-      '<tr><td>Fachada construida</td><td class="n">' + cu.llenoM + ' m · ' + cu.pctLleno + '%</td></tr>' +
+      '<tr><td>Fachada construida</td><td class="n">' + conComa(cu.llenoM) + ' m · ' + conComa(cu.pctLleno) + ' %</td></tr>' +
       '<tr><td>Edificios que dan al frente</td><td class="n">' + cu.edificios + '</td></tr>' +
       (cu.frenteTipicoM != null
         ? '<tr><td>Frente típico de un edificio</td><td class="n">' + cu.frenteTipicoM + ' m</td></tr>' : '') +
@@ -3077,12 +3077,12 @@
     return '<h2>Asoleamiento</h2>' +
       (carta ? '<div class="dib">' + carta + '</div>' : '') +
       '<table>' +
-      '<tr><td>Amanecer</td><td class="n">' + hora(d.salida) + ' · ' + d.azimutSalida + '°</td></tr>' +
-      '<tr><td>Mediodía solar</td><td class="n">' + hora(d.cenit) + ' · ' + d.alturaMaxima + '°</td></tr>' +
-      '<tr><td>Atardecer</td><td class="n">' + hora(d.puesta) + ' · ' + d.azimutPuesta + '°</td></tr>' +
+      '<tr><td>Amanecer</td><td class="n">' + hora(d.salida) + ' · ' + conComa(d.azimutSalida) + '°</td></tr>' +
+      '<tr><td>Mediodía solar</td><td class="n">' + hora(d.cenit) + ' · ' + conComa(d.alturaMaxima) + '°</td></tr>' +
+      '<tr><td>Atardecer</td><td class="n">' + hora(d.puesta) + ' · ' + conComa(d.azimutPuesta) + '°</td></tr>' +
       '<tr><td>Horas de luz</td><td class="n">' + String(d.duracionH).replace('.', ',') + ' h</td></tr>' +
-      '<tr><td>Sol más alto del año</td><td class="n">' + a.solsticios.masAlto.altura + '°</td></tr>' +
-      '<tr><td>Sol más bajo del año</td><td class="n">' + a.solsticios.masBajo.altura + '°</td></tr>' +
+      '<tr><td>Sol más alto del año</td><td class="n">' + conComa(a.solsticios.masAlto.altura) + '°</td></tr>' +
+      '<tr><td>Sol más bajo del año</td><td class="n">' + conComa(a.solsticios.masBajo.altura) + '°</td></tr>' +
       '</table>' +
       '<p class="pie">Calculado para hoy en las coordenadas del sector. Es el sol geométrico: ' +
       'no considera montañas ni edificios vecinos. La fachada occidental es la que recibe el sol ' +
@@ -4599,7 +4599,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       caja('El sitio',
       '<div class="kpis">' +
       '<div class="k"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
-      '<div class="k"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
+      '<div class="k"><b>' + (st.densidadPorHa != null ? conComa(Number(st.densidadPorHa).toFixed(1)) : '—') +
       '</b><small>por hectárea</small></div>' +
       '</div>' +
       fila('Área', esc(formatearArea(meta.areaM2) || '—')) +
@@ -5239,8 +5239,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       return '<div class="dib-par">' +
       (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="kpis">' +
-      '<div class="k"><b>' + ll.pctLleno + '%</b><small>construido</small></div>' +
-      '<div class="k"><b>' + ll.pctVacio + '%</b><small>libre</small></div>' +
+      '<div class="k"><b>' + conComa(ll.pctLleno) + ' %</b><small>construido</small></div>' +
+      '<div class="k"><b>' + conComa(ll.pctVacio) + ' %</b><small>libre</small></div>' +
       '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
       '</div>' +
       '</div>' +
@@ -5332,13 +5332,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="kpis">' +
       '<div class="k"><b>' + hh(sol.salida) + '</b><small>amanecer</small></div>' +
       '<div class="k"><b>' + hh(sol.puesta) + '</b><small>atardecer</small></div>' +
-      '<div class="k"><b>' + sol.alturaMaxima + '°</b><small>al mediodía</small></div>' +
+      '<div class="k"><b>' + conComa(sol.alturaMaxima) + '°</b><small>al mediodía</small></div>' +
       '</div>' +
-      fila('Sale por el', esc(SOL.rumbo(sol.azimutSalida)) + ' · ' + sol.azimutSalida + '°') +
-      fila('Se pone por el', esc(SOL.rumbo(sol.azimutPuesta)) + ' · ' + sol.azimutPuesta + '°') +
+      fila('Sale por el', esc(SOL.rumbo(sol.azimutSalida)) + ' · ' + conComa(sol.azimutSalida) + '°') +
+      fila('Se pone por el', esc(SOL.rumbo(sol.azimutPuesta)) + ' · ' + conComa(sol.azimutPuesta) + '°') +
       fila('Horas de luz', String(sol.duracionH).replace('.', ',') + ' h') +
-      (solAnio ? fila('En el año', solAnio.solsticios.masBajo.altura + '° a ' +
-      solAnio.solsticios.masAlto.altura + '°') : '') +
+      (solAnio ? fila('En el año', conComa(solAnio.solsticios.masBajo.altura) + '° a ' +
+      conComa(solAnio.solsticios.masAlto.altura) + '°') : '') +
       (solAnio && (solAnio.equinoccios || []).length
       ? fila('Equinoccios', solAnio.equinoccios.map(function (f) {
       return f.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
@@ -7732,7 +7732,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (pv > 0) {
         pon('Personas y viviendas son unidades distintas, y su razón es plausible',
             (pv >= 1.5 && pv <= 8) ? 'pasa' : 'falla',
-            (Math.round(pv * 100) / 100) + ' personas por vivienda' +
+            conComa(Math.round(pv * 100) / 100) + ' personas por vivienda' +
             (pv >= 1.5 && pv <= 8 ? '' : ': fuera del rango creíble, casi siempre por sumar personas donde iban viviendas'));
       } else {
         pon('Personas y viviendas son unidades distintas, y su razón es plausible', 'sin-dato',
@@ -7768,7 +7768,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (enPanel != null && enCierre != null) {
         pon('El espacio público que cita el cierre es el del panel',
             Math.abs(enPanel - enCierre) <= 0.15 ? 'pasa' : 'falla',
-            'panel ' + enPanel + ' m²/hab · cierre ' + enCierre + ' m²/hab' +
+            'panel ' + conComa(enPanel) + ' m²/hab · cierre ' + conComa(enCierre) + ' m²/hab' +
             (Math.abs(enPanel - enCierre) <= 0.15 ? '' : ': dos cuentas distintas de la misma cosa en la misma lámina'));
       } else {
         pon('El espacio público que cita el cierre es el del panel', 'sin-dato',
@@ -11099,7 +11099,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">' +
         (censal
           ? 'Parte del censo del DANE; lo demás es proyección con su tasa de crecimiento' +
-            (st.tasaAnualDane ? ' (' + (st.tasaAnualDane * 100).toFixed(2) + '% al año)' : '') +
+            (st.tasaAnualDane ? ' (' + tasaAnualPct(st.tasaAnualDane) + ' % al año)' : '') +
             '. <b>El tramo punteado es pronóstico hacia adelante</b>, no un dato contado.'
           : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no un dato observado.') +
         (esPol ? ' En un área dibujada se consulta por el centro y un radio de superficie equivalente, así que es aproximada.' : '') +
@@ -11510,7 +11510,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '</div>' +
         '<div class="pcr-sol-hito pcr-sol-alto">' +
           '<span class="pcr-lab">Mediodía solar</span><b>' + hora(d.cenit) + '</b>' +
-          '<small>a ' + d.alturaMaxima + '° sobre el horizonte</small>' +
+          '<small>a ' + conComa(d.alturaMaxima) + '° sobre el horizonte</small>' +
         '</div>' +
         '<div class="pcr-sol-hito">' +
           '<span class="pcr-lab">Atardecer</span><b>' + hora(d.puesta) + '</b>' +
@@ -11525,7 +11525,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-conc">Al amanecer las sombras caen hacia el <b>' + esc(sombraAmanecer) +
         '</b>; en la tarde, hacia el <b>' + esc(sombraTarde) + '</b>. ' +
         (fc.manda === 'cubierta'
-          ? 'Hoy el sol culmina casi vertical (' + d.alturaMaxima + '°), así que a esa hora ' +
+          ? 'Hoy el sol culmina casi vertical (' + conComa(d.alturaMaxima) + '°), así que a esa hora ' +
             'la fachada recibe poco y <b>el problema es la cubierta</b>.'
           : 'El sol culmina hacia el <b>' + esc(fc.culminacion) + '</b> a ' + d.alturaMaxima + '°.') +
         ' Lo que de verdad recalienta es el sol de la tarde, que entra bajo por el ' +
@@ -13181,7 +13181,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         listo: !!(trz && trz.llenos) && !trazadoSinDatos(trz),
         falta: trz ? 'no hay nada mapeado en el sector' : 'mida el trazado',
         dato: trz && trz.llenos && !trazadoSinDatos(trz)
-          ? trz.llenos.pctLleno + '% construido' : '' },
+          ? conComa(trz.llenos.pctLleno) + ' % construido' : '' },
       { id: 'como-se-llega', t: 'Cómo se llega', g: 'Cómo se mueve',
         listo: !!(res && res.stats && res.stats.movilidad),
         falta: 'analice el sector',
@@ -13479,6 +13479,27 @@ function donaHTML(datos, colorDe, nombreDe) {
   function jerarquiaVialDe(clase) { return JER_POR_CLASE[String(clase || '')] || null; }
   // La coma decimal de acá, que es la que lee quien va a imprimir esto.
   function conComa(x) { return String(x).replace('.', ','); }
+  /* ── La tasa anual de población, en una sola ruta (v891) ─────────────────
+     `tasaAnualDe` del motor devuelve una FRACCIÓN —`Math.pow(…) - 1`, o sea
+     0,004435 para un 0,44 % al año—, y eso se imprimía en dos sitios con dos
+     criterios distintos: el informe hacía `* 100` y `toFixed(2)`, y el panel
+     de presión de crecimiento (v888) la pasaba tal cual por `conComa`. En la
+     lámina real salió impreso:
+
+         +3,6 % desde el censo de 2018 · 0,004435050053115175 % al año
+
+     Dos defectos a la vez y el primero es el caro: **cien veces menor de lo
+     que es**, con el signo de porcentaje al lado. El segundo es de la clase
+     de la v874 —dieciocho decimales en una hoja que se cuelga en una pared—.
+
+     Es exactamente lo que la v879 dejó escrito: «dos rutas de cálculo para la
+     misma cantidad no divergen el día que se escriben, divergen la tanda
+     siguiente». Acá divergieron en la tanda siguiente, y el que se equivocó
+     fue el nuevo. Ahora hay una sola. */
+  function tasaAnualPct(x) {
+    if (x == null || !isFinite(Number(x))) return null;
+    return conComa((Number(x) * 100).toFixed(2));
+  }
   function conComaY(lista) {
     var xs = (lista || []).map(function (x) { return esc(String(x)); });
     if (xs.length <= 1) return xs[0] || '';
@@ -14201,7 +14222,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         conv: [{ c: '#3B4A5A', t: 'Huella de edificio', f: 'area' },
                { c: '#F3F8FB', t: 'Sin construir', f: 'area' }],
         pie: hue.length + ' huellas de edificio' +
-             (S.trazado && S.trazado.llenos ? ' · ' + S.trazado.llenos.pctLleno + '% construido' : '')
+             (S.trazado && S.trazado.llenos ? ' · ' + conComa(S.trazado.llenos.pctLleno) + ' % construido' : '')
       });
     }
     var cv = o.curvas !== undefined ? o.curvas
@@ -15959,7 +15980,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       filas.push({
         id: 'poblacion', t: 'Población del municipio',
         v: '+' + conComa(st.crecimientoPct) + ' % desde el censo de 2018',
-        d: st.tasaAnualDane != null ? conComa(st.tasaAnualDane) + ' % al año' : '',
+        d: tasaAnualPct(st.tasaAnualDane) ? tasaAnualPct(st.tasaAnualDane) + ' % al año' : '',
         proxy: 'proxy de CUÁNTA gente más hay que alojar, del municipio entero y no de este sector',
         limite: 'supone que todos los barrios del municipio crecen igual, y en una ciudad con ' +
                 'borde en expansión eso es falso',
@@ -17084,7 +17105,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var sol = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
         if (sol && sol.alturaMaxima != null) {
           C('La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger',
-            sol.alturaMaxima + '° al mediodía');
+            conComa(sol.alturaMaxima) + '° al mediodía');
         }
       } catch (err) {}
     }
@@ -20566,7 +20587,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           (a.critica.via ? ' (' + esc(a.critica.via) + ')' : '') + ', que mira al ' +
           esc((a.critica.mira && a.critica.mira.nombre) || 'occidente') + '; los de al lado la siguen ' +
           'en la medida en que también miran al poniente. Se mide contra el sol que se pone ' +
-          (a.azimutPuesta ? 'hoy a los ' + a.azimutPuesta + '°' : 'hoy') + ', no contra un oeste fijo: ' +
+          (a.azimutPuesta ? 'hoy a los ' + conComa(a.azimutPuesta) + '°' : 'hoy') + ', no contra un oeste fijo: ' +
           'en el trópico el sol de la tarde entra casi horizontal, y al mediodía está tan alto que ' +
           'la fachada apenas lo recibe — el problema del mediodía es la cubierta.</p>'
         : '') +
