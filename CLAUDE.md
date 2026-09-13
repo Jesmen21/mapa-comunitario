@@ -2942,6 +2942,154 @@ siga imprimiendo cinco propuestas, que cada una siga citando el área típica
 de su uso, que no haya marcadores sin reemplazar, y las dos que en este
 sector no tienen material.
 
+## A qué escala se analizó, dicho con una referencia medida (v890)
+
+§8 del pliego de ajustes, la última sección que quedaba, y la que había que
+auditar antes de tocar porque parecía que iba a mover cifras en media
+batería:
+
+> La corrida anterior usó radio de 2.500 m: 19,63 km², 77.145 habitantes. Eso
+> no es un sector, es un tercio de Cúcuta. Y el «lote» tenía 871.935 m²
+> (87 ha), que no es un lote. Correr las pruebas con: radio de 800 m; lote:
+> un predio real de unos pocos miles de metros cuadrados.
+
+Medido antes de cambiar nada, de las dos cosas que pide **una ya estaba y la
+otra no**:
+
+* El **sector** de `tdoslaminas` mide 1,77 km² — un radio equivalente de
+  **750 m**, que es justo la escala que §8 pide. No había que tocarlo, y
+  tocarlo habría movido cifras en una docena de suites para nada.
+* El **lote** eran dieciocho hectáreas. Ahí sí: todo lo que la lámina mide
+  sobre el predio se estaba probando a una escala a la que un predio no
+  existe.
+
+### Lo que el predio destapó, y no se veía a dieciocho hectáreas
+
+Con el lote a escala de verdad —unos 3.000 m²— el cruce del cierre pasa de
+**«el lote mide 9 veces el área de una manzana mediana»** a **«ocupa cerca
+del 14 % de una manzana mediana»**. La primera frase es correcta y no
+significa nada: describe un lote que no es un lote. Es la misma clase de la
+v874 —una cifra correcta dicha de una manera que no se puede leer— y solo
+aparece cuando el material de prueba puede producirla.
+
+Y una del método, que costó una vuelta: **a escala de predio los vértices no
+caben en el píxel**. El lote de veintidós lados no se puede conservar a 33 m
+de radio: a zoom 15 los vértices quedan a dos píxeles unos de otros y el
+dibujo los funde, así que el polígono ni siquiera se registra y la hoja sale
+sin lote. Quedan ocho lados —suficientes para que el reparto por sol siga
+teniendo algo que repartir— y **se marca con el mapa acercado**, que es lo
+que hace cualquiera para dibujar un predio. Eso no es un arreglo para la
+prueba: es lo que pasa en la aplicación de verdad.
+
+### `tpliegogrande` NO baja de escala, y el motivo está escrito
+
+Su lote de veintidós lados y 19 ha no es un descuido de escala: es la
+regresión que esa suite existe para guardar. Su propia cabecera lo dice —«un
+lote de 193.863 m² con veintidós lados… la fila entera crecía con ella: el
+pliego acostado pedía 652 mm de los 600 que tiene»— y **«un lote de cuatro
+esquinas no lo destapaba nunca»**.
+
+Bajarlo a predio habría dejado esa suite sin material, que es exactamente la
+manera silenciosa de perder una prueba. Se intentó, se midió lo que costaba,
+y se deshizo. Las dos escalas hacen falta y cada una en su sitio: el predio
+donde se mide el predio, el lote patológico donde se mide que el papel
+aguanta.
+
+### La otra mitad de §8, que no era de las pruebas
+
+El reclamo no es sobre el fixture: es sobre **la corrida real del usuario**.
+La hoja imprimía el radio —eso está desde la v848— y **nada sobre lo que ese
+radio le hace a las cifras**. Un jurado que lee «6,1 m² de espacio público
+por habitante» no tiene cómo saber si eso es de un barrio o de un tercio del
+municipio, y todo indicador por habitante o por hectárea es un promedio sobre
+el área analizada.
+
+Lo difícil no era decirlo sino **con qué compararlo**. Una tabla de cortes a
+ojo —«hasta N km² es un sector»— sería repetir el error del techo de Overpass
+de la v869: un número inventado que después nadie puede defender. Así que se
+usan dos referencias que la hoja YA mide:
+
+* el **área censada del municipio**, que llega con la referencia de ciudad de
+  la v876 (`stats.ciudad.areaCensadaM2`). «El 31 % del área censada de San
+  José de Cúcuta» es verificable —cualquiera rehace la división— y dice lo
+  que hay que decir sin inventar ningún umbral;
+* los **tres radios que la propia hoja compara** —500, 800 y 1.000 m
+  (`comparacionDeRadios`, v848)—, que es el rango en el que el módulo se
+  declara capaz de leer un sector.
+
+En el sector de prueba sale, en gris, como una declaración más:
+
+> Escala del análisis: 1,77 km² · radio equivalente de 750 m · el 2,9 % del
+> área censada de San José de Cúcuta. Está dentro del rango de sector que
+> esta hoja compara —500, 800 y 1.000 m—.
+
+Y en la corrida de 19,63 km², en rojo y a trazos —el mismo código visual que
+la contradicción de la v879—, encabezado con **«Esto no es un sector.»**, con
+qué le hace eso a las cifras y con el remedio al lado: volver a analizar con
+un radio de unos 800 m.
+
+**Se declara, no se topa ni se rechaza.** La hoja grande sale entera y el
+aviso se suma al panel del radio en vez de quitarle una caja: es la decisión
+de la v875 con la necesidad topada y la de la v886 con los mapas de 6,5 cm.
+Quien analiza elige su escala; la hoja dice a cuál lo hizo.
+
+### El área sale del RESULTADO, no del polígono en pantalla
+
+`escalaDelAnalisis` lee `res.meta.areaM2` y deja `areaDelPoligono()` de
+respaldo para un análisis que todavía no se guardó. No es lo mismo: una ficha
+archivada se vuelve a componer con este código, y leyendo la pantalla
+imprimiría la escala del trazo que esté dibujado ahora —o ninguna— en vez de
+la del análisis que se está reimprimiendo. Es la regla de la v879 aplicada
+antes de que divergiera, no después.
+
+### El sector de prueba no podía enseñar la rama del aviso
+
+Décima vez (v862, v866, v874, v877, v880, v882, v884, v888, v889, y esta).
+Este sector mide 750 m de radio equivalente, así que la rama roja no se
+ejercitaría nunca y la comprobación pasaría por no tener nada que rechazar.
+
+La suite **vuelve a analizar de verdad** —con el botón, un polígono de 2.500 m
+de radio equivalente y los 5,2 s del limitador de Overpass— y compone una
+lámina A más. Las dos ramas se miden en la misma corrida: la gris y la roja.
+
+Y una de las aserciones que hubo que corregir sobre la marcha: la primera
+versión comparaba el número de cajas de la hoja grande contra el de la hoja
+del sector y salía «12 contra 26». **No era un panel perdido**: esa segunda
+corrida no volvió a medir el trazado, la cobertura ni el terreno, así que
+estaba midiendo otra cosa de la que decía. Lo que sí se comprueba es dónde
+CAE el aviso —dentro del bloque del radio, al lado de la tabla de los tres
+radios— y que la hoja siga trayendo sus cajas. Un umbral absoluto habría
+pasado o fallado por el motivo equivocado.
+
+### Dos suites siguieron el cambio, y las dos se apretaron
+
+* `tlaminaedu` exigía «el lote quedó de veintidós lados», que es una
+  propiedad del dibujo y no del predio: un lote de dieciocho hectáreas la
+  pasaba sin despeinarse. Ahora pide lados de sobra —para que el reparto por
+  sol reparta algo— **y que la superficie que la hoja imprime sea la de un
+  predio**, leída del papel.
+* `tpliegogrande` llevaba el número de lados escrito DENTRO de una aserción
+  de contenido: `\d+ de 22 lados`. Eso es una constante del fixture metida en
+  la comprobación de un panel, y se ponía roja por un cambio que no tiene
+  nada que ver con lo que mide. Pide la forma —cuántos de cuántos, y los
+  metros— y que el total cuadre con los lados dibujados.
+
+### Demostrado contra la v889
+
+Ocho aserciones en rojo de once: «no la declara», «no lo dice» por el aviso
+de escala grande, «no lo nombra» por la superficie, «no lo explica» y «sin
+remedio».
+
+Las tres que **no** fallan son guardas a propósito, como las de la v879, la
+v882 y la v889: que una corrida de 19,6 km² se analice en vez de rechazarse
+—cierto antes y que tiene que seguir siéndolo—, que la hoja salga entera, y
+que la página no suelte errores.
+
+Lo del lote no se demuestra con `git stash` de `js/`: es un cambio de
+fixture, y contra la suite de la v889 lo que falla es la aserción vieja de
+los veintidós lados. La demostración de que valía la pena es el cruce del
+cierre, que pasa de «9 veces una manzana» a «el 14 % de una manzana».
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

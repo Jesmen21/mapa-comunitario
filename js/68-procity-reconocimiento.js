@@ -1239,6 +1239,58 @@
 
      El corte en 300 % es el del pliego de ajustes, y es donde el castellano
      cambia de forma solo: «el triple» se dice, «el 300 %» ya se calcula. */
+  /* ── A qué escala se analizó, dicho con una referencia MEDIDA (§8, v890) ─
+     El pliego de ajustes, sobre la corrida real: «radio de 2.500 m: 19,63
+     km², 77.145 habitantes. Eso no es un sector, es un tercio de Cúcuta».
+
+     La hoja imprimía el radio —eso estaba desde la v848— y **nada sobre lo
+     que ese radio significa**. Y sí importa: todo indicador por habitante o
+     por hectárea es un promedio sobre el área analizada, así que a escala de
+     media ciudad describe el conjunto y no ninguno de sus barrios. Un jurado
+     que lee «6,1 m² de espacio público por habitante» no tiene cómo saber si
+     eso es de un barrio o de un tercio del municipio.
+
+     Lo difícil no era decirlo sino **con qué compararlo**. Poner una tabla de
+     cortes a ojo —«hasta N km² es un sector»— sería el error que la v869 ya
+     cometió con el techo de Overpass: un número inventado que después nadie
+     puede defender. Así que se usan dos referencias que la hoja YA mide:
+
+       · el **área censada del municipio**, que llega con la referencia de
+         ciudad de la v876 (`stats.ciudad.areaCensadaM2`). «El 12 % del área
+         censada de Cúcuta» es verificable y dice lo que hay que decir sin
+         inventar ningún umbral.
+       · los **tres radios que esta misma hoja compara** —500, 800 y 1.000 m
+         (`comparacionDeRadios`, v848)—, que es el rango en el que el módulo
+         se declara capaz de leer un sector. Pasarse de ahí no es ilegal: es
+         salirse del rango que la propia hoja usa para contrastar.
+
+     Se declara, no se topa ni se rechaza: es la decisión de la v875 con la
+     necesidad y la de la v886 con los mapas chicos. Quien analiza decide a
+     qué escala trabaja; la hoja dice a cuál lo hizo. */
+  var RADIO_SECTOR_M = 1000;   // el mayor de los tres radios que la hoja compara
+  function escalaDelAnalisis(res) {
+    var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
+    /* El área sale del RESULTADO y no del polígono que hay en la pantalla.
+       No es lo mismo: una ficha archivada se vuelve a componer con este
+       código, y si leyera `areaDelPoligono()` imprimiría la escala del trazo
+       que esté dibujado ahora —o ninguna— en vez de la del análisis que se
+       está reimprimiendo. Es la regla de la v879: dos rutas para la misma
+       cantidad divergen la tanda siguiente. El polígono en pantalla queda de
+       respaldo para un análisis que todavía no se guardó. */
+    var areaM2 = Number(meta.areaM2 || 0);
+    if (!(areaM2 > 0) && meta.radioM > 0) areaM2 = Math.PI * Math.pow(Number(meta.radioM), 2);
+    if (!(areaM2 > 0)) { try { areaM2 = areaDelPoligono(); } catch (e) { areaM2 = 0; } }
+    if (!(areaM2 > 0)) return null;
+    var areaKm2 = areaM2 / 1e6;
+    var radioEq = Math.round(Math.sqrt(areaM2 / Math.PI));
+    var C = st.ciudad || null;
+    var areaCiudad = C && C.estado === 'ok' ? Number(C.areaCensadaM2 || 0) : 0;
+    var pctCiudad = areaCiudad > 0 ? Math.round(1000 * areaM2 / areaCiudad) / 10 : null;
+    return { areaKm2: areaKm2, radioEq: radioEq, pctCiudad: pctCiudad,
+             municipio: (C && C.municipio) || st.municipioNombre || '',
+             deSector: radioEq <= RADIO_SECTOR_M };
+  }
+
   function razonLegible(parte, todo) {
     var t = Number(todo) || 0, p = Number(parte) || 0;
     if (!(t > 0)) return 'sin manzana con la que compararlo';
@@ -4595,6 +4647,29 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<p class="nota">' + (cr.cambia
             ? 'Lo que manda cambia con el radio: la conclusión depende del radio elegido, y hay que decirlo.'
             : 'Lo que manda no cambia con el radio: la lectura se sostiene a las tres escalas.') + '</p>' +
+          /* §8 (v890) · a qué escala se analizó, y qué le hace eso a las
+             cifras por habitante y por hectárea de toda la hoja. */
+          (function () {
+            var ea; try { ea = escalaDelAnalisis(res); } catch (e) { ea = null; }
+            if (!ea) return '';
+            var cuanto = formatearArea(ea.areaKm2 * 1e6) +
+              ' · radio equivalente de ' + ea.radioEq.toLocaleString('es-CO') + ' m' +
+              (ea.pctCiudad != null
+                ? ' · el ' + conComa(ea.pctCiudad) + ' % del área censada de ' +
+                  esc(ea.municipio || 'el municipio')
+                : '');
+            return ea.deSector
+              ? '<p class="nota esc-an">Escala del análisis: ' + cuanto + '. Está dentro del rango ' +
+                'de sector que esta hoja compara —500, 800 y 1.000 m—, así que las cifras por ' +
+                'habitante y por hectárea describen un sector.</p>'
+              : '<p class="nota esc-an esc-grande"><b>Esto no es un sector.</b> Escala del análisis: ' +
+                cuanto + ', por encima del mayor de los tres radios que esta hoja compara (1.000 m). ' +
+                'Todo lo que la lámina dice <b>por habitante o por hectárea</b> es un promedio sobre ' +
+                'esa superficie: describe el conjunto y no ninguno de los barrios que lo componen, que ' +
+                'a esta escala son muy distintos entre sí. Para leer un barrio hay que volver a ' +
+                'analizar con un radio de unos 800 m. La hoja no lo impide —quien analiza elige su ' +
+                'escala—, pero la cifra no se puede leer como si fuera de un sector.</p>';
+          })() +
         '</div>';
       })(),
       'g2') +
@@ -8028,6 +8103,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
       '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
       '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
+      /* §8 (v890) · la escala del análisis. En gris cuando es de sector —es
+         una declaración más— y en rojo a trazos cuando no lo es: ahí deja de
+         ser un dato de procedencia y pasa a ser una advertencia sobre cómo
+         se leen todas las cifras por habitante de la hoja. */
+      '.esc-an{ margin-top:1.2mm }' +
+      '.esc-grande{ color:#8A1C1C; border:0.4mm dashed #C4453C; border-radius:1mm;' +
+        ' padding:1.4mm 2mm; background:#FDF3F2 }' +
       /* §20 (v889) · lo que da el sitio, dicho una vez. Va en gris y con
          menos peso que una propuesta: es el marco de las cinco, no una de
          ellas. */

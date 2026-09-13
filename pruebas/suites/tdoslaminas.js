@@ -25,13 +25,29 @@ const S = E.TRABAJO, LEAFLET = S + 'node_modules/leaflet/dist/';
 const C = { lat: 7.8939, lng: -72.5078 }, L = 0.006;
 const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - L },
              { lat: C.lat + L, lng: C.lng + L }, { lat: C.lat - L, lng: C.lng + L }];
-/* El lote de la captura: grande, irregular y de veintidós lados. Los radios
-   se mueven a propósito para que los lados salgan de largos distintos y el
-   reparto por sol tenga algo que repartir. */
-const NL = 22, RL = 0.0022;
+/* §8 (v890) · EL LOTE ES UN PREDIO, no media hacienda.
+   ────────────────────────────────────────────────────────────────────────
+   Hasta la v889 esto era un polígono de veintidós lados y 245 m de radio:
+   **dieciocho hectáreas**, que no es un lote —el pliego de ajustes lo dijo
+   de la corrida real: «el "lote" tenía 871.935 m² (87 ha), que no es un
+   lote»—. Todo lo que la lámina mide sobre el predio se estaba probando a
+   una escala a la que un predio no existe.
+
+   Ahora son **unos 3.000 m²**, que es un predio urbano grande pero real, con
+   ocho lados de largos distintos para que el reparto por sol siga teniendo
+   algo que repartir. Los veintidós lados no se pueden conservar a esta
+   escala y por una razón física, no de gusto: a 33 m de radio los vértices
+   quedan a dos píxeles unos de otros en el zoom del mapa, y el dibujo los
+   funde. Ocho ya no.
+
+   Y se dibuja con el mapa ACERCADO, que es lo que hace cualquiera para
+   marcar un predio: a zoom 15 un lote de 3.000 m² mide dieciocho píxeles de
+   punta a punta. */
+const RL = 33 / 111320;                       // 33 m de radio → unos 3.000 m²
+const NL = 8;
 const LOTE = [];
 for (let i = 0; i < NL; i++) {
-  const a = i * 2 * Math.PI / NL, rr = RL * (0.75 + 0.5 * ((i * 7) % 5) / 4);
+  const a = i * 2 * Math.PI / NL, rr = RL * (0.75 + 0.5 * ((i * 3) % 5) / 4);
   LOTE.push({ lat: C.lat + Math.cos(a) * rr,
               lng: C.lng + Math.sin(a) * rr / Math.cos(C.lat * Math.PI / 180) });
 }
@@ -273,9 +289,13 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     if (bf) { bf.click(); await esperar(400); }
     const bd = H().querySelector('[data-pcr="lote-dibujar"]');
     if (bd) { bd.click(); await esperar(500); }
+    /* §8 · acercarse para marcar el predio. A zoom 15 los ocho vértices de un
+       lote de 3.000 m² caen a dos píxeles unos de otros. */
+    window.map.setView([C.lat, C.lng], 19); await esperar(400);
     for (const p of LOTE) { window.map.fire('click', { latlng: { lat: p.lat, lng: p.lng } }); await esperar(40); }
     const bc = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
     if (bc) { bc.click(); await esperar(900); }
+    window.map.setView([C.lat, C.lng], 15); await esperar(300);
     R.abrir(); await esperar(500);
     const asa = H().querySelector('[data-pcr="agrandar"]'); if (asa) { asa.click(); await esperar(400); }
     await esperar(5200);   // el limitador de Overpass
@@ -438,6 +458,26 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     if (bc2) { bc2.click(); await esperar(900); }
     R.abrir(); await esperar(400);
     o.loteChico = R.laminaA({ hoja: 'B' });
+    /* §8 (v890) · la otra rama de la escala: el caso que el pliego reportó.
+       «Radio de 2.500 m: 19,63 km², 77.145 habitantes. Eso no es un sector,
+       es un tercio de Cúcuta». El sector de esta suite mide 1,77 km² —750 m
+       de radio equivalente, justo el rango que §8 pide—, así que el aviso de
+       escala grande no se ejercitaría en ninguna prueba y la comprobación
+       pasaría por no tener nada que rechazar: es el agujero que este
+       proyecto lleva nueve tandas persiguiendo.
+
+       Se vuelve a analizar de verdad, con un polígono de 2.500 m de radio
+       equivalente y el botón de siempre. Cuesta una consulta más y los 5,2 s
+       del limitador de Overpass; enseñar la rama los vale. */
+    const G = 2500 / 111320 * Math.sqrt(Math.PI) / 2;   // medio lado de un cuadrado de 19,6 km²
+    await esperar(5200);
+    A.iniciarDibujo();
+    [[-1, -1], [1, -1], [1, 1], [-1, 1], [-1, -1]].forEach(function (v) {
+      A.agregarPunto(C.lat + v[1] * G, C.lng + v[0] * G / Math.cos(C.lat * Math.PI / 180));
+    });
+    R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
+    await R.analizar(); await esperar(1500);
+    o.granEscala = R.laminaA({ hoja: 'A', clima: CLIMA });
     return o;
   }, { C, POL, LOTE });
 
@@ -703,6 +743,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     fs2.writeFileSync(E.TRABAJO + 'lamina-dos.html', r.doc || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-a.html', r.soloA || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-b.html', r.soloB || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-gran.html', r.granEscala || '', 'utf8');
   } catch (e) {}
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
@@ -2389,6 +2430,76 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       .map(t => h.id + ': ' + t.slice(0, 70))), []);
     T('ninguna hoja imprime un marcador de plantilla sin reemplazar',
       sucios.length === 0, sucios.slice(0, 3).join(' · ') || 'ninguno');
+  }
+
+  /* ══ §8 · la hoja dice a qué escala se analizó ═════════════════════════
+     El pliego, sobre la corrida real: «radio de 2.500 m: 19,63 km², 77.145
+     habitantes. Eso no es un sector, es un tercio de Cúcuta». La hoja
+     imprimía el radio y nada sobre lo que ese radio le hace a toda cifra por
+     habitante y por hectárea de la lámina.
+
+     Se miden LAS DOS ramas en la misma corrida, que es lo que una sola no
+     puede enseñar: este sector, que sí es de escala de sector, y una segunda
+     corrida de 19,6 km² que no lo es. */
+  console.log('\n  -- §8 · a qué escala se analizó --');
+  {
+    const linea = (h) => {
+      const m = String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+        .match(/(Esto no es un sector\.?\s*)?Escala del análisis:[^]{0,900}/);
+      return m ? m[0] : '';
+    };
+    const lA = linea(r.soloA) || linea(r.doc);
+    T('la lámina declara la escala del área analizada',
+      /Escala del análisis:/.test(lA), lA.slice(0, 70) || 'no la declara');
+    /* La referencia no es un umbral inventado: es el área censada del
+       municipio —la misma de la comparación de la v876— y los tres radios
+       que la propia hoja compara. Un corte puesto a ojo sería el error del
+       techo de Overpass de la v869. */
+    T('y la dice con una referencia medida, no con un umbral a ojo',
+      /km²/.test(lA) && /radio equivalente de [\d.]+ m/.test(lA) &&
+      /% del área censada de/.test(lA),
+      lA.slice(0, 150));
+    T('este sector cae en el rango que la hoja compara, y lo dice',
+      /dentro del rango de sector/.test(lA) && !/Esto no es un sector/.test(lA),
+      (lA.match(/(dentro del rango de sector|Esto no es un sector)/) || ['no lo dice'])[0]);
+    // Y la rama que el pliego reportó: 19,6 km², que no es un sector.
+    const lG = linea(r.granEscala);
+    T('una corrida de 19,6 km² sí se analiza, no se rechaza',
+      (r.granEscala || '').length > 20000, ((r.granEscala || '').length) + ' caracteres de hoja');
+    T('y la hoja lo dice con esas palabras: esto no es un sector',
+      /Esto no es un sector/.test(lG), lG.slice(0, 90) || 'no lo dice');
+    T('nombra la superficie y qué parte del municipio es',
+      /1[89],\d+ km²|19 km²|2[01],\d+ km²/.test(lG) && /% del área censada de/.test(lG),
+      (lG.match(/[\d,.]+ km²[^.]{0,70}/) || ['no lo nombra'])[0]);
+    /* Lo que de verdad hay que decirle a quien lee: qué le hace esa escala a
+       las cifras. Sin esta frase el aviso sería un rótulo. */
+    T('y explica que las cifras por habitante son promedios del conjunto',
+      /por habitante o por hectárea/.test(lG) && /no ninguno de los barrios/.test(lG),
+      (lG.match(/promedio sobre[^.]{0,90}/) || ['no lo explica'])[0]);
+    T('con el remedio al lado: volver a analizar a unos 800 m',
+      /volver a\s+analizar con un radio de unos 800 m/.test(lG.replace(/\s+/g, ' ')),
+      (lG.match(/Para leer un barrio[^.]{0,80}/) || ['sin remedio'])[0]);
+    /* Y no se topa ni se rechaza: la hoja sale entera, con su aviso. Es la
+       decisión de la v875 con la necesidad y la de la v886 con los mapas. */
+    /* El aviso no TAPA nada: se suma al panel del radio, que es donde vive
+       el tema, en vez de reemplazar la hoja o quitarle cajas. Es la decisión
+       de la v875 con la necesidad topada y la de la v886 con los mapas
+       chicos: se declara, no se recorta.
+
+       Se mide por el SITIO donde cae —dentro del bloque `.radios`, al lado
+       de la tabla de los tres radios— y porque la hoja grande sigue trayendo
+       sus cajas de siempre. Contar cajas contra la hoja del sector chico
+       mediría otra cosa: esa corrida trae además el trazado, la cobertura y
+       el terreno, que esta segunda no volvió a medir. */
+    const bloqueRadios = (String(r.granEscala || '').split('<div class="radios">')[1] || '')
+      .split('</div>')[0];
+    T('el aviso va dentro del panel del radio, no como caja aparte',
+      /esc-an/.test(bloqueRadios),
+      !bloqueRadios ? 'no hay panel de radio' : /esc-an/.test(bloqueRadios) ? 'en el panel del radio' : 'el panel del radio no lo trae');
+    T('y la hoja grande sale entera: el aviso se suma, no recorta',
+      /<h2>El sitio<\/h2>/.test(r.granEscala || '') &&
+      /<h2>Dónde queda, escala por escala<\/h2>/.test(r.granEscala || ''),
+      ((r.granEscala || '').match(/<h2>[^<]+<\/h2>/g) || []).length + ' cajas');
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');

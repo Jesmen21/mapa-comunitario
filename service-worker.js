@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v889-cada-propuesta-su-dato';
+const URBIS_CACHE = 'urbis-v890-escala-del-analisis';
 const URBIS_ASSETS = [
   './',
   './index.html',

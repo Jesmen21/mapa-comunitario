@@ -37,13 +37,16 @@ const S = E.TRABAJO, LEAFLET = S + 'node_modules/leaflet/dist/';
 const C = { lat: 7.8939, lng: -72.5078 }, L = 0.006;
 const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - L },
              { lat: C.lat + L, lng: C.lng + L }, { lat: C.lat - L, lng: C.lng + L }];
-/* El lote de la captura: grande, irregular y de veintidós lados. Los radios
-   se mueven a propósito para que los lados salgan de largos distintos y el
-   reparto por sol tenga algo que repartir. */
-const NL = 22, RL = 0.0022;
+/* §8 (v890) · el lote es un PREDIO de unos 3.000 m², no dieciocho hectáreas.
+   Ocho lados de largos distintos, para que el reparto por sol siga teniendo
+   algo que repartir; los veintidós de antes no caben a esta escala —los
+   vértices quedarían a dos píxeles unos de otros y el dibujo los funde—.
+   Se marca con el mapa acercado, que es lo que hace cualquiera. */
+const RL = 33 / 111320;
+const NL = 8;
 const LOTE = [];
 for (let i = 0; i < NL; i++) {
-  const a = i * 2 * Math.PI / NL, rr = RL * (0.75 + 0.5 * ((i * 7) % 5) / 4);
+  const a = i * 2 * Math.PI / NL, rr = RL * (0.75 + 0.5 * ((i * 3) % 5) / 4);
   LOTE.push({ lat: C.lat + Math.cos(a) * rr,
               lng: C.lng + Math.sin(a) * rr / Math.cos(C.lat * Math.PI / 180) });
 }
@@ -164,10 +167,13 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     if (bf) { bf.click(); await esperar(400); }
     const bd = H().querySelector('[data-pcr="lote-dibujar"]');
     if (bd) { bd.click(); await esperar(500); }
+    // §8 · acercarse para marcar el predio: a zoom 15 no cabe.
+    window.map.setView([C.lat, C.lng], 19); await esperar(400);
     for (const p of LOTE) { window.map.fire('click', { latlng: { lat: p.lat, lng: p.lng } }); await esperar(40); }
     o.lados = (R.loteDePrueba() || []).length;
     const bc = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
     if (bc) { bc.click(); await esperar(900); }
+    window.map.setView([C.lat, C.lng], 15); await esperar(300);
     R.abrir(); await esperar(500);
     const asa = H().querySelector('[data-pcr="agrandar"]'); if (asa) { asa.click(); await esperar(400); }
     const medir = async (acc, sel) => {
@@ -369,7 +375,17 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
 
   console.log('\n  -- el sector: lote, trazado y foto --');
-  T('el lote quedó de veintidós lados y el trazado medido', r.lados === 22 && r.trazado === true, r.lados + ' lados');
+  /* §8 (v890) · la aserción se apretó al bajar de escala, no se aflojó.
+     Pedía veintidós lados, que era una propiedad del dibujo y no del predio;
+     ahora pide las dos cosas que §8 exige de verdad —que el lote tenga lados
+     de sobra para que el reparto por sol reparta algo, **y que mida lo que
+     mide un predio**— leyendo la superficie que la propia hoja imprime. Un
+     lote de dieciocho hectáreas pasaba la de antes sin despeinarse. */
+  const areaLote = Number(((r.v || '').match(/Lote de ([\d.]+) m²/) || [0, '0'])[1].replace(/\./g, ''));
+  T('el lote tiene lados de sobra y el trazado quedó medido',
+    r.lados >= 6 && r.trazado === true, r.lados + ' lados');
+  T('y es un PREDIO de unos miles de m², no media hacienda (§8)',
+    areaLote >= 500 && areaLote <= 20000, areaLote.toLocaleString('es-CO') + ' m²');
   T('salieron las dos láminas', (r.v || '').length > 20000 && (r.h || '').length > 20000);
   console.log('  · quedó fuera de la última: ' + ((r.fuera || []).join(', ') || 'nada'));
 
