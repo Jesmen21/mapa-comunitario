@@ -168,9 +168,109 @@
     return { masAlto: alto, masBajo: bajo };
   }
 
+  /* Los dos equinoccios: los días en que la declinación del sol cruza el
+     ecuador. Son la referencia que falta en una carta solar con solo los dos
+     solsticios — el recorrido de equinoccio es el que parte el año en dos y
+     el único que sale exactamente por el oriente y se pone por el occidente
+     en CUALQUIER latitud. Sin él, la carta enseña los dos extremos y no
+     enseña el caso medio, que es el que ocurre la mayor parte del año.
+
+     Se buscan igual que los pasos cenitales: por cambio de signo de la
+     declinación, no por fecha de calendario. El 21 de marzo es una
+     aproximación que se corre un día según el año bisiesto. */
+  function equinoccios(lat, anio) {
+    var hallados = [], anterior = null;
+    for (var i = 0; i < 366; i++) {
+      var f = new Date(Date.UTC(anio, 0, 1, 12));
+      f.setUTCDate(f.getUTCDate() + i);
+      var dec = posicion(f, lat, 0).declinacion;
+      if (anterior !== null && ((anterior < 0 && dec >= 0) || (anterior > 0 && dec <= 0))) {
+        hallados.push(new Date(f));
+      }
+      anterior = dec;
+    }
+    return hallados;
+  }
+
+  /* ── Lo que recibe cada orientación ─────────────────────────────────────
+     Un plano VERTICAL mirando a un azimut recibe sol directo cuando el sol
+     está sobre el horizonte Y por delante del plano. El coseno del ángulo de
+     incidencia sobre ese plano es cos(altura) · cos(azimutSol − azimutPlano),
+     y solo cuenta cuando es positivo: con el sol detrás, la fachada está en
+     su propia sombra.
+
+     De ahí salen dos cosas distintas y las dos hacen falta:
+
+     * las HORAS de sol directo al año, que es cuánto tiempo le da;
+     * el REPARTO del directo, que es cuánta energía le da — porque una hora
+       con el sol de frente y alto no vale lo mismo que una hora rasante.
+
+     Una fachada oriental y una occidental reciben las MISMAS horas por
+     simetría, y sin embargo la occidental es la que recalienta: le llega a la
+     tarde, cuando el aire ya está caliente. Eso no lo dice la geometría y por
+     eso la lectura va aparte, en `js/68`.
+
+     LO QUE ESTO NO ES: radiación en kWh/m². Es la geometría del sol, sin
+     nubes, sin difusa y sin el horizonte que tapen los vecinos. Para la
+     energía de verdad sobre una fachada orientada hace falta una serie
+     HORARIA de irradiancia con su reparto directo/difuso —el atlas del IDEAM
+     o un año meteorológico tipo—, y quien imprima esto tiene que decirlo. */
+  var PASO_DIAS = 5, PASO_MIN = 15;
+  function porOrientacion(lat, lng, cual) {
+    var a = cual || new Date().getFullYear();
+    var horas = new Array(8).fill(0), directo = new Array(8).fill(0);
+    var muestras = 0, horasTotales = 0;
+    for (var i = 0; i < 366; i += PASO_DIAS) {
+      var d0 = new Date(Date.UTC(a, 0, 1));
+      d0.setUTCDate(d0.getUTCDate() + i);
+      if (d0.getUTCFullYear() !== a) break;
+      for (var m = 0; m < 24 * 60; m += PASO_MIN) {
+        var t = new Date(d0.getTime() + m * 60000);
+        var p;
+        try { p = posicion(t, lat, lng); } catch (e) { continue; }
+        muestras++;
+        if (p.altitud <= 0) continue;
+        horasTotales++;
+        for (var k = 0; k < 8; k++) {
+          var dif = ((p.azimut - k * 45) % 360 + 540) % 360 - 180;   // a (−180, 180]
+          var cosAz = Math.cos(RAD * dif);
+          if (cosAz <= 0) continue;                                  // el sol, detrás
+          horas[k]++;
+          directo[k] += Math.cos(RAD * p.altitud) * cosAz;
+        }
+      }
+    }
+    if (!horasTotales) return null;
+    // De muestras a horas de un año: cada muestra vale PASO_MIN minutos, y se
+    // miró un día de cada PASO_DIAS.
+    var aHoras = (PASO_MIN / 60) * PASO_DIAS;
+    var maxDir = Math.max.apply(null, directo) || 1;
+    var lista = RUMBOS.map(function (nombre, k) {
+      return {
+        rumbo: nombre, azimut: k * 45,
+        horasAnio: Math.round(horas[k] * aHoras),
+        // 100 = la orientación que más directo recibe. Relativo a propósito:
+        // un absoluto pediría la irradiancia que este módulo no tiene.
+        indice: Math.round(100 * directo[k] / maxDir)
+      };
+    });
+    var mejor = lista.slice().sort(function (x, y) { return x.indice - y.indice; })[0];
+    var peor = lista.slice().sort(function (x, y) { return y.indice - x.indice; })[0];
+    return {
+      lista: lista,
+      // La que menos directo recibe y la que más: son las dos que deciden el
+      // partido de un lote alargado.
+      menosExpuesta: mejor, masExpuesta: peor,
+      horasDeLuzAnio: Math.round(horasTotales * aHoras),
+      pasoDias: PASO_DIAS, pasoMin: PASO_MIN,
+      esGeometria: true
+    };
+  }
+
   function anio(lat, lng, cual) {
     var a = cual || new Date().getFullYear();
-    return { anio: a, cenitales: dosPasosCenitales(lat, a), solsticios: solsticios(lat, lng, a) };
+    return { anio: a, cenitales: dosPasosCenitales(lat, a), solsticios: solsticios(lat, lng, a),
+             equinoccios: equinoccios(lat, a) };
   }
 
   // ── Traducciones ────────────────────────────────────────────────────────
@@ -205,6 +305,7 @@
 
   window.URBIS_SOLAR = {
     posicion: posicion, dia: dia, anio: anio,
-    rumbo: rumbo, sombra: sombra, fachadaCritica: fachadaCritica
+    rumbo: rumbo, sombra: sombra, fachadaCritica: fachadaCritica,
+    equinoccios: equinoccios, porOrientacion: porOrientacion
   };
 })();

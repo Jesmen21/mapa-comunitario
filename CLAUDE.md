@@ -1832,6 +1832,228 @@ más denso tiene que **mirar la barra**. El lector de paneles sacaba solo el
 igual con las barras dibujadas por conteo. `anchoBarras` lee el ancho del `<u>`
 de cada una.
 
+## La banda ambiental cierra en decisión de proyecto (v882)
+
+§12 del pliego de ajustes: «quedó a medias». Antes de escribir nada se
+auditó qué había de verdad, que es la regla de la v863 y de la v879 —una
+sospecha sobre datos se comprueba leyendo el código, no recordándolo—, y de
+las cinco cosas que pedía, **una estaba, una a medias y tres no**:
+
+| §12 pide | Lo que había |
+|---|---|
+| Carta solar con solsticios y equinoccios | La carta estaba, con los dos solsticios y **sin equinoccio** |
+| Orientación de fachadas derivada de la carta | Una **frase fija** en la caja: «la fachada occidental… es la que hay que proteger» |
+| Radiación y horas de sol por orientación | Nada, en ninguna parte |
+| Sombra de la altura predominante medida, dos horas | Dos estudios de sombra, y ninguno servía (ver abajo) |
+| Vientos cerrando en estrategia de ventilación | La rosa dibujada y una pista de un renglón |
+
+### En el trópico la fachada que más horas suma no es la que más recibe
+
+Es el hallazgo del que sale toda la tabla. `porOrientacion` en `js/73` recorre
+el año —un día de cada cinco, cada quince minutos— y para cada uno de los ocho
+rumbos suma dos cosas **distintas**: las horas con el sol por delante del plano
+vertical, y el coseno del ángulo de incidencia, que es cuánta energía le llega.
+A 7,9° de latitud da esto:
+
+| Orientación | Horas al año | Directo |
+|---|---|---|
+| Norte | 1.970 | 30 |
+| **Oriente** | 2.204 | **100** |
+| **Sur** | **2.413** | 53 |
+| Occidente | 2.179 | 99 |
+
+**El sur suma más horas que ninguna y recibe la mitad**: cuando el sol está al
+sur, acá está alto, y roza el plano vertical. Las que se calientan son la
+oriental y la occidental. Es exactamente lo contrario de lo que dice un manual
+europeo, y es la razón de imprimir la tabla en vez de una regla aprendida.
+
+Dos comprobaciones de respuesta conocida antes de conectarlo: que oriente y
+occidente salgan iguales por simetría (2.204 y 2.179 h, 100 y 99 — la
+diferencia es del muestreo y va declarada), y que las horas de luz del año den
+4.383, o sea 12,01 h al día, que es lo que le toca al trópico.
+
+#### Una etiqueta que decía «la que más» y no decía de qué
+
+La primera versión marcaba la fila del oriente con «la que más». En la misma
+fila hay dos columnas, y el sur gana una y pierde la otra: un «la que más» a
+secas se lee sobre la columna que el ojo tenga más cerca. Dice ahora **«más
+directo»** y **«más horas»**, cada una sobre la suya. Es la clase de defecto de
+la v874 —una cifra correcta dicha de una manera que no se puede leer— y salió
+mirando el papel impreso, no el código.
+
+### La radiación medida era un campo más de la consulta que ya se hacía
+
+`shortwave_radiation_sum` viene del **mismo** archivo de Open-Meteo del que ya
+salen la temperatura, la lluvia y el viento: un campo más en la misma petición,
+sin una consulta aparte. Es el patrón de la v876 con el censo por municipio.
+
+Se publica **al lado** de las horas por orientación y **no multiplicada por
+ellas**: la radiación es global horizontal con las nubes de cinco años dentro,
+y la geometría es el sol sin nubes. El producto se leería como si las dos
+fueran medidas. Para kWh/m² sobre una fachada orientada hace falta una serie
+**horaria** con su reparto directo/difuso —el atlas del IDEAM o un año
+meteorológico tipo—, y eso va escrito en la hoja.
+
+#### La clave del caché lleva versión de campos
+
+`'clima|…|r1'`. Sin ese sufijo, un teléfono con el clima ya guardado habría
+seguido sirviendo la respuesta vieja —sin radiación— durante toda la vida del
+caché, y el panel nuevo habría dicho «no se pudo medir» justo a quien acababa
+de actualizar. **Un campo nuevo en una consulta cacheada sube ese número.**
+
+### La recomendación de fachada se deduce; la frase fija se imprimía igual en Bogotá
+
+La caja cerraba en una sola frase escrita a mano. En Cúcuta es cierta; en otra
+latitud se imprimía igual, sin haberla comprobado — la misma forma de las
+cuatro carencias falsas de la v861 a la v864, dicha como afirmación en vez de
+como negación. Ahora sale de `fachadaCritica` y de la tabla: qué orientación
+recibe más, cuál menos, si manda la fachada o la cubierta, y **por qué el
+occidente se protege primero aunque reciba lo mismo que el oriente** —le llega
+a la tarde, con el aire ya caliente—, que es lo único de ahí que no lo dice la
+geometría.
+
+Lo mismo con la línea de decisión de la banda (`DECIDE`), que mandaba «los
+espacios de estar al norte y al sur» de memoria.
+
+#### Las tres lecturas salen de UNA cuenta memoizada
+
+`orientacionDelSitio()` guarda el resultado y lo leen la tabla, la estrategia
+de ventilación y la línea de decisión. No es solo ahorro —recorrer el año son
+miles de posiciones de sol—: es lo que impide que la tabla diga que la
+orientación menos expuesta es una y el pie de la banda mande los dormitorios a
+otra, que es el fallo que la v879 persiguió entre las dos láminas.
+
+**Se memoiza por COORDENADA.** La primera versión guardaba en `S.solOri` a
+secas y leía `S.meta`, que al componer la lámina puede no estar puesto todavía:
+la caja imprimió la carta solar y **nada debajo**, sin un solo error. Se vio
+mirando el papel.
+
+### El módulo tenía dos estudios de sombra y ninguno servía para esto
+
+El de los **vecinos** pide un lote dibujado y las huellas medidas; el del
+**volumen permitido** parte de una norma que no se tiene. Los dos hablan de un
+proyecto. §12 pide el del **sector**: qué sombra echa la altura que el sector
+ya demuestra.
+
+`sombraDeLoConstruido` la calcula a las 9 y a las 15 —las dos horas que deciden
+una calle; al mediodía la sombra es la más corta del día y no limita nada— y la
+altura es la **moda** del reparto de la v880, no la media: con seis de cada diez
+edificios de un piso y tres torres, la media describe un sector que no existe y
+su sombra tampoco.
+
+Y cierra **cruzándola con la calzada medida**: 3,4 m de sombra sobre 7,4 m de
+calzada no alcanza la otra acera, así que la sombra del peatón hay que ponerla
+con árboles porque el volumen no la da. Si la cruzara, la frase es la otra —la
+planta baja de enfrente no ve el sol, que para vivienda es un problema y para
+un andén comercial en clima cálido es lo que se busca—. **Las dos son ciertas y
+la hoja no elige**: dice cuál es el caso y quién decide.
+
+### El conflicto entre ventilar y protegerse del sol, dicho
+
+La rosa de vientos cerraba en «el pétalo largo es el rumbo que ventila». Ahora
+dice por dónde **entra** el aire, por dónde **sale** —una abertura sola no
+ventila, ventila el par—, cómo se dimensionan con la temperatura medida, y qué
+hacer cuando el viento es flojo.
+
+Y lo que de verdad hacía falta: **cuando el aire entra justo por donde más pega
+el sol, la hoja lo nombra**. Abrir para ventilar es abrir al sol, y eso pide
+protección que deje pasar el aire y no la luz. Que lo descubra quien dibuja no
+es una opción. El aviso **no sale cuando no hay conflicto** —si no, sería un
+adorno— y hay una aserción para cada una de las dos ramas.
+
+### Cuatro curvas del mismo gris sin decir cuál es cuál
+
+La carta solar dibujaba hoy, el solsticio alto y el bajo, las dos últimas del
+mismo gris a trazos y **sin leyenda**. Se veía que el sol se mueve entre dos
+extremos y no cuál de los dos era junio. **De un dibujo del que no se sabe qué
+curva es cuál no sale una fachada**, y decidir una fachada es para lo que
+existe.
+
+Lleva ahora el **equinoccio** —el caso medio, el único que sale exacto por el
+oriente en cualquier latitud, y el que un estudiante calca— y una leyenda al
+pie con las cuatro curvas y su fecha. La leyenda va **dentro del propio SVG**:
+como texto de al lado, una lámina que encoge el dibujo la dejaría a otra escala
+y el informe en hojas la separaría al partir la página.
+
+### El sector de prueba, otra vez más pobre que uno real
+
+Sexta vez (v862, v866, v874, v877, v880, y esta). El clima que `tdoslaminas`
+inyecta traía `viento: {}` — sin rosa, sin dominante, sin velocidad — y ninguna
+radiación. **La estrategia de ventilación y la radiación no se habrían
+ejercitado en ninguna prueba**: el panel pasaba en verde por no tener nada que
+decir.
+
+Ahora trae la rosa de los ocho rumbos, el viento medio y la radiación. Y como
+las ramas dicen cosas opuestas y una sola corrida no puede enseñar las dos, se
+componen **tres** hojas A: la normal —viento del norte, que no choca con el
+sol—, la del **choque** —viento del oriente y flojo— y la que viene **sin
+radiación**, que es lo que pasa cuando el archivo no la trae en un punto.
+
+### El fallo que no era de la hoja: un medidor que divide por la pista equivocada
+
+Al entrar la caja nueva, `tpliegogrande` denunció que la banda ambiental
+dejaba **«9 huecos en 2 renglones»**. Parecía una consecuencia de layout de
+la caja nueva y no lo era.
+
+`ocupa` contaba los renglones de cada caja **dividiendo su alto por el de la
+PRIMERA pista**. Los renglones de una banda casi nunca miden lo mismo: en la
+ambiental acostada son **1.417 px y 533**. Una caja que pisa los dos mide
+1.964, y 1.964 ÷ 1.430 da 1,38, que redondea a **uno**. La banda ocupaba 17
+de 20 celdas y la cuenta decía 11; con las siete cajas decía 15 de 24 cuando
+eran **23 de 24, un hueco**.
+
+Es la lección de la v854 —medir lo que la grilla hizo, no lo que se le
+pidió— con un paso más que faltaba: **las pistas tampoco son todas iguales.**
+Se cuentan ahora las pistas que la caja PISA de verdad, con sus alturas
+reales, sus huecos y el factor de escala de la hoja.
+
+**Y la parte que más cuesta contar:** creyendo el fallo, moví «La sombra de
+los vecinos» a la banda del lote para descargar la ambiental. Con el medidor
+arreglado, las siete cajas pasan con un hueco: **la mudanza no hacía falta y
+se deshizo.** Un arreglo estructural hecho para callar una comprobación es un
+arreglo sin causa, y el día que alguien busque por qué se movió no va a
+encontrar ninguna.
+
+Lo que sí quedó de esa vuelta es un hallazgo de verdad y aparte: **«La sombra
+de los vecinos» declaraba escala `sector` y mide «% DEL LOTE en sombra»**, y
+necesita un lote dibujado para existir. Es `predio`, y está corregido. Las
+bandas agrupan por TEMA y no por escala —«El clima», que es de ciudad, vive
+en la ambiental—, así que la banda nunca iba a desmentir el rótulo: por eso
+cada panel tiene que declararlo por su cuenta.
+
+#### La guarda del medidor, y por qué la primera no servía
+
+La primera versión exigía que alguna banda de dos renglones tuviera
+`ocupa > cols`. **Pasaba en verde con el medidor roto** —15 > 12—, así que no
+guardaba nada: exactamente el verde que este proyecto lleva cinco tandas
+persiguiendo.
+
+La que quedó mide la causa y no un síntoma: una banda compuesta a dos
+renglones y con un mapa **tiene** que reportar una caja que pisa los dos,
+porque el CSS se lo da (`.bcuerpo.dos .mapa-caja{grid-row:span 2}`). Si
+ninguna lo pisa, el recuento está roto otra vez y lo que diga esta sección no
+vale. Y falla también si no hay ninguna banda así, que es el caso en que la
+guarda se quedaría sin material.
+
+Demostrada devolviendo la división vieja: sale «pisa 1» donde la caja pisa
+dos.
+
+### Demostrado contra la v881
+
+Diecinueve aserciones en rojo de veinte, con el texto viejo impreso: «no lo
+trae» por el equinoccio, «sin leyenda», «sin tabla», «no está» por la
+radiación y por la sombra del sector, «la rosa se queda sola» y «lo calla» por
+el conflicto.
+
+La vigésima **no** falla, y es a propósito: que el conflicto no se imprima
+cuando no lo hay era cierto antes y tiene que seguir siéndolo. Es una guarda
+contra pasarse de avisar, no una afirmación nueva — igual que las dos de la
+v879.
+
+Como en la v881, hay que devolver **las dos mitades**: el `git stash` de los
+tres archivos de `js/` no toca `motor-reglas.js`, que vive en el otro
+repositorio.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -1883,6 +2105,17 @@ que se ve a simple vista: la cláusula está o no está.
   y el bloque gastaba una banda para no decir nada; en un municipio con
   resguardo o consejo comunitario diría mucho.
   `ya: el bloque está escrito y probado —entra volviendo a poner su renglón en BLOQUES_CENSO—, y la capa se pregunta igual para los otros tres`
+* **La radiación sobre una fachada ORIENTADA, en kWh/m²** — pide una serie
+  horaria de irradiancia con su reparto directo/difuso: el atlas del IDEAM o
+  un año meteorológico tipo. El archivo diario solo trae la global sobre plano
+  horizontal.
+  `ya: las horas de sol al año y el reparto del directo de las ocho orientaciones, calculados con la carta solar del sitio y declarados como geometría, junto a la radiación horizontal medida de cinco años con su fuente`
+* **El viento DENTRO de la manzana** — se mide en el sitio: entre construcción
+  la velocidad baja y la dirección se tuerce con las calles.
+  `ya: la rosa de los ocho rumbos pesada por velocidad, el dominante, la media, y la estrategia de ventilación —por dónde entra, por dónde sale, cómo se dimensionan las aberturas— declarada a 10 m en campo abierto`
+* **La sombra sobre terreno en PENDIENTE** — pide cruzar el modelo de alturas
+  con cada proyección, que es otra tanda.
+  `ya: la sombra de la altura que más se repite en el sector a las 9 y a las 15, cruzada con la calzada media medida, y declarada sobre terreno plano`
 * **Los cuatro vacíos obligatorios** — riesgo oficial, norma urbana del POT,
   movilidad real e información legal del predio. Cada uno pide su entidad y
   ninguno se deduce; servicios públicos salió de la lista en la v880.

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v881-anillos-en-densidad';
+const URBIS_CACHE = 'urbis-v882-ambiental-completa';
 const URBIS_ASSETS = [
   './',
   './index.html',

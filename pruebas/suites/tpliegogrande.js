@@ -284,6 +284,7 @@ const geo = [
            columnas —redondeando sobre el ancho de la primera pista y el
            hueco entre ellas—, que es lo mismo que hace el navegador. */
         bandas: [...document.querySelectorAll('.banda')].map(b => {
+          let maxFil = 0;
           const cuerpo = b.querySelector('.bcuerpo'), cs = getComputedStyle(cuerpo);
           const pistas = cs.gridTemplateColumns.split(/\s+/).filter(Boolean).map(parseFloat);
           const hueco = parseFloat(cs.columnGap) || 0;
@@ -291,6 +292,11 @@ const geo = [
           const cajas = [...cuerpo.querySelectorAll(':scope > section.caja')];
           return { t: ((b.querySelector('h3') || {}).textContent || '?'),
             n: cajas.length,
+            /* Para la guarda del propio medidor: una banda compuesta a dos
+               renglones y con un mapa TIENE que tener alguna caja que pise
+               los dos, porque el CSS se lo da (`.bcuerpo.dos .mapa-caja`). */
+            dos: cuerpo.classList.contains('dos'),
+            conMapa: !!cuerpo.querySelector(':scope > section.mapa-caja'),
             cols: pistas.length,
             renglones: cs.gridTemplateRows.split(/\s+/).filter(Boolean).length,
             /* `offsetWidth` y NO `getBoundingClientRect`: la rejilla va con un
@@ -305,19 +311,53 @@ const geo = [
                pidió. */
             ocupa: (function () {
               /* Los renglones que ocupa cada caja se miden por GEOMETRÍA —el
-                 alto de la caja contra el alto de la pista— y no por el
-                 estilo calculado: Chromium devuelve `auto` en `grid-row-end`
-                 para un `span 2` autocolocado, aunque la caja ocupe los dos
-                 renglones de verdad. */
+                 alto de la caja contra el de las pistas— y no por el estilo
+                 calculado: Chromium devuelve `auto` en `grid-row-end` para un
+                 `span 2` autocolocado, aunque la caja ocupe los dos renglones
+                 de verdad.
+
+                 Pero NO dividiendo por la primera pista (v882). Los renglones
+                 de una banda casi nunca miden lo mismo —en la ambiental
+                 acostada son 1.417 px y 533—, así que una caja que ocupa los
+                 dos mide 1.964 y dividida por 1.430 da 1,38, que redondea a
+                 UNO. La cuenta decía que la banda ocupaba 11 de 20 celdas
+                 cuando ocupaba 17, y denunciaba nueve huecos donde había
+                 tres: un fallo inventado por el medidor.
+
+                 Se cuentan las pistas que la caja PISA de verdad, con sus
+                 alturas reales y sus huecos. Es la misma regla de la v854
+                 —medir lo que la grilla hizo, no lo que se le pidió— llevada
+                 un paso más: las pistas tampoco son todas iguales. */
               const pistasF = cs.gridTemplateRows.split(/\s+/).filter(Boolean).map(parseFloat);
               const huecoF = parseFloat(cs.rowGap) || 0;
-              const unidadF = (pistasF[0] || 1) + huecoF;
+              /* El SVG de la hoja va con un `transform: scale()`, así que los
+                 rectángulos vienen escalados y las pistas de la grilla no.
+                 El factor sale del propio cuerpo: su rectángulo contra su
+                 `offsetHeight`, que es alto de composición sin escalar. */
+              const rc = cuerpo.getBoundingClientRect();
+              const esc = cuerpo.offsetHeight ? rc.height / cuerpo.offsetHeight : 1;
+              const bordes = [];
+              let y = 0;
+              pistasF.forEach((h, i) => {
+                bordes.push([y, y + h]);
+                y += h + (i < pistasF.length - 1 ? huecoF : 0);
+              });
+              maxFil = 0;
               return cajas.reduce((a, c) => {
                 const anchoCol = Math.max(1, Math.round((c.offsetWidth + hueco) / unidad));
-                const fil = Math.max(1, Math.round((c.offsetHeight + huecoF) / unidadF));
-                return a + anchoCol * Math.min(fil, pistasF.length || 1);
+                const rcc = c.getBoundingClientRect();
+                const arriba = esc ? (rcc.top - rc.top) / esc : 0;
+                const abajo = arriba + c.offsetHeight;
+                /* Con un milímetro de tolerancia por el redondeo del navegador:
+                   una caja que termina un pelo antes del borde de su pista
+                   sigue pisando esa pista. */
+                const tol = 2;
+                const fil = bordes.filter(b => abajo > b[0] + tol && arriba < b[1] - tol).length;
+                if (fil > maxFil) maxFil = fil;
+                return a + anchoCol * Math.max(1, fil);
               }, 0);
-            })() };
+            })(),
+            maxFil: maxFil };
         }),
         /* Las cuatro cajas cuyo contenido principal es un DIBUJO —la carta
            solar, la curva de amenaza, el año de lluvia, el plano del predio—
@@ -422,6 +462,23 @@ const geo = [
       /* En MEDIAS columnas desde v847: una caja son dos pistas, así que el
          resto de una división vale hasta dos pistas por renglón. */
       .filter(b => b.huecos > 2 * b.renglones);
+    /* El medidor se defiende solo. Contar los renglones de una caja
+       dividiendo por el alto de la PRIMERA pista da uno cuando la caja pisa
+       dos y las pistas miden distinto —1.417 px y 533 en la banda ambiental
+       acostada—, y entonces esta comprobación denuncia huecos que no existen:
+       decía 11 de 20 celdas donde había 17 y señalaba nueve huecos donde
+       había tres. Se ve como un fallo de la hoja y es del medidor.
+
+       Así que se exige que el recuento REPORTE cajas de dos renglones cuando
+       la banda tiene dos: si nadie pisa dos pistas, la cuenta está rota otra
+       vez y lo que siga diciendo esta sección no vale. Es la lección de la
+       v878 —una guarda que puede quedarse vacía sin que nadie se entere no es
+       una guarda— aplicada al arnés. */
+    const conDos = (o.bandas || []).filter(b => b.dos && b.conMapa && b.renglones >= 2);
+    T('el recuento ve las cajas que pisan dos renglones, no solo su ancho',
+      conDos.length > 0 && conDos.every(b => b.maxFil >= 2),
+      conDos.map(b => b.t + ': pisa ' + b.maxFil + ' · ' + b.ocupa + '/' + (b.cols * b.renglones))
+        .join(' · ') || 'NINGUNA banda a dos renglones con mapa: la guarda se quedó sin material');
     T('ninguna banda deja un renglón casi vacío',
       flojas.length === 0,
       flojas.map(b => b.t + ' (' + b.n + ' cajas ocupan ' + b.ocupa + ' de ' +

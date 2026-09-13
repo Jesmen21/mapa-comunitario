@@ -39,9 +39,17 @@
      Es la que se usa en las cartas solares de arquitectura porque las alturas
      se leen con una regla en vez de con una tabla.
 
-     Van tres recorridos: el de hoy, el del día más alto del año y el del más
-     bajo. Entre esos dos se mueve todo lo demás, así que el dibujo dice de
-     una sola vez por dónde entra el sol en cualquier fecha.
+     Van CUATRO recorridos: el de hoy, el del día más alto del año, el del más
+     bajo y el del equinoccio. Entre los dos solsticios se mueve todo lo
+     demás, y el equinoccio es el caso medio —el único que sale exacto por el
+     oriente y se pone exacto por el occidente en cualquier latitud—, que es
+     el que ocurre la mayor parte del año y el que un estudiante calca.
+
+     Y los cuatro van ROTULADOS, con una leyenda al pie. Hasta la v881 eran
+     tres curvas —dos del mismo gris a trazos y una ámbar— sin decir cuál era
+     cuál: se veía que el sol se mueve entre dos extremos y no cuál de los dos
+     era junio. De un dibujo del que no se sabe qué curva es cuál no sale una
+     fachada, y decidir una fachada es para lo que existe.
 
      El sector occidental va sombreado: en el trópico el sol de la tarde entra
      casi horizontal por ahí y es el que recalienta. Que eso esté DIBUJADO y
@@ -85,6 +93,32 @@
     var hoyPath = recorrido(hoy);
     var altoPath = a.solsticios && a.solsticios.masAlto ? recorrido(a.solsticios.masAlto.fecha) : '';
     var bajoPath = a.solsticios && a.solsticios.masBajo ? recorrido(a.solsticios.masBajo.fecha) : '';
+    var eq = (a.equinoccios || [])[0] || null;
+    var eqPath = eq ? recorrido(eq) : '';
+    function mesDia(f) {
+      try { return f.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }); }
+      catch (e) { return ''; }
+    }
+    /* La leyenda, al pie y DENTRO del propio SVG: como texto de al lado, una
+       lámina que encoge el dibujo la dejaría a otra escala, y en el informe
+       en hojas se separaría del dibujo al partir la página. */
+    function leyenda() {
+      return [
+        { t: 'hoy · ' + mesDia(hoy), trazo: false, col: AMBAR, grueso: 3 },
+        { t: a.solsticios && a.solsticios.masAlto
+            ? 'sol más alto · ' + mesDia(a.solsticios.masAlto.fecha) + ' · ' + n1(a.solsticios.masAlto.altura) + '°'
+            : '', trazo: true, col: GRIS, grueso: 1 },
+        { t: a.solsticios && a.solsticios.masBajo
+            ? 'sol más bajo · ' + mesDia(a.solsticios.masBajo.fecha) + ' · ' + n1(a.solsticios.masBajo.altura) + '°'
+            : '', trazo: true, col: GRIS, grueso: 1 },
+        { t: eq ? 'equinoccio · ' + mesDia(eq) : '', trazo: false, col: GRIS, grueso: 1.4 }
+      ].filter(function (f) { return f.t; }).map(function (f, i) {
+        var yy = cy + R + 38 + i * 11;
+        return '<path d="M6 ' + yy + 'H26" stroke="' + f.col + '" stroke-width="' + f.grueso + '"' +
+          (f.trazo ? ' stroke-dasharray="4 3"' : '') + ' stroke-linecap="round"/>' +
+          '<text x="31" y="' + (yy + 3) + '" font-size="8.5" fill="' + GRIS + '">' + esc(f.t) + '</text>';
+      }).join('');
+    }
 
     // Los anillos de altura, rotulados: sin el número el dibujo es decoración.
     var anillos = [30, 60].map(function (alt) {
@@ -114,15 +148,19 @@
         'font-weight="700">' + esc(t) + '</text>';
     }
 
-    return '<svg class="pcr-carta" viewBox="0 0 240 248" width="240" height="248" ' +
-      'role="img" aria-label="Carta solar del sector: recorrido del sol hoy y en los dos ' +
-      'solsticios, con el occidente señalado">' +
+    return '<svg class="pcr-carta" viewBox="0 0 240 292" width="240" height="292" ' +
+      'role="img" aria-label="Carta solar del sector: recorrido del sol hoy, en los dos ' +
+      'solsticios y en el equinoccio, con el occidente señalado y una leyenda de las cuatro ' +
+      'curvas">' +
       '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="#F7FAFC" stroke="' + LINEA + '" stroke-width="1.2"/>' +
       cuna + anillos +
       '<path d="M' + cx + ' ' + (cy - R) + 'V' + (cy + R) + 'M' + (cx - R) + ' ' + cy + 'H' + (cx + R) + '" ' +
         'stroke="' + LINEA + '" stroke-width="1"/>' +
       (bajoPath ? '<path d="' + bajoPath + '" fill="none" stroke="' + GRIS + '" stroke-width="1" stroke-dasharray="4 3"/>' : '') +
       (altoPath ? '<path d="' + altoPath + '" fill="none" stroke="' + GRIS + '" stroke-width="1" stroke-dasharray="4 3"/>' : '') +
+      // El equinoccio en línea continua fina: es el caso medio y el que se
+      // calca, así que se distingue de los dos extremos, que van a trazos.
+      (eqPath ? '<path d="' + eqPath + '" fill="none" stroke="' + GRIS + '" stroke-width="1.4"/>' : '') +
       (hoyPath ? '<path d="' + hoyPath + '" fill="none" stroke="' + AMBAR + '" stroke-width="3" stroke-linecap="round"/>' : '') +
       // La flecha de la sombra: del centro hacia donde cae en la tarde.
       '<path d="M' + cx + ' ' + cy + ' L' + n1(pSom.x) + ' ' + n1(pSom.y) + '" stroke="' + TINTA + '" ' +
@@ -137,6 +175,7 @@
       rotulo(cx, 12, 'Hoy · ' + n1(d.alturaMaxima) + '° al mediodía', 'middle', GRIS, 9) +
       rotulo(cx, cy + R + 26, 'sale ' + n1(d.azimutSalida) + '° · se pone ' + n1(d.azimutPuesta) + '°',
              'middle', GRIS, 8.5) +
+      leyenda() +
       '</svg>';
   }
 

@@ -755,7 +755,14 @@
     const fin = new Date(hoy.getTime() - 7 * 86400000);
     const ini = new Date(Date.UTC(fin.getUTCFullYear() - CLIMA_ANIOS, 0, 1));
     const iso = d => d.toISOString().slice(0, 10);
-    const clave = 'clima|' + lat.toFixed(2) + ',' + lng.toFixed(2) + '|' + iso(ini) + '|' + iso(fin);
+    /* El `r1` del final es la VERSIÓN DE LOS CAMPOS PEDIDOS, y no está de
+       adorno: la v882 le agregó la radiación a la consulta, y sin cambiar la
+       clave un teléfono con el clima ya guardado habría seguido sirviendo la
+       respuesta vieja —sin radiación— durante toda la vida del caché. El
+       panel nuevo habría dicho «no se pudo medir» a quien acababa de
+       actualizar, que es exactamente el fallo silencioso que este módulo
+       persigue. Un campo nuevo en la consulta sube este número. */
+    const clave = 'clima|' + lat.toFixed(2) + ',' + lng.toFixed(2) + '|' + iso(ini) + '|' + iso(fin) + '|r1';
     const guardado = leerCache(clave);
     if (guardado) return guardado;
 
@@ -763,7 +770,7 @@
     const url = CLIMA_API + '?latitude=' + lat.toFixed(4) + '&longitude=' + lng.toFixed(4) +
       '&start_date=' + iso(ini) + '&end_date=' + iso(fin) +
       '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,' +
-      'wind_speed_10m_max,wind_direction_10m_dominant&timezone=auto';
+      'wind_speed_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum&timezone=auto';
     let d;
     try {
       const res = await fetch(url);
@@ -785,7 +792,15 @@
         tMin: dia.temperature_2m_min ? dia.temperature_2m_min[i] : null,
         lluvia: dia.precipitation_sum ? dia.precipitation_sum[i] : null,
         viento: dia.wind_speed_10m_max ? dia.wind_speed_10m_max[i] : null,
-        vientoDir: dia.wind_direction_10m_dominant ? dia.wind_direction_10m_dominant[i] : null
+        vientoDir: dia.wind_direction_10m_dominant ? dia.wind_direction_10m_dominant[i] : null,
+        /* Radiación global horizontal del día, en MJ/m². Sale del MISMO
+           archivo que la temperatura y la lluvia —un campo más en la misma
+           petición, sin una consulta aparte— y es lo que convierte «horas de
+           sol por orientación», que es geometría, en una cifra medida con la
+           que contrastarla. Puede venir nula: es un reanálisis y no todos los
+           puntos la traen, así que quien la lea tiene que saber distinguir
+           «no la trajo» de «vale cero». */
+        rad: dia.shortwave_radiation_sum ? dia.shortwave_radiation_sum[i] : null
       }))
     };
     guardarCache(clave, salida);

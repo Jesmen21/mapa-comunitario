@@ -1221,6 +1221,7 @@ console.log('\n  -- las listas vivas --');
   const md = leer('CLAUDE.md');
   const j68 = leer('js/68-procity-reconocimiento.js');
   const j61 = leer('js/61-analisis-ia-datos.js');
+  const j73 = leer('js/73-solar.js');
   const j90 = leer('js/90-vt-app.js');
 
   const LISTAS = [
@@ -1240,7 +1241,19 @@ console.log('\n  -- las listas vivas --');
       { t: 'el ancho de vía',                  tema: /ancho de (la )?vía|andén|anden/i,
         prueba: () => /coberturaAncho/.test(j68) },
       { t: 'la pirámide del sector',           tema: /pirámide|edades/i,
-        prueba: () => /tramoDominante/.test(j68) }
+        prueba: () => /tramoDominante/.test(j68) },
+      /* §12 (v882). Las tres de la banda ambiental. La del sol es la que más
+         falta hacía: el módulo tiene TRES estudios de sombra —vecinos,
+         volumen permitido y ahora el del sector— y es fácil que una tanda
+         escriba que falta el que ya está. */
+      { t: 'lo que recibe cada orientación',   tema: /orientaci[oó]n|asoleamiento|carta solar/i,
+        prueba: () => /porOrientacion/.test(j73) && /tablaDeOrientacion/.test(j68) },
+      { t: 'la radiación medida del sitio',    tema: /radiaci[oó]n|irradiancia/i,
+        prueba: () => /shortwave_radiation_sum/.test(j61) && /Radiación medida/.test(j68) },
+      { t: 'la sombra de lo construido',       tema: /sombra/i,
+        prueba: () => /sombraDeLoConstruido/.test(j68) },
+      { t: 'la estrategia de ventilación',     tema: /viento|ventilaci[oó]n/i,
+        prueba: () => /estrategiaDeVentilacion/.test(j68) }
     ] },
     /* Visión Territorial (v868). Sus cinco carencias se auditaron una por una
        contra el código y salieron honestas — no hay malla vial en el esquema,

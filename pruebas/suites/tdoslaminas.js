@@ -310,9 +310,39 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        un dato de ciudad no se rotula como del sector, y en este banco no hay
        servidor de clima al que consultarle. Se inyecta por opciones, que es
        para lo que `laminaA` las acepta. */
-    o.soloA = R.laminaA({ hoja: 'A',
-      clima: { temperatura: { media: 27.4, max: 33, min: 21 }, lluvia: { anual: 1180 }, viento: {} } });
+    /* §12 (v882): el clima inyectado trae ahora la ROSA de los ocho rumbos,
+       el viento medio y la RADIACIÓN medida. Sin ellos la caja del clima
+       imprimía la temperatura y la lluvia y nada más, así que la estrategia
+       de ventilación y la radiación del asoleamiento no se ejercitaban en
+       ninguna prueba: el panel habría pasado en verde por no tener nada que
+       decir. Es la sexta vez que el fixture era más pobre que un sector real
+       (v862, v866, v874, v877, v880, y esta).
+
+       El viento dominante va del NORTE a propósito: en esta latitud la
+       orientación que más sol recibe es el oriente, así que el caso normal
+       —ventilar sin chocar con el sol— es el que sale en la hoja. El choque
+       se prueba aparte, con su propia inyección, porque las dos ramas dicen
+       cosas opuestas y una sola corrida no puede enseñar las dos. */
+    const ROSA = [
+      { rumbo: 'norte', pct: 31 }, { rumbo: 'nororiente', pct: 18 },
+      { rumbo: 'oriente', pct: 9 }, { rumbo: 'suroriente', pct: 6 },
+      { rumbo: 'sur', pct: 8 }, { rumbo: 'suroccidente', pct: 7 },
+      { rumbo: 'occidente', pct: 10 }, { rumbo: 'noroccidente', pct: 11 }
+    ];
+    const CLIMA = {
+      temperatura: { media: 27.4, max: 33, min: 21 }, lluvia: { anual: 1180 },
+      viento: { dominante: { rumbo: 'norte', pct: 31 }, mediaKmh: 9.4, rosa: ROSA },
+      radiacion: { mediaKwhDia: 5.12, masAlto: { mes: 'agosto', kwh: 5.94 },
+                   masBajo: { mes: 'noviembre', kwh: 4.31 }, mesesConDato: 12, dias: 1820,
+                   plano: 'horizontal', fuente: 'reanálisis ERA5 servido por Open-Meteo, 5 años' }
+    };
+    o.soloA = R.laminaA({ hoja: 'A', clima: CLIMA });
     o.soloB = R.laminaA({ hoja: 'B' });
+    // La rama del conflicto: el aire entra justo por donde más pega el sol.
+    o.choque = R.laminaA({ hoja: 'A', clima: Object.assign({}, CLIMA, {
+      viento: { dominante: { rumbo: 'oriente', pct: 34 }, mediaKmh: 4.1, rosa: ROSA } }) });
+    // Y la rama sin radiación: el archivo no siempre la trae en un punto.
+    o.sinRad = R.laminaA({ hoja: 'A', clima: Object.assign({}, CLIMA, { radiacion: null }) });
     return o;
   }, { C, POL, LOTE });
 
@@ -707,6 +737,113 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      105 en el segundo, pero 6/ha contra 2,8/ha. Contando, afuera hay más;
      midiendo, adentro hay el doble. Esa inversión es la razón de la tanda, y
      por eso se comprueba y no solo se mira. */
+  /* ── §12 · la banda ambiental cierra en decisión de proyecto ──────────
+     Quedó a medias: la carta solar estaba, con los dos solsticios y sin el
+     equinoccio y sin decir qué curva era cuál; la recomendación de fachada
+     era UNA FRASE FIJA que se imprimía igual en cualquier latitud; no había
+     nada por orientación; el único estudio de sombra pedía un lote dibujado;
+     y la rosa de vientos se quedaba en rosa.
+
+     Se comprueba sobre el PAPEL y no sobre las variables, que es la regla de
+     la v879: lo que hay que ver es lo que el lector ve. */
+  console.log('\n  -- §12 · la banda ambiental cierra en decisión --');
+  const cajaDeA = (doc, t) => ((doc || '').split('<section class="caja')
+    .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const enLetras = h => (h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const ASOL = cajaDeA(r.soloA, 'Asoleamiento');
+  const ASOLT = enLetras(ASOL);
+  const SOMB = cajaDeA(r.soloA, 'La sombra de lo construido');
+  const SOMBT = enLetras(SOMB);
+  const CLIM = enLetras(cajaDeA(r.soloA, 'El clima'));
+  const CHOQ = enLetras(cajaDeA(r.choque, 'El clima'));
+  const SINRAD = enLetras(cajaDeA(r.sinRad, 'Asoleamiento'));
+
+  T('la carta solar trae el equinoccio, no solo los dos solsticios',
+    /equinoccio/i.test(ASOLT) && /Equinoccios .*(marzo|abril|septiembre)/.test(ASOLT),
+    (ASOLT.match(/Equinoccios [^A-Z]{0,44}/) || ['no lo trae'])[0]);
+  /* Cuatro curvas del mismo gris sin leyenda enseñan que el sol se mueve
+     entre dos extremos y no cuál de los dos es junio. De un dibujo del que
+     no se sabe qué curva es cuál no sale una fachada. */
+  T('y la leyenda dice cuál curva es cuál, con su fecha',
+    ['hoy · ', 'sol más alto · ', 'sol más bajo · ', 'equinoccio · ']
+      .every(x => ASOLT.indexOf(x) !== -1),
+    (ASOLT.match(/hoy · [^A-Z]{0,90}/) || ['sin leyenda'])[0]);
+
+  T('las ocho orientaciones traen sus horas de sol al año',
+    ['Norte', 'Nororiente', 'Oriente', 'Suroriente', 'Sur', 'Suroccidente', 'Occidente', 'Noroccidente']
+      .every(x => new RegExp(x + '[^|]{0,30}\\d[\\d.]* h').test(ASOLT)) &&
+    (ASOLT.match(/\d[\d.]* h/g) || []).length >= 8,
+    (ASOLT.match(/Orientación[^.]{0,150}/) || ['sin tabla'])[0]);
+  T('y su reparto del directo, que es otra cosa que las horas',
+    (ASOLT.match(/\d+ \/ 100/g) || []).length >= 8,
+    (ASOLT.match(/\d+ \/ 100/g) || []).join(' · '));
+  /* La comprobación que de verdad importa de esta tabla: en el trópico la
+     orientación con MÁS HORAS y la que más DIRECTO recibe no son la misma
+     —el sur suma más horas y recibe la mitad, porque cuando el sol está al
+     sur está alto y roza el plano vertical—. Si las dos etiquetas cayeran en
+     la misma fila, la tabla estaría midiendo una cosa dos veces. */
+  T('en esta latitud la que más horas suma NO es la que más directo recibe',
+    /más horas/.test(ASOLT) && /más directo/.test(ASOLT) &&
+    !/(más horas[^|]{0,12}más directo|más directo[^|]{0,12}más horas)/.test(ASOLT),
+    (ASOLT.match(/[A-Za-zóí]+ más directo[^A-Z]{0,22}/) || ['-'])[0] + ' | ' +
+    (ASOLT.match(/[A-Za-zóí]+ [\d.]+ h más horas[^A-Z]{0,12}/) || ['-'])[0]);
+  T('y las dos etiquetas dicen DE QUÉ son, no «la que más» a secas',
+    !/la que más<|la que menos</.test(ASOL) && /más directo/.test(ASOLT) && /menos directo/.test(ASOLT));
+
+  T('la radiación medida va al lado, dicha como horizontal y con su fuente',
+    /Radiación medida:.*kWh\/m².*horizontal/.test(ASOLT) && /Open-Meteo/.test(ASOLT),
+    (ASOLT.match(/Radiación medida:[^.]{0,80}/) || ['no está'])[0]);
+  /* Y no multiplicada por la geometría: una es un reanálisis con las nubes
+     dentro y la otra el sol sin nubes. Se declara qué haría falta para pasar
+     de una a otra en vez de fabricar el producto. */
+  T('y la hoja dice que el reparto es geometría, no radiación por fachada',
+    /geometría del sol/.test(ASOLT) && /(relativo|relativa)/.test(ASOLT) &&
+    /(horaria|IDEAM|meteorológico tipo)/.test(ASOLT),
+    (ASOLT.match(/pasarlo a kWh[^.]{0,110}/) || ['no lo declara'])[0]);
+  T('si la serie no trajo radiación lo dice, y no calla ni inventa',
+    /no vino en la serie/.test(SINRAD) && /geometría del sol/.test(SINRAD),
+    (SINRAD.match(/Radiación medida:[^.]{0,70}/) || ['no lo dice'])[0]);
+
+  /* La recomendación DERIVADA. Hasta la v881 era una frase fija que se
+     imprimía igual en cualquier latitud sin haberla comprobado. */
+  T('la recomendación de fachadas sale de la carta, con las cifras del sitio',
+    /La orientación que más sol directo recibe es la <b>/.test(ASOL) &&
+    /\(\d+ de 100\)/.test(ASOLT) && /no de una regla general/.test(ASOLT),
+    (ASOLT.match(/La orientación que más sol directo[^.]{0,70}/) || ['no la trae'])[0]);
+  T('y dice por qué el occidente se protege primero aunque reciba lo mismo que el oriente',
+    /no cuestan lo mismo/.test(ASOLT) && /a la tarde/.test(ASOLT));
+
+  T('el estudio de sombra sale de la altura MEDIDA, y de la moda, no de la media',
+    !!SOMBT && /la altura que más se repite/.test(SOMBT) && /moda/.test(SOMBT) &&
+    /no la media/.test(SOMBT),
+    (SOMBT.match(/La altura es la moda[^.]{0,60}/) || ['no está'])[0]);
+  T('a dos horas del día, con la altura del sol y hacia dónde cae',
+    (SOMBT.match(/\d+:00/g) || []).length >= 2 && /Cae hacia el/.test(SOMBT),
+    (SOMBT.match(/Hora Sol Sombra Cae hacia el[^A-Z]{0,80}/) || ['-'])[0]);
+  T('y cierra cruzándola con la calzada medida, no en el largo a secas',
+    /calzada media de/.test(SOMBT) &&
+    /(cruza la calle entera|no alcanza la otra acera)/.test(SOMBT),
+    (SOMBT.match(/La sombra (no alcanza|cruza)[^.]{0,60}/) || ['no cierra'])[0]);
+  T('declarando el terreno plano y que el reparto depende del rumbo de cada calle',
+    /terreno <b>plano<\/b>|terreno plano/.test(SOMBT) && /rumbo de cada calle/.test(SOMBT));
+
+  T('el viento cierra en estrategia: por dónde entra y por dónde sale',
+    /Entra por el/.test(CLIM) && /sale por el/.test(CLIM) &&
+    /una abertura sola no ventila/.test(CLIM),
+    (CLIM.match(/Entra por el[^.]{0,70}/) || ['la rosa se queda sola'])[0]);
+  T('y dimensiona las aberturas con la temperatura medida, no en general',
+    /°C de media/.test(CLIM) && /(aire cruzado|se puedan)/.test(CLIM));
+  T('la rosa declara que está medida a 10 m en campo abierto, no en la manzana',
+    /10 m de altura en campo abierto/.test(CLIM) && /medirlo en el sitio/.test(CLIM));
+  /* Cuando el aire entra justo por donde más pega el sol, las dos cajas de
+     la banda mandan cosas opuestas. Decirlo es el trabajo; que lo descubra
+     quien dibuja, no. */
+  T('y si el aire entra por donde más pega el sol, la hoja nombra el conflicto',
+    /conflicto que decidir/.test(CHOQ) && /entra el aire y la orientación que más sol/.test(CHOQ),
+    (CHOQ.match(/conflicto que decidir:[^.]{0,80}/) || ['lo calla'])[0]);
+  T('que no sale cuando no lo hay, porque entonces sería un aviso de adorno',
+    !/conflicto que decidir/.test(CLIM));
+
   console.log('\n  -- §14 · los anillos se comparan por densidad --');
   const AL = (A.paneles || {}).alejarse || (B.paneles || {}).alejarse;
   T('el panel de anillos está', !!AL && (AL.barras || []).length >= 2,
@@ -1386,7 +1523,27 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     { que: 'la densidad de la ciudad',
       mide: t => /hab\/ha<\/b>\s*<b class="par-c">|par-c">[\d.,]+ hab\/ha/.test(t) ||
                  /Densidad[^<]*<\/i><b class="par-s">/.test(t),
-      niega: t => /La densidad de la ciudad\.<\/b>/.test(t) }
+      niega: t => /La densidad de la ciudad\.<\/b>/.test(t) },
+    /* §12 (v882). Los tres pares de la banda ambiental, por la misma regla
+       de la v864: una tanda que mide algo que antes se daba por ausente
+       agrega su par acá, y es más barato que volver a encontrarlo leyendo.
+
+       El de la sombra es el que más falta hacía: el módulo tenía DOS
+       estudios de sombra y los dos piden algo que no siempre está —un lote
+       dibujado, una norma—, así que era fácil que una tanda posterior
+       escribiera «la sombra del sector no se mide» sin mirar que ya se
+       mide. */
+    { que: 'lo que recibe cada orientación',
+      mide: t => /Directo que recibe/.test(t) && /Horas de sol al año/.test(t),
+      niega: t => /(horas de sol|radiación)[^.]{0,60}por orientación[^.]{0,60}(no se|haría falta|falta)/i.test(t) ||
+                  /sin (cálculo|dato) de orientación/i.test(t) },
+    { que: 'la sombra de la altura construida del sector',
+      mide: t => /La sombra de lo construido/.test(t),
+      niega: t => /sombra[^.]{0,70}(solo|únicamente) (con|si hay) (el )?lote/i.test(t) ||
+                  /la sombra del sector no se (mide|calcula)/i.test(t) },
+    { que: 'la estrategia de ventilación, no la rosa sola',
+      mide: t => /Entra por el/.test(t) && /sale por el/.test(t),
+      niega: t => /(la rosa|el viento)[^.]{0,70}no (dice|cierra)[^.]{0,50}(estrategia|aberturas)/i.test(t) }
   ];
   const textoB = (r.soloB || '') + (r.soloA || '');
   const plano = textoB.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');

@@ -1592,6 +1592,82 @@
              pctSinDato: edificios > 0 ? Math.round(1000 * (edificios - conDato) / edificios) / 10 : 0 };
   }
 
+  /* ── §12 · la sombra de lo que YA está construido (v882) ───────────────
+     El módulo tenía dos estudios de sombra y ninguno servía para esto: el de
+     los VECINOS pide un lote dibujado y las huellas medidas, y el del
+     VOLUMEN PERMITIDO parte de una norma que no se tiene. Los dos hablan de
+     un proyecto. Este habla del SECTOR: qué sombra echa la altura que el
+     sector ya demuestra, que es un dato que existe siempre que haya alturas
+     mapeadas y no pide ni lote ni POT.
+
+     La altura es la MODA del reparto de la v880 —cómo es la mayoría—, no la
+     media: con seis de cada diez edificios de un piso y tres torres, la
+     media describe un sector que no existe y su sombra tampoco.
+
+     Se calcula a dos horas, que es lo que pide el pliego, y son las dos que
+     deciden una calle: a media mañana y a media tarde. Al mediodía la sombra
+     es la más corta del día y no es la que limita nada. */
+  /* Lo que recibe cada orientación, calculado UNA vez por sector y guardado.
+     Recorrer el año hora a hora cuesta unos miles de posiciones de sol, y lo
+     leen tres sitios: la tabla del asoleamiento, la estrategia de ventilación
+     y la línea de decisión de la banda. Que los tres lean la MISMA cuenta no
+     es solo ahorro: es lo que impide que la tabla diga que la fachada menos
+     expuesta es una y el pie de la banda mande los dormitorios a otra, que es
+     el fallo que la v879 persiguió entre las dos láminas. */
+  /* Se memoiza por COORDENADA y no a secas: al componer la lámina, `meta`
+     es un local del compositor y `S.meta` puede no estar puesto todavía —así
+     se perdió la tabla entera la primera vez que se probó, con la caja
+     imprimiendo la carta solar y nada debajo—. Quien tenga las coordenadas a
+     mano las pasa; quien no, cae en `S.meta`, que es el caso de la línea de
+     decisión de la banda. */
+  function orientacionDelSitio(lat, lng) {
+    var SOL = window.URBIS_SOLAR, m = S.meta || {};
+    var la = lat != null && isFinite(lat) ? Number(lat) : (m.lat != null ? Number(m.lat) : null);
+    var lo = lng != null && isFinite(lng) ? Number(lng) : (m.lng != null ? Number(m.lng) : null);
+    if (la == null || !isFinite(la) || !isFinite(lo)) return null;
+    var llave = la.toFixed(3) + ',' + lo.toFixed(3);
+    if (S.solOriLlave === llave) return S.solOri;
+    S.solOriLlave = llave; S.solOri = null;
+    try { if (SOL) S.solOri = SOL.porOrientacion(la, lo); } catch (e) { S.solOri = null; }
+    return S.solOri;
+  }
+
+  var HORAS_SOMBRA_SECTOR = [9, 15];
+  function sombraDeLoConstruido(mp, lat, lng, trz) {
+    var SOL = window.URBIS_SOLAR;
+    var rep = repartoDeAlturas(mp);
+    if (!SOL || !rep || !rep.moda || !isFinite(lat) || !isFinite(lng)) return null;
+    var pisos = rep.moda.pisos, h = pisos * ALTO_POR_PISO_M;
+    var hoy = new Date();
+    var horas = [];
+    for (var i = 0; i < HORAS_SOMBRA_SECTOR.length; i++) {
+      var hh2 = HORAS_SOMBRA_SECTOR[i];
+      var t = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), hh2, 0, 0);
+      var pos;
+      try { pos = SOL.posicion(t, lat, lng); } catch (e) { return null; }
+      if (!pos || pos.altitud <= 3) continue;   // con el sol casi en el horizonte la sombra tiende a infinito
+      var largo = h / Math.tan(pos.altitud * Math.PI / 180);
+      horas.push({
+        hora: hh2, alturaSol: Math.round(pos.altitud * 10) / 10,
+        azimutSol: Math.round(pos.azimut * 10) / 10,
+        largoM: Math.round(largo * 10) / 10,
+        // Hacia dónde cae: el opuesto de por donde viene el sol.
+        haciaAz: Math.round(SOL.sombra(pos.azimut) * 10) / 10,
+        hacia: SOL.rumbo(SOL.sombra(pos.azimut))
+      });
+    }
+    if (!horas.length) return null;
+    var pf = (trz && trz.perfil) || null;
+    return {
+      pisos: pisos, abierto: !!rep.moda.abierto, etq: rep.moda.etq,
+      alturaM: h, porPiso: ALTO_POR_PISO_M, horas: horas,
+      pctDelSector: rep.moda.pct,
+      anchoCalleM: pf && pf.anchoMedioM != null ? pf.anchoMedioM : null,
+      anchoDe: pf ? pf.anchoDe : null, coberturaAncho: pf ? pf.coberturaAncho : null,
+      fecha: hoy
+    };
+  }
+
   /* La frase, una sola para la ficha, el pliego y el informe. */
   function fraseAlturasCampo(c) {
     if (!c) return '';
@@ -3238,6 +3314,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Lo medido sobre el LOTE dibujado.
     'El lote a intervenir': 'predio', 'La cuadra del lote': 'predio',
     'Qué cabe en el lote': 'predio', 'La sombra que proyecta': 'predio',
+    /* Mide «% DEL LOTE en sombra» y necesita un lote dibujado para existir:
+       es una medición de PREDIO, y estaba declarada como de sector. Un panel
+       con la escala mal puesta deja que el lector suponga que habla del
+       sector entero, que es justo el error que `ESCALA_PANEL` existe para
+       evitar — y la banda no lo desmiente, porque las bandas agrupan por TEMA
+       y no por escala: «El clima», que es de ciudad, vive en la misma. De ahí
+       que el rótulo tenga que decirlo cada panel por su cuenta. (v882) */
+    'La sombra de los vecinos': 'predio',
     'Qué le pide el sitio al proyecto': 'predio', 'Información legal del predio': 'predio',
     'Norma urbana': 'predio', 'Hasta dónde se camina desde el lote': 'predio',
     // Lo medido dentro del área analizada.
@@ -3245,9 +3329,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Qué manda en el sector': 'sector', 'Dónde está la calle comercial': 'sector',
     'Hitos y nodos': 'sector', 'Llenos y vacíos': 'sector', 'Alturas de lo construido': 'sector',
     'Cobertura del suelo': 'sector', 'Verde y agua': 'sector', 'Espacio público efectivo': 'sector',
-    'El terreno': 'sector', 'La sombra de los vecinos': 'sector', 'El ruido del tránsito': 'sector',
+    'El terreno': 'sector', 'El ruido del tránsito': 'sector',
     'Cómo se llega': 'sector', 'El perfil de la calle': 'sector', 'A distancia de caminar': 'sector',
     'Cómo cambia al alejarse': 'sector', 'Dónde falta mapear': 'sector',
+    'La sombra de lo construido': 'sector',
     'Lo levantado en campo': 'sector', 'Lo que falta levantar': 'sector', 'Lo intangible': 'sector',
     'Cómo cambió el sitio': 'sector', 'La inundación': 'sector', 'Síntesis del sector': 'sector',
     'Infraestructura de servicios': 'sector', 'Quién vive acá': 'sector',
@@ -3774,6 +3859,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'El terreno':                        ['suelo', 'perfil'],
       'El clima':                          ['suelo', 'nube'],
       'Asoleamiento':                      ['suelo', 'destello'],
+      'La sombra de lo construido':        ['suelo', 'edificio'],
       'La amenaza sísmica':                ['suelo', 'alerta'],
       'La inundación':                     ['suelo', 'agua'],
       'Verde y agua':                      ['suelo', 'verde'],
@@ -3860,8 +3946,26 @@ function donaHTML(datos, colorDe, nombreDe) {
         return tt.media >= 26 ? 'sombra en todo recorrido exterior, aleros, ventilación cruzada y la fachada oeste ciega o protegida'
              : tt.media <= 14 ? 'captar sol en los espacios de estar y cortar el viento frío' : 'clima templado: la orientación decide el confort, no el equipo';
       },
-      'Asoleamiento': function () { return 'los espacios de estar al norte y al sur; el poniente para servicios, escaleras y muros ciegos'; },
+      /* Derivada, no aprendida: sale de las mismas horas por orientación que
+         imprime la tabla del panel. La frase fija que había acá —«los
+         espacios de estar al norte y al sur»— es cierta en Cúcuta y se
+         imprimía igual en cualquier latitud, sin haberla comprobado. */
+      'Asoleamiento': function () {
+        var oo = orientacionDelSitio();
+        if (!oo) return '';
+        return 'los espacios de estar al ' + oo.menosExpuesta.rumbo + ', que es la orientación que ' +
+          'menos sol directo recibe acá; el ' + oo.masExpuesta.rumbo + ' y el occidente para ' +
+          'servicios, escaleras y muros protegidos';
+      },
       'La sombra de los vecinos': function () { return 'los patios y las ventanas principales donde no llega la sombra de las 15 h'; },
+      'La sombra de lo construido': function () {
+        var so2 = sombraDeLoConstruido(mediaDePisos(S.trazado, S.stats), Number((S.meta || {}).lat), Number((S.meta || {}).lng), S.trazado);
+        if (!so2) return '';
+        var larga = so2.horas.slice().sort(function (a, b) { return b.largoM - a.largoM; })[0];
+        return (so2.anchoCalleM != null && larga.largoM >= so2.anchoCalleM)
+          ? 'la planta baja de la acera de enfrente ya está en sombra a esa hora: locales y no vivienda'
+          : 'la calle no la sombrea el volumen: la sombra del peatón se pone con árboles o aleros';
+      },
       'La amenaza sísmica': function () {
         var am = S.amenaza;
         return am && am.nivel ? 'estructura NSR-10 para amenaza ' + String(am.nivel).toLowerCase() + ': planta regular, sin pisos blandos ni columnas cortas' : '';
@@ -4041,17 +4145,155 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
     var dona = donaHTML;
 
+    /* ── §12 · lo que recibe cada orientación ───────────────────────────
+       Dos cosas distintas por orientación, y las dos hacen falta: las HORAS
+       de sol directo al año —cuánto tiempo le da— y el REPARTO del directo
+       —cuánta energía—. A 7,9° de latitud no dan lo mismo ni parecido: la
+       fachada sur recibe MÁS horas que la oriental y la mitad de energía,
+       porque cuando el sol está al sur está alto y roza el plano vertical.
+       Es exactamente lo contrario de lo que dice un manual europeo, y es la
+       razón de imprimir la tabla en vez de una regla aprendida.
+
+       La radiación medida va al lado y NO multiplicada por la geometría: una
+       es un reanálisis con las nubes dentro y la otra es el sol sin nubes, y
+       el producto se leería como si las dos fueran medidas. */
+    function tablaDeOrientacion() {
+      if (!solOri || !solOri.lista) return '';
+      var rad = (cli && cli.radiacion) || null;
+      var maxH = solOri.lista.reduce(function (m, x) { return Math.max(m, x.horasAnio); }, 1);
+      var masHoras = solOri.lista.slice().sort(function (x, y) { return y.horasAnio - x.horasAnio; })[0];
+      return '<table class="ancha ori"><thead><tr><th>Orientación</th>' +
+        '<th class="n">Horas de sol al año</th><th class="n">Directo que recibe</th></tr></thead><tbody>' +
+        solOri.lista.map(function (x) {
+          var dura = x.rumbo === solOri.masExpuesta.rumbo;
+          var suave = x.rumbo === solOri.menosExpuesta.rumbo;
+          return '<tr' + (dura ? ' class="ori-dura"' : suave ? ' class="ori-suave"' : '') + '>' +
+            '<td>' + esc(x.rumbo.charAt(0).toUpperCase() + x.rumbo.slice(1)) +
+              /* La etiqueta dice DE QUÉ es la que más. En la misma fila hay
+                 dos columnas y el sur gana una —2.413 horas, más que
+                 ninguna— y pierde la otra —53 de directo—: un «la que más» a
+                 secas se lee sobre la columna que el ojo tenga más cerca. */
+              (dura ? ' <i class="ori-tag">más directo</i>' : suave ? ' <i class="ori-tag">menos directo</i>' : '') + '</td>' +
+            '<td class="n">' + Number(x.horasAnio).toLocaleString('es-CO') + ' h' +
+              (x.rumbo === masHoras.rumbo ? ' <i class="ori-tag">más horas</i>' : '') +
+              '<u class="ori-b" style="width:' + Math.round(100 * x.horasAnio / maxH) + '%"></u></td>' +
+            '<td class="n">' + x.indice + ' / 100</td></tr>';
+        }).join('') + '</tbody></table>' +
+        (rad
+          ? '<p class="nota"><b>Radiación medida:</b> ' + conComa(rad.mediaKwhDia) + ' kWh/m² al día sobre ' +
+            'plano <b>horizontal</b>, de ' + conComa(rad.masBajo.kwh) + ' en ' + esc(rad.masBajo.mes) +
+            ' a ' + conComa(rad.masAlto.kwh) + ' en ' + esc(rad.masAlto.mes) + '. Sale de ' +
+            esc(rad.fuente) + ' y lleva las nubes de esos años dentro.</p>'
+          : '<p class="nota"><b>Radiación medida:</b> no vino en la serie de este punto. La tabla de ' +
+            'arriba sigue valiendo —es geometría del sol— pero no hay con qué contrastarla.</p>') +
+        '<p class="nota">Las horas y el reparto son <b>geometría del sol</b>: el cielo despejado, sin ' +
+        'nubes y sin los vecinos que tapen el horizonte. Muestreado cada ' + solOri.pasoDias +
+        ' días y ' + solOri.pasoMin + ' minutos, así que dos orientaciones que la geometría hace ' +
+        'iguales —oriente y occidente— pueden salir con un punto de diferencia. El reparto es ' +
+        '<b>relativo</b>, 100 la que más recibe: pasarlo a kWh/m² sobre una fachada orientada pide ' +
+        'una serie <b>horaria</b> de irradiancia con su parte directa y su parte difusa —el atlas del ' +
+        'IDEAM o un año meteorológico tipo—, que este módulo no tiene.</p>';
+    }
+
+    /* La recomendación de fachadas, DERIVADA y no aprendida. Hasta la v881
+       la caja imprimía una sola frase fija —«la fachada occidental recibe el
+       sol bajo de la tarde: es la que hay que proteger»—, que en Cúcuta es
+       cierta y en Bogotá o en un sector al sur del ecuador se imprimía igual
+       sin haberla comprobado. Ahora sale de la carta: de la culminación, de
+       la altura del sol y de qué orientación recibe más directo. */
+    function recomendacionDeFachada() {
+      if (!solOri || !solFach || !sol) return '';
+      var dura = solOri.masExpuesta, suave = solOri.menosExpuesta;
+      var mandaCubierta = solFach.manda === 'cubierta';
+      var partes = [];
+      partes.push('La orientación que más sol directo recibe es la <b>' + esc(dura.rumbo) +
+        '</b> (' + dura.indice + ' de 100) y la que menos, la <b>' + esc(suave.rumbo) +
+        '</b> (' + suave.indice + ').');
+      /* Oriente y occidente reciben lo mismo por geometría y no cuestan lo
+         mismo: la del occidente recibe a la tarde, con el aire ya caliente y
+         la masa del edificio cargada. Eso no lo dice la carta, lo dice la
+         hora, y por eso va escrito y no deducido de la tabla. */
+      partes.push('Oriente y occidente reciben prácticamente lo mismo y <b>no cuestan lo mismo</b>: ' +
+        'el del occidente llega a la tarde, con el aire ya caliente y el edificio cargado de calor ' +
+        'del día. Es la fachada que se protege primero.');
+      partes.push(mandaCubierta
+        ? 'Con el sol culminando a <b>' + conComa(sol.alturaMaxima) + '°</b> lo que más recibe no es ' +
+          'ninguna fachada sino la <b>cubierta</b>: ahí es donde se gana o se pierde el confort.'
+        : 'El sol culmina a <b>' + conComa(sol.alturaMaxima) + '°</b> hacia el <b>' +
+          esc(solFach.culminacion) + '</b>, así que un alero corto ya protege la fachada de esa cara; ' +
+          'la del occidente pide protección vertical, que el sol de la tarde entra casi horizontal.');
+      partes.push('Los locales que no toleran el sol directo van a la <b>' + esc(suave.rumbo) + '</b>.');
+      return '<p class="lee">' + partes.join(' ') + '</p>' +
+        '<p class="nota">Esto se deduce de la carta solar de este punto y de las horas por ' +
+        'orientación, no de una regla general: en otra latitud la misma cuenta da otra respuesta.</p>';
+    }
+
+    /* ── §12 · el viento cierra en estrategia, no en rosa ────────────────
+       La rosa decía de dónde viene el viento y qué parte del tiempo, y ahí
+       se quedaba: un dibujo bonito del que cada quien saca lo que quiere.
+       Lo que un proyecto necesita es por dónde ENTRA el aire, por dónde
+       SALE, y qué hacer con la fachada que además es la que se calienta.
+
+       Las dos cajas de esta banda leen `solOri` y `solFach`, así que la
+       fachada que el asoleamiento manda proteger y la que la ventilación
+       manda abrir son la misma cuenta: cuando coinciden, el conflicto se
+       dice en vez de quedar para que lo descubra quien dibuja. */
+    function estrategiaDeVentilacion(vi) {
+      if (!vi || !vi.dominante) return '';
+      var de = vi.dominante.rumbo, pct = vi.dominante.pct;
+      var OCHO = ['norte', 'nororiente', 'oriente', 'suroriente',
+                  'sur', 'suroccidente', 'occidente', 'noroccidente'];
+      var k = OCHO.indexOf(de);
+      var opuesto = k >= 0 ? OCHO[(k + 4) % 8] : '';
+      var t = (cli && cli.temperatura && cli.temperatura.media != null) ? cli.temperatura.media : null;
+      var calido = t != null && t >= 24;
+      var flojo = vi.mediaKmh != null && vi.mediaKmh < 6;
+      var choca = solOri && solOri.masExpuesta && solOri.masExpuesta.rumbo === de;
+      var L = [];
+      L.push('<b>Entra por el ' + esc(de) + '</b> — el viento viene de ahí el ' + pct +
+        ' % del tiempo — y <b>sale por el ' + esc(opuesto) + '</b>: una abertura sola no ventila, ' +
+        'ventila el par.');
+      L.push(calido
+        ? 'Con ' + conComa(t) + ' °C de media, el aire cruzado es lo que da confort: las aberturas ' +
+          'del ' + esc(de) + ' se dimensionan generosas y las de salida <b>iguales o mayores</b>, que ' +
+          'una salida chica frena todo el paso.'
+        : 'Con ' + (t != null ? conComa(t) + ' °C' : 'esta temperatura') + ' de media el aire cruzado ' +
+          'se regula, no se busca todo el día: aberturas que se puedan <b>cerrar</b> en las horas frescas.');
+      if (flojo) {
+        L.push('El viento medio es de ' + conComa(vi.mediaKmh) + ' km/h, <b>flojo</b>: a esa velocidad ' +
+          'el cruce no se logra solo con abrir: pide diferencia de altura —aberturas bajas de entrada y ' +
+          'altas de salida, o un patio— para que el aire suba por temperatura.');
+      }
+      if (choca) {
+        L.push('<b>Y acá hay un conflicto que decidir:</b> el ' + esc(de) + ' es a la vez por donde ' +
+          'entra el aire y la orientación que más sol directo recibe. Abrir para ventilar es abrir ' +
+          'al sol: esa fachada pide protección que deje pasar el aire y no la luz —celosía, quiebrasol ' +
+          'separado del muro—, no un vidrio más grande ni un muro ciego.');
+      }
+      L.push('La rosa está medida sobre viento a <b>10 m de altura en campo abierto</b>, que es como ' +
+        'lo publica el archivo: entre manzanas construidas la velocidad baja y la dirección se tuerce ' +
+        'con las calles. Para el viento de la manzana hace falta medirlo en el sitio.');
+      return '<p class="lee">' + L.join(' ') + '</p>';
+    }
+
     // ── Ubicación ───────────────────────────────────────────────────────
     var cadena = ubic
       ? [ubic.pais, ubic.departamento, ubic.ciudad, ubic.comuna, ubic.barrio].filter(Boolean).join(' › ')
       : '';
 
     // ── Asoleamiento ────────────────────────────────────────────────────
-    var SOL = window.URBIS_SOLAR, sol = null, solAnio = null;
+    var SOL = window.URBIS_SOLAR, sol = null, solAnio = null, solOri = null, solFach = null;
     try {
       if (SOL && meta.lat != null) {
         sol = SOL.dia(new Date(), Number(meta.lat), Number(meta.lng));
         solAnio = SOL.anio(Number(meta.lat), Number(meta.lng));
+        /* Lo que recibe cada orientación y cuál es la fachada crítica. Las
+           dos salen de `js/73` y se calculan UNA vez acá: la caja del
+           asoleamiento y la estrategia de ventilación de la caja del clima
+           leen las mismas, que es lo que impide que las dos cajas de la
+           misma banda recomienden orientaciones distintas. (§12, v882) */
+        solOri = orientacionDelSitio(Number(meta.lat), Number(meta.lng));
+        solFach = SOL.fachadaCritica(sol, Number(meta.lat));
       }
     } catch (e) { sol = null; }
     var hh = function (x) {
@@ -4729,13 +4971,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? dib('rosaDeRumbos', rosa.map(function (r2) { return { n: r2.pct }; }),
       { etiqueta: 'De dónde viene el viento, en porcentaje del tiempo por cada rumbo' })
       : '';
-      return dr
+      return (dr
       ? '<div class="dib-par"><div class="dib dib-rosa">' + dr + '</div><div>' +
         (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '') +
         (vi.mediaKmh != null ? fila('Viento medio', conComa(vi.mediaKmh) + ' km/h') : '') +
-        '<p class="nota">La rosa dice de dónde viene el viento y qué parte del tiempo: ' +
-        'el pétalo largo es el rumbo que ventila. Por ahí se abren los patios.</p></div></div>'
-      : (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '');
+        '<p class="nota">El pétalo largo es el rumbo del que más sopla, pesado por velocidad ' +
+        'y no por número de días.</p></div></div>'
+      : (vi.dominante ? fila('El viento viene del', esc(vi.dominante.rumbo) + ' (' + vi.dominante.pct + '%)') : '')) +
+      /* §12: la rosa no puede quedar suelta. Cierra en por dónde entra el
+         aire, por dónde sale y qué hacer con la fachada — que es lo que un
+         proyecto necesita y lo que un dibujo solo no da. */
+      estrategiaDeVentilacion(vi);
       })() +
       (cli.lectura ? '<p class="lee">' + esc(cli.lectura) + '</p>' : '');
       })(), 'g3') +
@@ -4758,9 +5004,68 @@ function donaHTML(datos, colorDe, nombreDe) {
       fila('Horas de luz', String(sol.duracionH).replace('.', ',') + ' h') +
       (solAnio ? fila('En el año', solAnio.solsticios.masBajo.altura + '° a ' +
       solAnio.solsticios.masAlto.altura + '°') : '') +
-      '<p class="lee">La fachada occidental recibe el sol bajo de la tarde: es la que hay que proteger.' +
-      (cen.length === 2 ? ' El sol pasa por el cenit el ' + esc(cen[0]) + ' y el ' + esc(cen[1]) + '.' : '') +
-      '</p>';
+      (solAnio && (solAnio.equinoccios || []).length
+      ? fila('Equinoccios', solAnio.equinoccios.map(function (f) {
+      return f.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+      }).join(' y ')) : '') +
+      tablaDeOrientacion() +
+      recomendacionDeFachada() +
+      (cen.length === 2 ? '<p class="lee">El sol pasa por el <b>cenit</b> el ' + esc(cen[0]) +
+      ' y el ' + esc(cen[1]) + ': esos dos días la fachada casi no recibe y la cubierta lo ' +
+      'recibe todo.</p>' : '');
+      })(), 'g3') +
+
+      /* §12 · El estudio de sombra del SECTOR. Los otros dos que había —la de
+         los vecinos y la del volumen permitido— hablan de un proyecto y piden
+         un lote dibujado o una norma que no se tiene. Este mide lo que el
+         sector ya demuestra, y por eso sale siempre que haya alturas
+         mapeadas. */
+      caja('La sombra de lo construido',
+      (function () {
+      var so2 = sombraDeLoConstruido(mediaDePisos(trz, st), Number(meta.lat), Number(meta.lng), trz);
+      if (!so2) return '';
+      var larga = so2.horas.slice().sort(function (a, b) { return b.largoM - a.largoM; })[0];
+      var cruza = so2.anchoCalleM != null;
+      return '<div class="kpis">' +
+        '<div class="k"><b>' + esc(so2.etq) + '</b><small>la altura que más se repite</small></div>' +
+        '<div class="k"><b>' + (so2.abierto ? '≥' : '') + so2.alturaM + ' m</b><small>a ' +
+          so2.porPiso + ' m por piso</small></div>' +
+        '</div>' +
+        '<table class="ancha"><thead><tr><th>Hora</th><th class="n">Sol</th>' +
+        '<th class="n">Sombra</th><th>Cae hacia el</th></tr></thead><tbody>' +
+        so2.horas.map(function (x) {
+          return '<tr><td>' + x.hora + ':00</td>' +
+            '<td class="n">' + conComa(x.alturaSol) + '°</td>' +
+            '<td class="n">' + (so2.abierto ? '≥' : '') + conComa(x.largoM) + ' m</td>' +
+            '<td>' + esc(x.hacia) + '</td></tr>';
+        }).join('') + '</tbody></table>' +
+        (cruza
+          ? '<p class="lee">A las ' + larga.hora + ':00 la altura que manda en el sector echa ' +
+            (so2.abierto ? 'al menos ' : '') + '<b>' + conComa(larga.largoM) + ' m</b> de sombra, sobre ' +
+            'una calzada media de <b>' + conComa(so2.anchoCalleM) + ' m</b>. ' +
+            (larga.largoM >= so2.anchoCalleM
+              ? 'La sombra <b>cruza la calle entera</b>: en las calles que corran perpendiculares al sol ' +
+                'de esa hora, la planta baja de enfrente no ve el sol. Para una vivienda eso es un ' +
+                'problema y para un andén comercial en clima cálido es exactamente lo que se busca — ' +
+                'quien proyecta decide cuál de las dos cosas quiere.'
+              : 'La sombra <b>no alcanza la otra acera</b>: la calle recibe sol a esa hora, y la sombra ' +
+                'que un peatón necesita en clima cálido hay que ponerla con árboles o con aleros, ' +
+                'porque el volumen construido no la da.') + '</p>'
+          : '<p class="lee">A las ' + larga.hora + ':00 la altura que manda en el sector echa ' +
+            (so2.abierto ? 'al menos ' : '') + '<b>' + conComa(larga.largoM) + ' m</b> de sombra hacia ' +
+            'el ' + esc(larga.hacia) + '. Sin el ancho de calzada medido no se puede decir si cruza ' +
+            'la calle: eso sale de medir el trazado del sector.</p>') +
+        '<p class="nota">La altura es la <b>moda</b> del reparto de pisos —el ' +
+        conComa(so2.pctDelSector) + ' % de lo mapeado— y no la media: con la mayoría baja y unas ' +
+        'torres sueltas, la media describe un sector que no existe. Las dos horas son las que ' +
+        'deciden una calle; al mediodía la sombra es la más corta del día y no limita nada. ' +
+        (so2.abierto
+          ? 'El cajón de arriba agrupa todo lo de cuatro pisos o más, así que la sombra va con ' +
+            '«al menos»: la real es mayor. '
+          : '') +
+        'Se calcula para <b>hoy</b> y sobre terreno <b>plano</b>: en ladera cae más lejos cuesta ' +
+        'abajo. Y cuánta calle tapa depende del <b>rumbo de cada calle</b> frente al del sol, que ' +
+        'cambia manzana por manzana: lo que acá se mide es el largo, no el reparto.</p>';
       })(), 'g3') +
       
       /* La amenaza sísmica. Va con la curva dibujada: cinco cifras sueltas no
@@ -6009,8 +6314,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo', hoja: 'A',
         pregunta: '¿Qué le pone el suelo, el clima y el agua al proyecto antes de dibujar nada?',
         que: 'relieve · clima · sol · viento · ruido · verde · cobertura · espacio público',
-        cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de los vecinos',
-                'Verde y agua', 'El ruido del tránsito']
+        cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de lo construido',
+                'La sombra de los vecinos', 'Verde y agua', 'El ruido del tránsito']
                 .concat(horiz ? ['Cómo cambió el sitio'] : [])
                 .concat(['Cobertura del suelo', 'Espacio público efectivo']) },
       /* ── Riesgo y servicios, banda propia (v853) ──────────────────────
@@ -7760,6 +8065,19 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.coh-falla b, .coh-falla i{ color:#B42318 }' +
       '.ag{ font-style:normal; font-size:2.2mm; letter-spacing:.08em; text-transform:uppercase;' +
         'color:#8A6D3B; background:#FDF3E3; border-radius:.8mm; padding:.2mm 1mm; margin-left:1.2mm }' +
+      /* §12 · la tabla de orientaciones. La barra va DENTRO de la celda de
+         horas y detrás del número: lo que se compara de un golpe es cuál
+         recibe más, y la cifra exacta se lee después. Las dos filas que
+         deciden —la que más y la que menos— van marcadas, porque son las que
+         un proyecto usa y el resto es el degradado entre ellas. */
+      '.ori td{ position:relative }' +
+      '.ori .ori-b{ display:block; height:.7mm; background:#C7D7E4; border-radius:.4mm; margin:.5mm 0 0 auto }' +
+      '.ori-dura td{ background:#FDF3E3 }' +
+      '.ori-dura .ori-b{ background:#E0A93B }' +
+      '.ori-suave td{ background:#EEF7F1 }' +
+      '.ori-suave .ori-b{ background:#7FBF9A }' +
+      '.ori-tag{ font-style:normal; font-size:2.1mm; letter-spacing:.06em; text-transform:uppercase;' +
+        'color:#5B6B7B; margin-left:1mm }' +
       '.coh-sin-dato{ color:#8A6D3B }' +
       '.coh-sin-dato b, .coh-sin-dato i{ color:#8A6D3B }' +
       /* La contradicción entre láminas pesa más que un chequeo fallado y se
@@ -12429,6 +12747,13 @@ function donaHTML(datos, colorDe, nombreDe) {
         falta: 'marque el lote y mida el trazado', dato: '5, 10 y 15 min' },
       { id: 'la-sombra-de-los-vecinos', t: 'La sombra de los vecinos', g: 'El lote',
         listo: somb(), falta: 'marque el lote y mida el trazado', dato: '9, 12 y 15 h' },
+      /* La condición `listo` es la MISMA que usa la caja para devolver vacío
+         —`sombraDeLoConstruido` devuelve null y la caja no imprime—, que es
+         justo lo que `tpliego` comprueba que no se separe. */
+      { id: 'la-sombra-de-lo-construido', t: 'La sombra de lo construido', g: 'Ambiental',
+        listo: !!sombraDeLoConstruido(mediaDePisos(S.trazado, S.stats),
+                 Number((S.meta || {}).lat), Number((S.meta || {}).lng), S.trazado),
+        falta: 'mida el trazado para tener las alturas del sector', dato: '9 y 15 h' },
 
       { id: 'lo-intangible', t: 'Lo intangible', g: 'El trabajo del curso',
         listo: !!(S.intangible && S.intangible.length),
@@ -14566,6 +14891,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El clima': { f: 'medias históricas de temperatura, lluvia y viento en el punto', fu: 'Open-Meteo, archivo climático', c: 'media-alta', r: 'confort entre 18 y 26 °C', e: 'el microclima del sector no se mide: ±2 °C' },
     'Asoleamiento': { f: 'posición del sol por fecha y hora (azimut y altura) sobre las orientaciones del lote', fu: 'cálculo astronómico para la latitud del sitio', c: 'alta', r: 'en el trópico la fachada al poniente es la crítica', e: 'sin obstrucciones: ver «La sombra de los vecinos»' },
     'La sombra de los vecinos': { f: 'proyección de las huellas vecinas con su altura a las 9, 12 y 15 h', fu: 'OpenStreetMap, hoy; sol calculado', c: 'media', r: 'la sombra de las 15 h manda el confort de la tarde', e: 'altura que falta = sombra que falta' },
+    'La sombra de lo construido': { f: 'largo = altura de la moda de pisos ÷ tangente de la altura del sol, a las 9 y a las 15 h', fu: 'alturas de OpenStreetMap y lo contado en campo, hoy; sol calculado para la latitud', c: 'media', r: 'la sombra que cruza la calzada decide si la planta baja de enfrente ve el sol', e: 'terreno plano y el cajón de «4 o más» agrupado: la sombra real es mayor, nunca menor' },
     'La amenaza sísmica': { f: 'zona de amenaza y coeficientes Aa y Av del municipio', fu: 'Servicio Geológico Colombiano; NSR-10 (2010), tabla A.2.3-2', c: 'alta como dato municipal', r: 'la microzonificación local, si existe', e: 'es del municipio, no del lote' },
     'La inundación': { f: 'cruce del sitio con las manchas de inundación por periodo de retorno', fu: 'IDEAM, zonas susceptibles de inundación', c: 'media: escala 1:100.000', r: 'periodo de retorno de 100 años', e: 'no reemplaza el estudio de detalle del POT' },
     'Verde y agua': { f: 'cuerpos de agua, parques y verde natural registrados, con nombre', fu: 'OpenStreetMap, hoy', c: 'media', r: 'cobertura verde ≥ 30 % del sector', e: 'el verde privado no aparece' },
