@@ -7488,6 +7488,50 @@ function donaHTML(datos, colorDe, nombreDe) {
       var pon = function (t, estado, dicho, a, b) {
         out.push({ t: t, estado: estado, dicho: dicho, a: a || '', b: b || '', cruzado: true });
       };
+      /* §2 (v899) · «SIN DATO» Y «EL PANEL CEDIÓ» SON COSAS DISTINTAS.
+         ──────────────────────────────────────────────────────────────────
+         Estos chequeos leen el TEXTO COMPUESTO de las dos hojas, que es lo
+         correcto y la razón de la v879: un error de unidad, de redondeo o
+         de rótulo no existe en las variables, existe en el papel.
+
+         Pero una caja que CEDIÓ su sitio para que la hoja cerrara no está
+         en ese texto, y hasta la v898 el chequeo la daba por no medida:
+         imprimía «sin llenos y vacíos medidos» y «ninguna altura registrada
+         ni contada en campo» sobre un sector en el que las dos cosas
+         estaban medidas y la ficha las nombra en la lista de lo que cedió.
+
+         **Declarar ausente algo medido es peor que un dato de menos** —es
+         la lección de la v861— y acá además desorienta: quien lee va a
+         buscar la fuente que haría falta cuando lo único que hace falta es
+         apagar otro panel. Así que se dicen distinto, y el que cedió lleva
+         su remedio escrito.
+
+         El pliego v2 supuso otra causa —«el chequeo está consultando una
+         variable interna vacía»— y no era: se reprodujo componiendo la hoja
+         con esos dos paneles apagados y salieron las dos frases del reporte,
+         palabra por palabra. */
+      var cedio = function (titulo) {
+        try { return (apagadas || []).indexOf(slugPliego(titulo)) !== -1; }
+        catch (e) { return false; }
+      };
+      /* Un chequeo que no encuentra su cifra: o el panel que la lleva cedió
+         —y entonces se dice, con el remedio—, o de verdad no está en
+         ninguna de las dos hojas, y entonces se nombra la fuente que haría
+         falta, que es lo que §2 pide reservar para ese caso. */
+      var noHay = function (t, paneles, dichoSinDato) {
+        var ced = (paneles || []).filter(cedio);
+        if (ced.length) {
+          pon(t, 'cedio',
+            'no se pudo cruzar en esta composición: ' +
+            (ced.length === 1 ? 'el panel «' + ced[0] + '» cedió su sitio'
+                              : 'los paneles «' + ced.join('» y «') + '» cedieron su sitio') +
+            ' para que la hoja cerrara, así que su cifra no está impresa. ' +
+            'No es que el dato falte —está medido, y la ficha lo nombra entre lo que cedió—: ' +
+            'apagar otro panel o imprimir esta hoja suelta sube la escala y lo devuelve.');
+          return;
+        }
+        pon(t, 'sin-dato', dichoSinDato);
+      };
       var plano = function (h) {
         return String(h || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')
           .replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
@@ -7559,7 +7603,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           return;
         }
         if (!dTrama || !dPar) {
-          pon('La trama y el paramento no se llaman igual', 'sin-dato',
+          noHay('La trama y el paramento no se llaman igual',
+                ['Continuidad del tejido'],
               'una de las dos no se pudo medir en este sector: la trama pide vías mapeadas y el ' +
               'paramento pide el lote dibujado.');
           return;
@@ -7584,7 +7629,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         var area = haDe(sitio, '\\s*Perímetro|\\s*En metros');
         var dens = /([\d.,]+) hab\/ha/.exec(ciudad);
         if (habA == null || habB == null) {
-          pon('La población es la misma en las dos láminas', 'sin-dato',
+          noHay('La población es la misma en las dos láminas',
+                ['El sitio', 'Quién vive acá'],
               'una de las dos hojas no imprime el total de habitantes en este sector.');
           return;
         }
@@ -7620,8 +7666,10 @@ function donaHTML(datos, colorDe, nombreDe) {
           return;
         }
         if (haA == null || haB == null) {
-          pon('El suelo disponible es el mismo en las dos láminas', 'sin-dato',
-              'sin llenos y vacíos medidos no hay suelo libre que contar en ninguna de las dos.');
+          noHay('El suelo disponible es el mismo en las dos láminas',
+                ['Suelo disponible real'],
+                'sin llenos y vacíos medidos no hay suelo libre que contar en ninguna de las dos. ' +
+                'Los llenos salen de medir el trazado.');
           return;
         }
         /* La tolerancia es la del PAPEL, no la del cálculo: `formatearArea`
@@ -7647,8 +7695,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         var grano = plano(cajaEn(A, 'El grano: manzana y predio'));
         var huella = /Huella construida media ([\d.,]+)\s*m²/.exec(grano);
         if (!mA || !mB) {
-          pon('La altura media construida es la misma en las dos láminas', 'sin-dato',
-              'ninguna altura registrada ni contada en campo en este sector.');
+          noHay('La altura media construida es la misma en las dos láminas',
+                ['Potencial edificatorio'],
+                'ninguna altura registrada ni contada en campo en este sector: OpenStreetMap no ' +
+                'trae building:levels acá y no se levantó en campo.');
           return;
         }
         var a = nDec(mA[1]), b = nDec(mB[1]);
@@ -7675,7 +7725,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         var mHa = /([\d.,]+)\s*hectáreas/.exec(ep);
         var haSecA = haDe(plano(cajaEn(A, 'El sitio')), '\\s*Perímetro|\\s*En metros');
         if (!mHa) {
-          pon('El espacio público cabe dentro del sector y no se confunde con el verde', 'sin-dato',
+          noHay('El espacio público cabe dentro del sector y no se confunde con el verde',
+                ['Espacio público efectivo', 'Cobertura del suelo'],
               'ningún parque ni plaza con forma mapeada: una capa vacía no se puede cruzar con ' +
               'la cobertura, y que esté vacía es un dato del mapa y no del sector.');
           return;
@@ -7864,7 +7915,9 @@ function donaHTML(datos, colorDe, nombreDe) {
             return (cruces.length
               ? '<p class="lee">Lo que dicen juntas las cifras</p><div class="cruces">' +
                 cruces.map(function (c) {
-                  return '<div class="cruce"><i class="cv-k">' + esc(c.k) + '</i><b class="cv-v">' + esc(c.v) + '</b><small class="cv-l">' + esc(c.l) + '</small></div>';
+                  return '<div class="cruce' + (c.sm ? ' cruce-sm' : '') + '"><i class="cv-k">' +
+                    esc(c.k) + '</i><b class="cv-v">' + esc(c.v) + '</b><small class="cv-l">' +
+                    esc(c.l) + '</small></div>';
                 }).join('') + '</div>'
               : '') +
               '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
@@ -7947,6 +8000,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!lista || !lista.length) return '';
       var fallan = lista.filter(function (x) { return x.estado === 'falla'; }).length;
       var sinDato = lista.filter(function (x) { return x.estado === 'sin-dato'; }).length;
+      var cedidos = lista.filter(function (x) { return x.estado === 'cedio'; }).length;
       var contra = lista.filter(function (x) { return x.estado === 'contradice'; }).length;
       var cruzados = lista.filter(function (x) { return x.cruzado; }).length;
       /* La marca de estado se DIBUJA con la hoja de estilo, no con un
@@ -7955,7 +8009,11 @@ function donaHTML(datos, colorDe, nombreDe) {
          color con su palabra al lado se lee igual de rápido y además
          sobrevive a una fotocopia en blanco y negro, donde el color no
          distingue pero la palabra sí. */
-      var ICONO = { pasa: 'pasa', falla: 'falla', 'sin-dato': 'sin dato', contradice: 'CONTRADICCIÓN' };
+      /* «panel fuera» y no «sin dato»: son dos cosas que piden dos acciones
+         distintas —una se resuelve consiguiendo una fuente, la otra apagando
+         otro panel— y con el mismo rótulo se leen como una sola. (§2, v899) */
+      var ICONO = { pasa: 'pasa', falla: 'falla', 'sin-dato': 'sin dato',
+                    cedio: 'panel fuera', contradice: 'CONTRADICCIÓN' };
       return caja('Coherencia de las cifras',
         /* La cabecera nombra las DOS cosas cuando pasan las dos. Contando
            solo la contradicción, un chequeo fallado se quedaba sin avisar en
@@ -7972,7 +8030,12 @@ function donaHTML(datos, colorDe, nombreDe) {
                 'Lo que falla está impreso: no se corrigió en silencio.'
               : '')
           : 'Los chequeos que se pueden correr con lo que hay, pasan.') +
-          ' ' + sinDato + ' de ' + lista.length + ' no se pueden correr todavía y dicen por qué.</p>' +
+          ' ' + sinDato + ' de ' + lista.length + ' no se pueden correr todavía y dicen por qué.' +
+          (cedidos
+            ? ' Y <b>' + cedidos + (cedidos === 1 ? ' se quedó sin cruzar' : ' se quedaron sin cruzar') +
+              ' porque el panel que lleva su cifra cedió su sitio en esta hoja</b>: eso no es un dato ' +
+              'que falte, y cada uno dice cuál es y cómo devolverlo.'
+            : '') + '</p>' +
         '<ul class="coh">' + lista.map(function (x) {
           return '<li class="coh-' + x.estado + (x.cruzado ? ' coh-cruz' : '') + '">' +
             '<b><i class="coh-mk"></i>' + ICONO[x.estado] + '</b>' +
@@ -8233,6 +8296,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.cruces{ display:grid; grid-template-columns:repeat(' + (horiz ? 4 : 3) + ',minmax(0,1fr)); gap:1.8mm; margin:1.5mm 0 2.5mm }' +
       '.cruce{ padding:1.4mm 2mm; border:.3mm solid #E3EAF0; border-radius:1.5mm; background:#fff; display:flex; flex-direction:column; gap:.4mm }' +
       '.cv-k{ font-style:normal; font-size:2.3mm; letter-spacing:.12em; text-transform:uppercase; color:var(--tinte); font-weight:800 }' +
+      /* §1 (v899) · la casilla que no se pudo medir, en ámbar y a trazos: el
+         mismo código visual que los vacíos obligatorios de la v849, porque
+         es lo mismo —una tarea para quien analiza— dicho en otro sitio. */
+      '.cruce-sm{ border:.4mm dashed #B7791F; background:#FFFBEB; border-radius:1mm; padding:1.4mm 1.8mm }' +
+      '.cruce-sm .cv-k{ color:#8A6D3B }' +
+      '.cruce-sm .cv-v{ color:#8A6D3B; font-weight:800; letter-spacing:.06em }' +
+      '.cruce-sm .cv-l{ color:#8A6D3B }' +
       '.cv-v{ font-size:3mm; line-height:1.25 }' +
       '.cv-l{ font-size:2.6mm; line-height:1.3; color:#5A6472 }' +
       '.caja-campo .lee{ border-left-color:var(--tinte) }' +
@@ -8619,6 +8689,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.ori-tag{ font-style:normal; font-size:2.1mm; letter-spacing:.06em; text-transform:uppercase;' +
         'color:#5B6B7B; margin-left:1mm }' +
       '.coh-sin-dato{ color:#8A6D3B }' +
+      /* El que cedió va en el AZUL de la hoja y no en el ámbar del vacío: el
+         ámbar dice «esto no lo tenemos» y esto dice «esto está medido y no
+         cupo». Dos cosas distintas con el mismo color se leen como una sola,
+         que es la decisión de la v880 con el verde del «cómo se consigue». */
+      '.coh-cedio{ color:#0A6F9E }' +
+      '.coh-cedio b, .coh-cedio i{ color:#0A6F9E }' +
       '.coh-sin-dato b, .coh-sin-dato i{ color:#8A6D3B }' +
       /* La contradicción entre láminas pesa más que un chequeo fallado y se
          ve distinto: caja roja a trazos, como los vacíos obligatorios van en
@@ -16797,6 +16873,27 @@ function donaHTML(datos, colorDe, nombreDe) {
     var fmt = function (n) { return Math.round(Number(n)).toLocaleString('es-CO'); };
     var filas = [];
     var F = function (k, v, l) { filas.push({ k: k, v: v, l: l }); };
+    /* §1 (v899) · UNA CASILLA QUE NO SE PUDO MEDIR NO LLEVA CIFRA.
+       ────────────────────────────────────────────────────────────────────
+       La regla de la v875 —un dato no mapeado no genera propuesta ni
+       conclusión— se escribió para las propuestas y se cumplió ahí. El mismo
+       error reapareció en la síntesis, y el pliego v2 lo trajo impreso:
+
+         «CONTINUIDAD DEL PARAMENTO — 0 % del frente de la cuadra con
+          fachada — frente roto: el proyecto puede cerrar la cuadra»
+
+       Ese 0 % es la fracción del tramo de calle cubierta por HUELLAS DE
+       OPENSTREETMAP. Con cero huellas mapeadas sobre esa cuadra da cero
+       siempre, y el cero se convirtió en diagnóstico urbano y en
+       recomendación de proyecto. **Cero mapeado y cero existente son cosas
+       distintas**, y en un barrio colombiano corriente las huellas no están.
+
+       `SM` imprime la casilla sin cifra: «SIN MEDIR», la razón por la que no
+       se pudo, y qué la llena. Va en ámbar y a trazos, el mismo código
+       visual que los vacíos obligatorios de la v849, porque es lo mismo
+       dicho en otro sitio: una tarea para quien analiza, no una conclusión
+       para quien proyecta. */
+    var SM = function (k, l) { filas.push({ k: k, v: 'SIN MEDIR', l: l, sm: true }); };
 
     // 1 · Cobertura de equipamientos: gente servida y gente lejos, por tipo.
     var ac = st.accesibilidad;
@@ -16822,10 +16919,10 @@ function donaHTML(datos, colorDe, nombreDe) {
           String(peor[0].etiqueta).toLowerCase() + ': ahí va el primer equipamiento' +
           (acSin.length ? '. Las clases sin un punto mapeado no entran en esta cuenta: primero hay que ir a ver si existen' : ''));
     } else if (acSin.length) {
-      F('Cobertura de equipamientos', 'ninguna clase con un punto mapeado',
+      SM('Cobertura de equipamientos',
         'con la capa vacía no hay cobertura que contar: recorrer el sector es el paso anterior a cualquier propuesta de equipamiento');
     } else {
-      F('Cobertura de equipamientos', ac ? 'sin población censal para contar servidos' : 'sin medir',
+      SM('Cobertura de equipamientos',
         'con el censo por manzana la cobertura se cuenta en personas, no en hectáreas');
     }
 
@@ -16837,7 +16934,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         porHab >= meta15 ? 'cumple la meta: el proyecto no tiene que ceder plaza, sino cuidarla'
           : 'faltan ' + fmt((meta15 - porHab) * hab) + ' m²: ' + fmt(hab - e.areaM2 / meta15) + ' personas sin su cuota; el primer piso libre es la respuesta más barata');
     } else {
-      F('Espacio público', e && !e.piezas ? 'ningún parque con polígono' : 'sin medir', 'dibujar el polígono de cada parque es lo que vuelve esto una cifra');
+      SM('Espacio público', (e && !e.piezas
+        ? 'ningún parque ni plaza con polígono mapeado en el área: sin forma no hay superficie que repartir. '
+        : 'el espacio público efectivo no se pudo calcular en este sector. ') +
+        'Dibujar el polígono de cada parque en OpenStreetMap es lo que vuelve esto una cifra.');
     }
 
     // 3 · Potencial edificatorio: lo construido contra lo permitido.
@@ -16861,7 +16961,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           : viv < 30 ? 'sector sin residentes: traer vivienda es lo que le da vida después de las seis'
           : 'mezcla de barrio: el proyecto la continúa con usos en planta baja');
     } else {
-      F('Mezcla de usos', 'sin peso de vivienda calculado', 'medir usos por edificio en campo es lo que lo destapa');
+      SM('Mezcla de usos', 'sin peso de vivienda calculado: lo registrado no dice cuánto de cada ' +
+        'edificio es vivienda. La plantilla de campo «Actividad en primer piso» y el mapeo por ' +
+        'edificio lo destapan.');
     }
 
     // 5 · Continuidad del PARAMENTO — no del tejido.
@@ -16875,14 +16977,25 @@ function donaHTML(datos, colorDe, nombreDe) {
        de fachada de la cuadra. (v879, §6) */
     var cu = null; try { cu = laCuadraDelLote(); } catch (e2) {}
     var ll = trz && trz.llenos;
-    if (cu && cu.pctLleno != null) {
+    /* §1 (v899) · con CERO huellas mapeadas sobre la cuadra, `pctLleno` da
+       cero siempre y no mide un frente: mide una capa vacía. `cu.edificios`
+       es el discriminante y ya existía —igual que `puntos` en la v875—, solo
+       había que dejar de leer el cero como si fuera una medición. */
+    if (cu && cu.pctLleno != null && Number(cu.edificios) > 0) {
       F('Continuidad del paramento', cu.pctLleno + ' % del frente de la cuadra con fachada',
         cu.pctLleno >= 70 ? 'frente continuo: el proyecto se alinea al paramento y no lo rompe' : 'frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un retroceso');
+    } else if (cu && cu.pctLleno != null) {
+      SM('Continuidad del paramento',
+        'ninguna huella de edificio mapeada sobre esta cuadra, así que el cero es del mapa y no del ' +
+        'frente. La plantilla de campo «Actividad en primer piso» lo levanta caminando la cuadra, y ' +
+        'esta casilla se calcula sola.');
     } else if (ll && ll.pctLleno != null) {
       F('Continuidad del paramento', num(ll.pctLleno) + ' % del suelo construido (sin lote dibujado)',
         'con el lote dibujado se mide el frente de su cuadra, que es lo que el proyecto continúa o rompe');
     } else {
-      F('Continuidad del paramento', 'sin trazado medido', 'medir el trazado da los llenos; el lote da la cuadra');
+      SM('Continuidad del paramento',
+        'sin trazado medido no hay llenos, y sin lote dibujado no hay cuadra. Se mide con el botón ' +
+        'del trazado y dibujando el lote, y esta casilla se calcula sola.');
     }
 
     // 6 · Suelo disponible real.
@@ -16913,7 +17026,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         ' ha aprovechables tras los descuentos',
         'no es suelo urbanizable: la amenaza sigue sin descontarse, y el ancho de ronda que se usó es una estimación de trabajo y no el del POMCA');
     } else {
-      F('Suelo disponible real', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
+      SM('Suelo disponible real', 'sin trazado medido no hay llenos ni vacíos, que son la primera ' +
+        'cuenta de la cascada. Se mide con el botón del trazado y esta casilla se calcula sola.');
     }
 
     /* 7 · §17 · Presión de crecimiento. Citaba el VERDE que se fue, y el
@@ -16926,7 +17040,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       F('Presión de crecimiento', pres.resumen,
         pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.');
     } else {
-      F('Presión de crecimiento', 'sin ningún proxy medido',
+      SM('Presión de crecimiento',
         'la huella construida se lee con «Cómo cambió el sitio»; la obra pública contratada ' +
         'de SECOP no se consulta en esta versión');
     }
@@ -16944,7 +17058,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         nArt <= 1 ? 'una sola entrada: si se cierra, el sector queda aislado; el proyecto no debe cargarla más'
           : 'varias entradas: el acceso no depende de una calle');
     } else {
-      F('Dependencia de acceso', 'sin red vial medida', 'medir el trazado trae la jerarquía de la red');
+      SM('Dependencia de acceso', 'sin red vial medida no hay jerarquía que contar. Se mide con el ' +
+        'botón del trazado y esta casilla se calcula sola.');
     }
 
     // 9 · Tamaño y forma de predios.
@@ -16983,7 +17098,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'DANE; lo que todavía no se compara es la estructura de edades, el estrato y la ' +
           'densidad, que piden las tablas municipales');
       } else {
-        F('Comparación con la ciudad', 'sin cifra municipal comparable en esta hoja',
+        SM('Comparación con la ciudad',
           'este municipio no está en la tabla de proyecciones del repositorio, así que no hay ' +
           'población de ciudad contra la cual medir; la comparación que sí hay es contra los ' +
           'sectores del curso, en la ficha');

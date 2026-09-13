@@ -40,6 +40,11 @@ const POL = [{ lat: C.lat - L, lng: C.lng - L }, { lat: C.lat + L, lng: C.lng - 
 const GLAT = m => m / 110540, GLNG = m => m / (111320 * Math.cos(C.lat * Math.PI / 180));
 const P = (dx, dy) => ({ lat: C.lat + GLAT(dy), lng: C.lng + GLNG(dx) });
 const LOTE = [P(-60, -45), P(60, -45), P(60, 45), P(-60, 45)];
+/* El segundo lote: arriba del todo, entre las calles de y=360 y y=480. Las
+   treinta y seis huellas llegan hasta y=255, así que la cuadra que le toca a
+   este lote no tiene una sola fachada mapeada — y eso es lo normal en un
+   barrio colombiano a medio mapear, no el caso raro. */
+const LOTE_SIN_HUELLAS = [P(-40, 400), P(40, 400), P(40, 450), P(-40, 450)];
 
 /* Los usos: SOLO comercio y vivienda. Ni `school`, ni `pharmacy`, ni
    `clinic`, ni `library`, ni `police` — nada que el motor cuente como
@@ -118,7 +123,7 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
   await pg.goto(E.ESTATICO + '/index.html?app=educativo', { waitUntil: 'domcontentloaded' });
   await E.esperarLaApp(pg);
   const r = await pg.evaluate(async (D) => {
-    const { C, POL, LOTE } = D, o = {}, esperar = ms => new Promise(x => setTimeout(x, ms));
+    const { C, POL, LOTE, LOTE_SIN_HUELLAS } = D, o = {}, esperar = ms => new Promise(x => setTimeout(x, ms));
     window.URBIS_CONFIG.ANALISIS.API = window.__URBIS_MOTOR;
     window.map.setView([C.lat, C.lng], 15); await esperar(500);
     const A = window.URBIS_PC_ANALISIS, R = window.URBIS_PC_RECON;
@@ -154,9 +159,38 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
 
     const bl = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
     if (bl) { bl.click(); await esperar(1400); }
-    o.doc = capturado;
+    o.doc = capturado; capturado = '';
+
+    /* §1 (v899) · UNA CUADRA SIN UNA SOLA HUELLA MAPEADA.
+       ────────────────────────────────────────────────────────────────────
+       El pliego v2 lo trajo impreso de la corrida real: «CONTINUIDAD DEL
+       PARAMENTO — 0 % del frente de la cuadra con fachada — frente roto: el
+       proyecto puede cerrar la cuadra». Ese cero es la fracción del tramo de
+       calle cubierta por huellas de OpenStreetMap, y con cero huellas da
+       cero siempre: no mide un frente, mide una capa vacía.
+
+       El lote de arriba está en el centro, donde SÍ hay huellas, así que esa
+       rama se mide y la otra no se ejercitaba en ninguna prueba —es el
+       agujero que este proyecto lleva catorce tandas persiguiendo—. Se
+       dibuja un SEGUNDO lote arriba del todo, en la franja donde la malla de
+       calles llega y las treinta y seis huellas no: la cuadra que le toca no
+       tiene una sola fachada mapeada, que es el caso del reporte.
+
+       Las dos ramas se miden en la misma corrida: con huellas, la casilla
+       trae su porcentaje; sin ellas, dice SIN MEDIR y nombra qué la llena. */
+    const b2 = H().querySelector('[data-pcr="lote-borrar"]');
+    if (b2) { b2.click(); await esperar(300); }
+    const bd2 = H().querySelector('[data-pcr="lote-dibujar"]');
+    if (bd2) { bd2.click(); await esperar(400); }
+    for (const p of LOTE_SIN_HUELLAS) { window.map.fire('click', { latlng: { lat: p.lat, lng: p.lng } }); await esperar(50); }
+    const bc2 = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
+    if (bc2) { bc2.click(); await esperar(900); }
+    R.abrir(); await esperar(400);
+    const bl2 = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
+    if (bl2) { bl2.click(); await esperar(1400); }
+    o.docSinHuellas = capturado;
     return o;
-  }, { C, POL, LOTE });
+  }, { C, POL, LOTE, LOTE_SIN_HUELLAS });
   await pg.close(); await ctx.close(); await b.close();
 
   try { fs.writeFileSync(E.TRABAJO + 'lamina-sinmapear.html', r.doc || '', 'utf8'); } catch (e) {}
@@ -262,6 +296,32 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     /ninguna parada mapeada, que no es lo mismo que ninguna parada/.test(txt) &&
     !/\b0 paradas de transporte público registradas/.test(txt),
     (txt.match(/ninguna parada[^.]{0,70}/) || ['no lo dice'])[0]);
+
+  /* §1 (v899) · LAS DOS RAMAS DEL PARAMENTO, en la misma corrida.
+     Con huellas sobre la cuadra la casilla trae su porcentaje; sin una sola
+     huella dice SIN MEDIR y nombra qué la llena. Medir solo la segunda
+     dejaría pasar un «SIN MEDIR» puesto en todas partes, que sería la
+     mentira contraria y la que la v875 ya rechazó una vez. */
+  console.log('\n  -- §1 · la casilla que no se pudo medir no lleva cifra --');
+  const paramDe = (h) => {
+    const m = /<i class="cv-k">Continuidad del paramento<\/i><b class="cv-v">([^<]*)<\/b><small class="cv-l">([^<]*)<\/small>/
+      .exec(String(h || ''));
+    return m ? { v: m[1], l: m[2] } : null;
+  };
+  const pCon = paramDe(doc), pSin = paramDe(String(r.docSinHuellas || ''));
+  T('con huellas sobre la cuadra, el paramento trae su porcentaje',
+    !!pCon && /% del frente de la cuadra/.test(pCon.v), pCon ? pCon.v : 'no sale el cruce');
+  T('sin una sola huella, no imprime un 0 % sino SIN MEDIR',
+    !!pSin && /SIN MEDIR/.test(pSin.v) && !/^0 %/.test(pSin.v),
+    pSin ? pSin.v : 'no sale el cruce');
+  T('y dice que el cero es del mapa, no del frente, y qué lo llena',
+    !!pSin && /del mapa y no del frente/.test(pSin.l) && /Actividad en primer piso/.test(pSin.l),
+    pSin ? pSin.l.slice(0, 130) : '—');
+  /* Y lo que de verdad importa: que esa casilla ya no cierre en una
+     recomendación de proyecto sobre una capa vacía. */
+  T('y no concluye «frente roto» sobre una cuadra que nadie mapeó',
+    !!pSin && !/frente roto|cerrar la cuadra/.test(pSin.v + ' ' + pSin.l),
+    pSin ? (pSin.v + ' · ' + pSin.l).slice(0, 110) : '—');
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
   console.log('\n  ' + (mal ? mal + ' comprobaciones fallaron' : 'todo en verde'));

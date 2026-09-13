@@ -772,8 +772,13 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
      aserción se apretó al cambiar: antes bastaba con que dijera algo; ahora
      tiene que nombrar el proxy que le falta y no puede citar el verde. */
   const cruPres = (CR.filter(c => c.k === 'Presión de crecimiento')[0] || { v: '', l: '' });
+  /* §1 (v899) · y ahora, además, la casilla no medida va MARCADA como no
+     medida: hasta la v898 imprimía «sin ningún proxy medido» en el sitio de
+     la cifra, que a un palmo de «6,1 m²/hab» se lee como un valor. La
+     aserción se aprieta: o trae la cifra, o dice SIN MEDIR y nombra lo que
+     le falta. */
   T('la presión de crecimiento nombra el proxy que le falta, en vez de callar',
-    /sin ningún proxy medido|superficie dura/.test(cruPres.v) &&
+    (/SIN MEDIR|superficie dura/.test(cruPres.v)) &&
     /huella construida|SECOP|superficie dura/.test(cruPres.l),
     (cruPres.v + ' · ' + cruPres.l).slice(0, 120));
   T('y no cita el verde como si midiera la presión',

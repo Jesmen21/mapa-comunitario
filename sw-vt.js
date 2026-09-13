@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v898-cada-glifo-una-vez';
+const VT_CACHE = 'urbis-vt-v899-el-panel-que-cedio-no-es-un-dato-que-falte';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

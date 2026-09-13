@@ -346,6 +346,18 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     const bv = H().querySelector('[data-pcr="lamina-ver"]');
     if (bv) { bv.click(); await esperar(600); }
     o.doc = capturado; capturado = '';
+    /* §2 (v899) · LA HOJA A LA QUE UN PANEL LE CEDIÓ EL SITIO.
+       ────────────────────────────────────────────────────────────────────
+       Los doce chequeos cruzados leen el TEXTO de las cajas compuestas, y
+       una caja que cedió su sitio para que la hoja cierre no está en ese
+       texto. El chequeo entonces no la encuentra y dice «sin dato» — sobre
+       una cifra que el módulo midió y que la ficha nombra en la lista de lo
+       que cedió. Es la clase de la v861 dicha en el panel de coherencia.
+
+       Se compone con los dos paneles de §2 apagados a propósito. Sin esta
+       rama la comprobación pasaría por no tener nada que rechazar: en la
+       hoja normal los dos paneles están y los dos chequeos pasan. */
+    o.docCede = R.laminaDoble({ pliegoOff: ['suelo-disponible-real', 'potencial-edificatorio'] });
     /* §1 · el nombre del archivo exportado. Se mide donde de verdad se
        decide —en la llamada que baja el PDF— y no leyendo la función: es la
        regla de la v863. Un doble del armador de PDF, que no dibuja nada y
@@ -478,6 +490,27 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     R.cerrar(); await esperar(150); R.abrir(); await esperar(300);
     await R.analizar(); await esperar(1500);
     o.granEscala = R.laminaA({ hoja: 'A', clima: CLIMA });
+    /* Y el TRAZADO de esa corrida. Sin él, los paneles de suelo disponible y
+       de potencial edificatorio no existen en la hoja grande, y los dos
+       chequeos que §2 persigue saldrían «sin dato» con razón —por no haber
+       nada que leer— en vez de por no saber leerlo. Medir la cosa
+       equivocada es lo que esta suite lleva tres tandas evitando. */
+    await esperar(5200);
+    o.trazadoGran = await medir('trazado', '.pcr-llenos');
+    /* §2 (v899) · LAS DOS HOJAS a la escala de la corrida real.
+       ────────────────────────────────────────────────────────────────────
+       Los doce chequeos cruzados viven en la hoja B y comparan contra la A,
+       así que una hoja A suelta no los produce: hasta la v898 esta corrida
+       de 19,6 km² componía solo la A y los chequeos no se medían nunca a
+       esta escala.
+
+       Y la escala es justo lo que los rompe. A 177 ha la cascada de suelo
+       imprime «131 ha» y a 19,6 km² imprime «1.627,1 ha» — con separador de
+       miles, que es lo que el lector de áreas no sabía leer. El sector
+       chico no puede producir el fallo: es la decimocuarta vez. */
+    const bv2 = H().querySelector('[data-pcr="lamina-ver"]');
+    if (bv2) { bv2.click(); await esperar(700); }
+    o.docGran = capturado; capturado = '';
     return o;
   }, { C, POL, LOTE });
 
@@ -601,6 +634,17 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
             nombre: ((x.querySelector('span') || {}).textContent || '').trim(),
             cat: ((x.querySelector('u') || {}).textContent || '').trim() })) : [];
         })(),
+        /* §1 (v899) · cada casilla del cierre, con su valor y su marca.
+           Lo que se persigue es la CLASE: una casilla o trae una cifra, o va
+           marcada como no medida. Una frase en el sitio de la cifra —«sin
+           trazado medido», «ninguna clase con un punto mapeado»— se lee, a
+           un palmo de «6,1 m²/hab», como si fuera un valor. */
+        crucesDet: [...h.querySelectorAll('.cruce')].map(x => ({
+          k: ((x.querySelector('.cv-k') || {}).textContent || '').trim(),
+          v: ((x.querySelector('.cv-v') || {}).textContent || '').trim(),
+          l: ((x.querySelector('.cv-l') || {}).textContent || '').trim(),
+          sm: x.classList.contains('cruce-sm')
+        })),
         cruces: [...h.querySelectorAll('.cruces li, .cruce')].map(x =>
           x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
         coherencia: (function () {
@@ -781,6 +825,8 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-a.html', r.soloA || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-b.html', r.soloB || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-gran.html', r.granEscala || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-gran-doc.html', r.docGran || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-cede.html', r.docCede || '', 'utf8');
   } catch (e) {}
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
@@ -1286,8 +1332,15 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   const cruPres = (B.cruces.filter(x => /Presión de crecimiento/.test(x))[0] || '');
   T('el cruce del cierre ya no cita el verde como presión',
     !!cruPres && !/verde/.test(cruPres), cruPres || '(sin cruce)');
-  T('y cita la superficie dura o dice que no tiene ningún proxy medido',
-    /superficie dura|sin ningún proxy medido/.test(cruPres), cruPres);
+  /* §1 (v899) · la casilla sin proxy medido ya no imprime una frase donde va
+     una cifra: imprime SIN MEDIR, que es lo que §1 pide para toda casilla de
+     la síntesis cuyo origen no se pudo medir. Se acepta la rama medida —la
+     superficie dura— y la no medida, pero la no medida tiene que ir marcada
+     como tal Y nombrar lo que le falta: sin la segunda mitad, bastaría con
+     decir «SIN MEDIR» y callar. */
+  T('y cita la superficie dura, o dice SIN MEDIR y nombra el proxy que le falta',
+    /superficie dura/.test(cruPres) ||
+    (/SIN MEDIR/.test(cruPres) && /huella construida|SECOP/.test(cruPres)), cruPres);
 
   /* Y la rama MEDIDA, con la serie inyectada: es la que §17 pide de verdad
      —la huella construida entre dos fechas de imagen— y la que el sector de
@@ -1310,6 +1363,72 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      esta tanda, un `ReferenceError` dejó la hoja sin los once cruces y sin un
      solo aviso — la suite lo vio por tres aserciones que fallaban lejos de la
      causa. Una lista de cruces vacía es un fallo, no un resultado. */
+  /* §1 y §2 (v899) · LO QUE NO SE MIDIÓ Y LO QUE NO CUPO, DICHOS DISTINTO.
+     ──────────────────────────────────────────────────────────────────────
+     §1 amplía la regla de la v875 a la síntesis: una casilla cuyo origen es
+     una capa sin registros o una plantilla sin llenar no puede aparecer con
+     cifra. Se persigue la CLASE y no la casilla que el pliego nombró: en
+     todo el cierre, una casilla o trae una cifra, o va marcada como no
+     medida. Una frase puesta donde va la cifra —«sin trazado medido»— se
+     lee, a un palmo de «6,1 m²/hab», como si fuera un valor.
+
+     §2 es la otra mitad, y la causa no era la que el pliego suponía. Los
+     chequeos cruzados SÍ leen el papel desde la v879; lo que pasa es que un
+     panel que CEDIÓ su sitio no está en ese papel, y el chequeo lo daba por
+     no medido. Se reprodujo componiendo la hoja con esos dos paneles
+     apagados y salieron las dos frases del reporte, palabra por palabra. */
+  console.log('\n  -- §1 · una casilla sin medir no lleva cifra --');
+  {
+    const cas = [].concat(A.crucesDet || [], B.crucesDet || []);
+    T('el cierre trae sus casillas', cas.length >= 8, cas.length + ' casillas');
+    /* Una casilla con cifra es la que trae un número en el valor. Sin esto
+       la regla se podría cumplir marcando todo como no medido. */
+    const conCifra = cas.filter(c => /\d/.test(c.v) && !c.sm);
+    const marcadas = cas.filter(c => c.sm);
+    const sueltas = cas.filter(c => !c.sm && !/\d/.test(c.v));
+    T('las que traen cifra no van marcadas como no medidas',
+      conCifra.length >= 5, conCifra.length + ' con cifra');
+    T('y ninguna pone una frase donde va la cifra sin marcarse',
+      sueltas.length === 0,
+      sueltas.map(c => c.k + ': «' + c.v + '»').join(' | ') || 'ninguna');
+    /* Y la marca no puede quedarse en un rótulo: la casilla no medida tiene
+       que decir CÓMO se llena, que es lo que la vuelve una tarea en vez de
+       un muro. Es la decisión de la v880 con el «cómo se consigue». */
+    T('y cada casilla no medida dice qué la llena',
+      marcadas.every(c => /se calcula sola|se mide con|plantilla de campo|Dibujar|dibujando|se consulta|tabla de proyecciones/.test(c.l)),
+      marcadas.map(c => c.k).join(' · ') || 'ninguna marcada en este sector');
+  }
+
+  console.log('\n  -- §2 · un panel que cedió no es un dato que falte --');
+  {
+    const leerCoh = (html) => {
+      const out = [], re = /<li class="coh-([a-z-]+)[^"]*">([\s\S]*?)<\/li>/g;
+      let m; while ((m = re.exec(String(html || '')))) {
+        out.push({ e: m[1], t: m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() });
+      }
+      return out;
+    };
+    const cohCede = leerCoh(r.docCede);
+    const cohNormal = leerCoh(r.doc);
+    const dosDe = (l) => l.filter(x => /suelo disponible es el mismo|altura media construida es la misma/i.test(x.t));
+    const ced = dosDe(cohCede), nor = dosDe(cohNormal);
+    T('con los dos paneles puestos, los dos chequeos se cruzan',
+      nor.length === 2 && nor.every(x => x.e === 'pasa' || x.e === 'contradice'),
+      nor.map(x => x.e).join(' · ') || 'no salen');
+    T('y con el panel cedido NO dicen «sin dato»',
+      ced.length === 2 && ced.every(x => x.e === 'cedio'),
+      ced.map(x => x.e).join(' · ') || 'no salen');
+    T('sino que nombran el panel que cedió y cómo devolverlo',
+      ced.length === 2 && ced.every(x => /cedió su sitio/.test(x.t)) &&
+      ced.every(x => /apagar otro panel|imprimir esta hoja suelta/.test(x.t)),
+      (ced[0] || { t: '—' }).t.slice(0, 130));
+    /* Y la mitad que se puede perder sin darse cuenta: que no se marque como
+       «panel fuera» un chequeo que sí se pudo correr. */
+    T('y ningún chequeo de la hoja normal se marca como panel fuera',
+      cohNormal.filter(x => x.e === 'cedio').length === 0,
+      cohNormal.filter(x => x.e === 'cedio').map(x => x.t.slice(0, 40)).join(' | ') || 'ninguno');
+  }
+
   T('el cierre imprime sus cruces: una lista vacía sería un error tragado',
     B.cruces && B.cruces.length >= 8, (B.cruces || []).length + ' cruces');
 

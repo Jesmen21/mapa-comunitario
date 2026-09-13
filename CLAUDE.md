@@ -3702,6 +3702,128 @@ saltárselo perdería un nombre en silencio, que es justo lo que este módulo
 tiene prohibido. Queda dicho acá para que la tanda que lo aborde no lo
 descubra otra vez.
 
+## Lo que no se midió y lo que no cupo, dichos distinto (v899)
+
+§1 y §2 del pliego de ajustes v2, que son el mismo defecto visto desde dos
+sitios: **la hoja declarando que no tiene algo, cuando lo tiene**. Los dos
+llegaron con el texto impreso, y en los dos la causa que el pliego supone no
+es la causa — que es la regla de la v863 y la v879: una sospecha sobre datos
+se comprueba corriendo o leyendo el código, no recordándolo.
+
+### §1 · el cero que era del mapa y salió como diagnóstico
+
+> «CONTINUIDAD DEL PARAMENTO — 0 % del frente de la cuadra con fachada —
+> frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un
+> retroceso»
+
+El pliego dice que ese cero sale de la plantilla de campo «Actividad en
+primer piso», que está en blanco. **No.** `laCuadraDelLote().pctLleno` es la
+fracción del tramo de calle cubierta por **huellas de OpenStreetMap**
+proyectadas sobre la vía; la plantilla no entra en la cuenta.
+
+Pero el defecto sí es el que el pliego describe, y es exactamente el de la
+v875 reaparecido en la síntesis: **con cero huellas mapeadas sobre esa
+cuadra, `pctLleno` da cero siempre**. No mide un frente: mide una capa vacía.
+Y el cero se convirtió en diagnóstico urbano y en recomendación de proyecto,
+que es la forma más cara de equivocarse porque no se ve.
+
+El discriminante ya existía y nadie lo miraba —`cu.edificios`, igual que
+`puntos` en la v875—: no hizo falta tocar el motor, solo dejar de leer el
+cero como si fuera una medición.
+
+#### La regla, ampliada a las once casillas
+
+§1 la pide sin excepciones, y tenía razón en que la v1 la escribió solo para
+las propuestas: **ocho casillas del cierre imprimían una frase donde va la
+cifra** —«sin trazado medido», «ninguna clase con un punto mapeado», «sin
+ningún proxy medido»—, y a un palmo de «6,1 m²/hab» una frase en ese sitio
+se lee como un valor.
+
+Ahora hay dos formas y se distinguen a simple vista: la casilla medida trae
+su cifra; la que no se pudo medir imprime **SIN MEDIR** en ámbar y a trazos
+—el mismo código visual que los vacíos obligatorios de la v849, porque es lo
+mismo dicho en otro sitio: una tarea para quien analiza, no una conclusión
+para quien proyecta— y **dice qué la llena**. Sin esa segunda mitad la marca
+sería un rótulo; con ella es una tarea de una tarde, que es la decisión de la
+v880 con el «cómo se consigue».
+
+### §2 · el chequeo no leía una variable vacía: el panel había cedido
+
+> «SIN DATO — La altura media construida es la misma en las dos láminas ·
+> ninguna altura registrada ni contada en campo»
+> «SIN DATO — El suelo disponible es el mismo en las dos láminas · sin
+> llenos y vacíos medidos»
+
+El pliego concluye: «El chequeo está consultando una variable interna vacía
+en vez de la cifra compuesta en el papel. El propio panel dice que lee del
+papel y no de las variables: cúmplalo.» **Lo cumple desde la v879**:
+`chequeosCruzados` recorre el texto ya compuesto de las dos hojas.
+
+Lo que pasa es otra cosa, y se encontró reproduciéndola: **una caja que CEDIÓ
+su sitio para que la hoja cerrara no está en ese texto**. El chequeo entonces
+no la encuentra y la daba por no medida. Compuestas las dos hojas con esos
+dos paneles apagados, salen las dos frases del reporte **palabra por
+palabra** — que es lo que convierte una hipótesis en una causa.
+
+Y el camino hasta ahí valió por lo que descartó, porque las dos primeras
+sospechas eran falsas:
+
+* **La escala.** A 177 ha la cascada imprime «131 ha» y a 19,6 km² imprimiría
+  un área con separador de miles, que `nDec` no sabe leer —`haDe('… 1.627,1
+  ha …')` devuelve `null`, comprobado—. Pero ningún sitio de la hoja imprime
+  un área así: `formatearArea` da «19,23 km²» o «131 ha», y el cruce usa
+  `num`, que tampoco separa miles. Es un lector frágil y queda dicho, pero no
+  es este fallo.
+* **El trazado sin medir.** La corrida grande de `tdoslaminas` no volvía a
+  medir el trazado, así que los dos paneles no existían y los chequeos decían
+  «sin dato» **con razón**. Medir la cosa equivocada habría sido peor que no
+  medir: se añadió la medición del trazado a esa corrida antes de seguir.
+
+#### «Sin dato» y «panel fuera» son dos acciones distintas
+
+Un chequeo que no encuentra su cifra dice ahora cuál de las dos cosas pasó, y
+en dos colores distintos:
+
+| | Qué significa | Qué hay que hacer |
+|---|---|---|
+| **sin dato** (ámbar) | la cifra no está en ninguna de las dos hojas | conseguir la fuente que se nombra |
+| **panel fuera** (azul) | el panel que la lleva cedió su sitio | apagar otro panel, o imprimir esa hoja suelta |
+
+**Declarar ausente algo medido es peor que un dato de menos** —la lección de
+la v861— y acá además desorienta: quien lee sale a buscar una fuente cuando
+lo único que hace falta es apagar un panel. Juntarlos bajo el mismo rótulo
+los leería como uno solo, que es la misma decisión que la v880 tomó con el
+ámbar y el verde.
+
+### El material no podía producir ninguno de los dos
+
+Decimocuarta vez (v862, v866, v874, v877, v880, v882, v884, v888, v889,
+v890, v895, v896, v898, y esta), y esta vez fueron dos a la vez:
+
+* **El paramento.** El lote de `tsinmapear` está en el centro del sector,
+  donde sí hay huellas, así que la rama medida se ejercitaba y la otra no.
+  Se dibuja un **segundo lote** arriba del todo, donde la malla de calles
+  llega y las treinta y seis huellas no: la cuadra que le toca no tiene una
+  sola fachada mapeada. Las dos ramas se miden en la misma corrida —42 % con
+  huellas, SIN MEDIR sin ellas—, y medir solo la segunda dejaría pasar un
+  «SIN MEDIR» puesto en todas partes, que es la mentira contraria.
+* **El panel que cede.** En la hoja normal los dos paneles están y los dos
+  chequeos pasan, así que la comprobación habría pasado por no tener nada que
+  rechazar. `tdoslaminas` compone ahora una hoja más con esos dos paneles
+  apagados a propósito.
+
+### Demostrado contra la v898
+
+Siete aserciones en rojo, con el texto viejo impreso: **«0 % del frente de la
+cuadra con fachada · frente roto: el proyecto puede cerrar la cuadra»** —la
+frase exacta que §1 cita—, «sin ningún proxy medido» puesto donde va la
+cifra, y los dos chequeos diciendo `sin-dato` sobre un panel que cedió.
+
+Dos aserciones **no** fallan y son guardas, no afirmaciones nuevas: que con
+los dos paneles puestos los chequeos se crucen —cierto antes y que tiene que
+seguir siéndolo— y que ningún chequeo de la hoja normal se marque como
+«panel fuera», que es la manera de pasarse de marcar.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
