@@ -1253,7 +1253,14 @@ console.log('\n  -- las listas vivas --');
       { t: 'la sombra de lo construido',       tema: /sombra/i,
         prueba: () => /sombraDeLoConstruido/.test(j68) },
       { t: 'la estrategia de ventilación',     tema: /viento|ventilaci[oó]n/i,
-        prueba: () => /estrategiaDeVentilacion/.test(j68) }
+        prueba: () => /estrategiaDeVentilacion/.test(j68) },
+      /* §18 (v883). Tres renglones de esta lista —el perfil acotado, la
+         frecuencia de las rutas, el aforo— piden justo lo que estas seis
+         plantillas van a levantar. La plantilla NO es la medición, así que
+         los renglones siguen; pero su cláusula `ya:` tiene que decir que el
+         formulario existe, o la sesión siguiente lo escribe otra vez. */
+      { t: 'las seis plantillas de campo',     tema: /campo|plantilla|se levanta en campo|conteo en campo/i,
+        prueba: () => /PLANTILLAS_DE_CAMPO/.test(j68) && /plantillaCampo/.test(j68) }
     ] },
     /* Visión Territorial (v868). Sus cinco carencias se auditaron una por una
        contra el código y salieron honestas — no hay malla vial en el esquema,

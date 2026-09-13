@@ -746,6 +746,74 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
 
      Se comprueba sobre el PAPEL y no sobre las variables, que es la regla de
      la v879: lo que hay que ver es lo que el lector ve. */
+  /* ── §18 · seis plantillas de medición, no tres paneles ───────────────
+     La banda de campo traía tres paneles y los tres son de PERCEPCIÓN: qué
+     se sintió, qué permanece, qué dice quien vive ahí. El pliego pide seis
+     formularios de MEDICIÓN, con su cuadrícula y sus casillas rotuladas.
+
+     La aserción que más vale no es que estén: es que **cada una diga en qué
+     panel se pega su resultado**. Sin eso es un anexo —una hoja que se
+     llena, se archiva y no cambia nada— y el pliego pidió lo contrario. */
+  console.log('\n  -- §18 · las seis plantillas de medición --');
+  const cajaB = t => ((r.soloB || '').split('<section class="caja')
+    .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  const LAS_SEIS = ['Conteo de alturas por manzana', 'Perfil vial acotado',
+    'Estado de andenes por tramo', 'Rutas observadas y su frecuencia',
+    'Cupo real de equipamientos', 'Actividad en primer piso'];
+  const PL = LAS_SEIS.map(t => ({ t: t, html: cajaB(t) }));
+
+  T('las seis plantillas están impresas, no tres',
+    PL.every(x => !!x.html), PL.filter(x => !x.html).map(x => x.t).join(' · ') || 'las seis');
+  T('cada una dice qué se mide, con qué y cuánto demora',
+    PL.every(x => /Qué se mide/.test(x.html) && /Con qué/.test(x.html) && /Cuánto demora/.test(x.html)),
+    PL.filter(x => !/Cuánto demora/.test(x.html)).map(x => x.t).join(' · ') || 'las seis');
+  /* Lo que separa una plantilla de un anexo. */
+  T('y en qué panel de la lámina se pega lo que se traiga',
+    PL.every(x => /pl-pega/.test(x.html) && /Dónde se pega/.test(x.html)),
+    (PL[1].html.match(/Dónde se pega<\/i><span>([^<]{0,70})/) || ['', 'no lo dice'])[1]);
+
+  T('cada una trae su cuadrícula con las columnas rotuladas',
+    PL.every(x => (x.html.match(/<th>[^<]+<\/th>/g) || []).length >= 5),
+    PL.map(x => x.t.split(' ')[0] + ':' + (x.html.match(/<th>/g) || []).length).join(' · '));
+  /* Y con filas de verdad para escribir: una cuadrícula de una sola fila no
+     sirve para recorrer una manzana. */
+  T('y filas en blanco suficientes para una salida',
+    PL.every(x => (x.html.match(/<tr><td><\/td>/g) || []).length >= 7),
+    PL.map(x => x.t.split(' ')[0] + ':' + (x.html.match(/<tr><td><\/td>/g) || []).length).join(' · '));
+  T('ninguna casilla viene llena: se imprimen en blanco',
+    PL.every(x => {
+      const cuerpo = (x.html.match(/<tbody>[\s\S]*?<\/tbody>/) || [''])[0];
+      return cuerpo && !/<td>[^<]/.test(cuerpo);
+    }));
+
+  T('van en banda propia, con su pregunta',
+    /Qué medir en la calle/.test(r.soloB || '') &&
+    /¿Qué hay que ir a levantar, con qué se mide/.test(r.soloB || ''),
+    (((r.soloB || '').match(/¿Qué hay que ir a levantar[^<]{0,70}/) || ['sin banda']))[0]);
+  /* La advertencia que de verdad hace falta: tres de estas seis levantan
+     justo lo que la hoja declara faltando, y una plantilla en blanco se
+     puede leer como si la carencia ya estuviera resuelta. */
+  T('y la banda avisa que una plantilla vacía no mide nada',
+    /Una plantilla vacía no mide nada/.test(r.soloB || '') &&
+    /siguen abiertas hasta que alguien/.test(r.soloB || ''),
+    (((r.soloB || '').match(/Una plantilla vacía[^<]{0,90}/) || ['no lo avisa']))[0]);
+  /* Y la otra mitad de lo mismo, medida sobre la hoja: que la carencia que
+     la plantilla viene a cerrar SIGA declarada. Si una tanda futura leyera
+     el formulario como si fuera la medición, esto se pone rojo. */
+  T('la carencia de frecuencia sigue declarada, porque el formulario no la mide',
+    /cada cuánto pasan no está en ninguna parte/.test(r.soloB || ''),
+    (((r.soloB || '').match(/cada cuánto pasan[^<]{0,80}/) || ['ya no la declara']))[0]);
+
+  /* §20 · la nota de desarrollo que salía impresa en el pliego real. */
+  T('ninguna hoja imprime la nota de desarrollo de la bolsa de sueltas',
+    !/Mediciones que todavía no tienen banda propia/.test((r.soloA || '') + (r.soloB || '')));
+  /* Y la clase, no el caso: una banda nueva sin conclusión propia caería en
+     el `default` y la imprimiría otra vez. Se exige que TODA conclusión
+     impresa diga algo del contenido de su banda — ninguna puede ser la de
+     «no se pudo redactar», que es la que sale cuando revienta. */
+  T('y ninguna banda cierra con la conclusión de emergencia',
+    !/la conclusión no se pudo redactar/.test((r.soloA || '') + (r.soloB || '')));
+
   console.log('\n  -- §12 · la banda ambiental cierra en decisión --');
   const cajaDeA = (doc, t) => ((doc || '').split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');

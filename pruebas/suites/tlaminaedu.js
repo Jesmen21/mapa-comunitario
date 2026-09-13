@@ -292,9 +292,20 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           l: (c.querySelector('.cv-l') || {}).textContent || '' })),
         decisiones: [...document.querySelectorAll('.banda-ambiental .caja .decide')].map(d => ({
           t: (d.closest('.caja').querySelector('h2') || {}).textContent || '?', texto: d.textContent })),
+        /* Dos clases de panel de campo, y se miden distinto (v883). Los tres
+           de PERCEPCIÓN traen una instrucción en prosa y renglones o casillas
+           rotuladas; las seis PLANTILLAS de medición traen las cuatro
+           etiquetas de instrucción —qué, con qué, cuánto demora, dónde se
+           pega— y una cuadrícula de celdas en blanco. Pedirle `.lee` a una
+           plantilla es medir la marca de la otra. */
         campo: [...document.querySelectorAll('.caja-campo')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height),
           casillas: c.querySelectorAll('.cf').length, renglones: !!c.querySelector('.renglones'),
+          plantilla: c.classList.contains('caja-plantilla'),
+          comoN: c.querySelectorAll('.pl-como .pl-c').length,
+          pega: !!c.querySelector('.pl-pega'),
+          columnas: c.querySelectorAll('.pl-rej th').length,
+          celdas: [...c.querySelectorAll('.pl-rej td')].filter(td => !td.textContent.trim()).length,
           instruccion: (c.querySelector('.lee') || {}).textContent || '' })),
         // La pista nominal: la rejilla en medias columnas (16 parada, 24 acostada).
         unidad: rej.offsetWidth / (document.querySelector('.hoja').offsetWidth > document.querySelector('.hoja').offsetHeight ? 24 : 16),
@@ -613,15 +624,38 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     const nombresCampo = o.campo.map(c => c.t);
     const PANELES = ['Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá'];
     const IDS_PANEL = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];
+    /* §18 (v883): las seis plantillas de medición, que son otra cosa que los
+       tres de percepción y por eso se comprueban aparte. */
+    const PLANTILLAS = ['Conteo de alturas por manzana', 'Perfil vial acotado',
+      'Estado de andenes por tramo', 'Rutas observadas y su frecuencia',
+      'Cupo real de equipamientos', 'Actividad en primer piso'];
+    const IDS_PLANTILLA = ['conteo-de-alturas-por-manzana', 'perfil-vial-acotado',
+      'estado-de-andenes-por-tramo', 'rutas-observadas-y-su-frecuencia',
+      'cupo-real-de-equipamientos', 'actividad-en-primer-piso'];
     /* Parada —el formato del pliego educativo— los tres paneles no ceden.
        Acostada, con 300 mm menos, ceden los últimos y quedan declarados. */
     T(nom + (nom === 'parada' ? ': los tres paneles de campo están impresos, integrados en su banda' : ': los paneles de campo están impresos o declarados fuera'),
       nom === 'parada' ? PANELES.every(x => nombresCampo.indexOf(x) >= 0)
                        : PANELES.every((x, i) => nombresCampo.indexOf(x) >= 0 || fuera.indexOf(IDS_PANEL[i]) >= 0),
       nombresCampo.join(' · ') || 'ninguno impreso');
-    T(nom + ': cada uno impreso trae su instrucción y sitio para escribir, de al menos 45 mm de papel',
-      (nom !== 'parada' || o.campo.length === 3) && o.campo.every(c => c.alto >= 45 && c.instruccion.length >= 40 && (c.casillas >= 3 || c.renglones)),
-      o.campo.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + (c.casillas || 'r')).join(' · ') || 'ninguno impreso');
+    T(nom + (nom === 'parada' ? ': las seis plantillas de medición están impresas' : ': las seis plantillas están impresas o declaradas fuera'),
+      nom === 'parada' ? PLANTILLAS.every(x => nombresCampo.indexOf(x) >= 0)
+                       : PLANTILLAS.every((x, i) => nombresCampo.indexOf(x) >= 0 || fuera.indexOf(IDS_PLANTILLA[i]) >= 0),
+      PLANTILLAS.filter(x => nombresCampo.indexOf(x) < 0).join(' · ') || 'las seis');
+    /* Cada clase con lo suyo. Un panel de percepción sin su instrucción en
+       prosa no dice qué anotar; una plantilla sin sus cuatro etiquetas y sin
+       celdas en blanco no se puede llenar en la calle. */
+    const dePercepcion = o.campo.filter(c => !c.plantilla);
+    T(nom + ': los de percepción traen su instrucción y sitio para escribir, 45 mm de papel o más',
+      dePercepcion.length > 0 &&
+      dePercepcion.every(c => c.alto >= 45 && c.instruccion.length >= 40 && (c.casillas >= 3 || c.renglones)),
+      dePercepcion.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + (c.casillas || 'r')).join(' · ') || 'ninguno impreso');
+    const plantillas = o.campo.filter(c => c.plantilla);
+    T(nom + ': las plantillas traen las cuatro instrucciones, su cuadrícula y dónde se pegan',
+      plantillas.length > 0 &&
+      plantillas.every(c => c.alto >= 45 && c.comoN === 4 && c.pega && c.columnas >= 5 && c.celdas >= 35),
+      plantillas.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + c.columnas + 'col/' + c.celdas + 'celdas')
+        .join(' · ') || 'ninguna impresa');
   });
 
   /* ── Tanda 3 (v849): los vacíos obligatorios y los cruces ──────────── */

@@ -3346,6 +3346,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Lo que el censo trae además': 'sector',
     'Suelo disponible real': 'sector', 'Potencial edificatorio': 'sector',
     // Lo que se levanta en la calle: se levanta acá, en el sector.
+    /* §18 · las seis plantillas. Se levantan caminando el sector, así que
+       su escala es la del sector aunque cada fila sea de una manzana o de un
+       tramo: lo que se declara es sobre qué se mide, no el tamaño de la
+       casilla. */
+    'Conteo de alturas por manzana': 'sector', 'Perfil vial acotado': 'sector',
+    'Estado de andenes por tramo': 'sector', 'Rutas observadas y su frecuencia': 'sector',
+    'Cupo real de equipamientos': 'sector', 'Actividad en primer piso': 'sector',
     'Percepción del lugar': 'sector', 'Lo que no cambia': 'sector',
     'Voces de quien vive acá': 'sector', 'Movilidad real': 'sector', 'Riesgo oficial': 'sector',
     'Servicios públicos': 'sector',
@@ -3884,6 +3891,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       'Qué le pide el sitio al proyecto':  ['proyecto', 'plan'],
       'Lo intangible':                     ['campo', 'ojo'],
       'Lo levantado en campo':             ['campo', 'campo'],
+      'Conteo de alturas por manzana':     ['campo', 'edificio'],
+      'Perfil vial acotado':               ['campo', 'perfil'],
+      'Estado de andenes por tramo':       ['campo', 'mover'],
+      'Rutas observadas y su frecuencia':  ['campo', 'reloj'],
+      'Cupo real de equipamientos':        ['campo', 'poblacion'],
+      'Actividad en primer piso':          ['campo', 'capas'],
       'Percepción del lugar':              ['campo', 'lapiz'],
       'Lo que no cambia':                  ['campo', 'lapiz'],
       'Voces de quien vive acá':           ['campo', 'lapiz'],
@@ -4109,6 +4122,27 @@ function donaHTML(datos, colorDe, nombreDe) {
             }).join('') + '</div>'
           : '') +
         (renglones ? '<div class="renglones" style="--n:' + renglones + '"></div>' : '');
+    }
+    /* §18 · una plantilla de medición: la cabecera de instrucciones —qué se
+       mide, con qué, cuánto demora y DÓNDE SE PEGA— y la cuadrícula en
+       blanco con sus columnas rotuladas.
+
+       El «dónde se pega» es lo que la separa de un anexo: una hoja que se
+       llena, se archiva y no cambia ningún panel no le sirve a nadie. */
+    function plantillaCampo(p) {
+      return '<div class="pl-como">' +
+          '<div class="pl-c"><i>Qué se mide</i><span>' + esc(p.que) + '</span></div>' +
+          '<div class="pl-c"><i>Con qué</i><span>' + esc(p.con) + '</span></div>' +
+          '<div class="pl-c"><i>Cuánto demora</i><span>' + esc(p.demora) + '</span></div>' +
+          '<div class="pl-c pl-pega"><i>Dónde se pega</i><span>' + esc(p.pega) + '</span></div>' +
+        '</div>' +
+        '<table class="ancha pl-rej"><thead><tr>' +
+          p.cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') +
+        '</tr></thead><tbody>' +
+          Array.apply(null, { length: p.filas }).map(function () {
+            return '<tr>' + p.cols.map(function () { return '<td></td>'; }).join('') + '</tr>';
+          }).join('') +
+        '</tbody></table>';
     }
     function fila(etq, val) {
       return val === null || val === undefined || val === ''
@@ -6232,6 +6266,11 @@ function donaHTML(datos, colorDe, nombreDe) {
           ['«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá', '«…» — iniciales · edad · años acá']),
         'fam-campo caja-campo') +
 
+      /* §18 · las seis plantillas de medición, cada una con su cuadrícula. */
+      PLANTILLAS_DE_CAMPO.map(function (p) {
+        return caja(p.t, plantillaCampo(p), 'fam-campo caja-campo caja-plantilla');
+      }).join('') +
+
       caja('Lo intangible',
       (function () {
       var IT2 = window.URBIS_INTANGIBLE;
@@ -6361,6 +6400,15 @@ function donaHTML(datos, colorDe, nombreDe) {
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
                 'La sombra que proyecta', 'Potencial edificatorio', 'Suelo disponible real',
                 'Qué le pide el sitio al proyecto'] },
+      /* §18 · banda propia para las seis plantillas de medición. No caben
+         junto a los tres paneles de percepción y los cuatro vacíos —serían
+         catorce cajas en una banda— y sobre todo son OTRA pregunta: los de
+         percepción dicen qué se sintió, estos dicen qué hay que ir a medir.
+         Es la misma separación que hizo la v853 con «riesgo y servicios». */
+      { id: 'medir',      titulo: 'Qué medir en la calle', fam: 'campo', hoja: 'B',
+        pregunta: '¿Qué hay que ir a levantar, con qué se mide, cuánto demora y en qué panel se pega?',
+        que: 'seis plantillas en blanco, con su cuadrícula y su destino',
+        cajas: PLANTILLAS_DE_CAMPO.map(function (p) { return p.t; }) },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo', hoja: 'B',
         pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
         que: 'lo intangible · lo levantado · lo que falta · los datos oficiales que no hay',
@@ -6545,10 +6593,30 @@ function donaHTML(datos, colorDe, nombreDe) {
               return nv + ' usos nuevos encontrados en la calle, ' + ds + ' discrepancias con el mapa y ' + sv + ' registros sin verificar.';
             }
             return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar, y trae tres paneles para llenar a mano en la calle.';
+          case 'medir':
+            /* La advertencia que de verdad hace falta acá: tres de estas seis
+               levantan justo lo que la hoja declara faltando, y una plantilla
+               en blanco se puede leer como si la carencia ya estuviera
+               resuelta. El formulario es el camino, no el dato. */
+            return 'Seis plantillas en blanco, cada una con dónde se pega lo que se traiga. ' +
+                   'Una plantilla vacía no mide nada: las carencias que cierran —la frecuencia ' +
+                   'de las rutas, el perfil acotado, el cupo— siguen abiertas hasta que alguien ' +
+                   'las llene en la calle.';
           case 'sintesis':
             return 'Cinco propuestas ordenadas por necesidad medida y factibilidad del predio. URBIS recomienda; el estudiante y el jurado deciden.';
           default:
-            return 'Mediciones que todavía no tienen banda propia.';
+            /* Iba impreso «Mediciones que todavía no tienen banda propia»,
+               que es una nota de desarrollo: le habla a quien programa, no a
+               quien lee el pliego colgado en una pared. Y salía en la hoja
+               real (§20 del pliego de ajustes).
+
+               Lo que un lector necesita saber de la bolsa de «Otras
+               mediciones» es por qué esas cifras van juntas —no van juntas
+               por tema, van juntas para no perderse— y que cada una trae su
+               método declarado igual que las demás. */
+            return 'Estas mediciones no pertenecen a ninguna de las bandas anteriores y van juntas ' +
+                   'para que no se pierdan. Cada una trae su método y su escala declarados, como ' +
+                   'las demás: se leen una por una, no como conjunto.';
         }
       } catch (e) {
         return 'Las cajas de arriba traen la medición; la conclusión no se pudo redactar.';
@@ -8070,6 +8138,24 @@ function donaHTML(datos, colorDe, nombreDe) {
          recibe más, y la cifra exacta se lee después. Las dos filas que
          deciden —la que más y la que menos— van marcadas, porque son las que
          un proyecto usa y el resto es el degradado entre ellas. */
+      /* §18 · las plantillas de medición. La cuadrícula tiene que poder
+         LLENARSE a mano en la calle: las filas van con alto fijo en
+         milímetros de papel y no con el alto de la letra, porque lo que
+         manda es que quepa un número escrito con lápiz sobre una carpeta.
+         Y van sin relleno alterno: una trama detrás de un número escrito a
+         mano lo hace ilegible. */
+      '.caja-plantilla .pl-como{ display:grid; grid-template-columns:1fr 1fr; gap:1mm 3mm; margin:.8mm 0 1.6mm }' +
+      '.caja-plantilla .pl-c i{ display:block; font-style:normal; font-size:2.2mm; letter-spacing:.06em;' +
+        'text-transform:uppercase; color:#5B6B7B }' +
+      '.caja-plantilla .pl-c span{ display:block }' +
+      /* El destino va destacado: es lo que separa una plantilla de un anexo. */
+      '.caja-plantilla .pl-pega{ grid-column:1 / -1; border-top:.2mm solid #D8E2EA; padding-top:1mm }' +
+      '.caja-plantilla .pl-pega i{ color:#1B6B4A }' +
+      '.caja-plantilla .pl-pega span{ font-weight:700 }' +
+      '.pl-rej{ table-layout:fixed }' +
+      '.pl-rej th{ font-size:2.3mm; line-height:1.15; vertical-align:bottom; padding-bottom:.6mm }' +
+      '.pl-rej td{ height:5.2mm; border:.2mm solid #C7D7E4; background:#fff; padding:0 }' +
+      '.pl-rej tbody tr:nth-child(even) td{ background:#fff }' +
       '.ori td{ position:relative }' +
       '.ori .ori-b{ display:block; height:.7mm; background:#C7D7E4; border-radius:.4mm; margin:.5mm 0 0 auto }' +
       '.ori-dura td{ background:#FDF3E3 }' +
@@ -12765,6 +12851,15 @@ function donaHTML(datos, colorDe, nombreDe) {
         listo: !!res, falta: 'analice el sector', dato: 'la rosa de los rumbos' },
       { id: 'lo-que-falta-levantar', t: 'Lo que falta levantar', g: 'El trabajo del curso',
         listo: falt(), falta: 'no queda nada por levantar', dato: 'la lista de tareas' },
+      /* §18 · las seis plantillas de medición: siempre listas, como los tres
+         paneles de percepción, porque se imprimen en blanco. La condición es
+         la MISMA que usa la caja —`caja(p.t, plantillaCampo(p))` siempre
+         devuelve contenido—, que es lo que `tpliego` comprueba. */
+      ].concat(PLANTILLAS_DE_CAMPO.map(function (p) {
+        return { id: p.id, t: p.t, g: 'El trabajo del curso',
+                 listo: !!res, falta: 'analice el sector',
+                 dato: 'en blanco, con su cuadrícula' };
+      })).concat([
       /* Los tres paneles de campo: siempre listos, porque se llenan a mano. */
       { id: 'percepcion-del-lugar', t: 'Percepción del lugar', g: 'El trabajo del curso',
         listo: !!res, falta: 'analice el sector', dato: 'en blanco, para llenar en la calle' },
@@ -12779,7 +12874,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'norma-urbana', t: 'Norma urbana', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
       { id: 'movilidad-real', t: 'Movilidad real', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' },
       { id: 'informacion-legal-del-predio', t: 'Información legal del predio', g: 'Lo que falta', listo: !!res, falta: 'analice el sector', dato: 'sin dato oficial, dicho' }
-    ];
+    ]);
     var off = S.pliegoOff || [];
     /* Qué consigue cada caja gris. Se pidió así: «las cajas grises que salen
        en el análisis que no se han hecho, que sean el acceso rápido para
@@ -14168,7 +14263,81 @@ function donaHTML(datos, colorDe, nombreDe) {
      cede nunca, ya dice lo esencial. */
   /* Los paneles de campo: en blanco, para la calle. Ceden los últimos entre
      las cajas, con las baldosas de cifra. */
-  var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];
+  /* ── §18 · las seis plantillas de medición (v883) ─────────────────────
+     La banda de campo traía TRES paneles y los tres son de percepción: qué
+     se sintió, qué permanece, qué dice quien vive ahí. El pliego pide seis
+     más, y son de otra clase: **formularios de medición**, con su cuadrícula
+     y sus casillas rotuladas, para volver con números de la calle.
+
+     Por eso van en banda propia y no apretadas junto a las otras. Son otra
+     pregunta —qué hay que ir a medir, con qué, cuánto demora y dónde se
+     pega lo que se traiga— y es la misma razón por la que la v853 separó
+     «riesgo y servicios» del análisis ambiental.
+
+     **Cada plantilla dice en qué panel se pega su resultado.** Sin eso es un
+     anexo: una hoja que se llena, se archiva y no cambia nada. Con eso, cada
+     salida a la calle tiene un destino escrito en la misma lámina.
+
+     Y una advertencia que va impresa en la banda: **una plantilla en blanco
+     no mide nada.** Tres de estas seis levantan justo lo que la hoja declara
+     faltando —la frecuencia de las rutas, el perfil acotado, el aforo—, y
+     sería fácil leer la plantilla como si la carencia ya estuviera resuelta.
+     No lo está hasta que alguien la llene: el formulario es el camino, no el
+     dato. */
+  var PLANTILLAS_DE_CAMPO = [
+    { t: 'Conteo de alturas por manzana',
+      que: 'cuántos pisos tiene cada construcción de la manzana, contados desde la acera de enfrente',
+      con: 'a ojo, con la libreta; una persona sola',
+      demora: 'unos 20 minutos por manzana',
+      pega: '«Potencial edificatorio» y el mapa de alturas',
+      cols: ['Manzana', 'Lado o dirección', 'Pisos', 'Uso en planta baja', 'Observación'],
+      filas: 10 },
+    { t: 'Perfil vial acotado',
+      que: 'el ancho de cada pieza de la sección de la calle, de paramento a paramento',
+      con: 'cinta de 30 m o distanciómetro; dos personas, una sostiene',
+      demora: 'unos 10 minutos por tramo',
+      pega: '«Cómo se mueve el sector», que hoy solo tiene la calzada',
+      cols: ['Calle y tramo', 'Calzada (m)', 'Separador (m)', 'Andén izq. (m)', 'Andén der. (m)', 'Antejardín (m)'],
+      filas: 8 },
+    { t: 'Estado de andenes por tramo',
+      que: 'si el andén se puede usar: ancho libre de verdad, material, estado y qué lo obstruye',
+      con: 'cinta y la vista; se camina el tramo',
+      demora: 'unos 5 minutos por tramo',
+      pega: '«Movilidad real», que hoy se declara sin dato oficial',
+      cols: ['Tramo', 'Ancho libre (m)', 'Material', 'Estado', 'Qué lo obstruye', 'Rampa en esquina'],
+      filas: 8 },
+    { t: 'Rutas observadas y su frecuencia',
+      que: 'qué rutas paran de verdad en cada parada y cada cuánto pasan',
+      con: 'reloj, media hora sentado en la parada, en hora pico y en hora valle',
+      demora: '30 minutos por parada y por franja',
+      pega: '«Cómo se mueve el sector»: OpenStreetMap da el nombre de la ruta y nunca la frecuencia',
+      cols: ['Parada', 'Ruta (letrero)', 'Paso 1', 'Paso 2', 'Paso 3', 'Intervalo'],
+      filas: 8 },
+    { t: 'Cupo real de equipamientos',
+      que: 'a cuánta gente atiende de verdad cada equipamiento, preguntado en la portería',
+      con: 'la pregunta, en portería o secretaría; conviene ir en la mañana',
+      demora: 'unos 15 minutos por equipamiento',
+      pega: '«Quién queda por fuera», que hoy reparte la población por área y no por cupo',
+      cols: ['Equipamiento', 'Tipo', 'Cupo o capacidad', 'Jornadas', 'Cobra', 'Quién informó'],
+      filas: 7 },
+    { t: 'Actividad en primer piso',
+      que: 'cuántos metros del frente de la cuadra tienen puerta o vitrina abierta a la calle',
+      con: 'cinta, o pasos contados y calibrados antes de salir',
+      demora: 'unos 15 minutos por cuadra',
+      pega: '«Continuidad del paramento», en el cierre de esta lámina',
+      cols: ['Cuadra y lado', 'Frente total (m)', 'Con puerta o vitrina (m)', 'Muro ciego (m)', 'Cerrado ese día (m)'],
+      filas: 8 }
+  ];
+  /* El id de cada plantilla SE DERIVA del título y no se escribe a mano.
+     Escribiéndolo a mano puse `rutas-observadas-y-frecuencia` donde el slug
+     del título es `rutas-observadas-y-su-frecuencia`, y «dejar solo el plano»
+     —que apaga comparando `slugPliego(titulo)` contra la lista— se quedó sin
+     poder apagar esa caja. Lo cazó `tpliego`, que es el mismo fallo que la
+     v857 dejó advertido y la v878 volvió a encontrar. Derivándolo no puede
+     repetirse: cambiar el título cambia el id solo. */
+  PLANTILLAS_DE_CAMPO.forEach(function (x) { x.id = slugPliego(x.t); });
+  var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca']
+    .concat(PLANTILLAS_DE_CAMPO.map(function (x) { return x.id; }));
   /* Los cinco vacíos obligatorios (v849): baldosas que no ceden en ningún
      formato. Decir «sin dato oficial» es parte del análisis. */
   var PANELES_DE_VACIO = ['riesgo-oficial', 'servicios-publicos', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
@@ -15008,7 +15177,18 @@ function donaHTML(datos, colorDe, nombreDe) {
     'acuerdos': { f: 'acuerdos y desacuerdos entre quienes marcaron', fu: 'levantamiento del curso', c: 'testimonio', r: 'ninguna', e: 'pocas marcas, poco acuerdo' },
     'caminata': { f: 'tramos de calle alcanzados a 5, 10 y 15 minutos desde el lote', fu: 'red vial de OpenStreetMap, hoy', c: 'media-alta', r: 'isócronas', e: '±2 min' },
     'cobertura': { f: 'clasificación píxel a píxel de la foto satelital', fu: 'Esri World Imagery', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: '±8 %' },
-    'foto': { f: 'la imagen cruda', fu: 'Esri World Imagery; sin fecha publicada', c: 'alta como imagen', r: 'ninguna', e: 'puede tener años' }
+    'foto': { f: 'la imagen cruda', fu: 'Esri World Imagery; sin fecha publicada', c: 'alta como imagen', r: 'ninguna', e: 'puede tener años' },
+    /* §18 · las seis plantillas. El método de una plantilla en blanco es el
+       PROCEDIMIENTO de campo, no una fórmula: qué instrumento, contra qué se
+       contrasta y en qué se equivoca quien la llena. La confiabilidad dice
+       «ninguna hasta que se llene», que es la verdad y evita que la hoja se
+       lea como si el dato ya estuviera. */
+    'Conteo de alturas por manzana': { f: 'se cuentan los pisos de cada construcción desde la acera de enfrente y se anota el lado de la manzana', fu: 'observación directa del curso', c: 'ninguna hasta que se llene; después, alta', r: 'contrastar contra building:levels de OpenStreetMap y anotar las diferencias', e: 'un altillo o un semisótano se cuentan de más o de menos: anote la duda en la casilla' },
+    'Perfil vial acotado': { f: 'se mide cada pieza de la sección de paramento a paramento y se suman', fu: 'medición en campo con cinta', c: 'ninguna hasta que se llene; después, alta', r: 'el ancho de calzada que la hoja saca de la etiqueta width', e: 'medir en un solo punto del tramo: la sección cambia entre esquinas' },
+    'Estado de andenes por tramo': { f: 'ancho LIBRE —descontando postes, materas y vitrinas— y estado a criterio de quien camina', fu: 'medición y observación en campo', c: 'ninguna hasta que se llene; después, media: el estado es un juicio', r: 'NTC 4143 para rampas y pendientes de acceso', e: 'dos personas califican distinto el mismo andén: acuerde la escala antes de salir' },
+    'Rutas observadas y su frecuencia': { f: 'se anota la hora de paso de cada ruta y el intervalo sale de restar pasos consecutivos', fu: 'observación en la parada, con reloj', c: 'ninguna hasta que se llene; después, media', r: 'las rutas que OpenStreetMap registra en las paradas del sector', e: 'media hora en una sola franja no da la frecuencia del día: hacen falta hora pico y hora valle' },
+    'Cupo real de equipamientos': { f: 'se pregunta el cupo en portería y se anota quién informó', fu: 'la portería o la secretaría de cada equipamiento', c: 'ninguna hasta que se llene; después, la de quien contestó', r: 'la población del sector que la lámina proyecta', e: 'quien atiende la portería puede no saber la cifra exacta: por eso se anota quién informó' },
+    'Actividad en primer piso': { f: 'metros de frente con puerta o vitrina abierta sobre metros de frente total', fu: 'medición en campo con cinta o pasos calibrados', c: 'ninguna hasta que se llene; después, alta', r: 'la continuidad del paramento que calcula el cierre de esta lámina', e: 'un local cerrado ESE día no es un muro ciego: van en columnas distintas a propósito' }
   };
   var METODO_GENERICO = { f: 'método no descrito todavía en esta hoja', fu: 'las fuentes de la bibliografía', c: 'la de su fuente', r: 'ver la ficha en pantalla', e: 'no estimado' };
   function metodoDe(clave, hoyTxt) {

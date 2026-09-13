@@ -368,8 +368,14 @@ const geo=[
   console.log('\n  -- probar si cabe --');
   T('la prueba responde', !!r.cabe, r.cabe?r.cabe.texto:'no respondió');
   T('con esta lámina, cabe', !!r.cabe && r.cabe.si===true, r.cabe?r.cabe.texto:'');
+  /* El «[4-9]» de antes era una cota escrita cuando había menos bandas, y la
+     banda de plantillas de la v883 la hizo diez. Se conserva el PISO —menos
+     de cuatro bandas significa que el reparto se derrumbó, y eso sí hay que
+     ver— y se deja crecer por arriba: una cota superior escrita a mano falla
+     cada vez que el pliego gana una banda, y lo que denuncia entonces no es
+     un defecto. */
   T('y dice cuántas cajas y en cuántas bandas',
-    !!r.cabe && /\d+ cajas en [4-9] bandas/.test(r.cabe.texto||''), r.cabe?r.cabe.texto:'');
+    !!r.cabe && /\d+ cajas en (?:[4-9]|[1-9]\d+) bandas/.test(r.cabe.texto||''), r.cabe?r.cabe.texto:'');
   T('el marco escondido se retira solo', r.sinMarcos===0, r.sinMarcos+' marcos quedaron');
 
   console.log('\n  -- se guarda con la ficha --');

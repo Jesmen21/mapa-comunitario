@@ -2054,6 +2054,102 @@ Como en la v881, hay que devolver **las dos mitades**: el `git stash` de los
 tres archivos de `js/` no toca `motor-reglas.js`, que vive en el otro
 repositorio.
 
+## Seis plantillas para volver con números de la calle (v883)
+
+§18 del pliego de ajustes: «la banda anuncia que trae tres paneles para
+llenar a mano y se pidieron seis». Auditado antes de escribir, el reclamo era
+más de fondo que un conteo: **los tres que había son de PERCEPCIÓN** —qué se
+sintió, qué permanece, qué dice quien vive ahí— y los seis que pide el pliego
+son de otra clase, **formularios de medición** con su cuadrícula y sus
+casillas rotuladas.
+
+Las seis, con su columna rotulada y su instrumento:
+
+| Plantilla | Con qué | Dónde se pega |
+|---|---|---|
+| Conteo de alturas por manzana | a ojo desde la acera de enfrente | «Potencial edificatorio» y el mapa de alturas |
+| Perfil vial acotado | cinta de 30 m, dos personas | «Cómo se mueve el sector», que hoy solo tiene la calzada |
+| Estado de andenes por tramo | cinta y la vista, caminando | «Movilidad real», que hoy se declara sin dato oficial |
+| Rutas observadas y su frecuencia | reloj, media hora en la parada | la frecuencia, que OpenStreetMap nunca lleva |
+| Cupo real de equipamientos | la pregunta, en portería | «Quién queda por fuera» |
+| Actividad en primer piso | cinta o pasos calibrados | «Continuidad del paramento» |
+
+### «Dónde se pega» es lo que la separa de un anexo
+
+Es el campo que hace el trabajo. Una plantilla que se llena, se archiva y no
+cambia ningún panel es un anexo, y el pliego pidió lo contrario —«integrados,
+no como anexo», con las mismas palabras de la v848—. Con el destino escrito
+en la misma lámina, cada salida a la calle tiene a dónde llegar.
+
+Va destacado y en verde, aparte de las otras tres instrucciones: es la misma
+decisión de la v880 con «cómo se consigue», donde el ámbar dice «esto no lo
+tenemos» y el verde dice «así se consigue».
+
+### Una plantilla en blanco no mide nada
+
+**Tres de las seis levantan justo lo que la hoja declara faltando** —la
+frecuencia de las rutas, el perfil acotado, el cupo—, y ahí está el riesgo:
+es fácil leer el formulario como si la carencia ya estuviera resuelta. No lo
+está. El formulario es el camino, no el dato.
+
+Por eso la conclusión de la banda lo dice entero, y la suite lo persigue en
+las **dos** direcciones: que la advertencia esté, **y que la carencia de
+frecuencia siga declarada en la hoja**. Si una tanda futura confundiera el
+formulario con la medición y borrara la carencia, esa aserción se pone roja.
+
+Lo mismo en la lista viva: los renglones del perfil acotado y de la frecuencia
+**se quedan**, y su cláusula `ya:` nombra la plantilla diciendo qué es. Un
+renglón que no la nombrara haría que la sesión siguiente la escribiera otra
+vez; uno que la contara como medición sería la mentira de la v861.
+
+### Banda propia, porque son otra pregunta
+
+La banda de campo tenía ocho cajas —tres de percepción, los cuatro vacíos y
+lo levantado—; con seis más serían catorce. Pero el motivo no es el cupo: los
+de percepción dicen **qué se sintió** y estos dicen **qué hay que ir a
+medir**. Es la misma separación que hizo la v853 con «riesgo y servicios», y
+esta vez el contenido la justifica —a diferencia de la mudanza que la v882
+deshizo, que la justificaba un medidor roto.
+
+La banda nueva es «Qué medir en la calle», en la lámina B.
+
+### La nota de desarrollo que salía impresa (§20)
+
+El `default:` de `conclusionDeBanda` devolvía **«Mediciones que todavía no
+tienen banda propia»**, y eso se imprimía en el pliego real. Es una nota que
+le habla a quien programa, no a quien lee una hoja colgada en una pared.
+
+Y no era un caso aislado esperando: **una banda nueva sin `case` propio cae
+en ese `default`**, así que la banda de esta misma tanda la habría impreso.
+El texto dice ahora lo que un lector necesita saber de la bolsa de «Otras
+mediciones» —que van juntas para no perderse, no por tema, y que cada una
+trae su método y su escala—, y hay una aserción de clase: ninguna hoja puede
+imprimir la conclusión de emergencia.
+
+### La comprobación se hizo más precisa, no más laxa
+
+`tlaminaedu` exigía de todo panel de campo una instrucción en `.lee` y
+casillas `.cf` o renglones. Una plantilla no tiene ninguna de las tres: tiene
+cuatro etiquetas de instrucción y una cuadrícula. Aflojar la aserción para
+que pasara habría sido perder la prueba entera.
+
+Se partió en dos, y cada clase responde por lo suyo: **los de percepción**
+por su instrucción en prosa y su sitio para escribir; **las plantillas** por
+sus cuatro etiquetas, su «dónde se pega», sus columnas rotuladas y sus celdas
+en blanco —de 40 a 50 por plantilla, contadas vacías—. Es más de lo que se
+pedía antes, no menos.
+
+### Demostrado contra la v882
+
+Nueve aserciones en rojo de once, con «no lo dice» por el destino, «0» por
+las columnas y «sin banda». Dos pasan a propósito y son guardas, no
+afirmaciones nuevas: que la carencia de frecuencia siga declarada —cierto
+antes y que tiene que seguir siéndolo— y que ninguna banda cierre con la
+conclusión de emergencia.
+
+Y la décima, la de la nota de desarrollo, **falló contra la v882**: confirma
+que el pliego la venía imprimiendo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -2089,11 +2185,16 @@ que se ve a simple vista: la cláusula está o no está.
   el perímetro y no contra lo censado.
   `ya: la densidad de la ciudad sobre el área de sus manzanas censales, declarada con ese nombre y no como «área urbana»`
 * **El recorrido de cada ruta y su frecuencia** — un GTFS, o el cuadro de la
-  secretaría de tránsito. `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector`
+  secretaría de tránsito. La plantilla de campo levanta la frecuencia parada
+  por parada, pero **una plantilla en blanco no es una medición**: el renglón
+  se queda hasta que alguien la llene.
+  `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector, y la plantilla de campo para anotar las horas de paso con su intervalo`
 * **El aforo de hora pico** — un conteo en campo o el de la secretaría, con su
   fecha. `ya: el flujo modelado a partir de los usos y la jerarquía, rotulado como modelado y no como contado`
 * **El perfil acotado de la calle**: andenes, antejardines, arborización — se
-  levanta en campo. `ya: el ancho de vía leído de width con su cobertura, y qué parte de la red no tiene dato de andén`
+  levanta en campo, y la lámina ya trae con qué: el renglón se queda porque
+  la plantilla es el camino y no el dato.
+  `ya: el ancho de vía leído de width con su cobertura, qué parte de la red no tiene dato de andén, y las plantillas de campo del perfil acotado y del estado de andenes, con sus columnas y su instrumento`
 * **La vulnerabilidad por manzana** — no hay fuente abierta a esa escala.
   `ya: el estrato predominante con su mínimo y su máximo y su mapa por manzana, y el nombre del barrio y la comuna del geocodificador`
 * **Comprobar los nombres de campo del censo contra el servicio real** — desde
