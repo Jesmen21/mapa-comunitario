@@ -403,6 +403,17 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        pasaría por no tener nada que rechazar, que es el verde que este
        proyecto lleva seis tandas persiguiendo. */
     o.sinProyecto = R.laminaA({ hoja: 'A', proyecto: '', clima: CLIMA });
+    /* §17 · la rama MEDIDA de la presión de crecimiento. La serie de fotos
+       no se pide en esta suite —son diez descargas y esto es la lámina—, así
+       que la tendencia se inyecta por opciones, igual que el clima desde la
+       v882 y el terreno desde la v884. Sin esto la huella construida saldría
+       siempre «serie satelital no leída» y el proxy que §17 pide no se
+       ejercitaría en ninguna prueba, que es el agujero de la v874. */
+    o.conSerie = R.laminaA({ hoja: 'A', clima: CLIMA, evo: { wayback: { tendencia: {
+      desde: 2014, hasta: 2024, aniosUsados: 6,
+      verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
+      verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
+      aguaDesde: 3, aguaHasta: 3 } } } });
     return o;
   }, { C, POL, LOTE });
 
@@ -1104,6 +1115,74 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   const ASOLT = enLetras(ASOL);
   const SOMB = cajaDeA(r.soloA, 'La sombra de lo construido');
   const SOMBT = enLetras(SOMB);
+
+  console.log('\n  -- §17 · la presión de crecimiento, por sus proxies --');
+  /* El pliego lo dijo con esas palabras: «se resolvió con pérdida de
+     cobertura verde, que es consecuencia, no presión». El verde que se va
+     mide que alguien construyó, no la fuerza que empuja a construir. */
+  const PC = cajaDeA(r.soloA, 'Presión de crecimiento');
+  const pcTxt = enLetras(PC);
+  T('la caja de presión de crecimiento está, y en la lámina A',
+    !!PC && !/Presión de crecimiento<\/h2>/.test(String(r.soloB || '')),
+    PC ? 'está' : 'no está');
+  T('dice que las tres son proxies y no una medición de la presión',
+    /proxies/.test(pcTxt) && /[Nn]inguna[^.]{0,60}mide la presión directamente/.test(pcTxt),
+    (pcTxt.match(/[Nn]inguna[^.]*mide la presión[^.]*\./) || ['no lo dice'])[0].slice(0, 120));
+  /* Y cada uno declara DE QUÉ es proxy, que es la instrucción literal del
+     pliego. Sin esa frase los tres se leen como mediciones directas. */
+  T('los tres proxies están, cada uno con de qué es proxy',
+    /Huella construida/.test(pcTxt) && /Población del municipio/.test(pcTxt) &&
+    /Obra pública contratada/.test(pcTxt) &&
+    (pcTxt.match(/proxy de/g) || []).length >= 3,
+    (pcTxt.match(/proxy de/g) || []).length + ' declaraciones «proxy de»');
+  /* La huella construida es el proxy que §17 pide y que YA estaba medido:
+     `tendenciaDe` devuelve `duro` desde siempre, al lado del verde que el
+     cruce sí usaba. */
+  T('la huella construida es el proxy más directo, y se dice',
+    /más directo es la huella construida/.test(pcTxt),
+    (pcTxt.match(/De los tres[^.]*\./) || ['no lo dice'])[0].slice(0, 110));
+  /* La población es del MUNICIPIO y el pliego la pide por comuna: decirlo es
+     la diferencia entre un proxy y una suposición sobre este sector. */
+  T('la población se declara del municipio, no del sector',
+    /municipio entero/.test(pcTxt) && /por comuna/.test(pcTxt),
+    (pcTxt.match(/La población es del[^.]*\./) || ['no lo dice'])[0].slice(0, 130));
+  /* SECOP es la única de las tres que de verdad falta, y se dice qué haría. */
+  T('la obra contratada se declara sin consultar, con qué haría falta',
+    /SECOP/.test(pcTxt) && /sin consultar/.test(pcTxt),
+    (pcTxt.match(/SECOP[^.]*\./) || ['no lo dice'])[0].slice(0, 110));
+  /* Y el verde deja de hacer de indicador de presión: es el cambio de fondo
+     que §17 pide, así que se comprueba en el CIERRE, que es donde estaba. */
+  /* El cruce del cierre, de la lista que el lector ya saca de la hoja B. */
+  const cruPres = (B.cruces.filter(x => /Presión de crecimiento/.test(x))[0] || '');
+  T('el cruce del cierre ya no cita el verde como presión',
+    !!cruPres && !/verde/.test(cruPres), cruPres || '(sin cruce)');
+  T('y cita la superficie dura o dice que no tiene ningún proxy medido',
+    /superficie dura|sin ningún proxy medido/.test(cruPres), cruPres);
+
+  /* Y la rama MEDIDA, con la serie inyectada: es la que §17 pide de verdad
+     —la huella construida entre dos fechas de imagen— y la que el sector de
+     esta suite no puede producir por su cuenta. */
+  const PCS = enLetras(cajaDeA(r.conSerie, 'Presión de crecimiento'));
+  T('con la serie leída, la huella construida sale medida y con sus dos fechas',
+    /44,1 % → 53,5 %/.test(PCS) && /2014/.test(PCS) && /2024/.test(PCS),
+    (PCS.match(/44,1[^·]*·[^·]*/) || ['no la mide'])[0].slice(0, 110));
+  T('y la lectura sale de la huella, no del verde',
+    /se está llenando/.test(PCS) && !/perdió .* verde/.test(PCS),
+    (PCS.match(/El sector[^.]*\./) || ['sin lectura'])[0].slice(0, 120));
+  /* El umbral de 3 puntos es el mismo de la serie (js/80) y por debajo no se
+     afirma: una diferencia menor cabe en el error de medir dos fotos de años
+     y estaciones distintas. */
+  T('y declara el límite: por debajo de 3 puntos no se afirma',
+    /menor de 3 puntos/.test(PCS), (PCS.match(/menor de 3 puntos[^;]*/) || ['no lo dice'])[0].slice(0, 90));
+
+  /* Y la guarda que esto se ganó a pulso: los cruces del cierre van dentro de
+     un `try/catch` que devuelve la lista VACÍA si algo revienta. Al escribir
+     esta tanda, un `ReferenceError` dejó la hoja sin los once cruces y sin un
+     solo aviso — la suite lo vio por tres aserciones que fallaban lejos de la
+     causa. Una lista de cruces vacía es un fallo, no un resultado. */
+  T('el cierre imprime sus cruces: una lista vacía sería un error tragado',
+    B.cruces && B.cruces.length >= 8, (B.cruces || []).length + ' cruces');
+
   const CLIM = enLetras(cajaDeA(r.soloA, 'El clima'));
   const CHOQ = enLetras(cajaDeA(r.choque, 'El clima'));
   const SINRAD = enLetras(cajaDeA(r.sinRad, 'Asoleamiento'));

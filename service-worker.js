@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v887-siluetas-de-verdad';
+const URBIS_CACHE = 'urbis-v888-presion-por-proxies';
 const URBIS_ASSETS = [
   './',
   './index.html',

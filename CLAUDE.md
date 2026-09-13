@@ -2673,6 +2673,129 @@ La octava —que ninguna casilla imprima un área que no es la suya— pasa cont
 la v886 por no haber ninguna área que imprimir. Es una guarda contra el
 defecto que esta misma tanda encontró en el papel, no una afirmación nueva.
 
+## La presión de crecimiento, por sus proxies (v888)
+
+§17 del pliego de ajustes, con el diagnóstico exacto: «se resolvió con pérdida
+de cobertura verde, que es **consecuencia, no presión**». Y tiene razón —el
+verde que se va mide que alguien ya construyó, no la fuerza que empuja a
+construir—, pero el arreglo no era buscar otra fuente.
+
+### Dos de los tres proxies ya estaban medidos
+
+Auditado antes de escribir, que es la regla de la v863: de las tres fuentes
+que §17 propone, **dos estaban en el código y nadie las miraba**.
+
+* **La huella construida entre dos fechas de imagen.** `tendenciaDe`, en
+  `js/80`, devuelve `duro`, `duroDesde` y `duroHasta` desde que existe —
+  **al lado del verde que el cruce sí usaba**, en el mismo objeto y en la
+  misma línea. Es exactamente el segundo proxy del pliego, medido con el
+  mismo clasificador sobre las mismas fotos.
+* **La variación de población.** `st.crecimientoPct` la proyecta el DANE desde
+  el censo. El pliego la pide a escala de COMUNA y esta es MUNICIPAL, así que
+  entra declarada por lo que es.
+* **La obra pública contratada** (SECOP) es la única que de verdad falta.
+
+Es la quinta declaración de ausencia falsa de este módulo (v861, v863, v864,
+v884, y esta) y la primera en la que el dato estaba **en el mismo objeto** que
+el que sí se leía. El patrón no cambia: se escribió mirando lo que a una
+herramienta así suele faltarle, en vez de leer lo que ESTA mide.
+
+### «Declarar cuál es proxy y de qué» es la instrucción, no un adorno
+
+Cada renglón dice de qué es proxy, con esas palabras, porque **un indicador
+indirecto sin esa frase se lee como una medición directa**:
+
+| Proxy | De qué |
+|---|---|
+| Huella construida · 44,1 % → 53,5 % de superficie dura | de CUÁNTO se construyó |
+| Población del municipio · +2,4 % desde el censo | de CUÁNTA gente hay que alojar |
+| Obra pública contratada · sin consultar | de la INVERSIÓN comprometida |
+
+Y cada uno lleva su límite. El de la población es el que más importa: aplicarle
+al sector la tasa del municipio **supone que todos sus barrios crecen igual**,
+y en una ciudad con borde en expansión eso es falso. Decirlo es la diferencia
+entre un proxy y una suposición.
+
+El de la obra contratada es el que mejor mediría la presión de verdad —un
+contrato firmado precede a la obra en año y medio, así que empuja **antes** de
+verse en la foto—, y es el que falta. SECOP II es una consulta abierta y sin
+llave; desde la máquina de desarrollo el proxy la bloquea, igual que
+`ags.esri.co` y Overpass.
+
+### Un `ReferenceError` que dejó la hoja sin once cruces, en silencio
+
+El hallazgo caro de la tanda, y no era del panel.
+
+El bloque viejo de la presión declaraba `var ev, W, t` para leer la tendencia.
+Al reescribirlo, esas tres variables se fueron — y **el cruce 11, el del
+horizonte temporal, sesenta líneas más abajo, leía `t`**. Dos cruces acoplados
+por un local que uno dejaba puesto y el otro encontraba, sin que nada lo
+nombrara.
+
+Lo que lo hace caro es lo que pasó después: la lista de cruces se arma dentro
+de un `try { … } catch { cruces = []; }`, así que el `ReferenceError` se tragó
+y **la lámina B salió sin sus once cruces y sin un solo aviso**. El `catch`
+está bien puesto —un adorno no puede tumbar una hoja, que es la regla de la
+v870— pero convierte un error de programación en una hoja incompleta que se
+ve normal.
+
+Tres cosas quedaron de ahí:
+
+* El cruce 11 lee el tramo de años de `presionDeCrecimiento`, que es de donde
+  sale, y no de un local que otro cruce dejó puesto.
+* **La suite comprueba que el cierre imprima sus cruces.** Una lista vacía es
+  un error tragado, no un resultado: sin esa aserción, la siguiente vez que
+  algo reviente ahí la hoja volverá a salir muda.
+* Y el método: la suite lo señaló con **tres aserciones que fallaban lejos de
+  la causa** —el suelo disponible, el cruce de predios, los dos valores—.
+  Encontrarlo pidió instrumentar el `catch` para ver qué se estaba tragando.
+  Un `catch` que no deja rastro convierte media hora en una tarde.
+
+### La caja cuesta 8 mm de mapa, y por eso va solo en la hoja parada
+
+Medido, no supuesto, y es la lección de la v886 aplicada en la dirección
+contraria: allá cada milímetro de mapa costaba un panel; acá un panel cuesta
+milímetros de mapa.
+
+En la hoja **acostada** —300 mm menos de alto, y que ya cierra en el piso de
+letra— una caja más no hace ceder nada: le encoge los mapas. El mapa más chico
+pasaba de **57,4 a 49,2 mm** de lado menor, por debajo del piso que la v886
+dejó puesto.
+
+Así que va en la hoja de 60 × 90 vertical, que es el pliego educativo —§21
+escribe sus mínimos «contra la hoja de 60 × 90»— y donde el mapa más chico
+sigue en 64,4 mm. La acostada ya carga menos por la misma razón: los paneles
+de campo y los de vacío ceden ahí y no acá.
+
+Y el texto de la caja se escribió **corto a propósito**: lo que no puede
+faltar son las tres declaraciones de «proxy de»; el resto es prosa, y en este
+pliego la prosa se paga en milímetros de mapa.
+
+### La rama medida no existía en el sector de prueba
+
+Octava vez (v862, v866, v874, v877, v880, v882, v884, y esta). `tdoslaminas`
+no pide la serie de fotos —son diez descargas y esto es la lámina—, así que la
+huella construida habría salido **siempre** «serie satelital no leída» y el
+proxy que §17 pide de verdad no se habría ejercitado en ninguna prueba.
+
+La tendencia se inyecta por opciones, igual que el clima desde la v882 y el
+terreno desde la v884, y con ella sale la rama que importa: 44,1 % → 53,5 % de
+superficie dura, +9,4 puntos en diez años, «el sector se está llenando».
+
+### Dos suites siguieron el cambio, y las dos se apretaron
+
+`tlaminaedu` aceptaba que el cruce dijera «puntos de verde» o «estable»; ahora
+exige que **nombre el proxy que le falta** y que **no cite el verde** como si
+midiera la presión. Una prueba que falla por un cambio legítimo se hace más
+precisa, no más laxa.
+
+### Demostrado contra la v887
+
+Diez aserciones en rojo de doce, con el texto viejo impreso: «no está» por la
+caja, «0 declaraciones proxy de», y el cruce diciendo «serie satelital no
+leída · leer la evolución es lo que mide la presión» — que es justamente la
+frase que §17 corrigió.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -2723,6 +2846,11 @@ que se ve a simple vista: la cláusula está o no está.
   población por departamento y por comuna, que pide anclas del DANE como las
   municipales.
   `ya: el contorno real del país y del departamento, de geometría fija y dominio público, con el departamento resaltado dentro del país y el sitio del sector marcado dentro del departamento; la superficie de cada figura calculada sobre el mismo contorno que se dibuja, y la población del municipio y la del sector`
+* **La obra pública contratada y la variación de población POR COMUNA** — los
+  contratos de SECOP II (datos.gov.co) por municipio y año con su monto, y las
+  anclas del DANE a escala de comuna. Son los dos proxies de presión que el
+  pliego pide y esta versión no tiene.
+  `ya: la huella construida entre dos fechas de imagen —los puntos de superficie dura que el sector ganó, medidos con el mismo clasificador— y la variación de población del municipio, las dos declaradas como proxies y con su límite escrito`
 * **La vulnerabilidad por manzana** — no hay fuente abierta a esa escala.
   `ya: el estrato predominante con su mínimo y su máximo y su mapa por manzana, y el nombre del barrio y la comuna del geocodificador`
 * **Comprobar los nombres de campo del censo contra el servicio real** — desde

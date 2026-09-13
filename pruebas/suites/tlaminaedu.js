@@ -730,8 +730,17 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     /altura permitida: sin dato oficial/.test((CR.filter(c => c.k === 'Potencial edificatorio')[0] || { v: '' }).v));
   T('y la mezcla de usos cierra en decisión de diseño',
     /primer piso|vivienda|planta baja/.test((CR.filter(c => c.k === 'Mezcla de usos')[0] || { l: '' }).l));
-  T('la presión de crecimiento dice que la serie no está leída cuando no lo está, en vez de callar',
-    /serie satelital no leída|puntos de verde|estable/.test((CR.filter(c => c.k === 'Presión de crecimiento')[0] || { v: '', l: '' }).v + ' ' + (CR.filter(c => c.k === 'Presión de crecimiento')[0] || { l: '' }).l));
+  /* §17 (v888) · el cruce dejaba de citar el VERDE como presión: el verde es
+     consecuencia —mide que alguien construyó— y no la fuerza que empuja. La
+     aserción se apretó al cambiar: antes bastaba con que dijera algo; ahora
+     tiene que nombrar el proxy que le falta y no puede citar el verde. */
+  const cruPres = (CR.filter(c => c.k === 'Presión de crecimiento')[0] || { v: '', l: '' });
+  T('la presión de crecimiento nombra el proxy que le falta, en vez de callar',
+    /sin ningún proxy medido|superficie dura/.test(cruPres.v) &&
+    /huella construida|SECOP|superficie dura/.test(cruPres.l),
+    (cruPres.v + ' · ' + cruPres.l).slice(0, 120));
+  T('y no cita el verde como si midiera la presión',
+    !/verde/.test(cruPres.v + ' ' + cruPres.l), (cruPres.v + ' ' + cruPres.l).slice(0, 90));
 
   console.log('\n  -- cada dato ambiental cierra en una decisión --');
   const DEC = VC.decisiones || [];

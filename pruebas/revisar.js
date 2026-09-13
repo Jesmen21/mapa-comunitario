@@ -1288,6 +1288,12 @@ console.log('\n  -- las listas vivas --');
          silueta del país, que ya está. */
       { t: 'la silueta del país y del departamento', tema: /silueta|contorno|escala por escala|l[ií]mites administrativos/i,
         prueba: () => /URBIS_SILUETAS_CO/.test(j68) && /areaDeAnilloM2/.test(j68) },
+      /* §17 (v888). El renglón que queda pide SECOP y la comuna, así que toca
+         el mismo tema que los dos proxies que sí se miden: su cláusula `ya:`
+         tiene que nombrarlos o la tanda siguiente vuelve a pedir la huella
+         construida, que ya está. */
+      { t: 'los proxies de presión de crecimiento', tema: /presi[oó]n de crecimiento|SECOP|obra p[uú]blica|intercensal/i,
+        prueba: () => /presionDeCrecimiento/.test(j68) && /duroDesde/.test(j68) },
       /* §12 (v882). Las tres de la banda ambiental. La del sol es la que más
          falta hacía: el módulo tiene TRES estudios de sombra —vecinos,
          volumen permitido y ahora el del sector— y es fácil que una tanda

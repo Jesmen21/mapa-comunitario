@@ -3490,6 +3490,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     'La sombra de lo construido': 'sector',
     'Lo levantado en campo': 'sector', 'Lo que falta levantar': 'sector', 'Lo intangible': 'sector',
     'Cómo cambió el sitio': 'sector', 'La inundación': 'sector', 'Síntesis del sector': 'sector',
+    /* §17 · el proxy que manda es la huella construida del SECTOR; la
+       población es del municipio y la caja lo dice en su propio renglón,
+       que es donde se puede decir sin mentirle al rótulo. */
+    'Presión de crecimiento': 'sector',
     'Infraestructura de servicios': 'sector', 'Quién vive acá': 'sector',
     'Coherencia de las cifras': 'sector', 'Dónde queda, escala por escala': 'sector',
     /* La comparación con la ciudad se mide a escala de MUNICIPIO: es la
@@ -4028,6 +4032,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'El ruido del tránsito':             ['mover', 'alerta'],
       'Infraestructura de servicios':      ['suelo', 'industria'],
       'Cómo cambió el sitio':              ['suelo', 'reloj'],
+      'Presión de crecimiento':            ['suelo', 'reloj'],
       'Quién vive acá':                    ['sitio', 'poblacion'],
       'Qué manda en el sector':             ['sitio', 'estadistica'],
       'Dónde está la calle comercial':      ['sitio', 'comercio'],
@@ -5956,6 +5961,35 @@ function donaHTML(datos, colorDe, nombreDe) {
       'una diferencia menor de 3 puntos cabe en el error y no se afirma.</p>';
       })(), 'g3') +
 
+      /* ── §17 · Presión de crecimiento ────────────────────────────────
+         Los tres proxies del pliego, cada uno diciendo DE QUÉ es proxy. El
+         verde que se va estaba haciendo de indicador y es una consecuencia:
+         mide que alguien construyó, no la fuerza que empuja a construir. */
+      caja('Presión de crecimiento',
+      (function () {
+      var pr = presionDeCrecimiento(o.evo !== undefined ? o.evo : S.evo, st);
+      /* El texto de la caja va CORTO a propósito. Es contenido nuevo en una
+         hoja que ya cerraba apretada, y en este pliego cada milímetro que se
+         gasta se lo quita a un mapa —medido en la v886—: lo que no puede
+         faltar son las tres declaraciones de «proxy de», que son la
+         instrucción del pliego; el resto es prosa. */
+      return '<p class="lee">Ninguna mide la presión directamente —eso pediría las licencias de ' +
+        'construcción, que no son públicas—. Son <b>proxies</b>, y cada uno dice de qué.</p>' +
+        '<div class="prox">' + pr.filas.map(function (f) {
+          return '<div class="prox-f' + (f.medido ? '' : ' prox-no') + '">' +
+            '<b>' + esc(f.t) + '</b>' +
+            '<i>' + esc(f.v) + (f.d ? ' · ' + esc(f.d) : '') + '</i>' +
+            '<u>' + esc(f.proxy) + '</u>' +
+            (f.limite ? '<s>Límite: ' + esc(f.limite) + '</s>' : '') +
+            (f.comoSe ? '<s>Cómo se consigue: ' + esc(f.comoSe) + '</s>' : '') +
+            '</div>';
+        }).join('') + '</div>' +
+        (pr.lectura ? '<p class="lee"><b>' + esc(pr.lectura) + '</b></p>' : '') +
+        '<p class="nota">De los tres, el más directo es la huella construida: mide el resultado ' +
+        'físico. La población es del <b>municipio entero</b> —el pliego la pide por comuna— y la ' +
+        'obra contratada empuja <b>antes</b> de verse en la foto, por eso falta la que más haría.</p>';
+      })(), 'g3') +
+
       /* ── La infraestructura de servicios ──────────────────────────────
          Lo que hay registrado y a qué distancia. NO es cobertura de servicios
          públicos —eso es censo del DANE y no hay de dónde bajarlo—, y la caja
@@ -6597,7 +6631,18 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo', hoja: 'A',
         pregunta: '¿Hacia dónde viene moviéndose el sector, y a qué ritmo?',
         que: 'las fotos desde 2014 · lo medido desde 1984',
-        cajas: horiz ? [] : ['Cómo cambió el sitio'] },
+        /* §17 · la presión de crecimiento va en la hoja PARADA y no en la
+           acostada, y la razón es medida: la acostada tiene 300 mm menos de
+           alto y cierra en el piso de letra, así que una caja más no la
+           hace ceder nada — le encoge los mapas. Medido: su mapa más chico
+           pasaba de 57,4 a 49,2 mm de lado con esta caja dentro, por debajo
+           del piso que la v886 dejó puesto.
+
+           El pliego educativo es la hoja de 60 × 90 vertical —§21 escribe
+           sus mínimos «contra la hoja de 60 × 90»— y la acostada ya carga
+           menos por la misma razón: los paneles de campo y los de vacío
+           ceden ahí y no acá. */
+        cajas: horiz ? [] : ['Cómo cambió el sitio', 'Presión de crecimiento'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover', hoja: 'B',
         pregunta: '¿Cómo se llega, por dónde se entra y qué se alcanza a pie?',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
@@ -8452,6 +8497,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.tamanos b{ color:#075E88 }' +
       '.tamanos.corto{ color:#B42318 }' +
       '.tamanos.corto b{ color:#B42318 }' +
+      /* §17 · los tres proxies, uno por renglón: qué dice, de qué es proxy y
+         cuál es su límite. El de proxy va destacado porque es la instrucción
+         literal del pliego —«declarar cuál es proxy y de qué»— y sin él los
+         tres se leen como mediciones directas. */
+      '.prox{ display:flex; flex-direction:column; gap:2.2mm; margin:2mm 0 }' +
+      '.prox-f{ border-left:.8mm solid #34CCFE; padding-left:2.6mm }' +
+      '.prox-f.prox-no{ border-left-color:#D9A400; opacity:.92 }' +
+      '.prox-f b{ display:block; font-size:3.2mm; color:#0F1F2E }' +
+      '.prox-f i{ display:block; font-style:normal; font-size:3.4mm; font-weight:700; color:#075E88 }' +
+      '.prox-f u{ display:block; text-decoration:none; font-size:2.9mm; color:#0A6F9E; margin-top:.6mm }' +
+      '.prox-f s{ display:block; text-decoration:none; font-size:2.7mm; color:#6B7A8A; margin-top:.5mm }' +
       /* Las dos láminas en un documento: cada una ocupa su papel y la
          segunda empieza en página nueva. */
       '.hoja + .hoja{ page-break-before:always; break-before:page }' +
@@ -13142,6 +13198,15 @@ function donaHTML(datos, colorDe, nombreDe) {
                  Number((S.meta || {}).lat), Number((S.meta || {}).lng), S.trazado),
         falta: 'mida el trazado para tener las alturas del sector', dato: '9 y 15 h' },
 
+      /* §17 · `listo` es la MISMA condición que usa la caja para no salir
+         vacía —al menos un proxy medido—, que es lo que `tpliego` comprueba
+         que no se separe. La caja sale aunque falten dos de los tres: decir
+         cuál falta y qué haría es la mitad del panel. */
+      { id: 'presion-de-crecimiento', t: 'Presión de crecimiento', g: 'Ambiental',
+        listo: presionDeCrecimiento(S.evo, S.stats).medidas > 0,
+        falta: 'lea la evolución con «Cómo cambió el sitio» o analice un municipio con ancla del DANE',
+        dato: 'proxies' },
+
       { id: 'lo-intangible', t: 'Lo intangible', g: 'El trabajo del curso',
         listo: !!(S.intangible && S.intangible.length),
         falta: 'marque lo que viste en la calle',
@@ -15545,6 +15610,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     'El clima': { f: 'medias históricas de temperatura, lluvia y viento en el punto', fu: 'Open-Meteo, archivo climático', c: 'media-alta', r: 'confort entre 18 y 26 °C', e: 'el microclima del sector no se mide: ±2 °C' },
     'Asoleamiento': { f: 'posición del sol por fecha y hora (azimut y altura) sobre las orientaciones del lote', fu: 'cálculo astronómico para la latitud del sitio', c: 'alta', r: 'en el trópico la fachada al poniente es la crítica', e: 'sin obstrucciones: ver «La sombra de los vecinos»' },
     'La sombra de los vecinos': { f: 'proyección de las huellas vecinas con su altura a las 9, 12 y 15 h', fu: 'OpenStreetMap, hoy; sol calculado', c: 'media', r: 'la sombra de las 15 h manda el confort de la tarde', e: 'altura que falta = sombra que falta' },
+    'Presión de crecimiento': {
+      f: 'tres indicadores indirectos, cada uno declarado: los puntos de superficie dura ganados ' +
+         'entre dos fechas de imagen, la variación de población del municipio desde el censo, y la ' +
+         'obra pública contratada (que esta versión no consulta)',
+      fu: 'la serie de fotos del proveedor de imágenes, 2014 a hoy; proyecciones del DANE por ' +
+          'municipio; SECOP II sin consultar',
+      c: 'media para la huella; baja para la población, que es de otra escala',
+      r: 'las licencias de construcción serían la medida directa, y en Colombia no son públicas',
+      e: 'confundir un proxy con una medición: ninguno de los tres mide la presión, la indican' },
     'La sombra de lo construido': { f: 'largo = altura de la moda de pisos ÷ tangente de la altura del sol, a las 9 y a las 15 h', fu: 'alturas de OpenStreetMap y lo contado en campo, hoy; sol calculado para la latitud', c: 'media', r: 'la sombra que cruza la calzada decide si la planta baja de enfrente ve el sol', e: 'terreno plano y el cajón de «4 o más» agrupado: la sombra real es mayor, nunca menor' },
     'La amenaza sísmica': { f: 'zona de amenaza y coeficientes Aa y Av del municipio', fu: 'Servicio Geológico Colombiano; NSR-10 (2010), tabla A.2.3-2', c: 'alta como dato municipal', r: 'la microzonificación local, si existe', e: 'es del municipio, no del lote' },
     'La inundación': { f: 'cruce del sitio con las manchas de inundación por periodo de retorno', fu: 'IDEAM, zonas susceptibles de inundación', c: 'media: escala 1:100.000', r: 'periodo de retorno de 100 años', e: 'no reemplaza el estudio de detalle del POT' },
@@ -15711,6 +15785,117 @@ function donaHTML(datos, colorDe, nombreDe) {
      el estudiante» y comparara 500, 800 y 1.000: la misma esquina leída a
      tres radios enseña si la conclusión es del sector o del radio. Se
      cuenta sobre los usos registrados, en línea recta desde el centro. */
+  /* ── §17 · la presión de crecimiento, por sus proxies ───────────────
+     El pliego de ajustes lo llamó por su nombre: «se resolvió con pérdida de
+     cobertura verde, que es **consecuencia, no presión**». Y tiene razón —el
+     verde que se va es el resultado de que alguien construyó, no la fuerza
+     que empuja— pero el arreglo no era buscar otra fuente: dos de los tres
+     proxies que el pliego pide **ya estaban medidos y nadie los miraba**.
+
+     Es la quinta vez que pasa en este módulo (v861, v863, v864, v884, y
+     esta), y siempre por lo mismo: se escribió mirando lo que a una
+     herramienta así suele faltarle, en vez de leer lo que ESTA mide.
+
+     · La **huella construida entre dos fechas de imagen**: `tendenciaDe` en
+       `js/80` devuelve `duro`, `duroDesde` y `duroHasta` desde que existe,
+       al lado del verde que el cruce sí usaba. Es exactamente el segundo
+       proxy del pliego, medido con el mismo clasificador sobre las mismas
+       fotos.
+     · La **variación de población**: `st.crecimientoPct` la proyecta el DANE
+       desde el censo. El pliego la pide a escala de COMUNA y esta es
+       MUNICIPAL, así que entra declarada por lo que es — aplicarle al sector
+       la tasa del municipio supone que todos sus barrios crecen igual, y
+       decirlo es la diferencia entre un proxy y una suposición.
+     · La **obra pública contratada** (SECOP) es la que de verdad falta.
+
+     Cada renglón dice de qué es proxy, que es la instrucción literal del
+     pliego —«declarar cuál es proxy y de qué»—: un indicador indirecto sin
+     esa frase se lee como una medición directa de la presión, y ninguno de
+     los tres lo es. */
+  function presionDeCrecimiento(evo, st) {
+    var t = (evo && evo.wayback && evo.wayback.tendencia) || null;
+    var filas = [];
+    /* 1 · La huella construida. Es el proxy más directo de los tres: mide el
+       resultado físico de construir, no una intención ni una consecuencia
+       ambiental. */
+    if (t && t.duroDesde != null && t.duroHasta != null) {
+      filas.push({
+        id: 'huella', t: 'Huella construida',
+        v: conComa(t.duroDesde) + ' % → ' + conComa(t.duroHasta) + ' % de superficie dura',
+        d: (t.duro > 0 ? '+' : '') + conComa(t.duro) + ' puntos entre ' + t.desde + ' y ' + t.hasta,
+        proxy: 'proxy de CUÁNTO se construyó, medido sobre las fotos del mismo proveedor con ' +
+               'el clasificador de colores de la cobertura de hoy',
+        limite: 'una diferencia menor de 3 puntos cabe en el error de medición y no se afirma; ' +
+                'un techo nuevo sobre un lote ya duro no se ve',
+        medido: true, senal: t.duro
+      });
+    } else {
+      filas.push({
+        id: 'huella', t: 'Huella construida', v: 'serie satelital no leída', medido: false,
+        proxy: 'sería el proxy de CUÁNTO se construyó, y el más directo de los tres: la superficie ' +
+               'dura que el sector ganó entre dos fechas de imagen',
+        comoSe: 'se mide con el botón «Cómo cambió el sitio», que trae las fotos de 2014 a hoy'
+      });
+    }
+    /* 2 · La población. Escala MUNICIPAL y se dice: el pliego la pide por
+       comuna y el DANE la publica por municipio. */
+    if (st && st.crecimientoPct != null) {
+      filas.push({
+        id: 'poblacion', t: 'Población del municipio',
+        v: '+' + conComa(st.crecimientoPct) + ' % desde el censo de 2018',
+        d: st.tasaAnualDane != null ? conComa(st.tasaAnualDane) + ' % al año' : '',
+        proxy: 'proxy de CUÁNTA gente más hay que alojar, del municipio entero y no de este sector',
+        limite: 'supone que todos los barrios del municipio crecen igual, y en una ciudad con ' +
+                'borde en expansión eso es falso',
+        medido: true, escala: 'municipio'
+      });
+    } else {
+      filas.push({
+        id: 'poblacion', t: 'Población del municipio', v: 'sin proyección para este municipio',
+        medido: false,
+        proxy: 'sería el proxy de cuánta gente más hay que alojar',
+        comoSe: 'pide el ancla del DANE de ese municipio en assets/data/dane-proyecciones.json'
+      });
+    }
+    /* 3 · La obra pública. La única de las tres que no está, y la que mejor
+       mediría la presión de verdad: la plata que ya se comprometió. */
+    filas.push({
+      id: 'obra', t: 'Obra pública contratada', v: 'sin consultar', medido: false,
+      proxy: 'sería el proxy de la INVERSIÓN comprometida, que es la que empuja antes de que se ' +
+             'vea en la foto: un contrato firmado precede a la obra en año y medio',
+      comoSe: 'los contratos de SECOP II (datos.gov.co) por municipio y año, con su monto: es una ' +
+              'consulta abierta y sin llave, y esta versión no la hace'
+    });
+    var medidas = filas.filter(function (f) { return f.medido; });
+    /* La conclusión sale del proxy más directo que se tenga, y dice cuál es.
+       Sin ninguno, no se concluye: una presión deducida de cero proxies no
+       es una lectura prudente, es una invención. */
+    var h = filas[0].medido ? filas[0] : null;
+    var lectura = null;
+    if (h) {
+      lectura = h.senal >= 3
+        ? 'El sector se está llenando: ganó ' + conComa(h.senal) + ' puntos de superficie dura ' +
+          'en ' + (t.hasta - t.desde) + ' años. Un proyecto acá compite por lo último libre.'
+        : h.senal <= -3
+        ? 'El sector perdió superficie dura, que casi siempre es demolición o una foto con otra ' +
+          'estación: mirarlo en la calle antes de concluir.'
+        : 'Sin cambio afirmable en la huella construida: la diferencia cabe en el error de ' +
+          'medición. Presión baja, o un sector que ya estaba lleno en ' + t.desde + '.';
+    }
+    return { filas: filas, medidas: medidas.length, lectura: lectura,
+             /* El tramo de años que la serie cubre. Lo lee también el cruce
+                del horizonte temporal: hasta la v887 se lo alcanzaba por un
+                `var t` que este mismo bloque dejaba en el ámbito de la
+                función, y eso es una dependencia entre dos cruces que no se
+                ve —ver la nota de la v888—. */
+             desde: t ? t.desde : null, hasta: t ? t.hasta : null,
+             /* El resumen que cita el cierre, para que la caja y el cruce no
+                se separen — la regla de la v879 y de la v884. */
+             resumen: h ? (conComa(h.senal > 0 ? h.senal : -h.senal) + ' puntos de superficie dura ' +
+                           (h.senal > 0 ? 'de más' : 'de menos') + ' entre ' + t.desde + ' y ' + t.hasta)
+                        : 'sin ningún proxy medido' };
+  }
+
   /* ── Dónde queda, escala por escala (§3) ───────────────────────────
      Cinco siluetas en fila —país, departamento, municipio, comuna, sector—
      con la última resaltada. Sirve para una cosa concreta: un jurado que no
@@ -16158,15 +16343,19 @@ function donaHTML(datos, colorDe, nombreDe) {
       F('Suelo disponible real', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
     }
 
-    // 7 · Presión de crecimiento: el verde que se fue.
-    var ev = S.evo || {}, W = ev.wayback, t = W && W.tendencia;
-    if (t && t.verdeDesde != null && t.verdeHasta != null) {
-      var dv = Math.round((t.verdeHasta - t.verdeDesde) * 10) / 10;
-      F('Presión de crecimiento', 'verde del ' + num(t.verdeDesde) + ' % en ' + t.desde + ' al ' + num(t.verdeHasta) + ' % en ' + t.hasta,
-        dv < -5 ? 'perdió ' + num(-dv) + ' puntos de verde: el sector se está llenando y el proyecto compite por lo último libre'
-          : dv > 5 ? 'ganó verde: presión baja o abandono; mirarlo en la calle' : 'estable en una década: presión baja');
+    /* 7 · §17 · Presión de crecimiento. Citaba el VERDE que se fue, y el
+       pliego de ajustes lo corrigió: el verde es consecuencia, no presión.
+       Sale de `presionDeCrecimiento`, la misma función que arma el panel, y
+       no de una cuenta copiada: es la regla de la v879 y lo que la v884
+       encontró roto una tanda después de escribirla. */
+    var pres = presionDeCrecimiento(S.evo, st);
+    if (pres.lectura) {
+      F('Presión de crecimiento', pres.resumen,
+        pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.');
     } else {
-      F('Presión de crecimiento', 'serie satelital no leída', 'leer la evolución (2014 a hoy) es lo que mide la presión');
+      F('Presión de crecimiento', 'sin ningún proxy medido',
+        'la huella construida se lee con «Cómo cambió el sitio»; la obra pública contratada ' +
+        'de SECOP no se consulta en esta versión');
     }
 
     // 8 · Dependencia de acceso.
@@ -16228,8 +16417,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
     })();
 
-    // 11 · Horizonte temporal.
-    F('Horizonte temporal', (t ? 'medido de ' + t.desde + ' a ' + t.hasta : 'una sola foto: hoy') + ' · a 10 años: sin proyección del sector',
+    // 11 · Horizonte temporal. Lee el tramo de años de `presionDeCrecimiento`,
+    //      que es de donde sale, y no de un local que otro cruce dejó puesto.
+    F('Horizonte temporal',
+      (pres.desde ? 'medido de ' + pres.desde + ' a ' + pres.hasta : 'una sola foto: hoy') +
+      ' · a 10 años: sin proyección del sector',
       'la proyección DANE es del municipio, no del barrio: el proyecto se diseña para la gente de hoy y el suelo que quede');
 
     return filas;
