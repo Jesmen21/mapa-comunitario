@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v886-tamanos-comprobados';
+const URBIS_CACHE = 'urbis-v887-siluetas-de-verdad';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -175,6 +175,7 @@ const URBIS_ASSETS = [
   './js/80-cortes-a-mano.js',
   './js/77-sin-senal.js',
   './js/78-que-cabe.js',
+  './js/79-siluetas-co.js',
 ];
 
 self.addEventListener('install', event => {

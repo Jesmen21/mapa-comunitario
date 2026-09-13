@@ -1281,6 +1281,13 @@ console.log('\n  -- las listas vivas --');
         prueba: () => /coberturaAncho/.test(j68) },
       { t: 'la pirámide del sector',           tema: /pirámide|edades/i,
         prueba: () => /tramoDominante/.test(j68) },
+      /* §3 (v887). El país y el departamento son contorno de verdad, de
+         geometría fija. El renglón que queda pide el del MUNICIPIO y el de la
+         COMUNA, así que toca el mismo tema y su cláusula `ya:` tiene que
+         nombrar lo que sí se dibuja — o la tanda siguiente vuelve a pedir la
+         silueta del país, que ya está. */
+      { t: 'la silueta del país y del departamento', tema: /silueta|contorno|escala por escala|l[ií]mites administrativos/i,
+        prueba: () => /URBIS_SILUETAS_CO/.test(j68) && /areaDeAnilloM2/.test(j68) },
       /* §12 (v882). Las tres de la banda ambiental. La del sol es la que más
          falta hacía: el módulo tiene TRES estudios de sombra —vecinos,
          volumen permitido y ahora el del sector— y es fácil que una tanda

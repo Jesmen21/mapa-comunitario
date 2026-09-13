@@ -4602,11 +4602,31 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<p class="lee">' + esc(ea.cadena) + '</p>' +
         (ea.sinNombre.length
           ? '<p class="nota">Sin nombre en el geocodificador: ' + esc(ea.sinNombre.join(', ')) +
-            '. Se deja el marco vacío en vez de rellenarlo con una suposición.</p>'
+            '. Se deja la casilla sin rotular en vez de rellenarla con una suposición.</p>'
           : '') +
-        '<p class="nota">Los cuatro marcos de la izquierda son <b>esquemáticos</b>: ubican, no miden. ' +
-        'Este módulo no descarga los límites de país, departamento, municipio ni comuna. ' +
-        'Lo real son los nombres y la última silueta, que es el área analizada dibujada a escala.</p>';
+        /* §3 · de dónde sale cada contorno y con qué precisión. Un contorno
+           simplificado sigue siendo aproximado, y la tolerancia dice cuánto:
+           callarla dejaría leer la silueta como un límite legal. */
+        (ea.conSilueta
+          ? '<p class="nota">El contorno del país y el del departamento son los <b>reales</b>, de ' +
+            esc(ea.fuente) + ', simplificados a ' +
+            (ea.tolerancia ? conComa(Math.round(ea.tolerancia * 111)) + ' km' : 'la escala del dibujo') +
+            ': a quince milímetros de papel la simplificación no se ve, pero no son un límite ' +
+            'legal ni el territorio entero —las islas no se dibujan a esta escala—. ' +
+            'Cada casilla lleva su superficie, calculada sobre el mismo contorno que se dibuja.</p>'
+          : '<p class="nota">No se pudo leer la tabla de siluetas de Colombia, así que las casillas ' +
+            'de país y departamento salen sin contorno. Es un archivo del propio programa: ' +
+            'recargue la aplicación.</p>') +
+        (ea.prestadas.length
+          ? '<p class="nota">La casilla de ' + esc(conComaY(ea.prestadas)) + ' <b>ubica, no delimita</b>: ' +
+            'se marca el sitio dentro del departamento porque este módulo todavía no descarga los ' +
+            'límites administrativos de OpenStreetMap. Es una ubicación medida, no un contorno.</p>'
+          : '') +
+        (ea.sinPoblacion.length
+          ? '<p class="nota">Sin población al pie en ' + esc(conComaY(ea.sinPoblacion)) + ': ' +
+            'harían falta las proyecciones del DANE por departamento y por comuna, que este módulo ' +
+            'solo tiene por municipio. El área sí sale de la silueta en las cinco.</p>'
+          : '');
       })(), 'g1') +
 
       caja('Potencial edificatorio',
@@ -15569,11 +15589,16 @@ function donaHTML(datos, colorDe, nombreDe) {
       r: 'no hay estándar único; se lee contra la jerarquía declarada en el POT',
       e: 'vías sin nombre y sin sentido registrado no se cuentan como tales; el ancho cubre solo la parte de la red que trae el dato' },
     'Dónde queda, escala por escala': {
-      f: 'la cadena de límites administrativos que contienen al punto, del país al barrio',
-      fu: 'OpenStreetMap vía geocodificación inversa (LocationIQ), hoy',
-      c: 'alta para los nombres; los cuatro marcos exteriores son esquemáticos y no miden nada',
+      f: 'la cadena de límites administrativos que contienen al punto, del país al barrio, con ' +
+         'el contorno real del país y del departamento y la superficie de cada figura calculada ' +
+         'sobre el mismo contorno que se dibuja',
+      fu: 'los nombres, de OpenStreetMap vía geocodificación inversa (LocationIQ), hoy; los ' +
+          'contornos de país y departamento, de Natural Earth 1:10m, dominio público',
+      c: 'alta para los nombres y para las dos siluetas; el municipio y la comuna se ubican con ' +
+         'un punto medido y sin contorno propio',
       r: 'la división político-administrativa del DANE',
-      e: 'leer los marcos dibujados como si fueran los límites reales. Ubican, no miden' },
+      e: 'leer una silueta simplificada a 3 km como si fuera un límite legal, o el punto del ' +
+         'municipio como si fuera su borde' },
     'Potencial edificatorio': {
       f: 'altura media construida y altura máxima construida, contadas sobre los edificios con ' +
          'número de pisos registrado; la brecha entre las dos es la cota inferior del potencial',
@@ -15686,75 +15711,194 @@ function donaHTML(datos, colorDe, nombreDe) {
      el estudiante» y comparara 500, 800 y 1.000: la misma esquina leída a
      tres radios enseña si la conclusión es del sector o del radio. Se
      cuenta sobre los usos registrados, en línea recta desde el centro. */
-  /* ── Dónde queda, escala por escala (§3 A1 del pliego) ──────────────
+  /* ── Dónde queda, escala por escala (§3) ───────────────────────────
      Cinco siluetas en fila —país, departamento, municipio, comuna, sector—
      con la última resaltada. Sirve para una cosa concreta: un jurado que no
      conoce la ciudad no sabe si el sector que está mirando es el centro o un
      borde, y la cadena de escalas se lo dice en un vistazo.
 
-     Los cuatro primeros marcos son ESQUEMÁTICOS y la lámina lo dice: no son
-     los límites reales de Colombia, del departamento ni del municipio, que
-     este módulo no descarga. Lo real son los NOMBRES —salen del geocodificador—
-     y la última silueta, que es el área analizada dibujada de verdad. Pintar
-     un contorno inventado y no advertirlo sería exactamente lo que el pliego
-     prohíbe: presentar una suposición como un dato. */
+     Hasta la v886 los cuatro marcos de la izquierda eran RECTÁNGULOS A
+     TRAZOS con la palabra «esquemático» al pie, y el pliego de ajustes lo
+     prohibió con esas palabras: «nunca imprimir un marco vacío con la
+     palabra esquemático». Un marco vacío no ubica nada; solo ocupa el sitio
+     de la figura que debería estar.
+
+     Ahora el país y el departamento son su CONTORNO DE VERDAD, de geometría
+     fija (`js/79`, Natural Earth, dominio público, simplificada a unos 3 km y
+     declarado). Y cada casilla lleva al pie su superficie, calculada sobre el
+     propio contorno que se dibuja: el salto de escala se lee en números y no
+     solo en forma, que es lo que §3 pide.
+
+     Lo que todavía no se descarga es el contorno del MUNICIPIO y el de la
+     COMUNA —piden los límites administrativos de OpenStreetMap—. Esas dos
+     casillas no se quedan vacías: dibujan el departamento con el sitio
+     marcado dentro y dicen que es una ubicación y no un contorno. Localizar
+     de verdad y decir que no se midió el borde es distinto de pintar un
+     rectángulo a trazos. */
+  var ESC_W = 44, ESC_H = 40, ESC_GAP = 6;
+  /* El área de un anillo sobre la esfera. La fórmula plana se queda corta con
+     Colombia entera —doce grados de latitud— y acá se imprime al lado del
+     área del sector, que son unas hectáreas: dos cifras de la misma columna
+     tienen que salir del mismo método. */
+  function areaDeAnilloM2(anillo) {
+    var R = 6378137, s = 0, rad = Math.PI / 180;
+    for (var i = 0, n = anillo.length; i < n; i++) {
+      var p = anillo[i], q = anillo[(i + 1) % n];
+      s += (q[0] - p[0]) * rad * (2 + Math.sin(p[1] * rad) + Math.sin(q[1] * rad));
+    }
+    return Math.abs(s * R * R / 2);
+  }
+  function areaDeAnillos(anillos) {
+    return (anillos || []).reduce(function (a, r) { return a + areaDeAnilloM2(r); }, 0);
+  }
+  /* El encuadre de una casilla: la caja de todos los anillos del NIVEL, para
+     que el hijo se dibuje dentro del padre a la misma escala y se vea de qué
+     parte del padre se trata. */
+  function encuadreDe(anillos) {
+    var x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    (anillos || []).forEach(function (r) {
+      r.forEach(function (p) {
+        if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0];
+        if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1];
+      });
+    });
+    if (x0 > x1) return null;
+    var kx = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
+    var an = Math.max(1e-9, (x1 - x0) * kx), al = Math.max(1e-9, y1 - y0);
+    var k = Math.min((ESC_W - 8) / an, (ESC_H - 13) / al);
+    return {
+      k: k, kx: kx, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2,
+      x: function (lng) { return ESC_W / 2 + (lng - this.cx) * this.kx * this.k; },
+      y: function (lat) { return (ESC_H - 13) / 2 + 1.5 - (lat - this.cy) * this.k; }
+    };
+  }
+  function trazoDe(anillos, enc) {
+    return (anillos || []).map(function (r) {
+      return r.map(function (p, i) {
+        return (i ? 'L' : 'M') + Math.round(enc.x(p[0]) * 10) / 10 + ' ' +
+               Math.round(enc.y(p[1]) * 10) / 10;
+      }).join(' ') + ' Z';
+    }).join(' ');
+  }
   function escalasAnidadas(res, ubic) {
     var meta = (res && res.meta) || {};
+    var st = (res && res.stats) || {};
     var u = ubic || {};
+    var SIL = (typeof window !== 'undefined' && window.URBIS_SILUETAS_CO) || null;
+    /* El nombre del departamento del geocodificador contra el de la tabla:
+       se comparan sin tildes ni mayúsculas, porque «Norte de Santander» y
+       «NORTE DE SANTANDER» son el mismo sitio y una tabla que solo acierta
+       con la grafía exacta deja la casilla vacía por una tilde. */
+    var llano = function (t) {
+      return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    };
+    var silDep = (function () {
+      if (!SIL || !u.departamento) return null;
+      var q = llano(u.departamento), k = Object.keys(SIL.dep);
+      for (var i = 0; i < k.length; i++) if (llano(k[i]) === q) return { nom: k[i], anillos: SIL.dep[k[i]] };
+      /* Bogotá llega del geocodificador como ciudad y como departamento con
+         media docena de grafías; se acepta por prefijo antes de rendirse. */
+      for (var j = 0; j < k.length; j++) if (llano(k[j]).indexOf(q) === 0 || q.indexOf(llano(k[j])) === 0)
+        return { nom: k[j], anillos: SIL.dep[k[j]] };
+      return null;
+    })();
+    var silPais = SIL ? SIL.pais : null;
+    /* El sector: su trazo real. Si se analizó por radio es un círculo, que
+       también es su forma real y no un símbolo. */
+    var pts = (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3)
+      ? meta.poligono.map(function (p) { return [+p.lng, +p.lat]; }) : null;
+    var centro = (meta.lat != null && meta.lng != null) ? [+meta.lng, +meta.lat]
+      : (pts ? [pts[0][0], pts[0][1]] : null);
+    var areaSector = meta.areaM2 || (meta.radioM ? Math.PI * meta.radioM * meta.radioM : 0);
+    var fmtArea = function (m2) {
+      if (!m2) return null;
+      if (m2 >= 1e9) return fmtN(Math.round(m2 / 1e6)) + ' km²';
+      if (m2 >= 1e6) return conComa(Math.round(m2 / 1e5) / 10) + ' km²';
+      return conComa(Math.round(m2 / 1000) / 10) + ' ha';
+    };
+    /* Las cinco casillas. `dibujo` es lo que se pinta; `area` lo que se
+       imprime al pie; `pob` la población cuando el módulo la tiene de verdad
+       —el municipio la proyecta el DANE y el sector se mide— y `nota` lo que
+       hay que decir cuando se ubica sin contorno. */
     var niveles = [
-      { t: 'País', v: u.pais },
-      { t: 'Departamento', v: u.departamento },
-      { t: 'Municipio', v: u.ciudad },
-      { t: 'Comuna', v: u.comuna },
-      { t: 'Sector', v: u.barrio || 'el área analizada' }
+      { t: 'País', v: u.pais || (silPais ? 'Colombia' : ''), anillos: silPais, dentro: silDep && silDep.anillos },
+      { t: 'Departamento', v: u.departamento, anillos: silDep && silDep.anillos, punto: true },
+      { t: 'Municipio', v: u.ciudad, anillos: silDep && silDep.anillos, punto: true,
+        prestado: 'departamento', pob: st.poblacionMunicipio || null },
+      { t: 'Comuna', v: u.comuna, anillos: silDep && silDep.anillos, punto: true,
+        prestado: 'departamento' },
+      { t: 'Sector', v: u.barrio || 'el área analizada', propio: true,
+        area: areaSector, pob: st.poblacionEstimada || null }
     ];
     if (!niveles.slice(0, 4).filter(function (x) { return x.v; }).length) return null;
-    var W = 44, H = 34, GAP = 6, n = niveles.length;
-    var ancho = n * W + (n - 1) * GAP;
-    /* La silueta del sector: el trazo real, encajado en su casilla. Si se
-       analizó por radio es un círculo, que también es su forma real. */
-    var pts = (meta.forma === 'poligono' && meta.poligono && meta.poligono.length >= 3)
-      ? meta.poligono : null;
-    var silueta = (function () {
-      if (!pts) return '<circle cx="' + (W / 2) + '" cy="' + (H / 2 - 1) + '" r="9"' +
-        ' fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
-      var lats = pts.map(function (p) { return +p.lat; });
-      var lngs = pts.map(function (p) { return +p.lng; });
-      var y0 = Math.min.apply(null, lats), y1 = Math.max.apply(null, lats);
-      var x0 = Math.min.apply(null, lngs), x1 = Math.max.apply(null, lngs);
-      var kx = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
-      var an = Math.max(1e-9, (x1 - x0) * kx), al = Math.max(1e-9, y1 - y0);
-      var k = Math.min(22 / an, 18 / al);
-      var d = pts.map(function (p, i) {
-        var x = W / 2 + ((+p.lng - (x0 + x1) / 2) * kx) * k;
-        var y = (H / 2 - 1) - ((+p.lat - (y0 + y1) / 2)) * k;
-        return (i ? 'L' : 'M') + Math.round(x * 10) / 10 + ' ' + Math.round(y * 10) / 10;
-      }).join(' ') + ' Z';
-      return '<path d="' + d + '" fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
-    })();
+    var n = niveles.length, ancho = n * ESC_W + (n - 1) * ESC_GAP;
     var casillas = niveles.map(function (x, i) {
-      var dx = i * (W + GAP), ultimo = i === n - 1;
+      var dx = i * (ESC_W + ESC_GAP), ultimo = i === n - 1;
+      var dentro = '', fig = '', area = x.area || 0;
+      if (x.propio) {
+        /* El sector, encajado en su casilla: el polígono si se dibujó, el
+           círculo si se analizó por radio. */
+        if (pts) {
+          var e = encuadreDe([pts]);
+          fig = '<path d="' + trazoDe([pts], e) + '" fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
+        } else {
+          fig = '<circle cx="' + (ESC_W / 2) + '" cy="' + ((ESC_H - 13) / 2 + 1.5) + '" r="9"' +
+                ' fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
+        }
+      } else if (x.anillos && x.anillos.length) {
+        var en = encuadreDe(x.anillos);
+        fig = '<path d="' + trazoDe(x.anillos, en) + '" fill="' + (x.prestado ? '#EEF4F8' : '#DCEAF3') +
+              '" stroke="#0A6F9E" stroke-width="0.7"/>';
+        /* El nivel siguiente, resaltado DENTRO del anterior: es lo que
+           convierte cinco dibujos sueltos en una cadena de escalas. */
+        if (x.dentro && x.dentro.length) {
+          dentro = '<path d="' + trazoDe(x.dentro, en) + '" fill="#FFD166" fill-opacity=".85"' +
+                   ' stroke="#B8860B" stroke-width="0.7"/>';
+        } else if (x.punto && centro) {
+          dentro = '<circle cx="' + Math.round(en.x(centro[0]) * 10) / 10 + '" cy="' +
+                   Math.round(en.y(centro[1]) * 10) / 10 + '" r="1.9" fill="#FFD166"' +
+                   ' stroke="#B8860B" stroke-width="0.7"/>';
+        }
+        /* La superficie se imprime SOLO cuando el contorno es de esa figura.
+           La casilla del municipio dibuja el departamento porque no se
+           descarga su borde, y poner debajo los 22.140 km² del departamento
+           bajo el rótulo «Municipio» sería una cifra correcta de otra cosa
+           —la clase de error de la v879, en una casilla de quince
+           milímetros—. Se queda sin área y la caja dice por qué. */
+        if (!area && !x.prestado) area = areaDeAnillos(x.anillos);
+      }
+      var pie = [];
+      if (area) pie.push(fmtArea(area));
+      if (x.pob) pie.push(fmtN(x.pob) + ' hab.');
       return '<g transform="translate(' + dx + ',0)">' +
-        '<rect x=".6" y=".6" width="' + (W - 1.2) + '" height="' + (H - 1.2) + '" rx="2.5"' +
-          ' fill="' + (ultimo ? '#E8F4FA' : '#F6F9FB') + '"' +
+        '<rect x=".6" y=".6" width="' + (ESC_W - 1.2) + '" height="' + (ESC_H - 1.2) + '" rx="2.5"' +
+          ' fill="' + (ultimo ? '#E8F4FA' : '#FBFDFE') + '"' +
           ' stroke="' + (ultimo ? '#0A6F9E' : '#C9D6E0') + '"' +
-          ' stroke-width="' + (ultimo ? 1.6 : 0.8) + '"' +
-          (ultimo ? '' : ' stroke-dasharray="2 1.6"') + '/>' +
-        /* Los marcos de fuera llevan un contorno genérico —no es el mapa de
-           nadie— y el de dentro, el trazo real del sector. */
-        (ultimo ? silueta
-                : '<rect x="' + (W / 2 - 11) + '" y="' + (H / 2 - 10) + '" width="22" height="18" rx="2"' +
-                  ' fill="none" stroke="#C9D6E0" stroke-width="1" stroke-dasharray="2 1.6"/>') +
-        '<text x="' + (W / 2) + '" y="' + (H - 3) + '" text-anchor="middle"' +
+          ' stroke-width="' + (ultimo ? 1.6 : 0.8) + '"/>' +
+        fig + dentro +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 8.2) + '" text-anchor="middle"' +
           ' font-size="3.4" fill="' + (ultimo ? '#075E88' : '#6B7A8A') + '"' +
           ' font-weight="' + (ultimo ? 700 : 500) + '">' + esc(x.t) + '</text>' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 4.2) + '" text-anchor="middle"' +
+          ' font-size="2.9" fill="#0A6F9E">' + esc(pie[0] || '') + '</text>' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 1) + '" text-anchor="middle"' +
+          ' font-size="2.9" fill="#6B7A8A">' + esc(pie[1] || '') + '</text>' +
         '</g>';
     }).join('');
     return {
-      svg: '<svg viewBox="0 0 ' + ancho + ' ' + H + '" width="100%" role="img"' +
-        ' aria-label="Las cinco escalas, de país a sector">' + casillas + '</svg>',
+      svg: '<svg viewBox="0 0 ' + ancho + ' ' + ESC_H + '" width="100%" role="img"' +
+        ' aria-label="Las cinco escalas, de país a sector, con su superficie">' + casillas + '</svg>',
       cadena: niveles.filter(function (x) { return x.v; })
         .map(function (x) { return x.v; }).join(' › '),
+      conSilueta: !!(silPais && silDep),
+      /* Las casillas que UBICAN sin contorno propio, para que la caja lo diga
+         por su nombre en vez de dejarlo a la vista del lector. */
+      prestadas: niveles.filter(function (x) { return x.prestado && x.v; })
+        .map(function (x) { return x.t.toLowerCase(); }),
+      sinPoblacion: niveles.filter(function (x) { return !x.propio && !x.pob && x.v; })
+        .map(function (x) { return x.t.toLowerCase(); }),
+      fuente: SIL ? SIL.fuente : '',
+      tolerancia: SIL ? SIL.toleranciaGrados : null,
       sinNombre: niveles.filter(function (x) { return !x.v; }).map(function (x) { return x.t; })
     };
   }

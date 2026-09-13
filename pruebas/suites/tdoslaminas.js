@@ -525,8 +525,11 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
                      rojo: getComputedStyle(li).color })) };
         })(),
         /* Las cinco escalas anidadas: cuántos marcos, cómo se rotulan, y
-           cuáles van a trazos. Los cuatro de fuera TIENEN que ir a trazos:
-           son esquemáticos, no son los límites de nadie. */
+           —desde la v887— cuáles llevan un CONTORNO de verdad y qué
+           superficie imprime cada uno. Hasta la v886 se contaban los marcos
+           a trazos, que era la forma de decir «esto no es el límite de
+           nadie»; §3 lo prohibió y ahora lo que hay que contar es lo
+           contrario: que ninguna casilla esté vacía. */
         escalera: (function () {
           const c = [...h.querySelectorAll('.caja')].filter(x =>
             /Dónde queda, escala por escala/.test((x.querySelector('h2') || {}).textContent || ''))[0];
@@ -540,6 +543,17 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               const r = g.querySelector('rect');
               return r && r.getAttribute('stroke-dasharray');
             }).length,
+            /* Una casilla DIBUJADA es la que trae una figura: un contorno
+               (`path`) o el círculo del sector analizado por radio. El marco
+               de la casilla es un `rect` y no cuenta — contarlo sería dar por
+               buena exactamente la casilla vacía que §3 prohíbe. */
+            conFigura: marcos.filter(g => g.querySelector('path, circle')).length,
+            /* Y las superficies que imprime cada casilla, en el orden en que
+               salen. Son el «salto de escala en números» que §3 pide. */
+            areas: marcos.map(g => {
+              const t = [...g.querySelectorAll('text')].map(x => x.textContent.trim());
+              return (t[1] || '');
+            }),
             /* el último lleva el trazo REAL del área analizada: polígono o
                círculo, no un contorno genérico */
             ultimoReal: !!(marcos.length && marcos[marcos.length - 1].querySelector('path, circle')),
@@ -1293,16 +1307,56 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     T('y cada uno va rotulado con su escala',
       ['País', 'Departamento', 'Municipio', 'Comuna', 'Sector']
         .every((x, i) => EL.rotulos[i] === x), EL.rotulos.join(' › '));
-    T('los cuatro de fuera van a trazos, porque son esquemáticos',
-      EL.aTrazos === 4, EL.aTrazos + ' a trazos de ' + EL.marcos);
+    /* §3 (v887) · la aserción se dio vuelta. Exigía que los cuatro marcos
+       de fuera fueran rectángulos a trazos —la manera de decir «esto no es
+       el límite de nadie»— y el pliego lo prohibió: «nunca imprimir un
+       marco vacío con la palabra esquemático». Lo que tiene que fallar ahora
+       es justo lo que antes tenía que pasar. */
+    T('ninguna casilla se queda vacía: las cinco llevan su figura',
+      EL.conFigura === EL.marcos, EL.conFigura + ' con figura de ' + EL.marcos);
+    T('y ningún marco va ya a trazos, que era la forma de decir que no medía',
+      EL.aTrazos === 0, EL.aTrazos + ' a trazos');
     T('y el último lleva el trazo real del área analizada',
       EL.ultimoReal === true);
     /* La advertencia no es un detalle de estilo: pintar un contorno
        inventado sin decirlo es presentar una suposición como un dato, que
        es justo lo que el pliego prohíbe. */
-    T('la hoja declara que los cuatro marcos ubican y no miden',
-      /esquemáticos/.test(EL.texto) && /ubican, no miden/.test(EL.texto) &&
-      /no descarga los límites/.test(EL.texto), EL.texto.slice(-170));
+    /* Y el salto de escala se lee EN NÚMEROS: cada casilla imprime su
+       superficie, calculada sobre el mismo contorno que dibuja. Sin eso son
+       cinco siluetas bonitas de las que no se saca cuánto es cada salto. */
+    T('cada casilla con contorno propio imprime su superficie',
+      EL.areas.filter(x => /(km²|ha)/.test(x)).length >= 3,
+      EL.areas.join(' · '));
+    /* Y la que dibuja prestado NO imprime área. Salió midiendo el papel: las
+       casillas de municipio y comuna dibujan el departamento porque no se
+       descarga su borde, y debajo salían sus 22.140 km² bajo el rótulo
+       «Municipio». Una cifra correcta de otra cosa, que es la clase de error
+       de la v879 metida en una casilla de quince milímetros. */
+    T('y la que ubica sin contorno no imprime un área que no es la suya',
+      new Set(EL.areas.filter(x => /(km²|ha)/.test(x))).size ===
+        EL.areas.filter(x => /(km²|ha)/.test(x)).length,
+      EL.areas.map(x => x || '—').join(' · '));
+    /* El país y el departamento son contornos REALES y hay que decir de
+       dónde salen y con qué simplificación: un contorno simplificado sigue
+       siendo aproximado, y callarlo dejaría leerlo como un límite legal. */
+    T('la hoja dice que el contorno del país y del departamento son los reales, y su fuente',
+      /contorno del país y el del departamento son los <?b?>?reales/i.test(EL.texto.replace(/\s+/g, ' ')) ||
+      (/son los reales/.test(EL.texto) && /Natural Earth/.test(EL.texto)),
+      (EL.texto.match(/El contorno[^.]*\./) || ['no lo dice'])[0].slice(0, 150));
+    T('y declara la simplificación en vez de dejarla leer como un límite legal',
+      /simplificad/.test(EL.texto) && /no son un límite legal/.test(EL.texto),
+      (EL.texto.match(/simplificados a [^:]*/) || ['no lo dice'])[0].slice(0, 90));
+    /* Lo que se ubica sin contorno se dice por su nombre. Es la otra mitad
+       de §3: dibujar de verdad lo que se tiene y nombrar lo que no. */
+    T('el municipio y la comuna se declaran como ubicación, no como contorno',
+      /ubica, no delimita/.test(EL.texto) && /municipio/.test(EL.texto) && /comuna/.test(EL.texto),
+      (EL.texto.match(/La casilla de[^.]*\./) || ['no lo dice'])[0].slice(0, 140));
+    /* Y la palabra prohibida no vuelve. Persigue la CLASE: no es que esa
+       frase concreta desapareciera, es que la caja no puede volver a
+       presentar un marco como esquemático. */
+    T('y en ninguna parte de la caja vuelve la palabra «esquemático»',
+      !/esquemátic/i.test(EL.texto),
+      (EL.texto.match(/esquemátic\w*/i) || ['ninguna'])[0]);
     T('y nombra los cinco niveles de verdad, con el geocodificador',
       /Colombia/.test(EL.texto) && /Norte de Santander|Santander/.test(EL.texto),
       (EL.texto.match(/[^.]*›[^.]*/) || [''])[0].slice(0, 110));

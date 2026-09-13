@@ -2549,6 +2549,130 @@ null y mide 65,4», sin separar el piso del objetivo y sin el remedio escrito.
 La séptima —que ningún mapa baje de 60 mm— pasa contra las dos versiones a
 propósito: es una guarda contra encoger los mapas, no una afirmación nueva.
 
+## Nunca un marco vacío con la palabra «esquemático» (v887)
+
+§3 del pliego de ajustes, citado tal cual: «Hoy imprime cuatro marcos vacíos y
+confiesa que son esquemáticos». Y cierra con una prohibición: **«Nunca
+imprimir un marco vacío con la palabra esquemático.»**
+
+Tenía razón en lo de fondo. Un rectángulo a trazos con «País» debajo no ubica
+nada: ocupa el sitio de la figura que debería estar, y la confesión honesta
+—«ubican, no miden»— no lo arregla, porque **declarar bien una figura que no
+sirve sigue dejando la figura sin servir**. Es el caso raro en este proyecto:
+una declaración correcta que no salva al dibujo.
+
+### El país y el departamento, de geometría fija
+
+`js/79-siluetas-co.js`: el contorno de Colombia y el de los 33 departamentos,
+de **Natural Earth 1:10m**. La licencia fue el criterio de selección, no la
+precisión: es de **dominio público**, y una silueta que se imprime en una
+lámina que un estudiante entrega no puede depender de una atribución que nadie
+va a poner.
+
+Simplificado por Douglas-Peucker a **0,03°**, unos 3 km. A los quince
+milímetros de papel que mide cada casilla, 3 km es menos de un décimo de
+milímetro. El canje, medido:
+
+| Tolerancia | Puntos | Bytes |
+|---|---|---|
+| 0,02° | 2.601 | 42 KB |
+| **0,03°** | **1.921** | **31 KB** |
+| 0,08° | 833 | 14 KB |
+
+De 40 MB de origen a 31 KB, sin que se note en el dibujo. La tolerancia va
+escrita en el archivo **y en la hoja**: un contorno simplificado sigue siendo
+aproximado, y callarlo dejaría leer la silueta como un límite legal.
+
+Lo que no está: las partes de menos del 2 % del área mayor. Para Colombia eso
+deja fuera San Andrés, Providencia y Malpelo, que a esta escala serían un
+punto de tinta — y la hoja dice que es el contorno **continental**.
+
+Las áreas que salen del contorno simplificado se comprobaron contra las
+publicadas antes de conectarlo: Colombia **1.142.131 km²** contra 1.141.748
+reales (0,03 % de diferencia) y Norte de Santander **22.140** contra 21.658
+(2 %). Es lo que cuesta simplificar a 3 km, y es la razón de imprimir la
+tolerancia al lado.
+
+### El nivel siguiente, resaltado dentro del anterior
+
+Es lo que §3 pide y lo que convierte cinco dibujos sueltos en una cadena: el
+departamento va **relleno dentro del país**, y el sitio del sector va marcado
+dentro del departamento. Sin eso, cinco siluetas en fila no dicen que una está
+metida en la otra.
+
+### El salto de escala, en números
+
+Cada casilla lleva su superficie al pie, **calculada sobre el mismo contorno
+que dibuja** —no sobre una tabla aparte que podría envejecer por su cuenta—, y
+su población donde el módulo la tiene de verdad: el municipio, que proyecta el
+DANE, y el sector, que se mide.
+
+El área va con la fórmula **esférica** y no la plana. Con Colombia entera
+—doce grados de latitud— la plana se queda corta, y esta cifra se imprime en
+la misma fila que las hectáreas del sector: dos números de la misma columna
+tienen que salir del mismo método.
+
+### La casilla que ubica no imprime un área que no es la suya
+
+El hallazgo de la tanda, y salió **mirando el papel impreso**, no el código.
+Con todo funcionando, la fila salía así:
+
+```
+País 1.142.131 km² · Departamento 22.140 km² · Municipio 22.140 km² · Comuna 22.140 km²
+```
+
+Las casillas del municipio y de la comuna dibujan el departamento —sus bordes
+piden los límites administrativos de OpenStreetMap, que este módulo todavía no
+descarga— y debajo salían **los 22.140 km² del departamento bajo el rótulo
+«Municipio»**. Una cifra correcta de otra cosa, que es exactamente la clase de
+error que la v879 persiguió entre las dos láminas, metida en una casilla de
+quince milímetros.
+
+Se quedan sin área, y la caja dice por qué con esas palabras: **«ubica, no
+delimita»**. Localizar de verdad y decir que no se midió el borde es distinto
+de pintar un rectángulo a trazos — y es lo que separa esta versión de la
+anterior, no el dibujo.
+
+La comprobación persigue la clase y no el caso: **ninguna superficie puede
+repetirse entre casillas**. Dos casillas con el mismo número son dos figuras
+distintas diciendo que miden lo mismo.
+
+### Dos aserciones que se dieron vuelta
+
+`tdoslaminas` exigía que **los cuatro marcos de fuera fueran rectángulos a
+trazos** y que la hoja dijera «esquemáticos». Era la manera correcta de
+declarar un dibujo que no medía; con el dibujo medido, lo que tiene que fallar
+es justo lo que antes tenía que pasar. Es la misma vuelta que dio la v876 con
+la estructura de edades y la densidad de la ciudad.
+
+Y una guarda de clase: **la palabra «esquemático» no puede volver a la caja**.
+No persigue esa frase concreta —persigue que la caja vuelva a presentar un
+marco como un símbolo.
+
+### Lo que §3 pide y esta versión NO hace
+
+El contorno del **municipio** y el de la **comuna**. §3 los pide —el primero
+como geometría fija, el segundo de OpenStreetMap— y Natural Earth no llega a
+esa escala: no hay municipios en su cartografía. Traerlos pide una consulta de
+límites administrativos a Overpass, que desde la máquina de desarrollo el
+proxy bloquea, así que sería código que no se puede probar contra el servicio
+de verdad.
+
+Queda en la lista viva con su cláusula `ya:`, y las dos casillas **ubican con
+un punto medido** mientras tanto. También queda la población por departamento
+y por comuna: pide anclas del DANE como las municipales, y escribir treinta y
+tres cifras de memoria es exactamente lo que la v863 y la v879 prohíben.
+
+### Demostrado contra la v886
+
+Siete aserciones en rojo de ocho, con el texto viejo impreso: «1 con figura de
+5», «4 a trazos», ninguna superficie, sin fuente, sin simplificación
+declarada, y **«esquemáticos»** todavía en la caja.
+
+La octava —que ninguna casilla imprima un área que no es la suya— pasa contra
+la v886 por no haber ninguna área que imprimir. Es una guarda contra el
+defecto que esta misma tanda encontró en el papel, no una afirmación nueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -2594,6 +2718,11 @@ que se ve a simple vista: la cláusula está o no está.
   levanta en campo, y la lámina ya trae con qué: el renglón se queda porque
   la plantilla es el camino y no el dato.
   `ya: el ancho de vía leído de width con su cobertura, qué parte de la red no tiene dato de andén, y las plantillas de campo del perfil acotado y del estado de andenes, con sus columnas y su instrumento`
+* **El contorno del MUNICIPIO y el de la COMUNA** — los límites
+  administrativos de OpenStreetMap, que este módulo todavía no descarga. Y la
+  población por departamento y por comuna, que pide anclas del DANE como las
+  municipales.
+  `ya: el contorno real del país y del departamento, de geometría fija y dominio público, con el departamento resaltado dentro del país y el sitio del sector marcado dentro del departamento; la superficie de cada figura calculada sobre el mismo contorno que se dibuja, y la población del municipio y la del sector`
 * **La vulnerabilidad por manzana** — no hay fuente abierta a esa escala.
   `ya: el estrato predominante con su mínimo y su máximo y su mapa por manzana, y el nombre del barrio y la comuna del geocodificador`
 * **Comprobar los nombres de campo del censo contra el servicio real** — desde
