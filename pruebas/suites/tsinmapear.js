@@ -186,8 +186,26 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
   console.log('\n  -- §5 · una capa vacía no sostiene una propuesta --');
   const pr = r.pu.propuestas || [];
   const necTextos = pr.map(p => String(p.necTexto || '')).join(' | ');
-  T('ninguna propuesta se apoya en «registrado» o «mapeado»',
-    !/registrad|mapead/i.test(necTextos), necTextos.slice(0, 150));
+  /* La guarda de la v875 se APRETÓ en la v889, no se aflojó. Decía «ningún
+     necTexto nombra lo registrado o lo mapeado» y eso, palabra a palabra,
+     prohibía también la frase honesta —«sin medir: la capa de colegio o
+     jardín no tiene un solo punto mapeado»—, que es justo lo que §20 vino a
+     poner. Lo que la v875 quería impedir es que una NECESIDAD se apoye en
+     una ausencia de mapeo; una propuesta que declara que no se pudo medir no
+     afirma ninguna necesidad.
+
+     Así que se parte en dos, y la segunda mitad es nueva: las que traen una
+     necesidad medida no pueden nombrar el mapa, y las que no se pudieron
+     medir tienen que llevar la etiqueta «sin medir» y no «baja». Sin esa
+     segunda mitad, bastaría con dejar de decir la palabra para pasar. */
+  const conNecesidad = pr.filter(p => String(p.necesidad || '') !== 'sin medir');
+  T('ninguna propuesta con necesidad medida se apoya en «registrado» o «mapeado»',
+    !/registrad|mapead/i.test(conNecesidad.map(p => String(p.necTexto || '')).join(' | ')),
+    conNecesidad.map(p => p.necTexto).join(' | ').slice(0, 150) || 'ninguna');
+  const sinMedir = pr.filter(p => /^sin medir/.test(String(p.necTexto || '')));
+  T('y las que no se pudieron medir lo dicen: «sin medir», nunca «necesidad baja»',
+    sinMedir.length >= 1 && sinMedir.every(p => String(p.necesidad) === 'sin medir'),
+    sinMedir.map(p => p.necesidad + ' · ' + String(p.necTexto).slice(0, 46)).join(' | ') || 'ninguna sin medir');
   T('ninguna propuesta sale de una cobertura sin un solo punto mapeado',
     !pr.some(p => /% del sector a más de/.test(String(p.necTexto || ''))),
     (necTextos.match(/[^|]*% del sector a más de[^|]*/) || ['ninguna'])[0].slice(0, 110));

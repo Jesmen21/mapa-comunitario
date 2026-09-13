@@ -7759,17 +7759,38 @@ function donaHTML(datos, colorDe, nombreDe) {
               : '') +
               '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
                 '</b>, ordenadas por necesidad medida y factibilidad del predio</p>' +
+              /* Las condiciones del SITIO, una vez y arriba de las cinco.
+                 Valen lo mismo para cualquier uso que se proponga, así que
+                 repetirlas en cada renglón las disfrazaba de hallazgo de esa
+                 propuesta y enterraba lo único que sí cambia. */
+              '<p class="pu-sitio"><i>Lo que da el sitio, igual para las cinco:</i> ' +
+                esc(pu.sitio) + ' · <b>norma urbana: sin dato oficial</b>' +
+                (pu.normaTapo ? ' — hay propuestas que darían factibilidad alta y se quedan en media hasta que se lea el POT' : '') +
+              '</p>' +
+              /* §20 · la etiqueta de factibilidad SOLO si separa a las cinco.
+                 Cuando el lote las admite todas, cinco «media» idénticas no
+                 son cinco medidas: son una sola, dicha cinco veces. Se dice
+                 una vez, con lo que se midió y por qué no separa. */
+              (pu.facDiscrimina ? '' :
+                '<p class="pu-sitio pu-nofac"><i>Factibilidad · ' + esc(pu.facComun) +
+                ' para las cinco:</i> el criterio es cómo le queda el lote al uso —sobra, cabe, justo, corto— ' +
+                'topado en «media» mientras no se lea el POT. En este predio los cinco caen en el mismo ' +
+                'peldaño, así que la etiqueta no separa nada y no se imprime cinco veces igual: lo que ' +
+                'separa una propuesta de otra acá es la necesidad medida.</p>') +
               '<div class="props">' +
                 pu.propuestas.map(function (p, i) {
-                  return '<div class="pu n-' + p.necesidad + ' f-' + p.factibilidad +
+                  return '<div class="pu n-' + p.necesidad.replace(/\s+/g, '-') + ' f-' + p.factibilidad +
                       '" data-nec="' + p.nec + '" data-fac="' + p.fac + '">' +
                     '<b class="pu-n">' + (i + 1) + '</b>' +
                     '<div class="pu-t"><span class="pu-uso">' + esc(p.uso) + '</span>' +
                       '<small class="pu-razon">' + esc(p.razon) + '</small></div>' +
                     '<span class="pu-ind pu-nec"><i>Necesidad</i><b>' + esc(p.necesidad) + '</b>' +
                       '<small>' + esc(p.necTexto) + '</small></span>' +
-                    '<span class="pu-ind pu-fac"><i>Factibilidad</i><b>' + esc(p.factibilidad) + '</b>' +
-                      '<small>' + esc(p.facTexto) + '</small></span>' +
+                    (pu.facDiscrimina
+                      ? '<span class="pu-ind pu-fac"><i>Factibilidad</i><b>' + esc(p.factibilidad) + '</b>' +
+                        '<small>' + esc(p.facTexto) + '</small></span>'
+                      : '<span class="pu-ind pu-fac"><i>El lote para este uso</i><b>' + esc(p.cabe || '—') + '</b>' +
+                        '<small>' + esc(p.facTexto) + '</small></span>') +
                   '</div>';
                 }).join('') +
               '</div>' +
@@ -7793,7 +7814,9 @@ function donaHTML(datos, colorDe, nombreDe) {
                   'alguien vaya y lo compruebe, y por eso están acá y no arriba.</small></div>'
                 : '') +
               '<small class="props-nota">Necesidad: lo que falta según lo medido en este sector —coberturas a pie, ' +
-                'espacio público por habitante, mezcla de usos, transporte—. Factibilidad: lo que el predio, su ' +
+                'espacio público por habitante, mezcla de usos, transporte—, y cada propuesta cita la cifra que ' +
+                'la suya. «Sin medir» no es necesidad baja: es que la capa de ese uso está vacía, y eso no se ' +
+                'puede leer como que no hace falta. Factibilidad: lo que el predio, su ' +
                 'acceso y los servicios registrados permiten' + (pu.hayLote ? '' : ', juzgado sobre el sector porque no hay lote dibujado') +
                 '. La norma urbana no está consultada: ninguna propuesta sube de factibilidad media hasta que se lea. ' +
                 'URBIS recomienda; el estudiante y el jurado deciden.' +
@@ -8005,6 +8028,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pu.n-alta .pu-nec b{ color:#B42318 } .pu.n-media .pu-nec b{ color:#B7791F } .pu.n-baja .pu-nec b{ color:#5A6472 }' +
       '.pu.f-alta .pu-fac b{ color:#0E7C4A } .pu.f-media .pu-fac b{ color:#B7791F } .pu.f-baja .pu-fac b{ color:#B42318 }' +
       '.props-nota{ display:block; margin-top:2.5mm; font-size:2.7mm; line-height:1.35; color:#5A6472 }' +
+      /* §20 (v889) · lo que da el sitio, dicho una vez. Va en gris y con
+         menos peso que una propuesta: es el marco de las cinco, no una de
+         ellas. */
+      '.pu-sitio{ margin:1.2mm 0 1.8mm; font-size:2.8mm; line-height:1.35; color:#4A5563;' +
+        ' padding:1.2mm 2mm; border-left:0.7mm solid #C9D6E2; background:#F7F9FB }' +
+      '.pu-sitio i{ font-style:normal; font-weight:700; color:#2E3A47 }' +
+      '.pu-nofac{ border-left-color:#B08A2E; background:#FDF8EC }' +
+      /* Una propuesta SIN MEDIR no se pinta como una de necesidad baja: se
+         pinta como lo que es, una casilla que todavía no se puede juzgar. */
+      '.pu.n-sin-medir{ opacity:0.92 }' +
+      '.pu.n-sin-medir .pu-nec b{ color:#8A6D1F; font-style:italic }' +
       /* §9 · El par SECTOR | CIUDAD | DIFERENCIA. Cuatro columnas fijas para
          que la de diferencia se lea en vertical de un golpe: es la columna
          que un jurado recorre primero. */
@@ -16470,12 +16504,22 @@ function donaHTML(datos, colorDe, nombreDe) {
     var aVerificar = function (que, porque, comoSeResuelve) {
       verificar.push({ que: que, porque: porque, como: comoSeResuelve });
     };
-    var pon = function (id, nec, necTexto, razon) {
+    /* Qué usos quedaron SIN MEDIR, y por qué. Es distinto de «medido y sin
+       déficit», y hasta la v888 se decían igual: las propuestas de relleno
+       imprimían «lo medido no muestra déficit» sobre usos cuya capa estaba
+       vacía —los mismos que dos centímetros más abajo aparecían en «Antes de
+       proponer, compruebe esto»—. La hoja se contradecía consigo misma, que
+       es la clase que la v879 persigue entre las dos láminas, metida acá
+       dentro de una sola caja. */
+    var sinMedir = {};
+    var marcarSinMedir = function (id, porque) { if (id && !sinMedir[id]) sinMedir[id] = porque; };
+    var pon = function (id, nec, necTexto, razon, medido) {
       var t = tipo(id);
       if (!t) return;
       nec = Math.max(0, Math.min(100, Math.round(nec)));
       if (cand[id] && cand[id].nec >= nec) return;
-      cand[id] = { id: id, uso: t.uso, m2: t.m2, nec: nec, necTexto: necTexto, razon: razon };
+      cand[id] = { id: id, uso: t.uso, m2: t.m2, nec: nec, necTexto: necTexto, razon: razon,
+                   medido: medido !== false };
     };
 
     // 1 · Lo que falta a distancia de caminar, por tipo de equipamiento.
@@ -16493,13 +16537,24 @@ function donaHTML(datos, colorDe, nombreDe) {
           'ninguno aparece mapeado, así que el «' + num(sin) + ' % sin cubrir» no mide la cobertura: ' +
             'mide que la capa está vacía',
           'recorrer el sector o mirar el directorio de la secretaría; con uno solo mapeado la cobertura ya se puede calcular');
+        marcarSinMedir(t.id, 'la capa de «' + String(c.etiqueta).toLowerCase() + '» no tiene un solo punto mapeado');
         return;
       }
       pon(t.id, sin,
         num(sin) + ' % del sector a más de ' + c.minutos + ' min de ' + String(c.etiqueta).toLowerCase() +
           (hab > 0 && sin > 0 ? ' · ' + fmt(hab * sin / 100) + ' hab. lejos' : ''),
-        sin >= 50 ? 'más de la mitad del sector no lo alcanza caminando: es la carencia más directa que un predio resuelve'
-                  : 'la cobertura a pie es la primera cuenta de un equipamiento de barrio');
+        /* La razón cita los números de ESTA categoría —cuántos hay mapeados
+           y a qué distancia se midió—, y no una frase de manual. Dos
+           equipamientos distintos cerraban con la misma línea palabra por
+           palabra, que es lo que §20 señala: cada propuesta tiene que citar
+           su propio dato, también en la razón. */
+        (sin >= 50
+          ? 'más de la mitad del sector no lo alcanza caminando, y eso con ' + fmt(c.puntos) +
+            (Number(c.puntos) === 1 ? ' ya mapeado' : ' ya mapeados') +
+            ': es la carencia más directa que un predio resuelve'
+          : 'con ' + fmt(c.puntos) + (Number(c.puntos) === 1 ? ' mapeado' : ' mapeados') +
+            ', la cobertura a ' + c.minutos + ' min deja fuera el ' + num(sin) +
+            ' % del sector: una brecha medida y chica, no una ausencia'));
     });
 
     // 2 · El espacio público, contra la meta nacional.
@@ -16514,6 +16569,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'ninguno tiene forma dibujada en OpenStreetMap, y el espacio público se mide sobre el polígono: ' +
             'sin forma no hay área, y sin área no hay m² por habitante',
           'dibujarlos en OpenStreetMap, o levantar su contorno en campo; con eso la brecha contra los 15 m²/hab del Decreto 1077 se calcula sola');
+        marcarSinMedir('parque', 'ningún parque, cancha o plaza tiene forma dibujada, y el espacio público se mide sobre el polígono');
       } else if (hab > 0) {
         var porHab = e.areaM2 / hab;
         var brecha = Math.max(0, 1 - porHab / metaM2) * 100;
@@ -16540,10 +16596,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (mv && mv.paradasBus === 0)
       /* Lo mismo: en Cúcuta los paraderos de barrio casi nunca están en
          OpenStreetMap, y eso no quiere decir que no pasen buses. */
-      aVerificar('por dónde pasa el transporte público',
-        'no hay ninguna parada mapeada en el sector, que en un barrio colombiano es lo normal ' +
-          'y no quiere decir que no pasen rutas',
-        'preguntar en la calle qué rutas paran y dónde, o pedir el cuadro de la secretaría de tránsito');
+      (function () {
+        aVerificar('por dónde pasa el transporte público',
+          'no hay ninguna parada mapeada en el sector, que en un barrio colombiano es lo normal ' +
+            'y no quiere decir que no pasen rutas',
+          'preguntar en la calle qué rutas paran y dónde, o pedir el cuadro de la secretaría de tránsito');
+        marcarSinMedir('transporte', 'no hay ninguna parada mapeada, así que no hay con qué medir la cobertura');
+      })();
     else if (mv && mv.paradasBus > 0 && hab > 0 && hab / mv.paradasBus > 1500)
       pon('transporte', 45, fmt(hab / mv.paradasBus) + ' hab. por parada',
         'más de 1.500 personas por parada es una parada que no alcanza');
@@ -16557,23 +16616,93 @@ function donaHTML(datos, colorDe, nombreDe) {
         'entre lo que está clasificado no aparece ningún sitio de reunión que no sea la casa o la tienda; ' +
         'con veinte usos o más clasificados eso ya dice algo del sector, aunque un salón comunal sin mapear no cuente');
 
-    // Completar a cinco, diciendo que lo medido no sostiene la necesidad.
+    /* ── Completar a cinco: cada una con SU dato (§20, v889) ─────────────
+       Hasta la v888 las que faltaban entraban las ocho con el mismo par de
+       frases —«lo medido no muestra déficit» y «entra para completar la
+       comparación de cinco»—, palabra por palabra. El pliego lo señaló:
+       «ese mismo texto aparece idéntico en las cinco propuestas: cada
+       propuesta tiene que citar su propio dato».
+
+       Y al medirlo salieron dos cosas peores que la repetición:
+
+       · Ese relleno entraba con **necesidad 8**, un número inventado, y con
+         él ADELANTABA a los usos que sí tenían cobertura medida. En el
+         sector de prueba, «colegio o jardín · 0,7 % sin cubrir» y «salud ·
+         2,4 %» —las dos con cuarenta y cuatro equipamientos mapeados y una
+         cifra de verdad— quedaban fuera de las cinco, desplazadas por cuatro
+         rellenos que no citan nada. Un placeholder no puede rankear por
+         encima de una medición: el relleno entra con CERO.
+       · Y sobre los usos cuya capa venía vacía, el relleno afirmaba «lo
+         medido no muestra déficit» — sobre exactamente lo que la misma caja
+         manda a comprobar dos centímetros más abajo. Es la regla de la v875
+         volviendo a entrar por la puerta de atrás.
+
+       Tres clases distintas, y se dicen distinto:
+         1 · sin medir  — la capa está vacía. No lleva necesidad: llevaría
+             una afirmación que nadie midió.
+         2 · medido     — hay una cifra propia de ESE uso; se imprime.
+         3 · sin cuenta propia — no hay ninguna medición de ese uso en la
+             hoja, y se dice con esas palabras en vez de suponer un cero. */
+    var areaHa = Number(st.areaHa || 0);
+    var porHa = function (n) {
+      return areaHa > 0 ? ' · ' + num(Math.round(n / areaHa * 10) / 10) + ' por hectárea' : '';
+    };
+    /* El dato propio de un uso, cuando la hoja lo tiene. Sale de los mismos
+       `stats` que el resto de la caja: ninguna cifra nueva, solo dejar de
+       callar la que ya estaba medida. */
+    var datoPropio = function (id) {
+      var g = { comercio: 'comercio', cultura: 'cultura', salud: 'salud', vivienda: 'vivienda' }[id];
+      if (g && pg[g] != null && clasificados > 0)
+        return { texto: fmt(pg[g] || 0) + ' usos de esta clase entre ' + fmt(clasificados) +
+                        ' clasificados' + porHa(pg[g] || 0),
+                 razon: 'lo que hay mapeado de este uso no señala una carencia; la comparación de cinco lo incluye para que se vea' };
+      if (id === 'transporte' && mv && mv.paradasBus > 0 && hab > 0)
+        return { texto: fmt(mv.paradasBus) + (mv.paradasBus === 1 ? ' parada mapeada · ' : ' paradas mapeadas · ') +
+                        fmt(hab / mv.paradasBus) + ' hab. por parada, bajo el umbral de 1.500',
+                 razon: 'la cobertura de paradas medida no queda por debajo del umbral' };
+      if (id === 'parque' && e && e.piezas && hab > 0)
+        return { texto: num(Math.round(e.areaM2 / hab * 10) / 10) + ' m²/hab de espacio público con forma dibujada',
+                 razon: 'el espacio público medido no deja brecha contra la meta nacional' };
+      return null;
+    };
     ['parque', 'comercio', 'vivienda', 'cultura', 'educacion', 'salud', 'deporte', 'transporte'].forEach(function (id) {
-      if (!cand[id]) pon(id, 8, 'lo medido no muestra déficit: necesidad baja',
-        'entra para completar la comparación de cinco; no es una carencia medida');
+      if (cand[id]) return;
+      if (sinMedir[id]) {
+        pon(id, 0, 'sin medir: ' + sinMedir[id],
+          'no sostiene ni descarta nada: está en «Antes de proponer, compruebe esto», no en las cinco', false);
+        return;
+      }
+      var d = datoPropio(id);
+      if (d) { pon(id, 0, d.texto, d.razon); return; }
+      pon(id, 0, 'sin cuenta propia de este uso en esta hoja',
+        'entra para completar la comparación de cinco; ninguna cifra de la hoja lo sostiene ni lo descarta', false);
     });
 
-    /* La factibilidad, uso por uso. Puntos por lo que el predio y el acceso
-       dan; la norma sin consultar tapa el «alta». */
+    /* ── La factibilidad, partida en dos (§20, v889) ──────────────────────
+       Hasta la v888 iba entera uso por uso, y el resultado era un renglón
+       repetido cinco veces con un solo número distinto en medio:
+
+         «lote de 179.009 m² para 300 típicos · esquinero, 4 frentes · vía
+          principal a 100 m · 1 pieza de servicios registrada · alta si la
+          norma lo permite: sin dato oficial»
+
+       Cuatro de las cinco cláusulas son del SITIO —el lote, sus frentes, la
+       vía, los servicios, la mancha de inundación, la norma sin consultar—:
+       valen lo mismo para cualquier uso que se proponga, por construcción.
+       Imprimirlas cinco veces no solo gasta papel: hace parecer que son un
+       hallazgo de cada propuesta, y entierra la única cláusula que de verdad
+       cambia de una a otra.
+
+       Así que las del sitio se dicen UNA vez, arriba de las cinco, y cada
+       propuesta lleva solo lo suyo: cómo le queda el lote al uso que se
+       propone. */
     var inu = S.inundacion;
-    var factibilidad = function (c) {
+    var condicionesDelSitio = (function () {
       var pts = 0, por = [];
       if (la) {
-        if (la.areaM2 >= c.m2) { pts += 2; por.push('lote de ' + fmt(la.areaM2) + ' m² para ' + fmt(c.m2) + ' típicos'); }
-        else if (la.areaM2 >= c.m2 * 0.6) { pts += 1; por.push('lote de ' + fmt(la.areaM2) + ' m², justo para ' + fmt(c.m2) + ' típicos'); }
-        else { pts -= 1; por.push('lote de ' + fmt(la.areaM2) + ' m², corto para ' + fmt(c.m2) + ' típicos'); }
         var nf = (la.frentes || []).length;
-        if (la.esquinero) { pts += 1; por.push('esquinero, ' + nf + ' frentes'); }
+        por.push('lote de ' + fmt(la.areaM2) + ' m²');
+        if (la.esquinero) { pts += 1; por.push('esquinero, ' + nf + (nf === 1 ? ' frente' : ' frentes')); }
         else if (nf === 1) por.push('un solo frente');
         else por.push('sin frente a calle registrada');
       } else {
@@ -16591,18 +16720,76 @@ function donaHTML(datos, colorDe, nombreDe) {
                  ' (presencia, no cobertura)');
       }
       if (inu && inu.cobertura && inu.trPeor != null) { pts -= 1; por.push('dentro de una mancha de inundación'); }
-      por.push('norma urbana: sin dato oficial');
-      var nivel = pts >= 3 ? 'alta' : pts >= 1 ? 'media' : 'baja';
-      if (nivel === 'alta') { nivel = 'media'; por[por.length - 1] = 'alta si la norma lo permite: sin dato oficial'; }
-      return { nivel: nivel, pts: pts, texto: por.join(' · ') };
+      return { pts: pts, texto: por.join(' · ') };
+    })();
+    /* Lo único que cambia de un uso a otro: cómo le queda el lote. Con un
+       lote grande caben todos y esto no separa nada —y entonces la etiqueta
+       no se imprime, ver abajo—; con un lote de barrio de 300 m² separa el
+       comercio de la cancha, que es de lo que se trata. */
+    var ajusteDelUso = function (c) {
+      if (!la) return { pts: 0, cabe: 'sin lote',
+        texto: 'sin lote dibujado: el tamaño no se puede contrastar con los ' + fmt(c.m2) + ' m² típicos de este uso' };
+      if (la.areaM2 >= c.m2) {
+        var veces = la.areaM2 / c.m2;
+        return { pts: 2, cabe: veces >= 2 ? 'sobra' : 'cabe', texto: veces >= 3
+          ? 'caben ' + num(Math.round(veces * 10) / 10) + ' veces los ' + fmt(c.m2) + ' m² típicos de este uso'
+          : 'el lote da para ' + Math.round(100 * veces) + ' % de los ' + fmt(c.m2) + ' m² típicos de este uso' };
+      }
+      if (la.areaM2 >= c.m2 * 0.6)
+        return { pts: 1, cabe: 'justo', texto: 'justo: el lote es el ' + Math.round(100 * la.areaM2 / c.m2) + ' % de los ' +
+                                fmt(c.m2) + ' m² típicos de este uso' };
+      return { pts: -1, cabe: 'corto', texto: 'corto: el lote es el ' + Math.round(100 * la.areaM2 / c.m2) + ' % de los ' +
+                               fmt(c.m2) + ' m² típicos de este uso' };
     };
 
+    /* El NIVEL de factibilidad sale del encaje del lote en el uso, y de nada
+       más. Hasta la v888 sumaba en el mismo montón las condiciones del sitio
+       —frentes, vía, servicios— y el encaje, y como el sitio vale lo mismo
+       para los cinco, lo único que hacía era empujar a los cinco por encima
+       del corte: con el tope de la norma en «media», los cinco salían media
+       SIEMPRE. Un lote de 601 m² —donde el comercio sobra, la salud queda
+       justa y el colegio queda corto— imprimía las mismas cinco etiquetas
+       que un lote de dieciocho hectáreas.
+
+       Las condiciones del sitio no desaparecen: se dicen una vez, arriba,
+       que es donde corresponde a algo que vale para las cinco. */
     var lista = Object.keys(cand).map(function (id) {
-      var c = cand[id], f = factibilidad(c);
-      c.necesidad = c.nec >= 50 ? 'alta' : c.nec >= 25 ? 'media' : 'baja';
-      c.factibilidad = f.nivel; c.fac = f.pts; c.facTexto = f.texto;
+      var c = cand[id], a = ajusteDelUso(c);
+      /* Un uso SIN MEDIR no lleva etiqueta de necesidad: ponerle «baja»
+         sería afirmar sobre una capa vacía justo lo que la caja de abajo
+         manda a comprobar. */
+      c.necesidad = c.medido === false ? 'sin medir'
+                  : c.nec >= 50 ? 'alta' : c.nec >= 25 ? 'media' : 'baja';
+      var nivel = a.cabe === 'corto' ? 'baja' : a.cabe === 'justo' ? 'media'
+                : a.cabe === 'sin lote' ? 'media' : 'alta';
+      c.normaTapo = nivel === 'alta';
+      if (c.normaTapo) nivel = 'media';
+      c.factibilidad = nivel; c.fac = a.pts; c.facTexto = a.texto; c.cabe = a.cabe;
       return c;
-    }).sort(function (a, b) { return (b.nec - a.nec) || (b.fac - a.fac) || (a.id < b.id ? -1 : 1); }).slice(0, 5);
+    }).sort(function (a, b) {
+      /* A igual necesidad, una propuesta con su cifra medida va antes que un
+         relleno sin cuenta propia. Es la misma decisión que bajar el relleno
+         a cero: lo medido manda sobre lo que no se midió, siempre. */
+      return (b.nec - a.nec) || ((a.medido === false ? 1 : 0) - (b.medido === false ? 1 : 0)) ||
+             (b.fac - a.fac) || (a.id < b.id ? -1 : 1);
+    }).slice(0, 5);
+
+    /* ── ¿La factibilidad separa las cinco? Se MIDE, no se supone ─────────
+       §20: «si el método no discrimina factibilidad, no imprimir la
+       etiqueta; si se imprime, tiene que haber un criterio declarado que
+       produzca valores distintos». Las dos mitades de esa frase son la misma
+       decisión, y la respuesta depende del sector: con un lote de 18 ha
+       caben los ocho usos y las cinco salen iguales; con un lote de barrio,
+       no. Así que se compara lo que salió.
+
+       Y no se resuelve inventando un criterio que produzca diferencias: eso
+       sería la mentira más pequeña de las dos, que es lo que este módulo
+       lleva quince tandas sin permitirse. Cuando no separa, se dice una vez
+       qué se midió y que no separa. */
+    var facDiscrimina = lista.length > 1 &&
+      lista.some(function (x) { return x.factibilidad !== lista[0].factibilidad; });
+    var facComun = facDiscrimina ? '' : (lista[0] ? lista[0].factibilidad : '');
+    var normaTapo = lista.some(function (x) { return x.normaTapo; });
 
     var objeto = la
       ? 'el lote de ' + fmt(la.areaM2) + ' m²' +
@@ -16610,6 +16797,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       : 'el sector, sin lote dibujado';
     return { propuestas: lista, objeto: objeto, hayLote: !!la,
              poblacion: hab > 0 ? Math.round(hab) : null,
+             // Las condiciones del sitio: valen para las cinco y se dicen una vez.
+             sitio: condicionesDelSitio.texto,
+             facDiscrimina: facDiscrimina, facComun: facComun, normaTapo: normaTapo,
              // Lo que quedó fuera de las cinco por venir de una capa vacía.
              verificar: verificar };
   }

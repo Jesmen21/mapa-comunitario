@@ -341,6 +341,10 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
               facTexto: (p.querySelector('.pu-fac small') || {}).textContent || '',
               razon: (p.querySelector('.pu-razon') || {}).textContent || '' })),
             objeto: (s.querySelector('.lee b') || {}).textContent || '',
+            /* §20 (v889) · lo que da el SITIO, dicho una vez arriba de las
+               cinco. Ahí es donde vive ahora el lote con sus metros: dentro
+               de cada propuesta era la misma frase cinco veces. */
+            sitio: [...s.querySelectorAll('.pu-sitio')].map(x => x.textContent.replace(/\s+/g, ' ').trim()),
             nota: (s.querySelector('.props-nota') || {}).textContent || '',
             // El alto de la caja contra el de su rejilla: el papel muerto.
             sobra: mm(rect(cuerpo).height - rect(s).height),
@@ -561,15 +565,32 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     if (!c) return;
     T('ya no es la FODA: son exactamente cinco propuestas', !c.foda && c.filas.length === 5,
       c.filas.length + ' filas' + (c.foda ? ' y todavía hay FODA' : ''));
-    T('cada una con necesidad y factibilidad en alta, media o baja',
-      c.filas.length === 5 && c.filas.every(f => /^(alta|media|baja)$/.test(f.necNivel) && /^(alta|media|baja)$/.test(f.facNivel)),
-      c.filas.map(f => f.necNivel[0] + '/' + f.facNivel[0]).join(' '));
+    /* §20 (v889) · la aserción se apretó al cambiar la caja, no se aflojó.
+       Antes pedía que los dos niveles fueran alta/media/baja; ahora hay dos
+       valores más y los dos significan algo que antes se callaba: una
+       propuesta cuya capa está vacía lleva «sin medir» en vez de una
+       necesidad que nadie midió, y la columna del lote lleva el encaje del
+       uso —sobra, cabe, justo, corto— cuando la factibilidad no separa a las
+       cinco y por eso no se imprime. Se exige además que ninguna quede en
+       blanco, que es lo que la de antes de verdad guardaba. */
+    const NEC_OK = /^(alta|media|baja|sin medir)$/, FAC_OK = /^(alta|media|baja|sobra|cabe|justo|corto|sin lote)$/;
+    T('cada una lleva su necesidad —o dice que no se pudo medir— y cómo le queda el lote',
+      c.filas.length === 5 && c.filas.every(f => NEC_OK.test(f.necNivel.trim()) && FAC_OK.test(f.facNivel.trim())),
+      c.filas.map(f => f.necNivel + '/' + f.facNivel).join(' · '));
     T('ordenadas por necesidad, de mayor a menor',
       c.filas.length === 5 && c.filas.every((f, i) => i === 0 || f.nec <= c.filas[i - 1].nec),
       c.filas.map(f => f.nec).join(' ≥ '));
-    T('cada una nombra el lote concreto, con sus metros',
-      c.filas.length === 5 && c.filas.every(f => /lote de [\d.]+ m²/.test(f.facTexto)) && /lote de [\d.]+ m²/.test(c.objeto),
-      c.objeto);
+    /* El lote con sus metros se nombra UNA vez —en el renglón del sitio y en
+       el objeto de la caja—, y cada propuesta lo contrasta contra el área
+       típica de SU uso. Repetido en los cinco renglones era la frase que §20
+       señaló: la misma cadena cinco veces con un número en medio. */
+    T('el lote concreto se nombra una vez, con sus metros',
+      /lote de [\d.]+ m²/.test(c.objeto) && (c.sitio || []).some(x => /lote de [\d.]+ m²/.test(x)),
+      c.objeto + ' | ' + ((c.sitio || [])[0] || 'sin renglón de sitio').slice(0, 70));
+    T('y cada propuesta lo contrasta contra el área típica de su uso, sin repetir la de otra',
+      c.filas.length === 5 && c.filas.every(f => /m² típicos de este uso/.test(f.facTexto)) &&
+      new Set(c.filas.map(f => f.facTexto)).size === 5,
+      (c.filas[0] || {}).facTexto);
     T('y da su razón en una línea', c.filas.every(f => f.razon.trim().length >= 25),
       (c.filas[0] || {}).razon.slice(0, 80));
     T('la nota dice que la norma no está consultada y que la decisión es humana',

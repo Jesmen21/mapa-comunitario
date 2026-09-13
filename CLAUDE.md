@@ -2796,6 +2796,152 @@ caja, «0 declaraciones proxy de», y el cruce diciendo «serie satelital no
 leída · leer la evolución es lo que mide la presión» — que es justamente la
 frase que §17 corrigió.
 
+## Cada propuesta cita su propio dato (v889)
+
+§20 del pliego de ajustes, en sus tres puntos que quedaban vivos. Auditado
+antes de escribir —que es la regla de la v863— componiendo la hoja y leyendo
+los cinco renglones impresos, y el reclamo se quedaba corto: además de la
+repetición había dos cosas peores debajo.
+
+Lo que salía impreso, cinco veces con un solo número cambiado en medio:
+
+> «lote de 179.009 m² para 300 típicos · esquinero, 4 frentes · vía principal
+> a 100 m · 1 pieza de servicios registrada · alta si la norma lo permite:
+> sin dato oficial»
+
+y tres de las cinco con la misma necesidad, palabra por palabra: «lo medido
+no muestra déficit: necesidad baja».
+
+### Lo que da el SITIO se dice una vez
+
+Cuatro de las cinco cláusulas de la factibilidad son del sitio —el lote, sus
+frentes, la vía, los servicios, la mancha de inundación, la norma sin
+consultar—. **Valen lo mismo para cualquier uso que se proponga, por
+construcción**, así que repetirlas en cada renglón no solo gasta papel: las
+disfraza de hallazgo de esa propuesta y entierra la única cláusula que de
+verdad cambia de una a otra, que es cómo le queda el lote al uso.
+
+Van una vez, arriba de las cinco. Y cada propuesta lleva solo lo suyo:
+«caben 596,7 veces los 300 m² típicos» contra «caben 119,3 veces los 1.500».
+
+### El relleno adelantaba a lo medido
+
+El hallazgo que no estaba en el reclamo. Las propuestas de relleno entraban
+con **necesidad 8** —un número inventado, no una medición— y con él pasaban
+por delante de los usos que sí tenían cobertura medida. En el sector de
+prueba, «colegio o jardín · 0,7 % sin cubrir · 22 hab. lejos» y «salud ·
+2,4 % · 76 hab. lejos» —las dos con cuarenta y cuatro equipamientos mapeados
+y una cifra de verdad— **quedaban fuera de las cinco**, desplazadas por
+cuatro rellenos que no citaban nada.
+
+Un marcador de posición no puede rankear por encima de una medición. El
+relleno entra con cero, y a igual necesidad lo medido va antes.
+
+### Y afirmaba «sin déficit» sobre lo que la misma caja manda a comprobar
+
+La otra mitad, y es la v875 volviendo a entrar por la puerta de atrás. Sobre
+un uso cuya capa venía vacía, el relleno imprimía «lo medido no muestra
+déficit» — sobre exactamente lo que dos centímetros más abajo aparece en
+«Antes de proponer, compruebe esto». **La hoja se contradecía consigo misma
+dentro de una sola caja**, que es la clase que la v879 persigue entre las dos
+láminas.
+
+Ahora hay tres clases y se dicen distinto, porque significan cosas distintas:
+
+| | Qué imprime |
+|---|---|
+| **sin medir** | «sin medir: la capa de «colegio o jardín» no tiene un solo punto mapeado». **No lleva etiqueta de necesidad**: ponerle «baja» sería afirmar sobre una capa vacía |
+| **medido** | la cifra propia de ese uso: «90 usos de esta clase entre 226 clasificados · 0,5 por hectárea» |
+| **sin cuenta propia** | lo dice con esas palabras, en vez de suponer un cero |
+
+La razón también: dos equipamientos distintos cerraban con «la cobertura a
+pie es la primera cuenta de un equipamiento de barrio», idéntica. Ahora cita
+cuántos hay mapeados y a qué distancia se midió.
+
+### La factibilidad: separa, o no se imprime
+
+§20 pide las dos mitades de la misma decisión: «si el método no discrimina
+factibilidad, no imprimir la etiqueta; si se imprime, tiene que haber un
+criterio declarado que produzca valores distintos».
+
+Medido, el método no discriminaba **nunca**, y la causa no era la que parecía.
+El nivel sumaba en un mismo montón las condiciones del sitio y el encaje del
+uso; como el sitio vale lo mismo para los cinco, lo único que hacía era
+empujarlos a todos por encima del corte, y con el tope de la norma en
+«media» los cinco salían media siempre. Un lote de 601 m² —donde el comercio
+sobra, la salud queda justa y el colegio queda corto— imprimía las mismas
+cinco etiquetas que uno de dieciocho hectáreas.
+
+El nivel sale ahora **del encaje del lote en el uso y de nada más** —sobra,
+cabe, justo, corto—, topado en «media» mientras no se lea el POT. Es lo único
+que se mide por uso, y es literalmente lo que «factibilidad del predio»
+quiere decir. Con eso:
+
+* lote de 18 ha → los cinco caen en el mismo peldaño. **No se imprime cinco
+  veces la misma etiqueta**: se dice una vez, con el criterio escrito y con
+  que no separa, y la columna de cada propuesta pasa a decir cómo le queda el
+  lote.
+* lote de 601 m² → sale «baja» para el colegio y «media» para los demás, y la
+  etiqueta se imprime propuesta por propuesta.
+
+**No se resolvió inventando un criterio que produjera diferencias.** Eso
+habría sido la mentira más pequeña de las dos, que es la decisión que este
+módulo ya tomó en la v875 con la necesidad topada y en la v881 con los
+anillos agrupados.
+
+### El sector de prueba no podía enseñar las dos ramas
+
+Novena vez (v862, v866, v874, v877, v880, v882, v884, v888, y esta). El lote
+de `tdoslaminas` son dieciocho hectáreas: ahí caben los ocho usos típicos y
+la rama que imprime la etiqueta quedaba sin ejercitar, así que la
+comprobación habría pasado por no tener nada que rechazar.
+
+La suite dibuja ahora **un segundo lote** de 601 m² —un predio urbano
+corriente— con los botones de verdad (borrar, dibujar, cerrar; la regla de la
+v871, no escribirle a `S`) y compone una lámina B más. Las dos ramas se miden
+en la misma corrida.
+
+Y la rama «sin medir» se mide donde hay material: en `tsinmapear`, cuyo
+sector no tiene ni colegio ni salud ni parque con forma.
+
+### Los marcadores de plantilla, como clase
+
+El tercer punto de §20 —«revisar que no quede ningún marcador de plantilla
+sin reemplazar»— no se persigue por el marcador que hoy existe (`@@TAM@@`, de
+la v886) sino por la clase: sobre los nodos de texto de las dos hojas, ni
+`@@X@@`, ni `{{x}}`, ni `undefined`, ni `NaN`, ni `[object Object]`. Son
+todos el mismo defecto —algo que el programa iba a reemplazar y no
+reemplazó— y el lector los ve igual. Por nodo y no sobre la tira, que es la
+lección de la v885.
+
+### Dos suites siguieron el cambio, y las dos se apretaron
+
+* `tsinmapear` exigía que ningún `necTexto` nombrara lo «registrado» o lo
+  «mapeado». Palabra a palabra eso prohibía también la frase honesta que esta
+  tanda vino a poner —«sin medir: la capa … no tiene un solo punto
+  mapeado»—. Lo que la v875 quería impedir es que una NECESIDAD se apoye en
+  una ausencia de mapeo, y una propuesta que declara que no se pudo medir no
+  afirma ninguna. Se partió en dos, y **la segunda mitad es nueva**: las que
+  no se pudieron medir tienen que llevar «sin medir» y no «baja». Sin ella,
+  bastaría con dejar de decir la palabra para pasar.
+* `tlaminaedu` pedía los dos niveles en alta/media/baja. Ahora acepta dos
+  valores más —que significan algo que antes se callaba— y exige además que
+  los cinco contrastes del lote sean distintos entre sí, que es lo que la de
+  antes no miraba.
+
+### Demostrado contra la v888
+
+Nueve aserciones en rojo de catorce, con el texto viejo impreso: «3 textos
+distintos de 5», «lo medido no muestra défic» tres veces en el cierre, el
+renglón del sitio repetido dentro de cada propuesta, y
+«media · media · media · media · media» en el lote de barrio. En
+`tsinmapear`, «ninguna sin medir».
+
+Cinco pasan a propósito y son guardas, no afirmaciones nuevas: que el cierre
+siga imprimiendo cinco propuestas, que cada una siga citando el área típica
+de su uso, que no haya marcadores sin reemplazar, y las dos que en este
+sector no tienen material.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

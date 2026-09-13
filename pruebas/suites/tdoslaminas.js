@@ -414,6 +414,30 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
       verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
       aguaDesde: 3, aguaHasta: 3 } } } });
+    /* §20 (v889) · la rama en la que la factibilidad SÍ separa a los cinco.
+       El lote de esta suite son dieciocho hectáreas: ahí caben los ocho usos
+       típicos y la etiqueta sale igual para todos —lo que es correcto y es
+       justo por lo que no se imprime cinco veces—. Sin un segundo lote, la
+       rama que la imprime quedaría sin ejercitar y la comprobación pasaría
+       por no tener nada que rechazar, que es el agujero que este proyecto
+       lleva ocho tandas persiguiendo.
+
+       Se dibuja con los botones de verdad —borrar, dibujar, cerrar—, no
+       escribiéndole a `S`: es la regla de la v871. Un predio de 601 m², que
+       es un lote urbano corriente: el comercio sobra, la salud queda justa y
+       el colegio queda corto. */
+    const bb = H().querySelector('[data-pcr="lote-borrar"]');
+    if (bb) { bb.click(); await esperar(300); }
+    const bd2 = H().querySelector('[data-pcr="lote-dibujar"]');
+    if (bd2) { bd2.click(); await esperar(400); }
+    const g = 0.0000899;                       // unos 10 m de latitud
+    const CHICO = [[-1, -1.5], [1, -1.5], [1, 1.5], [-1, 1.5]].map(function (v) {
+      return { lat: C.lat + v[1] * g, lng: C.lng + v[0] * g / Math.cos(C.lat * Math.PI / 180) }; });
+    for (const q of CHICO) { window.map.fire('click', { latlng: q }); await esperar(60); }
+    const bc2 = document.querySelector('#pcr-lote-barra [data-lote="cerrar"]');
+    if (bc2) { bc2.click(); await esperar(900); }
+    R.abrir(); await esperar(400);
+    o.loteChico = R.laminaA({ hoja: 'B' });
     return o;
   }, { C, POL, LOTE });
 
@@ -448,6 +472,20 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
           while (w.nextNode()) { const x = w.currentNode.nodeValue.replace(/\s+/g, ' ').trim(); if (x) t.push(x); }
           return t;
         })(),
+        /* §20 (v889) · las cinco propuestas del cierre, leídas una por una.
+           «Cada propuesta tiene que citar su propio dato» no se puede
+           comprobar sobre un párrafo: hay que comparar los cinco entre sí,
+           así que cada renglón se lee por separado. */
+        sitio: [...h.querySelectorAll('.pu-sitio')].map(x => x.textContent.replace(/\s+/g, ' ').trim()),
+        props: [...h.querySelectorAll('.pu')].map(x => ({
+          uso: ((x.querySelector('.pu-uso') || {}).textContent || '').trim(),
+          razon: ((x.querySelector('.pu-razon') || {}).textContent || '').trim(),
+          nec: ((x.querySelector('.pu-nec b') || {}).textContent || '').trim(),
+          necTexto: ((x.querySelector('.pu-nec small') || {}).textContent || '').trim(),
+          facRotulo: ((x.querySelector('.pu-fac i') || {}).textContent || '').trim(),
+          fac: ((x.querySelector('.pu-fac b') || {}).textContent || '').trim(),
+          facTexto: ((x.querySelector('.pu-fac small') || {}).textContent || '').trim()
+        })),
         eyebrow: (h.querySelector('.ey') || {}).textContent || '',
         responde: (h.querySelector('.que-responde') || {}).textContent || '',
         neutral: (h.querySelector('.neutral') || {}).textContent || '',
@@ -2260,6 +2298,97 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     const veces = (txtD.match(/isolíneas de ese conteo/g) || []).length;
     T('el método de la fila se imprime una sola vez, no bajo cada mapa',
       veces === 1, veces + ' veces');
+  }
+
+  /* ══ §20 · cada propuesta cita SU dato, y la factibilidad separa o no se
+        imprime (v889) ═══════════════════════════════════════════════════
+     El pliego de ajustes, con la hoja impresa delante: «ese mismo texto
+     aparece idéntico en las cinco propuestas: cada propuesta tiene que citar
+     su propio dato» y «las cinco salieron con factibilidad Media y redacción
+     casi idéntica. Si el método no discrimina factibilidad, no imprimir la
+     etiqueta».
+
+     Las dos mitades se miden sobre el PAPEL —los cinco renglones compuestos,
+     comparados entre sí—, que es donde el defecto existe: en las variables
+     cada propuesta tiene su objeto y parece distinta. */
+  console.log('\n  -- §20 · cada propuesta con su dato --');
+  {
+    const P = B.props || [];
+    T('el cierre imprime cinco propuestas', P.length === 5, P.length + '');
+    const distintos = a => new Set(a.filter(Boolean)).size;
+    /* La comprobación central, y persigue la CLASE: no busca la frase vieja
+       —«lo medido no muestra déficit», que entraba idéntica en cuatro de las
+       cinco— sino que dos propuestas cualesquiera digan lo mismo. Una tanda
+       futura que invente otro relleno repetido vuelve a ponerla en rojo. */
+    T('las cinco citan cifras distintas: ninguna repite el texto de otra',
+      P.length === 5 && distintos(P.map(x => x.necTexto)) === 5,
+      distintos(P.map(x => x.necTexto)) + ' textos distintos de ' + P.length);
+    T('y ninguna repite la razón de otra',
+      P.length === 5 && distintos(P.map(x => x.razon)) === 5,
+      distintos(P.map(x => x.razon)) + ' razones distintas de ' + P.length);
+    T('cada una contrasta el lote contra el área típica de SU uso',
+      P.length === 5 && distintos(P.map(x => x.facTexto)) === 5,
+      (P[0] || {}).facTexto + ' | ' + (P[2] || {}).facTexto);
+    /* Lo que da el SITIO vale igual para las cinco, así que va una vez
+       arriba. Repetido en cada renglón se disfrazaba de hallazgo de esa
+       propuesta y enterraba lo único que sí cambiaba. */
+    T('las condiciones del sitio se dicen una sola vez, fuera de las cinco',
+      (B.sitio || []).length >= 1 && /Lo que da el sitio, igual para las cinco/.test((B.sitio || [])[0] || ''),
+      ((B.sitio || [])[0] || 'no las dice').slice(0, 90));
+    T('y no se repiten dentro de ninguna propuesta',
+      P.length > 0 && !P.some(x => /esquinero|pieza[s]? de servicios|vía principal a/.test(x.facTexto)),
+      (P.filter(x => /esquinero|servicios/.test(x.facTexto))[0] || { facTexto: 'ninguna las repite' }).facTexto.slice(0, 90));
+    /* El relleno entraba con necesidad 8 —un número inventado— y con él
+       ADELANTABA a los usos que sí tenían cobertura medida. Que el colegio y
+       la salud estén en las cinco es la prueba de que ya no. */
+    T('los usos con cobertura medida entran a las cinco, no los desplaza un relleno',
+      P.some(x => /colegio o jardín/.test(x.necTexto)) && P.some(x => /servicio de salud/.test(x.necTexto)),
+      P.map(x => x.necTexto.slice(0, 26)).join(' | ').slice(0, 150));
+    /* Un uso cuya capa está vacía no puede salir con «necesidad baja»: sería
+       afirmar sobre lo que la misma caja manda a comprobar dos centímetros
+       más abajo. Guarda de clase; el material que la ejercita está en
+       `tsinmapear`, cuyo sector no tiene ni parques ni paradas. */
+    T('lo que no se pudo medir no sale como necesidad baja',
+      !P.some(x => /^sin medir/.test(x.necTexto) && x.nec !== 'sin medir'),
+      (P.filter(x => /^sin medir/.test(x.necTexto))[0] || { nec: 'ninguna sin medir en este sector' }).nec);
+
+    /* ── La factibilidad: separa, o no se imprime ──────────────────────── */
+    const etiquetas = P.map(x => x.fac);
+    const rotulos = P.map(x => x.facRotulo);
+    T('con un lote de 18 ha la etiqueta no separa nada y no se imprime cinco veces',
+      rotulos.length === 5 && rotulos.every(x => /El lote para este uso/.test(x)),
+      rotulos.join(' | ').slice(0, 110));
+    T('y se dice UNA vez, con el criterio escrito',
+      (B.sitio || []).some(x => /Factibilidad · \w+ para las cinco/.test(x) &&
+        /sobra, cabe, justo, corto/.test(x) && /POT/.test(x)),
+      ((B.sitio || [])[1] || 'no lo dice').slice(0, 120));
+    /* Y la otra rama, que es la que impide que esto sea un verde: con un
+       lote de barrio de 601 m² el criterio SÍ produce valores distintos, y
+       entonces la etiqueta se imprime propuesta por propuesta. */
+    const ch = r.loteChico || '';
+    const facCh = (ch.match(/<i>Factibilidad<\/i><b>([^<]*)<\/b>/g) || [])
+      .map(x => (x.match(/<b>([^<]*)<\/b>/) || [0, ''])[1]);
+    T('con un lote de barrio la etiqueta sí se imprime, propuesta por propuesta',
+      facCh.length === 5, facCh.length + ' etiquetas');
+    T('y produce valores distintos, que es lo que §20 exige para imprimirla',
+      new Set(facCh).size >= 2, facCh.join(' · ') || 'ninguna');
+    T('el lote chico separa el uso que cabe del que queda corto',
+      /corto: el lote es el \d+ % de los/.test(ch) && /justo: el lote es el \d+ % de los/.test(ch),
+      (ch.match(/corto: el lote es el \d+ % de los [\d.]+ m²/) || ['no lo separa'])[0]);
+  }
+  /* §20 · «revisar que no quede ningún marcador de plantilla sin
+     reemplazar». Persigue la clase sobre los NODOS de texto de las dos
+     hojas: un marcador sin sustituir, un `undefined` de una propiedad que
+     cambió de nombre o un `[object Object]` son todos el mismo defecto —algo
+     que el programa iba a reemplazar y no reemplazó— y el lector los ve
+     igual. Se mira por nodo y no sobre la tira, que es la lección de la
+     v885: `textContent` pega lo de dos elementos vecinos. */
+  {
+    const MARCA = /@@[A-Z_]+@@|\{\{[^}]*\}\}|\bundefined\b|\bNaN\b|\[object Object\]|<%[^%]*%>/;
+    const sucios = M.reduce((a, h) => a.concat((h.trozos || []).filter(t => MARCA.test(t))
+      .map(t => h.id + ': ' + t.slice(0, 70))), []);
+    T('ninguna hoja imprime un marcador de plantilla sin reemplazar',
+      sucios.length === 0, sucios.slice(0, 3).join(' · ') || 'ninguno');
   }
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
