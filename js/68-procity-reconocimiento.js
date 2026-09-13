@@ -10221,6 +10221,52 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Encogida CON resultado solo pasa por el mapa de calor: la barra habla
     // de eso y no de radios ni de dibujar, que ya son pasos cumplidos.
     if (S.resultado) return htmlEncogidaCalor();
+    /* Y con un trazo abierto, la barra es la del TRAZO (v896). La v895
+       prohibió encoger con la ventana abierta para que no saliera «otra
+       ventana de la nada», y con eso se llevó por delante el poder bajar la
+       hoja para ver el mapa — que es justo lo que se hace cuando se elige un
+       radio—. El arreglo no era prohibirlo: era que al encoger siguiera
+       siendo el mismo sitio, con su nombre, su radio y su botón, y sin los
+       seis botones de radio ni el lote, que es el ruido que esta ventana vino
+       a quitar. Es el mismo trato que ya tenía el lote, dos ramas más abajo.
+
+       Y `S.trazoAbierto` no se toca al encoger, así que subir la hoja
+       devuelve la ventana entera donde estaba. */
+    if (S.trazoAbierto) {
+      var tz = trazoGuardado(S.trazoAbierto);
+      if (tz) {
+        var porRad = S.forma === 'radio';
+        return '' +
+          '<button type="button" data-pcr="agrandar" class="pcr-asa" aria-label="Abrir la hoja"></button>' +
+          '<div class="pcr-mini-cuerpo">' +
+            '<div class="pcr-mini-fila">' +
+              '<div class="pcr-mini-que">' +
+                '<b>' + ico('lapiz', 16) + esc(tz.nombre || 'Trazo guardado') + '</b>' +
+                '<small>' + (porRad
+                  ? textoRadio(S.radioM) + ' alrededor del centro del trazo'
+                  : 'el trazo tal cual · ' + esc(formatearArea(tz.areaM2))) + '</small>' +
+              '</div>' +
+              '<button type="button" data-pcr="agrandar" class="pcr-mini-mas" aria-label="Más opciones">⋯</button>' +
+            '</div>' +
+            (porRad
+              ? '<div class="pcr-rango-fila">' +
+                  '<input type="range" class="pcr-rango" data-pcr="radio-rango" min="100" max="8000" ' +
+                    'step="50" value="' + S.radioM + '" ' +
+                    'aria-label="Radio alrededor del centro del trazo, en metros">' +
+                  '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
+                '</div>'
+              : '') +
+            '<button type="button" data-pcr="trazo-analizar" class="pcr-principal pcr-trazo-ir"' +
+              (S.cargando ? ' disabled' : '') + '>' +
+              ico('lupa', 18) +
+              (S.cargando ? 'Consultando…'
+                : 'Analizar ' + (porRad ? 'a ' + textoRadio(S.radioM) + ' a la redonda'
+                                        : 'el trazo tal cual')) + '</button>' +
+            (S.error ? '<p class="pcr-error">' + esc(S.error) + '</p>' : '') +
+            (S.cargando ? barraDeEspera() : '') +
+          '</div>';
+      }
+    }
     var esPol = S.forma === 'poligono';
     var hayPol = !!(S.poligono && S.poligono.length >= 3);
 
@@ -10329,16 +10375,15 @@ function donaHTML(datos, colorDe, nombreDe) {
        un gesto de la persona significaba que, con la ficha analizada y sin
        ninguna capa encendida, la hoja NO SE DEJABA BAJAR. Que es justo lo
        que alguien quiere hacer cuando quiere mirar el mapa. */
-    /* Y NUNCA con la ventana del trazo abierta (v893). Bajar la hoja con el
-       dedo la reemplazaba por la barra encogida —otro panel, con otros
-       controles— y el reporte lo dijo tal cual: «me pasó otra ventana
-       aparte… primero me retrocedió y después apareció esa ventana, y eso
-       me enredó; que todo sea transitorio, que no salga en ventanas de la
-       nada». La ventana del trazo es UNA ventana: se sale de ella por
-       «Volver» o por «Solo ponerlo en el mapa», que son dos puertas
-       escritas, no por un gesto que la cambia por otra cosa. */
+    /* Con la ventana del trazo abierta SÍ se puede encoger (v896): lo que no
+       puede pasar es que encogerla lleve a otro sitio, y de eso responde
+       `htmlEncogida`, que con un trazo abierto pinta la barra de ESE trazo.
+       La v895 lo prohibió entero y el remedio salió peor que el defecto —«no
+       puedo ni bajar ni subir, tampoco la puedo minimizar»—: bajar la hoja
+       para ver el mapa es exactamente lo que se hace mientras se elige un
+       radio. */
     var encoger = S.loteDibujando ||
-                  (S.encogida && !S.comparacion && !S.trazoAbierto &&
+                  (S.encogida && !S.comparacion &&
                    (S.encogidaAMano || !S.resultado || hayCapa));
     h.classList.toggle('pcr-encogida', encoger);
     h.classList.toggle('pcr-minima', encoger && !!S.minima && !S.loteDibujando);
@@ -10674,7 +10719,24 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cuando = new Date(t.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
     var porRadio = S.forma === 'radio';
     var hechos = analisisDelTrazo(id);
-    return '<div class="pcr-trazo-vent">' +
+    /* La barra de arriba y el CUERPO, que es lo que a la v892 se le olvidó y
+       la v895 no vio (llegó en captura: «la ventana está estática y se sale
+       de la pantalla, no puedo ni bajar ni subir, tampoco la puedo
+       minimizar»).
+
+       No son adorno: `.pcr-cuerpo` es el único elemento con `overflow-y`, y
+       la hoja está topada en 86 vh, así que sin él todo lo que pase de la
+       pantalla se recorta y no hay cómo alcanzarlo. Y `barra()` trae el asa
+       —que se arrastra para bajar la hoja— y la X. Una pantalla armada a mano
+       dentro de esta hoja tiene que traer las dos cosas; las otras tres
+       vistas las traen desde siempre y por eso el defecto era solo de esta. */
+    return '' +
+      barra('Modo educativo · Trazo guardado', esc(t.nombre || ('Trazo del ' + cuando)), 'lapiz') +
+      '<div class="pcr-cuerpo">' +
+      '<div class="pcr-trazo-vent">' +
+      /* El nombre vive ahora en la barra de arriba, que es donde esta hoja
+         dice siempre qué se está mirando. Acá queda la puerta de vuelta y
+         nada más: repetirlo serían dos títulos. */
       '<div class="pcr-trazo-cab">' +
         /* `pcr-trazo-volver` y NO `pcr-volver`: esa clase ya existe y es la
            píldora flotante de «Volver al análisis» (§18), con
@@ -10683,8 +10745,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            trazo», que es el solape que llegó en captura. Es la colisión de
            `trazoDe` de la v892 dicha en CSS. */
         '<button type="button" data-pcr="trazo-cerrar" class="pcr-mini pcr-trazo-volver">' +
-          ico('atras', 16) + 'Volver</button>' +
-        h4('lapiz', esc(t.nombre || ('Trazo del ' + cuando))) +
+          ico('atras', 16) + 'Volver a los trazos guardados</button>' +
       '</div>' +
       '<div class="pcr-trazo-id">' +
         miniaturaDeFicha({ forma: 'poligono', poligono: t.pts }) +
@@ -10788,6 +10849,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       '<button type="button" data-pcr="trazo-al-mapa" class="pcr-mini pcr-trazo-mapa">' +
         ico('mapa', 16) + 'Solo ponerlo en el mapa</button>' +
+    '</div>' +
     '</div>';
   }
 

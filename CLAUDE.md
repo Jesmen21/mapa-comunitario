@@ -3398,6 +3398,77 @@ Y una de numeración: la otra sesión publicó una v893 y una v894 mientras esta
 tanda se escribía, así que esto es la **v895**. Se sube por encima de las dos,
 nunca bajando la propia — es la regla del 7 de septiembre.
 
+## Una pantalla armada a mano dentro de la hoja (v896)
+
+Llegó en captura al día siguiente de la v895, y con una frase que dice las
+tres cosas: **«la ventana está estática y se sale de la pantalla, no puedo ni
+bajar ni subir, tampoco la puedo minimizar».** Un trazo de 52 vértices con
+tres análisis guardados: la lista de abajo quedaba fuera y no había cómo
+alcanzarla.
+
+### Lo que le faltaba no era CSS: era la estructura de la hoja
+
+`htmlTrazoAbierto` devolvía su contenido **a pelo**, sin las dos piezas que
+las otras tres vistas de esta hoja traen desde siempre:
+
+* **`.pcr-cuerpo`** es el único elemento con `overflow-y:auto`. La hoja está
+  topada en `max-height:86vh`, así que sin ese contenedor todo lo que pase de
+  la pantalla **se recorta y no hay cómo llegar a ello**. No es que se saliera:
+  es que estaba cortado, que desde afuera se ve igual.
+* **`barra()`** trae el **asa** —el objetivo ancho que se arrastra para bajar
+  la hoja— y la **X**. Sin ella no había gesto de minimizar ni de cerrar.
+
+De paso, el recuerdo de por dónde iba leyendo cada vista (`h.querySelector('.pcr-cuerpo')`)
+tampoco encontraba nada, así que esta pantalla era la única de las cuatro sin
+esa memoria.
+
+**Una pantalla nueva dentro de esta hoja se arma con `barra(...)` y con el
+contenido dentro de `<div class="pcr-cuerpo">`.** Las otras tres lo hacen; la
+mía no, y no lo dijo ningún error.
+
+### La v895 prohibió encoger, y el remedio salió peor que el defecto
+
+La v895 le puso `!S.trazoAbierto` a `encoger` para que bajar la hoja no la
+cambiara por la barra encogida —que es el panel general, con sus seis botones
+de radio y el lote—. El diagnóstico era correcto y **la solución estaba del
+lado equivocado**: se llevó por delante el poder ver el mapa, que es
+exactamente lo que uno hace mientras elige un radio.
+
+Lo correcto no era prohibir el gesto sino **que el gesto no cambiara de
+sitio**: `htmlEncogida` tiene ahora una rama propia para el trazo abierto —su
+nombre, su barrita de radio y su botón de analizar, sin nada del panel
+general—, igual que la que el lote ya tenía dos ramas más abajo. `S.trazoAbierto`
+no se toca al encoger, así que subir la hoja devuelve la ventana entera.
+
+Es la misma lección que la v882 y la v886 dejaron escritas por otros dos
+caminos: **un arreglo que quita una capacidad para callar un defecto es un
+arreglo a medias**, y se nota al día siguiente.
+
+### El fixture tenía una sola ficha, y por eso nada desbordaba
+
+Duodécima vez (v862, v866, v874, v877, v880, v882, v884, v888, v889, v890,
+v895 y esta). Con un solo análisis el contenido cabía en la hoja: la aserción
+de «se puede recorrer» habría pasado **sin tener nada que recorrer**, que es
+el verde que este proyecto lleva doce tandas persiguiendo.
+
+El trazo de la captura tenía **tres**, así que la suite siembra dos fichas más
+sobre la real. Se siembran en el almacén y no se corren dos análisis más
+—serían dos consultas y dos esperas de 5,2 s del limitador de Overpass— y es
+lo que de verdad tiene quien vuelve días después: no se está cambiando el
+estado por un lado, se está poniendo el material guardado que la ventana lee.
+Con ellas sobran 163 px por debajo del borde, y la aserción mide que el último
+botón se alcanza recorriendo.
+
+De paso se apretó otra: «borrar el trazo no borra los análisis» comparaba
+contra **una** ficha, donde no se distingue «no borró» de «no había más que
+una». Ahora son tres.
+
+### Demostrado contra la v895
+
+Cinco aserciones en rojo, con el estado viejo impreso: «cuerpo false ·
+overflow sin cuerpo», «0 px por debajo del borde», «sin cuerpo que recorrer»,
+«asa false · cerrar false» y «encogida false» — que es no poder minimizarla.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

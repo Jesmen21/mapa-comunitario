@@ -343,8 +343,74 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
        tres análisis del mismo trazo se ven idénticos en la lista y la
        promesa de la v871 —«diferentes análisis» del mismo sitio— no se
        puede usar. Es la regla de la v889 dicha acá. */
+    /* Y con TRES análisis guardados, que es el caso de la captura del 13 de
+       septiembre: el de este trazo era un polígono de 52 vértices con tres
+       análisis, y ahí la ventana pasaba de los 86 vh de la hoja. Los dos
+       extra se siembran en el almacén en vez de correr dos análisis más
+       —serían dos consultas y dos esperas de 5,2 s del limitador de
+       Overpass— y son exactamente lo que tiene quien vuelve días después: no
+       se está cambiando el estado por un lado, se está poniendo el material
+       guardado que la ventana lee. */
+    (function(){
+      try{
+        const fs=JSON.parse(localStorage.getItem('pcr_fichas_v1')||'[]');
+        const base=fs[0]; if(!base) return;
+        [['Urbisprocity',4000],['Revisión del borde norte',1000]].forEach(function(par,i){
+          const c=JSON.parse(JSON.stringify(base));
+          c.id='f-sembrada-'+i; c.nombre=par[0]; c.radioM=par[1];
+          c.ts=(base.ts||Date.now())-(i+1)*86400000;
+          fs.push(c);
+        });
+        localStorage.setItem('pcr_fichas_v1',JSON.stringify(fs));
+      }catch(e){}
+    })();
     const bUsar2=H().querySelector('[data-pcr="usar-trazo"]');
     if(bUsar2){ bUsar2.click(); await esperar(800); }
+    /* ── 5c. La ventana cabe en la pantalla y se puede recorrer (v896).
+       Llegó en captura: «la ventana está estática y se sale de la pantalla,
+       no puedo ni bajar ni subir, tampoco la puedo minimizar». La causa es
+       que `htmlTrazoAbierto` no traía `.pcr-cuerpo` —el único elemento con
+       `overflow-y`— ni `barra()`, que es la que pone el asa. */
+    o.caja=(function(){
+      const h=H(), c=h.querySelector('.pcr-cuerpo');
+      const rh=h.getBoundingClientRect();
+      return { hayCuerpo:!!c,
+               desplaza:c?getComputedStyle(c).overflowY:'sin cuerpo',
+               deSobra:c?Math.round(c.scrollHeight-c.clientHeight):0,
+               seSale:Math.round(rh.bottom-window.innerHeight),
+               hayAsa:!!h.querySelector('[data-pcr="asa"]'),
+               hayX:!!h.querySelector('[data-pcr="cerrar"]') };
+    })();
+    /* Y recorrerla de verdad, no solo poder: se empuja el cuerpo hasta abajo
+       y se mira que el último botón de la ventana quede dentro de la
+       pantalla. «Poder desplazarse» y «alcanzar lo de abajo» no son lo
+       mismo, y lo que el reporte no podía era lo segundo. */
+    o.alcanza=(function(){
+      const c=H().querySelector('.pcr-cuerpo');
+      if(!c) return null;
+      c.scrollTop=c.scrollHeight;
+      const ult=H().querySelector('[data-pcr="trazo-al-mapa"]');
+      if(!ult) return { movio:Math.round(c.scrollTop), visible:false };
+      const r=ult.getBoundingClientRect();
+      return { movio:Math.round(c.scrollTop),
+               visible:r.bottom<=window.innerHeight+1 && r.top>=0 };
+    })();
+    /* ── 5d. Minimizarla, que era la otra mitad del reporte. Y al encoger
+       sigue siendo el trazo: sin los seis botones de radio del panel general
+       —el ruido que esta ventana vino a quitar— y con su radio y su botón.
+       Subirla devuelve la ventana entera. */
+    const asaT=H().querySelector('[data-pcr="asa"]');
+    if(asaT){ asaT.click(); await esperar(700); }
+    o.minimizada=(function(){ const h=H();
+      return { encogida:h.classList.contains('pcr-encogida'),
+               nombraElTrazo:/El lote de la loma/.test(h.textContent||''),
+               botonesRadio:h.querySelectorAll('[data-pcr="radio"]').length,
+               haySlider:!!h.querySelector('[data-pcr="radio-rango"]'),
+               hayAnalizar:!!h.querySelector('[data-pcr="trazo-analizar"]'),
+               alto:Math.round(h.getBoundingClientRect().height) }; })();
+    const bAgrT=H().querySelector('[data-pcr="agrandar"]');
+    if(bAgrT){ bAgrT.click(); await esperar(700); }
+    o.devueltaEntera=!!H().querySelector('.pcr-trazo-vent');
     o.hechos=(function(){
       const c=H().querySelector('.pcr-trazo-hechos');
       if(!c) return null;
@@ -408,8 +474,11 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     (r.diceCuantos||'sin lista').slice(0,110));
   /* Y al revés: borrar la forma no puede llevarse por delante el trabajo
      hecho sobre ella. Son dos almacenes justamente para esto. */
-  T('borrar el trazo no borra los análisis que salieron de él',
-    r.trasBorrar===0 && r.fichasTrasBorrar===1,
+  /* Las TRES, desde la v896: el trazo de la captura tenía tres análisis, y
+     borrar la forma no puede llevarse ninguno. Con una sola ficha esto se
+     cumplía sin distinguir «no borró» de «no había más que una». */
+  T('borrar el trazo no borra los tres análisis que salieron de él',
+    r.trasBorrar===0 && r.fichasTrasBorrar===3,
     r.trasBorrar+' trazos · '+r.fichasTrasBorrar+' fichas');
 
   console.log('');
@@ -536,6 +605,40 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
   T('la ficha declara que el centro salió del trazo, no del mapa',
     /trazo guardado/i.test(r.origen||'') && !/centro del mapa/i.test(r.origen||''),
     r.origen||'no lo declara');
+
+  console.log('\n  -- la ventana cabe, se recorre y se minimiza --');
+  /* Las cuatro piezas del reporte del 13 de septiembre, medidas en píxeles
+     de pantalla: «la ventana está estática y se sale de la pantalla, no
+     puedo ni bajar ni subir, tampoco la puedo minimizar». */
+  T('la ventana tiene cuerpo con desplazamiento, y no se sale de la pantalla',
+    !!r.caja && r.caja.hayCuerpo===true && /auto|scroll/.test(r.caja.desplaza||'') &&
+    r.caja.seSale<=1,
+    r.caja ? 'cuerpo '+r.caja.hayCuerpo+' · overflow '+r.caja.desplaza+
+             ' · se sale '+r.caja.seSale+' px' : 'sin medir');
+  /* Con tres análisis guardados el contenido pasa de la hoja: si no sobrara
+     nada, esta aserción pasaría sin tener nada que recorrer — que es el
+     agujero que este proyecto lleva once tandas persiguiendo. */
+  T('con tres análisis el contenido pasa de la hoja, que es el caso de la captura',
+    !!r.caja && r.caja.deSobra>0, (r.caja?r.caja.deSobra:0)+' px por debajo del borde');
+  T('y lo de abajo se alcanza recorriéndola',
+    !!r.alcanza && r.alcanza.movio>0 && r.alcanza.visible===true,
+    r.alcanza ? 'recorrió '+r.alcanza.movio+' px · último botón a la vista '+r.alcanza.visible
+              : 'sin cuerpo que recorrer');
+  T('trae el asa para bajarla y la X para cerrarla',
+    !!r.caja && r.caja.hayAsa===true && r.caja.hayX===true,
+    r.caja ? 'asa '+r.caja.hayAsa+' · cerrar '+r.caja.hayX : 'sin medir');
+  /* Minimizada sigue siendo el trazo. La v895 prohibió encoger para que no
+     saliera «otra ventana»; el arreglo es que la encogida sea la de ESTE
+     trazo, no la del panel general con sus seis botones de radio. */
+  T('minimizada sigue siendo el trazo, con su radio y su botón',
+    !!r.minimizada && r.minimizada.encogida===true && r.minimizada.nombraElTrazo===true &&
+    r.minimizada.botonesRadio===0 && r.minimizada.haySlider===true &&
+    r.minimizada.hayAnalizar===true,
+    r.minimizada ? 'encogida '+r.minimizada.encogida+' · lo nombra '+r.minimizada.nombraElTrazo+
+                   ' · radios sueltos '+r.minimizada.botonesRadio+' · barrita '+r.minimizada.haySlider
+                 : 'sin medir');
+  T('y subirla devuelve la ventana entera, no el panel general',
+    r.devueltaEntera===true);
 
   console.log('\n  -- el botón que hay que tocar se ve --');
   /* Medido en píxeles de pantalla y no por su clase: en la v892 llevaba dos
