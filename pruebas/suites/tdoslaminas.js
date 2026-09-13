@@ -727,6 +727,43 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
                    fuera: dame(/Quién queda por fuera/),
                    mueve: dame(/Cómo se mueve el sector/) };
         })(),
+        /* §3 (v898) · ¿algún rótulo se pinta DOS veces?
+           ────────────────────────────────────────────────────────────────
+           Un `<text>` con `stroke` no lleva un contorno: lleva una SEGUNDA
+           PASADA DE PINTURA. Medido sobre el PDF de estas mismas dos hojas,
+           cada rótulo así salía como dos bloques de texto en la misma
+           matriz —uno blanco glifo a glifo y encima el de tinta—, y el
+           lector los veía interlineados: «VVeerrddee nnaattuurraall».
+
+           Se persigue la CLASE y no los catorce rótulos que tenía: en toda
+           la hoja, ningún nodo de texto puede llevar un trazo que pinte.
+           `paint-order` no es la salida —fue lo que había— porque no evita
+           la segunda pasada: la ordena. */
+        textoConTrazo: [...h.querySelectorAll('svg text')].filter(t => {
+          const cs = getComputedStyle(t);
+          return cs.stroke && cs.stroke !== 'none' && parseFloat(cs.strokeWidth) > 0;
+        }).map(t => (t.textContent || '').slice(0, 24)),
+        /* §3 · las cotas del plano del lote, con su caja REAL.
+           Con los cincuenta y dos lados que reportó el pliego, las cotas se
+           pisaban unas con otras y no se leía ninguna. Se mide el `getBBox`
+           de cada una —lo que el navegador dibujó, no lo que se le pidió— y
+           se buscan solapes. */
+        lote: (function () {
+          const sv = h.querySelector('.pcr-plano-lote');
+          if (!sv) return null;
+          const cot = [...sv.querySelectorAll('text')]
+            .filter(t => t.getAttribute('font-size') === '8.5')
+            .map(t => { const b = t.getBBox();
+              return { t: t.textContent, x1: b.x, x2: b.x + b.width, y1: b.y, y2: b.y + b.height }; });
+          let solapes = 0;
+          for (let i = 0; i < cot.length; i++) for (let j = i + 1; j < cot.length; j++) {
+            const a = cot[i], c = cot[j];
+            if (a.x1 < c.x2 && a.x2 > c.x1 && a.y1 < c.y2 && a.y2 > c.y1) solapes++;
+          }
+          return { cotas: cot.length, solapes,
+                   numerados: sv.querySelectorAll('circle[r="3.4"]').length,
+                   cuadro: /lados no tienen sitio para su cota/.test(sv.textContent) };
+        })(),
         biblio: h.querySelectorAll('.pie .biblio li').length,
         propuestas: h.querySelectorAll('.sintesis-pie .pu').length,
         plano: !!h.querySelector('.plano-hero')
@@ -2214,6 +2251,46 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      las cuatro son cifras correctas dichas de una manera que no se puede
      leer, y por eso ninguna suite las veía. */
   console.log('\n  -- lo que sale impreso se puede leer --');
+
+  /* 0 · §3 (v898) · CADA GLIFO SE DIBUJA UNA SOLA VEZ.
+     ──────────────────────────────────────────────────────────────────────
+     Llegó del pliego v2 con el síntoma escrito: «VVeerrddee nnaattuurraall»,
+     «CCuueerrppoo ddee aagguuaa», «7744,,44 ddBB((AA))», y «sobre todo El
+     lote a intervenir, donde las cotas de los 52 lados quedan completamente
+     ilegibles».
+
+     La causa se midió sobre el PDF y no leyendo: un `<text>` con
+     `stroke` + `paint-order` sale del motor de impresión como DOS bloques
+     de texto en la MISMA matriz —uno blanco, glifo a glifo, y encima el de
+     tinta—. Catorce rótulos así en una sola corrida de estas dos hojas.
+
+     Se persigue la CLASE: ningún nodo de texto de la hoja lleva un trazo
+     que pinte. Un renglón que diga «y sin `paint-order`» no serviría: el
+     `paint-order` no crea la segunda pasada, la ordena, y era justamente lo
+     que había. */
+  {
+    const conTrazo = [].concat(A.textoConTrazo || [], B.textoConTrazo || []);
+    T('ningún rótulo se pinta dos veces: nada de trazo sobre el texto',
+      conTrazo.length === 0, conTrazo.length + (conTrazo.length ? ' · ' + conTrazo.slice(0, 4).join(' · ') : ''));
+  }
+
+  /* 0b · Las cotas del plano del lote. El lote de esta suite es un predio de
+     ocho lados (v890), así que acá TODAS caben: lo que se mide es que no se
+     haya perdido ninguna por el arreglo, y que no aparezca ni un número ni
+     el cuadro donde no hacen falta. La otra rama —la del lote al que no le
+     cabe— la mide `tpliegogrande`, cuyo lote tiene veintidós lados y la
+     produce de verdad; es la lección de la v874 y esta vez no hizo falta
+     empobrecer ningún material: ya había uno que la destapa. */
+  {
+    const lo = A.lote || B.lote;
+    T('el plano del lote imprime sus cotas', !!lo && lo.cotas >= 8,
+      lo ? lo.cotas + ' cotas' : 'no hay plano del lote');
+    T('y ninguna se pisa con otra', !!lo && lo.solapes === 0,
+      lo ? lo.solapes + ' solapes' : '—');
+    T('con ocho lados caben todas: ni un número ni cuadro al pie',
+      !!lo && lo.numerados === 0 && lo.cuadro === false,
+      lo ? lo.numerados + ' numerados · cuadro ' + lo.cuadro : '—');
+  }
 
   /* 1 · Una razón grande se dice en VECES. «el lote ocupa cerca del 15978 %
      de una manzana mediana» es cierto y no significa nada. En este sector el

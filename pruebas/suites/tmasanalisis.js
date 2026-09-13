@@ -698,11 +698,27 @@ const CAPAS_IDEAM = [
 
   /* El mapa de hitos y nodos, con los nombres al lado del punto. */
   const HN = (LC.split('<section class="caja').filter(x => /^ mapa-caja/.test(x) && /<h2>Hitos y nodos( · el mapa)?<\/h2>/.test(x))[0] || '');
-  const rotulos = (HN.match(/paint-order="stroke"/g) || []).length;
+  /* Los rótulos se contaban por `paint-order="stroke"` —el halo—, y el halo
+     resultó ser el defecto de §3: un `<text>` con trazo sale del motor de
+     impresión como DOS pasadas de pintura y el lector lee «VVeerrddee
+     nnaattuurraall». Contar por ahí era citar la implementación, y encima la
+     equivocada.
+
+     Se cuenta ahora lo que la aserción dice que mide: el NOMBRE al lado del
+     punto y el NÚMERO dentro del disco. Y se le suma lo que antes no
+     miraba: que cada nombre vaya sobre su plaquita y que ninguno lleve
+     trazo encima. Es más de lo que se pedía, no menos. */
+  const rotulos = (HN.match(/fill="#12202e">[^<]+<\/text>/g) || []).length;
+  const numeros = (HN.match(/font-weight="800" fill="#fff">\d+<\/text>/g) || []).length;
+  const placas  = (HN.match(/fill-opacity="\.84"/g) || []).length;
   T('un mapa exclusivo de hitos y nodos', !!HN);
   T('que la impresa trae, o declara fuera por su nombre', /data-m="hitos"/.test(LAM) || (r.fuera || []).indexOf('hitos') >= 0);
-  T('con el número y el nombre al lado de cada punto', rotulos >= 3 && /Colegio \d/.test(HN),
-    rotulos + ' rótulos');
+  T('con el número y el nombre al lado de cada punto',
+    rotulos >= 3 && numeros >= 3 && /Colegio \d/.test(HN),
+    rotulos + ' nombres · ' + numeros + ' números');
+  T('cada nombre sobre su plaquita, y ninguno con trazo encima (§3)',
+    placas >= rotulos && !/<text[^>]*stroke=/.test(HN),
+    placas + ' plaquitas para ' + rotulos + ' nombres');
   T('y los parques con nombre, en verde', /fill="#16A34A"/.test(HN) && /Parque \d/.test(HN),
     (HN.match(/Parque \d/g) || []).join(' · ') || 'sin parques');
   T('el informe en hojas lo trae también', /<figcaption>Hitos y nodos<\/figcaption>/.test(PDF));

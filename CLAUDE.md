@@ -3578,6 +3578,130 @@ y la v890: que el botón **no** nazca iluminado. Con el autoguardado detrás, es
 es la mitad que se puede romper sin darse cuenta — y un botón que ya está
 verde cuando llegas no acusa nada.
 
+## Cada glifo se dibuja una sola vez (v898)
+
+§3 del pliego de ajustes v2, y el propio pliego lo puso primero: «es lo
+primero que se ve de la lámina». Llegó con el síntoma escrito:
+
+> «VVeerrddee nnaattuurraall», «CCuueerrppoo ddee aagguuaa»,
+> «7744,,44 ddBB((AA))» … y, sobre todo, El lote a intervenir, donde las
+> cotas de los 52 lados quedan completamente ilegibles.
+
+Son **dos defectos distintos** con el mismo resultado —un rótulo que no se
+puede leer— y con causas que no tienen nada que ver.
+
+### El arreglo que el reporte proponía era lo que el código ya hacía
+
+§3 cierra con: «si se quiere halo de legibilidad, usar stroke con
+paint-order, no un segundo trazo de texto». Eso es **exactamente** lo que
+`mini()` hacía desde siempre: un solo `<text>` con `stroke="#fff"`,
+`stroke-width="2.4"` y `paint-order="stroke"`.
+
+Así que leyendo el código el defecto no existía, y la tentación era
+contestar que no se reproduce. Se midió sobre el PDF, que es donde el
+lector lo ve: se genera el documento de las dos hojas con el mismo motor
+que lo imprime, se descomprimen sus flujos y se leen los operadores de
+texto. Un rótulo con halo sale así:
+
+```
+1 1 1 rg            ← blanco
+BT /F4 12 Tf  1 0 0 -1 10 30 Tm   <2B> Tj  <24> Tj  <2F> Tj …   ← glifo a glifo
+.0706 .1255 .1804 rg  ← tinta
+BT /F5 12 Tf  1 0 0 -1 10 30 Tm   <002B0024002F> Tj …           ← otra vez
+```
+
+**Dos bloques de texto en la misma matriz**, con fuentes distintas. El de
+al lado, sin halo, sale una sola vez. **`paint-order` no evita la segunda
+pasada: la ordena.** Catorce rótulos así en una sola corrida de las dos
+láminas.
+
+Lo que sustituye al halo es una **plaquita opaca** detrás del rótulo y un
+`<text>` liso encima. Se lee mejor sobre la foto —a 5 px de letra, un
+contorno de 2,4 se come el glifo— y no puede duplicarse, porque no hay
+segunda pasada que duplicar. El ancho de la plaquita se estima por
+caracteres —el SVG no sabe medir texto sin montarlo— y el margen va del
+lado seguro: una plaquita ancha de más tapa un poco más de mapa, una corta
+deja el rótulo saliéndose.
+
+### La cota que no cabe va al cuadro, y se dice
+
+El plano del lote imprimía sus N cotas pasara lo que pasara. Con cuatro
+lados eso está bien; con los cincuenta y dos del lote que reportó §3, en un
+dibujo de 260 × 210, **no se lee ninguna** —ni las que sobraban ni las que
+no—. Medido sobre la lámina compuesta con el lote de veintidós lados de
+`tpliegogrande`: **18 solapes**.
+
+Una cota que no se puede leer no es una medida: es tinta encima del plano.
+Ahora se mide el sitio que cada rótulo pide y se reparte de lado más LARGO
+a más corto —el lado largo es el que tiene sitio y el que manda en la
+forma—; el que no alcanza se **numera**, y su medida va a un cuadro al pie
+que dice cuántos son y por qué. **No se pierde un solo dato**: es lo que
+hace un plano acotado de verdad cuando los linderos son muchos.
+
+Dos cosas que costaron una vuelta cada una:
+
+* **Una cota que se sale del papel se CORRE, no se rinde.** La primera
+  versión la mandaba al cuadro, y un lote de cuatro lados con el nombre de
+  una avenida perdía una cota por el ancho del rótulo y no por falta de
+  sitio. Se prueban cuatro sitios antes de rendirse —el de siempre, más
+  afuera, corrido para que quepa, y hacia adentro del lote—, que es lo que
+  hace quien acota a mano. Con eso los lotes de cuatro y ocho lados
+  imprimen **todas** sus cotas, como antes.
+* **La caja estimada de menos deja pasar exactamente lo que mide.** Con
+  0,52 em de avance y 9,5 px de alto —el primer intento— quedaban tres
+  cotas pisándose en el lote de cincuenta y dos lados: el defecto volvía
+  por la puerta de atrás. Los 0,58 em y 11 px que quedaron salen de leer el
+  `getBBox` de estos mismos rótulos en el navegador, no de suponerlos.
+
+### Tres guardas, y cada una mide algo distinto
+
+* **`revisar.js`** · ningún `<text>` de lo que se sirve lleva trazo encima
+  del glifo. Recorre el disco, no una lista escrita, así que **un
+  renderizador nuevo queda vigilado sin que su autor se acuerde**. Y no
+  persigue `paint-order`, que sería perseguir un síntoma: persigue el trazo,
+  venga como venga.
+* **`tdoslaminas`** · sobre el papel ya compuesto, ningún nodo de texto de
+  las dos hojas tiene un trazo que pinte. Es la misma afirmación medida en
+  el otro extremo, y las dos coincidieron en el número: catorce.
+* **`tpliegogrande`** · las cotas del lote, con el `getBBox` de cada una en
+  las dos orientaciones. Va ahí y no en `tdoslaminas` porque **aquel lote es
+  un predio de ocho lados** (v890) y ahí no se pisa nada ni queriendo: la
+  comprobación habría pasado por no tener nada que rechazar. Es el agujero
+  que este proyecto lleva trece tandas persiguiendo, y esta vez no hizo
+  falta empobrecer ningún material: ya había uno que lo destapa.
+
+Y las dos mitades de esa última hacen falta. Sin la primera —«el plano
+imprime las cotas que caben»— se podría «arreglar» la ilegibilidad mandando
+todas al cuadro y dejando el plano mudo; sin la segunda, numerando lados
+que no se pueden leer en ningún sitio.
+
+### Demostrado contra la v897
+
+Cuatro medidas en rojo, cada una con el estado viejo impreso: la guarda
+estática señala `js/24:1352` con archivo y línea; `tdoslaminas` denuncia
+**14 rótulos** y los nombra —«69,2 dB(A)», «Autopista Nacional»—;
+`tpliegogrande` da **22 cotas · 18 solapes · 0 numerados · sin cuadro**; y
+la sonda del PDF pasa de **14 bloques dobles a 0**.
+
+Dos aserciones **no** fallan contra la v897 y es a propósito, como las
+guardas de la v879, la v882 y la v890: que el plano siga imprimiendo cotas
+—las imprimía todas, solo que ilegibles— y que cada lado numerado esté
+medido en el cuadro, que con cero numerados se cumple sola. Son guardas
+contra pasarse de corregir, no afirmaciones nuevas.
+
+### Lo que se vio en el papel y NO se tocó
+
+Mirando la lámina impresa —que es el método que encontró los defectos de la
+v874, la v882, la v885 y la v887— se ve que en el mapa de hitos dos
+rótulos de POI se montan uno sobre otro. Es el mismo defecto de clase que
+la cota del lote y **no se arregló acá**, por dos razones: el sector de
+prueba los apila porque tiene cinco hitos a veinte metros unos de otros,
+que no es un sector real; y para el lote la solución es lossless —el número
+remite al cuadro— mientras que para un rótulo de mapa sin lista al lado,
+saltárselo perdería un nombre en silencio, que es justo lo que este módulo
+tiene prohibido. Queda dicho acá para que la tanda que lo aborde no lo
+descubra otra vez.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

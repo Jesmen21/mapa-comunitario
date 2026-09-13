@@ -1309,8 +1309,28 @@
     /* Puntos CON NOMBRE: los hitos y nodos del sector, numerados, y los
        parques con nombre. Se pidió «un mapeo exclusivo de hitos y nodos con
        los nombres», y con razón: un hito sin nombre en el plano es un punto
-       más, y el número solo sirve si la lista de al lado lo repite. El rótulo
-       lleva un halo blanco para leerse sobre la foto o sobre las huellas. */
+       más, y el número solo sirve si la lista de al lado lo repite.
+
+       EL RÓTULO VA SOBRE UNA PLAQUITA, NO CON HALO (v898). Hasta la v897 el
+       texto llevaba `stroke="#fff"` con `paint-order="stroke"`, que es la
+       manera recomendada de hacer un halo en SVG y la que este mismo defecto
+       proponía como arreglo. Pero un contorno NO es una decoración del
+       glifo: es una segunda pasada de pintura.
+
+       Medido sobre el PDF de las dos láminas: cada rótulo con halo sale como
+       DOS bloques de texto en la MISMA matriz —uno blanco, glifo a glifo, y
+       encima el de tinta—, y el lector los ve interlineados: «VVeerrddee
+       nnaattuurraall». Catorce rótulos así en una sola corrida.
+
+       Una plaquita opaca detrás y UN solo `<text>` encima se lee mejor sobre
+       la foto —a 5 px un contorno de 2,4 se come el glifo— y no puede
+       duplicarse, porque no hay segunda pasada que duplicar.
+
+       El ancho de la plaquita se ESTIMA por el número de caracteres: el SVG
+       no sabe medir texto sin montarlo. Es una estimación y se dice; una
+       plaquita ancha de más no cuesta nada —tapa un poco más de mapa— y una
+       corta dejaría el rótulo saliéndose, así que el margen va del lado
+       seguro. */
     let rotulos = '';
     if (Array.isArray(o.rotulos) && o.rotulos.length) {
       const fz = o.rotuloTam || 5.2;
@@ -1321,13 +1341,19 @@
           const col = rt.color || '#0A6F9E';
           const txt = String(rt.texto || '').replace(/[<&>]/g, '').slice(0, 26);
           const num = rt.n != null ? String(rt.n) : '';
+          const tx = x + (num ? 6 : 4.2), ty = y + 1.9;
+          // 0,56 em de avance medio por carácter en negrita, más un respiro
+          // a cada lado. Medido contra el propio PDF, no adivinado.
+          const anchoTxt = txt.length * fz * 0.56 + 2.4;
           return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (num ? 4.2 : 2.6) +
               '" fill="' + col + '" stroke="#fff" stroke-width="1"/>' +
-            (num ? '<text x="' + x.toFixed(1) + '" y="' + (y + 1.9).toFixed(1) + '" text-anchor="middle" ' +
+            (num ? '<text x="' + x.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="middle" ' +
               'font-size="5" font-weight="800" fill="#fff">' + num + '</text>' : '') +
-            (txt ? '<text x="' + (x + (num ? 6 : 4.2)).toFixed(1) + '" y="' + (y + 1.9).toFixed(1) +
-              '" font-size="' + fz + '" font-weight="700" fill="#12202e" stroke="#fff" stroke-width="2.4" ' +
-              'paint-order="stroke" stroke-linejoin="round">' + txt + '</text>' : '');
+            (txt ? '<rect x="' + (tx - 1.2).toFixed(1) + '" y="' + (ty - fz + 0.4).toFixed(1) +
+                '" width="' + anchoTxt.toFixed(1) + '" height="' + (fz + 2).toFixed(1) +
+                '" rx="1.3" fill="#fff" fill-opacity=".84"/>' +
+              '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) +
+              '" font-size="' + fz + '" font-weight="700" fill="#12202e">' + txt + '</text>' : '');
         }).join('') + '</g>';
     }
 

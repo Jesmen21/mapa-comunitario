@@ -332,6 +332,59 @@ console.log('\n  -- ningún elemento sin una sola clase pintada --');
                      Object.keys(ASIDEROS).length + ' asideros declarados');
 }
 
+// ── 3b bis. ningún glifo se dibuja dos veces ─────────────────────────────
+/* §3 del pliego de ajustes v2, y la guarda que impide que vuelva a entrar.
+
+   Un `<text>` de SVG con `stroke` no lleva un contorno alrededor del glifo:
+   lleva una SEGUNDA PASADA DE PINTURA. Medido sobre el PDF de las dos
+   láminas, cada rótulo así salía como dos bloques de texto en la MISMA
+   matriz —uno blanco, glifo a glifo, y encima el de tinta—, y el lector los
+   veía interlineados: «VVeerrddee nnaattuurraall», «7744,,44 ddBB((AA))».
+   Catorce rótulos así en una sola corrida.
+
+   Lo que más cuesta creer de esto es que el arreglo que el propio reporte
+   proponía —«usar stroke con paint-order, no un segundo trazo de texto»— era
+   EXACTAMENTE lo que el código ya hacía. `paint-order` no evita la segunda
+   pasada: la ordena. Por eso la guarda no persigue `paint-order`, que sería
+   perseguir un síntoma: persigue el trazo sobre el texto, venga como venga.
+
+   Se recorre lo que se sirve al navegador —listado del disco, para que un
+   archivo nuevo quede vigilado sin que su autor se acuerde— buscando la
+   apertura de un `<text` y mirando hasta donde la etiqueta se cierra. El
+   halo se pone SIEMPRE en la apertura, así que ahí es donde se ve.
+
+   Lo que sustituye al halo es una plaquita opaca detrás del rótulo: se lee
+   mejor sobre una foto —a cinco píxeles, un contorno de 2,4 se come el
+   glifo— y no puede duplicarse, porque no hay segunda pasada que duplicar. */
+console.log('\n  -- ningún glifo se dibuja dos veces --');
+{
+  const conHalo = [];
+  const archivos = fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter(f => f.endsWith('.html')));
+  archivos.forEach(f => {
+    const s = leer(f);
+    let m; const re = /<text\b/g;
+    while ((m = re.exec(s)) !== null) {
+      /* Hasta donde la etiqueta de apertura se cierra. El `>` puede estar a
+         varias concatenaciones de distancia, así que se mira una ventana y
+         se corta en el primer `>` que no venga de un `=>` de JavaScript. */
+      const trozo = s.slice(m.index, m.index + 700);
+      const fin = (function () {
+        for (let i = 5; i < trozo.length; i++)
+          if (trozo[i] === '>' && trozo[i - 1] !== '=') return i;
+        return trozo.length;
+      })();
+      const abre = trozo.slice(0, fin);
+      if (/\bstroke\s*=|\bstroke-width\s*=|\bpaint-order\s*=/.test(abre))
+        conHalo.push(f + ':' + s.slice(0, m.index).split('\n').length);
+    }
+  });
+  comprobar('ningún <text> servido lleva trazo encima del glifo',
+    conHalo.length === 0,
+    conHalo.length ? conHalo.slice(0, 6).join(' | ')
+                   : archivos.length + ' archivos revisados');
+}
+
 // ── 3c. los scripts sueltos de las páginas parsean ───────────────────────
 /* Un `<script>` escrito dentro del HTML que no cierre bien no rompe la página:
    el navegador descarta ESE bloque y sigue como si nada. Lo que había adentro

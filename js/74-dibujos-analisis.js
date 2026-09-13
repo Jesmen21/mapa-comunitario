@@ -280,13 +280,29 @@
       return (i ? 'L' : 'M') + n1(p.x) + ' ' + n1(p.y);
     }).join(' ') + ' Z';
 
-    // Los lados, con su cota. El análisis ya los trae medidos y orientados:
-    // acá solo se dibujan en el mismo orden en que vienen.
-    var lados = (a.lados || []).map(function (l, i) {
+    /* Los lados, con su cota. El análisis ya los trae medidos y orientados:
+       acá solo se dibujan en el mismo orden en que vienen.
+
+       LA COTA SALE DONDE QUEPA, Y DONDE NO, UN NÚMERO (v898). Hasta la v897
+       los N lados imprimían sus N cotas pasara lo que pasara. Con cuatro
+       lados eso está bien; con los cincuenta y dos del lote que reportó §3,
+       en un dibujo de 260 × 210, las cotas se pisan unas a otras y **no se
+       lee ninguna** —ni las que sobraban ni las que no—.
+
+       Una cota que no se puede leer no es una medida: es tinta encima del
+       plano. Así que se mide el sitio que cada rótulo necesita y se queda el
+       que cabe; el lado que no alcanza se NUMERA, y su medida va al cuadro
+       de abajo. No se pierde un solo dato —es lo que hace un plano acotado
+       de verdad cuando los linderos son muchos—, y el dibujo vuelve a
+       servir para lo que existe: leerlo.
+
+       Se reparte de lado más LARGO a más corto: el lado largo es el que
+       tiene sitio y el que manda en la forma, así que es el que se lleva la
+       cota cuando hay que elegir. */
+    var GEO = (a.lados || []).map(function (l, i) {
       var p1 = P[i], p2 = P[(i + 1) % P.length];
-      if (!p1 || !p2) return '';
+      if (!p1 || !p2) return null;
       var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-      var esCritica = a.critica && a.critica.i === l.i;
       var dx = p2.x - p1.x, dy = p2.y - p1.y;
       var largo = Math.sqrt(dx * dx + dy * dy) || 1;
       // La cota se corre hacia afuera del lote, perpendicular al lado.
@@ -298,24 +314,104 @@
          cuanto el dibujo se imprimía pequeño, que es como termina en la
          lámina. */
       var rot = l.largoM + ' m' + (l.via ? ' · ' + String(l.via).slice(0, 14) : '');
+      return { l: l, i: i, p1: p1, p2: p2, mx: mx, my: my, largo: largo,
+               cx: mx + hx, cy: my + hy, rot: rot,
+               esCritica: !!(a.critica && a.critica.i === l.i) };
+    }).filter(Boolean);
+
+    /* El sitio que pide cada rótulo. El ancho se ESTIMA por caracteres —el
+       SVG no sabe medir texto sin montarlo— con el avance medio de la
+       negrita a 8,5 px; el margen va del lado seguro, porque estimar de
+       menos deja pasar dos cotas que se tocan y estimar de más solo manda
+       una al cuadro. */
+    var puestas = [];
+    GEO.slice().sort(function (x, y) { return y.largo - x.largo; }).forEach(function (g) {
+      /* El ancho y el alto de la caja, MEDIDOS y no supuestos: 0,58 em de
+         avance medio y 11 px de alto salen de leer el `getBBox` de estos
+         mismos rótulos en el navegador. Con 0,52 y 9,5 —que fue el primer
+         intento— quedaban tres cotas pisándose en el lote de cincuenta y
+         dos lados, y el defecto que este arreglo viene a quitar volvía por
+         la puerta de atrás: una caja estimada de menos deja pasar
+         exactamente lo que mide. */
+      var w = g.rot.length * 8.5 * 0.58 + 5, h = 11;
+      var ux = (g.cx - g.mx), uy = (g.cy - g.my);     // el unitario hacia afuera, × 13
+      /* Se PRUEBAN cuatro sitios antes de rendirse, que es lo que hace quien
+         acota a mano: el de siempre —perpendicular al lado y hacia afuera—,
+         uno más afuera, el mismo corrido para que no se salga del papel, y
+         por último hacia adentro del lote. Rendirse en el primero mandaba al
+         cuadro cotas que sí tenían dónde ir: con cuatro lados y el nombre de
+         una avenida, los rótulos se cruzan en las esquinas del recuadro y se
+         perdía una de cuatro. */
+      var sitios = [[g.cx, g.cy], [g.mx + ux * 1.75, g.my + uy * 1.75],
+                    [0, 0], [g.mx - ux * 0.9, g.my - uy * 0.9]];
+      sitios[2] = [Math.min(Math.max(g.cx, w / 2 + 1), W - w / 2 - 1),
+                   Math.min(Math.max(g.cy, h / 2 + 1), H - h / 2 - 1)];
+      for (var si = 0; si < sitios.length; si++) {
+        var cx = sitios[si][0], cy = sitios[si][1];
+        if (cx - w / 2 < 0 || cx + w / 2 > W || cy - h / 2 < 0 || cy + h / 2 > H) continue;
+        var c = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h / 2, y2: cy + h / 2 }, choca = false;
+        for (var k = 0; k < puestas.length; k++) {
+          var o2 = puestas[k].c;
+          if (c.x1 < o2.x2 && c.x2 > o2.x1 && c.y1 < o2.y2 && c.y2 > o2.y1) { choca = true; break; }
+        }
+        if (choca) continue;
+        puestas.push({ g: g, c: c });
+        g.conCota = true; g.cx = cx; g.cy = cy;
+        return;
+      }
+    });
+    var sinCota = GEO.filter(function (g) { return !g.conCota; });
+
+    var lados = GEO.map(function (g) {
       /* Cada lado con el color de cuánto sol de la tarde recibe —del rojo al
          azul—, y no solo la fachada crítica en rojo: llegó de campo que «al
          lado de esa línea roja también pega el sol». El análisis trae el
          nivel; sin él, se vuelve al dibujo de antes. */
-      var colorSol = l.nivelSol && l.nivelSol.color;
+      var colorSol = g.l.nivelSol && g.l.nivelSol.color;
       var trazo = colorSol
-        ? '<path d="M' + n1(p1.x) + ' ' + n1(p1.y) + 'L' + n1(p2.x) + ' ' + n1(p2.y) + '" ' +
-          'stroke="' + colorSol + '" stroke-width="' + (esCritica ? 5 : 3.5) + '" stroke-linecap="butt"/>'
-        : (esCritica
-          ? '<path d="M' + n1(p1.x) + ' ' + n1(p1.y) + 'L' + n1(p2.x) + ' ' + n1(p2.y) + '" ' +
+        ? '<path d="M' + n1(g.p1.x) + ' ' + n1(g.p1.y) + 'L' + n1(g.p2.x) + ' ' + n1(g.p2.y) + '" ' +
+          'stroke="' + colorSol + '" stroke-width="' + (g.esCritica ? 5 : 3.5) + '" stroke-linecap="butt"/>'
+        : (g.esCritica
+          ? '<path d="M' + n1(g.p1.x) + ' ' + n1(g.p1.y) + 'L' + n1(g.p2.x) + ' ' + n1(g.p2.y) + '" ' +
             'stroke="' + ALERTA + '" stroke-width="4" stroke-linecap="round"/>'
           : '');
+      if (g.conCota) {
+        return trazo +
+          '<text x="' + n1(g.cx) + '" y="' + n1(g.cy + 3) + '" font-size="8.5" ' +
+          'text-anchor="middle" font-weight="700" fill="' + (g.esCritica ? ALERTA : GRIS) + '">' +
+          esc(g.rot) + '</text>';
+      }
+      // Sin sitio para la cota: el número, que es lo que remite al cuadro.
       return trazo +
-        '<text x="' + n1(mx + hx) + '" y="' + n1(my + hy + 3) + '" font-size="8.5" ' +
-        'text-anchor="middle" font-weight="700" fill="' + (esCritica ? ALERTA : GRIS) + '">' +
-        esc(rot) + '</text>';
+        '<circle cx="' + n1(g.cx) + '" cy="' + n1(g.cy) + '" r="3.4" fill="#fff" ' +
+        'stroke="' + (g.esCritica ? ALERTA : GRIS) + '" stroke-width=".7"/>' +
+        '<text x="' + n1(g.cx) + '" y="' + n1(g.cy + 1.7) + '" font-size="4.6" ' +
+        'text-anchor="middle" font-weight="700" fill="' + (g.esCritica ? ALERTA : GRIS) + '">' +
+        esc(String(g.l.i)) + '</text>';
     }).join('');
     var hayNiveles = (a.lados || []).some(function (l) { return l.nivelSol && l.nivelSol.color; });
+
+    /* El cuadro de los lados numerados. Va debajo del dibujo y DICE por qué
+       está: sin esa línea, un plano con números y un cuadro al pie se lee
+       como si el autor hubiera elegido no acotar. */
+    var cuadro = '', altoCuadro = 0;
+    if (sinCota.length) {
+      var ent = sinCota.slice().sort(function (x, y) { return x.l.i - y.l.i; })
+        .map(function (g) { return g.l.i + ' · ' + g.rot; });
+      var porFila = Math.max(1, Math.floor(236 / (Math.max.apply(null,
+        ent.map(function (t) { return t.length; })) * 3.55 + 9)));
+      var filas = [];
+      for (var q = 0; q < ent.length; q += porFila) filas.push(ent.slice(q, q + porFila));
+      altoCuadro = 11 + filas.length * 8.4;
+      cuadro = '<g transform="translate(12,0)">' +
+        '<text x="0" y="0" font-size="7" font-weight="700" fill="' + GRIS + '">' +
+        sinCota.length + ' de ' + GEO.length + ' lados no tienen sitio para su cota a esta ' +
+        'escala: van numerados en el plano y medidos acá.</text>' +
+        filas.map(function (fl, fi) {
+          return '<text x="0" y="' + n1(11 + fi * 8.4) + '" font-size="7.5" fill="' + GRIS + '">' +
+            esc(fl.join('    ')) + '</text>';
+        }).join('') + '</g>';
+    }
 
     var esquinas = P.map(function (p) {
       return '<circle cx="' + n1(p.x) + '" cy="' + n1(p.y) + '" r="2.6" fill="' + TINTA + '"/>';
@@ -331,8 +427,11 @@
     })();
     var largoBarra = metrosBarra * escala;
 
-    return '<svg class="pcr-plano-lote" viewBox="0 0 ' + W + ' ' + (H + 44) + '" width="' + W + '" ' +
-      'height="' + (H + 44) + '" role="img" aria-label="' +
+    // El papel crece con el cuadro: sin esto el cuadro quedaría fuera del
+    // viewBox y el lector vería un plano con números y sin dónde leerlos.
+    var HT = H + 44 + altoCuadro;
+    return '<svg class="pcr-plano-lote" viewBox="0 0 ' + W + ' ' + HT + '" width="' + W + '" ' +
+      'height="' + HT + '" role="img" aria-label="' +
       esc(o.etiqueta || 'Plano acotado del lote: cada lado con su largo, la calle a la que da y ' +
       'en rojo la fachada que recibe el sol de la tarde') + '">' +
       '<path d="' + contorno + '" fill="#FFD54F" fill-opacity=".28" stroke="#7A5901" stroke-width="1.6"/>' +
@@ -363,6 +462,7 @@
           ? '<text x="12" y="' + (H + 31) + '" font-size="8" fill="' + ALERTA + '" ' +
             'font-weight="700">En rojo, la fachada que recibe el sol de la tarde.</text>'
           : '')) +
+      (cuadro ? '<g transform="translate(0,' + n1(H + 44) + ')">' + cuadro + '</g>' : '') +
       '</svg>';
   }
 

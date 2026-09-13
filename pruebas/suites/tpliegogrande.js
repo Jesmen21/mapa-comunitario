@@ -386,6 +386,24 @@ const geo = [
         recortadas: [...document.querySelectorAll('.caja')]
           .filter(c => c.scrollHeight > c.clientHeight + 2)
           .map(c => ((c.querySelector('h2') || {}).textContent || '?')),
+        /* §3 (v898) · ¿se pisan las cotas del plano del lote?
+           Con veintidós lados es donde se ve: el `getBBox` de cada rótulo
+           es lo que el navegador DIBUJÓ, no lo que se le pidió, así que un
+           ancho estimado de menos sale acá y no en el papel del estudiante.
+           Va en esta suite y no en `tdoslaminas` porque aquel lote es un
+           predio de ocho lados y ahí no se pisa nada ni queriendo. */
+        cotasLote: (function () {
+          const sv = document.querySelector('.pcr-plano-lote');
+          if (!sv) return null;
+          const c = [...sv.querySelectorAll('text')]
+            .filter(t => t.getAttribute('font-size') === '8.5')
+            .map(t => { const b = t.getBBox();
+              return { x1: b.x, x2: b.x + b.width, y1: b.y, y2: b.y + b.height }; });
+          let sol = 0;
+          for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++)
+            if (c[i].x1 < c[j].x2 && c[i].x2 > c[j].x1 && c[i].y1 < c[j].y2 && c[i].y2 > c[j].y1) sol++;
+          return { n: c.length, solapes: sol };
+        })(),
         mapas: [...document.querySelectorAll('.mapa-caja')].map(f => {
           const s = f.querySelector('.mp-dib svg'), d = f.querySelector('.mp-dib');
           const sb = s ? s.getBoundingClientRect() : { width: 0, height: 0 };
@@ -698,6 +716,53 @@ const geo = [
   T('y cuánto del perímetro recibe sol de la tarde',
     /<b>\d+ de 22 lados<\/b> reciben algo de sol de la tarde, \d+ m de perímetro/.test(cajaLote),
     (cajaLote.match(/\d+ de 22 lados<\/b>[^;]*/) || ['(no lo dice)'])[0].replace(/<[^>]+>/g, ''));
+
+  /* §3 (v898) · LA COTA QUE NO CABE VA AL CUADRO, Y SE DICE.
+     ──────────────────────────────────────────────────────────────────────
+     El pliego v2 lo reportó del lote real: «las cotas de los 52 lados
+     quedan completamente ilegibles». Hasta la v897 los N lados imprimían
+     sus N cotas pasara lo que pasara, así que en un lote de muchos lados no
+     se leía NINGUNA —ni las que sobraban ni las que no—.
+
+     Esta es la rama que sí tiene material acá y no en `tdoslaminas`: aquel
+     lote es un predio de ocho lados (v890) y ahí caben todas, así que la
+     comprobación pasaría por no tener nada que rechazar. Éste tiene
+     veintidós y los produce de verdad. Es la lección de la v874 —el
+     material sobre el que se mide tiene que poder producir el fallo— sin
+     tener que empobrecer ningún fixture: ya había uno que lo destapa.
+
+     Y las dos mitades hacen falta. Sin la primera, se podría «arreglar» la
+     ilegibilidad mandando TODAS las cotas al cuadro y dejando el plano
+     mudo; sin la segunda, numerando lados que no se pueden leer en ningún
+     sitio. Lo que se exige es que ni una sola medida se pierda. */
+  {
+    const cotas = (cajaLote.match(/font-size="8\.5"/g) || []).length;
+    const nums  = (cajaLote.match(/r="3\.4"/g) || []).length;
+    const aviso = (cajaLote.match(/(\d+) de (\d+) lados no tienen sitio para su cota/) || []);
+    T('con veintidós lados, el plano imprime las cotas que caben', cotas >= 8,
+      cotas + ' cotas impresas de 22 lados');
+    T('y las que no caben van numeradas, no encimadas', nums > 0 && cotas + nums === 22,
+      cotas + ' cotas + ' + nums + ' numerados = ' + (cotas + nums));
+    T('el cuadro al pie dice cuántas son y por qué', aviso.length > 0 && Number(aviso[1]) === nums,
+      aviso[0] || '(no lo dice)');
+    /* Ni una medida se pierde: cada lado numerado tiene su renglón en el
+       cuadro, con sus metros. El cuadro sin esto sería un rótulo. */
+    const enCuadro = (cajaLote.match(/\d+ · \d+ m/g) || []).length;
+    T('y cada lado numerado está medido en el cuadro', enCuadro >= nums,
+      enCuadro + ' renglones para ' + nums + ' numerados');
+    /* Y lo que de verdad decide si se lee: medido con el `getBBox` de cada
+       rótulo en las dos orientaciones. El ancho de la caja que reparte las
+       cotas es una ESTIMACIÓN por caracteres —el SVG no sabe medir texto sin
+       montarlo—, así que si se queda corta dos cotas se tocan y el defecto
+       vuelve por la puerta de atrás. Con la primera estimación que escribí
+       —0,52 em y 9,5 px de alto— quedaban tres solapes. */
+    [['parada', V], ['acostada', HZ]].forEach(function (par) {
+      const cl = par[1] && par[1].cotasLote;
+      T('en la ' + par[0] + ', ninguna cota del lote se pisa con otra',
+        !!cl && cl.solapes === 0,
+        cl ? cl.n + ' cotas · ' + cl.solapes + ' solapes' : 'no hay plano del lote');
+    });
+  }
 
   /* ── Los mapas que faltaban ────────────────────────────────────────
      «Faltó altura de lo construido»: las barras del reparto estaban, y lo
