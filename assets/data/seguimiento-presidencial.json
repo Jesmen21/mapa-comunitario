@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-12",
- "proximaActualizacion": "2026-09-13",
+ "actualizado": "2026-09-13",
+ "proximaActualizacion": "2026-09-14",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,89 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-12",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella da a Defensa y Justicia una semana para lograr la entrega de alias 'Pinocho', jefe de las ACSN, o advierte que será «dado de baja»",
+   "detalle": "El presidente instruyó por redes sociales a los ministros de Defensa y Justicia coordinar, en un plazo de una semana, el sometimiento a la justicia de Fredy Castillo Carrillo, alias 'Pinocho', señalado jefe de las Autodefensas Conquistadoras de la Sierra Nevada (ACSN). La orden llegó después de que Castillo, prófugo, dijera en una entrevista con la revista Semana estar dispuesto a entregarse a la justicia colombiana y estadounidense, aunque condicionó esa decisión a garantías legales y a una ley que fije las condiciones de su sometimiento y las penas que enfrentaría. De la Espriella declaró que «aquí no hay negociaciones, ni plazos, ni exigencias» y que si Castillo no se entrega y sigue enfrentando al Estado, «la orden va a ser darlo de baja». El ministro de Defensa, Jorge Mora, respaldó el mensaje: «no habrá impunidad ni permisividad».",
+   "contrapunto": "El anuncio de que la alternativa a la entrega es «darlo de baja» —dicho por el propio presidente antes de cualquier operación— llega semanas después de que un juzgado laboral de Bogotá le ordenara a la Presidencia retirar publicaciones de De la Espriella junto a cadáveres de operativos militares (ver entrada del 9 de septiembre de 2026). Organizaciones de derechos humanos han señalado que anticipar en público el resultado letal de un operativo, en vez de la captura, es un mensaje que riñe con el debido proceso, incluso tratándose de una persona con orden de captura vigente.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Colombiano · De la Espriella da una semana a MinDefensa y MinJusticia para lograr el sometimiento de 'Pinocho', jefe de las ACSN",
+     "u": "https://www.elcolombiano.com/colombia/presidente-de-la-espriella-da-una-semana-mindefensa-minjusticia-sometimiento-pinocho-jefe-acsn-JE40991679"
+    },
+    {
+     "n": "El Tiempo · Jorge Mora, ministro de Defensa, responde al presidente Abelardo De La Espriella por alias 'Pinocho': «No habrá impunidad ni permisividad»",
+     "u": "https://www.eltiempo.com/politica/gobierno/jorge-mora-ministro-de-defensa-responde-al-presidente-abelardo-de-la-espriella-por-alias-pinocho-no-habra-impunidad-ni-permisividad-3585663"
+    },
+    {
+     "n": "El País (Cali) · De La Espriella responde a alias Pinocho y da plazo a MinDefensa y MinJusticia para someterlo a la justicia: «No hay negociaciones»",
+     "u": "https://www.elpais.com.co/politica/de-la-espriella-responde-a-alias-pinocho-y-da-plazo-a-mindefensa-y-minjusticia-para-someterlo-a-la-justicia-no-hay-negociaciones-1232.html"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-12",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "La SIC destapa, en un informe del Gobierno De la Espriella, un presunto esquema de corrupción contractual en el Parque de las Aguas de Medellín durante la administración de Daniel Quintero",
+   "detalle": "La Superintendencia de Industria y Comercio (SIC), bajo el actual Gobierno, reveló un informe reservado sobre un presunto esquema de corrupción en la contratación del Parque de las Aguas de Medellín en 2021, cuando Daniel Quintero era alcalde. Según la SIC, el Área Metropolitana del Valle de Aburrá (AMVA) canalizó más de $15.748 millones hacia Metroparques mediante los contratos interadministrativos 288 y 961 de 2021, en un proceso que habría simulado competencia entre oferentes para favorecer empresas escogidas de antemano: ocho invitaciones privadas se habrían direccionado hacia tres firmas (Comercializadora JPino S.A.S., 1Soluciones S.A.S. y Constru Americana S.A.S.). La SIC señala que Metroparques modificó su objeto social en junio de 2020 para incluir el mantenimiento y la operación de parques, actividad que no realizaba antes y en la que tenía menos de un año de experiencia al momento de los contratos, y calcula un sobrecosto de unos $1.368 millones por la comisión de administración cobrada. El caso ya fue puesto en conocimiento de la Fiscalía y la Contraloría.",
+   "contrapunto": "Es un hallazgo preliminar de la SIC bajo el Gobierno actual sobre una administración anterior (la alcaldía de Medellín de Daniel Quintero, ajena al Gobierno nacional de Petro), y está en la etapa de haberse remitido a la Fiscalía y la Contraloría: no hay todavía imputación de cargos ni fallo. Los medios reportan el hallazgo como «presunta» corrupción contractual, y ni Quintero ni las empresas señaladas habían dado una respuesta pública al momento de esta entrada.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Gobierno De la Espriella denuncia corrupción en contratación del Parque de las Aguas durante administración de Daniel Quintero",
+     "u": "https://www.infobae.com/colombia/2026/09/12/gobierno-de-la-espriella-denuncia-corrupcion-en-contratacion-del-parque-de-las-aguas-durante-administracion-de-daniel-quintero/"
+    },
+    {
+     "n": "El Tiempo · El informe reservado de la SIC del Gobierno De La Espriella sobre esquema de corrupción en caso Metroparques durante la alcaldía de Daniel Quintero",
+     "u": "https://www.eltiempo.com/unidad-investigativa/el-informe-reservado-de-la-sic-del-gobierno-de-la-espriella-sobre-esquema-de-corrupcion-en-caso-metroparques-durante-la-alcaldia-de-daniel-quintero-3584843"
+    },
+    {
+     "n": "El Colombiano · Rusinque abre proceso a firmas del escándalo del Parque de las Aguas",
+     "u": "https://www.elcolombiano.com/amp/medellin/investigacion-sic-metroparques-corrupcion-parque-aguas-medellin-LB34719323"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-12",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno restringe el ingreso de precursores químicos, partes de dron y maquinaria amarilla a solo dos puertos de entrada, con coordinación de agencias de EE. UU.",
+   "detalle": "El presidente De la Espriella anunció restricciones a la importación de precursores químicos, partes para fabricar drones y maquinaria amarilla, que a partir de ahora solo podrán ingresar por Cartagena y Bogotá. El director de la DIAN, Andrés Felipe Velásquez Reyes, señaló que un acto administrativo restringirá los lugares habilitados para esa importación. El Gobierno dijo que las secciones de aduanas en puertos y fronteras estarán lideradas por oficiales de la fuerza pública en coordinación con agencias de EE. UU. como el HSI (Homeland Security Investigations), «para que todo contrabandista termine judicializado internacionalmente». El objetivo declarado es reforzar los controles de entrada al país para evitar que esos insumos alimenten la minería ilegal, el narcotráfico y los ataques con drones.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "La República · De la Espriella anunció restricción del ingreso de precursores químicos",
+     "u": "https://www.larepublica.co/economia/de-la-espriella-anuncio-restriccion-del-ingreso-de-precursores-quimicos-4480535"
+    },
+    {
+     "n": "Semana · Gobierno anuncia restricciones para la importación de maquinaria amarilla, partes de drones y precursores químicos",
+     "u": "https://www.semana.com/nacion/articulo/gobierno-anuncia-restricciones-para-la-importacion-de-maquinaria-amarilla-partes-de-drones-y-precursores-quimicos/202638/"
+    },
+    {
+     "n": "El Colombiano · «Se acabó la vagabundería»: las nuevas restricciones de De la Espriella a la importación de drones y químicos",
+     "u": "https://www.elcolombiano.com/colombia/gobierno-colombia-restringe-importacion-drones-maquinaria-HE40997462"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-12",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El Gobierno anuncia que cancelará 10.000 contratos de prestación de servicios del Ministerio de Agricultura en 2027 y suspenderá la compra de nuevas tierras",
+   "detalle": "El Gobierno de De la Espriella anunció ante las comisiones económicas del Congreso, durante el debate del Presupuesto General de la Nación para 2027, que cancelará 10.000 contratos de prestación de servicios del Ministerio de Agricultura y suspenderá la compra de nuevos predios, con el objetivo declarado de liberar recursos para créditos y programas productivos destinados a los agricultores. La medida responde a una reducción presupuestal del 32 % en esa cartera para 2027, equivalente a $1,3 billones.",
+   "contrapunto": "El anuncio corresponde a un proyecto de presupuesto que todavía debe surtir su trámite en el Congreso; el recorte y la cancelación de contratos son una propuesta del Ejecutivo y no una decisión en firme hasta que se apruebe el Presupuesto General de la Nación 2027.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Gobierno de De la Espriella anunció que cancelará 10.000 contratos de prestación de servicios del Ministerio de Agricultura en 2027",
+     "u": "https://www.infobae.com/colombia/2026/09/12/gobierno-de-de-la-espriella-anuncio-que-cancelara-10000-contratos-de-prestacion-de-servicios-del-ministerio-de-agricultura-en-2027/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-11",
    "precision": "exacta",

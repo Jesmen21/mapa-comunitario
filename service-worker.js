@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v893-alertas-13-sep';
+const URBIS_CACHE = 'urbis-v894-seguimiento-13-sep';
 const URBIS_ASSETS = [
   './',
   './index.html',
