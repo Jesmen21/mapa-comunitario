@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v899-el-panel-que-cedio-no-es-un-dato-que-falte';
+const URBIS_CACHE = 'urbis-v900-el-pie-no-se-contradice';
 const URBIS_ASSETS = [
   './',
   './index.html',

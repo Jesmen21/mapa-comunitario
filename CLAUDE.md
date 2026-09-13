@@ -3824,6 +3824,91 @@ los dos paneles puestos los chequeos se crucen —cierto antes y que tiene que
 seguir siéndolo— y que ningún chequeo de la hoja normal se marque como
 «panel fuera», que es la manera de pasarse de marcar.
 
+## Una cuenta, una conclusión (v900)
+
+§5 del pliego de ajustes v2, y llegó con la contradicción impresa:
+
+> Lámina B, pie: lista dieciséis mapas por debajo del mínimo de 8 cm y en la
+> frase siguiente afirma «Todos alcanzan el objetivo del pliego». Las dos
+> cosas no pueden ser ciertas.
+
+No era una contradicción de cálculo —por eso ninguna comprobación de datos
+la veía— sino de redacción, y de una clase que vale la pena tener escrita:
+**dos frases que salen de la misma cuenta y se deciden por separado.**
+
+`veredictoDeTamanos` saca del recuento de OBJETIVO al mapa que ya cayó por el
+PISO: `bajoPiso.push(...)` y `return`. Es correcto para no contar dos veces
+el mismo defecto. Pero entonces, cuando TODO lo que se queda corto se quedó
+corto por debajo del piso, la lista de objetivo queda vacía y la frase de
+cumplimiento —que solo miraba esa lista— sale sola, a dos renglones de los
+dieciséis mapas ilegibles.
+
+Un mapa por debajo del piso está, por construcción, por debajo de su
+objetivo. Así que la frase de cumplimiento solo se imprime cuando las **dos**
+listas están vacías; con mapas caídos la hoja lo dice entero —«pero con los
+de arriba por debajo del piso la hoja NO cumple el pliego»— y no agrega nada
+que suene a que cumplió.
+
+### El estado que lo produce hubo que construirlo
+
+Decimoquinta vez. En el sector de prueba hay mapas en el tramo de en medio
+—92 mm de un objetivo de 100—, así que la lista de objetivo nunca se vacía y
+la contradicción no aparece: la comprobación habría pasado por no tener nada
+que rechazar.
+
+Se compone una hoja más con los mapas de categoría y los tres de la banda
+demográfica apagados, que son justo los del tramo de en medio. Lo que queda
+son los cuatro de movilidad, todos por debajo del piso, y la lista de
+objetivo se vacía: es el estado exacto del reporte. No hizo falta inventar
+un sector, solo apagar paneles con el mismo parámetro que ya existe.
+
+### La guarda persigue la clase, no la frase
+
+Tres aserciones, y cada una tapa un agujero distinto:
+
+* ningún pie de ninguna de las hojas compuestas lista mapas bajo el piso y
+  además dice que cumple —la contradicción, como clase—;
+* en la hoja construida a propósito, el pie dice que NO cumple;
+* y **cada pie que midió cierra en UNA conclusión, ni dos ni ninguna**. Sin
+  esta tercera, el arreglo podría haber sido borrar la frase de cumplimiento,
+  y entonces una hoja que sí cumple no lo diría: el silencio es la otra
+  manera de fallar de un aviso.
+
+### Demostrado contra la v899
+
+Dos aserciones en rojo con el texto viejo impreso: «Por debajo del mínimo de
+8 cm: Jerarquía vial 6,2 cm · … A ese tamaño un mapa no se lee en la pared.
+**Todos alcanzan el objetivo del pliego.**»
+
+La tercera pasa contra las dos versiones a propósito: es una guarda contra
+quedarse sin conclusión, no una afirmación nueva.
+
+### Lo que §4 pide y esta versión NO hace
+
+§4 es la otra mitad del bloque y es una tanda de diagramación entera, no un
+renglón: los mapas de categoría a 10 cm, el principal de cada banda a 12, y
+—esto es nuevo— **el que no alcance 8 cm no se imprime: se apaga el panel y
+se reporta en el pie**.
+
+Eso invierte la decisión que la v886 dejó escrita («entre quitar un mapa y
+publicarlo diciendo cuánto mide, se publica diciendo cuánto mide»), y la
+invierte quien tiene el pliego impreso en la mano, que es quien decide. Pero
+§4 le pone un ORDEN —primero crecer los de categoría cediendo bandas de
+texto, después el principal, y apagar solo lo que aun así no llegue—, y
+hacer el apagado antes que el crecimiento apagaría nueve de veinte mapas del
+sector de prueba en vez de los pocos que quedarían después.
+
+Medido hoy, antes de tocar nada:
+
+| | Lámina A | Lámina B |
+|---|---|---|
+| mapas | 8 | 12 |
+| por debajo de 8 cm | 2 | 7 |
+| el más chico | 6,5 cm | 6,5 cm |
+| los de categoría | — | 9,2 cm de 10 |
+
+Queda como la tanda siguiente, con la medición hecha.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

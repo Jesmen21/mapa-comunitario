@@ -358,6 +358,25 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        rama la comprobación pasaría por no tener nada que rechazar: en la
        hoja normal los dos paneles están y los dos chequeos pasan. */
     o.docCede = R.laminaDoble({ pliegoOff: ['suelo-disponible-real', 'potencial-edificatorio'] });
+    /* §5 (v900) · EL PIE QUE SE CONTRADECÍA A SÍ MISMO.
+       ────────────────────────────────────────────────────────────────────
+       El pliego v2 lo trajo de la lámina B real: listaba dieciséis mapas por
+       debajo del mínimo de 8 cm y en la frase siguiente afirmaba «Todos
+       alcanzan el objetivo del pliego».
+
+       `veredictoDeTamanos` saca del recuento de OBJETIVO al mapa que ya cayó
+       por el PISO, así que la frase de cumplimiento sale sola cuando TODO lo
+       que se queda corto se quedó corto por abajo del piso. En la hoja
+       normal de esta suite hay mapas en el tramo de en medio —92 mm de 100—
+       y por eso la contradicción no aparece: la comprobación pasaría por no
+       tener nada que rechazar.
+
+       Se apagan los mapas de categoría, que son justo los del tramo de en
+       medio. Lo que queda son los de 65 y 75 mm, todos por debajo del piso,
+       y la lista de objetivo se vacía: es el estado exacto del reporte. */
+    o.docPieContra = R.laminaDoble({ pliegoMapasOff:
+      ['calor:todos', 'calor:comercio', 'calor:institucional', 'calor:salud', 'calor:cultura',
+       'hitos', 'comercial', 'anillos'] });
     /* §1 · el nombre del archivo exportado. Se mide donde de verdad se
        decide —en la llamada que baja el PDF— y no leyendo la función: es la
        regla de la v863. Un doble del armador de PDF, que no dibuja nada y
@@ -827,6 +846,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     fs2.writeFileSync(E.TRABAJO + 'lamina-gran.html', r.granEscala || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-gran-doc.html', r.docGran || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-cede.html', r.docCede || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-pie.html', r.docPieContra || '', 'utf8');
   } catch (e) {}
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
@@ -1397,6 +1417,45 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     T('y cada casilla no medida dice qué la llena',
       marcadas.every(c => /se calcula sola|se mide con|plantilla de campo|Dibujar|dibujando|se consulta|tabla de proyecciones/.test(c.l)),
       marcadas.map(c => c.k).join(' · ') || 'ninguna marcada en este sector');
+  }
+
+  console.log('\n  -- §5 · el pie no se contradice a sí mismo --');
+  {
+    const pies = (html) => {
+      const out = [], re = /<div class="tamanos[^"]*">([\s\S]*?)<\/div>/g;
+      let m; while ((m = re.exec(String(html || '')))) {
+        out.push(m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+      }
+      return out;
+    };
+    /* La CLASE, sobre todos los pies que esta suite compone: un pie que
+       lista mapas por debajo del piso no puede además afirmar que se
+       cumplió. Son la misma cuenta y tiene que dar una sola conclusión. */
+    const todos = [].concat(pies(r.doc), pies(r.docPieContra), pies(r.docCede), pies(r.granEscala));
+    const contra = todos.filter(t => /Por debajo del mínimo de 8 cm/.test(t) &&
+                                     /Todos alcanzan el objetivo/.test(t));
+    T('ningún pie lista mapas bajo el piso y encima dice que cumple',
+      contra.length === 0, contra.length ? contra[0].slice(0, 170) : todos.length + ' pies revisados');
+    /* Y la rama que lo producía: con todos los del tramo de en medio
+       apagados, la lista de objetivo se vacía y la frase de cumplimiento
+       salía sola. Acá tiene que decir lo contrario, y decirlo entero. */
+    const pB = pies(r.docPieContra)[1] || '';
+    T('con la lista de objetivo vacía y mapas caídos, el pie dice que NO cumple',
+      /Por debajo del mínimo de 8 cm/.test(pB) && /NO cumple el pliego/.test(pB) &&
+      !/Todos alcanzan el objetivo/.test(pB), pB.slice(-160) || 'no hay pie');
+    /* Y la otra mitad, para no arreglarlo borrando la frase: cada pie que
+       midió mapas cierra en UNA conclusión y nunca en dos. Las tres son
+       excluyentes —cumple, se queda corto del objetivo, no llega al piso— y
+       contar cuántas aparecen es lo que impide tanto la contradicción como
+       el silencio. */
+    const CIERRES = [/Todos alcanzan el objetivo del pliego/,
+                     /No alcanzan el objetivo del pliego/,
+                     /NO cumple el pliego/];
+    const medidos = todos.filter(t => /mapas medidos por su lado menor/.test(t));
+    const cuantas = medidos.map(t => CIERRES.filter(re => re.test(t)).length);
+    T('y cada pie que midió cierra en una sola conclusión, ni dos ni ninguna',
+      medidos.length >= 4 && cuantas.every(n => n === 1),
+      medidos.length + ' pies medidos · conclusiones por pie: ' + cuantas.join(', '));
   }
 
   console.log('\n  -- §2 · un panel que cedió no es un dato que falte --');

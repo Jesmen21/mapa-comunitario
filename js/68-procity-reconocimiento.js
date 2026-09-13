@@ -15704,14 +15704,37 @@ function donaHTML(datos, colorDe, nombreDe) {
         (v.bajoPiso.length > 5 ? ' y ' + (v.bajoPiso.length - 5) + ' más' : '') +
         '. A ese tamaño un mapa no se lee en la pared. '
       : 'Ninguno baja del mínimo de 8 cm. ';
-    t += v.bajoObjetivo.length
-      ? 'No alcanzan el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
+    /* §5 (v899→v900) · UNA SOLA CUENTA, UNA SOLA CONCLUSIÓN.
+       Hasta la v899 esto se leía así en la lámina B del pliego real:
+       listaba dieciséis mapas por debajo del mínimo de 8 cm y en la frase
+       siguiente afirmaba «Todos alcanzan el objetivo del pliego».
+
+       No era una contradicción de cálculo sino de redacción, y por eso
+       ninguna comprobación de datos la veía: `veredictoDeTamanos` saca del
+       recuento de objetivo al mapa que ya cayó por el piso —`bajoPiso.push`
+       y `return`—, así que con los dieciséis abajo la lista de objetivo
+       quedaba vacía y la frase de cumplimiento salía sola.
+
+       Un mapa por debajo del piso está, por construcción, por debajo de su
+       objetivo. Así que la frase de cumplimiento solo se imprime cuando las
+       DOS listas están vacías; si algo cayó, la hoja lo dice y no agrega
+       nada que suene a que cumplió. Es la misma regla de la v879 con las
+       contradicciones entre láminas, dicha dentro de un renglón. */
+    if (v.bajoObjetivo.length) {
+      t += 'No alcanzan el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
         'categoría—: ' + v.bajoObjetivo.slice(0, 5).map(function (c) {
           return esc(c.t) + ' ' + cm(c.mm) + ' de ' + (c.piso / 10); }).join(' · ') +
         (v.bajoObjetivo.length > 5 ? ' y ' + (v.bajoObjetivo.length - 5) + ' más' : '') +
         '. Se imprimen igual y con su medida escrita: para que crezcan hay que apagar paneles ' +
-        'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.'
-      : 'Todos alcanzan el objetivo del pliego.';
+        'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.';
+    } else if (!v.bajoPiso.length) {
+      t += 'Todos alcanzan el objetivo del pliego.';
+    } else {
+      /* Ni una palabra de cumplimiento con mapas caídos por el piso: los que
+         cayeron están por debajo de su objetivo por construcción. */
+      t += 'Ningún otro se queda corto del objetivo —12 cm el principal de cada banda, 10 los ' +
+        'de categoría—, pero con los de arriba por debajo del piso la hoja NO cumple el pliego.';
+    }
     return t;
   }
   function laminaQueQuepa(res, opts) {
