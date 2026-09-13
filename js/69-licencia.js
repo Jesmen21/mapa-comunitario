@@ -182,7 +182,7 @@
     var cupo = Number(g('ulic-cupo') || 0);
 
     if (!secreto) { S.errorEmitir = 'Falta el secreto de URBIS.'; pintar(); return; }
-    if (!cliente) { S.errorEmitir = 'Ponele el nombre del cliente.'; pintar(); return; }
+    if (!cliente) { S.errorEmitir = 'Póngale el nombre del cliente.'; pintar(); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(vence)) { S.errorEmitir = 'La fecha va como 2027-12-31.'; pintar(); return; }
 
     S.comprobando = true; S.errorEmitir = ''; S.emitida = null; S.copiada = false; pintar();
@@ -362,28 +362,28 @@
     var edu = esEducativo();
     if (motivo === 'sin_cupo' || motivo === 'sin_cupo_libre') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'Se agotaron los análisis de hoy de la licencia del curso. Se reinician mañana; si hacen falta más, avisale a tu profesor.'
-        : 'Se agotó el cupo de análisis de hoy. Se reinicia mañana; si necesitás más, escribinos.') + '</p>';
+        ? 'Se agotaron los análisis de hoy de la licencia del curso. Se reinician mañana; si hacen falta más, avísele a su profesor.'
+        : 'Se agotó el cupo de análisis de hoy. Se reinicia mañana; si necesita más, escríbanos.') + '</p>';
     }
     if (motivo === 'vencida') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'La licencia del curso venció. Avisale a tu profesor para que emita una nueva.'
-        : 'Tu licencia venció. Escribinos para renovarla.') + '</p>';
+        ? 'La licencia del curso venció. Avísele a su profesor para que emita una nueva.'
+        : 'Su licencia venció. Escríbanos para renovarla.') + '</p>';
     }
     if (motivo === 'revocada') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'Esta licencia fue anulada. Avisale a tu profesor.'
-        : 'Esta licencia fue anulada. Escribinos para saber por qué.') + '</p>';
+        ? 'Esta licencia fue anulada. Avísele a su profesor.'
+        : 'Esta licencia fue anulada. Escríbanos para saber por qué.') + '</p>';
     }
     if (motivo === 'firma' || motivo === 'formato' || motivo === 'ilegible' || motivo === 'incompleta') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'Esa licencia no es válida. Puede que sea de un curso anterior: pedile el enlace nuevo a tu profesor.'
+        ? 'Esa licencia no es válida. Puede que sea de un curso anterior: pídale el enlace nuevo a su profesor.'
         : 'Esa licencia no es válida. Revise que la hayas pegado completa.') + '</p>';
     }
     if (motivo === 'ausente') {
       return '<p class="ulic-alerta">' + (edu
         ? 'Para analizar hace falta la licencia del curso. Tu profesor te pasa un <b>enlace</b> que la instala sola; también puede pegarla acá abajo.'
-        : 'Para analizar hace falta una licencia. Pegala acá abajo.') + '</p>';
+        : 'Para analizar hace falta una licencia. Péguela acá abajo.') + '</p>';
     }
     if (motivo === 'instalada') {
       return '<p class="ulic-instalada">✓ Licencia instalada desde el enlace. Abajo ves de quién es y hasta cuándo vale.</p>';

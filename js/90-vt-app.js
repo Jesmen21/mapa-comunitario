@@ -224,7 +224,7 @@
         (mensaje ? '<p class="vt-chip critico" style="display:inline-flex;margin-bottom:10px">' + esc(mensaje) + '</p>' : '') +
         '<textarea id="vt-lic-input" placeholder="URBIS1.…" autocomplete="off" spellcheck="false">' + esc(licencia()) + '</textarea>' +
         '<div class="vt-acciones"><button type="button" class="vt-btn primario ancho" id="vt-lic-entrar">' + ico('llave', 18) + ' Entrar</button></div>' +
-        '<p class="vt-nota" style="margin-top:12px;color:var(--vt-tinta-3);font-size:.8em">URBIS recomienda, el humano decide. La credencial no se recupera sola: si la perdiste, escribile al administrador de tu entidad.</p>' +
+        '<p class="vt-nota" style="margin-top:12px;color:var(--vt-tinta-3);font-size:.8em">URBIS recomienda, el humano decide. La credencial no se recupera sola: si la perdió, escríbale al administrador de su entidad.</p>' +
       '</div>';
     var b = $('vt-lic-entrar'); if (b) b.onclick = function () {
       var v = String(($('vt-lic-input') || {}).value || '').trim();

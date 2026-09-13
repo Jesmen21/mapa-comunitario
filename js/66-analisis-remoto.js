@@ -76,16 +76,16 @@
       edu:  'Falta la licencia del curso. Pídasela a tu profesor: es un enlace que la instala sola.',
       gen:  'Falta la licencia de URBIS, o no es válida.'
     },
-    formato:  { edu: 'Esa licencia no tiene el formato correcto. Pedile el enlace a tu profesor.',
+    formato:  { edu: 'Esa licencia no tiene el formato correcto. Pídale el enlace a su profesor.',
                 gen: 'La licencia no tiene el formato esperado.' },
-    firma:    { edu: 'Esa licencia no es válida. Puede que sea de un curso anterior: pedile la nueva a tu profesor.',
+    firma:    { edu: 'Esa licencia no es válida. Puede que sea de un curso anterior: pídale la nueva a su profesor.',
                 gen: 'La licencia no es válida.' },
-    ilegible: { edu: 'Esa licencia no es válida. Pedile el enlace a tu profesor.',
+    ilegible: { edu: 'Esa licencia no es válida. Pídale el enlace a su profesor.',
                 gen: 'La licencia no es válida.' },
-    vencida:  { edu: 'La licencia del curso venció. Avisale a tu profesor para que emita una nueva.',
-                gen: 'La licencia venció. Escribinos para renovarla.' },
-    revocada: { edu: 'Esta licencia fue anulada. Avisale a tu profesor.',
-                gen: 'Esta licencia fue anulada. Escribinos para saber por qué.' },
+    vencida:  { edu: 'La licencia del curso venció. Avísele a su profesor para que emita una nueva.',
+                gen: 'La licencia venció. Escríbanos para renovarla.' },
+    revocada: { edu: 'Esta licencia fue anulada. Avísele a su profesor.',
+                gen: 'Esta licencia fue anulada. Escríbanos para saber por qué.' },
     sin_cupo: { edu: 'Se agotaron los análisis de hoy de la licencia del curso. Se reinician mañana.',
                 gen: 'Se agotó el cupo de análisis de hoy para esta licencia.' },
     sin_cupo_libre: { edu: 'Se agotaron los análisis gratuitos de hoy en este dispositivo. Se reinician mañana.',
@@ -190,7 +190,7 @@
     if (!disponible()) {
       return sinServidor('servidor no configurado',
         'El análisis de URBIS para Empresas corre en el servidor y este ' +
-        'navegador no lo tiene configurado. Avisale a URBIS.');
+        'navegador no lo tiene configurado. Avísele a URBIS.');
     }
 
     var ruta = modo === 'mixto' ? '/analizar-mixto' : '/analizar';

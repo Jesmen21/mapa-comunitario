@@ -9391,6 +9391,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           : (r.error || 'No se pudo guardar el trazo.');
         if (r.ok) S.trazoId = r.id;
         pintar();
+        if (r.ok) destelloDeGuardado('guardar-trazo');
         return;
       }
       /* Abrir un trazo guardado lleva a SU ventana (v892), no al panel de
@@ -9542,7 +9543,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var fF = (leerFichas() || []).filter(function (x) { return x.id === idF; })[0];
         if (!fF) { S.error = 'Esa ficha ya no está guardada.'; pintar(); return; }
         if (reanudarFicha(fF)) {
-          S.aviso = 'Listo, seguimos con «' + (fF.nombre || 'el sector') + '». Si necesitás ' +
+          S.aviso = 'Listo, seguimos con «' + (fF.nombre || 'el sector') + '». Si necesita ' +
                     'llenos y vacíos o sombras, vuelva a medir el trazado.';
           enfocarSector();
         } else {
@@ -9591,8 +9592,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txtAm);
             S.aviso = 'Copiado con la fuente y la advertencia. Va tal cual a la memoria.';
-          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
-        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
+          } else { S.aviso = 'Cópielo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Cópielo del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'pedido-texto') {
@@ -9604,9 +9605,9 @@ function donaHTML(datos, colorDe, nombreDe) {
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txtP);
-            S.aviso = 'Copiada. Pegala en las notas del teléfono y llevala a la ventanilla.';
-          } else { S.aviso = 'Copiala del cuadro de abajo.'; }
-        } catch (e) { S.aviso = 'Copiala del cuadro de abajo.'; }
+            S.aviso = 'Copiada. Péguela en las notas del teléfono y llévela a la ventanilla.';
+          } else { S.aviso = 'Cópiela del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Cópiela del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'pliego-caja') {
@@ -9733,8 +9734,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txtC);
             S.aviso = 'Copiado, con la advertencia de dónde salen los índices.';
-          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
-        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
+          } else { S.aviso = 'Cópielo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Cópielo del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'cabe-reiniciar') {
@@ -9807,8 +9808,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txtInt);
             S.aviso = 'Testimonio copiado. Va con nombre y fecha: es de quien caminó.';
-          } else { S.aviso = 'Copialo del cuadro de abajo.'; }
-        } catch (e) { S.aviso = 'Copialo del cuadro de abajo.'; }
+          } else { S.aviso = 'Cópielo del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Cópielo del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'lote-dibujar') { iniciarLote(); return; }
@@ -9831,9 +9832,9 @@ function donaHTML(datos, colorDe, nombreDe) {
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txtOsm);
-            S.aviso = 'Lista copiada. Pegala donde se reparta el trabajo.';
-          } else { S.aviso = 'Copiala del cuadro de abajo.'; }
-        } catch (e) { S.aviso = 'Copiala del cuadro de abajo.'; }
+            S.aviso = 'Lista copiada. Péguela donde se reparta el trabajo.';
+          } else { S.aviso = 'Cópiela del cuadro de abajo.'; }
+        } catch (e) { S.aviso = 'Cópiela del cuadro de abajo.'; }
         pintar(); return;
       }
       if (acc === 'estratos') { alternarEstratos(); return; }
@@ -9891,9 +9892,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.nombreGuardado = nom;
         var g = guardarFicha(S.resultado, S.ultimasZonas, nom, S.fichaActualId);
         if (g.ok) {
-          S.aviso = 'Ficha guardada. La encontrás en la pestaña «Sector»' +
+          /* Qué quedó guardado, para que el botón lo pueda decir. Va ANTES
+             de `pintar`, que es cuando se lee. */
+          S.guardadaDe = S.resultado;
+          S.guardadaNombre = nom;
+          S.aviso = 'Ficha guardada. La encuentra en la pestaña «Sector»' +
                     (g.n > 1 ? ', con ' + (g.n - 1) + ' más.' : '.');
           pintar();
+          // Y el destello, DESPUÉS del repintado: si no, se lo lleva por
+          // delante el `innerHTML` que acaba de rehacer el botón.
+          destelloDeGuardado('guardar');
         }
         /* Lo que haya que decir de la falta de espacio lo dice el mismo sitio
            que lo dice en el guardado automático: un solo texto, y no dos que
@@ -9904,11 +9912,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'copiar') {
         if (!S.resultado || !S.ultimasZonas) return;
         var txt = fichaComoTexto(S.resultado, S.ultimasZonas);
-        var listo = function () { S.aviso = 'Copiado. Pegalo en tus notas o en un chat para tenerlo sin señal.'; pintar(); };
+        var listo = function () { S.aviso = 'Copiado. Péguelo en sus notas o en un chat para tenerlo sin señal.'; pintar(); };
         var falló = function () {
           // Sin portapapeles (navegador viejo, o sin HTTPS) no se deja al
           // usuario sin salida: se le muestra el texto para copiarlo a mano.
-          S.aviso = 'Este navegador no deja copiar solo. Mantené pulsado el texto de abajo para copiarlo.';
+          S.aviso = 'Este navegador no deja copiar solo. Mantenga pulsado el texto de abajo para copiarlo.';
           S.textoPlano = txt; pintar();
         };
         try {
@@ -9951,7 +9959,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           try { g3 = guardarFicha(S.resultado, S.ultimasZonas, nom2, S.fichaActualId); } catch (e) {}
         }
         S.aviso = g2
-          ? ('Área «' + nom2 + '» guardada. La encontrás en Análisis → Áreas guardadas.')
+          ? ('Área «' + nom2 + '» guardada. La encuentra en Análisis → Áreas guardadas.')
           : 'No se pudo guardar el área.';
         pintar();
         // Si el sector que va con el área no cupo, se dice: el área sola no
@@ -9962,9 +9970,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'comp-copiar') {
         if (!S.comparacion) return;
         var txtC = comparacionComoTexto(S.comparacion);
-        var listoC = function () { S.aviso = 'Copiado. Pegalo en el informe del curso.'; pintar(); };
+        var listoC = function () { S.aviso = 'Copiado. Péguelo en el informe del curso.'; pintar(); };
         var falloC = function () {
-          S.aviso = 'Este navegador no deja copiar solo. Mantené pulsado el texto de abajo.';
+          S.aviso = 'Este navegador no deja copiar solo. Mantenga pulsado el texto de abajo.';
           S.textoPlano = txtC; pintar();
         };
         try {
@@ -10997,15 +11005,73 @@ function donaHTML(datos, colorDe, nombreDe) {
 
      Si no hay ninguna ficha no se muestra nada: un cajón vacío con un
      título encima solo ocupa pantalla. */
+  /* ── El acuse de guardado (v897) ──────────────────────────────────────
+     Pedido con estas palabras: «cuando le dé guardar ojalá salga una
+     animación en el botón y que quede iluminado de un color para saber que
+     quedó guardado». Son DOS cosas y hay que separarlas, porque viven en
+     sitios distintos:
+
+     * **El destello** es del momento: dice «te oí». Va en el nodo ya
+       repintado y muere en el siguiente repintado. Si viajara en el HTML, el
+       botón volvería a destellar cada vez que se repinta la hoja —encender
+       una capa, mover la barrita— y un botón que parpadea sin que nadie lo
+       toque no dice nada.
+     * **El iluminado** es del ESTADO: dice «esto que ves está guardado». Ese
+       sí viaja en el HTML, porque tiene que seguir ahí al volver de otra
+       pestaña, y se apaga solo cuando deja de ser cierto.
+
+     Se busca en el DOCUMENTO y no dentro de `hojaEl()`: el botón de guardar
+     sale también en el panel de pestaña, y buscarlo en un solo sitio lo
+     dejaría muerto en el otro — que es exactamente lo que le pasó a la barra
+     de espera en la v870. */
+  function destelloDeGuardado(acc) {
+    try {
+      var nodos = document.querySelectorAll('[data-pcr="' + acc + '"]');
+      for (var i = 0; i < nodos.length; i++) {
+        var b = nodos[i];
+        b.classList.remove('pcr-destello');
+        /* Leer el ancho fuerza el reflujo y reinicia la animación. Sin esto,
+           guardar dos veces seguidas no vuelve a destellar: para el navegador
+           la clase nunca se fue. */
+        void b.offsetWidth;
+        b.classList.add('pcr-destello');
+      }
+    } catch (e) {}
+  }
+
+  /* ¿La ficha que está en pantalla quedó guardada CON ESTE NOMBRE?
+
+     Ojo con lo que esto significa y con lo que no. El análisis ya se archiva
+     solo al terminar (`guardarFichaViva`), así que «guardada» a secas sería
+     cierto desde antes de tocar nada y el botón nacería iluminado, que no
+     dice nada. Lo que el botón hace de verdad es ponerle NOMBRE a esa misma
+     entrada, así que lo que se ilumina es eso: esta ficha, con este nombre.
+     Cambiar el nombre o analizar otro sector lo apaga, que es cuando vuelve
+     a haber algo que guardar.
+
+     Se compara el OBJETO del resultado, no una bandera: así vale para todos
+     los caminos por los que cambia —otro análisis, una ficha archivada que
+     se retoma— sin tener que acordarse de limpiarlo en cada uno. Es el mismo
+     truco que usa el enrutador para recordar por dónde iba leyendo. */
+  function fichaYaGuardada() {
+    return !!S.resultado && S.guardadaDe === S.resultado &&
+           S.guardadaNombre === String(S.nombreGuardado || '');
+  }
+
   /* El botón de guardar el trazo. Sale solo cuando hay uno cerrado, y al
      lado de «Ver qué hay» y no dentro de una pestaña: el momento en que uno
      quiere guardar la forma es el mismo en que acaba de cerrarla, no diez
      pantallas después. */
   function botonGuardarTrazo() {
     if (!trazoALaVista() || S.cargando) return '';
+    /* Este estado ya existía desde la v871 y solo cambiaba el texto: el
+       trazo a la vista está guardado o no lo está, y eso es comprobable en
+       el almacén. Ahora además se ve, que es lo que se pidió. */
     var yaEs = S.trazoId && leerTrazos().some(function (t) { return t.id === S.trazoId; });
-    return '<button type="button" data-pcr="guardar-trazo" class="pcr-mini pcr-guardar-trazo">' +
-      ico('guardar', 16) + (yaEs ? 'Guardar como otro trazo' : 'Guardar solo el trazo') + '</button>' +
+    return '<button type="button" data-pcr="guardar-trazo" class="pcr-mini pcr-guardar-trazo' +
+      (yaEs ? ' pcr-guardado' : '') + '">' +
+      ico(yaEs ? 'ok' : 'guardar', 16) +
+      (yaEs ? 'Trazo guardado · guardar como otro' : 'Guardar solo el trazo') + '</button>' +
       (S.trazoAviso ? '<p class="pcr-pista pcr-trazo-aviso">' + esc(S.trazoAviso) + '</p>' : '');
   }
 
@@ -15956,7 +16022,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* El lote no es un mapa ni una medición: es un trazo a mano, y sin él la
        mitad del pliego —lo que cabe, la cuadra, las determinantes— no existe. */
     if (!(S.lote && S.lote.length >= 3)) {
-      out.push({ que: 'El lote a intervenir', por: 'marcalo en el mapa',
+      out.push({ que: 'El lote a intervenir', por: 'márquelo en el mapa',
                  pide: 'lote-dibujar', pestana: 'lote' });
     }
     return out;
@@ -20876,7 +20942,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!a) {
       return h4('area', 'El lote a intervenir') +
         '<p class="pcr-pista">El área dice <b>qué hay alrededor</b>. El lote dice <b>dónde vas a ' +
-        'proponer algo</b>. Marcalo y sale su propio análisis: cuánto mide, a qué calles da, ' +
+        'proponer algo</b>. Márquelo y sale su propio análisis: cuánto mide, a qué calles da, ' +
         'cuántos metros de frente sobre cada una, hacia dónde mira cada fachada y qué tiene pegado ' +
         'al lado.</p>' +
         '<div class="pcr-llevar">' +
@@ -23141,7 +23207,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (est.foto
         ? ' Estás con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
           'navegador le reserva mucho más espacio del que ocupa, así que puede que no quepan ' +
-          'todas. Si solo necesitás ubicarte, cambie a un mapa de dibujo antes de guardar.'
+          'todas. Si solo necesita ubicarte, cambie a un mapa de dibujo antes de guardar.'
         : '') + '</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="teselas" class="pcr-mini pcr-llevar-b">' +
@@ -23859,7 +23925,13 @@ function donaHTML(datos, colorDe, nombreDe) {
         (S.estratos && S.estratos.leyenda ? S.estratos.leyenda : '') +
 
         '<div class="pcr-llevar">' +
-          '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b">' + ico('guardar') + 'Guardar ficha</button>' +
+          (function () {
+            var ya = fichaYaGuardada();
+            return '<button type="button" data-pcr="guardar" class="pcr-mini pcr-llevar-b' +
+              (ya ? ' pcr-guardado' : '') + '"' +
+              (ya ? ' aria-label="Ficha guardada. Tóquela otra vez para volver a guardarla."' : '') + '>' +
+              ico(ya ? 'ok' : 'guardar') + (ya ? 'Guardada' : 'Guardar ficha') + '</button>';
+          })() +
           '<button type="button" data-pcr="copiar" class="pcr-mini pcr-llevar-b">' + ico('copiar') + 'Copiar</button>' +
           /* «PDF» a secas, al lado de «Lámina … · PDF», llevaba a tocarlo
              esperando el pliego y a encontrarse el cuadro de impresión del
@@ -25132,7 +25204,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           var f = fichaRecienViva();
           if (f) {
             if (reanudarFicha(f)) {
-              S.aviso = 'Listo, seguimos con «' + (f.nombre || 'el sector') + '». Si necesitás ' +
+              S.aviso = 'Listo, seguimos con «' + (f.nombre || 'el sector') + '». Si necesita ' +
                         'llenos y vacíos o sombras, vuelva a medir el trazado.';
             } else {
               S.error = 'Ese sector no guarda el área: no se puede reanudar.';
@@ -25830,8 +25902,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(txtCot);
           S.avisoPestana = 'Tabla copiada. Se pega en una hoja de cálculo con las columnas ya separadas.';
-        } else { S.avisoPestana = 'Copiala del cuadro de abajo.'; }
-      } catch (e) { S.avisoPestana = 'Copiala del cuadro de abajo.'; }
+        } else { S.avisoPestana = 'Cópiela del cuadro de abajo.'; }
+      } catch (e) { S.avisoPestana = 'Cópiela del cuadro de abajo.'; }
       S.textoPlano = txtCot;
       repintar(); return true;
     }
@@ -25889,7 +25961,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (name === 'copiar') {
       if (!f) return true;
       var txt = fichaComoTexto(comoResultado(f), comoZonas(f));
-      var ok = function () { S.avisoPestana = 'Copiado. Pegalo en tus notas o en un chat.'; repintar(); };
+      var ok = function () { S.avisoPestana = 'Copiado. Péguelo en sus notas o en un chat.'; repintar(); };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, ok);
         else ok();

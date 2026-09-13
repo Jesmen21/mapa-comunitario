@@ -1060,7 +1060,43 @@ console.log('\n  -- el FODA del curso --');
     'mir\u00e1','med\u00ed','escrib\u00ed','pon\u00e9','and\u00e1','ten\u00e9','hac\u00e9','fijate','eleg\u00ed','eleg\u00eds','dibuj\u00e1','toc\u00e1',
     'marc\u00e1','prob\u00e1','sum\u00e1','agreg\u00e1','guard\u00e1','abr\u00ed','cerr\u00e1','busc\u00e1','cont\u00e1','anot\u00e1','compar\u00e1',
     'revis\u00e1','us\u00e1','llen\u00e1','mov\u00e9','segu\u00ed','dej\u00e1','volv\u00e9','ped\u00ed','le\u00e9','cambi\u00e1','ampli\u00e1','acerc\u00e1',
-    'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','guardalo','escribilo','ped\u00edsela','mirala','ponelo'];
+    'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','peg\u00e1','avis\u00e1','encontr\u00e1s','necesit\u00e1s','proyect\u00e1s','tap\u00e1s','manten\u00e9',
+    'ped\u00edsela'];
+
+  /* ── Los imperativos CON PRONOMBRE PEGADO, derivados y no listados ─────
+     El agujero que destapó la v897, y es estructural: al pegarle el pronombre
+     al imperativo **la tilde desaparece** —«peg\u00e1» + «lo» = «pegalo»—, así que
+     ninguna regla que mire acentos puede verlos. La lista de arriba tenía
+     cinco escritos a mano (`guardalo`, `escribilo`, `mirala`, `ponelo`) y le
+     faltaban los demás: quedaban siete «Pegalo/Pegala/Marcalo» impresos en
+     avisos que el usuario lee, con la guarda en verde.
+
+     No se arregla escribiendo más: se DERIVAN de la lista de arriba. Cada
+     forma que acabe en vocal con tilde pierde la tilde y recibe cada
+     pronombre, así que un verbo nuevo en la lista base trae su familia
+     entera sin que su autor se acuerde — que es lo único que ha impedido que
+     estas guardas se queden viejas.
+
+     Y la forma correcta en Colombia SIEMPRE lleva tilde —«péguelo»,
+     «márquelo», «guárdelo»—, así que denunciar la que no la lleva no puede
+     confundirse con el castellano bueno. */
+  /* La única excepción de la familia derivada, y va escrita con su razón
+     porque una excepción sin razón es una lista que crece sola: `leeme` sale
+     de «le\u00e9»+«me», pero acá no es una frase dirigida a nadie — es el nombre
+     del archivo `LEEME.txt` que acompaña a una exportación, y esa es una
+     convención de archivo tan vieja como el README. */
+  const NO_ES_VOSEO = ['leeme'];
+  const SIN_TILDE = { '\u00e1': 'a', '\u00e9': 'e', '\u00ed': 'i' };
+  const PRONOMBRES = ['lo', 'la', 'los', 'las', 'le', 'les', 'me', 'te', 'se', 'nos'];
+  VOSEO.slice().forEach(f => {
+    const fin = f.slice(-1);
+    if (!SIN_TILDE[fin]) return;
+    const raiz = f.slice(0, -1) + SIN_TILDE[fin];
+    PRONOMBRES.forEach(pr => {
+      const f2 = raiz + pr;
+      if (NO_ES_VOSEO.indexOf(f2) < 0 && VOSEO.indexOf(f2) < 0) VOSEO.push(f2);
+    });
+  });
 
 
   /* ── El voseo terminado en -á: la guarda se da vuelta ──────────────────
@@ -1267,7 +1303,7 @@ console.log('\n  -- el FODA del curso --');
     sigueSiendoVoseo,
     VOSEO.filter(function (f) { return /[\u00e1\u00e9\u00ed]$/.test(f); }).length + ' formas con tilde final');
   comprobar('ningún voseo en el texto que ve el usuario (§7)', hallados.length === 0,
-    hallados.length ? hallados.slice(0, 6).join(' · ') + (hallados.length > 6 ? ' …y ' + (hallados.length - 6) + ' más' : '')
+    hallados.length ? hallados.slice(0, 40).join(' · ') + (hallados.length > 6 ? ' …y ' + (hallados.length - 6) + ' más' : '')
                     : 'revisados ' + archivos.length + ' archivos, solo fuera de comentarios');
 })();
 

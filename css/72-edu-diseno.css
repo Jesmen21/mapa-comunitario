@@ -2023,3 +2023,37 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   background:#FDF8EC; padding:6px 8px; border-radius:4px;
 }
 .pcr-hoja .pcr-trazo-mapa{ align-self:flex-start; }
+
+/* ── 31. El acuse de guardado (v897) ─────────────────────────────────────
+   Pedido así: «cuando le dé guardar ojalá salga una animación en el botón y
+   que quede iluminado de un color para saber que quedó guardado». Son dos
+   cosas y se pintan aparte a propósito —ver el comentario de
+   `destelloDeGuardado` en js/68—: el DESTELLO dura un segundo y dice «te
+   oí»; el ILUMINADO se queda y dice «esto está guardado».
+
+   El verde es `--edu-ok`, el mismo que la v880 le dio al «así se consigue»
+   de los vacíos: en esta aplicación el verde ya significa «esto está
+   resuelto», y darle un color nuevo a lo mismo sería enseñar dos códigos. */
+.pcr-hoja .pcr-guardado, .pcr-pestana .pcr-guardado{
+  border-color:var(--edu-ok) !important;
+  background:#E8F7F0 !important;
+  color:#0F6B48 !important; -webkit-text-fill-color:#0F6B48 !important;
+  font-weight:700 !important;
+}
+.pcr-hoja .pcr-guardado .u-ico, .pcr-pestana .pcr-guardado .u-ico{ color:var(--edu-ok); }
+
+/* El destello. `forwards` NO: al terminar tiene que devolver el botón a su
+   estado normal —el iluminado, que lo pone la clase de arriba—, y no dejarlo
+   congelado en el último fotograma de la animación. */
+.pcr-destello{ animation:pcr-guardado-destello .85s ease-out 1; }
+@keyframes pcr-guardado-destello{
+  0%{   transform:scale(1);     box-shadow:0 0 0 0 rgba(27,158,107,.55); }
+  35%{  transform:scale(1.045); box-shadow:0 0 0 8px rgba(27,158,107,.18); }
+  100%{ transform:scale(1);     box-shadow:0 0 0 16px rgba(27,158,107,0); }
+}
+/* Con el movimiento reducido no se mueve nada, pero el acuse no se pierde:
+   se queda el halo, que es lo que dice «pasó algo acá». Quitar la animación
+   y dejar al usuario sin respuesta sería cambiar un problema por otro. */
+@media (prefers-reduced-motion:reduce){
+  .pcr-destello{ animation:none; box-shadow:0 0 0 3px rgba(27,158,107,.45); }
+}

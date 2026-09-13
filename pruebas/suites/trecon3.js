@@ -85,10 +85,30 @@ for(let i=0;i<140;i++){
     o.mencionaSinCategoria=/sin categoría/.test(o.texto);
     o.hayBotones=!!h.querySelector('[data-pcr="guardar"]') && !!h.querySelector('[data-pcr="copiar"]');
 
+    /* ── El acuse de guardado (v897) ───────────────────────────────────
+       Pedido con estas palabras: «cuando le dé guardar ojalá salga una
+       animación en el botón y que quede iluminado de un color para saber que
+       quedó guardado». Son dos cosas distintas y se miden aparte: el
+       DESTELLO, que dura un momento, y el ILUMINADO, que se queda. */
+    const leerGuardar=()=>{ const b=document.getElementById('pcr-hoja')
+        .querySelector('[data-pcr="guardar"]');
+      if(!b) return null; const cs=getComputedStyle(b);
+      return { texto:(b.textContent||'').replace(/\s+/g,' ').trim(),
+               iluminado:b.classList.contains('pcr-guardado'),
+               destellando:b.classList.contains('pcr-destello'),
+               animacion:cs.animationName,
+               fondo:cs.backgroundColor, borde:cs.borderColor }; };
+    o.botonAntes=leerGuardar();
+
     // guardar
     h.querySelector('[data-pcr="guardar"]').click();
+    /* El destello se mide SIN esperar: se pone sobre el nodo ya repintado y
+       muere en el repintado siguiente, así que una espera larga mediría el
+       final y no el acuse. Es la lección de la v895 con la barra de espera. */
+    o.botonEnElActo=leerGuardar();
     await new Promise(r=>setTimeout(r,150));
     o.avisoGuardado=(document.querySelector('.pcr-aviso')||{}).textContent||'';
+    o.botonDespues=leerGuardar();
     const fichas=JSON.parse(localStorage.getItem('pcr_fichas_v1')||'[]');
     o.nFichas=fichas.length;
     o.fichaTienePuntos=fichas[0] ? fichas[0].pois.length : 0;
@@ -125,6 +145,32 @@ for(let i=0;i<140;i++){
   P('los dos botones están', r.hayBotones);
   P('guardar guarda de verdad', r.nFichas===1, r.nFichas+' ficha, '+r.pesoKB+' KB');
   P('y avisa que quedó guardada', /guardada/i.test(r.avisoGuardado), r.avisoGuardado.slice(0,60));
+
+  console.log('\n  -- el botón acusa recibo --');
+  /* Antes de tocarlo NO puede estar iluminado: un botón que nace verde no
+     dice nada, y encima sería falso —lo que se ilumina es «guardada con este
+     nombre», y el nombre lo pone este botón—. */
+  P('antes de tocarlo el botón no está iluminado ni destella',
+    !!r.botonAntes && r.botonAntes.iluminado===false && r.botonAntes.destellando===false &&
+    /Guardar ficha/.test(r.botonAntes.texto||''),
+    r.botonAntes ? r.botonAntes.texto+' · iluminado '+r.botonAntes.iluminado : 'no hay botón');
+  /* La animación, medida por el nombre de la animación que el navegador le
+     aplica de verdad: que la clase esté no prueba que haya regla. */
+  P('al tocarlo destella, con una animación que existe de verdad',
+    !!r.botonEnElActo && r.botonEnElActo.destellando===true &&
+    /pcr-guardado-destello/.test(r.botonEnElActo.animacion||''),
+    r.botonEnElActo ? 'destella '+r.botonEnElActo.destellando+' · animación '+r.botonEnElActo.animacion
+                    : 'no hay botón');
+  /* Y el iluminado SE QUEDA, que es la otra mitad del pedido. Se mide el
+     color calculado y no la clase: una clase sin regla no ilumina nada, que
+     es el defecto que la v895 encontró en el botón de analizar. */
+  P('y queda iluminado en verde, diciendo que está guardada',
+    !!r.botonDespues && r.botonDespues.iluminado===true &&
+    /Guardada/.test(r.botonDespues.texto||'') &&
+    r.botonDespues.fondo!==(r.botonAntes||{}).fondo &&
+    r.botonDespues.borde!==(r.botonAntes||{}).borde,
+    r.botonDespues ? r.botonDespues.texto+' · '+r.botonDespues.fondo+' sobre borde '+r.botonDespues.borde
+                   : 'no hay botón');
   P('guarda los puntos, no solo los totales', r.fichaTienePuntos>0, r.fichaTienePuntos+' puntos');
   P('y el reparto por rumbos', r.fichaTieneRumbos===8, r.fichaTieneRumbos+' rumbos');
   P('guardar dos veces el mismo análisis no lo duplica', r.nFichas2===1, r.nFichas2+' ficha');

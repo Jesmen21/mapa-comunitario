@@ -3469,6 +3469,115 @@ Cinco aserciones en rojo, con el estado viejo impreso: «cuerpo false ·
 overflow sin cuerpo», «0 px por debajo del borde», «sin cuerpo que recorrer»,
 «asa false · cerrar false» y «encogida false» — que es no poder minimizarla.
 
+## El botón acusa recibo, y lo que eso destapó (v897)
+
+Pedido con estas palabras: **«cuando le dé guardar ojalá salga una animación
+en el botón y que quede iluminado de un color para saber que quedó
+guardado».** Hasta la v896 guardar solo dejaba una línea de aviso arriba del
+todo, y el botón está abajo: quien lo toca no ve nada donde está mirando.
+
+### Son DOS cosas, y viven en sitios distintos
+
+Es la parte que cuesta ver y la que decide la implementación:
+
+* **El destello** es del MOMENTO: dice «te oí». Se pone sobre el nodo ya
+  repintado (`destelloDeGuardado`) y muere en el repintado siguiente. Si
+  viajara en el HTML, el botón volvería a destellar cada vez que se repinta la
+  hoja —encender una capa, mover la barrita— y **un botón que parpadea sin que
+  nadie lo toque no dice nada**.
+* **El iluminado** es del ESTADO: dice «esto que ves está guardado». Ese sí va
+  en el HTML, porque tiene que seguir ahí al volver de otra pestaña, y se
+  apaga solo cuando deja de ser cierto.
+
+Dos detalles que costaron una vuelta: se lee `offsetWidth` antes de volver a
+poner la clase, porque sin ese reflujo **guardar dos veces seguidas no vuelve
+a destellar** —para el navegador la clase nunca se fue—; y el botón se busca
+en el DOCUMENTO y no dentro de `hojaEl()`, porque sale también en el panel de
+pestaña. Es la lección de la v870 con la barra de espera.
+
+#### Qué significa «Guardada», que no es lo obvio
+
+El análisis **ya se archiva solo** al terminar (`guardarFichaViva`), así que
+«guardada» a secas sería cierto antes de tocar nada y el botón nacería verde
+— que no dice nada, y encima haría que tocarlo no cambiara nada. Lo que el
+botón hace de verdad desde la v871 es ponerle **nombre** a esa misma entrada.
+
+Así que lo que se ilumina es eso: *esta ficha, con este nombre*. Cambiar el
+nombre o analizar otro sector lo apaga, que es cuando vuelve a haber algo que
+guardar. Se compara el OBJETO del resultado y no una bandera, que es el mismo
+truco con el que el enrutador recuerda por dónde iba leyendo.
+
+El del trazo no necesitó estado nuevo: `botonGuardarTrazo` ya sabía desde la
+v871 si el trazo a la vista está en el almacén, y solo lo usaba para cambiar
+el texto. Ahora además se ve.
+
+### Lo que apareció leyendo esas cuatro líneas: la guarda del voseo fallaba
+
+Al abrir el manejador de guardar, en el renglón de al lado estaba escrito
+«Ficha guardada. **La encontrás** en la pestaña «Sector»». Voseo, en texto que
+ve el usuario, con `revisar.js` en verde desde la v880.
+
+Medido, eran **veintidós**, y no era mala suerte: era un agujero
+**estructural**.
+
+#### La tilde desaparece al pegar el pronombre
+
+`pegá` + `lo` = **`pegalo`**. Sin tilde. Ninguna regla que mire acentos —que
+es como están hechas las dos mitades de esta guarda— puede verlo. La lista
+tenía cinco de esa familia escritos a mano (`guardalo`, `escribilo`,
+`mirala`, `ponelo`) y le faltaban los demás, así que quedaban «Pegalo»,
+«Pegala», «Copialo», «Copiala», «Marcalo», «Ponele», «Pedile», «Escribinos»,
+«Avisale» impresos en avisos que el usuario lee.
+
+**No se arregla escribiendo más.** Se DERIVAN de la lista base: cada forma que
+acabe en vocal con tilde pierde la tilde y recibe cada pronombre, así que un
+verbo nuevo en la lista trae su familia entera sin que su autor se acuerde. Y
+la forma correcta en Colombia **siempre** lleva tilde —«péguelo», «márquelo»,
+«guárdelo»—, así que denunciar la que no la lleva no puede confundirse con el
+castellano bueno.
+
+La derivación se validó sola en el acto: al agregar **un** verbo a la lista
+base (`avisá`, que faltaba) aparecieron cuatro «Avisale» más que nadie había
+visto. Eso es exactamente lo que una guarda derivada tiene que hacer y una
+lista escrita a mano no hace.
+
+Queda **una** excepción declarada con su razón: `leeme` sale de «leé»+«me»,
+pero ahí no es una frase dirigida a nadie — es el nombre del archivo
+`LEEME.txt` que acompaña una exportación.
+
+#### Y una advertencia sobre mi propio barrido
+
+Buscando esto escribí `/\bvé\b/` y me devolvió **«vértices»** treinta veces.
+Es la trampa que la v878 dejó escrita en este mismo archivo —en JavaScript
+`\b` trata las vocales acentuadas como NO-palabra— y volví a caer en ella. La
+guarda del proyecto, que pone los límites a mano, no se equivocó: la que
+estaba mal era la mía. **Antes de creerle a un barrido propio conviene
+comprobarlo contra la guarda que ya existe.**
+
+### Lo que NO se tocó, y por qué queda dicho
+
+Quedan en el texto que ve el usuario **doce** formas de **tuteo** —«estás»
+ocho veces, «llegarás», «verás», «podrás», «tendrás»— y alguna más suelta
+(«Lo que no mediste no sale»). No son voseo: «estás» es igual en tuteo y en
+voseo, y los futuros en -rás son de tú.
+
+§7 pidió sacar el **voseo**, y eso está hecho y guardado. El tuteo es otra
+familia y otra decisión —si la aplicación habla de usted en todas partes o
+no—, toca ocho archivos que esta tanda no abre, y **darla por hecha de paso
+sería tomar una decisión de producto que nadie tomó**. Va acá con su número
+para que la próxima tanda la coja entera en vez de volver a descubrirla.
+
+### Demostrado contra la v896
+
+Dos aserciones en rojo de tres, con el estado viejo impreso: «destella false ·
+animación none» y «Guardar ficha · rgb(255, 255, 255) sobre borde
+rgb(207, 220, 230)».
+
+La tercera **no** falla y es a propósito, como las guardas de la v879, la v882
+y la v890: que el botón **no** nazca iluminado. Con el autoguardado detrás, esa
+es la mitad que se puede romper sin darse cuenta — y un botón que ya está
+verde cuando llegas no acusa nada.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
