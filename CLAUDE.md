@@ -3175,6 +3175,98 @@ Una aserción en rojo que enseña seis de las catorce cifras con su punto:
 porque la guarda de la clase ya la cazaba por los dieciocho decimales; lo que
 sí quedó es que las dos rutas son una sola, y eso se lee en el código.
 
+## El trazo guardado tiene su propia ventana (v892)
+
+Pedido con estas palabras: «cuando acceda a ese polígono guardado me deje
+ajustar el radio con su barrita para poder dejar un radio de 2.5 kilómetros y
+personalizarlo más, y una ventana exclusiva de eso porque sale mucha
+información y confunde».
+
+Las dos mitades eran ciertas y las dos se comprobaron leyendo el código antes
+de escribir nada:
+
+* **No había barrita.** `htmlAjustes` pinta el control de radio **solo en la
+  rama del LOTE**. Con un polígono puesto —que es exactamente lo que deja un
+  trazo guardado— la caja decía «N vértices · tanta área» y nada más. Así que
+  un trazo guardado se podía volver a analizar, sí, pero **siempre a la misma
+  escala**: justo lo contrario de lo que la v871 prometía cuando la pidieron,
+  «analizarlo las veces que yo quiera… para hacer diferentes análisis».
+* **Y 2,5 km no está en los botones.** `RADIOS` son 250, 500, 1.000, 2.000,
+  4.000 y 8.000 m. La barrita va de 100 m a 8 km de 50 en 50, así que 2.500
+  solo se alcanza con ella — por eso el pedido dice «con su barrita» y no
+  «con los botones».
+
+### Un trazo es un SITIO; cada análisis elige su escala
+
+Esa es la separación que faltaba, y es la misma forma que la v871 le dio a los
+trazos frente a las fichas. La forma dibujada es **una** manera de analizar el
+sitio; un radio alrededor de su centro es **otra**, sobre el mismo sitio. Las
+dos quedan enlazadas al mismo trazo, y **la lista de la ventana dice a qué
+escala salió cada análisis** — sin eso, tres análisis del mismo trazo se ven
+idénticos en la lista y la promesa no se puede usar. Es la regla de la v889
+dicha acá: cada renglón cita su propio dato.
+
+El centro del radio es el del trazo, y eso también se comprueba: si se moviera,
+sería otro sector con el mismo nombre.
+
+### La ventana se mide por lo que NO trae
+
+El panel de antes de analizar trae, todo junto: los seis botones de radio, el
+lote con su dibujo, los reconocimientos guardados y los trazos. Para alguien
+que solo quiere volver a un sitio suyo y mirarlo a otra escala, eso es ruido
+menos dos controles — y es literalmente lo que el pedido llamó «mucha
+información».
+
+Así que la aserción que vale es la negativa: en la ventana del trazo **no hay**
+lista de reconocimientos, ni la otra lista de trazos, ni un solo botón de radio
+suelto, ni el dibujo del lote. Medir solo lo que sí trae habría pasado en verde
+con el panel general debajo.
+
+### El aviso de escala, antes de analizar y no después
+
+Por encima de 1 km la ventana dice, en ámbar, que eso deja de ser un sector y
+que las cifras por habitante van a ser promedios de un área que mezcla barrios
+distintos. Es el mismo aviso que la lámina imprime desde la v890 —y con la
+misma decisión: **no impide analizar**, porque quien analiza elige su escala—
+pero dicho donde todavía se puede cambiar de idea. En el papel ya no.
+
+### El trazo queda dibujado dentro del círculo
+
+La ventana promete que «la línea gris es el trazo guardado, que queda de
+referencia». Eso obliga a `pintarCirculo`, que limpia la capa en cada
+movimiento de la barrita: sin el contorno, elegir el radio sobre un mapa donde
+la forma guardada desapareció es elegirlo a ciegas. Va en gris fino y sin
+relleno para que no se confunda con lo que se va a analizar, que es el círculo.
+Y hay una aserción que lo busca **en el mapa**, no en el texto: una promesa
+escrita y no cumplida es peor que no hacerla.
+
+### Dos errores míos, los dos cazados por guardas del propio proyecto
+
+* **`trazoDe` ya existía.** Escribí `trazoDe(id)` para buscar un trazo
+  guardado, y `trazoDe(anillos, enc)` —el constructor de rutas SVG de la
+  v887— vive sesenta pantallas más abajo. Como la segunda declaración pisa a
+  la primera, **mi ventana habría llamado al constructor de rutas SVG**. Lo
+  denunció con archivo y línea la guarda que la v885 dejó puesta, que es
+  exactamente para lo que se escribió. La mía se llama `trazoGuardado`.
+* **La ficha guarda `forma` y `radioM` en el PRIMER NIVEL, no en `meta`.**
+  Escribí `f.meta.forma` porque esa es la forma del resultado VIVO, y la
+  guardada es otra: salían las dos indefinidas y todo análisis se listaba como
+  «el trazo tal cual», incluido el de 2,5 km que se acababa de hacer. Es la
+  regla de la v863 con el agravante de que las dos formas existen y se
+  parecen — leer `guardarFicha` costó un minuto y la suposición costó dos
+  aserciones en rojo.
+
+### Demostrado contra la v891
+
+Trece aserciones en rojo de dieciséis: «no hay ventana», el ruido del panel
+general presente —«trazos true · lote true»—, «ninguna» por las dos escalas,
+«0 contornos de referencia», y la ficha con `forma: undefined` porque lo que
+corría era un análisis del lote.
+
+Tres pasan a propósito y son guardas, no afirmaciones nuevas: que la barrita
+llegue a 8 km de 50 en 50 y que 2.500 sea alcanzable —el control ya era así,
+lo que faltaba era tenerlo para un trazo guardado— y que el centro no se mueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

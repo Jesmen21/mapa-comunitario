@@ -81,6 +81,12 @@
     // ficha y poder contar cuántos análisis lleva ese trazo.
     trazoId: null,
     trazoAviso: '',
+    /* El trazo guardado que está ABIERTO en su propia ventana (v892). No es
+       lo mismo que `trazoId`: aquel dice de qué trazo salió lo que se va a
+       analizar y viaja a la ficha; este dice qué pantalla se está mirando.
+       Juntarlos haría que abrir un trazo para verlo cambiara de dónde dice
+       venir el análisis siguiente. */
+    trazoAbierto: null,
     radioM: RADIO_POR_DEFECTO,
     centro: null,
     capa: null,
@@ -1456,6 +1462,20 @@
       : centroDeAnalisis();
     if (!centro) return;
     L.circle([centro.lat, centro.lng], Object.assign({ radius: S.radioM }, estilo)).addTo(c);
+    /* Con un trazo guardado abierto y analizándolo POR RADIO (v892), su forma
+       queda dibujada de referencia dentro del círculo. La ventana lo dice con
+       esas palabras —«la línea gris es el trazo guardado»—, así que tiene que
+       estar: sin ella, elegir el radio sobre un mapa donde la forma guardada
+       desapareció es elegirlo a ciegas. Va en gris fino y sin relleno para
+       que no se confunda con lo que se va a analizar, que es el círculo. */
+    if (S.trazoAbierto) {
+      var tRef = trazoGuardado(S.trazoAbierto);
+      if (tRef && tRef.pts && tRef.pts.length >= 3) {
+        L.polygon(tRef.pts.map(function (p) { return [p.lat, p.lng]; }),
+          { color: '#6B7A8A', weight: 1.5, dashArray: '3 4', fill: false,
+            interactive: false }).addTo(c);
+      }
+    }
     var S_centro = centro;
     L.circleMarker([S_centro.lat, S_centro.lng], {
       radius: 5, color: '#075E88', weight: 2, fillColor: '#FABD0A', fillOpacity: 1
@@ -9358,31 +9378,64 @@ function donaHTML(datos, colorDe, nombreDe) {
         pintar();
         return;
       }
+      /* Abrir un trazo guardado lleva a SU ventana (v892), no al panel de
+         antes de analizar. Antes lo volcaba en el mapa y devolvía al panel
+         general —con los botones de radio, el lote, las dos listas y todo lo
+         demás—, que es de lo que salió el pedido: «una ventana exclusiva de
+         eso porque sale mucha información y confunde».
+
+         El volcado al mapa sigue existiendo y sigue haciéndose acá: la
+         ventana enseña el trazo y hay que poder verlo. Lo que se quitó es el
+         `seguirAlMapa(true)`, que encogía el panel — encoger es para marcar
+         sobre el mapa, y acá se viene a elegir una escala. */
       if (acc === 'usar-trazo') {
-        if (usarTrazo(b.getAttribute('data-id'))) {
+        var idT = b.getAttribute('data-id');
+        if (usarTrazo(idT)) {
           /* El resultado que hubiera en memoria es de OTRA área: dejarlo a la
              vista mientras el mapa ya enseña el trazo nuevo es el fallo que
              `areaDelResultado` existe para no cometer. */
-          S.resultado = null; S.aviso = ''; S.error = '';
-          S.trazoAviso = 'Trazo puesto en el mapa. Cuando quieras, analizalo.';
-          /* Las dos: el círculo o el polígono del sector, y el lote amarillo
-             si el trazo era un lote. Cuál de las dos hace falta depende de la
-             forma, y llamarlas a las dos es más barato que acertar. */
-          pintarCirculo(); pintarLote();
-          /* Y el mapa va a donde está el trazo. Sin esto el trazo se pone
-             donde corresponde y la pantalla se queda mirando otra ciudad:
-             parece que el botón no hizo nada. */
-          (function () {
-            var pts = (S.lote && S.lote.length >= 3) ? S.lote : S.poligono;
-            var m = mapa();
-            if (!m || !pts || !pts.length || typeof L === 'undefined') return;
-            try {
-              m.fitBounds(L.latLngBounds(pts.map(function (p) { return [p.lat, p.lng]; })).pad(0.2));
-            } catch (e) {}
-          })();
-          seguirAlMapa(true);
+          S.resultado = null; S.aviso = ''; S.error = ''; S.trazoAviso = '';
+          S.trazoAbierto = idT;
+          ponerTrazoEnMapa();
           pintar();
         }
+        return;
+      }
+      /* ── Las tres acciones de la ventana del trazo (v892) ──────────────── */
+      if (acc === 'trazo-cerrar') { S.trazoAbierto = null; pintar(); return; }
+      if (acc === 'trazo-escala') {
+        var e = b.getAttribute('data-e');
+        var t2 = trazoGuardado(S.trazoAbierto);
+        if (!t2) return;
+        if (e === 'radio') {
+          /* El centro del trazo es el centro del radio: es el mismo SITIO
+             mirado más amplio. `usarTrazo` ya lo dejó puesto, pero se vuelve
+             a fijar acá porque a esta ventana se puede llegar con el centro
+             movido por otra cosa. */
+          S.forma = 'radio';
+          S.centro = t2.centro || centroideDe(t2.pts);
+        } else {
+          S.forma = 'poligono';
+          S.poligono = t2.pts.map(function (q) { return { lat: q.lat, lng: q.lng }; });
+        }
+        S.resultado = null;
+        ponerTrazoEnMapa();
+        pintar();
+        return;
+      }
+      if (acc === 'trazo-al-mapa') {
+        S.trazoAbierto = null;
+        ponerTrazoEnMapa();
+        seguirAlMapa(true);
+        pintar();
+        return;
+      }
+      if (acc === 'trazo-analizar') {
+        /* La ventana se cierra ANTES de analizar: lo que hay que ver cuando
+           termine es la ficha. `S.trazoId` no se toca —sigue diciendo de qué
+           trazo salió— y por eso la ficha queda enlazada y la cuenta sube. */
+        S.trazoAbierto = null;
+        analizar();
         return;
       }
       if (acc === 'borrar-trazo') {
@@ -10281,7 +10334,8 @@ function donaHTML(datos, colorDe, nombreDe) {
        píxel 1.800 de «Ambiente» cuando vuelve a «Movilidad» es dejarlo en
        mitad de otra cosa. */
     var mismaVista = S.comparacion ? 'comparacion' : encoger ? 'encogida'
-                   : S.resultado ? ('ficha:' + (S.pestanaFicha || 'general')) : 'ajustes';
+                   : S.resultado ? ('ficha:' + (S.pestanaFicha || 'general'))
+                   : S.trazoAbierto ? ('trazo:' + S.trazoAbierto) : 'ajustes';
     /* Y se olvida en cuanto cambia el sector. Devolver a alguien al píxel
        1.800 de la ficha ANTERIOR lo deja en mitad de un texto que no ha
        leído, y encima de otro sitio. Se compara el objeto del resultado y no
@@ -10297,6 +10351,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     h.innerHTML = S.comparacion ? htmlComparacion(S.comparacion)
                 : encoger        ? htmlEncogida()
                 : S.resultado    ? htmlFicha(S.resultado)
+                /* La ventana del trazo va DESPUÉS del resultado: con un
+                   análisis recién hecho lo que hay que ver es la ficha, no la
+                   pantalla desde la que se lanzó. La cierra `trazo-analizar`
+                   igual, pero el orden lo deja dicho. */
+                : S.trazoAbierto ? htmlTrazoAbierto(S.trazoAbierto)
                 : htmlAjustes();
 
     if (vuelveA > 0) {
@@ -10481,6 +10540,188 @@ function donaHTML(datos, colorDe, nombreDe) {
           grupos.map(function (g) { return chip('g:' + g.id, nombreGrupo(g.id), g.n, colorDeGrupo(g.id)); }).join('') +
         '</div>' +
       '</div>';
+  }
+
+  /* ── La ventana del trazo guardado (v892) ────────────────────────────────
+     Pedido con estas palabras: «cuando acceda a ese polígono guardado me
+     deje ajustar el radio con su barrita para poder dejar un radio de 2.5
+     kilómetros y personalizarlo más, y una ventana exclusiva de eso porque
+     sale mucha información y confunde».
+
+     Las dos mitades eran ciertas y medibles:
+
+     * **No había barrita.** `htmlAjustes` solo pinta el control de radio en
+       la rama del LOTE; con un polígono puesto —que es lo que deja un trazo
+       guardado— la caja dice «N vértices · tanta área» y nada más. Así que un
+       trazo guardado se podía volver a analizar, sí, pero **siempre a la
+       misma escala**, que es justo lo contrario de lo que la v871 prometía:
+       «analizarlo las veces que yo quiera… para hacer diferentes análisis».
+     * **Y 2,5 km no está en los botones.** `RADIOS` son 250, 500, 1.000,
+       2.000, 4.000 y 8.000 m. La barrita va de 100 m a 8 km de 50 en 50, así
+       que 2.500 solo se alcanza con ella — por eso el pedido dice «con su
+       barrita» y no «con los botones».
+
+     El trazo guardado es **un sitio**, y cada análisis elige **su escala**.
+     Esa es la separación que faltaba: la forma dibujada es una manera de
+     analizarlo, y un radio alrededor de su centro es otra, sobre el mismo
+     sitio. Las dos quedan enlazadas al mismo trazo y la lista de abajo dice
+     a qué escala salió cada una — sin eso, tres análisis del mismo trazo se
+     ven idénticos en la lista, que es la lección de la v889.
+
+     Y va en ventana propia porque el panel de antes de analizar trae, todo
+     junto: los botones de radio, el lote, el dibujo, los reconocimientos
+     guardados y los trazos. Para alguien que solo quiere volver a un sitio
+     suyo y mirarlo a otra escala, eso es todo ruido menos dos controles. */
+  function trazoGuardado(id) {
+    return leerTrazos().filter(function (t) { return t.id === id; })[0] || null;
+  }
+  /* Los análisis que salieron de este trazo, cada uno con la escala a la que
+     se hizo. La escala sale de `meta`, que es lo que la ficha guardó de
+     verdad: deducirla del área sería una segunda ruta para la misma cosa. */
+  function analisisDelTrazo(id) {
+    return leerFichas().filter(function (f) { return f.trazoId === id; })
+      .map(function (f) {
+        /* La escala sale de los campos que la ficha guarda DE VERDAD, que
+           están en el primer nivel —`forma`, `radioM`, `areaM2`— y no dentro
+           de un `meta`. Lo escribí primero leyendo `f.meta`, que es la forma
+           que tiene el resultado VIVO y no la guardada: salían las dos
+           indefinidas y todo análisis se listaba como «el trazo tal cual».
+           Es la regla de la v863 —leer el código, no recordarlo— con la
+           agravante de que las dos formas existen y se parecen. */
+        return { id: f.id, nombre: f.nombre || '', ts: f.ts,
+                 escala: f.forma === 'radio'
+                   ? 'radio de ' + textoRadio(f.radioM)
+                   : 'el trazo tal cual' + (f.areaM2 ? ' · ' + formatearArea(f.areaM2) : '') };
+      })
+      .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
+
+  /* Poner en el mapa lo que la ventana está enseñando, y encuadrarlo. Sale
+     del manejador de `usar-trazo` para que los tres caminos —abrir, cambiar
+     de escala y «solo ponerlo en el mapa»— hagan exactamente lo mismo: tres
+     copias de esto divergirían a la tanda siguiente, que es la regla de la
+     v879. */
+  function ponerTrazoEnMapa() {
+    /* Las dos: el círculo o el polígono del sector, y el lote amarillo si el
+       trazo era un lote. Cuál hace falta depende de la forma, y llamarlas a
+       las dos es más barato que acertar. */
+    pintarCirculo(); pintarLote();
+    var m = mapa();
+    if (!m || typeof L === 'undefined') return;
+    /* Encuadre: sin esto el trazo se pone donde corresponde y la pantalla se
+       queda mirando otra ciudad, y parece que el botón no hizo nada. Por
+       RADIO se encuadra el círculo y no el trazo — que es lo que se va a
+       analizar, y a 2,5 km el trazo es un punto en el medio. */
+    try {
+      if (S.forma === 'radio' && S.centro) {
+        m.fitBounds(L.circle([S.centro.lat, S.centro.lng], { radius: S.radioM }).getBounds().pad(0.15));
+        return;
+      }
+      var pts = (S.lote && S.lote.length >= 3) ? S.lote : S.poligono;
+      if (!pts || !pts.length) return;
+      m.fitBounds(L.latLngBounds(pts.map(function (p) { return [p.lat, p.lng]; })).pad(0.2));
+    } catch (e) {}
+  }
+
+  function htmlTrazoAbierto(id) {
+    var t = trazoGuardado(id);
+    if (!t) return '<div class="pcr-campo"><p class="pcr-pista">Ese trazo ya no está guardado.</p>' +
+      '<button type="button" data-pcr="trazo-cerrar" class="pcr-mini">Volver</button></div>';
+    var cuando = new Date(t.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+    var porRadio = S.forma === 'radio';
+    var hechos = analisisDelTrazo(id);
+    return '<div class="pcr-trazo-vent">' +
+      '<div class="pcr-trazo-cab">' +
+        '<button type="button" data-pcr="trazo-cerrar" class="pcr-mini pcr-volver">' +
+          ico('atras', 16) + 'Volver</button>' +
+        h4('lapiz', esc(t.nombre || ('Trazo del ' + cuando))) +
+      '</div>' +
+      '<div class="pcr-trazo-id">' +
+        miniaturaDeFicha({ forma: 'poligono', poligono: t.pts }) +
+        '<div class="pcr-trazo-datos">' +
+          '<b>' + esc(formatearArea(t.areaM2)) + '</b>' +
+          '<small>' + t.pts.length + (t.pts.length === 1 ? ' vértice' : ' vértices') +
+            ' · guardado el ' + esc(cuando) + '</small>' +
+          '<small>' + (hechos.length
+            ? hechos.length + (hechos.length === 1 ? ' análisis hecho' : ' análisis hechos')
+            : 'sin analizar todavía') + '</small>' +
+        '</div>' +
+      '</div>' +
+
+      /* La escala, que es lo que esta ventana vino a resolver. Dos maneras de
+         analizar el MISMO sitio, dichas como lo que son. */
+      '<div class="pcr-campo">' +
+        '<label class="pcr-lab">A qué escala analizarlo</label>' +
+        '<div class="pcr-escala-ops">' +
+          '<button type="button" data-pcr="trazo-escala" data-e="poligono"' +
+            ' class="pcr-escala-op' + (porRadio ? '' : ' pcr-escala-on') + '"' +
+            ' aria-pressed="' + (porRadio ? 'false' : 'true') + '">' +
+            '<b>El trazo tal cual</b><small>exactamente la forma que dibujó · ' +
+            esc(formatearArea(t.areaM2)) + '</small></button>' +
+          '<button type="button" data-pcr="trazo-escala" data-e="radio"' +
+            ' class="pcr-escala-op' + (porRadio ? ' pcr-escala-on' : '') + '"' +
+            ' aria-pressed="' + (porRadio ? 'true' : 'false') + '">' +
+            '<b>Un radio alrededor</b><small>desde el centro del trazo, a la escala que elija</small></button>' +
+        '</div>' +
+      '</div>' +
+
+      (porRadio
+        ? '<div class="pcr-campo">' +
+            '<label class="pcr-lab" for="pcr-trazo-rango">Cuánto alrededor del centro</label>' +
+            '<div class="pcr-rango-fila">' +
+              '<input type="range" id="pcr-trazo-rango" class="pcr-rango" data-pcr="radio-rango" ' +
+                'min="100" max="8000" step="50" value="' + S.radioM + '" ' +
+                'aria-label="Radio alrededor del centro del trazo, en metros">' +
+              '<output id="pcr-radio-eco" class="pcr-rango-eco">' + textoRadio(S.radioM) + '</output>' +
+            '</div>' +
+            '<small class="pcr-pista">De 100 m a 8 km. En el mapa, el círculo azul es lo que se va a ' +
+            'analizar y la línea gris es el trazo guardado, que queda de referencia.' +
+            (S.radioM > 3000
+              ? ' <b>A este radio la consulta tarda más</b> —hasta tres minutos— y puede venir sin ' +
+                'las capas de uso del suelo: si eso pasa, se dice al terminar.'
+              : '') + '</small>' +
+            /* La misma advertencia de escala que imprime la lámina (§8, v890),
+               dicha ANTES de analizar y no después: acá todavía se puede
+               cambiar de idea, y en el papel ya no. */
+            (S.radioM > 1000
+              ? '<p class="pcr-pista pcr-pista-ojo">Por encima de 1 km esto deja de ser un sector: ' +
+                'las cifras por habitante y por hectárea van a ser promedios de un área que mezcla ' +
+                'barrios distintos. La lámina lo dice, y se puede analizar igual.</p>'
+              : '') +
+          '</div>'
+        : '<div class="pcr-campo">' +
+            '<small class="pcr-pista">Se analiza exactamente la forma guardada. Para mirar el mismo ' +
+            'sitio más amplio o más cerrado, elija «Un radio alrededor».</small>' +
+          '</div>') +
+
+      '<button type="button" data-pcr="trazo-analizar" class="pcr-btn pcr-btn-ir">' +
+        ico('lupa', 18) + 'Analizar ' +
+        (porRadio ? 'a ' + textoRadio(S.radioM) + ' a la redonda' : 'el trazo tal cual') + '</button>' +
+
+      /* Lo que ya se hizo sobre este trazo, cada uno con SU escala. Es lo que
+         convierte la ventana en el sitio donde vive un lugar guardado, y no
+         en un formulario que se abre y se cierra. */
+      (hechos.length
+        ? '<div class="pcr-guardadas pcr-trazo-hechos">' +
+            '<div class="pcr-guardadas-cab">' + h4('carpeta', 'Análisis de este trazo') + '</div>' +
+            hechos.map(function (f) {
+              var c = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+              return '<div class="pcr-guardada">' +
+                '<button type="button" class="pcr-guardada-ir" data-pcr="ver-ficha" data-id="' + esc(f.id) + '">' +
+                  '<span class="pcr-guardada-t">' +
+                    '<b>' + esc(f.nombre || c) + '</b>' +
+                    '<small>' + esc(f.escala) + '</small>' +
+                    '<em class="pcr-guardada-ver">' + ico('lupa', 13) + 'Abrir el análisis</em>' +
+                  '</span>' +
+                '</button>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '') +
+
+      '<button type="button" data-pcr="trazo-al-mapa" class="pcr-mini pcr-trazo-mapa">' +
+        ico('mapa', 16) + 'Solo ponerlo en el mapa</button>' +
+    '</div>';
   }
 
   function htmlAjustes() {
@@ -25721,6 +25962,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         poligono: (S.poligono || []).slice(),
         trazoId: S.trazoId || null,
         trazoAviso: S.trazoAviso || '',
+        /* Qué trazo guardado está abierto en su ventana, y a qué escala se va
+           a analizar (v892). Lo lee `ttrazos` para comprobar que elegir un
+           radio de 2,5 km sobre un trazo guardado hace las dos cosas: cambia
+           la forma del análisis y deja el centro donde estaba el trazo. */
+        trazoAbierto: S.trazoAbierto || null,
         /* Cuántos equipamientos de cada clase hay MAPEADOS. Es el
            discriminante entre «no hay colegio» y «nadie mapeó el colegio»,
            así que una prueba sobre esa distinción tiene que poder leerlo —y

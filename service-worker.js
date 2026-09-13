@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v891-punto-decimal-y-tasa';
+const URBIS_CACHE = 'urbis-v892-ventana-del-trazo';
 const URBIS_ASSETS = [
   './',
   './index.html',

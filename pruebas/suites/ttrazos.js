@@ -131,7 +131,7 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     o.dibujoSoltado=(R.estado().lote||[]).length;
     o.sobrevive=leer().length;
 
-    // ── 4. Volver a ponerlo en el mapa desde la lista.
+    // ── 4. Abrirlo desde la lista: desde la v892 eso lleva a SU ventana.
     const bUsar=H().querySelector('[data-pcr="usar-trazo"]');
     o.hayLista=!!bUsar;
     o.textoLista=(function(){ const c=H().querySelector('.pcr-trazos'); return c?(c.textContent||'').replace(/\s+/g,' ').trim():''; })();
@@ -139,15 +139,71 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     const st=R.estado();
     o.vueltoAlMapa=(st.lote||[]).length;
     o.trazoIdPuesto=!!st.trazoId;
+    o.abrioVentana=!!st.trazoAbierto;
     // Y en el mapa de verdad, no solo en el estado.
     o.poligonosEnMapa=(function(){ let n=0;
       window.map.eachLayer(l=>{ if(l instanceof L.Polygon && l.options && /FFD54F/i.test(l.options.fillColor||'')) n++; });
       return n; })();
 
-    // ── 5. Analizarlo. La ficha que salga queda enlazada al trazo.
-    const bAn=H().querySelector('[data-pcr="analizar"]');
+    /* La ventana del trazo: qué trae y qué NO trae. Lo segundo es la mitad
+       del pedido —«sale mucha información y confunde»—, así que se mide que
+       el ruido del panel general no esté: ni la lista de reconocimientos, ni
+       los botones de radio sueltos, ni el dibujo del lote. */
+    o.vent=(function(){
+      const v=H().querySelector('.pcr-trazo-vent');
+      if(!v) return null;
+      return { texto:(v.textContent||'').replace(/\s+/g,' ').trim(),
+               escalas:[...v.querySelectorAll('[data-pcr="trazo-escala"]')].map(x=>x.getAttribute('data-e')),
+               haySlider:!!v.querySelector('[data-pcr="radio-rango"]'),
+               hayAnalizar:!!v.querySelector('[data-pcr="trazo-analizar"]') };
+    })();
+    o.ruido=(function(){
+      const h=H();
+      return { otrosTrazos:!!h.querySelector('.pcr-trazos'),
+               reconocimientos:!!h.querySelector('.pcr-guardadas:not(.pcr-trazo-hechos):not(.pcr-trazos)'),
+               botonesRadio:h.querySelectorAll('[data-pcr="radio"]').length,
+               dibujarLote:!!h.querySelector('[data-pcr="lote-dibujar"]') };
+    })();
+
+    /* ── 4b. La barrita: elegir un radio de 2,5 km sobre el trazo guardado.
+       Es el pedido literal, y 2.500 NO está entre los botones de `RADIOS`
+       —250, 500, 1.000, 2.000, 4.000, 8.000—, así que solo se alcanza con
+       el control deslizante. */
+    const bRad=H().querySelector('[data-pcr="trazo-escala"][data-e="radio"]');
+    if(bRad){ bRad.click(); await esperar(600); }
+    o.trasElegirRadio=(function(){ const e=R.estado();
+      return { forma:e.forma, haySlider:!!H().querySelector('[data-pcr="radio-rango"]'),
+               centro:e.centro?{lat:e.centro.lat,lng:e.centro.lng}:null }; })();
+    const sl=H().querySelector('[data-pcr="radio-rango"]');
+    o.rango=sl?{min:sl.min,max:sl.max,step:sl.step}:null;
+    if(sl){
+      sl.value='2500';
+      sl.dispatchEvent(new Event('input',{bubbles:true}));
+      sl.dispatchEvent(new Event('change',{bubbles:true}));
+      await esperar(700);
+    }
+    o.radioPuesto=R.estado().radioM;
+    o.ventTrasRadio=(function(){ const v=H().querySelector('.pcr-trazo-vent');
+      return v?(v.textContent||'').replace(/\s+/g,' ').trim():''; })();
+    /* El trazo guardado queda dibujado de referencia dentro del círculo: la
+       ventana lo dice con esas palabras, así que tiene que estar en el mapa.
+       Se busca el polígono GRIS y sin relleno, que es el de referencia, no
+       el amarillo del lote. */
+    o.referenciaEnMapa=(function(){ let n=0;
+      window.map.eachLayer(l=>{ if(l instanceof L.Polygon && l.options &&
+        /6B7A8A/i.test(l.options.color||'') && l.options.fill===false) n++; });
+      return n; })();
+
+    // ── 5. Analizarlo DESDE la ventana, a 2,5 km. La ficha queda enlazada.
+    const bAn=H().querySelector('[data-pcr="trazo-analizar"]');
+    o.analizaDesdeVentana=!!bAn;
     if(bAn && !bAn.disabled){ bAn.click(); }
     await esperar(6000);
+    o.metaDelRadio=(function(){ try{
+      const f=JSON.parse(localStorage.getItem('pcr_fichas_v1')||'[]')[0]||{};
+      /* En el primer nivel, que es donde `guardarFicha` los pone: dentro de
+         un `meta` está la forma del resultado VIVO, no la de la guardada. */
+      return { forma:f.forma, radioM:f.radioM }; }catch(e){ return {}; } })();
     o.fichas=(function(){ try{ return JSON.parse(localStorage.getItem('pcr_fichas_v1')||'[]'); }catch(e){ return []; } })();
     o.trazosTrasAnalizar=leer().length;
     /* Con el análisis hecho, la hoja enseña la FICHA: las listas viven en el
@@ -161,6 +217,24 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     const bAg3=H().querySelector('[data-pcr="agrandar"]');
     if(bAg3){ bAg3.click(); await esperar(500); }
     o.diceCuantos=(function(){ const c=H().querySelector('.pcr-trazos'); return c?(c.textContent||'').replace(/\s+/g,' ').trim():''; })();
+
+    /* ── 5b. Volver a abrir el trazo: su ventana lista los análisis que
+       salieron de él, y CADA UNO con la escala a la que se hizo. Sin eso,
+       tres análisis del mismo trazo se ven idénticos en la lista y la
+       promesa de la v871 —«diferentes análisis» del mismo sitio— no se
+       puede usar. Es la regla de la v889 dicha acá. */
+    const bUsar2=H().querySelector('[data-pcr="usar-trazo"]');
+    if(bUsar2){ bUsar2.click(); await esperar(800); }
+    o.hechos=(function(){
+      const c=H().querySelector('.pcr-trazo-hechos');
+      if(!c) return null;
+      return [...c.querySelectorAll('.pcr-guardada')].map(x=>(x.textContent||'').replace(/\s+/g,' ').trim());
+    })();
+    /* Y se vuelve al panel de antes con el botón de volver, que es la puerta
+       que la ventana promete. */
+    const bVolver=H().querySelector('[data-pcr="trazo-cerrar"]');
+    if(bVolver){ bVolver.click(); await esperar(500); }
+    o.volvioAlPanel=!R.estado().trazoAbierto && !!H().querySelector('.pcr-trazos');
 
     // ── 6. Borrar el trazo no toca los análisis: son cosas distintas.
     const bBorrar=H().querySelector('[data-pcr="borrar-trazo"]');
@@ -219,6 +293,68 @@ const geo=[ via('Calle 7','residential',[P(-40,-300),P(-40,0),P(-40,300)]),
     r.trasBorrar+' trazos · '+r.fichasTrasBorrar+' fichas');
 
   console.log('');
+  /* ══ v892 · la ventana del trazo, y la barrita del radio ═══════════════
+     Pedido con estas palabras: «cuando acceda a ese polígono guardado me
+     deje ajustar el radio con su barrita para poder dejar un radio de 2.5
+     kilómetros y personalizarlo más, y una ventana exclusiva de eso porque
+     sale mucha información y confunde». */
+  console.log('\n  -- la ventana del trazo, y su radio --');
+  T('abrir un trazo guardado lleva a su propia ventana', r.abrioVentana===true);
+  T('la ventana trae la identidad del trazo y su botón de analizar',
+    !!r.vent && r.vent.hayAnalizar===true,
+    r.vent?r.vent.texto.slice(0,80):'no hay ventana');
+  /* La otra mitad del pedido, y se mide por lo que NO está: el panel general
+     trae los reconocimientos guardados, los seis botones de radio y el
+     dibujo del lote, y nada de eso es de este trazo. */
+  T('y NO trae el ruido del panel general: otras listas, botones de radio, el lote',
+    !!r.ruido && r.ruido.reconocimientos===false && r.ruido.otrosTrazos===false &&
+    r.ruido.botonesRadio===0 && r.ruido.dibujarLote===false,
+    r.ruido?('recon '+r.ruido.reconocimientos+' · trazos '+r.ruido.otrosTrazos+
+             ' · radios '+r.ruido.botonesRadio+' · lote '+r.ruido.dibujarLote):'sin medir');
+  T('ofrece las dos escalas: el trazo tal cual y un radio alrededor',
+    !!r.vent && r.vent.escalas.join(',')==='poligono,radio',
+    r.vent?r.vent.escalas.join(' · '):'ninguna');
+  /* Hasta la v891 el control de radio solo existía en la rama del LOTE: con
+     un polígono puesto —que es lo que deja un trazo guardado— no había
+     barrita, así que el trazo solo se podía analizar a una escala. */
+  T('elegir «radio» pone la barrita y deja la forma en radio',
+    !!r.trasElegirRadio && r.trasElegirRadio.forma==='radio' && r.trasElegirRadio.haySlider===true,
+    r.trasElegirRadio?(r.trasElegirRadio.forma+' · barrita '+r.trasElegirRadio.haySlider):'sin medir');
+  T('y la barrita llega a los 8 km, de 50 en 50',
+    !!r.rango && Number(r.rango.min)<=100 && Number(r.rango.max)>=8000 && Number(r.rango.step)<=50,
+    r.rango?(r.rango.min+'–'+r.rango.max+' paso '+r.rango.step):'no hay barrita');
+  /* El pedido literal: 2,5 km. No está entre los botones de RADIOS, así que
+     esta aserción es la que prueba que la barrita sirve para lo que se pidió. */
+  T('se puede dejar en 2,5 km, que no está entre los botones', r.radioPuesto===2500,
+    r.radioPuesto+' m');
+  T('y la ventana lo dice en el botón de analizar',
+    /2,5 km a la redonda/.test(r.ventTrasRadio||''),
+    (String(r.ventTrasRadio||'').match(/Analizar[^·]{0,40}/)||['no lo dice'])[0]);
+  /* El centro del radio es el del trazo: es el mismo SITIO mirado más
+     amplio, y si el centro se moviera sería otro sector con el mismo nombre. */
+  T('el radio queda centrado en el trazo, no en otro sitio',
+    !!(r.trasElegirRadio && r.trasElegirRadio.centro) &&
+    Math.abs(r.trasElegirRadio.centro.lat - C.lat) < 0.002 &&
+    Math.abs(r.trasElegirRadio.centro.lng - C.lng) < 0.002,
+    r.trasElegirRadio&&r.trasElegirRadio.centro
+      ? r.trasElegirRadio.centro.lat.toFixed(4)+', '+r.trasElegirRadio.centro.lng.toFixed(4) : 'sin centro');
+  /* La ventana promete que el trazo queda de referencia dentro del círculo.
+     Si no estuviera, elegir el radio sería elegirlo a ciegas — y la promesa
+     sería falsa, que en este proyecto es peor que no hacerla. */
+  T('el trazo guardado queda dibujado de referencia dentro del círculo',
+    r.referenciaEnMapa>=1, r.referenciaEnMapa+' contornos de referencia');
+  T('se analiza desde la ventana misma', r.analizaDesdeVentana===true);
+  T('y la ficha guarda que se hizo por radio, a 2,5 km',
+    !!r.metaDelRadio && r.metaDelRadio.forma==='radio' && r.metaDelRadio.radioM===2500,
+    r.metaDelRadio?(r.metaDelRadio.forma+' · '+r.metaDelRadio.radioM+' m'):'sin meta');
+  /* Y la lista de la ventana cita la escala de cada análisis: sin eso, dos
+     análisis del mismo trazo se ven idénticos y la promesa de la v871 —el
+     mismo sitio a distintas escalas— no se puede usar. */
+  T('al volver, la ventana lista sus análisis con la escala de cada uno',
+    !!r.hechos && r.hechos.length>=1 && /radio de 2,5 km/.test(r.hechos.join(' | ')),
+    r.hechos?r.hechos.join(' | ').slice(0,110):'sin lista');
+  T('y el botón de volver devuelve al panel de antes', r.volvioAlPanel===true);
+
   T('sin errores de JavaScript', err.length===0, err.join(' | ')||'ninguno');
   await b.close();
   console.log('\n  '+(mal?mal+' fallaron':'todo pasó'));

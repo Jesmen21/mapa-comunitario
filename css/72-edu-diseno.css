@@ -1940,3 +1940,55 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   font-size:.68rem; line-height:1.25; font-weight:600;
   color:var(--edu-ink-2) !important; -webkit-text-fill-color:var(--edu-ink-2) !important;
 }
+
+/* ── 30. La ventana del trazo guardado (v892) ────────────────────────────
+   Un trazo guardado es un SITIO al que se vuelve, y esta es su pantalla: se
+   entra desde la lista, se elige a qué escala mirarlo y se analiza. Va
+   aparte del panel de antes de analizar a propósito —«una ventana exclusiva
+   de eso porque sale mucha información y confunde»—, así que acá no entra
+   nada que no sea de este trazo. */
+.pcr-hoja .pcr-trazo-vent{
+  display:flex; flex-direction:column; gap:10px; min-height:0;
+}
+.pcr-hoja .pcr-trazo-cab{
+  display:flex; align-items:center; gap:8px; flex:0 0 auto;
+}
+.pcr-hoja .pcr-trazo-cab h4{ margin:0; }
+.pcr-hoja .pcr-volver{ flex:0 0 auto; }
+
+/* La identidad del trazo: su miniatura y sus tres datos. Lo que un lector
+   necesita para saber que abrió el que quería, y nada más. */
+.pcr-hoja .pcr-trazo-id{
+  display:flex; align-items:center; gap:10px; flex:0 0 auto;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); padding:8px;
+}
+.pcr-hoja .pcr-trazo-datos{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.pcr-hoja .pcr-trazo-datos b{ font-size:1.05rem; color:var(--edu-accent-deep); }
+.pcr-hoja .pcr-trazo-datos small{ font-size:.82rem; color:var(--edu-tinta-2); }
+
+/* Las dos escalas, una al lado de la otra: la forma dibujada y un radio
+   alrededor del centro. Se pintan como lo que son —dos opciones del mismo
+   peso— y no como un control principal y una alternativa escondida. */
+.pcr-hoja .pcr-escala-ops{ display:flex; gap:8px; flex:0 0 auto; }
+.pcr-hoja .pcr-escala-op{
+  flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:3px;
+  text-align:left; padding:9px 10px; cursor:pointer;
+  background:var(--edu-ground); border:1px solid var(--edu-line);
+  border-radius:var(--edu-r-m); color:inherit;
+}
+.pcr-hoja .pcr-escala-op b{ font-size:.95rem; }
+.pcr-hoja .pcr-escala-op small{ font-size:.78rem; color:var(--edu-tinta-2); line-height:1.25; }
+.pcr-hoja .pcr-escala-op.pcr-escala-on{
+  border-color:var(--edu-accent-deep); border-width:2px; padding:8px 9px;
+  background:var(--edu-accent-suave);
+}
+.pcr-hoja .pcr-escala-op.pcr-escala-on b{ color:var(--edu-accent-deep); }
+
+/* El aviso de escala, en ámbar: no impide analizar —quien analiza elige su
+   escala, que es la decisión de la v890— pero se dice antes y no después. */
+.pcr-hoja .pcr-pista-ojo{
+  border-left:3px solid var(--edu-ambar, #B08A2E);
+  background:#FDF8EC; padding:6px 8px; border-radius:4px;
+}
+.pcr-hoja .pcr-trazo-mapa{ align-self:flex-start; }
