@@ -391,6 +391,8 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     if (bpdf) { bpdf.click(); await esperar(1200); }
     o.archivo = bajadoComo;
     o.fuera = ((R.estado() || {}).pliegoFuera || []).slice();
+    // §4 (v901): el veredicto del control de cierre de la última composición.
+    o.cierre = (R.estado() || {}).pliegoCierre || null;
     // Y cada hoja por separado, para poder pedirle a cada una lo suyo.
     /* La A suelta se pide CON clima: la caja del clima es la que prueba que
        un dato de ciudad no se rotula como del sector, y en este banco no hay
@@ -440,6 +442,12 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
           { id: 'media',  etiqueta: 'Pendiente media',    nodos: 54,  pct: 18 },
           { id: 'fuerte', etiqueta: 'Pendiente fuerte',   nodos: 36,  pct: 12 }
         ] } };
+    /* La A de REFERENCIA, con las mismas opciones que usa el documento que
+       sale a imprimir —o sea ninguna—: es contra esta que se comprueba que
+       nada se cayó en silencio. Comparar contra la A con clima inyectado
+       denunciaría «El clima» como panel perdido cuando lo que pasa es que el
+       documento no lo tenía nunca. */
+    o.refA = R.laminaA({ hoja: 'A' });
     o.soloA = R.laminaA({ hoja: 'A', clima: CLIMA });
     // Con el terreno medido: la cascada descuenta la pendiente fuerte.
     o.conTerreno = R.laminaA({ hoja: 'A', clima: CLIMA, terreno: TERRENO });
@@ -539,7 +547,14 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   await m.setViewportSize({ width: 2268, height: 3402 });
   await m.setContent(r.doc || '<i></i>', { waitUntil: 'load' });
   await m.waitForTimeout(700);
-  const M = await m.evaluate(() => {
+  /* El lector de una hoja compuesta. Se extrae con nombre —y no se escribe
+     dentro del `evaluate`— porque desde la v901 se aplica a DOS documentos:
+     el que sale a imprimir, que puede haber cedido paneles, y las dos hojas
+     sueltas, donde están todos. Lo que un panel DICE se comprueba donde el
+     panel existe; lo que la hoja compuesta tiene que cumplir es otra cosa y
+     se comprueba aparte. Dos lectores para lo mismo divergirían a la tanda
+     siguiente, que es la regla de la v879. */
+  const LECTOR = () => {
     const PX = 3.7795275, mm = px => Math.round(px / PX * 10) / 10;
     return [...document.querySelectorAll('.hoja')].map(h => {
       const rej = h.querySelector('.rej'), marco = h.querySelector('.rejilla');
@@ -827,12 +842,41 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
                    numerados: sv.querySelectorAll('circle[r="3.4"]').length,
                    cuadro: /lados no tienen sitio para su cota/.test(sv.textContent) };
         })(),
+        /* Los títulos de las cajas que esta hoja trae. Es lo que permite
+           comparar la hoja compuesta con la suelta y exigir que lo que no
+           esté, esté DECLARADO fuera. */
+        titulos: [...h.querySelectorAll('section.caja h2')].map(x => x.textContent.trim()),
+        /* Y la IDENTIDAD de cada una: el `data-m` cuando es un mapa, el
+           título cuando no. Una caja de mapa se titula «X · el mapa» y se
+           declara fuera por su identificador de mapa (`sombras`), así que
+           compararlas por el slug del título no las reconocería — y la
+           comprobación diría que un mapa se cayó en silencio cuando está
+           declarado con todas las letras. */
+        idCajas: [...h.querySelectorAll('section.caja')].map(c =>
+          c.getAttribute('data-m') ||
+          (c.classList.contains('plano-hero') ? 'plano'
+            : ((c.querySelector('h2') || {}).textContent || '').trim())),
         biblio: h.querySelectorAll('.pie .biblio li').length,
         propuestas: h.querySelectorAll('.sintesis-pie .pu').length,
         plano: !!h.querySelector('.plano-hero')
       };
     });
-  });
+  };
+  const leerDoc = async (html) => {
+    const pg2 = await ctx.newPage();
+    await pg2.setViewportSize({ width: 2268, height: 3402 });
+    await pg2.setContent(html || '<i></i>', { waitUntil: 'load' });
+    await pg2.waitForTimeout(700);
+    const out = await pg2.evaluate(LECTOR);
+    await pg2.close();
+    return out;
+  };
+  const M = await m.evaluate(LECTOR);
+  /* Las dos hojas SUELTAS, sin ajustar: ahí están todos los paneles, cedan o
+     no en la compuesta. */
+  const [SA] = await leerDoc(r.soloA);
+  const [SB] = await leerDoc(r.soloB);
+  const [RA] = await leerDoc(r.refA);
   await m.close();
   await pg.close(); await b.close();
   /* Las dos láminas, guardadas: cuando una comprobación de diagramación
@@ -848,11 +892,31 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     fs2.writeFileSync(E.TRABAJO + 'lamina-cede.html', r.docCede || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-pie.html', r.docPieContra || '', 'utf8');
   } catch (e) {}
+  if (process.env.URBIS_FUERA) console.log("FUERA(" + (r.fuera||[]).length + "): " + (r.fuera||[]).join(", "));
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
 
   console.log('\n  -- el pliego son DOS láminas --');
+  /* ── §4 · nada se cae en silencio (v901) ─────────────────────────────
+     El orden de cesión hace que la hoja compuesta pueda traer menos paneles
+     que la suelta: primero cede el texto, después el mapa secundario, y el
+     principal de banda al final. Lo que NO puede pasar es que un panel
+     desaparezca sin que la ficha lo nombre — la promesa de la v850 es «lo
+     que cede se dice por su nombre y entero en el informe en hojas», y sin
+     esta comprobación nadie la vigilaba: la suite solo miraba que los
+     paneles que le interesaban estuvieran.
+
+     Persigue la CLASE y no un panel: se comparan los títulos de la hoja
+     suelta contra los de la compuesta, y cada diferencia tiene que estar en
+     `pliegoFuera`. */
+  const slug = t => String(t || '').toLowerCase()
+    .replace(/[áàä]/g, 'a').replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i')
+    .replace(/[óòö]/g, 'o').replace(/[úùü]/g, 'u').replace(/ñ/g, 'n')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const cedidoSinDecir = (suelta, puesta) => (suelta.idCajas || [])
+    .filter(id => (puesta.idCajas || []).indexOf(id) === -1)
+    .filter(id => (r.fuera || []).indexOf(id) === -1 && (r.fuera || []).indexOf(slug(id)) === -1);
   T('el lote quedó dibujado y el trazado medido', r.trazado === true);
   T('lo que sale a imprimir trae dos hojas, no una', M.length === 2, M.length + ' hojas');
   if (M.length !== 2) { console.log('\n  ' + (mal || 1) + ' comprobaciones fallaron'); process.exit(1); }
@@ -870,6 +934,38 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     /condiciones físicas manda el terreno/.test(A.responde) &&
     /quién vive acá|cómo se mueve/i.test(B.responde),
     A.responde.slice(0, 60) + ' | ' + B.responde.slice(0, 60));
+
+  console.log('\n  -- §4 · el orden de cesión, declarado --');
+  /* Nada se cae en silencio: lo que la hoja suelta trae y la compuesta no,
+     tiene que estar nombrado en `pliegoFuera`. */
+  T('ningún panel desaparece de la hoja compuesta sin quedar declarado fuera',
+    cedidoSinDecir(RA, A).length === 0 && cedidoSinDecir(SB, B).length === 0,
+    cedidoSinDecir(RA, A).concat(cedidoSinDecir(SB, B)).join(' · ') || 'ninguno');
+  /* Las once casillas y la banda de coherencia NO ceden nunca: la síntesis
+     anuncia once cruces, y publicarla con nueve es mentir por omisión sin
+     escribir nada falso. Y con ellas los dos paneles de la lámina A de donde
+     salen dos de esas once. */
+  const NO_CEDEN = ['Síntesis del sector', 'Coherencia de las cifras'];
+  T('la síntesis y la banda de coherencia no ceden en ninguna hoja',
+    NO_CEDEN.every(t => (A.titulos || []).concat(B.titulos || []).indexOf(t) >= 0),
+    NO_CEDEN.filter(t => (A.titulos || []).concat(B.titulos || []).indexOf(t) < 0).join(' · ') || 'las dos están');
+  T('«Suelo disponible real» y «Potencial edificatorio» tampoco: el cierre los cruza',
+    (A.titulos || []).indexOf('Suelo disponible real') >= 0 &&
+    (A.titulos || []).indexOf('Potencial edificatorio') >= 0,
+    (A.titulos || []).filter(t => /Suelo disponible|Potencial edific/.test(t)).join(' · ') || 'no están');
+  /* Y las once, completas: el número de casillas compuestas tiene que ser el
+     que la banda anuncia. Es el control de cierre visto desde el papel. */
+  T('el cierre imprime las once casillas que la síntesis anuncia',
+    (B.crucesDet || []).length === 11, (B.crucesDet || []).length + ' casillas');
+  T('y el control de cierre lo confirma, así que la hoja se puede exportar',
+    !!r.cierre && r.cierre.ok === true && r.cierre.n === r.cierre.declarados,
+    r.cierre ? (r.cierre.n + ' de ' + r.cierre.declarados + (r.cierre.ok ? ' · exporta' : ' · NO exporta')) : 'sin control');
+  /* El peldaño 3: un mapa PRINCIPAL de banda no cede mientras haya texto o
+     mapa secundario que ceder. Los principales del sector de prueba son la
+     foto, el plano y el de todos los usos. */
+  T('ningún mapa principal de banda cedió su sitio',
+    ['foto', 'plano', 'calor:todos'].every(id => (r.fuera || []).indexOf(id) === -1),
+    ['foto', 'plano', 'calor:todos'].filter(id => (r.fuera || []).indexOf(id) >= 0).join(' · ') || 'ninguno');
 
   console.log('\n  -- cada hoja cierra en SU papel --');
   /* Son dos contenidos distintos: obligarlas a la misma escala sería
@@ -1432,17 +1528,40 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        lista mapas por debajo del piso no puede además afirmar que se
        cumplió. Son la misma cuenta y tiene que dar una sola conclusión. */
     const todos = [].concat(pies(r.doc), pies(r.docPieContra), pies(r.docCede), pies(r.granEscala));
-    const contra = todos.filter(t => /Por debajo del mínimo de 8 cm/.test(t) &&
+    const contra = todos.filter(t => (/Por debajo del mínimo de 8 cm/.test(t) ||
+                                      /no se imprimi(ó|eron) por no llegar a 8 cm/.test(t)) &&
                                      /Todos alcanzan el objetivo/.test(t));
-    T('ningún pie lista mapas bajo el piso y encima dice que cumple',
+    T('ningún pie nombra un mapa que no llegó al piso y encima dice que cumple',
       contra.length === 0, contra.length ? contra[0].slice(0, 170) : todos.length + ' pies revisados');
-    /* Y la rama que lo producía: con todos los del tramo de en medio
-       apagados, la lista de objetivo se vacía y la frase de cumplimiento
-       salía sola. Acá tiene que decir lo contrario, y decirlo entero. */
-    const pB = pies(r.docPieContra)[1] || '';
-    T('con la lista de objetivo vacía y mapas caídos, el pie dice que NO cumple',
-      /Por debajo del mínimo de 8 cm/.test(pB) && /NO cumple el pliego/.test(pB) &&
-      !/Todos alcanzan el objetivo/.test(pB), pB.slice(-160) || 'no hay pie');
+    /* Y la rama que lo produce HOY. La del reporte —dieciséis mapas impresos
+       por debajo del piso— ya no se puede alcanzar en este sector: el apagado
+       de §4 los quita, que es justo lo que §4 pidió. Lo que sí se alcanza es
+       la misma contradicción con otra ropa: la hoja dice que apagó un mapa
+       por no llegar a 8 cm y dos renglones después que todos alcanzan el
+       objetivo. Todos los que quedaron, que no es lo que el lector entiende.
+
+       Se mide en el pie de la lámina A del documento normal, que es donde de
+       verdad cae un mapa apagado en este sector. Buscarlo en una composición
+       fabricada habría medido otra cosa: si el sector deja de producirlo, la
+       aserción lo dice en vez de pasar por no tener material. */
+    /* La rama del reporte —dieciséis mapas impresos por debajo del piso— ya
+       no se alcanza en la hoja parada, y no por tolerancia: por construcción.
+       El reflujo garantiza que ninguna pista baje de 10 cm de ancho, y el
+       alto de un mapa al piso de composición del 30 % son 8,25 cm, así que
+       el lado menor no puede caer de 8 cm. Medirlo es la manera de saber que
+       sigue siendo cierto — si un día un mapa se cae, esta se pone roja. */
+    const conQuitados = todos.filter(t => /no se imprimi(ó|eron) por no llegar a 8 cm/.test(t));
+    T('ninguna composición tuvo que apagar un mapa por no llegar a los 8 cm',
+      conQuitados.length === 0,
+      conQuitados.length ? conQuitados[0].slice(0, 150) : todos.length + ' pies, ninguno con mapa apagado');
+    /* Y la otra mitad, que hoy pasa sin material y es a propósito: el día
+       que una composición sí tenga que apagar uno, su pie no puede decir que
+       todos alcanzan el objetivo. Es la misma contradicción de §5 con otra
+       ropa, y se deja escrita para que no vuelva por la puerta de atrás. */
+    T('y si alguna lo hiciera, su pie diría que la hoja NO cumple',
+      conQuitados.every(t =>
+        /NO cumple el pliego/.test(t) || /No alcanzan el objetivo del pliego/.test(t)),
+      conQuitados.length ? conQuitados[0].slice(-150) : 'guarda sin material: ninguna apagó');
     /* Y la otra mitad, para no arreglarlo borrando la frase: cada pie que
        midió mapas cierra en UNA conclusión y nunca en dos. Las tres son
        excluyentes —cumple, se queda corto del objetivo, no llega al piso— y
@@ -1976,7 +2095,12 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   }
   /* Y la escala: es una cifra de MUNICIPIO impresa al lado de las del
      sector, que es exactamente el error que la tabla de escalas evita. */
-  const escalaB = t => (B.escalas.filter(x => x.t === t)[0] || {}).e || 'no está';
+  /* Sobre la hoja B SUELTA: el rótulo de escala es una propiedad del panel,
+     no de la composición, y desde la v901 un panel de la banda de movilidad
+     puede haber cedido su sitio en la compuesta (el orden de cesión pone el
+     texto de primero). Que ceda o no se comprueba aparte —y que se declare
+     al ceder, también—; lo que dice cuando está se comprueba donde está. */
+  const escalaB = t => (SB.escalas.filter(x => x.t === t)[0] || {}).e || 'no está';
   T('la comparación con la ciudad va rotulada como municipio',
     escalaB('El sector dentro de la ciudad') === 'municipio',
     escalaB('El sector dentro de la ciudad'));
@@ -2019,9 +2143,9 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   console.log('\n  -- la red de vías, con sus nombres --');
   /* Un plano de movilidad sin las vías nombradas no se puede discutir en una
      mesa: «la vía principal» no es una vía, es una categoría. */
-  const MV = (B.paneles || {}).mueve;
+  const MV = (SB.paneles || {}).mueve;
   T('el panel está, y en la banda de movilidad de la lámina B',
-    !!MV && /banda-movilidad/.test((MV || {}).banda || '') && !(A.paneles || {}).mueve,
+    !!MV && /banda-movilidad/.test((MV || {}).banda || '') && !(SA.paneles || {}).mueve,
     MV ? (MV.banda.match(/banda-[a-z]+/) || [''])[0] : 'no está');
   if (MV) {
     T('mide la red: kilómetros, densidad y cuánto va en un solo sentido',

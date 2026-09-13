@@ -471,8 +471,27 @@ node vt/probar-vt.js && node vt/probar-rutas.js
 ```
 
 El motor de 8787 necesita `VT_DATABASE_URL` (la de `vt_app`) y un
-`URBIS_SECRETO` de pruebas para firmar licencias con territorio; el script
-de reinicio de la sesión los exporta. Una licencia entra al módulo solo si
+`URBIS_SECRETO` de pruebas para firmar licencias con territorio. En un
+contenedor recién levantado no hay script que los exporte y **el motor
+arranca igual**: las rutas `/vt/*` contestan 503 o 401 y `tvision` se cae
+con «Cannot read properties of null (reading 'deficit')», que no se parece
+en nada a «falta una variable de entorno». Cuesta media hora si no está
+escrito, así que va escrito:
+
+```bash
+service postgresql start
+cd /home/user/urbis-motor
+VT_DATABASE_URL_MIGRADOR="postgres://vt_migrador:vt_migrador_local@127.0.0.1:5432/urbis_vt_pruebas" \
+  node vt/migrar.js && node vt/semilla.js
+VT_DATABASE_URL="postgres://vt_app:vt_app_local@127.0.0.1:5432/urbis_vt_pruebas" \
+  URBIS_SECRETO="secreto-de-pruebas-locales-no-es-el-de-produccion" \
+  nohup node servidor.js > /tmp/motor.log 2>&1 &
+```
+
+**El secreto tiene que ser EXACTAMENTE ese**: es el que `tvision.js` usa para
+firmar sus licencias de prueba, y con otro la firma no valida —401— y el
+cliente recibe null. No es el de producción y no es un secreto: está escrito
+en la suite, que está en el repositorio. Una licencia entra al módulo solo si
 lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
 
 ### Lo que falta, y se dice en pantalla
@@ -3908,6 +3927,240 @@ Medido hoy, antes de tocar nada:
 | los de categoría | — | 9,2 cm de 10 |
 
 Queda como la tanda siguiente, con la medición hecha.
+
+## El orden de cesión, declarado (v901)
+
+§4 del pliego de ajustes v2, y la parte que faltaba de la v886. Aquella midió
+los veinte mapas de las dos hojas y dio la respuesta honesta: nueve por debajo
+del piso de 8 cm, el más chico en 6,5, y «cada milímetro por encima de ~66
+cuesta un panel medido». §4 pide lo contrario —los de categoría a 10 cm, el
+principal de cada banda a 12, ninguno bajo 8— y el reporte del usuario lo
+resolvió por otro lado: **una banda puede ocupar varias filas.**
+
+    v900          9 de 20 mapas bajo 8 cm · el más chico 6,5 cm · 0 paneles ceden
+    v901          0 de 20 mapas bajo 8 cm · el más chico 8,2 cm · 2 paneles ceden
+
+Los dos que ceden son de la banda de movilidad y van declarados por su nombre.
+
+### El nudo: el ancho de la banda y sus pistas eran el mismo número
+
+Hasta la v900 el ancho de un mapa salía de repartir la fila entre TODO lo que
+la banda tiene, en una sola fila: con ocho mapas en la banda demográfica eso
+da dieciséis pistas y cada mapa se queda con 65 mm. Y crecer la hoja no lo
+arregla, lo **empeora**: al crecer entra más contenido por fila y la pista se
+estrecha todavía más —medido, el mínimo baja de 75 a 67 mm entre el 34 % y el
+100 %—.
+
+Bajar las pistas tampoco servía, y ahí estaba el nudo: `bd.cols = pistas / 2`
+y la rejilla se escribía con `repeat(cols × 2)`, así que **el ancho de la
+banda en la fila y sus pistas por dentro eran el mismo número**. Bajar las
+pistas para ensanchar los mapas estrechaba la banda en la misma proporción y
+cada mapa se quedaba igual. Se separan: `bd.pistas` es lo de adentro, `bd.cols`
+lo de afuera, y la banda se queda con la fila entera y crece hacia abajo, que
+es donde la hoja de 90 cm tiene sitio.
+
+### El peso de un mapa deja de valer ANCHO
+
+Lo destapó mirar el papel, no el código. Con la banda a doce pistas, un mapa
+de peso 2 se llevaba cuatro —184 mm de ancho— y su dibujo se quedaba en 97 mm
+de alto: **el 47 % de esa caja era papel en blanco a los lados**, y el LADO
+MENOR —que es lo que §21 mide— no sube ni un milímetro por ser más ancho.
+
+Así que en la banda reflujada todos los mapas valen dos pistas menos el
+PRINCIPAL de la banda, que conserva el suyo. El peso sigue estando en
+`data-p`, de donde sale quién es el principal y a qué piso se lo mide; solo
+deja de traducirse en pistas. Es lo que más papel devolvió de toda la tanda:
+con la mitad del ancho por mapa, la banda demográfica pasó de cuatro renglones
+a dos, y cada renglón que se ahorra son paneles que no tienen que ceder.
+
+Y entonces **la pista ES el lado del mapa**, así que el mínimo de pista sube a
+los 10 cm que §4 pide para los de categoría. No es un número nuevo: es el
+mismo de §4, aplicado donde de verdad decide.
+
+### La cuenta de la pista es la de la grilla, no una regla de tres
+
+Costó una vuelta y es fácil volver a equivocarse: **un mapa no vale dos
+pistas, vale el doble de su peso.** Con `2 · ancho / mínimo` —el primer
+intento— un mapa de peso 2 se medía como si ocupara la mitad de lo que ocupa,
+así que pedirle 10 cm a la banda de categorías la dejaba en diez pistas cuando
+le caben veinte, y de ahí salían tres renglones de mapas y ocho paneles menos.
+La buena:
+
+    ancho de un mapa de peso w en p pistas
+      = 2w · (útil − (p−1)·gap) / p  +  (2w−1)·gap
+
+Se prueba pista por pista de mayor a menor y se toma la mayor que deje a TODOS
+los mapas de la banda por encima de su mínimo. En par, porque una caja vale
+dos pistas y una fila impar deja una suelta en cada renglón (v850).
+
+Comprobada contra lo medido antes de conectarla: a doce pistas la fórmula da
+90 mm y el papel da 89.
+
+### Manda el número de RENGLONES, no el hueco
+
+`pistasQueLlenan` elige, entre las anchuras que el mínimo permite, la que deja
+menos papel en blanco — pero **primero la que deja menos renglones**. Medido al
+revés, minimizando el hueco a secas, la banda se iba a tres y cuatro renglones
+y la hoja pasaba de una cesión a dieciséis: un renglón de más son diez
+centímetros de papel y, al final de la cadena, paneles que ceden.
+
+### ORDEN DE CESIÓN, y por qué se declara
+
+Pedido con estas palabras: «el reequilibrio se resuelve con jerarquía
+explícita, no por lo que sobre». Cuando la hoja se llena, el sitio lo cede en
+este orden:
+
+1. los paneles de texto;
+2. los mapas y gráficos de análisis **secundario** —los anillos, la serie
+   temporal, la calle comercial—, que son los que no abren su banda;
+3. los mapas **principales** de banda, al final;
+4. **NUNCA**: las once casillas de la síntesis ni la banda de coherencia, y con
+   ellas «Suelo disponible real» y «Potencial edificatorio».
+
+La razón de la cuarta va escrita porque es la que cuesta: **la síntesis anuncia
+once cruces, y publicarla con nueve es mentir por omisión sin escribir nada
+falso.** Los dos paneles de la lámina A entran en la lista porque de ellos
+salen dos de esas once: con el panel fuera, el cruce de la B se queda sin con
+qué cruzarse, que es justo lo que la v899 acababa de aprender a decir.
+
+**El peldaño 3 no tiene lista escrita.** El principal de una banda es el mapa
+de más peso que esa banda trae; con dos iguales, el primero — la misma regla
+con la que la v886 decide a qué piso se mide cada mapa. Se calcula sobre la
+hoja YA compuesta, de donde salen el peso y la banda de cada mapa: deducirlo de
+una tabla aparte sería una segunda ruta de cálculo para la misma cantidad, y
+esas no divergen el día que se escriben (v879). En el sector de prueba reparte
+solo: los anillos, los hitos y la calle comercial quedan en el peldaño 2, y la
+jerarquía vial, la foto y el de todos los usos en el 3. Son exactamente los
+tres que el pedido nombra como secundarios.
+
+#### La bisección apagaba paneles de la OTRA hoja
+
+Encontrado al medir la lista de lo que cedía: 34 renglones, y los nueve
+primeros repetidos. `ordenDeSacrificio` recorría `cajasDelPliego`, que no sabe
+de hojas, así que componiendo la B se apagaban cajas de la A —que no liberan un
+milímetro— y después se declaraban fuera. El pie de la B nombraba paneles que
+nunca habían estado en la B. Ahora los candidatos se leen del papel
+(`cajasEnLaHoja`): lo que no está compuesto no puede ceder.
+
+### El método extendido NO cede, y costó medirlo
+
+El orden pone de primero «los paneles de texto explicativo y método extendido»,
+y lo barato parecía acortar el pie de método de las treinta y pico cajas: dejar
+la fórmula y la fuente, ceder confiabilidad, referencia y error típico. Medido,
+devolvía **tres paneles**.
+
+Y costaba dos declaraciones que la hoja tiene obligación de hacer, las dos
+escondidas justo en los renglones que se iban: la **referencia** de
+`calor:categoria` es donde la lámina explica por qué la línea y no solo el
+degradado (v877), y el **error típico** es donde dice que dar por bueno un
+chequeo que no se pudo correr es el error de esta hoja (v879). Las dos tienen
+su aserción, y las dos se pusieron rojas.
+
+No es una cesión, es un silencio: tres paneles a cambio de que treinta cajas
+dejen de decir de qué se fían y en qué se suelen equivocar. Se deshizo —el
+modo corto ni siquiera se quedó en el código, que es lo que la v885 enseñó
+sobre dejar funciones que nadie llama— y queda escrito acá para que la idea no
+vuelva a parecer buena.
+
+#### Y no hay un solo panel de PROSA
+
+De paso salió una medición que resuelve la ambigüedad del peldaño 1: de las 37
+cajas de la lámina B, **ninguna es solo texto**. Todas traen una figura, una
+tabla, una baldosa de cifra o una cuadrícula — los paneles de campo y los de
+vacío incluidos. Así que «paneles de texto explicativo» no separa nada en este
+pliego: el peldaño 1 son los paneles, y dentro de él sigue mandando el orden de
+atrás hacia adelante. Comprobarlo costó dos minutos y evitó inventar un
+criterio para repartir una lista vacía.
+
+### Las once casillas, apretadas antes que perdidas
+
+«Prefiero once casillas apretadas que nueve holgadas.» Si ni apagando todo lo
+cedible cierra la hoja, lo que sigue no es tirar la síntesis: es componerla de
+nuevo con las casillas en formato **compacto** —título, cifra y una línea— y
+volver a buscar. La línea que queda es la primera frase y no un recorte por
+caracteres: cortar por número de letras deja el renglón a media palabra, y un
+«…» en mitad de una conclusión se lee como un dato incompleto en vez de como
+una lectura corta.
+
+### El control de cierre: la hoja no exporta si no cuadra
+
+«Si el número de casillas compuestas es distinto del número de cruces que la
+banda declara, la hoja no exporta y lo reporta.» Es el mismo principio del §5
+que la v900 puso en el pie, aplicado a la síntesis, y **corta la exportación**
+en vez de avisar al pie: un aviso al pie de una hoja incompleta se lee después
+de haberla impreso.
+
+Se cuenta sobre el HTML ya compuesto y no sobre la lista de cruces, que es la
+regla de la v879: una casilla que se cayó por el camino —la caja apagada, la
+rejilla recortando, un error tragado por un `catch`— no existe en la variable;
+existe, o deja de existir, en el papel. Y se cuenta solo cuando la hoja TRAE la
+síntesis: exigirle once casillas a la lámina A sería un rojo permanente que no
+significa nada, la misma decisión que la v886 tomó con la hoja acostada.
+
+### La acostada se queda como estaba
+
+El reflujo es de la hoja PARADA. Los pisos de §21 están escritos «contra la
+hoja de 60 × 90»; la acostada es de 90 × 60, con 30 cm menos de alto, así que
+repartir sus bandas en varios renglones le quita justo el alto que no tiene.
+Medido, le dejaba la banda demográfica con **22 celdas vacías** y once dibujos
+al 45 % de su caja. Es la misma decisión de la v886 —no se le aplican unos
+pisos que el pliego no pidió para ella—, dicha ahora para la diagramación y no
+solo para el aviso.
+
+### El punto decimal, otra vez, en el renglón nuevo
+
+La guarda de la v885 cazó su propia clase en un sitio que no existía cuando se
+escribió: el pie de tamaños imprimía el objetivo con `piso / 10` y salía
+**«8,7 cm de 9.2»**, un punto decimal en una hoja en castellano, al lado de una
+cifra bien escrita. Es exactamente para lo que la v891 amplió esa guarda a
+todas las unidades. Ahora el objetivo pasa por el mismo `cm()` que la medición.
+
+### Nada se cae en silencio
+
+`tdoslaminas` compara ahora los títulos de la hoja SUELTA contra los de la
+compuesta y exige que cada diferencia esté en `pliegoFuera`. La suite solo
+miraba que los paneles que le interesaban estuvieran; la promesa de la v850
+—«lo que cede se dice por su nombre»— no la vigilaba nadie.
+
+Dos cosas de esa comparación:
+
+* **Se compara por IDENTIDAD, no por título.** Una caja de mapa se titula «X ·
+  el mapa» y se declara fuera por su identificador (`sombras`), así que el slug
+  del título no la reconocía: la comprobación denunciaba un mapa caído en
+  silencio que estaba declarado con todas las letras.
+* **Contra una hoja compuesta con las MISMAS opciones.** La A suelta de esta
+  suite lleva el clima inyectado y el documento no, así que «El clima» salía
+  como panel perdido cuando nunca había estado. Se compone una A de referencia
+  sin nada inyectado.
+
+Y el lector de hojas se extrajo con nombre (`LECTOR`) porque ahora se aplica a
+dos documentos: lo que un panel DICE se comprueba donde el panel existe; lo que
+la hoja compuesta tiene que cumplir es otra cosa y se comprueba aparte. Dos
+lectores para lo mismo divergirían a la tanda siguiente.
+
+### La rama del reporte ya no se puede alcanzar, y eso también se mide
+
+La contradicción de §5 —dieciséis mapas impresos bajo el piso y «todos alcanzan
+el objetivo»— no se alcanza más en la hoja parada, y no por tolerancia: por
+construcción. El reflujo garantiza que ninguna pista baje de 10 cm de ancho, y
+el alto de un mapa al piso de composición del 30 % son 8,25 cm, así que el lado
+menor no puede caer de 8. La aserción que lo medía se dio vuelta: ahora dice
+que **ninguna composición tuvo que apagar un mapa**, y si un día una lo hace,
+se pone roja. La otra mitad —que ese pie diría que la hoja NO cumple— se queda
+escrita, declarada en la suite como una guarda sin material.
+
+De paso quedó cerrada la misma contradicción con otra ropa: un pie que decía
+haber apagado un mapa por no llegar a 8 cm y dos renglones después que todos
+alcanzan el objetivo. Todos los que quedaron, que no es lo que el lector
+entiende.
+
+### Demostrado contra la v900
+
+Los veinte mapas de las dos hojas, por su lado menor y sobre el papel ya
+compuesto: **9 por debajo de 8 cm y el más chico en 6,5**, contra 0 y 8,2 de
+esta versión. Y la lista de lo que cede, que la v900 no publicaba: dos
+paneles, los dos nombrados en el pie.
+
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

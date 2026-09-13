@@ -3228,7 +3228,19 @@
   function bajarPliegoPDF(horizontal, alAvisar) {
     var P = window.URBIS_PLIEGO_PDF;
     // Ajustada al papel antes de dibujarla: ver `laminaQueQuepa`.
+    S.pliegoCierre = null;
     var html = laminaDoble(S.resultado, { horizontal: !!horizontal, letra: S.pliegoLetra });
+    /* §4 · el control de cierre. La hoja no sale si la síntesis compuso un
+       número de casillas distinto del que la banda anuncia: es el mismo
+       principio del §5 —la hoja no puede afirmar algo que ella misma
+       contradice— y por eso corta la exportación en vez de avisar al pie. */
+    var cierre = S.pliegoCierre;
+    if (cierre && !cierre.ok) {
+      S.pdfArmando = false; S.pdfAviso = ''; S.pdfError = cierre.dice;
+      if (alAvisar) alAvisar(cierre.dice);
+      pintar();
+      return Promise.resolve(false);
+    }
     if (!P || !P.disponible()) {
       // Sin lo que hace falta, se cae al camino de siempre en vez de dejar
       // a alguien sin lámina.
@@ -3300,6 +3312,11 @@
      aviso va a la pestaña. */
   function bajarPliegoDeFicha(f, horizontal, html, alAvisar) {
     var P = window.URBIS_PLIEGO_PDF;
+    /* La misma puerta que la de la ficha viva: una lámina archivada se vuelve
+       a componer con ESTE código, así que puede quedarse corta de casillas
+       igual que una recién hecha. */
+    var cf = S.pliegoCierre;
+    if (cf && !cf.ok) { if (alAvisar) alAvisar(cf.dice); return; }
     if (!P || !P.disponible()) { abrirImpresion(html, alAvisar); return; }
     var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
     var nombre = String((f && f.nombre) || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
@@ -3623,6 +3640,84 @@ function donaHTML(datos, colorDe, nombreDe) {
     B: { id: 'B', t: 'Gente, usos y movilidad',
          pregunta: '¿Quién vive acá, qué le falta y cómo se mueve?' }
   };
+
+  /* ── §4 · cuántas pistas admite una banda sin achicar sus mapas ──────
+     Los mínimos de §21, en milímetros de papel y sobre el LADO MENOR: 12 cm
+     el principal de la banda, 10 los de categoría, 8 el piso. El principal
+     no entra en la cuenta de esta función: lo alcanza por su peso, que le da
+     el doble de pistas que a los demás, y exigirle 12 cm a la banda entera
+     dejaría filas de dos mapas y una altura que la hoja no tiene.
+
+     La cuenta es la de la grilla y no una regla de tres, y eso costó una
+     vuelta: **un mapa no vale dos pistas, vale el doble de su peso.** Con
+     `2 * ancho / minimo` —que fue el primer intento— un mapa de peso 2 se
+     medía como si ocupara la mitad de lo que ocupa, así que pedirle 10 cm a
+     la banda de categorías la dejaba en diez pistas cuando le caben
+     veinte, y de ahí salían tres renglones de mapas y ocho paneles menos en
+     la hoja. Con la cuenta buena:
+
+         ancho de un mapa de peso w en p pistas
+           = 2w · (útil − (p−1)·gap) / p  +  (2w−1)·gap
+
+     Se prueba pista por pista, de mayor a menor, y se toma la mayor que
+     deje a TODOS los mapas de la banda por encima de su mínimo. En par,
+     porque una caja vale dos pistas y una fila impar deja una suelta en
+     cada renglón (v850).
+
+     Y no es la única guarda: la de verdad es la de §21, que mide el papel
+     ya compuesto y apaga lo que aun así no llegue. Esta evita el problema;
+     aquella comprueba que se evitó. */
+  var MINIMOS_PISTA = { categoria: 100, piso: 100 };
+  /* De las anchuras de fila que el mínimo permite, la que deja MENOS papel
+     en blanco. Tomar la mayor sin más es lo que dejaba la banda ambiental
+     con «23 de 30 celdas · 7 huecos en 3 renglones»: con diez pistas la
+     banda pide tres renglones y sobra un renglón entero de hueco, y con
+     ocho cabe en tres sin sobrar casi nada. Se prueba cada anchura par y se
+     mide el desperdicio de verdad —pistas × renglones menos lo que ocupa—,
+     que es lo que el lector ve como un renglón a medio llenar.
+
+     En número PAR: una caja vale dos pistas, así que una fila impar deja
+     una suelta en cada renglón (v850). */
+  function pistasQueLlenan(celdasAncho, topePistas) {
+    var pide = Math.max(2, Math.ceil(2 * celdasAncho));
+    var tope = Math.min(topePistas, pide);
+    if (tope % 2) tope--;
+    /* Manda el número de RENGLONES, no el hueco: un renglón de más son diez
+       centímetros de papel y, al final de la cadena, paneles que ceden. Entre
+       las anchuras que dan el mismo número de renglones se toma la que menos
+       hueco deja, que es lo que el lector ve como un renglón a medio llenar.
+       Medido al revés —minimizando el hueco a secas— la banda se iba a tres
+       y cuatro renglones y la hoja pasaba de una cesión a dieciséis. */
+    var mejor = Math.max(2, tope), mejorReng = Infinity, sobra = Infinity;
+    for (var p = tope; p >= 4; p -= 2) {
+      var reng = Math.max(1, Math.ceil(pide / p));
+      var hueco = p * reng - pide;
+      if (reng < mejorReng || (reng === mejorReng && hueco < sobra)) {
+        mejorReng = reng; sobra = hueco; mejor = p;
+      }
+    }
+    return mejor;
+  }
+  function topeDePistas(cajas, anchoUtilMM, horiz) {
+    var gap = horiz ? 3.5 : 4;
+    var pide = [];
+    (cajas || []).forEach(function (t) {
+      if (!/^<section class="caja mapa-caja/.test(t)) return;
+      var id = (t.match(/data-m="([^"]*)"/) || [])[1] || '';
+      var w = Number((t.match(/data-p="([0-9.]+)"/) || [])[1]) || 1;
+      pide.push({ w: w, min: /^calor:(?!todos)/.test(id) ? MINIMOS_PISTA.categoria
+                                                         : MINIMOS_PISTA.piso });
+    });
+    if (!pide.length) return 24;
+    var anchoDe = function (w, p) {
+      return 2 * w * (anchoUtilMM - (p - 1) * gap) / p + (2 * w - 1) * gap;
+    };
+    for (var p2 = 24; p2 >= 4; p2 -= 2) {
+      var cabe = pide.every(function (m) { return anchoDe(m.w, p2) >= m.min; });
+      if (cabe) return p2;
+    }
+    return 2;
+  }
 
   function laminaImprimible(res, opts) {
     var o = opts || {};
@@ -3975,7 +4070,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        eso guardaba los mapas grandes a costa de apagarlos, que es de lo que
        vino la queja. El canje de v850 es el otro: los mapas están todos y
        lo que cede, dicho por su nombre, son los paneles de texto. */
-    var SUELO_MAPA = 0.5;
+    var SUELO_MAPA = 0.4;
     var papelMapa = function (mm) { return 'calc(' + mm + 'mm / max(var(--k, 1), ' + SUELO_MAPA + '))'; };
     /* La primera banda: la foto, el plano y la ficha del sitio. El ancho del
        plano en el papel sale de cuántas columnas de la fila se lleva su
@@ -7142,17 +7237,110 @@ function donaHTML(datos, colorDe, nombreDe) {
            así: van en tantos renglones como haga falta, de a una fila, y
            cada caja de cifras se estira al alto de su mapa. */
         if (conMapa && deDos >= deUna && !/sintesis-pie/.test(bd.cajas[0])) {
-          var reng = Math.max(1, Math.ceil(celdasAncho / ANCHO_FILA));
-          bd.renglones = reng;
+          /* §4 (v901) · EL ANCHO MÍNIMO MANDA, Y LA BANDA CRECE HACIA ABAJO.
+             ──────────────────────────────────────────────────────────────
+             Hasta la v900 el ancho de cada mapa salía de repartir la fila
+             entre TODO lo que la banda tiene: `pistas = 2·celdasAncho/reng`.
+             Con ocho mapas en la banda demográfica eso da dieciséis pistas y
+             cada mapa se queda con 65 mm de papel — y crecer la hoja no lo
+             arregla, lo empeora, porque al crecer entra más contenido por
+             fila y la pista se estrecha todavía más: medido, el mínimo baja
+             de 75 a 67 mm entre el 34 % y el 100 %.
+
+             Se da vuelta el cálculo. Primero el ANCHO MÍNIMO que cada clase
+             de mapa necesita para leerse —12 cm el principal de la banda,
+             10 los de categoría, 8 el piso—; de ahí sale cuántos caben por
+             fila; y la banda se reparte en tantas filas como haga falta. La
+             hoja mide 90 cm de alto y el sitio vertical estaba ahí.
+
+             Esto es lo que evita tener que apagar mapas: apagarlos era la
+             única manera de ensanchar a los que quedaban mientras la banda
+             se compusiera en una sola fila. */
           bd.sinApilar = true;
+          /* El reflujo es de la hoja PARADA, y la acostada sigue como estaba.
+             Los pisos de §21 están escritos «contra la hoja de 60 × 90»; la
+             acostada es de 90 × 60, con 30 cm menos de alto, así que repartir
+             sus bandas en varios renglones le quita justo el alto que no
+             tiene. Medido, le dejaba la banda demográfica con 22 celdas
+             vacías y once dibujos al 45 % de su caja: el mapa se queda a su
+             techo de alto y la pista ancha de más es papel en blanco.
+
+             Es la misma decisión que la v886 tomó con el veredicto de
+             tamaños —no se le aplican unos pisos que el pliego no pidió para
+             ella—, dicha ahora para la diagramación y no solo para el
+             aviso. */
+          if (horiz) {
+            var reng = Math.max(1, Math.ceil(celdasAncho / ANCHO_FILA));
+            bd.renglones = reng;
+            var pistasH = Math.ceil(2 * celdasAncho / reng);
+            if (pistasH % 2) pistasH++;
+            bd.cols = Math.max(0.5, pistasH / 2);
+            bd.peso = bd.cols;
+            return;
+          }
+          var anchoUtilMM = 600 - 40;
+          var topePistas = topeDePistas(bd.cajas, anchoUtilMM, horiz);
           /* Y en número PAR de pistas: un mapa vale dos, así que una fila
              de once pistas deja una suelta en cada renglón y la grilla se
              parte en un renglón de más. Se vio en la banda demográfica con
              ocho mapas y dos cajas: once pistas, tres renglones y once
              huecos. Con doce, dos renglones y dos huecos. */
-          var pistas = Math.ceil(2 * celdasAncho / reng);
+          var pistas = pistasQueLlenan(celdasAncho, topePistas);
+          /* Y acá está el nudo que hacía que nada de esto sirviera: hasta la
+             v900 el ANCHO DE LA BANDA en la fila y sus PISTAS POR DENTRO eran
+             el mismo número —`bd.cols = pistas / 2`, y la rejilla se escribía
+             con `repeat(cols × 2)`—. Bajar las pistas para ensanchar los
+             mapas ESTRECHABA la banda en la misma proporción, así que cada
+             mapa se quedaba igual. Se separan: la banda se queda con la fila
+             entera y por dentro lleva las pistas que el ancho mínimo permite.
+
+             Las filas salen de lo que la banda tiene y de lo que cabe por
+             fila, no al revés: la banda crece hacia abajo, que es donde la
+             hoja de 90 cm tiene sitio. */
+          /* ── El peso de un mapa deja de valer ANCHO en la banda reflujada ─
+             Medido sobre el papel: con doce pistas, un mapa de peso 2 se
+             lleva cuatro —184 mm de ancho— y su dibujo, que tiene la
+             proporción del sector, se queda en 97 mm de alto. El 47 % de esa
+             caja es papel en blanco a los lados, y el LADO MENOR del mapa
+             —que es lo que §21 mide— no sube ni un milímetro por ser más
+             ancho: sube por ser más alto.
+
+             Así que en la banda reflujada todos los mapas valen dos pistas,
+             menos el PRINCIPAL de la banda, que conserva el suyo: ahí el
+             ancho de más sí se nota porque es el que abre la banda. El peso
+             sigue estando en `data-p` —de donde sale quién es el principal y
+             a qué piso se lo mide—, solo deja de traducirse en pistas.
+
+             Y de paso es lo que más papel devuelve: con la mitad del ancho
+             por mapa, la banda demográfica pasa de cuatro renglones a dos, y
+             cada renglón que se ahorra son paneles que no tienen que ceder. */
+          var pesoMax = 0;
+          bd.cajas.forEach(function (t) {
+            if (!esMapa(t)) return;
+            pesoMax = Math.max(pesoMax, Number((t.match(/data-p="([0-9.]+)"/) || [])[1]) || 1);
+          });
+          var yaPrincipal = false;
+          celdasAncho = 0;
+          bd.cajas = bd.cajas.map(function (t) {
+            if (!esMapa(t)) { celdasAncho += anchoDe(t); return t; }
+            var w = Number((t.match(/data-p="([0-9.]+)"/) || [])[1]) || 1;
+            if (!yaPrincipal && w === pesoMax) {
+              yaPrincipal = true; celdasAncho += anchoDe(t); return t;
+            }
+            celdasAncho += 1;
+            /* Dos pistas es `.mapa-caja` a secas: la clase de peso vale
+               `2 × n`, así que poner `mapa-p2` daría CUATRO. Se quita. */
+            return t.replace(/\s?\bmapa-p[0-9]+\b/, '')
+                    .replace(/\s?\bmapa-foto\b/, '')
+                    .replace(/\s?\bmapa-ancho\b/, '');
+          });
+          bd.celdasAncho = celdasAncho;
+          pistas = Math.min(topePistas, Math.ceil(2 * celdasAncho));
           if (pistas % 2) pistas++;
-          bd.cols = Math.max(0.5, pistas / 2);
+          pistas = pistasQueLlenan(celdasAncho, topePistas);
+          bd.pistas = pistas;
+          bd.renglones = Math.max(1, Math.ceil(2 * celdasAncho / pistas));
+          bd.cols = ANCHO_FILA;
           bd.peso = bd.cols;
           return;
         }
@@ -7184,6 +7372,18 @@ function donaHTML(datos, colorDe, nombreDe) {
           bd.cols = Math.max(0.5, Math.ceil(2 * celdas / renglones) / 2);
         }
         bd.peso = bd.cols;
+        /* §4 (v901) · y la MISMA regla del ancho mínimo en las bandas
+           mixtas, que son las que tienen más texto que mapa —la ambiental,
+           por ejemplo, con tres mapas y cuatro cajas—. Ahí el ancho de la
+           banda ya lo decidió el reparto de arriba; lo que se acota es
+           cuántas pistas lleva por dentro, contra el ancho de papel que de
+           verdad le tocó. La grilla reparte en más renglones sola. */
+        if (conMapa && !horiz) {
+          var anchoB = ((horiz ? 900 : 600) - 40) * Math.min(1, bd.cols / ANCHO_FILA);
+          var topeB = topeDePistas(bd.cajas, anchoB, horiz);
+          var dentroB = Math.max(1, Math.round(bd.cols * 2));
+          if (topeB < dentroB) bd.pistas = topeB;
+        }
       });
       /* Un mapa cuyo grupo no existe en la lámina —porque no se midió nada de
          ese tema— no puede desaparecer en silencio: va con las sueltas. */
@@ -7263,9 +7463,12 @@ function donaHTML(datos, colorDe, nombreDe) {
              en UN renglón, con una columna por caja: apilada en dos y
              estirada a la fila entera, cada caja salía del doble de ancho
              que de alto y el papel se iba en blanco. */
-          if (f.bandas.length === 1 && renglones >= 2 && bd.celdasAncho <= ANCHO_FILA) {
+          if (f.bandas.length === 1 && renglones >= 2 && bd.celdasAncho <= ANCHO_FILA && !bd.pistas) {
             renglones = 1; cols = bd.celdasAncho;
           }
+          /* Las pistas de dentro, cuando la banda las fijó por ancho mínimo
+             de mapa (§4, v901): son OTRA cosa que su ancho en la fila. */
+          var pistasDentro = bd.pistas || Math.max(1, Math.round(cols * 2));
           return '<div class="banda banda-' + bd.g.id + (bd.cajas.length === 1 ? ' sola' : '') +
               '" style="--tinte:' + bd.fam.tinte + ';--suave:' + bd.fam.suave + ';flex:' + bd.peso + ' 1 0">' +
             '<div class="bcab"><b>' + (bd.n < 10 ? '0' : '') + bd.n + '</b><h3>' + esc(bd.g.titulo) + '</h3>' +
@@ -7279,7 +7482,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                cifra, así que la rejilla se escribe al doble y cada caja
                ocupa dos pistas, la baldosa una y el mapa el doble de su peso. */
             '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
-              '" style="grid-template-columns:repeat(' + Math.max(1, Math.round(cols * 2)) + ',minmax(0,1fr))">' +
+              '" style="grid-template-columns:repeat(' + pistasDentro + ',minmax(0,1fr))">' +
               bd.cajas.join('') + '</div>' +
             '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>' +
           '</div>';
@@ -7912,12 +8115,34 @@ function donaHTML(datos, colorDe, nombreDe) {
             var fmtN = function (n) { return Number(n).toLocaleString('es-CO'); };
             var cruces = [];
             try { cruces = crucesDelSector(res); } catch (e9) { cruces = []; }
+            /* §4 (v901) · la casilla COMPACTA. Cuando la hoja no cierra ni
+               con todo lo cedible apagado, las once casillas no se caen: se
+               quedan con su título, su cifra y UNA línea —la primera frase
+               de la lectura—, que es de donde sale el nombre. Once
+               apretadas dicen los once cruces que la banda anuncia; nueve
+               holgadas dicen nueve y prometen once.
+
+               La línea que queda es la primera frase y no un recorte por
+               caracteres: cortar por número de letras deja el renglón a
+               media palabra, y un «…» en mitad de una conclusión se lee
+               como un dato incompleto en vez de como una lectura corta. */
+            var unaLinea = function (t) {
+              var x = String(t || '').trim();
+              var m1 = x.match(/^[^.]*\./);
+              var corta = (m1 ? m1[0] : x).trim();
+              return corta;
+            };
+            var compacta = !!o.crucesCompactos;
             return (cruces.length
-              ? '<p class="lee">Lo que dicen juntas las cifras</p><div class="cruces">' +
+              ? '<p class="lee">Lo que dicen juntas las cifras' +
+                (compacta ? ' <i>· las once, en formato compacto: no cabían con su lectura entera ' +
+                  'y se prefiere apretarlas antes que publicar la síntesis con menos cruces de los ' +
+                  'que anuncia</i>' : '') +
+                '</p><div class="cruces' + (compacta ? ' cruces-compacta' : '') + '">' +
                 cruces.map(function (c) {
                   return '<div class="cruce' + (c.sm ? ' cruce-sm' : '') + '"><i class="cv-k">' +
                     esc(c.k) + '</i><b class="cv-v">' + esc(c.v) + '</b><small class="cv-l">' +
-                    esc(c.l) + '</small></div>';
+                    esc(compacta ? unaLinea(c.l) : c.l) + '</small></div>';
                 }).join('') + '</div>'
               : '') +
               '<p class="lee">Recomendación de uso · cinco propuestas para <b>' + esc(pu.objeto) +
@@ -8294,6 +8519,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.decide{ margin:1.6mm 0 0; padding:1.2mm 2.4mm; font-size:2.9mm; line-height:1.32; color:#0F1F2E; background:var(--suave); border-radius:1.5mm; font-weight:600 }' +
       // Los cruces del cierre.
       '.cruces{ display:grid; grid-template-columns:repeat(' + (horiz ? 4 : 3) + ',minmax(0,1fr)); gap:1.8mm; margin:1.5mm 0 2.5mm }' +
+      // Las once, apretadas: más columnas, menos aire y la lectura en una línea.
+      '.cruces-compacta{ grid-template-columns:repeat(' + (horiz ? 6 : 4) + ',minmax(0,1fr)); gap:1.1mm }' +
+      '.cruces-compacta .cruce{ padding:1mm 1.2mm }' +
+      '.cruces-compacta .cv-l{ margin-top:.4mm }' +
       '.cruce{ padding:1.4mm 2mm; border:.3mm solid #E3EAF0; border-radius:1.5mm; background:#fff; display:flex; flex-direction:column; gap:.4mm }' +
       '.cv-k{ font-style:normal; font-size:2.3mm; letter-spacing:.12em; text-transform:uppercase; color:var(--tinte); font-weight:800 }' +
       /* §1 (v899) · la casilla que no se pudo medir, en ámbar y a trazos: el
@@ -8720,7 +8949,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pie-abajo > div b{ display:block; font-size:2.5mm; letter-spacing:.1em;' +
         'text-transform:uppercase; color:#075E88; margin-bottom:.6mm }' +
       '.pie-abajo .neutral{ border-left-color:#34CCFE }' +
-      '.tamanos{ font-size:2.5mm; line-height:1.35; color:#6B7A8A; margin:0 0 2.5mm }' +
+      /* §4 (v901) · EL PIE TIENE SU SITIO RESERVADO.
+         El veredicto de tamaños se sustituye SOBRE la hoja ya medida —no se
+         vuelve a maquetar, que es la regla de la v886 para no medir una
+         maquetación y publicar otra—, así que el sitio que ocupa tiene que
+         estar contado ANTES. Con la marca de un renglón y el texto de
+         cuatro, la hoja se pasaba del papel justo después de medirla: la
+         lámina A pedía 778 mm de 774, y con la marca de un carácter cabía
+         por dos décimas.
+
+         Cuatro renglones reservados, que es lo que ocupa el veredicto más
+         largo —el que además nombra los mapas que no se imprimieron—. Si
+         sobra, es papel en blanco al pie; si faltara, la hoja se recorta sin
+         decirlo, y eso no. */
+      '.tamanos{ font-size:2.5mm; line-height:1.35; color:#6B7A8A; margin:0 0 2.5mm;' +
+        ' min-height:calc(2.5mm * 1.35 * 4) }' +
       '.tamanos b{ color:#075E88 }' +
       '.tamanos.corto{ color:#B42318 }' +
       '.tamanos.corto b{ color:#B42318 }' +
@@ -15270,8 +15513,29 @@ function donaHTML(datos, colorDe, nombreDe) {
 
      El resto cae de atrás hacia adelante, que es el orden en que lo haría
      quien arma la hoja: lo del cierre pesa menos que lo del sitio. */
+  /* ── §4 · el ORDEN DE CESIÓN, declarado y no lo que sobre (v901) ─────
+     Pedido con estas palabras: «el reequilibrio se resuelve con jerarquía
+     explícita, no por lo que sobre». Cuando la hoja se llena, el sitio lo
+     cede, en este orden:
+
+       1. los paneles de texto explicativo y de método extendido;
+       2. los mapas y gráficos de análisis SECUNDARIO —los anillos, la serie
+          temporal, la calle comercial—, que son los que no abren su banda;
+       3. los mapas PRINCIPALES de banda, al final;
+       4. NUNCA: las once casillas de la síntesis ni la banda de coherencia.
+
+     La razón de la cuarta va escrita porque es la que cuesta: **la síntesis
+     anuncia once cruces, y publicarla con nueve es mentir por omisión sin
+     escribir nada falso.** Una casilla que no cabe no se cae en silencio: se
+     imprime COMPACTA —título, cifra y una línea—, renunciando al panel largo.
+     Once apretadas valen más que nueve holgadas.
+
+     Y con ellas no ceden «Suelo disponible real» ni «Potencial edificatorio»:
+     son las cajas de la lámina A de donde salen dos de esas once, y con el
+     panel fuera el cruce de la B se queda sin con qué cruzarse (v899). */
   var PLIEGO_INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio',
-                           'sintesis-del-sector'];
+                           'sintesis-del-sector', 'coherencia-de-las-cifras',
+                           'suelo-disponible-real', 'potencial-edificatorio'];
   /* Los mapas, del más prescindible al más necesario, para cuando ni
      apagando todas las cajas cabe la hoja. Lo que no esté acá sale primero.
      Las categorías de uso van temprano: el mapa de todos los usos, que no
@@ -15443,7 +15707,22 @@ function donaHTML(datos, colorDe, nombreDe) {
              menor: Math.min.apply(null, lista.map(function (m) { return m.mm; })) };
   }
 
-  function ordenDeSacrificio(res, o) {
+  /* Los títulos de caja que la hoja YA compuesta trae, por su slug. Se leen
+     del papel y no de una lista: una caja de la lámina A no puede «ceder» en
+     la B —no está ahí—, y apagarla no libera un milímetro. Hasta la v900 la
+     bisección gastaba sus primeros pasos apagando cajas de la otra hoja y
+     después las declaraba fuera, así que el pie de la B nombraba paneles que
+     nunca habían estado en la B. */
+  function cajasEnLaHoja(d) {
+    var mapa = {};
+    try {
+      var hs = d.querySelectorAll('section.caja h2');
+      for (var i = 0; i < hs.length; i++) mapa[slugPliego((hs[i].textContent || '').trim())] = true;
+    } catch (e) {}
+    return mapa;
+  }
+
+  function ordenDeSacrificio(res, o, enLaHoja) {
     var off = (o && o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
     var lista;
     try { lista = cajasDelPliego(res) || []; } catch (e) { return []; }
@@ -15468,6 +15747,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var protegeCampo = !(o && o.horizontal) && pisoDeLetra(o && o.letra) < 0.5;
     return lista.filter(function (c) {
       return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1 &&
+        !(enLaHoja && !enLaHoja[c.id]) &&
         !(hayLote && c.id === 'el-lote-a-intervenir') &&
         !(protegeCampo && (PANELES_DE_CAMPO.indexOf(c.id) !== -1 || PANELES_DE_VACIO.indexOf(c.id) !== -1));
     }).map(function (c) { return c.id; }).reverse();
@@ -15532,9 +15812,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           var kc = Math.round((bajoC + altoC) / 2 * 1000) / 1000;
           if (mide(kc)) { mejorC = kc; bajoC = kc; } else { altoC = kc; }
         }
-        return mejorC > 1.01
-          ? laminaImprimible(res, Object.assign({}, o, { escala: mejorC }))
-          : html;
+        return mejorC > 1.01 ? componerQueQuepa(res, o, mejorC, 1) : html;
       }
       var piso = pisoDeLetra(o.letra);
       var bajo = piso, alto = 1, mejor = null;
@@ -15542,7 +15820,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var k = Math.round((bajo + alto) / 2 * 1000) / 1000;
         if (mide(k)) { mejor = k; bajo = k; } else { alto = k; }
       }
-      if (mejor) { S.pliegoFuera = []; return laminaImprimible(res, Object.assign({}, o, { escala: mejor })); }
+      if (mejor) { S.pliegoFuera = []; return componerQueQuepa(res, o, mejor, piso); }
 
       /* Ni al piso cabe. Antes se mandaba el mínimo igual y la rejilla, que
          recorta, se comía lo que sobraba sin decir nada: la hoja salía de la
@@ -15567,7 +15845,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.pliegoFuera = [];
         return laminaImprimible(res, Object.assign({}, o, { escala: piso }));
       }
-      var candidatos = ordenDeSacrificio(res, o);
+      var candidatos = ordenDeSacrificio(res, o, cajasEnLaHoja(d));
       /* Las baldosas de cifra —media columna, cuatro renglones— son lo más
          barato de conservar y lo que más dice por milímetro: caen las
          últimas entre las cajas. La composición anotó cuáles son. Acostada,
@@ -15604,15 +15882,62 @@ function donaHTML(datos, colorDe, nombreDe) {
         return i === -1 ? -1 : i;
       };
       candMapas.sort(function (a, b) { return pos(a) - pos(b); });
-      /* Con letra grande, los mapas que sobran del núcleo ceden ANTES que
-         las cajas; el núcleo —los cuatro últimos de la prioridad: la
-         cobertura, los llenos, las alturas, lo que se alcanza a pie— cede
-         al final, con lo demás ya fuera. */
-      var NUCLEO = 4;
-      var primeroMapas = piso >= 0.5;
-      var sobrantes = primeroMapas ? candMapas.slice(0, Math.max(0, candMapas.length - NUCLEO)) : [];
-      var luego = primeroMapas ? candMapas.slice(Math.max(0, candMapas.length - NUCLEO)) : candMapas;
-      var todosLosCandidatos = sobrantes.concat(candidatos, luego);
+      /* ── Los dos peldaños de mapa del ORDEN DE CESIÓN (v901) ──────────
+         El PRINCIPAL de una banda es el mapa de más peso que esa banda
+         trae; con dos iguales, el primero. No hay lista escrita, y es a
+         propósito: es la misma regla con la que la v886 decide a qué piso
+         se mide cada mapa, así que **una banda nueva hereda su protección
+         sin que su autor se acuerde** — que es lo único que impidió que el
+         aviso de origen de la v867 volviera a perderse.
+
+         Se calcula sobre la hoja YA compuesta, que es de donde sale el
+         peso y la banda de cada mapa: deducirlo de una tabla aparte sería
+         una segunda ruta de cálculo para la misma cantidad, y esas no
+         divergen el día que se escriben (v879).
+
+         En el sector de prueba esto reparte solo: los anillos, los hitos y
+         la calle comercial quedan en el peldaño 2 —la banda demográfica la
+         abre el mapa de todos los usos— y la jerarquía vial, la foto y el
+         de todos los usos quedan en el 3. Son exactamente los tres que el
+         pedido nombra como secundarios. */
+      var principales = {};
+      try { principales = principalesPorBanda(mapasMedidos(d)); } catch (e) { principales = {}; }
+      var esPrincipal = {};
+      Object.keys(principales).forEach(function (g) { esPrincipal[principales[g]] = true; });
+      var secundarios = candMapas.filter(function (id) { return !esPrincipal[id]; });
+      var deBanda = candMapas.filter(function (id) { return !!esPrincipal[id]; });
+      /* Los tres peldaños, en el orden pedido: primero el texto, después el
+         mapa secundario, y el principal de banda al final.
+
+         Antes de la v901 el orden se daba vuelta con la letra grande —los
+         mapas que sobraban del núcleo cedían ANTES que las cajas— porque
+         con los mapas al final «Se lee de pie» no cerraba ni con todo
+         apagado. Con los mapas repartidos en dos peldaños eso ya no hace
+         falta: el peldaño 2 solo tiene mapas secundarios, y ceder catorce
+         de esos libera el mismo papel que cedían los del núcleo, sin
+         tocar el que abre cada banda. */
+      /* ── El método extendido NO cede, y costó medirlo ────────────────
+         El orden pedido pone de primero «los paneles de texto explicativo y
+         método extendido», y lo barato parecía acortar el pie de método de
+         las treinta y pico cajas: de los cinco renglones de `metodoDe`
+         dejar la fórmula y la fuente, y ceder confiabilidad, referencia y
+         error típico. Medido, devolvía TRES paneles a la hoja.
+
+         Y costaba dos declaraciones que la hoja tiene obligación de hacer,
+         las dos escondidas justo en los renglones que se iban: la
+         referencia de `calor:categoria` es donde la lámina explica **por
+         qué la línea y no solo el degradado** (v877), y el error típico es
+         donde dice que **dar por bueno un chequeo que no se pudo correr**
+         es el error de esta hoja (v879). Las dos tienen su aserción.
+
+         Así que no es una cesión, es un silencio: tres paneles a cambio de
+         que treinta cajas dejen de decir de qué se fían y en qué se suelen
+         equivocar. Es la misma decisión de la v875 con la necesidad topada
+         y la de la v881 con los anillos agrupados —no se arregla un
+         apretón con una mentira más pequeña—, y queda escrita acá para que
+         la idea no vuelva a parecer buena. El método se acorta en el código
+         (`metodoDe(clave, hoy, corto)`) y no lo usa ningún peldaño. */
+      var todosLosCandidatos = candidatos.concat(secundarios, deBanda);
       var conN = function (n) {
         var parte = todosLosCandidatos.slice(0, n);
         var offC = parte.filter(function (x) { return candidatos.indexOf(x) >= 0; });
@@ -15630,6 +15955,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       while (bajoN <= altoN) {
         var med = Math.floor((bajoN + altoN) / 2);
         if (cabeConN(med)) { elegido = med; altoN = med - 1; } else { bajoN = med + 1; }
+      }
+      /* ── Las once casillas, apretadas antes que perdidas (v901) ────
+         «Prefiero once casillas apretadas que nueve holgadas.» Si ni
+         apagando todo lo cedible cierra la hoja, lo que sigue NO es tirar
+         la síntesis: es imprimir sus casillas en formato compacto —título,
+         cifra y una línea— y volver a buscar. La síntesis anuncia once
+         cruces, y publicarla con nueve es mentir por omisión sin escribir
+         nada falso. */
+      if (elegido === null && !o.crucesCompactos) {
+        var conCompacto = laminaAjustada(res, Object.assign({}, o, { crucesCompactos: true }));
+        if (conCompacto) return conCompacto;
       }
       if (elegido === null) {
         /* Ni apagándolo todo: es un sector con más mapas que papel. Se
@@ -15664,6 +16000,45 @@ function donaHTML(datos, colorDe, nombreDe) {
      cuánto mide, se publica diciendo cuánto mide: la lámina pierde una
      promesa y no un dato, y quien la imprime tiene el número para decidir.
      Callarlo sí sería inaceptable, y es lo que pasaba hasta la v885. */
+  /* ¿La hoja YA COMPUESTA cabe en su papel? Las dos bisecciones de
+     `laminaAjustada` miden ESCALANDO la hoja compuesta a tamaño 1, pero lo
+     que devuelven es una RECOMPUESTA a la escala elegida, y recomponer
+     cambia el reparto de las bandas: la recompuesta puede pedir algo más de
+     alto que la que se midió. Con poca holgura no se notaba; con los mapas
+     chicos apagados (§4, v901) la hoja tiene mucha más y salió a la luz —
+     pedía 778 mm de 774—. Comprobar la de verdad cuesta una medida y evita
+     una hoja que la impresora recorta sin decirlo. */
+  function cabeLaHoja(html) {
+    if (typeof document === 'undefined' || !document.body) return true;
+    var marco = null;
+    try {
+      marco = document.createElement('iframe');
+      marco.setAttribute('aria-hidden', 'true');
+      marco.style.cssText = 'position:fixed;left:-9999px;top:0;width:420px;height:600px;' +
+                            'border:0;visibility:hidden';
+      document.body.appendChild(marco);
+      var d = marco.contentDocument;
+      if (!d) return true;
+      d.open(); d.write(html); d.close();
+      var rej = d.querySelector('.rej'), fr = d.querySelector('.rejilla');
+      if (!rej || !fr) return true;
+      return rej.getBoundingClientRect().height <= fr.getBoundingClientRect().height + 1;
+    } catch (e) { return true; }
+    finally { try { if (marco) marco.remove(); } catch (e2) {} }
+  }
+  /* Compone a la escala pedida y, si la recompuesta se pasa, baja un peldaño
+     hasta que quepa. Nunca sube: subir es lo que la bisección ya hizo. */
+  function componerQueQuepa(res, o, escala, piso) {
+    var k = escala, html = null;
+    for (var i = 0; i < 6; i++) {
+      html = laminaImprimible(res, Object.assign({}, o, { escala: k }));
+      if (cabeLaHoja(html)) return html;
+      var kn = Math.round(k * 0.96 * 1000) / 1000;
+      if (kn <= piso) break;
+      k = kn;
+    }
+    return html;
+  }
   function medirTamanos(html) {
     if (typeof document === 'undefined' || !document.body) return null;
     var marco = null;
@@ -15687,7 +16062,7 @@ function donaHTML(datos, colorDe, nombreDe) {
      midieron y cuánto mide el más chico— y después, en su orden, lo que no
      llegó: primero el piso, que es el defecto, y después el objetivo, que es
      una cuenta de reparto de papel. */
-  function textoDeTamanos(v, horiz) {
+  function textoDeTamanos(v, horiz, quitados) {
     if (horiz) {
       return '<b>Tamaños de impresión.</b> Los pisos del pliego —12 cm el mapa ' +
         'principal de cada banda, 10 los de categoría, 8 cm ninguno por debajo— están ' +
@@ -15698,11 +16073,29 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cm = function (mm) { return conComa(Math.round(mm) / 10) + ' cm'; };
     var t = '<b>Tamaños de impresión comprobados.</b> ' + v.n + ' mapas medidos por su lado menor ' +
       'sobre el papel ya compuesto; el más chico mide ' + cm(v.menor) + '. ';
+    /* §4 (v901) · lo que se apagó por no llegar al piso, con su medida.
+       Un mapa que no está y no se nombra es una promesa rota; nombrado con
+       el tamaño al que habría salido, es una decisión que se puede
+       discutir — y el remedio va escrito, porque quien arma la lámina puede
+       apagar otra cosa y recuperarlo. */
+    if (quitados && quitados.length) {
+      /* Tres nombres y el resto contados. El pie se sustituye SOBRE la hoja
+         ya medida —no se vuelve a maquetar, que es la regla de la v886—, así
+         que un renglón que crezca demasiado empuja la hoja fuera del papel
+         después de haberla medido. Medido: con los siete nombres de la
+         lámina B, se pasaba 7 mm. */
+      t += '<b>' + quitados.length + (quitados.length === 1
+            ? ' mapa no se imprimió' : ' mapas no se imprimieron') +
+        ' por no llegar a 8 cm</b> —el más chico habría salido a ' +
+        cm(Math.min.apply(null, quitados.map(function (c) { return c.mm; }))) +
+        '—; están en el informe en hojas. ';
+    }
     t += v.bajoPiso.length
       ? '<b>Por debajo del mínimo de 8 cm:</b> ' + v.bajoPiso.slice(0, 5).map(function (c) {
           return esc(c.t) + ' ' + cm(c.mm); }).join(' · ') +
         (v.bajoPiso.length > 5 ? ' y ' + (v.bajoPiso.length - 5) + ' más' : '') +
-        '. A ese tamaño un mapa no se lee en la pared. '
+        '. A ese tamaño un mapa no se lee en la pared, y no se apagaron porque son los que ' +
+        'ubican: sin la foto, el plano o el mapa de todos los usos la lámina deja de ser una lámina. '
       : 'Ninguno baja del mínimo de 8 cm. ';
     /* §5 (v899→v900) · UNA SOLA CUENTA, UNA SOLA CONCLUSIÓN.
        Hasta la v899 esto se leía así en la lámina B del pliego real:
@@ -15723,17 +16116,30 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (v.bajoObjetivo.length) {
       t += 'No alcanzan el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
         'categoría—: ' + v.bajoObjetivo.slice(0, 5).map(function (c) {
-          return esc(c.t) + ' ' + cm(c.mm) + ' de ' + (c.piso / 10); }).join(' · ') +
+          /* El objetivo también en centímetros y con COMA: con un piso de
+             92 mm salía «8,7 cm de 9.2», un punto decimal en una hoja en
+             castellano. Es la guarda de la v885 cazando su propia clase en
+             un sitio nuevo. */
+          return esc(c.t) + ' ' + cm(c.mm) + ' de ' + cm(c.piso); }).join(' · ') +
         (v.bajoObjetivo.length > 5 ? ' y ' + (v.bajoObjetivo.length - 5) + ' más' : '') +
         '. Se imprimen igual y con su medida escrita: para que crezcan hay que apagar paneles ' +
         'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.';
-    } else if (!v.bajoPiso.length) {
+    } else if (!v.bajoPiso.length && !(quitados && quitados.length)) {
       t += 'Todos alcanzan el objetivo del pliego.';
     } else {
       /* Ni una palabra de cumplimiento con mapas caídos por el piso: los que
-         cayeron están por debajo de su objetivo por construcción. */
+         cayeron están por debajo de su objetivo por construcción.
+
+         Y lo mismo con los que NO se imprimieron (v901). Es la misma
+         contradicción de §5 con otra ropa: la hoja acaba de decir que apagó
+         un mapa por no llegar a 8 cm, y dos renglones después decía «todos
+         alcanzan el objetivo del pliego» — todos los que quedaron, que no es
+         lo que el lector entiende. Un mapa apagado por el piso está, por
+         construcción, por debajo de su objetivo, así que cuenta. */
       t += 'Ningún otro se queda corto del objetivo —12 cm el principal de cada banda, 10 los ' +
-        'de categoría—, pero con los de arriba por debajo del piso la hoja NO cumple el pliego.';
+        'de categoría—, pero con ' + ((quitados && quitados.length && !v.bajoPiso.length)
+          ? 'el mapa que no llegó al piso' : 'los de arriba por debajo del piso') +
+        ' la hoja NO cumple el pliego.';
     }
     return t;
   }
@@ -15751,16 +16157,121 @@ function donaHTML(datos, colorDe, nombreDe) {
        de aplicarle unos pisos que el pliego no pidió para ella. */
     if (o.horizontal) {
       S.pliegoTamanos = { aplica: false, bajoPiso: [], bajoObjetivo: [] };
-      return poner(html, textoDeTamanos(null, true), false);
+      var hH = poner(html, textoDeTamanos(null, true), false);
+      anotarCierre(hH, res); return hH;
     }
     var v = medirTamanos(html);
-    if (!v) { S.pliegoTamanos = null; return poner(html, textoDeTamanos(null, false), false); }
+    /* §4 (v901) · EL MAPA QUE NO ALCANZA EL PISO NO SE IMPRIME.
+       ────────────────────────────────────────────────────────────────────
+       «Ningún mapa por debajo de 8 cm. El que no alcance 8 cm no se imprime:
+       se apaga el panel… y lo reporta en el pie, en vez de imprimirlo
+       ilegible.» Es el pedido de §4 con esas palabras, y **invierte la
+       decisión que la v886 dejó escrita** —«entre quitar un mapa y
+       publicarlo diciendo cuánto mide, se publica diciendo cuánto mide»—.
+       La invierte quien tiene el pliego impreso en la mano, que es quien
+       decide; lo que la v886 hizo bien fue dejar el número a la vista para
+       que se pudiera decidir.
+
+       Se apaga DE A UNO y se vuelve a medir, y no todos de golpe, por una
+       razón medida: el ancho de un mapa chico es su pista, y la pista sale
+       del reparto de su banda. Apagar el más chico ENSANCHA a los que
+       quedan en esa banda, así que varios de los que estaban por debajo
+       suben solos. Apagarlos todos de una vez se llevaría mapas que ya
+       habrían alcanzado el piso sin ayuda.
+
+       Lo que NO se apaga nunca: la foto satelital y el mapa de todos los
+       usos, que son los que ubican (v850), y el plano del sector. Si el que
+       no llega es uno de esos, se imprime y se dice — un pliego sin foto no
+       es una lámina.
+
+       El tope de pasadas es real y no una precaución: cada pasada recompone
+       y remide la hoja, y sin tope un sector con doce mapas chicos costaría
+       doce composiciones en un teléfono. */
+    var PROTEGIDOS = ['foto', 'calor:todos', 'plano'];
+    var apagados = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || [])
+                                                   : (S.pliegoMapasOff || [])).slice();
+    var quitados = [];
+    for (var pase = 0; pase < 8 && v && v.bajoPiso.length; pase++) {
+      var cae = v.bajoPiso.filter(function (c) {
+        return PROTEGIDOS.indexOf(String(c.id)) === -1 && apagados.indexOf(String(c.id)) === -1;
+      })[0];
+      if (!cae) break;
+      apagados.push(String(cae.id));
+      quitados.push({ id: cae.id, t: cae.t, mm: cae.mm });
+      var oQ = Object.assign({}, o, { pliegoMapasOff: apagados });
+      var htmlQ = laminaAjustada(res, oQ);
+      var vQ = htmlQ ? medirTamanos(htmlQ) : null;
+      if (!vQ) { apagados.pop(); quitados.pop(); break; }
+      html = htmlQ; v = vQ;
+    }
+    /* Lo apagado por tamaño se declara DONDE TODO LO DEMÁS QUE CEDE, y no
+       solo en el pie. La ficha nombra `S.pliegoFuera` para que quien arma la
+       lámina sepa qué no salió, el informe en hojas los trae enteros, y las
+       comprobaciones de las demás suites preguntan «está, o está declarado
+       fuera». Un mapa apagado y no declarado ahí es una promesa rota en
+       silencio, que es justo lo que el pie viene a evitar. */
+    if (quitados.length) {
+      S.pliegoFuera = (S.pliegoFuera || []).concat(quitados.map(function (c) { return String(c.id); }));
+    }
+    if (!v) { S.pliegoTamanos = null;
+      var hSin = poner(html, textoDeTamanos(null, false), false);
+      anotarCierre(hSin, res); return hSin; }
     S.pliegoTamanos = { aplica: true, n: v.n, menor: v.menor,
-                        bajoPiso: v.bajoPiso, bajoObjetivo: v.bajoObjetivo };
+                        bajoPiso: v.bajoPiso, bajoObjetivo: v.bajoObjetivo,
+                        apagadosPorTamano: quitados };
     /* Rojo solo cuando algo baja del PISO. El objetivo sin alcanzar es una
        cuenta de reparto de papel, y pintarla de rojo enseñaría a ignorar el
        aviso el día que sí haya un mapa ilegible. */
-    return poner(html, textoDeTamanos(v, false), v.bajoPiso.length > 0);
+    /* Rojo SOLO cuando algo quedó impreso por debajo del piso. Un mapa
+       apagado no es una alarma: es el aviso funcionando. Pintar de rojo una
+       hoja que cumple enseñaría a ignorar el color, que es la decisión que
+       la v886 tomó con los dos niveles y que sigue valiendo. */
+    var hFin = poner(html, textoDeTamanos(v, false, quitados), v.bajoPiso.length > 0);
+    anotarCierre(hFin, res);
+    return hFin;
+  }
+
+  /* El control se anota solo cuando la hoja trae la síntesis; si no, se deja
+     como estaba. Así la lámina A no borra el veredicto que dejó la B. */
+  function anotarCierre(html, res) {
+    try {
+      var c = controlDeCierre(html, res);
+      if (c.aplica) S.pliegoCierre = c;
+    } catch (e) {}
+  }
+
+  /* ── §4 · el control de cierre: la hoja no afirma lo que se contradice ─
+     Pedido con estas palabras: «si el número de casillas compuestas es
+     distinto del número de cruces que la banda declara, la hoja no exporta
+     y lo reporta». Es el mismo principio del §5 que la v900 puso en el pie
+     —una cuenta, una conclusión—, aplicado a la síntesis.
+
+     Se cuenta sobre el HTML ya compuesto y no sobre la lista de cruces: lo
+     que hay que comprobar es lo que el lector va a ver impreso, que es la
+     regla de la v879. Una casilla que se cayó por el camino —la caja
+     apagada, la rejilla recortando, un error tragado por un `catch`— no
+     existe en la variable: existe (o deja de existir) en el papel.
+
+     Y se cuenta solo cuando la hoja TRAE la síntesis: la lámina A no la
+     lleva, así que exigirle once casillas sería un rojo permanente que no
+     significa nada — la misma decisión que la v886 tomó con la hoja
+     acostada y los pisos de §21. */
+  function controlDeCierre(html, res) {
+    var h = String(html || '');
+    var declarados = 0;
+    try { declarados = (crucesDelSector(res) || []).length; } catch (e) { declarados = 0; }
+    var traeSintesis = /class="cruces/.test(h) || /sintesis-pie/.test(h);
+    if (!declarados || !traeSintesis) return { aplica: false, ok: true, n: 0, declarados: declarados };
+    var compuestas = (h.match(/<div class="cruce(?=[ "])/g) || []).length;
+    if (compuestas === declarados) {
+      return { aplica: true, ok: true, n: compuestas, declarados: declarados };
+    }
+    return { aplica: true, ok: false, n: compuestas, declarados: declarados,
+      dice: 'La lámina no se exporta: la síntesis anuncia ' + declarados + ' cruces y la hoja ' +
+        'compuso ' + compuestas + '. Publicarla así sería afirmar once cosas e imprimir ' +
+        compuestas + ', que es mentir por omisión sin escribir nada falso. Apague algún panel ' +
+        'desde la ficha —eso sube la escala de composición y devuelve las casillas— o imprima ' +
+        'las dos hojas por separado.' };
   }
 
   /* ── Las dos láminas, en un documento de dos páginas (v853) ─────────
@@ -16427,6 +16938,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Actividad en primer piso': { f: 'metros de frente con puerta o vitrina abierta sobre metros de frente total', fu: 'medición en campo con cinta o pasos calibrados', c: 'ninguna hasta que se llene; después, alta', r: 'la continuidad del paramento que calcula el cierre de esta lámina', e: 'un local cerrado ESE día no es un muro ciego: van en columnas distintas a propósito' }
   };
   var METODO_GENERICO = { f: 'método no descrito todavía en esta hoja', fu: 'las fuentes de la bibliografía', c: 'la de su fuente', r: 'ver la ficha en pantalla', e: 'no estimado' };
+  /* Los cinco renglones del método van SIEMPRE los cinco. Se probó acortarlo
+     —ver el orden de cesión en `laminaAjustada`— y dos de los tres que se
+     iban llevaban declaraciones obligatorias dentro. */
   function metodoDe(clave, hoyTxt) {
     var m = METODO_PANEL[clave] || METODO_GENERICO;
     var f = function (t) { return esc(String(t).replace(/\bhoy\b/g, hoyTxt || 'hoy')); };
@@ -26292,6 +26806,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         // que ese tamaño dejó fuera en la última lámina que se armó.
         pliegoLetra: S.pliegoLetra || 'todo',
         pliegoFuera: (S.pliegoFuera || []).slice(),
+        /* Los dos peldaños del orden de cesión que NO son una caja apagada:
+           el método acortado y el veredicto del control de cierre. Se
+           exponen porque una prueba tiene que poder leerlos, y la regla de
+           la v871 es que lo que una prueba necesita leer se agrega acá en
+           vez de alcanzarlo por un lado. */
+        pliegoCierre: S.pliegoCierre ? Object.assign({}, S.pliegoCierre) : null,
         // Las manzanas por estrato que hay en memoria, que son las que el
         // pliego dibuja y las que viajan con la ficha.
         estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,
