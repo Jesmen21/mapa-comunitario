@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v883-plantillas-de-campo';
+const URBIS_CACHE = 'urbis-v884-suelo-en-cascada';
 const URBIS_ASSETS = [
   './',
   './index.html',

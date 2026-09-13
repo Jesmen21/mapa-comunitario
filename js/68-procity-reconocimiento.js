@@ -1668,6 +1668,118 @@
     };
   }
 
+  /* ── §11 · la cascada del suelo disponible (v884) ──────────────────────
+     El panel reportaba «95,5 % libre» sobre el sector entero: un número que
+     incluye las vías, las rondas y las laderas imposibles, y que por eso no
+     se puede discutir. El pliego pide la CASCADA con sus tres descuentos y
+     los tres números a la vista.
+
+     Dos de los tres se declaraban imposibles y no lo eran — la quinta
+     declaración de ausencia falsa de este módulo:
+
+     * **La pendiente.** El panel decía «una media no dice cuánta superficie
+       pasa del umbral: haría falta el modelo de elevación por celda». El
+       modelo por celda ESTÁ: `analizarTerreno` clasifica nodo por nodo y
+       devuelve `pendiente.clases` con el porcentaje de cada clase. Lo que
+       falta es el umbral del POT, que es otra cosa y se dice aparte.
+     * **La franja hídrica.** Decía que solo estaba la lámina de agua del
+       satélite. La consulta del trazado pide `way["waterway"]` con `out
+       geom`, así que el RECORRIDO de los cauces llega, y de un recorrido
+       sale una franja.
+
+     Lo que de verdad no se puede es fijar el ANCHO de la ronda: eso lo
+     define el POMCA. Los 30 m son una estimación de trabajo y la hoja lo
+     dice con esas palabras.
+
+     Tres cosas del método, y las tres van impresas porque cambian el
+     resultado:
+
+     * **Los descuentos se aplican sobre lo que queda**, en proporción. Una
+       ladera fuerte puede caer sobre suelo ya construido, así que restarle
+       al suelo libre el porcentaje de ladera del SECTOR supone que la
+       pendiente se reparte igual dentro y fuera de lo construido. Es un
+       supuesto y va dicho.
+     * **Los tres pueden solaparse**: una vía junto a una quebrada en ladera
+       se descuenta tres veces. Por eso el resultado es una cota INFERIOR —
+       resta de más, no de menos— y así se nombra.
+     * **El umbral de pendiente es el de URBIS**, no el del POT: 30 %, que es
+       donde `CLASES_PENDIENTE` deja de llamarla urbanizable. Va impreso. */
+  var FRANJA_RONDA_M = 30;
+  var UMBRAL_PENDIENTE_PCT = 30;
+  function fmtN(n) { return Math.round(Number(n) || 0).toLocaleString('es-CO'); }
+  function cascadaDeSuelo(vacioM2, aguaM2, areaM2, ter, trz) {
+    var pasos = [{ t: 'Suelo sin construir', m2: vacioM2 }];
+    var queda = vacioM2, faltan = [];
+    if (aguaM2 != null) {
+      pasos.push({ t: 'Lámina de agua', m2: aguaM2, resta: true, de: 'clasificada en la foto satelital' });
+      queda = Math.max(0, queda - aguaM2);
+    }
+    /* 1 · La pendiente que la propia clasificación llama restringida. */
+    var cl = (ter && ter.pendiente && ter.pendiente.clases) || [];
+    var fuerte = cl.filter(function (c) { return c.id === 'fuerte'; })[0];
+    if (fuerte && fuerte.pct > 0) {
+      var m2Pend = queda * fuerte.pct / 100;
+      pasos.push({ t: 'Pendiente sobre ' + UMBRAL_PENDIENTE_PCT + ' %', m2: m2Pend, resta: true,
+                   de: conComa(fuerte.pct) + ' % de los nodos del modelo de elevación' });
+      queda = Math.max(0, queda - m2Pend);
+    } else if (cl.length) {
+      pasos.push({ t: 'Pendiente sobre ' + UMBRAL_PENDIENTE_PCT + ' %', m2: 0, resta: true,
+                   de: 'ningún nodo del modelo pasa el umbral' });
+    } else {
+      /* Y si el terreno no se midió, se DICE. Omitir el renglón dejaba una
+         cascada que parecía completa y le faltaba un descuento: el lector no
+         tiene cómo saber que ahí había una resta. Es la misma regla de toda
+         la lámina —un vacío se declara, no se calla— y acá además tiene
+         arreglo de un botón. */
+      faltan.push('<b>La pendiente no urbanizable.</b> El terreno de este sector no se ha medido, así ' +
+        'que no hay modelo de elevación por celda con el que saber cuánta superficie pasa del ' +
+        UMBRAL_PENDIENTE_PCT + ' %. Se mide con el botón del terreno, y entonces este descuento entra ' +
+        'solo en la cascada.');
+    }
+    /* 2 · La franja de protección a lado y lado de los cauces mapeados. */
+    var su = (trz && trz.suelo) || null;
+    if (su && su.metrosCauce > 0) {
+      var m2Franja = Math.min(queda, su.metrosCauce * 2 * FRANJA_RONDA_M);
+      pasos.push({ t: 'Franja de ' + FRANJA_RONDA_M + ' m a lado y lado de los cauces', m2: m2Franja, resta: true,
+                   de: fmtN(su.metrosCauce) + ' m de cauce en ' + su.cauces +
+                       (su.cauces === 1 ? ' tramo mapeado' : ' tramos mapeados') });
+      queda = Math.max(0, queda - m2Franja);
+    } else {
+      faltan.push('<b>La franja de los cauces.</b> No hay ningún cauce mapeado dentro del sector en ' +
+        'OpenStreetMap, y eso no quiere decir que no haya: una quebrada sin mapear no deja huella acá. ' +
+        'Se comprueba en la foto satelital y en la plancha del IGAC.');
+    }
+    /* 3 · La superficie de vía, que no es suelo disponible para nadie. */
+    if (su && su.areaViasM2 != null) {
+      var m2Vias = Math.min(queda, su.areaViasM2);
+      pasos.push({ t: 'Superficie de vía existente', m2: m2Vias, resta: true,
+                   de: fmtN(su.metrosVia) + ' m de calzada a ' + conComa(su.anchoMedioM) + ' m de ancho medio' });
+      queda = Math.max(0, queda - m2Vias);
+    } else {
+      faltan.push('<b>La superficie de vía.</b> Ninguna vía del sector trae ancho ni carriles en ' +
+        'OpenStreetMap, así que no hay con qué estimar cuánto suelo ocupa la calzada. La plantilla de ' +
+        '«Perfil vial acotado» lo levanta en campo.');
+    }
+    pasos.push({ t: 'Aprovechable estimado', m2: queda, fin: true });
+    /* La amenaza sigue sin poder descontarse, y es la única de las cuatro. */
+    faltan.push('<b>La amenaza por remoción o inundación.</b> Haría falta el mapa oficial de riesgo del ' +
+      'municipio. Lo que hay acá es la susceptibilidad por pendiente, que es un insumo del riesgo y no el riesgo.');
+    var pctFinal = areaM2 ? Math.round(1000 * queda / areaM2) / 10 : 0;
+    return {
+      aprovechable: queda, pasos: pasos, faltan: faltan,
+      lectura: 'Del ' + conComa(Math.round(1000 * vacioM2 / areaM2) / 10) + ' % del sector sin construir, ' +
+        'queda un <b>' + conComa(pctFinal) + ' %</b> después de los descuentos que se pudieron medir. ' +
+        'No es suelo urbanizable —eso lo dice el POT— sino lo que queda por mirar en campo.',
+      supuesto: 'Cada descuento se aplica sobre lo que queda del anterior y en proporción, lo que supone ' +
+        'que la pendiente y los cauces se reparten igual dentro y fuera de lo construido. Y los tres se ' +
+        'pueden <b>solapar</b> —una vía junto a una quebrada en ladera se descuenta tres veces—, así que ' +
+        'esto resta de más y no de menos: el aprovechable real es igual o mayor. El umbral de ' +
+        UMBRAL_PENDIENTE_PCT + ' % es el de esta herramienta, no el del POT. Y <b>la ronda hídrica oficial ' +
+        'la define el POMCA: los ' + FRANJA_RONDA_M + ' m son una estimación de trabajo, no un dato ' +
+        'normativo.</b>'
+    };
+  }
+
   /* La frase, una sola para la ficha, el pliego y el informe. */
   function fraseAlturasCampo(c) {
     if (!c) return '';
@@ -4491,25 +4603,30 @@ function donaHTML(datos, colorDe, nombreDe) {
       })();
       var agua = pctAgua != null ? areaM2 * pctAgua / 100 : null;
       var libre = agua != null ? Math.max(0, vacio - agua) : vacio;
-      var pend = ter && ter.pendiente && ter.pendiente.media;
+      var casc = cascadaDeSuelo(vacio, agua, areaM2, ter, trz);
       return '<div class="kpis">' +
-        '<div class="k"><b>' + formatearArea(libre) + '</b><small>suelo libre contado</small></div>' +
+        '<div class="k"><b>' + formatearArea(casc.aprovechable) + '</b><small>aprovechable estimado</small></div>' +
+        '<div class="k"><b>' + conComa(Math.round(1000 * casc.aprovechable / areaM2) / 10) +
+          ' %</b><small>del sector</small></div>' +
         '</div>' +
-        fila('Suelo sin construir', esc(formatearArea(vacio))) +
-        (agua != null ? fila('Menos la superficie de agua', '− ' + esc(formatearArea(agua))) : '') +
-        '<p class="lee">Es el suelo sin construir al que se le descontó lo que se pudo descontar. ' +
-        'No es suelo urbanizable: es lo que queda por mirar en campo.</p>' +
-        '<p class="vacio-tag">Dos descuentos que NO se pudieron hacer</p>' +
-        '<p class="vacio-falta"><b>La ronda hídrica.</b> Haría falta el acuerdo municipal que fija el ' +
-        'ancho de la ronda de cada cauce; acá solo está la superficie de agua vista desde el satélite, ' +
-        'que no es lo mismo: la ronda es suelo seco con restricción.</p>' +
-        '<p class="vacio-falta"><b>La pendiente no urbanizable y la amenaza.</b> ' +
-        (pend != null
-          ? 'La pendiente media del sector es del ' + conComa(pend) + ' %, pero una media no dice ' +
-            'cuánta superficie pasa del umbral: haría falta el modelo de elevación por celda y el ' +
-            'umbral del POT.'
-          : 'Haría falta el modelo de elevación por celda y el umbral que fije el POT.') +
-        ' La amenaza, del mapa oficial de riesgo del municipio.</p>';
+        /* La cascada, con los tres números a la vista. Un solo número —«95,5 %
+           libre»— no se puede discutir; cuatro renglones con lo que se le
+           restó a cada paso sí, y cada uno dice de dónde sale su descuento. */
+        '<div class="casc">' +
+          casc.pasos.map(function (x) {
+            return '<div class="casc-p' + (x.resta ? ' casc-resta' : '') + (x.fin ? ' casc-fin' : '') + '">' +
+              '<span>' + esc(x.t) + '</span>' +
+              '<b>' + (x.resta ? '− ' : '') + esc(formatearArea(x.m2)) + '</b>' +
+              (x.de ? '<i>' + esc(x.de) + '</i>' : '') + '</div>';
+          }).join('') +
+        '</div>' +
+        '<p class="lee">' + casc.lectura + '</p>' +
+        '<p class="nota">' + casc.supuesto + '</p>' +
+        (casc.faltan.length
+          ? '<p class="vacio-tag">' + (casc.faltan.length === 1 ? 'Un descuento que NO se pudo hacer'
+              : casc.faltan.length + ' descuentos que NO se pudieron hacer') + '</p>' +
+            casc.faltan.map(function (f) { return '<p class="vacio-falta">' + f + '</p>'; }).join('')
+          : '');
       })(), 'g4') +
 
       caja('El lote a intervenir',
@@ -7227,7 +7344,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       // X3 · Suelo disponible (A) contra lo que el cierre cita (B).
       (function () {
         var pa = plano(cajaEn(A, 'Suelo disponible real'));
-        var haA = haDe(pa, 'suelo libre contado');
+        /* El ancla es el rótulo del KPI, y cambió con la cascada de la v884:
+           era «suelo libre contado» y ahora es «aprovechable estimado». Se
+           aceptan los dos, porque una ficha guardada antes lleva el viejo y
+           su lámina se vuelve a componer con este código. */
+        var haA = haDe(pa, 'aprovechable estimado');
+        if (haA == null) haA = haDe(pa, 'suelo libre contado');
         var vB = cruceEn(B, 'Suelo disponible real');
         var viejoB = cruceEn(B, 'Suelo disponible');
         var haB = vB ? haDe(plano(vB), '') : null;
@@ -7250,9 +7372,9 @@ function donaHTML(datos, colorDe, nombreDe) {
         var difere = Math.abs(haA - haB) > Math.max(0.25, haB * 0.015);
         pon('El suelo disponible es el mismo en las dos láminas', difere ? 'contradice' : 'pasa',
             difere
-              ? 'dos hectáreas distintas de suelo libre: casi siempre es que una de las dos no ' +
-                'descontó el agua, y la del cierre es la que se cita'
-              : 'la misma resta en las dos' + (usos ? ' · sobre ese suelo hay ' + usos[1] + ' usos registrados' : ''),
+              ? 'dos hectáreas distintas de suelo aprovechable: casi siempre es que una de las dos ' +
+                'no hizo alguno de los descuentos, y la del cierre es la que se cita'
+              : 'la misma cascada en las dos' + (usos ? ' · sobre ese suelo hay ' + usos[1] + ' usos registrados' : ''),
             String(Math.round(haA * 10) / 10).replace('.', ',') + ' ha (lámina A)',
             String(Math.round(haB * 10) / 10).replace('.', ',') + ' ha (lámina B)');
       })();
@@ -8156,6 +8278,20 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pl-rej th{ font-size:2.3mm; line-height:1.15; vertical-align:bottom; padding-bottom:.6mm }' +
       '.pl-rej td{ height:5.2mm; border:.2mm solid #C7D7E4; background:#fff; padding:0 }' +
       '.pl-rej tbody tr:nth-child(even) td{ background:#fff }' +
+      /* §11 · la cascada del suelo. Los renglones se leen de arriba abajo y
+         el ojo tiene que ver DÓNDE se resta y dónde se cierra: las restas
+         van sangradas y con su signo, y el total con una línea encima. La
+         procedencia de cada descuento va debajo y en chico — es lo que
+         permite discutir el número en vez de creerlo. */
+      '.casc{ margin:1.2mm 0 1.6mm }' +
+      '.casc-p{ display:grid; grid-template-columns:1fr auto; gap:0 2mm; padding:.5mm 0;' +
+        'border-bottom:.15mm solid #E6EDF3 }' +
+      '.casc-p b{ font-variant-numeric:tabular-nums; white-space:nowrap }' +
+      '.casc-p i{ grid-column:1 / -1; font-style:normal; font-size:2.2mm; color:#5B6B7B }' +
+      '.casc-resta{ padding-left:3mm }' +
+      '.casc-resta b{ color:#8A6D3B }' +
+      '.casc-fin{ border-bottom:0; border-top:.35mm solid #12202E; margin-top:.6mm; padding-top:1mm }' +
+      '.casc-fin span, .casc-fin b{ font-weight:700 }' +
       '.ori td{ position:relative }' +
       '.ori .ori-b{ display:block; height:.7mm; background:#C7D7E4; border-radius:.4mm; margin:.5mm 0 0 auto }' +
       '.ori-dura td{ background:#FDF3E3 }' +
@@ -15530,11 +15666,21 @@ function donaHTML(datos, colorDe, nombreDe) {
         var cb = null; try { cb = o2Cobertura(); } catch (e5) { cb = null; }
         return (cb && cb.agua != null) ? meta.areaM2 * (Number(cb.agua) || 0) / 100 : null;
       })();
-      var libreM2 = aguaM2 != null ? Math.max(0, vacioM2 - aguaM2) : vacioM2;
-      var libreHa = Math.round(libreM2 / 10000 * 10) / 10;
-      F('Suelo disponible real', num(ll.pctVacio) + ' % sin construir · unas ' + num(libreHa) + ' ha' +
-        (aguaM2 != null ? ' descontada el agua' : ' brutas'),
-        'no es suelo urbanizable: faltan por descontar la ronda hídrica, la pendiente no urbanizable y la amenaza, que piden el POT y el mapa oficial de riesgo');
+      /* §11 (v884): la MISMA cascada que el panel, llamando a la misma
+         función. Acá había una resta copiada —«el suelo sin construir menos
+         el agua»—, y en cuanto el panel aprendió a descontar la pendiente,
+         la franja de ronda y la vía, las dos hojas volvieron a imprimir dos
+         hectáreas distintas bajo el mismo nombre. Es el fallo que la v879
+         arregló y que reapareció en la tanda siguiente, que es exactamente
+         lo que aquella sección predijo: dos rutas de cálculo para la misma
+         cantidad no divergen el día que se escriben, divergen cuando una de
+         las dos mejora. */
+      var terC = null; try { terC = S.terreno; } catch (e6) { terC = null; }
+      var cascC = cascadaDeSuelo(vacioM2, aguaM2, meta.areaM2, terC, trz);
+      var libreHa = Math.round(cascC.aprovechable / 10000 * 10) / 10;
+      F('Suelo disponible real', num(ll.pctVacio) + ' % sin construir · unas ' + num(libreHa) +
+        ' ha aprovechables tras los descuentos',
+        'no es suelo urbanizable: la amenaza sigue sin descontarse, y el ancho de ronda que se usó es una estimación de trabajo y no el del POMCA');
     } else {
       F('Suelo disponible real', 'sin trazado medido', 'los llenos y vacíos del trazado son la primera cuenta');
     }

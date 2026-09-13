@@ -139,7 +139,20 @@ const geo = [
      «un piso», que es la diferencia que el pliego pide imprimir. */
   Array.from({ length: 30 }, (_, i) => edif(-560 + (i % 10) * 115,
     -400 + Math.floor(i / 10) * 220, 60, 90,
-    i < 17 ? 1 : i < 23 ? 2 : i < 27 ? 3 : [5, 7, 9][i - 27]))
+    i < 17 ? 1 : i < 23 ? 2 : i < 27 ? 3 : [5, 7, 9][i - 27])),
+  /* §11 (v884) · una quebrada que cruza el sector. Sin ella el descuento de
+     la franja de ronda no se ejercitaba en ninguna prueba: el panel habría
+     salido en verde declarando «no hay ningún cauce mapeado», que es la otra
+     rama y la que ya cubre `tsinmapear`. Es la séptima vez que el material
+     de prueba era más pobre que un sector real (v862, v866, v874, v877,
+     v880, v882, y esta).
+
+     Va como `way["waterway"]` con su recorrido, que es como llega de verdad
+     en la consulta del trazado —`out geom`—, y no como un punto: de un punto
+     no sale una franja. */
+  [{ type: 'way', id: 900001, tags: { waterway: 'stream', name: 'Quebrada Seca' },
+     geometry: [P(-600, -460), P(-300, -380), P(0, -300), P(300, -260), P(600, -180)]
+       .map(q => ({ lat: q.lat, lon: q.lng })) }]
 );
 
 /* Lo que este sector necesita para tener CIFRAS SUELTAS: un parque con
@@ -336,7 +349,27 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
                    masBajo: { mes: 'noviembre', kwh: 4.31 }, mesesConDato: 12, dias: 1820,
                    plano: 'horizontal', fuente: 'reanálisis ERA5 servido por Open-Meteo, 5 años' }
     };
+    /* §11 (v884): el descuento de pendiente pide el modelo de elevación por
+       celda, y ese se mide con el botón del terreno —que tarda casi medio
+       minuto: `tterreno` le da hasta 28 s—. Cargárselo a esta suite, que es
+       de las dos láminas y no del terreno, sería pagar ese medio minuto en
+       cada corrida de la batería.
+
+       Se INYECTA, igual que el clima desde la v882: `laminaA` acepta
+       `terreno` por opciones. Así se componen las dos ramas —con pendiente
+       fuerte medida y sin terreno medido— y cada una se comprueba por lo que
+       tiene que decir, que es lo que una sola corrida no puede enseñar. */
+    const TERRENO = {
+      pendiente: { media: 11.4, maxima: 38.2,
+        clases: [
+          { id: 'plano',  etiqueta: 'Plano o casi plano', nodos: 120, pct: 40 },
+          { id: 'suave',  etiqueta: 'Pendiente suave',    nodos: 90,  pct: 30 },
+          { id: 'media',  etiqueta: 'Pendiente media',    nodos: 54,  pct: 18 },
+          { id: 'fuerte', etiqueta: 'Pendiente fuerte',   nodos: 36,  pct: 12 }
+        ] } };
     o.soloA = R.laminaA({ hoja: 'A', clima: CLIMA });
+    // Con el terreno medido: la cascada descuenta la pendiente fuerte.
+    o.conTerreno = R.laminaA({ hoja: 'A', clima: CLIMA, terreno: TERRENO });
     o.soloB = R.laminaA({ hoja: 'B' });
     // La rama del conflicto: el aire entra justo por donde más pega el sol.
     o.choque = R.laminaA({ hoja: 'A', clima: Object.assign({}, CLIMA, {
@@ -467,6 +500,17 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
               tramite: [...c.querySelectorAll('.comoq > .cq')].map(x => ({
                 etq: ((x.querySelector('i') || {}).textContent || '').trim(),
                 val: ((x.querySelector('span') || {}).textContent || '').replace(/\s+/g, ' ').trim() })),
+              /* §11 (v884): los renglones de la cascada del suelo, cada uno
+                 con su cifra y con de dónde sale el descuento. Se leen como
+                 filas y no como texto corrido porque la comprobación es
+                 sobre cada paso: un descuento sin origen impreso no se puede
+                 discutir, que es justo lo que el panel viene a arreglar. */
+              casc: [...c.querySelectorAll('.casc > .casc-p')].map(x => ({
+                t: ((x.querySelector('span') || {}).textContent || '').trim(),
+                m: ((x.querySelector('b') || {}).textContent || '').trim(),
+                de: ((x.querySelector('i') || {}).textContent || '').trim(),
+                resta: x.classList.contains('casc-resta'),
+                fin: x.classList.contains('casc-fin') })),
               columnas: [...c.querySelectorAll('table.rad th')].map(x => x.textContent.trim()),
               filas: [...c.querySelectorAll('table.rad tr')].slice(1)
                 .map(tr => [...tr.querySelectorAll('td')].map(x => x.textContent.trim())),
@@ -721,9 +765,12 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     (A.texto.match(/Población (?:proyectada|del censo|estimada)[^0-9]{0,32}[\d.]+/) || ['-'])[0]);
   T('y no la llama «contada por el censo» si es la proyectada',
     !/Población contada por el censo/.test(A.texto));
-  T('el suelo disponible del cierre descuenta el agua, como el panel de la A',
-    /Suelo disponible real/.test(B.texto) && /descontada el agua/.test(B.texto),
-    (B.texto.match(/Suelo disponible real[^·]{0,60}/) || ['-'])[0]);
+  /* §11 (v884): el cierre cita ahora la cascada entera y no la resta del
+     agua sola. Es la misma exigencia de la v879 —una sola cuenta para las
+     dos hojas— con una cuenta que creció. */
+  T('el suelo disponible del cierre cita la cascada, como el panel de la A',
+    /Suelo disponible real/.test(B.texto) && /aprovechables tras los descuentos/.test(B.texto),
+    (B.texto.match(/Suelo disponible real[^·]{0,70}/) || ['-'])[0]);
   T('y no queda en el cierre el rótulo viejo de «ha brutas»',
     !/ha brutas/.test(B.texto));
 
@@ -1135,9 +1182,57 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
 
 
   if (SU) {
-    T('el suelo disponible parte de lo sin construir y descuenta el agua',
-      /Suelo sin construir/.test(SU.texto) && /Menos la superficie de agua/.test(SU.texto),
-      SU.kpis.map(x => x.v + ' ' + x.r).join(' · '));
+    /* §11 · la cascada, con sus tres descuentos y los cuatro números a la
+       vista. Un solo «95,5 % libre» no se puede discutir; cuatro renglones
+       con lo que se le restó a cada paso, sí. */
+    T('el suelo disponible sale en cascada, de lo sin construir al aprovechable',
+      /Suelo sin construir/.test(SU.texto) && /Aprovechable estimado/.test(SU.texto) &&
+      SU.casc.length >= 4,
+      SU.casc.map(x => x.t + ' ' + x.m).join(' · ') || 'sin cascada');
+    /* Los dos descuentos que el panel declaraba imposibles y no lo eran: la
+       pendiente sale del modelo de elevación por celda, que existe, y la
+       franja de ronda del recorrido de los cauces, que llega con `out geom`. */
+    T('cada descuento dice de dónde sale, que es lo que permite discutirlo',
+      SU.casc.filter(x => x.resta).length >= 2 &&
+      SU.casc.filter(x => x.resta).every(x => x.de && x.de.length >= 12),
+      SU.casc.filter(x => x.resta).map(x => x.t.split(' ')[0] + '←' + (x.de || 'SIN ORIGEN').slice(0, 26)).join(' · '));
+    T('la franja de los cauces sale del largo mapeado, no de un conteo de puntos',
+      SU.casc.some(x => /^Franja de \d+ m/.test(x.t) && /m de cauce en \d+ tramo/.test(x.de)),
+      (SU.casc.filter(x => /^Franja/.test(x.t))[0] || { de: 'no está' }).de);
+    T('y la superficie de vía, de los metros de calzada por su ancho medio',
+      SU.casc.some(x => /^Superficie de vía/.test(x.t) && /m de calzada a [\d,]+ m de ancho/.test(x.de)),
+      (SU.casc.filter(x => /^Superficie de vía/.test(x.t))[0] || { de: 'no está' }).de);
+    /* Sin terreno medido el descuento de pendiente NO se puede hacer, y el
+       panel lo declara en vez de omitir el renglón: una cascada a la que le
+       falta una resta sin decirlo parece completa. */
+    T('sin terreno medido, la pendiente se declara y no se omite en silencio',
+      !SU.casc.some(x => /^Pendiente sobre/.test(x.t)) &&
+      SU.falta.some(x => /pendiente no urbanizable/i.test(x) && /no se ha medido/.test(x)),
+      SU.falta.map(x => x.slice(0, 40)).join(' | '));
+    /* Y con el terreno medido entra sola, con el umbral impreso. El modelo
+       de elevación por celda EXISTE —`analizarTerreno` clasifica nodo por
+       nodo—, así que la carencia que el panel declaraba era falsa. */
+    const SUT = (((r.conTerreno || '').split('<section class="caja')
+      .filter(x => /<h2>Suelo disponible real<\/h2>/.test(x))[0]) || '')
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    T('con el terreno medido, la pendiente entra en la cascada con su umbral',
+      /Pendiente sobre 30 %/.test(SUT) && /12 % de los nodos del modelo de elevación/.test(SUT),
+      (SUT.match(/Pendiente sobre[^−]{0,60}/) || ['no entra'])[0]);
+    T('y el umbral va dicho como el de la herramienta, no como el del POT',
+      /umbral de 30 % es el de esta herramienta, no el del POT/.test(SU.texto));
+    /* La frase que el pliego pide casi literal. El ancho de la franja es un
+       supuesto y confundirlo con una norma es lo que convierte un tanteo en
+       una cifra que alguien alega. */
+    T('y la ronda declarada como estimación de trabajo, no como norma',
+      /la define el POMCA/.test(SU.texto) &&
+      /los 30 m son una estimación de trabajo, no un dato normativo/.test(SU.texto),
+      (SU.texto.match(/ronda hídrica oficial[^.]{0,90}/) || ['no lo declara'])[0]);
+    /* Y los dos supuestos que cambian el resultado: el reparto proporcional
+       y el solape. Sin ellos la cifra se lee como una medición. */
+    T('los supuestos van dichos: reparto proporcional y descuentos que se solapan',
+      /en proporción/.test(SU.texto) && /solapar/.test(SU.texto) &&
+      /resta de más y no de menos/.test(SU.texto),
+      (SU.texto.match(/se pueden solapar[^.]{0,80}/) || ['no los dice'])[0]);
     /* El salto de «sin construir» a «urbanizable» es el error caro de este
        panel: se cuenta lo vacío desde el satélite y se lee como suelo donde
        se puede construir. La cifra se rotula por lo que es y la hoja niega
@@ -1149,13 +1244,16 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       SU.kpis.map(x => x.v + ' ' + x.r).join(' · '));
     /* Los dos descuentos que faltan son los que cambiarían la cifra, así
        que van dichos uno por uno con su fuente. */
-    T('dice cuáles son los dos descuentos que NO pudo hacer',
-      SU.vacios.some(x => /NO se pudieron hacer/.test(x)) &&
-      SU.falta.some(x => /ronda hídrica/i.test(x)) &&
-      SU.falta.some(x => /pendiente/i.test(x) && /amenaza/i.test(x)),
-      SU.falta.map(x => x.slice(0, 40)).join(' | '));
-    T('y por qué el agua vista del satélite no es la ronda',
-      /es suelo seco con restricción/.test(SU.texto), SU.falta.join(' ').slice(0, 140));
+    /* Lo que sigue sin poder descontarse se dice, y con su fuente. La
+       amenaza es la única de las cuatro que no tiene con qué medirse acá:
+       lo que hay es susceptibilidad por pendiente, que es un insumo del
+       riesgo y no el riesgo. */
+    T('y lo que sigue sin poder descontarse va dicho, con su fuente',
+      SU.vacios.some(x => /NO se pud/.test(x)) &&
+      SU.falta.some(x => /amenaza/i.test(x) && /mapa oficial de riesgo/i.test(x)),
+      SU.falta.map(x => x.slice(0, 46)).join(' | ') || 'no lo dice');
+    T('sin confundir la susceptibilidad por pendiente con el riesgo',
+      SU.falta.some(x => /insumo del riesgo y no el riesgo/.test(x)));
   }
 
   console.log('\n  -- el sector, comparado con su ciudad --');

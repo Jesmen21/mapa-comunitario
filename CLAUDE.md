@@ -2150,6 +2150,112 @@ conclusión de emergencia.
 Y la décima, la de la nota de desarrollo, **falló contra la v882**: confirma
 que el pliego la venía imprimiendo.
 
+## El suelo disponible, en cascada (v884)
+
+§11 del pliego de ajustes: «reportó 95,5 % libre y 1.875 ha brutas,
+incluyendo vías, rondas y pendientes imposibles. No sirve así». Pedía la
+cascada con los tres descuentos y los tres números a la vista.
+
+En el sector de prueba sale:
+
+```
+Suelo sin construir                              1,60 km²
+  − Lámina de agua                                5,3 ha
+  − Franja de 30 m a lado y lado de los cauces    7,4 ha
+  − Superficie de vía existente                  17,3 ha
+= Aprovechable estimado                          1,31 km²
+```
+
+Y cada resta dice de dónde sale —«1.233 m de cauce en 1 tramo mapeado»,
+«23.264 m de calzada a 7,4 m de ancho medio»—, que es lo que permite
+discutir el número en vez de creerlo. Un solo «95,5 % libre» no se puede
+discutir; cuatro renglones con su procedencia, sí.
+
+### Dos descuentos que el panel declaraba imposibles y no lo eran
+
+La quinta declaración de ausencia falsa de este módulo, y las dos se
+encontraron leyendo el código en vez de recordarlo:
+
+* **La pendiente.** El panel decía «una media no dice cuánta superficie pasa
+  del umbral: haría falta el modelo de elevación por celda». **El modelo por
+  celda está**: `analizarTerreno` clasifica nodo por nodo con diferencias
+  centradas y devuelve `pendiente.clases` con el porcentaje de cada una. Lo
+  que falta es el umbral del POT, que es otra cosa y se dice aparte.
+* **La franja hídrica.** Decía que solo estaba la lámina de agua del
+  satélite. La consulta del trazado pide `way["waterway"]` con **`out
+  geom`**, así que el RECORRIDO de los cauces llega, y de un recorrido sale
+  una franja. El motor suma ahora los tramos que caen dentro del área —por
+  el punto medio de cada segmento, igual que las vías— y publica
+  `trazado.suelo`.
+
+Lo que de verdad no se puede es **fijar el ancho de la ronda**: eso lo define
+el POMCA. Los 30 m son una estimación de trabajo y la hoja lo dice con esas
+palabras, que es lo que el pliego pide casi literal.
+
+### Tres cosas del método, y las tres van impresas porque cambian el resultado
+
+* **Los descuentos se aplican sobre lo que queda, en proporción.** Restarle
+  al suelo libre el porcentaje de ladera del SECTOR supone que la pendiente
+  se reparte igual dentro y fuera de lo construido. Es un supuesto.
+* **Los tres pueden solaparse**: una vía junto a una quebrada en ladera se
+  descuenta tres veces. Así que esto **resta de más y no de menos** — el
+  aprovechable real es igual o mayor—, y así se nombra.
+* **El umbral de pendiente es el de esta herramienta, 30 %**, que es donde
+  `CLASES_PENDIENTE` deja de llamarla urbanizable. No es el del POT y va
+  dicho.
+
+### Una cascada a la que le falta una resta parece completa
+
+Sin terreno medido no hay con qué descontar la pendiente, y la primera
+versión simplemente **omitía el renglón**. El lector no tiene cómo saber que
+ahí había una resta: una cascada sin huecos se lee como completa. Ahora se
+declara, con el arreglo al lado —se mide con el botón del terreno y el
+descuento entra solo—. Es la misma regla de toda la lámina dicha en un sitio
+nuevo: un vacío se declara, no se calla.
+
+### El cruce del cierre volvió a divergir, y la v879 lo había predicho
+
+El cruce de la lámina B hacía **la misma resta copiada** del panel —«el suelo
+sin construir menos el agua»—, y en cuanto el panel aprendió a descontar tres
+cosas más, las dos hojas imprimieron dos hectáreas distintas bajo el mismo
+nombre. Es exactamente el fallo que la v879 arregló, reaparecido una tanda
+después.
+
+Y es literalmente lo que aquella sección dejó escrito: **«dos rutas de
+cálculo para la misma cantidad no divergen el día que se escriben, divergen
+la tanda siguiente, cuando una de las dos mejora.»** Ahora el cierre llama a
+`cascadaDeSuelo`, la misma función.
+
+De paso, el ancla del chequeo cruzado: leía el rótulo del KPI «suelo libre
+contado», que pasó a «aprovechable estimado». Se aceptan los dos, porque una
+ficha guardada antes lleva el viejo y su lámina se vuelve a componer con este
+código — la misma razón por la que la v878 aceptó el id viejo de una caja
+renombrada.
+
+### El sector de prueba no tenía ni una quebrada
+
+Séptima vez (v862, v866, v874, v877, v880, v882, y esta). El fixture no traía
+un solo `waterway`, así que el descuento de la franja **no se ejercitaba en
+ninguna prueba**: el panel habría pasado en verde declarando «no hay ningún
+cauce mapeado», que es la otra rama y la que ya cubre `tsinmapear`. Ahora
+cruza una quebrada con su recorrido —no un punto: de un punto no sale una
+franja—.
+
+Y el terreno **no se inyecta con el botón**. Medirlo tarda casi medio minuto
+—`tterreno` le da hasta 28 s— y cargárselo a una suite que es de las dos
+láminas sería pagarlo en cada corrida de la batería. Se inyecta por opciones,
+igual que el clima desde la v882, y se componen las **dos ramas**: con
+pendiente fuerte medida y sin terreno medido. Cada una se comprueba por lo
+que tiene que decir, que es lo que una sola corrida no puede enseñar.
+
+### Demostrado contra la v883
+
+Once aserciones en rojo, con el texto viejo impreso: «sin cascada», «no
+está» por la franja y por la vía, «no lo declara» por la ronda, «no los
+dice» por los supuestos, y las dos carencias falsas —«La ronda hídrica.
+Haría falta el acuerdo…» y «La pendiente no urbanizable y la amenaza»—
+todavía escritas como imposibles.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
