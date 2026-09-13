@@ -1195,10 +1195,6 @@
       panel.classList.add('visible');
   }
 
-  function limpiarRuta() {
-      rutaLayer.clearLayers();
-      rutaManualOrigen = null;
-  }
 
   function dibujarRuta(origen, destino, titulo = 'Ruta estimada') {
       limpiarRuta();

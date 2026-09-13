@@ -279,8 +279,16 @@ const PT = mm => mm * 72 / 25.4;
   T('con nombre de lámina y su tamaño', /URBIS-lamina-.*90x60\.pdf$/.test(r.nombre || ''), r.nombre || '(sin nombre)');
   T('la casilla conserva el nombre después de guardar', r.valorTrasGuardar === 'La Playa',
     JSON.stringify(r.valorTrasGuardar));
-  T('y el archivo se llama como se guardó el sector', /URBIS-lamina-La-Playa-90x60\.pdf$/.test(r.nombre || ''),
+  /* §1 (v885) · el nombre del archivo lleva los TRES datos de identificación,
+     no solo el sector: proyecto, sector y fecha. Acá el proyecto se dejó en
+     blanco a propósito —es el caso corriente de quien solo nombra el sector—
+     y por eso sale «sin-nombrar» en el nombre del archivo, que es la misma
+     regla que en la cabecera: un hueco se dice, no se calla. */
+  T('y el archivo se llama como se guardó el sector, con su fecha',
+    /URBIS-lamina-.*-La-Playa-\d{4}-\d{2}-\d{2}-90x60\.pdf$/.test(r.nombre || ''),
     r.nombre || '(sin nombre)');
+  T('y el proyecto que nadie escribió sale nombrado como tal',
+    /URBIS-lamina-sin-nombrar-/.test(r.nombre || ''), r.nombre || '(sin nombre)');
   T('y sin abrir ninguna otra pestaña', r.otraPestana === 0, r.otraPestana + ' pestañas');
   T('la ficha dice qué bajó y dónde está', /Lámina bajada/.test(r.aviso || ''), r.aviso || '(no dice nada)');
 

@@ -208,8 +208,10 @@
     resultado: null, verde: null, reportes: []
   };
 
+  // Con coma decimal, como en js/24 y js/68: «1.30 ha» se lee como mil ciento
+  // treinta en castellano.
   function fmtArea(m2) {
-    if (m2 >= 10000) return (m2 / 10000).toFixed(2) + ' ha';
+    if (m2 >= 10000) return (m2 / 10000).toFixed(2).replace('.', ',') + ' ha';
     return Math.round(m2).toLocaleString('es-CO') + ' m²';
   }
 

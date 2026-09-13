@@ -323,7 +323,10 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
           t: (b.querySelector('h3') || {}).textContent || '?',
           pregunta: (b.querySelector('.b-pregunta') || {}).textContent || '',
           cierre: (b.querySelector('.b-cierre') || {}).textContent || '' })),
-        leeAsi: (document.querySelector('.cab .lee-asi') || {}).textContent || '',
+        leeAsi: (document.querySelector('.pie .lee-asi') || {}).textContent || '',
+        /* Y lo que quedó en la CABECERA, para poder comprobar que el «cómo
+           se lee» bajó al pie y no se quedó en las dos partes. */
+        cabTexto: ((document.querySelector('.cab') || {}).textContent || '').replace(/\s+/g, ' '),
         cierre: (function () {
           const s = document.querySelector('.sintesis-pie');
           if (!s) return null;
@@ -536,7 +539,13 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
        su propio bloque de NEUTRALIDAD (v853), que es donde el pliego de
        instrucciones lo pide y donde se lee como la regla que es. Así que se
        busca cada cosa donde vive, que además es más preciso. */
-    T('la cabecera dice cómo se lee la hoja', /Cómo se lee/.test(o.leeAsi) && /01 → \d\d/.test(o.leeAsi),
+    /* Y desde la v885 vive al PIE, no en la cabecera: es una instrucción que
+       se busca, no algo que se lea a tres metros, y la franja de arriba la
+       necesita el nombre del sector. La aserción se apretó al mudarse:
+       ahora exige además que NO se haya quedado también arriba. */
+    T('el «cómo se lee» está impreso, y al pie y no en la cabecera',
+      /Cómo se lee/.test(o.leeAsi) && /01 → \d\d/.test(o.leeAsi) &&
+      !/Cómo se lee/.test(o.cabTexto),
       o.leeAsi.slice(0, 80));
 
     console.log('\n  -- ' + nom + ': el cierre son cinco propuestas --');

@@ -112,12 +112,17 @@
     return t;
   }
 
+  /* Coma decimal: en castellano «1.3 ha» se lee como un punto de MILES. Es
+     la misma corrección que en `formatearArea` de js/68 y va en los dos
+     sitios, porque las dos cifras caen en la misma lámina y una hoja que
+     escribe el número de dos maneras se lee como escrita por dos personas. */
+  function conComaN(n){ return String(n).replace('.', ','); }
   function fmtArea(m2){
     const ha = m2 / 10000;
-    return ha >= 1 ? (Math.round(ha * 100) / 100) + ' ha' : Math.round(m2) + ' m²';
+    return ha >= 1 ? conComaN(Math.round(ha * 100) / 100) + ' ha' : Math.round(m2) + ' m²';
   }
   function fmtDist(m){
-    return m >= 1000 ? (Math.round(m / 100) / 10) + ' km' : Math.round(m) + ' m';
+    return m >= 1000 ? conComaN(Math.round(m / 100) / 10) + ' km' : Math.round(m) + ' m';
   }
 
   // ── Acceso a los globales de URBIS ──────────────────────────────────────

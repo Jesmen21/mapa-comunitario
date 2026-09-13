@@ -312,11 +312,33 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     if (bcob) { bcob.click(); await esperar(1600); }
     const cn = document.getElementById('pcr-nombre');
     if (cn) { cn.value = 'La Playa'; cn.dispatchEvent(new Event('input', { bubbles: true })); }
+    /* §1 · los otros dos campos de identificación, escritos como los
+       escribiría alguien. Se llenan los TRES en el documento principal
+       porque la comprobación de la cabecera es sobre una lámina nombrada;
+       la rama del campo en blanco se compone aparte, más abajo, que es la
+       lección de siempre: una sola corrida no enseña las dos ramas. */
+    const cp = document.getElementById('pcr-proyecto');
+    if (cp) { cp.value = 'Taller VII · análisis de sector'; cp.dispatchEvent(new Event('input', { bubbles: true })); }
+    const cu = document.getElementById('pcr-ubicacion');
+    if (cu) { cu.value = 'Comuna 1, Cúcuta, Norte de Santander'; cu.dispatchEvent(new Event('input', { bubbles: true })); }
     /* El botón de ver la lámina: desde la v853 entrega LAS DOS en un
        documento de dos páginas. Es lo que sale a imprimir. */
     const bv = H().querySelector('[data-pcr="lamina-ver"]');
     if (bv) { bv.click(); await esperar(600); }
     o.doc = capturado; capturado = '';
+    /* §1 · el nombre del archivo exportado. Se mide donde de verdad se
+       decide —en la llamada que baja el PDF— y no leyendo la función: es la
+       regla de la v863. Un doble del armador de PDF, que no dibuja nada y
+       solo apunta con qué nombre se pidió bajarlo. */
+    var bajadoComo = '';
+    window.URBIS_PLIEGO_PDF = {
+      disponible: function () { return true; },
+      generar: function () { return Promise.resolve({ blob: new Blob(['x']), bytes: 1024, dpi: 300 }); },
+      bajar: function (blob, nombre) { bajadoComo = nombre; }
+    };
+    var bpdf = H().querySelector('[data-pcr="lamina"]');
+    if (bpdf) { bpdf.click(); await esperar(1200); }
+    o.archivo = bajadoComo;
     o.fuera = ((R.estado() || {}).pliegoFuera || []).slice();
     // Y cada hoja por separado, para poder pedirle a cada una lo suyo.
     /* La A suelta se pide CON clima: la caja del clima es la que prueba que
@@ -376,6 +398,11 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       viento: { dominante: { rumbo: 'oriente', pct: 34 }, mediaKmh: 4.1, rosa: ROSA } }) });
     // Y la rama sin radiación: el archivo no siempre la trae en un punto.
     o.sinRad = R.laminaA({ hoja: 'A', clima: Object.assign({}, CLIMA, { radiacion: null }) });
+    /* §1 · la rama del campo vacío. Un campo en blanco no se calla: se
+       imprime «SIN NOMBRAR» en rojo. Sin esta hoja aparte la comprobación
+       pasaría por no tener nada que rechazar, que es el verde que este
+       proyecto lleva seis tandas persiguiendo. */
+    o.sinProyecto = R.laminaA({ hoja: 'A', proyecto: '', clima: CLIMA });
     return o;
   }, { C, POL, LOTE });
 
@@ -400,10 +427,47 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
            redacción —la concordancia, un plural donde va un singular— son
            sobre la hoja entera y no sobre un panel. */
         texto: h.textContent.replace(/\s+/g, ' ').trim(),
+        /* Y la misma hoja partida en NODOS de texto. `textContent` pega lo
+           de dos elementos vecinos sin nada en medio, así que un «100» y un
+           «100» de dos cajas contiguas se leen como «100100»: una cifra de
+           seis dígitos que nadie imprimió. Las comprobaciones sobre cómo se
+           escribe un número van sobre estos trozos, no sobre la tira. */
+        trozos: (function () {
+          const w = document.createTreeWalker(h, NodeFilter.SHOW_TEXT), t = [];
+          while (w.nextNode()) { const x = w.currentNode.nodeValue.replace(/\s+/g, ' ').trim(); if (x) t.push(x); }
+          return t;
+        })(),
         eyebrow: (h.querySelector('.ey') || {}).textContent || '',
         responde: (h.querySelector('.que-responde') || {}).textContent || '',
         neutral: (h.querySelector('.neutral') || {}).textContent || '',
-        sub: (h.querySelector('.sub') || {}).textContent || '',
+        /* §1+§2 · la cabecera, leída pieza por pieza y no como un
+           párrafo: el orden es lo que se comprueba, así que cada
+           renglón se lee por su clase y se mide su tamaño en
+           milímetros de papel. Un `textContent` de la cabecera
+           entera pasaría con las cuatro piezas en cualquier orden. */
+        h1: (h.querySelector('.tit h1') || {}).textContent || '',
+        ubicAdm: (h.querySelector('.tit .ubic-adm') || {}).textContent || '',
+        cifraHoja: (h.querySelector('.tit .cifra-hoja') || {}).textContent || '',
+        alcance: (h.querySelector('.pie .alcance') || {}).textContent || '',
+        leeAsi: (h.querySelector('.pie .lee-asi') || {}).textContent || '',
+        /* Lo que queda en la CABECERA y lo que bajó al PIE. §2 pide
+           que los tres párrafos de letra chica dejen de ocupar la
+           franja que se lee de lejos, así que hay que mirar dónde
+           está cada uno y no solo que esté. */
+        cabTexto: ((h.querySelector('.cab') || {}).textContent || '').replace(/\s+/g, ' ').trim(),
+        pieTexto: ((h.querySelector('.pie') || {}).textContent || '').replace(/\s+/g, ' ').trim(),
+        sinNombrar: [...h.querySelectorAll('.sin-nombrar')].length,
+        /* Los tamaños de la cabecera, en milímetros de papel: la
+           jerarquía del pliego es de tamaño, no de orden. */
+        mmH1: mm(parseFloat(getComputedStyle(h.querySelector('.tit h1')).fontSize) || 0),
+        mmCifra: (function () {
+          const b = h.querySelector('.tit .cifra-hoja b');
+          return b ? mm(parseFloat(getComputedStyle(b).fontSize) || 0) : 0;
+        })(),
+        mmPie: (function () {
+          const d = h.querySelector('.pie-abajo > div');
+          return d ? mm(parseFloat(getComputedStyle(d).fontSize) || 0) : 0;
+        })(),
         escala: esc,
         pide: rej ? mm(rej.getBoundingClientRect().height) : 0,
         papel: marco ? mm(marco.getBoundingClientRect().height) : 0,
@@ -634,10 +698,104 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   T('las dos láminas dicen que el análisis se hizo sin propósito declarado',
     neutralOk(A.neutral) && neutralOk(B.neutral), A.neutral.slice(0, 90));
 
+  console.log('\n  -- §1+§2 · quién firma la lámina y qué dice de lejos --');
+  /* §1 · los tres datos de identificación. La comprobación es sobre la
+     CABECERA impresa y no sobre el estado: lo que hay que garantizar es que
+     alguien que descuelga la hoja de una pared sepa de qué sector es, de qué
+     proyecto y dónde queda. */
+  T('las dos láminas nombran el sector en su tipografía mayor',
+    /La Playa/.test(A.h1) && /La Playa/.test(B.h1), A.h1 + ' | ' + B.h1);
+  T('y llevan la ubicación administrativa en su propio renglón',
+    /Cúcuta/.test(A.ubicAdm) && /Norte de Santander/.test(B.ubicAdm),
+    A.ubicAdm);
+  T('el proyecto va con la lámina que es',
+    /Taller VII/.test(A.eyebrow) && /Lámina A de 2/.test(A.eyebrow) &&
+    /Taller VII/.test(B.eyebrow) && /Lámina B de 2/.test(B.eyebrow),
+    A.eyebrow);
+  /* §2 · UNA cifra, y la de cada hoja es la suya: la A responde por el sitio
+     y el terreno, la B por la gente. Si las dos imprimieran la misma, la
+     cifra dejaría de resumir la lámina y pasaría a ser un membrete. */
+  T('cada lámina abre con UNA cifra grande, y es la suya',
+    /área analizada/.test(A.cifraHoja) && /habitantes/.test(B.cifraHoja) &&
+    A.cifraHoja.trim() !== B.cifraHoja.trim(),
+    A.cifraHoja.trim() + '  ||  ' + B.cifraHoja.trim());
+  T('y debajo, la pregunta que abre la lámina',
+    /\?/.test(A.responde) && /\?/.test(B.responde), A.responde.slice(0, 70));
+  /* La jerarquía del pliego es de TAMAÑO. Se mide en milímetros de papel
+     porque es lo que decide a qué distancia se lee cada cosa: el nombre del
+     sector a tres metros, la cifra a dos, el pie a treinta centímetros. */
+  T('el nombre del sector es lo más grande de la hoja, y la cifra va detrás',
+    A.mmH1 > A.mmCifra && A.mmCifra > A.mmPie * 2,
+    'sector ' + A.mmH1 + ' mm · cifra ' + A.mmCifra + ' mm · pie ' + A.mmPie + ' mm');
+
+  /* §2 · los tres párrafos de cuerpo pequeño BAJARON al pie. No basta con que
+     estén: la petición es que dejen de ocupar la franja que se lee de lejos,
+     así que se mira en qué mitad de la hoja está cada uno. */
+  const enCab = (h, re) => re.test(h.cabTexto), enPie = (h, re) => re.test(h.pieTexto);
+  T('la regla de neutralidad está impresa, y al pie y no en la cabecera',
+    enPie(A, /Sin propósito declarado/) && !enCab(A, /Sin propósito declarado/) &&
+    enPie(B, /Sin propósito declarado/) && !enCab(B, /Sin propósito declarado/));
+  T('el «cómo se lee» también bajó',
+    enPie(A, /Cómo se lee/) && !enCab(A, /Cómo se lee/) &&
+    enPie(B, /Cómo se lee/) && !enCab(B, /Cómo se lee/),
+    A.leeAsi.slice(0, 70));
+  T('y el radio con su fecha de corte',
+    enPie(A, /fecha de corte/) && !enCab(A, /Radio de análisis/) &&
+    enPie(B, /fecha de corte/) && !enCab(B, /Radio de análisis/));
+
+  /* §1 · un campo en blanco se IMPRIME. Es lo contrario de lo que hace un
+     formulario: acá el hueco tiene que verse, porque una lámina sin nombre de
+     proyecto colgada al lado de otra no se distingue de ella. */
+  T('un campo de identificación en blanco sale «SIN NOMBRAR», no en blanco',
+    /class="sin-nombrar">SIN NOMBRAR</.test(r.sinProyecto || ''),
+    (String(r.sinProyecto || '').match(/<b class="sin-nombrar">[^<]*<\/b>/) || ['—'])[0]);
+  /* Y en su propio elemento, que es lo que permite pintarlo de rojo: como
+     texto suelto sería una cadena más y se imprimiría igual que el resto. */
+  T('y va marcado aparte, para poder verse en rojo',
+    /\.sin-nombrar\{[^}]*color:#FF8A7A/.test(r.sinProyecto || ''));
+  T('con los tres campos escritos, la hoja no dice SIN NOMBRAR en ninguna parte',
+    A.sinNombrar === 0 && B.sinNombrar === 0,
+    A.sinNombrar + ' en la A · ' + B.sinNombrar + ' en la B');
+
+  /* §1 · y los tres viajan al nombre del archivo. Veinte PDF en la carpeta de
+     descargas de un profesor se distinguen por ahí y por nada más. */
+  T('el PDF se baja con el proyecto, el sector y la fecha en el nombre',
+    /Taller-VII/.test(r.archivo || '') && /La-Playa/.test(r.archivo || '') &&
+    /\d{4}-\d{2}-\d{2}/.test(r.archivo || '') && /60x90\.pdf$/.test(r.archivo || ''),
+    r.archivo || '(no se bajó)');
+
+  /* Y la cifra se dice como se escribe en castellano. Persigue la CLASE y no
+     el caso: en toda la hoja, ninguna área lleva punto decimal. Se acota a
+     una o dos cifras detrás del punto porque un separador de miles siempre
+     trae tres —«1.234 ha» son mil doscientas—, así que el patrón no puede
+     confundir las dos maneras de escribir un número que conviven en la hoja. */
+  const buscar = (h, re) => h.trozos.reduce((a, t) => a.concat(String(t).match(re) || []), []);
+  const PUNTO_DEC = /\d\.\d{1,2}\s*(?:ha|km²)/g;
+  T('ninguna área impresa lleva punto decimal en vez de coma',
+    !buscar(A, PUNTO_DEC).length && !buscar(B, PUNTO_DEC).length,
+    buscar(A, PUNTO_DEC).concat(buscar(B, PUNTO_DEC)).slice(0, 4).join(' · ') || 'ninguna');
+
+  /* Y el separador de miles. Mismo molde: una cifra correcta que no se puede
+     leer. Se persigue desde cinco dígitos porque por debajo caben los años,
+     los números de decreto y las coordenadas, que se escriben sin punto a
+     propósito; de cinco en adelante no hay ninguna cifra de esta hoja que se
+     escriba seguida. */
+  const SIN_MILES = /(?<![\d.,])\d{5,}(?![\d.,])/g;
+  T('ninguna cifra de cinco dígitos va impresa sin separador de miles',
+    !buscar(A, SIN_MILES).length && !buscar(B, SIN_MILES).length,
+    buscar(A, SIN_MILES).concat(buscar(B, SIN_MILES)).slice(0, 4).join(' · ') || 'ninguna');
+
   console.log('\n  -- el radio y la bibliografía --');
-  T('las dos llevan el tamaño del área analizada en la cabecera',
-    /Área dibujada|Radio de/.test(A.sub) && /Área dibujada|Radio de/.test(B.sub),
-    A.sub.slice(0, 70));
+  /* §2 · el alcance sigue impreso en las dos, pero AL PIE: es procedencia
+     que alguien va a querer citar, no algo que se lea a tres metros. La
+     aserción se apretó al mudarse —antes bastaba con «Radio de» en la
+     cabecera; ahora pide además los usos contados y la fecha de consulta,
+     que es lo que hace citable una lámina. */
+  const alcanceOk = t => /Área dibujada|Radio de análisis/.test(t) &&
+                         /usos registrados/.test(t) && /consultado el/.test(t);
+  T('las dos llevan el alcance y la fecha de corte, y van al pie',
+    alcanceOk(A.alcance) && alcanceOk(B.alcance),
+    A.alcance.slice(0, 90));
   /* Es la bibliografía de las dos: repetirla en la A gasta el papel de dos
      columnas para decir lo mismo. */
   T('la bibliografía va al pie de la B y no se repite en la A',

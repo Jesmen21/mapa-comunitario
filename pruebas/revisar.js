@@ -218,6 +218,45 @@ console.log('\n  -- identificadores sueltos --');
   });
 }
 
+// ── 3d. dos funciones con el mismo nombre en el mismo archivo ────────────
+/* Hermana de la comprobación 8 —dos cosas distintas con el mismo nombre en
+   `window`— pero DENTRO de un archivo, que es donde nadie mira. Una función
+   declarada dos veces en el mismo ámbito no da error en ninguna parte: la
+   segunda pisa a la primera, y la primera queda de adorno. Quien la lee cree
+   estar leyendo lo que corre.
+
+   Salió al conectar el nombre del archivo exportado en la v885: `js/68`
+   tenía `bajarPliegoDeFicha` y `abrirImpresion` declaradas DOS VECES, letra
+   por letra, con `marcaURBIS` metida en medio —un trozo pegado dos veces—.
+   Al buscarlo en los demás archivos aparecieron dos más, y las dos con
+   cuerpos DISTINTOS: `bloqueOportunidad` en `js/63`, donde ganaba la
+   maquetación nueva y la vieja se quedaba muerta, y `limpiarRuta` en
+   `js/05`, donde la que gana llama a `limpiarRutaReal` —que hace lo mismo y
+   más, así que ahí no había fallo, solo código que mentía sobre sí mismo—.
+
+   Se mira solo el PRIMER nivel del módulo (dos espacios de sangría): dentro
+   de una función, dos ayudantes que se llamen igual en dos ámbitos distintos
+   son legítimos y corrientes —`fila`, `chip`—, y denunciarlos sería pedir
+   que nadie repita un nombre en treinta mil líneas. */
+console.log('\n  -- una función, un nombre --');
+{
+  const dobles = [];
+  fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).sort().forEach(f => {
+    const vistas = {};
+    leer('js/' + f).split('\n').forEach((l, i) => {
+      const m = /^  function\s+([A-Za-z_$][\w$]*)\s*\(/.exec(l);
+      if (m) (vistas[m[1]] = vistas[m[1]] || []).push(i + 1);
+    });
+    Object.keys(vistas).forEach(k => {
+      if (vistas[k].length > 1) dobles.push('js/' + f + ' · ' + k + ' en ' + vistas[k].join(' y '));
+    });
+  });
+  comprobar('ninguna función del primer nivel se declara dos veces en su archivo',
+    dobles.length === 0,
+    dobles.length ? dobles.slice(0, 5).join(' | ')
+                  : fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).length + ' archivos revisados');
+}
+
 // ── 3c. los scripts sueltos de las páginas parsean ───────────────────────
 /* Un `<script>` escrito dentro del HTML que no cierre bien no rompe la página:
    el navegador descarta ESE bloque y sigue como si nada. Lo que había adentro

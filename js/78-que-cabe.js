@@ -26,6 +26,13 @@
 
   function n(x) { return (x === null || x === undefined || x === '') ? null : Number(x); }
   function r1(x) { return Math.round(x * 10) / 10; }
+  /* Un número como se escribe en castellano: separador de miles y coma
+     decimal. Estos textos salen impresos en la lámina de 60 × 90, y ahí
+     «20881 personas» y «31.3 ha» son dos cifras correctas que no se pueden
+     leer —la primera se cuenta con el dedo, la segunda se lee como treinta y
+     un mil trescientas—. Es la clase de defecto de la v874. */
+  function miles(n) { return Number(n).toLocaleString('es-CO'); }
+  function conComa(n) { return String(n).replace('.', ','); }
 
   /* Lo que se le pide al estudiante, con lo que significa cada cosa. El texto
      de ayuda no es adorno: la mitad de los errores de un taller salen de
@@ -148,8 +155,8 @@
     // ── Lo que solo se puede decir porque el sitio está medido ──────────
     if (c.pendientePct != null && c.pendientePct >= 15) {
       cruces.push({ clase: 'pendiente',
-        texto: 'La pendiente medida es del ' + String(r1(c.pendientePct)).replace('.', ',') +
-          '%. Una huella de ' + Math.round(huella) + ' m² sobre esa pendiente no se resuelve ' +
+        texto: 'La pendiente medida es del ' + conComa(r1(c.pendientePct)) +
+          '%. Una huella de ' + miles(Math.round(huella)) + ' m² sobre esa pendiente no se resuelve ' +
           'con una losa: son plataformas, muros de contención y un sótano que aparece solo. ' +
           'Eso cambia el costo antes que el diseño.' });
     }
@@ -170,10 +177,10 @@
       var faltan = Math.max(0, meta - c.m2PublicoPorHab);
       if (faltan > 0) {
         cruces.push({ clase: 'publico',
-          texto: 'El sector tiene ' + String(r1(c.m2PublicoPorHab)).replace('.', ',') +
+          texto: 'El sector tiene ' + conComa(r1(c.m2PublicoPorHab)) +
             ' m² de espacio público por habitante y la meta nacional son ' + meta +
-            ' (Decreto 1504). Meter ' + personas + ' personas más sin agregar espacio público ' +
-            'lo empeora: harían falta ' + Math.round(personas * meta / 10000 * 10) / 10 +
+            ' (Decreto 1504). Meter ' + miles(personas) + ' personas más sin agregar espacio público ' +
+            'lo empeora: harían falta ' + conComa(Math.round(personas * meta / 10000 * 10) / 10) +
             ' ha para sostener la meta con los nuevos.' });
       }
     }

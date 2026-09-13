@@ -186,6 +186,16 @@
     corteDibujando: false, cortePts: null, corteAviso: '',
     terRejilla: null, curvas: null, curvasEnMapa: false, sombras: null, sombrasEnMapa: false,
     nombreGuardado: '',
+    /* §1 (v885) · la identificación que escribe quien analiza. El nombre del
+       sector ya existía; faltaban el del PROYECTO y la UBICACIÓN
+       ADMINISTRATIVA. El geocodificador rellena lo que puede y el estudiante
+       corrige: son campos de texto, no etiquetas del mapa.
+
+       Van aparte de `ubic` a propósito. `ubic` es lo que dijo el
+       geocodificador y no se toca; esto es lo que la persona firma. Cuando
+       las dos difieren manda la persona, y en la hoja se ve cuál se imprimió. */
+    nombreProyecto: '',
+    ubicacionAdmin: '',
     puntosEnMapa: 0,
     estratos: null,
     cargandoEstratos: false,
@@ -668,6 +678,12 @@
       id: id || ('f' + Date.now()),
       ts: new Date().toISOString(),
       nombre: nombre || '',
+      /* §1 · los otros dos campos de identificación. Van con la ficha por la
+         misma razón que el nombre: reabrirla para reimprimir la lámina tiene
+         que devolver la MISMA lámina, y una cabecera que pierde el proyecto
+         imprime «SIN NOMBRAR» sobre un trabajo que sí estaba nombrado. */
+      proyecto: S.nombreProyecto || '',
+      ubicacionAdmin: S.ubicacionAdmin || '',
       // Lo que necesita la pestaña «Sector» para redibujar el informe sin
       // volver a consultar la red.
       stats: statsLigero(st),
@@ -1080,10 +1096,16 @@
     return Math.round(m).toLocaleString('es-CO') + ' m';
   }
 
+  /* La coma decimal, como la escribe el castellano. Salió a la vista al
+     ponerle a la cabecera la cifra que resume la lámina: «1.77 km²», que en
+     Colombia se lee como un punto de MILES —ciento setenta y siete— y no
+     como uno y pico. La cifra era correcta y no se podía leer, que es la
+     clase de defecto de la v874; y estaba a dos renglones de
+     `formatearLargo`, que sí hace el cambio desde siempre. */
   function formatearArea(m2) {
     if (!m2) return '';
-    if (m2 >= 1000000) return (m2 / 1000000).toFixed(2) + ' km²';
-    return (m2 / 10000).toFixed(1) + ' ha';
+    if (m2 >= 1000000) return (m2 / 1000000).toFixed(2).replace('.', ',') + ' km²';
+    return (m2 / 10000).toFixed(1).replace('.', ',') + ' ha';
   }
 
   /* «800 m» o «1,2 km»: la misma cifra dicha como se dice en una conversación
@@ -1704,6 +1726,48 @@
        resta de más, no de menos— y así se nombra.
      * **El umbral de pendiente es el de URBIS**, no el del POT: 30 %, que es
        donde `CLASES_PENDIENTE` deja de llamarla urbanizable. Va impreso. */
+  /* ── §1 · la identificación del proyecto (v885) ────────────────────────
+     Tres campos que escribe quien analiza: el proyecto, el sector y la
+     ubicación administrativa. El geocodificador rellena lo que puede —de ahí
+     `ubicacionSugerida`— y la persona corrige; lo que quede en blanco sale
+     impreso como SIN NOMBRAR y en rojo.
+
+     Por qué en rojo y no en blanco: **una lámina sin topónimo no se puede
+     archivar ni citar**. Dejar el hueco parece un descuido de maquetación y
+     se pasa por alto; «SIN NOMBRAR» en rojo es una tarea pendiente que se ve
+     desde el otro lado del salón. Es la misma decisión que los vacíos
+     obligatorios de la v849: un dato que falta se declara, no se calla. */
+  function ubicacionSugerida() {
+    var u = S.ubic || null;
+    if (!u) return '';
+    return [u.comuna, u.ciudad, u.departamento].filter(Boolean).join(', ');
+  }
+  /* El valor a imprimir y si hay que gritarlo. Devuelve las dos cosas juntas
+     porque quien imprime necesita saber cuál de los dos casos es: con el
+     texto solo, «SIN NOMBRAR» sería una cadena más y se imprimiría en negro
+     como si fuera el nombre del sitio. */
+  function identidadDe(valor, sugerido) {
+    var v = String(valor == null ? '' : valor).trim();
+    if (!v && sugerido) v = String(sugerido).trim();
+    return v ? { t: v, falta: false } : { t: 'SIN NOMBRAR', falta: true };
+  }
+  function idHTML(x) {
+    return x.falta ? '<b class="sin-nombrar">SIN NOMBRAR</b>' : esc(x.t);
+  }
+  /* Los tres campos se leen de la pantalla en un solo sitio. Estaban leídos
+     en cuatro —imprimir, bajar el PDF, ver la lámina, guardar— y cada uno
+     con su línea: así es como el PDF salía con un nombre y la hoja con otro
+     antes de la v815. Con dos campos más, cuatro copias serían doce líneas
+     que tienen que decir lo mismo. Un campo que no esté en pantalla NO borra
+     lo guardado: esa guarda es la que arregló aquel fallo. */
+  function leerIdentidad() {
+    var g = function (id) { return document.getElementById(id); };
+    var n = g('pcr-nombre'), pr = g('pcr-proyecto'), ub = g('pcr-ubicacion');
+    if (n) S.nombreGuardado = String(n.value || '').trim();
+    if (pr) S.nombreProyecto = String(pr.value || '').trim();
+    if (ub) S.ubicacionAdmin = String(ub.value || '').trim();
+  }
+
   var FRANJA_RONDA_M = 30;
   var UMBRAL_PENDIENTE_PCT = 30;
   function fmtN(n) { return Math.round(Number(n) || 0).toLocaleString('es-CO'); }
@@ -3051,6 +3115,29 @@
      Así que se arma acá —ver js/75— y se baja como archivo. Sin otra
      pestaña, sin diálogo del sistema y sin elegir papel: el papel ya está
      escrito dentro del archivo. */
+  /* §1 · el nombre del archivo lleva los tres datos de identificación.
+     «URBIS-lamina-<proyecto>-<sector>-<fecha>-60x90.pdf», y un campo vacío
+     sale como «sin-nombrar» en vez de desaparecer: veinte PDF en la carpeta
+     de descargas de un profesor se distinguen por el nombre del archivo y por
+     nada más, y uno que calla el proyecto se confunde con el del vecino.
+
+     Una sola función para los dos caminos —la lámina viva y la de una ficha
+     archivada—, porque dos maneras de armar el mismo nombre no divergen el
+     día que se escriben: divergen la tanda siguiente. */
+  function trozoDeNombre(v) {
+    var t = String(v == null ? '' : v)
+      .replace(/[^\wáéíóúüñÁÉÍÓÚÜÑ \-]/g, ' ')
+      .trim().replace(/\s+/g, '-');
+    return t || 'sin-nombrar';
+  }
+  function nombreDeArchivo(sector, proyecto, mm) {
+    var f = new Date();
+    var fecha = f.getFullYear() + '-' +
+      ('0' + (f.getMonth() + 1)).slice(-2) + '-' + ('0' + f.getDate()).slice(-2);
+    return 'URBIS-lamina-' + trozoDeNombre(proyecto) + '-' + trozoDeNombre(sector) +
+      '-' + fecha + '-' + (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf';
+  }
+
   function bajarPliegoPDF(horizontal, alAvisar) {
     var P = window.URBIS_PLIEGO_PDF;
     // Ajustada al papel antes de dibujarla: ver `laminaQueQuepa`.
@@ -3073,8 +3160,7 @@
         if (c) c.textContent = t;
       }
     }).then(function (r) {
-      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
-                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
+      P.bajar(r.blob, nombreDeArchivo(nombre, S.nombreProyecto, mm));
       S.pdfArmando = false;
       if (alAvisar) {
         alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
@@ -3096,48 +3182,6 @@
       pintar();
       return false;
     });
-  }
-
-  /* La lámina de un sector GUARDADO, también en PDF. Misma cuenta que la de
-     la ficha viva; lo único distinto es de dónde sale el nombre y que el
-     aviso va a la pestaña. */
-  function bajarPliegoDeFicha(f, horizontal, html, alAvisar) {
-    var P = window.URBIS_PLIEGO_PDF;
-    if (!P || !P.disponible()) { abrirImpresion(html, alAvisar); return; }
-    var mm = horizontal ? { anchoMM: 900, altoMM: 600 } : { anchoMM: 600, altoMM: 900 };
-    var nombre = String((f && f.nombre) || 'sector').replace(/[^\wáéíóúñÁÉÍÓÚÑ \-]/g, '').trim() || 'sector';
-    if (alAvisar) alAvisar('Dibujando la lámina… tarda unos segundos.');
-    P.generar(html, {
-      anchoMM: mm.anchoMM, altoMM: mm.altoMM,
-      titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm',
-      alAvisar: function (t) { if (alAvisar) alAvisar(t); }
-    }).then(function (r) {
-      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
-                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
-      if (alAvisar) {
-        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
-                 Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
-                 'Está en las descargas del teléfono, ya con su tamaño puesto.');
-      }
-    }).catch(function (e) {
-      if (alAvisar) {
-        alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
-                 '. Pruebe desde la ficha del sector, o imprimí desde un computador.');
-      }
-    });
-  }
-
-  function abrirImpresion(html, alFallar) {
-    var ayuda = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
-    if (ayuda) { ayuda(html); return true; }
-    var w = window.open('', '_blank');
-    if (!w) {
-      if (alFallar) alFallar('Permití las ventanas emergentes para poder imprimir.');
-      return false;
-    }
-    w.document.write(html); w.document.close();
-    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600);
-    return true;
   }
 
   /* El logo de URBIS, el de verdad.
@@ -3178,8 +3222,7 @@
       titulo: 'URBIS · ' + nombre + ' · ' + mm.anchoMM / 10 + '×' + mm.altoMM / 10 + ' cm',
       alAvisar: function (t) { if (alAvisar) alAvisar(t); }
     }).then(function (r) {
-      P.bajar(r.blob, 'URBIS-lamina-' + nombre.replace(/\s+/g, '-') + '-' +
-                      (mm.anchoMM / 10) + 'x' + (mm.altoMM / 10) + '.pdf');
+      P.bajar(r.blob, nombreDeArchivo(nombre, (f && f.proyecto) || '', mm));
       if (alAvisar) {
         alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
                  Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
@@ -3198,7 +3241,7 @@
     if (ayuda) { ayuda(html); return true; }
     var w = window.open('', '_blank');
     if (!w) {
-      if (alFallar) alFallar('Permití las ventanas emergentes para poder imprimir.');
+      if (alFallar) alFallar('Permita las ventanas emergentes para poder imprimir.');
       return false;
     }
     w.document.write(html); w.document.close();
@@ -4291,6 +4334,47 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
     var dona = donaHTML;
 
+    /* §1 · los tres campos de identificación, resueltos una vez. El sector
+       cae al barrio del geocodificador si nadie escribió nada, y la
+       ubicación a comuna/municipio/departamento: el pliego dice que el
+       geocodificador rellena lo que pueda. El PROYECTO no tiene de dónde
+       caer —no hay geocodificador de proyectos— así que es el que de verdad
+       puede salir SIN NOMBRAR. */
+    var ID = {
+      sector: identidadDe(o.nombre !== undefined ? o.nombre : S.nombreGuardado,
+                          (ubic && ubic.barrio) || ''),
+      proyecto: identidadDe(o.proyecto !== undefined ? o.proyecto : S.nombreProyecto, ''),
+      ubicacion: identidadDe(o.ubicacionAdmin !== undefined ? o.ubicacionAdmin : S.ubicacionAdmin,
+                             ubic ? [ubic.comuna, ubic.ciudad, ubic.departamento].filter(Boolean).join(', ') : '')
+    };
+    /* §2 · UNA cifra que resuma la lámina. La A responde por el sitio y el
+       terreno —cuánto mide y qué pendientes tiene—; la B por la gente
+       —cuántos son y qué tan apretados—. Sin lámina declarada se compone la
+       hoja única, y entonces resume lo que siempre hay: el área y los usos.
+
+       Lo que NO se hace es inventar la cifra cuando falta: si el terreno no
+       se midió, la A dice el área y calla la pendiente en vez de escribir un
+       rango que no tiene. */
+    function resumenDeLamina() {
+      var areaTxt = esPol ? formatearArea(meta.areaM2) : formatearArea(Math.PI * meta.radioM * meta.radioM);
+      var hoja = LAMINA ? LAMINA.id : null;
+      if (hoja === 'B') {
+        var hab = Number(st.poblacionEstimada || 0);
+        var dens = st.densidadHabHa != null ? st.densidadHabHa
+                 : (hab && meta.areaM2 ? Math.round(10 * hab / (meta.areaM2 / 10000)) / 10 : null);
+        if (!hab) return '<b>' + esc(areaTxt) + '</b> <span>de área analizada</span>';
+        return '<b>' + fmtN(hab) + '</b> <span>habitantes</span>' +
+          (dens != null ? '<b>' + conComa(dens) + '</b> <span>hab/ha</span>' : '');
+      }
+      var pen = ter && ter.pendiente;
+      var rango = (pen && pen.media != null)
+        ? conComa(pen.media) + ' %' + (pen.maxima != null ? ' de media, hasta ' + conComa(pen.maxima) + ' %' : ' de pendiente media')
+        : null;
+      return '<b>' + esc(areaTxt) + '</b> <span>de área analizada</span>' +
+        (rango ? '<b>' + esc(rango.split(' de media')[0]) + '</b> <span>de pendiente media' +
+                 (pen.maxima != null ? ', hasta ' + conComa(pen.maxima) + ' %' : '') + '</span>' : '');
+    }
+
     /* ── §12 · lo que recibe cada orientación ───────────────────────────
        Dos cosas distintas por orientación, y las dos hacen falta: las HORAS
        de sol directo al año —cuánto tiempo le da— y el REPARTO del directo
@@ -4711,7 +4795,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       fila('Aislamientos', q.indices.aisFrente + ' / ' + q.indices.aisLado + ' / ' +
       q.indices.aisFondo + ' m') +
       fila('Pisos que salen', String(q.pisosQueSalen).replace('.', ',')) +
-      fila('Gente', q.personas + ' personas') +
+      fila('Gente', fmtN(q.personas) + ' personas') +
       (q.cruces.length ? '<p class="lee">' + esc(q.cruces[0].texto) + '</p>' : '') +
       /* De dónde salieron los índices, EN EL PAPEL. El bloque de la ficha que
          los pide dice «sale en la lámina» desde que existe, y no salía: la
@@ -7739,12 +7823,30 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.marca b{ font-size:13mm; line-height:1; letter-spacing:.06em; color:#fff; font-weight:800 }' +
       '.marca small{ font-size:2.8mm; letter-spacing:.28em; text-transform:uppercase; color:#34CCFE; font-weight:700 }' +
       '.tit{ flex:1; min-width:0; position:relative }' +
-      '.tit .ey{ font-size:3mm; letter-spacing:.24em; text-transform:uppercase; color:#34CCFE; font-weight:800 }' +
-      '.tit h1{ margin:1mm 0 2mm; font-size:11.5mm; line-height:1.05; letter-spacing:-.02em; font-weight:800; color:#fff }' +
-      '.tit .sub{ font-size:3.6mm; color:#D6EEF8; line-height:1.4 }' +
-      '.tit .cad{ font-size:3.2mm; color:#9FD8F0; margin-top:1.5mm }' +
-      '.tit .lee-asi{ font-size:3.1mm; line-height:1.4; color:#D6EEF8; margin-top:2mm; max-width:190mm }' +
-      '.tit .lee-asi b{ color:#34CCFE }' +
+      /* §2 · la cabecera, de arriba abajo y en ese orden: el SECTOR en la
+         tipografía mayor de la lámina, su ubicación administrativa debajo,
+         el proyecto y qué lámina es, y una sola cifra grande. Los tamaños
+         son la jerarquía: lo que se lee a tres metros arriba, lo que se lee
+         a un metro después. Lo que solo sirve a treinta centímetros bajó al
+         pie. */
+      '.tit h1{ margin:0 0 1mm; font-size:13mm; line-height:1.02; letter-spacing:-.02em; font-weight:800; color:#fff }' +
+      '.tit .ubic-adm{ font-size:4.6mm; line-height:1.2; color:#9FD8F0; font-weight:600 }' +
+      '.tit .ey{ margin-top:2.6mm; font-size:3mm; letter-spacing:.24em; text-transform:uppercase; color:#34CCFE; font-weight:800 }' +
+      /* La cifra que resume la hoja: el número grande y su unidad al lado en
+         cuerpo pequeño, que es como se lee una cifra y no como se lee una
+         frase. Son una o dos, nunca más: la tercera deja de ser el resumen y
+         pasa a ser una tabla. */
+      '.tit .cifra-hoja{ display:flex; align-items:baseline; flex-wrap:wrap; gap:0 2.4mm; margin-top:2.4mm }' +
+      '.tit .cifra-hoja b{ font-size:8.4mm; line-height:1; font-weight:800; color:#fff }' +
+      '.tit .cifra-hoja b + b{ margin-left:3.5mm }' +
+      '.tit .cifra-hoja span{ font-size:3.4mm; color:#9FD8F0; font-weight:600 }' +
+      '.tit .que-responde{ margin-top:1.8mm; font-size:3.6mm; line-height:1.35; color:#D6EEF8; max-width:190mm }' +
+      /* Un campo de identificación en blanco se IMPRIME, en rojo y diciendo
+         que falta. En blanco, una lámina sin nombre de proyecto se ve igual
+         que una que no lo necesita, y sobre la pared de un salón nadie sabe
+         cuál de las dos es. */
+      '.sin-nombrar{ color:#FF8A7A; font-weight:800; letter-spacing:.04em }' +
+      '.cab .sin-nombrar{ color:#FFB4A6 }' +
       // Las bandas
       /* La hoja es una pila de FILAS, y cada fila una o más BANDAS con su
          cabecera —número, título, qué trae— y sus cajas en una rejilla de
@@ -8314,11 +8416,18 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.coh-par em{ font-style:normal; font-weight:700; font-size:2.7mm; color:#12202E;' +
         'background:#fff; border:.25mm solid #C9D4DE; border-radius:.8mm; padding:.6mm 1.4mm }' +
       '.coh-contradice .coh-par em{ border-color:#B42318; color:#B42318 }' +
-      '.que-responde{ margin-top:1.6mm; font-size:3.4mm; color:#075E88 }' +
-      '.que-responde b{ color:#0A6F9E }' +
-      '.neutral{ margin-top:1.6mm; font-size:2.9mm; line-height:1.35; color:#5A6472;' +
-        'border-left:.8mm solid #34CCFE; padding-left:2.4mm }' +
-      '.neutral b{ color:#075E88 }' +
+      /* §2 · los tres párrafos que bajaron de la cabecera. Van en una fila
+         de tres columnas al pie: se consultan, no se leen de lejos, y así
+         cuestan un renglón de papel en vez de la franja que sí se lee de
+         lejos. En una sola columna serían tres párrafos seguidos, que es
+         justo lo que ocupaban arriba. */
+      '.pie-abajo{ display:grid; grid-template-columns:repeat(3, 1fr); gap:4mm;' +
+        'margin:0 0 3mm; align-items:start }' +
+      '.pie-abajo > div{ font-size:2.6mm; line-height:1.35; color:#6B7A8A;' +
+        'border-left:.7mm solid #BFE4F5; padding-left:2.4mm }' +
+      '.pie-abajo > div b{ display:block; font-size:2.5mm; letter-spacing:.1em;' +
+        'text-transform:uppercase; color:#075E88; margin-bottom:.6mm }' +
+      '.pie-abajo .neutral{ border-left-color:#34CCFE }' +
       /* Las dos láminas en un documento: cada una ocupa su papel y la
          segunda empieza en página nueva. */
       '.hoja + .hoja{ page-break-before:always; break-before:page }' +
@@ -8333,37 +8442,36 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       '<header class="cab">' +
         '<div class="marca">' + marcaURBIS(15) + '<b>URBIS</b><small>Pro City</small></div>' +
+        /* ── §2 · la cabecera, reordenada (v885) ───────────────────────
+           «Hoy el encabezado gasta la mejor franja de la hoja en explicar el
+           método. Esa franja se lee a tres metros; el método se lee a treinta
+           centímetros.» Tenía razón: la cabecera de una lámina de 60 × 90 es
+           lo único que se lee desde el otro lado del salón, y lo que hacía
+           falta saber desde ahí —qué sitio es y qué tamaño tiene— iba en
+           cuerpo pequeño debajo de tres párrafos de instrucciones.
+
+           El orden es el que pide el pliego, de arriba abajo:
+             1 · el SECTOR y su ubicación administrativa, en la tipografía
+                 mayor de la lámina;
+             2 · el proyecto y qué lámina es;
+             3 · UNA cifra grande que resuma la hoja;
+             4 · la pregunta que abre la lámina, en una línea.
+
+           Y bajan al pie, en cuerpo pequeño: la neutralidad, el «cómo se
+           lee» y el radio con su fecha de corte. No se borran —la
+           neutralidad es la regla que un estudiante rompe sin darse cuenta—
+           pero dejan de ocupar la franja que se lee de lejos. */
         '<div class="tit">' +
-          '<div class="ey">' + (LAMINA
-            ? 'Lámina ' + LAMINA.id + ' de 2 · ' + esc(LAMINA.t)
-            : 'Análisis urbano · reconocimiento del sector') + '</div>' +
-          '<h1>' + esc(nombre || (ubic && ubic.barrio) || 'Sector analizado') + '</h1>' +
-          '<div class="sub">' +
-            (esPol ? 'Área dibujada de ' + esc(formatearArea(meta.areaM2) || '') : 'Radio de ' + meta.radioM + ' m') +
-            (meta.perimetroM ? ' · perímetro ' + esc(formatearLargo(meta.perimetroM)) : '') +
-            ' · ' + (st.total || 0) + ' usos registrados' +
-          '</div>' +
-          /* La jerarquía de lectura, explícita: se pidió que la lámina
-             dijera por dónde se lee y no que se adivinara. */
-          (LAMINA ? '<div class="que-responde"><b>Esta lámina responde:</b> ' +
-                    esc(LAMINA.pregunta) + '</div>' : '') +
-          '<div class="lee-asi"><b>Cómo se lee.</b> Por bandas numeradas, 01 → ' +
-            (agrupado.grupos < 10 ? '0' : '') + agrupado.grupos +
-            ': cada una abre con la pregunta que responde y cierra con su conclusión' +
-            (LAMINA && LAMINA.id === 'B'
-              ? '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad'
-              : LAMINA ? '' : '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad') +
-            '.</div>' +
-          /* ── La regla de neutralidad, impresa ──────────────────────────
-             Va en la hoja y no solo en el instructivo del curso, porque es
-             la regla que el estudiante rompe sin darse cuenta: llega con el
-             proyecto decidido y usa el análisis para justificarlo. Escrita
-             en la lámina, quien la mire puede reclamarle que la cumpla. */
-          '<div class="neutral"><b>Sin propósito declarado.</b> Este análisis se hizo sin decidir ' +
-            'antes qué construir: lo que se mide es qué le hace falta al sector. Un análisis que ' +
-            'empieza con el proyecto puesto deja de analizar y pasa a justificar. ' +
-            'URBIS recomienda, quien proyecta decide.</div>' +
-          (cadena ? '<div class="cad">' + esc(cadena) + '</div>' : '') +
+          '<h1>' + idHTML(ID.sector) + '</h1>' +
+          '<div class="ubic-adm">' + idHTML(ID.ubicacion) + '</div>' +
+          '<div class="ey">' + idHTML(ID.proyecto) +
+            (LAMINA ? ' · Lámina ' + LAMINA.id + ' de 2 · ' + esc(LAMINA.t)
+                    : ' · Análisis urbano · reconocimiento del sector') + '</div>' +
+          /* La cifra que resume la hoja: la A es del sitio y el terreno, la B
+             de la gente. Una sola y grande, que es lo que se lee a tres
+             metros; el resto de las cifras están en sus cajas. */
+          '<div class="cifra-hoja">' + resumenDeLamina() + '</div>' +
+          (LAMINA ? '<div class="que-responde">' + esc(LAMINA.pregunta) + '</div>' : '') +
         '</div>' +
       '</header>' +
 
@@ -8386,6 +8494,31 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<div class="biblio"><b>Bibliografía y fuentes</b><ol>' +
             BIBLIOGRAFIA.map(function (b) { return '<li>' + esc(b.replace(/\bhoy\b/g, hoyTxt)) + '</li>'; }).join('') +
           '</ol></div>') +
+        /* §2 · lo que bajó de la cabecera. Se lee a treinta centímetros, que
+           es donde este texto sirve: la neutralidad es una regla que se
+           consulta, el «cómo se lee» una instrucción que se busca, y el
+           radio con su fecha de corte, la procedencia que alguien va a
+           querer citar. Ninguno de los tres se lee a tres metros, y los tres
+           ocupaban la franja que sí. */
+        '<div class="pie-abajo">' +
+          '<div class="neutral"><b>Sin propósito declarado.</b> Este análisis se hizo sin decidir ' +
+            'antes qué construir: lo que se mide es qué le hace falta al sector. Un análisis que ' +
+            'empieza con el proyecto puesto deja de analizar y pasa a justificar. ' +
+            'URBIS recomienda, quien proyecta decide.</div>' +
+          '<div class="lee-asi"><b>Cómo se lee.</b> Por bandas numeradas, 01 → ' +
+            (agrupado.grupos < 10 ? '0' : '') + agrupado.grupos +
+            ': cada una abre con la pregunta que responde y cierra con su conclusión' +
+            (LAMINA && LAMINA.id === 'B'
+              ? '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad'
+              : LAMINA ? '' : '; el cierre son cinco propuestas de uso ordenadas por necesidad y factibilidad') +
+            '.</div>' +
+          '<div class="alcance"><b>Alcance y fecha de corte.</b> ' +
+            (esPol ? 'Área dibujada de ' + esc(formatearArea(meta.areaM2) || '')
+                   : 'Radio de análisis de ' + meta.radioM + ' m, definido por quien analiza') +
+            (meta.perimetroM ? ' · perímetro ' + esc(formatearLargo(meta.perimetroM)) : '') +
+            ' · ' + (st.total || 0) + ' usos registrados · consultado el ' + esc(hoyTxt) + '.' +
+            (cadena ? ' ' + esc(cadena) + '.' : '') + '</div>' +
+        '</div>' +
         '<div class="pie-linea">' +
         '<div><b>URBIS</b> · urbispro.city · Generada el ' + esc(hoy.toLocaleDateString('es-CO')) +
           (meta.lat != null ? ' · ' + Number(meta.lat).toFixed(5) + ', ' + Number(meta.lng).toFixed(5) : '') + '</div>' +
@@ -9081,10 +9214,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
       if (acc === 'imprimir') {
         if (!S.resultado || !S.ultimasZonas) return;
-        var caja2 = document.getElementById('pcr-nombre');
-        // Sin casilla en pantalla se conserva el nombre que había: borrarlo
-        // por no encontrarla es lo que dejaba el PDF sin título.
-        if (caja2) S.nombreGuardado = String(caja2.value || '').trim();
+        // Sin casilla en pantalla se conserva lo que había: borrarlo por no
+        // encontrarla es lo que dejaba el PDF sin título.
+        leerIdentidad();
         var html = htmlImprimible(S.resultado, S.ultimasZonas);
         var abrir = window.AIA_INFORME && window.AIA_INFORME.abrirVentanaImpresion;
         if (abrir) { abrir(html); return; }
@@ -9097,8 +9229,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'lamina' || acc === 'lamina-h') {
         if (!S.resultado || S.pdfArmando) return;
         S.pdfError = '';
-        var caja3 = document.getElementById('pcr-nombre');
-        if (caja3) S.nombreGuardado = String(caja3.value || '').trim();
+        leerIdentidad();
         bajarPliegoPDF(acc === 'lamina-h', function (m) { S.aviso = m; pintar(); });
         return;
       }
@@ -9108,8 +9239,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (!S.resultado) return;
         // El nombre se lee acá también: es el título de la lámina, y por los
         // dos caminos sale la misma hoja.
-        var cajaV = document.getElementById('pcr-nombre');
-        S.nombreGuardado = cajaV ? String(cajaV.value || '').trim() : S.nombreGuardado;
+        leerIdentidad();
         var fueraAntes = (S.pliegoFuera || []).length;
         abrirImpresion(laminaDoble(S.resultado, { horizontal: acc === 'lamina-ver-h',
           letra: S.pliegoLetra }),
@@ -9471,8 +9601,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Un nombre, porque tres fichas del mismo día son indistinguibles por
         // la fecha. Si no escribe nada, se guarda igual: obligarlo a nombrar
         // algo que quizá analiza una sola vez sería cobrarle por adelantado.
-        var caja = document.getElementById('pcr-nombre');
-        var nom = caja ? String(caja.value || '').trim().slice(0, 60) : '';
+        leerIdentidad();
+        var nom = String(S.nombreGuardado || '').slice(0, 60);
         S.nombreGuardado = nom;
         var g = guardarFicha(S.resultado, S.ultimasZonas, nom, S.fichaActualId);
         if (g.ok) {
@@ -19114,8 +19244,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<text x="' + (tx + tw + 10) + '" y="' + (tb - pisos * ph + 8) + '" class="pcr-sec-t">' + pisos + ' piso' + (pisos === 1 ? '' : 's') + '</text>' +
       '<text x="' + (tx + tw + 10) + '" y="' + (tb - pisos * ph / 2 + 3) + '" class="pcr-sec-t">' +
         q.construibleM2.toLocaleString('es-CO') + ' m²</text>' +
-      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 14) + '" class="pcr-sec-t">' + q.viviendas + ' viviendas</text>' +
-      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 3) + '" class="pcr-sec-t">' + q.personas + ' personas</text>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 14) + '" class="pcr-sec-t">' + fmtN(q.viviendas) + ' viviendas</text>' +
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 3) + '" class="pcr-sec-t">' + fmtN(q.personas) + ' personas</text>' +
       '</svg></div>';
   }
 
@@ -22492,6 +22622,22 @@ function donaHTML(datos, colorDe, nombreDe) {
           'placeholder="Ej: La Playa, entre calles 8 y 12" ' +
           'value="' + esc(S.nombreGuardado || S.nombreSugerido || '') + '">' +
 
+        /* §1 · los otros dos campos de identificación. Un análisis sin
+           topónimo no se puede archivar ni citar, y uno sin proyecto no se
+           puede devolver a su autor. Se rellenan con lo que el
+           geocodificador sepa y se corrigen a mano. */
+        '<label class="pcr-lab" for="pcr-proyecto">Nombre del proyecto</label>' +
+        '<input id="pcr-proyecto" class="pcr-nombre" type="text" maxlength="80" ' +
+          'placeholder="Ej: Taller VII · análisis de sector" ' +
+          'value="' + esc(S.nombreProyecto || '') + '">' +
+        '<label class="pcr-lab" for="pcr-ubicacion">Ubicación administrativa</label>' +
+        '<input id="pcr-ubicacion" class="pcr-nombre" type="text" maxlength="120" ' +
+          'placeholder="Comuna, municipio, departamento" ' +
+          'value="' + esc(S.ubicacionAdmin || ubicacionSugerida()) + '">' +
+        '<p class="pcr-pista">Los tres salen impresos en la cabecera de las dos láminas y en el ' +
+          'nombre del archivo. El que quede en blanco sale como <b>SIN NOMBRAR</b>, en rojo: una ' +
+          'lámina sin nombre de lugar no se puede archivar ni citar.</p>' +
+
         // Lo que se ve en el mapa detrás de esta hoja.
         h4('mapa', 'En el mapa') +
         '<p class="pcr-pista">' + (S.puntosEnMapa || 0) + ' puntos pintados con el color de su categoría' +
@@ -23251,6 +23397,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.sectorAnclado = anclaDelSector();
     S.fichaActualId = f.id || '';
     S.nombreGuardado = f.nombre || '';
+    S.nombreProyecto = f.proyecto || '';
+    S.ubicacionAdmin = f.ubicacionAdmin || '';
     // El origen es del análisis que se archivó, no del estado de ahora.
     S.centroDeAnalizado = f.centroDe || 'ficha';
 
@@ -23625,6 +23773,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.clima = null; S.cliAviso = ''; S.campo = null;
     S.amenaza = null; S.amenazaAviso = '';
     S.nombreGuardado = ''; S.nombreSugerido = '';
+    S.nombreProyecto = ''; S.ubicacionAdmin = '';
     S.terAviso = ''; S.trzAviso = '';
     pintarLlenos(false);
     try {
@@ -23669,6 +23818,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
          meses después, cuando los datos ya no se pueden creer. */
     S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
+    S.nombreProyecto = ''; S.ubicacionAdmin = '';
     S.trzVias = null;
       // El lote pertenece al sector que se estaba mirando. Con otro sector es
       // un polígono huérfano flotando en un mapa que ya no es el suyo.
@@ -24427,7 +24577,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (abrirG) { abrirG(htmlG); return true; }
       var wG = window.open('', '_blank');
       if (!wG) {
-        S.avisoPestana = 'Permití las ventanas emergentes para poder imprimir.';
+        S.avisoPestana = 'Permita las ventanas emergentes para poder imprimir.';
         repintar(); return true;
       }
       wG.document.write(htmlG); wG.document.close();

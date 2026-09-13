@@ -647,25 +647,6 @@
       '</table></div>';
   }
 
-  // Score de Oportunidad Urbana: el número que resume todo el análisis.
-  function bloqueOportunidad(r){
-    const i = r.indicadores;
-    if (!i) return '';
-    const so = i.scoreOportunidad;
-    const col = so.valor >= 75 ? T.ok : so.valor >= 60 ? T.acento : so.valor >= 45 ? T.warn : T.bad;
-    const est = estrellasDeScore(so.valor);
-    const opos = (i.oportunidades.lista || []).slice(0, 3);
-    return '<div class="bloque"><h2>Oportunidad urbana <em>· qué tan buen sitio es, sin importar qué se construya</em></h2>' +
-      '<div class="hero">' + gaugeSVG(so.valor, col) +
-      '<div class="hero-est">' + estrellasHTML(est) + '</div>' +
-      '<div class="hero-info"><b>' + so.valor + '<small>/100</small></b>' +
-      '<span class="nivel" style="background:' + col + '">Oportunidad ' + esc(so.nivel) + '</span></div></div>' +
-      (opos.length ? '<table class="tbl-mini">' + opos.map(o =>
-        '<tr><td class="pos">+' + o.potencial + '</td><td>' + esc(o.nombre) + '</td>' +
-        '<td class="razon">hoy hay ' + o.existentes + '</td></tr>').join('') + '</table>' : '') +
-      '</div>';
-  }
-
   // Comparativa multi-radio (Fase 3): cómo cambia el entorno según qué tan
   // lejos se mire. Responde la pregunta de si el lote está en el núcleo de
   // actividad o en su borde.

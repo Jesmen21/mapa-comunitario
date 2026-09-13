@@ -2256,6 +2256,147 @@ dice» por los supuestos, y las dos carencias falsas —«La ronda hídrica.
 Haría falta el acuerdo…» y «La pendiente no urbanizable y la amenaza»—
 todavía escritas como imposibles.
 
+## Quién firma la lámina, y qué se lee a tres metros (v885)
+
+§1 y §2 del pliego de ajustes, que son la misma cosa vista desde dos lados:
+una hoja de 60 × 90 colgada en una pared se lee por capas —a tres metros, a
+un metro, a treinta centímetros— y hasta la v884 la cabecera tenía puesto en
+la franja de los tres metros lo que solo sirve a treinta.
+
+### Los tres datos de identificación, y el hueco que se imprime
+
+Al nombre del sector se le suman el **nombre del proyecto** y la **ubicación
+administrativa**. Los tres se rellenan con lo que el geocodificador sepa —el
+barrio, y comuna/municipio/departamento— y se corrigen a mano; el proyecto no
+tiene de dónde caer, así que es el que de verdad puede quedar vacío.
+
+**Un campo vacío se imprime.** Sale «SIN NOMBRAR» en rojo y en su propio
+elemento, no en blanco. Es lo contrario de lo que hace un formulario, y a
+propósito: en blanco, una lámina sin nombre de proyecto se ve igual que una
+que no lo necesita, y sobre la pared de un salón nadie sabe cuál de las dos
+es. El hueco tiene que verse para que alguien lo llene.
+
+Los tres viajan a tres sitios: la cabecera de las dos láminas, **el nombre
+del archivo exportado** —`URBIS-lamina-<proyecto>-<sector>-<fecha>-60x90.pdf`,
+con `sin-nombrar` donde falte: veinte PDF en la carpeta de descargas de un
+profesor se distinguen por ahí y por nada más— y **la ficha guardada**, que
+si no los perdiera y reabrirla para reimprimir daría «SIN NOMBRAR» sobre un
+trabajo que sí estaba nombrado.
+
+El nombre del archivo lo arma **una sola función** para los dos caminos, el
+de la lámina viva y el de una ficha archivada. Es la regla de la v879: dos
+maneras de armar la misma cadena no divergen el día que se escriben, divergen
+la tanda siguiente.
+
+### La cabecera, por capas de distancia
+
+De arriba abajo, y el orden es el que pide §2: el **sector** en la tipografía
+mayor de la hoja (13 mm), su **ubicación administrativa** debajo, el
+**proyecto** con qué lámina es, **una** cifra grande que resuma la hoja
+(8,4 mm) y la **pregunta** que la abre.
+
+La cifra es distinta en cada lámina y tiene que serlo: la A responde por el
+sitio y el terreno —cuánto mide, qué pendiente tiene—, la B por la gente
+—cuántos son, qué tan apretados—. Si las dos imprimieran la misma, dejaría de
+resumir la lámina y pasaría a ser un membrete. Y **no se inventa cuando
+falta**: sin terreno medido, la A dice el área y calla la pendiente.
+
+Bajan al pie, en cuerpo pequeño (2,6 mm) y en tres columnas: la regla de
+neutralidad, el «cómo se lee» y el alcance con su fecha de corte. **No se
+borran** —la neutralidad es la regla que un estudiante rompe sin darse
+cuenta— pero ninguno de los tres se lee a tres metros y los tres ocupaban la
+franja que sí.
+
+La jerarquía se comprueba **en milímetros de papel**, no en el orden del
+HTML: el orden dice qué va antes, el tamaño dice a qué distancia se lee, y es
+el segundo el que §2 pide. Y las dos aserciones del pie miran **en qué mitad
+de la hoja** está cada párrafo, no solo que esté: «bajó» no es lo mismo que
+«está».
+
+### Dos cifras correctas que no se podían leer
+
+Salieron al poner la cifra que resume la lámina: el resumen de la A imprimía
+**«1.77 km²»**, que en castellano se lee como un punto de MILES. Es la clase
+de defecto de la v874 —una cifra correcta dicha de una manera que no se puede
+leer— y estaba a dos renglones de `formatearLargo`, que hace la sustitución
+desde siempre. Con ella cayeron `fmtArea` de `js/24` y de `js/49`, y de la
+misma frase de `js/78` salió la otra mitad: **«Meter 20881 personas»**, sin
+separador de miles, que se cuenta con el dedo.
+
+Las dos comprobaciones **persiguen la clase**, no el caso: en toda la hoja,
+ninguna área con punto decimal y ninguna cifra de cinco dígitos sin separar.
+Los dos patrones están acotados para no confundir las dos maneras de escribir
+un número que conviven en la hoja (v879): el decimal pide una o dos cifras
+detrás del punto, porque un separador de miles siempre trae tres; el de miles
+empieza en cinco dígitos, porque por debajo caben los años, los números de
+decreto y las coordenadas, que se escriben seguidos a propósito.
+
+#### `textContent` pega lo de dos elementos vecinos
+
+La primera versión de la comprobación de miles denunció «100100», «110500» y
+«168321», y **ninguno estaba impreso**: eran un «100» y un «100» de dos cajas
+contiguas que `h.textContent` junta sin nada en medio. Las comprobaciones
+sobre cómo se ESCRIBE un número van sobre los nodos de texto uno por uno, no
+sobre la tira de la hoja entera. Es la lección de la v874 con `.hit` —buscar
+dentro de la caja— dicha para el texto: pegar dos cifras fabrica una tercera
+que nadie escribió.
+
+### Una función declarada dos veces, y nadie mirando
+
+El hallazgo caro de la tanda, y no era de la lámina. Al conectar el nombre del
+archivo apareció que `js/68` tenía **`bajarPliegoDeFicha` y `abrirImpresion`
+declaradas dos veces**, letra por letra, con `marcaURBIS` metida en medio: un
+trozo pegado dos veces. No da error en ninguna parte —la segunda pisa a la
+primera— y lo que se lee arriba no es lo que corre.
+
+Buscándolo en los demás archivos salieron **dos más, y las dos con cuerpos
+DISTINTOS**:
+
+* `bloqueOportunidad` en `js/63`: ganaba la maquetación nueva —`.tarjeta`,
+  `aroXL`— y la vieja —`.bloque`, `gaugeSVG`— llevaba versiones muerta, con
+  su propio HTML y su propia redacción. Quien la leyera creería estar leyendo
+  el informe de empresas.
+* `limpiarRuta` en `js/05`: la que gana llama a `limpiarRutaReal`, que hace lo
+  mismo **y más** —limpia la capa, borra los puntos y apaga los botones—, así
+  que ahí no había fallo de comportamiento; había código mintiendo sobre sí
+  mismo. Comprobado leyendo `window.limpiarRutaReal` antes de borrar nada,
+  que es la regla de la v863: borrar la primera copia es un no-op de verdad y
+  no una suposición sobre cuál de las dos gana.
+
+La guarda está en `revisar.js` y mira solo el **primer nivel del módulo** —dos
+espacios de sangría—. Dentro de una función, dos ayudantes que se llamen igual
+en dos ámbitos distintos son legítimos y corrientes —`fila`, `chip`, `pintar`—
+y denunciarlos sería pedir que nadie repita un nombre en treinta mil líneas.
+En el primer nivel, en cambio, las tres que había eran las tres un defecto.
+Demostrada devolviendo los `js/`: los cuatro pares, con archivo y línea.
+
+De paso, dos «Permití las ventanas emergentes» en texto que ve el usuario. Es
+exactamente el agujero que la v880 dejó declarado: con **-í** no hay regla que
+separe el voseo del pretérito de primera persona —«asistí a uno» es correcto—
+y esas van una por una en la lista.
+
+### Dos suites siguieron la mudanza, y las dos se apretaron
+
+`tlaminaedu` buscaba el «cómo se lee» en `.cab`; ahora lo busca en `.pie` **y
+exige que no se haya quedado también arriba**. `tpdfpliego` exigía
+`URBIS-lamina-La-Playa-90x60.pdf`; ahora exige el proyecto, el sector y la
+fecha, y —como su sector no tiene proyecto escrito— que el hueco salga
+nombrado como tal en el propio nombre del archivo. Una prueba que falla por un
+cambio legítimo se hace más precisa, no más laxa.
+
+### Demostrado contra la v884
+
+Trece aserciones en rojo de dieciséis, con el texto viejo impreso: la
+cabecera sin ubicación ni proyecto, «cifra 0 mm», el «cómo se lee» arriba,
+«1.77 km²», «20881» y `URBIS-lamina-La-Playa-60x90.pdf` sin proyecto ni
+fecha.
+
+Las tres que **no** fallan son a propósito, como las dos de la v879 y la de la
+v882: que el `<h1>` siga siendo el nombre del sector, que la pregunta de la
+lámina siga impresa, y que con los tres campos escritos no aparezca ningún
+«SIN NOMBRAR». Son guardas contra perder lo que ya estaba y contra pasarse de
+marcar, no afirmaciones nuevas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
