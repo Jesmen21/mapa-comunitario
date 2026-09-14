@@ -5468,10 +5468,48 @@ correr la serie de fotos de verdad en la suite (`E.rutaWayback` existe desde la
 v907) y después apretar la hoja: son diez descargas y otras tantas pasadas del
 clasificador, y es otra tanda.
 
-De paso queda anotada la divergencia que lo destapó, que es de la clase de la
-v879: `crucesDelSector` lee `oo.evo || S.evo` y la caja lee **solo** `S.evo`.
-En producción coinciden, así que hoy no se ve; el día que alguien componga una
-lámina con la serie por opciones, se ve.
+#### La divergencia que lo destapó se cerró en el acto
+
+`crucesDelSector` y el CUERPO de la caja leían `o.evo !== undefined ? o.evo :
+S.evo`; el **inventario** —el que decide si la caja está `listo`— leía solo
+`S.evo`. Es la clase de la v879 y no se dejó para después: hay una sola
+función, `evoDe(o)`, y la llaman las cuatro lecturas.
+
+Lo que costó fue averiguar **qué se veía de verdad**, y la primera respuesta
+era falsa. Dije que con la serie por opciones la caja no se componía: no es
+eso. El cuerpo siempre leyó `o.evo`, así que la caja sale en las dos
+versiones; lo que el inventario decide es otra cosa —quién entra en la lista
+de candidatos a ceder—, y con él leyendo `S.evo` la caja se componía y
+quedaba **inmune por accidente**: `ordenDeSacrificio` la daba por no lista y
+no podía cederla nunca.
+
+Es una consecuencia más chica que la que anuncié y hay que decirlo así. La
+aserción que quedó es la que distingue las dos versiones —contra la v911 sin
+unificar sale «inmune por accidente: el inventario la da por no lista»— y al
+lado va su guarda, declarada como tal: que la caja siga componiéndose, que es
+lo que pasaba en las dos y no podía romperse al unificar.
+
+De paso, el fixture: `EVO_SERIE` traía la tendencia y **no los pasos**, y el
+inventario cuenta pasos medidos. Sin ellos la caja nunca era candidata por
+falta de material y no por el código, así que la comprobación habría pasado
+por no tener nada que rechazar. Es la decimoséptima vez.
+
+### El papel solo no distingue «cedió» de «nunca tuvo dato»
+
+La regla que salió de la foto satelital, y vale para toda comprobación de
+cesión que venga después.
+
+Medir sobre el papel es lo correcto —lo que hay que comprobar es lo que el
+lector no encuentra— pero un panel ausente lo está por dos razones que se ven
+IGUAL en la hoja: cedió el sitio, o nunca tuvo dato que imprimir. La primera
+versión de la aserción del peldaño 0 denunció la foto satelital como cedida, y
+lo que pasaba es que esa corrida no midió la cobertura.
+
+**Toda aserción de cesión necesita la misma corrida SIN apretar como base.**
+No una lista de lo que debería existir —que envejece— sino el mismo documento
+compuesto sin la presión: lo que está en la base y no en la apretada, cedió;
+lo que no está en ninguna de las dos, nunca estuvo. Es la distinción de la
+v899 entre «sin dato» y «panel fuera», dicha para las pruebas.
 
 ### El bug que salió al medir: los mapas de la OTRA hoja también cedían
 

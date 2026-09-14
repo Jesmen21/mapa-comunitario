@@ -487,11 +487,32 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        Se componen las DOS ramas con la misma tendencia inyectada: con la
        banda puesta —las casillas citan— y con la banda cedida —las
        casillas dicen que la hoja no las sostiene, y cómo devolverlas—. */
-    var EVO_SERIE = { wayback: { tendencia: {
-      desde: 2014, hasta: 2026, aniosUsados: 5,
-      verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
-      verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
-      aguaDesde: 3, aguaHasta: 3 } } };
+    /* Con sus PASOS y no solo la tendencia: el inventario marca la caja
+       `listo` contando pasos medidos, así que sin ellos la caja no se compone
+       y lo único que se ejercitaba era la casilla de la otra lámina — que es
+       justo la divergencia que la v911 unificó. Cinco estampas, como las que
+       `aniosDe` produce de 2014 a 2026 con paso 3. */
+    var EVO_SERIE = { wayback: {
+      pasos: [2014, 2017, 2020, 2023, 2026].map(function (a, i) {
+        return { anio: a, ok: true, medida: { verde: 38.4 - i * 1.8, duro: 44.1 + i * 2.35 } };
+      }),
+      tendencia: {
+        desde: 2014, hasta: 2026, aniosUsados: 5,
+        verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
+        verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
+        aguaDesde: 3, aguaHasta: 3 } } };
+    /* En el DOCUMENTO, que es el que pasa por la bisección: `laminaA` compone
+       directo y el cuerpo de la caja siempre leyó `o.evo`, así que medir con
+       ella no distingue una versión de la otra. Lo que decidía el inventario
+       —y por tanto `ordenDeSacrificio`— es lo que estaba partido. */
+    o.serieEnA = R.laminaDoble({ clima: CLIMA, evo: EVO_SERIE });
+    /* Y apretada: con el inventario leyendo `S.evo` la caja se componía pero
+       quedaba FUERA de la lista de candidatos —`ordenDeSacrificio` la daba por
+       no lista—, así que era inmune por accidente. Eso es lo que distingue
+       una versión de la otra, y no que la caja salga o no salga. */
+    R.laminaDoble({ letra: 'grande', clima: CLIMA, evo: EVO_SERIE });
+    o.serieCandidata = ((R.estado() || {}).pliegoFuera || [])
+      .indexOf('como-cambio-el-sitio') >= 0;
     o.serieEntera = R.laminaA({ hoja: 'B', clima: CLIMA, evo: EVO_SERIE });
     o.serieCedida = R.laminaA({ hoja: 'B', clima: CLIMA, evo: EVO_SERIE,
                                 pliegoOff: ['como-cambio-el-sitio'] });
@@ -2878,6 +2899,22 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       !hayCajaSerie || tA.indexOf('Cómo cambió el sitio') >= 0 || !estaGrano,
       hayCajaSerie ? 'compuesta' : 'no se compone en esta corrida: nada que ordenar');
   }
+
+  /* La serie de fotos se lee en UN solo sitio (v911). El inventario decidía
+     `listo` mirando `S.evo` y el cuerpo de la caja miraba `o.evo`: con la
+     serie puesta por opciones la caja NO se componía y la casilla de la otra
+     lámina sí afirmaba sobre ella — el §1 de la v910 esperando su tanda. */
+  T('con la serie por opciones, la caja entra en el orden de cesión',
+    r.serieCandidata === true,
+    r.serieCandidata ? 'cede cuando la hoja aprieta'
+                     : 'inmune por accidente: el inventario la da por no lista');
+  /* Guarda, no afirmación nueva: la caja se componía en las dos versiones
+     —el cuerpo siempre leyó `o.evo`—, así que esto no distingue una de otra.
+     Está para que la unificación no se pase de rosca y la apague. */
+  T('y sigue componiéndose, que es lo que no podía romperse',
+    /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || ''),
+    /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '')
+      ? 'compuesta' : 'el inventario la da por no lista con la serie en las opciones');
 
   console.log('\n  -- una banda sin su caja principal lo dice EN la banda (v911) --');
   {

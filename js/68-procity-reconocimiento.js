@@ -6578,7 +6578,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       caja('Cómo cambió el sitio',
       (function () {
       var EV = window.URBIS_EVOLUCION;
-      var ev = (o.evo !== undefined ? o.evo : S.evo) || {};
+      var ev = evoDe(o) || {};
       var W = ev.wayback;
       if (!EV || !W) return '';
       /* Solo las fotos de alta resolución. Son las que se miran y, desde que
@@ -6642,7 +6642,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          mide que alguien construyó, no la fuerza que empuja a construir. */
       caja('Presión de crecimiento',
       (function () {
-      var pr = presionDeCrecimiento(o.evo !== undefined ? o.evo : S.evo, st);
+      var pr = presionDeCrecimiento(evoDe(o), st);
       /* El texto de la caja va CORTO a propósito. Es contenido nuevo en una
          hoja que ya cerraba apretada, y en este pliego cada milímetro que se
          gasta se lo quita a un mapa —medido en la v886—: lo que no puede
@@ -10064,7 +10064,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       infraImpresa((function () { try { return infraDeServicios(res); } catch (e) { return null; } })()) +
       sombraProyectoImpresa(o.sombraProyecto !== undefined ? o.sombraProyecto
         : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })()) +
-      evolucionImpresa(o.evo !== undefined ? o.evo : S.evo) +
+      evolucionImpresa(evoDe(o)) +
       poblacionImpresa(st) +
       demografiaImpresa(st) +
       nucleosImpresos(st) +
@@ -14687,7 +14687,21 @@ function donaHTML(datos, colorDe, nombreDe) {
      cada caja para devolver vacío —la prueba tpliego comprueba justamente que
      no se separen: lo que acá sale listo tiene que aparecer en el papel, y lo
      que sale gris no puede aparecer. */
-  function cajasDelPliego(res) {
+  /* ── UNA SOLA LECTURA DE LA SERIE DE FOTOS (v911) ────────────────────
+     La serie satelital se leía de dos maneras: el CUERPO de la caja y el
+     panel de presión hacían `o.evo !== undefined ? o.evo : S.evo`, y el
+     inventario —el que decide si la caja está `listo`— leía **solo**
+     `S.evo`. Con la serie puesta por opciones eso daba lo peor de los dos
+     mundos: la caja no se componía y la síntesis de la otra lámina sí
+     afirmaba sobre ella, que es exactamente el §1 de la v910 esperando su
+     tanda.
+
+     Hoy no duele porque en producción `S.evo` está puesto y las dos
+     coinciden; la divergencia de la v879 nunca duele el día que se escribe.
+     Una sola función, y la llaman las cuatro lecturas. */
+  function evoDe(o) { return (o && o.evo !== undefined) ? o.evo : S.evo; }
+
+  function cajasDelPliego(res, o) {
     var st = (res && res.stats) || {};
     var trz = S.trazado, esPol = (res && res.meta && res.meta.forma) === 'poligono';
     var hayLote = !!(S.lote && S.lote.length >= 3);
@@ -14853,11 +14867,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Las fotos de alta resolución, con su verde medido: es lo que va al
          papel. La serie de Landsat ya no cuenta para esta caja. */
       { id: 'como-cambio-el-sitio', t: 'Cómo cambió el sitio', g: 'El suelo',
-        listo: !!(S.evo && S.evo.wayback && (S.evo.wayback.pasos || [])
-                   .filter(function (p) { return p.ok && p.medida; }).length >= 2),
+        listo: (function () { var e = evoDe(o);
+          return !!(e && e.wayback && (e.wayback.pasos || [])
+                     .filter(function (p) { return p.ok && p.medida; }).length >= 2); })(),
         falta: 'pida las fotos desde 2014',
         dato: (function () {
-          var t = S.evo && S.evo.wayback && S.evo.wayback.tendencia;
+          var e0 = evoDe(o);
+          var t = e0 && e0.wayback && e0.wayback.tendencia;
           return t ? t.desde + ' → ' + t.hasta + ' · ' + (t.verde > 0 ? '+' : '') +
                      conComa(t.verde) + ' puntos de verde'
                    : 'las fotos desde 2014 y su verde';
@@ -14949,7 +14965,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          que no se separe. La caja sale aunque falten dos de los tres: decir
          cuál falta y qué haría es la mitad del panel. */
       { id: 'presion-de-crecimiento', t: 'Presión de crecimiento', g: 'Ambiental',
-        listo: presionDeCrecimiento(S.evo, S.stats).medidas > 0,
+        listo: presionDeCrecimiento(evoDe(o), S.stats).medidas > 0,
         falta: 'lea la evolución con «Cómo cambió el sitio» o analice un municipio con ancla del DANE',
         dato: 'proxies' },
 
@@ -16689,7 +16705,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function ordenDeSacrificio(res, o, enLaHoja) {
     var off = (o && o.pliegoOff !== undefined ? (o.pliegoOff || []) : (S.pliegoOff || []));
     var lista;
-    try { lista = cajasDelPliego(res) || []; } catch (e) { return []; }
+    try { lista = cajasDelPliego(res, o) || []; } catch (e) { return []; }
     /* Y el lote, cuando está dibujado: es el predio donde se va a proponer,
        lo primero que un jurado pregunta y lo que las cinco propuestas del
        cierre nombran. Con los mapas a 120 mm (v847) las cajas del final de
@@ -18604,7 +18620,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        Sale de `presionDeCrecimiento`, la misma función que arma el panel, y
        no de una cuenta copiada: es la regla de la v879 y lo que la v884
        encontró roto una tanda después de escribirla. */
-    var pres = presionDeCrecimiento(oo.evo !== undefined ? oo.evo : S.evo, st);
+    var pres = presionDeCrecimiento(evoDe(oo), st);
     if (pres.lectura) {
       F('Presión de crecimiento', pres.resumen,
         pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.',
