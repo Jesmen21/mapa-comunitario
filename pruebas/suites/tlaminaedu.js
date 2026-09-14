@@ -176,6 +176,19 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     window.map.setView([C.lat, C.lng], 15); await esperar(300);
     R.abrir(); await esperar(500);
     const asa = H().querySelector('[data-pcr="agrandar"]'); if (asa) { asa.click(); await esperar(400); }
+    /* §6 (v903) · los índices del POT, escritos con los campos de verdad.
+       Esta suite exige los QUINCE mapas del sector, y uno de ellos es «La
+       sombra que proyecta», que desde esta versión no se dibuja sobre un
+       volumen de ejemplo: sin los tres índices puestos por una persona, la
+       caja imprime un vacío y el mapa no sale. Escribirlos acá es lo que
+       hace la lámina de un estudiante que ya fue a la curaduría, y la rama
+       contraria la mide `tdoslaminas`. */
+    ['io', 'ic', 'pisos'].forEach(id => {
+      const el = H().querySelector('[data-pcr-idx="' + id + '"]');
+      if (el) { el.value = String(Number(el.value) || 1);
+                el.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+    await esperar(700);
     const medir = async (acc, sel) => {
       const x = H().querySelector('[data-pcr="' + acc + '"]');
       if (!x) return false;
@@ -671,9 +684,17 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
       /1077 de 2015/.test(o.biblio.texto) && /Lynch/.test(o.biblio.texto) && /Jacobs/.test(o.biblio.texto) && /Gehl/.test(o.biblio.texto) &&
       /Ley 388 de 1997/.test(o.biblio.texto),
       o.biblio.n + ' entradas');
+    /* §9 (v903) · «Tu lectura» pasó a «Su lectura», y la pregunta con ella.
+       Una prueba que cita la interfaz tiene que citar la de ahora, y de paso
+       se aprieta: exige que el renglón hable de USTED —que es lo que §9
+       compró— y no solo que exista el espacio. */
     T(nom + ': el cierre deja renglones para la lectura propia, de al menos 18 mm de papel',
-      !!o.propia && o.propia.alto >= 18 && /Tu lectura/.test(o.propia.texto) && /a mano/.test(o.propia.texto),
+      !!o.propia && o.propia.alto >= 18 && /Su lectura/.test(o.propia.texto) && /a mano/.test(o.propia.texto),
       o.propia ? o.propia.alto + ' mm' : 'sin espacio');
+    T(nom + ': y la pregunta de esa lectura habla de usted, no de tú',
+      !!o.propia && /se queda/.test(o.propia.texto) && /vio en la calle/.test(o.propia.texto) &&
+      !/\bte queda\b|\bviste\b/.test(o.propia.texto),
+      o.propia ? o.propia.texto.slice(0, 100) : '—');
     const nombresCampo = o.campo.map(c => c.t);
     const PANELES = ['Percepción del lugar', 'Lo que no cambia', 'Voces de quien vive acá'];
     const IDS_PANEL = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca'];

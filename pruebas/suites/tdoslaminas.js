@@ -1108,6 +1108,43 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      los números de decreto y las coordenadas, que se escriben sin punto a
      propósito; de cinco en adelante no hay ninguna cifra de esta hoja que se
      escriba seguida. */
+  /* ── §9 (v903) · la hoja habla de USTED ─────────────────────────────
+     La v878 sacó el voseo y la v880 le puso una guarda que se defiende sola.
+     El TUTEO se quedó: la v897 lo midió, lo declaró «otra familia y otra
+     decisión», y lo dejó escrito con su número para que alguien la tomara.
+     §9 la toma: «unificar todo en usted».
+
+     Esta guarda va sobre el PAPEL y no sobre los archivos, y por una razón
+     que costó una vuelta averiguar: recorriendo el código, «te» y «tu» casan
+     dentro de identificadores —`var te = ter.elevacion`— y una guarda con
+     esa clase de falso positivo termina con una lista de excepciones que
+     envejece hasta no significar nada (la lección de la v895). Sobre los
+     nodos de texto de las dos hojas compuestas no hay identificadores: lo
+     que está ahí es lo que el jurado lee.
+
+     Las formas van listadas una por una porque no hay regla que las separe:
+     «vio» es usted y «viste» es tú, pero también es el pretérito de «vestir»;
+     la lista es corta y cada renglón se ve. */
+  const TUTEO = [
+    /\btu\b/gi, /\btus\b/gi, /\btú\b/gi, /\btuyos?\b/gi, /\btuyas?\b/gi, /\bcontigo\b/gi,
+    /\bte\s+(queda|sirve|toca|ahorran?|recomienda|deja|dice|da|pasa)\b/gi,
+    /\b(tienes|puedes|quieres|sabes|haces|dices|vienes|pones|sales|debes|necesitas|eres)\b/gi,
+    /\b(estás|vas a)\b/gi,
+    /\b(mediste|viste|elegiste|dibujaste|marcaste|pusiste|escribiste|hiciste|agregaste|sentiste)\b/gi,
+    /\b(llegarás|verás|podrás|tendrás|sabrás|harás|irás|querrás|dirás|pondrás|vendrás|saldrás)\b/gi
+  ];
+  const tuteoEn = (h) => {
+    const out = [];
+    TUTEO.forEach(re => { (h.trozos || []).forEach(t => {
+      let m; re.lastIndex = 0;
+      while ((m = re.exec(t))) out.push(m[0] + ' → «' + t.slice(Math.max(0, m.index - 25), m.index + 35).trim() + '»');
+    }); });
+    return out;
+  };
+  T('ninguna de las dos hojas le habla de tú a quien la lee',
+    !tuteoEn(A).length && !tuteoEn(B).length,
+    tuteoEn(A).concat(tuteoEn(B)).slice(0, 5).join(' · ') || 'ninguna');
+
   const SIN_MILES = /(?<![\d.,])\d{5,}(?![\d.,])/g;
   T('ninguna cifra de cinco dígitos va impresa sin separador de miles',
     !buscar(A, SIN_MILES).length && !buscar(B, SIN_MILES).length,
@@ -1406,6 +1443,54 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   const ASOLT = enLetras(ASOL);
   const SOMB = cajaDeA(r.soloA, 'La sombra de lo construido');
   const SOMBT = enLetras(SOMB);
+
+  /* ── §6 (v903) · el volumen que nadie autorizó ──────────────────────
+     El pliego v2 lo trajo impreso de la corrida real: «204.544 m² de sombra»
+     sobre «4 pisos sobre 523.161 m² de huella», llamado **el volumen de la
+     norma**, en una hoja cuyo panel de norma urbana dice SIN DATO OFICIAL.
+     Los 4 pisos son el valor de ejemplo con el que llega la herramienta: una
+     cuenta correcta sobre un supuesto inventado, presentada como medición.
+
+     Esta suite mide la rama del VACÍO —su lote es un predio de tres mil
+     metros que nadie ha normado, que es el caso de cualquier estudiante el
+     primer día—. La rama medida, la del que ya fue a la curaduría, la miden
+     `tlaminaedu`, `tpliegogrande` y `tmasanalisis`, que escriben los tres
+     índices con los campos de verdad. Las dos hacen falta: sin la primera la
+     hoja vuelve a inventarse una norma, y sin la segunda un «no se puede
+     calcular» puesto en todas partes pasaría por bueno. */
+  console.log('\n  -- §6 · sin índices del POT no hay volumen permitido --');
+  const SOMPRO = cajaDeA(r.soloA, 'La sombra que proyecta');
+  const somproTxt = enLetras(SOMPRO);
+  T('la caja sigue en la hoja: no desaparece, cambia de forma', !!SOMPRO,
+    SOMPRO ? somproTxt.slice(0, 70) : 'no está');
+  T('y NO imprime un volumen que nadie autorizó',
+    !!SOMPRO && !/pisos que permite la norma/.test(somproTxt) && !/m² de sombra fuera del lote/.test(somproTxt),
+    (somproTxt.match(/\d+ pisos que permite la norma|[\d.]+ m² de sombra fuera del lote/) || ['no lo imprime'])[0]);
+  T('lo dice como vacío, y nombra los tres índices que faltan',
+    /Sin dato oficial disponible/.test(somproTxt) &&
+    /índices de ocupación y construcción/.test(somproTxt) && /altura máxima/.test(somproTxt),
+    (somproTxt.match(/Haría falta[^.]{0,120}/) || ['no lo dice'])[0]);
+  T('y se pinta como los otros vacíos, no como una medición',
+    /caja-vacio/.test(SOMPRO), /caja-vacio/.test(SOMPRO) ? 'ámbar y a trazos' : 'como si midiera');
+  /* La regla de la v880: un vacío que solo nombra lo que falta es un muro.
+     Con el trámite y el sustituto declarado es una tarea de una tarde. */
+  T('cierra en cómo se consigue, con la curaduría y su término',
+    /Cómo se consigue/.test(somproTxt) && /curaduría/.test(somproTxt) && /días hábiles/.test(somproTxt),
+    /Cómo se consigue/.test(somproTxt) ? 'con el trámite' : 'nombra el documento y calla el trámite');
+  T('y remite a lo que sí se puede leer: la sombra de lo CONSTRUIDO',
+    /sombra de lo CONSTRUIDO hoy/.test(somproTxt) && /no de un volumen supuesto/.test(somproTxt),
+    (somproTxt.match(/Lo que hay no es eso[^.]{0,90}/) || ['no lo dice'])[0]);
+  /* Y el mapa tampoco: una mancha de sombra se mira y se cree, así que
+     dejarlo mientras la caja dice que no se puede calcular sería desmentir
+     el aviso con la figura de al lado. */
+  T('y el mapa de las manchas por hora tampoco se dibuja',
+    !/data-m="sombra-proyecto"/.test(r.soloA || ''),
+    /data-m="sombra-proyecto"/.test(r.soloA || '') ? 'lo dibuja igual' : 'no se dibuja');
+  /* La guarda, contra pasarse de corregir: la sombra de lo CONSTRUIDO —que
+     es de la altura medida del sector y no de ninguna norma— tiene que
+     seguir imprimiéndose. Es cierto antes y tiene que seguir siéndolo. */
+  T('y la sombra de lo construido, que sí está medida, sigue en la hoja',
+    !!SOMB && /m/.test(SOMBT), SOMB ? 'sigue' : 'se la llevó por delante');
 
   console.log('\n  -- §17 · la presión de crecimiento, por sus proxies --');
   /* El pliego lo dijo con esas palabras: «se resolvió con pérdida de

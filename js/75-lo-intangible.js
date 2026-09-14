@@ -71,7 +71,7 @@
               'muro. La distancia real es el doble de la que sale medida.' },
     { id: 'agradable', nombre: 'Da gusto estar', geom: 'zona',
       color: '#1E9E6A', ico: '★',
-      pregunta: '¿Dónde te quedarías un rato sin tener nada que hacer?',
+      pregunta: '¿Dónde se quedaría un rato sin tener nada que hacer?',
       porQue: 'Es lo más difícil de explicar y lo más importante de copiar. ' +
               'Si algo funciona ahí, conviene saber qué es antes de proponer otra cosa.' }
   ];

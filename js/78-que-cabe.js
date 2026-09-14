@@ -98,7 +98,7 @@
       con: 'Solo hace falta si el lote está cerca del río o de una quebrada.' },
     { que: '¿Hay microzonificación sísmica de Cúcuta?',
       donde: 'Secretaría de Planeación Municipal',
-      trae: 'Si existe, MANDA sobre el Aa y el Av que URBIS te mostró, y puede duplicar ' +
+      trae: 'Si existe, MANDA sobre el Aa y el Av que URBIS le mostró, y puede duplicar ' +
             'la aceleración de diseño.',
       con: 'Es una pregunta de sí o no; si la respuesta es sí, pida el documento.' }
   ];

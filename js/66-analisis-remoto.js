@@ -73,7 +73,7 @@
 
   var MENSAJES = {
     ausente: {
-      edu:  'Falta la licencia del curso. Pídasela a tu profesor: es un enlace que la instala sola.',
+      edu:  'Falta la licencia del curso. Pídasela a su profesor: es un enlace que la instala sola.',
       gen:  'Falta la licencia de URBIS, o no es válida.'
     },
     formato:  { edu: 'Esa licencia no tiene el formato correcto. Pídale el enlace a su profesor.',

@@ -186,7 +186,7 @@ const archivos=['Ana','Luis'].map((autor,a)=>{
     o.curso=(R.cursoDePrueba()||[]).length;
     const t=(H().textContent||'').replace(/\s+/g,' ').trim();
     o.loDice=/quedó guardado con/i.test(t) && /pestaña «Sector»/i.test(t);
-    o.cuenta=/1 marca tuya/.test(t) && /2 recorridos traídos/.test(t);
+    o.cuenta=/1 marca suya/.test(t) && /2 recorridos traídos/.test(t);
     o.frase=(t.match(/[^.]{0,40}(quedó guardado con)[^.]{0,150}\./i)||[])[0]||'no dice nada';
     o.hayTraba=!!H().querySelector('.pcr-traba');
     o.hayGuardadoMal=!!H().querySelector('.pcr-guardado-mal');

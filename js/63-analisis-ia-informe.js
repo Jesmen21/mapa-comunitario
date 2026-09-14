@@ -422,7 +422,7 @@
     // pero como respaldo del dato principal.
     const est = estrellasDeScore(v.score);
     const cg = r.compatibilidadGlobal;
-    return '<div class="bloque"><h2>Viabilidad del proyecto <em>· qué tan bien encaja TU proyecto en este lote</em></h2>' +
+    return '<div class="bloque"><h2>Viabilidad del proyecto <em>· qué tan bien encaja SU proyecto en este lote</em></h2>' +
       '<div class="hero">' +
         gaugeSVG(v.score, col) +
         '<div class="hero-est">' + estrellasHTML(est) + '</div>' +
@@ -447,7 +447,7 @@
   function bloqueUnidades(r){
     if (!r.recomendacionesUnidades || !r.recomendacionesUnidades.length) return '';
     return r.recomendacionesUnidades.map(g =>
-      '<div class="bloque"><h2>Qué poner en tus ' + g.cantidad + ' unidad(es) de "' + esc(g.usoNombre) + '"</h2>' +
+      '<div class="bloque"><h2>Qué poner en sus ' + g.cantidad + ' unidad(es) de "' + esc(g.usoNombre) + '"</h2>' +
       '<table class="tbl-mini">' + g.opciones.map(o =>
         '<tr><td class="pos">' + o.unidadesSugeridas + '×</td><td>' + o.icono + ' ' + esc(o.nombre) + '</td><td class="num"><b>' + o.score + '</b>/100</td></tr>').join('') +
       '</table></div>').join('');
@@ -730,7 +730,7 @@
   function bloqueGuia(r){
     const i = r.indicadores || {};
     const filas = [
-      ['⭐ Viabilidad', 'Qué tan bien encaja TU proyecto en este lote concreto.'],
+      ['⭐ Viabilidad', 'Qué tan bien encaja SU proyecto en este lote concreto.'],
       ['🏆 Oportunidad urbana', 'Qué tan buen sitio es el lote, sin importar qué se construya.'],
       ['👥 Población', r.stats.poblacionEsCensal
         ? 'Habitantes reales del área según el Censo DANE, no una estimación.'
@@ -989,7 +989,7 @@
   function bloqueComoLeer(r){
     const i = r.indicadores || {};
     const filas = [
-      ['Viabilidad', 'qué tan bien encaja TU proyecto en este lote.'],
+      ['Viabilidad', 'qué tan bien encaja SU proyecto en este lote.'],
       ['Exposición vial', 'visibilidad y acceso que aporta la malla vial cercana.'],
       ['Oportunidad urbana', 'qué tan buen sitio es el lote, sin importar qué se construya.'],
       ['Estrato', 'capacidad de compra del sector; orienta producto y precio.'],

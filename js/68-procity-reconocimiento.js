@@ -1664,10 +1664,10 @@
   }
 
   var ORIGEN_TEXTO = {
-    area: 'el área que dibujaste',
-    lote: 'el lote que marcaste',
+    area: 'el área que dibujó',
+    lote: 'el lote que marcó',
     mapa: 'el centro del mapa, donde estaba la vista',
-    ficha: 'el sector guardado que retomaste',
+    ficha: 'el sector guardado que retomó',
     /* Sin este renglón, un análisis lanzado desde la ventana de un trazo
        imprimía «el centro del mapa, donde estaba la vista» —el texto por
        omisión— sobre un centro que no salió del mapa. Declarar mal la
@@ -3195,7 +3195,7 @@
           esc(am.discrepan.map(function (d) {
             return d.cual + ' (' + d.normativa + ' contra ' + d.mapa + ')'; }).join(' ni en ')) +
           '. Acá se toma el de la capa de zonas NSR-10, que es la que existe para servir la ' +
-          'norma. Verificalo contra la tabla A.2.3-2 antes de usarlo en un cálculo.</p>'
+          'norma. Verifíquelo contra la tabla A.2.3-2 antes de usarlo en un cálculo.</p>'
         : '') +
       (am.masa
         ? '<h3>Movimientos en masa</h3><table>' +
@@ -5310,11 +5310,36 @@ function donaHTML(datos, colorDe, nombreDe) {
          de los mapas de usos: son exactamente los colores de los puntos. */
       var colorDe = function (x) { return COL[x.id] || '#94a3b8'; };
       var nombreDe = function (x) { return sinEmoji(nombreGrupo(x.id)); };
+      /* §10a (v903) · UN SOLO TOTAL EN TODA LA HOJA, o la diferencia dicha.
+         El pliego v2 lo trajo de la corrida real: «2.526 usos» en el
+         encabezado, el plano y los anillos, y «2.523» acá y en las
+         propuestas. No es un error de cuenta: esta tabla descarta a
+         propósito el grupo «otro» —el uso que el motor no pudo clasificar—
+         porque una barra de «indefinido» no dice nada. Pero descartarlo en
+         silencio deja dos totales impresos a dos palmos uno de otro, y quien
+         lee no tiene cómo saber cuál creer.
+
+         No se arregla metiendo «otro» en la tabla ni cambiando el total del
+         encabezado: los dos números son correctos y miden cosas distintas.
+         Se arregla diciéndolo, que es lo que el pliego pide con esas
+         palabras: «si hay registros descartados, decir cuántos y por qué». */
+      var sumaTabla = filas.reduce(function (a, x) { return a + x.n; }, 0);
+      var fueraTabla = Math.max(0, (Number(st.total) || 0) - sumaTabla);
       return dona(filas, colorDe, nombreDe) +
       '<p class="lee-min">Convenciones de los mapas de usos: cada punto del plano lleva el ' +
       'color de su categoría.</p>' +
       barras(filas.slice(0, 8), nombreDe, function (x) { return x.n; },
-      function (x) { return x.n; }, colorDe);
+      function (x) { return x.n; }, colorDe) +
+      '<p class="nota">Esta tabla suma <b>' + sumaTabla.toLocaleString('es-CO') + '</b> de los <b>' +
+      (Number(st.total) || 0).toLocaleString('es-CO') + '</b> usos que cuenta el sector' +
+      (fueraTabla
+        ? ': ' + (fueraTabla === 1
+            ? 'el que falta lleva etiquetas que el motor no pudo clasificar en ninguna categoría'
+            : 'los ' + fueraTabla.toLocaleString('es-CO') + ' que faltan llevan etiquetas que el motor ' +
+              'no pudo clasificar en ninguna categoría') +
+          ', y se cuentan en el total del sector pero no acá, porque una barra de «sin clasificar» ' +
+          'no dice qué hay.'
+        : ', que son todos.') + '</p>';
       })(), 'g3') +
 
       /* ── Qué manda en el sector ───────────────────────────────────────
@@ -5802,7 +5827,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (am.discrepan && am.discrepan.length
       ? '<p class="lee">Las dos capas del SGC no coinciden en ' +
       esc(am.discrepan.map(function (d) { return d.cual; }).join(' ni en ')) +
-      '; acá va el de la capa de zonas NSR-10. Verificalo contra la tabla A.2.3-2.</p>'
+      '; acá va el de la capa de zonas NSR-10. Verifíquelo contra la tabla A.2.3-2.</p>'
       : '') +
       '<p class="nota">Valor del municipio de ' + esc(am.municipio) + ', no del lote: la ' +
       'NSR-10 da Aa y Av por municipio. Si hay microzonificación sísmica, manda esa. ' +
@@ -6786,13 +6811,48 @@ function donaHTML(datos, colorDe, nombreDe) {
          quién se lo tapa el lote, que es la pregunta que hace un jurado
          apenas ve la volumetría y que hasta ahora no tenía respuesta en
          ninguna parte de la aplicación. */
-      caja('La sombra que proyecta',
+      /* La clase de la caja depende de lo que el cuerpo resultó ser, así que
+         `sp` se lee AFUERA: un vacío se pinta en ámbar y a trazos como los
+         otros cuatro, y desde dentro del cuerpo no se puede decidir la clase
+         de la caja que lo envuelve. */
       (function () {
       var sp = o.sombraProyecto !== undefined ? o.sombraProyecto
              : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })();
+      var cuerpoSp = (function () {
       if (!sp || !sp.horas || !sp.horas.length) return '';
       var util = sp.horas.filter(function (h) { return !h.bajo; });
       if (!util.length) return '';
+      /* §6 (v903) · SIN LOS ÍNDICES DEL POT no hay volumen permitido que
+         proyecte sombra: hay un volumen de ejemplo. La cuenta se hizo igual
+         —y sigue estando, para el día que alguien cargue la ficha
+         normativa—, pero lo que se imprime es el vacío, con las mismas
+         palabras y el mismo trámite que el panel de norma urbana: es el
+         MISMO documento el que llena a los dos.
+
+         Y cierra en lo que sí se puede leer, que es la regla de la v880:
+         un vacío que solo nombra lo que falta es un muro; con el sustituto
+         y su límite escrito al lado es una tarea. */
+      if (!sp.normaPuesta) {
+        return panelVacio(
+          'los índices de ocupación y construcción y la altura máxima del predio: la ficha ' +
+          'normativa del POT o un concepto de la curaduría urbana. Sin los tres no hay volumen ' +
+          'permitido, y ' +
+          (sp.faltanIndices.length === 3
+            ? 'los tres siguen en el ejemplo con el que llega la herramienta'
+            : 'todavía falta ' + sp.faltanIndices.join(' y ')) + '.',
+          'la sombra de lo CONSTRUIDO hoy, en la banda ambiental: sale de la altura que de verdad ' +
+          'se repite en el sector, no de un volumen supuesto. No dice qué sombra echaría un ' +
+          'proyecto nuevo, dice la que hay.',
+          { que: 'ficha normativa del predio, o concepto de norma urbanística',
+            quien: 'curaduría urbana del municipio; donde no hay curaduría, la Secretaría de Planeación',
+            como: 'solicitud de concepto de norma en la ventanilla de la curaduría; algunas la reciben en línea',
+            llevar: 'matrícula inmobiliaria o cédula catastral, dirección y plano de localización',
+            tarda: 'entre 5 y 15 días hábiles según el municipio; tiene costo en la mayoría de curadurías',
+            mientras: 'la sombra de la altura construida del sector, que es una cota medida de lo que ' +
+                      'hay y NO de lo que la norma deja levantar' }) +
+          '<p class="nota">Con los tres índices escritos en «Qué cabe en el lote» este panel vuelve ' +
+          'solo, con la sombra hora por hora y los vecinos que toca.</p>';
+      }
       return '<div class="kpis">' +
       '<div class="k"><b>' + sp.pisos + '</b><small>pisos que permite la norma</small></div>' +
       '<div class="k"><b>' + sp.alturaM + '</b><small>m de alto</small></div>' +
@@ -6824,7 +6884,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       'cada lindero. Sirve para saber a quién le cae la sombra y en qué orden de magnitud.' +
       (sp.vecinosSinPisos ? ' ' + sp.vecinosSinPisos + ' vecinos sin pisos registrados no se ' +
       'pueden evaluar como afectados.' : '') + '</p>';
-      })(), 'g3') +
+      })();
+      return caja('La sombra que proyecta', cuerpoSp,
+                  (sp && !sp.normaPuesta) ? 'g3 caja-vacio' : 'g3');
+      })() +
 
       caja('Lo levantado en campo',
       (function () {
@@ -7002,7 +7065,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       caja('Percepción del lugar',
         panelCampo('A la hora que fuiste, con los cinco sentidos: anote día y hora, y lo que estas cifras no ven.',
-          ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde te sentiste a gusto, y dónde no']),
+          ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde se sintió a gusto, y dónde no']),
         'fam-campo caja-campo') +
       caja('Lo que no cambia',
         panelCampo('Permanencias: lo que lleva décadas ahí y el barrio defendería —un árbol, una tienda, una esquina, una fiesta—. Nada de esto está en los datos.',
@@ -7244,6 +7307,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        midió: una banda sin mediciones dice eso, no inventa. Es la parte de
        la capa educativa que va en la estructura: la pregunta arriba, la
        respuesta abajo, y en medio las cajas que la sostienen. */
+    /* §7 (v903) · el recuento del panel de coherencia, para que la conclusión
+       de SU banda lo diga sin volver a contarlo. Lo deja puesto el propio
+       panel al armarse —que ocurre antes de repartir las bandas— y por eso
+       se declara acá arriba: dos rutas de cálculo para la misma cuenta no
+       divergen el día que se escriben, divergen la tanda siguiente (v879). */
+    var resumenCoherencia = null;
     function conclusionDeBanda(id) {
       var num = function (x) { return String(x).replace('.', ','); };
       var fmt = function (n) { return Number(n).toLocaleString('es-CO'); };
@@ -7350,16 +7419,99 @@ function donaHTML(datos, colorDe, nombreDe) {
               var nv = (cmp.nuevos || []).length, ds = (cmp.discrepancias || []).length, sv = (cmp.sinVerificar || []).length;
               return nv + ' usos nuevos encontrados en la calle, ' + ds + ' discrepancias con el mapa y ' + sv + ' registros sin verificar.';
             }
-            return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar, y trae tres paneles para llenar a mano en la calle.';
+            /* §8 (v903) · el número lo cuenta el programa. Decía «tres
+               paneles» desde la v848 y son tres de percepción MÁS los cuatro
+               vacíos obligatorios, así que el renglón se quedó viejo el día
+               que la v880 sacó servicios públicos de la lista — y lo habría
+               vuelto a hacer la siguiente vez que alguien agregue o quite
+               uno. Un conteo escrito a mano en un texto fijo es una cifra
+               que envejece sola, que es lo mismo que la lista viva (v866)
+               dicho dentro de la hoja. */
+            var nPerc = PANELES_DE_CAMPO.length, nVac = PANELES_DE_VACIO.length;
+            var plural = function (n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); };
+            return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar, y trae ' +
+              plural(nPerc, 'panel de percepción', 'paneles de percepción') + ' para llenar a mano ' +
+              'en la calle y ' + plural(nVac, 'vacío obligatorio', 'vacíos obligatorios') +
+              ' con el trámite que lo resuelve.';
           case 'medir':
             /* La advertencia que de verdad hace falta acá: tres de estas seis
                levantan justo lo que la hoja declara faltando, y una plantilla
                en blanco se puede leer como si la carencia ya estuviera
                resuelta. El formulario es el camino, no el dato. */
-            return 'Seis plantillas en blanco, cada una con dónde se pega lo que se traiga. ' +
+            /* §8 (v903) · igual acá: «Seis plantillas» eran seis el día que se
+               escribió, y el día que entre la séptima nadie se va a acordar
+               de este renglón. */
+            return (function (n) { return n === 1 ? 'Una plantilla en blanco' : n + ' plantillas en blanco'; })(PLANTILLAS_DE_CAMPO.length) +
+                   ', cada una con dónde se pega lo que se traiga. ' +
                    'Una plantilla vacía no mide nada: las carencias que cierran —la frecuencia ' +
                    'de las rutas, el perfil acotado, el cupo— siguen abiertas hasta que alguien ' +
                    'las llene en la calle.';
+          /* ── §7 (v903) · las dos bandas que cerraban con el texto de la
+             bolsa de sobras ────────────────────────────────────────────
+             «Riesgo y servicios» y «Coherencia de las cifras» no tenían
+             `case`, así que caían las dos en el `default` y cerraban con
+             «Estas mediciones no pertenecen a ninguna de las bandas
+             anteriores» — sobre dos bandas que tienen tema propio, título
+             propio y pregunta propia impresos dos centímetros más arriba.
+             El pliego de ajustes v2 lo trajo de la hoja real.
+
+             No es un descuido aislado: el `default` es una trampa abierta,
+             y cualquier banda nueva sin su `case` vuelve a caer en ella.
+             Por eso `tdoslaminas` persigue la CLASE desde la v883 —ninguna
+             hoja puede imprimir la conclusión de emergencia— y desde esta
+             versión también que ninguna banda con tema propio cierre con la
+             de la bolsa. */
+          case 'riesgo':
+            var amR = o.amenaza !== undefined ? o.amenaza : S.amenaza;
+            if (amR && amR.nivel) partes.push('amenaza sísmica ' + String(amR.nivel).toLowerCase() +
+              (amR.aa != null ? ' (Aa ' + num(amR.aa) + ')' : ''));
+            /* Los nombres salen de leer la caja, no de recordarlos: no hay
+               `pctInundable` en ninguna parte —lo que hay es `cobertura`,
+               `trPeor` y `dentroDe`—, y escribirlo de memoria habría dejado
+               esta línea en blanco sin que nada se pusiera rojo. Es la regla
+               de la v863 en la frase que la cita. */
+            var inuR = o.inundacion !== undefined ? o.inundacion : S.inundacion;
+            if (inuR && !inuR.sinDato && !inuR.cobertura)
+              partes.push('inundación sin modelar en este punto, que no es lo mismo que sin riesgo');
+            else if (inuR && !inuR.sinDato && inuR.trPeor != null)
+              partes.push('el lote cae en la mancha de ' + inuR.trPeor + ' años');
+            else if (inuR && !inuR.sinDato)
+              partes.push('modelado de inundación leído: el lote queda fuera de las manchas');
+            var infR = o.infra !== undefined ? o.infra
+                     : (function () { try { return infraDeServicios(res); } catch (e2) { return null; } })();
+            if (infR && infR.n != null)
+              partes.push(infR.n === 1 ? '1 pieza de infraestructura registrada en el mapa'
+                                       : infR.n + ' piezas de infraestructura registradas en el mapa');
+            /* Y lo que esta banda tiene que dejar dicho pase lo que pase: lo
+               de arriba es lo que hay mapeado o modelado, y el riesgo que
+               vale en una curaduría lo declara una autoridad. Sin esta
+               frase, una amenaza «media» calculada se lee como una amenaza
+               media declarada, que es la confusión que esta banda existe
+               para deshacer. */
+            return (partes.length ? partes.join(' · ') + '. ' : '') +
+              'Nada de esto es el estudio oficial: la amenaza que vale en una curaduría la declara ' +
+              'el POT o el Servicio Geológico, y la cobertura de servicios la certifica cada empresa. ' +
+              'Los dos vacíos de esta banda dicen a quién se le pide.';
+          case 'coherencia':
+            /* Los números salen del panel que la banda contiene, no de
+               recalcular los chequeos: dos rutas para la misma cuenta
+               divergen a la tanda siguiente (v879). `resumenCoherencia` lo
+               deja puesto el propio panel al armarse, que ocurre antes de
+               repartir las bandas. */
+            var rc = resumenCoherencia;
+            if (!rc) return 'El panel de esta banda cruza las cifras de las dos láminas entre sí. ' +
+              'No se pudo redactar su recuento: lo que vale es lo que el panel imprime.';
+            if (rc.contra) partes.push(rc.contra === 1 ? '1 contradicción entre las dos láminas'
+                                                       : rc.contra + ' contradicciones entre las dos láminas');
+            if (rc.fallan) partes.push(rc.fallan === 1 ? '1 chequeo falla' : rc.fallan + ' chequeos fallan');
+            partes.push((rc.total - rc.fallan - rc.sinDato - rc.cedidos - rc.contra) + ' de ' + rc.total + ' pasan');
+            if (rc.sinDato) partes.push(rc.sinDato + ' no se pueden correr y nombran la fuente que faltaría');
+            if (rc.cedidos) partes.push(rc.cedidos + (rc.cedidos === 1 ? ' se quedó' : ' se quedaron') +
+              ' sin cruzar porque su panel cedió el sitio en esta hoja');
+            return partes.join(' · ') + '. ' +
+              (rc.contra
+                ? 'Mientras una contradicción esté abierta, ninguno de los dos valores sostiene una conclusión.'
+                : 'Un chequeo que no se pudo correr no es un chequeo que pasa: darlo por bueno es el error típico de esta hoja.');
           case 'sintesis':
             return 'Cinco propuestas ordenadas por necesidad medida y factibilidad del predio. URBIS recomienda; el estudiante y el jurado deciden.';
           default:
@@ -8498,8 +8650,8 @@ function donaHTML(datos, colorDe, nombreDe) {
                 (pu.poblacion ? ' Población de referencia: ' + fmtN(pu.poblacion) + ' hab.' : '') + '</small>' +
               /* El espacio de la lectura propia: la parte de la lámina que
                  URBIS no puede hacer, a mano y con renglones. */
-              '<div class="propia"><b>Tu lectura</b>' +
-                '<small>¿Con cuál de las cinco te queda, y qué viste en la calle que estas cifras no ven? ' +
+              '<div class="propia"><b>Su lectura</b>' +
+                '<small>¿Con cuál de las cinco se queda, y qué vio en la calle que estas cifras no ven? ' +
                 'Escríbalo acá, a mano: es la parte de la lámina que URBIS no puede hacer.</small>' +
                 '<div class="renglones" style="--n:3"></div></div>';
           })(), 'sintesis-pie');
@@ -8515,6 +8667,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       var cedidos = lista.filter(function (x) { return x.estado === 'cedio'; }).length;
       var contra = lista.filter(function (x) { return x.estado === 'contradice'; }).length;
       var cruzados = lista.filter(function (x) { return x.cruzado; }).length;
+      resumenCoherencia = { total: lista.length, fallan: fallan, sinDato: sinDato,
+                            cedidos: cedidos, contra: contra, cruzados: cruzados };
       /* La marca de estado se DIBUJA con la hoja de estilo, no con un
          glifo: los signos de visto y de cruz cuentan como emoji, y el
          pliego no lleva ni uno —se comprueba en `tlamina`—. Un cuadrito de
@@ -9963,7 +10117,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!pide) return;
       if (pide === 'int-dibujar') {
         S.pestanaFicha = pestanaDe('int-dibujar');
-        S.intAviso = 'Elija un lápiz y marque en el mapa lo que viste en la calle.';
+        S.intAviso = 'Elija un lápiz y marque en el mapa lo que vio en la calle.';
         pintar(); return;
       }
       despachar(b, pide);
@@ -10388,7 +10542,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         rehacerUnion(); pintarAcuerdos(false);
         // Que el borrado también quede escrito: si no, se quitan y vuelven.
         guardarFichaViva();
-        S.aviso = 'Se quitaron los recorridos traídos. El tuyo queda.';
+        S.aviso = 'Se quitaron los recorridos traídos. El suyo queda.';
         pintar(); return;
       }
       if (acc === 'int-acuerdos-mapa') {
@@ -11547,7 +11701,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (!c) {
             return '<div class="pcr-campo">' +
               '<label class="pcr-lab">El lote a intervenir</label>' +
-              '<p class="pcr-pista">Marque en el mapa el terreno sobre el que vas a proponer algo. ' +
+              '<p class="pcr-pista">Marque en el mapa el terreno sobre el que va a proponer algo. ' +
               'Después elige cuánto de su alrededor quiere estudiar: el círculo azul sale ' +
               'centrado en el lote.</p>' +
               '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-lote-btn">' +
@@ -11726,7 +11880,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         h4('lapiz', 'Trazos guardados') +
       '</div>' +
       '<p class="pcr-pista">Son solo las formas, sin análisis. Toque una para ponerla otra vez ' +
-      'en el mapa y analizarla cuantas veces quieras: cada análisis se guarda aparte, arriba.</p>' +
+      'en el mapa y analizarla cuantas veces quiera: cada análisis se guarda aparte, arriba.</p>' +
       trazos.map(function (t) {
         var cuando = new Date(t.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
         var n = analisisDeTrazo(t.id);
@@ -11763,8 +11917,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Toque un sector para volver a ver su informe entero, con sus gráficas, ' +
       'sin repetir el análisis. ' +
       (hayCampo
-        ? 'Y después de la salida a campo, compare: vas a ver cuánto agregó el curso.'
-        : 'Cuando el curso mapee en estas zonas, acá vas a poder comparar el antes y el después.') +
+        ? 'Y después de la salida a campo, compare: va a ver cuánto agregó el curso.'
+        : 'Cuando el curso mapee en estas zonas, acá va a poder comparar el antes y el después.') +
       '</p>' +
       fichas.map(function (f) {
         var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
@@ -12421,7 +12575,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>' +
       '<p class="pcr-pista">El perímetro es el borde que se recorre a pie; ' +
       'el área, lo que se puede ocupar. Las dos cifras salen de la geometría que ' +
-      (esPol ? 'dibujaste' : 'define el radio') + ', no de una estimación.</p>';
+      (esPol ? 'dibujó' : 'define el radio') + ', no de una estimación.</p>';
   }
 
   /* Alturas de lo construido. El dato viene edificio por edificio de
@@ -14131,7 +14285,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         }).join('') +
       '</div>' +
       '<p class="pcr-conc">Ninguna de estas dice <b>qué</b> construir. Dicen a qué hay que ' +
-      'responder: la respuesta es el proyecto, y esa es tuya.</p>';
+      'responder: la respuesta es el proyecto, y esa es suya.</p>';
   }
 
   function determinantesComoTexto(st) {
@@ -14463,7 +14617,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
       { id: 'lo-intangible', t: 'Lo intangible', g: 'El trabajo del curso',
         listo: !!(S.intangible && S.intangible.length),
-        falta: 'marque lo que viste en la calle',
+        falta: 'marque lo que vio en la calle',
         dato: (S.intangible || []).length + ' marcas' },
       { id: 'lo-levantado-en-campo', t: 'Lo levantado en campo', g: 'El trabajo del curso',
         listo: !!S.campo, falta: 'compare con lo del curso', dato: 'lo que encontró la salida' },
@@ -14776,7 +14930,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     lista.push({ id: 'intangible', t: 'Lo intangible',
                  listo: !!(S.intangible && S.intangible.length),
                  dato: (S.intangible || []).length + ' marcas',
-                 falta: 'marque lo que viste en la calle' });
+                 falta: 'marque lo que vio en la calle' });
     /* Los seis que les faltaban a sus cajas. */
     var mvD = st.movilidad || null;
     lista.push({ id: 'llega', t: 'Cómo se llega', pide: 'trazado',
@@ -14795,10 +14949,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                  listo: !!((st.nucleos || []).length),
                  dato: 'los locales juntos y su calle en rojo', falta: 'no hay comercios agrupados en el área' });
     lista.push({ id: 'sombra-proyecto', t: 'La sombra que proyecta',
-                 listo: (function () { try { var x = sombraDelProyecto(); return !!(x && x.horas && x.horas.some(function (h) { return !h.bajo; })); }
+                 /* La MISMA condición con la que el mapa se dibuja (v857): si
+                    se separan, la ficha promete un mapa que la lámina no
+                    imprime. Desde la v903 incluye los índices del POT. */
+                 listo: (function () { try { var x = sombraDelProyecto(); return !!(x && x.normaPuesta && x.horas && x.horas.some(function (h) { return !h.bajo; })); }
                                        catch (e) { return false; } })(),
                  dato: 'a quién le cae la sombra del volumen permitido, a las 9, 12 y 15',
-                 falta: 'marque el lote y mida el trazado' });
+                 falta: 'escriba los índices del POT en «Qué cabe en el lote»' });
     lista.push({ id: 'anillos', t: 'Cómo cambia al alejarse',
                  listo: (st.anillos || []).filter(function (a) { return a.n > 0; }).length >= 2,
                  dato: 'los anillos de distancia con lo que hay en cada uno', falta: 'analice el sector' });
@@ -14893,7 +15050,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                    : 'lo que solo se ve caminando'),
                  color: '#E23D3D', on: !!S.intEnMapa,
                  listo: !!(S.intangible && S.intangible.length),
-                 falta: 'marque lo que viste en la calle' });
+                 falta: 'marque lo que vio en la calle' });
     /* Lo que consigue cada capa gris: la misma regla que las cajas del
        pliego —ver `cajasDelPliego`— y la misma llave del despachador, para
        que tocar la capa apagada sea tocar el botón que la mide. Las capas
@@ -15738,7 +15895,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     // ── La sombra que arroja el volumen permitido, sobre el plano: a quién le cae.
     var spM = o.sombraProyecto !== undefined ? o.sombraProyecto
             : (function () { try { return sombraDelProyecto(); } catch (e) { return null; } })();
-    if (spM && spM.horas && spM.horas.some(function (h) { return !h.bajo && h.sombra && h.sombra.length >= 3; })) {
+    /* §6 (v903) · sin los índices del POT no se dibuja. Un mapa de manchas de
+       sombra es más convincente que el párrafo que lo acompaña —se mira y se
+       cree—, así que dejarlo mientras la caja se vuelve un vacío sería
+       desmentir el aviso con la figura de al lado. Vuelve solo el día que
+       alguien escriba la ficha normativa. */
+    if (spM && spM.normaPuesta &&
+        spM.horas && spM.horas.some(function (h) { return !h.bajo && h.sombra && h.sombra.length >= 3; })) {
       var TINTE_P = { 9: '#F2B441', 12: '#7C4DFF', 15: '#0A6F9E' };
       var polisP = [], tocadosP = [], vistosT = {};
       spM.horas.forEach(function (h) {
@@ -16767,7 +16930,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     trazado: 'se mide', terreno: 'se mide', clima: 'se pide', amenaza: 'se pide',
     cobertura: 'se lee la foto', evolucion: 'se pide', 'evolucion-alta': 'se traen las fotos',
     'lote-dibujar': 'se marca',
-    'int-dibujar': 'vas a los lápices', campo: 'se compara', analizar: 'se analiza'
+    'int-dibujar': 'va a los lápices', campo: 'se compara', analizar: 'se analiza'
   };
   function bloquePliego(res) {
     if (!res) return '';
@@ -16875,7 +17038,7 @@ function donaHTML(datos, colorDe, nombreDe) {
              después, es una sorpresa. */
           '<p class="pcr-pista">Cada mapa va en la banda de <b>su tema</b> y ocupa el doble de ' +
           'ancho que una caja de cifras. Entran <b>todos</b> los que enciendas; la hoja no crece, ' +
-          'así que cuantos más pongas, más chica se compone. Con «probar si cabe» se ve a qué ' +
+          'así que cuantos más ponga, más chica se compone. Con «probar si cabe» se ve a qué ' +
           'tamaño va a salir.</p>' +
           '<div class="pcr-capas">' +
             mps.map(function (m) {
@@ -19330,7 +19493,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (fs.length < 2) {
       return S.cotejo.length === 1
         ? '<p class="pcr-pista pcr-cotejo-pista">Elija <b>otro sector</b> para comparar con el que ' +
-          'marcaste. Se pueden poner hasta cuatro lado a lado.</p>'
+          'marcó. Se pueden poner hasta cuatro lado a lado.</p>'
         : '';
     }
     var nombres = fs.map(function (f) { return f.nombre || ('Sector del ' + fmtFecha(f.ts)); });
@@ -19564,7 +19727,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       return '<div class="pcr-curso">' +
         h4('perfil', 'Vista del curso') +
         '<p class="pcr-pista">Todavía no hay puntos levantados en este dispositivo. Cuando el curso ' +
-        'empiece a mapear, acá vas a ver cuánto lleva cada quien y qué parte de la ciudad falta.</p>' +
+        'empiece a mapear, acá va a ver cuánto lleva cada quien y qué parte de la ciudad falta.</p>' +
         '</div>';
     }
     var sinTocar = r.sectores.filter(function (x) { return x.n === 0; });
@@ -20376,7 +20539,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!g) return;
     if (!g.ok) {
       var texto = (g.error || 'No se pudo guardar el sector.') +
-        ' Lo que hiciste sigue en pantalla, pero se pierde si cierra la aplicación.' +
+        ' Lo que hizo sigue en pantalla, pero se pierde si cierra la aplicación.' +
         ' Exporte su recorrido con «Compartir el mío» y borre sectores guardados' +
         ' desde la pestaña «Sector» para hacer sitio.';
       if (S.avisoGuardado !== texto) { S.avisoGuardado = texto; pintar(); }
@@ -20396,11 +20559,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (g.sinTrazado) {
       partes.push('No cabía la geometría del trazado —' + g.sinTrazado + ' huellas de edificios y ' +
         'las calles—, así que este sector se guardó sin ella: al reabrirlo, los llenos y vacíos y ' +
-        'las sombras piden volver a medir el trazado. Las cifras y lo tuyo quedaron completos.');
+        'las sombras piden volver a medir el trazado. Las cifras y lo suyo quedaron completos.');
     }
     if (g.sinPuntos) {
       partes.push('Este sector se guardó sin sus ' + g.sinPuntos + ' usos, que no cabían: ' +
-        'al reabrirlo hay que volver a analizar para verlos en el mapa. Las cuentas, tus ' +
+        'al reabrirlo hay que volver a analizar para verlos en el mapa. Las cuentas, sus ' +
         'marcas, el lote y los recorridos del curso quedaron completos.');
     }
     /* Se repinta también cuando el aviso DESAPARECE. Si no, una advertencia de
@@ -21756,7 +21919,31 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     var peor = horas.slice().sort(function (a, b) { return b.m2Fuera - a.m2Fuera; })[0] || null;
     var masTocados = horas.reduce(function (m, h) { return Math.max(m, h.tocados.length); }, 0);
+    /* ── §6 (v903) · ¿esto es LA NORMA, o son los ejemplos? ──────────────
+       El pliego de ajustes v2 lo trajo impreso: «204.544 m² de sombra sobre
+       un volumen de 4 pisos sobre 523.161 m² de huella», llamado **el
+       volumen de la norma**, en una hoja cuyo panel de norma urbana dice
+       SIN DATO OFICIAL dos palmos más abajo. Los 4 pisos y el 0,6 de
+       ocupación son `Q.porDefecto()`: números de ejemplo que la pantalla de
+       «Qué cabe» rotula como tales y que la lámina imprimía como norma.
+
+       Es la falta de la v875 en su forma más cara: una cuenta correcta
+       sobre un supuesto inventado, presentada como medición. El
+       discriminante existía y nadie lo miraba —`S.indicesPuestos`, que
+       marca los campos que una persona escribió de verdad—, igual que
+       `puntos` en la v875 y `cu.edificios` en la v899.
+
+       Las tres que definen el VOLUMEN son las del POT: ocupación,
+       construcción y altura. El tamaño de vivienda no entra —lo decide
+       quien proyecta y no cambia la sombra—. */
+    var puestos = S.indicesPuestos || {};
+    var DEL_POT = [['io', 'el índice de ocupación'], ['ic', 'el índice de construcción'],
+                   ['pisos', 'la altura máxima en pisos']];
+    var faltanIndices = DEL_POT.filter(function (c) { return !puestos[c[0]]; })
+                              .map(function (c) { return c[1]; });
     return {
+      normaPuesta: faltanIndices.length === 0,
+      faltanIndices: faltanIndices,
       horas: horas, pisos: pisos, alturaM: Math.round(alturaM),
       huellaM2: q.huellaM2, areaLoteM2: Math.round(areaLote),
       vecinosCerca: vecinos.length,
@@ -21976,7 +22163,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var a = preA || analisisDelLote();
     if (!a) {
       return h4('area', 'El lote a intervenir') +
-        '<p class="pcr-pista">El área dice <b>qué hay alrededor</b>. El lote dice <b>dónde vas a ' +
+        '<p class="pcr-pista">El área dice <b>qué hay alrededor</b>. El lote dice <b>dónde va a ' +
         'proponer algo</b>. Márquelo y sale su propio análisis: cuánto mide, a qué calles da, ' +
         'cuántos metros de frente sobre cada una, hacia dónde mira cada fachada y qué tiene pegado ' +
         'al lado.</p>' +
@@ -22858,7 +23045,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       return cab +
         '<p class="pcr-pista">Todo lo que hay más arriba se bajó de algún lado. Esto no: <b>solo lo ' +
         'tiene quien caminó</b>. Dónde no pasarías de noche, qué esquina queda a oscuras, dónde ' +
-        'huele mal, dónde te quedarías un rato. Nada de eso está en ningún mapa, y es la mitad de ' +
+        'huele mal, dónde se quedaría un rato. Nada de eso está en ningún mapa, y es la mitad de ' +
         'lo que decide un proyecto.</p>' +
         (guardada ? '<p class="pcr-pista">Esta ficha se guardó sin marcas.</p>' : lapices) +
         '<p class="pcr-conc">Elija un lápiz y toque el mapa. Se puede hacer sentado mirando la foto, ' +
@@ -22919,7 +23106,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                 ? (m.nota ? '<q>' + esc(m.nota) + '</q>' : '')
                 : '<input type="text" class="pcr-int-nota" data-pcr-nota="' + esc(m.id) + '" ' +
                   'value="' + esc(m.nota || '') + '" maxlength="220" ' +
-                  'placeholder="Por qué, en tus palabras" />') +
+                  'placeholder="Por qué, en sus palabras" />') +
             '</div>' +
             (guardada ? '' :
               '<button type="button" class="pcr-int-x" data-pcr="int-borrar" data-m="' +
@@ -23050,7 +23237,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (hay
         ? '<p class="pcr-pista">Queda escrito con la ficha y sale en la lámina: es lo que hace ' +
           'citable el número.</p>'
-        : '<p class="pcr-pista">Dos líneas ahora te ahorran volver a la ventanilla dentro de tres ' +
+        : '<p class="pcr-pista">Dos líneas ahora le ahorran volver a la ventanilla dentro de tres ' +
           'meses, cuando nadie se acuerde de qué acuerdo era.</p>') +
     '</div>';
   }
@@ -23139,7 +23326,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          la encontraba a ella en vez de a su resultado—. */
       '<p class="pcr-conc pcr-ojo"><b>Estos índices los pone usted.</b> Salen del POT del ' +
       'municipio y URBIS no los conoce ni los verifica: acá solo se hace la cuenta con lo que ' +
-      'escribas. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
+      'escriba. Si están mal, el resultado sale mal con la misma cara de seguridad. Buscarlos ' +
       'es parte del ejercicio.</p>' +
       (guardada ? '' : '<div class="pcr-cabe-campos">' + campos + '</div>') +
       bloqueFuenteIndices(guardada) +
@@ -23243,7 +23430,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       return cab + explica +
         ((S.intCurso || []).length
           ? ''
-          : '<p class="pcr-conc">Todavía es un solo recorrido: el tuyo. Con uno no hay acuerdo ' +
+          : '<p class="pcr-conc">Todavía es un solo recorrido: el suyo. Con uno no hay acuerdo ' +
             'posible, y creer que uno coincide consigo mismo sería la peor lectura de todas.</p>') +
         traer;
     }
@@ -24240,7 +24427,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-pista">Son unas <b>' + est.teselas + '</b> imágenes, cerca de <b>' +
       String(est.mb).replace('.', ',') + ' MB</b>. Conviene hacerlo con wifi.' +
       (est.foto
-        ? ' Estás con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
+        ? ' Está con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
           'navegador le reserva mucho más espacio del que ocupa, así que puede que no quepan ' +
           'todas. Si solo necesita ubicarte, cambie a un mapa de dibujo antes de guardar.'
         : '') + '</p>' +
@@ -24987,7 +25174,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<b>Estos dos botones son los que sirven en el celular:</b> bajan un archivo que ya trae ' +
         'el tamaño del pliego escrito dentro, así que no hay que elegir papel en ninguna parte ' +
         '—se lleva el archivo al plotter y sale a 60 × 90—. Tarda unos segundos: la hoja se ' +
-        'dibuja entera antes de guardarse. Lo que no mediste no sale: mida el terreno, el clima ' +
+        'dibuja entera antes de guardarse. Lo que no midió no sale: mida el terreno, el clima ' +
         'y el trazado antes si quiere que aparezcan.</p>' +
         (S.pdfArmando
           ? '<p class="pcr-conc" id="pcr-pdf-estado">' + esc(S.pdfAviso || 'Dibujando la lámina…') + '</p>'
@@ -25906,7 +26093,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var t = S.trabaDescartar;
     if (!t) return '';
     var piezas = [];
-    if (t.marcas) piezas.push(t.marcas + (t.marcas === 1 ? ' marca tuya' : ' marcas tuyas'));
+    if (t.marcas) piezas.push(t.marcas + (t.marcas === 1 ? ' marca suya' : ' marcas suyas'));
     if (t.curso) piezas.push(t.curso + (t.curso === 1 ? ' recorrido traído' : ' recorridos traídos'));
     if (t.lote) piezas.push('el lote');
     if (t.indices) piezas.push('los índices del POT');
@@ -26161,7 +26348,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Y se dice adónde fue a parar, con las cifras de lo que había.
     if (hecho && hecho.hay) {
       var piezas = [];
-      if (hecho.marcas) piezas.push(hecho.marcas + (hecho.marcas === 1 ? ' marca tuya' : ' marcas tuyas'));
+      if (hecho.marcas) piezas.push(hecho.marcas + (hecho.marcas === 1 ? ' marca suya' : ' marcas suyas'));
       if (hecho.curso) piezas.push(hecho.curso + (hecho.curso === 1 ? ' recorrido traído' : ' recorridos traídos'));
       if (hecho.lote) piezas.push('el lote');
       if (hecho.indices) piezas.push('los índices del POT');

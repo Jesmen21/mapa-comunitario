@@ -338,7 +338,7 @@
     $('aia-uso-sub').value = u.sub;
     $('aia-uso-nombre').value = u.nombre || '';
     $('aia-uso-donde').innerHTML = '📍 Ubicación: <b>' + Number(u.lat).toFixed(6) + ', ' +
-      Number(u.lng).toFixed(6) + '</b><small>Toca el mapa si quieres moverlo.</small>';
+      Number(u.lng).toFixed(6) + '</b><small>Toque el mapa si quiere moverlo.</small>';
     $('aia-uso-guardar').textContent = 'Guardar cambios y re-analizar';
     S.map.panTo([u.lat, u.lng]);
     resaltarUso(u);
@@ -837,8 +837,8 @@
         if (usoBase.generico || usoBase.contable) {
           const unidad = usoBase.unidad || 'unidades';
           const pregunta = usoBase.generico
-            ? '¿Cuántas unidades de "' + usoBase.nombre + '" tendrá el proyecto? URBIS te recomendará el mejor negocio para cada una.'
-            : '¿Cuántos/as ' + unidad + ' tendrá el proyecto? Déjalo en 1 si no lo sabes todavía.';
+            ? '¿Cuántas unidades de "' + usoBase.nombre + '" tendrá el proyecto? URBIS le recomendará el mejor negocio para cada una.'
+            : '¿Cuántos/as ' + unidad + ' tendrá el proyecto? Déjelo en 1 si no lo sabe todavía.';
           const cant = parseInt(prompt(pregunta, '1'), 10);
           usoFinal = Object.assign({}, usoBase, { cantidad: (cant > 0 ? cant : 1) });
         }
@@ -1087,7 +1087,7 @@
       asignados++;
     });
     if (asignados > 0) {
-      alert('✅ ' + asignados + ' uso(s) guardado(s) en la Matriz de Usos de tu celular. Se reconocerán automáticamente en todos tus análisis futuros.');
+      alert('✅ ' + asignados + ' uso(s) guardado(s) en la Matriz de Usos de su celular. Se reconocerán automáticamente en todos sus análisis futuros.');
       ejecutarAnalisis(); // recalcula con la clasificación nueva (usa caché, sin red)
     }
   }
@@ -1120,8 +1120,8 @@
       $('aia-aviso-otro').innerHTML =
         (nMan > 0
           ? '<p class="aia-aviso-manual">✍️ ' +
-            (nMan === 1 ? 'Un uso de este análisis lo agregaste tú'
-                        : nMan + ' usos de este análisis los agregaste tú') +
+            (nMan === 1 ? 'Un uso de este análisis lo agregó usted'
+                        : nMan + ' usos de este análisis los agregó usted') +
             ' y no viene' + (nMan === 1 ? '' : 'n') + ' del mapa abierto. ' +
             'Cuenta' + (nMan === 1 ? '' : 'n') + ' igual que los demás y sale' +
             (nMan === 1 ? '' : 'n') + ' con aro blanco en el mapa.</p>'
@@ -1136,7 +1136,7 @@
             '<b>🗂️ Bandeja de usos sin categoría</b>' +
             '<small>URBIS lleva guardados <b>' + band.patrones + '</b> ' +
               (band.patrones === 1 ? 'patrón distinto' : 'patrones distintos') +
-              ' (' + band.apariciones + ' apariciones) de todos tus análisis. ' +
+              ' (' + band.apariciones + ' apariciones) de todos sus análisis. ' +
               'Cópialos y pégalos en el chat para decidir a qué categoría va cada uno — ' +
               'y si alguno no encaja en ninguna, creamos una categoría nueva.</small>' +
             '<div class="aia-bandeja-btns">' +
@@ -1257,7 +1257,7 @@
       $('aia-recomend-unidades').hidden = ru.length === 0;
       if (ru.length) {
         $('aia-recomend-unidades').innerHTML = ru.map(g =>
-          '<h3>' + g.icono + ' ¿Qué poner en tus ' + g.cantidad + ' unidad' + (g.cantidad === 1 ? '' : 'es') + ' de "' + escHTML(g.usoNombre) + '"?</h3>' +
+          '<h3>' + g.icono + ' ¿Qué poner en sus ' + g.cantidad + ' unidad' + (g.cantidad === 1 ? '' : 'es') + ' de "' + escHTML(g.usoNombre) + '"?</h3>' +
           '<div class="aia-unidad-opciones">' + g.opciones.map(o => {
             const color = o.nivel === 'Alta' ? '#4ade80' : (o.nivel === 'Media' ? '#f5b942' : '#f87171');
             return '<div class="aia-unidad-op"><span class="aia-unidad-cant">' + o.unidadesSugeridas + '×</span>' +
@@ -1781,7 +1781,7 @@
       '<div class="aia-so"><div class="aia-so-est">' + '★'.repeat(est) + '☆'.repeat(5 - est) + '</div>' +
       '<div class="aia-so-info"><b style="color:' + colSO + '">' + so.valor + '<small>/100</small></b>' +
       '<span style="background:' + colSO + '">Oportunidad ' + escHTML(so.nivel) + '</span></div></div>' +
-      '<p class="aia-ind-nota">👉 El indicador que resume si <b>tu proyecto</b> conviene o no es ' +
+      '<p class="aia-ind-nota">👉 El indicador que resume si <b>su proyecto</b> conviene o no es ' +
       '<b>Viabilidad</b> (arriba, con las estrellas grandes) — este de aquí solo describe el lugar.</p>' +
 
       '<h3>📐 Indicadores del sector</h3>' +

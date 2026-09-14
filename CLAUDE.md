@@ -4368,6 +4368,172 @@ antes de correrla la hoja NO compare la densidad de usos —cierto en las dos
 versiones—, que sin pares no haya nombres escapados dos veces, y las dos de la
 rama `sin-area`, que en la v901 se cumplen por no haber referencia ninguna.
 
+## Un volumen que nadie autorizó, y dos bandas mudas (v903)
+
+§6 a §10 del pliego de ajustes v2. Cinco cosas de distinta clase con un solo
+hilo: **la hoja afirmando por descuido lo que no puede sostener.**
+
+### §6 · «el volumen de la norma» eran los valores de ejemplo
+
+El pliego lo trajo impreso de la corrida real:
+
+> LA SOMBRA QUE PROYECTA — 204.544 m² de sombra sobre 4 pisos y 523.161 m²
+> de huella, «el volumen de la norma»
+
+y dos palmos más abajo, en la misma hoja, el panel de norma urbana diciendo
+SIN DATO OFICIAL. Los 4 pisos y el 0,6 de ocupación son `Q.porDefecto()`:
+números de ejemplo con los que llega la herramienta, que la pantalla de «Qué
+cabe en el lote» rotula como tales —«ejemplo», en gris— y que la lámina
+imprimía como norma.
+
+Es la falta de la v875 en su forma más cara: **una cuenta correcta sobre un
+supuesto inventado, presentada como medición**. Y el discriminante existía y
+nadie lo miraba —`S.indicesPuestos`, que marca los campos que una persona
+escribió de verdad—, igual que `puntos` en la v875 y `cu.edificios` en la
+v899. Tercera vez.
+
+Sin los tres índices del POT —ocupación, construcción y altura; el tamaño de
+vivienda no entra porque lo decide quien proyecta y no cambia la sombra— el
+panel imprime el **vacío**, con el trámite del panel de norma urbana: es el
+mismo documento el que llena a los dos. Y **el mapa tampoco se dibuja**: una
+mancha de sombra se mira y se cree, así que dejarla mientras la caja dice que
+no se puede calcular sería desmentir el aviso con la figura de al lado.
+
+Vuelve solo el día que alguien escriba la ficha normativa, que es lo que §6
+pide: no hay lista ni bandera, el panel se enciende solo cuando `indicesPuestos` los trae.
+
+#### La clase de la caja se decide AFUERA del cuerpo
+
+`caja(titulo, cuerpo, clase)` recibe la clase como tercer argumento, así que
+desde dentro del cuerpo no se puede pedir el ámbar de los vacíos. `sp` se lee
+una vez fuera y el cuerpo se arma en su propia función. De paso sale gratis
+lo que más importa: `caja()` **ya suprime el pie de método en las cajas
+`caja-vacio`** desde la v880, así que el método «sombra del volumen permitido
+a las 9, 12 y 15 h» desaparece solo. La costura estaba puesta.
+
+### §7 · dos bandas cerrando con el texto de la bolsa de sobras
+
+«Riesgo y servicios» (lámina A) y «Coherencia de las cifras» (lámina B) no
+tenían `case` en `conclusionDeBanda`, así que caían las dos en el `default` y
+cerraban con «Estas mediciones no pertenecen a ninguna de las bandas
+anteriores» — sobre dos bandas con tema, título y pregunta propios impresos
+dos centímetros más arriba.
+
+* **Riesgo** cierra en lo suyo —amenaza sísmica, mancha de inundación, piezas
+  de infraestructura— y en lo que esta banda tiene que dejar dicho pase lo que
+  pase: nada de eso es el estudio oficial. Sin esa frase, una amenaza «media»
+  calculada se lee como una amenaza media declarada, que es justamente la
+  confusión que la banda existe para deshacer (v853).
+* **Coherencia** cierra en su recuento: cuántos pasan, cuántos fallan, cuántos
+  no se pueden correr, cuántos se quedaron sin cruzar porque su panel cedió.
+  Los números salen de `resumenCoherencia`, que **deja puesto el propio
+  panel** al armarse; recalcular los chequeos para el pie sería la segunda
+  ruta de cálculo de la v879.
+
+Y una del método, que es la regla de la v863 en la frase que la cita: escribí
+`inu.pctInundable` de memoria y **ese campo no existe** —lo que hay es
+`cobertura`, `trPeor` y `dentroDe`—. La línea habría salido en blanco sin que
+nada se pusiera rojo.
+
+### §8 · «trae tres paneles» y eran siete
+
+La conclusión de la banda de campo decía «tres paneles para llenar a mano»
+desde la v848. Son tres de percepción **más** los vacíos obligatorios, que
+eran cinco y la v880 dejó en cuatro. El renglón se quedó viejo el día que
+cambió la lista, y lo habría vuelto a hacer la próxima vez.
+
+Ahora los cuenta el programa —`PANELES_DE_CAMPO.length`, `PANELES_DE_VACIO.length`,
+`PLANTILLAS_DE_CAMPO.length`—, con su singular y su plural. **Un conteo escrito
+a mano dentro de un texto fijo es una cifra que envejece sola**: es la lista
+viva de la v866 dicha dentro de la hoja.
+
+### §9 · la hoja habla de usted
+
+La v878 sacó el voseo. El TUTEO se quedó, y la v897 lo dejó escrito con su
+número: «otra familia y otra decisión — si la aplicación habla de usted en
+todas partes o no… darla por hecha de paso sería tomar una decisión de
+producto que nadie tomó». §9 la toma: «unificar todo en usted».
+
+Medido con el mismo recorrido de `revisar.js` —fuera de comentarios y fuera de
+expresiones regulares— salieron **48 en el módulo educativo** y 209 más en el
+resto de la aplicación. Se hicieron los 48 y los del panel de licencia, que es
+la primera pantalla que ve un estudiante: **uno por uno y no con un reemplazo
+masivo**, porque cambiar el pronombre no conjuga los verbos de alrededor y la
+v878 dejó cinco frases torcidas por hacerlo al revés.
+
+**Los 209 del resto de la aplicación no se tocaron**, y se dice acá con su
+número: son módulos que este pliego no nombra —reportes, mascotas, deporte,
+presencia— y unificarlos es una decisión de producto sobre toda la aplicación,
+no sobre esta lámina. Queda medido para la tanda que la tome.
+
+#### La guarda va sobre el PAPEL, no sobre los archivos
+
+Y esto costó una vuelta averiguarlo. Recorriendo el código, «te» y «tu» casan
+dentro de identificadores —`var te = ter.elevacion`— y una guarda con esa
+clase de falso positivo termina con una lista de excepciones que envejece
+hasta no significar nada, que es la razón por la que la v895 no persigue «clase
+sin regla». Sobre los **nodos de texto de las dos hojas compuestas** no hay
+identificadores: lo que está ahí es lo que el jurado lee. La guarda vive en
+`tdoslaminas` y persigue la clase entera, no las tres frases del reporte.
+
+#### Y mi propio barrido tenía el fallo de siempre
+
+Escribí `/\s|$/.test(f.slice(-1))` para saltar la comprobación de la letra
+siguiente cuando la forma acaba en espacio. **`$` casa la cadena vacía
+siempre**, así que la guarda nunca corría y «puedes» casaba dentro de
+«puedeSubir»: el primer inventario dio seis casos de humo. Es la trampa de la
+v878 y de la v891, en mi propio barrido, por tercera vez. La guarda buena del
+proyecto —la que pone los límites a mano— no se equivocó.
+
+### §10a · un solo total en toda la hoja, o la diferencia dicha
+
+«2.526 usos» en el encabezado, el plano y los anillos; «2.523» en «Qué hay,
+por categoría» y en las propuestas. No es un error de cuenta: esa tabla
+descarta a propósito el grupo «otro» —el uso que el motor no pudo
+clasificar— porque una barra de «indefinido» no dice nada.
+
+**No se arregla metiendo «otro» en la tabla ni cambiando el total del
+encabezado**: los dos números son correctos y miden cosas distintas. Se
+arregla diciéndolo, que es lo que el pliego pide con esas palabras —«si hay
+registros descartados, decir cuántos y por qué»—. La tabla imprime ahora su
+suma contra el total del sector y nombra la diferencia.
+
+### Los cuatro sectores de prueba, y las dos ramas
+
+La rama del vacío de §6 la mide `tdoslaminas`, cuyo lote es un predio de tres
+mil metros que nadie ha normado —el caso de cualquier estudiante el primer
+día—. La rama MEDIDA la miden `tlaminaedu`, `tpliegogrande` y `tmasanalisis`,
+que escriben los tres índices **con los campos de verdad** (la regla de la
+v871: para cambiar el estado desde una prueba se usa el botón).
+
+Las dos hacen falta, y por razones opuestas: sin la primera la hoja vuelve a
+inventarse una norma; sin la segunda, un «no se puede calcular» puesto en
+todas partes pasaría por bueno. Es la decimosexta vez que esta tanda de
+comprobaciones necesita las dos ramas para significar algo.
+
+`tlaminaedu` además pide los quince mapas del sector, y uno de ellos es este:
+sin los índices puestos, esa suite habría empezado a fallar por un cambio
+legítimo. Se hizo más precisa —ahora exige que el cierre hable de usted— y no
+más laxa.
+
+### Lo que §10 pide y esta versión NO hace
+
+Cuatro de las cinco cifras que §10 nombra no se pudieron perseguir desde acá,
+y decirlo es más útil que un arreglo a ojo:
+
+| | Por qué queda |
+|---|---|
+| b · dos tramos de edad con el mismo valor | pide reproducir el reparto del censo real; el doble del DANE no lo produce |
+| c · 3.760 contra 3.673 edificios | son dos consultas distintas —`out center` y `out geom`— y los paneles que las imprimen eligen con el MISMO ternario: la divergencia no se reproduce con este material |
+| d · 2014 y 2017 idénticos | pide la serie satelital real, que esta batería no descarga |
+| e · 6,3 % contra 6,2 % de pendiente | un redondeo en dos sitios, y el sector de prueba no lo produce |
+
+Las cuatro tienen la misma forma que §10a y el mismo arreglo posible —una
+cuenta, un sitio— pero **arreglar a ojo lo que no se puede medir es lo que
+este proyecto lleva cinco tandas deshaciendo** (la mudanza de la v882, la
+bisección de la v886, la fila de texto de la v901). Quedan con lo que se
+averiguó de cada una. §12 y §13 quedan enteras.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -83,7 +83,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     const H=()=>document.getElementById('pcr-hoja');
     const a=H().querySelector('[data-pcr="agrandar"]'); if(a){ a.click(); await esperar(400); }
     const t=(H().textContent||'').replace(/\s+/g,' ').trim();
-    o.loDice=/Se midió alrededor de el área que dibujaste/.test(t);
+    o.loDice=/Se midió alrededor de el área que dibujó/.test(t);
     o.conCoordenadas=/Se midió alrededor de[^.]*\(-?\d+\.\d{5}, -?\d+\.\d{5}\)/.test(t);
     o.enLaFicha=((R.leerFichas()||[])[0]||{}).centroDe;
     return o;
@@ -113,7 +113,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     await R.analizar(); await esperar(1500);
     await abrir();
     const t=(H().textContent||'').replace(/\s+/g,' ').trim();
-    o.loDice=/Se midió alrededor de el lote que marcaste/.test(t);
+    o.loDice=/Se midió alrededor de el lote que marcó/.test(t);
     o.enLaFicha=((R.leerFichas()||[])[0]||{}).centroDe;
     /* Y lo dicho tiene que ser verdad: el punto que se nombra es el mismo que
        la función que elige el centro devuelve. */
@@ -144,7 +144,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     await abrir();
     let t=(H().textContent||'').replace(/\s+/g,' ').trim();
     o.pideLaFuente=/De dónde los sacaste/.test(t);
-    o.avisaSinFuente=/Dos líneas ahora te ahorran/.test(t);
+    o.avisaSinFuente=/Dos líneas ahora le ahorran/.test(t);
     // Y se anota de dónde salieron.
     const doc=H().querySelector('[data-pcr-fuente="documento"]');
     const fec=H().querySelector('[data-pcr-fuente="fecha"]');
@@ -172,7 +172,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     if(bPC){ bPC.click(); await esperar(600); }
     R.accion('ver',{getAttribute:function(){ return idFicha; }}); await esperar(400);
     const html=R.htmlPestana();
-    o.diceElCentro=/Se midió alrededor de <b>el lote que marcaste<\/b>/.test(html);
+    o.diceElCentro=/Se midió alrededor de <b>el lote que marcó<\/b>/.test(html);
     o.diceLaFuente=/Acuerdo 0089/.test(html) && /2011, revisado en 2019/.test(html);
     /* Con los índices de SU ficha, no con los que haya en memoria —que tras
        recargar son los de ejemplo—. */

@@ -111,7 +111,7 @@
         try {
           navigator.share({
             title: 'Licencia de URBIS',
-            text: 'Toque este enlace para activar tu licencia de URBIS · ' +
+            text: 'Toque este enlace para activar su licencia de URBIS · ' +
                   (S.emitida.cliente || '') + ' · vence ' + (S.emitida.vence || ''),
             url: en2
           }).catch(function () {});
@@ -210,7 +210,7 @@
       .toISOString().slice(0, 10);
 
     return '<div class="ulic-emisor">' +
-      '<p class="ulic-pista">Solo para URBIS. Tu secreto <b>no se guarda</b>: se usa para esta ' +
+      '<p class="ulic-pista">Solo para URBIS. Su secreto <b>no se guarda</b>: se usa para esta ' +
       'emisión y se olvida al cerrar.</p>' +
 
       '<label class="ulic-lab" for="ulic-secreto">Secreto de URBIS</label>' +
@@ -289,7 +289,7 @@
       cuerpo =
         '<div class="ulic-ok">' +
           '<b>Este servidor todavía no exige licencia.</b>' +
-          '<p>El análisis funciona sin ella. Cuando URBIS active el cobro, acá vas a poner la tuya.</p>' +
+          '<p>El análisis funciona sin ella. Cuando URBIS active el cobro, acá va a poner la suya.</p>' +
         '</div>';
     } else if (e && e.ok) {
       var restante = e.restante === null ? 'sin tope' : e.restante;
@@ -325,13 +325,13 @@
         cuerpo +
 
         '<label class="ulic-lab" for="ulic-campo">' +
-          (esEducativo() ? 'La licencia del curso' : 'Tu licencia') + '</label>' +
+          (esEducativo() ? 'La licencia del curso' : 'Su licencia') + '</label>' +
         '<textarea id="ulic-campo" class="ulic-campo" rows="3" spellcheck="false" ' +
           'placeholder="URBIS1.xxxxx.xxxxx">' + esc(lic) + '</textarea>' +
         '<p class="ulic-pista">' + (esEducativo()
-          ? 'Es el texto largo que te pasó tu profesor. Empieza por <code>URBIS1.</code> — y si te mandó un ' +
+          ? 'Es el texto largo que le pasó su profesor. Empieza por <code>URBIS1.</code> — y si le mandó un ' +
             'enlace, con tocarlo alcanza: no hace falta copiar nada.'
-          : 'Es el texto largo que te entregó URBIS. Empieza por <code>URBIS1.</code>') + '</p>' +
+          : 'Es el texto largo que le entregó URBIS. Empieza por <code>URBIS1.</code>') + '</p>' +
 
         (S.error ? '<p class="ulic-error">' + esc(S.error) + '</p>' : '') +
 
@@ -351,7 +351,7 @@
         '<p class="ulic-nota">La licencia se guarda <b>solo en este navegador</b>. Si entra desde otro ' +
         'dispositivo, tiene que pegarla ahí también. ' + (esEducativo()
           ? 'No la publiques: es la del curso entero, y cualquiera que la tenga gasta el cupo de todas.'
-          : 'No la compartas: cualquiera que la tenga consume tu cupo.') + '</p>' +
+          : 'No la comparta: cualquiera que la tenga consume su cupo.') + '</p>' +
       '</div>';
   }
 
@@ -382,7 +382,7 @@
     }
     if (motivo === 'ausente') {
       return '<p class="ulic-alerta">' + (edu
-        ? 'Para analizar hace falta la licencia del curso. Tu profesor te pasa un <b>enlace</b> que la instala sola; también puede pegarla acá abajo.'
+        ? 'Para analizar hace falta la licencia del curso. Su profesor le pasa un <b>enlace</b> que la instala sola; también puede pegarla acá abajo.'
         : 'Para analizar hace falta una licencia. Péguela acá abajo.') + '</p>';
     }
     if (motivo === 'instalada') {
@@ -399,7 +399,7 @@
     var t = String((err && err.message) || err || '');
     if (!t) return 'No se pudo comprobar la licencia.';
     if (/failed to fetch|networkerror|load failed|network request failed/i.test(t)) {
-      return 'No se pudo hablar con el servidor de URBIS. Puede ser tu conexión, o que el ' +
+      return 'No se pudo hablar con el servidor de URBIS. Puede ser su conexión, o que el ' +
              'servidor esté despertando: espere unos segundos y vuelva a intentar.';
     }
     if (/abort|timeout|no respondió/i.test(t)) {

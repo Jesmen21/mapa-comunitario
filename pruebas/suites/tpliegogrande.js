@@ -157,6 +157,18 @@ const geo = [
     if (bc) { bc.click(); await esperar(900); }
     R.abrir(); await esperar(500);
     const asa = H().querySelector('[data-pcr="agrandar"]'); if (asa) { asa.click(); await esperar(400); }
+    /* §6 (v903) · los índices del POT, escritos con los campos de verdad.
+       Esta suite mide el pliego LLENO —el de la captura—, y desde esta
+       versión «La sombra que proyecta» solo dibuja su volumen cuando los
+       tres índices los puso una persona: con los de ejemplo imprime un
+       vacío, porque llamarlos «la norma» es inventarse una norma. La rama
+       del vacío la mide `tdoslaminas`. */
+    ['io', 'ic', 'pisos'].forEach(id => {
+      const el = H().querySelector('[data-pcr-idx="' + id + '"]');
+      if (el) { el.value = String(Number(el.value) || 1);
+                el.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+    await esperar(700);
 
     // ── Y una medición, para que la hoja vaya llena como la de la captura.
     const medir = async (acc, sel) => {

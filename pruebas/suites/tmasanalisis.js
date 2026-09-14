@@ -219,6 +219,22 @@ const CAPAS_IDEAM = [
     if (bc) { bc.click(); await esperar(900); }
     o.lados = (R.loteDePrueba() || []).length;
     R.abrir(); await esperar(400); await abrir();
+    /* §6 (v903) · LOS ÍNDICES DEL POT, escritos como los escribe una persona.
+       Desde esta versión «La sombra que proyecta» no dibuja un volumen de
+       ejemplo: sin los tres índices del POT imprime un vacío, porque llamar
+       «el volumen de la norma» a los valores con los que llega la
+       herramienta es inventarse una norma. Esta suite mide la rama MEDIDA
+       —la del estudiante que ya fue a la curaduría—, así que los escribe con
+       los campos de verdad; la rama del vacío la mide `tdoslaminas`, cuyo
+       lote es un predio que nadie ha normado.
+       Se escribe el mismo valor que ya está: lo que cambia no es la cuenta
+       sino QUIÉN puso el número, que es justo el discriminante. */
+    ['io', 'ic', 'pisos'].forEach(id => {
+      const el = H().querySelector('[data-pcr-idx="' + id + '"]');
+      if (el) { el.value = String(Number(el.value) || 1);
+                el.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+    await esperar(700); await abrir();
     const bAm = H().querySelector('[data-pcr="amenaza"]');
     if (bAm) { bAm.click(); }
     for (let i = 0; i < 60 && !R.estadoInundacion; i++) await esperar(400);

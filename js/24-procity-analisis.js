@@ -517,7 +517,7 @@
   }
   function guardarArea(){
     if (!S.cerrada || S.pts.length < 3) return;
-    const nombre = (prompt('¿Qué nombre le pones a esta área?\nEj. "Barrio La Libertad", "Corredor Av. Libertadores"', S.nombre || '') || '').trim();
+    const nombre = (prompt('¿Qué nombre le pone a esta área?\nEj. "Barrio La Libertad", "Corredor Av. Libertadores"', S.nombre || '') || '').trim();
     if (!nombre) return;
     const areas = leerAreas();
     areas.unshift({
@@ -596,7 +596,7 @@
   }
   function vistaTexto(ctx){
     const v = vistaDelMapa(ctx);
-    return icoCat(v.ico, 14) + 'Se genera sobre lo que estás viendo: <b>' + esc(v.etq) + '</b>' +
+    return icoCat(v.ico, 14) + 'Se genera sobre lo que está viendo: <b>' + esc(v.etq) + '</b>' +
       (v.id === 'todos' ? '' : '. Cambia la vista con el botón del ojo en el mapa.');
   }
 
@@ -1494,7 +1494,7 @@
     const areas = leerAreas();
     const guardadas = areas.length ? (
       '<div class="pca-guardadas">' +
-        '<div class="pca-sec"><span class="pca-sec-eyebrow">Tus áreas</span>' +
+        '<div class="pca-sec"><span class="pca-sec-eyebrow">Sus áreas</span>' +
           '<b>Áreas guardadas</b><small>Toque una para volver a cargarla en el mapa.</small></div>' +
         areas.map(a =>
           '<div class="pca-guardada pca-card-area">' +
@@ -1515,7 +1515,7 @@
     return '<div class="pca-panel">' +
       '<div class="pca-intro">' +
         '<span class="pca-intro-ico">' + ico('lapiz', 22) + '</span>' +
-        '<div><b>Dibuja el área que quieres analizar</b>' +
+        '<div><b>Dibuje el área que quiere analizar</b>' +
         '<small>Marca el contorno de un barrio, una manzana o un corredor y URBIS cuenta todo lo que la comunidad ya mapeó adentro — sin depender del radio de la ciudad.</small></div>' +
       '</div>' +
       '<button type="button" class="pca-btn-principal" data-u52-call="pca-dibujar">' + ico('lapiz') + 'Dibujar área en el mapa</button>' +
@@ -2963,7 +2963,7 @@ bloquesDiag,
     const verImp = S.verImplantacion;
     return '<div class="pcd-sel">' +
       h4('escuela', 'Qué dice esta área', 'pca-h-diag') +
-      '<p class="pcd-ayuda">Lectura del sector a partir de tus ' + d.ind.total +
+      '<p class="pcd-ayuda">Lectura del sector a partir de sus ' + d.ind.total +
         ' elementos mapeados' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
       '<div class="pcd-sub">Población y reparto de usos</div>' +
       (typeof D.htmlPoblacion === 'function' ? D.htmlPoblacion(d) : '') +
