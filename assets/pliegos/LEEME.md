@@ -10,6 +10,20 @@ reales ha encontrado en este módulo (v874, v882, v885, v887, v912).
 |---|---|
 | `pliego-v914-radio2500-normal.pdf` | Radio 2.500 m, letra por defecto. Cede dos paneles, los dos de peldaño 1. |
 | `pliego-v914-radio2500-de-pie.pdf` | El mismo sector con «Se lee de pie». Composición apretada a propósito: se ven los renglones de banda entera fuera, la línea de «Cedió en esta composición» por banda, y la numeración fija del pliego. |
+| `…-liviano.pdf` | Los dos anteriores a 0,8 MB en vez de 2,55, para que quepan en un adjunto. |
+
+## Los livianos son el MISMO papel
+
+`pruebas/aligerar-pliego.py` rehace el archivo con la misma página de 60 × 90
+y la misma imagen, con menos píxeles: de 120 a 84 puntos por pulgada. **El
+tamaño del papel no cambia**, así que medir milímetros sobre ellos —que es
+para lo que existen estos PDF— da exactamente lo mismo; lo único que baja es
+la nitidez de la letra chica. Para leer un pie de método de 2,6 mm conviene el
+pesado.
+
+```bash
+python3 pruebas/aligerar-pliego.py entrada.pdf salida.pdf 0.70 75
+```
 
 ## Lo que este archivo NO puede hacer
 
