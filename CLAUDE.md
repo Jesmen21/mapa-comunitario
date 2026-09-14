@@ -5733,6 +5733,77 @@ mirado de dónde salía cada número. Unificarlas es del motor y es otra tanda:
 queda con la premisa corregida, que es lo que le faltaba para poder hacerse
 bien.
 
+## La secuencia crece, y la última caja de una banda se protege (v913)
+
+Tres cosas del PDF de la v912, y la primera es un bug que introdujo la v912
+misma.
+
+### El número quedó fijo y se rompió la secuencia
+
+La v912 clavó el número al pliego y con eso destapó algo que antes no se veía:
+el reparto por filas empaqueta las bandas por lo que CABE, y cuando la
+siguiente no cabía **buscaba una de más adelante** (v857). Con la numeración
+renumerada sobre lo empaquetado eso era invisible; con el número fijo salió
+impreso como un salto hacia atrás —la lámina A en «01 02 03 04 08 07»—.
+
+**Las dos cosas tienen que ser ciertas a la vez**, y ahora lo son: el número
+sale del pliego y las bandas se imprimen ordenadas por ese número. Se cierra
+la fila en la primera banda que no quepa, sin mirar hacia adelante.
+
+Cuesta algo de papel en blanco cuando a una banda chica le sigue una grande
+—es el caso que la v857 resolvió al revés— y se paga: **un número fijo no
+sirve de nada si la secuencia no crece.** Un índice que retrocede se lee como
+un error de armado, no como una ausencia.
+
+Medido sobre las dos hojas: `01 02 03 04 07 08` y `05 06 09 10 11 12`.
+
+### La guarda de última caja: la fragilidad no estaba considerada
+
+El peldaño protege panel por panel y **no ve el tamaño de la banda**. Una
+banda de dos paneles muere completa al ceder dos; una de ocho pierde uno y
+sigue viva. Medido en el pliego real: cedió entera la banda «Cómo cambió el
+sitio» mientras sobrevivían Verde y agua, Curvas de nivel y El sitio, que son
+paneles sueltos de bandas grandes.
+
+**El último panel en pie de una banda sube un peldaño.** Así, antes de matar
+una banda entera, la hoja cede otro panel de una banda que sí puede
+permitírselo. Si aun así no cierra, la banda cede y se imprime su renglón, que
+es el que la v912 dejó puesto.
+
+«En pie» se calcula sobre la lista de CANDIDATOS y no sobre la banda entera:
+los paneles de peldaño 0 y los ya apagados no cuentan, porque la banda no los
+puede perder por este camino.
+
+Medido: con la guarda, la banda «Cómo cambió el sitio» **sobrevive**
+—`base=1 apretada=1`— donde antes caía entera.
+
+### Un panel que cede en una banda que sobrevive se iba en silencio
+
+El renglón de la v912 solo dispara cuando cae la banda completa. Un panel
+suelto que cede en una banda que sigue en pie no dejaba rastro: la banda queda
+con sus otras cajas y lo único que lo decía era el pie, mezclado con la lista
+de medidas de toda la hoja. Así desapareció «Susceptibilidad por pendiente»
+sin que nadie lo notara.
+
+Cada banda imprime ahora, debajo de su conclusión y en cuerpo pequeño, una
+línea: «Cedió en esta composición: …». Un apunte y no una alarma —la banda
+sigue en pie—, y se lee donde se lo busca en vez de al final de la hoja.
+
+### El conteo de usos que cambió entre dos PDF
+
+Reportado: 1.380 en la v911 contra 1.320 en la v912, sin explicación. Medido
+sobre el diff: **la v912 no toca una sola línea de conteo** —solo comentarios,
+la tabla de peldaños y el manejo de bandas—, así que la diferencia no puede
+venir del cambio de versión: viene de la consulta. Dos exportaciones a 2.500 m
+son dos respuestas de Overpass distintas, y a esa escala la consulta puede
+salir recortada.
+
+Lo que sí hay que decir es que el recorte YA se declara desde la v851 —el
+aviso viaja pegado a la lista— así que si hubiera sido truncamiento, la hoja
+lo diría. Queda como la comprobación que falta: que dos corridas del mismo
+sector con el mismo radio impriman el mismo total, o que la hoja diga por qué
+no. Eso pide guardar el total de la corrida anterior, que es otra tanda.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

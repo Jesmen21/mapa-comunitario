@@ -8050,14 +8050,21 @@ function donaHTML(datos, colorDe, nombreDe) {
         bandas.push({ g: { id: 'otras', titulo: 'Otras mediciones', que: 'sin categoría todavía' },
                       cajas: sueltas, peso: sueltas.length, fam: { tinte: '#6B7A8A', suave: '#EEF3F7' } });
       }
-      /* Las filas: bandas seguidas mientras quepan en el ancho. Y cuando la
-         siguiente no cabe, se mira si alguna de MÁS ADELANTE sí cabe antes
-         de cerrar la fila. Se vio en el pliego parado: la movilidad —tres
-         columnas— quedaba sola porque la demográfica pide seis, y sola se
-         estiraba a la fila entera con el perfil de la calle de medio metro;
-         la morfología, dos bandas después, pedía tres y cabía al lado. El
-         orden de lectura cambia de a una banda y la numeración lo sigue; la
-         síntesis no se adelanta nunca: cierra. */
+      /* Las filas: bandas seguidas mientras quepan en el ancho, y **en
+         orden estricto**.
+
+         Hasta la v912 esto miraba MÁS ADELANTE: cuando la siguiente no
+         cabía, buscaba una posterior que sí, y la numeración seguía al
+         empaquetado. Con el número fijo al pliego (v912) eso dejó de ser
+         invisible y pasó a ser un salto hacia atrás impreso —la lámina B
+         salía «05 09 10 11 · 06 · 12»—, que es lo que el lector no puede
+         leer: un índice que retrocede parece un error de armado.
+
+         Así que se cierra la fila en la primera que no quepa. Cuesta algo de
+         papel en blanco cuando a una banda chica le sigue una grande —es el
+         caso que la v857 resolvió al revés—, y se paga: **el número fijo no
+         sirve de nada si la secuencia no crece.** La síntesis sigue sin
+         adelantarse nunca: cierra. */
       var filas = [], pendientes = bandas.slice(), orden = [];
       var esSintesis = function (bd) { return /sintesis-pie/.test(bd.cajas[0] || ''); };
       while (pendientes.length) {
@@ -8070,7 +8077,9 @@ function donaHTML(datos, colorDe, nombreDe) {
             /* La síntesis solo entra si ya no queda nada más por poner: así
                comparte fila con la última banda cuando cabe —como antes— sin
                adelantarse a ninguna. */
-            if ((esSintesis(cand) && pendientes.length > 1) || fila.peso + cand.peso > ANCHO_FILA) continue;
+            /* `break` y no `continue`: saltarse una para meter la de atrás
+               es exactamente lo que rompía el orden. */
+            if ((esSintesis(cand) && pendientes.length > 1) || fila.peso + cand.peso > ANCHO_FILA) break;
             fila.bandas.push(cand); fila.peso += cand.peso; orden.push(cand);
             pendientes.splice(k, 1); k--;
           }
@@ -8088,6 +8097,26 @@ function donaHTML(datos, colorDe, nombreDe) {
            la prueba de que algo falta. */
         bd.n = NUM_BANDA[bd.g.id] || (i + 1);
         indice.push({ n: bd.n, titulo: bd.g.titulo, fam: bd.fam });
+      });
+      /* ── EL NÚMERO ES FIJO **Y** LA SECUENCIA CRECE (v913) ────────────
+         La v912 clavó el número al pliego y con eso rompió el orden: el
+         reparto por filas empaqueta las bandas por lo que CABE, así que la
+         lámina A salía «01 02 03 04 08 07» — la 08 antes que la 07. Antes no
+         se notaba porque el número se renumeraba sobre lo empaquetado, que
+         es justo lo que borraba la prueba de que algo faltaba.
+
+         Las dos cosas tienen que ser ciertas a la vez, y lo son: el número
+         sale del pliego y el ORDEN de impresión se ordena por ese número.
+         Reordenar no cambia lo que cabe —las filas son de ancho completo y
+         se apilan—, solo en qué orden se leen. */
+      filas.forEach(function (f) {
+        f.bandas.sort(function (a2, b2) { return (a2.n || 0) - (b2.n || 0); });
+      });
+      filas.sort(function (f1, f2) {
+        var m = function (f) {
+          return f.bandas.reduce(function (x, bd) { return Math.min(x, bd.n || 99); }, 99);
+        };
+        return m(f1) - m(f2);
       });
       var salida = filas.map(function (f) {
         return '<div class="fila">' + f.bandas.map(function (bd) {
@@ -8182,7 +8211,25 @@ function donaHTML(datos, colorDe, nombreDe) {
               '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
                 '" style="grid-template-columns:repeat(' + pistasDentro + ',minmax(0,1fr))">' +
                 bd.cajas.join('') + '</div>' +
-              '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>') +
+              '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>' +
+              /* ── LO QUE ESTA BANDA PERDIÓ, EN SU BANDA (v913) ───────────
+                 Un panel que cede en una banda que SOBREVIVE se iba en
+                 silencio: la banda queda con sus otras cajas, el renglón de
+                 banda entera no dispara y lo único que lo dice es el pie,
+                 mezclado con la lista de medidas de toda la hoja. Así
+                 desapareció «Susceptibilidad por pendiente» sin que nadie
+                 lo notara.
+                 Una línea, en cuerpo pequeño, debajo de la conclusión: lo
+                 que falta se lee donde se lo busca. */
+              (function () {
+                var f = (bd.g.cajas || []).filter(function (tt) {
+                  try { return (o.pliegoCedidas || []).indexOf(slugPliego(tt)) !== -1; }
+                  catch (eC) { return false; }
+                });
+                return f.length
+                  ? '<p class="b-cedio">Cedió en esta composición: ' + esc(f.join(' · ')) + '.</p>'
+                  : '';
+              })()) +
           '</div>';
         }).join('') + '</div>';
       }).join('');
@@ -9188,6 +9235,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* La banda que cedió entera (v912): el mismo rojo a trazos que el
          renglón de panel ausente, con más aire porque es todo lo que la
          banda trae. */
+      /* Lo que la banda perdió (v913): cuerpo pequeño, gris, debajo de la
+         conclusión. No es una alarma —la banda sigue en pie— es un apunte. */
+      '.b-cedio{ margin:0.6mm 0 0; font-size:2.6mm; line-height:1.25; color:#6B7A8A }' +
       '.b-fuera{ margin:1mm 0 0; padding:2.4mm 2.6mm; font-size:3.1mm; line-height:1.35;' +
         ' color:#8A1C1C; border:0.5mm dashed #C0392B; border-radius:1.2mm; background:#FDF3F2 }' +
       '.b-falta{ margin:1mm 0 0; padding:1.4mm 2mm; font-size:3mm; line-height:1.3;' +
@@ -16991,8 +17041,43 @@ function donaHTML(datos, colorDe, nombreDe) {
          los motores, y con un orden interno que sí está medido perder el
          desempate sería cambiar dos cosas a la vez. */
       var unidos = candidatos.concat(candMapas);
-      var todosLosCandidatos = [1, 2, 3].reduce(function (ac, n) {
-        return ac.concat(unidos.filter(function (id) { return peldanoDe(id) === n; }));
+      /* ── LA GUARDA DE ÚLTIMA CAJA (v913) ──────────────────────────────
+         El peldaño protege panel por panel y no ve el TAMAÑO de la banda:
+         una banda de dos paneles muere completa al ceder dos, y una de ocho
+         pierde uno y sigue viva. Medido en el pliego real: cedió entera la
+         banda «Cómo cambió el sitio» —sus dos paneles— mientras sobrevivían
+         Verde y agua, Curvas de nivel y El sitio, que son paneles sueltos de
+         bandas grandes. La fragilidad no estaba considerada.
+
+         El ÚLTIMO panel en pie de una banda sube un peldaño. Así, antes de
+         matar una banda entera, la hoja cede otro panel de una banda que sí
+         puede permitírselo. Si aun así no cierra, la banda cede y se imprime
+         su renglón, que es el que la v912 dejó puesto.
+
+         Se calcula sobre la lista de CANDIDATOS y no sobre la banda entera:
+         «en pie» es lo que todavía puede ceder, no lo que la banda trae —los
+         paneles de peldaño 0 y los ya apagados no cuentan, porque no los
+         puede perder por este camino. */
+      var bandaDe = {};
+      try {
+        GRUPOS.forEach(function (g) {
+          (g.cajas || []).forEach(function (tt) { bandaDe[slugPliego(tt)] = g.id; });
+        });
+        mapasMedidos(d).forEach(function (m) { if (m.g) bandaDe[m.id] = m.g; });
+      } catch (eG) { bandaDe = {}; }
+      var ultimoDeBanda = {};
+      unidos.forEach(function (id, i) {
+        var b = bandaDe[id]; if (!b) return;
+        var p = peldanoDe(id), mejor = ultimoDeBanda[b];
+        if (!mejor || p > mejor.p || (p === mejor.p && i > mejor.i)) ultimoDeBanda[b] = { id: id, p: p, i: i };
+      });
+      var esUltimo = {};
+      Object.keys(ultimoDeBanda).forEach(function (b) { esUltimo[ultimoDeBanda[b].id] = true; });
+      var peldanoEfectivo = function (id) {
+        return peldanoDe(id) + (esUltimo[id] ? 1 : 0);
+      };
+      var todosLosCandidatos = [1, 2, 3, 4].reduce(function (ac, n) {
+        return ac.concat(unidos.filter(function (id) { return peldanoEfectivo(id) === n; }));
       }, []);
       var conN = function (n) {
         var parte = todosLosCandidatos.slice(0, n);
