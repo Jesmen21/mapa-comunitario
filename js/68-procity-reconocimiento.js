@@ -7433,6 +7433,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     // cajas de mapa, que se arman antes de saber en qué banda van a caer.
     var GRUPO_FAM = {};
     GRUPOS.forEach(function (g) { GRUPO_FAM[g.id] = g.fam; });
+    /* El número FIJO de cada banda en el pliego, de su orden declarado y no
+       de cuántas sobrevivieron a la composición (v912). Corrido por las dos
+       hojas: la A y la B son el mismo pliego, así que la B sigue contando
+       donde la A terminó. «Otras mediciones» va al final, que es donde está.*/
+    var NUM_BANDA = {};
+    GRUPOS.forEach(function (g, i) { NUM_BANDA[g.id] = i + 1; });
+    NUM_BANDA.otras = GRUPOS.length + 1;
     /* Un mapa vale DOS columnas de su banda. Es lo que lo hace grande: al
        lado de las cajas de cifras del mismo tema, que valen una, el dibujo se
        lleva el doble de ancho. Con una sola columna quedaba igual de chico
@@ -7797,7 +7804,33 @@ function donaHTML(datos, colorDe, nombreDe) {
         g.cajas.forEach(function (tt) {
           (porTitulo[tt] || []).forEach(function (t) { suyas.push(t); peso += pesoDe(tt); puestas[tt] = true; });
         });
-        if (!suyas.length) return;
+        /* ── UNA BANDA COMPLETA NUNCA CEDE EN SILENCIO (v912) ──────────
+           Hasta la v911 una banda sin cajas se descartaba acá, y con ella se
+           iba su encabezado, su pregunta y su número. Medido sobre el pliego
+           real: la lámina A pasó de SEIS bandas a cuatro y desaparecieron
+           enteras «Riesgo y servicios» y «Cómo cambió el sitio» — sin que la
+           hoja dijera una palabra.
+
+           No es que la bisección apague por banda: apaga panel por panel, y
+           la banda se evapora cuando cedieron TODOS los suyos. Perder un
+           panel se ve —la caja no está—; perder la banda entera es
+           invisible, porque no queda ni el hueco.
+
+           Ahora la banda se queda con su encabezado, su pregunta y un
+           renglón único que dice qué llevaba. Y solo cuando de verdad
+           CEDIÓ: si ninguno de sus paneles llegó a componerse por falta de
+           dato, la banda no existe y decir que cedió sería declarar mal la
+           causa, que es la falta de la v867. */
+        if (!suyas.length) {
+          var cedidasAca = (g.cajas || []).filter(function (tt) {
+            try { return (o.pliegoCedidas || []).indexOf(slugPliego(tt)) !== -1; }
+            catch (eB) { return false; }
+          });
+          if (!cedidasAca.length) return;
+          bandas.push({ g: g, cajas: [], vacia: cedidasAca, peso: 1,
+                        fam: FAMILIAS[g.fam] || FAMILIAS.sitio });
+          return;
+        }
         bandas.push({ g: g, cajas: suyas, peso: peso, fam: FAMILIAS[g.fam] || FAMILIAS.sitio });
       });
       /* ── Apilar de a dos ─────────────────────────────────────────────
@@ -8046,7 +8079,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
       bandas = orden;
       bandas.forEach(function (bd, i) {
-        bd.n = i + 1;
+        /* ── LA NUMERACIÓN ES DEL PLIEGO, NO DE LO QUE SOBREVIVIÓ (v912)
+           Era `i + 1` sobre las bandas compuestas, así que al caer dos la
+           lámina A imprimía «01 → 04» y nadie podía saber que faltaban.
+           Ahora sale del orden declarado en `GRUPOS`, que es el mismo para
+           las dos hojas: si la 03 cede, la siguiente sigue siendo la 04 y
+           la 03 aparece con su renglón. Un número que se corre solo borra
+           la prueba de que algo falta. */
+        bd.n = NUM_BANDA[bd.g.id] || (i + 1);
         indice.push({ n: bd.n, titulo: bd.g.titulo, fam: bd.fam });
       });
       var salida = filas.map(function (f) {
@@ -8129,14 +8169,20 @@ function donaHTML(datos, colorDe, nombreDe) {
                que las cajas— después. Es la capa educativa en su forma más
                corta: un panel que se ve bien y no enseña, no sirve. */
             '<p class="b-pregunta">' + esc(bd.g.pregunta || '¿Qué dice este tema del sector?') + '</p>' +
-            faltaEnLaBanda(bd) +
+            (bd.vacia
+              ? '<p class="b-fuera"><b>Banda completa fuera de esta composición.</b> ' +
+                'Llevaba ' + esc(bd.vacia.join(' · ')) + '. Cedió entera para que la hoja ' +
+                'cerrara, y está medida: apague paneles desde la ficha o imprima esta hoja ' +
+                'suelta y vuelve con todo.</p>'
+              : faltaEnLaBanda(bd)) +
             /* Medias columnas: `cols` puede traer un ,5 por las baldosas de
                cifra, así que la rejilla se escribe al doble y cada caja
                ocupa dos pistas, la baldosa una y el mapa el doble de su peso. */
-            '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
-              '" style="grid-template-columns:repeat(' + pistasDentro + ',minmax(0,1fr))">' +
-              bd.cajas.join('') + '</div>' +
-            '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>' +
+            (bd.vacia ? '' :
+              '<div class="bcuerpo' + (renglones >= 2 && !bd.sinApilar ? ' dos' : '') +
+                '" style="grid-template-columns:repeat(' + pistasDentro + ',minmax(0,1fr))">' +
+                bd.cajas.join('') + '</div>' +
+              '<p class="b-cierre"><b>Conclusión</b>' + esc(conclusionDeBanda(bd.g.id)) + '</p>') +
           '</div>';
         }).join('') + '</div>';
       }).join('');
@@ -9139,6 +9185,11 @@ function donaHTML(datos, colorDe, nombreDe) {
          de la v890: los tres dicen «no le crea a esta parte de la hoja
          todavía». No es ámbar —el ámbar de la v849 es «esto no lo tenemos»
          y esto sí lo tenemos, solo que no cupo—. */
+      /* La banda que cedió entera (v912): el mismo rojo a trazos que el
+         renglón de panel ausente, con más aire porque es todo lo que la
+         banda trae. */
+      '.b-fuera{ margin:1mm 0 0; padding:2.4mm 2.6mm; font-size:3.1mm; line-height:1.35;' +
+        ' color:#8A1C1C; border:0.5mm dashed #C0392B; border-radius:1.2mm; background:#FDF3F2 }' +
       '.b-falta{ margin:1mm 0 0; padding:1.4mm 2mm; font-size:3mm; line-height:1.3;' +
         ' color:#8A1C1C; border:0.4mm dashed #C0392B; border-radius:1mm; background:#FDF3F2 }' +
       '.b-falta b{ letter-spacing:.02em }' +
@@ -16460,42 +16511,84 @@ function donaHTML(datos, colorDe, nombreDe) {
      3 último. Vale para cajas y para mapas, con el mismo número, porque un
      mapa y su caja de conteo son el mismo panel para quien lee la hoja. */
   var PELDANO_PLIEGO = {
-    /* 0 · NO CEDE NUNCA. Las once casillas y el cierre de cinco propuestas
-       —publicar nueve de once es mentir por omisión (v901)—, la banda de
-       coherencia, el plano y la foto, y los mapas de categoría de la banda
-       de forma, que van por regla más abajo.
-
-       `calor:todos` se queda acá y NO está en la lista dictada: lo pone la
-       v850, dicha dos veces y con el PDF en la mano —«nunca la foto ni el de
-       todos los usos»—. Sumarlo es honrar las dos instrucciones; quitarlo
-       habría sido dejar caer una por no estar repetida en la última. */
+    /* ── 0 · NO CEDE NUNCA ───────────────────────────────────────────── */
     'sintesis-del-sector': 0, 'coherencia-de-las-cifras': 0,
     'plano-del-sector': 0, 'plano': 0, 'foto': 0, 'calor:todos': 0,
 
-    /* 1 · CEDE PRIMERO */
-    'anillos': 1, 'como-cambia-al-alejarse': 1,
-    'comercial': 1, 'donde-esta-la-calle-comercial': 1,
-    'hitos': 1, 'hitos-y-nodos': 1,
-    'estratos': 1,
-    'el-grano-manzana-y-predio': 1,
-    /* «Verde y agua (el mapa; la caja de conteo se queda)»: el MAPA cede
-       primero y la caja no lo acompaña. Como el único nivel que no cede es
-       el 0 —y la caja no está en el 0—, «se queda» se lee como «cede la
-       última», que es el 3: es donde están las demás cajas de su banda. */
-    'agua': 1,
+    /* ── 1 · CEDE PRIMERO · LO HIPOTÉTICO ─────────────────────────────
+       El criterio no es «análisis secundario» —esa fue la primera versión y
+       estaba mal—: es **lo que descansa sobre un polígono trazado a mano o
+       sobre índices que no existen**. Un anillo de distancia es una medición
+       del territorio; una sombra sobre un lote sin norma es una suposición
+       con buena pinta. Entre perder una medición y perder una suposición, se
+       pierde la suposición.
 
-    /* 2 */
-    'como-cambio-el-sitio': 2, 'masa': 2, 'curvas': 2,
+       Medido, y por eso se corrigió: con los anillos y los hitos en el 1,
+       CUALQUIER hoja que tuviera que ceder algo empezaba por ahí — también
+       la de 750 m, que solo necesitaba soltar un panel. */
+    'la-sombra-de-los-vecinos': 1, 'sombras': 1,
+    'la-sombra-que-proyecta': 1, 'sombra-proyecto': 1,
+    'que-cabe-en-el-lote': 1, 'la-cuadra-del-lote': 1,
+    'que-le-pide-el-sitio-al-proyecto': 1,
+    /* Los tres que también salen del trazo hecho a mano. */
+    'hasta-donde-se-camina-desde-el-lote': 1,
+    'lo-intangible': 1, 'intangible': 1, 'acuerdos': 1,
+    'los-mapas-del-sector': 1,
+
+    /* ── 2 ────────────────────────────────────────────────────────────── */
+    /* Mediciones del sector que no abren su banda. */
+    'anillos': 2, 'como-cambia-al-alejarse': 2,
+    'comercial': 2, 'donde-esta-la-calle-comercial': 2,
+    'hitos': 2, 'hitos-y-nodos': 2,
+    'estratos': 2,
+    'el-grano-manzana-y-predio': 2,
+    /* El MAPA de verde y agua sube con ellas; la caja de conteo se queda en
+       el 3, con las demás de su banda. */
+    'agua': 2,
+    'lo-que-el-censo-trae-ademas': 2, 'que-manda-en-el-sector': 2,
+    'como-cambio-el-sitio': 2, 'presion-de-crecimiento': 2,
+    'masa': 2, 'curvas': 2,
     'ruido': 2, 'el-ruido-del-transito': 2,
+    'continuidad-del-tejido': 2,
+    'el-sector-dentro-de-la-ciudad': 2, 'quien-queda-por-fuera': 2,
+    'el-perfil-de-la-calle': 2, 'como-se-llega': 2, 'a-distancia-de-caminar': 2,
+    'lo-levantado-en-campo': 2, 'donde-falta-mapear': 2, 'lo-que-falta-levantar': 2,
+    'percepcion-del-lugar': 2, 'lo-que-no-cambia': 2, 'voces-de-quien-vive-aca': 2,
+    /* Las seis plantillas de campo (§18): se pidieron «integradas, no como
+       anexo», así que ceden, pero no antes que un mapa de análisis
+       secundario. Sus identificadores salen de `slugPliego` del título. */
+    'conteo-de-alturas-por-manzana': 2, 'perfil-vial-acotado': 2,
+    'estado-de-andenes-por-tramo': 2, 'rutas-observadas-y-su-frecuencia': 2,
+    'cupo-real-de-equipamientos': 2, 'actividad-en-primer-piso': 2,
 
-    /* 3 · ÚLTIMO EN CEDER */
+    /* ── 3 · ÚLTIMO EN CEDER ─────────────────────────────────────────── */
+    /* La identidad de la hoja. Pierde la INMUNIDAD —puede ceder— pero es lo
+       último: de acá salen el área, la población y la densidad que tres
+       cruces del cierre citan. */
+    'el-sitio': 3, 'donde-queda-escala-por-escala': 3,
+    /* Riesgo y servicios, entera y por CONTENIDO: una amenaza declarada no
+       es una condición de diseño, es una restricción (v853). */
+    'la-amenaza-sismica': 3, 'la-inundacion': 3, 'infraestructura-de-servicios': 3,
+    /* Ambiental. */
     'asoleamiento': 3, 'el-clima': 3, 'el-terreno': 3,
     'espacio-publico-efectivo': 3, 'verde-y-agua': 3,
     'cobertura-del-suelo': 3, 'cobertura': 3,
+    'la-sombra-de-lo-construido': 3,
+    /* Morfología medida. */
     'llenos-y-vacios': 3, 'llenos': 3,
+    'alturas-de-lo-construido': 3, 'alturas': 3,
+    /* El predio y lo que de él sale. */
+    'el-lote-a-intervenir': 3,
     'potencial-edificatorio': 3, 'suelo-disponible-real': 3,
-    /* Los cuatro mapas de movilidad. */
-    'llega': 3, 'caminar': 3, 'caminata': 3, 'vias': 3
+    /* Movilidad: su caja principal y los cuatro mapas. */
+    'como-se-mueve-el-sector': 3,
+    'llega': 3, 'caminar': 3, 'caminata': 3, 'vias': 3,
+    /* Demografía: la pirámide y el reparto por categoría. */
+    'quien-vive-aca': 3, 'que-hay-por-categoria': 3,
+    /* Los cuatro vacíos obligatorios: decir «sin dato oficial» con su
+       trámite es parte del análisis, no un relleno (v849, v880). */
+    'riesgo-oficial': 3, 'servicios-publicos': 3, 'norma-urbana': 3,
+    'movilidad-real': 3, 'informacion-legal-del-predio': 3
   };
   /* Los de categoría de la banda de forma van por PATRÓN y no uno por uno:
      sus identificadores salen de las categorías que el sector tenga
@@ -17158,13 +17251,20 @@ function donaHTML(datos, colorDe, nombreDe) {
        El tope de pasadas es real y no una precaución: cada pasada recompone
        y remide la hoja, y sin tope un sector con doce mapas chicos costaría
        doce composiciones en un teléfono. */
+    /* §21 apagaba por TAMAÑO con su propia lista corta, y ese camino no
+       pasaba por el orden de cesión: con la lista completa de la v912 dos
+       mapas de CATEGORÍA —peldaño 0— quedaron bajo los 8 cm y los apagó,
+       que es justo lo que el peldaño 0 significa que no puede pasar.
+       Ahora la protección es la misma: el peldaño manda en los dos caminos
+       o no manda en ninguno. */
     var PROTEGIDOS = ['foto', 'calor:todos', 'plano'];
     var apagados = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || [])
                                                    : (S.pliegoMapasOff || [])).slice();
     var quitados = [];
     for (var pase = 0; pase < 8 && v && v.bajoPiso.length; pase++) {
       var cae = v.bajoPiso.filter(function (c) {
-        return PROTEGIDOS.indexOf(String(c.id)) === -1 && apagados.indexOf(String(c.id)) === -1;
+        return PROTEGIDOS.indexOf(String(c.id)) === -1 && apagados.indexOf(String(c.id)) === -1 &&
+               peldanoDe(String(c.id)) > 0;
       })[0];
       if (!cae) break;
       apagados.push(String(cae.id));

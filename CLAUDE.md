@@ -5623,6 +5623,116 @@ renglón, y que una caja apagada a mano no se declare como cedida. Contra la
 v910 se cumplen por no existir el renglón; existen para que esta tanda no se
 pase de avisar.
 
+## Una banda no cede en silencio, y el peldaño 1 es lo hipotético (v912)
+
+El PDF de la v911 llegó medido y con un reclamo que valía más que los cinco
+puntos anteriores: **la lámina A pasó de SEIS bandas a cuatro**. Desaparecieron
+enteras «Riesgo y servicios» y «Cómo cambió el sitio», y la hoja no dijo una
+palabra.
+
+### Primero medir cuál de las tres era
+
+El reporte planteaba tres hipótesis y pedía medir. Con la misma corrida sin
+apretar como base —la regla que la tanda anterior acababa de escribir— sale
+sola:
+
+```
+riesgo       base=1  apretada=0  ← perdió: Infraestructura de servicios
+movilidad    base=5  apretada=0  ← perdió las cinco
+medir        base=6  apretada=0  ← perdió las seis
+campo        base=8  apretada=0  ← perdió las ocho
+```
+
+No es que la bisección apague por banda: **apaga panel por panel, y la banda
+se evapora cuando cedieron todos los suyos**. Y cedieron porque de los ~56
+paneles del inventario, `PELDANO_PLIEGO` solo nombraba los ~20 de la lista
+dictada: todo lo demás caía al peldaño 1 por omisión y la regla de fallar
+cerrado los barrió en bloque. Era **(a) con (c) encima**, no (b).
+
+### El peldaño 1 no es «lo secundario»: es LO HIPOTÉTICO
+
+Completar la lista destapó que el criterio con el que estaba escrita era el
+equivocado, y el que la corrigió fue el propio lector:
+
+> «Un anillo de distancia es una medición del territorio y una sombra sobre un
+> lote sin norma es una suposición con buena pinta. Entre perder una medición
+> y perder una suposición, se pierde la suposición.»
+
+Así que el peldaño 1 es **lo que descansa sobre un polígono trazado a mano o
+sobre índices que no existen**: las tres sombras de proyecto, «Qué cabe en el
+lote», «La cuadra del lote», «Qué le pide el sitio», lo que se alcanza a pie
+desde el lote y las marcas de lo intangible. Los anillos, los hitos, la calle
+comercial, las manzanas por estrato, «El grano» y el mapa de verde y agua
+bajan al 2.
+
+**Se midió lo que costaba la primera versión**, y por eso se corrigió: con los
+anillos y los hitos en el peldaño 1, CUALQUIER hoja que tuviera que ceder algo
+empezaba por ahí — también la de 750 m, que solo necesitaba soltar un panel.
+Pasó de 60 cajas a 56 y perdió los dos mapas que el lector nombra como los que
+más le importan. Con el criterio corregido vuelve a sus 60.
+
+Es la lección de la v886 y la v901 otra vez: **una decisión de orden no se
+juzga leyéndola, se juzga midiendo qué se lleva por delante.**
+
+### Una banda completa nunca cede en silencio
+
+La regla nueva, y es la que de verdad cierra el agujero: perder un panel se ve
+—la caja no está—; **perder la banda entera es invisible**, porque no queda ni
+el hueco donde estaba.
+
+`if (!suyas.length) return;` tiraba la banda con su encabezado, su pregunta y
+su número. Ahora la banda se queda y imprime un renglón único:
+
+> **Banda completa fuera de esta composición.** Llevaba Cómo se llega · Cómo
+> se mueve el sector · El perfil de la calle · A distancia de caminar.
+> Cedió entera para que la hoja cerrara, y está medida: apague paneles desde
+> la ficha o imprima esta hoja suelta y vuelve con todo.
+
+Y **solo cuando de verdad cedió**: si ninguno de sus paneles llegó a
+componerse por falta de dato, la banda no existe y decir que cedió sería
+declarar mal la causa, que es la falta de la v867. Se lee de `pliegoCedidas`,
+la señal que la v911 separó de «lo apagó una persona».
+
+### La numeración es del pliego, no de lo que sobrevivió
+
+Era `i + 1` sobre las bandas compuestas, así que al caer dos la lámina A
+imprimía «01 → 04» y el lector no tenía forma de saber que faltaban. Sale
+ahora del orden declarado en `GRUPOS`, corrido por las dos hojas —la A y la B
+son el mismo pliego—: si la 03 cede, la siguiente sigue siendo la 04 y la 03
+aparece con su renglón. **Un número que se corre solo borra la prueba de que
+algo falta.**
+
+Medido sobre el papel apretado: `01 02 03 04 07 08 05 09 10 11 06 12`.
+
+### §21 apagaba mapas del peldaño 0 por su cuenta
+
+Salió al completar la lista: dos mapas de CATEGORÍA quedaron bajo los 8 cm y
+el camino de §21 —que apaga por tamaño con su propia lista corta de
+protegidos— los apagó. Ese camino no pasaba por el orden de cesión, así que el
+peldaño 0 valía en la bisección y no valía ahí. **El peldaño manda en los dos
+caminos o no manda en ninguno.**
+
+### Lo que el reporte daba por perdido y solo había cedido
+
+La lista de «Hitos y nodos» —cada hito con su categoría y su distancia— no
+cambió de formato: está entera («Sitio 21 · Educativo · 119 m»). En el pliego
+real cedió **la caja** y quedó el **mapa**, que imprime los nombres corridos.
+Con la lista corregida las dos son peldaño 2 y ceden juntas, mucho más tarde.
+
+### Lo que §10 pide y esta versión NO hace, con la premisa corregida
+
+Las dos cifras de edificios —3.760 contra 3.673, 848 contra 747— **no son dos
+consultas distintas**, que es lo que se venía suponiendo desde la v906. Son
+`trazado.llenos.edificios` y `trazado.alturas.edificios`: **dos conteos dentro
+de la MISMA consulta de trazado**, uno el de las huellas que entran al
+porcentaje de lleno y otro el de las que traen altura.
+
+`conteoDeEdificios` unificó la elección entre la consulta de usos y la de
+trazado (v906) y no toca esta otra, porque cuando se escribió nadie había
+mirado de dónde salía cada número. Unificarlas es del motor y es otra tanda:
+queda con la premisa corregida, que es lo que le faltaba para poder hacerse
+bien.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

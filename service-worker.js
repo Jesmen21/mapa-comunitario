@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v911-el-peldano-se-declara';
+const URBIS_CACHE = 'urbis-v912-una-banda-no-cede-en-silencio';
 const URBIS_ASSETS = [
   './',
   './index.html',
