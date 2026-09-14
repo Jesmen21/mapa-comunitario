@@ -3704,7 +3704,7 @@
     }).catch(function (e) {
       if (alAvisar) {
         alAvisar('No se pudo armar el PDF en este teléfono: ' + ((e && e.message) || e) +
-                 '. Pruebe desde la ficha del sector, o imprimí desde un computador.');
+                 '. Pruebe desde la ficha del sector, o imprima desde un computador.');
       }
     });
   }
@@ -9817,6 +9817,13 @@ function donaHTML(datos, colorDe, nombreDe) {
          segunda empieza en página nueva. */
       '.hoja + .hoja{ page-break-before:always; break-before:page }' +
       '.pie-linea{ display:flex; justify-content:space-between; align-items:flex-end; gap:6mm }' +
+      /* La franja de export de prueba: negra, a todo el ancho y en cuerpo
+         grande. No comparte el rojo de las alarmas de la hoja —una
+         contradicción y «esto no es real» no son la misma cosa— y no se
+         puede confundir con un panel. */
+      '.hoja-prueba{ margin:0 0 4mm; padding:3mm 4mm; background:#0F1F2E; color:#fff;' +
+        'font-size:5.2mm; font-weight:800; letter-spacing:.06em; text-transform:uppercase;' +
+        'text-align:center; border-radius:1mm }' +
       '.pie{ margin-top:auto; display:block;' +
         'border-top:1.2mm solid #34CCFE; padding-top:4mm; font-size:2.8mm; color:#6B7A8A }' +
       '.pie b{ color:#075E88 }' +
@@ -9824,6 +9831,26 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.pie .red{ display:inline-flex; align-items:center; gap:1.4mm; color:#075E88 }' +
       '.pie .red b{ font-size:3.1mm; letter-spacing:.04em }' +
       '</style></head><body><div class="hoja" data-hoja="' + (LAMINA ? LAMINA.id : 'U') + '">' +
+
+      /* ── LA FRANJA DE EXPORT DE PRUEBA (v913) ─────────────────────────
+         Un PDF viaja SOLO. El `LEEME.md` que lo acompaña en el repositorio
+         no lo sigue cuando alguien lo reenvía, así que lo que el archivo no
+         diga de sí mismo no está dicho — que es la regla de toda esta hoja
+         aplicada al archivo en vez de a una cifra.
+
+         Va arriba del todo y en la franja de los tres metros (v885), porque
+         para eso existe: quien mire el pliego de lejos tiene que saber, antes
+         que nada, que no es el análisis de un predio.
+
+         Solo con `pruebaDeFixture` puesto. El pliego normal no la lleva, y no
+         se deduce de ninguna señal del entorno: se pide a propósito desde la
+         sonda que exporta estos PDF. Deducirla sería arriesgar que un
+         análisis de verdad saliera marcado como prueba, que es la mentira
+         contraria y peor. */
+      (o.pruebaDeFixture
+        ? '<p class="hoja-prueba">Sector de prueba · datos de fixture · ' +
+          'no es el análisis de ningún predio real</p>'
+        : '') +
 
       '<header class="cab">' +
         '<div class="marca">' + marcaURBIS(15) + '<b>URBIS</b><small>Pro City</small></div>' +
@@ -17504,7 +17531,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         pintar(); listo(r);
       };
       var reloj = setTimeout(function () {
-        terminar({ error: 'La prueba tardó demasiado. Imprimí y mire el papel.' });
+        terminar({ error: 'La prueba tardó demasiado. Imprima y mire el papel.' });
       }, 9000);
       try {
         /* La misma que se va a imprimir: ajustada. Medir la de tamaño natural

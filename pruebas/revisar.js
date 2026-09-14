@@ -1114,7 +1114,12 @@ console.log('\n  -- el FODA del curso --');
     'marc\u00e1','prob\u00e1','sum\u00e1','agreg\u00e1','guard\u00e1','abr\u00ed','cerr\u00e1','busc\u00e1','cont\u00e1','anot\u00e1','compar\u00e1',
     'revis\u00e1','us\u00e1','llen\u00e1','mov\u00e9','segu\u00ed','dej\u00e1','volv\u00e9','ped\u00ed','le\u00e9','cambi\u00e1','ampli\u00e1','acerc\u00e1',
     'alej\u00e1','analiz\u00e1','copi\u00e1','export\u00e1','llev\u00e1','peg\u00e1','avis\u00e1','encontr\u00e1s','necesit\u00e1s','proyect\u00e1s','tap\u00e1s','manten\u00e9',
-    'ped\u00edsela'];
+    'ped\u00edsela',
+    /* Entraron en la v913, las dos mezcladas con usted en la MISMA frase
+       —«Pruebe desde la ficha… o imprim\u00ed desde un computador»— que es como
+       se ven cuando alguien corrige medio aviso. Van una por una porque
+       terminan en -\u00ed y ah\u00ed no hay regla: «asist\u00ed a uno» es correcto. */
+    'imprim\u00ed'];
 
   /* ── Los imperativos CON PRONOMBRE PEGADO, derivados y no listados ─────
      El agujero que destapó la v897, y es estructural: al pegarle el pronombre

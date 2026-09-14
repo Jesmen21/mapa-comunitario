@@ -614,6 +614,14 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        que use «dejar solo el plano». */
     o.apagadaAMano = R.laminaDoble({ pliegoOff: ['asoleamiento'] });
 
+    /* ── LA FRANJA DE EXPORT DE PRUEBA (v914) ──────────────────────────
+       Un PDF de muestra viaja SOLO: el LEEME que lo acompaña en el
+       repositorio no lo sigue cuando alguien lo reenvía. Se comprueban las
+       DOS ramas en la misma corrida, y la que más importa es la primera: una
+       franja que saliera siempre marcaría de «prueba» el análisis de un
+       predio real, que es la mentira contraria y peor que no marcar nada. */
+    o.conFranja = R.laminaDoble({ pruebaDeFixture: true });
+
     return o;
   }, { C, POL, LOTE });
 
@@ -2944,6 +2952,28 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     T('y una caja apagada A MANO no se declara como cedida',
       aMano.length === 0,
       aMano.length ? aMano.map(x => x.slice(0, 80)).join(' · ') : 'ninguno');
+  }
+
+  console.log('\n  -- la franja de export de prueba (v914) --');
+  /* Los dos PDF de muestra publicados en `assets/pliegos/` llevan un LEEME al
+     lado que dice que son datos de fixture. Un PDF viaja SOLO: reenviado por
+     correo o por WhatsApp, el archivo de al lado no lo sigue, así que lo que
+     el pliego no diga de s\u00ed mismo no est\u00e1 dicho — que es la regla de toda
+     esta hoja aplicada al archivo en vez de a una cifra.
+
+     Las dos ramas, y la guarda importa m\u00e1s que la afirmaci\u00f3n: una franja que
+     saliera siempre marcar\u00eda como prueba el an\u00e1lisis de un predio de verdad. */
+  {
+    const franjas = (htm) => (String(htm || '').match(/class="hoja-prueba"/g) || []).length;
+    T('el pliego normal no lleva ninguna franja de prueba',
+      franjas(r.doc) === 0, franjas(r.doc) + ' franjas');
+    T('y el export de prueba la lleva en LAS DOS hojas',
+      franjas(r.conFranja) === 2, franjas(r.conFranja) + ' franjas de 2 hojas');
+    const txt = (String(r.conFranja || '')
+      .match(/<p class="hoja-prueba">([\s\S]*?)<\/p>/) || ['', ''])[1]
+      .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    T('y dice que no es el an\u00e1lisis de ning\u00fan predio real',
+      /fixture/i.test(txt) && /no es el an[a\u00e1]lisis/i.test(txt), txt || 'sin texto');
   }
 
   console.log('\n  -- un chequeo no PASA contra SIN MEDIR (v910) --');

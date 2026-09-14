@@ -5804,6 +5804,75 @@ lo diría. Queda como la comprobación que falta: que dos corridas del mismo
 sector con el mismo radio impriman el mismo total, o que la hoja diga por qué
 no. Eso pide guardar el total de la corrida anterior, que es otra tanda.
 
+## El PDF de prueba lo dice en el papel (v914)
+
+Pedido con estas palabras, sobre los dos pliegos de muestra que la v913
+publicó en `assets/pliegos/`: «Bien pensado el LEEME. Y agregale lo que el
+LEEME no puede hacer: **el PDF viaja solo y el archivo de al lado no lo
+sigue**. Que estos dos exports lleven una franja impresa en la propia lámina,
+arriba y visible.»
+
+Es la regla de toda esta hoja —lo que no se puede leer del papel no está
+dicho— aplicada al ARCHIVO en vez de a una cifra. Un LEEME al lado de un PDF
+no lo acompaña cuando alguien lo reenvía por correo o por WhatsApp; y un
+pliego de 60 × 90 lleno de cifras de Cúcuta, sin nada que lo desmienta, se
+lee como el análisis de un predio.
+
+La franja va arriba del todo y en cuerpo de 5,2 mm, que es la franja de los
+tres metros de la v885: quien mire la lámina de lejos tiene que saber, antes
+que nada, que no es un análisis. No comparte el rojo de las alarmas de la
+hoja —una contradicción y «esto no es real» no son la misma cosa— ni el ámbar
+de los vacíos.
+
+### Solo con la opción puesta, y NUNCA deducida
+
+`o.pruebaDeFixture`, y no hay ninguna señal del entorno que la encienda sola.
+La tentación era deducirla —del origen `localhost`, del nombre del sector, de
+que haya un doble del DANE contestando— y todas tienen el mismo defecto: el
+día que acierten de más, **marcan como prueba el análisis de un predio de
+verdad**. Esa es la mentira contraria y es peor: un pliego real desmentido por
+su propia cabecera no se puede defender ante nadie, mientras que un pliego de
+prueba sin franja solo vuelve al estado de la v913.
+
+Por eso tampoco se le abre una costura al botón de exportar. El botón compone
+con las opciones de la aplicación y ahí no hay dónde meterla; la sonda hace lo
+que hace `bajarPliegoPDF` —compone la lámina y se la pasa al armador de PDF—
+con la opción puesta a propósito por quien exporta. Es la misma decisión de la
+v869 con `corteMsMax`: un parámetro de verdad, no una puerta trasera de
+pruebas.
+
+### Las dos ramas, y la guarda vale más que la afirmación
+
+`tdoslaminas` mide las dos en la misma corrida: el pliego normal con **cero**
+franjas y el export marcado con **dos**, una por hoja. La primera es la que
+hay que proteger — es la que se rompe sin que nadie se entere si algún día la
+franja pasa a deducirse.
+
+Demostrada contra la v913: «0 franjas de 2 hojas» y «sin texto». La guarda no
+falla, que es a propósito, como las de la v879, la v882 y la v890.
+
+### Y se miró el papel
+
+Las dos páginas de cada PDF, recortando la franja superior de la imagen
+rasterizada: la banda sale entera y legible encima de la cabecera en las
+cuatro. Medir el HTML habría dicho que la etiqueta está; lo que hacía falta
+saber es que **se lee**, y eso solo lo dice el papel — que es el método que
+encontró los defectos de la v874, la v882, la v885 y la v887.
+
+### Dos voseos que la guarda no podía ver, y el renglón que cuesta
+
+Al abrir `js/68` aparecieron dos, los dos en texto que ve el usuario y los dos
+**mezclados con usted en la MISMA frase**: «Pruebe desde la ficha del sector,
+o imprimí desde un computador» y «La prueba tardó demasiado. Imprimí y mire el
+papel». Así es como se ven cuando alguien corrige medio aviso.
+
+`imprimí` termina en -í, y ahí no hay regla: la v880 dejó escrito que con -é y
+con -í el voseo es indistinguible del pretérito de primera persona —«asistí a
+uno» es correcto— y que esas van una por una en la lista. Se corrigieron y se
+agregó el renglón, que es el contrato: la mitad estructural de esa guarda caza
+sola, la mitad de vocabulario cuesta una línea cada vez que aparece una forma
+nueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
