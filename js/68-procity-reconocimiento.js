@@ -5042,13 +5042,25 @@ function donaHTML(datos, colorDe, nombreDe) {
       
       caja('Dónde queda, escala por escala',
       (function () {
-      var ea = escalasAnidadas(res, ubic);
+      /* §13 (v904) · «Sin nombre en el geocodificador: Comuna». El estudiante
+         YA escribió la ubicación administrativa a mano en la ficha —«Comuna,
+         municipio, departamento», con ese orden en el propio marcador de
+         posición del campo— y la casilla la dejaba vacía igual. Se le pasa,
+         y la casilla lo dice: es un dato escrito por quien analiza, no del
+         geocodificador, y esta hoja no presenta lo uno como lo otro. */
+      var ea = escalasAnidadas(res, ubicConLoEscrito(ubic, ID.ubicacion));
       if (!ea) return '';
       return '<div class="escalera">' + ea.svg + '</div>' +
         '<p class="lee">' + esc(ea.cadena) + '</p>' +
         (ea.sinNombre.length
           ? '<p class="nota">Sin nombre en el geocodificador: ' + esc(ea.sinNombre.join(', ')) +
             '. Se deja la casilla sin rotular en vez de rellenarla con una suposición.</p>'
+          : '') +
+        (ea.aMano.length
+          ? '<p class="nota">' + esc(ea.aMano.join(', ')) +
+            (ea.aMano.length === 1 ? ': el nombre lo escribió' : ': los nombres los escribió') +
+            ' quien analiza, en la ficha, porque el geocodificador no lo trajo. Se imprime por eso ' +
+            'y no porque se haya consultado.</p>'
           : '') +
         /* §3 · de dónde sale cada contorno y con qué precisión. Un contorno
            simplificado sigue siendo aproximado, y la tolerancia dice cuánto:
@@ -5388,13 +5400,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       var ns = st.nucleos || [];
       if (!ns.length) return '';
       return ns.slice(0, 5).map(function (x, i) {
+      /* §12 (v904) · el rótulo dice CUÁNTOS del grupo son del rubro que lo
+         nombra. «Restaurante» sobre doce locales de los que cuatro lo son es
+         una mayoría relativa, y sin la cifra se lee como si los doce fueran
+         restaurantes — que es como llegó impreso, con tres nombres que no lo
+         eran debajo. */
       return '<div class="hit"><i>' + (i + 1) + '</i><span>' +
       x.n + ' locales · ' + esc(x.rubroDominante || 'comercio') +
+      (x.nDominante != null && x.n ? ' (' + x.nDominante + ' de ' + x.n + ')' : '') +
       ((x.nombres || []).length ? '<br>' + esc(x.nombres.join(', ')) : '') +
       '</span><u>' + x.distM + ' m</u></div>';
       }).join('') +
       '<p class="nota">Grupos de comercios que están juntos, con la distancia al centro ' +
-      'del área. Es dónde se juntan, no cuántos hay.</p>';
+      'del área. Es dónde se juntan, no cuántos hay. El rótulo es el rubro que más se repite ' +
+      'en cada grupo —con cuántos de cuántos— y los nombres que van debajo empiezan por los ' +
+      'de ese rubro: la etiqueta y los ejemplos hablan de lo mismo.</p>';
       })(), 'g3') +
 
       /* ── Cómo cambia al alejarse ──────────────────────────────────────
@@ -8641,8 +8661,8 @@ function donaHTML(datos, colorDe, nombreDe) {
                   'alguien vaya y lo compruebe, y por eso están acá y no arriba.</small></div>'
                 : '') +
               '<small class="props-nota">Necesidad: lo que falta según lo medido en este sector —coberturas a pie, ' +
-                'espacio público por habitante, mezcla de usos, transporte—, y cada propuesta cita la cifra que ' +
-                'la suya. «Sin medir» no es necesidad baja: es que la capa de ese uso está vacía, y eso no se ' +
+                'espacio público por habitante, mezcla de usos, transporte—, y cada propuesta cita la cifra ' +
+                'que sostiene la suya. «Sin medir» no es necesidad baja: es que la capa de ese uso está vacía, y eso no se ' +
                 'puede leer como que no hace falta. Factibilidad: lo que el predio, su ' +
                 'acceso y los servicios registrados permiten' + (pu.hayLote ? '' : ', juzgado sobre el sector porque no hay lote dibujado') +
                 '. La norma urbana no está consultada: ninguna propuesta sube de factibilidad media hasta que se lea. ' +
@@ -17697,6 +17717,25 @@ function donaHTML(datos, colorDe, nombreDe) {
       }).join(' ') + ' Z';
     }).join(' ');
   }
+  /* §13 (v904) · La comuna que el geocodificador no trajo y una persona sí
+     escribió. Solo la COMUNA: el municipio y el departamento el
+     geocodificador los acierta casi siempre, y sobrescribirlos con lo escrito
+     a mano cambiaría un dato medido por uno tecleado sin ganar nada. El campo
+     lleva su orden en el marcador de posición del formulario, así que el
+     primer segmento es la comuna; si trae uno solo, no se supone que sea
+     ella. */
+  function ubicConLoEscrito(ubic, escrito) {
+    var u = ubic || {};
+    if (u.comuna) return u;
+    var partes = String((escrito && escrito.valor) || '').split(',')
+      .map(function (x) { return x.trim(); }).filter(Boolean);
+    if (partes.length < 2) return u;
+    var out = {}; Object.keys(u).forEach(function (k) { out[k] = u[k]; });
+    out.comuna = partes[0];
+    out.comunaAMano = true;
+    return out;
+  }
+
   function escalasAnidadas(res, ubic) {
     var meta = (res && res.meta) || {};
     var st = (res && res.stats) || {};
@@ -17743,7 +17782,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       { t: 'Municipio', v: u.ciudad, anillos: silDep && silDep.anillos, punto: true,
         prestado: 'departamento', pob: st.poblacionMunicipio || null },
       { t: 'Comuna', v: u.comuna, anillos: silDep && silDep.anillos, punto: true,
-        prestado: 'departamento' },
+        prestado: 'departamento', aMano: !!u.comunaAMano },
       { t: 'Sector', v: u.barrio || 'el área analizada', propio: true,
         area: areaSector, pob: st.poblacionEstimada || null }
     ];
@@ -17816,7 +17855,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         .map(function (x) { return x.t.toLowerCase(); }),
       fuente: SIL ? SIL.fuente : '',
       tolerancia: SIL ? SIL.toleranciaGrados : null,
-      sinNombre: niveles.filter(function (x) { return !x.v; }).map(function (x) { return x.t; })
+      sinNombre: niveles.filter(function (x) { return !x.v; }).map(function (x) { return x.t; }),
+      /* §13 (v904) · las casillas cuyo nombre lo escribió una persona y no el
+         geocodificador. La caja lo dice: un nombre tecleado y uno consultado
+         se ven igual impresos, y esta hoja no presenta lo uno como lo otro. */
+      aMano: niveles.filter(function (x) { return x.aMano && x.v; }).map(function (x) { return x.t; })
     };
   }
 
@@ -18469,7 +18512,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (la.areaM2 >= c.m2) {
         var veces = la.areaM2 / c.m2;
         return { pts: 2, cabe: veces >= 2 ? 'sobra' : 'cabe', texto: veces >= 3
-          ? 'caben ' + num(Math.round(veces * 10) / 10) + ' veces los ' + fmt(c.m2) + ' m² típicos de este uso'
+          /* §13 (v904) · entero. «Caben 1089,9 veces» tiene una décima que no
+             significa nada: es la misma clase de la v874 —una cifra correcta
+             dicha de una manera que no se lee—, y acá además la décima finge
+             una precisión que el «área típica» de un uso no tiene. */
+          ? 'caben ' + Math.round(veces).toLocaleString('es-CO') + ' veces los ' + fmt(c.m2) + ' m² típicos de este uso'
           : 'el lote da para ' + Math.round(100 * veces) + ' % de los ' + fmt(c.m2) + ' m² típicos de este uso' };
       }
       if (la.areaM2 >= c.m2 * 0.6)

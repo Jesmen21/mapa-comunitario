@@ -4534,6 +4534,80 @@ este proyecto lleva cinco tandas deshaciendo** (la mudanza de la v882, la
 bisección de la v886, la fila de texto de la v901). Quedan con lo que se
 averiguó de cada una. §12 y §13 quedan enteras.
 
+## La etiqueta y los ejemplos hablan de lo mismo (v904)
+
+§12 y §13 del pliego de ajustes v2, que cierran el documento. Auditados antes
+de tocar —la regla de la v863— y el primero salió a medias resuelto.
+
+### §12 · los moteles ya estaban fuera de los hitos; el problema era otro
+
+«En hitos y nodos, excluir alojamiento por hora» **está hecho desde la v874**:
+`hotel` no está en `PESO_DE_HITO` y un motel solo entra si trae `wikidata`,
+`wikipedia` o `heritage`, que es la señal más fuerte de que algo sí es un hito.
+Lo que quedaba vivo del reclamo es lo de la calle comercial, y era peor de lo
+que parecía.
+
+**El rótulo de un núcleo y los nombres que lo acompañan salían de dos
+subconjuntos distintos.** El rótulo, del rubro mayoritario del grupo; los
+nombres, de los cuatro más cercanos que tuvieran nombre propio. En la corrida
+real eso imprimió «Restaurante» sobre Tiendas D1, Yamaha y MaoTech.
+
+La etiqueta era **cierta del grupo y falsa de los tres nombres que la
+acompañan** — y los nombres son la única parte que el lector puede comprobar.
+Ahora los del rubro dominante van primero y los demás completan por cercanía,
+así que la etiqueta y los ejemplos hablan de lo mismo. Y va **cuántos de
+cuántos**: «Restaurante (4 de 12)» es una mayoría relativa, y decirlo es la
+diferencia entre un rótulo y una medición.
+
+Obliga a `node construir.js` y a **reiniciar el servidor**.
+
+#### «Hotel / Hospedaje» no describe lo que agrupa
+
+El `sub` casa `motel` y `love_hotel` además de hotel, hostal y guest house.
+En un corredor de Cúcuta el alojamiento por hora es la mayoría de esa clase, y
+la etiqueta lo callaba. Pasa a **«Hotel, hostal o motel»**: nombra lo que hay.
+Sacarlos de la lectura de usos sería otra cosa y no se hace — ahí cuentan,
+que es lo que la v874 dejó decidido.
+
+La etiqueta vive en `js/59`, que es el catálogo que el motor **reensambla**
+con sus reglas: una sola edición y las dos mitades quedan de acuerdo, con la
+comprobación de posición que ya salta si se desordenan.
+
+### §13 · tres cosas menores y una que no lo era
+
+* **«caben 1089,9 veces»** — la décima no significa nada y encima finge una
+  precisión que un «área típica» no tiene. Entero. Es la clase de la v874.
+* **Una frase incompleta** impresa en el pie de las propuestas: «cada
+  propuesta cita la cifra que la suya». Dice ahora «la cifra que sostiene la
+  suya».
+* **«Sin nombre en el geocodificador: Comuna»** con el estudiante habiéndola
+  escrito a mano dos pantallas antes. El campo de ubicación administrativa
+  lleva su orden en el propio marcador de posición —«Comuna, municipio,
+  departamento»— así que el primer segmento es la comuna, y con un solo
+  segmento no se supone que lo sea.
+
+  **Y la casilla dice que ese nombre lo escribió una persona.** Un nombre
+  tecleado y uno consultado se ven igual impresos, y esta hoja no presenta lo
+  uno como lo otro: es la regla del aviso de origen de la v867 en una casilla
+  de quince milímetros. Solo la comuna se toma de lo escrito — el municipio y
+  el departamento el geocodificador los acierta casi siempre, y
+  sobrescribirlos cambiaría un dato consultado por uno tecleado sin ganar
+  nada.
+
+### Lo que §13 pide y esta versión NO hace
+
+El **contorno de la comuna** desde los límites administrativos de Overpass.
+§13 dice «se pueden descargar en la misma consulta que ya se hace. Intentarlo
+antes de declarar que no se puede», y tiene razón en que hay que intentarlo:
+la consulta de usos ya trae `relation["boundary"="administrative"]` por
+`is_in` y `js/61` las preserva a propósito desde la v863. Lo que trae son sus
+ETIQUETAS, no su geometría —se piden sin recorrido, igual que las rutas— así
+que dibujar el contorno pide una consulta más.
+
+Se deja sin hacer y no se declara imposible, que es la distinción que este
+módulo lleva cinco tandas defendiendo: queda en la lista viva con lo que sí
+hay —el punto medido dentro del departamento— y con lo que costaría.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -4585,7 +4659,7 @@ que se ve a simple vista: la cláusula está o no está.
   administrativos de OpenStreetMap, que este módulo todavía no descarga. Y la
   población por departamento y por comuna, que pide anclas del DANE como las
   municipales.
-  `ya: el contorno real del país y del departamento, de geometría fija y dominio público, con el departamento resaltado dentro del país y el sitio del sector marcado dentro del departamento; la superficie de cada figura calculada sobre el mismo contorno que se dibuja, y la población del municipio y la del sector`
+  `ya: el contorno real del país y del departamento, de geometría fija y dominio público, con el departamento resaltado dentro del país y el sitio del sector marcado dentro del departamento; la superficie de cada figura calculada sobre el mismo contorno que se dibuja, la población del municipio y la del sector, y el nombre de la comuna tomado de lo que quien analiza escribió en la ficha cuando el geocodificador no lo trae, declarado como escrito a mano`
 * **La obra pública contratada y la variación de población POR COMUNA** — los
   contratos de SECOP II (datos.gov.co) por municipio y año con su monto, y las
   anclas del DANE a escala de comuna. Son los dos proxies de presión que el

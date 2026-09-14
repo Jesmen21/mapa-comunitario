@@ -83,7 +83,13 @@
       // (Efecty, SuperGiros) y cafés internet.
       { sub:'pagos',           nombre:'Corresponsal / Pagos', grupo:'comercio',     icono:'💳' },
       { sub:'internet_cafe',   nombre:'Café internet',        grupo:'comercio',     icono:'🖥️' },
-      { sub:'hotel',           nombre:'Hotel / Hospedaje',    grupo:'comercio',     icono:'🏨' },
+      /* §12 (v904) · «Hotel / Hospedaje» sobre dos moteles es una etiqueta
+         que no describe lo que agrupa: este `sub` casa `motel` y
+         `love_hotel` además de hotel y hostal —así lo pide la regla en
+         js/60— y en un corredor de Cúcuta el alojamiento por hora es la
+         mayoría. La etiqueta nombra lo que hay; sacarlos sería otra cosa,
+         y en la lectura de usos del sector NO se sacan: cuentan. */
+      { sub:'hotel',           nombre:'Hotel, hostal o motel', grupo:'comercio',   icono:'🏨' },
       { sub:'camping',         nombre:'Camping / zona de acampada', grupo:'comercio', icono:'⛺' },
       { sub:'salon_eventos',   nombre:'Salón de eventos',     grupo:'comercio',     icono:'🎪' },
       { sub:'gasolinera',      nombre:'Estación de servicio', grupo:'comercio',     icono:'⛽' },
