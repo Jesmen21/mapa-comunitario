@@ -473,6 +473,32 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
       verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
       aguaDesde: 3, aguaHasta: 3 } } } });
+    /* §1 (v910) · LA SERIE MEDIDA Y SU PANEL FUERA DE LA HOJA.
+       ────────────────────────────────────────────────────────
+       El pliego real lo trajo así: la banda de la serie temporal no estaba
+       en la lámina A y la síntesis de la B seguía afirmando «2,6 puntos de
+       superficie dura entre 2014 y 2026». Las dos mitades tienen que darse
+       a la vez para producirlo —la serie MEDIDA y el panel CEDIDO— y en
+       esta suite no se daban: la hoja normal no inyecta la tendencia, así
+       que sus dos casillas salían «SIN MEDIR» por su cuenta y la
+       comprobación habría pasado por no tener nada que rechazar. Es el
+       agujero que este proyecto lleva quince tandas persiguiendo.
+
+       Se componen las DOS ramas con la misma tendencia inyectada: con la
+       banda puesta —las casillas citan— y con la banda cedida —las
+       casillas dicen que la hoja no las sostiene, y cómo devolverlas—. */
+    var EVO_SERIE = { wayback: { tendencia: {
+      desde: 2014, hasta: 2026, aniosUsados: 5,
+      verde: -7.2, duro: 9.4, agua: 0, viva: -6.1,
+      verdeDesde: 38.4, verdeHasta: 31.2, duroDesde: 44.1, duroHasta: 53.5,
+      aguaDesde: 3, aguaHasta: 3 } } };
+    o.serieEntera = R.laminaA({ hoja: 'B', clima: CLIMA, evo: EVO_SERIE });
+    o.serieCedida = R.laminaA({ hoja: 'B', clima: CLIMA, evo: EVO_SERIE,
+                                pliegoOff: ['como-cambio-el-sitio'] });
+    /* La bibliografía va al pie de la B y cita la fuente de la serie. Con la
+       banda fuera, esa entrada cita un trabajo que el lector no tiene. */
+    o.bibEntera = /Planetary Computer/.test(o.serieEntera || '');
+    o.bibCedida = /Planetary Computer/.test(o.serieCedida || '');
     /* §20 (v889) · la rama en la que la factibilidad SÍ separa a los cinco.
        El lote de esta suite son dieciocho hectáreas: ahí caben los ocho usos
        típicos y la etiqueta sale igual para todos —lo que es correcto y es
@@ -2664,6 +2690,108 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       !lo || !p.niega(plano),
       lo ? (p.niega(plano) ? 'LA MIDE Y LA NIEGA' : 'la mide, y no la niega') : 'no la mide en este sector');
   });
+
+  console.log('\n  -- una cita no sobrevive al panel que la sostiene (v910) --');
+  /* §1 del pliego v2, tercera entrega. La banda de la serie temporal cedió
+     y la síntesis siguió citándola: «2,6 puntos de superficie dura entre
+     2014 y 2026» con las fotos ya fuera de la hoja. La cifra era CIERTA —la
+     serie se midió— y la hoja no la sostenía: quien la lee no tiene con qué
+     comprobarla. Es la otra mitad de lo que la v901 dejó a medias: declaró
+     el panel ausente en el pie y dejó viva la cita. */
+  const casillaDe = (html, etq) => {
+    const re = new RegExp('<i class="cv-k">' + etq + '<\\/i><b class="cv-v">([^<]*)<\\/b>');
+    const m = re.exec(String(html || ''));
+    return m ? m[1] : null;
+  };
+  const ENT = r.serieEntera || '', CED = r.serieCedida || '';
+  /* Primero la guarda de MATERIAL: sin la serie medida esta comprobación no
+     tiene nada que rechazar, y pasaría en verde sin comprobar nada. */
+  T('con la banda puesta, las dos casillas de la serie citan sus años',
+    /2014/.test(casillaDe(ENT, 'Horizonte temporal') || '') &&
+    !/SIN MEDIR/.test(casillaDe(ENT, 'Presión de crecimiento') || 'SIN MEDIR'),
+    'horizonte «' + (casillaDe(ENT, 'Horizonte temporal') || '(no está)') + '» · presión «' +
+      (casillaDe(ENT, 'Presión de crecimiento') || '(no está)') + '»');
+  T('con la banda cedida, ninguna casilla sigue afirmando sobre ella',
+    !/2014/.test(casillaDe(CED, 'Horizonte temporal') || '') &&
+    !/2014/.test(casillaDe(CED, 'Presión de crecimiento') || ''),
+    'horizonte «' + (casillaDe(CED, 'Horizonte temporal') || '(no está)') + '» · presión «' +
+      (casillaDe(CED, 'Presión de crecimiento') || '(no está)') + '»');
+  /* Y no basta con callar: la casilla tiene que decir que el dato ESTÁ
+     medido y que lo único que falta es papel, o quien lee sale a levantar
+     una serie que ya tiene. Es la distinción de la v899 entre «sin dato» y
+     «el panel cedió», dicha ahora en la síntesis. */
+  const lCed = (function () {
+    const m = /<i class="cv-k">Horizonte temporal<\/i><b class="cv-v">[^<]*<\/b><small class="cv-l">([^<]*)<\/small>/.exec(CED);
+    return m ? m[1] : '';
+  })();
+  T('y dice que la cifra está medida y que el panel cedió, con su remedio',
+    /est[áa] medida/i.test(lCed) && /cedi[óo] su sitio/i.test(lCed) && /Cómo cambió el sitio/.test(lCed),
+    lCed ? '«' + lCed.slice(0, 120) + '…»' : 'sin lectura');
+  /* La bibliografía es el otro sitio donde la hoja CITA, y citaba la fuente
+     de una banda que no estaba. */
+  T('la bibliografía deja de citar la fuente de la banda que cedió',
+    r.bibEntera && !r.bibCedida,
+    'con la banda: ' + (r.bibEntera ? 'la cita' : 'NO la cita') +
+      ' · sin la banda: ' + (r.bibCedida ? 'LA SIGUE CITANDO' : 'no la cita'));
+
+  console.log('\n  -- la ubicación escrita a mano llega a las escalas (v910) --');
+  /* §4 del pliego v2. La v904 dijo que conectaba el campo de ubicación
+     administrativa con la casilla de la comuna, y **no lo conectó nunca**:
+     leía `escrito.valor` y `identidadDe` devuelve `{ t, falta }`. `partes`
+     salía vacío, no llegaba nunca a dos y la función devolvía el
+     geocodificador tal cual, así que el panel siguió imprimiendo «Sin
+     nombre en el geocodificador: Comuna» con la ubicación escrita dos
+     pantallas antes. Es la regla de la v863 en su forma más barata de
+     evitar: el nombre del campo se lee de la función.
+
+     Esta suite escribe «Comuna 1, Cúcuta, Norte de Santander» en el campo,
+     así que el material está desde la v885. */
+  const cajaEsc = (function () {
+    const i = String(r.doc || '').indexOf('<h2>Dónde queda, escala por escala</h2>');
+    if (i < 0) return '';
+    const j = String(r.doc).indexOf('<section class="caja', i);
+    return String(r.doc).slice(i, j < 0 ? undefined : j).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+  })();
+  T('la casilla de la comuna toma lo que se escribió en la ficha',
+    !!cajaEsc && !/Sin nombre en el geocodificador[^.]*Comuna/.test(cajaEsc),
+    cajaEsc ? (cajaEsc.match(/Sin nombre en el geocodificador[^.]{0,60}/) || ['ninguna casilla sin nombre'])[0] : 'no sale la caja');
+  /* Y lo declara: un nombre tecleado y uno consultado se ven igual
+     impresos, y esta hoja no presenta lo uno como lo otro (v867). */
+  T('y declara que ese nombre lo escribió quien analiza',
+    /lo escribi[óo] quien analiza|los nombres los escribi[óo] quien analiza/.test(cajaEsc),
+    (cajaEsc.match(/.{0,40}escribi[óo] quien analiza.{0,50}/) || ['no lo declara'])[0]);
+
+  console.log('\n  -- un chequeo no PASA contra SIN MEDIR (v910) --');
+  /* §2 del pliego v2. Desde la v899 una casilla que no se pudo medir imprime
+     la palabra «SIN MEDIR» donde iba la cifra. Los doce chequeos cruzados
+     solo miraban `null`, y una cadena es verdadera: salía impreso
+     «PASA · 103 cruces por km² (lámina A) · SIN MEDIR (lámina B)» — que es
+     el error típico que el propio panel nombra dos renglones más abajo.
+
+     Se persigue la CLASE y no ese chequeo: en las dos hojas compuestas,
+     ningún chequeo marcado «pasa» puede llevar «SIN MEDIR» en ninguno de
+     sus dos lados. Así un chequeo nuevo hereda la guarda. */
+  const filasCoh = (htm) => {
+    const out = [];
+    String(htm || '').replace(/<li class="coh-([a-z-]+)[^"]*">([\s\S]*?)<\/li>/g,
+      (todo, est, cuerpo) => { out.push({ est: est, txt: cuerpo.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }); return ''; });
+    return out;
+  };
+  /* Sobre el DOCUMENTO compuesto —que es lo que se imprime— y sobre la
+     composición en la que dos paneles ceden, que es donde la v899 metió el
+     estado «panel fuera» y donde más fácil se cuela un lado vacío. */
+  const cohA = filasCoh(r.doc), cohB = filasCoh(r.docCede);
+  /* Guarda de MATERIAL: sin filas leídas esta comprobación no mide nada, y
+     es justo el aspecto que tendría si el `<li>` cambiara de clase. */
+  T('los chequeos de coherencia se leen del papel',
+    cohA.concat(cohB).length >= 10,
+    cohA.length + ' en A · ' + cohB.length + ' en B');
+  const chequeosSM = cohA.concat(cohB)
+    .filter(x => x.est === 'pasa' && /SIN MEDIR/i.test(x.txt))
+    .map(x => x.txt.slice(0, 110));
+  T('ningún chequeo marcado «pasa» tiene un lado en SIN MEDIR',
+    chequeosSM.length === 0,
+    chequeosSM.length ? chequeosSM.join(' · ') : 'ninguno de los doce pasa contra un lado vacío');
 
   console.log('\n  -- el censo se pregunta qué trae (v865) --');
   /* Escolaridad y hogares se venían dando por ausentes sin haberlo

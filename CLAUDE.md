@@ -5158,6 +5158,220 @@ tu · …:195 Estás · js/05:385 TU…». Cero después. Y la comprobación del
 recorrido pasa contra las dos versiones a propósito: es una guarda contra que
 el autómata vuelva a perderse, no una afirmación nueva.
 
+## Una cita no sobrevive al panel que la sostiene (v910)
+
+Cinco cosas medidas sobre el PDF de la v905, con las dos hojas en la mano.
+Tres eran defectos y se arreglaron; **dos eran preguntas, y la respuesta
+honesta a las dos es una medición, no un parche**. Las cinco tienen el mismo
+hilo que la v899 y la v879: la hoja afirmando por descuido lo que no puede
+sostener.
+
+### §1 · un panel cedió y la síntesis siguió citándolo
+
+Llegó con las dos casillas impresas:
+
+> PRESIÓN DE CRECIMIENTO · «2,6 puntos de superficie dura de menos entre 2014
+> y 2026» · HORIZONTE TEMPORAL · «medido de 2014 a 2026»
+
+y la banda de la que salen esas cifras —«Cómo cambió el sitio», las estampas
+de 2014 a 2026— **no estaba en la lámina A**. La bibliografía seguía citando
+Planetary Computer «para la serie temporal».
+
+Es justo lo que el ORDEN DE CESIÓN de la v901 tenía que impedir, y no lo
+impedía: aquella tanda guardó el **recuento** —que las once casillas se
+compongan— y no las **citas**. Una casilla puede componerse perfectamente y
+estar hablando de un panel que ya no está en el papel.
+
+#### La dependencia se declara en la casilla, no se adivina
+
+`crucesDelSector` recibe un parámetro más por casilla: de qué panel depende.
+
+```js
+var F  = function (k, v, l, p) { filas.push({ k: k, v: v, l: l, p: p || null }); };
+var SM = function (k, l, p)    { filas.push({ k: k, v: 'SIN MEDIR', l: l, sm: true, p: p || null }); };
+```
+
+Las dos de la serie declaran `['Cómo cambió el sitio']`. Al componer, con la
+MISMA señal que la v899 usa para saber que un panel cedió, la casilla se da
+vuelta: pasa a **SIN MEDIR**, nombra el panel ausente y dice el remedio
+—apagar otro panel desde la ficha, o imprimir esa hoja suelta, que sube la
+escala y la devuelve con su banda—.
+
+Y dice **cuál de las dos cosas pasó**, que es la distinción que la v899
+estrenó y acá se hereda: *la cifra está medida*, lo que falta es la banda que
+la sostiene. No es un dato de menos, es un panel fuera. Confundirlos manda al
+lector a buscar una fuente cuando lo único que hace falta es apagar un panel.
+
+#### La bibliografía también cita, y también tenía que encogerse
+
+Una entrada de bibliografía es una cita como cualquier otra. La de la serie
+temporal pasó a ser un objeto con las dos redacciones:
+
+```js
+{ t: 'Esri World Imagery; Microsoft Planetary Computer (Sentinel-2, Landsat) para la serie temporal.',
+  panel: 'Cómo cambió el sitio', sinPanel: 'Esri World Imagery.' },
+```
+
+Es la regla de `faltanDeCiudad` de la v876 —**una lista que se encoge sola no
+puede quedarse vieja, porque no está escrita: se calcula**— dicha al pie de la
+hoja en vez de en un panel.
+
+**Y se auditaron las doce entradas, no solo la que falló.** Es la única cuya
+justificación entera es un panel: las demás nombran una fuente que la hoja usa
+en varios sitios —la NSR-10 aparece trece veces, el IDEAM doce, el Decreto 1504
+diez— o que sostiene el CIERRE, que no cede nunca; la Ley 388 sale una sola vez
+en la bibliografía, pero el POT lo citan siete sitios más, entre ellos la
+factibilidad de las cinco propuestas. El mecanismo queda genérico —`panel` y
+`sinPanel` en cualquier entrada, una línea— para el día que una entrada nueva
+sí dependa de un solo panel.
+
+#### La respuesta al «qué peldaño y por qué»
+
+Cedió, no se cayó, y el peldaño es el **1**. «Cómo cambió el sitio» se arma con
+`caja(...)`, y el peldaño 1 del orden de cesión son las cajas; los anillos y la
+calle comercial son mapas, y los mapas secundarios son el peldaño 2. Así que
+salió antes que ellos **por construcción**, no por un fallo.
+
+Lo que sí queda dicho, porque es una tensión real de la regla: el orden que el
+pliego pide empieza por «los paneles de texto explicativo», y esta caja **no
+es texto** —son cinco estampas de satélite—. Lo mismo «Asoleamiento», que es
+una carta solar. La v901 midió que en la lámina B ninguna caja es solo texto y
+concluyó que el peldaño 1 son *los paneles*; en la lámina A hay cuatro cajas
+que llevan un dibujo de verdad (`CAJAS_DIBUJO`), y esas discuten el peldaño.
+
+**No se movieron, y la razón es de método, no de opinión:** el sector de
+prueba compone las dos láminas **sin ceder nada** —los dos paneles salen
+enteros, comprobado sobre el papel guardado—, así que un cambio de peldaño no
+se podría medir desde acá y entraría a ciegas. Es la decimosexta vez que este
+proyecto tropieza con material que no puede producir el caso, y la primera en
+que la conclusión es **no tocarlo** en vez de enriquecer el material: enriquecerlo
+aquí significa fabricar una lámina que no cierra, que es otra tanda.
+
+Queda escrito acá y **no en la lista viva**, a propósito: esa lista es de
+fuentes que faltan, y esto no es una fuente — es una decisión de diagramación
+pendiente, con su medición hecha para que la tanda que la tome no empiece por
+averiguar lo mismo.
+
+### §2 · un chequeo pasaba contra SIN MEDIR
+
+> PASA · La trama y el paramento no se llaman igual … 103 cruces por km²
+> (lámina A) · **SIN MEDIR** (lámina B)
+
+La v899 enseñó a las casillas a imprimir **SIN MEDIR** donde va la cifra. Lo
+que no se hizo entonces es enseñarle al lector de chequeos que eso **no es un
+valor**: `cruceEn` devolvía la cadena, los dos lados existían, y el chequeo se
+daba por pasado. Es literalmente el error típico que el propio panel declara
+dos renglones más abajo —«dar por bueno un chequeo que no se pudo correr»—,
+cometido por el panel que lo declara.
+
+El arreglo va **en el único sitio por donde pasan los doce**, que es la regla
+de la v867:
+
+```js
+/* Una casilla «SIN MEDIR» no es un valor: es la marca de que no se pudo
+   medir. Devolverla dejaba pasar el chequeo con un lado vacío. */
+return (v && !/^\s*SIN MEDIR\s*$/i.test(plano(v))) ? v : null;
+```
+
+Con eso el chequeo sale **SIN DATO**, que es lo que ya sabía decir, y —esto es
+lo que lo vuelve una tarea— **nombra la plantilla que lo llena**: «Actividad en
+primer piso», de las seis de la v883. Un «sin dato» que no dice cómo se
+consigue es la mitad del trabajo, que es la decisión de la v880 con el ámbar y
+el verde.
+
+La guarda persigue **la clase y no ese chequeo**: sobre las dos hojas
+compuestas, ninguno marcado «pasa» puede tener un lado en SIN MEDIR.
+
+### §4 · la v904 conectó la ubicación escrita a mano y nunca corrió
+
+«Dónde queda, escala por escala» seguía imprimiendo «Sin nombre en el
+geocodificador: Comuna» con el estudiante habiéndola escrito dos pantallas
+antes, y la cabecera de la misma hoja sí la usaba.
+
+La conexión existía desde la v904. Lo que no existía era el campo:
+
+```js
+var partes = String((escrito && escrito.t) || '').split(',')   // era escrito.valor
+```
+
+`escrito.valor` es `undefined` siempre, así que `partes` quedaba vacío, la
+guarda de «menos de dos segmentos» disparaba y la función devolvía la ubicación
+del geocodificador intacta. **Ni un error ni una consola: una mejora escrita,
+probada a ojo y desconectada.**
+
+Es la regla de la v863 en su forma más barata de evitar —se comprueba leyendo
+la función que devuelve el objeto, no recordando cómo se llama su campo— y la
+misma que costó dos aserciones en la v895 con `f.meta.forma`. Ahora hay una
+aserción que lo lee **del papel**: que ninguna casilla salga sin nombre, y que
+la que toma lo escrito **declare que ese nombre lo escribió una persona** —un
+nombre tecleado y uno consultado se ven igual impresos (v867)—.
+
+### §3 · los tamaños impresos SÍ son los medidos
+
+La pregunta era si el reflujo de la v901 se aplica en la exportación a PDF o
+si el pie miente. Medido: **el pie dice lo que el papel mide**. La
+comprobación de la v886 lo cruza en cada corrida —«A dice 95 y mide 94,6 · B
+dice 83 y mide 82,5»— y por construcción no puede separarse más de un
+milímetro, porque la cifra se sustituye en la cadena sobre la hoja **ya
+maquetada**.
+
+Lo que cambió es el **sector**, no el código: aquella medición del reflujo salió
+del sector de prueba —1,77 km², radio equivalente de 750 m (v890)— y el PDF
+medido es una corrida de radio 2.500. Con más área entran más cajas por banda,
+`pistasQueLlenan` elige otra anchura y el reparto es otro. Los ocho de
+categoría bajan de 9,7 a 8,3 cm por eso, no por una regresión.
+
+**Y es exactamente lo que §21 no alcanza y la v886 dejó escrito**: los 10 cm de
+los de categoría no se sostienen a cualquier escala de análisis sin perder
+paneles medidos. La salida sigue siendo la de siempre y está impresa al lado de
+la cifra: apagar paneles desde la ficha sube la escala de composición y con ella
+todos los mapas.
+
+### §5 · la banda ambiental no está incompleta: cedió
+
+Las tres cosas que §5 da por faltantes —carta solar con solsticios y
+equinoccios, recomendación de orientación de fachadas derivada de ella, y horas
+de sol y radiación por orientación— están **las tres en la v882** y **las tres
+en la misma caja**, `Asoleamiento`: la carta la dibuja `dib('cartaSolar', …)` y
+la tabla de las ocho orientaciones es `tablaDeOrientacion()`, llamada dentro de
+esa misma caja.
+
+Así que no falta ninguna: **cedió la caja que las lleva**, por lo mismo que la
+serie temporal y en el mismo peldaño. La hoja lo dice —lo que cede se nombra en
+el pie desde la v850— pero se lee como una lista de paneles y no como «le falta
+la carta solar a la banda ambiental», que es como se leyó.
+
+Es la otra cara de §1 y vale escribirla: **cuando un panel cede, lo que el
+lector ve no es un hueco rotulado, es una banda que parece terminada.** §1 se
+podía arreglar porque algo la citaba; acá no cita nadie, y lo único que queda
+es el pie. Subirlo de peldaño es la discusión de §1, con la misma medición
+encima: desde el sector de prueba no se puede probar.
+
+### Demostrado contra la v909
+
+`tdoslaminas`, con la banda cedida a propósito (`pliegoOff: ['como-cambio-el-sitio']`):
+
+* con la banda puesta, las dos casillas citan sus años —«medido de 2014 a
+  2026», «9,4 puntos de superficie dura»—;
+* con la banda cedida, **la v909 las sigue imprimiendo igual** y la
+  bibliografía **la sigue citando**;
+* y el chequeo de la trama sale «pasa» contra un lado vacío.
+
+`tsinmapear` lo enseña donde vive el material —su segundo lote, el de la v899,
+no tiene una sola fachada mapeada—:
+
+```
+✗ ningún chequeo marcado «pasa» tiene un lado en SIN MEDIR
+    — pasa La trama y el paramento no se llaman igual · miden cosas distintas …
+✗ el de la trama sale sin dato y nombra la plantilla que lo llena
+```
+
+Y una del método de demostrar, que ya está escrita en la v875 y se volvió a
+cobrar: el `git stash` del archivo entero se lleva también lo que la suite
+necesita para LEER, así que dos de las aserciones fallan por «la función no
+existe» y no por el defecto. Las que valen son las que enseñan el texto viejo
+impreso — acá, la bibliografía citando la serie de una banda que no está.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

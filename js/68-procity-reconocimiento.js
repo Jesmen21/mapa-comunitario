@@ -8384,7 +8384,27 @@ function donaHTML(datos, colorDe, nombreDe) {
         var re = new RegExp('<i class="cv-k">' + etq.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
                             '<\\/i><b class="cv-v">([^<]*)<\\/b>');
         var m = re.exec(String(html || ''));
-        return m ? m[1] : null;
+        var v = m ? m[1] : null;
+        /* §2 (v910) · UNA CASILLA «SIN MEDIR» NO ES UN VALOR.
+           ────────────────────────────────────────────────
+           Desde la v899 la casilla que no se pudo medir imprime la palabra
+           «SIN MEDIR» donde iba la cifra — que es lo correcto y lo que §1
+           de aquel pliego pidió. Pero estos chequeos solo miraban `null`, y
+           una cadena es verdadera: el cruce de la trama contra el paramento
+           salía impreso
+
+             «PASA · 103 cruces por km² (lámina A) · SIN MEDIR (lámina B)»
+
+           es decir, PASANDO contra un lado que no existe — que es
+           literalmente el error típico que este mismo panel nombra dos
+           renglones más abajo: «un chequeo que no se pudo correr se declara
+           sin dato; darlo por bueno es el error típico de este panel».
+
+           Se rechaza acá y no en el chequeo que lo destapó, porque este es
+           el ÚNICO sitio por donde los doce leen una casilla: así un
+           chequeo nuevo hereda la guarda sin que su autor se acuerde, que
+           es la regla del aviso de origen de la v867. */
+        return (v && !/^\s*SIN MEDIR\s*$/i.test(plano(v))) ? v : null;
       };
       var A = porHoja.A || '', B = porHoja.B || '';
 
@@ -8405,9 +8425,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         }
         if (!dTrama || !dPar) {
           noHay('La trama y el paramento no se llaman igual',
-                ['Continuidad del tejido'],
-              'una de las dos no se pudo medir en este sector: la trama pide vías mapeadas y el ' +
-              'paramento pide el lote dibujado.');
+                ['Continuidad del tejido', 'La cuadra del lote'],
+              'una de las dos no se pudo medir en este sector' +
+              (dTrama && !dPar
+                 ? ': el paramento sale de las huellas de OpenStreetMap proyectadas sobre la ' +
+                   'cuadra, y sin una sola huella mapeada ahí no mide un frente, mide una capa ' +
+                   'vacía. Lo llena la plantilla de campo «Actividad en primer piso», que se ' +
+                   'levanta con cinta o pasos calibrados y se pega justo en este cruce.'
+               : !dTrama && dPar
+                 ? ': la trama pide las vías mapeadas del sector, y acá no hay malla que recorrer.'
+                 : ': la trama pide vías mapeadas y el paramento pide el lote dibujado.'));
           return;
         }
         pon('La trama y el paramento no se llaman igual', 'pasa',
@@ -8712,7 +8739,46 @@ function donaHTML(datos, colorDe, nombreDe) {
             if (!pu || !pu.propuestas.length) return '';
             var fmtN = function (n) { return Number(n).toLocaleString('es-CO'); };
             var cruces = [];
-            try { cruces = crucesDelSector(res); } catch (e9) { cruces = []; }
+            try { cruces = crucesDelSector(res, o); } catch (e9) { cruces = []; }
+            /* §1 (v910) · UNA CITA NO SOBREVIVE AL PANEL QUE LA SOSTIENE.
+               ──────────────────────────────────────────────────────────
+               Llegó del pliego real: la banda de la serie temporal no estaba
+               en la lámina A y la síntesis de la B seguía diciendo «2,6
+               puntos de superficie dura entre 2014 y 2026». La cifra es
+               CIERTA —la serie se midió— y la hoja no la sostiene: quien la
+               lee no tiene con qué comprobarla, y la banda que la
+               explicaría no está.
+
+               No es lo mismo que el «SIN MEDIR» de la v899: ahí el dato no
+               existe y hay que salir a levantarlo; acá existe y lo único
+               que hace falta es apagar otro panel o imprimir la hoja
+               suelta. Por eso lleva su remedio escrito, igual que el «panel
+               fuera» que la v899 puso en los chequeos cruzados — son la
+               misma situación dicha en las dos bandas del cierre. */
+            /* Se lee de `apagadas` —la misma señal que `cedio()` en los
+               chequeos cruzados— y no del texto ya compuesto: la síntesis se
+               arma MIENTRAS se compone la hoja, así que el papel entero
+               todavía no existe cuando esto corre. La bisección del orden de
+               cesión entrega lo que cede por `pliegoOff`, que es justo lo
+               que `apagadas` trae. */
+            var cedioPanel = function (tt) {
+              try { return (apagadas || []).indexOf(slugPliego(tt)) !== -1; }
+              catch (eP) { return false; }
+            };
+            {
+              cruces = cruces.map(function (c) {
+                if (!c.p || !c.p.length) return c;
+                var falt = c.p.filter(cedioPanel);
+                if (!falt.length) return c;
+                return { k: c.k, v: 'SIN MEDIR', sm: true, cedio: true,
+                  l: 'la cifra está medida, pero ' +
+                     (falt.length === 1 ? 'el panel «' + falt[0] + '» cedió su sitio'
+                                        : 'los paneles «' + falt.join('» y «') + '» cedieron su sitio') +
+                     ' para que la hoja cerrara, así que esta hoja no la sostiene: no hay con qué ' +
+                     'comprobarla. Apagar otro panel desde la ficha, o imprimir esta hoja suelta, ' +
+                     'sube la escala y la devuelve con su banda.' };
+              });
+            }
             /* §4 (v901) · la casilla COMPACTA. Cuando la hoja no cierra ni
                con todo lo cedible apagado, las once casillas no se caen: se
                quedan con su título, su cifra y UNA línea —la primera frase
@@ -9642,7 +9708,15 @@ function donaHTML(datos, colorDe, nombreDe) {
            dos veces lo mismo. */
         (LAMINA && LAMINA.id === 'A' ? '' :
           '<div class="biblio"><b>Bibliografía y fuentes</b><ol>' +
-            BIBLIOGRAFIA.map(function (b) { return '<li>' + esc(b.replace(/\bhoy\b/g, hoyTxt)) + '</li>'; }).join('') +
+            BIBLIOGRAFIA.map(function (b) {
+              var txt = b;
+              if (b && typeof b === 'object') {
+                var fuera = false;
+                try { fuera = (apagadas || []).indexOf(slugPliego(b.panel)) !== -1; } catch (eB) { fuera = false; }
+                txt = fuera ? b.sinPanel : b.t;
+              }
+              return txt ? '<li>' + esc(String(txt).replace(/\bhoy\b/g, hoyTxt)) + '</li>' : '';
+            }).join('') +
           '</ol></div>') +
         /* §2 · lo que bajó de la cabecera. Se lee a treinta centímetros, que
            es donde este texto sirve: la neutralidad es una regla que se
@@ -17698,7 +17772,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Resolución 627 de 2006, Ministerio de Ambiente: estándares máximos de ruido ambiental.',
     'Ley 388 de 1997, ordenamiento territorial: el Plan de Ordenamiento Territorial del municipio es la norma urbana que esta hoja no consulta.',
     'Copernicus DEM GLO-90 (ESA), servido por Open-Meteo Elevation API; Open-Meteo, archivo climático.',
-    'Esri World Imagery; Microsoft Planetary Computer (Sentinel-2, Landsat) para la serie temporal.',
+    { t: 'Esri World Imagery; Microsoft Planetary Computer (Sentinel-2, Landsat) para la serie temporal.',
+      /* §1 (v910) · esta entrada solo existe por la banda de la serie. Con
+         la banda fuera de la hoja, citar su fuente es citar un trabajo que
+         el lector no tiene delante: la bibliografía pasa a nombrar solo lo
+         que la foto satelital sí usa. Es la misma regla que las casillas de
+         la síntesis, en el otro sitio donde la hoja CITA. */
+      panel: 'Cómo cambió el sitio',
+      sinPanel: 'Esri World Imagery.' },
     'Lynch, K. (1960). The Image of the City. MIT Press: hitos, nodos, sendas, bordes y barrios.',
     'Jacobs, J. (1961). The Death and Life of Great American Cities. Random House: mezcla de usos y ojos en la calle.',
     'Gehl, J. (2010). Cities for People. Island Press: la escala humana y los 5 km/h del peatón.'
@@ -17899,9 +17980,17 @@ function donaHTML(datos, colorDe, nombreDe) {
   function ubicConLoEscrito(ubic, escrito) {
     var u = ubic || {};
     if (u.comuna) return u;
-    var partes = String((escrito && escrito.valor) || '').split(',')
+    /* §4 (v910) · `identidadDe` devuelve `{ t, falta }`, no `{ valor }`.
+       Esto leía `escrito.valor` —undefined siempre—, así que `partes` salía
+       vacío, no llegaba nunca a dos y la función devolvía el geocodificador
+       tal cual: **la conexión que la v904 dio por hecha no funcionó nunca**,
+       y el panel siguió imprimiendo «Sin nombre en el geocodificador:
+       Comuna» con la ubicación escrita a mano dos pantallas antes. Es la
+       regla de la v863 en su forma más barata de evitar y más cara de ver:
+       el nombre del campo se lee de la función, no se recuerda. */
+    var partes = String((escrito && escrito.t) || '').split(',')
       .map(function (x) { return x.trim(); }).filter(Boolean);
-    if (partes.length < 2) return u;
+    if (partes.length < 2 || /^SIN NOMBRAR$/i.test(partes[0])) return u;
     var out = {}; Object.keys(u).forEach(function (k) { out[k] = u[k]; });
     out.comuna = partes[0];
     out.comunaAMano = true;
@@ -18164,13 +18253,32 @@ function donaHTML(datos, colorDe, nombreDe) {
      lectura que cierra en decisión. Solo sobre lo medido; lo que no está,
      lo dice —«sin dato oficial», «sin serie leída»— y nombra qué haría
      falta, que es lo contrario de rellenar. */
-  function crucesDelSector(res) {
+  /* `o` son las opciones de la composición. Sin ellas la casilla leía
+     `S.evo` mientras el PANEL de la misma cifra lee `o.evo !== undefined ?
+     o.evo : S.evo`: dos rutas para la misma cantidad, que es la divergencia
+     de la v879 esperando su tanda. En producción coincidían —`S.evo` es la
+     de verdad— y lo que las separaba era justamente componer una hoja con
+     la serie puesta por opciones, que es como se prueba esto. */
+  function crucesDelSector(res, o) {
+    var oo = o || {};
     var st = (res && res.stats) || {}, meta = (res && res.meta) || {};
     var trz = S.trazado, hab = Number(st.poblacionEstimada || 0);
     var num = function (x) { return String(x).replace('.', ','); };
     var fmt = function (n) { return Math.round(Number(n)).toLocaleString('es-CO'); };
     var filas = [];
-    var F = function (k, v, l) { filas.push({ k: k, v: v, l: l }); };
+    /* §1 (v910) · DE QUÉ PANEL SALE ESTA CIFRA.
+       ─────────────────────────────────────────
+       La banda de la serie temporal cedió su sitio y la síntesis siguió
+       afirmando sobre ella: «2,6 puntos de superficie dura de menos entre
+       2014 y 2026» y «medido de 2014 a 2026», con las fotos ya fuera de la
+       hoja. Es justo lo que el ORDEN DE CESIÓN tenía que impedir —lo que
+       cede se dice por su nombre— y la v901 lo dejó a medias: declaró el
+       panel ausente en el pie y dejó viva la CITA.
+
+       `p` nombra los paneles de los que sale la cifra. Al componer, una
+       casilla cuyo panel no quedó en el papel pasa a SIN MEDIR nombrándolo:
+       una cita no puede sobrevivir al panel que la sostiene. */
+    var F = function (k, v, l, p) { filas.push({ k: k, v: v, l: l, p: p || null }); };
     /* §1 (v899) · UNA CASILLA QUE NO SE PUDO MEDIR NO LLEVA CIFRA.
        ────────────────────────────────────────────────────────────────────
        La regla de la v875 —un dato no mapeado no genera propuesta ni
@@ -18191,7 +18299,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        visual que los vacíos obligatorios de la v849, porque es lo mismo
        dicho en otro sitio: una tarea para quien analiza, no una conclusión
        para quien proyecta. */
-    var SM = function (k, l) { filas.push({ k: k, v: 'SIN MEDIR', l: l, sm: true }); };
+    var SM = function (k, l, p) { filas.push({ k: k, v: 'SIN MEDIR', l: l, sm: true, p: p || null }); };
 
     // 1 · Cobertura de equipamientos: gente servida y gente lejos, por tipo.
     var ac = st.accesibilidad;
@@ -18333,10 +18441,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        Sale de `presionDeCrecimiento`, la misma función que arma el panel, y
        no de una cuenta copiada: es la regla de la v879 y lo que la v884
        encontró roto una tanda después de escribirla. */
-    var pres = presionDeCrecimiento(S.evo, st);
+    var pres = presionDeCrecimiento(oo.evo !== undefined ? oo.evo : S.evo, st);
     if (pres.lectura) {
       F('Presión de crecimiento', pres.resumen,
-        pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.');
+        pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.',
+        ['Cómo cambió el sitio']);
     } else {
       SM('Presión de crecimiento',
         'la huella construida se lee con «Cómo cambió el sitio»; la obra pública contratada ' +
@@ -18408,7 +18517,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     F('Horizonte temporal',
       (pres.desde ? 'medido de ' + pres.desde + ' a ' + pres.hasta : 'una sola foto: hoy') +
       ' · a 10 años: sin proyección del sector',
-      'la proyección DANE es del municipio, no del barrio: el proyecto se diseña para la gente de hoy y el suelo que quede');
+      'la proyección DANE es del municipio, no del barrio: el proyecto se diseña para la gente de hoy y el suelo que quede',
+      /* El tramo de años sale de la serie; lo de «a 10 años» no. Solo se
+         declara dependiente cuando de verdad cita la serie. */
+      pres.desde ? ['Cómo cambió el sitio'] : null);
 
     return filas;
   }

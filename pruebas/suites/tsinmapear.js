@@ -328,6 +328,44 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
   T('y dice que el cero es del mapa, no del frente, y qué lo llena',
     !!pSin && /del mapa y no del frente/.test(pSin.l) && /Actividad en primer piso/.test(pSin.l),
     pSin ? pSin.l.slice(0, 130) : '—');
+
+  /* §2 (v910) · Y EL CHEQUEO QUE LEE ESA CASILLA NO PUEDE DARLA POR BUENA.
+     ──────────────────────────────────────────────────────────────────
+     La v899 hizo bien la mitad de arriba —la casilla dice SIN MEDIR en vez
+     de un 0 % falso— y destapó la de abajo sin darse cuenta: los doce
+     chequeos cruzados leen esa casilla con `cruceEn`, que devolvía la
+     CADENA «SIN MEDIR». Una cadena es verdadera, así que el chequeo la
+     tomaba por un valor y salía impreso
+
+       «PASA · 51 cruces por km² (lámina A) · SIN MEDIR (lámina B)»
+
+     —pasando contra un lado que no existe, que es literalmente el error
+     típico que ese mismo panel nombra dos renglones más abajo—.
+
+     Esta suite es donde vive el material: su segundo lote no tiene una sola
+     huella sobre la cuadra, así que el paramento sale SIN MEDIR de verdad.
+     En `tdoslaminas` los dos lados están medidos y la comprobación pasaría
+     por no tener nada que rechazar. */
+  console.log('\n  -- §2 · un chequeo no PASA contra SIN MEDIR (v910) --');
+  const filasCoh = (htm) => {
+    const out = [];
+    String(htm || '').replace(/<li class="coh-([a-z-]+)[^"]*">([\s\S]*?)<\/li>/g,
+      (todo, est, cuerpo) => { out.push({ est: est, txt: cuerpo.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }); return ''; });
+    return out;
+  };
+  const coh = filasCoh(String(r.docSinHuellas || ''));
+  T('los chequeos de coherencia se leen del papel de esa hoja',
+    coh.length >= 10, coh.length + ' filas leídas');
+  const malos = coh.filter(x => x.est === 'pasa' && /SIN MEDIR/i.test(x.txt)).map(x => x.txt.slice(0, 120));
+  T('ningún chequeo marcado «pasa» tiene un lado en SIN MEDIR',
+    malos.length === 0, malos.length ? malos.join(' · ') : 'ninguno');
+  /* Y la otra mitad: no basta con dejar de decir «pasa». El chequeo que no
+     se pudo correr tiene que salir como sin dato y nombrar qué lo llenaría,
+     que es lo que §2 pide con esas palabras. */
+  const trama = coh.filter(x => /trama y el paramento/i.test(x.txt))[0];
+  T('el de la trama sale sin dato y nombra la plantilla que lo llena',
+    !!trama && trama.est === 'sin-dato' && /Actividad en primer piso/.test(trama.txt),
+    trama ? trama.est + ' · ' + trama.txt.slice(0, 150) : 'no sale el chequeo');
   /* Y lo que de verdad importa: que esa casilla ya no cierre en una
      recomendación de proyecto sobre una capa vacía. */
   T('y no concluye «frente roto» sobre una cuadra que nadie mapeó',
