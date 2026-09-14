@@ -1575,6 +1575,45 @@ console.log('\n  -- un nombre, una cosa --');
     const archivos = new Set(donde[n].map(x => x.archivo));
     return formas.size > 1 && archivos.size > 1;
   });
+/* ── §10b · LOS TRAMOS DE EDAD REPARTEN EL CENSO, SIN REPETIR (v916) ─────
+   El pliego v2 reportó que «30 a 44» y «45 a 64» traían el mismo valor exacto
+   —15.787 · 22 %— y pidió revisar el mapeo de campos de edad.
+
+   Revisado: el mapeo está bien. Los cinco tramos PARTEN los veintiún campos
+   del censo —cada uno en exactamente un tramo, ninguno suelto— así que dos
+   tramos no pueden compartir un sumando, y la coincidencia de la corrida real
+   no sale de acá. Eso se midió antes de tocar nada y no se tocó nada.
+
+   Lo que sí queda es esta guarda, porque la propiedad que hace imposible el
+   defecto no está escrita en ninguna parte: es una coincidencia entre dos
+   listas que alguien puede romper editando una sola. Un campo repetido daría
+   exactamente el síntoma reportado —dos tramos con cifra idéntica— y un campo
+   suelto perdería población sin que nada lo dijera, que es peor porque no se
+   ve. Es la regla de la v879 puesta sobre dos listas en vez de sobre dos
+   rutas de cálculo. */
+{
+  const F = 'js/61-analisis-ia-datos.js';
+  const src = leer(F);
+  const bloque = (src.match(/const EDADES = \[([^\]]*)\]/) || [])[1] || '';
+  const edades = (bloque.match(/'[^']+'/g) || []).map(x => x.slice(1, -1));
+  const tramos = [...src.matchAll(/campos:\s*\[([^\]]*)\]/g)]
+    .map(m => (m[1].match(/'[^']+'/g) || []).map(x => x.slice(1, -1)));
+  const repartidos = [].concat(...tramos);
+  const repetidos = repartidos.filter((x, i) => repartidos.indexOf(x) !== i);
+  const sinTramo = edades.filter(x => repartidos.indexOf(x) === -1);
+  const inventados = repartidos.filter(x => edades.indexOf(x) === -1);
+  comprobar('los tramos de edad no repiten un campo del censo',
+    edades.length > 0 && tramos.length > 0 && repetidos.length === 0,
+    repetidos.length
+      ? 'en dos tramos: ' + [...new Set(repetidos)].join(', ') + ' — dos tramos con la misma cifra'
+      : tramos.length + ' tramos sobre ' + edades.length + ' campos, ninguno repetido');
+  comprobar('y no dejan ninguno afuera: la pirámide suma la población entera',
+    sinTramo.length === 0 && inventados.length === 0,
+    (sinTramo.length ? 'sin tramo: ' + sinTramo.join(', ') + ' ' : '') +
+    (inventados.length ? 'en un tramo pero no en EDADES: ' + inventados.join(', ') : '') ||
+      'los ' + edades.length + ' repartidos, sin sobrantes');
+}
+
 /* ── UN PANEL SE APAGA POR UN SOLO CAMINO (v915) ─────────────────────────
    «Había dos caminos de apagado y solo uno obedecía. Ese era el bug de fondo
    detrás de todo lo que veníamos persiguiendo. Queda como regla: un panel se

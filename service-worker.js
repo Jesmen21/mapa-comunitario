@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v915-una-cuenta-por-magnitud-y-una-puerta-de-apagado';
+const URBIS_CACHE = 'urbis-v916-dos-premisas-medidas-y-la-piramide-guardada';
 const URBIS_ASSETS = [
   './',
   './index.html',

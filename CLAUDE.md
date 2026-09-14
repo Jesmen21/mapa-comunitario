@@ -6009,6 +6009,77 @@ El usuario llamó «v914» a esta tanda, pero la v914 se la llevó la franja de
 los PDF de prueba, que se publicó primero. Esto es la **v915**. Se sube por
 encima, nunca bajando la propia — la regla del 7 de septiembre.
 
+## Dos premisas medidas, y la pirámide guardada (v916)
+
+Con las trece secciones del pliego v2 cerradas, quedaban cuatro cosas que la
+v903 dejó escritas como «no se pudieron perseguir desde acá». Dos de ellas
+—§10(b) y §10(e)— se auditaron de frente, y **las dos vuelven con la premisa
+no confirmada**. Queda escrito lo que se midió, que es más útil que un arreglo
+a ojo.
+
+Es la regla que el usuario fijó en esta tanda: *«cuando yo te dé una premisa
+técnica sobre el código, medila antes de actuar. Yo veo el papel, vos ves el
+repositorio; mi diagnóstico del síntoma suele servir y mi diagnóstico de la
+causa no siempre.»*
+
+### §10(e) · la pendiente media no tiene dos rutas de redondeo
+
+«6,3 % en el encabezado, 6,2 % bajo el corte topográfico. Una sola cifra.»
+
+Buscados los sitios que la imprimen: el resumen de cabecera, la caja del
+terreno, la conclusión de banda ambiental y la FODA leen **todos**
+`terreno.pendiente.media`, y los cuatro la formatean con la misma línea
+—`String(x).replace('.', ',')`—. El motor la publica ya redondeada a un
+decimal (`Math.round(pendMedia * 10) / 10`), y su `lectura` **no lleva
+número**: es una frase de grado.
+
+La única segunda ruta candidata está en `js/64`, que arma su propia `lectura`
+con `toLocaleString('es-CO', { maximumFractionDigits: 1 })` sobre el valor
+crudo, mientras devuelve `pendientePct` con `Math.round(x * 10) / 10`. Parecía
+el defecto: dos redondeos distintos sobre una cantidad. **Medido, no lo es**:
+sobre diez valores de media tabla —6,35 · 2,45 · 8,15 · 11,45…— las dos rutas
+coinciden en valor. La única diferencia que aparece es de escritura —«10»
+contra «10,0»— y no es la reportada.
+
+Así que no se tocó nada. Y hay que decir lo que esto NO descarta: el sector de
+prueba no imprime la cifra —su terreno no está medido en la corrida guardada—
+así que **desde acá no se puede reproducir el papel del reporte**. Si vuelve a
+salir, lo que hay que mirar es de dónde sale el 6,2: no de un redondeo, porque
+los cuatro sitios leen el mismo campo ya redondeado.
+
+### §10(b) · los tramos de edad no comparten un sumando
+
+«30–44 y 45–64 traen el mismo valor exacto, 15.787 · 22 %. Revisar el mapeo de
+campos de edad del censo.»
+
+Revisado, y el mapeo está bien: los cinco tramos **parten** los veintiún
+campos del censo —`30_34, 35_39, 40_44` contra `45_49, 50_54, 55_59, 60_64`—,
+cada campo en exactamente un tramo y ninguno suelto. Comprobado contando:
+21 campos, 5 tramos, 21 repartidos, cero repetidos. Dos tramos no pueden
+compartir un sumando, así que la coincidencia de la corrida real no sale de
+ahí.
+
+Lo que sí faltaba es la guarda, y es la parte que vale. **La propiedad que
+hace imposible el defecto no estaba escrita en ninguna parte**: es una
+coincidencia entre dos listas que alguien rompe editando una sola. `revisar.js`
+la persigue en las dos direcciones:
+
+* un campo **repetido** da exactamente el síntoma del reporte —dos tramos con
+  cifra idéntica—;
+* un campo **suelto** pierde población de la pirámide sin que nada lo diga,
+  que es peor porque no se ve.
+
+Demostrada contra las dos: metiendo `40_44` también en el tramo de 45–64 sale
+«en dos tramos: 40_44 — dos tramos con la misma cifra», y quitándolo del suyo
+sale «sin tramo: 40_44».
+
+### Las dos que siguen sin poderse perseguir
+
+* **§10(c)** quedó resuelta en la v915 y por la vía contraria: no había dos
+  cuentas.
+* **§10(d)** —2014 y 2017 idénticos en la serie satelital— pide la serie real,
+  que esta batería no descarga.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
