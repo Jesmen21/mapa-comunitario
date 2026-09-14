@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v917-la-tira-de-estampas-medida-y-lo-que-el-apreton-le-hace';
+const URBIS_CACHE = 'urbis-v918-la-tira-sube-de-peldano-y-se-degrada-antes-de-ceder';
 const URBIS_ASSETS = [
   './',
   './index.html',

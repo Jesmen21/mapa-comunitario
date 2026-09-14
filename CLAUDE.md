@@ -6151,6 +6151,85 @@ Overpass y `ags.esri.co`. Lo que sí queda cerrado es que, si llegan, el panel
 las dibuja; y que si no aparecen en el papel con datos buenos, la causa a
 mirar es la cesión y no el cableado.
 
+## La tira sube de peldaño, y se degrada antes de ceder (v918)
+
+Dos cosas pedidas sobre lo que la v917 midió, y la primera trae un canje que
+hay que dejar escrito porque no es gratis.
+
+### El peldaño ordena por lo que cuesta recuperar, no por lo que ocupa
+
+«La caja de estampas está donde está por peso, no por valor. De todo lo que la
+lámina imprime, esa tira es de lo menos reconstruible: una cobertura se
+recalcula en segundos, una década de imágenes satelitales hay que
+descargarla.»
+
+`como-cambio-el-sitio` pasa del peldaño 2 al 3. `presion-de-crecimiento` se
+queda en el 2: son tres cifras del mismo análisis, y se vuelven a tener
+corriendo la hoja otra vez.
+
+**El canje, medido en el sector de 2.500 m con letra normal:**
+
+| | Ceden | La tira |
+|---|---|---|
+| peldaño 2 | 11 paneles | **cede** |
+| peldaño 3 | 13 paneles | se queda |
+
+Los dos que entran en su lugar son **«El grano: manzana y predio»** y
+**«Continuidad del tejido»** —los dos paneles de morfología de la v859— más el
+mapa de ruido. No es gratis y no se presenta como si lo fuera: se cambian dos
+mediciones del tejido por una serie de fotos que no se puede reconstruir. La
+decisión es de quien tiene el pliego en la mano y está tomada; lo que queda
+acá es el precio, para que la tanda que quiera revisarla no lo mida otra vez.
+
+### Tres estampas antes que ninguna
+
+«Tres fotos siguen diciendo la dirección del cambio; ninguna no dice nada.»
+
+`estampasMax` recorta la tira a la **primera, la del medio y la última**, y la
+composición lo intenta antes de dar la caja por perdida. Se quedan los
+EXTREMOS y no las tres primeras: el cambio se lee entre la más vieja y la más
+nueva, y una serie cortada por el final diría que el sector dejó de cambiar en
+2020.
+
+Y se dice en el papel, que es la mitad que lo separa de un recorte silencioso:
+
+> Se muestran **3 de 5 estampas** por espacio: la primera, la del medio y la
+> última. Las 5 están en la hoja suelta y en el informe. El verde año por año,
+> acá al lado, sí sale entero: lo que se recortó son las fotos, no las cifras.
+
+Es la decisión de la v901 con las once casillas —apretadas antes que
+perdidas— y la de la v881 con los anillos: un problema de espacio no se
+arregla con un silencio.
+
+**Solo se acepta si la caja SE QUEDA.** Degradarla y perderla igual sería
+pagar el recorte por nada. Y es un intento, no una escalera de topes: cada
+intento es una composición entera, y eso en un teléfono se paga en segundos.
+
+### Lo que NO se pudo ejercitar, y hay que decirlo
+
+**El escalón del degradado no llega a dispararse con provecho en este
+sector.** Medido en las tres letras:
+
+* letra normal → la caja se queda entera con sus cinco estampas: no hace falta;
+* «Equilibrio» → ceden **51** paneles y la caja entre ellos. El degradado SÍ se
+  intenta —se comprobó que la caja está en la lista— y no la rescata;
+* «Se lee de pie» → ceden **60**. Lo mismo.
+
+O sea que a esta escala el comportamiento es binario: o cabe entera, o la hoja
+está tan apretada que dos fotos de menos no cambian nada. El caso que el
+pedido imagina —la caja que no cabe *por poco*— no se produce acá.
+
+Así que lo que queda demostrado es la mitad que sí se puede: **cómo se
+dibuja**. Con `estampasMax: 3` salen tres figuras, los años 2014 · 2020 · 2026,
+el aviso impreso, y las cinco cifras del verde intactas. El escalón de la
+escalera queda escrito y sin ejercitar sobre el camino real, y eso es lo que
+hay que saber de él: no es código muerto —se llama— pero su rama útil no la
+produce ningún material de la batería.
+
+Fabricar una composición que quede corta *por poco* para ejercitarlo es lo que
+la v910 declinó como «otra tanda», y por la misma razón: pedir una lámina que
+no cierra es un material que hay que diseñar, no ajustar.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

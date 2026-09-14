@@ -6713,9 +6713,32 @@ function donaHTML(datos, colorDe, nombreDe) {
          una lámina reimpresa de un sector viejo trae las cifras y no las
          fotos; se comprueba por imagen: un `<img src="undefined">` es un
          recuadro roto en mitad del pliego. */
-      var fotos = (W.pasos || []).filter(function (p) { return p.ok && p.imagen; });
+      var todasLasFotos = (W.pasos || []).filter(function (p) { return p.ok && p.imagen; });
       var cifras = (W.pasos || []).filter(function (p) { return p.ok && p.medida; });
-      if (!fotos.length && cifras.length < 2) return '';
+      if (!todasLasFotos.length && cifras.length < 2) return '';
+      /* ── LA TIRA SE DEGRADA ANTES DE CEDER ENTERA (v918) ─────────────
+         «Tres fotos siguen diciendo la dirección del cambio; ninguna no dice
+         nada.» Con cinco estampas esta caja es de las más pesadas de la hoja,
+         y hasta la v917 la bisección la cedía completa. Antes de perderla se
+         compone con TRES —la primera, la del medio y la última—, que es el
+         mínimo que conserva lo que la tira existe para mostrar: de dónde
+         salió, por dónde pasó y dónde terminó.
+
+         Se quedan los EXTREMOS y no las tres primeras: el cambio se lee entre
+         la más vieja y la más nueva, y una serie recortada por el final
+         diría que el sector dejó de cambiar en 2020.
+
+         Es la decisión de la v901 con las once casillas —apretadas antes que
+         perdidas— y la de la v881 con los anillos: no se arregla un problema
+         de espacio con un silencio. */
+      var fotos = todasLasFotos, degradada = 0;
+      var tope = Number(o && o.estampasMax) || 0;
+      if (tope >= 3 && todasLasFotos.length > tope) {
+        var medio = Math.floor((todasLasFotos.length - 1) / 2);
+        fotos = [todasLasFotos[0], todasLasFotos[medio],
+                 todasLasFotos[todasLasFotos.length - 1]];
+        degradada = todasLasFotos.length;
+      }
       var t = W.tendencia;
       var conc = cifras.length >= 2 ? (EV.conclusion(W) || []) : [];
       var anioDe = function (p) { return p.anioReal || p.anio; };
@@ -6753,6 +6776,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       return '<p class="lee">' + esc(c.texto) + ' <b>' + esc(c.dato) + '</b></p>';
       }).join('') +
       '</div></div>' +
+      (degradada
+      ? '<p class="nota falta">Se muestran <b>' + fotos.length + ' de ' + degradada +
+        ' estampas</b> por espacio: la primera, la del medio y la última. Las ' + degradada +
+        ' están en la hoja suelta y en el informe. El verde año por año, acá al lado, sí sale ' +
+        'entero: lo que se recortó son las fotos, no las cifras.</p>'
+      : '') +
       '<p class="nota">Debajo de cada foto, la <b>fecha de la entrega</b> de la que salió —el ' +
       'proveedor publica por entregas fechadas, no por años— y el porcentaje del sector con ' +
       'vegetación, medido sobre la foto con el <b>mismo clasificador</b> de colores que lee la ' +
@@ -16747,7 +16776,17 @@ function donaHTML(datos, colorDe, nombreDe) {
        el 3, con las demás de su banda. */
     'agua': 2,
     'lo-que-el-censo-trae-ademas': 2, 'que-manda-en-el-sector': 2,
-    'como-cambio-el-sitio': 2, 'presion-de-crecimiento': 2,
+    /* La caja de estampas sube al 3 (v918). Estaba en el 2 por PESO y no por
+       valor: con cinco imágenes es de las más pesadas de la hoja, y eso la
+       hacía ceder temprano. Pero de todo lo que la lámina imprime, esta tira
+       es de lo MENOS reconstruible — una cobertura se recalcula en segundos,
+       una década de imágenes satelitales hay que descargarla—, y el peldaño
+       ordena por lo que cuesta recuperar, no por lo que ocupa.
+
+       `presion-de-crecimiento` se queda en el 2: son tres cifras que salen
+       del mismo análisis y se vuelven a tener corriendo la hoja otra vez. */
+    'como-cambio-el-sitio': 3,
+    'presion-de-crecimiento': 2,
     'masa': 2, 'curvas': 2,
     'ruido': 2, 'el-ruido-del-transito': 2,
     'continuidad-del-tejido': 2,
@@ -17295,6 +17334,23 @@ function donaHTML(datos, colorDe, nombreDe) {
          cifra y una línea— y volver a buscar. La síntesis anuncia once
          cruces, y publicarla con nueve es mentir por omisión sin escribir
          nada falso. */
+      /* ── ANTES DE PERDER LA TIRA, TRES ESTAMPAS (v918) ────────────
+         La caja de estampas subió al peldaño 3, así que cede de las
+         últimas — pero cuando la hoja aprieta de verdad (la letra de
+         colgar) cede igual. Y de todo lo que la lámina imprime, esta tira
+         es de lo MENOS reconstruible: una cobertura se recalcula en
+         segundos, una década de imágenes hay que descargarla.
+
+         Así que si la bisección la mandó fuera, se vuelve a componer con
+         la tira recortada a tres. Solo se acepta si con eso la caja SE
+         QUEDA: degradarla y perderla igual sería pagar el recorte por
+         nada. Un intento y no una escalera de topes — cada intento es una
+         composición entera, y eso en un teléfono se paga en segundos. */
+      if (elegido !== null && !o.estampasMax &&
+          todosLosCandidatos.slice(0, elegido).indexOf('como-cambio-el-sitio') !== -1) {
+        var conTres = laminaAjustada(res, Object.assign({}, o, { estampasMax: 3 }));
+        if (conTres && String(conTres).indexOf('<h2>Cómo cambió el sitio</h2>') !== -1) return conTres;
+      }
       if (elegido === null && !o.crucesCompactos) {
         var conCompacto = laminaAjustada(res, Object.assign({}, o, { crucesCompactos: true }));
         if (conCompacto) return conCompacto;

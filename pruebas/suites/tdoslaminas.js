@@ -527,6 +527,16 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        ve si la tira se dibuja; si se mirara solo el documento compuesto, un
        panel ausente puede serlo por dos razones y el papel no las distingue. */
     o.serieSuelta = R.laminaA({ hoja: 'A', clima: CLIMA, evo: EVO_SERIE });
+    /* Y la MISMA composición con la letra de colgar, que es la que de verdad
+       aprieta: es donde se ve si la tira sobrevive y qué cede en su lugar. */
+    R.laminaDoble({ letra: 'grande', clima: CLIMA, evo: EVO_SERIE });
+    o.serieFueraPie = ((R.estado() || {}).pliegoFuera || []).slice();
+    o.serieDePie = R.laminaDoble({ letra: 'grande', clima: CLIMA, evo: EVO_SERIE });
+    o.serieMedia = R.laminaDoble({ letra: 'media', clima: CLIMA, evo: EVO_SERIE });
+    /* La tira RECORTADA, pedida a propósito: es la mitad del degradado que
+       sí se puede ejercitar —cómo se dibuja— y la que el lector ve. */
+    o.serieTres = R.laminaA({ hoja: 'A', clima: CLIMA, evo: EVO_SERIE, estampasMax: 3 });
+    o.serieFueraMedia = ((R.estado() || {}).pliegoFuera || []).slice();
     /* Y apretada: con el inventario leyendo `S.evo` la caja se componía pero
        quedaba FUERA de la lista de candidatos —`ordenDeSacrificio` la daba por
        no lista—, así que era inmune por accidente. Eso es lo que distingue
@@ -2985,6 +2995,53 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      con cinco estampas la caja cede, y cede DECLARADA. Un panel que se cae en
      silencio es lo que la v850 prohíbe y la v911 vigila; acá se comprueba
      justo para esta caja, que es la que se venía buscando en el papel. */
+  /* ── LA TIRA SUBE AL PELDAÑO 3, Y SE DEGRADA ANTES DE CEDER (v918) ──
+     «La caja de estampas está donde está por peso, no por valor. De todo lo
+     que la lámina imprime, esa tira es de lo menos reconstruible: una
+     cobertura se recalcula en segundos, una década de imágenes hay que
+     descargarla.»
+
+     Medido, el canje es concreto: con la caja en el peldaño 2 cedían once
+     paneles y ella entre ellos; en el 3 ceden trece y ella se queda. Lo que
+     entra en su lugar son «El grano: manzana y predio», «Continuidad del
+     tejido» y el mapa de ruido. */
+  {
+    const cajaEn = (h) => {
+      const d = String(h || ''); const i = d.indexOf('<h2>Cómo cambió el sitio</h2>');
+      if (i < 0) return '';
+      const j = d.indexOf('<section class="caja', i);
+      return d.slice(i, j < 0 ? d.length : j);
+    };
+    T('en el peldaño 3 la tira sobrevive al documento compuesto',
+      /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '') &&
+        (r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') === -1,
+      (r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') === -1
+        ? 'se queda · ceden ' + (r.serieFueraDoc || []).length + ' paneles en su lugar'
+        : 'cedió igual');
+    T('y sale con sus cinco estampas, no recortada porque sí',
+      (cajaEn(r.serieEnA).match(/<figure/g) || []).length === 5 &&
+        !/de 5 estampas/.test(cajaEn(r.serieEnA)),
+      (cajaEn(r.serieEnA).match(/<figure/g) || []).length + ' figuras · aviso de recorte: ' +
+        /de 5 estampas/.test(cajaEn(r.serieEnA)));
+    /* La tira recortada, pedida a propósito: es la mitad del degradado que sí
+       se puede ejercitar desde acá —cómo se DIBUJA— y la que el lector ve. */
+    const TR = cajaEn(r.serieTres);
+    const anios = (TR.match(/<figcaption>(\d{4})<\/figcaption>/g) || [])
+      .map(x => x.replace(/<\/?figcaption>/g, ''));
+    T('degradada a tres, quedan la PRIMERA, la del medio y la ÚLTIMA',
+      anios.join(',') === '2014,2020,2026',
+      anios.join(' · ') || 'ninguna');
+    /* Los extremos y no las tres primeras: el cambio se lee entre la más
+       vieja y la más nueva, y una serie cortada por el final diría que el
+       sector dejó de cambiar en 2020. */
+    T('y lo DICE, en vez de recortar en silencio',
+      /Se muestran <b>3 de 5 estampas<\/b> por espacio/.test(TR) &&
+        /est[aá]n en la hoja suelta/.test(TR),
+      (TR.match(/Se muestran[^.]{0,90}/) || ['no lo dice'])[0]);
+    T('y las CIFRAS no se recortan: lo que cede son las fotos',
+      ['2014', '2017', '2020', '2023', '2026'].every(a2 => TR.indexOf(a2) >= 0),
+      'los cinco años siguen en el verde año por año');
+  }
   T('y con las estampas pesa: en el documento apretado cede, y queda declarada',
     !/<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '')
       ? (r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
@@ -3023,7 +3080,6 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       aMano.length === 0,
       aMano.length ? aMano.map(x => x.slice(0, 80)).join(' · ') : 'ninguno');
   }
-
   console.log('\n  -- la franja de export de prueba (v914) --');
   /* Los dos PDF de muestra publicados en `assets/pliegos/` llevan un LEEME al
      lado que dice que son datos de fixture. Un PDF viaja SOLO: reenviado por
