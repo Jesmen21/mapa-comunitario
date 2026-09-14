@@ -314,7 +314,7 @@
     return !!yo && !!n && n.duenio === yo;
   }
   function exigirEditar(n) {
-    if (!puedoEditar(n)) throw new Error('Este emprendimiento no es tuyo: solo lo edita quien URBIS designó.');
+    if (!puedoEditar(n)) throw new Error('Este emprendimiento no es suyo: solo lo edita quien URBIS designó.');
   }
   function exigirAdmin(accion) {
     if (!esAdmin()) throw new Error('Solo el administrador de URBIS puede ' + accion + '.');
@@ -429,7 +429,7 @@
               try { g2.putImageData(guardado, 0, 0); } catch (e) {}
             }
             if (url.length > MAX_CELDA) {
-              reject(new Error('El logo pesa demasiado. Prueba con una imagen más sencilla.'));
+              reject(new Error('El logo pesa demasiado. Pruebe con una imagen más sencilla.'));
               return;
             }
             resolve(url);
@@ -459,7 +459,7 @@
     let d = String(numero || '').replace(/\D/g, '');
     if (!d) return '';
     if (d.length === 10 && d.charAt(0) === '3') d = '57' + d;
-    const texto = 'Hola 👋 Vi ' + (nombre ? '“' + nombre + '”' : 'tu emprendimiento') +
+    const texto = 'Hola 👋 Vi ' + (nombre ? '“' + nombre + '”' : 'su emprendimiento') +
                   ' en URBIS y quiero más información.';
     return 'https://wa.me/' + d + '?text=' + encodeURIComponent(texto);
   }
@@ -573,7 +573,7 @@
         (prods.some(function (x) { return x.promo; })
           ? '<div class="uvit-hay-ofertas">🏷️ Este negocio tiene promociones activas</div>' : '') +
         (prods.length
-          ? '<div class="uvit-porta"><b>Lo que encuentras aquí</b><div class="uvit-grid">' +
+          ? '<div class="uvit-porta"><b>Lo que encuentra aquí</b><div class="uvit-grid">' +
             // Lo que está en oferta va primero: es lo que trajo a la persona.
             prods.slice().sort(function (a, b) {
               return (b.promo ? 1 : 0) - (a.promo ? 1 : 0);
@@ -642,8 +642,8 @@
             '</div></div>';
         }).join('')
         : (admin
-            ? '<div class="uadm-vacio">Todavía no hay emprendimientos. Crea el primero.</div>'
-            : '<div class="uadm-vacio">El administrador de URBIS todavía no te ha asignado un emprendimiento. ' +
+            ? '<div class="uadm-vacio">Todavía no hay emprendimientos. Cree el primero.</div>'
+            : '<div class="uadm-vacio">El administrador de URBIS todavía no le ha asignado un emprendimiento. ' +
               'Cuando lo haga, aparecerá aquí para que lo edites.</div>'));
 
       const nuevo = cont.querySelector('.uvit-nuevo');
@@ -701,7 +701,7 @@
         '<div class="uvit-form">' +
           '<label>¿Qué emoji lo representa?</label>' +
           '<div class="uvit-elegido"><span id="uvit-muestra">' + esc(v.emoji) + '</span>' +
-            '<small>El que se verá en el mapa. Busca tu oficio o elige de la lista.</small></div>' +
+            '<small>El que se verá en el mapa. Busque su oficio o elija de la lista.</small></div>' +
           '<input type="text" id="uvit-buscar-e" placeholder="Buscar: ferretería, papelería, pizza…" autocomplete="off">' +
           '<div class="uvit-e-chips"></div>' +
           '<div class="uvit-emojis"></div>' +
@@ -713,8 +713,8 @@
                   '<label class="ucfg-foto"><span id="uvit-logo-txt">🖼️ Subir logo (PNG o JPG)</span>' +
                   '<input type="file" id="uvit-logo-file" accept="image/png,image/jpeg,image/webp"></label>' +
                   '<button type="button" id="uvit-logo-quitar" hidden>Quitar logo</button>' +
-                  '<small>Si subes un logo, será la cara del negocio en el mapa. ' +
-                  'Sin logo se usa el emoji. Se recorta cuadrado, así que céntralo.</small>' +
+                  '<small>Si sube un logo, será la cara del negocio en el mapa. ' +
+                  'Sin logo se usa el emoji. Se recorta cuadrado, así que céntrelo.</small>' +
                 '</div>' +
               '</div>'
             : '') +
@@ -728,7 +728,7 @@
           '<input id="uvit-nombre" maxlength="60" value="' + esc(v.nombre) + '" placeholder="Barbería Don Luis">' +
           '<label>En una frase, ¿qué es?</label>' +
           '<input id="uvit-lema" maxlength="90" value="' + esc(v.lema) + '" placeholder="Cortes clásicos y modernos en Atalaya">' +
-          '<label>Cuéntale a la gente qué encuentra aquí</label>' +
+          '<label>Cuéntele a la gente qué encuentra aquí</label>' +
           '<textarea id="uvit-desc" rows="3" maxlength="600" placeholder="Qué venden, qué los hace especiales, desde cuándo…">' + esc(v.descripcion) + '</textarea>' +
           '<div class="uvit-dos"><div><label>Teléfono</label>' +
           '<input id="uvit-tel" maxlength="20" inputmode="tel" value="' + esc(v.telefono) + '" placeholder="3001234567"></div>' +
@@ -742,9 +742,9 @@
             ? '<label>Usuario que lo administra <small>(opcional)</small></label>' +
               '<input id="uvit-duenio" maxlength="40" autocapitalize="off" autocomplete="off" value="' + esc(v.duenio || '') + '" placeholder="usuario de URBIS, sin @">' +
               '<small class="uvit-duenio-nota">Podrá editar la ficha y el portafolio de este emprendimiento. ' +
-              'Publicarlo, pausarlo o borrarlo sigue siendo decisión tuya. Para que pueda guardar necesita ' +
-              'además el permiso «Administrar la vitrina»: si eres la cuenta dueña de URBIS se le da solo al guardar; ' +
-              'si no, dáselo en Panel → Equipo.</small>'
+              'Publicarlo, pausarlo o borrarlo sigue siendo decisión suya. Para que pueda guardar necesita ' +
+              'además el permiso «Administrar la vitrina»: si es la cuenta dueña de URBIS se le da solo al guardar; ' +
+              'si no, déselo en Panel → Equipo.</small>'
             : '') +
           (editando ? '' :
             '<label>¿Dónde queda?</label>' +
@@ -766,7 +766,7 @@
               '</div>' +
               '<label>Promoción</label>' +
               '<input id="uvit-ipromo" maxlength="28" placeholder="2x1, −30%, Martes de descuento…">' +
-              '<small class="uvit-promo-nota">Si escribes una promoción, la gota del negocio se ' +
+              '<small class="uvit-promo-nota">Si escribe una promoción, la gota del negocio se ' +
               'pondrá a latir en el mapa con una etiqueta 🏷️ para que la gente la vea de lejos. ' +
               'Déjala vacía si es un producto normal.</small>' +
               '<button type="button" class="ucfg-primario" id="uvit-iadd">Agregar al portafolio</button>' +
@@ -824,7 +824,7 @@
           }).join('');
         });
         zonaE.innerHTML = html ||
-          '<div class="uvit-e-nada">Sin resultados. Prueba con el oficio: “panadería”, “taller”, “ropa”…</div>';
+          '<div class="uvit-e-nada">Sin resultados. Pruebe con el oficio: “panadería”, “taller”, “ropa”…</div>';
         zonaE.querySelectorAll('.uvit-e').forEach(function (b) {
           b.addEventListener('click', function () {
             zonaE.querySelectorAll('.uvit-e').forEach(function (x) { x.classList.remove('on'); });
@@ -857,7 +857,7 @@
           coordTxt.textContent = 'buscando…';
           navigator.geolocation.getCurrentPosition(function (pos) {
             lat = pos.coords.latitude.toFixed(7); lng = pos.coords.longitude.toFixed(7); marcarCoord();
-          }, function () { coordTxt.textContent = 'no se pudo — toca el mapa'; }, { enableHighAccuracy: true, timeout: 10000 });
+          }, function () { coordTxt.textContent = 'no se pudo — toque el mapa'; }, { enableHighAccuracy: true, timeout: 10000 });
         });
         cont.querySelector('#uvit-toque').addEventListener('click', function () {
           // Se cierra el panel, se toca el sitio y el formulario vuelve con la
@@ -868,7 +868,7 @@
           // rompa la próxima vez que el mostrador cambie de casa.
           const panel = cont.closest('.urbis-cfg-overlay');
           if (panel) panel.style.display = 'none';
-          alert('Toca en el mapa el punto exacto donde queda el negocio.');
+          alert('Toque en el mapa el punto exacto donde queda el negocio.');
           const m = getMap();
           if (!m) { if (panel) panel.style.display = ''; return; }
           m.once('click', function (ev) {
@@ -917,7 +917,7 @@
             : 'Guardado. @' + (r && r.usuario || d.duenio) + ' recibió el permiso de vitrina y ya puede editar este emprendimiento.');
         }).catch(function (e) {
           decir('Guardado, pero no se pudo dar el permiso a @' + d.duenio + ': ' + (e && e.message || e) +
-                '. Dáselo en Panel → Equipo.');
+                '. Déselo en Panel → Equipo.');
         });
       }
 
@@ -925,8 +925,8 @@
         const btn = this, err = cont.querySelector('.ucfg-error');
         const d = leerCampos();
         if (!d.nombre) { err.textContent = 'El emprendimiento necesita un nombre.'; err.hidden = false; return; }
-        if (!d.telefono && !d.whatsapp) { err.textContent = 'Deja al menos un número: es como la gente los va a contactar.'; err.hidden = false; return; }
-        if (!editando && (!lat || !lng)) { err.textContent = 'Falta la ubicación: usa el GPS o toca el mapa.'; err.hidden = false; return; }
+        if (!d.telefono && !d.whatsapp) { err.textContent = 'Deje al menos un número: es como la gente los va a contactar.'; err.hidden = false; return; }
+        if (!editando && (!lat || !lng)) { err.textContent = 'Falta la ubicación: use el GPS o toque el mapa.'; err.hidden = false; return; }
         btn.disabled = true; btn.textContent = 'Guardando…';
         try {
           if (editando) { Object.assign(v, d); await actualizarNegocio(v); }
@@ -1049,9 +1049,9 @@
           const precio = limpio('#uvit-iprecio');
           const antes = limpio('#uvit-iantes');
           const promo = limpio('#uvit-ipromo');
-          if (!nombre) { err.textContent = 'Ponle nombre al producto.'; err.hidden = false; return; }
+          if (!nombre) { err.textContent = 'Póngale nombre al producto.'; err.hidden = false; return; }
           if (antes && !promo) {
-            err.textContent = 'Pusiste un precio anterior pero ninguna promoción. Escribe cuál es (por ejemplo “−30%”) o borra el precio anterior.';
+            err.textContent = 'Puso un precio anterior pero ninguna promoción. Escriba cuál es (por ejemplo “−30%”) o borre el precio anterior.';
             err.hidden = false; return;
           }
           btn.disabled = true; btn.textContent = 'Agregando…';
@@ -1109,10 +1109,10 @@
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
         (esAdmin()
           ? '<h3>🛍️ Emprendimientos URBIS</h3>' +
-            '<p class="ucfg-sub">Tu mostrador: crea la ficha de cada negocio, arma su ' +
+            '<p class="ucfg-sub">Su mostrador: cree la ficha de cada negocio, arme su ' +
             'portafolio, decide cuáles se ven en el mapa y quién administra cada uno.</p>'
           : '<h3>🛍️ Mi emprendimiento</h3>' +
-            '<p class="ucfg-sub">Edita la ficha y el portafolio del emprendimiento que URBIS te asignó. ' +
+            '<p class="ucfg-sub">Edite la ficha y el portafolio del emprendimiento que URBIS le asignó. ' +
             'Publicarlo o pausarlo lo decide el administrador.</p>') +
         '<div class="uvit-mostrador-cuerpo"></div>' +
       '</div>';
@@ -1182,7 +1182,7 @@
     const arr = negocios().filter(function (n) { return n.estado === 'visible'; });
     cont.innerHTML =
       '<p class="uvit-dir-intro">Emprendimientos que URBIS conoce y respalda. ' +
-      'Toca uno para ver qué ofrece y escribirle directo.</p>' +
+      'Toque uno para ver qué ofrece y escribirle directo.</p>' +
       (puedo()
         ? '<button type="button" class="uvit-dir-admin">' + (esAdmin() ? '🛠️ Administrar la vitrina' : '🛠️ Mi emprendimiento') + '</button>'
         : '') +
@@ -1202,9 +1202,9 @@
       }).join('')
       : '<div class="uvit-dir-pronto"><span>✨</span><b>Muy pronto</b>' +
         '<small>Estamos preparando los primeros Emprendimientos URBIS: ' +
-        'una barbería, un taller tecnológico y una odontología. Vuelve a asomarte.</small></div>') +
-      '<small class="ucfg-nota">¿Tienes un emprendimiento y quieres ser parte? ' +
-      'Escríbenos desde Perfil → Configuración.</small>';
+        'una barbería, un taller tecnológico y una odontología. Vuelva a asomarse.</small></div>') +
+      '<small class="ucfg-nota">¿Tiene un emprendimiento y quiere ser parte? ' +
+      'Escríbanos desde Perfil → Configuración.</small>';
 
     const admin = cont.querySelector('.uvit-dir-admin');
     if (admin) admin.addEventListener('click', function () { window.urbisAbrirVitrinaAdmin(); });

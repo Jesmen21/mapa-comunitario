@@ -198,7 +198,7 @@
       const esc = t => String(t).replace(/"/g, '&quot;');
 
       const partes = [];
-      if(v.confirm) partes.push(v.confirm + (v.confirm === 1 ? ' confirma' : ' confirman') + ' que sigue');
+      if(v.confirm) partes.push(v.confirm + (v.confirm === 1 ? ' confirme' : ' confirman') + ' que sigue');
       if(v.ongoing) partes.push(v.ongoing + (v.ongoing === 1 ? ' dice' : ' dicen') + ' que sigue ocurriendo');
       if(v.gone)    partes.push(v.gone + (v.gone === 1 ? ' dice' : ' dicen') + ' que ya no está');
       if(v.wrong)   partes.push(v.wrong + (v.wrong === 1 ? ' marca' : ' marcan') + ' el dato como incorrecto');
@@ -207,7 +207,7 @@
       const etiquetaVoto = { confirm:'✅ sigue ahí', ongoing:'🔄 sigue ocurriendo',
                              gone:'👌 ya no está', wrong:'🚩 dato incorrecto' };
       const mio = v.miVoto
-        ? '<div class="uv-mio">Tu respuesta: <b>' + etiquetaVoto[v.miVoto] + '</b> · puedes cambiarla tocando otra</div>'
+        ? '<div class="uv-mio">Su respuesta: <b>' + etiquetaVoto[v.miVoto] + '</b> · puede cambiarla tocando otra</div>'
         : '';
 
       // Solo se avisa cuando alguien ya empezó a decir que no está: antes de eso
@@ -219,7 +219,7 @@
 
       const sub = v.dias == null ? ''
         : (v.hayQuePreguntar
-            ? '<div class="uv-sub uv-viejo">Nadie da noticias de este reporte desde ' + cuando + '. Si pasas por ahí, cuéntanos.</div>'
+            ? '<div class="uv-sub uv-viejo">Nadie da noticias de este reporte desde ' + cuando + '. Si pasa por ahí, cuéntenos.</div>'
             : '<div class="uv-sub">Última noticia ' + cuando + '</div>');
 
       const b = (accion, clase, texto) =>
@@ -244,7 +244,7 @@
       const votoPrevio = v.votos[yo.clave] || '';
 
       if(votoPrevio === accionSegura) {
-          alert('Ya diste esta respuesta sobre este reporte. Puedes cambiarla eligiendo otra.');
+          alert('Ya dio esta respuesta sobre este reporte. Puede cambiarla eligiendo otra.');
           return;
       }
       // Cambiar de opinión no suma: mueve el voto de una casilla a la otra.
@@ -280,7 +280,7 @@
           punto.descripcion = descripcionFinal; // la vista abierta ya refleja el voto
           if(btn) btn.innerText = done[accionSegura];
           if(accionSegura === 'gone' && !yo.identificado) {
-              alert('Gracias. Tu respuesta quedó registrada y se ve en el reporte.\n\nPara que cuente a la hora de retirarlo del mapa hay que iniciar sesión: así nadie puede borrar reportes reales abriendo ventanas nuevas.');
+              alert('Gracias. Su respuesta quedó registrada y se ve en el reporte.\n\nPara que cuente a la hora de retirarlo del mapa hay que iniciar sesión: así nadie puede borrar reportes reales abriendo ventanas nuevas.');
           }
           cargarPuntos();
       })
@@ -340,9 +340,9 @@
   window.eliminarPunto = function(lat) {
       const punto = buscarPuntoPorLat(lat);
       if(!punto) { alert("No se encontró el reporte para eliminar."); return; }
-      if(!puedeGestionarReporte(punto)) { alert("Solo puedes eliminar tus propios reportes mientras sigan activos."); return; }
+      if(!puedeGestionarReporte(punto)) { alert("Solo puede eliminar sus propios reportes mientras sigan activos."); return; }
       const mensaje = (userRole === 'citizen')
-          ? "¿Eliminar tu reporte? Esta acción lo quitará del mapa actual."
+          ? "¿Eliminar su reporte? Esta acción lo quitará del mapa actual."
           : "¿Eliminar punto de forma permanente?";
       if(confirm(mensaje)) {
           // OPTIMISTA: quitar el reporte del mapa y de las listas YA, para que el ícono
@@ -451,8 +451,8 @@
         'background:#7C2D12;color:#FFF7ED;font:600 13px/1.35 system-ui,-apple-system,sans-serif;' +
         'padding:9px 44px 9px 14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.3)';
       el.textContent = hayViejos
-        ? 'Sin conexión con el servidor. Estás viendo reportes guardados ' + _dbEdadLegible(edadMs) + '; puede faltar lo más reciente.'
-        : 'No se pudieron cargar los reportes. El mapa está incompleto — esto NO significa que no haya avisos en tu zona.';
+        ? 'Sin conexión con el servidor. Está viendo reportes guardados ' + _dbEdadLegible(edadMs) + '; puede faltar lo más reciente.'
+        : 'No se pudieron cargar los reportes. El mapa está incompleto — esto NO significa que no haya avisos en su zona.';
       const cerrar = document.createElement('button');
       cerrar.type = 'button';
       cerrar.setAttribute('aria-label', 'Cerrar aviso');
@@ -535,7 +535,7 @@
 
   window.enviarDatosDesdeFormulario = function(btn) {
       const ctx = window.__urbisCurrentFormContext;
-      if(!ctx) { alert('No se encontró el contexto del formulario. Vuelve a tocar el mapa y crea el reporte otra vez.'); return; }
+      if(!ctx) { alert('No se encontró el contexto del formulario. Vuelva a tocar el mapa y cree el reporte otra vez.'); return; }
       return enviarDatos(ctx.cat, ctx.lat, ctx.lng, ctx.isEdit, ctx.estadoVal, ctx.creadorNom, ctx.creadorRolStr, ctx.likesActuales, ctx.correoReq, ctx.cedulaReq, ctx.barrioReq, btn);
   };
 
@@ -543,7 +543,7 @@
     if(isEdit) {
         const puntoEdicion = buscarPuntoPorLat(lat);
         if(!puntoEdicion || !puedeGestionarReporte(puntoEdicion)) {
-            alert("No tienes permiso para editar este reporte o ya venció su tiempo activo.");
+            alert("No tiene permiso para editar este reporte o ya venció su tiempo activo.");
             return;
         }
     }
@@ -779,7 +779,7 @@
     } catch(e){}
 
     if(descripcionFinal.length > 49000) {
-        alert('El reporte quedó demasiado pesado para SheetDB/Google Sheets. Usa un link de foto o una imagen más pequeña.');
+        alert('El reporte quedó demasiado pesado para SheetDB/Google Sheets. Use un link de foto o una imagen más pequeña.');
         if(btn) { btn.innerText = btn.dataset.originalText || 'GUARDAR REPORTE'; btn.disabled = false; }
         return;
     }
@@ -1150,9 +1150,9 @@
     html += `<div class="mis-rep-head"><div class="mis-rep-filtros">${chips}</div><div class="mis-rep-count">${filtrados.length} reporte(s)</div></div>`;
 
     if(!mios.length){
-      html += `<div class="u52-empty-card"><span>🕒</span><div><b>Aún no has hecho reportes</b><small>Crea uno con el botón ＋ y aparecerá aquí, incluso después de vencer sus 8 horas.</small></div></div>`;
+      html += `<div class="u52-empty-card"><span>🕒</span><div><b>Aún no has hecho reportes</b><small>Cree uno con el botón ＋ y aparecerá aquí, incluso después de vencer sus 8 horas.</small></div></div>`;
     } else if(!filtrados.length){
-      html += `<div class="u52-empty-card"><span>🔎</span><div><b>Nada en este filtro</b><small>Prueba con “Todos” o cambia la búsqueda.</small></div></div>`;
+      html += `<div class="u52-empty-card"><span>🔎</span><div><b>Nada en este filtro</b><small>Pruebe con “Todos” o cambia la búsqueda.</small></div></div>`;
     } else {
       html += '<div class="mis-rep-list">' + filtrados.map(p => {
         const d = String(p.descripcion || '').split(' | ');
@@ -1182,7 +1182,7 @@
             <button onclick="window.urbisMarcarReporteVisto && window.urbisMarcarReporteVisto('${p.lat}'); window.urbisRenderMisReportes && window.urbisRenderMisReportes();">Entendido</button>
           </div>` : '';
         const pedidoHTML = pedido.vigente ? `<div class="mis-rep-pedido">
-            <b>✋ Te piden corregir algo antes de publicarlo</b>
+            <b>✋ Le piden corregir algo antes de publicarlo</b>
             <span>${escaparHTML(pedido.texto)}</span>
             <button onclick="window.urbisEditarReporteMovil ? window.urbisEditarReporteMovil('${p.lat}') : (window.prepararEdicion && window.prepararEdicion('${p.lat}'))">✏️ Corregir ahora</button>
           </div>` : '';
@@ -1270,9 +1270,9 @@
     html += `<div class="mis-rep-head"><div class="mis-rep-filtros">${chips}</div><div class="mis-rep-count">${filtrados.length} evento(s)</div></div>`;
 
     if(!mios.length){
-      html += `<div class="u52-empty-card"><span>🎪</span><div><b>Aún no has creado eventos</b><small>Crea uno desde el mapa: toca una cancha, parque o plaza y elige “Evento”.</small></div></div>`;
+      html += `<div class="u52-empty-card"><span>🎪</span><div><b>Aún no has creado eventos</b><small>Cree uno desde el mapa: toque una cancha, parque o plaza y elija “Evento”.</small></div></div>`;
     } else if(!filtrados.length){
-      html += `<div class="u52-empty-card"><span>🔎</span><div><b>Nada en este filtro</b><small>Prueba con “Todos” o cambia la búsqueda.</small></div></div>`;
+      html += `<div class="u52-empty-card"><span>🔎</span><div><b>Nada en este filtro</b><small>Pruebe con “Todos” o cambia la búsqueda.</small></div></div>`;
     } else {
       html += '<div class="mis-rep-list">' + filtrados.map(p => {
         const d = String(p.descripcion || '').split(' | ');
@@ -1328,7 +1328,7 @@
         const meta = (typeof obtenerMetaTemporal === 'function') ? obtenerMetaTemporal(p) : {archivado:false};
         const color = meta.archivado ? '#9aa6b8' : '#FF6500';
         _urbisVerTempMarker = L.circleMarker([la, ln], { radius:14, color:color, weight:3, fillColor:color, fillOpacity:.35 }).addTo(map);
-        _urbisVerTempMarker.bindTooltip(meta.archivado ? 'Reporte archivado — toca “Reactivar” para mostrarlo en el mapa' : 'Tu reporte', { permanent:false }).openTooltip();
+        _urbisVerTempMarker.bindTooltip(meta.archivado ? 'Reporte archivado — toque “Reactivar” para mostrarlo en el mapa' : 'Su reporte', { permanent:false }).openTooltip();
         const _m = _urbisVerTempMarker;
         setTimeout(()=>{ try{ if(_m) map.removeLayer(_m); if(_urbisVerTempMarker === _m) _urbisVerTempMarker = null; }catch(e){} }, 8000);
         if(typeof mostrarDetalles === 'function') mostrarDetalles(p);
@@ -1420,7 +1420,7 @@
         <div class="uc-ref">${esc(titulo || 'Reporte')}</div>
         <div class="uc-list"></div>
         <div class="uc-form">
-          <textarea class="uc-input" rows="2" maxlength="600" placeholder="Escribe un comentario respetuoso…"></textarea>
+          <textarea class="uc-input" rows="2" maxlength="600" placeholder="Escriba un comentario respetuoso…"></textarea>
           <button type="button" class="uc-send">Enviar</button>
         </div>
       </div>`;
@@ -1507,7 +1507,7 @@
       const texto = (ta.value || '').trim().replace(/~~~/g, ' ').replace(/[§|]/g, ' ');
       if(!texto) return;
       const usuario = (typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || window.userUsernameGlobal || '';
-      if(!usuario && !(window.urbisHaySesion && window.urbisHaySesion())){ const n = prompt('¿Cuál es tu nombre de usuario URBIS? (sin @)'); if(n && window.urbisSetMiUsuario) window.urbisSetMiUsuario(n); if(!(typeof window.urbisUsuarioActual==='function' && window.urbisUsuarioActual())){ alert('Necesitas definir tu usuario para comentar.'); return; } }
+      if(!usuario && !(window.urbisHaySesion && window.urbisHaySesion())){ const n = prompt('¿Cuál es su nombre de usuario URBIS? (sin @)'); if(n && window.urbisSetMiUsuario) window.urbisSetMiUsuario(n); if(!(typeof window.urbisUsuarioActual==='function' && window.urbisUsuarioActual())){ alert('Necesita definir su usuario para comentar.'); return; } }
       const usuarioFinal = (typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || usuario;
       const btn = this; btn.disabled = true; btn.textContent = 'Enviando…';
       const fila = { tipo:'💬 Comentario', lat:ref, lng:'0', descripcion: String(usuarioFinal).replace(/~~~/g,' ') + '~~~' + texto, fecha: new Date().toISOString() };
@@ -1570,7 +1570,7 @@
   function urbisAsegurarUsuario(){
     let u = window.urbisUsuarioActual();
     if(!u && !window.urbisHaySesion()){
-      const nuevo = prompt('¿Cuál es tu nombre de usuario URBIS? (sin @)\nEjemplo: jesmen21');
+      const nuevo = prompt('¿Cuál es su nombre de usuario URBIS? (sin @)\nEjemplo: jesmen21');
       if(nuevo){ u = window.urbisSetMiUsuario(nuevo); try{ if(typeof window.urbisApplyProfileIdentityUI === 'function') window.urbisApplyProfileIdentityUI(); }catch(e){} }
     }
     return u;
@@ -1592,18 +1592,18 @@
   window.urbisCompartirUbicacion = function(silencioso){
     if(silencioso) return;
     const P = window.URBIS_PRESENCIA;
-    if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
-    if(P.estadoCompartir().activo){ alert('Ya estás compartiendo tu ubicación. En Amigos puedes apagarlo.'); return; }
+    if(!P){ alert('El módulo de presencia no cargó. Recargue la aplicación.'); return; }
+    if(P.estadoCompartir().activo){ alert('Ya está compartiendo su ubicación. En Amigos puede apagarlo.'); return; }
     const r = P.compartir(60);
     if(!r.ok){ alert(r.motivo || 'No se pudo empezar a compartir.'); return; }
-    alert('📡 Compartiendo tu ubicación con tus amigos durante 1 hora. En Amigos puedes cambiar la duración o apagarlo.');
+    alert('📡 Compartiendo su ubicación con sus amigos durante 1 hora. En Amigos puede cambiar la duración o apagarlo.');
   };
 
   window.urbisAgregarContacto = function(usuario, relacion, cb){
     const yo = urbisAsegurarUsuario();
-    if(!yo){ alert('Necesitas definir tu usuario para agregar contactos.'); return; }
+    if(!yo){ alert('Necesita definir su usuario para agregar contactos.'); return; }
     const cont = String(usuario||'').trim().replace(/[§|]/g,'');
-    if(!cont){ alert('Escribe el usuario del contacto.'); return; }
+    if(!cont){ alert('Escriba el usuario del contacto.'); return; }
     const rel = relacion === 'familia' ? 'familia' : 'amigo';
     const fila = { tipo:'🤝 Relacion', lat:'0', lng:'0', descripcion: yo+'~~~'+cont+'~~~'+rel, fecha:new Date().toISOString() };
     window.urbisGuardarFila(fila)
@@ -1630,7 +1630,7 @@
   window.urbisEliminarContacto = function(usuario, cb){
     const yo = (urbisMiUsuario()||'').trim();
     if(!yo || !usuario) return;
-    if(!confirm('¿Eliminar a @' + usuario + ' de tus contactos?')) return;
+    if(!confirm('¿Eliminar a @' + usuario + ' de sus contactos?')) return;
     const yo_l = yo.toLowerCase(), ellos_l = String(usuario).toLowerCase();
     // Borrar ambos lados en memoria local
     window.urbisRelaciones = (window.urbisRelaciones||[]).filter(r => {
@@ -1694,13 +1694,13 @@
     try{ if(window.UrbisMobileAppV58 && typeof window.UrbisMobileAppV58.show === 'function') window.UrbisMobileAppV58.show('map'); }catch(e){}
     setTimeout(()=>{
       const P = window.URBIS_PRESENCIA;
-      if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
+      if(!P){ alert('El módulo de presencia no cargó. Recargue la aplicación.'); return; }
       const lista = P.ver();
       if(!lista.some(a => a.visible)){
         const motivos = lista.slice(0, 4).map(a => '@' + a.usuario + ': ' + a.motivo).join('\n');
         alert(lista.length
-          ? 'Ninguno de tus amigos está compartiendo su ubicación ahora.\n' + motivos
-          : 'Todavía no tienes amigos mutuos en URBIS.');
+          ? 'Ninguno de sus amigos está compartiendo su ubicación ahora.\n' + motivos
+          : 'Todavía no tiene amigos mutuos en URBIS.');
       }
     }, 250);
   };
@@ -1741,9 +1741,9 @@
       // Solo se pide definir usuario si NO hay sesión. Con sesión iniciada el usuario
       // ya existe (no volver a pedirlo: genera conflictos).
       if(window.urbisHaySesion && window.urbisHaySesion()){
-        cont.innerHTML = `<div class="ct-empty">😕<span>No pudimos leer tu usuario. Cierra y vuelve a iniciar sesión.</span></div>`;
+        cont.innerHTML = `<div class="ct-empty">😕<span>No pudimos leer su usuario. Cierre y vuelva a iniciar sesión.</span></div>`;
       } else {
-        cont.innerHTML = `<div class="ct-empty">🙋<span>Inicia sesión para ver a tus ${etiqueta}.</span></div>`;
+        cont.innerHTML = `<div class="ct-empty">🙋<span>Inicie sesión para ver a sus ${etiqueta}.</span></div>`;
       }
       return;
     }
@@ -1793,7 +1793,7 @@
     }
     let html = '';
     if(contactos.length){ html += `<div class="amigos-table">${contactos.map(filaContacto).join('')}</div>`; }
-    else { html += `<div class="amigo-empty"><span>👥</span><span>Aún no tienes amigos en URBIS. Búscalos por usuario o ID URBIS.</span></div>`; }
+    else { html += `<div class="amigo-empty"><span>👥</span><span>Aún no tiene amigos en URBIS. Búsquelos por usuario o ID URBIS.</span></div>`; }
     cont.innerHTML = html;
   };
 
@@ -2063,7 +2063,7 @@
     try{ if(window.UrbisMobileAppV58 && typeof window.UrbisMobileAppV58.show === 'function') window.UrbisMobileAppV58.show('map'); }catch(e){}
     setTimeout(()=>{
       const P = window.URBIS_PRESENCIA;
-      if(!P){ alert('El módulo de presencia no cargó. Recarga la aplicación.'); return; }
+      if(!P){ alert('El módulo de presencia no cargó. Recargue la aplicación.'); return; }
       const r = P.verUno(usuario);
       if(!r.ok) alert('@' + usuario + ': ' + (r.motivo || 'no está compartiendo su ubicación'));
     }, 250);
@@ -2075,13 +2075,13 @@
     if(!cont) return;
     const yo = window.urbisUsuarioActual ? window.urbisUsuarioActual() : '';
     if(!yo){
-      cont.innerHTML = `<div class="ct-empty">🟢<span>Inicia sesión para ver el estado de tus contactos.</span></div>`;
+      cont.innerHTML = `<div class="ct-empty">🟢<span>Inicie sesión para ver el estado de sus contactos.</span></div>`;
       return;
     }
     // Reunir TODOS los contactos únicos (todos los tipos).
     const todos = urbisMisContactos('todos');
     if(!todos.length){
-      cont.innerHTML = `<div class="ct-empty">🟢<span>Aún no tienes contactos. Agrégalos con su usuario o ID URBIS.</span></div>`;
+      cont.innerHTML = `<div class="ct-empty">🟢<span>Aún no tiene contactos. Agréguelos con su usuario o ID URBIS.</span></div>`;
       return;
     }
     const ahora = Date.now();
@@ -2256,13 +2256,13 @@
     _urbisArcadeSig = JSON.stringify(lb);
     cont.innerHTML = `
       <div class="ug-hero">
-        <div class="ug-points"><span>${total}</span><small>TU RÉCORD</small></div>
-        <p class="ug-tag">🏆 Solo cuenta tu <b>mejor partida</b>. Los mejores récords ganarán <b>premios reales</b>.</p>
+        <div class="ug-points"><span>${total}</span><small>SU RÉCORD</small></div>
+        <p class="ug-tag">🏆 Solo cuenta su <b>mejor partida</b>. Los mejores récords ganarán <b>premios reales</b>.</p>
       </div>
       <div class="ug-games">
         <button class="ug-card ug-card-live" onclick="window.urbisJuegoTap && window.urbisJuegoTap()">
           <span class="ug-ico">⚡</span>
-          <div class="ug-card-txt"><b>Reflejos Urbanos</b><small>Toca los rayos lo más rápido posible · 30s</small></div>
+          <div class="ug-card-txt"><b>Reflejos Urbanos</b><small>Toque los rayos lo más rápido posible · 30s</small></div>
           <span class="ug-best">Récord ${best}</span>
           <span class="ug-play-hint">▶ JUGAR</span>
         </button>
@@ -2591,7 +2591,7 @@
               <span><b>×${(Math.round(Math.min(3, 1 + mejorRacha*0.1)*10)/10).toLocaleString('es-CO',{minimumFractionDigits:1})}</b>multiplicador máximo</span>
               <span><b>${fallos + escapadas}</b>${(fallos + escapadas) === 1 ? 'racha rota' : 'rachas rotas'}</span>
             </div>
-            <div class="gt-total">Tu mejor en el evento: <b>${best}</b></div>
+            <div class="gt-total">Su mejor en el evento: <b>${best}</b></div>
             <div class="gt-intentos" id="gt-intentos" hidden></div>
             <div class="gt-guardado" id="gt-guardado" hidden></div>
             <div class="gt-aurea-board" id="gt-aurea-board">⏳ Cargando tabla del evento…</div>
@@ -2614,8 +2614,8 @@
             if(ic && quedan !== null){
               ic.hidden = false;
               ic.textContent = quedan > 0
-                ? '🎯 Te ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos') + ' en este evento'
-                : '🎯 Sin intentos. Cuenta el mejor puntaje que hiciste.';
+                ? '🎯 Le ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos') + ' en este evento'
+                : '🎯 Sin intentos. Cuenta el mejor puntaje que hizo.';
               ic.classList.toggle('agotado', quedan === 0);
             }
             if(otra && quedan === 0){ otra.disabled = true; otra.textContent = '🎯 Sin intentos'; }
@@ -2636,15 +2636,15 @@
               if(!el) return;
               const g = window.urbisTablaEventoLeer(juegoId);
               if(g && g.tabla.length){
-                el.innerHTML = '<div class="gt-aurea-vieja">🕗 Sin conexión. Este es el ranking visto ' + _aureaHaceCuanto(g.cuando) + '; tu puntaje sí quedó guardado.</div>' +
+                el.innerHTML = '<div class="gt-aurea-vieja">🕗 Sin conexión. Este es el ranking visto ' + _aureaHaceCuanto(g.cuando) + '; su puntaje sí quedó guardado.</div>' +
                                _aureaBoardHTML(g.tabla, juegoId);
                 _engancharFix(el, juegoId);
               } else {
-                el.textContent = 'No se pudo cargar la tabla del evento. Tu puntaje sí quedó guardado.';
+                el.textContent = 'No se pudo cargar la tabla del evento. Su puntaje sí quedó guardado.';
               }
             });
         } else {
-          arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${puntos}</span><small>puntos en esta partida</small><div class="gt-total">Tu récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
+          arena.innerHTML = `<div class="gt-result"><span class="gt-result-score">${puntos}</span><small>puntos en esta partida</small><div class="gt-total">Su récord: <b>${best}</b></div><div class="gt-result-btns"><button class="gt-again">🔄 Otra vez</button><button class="gt-exit">🏆 Ver arcade</button></div></div>`;
         }
         arena.querySelector('.gt-again').onclick = () => { cerrar(); window.urbisJuegoTap(juegoId, opts); };
         arena.querySelector('.gt-exit').onclick  = () => { cerrar(); if(!premium && window.urbisRenderGamesHub) window.urbisRenderGamesHub(); if(premium && typeof window.urbisAureaMenuRefrescar === 'function') window.urbisAureaMenuRefrescar(); };
@@ -2680,11 +2680,11 @@
   window.urbisCorregirPuntaje = function(usuario, juegoId, alTerminar){
     if(!usuario || !juegoId) return;
     const v = prompt('✏️ Corregir el puntaje de @' + usuario + ' en este evento.\n\n' +
-      'Escribe el puntaje correcto, o BORRAR para quitarlo de la tabla:', '0');
+      'Escriba el puntaje correcto, o BORRAR para quitarlo de la tabla:', '0');
     if(v === null) return;
     const borrar = /^borrar$/i.test(String(v).trim());
     const puntos = borrar ? -1 : (parseInt(v, 10) || 0);
-    if(!borrar && String(v).trim() !== String(puntos)){ alert('Escribe un número, o la palabra BORRAR.'); return; }
+    if(!borrar && String(v).trim() !== String(puntos)){ alert('Escriba un número, o la palabra BORRAR.'); return; }
     _juegoAPI({ action:'ajustar_puntaje', usuario:usuario, juego:juegoId, puntos:puntos, borrar:borrar })
       .then(out => {
         if(!out || out.ok === false) throw new Error((out && out.message) || 'No se pudo corregir.');
@@ -2711,14 +2711,14 @@
   // Entrar a JUGAR el evento de Juegos URBIS (premium). Solo se llama desde la gota de agua del mapa.
   window.urbisJugarAurea = function(juegoId, titulo){
     if(!juegoId){ alert('Evento no válido.'); return; }
-    if(!(window.urbisUsuarioActual && window.urbisUsuarioActual())){ alert('Inicia sesión para competir por el premio del evento de Juegos URBIS.'); return; }
+    if(!(window.urbisUsuarioActual && window.urbisUsuarioActual())){ alert('Inicie sesión para competir por el premio del evento de Juegos URBIS.'); return; }
     /* Se corta ACÁ, antes de jugar, y no después: enterarse de que la partida
        no contaba cuando ya se jugaron los treinta segundos es la peor manera
        de decirlo. El servidor la rechazaría igual —ese es el candado—, pero
        entonces el jugador ya habría jugado para nada. */
     const quedan = window.urbisIntentosRestantes(juegoId);
     if(quedan === 0){
-      alert('Ya usaste tus intentos en este evento.\n\nEl puntaje que cuenta es el mejor de los que hiciste.');
+      alert('Ya usó sus intentos en este evento.\n\nEl puntaje que cuenta es el mejor de los que hizo.');
       return;
     }
     window.urbisJuegoTap(juegoId, { premium:true, titulo: titulo || 'Juegos URBIS' });
@@ -2909,7 +2909,7 @@
       boardInner = estado === 'cargando'
         ? '<div class="ah-empty-board ah-board-cargando">Trayendo el ranking del evento…</div>'
         : estado === 'sinred'
-          ? '<div class="ah-empty-board ah-board-sinred">No se pudo traer el ranking del evento.<br>Revisa la señal y vuelve a entrar; tus puntos están guardados en el servidor.</div>'
+          ? '<div class="ah-empty-board ah-board-sinred">No se pudo traer el ranking del evento.<br>Revise la señal y vuelva a entrar; sus puntos están guardados en el servidor.</div>'
           : '<div class="ah-empty-board">Aún no hay jugadores.<br>¡Sé el primero del evento! 🏆</div>';
     } else {
       /* Los tres del podio llevan su nombre y su puesto EN EL RENGLÓN
@@ -2974,9 +2974,9 @@
       boardInner = podio + filas;
     }
     let miRow;
-    if(!yoLogin) miRow = '<div class="am-me am-me-guest">Inicia sesión para competir por el premio.</div>';
-    else if(miPos) miRow = '<div class="am-me"><span class="am-me-lbl">TU POSICIÓN</span><span class="am-me-pos">#'+miPos+'</span><span class="am-me-user">@'+_escJuego(yoLogin)+'</span><span class="am-me-pts">'+miPts+' pts</span></div>';
-    else miRow = '<div class="am-me am-me-out"><span class="am-me-lbl">TU POSICIÓN</span><span>Aún no compites · ¡juega para entrar!</span></div>';
+    if(!yoLogin) miRow = '<div class="am-me am-me-guest">Inicie sesión para competir por el premio.</div>';
+    else if(miPos) miRow = '<div class="am-me"><span class="am-me-lbl">SU POSICIÓN</span><span class="am-me-pos">#'+miPos+'</span><span class="am-me-user">@'+_escJuego(yoLogin)+'</span><span class="am-me-pts">'+miPts+' pts</span></div>';
+    else miRow = '<div class="am-me am-me-out"><span class="am-me-lbl">SU POSICIÓN</span><span>Aún no compites · ¡juega para entrar!</span></div>';
     let accion;
     /* Terminado: quién ganó y, si soy yo, cómo reclamo; si soy admin, cómo
        se paga. Lo arma js/13j sobre la misma tabla que se ve aquí.
@@ -2992,7 +2992,7 @@
           ? '<div class="am-winner">🥇 Ganador: <b>@'+_escJuego(lista[0].usuario)+'</b> · '+lista[0].puntos+' pts</div>'
           : '<div class="am-winner">Evento finalizado sin participantes.</div>')
       : (estado === 'sinred'
-          ? '<div class="am-winner am-winner-espera">🏁 Evento finalizado. No se pudo confirmar el resultado con el servidor: vuelve a entrar con señal para ver quién ganó.</div>'
+          ? '<div class="am-winner am-winner-espera">🏁 Evento finalizado. No se pudo confirmar el resultado con el servidor: vuelva a entrar con señal para ver quién ganó.</div>'
           : '<div class="am-winner am-winner-espera">🏁 Evento finalizado. Confirmando el resultado con el servidor…</div>');
     // Un solo punto de entrada al juego. Antes había dos botones que hacían lo
     // mismo —la tarjeta del medio y este— y competían entre sí; queda el de
@@ -3000,7 +3000,7 @@
     // encima para no perder esa información al quitar la tarjeta.
     else accion =
       '<div class="am-reto"><b>Reto de Reflejos · Juegos URBIS</b>' +
-      '<small>Toca los rayos lo más rápido · 30 s</small></div>' +
+      '<small>Toque los rayos lo más rápido · 30 s</small></div>' +
       '<button class="am-play" id="ah-play"'+(yoLogin?'':' disabled')+'>⚡ ¡Jugar ahora!</button>';
     const gameCard = '';
 
@@ -3023,7 +3023,7 @@
         '<div class="ah-meta">'+
           (fin ? '<span class="ah-chip">'+(terminado?'🏁 Terminó':'⏳ Termina')+' '+_escJuego(fin)+'</span>' : '')+
           '<span class="ah-chip">👥 '+lista.length+(lista.length===1?' jugador':' jugadores')+'</span>'+
-          '<span class="ah-chip">⚡ Tu mejor: '+best+'</span>'+
+          '<span class="ah-chip">⚡ Su mejor: '+best+'</span>'+
           _chipFrescura+
         '</div>'+
       '</div>'+
@@ -3096,7 +3096,7 @@
     if(!cont) return;
     const ctx = window.__urbisAureaCtx || {};
     if(!ctx.juegoId){
-      cont.innerHTML = '<div class="ah-empty">✨ Abre un <b>Juegos URBIS</b> tocando el logo de URBIS en el mapa para competir aquí.</div>';
+      cont.innerHTML = '<div class="ah-empty">✨ Abra un <b>Juegos URBIS</b> tocando el logo de URBIS en el mapa para competir aquí.</div>';
       return;
     }
     // Si no se guardó estado (se entró por otra puerta), se deduce: con
@@ -3232,10 +3232,10 @@
   // Abrir la ventana de chat con un usuario.
   window.urbisAbrirChat = function(usuario, nombre){
     const yo = urbisMiUsuario ? urbisMiUsuario() : (window.urbisUsuarioActual ? window.urbisUsuarioActual() : '');
-    if(!yo){ alert('Inicia sesión para enviar mensajes.'); return; }
+    if(!yo){ alert('Inicie sesión para enviar mensajes.'); return; }
     usuario = String(usuario||'').trim();
     if(!usuario) return;
-    if(usuario.toLowerCase() === String(yo).toLowerCase()){ alert('No puedes chatear contigo mismo 🙂'); return; }
+    if(usuario.toLowerCase() === String(yo).toLowerCase()){ alert('No puede chatear con usted mismo 🙂'); return; }
     _chatActivo = usuario;
     var old = document.getElementById('urbis-chat-ov'); if(old && old.parentNode) old.parentNode.removeChild(old);
     var ov = document.createElement('div');
@@ -3248,7 +3248,7 @@
       '</div>'+
       '<div id="urbis-chat-hilo" style="flex:1;overflow-y:auto;padding:12px 12px 6px;-webkit-overflow-scrolling:touch;"></div>'+
       '<div style="display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;box-shadow:0 -2px 10px rgba(0,0,0,.06);flex-shrink:0;align-items:flex-end;">'+
-        '<textarea id="urbis-chat-input" rows="1" placeholder="Escribe un mensaje..." style="flex:1;resize:none;max-height:96px;border:1.5px solid #e2e8f0;border-radius:18px;padding:9px 14px;font-size:.92rem;font-family:inherit;outline:none;box-sizing:border-box;"></textarea>'+
+        '<textarea id="urbis-chat-input" rows="1" placeholder="Escriba un mensaje..." style="flex:1;resize:none;max-height:96px;border:1.5px solid #e2e8f0;border-radius:18px;padding:9px 14px;font-size:.92rem;font-family:inherit;outline:none;box-sizing:border-box;"></textarea>'+
         '<button id="urbis-chat-send" style="background:#00B68D;border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.2rem;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(0,182,141,.4);">➤</button>'+
       '</div>';
     document.body.appendChild(ov);
@@ -3281,7 +3281,7 @@
   // Bandeja de conversaciones (inbox).
   window.urbisAbrirBandejaChats = function(){
     const yo = (window.urbisUsuarioActual ? window.urbisUsuarioActual() : '');
-    if(!yo){ alert('Inicia sesión para ver tus mensajes.'); return; }
+    if(!yo){ alert('Inicie sesión para ver sus mensajes.'); return; }
     var old = document.getElementById('urbis-inbox-ov'); if(old && old.parentNode) old.parentNode.removeChild(old);
     var ov = document.createElement('div');
     ov.id = 'urbis-inbox-ov';
@@ -3297,14 +3297,14 @@
     var list = ov.querySelector('#urbis-inbox-list');
     function pintar(){
       const convs = (window.urbisChatInbox||[]).slice().sort(function(a,b){ return new Date(b.fecha||0)-new Date(a.fecha||0); });
-      if(!convs.length){ list.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:44px 16px;font-size:.9rem;">📭 No tienes conversaciones aún.<br>Abre el perfil de un amigo y toca "Enviar mensaje".</div>'; return; }
+      if(!convs.length){ list.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:44px 16px;font-size:.9rem;">📭 No tiene conversaciones aún.<br>Abra el perfil de un amigo y toque "Enviar mensaje".</div>'; return; }
       const yo = (window.urbisUsuarioActual ? window.urbisUsuarioActual() : '').toLowerCase();
       list.innerHTML = convs.map(function(c){
         const nl = _chatNoLeidos(c.otro, c.de, c.fecha) > 0;
         const mio = String(c.de||'').toLowerCase() === yo;
         return '<div onclick="window.urbisAbrirChat(\''+_chatSan(c.otro)+'\',\''+_chatEsc(c.otro)+'\')" style="display:flex;align-items:center;gap:12px;padding:13px 14px;background:#fff;border-radius:14px;margin-bottom:8px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.05);">'+
           '<div style="width:46px;height:46px;border-radius:50%;background:#00B68D;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;">'+(String(c.otro)[0]||'?').toUpperCase()+'</div>'+
-          '<div style="flex:1;min-width:0;"><div style="font-weight:'+(nl?'800':'700')+';color:#1b2742;">@'+_chatEsc(c.otro)+'</div><div style="font-size:.82rem;color:'+(nl?'#0f172a':'#94a3b8')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:'+(nl?'700':'400')+';">'+(mio?'Tú: ':'')+_chatEsc(c.ultimo)+'</div></div>'+
+          '<div style="flex:1;min-width:0;"><div style="font-weight:'+(nl?'800':'700')+';color:#1b2742;">@'+_chatEsc(c.otro)+'</div><div style="font-size:.82rem;color:'+(nl?'#0f172a':'#94a3b8')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:'+(nl?'700':'400')+';">'+(mio?'Usted: ':'')+_chatEsc(c.ultimo)+'</div></div>'+
           (nl?'<span style="background:#ef4444;color:#fff;font-size:.7rem;font-weight:800;min-width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 6px;">●</span>':'')+
         '</div>';
       }).join('');
@@ -3484,14 +3484,14 @@
   };
   window.urbisAdminUnlock = function(){
     alert('El modo administrador ya no se activa desde aquí.\n\n' +
-          'Cierra sesión y entra con la cuenta de administrador (usuario ' + _adminUser() + ') ' +
+          'Cierre sesión y entre con la cuenta de administrador (usuario ' + _adminUser() + ') ' +
           'como entra cualquier usuario. Su contraseña la verifica el servidor de URBIS, ' +
           'no la aplicación: así no puede quedar escrita en un archivo público.');
   };
   window.urbisAdminLogout = function(){
     window.userRole = 'citizen'; window.userBaseRoleGlobal = 'citizen';
     try{ document.body.dataset.role = 'citizen'; }catch(e){}
-    alert('Saliste del modo administrador.');
+    alert('Salió del modo administrador.');
     try{ if(typeof window.urbisRenderEventosMovil === 'function') window.urbisRenderEventosMovil(); }catch(e){}
   };
 
@@ -3518,7 +3518,7 @@
   window.urbisOtorgarPermiso = function(usuario, cb){
     if(!window.urbisEsAdmin()){ alert('Solo el administrador puede dar permisos.'); return; }
     const u = String(usuario||'').trim().replace(/^@/,'').replace(/[~|§]/g,'');
-    if(!u){ alert('Escribe el usuario al que quieres dar permiso.'); return; }
+    if(!u){ alert('Escriba el usuario al que quiere dar permiso.'); return; }
     if(urbisTienePermisoEspecial(u)){ alert('@' + u + ' ya tiene permiso de evento especial.'); if(cb) cb(); return; }
     const fila = { tipo:'🔑 Permiso', lat:'0', lng:'0', descripcion: u + '~~~evento_especial', fecha:new Date().toISOString() };
     window.urbisGuardarFila(fila)
@@ -3544,12 +3544,12 @@
     pedir.then(function(rango){
       if(!rango) return;                       // cancelaron el calendario
       const h = Math.max(1, rango.horas || 24);
-      if(!navigator.geolocation){ alert('Necesitas activar el GPS para ubicar el evento de Juegos URBIS.'); return; }
+      if(!navigator.geolocation){ alert('Necesita activar el GPS para ubicar el evento de Juegos URBIS.'); return; }
       navigator.geolocation.getCurrentPosition(function(pos){
         window.urbisCrearEventoPremiumEn(pos.coords.latitude.toFixed(7), pos.coords.longitude.toFixed(7), titulo, premio, detalle, h, rango)
           .then(()=>{ alert('✨ ¡Evento de Juegos URBIS creado! Brillará en el mapa. El ganador recibirá el premio real.'); })
           .catch(err=> alert('No se pudo crear el evento de Juegos URBIS: ' + (err && err.message || err)));
-      }, function(){ alert('No se pudo obtener tu ubicación GPS.'); }, { enableHighAccuracy:true, timeout:9000 });
+      }, function(){ alert('No se pudo obtener su ubicación GPS.'); }, { enableHighAccuracy:true, timeout:9000 });
     });
   };
   // Crea el evento de Juegos URBIS en un punto específico (usado por el compositor de eventos del mapa).
@@ -3585,7 +3585,7 @@
   window.urbisEditarReporteMovil = function(lat){
     const p = buscarPuntoPorLat(lat);
     if(!p){ alert('No se encontró el reporte para editar.'); return; }
-    if(typeof puedeGestionarReporte === 'function' && !puedeGestionarReporte(p)){ alert('Solo puedes editar tus propios reportes.'); return; }
+    if(typeof puedeGestionarReporte === 'function' && !puedeGestionarReporte(p)){ alert('Solo puede editar sus propios reportes.'); return; }
     try{ map.closePopup(); }catch(e){}
     const d = String(p.descripcion || '').split(' | ');
     const tituloAct = d[1] || d[0] || '';
@@ -3637,7 +3637,7 @@
         <label>Descripción</label>
         <textarea id="ued-nota" rows="4" placeholder="Describe la situación...">${escHtml(notaAct)}</textarea>
         ${bloqueVictimasEdicion}
-        <label>Foto (opcional · si no eliges nada, se conserva la actual)</label>
+        <label>Foto (opcional · si no elige nada, se conserva la actual)</label>
         ${tieneFoto ? `<img class="ued-foto-actual" src="${fotoAct}" alt="Foto actual">` : '<div class="ued-sinfoto">Sin foto actual</div>'}
         <input id="ued-foto" type="file" accept="image/*">
         <div class="ued-actions">
@@ -3667,7 +3667,7 @@
       picker.innerHTML = `
         <div class="utp-card">
           <button type="button" class="utp-close" aria-label="Cerrar">×</button>
-          <h2>Elige el tipo de reporte</h2>
+          <h2>Elija el tipo de reporte</h2>
           ${listaHtml}
         </div>`;
       document.body.appendChild(picker);

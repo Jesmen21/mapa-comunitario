@@ -15,9 +15,9 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="css/main.css?v=907-el-historial-satelital-y-el-acuse"/>
+  <link rel="stylesheet" href="css/main.css?v=908-la-aplicacion-habla-de-usted"/>
   <script>
-    window.URBIS_APP_VERSION = '907-el-historial-satelital-y-el-acuse';
+    window.URBIS_APP_VERSION = '908-la-aplicacion-habla-de-usted';
     // Fuerza a Safari/Brave/Chrome móvil a tomar el service worker nuevo sin mezclar archivos viejos.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations?.().then(regs => regs.forEach(r => r.update?.())).catch(()=>{});
@@ -88,7 +88,7 @@
   <div class="ubs-card">
     <div class="ubs-badge">🧪 Versión BETA</div>
     <div class="ubs-title">Fase experimental ✨</div>
-    <div class="ubs-sub">Estamos construyendo tu ciudad contigo 💚</div>
+    <div class="ubs-sub">Estamos construyendo su ciudad con usted 💚</div>
   </div>
 </div>
 <script>setTimeout(function(){var s=document.getElementById('urbis-beta-splash');if(s&&s.parentNode)s.parentNode.removeChild(s);},3600);</script>
@@ -121,11 +121,11 @@
                         <img src="assets/brand/urbis-logo.png" alt="Logo URBIS" class="clean-entry-mascot">
                         <div class="clean-entry-logo">URBIS</div>
                         <div class="clean-entry-tagline">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
-                        <p class="uw-about">La plataforma ciudadana que conecta a las personas con su territorio: reporta, explora y ayuda a transformar tu ciudad en tiempo real.</p>
-                        <div class="uw-features" aria-label="Qué puedes hacer en URBIS">
-                            <span class="uw-feature"><i aria-hidden="true">🗺️</i>Mapea tu barrio</span>
-                            <span class="uw-feature"><i aria-hidden="true">🚨</i>Reporta en vivo</span>
-                            <span class="uw-feature"><i aria-hidden="true">📊</i>Analiza tu ciudad</span>
+                        <p class="uw-about">La plataforma ciudadana que conecta a las personas con su territorio: reporte, explore y ayude a transformar su ciudad en tiempo real.</p>
+                        <div class="uw-features" aria-label="Qué puede hacer en URBIS">
+                            <span class="uw-feature"><i aria-hidden="true">🗺️</i>Mapee su barrio</span>
+                            <span class="uw-feature"><i aria-hidden="true">🚨</i>Reporte en vivo</span>
+                            <span class="uw-feature"><i aria-hidden="true">📊</i>Analice su ciudad</span>
                         </div>
                     </div>
 
@@ -141,12 +141,12 @@
                     <div class="clean-entry-card">
                         <div class="clean-entry-card-icon">🏙️</div>
                         <h1>Bienvenido a URBIS</h1>
-                        <p class="subtitle">Conecta con tu ciudad de forma inteligente.</p>
+                        <p class="subtitle">Conecte con su ciudad de forma inteligente.</p>
 
                         <div class="clean-entry-actions" role="group" aria-label="Acciones de acceso URBIS">
                             <button id="btn-acceso-normal" type="button" class="clean-entry-action clean-entry-login" data-urbis-auth-mode="login">
                                 <span class="clean-entry-action-ico">👤</span>
-                                <span class="clean-entry-action-copy"><b>Iniciar sesión</b><small>Entrar con tu usuario y contraseña</small></span>
+                                <span class="clean-entry-action-copy"><b>Iniciar sesión</b><small>Entrar con su usuario y contraseña</small></span>
                                 <span class="clean-entry-action-arrow">›</span>
                             </button>
                             <button id="btn-acceso-register" type="button" class="clean-entry-action clean-entry-register" data-urbis-auth-mode="register">
@@ -164,32 +164,32 @@
                         </div>
 
                         <div id="normal-access-panel" class="login-subpanel clean-auth-panel">
-                            <p class="login-helper">Ingresa como ciudadanía. Los permisos especiales se revisan después dentro de la plataforma.</p>
+                            <p class="login-helper">Ingrese como ciudadanía. Los permisos especiales se revisan después dentro de la plataforma.</p>
                             <div id="normal-data-panel" class="urbis-register-panel clean-register-panel" style="display:block; margin-top:12px;">
                                 <div id="urbis-login-panel" class="urbis-login-panel urbis-login-kawaii">
                                     <button type="button" id="urbis-login-back" class="urbis-auth-back">← Volver</button>
                                     <div class="urbis-login-hero">
                                         <div class="urbis-login-wordmark">URBIS</div>
                                         <div class="urbis-login-slogan">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
-                                        <p class="urbis-login-welcome">¡Nos alegra tenerte de vuelta!<br>Ingresa para continuar en URBIS 💙</p>
+                                        <p class="urbis-login-welcome">¡Nos alegra tenerlo de vuelta!<br>Ingrese para continuar en URBIS 💙</p>
                                     </div>
                                     <div class="urbis-kawaii-login-card">
                                         <div class="urbis-field urbis-login-field">
                                             <label class="urbis-field-label" for="login-username">Usuario</label>
                                             <div class="urbis-input-shell user-shell">
                                                 <span class="urbis-input-icon">👤</span>
-                                                <input type="text" id="login-username" class="reg-input" placeholder="Ingresa tu usuario" autocomplete="username" enterkeyhint="next">
+                                                <input type="text" id="login-username" class="reg-input" placeholder="Ingrese su usuario" autocomplete="username" enterkeyhint="next">
                                             </div>
                                         </div>
                                         <div class="urbis-field urbis-login-field">
                                             <label class="urbis-field-label password-label" for="login-password">Contraseña</label>
                                             <div class="urbis-input-shell password-shell">
                                                 <span class="urbis-input-icon">🔒</span>
-                                                <input type="password" id="login-password" class="reg-input" placeholder="Ingresa tu contraseña" autocomplete="current-password" enterkeyhint="done">
+                                                <input type="password" id="login-password" class="reg-input" placeholder="Ingrese su contraseña" autocomplete="current-password" enterkeyhint="done">
                                             </div>
                                         </div>
                                         <button type="button" id="urbis-login-btn" class="btn-save clean-auth-submit urbis-kawaii-login-btn">Ingresar</button>
-                                        <button type="button" id="urbis-open-recovery-login" class="urbis-auth-mini-link urbis-login-forgot">¿Olvidaste tu contraseña?</button>
+                                        <button type="button" id="urbis-open-recovery-login" class="urbis-auth-mini-link urbis-login-forgot">¿Olvidó su contraseña?</button>
                                     </div>
                                 </div>
 
@@ -198,8 +198,8 @@
                                     <div class="urbis-register-hero">
                                         <div class="urbis-register-wordmark">URBIS</div>
                                         <div class="urbis-register-slogan">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
-                                        <h2 class="urbis-register-title">Crea tu cuenta</h2>
-                                        <p class="urbis-register-copy-main">Solo lo necesario para empezar. Si más adelante quieres subir fotos a tus reportes, te pediremos verificar tu identidad — así nadie publica cualquier cosa en el mapa.</p>
+                                        <h2 class="urbis-register-title">Cree su cuenta</h2>
+                                        <p class="urbis-register-copy-main">Solo lo necesario para empezar. Si más adelante quiere subir fotos a sus reportes, le pediremos verificar su identidad — así nadie publica cualquier cosa en el mapa.</p>
                                     </div>
                                     <div class="urbis-register-card">
                                         <div class="urbis-field urbis-nivel2">
@@ -266,7 +266,7 @@
                                                 <span class="urbis-register-icon">🙂</span>
                                                 <input type="text" id="reg-username" class="reg-input" placeholder="Nombre de usuario" autocomplete="username" enterkeyhint="next">
                                             </div>
-                                            <small id="reg-username-status" class="urbis-field-hint username-status">Usa mínimo 5 caracteres. Puedes usar letras, números, punto, guion o guion bajo.</small>
+                                            <small id="reg-username-status" class="urbis-field-hint username-status">Use mínimo 5 caracteres. Puede usar letras, números, punto, guion o guion bajo.</small>
                                         </div>
                                         <div class="urbis-field">
                                             <div class="urbis-register-input-shell purple-shell">
@@ -280,7 +280,7 @@
                                                 <span class="urbis-register-icon">📱</span>
                                                 <input type="tel" id="reg-phone" class="reg-input" placeholder="Número de celular" inputmode="tel" autocomplete="tel-national" enterkeyhint="next">
                                             </div>
-                                            <small id="reg-phone-status" class="urbis-field-hint identity-status">Si seleccionas Colombia, se guardará automáticamente con el prefijo +57.</small>
+                                            <small id="reg-phone-status" class="urbis-field-hint identity-status">Si selecciona Colombia, se guardará automáticamente con el prefijo +57.</small>
                                         </div>
                                         <div class="urbis-field">
                                             <div class="urbis-register-input-shell purple-shell select-shell">
@@ -294,7 +294,7 @@
                                             <div id="reg-country-other-wrap" class="urbis-register-other-country" hidden>
                                                 <div class="urbis-register-input-shell aqua-shell">
                                                     <span class="urbis-register-icon">🌐</span>
-                                                    <input type="text" id="reg-country-other" class="reg-input" placeholder="Escribe tu país" autocomplete="country-name" enterkeyhint="next">
+                                                    <input type="text" id="reg-country-other" class="reg-input" placeholder="Escriba su país" autocomplete="country-name" enterkeyhint="next">
                                                 </div>
                                                 <small class="urbis-field-hint">Por ahora el listado detallado de departamentos, ciudades y barrios está disponible para Colombia.</small>
                                             </div>
@@ -367,7 +367,7 @@
                                                 </select>
                                                 <span class="urbis-register-trailing">⌄</span>
                                             </div>
-                                            <small class="urbis-field-hint">En Soledad y Cúcuta, los barrios se cargan según la comuna seleccionada. Si no aparece, elige Otro y escríbelo.</small>
+                                            <small class="urbis-field-hint">En Soledad y Cúcuta, los barrios se cargan según la comuna seleccionada. Si no aparece, elija Otro y escríbalo.</small>
                                         </div>
                                         <div class="urbis-field">
                                             <div class="urbis-register-input-shell aqua-shell select-shell">
@@ -395,13 +395,13 @@
                                             </div>
                                         </div>
                                         <button id="normal-submit-btn" class="btn-save clean-auth-submit urbis-register-submit" style="margin-top:5px; padding:12px;" onclick="continuarPerfilNormal()">Crear cuenta</button>
-                                        <button type="button" id="urbis-switch-login-link" class="urbis-register-login-link">¿Ya tienes cuenta? <b>Inicia sesión</b></button>
+                                        <button type="button" id="urbis-switch-login-link" class="urbis-register-login-link">¿Ya tiene cuenta? <b>Inicie sesión</b></button>
                                     </div>
                                 </div>
 
                                 <div id="normal-secret-panel" style="display:none; background:rgba(255,255,255,.06); padding:15px; border-radius:16px; margin-bottom:10px; border:1px solid rgba(255,255,255,.10);">
                                     <label class="urbis-field-label" for="normal-secret-pass">Clave de acceso</label>
-                                    <input type="password" id="normal-secret-pass" class="login-input" placeholder="Escribe la clave de acceso">
+                                    <input type="password" id="normal-secret-pass" class="login-input" placeholder="Escriba la clave de acceso">
                                 </div>
                             </div>
                         </div>
@@ -409,8 +409,8 @@
                         <div class="clean-entry-privacy">
                             <span class="clean-entry-privacy-icon">🛡️</span>
                             <div>
-                                <b>Tus datos están protegidos.</b><br>
-                                <small>Consulta nuestra Política de Privacidad.</small>
+                                <b>Sus datos están protegidos.</b><br>
+                                <small>Consulte nuestra Política de Privacidad.</small>
                             </div>
                         </div>
                     </div>
@@ -443,10 +443,10 @@
                     </div>
 
                     <div class="login-info-strip">
-                        <div class="login-feature"><div class="login-feature-icon">⌖</div><b>Mapas inteligentes</b><span>Visualiza tu territorio con datos en tiempo real.</span></div>
-                        <div class="login-feature"><div class="login-feature-icon">▤</div><b>Reportes ciudadanos</b><span>Reporta desde cualquier lugar de forma rápida y sencilla.</span></div>
-                        <div class="login-feature"><div class="login-feature-icon">▥</div><b>Análisis territorial</b><span>Convierte datos en decisiones con información confiable.</span></div>
-                        <div class="login-feature"><div class="login-feature-icon">◎</div><b>Gestión colaborativa</b><span>Trabaja en conjunto por comunidades más seguras.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">⌖</div><b>Mapas inteligentes</b><span>Visualice su territorio con datos en tiempo real.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">▤</div><b>Reportes ciudadanos</b><span>Reporte desde cualquier lugar de forma rápida y sencilla.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">▥</div><b>Análisis territorial</b><span>Convierta datos en decisiones con información confiable.</span></div>
+                        <div class="login-feature"><div class="login-feature-icon">◎</div><b>Gestión colaborativa</b><span>Trabaje en conjunto por comunidades más seguras.</span></div>
                         <div class="login-stat stat-green" data-landing-metric="total"><b>Reportes totales</b><strong>0</strong><span>En plataforma</span></div>
                         <div class="login-stat stat-amber" data-landing-metric="revision"><b>En revisión</b><strong>0</strong><span>Pendientes de validar</span></div>
                         <div class="login-stat stat-purple" data-landing-metric="proceso"><b>En proceso</b><strong>0</strong><span>Activos visibles</span></div>
@@ -467,7 +467,7 @@
 <div id="urbis-move-banner" hidden>
   <div class="move-banner-top">
     <span class="move-drop">💧</span>
-    <div class="move-text"><b>Mueve tu reporte</b><span>Toca en el mapa el punto exacto donde quieres la gota</span></div>
+    <div class="move-text"><b>Mueva su reporte</b><span>Toque en el mapa el punto exacto donde quiere la gota</span></div>
   </div>
   <button type="button" id="urbis-move-cancel" onclick="window.urbisCancelarMoverReporte && window.urbisCancelarMoverReporte()">Cancelar</button>
 </div>
@@ -479,7 +479,7 @@
         <div class="basemap-title">
             <div class="basemap-title-copy">
                 <span id="basemap-panel-title">Mapas</span>
-                <small>Elige cómo quieres ver la ciudad. Desliza hacia abajo para cerrar.</small>
+                <small>Elija cómo quiere ver la ciudad. Deslice hacia abajo para cerrar.</small>
             </div>
             <button type="button" class="basemap-close-btn" onclick="cerrarBasemapPanel()" aria-label="Cerrar selector de mapas">✕</button>
         </div>
@@ -541,7 +541,7 @@
         <div id="nav-panel" class="nav-panel" hidden></div>
         <div id="quick-route-card" class="quick-route-card" hidden>
             <b>Destino rápido</b><br>
-            <span id="quick-route-text">Toca un punto del mapa para activar “Llegar aquí”.</span>
+            <span id="quick-route-text">Toque un punto del mapa para activar “Llegar aquí”.</span>
         </div>
         <div class="mobility-extra-panel" id="traffic-control-panel">
             <div class="mobility-extra-title">📷 Control vial</div>
@@ -557,7 +557,7 @@
                 <div class="route-real-title">Guía para llegar</div>
                 <span class="route-real-dev">Ruta en vivo</span>
             </div>
-            <div class="route-real-help">Elige a dónde vas. URBIS te muestra el camino y solo deja visibles las alertas que pueden afectar tu recorrido.</div>
+            <div class="route-real-help">Elija a dónde va. URBIS le muestra el camino y solo deja visibles las alertas que pueden afectar su recorrido.</div>
             <div class="mobility-grid">
                 <button id="mode-walking" class="mobility-option" onclick="seleccionarModoRutaReal('walking')">🚶<span>A pie</span></button>
                 <button id="mode-bike" class="mobility-option" onclick="seleccionarModoRutaReal('bike')">🚲<span>Bici</span></button>
@@ -569,7 +569,7 @@
                 <div class="route-real-mini"><b>Salida</b><span id="route-point-a">Sin seleccionar</span></div>
                 <div class="route-real-mini"><b>Destino</b><span id="route-point-b">Sin seleccionar</span></div>
             </div>
-            <div id="route-real-result" class="route-real-result">Pulsa “Elegir destino” y toca en el mapa el lugar al que quieres ir.</div>
+            <div id="route-real-result" class="route-real-result">Pulse “Elegir destino” y toque en el mapa el lugar al que quiere ir.</div>
             <div class="route-real-actions">
                 <button id="btn-real-route-capture" class="tool-btn" onclick="prepararDestinoDesdeGPS()">🎯 Elegir destino</button>
                 <button class="tool-btn" onclick="calcularRutaRealActual()">🚀 Iniciar recorrido</button>
@@ -586,12 +586,12 @@
                 <div>
                     <div class="sport-eyebrow">🏃 Deporte y bienestar activo</div>
                     <h3>Plan de actividad</h3>
-                    <p>Registra tus datos, elige tu enfoque y URBIS crea una rutina base. Luego ajusta la intensidad según tu progreso, fatiga o constancia.</p>
+                    <p>Registre sus datos, elija su enfoque y URBIS crea una rutina base. Luego ajusta la intensidad según su progreso, fatiga o constancia.</p>
                 </div>
                 <div class="sport-score-card">
                     <span>Estado</span>
                     <strong id="sport-status-pill">Sin perfil</strong>
-                    <small id="sport-status-help">Completa los datos para generar tu plan.</small>
+                    <small id="sport-status-help">Complete los datos para generar su plan.</small>
                 </div>
             </div>
 
@@ -599,7 +599,7 @@
                 <div>
                     <div class="sport-runner-kicker">🔥 Modo runner</div>
                     <h4>Entrenamiento con GPS y recorrido real</h4>
-                    <p>Activa una experiencia inmersiva para correr, caminar o hacer senderismo. Registra tu ruta, ritmo, distancia, historial, PR y semanas activas al estilo de una app deportiva.</p>
+                    <p>Active una experiencia inmersiva para correr, caminar o hacer senderismo. Registre su ruta, ritmo, distancia, historial, PR y semanas activas al estilo de una app deportiva.</p>
                 </div>
                 <button class="tool-btn sport-runner-btn" onclick="abrirModoRunnerUrbis()">Entrar a modo runner</button>
             </div>
@@ -623,7 +623,7 @@
                         <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('user')">
                             <span class="runner-home-icon">👤</span>
                             <b>Usuario</b>
-                            <small>Tu perfil deportivo</small>
+                            <small>Su perfil deportivo</small>
                         </button>
                         <button class="sport-runner-home-card" onclick="abrirVistaRunnerUrbis('map')">
                             <span class="runner-home-icon">🗺️</span>
@@ -655,7 +655,7 @@
                     <div class="sport-runner-section-grid">
                         <div class="sport-runner-card">
                             <h4>Usuario</h4>
-                            <div id="runner-user-summary">Completa tu perfil deportivo para ver datos útiles aquí.</div>
+                            <div id="runner-user-summary">Complete su perfil deportivo para ver datos útiles aquí.</div>
                         </div>
                         <div class="sport-runner-card">
                             <h4>Racha activa</h4>
@@ -694,7 +694,7 @@
                     </div>
                     <div id="runner-type-stage" class="runner-stage" hidden>
                         <div class="sport-runner-card">
-                            <h4>¿Qué vas a hacer?</h4>
+                            <h4>¿Qué va a hacer?</h4>
                             <div class="runner-kind-grid">
                                 <button class="runner-kind-card active" data-runner-kind="correr" onclick="selectRunnerKindUrbis('correr')">
                                     <span>⚡</span><b>Correr</b><small>Ritmo libre</small>
@@ -742,7 +742,7 @@
                     </div>
                     <div id="runner-save-card" class="sport-runner-card" style="display:none;">
                         <h4>Guardar recorrido</h4>
-                        <div id="runner-save-summary" class="sport-output">Revisa tu actividad antes de guardarla.</div>
+                        <div id="runner-save-summary" class="sport-output">Revise su actividad antes de guardarla.</div>
                         <div class="sport-grid sport-grid-2">
                             <label class="sport-field">Título del recorrido
                                 <input id="runner-save-title" class="event-input" type="text" placeholder="Ej. Trote al amanecer">
@@ -751,8 +751,8 @@
                                 <input id="runner-save-photo-file" class="event-input" type="file" accept="image/*" onchange="handleRunnerPhotoFileUrbis(event)">
                             </label>
                         </div>
-                        <div id="runner-photo-preview" class="sport-output">Puedes subir una foto desde tu celular o computador.</div>
-                        <textarea id="runner-save-notes" class="event-textarea" placeholder="¿Cómo te sentiste? ¿Fue trote, caminata o senderismo?"></textarea>
+                        <div id="runner-photo-preview" class="sport-output">Puede subir una foto desde su celular o computador.</div>
+                        <textarea id="runner-save-notes" class="event-textarea" placeholder="¿Cómo se sintió? ¿Fue trote, caminata o senderismo?"></textarea>
                         <div class="sport-actions">
                             <button class="tool-btn sport-runner-btn" onclick="saveRunnerSessionUrbis()">Guardar actividad</button>
                             <button class="tool-btn" onclick="discardRunnerSessionUrbis()">Descartar</button>
@@ -771,7 +771,7 @@
 
                     <div class="sport-runner-card">
                         <h4>Tarjeta del trayecto</h4>
-                        <div id="runner-share-output">Cuando guardes una actividad, aquí verás una tarjeta visual de tu recorrido.</div>
+                        <div id="runner-share-output">Cuando guardes una actividad, aquí verá una tarjeta visual de su recorrido.</div>
                     </div>
                 </div>
             </div>
@@ -855,7 +855,7 @@
                         </label>
                     </div>
 
-                    <textarea id="sport-notes" class="event-textarea" placeholder="Nota opcional: cómo te sentiste, ruta, ejercicio o energía del día."></textarea>
+                    <textarea id="sport-notes" class="event-textarea" placeholder="Nota opcional: cómo se sintió, ruta, ejercicio o energía del día."></textarea>
                     <div class="sport-actions">
                         <button class="tool-btn sport-primary" onclick="registrarActividadDeportivaUrbis()">Guardar actividad</button>
                         <button class="tool-btn" onclick="limpiarRegistroDeportivoUrbis()">Limpiar</button>
@@ -887,7 +887,7 @@
 
     <div id="page-alerts" class="sidebar-page">
         <div id="info-content">
-            <p style="color:#aaa; font-size: 1.05rem; animation: fadeIn 0.3s; text-align: center;">👈 Toca el mapa para registrar un reporte o selecciona un hito existente.</p>
+            <p style="color:#aaa; font-size: 1.05rem; animation: fadeIn 0.3s; text-align: center;">👈 Toque el mapa para registrar un reporte o seleccione un hito existente.</p>
         </div>
         <div id="dashboard-section">
             <div id="admin-panel" style="display:none; margin-bottom: 20px;"></div>
@@ -910,17 +910,17 @@
             <div class="accordion-body">
                 <div class="profile-access-card">
                     <b>Datos básicos</b>
-                    <span id="profile-basic-data">Completa o revisa tus datos desde el ingreso. Género: no registrado.</span>
+                    <span id="profile-basic-data">Complete o revise sus datos desde el ingreso. Género: no registrado.</span>
                 </div>
                 <div class="profile-access-card">
                     <b id="profile-access-title">Ciudadano activo</b>
-                    <span id="profile-access-description">Estás usando URBIS como ciudadano. Puedes solicitar permisos temporales de JAC o modo educativo sin dejar de ser ciudadano.</span>
+                    <span id="profile-access-description">Está usando URBIS como ciudadano. Puede solicitar permisos temporales de JAC o modo educativo sin dejar de ser ciudadano.</span>
                     <div class="profile-access-row">
                         <button class="tool-btn" onclick="activarSubmodoCiudadano('gov')">Habilitar JAC / funcionario</button>
                         <button class="tool-btn" onclick="activarSubmodoCiudadano('edu')">Habilitar modo educativo</button>
                         <button class="tool-btn" onclick="volverAModoCiudadano()">Volver a ciudadano</button>
                     </div>
-                    <small>Demo: usa la clave <b>0000</b>. A futuro estos permisos podrán activarse y desactivarse desde administración según si la persona sigue siendo JAC, estudiante o colaborador.</small>
+                    <small>Demo: use la clave <b>0000</b>. A futuro estos permisos podrán activarse y desactivarse desde administración según si la persona sigue siendo JAC, estudiante o colaborador.</small>
                 </div>
                 <div class="wellness-inside-card">
                     <div class="wellness-inside-head">
@@ -942,9 +942,9 @@
                         <option value="mal">🙁 Bajo de ánimo</option>
                         <option value="muy-mal">😣 Muy cargado</option>
                     </select>
-                    <textarea id="profile-mood-note" class="event-textarea" placeholder="Nota opcional: ¿qué hiciste hoy o qué te gustaría recordar?" style="min-height:64px;margin-bottom:8px;"></textarea>
+                    <textarea id="profile-mood-note" class="event-textarea" placeholder="Nota opcional: ¿qué hizo hoy o qué le gustaría recordar?" style="min-height:64px;margin-bottom:8px;"></textarea>
                     <button class="tool-btn wellness-save-btn" onclick="registrarCheckinBienestar()">Guardar estado de hoy</button>
-                    <div id="wellness-profile-status" class="wellness-profile-status">Aún no has registrado tu estado de ánimo dentro de la app.</div>
+                    <div id="wellness-profile-status" class="wellness-profile-status">Aún no has registrado su estado de ánimo dentro de la app.</div>
                 </div>
 
                 <div class="achievements-panel">
@@ -961,11 +961,11 @@
 
     <div id="page-events" class="sidebar-page">
         <div class="golden-divider"></div><h3 style="margin-top: 10px; color: var(--fuchsia);">🎪 Eventos ciudadanos</h3>
-        <p style="font-size: 0.78rem; color:#aaa; margin-top:-5px;">Registra y consulta actividades en espacios públicos: fútbol, tenis, ajedrez, shows, festivales, clases abiertas y encuentros comunitarios.</p>
+        <p style="font-size: 0.78rem; color:#aaa; margin-top:-5px;">Registre y consulte actividades en espacios públicos: fútbol, tenis, ajedrez, shows, festivales, clases abiertas y encuentros comunitarios.</p>
         <div class="events-panel">
             <div class="events-title">Crear evento</div>
-            <div class="events-help">Toca el mapa para marcar la ubicación o usa el último punto seleccionado. El evento queda como dato URBIS y se puede visualizar en el mapa.</div>
-            <div class="event-location-card" id="event-location-label">📍 Ubicación pendiente. Toca el mapa o pulsa “usar último punto”.</div>
+            <div class="events-help">Toque el mapa para marcar la ubicación o use el último punto seleccionado. El evento queda como dato URBIS y se puede visualizar en el mapa.</div>
+            <div class="event-location-card" id="event-location-label">📍 Ubicación pendiente. Toque el mapa o pulse “usar último punto”.</div>
             <div class="route-real-actions" style="margin-bottom:8px;">
                 <button class="tool-btn" onclick="activarModoUbicacionEvento()">📍 Elegir ubicación</button>
                 <button class="tool-btn" onclick="usarUltimoPuntoParaEvento()">🎯 Usar último punto</button>
@@ -1023,11 +1023,11 @@
 
     <div id="page-mapping" class="sidebar-page">
         <div class="golden-divider"></div><h3 style="margin-top: 10px; color: var(--cyan);">🧩 Capas del mapa</h3>
-        <p style="font-size: 0.8rem; color:#aaa; margin-top:-5px;">Activa o desactiva capas para analizar mejor el entorno.</p>
+        <p style="font-size: 0.8rem; color:#aaa; margin-top:-5px;">Active o desactiva capas para analizar mejor el entorno.</p>
         <div class="layers-container" id="layers-toggles"></div>
 
         <div class="golden-divider"></div><h3 style="margin-top: 20px; color: var(--cyan);">🧭 AutoMapeo Cúcuta</h3>
-        <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Grupo separado: lugares públicos de OpenStreetMap remapeados al lenguaje de URBIS, sin mezclarlos con tus capas manuales/Excel.</p>
+        <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Grupo separado: lugares públicos de OpenStreetMap remapeados al lenguaje de URBIS, sin mezclarlos con sus capas manuales/Excel.</p>
         <div class="automap-panel" id="automap-panel">
             <div class="automap-head"><div class="automap-title">Cúcuta · OSM</div><span class="automap-badge">Nuevo grupo</span></div>
             <div class="automap-help">Carga restaurantes, droguerías, parques, canchas, colegios, hospitales y otros usos urbanos detectados en Cúcuta. Cada punto se convierte a la Matriz de Usos Multidimensional y puede anexarse a SheetDB desde su popup.</div>
@@ -1045,7 +1045,7 @@
         <div class="golden-divider"></div><h3 style="margin-top: 20px; color: var(--cyan);">🌊🕳️ Zonas ciudadanas</h3>
         <p style="font-size: 0.75rem; color:#888; margin-top:-5px;">Detecta zonas de inundación, huecos, retenes y vías cerradas según los reportes.</p>
         <div id="zona-analysis" class="layers-container">
-            <div class="zone-card">Aún no hay análisis cargado. Activa la plataforma o pulsa <b>Analizar zonas Waze</b>.</div>
+            <div class="zone-card">Aún no hay análisis cargado. Active la plataforma o pulse <b>Analizar zonas Waze</b>.</div>
         </div>
     </div>
 
@@ -1064,7 +1064,7 @@
         <details class="urbis-accordion advanced-only" open>
             <summary>📊 Análisis del sector con lo que mapeamos</summary>
             <div class="accordion-body">
-                <p class="advanced-help">Corre el mismo análisis que URBIS hace para las empresas —población del DANE proyectada a hoy, flujo peatonal y vehicular, mapas de calor, composición del sector y FODA— pero con los puntos que ustedes levantaron. Centra el mapa donde quieras analizar y elige el radio.</p>
+                <p class="advanced-help">Corre el mismo análisis que URBIS hace para las empresas —población del DANE proyectada a hoy, flujo peatonal y vehicular, mapas de calor, composición del sector y FODA— pero con los puntos que ustedes levantaron. Centre el mapa donde quiera analizar y elija el radio.</p>
                 <label class="advanced-label" for="edu-analisis-radio">Radio alrededor del centro del mapa</label>
                 <select id="edu-analisis-radio" class="event-select">
                     <option value="300">300 m · una manzana y sus vecinas</option>
@@ -1097,7 +1097,7 @@
                     <button class="tool-btn" onclick="limpiarAreaAnalisis()">✕ Cancelar ruta área</button>
                     <button class="tool-btn" onclick="generarRasterDemo()">🧪 Generar raster</button>
                 </div>
-                <div id="advanced-area-status" class="advanced-status">Área: todavía no seleccionada. Puedes dibujar un polígono con clics en el mapa.</div>
+                <div id="advanced-area-status" class="advanced-status">Área: todavía no seleccionada. Puede dibujar un polígono con clics en el mapa.</div>
             </div>
         </details>
 
@@ -1124,10 +1124,10 @@
         <details class="urbis-accordion advanced-only">
             <summary>📌 Flujo sugerido</summary>
             <div class="accordion-body">
-                <div class="advanced-step"><b>1.</b> Selecciona mapa satelital HD.</div>
-                <div class="advanced-step"><b>2.</b> Dibuja el área de intervención.</div>
-                <div class="advanced-step"><b>3.</b> Elige el tipo de raster.</div>
-                <div class="advanced-step"><b>4.</b> Genera la capa y actívala/desactívala.</div>
+                <div class="advanced-step"><b>1.</b> Seleccione mapa satelital HD.</div>
+                <div class="advanced-step"><b>2.</b> Dibuje el área de intervención.</div>
+                <div class="advanced-step"><b>3.</b> Elija el tipo de raster.</div>
+                <div class="advanced-step"><b>4.</b> Genera la capa y actívela/desactívala.</div>
             </div>
         </details>
     </div>
@@ -1138,46 +1138,46 @@
 <!-- URBIS V51 · App móvil propia (no es adaptación web) -->
 <div id="urbis-mobile-app" class="u52-app" aria-label="URBIS aplicación móvil"></div>
 
-<script src="js/00-config.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/00-app-shell.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/27-automapeo-default-off.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/28-zoom-marker-optimizer.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/01-audio-feedback.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/02-auth-roles.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/41-email-registration-auth.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/03-map-data-config.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/03b-edificio-vocabulario.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/03c-reportes-rapidos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/04-marker-proximity.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/05-helpers-temporal-security.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/06-mobility-traffic.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/07-admin-verification.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/08-charts-dashboard.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/09-events.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/10-visible-markers.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/11-report-form.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/12-spa-ui.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13b-duplicados.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13c-denuncias.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13d-mis-reportes-noti.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13e-nivel2.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13f-victimas.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13g-config-admin.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13h-permisos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13i-vitrina.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13j-premio.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/13-landing-metrics.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/47-aurea-forzado.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/50-alerta-forzado.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/14-advanced-tools.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/15-role-accessibility-layers.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/16-achievements.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/17-sport.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/45-mascotas-fundacion.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/46-runner-strava.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/48-runner-stats.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/49-urbis-analisis.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/18-mobile-first-ux.js?v=907-el-historial-satelital-y-el-acuse"></script> -->
+<script src="js/00-config.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/00-app-shell.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/27-automapeo-default-off.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/28-zoom-marker-optimizer.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/01-audio-feedback.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/02-auth-roles.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/41-email-registration-auth.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/03-map-data-config.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/03b-edificio-vocabulario.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/03c-reportes-rapidos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/04-marker-proximity.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/05-helpers-temporal-security.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/06-mobility-traffic.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/07-admin-verification.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/08-charts-dashboard.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/09-events.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/10-visible-markers.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/11-report-form.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/12-spa-ui.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13b-duplicados.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13c-denuncias.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13d-mis-reportes-noti.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13e-nivel2.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13f-victimas.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13g-config-admin.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13h-permisos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13i-vitrina.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13j-premio.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/13-landing-metrics.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/47-aurea-forzado.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/50-alerta-forzado.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/14-advanced-tools.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/15-role-accessibility-layers.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/16-achievements.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/17-sport.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/45-mascotas-fundacion.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/46-runner-strava.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/48-runner-stats.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/49-urbis-analisis.js?v=908-la-aplicacion-habla-de-usted"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/18-mobile-first-ux.js?v=908-la-aplicacion-habla-de-usted"></script> -->
 
 <script>
   // Auto-actualización SUAVE: cuando se despliega código nuevo, la app se recarga sola
@@ -1228,47 +1228,47 @@
 <!-- El motor y la capa de datos del Análisis IA, para que el modo educativo
      corra EXACTAMENTE el mismo análisis que el modo empresas sobre los puntos
      del curso. Los dos son módulos puros: no tocan el DOM al cargar. -->
-<script src="js/59-analisis-ia-catalogo.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/66-analisis-remoto.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/69-licencia.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/67-analisis-cliente.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/61-analisis-ia-datos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/63-analisis-ia-informe.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/56-calor.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/57-referencia.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/58-anillos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/64-analisis-edu.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/65-analisis-edu-ui.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/71-iconos-urbis.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/73-solar.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/74-dibujos-analisis.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/75-pliego-pdf.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/76-llenos-foto.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/77-marca-urbis.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/75-lo-intangible.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/76-amenaza-sismica.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/79-amenaza-inundacion.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/80-evolucion.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/80-cortes-a-mano.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/77-sin-senal.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/78-que-cabe.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/79-siluetas-co.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/24-procity-analisis.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/68-procity-reconocimiento.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/25-procity-analitica.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/26-procity-exportar.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/26-procity-diagnostico.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/20-mobile-functional-app.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/78-presencia.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/81-curso-servidor.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/82-calendario.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/70-modo-app.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/21-mobile-mobility-pro.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/22-mobility-clean-traffic.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/23-contextual-mobility-ui.js?v=907-el-historial-satelital-y-el-acuse"></script> -->
-<script src="js/36-mobility-static-search.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/37-mobility-state-controller.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/38-mobile-shell-visibility-guard.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/39-mobility-map-picker-hardfix.js?v=907-el-historial-satelital-y-el-acuse"></script> -->
+<script src="js/59-analisis-ia-catalogo.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/66-analisis-remoto.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/69-licencia.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/67-analisis-cliente.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/61-analisis-ia-datos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/63-analisis-ia-informe.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/56-calor.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/57-referencia.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/58-anillos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/64-analisis-edu.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/65-analisis-edu-ui.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/71-iconos-urbis.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/73-solar.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/74-dibujos-analisis.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/75-pliego-pdf.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/76-llenos-foto.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/77-marca-urbis.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/75-lo-intangible.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/76-amenaza-sismica.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/79-amenaza-inundacion.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/80-evolucion.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/80-cortes-a-mano.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/77-sin-senal.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/78-que-cabe.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/79-siluetas-co.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/24-procity-analisis.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/68-procity-reconocimiento.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/25-procity-analitica.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/26-procity-exportar.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/26-procity-diagnostico.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/20-mobile-functional-app.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/78-presencia.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/81-curso-servidor.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/82-calendario.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/70-modo-app.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/21-mobile-mobility-pro.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/22-mobility-clean-traffic.js?v=908-la-aplicacion-habla-de-usted"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/23-contextual-mobility-ui.js?v=908-la-aplicacion-habla-de-usted"></script> -->
+<script src="js/36-mobility-static-search.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/37-mobility-state-controller.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/38-mobile-shell-visibility-guard.js?v=908-la-aplicacion-habla-de-usted"></script>
+<!-- URBIS v172-clean-core: script legacy desactivado para evitar superposiciones: <script src="js/39-mobility-map-picker-hardfix.js?v=908-la-aplicacion-habla-de-usted"></script> -->
 </body>
 </html>

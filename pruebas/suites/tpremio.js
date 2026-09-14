@@ -169,7 +169,7 @@ const TABLAS = {
   console.log('\n── La ganadora, en la campanita ─────────────────────');
   console.log('  ' + notiA.txt.replace(/\n/g, ' · ').slice(0, 160));
   chk(notiA.primeraEsPremio, 'el aviso del premio va PRIMERO en la campanita');
-  chk(/Ganaste/.test(notiA.txt) && /Reto Chapinero/.test(notiA.txt) && /100\.000 COP/.test(notiA.txt),
+  chk(/¡Ganó/.test(notiA.txt) && /Reto Chapinero/.test(notiA.txt) && /100\.000 COP/.test(notiA.txt),
       'dice que ganó, qué evento y cuánto');
   chk(/40 pts/.test(notiA.txt), 'y con cuántos puntos quedó #1');
   chk(notiA.reclamar && notiA.ranking, 'con botón de reclamar y de ver el ranking');
@@ -210,7 +210,7 @@ const TABLAS = {
     return { txt: premio ? premio.innerText : '', chat: !!(premio && premio.querySelector('[data-premio-accion="chat"]')),
              reclamar: !!(premio && premio.querySelector('[data-premio-accion="reclamar"]')) };
   });
-  chk(/Tu premio/.test(estadoA.txt) && /Reclamado/i.test(estadoA.txt) && estadoA.chat && !estadoA.reclamar,
+  chk(/Su premio/.test(estadoA.txt) && /Reclamado/i.test(estadoA.txt) && estadoA.chat && !estadoA.reclamar,
       'después del reclamo, la campanita muestra el estado con el chat del premio y ya sin «reclamar»');
 
   await A.pg.evaluate(j => { if (window.urbisAbrirAureaModulo) window.urbisAbrirAureaModulo(j, 'Reto Chapinero', '100.000 COP', 'ayer', true); }, JUEGO_TERMINADO);
@@ -226,7 +226,7 @@ const TABLAS = {
   });
   console.log('\n── El hub del evento terminado ──────────────────────');
   console.log('  ' + hubA.bloque.replace(/\n/g, ' · '));
-  chk(/Tu premio/.test(hubA.bloque) && /Reclamado/.test(hubA.bloque), 'el hub enseña a la ganadora el estado de su premio');
+  chk(/Su premio/.test(hubA.bloque) && /Reclamado/.test(hubA.bloque), 'el hub enseña a la ganadora el estado de su premio');
   chk(/@vecina/.test(hubA.ganador), 'y sigue diciendo quién ganó');
   chk(hubA.premioPx > hubA.tituloPx * 1.5, 'el premio es la cifra grande del hub (' + hubA.premioPx + ' px vs título ' + hubA.tituloPx + ' px)');
   chk(hubA.chips >= 2, 'con las fichas de cuándo termina, cuántos compiten y mi mejor (' + hubA.chips + ')');

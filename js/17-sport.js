@@ -95,9 +95,9 @@
     }
 
     return [
-      ['Sesión 1 · Cardio moderado', 'Caminar, trotar suave o bici. Mantén intensidad cómoda y constante.'],
+      ['Sesión 1 · Cardio moderado', 'Caminar, trotar suave o bici. Mantenga intensidad cómoda y constante.'],
       ['Sesión 2 · Fuerza funcional', 'Ejercicios multiarticulares con peso controlado y buena técnica.'],
-      ['Sesión 3 · HIIT moderado', 'Intervalos cortos, seguros y progresivos. No hacerlo si estás muy fatigado.'],
+      ['Sesión 3 · HIIT moderado', 'Intervalos cortos, seguros y progresivos. No hacerlo si está muy fatigado.'],
       ['Adaptación', `${base.dias} sesiones/semana. Enfoque en constancia, descanso y progreso saludable.`]
     ];
   }
@@ -106,7 +106,7 @@
     if(!profile) {
       setHTML('sport-profile-output', 'Aún no hay perfil deportivo guardado.');
       setHTML('sport-status-pill', 'Sin perfil');
-      setHTML('sport-status-help', 'Completa los datos para generar tu plan.');
+      setHTML('sport-status-help', 'Complete los datos para generar su plan.');
       return;
     }
     const imc = calcularIMC(profile.peso, profile.estatura);
@@ -126,7 +126,7 @@
     const cont = document.getElementById('sport-routine-output');
     if(!cont) return;
     if(!profile) {
-      cont.innerHTML = '<div class="sport-empty">Completa tu perfil para generar una rutina.</div>';
+      cont.innerHTML = '<div class="sport-empty">Complete su perfil para generar una rutina.</div>';
       return;
     }
     cont.innerHTML = generarRutina(profile).map(([title, desc]) => `
@@ -139,14 +139,14 @@
 
   function evaluarProgreso(actual, history) {
     const prev = history.slice(-4);
-    if(!prev.length) return { estado:'inicio', texto:'Primera actividad registrada. Desde la próxima sesión compararemos tu progreso.' };
+    if(!prev.length) return { estado:'inicio', texto:'Primera actividad registrada. Desde la próxima sesión compararemos su progreso.' };
 
     const prevScore = prev.reduce((acc, a) => acc + (Number(a.score) || 0), 0) / prev.length;
     const score = Number(actual.score) || 0;
 
-    if(score > prevScore * 1.08) return { estado:'progreso', texto:'Vas mejorando. Mantén la progresión sin subir todo de golpe.' };
+    if(score > prevScore * 1.08) return { estado:'progreso', texto:'Va mejorando. Mantenga la progresión sin subir todo de golpe.' };
     if(score < prevScore * 0.82) return { estado:'fatiga', texto:'El rendimiento bajó frente a sesiones recientes. Considera descanso, movilidad o una sesión suave.' };
-    return { estado:'estable', texto:'Rendimiento estable. Si se mantiene igual varias sesiones, cambia estímulo o ajusta intensidad.' };
+    return { estado:'estable', texto:'Rendimiento estable. Si se mantiene igual varias sesiones, cambie estímulo o ajuste intensidad.' };
   }
 
   function renderMetrics() {
@@ -244,7 +244,7 @@
     `);
     renderMetrics();
     if(typeof showAchievementToast === 'function') {
-      showAchievementToast('Actividad registrada', 'Tu progreso deportivo quedó guardado.');
+      showAchievementToast('Actividad registrada', 'Su progreso deportivo quedó guardado.');
     } else if(typeof playSuccessSound === 'function') {
       playSuccessSound();
     }
@@ -255,7 +255,7 @@
       const el = document.getElementById(id);
       if(el) el.value = '';
     });
-    setHTML('sport-activity-output', 'Formulario limpio. Puedes registrar una nueva sesión.');
+    setHTML('sport-activity-output', 'Formulario limpio. Puede registrar una nueva sesión.');
   };
 
   window.renderSportModuleUrbis = function() {
@@ -403,7 +403,7 @@
     const input = document.getElementById('runner-save-photo-file');
     if(input) input.value = '';
     const prev = document.getElementById('runner-photo-preview');
-    if(prev) prev.innerHTML = 'Puedes subir una foto desde tu celular o computador.';
+    if(prev) prev.innerHTML = 'Puede subir una foto desde su celular o computador.';
   }
   function resetRunnerStartFlow() {
     const startStage = document.getElementById('runner-start-stage');
@@ -438,7 +438,7 @@
     const profile = getProfile();
     const cont = document.getElementById('runner-user-summary');
     if(cont) {
-      if(!profile) cont.innerHTML = 'No hay perfil deportivo guardado. Completa tu perfil para personalizar la experiencia runner.';
+      if(!profile) cont.innerHTML = 'No hay perfil deportivo guardado. Complete su perfil para personalizar la experiencia runner.';
       else cont.innerHTML = `
         <b>${etiquetaObjetivo(profile.objetivo)}</b><br>
         Nivel: <b>${profile.nivel}</b> · Edad: <b>${profile.edad || '—'}</b><br>
@@ -450,8 +450,8 @@
     const out = document.getElementById('runner-streak-summary');
     if(out) {
       out.innerHTML = streak.weeks
-        ? `Has registrado actividad en <b>${streak.weeks} semana(s)</b>.<br><span style="display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(255,110,48,.12);border:1px solid rgba(255,130,70,.22);margin-top:10px;">🍃 <b style="color:#ffb148;">Insignia runner · ${streak.weeks} semana(s)</b></span>`
-        : 'Aún no hay semanas activas registradas. Empieza tu primer recorrido y URBIS contará tu constancia.';
+        ? `Ha registrado actividad en <b>${streak.weeks} semana(s)</b>.<br><span style="display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(255,110,48,.12);border:1px solid rgba(255,130,70,.22);margin-top:10px;">🍃 <b style="color:#ffb148;">Insignia runner · ${streak.weeks} semana(s)</b></span>`
+        : 'Aún no hay semanas activas registradas. Empiece su primer recorrido y URBIS contará su constancia.';
     }
   }
   function renderRunnerPRs() {
@@ -506,7 +506,7 @@
     const out = document.getElementById('runner-share-output');
     if(!out) return;
     if(!session) {
-      out.textContent = 'Cuando guardes una actividad, aquí verás una tarjeta visual de tu recorrido.';
+      out.textContent = 'Cuando guardes una actividad, aquí verá una tarjeta visual de su recorrido.';
       return;
     }
     out.innerHTML = `
@@ -761,7 +761,7 @@
     if(saveCard) saveCard.style.display = 'none';
     runnerState.pendingSession = null;
     const out = document.getElementById('runner-session-status');
-    if(out) out.innerHTML = '<b>Recorrido guardado.</b> Ya puedes revisar historial, PR y tu tarjeta del trayecto.';
+    if(out) out.innerHTML = '<b>Recorrido guardado.</b> Ya puede revisar historial, PR y su tarjeta del trayecto.';
   };
   window.discardRunnerSessionUrbis = function() {
     runnerState.pendingSession = null;

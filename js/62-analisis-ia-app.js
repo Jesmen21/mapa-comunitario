@@ -533,7 +533,7 @@
         fillColor: p.color, fillOpacity: p.grupo === 'otro' ? .95 : .85
       }).bindPopup('<b>' + p.icono + ' ' + escHTML(p.nombre) + '</b><br>' +
         escHTML(window.AIA_MOTOR.GRUPOS[p.grupo].t) + ' · ' + p.distM + ' m' +
-        (p.manual ? '<br><em>Agregado por ti</em>' : ''))
+        (p.manual ? '<br><em>Agregado por usted</em>' : ''))
         .addTo(S.capaPOIs);
     });
   }

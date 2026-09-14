@@ -94,9 +94,9 @@
     if(now - lastRecalcRequestAt < 14000) return;
     lastRecalcRequestAt = now;
     document.body.classList.add('u64-offroute-warning');
-    status('Te saliste de la ruta · recalculando');
+    status('Se salió de la ruta · recalculando');
     playDeviationAlert();
-    speak('Te saliste de la ruta. Recalculando recorrido.', true);
+    speak('Se salió de la ruta. Recalculando recorrido.', true);
     setTimeout(()=>document.body.classList.remove('u64-offroute-warning'), 4200);
     try{
       // Recalcula desde el GPS real actual hacia el mismo destino.
@@ -178,7 +178,7 @@
 
   function setTransportAccent(mode){
     const labels = {walking:'A pie', bike:'Bici', bus:'Bus', motorcycle:'Moto', car:'Carro'};
-    status(`${labels[mode] || 'Carro'} seleccionado · elige destino`);
+    status(`${labels[mode] || 'Carro'} seleccionado · elija destino`);
   }
 
   function updateRouteUIAfterStart(){
@@ -213,9 +213,9 @@
           if(next && next.maneuver){
             const mod = String(next.maneuver.modifier || '').toLowerCase();
             const d = Math.round(Number(next.distance || 0));
-            if(mod.includes('right')) speak(d ? `En ${d} metros, gira a la derecha.` : 'Gira a la derecha.');
-            else if(mod.includes('left')) speak(d ? `En ${d} metros, gira a la izquierda.` : 'Gira a la izquierda.');
-            else speak('Sigue la ruta marcada.');
+            if(mod.includes('right')) speak(d ? `En ${d} metros, gire a la derecha.` : 'Gire a la derecha.');
+            else if(mod.includes('left')) speak(d ? `En ${d} metros, gire a la izquierda.` : 'Gire a la izquierda.');
+            else speak('Siga la ruta marcada.');
           }
         }
       }catch(e){}
@@ -234,7 +234,7 @@
     try { if(typeof quitarOverlayInicioRecorridoCiudadano === 'function') quitarOverlayInicioRecorridoCiudadano(); } catch(e) {}
     try { if(typeof window.UrbisMobileAppV58?.show === 'function') window.UrbisMobileAppV58.show('mobility'); } catch(e) {}
     enableMapGestures();
-    status('Ruta finalizada · elige un nuevo destino');
+    status('Ruta finalizada · elija un nuevo destino');
     setTimeout(()=>document.body.classList.remove('u59-route-ended'), 1500);
   }
 
@@ -252,12 +252,12 @@
     enableMapGestures();
     primeVoice();
     document.body.classList.add('u59-mobility-blue');
-    status('Toca el mapa para elegir destino.');
+    status('Toque el mapa para elegir destino.');
     try{
       if(typeof originalPrepare === 'function') return await originalPrepare();
     }catch(e){
       console.warn('Destino GPS móvil', e);
-      status('Activa permisos de ubicación.');
+      status('Active permisos de ubicación.');
     } finally {
       enableMapGestures();
     }
@@ -314,7 +314,7 @@
             lastOffRouteWarnAt = Date.now();
             document.body.classList.add('u64-offroute-warning');
             playDeviationAlert();
-            speak('Atención. Parece que te saliste de la ruta.', true);
+            speak('Atención. Parece que se salió de la ruta.', true);
             status('Fuera de ruta · recalculando si continúa');
             setTimeout(()=>document.body.classList.remove('u64-offroute-warning'), 3500);
           }

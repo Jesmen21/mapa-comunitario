@@ -38,17 +38,17 @@
   function pad2(v){ return String(v || '').padStart(2, '0'); }
   function buildBirthDateFromParts(day, month, year){
     const d = Number(day), m = Number(month), y = Number(year);
-    if(!d || !m || !y) return { valid:false, message:'Selecciona día, mes y año de nacimiento.' };
+    if(!d || !m || !y) return { valid:false, message:'Seleccione día, mes y año de nacimiento.' };
     const dt = new Date(y, m - 1, d);
     if(dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d){
-      return { valid:false, message:'Selecciona una fecha de nacimiento válida.' };
+      return { valid:false, message:'Seleccione una fecha de nacimiento válida.' };
     }
     const today = new Date();
     if(dt > today) return { valid:false, message:'La fecha de nacimiento no puede ser futura.' };
     let age = today.getFullYear() - y;
     const beforeBirthday = (today.getMonth() < m - 1) || (today.getMonth() === m - 1 && today.getDate() < d);
     if(beforeBirthday) age--;
-    if(age < 0 || age > 120) return { valid:false, message:'Revisa el año de nacimiento.' };
+    if(age < 0 || age > 120) return { valid:false, message:'Revise el año de nacimiento.' };
     return {
       valid:true,
       fecha: `${y}-${pad2(m)}-${pad2(d)}`,
@@ -78,7 +78,7 @@
       status.classList.add('is-error');
       return;
     }
-    status.textContent = birth.esMayor ? `Mayor de edad: ${birth.edad} años.` : `Menor de edad: ${birth.edad} años. Puedes usar Tarjeta de identidad si corresponde.`;
+    status.textContent = birth.esMayor ? `Mayor de edad: ${birth.edad} años.` : `Menor de edad: ${birth.edad} años. Puede usar Tarjeta de identidad si corresponde.`;
     status.classList.add(birth.esMayor ? 'is-ok' : 'is-minor');
   }
 
@@ -161,7 +161,7 @@
     barriosPorComuna: {
       'Soledad': {
         'Comuna 1 - Antigua Soledad':['12 de Octubre','El Parque','Las Gaviotas','Nuevo Triunfo','Villa Angelita','Villa Valentina','13 de Mayo','El Pasito','Las Margaritas','Oriental','Villa del Carmen','Villa Éxito','16 de Julio','El Río','Las Moras','Porvenir','Villa del Rey','Villa María','20 de Julio','El Triunfo','Las Nubes','Prado Soledad','Villa Estadio','Villa Severa','7 de Agosto','El Tucán','Las Trinitarias','Primero de Mayo','Villa Estefanny','Villa Viola','Altos de Sevilla','El Hipódromo','Ferrocarril','Puerta de Oro','Villa Gladys','Los Cocos','Bella Murillo','Juan Domínguez Romero','Los Almendros','Pumarejo','Villa Karla','Bonanza','La Alianza','Los Arrayanes','Renacer','Villa Katanga','Portal de Las Moras','Otro barrio / no aparece'],
-        'Comuna 2 - Nueva Soledad':['Cabrera','La Arboleda','Los Balcanes','Los Cedros','Sal Si Puedes','Nueva Esperanza','Centenario','La Central','Los Cusules','Salamanca','Villa Merly','Centro','La Esperanza','Los Laureles','Salcedo','Villa Mónaco','Ciudad del Puerto','Ciudad Paraíso','Ciudad Camelot','Ciudad Bolívar','La Farruca','Los Loteros','San Antonio','Ciudad Salitre','La Fe','Los Mangos','San Vicente','Villa Rosa','Antonio Nariño','Ciudadela Metropolitana','Los Campanos','Altos de Las Villas','Ríos de Agua Viva','Villa Muvdi','La Floresta','Los Robles','Santa Inés','Villa Selene','Portal de Las Moras','Costa Hermosa','La Loma','Manuela Beltrán','Soledad 2000','Villa Sol','Cruz de Mayo','La María','Moras Norte','Tajamar','Villa Soledad','Don Bosco IV','La Rivera','Moras Occidente','Terranova','Villa Zambrano','El Cachimbero','El Chuchal','Normandía','Villa Adela','Viña del Rey','Villa de Las Moras','El Esfuerzo','Las Candelarias','Nueva Jerusalén','Villa Anita','Vista Hermosa','El Ferrocarril','Las Colonias','Nuevo Horizonte','Villa Aragón','Zarabanda','El Manantial','Las Ferias','Nuevo Milenio','Parque Muvdi','Villa Cecilia','Otro barrio / no aparece'],
+        'Comuna 2 - Nueva Soledad':['Cabrera','La Arboleda','Los Balcanes','Los Cedros','Salga Si Puede','Nueva Esperanza','Centenario','La Central','Los Cusules','Salamanca','Villa Merly','Centro','La Esperanza','Los Laureles','Salcedo','Villa Mónaco','Ciudad del Puerto','Ciudad Paraíso','Ciudad Camelot','Ciudad Bolívar','La Farruca','Los Loteros','San Antonio','Ciudad Salitre','La Fe','Los Mangos','San Vicente','Villa Rosa','Antonio Nariño','Ciudadela Metropolitana','Los Campanos','Altos de Las Villas','Ríos de Agua Viva','Villa Muvdi','La Floresta','Los Robles','Santa Inés','Villa Selene','Portal de Las Moras','Costa Hermosa','La Loma','Manuela Beltrán','Soledad 2000','Villa Sol','Cruz de Mayo','La María','Moras Norte','Tajamar','Villa Soledad','Don Bosco IV','La Rivera','Moras Occidente','Terranova','Villa Zambrano','El Cachimbero','El Chuchal','Normandía','Villa Adela','Viña del Rey','Villa de Las Moras','El Esfuerzo','Las Candelarias','Nueva Jerusalén','Villa Anita','Vista Hermosa','El Ferrocarril','Las Colonias','Nuevo Horizonte','Villa Aragón','Zarabanda','El Manantial','Las Ferias','Nuevo Milenio','Parque Muvdi','Villa Cecilia','Otro barrio / no aparece'],
         'Comuna 3':['Cabecera municipal / centro urbano','Zona general de la comuna','Otro barrio / no aparece'],
         'Comuna 4':['Cabecera municipal / centro urbano','Zona general de la comuna','Otro barrio / no aparece'],
         'Comuna 5':['Cabecera municipal / centro urbano','Zona general de la comuna','Otro barrio / no aparece'],
@@ -274,10 +274,10 @@
     }
 
     function ensureLocationOtherInputs(){
-      ensureLocationOtherInput('reg-department','reg-department-other','Escribe tu departamento','🗺️');
-      ensureLocationOtherInput('reg-city','reg-city-other','Escribe tu ciudad o corregimiento','🏙️');
-      ensureLocationOtherInput('reg-comuna','reg-comuna-other','Escribe tu comuna o sector','🧭');
-      ensureLocationOtherInput('reg-barrio','reg-barrio-other','Escribe tu barrio, vereda o sector','📍');
+      ensureLocationOtherInput('reg-department','reg-department-other','Escriba su departamento','🗺️');
+      ensureLocationOtherInput('reg-city','reg-city-other','Escriba su ciudad o corregimiento','🏙️');
+      ensureLocationOtherInput('reg-comuna','reg-comuna-other','Escriba su comuna o sector','🧭');
+      ensureLocationOtherInput('reg-barrio','reg-barrio-other','Escriba su barrio, vereda o sector','📍');
     }
 
     function updateLocationOtherInputs(){
@@ -468,7 +468,7 @@
         <div class="urbis-ios-picker-handle" aria-hidden="true"></div>
         <div class="urbis-ios-picker-head">
           <div>
-            <small>Selecciona de la lista</small>
+            <small>Seleccione de la lista</small>
             <h3 id="urbis-ios-picker-title">Ubicación</h3>
           </div>
           <button type="button" class="urbis-ios-picker-close" data-urbis-ios-picker-close="1" aria-label="Cerrar">×</button>
@@ -531,7 +531,7 @@
     const options = getIOSPickerOptions(select);
     const filtered = options.filter(opt => normalizeEmail(opt.label).includes(search) || normalizeEmail(opt.value).includes(search));
     if(!filtered.length){
-      list.innerHTML = `<div class="urbis-ios-picker-empty">No hay opciones disponibles. Prueba con N/A u Otro cuando aparezca en la lista.</div>`;
+      list.innerHTML = `<div class="urbis-ios-picker-empty">No hay opciones disponibles. Pruebe con N/A u Otro cuando aparezca en la lista.</div>`;
       return;
     }
     list.innerHTML = filtered.map(opt => {
@@ -721,8 +721,8 @@
       <div class="urbis-register-loading-card">
         <div class="urbis-loading-brand">URBIS</div>
         <div class="urbis-loading-spinner" aria-hidden="true"></div>
-        <h2 id="urbis-loading-title">Creando tu cuenta</h2>
-        <p id="urbis-loading-text">Espera un momento mientras enviamos el código de confirmación a tu correo. Si no lo ves, revisa Spam o Promociones.</p>
+        <h2 id="urbis-loading-title">Creando su cuenta</h2>
+        <p id="urbis-loading-text">Espere un momento mientras enviamos el código de confirmación a su correo. Si no lo ve, revisa Spam o Promociones.</p>
         <div class="urbis-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
       </div>
     `;
@@ -734,8 +734,8 @@
     const loading = $('urbis-register-loading');
     const titleEl = $('urbis-loading-title');
     const textEl = $('urbis-loading-text');
-    if(titleEl) titleEl.textContent = title || 'Creando tu cuenta';
-    if(textEl) textEl.textContent = text || 'Espera un momento mientras preparamos la confirmación.';
+    if(titleEl) titleEl.textContent = title || 'Creando su cuenta';
+    if(textEl) textEl.textContent = text || 'Espere un momento mientras preparamos la confirmación.';
     if(loading){
       loading.classList.add('show');
       document.body.classList.add('urbis-register-is-loading');
@@ -759,7 +759,7 @@
       box.id = 'urbis-auth-consents';
       box.className = 'urbis-auth-consents';
       box.innerHTML = `
-        <div class="urbis-legal-title"><span class="urbis-legal-title-icon">🛡️</span> Protección de tus datos</div>
+        <div class="urbis-legal-title"><span class="urbis-legal-title-icon">🛡️</span> Protección de sus datos</div>
         <label class="urbis-auth-check urbis-auth-check-required">
           <input type="checkbox" id="urbis-terms-accepted" aria-required="true">
           <span>
@@ -778,11 +778,11 @@
         <div class="urbis-legal-separator" aria-hidden="true"></div>
         <div class="urbis-legal-note">
           <span class="urbis-legal-note-icon">🔒</span>
-          <span>Tus datos serán tratados de forma segura. Puedes solicitar actualización o eliminación escribiendo a <b>urbisprocity@gmail.com</b>.</span>
+          <span>Sus datos serán tratados de forma segura. Puede solicitar actualización o eliminación escribiendo a <b>urbisprocity@gmail.com</b>.</span>
         </div>
         <small class="urbis-auth-phone-note">El celular se guardará con indicativo Colombia <b>+57</b>.</small>
-        <button type="button" id="urbis-open-recovery" class="urbis-auth-mini-link">¿Olvidaste tu cuenta?<br><span>Recuperar acceso</span></button>
-        <small class="urbis-auth-note">Tu correo se validará con un código antes de activar la cuenta. Si no llega a la bandeja principal, revisa Spam, Promociones o Correo no deseado.</small>
+        <button type="button" id="urbis-open-recovery" class="urbis-auth-mini-link">¿Olvidó su cuenta?<br><span>Recuperar acceso</span></button>
+        <small class="urbis-auth-note">Su correo se validará con un código antes de activar la cuenta. Si no llega a la bandeja principal, revisa Spam, Promociones o Correo no deseado.</small>
       `;
       const holder = submit.parentElement || panel;
       holder.insertBefore(box, submit);
@@ -827,12 +827,12 @@
       <div class="urbis-auth-card urbis-verification-card">
         <button type="button" class="urbis-auth-x" id="urbis-auth-close" aria-label="Cerrar verificación">×</button>
         <div class="urbis-auth-badge">URBIS</div>
-        <h2>Confirma tu correo</h2>
-        <p id="urbis-auth-modal-text">Te enviamos un código de 6 dígitos. Escríbelo para activar tu cuenta. Si no aparece, revisa Spam, Promociones o Correo no deseado.</p>
+        <h2>Confirme su correo</h2>
+        <p id="urbis-auth-modal-text">Le enviamos un código de 6 dígitos. Escríbalo para activar su cuenta. Si no aparece, revisa Spam, Promociones o Correo no deseado.</p>
         <input id="urbis-verification-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-label="Código de verificación">
         <button type="button" id="urbis-verify-btn" class="urbis-auth-primary">Verificar y entrar a URBIS</button>
         <button type="button" id="urbis-resend-btn" class="urbis-auth-secondary">Reenviar código</button>
-        <p class="urbis-auth-hint">Tu cuenta no se activa hasta confirmar el código. Revisa también Spam, Promociones o Correo no deseado.</p>
+        <p class="urbis-auth-hint">Su cuenta no se activa hasta confirmar el código. Revise también Spam, Promociones o Correo no deseado.</p>
       </div>
     `;
     document.body.appendChild(modal);
@@ -856,7 +856,7 @@
 
   function openVerificationModal(email){
     ensureVerificationModal();
-    $('urbis-auth-modal-text').innerHTML = `Enviamos un código a <b>${esc(email)}</b>. Escríbelo para activar tu cuenta y entrar a URBIS. Si no lo ves en unos segundos, revisa <b>Spam</b>, <b>Promociones</b> o <b>Correo no deseado</b>.`;
+    $('urbis-auth-modal-text').innerHTML = `Enviamos un código a <b>${esc(email)}</b>. Escríbalo para activar su cuenta y entrar a URBIS. Si no lo ve en unos segundos, revisa <b>Spam</b>, <b>Promociones</b> o <b>Correo no deseado</b>.`;
     $('urbis-verification-code').value = '';
     $('urbis-verification-modal').classList.add('show');
     setTimeout(()=>$('urbis-verification-code')?.focus(), 150);
@@ -873,7 +873,7 @@
         <button type="button" class="urbis-auth-x" id="urbis-recovery-close">×</button>
         <div class="urbis-auth-badge">URBIS</div>
         <h2>Recuperar cuenta</h2>
-        <p id="urbis-recovery-text">Escribe tu usuario, correo, celular o cédula. Enviaremos un código al correo asociado.</p>
+        <p id="urbis-recovery-text">Escriba su usuario, correo, celular o cédula. Enviaremos un código al correo asociado.</p>
         <input id="urbis-recovery-identifier" class="urbis-auth-input" placeholder="Usuario, correo, celular o cédula" autocomplete="username">
         <button type="button" id="urbis-recovery-send" class="urbis-auth-primary">Enviar código</button>
         <input id="urbis-recovery-code" class="urbis-auth-input" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" hidden>
@@ -886,11 +886,11 @@
           <button type="button" class="urbis-auth-eye" data-urbis-password-toggle="urbis-recovery-new-password-confirm" aria-label="Mostrar contraseña" aria-pressed="false">👁️</button>
         </div>
         <div id="urbis-recovery-resend-box" class="urbis-recovery-resend-box" hidden>
-          <p id="urbis-recovery-timer" class="urbis-auth-hint urbis-recovery-timer">Podrás reenviar el código en 01:00</p>
+          <p id="urbis-recovery-timer" class="urbis-auth-hint urbis-recovery-timer">Podrá reenviar el código en 01:00</p>
           <button type="button" id="urbis-recovery-resend" class="urbis-auth-secondary" disabled>Reenviar código</button>
         </div>
         <button type="button" id="urbis-recovery-verify" class="urbis-auth-primary" hidden>Verificar y entrar</button>
-        <p class="urbis-auth-hint">Por seguridad, si usas celular, el código se enviará al correo que esté vinculado a ese número.</p>
+        <p class="urbis-auth-hint">Por seguridad, si usa celular, el código se enviará al correo que esté vinculado a ese número.</p>
       </div>
     `;
     document.body.appendChild(modal);
@@ -919,10 +919,10 @@
       'reg-gender': { label:'Género' },
       'reg-email': { placeholder:'Ej: correo@ejemplo.com', label:'Correo electrónico' },
       'reg-password': { placeholder:'Mínimo 8 caracteres', label:'Crear contraseña' },
-      'reg-password-confirm': { placeholder:'Repite tu contraseña', label:'Confirmar contraseña' },
+      'reg-password-confirm': { placeholder:'Repita su contraseña', label:'Confirmar contraseña' },
       'login-username': { placeholder:'Usuario o cédula', label:'Usuario o cédula' },
-      'login-password': { placeholder:'Escribe tu contraseña', label:'Contraseña' },
-      'reg-barrio': { label:'Barrio donde vives' }
+      'login-password': { placeholder:'Escriba su contraseña', label:'Contraseña' },
+      'reg-barrio': { label:'Barrio donde vive' }
     };
     Object.entries(defs).forEach(([id, meta]) => {
       const el = $(id);
@@ -1091,11 +1091,11 @@
     if(remaining > 0){
       resendBtn.disabled = true;
       resendBtn.textContent = 'Reenviar código';
-      timerText.textContent = `Podrás reenviar el código en ${formatRecoveryTime(remaining)}`;
+      timerText.textContent = `Podrá reenviar el código en ${formatRecoveryTime(remaining)}`;
     } else {
       resendBtn.disabled = false;
       resendBtn.textContent = 'Reenviar código';
-      timerText.textContent = 'Si no te llegó el código, puedes reenviarlo ahora.';
+      timerText.textContent = 'Si no le llegó el código, puede reenviarlo ahora.';
       if(recoveryResendTimer){
         clearInterval(recoveryResendTimer);
         recoveryResendTimer = null;
@@ -1125,7 +1125,7 @@
     if($('urbis-recovery-resend-box')) $('urbis-recovery-resend-box').hidden = true;
     clearRecoveryCountdown();
     updateRecoveryCountdownUI();
-    $('urbis-recovery-text').textContent = 'Escribe tu usuario, correo, celular o cédula. Enviaremos un código al correo asociado.';
+    $('urbis-recovery-text').textContent = 'Escriba su usuario, correo, celular o cédula. Enviaremos un código al correo asociado.';
     $('urbis-recovery-modal').classList.add('show');
     setTimeout(()=>$('urbis-recovery-identifier')?.focus(), 150);
   }
@@ -1179,7 +1179,7 @@
 
   async function requestRecoveryCode(isResend = false){
     const identifier = normalizeIdentifier($('urbis-recovery-identifier')?.value || '');
-    if(!identifier) { toast('Escribe tu usuario, correo, celular o cédula.'); return; }
+    if(!identifier) { toast('Escriba su usuario, correo, celular o cédula.'); return; }
     if(!authReady()) { alert('Falta configurar el endpoint de Google Apps Script.'); return; }
     const btn = isResend ? $('urbis-recovery-resend') : $('urbis-recovery-send');
     try{
@@ -1187,7 +1187,7 @@
       const out = await callAuthAPI({ action:'recover_request', identifier, identificador: identifier, indentificador: identifier });
       if(!out.ok) throw new Error(out.message || 'No se pudo enviar el código.');
       pendingRecovery = { identifier, email: out.email || '' };
-      $('urbis-recovery-text').innerHTML = `Enviamos un código al correo asociado${out.masked_email ? ': <b>' + esc(out.masked_email) + '</b>' : ''}. Escribe el código y crea una nueva contraseña.`;
+      $('urbis-recovery-text').innerHTML = `Enviamos un código al correo asociado${out.masked_email ? ': <b>' + esc(out.masked_email) + '</b>' : ''}. Escriba el código y cree una nueva contraseña.`;
       $('urbis-recovery-code').hidden = false;
       if($('urbis-recovery-pass-wrap')) $('urbis-recovery-pass-wrap').hidden = false;
       if($('urbis-recovery-pass-confirm-wrap')) $('urbis-recovery-pass-confirm-wrap').hidden = false;
@@ -1211,10 +1211,10 @@
     const identifier = pendingRecovery?.identifier || normalizeIdentifier($('urbis-recovery-identifier')?.value || '');
     const newPassword = clean($('urbis-recovery-new-password')?.value || '');
     const newPasswordConfirm = clean($('urbis-recovery-new-password-confirm')?.value || '');
-    if(!/^\d{6}$/.test(code)){ toast('Escribe el código de 6 dígitos.'); return; }
-    if(!newPassword){ toast('Escribe una nueva contraseña para recuperar tu cuenta.'); return; }
+    if(!/^\d{6}$/.test(code)){ toast('Escriba el código de 6 dígitos.'); return; }
+    if(!newPassword){ toast('Escriba una nueva contraseña para recuperar su cuenta.'); return; }
     if(!passwordStrong(newPassword)){ toast('La nueva contraseña debe tener mínimo 8 caracteres.'); return; }
-    if(!newPasswordConfirm){ toast('Confirma tu nueva contraseña.'); return; }
+    if(!newPasswordConfirm){ toast('Confirme su nueva contraseña.'); return; }
     if(newPassword !== newPasswordConfirm){ toast('Las contraseñas no coinciden.'); return; }
     const btn = $('urbis-recovery-verify');
     try{
@@ -1313,18 +1313,18 @@
   // teléfono se hacen eternos, y para saber de qué ciudad reporta alguien no
   // hacen falta.
   function validateCitizenForm(data){
-    if(!/^[a-z0-9._-]{5,30}$/.test(data.usuario || '')) return 'Escribe un usuario válido de 5 a 30 caracteres. Usa letras, números, punto, guion o guion bajo.';
-    if(!/^\S+@\S+\.\S+$/.test(data.correo)) return 'Escribe un correo válido.';
+    if(!/^[a-z0-9._-]{5,30}$/.test(data.usuario || '')) return 'Escriba un usuario válido de 5 a 30 caracteres. Use letras, números, punto, guion o guion bajo.';
+    if(!/^\S+@\S+\.\S+$/.test(data.correo)) return 'Escriba un correo válido.';
     if(!passwordStrong(data.password)) return 'La contraseña debe tener mínimo 8 caracteres.';
     if(data.password !== data.passwordConfirm) return 'Las contraseñas no coinciden.';
     const birth = readBirthDate();
     if(!birth.valid) return birth.message;
-    if(!data.pais) return 'Selecciona Colombia o escribe tu país.';
+    if(!data.pais) return 'Seleccione Colombia o escriba su país.';
     if(data.pais === 'Colombia'){
-      if(!data.departamento) return 'Selecciona tu departamento.';
-      if(!data.ciudad) return 'Selecciona tu ciudad o corregimiento.';
+      if(!data.departamento) return 'Seleccione su departamento.';
+      if(!data.ciudad) return 'Seleccione su ciudad o corregimiento.';
     }
-    if(!data.termsAccepted) return 'Debes aceptar el tratamiento de datos personales y los términos para crear la cuenta.';
+    if(!data.termsAccepted) return 'Debe aceptar el tratamiento de datos personales y los términos para crear la cuenta.';
     // Si los campos de identidad se revelaron porque el servidor los pidió,
     // aquí sí se exigen. Sin esto el formulario los mandaría vacíos otra vez y
     // el usuario quedaría dando vueltas en el mismo rechazo.
@@ -1339,21 +1339,21 @@
   // Se llama cuando el usuario intenta subir una foto o publicar en una
   // categoría sensible. Aquí sí se exige la identidad legal completa.
   function validateVerificacionNivel2(data){
-    if(clean(data.nombres || '').length < 2) return 'Escribe tus nombres.';
-    if(clean(data.apellidos || '').length < 2) return 'Escribe tus apellidos.';
-    if(clean(data.cedula_numero || '').length < 5) return 'Escribe tu número de documento.';
+    if(clean(data.nombres || '').length < 2) return 'Escriba sus nombres.';
+    if(clean(data.apellidos || '').length < 2) return 'Escriba sus apellidos.';
+    if(clean(data.cedula_numero || '').length < 5) return 'Escriba su número de documento.';
     if(data.pais === 'Colombia'){
-      if(phoneDigitsForValidation(data.telefono).length !== 12) return 'Escribe un celular colombiano válido con 10 dígitos. Se guardará como +57.';
+      if(phoneDigitsForValidation(data.telefono).length !== 12) return 'Escriba un celular colombiano válido con 10 dígitos. Se guardará como +57.';
       // Comuna y barrio también viven en el nivel 2. Son dos desplegables en
       // cascada —hay que elegir departamento, luego ciudad, luego comuna, luego
       // barrio— y en un teléfono eso es una eternidad para alguien que solo
       // quiere avisar de un hueco. Aquí sí se exigen porque es justo lo que
       // pide el servidor cuando rechaza un registro incompleto: revelar los
       // campos sin exigirlos dejaría al usuario reenviando vacío en bucle.
-      if(!data.comuna) return 'Selecciona tu comuna.';
-      if(!data.barrio) return 'Selecciona tu barrio.';
+      if(!data.comuna) return 'Seleccione su comuna.';
+      if(!data.barrio) return 'Seleccione su barrio.';
     }else if(onlyDigits(data.telefono || '').length < 7){
-      return 'Escribe un número de celular válido.';
+      return 'Escriba un número de celular válido.';
     }
     return '';
   }
@@ -1381,7 +1381,7 @@
     if(input.value !== usuario) input.value = usuario;
     usernameAvailable = null;
     if(!usuario){
-      setUsernameStatus('Usa mínimo 5 caracteres. Puedes usar letras, números, punto, guion o guion bajo.');
+      setUsernameStatus('Use mínimo 5 caracteres. Puede usar letras, números, punto, guion o guion bajo.');
       return;
     }
     if(!/^[a-z0-9._-]{5,30}$/.test(usuario)){
@@ -1403,7 +1403,7 @@
       if(lastUsernameCheck !== usuario) return;
       usernameAvailable = !!out.available;
       if(out.ok && out.available) setUsernameStatus('Usuario disponible.', 'is-ok');
-      else setUsernameStatus(out.message || 'Ese nombre de usuario ya existe. Elige otro.', 'is-error');
+      else setUsernameStatus(out.message || 'Ese nombre de usuario ya existe. Elija otro.', 'is-error');
     }catch(e){
       if(lastUsernameCheck !== usuario) return;
       usernameAvailable = null;
@@ -1448,8 +1448,8 @@
       return { ok:true, available:null };
     }
     if(!/^\S+@\S+\.\S+$/.test(correo)){
-      setEmailStatus('Escribe un correo válido.', 'is-error');
-      return { ok:false, available:false, message:'Escribe un correo válido.' };
+      setEmailStatus('Escriba un correo válido.', 'is-error');
+      return { ok:false, available:false, message:'Escriba un correo válido.' };
     }
     if(!authReady()){
       setEmailStatus('Se validará el correo al crear la cuenta.', 'is-checking');
@@ -1466,7 +1466,7 @@
       if(lastEmailCheck !== correo) return out;
       emailAvailable = out && out.available !== false;
       if(out && out.ok && out.available) setEmailStatus('Correo disponible.', 'is-ok');
-      else setEmailStatus((out && out.message) || 'Este correo ya está registrado. Usa otro correo o inicia sesión.', 'is-error');
+      else setEmailStatus((out && out.message) || 'Este correo ya está registrado. Use otro correo o inicie sesión.', 'is-error');
       return out;
     }catch(e){
       if(lastEmailCheck !== correo) return { ok:true, available:null };
@@ -1514,7 +1514,7 @@
       setIdentityStatus('cedula', 'La cédula no puede estar registrada en otra cuenta.');
     }
     if(!telefono){
-      setIdentityStatus('phone', selectedCountry === 'Otro país' ? 'El celular no puede estar registrado en otra cuenta.' : 'Si seleccionas Colombia, se guardará automáticamente con el prefijo +57.');
+      setIdentityStatus('phone', selectedCountry === 'Otro país' ? 'El celular no puede estar registrado en otra cuenta.' : 'Si selecciona Colombia, se guardará automáticamente con el prefijo +57.');
     }
     if(!authReady() || (!cedula_numero && !telefono)){
       return { ok:true, cedulaAvailable:null, phoneAvailable:null };
@@ -1586,8 +1586,8 @@
     const rawLogin = clean($('mobile-login-username')?.value || $('login-username')?.value || '');
     const identifier = rawLogin.includes('@') ? normalizeEmail(rawLogin) : rawLogin;
     const password = clean($('mobile-login-password')?.value || $('login-password')?.value || '');
-    if(!identifier){ toast('Escribe tu usuario, correo, celular o cédula.'); alert('Escribe tu usuario, correo, celular o cédula.'); return; }
-    if(!password){ toast('Escribe tu contraseña.'); alert('Escribe tu contraseña.'); return; }
+    if(!identifier){ toast('Escriba su usuario, correo, celular o cédula.'); alert('Escriba su usuario, correo, celular o cédula.'); return; }
+    if(!password){ toast('Escriba su contraseña.'); alert('Escriba su contraseña.'); return; }
     // El atajo de administrador se retiró en la v574: comparaba la contraseña
     // contra un valor escrito en js/00-config.js, que se sirve tal cual desde
     // urbispro.city. La cuenta de administrador entra ahora por este mismo
@@ -1650,18 +1650,18 @@
     try{
       if(btn){ btn.disabled = true; btn.textContent = resend ? 'Reenviando código...' : 'Creando cuenta...'; }
       showRegisterLoading(
-        resend ? 'Reenviando código' : 'Creando tu cuenta',
-        resend ? 'Espera un momento mientras enviamos un nuevo código a tu correo. Revisa también Spam o Promociones.' : 'Espera un momento mientras validamos tus datos y enviamos el código a tu correo. Si no lo ves, revisa Spam o Promociones.'
+        resend ? 'Reenviando código' : 'Creando su cuenta',
+        resend ? 'Espere un momento mientras enviamos un nuevo código a su correo. Revise también Spam o Promociones.' : 'Espere un momento mientras validamos sus datos y enviamos el código a su correo. Si no lo ve, revisa Spam o Promociones.'
       );
       const out = await callAuthAPI({ action:'register', data });
       if(!out.ok) throw new Error(out.message || 'No se pudo registrar.');
       pendingRegistration = data;
       savePendingRegistration(data);
-      showRegisterLoading('Código enviado', 'Ahora abriremos la pantalla para confirmar tu correo. Si no llega, revisa Spam, Promociones o Correo no deseado.');
+      showRegisterLoading('Código enviado', 'Ahora abriremos la pantalla para confirmar su correo. Si no llega, revisa Spam, Promociones o Correo no deseado.');
       await wait(650);
       hideRegisterLoading();
       openVerificationModal(data.correo);
-      toast(resend ? 'Código reenviado.' : 'Cuenta pendiente. Revisa tu correo.');
+      toast(resend ? 'Código reenviado.' : 'Cuenta pendiente. Revise su correo.');
     }catch(err){
       hideRegisterLoading();
       // El servidor puede ir por detrás del navegador. Mientras el Apps Script
@@ -1710,7 +1710,7 @@
       return d;
     })();
     aviso.innerHTML = '<b>Faltan unos datos más</b><span>El servidor todavía pide ' +
-      'la información completa. Complétala aquí abajo y crea tu cuenta; ' +
+      'la información completa. Complétela aquí abajo y cree su cuenta; ' +
       'cuando el servidor se actualice ya no se pedirá.</span>' +
       '<em>' + esc(String(mensaje || '')) + '</em>';
     if(!nivel2Revelado){
@@ -1719,7 +1719,7 @@
       if(primero && primero.scrollIntoView) primero.scrollIntoView({ behavior:'smooth', block:'center' });
       try{ primero && primero.focus({ preventScroll:true }); }catch(e){}
     }
-    toast('Completa los datos que faltan para crear la cuenta.');
+    toast('Complete los datos que faltan para crear la cuenta.');
   }
   // Se expone para poder comprobar la adaptación sin tener que montar un
   // servidor viejo de mentira.
@@ -1743,7 +1743,7 @@
       try{
         const check = await callAuthAPI({ action:'check_username', usuario:data.usuario });
         if(check && check.ok && check.available === false){
-          const msg = check.message || 'Ese nombre de usuario ya existe. Elige otro.';
+          const msg = check.message || 'Ese nombre de usuario ya existe. Elija otro.';
           setUsernameStatus(msg, 'is-error');
           toast(msg); alert(msg); return;
         }
@@ -1754,7 +1754,7 @@
       try{
         const emailCheck = await checkEmailAvailability();
         if(emailCheck && emailCheck.available === false){
-          const msg = emailCheck.message || 'Este correo ya está registrado. Usa otro correo o inicia sesión.';
+          const msg = emailCheck.message || 'Este correo ya está registrado. Use otro correo o inicie sesión.';
           setEmailStatus(msg, 'is-error');
           toast(msg); alert(msg); return;
         }
@@ -1792,8 +1792,8 @@
     pendingRegistration = pendingRegistration || readPendingRegistration();
     const code = clean($('urbis-verification-code')?.value || '');
     const email = pendingRegistration?.correo || normalizeEmail($('reg-email')?.value || '');
-    if(!/^\d{6}$/.test(code)){ toast('Escribe el código de 6 dígitos.'); return; }
-    if(!email){ toast('No encontramos el correo pendiente. Vuelve a crear la cuenta.'); return; }
+    if(!/^\d{6}$/.test(code)){ toast('Escriba el código de 6 dígitos.'); return; }
+    if(!email){ toast('No encontramos el correo pendiente. Vuelva a crear la cuenta.'); return; }
     const btn = $('urbis-verify-btn');
     try{
       if(btn){ btn.disabled = true; btn.textContent = 'Verificando...'; }
@@ -2097,7 +2097,7 @@
       bindPasswordVisibilityToggles();
       document.body.classList.remove('u52-real-map');
       setTimeout(() => (desiredMode === 'register' ? $('reg-name') : $('login-username'))?.focus(), 140);
-      toast(desiredMode === 'register' ? 'Crea tu cuenta ciudadana para entrar a URBIS.' : 'Inicia sesión para entrar a URBIS.');
+      toast(desiredMode === 'register' ? 'Cree su cuenta ciudadana para entrar a URBIS.' : 'Inicie sesión para entrar a URBIS.');
     }catch(e){}
   }
 

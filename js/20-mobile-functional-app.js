@@ -58,7 +58,7 @@
         const liviano = items.slice(-40).map(it => Object.assign({}, it, { points: (it.points||[]).filter((_,i)=>i%2===0) }));
         persistir(liviano); return true;
       }catch(e2){
-        alert('No se pudo guardar el recorrido: la memoria del navegador está llena. Elimina recorridos viejos en Progreso.');
+        alert('No se pudo guardar el recorrido: la memoria del navegador está llena. Elimine recorridos viejos en Progreso.');
         return false;
       }
     }
@@ -304,7 +304,7 @@
     if(mobileGps.watchId !== null || !navigator.geolocation) return;
     mobileGps.watchId = navigator.geolocation.watchPosition(onMobileGpsPoint, err=>{
       console.warn('GPS móvil no disponible', err);
-      setMobilityStatus('Activa permisos de ubicación.');
+      setMobilityStatus('Active permisos de ubicación.');
     }, {enableHighAccuracy:true, maximumAge:500, timeout:12000});
   }
   /* Volver a pedir el seguimiento desde cero.
@@ -331,7 +331,7 @@
     startMobileGpsWatch();
     // Con la última lectura vieja, el punto que se ve en pantalla ya no dice
     // dónde estás: se avisa en vez de dejarlo pasar por bueno.
-    if(viejo > 30000) setMobilityStatus('Buscando tu ubicación…');
+    if(viejo > 30000) setMobilityStatus('Buscando su ubicación…');
   }
 
   app.innerHTML = `
@@ -344,8 +344,8 @@
           <img src="assets/brand/urbis-logo.png" alt="Logo URBIS" class="u52-auth-logo-img-figma">
           <strong class="u52-auth-wordmark-figma">URBIS</strong>
           <p class="u52-auth-tagline-figma">
-            <span>Conecta <b>tu ciudad.</b></span>
-            <span>Transforma <b>tu territorio.</b></span>
+            <span>Conecte <b>su ciudad.</b></span>
+            <span>Transforme <b>su territorio.</b></span>
           </p>
         </header>
 
@@ -369,7 +369,7 @@
         <header class="u52-kawaii-login-hero">
           <div class="u52-kawaii-login-wordmark">URBIS</div>
           <div class="u52-kawaii-login-slogan">MOVILIDAD • CONECTIVIDAD • FUTURO</div>
-          <p>¡Nos alegra tenerte de vuelta!<br>Ingresa para continuar en URBIS 💙</p>
+          <p>¡Nos alegra tenerlo de vuelta!<br>Ingrese para continuar en URBIS 💙</p>
         </header>
 
         <section class="u52-kawaii-login-card">
@@ -377,22 +377,22 @@
             <span>Usuario o cédula</span>
             <div class="u52-kawaii-input user">
               <i aria-hidden="true">👤</i>
-              <input id="mobile-login-username" type="text" placeholder="Ingresa tu usuario o cédula" autocomplete="username" enterkeyhint="next">
+              <input id="mobile-login-username" type="text" placeholder="Ingrese su usuario o cédula" autocomplete="username" enterkeyhint="next">
             </div>
-            <small class="u52-login-field-help">Puedes entrar con tu nombre de usuario o con tu número de cédula.</small>
+            <small class="u52-login-field-help">Puede entrar con su nombre de usuario o con su número de cédula.</small>
           </label>
 
           <label class="u52-kawaii-field password">
             <span>Contraseña</span>
             <div class="u52-kawaii-input pass has-eye">
               <i aria-hidden="true">🔒</i>
-              <input id="mobile-login-password" type="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" enterkeyhint="done">
+              <input id="mobile-login-password" type="password" placeholder="Ingrese su contraseña" autocomplete="current-password" enterkeyhint="done">
               <button type="button" class="u52-login-eye" data-urbis-password-toggle="mobile-login-password" aria-label="Mostrar contraseña" aria-pressed="false">👁️</button>
             </div>
           </label>
 
           <button id="mobile-urbis-login-btn" class="u52-kawaii-login-submit" data-u52-auth-login-submit type="button">Ingresar</button>
-          <button class="u52-kawaii-forgot" data-u52-auth-forgot type="button">¿Olvidaste tu contraseña?</button>
+          <button class="u52-kawaii-forgot" data-u52-auth-forgot type="button">¿Olvidó su contraseña?</button>
         </section>
       </div>
     </section>
@@ -435,8 +435,8 @@
           <button class="u52-module map u52-jac-module" data-u52-go="map"><span><img src="assets/icons/urbis-map.png" alt="Reportar"></span><b>Reportar</b><small>Mapa y alertas en vivo</small></button>
           <button class="u52-module events u52-jac-module" data-u52-go="events"><span><img src="assets/icons/urbis-events.svg" alt="Eventos"></span><b>Eventos</b><small>Disponibles</small></button>
           <button class="u52-module social u52-jac-module" data-u52-go="social"><span><img src="assets/brand/social.png" alt="Social URBIS"></span><b>Social</b><small>Comunidad</small></button>
-          <button class="u52-module games u52-jac-module" data-u52-go="games"><span class="u52-games-ico">🎮</span><b>Minijuegos</b><small>Juega y gana</small></button>
-          <button class="u52-module sport u52-jac-module" data-u52-go="sport"><span><img src="assets/icons/urbis-runner.png" alt="URBIS Rush"></span><b>URBIS Rush</b><small>Corre y compite</small></button>
+          <button class="u52-module games u52-jac-module" data-u52-go="games"><span class="u52-games-ico">🎮</span><b>Minijuegos</b><small>Juegue y gane</small></button>
+          <button class="u52-module sport u52-jac-module" data-u52-go="sport"><span><img src="assets/icons/urbis-runner.png" alt="URBIS Rush"></span><b>URBIS Rush</b><small>Corra y compita</small></button>
           <button class="u52-module seguimiento u52-jac-module" onclick="location.href='seguimiento.html'"><span class="u52-seguimiento-ico">🏛️</span><b>Seguimiento</b><small>Qué hace el Gobierno</small></button>
         </div>
 
@@ -464,7 +464,7 @@
     <section class="u52-screen map-screen" data-u52-screen="mobility">
       <header class="u52-topbar u52-touch"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Movilidad</h2><button class="u52-icon-btn" data-u52-call="locate">⌖</button></header>
       <div class="u52-map-actions u52-map-actions-clean" hidden aria-hidden="true"></div>
-      <div class="u52-sheet u52-mobility-sheet"><div class="u52-sheet-row"><div><b>Guía de ruta</b><br><span>Elige destino y transporte</span></div><span class="u52-pill-blue">Movilidad</span></div><div id="u56-mobility-status" class="u56-mobility-status">GPS activo. Muévete libremente por el mapa y toca “Elegir destino”.</div><div class="u57-transport-row" aria-label="Modo de movilidad"><button class="active" data-u52-transport="car">🚗<small>Carro</small></button><button data-u52-transport="motorcycle">🏍️<small>Moto</small></button><button data-u52-transport="bike">🚲<small>Bici</small></button><button data-u52-transport="walking">🚶<small>A pie</small></button><button data-u52-transport="bus">🚌<small>Bus</small></button></div><div class="u52-two"><button class="u52-secondary" data-u52-call="choose-destination">Elegir destino</button><button class="u52-primary blue" data-u52-call="start-route">Iniciar ruta</button></div></div>
+      <div class="u52-sheet u52-mobility-sheet"><div class="u52-sheet-row"><div><b>Guía de ruta</b><br><span>Elija destino y transporte</span></div><span class="u52-pill-blue">Movilidad</span></div><div id="u56-mobility-status" class="u56-mobility-status">GPS activo. Muévase libremente por el mapa y toque “Elegir destino”.</div><div class="u57-transport-row" aria-label="Modo de movilidad"><button class="active" data-u52-transport="car">🚗<small>Carro</small></button><button data-u52-transport="motorcycle">🏍️<small>Moto</small></button><button data-u52-transport="bike">🚲<small>Bici</small></button><button data-u52-transport="walking">🚶<small>A pie</small></button><button data-u52-transport="bus">🚌<small>Bus</small></button></div><div class="u52-two"><button class="u52-secondary" data-u52-call="choose-destination">Elegir destino</button><button class="u52-primary blue" data-u52-call="start-route">Iniciar ruta</button></div></div>
     </section>
 
     <section class="u52-screen map-screen u52-jac-map-screen u52-jac-mapcentric" data-u52-screen="map">
@@ -472,7 +472,7 @@
         <button class="u52-mapcentric-round" data-u52-back aria-label="Volver">←</button>
         <div class="u52-mapcentric-title">
           <b>Reporte o evento</b>
-          <small>Toca el mapa para ubicarlo</small>
+          <small>Toque el mapa para ubicarlo</small>
         </div>
         <button class="u52-mapcentric-filter u52-procity-filter-btn" data-u52-call="procity-filter-open" aria-label="Filtrar matriz de usos" hidden>🔷</button>
         <button class="u52-mapcentric-filter u52-cfilter-btn" data-u52-call="cfilter-open" aria-label="Filtrar reportes y eventos"><img src="assets/icons/urbis-filtro.png" alt="" class="u52-btn-img"></button>
@@ -494,7 +494,7 @@
     </section>
 
     <section class="u52-screen map-screen" data-u52-screen="nav">
-      <div class="u52-nav-card u61-nav-card-clean"><div><small>Movilidad</small><b>Ruta activa</b><span id="u52-route-state">El recorrido se actualiza con tu GPS.</span></div></div>
+      <div class="u52-nav-card u61-nav-card-clean"><div><small>Movilidad</small><b>Ruta activa</b><span id="u52-route-state">El recorrido se actualiza con su GPS.</span></div></div>
       <div class="u52-sheet"><div class="u52-sheet-row"><b>Navegación</b><span>GPS guía</span></div><button class="u52-danger" data-u52-call="finish-route">Finalizar recorrido</button></div>
     </section>
 
@@ -504,8 +504,8 @@
         <div class="rush-home-hero">
           <div class="rush-home-emoji">🏃‍♂️💨</div>
           <div class="rush-home-hero-copy">
-            <h1>¡A moverte!</h1>
-            <p>Elige tu actividad y URBIS Rush rastrea tu recorrido en vivo.</p>
+            <h1>¡A moverse!</h1>
+            <p>Elija su actividad y URBIS Rush rastrea su recorrido en vivo.</p>
           </div>
         </div>
         <div class="rush-home-stats" id="rush-home-stats">
@@ -513,7 +513,7 @@
           <div class="rush-home-stat"><b>0.0</b><span>km totales</span></div>
           <div class="rush-home-stat"><b>--</b><span>mejor /km</span></div>
         </div>
-        <div class="rush-home-label">Elige tu actividad</div>
+        <div class="rush-home-label">Elija su actividad</div>
         <div class="u52-activity-grid rush-acts">
           <button class="u52-activity rush-act active" data-u52-activity="correr"><span class="rush-act-ic">⚡</span><b>Correr</b></button>
           <button class="u52-activity rush-act" data-u52-activity="ciclismo"><span class="rush-act-ic">🚲</span><b>Ciclismo</b></button>
@@ -521,7 +521,7 @@
           <button class="u52-activity rush-act" data-u52-activity="senderismo"><span class="rush-act-ic">⛰️</span><b>Senderismo</b></button>
         </div>
         <button class="rush-home-start" data-u52-call="start-runner">▶ Iniciar actividad</button>
-        <div class="rush-home-last" id="u52-sport-state"><img class="rush-pin-ico" src="assets/brand/llegada.png" alt=""><div><b>Todavía no has iniciado actividades</b><small>Tu recorrido aparecerá aquí.</small></div></div>
+        <div class="rush-home-last" id="u52-sport-state"><img class="rush-pin-ico" src="assets/brand/llegada.png" alt=""><div><b>Todavía no has iniciado actividades</b><small>Su recorrido aparecerá aquí.</small></div></div>
       </main>
     </section>
 
@@ -539,7 +539,7 @@
       </div>
       <div class="rush-live-controls">
         <button class="rush-ctrl pause" data-u52-call="pause-runner" aria-label="Pausar / reanudar">❚❚</button>
-        <button class="rush-ctrl report" data-u52-call="rush-report-live" aria-label="Reportar algo en el camino sin detener tu actividad">📢</button>
+        <button class="rush-ctrl report" data-u52-call="rush-report-live" aria-label="Reportar algo en el camino sin detener su actividad">📢</button>
         <button class="rush-ctrl finish" data-u52-call="stop-runner">Finalizar</button>
       </div>
     </section>
@@ -568,7 +568,7 @@
       </main>
     </section>
 
-    <section class="u52-screen" data-u52-screen="social"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Social</h2><button class="u52-icon-btn" onclick="window.urbisAbrirBandejaChats&&window.urbisAbrirBandejaChats()" aria-label="Mensajes" style="position:relative;">💬<i data-urbis-chat-badge hidden style="position:absolute;top:-3px;right:-3px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;min-width:16px;height:16px;border-radius:999px;align-items:center;justify-content:center;padding:0 4px;display:none;">0</i></button><button class="u52-icon-btn" data-u52-go="map">🗺️</button></header><main class="u52-content"><div class="u52-hero"><h1>Amigos URBIS</h1><p>Busca personas registradas por usuario, cédula o ID URBIS.</p></div><div class="u52-card u52-social-card u52-social-my-card"><span><img src="assets/brand/social.png" alt="Social URBIS"></span><div><b>Tu ID URBIS privado</b><small>Compártelo solo con personas que quieras agregar.</small><code id="u52-social-my-code">Cargando...</code></div><button type="button" data-u52-social-copy-id>Copiar</button></div><div class="u52-card u52-social-search-card"><label><b>Agregar amigo</b><small>Escribe un usuario, una cédula o un ID URBIS de 8 caracteres.</small><input id="u52-social-search-input" type="text" placeholder="Ej: usuario_amigo, cédula o ZX4M8PQL" autocomplete="off"></label><button type="button" class="u52-primary green" data-u52-social-search>Buscar usuario</button><div id="u52-social-result" class="u52-social-result"></div></div><div class="u52-empty-card"><span>🔐</span><div><b>Privacidad primero</b><small>Tu ubicación solo se comparte si lo enciendes, por el tiempo que elijas, y solo la ven tus amigos mutuos.</small></div></div><div class="u52-amigos-card"><div class="u52-amigos-topbar"><b>👥 Mis amigos</b><button type="button" data-u52-call="ver-contactos-mapa">🗺️ Ver en mapa</button></div><div id="u52-contactos-lista"><div class="amigo-empty"><span>👥</span><span>Aún no tienes amigos en URBIS.</span></div></div></div></main></section>
+    <section class="u52-screen" data-u52-screen="social"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Social</h2><button class="u52-icon-btn" onclick="window.urbisAbrirBandejaChats&&window.urbisAbrirBandejaChats()" aria-label="Mensajes" style="position:relative;">💬<i data-urbis-chat-badge hidden style="position:absolute;top:-3px;right:-3px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;min-width:16px;height:16px;border-radius:999px;align-items:center;justify-content:center;padding:0 4px;display:none;">0</i></button><button class="u52-icon-btn" data-u52-go="map">🗺️</button></header><main class="u52-content"><div class="u52-hero"><h1>Amigos URBIS</h1><p>Busque personas registradas por usuario, cédula o ID URBIS.</p></div><div class="u52-card u52-social-card u52-social-my-card"><span><img src="assets/brand/social.png" alt="Social URBIS"></span><div><b>Su ID URBIS privado</b><small>Compártalo solo con personas que quiera agregar.</small><code id="u52-social-my-code">Cargando...</code></div><button type="button" data-u52-social-copy-id>Copiar</button></div><div class="u52-card u52-social-search-card"><label><b>Agregar amigo</b><small>Escriba un usuario, una cédula o un ID URBIS de 8 caracteres.</small><input id="u52-social-search-input" type="text" placeholder="Ej: usuario_amigo, cédula o ZX4M8PQL" autocomplete="off"></label><button type="button" class="u52-primary green" data-u52-social-search>Buscar usuario</button><div id="u52-social-result" class="u52-social-result"></div></div><div class="u52-empty-card"><span>🔐</span><div><b>Privacidad primero</b><small>Su ubicación solo se comparte si lo enciende, por el tiempo que elija, y solo la ven sus amigos mutuos.</small></div></div><div class="u52-amigos-card"><div class="u52-amigos-topbar"><b>👥 Mis amigos</b><button type="button" data-u52-call="ver-contactos-mapa">🗺️ Ver en mapa</button></div><div id="u52-contactos-lista"><div class="amigo-empty"><span>👥</span><span>Aún no tiene amigos en URBIS.</span></div></div></div></main></section>
 
     <section class="u52-screen" data-u52-screen="progress"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis recorridos</h2><button class="u52-icon-btn">📅</button></header><main class="u52-content" id="u52-progress-content"></main></section>
 
@@ -576,7 +576,7 @@
 
     <section class="u52-screen" data-u52-screen="notifications"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Noti</h2><button class="u52-icon-btn" data-u52-noti-refresh>↻</button></header><main class="u52-content"><div class="u52-hero"><h1>Notificaciones</h1><p>Solicitudes de amistad y avisos importantes de URBIS.</p></div><div id="u52-noti-list" class="u52-noti-list"><div class="u52-empty-card"><span>🔔</span><div><b>Sin notificaciones</b><small>Cuando recibas solicitudes o avisos aparecerán aquí.</small></div></div></div></main></section>
 
-    <section class="u52-screen" data-u52-screen="alerts"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Alertas</h2><button class="u52-icon-btn" data-u52-go="map">🗺️</button></header><main class="u52-content"><div class="u52-empty-card"><span>⚠️</span><div><b>Sin reportes recientes</b><small>Consulta el mapa o reporta.</small></div><button data-u52-go="map">Mapa</button></div><button class="u52-primary green" data-u52-call="open-report">Nuevo reporte</button></main></section>
+    <section class="u52-screen" data-u52-screen="alerts"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Alertas</h2><button class="u52-icon-btn" data-u52-go="map">🗺️</button></header><main class="u52-content"><div class="u52-empty-card"><span>⚠️</span><div><b>Sin reportes recientes</b><small>Consulte el mapa o reporte.</small></div><button data-u52-go="map">Mapa</button></div><button class="u52-primary green" data-u52-call="open-report">Nuevo reporte</button></main></section>
 
     <section class="u52-screen" data-u52-screen="events"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Eventos</h2><button class="u52-icon-btn" data-u52-call="eventos-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-eventos-content"><div class="u52-empty-card"><span>📅</span><div><b>Cargando eventos…</b><small>Eventos de la comunidad.</small></div></div></main></section>
 
@@ -586,13 +586,13 @@
 
     <section class="u52-screen u52-aurea-screen" data-u52-screen="aurea"><header class="u52-topbar u52-aurea-top"><button class="u52-aurea-back" data-u52-back aria-label="Volver">←</button><h2 class="u52-title">✨ Juegos URBIS</h2><span class="u52-aurea-spacer"></span></header><main class="u52-content" id="u52-aurea-content"><div class="ah-empty">Cargando evento premium…</div></main></section>
 
-    <section class="u52-screen" data-u52-screen="timeline"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis reportes</h2><button class="u52-icon-btn" data-u52-call="timeline-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-timeline-content"><div class="u52-empty-card"><span>🕒</span><div><b>Cargando tus reportes…</b><small>Aquí verás todo lo que has reportado.</small></div></div></main></section>
+    <section class="u52-screen" data-u52-screen="timeline"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis reportes</h2><button class="u52-icon-btn" data-u52-call="timeline-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-timeline-content"><div class="u52-empty-card"><span>🕒</span><div><b>Cargando sus reportes…</b><small>Aquí verá todo lo que has reportado.</small></div></div></main></section>
 
-    <section class="u52-screen" data-u52-screen="mis-eventos"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis eventos</h2><button class="u52-icon-btn" data-u52-call="miseventos-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-miseventos-content"><div class="u52-empty-card"><span>🎪</span><div><b>Cargando tus eventos…</b><small>Aquí verás los eventos que has creado, incluso los ya finalizados.</small></div></div></main></section>
+    <section class="u52-screen" data-u52-screen="mis-eventos"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Mis eventos</h2><button class="u52-icon-btn" data-u52-call="miseventos-refresh" aria-label="Actualizar">↻</button></header><main class="u52-content" id="u52-miseventos-content"><div class="u52-empty-card"><span>🎪</span><div><b>Cargando sus eventos…</b><small>Aquí verá los eventos que has creado, incluso los ya finalizados.</small></div></div></main></section>
 
-    <section class="u52-screen" data-u52-screen="profile"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Perfil</h2><span class="u52-icon-btn" style="visibility:hidden">·</span></header><main class="u52-content"><div class="u52-card u52-profile-card"><div class="u65-profile-avatar" data-u65-current-avatar></div><h1 id="u52-profile-name">Usuario URBIS</h1><div id="u52-profile-username" class="u52-profile-username">@usuario</div><p id="u52-profile-role">Configura tu perfil</p><button class="u52-secondary u65-avatar-open u65-avatar-open-pulse" data-u52-go="avatar">🎨 Elegir avatar</button></div><div class="u52-card u52-profile-id-card"><span class="u52-profile-id-icon">🪪</span><div><b>ID URBIS privado</b><small>Compártelo para que te agreguen sin dar tu cédula ni correo.</small><code id="u52-profile-friend-code">Cargando...</code></div><button type="button" class="u52-profile-copy-id" data-u52-profile-copy-id aria-label="Copiar ID URBIS"><span>⧉</span><small>Copiar</small></button></div><div class="u52-empty-card"><span>🏆</span><div><b>No tienes logros aún</b><small>Completa actividades reales.</small></div></div><div class="u52-empty-card"><span>📋</span><div><b>Sin reportes guardados</b><small>Los reportes validados aparecerán aquí.</small></div></div><button class="u52-profile-logout" data-u52-call="logout-session" type="button"><span>🚪</span><div><b>Cerrar sesión</b><small>Salir de URBIS en este dispositivo</small></div></button></main></section>
+    <section class="u52-screen" data-u52-screen="profile"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Perfil</h2><span class="u52-icon-btn" style="visibility:hidden">·</span></header><main class="u52-content"><div class="u52-card u52-profile-card"><div class="u65-profile-avatar" data-u65-current-avatar></div><h1 id="u52-profile-name">Usuario URBIS</h1><div id="u52-profile-username" class="u52-profile-username">@usuario</div><p id="u52-profile-role">Configure su perfil</p><button class="u52-secondary u65-avatar-open u65-avatar-open-pulse" data-u52-go="avatar">🎨 Elegir avatar</button></div><div class="u52-card u52-profile-id-card"><span class="u52-profile-id-icon">🪪</span><div><b>ID URBIS privado</b><small>Compártalo para que lo agreguen sin dar su cédula ni correo.</small><code id="u52-profile-friend-code">Cargando...</code></div><button type="button" class="u52-profile-copy-id" data-u52-profile-copy-id aria-label="Copiar ID URBIS"><span>⧉</span><small>Copiar</small></button></div><div class="u52-empty-card"><span>🏆</span><div><b>No tiene logros aún</b><small>Complete actividades reales.</small></div></div><div class="u52-empty-card"><span>📋</span><div><b>Sin reportes guardados</b><small>Los reportes validados aparecerán aquí.</small></div></div><button class="u52-profile-logout" data-u52-call="logout-session" type="button"><span>🚪</span><div><b>Cerrar sesión</b><small>Salir de URBIS en este dispositivo</small></div></button></main></section>
 
-    <section class="u52-screen" data-u52-screen="avatar"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Avatar GPS</h2><span class="u52-icon-btn" style="visibility:hidden">·</span></header><main class="u52-content"><div class="u52-hero"><h1>Elige tu skin</h1><p>Se verá sobre tu ubicación.</p></div><div class="u65-avatar-preview"><div data-u65-current-avatar></div><span>Avatar activo</span></div><div class="u65-avatar-grid">${URBIS_AVATARS.map(a=>`<button class="u65-avatar-card" data-u65-avatar-choice="${a.id}"><img src="${a.src}" alt="${a.name}"><small>${a.name}</small></button>`).join('')}</div></main></section>
+    <section class="u52-screen" data-u52-screen="avatar"><header class="u52-topbar"><button class="u52-icon-btn" data-u52-back>←</button><h2 class="u52-title">Avatar GPS</h2><span class="u52-icon-btn" style="visibility:hidden">·</span></header><main class="u52-content"><div class="u52-hero"><h1>Elija su skin</h1><p>Se verá sobre su ubicación.</p></div><div class="u65-avatar-preview"><div data-u65-current-avatar></div><span>Avatar activo</span></div><div class="u65-avatar-grid">${URBIS_AVATARS.map(a=>`<button class="u65-avatar-card" data-u65-avatar-choice="${a.id}"><img src="${a.src}" alt="${a.name}"><small>${a.name}</small></button>`).join('')}</div></main></section>
 
     <nav class="u52-bottom-nav u52-bottom-nav-png u52-jac-bottom-nav" aria-label="Navegación inferior móvil">
       <button class="active" data-u52-go="home"><img class="u52-bottom-icon-img u52-bottom-icon-home" src="assets/icons/urbis-home.png" alt="Inicio"><span>Inicio</span></button>
@@ -621,7 +621,7 @@
     <div class="u52-layer-sheet u52-basemap-sheet" id="u52-layer-sheet" hidden>
       <button class="u52-layer-close" data-u52-call="layers-close">×</button>
       <h2>Tipo de mapa</h2>
-      <p class="u52-basemap-hint">Elige cómo se ve el mapa base.</p>
+      <p class="u52-basemap-hint">Elija cómo se ve el mapa base.</p>
       <div class="u52-basemap-grid" id="u52-basemap-grid"></div>
     </div>
   `;
@@ -635,19 +635,19 @@
   // usuario, de cualquier lugar, se sienta identificado).
   // ═══════════════════════════════════════════════════════════════════════
   const URBIS_HERO_MESSAGES = [
-    '🌱 Somos una app hecha por y para la comunidad — cada reporte tuyo hace crecer una ciudad mejor.',
-    '🤝 Juntos vemos lo que antes nadie veía. Tu voz, sumada a la de tu barrio, mueve montañas.',
-    '🏙️ URBIS es el mapa vivo de tu ciudad: lo que reportas hoy ayuda a decidir mejor mañana.',
+    '🌱 Somos una app hecha por y para la comunidad — cada reporte suyo hace crecer una ciudad mejor.',
+    '🤝 Juntos vemos lo que antes nadie veía. Su voz, sumada a la de su barrio, mueve montañas.',
+    '🏙️ URBIS es el mapa vivo de su ciudad: lo que reporta hoy ayuda a decidir mejor mañana.',
     '💚 Nuestra misión: darle a cada vecino una forma fácil y real de mejorar su entorno.',
     '✨ Nuestra visión: una ciudad donde cada problema se ve, se atiende y se resuelve más rápido.',
     '🚨 Cada alerta que publicas es un cuidado que le regalas a otro vecino — así nos protegemos entre todos.',
-    '🛡️ Avisar a tiempo también es ayudar: tu reporte puede evitar que alguien más pase por lo mismo.',
-    '🧑‍🤝‍🧑 No estás solo reportando — estás construyendo comunidad, un punto en el mapa a la vez.',
+    '🛡️ Avisar a tiempo también es ayudar: su reporte puede evitar que alguien más pase por lo mismo.',
+    '🧑‍🤝‍🧑 No está solo reportando — está construyendo comunidad, un punto en el mapa a la vez.',
     '🕊️ Aquí no hay extraños, hay vecinos cuidándose los unos a los otros.',
     '🫶 De la mano de la ciudadanía, la JAC y quien quiera ayudar: así se construye una URBIS mejor.',
     '🎉 Reportar también puede ser divertido — gana, participa y sé parte del cambio.',
-    '👁️ Reportar situaciones de riesgo no es señalar a nadie: es avisar a tu comunidad para tomar precauciones en esa zona.',
-    '🚔 Tus reportes también hablan por la ciudad: ayudan a que la policía y otras autoridades sepan qué sectores necesitan más atención.',
+    '👁️ Reportar situaciones de riesgo no es señalar a nadie: es avisar a su comunidad para tomar precauciones en esa zona.',
+    '🚔 Sus reportes también hablan por la ciudad: ayudan a que la policía y otras autoridades sepan qué sectores necesitan más atención.',
     '🔦 La información pública ilumina zonas que antes quedaban en la sombra — así todos, incluidas las autoridades, pueden actuar mejor.',
     '📊 Entre más reportamos, más real es el retrato de nuestra ciudad: información ciudadana transparente, difícil de manipular u ocultar.',
     '🗳️ Los datos no tienen partido: cada reporte es un hecho verificable, no una opinión.',
@@ -674,41 +674,41 @@
     '🗿 "Quien declara la guerra casi nunca entierra a su propio hijo." — dicho popular',
     '🌻 Nadie construye una ciudad solo — cada mano que se suma hace la diferencia.',
     '🧵 Cada reporte es un hilo. Entre todos tejemos la red que cuida al barrio.',
-    '🐾 Muy pronto, Patitas URBIS te ayudará a cuidar también a los animales de tu ciudad — porque ellos también son comunidad.',
+    '🐾 Muy pronto, Patitas URBIS le ayudará a cuidar también a los animales de su ciudad — porque ellos también son comunidad.',
     '🐶 Los animales no pueden reportar lo que les pasa — por eso estamos construyendo Patitas URBIS, para ser su voz.',
-    '🏃 Con el modo Rush no solo te mueves tú: se mueve la salud de todo el pueblo, un paso a la vez.',
-    '❤️‍🔥 Cuidar tu cuerpo también es cuidar tu comunidad — actívate con URBIS Rush.',
-    '🎮 Los minijuegos de URBIS no son solo diversión — también ayudan a sostener esta plataforma para que siga siendo gratis para tu comunidad.',
+    '🏃 Con el modo Rush no solo se mueve usted: se mueve la salud de todo el pueblo, un paso a la vez.',
+    '❤️‍🔥 Cuidar su cuerpo también es cuidar su comunidad — actívese con URBIS Rush.',
+    '🎮 Los minijuegos de URBIS no son solo diversión — también ayudan a sostener esta plataforma para que siga siendo gratis para su comunidad.',
     '💰 Cada evento premium que se juega también aporta a que URBIS pueda seguir creciendo y llegando a más gente.',
     '🕹️ Aquí jugar también construye: entre risas y retos, seguimos financiando una herramienta hecha para cuidar el barrio.',
-    '🎯 Cada partida que juegas ayuda, sin que lo notes, a que esta app siga en pie para todos.',
-    '🪙 Divertirte aquí también es apoyar: los juegos mantienen viva la plataforma que todos usamos gratis.',
-    '🎡 Jugar, ganar y compartir — así, sin darte cuenta, ayudas a que URBIS siga funcionando para tu comunidad.',
+    '🎯 Cada partida que juega ayuda, sin que lo notes, a que esta app siga en pie para todos.',
+    '🪙 Divertirse aquí también es apoyar: los juegos mantienen viva la plataforma que todos usamos gratis.',
+    '🎡 Jugar, ganar y compartir — así, sin darle cuenta, ayuda a que URBIS siga funcionando para su comunidad.',
     '🧡 Detrás de cada minijuego hay un propósito: mantener esta herramienta viva para quien la necesite.',
-    '💼 A futuro, URBIS también te ayudará a buscar empleo y a impulsar tu emprendimiento — porque una ciudad fuerte es una ciudad con trabajo.',
+    '💼 A futuro, URBIS también le ayudará a buscar empleo y a impulsar su emprendimiento — porque una ciudad fuerte es una ciudad con trabajo.',
     '🌟 Soñamos con crecer para abrir oportunidades reales: empleo, emprendimiento y crecimiento para toda la comunidad.',
     '🏙️ El urbanismo es como un ser vivo: las calles son sus arterias, los parques sus pulmones, y los vecinos, el corazón que lo mantiene latiendo.',
     '🌳 Una ciudad no se construye solo con cemento — se construye con quienes la habitan y la cuidan cada día.',
-    '👀 "La urbanista Jane Jacobs decía que las mejores ciudades se cuidan con \'ojos en la calle\' — cada reporte tuyo es uno de esos ojos."',
+    '👀 "La urbanista Jane Jacobs decía que las mejores ciudades se cuidan con \'ojos en la calle\' — cada reporte suyo es uno de esos ojos."',
     '🌆 Como cualquier ser vivo, una ciudad enferma si nadie la cuida, y florece cuando todos la atienden.',
     '🎓 UrbisProCity crecerá para ser la herramienta de análisis urbano de estudiantes y universitarios — mapas de calor, gráficos y datos reales de la ciudad.',
     '📊 Más que reportar, UrbisProCity busca enseñar: convertir cada dato georreferenciado en conocimiento para quien estudia la ciudad.',
     '🗺️ Pensamos en los futuros urbanistas: UrbisProCity será su laboratorio de datos, gráficos y mapas de calor para entender la ciudad de verdad.',
     '🚨 Un reporte a tiempo puede avisar a todo el barrio de un enfrentamiento armado que se acerca — y darles minutos valiosos para protegerse.',
-    '📡 Denunciar la inseguridad no es exagerar: es darle a tu comunidad la oportunidad de reaccionar antes de que sea tarde.',
+    '📡 Denunciar la inseguridad no es exagerar: es darle a su comunidad la oportunidad de reaccionar antes de que sea tarde.',
     '🌪️ Ante un desastre natural, cada reporte cuenta: minutos de aviso pueden significar vidas salvadas.',
     '🌊 No podemos evitar una creciente o un sismo, pero sí podemos avisarnos entre todos a tiempo para estar a salvo.',
-    '⛈️ Los desastres naturales no avisan solos — por eso cada reporte tuyo se vuelve la alerta que otro vecino necesita.',
-    '🔔 Muy pronto, URBIS te avisará con anticipación: cierres de vía, accidentes, robos, sismos, movimientos de masas o crecientes cerca de ti.',
-    '📲 Estamos preparando notificaciones anticipadas — para que el reporte de un vecino te avise a ti antes de que la sorpresa te alcance.',
-    '👨‍👩‍👧‍👦 También estamos preparando un Modo Familia: para que sepas que tus hijos, padres o hermanos están bien, estés donde estés.',
-    '🛡️ Pronto, URBIS te ayudará a cuidar a los tuyos con un Modo Familia — tranquilidad para quienes más quieres.',
-    '🧪 URBIS todavía está en etapa experimental (beta) — si algo falla, cuéntanos a urbisprocity@gmail.com y lo arreglamos.',
-    '💌 ¿Encontraste un error? Escríbenos a urbisprocity@gmail.com — cada aviso nos ayuda a mejorar más rápido.',
-    '🛠️ Seguimos construyendo URBIS todos los días — si ves un error, ten paciencia: ya estamos trabajando en mejorarlo.',
-    '🌤️ Como toda app en desarrollo, a veces algo puede fallar — gracias por tu paciencia mientras seguimos creciendo.',
-    '🧑‍🎨 Elige tu avatar en URBIS — a futuro podrás verlo en el mapa junto al de tus amigos y familiares.',
-    '👥 Muy pronto podrás ver en el mapa dónde están tus amigos y familiares, cada uno con su propio avatar.'
+    '⛈️ Los desastres naturales no avisan solos — por eso cada reporte suyo se vuelve la alerta que otro vecino necesita.',
+    '🔔 Muy pronto, URBIS le avisará con anticipación: cierres de vía, accidentes, robos, sismos, movimientos de masas o crecientes cerca de usted.',
+    '📲 Estamos preparando notificaciones anticipadas — para que el reporte de un vecino le avise a usted antes de que la sorpresa lo alcance.',
+    '👨‍👩‍👧‍👦 También estamos preparando un Modo Familia: para que sepa que sus hijos, padres o hermanos están bien, esté donde esté.',
+    '🛡️ Pronto, URBIS le ayudará a cuidar a los suyos con un Modo Familia — tranquilidad para quienes más quiere.',
+    '🧪 URBIS todavía está en etapa experimental (beta) — si algo falla, cuéntenos a urbisprocity@gmail.com y lo arreglamos.',
+    '💌 ¿Encontró un error? Escríbanos a urbisprocity@gmail.com — cada aviso nos ayuda a mejorar más rápido.',
+    '🛠️ Seguimos construyendo URBIS todos los días — si ve un error, tenga paciencia: ya estamos trabajando en mejorarlo.',
+    '🌤️ Como toda app en desarrollo, a veces algo puede fallar — gracias por su paciencia mientras seguimos creciendo.',
+    '🧑‍🎨 Elija su avatar en URBIS — a futuro podrá verlo en el mapa junto al de sus amigos y familiares.',
+    '👥 Muy pronto podrá ver en el mapa dónde están sus amigos y familiares, cada uno con su propio avatar.'
   ];
   // Paleta pastel cute — un tono distinto por mensaje, cíclica.
   const URBIS_HERO_COLORS = ['#4fd9c0','#7fa8e8','#f2a6cf','#b596ef','#ffbf6b','#7bd48f','#ff9d9d','#f6d365'];
@@ -751,7 +751,7 @@
         navigator.geolocation.getCurrentPosition(pos=>{
           onMobileGpsPoint(pos);
           centerOnMobileGps(true);
-        },()=>setMobilityStatus('Activa permisos de ubicación.'),{enableHighAccuracy:true,maximumAge:1000,timeout:12000});
+        },()=>setMobilityStatus('Active permisos de ubicación.'),{enableHighAccuracy:true,maximumAge:1000,timeout:12000});
       }
     }
   }
@@ -911,7 +911,7 @@
     }catch(e){}
     setFriendCodeUI(s?.friend_code || 'Generando...');
     const id = socialIdentifier();
-    if(!id){ setFriendCodeUI('Inicia sesión'); return; }
+    if(!id){ setFriendCodeUI('Inicie sesión'); return; }
     try{
       const out = await socialAPI({ action:'social_profile', current_user_id:s?.user_id || '', identifier:id, usuario:s?.usuario || '', cedula:s?.cedula_numero || s?.cedula || '' });
       if(out.ok && out.user){
@@ -970,20 +970,20 @@
     }
   }
   async function socialSearchFriend(){
-    const input = app.querySelector('#u52-social-search-input'); const q = (input?.value || '').trim(); if(!q){ socialSetResult('<div class="u52-social-msg">Escribe usuario, cédula o ID URBIS.</div>'); return; } socialSetResult('<div class="u52-social-msg">Buscando usuario...</div>'); const s = socialSession() || {};
+    const input = app.querySelector('#u52-social-search-input'); const q = (input?.value || '').trim(); if(!q){ socialSetResult('<div class="u52-social-msg">Escriba usuario, cédula o ID URBIS.</div>'); return; } socialSetResult('<div class="u52-social-msg">Buscando usuario...</div>'); const s = socialSession() || {};
     try{ const out = await socialAPI({ action:'social_find_user', query:q, current_user_id:s.user_id || '', current_identifier:s.friend_code || s.usuario || s.cedula_numero || s.cedula || '' }); if(!out.ok) throw new Error(out.message || 'No se pudo buscar.'); if(!out.found){ socialSetResult(`<div class="u52-social-msg">${esc(out.message || 'No encontramos ese usuario.')}</div>`); return; } socialSetResult(socialUserCard(out.user, out.message)); }catch(err){ socialSetResult(`<div class="u52-social-msg error">${esc(err.message || 'Error buscando usuario.')}</div>`); }
   }
   async function socialAddFriend(btn){
     const target = btn?.dataset?.targetUserId || btn?.dataset?.targetCode || '';
     const s = socialSession() || {};
-    if(!target){ socialSetResult('<div class="u52-social-msg error">Busca primero un usuario.</div>'); return; }
+    if(!target){ socialSetResult('<div class="u52-social-msg error">Busque primero un usuario.</div>'); return; }
     try{
       btn.disabled = true; btn.textContent = 'Enviando...';
       const out = await socialAPI({ action:'social_add_friend', requester_user_id:s.user_id || '', requester_identifier:s.friend_code || s.usuario || s.cedula_numero || s.cedula || '', target_user_id:btn.dataset.targetUserId || '', target_friend_code:btn.dataset.targetCode || '' });
       if(!out.ok) throw new Error(out.message || 'No se pudo agregar.');
       // Si ya existe solicitud pendiente → mostrar opción de cancelar
       if(out.status === 'pendiente' && out.message && out.message.indexOf('ya existe') !== -1){
-        socialSetResult(socialUserCard(out.user, 'Ya tienes una solicitud pendiente con este usuario.', {showCancel:true}));
+        socialSetResult(socialUserCard(out.user, 'Ya tiene una solicitud pendiente con este usuario.', {showCancel:true}));
         return;
       }
       // Si ya son amigos aceptados
@@ -1002,11 +1002,11 @@
       btn.disabled = true; btn.textContent = 'Cancelando...';
       const out = await socialAPI({ action:'social_cancel_request', current_user_id:s.user_id || '', identifier:s.user_id || s.friend_code || s.usuario || s.cedula_numero || s.cedula || '', target_user_id:btn.dataset.targetUserId || '' });
       if(!out.ok) throw new Error(out.message || 'No se pudo cancelar.');
-      socialSetResult('<div class="u52-social-msg">Solicitud cancelada. Puedes buscar el usuario y enviar una nueva solicitud.</div>');
+      socialSetResult('<div class="u52-social-msg">Solicitud cancelada. Puede buscar el usuario y enviar una nueva solicitud.</div>');
     }catch(err){ alert(err.message || 'No se pudo cancelar la solicitud.'); }
     finally{ if(btn){ btn.disabled = false; btn.textContent = 'Cancelar solicitud'; } }
   }
-  function copySocialId(source){ const profileCode = (app.querySelector('#u52-profile-friend-code')?.textContent || '').trim(); const socialCode = (app.querySelector('#u52-social-my-code')?.textContent || '').trim(); const code = (source === 'profile' ? profileCode : socialCode) || profileCode || socialCode; if(!code || code === 'Cargando...' || code === 'Generando...' || code === 'Inicia sesión' || code === 'No disponible') return; try{ navigator.clipboard?.writeText(code); }catch(e){} try{ if(typeof showAchievementToast === 'function') showAchievementToast('ID URBIS copiado', code); else alert('ID URBIS copiado: ' + code); }catch(e){ alert('ID URBIS copiado: ' + code); } }
+  function copySocialId(source){ const profileCode = (app.querySelector('#u52-profile-friend-code')?.textContent || '').trim(); const socialCode = (app.querySelector('#u52-social-my-code')?.textContent || '').trim(); const code = (source === 'profile' ? profileCode : socialCode) || profileCode || socialCode; if(!code || code === 'Cargando...' || code === 'Generando...' || code === 'Inicie sesión' || code === 'No disponible') return; try{ navigator.clipboard?.writeText(code); }catch(e){} try{ if(typeof showAchievementToast === 'function') showAchievementToast('ID URBIS copiado', code); else alert('ID URBIS copiado: ' + code); }catch(e){ alert('ID URBIS copiado: ' + code); } }
 
 
   function isMissingBirthdateSession(s){
@@ -1019,8 +1019,8 @@
     return {
       id:'local_birthdate_missing',
       type:'complete_birthdate',
-      title:'Completa tu fecha de nacimiento',
-      message:'Ayúdanos a mejorar el análisis demográfico de URBIS. Solo se usará para estadísticas y validación de edad.',
+      title:'Complete su fecha de nacimiento',
+      message:'Ayúdenos a mejorar el análisis demográfico de URBIS. Solo se usará para estadísticas y validación de edad.',
       action:'abrir_perfil_demografia'
     };
   }
@@ -1037,7 +1037,7 @@
   }
   function validateBirthModal(day, month, year){
     const d=Number(day), m=Number(month), y=Number(year);
-    if(!d || !m || !y) return {ok:false,message:'Selecciona día, mes y año.'};
+    if(!d || !m || !y) return {ok:false,message:'Seleccione día, mes y año.'};
     const dt = new Date(y, m-1, d);
     if(dt.getFullYear() !== y || dt.getMonth() !== m-1 || dt.getDate() !== d) return {ok:false,message:'Fecha de nacimiento inválida.'};
     const today = new Date();
@@ -1045,7 +1045,7 @@
     let age = today.getFullYear() - y;
     const beforeBirthday = today.getMonth() < m-1 || (today.getMonth() === m-1 && today.getDate() < d);
     if(beforeBirthday) age--;
-    if(age < 0 || age > 120) return {ok:false,message:'Revisa el año seleccionado.'};
+    if(age < 0 || age > 120) return {ok:false,message:'Revise el año seleccionado.'};
     return {ok:true, fecha:`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, dia:String(d).padStart(2,'0'), mes:String(m).padStart(2,'0'), anio:String(y), edad:age, es_mayor_edad: age >= 18 ? 'si' : 'no'};
   }
   function ensureBirthdateModal(){
@@ -1058,14 +1058,14 @@
       <section class="u52-birthdate-sheet" role="dialog" aria-modal="true" aria-label="Completar fecha de nacimiento">
         <button type="button" class="u52-birthdate-x" data-u52-birthdate-close>×</button>
         <div class="u52-birthdate-icon">🎂</div>
-        <h2>Completa tu fecha de nacimiento</h2>
+        <h2>Complete su fecha de nacimiento</h2>
         <p>Este dato ayuda a URBIS a hacer análisis demográfico y verificar rangos de edad. No se mostrará públicamente.</p>
         <div class="u52-birthdate-grid">
           <label><span>Día</span><select id="u52-birth-day"><option value="">Día</option>${birthModalOptions('day')}</select></label>
           <label><span>Mes</span><select id="u52-birth-month"><option value="">Mes</option>${birthModalOptions('month')}</select></label>
           <label><span>Año</span><select id="u52-birth-year"><option value="">Año</option>${birthModalOptions('year')}</select></label>
         </div>
-        <div id="u52-birth-status" class="u52-birth-status">Selecciona la fecha para calcular la edad.</div>
+        <div id="u52-birth-status" class="u52-birth-status">Seleccione la fecha para calcular la edad.</div>
         <button type="button" class="u52-primary green" data-u52-birthdate-save>Guardar fecha</button>
       </section>`;
     document.body.appendChild(modal);
@@ -1110,7 +1110,7 @@
       const updated = {...current, ...res, fecha_nacimiento_pendiente:'NO'};
       try{ localStorage.setItem((window.URBIS_CONFIG?.AUTH?.SESSION_KEY || 'urbis_auth_session_v1'), JSON.stringify(updated)); }catch(e){}
       closeBirthdateModal();
-      try{ if(typeof showAchievementToast === 'function') showAchievementToast('Fecha guardada','Gracias por actualizar tu perfil.'); else alert('Fecha guardada.'); }catch(e){}
+      try{ if(typeof showAchievementToast === 'function') showAchievementToast('Fecha guardada','Gracias por actualizar su perfil.'); else alert('Fecha guardada.'); }catch(e){}
       await loadNotifications();
     }catch(err){ alert(err.message || 'No se pudo guardar la fecha.'); }
     finally{ if(btn){ btn.disabled = false; btn.textContent = 'Guardar fecha'; } }
@@ -1159,7 +1159,7 @@
               <div style="font-size:.9rem;font-weight:800;color:#0f172a;">${name}</div>
               <div style="font-size:.8rem;font-weight:700;color:#00B68D;">@${username}</div>
               ${code ? `<div style="font-size:.72rem;font-weight:700;color:#1e40af;">ID&nbsp;${code}</div>` : ''}
-              <div style="font-size:.78rem;color:#475569;margin-top:2px;">quiere agregarte a URBIS</div>
+              <div style="font-size:.78rem;color:#475569;margin-top:2px;">quiere agregarlo a URBIS</div>
             </div>
           </div>
           <div class="u52-noti-actions">
@@ -1466,7 +1466,7 @@
       t = document.createElement('div');
       t.id = 'u52-salir-aviso';
       t.className = 'u52-salir-aviso';
-      t.textContent = 'Pulsa atrás otra vez para salir de URBIS';
+      t.textContent = 'Pulse atrás otra vez para salir de URBIS';
       document.body.appendChild(t);
     }
     t.classList.add('visible');
@@ -1566,7 +1566,7 @@
     const userEl = app.querySelector('#u52-profile-username');
     const pr   = app.querySelector('#u52-profile-role');
     const haySesion = (typeof window.urbisHaySesion === 'function') ? window.urbisHaySesion() : !!s;
-    if(name) name.textContent = nombre || (rol === 'admin' ? 'Administrador URBIS' : 'Completa tu perfil');
+    if(name) name.textContent = nombre || (rol === 'admin' ? 'Administrador URBIS' : 'Complete su perfil');
     if(userEl){
       userEl.style.display = '';
       if(usuario){
@@ -1578,7 +1578,7 @@
       } else if(haySesion){
         // Sesión iniciada pero sin usuario legible: no ofrecer re-definir (conflicto);
         // la solución es volver a iniciar sesión con su usuario.
-        userEl.textContent = 'Cierra sesión y vuelve a entrar con tu usuario';
+        userEl.textContent = 'Cierre sesión y vuelva a entrar con su usuario';
         userEl.classList.add('is-empty');
         userEl.onclick = null;
         userEl.style.cursor = 'default';
@@ -1589,7 +1589,7 @@
         userEl.style.cursor = 'pointer';
         userEl.onclick = function(){
           const actual = (typeof window.urbisUsuarioActual === 'function' ? window.urbisUsuarioActual() : '') || '';
-          const nuevo = prompt('Tu nombre de usuario URBIS (sin @):', actual);
+          const nuevo = prompt('Su nombre de usuario URBIS (sin @):', actual);
           if(nuevo && typeof window.urbisSetMiUsuario === 'function'){
             window.urbisSetMiUsuario(nuevo);
             applyProfileIdentityUI();
@@ -1664,11 +1664,11 @@
     const home = app.querySelector('#u52-home-runner-state');
     if(home) home.innerHTML = stats.count
       ? `<span>🔥</span><div><b>${stats.count} actividad(es)</b><small>${stats.totalKm.toFixed(2)} km registrados.</small></div><button data-u52-go="progress">Ver</button>`
-      : `<span>🔥</span><div><b>Aún no tienes actividades</b><small>Inicia tu primer recorrido.</small></div><button data-u52-go="sport">Iniciar</button>`;
+      : `<span>🔥</span><div><b>Aún no tiene actividades</b><small>Inicie su primer recorrido.</small></div><button data-u52-go="sport">Iniciar</button>`;
     const sport = app.querySelector('#u52-sport-state');
     if(sport) sport.innerHTML = stats.count
       ? `<span>📊</span><div><b>Última actividad guardada</b><small>${esc(stats.latest?.type || 'Runner')} · ${(stats.latest?.distanceKm||0).toFixed(2)} km</small></div><button data-u52-go="progress">Ver</button>`
-      : `<img class="rush-pin-ico" src="assets/brand/llegada.png" alt=""><div><b>Todavía no has iniciado actividades</b><small>Tu recorrido aparecerá aquí.</small></div>`;
+      : `<img class="rush-pin-ico" src="assets/brand/llegada.png" alt=""><div><b>Todavía no has iniciado actividades</b><small>Su recorrido aparecerá aquí.</small></div>`;
     const rushStats = app.querySelector('#rush-home-stats');
     if(rushStats) rushStats.innerHTML =
       `<div class="rush-home-stat"><b>${stats.count}</b><span>actividades</span></div>` +
@@ -1709,8 +1709,8 @@
         </div>
       ` : `
         <div style="padding:14px 14px 0">${rushCalendarHTML([], true)}</div>
-        <div class="u52-empty-card rush-empty"><span>📊</span><div><b>No hay recorridos todavía</b><small>Inicia una actividad y tu progreso aparecerá aquí.</small></div><button data-u52-go="sport">▶ Iniciar</button></div>
-        <div class="u52-empty-card rush-empty"><span>🏆</span><div><b>Aún no tienes logros</b><small>Completa recorridos para desbloquearlos.</small></div></div>
+        <div class="u52-empty-card rush-empty"><span>📊</span><div><b>No hay recorridos todavía</b><small>Inicie una actividad y su progreso aparecerá aquí.</small></div><button data-u52-go="sport">▶ Iniciar</button></div>
+        <div class="u52-empty-card rush-empty"><span>🏆</span><div><b>Aún no tiene logros</b><small>Complete recorridos para desbloquearlos.</small></div></div>
       `;
       try{ if(typeof window.urbisRunnerStatsRenderProgreso === 'function') window.urbisRunnerStatsRenderProgreso(); }catch(e){}
     }
@@ -1831,7 +1831,7 @@
   function hideGpsWarmup(){ const ov=document.getElementById('rush-warmup'); if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }
 
   function startRunner(){
-    if(!navigator.geolocation){ alert('Tu dispositivo no permite GPS. URBIS Rush solo rastrea con ubicación activa.'); return; }
+    if(!navigator.geolocation){ alert('Su dispositivo no permite GPS. URBIS Rush solo rastrea con ubicación activa.'); return; }
     let best=null, fixes=0, done=false, warmWatch=null, warmTimer=null;
     const cleanupWarm=()=>{ if(warmWatch!=null){ try{navigator.geolocation.clearWatch(warmWatch);}catch(e){} warmWatch=null; } if(warmTimer){ clearTimeout(warmTimer); warmTimer=null; } };
     showGpsWarmup(()=>{ done=true; cleanupWarm(); });
@@ -1869,9 +1869,9 @@
       if(!best || acc < (best.coords.accuracy||999)) best=pos;
       updateGpsWarmup(acc, fixes, ()=>begin(best||pos));
       if(acc<=GOOD && fixes>=2) begin(pos); // auto-arranca con señal buena y estable
-    }, err=>{ if(!done){ cleanupWarm(); hideGpsWarmup(); alert('No pudimos activar tu GPS. Revisa los permisos de ubicación y vuelve a intentar. 📡'); } },
+    }, err=>{ if(!done){ cleanupWarm(); hideGpsWarmup(); alert('No pudimos activar su GPS. Revise los permisos de ubicación y vuelva a intentar. 📡'); } },
        {enableHighAccuracy:true, maximumAge:0, timeout:16000});
-    warmTimer = setTimeout(()=>{ if(!done){ if(best) begin(best); else { cleanupWarm(); hideGpsWarmup(); alert('GPS sin señal suficiente. Sal a cielo abierto e intenta de nuevo. 📡'); } } }, 16000);
+    warmTimer = setTimeout(()=>{ if(!done){ if(best) begin(best); else { cleanupWarm(); hideGpsWarmup(); alert('GPS sin señal suficiente. Salga a cielo abierto e intenta de nuevo. 📡'); } } }, 16000);
   }
   function pauseRunner(btn){
     if(!runner.active && !runner.paused) return;
@@ -1951,7 +1951,7 @@
       if(!chip){
         chip = document.createElement('button');
         chip.id = 'rush-return-chip'; chip.type = 'button';
-        chip.innerHTML = '▶ Volver a tu actividad · <b>GPS grabando</b>';
+        chip.innerHTML = '▶ Volver a su actividad · <b>GPS grabando</b>';
         chip.onclick = ()=> show('runner-live');
         document.body.appendChild(chip);
       }
@@ -1974,8 +1974,8 @@
     const s = window.urbisRunnerSesionActual;
     if(!s || !(s.points||[]).length){ alert('No hay una actividad reciente para publicar.'); return; }
     const usuario = (typeof window.urbisUsuarioActual === 'function' && window.urbisUsuarioActual()) || '';
-    if(!usuario){ alert('Inicia sesión para publicar en Social Rush.'); return; }
-    if(!confirm('¿Publicar este recorrido en Social Rush?\n\nOtros usuarios de URBIS podrán ver tu ruta, distancia y ritmo. Publicar es totalmente voluntario.')) return;
+    if(!usuario){ alert('Inicie sesión para publicar en Social Rush.'); return; }
+    if(!confirm('¿Publicar este recorrido en Social Rush?\n\nOtros usuarios de URBIS podrán ver su ruta, distancia y ritmo. Publicar es totalmente voluntario.')) return;
     const btn = document.querySelector('[data-u52-call="rush-publicar"]');
     if(btn){ btn.disabled = true; btn.textContent = 'Publicando…'; }
     const desc = [usuario, s.type||'correr', (Number(s.distanceKm)||0).toFixed(2), Math.round(s.elapsed||0), Math.round(s.paceSecKm||0), s.createdAt||new Date().toISOString(), puntosAPolyline(s.points, 60)].join('~');
@@ -2022,8 +2022,8 @@
     </div>`;
     if(!items.length){
       html += _rushSocialTab === 'amigos'
-        ? '<div class="u52-empty-card rush-empty"><span>👥</span><div><b>Tus amigos aún no publican</b><small>Cuando un amigo publique un recorrido, aparecerá aquí.</small></div></div>'
-        : '<div class="u52-empty-card rush-empty"><span>🌍</span><div><b>Aún no hay recorridos publicados</b><small>Termina una actividad y toca "Publicar en Social Rush" para inaugurar el muro.</small></div></div>';
+        ? '<div class="u52-empty-card rush-empty"><span>👥</span><div><b>Sus amigos aún no publican</b><small>Cuando un amigo publique un recorrido, aparecerá aquí.</small></div></div>'
+        : '<div class="u52-empty-card rush-empty"><span>🌍</span><div><b>Aún no hay recorridos publicados</b><small>Termine una actividad y toque "Publicar en Social Rush" para inaugurar el muro.</small></div></div>';
     } else {
       html += '<div class="rush-social-list">' + items.map(x => `
         <div class="rush-social-card">
@@ -2171,7 +2171,7 @@
     panel.innerHTML = `
       <div class="u52-quick-report-head">
         <button type="button" data-u52-call="quick-event-close" aria-label="Cerrar">×</button>
-        <div><b>Tipo de evento</b><small>Elige la categoría</small></div>
+        <div><b>Tipo de evento</b><small>Elija la categoría</small></div>
       </div>
       <div class="u52-quick-report-tabs">${tabs}</div>
       <div class="u52-quick-report-grid">${cards}</div>`;
@@ -2288,7 +2288,7 @@
 
     const direccionEl = panel && panel.querySelector('#ev-direccion');
     const direccion = (direccionEl?.value || '').trim();
-    if(!direccion){ alert('Ingresa la dirección o lugar del evento.'); direccionEl?.focus(); return; }
+    if(!direccion){ alert('Ingrese la dirección o lugar del evento.'); direccionEl?.focus(); return; }
 
     const tituloEl = panel && panel.querySelector('#ev-titulo-custom');
     const titulo = (tituloEl?.value || evType.label).trim() || evType.label;
@@ -2395,7 +2395,7 @@
     panel.innerHTML = `
       <div class="u52-quick-report-head">
         <button type="button" data-u52-call="quick-report-close" aria-label="Cerrar">×</button>
-        <div><b>Tipo de alerta</b><small>Elige una opción para este punto</small></div>
+        <div><b>Tipo de alerta</b><small>Elija una opción para este punto</small></div>
       </div>
       <div class="u52-quick-report-tabs">${tabs}</div>
       ${safety}
@@ -2451,7 +2451,7 @@
       quickLabel:item.label,
       photoRequired
     };
-    const sensitive = item.sensitive ? '<div class="u52-quick-report-safety">No escribas nombres, acusaciones directas, rostros ni datos personales. Reporta solo la situación.</div>' : '';
+    const sensitive = item.sensitive ? '<div class="u52-quick-report-safety">No escribas nombres, acusaciones directas, rostros ni datos personales. Reporte solo la situación.</div>' : '';
     // En conflicto armado, primero el teléfono: URBIS no es una línea de
     // emergencia y no puede sustituirla. Y el reporte sale sin firma salvo
     // que la persona decida lo contrario: en zona de frontera, un reporte de
@@ -2467,8 +2467,8 @@
         <small>Secuestro y extorsión: GAULA 165. Este reporte no reemplaza la denuncia formal ante la Fiscalía.</small>
       </div>
       <div class="u52-anon-garantia">
-        <b>🕶️ Tu nombre no va a aparecer</b>
-        <span>Este reporte sale como <b>anónimo</b> en el mapa. URBIS sabe quién lo publicó —por eso se pide cuenta verificada, para que nadie invente hechos del conflicto—, pero nadie más lo ve. Puedes reportar con tranquilidad.</span>
+        <b>🕶️ Su nombre no va a aparecer</b>
+        <span>Este reporte sale como <b>anónimo</b> en el mapa. URBIS sabe quién lo publicó —por eso se pide cuenta verificada, para que nadie invente hechos del conflicto—, pero nadie más lo ve. Puede reportar con tranquilidad.</span>
       </div>
       <input type="checkbox" id="ins-anonimo" checked hidden>` : '';
     // ¿Hubo gente herida? Solo en los reportes donde puede haberla (js/03c).
@@ -2582,7 +2582,7 @@
     const direccionEl = document.getElementById('ins-direccion');
     const direccion = (direccionEl?.value || '').trim();
     if(!direccion){
-      alert('Ingresa la dirección o punto de referencia del reporte.');
+      alert('Ingrese la dirección o punto de referencia del reporte.');
       direccionEl?.focus();
       return;
     }
@@ -2673,19 +2673,19 @@
     hideQuickReportPanel();
     hideProCityCategorySheet();
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
-    setMapReportStatus('📍 Toca el mapa para ubicar lo que quieres mapear.');
+    setMapReportStatus('📍 Toque el mapa para ubicar lo que quiere mapear.');
   }
 
   function beginProCityLocationGps(){
     proCity.dim = ''; proCity.editLat = '';
     const usar = (lat, lng) => pickProCityPoint(lat, lng);
     if(mobileGps.last){ usar(Number(mobileGps.last.lat), Number(mobileGps.last.lng)); return; }
-    if(!navigator.geolocation){ setMapReportStatus('Sin GPS disponible. Usa "En el mapa".'); return; }
-    setMapReportStatus('Buscando tu ubicación GPS…');
+    if(!navigator.geolocation){ setMapReportStatus('Sin GPS disponible. Use "En el mapa".'); return; }
+    setMapReportStatus('Buscando su ubicación GPS…');
     navigator.geolocation.getCurrentPosition(pos=>{
       onMobileGpsPoint(pos);
       usar(pos.coords.latitude, pos.coords.longitude);
-    }, ()=>{ setMapReportStatus('Sin GPS. Usa "En el mapa".'); }, { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
+    }, ()=>{ setMapReportStatus('Sin GPS. Use "En el mapa".'); }, { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
   }
 
 
@@ -2705,7 +2705,7 @@
     const viewFilterBtn = app.querySelector('.u52-procity-view-filter-btn');
     const mapScreen = app.querySelector('[data-u52-screen="map"]');
     if(titleB) titleB.textContent = activo ? 'UrbisProCity' : 'Reporte o evento';
-    if(titleSmall) titleSmall.textContent = activo ? 'Mapeo urbano profesional' : 'Toca el mapa para ubicarlo';
+    if(titleSmall) titleSmall.textContent = activo ? 'Mapeo urbano profesional' : 'Toque el mapa para ubicarlo';
     if(actions) actions.hidden = !!activo;
     // Botón de filtro de la matriz (arriba a la derecha, al lado del GPS): solo
     // en Pro City. El de reportes/eventos ciudadanos es lo opuesto: siempre
@@ -2782,7 +2782,7 @@
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-category-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>🏙️ URBIS Pro City</b><small>Elige qué vas a ubicar</small></div>
+          <div><b>🏙️ URBIS Pro City</b><small>Elija qué va a ubicar</small></div>
           <button type="button" data-u52-call="procity-category-close" aria-label="Cerrar">×</button>
         </div>
         <input type="text" class="u52-matriz-search" id="u52-category-search" placeholder="🔎 Buscar en la Matriz de Usos (ej. hospital, cancha…)" value="${esc(proCity.categorySearch)}" oninput="window.urbisProCityCategorySearch(this.value)" autocomplete="off">
@@ -2838,7 +2838,7 @@
     hideCommunityChooser(false);
     hideQuickReportPanel();
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
-    setMapReportStatus(`📍 Toca el mapa para ubicar: <b>${esc(grupo ? grupo.t : 'Matriz de Usos')}</b>`);
+    setMapReportStatus(`📍 Toque el mapa para ubicar: <b>${esc(grupo ? grupo.t : 'Matriz de Usos')}</b>`);
   }
 
   function pickProCityFromSearch(label){
@@ -2978,19 +2978,19 @@
         : `<div class="u52-empty-card"><span>🗺️</span><div><b>Aún no has georreferenciado nada</b><small>Lo que mapees en Pro City aparecerá aquí.</small></div></div>`;
     } else if(proCity.statsTab === 'amigos'){
       body = deAmigos.length ? `<div class="u52-procity-mine-list">${deAmigos.map(p=>_mineCard(p, false)).join('')}</div>`
-        : `<div class="u52-empty-card"><span>👥</span><div><b>Aún no ves mapeos de amigos</b><small>Cuando un amigo tuyo en URBIS Social georreferencie algo, aparece aquí.</small></div></div>`;
+        : `<div class="u52-empty-card"><span>👥</span><div><b>Aún no ve mapeos de amigos</b><small>Cuando un amigo suyo en URBIS Social georreferencie algo, aparece aquí.</small></div></div>`;
     } else if(proCity.statsTab === 'sector'){
       // El informe entero lo dibuja js/68 con lo que guardó: acá no se
       // consulta la red, así que la pestaña abre igual sin señal.
       body = (window.URBIS_PC_RECON && typeof window.URBIS_PC_RECON.htmlPestana === 'function')
         ? window.URBIS_PC_RECON.htmlPestana()
-        : '<div class="u52-empty-card"><span>🔍</span><div><b>Reconocimiento no disponible</b><small>Recarga la app para activar el análisis de sector.</small></div></div>';
+        : '<div class="u52-empty-card"><span>🔍</span><div><b>Reconocimiento no disponible</b><small>Recargue la app para activar el análisis de sector.</small></div></div>';
     } else if(proCity.statsTab === 'analisis'){
       // El análisis por área vive en js/24; aquí solo se le pasa lo que él no
       // puede saber (la Matriz, los colores y cómo leer el autor de un punto).
       body = window.URBIS_PC_ANALISIS
         ? window.URBIS_PC_ANALISIS.htmlPanel(proCityCtxAnalisis())
-        : '<div class="u52-empty-card"><span>📊</span><div><b>Análisis no disponible</b><small>Recarga la app para activar el módulo de análisis por área.</small></div></div>';
+        : '<div class="u52-empty-card"><span>📊</span><div><b>Análisis no disponible</b><small>Recargue la app para activar el módulo de análisis por área.</small></div></div>';
     } else {
       // Pedido explícito: mostrar tal cual se ve al elegir dónde mapear —
       // las 10 categorías compactas de la Matriz de Usos (Vivienda y ocio,
@@ -3271,7 +3271,7 @@
   function saveProCityRadioFromInput(){
     const input = document.getElementById('u52-procity-radio-input');
     const km = input ? parseFloat(input.value) : NaN;
-    if(isNaN(km) || km <= 0){ alert('Ingresa un radio válido en kilómetros.'); return; }
+    if(isNaN(km) || km <= 0){ alert('Ingrese un radio válido en kilómetros.'); return; }
     proCitySetRadioKm(km);
     hideProCityRadioConfigSheet();
     showProCityStats();
@@ -3555,7 +3555,7 @@
   // en vez de crear vacío y tener que invitar uno por uno después.
   function showProCityFolderCreateSheet(){
     const usuario = proCityCurrentUsername();
-    if(!usuario){ alert('Inicia sesión para crear un proyecto cooperativo.'); return; }
+    if(!usuario){ alert('Inicie sesión para crear un proyecto cooperativo.'); return; }
     const mapScreen = app.querySelector('[data-u52-screen="map"]');
     if(!mapScreen) return;
     const friends = Array.isArray(window.urbisAmigosFromServer) ? window.urbisAmigosFromServer : [];
@@ -3563,14 +3563,14 @@
       const u = String(f.usuario || '');
       if(!u) return '';
       return `<label class="u52-procity-folder-pick"><input type="checkbox" class="u52-procity-folder-pick-chk" value="${esc(u)}"><span>👤 ${esc(u)}</span></label>`;
-    }).join('') : `<div class="u52-matriz-empty">Aún no tienes amigos agregados en URBIS Social. Puedes crear el proyecto igual e invitarlos después con el código.</div>`;
+    }).join('') : `<div class="u52-matriz-empty">Aún no tiene amigos agregados en URBIS Social. Puede crear el proyecto igual e invitarlos después con el código.</div>`;
     let sheet = document.getElementById('u52-procity-invite-sheet');
     if(!sheet){ sheet = document.createElement('div'); sheet.id = 'u52-procity-invite-sheet'; sheet.className = 'u52-procity-sheet'; mapScreen.appendChild(sheet); }
     sheet.innerHTML = `
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-invite-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>🤝 Nuevo proyecto cooperativo</b><small>Ponle nombre y elige con quién lo haces</small></div>
+          <div><b>🤝 Nuevo proyecto cooperativo</b><small>Póngale nombre y elija con quién lo hace</small></div>
           <button type="button" data-u52-call="procity-invite-close" aria-label="Cerrar">×</button>
         </div>
         <input type="text" class="u52-matriz-search" id="u52-folder-new-name" placeholder="Nombre del proyecto (ej. La esquina de Juancho)" autocomplete="off">
@@ -3583,7 +3583,7 @@
     const usuario = proCityCurrentUsername();
     const nameEl = document.getElementById('u52-folder-new-name');
     const nombre = (nameEl?.value || '').trim();
-    if(!nombre){ alert('Escribe un nombre para el proyecto.'); nameEl?.focus(); return; }
+    if(!nombre){ alert('Escriba un nombre para el proyecto.'); nameEl?.focus(); return; }
     const seleccionados = Array.from(document.querySelectorAll('.u52-procity-folder-pick-chk:checked')).map(c=>c.value);
     socialAPI({ action:'procity_folder_create', nombre: nombre, usuario: usuario }).then(function(out){
       if(!out || !out.ok){ alert((out && out.message) || 'No se pudo crear el proyecto.'); return; }
@@ -3598,11 +3598,11 @@
   }
   function joinProCityFolderByCode(){
     const usuario = proCityCurrentUsername();
-    if(!usuario){ alert('Inicia sesión para unirte a un proyecto cooperativo.'); return; }
+    if(!usuario){ alert('Inicie sesión para unirse a un proyecto cooperativo.'); return; }
     const codigo = prompt('Código del proyecto cooperativo:');
     if(!codigo || !codigo.trim()) return;
     socialAPI({ action:'procity_folder_join', id: codigo.trim().toUpperCase(), miembro: usuario }).then(function(out){
-      if(out && out.ok){ loadProCityFolders(); alert('Te uniste a "' + out.folder.nombre + '".'); }
+      if(out && out.ok){ loadProCityFolders(); alert('Se unió a "' + out.folder.nombre + '".'); }
       else alert((out && out.message) || 'No se encontró ese proyecto.');
     }).catch(function(){ alert('No se pudo unir al proyecto.'); });
   }
@@ -3626,7 +3626,7 @@
       const u = String(f.usuario || '');
       if(!u) return '';
       return `<button type="button" class="u52-procity-folder-member" data-u52-procity-folder-invite="${esc(folderId)}" data-u52-procity-invite-user="${esc(u)}"><span>👤 ${esc(u)}</span><b>＋ Agregar</b></button>`;
-    }).join('') : `<div class="u52-matriz-empty">No tienes más amigos para agregar.</div>`;
+    }).join('') : `<div class="u52-matriz-empty">No tiene más amigos para agregar.</div>`;
     let sheet = document.getElementById('u52-procity-invite-sheet');
     if(!sheet){ sheet = document.createElement('div'); sheet.id = 'u52-procity-invite-sheet'; sheet.className = 'u52-procity-sheet'; mapScreen.appendChild(sheet); }
     sheet.innerHTML = `
@@ -3655,12 +3655,12 @@
   function addProCityFolderMemberById(folderId){
     const input = document.getElementById('u52-folder-add-username');
     const usuario = (input?.value || '').trim();
-    if(!usuario){ alert('Escribe un nombre de usuario o código de amigo.'); input?.focus(); return; }
+    if(!usuario){ alert('Escriba un nombre de usuario o código de amigo.'); input?.focus(); return; }
     socialAPI({ action:'procity_folder_join', id: folderId, miembro: usuario }).then(function(out){
       if(out && out.ok){
         loadProCityFolders().then(function(){ showProCityFolderMembersSheet(folderId); });
         try{ if(typeof showAchievementToast === 'function') showAchievementToast('Agregado', usuario + ' se unió al proyecto.'); }catch(e){}
-      } else alert((out && out.message) || 'No se encontró ese usuario. Verifica que esté escrito igual a su nombre de usuario en URBIS.');
+      } else alert((out && out.message) || 'No se encontró ese usuario. Verifique que esté escrito igual a su nombre de usuario en URBIS.');
     }).catch(function(){ alert('No se pudo agregar.'); });
   }
   function removeProCityFolderMember(folderId, usuario){
@@ -3713,7 +3713,7 @@
     const I0 = window.URBIS_ICONO;
     if (I0) btn.innerHTML = I0('carpeta', { tam:24, grosor:2 });
     else btn.textContent = folder ? '🟢' : '📁';
-    btn.setAttribute('aria-label', folder ? `Mapeo cooperativo activo en "${folder.nombre}" — toca para cambiar` : 'Elegir carpeta cooperativa activa para mapear');
+    btn.setAttribute('aria-label', folder ? `Mapeo cooperativo activo en "${folder.nombre}" — toque para cambiar` : 'Elegir carpeta cooperativa activa para mapear');
     btn.title = folder ? `Activo: ${folder.nombre}` : 'Elegir carpeta cooperativa';
   }
   function showProCityActiveFolderPicker(){
@@ -3729,14 +3729,14 @@
           <div><b>${activa?'🟢':'📁'} ${esc(f.nombre)}</b><small>Código: ${esc(f.id)} · ${(f.miembros||[]).length} miembro(s)</small></div>
         </div>
       </button>`;
-    }).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tienes proyectos cooperativos</b><small>Crea uno desde 🤝 Cooperativo para poder elegirlo aquí.</small></div></div>`;
+    }).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tiene proyectos cooperativos</b><small>Cree uno desde 🤝 Cooperativo para poder elegirlo aquí.</small></div></div>`;
     let sheet = document.getElementById('u52-procity-active-folder-sheet');
     if(!sheet){ sheet = document.createElement('div'); sheet.id = 'u52-procity-active-folder-sheet'; sheet.className = 'u52-procity-sheet'; mapScreen.appendChild(sheet); }
     sheet.innerHTML = `
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-active-folder-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>📁 Mapear dentro de un proyecto</b><small>Elige la carpeta cooperativa activa</small></div>
+          <div><b>📁 Mapear dentro de un proyecto</b><small>Elija la carpeta cooperativa activa</small></div>
           <button type="button" data-u52-call="procity-active-folder-close" aria-label="Cerrar">×</button>
         </div>
         ${activaHtml}
@@ -3770,19 +3770,19 @@
   function updateProCityViewFilterBtn(){
     const btn = app.querySelector('.u52-procity-view-filter-btn');
     if(!btn) return;
-    let icon = '👤', nombreIcono = 'perfil', label = 'Viendo: solo lo tuyo';
+    let icon = '👤', nombreIcono = 'perfil', label = 'Viendo: solo lo suyo';
     if(proCity.folderFilter){
       const f = proCity.myFolders.find(x=>x.id === proCity.folderFilter);
       icon = '📁'; nombreIcono = 'carpeta'; label = 'Viendo: proyecto "' + (f ? f.nombre : proCity.folderFilter) + '"';
     } else if(proCity.onlyFriends){
-      icon = '👥'; nombreIcono = 'poblacion'; label = 'Viendo: solo tus amigos';
+      icon = '👥'; nombreIcono = 'poblacion'; label = 'Viendo: solo sus amigos';
     } else if(!proCity.onlyMine){
       icon = '🌐'; nombreIcono = 'mundo'; label = 'Viendo: todo el mundo';
     }
     const I1 = window.URBIS_ICONO;
     if (I1) btn.innerHTML = I1(nombreIcono, { tam:24, grosor:2 });
     else btn.textContent = icon;
-    btn.setAttribute('aria-label', label + ' — toca para cambiar');
+    btn.setAttribute('aria-label', label + ' — toque para cambiar');
     btn.title = label;
   }
   function showProCityViewFilterPicker(){
@@ -3796,23 +3796,23 @@
       const lista = proCity.myFolders.length ? proCity.myFolders.map(f=>`
         <button type="button" class="u52-procity-folder-card${proCity.folderFilter===f.id?' activa':''}" data-u52-procity-view-folder-pick="${esc(f.id)}">
           <div class="u52-procity-folder-head"><div><b>📁 ${esc(f.nombre)}</b><small>Código: ${esc(f.id)} · ${(f.miembros||[]).length} miembro(s)</small></div></div>
-        </button>`).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tienes proyectos cooperativos</b><small>Crea uno desde 🤝 Cooperativo primero.</small></div></div>`;
+        </button>`).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tiene proyectos cooperativos</b><small>Cree uno desde 🤝 Cooperativo primero.</small></div></div>`;
       contenido = `
         <div class="u52-procity-sheet-head">
           <button type="button" data-u52-call="procity-view-filter-back" aria-label="Volver">‹</button>
-          <div><b>📁 ¿Qué proyecto?</b><small>Elige la carpeta cooperativa a ver</small></div>
+          <div><b>📁 ¿Qué proyecto?</b><small>Elija la carpeta cooperativa a ver</small></div>
           <button type="button" data-u52-call="procity-view-filter-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-procity-mine-list">${lista}</div>`;
     } else {
       contenido = `
         <div class="u52-procity-sheet-head">
-          <div><b>👁️ ¿Qué quieres ver en el mapa?</b><small>Elige la vista</small></div>
+          <div><b>👁️ ¿Qué quiere ver en el mapa?</b><small>Elija la vista</small></div>
           <button type="button" data-u52-call="procity-view-filter-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-procity-view-filter-options">
           <button type="button" class="u52-procity-view-filter-opt${(proCity.onlyMine && !proCity.folderFilter && !proCity.onlyFriends)?' activa':''}" data-u52-call="procity-view-filter-mine"><span>👤</span><b>Solo lo mío</b><small>Lo que yo he georreferenciado</small></button>
-          <button type="button" class="u52-procity-view-filter-opt${proCity.onlyFriends?' activa':''}" data-u52-call="procity-view-filter-friends"><span>👥</span><b>Solo mis amigos</b><small>Lo mapeado por tus contactos</small></button>
+          <button type="button" class="u52-procity-view-filter-opt${proCity.onlyFriends?' activa':''}" data-u52-call="procity-view-filter-friends"><span>👥</span><b>Solo mis amigos</b><small>Lo mapeado por sus contactos</small></button>
           <button type="button" class="u52-procity-view-filter-opt${proCity.folderFilter?' activa':''}" data-u52-call="procity-view-filter-folder-step"><span>📁</span><b>Una carpeta cooperativa</b><small>Elegir cuál proyecto ver</small></button>
           <button type="button" class="u52-procity-view-filter-opt${(!proCity.onlyMine && !proCity.onlyFriends && !proCity.folderFilter)?' activa':''}" data-u52-call="procity-view-filter-all"><span>🌐</span><b>Todo el mundo</b><small>Todo lo que hay mapeado</small></button>
         </div>`;
@@ -3833,7 +3833,7 @@
     hideProCityViewFilterPicker();
     updateProCityViewFilterBtn();
     try{ renderProCityPoints(); }catch(e){}
-    const labels = { mine:'Mostrando solo lo tuyo.', friends:'Mostrando lo mapeado por tus amigos.', folder:'Mostrando solo este proyecto cooperativo.', all:'Mostrando todo lo mapeado.' };
+    const labels = { mine:'Mostrando solo lo suyo.', friends:'Mostrando lo mapeado por sus amigos.', folder:'Mostrando solo este proyecto cooperativo.', all:'Mostrando todo lo mapeado.' };
     try{ if(typeof showAchievementToast === 'function') showAchievementToast('Vista del mapa', labels[mode] || ''); }catch(e){}
   }
   // ── Agregar MANUALMENTE uno o varios mapeos ya existentes a una carpeta ──
@@ -3850,20 +3850,20 @@
     proCity.tagTargetPoints = (points || []).filter(Boolean);
     const mapScreen = app.querySelector('[data-u52-screen="map"]');
     if(!mapScreen) return;
-    if(!proCity.tagTargetPoints.length){ alert('No se encontró ese mapeo. Intenta de nuevo.'); return; }
+    if(!proCity.tagTargetPoints.length){ alert('No se encontró ese mapeo. Intente de nuevo.'); return; }
     if(!proCity.foldersLoaded){ loadProCityFolders().then(function(){ showProCityTagFolderPicker(points); }); return; }
     const n = proCity.tagTargetPoints.length;
     const lista = proCity.myFolders.length ? proCity.myFolders.map(f=>`
       <button type="button" class="u52-procity-folder-card" data-u52-procity-tag-pick="${esc(f.id)}">
         <div class="u52-procity-folder-head"><div><b>📁 ${esc(f.nombre)}</b><small>Código: ${esc(f.id)} · ${(f.miembros||[]).length} miembro(s)</small></div></div>
-      </button>`).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tienes proyectos cooperativos</b><small>Crea uno desde 🤝 Cooperativo primero.</small></div></div>`;
+      </button>`).join('') : `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tiene proyectos cooperativos</b><small>Cree uno desde 🤝 Cooperativo primero.</small></div></div>`;
     let sheet = document.getElementById('u52-procity-tag-folder-sheet');
     if(!sheet){ sheet = document.createElement('div'); sheet.id = 'u52-procity-tag-folder-sheet'; sheet.className = 'u52-procity-sheet'; mapScreen.appendChild(sheet); }
     sheet.innerHTML = `
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-tag-folder-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>📁 Agregar ${n > 1 ? n + ' mapeos' : 'a una carpeta'}</b><small>Elige el proyecto cooperativo</small></div>
+          <div><b>📁 Agregar ${n > 1 ? n + ' mapeos' : 'a una carpeta'}</b><small>Elija el proyecto cooperativo</small></div>
           <button type="button" data-u52-call="procity-tag-folder-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-procity-mine-list">${lista}</div>
@@ -3876,7 +3876,7 @@
   }
   function tagExistingProCityPoint(folderId){
     const puntos = proCity.tagTargetPoints || [];
-    if(!puntos.length){ alert('No se encontró ese mapeo. Intenta de nuevo.'); return; }
+    if(!puntos.length){ alert('No se encontró ese mapeo. Intente de nuevo.'); return; }
     if(typeof window.urbisDBUpdate !== 'function') return;
     hideProCityTagFolderPicker();
     // Actualización OPTIMISTA: se edita `p` (la MISMA referencia que vive
@@ -3934,7 +3934,7 @@
     const lats = Array.from(proCity.selectedLats || []);
     if(!lats.length) return;
     if(typeof window.urbisDBDelete !== 'function'){
-      alert('Sin conexión con URBIS. Intenta de nuevo en un momento.');
+      alert('Sin conexión con URBIS. Intente de nuevo en un momento.');
       return;
     }
     const msg = lats.length === 1
@@ -3972,7 +3972,7 @@
   function showProCityBulkTagFolderPicker(){
     const datos = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData : [];
     const puntos = datos.filter(p => p && proCity.selectedLats.has(String(p.lat)));
-    if(!puntos.length){ alert('Selecciona al menos un mapeo primero (mantén presionado uno para empezar).'); return; }
+    if(!puntos.length){ alert('Seleccione al menos un mapeo primero (mantenga presionado uno para empezar).'); return; }
     showProCityTagFolderPicker(puntos);
   }
   // ── Modo Cooperativo: pantalla propia (NO flotante) para el mapeo grupal ──
@@ -4128,7 +4128,7 @@
       </button>`;
     }).join('')}</div>` : (puntos.length
       ? `<div class="u52-empty-card"><span>🔎</span><div><b>Sin resultados</b><small>Nada coincide con la búsqueda o el autor elegido.</small></div></div>`
-      : `<div class="u52-empty-card"><span>🗺️</span><div><b>Aún no hay nada mapeado en este proyecto</b><small>Toca "Mapear aquí" y georreferencia algo en Pro City para empezar.</small></div></div>`);
+      : `<div class="u52-empty-card"><span>🗺️</span><div><b>Aún no hay nada mapeado en este proyecto</b><small>Toque "Mapear aquí" y georreferencia algo en Pro City para empezar.</small></div></div>`);
     cont.innerHTML = chipsAutores + chipsGrupos + list;
   }
   window.urbisProCityCoopSearch = function(val){
@@ -4210,7 +4210,7 @@
       el.innerHTML = `
         <div class="u52-procity-coop-head">
           <button type="button" data-u52-call="procity-coop-back" aria-label="Cerrar">‹</button>
-          <div><b>🤝 Modo Cooperativo</b><small>Mapeo grupal con tus amigos</small></div>
+          <div><b>🤝 Modo Cooperativo</b><small>Mapeo grupal con sus amigos</small></div>
           <span class="u52-procity-coop-head-spacer"></span>
         </div>
         <div class="u52-procity-coop-body">
@@ -4272,7 +4272,7 @@
     }, 60);
   }
   function urbisRangeLabelFor(tf){
-    if(tf.start == null) return 'Elige una fecha o un rango';
+    if(tf.start == null) return 'Elija una fecha o un rango';
     const a = new Date(tf.start).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
     if(tf.end == null || tf.end === tf.start) return a;
     const b = new Date(tf.end).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
@@ -4611,13 +4611,13 @@
       <div class="u52-procity-sheet-backdrop" data-u52-call="procity-filter-close"></div>
       <div class="u52-procity-sheet-card">
         <div class="u52-procity-sheet-head">
-          <div><b>🔷 Filtrar matriz de usos</b><small>Toca para mostrar u ocultar cada capa</small></div>
+          <div><b>🔷 Filtrar matriz de usos</b><small>Toque para mostrar u ocultar cada capa</small></div>
           <button type="button" data-u52-call="procity-filter-close" aria-label="Cerrar">×</button>
         </div>
         <button type="button" class="u52-procity-filter-mine${proCity.onlyMine?' on':''}" data-u52-call="procity-filter-mine">
           <span>${proCity.onlyMine?'👤':'🌐'}</span>
           <b>${proCity.onlyMine ? 'Mostrando solo lo mío' : 'Mostrando todo lo mapeado'}</b>
-          <small>Toca para ${proCity.onlyMine ? 'ver también lo de otros usuarios' : 'ver solo lo que tú georreferenciaste'}</small>
+          <small>Toque para ${proCity.onlyMine ? 'ver también lo de otros usuarios' : 'ver solo lo que tú georreferenciaste'}</small>
         </button>
         <div class="u52-procity-filter-tools">
           <button type="button" data-u52-call="procity-filter-all">Mostrar todas</button>
@@ -4808,7 +4808,7 @@
       <div class="u52-cfilter-backdrop" data-u52-call="cfilter-close"></div>
       <div class="u52-cfilter-card">
         <div class="u52-cfilter-head">
-          <div><b>🎚️ Filtrar reportes y eventos</b><small>Toca para mostrar u ocultar cada tipo</small></div>
+          <div><b>🎚️ Filtrar reportes y eventos</b><small>Toque para mostrar u ocultar cada tipo</small></div>
           <button type="button" data-u52-call="cfilter-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-cfilter-tools">
@@ -4871,7 +4871,7 @@
     hideCommunityChooser(false);
     hideQuickReportPanel();
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
-    setMapReportStatus(`📍 Toca el mapa para ubicar: <b>${esc(dim)}</b>`);
+    setMapReportStatus(`📍 Toque el mapa para ubicar: <b>${esc(dim)}</b>`);
   }
 
   function pickProCityPoint(lat, lng){
@@ -4992,7 +4992,7 @@
     panel.innerHTML = `
       <div class="u52-quick-report-head u52-procity-panel-head">
         <button type="button" data-u52-call="procity-close" aria-label="Cerrar">×</button>
-        <div><b>${d.icon} ${esc(proCity.dim)}</b><small>Elige qué hay en este punto</small></div>
+        <div><b>${d.icon} ${esc(proCity.dim)}</b><small>Elija qué hay en este punto</small></div>
       </div>
       <div class="u52-quick-report-grid">${items}</div>`;
     panel.classList.add('u52-procity-mode');
@@ -5044,7 +5044,7 @@
       panel.innerHTML = `
         <div class="u52-quick-report-head u52-procity-panel-head">
           <button type="button" data-u52-call="procity-close" aria-label="Cerrar">×</button>
-          <div><b>${d.icon} Matriz de Usos</b><small>Elige la categoría</small></div>
+          <div><b>${d.icon} Matriz de Usos</b><small>Elija la categoría</small></div>
         </div>
         <input type="text" class="u52-matriz-search" id="u52-matriz-search" placeholder="🔎 Buscar uso o tipo (ej. hospital, cancha…)" value="${esc(proCity.matrizSearch)}" oninput="window.urbisProCityMatrizSearch(this.value)" autocomplete="off">
         ${recientesHtml}
@@ -5062,7 +5062,7 @@
       panel.innerHTML = `
         <div class="u52-quick-report-head u52-procity-panel-head">
           <button type="button" data-u52-call="procity-matriz-back" aria-label="Volver a categorías">‹</button>
-          <div><b>${grupo ? grupo.i : '🗺️'} ${esc(grupo ? grupo.t : '')}</b><small>Elige el uso del suelo</small></div>
+          <div><b>${grupo ? grupo.i : '🗺️'} ${esc(grupo ? grupo.t : '')}</b><small>Elija el uso del suelo</small></div>
           <button type="button" data-u52-call="procity-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-quick-report-grid">${cards}</div>`;
@@ -5076,7 +5076,7 @@
       panel.innerHTML = `
         <div class="u52-quick-report-head u52-procity-panel-head">
           <button type="button" data-u52-call="procity-matriz-back" aria-label="Volver a usos">‹</button>
-          <div><b>${grupo ? grupo.i : '🗺️'} ${esc(proCity.matrizUse)}</b><small>Elige el tipo exacto</small></div>
+          <div><b>${grupo ? grupo.i : '🗺️'} ${esc(proCity.matrizUse)}</b><small>Elija el tipo exacto</small></div>
           <button type="button" data-u52-call="procity-close" aria-label="Cerrar">×</button>
         </div>
         <div class="u52-quick-report-grid">${cards}</div>`;
@@ -5206,7 +5206,7 @@
     panel.innerHTML = `
       <div class="u52-quick-report-head u52-procity-panel-head">
         <button type="button" data-u52-call="procity-back" aria-label="Volver">‹</button>
-        <div><b>${editando ? 'Editar mapeo' : 'Nuevo elemento urbano'}</b><small>Toca la tarjeta de abajo para cambiar la categoría/uso</small></div>
+        <div><b>${editando ? 'Editar mapeo' : 'Nuevo elemento urbano'}</b><small>Toque la tarjeta de abajo para cambiar la categoría/uso</small></div>
         <button type="button" data-u52-call="procity-close" aria-label="Cerrar">×</button>
       </div>
       <div class="u52-quick-report-selected u52-procity-selected u52-procity-selected-tap" data-u52-call="procity-change-category" role="button" tabindex="0">
@@ -5246,7 +5246,7 @@
     overlay.hidden = true;
     overlay.innerHTML = `
       <div class="u52-community-choice-card" aria-live="polite">
-        <div class="u52-community-choice-title">¿Qué quieres crear aquí?</div>
+        <div class="u52-community-choice-title">¿Qué quiere crear aquí?</div>
         <div class="u52-community-choice-actions" role="group" aria-label="Elegir tipo de creación">
           <button type="button" data-u52-call="choice-report"><span class="report">📝</span><b>Reporte</b></button>
           <button type="button" data-u52-call="choice-event"><span class="event">📅</span><b>Evento</b></button>
@@ -5355,7 +5355,7 @@
     communityComposer.pickMode = 'manual';
     communityComposer.selected = null;
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
-    setMapReportStatus('Toca un punto en el mapa.');
+    setMapReportStatus('Toque un punto en el mapa.');
     try{ if(window.map && map.getContainer) map.getContainer().classList.add('u52-community-report-ready'); }catch(e){}
   }
 
@@ -5441,7 +5441,7 @@
     try {
       if(alertas.length){
         m.fitBounds(L.latLngBounds(alertas), { padding:[60,90], maxZoom:9 });
-        setMapReportStatus('🇨🇴 Vista nacional: ' + alertas.length + ' alerta(s) de desastre en el mapa. Toca una gota para ver el detalle.');
+        setMapReportStatus('🇨🇴 Vista nacional: ' + alertas.length + ' alerta(s) de desastre en el mapa. Toque una gota para ver el detalle.');
       } else {
         m.fitBounds(L.latLngBounds([[-4.3, -79.1], [13.5, -66.8]]), { padding:[20,20] });
         setMapReportStatus('🇨🇴 Vista nacional: no hay alertas de desastre activas ahora mismo.');
@@ -5477,10 +5477,10 @@
         onMobileGpsPoint(pos);
         pickCommunityPoint(pos.coords.latitude, pos.coords.longitude, 'gps');
       },()=>{
-        setMapReportStatus('Sin GPS. Usa En mapa.');
+        setMapReportStatus('Sin GPS. Use En mapa.');
       },{enableHighAccuracy:true,maximumAge:1000,timeout:12000});
     }else{
-      setMapReportStatus('Sin permiso GPS. Usa En mapa.');
+      setMapReportStatus('Sin permiso GPS. Use En mapa.');
     }
   }
 
@@ -5508,9 +5508,9 @@
       if(name==='contactos-familia') { socialContactRel='familia'; setContactTab(); try{ if(typeof window.urbisRenderContactos==='function') window.urbisRenderContactos('familia'); }catch(e){} return; }
       if(name==='contactos-online') { socialContactRel='online'; setContactTab(); try{ if(typeof window.urbisRenderContactosOnline==='function') window.urbisRenderContactosOnline(); }catch(e){} return; }
       if(name==='locate') ensureMobileGps(true);
-      if(name==='choose-destination' && typeof prepararDestinoDesdeGPS==='function') { ensureMobileGps(false); await prepararDestinoDesdeGPS(); setMobilityStatus('Toca el mapa para marcar destino. Puedes mover o alejar el mapa.'); }
+      if(name==='choose-destination' && typeof prepararDestinoDesdeGPS==='function') { ensureMobileGps(false); await prepararDestinoDesdeGPS(); setMobilityStatus('Toque el mapa para marcar destino. Puede mover o alejar el mapa.'); }
       if(name==='start-route' && typeof calcularRutaRealActual==='function') { ensureMobileGps(false); setMobilityStatus('Calculando ruta azul...'); await calcularRutaRealActual(); try{ if(typeof iniciarRastreoGPS==='function') iniciarRastreoGPS(); }catch(e){} describeCurrentRoute(); show('nav'); }
-      if(name==='finish-route' && typeof limpiarRutaReal==='function') { limpiarRutaReal(); setMobilityStatus('Ruta finalizada. Elige un nuevo destino.'); show('mobility'); }
+      if(name==='finish-route' && typeof limpiarRutaReal==='function') { limpiarRutaReal(); setMobilityStatus('Ruta finalizada. Elija un nuevo destino.'); show('mobility'); }
       if(name==='report-gps') { openGpsCommunityReport(); return; }
       if(name==='report-manual') { exitProCityModeIfActive(); show('map'); setTimeout(openManualCommunityReport, 80); return; }
       if(name==='event-map') { openCommunityEventMode(); return; }
@@ -5668,7 +5668,7 @@
       }else if(typeof window.mostrarAccesoNormal === 'function'){
         window.mostrarAccesoNormal();
       }else{
-        alert('Abre el registro ciudadano.');
+        alert('Abra el registro ciudadano.');
       }
       return;
     }
@@ -5727,7 +5727,7 @@
       if(role === 'admin'){
         ev.preventDefault();
         ev.stopPropagation();
-        alert('El acceso administrador por clave local fue desactivado por seguridad. Usa autenticación verificada desde backend.');
+        alert('El acceso administrador por clave local fue desactivado por seguridad. Use autenticación verificada desde backend.');
         return;
       }
 

@@ -45,11 +45,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- Lo que comparte con el panel del curso: referencia, anillos, calor. Va
        antes de css/60 para que la hoja propia de esta pantalla pueda ajustar. -->
-  <link rel="stylesheet" href="css/57-comparar-sector.css?v=907-el-historial-satelital-y-el-acuse" />
-  <link rel="stylesheet" href="css/60-analisis-ia.css?v=907-el-historial-satelital-y-el-acuse" />
+  <link rel="stylesheet" href="css/57-comparar-sector.css?v=908-la-aplicacion-habla-de-usted" />
+  <link rel="stylesheet" href="css/60-analisis-ia.css?v=908-la-aplicacion-habla-de-usted" />
   <!-- La pantalla de licencia vive en las dos páginas, y esta no carga
        css/main.css, así que su hoja va enlazada aparte. -->
-  <link rel="stylesheet" href="css/69-licencia.css?v=907-el-historial-satelital-y-el-acuse" />
+  <link rel="stylesheet" href="css/69-licencia.css?v=908-la-aplicacion-habla-de-usted" />
 </head>
 <body>
 
@@ -82,7 +82,7 @@
       <section id="aia-wizard">
 
         <div class="aia-paso" id="aia-paso-lote">
-          <h3><span class="aia-num">1</span> Selecciona el lote</h3>
+          <h3><span class="aia-num">1</span> Seleccione el lote</h3>
           <input id="aia-buscar-direccion" type="text" autocomplete="off"
                  placeholder="Buscar dirección en Cúcuta…" />
           <ul id="aia-sugerencias" hidden></ul>
@@ -96,10 +96,10 @@
             <button id="aia-coords-ok" type="button">OK</button>
           </div>
           <div class="aia-mini-form" id="aia-form-gmaps" hidden>
-            <input id="aia-gmaps-url" type="text" placeholder="Pega el enlace de Google Maps" />
+            <input id="aia-gmaps-url" type="text" placeholder="Pegue el enlace de Google Maps" />
             <button id="aia-gmaps-ok" type="button">OK</button>
           </div>
-          <p id="aia-lote-estado">Toca el mapa para marcar el lote</p>
+          <p id="aia-lote-estado">Toque el mapa para marcar el lote</p>
         </div>
 
         <div class="aia-paso" id="aia-paso-radio">
@@ -160,11 +160,11 @@
           <h3><span class="aia-num">5</span> Nombre del proyecto <em>(opcional)</em></h3>
           <input id="aia-nombre-proyecto" type="text" maxlength="80" autocomplete="off"
                  placeholder="Ej. Libertadores Plaza, Torre Norte, Lote Av. 0…" />
-          <p class="aia-nombre-ayuda">Así lo vas a reconocer luego en "Mis análisis" y en el PDF.
-            Si lo dejas vacío, se usa el nombre del proyecto propuesto.</p>
+          <p class="aia-nombre-ayuda">Así lo va a reconocer luego en "Mis análisis" y en el PDF.
+            Si lo deja vacío, se usa el nombre del proyecto propuesto.</p>
         </div>
 
-        <button id="aia-btn-analizar" type="button" disabled>⚡ Elige lote, estudio y proyecto</button>
+        <button id="aia-btn-analizar" type="button" disabled>⚡ Elija lote, estudio y proyecto</button>
       </section>
 
       <section id="aia-cargando" hidden>
@@ -198,16 +198,16 @@
 
           <div id="aia-uso-panel-agregar">
             <h3 id="aia-uso-titulo">➕ Agregar un uso al análisis</h3>
-            <p class="aia-agregar-ayuda">Para los locales que existen en la calle pero que todavía no están en el mapa abierto. Suman al análisis igual que los descargados y quedan señalados como añadidos por ti.</p>
+            <p class="aia-agregar-ayuda">Para los locales que existen en la calle pero que todavía no están en el mapa abierto. Suman al análisis igual que los descargados y quedan señalados como añadidos por usted.</p>
             <label for="aia-uso-sub">Qué es</label>
             <select id="aia-uso-sub"></select>
             <label for="aia-uso-nombre">Cómo se llama <small>(opcional)</small></label>
             <input id="aia-uso-nombre" type="text" placeholder="Smart Fit, Ventura Plaza…" autocomplete="off">
             <details class="aia-uso-ficha">
               <summary>Ficha del edificio <small>(opcional)</small></summary>
-              <p class="aia-uso-ficha-ayuda">Si estás parado frente al inmueble, esto entra en el
+              <p class="aia-uso-ficha-ayuda">Si está parado frente al inmueble, esto entra en el
                 análisis: los pisos pesan en el flujo peatonal y lo que hay a nivel de calle decide
-                si hace acera o no. Lo que no puedas determinar, déjalo sin registrar.</p>
+                si hace acera o no. Lo que no pueda determinar, déjalo sin registrar.</p>
               <label for="aia-uso-material">De qué está hecho</label>
               <select id="aia-uso-material"></select>
               <label for="aia-uso-pisos">Cuántos pisos</label>
@@ -227,7 +227,7 @@
 
           <div id="aia-uso-panel-mios" hidden>
             <h3>✏️ Los usos que yo agregué</h3>
-            <p class="aia-agregar-ayuda">Solo los tuyos, sin los cientos de puntos descargados. Toca uno para verlo en el mapa.</p>
+            <p class="aia-agregar-ayuda">Solo los suyos, sin los cientos de puntos descargados. Toque uno para verlo en el mapa.</p>
             <div id="aia-uso-lista"></div>
             <div class="aia-uso-botones">
               <button id="aia-uso-volver" type="button">← Volver al análisis</button>
@@ -344,7 +344,7 @@
           </div>
         </label>
         <label>Generado por (opcional)
-          <input id="aia-exp-autor" type="text" placeholder="Tu nombre o el de la constructora" />
+          <input id="aia-exp-autor" type="text" placeholder="Su nombre o el de la constructora" />
         </label>
         <button id="aia-exp-previsualizar" type="button">👁️ Previsualizar informe (1 hoja)</button>
 
@@ -366,17 +366,17 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/00-config.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/03b-edificio-vocabulario.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/56-calor.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/57-referencia.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/58-anillos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/59-analisis-ia-catalogo.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/66-analisis-remoto.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/69-licencia.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/67-analisis-cliente.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/61-analisis-ia-datos.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/63-analisis-ia-informe.js?v=907-el-historial-satelital-y-el-acuse"></script>
-<script src="js/62-analisis-ia-app.js?v=907-el-historial-satelital-y-el-acuse"></script>
+<script src="js/00-config.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/03b-edificio-vocabulario.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/56-calor.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/57-referencia.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/58-anillos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/59-analisis-ia-catalogo.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/66-analisis-remoto.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/69-licencia.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/67-analisis-cliente.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/61-analisis-ia-datos.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/63-analisis-ia-informe.js?v=908-la-aplicacion-habla-de-usted"></script>
+<script src="js/62-analisis-ia-app.js?v=908-la-aplicacion-habla-de-usted"></script>
 </body>
 </html>

@@ -72,7 +72,7 @@
           <h3 style="color:var(--fuchsia);">🛡️ Panel de Verificación</h3>
           ${denunciados}
           <div class="admin-alert-box">
-              <b style="color:#ff9f43; font-size:1.1rem;">⚠️ Tienes ${pendientes.length} reporte(s) por confirmar:</b>
+              <b style="color:#ff9f43; font-size:1.1rem;">⚠️ Tiene ${pendientes.length} reporte(s) por confirmar:</b>
               <div style="margin-top:10px; max-height: 150px; overflow-y:auto; padding-right:5px;" class="cats-container">`;
       
       pendientes.forEach(p => {

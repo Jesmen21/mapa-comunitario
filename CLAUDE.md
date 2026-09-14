@@ -4980,6 +4980,184 @@ La octava —la concordancia— no falla contra la v906 por no existir el panel
 que la produce. Es una guarda contra el defecto que esta misma tanda cometió,
 no una afirmación nueva.
 
+## Toda la aplicación habla de usted (v908)
+
+§9 del pliego de ajustes v2, en la mitad que la v903 dejó pendiente con su
+número: «Los 209 casos del resto de la aplicación… la decisión está tomada,
+unificá todo en usted. Es producto colombiano y dejarlo mezclado se nota más
+que cualquiera de las dos opciones. Hacelo en su propio commit, aparte de la
+lámina.»
+
+Medidos, eran **376 en 35 archivos**, no 209 — y la diferencia no es que la
+v903 contara mal: contó **pronombres**, y el grueso del tuteo son los
+imperativos («Pulsa», «Elige», «Ingresa»), los pretéritos («¿Olvidaste?»,
+«Llegaste») y los enclíticos («Compártelo», «moverte»), que ningún barrido de
+pronombres ve.
+
+### Dónde mira la guarda, y por qué no es donde miraba la del voseo
+
+La v903 dejó escrito que una guarda de tuteo sobre los ARCHIVOS no sirve:
+«te» y «tu» casan dentro de `var te = ter.elevacion` y de un nombre de
+variable, y una guarda con esa clase de falso positivo termina con una lista
+de excepciones que envejece hasta no significar nada. Por eso allá la guarda
+se puso sobre el PAPEL —los nodos de texto de las dos láminas compuestas—,
+donde no hay identificadores.
+
+El resto de la aplicación no tiene papel: son pantallas. Así que el recorrido
+cambia de signo. La guarda del voseo marca lo que está **fuera de un
+comentario**, que incluye el código; esta marca lo que está **dentro de una
+cadena**, que lo excluye. Con eso los 28 falsos positivos de identificador
+desaparecen sin una sola excepción escrita.
+
+#### El `${…}` de una plantilla es CÓDIGO
+
+El agujero del recorrido, y por poco. Un autómata que abre cadena en la
+comilla invertida y la cierra en la siguiente marca como texto TODO lo de en
+medio — incluido `${demoDias.has(dia)}` y `${hor.abre}`. El primer barrido
+escribió `demoDias.ha(dia)` y `value="${hor.abra}"`: **dos roturas de código
+hechas por un reemplazo de idioma**, y ninguna da error en ninguna parte
+hasta que alguien abre esa pantalla.
+
+Se cuentan las llaves para que un objeto literal adentro no cierre antes de
+tiempo, y las comillas de adentro para que una cadena con `}` no descoloque la
+cuenta. Y se comprueba contra el caso que lo rompió, que es la regla de la
+v879 con la regex de `js/68`: se mide **dónde cae cada cosa** —el «te» de
+código fuera, el `${}` fuera, el «tu» del texto dentro—, no que no reviente.
+
+### De qué responde la guarda, dicho entero
+
+Es la decisión de la v880 con las formas en -é y en -í del voseo: **decirlo
+importa más que tenerlo.**
+
+| Clase | Cómo se persigue |
+|---|---|
+| Pronombres: `tú`, `ti`, `contigo`, `tuyo/a/os/as`, `tu`, `tus`, `te` | **estructural**, falla cerrado — ninguno es otra cosa en castellano |
+| Futuro en -ás: `podrás`, `verás`, `llegarás` | **estructural** con lista de permitidas, la misma forma que la guarda de -á |
+| Presente, subjuntivo, pretérito e **imperativos** | **vocabulario**, y por tanto falla ABIERTO |
+
+La tercera fila es la que importa y no tiene arreglo: **la forma de tú es
+idéntica a la de tercera persona**, y a veces a un sustantivo. «Marca el
+punto» y «la app marca el punto» se escriben igual; «Recarga la app» y
+«Recarga de acuíferos» también. Los dos salieron en esta tanda, y los dos los
+cazó leer el reemplazo, no una regla.
+
+Queda **una** excepción declarada con su razón, como el `leeme` de la v897:
+en la lista de palabras con las que se busca un oficio en la vitrina, «te» es
+la infusión.
+
+### Lo que un reemplazo automático deja a medias, otra vez
+
+Es literalmente la lección de la v878 —«cambiar el pronombre no conjuga los
+verbos de alrededor»— y salió en tres formas distintas, las tres solo
+visibles leyendo lo cambiado:
+
+* **`te` es «le» o «se» según el verbo**, y eso no se decide sin leer. «URBIS
+  te ayudará» es «le ayudará»; «te saliste de la ruta» es «se salió». Se
+  dejaron los 42 fuera del automático a propósito y se hicieron uno por uno.
+* **El segundo imperativo de una frase coordinada.** El barrido solo toca el
+  que ABRE la frase —un imperativo a media frase es indistinguible de una
+  tercera persona—, así que quedaron 47 «Cierre sesión y **vuelve** a entrar»,
+  «Seleccione Colombia o **escribe** su país», «Dibuje y **cierra** un
+  polígono». Se buscan con un barrido propio: la forma ambigua precedida de
+  «y», «o» o «luego».
+* **El enclítico.** «Ponle nombre», «Búscalos», «Confírmalo», «Márcalos»,
+  «Complétala», «Escríbele» — la tilde se mueve al pasar a usted
+  («Póngale», «Búsquelos») y ninguna regla de terminación los ve.
+
+### Una cadena que no es texto: tres clases, y las tres rompen algo
+
+El riesgo que no tiene la guarda del voseo, porque el voseo solo aparece en
+prosa: **dentro de una cadena hay cosas que no le hablan a nadie**, y un
+reemplazo de idioma las reescribe igual. Las tres salieron leyendo el
+reemplazo y las tres rompían algo que no da error:
+
+* **Un nombre de clase.** `classList.toggle('activa', …)` pasó a `'active'`
+  por el imperativo de «activar», en `js/90` y en `js/20`. En Visión
+  Territorial eso es el conmutador de pantallas: la hoja de estilo pinta
+  `.vt-pantalla.activa` y a partir de ahí **ninguna pantalla se mostraba**.
+  Es el defecto de la v895 —una clase que ninguna regla pinta— creado por un
+  cambio de idioma. Lo cazó `tvision` con un clic que esperaba 58 veces un
+  botón invisible.
+* **Un valor de formulario.** `<option value="TI">Tarjeta de identidad (TI)`
+  pasó a `value="USTED"`. **TI es el código del tipo de documento** y viaja al
+  servidor: la cuenta se habría creado con un tipo que no existe. Se devolvió,
+  y como la guarda lo denuncia con razón, va en su lista de excepciones con la
+  razón escrita — igual que el `leeme` de la v897.
+* **Una clave guardada.** `sub: 'ganaste'` y `n.sub === 'ganaste'` cambiaron
+  los dos a `'ganó'`, así que el código quedaba coherente consigo mismo… y
+  mudo para los avisos que una persona ya tenía en `localStorage`. Es la regla
+  de la v878 con el id de una caja renombrada: **el identificador no es texto,
+  y cambiarlo rompe lo que ya está guardado.** Solo se cambió el título que se
+  lee.
+
+La comprobación que las encontró no fue leer el diff renglón a renglón: fue
+buscar, entre las líneas cambiadas, **las cadenas que son UNA sola palabra**.
+La prosa casi nunca lo es; un token siempre. Salieron cuatro candidatas y tres
+eran defectos.
+
+### Tres imperativos que no lo eran, y se vieron leyendo
+
+Las tres son cifras correctas dichas por una forma que también es otra cosa,
+que es la clase de la v874:
+
+* **`'Recarga de acuíferos'`** — un uso del suelo en la lista de valores
+  ambientales, convertido en «Recargue de acuíferos».
+* **`'marca=' + tags.brand`** — el rótulo de la etiqueta de OpenStreetMap,
+  convertido en «marque=».
+* **`'✅ sigue ahí'` / `'🔄 Sigue activo'`** — el estado de un reporte que otro
+  vecino confirma, convertido en una orden al lector. Y con él «El reporte NO
+  se publica: sigue esperando», que es el reporte y no la persona.
+
+Y una que sí lo era y parecía no serlo: **`<span>Convierte datos en
+decisiones</span>`** en la portada. Leída sola parece tercera persona; leída
+en su fila —«Mapea su barrio», «Reporta en vivo», «Analiza su ciudad», bajo un
+`aria-label` que dice «Qué puede hacer en URBIS»— es un imperativo, y encima
+mezclado con el «su» de usted en la misma frase. **Se vio mirando la pantalla
+de la que sale, no la cadena.**
+
+### Un futuro nuevo cuesta un renglón, y así tiene que ser
+
+Al convertir `llegarás` en `llegará`, la guarda del VOSEO lo denunció: su
+lista `FUTURO_3A` no lo traía. No es un fallo, es el contrato que la v880
+dejó escrito —«un imperativo voseante nuevo sale denunciado solo; un futuro
+nuevo cuesta un renglón y se ve en rojo hasta que alguien lo agregue»— y es
+la primera vez que se cobra. Se agregó el renglón.
+
+### La guarda encontró dos archivos que el barrido no miraba
+
+`js/62` y `js/78` quedaron fuera de la lista de archivos por el filtro del
+módulo educativo —que la v903 ya había hecho— pero la v903 solo tocó la
+LÁMINA, no esos dos. La guarda los denunció al primer intento: «Agregado por
+ti», «Tú no estás compartiendo», «Necesitas una sesión iniciada». Es
+exactamente para lo que se escribe una guarda que recorre el disco y no una
+lista escrita.
+
+### Lo que NO se tocó
+
+Los comentarios del código. El alcance es lo que sale en pantalla, que es la
+misma decisión de la v878: el tuteo de un comentario lo lee quien programa; el
+de una cadena lo lee un ciudadano en su teléfono. Y el nombre de una clase o
+de un identificador tampoco se toca — `pcr-tu-*` no es texto.
+
+### Ocho suites citaban el texto viejo
+
+Como las catorce de la v878: `tcorregir` («Te piden corregir»), `tintentos`
+(«te saliste del top»), `tpresencia` («Tú no estás compartiendo»), `tpremio`
+(«Ganaste», «Tu premio»), `tvitrina` («no es tuyo»), y `tgraficos` y `tedu`,
+que reimplementan a propósito la regla de la referencia —«el más alto de tus
+N»— para cazar a quien afloje el mínimo o se olvide de excluir el sector
+actual. Todas se actualizaron al texto de ahora.
+
+La octava, `tvision`, **no citaba nada**: se cayó por el `activa` de arriba, y
+es la única de las ocho que denunciaba un fallo de verdad.
+
+### Demostrado contra la v907
+
+**376 denuncias en 35 archivos**, con archivo y línea: «js/02-auth-roles.js:192
+tu · …:195 Estás · js/05:385 TU…». Cero después. Y la comprobación del
+recorrido pasa contra las dos versiones a propósito: es una guarda contra que
+el autómata vuelva a perderse, no una afirmación nueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

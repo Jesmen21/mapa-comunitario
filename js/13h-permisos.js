@@ -150,7 +150,7 @@
         '<button type="button" id="uper-buscar-btn">Buscar</button>' +
       '</div>' +
       '<p class="uper-ayuda">La persona tiene que estar registrada en URBIS con su propia cuenta. ' +
-      'Búscala y marca solo lo que quieras darle.</p>' +
+      'Búsquela y marque solo lo que quiera darle.</p>' +
       '<div class="uper-resultado"></div>' +
       '<div class="uper-equipo"><b>Con permisos ahora</b><div class="uper-lista">Cargando…</div></div>';
 

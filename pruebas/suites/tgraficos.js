@@ -172,8 +172,8 @@ function refEsperada(col) {
   const otros = CIFRAS.filter(c => c[0] !== ABIERTO).map(c => c[col]).sort((a, b) => a - b);
   if (otros.length < REF_MINIMO) return null;
   const min = otros[0], max = otros[otros.length - 1];
-  if (yo > max) return 'el más alto de tus ' + (otros.length + 1);
-  if (yo < min) return 'el más bajo de tus ' + (otros.length + 1);
+  if (yo > max) return 'el más alto de sus ' + (otros.length + 1);
+  if (yo < min) return 'el más bajo de sus ' + (otros.length + 1);
   return 'por encima de ' + otros.filter(v => v < yo).length + ' de ' + otros.length;
 }
 

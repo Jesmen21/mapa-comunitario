@@ -44,8 +44,8 @@
     // del rango se pega al extremo, y el texto lo dice: quedarse callado ahí
     // sería lo mismo que mentir con un 0 % o un 100 %.
     var pct = rango <= 0 ? 50 : Math.max(0, Math.min(100, ((actual - min) / rango) * 100));
-    var texto = actual > max ? 'el más alto de tus ' + (vals.length + 1)
-              : actual < min ? 'el más bajo de tus ' + (vals.length + 1)
+    var texto = actual > max ? 'el más alto de sus ' + (vals.length + 1)
+              : actual < min ? 'el más bajo de sus ' + (vals.length + 1)
               : 'por encima de ' + debajo + ' de ' + vals.length;
     return { n: vals.length, min: min, max: max, pct: pct, debajo: debajo, texto: texto };
   }
@@ -53,7 +53,7 @@
   function html(otros, actual) {
     var r = calcular(otros, actual);
     if (!r) return '';
-    return '<span class="urb-ref" title="Comparado con tus ' + r.n + ' sectores">' +
+    return '<span class="urb-ref" title="Comparado con sus ' + r.n + ' sectores">' +
       '<span class="urb-ref-riel"><i style="left:' + r.pct.toFixed(1) + '%"></i></span>' +
       '<em>' + esc(r.texto) + '</em></span>';
   }

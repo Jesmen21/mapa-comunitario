@@ -323,7 +323,7 @@ const FILAS = [
     chk(r.inventado === false, 'y un id inventado no abre nada (' + r.inventado + ')');
     chk(r.ahoraSuyo === false, 'al cambiar de usuario, ese emprendimiento deja de ser suyo');
     chk(r.escribio === false, 'y guardar NO escribe: el portero está en la escritura, no en el botón');
-    chk(/no es tuyo/i.test(r.error || ''), 'lo dice con nombre: "' + (r.error || '(sin mensaje)').slice(0, 60) + '"');
+    chk(/no es suyo/i.test(r.error || ''), 'lo dice con nombre: "' + (r.error || '(sin mensaje)').slice(0, 60) + '"');
     errores.push(...err); await ctx.close();
   }
 

@@ -138,21 +138,21 @@
 
   const EXPLICACION = {
     foto: {
-      titulo: 'Para subir una foto, verifica tu cuenta',
+      titulo: 'Para subir una foto, verifica su cuenta',
       porque: 'Una foto anónima sobre el mapa de un barrio es la vía más corta para que alguien publique una obscenidad o la cara de un vecino. Con la cuenta verificada, quien lo haga responde por ello.',
-      publico: 'Tu documento y tu celular <b>no salen en el mapa</b>. En tu reporte se ve tu usuario, nada más.'
+      publico: 'Su documento y su celular <b>no salen en el mapa</b>. En su reporte se ve su usuario, nada más.'
     },
     conflicto: {
-      titulo: 'Para publicar esto, verifica tu cuenta',
+      titulo: 'Para publicar esto, verifica su cuenta',
       porque: 'Un dato falso sobre un grupo armado pone en peligro a gente real. Por eso este tipo de reporte solo lo publican cuentas verificadas.',
-      publico: '<b>Tu nombre NO va a aparecer.</b> Este reporte sale como anónimo en el mapa: URBIS sabe quién lo publicó, pero nadie más. Puedes reportar con tranquilidad.'
+      publico: '<b>Su nombre NO va a aparecer.</b> Este reporte sale como anónimo en el mapa: URBIS sabe quién lo publicó, pero nadie más. Puede reportar con tranquilidad.'
     },
     // Respaldo por si algún día se pide verificación para otra cosa: una hoja
     // sin texto sería peor que no pedir nada.
     sensible: {
-      titulo: 'Para publicar esto, verifica tu cuenta',
+      titulo: 'Para publicar esto, verifica su cuenta',
       porque: 'Es una categoría delicada y un reporte falso aquí hace daño. Con la cuenta verificada, cada reporte tiene alguien detrás.',
-      publico: 'Tu documento y tu celular <b>no salen en el mapa</b>. En tu reporte se ve tu usuario, nada más.'
+      publico: 'Su documento y su celular <b>no salen en el mapa</b>. En su reporte se ve su usuario, nada más.'
     }
   };
 
@@ -162,7 +162,7 @@
   window.urbisExigirNivel2 = function (motivo) {
     if (window.urbisNivelCuenta() === 2) return Promise.resolve(true);
     if (window.urbisNivelCuenta() === 0) {
-      alert('Inicia sesión en URBIS para poder publicar esto.');
+      alert('Inicie sesión en URBIS para poder publicar esto.');
       return Promise.resolve(false);
     }
     const txt = EXPLICACION[motivo] || EXPLICACION.sensible;
@@ -213,10 +213,10 @@
         const apellidos = limpio(ov.querySelector('#n2-apellidos').value);
         const cedula = soloDigitos(ov.querySelector('#n2-cedula').value);
         const celular = soloDigitos(ov.querySelector('#n2-celular').value);
-        if (nombres.length < 2) return error('Escribe tus nombres.');
-        if (apellidos.length < 2) return error('Escribe tus apellidos.');
-        if (cedula.length < 5) return error('Escribe tu número de documento.');
-        if (celular.length < 7) return error('Escribe tu número de celular.');
+        if (nombres.length < 2) return error('Escriba sus nombres.');
+        if (apellidos.length < 2) return error('Escriba sus apellidos.');
+        if (cedula.length < 5) return error('Escriba su número de documento.');
+        if (celular.length < 7) return error('Escriba su número de celular.');
 
         boton.disabled = true; boton.textContent = 'Verificando…';
         const datos = { usuario: s.usuario || '', correo: s.correo || '',
@@ -241,7 +241,7 @@
           if (r.pendiente) {
             encolar(datos);
             cerrar(true);
-            alert('Listo, ya puedes publicar.\n\nTus datos quedaron guardados en este teléfono; se enviarán al servidor de URBIS en cuanto esté disponible.');
+            alert('Listo, ya puede publicar.\n\nTus datos quedaron guardados en este teléfono; se enviarán al servidor de URBIS en cuanto esté disponible.');
             return;
           }
           try { localStorage.removeItem(COLA); } catch (e) {}

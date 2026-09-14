@@ -35,7 +35,7 @@
   };
 
   function simularGoogleAuth() {
-      alert("🌐 MODO DESARROLLADOR: La interfaz visual está lista. En la siguiente fase conectaremos Firebase Authentication para que el inicio con Google funcione de verdad. Por ahora, llena tus datos manualmente abajo.");
+      alert("🌐 MODO DESARROLLADOR: La interfaz visual está lista. En la siguiente fase conectaremos Firebase Authentication para que el inicio con Google funcione de verdad. Por ahora, llena sus datos manualmente abajo.");
   }
 
   function activarFeedbackUI() {
@@ -104,7 +104,7 @@
   function mostrarCajaAdmin() { mostrarAccesoNormal(); }
 
   function usarDatosDemoCiudadano() {
-      alert('El ingreso directo de pruebas fue desactivado por seguridad. Completa el registro ciudadano.');
+      alert('El ingreso directo de pruebas fue desactivado por seguridad. Complete el registro ciudadano.');
       if(typeof window.URBIS_AUTH?.showCitizenRegistrationForm === 'function') window.URBIS_AUTH.showCitizenRegistrationForm();
   }
 
@@ -125,7 +125,7 @@
 
       // Seguridad: ya no se rellenan datos demo. El ciudadano debe registrar datos reales.
       if(!nameInput || !surnameInput || !usernameInput || !docInput || !phoneInput || !emailInput || !countryInput || (countryInput === 'Colombia' && (!deptInput || !cityInput || !barrioInput))){
-          alert('Completa nombres, apellidos, usuario, documento, celular, correo y ubicación para continuar.');
+          alert('Complete nombres, apellidos, usuario, documento, celular, correo y ubicación para continuar.');
           return false;
       }
       if(!/^[a-z0-9._-]{5,30}$/.test(usernameInput.toLowerCase())){
@@ -173,7 +173,7 @@
       userBaseRoleGlobal = 'admin';
       
       const pass = document.getElementById('admin-pass').value;
-      alert('Acceso administrador por clave local desactivado por seguridad. Usa autenticación del lado servidor.');
+      alert('Acceso administrador por clave local desactivado por seguridad. Use autenticación del lado servidor.');
   }
 
 
@@ -189,10 +189,10 @@
       const desc = document.getElementById('profile-access-description');
       if(title) title.textContent = badge.innerText;
       if(desc) desc.textContent = userRole === 'gov'
-        ? 'Tienes habilitadas funciones de JAC/funcionario mientras conservas tu perfil ciudadano.'
+        ? 'Tiene habilitadas funciones de JAC/funcionario mientras conservas su perfil ciudadano.'
         : userRole === 'edu'
-          ? 'Tienes habilitado el modo educativo y avanzado mientras conservas tu perfil ciudadano.'
-          : 'Estás usando URBIS como ciudadano. Puedes solicitar permisos temporales de JAC o modo educativo.';
+          ? 'Tiene habilitado el modo educativo y avanzado mientras conservas su perfil ciudadano.'
+          : 'Está usando URBIS como ciudadano. Puede solicitar permisos temporales de JAC o modo educativo.';
       const basic = document.getElementById('profile-basic-data');
       if(basic) {
           const genero = userGenderGlobal === 'femenino' ? 'Femenino / mujer'

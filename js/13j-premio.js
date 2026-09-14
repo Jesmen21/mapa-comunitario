@@ -254,12 +254,12 @@
       guardarPuesto(ev.juegoId, m.pos);
       if (antes == null || m.pos <= antes) return; // primera vez, o subí: nada que decir
       const queda = restante(ev.expira);
-      const donde = m.exacto ? ('vas ' + ordinal(m.pos)) : ('te saliste del top ' + t.length);
+      const donde = m.exacto ? ('va ' + ordinal(m.pos)) : ('se salió del top ' + t.length);
       meter({ type: 'premio', sub: 'pasado', id: 'premio_pasado_' + ev.juegoId + '_' + m.pos, ev: ev,
               pos: m.pos, antes: antes,
-              titulo: '📉 Te pasaron en «' + ev.titulo + '»',
-              mensaje: 'Ibas ' + ordinal(antes) + ' y ' + donde + '. ' +
-                       (queda ? queda + '. ' : '') + 'Todavía puedes recuperarlo.' });
+              titulo: '📉 Lo pasaron en «' + ev.titulo + '»',
+              mensaje: 'Iba ' + ordinal(antes) + ' y ' + donde + '. ' +
+                       (queda ? queda + '. ' : '') + 'Todavía puede recuperarlo.' });
     });
   }
 
@@ -283,11 +283,11 @@
       const rec = reclamoDe(ev.juegoId, u);
       if (!rec) {
         meter({ type: 'premio', sub: 'ganaste', id: 'premio_ganaste_' + ev.juegoId, ev: ev, puntos: g.puntos,
-                titulo: '🏆 ¡Ganaste «' + ev.titulo + '»!', mensaje: 'Quedaste #1 con ' + g.puntos + ' pts. Reclama tu premio: ' + ev.premio + '.' });
+                titulo: '🏆 ¡Ganó «' + ev.titulo + '»!', mensaje: 'Quedó #1 con ' + g.puntos + ' pts. Reclame su premio: ' + ev.premio + '.' });
       } else {
         const e = ESTADOS[rec.estado];
         meter({ type: 'premio', sub: 'mio', id: 'premio_mio_' + ev.juegoId + '_' + rec.estado, ev: ev, rec: rec,
-                titulo: (rec.estado === 'pagado' ? '✅ Premio pagado · ' : '🏆 Tu premio · ') + ev.titulo,
+                titulo: (rec.estado === 'pagado' ? '✅ Premio pagado · ' : '🏆 Su premio · ') + ev.titulo,
                 mensaje: e.t + ': ' + e.d });
       }
     });
@@ -371,7 +371,7 @@
     return '🏆 Reclamo del premio de «' + ev.titulo + '» (' + ev.juegoId + '). Quedé #1. Premio: ' + ev.premio + '. Soy @' + u + '. Cuéntenme cómo me lo envían.';
   }
   function mensajeAtiendo(rec, admin) {
-    return 'Hola @' + rec.ganador + ', soy @' + admin + ' de URBIS. Vi que ganaste «' + rec.titulo + '» y te atiendo el pago de ' + rec.premio + '. ¿Por qué medio te lo enviamos (Nequi, Daviplata, cuenta bancaria) y a qué número?';
+    return 'Hola @' + rec.ganador + ', soy @' + admin + ' de URBIS. Vi que ganó «' + rec.titulo + '» y le atiendo el pago de ' + rec.premio + '. ¿Por qué medio se lo enviamos (Nequi, Daviplata, cuenta bancaria) y a qué número?';
   }
   function mensajePagado(rec, admin) {
     return '✅ Premio de «' + rec.titulo + '» (' + rec.premio + ') enviado. Lo marco como pagado. ¡Felicitaciones, @' + rec.ganador + '! — @' + admin;
@@ -388,12 +388,12 @@
 
   window.urbisReclamarPremio = async function (juegoId) {
     const u = yo();
-    if (!u) { alert('Inicia sesión con la cuenta que jugó para reclamar el premio.'); return false; }
+    if (!u) { alert('Inicie sesión con la cuenta que jugó para reclamar el premio.'); return false; }
     const ev = eventoPorJuego(juegoId);
     if (!ev) { alert('No encontramos ese evento.'); return false; }
     if (!ev.terminado) { alert('El evento todavía no termina. El premio se reclama cuando cierre la competencia.'); return false; }
     const g = ganadorDe(juegoId);
-    if (!g) { alert('Todavía no llega la tabla del evento. Intenta en un momento.'); return false; }
+    if (!g) { alert('Todavía no llega la tabla del evento. Intente en un momento.'); return false; }
     if (!mismo(g.usuario, u)) { alert('El ranking del evento dice que el #1 es @' + g.usuario + '. Solo el #1 puede reclamar.'); return false; }
     const ya = reclamoDe(juegoId, u);
     if (ya) { abrirChat(ya.admin || adminPorDefecto()); return true; }
@@ -409,7 +409,7 @@
     }
     (window.urbisPremiosFilas = window.urbisPremiosFilas || []).push(fila);
     await enviar(adminPorDefecto(), mensajeReclamo(ev, u));
-    toast('🏆 Premio reclamado', 'Los administradores de URBIS ya lo ven. Te escribirán por el chat del premio.');
+    toast('🏆 Premio reclamado', 'Los administradores de URBIS ya lo ven. Le escribirán por el chat del premio.');
     recargarAvisos();
     abrirChat(adminPorDefecto());
     return true;
@@ -419,7 +419,7 @@
     if (!esAdmin()) { alert('Solo un administrador de URBIS puede hacer esto.'); return false; }
     const admin = yo().toLowerCase();
     const fila = (window.urbisPremiosFilas || []).find(p => String(p.descripcion || '') === descVieja);
-    if (!fila) { alert('No encontramos el reclamo. Actualiza y vuelve a intentar.'); return false; }
+    if (!fila) { alert('No encontramos el reclamo. Actualice y vuelva a intentar.'); return false; }
     const rec = leerFila(fila);
     const nuevo = sobreDe(Object.assign({}, rec, { estado: estado, admin: estado === 'en-pago' ? admin : (rec.admin || admin) }));
     try {
@@ -448,7 +448,7 @@
     if (a === 'reclamar') window.urbisReclamarPremio(ds.premioJuego);
     else if (a === 'chat') abrirChat(ds.premioCon);
     else if (a === 'atender') { b.disabled = true; window.urbisAtenderPremio(ds.premioDesc).then(ok => { if (!ok) b.disabled = false; }); }
-    else if (a === 'pagado') { if (confirm('¿Ya enviaste el premio? Se marcará como pagado y se le avisará al ganador por el chat.')) { b.disabled = true; window.urbisMarcarPremioPagado(ds.premioDesc).then(ok => { if (!ok) b.disabled = false; }); } }
+    else if (a === 'pagado') { if (confirm('¿Ya envió el premio? Se marcará como pagado y se le avisará al ganador por el chat.')) { b.disabled = true; window.urbisMarcarPremioPagado(ds.premioDesc).then(ok => { if (!ok) b.disabled = false; }); } }
     else if (a === 'jugar') { try { if (typeof window.urbisJugarAurea === 'function') window.urbisJugarAurea(ds.premioJuego, ds.premioTitulo); } catch (e) {} }
     else if (a === 'ranking') { try { if (typeof window.urbisVerGanadorAurea === 'function') window.urbisVerGanadorAurea(ds.premioJuego, ds.premioTitulo); } catch (e) {} }
     else if (a === 'abrir') { try { if (typeof window.urbisAbrirAureaModulo === 'function') window.urbisAbrirAureaModulo(ds.premioJuego, ds.premioTitulo, ds.premioPremio, ds.premioFin, ds.premioTerminado === '1'); } catch (e) {} }
@@ -482,11 +482,11 @@
     const rec = reclamoDe(ctx.juegoId);
     if (u && mismo(top.usuario, u)) {
       if (!rec) {
-        return '<div class="premio-hub premio-hub-gana"><b>🏆 ¡Ganaste este evento!</b><small>' + esc(ctx.premio) + ' · reclámalo y un administrador de URBIS te escribe por el chat.</small>' +
+        return '<div class="premio-hub premio-hub-gana"><b>🏆 ¡Ganó este evento!</b><small>' + esc(ctx.premio) + ' · reclámelo y un administrador de URBIS le escribe por el chat.</small>' +
           boton('reclamar', '🏆 Reclamar mi premio', { juego: ctx.juegoId }, 'premio-btn-oro premio-hub-btn') + '</div>';
       }
       const e = ESTADOS[rec.estado];
-      return '<div class="premio-hub premio-estado-' + e.cls + '"><b>' + (rec.estado === 'pagado' ? '✅ Premio pagado' : '🏆 Tu premio: ' + esc(e.t)) + '</b><small>' + esc(e.d) + '</small>' +
+      return '<div class="premio-hub premio-estado-' + e.cls + '"><b>' + (rec.estado === 'pagado' ? '✅ Premio pagado' : '🏆 Su premio: ' + esc(e.t)) + '</b><small>' + esc(e.d) + '</small>' +
         boton('chat', '💬 Chat del premio', { con: rec.admin || adminPorDefecto(), juego: ctx.juegoId }, 'premio-btn-oro premio-hub-btn') + '</div>';
     }
     if (esAdmin() && rec) {

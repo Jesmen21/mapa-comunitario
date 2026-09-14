@@ -678,11 +678,11 @@ const server = http.createServer((req, res) => {
   const refDe = t => (r.refs.find(k => k.etq.indexOf(t) === 0) || {}).ref;
   chk(r.refs.length === 4, 'los cuatro KPI del curso siguen ahí (' + r.refs.length + ')');
   chk(['Habitantes', 'Flujo a pie', 'Flujo vehicular', 'Usos leídos']
-        .every(t => /de 3$|de tus /.test(refDe(t) || '')),
+        .every(t => /de 3$|de sus /.test(refDe(t) || '')),
       'los cuatro se comparan contra los sectores que el curso ya levantó');
   // Las tres fichas sembradas llevan cifras mínimas a propósito: si la
   // referencia comparara contra otra cosa —o no comparara— esto no saldría.
-  chk(refDe('Habitantes') === 'el más alto de tus 4',
+  chk(refDe('Habitantes') === 'el más alto de sus 4',
       'y la comparación es de verdad, no un texto fijo (' + refDe('Habitantes') + ')');
 
   // ── ¿Qué forma tiene la traza? (v803) ─────────────────────────────────

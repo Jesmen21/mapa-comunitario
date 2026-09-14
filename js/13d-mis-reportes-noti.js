@@ -84,7 +84,7 @@
       oculto: oculto,
       dias: v.dias,
       pregunta: !!v.hayQuePreguntar,
-      titulo: (d[1] && d[1] !== 'N/A' ? d[1] : d[0]) || 'Tu reporte'
+      titulo: (d[1] && d[1] !== 'N/A' ? d[1] : d[0]) || 'Su reporte'
     };
   }
 
@@ -113,33 +113,33 @@
       if (!antes) return;             // reporte que aún no habíamos visto
 
       if (antes.validacion === 'Pendiente' && r.validacion === 'Aprobado') {
-        avisos.push(aviso(lat, 'aprobado', '✅', 'Tu reporte ya está publicado',
+        avisos.push(aviso(lat, 'aprobado', '✅', 'Su reporte ya está publicado',
           '“' + r.titulo + '” pasó la revisión y ahora lo ve todo el mundo en el mapa.'));
       }
       const nuevosApoyos = r.apoyos - (antes.apoyos || 0);
       if (nuevosApoyos > 0) {
         avisos.push(aviso(lat, 'apoyo', '👍',
-          nuevosApoyos === 1 ? 'Alguien confirmó tu reporte' : nuevosApoyos + ' personas confirmaron tu reporte',
+          nuevosApoyos === 1 ? 'Alguien confirmó su reporte' : nuevosApoyos + ' personas confirmaron su reporte',
           '“' + r.titulo + '” sigue vigente según la gente que pasa por ahí.'));
       }
       const nuevosNoEsta = r.noEsta - (antes.noEsta || 0);
       if (nuevosNoEsta > 0) {
-        avisos.push(aviso(lat, 'yano', '👌', 'Dicen que tu reporte ya se resolvió',
+        avisos.push(aviso(lat, 'yano', '👌', 'Dicen que su reporte ya se resolvió',
           nuevosNoEsta + (nuevosNoEsta === 1 ? ' persona dice' : ' personas dicen') +
-          ' que “' + r.titulo + '” ya no está. Si sigue ahí, entra y confírmalo.'));
+          ' que “' + r.titulo + '” ya no está. Si sigue ahí, entre y confírmelo.'));
       }
       const nuevosComentarios = r.comentarios - (antes.comentarios || 0);
       if (nuevosComentarios > 0) {
         avisos.push(aviso(lat, 'coment', '💬',
-          nuevosComentarios === 1 ? 'Comentaron tu reporte' : nuevosComentarios + ' comentarios nuevos',
+          nuevosComentarios === 1 ? 'Comentaron su reporte' : nuevosComentarios + ' comentarios nuevos',
           'Hay respuestas en “' + r.titulo + '”.'));
       }
       if (!antes.archivado && r.archivado) {
-        avisos.push(aviso(lat, 'archivado', '📦', 'Tu reporte se archivó',
+        avisos.push(aviso(lat, 'archivado', '📦', 'Su reporte se archivó',
           '“' + r.titulo + '” salió del mapa activo. Queda guardado en el histórico de URBIS.'));
       }
       if (!antes.oculto && r.oculto) {
-        avisos.push(aviso(lat, 'oculto', '🚩', 'Tu contenido está en revisión',
+        avisos.push(aviso(lat, 'oculto', '🚩', 'Su contenido está en revisión',
           '“' + r.titulo + '” se escondió del mapa porque alguien lo denunció. Un moderador lo va a mirar; si fue un error, vuelve.'));
       }
     });
@@ -157,10 +157,10 @@
       const ultimo = Number(avisados[lat] || 0);
       if (ahora - ultimo < ESPERA_RECORDATORIO_MS) return;
       avisados[lat] = ahora;
-      avisos.push(aviso(lat, 'recordatorio', '🕗', '¿Tu reporte sigue vigente?',
+      avisos.push(aviso(lat, 'recordatorio', '🕗', '¿Su reporte sigue vigente?',
         'Nadie da noticias de “' + r.titulo + '” desde hace ' +
         (typeof window.urbisHaceCuanto === 'function' ? window.urbisHaceCuanto(r.dias).replace('hace ', '') : r.dias + ' días') +
-        '. Confírmalo para que no se caiga del mapa.'));
+        '. Confírmelo para que no se caiga del mapa.'));
     });
     guardarJSON(AVISADOS, avisados);
 

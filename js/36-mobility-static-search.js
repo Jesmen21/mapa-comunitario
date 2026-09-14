@@ -59,12 +59,12 @@ function urbisCreateShell() {
     '</div>' +
     '<form class="u88-search" id="u88-search-form" autocomplete="off">' +
       '<div class="u88-search-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M10.7 18.2a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2.4"/><path d="m16.2 16.2 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>' +
-      '<input id="u88-search-input" type="search" placeholder="\u00bfA d\u00f3nde quieres ir?" />' +
+      '<input id="u88-search-input" type="search" placeholder="\u00bfA d\u00f3nde quiere ir?" />' +
       '<button class="u88-gps-btn" id="u88-gps-btn" type="button">' + urbisCutePinIconHtml('u88-gps-btn-img') + '</button>' +
     '</form>' +
     '<div id="u88-search-results"></div>' +
     '<section id="u88-transport-panel">' +
-      '<div class="u88-transport-title"><b>\u00bfC\u00f3mo quieres ir?</b></div>' +
+      '<div class="u88-transport-title"><b>\u00bfC\u00f3mo quiere ir?</b></div>' +
       '<div class="u88-transport-grid">' +
         URBIS_TRANSPORTS.map(function(t) {
           return '<button type="button" data-u88-transport="' + t.key + '"><span>' + t.icon + '</span><small>' + t.label + '</small></button>';
@@ -220,7 +220,7 @@ function urbisSetDest(lat, lng) {
   urbisHideResults();
   urbisHideTransport();
   urbisShowFloating(lat, lng);
-  urbisToast('Destino marcado. Toca "Ir" para continuar.');
+  urbisToast('Destino marcado. Toque "Ir" para continuar.');
 }
 
 function urbisCancelDest() {
@@ -247,11 +247,11 @@ function urbisCancelDest() {
 }
 
 function urbisConfirmDest() {
-  if (!urbisM.destLatlng) { urbisToast('Toca el mapa para elegir destino.'); return; }
+  if (!urbisM.destLatlng) { urbisToast('Toque el mapa para elegir destino.'); return; }
   urbisM.pendingDest = false;
   urbisHideFloating();
   urbisShowTransport();
-  urbisToast('\u00bfC\u00f3mo quieres ir?');
+  urbisToast('\u00bfC\u00f3mo quiere ir?');
 }
 
 // ─── Floating bubble ──────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ function urbisBeginManualDest() {
   window.urbisMobilityDestinationOnly = true;
   window.urbisDisableReportMapClick = true;
   urbisBindMapClick();
-  urbisToast('Toca el mapa para elegir destino.');
+  urbisToast('Toque el mapa para elegir destino.');
 }
 
 // ─── Búsqueda con LocationIQ ──────────────────────────────────────────────────
@@ -432,7 +432,7 @@ function urbisSearchAddressDebounced(query) {
   if (!query) { urbisHideResults(); return; }
 
   if (query.length < cfg.minChars) {
-    urbisShowResults('<div class="u88-result muted">Escribe al menos ' + cfg.minChars + ' letras para buscar cerca de ti.</div>');
+    urbisShowResults('<div class="u88-result muted">Escriba al menos ' + cfg.minChars + ' letras para buscar cerca de usted.</div>');
     return;
   }
 
@@ -443,21 +443,21 @@ function urbisSearchAddressDebounced(query) {
 
 function urbisSearchAddress(query) {
   query = String(query || '').trim();
-  if (!query) { urbisToast('Escribe un lugar.'); return; }
+  if (!query) { urbisToast('Escriba un lugar.'); return; }
 
   var cfg = urbisGetLocationIqConfig();
   if (!urbisHasLocationIqKey(cfg.apiKey)) {
     urbisShowResults(
       '<div class="u88-result muted">' +
       '<b>Falta conectar LocationIQ</b>' +
-      '<small>Abre js/00-config.js y pega tu API key en URBIS_CONFIG.LOCATIONIQ.apiKey.</small>' +
+      '<small>Abra js/00-config.js y pega su API key en URBIS_CONFIG.LOCATIONIQ.apiKey.</small>' +
       '</div>'
     );
     return;
   }
 
   if (query.length < cfg.minChars) {
-    urbisShowResults('<div class="u88-result muted">Escribe al menos ' + cfg.minChars + ' letras para buscar cerca de ti.</div>');
+    urbisShowResults('<div class="u88-result muted">Escriba al menos ' + cfg.minChars + ' letras para buscar cerca de usted.</div>');
     return;
   }
 
@@ -474,7 +474,7 @@ function urbisSearchAddress(query) {
   }
   urbisLocationIqAbort = ('AbortController' in window) ? new AbortController() : null;
 
-  var nearText = center && center.source === 'gps' ? 'cerca de tu GPS' : (center ? 'cerca del mapa actual' : 'en Colombia');
+  var nearText = center && center.source === 'gps' ? 'cerca de su GPS' : (center ? 'cerca del mapa actual' : 'en Colombia');
   urbisShowResults('<div class="u88-result muted">Buscando ' + nearText + '…</div>');
 
   function buildParams(radiusKm, bounded, limit){
@@ -527,7 +527,7 @@ function urbisSearchAddress(query) {
     .catch(function(err) {
       if (err && err.name === 'AbortError') return;
       console.warn('URBIS LocationIQ search error:', err);
-      urbisShowResults('<div class="u88-result muted">No se pudo buscar ahora. Revisa tu API key o conexión.</div>');
+      urbisShowResults('<div class="u88-result muted">No se pudo buscar ahora. Revise su API key o conexión.</div>');
     });
 }
 
@@ -553,7 +553,7 @@ function urbisResultSubtitle(item) {
 
 function urbisRenderSearchResults(data, center) {
   if (!data.length) {
-    urbisShowResults('<div class="u88-result muted">Sin resultados. Prueba con otra dirección o toca el mapa.</div>');
+    urbisShowResults('<div class="u88-result muted">Sin resultados. Pruebe con otra dirección o toque el mapa.</div>');
     return;
   }
 
@@ -607,7 +607,7 @@ function urbisUpdateTransportBtns() {
 
 // ─── Iniciar ruta ─────────────────────────────────────────────────────────────
 function urbisStartRoute() {
-  if (!urbisM.destLatlng) { urbisToast('Elige un destino primero.'); urbisBeginManualDest(); return; }
+  if (!urbisM.destLatlng) { urbisToast('Elija un destino primero.'); urbisBeginManualDest(); return; }
   try { window.routeRealMode = urbisM.transport === 'motorcycle' ? 'car' : urbisM.transport; } catch(e) {}
   try { document.querySelectorAll('[data-u52-transport]').forEach(function(b) { b.classList.toggle('active', b.dataset.u52Transport === urbisM.transport); }); } catch(e) {}
   try { if (typeof seleccionarModoRutaReal === 'function') seleccionarModoRutaReal(urbisM.transport); } catch(e) {}
@@ -625,7 +625,7 @@ function urbisStartRoute() {
       try { if (typeof iniciarRastreoGPS === 'function') iniciarRastreoGPS(); } catch(e) {}
       var ok = route || (window.routeRealLastResult && window.routeRealLastResult.geometry);
       if(!ok){ urbisToast('No se pudo dibujar la ruta. Reintenta con GPS activo.'); urbisShowTransport(); return; }
-      urbisToast('Ruta iniciada. Sigue la línea celeste.');
+      urbisToast('Ruta iniciada. Siga la línea celeste.');
       urbisGoScreen('nav');
     })
     .catch(function(e) { console.warn('[URBIS V102] ruta:', e); urbisToast('No se pudo iniciar.'); urbisShowTransport(); });
@@ -639,7 +639,7 @@ function urbisLocate() {
     var m = urbisGetMap();
     if (m) m.setView([pos.coords.latitude, pos.coords.longitude], Math.max(m.getZoom() || 16, 16), { animate: true });
     urbisToast('Ubicaci\u00f3n centrada.');
-  }, function() { urbisToast('Activa permisos de GPS.'); }, { enableHighAccuracy: true, timeout: 10000 });
+  }, function() { urbisToast('Active permisos de GPS.'); }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -788,7 +788,7 @@ function urbisForceCreateMobilityMapPicker() {
     '<section class="u120-map-list" aria-label="Tipos de mapa para movilidad">' +
       '<div class="u120-map-handle"></div>' +
       '<header class="u120-map-header">' +
-        '<div><b>Tipos de mapa</b><small id="u120-map-current">Selecciona el mapa base</small></div>' +
+        '<div><b>Tipos de mapa</b><small id="u120-map-current">Seleccione el mapa base</small></div>' +
         '<button type="button" class="u120-map-close" data-u120-close="1">×</button>' +
       '</header>' +
       '<div class="u120-map-options"></div>' +

@@ -182,7 +182,7 @@
         reponerRepuesto(); return;
       }
       var ahora = Date.now();
-      if (ahora - avisoSalida > 2500) { avisoSalida = ahora; toast('Pulsa atrás otra vez para salir de Visión Territorial'); reponerRepuesto(); return; }
+      if (ahora - avisoSalida > 2500) { avisoSalida = ahora; toast('Pulse atrás otra vez para salir de Visión Territorial'); reponerRepuesto(); return; }
       ignorandoPop = true;
       try { history.back(); } catch (e) {}
     });
@@ -220,7 +220,7 @@
       '<div class="vt-card">' +
         '<div class="vt-marca-grande"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><path d="M12 3.5V1.5"/></svg>' +
         '<b>Visión Territorial</b><small>URBIS · acceso con credencial de entidad</small></div>' +
-        '<p class="vt-sub">Esta herramienta es para entidades territoriales. Pegue la credencial que le entregó URBIS: lleva tu municipio y tu rol, y solo sirve en este equipo.</p>' +
+        '<p class="vt-sub">Esta herramienta es para entidades territoriales. Pegue la credencial que le entregó URBIS: lleva su municipio y su rol, y solo sirve en este equipo.</p>' +
         (mensaje ? '<p class="vt-chip critico" style="display:inline-flex;margin-bottom:10px">' + esc(mensaje) + '</p>' : '') +
         '<textarea id="vt-lic-input" placeholder="URBIS1.…" autocomplete="off" spellcheck="false">' + esc(licencia()) + '</textarea>' +
         '<div class="vt-acciones"><button type="button" class="vt-btn primario ancho" id="vt-lic-entrar">' + ico('llave', 18) + ' Entrar</button></div>' +
@@ -295,7 +295,7 @@
       h += '<div class="vt-card"><div class="vt-cargando" id="vt-en-curso">Análisis en curso desde ' + esc(fecha(T.en_curso.iniciado_en, true)) + '… la pantalla se actualiza sola al terminar.</div></div>';
     } else if (!A) {
       h += '<div class="vt-card"><div class="vt-eyebrow">Qué hace un análisis</div><p class="vt-sub" style="margin:6px 0 10px">Recorre las manzanas del territorio y mide quién queda a más de cada radio de caminata de un equipamiento público: colegios, puestos de salud, parques, CAI… Tarda menos de un minuto y deja copia de las reglas que usó.</p>' +
-        (puede('analizar') ? '<button type="button" class="vt-btn primario" data-vt-accion="analizar">' + ico('destello', 18) + ' Correr el primer análisis</button>' : '<span class="vt-chip">Tu rol consulta; el análisis lo corre el equipo técnico.</span>') + '</div>';
+        (puede('analizar') ? '<button type="button" class="vt-btn primario" data-vt-accion="analizar">' + ico('destello', 18) + ' Correr el primer análisis</button>' : '<span class="vt-chip">Su rol consulta; el análisis lo corre el equipo técnico.</span>') + '</div>';
     }
 
     if (A) {
@@ -339,7 +339,7 @@
       (A && puede('analizar') && !T.en_curso ? '<button type="button" class="vt-btn" data-vt-accion="analizar">' + ico('destello', 18) + ' Volver a analizar</button>' : '') +
       (A ? '<button type="button" class="vt-btn sutil" data-vt-accion="presentar">' + ico('ojo', 18) + ' Presentar</button>' : '') +
       '</div>';
-    h += '<div class="vt-cierre">Mientras otros suponen, tú ya sabes.<small>URBIS recomienda · la persona decide</small></div>';
+    h += '<div class="vt-cierre">Mientras otros suponen, usted ya sabe.<small>URBIS recomienda · la persona decide</small></div>';
     c.innerHTML = h;
   }
 
@@ -561,7 +561,7 @@
     if (S.mapa) S.mapa.getContainer().style.cursor = 'crosshair';
     var lista = tiposDisponibles();
     pintarHoja('<div class="vt-hoja-titulo"><b>Evaluar una idea</b><span class="vt-chip aviso">modo consulta</span></div>' +
-      '<p class="vt-sub" style="margin:8px 0">Elija el tipo de equipamiento y toque el mapa donde lo pondrías. URBIS te dice a cuánta gente serviría, qué hay ya cerca y qué pasa si no se hace.</p>' +
+      '<p class="vt-sub" style="margin:8px 0">Elija el tipo de equipamiento y toque el mapa donde lo pondría. URBIS le dice a cuánta gente serviría, qué hay ya cerca y qué pasa si no se hace.</p>' +
       '<select class="vt-select" id="vt-eval-tipo" aria-label="Tipo a evaluar">' + lista.map(function (t) { return '<option value="' + esc(t.tipo) + '"' + (t.tipo === S.tipo ? ' selected' : '') + '>' + esc(t.nombre) + '</option>'; }).join('') + '</select>');
     abrirHoja(true);
   }
@@ -679,7 +679,7 @@
         '<button type="button" class="vt-btn peligro" data-vt-accion="descartar" data-id="' + esc(p.id) + '">' + ico('cerrar', 18) + ' Descartar o inviable</button>';
       if (acc) h += '<div class="vt-acciones">' + acc + '</div>';
       if (S.sinRed) h += '<div class="vt-nota">Sin conexión se consulta y se exporta; no se aprueba. La decisión se registra en el servidor con fecha y responsable.</div>';
-      else if (!puede('decidir')) h += '<div class="vt-nota">Tu rol consulta lo publicado. Decidir es del equipo técnico y del gobernante.</div>';
+      else if (!puede('decidir')) h += '<div class="vt-nota">Su rol consulta lo publicado. Decidir es del equipo técnico y del gobernante.</div>';
     }
     h += '</div></div>';
     c.innerHTML = h;
@@ -721,7 +721,7 @@
     });
   }
   function modalAprobar(id) {
-    abrirModal('<h3>Aprobar esta propuesta</h3><p>Queda escrito con tu nombre, tu rol y la hora. Es la memoria de decisión del municipio y no se borra: si después se cae, se cierra con su motivo.</p>' +
+    abrirModal('<h3>Aprobar esta propuesta</h3><p>Queda escrito con su nombre, su rol y la hora. Es la memoria de decisión del municipio y no se borra: si después se cae, se cierra con su motivo.</p>' +
       '<p>Para confirmar, escriba <b>APROBAR</b>. <span style="color:var(--vt-tinta-3)">(La contraseña de nuevo llega con las cuentas por entidad; hoy la credencial es la de este equipo.)</span></p>' +
       '<input type="text" id="vt-conf" autocomplete="off" placeholder="APROBAR">' +
       '<div class="vt-acciones"><button type="button" class="vt-btn primario" id="vt-conf-ok" disabled>Confirmar</button><button type="button" class="vt-btn sutil" data-vt-accion="cerrar-modal">Cancelar</button></div>',
@@ -893,7 +893,7 @@
 
     var destino = pantallaDelHash();
     if (!licencia()) { ir('acceso'); return; }
-    $('vt-tablero').innerHTML = estado('cargando', { texto: 'Abriendo tu territorio…' });
+    $('vt-tablero').innerHTML = estado('cargando', { texto: 'Abriendo su territorio…' });
     ir('tablero', null, true);
     cargarSesion().then(function () { ir(destino.p, destino.arg); })
       .catch(function (e) { ir('acceso'); pintarAcceso(e.sinRed ? 'Sin conexión con URBIS y sin sesión guardada.' : e.message); });

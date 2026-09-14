@@ -103,7 +103,7 @@ const REPO = process.env.REPO || E.RAIZ;
       'carla no se pinta, y se dice por qué: su última posición tiene 73 días');
   chk(esc.motivos.some(m => /dani: dejó de compartir/.test(m)), 'dani apagó: «dejó de compartir», no un punto viejo');
   chk(!esc.orden.some(o => /beto/.test(o)), 'y beto no aparece ni en la lista: no es amigo mutuo');
-  chk(esc.chipItems === 2 && /2 amigos en el mapa/.test(esc.chipTxt) && /carla/.test(esc.chipTxt) && /Tú no estás compartiendo/.test(esc.chipTxt),
+  chk(esc.chipItems === 2 && /2 amigos en el mapa/.test(esc.chipTxt) && /carla/.test(esc.chipTxt) && /Usted no está compartiendo/.test(esc.chipTxt),
       'la ficha sobre el mapa cuenta los visibles, lista los motivos de los demás y avisa que yo no comparto');
   chk(esc.zoom <= 16, 'el mapa se encuadra en los amigos visibles');
 
@@ -169,7 +169,7 @@ const REPO = process.env.REPO || E.RAIZ;
   chk(comp.trasLejos === 2, 'moverse 45 m sí');
   chk(comp.trasQuieto === 2, 'quedarse quieto 25 s no');
   chk(comp.trasTiempo === 3, 'pero minuto y medio quieto sí, para que «hace cuánto» sea verdad');
-  chk(/\bon\b/.test(comp.tarjetaOn) && /Compartiendo tu ubicación/.test(comp.tarjetaTxt) && /última posición enviada/.test(comp.tarjetaTxt),
+  chk(/\bon\b/.test(comp.tarjetaOn) && /Compartiendo su ubicación/.test(comp.tarjetaTxt) && /última posición enviada/.test(comp.tarjetaTxt),
       'la tarjeta de Amigos dice que se está compartiendo y cuándo fue la última posición');
   chk(comp.trasApagar === 4 && /~~~off$/.test((comp.ultima.campos || {}).descripcion || '') && comp.clears >= 1,
       'apagar deja escrito «off» y suelta el GPS');

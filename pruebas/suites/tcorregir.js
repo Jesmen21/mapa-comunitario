@@ -143,17 +143,17 @@ const REPO = process.env.REPO || E.RAIZ;
 
   await conRol('citizen', AUTOR);
   const dMio = await detalle(conPeticion);
-  chk(dMio !== null && /Te piden corregir/.test(dMio) && dMio.indexOf('cedula') !== -1,
+  chk(dMio !== null && /Le piden corregir/.test(dMio) && dMio.indexOf('cedula') !== -1,
       'el autor ve en su reporte qué le piden corregir');
 
   await conRol('citizen', 'Otra Persona');
   const dAjeno = await detalle(conPeticion);
-  chk(dAjeno !== null && !/Te piden corregir/.test(dAjeno),
+  chk(dAjeno !== null && !/Le piden corregir/.test(dAjeno),
       'y un vecino cualquiera NO: lo que un moderador le pide a alguien no es asunto del barrio');
 
   await conRol('admin', 'Moderadora');
   const dMod = await detalle(conPeticion);
-  chk(dMod !== null && /Te piden corregir/.test(dMod),
+  chk(dMod !== null && /Le piden corregir/.test(dMod),
       'el moderador sí la ve: le hace falta para saber si ya se pidió');
 
   /* ── El defecto que se escapó en la v835 ──────────────────────────────
@@ -173,15 +173,15 @@ const REPO = process.env.REPO || E.RAIZ;
                          .map((v, i) => (i === BASE + 1 ? 'Aprobado' : v)).join(' | ') };
   await conRol('citizen', 'Otra Persona');
   const apVecino = await detalle(yaAprobado);
-  chk(apVecino !== null && !/Te piden corregir/.test(apVecino),
+  chk(apVecino !== null && !/Le piden corregir/.test(apVecino),
       'aprobado el reporte, un vecino NO lee lo que el moderador le pidió a su autor');
   await conRol('citizen', AUTOR);
   const apAutor = await detalle(yaAprobado);
-  chk(apAutor !== null && !/Te piden corregir/.test(apAutor),
+  chk(apAutor !== null && !/Le piden corregir/.test(apAutor),
       'y su propio autor tampoco: ya se publicó, no le están pidiendo nada');
   await conRol('admin', 'Moderadora');
   const apMod = await detalle(yaAprobado);
-  chk(apMod !== null && !/Te piden corregir/.test(apMod),
+  chk(apMod !== null && !/Le piden corregir/.test(apMod),
       'ni el moderador en la ficha pública: lo que ya se pidió lo ve en su bandeja, no encima del reporte');
   /* Y la regla vive en UN sitio. Repartida por las pantallas, una se queda
      sin ella —fue exactamente lo que pasó— y esa es la que enseña de más. */

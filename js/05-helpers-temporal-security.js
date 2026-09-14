@@ -382,7 +382,7 @@
   window.urbisFusionarEdicion = urbisFusionarEdicion;
 
   function etiquetaPropietarioReporte(p) {
-      return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">TU REPORTE</span>' : '';
+      return esAutorDelReporte(p) ? '<span class="badge-like owner-badge">SU REPORTE</span>' : '';
   }
 
   function requestJSON(url, options = {}, esperaJSON = true) {
@@ -403,7 +403,7 @@
           console.warn('URBIS móvil continúa sin bloquear por error SheetDB.');
           return;
       }
-      alert(`No se pudo completar la acción: ${contexto}. Revisa la conexión o inténtalo de nuevo.`);
+      alert(`No se pudo completar la acción: ${contexto}. Revise la conexión o inténtelo de nuevo.`);
   }
 
 
@@ -783,7 +783,7 @@
       // aún deja la celda. Peor una foto pobre que ninguna evidencia.
       const ultimo = _mejorCalidadQueQuepa(img, 320, 49000, 0.3);
       if(ultimo) return ultimo;
-      throw new Error('La foto sigue siendo demasiado pesada para guardarse en SheetDB/Google Sheets. Usa una foto más pequeña o pega un link de imagen.');
+      throw new Error('La foto sigue siendo demasiado pesada para guardarse en SheetDB/Google Sheets. Use una foto más pequeña o pega un link de imagen.');
   }
 
   window.urbanProcesarImagen = async function(file){ return procesarImagenSeleccionada(file); };
@@ -1052,8 +1052,8 @@
       if(!result) return;
       if(!info) {
           result.innerHTML = modoSimuladorGPS
-            ? 'Toca el mapa para seleccionar primero <b>Salida</b> y luego <b>Destino</b>.'
-            : 'Activa la captura para comenzar.';
+            ? 'Toque el mapa para seleccionar primero <b>Salida</b> y luego <b>Destino</b>.'
+            : 'Active la captura para comenzar.';
           return;
       }
       const p = progreso === null ? 0 : Math.max(0, Math.min(1, progreso));
@@ -1120,7 +1120,7 @@
       simPointB = { lat: latlng.lat, lng: latlng.lng };
       pintarPuntosSimuladorGPS(true);
       actualizarSimuladorGPS();
-      mostrarPanelNavegacion('✅ Destino seleccionado. Se generó un recorrido urbano simulado; pulsa <b>Iniciar carrera</b>.');
+      mostrarPanelNavegacion('✅ Destino seleccionado. Se generó un recorrido urbano simulado; pulse <b>Iniciar carrera</b>.');
   }
 
   window.iniciarAnimacionSimuladorGPS = function() {
@@ -1169,7 +1169,7 @@
       simRoutePath = [];
       simLayer.clearLayers();
       actualizarSimuladorGPS();
-      mostrarPanelNavegacion('🧹 Simulador GPS limpio. Activa captura y elige nuevos puntos.');
+      mostrarPanelNavegacion('🧹 Simulador GPS limpio. Active captura y elija nuevos puntos.');
   };
 
 
@@ -1213,9 +1213,9 @@
       const destino = { lat: parseFloat(lat), lng: parseFloat(lng) };
       if(!isFinite(destino.lat) || !isFinite(destino.lng)) { alert('Destino inválido.'); return; }
       if(userLastLatLng) {
-          dibujarRuta(userLastLatLng, destino, 'Ruta desde tu ubicación');
+          dibujarRuta(userLastLatLng, destino, 'Ruta desde su ubicación');
       } else {
-          mostrarPanelNavegacion('📍 Activa primero el GPS o usa <b>Ruta manual</b> para elegir origen y destino en el mapa.');
+          mostrarPanelNavegacion('📍 Active primero el GPS o use <b>Ruta manual</b> para elegir origen y destino en el mapa.');
       }
   };
 
@@ -1226,7 +1226,7 @@
       const btnSim = document.getElementById('btn-sim-capture');
       if(btnSim) btnSim.classList.remove('active');
       document.getElementById('btn-route-mode').classList.toggle('active', modoRutaManual);
-      mostrarPanelNavegacion(modoRutaManual ? '🧭 Modo ruta activo: toca primero el <b>origen</b> y luego el <b>destino</b> en el mapa.' : 'Modo ruta desactivado.');
+      mostrarPanelNavegacion(modoRutaManual ? '🧭 Modo ruta activo: toque primero el <b>origen</b> y luego el <b>destino</b> en el mapa.' : 'Modo ruta desactivado.');
       actualizarSimuladorGPS();
   };
 
@@ -1245,7 +1245,7 @@
   }
 
   window.iniciarRastreoGPS = function() {
-      if(!navigator.geolocation) { alert('Tu navegador no soporta geolocalización.'); return; }
+      if(!navigator.geolocation) { alert('Su navegador no soporta geolocalización.'); return; }
       const btnGps = document.getElementById('btn-gps');
       if(btnGps) btnGps.classList.add('active');
       if(userWatchId !== null) return;
@@ -1264,7 +1264,7 @@
           } else {
               gpsTrail.push([lat, lng]);
               if(!userPositionMarker) {
-                  userPositionMarker = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div class="gps-dot"></div>', iconSize: [24,24], iconAnchor: [12,12] }) }).addTo(userTraceLayer).bindPopup('Tu ubicación actual');
+                  userPositionMarker = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div class="gps-dot"></div>', iconSize: [24,24], iconAnchor: [12,12] }) }).addTo(userTraceLayer).bindPopup('Su ubicación actual');
                   if(!window.__urbisMobileMapFreeMode) map.setView([lat, lng], 17);
               } else {
                   userPositionMarker.setLatLng([lat, lng]);
@@ -1282,7 +1282,7 @@
       }, error => {
           const btnGps = document.getElementById('btn-gps');
           if(btnGps) btnGps.classList.remove('active');
-          alert('No se pudo activar el GPS. Revisa permisos de ubicación del navegador.');
+          alert('No se pudo activar el GPS. Revise permisos de ubicación del navegador.');
           console.error(error);
       }, { enableHighAccuracy: true, maximumAge: 500, timeout: 10000 });
   };
@@ -1387,7 +1387,7 @@
   };
 
   function textoIndicacionVoz(step) {
-      if(!step) return 'Sigue por la ruta indicada.';
+      if(!step) return 'Siga por la ruta indicada.';
       const distancia = Math.round(Number(step.distance || 0));
       const indicacion = textoIndicacionCiudadana(step).replace(/\.$/, '');
       if(distancia > 0 && distancia < 1000) return `En ${distancia} metros, ${indicacion.toLowerCase()}.`;
@@ -1406,18 +1406,18 @@
   function textoCortoManiobraUrbis(tipo, modificador, nombreVia = '') {
       const t = `${tipo || ''} ${modificador || ''}`.toLowerCase();
       const via = nombreVia ? ` por ${limpiarHTML(nombreVia)}` : '';
-      if(t.includes('arrive')) return 'Llegaste a tu destino';
-      if(t.includes('depart')) return via ? `Empieza el recorrido${via}` : 'Empieza el recorrido';
-      if(t.includes('roundabout') || t.includes('rotary')) return via ? `Toma la glorieta y continúa${via}` : 'Toma la glorieta y continúa';
-      if(t.includes('uturn')) return 'Haz un retorno con precaución';
-      if(t.includes('sharp right')) return via ? `Gira fuerte a la derecha${via}` : 'Gira fuerte a la derecha';
-      if(t.includes('sharp left')) return via ? `Gira fuerte a la izquierda${via}` : 'Gira fuerte a la izquierda';
-      if(t.includes('slight right')) return via ? `Mantente a la derecha${via}` : 'Mantente a la derecha';
-      if(t.includes('slight left')) return via ? `Mantente a la izquierda${via}` : 'Mantente a la izquierda';
-      if(t.includes('right')) return via ? `Gira a la derecha${via}` : 'Gira a la derecha';
-      if(t.includes('left')) return via ? `Gira a la izquierda${via}` : 'Gira a la izquierda';
-      if(t.includes('straight') || t.includes('continue')) return via ? `Continúa derecho${via}` : 'Continúa derecho';
-      return via ? `Continúa${via}` : 'Continúa';
+      if(t.includes('arrive')) return 'Llegó a su destino';
+      if(t.includes('depart')) return via ? `Empiece el recorrido${via}` : 'Empiece el recorrido';
+      if(t.includes('roundabout') || t.includes('rotary')) return via ? `Tome la glorieta y continúe${via}` : 'Tome la glorieta y continúe';
+      if(t.includes('uturn')) return 'Haga un retorno con precaución';
+      if(t.includes('sharp right')) return via ? `Gire fuerte a la derecha${via}` : 'Gire fuerte a la derecha';
+      if(t.includes('sharp left')) return via ? `Gire fuerte a la izquierda${via}` : 'Gire fuerte a la izquierda';
+      if(t.includes('slight right')) return via ? `Manténgase a la derecha${via}` : 'Manténgase a la derecha';
+      if(t.includes('slight left')) return via ? `Manténgase a la izquierda${via}` : 'Manténgase a la izquierda';
+      if(t.includes('right')) return via ? `Gire a la derecha${via}` : 'Gire a la derecha';
+      if(t.includes('left')) return via ? `Gire a la izquierda${via}` : 'Gire a la izquierda';
+      if(t.includes('straight') || t.includes('continue')) return via ? `Continúe derecho${via}` : 'Continúe derecho';
+      return via ? `Continúe${via}` : 'Continúe';
   }
 
   function proyectarPuntoARutaCompleta(punto, state) {
@@ -1478,7 +1478,7 @@
               source: 'beta',
               routeDistance: distRuta,
               pointIndex: i,
-              text: `Gira${fuerte} a la ${direccion}`,
+              text: `Gire${fuerte} a la ${direccion}`,
               shortText: `Giro a la ${direccion}`,
               icon: direccion === 'derecha' ? '↱' : '↰',
               announced: {}
@@ -1490,7 +1490,7 @@
           source: 'beta',
           routeDistance: Math.max(0, state.total - 8),
           pointIndex: state.pts.length - 1,
-          text: 'Llegaste a tu destino',
+          text: 'Llegó a su destino',
           shortText: 'Llegada',
           icon: '🏁',
           announced: {}
@@ -1533,7 +1533,7 @@
       let lista = desdePasos.length >= 2 ? desdePasos : generarInstruccionesBetaDesdePolilinea(state);
       lista = lista
           .sort((a,b) => a.routeDistance - b.routeDistance)
-          .filter((inst, idx, arr) => idx === 0 || Math.abs(inst.routeDistance - arr[idx - 1].routeDistance) > 25 || String(inst.text).includes('Llegaste'));
+          .filter((inst, idx, arr) => idx === 0 || Math.abs(inst.routeDistance - arr[idx - 1].routeDistance) > 25 || String(inst.text).includes('Llegó'));
       urbisVoiceRouteInstructions = lista;
       return lista;
   }
@@ -1561,14 +1561,14 @@
       if(!inst) return;
       const faltan = Math.max(0, inst.routeDistance - d);
       actualizarTarjetaProximaInstruccion(inst, faltan);
-      const hitos = inst.text && inst.text.includes('Llegaste') ? [80, 25] : [800, 400, 200, 100, 50, 20];
+      const hitos = inst.text && inst.text.includes('Llegó') ? [80, 25] : [800, 400, 200, 100, 50, 20];
       for(const h of hitos) {
           if(faltan <= h && !inst.announced[h]) {
               inst.announced[h] = true;
-              const texto = inst.text && inst.text.includes('Llegaste')
-                  ? (h <= 25 ? 'Llegaste a tu destino.' : `En ${formatearDistanciaVoz(faltan)}, llegarás a tu destino.`)
+              const texto = inst.text && inst.text.includes('Llegó')
+                  ? (h <= 25 ? 'Llegó a su destino.' : `En ${formatearDistanciaVoz(faltan)}, llegará a su destino.`)
                   : (h <= 20 ? `${inst.text}.` : `En ${formatearDistanciaVoz(faltan)}, ${String(inst.text).toLowerCase()}.`);
-              hablarGuiaUrbis(texto, h <= 20 || (inst.text && inst.text.includes('Llegaste') && h <= 25));
+              hablarGuiaUrbis(texto, h <= 20 || (inst.text && inst.text.includes('Llegó') && h <= 25));
               registrarDatoMovilidadUrbis('instruccion_anunciada', {
                   id: inst.id,
                   texto: inst.text,
@@ -1586,7 +1586,7 @@
       const distancia = route && route.distance ? formatoDistancia(route.distance) : 'la ruta';
       const duracion = route ? formatoTiempoMin(calcularDuracionAjustada(route.duration || 0, route.distance || 0)) : 'unos minutos';
       const primera = (urbisVoiceRouteInstructions || []).find(i => i.routeDistance > 25);
-      const primeraTxt = primera ? `Próxima indicación: ${primera.text}.` : 'Sigue la ruta marcada en el mapa.';
+      const primeraTxt = primera ? `Próxima indicación: ${primera.text}.` : 'Siga la ruta marcada en el mapa.';
       urbisVoiceIntroDone = true;
       hablarGuiaUrbis(`Recorrido iniciado. Modo ${modo.nombre}. Distancia aproximada ${distancia}. Tiempo estimado ${duracion}. ${primeraTxt}`, true);
   }
@@ -1845,16 +1845,16 @@
 
 
   function textoIndicacionCiudadana(step) {
-      if(!step) return 'Sigue la ruta marcada en el mapa.';
+      if(!step) return 'Siga la ruta marcada en el mapa.';
       const nombreVia = step.name ? ` por ${limpiarHTML(step.name)}` : '';
       const maniobra = step.maneuver && step.maneuver.type ? String(step.maneuver.type) : '';
       const modificador = step.maneuver && step.maneuver.modifier ? String(step.maneuver.modifier) : '';
-      if(maniobra.includes('arrive')) return 'Llegas a tu destino.';
-      if(maniobra.includes('depart')) return `Empieza el recorrido${nombreVia}.`;
-      if(modificador.includes('left')) return `Gira a la izquierda${nombreVia}.`;
-      if(modificador.includes('right')) return `Gira a la derecha${nombreVia}.`;
-      if(maniobra.includes('roundabout')) return `Toma la glorieta y continúa${nombreVia}.`;
-      return `Continúa${nombreVia}.`;
+      if(maniobra.includes('arrive')) return 'Llega a su destino.';
+      if(maniobra.includes('depart')) return `Empiece el recorrido${nombreVia}.`;
+      if(modificador.includes('left')) return `Gire a la izquierda${nombreVia}.`;
+      if(modificador.includes('right')) return `Gire a la derecha${nombreVia}.`;
+      if(maniobra.includes('roundabout')) return `Tome la glorieta y continúe${nombreVia}.`;
+      return `Continúe${nombreVia}.`;
   }
 
   function obtenerResumenRutaCiudadana(route) {
@@ -1863,7 +1863,7 @@
       const duracion = route ? formatoTiempoMin(calcularDuracionAjustada(route.duration || 0, route.distance || 0)) : 'Calculando';
       const steps = route && route.legs && route.legs[0] ? (route.legs[0].steps || []) : [];
       const siguiente = textoIndicacionCiudadana(steps[0]);
-      const despues = steps[1] ? textoIndicacionCiudadana(steps[1]) : 'Mantente atento a las alertas del recorrido.';
+      const despues = steps[1] ? textoIndicacionCiudadana(steps[1]) : 'Manténgase atento a las alertas del recorrido.';
       return { modo, distancia, duracion, siguiente, despues };
   }
 
@@ -1943,11 +1943,11 @@
       overlay.innerHTML = `
         <div class="route-choice-card">
           <div class="route-choice-kicker">Destino listo</div>
-          <h2>¿Cómo quieres llegar?</h2>
-          <p>URBIS usará tu ubicación actual como salida y te mostrará solo lo importante para moverte: ruta, tráfico disponible y alternativas reales cuando existan datos.</p>
+          <h2>¿Cómo quiere llegar?</h2>
+          <p>URBIS usará su ubicación actual como salida y le mostrará solo lo importante para moverse: ruta, tráfico disponible y alternativas reales cuando existan datos.</p>
           <div class="route-choice-destination"><span>🎯</span><div><b>Destino</b><small>${destino}</small></div></div>
           <button class="route-choice-start" onclick="calcularRutaRealActual()">🚀 Iniciar recorrido</button>
-          <div class="route-choice-label">O elige una forma de moverte</div>
+          <div class="route-choice-label">O elige una forma de moverse</div>
           <div class="route-choice-modes">${modosHTML}</div>
           <button class="route-choice-cancel" onclick="limpiarRutaReal()">Cancelar</button>
           <div class="route-choice-current">Modo seleccionado: <b>${modo.emoji} ${modo.nombre}</b></div>
@@ -2042,7 +2042,7 @@
           mobility: {
               kicker: 'Modo movilidad',
               title: 'Movilidad',
-              subtitle: 'Rutas, GPS, tránsito y herramientas en tiempo real para desplazarte mejor.'
+              subtitle: 'Rutas, GPS, tránsito y herramientas en tiempo real para desplazarse mejor.'
           },
           sport: {
               kicker: 'Modo deportivo',
@@ -2052,17 +2052,17 @@
           alerts: {
               kicker: 'Modo alertas',
               title: 'Alertas',
-              subtitle: 'Reporta, consulta y sigue incidencias ciudadanas con la menor distracción posible.'
+              subtitle: 'Reporte, consulte y siga incidencias ciudadanas con la menor distracción posible.'
           },
           access: {
               kicker: 'Modo perfil',
               title: 'Mi perfil',
-              subtitle: 'Tus datos, permisos, logros y configuración personal en un solo espacio.'
+              subtitle: 'Sus datos, permisos, logros y configuración personal en un solo espacio.'
           },
           events: {
               kicker: 'Modo eventos',
               title: 'Eventos',
-              subtitle: 'Descubre actividades, comunidad y experiencias especiales publicadas en URBIS.'
+              subtitle: 'Descubra actividades, comunidad y experiencias especiales publicadas en URBIS.'
           },
           stats: {
               kicker: 'Modo datos',
@@ -2230,7 +2230,7 @@
       ultimoDestinoRapido = { lat: Number(lat), lng: Number(lng) };
       const card = document.getElementById('quick-route-card');
       const text = document.getElementById('quick-route-text');
-      if(text) text.innerHTML = `Destino marcado: <b>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}</b><br>Usaré tu GPS como origen y el modo de movilidad seleccionado.`;
+      if(text) text.innerHTML = `Destino marcado: <b>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}</b><br>Usaré su GPS como origen y el modo de movilidad seleccionado.`;
       if(card) card.classList.add('visible');
   }
 
@@ -2254,7 +2254,7 @@
       routeRealAutoDestino = false;
       actualizarUIRutaReal();
       limpiarRutaRealVisual(true);
-      renderResultadoRutaReal(`🎯 Destino listo. Elige cómo quieres moverte para iniciar la guía.`);
+      renderResultadoRutaReal(`🎯 Destino listo. Elija cómo quiere moverse para iniciar la guía.`);
       if(typeof activarModoPrepararRecorridoUrbis === 'function') activarModoPrepararRecorridoUrbis();
 
       // Tomamos el GPS en segundo plano para que la transición sea inmediata.
@@ -2506,7 +2506,7 @@
       if(distBox) distBox.textContent = formatoDistancia(remainingM);
       const alertBox = overlay.querySelector('.nav-live-alert p');
       if(alertBox) {
-          if(urbisNavRouteState.deviationM > 60) alertBox.innerHTML = `Te estás alejando de la ruta (${Math.round(urbisNavRouteState.deviationM)} m). URBIS puede recalcular si continúa la desviación.`;
+          if(urbisNavRouteState.deviationM > 60) alertBox.innerHTML = `Se está alejando de la ruta (${Math.round(urbisNavRouteState.deviationM)} m). URBIS puede recalcular si continúa la desviación.`;
           else alertBox.innerHTML = `Avance aproximado: <b>${progress}%</b>. La línea celeste muestra únicamente lo que falta.`;
       }
   }
@@ -2518,7 +2518,7 @@
               icon: L.divIcon({ className: '', html: '<div class="gps-dot gps-dot-navigation"></div>', iconSize: [24,24], iconAnchor: [12,12] }),
               interactive: false,
               zIndexOffset: 1600
-          }).addTo(userTraceLayer).bindPopup('Tu ubicación actual');
+          }).addTo(userTraceLayer).bindPopup('Su ubicación actual');
       }
       const actual = userPositionMarker.getLatLng ? userPositionMarker.getLatLng() : latlngObjetivo;
       const alpha = 0.28;
@@ -2542,16 +2542,16 @@
           try { limpiarLineasProgresoRuta(); } catch(_e) {}
           routeRealGeoJSON = null;
           routeRealPointA = { lat: puntoGPS.lat, lng: puntoGPS.lng };
-          mostrarPanelNavegacion('🔄 Recalculando desde tu ubicación actual...');
+          mostrarPanelNavegacion('🔄 Recalculando desde su ubicación actual...');
           if(typeof hablarGuiaUrbis === 'function') hablarGuiaUrbis('Recalculando recorrido.', true);
           const route = await obtenerRutaReal(routeRealPointA, routeRealPointB);
           routeRealLastResult = route;
           pintarRutaReal(route);
           renderRutaReal(route);
-          mostrarPanelNavegacion('🔄 Ruta recalculada. Continúa hacia el destino.');
+          mostrarPanelNavegacion('🔄 Ruta recalculada. Continúe hacia el destino.');
       } catch(e) {
           console.warn('No se pudo recalcular ruta', e);
-          mostrarPanelNavegacion('No se pudo recalcular. Mantén el GPS activo e inténtalo de nuevo.');
+          mostrarPanelNavegacion('No se pudo recalcular. Mantenga el GPS activo e inténtelo de nuevo.');
       }
   }
 
@@ -2584,12 +2584,12 @@
       const text = `${tipo || ''} ${modificador || ''}`.toLowerCase();
       if(text.includes('arrive')) return ['🏁', 'Llegada al destino'];
       if(text.includes('depart')) return ['🚩', 'Salida'];
-      if(text.includes('left')) return ['↰', 'Gira a la izquierda'];
-      if(text.includes('right')) return ['↱', 'Gira a la derecha'];
-      if(text.includes('roundabout') || text.includes('rotary')) return ['🔄', 'Toma la glorieta'];
-      if(text.includes('merge')) return ['🔀', 'Incorpórate a la vía'];
-      if(text.includes('continue') || text.includes('straight')) return ['⬆️', 'Continúa derecho'];
-      return ['➡️', 'Avanza por la ruta'];
+      if(text.includes('left')) return ['↰', 'Gire a la izquierda'];
+      if(text.includes('right')) return ['↱', 'Gire a la derecha'];
+      if(text.includes('roundabout') || text.includes('rotary')) return ['🔄', 'Tome la glorieta'];
+      if(text.includes('merge')) return ['🔀', 'Incorpórese a la vía'];
+      if(text.includes('continue') || text.includes('straight')) return ['⬆️', 'Continúe derecho'];
+      return ['➡️', 'Avance por la ruta'];
   }
 
   function construirPasosPedagogicos(steps, modo, totalDistance) {
@@ -2619,8 +2619,8 @@
   function construirNavegacionWaze(route, steps, modo, duracion) {
       const modoInfo = ROUTE_REAL_MODES[modo] || ROUTE_REAL_MODES.car;
       const paso = primerPasoUtil(steps);
-      let icon = '🧭', label = 'Sigue la ruta marcada';
-      let detalle = 'Mantente sobre la línea resaltada. La app puede recalcular si cambias el destino o el modo.';
+      let icon = '🧭', label = 'Siga la ruta marcada';
+      let detalle = 'Manténgase sobre la línea resaltada. La app puede recalcular si cambia el destino o el modo.';
       if(paso) {
           const maniobra = paso.maneuver || {};
           [icon, label] = interpretarManiobra(maniobra.type, maniobra.modifier);
@@ -2772,7 +2772,7 @@
       actualizarUIRutaReal();
       if(routeRealPointA && routeRealPointB && !routeRealLastResult) {
           const modoInfo = ROUTE_REAL_MODES[routeRealMode] || ROUTE_REAL_MODES.car;
-          renderResultadoRutaReal(`🎯 Destino listo. Modo seleccionado: <b>${modoInfo.emoji} ${modoInfo.nombre}</b>.<br>Pulsa <b>🚀 Iniciar recorrido</b> para calcular el recorrido.`);
+          renderResultadoRutaReal(`🎯 Destino listo. Modo seleccionado: <b>${modoInfo.emoji} ${modoInfo.nombre}</b>.<br>Pulse <b>🚀 Iniciar recorrido</b> para calcular el recorrido.`);
       } else if(routeRealPointA && routeRealPointB && routeRealLastResult) {
           calcularRutaRealActual();
       }
@@ -2858,13 +2858,13 @@
               routeRealPointA = { lat: gps.lat, lng: gps.lng };
               actualizarUIRutaReal();
           } catch(error) {
-              renderResultadoRutaReal('⚠️ Falta el Salida. Activa permisos de GPS o usa Usar mi ubicación.');
+              renderResultadoRutaReal('⚠️ Falta el Salida. Active permisos de GPS o use Usar mi ubicación.');
               return;
           }
       }
       sincronizarRutaRealDesdeEstadoMovil();
       if(!routeRealPointA || !routeRealPointB) {
-          renderResultadoRutaReal('Pulsa <b>🎯 Elegir destino</b>: usaré tu GPS como Salida y luego toca en el mapa a dónde quieres llegar.');
+          renderResultadoRutaReal('Pulse <b>🎯 Elegir destino</b>: usaré su GPS como Salida y luego toque en el mapa a dónde quiere llegar.');
           return null;
       }
       const modo = ROUTE_REAL_MODES[routeRealMode] || ROUTE_REAL_MODES.car;
@@ -2887,7 +2887,7 @@
           return route;
       } catch(error) {
           console.error(error);
-          renderResultadoRutaReal('No se pudo calcular la recorrido. Revisa internet o intenta con otro modo de movilidad.');
+          renderResultadoRutaReal('No se pudo calcular la recorrido. Revise internet o intente con otro modo de movilidad.');
           mostrarPanelNavegacion('⚠️ No se pudo consultar la recorrido en este momento.');
       }
   };
@@ -2900,7 +2900,7 @@
               const punto = { lat: pos.coords.latitude, lng: pos.coords.longitude };
               userLastLatLng = punto;
               if(!userPositionMarker) {
-                  userPositionMarker = L.marker([punto.lat, punto.lng], { icon: L.divIcon({ className: '', html: '<div class="gps-dot"></div>', iconSize: [24,24], iconAnchor: [12,12] }) }).addTo(userTraceLayer).bindPopup('Tu ubicación actual');
+                  userPositionMarker = L.marker([punto.lat, punto.lng], { icon: L.divIcon({ className: '', html: '<div class="gps-dot"></div>', iconSize: [24,24], iconAnchor: [12,12] }) }).addTo(userTraceLayer).bindPopup('Su ubicación actual');
               } else {
                   userPositionMarker.setLatLng([punto.lat, punto.lng]);
               }
@@ -2917,11 +2917,11 @@
           routeRealPointA = { lat: gps.lat, lng: gps.lng };
           limpiarRutaRealVisual(true);
           actualizarUIRutaReal();
-          renderResultadoRutaReal('✅ Tu GPS quedó como <b>Salida</b>. Ahora pulsa <b>Elegir destino</b> y toca el mapa para indicar a dónde quieres llegar.');
+          renderResultadoRutaReal('✅ Su GPS quedó como <b>Salida</b>. Ahora pulse <b>Elegir destino</b> y toque el mapa para indicar a dónde quiere llegar.');
           mostrarPanelNavegacion('📍 GPS usado como origen de ruta. Ahora elige el destino en el mapa.');
       } catch(error) {
           console.error(error);
-          renderResultadoRutaReal('⚠️ No pude obtener tu GPS. Revisa permisos de ubicación del navegador.');
+          renderResultadoRutaReal('⚠️ No pude obtener su GPS. Revise permisos de ubicación del navegador.');
           mostrarPanelNavegacion('⚠️ No se pudo usar el GPS como origen.');
       }
   };
@@ -2941,11 +2941,11 @@
           const btnRoute = document.getElementById('btn-route-mode');
           if(btnReal) btnReal.classList.add('active');
           if(btnRoute) btnRoute.classList.add('active');
-          renderResultadoRutaReal('<span class="route-pulse"></span><b>Modo destino activo.</b><br>Toca cualquier sector del mapa para marcar a dónde quieres llegar. Luego elige el modo de movilidad y pulsa <b>Iniciar recorrido</b>.');
-          mostrarPanelNavegacion('🎯 Toca el mapa para elegir el destino de tu ruta.');
+          renderResultadoRutaReal('<span class="route-pulse"></span><b>Modo destino activo.</b><br>Toque cualquier sector del mapa para marcar a dónde quiere llegar. Luego elija el modo de movilidad y pulse <b>Iniciar recorrido</b>.');
+          mostrarPanelNavegacion('🎯 Toque el mapa para elegir el destino de su ruta.');
       } catch(error) {
           console.error(error);
-          renderResultadoRutaReal('⚠️ Activa permisos de GPS para usar tu ubicación como Salida.');
+          renderResultadoRutaReal('⚠️ Active permisos de GPS para usar su ubicación como Salida.');
           mostrarPanelNavegacion('⚠️ No se pudo activar el GPS para crear la ruta.');
       }
   };
@@ -2964,7 +2964,7 @@
       const btnReal = document.getElementById('btn-real-route-capture');
       if(btn) btn.classList.remove('active');
       if(btnReal) btnReal.classList.remove('active');
-      renderResultadoRutaReal('Pulsa “Elegir destino” para usar tu GPS como Salida y tocar en el mapa el lugar al que quieres llegar.');
+      renderResultadoRutaReal('Pulse “Elegir destino” para usar su GPS como Salida y tocar en el mapa el lugar al que quiere llegar.');
       mostrarPanelNavegacion('🧹 Recorrido limpiada.');
   };
 
@@ -2980,10 +2980,10 @@
           routeRealPointB = null;
           rutaLayer.clearLayers();
           actualizarUIRutaReal();
-          renderResultadoRutaReal('📌 Captura activa: toca el mapa para seleccionar <b>Salida</b> y luego <b>Destino</b>.');
-          mostrarPanelNavegacion('🧭 Captura de recorrido activa: toca <b>Salida</b> y luego <b>Destino</b>.');
+          renderResultadoRutaReal('📌 Captura activa: toque el mapa para seleccionar <b>Salida</b> y luego <b>Destino</b>.');
+          mostrarPanelNavegacion('🧭 Captura de recorrido activa: toque <b>Salida</b> y luego <b>Destino</b>.');
       } else {
-          renderResultadoRutaReal('Captura desactivada. Puedes volver a activarla cuando quieras.');
+          renderResultadoRutaReal('Captura desactivada. Puede volver a activarla cuando quiera.');
           mostrarPanelNavegacion('Modo recorrido desactivado.');
       }
   };
@@ -3008,13 +3008,13 @@
       renderResultadoRutaReal(`
           <div class="route-ready-card">
               <b>🎯 Destino seleccionado</b><br>
-              Origen: tu GPS · Destino: ${formatoCoordRutaReal(routeRealPointB)}<br>
-              Modo actual: <b>${modo.emoji} ${modo.nombre}</b>. Puedes cambiarlo arriba antes de iniciar.
+              Origen: su GPS · Destino: ${formatoCoordRutaReal(routeRealPointB)}<br>
+              Modo actual: <b>${modo.emoji} ${modo.nombre}</b>. Puede cambiarlo arriba antes de iniciar.
           </div>
-          <div style="margin-top:8px;color:#aeb6c2;">Pulsa <b>🚀 Iniciar recorrido</b> para calcular el recorrido real por calles.</div>
+          <div style="margin-top:8px;color:#aeb6c2;">Pulse <b>🚀 Iniciar recorrido</b> para calcular el recorrido real por calles.</div>
       `);
       if(typeof window.urbisMobileSetMobilityStatus === 'function') window.urbisMobileSetMobilityStatus(`Destino listo · ${modo.emoji} ${modo.nombre}`);
-      mostrarPanelNavegacion(`🎯 Destino listo. Elige cómo quieres moverte para iniciar la guía.`);
+      mostrarPanelNavegacion(`🎯 Destino listo. Elija cómo quiere moverse para iniciar la guía.`);
       if(typeof activarModoPrepararRecorridoUrbis === 'function') activarModoPrepararRecorridoUrbis();
   }
 
@@ -3039,7 +3039,7 @@
       const btnReal = document.getElementById('btn-real-route-capture');
       if(btn) btn.classList.remove('active');
       if(btnReal) btnReal.classList.remove('active');
-      renderResultadoRutaReal('🎯 Destino seleccionado. Elige cómo quieres moverte para iniciar la guía.');
+      renderResultadoRutaReal('🎯 Destino seleccionado. Elija cómo quiere moverse para iniciar la guía.');
       if(typeof activarModoPrepararRecorridoUrbis === 'function') activarModoPrepararRecorridoUrbis();
   }
 
@@ -3053,7 +3053,7 @@
           actualizarUIRutaReal();
           await calcularRutaRealActual();
       } else {
-          mostrarPanelNavegacion('📍 Activa primero el GPS o usa <b>Crear recorrido</b> para elegir origen y destino en el mapa.');
+          mostrarPanelNavegacion('📍 Active primero el GPS o use <b>Crear recorrido</b> para elegir origen y destino en el mapa.');
       }
   };
 

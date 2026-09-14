@@ -97,7 +97,7 @@ const GS = CANDIDATOS.find(f => { try { return fs.statSync(f).isFile(); } catch 
       'la tabla se pide de veinte: con cinco no se sabe en qué puesto voy');
   chk(/premio_pasado_' \+ ev\.juegoId \+ '_' \+ m\.pos/.test(av),
       'el aviso cambia de identidad con cada puesto nuevo, para que no se quede callado a la segunda');
-  chk(/exacto \? \(/.test(av) && /te saliste del top/.test(av),
+  chk(/exacto \? \(/.test(av) && /se salió del top/.test(av),
       'fuera de los veinte NO se inventa un puesto: se dice que salí del top');
   chk(/Recuperar el puesto/.test(j13),
       'y la tarjeta trae el botón de volver a jugar: una mala noticia sin salida no sirve de nada');

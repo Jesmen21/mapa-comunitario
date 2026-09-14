@@ -873,7 +873,7 @@
   function vacio() {
     var d = el('div', 'sp-vacio');
     d.appendChild(el('b', null, 'No encontramos resultados'));
-    d.appendChild(el('p', null, 'Prueba con otro tema o elimina algún filtro.'));
+    d.appendChild(el('p', null, 'Pruebe con otro tema o elimina algún filtro.'));
     var b = el('button', 'sp-btn sp-btn-ghost', 'Limpiar filtros'); b.type = 'button';
     b.addEventListener('click', function () {
       filtro.tipo = 'todos';
@@ -1887,7 +1887,7 @@
        la comparación —y también lo que obliga al aviso de abajo—. */
     var reg = (pestanaFicha === 'anterior') ? DA : D;
     if (pestanaFicha === 'anterior' && !reg) {
-      cont.appendChild(el('p', 'sp-fi-nada', 'No se pudo cargar el registro del gobierno anterior. Vuelve a entrar en un momento.'));
+      cont.appendChild(el('p', 'sp-fi-nada', 'No se pudo cargar el registro del gobierno anterior. Vuelva a entrar en un momento.'));
       return;
     }
     var f = fichaDe(reg, reg.cerrado ? reg.entrega : null);
@@ -2575,9 +2575,9 @@
         (c.opciones || []).forEach(function (o) {
           var n = (conteo && conteo[o.k]) || 0;
           var pct = total ? (n / total * 100) : 0;
-          var fila = el('div', 'sp-consulta-fila' + (ya === o.k ? ' tuyo' : ''));
+          var fila = el('div', 'sp-consulta-fila' + (ya === o.k ? ' suyo' : ''));
           var cab = el('div', 'sp-consulta-cab');
-          cab.appendChild(el('b', null, o.t + (ya === o.k ? ' · tu voto' : '')));
+          cab.appendChild(el('b', null, o.t + (ya === o.k ? ' · su voto' : '')));
           cab.appendChild(el('span', null, total ? pct.toFixed(1).replace('.', ',') + '%' : '—'));
           fila.appendChild(cab);
           var riel = el('div', 'sp-consulta-riel');
@@ -2593,7 +2593,7 @@
 
         zona.appendChild(el('p', 'sp-consulta-total',
           error
-            ? 'Tu voto quedó guardado en este dispositivo, pero aún no se pudo sincronizar el total.'
+            ? 'Su voto quedó guardado en este dispositivo, pero aún no se pudo sincronizar el total.'
             : total + (total === 1 ? ' respuesta' : ' respuestas') + ' hasta ahora'));
       };
 
@@ -2743,7 +2743,7 @@
 
     cont.appendChild(rejilla);
     cont.appendChild(el('p', 'sp-hero-nota',
-      'Toca cualquiera para ver la gráfica completa, su fuente y qué la explica.'));
+      'Toque cualquiera para ver la gráfica completa, su fuente y qué la explica.'));
   }
 
   // ── Panel de filtros ──────────────────────────────────────────────────────
@@ -2890,7 +2890,7 @@
       var m = $('sp-main');
       var d = el('div', 'sp-vacio');
       d.appendChild(el('b', null, 'No se pudo cargar el seguimiento'));
-      d.appendChild(el('p', null, 'Revisa tu conexión y vuelve a intentar. (' + e.message + ')'));
+      d.appendChild(el('p', null, 'Revise su conexión y vuelva a intentar. (' + e.message + ')'));
       var b = el('button', 'sp-btn sp-btn-solid', 'Reintentar'); b.type = 'button';
       b.addEventListener('click', function () { location.reload(); });
       d.appendChild(b);

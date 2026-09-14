@@ -59,7 +59,7 @@
           if(status) status.innerHTML = controlVialData.length ? `✅ Cargados ${controlVialData.length} punto(s) de control vial. Si no aparecen suficientes, falta información abierta en OSM para Cúcuta.` : '⚠️ No se encontraron cámaras o reductores registrados en OSM para esta zona.';
       } catch(error) {
           console.error(error);
-          if(status) status.innerHTML = '⚠️ No se pudo consultar Overpass en este momento. Intenta de nuevo en unos minutos.';
+          if(status) status.innerHTML = '⚠️ No se pudo consultar Overpass en este momento. Intente de nuevo en unos minutos.';
       }
   };
 
@@ -255,7 +255,7 @@
       const cont = document.getElementById('automap-matrix');
       if(!cont) return;
       if(!autoMapeoCucutaRegistros.length) {
-          cont.innerHTML = `<div class="automap-matrix-head"><div class="automap-matrix-title">Matriz de Usos Multidimensional · AutoMapeo</div></div><div class="automap-matrix-summary">Carga lugares de Cúcuta para convertirlos al mismo lenguaje de tu matriz URBIS: Comercial, Institucional, Ocio, Deportivo, Salud, Educativo, Transporte y demás variables.</div>`;
+          cont.innerHTML = `<div class="automap-matrix-head"><div class="automap-matrix-title">Matriz de Usos Multidimensional · AutoMapeo</div></div><div class="automap-matrix-summary">Carga lugares de Cúcuta para convertirlos al mismo lenguaje de su matriz URBIS: Comercial, Institucional, Ocio, Deportivo, Salud, Educativo, Transporte y demás variables.</div>`;
           return;
       }
       const counts = {};
@@ -274,7 +274,7 @@
         <div class="automap-matrix-summary">Cada lugar de OpenStreetMap se remapea al formato URBIS. Un mismo punto puede activar varios usos; por ejemplo, un centro comercial puede activar Comercial, Ocio / Negocio, Parqueadero o incluso Deportivo si el dato incluye gimnasio/cancha.</div>
         <div class="matrix-grid">${cards || '<div class="matrix-card"><b>Sin variables activas</b><strong>0</strong><small>No se pudo asignar uso.</small></div>'}</div>
         <div class="matrix-chip-row"><span class="matrix-chip">🔀 Multiuso: ${multiuso}</span><span class="matrix-chip">🧩 Variables URBIS: ${principales.length}</span><span class="matrix-chip">📌 Fuente: OpenStreetMap</span></div>
-        <div class="matrix-note">Estos conteos ya usan los mismos nombres de la matriz manual. Desde cada popup puedes anexar el punto a SheetDB con sus campos SI/NO.</div>`;
+        <div class="matrix-note">Estos conteos ya usan los mismos nombres de la matriz manual. Desde cada popup puede anexar el punto a SheetDB con sus campos SI/NO.</div>`;
   }
 
   function tipoUrbisAutoMapeo(tags = {}, tipo = 'otros') {
@@ -424,7 +424,7 @@
 
   window.anexarAutoMapeoAMatriz = async function(id, btn) {
       const registro = autoMapeoCucutaRegistros.find(r => r.id === id);
-      if(!registro) { alert('No encontré este punto del AutoMapeo. Vuelve a cargar los lugares.'); return; }
+      if(!registro) { alert('No encontré este punto del AutoMapeo. Vuelva a cargar los lugares.'); return; }
       if(userRole !== 'admin' && userRole !== 'gov') { alert('Solo Arquitecto/Admin o Funcionario/JAC puede anexar puntos a la base URBIS.'); return; }
       const registroSheetDB = construirRegistroSheetDBDesdeAutoMapeo(registro);
       if(btn) { btn.disabled = true; btn.innerText = '⏳ Anexando...'; }
@@ -511,7 +511,7 @@
       const status = document.getElementById('automap-status');
       if(!cont) return;
       const total = Object.values(autoMapeoCucutaCategorias).reduce((a,c) => a + (c.count || 0), 0);
-      if(status) status.innerHTML = total ? `Se cargaron <b>${total}</b> lugares de Cúcuta desde OpenStreetMap. Cuando OSM tenga nombre, se mostrará como referencia urbana. Este grupo está separado visualmente y cada punto ya fue clasificado automáticamente con SI/NO para la Matriz de Usos Multidimensional. Puedes anexar puntos individuales o todos los puntos cargados a SheetDB.` : 'No se encontraron lugares en la consulta actual.';
+      if(status) status.innerHTML = total ? `Se cargaron <b>${total}</b> lugares de Cúcuta desde OpenStreetMap. Cuando OSM tenga nombre, se mostrará como referencia urbana. Este grupo está separado visualmente y cada punto ya fue clasificado automáticamente con SI/NO para la Matriz de Usos Multidimensional. Puede anexar puntos individuales o todos los puntos cargados a SheetDB.` : 'No se encontraron lugares en la consulta actual.';
       cont.innerHTML = Object.keys(AUTOMAPEO_CUCUTA).map(k => {
           const cfg = AUTOMAPEO_CUCUTA[k];
           const count = autoMapeoCucutaCategorias[k] ? autoMapeoCucutaCategorias[k].count : 0;
@@ -552,7 +552,7 @@
           if(!auto) map.setView([7.8891, -72.4967], 13);
       } catch(error) {
           console.error(error);
-          if(status) status.innerHTML = '⚠️ No se pudo cargar el AutoMapeo de Cúcuta. Revisa internet o intenta de nuevo en unos minutos.';
+          if(status) status.innerHTML = '⚠️ No se pudo cargar el AutoMapeo de Cúcuta. Revise internet o intente de nuevo en unos minutos.';
       }
   };
 
@@ -565,7 +565,7 @@
       const cont = document.getElementById('automap-toggles');
       const status = document.getElementById('automap-status');
       if(cont) cont.innerHTML = '';
-      if(status) status.innerHTML = 'AutoMapeo limpiado. Tus capas manuales y reportes no se modificaron.';
+      if(status) status.innerHTML = 'AutoMapeo limpiado. Sus capas manuales y reportes no se modificaron.';
       renderAutoMapeoMatriz();
   };
 

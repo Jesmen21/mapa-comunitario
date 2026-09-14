@@ -168,7 +168,7 @@
     const abierto = r === 'si';
     const aviso = (v && v.registrado)
       ? '<small class="uv2-guardado">Ya registrado: ' + window.urbisResumenVictimas(v) +
-        '. Cámbialo si tienes información nueva.</small>'
+        '. Cámbielo si tiene información nueva.</small>'
       : '';
     return '' +
       '<div class="urbis-victimas" id="urbis-victimas"' + (r ? ' data-uv2-respuesta="' + r + '"' : '') + '>' +
@@ -182,7 +182,7 @@
         '<div class="uv2-detalle"' + (abierto ? '' : ' hidden') + '>' +
           '<label>Heridos<select id="uv2-heridos">' + opciones(v && v.heridos) + '</select></label>' +
           '<label>Fallecidos<select id="uv2-fallecidos">' + opciones(v && v.fallecidos) + '</select></label>' +
-          '<small>Cuenta cuántas personas, sin nombres, placas ni fotos de nadie.</small>' +
+          '<small>Cuente cuántas personas, sin nombres, placas ni fotos de nadie.</small>' +
         '</div>' +
       '</div>';
   };

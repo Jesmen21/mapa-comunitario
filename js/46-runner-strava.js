@@ -126,7 +126,7 @@
     if(pts.length < 2){
       ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='600 22px Segoe UI, system-ui, sans-serif';
       ctx.textAlign='center'; ctx.fillText('Recorrido muy corto para dibujar', cv.width/2, cv.height/2);
-      ctx.fillText('🐾 ¡muévete un poco más!', cv.width/2, cv.height/2+30);
+      ctx.fillText('🐾 ¡muévase un poco más!', cv.width/2, cv.height/2+30);
       return;
     }
     dibujarRuta(ctx, proyectar(pts, cv.width, cv.height, 38), { weight:7, glow:16 });
@@ -144,7 +144,7 @@
   window.urbisRunnerReplay = function(sess){
     var s = sesion(sess);
     var P = suavizar(limpiarPuntos(s && s.points));
-    if(!s || P.length < 2){ alert('Aún no hay recorrido suficiente para reproducir. ¡Muévete un poco más! 🏃'); return; }
+    if(!s || P.length < 2){ alert('Aún no hay recorrido suficiente para reproducir. ¡Muévase un poco más! 🏃'); return; }
 
     var lmap = (typeof map !== 'undefined' && map && map.getContainer) ? map : null;
 
@@ -344,7 +344,7 @@
     if(!s){ alert('Primero finaliza una actividad para crear su tarjeta.'); return; }
     var ov = overlay('rush-card-ov');
     ov.innerHTML =
-      '<div class="rush-ov-top"><span class="rush-ov-kicker">📸 Tu recorrido</span><button class="rush-ov-x" onclick="this.closest(\'.rush-overlay\').remove()">✕</button></div>' +
+      '<div class="rush-ov-top"><span class="rush-ov-kicker">📸 Su recorrido</span><button class="rush-ov-x" onclick="this.closest(\'.rush-overlay\').remove()">✕</button></div>' +
       '<div class="rush-card-stage"><canvas id="rush-card-cv" width="1080" height="1350"></canvas></div>' +
       '<div class="rush-ov-actions rush-ov-actions-wrap">' +
         '<label class="rush-btn ghost"><input type="file" accept="image/*" id="rush-card-foto"> 🖼️ Poner foto</label>' +
@@ -371,7 +371,7 @@
   window.urbisRunnerRecortar = function(sess){
     var s = sesion(sess);
     var trab = limpiarPuntos(s && s.points);
-    if(!s || trab.length < 3){ alert('Necesitas un recorrido con varios puntos GPS para recortarlo.'); return; }
+    if(!s || trab.length < 3){ alert('Necesita un recorrido con varios puntos GPS para recortarlo.'); return; }
     var base = s;
     var ov = overlay('rush-trim-ov');
     ov.innerHTML =

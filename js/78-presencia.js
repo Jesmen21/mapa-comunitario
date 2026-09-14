@@ -153,7 +153,7 @@
     return '<div class="urb-pres-pop"><b>@' + esc(a.usuario) + '</b>' +
       '<span class="f-' + a.frescura + '">' + (a.frescura === 'vivo' ? '🟢 en línea · ' : '') + esc(haceCuanto(r.ms)) + '</span>' +
       (r.acc ? '<small>precisión ±' + r.acc + ' m</small>' : '<small>precisión no reportada</small>') +
-      (dist != null ? '<small>a ' + (dist >= 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m') + ' de ti</small>' : '') +
+      (dist != null ? '<small>a ' + (dist >= 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m') + ' de usted</small>' : '') +
       '<a href="https://www.google.com/maps/dir/?api=1&destination=' + r.lat.toFixed(6) + ',' + r.lng.toFixed(6) + '" target="_blank" rel="noopener">Cómo llegar</a>' +
       '</div>';
   }
@@ -209,7 +209,7 @@
       }).join('') + '</ul>' : '') +
       (no.length ? '<p>' + no.slice(0, 4).map(function (a) { return '@' + esc(a.usuario) + ': ' + esc(a.motivo); }).join(' · ') + (no.length > 4 ? ' …' : '') + '</p>' : '') +
       (!amigos().length ? '<p>Todavía no tienes amigos mutuos en URBIS.</p>' : '') +
-      (!compartiendo.activo ? '<p class="urb-pres-yo">Tú no estás compartiendo. Se enciende en Amigos › Compartir mi ubicación.</p>' : '');
+      (!compartiendo.activo ? '<p class="urb-pres-yo">Usted no está compartiendo. Se enciende en Amigos › Compartir mi ubicación.</p>' : '');
     chip.hidden = false;
   }
   function refrescar() {
@@ -294,7 +294,7 @@
   }
   function compartir(minutos) {
     var geo = dep.geo();
-    if (!dep.usuario()) return { ok: false, motivo: 'Necesitas una sesión iniciada para compartir tu ubicación.' };
+    if (!dep.usuario()) return { ok: false, motivo: 'Necesita una sesión iniciada para compartir su ubicación.' };
     if (!geo || !geo.watchPosition) return { ok: false, motivo: 'Este dispositivo no permite leer el GPS.' };
     if (compartiendo.watchId != null) { try { geo.clearWatch(compartiendo.watchId); } catch (e) {} }
     compartiendo.activo = true;
@@ -346,10 +346,10 @@
     var ult = e.ultimaEscritura ? haceCuanto(dep.ahora() - e.ultimaEscritura.t) : '';
     return '<div class="u52-card urb-pres-tarjeta' + (e.activo ? ' on' : '') + '" id="urbis-presencia-tarjeta">' +
       '<div class="urb-pres-tarjeta-cab"><span>' + (e.activo ? '📡' : '📍') + '</span><div>' +
-        '<b>' + (e.activo ? 'Compartiendo tu ubicación con tus amigos' : 'Compartir mi ubicación con mis amigos') + '</b>' +
+        '<b>' + (e.activo ? 'Compartiendo su ubicación con sus amigos' : 'Compartir mi ubicación con mis amigos') + '</b>' +
         '<small>' + (e.activo
           ? hastaTxt + (ult ? ' · última posición enviada ' + ult : ' · esperando el GPS…') + (e.error ? ' · ' + esc(e.error) : '')
-          : 'Solo tus amigos mutuos la ven, con la precisión del GPS y hace cuánto. Nada se envía si no lo enciendes.') + '</small>' +
+          : 'Solo sus amigos mutuos la ven, con la precisión del GPS y hace cuánto. Nada se envía si no lo enciende.') + '</small>' +
       '</div></div>' +
       (e.activo
         ? '<button type="button" class="u52-primary" data-pres="apagar">Dejar de compartir</button>'

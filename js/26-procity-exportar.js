@@ -1081,7 +1081,7 @@
       '                mezcla de usos sin volver a la aplicación.',
       '',
       'satelital.png   La foto que se clasificó, ya sin velo de bruma.',
-      'satelital.pgw   Su archivo de mundo EN GRADOS: arrastra el PNG a QGIS y cae',
+      'satelital.pgw   Su archivo de mundo EN GRADOS: arrastre el PNG a QGIS y cae',
       '                georreferenciado solo.',
       'cobertura.png   El resultado de la clasificación, mismo encuadre.',
       'cobertura.pgw   Ídem para la clasificada.',
@@ -1159,7 +1159,7 @@
      segundo KMZ, un segundo DXF y un segundo SVG que envejecerían aparte. */
   function exportar(formato, datos){
     const d = datos || recolectar();
-    if (!d) { alert('Primero dibuja y cierra un área para exportarla.'); return false; }
+    if (!d) { alert('Primero dibuje y cierre un área para exportarla.'); return false; }
     try {
       if (formato === 'kmz') {
         descargar(kmzDe(d), nombreArchivo('area', 'kmz'));
@@ -1215,7 +1215,7 @@
     ].filter(Boolean).join(' · ') : '';
     const p = pre || 'pca-';
     const falta = inv && !inv.cobertura
-      ? '<p class="pca-exp-falta">Todavía no analizaste la cobertura del suelo: si lo haces antes de exportar, ' +
+      ? '<p class="pca-exp-falta">Todavía no analizó la cobertura del suelo: si lo hace antes de exportar, ' +
         'los archivos saldrán también con las manchas de vegetación y superficie dura como polígonos.</p>' : '';
 
     return '<div class="pca-exp-geo">' +

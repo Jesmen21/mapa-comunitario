@@ -191,7 +191,7 @@
     const yo = quienDenuncia();
     const v = leerDe(p);
     v.d = v.d || {};
-    if (v.d[yo.clave]) return Promise.reject(new Error('Ya denunciaste este contenido. Un moderador lo va a revisar.'));
+    if (v.d[yo.clave]) return Promise.reject(new Error('Ya denunció este contenido. Un moderador lo va a revisar.'));
     v.d[yo.clave] = { m: String(motivo || 'otro'), t: new Date().toISOString() };
     // Una denuncia nueva reabre el caso aunque ya se hubiera revisado antes.
     if (v.oculto === 'restaurado') v.oculto = '';
@@ -234,7 +234,7 @@
       '<div class="urbis-den" role="dialog" aria-modal="true" aria-labelledby="ud2-title">' +
         '<h3 id="ud2-title">Denunciar contenido</h3>' +
         '<div class="ud2-ref">' + esc(titulo || 'Contenido') + '</div>' +
-        '<p class="ud2-nota">Cuéntanos qué pasa. Nada se borra: si hace falta, el contenido se esconde del mapa mientras un moderador lo revisa.</p>' +
+        '<p class="ud2-nota">Cuéntenos qué pasa. Nada se borra: si hace falta, el contenido se esconde del mapa mientras un moderador lo revisa.</p>' +
         '<div class="ud2-motivos">' + opciones + '</div>' +
         '<button type="button" class="ud2-cancelar">Cancelar</button>' +
       '</div>';
@@ -254,7 +254,7 @@
           const oculto = window.urbisContenidoOculto(p);
           alert(oculto
             ? 'Gracias. El contenido queda escondido del mapa mientras un moderador lo revisa.'
-            : 'Gracias. Tu denuncia le llegó a los moderadores de URBIS.');
+            : 'Gracias. Su denuncia le llegó a los moderadores de URBIS.');
           try { if (typeof cargarPuntos === 'function') cargarPuntos(); } catch (e) {}
           // Si la denuncia salió de la hoja de comentarios, se repinta ahí
           // mismo; cerrar el detalle del mapa solo aplica a los reportes.
@@ -265,7 +265,7 @@
           } catch (e) {}
         }).catch(function (err) {
           cerrar();
-          alert((err && err.message) || 'No se pudo enviar la denuncia. Intenta de nuevo.');
+          alert((err && err.message) || 'No se pudo enviar la denuncia. Intente de nuevo.');
         });
       });
     });

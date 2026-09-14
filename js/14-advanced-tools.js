@@ -61,7 +61,7 @@ window.activarDibujoAreaAnalisis = function() {
     advancedAreaPoints = [];
     advancedAreaBounds = null;
     advancedAreaLayer.clearLayers();
-    actualizarAdvancedStatus('✏️ Modo dibujo activo: toca varios puntos en el mapa. Con 3 puntos o más ya puedes generar el raster. Doble clic para cerrar.');
+    actualizarAdvancedStatus('✏️ Modo dibujo activo: toque varios puntos en el mapa. Con 3 puntos o más ya puede generar el raster. Doble clic para cerrar.');
     map.getContainer().style.cursor = 'crosshair';
 };
 
@@ -85,8 +85,8 @@ window.limpiarAreaAnalisis = function() {
     advancedRasterLayer.clearLayers();
     advancedRasterGenerated = false;
     map.getContainer().style.cursor = '';
-    actualizarAdvancedStatus('Área: todavía no seleccionada. Puedes dibujar un polígono con clics en el mapa.');
-    actualizarRasterStatus('Raster limpiado. Selecciona un área y vuelve a generar.');
+    actualizarAdvancedStatus('Área: todavía no seleccionada. Puede dibujar un polígono con clics en el mapa.');
+    actualizarRasterStatus('Raster limpiado. Seleccione un área y vuelva a generar.');
 };
 
 function agregarPuntoAreaAnalisis(latlng) {
@@ -523,7 +523,7 @@ window.generarRasterDemo = function() {
     const puntosUsados = resultado.puntos.length;
 
     if(puntosUsados === 0) {
-        actualizarRasterStatus(`⚠️ No encontré puntos compatibles con <b>${tipo}</b> dentro del área. Datos disponibles: <b>${totalFuente}</b> (${manuales} URBIS + ${automap} OSM). Prueba con <b>Recargar lugares</b> en AutoMapeo o usa una zona con marcadores comerciales/urbanos.`);
+        actualizarRasterStatus(`⚠️ No encontré puntos compatibles con <b>${tipo}</b> dentro del área. Datos disponibles: <b>${totalFuente}</b> (${manuales} URBIS + ${automap} OSM). Pruebe con <b>Recargar lugares</b> en AutoMapeo o use una zona con marcadores comerciales/urbanos.`);
         return;
     }
 
@@ -564,7 +564,7 @@ map.on('dblclick', () => {
     if(advancedDrawMode && advancedAreaPoints.length >= 3) {
         advancedDrawMode = false;
         map.getContainer().style.cursor = '';
-        actualizarAdvancedStatus(`Área cerrada con <b>${advancedAreaPoints.length}</b> puntos. Puedes generar el raster.`);
+        actualizarAdvancedStatus(`Área cerrada con <b>${advancedAreaPoints.length}</b> puntos. Puede generar el raster.`);
     }
 });
 

@@ -117,7 +117,7 @@
   function enviarPeticion(texto, foto) {
     const u = yo();
     const limpio = String(texto || '').replace(/~~~/g, ' ').trim().slice(0, 1200);
-    if (!limpio) return Promise.reject(new Error('Escribe tu petición antes de enviarla.'));
+    if (!limpio) return Promise.reject(new Error('Escriba su petición antes de enviarla.'));
     let desc = [String(u.usuario || u.correo || 'ciudadano').replace(/~~~/g, ' '),
                 limpio, foto || '', 'nueva'].join('~~~');
     // La captura es un extra: si no cabe, se manda el texto igual. Perder la
@@ -128,7 +128,7 @@
       sinFoto = true;
     }
     if (typeof window.urbisGuardarFila !== 'function') {
-      return Promise.reject(new Error('No hay conexión con URBIS. Intenta más tarde.'));
+      return Promise.reject(new Error('No hay conexión con URBIS. Intente más tarde.'));
     }
     return window.urbisGuardarFila({
       tipo: TIPO_PETICION, lat: '0', lng: '0', descripcion: desc, fecha: new Date().toISOString()
@@ -143,15 +143,15 @@
     ov.innerHTML =
       '<div class="urbis-cfg" role="dialog" aria-modal="true">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
-        '<h3>Escríbele al administrador</h3>' +
-        '<p class="ucfg-sub">Cuéntanos qué mejorarías de URBIS, qué no te funcionó o qué te gustaría que existiera. ' +
-        'Lo lee el equipo de URBIS y te responde al correo de tu cuenta.</p>' +
-        '<textarea id="upet-texto" rows="5" maxlength="1200" placeholder="Escribe aquí tu petición o el problema que encontraste…"></textarea>' +
+        '<h3>Escríbale al administrador</h3>' +
+        '<p class="ucfg-sub">Cuéntenos qué mejoraría de URBIS, qué no le funcionó o qué le gustaría que existiera. ' +
+        'Lo lee el equipo de URBIS y le responde al correo de su cuenta.</p>' +
+        '<textarea id="upet-texto" rows="5" maxlength="1200" placeholder="Escriba aquí su petición o el problema que encontró…"></textarea>' +
         '<label class="ucfg-foto"><span id="upet-foto-txt">📷 Adjuntar una captura (opcional)</span>' +
         '<input type="file" id="upet-foto" accept="image/*"></label>' +
         '<div class="ucfg-error" hidden></div>' +
         '<button type="button" class="ucfg-primario" id="upet-enviar">Enviar petición</button>' +
-        '<small class="ucfg-nota">También puedes escribirnos directamente a <b>' + CORREO_URBIS + '</b>.</small>' +
+        '<small class="ucfg-nota">También puede escribirnos directamente a <b>' + CORREO_URBIS + '</b>.</small>' +
       '</div>';
     document.body.appendChild(ov);
     ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
@@ -167,7 +167,7 @@
       const boton = this;
       const err = ov.querySelector('.ucfg-error');
       const texto = ov.querySelector('#upet-texto').value;
-      if (!String(texto).trim()) { err.textContent = 'Escribe tu petición antes de enviarla.'; err.hidden = false; return; }
+      if (!String(texto).trim()) { err.textContent = 'Escriba su petición antes de enviarla.'; err.hidden = false; return; }
       boton.disabled = true; boton.textContent = 'Enviando…';
       let foto = '';
       const f = inputFoto.files && inputFoto.files[0];
@@ -180,12 +180,12 @@
         const r = await enviarPeticion(texto, foto);
         ov.remove();
         alert(r.sinFoto
-          ? 'Gracias, tu petición llegó.\n\nLa captura pesaba demasiado y se envió solo el texto. Si es importante, mándala a ' + CORREO_URBIS + '.'
-          : 'Gracias, tu petición llegó al equipo de URBIS. Te respondemos al correo de tu cuenta.');
+          ? 'Gracias, su petición llegó.\n\nLa captura pesaba demasiado y se envió solo el texto. Si es importante, mándela a ' + CORREO_URBIS + '.'
+          : 'Gracias, su petición llegó al equipo de URBIS. Le respondemos al correo de su cuenta.');
         try { if (typeof cargarPuntos === 'function') cargarPuntos(); } catch (e) {}
       } catch (e) {
         boton.disabled = false; boton.textContent = 'Enviar petición';
-        err.textContent = (e && e.message) || 'No se pudo enviar. Intenta de nuevo.';
+        err.textContent = (e && e.message) || 'No se pudo enviar. Intente de nuevo.';
         err.hidden = false;
       }
     });
@@ -197,31 +197,31 @@
      conexión. Dicen lo que URBIS hace de verdad — no es un texto copiado. */
   const TERMINOS = [
     ['Qué es URBIS',
-     'URBIS es un mapa hecho por la comunidad. Lo que ves lo publicaron vecinos como tú: no es información oficial ' +
+     'URBIS es un mapa hecho por la comunidad. Lo que ve lo publicaron vecinos como usted: no es información oficial ' +
      'de ninguna alcaldía, autoridad ni organismo de socorro, y no reemplaza una denuncia formal ni una llamada de emergencia. ' +
      'Si hay vida en riesgo, llama primero al 123 (o al 165, GAULA, si es secuestro o extorsión).'],
     ['Qué datos pedimos y por qué',
-     'Para abrir una cuenta pedimos lo mínimo: correo, un nombre de usuario, tu fecha de nacimiento y dónde vives. ' +
+     'Para abrir una cuenta pedimos lo mínimo: correo, un nombre de usuario, su fecha de nacimiento y dónde vive. ' +
      'Los datos de identidad —nombres, documento y celular— se piden DESPUÉS y solo cuando hacen falta: al subir una ' +
      'foto o al publicar un hecho del conflicto armado. Sirven para que cada publicación tenga alguien detrás.'],
     ['Qué se ve y qué no',
-     'En el mapa se ve tu nombre de usuario. Tu documento, tu celular y tu correo NO se publican ni viajan con tus ' +
+     'En el mapa se ve su nombre de usuario. Su documento, su celular y su correo NO se publican ni viajan con sus ' +
      'reportes. Los reportes del conflicto armado salen SIEMPRE como anónimos: URBIS sabe quién los publicó, el mapa no.'],
     ['Lo que publicas',
-     'Eres responsable de lo que publicas. No se permite contenido sexual, violencia explícita, datos personales de ' +
+     'Es responsable de lo que publicas. No se permite contenido sexual, violencia explícita, datos personales de ' +
      'otras personas, insultos, acusaciones directas ni información falsa a propósito. Cualquiera puede denunciar una ' +
      'publicación; si la denuncia es grave, el contenido se esconde del mapa mientras un moderador lo revisa. Esconder ' +
      'no es borrar: si fue un error, vuelve.'],
-    ['Tus reportes',
-     'Puedes editar y borrar tus propios reportes cuando quieras. El administrador de URBIS puede retirar cualquier ' +
+    ['Sus reportes',
+     'Puede editar y borrar sus propios reportes cuando quiera. El administrador de URBIS puede retirar cualquier ' +
      'publicación que incumpla estas reglas. Los reportes retirados quedan en el histórico interno, no en el mapa.'],
     ['Ubicación',
-     'La ubicación se usa para colocar lo que reportas y para orientarte en el mapa. El análisis de movilidad usa ' +
-     'datos anónimos y agregados, y es opcional: se acepta aparte en el registro y puedes pedir que se retire.'],
-    ['Tus derechos',
-     'Puedes pedir en cualquier momento que te digamos qué datos tuyos tenemos, que los corrijamos o que los ' +
-     'eliminemos, escribiendo a ' + CORREO_URBIS + '. Eliminar la cuenta elimina tus datos de identidad; los reportes ' +
-     'ya publicados pueden quedar en el mapa sin tu nombre, porque son información de utilidad para el barrio.'],
+     'La ubicación se usa para colocar lo que reporta y para orientarlo en el mapa. El análisis de movilidad usa ' +
+     'datos anónimos y agregados, y es opcional: se acepta aparte en el registro y puede pedir que se retire.'],
+    ['Sus derechos',
+     'Puede pedir en cualquier momento que le digamos qué datos suyos tenemos, que los corrijamos o que los ' +
+     'eliminemos, escribiendo a ' + CORREO_URBIS + '. Eliminar la cuenta elimina sus datos de identidad; los reportes ' +
+     'ya publicados pueden quedar en el mapa sin su nombre, porque son información de utilidad para el barrio.'],
     ['Cambios',
      'Si estas condiciones cambian, se avisa dentro de la aplicación. Seguir usando URBIS después del aviso significa ' +
      'que aceptas la versión nueva.']
@@ -236,11 +236,11 @@
       '<div class="urbis-cfg urbis-cfg-largo" role="dialog" aria-modal="true">' +
         '<button type="button" class="ucfg-x" aria-label="Cerrar">×</button>' +
         '<h3>Términos y condiciones</h3>' +
-        '<p class="ucfg-sub">Esto es lo que aceptaste al crear tu cuenta, en palabras claras.</p>' +
+        '<p class="ucfg-sub">Esto es lo que aceptó al crear su cuenta, en palabras claras.</p>' +
         TERMINOS.map(function (t) {
           return '<div class="ucfg-term"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div>';
         }).join('') +
-        '<small class="ucfg-nota">¿Dudas o quieres ejercer tus derechos? Escríbenos a <b>' + CORREO_URBIS + '</b>.</small>' +
+        '<small class="ucfg-nota">¿Dudas o quiere ejercer sus derechos? Escríbanos a <b>' + CORREO_URBIS + '</b>.</small>' +
       '</div>';
     document.body.appendChild(ov);
     ov.querySelector('.ucfg-x').addEventListener('click', function () { ov.remove(); });
@@ -284,11 +284,11 @@
             '<small>Emitir una licencia y mandarla por enlace: quien lo toque queda activado.</small></div></button>'
           : '') +
         '<button type="button" class="ucfg-fila" data-ucfg="peticion">' +
-          '<span class="ucfg-ico">💡</span><div><b>Escríbele al administrador</b>' +
-          '<small>Pide una mejora o cuéntanos un problema. Puedes adjuntar una captura.</small></div></button>' +
+          '<span class="ucfg-ico">💡</span><div><b>Escríbale al administrador</b>' +
+          '<small>Pida una mejora o cuéntenos un problema. Puede adjuntar una captura.</small></div></button>' +
         '<button type="button" class="ucfg-fila" data-ucfg="terminos">' +
           '<span class="ucfg-ico">📜</span><div><b>Términos y condiciones</b>' +
-          '<small>Qué datos pedimos, qué se ve en el mapa y cuáles son tus derechos.</small></div></button>' +
+          '<small>Qué datos pedimos, qué se ve en el mapa y cuáles son sus derechos.</small></div></button>' +
         '<a class="ucfg-fila" href="mailto:' + CORREO_URBIS + '?subject=URBIS%20%C2%B7%20Contacto">' +
           '<span class="ucfg-ico">✉️</span><div><b>Contactarnos</b>' +
           '<small>' + CORREO_URBIS + '</small></div></a>' +
@@ -332,7 +332,7 @@
     if (puedo('peticiones')) partes.push('leer peticiones');
     if (puedo('vitrina')) partes.push('cuidar la vitrina');
     if (soyDueno()) partes.push('repartir permisos');
-    if (!partes.length) return 'Tu panel de moderación.';
+    if (!partes.length) return 'Su panel de moderación.';
     const t = partes.join(', ');
     return t.charAt(0).toUpperCase() + t.slice(1) + '.';
   }
@@ -518,7 +518,7 @@
               (nota ? '<div class="uadm-apr-nota" data-nota>' + esc(nota) + '</div>' +
                       '<button type="button" class="uadm-apr-mas" data-acc="mas" hidden>Ver la nota completa</button>' : '') +
               (hayFoto ? '<div class="uadm-apr-avisofoto">🔍 Al aprobar se publica esta foto. Antes, comprueba en la cuenta de @' +
-                          esc(autor) + ' que su cédula es real; si no lo es, no apruebes y pídele que la corrija.</div>' : '') +
+                          esc(autor) + ' que su cédula es real; si no lo es, no apruebe y pídale que la corrija.</div>' : '') +
               // Si ya se le pidió algo, se dice — con la fecha. Sin esto, dos
               // moderadores le piden lo mismo dos veces, o el mismo lo repite
               // una semana después sin acordarse.
@@ -668,7 +668,7 @@
         btn.textContent = '📍 Ocultar el mapa';
         if (typeof L === 'undefined' || !isFinite(la) || !isFinite(ln)) {
           // Sin Leaflet o sin coordenadas no se inventa un mapa: se dice.
-          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Usa «Abrir» para verlo en el mapa grande.</div>';
+          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Use «Abrir» para verlo en el mapa grande.</div>';
           return;
         }
         try {
@@ -691,7 +691,7 @@
           // altura cero y pinta un mapa gris.
           setTimeout(function () { try { m.invalidateSize(); } catch (e) {} }, 60);
         } catch (e) {
-          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Usa «Abrir» para verlo en el mapa grande.</div>';
+          caja.innerHTML = '<div class="uadm-apr-mapa-no">No se pudo dibujar el mapa aquí. Use «Abrir» para verlo en el mapa grande.</div>';
         }
         return;
       }
@@ -704,10 +704,10 @@
         if (!p) { alert('No se encontró el reporte.'); return; }
         const yaPedido = (typeof window.urbisLeerCorreccion === 'function') ? window.urbisLeerCorreccion(p) : { texto: '' };
         const sugerida = yaPedido.texto ||
-          'No pudimos verificar tu cédula. Revisa que el número esté bien escrito en tu cuenta y avísanos; mientras tanto tu reporte se ve en el mapa, pero sin la foto ni los detalles.';
+          'No pudimos verificar su cédula. Revise que el número esté bien escrito en su cuenta y avísenos; mientras tanto su reporte se ve en el mapa, pero sin la foto ni los detalles.';
         const texto = prompt('✋ ¿Qué necesita corregir esta persona?\n\nLo va a leer en «Mis reportes», sobre este reporte. El reporte NO se publica: sigue esperando.', sugerida);
         if (texto === null) return;
-        if (!String(texto).trim()) { alert('Escribe qué hay que corregir, o cancela.'); return; }
+        if (!String(texto).trim()) { alert('Escriba qué hay que corregir, o cancela.'); return; }
         const etiquetaC = btn.textContent;
         btn.disabled = true; btn.textContent = '…';
         try {
@@ -765,7 +765,7 @@
           ? (peticiones()[parseInt(item.getAttribute('data-i'), 10)] || {}).fila
           : p;
         if (!objetivo) { alert('No se encontró la publicación.'); return; }
-        if (!puedo('eliminar')) { alert('No tienes el permiso de retirar publicaciones.'); return; }
+        if (!puedo('eliminar')) { alert('No tiene el permiso de retirar publicaciones.'); return; }
         if (!confirm('¿Eliminar esto de forma permanente?\n\nNo se puede deshacer.')) return;
         btn.disabled = true; btn.textContent = '…';
         /* En peticiones se repinta entero: la lista se indexa por posición y

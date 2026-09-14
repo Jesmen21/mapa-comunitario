@@ -460,7 +460,7 @@
         if(_vg.dias != null) {
           const _cu = window.urbisHaceCuanto(_vg.dias);
           frescuraPopup = _vg.hayQuePreguntar
-            ? `<span class="popup-vigencia popup-vigencia-vieja">🕗 Sin noticias desde ${_cu} · toca para decir si sigue ahí</span>`
+            ? `<span class="popup-vigencia popup-vigencia-vieja">🕗 Sin noticias desde ${_cu} · toque para decir si sigue ahí</span>`
             : `<span class="popup-vigencia">🕗 Última noticia ${_cu}</span>`;
         }
       }
@@ -738,7 +738,7 @@
     if (_rolEf !== 'admin' && _rolEf !== 'gov' && puedeGestionarReporte(p)) {
         botonesHTML = `
             <div class="owner-actions">
-                <small>Este reporte fue creado por ti.</small>
+                <small>Este reporte fue creado por usted.</small>
                 <div class="owner-actions-btns">
                   <button class="btn-owner-edit" onclick="prepararEdicion('${_escJsAttr(p.lat)}')">✏️ Editar</button>
                   <button class="btn-owner-move" onclick="window.urbisIniciarMoverReporte('${_escJsAttr(p.lat)}','${_escJsAttr(p.lng)}')">📍 Mover</button>
@@ -868,7 +868,7 @@
         // `vigente`, no `pedida`: un reporte ya publicado no le pide nada a
         // nadie, y lo ve cualquiera.
         if(_pc.vigente) _pedidoDet = `<div class="detalle-pedido">
-            <b>✋ Te piden corregir algo antes de publicarlo</b>
+            <b>✋ Le piden corregir algo antes de publicarlo</b>
             <span>${limpiarHTML(_pc.texto)}</span>
           </div>`;
       }
@@ -948,8 +948,8 @@
     let banner = tieneUbicacion
       ? `<h3>📍 Nuevo Registro ${subtitulo}</h3>`
       : (pendienteAqui
-          ? `<div class="cats-pending-banner">📍 Toca el mapa para ubicar tu <b>${pendienteAqui.label}</b><button class="cats-pending-cancel" onclick="window.urbisCancelarSeleccionCategoria()">✕ Cancelar</button></div>`
-          : `<h3>📍 Reportar en el mapa ${subtitulo}</h3><p style="color:#aaa; font-size:0.82rem; margin-top:-6px;">Elige qué quieres reportar. Luego toca el mapa para ubicarlo. (Mismo catálogo que en Android)</p>`);
+          ? `<div class="cats-pending-banner">📍 Toque el mapa para ubicar su <b>${pendienteAqui.label}</b><button class="cats-pending-cancel" onclick="window.urbisCancelarSeleccionCategoria()">✕ Cancelar</button></div>`
+          : `<h3>📍 Reportar en el mapa ${subtitulo}</h3><p style="color:#aaa; font-size:0.82rem; margin-top:-6px;">Elija qué quiere reportar. Luego toca el mapa para ubicarlo. (Mismo catálogo que en Android)</p>`);
 
     const secciones = window.URBIS_QUICK_REPORT_SECTIONS || [];
     let html = banner;
@@ -1001,8 +1001,8 @@
     let banner = tieneUbicacion
       ? `<h3>🧩 Mapeo Técnico — Nuevo Registro</h3>`
       : (pendienteAqui
-          ? `<div class="cats-pending-banner">📍 Toca el mapa para ubicar tu <b>${pendienteAqui.dim}</b><button class="cats-pending-cancel" onclick="window.urbisCancelarSeleccionCategoria()">✕ Cancelar</button></div>`
-          : `<h3>🧩 Mapeo Técnico</h3><p style="color:#aaa; font-size:0.82rem; margin-top:-6px;">Matriz de usos completa. Elige una capa urbana y toca el mapa para ubicarla.</p>`);
+          ? `<div class="cats-pending-banner">📍 Toque el mapa para ubicar su <b>${pendienteAqui.dim}</b><button class="cats-pending-cancel" onclick="window.urbisCancelarSeleccionCategoria()">✕ Cancelar</button></div>`
+          : `<h3>🧩 Mapeo Técnico</h3><p style="color:#aaa; font-size:0.82rem; margin-top:-6px;">Matriz de usos completa. Elija una capa urbana y toque el mapa para ubicarla.</p>`);
 
     let html = `${banner}
         <div class="cats-container">`;

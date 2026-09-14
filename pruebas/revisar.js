@@ -1184,7 +1184,7 @@ console.log('\n  -- el FODA del curso --');
   const FUTURO_3A = ['aparecer\u00e1', 'avisar\u00e1', 'ayudar\u00e1', 'brillar\u00e1', 'cambiar\u00e1',
     'conservar\u00e1', 'contar\u00e1', 'crecer\u00e1', 'depender\u00e1',
     'desaparecer\u00e1', 'encajar\u00e1', 'enviar\u00e1', 'estar\u00e1', 'evaluar\u00e1',
-    'guardar\u00e1', 'marcar\u00e1', 'mostrar\u00e1', 'pedir\u00e1', 'pelear\u00e1',
+    'guardar\u00e1', 'llegar\u00e1', 'marcar\u00e1', 'mostrar\u00e1', 'pedir\u00e1', 'pelear\u00e1',
     'perder\u00e1', 'podr\u00e1', 'pondr\u00e1', 'quedar\u00e1', 'quitar\u00e1',
     'realizar\u00e1', 'recibir\u00e1', 'recomendar\u00e1', 'renombrar\u00e1',
     'seguir\u00e1', 'ser\u00e1', 'tendr\u00e1', 'usar\u00e1', 'validar\u00e1', 'ver\u00e1',
@@ -1358,6 +1358,190 @@ console.log('\n  -- el FODA del curso --');
   comprobar('ningún voseo en el texto que ve el usuario (§7)', hallados.length === 0,
     hallados.length ? hallados.slice(0, 40).join(' · ') + (hallados.length > 6 ? ' …y ' + (hallados.length - 6) + ' más' : '')
                     : 'revisados ' + archivos.length + ' archivos, solo fuera de comentarios');
+})();
+
+/* ── §9 · Y el TUTEO, que es la otra familia (v908) ──────────────────────
+   La v878 sacó el voseo y dejó el tuteo escrito con su número: «otra familia
+   y otra decisión — si la aplicación habla de usted en todas partes o no…
+   darla por hecha de paso sería tomar una decisión de producto que nadie
+   tomó». §9 la toma, y esta guarda es lo que impide que vuelva a entrar de a
+   uno, que es como entró.
+
+   DÓNDE MIRA, y es la diferencia con la guarda del voseo: `dentroDeCadena`
+   marca lo que está DENTRO de una cadena, no lo que está fuera de un
+   comentario. Sobre código, «te» y «tu» casan dentro de `var te = ter.x` y
+   `tu` dentro de un nombre; una guarda con esa clase de falso positivo
+   termina con una lista de excepciones que envejece hasta no significar nada,
+   que es la razón por la que la v895 no persigue «clase sin regla». Y el
+   `${…}` de una plantilla también es código: sin excluirlo, un
+   `demoDias.has(dia)` cae dentro de una cadena.
+
+   DE QUÉ RESPONDE, dicho entero porque importa más que tenerlo:
+
+   · los PRONOMBRES son estructurales y fallan CERRADO. `tú`, `ti`, `contigo`,
+     `tuyo/a/os/as`, `tu`, `tus` y `te` no son otra cosa en castellano.
+   · el FUTURO en -ás es estructural con lista de permitidas, la misma forma
+     que la guarda de -á del voseo (v880): se lista lo que no es segunda
+     persona y se denuncia todo lo demás.
+   · el PRESENTE, el subjuntivo, el pretérito y los imperativos NO se pueden
+     separar por forma: la de tú es idéntica a la de tercera persona («la app
+     marca el punto» / «Marca el punto»), y a veces a un sustantivo («una
+     marca de agua», «Recarga de acuíferos» — los dos salieron en la tanda).
+     Esa mitad es un VOCABULARIO y por tanto falla ABIERTO. Se dice acá en vez
+     de fingir que está cubierta, que es la decisión de la v880 con las formas
+     en -é y en -í del voseo. */
+(function () {
+  /* Marca lo que está dentro de una cadena de JavaScript —`${…}` de plantilla
+     excluido— o, en un HTML, dentro del texto y de los atributos que se leen. */
+  function dentroDeCadena(txt) {
+    const s = new Uint8Array(txt.length);
+    const ANTES_REGEX = /[(,=:[!&|?{};+\-*%~^<>]$/;
+    let i = 0, modo = 0;
+    while (i < txt.length) {
+      const c = txt[i], d = txt[i + 1];
+      if (modo === 0) {
+        if (c === '/' && d === '/') { modo = 1; i += 2; continue; }
+        if (c === '/' && d === '*') { modo = 2; i += 2; continue; }
+        if (c === '/') {
+          const prev = txt.slice(Math.max(0, i - 12), i).replace(/\s+$/, '');
+          if (!prev || ANTES_REGEX.test(prev) || /\b(return|typeof|case|in|of|new|delete|void)$/.test(prev)) { modo = 6; i++; continue; }
+          i++; continue;
+        }
+        if (c === "'") { modo = 3; i++; continue; }
+        if (c === '"') { modo = 4; i++; continue; }
+        if (c === '`') { modo = 5; i++; continue; }
+        i++; continue;
+      }
+      if (modo === 1) { if (c === '\n') modo = 0; i++; continue; }
+      if (modo === 2) { if (c === '*' && d === '/') { modo = 0; i += 2; continue; } i++; continue; }
+      if (c === '\\') { if (modo >= 3 && modo <= 5) { s[i] = s[i + 1] = 1; } i += 2; continue; }
+      if (modo === 6) {
+        if (c === '[') { while (i < txt.length && txt[i] !== ']') { if (txt[i] === '\\') i++; i++; } i++; continue; }
+        if (c === '/') { modo = 0; i++; continue; }
+        if (c === '\n') { modo = 0; i++; continue; }
+        i++; continue;
+      }
+      if ((modo === 3 || modo === 4) && c === '\n') { modo = 0; i++; continue; }
+      if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; i++; continue; }
+      if (modo === 5 && c === '$' && d === '{') {
+        let prof = 1, j = i + 2;
+        while (j < txt.length && prof > 0) {
+          const e = txt[j];
+          if (e === '{') prof++;
+          else if (e === '}') prof--;
+          else if (e === "'" || e === '"' || e === '`') { const q = e; j++; while (j < txt.length && txt[j] !== q) { if (txt[j] === '\\') j++; j++; } }
+          j++;
+        }
+        i = j; continue;
+      }
+      s[i] = 1; i++;
+    }
+    return s;
+  }
+  function dentroDeTextoHtml(txt) {
+    const s = new Uint8Array(txt.length);
+    let i = 0;
+    while (i < txt.length) {
+      if (txt[i] === '<') {
+        const cierra = txt.indexOf('>', i);
+        if (cierra === -1) break;
+        const etq = txt.slice(i, cierra + 1);
+        const re = /\b(title|placeholder|alt|aria-label|value)\s*=\s*("([^"]*)"|'([^']*)')/gi;
+        let m;
+        while ((m = re.exec(etq))) {
+          const val = m[3] !== undefined ? m[3] : m[4];
+          if (!val) continue;
+          const off = i + m.index + m[0].indexOf(val, m[0].indexOf('='));
+          for (let k = 0; k < val.length; k++) s[off + k] = 1;
+        }
+        if (/^<script\b/i.test(etq)) {
+          const fin = txt.toLowerCase().indexOf('</script', cierra);
+          const cuerpo = txt.slice(cierra + 1, fin === -1 ? txt.length : fin);
+          const sub = dentroDeCadena(cuerpo);
+          for (let k = 0; k < sub.length; k++) if (sub[k]) s[cierra + 1 + k] = 1;
+          i = fin === -1 ? txt.length : fin; continue;
+        }
+        if (/^<style\b/i.test(etq)) {
+          const fin = txt.toLowerCase().indexOf('</style', cierra);
+          i = fin === -1 ? txt.length : fin; continue;
+        }
+        i = cierra + 1; continue;
+      }
+      s[i] = 1; i++;
+    }
+    return s;
+  }
+
+  const LETRA = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/;
+  const PRONOMBRES = ['tú', 'ti', 'contigo', 'tuyo', 'tuya', 'tuyos', 'tuyas', 'tu', 'tus', 'te'];
+  /* Las DOS excepciones, cada una con su razón escrita —como el `leeme` de la
+     guarda del voseo—: en la lista de palabras con las que se busca un oficio
+     en la vitrina, «te» es la infusión y no el pronombre; y «TI» en el selector
+     de documento es el código de Tarjeta de Identidad, un valor que viaja al
+     servidor. Se miran por el CONTEXTO de alrededor y no por lo que sigue,
+     porque ese código aparece dos veces en el mismo renglón —en el `value` y
+     en el rótulo— y solo una de las dos lleva al lado lo que lo identifica. */
+  const NO_ES_TUTEO = [['js/13i-vitrina.js', 'te aromatica'],
+                       ['index.html', 'tarjeta de identidad (ti)']];
+  /* Lo que termina en -ás y no es un futuro de tú. Corto a propósito: si
+     entra una palabra nueva cuesta un renglón y se ve en rojo hasta que
+     alguien la agregue, que es lo contrario de una guarda que falla abierto. */
+  const NO_ES_FUTURO = ['quizás', 'jamás', 'además', 'atrás', 'detrás', 'demás',
+    'compás', 'más', 'Tomás', 'Acacías'];
+
+  const arch = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
+  const tuteos = [];
+  arch.forEach(function (rel) {
+    let txt = '';
+    try { txt = leer(rel); } catch (e) { return; }
+    if (!txt) return;
+    const cad = /\.html$/.test(rel) ? dentroDeTextoHtml(txt) : dentroDeCadena(txt);
+    const bajo = txt.toLowerCase();
+    const apunta = (k, largo) => {
+      const ctx = txt.slice(Math.max(0, k - 45), k + 45).toLowerCase();
+      if (NO_ES_TUTEO.some(e => rel.indexOf(e[0]) !== -1 && ctx.indexOf(e[1]) !== -1)) return;
+      tuteos.push(rel + ':' + txt.slice(0, k).split('\n').length + ' «' + txt.substr(k, largo) + '»');
+    };
+    PRONOMBRES.forEach(function (f) {
+      let k = -1;
+      while ((k = bajo.indexOf(f, k + 1)) !== -1) {
+        if (!cad[k]) continue;
+        const antes = k > 0 ? txt[k - 1] : ' ', dsp = txt[k + f.length] || ' ';
+        if (LETRA.test(antes) || LETRA.test(dsp) || antes === '-' || dsp === '-' || antes === '\\') continue;
+        apunta(k, f.length);
+      }
+    });
+    const reAS = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ás(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g;
+    let m;
+    while ((m = reAS.exec(txt))) {
+      if (!cad[m.index]) continue;
+      if (NO_ES_FUTURO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
+      apunta(m.index, m[0].length);
+    }
+  });
+
+  /* La guarda se comprueba contra casos de respuesta conocida, y los casos
+     son los que la tumbaban: un `te` de código, un `${…}` de plantilla y un
+     topónimo. Sin esto puede volver a perderse y seguiría saliendo verde,
+     que es como pasó la v878. */
+  (function () {
+    const M = 'var te = ter.elevacion;\n' +
+              'var a = `hay ${demoDias.has(dia)} y tu casa`;\n' +
+              'var b = \'San Andrés\';\n';
+    const c = dentroDeCadena(M);
+    const iCod = M.indexOf('te = ter'), iTxt = M.indexOf('tu casa'), iHas = M.indexOf('.has(dia)');
+    comprobar('la guarda del tuteo mira dentro de la cadena, no del código',
+      !c[iCod] && !c[iHas] && !!c[iTxt],
+      'el «te» de código ' + (c[iCod] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ', el `${}` ' + (c[iHas] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ' y el «tu» del texto ' + (c[iTxt] ? 'se ve' : 'NO SE VERÍA'));
+  })();
+
+  comprobar('ningún tuteo en el texto que ve el usuario (§9)', tuteos.length === 0,
+    tuteos.length ? tuteos.slice(0, 40).join(' · ') + (tuteos.length > 40 ? ' …y ' + (tuteos.length - 40) + ' más' : '')
+                  : 'revisados ' + arch.length + ' archivos; los pronombres y el futuro en -ás son estructurales, ' +
+                    'el presente y los imperativos NO se pueden separar de la tercera persona y esa mitad no la cubre nadie');
 })();
 
 console.log('\n  -- un nombre, una cosa --');

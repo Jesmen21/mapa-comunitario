@@ -164,7 +164,7 @@
     }
     var typeCount = Object.keys(types).length;
     var defs = [
-      { id: 'primera', icon: '🎬', titulo: 'Primer paso', desc: 'Completa tu primera actividad', meta: 1, val: history.length },
+      { id: 'primera', icon: '🎬', titulo: 'Primer paso', desc: 'Complete su primera actividad', meta: 1, val: history.length },
       { id: 'constante', icon: '🔁', titulo: 'Constante', desc: '10 actividades completadas', meta: 10, val: history.length },
       { id: '5k', icon: '📏', titulo: '5K', desc: '5 km en una sola actividad', meta: 5, val: maxDist },
       { id: '10k', icon: '🏅', titulo: '10K', desc: '10 km en una sola actividad', meta: 10, val: maxDist },
@@ -173,7 +173,7 @@
       { id: 'madrugador', icon: '🌄', titulo: 'Madrugador', desc: 'Actividad antes de las 7am', meta: 1, val: early ? 1 : 0 },
       { id: 'buho', icon: '🌙', titulo: 'Búho nocturno', desc: 'Actividad después de las 9pm', meta: 1, val: late ? 1 : 0 },
       { id: 'velocista', icon: '⚡', titulo: 'Velocista', desc: 'Ritmo bajo 6:00 /km', meta: 1, val: (r.mejorPaceSecKm !== null && r.mejorPaceSecKm < 360) ? 1 : 0 },
-      { id: 'multi', icon: '🤸', titulo: 'Multideporte', desc: 'Prueba 3 tipos de actividad', meta: 3, val: typeCount }
+      { id: 'multi', icon: '🤸', titulo: 'Multideporte', desc: 'Pruebe 3 tipos de actividad', meta: 3, val: typeCount }
     ];
     return defs.map(function (d) {
       return { id: d.id, icon: d.icon, titulo: d.titulo, desc: d.desc, conseguido: d.val >= d.meta, progreso: Math.min(1, d.meta > 0 ? d.val / d.meta : 0) };
@@ -232,7 +232,7 @@
     ctx.fillStyle = '#0b0d12'; ctx.fillRect(0, 0, W, H);
     if (sp.length < 1) {
       ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '600 17px Segoe UI,system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.fillText('Recorre al menos 1 km para ver tu ritmo', W / 2, H / 2);
+      ctx.textAlign = 'center'; ctx.fillText('Recorre al menos 1 km para ver su ritmo', W / 2, H / 2);
       return;
     }
     var paces = sp.map(function (s) { return s.paceSecKm; });
@@ -309,7 +309,7 @@
           '<div class="rush-reto-foot">' + (mes.km >= goal ? '¡Meta cumplida! 🎉' : (mes.count + ' actividad(es) este mes · faltan ' + Math.max(0, goal - mes.km).toFixed(1) + ' km')) + '</div>' +
         '</div></div>' +
       '<div class="rush-pro-section"><div class="rush-streak-card"><span class="rush-streak-fire">🔥</span>' +
-        '<div><b>' + st + ' día' + (st === 1 ? '' : 's') + ' de racha</b><small>' + (st > 0 ? '¡Sigue así, no rompas la cadena!' : 'Sal hoy y empieza tu racha') + '</small></div></div></div>' +
+        '<div><b>' + st + ' día' + (st === 1 ? '' : 's') + ' de racha</b><small>' + (st > 0 ? '¡Siga así, no rompa la cadena!' : 'Salga hoy y empiece su racha') + '</small></div></div></div>' +
       '<div class="rush-pro-section"><div class="rush-pro-h">🎖️ Logros <span class="rush-ach-count">' + got + '/' + ach.length + '</span></div>' +
         '<div class="rush-ach-grid">' + ach.map(achBadge).join('') + '</div></div>' +
       '<button class="rush-heatmap-btn" onclick="window.urbisRunnerMapaCalor&&window.urbisRunnerMapaCalor()">🔥 Ver mi mapa de calor</button>';
@@ -320,7 +320,7 @@
     var v = prompt('Meta de kilómetros para este mes:', cur);
     if (v === null) return;
     var n = parseFloat(v);
-    if (isNaN(n) || n <= 0) { alert('Ingresa un número válido de km.'); return; }
+    if (isNaN(n) || n <= 0) { alert('Ingrese un número válido de km.'); return; }
     localStorage.setItem(GOAL_KEY, String(n));
     renderProgresoPanel();
   };
@@ -329,7 +329,7 @@
   window.urbisRunnerMapaCalor = function () {
     var history = getHistory();
     var routes = history.map(function (a) { return a.points || []; }).filter(function (p) { return p.length > 1; });
-    if (!routes.length) { alert('Aún no tienes recorridos para tu mapa de calor.'); return; }
+    if (!routes.length) { alert('Aún no tiene recorridos para su mapa de calor.'); return; }
     var lmap = (typeof map !== 'undefined' && map && map.getContainer) ? map : null;
     if (!lmap) { alert('El mapa no está disponible en este momento.'); return; }
     if (typeof window.UrbisMobileAppV58 !== 'undefined') window.UrbisMobileAppV58.show('map');

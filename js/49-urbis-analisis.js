@@ -308,7 +308,7 @@
         '<button class="ua-tool" data-ua="limpiar" title="Borrar polígono y resultados">🗑️<span>Limpiar</span></button>' +
         '<button class="ua-tool ua-x" data-ua="salir" title="Salir del modo análisis">✕<span>Salir</span></button>' +
       '</div>' +
-      '<div class="ua-status" id="ua-status">Elige ✏️ Polígono o ▭ Rectángulo y dibuja sobre el mapa el sector a analizar.</div>' +
+      '<div class="ua-status" id="ua-status">Elija ✏️ Polígono o ▭ Rectángulo y dibuje sobre el mapa el sector a analizar.</div>' +
       '<aside class="ua-panel" id="ua-panel" hidden>' +
         '<header class="ua-panel-head"><b id="ua-panel-titulo">Sector analizado</b>' +
           '<div class="ua-meta" id="ua-meta"></div></header>' +
@@ -358,8 +358,8 @@
   function setModo(mo) {
     W.modo = mo;
     document.querySelectorAll('.ua-tool').forEach(function (b) { b.classList.toggle('active', b.dataset.ua === mo); });
-    if (mo === 'poligono') setStatus('✏️ <b>Polígono:</b> haz clic en el mapa por cada vértice. <b>Doble clic</b> (o ✅ Analizar) para cerrar.');
-    if (mo === 'rect') setStatus('▭ <b>Rectángulo:</b> haz clic en una esquina y luego en la esquina opuesta.');
+    if (mo === 'poligono') setStatus('✏️ <b>Polígono:</b> haga clic en el mapa por cada vértice. <b>Doble clic</b> (o ✅ Analizar) para cerrar.');
+    if (mo === 'rect') setStatus('▭ <b>Rectángulo:</b> haga clic en una esquina y luego en la esquina opuesta.');
   }
 
   function accion(a) {
@@ -392,7 +392,7 @@
         var a = W.verts[0], b = W.verts[1];
         W.verts = [{ lat: a.lat, lng: a.lng }, { lat: a.lat, lng: b.lng }, { lat: b.lat, lng: b.lng }, { lat: b.lat, lng: a.lng }];
         cerrarPoligono();
-      } else { dibujarBorrador(); setStatus('▭ Ahora haz clic en la esquina opuesta.'); }
+      } else { dibujarBorrador(); setStatus('▭ Ahora haga clic en la esquina opuesta.'); }
       return;
     }
     W.verts.push(ll);
@@ -413,7 +413,7 @@
   }
 
   function cerrarPoligono() {
-    if (W.cerrado || W.verts.length < 3) { if (!W.cerrado) setStatus('Necesitas al menos 3 vértices para cerrar el polígono.'); return; }
+    if (W.cerrado || W.verts.length < 3) { if (!W.cerrado) setStatus('Necesita al menos 3 vértices para cerrar el polígono.'); return; }
     W.cerrado = true;
     W.grupo.clearLayers();
     L.polygon(W.verts.map(function (p) { return [p.lat, p.lng]; }),
@@ -448,7 +448,7 @@
         W.verde = res;
         pintarVerdeOverlay(res);
       }
-      setStatus('✅ Análisis completo. Usa las pestañas del panel y exporta con ⬇️ CSV o 🖨️ Informe.');
+      setStatus('✅ Análisis completo. Use las pestañas del panel y exporta con ⬇️ CSV o 🖨️ Informe.');
       var actual = document.querySelector('.ua-tab.active');
       if (actual && (actual.dataset.uatab === 'verde' || actual.dataset.uatab === 'comparativa')) activarTab(actual.dataset.uatab);
     });
@@ -572,7 +572,7 @@
     m.on('moveend zoomend', draw);
     W.heatCv = cv; W.heatFn = draw; W.heatOn = true;
     document.querySelector('[data-ua="heat"]')?.classList.add('active');
-    setStatus('🔥 Mapa de calor de <b>' + pts.length + '</b> datos comunitarios. Vuelve a pulsar 🔥 para apagarlo.');
+    setStatus('🔥 Mapa de calor de <b>' + pts.length + '</b> datos comunitarios. Vuelva a pulsar 🔥 para apagarlo.');
   }
   function apagarHeat() {
     var m = getMap();
@@ -584,7 +584,7 @@
 
   // ---- Exportar ----
   function descargarCSV() {
-    if (!W.resultado) { setStatus('Dibuja y cierra un polígono primero.'); return; }
+    if (!W.resultado) { setStatus('Dibuje y cierre un polígono primero.'); return; }
     var csv = csvInforme(W.resultado, W.verde && W.verde.stats ? W.verde.stats : null, W.reportes);
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
@@ -595,7 +595,7 @@
   }
 
   function imprimirInforme() {
-    if (!W.resultado) { setStatus('Dibuja y cierra un polígono primero.'); return; }
+    if (!W.resultado) { setStatus('Dibuje y cierre un polígono primero.'); return; }
     var r = W.resultado, v = W.verde && W.verde.stats ? W.verde.stats : null;
     var filas = r.capas.map(function (c) {
       return '<tr><td>' + c.icono + ' ' + c.nombre + '</td><td>' + c.count + '</td><td>' + c.porHa.toFixed(2) + '</td></tr>';
@@ -661,7 +661,7 @@
     if (document.getElementById('urbis-profile-fab')) return;
     var b = el('button', 'ua-profile-fab', '👤');
     b.id = 'urbis-profile-fab';
-    b.title = 'Tu cuenta URBIS';
+    b.title = 'Su cuenta URBIS';
     b.onclick = function (ev) { ev.stopPropagation(); toggleProfileMenu(); };
     document.body.appendChild(b);
 
