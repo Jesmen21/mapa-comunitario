@@ -7315,10 +7315,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        con títulos». */
     var GRUPOS = [
       { id: 'ubicacion', titulo: 'Ubicación y delimitación', fam: 'sitio', hoja: 'A',
+        principal: 'Plano del sector', principalQue: 'el plano del área analizada',
         pregunta: '¿Dónde queda el sector, cuánto mide y qué hay dibujado en él?',
         que: 'dónde queda · cuánto mide · el plano del sector',
         cajas: ['Plano del sector', 'El sitio', 'Dónde queda, escala por escala'] },
       { id: 'ambiental',  titulo: 'Análisis ambiental', fam: 'suelo', hoja: 'A',
+        principal: 'Asoleamiento', principalQue: 'carta solar y orientación de fachadas',
         pregunta: '¿Qué le pone el suelo, el clima y el agua al proyecto antes de dibujar nada?',
         que: 'relieve · clima · sol · viento · ruido · verde · cobertura · espacio público',
         cajas: ['El terreno', 'El clima', 'Asoleamiento', 'La sombra de lo construido',
@@ -7332,6 +7334,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          tiene razón: una amenaza declarada por una autoridad no es una
          condición de diseño, es una restricción. */
       { id: 'riesgo', titulo: 'Riesgo y servicios', fam: 'suelo', hoja: 'A',
+        principal: 'La amenaza sísmica', principalQue: 'la zona de amenaza y lo que obliga',
         pregunta: '¿Qué amenaza declarada tiene este suelo y con qué servicios se cuenta?',
         que: 'sismo · inundación · lo que llega por tubería y por cable',
         cajas: ['La amenaza sísmica', 'La inundación', 'Infraestructura de servicios'] },
@@ -7342,6 +7345,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          fila es la hoja. Acostada sigue dentro del ambiental a dos columnas,
          que es lo que la hoja de 600 mm de alto paga. */
       { id: 'tiempo', titulo: 'Cómo cambió el sitio', fam: 'suelo', hoja: 'A',
+        principal: 'Cómo cambió el sitio', principalQue: 'las estampas de satélite de 2014 a hoy',
         pregunta: '¿Hacia dónde viene moviéndose el sector, y a qué ritmo?',
         que: 'las fotos desde 2014 · lo medido desde 1984',
         /* §17 · la presión de crecimiento va en la hoja PARADA y no en la
@@ -7357,11 +7361,13 @@ function donaHTML(datos, colorDe, nombreDe) {
            ceden ahí y no acá. */
         cajas: horiz ? [] : ['Cómo cambió el sitio', 'Presión de crecimiento'] },
       { id: 'movilidad',  titulo: 'Movilidad', fam: 'mover', hoja: 'B',
+        principal: 'Cómo se mueve el sector', principalQue: 'la red, su densidad y las vías arterias con nombre',
         pregunta: '¿Cómo se llega, por dónde se entra y qué se alcanza a pie?',
         que: 'la red · cómo se llega · la calle · lo que se alcanza a pie',
         cajas: ['Cómo se llega', 'Cómo se mueve el sector', 'El perfil de la calle',
                 'A distancia de caminar', 'Hasta dónde se camina desde el lote'] },
       { id: 'demografico', titulo: 'Demográfico y usos del suelo', fam: 'sitio', hoja: 'B',
+        principal: 'Quién vive acá', principalQue: 'la pirámide, el reparto por sexo y el envejecimiento',
         pregunta: '¿Quién vive acá, qué uso manda y dónde se concentra lo que hay?',
         que: 'cuánta gente · qué uso manda · dónde se juntan · hitos y nodos',
         cajas: ['Quién vive acá', 'Lo que el censo trae además',
@@ -7369,11 +7375,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                 'Qué hay, por categoría', 'Qué manda en el sector',
                 'Dónde está la calle comercial', 'Cómo cambia al alejarse', 'Hitos y nodos'] },
       { id: 'forma',      titulo: 'Morfología urbana', fam: 'forma', hoja: 'A',
+        principal: 'Llenos y vacíos', principalQue: 'cuánto del sector está construido y cuánto libre',
         pregunta: '¿Qué tan lleno está el sector y a qué altura se construye?',
         que: 'llenos y vacíos · alturas',
         cajas: ['Llenos y vacíos', 'Alturas de lo construido',
                 'Continuidad del tejido', 'El grano: manzana y predio'] },
       { id: 'lote',       titulo: 'El lote y la norma', fam: 'proyecto', hoja: 'A',
+        principal: 'El lote a intervenir', principalQue: 'el predio dibujado, con sus cotas y su superficie',
         pregunta: '¿Qué permite el predio, qué le pide el sitio y qué no se sabe de la norma?',
         que: 'el predio · lo que cabe · lo que el sitio le pide al proyecto',
         cajas: ['El lote a intervenir', 'La cuadra del lote', 'Qué cabe en el lote',
@@ -7384,11 +7392,18 @@ function donaHTML(datos, colorDe, nombreDe) {
          catorce cajas en una banda— y sobre todo son OTRA pregunta: los de
          percepción dicen qué se sintió, estos dicen qué hay que ir a medir.
          Es la misma separación que hizo la v853 con «riesgo y servicios». */
+      /* Esta banda NO declara principal, y es a propósito: sus seis cajas son
+         formularios en blanco intercambiables, ninguno responde la pregunta
+         solo, y la conclusión los CUENTA desde la v903 —«trae N plantillas»—,
+         así que una que ceda ya se ve en el propio cierre. Declarar una como
+         principal sería inventar una jerarquía que la banda no tiene. */
       { id: 'medir',      titulo: 'Qué medir en la calle', fam: 'campo', hoja: 'B',
+        principal: null,
         pregunta: '¿Qué hay que ir a levantar, con qué se mide, cuánto demora y en qué panel se pega?',
         que: 'seis plantillas en blanco, con su cuadrícula y su destino',
         cajas: PLANTILLAS_DE_CAMPO.map(function (p) { return p.t; }) },
       { id: 'campo',      titulo: 'Trabajo de campo', fam: 'campo', hoja: 'B',
+        principal: 'Lo levantado en campo', principalQue: 'lo que se comprobó caminando el sector',
         pregunta: '¿Qué se comprobó en la calle, qué falta por levantar y qué dato oficial no hay todavía?',
         que: 'lo intangible · lo levantado · lo que falta · los datos oficiales que no hay',
         /* Los cinco vacíos obligatorios van acá y no en su banda de tema: son
@@ -7404,10 +7419,12 @@ function donaHTML(datos, colorDe, nombreDe) {
          reduce a lo que ocupe su contenido»—. Y de paso se lee mejor: primero
          se comprueba que los números no se contradicen, después se concluye. */
       { id: 'coherencia', titulo: 'Coherencia de las cifras', fam: 'cierre', hoja: 'B',
+        principal: 'Coherencia de las cifras', principalQue: 'los doce chequeos con lo que falla impreso',
         pregunta: '¿Las cifras de las DOS láminas se contradicen entre sí?',
         que: 'los siete chequeos, con lo que falla impreso',
         cajas: ['Coherencia de las cifras'] },
       { id: 'sintesis',   titulo: 'Síntesis del sector', fam: 'cierre', hoja: 'B',
+        principal: 'Síntesis del sector', principalQue: 'las once casillas y las cinco propuestas',
         pregunta: '¿Qué uso pide el sector y qué tan factible es en este predio?',
         que: 'a favor · en contra · falta levantar',
         cajas: ['Síntesis del sector'] }
@@ -8057,6 +8074,42 @@ function donaHTML(datos, colorDe, nombreDe) {
              rellena los huecos sola. */
           var cols = Math.min(bd.cols || bd.peso, ANCHO_FILA);
           var renglones = bd.renglones;
+          /* ── UNA BANDA QUE PIERDE SU CAJA PRINCIPAL PARECE TERMINADA (v911)
+             ──────────────────────────────────────────────────────────────
+             Es el hallazgo de la v910 y vale más que el arreglo que lo
+             destapó. Cuando la serie temporal cedió, la síntesis siguió
+             citándola y por ahí se pudo detectar. Cuando cedió la carta
+             solar **no la citaba nadie**: la banda ambiental salió con su
+             título, su pregunta y su conclusión, y sin la caja que responde
+             la pregunta — se lee como una banda completa.
+
+             Lo que cede se nombra en el pie desde la v850, pero el pie es
+             una lista de paneles y se lee después de haber leído la hoja.
+             Esto va DENTRO de la banda, debajo de su pregunta, que es donde
+             el lector está mirando cuando le falta la respuesta.
+
+             Solo cuando de verdad CEDIÓ. Si la caja nunca tuvo dato, el
+             panel de vacío ya lo dice con su trámite (v880) y escribir
+             «cedió el sitio» sería declarar mal la causa — que es la falta
+             de la v867 y lo que la v899 separó en «sin dato» y «panel
+             fuera». Por eso se lee de `apagadas`, la misma señal, y no de
+             «la caja no está». */
+          function faltaEnLaBanda(bd) {
+            var t = bd.g && bd.g.principal;
+            if (!t) return '';
+            var puesta = (bd.cajas || []).some(function (h) {
+              return String(h).indexOf('<h2>' + t + '</h2>') !== -1;
+            });
+            if (puesta) return '';
+            var cedio = false;
+            try { cedio = ((o.pliegoCedidas || [])).indexOf(slugPliego(t)) !== -1; } catch (eF) { cedio = false; }
+            if (!cedio) return '';
+            return '<p class="b-falta"><b>Falta en esta banda:</b> ' + esc(t) +
+                   (bd.g.principalQue ? ' (' + esc(bd.g.principalQue) + ')' : '') +
+                   '. Es la caja que responde la pregunta de arriba, y cedió el sitio en esta ' +
+                   'composición para que la hoja cerrara. Está medida: para verla, apague otro ' +
+                   'panel desde la ficha o imprima esta hoja suelta.</p>';
+          }
           /* Una banda que igual quedó sola en su fila se extiende a lo ancho
              en UN renglón, con una columna por caja: apilada en dos y
              estirada a la fila entera, cada caja salía del doble de ancho
@@ -8076,6 +8129,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                que las cajas— después. Es la capa educativa en su forma más
                corta: un panel que se ve bien y no enseña, no sirve. */
             '<p class="b-pregunta">' + esc(bd.g.pregunta || '¿Qué dice este tema del sector?') + '</p>' +
+            faltaEnLaBanda(bd) +
             /* Medias columnas: `cols` puede traer un ,5 por las baldosas de
                cifra, así que la rejilla se escribe al doble y cada caja
                ocupa dos pistas, la baldosa una y el mapa el doble de su peso. */
@@ -9074,6 +9128,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.caja-cifra .nota, .caja-cifra .lee{ font-size:2.8mm; line-height:1.3 }' +
       // La pregunta de la banda y su conclusión.
       '.b-pregunta{ margin:-1mm 0 0; font-size:3.4mm; line-height:1.3; color:#0F1F2E; font-weight:600 }' +
+      /* El renglón de banda incompleta (v911). Rojo y a trazos, el mismo
+         código visual que la contradicción de la v879 y el aviso de escala
+         de la v890: los tres dicen «no le crea a esta parte de la hoja
+         todavía». No es ámbar —el ámbar de la v849 es «esto no lo tenemos»
+         y esto sí lo tenemos, solo que no cupo—. */
+      '.b-falta{ margin:1mm 0 0; padding:1.4mm 2mm; font-size:3mm; line-height:1.3;' +
+        ' color:#8A1C1C; border:0.4mm dashed #C0392B; border-radius:1mm; background:#FDF3F2 }' +
+      '.b-falta b{ letter-spacing:.02em }' +
       '.b-cierre{ margin:0; font-size:3.3mm; line-height:1.38; color:#0F1F2E; border-left:1mm solid var(--tinte);' +
         'background:var(--suave); padding:1.8mm 3mm; border-radius:0 2mm 2mm 0 }' +
       '.b-cierre b{ display:inline-block; color:var(--tinte); text-transform:uppercase; letter-spacing:.14em;' +
@@ -16345,9 +16407,89 @@ function donaHTML(datos, colorDe, nombreDe) {
      Y con ellas no ceden «Suelo disponible real» ni «Potencial edificatorio»:
      son las cajas de la lámina A de donde salen dos de esas once, y con el
      panel fuera el cruce de la B se queda sin con qué cruzarse (v899). */
-  var PLIEGO_INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio',
-                           'sintesis-del-sector', 'coherencia-de-las-cifras',
-                           'suelo-disponible-real', 'potencial-edificatorio'];
+  /* ── §4 · EL PELDAÑO SE DECLARA, NO SE DEDUCE (v911) ─────────────────
+     La v901 escribió el orden como una regla estructural: peldaño 1 «los
+     paneles de texto explicativo», peldaño 2 los mapas secundarios, 3 los
+     principales de banda. Y la misma v901 midió que **de las 37 cajas de la
+     lámina B ninguna es solo texto**, así que «paneles de texto» no separaba
+     nada: en la práctica el peldaño 1 quedó siendo «todo lo que se arma con
+     `caja()`».
+
+     El criterio que operaba era CÓMO ESTÁ CONSTRUIDO el panel, no cuánto
+     vale. Por eso una carta solar y cinco estampas de satélite cedían antes
+     que un anillo de distancia — las dos veces que la v910 encontró, y las
+     dos con el peor síntoma posible: **una banda que pierde su pieza
+     principal parece terminada**.
+
+     Se reemplaza por una LISTA, panel por panel. No es una regresión hacia
+     lo escrito a mano: una regla estructural que no separa lo que dice
+     separar es peor que una lista, porque se lee como un criterio y no lo
+     es. Lo que sí se hereda de la regla —que una banda nueva quede
+     protegida sin que su autor se acuerde— se pierde a propósito, y a cambio
+     el que no declare su peldaño cae en el 1 y **cede primero**: lo que se
+     olvida se nota en la primera composición apretada, no tres tandas
+     después.
+
+     El PELDAÑO 0 no cede nunca. Los demás ceden en orden: 1 primero,
+     3 último. Vale para cajas y para mapas, con el mismo número, porque un
+     mapa y su caja de conteo son el mismo panel para quien lee la hoja. */
+  var PELDANO_PLIEGO = {
+    /* 0 · NO CEDE NUNCA. Las once casillas y el cierre de cinco propuestas
+       —publicar nueve de once es mentir por omisión (v901)—, la banda de
+       coherencia, el plano y la foto, y los mapas de categoría de la banda
+       de forma, que van por regla más abajo.
+
+       `calor:todos` se queda acá y NO está en la lista dictada: lo pone la
+       v850, dicha dos veces y con el PDF en la mano —«nunca la foto ni el de
+       todos los usos»—. Sumarlo es honrar las dos instrucciones; quitarlo
+       habría sido dejar caer una por no estar repetida en la última. */
+    'sintesis-del-sector': 0, 'coherencia-de-las-cifras': 0,
+    'plano-del-sector': 0, 'plano': 0, 'foto': 0, 'calor:todos': 0,
+
+    /* 1 · CEDE PRIMERO */
+    'anillos': 1, 'como-cambia-al-alejarse': 1,
+    'comercial': 1, 'donde-esta-la-calle-comercial': 1,
+    'hitos': 1, 'hitos-y-nodos': 1,
+    'estratos': 1,
+    'el-grano-manzana-y-predio': 1,
+    /* «Verde y agua (el mapa; la caja de conteo se queda)»: el MAPA cede
+       primero y la caja no lo acompaña. Como el único nivel que no cede es
+       el 0 —y la caja no está en el 0—, «se queda» se lee como «cede la
+       última», que es el 3: es donde están las demás cajas de su banda. */
+    'agua': 1,
+
+    /* 2 */
+    'como-cambio-el-sitio': 2, 'masa': 2, 'curvas': 2,
+    'ruido': 2, 'el-ruido-del-transito': 2,
+
+    /* 3 · ÚLTIMO EN CEDER */
+    'asoleamiento': 3, 'el-clima': 3, 'el-terreno': 3,
+    'espacio-publico-efectivo': 3, 'verde-y-agua': 3,
+    'cobertura-del-suelo': 3, 'cobertura': 3,
+    'llenos-y-vacios': 3, 'llenos': 3,
+    'potencial-edificatorio': 3, 'suelo-disponible-real': 3,
+    /* Los cuatro mapas de movilidad. */
+    'llega': 3, 'caminar': 3, 'caminata': 3, 'vias': 3
+  };
+  /* Los de categoría de la banda de forma van por PATRÓN y no uno por uno:
+     sus identificadores salen de las categorías que el sector tenga
+     (`calor:comercio`, `calor:salud`…), así que una categoría nueva quedaría
+     fuera de una lista escrita y cedería sin que nadie lo decidiera. */
+  function peldanoDe(id) {
+    var k = String(id || '');
+    if (/^calor:(?!todos)/.test(k)) return 0;
+    var p = PELDANO_PLIEGO[k];
+    return p === undefined ? 1 : p;
+  }
+  /* Lo intocable ya no es una lista aparte: es el peldaño 0, para que no
+     puedan separarse. Antes llevaba `el-sitio` y `los-mapas-del-sector`, que
+     la lista dictada no nombra, así que ahora ceden —en el peldaño 1, por
+     omisión—; y `suelo-disponible-real` y `potencial-edificatorio` bajaron
+     de «nunca» a «último», que es lo que la v910 hizo posible: con el panel
+     fuera su casilla dice SIN MEDIR nombrándolo, en vez de quedarse sin con
+     qué cruzarse. */
+  var PLIEGO_INTOCABLES = Object.keys(PELDANO_PLIEGO)
+    .filter(function (k) { return PELDANO_PLIEGO[k] === 0; });
   /* Los mapas, del más prescindible al más necesario, para cuando ni
      apagando todas las cajas cabe la hoja. Lo que no esté acá sale primero.
      Las categorías de uso van temprano: el mapa de todos los usos, que no
@@ -16683,10 +16825,24 @@ function donaHTML(datos, colorDe, nombreDe) {
            cifras: los que sobran del núcleo salen primero, porque si no
            no hay letra de 2,9 mm que alcance —medido: quedaba en 1,4—. */
       var mapasYa = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || []) : (S.pliegoMapasOff || []));
+      /* Los mapas que están EN ESTA HOJA, leídos del papel ya compuesto.
+         `mapasDisponibles` no sabe de hojas —no tiene por qué: es el
+         inventario del sector—, así que componiendo la A sus candidatos
+         incluían los mapas de la B. Apagar uno que no está no libera un
+         milímetro, y después se declara fuera: **el pie de la A nombraba
+         mapas que nunca estuvieron en la A**.
+
+         Es exactamente el fallo que la v901 encontró y arregló para las
+         cajas —«lo que no está compuesto no puede ceder»— y que quedó vivo
+         para los mapas, donde nadie lo miraba. Salió al medir el orden de
+         cesión de esta tanda, no leyendo. */
+      var enLaHoja = {};
+      try { mapasMedidos(d).forEach(function (m) { enLaHoja[m.id] = true; }); } catch (eH) { enLaHoja = null; }
       var candMapas = [];
       try {
         candMapas = mapasDisponibles(res).filter(function (m) {
-          return m.listo && mapasYa.indexOf(m.id) === -1 && m.id !== 'foto' && m.id !== 'calor:todos';
+          return m.listo && mapasYa.indexOf(m.id) === -1 && peldanoDe(m.id) > 0 &&
+                 (!enLaHoja || enLaHoja[m.id]);
         }).map(function (m) { return m.id; });
       } catch (e) { candMapas = []; }
       var pos = function (id) {
@@ -16694,68 +16850,45 @@ function donaHTML(datos, colorDe, nombreDe) {
         return i === -1 ? -1 : i;
       };
       candMapas.sort(function (a, b) { return pos(a) - pos(b); });
-      /* ── Los dos peldaños de mapa del ORDEN DE CESIÓN (v901) ──────────
-         El PRINCIPAL de una banda es el mapa de más peso que esa banda
-         trae; con dos iguales, el primero. No hay lista escrita, y es a
-         propósito: es la misma regla con la que la v886 decide a qué piso
-         se mide cada mapa, así que **una banda nueva hereda su protección
-         sin que su autor se acuerde** — que es lo único que impidió que el
-         aviso de origen de la v867 volviera a perderse.
+      /* ── EL ORDEN DE CESIÓN, por peldaño declarado (v911) ─────────────
+         Hasta la v910 esto partía los candidatos en tres por CONSTRUCCIÓN:
+         las cajas primero, después los mapas que no abren su banda, y al
+         final el principal de cada banda. Medido en el pliego real, esa
+         regla cedía la serie temporal y la carta solar —cinco estampas de
+         satélite y un gráfico— antes que un anillo de distancia, porque las
+         dos se arman con `caja()`.
 
-         Se calcula sobre la hoja YA compuesta, que es de donde sale el
-         peso y la banda de cada mapa: deducirlo de una tabla aparte sería
-         una segunda ruta de cálculo para la misma cantidad, y esas no
-         divergen el día que se escriben (v879).
+         Ahora cada panel trae su peldaño de `PELDANO_PLIEGO`, y cajas y
+         mapas se ordenan JUNTOS por ese número. Dentro de un mismo peldaño
+         se conserva el desempate que ya estaba medido —las cajas en el orden
+         de `cajasDelPliego` al revés, con las baldosas de cifra al final, y
+         los mapas por `PRIORIDAD_MAPA`—, porque el peldaño dice cuánto vale
+         un panel y no en qué orden ceden dos que valen lo mismo.
 
-         En el sector de prueba esto reparte solo: los anillos, los hitos y
-         la calle comercial quedan en el peldaño 2 —la banda demográfica la
-         abre el mapa de todos los usos— y la jerarquía vial, la foto y el
-         de todos los usos quedan en el 3. Son exactamente los tres que el
-         pedido nombra como secundarios. */
-      var principales = {};
-      try { principales = principalesPorBanda(mapasMedidos(d)); } catch (e) { principales = {}; }
-      var esPrincipal = {};
-      Object.keys(principales).forEach(function (g) { esPrincipal[principales[g]] = true; });
-      var secundarios = candMapas.filter(function (id) { return !esPrincipal[id]; });
-      var deBanda = candMapas.filter(function (id) { return !!esPrincipal[id]; });
-      /* Los tres peldaños, en el orden pedido: primero el texto, después el
-         mapa secundario, y el principal de banda al final.
-
-         Antes de la v901 el orden se daba vuelta con la letra grande —los
-         mapas que sobraban del núcleo cedían ANTES que las cajas— porque
-         con los mapas al final «Se lee de pie» no cerraba ni con todo
-         apagado. Con los mapas repartidos en dos peldaños eso ya no hace
-         falta: el peldaño 2 solo tiene mapas secundarios, y ceder catorce
-         de esos libera el mismo papel que cedían los del núcleo, sin
-         tocar el que abre cada banda. */
-      /* ── El método extendido NO cede, y costó medirlo ────────────────
-         El orden pedido pone de primero «los paneles de texto explicativo y
-         método extendido», y lo barato parecía acortar el pie de método de
-         las treinta y pico cajas: de los cinco renglones de `metodoDe`
-         dejar la fórmula y la fuente, y ceder confiabilidad, referencia y
-         error típico. Medido, devolvía TRES paneles a la hoja.
-
-         Y costaba dos declaraciones que la hoja tiene obligación de hacer,
-         las dos escondidas justo en los renglones que se iban: la
-         referencia de `calor:categoria` es donde la lámina explica **por
-         qué la línea y no solo el degradado** (v877), y el error típico es
-         donde dice que **dar por bueno un chequeo que no se pudo correr**
-         es el error de esta hoja (v879). Las dos tienen su aserción.
-
-         Así que no es una cesión, es un silencio: tres paneles a cambio de
-         que treinta cajas dejen de decir de qué se fían y en qué se suelen
-         equivocar. Es la misma decisión de la v875 con la necesidad topada
-         y la de la v881 con los anillos agrupados —no se arregla un
-         apretón con una mentira más pequeña—, y queda escrita acá para que
-         la idea no vuelva a parecer buena. El método se acorta en el código
-         (`metodoDe(clave, hoy, corto)`) y no lo usa ningún peldaño. */
-      var todosLosCandidatos = candidatos.concat(secundarios, deBanda);
+         `principalesPorBanda` NO desaparece: sigue decidiendo a qué piso de
+         §21 se mide cada mapa (v886). Lo que deja de hacer es decidir cuándo
+         cede, que es donde no servía. */
+      /* Ordenación ESTABLE por peldaño: `sort` no lo garantiza para todos
+         los motores, y con un orden interno que sí está medido perder el
+         desempate sería cambiar dos cosas a la vez. */
+      var unidos = candidatos.concat(candMapas);
+      var todosLosCandidatos = [1, 2, 3].reduce(function (ac, n) {
+        return ac.concat(unidos.filter(function (id) { return peldanoDe(id) === n; }));
+      }, []);
       var conN = function (n) {
         var parte = todosLosCandidatos.slice(0, n);
         var offC = parte.filter(function (x) { return candidatos.indexOf(x) >= 0; });
         var offM = parte.filter(function (x) { return candidatos.indexOf(x) < 0; });
         return laminaImprimible(res, Object.assign({}, o, {
-          escala: piso, pliegoOff: apagadasYa.concat(offC), pliegoMapasOff: mapasYa.concat(offM) }));
+          escala: piso, pliegoOff: apagadasYa.concat(offC), pliegoMapasOff: mapasYa.concat(offM),
+          /* Lo que cede la BISECCIÓN, aparte de lo que apagó una persona.
+             `pliegoOff` junta las dos cosas, y para el renglón de banda
+             incompleta no son lo mismo: a quien apagó Asoleamiento a
+             propósito desde la ficha, decirle que «cedió el sitio para que
+             la hoja cerrara» es declararle mal la causa —la falta de la
+             v867— sobre una decisión que tomó él. Sin esta lista el renglón
+             saldría en la hoja de cualquiera que use «dejar solo el plano». */
+          pliegoCedidas: offC.concat(offM) }));
       };
       var cabeConN = function (n) {
         d.open(); d.write(conN(n)); d.close();

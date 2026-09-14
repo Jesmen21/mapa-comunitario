@@ -564,6 +564,34 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     const bv2 = H().querySelector('[data-pcr="lamina-ver"]');
     if (bv2) { bv2.click(); await esperar(700); }
     o.docGran = capturado; capturado = '';
+    /* §4 (v911) · LO QUE CEDE DE VERDAD, y por eso se mide acá.
+       ──────────────────────────────────────────────────────────
+       El sector de 750 m compone las dos hojas SIN ceder nada, así que el
+       orden de cesión no se ejercita en ninguna prueba: cualquier cambio de
+       peldaño entraría a ciegas — que es exactamente lo que la v910 midió y
+       por lo que no lo tocó. A 19,6 km² la hoja sí se llena y la bisección
+       cede, así que ESTA corrida es el único material de la batería que
+       puede juzgar la lista de peldaños. */
+    /* Una sola lista: `pliegoFuera` junta cajas y mapas, porque la bisección
+       los cede de la misma lista de candidatos. */
+    o.fueraGran = ((R.estado() || {}).pliegoFuera || []).slice();
+    /* Y la misma hoja con la letra de colgar. Dos paneles cediendo no
+       distinguen un orden de otro: con el piso en 0,80 la bisección tiene
+       que bajar hasta el peldaño 3 y ahí SÍ se ve el orden entero. Es una
+       opción de verdad de la aplicación —«Se lee de pie», para colgar con
+       menos cajas—, no una puerta trasera de pruebas. */
+    /* Con `laminaDoble`, que es la que corre la BISECCIÓN: `laminaA` llama a
+       `laminaImprimible` directo y no cede nada, así que medir con ella el
+       orden de cesión sería medir otra cosa de la que se dice. */
+    o.granPie = R.laminaDoble({ letra: 'grande' });
+    o.fueraPie = ((R.estado() || {}).pliegoFuera || []).slice();
+    /* Y la MISMA caja apagada a mano desde la ficha. El renglón de banda
+       incompleta dice «cedió el sitio para que la hoja cerrara»: sobre una
+       caja que una persona apagó a propósito eso es declarar mal la causa,
+       que es la falta de la v867. Sin esta rama, `pliegoOff` —que junta las
+       dos cosas— habría dejado pasar el renglón en la hoja de cualquiera
+       que use «dejar solo el plano». */
+    o.apagadaAMano = R.laminaDoble({ pliegoOff: ['asoleamiento'] });
     return o;
   }, { C, POL, LOTE });
 
@@ -910,6 +938,8 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      dice en media hora. */
   try {
     const fs2 = require('fs');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-gran.html', r.docGran || '', 'utf8');
+    fs2.writeFileSync(E.TRABAJO + 'lamina-gran-pie.html', r.granPie || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-dos.html', r.doc || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-a.html', r.soloA || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-solo-b.html', r.soloB || '', 'utf8');
@@ -974,7 +1004,12 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   T('la síntesis y la banda de coherencia no ceden en ninguna hoja',
     NO_CEDEN.every(t => (A.titulos || []).concat(B.titulos || []).indexOf(t) >= 0),
     NO_CEDEN.filter(t => (A.titulos || []).concat(B.titulos || []).indexOf(t) < 0).join(' · ') || 'las dos están');
-  T('«Suelo disponible real» y «Potencial edificatorio» tampoco: el cierre los cruza',
+  /* Estos dos ya NO son intocables: la lista de peldaños de la v911 los
+     puso en el 3 —últimos en ceder— porque desde la v910 su casilla dice
+     SIN MEDIR nombrando el panel ausente, en vez de quedarse sin con qué
+     cruzarse. Lo que se sigue exigiendo es que en una hoja que NO cede
+     estén puestos: la aserción mide lo mismo, con la razón corregida. */
+  T('«Suelo disponible real» y «Potencial edificatorio» están en una hoja que no cede',
     (A.titulos || []).indexOf('Suelo disponible real') >= 0 &&
     (A.titulos || []).indexOf('Potencial edificatorio') >= 0,
     (A.titulos || []).filter(t => /Suelo disponible|Potencial edific/.test(t)).join(' · ') || 'no están');
@@ -2760,6 +2795,87 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   T('y declara que ese nombre lo escribió quien analiza',
     /lo escribi[óo] quien analiza|los nombres los escribi[óo] quien analiza/.test(cajaEsc),
     (cajaEsc.match(/.{0,40}escribi[óo] quien analiza.{0,50}/) || ['no lo declara'])[0]);
+
+
+  /* ── §4 (v911) · EL PELDAÑO SE DECLARA, Y LA BANDA DICE LO QUE PERDIÓ ──
+     La v901 escribió el orden de cesión como regla estructural y la propia
+     v901 midió que no separaba nada: «paneles de texto» no existe en este
+     pliego, así que el peldaño 1 quedó siendo «todo lo que se arma con
+     caja()». Medido en el pliego real, eso cedía la carta solar y cinco
+     estampas de satélite antes que un anillo de distancia.
+
+     Estas comprobaciones viven acá y NO en la corrida normal del sector:
+     a 1,77 km² la hoja compone las dos láminas sin ceder un solo panel, así
+     que pasarían por no tener nada que rechazar — es la medición que la
+     v910 hizo y por la que no tocó el orden. La corrida de 19,6 km² con la
+     letra de colgar es el único material de la batería que cede de verdad. */
+  console.log('\n  -- §4 · el orden de cesión, por peldaño declarado (v911) --');
+  {
+    /* El peldaño 0 se restablece acá y no se importa del módulo: una
+       comprobación que lea la misma tabla que el código no comprueba nada,
+       solo que la tabla es igual a sí misma. */
+    const NUNCA = ['sintesis-del-sector', 'coherencia-de-las-cifras',
+                   'plano-del-sector', 'plano', 'foto', 'calor:todos'];
+    const cede = (r.fueraPie || []);
+    T('la composición de letra grande sí cede: hay material que juzgar',
+      cede.length >= 10, cede.length + ' paneles cedidos');
+    const prohibidos = cede.filter(x => NUNCA.indexOf(x) !== -1 || /^calor:(?!todos)/.test(x));
+    T('ningún panel del peldaño 0 cede, por apretada que quede la hoja',
+      prohibidos.length === 0, prohibidos.length ? prohibidos.join(' · ') : 'ninguno');
+    /* Lo concreto que el pedido nombra, y el par tiene que ser DE LA MISMA
+       HOJA: `pliegoFuera` es la concatenación de lo que cedió la A y lo que
+       cedió la B, así que comparar la posición de un panel de la A con la de
+       uno de la B no mide un orden — mide en qué hoja está cada uno. La
+       primera versión de esta aserción lo hacía y salió roja por eso, no por
+       el código.
+
+       El par que sí vale: «Asoleamiento» (peldaño 3) contra «El grano»
+       (peldaño 1), los dos de la lámina A. Es exactamente la forma del
+       reclamo —una carta solar cediendo antes que un panel de análisis
+       secundario— medida donde se puede medir. */
+    const pos = id => cede.indexOf(id);
+    const grano = pos('el-grano-manzana-y-predio'), aso = pos('asoleamiento');
+    T('la carta solar no cede antes que un panel de la MISMA hoja con peldaño menor',
+      aso === -1 || (grano >= 0 && aso > grano),
+      aso === -1 ? 'no cede' : ('Asoleamiento en ' + aso + ' · El grano en ' + grano));
+    /* Y la serie temporal, cuando está compuesta. En esta corrida no lo
+       está —no se le inyecta la serie de fotos— así que la aserción pasa por
+       «no cede», y eso se dice en vez de disfrazarlo de orden comprobado. */
+    const serie = pos('como-cambio-el-sitio');
+    T('la serie temporal tampoco, cuando está en la hoja',
+      serie === -1 || (grano >= 0 && serie > grano),
+      serie === -1 ? 'no está compuesta en esta corrida: nada que ordenar' : ('cede en ' + serie));
+  }
+
+  console.log('\n  -- una banda sin su caja principal lo dice EN la banda (v911) --');
+  {
+    const filasFalta = (htm) => {
+      const out = [];
+      String(htm || '').replace(/<p class="b-falta">([\s\S]*?)<\/p>/g,
+        (t, c) => { out.push(c.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()); return ''; });
+      return out;
+    };
+    const conCesion = filasFalta(r.granPie);
+    const sinCesion = filasFalta(r.docGran);
+    const aMano = filasFalta(r.apagadaAMano);
+    T('la banda que perdió su caja principal lo imprime, con su nombre',
+      conCesion.some(x => /Asoleamiento/.test(x)),
+      conCesion.length ? conCesion.map(x => x.slice(0, 60)).join(' · ') : 'ningún renglón');
+    const aso = conCesion.filter(x => /Asoleamiento/.test(x))[0] || '';
+    T('y dice QUÉ lleva esa caja, que es lo que el lector no puede adivinar',
+      /carta solar/.test(aso) && /orientaci[oó]n de fachadas/.test(aso), aso.slice(0, 120));
+    T('y cómo recuperarla, en vez de dejarlo en la ausencia',
+      /apague otro panel/i.test(aso) && /imprima esta hoja suelta/i.test(aso), aso.slice(-110));
+    /* Las dos guardas contra pasarse de avisar, que son la otra mitad:
+       una hoja que no cedió nada no puede decir que perdió algo, y una caja
+       que apagó una persona no «cedió el sitio». */
+    T('una hoja que no cedió su principal no imprime ningún renglón',
+      sinCesion.length === 0,
+      sinCesion.length ? sinCesion.join(' · ') : 'ninguno, que es lo correcto');
+    T('y una caja apagada A MANO no se declara como cedida',
+      aMano.length === 0,
+      aMano.length ? aMano.map(x => x.slice(0, 80)).join(' · ') : 'ninguno');
+  }
 
   console.log('\n  -- un chequeo no PASA contra SIN MEDIR (v910) --');
   /* §2 del pliego v2. Desde la v899 una casilla que no se pudo medir imprime

@@ -5252,6 +5252,13 @@ fuentes que faltan, y esto no es una fuente — es una decisión de diagramació
 pendiente, con su medición hecha para que la tanda que la tome no empiece por
 averiguar lo mismo.
 
+**Lo tomó la tanda siguiente, y con una lista en vez de una regla:** ver «El
+peldaño se declara, y la banda dice lo que perdió» (v911). Esta sección se
+queda como está porque su medición es la que valió —el sector de prueba no
+cede— y porque la solución no fue mover peldaños a ojo sino que el usuario
+dictara la lista panel por panel. La rama que sí cede se ejercita ahora con la
+corrida de 19,6 km² y la letra de colgar.
+
 ### §2 · un chequeo pasaba contra SIN MEDIR
 
 > PASA · La trama y el paramento no se llaman igual … 103 cruces por km²
@@ -5371,6 +5378,177 @@ cobrar: el `git stash` del archivo entero se lleva también lo que la suite
 necesita para LEER, así que dos de las aserciones fallan por «la función no
 existe» y no por el defecto. Las que valen son las que enseñan el texto viejo
 impreso — acá, la bibliografía citando la serie de una banda que no está.
+
+## El peldaño se declara, y la banda dice lo que perdió (v911)
+
+La v910 arregló cinco cosas del PDF y destapó una sexta que vale más que las
+cinco: **el ORDEN DE CESIÓN de la v901 no hacía lo que decía.**
+
+El peldaño 1 estaba escrito como «los paneles de texto explicativo». La misma
+v901 midió, dos secciones más abajo, que **de las 37 cajas de la lámina B
+ninguna es solo texto** — y de ahí concluyó que el peldaño 1 «son los
+paneles». Con eso el criterio que quedó operando no era cuánto vale un panel
+sino **cómo está construido**: todo lo que sale de `caja()` cedía primero.
+
+Por eso cedieron, las dos veces que la v910 encontró, una carta solar y cinco
+estampas de satélite — antes que un anillo de distancia, que es un mapa.
+
+    v910          Asoleamiento cede en el puesto 5 · El grano en el 10
+    v911          Asoleamiento en el 17 · El grano en el 7
+
+### Una lista, y por qué no es un retroceso
+
+Se reemplaza por `PELDANO_PLIEGO`: cada panel —caja o mapa— declara su
+peldaño. El 0 no cede nunca; el 1 cede primero; el 3, último.
+
+Cambiar una regla por una lista parece ir para atrás, y hay que decir por qué
+no lo es: **una regla estructural que no separa lo que dice separar es peor
+que una lista**, porque se lee como un criterio y nadie la vuelve a mirar. La
+lista se ve entera en veinte renglones y se discute.
+
+Lo que sí se pierde es lo que la regla daba gratis —que una banda nueva quede
+protegida sin que su autor se acuerde, la propiedad que salvó al aviso de
+origen de la v867—. A cambio, **el que no declare su peldaño cae en el 1 y
+cede PRIMERO**: lo que se olvida se nota en la primera composición apretada,
+no tres tandas después. Es el mismo canje de la v880 con la guarda del voseo:
+entre fallar abierto y fallar cerrado, se elige fallar cerrado.
+
+Cajas y mapas llevan el mismo número, porque un mapa y su caja de conteo son
+el mismo panel para quien lee la hoja.
+
+#### Tres cosas que la lista dictada no decía, y cómo se resolvieron
+
+* **`calor:todos` se queda en el peldaño 0** sin estar en la lista. Lo pone la
+  v850, dicha dos veces y con el PDF en la mano —«nunca la foto ni el de todos
+  los usos»—. Sumarlo honra las dos instrucciones; quitarlo habría sido dejar
+  caer una por no estar repetida en la última.
+* **Los mapas de categoría van por PATRÓN y no uno por uno.** Sus
+  identificadores salen de las categorías que el sector tenga —`calor:comercio`,
+  `calor:salud`…—, así que una categoría nueva quedaría fuera de una lista
+  escrita y cedería sin que nadie lo decidiera.
+* **«Verde y agua (el mapa; la caja de conteo se queda)»** es el único renglón
+  ambiguo: el único nivel que no cede es el 0 y la caja no está en el 0. Se lee
+  «se queda» como «cede la última» —el peldaño 3—, que es donde están las demás
+  cajas de su banda. Queda dicho por si la lectura era otra.
+
+Y dos deltas contra lo que protegía la v901, las dos a propósito: `el-sitio` y
+`los-mapas-del-sector` ya no son intocables —la lista no los nombra, así que
+ceden en el 1 por omisión— y `suelo-disponible-real` y `potencial-edificatorio`
+bajaron de «nunca» a «último», que es lo que la v910 hizo posible: con el panel
+fuera su casilla dice SIN MEDIR nombrándolo, en vez de quedarse sin con qué
+cruzarse.
+
+### El bug que salió al medir: los mapas de la OTRA hoja también cedían
+
+`mapasDisponibles` es el inventario del SECTOR y no sabe de hojas. Así que
+componiendo la lámina A sus candidatos incluían los mapas de la B: apagar uno
+que no está no libera un milímetro, y después se declaraba fuera — **el pie de
+la A nombraba mapas que nunca estuvieron en la A**.
+
+Es exactamente el fallo que la v901 encontró y arregló para las cajas —«lo que
+no está compuesto no puede ceder»— y que quedó vivo para los mapas, donde no lo
+miraba nadie. Se vio porque la lista de lo que cede salía con `anillos`,
+`hitos`, `sombras` y `alturas` **repetidos**, no leyendo el código.
+
+### Una banda que pierde su caja principal PARECE TERMINADA
+
+Es el hallazgo de la v910 y vale más que el arreglo que lo destapó. Cuando
+cedió la serie temporal, la síntesis siguió citándola y por ahí se pudo
+detectar. Cuando cedió la carta solar **no la citaba nadie**: la banda
+ambiental salió con su título, su pregunta y su conclusión, y sin la caja que
+responde la pregunta. Se lee como una banda entera.
+
+Cada banda declara ahora su caja principal y **qué lleva**, y si esa caja cedió
+la banda lo imprime debajo de su pregunta, en rojo y a trazos:
+
+> **Falta en esta banda:** Asoleamiento (carta solar y orientación de fachadas).
+> Es la caja que responde la pregunta de arriba, y cedió el sitio en esta
+> composición para que la hoja cerrara. Está medida: para verla, apague otro
+> panel desde la ficha o imprima esta hoja suelta.
+
+Va DENTRO de la banda y no en el pie a propósito: lo que cede se nombra en el
+pie desde la v850, pero el pie es una lista de paneles y se lee después de
+haber leído la hoja. Esto va donde el lector está mirando cuando le falta la
+respuesta. El rojo a trazos es el de la contradicción de la v879 y el del aviso
+de escala de la v890 —«no le crea a esta parte todavía»—, y no el ámbar de la
+v849, que significa «esto no lo tenemos»: esto sí lo tenemos, solo que no cupo.
+
+#### `pliegoOff` junta dos cosas que no son la misma
+
+La trampa de la tanda, y por poco. La primera versión leía `apagadas` para
+saber si el panel había cedido — y `apagadas` es `pliegoOff`, que junta **lo
+que cedió la bisección** con **lo que apagó una persona desde la ficha**. A
+quien apaga Asoleamiento a propósito, decirle que «cedió el sitio para que la
+hoja cerrara» es declararle mal la causa —la falta de la v867— sobre una
+decisión que tomó él. Y habría salido en la hoja de cualquiera que use «dejar
+solo el plano».
+
+La bisección pasa ahora `pliegoCedidas` aparte, y el renglón lee esa. Hay una
+aserción para cada rama, y la de la caja apagada a mano es la que de verdad
+guarda.
+
+#### Y se calla cuando el MAPA responde la pregunta
+
+Medido sobre el papel: en la composición apretada cedió la caja
+«Llenos y vacíos» y **no salió renglón** en la banda de morfología. No es un
+fallo: el mapa del mismo nombre seguía puesto y la pregunta de la banda
+—«¿qué tan lleno está el sector?»— quedaba respondida. La comprobación es que
+el TÍTULO esté en la banda, no que esté la caja, y eso cubre las dos formas.
+
+Lo que sí queda sin renglón es una banda que se va ENTERA: ahí no hay banda
+donde imprimirlo, y tampoco hace falta —una banda que no está no aparenta estar
+terminada—. Queda dicho.
+
+#### La banda de las plantillas no declara principal
+
+Sus seis cajas son formularios en blanco intercambiables, ninguno responde la
+pregunta solo, y la conclusión los CUENTA desde la v903 —«trae N plantillas»—,
+así que una que ceda ya se ve en el propio cierre. Declarar una como principal
+sería inventar una jerarquía que la banda no tiene.
+
+### El material: la corrida de 19,6 km² con la letra de colgar
+
+A 1,77 km² las dos láminas cierran **sin ceder un solo panel** — es lo que la
+v910 midió y la razón por la que no tocó el orden. Así que estas comprobaciones
+habrían pasado por no tener nada que rechazar: es el agujero que este proyecto
+lleva dieciséis tandas persiguiendo.
+
+La corrida de 19,6 km² que la v890 ya hace cede **dos** paneles, los dos cajas
+de movilidad. Con la letra de colgar —«Se lee de pie», una opción de verdad de
+la aplicación, no una puerta trasera— cede **54**, y ahí se ve el orden entero:
+los peldaños 1, después el 2, después el 3.
+
+Tres cosas del método que costaron una vuelta cada una:
+
+* **`laminaA` no corre la bisección.** Llama a `laminaImprimible` directo, así
+  que mi primera sonda con `letra: 'grande'` midió exactamente lo mismo que sin
+  ella y yo lo leí como «cede igual». La que bisecta es `laminaDoble`.
+* **`pliegoFuera` es la CONCATENACIÓN de las dos hojas.** La primera aserción
+  comparaba la posición de Asoleamiento (lámina A) contra la de los anillos
+  (lámina B) y salió roja: no medía un orden, medía en qué hoja está cada uno.
+  El par que vale es de la misma hoja — Asoleamiento contra El grano.
+* **El peldaño 0 se reescribe en la suite y no se importa del módulo.** Una
+  comprobación que lea la misma tabla que el código no comprueba nada: solo que
+  la tabla es igual a sí misma.
+
+### Demostrado contra la v910
+
+Cinco aserciones, tres en rojo con el estado viejo impreso:
+
+```
+✗ ningún panel del peldaño 0 cede  — calor:comercio · calor:institucional (dos veces cada uno)
+✗ la carta solar no cede antes que un panel de la MISMA hoja con peldaño menor
+    — Asoleamiento en 5 · El grano en 10
+✗ la banda que perdió su caja principal lo imprime  — ningún renglón
+```
+
+Los duplicados de la primera son el bug de los mapas de la otra hoja, impreso.
+
+Las dos que **no** fallan son guardas, no afirmaciones nuevas —como las de la
+v879, la v882 y la v890—: que una hoja que no cedió nada no imprima ningún
+renglón, y que una caja apagada a mano no se declare como cedida. Contra la
+v910 se cumplen por no existir el renglón; existen para que esta tanda no se
+pase de avisar.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

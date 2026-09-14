@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v910-lo-que-cede-no-se-sigue-citando';
+const URBIS_CACHE = 'urbis-v911-el-peldano-se-declara';
 const URBIS_ASSETS = [
   './',
   './index.html',
