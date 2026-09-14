@@ -5438,6 +5438,41 @@ bajaron de «nunca» a «último», que es lo que la v910 hizo posible: con el p
 fuera su casilla dice SIN MEDIR nombrándolo, en vez de quedarse sin con qué
 cruzarse.
 
+### Una tercera lista de la misma forma, razonada y NO medida
+
+Buscando si había una tercera con la forma de las dos anteriores apareció
+esta: las casillas de síntesis y la bibliografía viven en la lámina **B** y
+citan paneles de la **A**, y cada hoja se compone con su propio `apagadas`.
+La v910 hizo que una casilla dejara de citar un panel ausente y lo probó
+apagándolo a mano —`pliegoOff` viaja en las opciones y llega a las dos
+hojas—; pero si el panel lo cede la BISECCIÓN de la A, su lista muere ahí y
+la B no se entera.
+
+`laminaDoble` le pasa ahora a la B lo que cedió la A (`pliegoCedidasOtraHoja`),
+y las citas leen las dos listas.
+
+**Y hay que decir que esto está RAZONADO y no medido.** Creí haberlo medido:
+compuse la serie con la hoja apretada, la caja no estaba en la A y la casilla
+de la B seguía diciendo «medido de 2014 a 2026». Pero al buscar la caja en la
+lista de lo que cedió **no estaba**, y en un documento sin apretar tampoco se
+compone: la caja lee `S.evo` y la suite inyecta la serie por opciones, que es
+de donde la casilla sí la toma. O sea que el panel nunca estuvo en la hoja, y
+lo que yo leí como «cedió y la B no se enteró» era el caso corriente de un
+panel sin dato.
+
+Así que el arreglo se queda —el razonamiento se sostiene solo: en producción
+`S.evo` está puesto, la caja se compone, y si la A la cede la B no tiene cómo
+saberlo— pero **sin una prueba que lo ejercite**, y eso vale decirlo entero en
+vez de dejar una aserción que pase por otra razón. Para ejercitarlo hay que
+correr la serie de fotos de verdad en la suite (`E.rutaWayback` existe desde la
+v907) y después apretar la hoja: son diez descargas y otras tantas pasadas del
+clasificador, y es otra tanda.
+
+De paso queda anotada la divergencia que lo destapó, que es de la clase de la
+v879: `crucesDelSector` lee `oo.evo || S.evo` y la caja lee **solo** `S.evo`.
+En producción coinciden, así que hoy no se ve; el día que alguien componga una
+lámina con la serie por opciones, se ve.
+
 ### El bug que salió al medir: los mapas de la OTRA hoja también cedían
 
 `mapasDisponibles` es el inventario del SECTOR y no sabe de hojas. Así que

@@ -8815,9 +8815,15 @@ function donaHTML(datos, colorDe, nombreDe) {
                todavía no existe cuando esto corre. La bisección del orden de
                cesión entrega lo que cede por `pliegoOff`, que es justo lo
                que `apagadas` trae. */
+            /* Una cita mira el DOCUMENTO entero, no esta hoja: `apagadas`
+               trae lo que apagó una persona y lo que cedió esta hoja, y
+               `pliegoCedidasOtraHoja` lo que cedió la otra (v911). */
             var cedioPanel = function (tt) {
-              try { return (apagadas || []).indexOf(slugPliego(tt)) !== -1; }
-              catch (eP) { return false; }
+              try {
+                var sl = slugPliego(tt);
+                return (apagadas || []).indexOf(sl) !== -1 ||
+                       ((o.pliegoCedidasOtraHoja || []).indexOf(sl) !== -1);
+              } catch (eP) { return false; }
             };
             {
               cruces = cruces.map(function (c) {
@@ -9774,7 +9780,11 @@ function donaHTML(datos, colorDe, nombreDe) {
               var txt = b;
               if (b && typeof b === 'object') {
                 var fuera = false;
-                try { fuera = (apagadas || []).indexOf(slugPliego(b.panel)) !== -1; } catch (eB) { fuera = false; }
+                try {
+                  var slB = slugPliego(b.panel);
+                  fuera = (apagadas || []).indexOf(slB) !== -1 ||
+                          ((o.pliegoCedidasOtraHoja || []).indexOf(slB) !== -1);
+                } catch (eB) { fuera = false; }
                 txt = fuera ? b.sinPanel : b.t;
               }
               return txt ? '<li>' + esc(String(txt).replace(/\bhoy\b/g, hoyTxt)) + '</li>' : '';
@@ -17236,7 +17246,27 @@ function donaHTML(datos, colorDe, nombreDe) {
     var fuera = [];
     var hojaA = laminaQueQuepa(res, Object.assign({}, o, { hoja: 'A' }));
     fuera = fuera.concat(S.pliegoFuera || []);
-    var hojaB = laminaQueQuepa(res, Object.assign({}, o, { hoja: 'B' }));
+    /* ── LO QUE CEDIÓ LA A TIENE QUE LLEGAR A LA B (v911) ────────────────
+       La v910 hizo que una casilla de síntesis dejara de citar un panel que
+       no está, y lo probó apagando el panel a mano: `pliegoOff` viaja en las
+       opciones y llega a las DOS hojas. Pero cuando el panel lo cede la
+       BISECCIÓN, lo cede la composición de la A y su lista muere ahí —cada
+       hoja se compone con su propio `apagadas`—, así que la B no se entera.
+
+       Medido: con la serie compuesta y la hoja apretada, «Cómo cambió el
+       sitio» sale de la lámina A y la síntesis de la B sigue imprimiendo
+       «medido de 2014 a 2026» y «9,4 puntos de superficie dura». Es el mismo
+       defecto que §1 reportó, vivo por la otra puerta.
+
+       Es la tercera lista de esta forma: candidatos de caja (v901),
+       candidatos de mapa (v911) y esto. Las tres son **un dato de alcance
+       de documento leído de una variable de alcance de hoja**.
+
+       Va en una sola dirección y alcanza: las casillas y la bibliografía
+       viven en la B y citan paneles de la A. El día que una caja de la A
+       cite una de la B habrá que componer dos veces. */
+    var hojaB = laminaQueQuepa(res, Object.assign({}, o, {
+      hoja: 'B', pliegoCedidasOtraHoja: fuera.slice() }));
     /* Lo que cedió en CADA hoja, junto: la ficha nombra los paneles que no
        cupieron sin que haya que preguntarle a cuál de las dos le faltó. */
     S.pliegoFuera = fuera.concat(S.pliegoFuera || []);

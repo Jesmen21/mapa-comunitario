@@ -592,6 +592,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        dos cosas— habría dejado pasar el renglón en la hoja de cualquiera
        que use «dejar solo el plano». */
     o.apagadaAMano = R.laminaDoble({ pliegoOff: ['asoleamiento'] });
+
     return o;
   }, { C, POL, LOTE });
 
@@ -2811,40 +2812,71 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      letra de colgar es el único material de la batería que cede de verdad. */
   console.log('\n  -- §4 · el orden de cesión, por peldaño declarado (v911) --');
   {
-    /* El peldaño 0 se restablece acá y no se importa del módulo: una
-       comprobación que lea la misma tabla que el código no comprueba nada,
-       solo que la tabla es igual a sí misma. */
-    const NUNCA = ['sintesis-del-sector', 'coherencia-de-las-cifras',
-                   'plano-del-sector', 'plano', 'foto', 'calor:todos'];
-    const cede = (r.fueraPie || []);
-    T('la composición de letra grande sí cede: hay material que juzgar',
-      cede.length >= 10, cede.length + ' paneles cedidos');
-    const prohibidos = cede.filter(x => NUNCA.indexOf(x) !== -1 || /^calor:(?!todos)/.test(x));
-    T('ningún panel del peldaño 0 cede, por apretada que quede la hoja',
-      prohibidos.length === 0, prohibidos.length ? prohibidos.join(' · ') : 'ninguno');
-    /* Lo concreto que el pedido nombra, y el par tiene que ser DE LA MISMA
-       HOJA: `pliegoFuera` es la concatenación de lo que cedió la A y lo que
-       cedió la B, así que comparar la posición de un panel de la A con la de
-       uno de la B no mide un orden — mide en qué hoja está cada uno. La
-       primera versión de esta aserción lo hacía y salió roja por eso, no por
-       el código.
+    /* Se mide sobre el PAPEL y no sobre `pliegoFuera`. Son dos cosas
+       distintas: esa lista es lo que el programa DICE que cedió, y lo que
+       hay que comprobar es lo que el lector no encuentra en la hoja. Es la
+       regla de la v879 aplicada al orden de cesión, y cierra el agujero de
+       una comprobación que se cree a sí misma.
 
-       El par que sí vale: «Asoleamiento» (peldaño 3) contra «El grano»
-       (peldaño 1), los dos de la lámina A. Es exactamente la forma del
-       reclamo —una carta solar cediendo antes que un panel de análisis
-       secundario— medida donde se puede medir. */
-    const pos = id => cede.indexOf(id);
-    const grano = pos('el-grano-manzana-y-predio'), aso = pos('asoleamiento');
-    T('la carta solar no cede antes que un panel de la MISMA hoja con peldaño menor',
-      aso === -1 || (grano >= 0 && aso > grano),
-      aso === -1 ? 'no cede' : ('Asoleamiento en ' + aso + ' · El grano en ' + grano));
-    /* Y la serie temporal, cuando está compuesta. En esta corrida no lo
-       está —no se le inyecta la serie de fotos— así que la aserción pasa por
-       «no cede», y eso se dice en vez de disfrazarlo de orden comprobado. */
-    const serie = pos('como-cambio-el-sitio');
+       Y el peldaño 0 se reescribe acá, no se importa de `PELDANO_PLIEGO`:
+       una comprobación que lee la misma tabla que el código solo prueba que
+       la tabla es igual a sí misma. */
+    const hojas = String(r.granPie || '').split('<div class="hoja').slice(1);
+    const titulosDe = h => (String(h).match(/<h2>([^<]+)<\/h2>/g) || [])
+      .map(x => x.replace(/<\/?h2>/g, '').trim());
+    const mapasDe = h => (String(h).match(/data-m="([^"]+)"/g) || [])
+      .map(x => x.replace(/data-m="|"/g, ''));
+    T('la composición de letra grande sí cede: hay material que juzgar',
+      hojas.length === 2 && titulosDe(r.granPie).length < titulosDe(r.doc).length,
+      hojas.length + ' hojas · ' + titulosDe(r.granPie).length + ' cajas contra ' +
+        titulosDe(r.doc).length + ' de la hoja sin apretar');
+    /* Peldaño 0 · tiene que ESTAR en el papel, por apretada que quede. */
+    /* La base es la MISMA corrida sin apretar, no una lista de lo que
+       debería existir. Leyendo solo la hoja apretada, un panel ausente puede
+       serlo por dos razones —cedió, o nunca tuvo dato— y el papel no las
+       distingue: la foto satelital no está en esta corrida porque no se midió
+       la cobertura, y la primera versión de esta aserción la denunció como
+       cedida. Es la distinción de la v899 —«sin dato» y «panel fuera»— dicha
+       en la suite. */
+    const PAPEL_SIEMPRE = ['Síntesis del sector', 'Coherencia de las cifras', 'Plano del sector'];
+    const baseT = titulosDe(r.docGran), baseM = mapasDe(r.docGran);
+    const hayT = titulosDe(r.granPie), hayM = mapasDe(r.granPie);
+    const faltan0 = PAPEL_SIEMPRE.filter(t => baseT.indexOf(t) >= 0 && hayT.indexOf(t) === -1);
+    T('los paneles del peldaño 0 que la corrida trae siguen impresos al apretar',
+      faltan0.length === 0 && PAPEL_SIEMPRE.filter(t => baseT.indexOf(t) >= 0).length >= 2,
+      faltan0.length ? ('cedieron: ' + faltan0.join(' · '))
+                     : (PAPEL_SIEMPRE.filter(t => baseT.indexOf(t) >= 0).length + ' de 3 en la corrida, y siguen'));
+    const mapas0 = ['foto', 'calor:todos'].filter(m => baseM.indexOf(m) >= 0 && hayM.indexOf(m) === -1);
+    const catBase = baseM.filter(m => /^calor:(?!todos)/.test(m));
+    const catFuera = catBase.filter(m => hayM.indexOf(m) === -1);
+    T('y los mapas que no ceden nunca: la foto, el de todos los usos y los de categoría',
+      mapas0.length === 0 && catBase.length > 0 && catFuera.length === 0,
+      (mapas0.length ? 'cedieron ' + mapas0.join(' · ') : 'ninguno de los dos cedió') +
+        ' · categoría: ' + catBase.length + ' en la corrida, ' + catFuera.length + ' cedidos');
+    /* El ORDEN, leído del papel: dentro de UNA hoja, si falta un panel de
+       peldaño 3 tienen que faltar también los de peldaño 1. El par va de la
+       misma hoja —`Asoleamiento` y `El grano` son las dos de la lámina A—
+       porque entre hojas la comparación no mide un orden: mide en qué hoja
+       está cada uno, que es lo que hizo roja la primera versión de esto. */
+    const hojaA = hojas.filter(h => /L[ÁA]MINA A/i.test(h))[0] || hojas[0] || '';
+    const tA = titulosDe(hojaA);
+    const estaAso = tA.indexOf('Asoleamiento') >= 0, estaGrano = tA.indexOf('El grano: manzana y predio') >= 0;
+    /* Y con su guarda de material: si la corrida no trae las dos cajas, esto
+       no está comparando un orden — está comparando dos ausencias. */
+    T('el par del orden existe en la corrida: hay con qué comparar',
+      baseT.indexOf('Asoleamiento') >= 0 && baseT.indexOf('El grano: manzana y predio') >= 0,
+      'Asoleamiento ' + (baseT.indexOf('Asoleamiento') >= 0 ? 'sí' : 'no') +
+        ' · El grano ' + (baseT.indexOf('El grano: manzana y predio') >= 0 ? 'sí' : 'no'));
+    T('en la lámina A, la carta solar no falta mientras un panel de peldaño menor sigue puesto',
+      estaAso || !estaGrano,
+      'Asoleamiento ' + (estaAso ? 'puesto' : 'FUERA') + ' · El grano ' + (estaGrano ? 'puesto' : 'fuera'));
+    /* La serie temporal, cuando está compuesta. En esta corrida no se le
+       inyecta la serie de fotos, así que la caja no existe y la aserción
+       pasa por eso — y se dice, en vez de disfrazarlo de orden comprobado. */
+    const hayCajaSerie = titulosDe(r.doc).indexOf('Cómo cambió el sitio') >= 0;
     T('la serie temporal tampoco, cuando está en la hoja',
-      serie === -1 || (grano >= 0 && serie > grano),
-      serie === -1 ? 'no está compuesta en esta corrida: nada que ordenar' : ('cede en ' + serie));
+      !hayCajaSerie || tA.indexOf('Cómo cambió el sitio') >= 0 || !estaGrano,
+      hayCajaSerie ? 'compuesta' : 'no se compone en esta corrida: nada que ordenar');
   }
 
   console.log('\n  -- una banda sin su caja principal lo dice EN la banda (v911) --');
