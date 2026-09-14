@@ -892,7 +892,6 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     fs2.writeFileSync(E.TRABAJO + 'lamina-cede.html', r.docCede || '', 'utf8');
     fs2.writeFileSync(E.TRABAJO + 'lamina-pie.html', r.docPieContra || '', 'utf8');
   } catch (e) {}
-  if (process.env.URBIS_FUERA) console.log("FUERA(" + (r.fuera||[]).length + "): " + (r.fuera||[]).join(", "));
 
   const ok = (n, c, d) => { console.log('  ' + (c ? '✓' : '✗') + ' ' + n + (d !== undefined ? '  — ' + d : '')); return !!c; };
   let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
@@ -2089,9 +2088,23 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     /* Y lo que de verdad sigue faltando sí se declara: son de OTRA fuente
        —OpenStreetMap sobre el municipio entero— y por eso no vienen con la
        columna de la derecha. */
-    T('pero sí lo que pide una corrida municipal de OpenStreetMap',
-      /Espacio público, densidad de usos y cobertura de equipamientos/.test(CD.falta.join(' ')),
-      CD.falta.map(x => x.slice(0, 44)).join(' | '));
+    /* §11 (v902): eran un solo renglón para tres cosas, y las tres no piden
+       lo mismo. Dos las resuelve la corrida municipal —que es un botón de
+       esta ficha— y la tercera pide una consulta DISTINTA, de polígonos, que
+       es justo la que la consulta suelta a escala municipal. Un renglón que
+       las siguiera pidiendo juntas mandaría a correr algo que no resuelve una
+       de las tres. Se exige que estén separadas Y que cada una diga lo suyo:
+       más preciso que antes, no más laxo. */
+    const faltaTxt = CD.falta.join(' ');
+    T('la corrida municipal se pide por su nombre, y para lo que sí resuelve',
+      /[Dd]ensidad de usos y cobertura de equipamientos de la ciudad/.test(faltaTxt) &&
+      /análisis de OpenStreetMap sobre el municipio/.test(faltaTxt),
+      (faltaTxt.match(/[Dd]ensidad de usos y cobertura[^.]{0,80}/) || ['no lo pide'])[0]);
+    T('y el espacio público va aparte, porque pide otra consulta',
+      /El espacio público de la ciudad/.test(faltaTxt) &&
+      /consulta aparte[^.]*parques y plazas con su geometría/.test(faltaTxt) &&
+      !/Espacio público, densidad de usos y cobertura/.test(faltaTxt),
+      (faltaTxt.match(/El espacio público de la ciudad[^.]{0,90}/) || ['sigue en el renglón de las tres'])[0]);
   }
   /* Y la escala: es una cifra de MUNICIPIO impresa al lado de las del
      sector, que es exactamente el error que la tabla de escalas evita. */

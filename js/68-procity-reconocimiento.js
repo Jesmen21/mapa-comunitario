@@ -394,6 +394,205 @@
   var TRAZOS_KEY = 'pcr_trazos_v1';
   var MAX_TRAZOS = 40;
 
+  /* ── §11 · LA REFERENCIA MUNICIPAL DE OPENSTREETMAP (v902) ─────────────
+     El pliego v2 lo llama «la prioridad número uno de contenido»: de las seis
+     cosas que la lámina declara que no puede comparar con la ciudad, cuatro
+     no dependen de pedirle nada a nadie. Tres de esas cuatro —espacio
+     público, densidad de usos y cobertura de equipamientos— salen de correr
+     el MISMO análisis sobre el municipio entero, una vez, y guardarlo. La
+     cuarta, la densidad de población, ya la mide la v876 desde el censo.
+
+     Tres decisiones que definen lo que esto es y lo que no:
+
+     · **Corre el análisis de siempre, no una cuenta nueva.** Se le pide a
+       Overpass el municipio y se le pasa al motor tal cual, así que el
+       espacio público y la cobertura de la ciudad salen de las mismas
+       funciones que los del sector. Escribir una segunda cuenta «para la
+       ciudad» sería la divergencia de la v879 comprada de antemano: dos
+       rutas para la misma cantidad no divergen el día que se escriben,
+       divergen la tanda siguiente.
+     · **Solo cuando se pide.** Es una consulta de mil kilómetros cuadrados;
+       lanzarla sola al abrir un análisis sería regalarle dos minutos y el
+       límite de Overpass a alguien que quería mirar un barrio. §11 lo dice
+       con esas palabras: «no se vuelve a correr hasta que se pida».
+     · **Se guardan las CIFRAS, no los elementos.** Catorce mil elementos son
+       megabytes y el cupo de `localStorage` se los llevaría por delante —y
+       con ellos las fichas, que es el trabajo de una tarde (v871)—. Lo que
+       queda guardado son ocho números y su fecha.
+
+     Y lo que NO es, escrito donde se guarda para que no se lea de más: es
+     **lo que OpenStreetMap tiene mapeado del municipio**, no lo que el
+     municipio tiene. La comparación sector contra ciudad es más justa que
+     una cifra suelta —las dos salen de la misma fuente y arrastran el mismo
+     sesgo de mapeo— pero ninguna de las dos es un inventario. */
+  var CIUDAD_OSM_KEY = 'urbis_ciudad_osm_v1';
+  /* Medio año. El censo dura 30 días porque el DANE puede corregir una capa;
+     esto dura más porque lo que cambia es OpenStreetMap, que se mapea de a
+     poco, y porque cada corrida cuesta una consulta municipal. Con fecha
+     impresa: una referencia sin fecha no se puede juzgar. */
+  var CIUDAD_OSM_DURA_MS = 180 * 24 * 3600 * 1000;
+
+  function leerCiudadOSM(divipola) {
+    try {
+      var g = JSON.parse(localStorage.getItem(CIUDAD_OSM_KEY) || 'null');
+      if (!g || String(g.divipola) !== String(divipola)) return null;
+      if (Date.now() - (Number(g.t) || 0) > CIUDAD_OSM_DURA_MS) return null;
+      return g.datos || null;
+    } catch (e) { return null; }
+  }
+  function guardarCiudadOSM(divipola, datos) {
+    /* Un vacío no se guarda, que es la regla de la v851 y de la v876: una
+       corrida municipal que volvió sin un solo uso es una consulta que se
+       cayó, no un municipio sin usos. */
+    if (!datos || !datos.usos) return false;
+    try {
+      localStorage.setItem(CIUDAD_OSM_KEY,
+        JSON.stringify({ divipola: String(divipola), t: Date.now(), datos: datos }));
+      return true;
+    } catch (e) { return false; }
+  }
+  function olvidarCiudadOSM() {
+    try { localStorage.removeItem(CIUDAD_OSM_KEY); } catch (e) {}
+  }
+  /* Le pega al resultado la referencia municipal guardada, si la hay y si es
+     del MISMO municipio. Sin esa comprobación, analizar un sector de El Zulia
+     con la referencia de Cúcuta en el almacén compararía un barrio contra la
+     ciudad de al lado sin decir una palabra. */
+  function ponerCiudadOSM(res) {
+    try {
+      var st = (res && res.stats) || null;
+      if (!st) return;
+      var dv = (st.ciudad && st.ciudad.divipola) || '';
+      if (!dv) { st.ciudadOSM = null; return; }
+      var g = leerCiudadOSM(dv);
+      st.ciudadOSM = (g && String(g.divipola) === String(dv)) ? g : null;
+    } catch (e) {}
+  }
+
+  /* Corre la referencia. Devuelve SIEMPRE un objeto con su `estado`, nunca
+     null — son seis situaciones distintas que piden seis acciones distintas,
+     y un null las juntaría en una (es la regla que la v876 escribió para
+     `censoCiudad`). */
+  async function correrCiudadOSM(st, alPaso) {
+    var C = (st && st.ciudad) || null;
+    if (!C || C.estado !== 'ok') {
+      return { estado: 'sin-censo',
+               razon: 'primero hace falta la referencia del censo municipal, que es de donde salen ' +
+                      'el código del municipio, su población y su área censada' };
+    }
+    if (!(Number(C.areaCensadaM2) > 0)) {
+      return { estado: 'sin-area',
+               razon: 'la capa del censo no publica Shape__Area para este municipio, así que no hay ' +
+                      'con qué medir una densidad ni sobre qué área correr el análisis' };
+    }
+    var ext = C.extension || null;
+    if (!ext || !isFinite(ext.lat) || !isFinite(ext.lng)) {
+      return { estado: 'sin-centro',
+               razon: 'la capa del censo no devolvió la extensión de las manzanas del municipio, ' +
+                      'así que no se sabe dónde centrar la consulta' };
+    }
+    var D = window.AIA_DATOS, M = window.AIA_MOTOR;
+    if (!D || !D.consultarEntorno || !M || !M.analizar) {
+      return { estado: 'sin-modulos', razon: 'faltan los módulos de datos o del motor' };
+    }
+    /* **El área de la consulta y la del denominador son LA MISMA.** Se pide
+       un círculo del área censada del municipio centrado en su envolvente, y
+       la densidad se divide por esa misma área censada. Pedir el rectángulo
+       envolvente entero —que incluye el suelo rural— y dividir por el área
+       censada urbana contaría usos de vereda contra hectáreas de ciudad, y la
+       densidad de la ciudad saldría inflada sin que nada lo dijera.
+
+       No es el límite municipal y no se presenta como tal: es un círculo del
+       tamaño correcto en el sitio correcto, y la lámina lo dice. */
+    var areaM2 = Number(C.areaCensadaM2);
+    var radioM = Math.round(Math.sqrt(areaM2 / Math.PI));
+    var elementos = [];
+    try {
+      if (alPaso) { try { D.alPaso = alPaso; } catch (e2) {} }
+      elementos = await D.consultarEntorno(ext.lat, ext.lng, radioM);
+    } catch (e) {
+      return { estado: 'sin-respuesta', razon: (e && e.message) || String(e),
+               radioM: radioM, areaM2: areaM2 };
+    } finally { try { D.alPaso = null; } catch (e3) {} }
+
+    if (!elementos || !elementos.length) {
+      return { estado: 'sin-respuesta', radioM: radioM, areaM2: areaM2,
+               razon: 'la consulta municipal volvió sin un solo elemento, que a esta escala es una ' +
+                      'consulta que se cayó y no un municipio sin usos' };
+    }
+    /* **Un conteo que toca el tope de salida no es un conteo.** Overpass
+       recorta la SALIDA en `tope` elementos, así que una densidad calculada
+       sobre una lista recortada sale por debajo de la real y no hay manera de
+       saber cuánto.
+
+       No se cuenta acá: **`js/61` ya lo detecta desde la v851** y lo manda
+       pegado a la lista, en `aviso`. Escribí primero la cuenta propia
+       —`elementos.length >= escalaDeConsulta(area).tope`— y estaba mal de
+       las dos maneras que importan: es la segunda ruta de cálculo para la
+       misma cantidad que la v879 prohíbe, y encima medía DESPUÉS de la
+       limpieza, sobre una lista ya más corta que la que el servidor cortó,
+       así que un tope tocado por poco se me escapaba en silencio. La cifra
+       sale del mismo sitio que el aviso que el análisis del sector imprime. */
+    var avisoLista = '';
+    try { avisoLista = String(elementos.aviso || ''); } catch (e) { avisoLista = ''; }
+    var mTope = /tope de (\d+) elementos/.exec(avisoLista);
+    var truncada = !!mTope, tope = mTope ? Number(mTope[1]) : 0;
+
+    var res = null;
+    try {
+      res = await M.analizar({ elementos: elementos, tipoEstudio: 'completo',
+                               proyectoId: 'recomendar',
+                               centro: { lat: ext.lat, lng: ext.lng }, radioM: radioM,
+                               dane: { poblacion: C.poblacion }, caminabilidad: null });
+    } catch (e) {
+      return { estado: 'sin-motor', razon: (e && e.message) || String(e) };
+    }
+    var sc = (res && res.stats) || {};
+    var out = {
+      estado: 'ok',
+      fecha: new Date().toISOString().slice(0, 10),
+      divipola: C.divipola, nombre: C.nombre || '',
+      areaM2: areaM2, radioM: radioM, poblacion: C.poblacion,
+      usos: Number(sc.total) || elementos.length,
+      truncada: truncada, tope: tope,
+      /* A escala municipal la consulta sale SIEMPRE en modo ligero —por
+         encima de 50 km² las capas de área no terminan (v851)—, así que
+         llegan los usos con puerta a la calle y no los polígonos de uso del
+         suelo. Para las dos cifras que se publican no cambia nada: contar
+         usos y medir cobertura de equipamientos se hace sobre puntos. Pero
+         es exactamente la razón por la que el espacio público NO sale de
+         acá, y las dos cosas se dicen juntas o la segunda parece un
+         capricho. */
+      ligera: /puerta a la calle/.test(avisoLista),
+      aviso: avisoLista,
+      /* Las DOS que esta ruta puede dar. La tercera que §11 pide —el espacio
+         público del municipio— no sale de acá y no se finge: el área de
+         parques y plazas la calcula `analizarTrazado` sobre POLÍGONOS con su
+         geometría, que son exactamente las capas que la consulta suelta por
+         encima de 50 km² desde la v851 porque no terminan. Pedirlas para
+         1.176 km² es pedir lo que se documentó que no se puede; publicar la
+         cifra sin ellas sería un espacio público de cero disfrazado de
+         medición, que es el error de la v875 a escala de ciudad.
+
+         Lo que haría falta está escrito en la lista viva y es concreto: una
+         consulta APARTE, solo de las clases de espacio público, que es mucho
+         más liviana que el trazado entero. No se escribió a ciegas porque
+         desde la máquina de desarrollo el proxy bloquea Overpass y no hay
+         manera de comprobar si aguanta —la misma razón de la v865 y la
+         v888—, y un código que no se puede medir contra el servicio real no
+         se publica como medición. */
+      usosPorHa: truncada ? null : Math.round(1000 * (Number(sc.total) || 0) / (areaM2 / 10000)) / 1000,
+      cobertura: (sc.accesibilidad && sc.accesibilidad.categorias)
+        ? sc.accesibilidad.categorias.map(function (c) {
+            return { id: c.id, etiqueta: c.etiqueta, puntos: c.puntos,
+                     pctCubierto: c.pctCubierto, radioM: c.radioM };
+          })
+        : null
+    };
+    guardarCiudadOSM(C.divipola, out);
+    return out;
+  }
+
   function leerTrazos() {
     try { var t = JSON.parse(localStorage.getItem(TRAZOS_KEY) || '[]'); return Array.isArray(t) ? t : []; }
     catch (e) { return []; }
@@ -1340,7 +1539,23 @@
       signo = (dif > 0 ? '+' : '') + conComa(dif) + ' pp';
     } else {
       var rel = vc ? Math.round(1000 * (vs - vc) / vc) / 10 : null;
-      signo = rel == null ? '—' : (rel > 0 ? '+' : '') + conComa(rel) + ' %';
+      /* La regla de la v874, que esta columna no tenía: **pasado cierto
+         punto un porcentaje deja de ser una proporción y pasa a ser un
+         número largo.** Con la densidad de usos de un barrio contra la de su
+         municipio salía «+18.178 %», que es aritméticamente cierto y no
+         significa nada; «29 veces» sí. El corte es el mismo de allá —300 %,
+         que es donde el castellano cambia de forma solo— y vale para
+         cualquier par de magnitudes, no solo para este.
+         Por debajo de cero el equivalente no es una multiplicación sino una
+         fracción, así que ahí se dice «la décima parte» en vez de una razón
+         menor que uno, que se lee peor que el porcentaje. */
+      if (rel != null && rel > 300) {
+        signo = conComa(Math.round(10 * vs / vc) / 10) + ' veces';
+      } else if (rel != null && rel < -90 && vs > 0) {
+        signo = 'la ' + conComa(Math.round(10 * vc / vs) / 10) + '.ª parte';
+      } else {
+        signo = rel == null ? '—' : (rel > 0 ? '+' : '') + conComa(rel) + ' %';
+      }
       dif = rel;
     }
     var tono = dif == null ? '' : (Math.abs(dif) < (esPct ? 2 : 10) ? ' igual' : (dif > 0 ? ' mas' : ' menos'));
@@ -1376,7 +1591,7 @@
      referencia de ciudad trae cosas: un renglón que pide algo que ya está en
      la columna de la derecha es la misma clase de mentira que perseguimos
      desde la v861, dicha en el panel en vez de en la bitácora. */
-  function faltanDeCiudad(hayC, C, dens) {
+  function faltanDeCiudad(hayC, C, dens, ref) {
     var out = [];
     if (!hayC || !C || C.densidadPorHa == null)
       out.push(['La densidad de la ciudad',
@@ -1390,11 +1605,32 @@
       out.push(['La escolaridad de la ciudad',
         'que la capa del censo exponga los campos de nivel educativo, que son los mismos ' +
         'que el sector ya usa']);
-    /* Estas tres piden una corrida de OpenStreetMap sobre el municipio
-       entero, que es otra cosa y por eso se nombra aparte. */
-    out.push(['Espacio público, densidad de usos y cobertura de equipamientos de la ciudad',
-      'correr el análisis de OpenStreetMap sobre el municipio entero y guardarlo, igual que ' +
-      'se guarda el censo: son de otra fuente y por eso no vienen con la columna de arriba']);
+    /* §11 (v902) · Estas tres pedían una corrida de OpenStreetMap sobre el
+       municipio. Dos ya la tienen, así que la lista se encoge sola y la
+       tercera se queda con SU razón, que no es la misma. Un renglón que
+       siguiera pidiendo las tres juntas sería la mentira de la v861 dicha en
+       el panel: declarar faltando lo que se acaba de medir. */
+    var CO = ref || null, hayCO = CO && CO.estado === 'ok';
+    if (!hayCO) {
+      out.push(['Densidad de usos y cobertura de equipamientos de la ciudad',
+        'correr el análisis de OpenStreetMap sobre el municipio y guardarlo, que es un botón de ' +
+        'esta misma ficha: son de otra fuente que el censo y por eso no vienen con la columna de ' +
+        'arriba' + (CO && CO.razon ? ' — ' + CO.razon : '')]);
+    } else if (CO.truncada) {
+      out.push(['La densidad de usos de la ciudad',
+        'una consulta municipal que no toque el tope de salida: la corrida del ' + (CO.fecha || '') +
+        ' devolvió ' + CO.tope + ' elementos, que es exactamente el tope, así que el conteo está ' +
+        'recortado y una densidad sacada de él saldría por debajo de la real']);
+    }
+    /* El espacio público NO entra en lo que la corrida municipal resuelve, y
+       la razón es concreta: su área sale de polígonos con geometría, que son
+       las capas que la consulta suelta por encima de 50 km² desde la v851
+       porque no terminan. Pide una consulta aparte, más liviana, solo de las
+       clases de espacio público. */
+    out.push(['El espacio público de la ciudad',
+      'una consulta aparte de OpenStreetMap, solo de parques y plazas con su geometría: el área ' +
+      'de espacio público sale de polígonos, y los polígonos son justamente lo que la consulta ' +
+      'suelta a escala municipal porque no termina']);
     out.push(['Desempleo y cobertura de servicios',
       'las tablas municipales del DANE, que se publican aparte del censo por manzana']);
     return out;
@@ -5755,6 +5991,35 @@ function donaHTML(datos, colorDe, nombreDe) {
           pares.push(parConCiudad('Mujeres', demo.pctMujeres,
             Math.round(1000 * C.mujeres / (C.mujeres + C.hombres)) / 10, ' %', true));
       }
+      /* §11 (v902) · Los dos que vienen de OpenStreetMap y no del censo. Van
+         con los demás y no en un cuadro aparte: para quien lee, «densidad de
+         usos» y «densidad de población» son dos renglones de la misma
+         columna, y separarlos por su fuente sería ordenar la hoja por cómo
+         está hecho el programa. De dónde sale cada uno se dice UNA vez,
+         abajo, que es donde se puede leer sin perder la comparación. */
+      var CO = st.ciudadOSM || null;
+      var hayCO = CO && CO.estado === 'ok';
+      if (hayCO) {
+        var haSector = (Number(meta.areaM2) || 0) / 10000;
+        var usosSector = Number(st.total) || 0;
+        if (haSector > 0 && CO.usosPorHa != null) {
+          pares.push(parConCiudad('Densidad de usos',
+            Math.round(100 * usosSector / haSector) / 100, CO.usosPorHa, ' por ha', false));
+        }
+        /* La cobertura, categoría por categoría, y solo las que en la ciudad
+           tienen al menos un equipamiento mapeado: comparar contra una capa
+           vacía es la regla de la v875 aplicada a la columna de la derecha. */
+        var accS = (st.accesibilidad && st.accesibilidad.categorias) || [];
+        (CO.cobertura || []).forEach(function (cc) {
+          if (!(Number(cc.puntos) > 0)) return;
+          var mia = accS.filter(function (x) { return x.id === cc.id; })[0];
+          if (!mia || mia.pctCubierto == null || !(Number(mia.puntos) > 0)) return;
+          /* Sin `esc` acá: `parConCiudad` escapa su etiqueta, y escaparla dos
+             veces imprime «Colegio o jard&amp;iacute;n» en la hoja. */
+          pares.push(parConCiudad(cc.etiqueta + ' a ' + Math.round(cc.radioM / 80) + ' min',
+            mia.pctCubierto, cc.pctCubierto, ' %', true));
+        });
+      }
 
       /* La pirámide del sector SOBREPUESTA a la de la ciudad, que es lo que
          el pliego pide —«no en gráfico aparte»—: la silueta de la ciudad va
@@ -5802,7 +6067,29 @@ function donaHTML(datos, colorDe, nombreDe) {
         (hayC ? '' : '<p class="vacio-tag">Por qué no hay columna de ciudad</p>' +
           '<p class="vacio-falta">' + esc(razonSinCiudad(C)) + '</p>') +
         '<p class="vacio-tag">Lo que todavía no se puede comparar con la ciudad</p>' +
-        faltanDeCiudad(hayC, C, dens).map(function (f) {
+        (hayCO
+          ? '<p class="nota">Las dos últimas clases de renglón —densidad de usos y cobertura de ' +
+            'equipamientos— salen de correr el MISMO análisis sobre el municipio, el ' +
+            esc(CO.fecha || '') + ', sobre un círculo del área censada centrado en sus manzanas. ' +
+            'Es <b>lo que OpenStreetMap tiene mapeado</b> del municipio, no un inventario: las dos ' +
+            'columnas arrastran el mismo sesgo de mapeo, que es justamente lo que las hace ' +
+            'comparables entre sí y no comparables contra una norma. <b>El círculo no es el ' +
+            'límite del municipio</b>: tiene su área censada y está en su sitio, pero deja fuera ' +
+            'manzanas de los bordes y mete suelo que no es manzana, así que la columna de ciudad ' +
+            'es una referencia de orden de magnitud y no un dato del perímetro urbano.' +
+            (CO.ligera
+              ? ' A esa escala la consulta sale en modo ligero —los usos con puerta a la calle, ' +
+                'sin los polígonos de uso del suelo—, que para contar usos y medir cobertura de ' +
+                'equipamientos no cambia nada y es justamente por qué el espacio público de la ' +
+                'ciudad no sale de acá.'
+              : '') +
+            (CO.truncada
+              ? ' <b>El conteo llegó al tope de salida de la consulta (' + CO.tope + ' elementos), ' +
+                'así que la densidad de usos de la ciudad no se publica: una lista recortada da una ' +
+                'densidad por debajo de la real y no hay manera de saber cuánto.</b>'
+              : '') + '</p>'
+          : '') +
+        faltanDeCiudad(hayC, C, dens, CO).map(function (f) {
           return '<p class="vacio-falta"><b>' + esc(f[0]) + '.</b> Haría falta ' + f[1] + '.</p>';
         }).join('');
       })(), 'g3') +
@@ -10369,6 +10656,40 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
       if (acc === 'trazado') { analizarTrazado(); return; }
       if (acc === 'terreno') { analizarTerreno(); return; }
+      /* §11 · la referencia municipal, a pedido. No se dispara sola al
+         analizar: es una consulta de mil kilómetros cuadrados y quien abrió
+         la ficha quería ver un barrio. */
+      if (acc === 'ciudad-osm') {
+        if (S.ciudadOSMCargando) return;
+        S.ciudadOSMCargando = true;
+        S.ciudadOSMAviso = 'Consultando el municipio… es una consulta grande y puede tardar un par de minutos.';
+        pintar();
+        correrCiudadOSM((S.resultado && S.resultado.stats) || null, function (paso) {
+          try {
+            /* `etq`, no `paso`: el aviso de js/61 llega como
+               `{ id, etq, presupuestoMs }` desde la v870, y leer una clave
+               que no existe dejaba el paréntesis vacío en cada paso — un
+               «(…)» que no dice nada es peor que no ponerlo. */
+            S.ciudadOSMAviso = 'Consultando el municipio… (' + ((paso && paso.etq) || '') + ')';
+            var c = document.getElementById('pcr-ciudad-estado');
+            if (c) c.textContent = S.ciudadOSMAviso;
+          } catch (e) {}
+        }).then(function (r) {
+          S.ciudadOSMCargando = false;
+          S.ciudadOSMAviso = r && r.estado === 'ok'
+            ? 'Referencia del municipio guardada. Vuelve a salir en la lámina sin volver a consultar.'
+            : 'No se pudo: ' + ((r && r.razon) || 'la consulta municipal no devolvió cifras') + '.';
+          /* Se le pega al resultado que hay a la vista para que la lámina la
+             use sin volver a analizar el sector. */
+          ponerCiudadOSM(S.resultado);
+          guardarFichaViva(); pintar();
+        }).catch(function (e) {
+          S.ciudadOSMCargando = false;
+          S.ciudadOSMAviso = 'No se pudo: ' + ((e && e.message) || e) + '.';
+          pintar();
+        });
+        return;
+      }
       if (acc === 'clima') { analizarClima(); return; }
       /* Leer los llenos de la foto: la cuenta la hace js/76 y tarda unos
          segundos sobre millones de píxeles, así que se avisa mientras. */
@@ -12989,6 +13310,68 @@ function donaHTML(datos, colorDe, nombreDe) {
   /* El terreno. En un lote de ladera esto manda sobre casi todo lo demás:
      decide por dónde corre el agua, cuánto cuesta construir y qué parte no se
      puede ocupar. Hasta ahora el análisis no lo miraba. */
+  /* §11 · el bloque de la referencia municipal, en la misma pestaña que el
+     terreno y por la misma razón: las dos son mediciones que se piden aparte
+     porque cuestan una consulta grande, y las dos dicen en su pista qué van a
+     traer antes de que alguien gaste el tiempo. */
+  /* `id` y no una clase nueva: es el asidero con el que se leen las pistas de
+     ESTE bloque y no las del de al lado —medir las de la pestaña entera daba
+     por buena la pista del terreno— y de paso no le inventa a la hoja de
+     estilo una clase que nadie pinta (v895). El envoltorio va acá y no en
+     cada salida: son tres, y tres copias de una etiqueta de apertura se
+     separan. */
+  function bloqueCiudadOSM() {
+    return '<div id="pcr-ciudad">' + cuerpoCiudadOSM() + '</div>';
+  }
+  function cuerpoCiudadOSM() {
+    var st = (S.resultado && S.resultado.stats) || {};
+    var C = st.ciudad || null;
+    var CO = st.ciudadOSM || null;
+    var nombre = (C && C.nombre) || st.municipioNombre || 'el municipio';
+    var cab = h4('lista', 'La referencia del municipio');
+    if (!C || C.estado !== 'ok') {
+      return cab + '<p class="pcr-pista">Sin la referencia del censo municipal no hay contra qué ' +
+        'correrla: de ahí salen el código del municipio, su población y su área censada.</p>';
+    }
+    if (CO && CO.estado === 'ok') {
+      return cab +
+        '<p class="pcr-pista">Corrida el <b>' + esc(CO.fecha) + '</b> sobre ' + esc(nombre) +
+        ': <b>' + Math.round(CO.usos).toLocaleString('es-CO') + '</b> usos mapeados' +
+        (CO.usosPorHa != null ? ' · <b>' + conComa(CO.usosPorHa) + '</b> por hectárea' : '') +
+        '. Ya sale en la lámina como columna de ciudad, sin volver a consultar.</p>' +
+        (CO.truncada
+          ? '<p class="pcr-error">El conteo tocó el tope de salida de la consulta (' + CO.tope +
+            ' elementos), así que la densidad de usos no se publica: una lista recortada da una ' +
+            'densidad por debajo de la real.</p>'
+          : '') +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="ciudad-osm" class="pcr-mini pcr-llevar-b"' +
+            (S.ciudadOSMCargando ? ' disabled' : '') + '>' +
+            (S.ciudadOSMCargando ? 'Consultando…' : ico('lista') + 'Volver a correrla') +
+          '</button>' +
+        '</div>' +
+        (S.ciudadOSMCargando
+          ? '<p class="pcr-pista" id="pcr-ciudad-estado">' + esc(S.ciudadOSMAviso || 'Preparando…') + '</p>'
+          : '');
+    }
+    return cab +
+      '<p class="pcr-pista">Corre el MISMO análisis sobre ' + esc(nombre) + ' una sola vez y lo ' +
+      'guarda, para que la lámina pueda decir si la densidad de usos y la cobertura de ' +
+      'equipamientos del sector son altas o bajas <b>para esta ciudad</b>. Es una consulta ' +
+      'grande —puede tardar un par de minutos— y por eso no se lanza sola.</p>' +
+      '<div class="pcr-llevar">' +
+        '<button type="button" data-pcr="ciudad-osm" class="pcr-mini pcr-llevar-b"' +
+          (S.ciudadOSMCargando ? ' disabled' : '') + '>' +
+          (S.ciudadOSMCargando ? 'Consultando…' : ico('lista') + 'Correr la referencia del municipio') +
+        '</button>' +
+      '</div>' +
+      (S.ciudadOSMCargando
+        ? '<p class="pcr-pista" id="pcr-ciudad-estado">' + esc(S.ciudadOSMAviso || 'Preparando…') + '</p>'
+        : '') +
+      (S.ciudadOSMAviso && !S.ciudadOSMCargando
+        ? '<p class="pcr-error">' + esc(S.ciudadOSMAviso) + '</p>' : '');
+  }
+
   function bloqueTerreno() {
     var t = S.terreno;
     if (!t) {
@@ -24696,6 +25079,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     P.ambiente =
         tiraDeMapas(res, 'ambiente') +
         bloqueTerreno() +
+        bloqueCiudadOSM() +
         bloqueClima() +
         bloqueSol(meta) +
         bloqueAmenaza() +
@@ -24924,6 +25308,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       // La ubicación ya se consultó arriba para el DANE: se guarda con el
       // resultado en vez de volver a pedirla, y así viaja también a la ficha.
       if (ubic) res.ubicacion = ubic;
+      /* §11 · la referencia municipal guardada, pegada al resultado en vez de
+         leída desde el panel. Es la regla de la v890 con el área: una ficha
+         archivada se vuelve a componer con este código, y leer el almacén
+         desde la caja imprimiría la referencia que haya HOY sobre un análisis
+         de hace un mes. Pegada acá viaja con la ficha y con su fecha. */
+      ponerCiudadOSM(res);
       S.resultado = res;
       S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
       // De dónde salió el punto que se acaba de consultar, congelado acá: lo
@@ -26841,6 +27231,18 @@ function donaHTML(datos, colorDe, nombreDe) {
             return { id: c.id, etiqueta: c.etiqueta, puntos: c.puntos,
                      pctCubierto: c.pctCubierto, pctSinCubrir: c.pctSinCubrir };
           }) };
+        })(),
+        /* §11 (v902) · La referencia municipal de OpenStreetMap y si se está
+           corriendo. Va acá y no se alcanza por un lado —es la regla de la
+           v871— porque una prueba tiene que poder distinguir tres cosas que
+           desde afuera se ven igual: que la corrida no se pidió, que está en
+           curso, y que volvió con un estado que no es `ok`. Es una COPIA:
+           escribirle encima no cambia nada. */
+        ciudadOSMCargando: !!S.ciudadOSMCargando,
+        ciudadOSMAviso: S.ciudadOSMAviso || '',
+        ciudadOSM: (function () {
+          var c = S.resultado && S.resultado.stats && S.resultado.stats.ciudadOSM;
+          return c ? Object.assign({}, c) : null;
         })()
       };
     }

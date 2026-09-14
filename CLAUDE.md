@@ -488,6 +488,14 @@ VT_DATABASE_URL="postgres://vt_app:vt_app_local@127.0.0.1:5432/urbis_vt_pruebas"
   nohup node servidor.js > /tmp/motor.log 2>&1 &
 ```
 
+Y el mismo síntoma vuelve **con todo bien puesto**: Postgres se cae solo entre
+tandas largas, y el motor no se entera —sigue en pie, sirviendo análisis, con
+`[vt] la base no responde` en su registro de arranque y las rutas `/vt/*` en
+401—. No se arregla levantando la base sola: **hay que reiniciar también el
+motor**, porque su conexión se resolvió al arrancar y no se vuelve a intentar.
+La pista es `service postgresql status`, que cuesta un segundo, antes de
+sospechar de una regresión que no existe.
+
 **El secreto tiene que ser EXACTAMENTE ese**: es el que `tvision.js` usa para
 firmar sus licencias de prueba, y con otro la firma no valida —401— y el
 cliente recibe null. No es el de producción y no es un secreto: está escrito
@@ -4162,6 +4170,204 @@ esta versión. Y la lista de lo que cede, que la v900 no publicaba: dos
 paneles, los dos nombrados en el pie.
 
 
+## La ciudad, también de OpenStreetMap (v902)
+
+§11 del pliego de ajustes v2, y la prioridad de contenido de la tanda. Desde
+la v876 la lámina compara con la ciudad todo lo que sale del censo —población,
+densidad, pirámide, reparto por sexo— y declaraba faltando, en un solo
+renglón, las tres cosas que salen de OpenStreetMap: espacio público, densidad
+de usos y cobertura de equipamientos.
+
+Auditado antes de escribir, que es la regla de la v863, **las tres no son la
+misma carencia**: dos salen de correr el análisis de siempre sobre el
+municipio, y la tercera no puede salir de ahí ni queriendo. Escribirlas juntas
+había escondido esa diferencia durante veintiséis versiones.
+
+    v901          población · densidad de población · pirámide · sexo
+    v902          + densidad de usos · + cobertura de los cuatro equipamientos
+
+En el sector de prueba sale «6,6 usos por ha contra 0,2 · 28,9 veces» y la
+cobertura de colegio, salud, parque y abastecimiento, categoría por categoría.
+
+### Correr el análisis de siempre, no escribir una cuenta nueva
+
+La corrida municipal le pide a Overpass el municipio y le pasa la lista al
+motor **tal cual**, con `tipoEstudio: 'completo'`. Así la densidad de usos y
+la cobertura de la ciudad salen de las mismas funciones que las del sector.
+Escribir una cuenta «para la ciudad» habría sido comprar de antemano la
+divergencia de la v879: dos rutas de cálculo para la misma cantidad no
+divergen el día que se escriben, divergen la tanda siguiente.
+
+Tres decisiones más, y las tres se notan el día que no están:
+
+* **Solo cuando se pide.** Es una consulta de mil kilómetros cuadrados y quien
+  abrió la ficha quería mirar un barrio. Va en un botón de la pestaña de
+  ambiente, al lado del terreno y por la misma razón: las dos cuestan una
+  consulta grande y las dos dicen en su pista qué van a traer **antes** de que
+  alguien gaste dos minutos.
+* **Se guardan las CIFRAS, no los elementos.** Catorce mil elementos son
+  megabytes, y el recorte por cupo de `localStorage` se llevaría por delante
+  las fichas, que son el trabajo de una tarde (v871). Lo guardado son ocho
+  números y su fecha, por municipio y por medio año —el censo dura treinta
+  días porque el DANE puede corregir una capa; esto dura más porque lo que
+  cambia es OpenStreetMap, que se mapea de a poco—.
+* **Se le pega al RESULTADO, no se lee desde la caja.** Es la regla de la v890
+  con el área: una ficha archivada se vuelve a componer con este código, y
+  leer el almacén desde el panel imprimiría la referencia que haya HOY sobre
+  un análisis de hace un mes. Pegada al resultado viaja con la ficha y con su
+  fecha.
+
+### Dónde queda el municipio, que la v876 nunca necesitó saber
+
+La referencia del censo sale de CONTAR manzanas por código, así que nunca hizo
+falta ninguna geometría. Correrle un análisis encima sí: hace falta un centro
+y un tamaño. `extensionCiudad` se lo pregunta a la misma capa con
+`returnExtentOnly` —una petición barata, que no devuelve una sola geometría
+sino el rectángulo que las contiene— y corrige el ancho por el coseno de la
+latitud, porque un rectángulo de grados no es un rectángulo de metros.
+
+**La clave del censo municipal sube a `_v2`.** El objeto guardado trae un
+campo más, y sin subir el número un teléfono que ya tenía la referencia de la
+v876 la seguiría sirviendo SIN extensión durante treinta días: el botón
+contestaría «no se sabe dónde centrar la consulta» justo a quien ya usaba la
+comparación. Es la regla de la v882 con la clave del clima, y la de la v852:
+un arreglo que sirve para todos menos para quien ya sufrió el fallo no está
+hecho.
+
+### El área de la consulta y la del denominador son LA MISMA
+
+Se pide un círculo del **área censada** del municipio centrado en su
+envolvente, y la densidad se divide por esa misma área censada. Pedir el
+rectángulo envolvente entero —que incluye suelo rural— y dividir por el área
+censada urbana contaría usos de vereda contra hectáreas de ciudad, y la
+densidad de la ciudad saldría inflada sin que nada lo dijera.
+
+Y lo que el círculo no es va escrito **en la hoja**, no solo acá: tiene el
+área correcta en el sitio correcto, pero deja fuera manzanas del borde y mete
+suelo que no es manzana, así que la columna de ciudad es una referencia de
+orden de magnitud y no un dato del perímetro urbano.
+
+### El espacio público NO sale de ahí, y la razón es la misma que lo explica
+
+A escala municipal la consulta sale **siempre en ligera** —por encima de
+50 km² las capas de área no terminan (v851)—, así que llegan los usos con
+puerta a la calle y no los polígonos. Para las dos cifras que se publican eso
+no cambia nada: contar usos y medir cobertura de equipamientos se hace sobre
+puntos. Pero el área de parques y plazas sale de **polígonos con su
+geometría**, que son exactamente lo que la consulta suelta.
+
+Publicar un espacio público municipal sin esas capas sería un cero disfrazado
+de medición, que es el error de la v875 a escala de ciudad. Así que se queda
+en la lista viva con su razón propia, y **las dos cosas se dicen juntas en la
+hoja** o la segunda parece un capricho.
+
+### El tope de salida ya estaba detectado, y mi cuenta estaba mal dos veces
+
+El hallazgo de la tanda, y era mío. Un conteo que toca el tope de `out` no es
+un conteo: Overpass recorta la salida y no avisa, así que una densidad sacada
+de una lista recortada sale por debajo de la real y no hay manera de saber
+cuánto. Escribí la detección a mano —`elementos.length >= escalaDeConsulta(área).tope`—
+y estaba mal de las dos maneras que importan:
+
+* **`js/61` ya lo detecta desde la v851** y lo manda pegado a la lista, en
+  `aviso`, con el número dentro. La mía era la segunda ruta de cálculo que la
+  v879 prohíbe, escrita en la misma tanda en que la cité.
+* **Y medía después de la limpieza**, sobre una lista ya más corta que la que
+  el servidor cortó, así que un tope tocado por poco se me escapaba en
+  silencio.
+
+Se lee del aviso. La densidad entonces **no se publica** —ni en la hoja ni en
+el panel— y se dice por qué, con el tope y con la consecuencia; la cobertura
+sí se compara igual, porque un porcentaje de área cubierta no se hunde porque
+falte cola de lista. Son dos cosas distintas y se tratan distinto.
+
+### Seis estados, nunca un null
+
+`correrCiudadOSM` devuelve siempre un objeto con su `estado`: `sin-censo`,
+`sin-area`, `sin-centro`, `sin-modulos`, `sin-respuesta`, `sin-motor`, `ok`.
+Es la regla que la v876 escribió para `censoCiudad`: son situaciones que piden
+acciones distintas —repetir con señal, corregir el patrón del campo, o nada— y
+un null las juntaría en una. Sin área censada **ni siquiera se sale a la red**:
+no hay sobre qué correr la consulta ni con qué dividir, y gastar dos minutos
+para averiguarlo sería gastarlos para nada.
+
+### Una razón grande se dice en VECES, también en la columna de diferencia
+
+Salió mirando el papel. La densidad de usos de un barrio contra la de su
+municipio imprimía **«+18.177,8 %»**: aritméticamente cierto y sin significado,
+que es exactamente la clase de la v874 —pasado cierto punto un porcentaje deja
+de ser una proporción y pasa a ser un número largo—. `parConCiudad` usa ahora
+el mismo corte del 300 % que `razonLegible` y dice «28,9 veces».
+
+La regla es de la columna, no de este par: vale para cualquier par de
+magnitudes. Y por debajo hay la otra mitad, que el corte simétrico no
+resuelve: menos del −90 % se dice «la 10.ª parte», porque una razón menor que
+uno se lee peor que el porcentaje.
+
+**La comprobación vive en `tciudad` y no en `tdoslaminas`**, y es la lección de
+las trece tandas anteriores: sin la referencia municipal ningún par de la hoja
+pasa del 300 %, así que allá habría pasado por no tener nada que rechazar.
+
+### Dos errores míos, los dos de leer un nombre en vez del código
+
+* **`paso.paso` no existe.** El aviso de js/61 llega como `{ id, etq,
+  presupuestoMs }` desde la v870, así que el paréntesis del aviso de espera
+  salía vacío en cada paso. Un «(…)» que no dice nada es peor que no ponerlo.
+* **`parConCiudad` ya escapa su etiqueta**, y pasársela escapada imprimía
+  «Colegio o jard&amp;iacute;n» en la hoja.
+
+Los dos son la regla de la v863 en pequeño: se comprueba leyendo la función,
+no recordando cómo se llama su campo.
+
+### `tciudad.js` · tres ramas, tres contextos
+
+Suite propia, y las tres ramas en corridas separadas porque **cada una
+necesita un doble del DANE distinto**: el tope de salida se deduce del ÁREA del
+municipio, que es justamente lo que las separa.
+
+| Rama | Qué ejercita |
+|---|---|
+| `ok` | los pares se imprimen, la procedencia se dice, la lista de carencias se encoge |
+| `truncada` | 3 km² censados, tope 3.000, 3.000 elementos servidos: la densidad no se publica y se dice por qué |
+| `sin-area` | no hay referencia y **no se gastó una consulta** para averiguarlo |
+
+Dos cosas del material, que son la enésima vez que aparece lo mismo:
+
+* **El doble del DANE no sabía contestar por extensión.** Sin `extent`, la
+  corrida municipal habría medido siempre el estado «no se sabe dónde
+  centrarla» y la comparación entera se habría probado sin comparar nada — la
+  lección de la v876 con `COD_DANE_MPIO`, otra vez y en el mismo doble. La
+  extensión es **deliberadamente mayor** que el área censada, como pasa de
+  verdad: si fueran iguales, la diferencia entre envolvente y área censada no
+  se ejercitaría.
+* **El municipio contesta cosas distintas del sector.** 1.400 usos repartidos
+  por todo el círculo contra 208 en un cuadrado de 560 m: si contestara lo
+  mismo, todas las diferencias darían cero.
+
+Y una del arnés que costó una corrida entera: **la consulta viaja en el cuerpo
+URL-codificada**, así que `around:4425` es `around%3A4425` y el patrón con el
+que la suite distingue la consulta municipal de la del sector no casaba. El
+doble le servía los usos del SECTOR a la consulta del municipio, la referencia
+salía con 208 usos y la rama truncada medía un municipio que nunca se
+consultó. Se decodifica antes de mirar.
+
+De paso, el bloque de la ficha lleva `id="pcr-ciudad"` y no una clase nueva:
+es el asidero con el que la suite lee **sus** pistas y no las del bloque de al
+lado —medir las de la pestaña entera daba por buena la pista del terreno, que
+es la lección de la v874 con `.hit`— y así no se le inventa a la hoja de
+estilo una clase que nadie pinta (v895).
+
+### Demostrado contra la v901
+
+Veinte aserciones en rojo de veinticinco: «no está» por el bloque, «0
+consultas», «no sale el par», «ninguna» por las cuatro coberturas, «lo calla»
+por el círculo, y la corrida truncada sin marcar.
+
+Cinco pasan a propósito y son guardas o vacíos, no afirmaciones nuevas: que
+antes de correrla la hoja NO compare la densidad de usos —cierto en las dos
+versiones—, que sin pares no haya nombres escapados dos veces, y las dos de la
+rama `sin-area`, que en la v901 se cumplen por no haber referencia ninguna.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -4188,11 +4394,13 @@ que se ve a simple vista: la cláusula está o no está.
 <!-- LISTA-VIVA-PLIEGO -->
 * **El predio: tamaño y forma de cada lote** — cartografía catastral del IGAC
   o del catastro municipal. `ya: la manzana cerrada por las vías mapeadas, que no es el lindero catastral`
-* **El espacio público, la densidad de usos y la cobertura de equipamientos DE
-  LA CIUDAD** — correr el análisis de OpenStreetMap sobre el municipio entero
-  y guardarlo, como se guarda el censo. Son de otra fuente que el censo y por
-  eso no vienen con la columna de ciudad.
-  `ya: la población, la densidad, la pirámide por tramos y el reparto por sexo del municipio, del mismo censo por manzana y en una sola consulta, impresos como par sector · ciudad · diferencia`
+* **El ESPACIO PÚBLICO de la ciudad, en m²** — una consulta aparte de
+  OpenStreetMap sobre el municipio, solo de parques y plazas CON su geometría.
+  No sale de la corrida municipal y la razón es concreta: su área se calcula
+  sobre polígonos, y los polígonos son justamente las capas que la consulta
+  suelta por encima de 50 km² porque no terminan (v851), así que a escala de
+  municipio la corrida sale siempre en ligera.
+  `ya: la densidad de usos y la cobertura de equipamientos del municipio, de correr el MISMO análisis sobre un círculo de su área censada una sola vez y guardar las cifras, impresas como par sector · ciudad · diferencia; y la población, la densidad, la pirámide por tramos y el reparto por sexo, del censo por manzana`
 * **El área URBANA del municipio** (IGAC o el POT), para una densidad contra
   el perímetro y no contra lo censado.
   `ya: la densidad de la ciudad sobre el área de sus manzanas censales, declarada con ese nombre y no como «área urbana»`

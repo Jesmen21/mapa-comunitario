@@ -1476,7 +1476,16 @@ console.log('\n  -- las listas vivas --');
          los renglones siguen; pero su cláusula `ya:` tiene que decir que el
          formulario existe, o la sesión siguiente lo escribe otra vez. */
       { t: 'las seis plantillas de campo',     tema: /campo|plantilla|se levanta en campo|conteo en campo/i,
-        prueba: () => /PLANTILLAS_DE_CAMPO/.test(j68) && /plantillaCampo/.test(j68) }
+        prueba: () => /PLANTILLAS_DE_CAMPO/.test(j68) && /plantillaCampo/.test(j68) },
+      /* §11 (v902). Las tres carencias de la columna de ciudad iban en UN
+         renglón —espacio público, densidad de usos y cobertura—; dos ya salen
+         de la corrida municipal y la que queda es el espacio público, con su
+         razón propia. La marca vigila que la tanda siguiente no las vuelva a
+         escribir juntas: cualquier renglón que toque la densidad de usos o la
+         cobertura de la ciudad tiene que decir en su `ya:` que están medidas. */
+      { t: 'la referencia municipal de OpenStreetMap',
+        tema: /espacio p[uú]blico de la ciudad|densidad de usos|cobertura de equipamientos de la ciudad|municipio entero/i,
+        prueba: () => /correrCiudadOSM/.test(j68) && /extensionCiudad/.test(j61) }
     ] },
     /* Visión Territorial (v868). Sus cinco carencias se auditaron una por una
        contra el código y salieron honestas — no hay malla vial en el esquema,

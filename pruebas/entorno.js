@@ -159,6 +159,16 @@ const CAMPOS_DANE = [
 const CIUDAD = {
   divipola: '54001', poblacion: 777_106, manzanas: 14_820,
   pctMujeres: 51.8, areaM2: 61_500_000,
+  /* §11 (v902) · DÓNDE queda el municipio. Sin esto la referencia municipal
+     no se puede correr —no hay centro ni tamaño— y la suite mediría el estado
+     «sin-centro» creyendo que mide la corrida: es la lección de la v876 con
+     `COD_DANE_MPIO`, otra vez y en el mismo doble.
+     La extensión es DELIBERADAMENTE mayor que el área censada, como pasa de
+     verdad: el rectángulo que contiene las manzanas incluye suelo que no es
+     manzana. Si fueran iguales, la diferencia entre «envolvente» y «área
+     censada» no se ejercitaría y el código podría confundirlas sin que nada
+     se pusiera rojo. */
+  extent: { xmin: -72.55, ymin: 7.83, xmax: -72.44, ymax: 7.96 },
   // La ciudad es más vieja y menos infantil que el sector de prueba: si la
   // pirámide sobrepuesta saliera idéntica, es que no se está comparando.
   piramide: [['0_4', 62], ['5_9', 64], ['10_14', 66], ['15_19', 72], ['20_24', 84],
@@ -274,6 +284,13 @@ async function rutaDane(ctx, censo) {
        primero porque no lleva `outStatistics`, y sin atenderla acá caería en
        la rama de agregados y devolvería un objeto vacío, que el módulo leería
        como «no se pudo preguntar» —otro estado, otra cosa—. */
+    /* La consulta de EXTENSIÓN: `returnExtentOnly`. Va antes que la de
+       agregados porque no lleva `outStatistics` y caería en su rama. */
+    if (/returnExtentOnly=true/i.test(r.request().url())) {
+      const ex = (censo && censo.extent !== undefined) ? censo.extent : CIUDAD.extent;
+      return r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify(ex ? { extent: Object.assign({ spatialReference: { wkid: 4326 } }, ex) } : {}) });
+    }
     if (!/\/query/.test(r.request().url())) {
       const cs = (censo && censo.camposDane !== undefined) ? censo.camposDane : CAMPOS_DANE;
       return r.fulfill({ status: 200, contentType: 'application/json',

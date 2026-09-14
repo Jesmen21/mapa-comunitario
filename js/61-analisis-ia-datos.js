@@ -1224,7 +1224,14 @@
 
      Se guarda por municipio y dura 30 días: el censo de 2018 no cambia, pero
      una caché eterna es una que nadie puede corregir. */
-  const LS_CIUDAD = 'urbis_censo_ciudad_v1';
+  /* §11 (v902) · `_v2` porque el objeto guardado trae un campo más —la
+     extensión, de donde sale el centro de la corrida municipal—. Sin subir
+     el número, un teléfono que ya tenía la referencia de la v876 guardada la
+     seguiría sirviendo SIN extensión durante treinta días, y el botón del
+     municipio contestaría «no se sabe dónde centrar la consulta» justo a
+     quien ya usaba la comparación. Es la regla de la v882 con la clave del
+     clima: un campo nuevo en una consulta cacheada sube ese número. */
+  const LS_CIUDAD = 'urbis_censo_ciudad_v2';
   const CIUDAD_DURA_MS = 30 * 24 * 60 * 60 * 1000;
   // Cómo suele llamarse el código de municipio en las capas del DANE. El
   // orden importa: el primero que case es el que se usa.
@@ -1302,10 +1309,11 @@
     /* El estrato y la escolaridad de la ciudad, por el mismo camino. No
        bloquean: si una de las dos no contesta, la otra se compara igual y la
        que falta se declara. */
-    let estrato = null, escolaridad = null, areaM2 = null;
+    let estrato = null, escolaridad = null, areaM2 = null, ext = null;
     try { estrato = await estratoCiudad(campo, dane); } catch (e) {}
     try { escolaridad = await escolaridadCiudad(campo, dane); } catch (e) {}
     try { areaM2 = await areaCensadaCiudad(campo, dane); } catch (e) {}
+    try { ext = await extensionCiudad(campo, dane); } catch (e) {}
 
     const out = {
       estado: 'ok', divipola: dane, nombre: nombre || '', campo: campo,
@@ -1319,6 +1327,9 @@
          se nombra así y no «área urbana». */
       areaCensadaM2: areaM2,
       densidadPorHa: (areaM2 > 0) ? Math.round(10 * a.TOTAL / (areaM2 / 10000)) / 10 : null,
+      /* Dónde queda y cuánto abarca, para poder correrle un análisis encima
+         (§11). Es la ENVOLVENTE de sus manzanas censales, no su límite. */
+      extension: ext,
       censo: 2018
     };
     guardarCiudad(dane, out);
@@ -1388,6 +1399,42 @@
     const d = await consultaDANE(DANE_CAPAS.personasManzana, p, 45000);
     const a = d && d.features && d.features[0] && d.features[0].attributes;
     return (a && Number(a.A) > 0) ? Number(a.A) : null;
+  }
+
+  /* ── §11 · DÓNDE está el municipio, para poder correr algo sobre él ────
+     La referencia de ciudad de la v876 sale de contar manzanas censales por
+     código, así que nunca necesitó saber dónde queda el municipio. Correr un
+     análisis sobre él sí: hace falta un centro y un tamaño.
+
+     ArcGIS lo contesta en la misma capa con `returnExtentOnly`, que es una
+     petición barata —no devuelve una sola geometría, solo el rectángulo que
+     las contiene—. Es literalmente «la envolvente de las manzanas censales»
+     que §11 propone, y por eso se declara como envolvente y no como límite
+     municipal: el municipio no es un rectángulo, y la diferencia se nombra
+     donde se imprime la cifra. */
+  async function extensionCiudad(campo, dane) {
+    const p = new URLSearchParams();
+    p.set('where', campo + " = '" + dane + "'");
+    p.set('returnExtentOnly', 'true');
+    p.set('outSR', '4326');
+    p.set('f', 'json');
+    const d = await consultaDANE(DANE_CAPAS.personasManzana, p, 45000);
+    const e = d && (d.extent || d.fullExtent);
+    if (!e) return null;
+    const x1 = Number(e.xmin), y1 = Number(e.ymin), x2 = Number(e.xmax), y2 = Number(e.ymax);
+    if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) return null;
+    if (!(x2 > x1 && y2 > y1)) return null;
+    /* Un rectángulo de grados no es un rectángulo de metros: el ancho se
+       encoge con el coseno de la latitud. Sin eso, la envolvente de Cúcuta
+       saldría un 1 % más ancha de lo que es y el radio equivalente con
+       ella. */
+    const latMed = (y1 + y2) / 2;
+    const anchoM = (x2 - x1) * 111320 * Math.cos(latMed * Math.PI / 180);
+    const altoM = (y2 - y1) * 110540;
+    return { lat: latMed, lng: (x1 + x2) / 2,
+             bbox: [y1, x1, y2, x2],
+             anchoM: Math.round(anchoM), altoM: Math.round(altoM),
+             areaM2: Math.round(anchoM * altoM) };
   }
 
   async function distribucionEstrato(lat, lng, radioM){
