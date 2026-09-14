@@ -593,6 +593,95 @@
     return out;
   }
 
+  /* ── EL TOTAL DE LA CORRIDA ANTERIOR DEL MISMO SECTOR (v915) ──────────
+     Reportado con dos PDF del mismo sector y el mismo radio en la mano:
+     1.380 usos en uno y 1.320 en el otro, sin una palabra que lo explicara.
+     Medido sobre el diff, la v912 no toca una sola línea de conteo, así que
+     la diferencia no venía del código: viene de la FUENTE. OpenStreetMap se
+     mapea de a poco y Overpass no devuelve siempre lo mismo.
+
+     Pero eso el lector no tiene cómo saberlo, y dos cifras distintas bajo el
+     mismo rótulo se leen como un error de la herramienta — que es justo lo
+     que la v879 persigue entre las dos láminas, acá entre dos corridas.
+
+     Se guarda APARTE de las fichas, y por la misma razón de la v871: son
+     cuatro números por sector y una ficha es el trabajo de una tarde. Metidos
+     en la ficha, el recorte por cupo se llevaría por delante el historial de
+     conteos para hacerle sitio a un análisis — o al revés, que es peor. */
+  var CONTEOS_KEY = 'pcr_conteos_v1';
+  var MAX_CONTEOS = 60;
+  /* La identidad de un sector, a efectos de «la misma corrida otra vez»: el
+     centro redondeado a cinco decimales —un metro— y el radio. Con más
+     precisión, mover el mapa un píxel fabricaría un sector nuevo y la
+     comparación no se haría nunca; con menos, dos barrios vecinos serían el
+     mismo. Un polígono no tiene radio, así que lleva su área redondeada a
+     la hectárea: redibujarlo a mano nunca da los mismos vértices, pero sí
+     casi la misma superficie. */
+  function llaveDeSector(meta) {
+    var m = meta || {};
+    var lat = Number(m.lat), lng = Number(m.lng);
+    if (!isFinite(lat) || !isFinite(lng)) return '';
+    var p = lat.toFixed(5) + ',' + lng.toFixed(5);
+    if (Number(m.radioM) > 0) return p + '|r' + Math.round(Number(m.radioM));
+    if (Number(m.areaM2) > 0) return p + '|a' + Math.round(Number(m.areaM2) / 10000);
+    return p;
+  }
+  function leerConteos() {
+    try { var c = JSON.parse(localStorage.getItem(CONTEOS_KEY) || '{}');
+          return (c && typeof c === 'object' && !Array.isArray(c)) ? c : {}; }
+    catch (e) { return {}; }
+  }
+  function escribirConteos(m) {
+    try { localStorage.setItem(CONTEOS_KEY, JSON.stringify(m)); return true; }
+    catch (e) { return false; }
+  }
+  /* EL UMBRAL NO SE INVENTA: SALE DE LO QUE LA HOJA IMPRIME.
+     ────────────────────────────────────────────────────────────────────
+     Poner «avisa si cambia más del 5 %» sería repetir el error del techo de
+     Overpass de la v869 — un número a ojo que después nadie puede defender.
+
+     Lo que la hoja imprime del total es la DENSIDAD, en usos por hectárea y
+     con un decimal. Así que una diferencia importa exactamente cuando
+     alcanza a mover esa cifra: hacen falta 0,05 usos por hectárea para
+     cruzar el redondeo, o sea 0,05 × hectáreas del sector. En el sector de
+     prueba —177 ha— son 9 usos; en una corrida de 19,6 km², 98.
+
+     Por debajo de eso la diferencia no cambia una sola cifra impresa, y
+     anunciarla sería ruido que enseña a ignorar el aviso — la misma decisión
+     de la v886 con el piso y el objetivo. El mínimo de 1 está porque una
+     diferencia de cero no es una diferencia. */
+  function umbralDeConteo(areaM2) {
+    var ha = (Number(areaM2) || 0) / 10000;
+    return Math.max(1, Math.round(0.05 * ha));
+  }
+  /* Se anota al terminar el análisis y se le PEGA al resultado, no se lee
+     después desde el panel: es la regla de la v890 con el área y la de la
+     v902 con la referencia municipal. Una ficha archivada se vuelve a
+     componer con este código, y leer el almacén desde la caja imprimiría la
+     comparación de hoy sobre un análisis de hace un mes. */
+  function registrarConteo(res) {
+    try {
+      var meta = (res && res.meta) || {}, st = (res && res.stats) || {};
+      var k = llaveDeSector(meta);
+      var total = Number(st.total) || 0;
+      if (!k || !(total > 0)) return;
+      var todos = leerConteos(), prev = todos[k];
+      var umbral = umbralDeConteo(meta.areaM2 || (Math.PI * Math.pow(Number(meta.radioM) || 0, 2)));
+      if (prev && Number(prev.total) > 0 && Math.abs(Number(prev.total) - total) >= umbral) {
+        res.conteoPrevio = { total: Number(prev.total), ts: prev.ts || '', umbral: umbral };
+      }
+      todos[k] = { total: total, ts: new Date().toISOString() };
+      /* El almacén no crece sin fin: se queda con los más recientes. Sesenta
+         sectores son varias semanas de trabajo de un curso. */
+      var llaves = Object.keys(todos);
+      if (llaves.length > MAX_CONTEOS) {
+        llaves.sort(function (a, b) { return String(todos[b].ts).localeCompare(String(todos[a].ts)); })
+              .slice(MAX_CONTEOS).forEach(function (x) { delete todos[x]; });
+      }
+      escribirConteos(todos);
+    } catch (e) {}
+  }
+
   function leerTrazos() {
     try { var t = JSON.parse(localStorage.getItem(TRAZOS_KEY) || '[]'); return Array.isArray(t) ? t : []; }
     catch (e) { return []; }
@@ -897,6 +986,12 @@
          imprime «SIN NOMBRAR» sobre un trabajo que sí estaba nombrado. */
       proyecto: S.nombreProyecto || '',
       ubicacionAdmin: S.ubicacionAdmin || '',
+      /* El total de la corrida anterior de este sector (v915). Son tres
+         campos y viajan con la ficha por la misma razón que el nombre del
+         proyecto: reabrirla para reimprimir tiene que devolver la MISMA
+         lámina. Leerlo del almacén al reabrir imprimiría la comparación de
+         hoy sobre un análisis de hace un mes — la regla de la v890. */
+      conteoPrevio: (res && res.conteoPrevio) || null,
       // Lo que necesita la pestaña «Sector» para redibujar el informe sin
       // volver a consultar la red.
       stats: statsLigero(st),
@@ -1949,7 +2044,7 @@
      cuenta que los devuelva LOS DOS con su nombre, para que ningún panel
      vuelva a fabricar el suyo. La v903 ya declaraba la diferencia en la
      tabla de categorías; lo que faltaba era que la cuenta fuera una. */
-  function conteoDeUsos(st) {
+  function conteoDeUsos(st, prev) {
     var pg = (st && st.porGrupo) || {};
     var clas = Object.keys(pg).filter(function (k) { return k !== 'otro'; })
       .reduce(function (a, k) { return a + (Number(pg[k]) || 0); }, 0);
@@ -1965,8 +2060,28 @@
       /* Por qué sobran. Va con la cifra y no en el panel de al lado. */
       razon: 'llevan etiquetas que el motor no pudo clasificar en ninguna categoría, ' +
         'y se cuentan en el total del sector pero no en el reparto, porque una barra de ' +
-        '«sin clasificar» no dice qué hay'
+        '«sin clasificar» no dice qué hay',
+      /* La corrida anterior del mismo sector, cuando la diferencia alcanza a
+         mover una cifra impresa. La frase dice de dónde viene la diferencia
+         porque sin eso dos cifras distintas bajo el mismo rótulo se leen
+         como un error de esta hoja, que es lo contrario de lo que son. */
+      anterior: (prev && Number(prev.total) > 0 && Number(prev.total) !== total)
+        ? { total: Number(prev.total), fecha: fechaCortaDe(prev.ts),
+            razon: 'La diferencia es de la fuente: OpenStreetMap cambia entre consultas y ' +
+              'Overpass no siempre devuelve lo mismo. No es un error de esta hoja.' }
+        : null
     };
+  }
+  /* Día y mes, que es lo que sirve para saber si la otra corrida fue de hoy
+     o del mes pasado. El año entero en una casilla de quince milímetros no
+     lo lee nadie, y en el mismo sector dos corridas separadas por un año son
+     el caso raro. */
+  function fechaCortaDe(ts) {
+    try {
+      var d = new Date(ts);
+      if (isNaN(d.getTime())) return '';
+      return d.getDate() + '/' + (d.getMonth() + 1);
+    } catch (e) { return ''; }
   }
 
   /* ── La media de pisos, una sola cuenta para las dos láminas (v879) ──
@@ -5468,7 +5583,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          encabezado: los dos números son correctos y miden cosas distintas.
          Se arregla diciéndolo, que es lo que el pliego pide con esas
          palabras: «si hay registros descartados, decir cuántos y por qué». */
-      var cu = conteoDeUsos(st);
+      var cu = conteoDeUsos(st, res.conteoPrevio);
       var sumaTabla = cu.clasificados, fueraTabla = cu.sinClasificar;
       return dona(filas, colorDe, nombreDe) +
       '<p class="lee-min">Convenciones de los mapas de usos: cada punto del plano lleva el ' +
@@ -5481,7 +5596,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         ? ': ' + (fueraTabla === 1
             ? 'el que falta ' + cu.razon.replace(/^llevan/, 'lleva')
             : 'los ' + fueraTabla.toLocaleString('es-CO') + ' que faltan ' + cu.razon) + '.'
-        : ', que son todos.') + '</p>';
+        : ', que son todos.') + '</p>' +
+      /* La corrida anterior del MISMO sector, cuando la diferencia alcanza a
+         mover una cifra impresa (v915). Va acá, donde el total es el sujeto,
+         y no en cada panel que lo cita: es la decisión de la v906 con la nota
+         del conteo de edificios. */
+      (cu.anterior
+        ? '<p class="nota"><b>' + cu.total.toLocaleString('es-CO') + ' usos</b> · la corrida ' +
+          'anterior' + (cu.anterior.fecha ? ' (' + esc(cu.anterior.fecha) + ')' : '') + ' contó <b>' +
+          cu.anterior.total.toLocaleString('es-CO') + '</b>. ' + cu.anterior.razon + '</p>'
+        : '');
       })(), 'g3') +
 
       /* ── Qué manda en el sector ───────────────────────────────────────
@@ -16677,15 +16801,47 @@ function donaHTML(datos, colorDe, nombreDe) {
     var p = PELDANO_PLIEGO[k];
     return p === undefined ? 1 : p;
   }
-  /* Lo intocable ya no es una lista aparte: es el peldaño 0, para que no
-     puedan separarse. Antes llevaba `el-sitio` y `los-mapas-del-sector`, que
-     la lista dictada no nombra, así que ahora ceden —en el peldaño 1, por
-     omisión—; y `suelo-disponible-real` y `potencial-edificatorio` bajaron
-     de «nunca» a «último», que es lo que la v910 hizo posible: con el panel
-     fuera su casilla dice SIN MEDIR nombrándolo, en vez de quedarse sin con
-     qué cruzarse. */
-  var PLIEGO_INTOCABLES = Object.keys(PELDANO_PLIEGO)
-    .filter(function (k) { return PELDANO_PLIEGO[k] === 0; });
+  /* ── LA PUERTA ÚNICA DE APAGADO (v915) ─────────────────────────────────
+     «Había dos caminos de apagado y solo uno obedecía. Ese era el bug de
+     fondo detrás de todo lo que veníamos persiguiendo. Queda como regla: un
+     panel se apaga por un solo camino, y ese camino lee el peldaño.»
+
+     Son DOS los caminos por los que el PROGRAMA decide apagar un panel —la
+     bisección, cuando la hoja no cierra, y §21, cuando un mapa no llega al
+     piso de 8 cm— y hasta la v912 el segundo tenía su propia lista corta de
+     protegidos, así que el peldaño 0 valía en uno y no en el otro. Aquella
+     tanda le puso la comprobación del peldaño al lado de la lista, que
+     arreglaba el caso y dejaba **dos listas para un solo hecho** — la
+     divergencia que la v879 persigue, esperando a la tanda siguiente.
+
+     Ahora hay una puerta y las dos la llaman. La lista corta desaparece: los
+     tres que nombraba —la foto, el mapa de todos los usos y el plano— son
+     peldaño 0, comprobado, así que no decía nada que el peldaño no dijera.
+
+     Lo que una PERSONA apaga desde la ficha no pasa por acá, y es a
+     propósito: quien arma la lámina puede apagar lo que quiera, incluida la
+     síntesis. El peldaño ordena lo que el programa cede cuando no le cabe;
+     no le dice a nadie qué puede mirar. Es la distinción que la v911 hizo
+     entre `pliegoCedidas` y `pliegoOff`. */
+  function puedeCeder(id, yaApagados) {
+    var k = String(id || '');
+    if (peldanoDe(k) === 0) return false;
+    if (yaApagados && yaApagados.indexOf(k) !== -1) return false;
+    return true;
+  }
+  /* Lo intocable no es una lista aparte: es el peldaño 0, y desde la v915 se
+     pregunta por `puedeCeder` y no por una lista derivada. La v911 dejó acá
+     un `PLIEGO_INTOCABLES` sacado de ese mismo peldaño, que era la TERCERA
+     copia del mismo hecho —la lista de §21 era la segunda— y ninguna decía
+     nada que el peldaño no dijera. Se retiraron las dos.
+
+     De lo que la v911 cambió y sigue vigente: `el-sitio` y
+     `los-mapas-del-sector` ya no son intocables —la lista dictada no los
+     nombra, así que ceden en el peldaño 1 por omisión—, y
+     `suelo-disponible-real` y `potencial-edificatorio` bajaron de «nunca» a
+     «último», que es lo que la v910 hizo posible: con el panel fuera su
+     casilla dice SIN MEDIR nombrándolo, en vez de quedarse sin con qué
+     cruzarse. */
   /* Los mapas, del más prescindible al más necesario, para cuando ni
      apagando todas las cajas cabe la hoja. Lo que no esté acá sale primero.
      Las categorías de uso van temprano: el mapa de todos los usos, que no
@@ -16896,7 +17052,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        todo lo demás apagado —caía al mínimo de 1,4 mm—. */
     var protegeCampo = !(o && o.horizontal) && pisoDeLetra(o && o.letra) < 0.5;
     return lista.filter(function (c) {
-      return c.listo && PLIEGO_INTOCABLES.indexOf(c.id) === -1 && off.indexOf(c.id) === -1 &&
+      return c.listo && puedeCeder(c.id, off) &&
         !(enLaHoja && !enLaHoja[c.id]) &&
         !(hayLote && c.id === 'el-lote-a-intervenir') &&
         !(protegeCampo && (PANELES_DE_CAMPO.indexOf(c.id) !== -1 || PANELES_DE_VACIO.indexOf(c.id) !== -1));
@@ -17037,7 +17193,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       var candMapas = [];
       try {
         candMapas = mapasDisponibles(res).filter(function (m) {
-          return m.listo && mapasYa.indexOf(m.id) === -1 && peldanoDe(m.id) > 0 &&
+          return m.listo && puedeCeder(m.id, mapasYa) &&
                  (!enLaHoja || enLaHoja[m.id]);
         }).map(function (m) { return m.id; });
       } catch (e) { candMapas = []; }
@@ -17369,15 +17525,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        que es justo lo que el peldaño 0 significa que no puede pasar.
        Ahora la protección es la misma: el peldaño manda en los dos caminos
        o no manda en ninguno. */
-    var PROTEGIDOS = ['foto', 'calor:todos', 'plano'];
     var apagados = (o.pliegoMapasOff !== undefined ? (o.pliegoMapasOff || [])
                                                    : (S.pliegoMapasOff || [])).slice();
     var quitados = [];
     for (var pase = 0; pase < 8 && v && v.bajoPiso.length; pase++) {
-      var cae = v.bajoPiso.filter(function (c) {
-        return PROTEGIDOS.indexOf(String(c.id)) === -1 && apagados.indexOf(String(c.id)) === -1 &&
-               peldanoDe(String(c.id)) > 0;
-      })[0];
+      var cae = v.bajoPiso.filter(function (c) { return puedeCeder(c.id, apagados); })[0];
       if (!cae) break;
       apagados.push(String(cae.id));
       quitados.push({ id: cae.id, t: cae.t, mm: cae.mm });
@@ -26352,6 +26504,9 @@ function donaHTML(datos, colorDe, nombreDe) {
          desde la caja imprimiría la referencia que haya HOY sobre un análisis
          de hace un mes. Pegada acá viaja con la ficha y con su fecha. */
       ponerCiudadOSM(res);
+      /* Y el total de la corrida anterior de ESTE mismo sector, por la misma
+         razón y en el mismo sitio: pegado al resultado, no leído después. */
+      registrarConteo(res);
       S.resultado = res;
       S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
       // De dónde salió el punto que se acaba de consultar, congelado acá: lo
@@ -27466,6 +27621,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       stats: f.stats || { total: f.total, porGrupo: f.porGrupo, porSub: f.porSub },
       pois: poisConColor(f.pois || []),
       ubicacion: f.ubicacion || null,
+      conteoPrevio: f.conteoPrevio || null,
       meta: { forma: f.forma, areaM2: f.areaM2, radioM: f.radioM,
               perimetroM: f.perimetroM || null, vertices: f.vertices || 0,
               poligono: f.poligono || null,
@@ -28259,6 +28415,28 @@ function donaHTML(datos, colorDe, nombreDe) {
            la v871 es que lo que una prueba necesita leer se agrega acá en
            vez de alcanzarlo por un lado. */
         pliegoCierre: S.pliegoCierre ? Object.assign({}, S.pliegoCierre) : null,
+        /* El total de usos de la corrida y el de la ANTERIOR de este mismo
+           sector, cuando la diferencia alcanza a mover una cifra impresa
+           (v915). Van acá por la regla de la v871 —lo que una prueba
+           necesita leer se agrega a `estado()` en vez de alcanzarlo por un
+           lado— y porque son dos cosas distintas: que la comparación se
+           anotara, y que se imprima. */
+        total: (S.resultado && S.resultado.stats && S.resultado.stats.total) || 0,
+        /* §10 · las DOS cifras de edificios que el motor publica en el
+           trazado, tal como llegan (v915). Se exponen para que una prueba
+           pueda comprobar que siguen siendo UNA sola: hoy salen de la misma
+           variable, y eso es un hecho de cómo está escrito el motor, no algo
+           que nada impida cambiar. Es la guarda de la v879 —dos rutas de
+           cálculo para una cantidad divergen la tanda siguiente— puesta
+           antes de que diverjan y no después. */
+        edificiosTrazado: (S.trazado && S.trazado.llenos && S.trazado.alturas)
+          ? { llenos: Number(S.trazado.llenos.edificios) || 0,
+              alturas: Number(S.trazado.alturas.edificios) || 0,
+              conGeometria: Number(S.trazado.llenos.conGeometria) || 0,
+              sinGeometria: Number(S.trazado.llenos.sinGeometria) || 0 }
+          : null,
+        conteoPrevio: (S.resultado && S.resultado.conteoPrevio)
+          ? Object.assign({}, S.resultado.conteoPrevio) : null,
         // Las manzanas por estrato que hay en memoria, que son las que el
         // pliego dibuja y las que viajan con la ficha.
         estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,

@@ -5873,6 +5873,142 @@ agregó el renglón, que es el contrato: la mitad estructural de esa guarda caza
 sola, la mitad de vocabulario cuesta una línea cada vez que aparece una forma
 nueva.
 
+## Una cuenta por magnitud, y una sola puerta de apagado (v915)
+
+Las tres cosas que quedaron de la v913, en el orden pedido. Dos salieron
+distintas de como estaban planteadas, y las dos por lo mismo: **la premisa se
+midió antes de tocar nada** (v863).
+
+### El total de usos, contra la corrida anterior del mismo sector
+
+Reportado con dos PDF del mismo sector y el mismo radio: 1.380 usos en uno y
+1.320 en el otro, sin una palabra. Medido sobre el diff, la v912 no toca una
+línea de conteo: la diferencia es de la FUENTE. Pero eso el lector no tiene
+cómo saberlo, y dos cifras distintas bajo el mismo rótulo se leen como un
+error de la herramienta — la v879 entre dos corridas en vez de entre dos
+hojas.
+
+Se guarda el total por sector en `pcr_conteos_v1`, **aparte de las fichas** y
+por la razón de la v871: son cuatro números y una ficha es el trabajo de una
+tarde; juntos, el recorte por cupo se llevaría uno para hacerle sitio al otro.
+La llave del sector es el centro a cinco decimales —un metro— más el radio, o
+el área a la hectárea para un polígono: con más precisión, mover el mapa un
+píxel fabricaría un sector nuevo y la comparación no se haría nunca.
+
+Y se le PEGA al resultado, no se lee después desde el panel: es la regla de la
+v890 con el área y la de la v902 con la referencia municipal. Una ficha
+archivada se vuelve a componer con este código, y leer el almacén desde la
+caja imprimiría la comparación de hoy sobre un análisis de hace un mes.
+
+#### El umbral no se inventa: sale de lo que la hoja imprime
+
+«Con un umbral», decía el pedido. Poner «avisa si cambia más del 5 %» sería
+repetir el error del techo de Overpass de la v869 — un número a ojo que
+después nadie puede defender.
+
+Lo que la hoja imprime del total es la DENSIDAD, en usos por hectárea y con un
+decimal. Así que una diferencia importa exactamente cuando alcanza a mover esa
+cifra: 0,05 usos por hectárea para cruzar el redondeo, o sea **0,05 × las
+hectáreas del sector**. En el de prueba —177 ha— son 9 usos; en la corrida de
+19,6 km², 98. Por debajo de eso la diferencia no cambia una sola cifra
+impresa, y anunciarla sería ruido que enseña a ignorar el aviso.
+
+#### `tconteo.js` · el mismo sector dos veces, que no lo tenía nadie
+
+Suite propia, y la razón es el material: hace falta correr EL MISMO sector dos
+veces con totales distintos. `tdoslaminas` vuelve a analizar, sí, pero con
+otro radio —que es otro sector para esta comparación, y con razón—. Sin las
+dos corridas la comprobación habría pasado por no tener nada que rechazar; es
+la decimoctava vez.
+
+Y **el caché de Overpass la dejó sin material al primer intento**: dura 24 h a
+propósito (v851), así que las tres corridas leían la misma respuesta guardada
+y el total no se movía — medido, 116 · 116 · 116. Se limpia entre corridas,
+que es exactamente lo que le pasa a quien vuelve al día siguiente o desde otro
+teléfono, o sea el caso que el reporte describe.
+
+Las tres ramas: sin corrida anterior la hoja **no** inventa un aviso; con 24
+usos de diferencia lo dice con las dos cifras y la procedencia; con uno se
+calla. La tercera es la que de verdad guarda — sin ella el arreglo podría
+haber sido avisar de toda diferencia, y el aviso saldría en cada corrida por
+un uso de más.
+
+### §10 · no había nada que unificar, y eso también se mide
+
+El pliego v2 reportó «3.760 contra 3.673 edificios» y lo atribuyó a dos
+consultas distintas; la v912 lo corrigió a «dos conteos dentro de la MISMA
+consulta de trazado» y lo dejó como tarea de motor.
+
+**Las dos premisas eran falsas**, y la segunda la escribí yo. Llamando al
+motor con material que puede distinguirlas —cuarenta edificios con huella y
+tres mapeados solo como punto— salen `llenos.edificios = 43` y
+`alturas.edificios = 43`: son **la misma variable**. Y del lado del cliente,
+la v906 ya había unificado la elección entre la consulta de usos y la del
+trazado en `conteoDeEdificios`, que llaman los diez sitios que imprimen la
+cifra.
+
+Así que no se unificó nada. **Inventar un cambio para cerrar la tarea es lo
+que este proyecto lleva cinco tandas deshaciendo** — la mudanza de la v882, la
+bisección de la v886, la fila de texto de la v901.
+
+Lo que sí faltaba es la guarda: que hoy salgan iguales es un hecho de cómo
+está escrito el motor, no algo que nada impida cambiar. `ttrazado` lo
+comprueba **con su propia guarda de material**: las tres cifras del fixture
+—43 edificios, 40 con forma, 3 solo punto— son distintas entre sí, así que la
+igualdad de las dos primeras no pasa por coincidencia de un sector donde todo
+vale lo mismo.
+
+### Una sola puerta de apagado, y el peldaño detrás de ella
+
+«Había dos caminos de apagado y solo uno obedecía. Queda como regla: un panel
+se apaga por un solo camino, y ese camino lee el peldaño.»
+
+La v912 arregló el caso —le puso la comprobación del peldaño al lado de la
+lista corta de §21— y dejó el defecto: **dos listas para un solo hecho**,
+esperando a la tanda siguiente. Y no eran dos sino TRES, porque
+`PLIEGO_INTOCABLES` era otra lista derivada del peldaño 0 que el filtro de
+cajas leía por su cuenta.
+
+Ahora hay una función, `puedeCeder(id, yaApagados)`, y las tres decisiones la
+llaman: los candidatos de caja, los de mapa y el apagado por tamaño de §21.
+Las dos listas derivadas se retiraron — ninguna decía nada que el peldaño no
+dijera, y una lista que repite un hecho es la forma de la v885 con las
+funciones declaradas dos veces.
+
+**Lo que una PERSONA apaga no pasa por la puerta**, y es a propósito: quien
+arma la lámina puede apagar lo que quiera, incluida la síntesis. El peldaño
+ordena lo que el programa cede cuando no le cabe; no le dice a nadie qué puede
+mirar. Es la distinción que la v911 hizo entre `pliegoCedidas` y `pliegoOff`.
+
+#### La guarda tiene dos mitades porque una sola falla abierto
+
+* **En `revisar.js`**, sobre el código: el peldaño se lee **solo** desde la
+  puerta y desde el orden, y cada sitio permitido dice para qué —es la forma
+  de la guarda del voseo en -á (v880): se lista lo permitido y se denuncia
+  todo lo demás—. Demostrada escribiendo un cuarto camino que filtra por su
+  cuenta: sale con archivo y línea, y con qué hacer.
+* **En `tdoslaminas`**, sobre el papel: ningún panel del peldaño 0 puede
+  faltar de una hoja compuesta. Esa es la que cierra el caso que la primera
+  no ve —un camino nuevo que **no mire el peldaño en absoluto**—, porque su
+  huella queda en la hoja aunque no lea nada.
+
+Y la guarda de la guarda: si `puedeCeder` dejara de leer el peldaño, la
+primera seguiría en verde sin vigilar nada. Hay una comprobación aparte que
+exige que lo siga leyendo — el patrón de la v878 con su propia lista y el de
+la v868 con las listas vivas.
+
+#### Medido: el cambio es neutro
+
+Las cuatro suites del pliego pasan sin tocar una aserción, que es lo que tenía
+que pasar: las tres listas coincidían, así que retirarlas no cambia una sola
+composición. Lo que cambia es que ya no pueden separarse.
+
+### Y una de numeración
+
+El usuario llamó «v914» a esta tanda, pero la v914 se la llevó la franja de
+los PDF de prueba, que se publicó primero. Esto es la **v915**. Se sube por
+encima, nunca bajando la propia — la regla del 7 de septiembre.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

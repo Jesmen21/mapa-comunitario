@@ -144,6 +144,9 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
         .filter(x=>/Intersecciones/.test(txt(x)))[0];
       return f?txt(f.querySelector('b')):'';
     })();
+    /* §10 · las dos cifras de edificios que el motor publica en el trazado,
+       tal como llegan (v915). Ver la aserción para por qué se miden acá. */
+    o.edif=(window.URBIS_PC_RECON.estado()||{}).edificiosTrazado||null;
     return o;
   },{C,POL});
 
@@ -220,6 +223,35 @@ for(let i=0;i<3;i++) geo.push({type:'way',id:id++,center:{lat:C.lat+0.0005,lon:C
   P('la barra aparece tras medir', r.hayLlenos);
   P('con su porcentaje de lleno y de vacío', r.cifras.length===2 && /%/.test(r.cifras[0]), r.cifras.join(' · '));
   P('y declara los edificios mapeados solo como punto', r.avisoPuntos, r.avisoPuntos?'lo dice':'NO lo dice');
+
+  /* ── §10 · UNA SOLA CIFRA DE EDIFICIOS (v915) ────────────────────────
+     El pliego v2 reportó «3.760 contra 3.673 edificios» y lo atribuyó a dos
+     consultas distintas; la v912 lo corrigió a «dos conteos dentro de la
+     misma consulta de trazado». **Las dos premisas eran falsas**, y se midió
+     llamando al motor antes de tocar nada —la regla de la v863—:
+     `llenos.edificios` y `alturas.edificios` son LA MISMA VARIABLE, así que
+     no había nada que unificar y no se unificó nada. Inventar un cambio para
+     cerrar la tarea es lo que este proyecto lleva cinco tandas deshaciendo
+     (la mudanza de la v882, la bisección de la v886, la fila de texto de la
+     v901).
+
+     Lo que sí faltaba es esta guarda. Que hoy salgan iguales es un hecho de
+     cómo está escrito el motor, no algo que nada impida cambiar — y la v879
+     dejó dicho que dos rutas de cálculo para una cantidad no divergen el día
+     que se escriben, divergen la tanda siguiente. Se pone antes de que
+     diverjan y no después.
+
+     El material de esta suite es lo que la hace significar algo: cuarenta
+     edificios con huella y TRES mapeados solo como punto, así que las tres
+     cifras son distintas entre sí y la igualdad de las dos primeras no pasa
+     por coincidencia de un fixture donde todo vale lo mismo. */
+  console.log('\n  -- §10 · una sola cifra de edificios --');
+  P('el motor publica un conteo, no dos', !!r.edif && r.edif.llenos === r.edif.alturas,
+    r.edif ? 'llenos=' + r.edif.llenos + ' · alturas=' + r.edif.alturas : 'no llegó');
+  P('y el material puede distinguirlas: hay edificios sin huella',
+    !!r.edif && r.edif.sinGeometria > 0 && r.edif.conGeometria !== r.edif.llenos,
+    r.edif ? r.edif.conGeometria + ' con forma de ' + r.edif.llenos +
+             ' · ' + r.edif.sinGeometria + ' solo punto' : 'no llegó');
 
   console.log('\n  -- jerarquía de las vías --');
   P('separa arterial, zonal y local', r.mallas.length===3, r.mallas.join(' | '));

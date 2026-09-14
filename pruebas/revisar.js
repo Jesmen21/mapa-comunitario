@@ -1575,6 +1575,66 @@ console.log('\n  -- un nombre, una cosa --');
     const archivos = new Set(donde[n].map(x => x.archivo));
     return formas.size > 1 && archivos.size > 1;
   });
+/* ── UN PANEL SE APAGA POR UN SOLO CAMINO (v915) ─────────────────────────
+   «Había dos caminos de apagado y solo uno obedecía. Ese era el bug de fondo
+   detrás de todo lo que veníamos persiguiendo. Queda como regla: un panel se
+   apaga por un solo camino, y ese camino lee el peldaño.»
+
+   El defecto de la v912: §21 apagaba mapas por TAMAÑO con su propia lista
+   corta de protegidos, así que el peldaño 0 valía en la bisección y no ahí, y
+   dos mapas de categoría —peldaño 0— se fueron de la hoja. Aquella tanda le
+   puso la comprobación del peldaño al lado de la lista; la v915 retiró las
+   dos listas derivadas —la de §21 y `PLIEGO_INTOCABLES`— y dejó una puerta,
+   `puedeCeder`, que las tres decisiones llaman.
+
+   ESTA GUARDA IMPIDE LA CUARTA. Persigue el caso en que alguien escriba otro
+   camino de apagado y lo filtre leyendo el peldaño por su cuenta: eso es una
+   segunda copia de la regla, y dos copias de una regla se separan (v879).
+
+   De qué NO responde, y decirlo importa más que tenerlo (v880): un camino
+   nuevo que no mire el peldaño EN ABSOLUTO no lo ve esta comprobación —falla
+   abierto para ese caso—. Lo cierra la otra mitad, sobre el papel: en
+   `tdoslaminas`, ningún panel del peldaño 0 puede faltar de una hoja
+   compuesta. Un camino nuevo deja su huella ahí aunque no lea nada. */
+{
+  const F = 'js/68-procity-reconocimiento.js';
+  const lineas = leer(F).split('\n');
+  /* Lo PERMITIDO, con su razón, en vez de una lista de lo prohibido: es la
+     forma de la guarda del voseo en -á (v880). Cada sitio dice para qué lee
+     el peldaño, y lo que no esté acá sale denunciado. */
+  const PERMITIDO = {
+    // La puerta misma: es la única que decide si un panel puede ceder.
+    puedeCeder: 'la puerta única',
+    /* Y el ORDEN, que es otra pregunta: entre los que ya pueden ceder, cuál
+       primero. Ahí el peldaño es un número que se compara y se corrige con
+       la guarda de última caja (v913), no una autorización. */
+    laminaAjustada: 'el orden de cesión y la guarda de última caja'
+  };
+  const sueltos = [];
+  let dentro = '';
+  lineas.forEach((ln, i) => {
+    const m = ln.match(/^  function ([A-Za-z0-9_$]+)\s*\(/);
+    if (m) dentro = m[1];
+    if (!/\bpeldanoDe\s*\(/.test(ln)) return;
+    if (/^\s*(\/\/|\*|\/\*)/.test(ln)) return;          // un comentario no llama a nada
+    if (dentro === 'peldanoDe') return;                  // su propia definición
+    if (PERMITIDO[dentro]) return;
+    sueltos.push(F + ':' + (i + 1) + ' en ' + (dentro || 'el nivel del módulo'));
+  });
+  comprobar('el peldaño se lee solo desde la puerta de apagado y desde el orden',
+    sueltos.length === 0,
+    sueltos.length
+      ? sueltos.join(' · ') + ' — hacelo pasar por puedeCeder()'
+      : Object.keys(PERMITIDO).map(k => k + ' (' + PERMITIDO[k] + ')').join(' · '));
+  /* Y la guarda de la guarda: si `puedeCeder` dejara de leer el peldaño, esta
+     comprobación seguiría en verde sin vigilar nada — que es el patrón de la
+     v878 con su propia lista y el de la v868 con las listas vivas. */
+  const cuerpoPuerta = (leer(F).match(/function puedeCeder\([^]*?\n  \}/) || [''])[0];
+  comprobar('y la puerta sigue leyéndolo: sin eso, esta comprobación sería un verde',
+    /peldanoDe\s*\(/.test(cuerpoPuerta) && /return false/.test(cuerpoPuerta),
+    cuerpoPuerta ? 'puedeCeder lee el peldaño' : 'NO se encontró puedeCeder');
+}
+
   comprobar('ningún nombre de window es función en un archivo y lista en otro',
     chocan.length === 0,
     chocan.length
