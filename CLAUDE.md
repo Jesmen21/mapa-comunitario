@@ -6080,6 +6080,77 @@ sale «sin tramo: 40_44».
 * **§10(d)** —2014 y 2017 idénticos en la serie satelital— pide la serie real,
   que esta batería no descarga.
 
+## La tira de estampas, medida, y lo que el apretón le hace (v917)
+
+Llegó midiendo el PDF de la v914, y con una corrección que ordena todo lo
+anterior: **la BANDA «Cómo cambió el sitio» y el PANEL de las cinco estampas
+son dos cosas distintas, y se venían mezclando.** La banda compone y sobrevive
+—en la composición de pie tiene título, pregunta y sus tres medidas: huella
+construida, población del municipio y obra pública contratada—. Lo que no
+salía es la tira de fotos.
+
+La pregunta era cuál de tres: si el panel cede, si no llegan las imágenes, o
+si no está cableado a la banda. Se midió, y la respuesta son dos hechos
+distintos.
+
+### El fixture no podía contestar, y por eso la pregunta llevaba tres tandas
+
+`evolucionImpresa` dibuja la tira con `pasos.filter(p => p.ok && p.imagen)`. El
+`EVO_SERIE` de `tdoslaminas` —que la v911 completó con `pasos` para que el
+inventario la diera por lista— traía `ok` y `medida` y **ninguna imagen**, así
+que el filtro devolvía vacío y salían la tabla y las frases sin una sola foto.
+Medido sobre las cuatro hojas guardadas: la caja presente en las cuatro, con
+**cero `<img>`**.
+
+Es la vigesimosegunda vez que el material no puede producir lo que la
+comprobación dice medir, y acá costaba el doble: la pregunta sobre la mesa era
+justamente si el panel está cableado, y con ese fixture no se podía contestar
+ni que sí ni que no.
+
+Con las estampas puestas —un PNG liso por paso, como el que `E.rutaWayback`
+sirve desde la v907— la tira sale: **5 figuras, 5 imágenes, cada una con su
+año**. El panel está cableado y la duda queda cerrada por medición.
+
+### Y lo segundo, que es lo que el reporte necesitaba
+
+Con las cinco estampas la caja **pesa**, y en el documento apretado la
+bisección la cede — declarada en `pliegoFuera`, como corresponde. Eso no es una
+regresión: es la máquina funcionando, y es la explicación del papel real.
+
+En el export de la v912 la banda entera salió con el renglón de «banda
+completa fuera», así que la tira no podía estar. La guarda de última caja de la
+v913 impide que la banda muera entera; **pero la caja de las estampas puede
+seguir cediendo sola**, y con imágenes de verdad pesa lo suficiente para que
+sea el caso probable a esa escala.
+
+Queda medido en las dos direcciones, que es lo que faltaba:
+
+* en la hoja SUELTA la caja se compone con su tira;
+* en el documento apretado cede, **y queda declarada**.
+
+### Dos cosas mías, las dos por medir mal
+
+* **El cortador de caja anclaba en el título pelado.** `indexOf('Cómo cambió
+  el sitio')` encuentra el nombre antes en el pie de método, en la línea de lo
+  que cedió y en el inventario de la banda, así que el trozo que cortaba no
+  era la caja y la tira salía vacía con las imágenes puestas. Es la lección de
+  la v854 —buscar DENTRO de la caja, con el ancla en el `<h2>`— y la volví a
+  cometer. Se vio instrumentando, no leyendo: la caja estaba en el documento y
+  mi lector no la encontraba.
+* **Una aserción que se puso roja por material más rico.** «Y sigue
+  componiéndose» miraba el documento apretado; con estampas la caja cede ahí
+  con todo derecho. Se apunta a la hoja suelta, que es donde vive su
+  afirmación, **y se agrega la medición del apretón**, que es información
+  nueva. Más precisa, no más laxa.
+
+### Lo que sigue sin poderse medir desde acá
+
+Si en una corrida REAL —sector de verdad y serie satelital descargada— las
+imágenes llegan. El proxy de esta máquina bloquea la descarga, igual que
+Overpass y `ags.esri.co`. Lo que sí queda cerrado es que, si llegan, el panel
+las dibuja; y que si no aparecen en el papel con datos buenos, la causa a
+mirar es la cesión y no el cableado.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

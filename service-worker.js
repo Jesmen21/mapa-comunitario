@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v916-dos-premisas-medidas-y-la-piramide-guardada';
+const URBIS_CACHE = 'urbis-v917-la-tira-de-estampas-medida-y-lo-que-el-apreton-le-hace';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -272,7 +272,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   await pg.goto(E.ESTATICO + '/index.html?app=educativo', { waitUntil: 'domcontentloaded' });
   await E.esperarLaApp(pg);
   const r = await pg.evaluate(async (D) => {
-    const { C, POL, LOTE } = D, o = {}, esperar = ms => new Promise(x => setTimeout(x, ms));
+    const { C, POL, LOTE, PNG_LISO } = D, o = {}, esperar = ms => new Promise(x => setTimeout(x, ms));
     window.URBIS_CONFIG.ANALISIS.API = window.__URBIS_MOTOR;
     window.map.setView([C.lat, C.lng], 15); await esperar(500);
     const A = window.URBIS_PC_ANALISIS, R = window.URBIS_PC_RECON;
@@ -492,9 +492,24 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        y lo único que se ejercitaba era la casilla de la otra lámina — que es
        justo la divergencia que la v911 unificó. Cinco estampas, como las que
        `aniosDe` produce de 2014 a 2026 con paso 3. */
+    /* LA TIRA DE ESTAMPAS PIDE `imagen`, Y EL FIXTURE NO LA TRAÍA (v917).
+       ────────────────────────────────────────────────────────────────────
+       Llegó midiendo el PDF de la v914: la caja «Cómo cambió el sitio»
+       componía en las cuatro hojas y con CERO `<img>`. La causa no era la
+       cesión ni el cableado —`evolucionImpresa` dibuja la tira con
+       `pasos.filter(p => p.ok && p.imagen)`— sino que estos pasos llevaban
+       `ok` y `medida` y ninguna imagen, así que el filtro devolvía vacío y
+       solo salían la tabla y las frases.
+
+       Es la vigesimosegunda vez que el material no puede producir lo que la
+       comprobación dice medir, y acá importaba el doble: la pregunta que
+       había sobre la mesa era si el panel está cableado a la banda, y con
+       este fixture no se podía contestar ni que sí ni que no. */
+    var ESTAMPA = 'data:image/png;base64,' + PNG_LISO;
     var EVO_SERIE = { wayback: {
       pasos: [2014, 2017, 2020, 2023, 2026].map(function (a, i) {
-        return { anio: a, ok: true, medida: { verde: 38.4 - i * 1.8, duro: 44.1 + i * 2.35 } };
+        return { anio: a, ok: true, imagen: ESTAMPA, fecha: a + '-06-15',
+                 medida: { verde: 38.4 - i * 1.8, duro: 44.1 + i * 2.35 } };
       }),
       tendencia: {
         desde: 2014, hasta: 2026, aniosUsados: 5,
@@ -506,6 +521,12 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        ella no distingue una versión de la otra. Lo que decidía el inventario
        —y por tanto `ordenDeSacrificio`— es lo que estaba partido. */
     o.serieEnA = R.laminaDoble({ clima: CLIMA, evo: EVO_SERIE });
+    o.serieFueraDoc = ((R.estado() || {}).pliegoFuera || []).slice();
+    /* La hoja A SUELTA con la serie: es la corrida SIN apretar, que es la
+       base contra la que se juzga cualquier cesión (v911). Acá es donde se
+       ve si la tira se dibuja; si se mirara solo el documento compuesto, un
+       panel ausente puede serlo por dos razones y el papel no las distingue. */
+    o.serieSuelta = R.laminaA({ hoja: 'A', clima: CLIMA, evo: EVO_SERIE });
     /* Y apretada: con el inventario leyendo `S.evo` la caja se componía pero
        quedaba FUERA de la lista de candidatos —`ordenDeSacrificio` la daba por
        no lista—, así que era inmune por accidente. Eso es lo que distingue
@@ -623,7 +644,7 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     o.conFranja = R.laminaDoble({ pruebaDeFixture: true });
 
     return o;
-  }, { C, POL, LOTE });
+  }, { C, POL, LOTE, PNG_LISO: E.pngLiso(8, 90, 120, 80).toString('base64') });
 
   /* El documento montado a tamaño real: las dos hojas, cada una con su
      reducción, medidas en milímetros de papel. */
@@ -2919,10 +2940,59 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   /* Guarda, no afirmación nueva: la caja se componía en las dos versiones
      —el cuerpo siempre leyó `o.evo`—, así que esto no distingue una de otra.
      Está para que la unificación no se pase de rosca y la apague. */
+  /* ── LA TIRA DE ESTAMPAS, MEDIDA (v917) ──────────────────────────────
+     Reportado midiendo el PDF de la v914: la banda «Cómo cambió el sitio»
+     compone y la TIRA DE FOTOS no sale. Eran dos cosas que se venían
+     mezclando —la banda con sus tres medidas, y el panel de las cinco
+     estampas— y la pregunta era cuál de tres: si cede, si no llegan las
+     imágenes, o si el panel no está cableado a la banda.
+
+     Esta aserción contesta la tercera y la deja contestada: con los pasos
+     trayendo imagen, la tira se dibuja. Si un día deja de hacerlo, el
+     cableado se rompió y se sabe acá, no en un PDF tres tandas después. */
+  {
+    /* El ancla es el `<h2>`, no el título pelado: el nombre de la caja
+       aparece antes en el pie de método, en la línea de lo que cedió y en el
+       inventario de la banda, así que `indexOf(titulo)` corta un trozo que no
+       es la caja y la tira sale vacía. Es la lección de la v854 —buscar
+       DENTRO de la caja— y la volví a cometer acá. */
+    const cajaEvo = (h) => {
+      const d = String(h || ''); const i = d.indexOf('<h2>Cómo cambió el sitio</h2>');
+      if (i < 0) return '';
+      const j = d.indexOf('<section class="caja', i);
+      return d.slice(i, j < 0 ? d.length : j);
+    };
+    const cj = cajaEvo(r.serieSuelta);
+    const figs = (cj.match(/<figure/g) || []).length;
+    const imgs = (cj.match(/<img /g) || []).length;
+    T('con las estampas puestas, la tira las dibuja: el panel SÍ está cableado',
+      figs === 5 && imgs === 5, figs + ' figuras · ' + imgs + ' imágenes');
+    T('y cada una lleva su año, que es lo que la vuelve una serie',
+      ['2014', '2017', '2020', '2023', '2026'].every(a2 => cj.indexOf('>' + a2 + '<') >= 0),
+      (cj.match(/<figcaption>(\d{4})<\/figcaption>/g) || []).join(' ') || 'sin años');
+  }
+  /* Sobre la hoja SUELTA y no sobre el documento compuesto. Con las estampas
+     de verdad —que el fixture no traía hasta la v917— la caja pesa lo bastante
+     para que la bisección la ceda, y eso es la máquina funcionando, no una
+     regresión de `evoDe`. Lo que esta aserción afirma —que la caja se compone
+     cuando hay serie— vive en la corrida sin apretar, que es la base contra la
+     que se juzga cualquier cesión (v911). */
   T('y sigue componiéndose, que es lo que no podía romperse',
-    /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || ''),
+    /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieSuelta || ''),
+    /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieSuelta || '')
+      ? 'compuesta en la hoja suelta' : 'el inventario la da por no lista con la serie en las opciones');
+  /* Y lo que el APRETÓN le hace, que es lo que el reporte necesitaba saber:
+     con cinco estampas la caja cede, y cede DECLARADA. Un panel que se cae en
+     silencio es lo que la v850 prohíbe y la v911 vigila; acá se comprueba
+     justo para esta caja, que es la que se venía buscando en el papel. */
+  T('y con las estampas pesa: en el documento apretado cede, y queda declarada',
+    !/<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '')
+      ? (r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
+      : true,
     /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '')
-      ? 'compuesta' : 'el inventario la da por no lista con la serie en las opciones');
+      ? 'no cedió en esta composición'
+      : ((r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
+          ? 'cedió y está en pliegoFuera' : 'cedió SIN declararse'));
 
   console.log('\n  -- una banda sin su caja principal lo dice EN la banda (v911) --');
   {

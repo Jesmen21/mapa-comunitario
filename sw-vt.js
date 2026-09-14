@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v916-dos-premisas-medidas-y-la-piramide-guardada';
+const VT_CACHE = 'urbis-vt-v917-la-tira-de-estampas-medida-y-lo-que-el-apreton-le-hace';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
