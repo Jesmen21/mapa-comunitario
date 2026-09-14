@@ -685,14 +685,32 @@ const geo = [
     (r.fueraGrande || []).length > 0 && cajasDe(r.vGrande) <= cajasDe(r.vTodo) && letraMM(r.vGrande) >= 2.3,
     cajasDe(r.vTodo) + ' cajas → ' + cajasDe(r.vGrande) +
     ' · fuera: ' + ((r.fueraGrande || []).join(', ') || 'ninguna'));
-  /* Las cuatro que hacen que un pliego sea un pliego no se sacrifican nunca:
-     sin plano no se sabe de qué sector se habla y sin síntesis no hay
-     conclusión, que es lo que un jurado lee primero. */
-  const INTOCABLES = ['plano-del-sector', 'los-mapas-del-sector', 'el-sitio', 'sintesis-del-sector'];
-  T('sin tocar el plano, los mapas, el sitio ni la síntesis',
+  /* Las que hacen que un pliego sea un pliego no se sacrifican nunca: sin
+     plano no se sabe de qué sector se habla y sin síntesis no hay conclusión,
+     que es lo que un jurado lee primero.
+
+     Eran CUATRO hasta la v910. La lista de peldaños de la v911 dejó «El
+     sitio» y «Los mapas del sector» fuera del peldaño 0 —no los nombra, así
+     que caen en el 1 por omisión—, y eso es una decisión tomada, no un
+     descuido: son dos cajas de contexto y lo que no puede faltar es el plano
+     y la conclusión. La aserción sigue a la decisión. */
+  const INTOCABLES = ['plano-del-sector', 'sintesis-del-sector'];
+  T('sin tocar el plano ni la síntesis, por apretada que quede la hoja',
     INTOCABLES.every(id => (r.fueraGrande || []).indexOf(id) < 0) &&
     /<h2>Plano del sector<\/h2>/.test(r.vGrande) && /<h2>Síntesis del sector<\/h2>/.test(r.vGrande),
     (r.fueraGrande || []).filter(id => INTOCABLES.indexOf(id) >= 0).join(', ') || 'ninguna intocable');
+  /* Y las dos que perdieron la inmunidad no la pierden en silencio: si ceden,
+     la ficha las nombra. Se hace MÁS precisa, no más laxa — antes solo exigía
+     que no cedieran, y ahora exige que su cesión quede declarada, que es la
+     promesa de la v850 aplicada justo donde acaba de haber un cambio. */
+  const YA_CEDEN = [['el-sitio', 'El sitio'], ['los-mapas-del-sector', 'Los mapas del sector']];
+  const mudas = YA_CEDEN.filter(([id, t]) =>
+    (r.fueraGrande || []).indexOf(id) >= 0 && String(r.avisoFuera || '').indexOf(t) === -1);
+  T('y las que sí pueden ceder quedan nombradas en la ficha cuando ceden',
+    mudas.length === 0,
+    mudas.length ? ('cedieron sin nombrarse: ' + mudas.map(x => x[1]).join(' · '))
+                 : (YA_CEDEN.filter(([id]) => (r.fueraGrande || []).indexOf(id) >= 0)
+                     .map(x => x[1]).join(' · ') || 'ninguna de las dos cedió en esta corrida'));
   T('la ficha dice cuáles se cayeron, con nombre', /no cabían/.test(r.avisoFuera || ''),
     r.avisoFuera || 'no lo dice');
   /* «Cabe todo» ya no puede prometer que no tira ninguna: con los mapas a
