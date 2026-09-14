@@ -4980,7 +4980,7 @@ La octava —la concordancia— no falla contra la v906 por no existir el panel
 que la produce. Es una guarda contra el defecto que esta misma tanda cometió,
 no una afirmación nueva.
 
-## Toda la aplicación habla de usted (v908)
+## Toda la aplicación habla de usted (v909)
 
 §9 del pliego de ajustes v2, en la mitad que la v903 dejó pendiente con su
 número: «Los 209 casos del resto de la aplicación… la decisión está tomada,
@@ -5151,7 +5151,7 @@ actual. Todas se actualizaron al texto de ahora.
 La octava, `tvision`, **no citaba nada**: se cayó por el `activa` de arriba, y
 es la única de las ocho que denunciaba un fallo de verdad.
 
-### Demostrado contra la v907
+### Demostrado contra la v907 (publicada como v909)
 
 **376 denuncias en 35 archivos**, con archivo y línea: «js/02-auth-roles.js:192
 tu · …:195 Estás · js/05:385 TU…». Cero después. Y la comprobación del
