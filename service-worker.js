@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v905-el-pdf-traia-una-hoja';
+const URBIS_CACHE = 'urbis-v906-una-sola-fuente-por-magnitud';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -157,6 +157,17 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     o.sin = R.sintesisDelSector ? R.sintesisDelSector() : null;
     o.accesibilidad = (R.estado ? R.estado() : {}).accesibilidad || {};
 
+    /* §10 (v906) · el conteo de edificios TAL COMO LA FICHA lo imprime, para
+       poder cruzarlo con el de la lámina. Este sector es el único de la
+       batería que puede producir el defecto: trae sesenta casas como PUNTO
+       —que la consulta de usos ve y la del trazado no pide— y treinta y seis
+       huellas con sus pisos, así que hasta la v905 la ficha se quedaba con la
+       lista MAYOR y la lámina con la que trajera pisos, y las dos imprimían
+       una cifra distinta bajo el mismo nombre. En el sector de
+       `tdoslaminas` las dos reglas coinciden y esto habría pasado en verde
+       por no tener nada que rechazar. */
+    o.fichaTexto = (H().textContent || '').replace(/\s+/g, ' ').trim();
+
     const bl = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
     if (bl) { bl.click(); await esperar(1400); }
     o.doc = capturado; capturado = '';
@@ -322,6 +333,40 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
   T('y no concluye «frente roto» sobre una cuadra que nadie mapeó',
     !!pSin && !/frente roto|cerrar la cuadra/.test(pSin.v + ' ' + pSin.l),
     pSin ? (pSin.v + ' · ' + pSin.l).slice(0, 110) : '—');
+
+  console.log('\n  -- §10 · una sola fuente por magnitud: los edificios --');
+  /* «Es el mismo dato contado dos veces en el mismo código». Este sector es
+     el único de la batería que puede producirlo: trae SESENTA casas como
+     punto —que la consulta de usos ve y la del trazado no pide, porque pide
+     `way` y `relation`— y TREINTA Y SEIS huellas con sus pisos. Hasta la v905
+     la ficha se quedaba con la lista mayor (60, ninguna con pisos) y la
+     lámina con la que trajera pisos (36, todas con pisos), así que las dos
+     imprimían una cifra distinta bajo el mismo nombre sobre el mismo sector.
+
+     En el sector de `tdoslaminas` las dos reglas coinciden, así que allá esto
+     habría pasado en verde por no tener nada que rechazar. */
+  const nDe = (t, re) => { const m = new RegExp(re).exec(String(t || '')); return m ? Number(m[1].replace(/\./g, '')) : null; };
+  const fich = String(r.fichaTexto || '');
+  const edFicha = nDe(fich, 'Se cuentan los ([\\d.]+) edificios') ||
+                  nDe(fich, 'Se encontraron ([\\d.]+) edificio') ||
+                  nDe(fich, '([\\d.]+) edificios en el área');
+  const edLamina = nDe(txt, 'Se cuentan los ([\\d.]+) edificios') ||
+                   nDe(txt, 'de ([\\d.]+) edificios traen la altura');
+  T('la ficha imprime un conteo de edificios', edFicha != null, edFicha == null ? 'no lo imprime' : edFicha);
+  T('la lámina imprime un conteo de edificios', edLamina != null, edLamina == null ? 'no lo imprime' : edLamina);
+  T('y las dos cuentan LOS MISMOS, que es lo que §10 pide',
+    edFicha != null && edLamina != null && edFicha === edLamina,
+    'ficha ' + edFicha + ' · lámina ' + edLamina);
+  /* Y la otra mitad: que el conteo diga de dónde salió y qué no vio la otra
+     consulta. Sin esto el arreglo podría ser callar una de las dos, y un
+     número sin procedencia es lo que la v867 prohíbe. */
+  T('y el conteo declara de qué consulta sale',
+    /Se cuentan los [\d.]+ edificios que trae la consulta del (trazado|usos)/.test(txt),
+    /Se cuentan[^.]{0,120}\./.exec(txt) ? /Se cuentan[^.]{0,120}\./.exec(txt)[0] : 'no lo dice');
+  T('y nombra los que la otra consulta ve y esta no, con su razón',
+    /La consulta de usos ve [^.]*\b(building=yes|sin huella)/.test(txt) ||
+    /mapeados como PUNTO, sin huella/.test(txt),
+    /La consulta de usos ve[^.]{0,150}\./.exec(txt) ? /La consulta de usos ve[^.]{0,150}\./.exec(txt)[0].slice(0, 130) : 'no los nombra');
 
   T('y la página no soltó errores', err.length === 0, err.slice(0, 2).join(' · ') || 'ninguno');
   console.log('\n  ' + (mal ? mal + ' comprobaciones fallaron' : 'todo en verde'));

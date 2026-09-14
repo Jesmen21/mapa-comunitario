@@ -75,8 +75,25 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     body:fs.readFileSync(S+'node_modules/chart.js/dist/chart.umd.js','utf8')}));
   await ctx.route(/locationiq\.com/, r=>r.fulfill({status:200,contentType:'application/json',
     body:JSON.stringify({address:{city:'Cúcuta',state:'Norte de Santander',country:'Colombia',suburb:'La Playa'}})}));
-  await ctx.route(/ags\.esri\.co/, r=>r.fulfill({status:200,contentType:'application/json',
-    body:JSON.stringify({features:[{attributes:{TOTAL:3045,N:42}}]})}));
+  /* El doble del DANE contesta DOS cosas distintas (v907): la suma de siempre,
+     y —cuando la consulta pide geometría— las manzanas con su estrato. Sin la
+     segunda, el paso nuevo de «medir todo» caería SIEMPRE y la comprobación
+     pasaría diciendo que lo intentó, que no es lo que dice medir. Es la
+     lección de la v876 con `COD_DANE_MPIO`, otra vez: un doble que no sabe
+     contestar la consulta nueva prueba la rama del fallo y nada más. */
+  const anillo=(dx,dy,l)=>[[[P(dx,dy).lng,P(dx,dy).lat],[P(dx+l,dy).lng,P(dx+l,dy).lat],
+    [P(dx+l,dy+l).lng,P(dx+l,dy+l).lat],[P(dx,dy+l).lng,P(dx,dy+l).lat],
+    [P(dx,dy).lng,P(dx,dy).lat]]];
+  const MANZANAS=[['Estrato 2',-200,-200],['Estrato 3',-60,-200],['Estrato 1',-200,-60],
+                  ['Sin Estrato',-60,-60]].map(([e,dx,dy])=>({
+    attributes:{ESTRATO_PREDOMINANTE:e}, geometry:{rings:anillo(dx,dy,120)}}));
+  await ctx.route(/ags\.esri\.co/, r=>{
+    const u=r.request().url()+(r.request().postData()||'');
+    const pideGeo=/returnGeometry=true|returnGeometry%3Dtrue/i.test(u);
+    r.fulfill({status:200,contentType:'application/json',
+      body:JSON.stringify(pideGeo?{features:MANZANAS}
+                                 :{features:[{attributes:{TOTAL:3045,N:42}}]})});
+  });
 
   /* El orden REAL en el que llegan las peticiones. Es la única forma de
      comprobar que la cadena va en serie: en paralelo, todas llegarían juntas
@@ -201,6 +218,20 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
       const c=H().querySelector('.pcr-medir');
       return c?(c.textContent||'').replace(/\s+/g,' ').trim():'';
     })();
+    /* v907 · lo medido, PUESTO en el mapa. Se lee del estado y no del DOM:
+       una polilínea de Leaflet dibujada en un lienzo no tiene nodo propio, así
+       que «hay una capa» no se puede comprobar con un `querySelector`. */
+    o.capas=(R.estado?R.estado():{}).capasEnMapa||{};
+    o.estratosMedidos=(R.estado?R.estado():{}).estratos||0;
+
+    /* Y «Analizar otro sector» tiene que dejar el mapa LIMPIO. Hasta la v906
+       soltaba las cuentas y dejaba dibujado el sector anterior: quien tocaba
+       el botón y no llegaba a correr el siguiente análisis se quedaba mirando
+       el viejo sin saberlo, y peor, marcaba el centro nuevo encima. */
+    const otro=H().querySelector('[data-pcr="otro"]');
+    o.hayOtro=!!otro;
+    if(otro){ otro.click(); await esperar(700); }
+    o.capasTrasOtro=(R.estado?R.estado():{}).capasEnMapa||{};
     return o;
   },{C,POL});
 
@@ -213,15 +244,24 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
 
   console.log('\n  -- antes de medir --');
   T('el bloque está arriba de la ficha', !!r.antes && r.antes.hayBoton===true);
-  T('y dice qué falta, una por una', (r.antes.pasos||[]).length===5,
-    (r.antes.pasos||[]).map(p=>p.nombre).join(' · '));
+  /* Cuántos son NO se escribe acá. Estaba puesto a 5 y la v907 añadió las
+     manzanas por estrato: una constante del código copiada en la
+     comprobación se pone roja por un cambio que no tiene nada que ver con lo
+     que mide (la lección de la v890). Lo que sí es invariante: que los nombre
+     uno por uno, que sean los de verdad, y que la cuenta de abajo cuadre con
+     esta lista. */
+  const PASOS=(r.antes.pasos||[]).map(p=>p.nombre);
+  T('y dice qué falta, una por una', PASOS.length>=5 &&
+    /trazado/i.test(PASOS.join(' ')) && /foto satelital/i.test(PASOS.join(' ')),
+    PASOS.join(' · '));
   T('todas apagadas, porque no se ha medido nada',
     (r.antes.pasos||[]).every(p=>!p.on));
   T('avisa de lo que tarda y de que se puede parar',
     /cerca de un minuto/.test(r.antes.texto) && /se puede parar/.test(r.antes.texto));
 
   console.log('\n  -- mientras corre --');
-  T('se ve el paso que va y de cuántos', !!r.durante && /\d+ de 5/.test(r.durante.texto),
+  T('se ve el paso que va y de cuántos',
+    !!r.durante && new RegExp('\\d+ de ' + PASOS.length).test(r.durante.texto),
     r.durante?r.durante.texto.slice(0,70):'no se vio');
   T('con barra y con botón de parar',
     !!r.durante && r.durante.hayBarra===true && r.durante.hayParar===true);
@@ -258,8 +298,44 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   T('y nombra lo que sí midió', /El trazado/.test(r.aviso||''), r.aviso);
   T('diciendo que con el clima no se pudo', /No se pudo con .*clima/i.test(r.aviso||''),
     r.aviso);
-  T('después queda marcado lo medido',
-    /Todo medido|Falta medir/.test(r.despues||''), (r.despues||'').slice(0,90));
+  /* El panel de después. Se apretó en la v907: antes bastaba con que dijera
+     «Todo medido» o «Falta medir», y con el clima caído lo que hay que ver es
+     que NOMBRE lo que falta —si no, quien lo lee no sabe qué volver a pedir—. */
+  T('después el panel nombra lo que falta, que es el clima',
+    /Medir el sector entero|Todo medido/.test(r.despues||'') && /clima/i.test(r.despues||''),
+    (r.despues||'').slice(0,110));
+
+  console.log('\n  -- v907 · y queda DIBUJADO en el mapa --');
+  /* «Que me analice todo, todo, todo» y «que me muestre una vez en el mapa la
+     línea de los cortes topográficos». Medir sin dibujar deja cinco
+     interruptores repartidos por la ficha, que es justo lo que el botón viene
+     a quitar. */
+  T('las manzanas por estrato entran en la cadena', r.estratosMedidos > 0,
+    r.estratosMedidos + ' manzanas');
+  T('los cortes topográficos quedan dibujados', r.capas.cortes===true,
+    JSON.stringify(r.capas));
+  T('y las curvas de nivel', r.capas.curvas===true);
+  T('y los llenos y vacíos', r.capas.llenos===true);
+  T('y la jerarquía de vías', r.capas.vias===true);
+  /* Las manzanas por estrato se MIDEN y no se encienden a la vez: son un
+     relleno de área como los llenos y vacíos y uno tapa al otro. Se dice, con
+     su interruptor al lado —la decisión de la v880 con el ámbar y el verde—,
+     y esta aserción es la que impide «arreglarlo» encendiéndolo todo. */
+  T('y las manzanas por estrato, que van al fondo', r.capas.estratos===true,
+    JSON.stringify(r.capas));
+  T('y el panel nombra las cinco y dónde se apagan',
+    /cortes topográficos/i.test(r.textoFinal||'') && /manzanas por estrato/i.test(r.textoFinal||'') &&
+    /Capas del mapa/i.test(r.textoFinal||''),
+    (/Al terminar quedan[^.]{0,190}/i.exec(r.textoFinal||'')||['no lo dice'])[0].slice(0,170));
+  T('y el aviso nombra lo que quedó puesto', /En el mapa: .*cortes topogr/i.test(r.aviso||''),
+    r.aviso);
+
+  console.log('\n  -- v907 · analizar otro sector deja el mapa limpio --');
+  T('el botón de analizar otro sector está', r.hayOtro===true);
+  T('y al tocarlo no queda dibujada ninguna capa del sector anterior',
+    !r.capasTrasOtro.cortes && !r.capasTrasOtro.curvas && !r.capasTrasOtro.llenos &&
+    !r.capasTrasOtro.vias && !r.capasTrasOtro.estratos && !r.capasTrasOtro.puntos,
+    JSON.stringify(r.capasTrasOtro));
 
   console.log('');
   T('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

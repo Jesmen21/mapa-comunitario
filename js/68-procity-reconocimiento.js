@@ -1852,6 +1852,123 @@
         .sort(function (a, b) { return b.n - a.n; })
     };
   }
+  /* ── §10 (v906) · UNA FUENTE POR MAGNITUD: los edificios ───────
+     El mismo dato contado dos veces en el mismo código, y las dos cuentas
+     impresas a un palmo una de otra. Los edificios llegan por DOS consultas
+     y ninguna de las dos está mal:
+
+       · la de USOS pide `["building"!="yes"]` —deja fuera el valor genérico,
+         que es el más común de todos— y trae el CENTRO de cada uno;
+       · la del TRAZADO los pide todos, con su HUELLA, y el módulo se queda
+         con los que tienen el centroide dentro del área dibujada.
+
+     Así que la del trazado es mayor casi siempre, y la diferencia no es un
+     error: son los mapeados como `building=yes`. Lo que sí era un error es
+     que cada panel eligiera por su cuenta. La ficha se quedaba con la MAYOR
+     de las dos; la lámina, con la que trajera pisos —`trz.alturas.conDato ?
+     trz.alturas : st.alturas`—, así que en un sector con huellas mapeadas y
+     sin `building:levels` la ficha decía una cifra y la lámina otra bajo el
+     mismo nombre. Es la divergencia de la v879: dos rutas de cálculo para la
+     misma cantidad no divergen el día que se escriben, divergen la tanda
+     siguiente, cuando una de las dos mejora.
+
+     Ahora hay una, dice de dónde salió y dice cuántos no vio la otra. */
+  function conteoDeEdificios(st, trz) {
+    var t = trz || S.trazado || null;
+    var au = (st && st.alturas) || null;
+    var at = (t && t.alturas) || null;
+    var nu = (au && Number(au.edificios)) || 0;
+    var nt = (at && Number(at.edificios)) || 0;
+    if (!nu && !nt) return null;
+    /* Manda el TRAZADO cuando se midió, y no la mayor de las dos. Estuve a
+       punto de poner «la mayor» y `tsinmapear` lo habría dejado pasar al
+       revés: su sector trae sesenta casas como PUNTO —que la consulta de usos
+       ve y la del trazado no pide, porque pide `way` y `relation`— y treinta
+       y seis huellas con sus pisos. Con «la mayor» ganaban las sesenta y la
+       hoja perdía las treinta y seis alturas medidas.
+
+       El trazado manda por contenido y no por tamaño: está recortado contra
+       el área DIBUJADA —la de usos llega por el círculo de Overpass—, trae la
+       huella y por tanto el área construida, y no deja fuera `building=yes`,
+       que es el valor más común de todos. Sin trazado medido queda la de
+       usos, y se dice que es ella. */
+    var deTrazado = nt > 0;
+    var a = deTrazado ? at : au;
+    var otra = deTrazado ? nu : nt;
+    var ll = (t && t.llenos) || null;
+    return {
+      a: a,
+      n: Number(a.edificios) || 0,
+      conDato: Number(a.conDato) || 0,
+      sinDato: Number(a.sinDato) || 0,
+      maximo: Number(a.maximo) || 0,
+      cobertura: Number(a.cobertura) || 0,
+      niveles: a.niveles || [],
+      /* Con la huella medida, cuántos de esos edificios llegaron con forma.
+         Es el otro descarte de esta magnitud y va con ella, no suelto en el
+         panel de al lado. */
+      conGeometria: deTrazado && ll ? Number(ll.conGeometria) || 0 : null,
+      fuente: deTrazado ? 'trazado' : 'usos',
+      fuenteTexto: deTrazado
+        ? 'la consulta del trazado, que los trae todos con su huella'
+        : 'la consulta de usos, que deja fuera los mapeados como «building=yes»',
+      otraN: otra,
+      /* La frase que hay que imprimir donde el conteo es el sujeto. No va en
+         cada panel —repetirla es lo que §20 prohíbe—: va donde se cita la
+         cifra como total del sector. */
+      nota: function () {
+        var L = 'Se cuentan los <b>' + (Number(a.edificios) || 0).toLocaleString('es-CO') +
+          '</b> edificios que trae ' + (deTrazado
+            ? 'la consulta del trazado, que los pide todos con su huella'
+            : 'la consulta de usos') + '.';
+        if (deTrazado && otra > 0 && otra < nt)
+          L += ' La consulta de usos ve solo <b>' + otra.toLocaleString('es-CO') + '</b>: deja fuera ' +
+            'los mapeados como «building=yes», que es el valor más común de todos. Los ' +
+            (nt - otra).toLocaleString('es-CO') + ' de diferencia no son un error de cuenta: ' +
+            'son los que no dicen de qué son.';
+        else if (deTrazado && otra > nt)
+          L += ' La consulta de usos ve <b>' + otra.toLocaleString('es-CO') + '</b>, pero son otros: ' +
+            'los mapeados como PUNTO, sin huella. No entran acá porque de un punto no sale ' +
+            'superficie construida, y contarlos junto a las huellas mezclaría dos cosas.';
+        else if (!deTrazado)
+          L += ' Este conteo deja fuera los mapeados como «building=yes», que suelen ser la ' +
+            'mayoría. Midiendo el trazado del sector se cuentan todos.';
+        return L;
+      }
+    };
+  }
+
+  /* ── §10a (v906) · UNA FUENTE POR MAGNITUD: los usos ─────────────
+     El otro dato contado dos veces. El total del sector es `st.total` y lo
+     citan el encabezado, el plano y los anillos; el reparto por categoría,
+     las propuestas y la FODA sumaban por su cuenta los grupos SIN «otro» —el
+     uso que el motor no pudo clasificar— y de ahí salía el segundo número.
+
+     Los dos son correctos y miden cosas distintas, así que no se arregla
+     metiendo «otro» en la tabla ni bajando el total: se arregla con una sola
+     cuenta que los devuelva LOS DOS con su nombre, para que ningún panel
+     vuelva a fabricar el suyo. La v903 ya declaraba la diferencia en la
+     tabla de categorías; lo que faltaba era que la cuenta fuera una. */
+  function conteoDeUsos(st) {
+    var pg = (st && st.porGrupo) || {};
+    var clas = Object.keys(pg).filter(function (k) { return k !== 'otro'; })
+      .reduce(function (a, k) { return a + (Number(pg[k]) || 0); }, 0);
+    var total = Number(st && st.total) || 0;
+    /* El total manda: si por lo que sea los grupos suman más que él, lo
+       clasificado no puede pasar del total —una parte mayor que el todo se
+       imprime igual de bien que una cifra buena, y no se ve—. */
+    if (clas > total) clas = total;
+    return {
+      total: total,
+      clasificados: clas,
+      sinClasificar: Math.max(0, total - clas),
+      /* Por qué sobran. Va con la cifra y no en el panel de al lado. */
+      razon: 'llevan etiquetas que el motor no pudo clasificar en ninguna categoría, ' +
+        'y se cuentan en el total del sector pero no en el reparto, porque una barra de ' +
+        '«sin clasificar» no dice qué hay'
+    };
+  }
+
   /* ── La media de pisos, una sola cuenta para las dos láminas (v879) ──
      El panel «Potencial edificatorio» de la lámina A la sacaba SOLO de
      OpenStreetMap, y el cruce del cierre de la lámina B prefería la contada
@@ -1868,7 +1985,10 @@
   function mediaDePisos(trz, st) {
     var campo = null;
     try { campo = alturasDeCampo(); } catch (e) { campo = null; }
-    var al = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : (st && st.alturas);
+    /* §10 (v906) · la MISMA fuente que todo lo demás. Tenía su propia regla
+       —la que trajera pisos— y por eso divergía del resto de la hoja. */
+    var ce = conteoDeEdificios(st, trz);
+    var al = ce ? ce.a : null;
     if (campo && campo.media != null) {
       return { media: campo.media, aproximada: false, fuente: 'campo',
                maximo: Math.max(Number(campo.maximo) || 0, (al && Number(al.maximo)) || 0),
@@ -3363,7 +3483,10 @@
   }
 
   function alturasImpresas(st) {
-    var a = st.alturas;
+    /* §10 (v906) · el mismo conteo que la ficha y la lámina: el informe
+       imprimía la muestra de la consulta de usos bajo el mismo rótulo. */
+    var ceA = conteoDeEdificios(st, S.trazado);
+    var a = ceA ? ceA.a : null;
     var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
     var campo = c
       ? '<h3>Contado en campo, piso por piso</h3><table>' +
@@ -5345,22 +5468,19 @@ function donaHTML(datos, colorDe, nombreDe) {
          encabezado: los dos números son correctos y miden cosas distintas.
          Se arregla diciéndolo, que es lo que el pliego pide con esas
          palabras: «si hay registros descartados, decir cuántos y por qué». */
-      var sumaTabla = filas.reduce(function (a, x) { return a + x.n; }, 0);
-      var fueraTabla = Math.max(0, (Number(st.total) || 0) - sumaTabla);
+      var cu = conteoDeUsos(st);
+      var sumaTabla = cu.clasificados, fueraTabla = cu.sinClasificar;
       return dona(filas, colorDe, nombreDe) +
       '<p class="lee-min">Convenciones de los mapas de usos: cada punto del plano lleva el ' +
       'color de su categoría.</p>' +
       barras(filas.slice(0, 8), nombreDe, function (x) { return x.n; },
       function (x) { return x.n; }, colorDe) +
       '<p class="nota">Esta tabla suma <b>' + sumaTabla.toLocaleString('es-CO') + '</b> de los <b>' +
-      (Number(st.total) || 0).toLocaleString('es-CO') + '</b> usos que cuenta el sector' +
+      cu.total.toLocaleString('es-CO') + '</b> usos que cuenta el sector' +
       (fueraTabla
         ? ': ' + (fueraTabla === 1
-            ? 'el que falta lleva etiquetas que el motor no pudo clasificar en ninguna categoría'
-            : 'los ' + fueraTabla.toLocaleString('es-CO') + ' que faltan llevan etiquetas que el motor ' +
-              'no pudo clasificar en ninguna categoría') +
-          ', y se cuentan en el total del sector pero no acá, porque una barra de «sin clasificar» ' +
-          'no dice qué hay.'
+            ? 'el que falta ' + cu.razon.replace(/^llevan/, 'lleva')
+            : 'los ' + fueraTabla.toLocaleString('es-CO') + ' que faltan ' + cu.razon) + '.'
         : ', que son todos.') + '</p>';
       })(), 'g3') +
 
@@ -5488,7 +5608,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       
       caja('Alturas de lo construido',
       (function () {
-      var a = (trz && trz.alturas && trz.alturas.conDato) ? trz.alturas : st.alturas;
+      /* §10 (v906) · la MISMA fuente que la ficha, «El grano» y la media de
+         pisos. Tenía su propia regla y por eso divergió. */
+      var ce = conteoDeEdificios(st, trz);
+      var a = ce ? ce.a : null;
       var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
       if ((!a || !a.conDato) && !c) return '';
       var TONO = { '1': '#BFE3F7', '2': '#5BB4E5', '3': '#0A6F9E', '+3': '#0B3A57' };
@@ -5498,7 +5621,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? barras(a.niveles, function (x) { return x.etiqueta; },
         function (x) { return x.pct + '%'; }, function (x) { return x.pct; }, tono) +
         '<p class="nota">' + a.conDato + ' de ' + a.edificios + ' edificios traen la altura ' +
-        'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos.</p>'
+        'registrada (' + a.cobertura + '%). El más alto: ' + a.maximo + ' pisos. ' + ce.nota() + '</p>'
       : '';
       /* Y lo contado en campo, piso por piso: cuando OpenStreetMap no trae
       nada, es la única altura que hay; cuando trae, es la que se midió de
@@ -5580,6 +5703,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (function () {
       if (!trz) return '';
       var mo = trz.morfologia || {}, ll = trz.llenos || {};
+      var ceG = conteoDeEdificios(st, trz);
       var mz = mo.manzanas || null;
       var g = granoDeManzana(mo);
       var huella = (ll.conGeometria && ll.areaConstruidaM2)
@@ -5592,7 +5716,11 @@ function donaHTML(datos, colorDe, nombreDe) {
              'una palabra falsa.</p>' : '') +
         (huella != null
           ? fila('Huella construida media', huella.toLocaleString('es-CO') + ' m²') +
-            fila('Edificios con forma medida', (ll.conGeometria || 0) + ' de ' + (ll.edificios || 0))
+            /* §10 (v906) · el TOTAL sale del conteo único, no de `ll` por su
+               cuenta: es la misma magnitud que imprimen las alturas dos cajas
+               más arriba, y hasta la v905 podían salir distintas. */
+            fila('Edificios con forma medida',
+                 (ll.conGeometria || 0) + ' de ' + ((ceG && ceG.n) || ll.edificios || 0))
           : '') +
         (g
           ? '<p class="lee">La manzana de este sector mide del orden de <b>' + g.lado + ' m</b> de ' +
@@ -7431,7 +7559,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           case 'forma':
             var ll = trz && trz.llenos;
             if (ll && ll.pctLleno != null) partes.push(num(ll.pctLleno) + ' % del suelo construido');
-            var al = (trz && trz.alturas) || st.alturas, camp = null;
+            var ceF = conteoDeEdificios(st, trz);
+            var al = ceF ? ceF.a : null, camp = null;
             try { camp = alturasDeCampo(); } catch (e1) {}
             if (camp && camp.media) partes.push(num(camp.media) + ' pisos de media, contados en campo');
             else if (al && al.media) partes.push(num(al.media) + ' pisos de media registrados');
@@ -10358,6 +10487,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         return;
       }
       if (acc === 'medir-todo') { medirTodo(false); return; }
+      /* Con todo medido, el botón vuelve a dibujarlo: un sector reanudado
+         llega con sus cifras y el mapa limpio (v907). */
+      if (acc === 'medir-dibujar') {
+        var ps = dibujarLoMedido();
+        S.aviso = ps.length ? 'En el mapa: ' + ps.join(', ') + '.'
+                            : 'No hay ninguna capa que dibujar todavía.';
+        pintar(); return;
+      }
       if (acc === 'medir-parar') {
         // Poner el estado en null es la señal que mira la cadena entre paso y
         // paso: lo que ya está pedido termina, pero no arranca nada más.
@@ -12085,7 +12222,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         L.push('  ' + (t ? t.nombre : x.id) + ': ' + x.n);
       });
     L.push('');
-    var alt = st.alturas;
+    var ceT = conteoDeEdificios(st, S.trazado);
+    var alt = ceT ? ceT.a : null;
     if (alt && alt.edificios) {
       L.push('ALTURAS DE LO CONSTRUIDO');
       if (!alt.conDato) {
@@ -12620,10 +12758,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        trazado los trae todos. Cuando el estudiante ha medido el trazado, ese
        es el reparto bueno; además así los dos bloques dejan de dar conteos de
        edificios distintos en la misma ficha, que es lo que confunde. */
-    var a = st.alturas;
-    var t = S.trazado && S.trazado.alturas;
-    var deTrazado = !!(t && t.edificios > ((a && a.edificios) || 0));
-    if (deTrazado) a = t;
+    /* §10 (v906) · la regla vive en `conteoDeEdificios` y no acá. La ficha
+       elegía la mayor de las dos y la lámina la que trajera pisos: dos
+       reglas para una magnitud, que es la divergencia de la v879. */
+    var ce = conteoDeEdificios(st, S.trazado);
+    var a = ce ? ce.a : null;
+    var deTrazado = !!(ce && ce.fuente === 'trazado');
     /* Lo contado en campo, piso por piso. Va al final del bloque, y cuando
        OpenStreetMap no trae ninguna altura es lo único que hay para mostrar. */
     var c = (function () { try { return alturasDeCampo(); } catch (e) { return null; } })();
@@ -12672,10 +12812,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'Los otros ' + a.sinDato + ' están sin contar — y contarlos en campo es trabajo del curso.</p>'
         : '<p class="pcr-pista">Casi todos los edificios del área traen su altura registrada, ' +
           'así que el reparto de arriba sí describe el sector.</p>') +
-      (deTrazado
-        ? ''
-        : '<p class="pcr-pista">Este conteo deja fuera los edificios mapeados sin decir de qué son, ' +
-          'que suelen ser la mayoría. <b>Midiendo el trazado del sector</b> se cuentan todos.</p>') +
+      '<p class="pcr-pista">' + ce.nota() + '</p>' +
       campo;
   }
 
@@ -14027,7 +14164,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function faltantesDelSector(st) {
     var trz = S.trazado;
     var lista = [];
-    var alt = (st && st.alturas) || {};
+    var alt = (function () { var c = conteoDeEdificios(st, trz); return (c && c.a) || {}; })();
     var perf = trz && trz.perfil;
     var vi = (trz && trz.vias) || {};
     var ll = (trz && trz.llenos) || {};
@@ -14488,7 +14625,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         falta: 'mida el trazado para tener la malla y las huellas',
         dato: 'el módulo de manzana, y el predio declarado sin dato' },
       { id: 'alturas-de-lo-construido', t: 'Alturas de lo construido', g: 'El suelo',
-        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato) ||
+        /* §10 (v906) · la MISMA condición que usa la caja para devolver vacío,
+           que es la regla de la v857: con dos reglas distintas, el
+           inventario ofrece una caja que la hoja no imprime. */
+        listo: !!((function () { var c = conteoDeEdificios(st, trz); return c && c.conDato; })() ||
                   (function () { try { return !!alturasDeCampo(); } catch (e) { return false; } })()),
         falta: 'mida el trazado o cuente los pisos en la calle',
         dato: (function () {
@@ -14590,7 +14730,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         falta: 'analice el sector', dato: 'la carta solar del sitio' },
 
       { id: 'potencial-edificatorio', t: 'Potencial edificatorio', g: 'El suelo',
-        listo: !!((trz && trz.alturas && trz.alturas.conDato) || (st.alturas && st.alturas.conDato)),
+        listo: !!(function () { var c = conteoDeEdificios(st, trz); return c && c.conDato; })(),
         falta: 'mida el trazado: ningún edificio trae la altura registrada',
         dato: 'lo construido, y la norma declarada sin dato' },
       { id: 'suelo-disponible-real', t: 'Suelo disponible real', g: 'El suelo',
@@ -18399,8 +18539,9 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     // 5 · Lo cultural y comunitario, si no hay nada de eso entre lo clasificado.
     var pg = st.porGrupo || {};
-    var clasificados = Object.keys(pg).filter(function (k) { return k !== 'otro'; })
-      .reduce(function (a, k) { return a + (pg[k] || 0); }, 0);
+    /* §10a (v906) · la misma cuenta que la tabla de categorías y que el
+       encabezado. Se sumaba acá aparte, y de ahí salía el segundo total. */
+    var cUsos = conteoDeUsos(st), clasificados = cUsos.clasificados;
     if (clasificados >= 20 && !Object.keys(pg).some(function (k) { return /cultur|educa/i.test(k) && pg[k] > 0; }))
       pon('cultura', 40, 'ningún uso cultural ni educativo entre ' + clasificados + ' clasificados',
         'entre lo que está clasificado no aparece ningún sitio de reunión que no sea la casa o la tienda; ' +
@@ -18443,8 +18584,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     var datoPropio = function (id) {
       var g = { comercio: 'comercio', cultura: 'cultura', salud: 'salud', vivienda: 'vivienda' }[id];
       if (g && pg[g] != null && clasificados > 0)
+        /* §10a (v906) · el subtotal se nombra CONTRA el total, no suelto. Un
+           «226 clasificados» a un palmo del «229 usos» del encabezado se lee
+           como dos cuentas que no cuadran, y son la misma con y sin los que
+           el motor no pudo clasificar. */
         return { texto: fmt(pg[g] || 0) + ' usos de esta clase entre ' + fmt(clasificados) +
-                        ' clasificados' + porHa(pg[g] || 0),
+                        ' clasificados' + (cUsos.sinClasificar
+                          ? ' de los ' + fmt(cUsos.total) + ' del sector' : '') +
+                        porHa(pg[g] || 0),
                  razon: 'lo que hay mapeado de este uso no señala una carencia; la comparación de cinco lo incluye para que se vea' };
       if (id === 'transporte' && mv && mv.paradasBus > 0 && hab > 0)
         return { texto: fmt(mv.paradasBus) + (mv.paradasBus === 1 ? ' parada mapeada · ' : ' paradas mapeadas · ') +
@@ -18816,7 +18963,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
 
     // ── Lo que falta levantar en campo
-    var al = st.alturas || (trz && trz.alturas);
+    var al = (function () { var c = conteoDeEdificios(st, trz); return c && c.a; })();
     if (al && al.edificios && al.cobertura < 50)
       T('Contar los pisos de los edificios: hoy solo se sabe de una parte',
         al.cobertura + '% con altura registrada');
@@ -20540,6 +20687,16 @@ function donaHTML(datos, colorDe, nombreDe) {
     // Ya es una marca guardada con la ficha: el borrador sobra.
     olvidarTrazoVivo();
     S.intDibujando = false; S.intPts = null; S.intAviso = '';
+    /* Y la hoja vuelve a subir (v906). `int-dibujar` la encoge SOLA —no se
+       marca una manzana sobre un mapa tapado— y ese encogimiento automático
+       tenía que terminar al terminar el dibujo; no lo hacía, y hasta ahora no
+       se notaba **por casualidad**: `pintar` deja la hoja abajo solo si
+       `S.encogida` y además hay alguna capa encendida, y en el recorrido de
+       prueba no había ninguna. Con «medir y dibujar todo» las hay, y entonces
+       se quedaba abajo con la marca recién hecha y sin el panel donde se le
+       escribe la nota. `encogidaAMano` es justo la señal que separa «la bajé
+       yo» de «se bajó sola», y solo se deshace la segunda. */
+    if (!S.encogidaAMano) S.encogida = false;
     soltarMapaInt();
     pintarIntangible(true);
     rehacerUnion();
@@ -24438,7 +24595,16 @@ function donaHTML(datos, colorDe, nombreDe) {
        se cae, todo lo anterior ya está hecho. */
     { id: 'cobertura', nombre: 'La foto satelital', que: 'cobertura del suelo clasificada',
       hecho: function () { return !!S.cobertura; },
-      correr: function () { return analizarCobertura(); } }
+      correr: function () { return analizarCobertura(); } },
+    /* Las manzanas por estrato entran acá en la v907, pedidas así: «que me
+       analice los colores de las manzanas». Estaban solo como interruptor
+       suelto en la pestaña de la gente, que es justo lo que el pedido dice
+       que no quiere —«no quiero estar buscando todo»—. Van al final porque
+       además de medir DIBUJAN, y lo que se dibuja se ve mejor con el resto
+       ya puesto. */
+    { id: 'estratos', nombre: 'Las manzanas por estrato', que: 'el estrato de cada manzana censal',
+      hecho: function () { return !!S.estratos; },
+      correr: function () { return alternarEstratos(); } }
   ];
 
   /* ── Llevárselo a la calle ─────────────────────────────────────────────
@@ -24578,16 +24744,26 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
     }
     if (!faltan.length) {
+      /* Todo medido, y aun así el botón se queda (v907): lo que hace entonces
+         es volver a DIBUJARLO. Un sector medido en otra sesión vuelve con sus
+         cifras y con el mapa en blanco, y ahí «ya está todo medido» sin un
+         botón al lado es una pantalla que no deja hacer nada. */
       return '<div class="pcr-medir">' +
-        '<p class="pcr-conc">Todo medido: trazado, terreno, clima, amenaza y la foto ' +
-        'satelital. Lo que sigue es de la calle —marcar el lote y salir a mirar—.</p>' +
+        '<p class="pcr-conc">Todo medido: ' +
+        esc(PASOS_MEDIR.map(function (p2) { return p2.nombre.replace(/^(El|La|Las|Los) /, ''); }).join(', ')) +
+        '. Lo que sigue es de la calle —marcar el lote y salir a mirar—.</p>' +
+        '<div class="pcr-llevar">' +
+          '<button type="button" data-pcr="medir-dibujar" class="pcr-mini">' +
+            ico('mapa', 16) + 'Dibujarlo todo en el mapa</button>' +
+        '</div>' +
       '</div>';
     }
     return '<div class="pcr-medir">' +
-      '<p class="pcr-lab">Falta medir</p>' +
+      '<p class="pcr-lab">Medir el sector entero</p>' +
       '<p class="pcr-pista">El análisis trae lo que hay; lo demás son mediciones aparte, cada ' +
-      'una a un servicio distinto. Se pueden pedir de a una más abajo, o todas de una vez ' +
-      'acá. Tarda cerca de un minuto y se puede parar.</p>' +
+      'una a un servicio distinto. Se pueden pedir de a una más abajo, o <b>todas de una vez ' +
+      'acá</b> —y al terminar quedan dibujadas en el mapa—. Tarda cerca de un minuto, dice ' +
+      'en qué va y se puede parar.</p>' +
       /* El caso del sector reanudado, dicho donde se va a leer: el trazado
          figura como pendiente y sus cifras están abajo, y sin esta línea eso
          parece un error de la aplicación. */
@@ -24615,8 +24791,18 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="medir-todo" class="pcr-principal">' +
-          ico('destello', 16) + 'Medir todo lo que falta</button>' +
+          ico('destello', 16) + 'Medir y dibujar todo el sector</button>' +
       '</div>' +
+      /* Estuve a punto de dejar las manzanas por estrato medidas y APAGADAS,
+         razonando que dos rellenos de área se tapan uno al otro. Medido, es
+         falso: `pintarEstratos` las manda al fondo con `bringToBack`, así que
+         quedan de base y las huellas encima —que es el dibujo urbano de toda
+         la vida—. La regla de la v863 vale también para las capas de un mapa:
+         una sospecha se comprueba corriendo, no razonando. */
+      '<p class="pcr-pista">Al terminar quedan puestos en el mapa <b>los cortes ' +
+      'topográficos</b>, las curvas de nivel, la jerarquía de vías, los llenos y vacíos y ' +
+      'las manzanas por estrato —estas últimas al fondo, de base—. Cada una se apaga por ' +
+      'su lado en «Capas del mapa», aquí debajo.</p>' +
     '</div>';
   }
 
@@ -24657,6 +24843,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (S.midiendoTodo) { S.midiendoTodo.hecho++; pintar(); }
       });
     }, Promise.resolve()).then(function () {
+      /* Y ahora se DIBUJA (v907), que es la otra mitad del pedido: «que me
+         muestre una vez en el mapa la línea de los cortes topográficos».
+         Medir sin dibujar deja al estudiante buscando cinco interruptores
+         repartidos por la ficha, que es exactamente lo que este botón viene a
+         quitar. Va DENTRO de la cadena y con su propio rótulo, para que la
+         barra siga diciendo que la espera está viva. */
+      if (S.midiendoTodo) { S.midiendoTodo.actual = 'Dibujándolo en el mapa'; pintar(); }
+      var puestas = dibujarLoMedido();
       var r = S.midiendoTodo;
       S.midiendoTodo = null;
       if (r) {
@@ -24664,10 +24858,40 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Medido: ' + (r.ok.join(', ') || 'nada') + '. No se pudo con ' +
             r.mal.join(', ') + '; pruebe esos de a uno.'
           : 'Listo: ' + r.ok.join(', ') + '.';
+        if (puestas.length) S.aviso += ' En el mapa: ' + puestas.join(', ') + '.';
       }
       pintar();
       return r;
     });
+  }
+
+  /* ── Lo medido, PUESTO en el mapa (v907) ──────────────────────
+     Se encienden las capas de LÍNEA y la de huellas, que se leen unas sobre
+     otras: los cortes topográficos —los que el pedido nombra—, las curvas de
+     nivel, la jerarquía de vías y los llenos y vacíos.
+
+     Las manzanas por estrato NO se encienden a la vez, y no es un olvido: son
+     un relleno de área igual que los llenos y vacíos, y dos rellenos
+     superpuestos se tapan uno al otro —el de arriba gana y el de abajo no se
+     ve, que es peor que no dibujar ninguno—. Se miden, quedan listas, y el
+     panel lo dice con su interruptor al lado. Es la misma decisión de la
+     v880 con el ámbar y el verde: dos cosas distintas no se pintan igual.
+
+     Cada una devuelve `false` cuando no tiene qué dibujar, así que la lista
+     que sale es la de lo que de verdad quedó puesto y no la de lo que se
+     intentó. Un aviso que nombra una capa que no está es peor que ninguno. */
+  function dibujarLoMedido() {
+    var puestas = [];
+    var CAPAS = [
+      ['los cortes topográficos', function () { return pintarCortes(true); }],
+      ['las curvas de nivel', function () { return pintarCurvas(true); }],
+      ['la jerarquía de vías', function () { return pintarVias(true); }],
+      ['los llenos y vacíos', function () { return pintarLlenos(true); }]
+    ];
+    CAPAS.forEach(function (c) {
+      try { if (c[1]()) puestas.push(c[0]); } catch (e) {}
+    });
+    return puestas;
   }
 
   function pedirAmenaza() {
@@ -25877,8 +26101,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     var r = await pintarEstratos(true);
     S.cargandoEstratos = false;
     if (!r.ok) { S.estratos = null; S.aviso = r.error; pintar(); return; }
-    // Verlas es bajar la hoja: las manzanas están justo debajo.
-    S.encogida = true;
+    /* Verlas es bajar la hoja: las manzanas están justo debajo. Pero no
+       mientras corre «medir todo» (v907): ahí encoger la hoja se lleva por
+       delante la barra de progreso, que es lo único que dice que la espera
+       sigue viva. */
+    if (!S.midiendoTodo) S.encogida = true;
 
     // La leyenda: sin ella los colores son adivinanza. «Sin estrato» va al
     // final porque es la excepción del mapa —industrial, dotacional, lotes—,
@@ -26336,6 +26563,22 @@ function donaHTML(datos, colorDe, nombreDe) {
     S.nombreProyecto = ''; S.ubicacionAdmin = '';
     S.terAviso = ''; S.trzAviso = '';
     pintarLlenos(false);
+    /* Y el MAPA queda limpio, que es lo que faltaba (v907). Soltar el
+       análisis borraba las cuentas y dejaba dibujadas las capas del sector
+       anterior: las manzanas por estrato, las curvas de nivel, los cortes
+       topográficos, la jerarquía de vías, las sombras, los puntos de uso y lo
+       que se alcanza a pie. Quien tocaba «Analizar otro sector» y no llegaba
+       a correr el siguiente se quedaba mirando el anterior sin saberlo —y
+       peor: al marcar el nuevo centro, encima del dibujo del viejo—.
+
+       `quitarDelMapa` ya existía y solo se llamaba al ARRANCAR el análisis
+       siguiente, que es tarde: entre las dos cosas hay una pantalla entera en
+       la que se elige el área. Lo que NO se toca es lo que puso una persona
+       —el lote, las marcas de lo intangible, los recorridos del curso—,
+       porque eso es del lugar y no del análisis. */
+    try { quitarDelMapa(); } catch (e) {}
+    S.estratos = null; S.puntosEnMapa = 0;
+    try { pintarCaminata(false); } catch (e) {}
     try {
       var A5 = window.URBIS_PC_ANALISIS;
       if (A5 && typeof A5.quitarRaster === 'function') A5.quitarRaster();
@@ -27449,6 +27692,19 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Las manzanas por estrato que hay en memoria, que son las que el
         // pliego dibuja y las que viajan con la ficha.
         estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,
+        /* Qué capas hay DIBUJADAS ahora mismo (v907). Va acá —la regla de la
+           v871— porque dos cosas que desde afuera se ven igual hay que poder
+           distinguirlas: que «medir todo» dejó el sector puesto en el mapa, y
+           que «Analizar otro sector» lo quitó. Contra el DOM no se puede: una
+           polilínea de Leaflet en un lienzo no tiene nodo propio. */
+        capasEnMapa: {
+          llenos: !!S.llenosEnMapa, curvas: !!S.curvasEnMapa, cortes: !!S.cortesEnMapa,
+          vias: !!S.viasEnMapa, sombras: !!S.sombrasEnMapa,
+          /* Lo DIBUJADO, no lo medido: `S.estratos` guarda las manzanas para la
+             lámina y sobrevive a apagar la capa. */
+          estratos: !!capaEstratos,
+          puntos: Number(S.puntosEnMapa) || 0
+        },
         estratosLeyenda: !!(S.estratos && S.estratos.leyenda),
         /* El trazo que hay a la vista y de qué trazo guardado viene. Esto
            es un objeto FABRICADO, no `S`: escribirle encima no cambia nada

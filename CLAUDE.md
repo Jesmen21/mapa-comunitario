@@ -4676,6 +4676,216 @@ después**, la segunda con «LÁMINA B DE 2 · GENTE, USOS Y MOVILIDAD», sus
 3.155 habitantes, la banda de movilidad, la comparación con la ciudad de la
 v902, las seis plantillas de campo, la coherencia y las cinco propuestas.
 
+## Una sola fuente por magnitud (v906)
+
+§10 del pliego de ajustes v2, en las dos mitades que no piden material real:
+«es el mismo dato contado dos veces en el mismo código. Elegí una sola fuente
+por magnitud, que todos los paneles la citen, y si hay registros descartados,
+imprimí cuántos y por qué».
+
+### Los edificios llegan por dos consultas, y ninguna está mal
+
+Auditado antes de escribir —la regla de la v863— y la causa no es un error de
+cuenta:
+
+* la consulta de **usos** pide `["building"!="yes"]` —deja fuera el valor
+  genérico, que es el más común de todos— y trae el CENTRO de cada uno;
+* la del **trazado** los pide todos, con su HUELLA, y el módulo se queda con
+  los que tienen el centroide dentro del área dibujada.
+
+Las dos son ciertas y cuentan cosas distintas. Lo que sí era un error es que
+**cada panel eligiera por su cuenta**: la ficha se quedaba con la lista MAYOR
+(`t.edificios > a.edificios`) y la lámina con la que trajera pisos
+(`trz.alturas.conDato ? trz.alturas : st.alturas`). Dos reglas para una
+magnitud, que es exactamente la divergencia de la v879 —dos rutas de cálculo
+no divergen el día que se escriben, divergen la tanda siguiente—.
+
+Ahora `conteoDeEdificios(st, trz)` decide una vez, y lo llaman los diez sitios
+que imprimían la cifra: la caja de la lámina, «El grano», `mediaDePisos`, el
+informe en hojas, el informe de texto, la conclusión de banda, las tareas de
+campo, lo que falta del sector y las dos condiciones `listo` del inventario
+—que tienen que ser la misma que usa la caja para devolver vacío (v857)—.
+
+#### Manda el trazado, y no la mayor de las dos
+
+Estuve a punto de poner «la mayor» y `tsinmapear` lo habría dejado pasar al
+revés: su sector trae **sesenta casas como PUNTO** —que la consulta de usos ve
+y la del trazado no pide, porque pide `way` y `relation`— y **treinta y seis
+huellas con sus pisos**. Con «la mayor» ganaban las sesenta y la hoja perdía
+las treinta y seis alturas medidas.
+
+El trazado manda por CONTENIDO y no por tamaño: está recortado contra el área
+dibujada —la de usos llega por el círculo de Overpass—, trae la huella y por
+tanto el área construida, y no deja fuera `building=yes`. Sin trazado medido
+queda la de usos, y se dice que es ella.
+
+#### Y se imprime qué no vio la otra
+
+`nota()` lo dice donde el conteo es el sujeto —no en cada panel, que es la
+repetición que §20 prohíbe—: de qué consulta sale, cuántos ve la otra y por
+qué son distintos. Cuando la de usos ve MENOS son los `building=yes`, «los que
+no dicen de qué son»; cuando ve MÁS son los mapeados como punto, sin huella,
+«y de un punto no sale superficie construida». Son dos frases porque son dos
+situaciones, y un número sin procedencia es lo que la v867 prohíbe.
+
+### Los usos: un total y dos subtotales con nombre
+
+`st.total` lo citan el encabezado, el plano y los anillos; el reparto por
+categoría, las propuestas y la FODA sumaban **por su cuenta** los grupos sin
+«otro». `conteoDeUsos(st)` devuelve los tres —`total`, `clasificados`,
+`sinClasificar`— con la razón pegada, y los tres sitios la llaman. La v903 ya
+declaraba la diferencia en la tabla; lo que faltaba era que la cuenta fuera
+una.
+
+De paso, el subtotal de las propuestas se nombra CONTRA el total: «226
+clasificados **de los 244 del sector**». Un «226 clasificados» a un palmo del
+«244 usos» del encabezado se lee como dos cuentas que no cuadran.
+
+### Dónde vive cada comprobación, y por qué
+
+* **`tsinmapear`** es el único sector de la batería que puede producir el
+  defecto —las sesenta casas punto contra las treinta y seis huellas—, así que
+  ahí va la comprobación de que **la ficha y la lámina cuentan los mismos**.
+  Demostrada contra la v905: **ficha 60 · lámina 36**, sobre el mismo sector.
+* **`tdoslaminas`** lleva la guarda de CLASE sobre las dos hojas compuestas:
+  de cada magnitud, un solo valor. Ahí las dos reglas coincidían, así que es
+  una guarda contra que vuelvan a separarse y no una afirmación nueva — y va
+  con su propia guarda de material: si no encuentra al menos dos citas de la
+  magnitud, no está comprobando nada y lo dice.
+
+#### El lector pegaba dos cifras y fabricaba una tercera
+
+La primera versión de la guarda denunció **«1244»** donde el sector tiene 244
+usos. No estaba impreso: `h.texto` es el `textContent` de la hoja, y un «1» de
+la caja de al lado se pega al «244» del encabezado. Es exactamente la lección
+de la v885 con «100100», encontrada otra vez y con el mismo aspecto —una cifra
+falsa que se ve igual de bien que una buena—.
+
+Se lee sobre los NODOS unidos por un separador que no es un dígito. Y las
+anclas que cruzan de rótulo a valor —en un `fila` son dos nodos— llevan ese
+separador escrito, que es lo que un `\s*` no puede hacer.
+
+## El mapa se limpia, y un botón lo mide todo (v906)
+
+Dos cosas pedidas con el teléfono en la mano, y las dos del mismo molde: la
+aplicación deja trabajo a medio hacer donde el usuario espera que esté hecho.
+
+### «Analizar otro sector» dejaba dibujado el anterior
+
+> «cuando le dé analizar otro sector, quiero que el análisis anterior, todo lo
+> que sea gráfico en el mapa, desaparezca, porque si no hago otro análisis, se
+> suele confundir porque queda a la vista del anterior análisis».
+
+`soltarElAnalisis` borraba las cuentas y apagaba dos capas —los llenos y el
+ráster—, y dejaba dibujadas las otras cinco: las manzanas por estrato, las
+curvas de nivel, los cortes topográficos, la jerarquía de vías y los puntos de
+uso. `quitarDelMapa` ya existía **y solo se llamaba al ARRANCAR el análisis
+siguiente**, que es tarde: entre las dos cosas hay una pantalla entera en la
+que se elige el área, y quien no llega a correr el siguiente se queda mirando
+el anterior sin saberlo — y peor, marcando el centro nuevo encima del dibujo
+del viejo.
+
+Lo que NO se toca es lo que puso una persona —el lote, las marcas de lo
+intangible, los recorridos del curso—: eso es del lugar y no del análisis, que
+es la regla que `soltarElAnalisis` ya tenía escrita para el estado y no para
+el mapa.
+
+Demostrado quitando esas tres líneas: `curvas true · cortes true · vias true ·
+estratos true · puntos 12` después de tocar el botón.
+
+### Un botón que mide y DIBUJA todo el sector
+
+> «quiero de primerito un botón que me analice todo, todo llenos y vacíos, me
+> analice los colores de las manzanas, me analice todo… que me muestre una vez
+> en el mapa la línea de los cortes topográficos… Y si está cargando, que diga
+> que está cargando».
+
+El botón existía desde antes y ya está de primero en «General», con su barra y
+su «Parar». Le faltaban las dos cosas que el pedido nombra:
+
+* **las manzanas por estrato no estaban en la cadena.** Eran un interruptor
+  suelto en otra pestaña, que es justo lo que el pedido dice que no quiere.
+  Entran como un paso más de `PASOS_MEDIR`, al final, porque además de medir
+  dibujan.
+* **medir no dibujaba.** `dibujarLoMedido` enciende al terminar los cortes
+  topográficos —los que el pedido nombra—, las curvas de nivel, la jerarquía
+  de vías, los llenos y vacíos y las manzanas por estrato. Va DENTRO de la
+  cadena y con su propio rótulo, para que la barra siga diciendo que la espera
+  está viva; y devuelve la lista de lo que de verdad quedó puesto y no la de
+  lo que se intentó, porque un aviso que nombra una capa que no está es peor
+  que ninguno.
+
+Y con todo medido el botón se queda, pero cambia: **«Dibujarlo todo en el
+mapa»**. Un sector reanudado vuelve con sus cifras y con el mapa en blanco, y
+ahí «ya está todo medido» sin un botón al lado es una pantalla que no deja
+hacer nada.
+
+#### Las manzanas por estrato SÍ se encienden, y eso hubo que medirlo
+
+Estuve a punto de dejarlas medidas y apagadas, razonando que dos rellenos de
+área se tapan uno al otro. **Es falso**: `pintarEstratos` las manda al fondo
+con `bringToBack`, así que quedan de base y las huellas encima, que es el
+dibujo urbano de toda la vida. Lo cazó la propia aserción que escribí para el
+razonamiento equivocado, en rojo con `estratos: true`.
+
+Es la regla de la v863 dicha para las capas de un mapa: **una sospecha se
+comprueba corriendo, no razonando** — y la primera versión de la prosa del
+panel ya explicaba con detalle un motivo que no existía.
+
+#### Un detalle que no se ve hasta que pasa
+
+`alternarEstratos` encogía la hoja para dejar ver las manzanas. Dentro de la
+cadena eso se lleva por delante la barra de progreso, que es lo único que dice
+que la espera sigue viva (v870). No encoge mientras `S.midiendoTodo`.
+
+#### Las dos constantes del fixture que estaban dentro de las aserciones
+
+`tmedir` exigía `pasos.length === 5` y `/\d+ de 5/`. Son el número de pasos
+del código copiado en la comprobación, y se pusieron rojas por añadir un paso
+—un cambio que no tiene nada que ver con lo que miden—. Es la lección de la
+v890 con los veintidós lados. Ahora la cuenta de la barra se compara **contra
+la lista que el propio panel imprime**, y lo que se exige es que los nombre
+uno por uno.
+
+#### El doble del DANE no sabía contestar por geometría
+
+Undécima vez. `tmedir` devolvía `{TOTAL, N}` a todo, así que la consulta de
+manzanas por estrato —que pide `returnGeometry`— no traía polígonos y el paso
+nuevo habría caído SIEMPRE: la comprobación habría medido la rama del fallo y
+pasado diciendo que lo intentó. Ahora contesta cuatro manzanas con su estrato
+—una de ellas «Sin Estrato», que es lo que el DANE le pone al suelo industrial
+y a los lotes— cuando la consulta pide geometría.
+
+#### El defecto que destapó encender una capa
+
+`tjornada` —el recorrido de un día entero— se cayó con esto, y no era la
+cadena: era un fallo viejo que hasta ahora se tapaba solo.
+
+`int-dibujar` encoge la hoja SOLA —no se marca una manzana sobre un mapa
+tapado por un panel—, y al cerrar el dibujo esa contracción automática no se
+deshacía. No se notaba **por casualidad**: `pintar` deja la hoja abajo solo si
+`S.encogida` **y además** hay alguna capa encendida (`hayCapa`), y en ese
+recorrido no había ninguna. Con «medir y dibujar todo» las hay, y entonces la
+hoja se queda abajo con la marca recién hecha y sin el panel donde se le
+escribe la nota —que es lo que convierte una mancha de color en un
+testimonio—.
+
+El arreglo es de una línea y usa la señal que ya existía: `encogidaAMano`
+separa «la bajé yo» de «se bajó sola», y solo se deshace la segunda.
+
+Y una del método: llegué a esto **bisecando las cuatro capas** —con los cortes
+solos fallaba, con los llenos solos no—, no leyendo. Tres teorías seguidas
+sobre quién encogía la hoja resultaron falsas; la cuarta medición dio el
+`hayCapa`. Es la regla de la v863 otra vez, y esta vez la pagué en tiempo por
+no aplicarla desde el principio.
+
+### Demostrado contra la v905
+
+Ocho aserciones en rojo con el estado viejo impreso: `0 manzanas` por el paso
+que no existía, `{}` por las capas que nadie dibujaba, «no lo dice» por el
+panel, y el aviso terminando en «pruebe esos de a uno» sin nombrar una sola
+capa puesta.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

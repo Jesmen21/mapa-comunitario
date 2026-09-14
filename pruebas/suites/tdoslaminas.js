@@ -1145,6 +1145,67 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     !tuteoEn(A).length && !tuteoEn(B).length,
     tuteoEn(A).concat(tuteoEn(B)).slice(0, 5).join(' · ') || 'ninguna');
 
+  /* ── §10 (v906) · una sola cifra por magnitud en las dos hojas ─────
+     «Es el mismo dato contado dos veces en el mismo código». Se persigue la
+     CLASE y no el par que el reporte trajo: de cada magnitud, las dos hojas
+     no pueden imprimir dos totales distintos. Se lee del papel compuesto, y
+     por ANCLA —la frase que rodea la cifra— y no por nodo suelto: en un
+     `fila` el rótulo y el valor son dos nodos, así que un número solo no
+     dice de qué es.
+
+     Va con su propia guarda de material: si no encuentra al menos dos sitios
+     donde la magnitud se cite, no está comprobando nada y lo dice. Es la
+     lección de la v886 —una comprobación que pasa por no tener nada que
+     rechazar es un verde—.
+
+     El par que §10 nombra sale en `tsinmapear`, cuyo sector sí puede
+     producirlo; acá las dos reglas coincidían, así que esto es una GUARDA
+     contra que vuelvan a separarse, no una afirmación nueva. */
+  const nMil = t => Number(String(t).replace(/\./g, ''));
+  /* Se lee sobre los NODOS unidos por un separador que no es un dígito, no
+     sobre la tira. Con la tira, un «1» de la caja de al lado se pega al
+     «244» del encabezado y sale un 1.244 que nadie imprimió —la lección de
+     la v885, encontrada otra vez acá y con el mismo aspecto: una cifra falsa
+     que se ve igual de bien que una buena—. El separador va en las anclas
+     que cruzan de rótulo a valor, que en un `fila` son dos nodos. */
+  const citas = (h, anclas) => {
+    const out = [], tira = (h.trozos || []).join(' \u22ee ');
+    anclas.forEach(([re, etq]) => {
+      const r = new RegExp(re, 'g'); let m;
+      while ((m = r.exec(tira))) out.push({ etq, n: nMil(m[1]) });
+    });
+    return out;
+  };
+  const ANCLAS_EDIF = [
+    ['Se cuentan los[^\\d]{0,8}([\\d.]+)[^\\d]{0,10}edificios que trae', 'la nota de fuente'],
+    ['de ([\\d.]+) edificios traen la altura', 'la cobertura de altura'],
+    ['Edificios con forma medida[^\\d]{0,8}[\\d.]+ de ([\\d.]+)', 'El grano'],
+    ['Edificios con altura registrada[^\\d]{0,8}[\\d.]+ de ([\\d.]+)', 'Potencial edificatorio']
+  ];
+  const ANCLAS_USOS = [
+    ['([\\d.]+)\\s*usos registrados', 'el encabezado'],
+    ['de los[^\\d]{0,8}([\\d.]+)[^\\d]{0,8}usos que cuenta el sector', 'Qué hay, por categoría'],
+    ['clasificados de los ([\\d.]+) del sector', 'las propuestas']
+  ];
+  const unaSola = (etq, anclas) => {
+    const c = citas(A, anclas).concat(citas(B, anclas));
+    const val = [...new Set(c.map(x => x.n))];
+    T('las dos hojas citan ' + etq + ' en más de un sitio', c.length >= 2,
+      c.length + ' citas: ' + c.map(x => x.etq + ' ' + x.n).join(' · '));
+    T('y todas dicen la MISMA cifra, que es lo que §10 pide', val.length === 1,
+      val.length === 1 ? String(val[0]) : c.map(x => x.etq + ' ' + x.n).join(' ≠ '));
+  };
+  console.log('\n  -- §10 · una sola fuente por magnitud --');
+  unaSola('los edificios del sector', ANCLAS_EDIF);
+  unaSola('los usos del sector', ANCLAS_USOS);
+  /* Y el subtotal, que es la otra mitad de §10: cuando la tabla descarta
+     registros tiene que decir cuántos y por qué. Sin esto, el arreglo
+     podría ser imprimir una sola cifra y callar la diferencia. */
+  T('y el reparto por categoría dice cuántos descarta y por qué',
+    /Esta tabla suma [\d.]+ de los [\d.]+ usos que cuenta el sector/.test(B.texto) &&
+    /(no pudo clasificar en ninguna categor\u00eda|que son todos)/.test(B.texto),
+    (/Esta tabla suma[^.]{0,170}/.exec(B.texto) || ['no lo dice'])[0].slice(0, 150));
+
   const SIN_MILES = /(?<![\d.,])\d{5,}(?![\d.,])/g;
   T('ninguna cifra de cinco dígitos va impresa sin separador de miles',
     !buscar(A, SIN_MILES).length && !buscar(B, SIN_MILES).length,
