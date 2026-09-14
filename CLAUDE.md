@@ -4886,6 +4886,100 @@ que no existía, `{}` por las capas que nadie dibujaba, «no lo dice» por el
 panel, y el aviso terminando en «pruebe esos de a uno» sin nombrar una sola
 capa puesta.
 
+## El historial satelital entra, y el botón acusa que terminó (v907)
+
+Dos cosas pedidas sobre el botón de la v906: «en ese botón nuevo que me hizo
+agrégale una animación de que ya todo está cargado» y «faltó que en ese botón
+también cargue los del historial de imágenes satelitales 2014-2026».
+
+### El historial, como un paso más
+
+`pedirEvolucion('wayback')` es la serie de fotos HD, y va **después de la foto
+satelital** por la misma razón por la que aquella iba última: es el paso más
+caro de todos —son varias descargas de imagen y otras tantas pasadas del
+clasificador, no una—, así que si se cae o alguien toca «Parar», todo lo
+anterior ya está hecho. Y no lleva la espera previa de cinco segundos: va
+contra el archivo de imágenes de Esri, no contra Overpass.
+
+#### El tramo es 2014-2026, y son CINCO estampas
+
+La primera aserción exigía diez años y salió roja con cinco. No era un fallo:
+`aniosDe` usa **paso 3** para la fuente HD, así que de 2014 a 2026 salen 2014,
+2017, 2020, 2023 y 2026. Contar años habría metido en la comprobación una
+constante del módulo —la lección de la v890 con los veintidós lados— y encima
+una equivocada, salida de leer el pedido en vez de correr el código.
+
+Lo que se comprueba es el **tramo**: que la primera sea 2014 y la última 2026.
+Un paso distinto mañana lo cumple igual; un historial que empiece en 2020 no.
+
+### La animación es del MOMENTO, y el panel es del estado
+
+Es la separación que la v897 dejó escrita para el acuse de guardado, y vale
+igual acá: el panel verde con su marca **se queda** y dice «esto está medido»
+—sigue ahí al volver de otra pestaña—; la animación dura un segundo y dice
+«acaba de terminar». Si viajara en el HTML, el panel volvería a celebrar cada
+vez que se repinta la hoja —encender una capa, mover la barrita— y algo que
+festeja sin que nadie haya hecho nada deja de significar «terminamos».
+
+Así que `destelloDeMedido` la pone sobre el nodo ya repintado, leyendo
+`offsetWidth` para forzar el reflujo: sin eso, medir dos veces seguidas no
+vuelve a animar porque para el navegador la clase nunca se fue.
+
+**Y solo cuando de verdad quedó todo.** Con un paso caído la cadena termina
+igual, pero celebrarlo diría que está cargado lo que no está — y el panel de
+abajo, que nombra lo que falta, quedaría desmentido por la animación de al
+lado. Se comprueban las dos condiciones: que ningún paso fallara **y** que no
+quede ninguno pendiente.
+
+El verde es `--edu-ok`, el mismo de los vacíos de la v880 y del acuse de la
+v897: en esta aplicación el verde ya significa «esto está resuelto», y darle
+un color nuevo a lo mismo sería enseñar dos códigos.
+
+### El acuse se apaga al analizar otro sector
+
+Es de ESTE sector. Sin apagarlo, la hoja del sector siguiente nacería
+celebrando lo que se acaba de soltar — el mismo error que la v897 evitó
+haciendo que el botón de guardar no naciera iluminado.
+
+### La suite tenía el clima caído a propósito, y por eso no había qué medir
+
+Decimoséptima vez que el material no puede producir lo que la comprobación
+dice medir. `tmedir` tumba el clima **a propósito** desde siempre, para probar
+que un paso caído no detiene la cadena — y con eso el acuse no sale nunca,
+porque nunca queda todo.
+
+El clima se cae ahora la PRIMERA vez y contesta la segunda. La primera pasada
+mide lo de siempre; la segunda deja un solo paso pendiente, la cadena cierra
+completa y el acuse aparece. Las dos ramas en la misma corrida.
+
+Y el doble de las fotos históricas va en `entorno.js` —`E.rutaWayback`, con su
+`E.pngLiso`— y no dentro de la suite: es el mismo razonamiento que `E.rutaDane`
+de la v862, y cualquier suite que corra la cadena lo va a necesitar. Sin él el
+paso nuevo caería SIEMPRE y la comprobación habría medido la rama del fallo
+diciendo que mide la del éxito.
+
+#### La suite encontró un defecto de impresión en la primera versión del panel
+
+«Se midieron los **1 pasos**.» La segunda pasada recoge un solo paso, y el
+resumen lo imprimía sin concordar — la clase exacta de la v874, en un panel
+que acababa de escribir.
+
+El arreglo no fue conjugar la frase: fue **cambiar lo que resume**. Lo que
+quien mira quiere saber no es cuántos pasos corrió esta pasada sino que el
+sector está completo, así que dice «Los 7 pasos están medidos y quedaron 4
+capas dibujadas». Las capas sí conjugan, porque pueden ser una. Y hay una
+aserción de clase sobre el panel entero: ningún «1» seguido de plural.
+
+### Demostrado contra la v906
+
+Siete aserciones en rojo de ocho: «undefined estampas, de undefined a
+undefined», «0 teselas pedidas», el paso sin nombrar en la lista, y «no hay
+panel de fin» por el acuse.
+
+La octava —la concordancia— no falla contra la v906 por no existir el panel
+que la produce. Es una guarda contra el defecto que esta misma tanda cometió,
+no una afirmación nueva.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

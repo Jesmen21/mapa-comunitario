@@ -12000,6 +12000,28 @@ function donaHTML(datos, colorDe, nombreDe) {
     } catch (e) {}
   }
 
+  /* ── «Ya está todo cargado» (v907) ──────────────────────────
+     Mismo molde que `destelloDeGuardado` y por la misma razón: la animación
+     se pone sobre el nodo YA repintado y no viaja en el HTML. Si viajara, el
+     panel volvería a celebrar cada vez que se repinta la hoja —encender una
+     capa, mover la barrita—, y algo que festeja sin que nadie haya hecho
+     nada deja de significar «terminamos».
+
+     Se lee `offsetWidth` antes de volver a poner la clase: sin ese reflujo,
+     medir dos veces seguidas no vuelve a animar porque para el navegador la
+     clase nunca se fue. */
+  function destelloDeMedido() {
+    try {
+      var nodos = document.querySelectorAll('.pcr-medir-fin');
+      for (var i = 0; i < nodos.length; i++) {
+        var el = nodos[i];
+        el.classList.remove('pcr-medir-nuevo');
+        void el.offsetWidth;
+        el.classList.add('pcr-medir-nuevo');
+      }
+    } catch (e) {}
+  }
+
   /* ¿La ficha que está en pantalla quedó guardada CON ESTE NOMBRE?
 
      Ojo con lo que esto significa y con lo que no. El análisis ya se archiva
@@ -24596,6 +24618,20 @@ function donaHTML(datos, colorDe, nombreDe) {
     { id: 'cobertura', nombre: 'La foto satelital', que: 'cobertura del suelo clasificada',
       hecho: function () { return !!S.cobertura; },
       correr: function () { return analizarCobertura(); } },
+    /* La SERIE SATELITAL, pedida en la v907: «faltó que en ese botón también
+       cargue los del historial de imágenes satelitales 2014-2026». Es la
+       fuente «wayback», que son las fotos HD desde 2014 —la Landsat rayada de
+       2004 se retiró en su momento porque el verde no se podía medir sobre
+       ella—.
+
+       Va DESPUÉS de la foto satelital y por la misma razón que aquella iba
+       última: es el paso más caro de todos —son diez descargas de imagen y
+       otras tantas pasadas del clasificador, no una—, así que si se cae o si
+       alguien toca «Parar», todo lo anterior ya está hecho. Y no lleva espera
+       previa: va contra el archivo de imágenes, no contra Overpass. */
+    { id: 'evolucion', nombre: 'El historial satelital', que: 'cómo cambió el sitio desde 2014',
+      hecho: function () { return !!(S.evo && S.evo.wayback); },
+      correr: function () { return pedirEvolucion('wayback'); } },
     /* Las manzanas por estrato entran acá en la v907, pedidas así: «que me
        analice los colores de las manzanas». Estaban solo como interruptor
        suelto en la pestaña de la gente, que es justo lo que el pedido dice
@@ -24748,8 +24784,16 @@ function donaHTML(datos, colorDe, nombreDe) {
          es volver a DIBUJARLO. Un sector medido en otra sesión vuelve con sus
          cifras y con el mapa en blanco, y ahí «ya está todo medido» sin un
          botón al lado es una pantalla que no deja hacer nada. */
-      return '<div class="pcr-medir">' +
-        '<p class="pcr-conc">Todo medido: ' +
+      var fin = S.medirTermino;
+      return '<div class="pcr-medir pcr-medir-fin' + (fin ? ' pcr-medir-ok' : '') + '">' +
+        '<p class="pcr-medir-titulo">' + ico('ok', 18) +
+          (fin ? 'Listo: ya está todo cargado' : 'Todo medido') + '</p>' +
+        (fin
+          ? '<p class="pcr-conc">Los <b>' + fin.pasos + '</b> pasos están medidos y qued' +
+            (fin.capas === 1 ? 'ó <b>1</b> capa dibujada' : 'aron <b>' + fin.capas + '</b> capas dibujadas') +
+            ' en el mapa.</p>'
+          : '') +
+        '<p class="pcr-pista">' +
         esc(PASOS_MEDIR.map(function (p2) { return p2.nombre.replace(/^(El|La|Las|Los) /, ''); }).join(', ')) +
         '. Lo que sigue es de la calle —marcar el lote y salir a mirar—.</p>' +
         '<div class="pcr-llevar">' +
@@ -24859,8 +24903,27 @@ function donaHTML(datos, colorDe, nombreDe) {
             r.mal.join(', ') + '; pruebe esos de a uno.'
           : 'Listo: ' + r.ok.join(', ') + '.';
         if (puestas.length) S.aviso += ' En el mapa: ' + puestas.join(', ') + '.';
+        /* El acuse de que TERMINÓ (v907), pedido así: «agrégale una animación
+           de que ya todo está cargado». Es del MOMENTO y no del estado, que es
+           la separación que la v897 dejó escrita: el panel de «todo medido» ya
+           dice, y sigue diciendo al volver de otra pestaña, que está hecho;
+           esto dice «acaba de terminar» y muere en el repintado siguiente.
+
+           Y solo cuando de verdad quedó todo. Con un paso caído la cadena
+           termina igual, pero celebrarlo sería decir que está cargado lo que
+           no está — y el panel de abajo, que nombra lo que falta, quedaría
+           desmentido por la animación de al lado. */
+        /* Lo que se resume es el estado del SECTOR y no el de esta pasada.
+           Con «medidos 1 pasos» —que es lo que salía cuando una segunda pasada
+           recoge el único que había quedado— se juntaban dos defectos: una
+           cifra que no concuerda (la clase de la v874) y una que responde a
+           una pregunta que nadie hizo. Lo que quien mira quiere saber es que
+           el sector está completo. */
+        S.medirTermino = !r.mal.length && !PASOS_MEDIR.filter(function (p2) { return !p2.hecho(); }).length
+          ? { pasos: PASOS_MEDIR.length, capas: puestas.length } : null;
       }
       pintar();
+      if (S.medirTermino) destelloDeMedido();
       return r;
     });
   }
@@ -25697,6 +25760,10 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
 
     S.cargando = true; S.error = ''; S.aviso = ''; S.textoPlano = '';
+    /* El acuse de «todo cargado» es de ESTE sector: analizar otro lo apaga
+       antes de que la hoja se repinte, o el panel del sector nuevo nacería
+       celebrando lo que se acaba de soltar. */
+    S.medirTermino = null;
     quitarDelMapa(); S.estratos = null; S.puntosEnMapa = 0;
     /* La barra arranca ANTES de la primera consulta y con su primer paso ya
        puesto: si se pintara vacía y se llenara al llegar el aviso de `js/61`,
@@ -26577,7 +26644,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        —el lote, las marcas de lo intangible, los recorridos del curso—,
        porque eso es del lugar y no del análisis. */
     try { quitarDelMapa(); } catch (e) {}
-    S.estratos = null; S.puntosEnMapa = 0;
+    S.estratos = null; S.puntosEnMapa = 0; S.medirTermino = null;
     try { pintarCaminata(false); } catch (e) {}
     try {
       var A5 = window.URBIS_PC_ANALISIS;
@@ -27692,6 +27759,24 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Las manzanas por estrato que hay en memoria, que son las que el
         // pliego dibuja y las que viajan con la ficha.
         estratos: S.estratos && S.estratos.manzanas ? S.estratos.manzanas.length : 0,
+        /* La serie de fotos históricas, por su fuente y cuántos años trajo
+           (v907). Va acá —la regla de la v871— porque una prueba tiene que
+           poder distinguir tres cosas: que la serie no se pidió, que se pidió
+           y volvió vacía, y que trajo sus años. */
+        serieSatelital: (function () {
+          var de = function (k) {
+            var ps = ((S.evo || {})[k] || {}).pasos || [];
+            var an = ps.map(function (x) { return Number(x.anio) || 0; })
+              .filter(function (x) { return x; });
+            /* El TRAMO y no solo el conteo: la serie de fotos HD va de tres
+               en tres (`aniosDe`, paso 3), así que de 2014 a 2026 son CINCO
+               estampas y no trece. Una prueba que contara años mediría esa
+               constante del módulo en vez del tramo que se pidió. */
+            return { n: ps.length, desde: an.length ? Math.min.apply(null, an) : 0,
+                     hasta: an.length ? Math.max.apply(null, an) : 0 };
+          };
+          return { wayback: de('wayback'), landsat: de('landsat') };
+        })(),
         /* Qué capas hay DIBUJADAS ahora mismo (v907). Va acá —la regla de la
            v871— porque dos cosas que desde afuera se ven igual hay que poder
            distinguirlas: que «medir todo» dejó el sector puesto en el mapa, y

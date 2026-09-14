@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v906-una-sola-fuente-por-magnitud';
+const URBIS_CACHE = 'urbis-v907-el-historial-satelital-y-el-acuse';
 const URBIS_ASSETS = [
   './',
   './index.html',

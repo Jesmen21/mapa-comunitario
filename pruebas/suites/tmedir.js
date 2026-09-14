@@ -95,6 +95,13 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
                                  :{features:[{attributes:{TOTAL:3045,N:42}}]})});
   });
 
+  /* Las fotos históricas 2014-2026, que desde la v907 son un paso de la
+     cadena. Sin ellas el paso caería SIEMPRE y la comprobación mediría la
+     rama del fallo diciendo que mide la de éxito —la lección de la v876 con
+     `COD_DANE_MPIO` y la de la v906 con las manzanas por estrato—. */
+  const teselasWayback = [];
+  await E.rutaWayback(ctx, u => teselasWayback.push(u));
+
   /* El orden REAL en el que llegan las peticiones. Es la única forma de
      comprobar que la cadena va en serie: en paralelo, todas llegarían juntas
      antes de que contestara la primera. */
@@ -116,9 +123,23 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
       body:JSON.stringify({elevation:lngs.map((x,i)=>300+i*3)})});
   });
   // El clima se cae a propósito: es lo que hay que sobrevivir.
+  /* El clima se cae la PRIMERA vez y contesta la segunda. La primera es lo
+     que esta suite mide desde siempre —que un paso caído no tumba la cadena—;
+     la segunda hace falta desde la v907, porque el acuse de «ya está todo
+     cargado» solo sale cuando de verdad quedó todo, y con el clima siempre
+     caído esa rama no se ejercitaría en ninguna prueba —que es el verde que
+     este proyecto lleva diecisiete tandas persiguiendo—. */
+  let climaCaidas=0;
   await ctx.route(/archive-api\.open-meteo\.com/, r=>{
     marcar('clima');
-    r.fulfill({status:500,contentType:'text/plain',body:'se cayó'});
+    if(!climaCaidas++) return r.fulfill({status:500,contentType:'text/plain',body:'se cayó'});
+    const dias=Array.from({length:60},(_,i)=>'2025-0'+(1+i%9)+'-0'+(1+i%9));
+    r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      daily:{ time:dias,
+        temperature_2m_max:dias.map(()=>32), temperature_2m_min:dias.map(()=>23),
+        temperature_2m_mean:dias.map(()=>27.5), precipitation_sum:dias.map(()=>3),
+        wind_speed_10m_max:dias.map(()=>9), wind_direction_10m_dominant:dias.map(()=>20),
+        shortwave_radiation_sum:dias.map(()=>19.4) } })});
   });
   await ctx.route(/srvags\.sgc\.gov\.co/, r=>{
     const u=decodeURIComponent(r.request().url());
@@ -222,6 +243,26 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
        una polilínea de Leaflet dibujada en un lienzo no tiene nodo propio, así
        que «hay una capa» no se puede comprobar con un `querySelector`. */
     o.capas=(R.estado?R.estado():{}).capasEnMapa||{};
+    /* v907 · la segunda pasada. Queda un solo paso pendiente —el clima, que
+       ahora sí contesta—, así que la cadena cierra completa y el panel tiene
+       que acusar que quedó todo cargado. */
+    const b2=H().querySelector('[data-pcr="medir-todo"]');
+    o.hayBoton2=!!b2;
+    if(b2){ b2.click(); await esperar(400);
+      for(let i=0;i<80 && H().querySelector('.pcr-medir-va');i++) await esperar(400);
+      await esperar(500); }
+    /* v907 · el acuse de que TERMINÓ, y la serie de fotos que ahora entra en
+       la cadena. El acuse se lee del DOM porque es una clase que se pone
+       sobre el nodo ya repintado y muere en el repintado siguiente: en el
+       estado no existe, y ese es justamente su diseño. */
+    o.fin=(function(){
+      const c=H().querySelector('.pcr-medir-fin');
+      if(!c) return null;
+      return { ok:c.classList.contains('pcr-medir-ok'),
+               anima:c.classList.contains('pcr-medir-nuevo'),
+               texto:(c.textContent||'').replace(/\s+/g,' ').trim() };
+    })();
+    o.serie=((R.estado?R.estado():{}).serieSatelital||{}).wayback||{};
     o.estratosMedidos=(R.estado?R.estado():{}).estratos||0;
 
     /* Y «Analizar otro sector» tiene que dejar el mapa LIMPIO. Hasta la v906
@@ -236,6 +277,7 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
   },{C,POL});
 
   r.err=err.filter(e=>!/L is not defined|Unexpected end/.test(e));
+  r.teselas=teselasWayback.length;
   await pg.close(); await b.close();
 
   const ok=(n,c,d)=>{console.log('  '+(c?'✓':'✗')+' '+n+(d!==undefined?'  — '+d:'')); return !!c;};
@@ -329,6 +371,44 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     (/Al terminar quedan[^.]{0,190}/i.exec(r.textoFinal||'')||['no lo dice'])[0].slice(0,170));
   T('y el aviso nombra lo que quedó puesto', /En el mapa: .*cortes topogr/i.test(r.aviso||''),
     r.aviso);
+
+  console.log('\n  -- v907 · el historial satelital y el acuse de terminado --');
+  /* «Faltó que en ese botón también cargue los del historial de imágenes
+     satelitales 2014-2026.» Son trece años de entregas escritas en `js/80`, y
+     lo que se comprueba es que la CADENA los traiga —no cuántos son, que es
+     una constante del módulo y se pondría roja el día que Esri publique
+     2027 (la lección de la v890)—. */
+  /* Se mide el TRAMO y no el conteo: las fotos HD van de tres en tres, así
+     que de 2014 a 2026 son cinco estampas. Exigir trece habría sido meter una
+     constante del módulo en la comprobación —la lección de la v890—, y encima
+     una equivocada: lo comprobé corriendo, no leyendo el pedido. */
+  T('el historial satelital entra en la cadena',
+    r.serie.n >= 4 && r.serie.desde === 2014 && r.serie.hasta === 2026,
+    r.serie.n + ' estampas, de ' + r.serie.desde + ' a ' + r.serie.hasta);
+  T('y sale del archivo de fotos, no de Overpass', r.teselas > 0, r.teselas + ' teselas pedidas');
+  T('el paso aparece nombrado en el panel',
+    /historial satelital/i.test((r.antes && r.antes.texto) || ''),
+    PASOS.join(' · '));
+
+  /* «Agrégale una animación de que ya todo está cargado.» Es del MOMENTO y no
+     del estado —la separación de la v897—, así que se lee del DOM: la clase
+     se pone sobre el nodo ya repintado y muere en el repintado siguiente. */
+  T('al terminar, el panel acusa que quedó todo cargado',
+    !!r.fin && r.fin.ok === true, r.fin ? JSON.stringify(r.fin).slice(0, 120) : 'no hay panel de fin');
+  T('y lo dice con esas palabras', !!r.fin && /ya está todo cargado/i.test(r.fin.texto),
+    r.fin ? r.fin.texto.slice(0, 90) : '—');
+  T('con la animación puesta, no solo el color',
+    !!r.fin && r.fin.anima === true, r.fin ? 'anima ' + r.fin.anima : '—');
+  T('y resume cuántos pasos y cuántas capas',
+    !!r.fin && /pasos están medidos/.test(r.fin.texto),
+    r.fin ? (/Los [^.]{0,90}\./.exec(r.fin.texto) || ['no lo dice'])[0] : '—');
+  /* Y sin la falta de concordancia de la v874, que este mismo panel produjo
+     en su primera versión: una segunda pasada que recoge un solo paso
+     imprimía «Se midieron los 1 pasos». Se persigue la CLASE en el panel
+     entero, como la guarda de la lámina. */
+  T('sin un «1» seguido de plural en el panel',
+    !!r.fin && !/(?<![\d.,])1 [a-záéíóúñ]+s\b/.test(r.fin.texto),
+    r.fin ? ((/(?<![\d.,])1 [a-záéíóúñ]+s\b/.exec(r.fin.texto) || ['ninguno'])[0]) : '—');
 
   console.log('\n  -- v907 · analizar otro sector deja el mapa limpio --');
   T('el botón de analizar otro sector está', r.hayOtro===true);

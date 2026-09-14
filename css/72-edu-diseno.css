@@ -2057,3 +2057,46 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 @media (prefers-reduced-motion:reduce){
   .pcr-destello{ animation:none; box-shadow:0 0 0 3px rgba(27,158,107,.45); }
 }
+
+/* ── 32. «Ya está todo cargado» (v907) ───────────────────────────────────
+   Pedido así: «en ese botón nuevo que me hizo agrégale una animación de que
+   ya todo está cargado». Es el mismo reparto de la v897 con el acuse de
+   guardado, y por la misma razón: el ESTADO —el panel verde con su marca—
+   se queda y dice «esto está medido»; la ANIMACIÓN dura un segundo y dice
+   «acaba de terminar». Si la animación viajara en el HTML, el panel volvería
+   a celebrar cada repintado y dejaría de significar nada.
+
+   Verde `--edu-ok`, que en esta aplicación ya significa «esto está resuelto»
+   desde la v880: darle un color nuevo a lo mismo sería enseñar dos códigos. */
+.pcr-medir-titulo{
+  display:flex; align-items:center; gap:7px;
+  margin:0 0 6px; font-weight:800; font-size:.92rem; color:var(--edu-ink-2);
+}
+.pcr-medir-titulo .u-ico{ flex:0 0 auto; color:var(--edu-ink-3); }
+.pcr-medir-ok{ border-color:var(--edu-ok); background:#E8F7F0; }
+.pcr-medir-ok .pcr-medir-titulo{ color:#0F6B48; }
+.pcr-medir-ok .pcr-medir-titulo .u-ico{ color:var(--edu-ok); }
+
+/* La animación. `forwards` NO, igual que en la v897: al terminar tiene que
+   devolver el panel a su estado normal —el verde, que lo pone la clase de
+   arriba— y no congelarlo en el último fotograma. La marca entra girando y
+   el panel da un latido: dos gestos cortos que se leen juntos como
+   «terminó», sin que ninguno se quede moviéndose. */
+.pcr-medir-nuevo{ animation:pcr-medido-latido .9s ease-out 1; }
+.pcr-medir-nuevo .pcr-medir-titulo .u-ico{ animation:pcr-medido-marca .55s ease-out 1; }
+@keyframes pcr-medido-latido{
+  0%{   transform:scale(1);     box-shadow:0 0 0 0 rgba(27,158,107,.5); }
+  30%{  transform:scale(1.02);  box-shadow:0 0 0 9px rgba(27,158,107,.16); }
+  100%{ transform:scale(1);     box-shadow:0 0 0 18px rgba(27,158,107,0); }
+}
+@keyframes pcr-medido-marca{
+  0%{   transform:scale(.4) rotate(-25deg); opacity:0; }
+  60%{  transform:scale(1.18) rotate(4deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0);       opacity:1; }
+}
+/* Con el movimiento reducido no se mueve nada y el acuse no se pierde: queda
+   el halo, que es lo que dice «pasó algo acá» (la decisión de la v897). */
+@media (prefers-reduced-motion:reduce){
+  .pcr-medir-nuevo{ animation:none; box-shadow:0 0 0 3px rgba(27,158,107,.45); }
+  .pcr-medir-nuevo .pcr-medir-titulo .u-ico{ animation:none; }
+}

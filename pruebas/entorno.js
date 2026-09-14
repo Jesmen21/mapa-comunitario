@@ -311,9 +311,61 @@ async function rutaDane(ctx, censo) {
   });
 }
 
+/* ── El doble de las fotos históricas (v907) ─────────────────────
+   La serie satelital entró en la cadena de «medir todo», así que cualquier
+   suite que la corra necesita teselas. `tevolucion` tiene el suyo con un
+   guión de colores por año —mide el verde que gana y pierde el sector—;
+   este es el sencillo: un verde plano, para las suites que solo necesitan
+   que el paso TERMINE.
+
+   Los años no se piden: `js/80` lleva la tabla de entregas escrita desde
+   2014 hasta 2026 y el refresco del índice de Esri no bloquea nada, así que
+   con la tesela alcanza. */
+function pngLiso(n, r, g, b) {
+  const zlib = require('zlib');
+  const fila = Buffer.alloc(1 + n * 3);
+  for (let i = 0; i < n; i++) { fila[1 + i * 3] = r; fila[2 + i * 3] = g; fila[3 + i * 3] = b; }
+  const cruda = Buffer.concat(Array.from({ length: n }, () => fila));
+  const TABLA = (() => { const t = new Int32Array(256);
+    for (let k = 0; k < 256; k++) { let c = k;
+      for (let j = 0; j < 8; j++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[k] = c; }
+    return t; })();
+  const crc32 = buf => { let c = -1;
+    for (let i = 0; i < buf.length; i++) c = TABLA[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ -1) >>> 0; };
+  const trozo = (tipo, datos) => {
+    const largo = Buffer.alloc(4); largo.writeUInt32BE(datos.length);
+    const cuerpo = Buffer.concat([Buffer.from(tipo, 'ascii'), datos]);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(cuerpo));
+    return Buffer.concat([largo, cuerpo, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(n, 0); ihdr.writeUInt32BE(n, 4);
+  ihdr[8] = 8; ihdr[9] = 2; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    trozo('IHDR', ihdr), trozo('IDAT', zlib.deflateSync(cruda)), trozo('IEND', Buffer.alloc(0))]);
+}
+
+async function rutaWayback(ctx, alPedir) {
+  const tesela = pngLiso(256, 60, 110, 70);
+  await ctx.route(/wayback\.maptiles\.arcgis\.com/, r => {
+    if (alPedir) { try { alPedir(r.request().url()); } catch (e) {} }
+    r.fulfill({ status: 200, contentType: 'image/png',
+                headers: { 'Access-Control-Allow-Origin': '*' }, body: tesela });
+  });
+  /* El índice de entregas de Esri. Se refresca en segundo plano y no bloquea
+     la serie, pero sin ruta la petición muere contra el atajo general de cada
+     suite y deja un error de red en la consola que no es del código. */
+  await ctx.route(/config\.maptiles\.arcgis\.com/, r => r.fulfill({
+    status: 200, contentType: 'application/json',
+    headers: { 'Access-Control-Allow-Origin': '*' }, body: '{}' }));
+}
+
 module.exports = {
   esperarLaApp: esperarLaApp,
   rutaDane: rutaDane,
+  rutaWayback: rutaWayback,
+  pngLiso: pngLiso,
   atributosDane: atributosDane,
   rasgosEstrato: rasgosEstrato,
   ESTRATOS: ESTRATOS,
