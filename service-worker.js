@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v907-el-historial-satelital-y-el-acuse';
+const URBIS_CACHE = 'urbis-v908-seguimiento-14-sep';
 const URBIS_ASSETS = [
   './',
   './index.html',

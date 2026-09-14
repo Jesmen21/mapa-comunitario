@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-13",
- "proximaActualizacion": "2026-09-14",
+ "actualizado": "2026-09-14",
+ "proximaActualizacion": "2026-09-15",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,209 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "En alocución por su primer mes de gobierno, De la Espriella anuncia un ajuste fiscal de $17,4 billones y advierte que casi la mitad del presupuesto de 2027 se financiará con deuda",
+   "detalle": "En una alocución transmitida por radio y televisión la noche del domingo 13 de septiembre, al cumplir un mes en el cargo, el presidente Abelardo de la Espriella presentó lo que llamó el «presupuesto de la verdad» para 2027: un esfuerzo de austeridad de aproximadamente $17,4 billones, con una reducción de $3 billones en compra de bienes y servicios y un recorte de $2,5 billones en proyectos de inversión que calificó de no prioritarios. Afirmó que el presupuesto que dejó el gobierno anterior «mentía» y «no reflejaba el peso de la deuda» del país, y advirtió que cerca de la mitad de los recursos que financiarán el presupuesto del próximo año provendrán de deuda.",
+   "contrapunto": "El gobierno anterior no se pronunció sobre el desglose específico del ajuste. El expresidente Gustavo Petro sí rechazó, la misma noche, que la crisis fiscal sea atribuible a corrupción de su administración (ver la entrada de esta misma fecha en la categoría «Corrupción y contratación»).",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Nueve puntos clave del discurso del presidente De La Espriella: desde crisis fiscal, autonomía universitaria, hasta cárcel ordinaria para corruptos",
+     "u": "https://www.eltiempo.com/politica/gobierno/nueve-puntos-clave-del-discurso-del-presidente-de-la-espriella-desde-crisis-fiscal-autonomia-universitaria-hasta-carcel-ordinaria-para-corruptos-3585808"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella expuso el déficit fiscal que heredó del gobierno de Gustavo Petro: «Lo advertí apenas llegué al Gobierno»",
+     "u": "https://www.infobae.com/colombia/2026/09/14/abelardo-de-la-espriella-expuso-el-deficit-fiscal-que-heredo-del-gobierno-de-gustavo-petro-lo-adverti-apenas-llegue-al-gobierno/"
+    },
+    {
+     "n": "Infobae · Estas son las 10 frases más contundentes de la alocución de De la Espriella, en la que se refirió a la crisis fiscal: «Al borde del precipicio»",
+     "u": "https://www.infobae.com/colombia/2026/09/14/estas-son-las-10-frases-mas-contundentes-de-la-alocucion-de-de-la-espriella-en-la-que-se-refirio-a-la-crisis-fiscal-al-borde-del-precipicio/"
+    },
+    {
+     "n": "El País (Cali) · Alocución presidencial: Abelardo De La Espriella se dirige a los colombianos este domingo 13 de septiembre",
+     "u": "https://www.elpais.com.co/politica/alocucion-presidencial-abelardo-de-la-espriella-se-dirige-a-los-colombianos-este-domingo-13-de-septiembre-1317.html"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "De la Espriella atribuye la crisis fiscal al «despilfarro» y la «corrupción» de Petro; el expresidente rechaza la acusación y pedirá réplica ante el CNE",
+   "detalle": "En la misma alocución del 13 de septiembre, el presidente Abelardo de la Espriella afirmó que la crisis fiscal que enfrenta el país es «responsabilidad exclusiva de Gustavo Petro, su gobierno, su despilfarro y su corrupción». Esa misma noche, Petro anunció que solicitará ante el Consejo Nacional Electoral (CNE) el derecho de réplica para confrontar el discurso, calificándolo de «absurdamente ineficaz», y rechazó el señalamiento: «Rechazo la acusación de corrupción a mi gobierno». En su respuesta, Petro además cuestionó el origen del patrimonio del presidente, afirmando que proviene «solo del narcotráfico».",
+   "contrapunto": "La afirmación de Petro sobre el origen del patrimonio presidencial repite el señalamiento de enriquecimiento ilícito y lavado de activos ligado al testimonio del narcotraficante Juan Carlos «El Tuso» Sierra, que la Fiscalía investigó y precluyó a favor de De la Espriella, con archivo definitivo del proceso en 2021 por no hallar «evidencia o elemento material probatorio» de esos delitos (registrado en este módulo como el caso «lavado-tuso-sierra», estado archivado); no consta ninguna investigación abierta sobre el punto a la fecha de esta actualización. En sentido inverso, las acusaciones de corrupción y despilfarro que De la Espriella atribuye al gobierno de Petro corresponden a señalamientos políticos formulados en esta alocución, sin que se citen procesos, radicados o fallos que los respalden de forma específica; ningún organismo de control se ha pronunciado sobre una atribución de responsabilidad fiscal de esa magnitud al gobierno saliente. El CNE no ha resuelto a la fecha la solicitud de réplica de Petro.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "Semana · Gustavo Petro solicitará réplica para confrontar la alocución de Abelardo De La Espriella: «Rechazo la acusación de corrupción a mi gobierno»",
+     "u": "https://www.semana.com/politica/articulo/gustavo-petro-solicitara-replica-para-confrontar-la-alocucion-de-abelardo-de-la-espriella-rechazo-la-acusacion-de-corrupcion-a-mi-gobierno/202638/"
+    },
+    {
+     "n": "Semana · De La Espriella asegura que «la crisis fiscal es responsabilidad de Gustavo Petro» y dice que el país está al borde del «abismo»",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-asegura-que-la-crisis-fiscal-es-responsabilidad-de-gustavo-petro-y-dice-que-el-pais-esta-al-borde-del-abismo/202639/"
+    },
+    {
+     "n": "El Espectador · Así se pronunció el país político tras denuncia de crisis fiscal: oposición pidió réplica",
+     "u": "https://www.elespectador.com/politica/asi-reacciono-el-pais-politico-por-las-denuncias-de-crisis-fiscal-de-de-la-espriella-contra-el-gobierno-petro/"
+    },
+    {
+     "n": "Radio Santa Fe · Petro, con su despilfarro y corrupción, dejó a Colombia al borde del abismo, afirma De la Espriella",
+     "u": "https://www.radiosantafe.com/2026/09/14/petro-con-su-despilfarro-y-corrupcion-dejo-a-colombia-al-borde-del-abismo-afirma-de-la-espriella-vamos-a-perseguir-si-cuartel-a-los-responsables-de-este-desastre/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "educacion",
+   "titulo": "De la Espriella anuncia un protocolo nacional para que la Fuerza Pública intervenga en universidades públicas ante vandalismo: «No serán santuarios de violencia»",
+   "detalle": "En la alocución del 13 de septiembre, el presidente anunció que su Gobierno establecerá un protocolo nacional que determine cuándo la Fuerza Pública puede intervenir en universidades públicas ante hechos de violencia, vandalismo o posibles actos terroristas, con la Policía Nacional como primera autoridad operativa cuando desde los campus se preparen ese tipo de actos. Afirmó: «No voy a permitir que las universidades públicas sigan siendo santuarios de la violencia bajo ninguna circunstancia» y que «la autonomía universitaria no está por encima del orden público, ni significa autonomía en materia de orden público ni convierte a los campus en territorios sustraídos de la Constitución, de la ley o de la autoridad legítima del Estado». Aclaró que la protesta pacífica ejercida dentro del marco constitucional seguirá siendo respetada y garantizada.",
+   "contrapunto": "Sectores académicos y de oposición cuestionaron el anuncio como un riesgo para la autonomía universitaria reconocida en el artículo 69 de la Constitución; el medio teleSUR lo describió como una amenaza a esa autonomía. El protocolo no se ha publicado a la fecha de esta actualización, por lo que su alcance operativo concreto —qué situaciones habilitarían el ingreso de la Fuerza Pública a un campus— aún no está definido en un texto normativo.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · De la Espriella anuncia protocolo para intervenir en universidades ante actos de vandalismo: «No serán santuarios de violencia»",
+     "u": "https://www.infobae.com/colombia/2026/09/14/de-la-espriella-anuncia-protocolo-para-intervenir-en-universidades-ante-actos-de-vandalismo-no-seran-santuarios-de-violencia/"
+    },
+    {
+     "n": "El País (Cali) · De La Espriella lanzó advertencia a quienes cometan actos vandálicos y se oculten en universidades: «Voy a ir por ustedes»",
+     "u": "https://www.elpais.com.co/politica/de-la-espriella-lanzo-advertencia-a-quienes-cometan-actos-vandalicos-y-se-oculten-en-universidades-voy-a-ir-por-ustedes-1317.html"
+    },
+    {
+     "n": "El Espectador · «La autonomía universitaria no está por encima del orden público»: De la Espriella",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-habla-de-autonomia-universitaria-presupuesto-general-y-seguridad-en-su-alocucion/"
+    },
+    {
+     "n": "teleSUR · De la Espriella amenaza autonomía universitaria y anuncia que la policía podrá entrar en los campus",
+     "u": "https://www.telesurtv.net/de-la-espriella-amenaza-autonomia-universitaria-anuncia-y-que-la-policia-podra-entrar-en-los-campus/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella dice que «respeta» los fallos judiciales que frenaron bombardeos y fumigaciones, pero anuncia que los «va a controvertir»",
+   "detalle": "En la alocución del 13 de septiembre, el presidente se refirió a las decisiones judiciales que han limitado medidas de su gobierno, entre ellas las órdenes de suspender bombardeos en zonas donde pueda haber menores reclutados (ver entrada del 10 de septiembre de 2026) y la suspensión cautelar de la aspersión aérea con glufosinato de amonio en Putumayo (ver entrada del 12 de septiembre de 2026). Declaró: «Respetamos las decisiones judiciales, pero las vamos a controvertir y vamos a defender las facultades constitucionales del presidente de la República», y agregó que «respetar una decisión judicial no significa renunciar al derecho de controvertirla por los medios que establece la Constitución y la ley, especialmente cuando considero que una medida puede terminar interfiriendo con competencias que la Constitución le dio expresamente al presidente de la República».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Presidente De La Espriella afirma que respeta los fallos judiciales adversos a su Gobierno, pero que los controvertirá por las vías legales",
+     "u": "https://www.eltiempo.com/justicia/investigacion/presidente-de-la-espriella-afirma-que-respeta-los-fallos-judiciales-adversos-a-su-gobierno-pero-que-los-controvertira-por-las-vias-legales-3585786"
+    },
+    {
+     "n": "Semana · «Una cosa es el control judicial, otra, sustituir al Gobierno»: De La Espriella sobre fallos contra bombardeos y fumigaciones",
+     "u": "https://www.semana.com/nacion/articulo/una-cosa-es-el-control-judicial-otra-sustituir-al-gobierno-de-la-espriella-sobre-fallos-contra-bombardeos-y-fumigaciones/202619/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella se refirió a los fallos judiciales que frenaron medidas de su gobierno como bombardeos y fumigaciones: «Vamos a controvertirlas»",
+     "u": "https://www.infobae.com/colombia/2026/09/14/abelardo-de-la-espriella-se-refirio-a-los-fallos-judiciales-que-frenaron-meddidas-de-su-gobierno-como-bombardeos-y-fumigaciones-vamos-a-controvertirlas/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "De la Espriella presenta un balance de ayudas para el Valle del Cauca tras el terremoto: viviendas, $40.000 millones para reactivación y $6.200 millones para la Basílica de Buga",
+   "detalle": "El presidente detalló medidas y recursos para el Valle del Cauca tras el terremoto del 10 de agosto: el mejoramiento de 110 viviendas en Buga con una inversión de $2.500 millones, la donación de 1.000 viviendas por parte de la Fundación Argos —200 de ellas para familias de Argelia, El Águila y El Cairo— y la gestión de 3.000 viviendas adicionales para ampliar la respuesta habitacional en la región. Anunció además $40.000 millones para microempresas, comercio y turismo afectados, y $6.200 millones para la recuperación de la Basílica del Señor de los Milagros, en Buga.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El País (Cali) · De La Espriella presentó balance de ayudas para el Valle del Cauca tras el terremoto: viviendas y más de $40.000 millones",
+     "u": "https://www.elpais.com.co/politica/de-la-espriella-presento-balance-de-ayudas-para-el-valle-del-cauca-tras-el-terremoto-viviendas-y-mas-de-40000-millones-1310.html"
+    },
+    {
+     "n": "El Espectador · De la Espriella anuncia COP 40.000 millones para plan de reactivación económica tras terremoto en Colombia",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-anuncia-cop-40000-millones-para-plan-de-reactivacion-economica-tras-terremoto-en-colombia/"
+    },
+    {
+     "n": "Semana · «Vamos a levantarnos mejor»: Abelardo De La Espriella entregó balance sobre el terremoto en Colombia",
+     "u": "https://www.semana.com/nacion/articulo/vamos-a-levantarnos-mejor-abelardo-de-la-espriella-entrego-balance-sobre-el-terremoto-en-colombia/202604/"
+    },
+    {
+     "n": "El Tiempo · Abelardo De La Espriella anunció medidas para acelerar la reconstrucción de Cali tras el terremoto, con acciones en vivienda, empleo y economía",
+     "u": "https://www.eltiempo.com/colombia/cali/abelardo-de-la-espriella-anuncio-medidas-para-acelerar-la-reconstruccion-de-cali-tras-el-terremoto-con-acciones-en-vivienda-empleo-y-economia-3583937"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-12",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Un juzgado de Puerto Asís (Putumayo) suspende el plan piloto de aspersión aérea con glufosinato de amonio impulsado por el Gobierno",
+   "detalle": "El Juzgado Tercero Mixto del Circuito de Puerto Asís admitió una tutela presentada por Jhonatan Enrique Meneses Valencia, representante de la fundación Tiempo de Cambios para la Transformación Social, y ordenó la suspensión provisional de cualquier actividad de aspersión aérea con glufosinato de amonio en el departamento de Putumayo. La medida cautelar suspende, mientras se resuelve el fondo, la Resolución 007 de agosto de 2026 del Consejo Nacional de Estupefacientes, que había habilitado el plan piloto de fumigación aérea de cultivos ilícitos anunciado por el Gobierno de De la Espriella. La organización accionante argumentó riesgos para la salud, el acceso al agua y la biodiversidad; el juzgado indicó que la medida cautelar se mantendrá mientras se recopila información suficiente sobre el herbicida, que es menos fuerte que el glifosato.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El País (Cali) · Un juez de Putumayo pone freno al plan piloto anunciado por De la Espriella de fumigación aérea con glufosinato",
+     "u": "https://www.elpais.com.co/colombia/un-juez-de-putumayo-pone-freno-al-plan-piloto-anunciado-por-de-la-espriella-de-fumigacion-aerea-con-glufosinato-1108.html"
+    },
+    {
+     "n": "Portafolio · Juez frena aspersión aérea con glufosinato de amonio en Putumayo",
+     "u": "https://www.portafolio.co/economia/gobierno/juez-frena-aspersion-aerea-con-glufosinato-de-amonio-en-putumayo-502343"
+    },
+    {
+     "n": "Pulzo · Juez ordena suspender la aspersión aérea con glufosinato de amonio en Putumayo mientras se revisa acción judicial",
+     "u": "https://www.pulzo.com/nacion/glufosinato-de-amonio-suspenden-aspersion-aerea-sobre-cultivos-de-coca-en-putumayo-PP5300623A"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella dona su primer salario presidencial a dos hogares geriátricos de Quimbaya (Quindío) y anuncia que lo hará cada mes",
+   "detalle": "Durante una visita a Quimbaya, Quindío, el 11 de septiembre, el presidente entregó su primer salario como jefe de Estado, repartido entre los hogares geriátricos Santo Domingo Savio y Consentidos de Jesús —a este último por un cheque de $15.979.307,80—, cumpliendo una promesa de campaña de no cobrar el sueldo presidencial: «Prometí en campaña que no iba a cobrar el sueldo del presidente. Y cada mes, cuando reciba el pago, voy a ir a una región de Colombia a entregarlo para ayudar a obras tan importantes como esta del cuidado de nuestros adultos mayores». La Presidencia confirmó que la donación mensual se mantendrá durante todo el gobierno, rotando entre distintas causas sociales en diferentes regiones del país.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · De la Espriella dona su primer salario a dos hogares geriátricos afectados por terremoto",
+     "u": "https://www.infobae.com/america/agencias/2026/09/12/de-la-espriella-dona-su-primer-salario-a-dos-hogares-geriatricos-afectados-por-terremoto/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella confirmó que cada mes donará su sueldo a causas sociales, tras entregar el primero a dos ancianatos de Quindío",
+     "u": "https://www.infobae.com/colombia/2026/09/12/abelardo-de-la-espriella-confirmo-que-cada-mes-donara-su-sueldo-a-causas-sociales-tras-entregar-el-primero-a-dos-ancianatos-de-quindio/"
+    },
+    {
+     "n": "El Espectador · De la Espriella donó su primer sueldo como presidente a hogares geriátricos del Quindío",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-dona-primer-mes-de-salario-en-quindio-y-dice-que-lo-hara-todo-el-gobierno/"
+    },
+    {
+     "n": "Vanguardia · Abelardo De La Espriella donó su primer sueldo como presidente a dos ancianatos de Quindío",
+     "u": "https://www.vanguardia.com/colombia/2026/09/12/abelardo-de-la-espriella-dono-su-primer-sueldo-como-presidente-a-dos-ancianatos-de-quindio/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-11",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "El Gobierno da a 204 municipios un plazo de cinco días para enviar el censo de daños del terremoto: «Sin información no se puede estructurar la reconstrucción»",
+   "detalle": "Un mes después del terremoto del 10 de agosto, el presidente De la Espriella advirtió que 204 municipios de las zonas afectadas aún no habían enviado el reporte detallado de daños que el Gobierno nacional requiere para organizar la reconstrucción, con plazo límite el 17 de septiembre. Instruyó directamente al Ministerio de Vivienda, al gestor de la reconstrucción y a la Unidad Nacional para la Gestión del Riesgo de Desastres hacer seguimiento a los municipios morosos: «Sin información no se puede estructurar correctamente la reconstrucción» y «hay que apretar a los alcaldes para que nos manden la información como debe ser».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "cwmas.com.co · De La Espriella lanzó duro reclamo a 204 alcaldes por demoras tras el sismo",
+     "u": "https://cwmas.com.co/politica/2026/09/11/tienen-5-dias-de-la-espriella-exigio-a-los-alcaldes-enviar-el-reporte-del-terremoto/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella 'apretó' a los alcaldes por informes sobre el terremoto: «No se puede estructurar la reconstrucción»",
+     "u": "https://www.infobae.com/colombia/2026/09/12/abelardo-de-la-espriella-apreto-a-los-alcaldes-por-informes-sobre-el-terremoto-no-se-puede-estructurar-la-reconstruccion/"
+    },
+    {
+     "n": "Semana · El regaño de De La Espriella a alcaldes que aún no han enviado datos del terremoto: «Hay que apretar»",
+     "u": "https://www.semana.com/politica/articulo/el-duro-regano-de-de-la-espriella-a-los-alcaldes-que-aun-no-han-enviado-datos-del-terremoto-hay-que-apretar/202637/"
+    },
+    {
+     "n": "El Espectador · «Hay que apretar a los alcaldes»: el regaño de De la Espriella por informes sobre terremoto",
+     "u": "https://www.elespectador.com/politica/hay-que-apretar-a-los-alcaldes-el-regano-de-de-la-espriella-por-informes-sobre-terremoto/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-12",
    "precision": "exacta",
