@@ -3498,7 +3498,12 @@
       P.bajar(r.blob, nombreDeArchivo(nombre, S.nombreProyecto, mm));
       S.pdfArmando = false;
       if (alAvisar) {
-        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
+        /* CUÁNTAS páginas, que desde la v905 pueden ser dos. Sin la cifra,
+           un archivo al que le faltara una hoja se ve igual que uno completo
+           hasta que alguien lo abre — que es como el defecto de la v905 pasó
+           cincuenta versiones sin que nadie lo notara. */
+        alAvisar('Lámina bajada: ' + (r.paginas > 1 ? r.paginas + ' hojas de ' : '') +
+                 (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
                  Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
                  'Está en las descargas del teléfono, ya con su tamaño puesto.');
       }
@@ -3564,7 +3569,12 @@
     }).then(function (r) {
       P.bajar(r.blob, nombreDeArchivo(nombre, (f && f.proyecto) || '', mm));
       if (alAvisar) {
-        alAvisar('Lámina bajada: ' + (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
+        /* CUÁNTAS páginas, que desde la v905 pueden ser dos. Sin la cifra,
+           un archivo al que le faltara una hoja se ve igual que uno completo
+           hasta que alguien lo abre — que es como el defecto de la v905 pasó
+           cincuenta versiones sin que nadie lo notara. */
+        alAvisar('Lámina bajada: ' + (r.paginas > 1 ? r.paginas + ' hojas de ' : '') +
+                 (mm.anchoMM / 10) + ' × ' + (mm.altoMM / 10) + ' cm, ' +
                  Math.round(r.bytes / 1048576 * 10) / 10 + ' MB a ' + r.dpi + ' puntos por pulgada. ' +
                  'Está en las descargas del teléfono, ya con su tamaño puesto.');
       }

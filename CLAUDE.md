@@ -4608,6 +4608,74 @@ Se deja sin hacer y no se declara imposible, que es la distinción que este
 módulo lleva cinco tandas defendiendo: queda en la lista viva con lo que sí
 hay —el punto medido dentro del departamento— y con lo que costaría.
 
+## El PDF traía una hoja de las dos (v905)
+
+Salió al exportar el PDF de las dos láminas para entregarlo y **mirarlo**, que
+es el método que encontró los defectos de la v874, la v882, la v885 y la v887.
+El archivo tenía una página. La cabecera decía «LÁMINA A DE 2» y ahí se
+acababa: **la lámina B no estaba en el archivo.**
+
+Desde la v853 el pliego educativo son dos hojas de 60 × 90. El botón «Lámina
+60×90 · PDF» —que es como sale el entregable, no la vista de impresión— venía
+bajando media entrega desde entonces.
+
+### Por qué no se veía
+
+`js/75` rasteriza la lámina metiendo el HTML en un `<foreignObject>` **del
+tamaño exacto del papel** y dibujándolo en un lienzo. Con un documento de dos
+hojas, la segunda queda debajo del recorte: no hay error, no hay aviso, y el
+JPEG que sale es una hoja perfecta. Desde afuera un PDF de 1,2 MB con la
+lámina A entera se ve exactamente como un PDF completo.
+
+**Y la comprobación estaba escrita al revés.** `tpdfpliego` exigía «trae una
+sola página» —cierto cuando se escribió, con el pliego de una hoja— y se quedó
+vieja el día que el pliego pasó a dos. Cincuenta versiones dando por buena una
+exportación recortada, en verde. Es la clase de la v864 —una afirmación que
+nació bien y la dejó obsoleta una tanda posterior— dicha en el arnés en vez de
+en la lámina, que es donde no la vigilaba nadie.
+
+### Una página por hoja
+
+`hojasDe` parte el documento por sus `.hoja` —por el elemento y no por una
+marca en el texto— y le pone a cada trozo la hoja de estilo del documento
+delante. `intentar` dibuja una a una, **soltando cada lienzo antes del
+siguiente**: el pico de memoria sigue siendo el de una hoja, que es lo que
+decide si un teléfono de gama media puede o no. Y `pdfConImagen` pasa a
+`pdfConImagenes`: el PDF se escribe a mano, así que el árbol de páginas, los
+objetos por hoja y la tabla `xref` se cuentan sobre `3 + 2n` en vez de sobre
+los seis fijos de antes.
+
+Un documento de una sola hoja —el informe, la lámina suelta— sale como estaba:
+una hoja, una página. No hay rama nueva que mantener.
+
+### La comprobación mide lo que el pliego ES
+
+No «dos páginas», que sería la misma constante copiada un piso más arriba y se
+quedaría vieja el día que el pliego pase a tres. La suite **cuenta las `.hoja`
+del documento que el propio módulo compone** y exige tantas páginas como
+hojas, cada una con su propia imagen —dos páginas apuntando al mismo dibujo
+serían la misma hoja impresa dos veces, y desde el conteo se ven igual— y cada
+una de 90 × 60 cm.
+
+De paso, el lector del `xref` leía `xref\n0 7`: **el número de objetos del PDF
+de una página, copiado en la prueba**. Ahora lee el que el archivo declara. Una
+constante del formato escrita a mano en la comprobación es lo que hace que la
+comprobación deje de mirar el archivo y empiece a mirarse a sí misma.
+
+### Y el aviso dice cuántas hojas bajaron
+
+«Lámina bajada: 2 hojas de 60 × 90 cm, 2,5 MB a 120 puntos por pulgada.» Sin
+la cifra, un archivo al que le falte una hoja se ve igual que uno completo
+hasta que alguien lo abre — que es exactamente cómo este defecto pasó cincuenta
+versiones.
+
+### Demostrado sobre el papel
+
+El PDF exportado con el sector de prueba: **una página de 60 × 90 antes, dos
+después**, la segunda con «LÁMINA B DE 2 · GENTE, USOS Y MOVILIDAD», sus
+3.155 habitantes, la banda de movilidad, la comparación con la ciudad de la
+v902, las seis plantillas de campo, la coherencia y las cinco propuestas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v904-la-etiqueta-y-los-ejemplos';
+const URBIS_CACHE = 'urbis-v905-el-pdf-traia-una-hoja';
 const URBIS_ASSETS = [
   './',
   './index.html',

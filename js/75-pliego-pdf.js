@@ -150,7 +150,24 @@
      la imagen y los metadatos. Lo único delicado es la tabla `xref`: guarda
      en qué byte empieza cada objeto, así que hay que ir contando mientras se
      escribe. Un byte de más y el archivo no abre. */
-  function pdfConImagen(jpeg, imW, imH, anchoMM, altoMM, titulo) {
+  /* ── UNA PÁGINA POR HOJA (v905) ─────────────────────────────────────
+     Escribía una sola página, y desde la v853 el pliego educativo son DOS
+     hojas de 60 × 90. El botón «Lámina 60×90 · PDF» —que es como sale el
+     entregable— bajaba un archivo de una página con la lámina A y **sin la
+     B**: el `foreignObject` mide exactamente el papel, así que lo que venía
+     debajo quedaba fuera del recorte, sin error y sin aviso.
+
+     Se vio exportando el PDF y mirándolo, que es el método que encontró los
+     defectos de la v874, la v882, la v885 y la v887. No lo cazó `tpdfpliego`
+     porque esa suite exigía «una página»: **la comprobación estaba escrita
+     contra el pliego de una hoja y se quedó vieja cuando el pliego cambió**,
+     que es exactamente la clase de la v864 dicha en el arnés en vez de en la
+     lámina.
+
+     Ahora recibe una imagen por hoja y escribe una página por imagen. El
+     `xref` se cuenta sobre el total de objetos, que ya no son seis fijos:
+     tres de cabecera más dos por página. */
+  function pdfConImagenes(paginas, anchoMM, altoMM, titulo) {
     var W = (anchoMM * PT_POR_MM).toFixed(2), H = (altoMM * PT_POR_MM).toFixed(2);
     var trozos = [], largo = 0, posiciones = [];
     function poner(x) {
@@ -170,30 +187,47 @@
     })();
     var limpio = String(titulo || 'Lámina URBIS').replace(/[\\()\r\n]/g, ' ');
 
+    /* Objetos: 1 catálogo, 2 árbol de páginas, 3 metadatos, y después dos por
+       hoja —la página y su imagen—, con el flujo de dibujo compartido: las
+       dos hojas se dibujan con el mismo operador porque miden lo mismo. */
+    var n = paginas.length;
+    var idPag = function (k) { return 4 + k * 2; };
+    var idImg = function (k) { return 5 + k * 2; };
+    var total = 3 + n * 2;
+
     poner('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
     objeto(1, '<< /Type /Catalog /Pages 2 0 R >>');
-    objeto(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
-    objeto(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + ']' +
-      ' /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>');
-    var dibujo = W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do';
-    objeto(4, '<< /Length ' + dibujo.length + ' >>', dibujo);
-    objeto(5, '<< /Type /XObject /Subtype /Image /Width ' + imW + ' /Height ' + imH +
-      ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' +
-      jpeg.length + ' >>', jpeg);
-    objeto(6, '<< /Title (' + limpio + ') /Producer (URBIS Pro City) /Creator (URBIS Pro City)' +
+    objeto(2, '<< /Type /Pages /Kids [' +
+      paginas.map(function (x, k) { return idPag(k) + ' 0 R'; }).join(' ') +
+      '] /Count ' + n + ' >>');
+    objeto(3, '<< /Title (' + limpio + ') /Producer (URBIS Pro City) /Creator (URBIS Pro City)' +
       ' /CreationDate (' + fecha + ') >>');
+    var dibujo = W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do';
+    paginas.forEach(function (pg, k) {
+      /* El flujo de contenido va DENTRO del objeto de la página, como un
+         objeto más: escribirlo aparte obligaría a un tercer identificador por
+         hoja y a otra cuenta en el `xref`. Se repite el mismo operador y
+         cuesta cuarenta bytes por página. */
+      objeto(idPag(k), '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + ']' +
+        ' /Resources << /XObject << /Im0 ' + idImg(k) + ' 0 R >> >>' +
+        ' /Contents << /Length ' + dibujo.length + ' >> >>', dibujo);
+      objeto(idImg(k), '<< /Type /XObject /Subtype /Image /Width ' + pg.w + ' /Height ' + pg.h +
+        ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' +
+        pg.jpeg.length + ' >>', pg.jpeg);
+    });
 
     var inicioXref = largo;
-    var xref = 'xref\n0 7\n0000000000 65535 f \n';
-    for (var n = 1; n <= 6; n++) {
-      xref += ('0000000000' + posiciones[n]).slice(-10) + ' 00000 n \n';
+    var xref = 'xref\n0 ' + (total + 1) + '\n0000000000 65535 f \n';
+    for (var q = 1; q <= total; q++) {
+      xref += ('0000000000' + (posiciones[q] || 0)).slice(-10) + ' 00000 n \n';
     }
     poner(xref);
-    poner('trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n' + inicioXref + '\n%%EOF\n');
+    poner('trailer\n<< /Size ' + (total + 1) + ' /Root 1 0 R /Info 3 0 R >>\nstartxref\n' +
+          inicioXref + '\n%%EOF\n');
 
-    var total = new Uint8Array(largo), i = 0;
-    trozos.forEach(function (t) { total.set(t, i); i += t.length; });
-    return new Blob([total], { type: 'application/pdf' });
+    var bytes = new Uint8Array(largo), i = 0;
+    trozos.forEach(function (t) { bytes.set(t, i); i += t.length; });
+    return new Blob([bytes], { type: 'application/pdf' });
   }
 
   /* Cuánto lienzo aguanta este teléfono. No se pregunta: se prueba. Un
@@ -267,17 +301,44 @@
   /* Un intento completo a una resolución: componer, dibujar, comprobar que
      hay algo y comprimir. Cualquier tropiezo devuelve null y el de arriba
      baja un escalón. */
+  /* ── Las hojas del documento, una por una (v905) ────────────────────
+     `laminaDoble` devuelve UN documento con dos `.hoja`. Cada una es un papel
+     de 60 × 90, y una página del PDF es un papel: hay que separarlas antes de
+     dibujar, o la segunda cae fuera del recorte del `foreignObject`.
+
+     Se parte por el elemento y no por una marca en el texto: el documento
+     lleva su propia hoja de estilo, y lo que hace falta de cada trozo es el
+     `.hoja` completo con esos estilos delante. Un documento de una sola hoja
+     —el informe, la lámina suelta— sale como estaba: una hoja, una página. */
+  function hojasDe(html) {
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var hojas = doc.querySelectorAll('.hoja');
+    if (hojas.length < 2) return [html];
+    var estilos = Array.prototype.map.call(doc.querySelectorAll('style'), function (s2) {
+      return s2.outerHTML;
+    }).join('');
+    var ser = new XMLSerializer();
+    return Array.prototype.map.call(hojas, function (h) {
+      return '<!doctype html><html><head>' + estilos + '</head><body>' +
+        ser.serializeToString(h) + '</body></html>';
+    });
+  }
+
   async function intentar(html, anchoMM, altoMM, dpi) {
     var base = { w: medirEnPx(anchoMM), h: medirEnPx(altoMM) };
     var k = dpi / 96;
     var w = Math.round(base.w * k), h = Math.round(base.h * k);
     if (!cabeElLienzo(w, h)) return null;
-    var lienzo = await dibujar(svgDeLaLamina(html, anchoMM, altoMM, k), w, h);
-    if (!tieneDibujo(lienzo)) { lienzo.width = lienzo.height = 1; return null; }
-    var url = lienzo.toDataURL('image/jpeg', 0.92);
-    lienzo.width = lienzo.height = 1;     // decenas de megabytes: se sueltan ya
-    if (!/^data:image\/jpeg/.test(url) || url.length < 5000) return null;
-    return { jpeg: bytesDe(url), w: w, h: h, dpi: dpi };
+    var docs = hojasDe(html), paginas = [];
+    for (var i = 0; i < docs.length; i++) {
+      var lienzo = await dibujar(svgDeLaLamina(docs[i], anchoMM, altoMM, k), w, h);
+      if (!tieneDibujo(lienzo)) { lienzo.width = lienzo.height = 1; return null; }
+      var url = lienzo.toDataURL('image/jpeg', 0.92);
+      lienzo.width = lienzo.height = 1;     // decenas de megabytes: se sueltan ya
+      if (!/^data:image\/jpeg/.test(url) || url.length < 5000) return null;
+      paginas.push({ jpeg: bytesDe(url), w: w, h: h });
+    }
+    return { paginas: paginas, w: w, h: h, dpi: dpi };
   }
 
   /* ── Armar el PDF ──────────────────────────────────────────────────────
@@ -304,11 +365,14 @@
       var dpi = CALIDADES[i];
       try {
         avisar('Dibujando la lámina a ' + dpi + ' puntos por pulgada…');
+        /* Con dos hojas son dos lienzos del tamaño del papel, uno detrás del
+           otro y soltando cada uno antes del siguiente: el pico de memoria es
+           el de una hoja, no el de las dos. */
         var r = await intentar(html, anchoMM, altoMM, dpi);
         if (r) {
-          var blob = pdfConImagen(r.jpeg, r.w, r.h, anchoMM, altoMM, o.titulo);
+          var blob = pdfConImagenes(r.paginas, anchoMM, altoMM, o.titulo);
           return { blob: blob, dpi: dpi, bytes: blob.size, ancho: r.w, alto: r.h,
-                   intentos: i + 1, bajadas: fallos };
+                   paginas: r.paginas.length, intentos: i + 1, bajadas: fallos };
         }
         fallos.push(dpi + ' ppp: no cupo');
       } catch (e) {

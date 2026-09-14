@@ -122,6 +122,18 @@ const PT = mm => mm * 72 / 25.4;
   }
   r.otraPestana = otraPestana;
   r.bytes = pdf ? pdf.length : 0;
+  /* Cuántas HOJAS compone el pliego de este sector. Se cuenta sobre el
+     documento que el propio módulo arma, no sobre una constante: el día que
+     el pliego pase a tres, la comprobación de páginas lo sigue sola en vez de
+     quedarse vieja como se quedó la de «una sola página». */
+  r.hojasCompuestas = await pg.evaluate(() => {
+    try {
+      const R = window.URBIS_PC_RECON;
+      const h = R.laminaDoble ? R.laminaDoble({ horizontal: true }) : '';
+      const d = new DOMParser().parseFromString(String(h), 'text/html');
+      return d.querySelectorAll('.hoja').length;
+    } catch (e) { return 0; }
+  });
   await pg.waitForTimeout(600);
   r.aviso = await pg.evaluate(() => {
     const a = document.querySelector('#pcr-hoja .pcr-aviso, #pcr-hoja .pcr-ok, #pcr-hoja .pcr-conc');
@@ -297,15 +309,36 @@ const PT = mm => mm * 72 / 25.4;
   T('y termina cerrado', /%%EOF\s*$/.test(txt));
   T('pesa lo que pesa una lámina, no cuatro bytes', r.bytes > 200000,
     Math.round(r.bytes / 1024) + ' KB');
-  T('trae una sola página', /\/Type\s*\/Pages[^>]*\/Count 1/.test(txt));
+  /* ── UNA PÁGINA POR HOJA (v905) ────────────────────────────────────
+     Esto decía «trae una sola página», y era cierto cuando se escribió: el
+     pliego era una hoja. Desde la v853 son DOS de 60 × 90, y la aserción se
+     quedó vieja —la clase de la v864— dando por buena una exportación a la
+     que le faltaba la lámina B entera. Cincuenta versiones bajando un PDF
+     con media entrega, en verde.
+
+     Ahora se mide lo que el pliego ES: el documento compuesto trae dos
+     `.hoja`, así que el archivo trae dos páginas, cada una con su propio
+     dibujo. Una sola página con dos hojas dentro no es una exportación
+     completa: es la primera hoja y el recorte. */
+  const nPag = Number((txt.match(/\/Type\s*\/Pages[^>]*\/Count (\d+)/) || [])[1] || 0);
+  const nHojas = r.hojasCompuestas || 0;
+  T('trae una página por hoja del pliego, no una sola con el resto recortado',
+    nPag === nHojas && nPag >= 1, nPag + ' páginas · ' + nHojas + ' hojas compuestas');
+  /* Y cada página con SU imagen: dos páginas apuntando al mismo dibujo serían
+     la misma hoja impresa dos veces, que desde el conteo se ve igual. */
+  const nImg = (txt.match(/\/Subtype \/Image/g) || []).length;
+  T('y cada página lleva su propio dibujo', nImg === nPag, nImg + ' imágenes');
   /* El punto de todo esto: los milímetros. 900 × 600 mm son 2551,18 × 1700,79
-     puntos, y es lo que tiene que decir la caja de la página. */
-  const caja = (txt.match(/\/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/) || []);
-  const anchoPt = Number(caja[1] || 0), altoPt = Number(caja[2] || 0);
-  T('la página mide 90 × 60 cm, no carta ni oficio',
-    Math.abs(anchoPt - PT(900)) < 0.5 && Math.abs(altoPt - PT(600)) < 0.5,
+     puntos, y es lo que tiene que decir la caja de CADA página. */
+  const cajas = (txt.match(/\/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/g) || []).map(x => {
+    const m = /\[0 0 ([\d.]+) ([\d.]+)\]/.exec(x);
+    return { a: Number(m[1]), b: Number(m[2]) };
+  });
+  const anchoPt = cajas.length ? cajas[0].a : 0, altoPt = cajas.length ? cajas[0].b : 0;
+  T('todas las páginas miden 90 × 60 cm, no carta ni oficio',
+    cajas.length === nPag && cajas.every(c => Math.abs(c.a - PT(900)) < 0.5 && Math.abs(c.b - PT(600)) < 0.5),
     anchoPt + ' × ' + altoPt + ' pt = ' + Math.round(anchoPt / 72 * 25.4) + ' × ' +
-    Math.round(altoPt / 72 * 25.4) + ' mm');
+    Math.round(altoPt / 72 * 25.4) + ' mm en ' + cajas.length + ' páginas');
   T('con la lámina dentro, como imagen', /\/Subtype \/Image/.test(txt) && /\/Filter \/DCTDecode/.test(txt));
   /* La tabla de posiciones es lo único que puede estar mal sin que se note al
      escribirla: si un desplazamiento no cae donde empieza su objeto, el
@@ -314,7 +347,11 @@ const PT = mm => mm * 72 / 25.4;
   T('la tabla de posiciones apunta a donde debe',
     startxref > 0 && txt.slice(startxref, startxref + 4) === 'xref',
     'startxref ' + startxref + ' → ' + JSON.stringify(txt.slice(startxref, startxref + 4)));
-  const prim = Number((txt.match(/xref\n0 7\n0000000000 65535 f \n(\d{10})/) || [])[1] || -1);
+  /* El «0 7» era el número de objetos del PDF de una página. Con una página
+     por hoja son 3 + 2n, así que se lee el que el propio archivo declara en
+     vez de escribirlo acá: una constante del formato copiada en la prueba es
+     lo que hizo que esta comprobación dejara de mirar nada. */
+  const prim = Number((txt.match(/xref\n0 \d+\n0000000000 65535 f \n(\d{10})/) || [])[1] || -1);
   T('y el primer objeto empieza donde dice',
     prim > 0 && /^1 0 obj/.test(txt.slice(prim, prim + 8)),
     prim + ' → ' + JSON.stringify(txt.slice(prim, prim + 8)));
