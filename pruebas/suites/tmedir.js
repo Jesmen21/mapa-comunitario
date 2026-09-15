@@ -263,6 +263,15 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
                texto:(c.textContent||'').replace(/\s+/g,' ').trim() };
     })();
     o.serie=((R.estado?R.estado():{}).serieSatelital||{}).wayback||{};
+    /* v921 · la CAJA de la serie, que es donde el lector la ve. La suite
+       corre la cadena de fotos de verdad contra el doble, así que es la
+       única de la batería con material para medir lo que la serie midió. */
+    try {
+      var docEvo = R.laminaA ? R.laminaA({ hoja: 'A' }) : '';
+      var iE = String(docEvo).indexOf('<h2>Cómo cambió el sitio</h2>');
+      var jE = iE < 0 ? -1 : String(docEvo).indexOf('<section class="caja', iE);
+      o.cajaEvo = iE < 0 ? '' : String(docEvo).slice(iE, jE < 0 ? iE + 6000 : jE);
+    } catch (eE) { o.cajaEvo = ''; }
     o.estratosMedidos=(R.estado?R.estado():{}).estratos||0;
 
     /* Y «Analizar otro sector» tiene que dejar el mapa LIMPIO. Hasta la v906
@@ -386,6 +395,53 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     r.serie.n >= 4 && r.serie.desde === 2014 && r.serie.hasta === 2026,
     r.serie.n + ' estampas, de ' + r.serie.desde + ' a ' + r.serie.hasta);
   T('y sale del archivo de fotos, no de Overpass', r.teselas > 0, r.teselas + ' teselas pedidas');
+
+  console.log('\n  -- §10(d) · dos estampas que leen igual pueden ser la misma foto (v921) --');
+  {
+    /* Hasta la v920 `E.rutaWayback` servía UNA tesela constante, así que las
+       cinco estampas daban cifras idénticas y la comprobación de la v907 —que
+       mira el TRAMO: n, desde, hasta— pasaba sin ver nada de eso. §10(d) se
+       aplazó como «pide la serie satelital real»; lo que pedía era un doble
+       que pudiera cambiar. */
+    const ps = (r.serie.pasos || []).filter(x => x.ok && x.duro !== null);
+    const distintos = new Set(ps.map(x => x.verde + '/' + x.duro)).size;
+    /* GUARDA DE MATERIAL, primero y por la razón de la v920: si el doble
+       volviera a servir una tesela constante, las tres de abajo pasarían por
+       no tener nada que rechazar. */
+    T('material: la serie mide cosas DISTINTAS por año, no una foto repetida',
+      ps.length >= 4 && distintos >= 3,
+      ps.length + ' estampas · ' + distintos + ' lecturas distintas');
+    /* Y el par idéntico A PROPÓSITO: es lo que hace Esri cuando no volvió a
+       volar el área, y es el caso que §10(d) reportó del pliego real. */
+    const par = ps.filter((x, i) => i > 0 &&
+      x.verde === ps[i - 1].verde && x.duro === ps[i - 1].duro);
+    T('material: y trae un par que lee idéntico, como una entrega no revolada',
+      par.length === 1 && par[0].anio === 2017,
+      par.length ? par.map(x => x.anio).join(' · ') : 'ninguno');
+
+    const cj = String(r.cajaEvo || '');
+    const txt = cj.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+    T('la fila del segundo del par dice que es la MISMA lectura, no otra medición',
+      /2017[^<]*misma lectura que 2014|misma lectura que 2014/.test(txt),
+      (txt.match(/misma lectura que \d{4}/g) || ['no lo dice']).join(' · '));
+    T('y la caja explica que puede ser la misma foto, y manda a mirarlas',
+      /no haya vuelto a volar el área/.test(txt) &&
+        /mirando las dos fotos/.test(txt),
+      /no haya vuelto a volar el área/.test(txt)
+        ? 'nombra el par y da cómo distinguirlo' : 'lo calla');
+    /* Y que la tendencia no se lea como apoyada en el par, que es lo que un
+       lector supone al ver una advertencia sin alcance. */
+    T('y dice que la tendencia no se apoya en ese par',
+      /del primer año al último/.test(txt),
+      /del primer año al último/.test(txt) ? 'lo acota' : 'no acota el alcance');
+    /* Marca exactamente UNA vez: ni de menos —que es el defecto— ni de más,
+       que sería la mentira contraria. No es una guarda pura como las de la
+       v879 o la v920: contra la v920 falla por el cero, así que se nombra
+       por lo que mide y no como si solo protegiera. */
+    T('y marca EXACTAMENTE una vez: los años que sí cambian no se marcan',
+      (txt.match(/misma lectura que/g) || []).length === 1,
+      (txt.match(/misma lectura que/g) || []).length + ' marcas para 1 par');
+  }
   T('el paso aparece nombrado en el panel',
     /historial satelital/i.test((r.antes && r.antes.texto) || ''),
     PASOS.join(' · '));

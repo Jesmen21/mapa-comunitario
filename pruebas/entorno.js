@@ -321,11 +321,21 @@ async function rutaDane(ctx, censo) {
    Los años no se piden: `js/80` lleva la tabla de entregas escrita desde
    2014 hasta 2026 y el refresco del índice de Esri no bloquea nada, así que
    con la tesela alcanza. */
-function pngLiso(n, r, g, b) {
+/* El escritor de PNG, con el color de cada fila decidido afuera. Estaba
+   escrito dentro de `pngLiso` y con eso solo se podían fabricar teselas de un
+   color; la serie satelital necesita una con dos clases mezcladas, y una
+   segunda copia del escritor habría divergido a la tanda siguiente. */
+function pngPorFilas(n, colorDe) {
   const zlib = require('zlib');
-  const fila = Buffer.alloc(1 + n * 3);
-  for (let i = 0; i < n; i++) { fila[1 + i * 3] = r; fila[2 + i * 3] = g; fila[3 + i * 3] = b; }
-  const cruda = Buffer.concat(Array.from({ length: n }, () => fila));
+  const filas = [];
+  for (let y = 0; y < n; y++) {
+    const c = colorDe(y), fila = Buffer.alloc(1 + n * 3);
+    for (let i = 0; i < n; i++) {
+      fila[1 + i * 3] = c[0]; fila[2 + i * 3] = c[1]; fila[3 + i * 3] = c[2];
+    }
+    filas.push(fila);
+  }
+  const cruda = Buffer.concat(filas);
   const TABLA = (() => { const t = new Int32Array(256);
     for (let k = 0; k < 256; k++) { let c = k;
       for (let j = 0; j < 8; j++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[k] = c; }
@@ -346,12 +356,50 @@ function pngLiso(n, r, g, b) {
     trozo('IHDR', ihdr), trozo('IDAT', zlib.deflateSync(cruda)), trozo('IEND', Buffer.alloc(0))]);
 }
 
+function pngLiso(n, r, g, b) {
+  return pngPorFilas(n, () => [r, g, b]);
+}
+
+/* Una tesela con DOS clases mezcladas, en la proporción que se pida: las
+   primeras filas en gris neutro —que el clasificador lee «construido»— y el
+   resto en verde. Con un color liso cada estampa daría 100 % de una sola
+   clase y la serie saltaría de golpe entre dos extremos, que no es una
+   tendencia: es un interruptor. */
+function pngMezcla(n, pctDuro) {
+  const filas = Math.round(n * Math.max(0, Math.min(100, pctDuro)) / 100);
+  return pngPorFilas(n, y => (y < filas ? [150, 150, 150] : [60, 110, 70]));
+}
+
+/* LA SERIE DE FOTOS TENÍA QUE PODER CAMBIAR (v921)
+   ────────────────────────────────────────────────────────────────────────
+   Hasta la v920 este doble servía **la misma tesela para todas las entregas**
+   —un `pngLiso` constante—, así que las cinco estampas de 2014 a 2026 daban
+   cifras idénticas y ninguna suite podía medir la tendencia: la comprobación
+   de la v907 mira el TRAMO (n, desde, hasta) y ahí eso no se ve.
+
+   Ahora la proporción de suelo duro sube con el año, y **2014 y 2017 sirven
+   la MISMA tesela a propósito**: es lo que hace Esri de verdad cuando no
+   volvió a volar el área entre dos entregas, y es el caso que §10(d) reportó
+   del pliego real. Con las dos ramas en una sola corrida se mide que la hoja
+   sabe distinguir «el sector no cambió» de «no hay foto nueva». */
+const DURO_POR_ANIO = { 2014: 44, 2017: 44, 2020: 48, 2023: 51, 2026: 54 };
+/* La entrega que `js/80` usa para cada año, que es lo que viaja en la URL. */
+const ENTREGA_DE_ANIO = { 5844: 2014, 25521: 2017, 29260: 2020,
+                          56102: 2023, 26334: 2026 };
+
 async function rutaWayback(ctx, alPedir) {
-  const tesela = pngLiso(256, 60, 110, 70);
+  const cache = {};
+  const teselaDe = pct => (cache[pct] = cache[pct] || pngMezcla(256, pct));
   await ctx.route(/wayback\.maptiles\.arcgis\.com/, r => {
-    if (alPedir) { try { alPedir(r.request().url()); } catch (e) {} }
+    const url = r.request().url();
+    if (alPedir) { try { alPedir(url); } catch (e) {} }
+    /* …/tile/{entrega}/{z}/{y}/{x} — el número de entrega, no el año. */
+    const m = url.match(/\/tile\/(\d+)\//);
+    const anio = m ? ENTREGA_DE_ANIO[Number(m[1])] : 0;
+    const pct = DURO_POR_ANIO[anio];
     r.fulfill({ status: 200, contentType: 'image/png',
-                headers: { 'Access-Control-Allow-Origin': '*' }, body: tesela });
+                headers: { 'Access-Control-Allow-Origin': '*' },
+                body: teselaDe(pct === undefined ? 44 : pct) });
   });
   /* El índice de entregas de Esri. Se refresca en segundo plano y no bloquea
      la serie, pero sin ruta la petición muere contra el atajo general de cada
@@ -366,6 +414,8 @@ module.exports = {
   rutaDane: rutaDane,
   rutaWayback: rutaWayback,
   pngLiso: pngLiso,
+  pngMezcla: pngMezcla,
+  DURO_POR_ANIO: DURO_POR_ANIO,
   atributosDane: atributosDane,
   rasgosEstrato: rasgosEstrato,
   ESTRATOS: ESTRATOS,

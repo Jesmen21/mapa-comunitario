@@ -6742,6 +6742,40 @@ function donaHTML(datos, colorDe, nombreDe) {
       var t = W.tendencia;
       var conc = cifras.length >= 2 ? (EV.conclusion(W) || []) : [];
       var anioDe = function (p) { return p.anioReal || p.anio; };
+      /* DOS ESTAMPAS QUE LEEN IGUAL PUEDEN SER LA MISMA FOTO (v921)
+         ────────────────────────────────────────────────────────────────
+         §10(d) del pliego v2 lo trajo del papel: «2014 y 2017 idénticos».
+         Se aplazó como «pide la serie satelital real», y no era eso — el
+         doble de la batería servía UNA tesela constante, así que las cinco
+         estampas daban lo mismo y nada podía verlo.
+
+         Con la serie variando, el caso sale solo y no es un error de
+         cuenta: Esri publica ENTREGAS, y una entrega sobre la que no volvió
+         a volar sirve **la imagen anterior**. Dos años con fechas distintas
+         y la misma foto se imprimían como dos mediciones, y de ahí el
+         lector saca que el sector no cambió en tres años.
+
+         Es la clase de la v875 y la v899 en la serie temporal: **cero
+         cambio medido y ninguna foto nueva son cosas distintas**, y la
+         cifra no las separa. Lo que sí las separa está impreso al lado —las
+         dos fotos—, así que la hoja nombra el par y manda a mirarlas en vez
+         de elegir por el lector.
+
+         Se comparan las CUATRO clases y no solo el verde: dos fotos
+         distintas pueden coincidir en una y es corriente; que coincidan en
+         las cuatro hasta la décima ya no lo es. */
+      var mismaLectura = function (x, y) {
+        if (!x || !x.medida || !y || !y.medida) return false;
+        return ['verde', 'duro', 'agua', 'mixto'].every(function (k) {
+          return Number(x.medida[k] || 0) === Number(y.medida[k] || 0);
+        });
+      };
+      var repes = [], repeDe = {};
+      for (var iR = 1; iR < cifras.length; iR++) {
+        if (!mismaLectura(cifras[iR - 1], cifras[iR])) continue;
+        repes.push(anioDe(cifras[iR - 1]) + ' y ' + anioDe(cifras[iR]));
+        repeDe[anioDe(cifras[iR])] = anioDe(cifras[iR - 1]);
+      }
       return (fotos.length
       ? '<p class="lee">De ' + anioDe(fotos[0]) + ' a ' + anioDe(fotos[fotos.length - 1]) +
         ', en alta resolución</p>' +
@@ -6760,7 +6794,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         cifras.map(function (p) {
           return fila(String(anioDe(p)), conComa(p.medida.verde) + '% verde · ' +
             conComa(p.medida.duro) + '% duro' +
-            (p.medida.agua ? ' · ' + conComa(p.medida.agua) + '% agua' : ''));
+            (p.medida.agua ? ' · ' + conComa(p.medida.agua) + '% agua' : '') +
+            /* En la fila, donde el lector compara: sin esto las dos cifras
+               iguales se leen como dos mediciones que coincidieron. */
+            (repeDe[anioDe(p)] ? ' · <b>misma lectura que ' + repeDe[anioDe(p)] +
+              '</b>' : ''));
         }).join('')
       : '') +
       '</div><div>' +
@@ -6781,6 +6819,18 @@ function donaHTML(datos, colorDe, nombreDe) {
         ' estampas</b> por espacio: la primera, la del medio y la última. Las ' + degradada +
         ' están en la hoja suelta y en el informe. El verde año por año, acá al lado, sí sale ' +
         'entero: lo que se recortó son las fotos, no las cifras.</p>'
+      : '') +
+      (repes.length
+      ? '<p class="nota falta">' +
+        (repes.length === 1 ? 'Dos entregas leen <b>exactamente igual</b>: '
+                            : 'Hay entregas que leen <b>exactamente igual</b>: ') +
+        esc(repes.join('; ')) + '. Cuando las cuatro clases coinciden hasta la décima, ' +
+        'lo más corriente es que el proveedor <b>no haya vuelto a volar el área</b> entre esas ' +
+        'dos entregas y esté sirviendo la misma imagen: ese par no mide el salto de años que ' +
+        'anuncian sus fechas, mide una foto contada dos veces. La otra posibilidad —un sector ' +
+        'que de verdad no cambió— se distingue mirando las dos fotos de arriba, que están ' +
+        'impresas al lado. La tendencia de esta caja va del primer año al último, así que no se ' +
+        'apoya en este par.</p>'
       : '') +
       '<p class="nota">Debajo de cada foto, la <b>fecha de la entrega</b> de la que salió —el ' +
       'proveedor publica por entregas fechadas, no por años— y el porcentaje del sector con ' +
@@ -28519,8 +28569,20 @@ function donaHTML(datos, colorDe, nombreDe) {
                en tres (`aniosDe`, paso 3), así que de 2014 a 2026 son CINCO
                estampas y no trece. Una prueba que contara años mediría esa
                constante del módulo en vez del tramo que se pidió. */
+            /* Y lo que cada estampa MIDIÓ (v921). El tramo dice que la serie
+               se pidió; esto dice que midió algo distinto en cada año, que es
+               otra cosa — con el doble sirviendo una tesela constante las
+               cinco daban lo mismo y ninguna suite podía verlo. Es la regla
+               de la v871: lo que una prueba necesite leer se agrega acá en
+               vez de alcanzarlo por un lado. */
             return { n: ps.length, desde: an.length ? Math.min.apply(null, an) : 0,
-                     hasta: an.length ? Math.max.apply(null, an) : 0 };
+                     hasta: an.length ? Math.max.apply(null, an) : 0,
+                     pasos: ps.map(function (x) {
+                       var m = x && x.medida;
+                       return { anio: Number(x.anio) || 0, ok: !!(x && x.ok),
+                                verde: m ? m.verde : null, duro: m ? m.duro : null,
+                                agua: m ? m.agua : null, mixto: m ? m.mixto : null };
+                     }) };
           };
           return { wayback: de('wayback'), landsat: de('landsat') };
         })(),

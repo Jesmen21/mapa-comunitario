@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v920-la-tercera-lista-deja-de-estar-razonada-y-pasa-a-estar-medida';
+const URBIS_CACHE = 'urbis-v921-dos-estampas-que-leen-igual-pueden-ser-la-misma-foto';
 const URBIS_ASSETS = [
   './',
   './index.html',

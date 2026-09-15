@@ -6349,6 +6349,97 @@ marcar, «medido de 2014 a 2026» citando una banda que no está en el papel, y
 de material y la de no pasarse siguen en verde, que es lo que tenían que
 hacer.
 
+## Dos estampas que leen igual pueden ser la misma foto (v921)
+
+Aplicada la práctica que la v920 dejó fijada —**revisar las deudas aplazadas
+cuando cambia el material, no dar por buena la estimación con que se
+aplazaron**— la primera que se cae es §10(d) del pliego v2:
+
+> d · 2014 y 2017 idénticos — pide la serie satelital real, que esta batería
+> no descarga.
+
+**La batería sí la descarga desde la v907**, contra el doble de
+`E.rutaWayback`. Lo que faltaba no era la serie: era que el doble pudiera
+cambiar.
+
+### El doble servía UNA tesela para las cinco entregas
+
+`rutaWayback` contestaba `pngLiso(256, 60, 110, 70)` a toda petición, así que
+2014, 2017, 2020, 2023 y 2026 daban **la misma cifra** — y la comprobación de
+la v907 mira el TRAMO (`n`, `desde`, `hasta`), donde eso no se ve. Es la
+decimonovena vez que el material no puede producir lo que la comprobación
+dice medir, y la primera en que el fixture producía **exactamente el defecto
+del reporte** sin que nadie lo notara.
+
+Ahora la proporción de suelo duro sube con la entrega —44 · 44 · 48 · 51 · 54—
+y **2014 y 2017 sirven la misma tesela a propósito**, que es lo que Esri hace
+de verdad. Con eso una sola corrida ejercita las dos ramas: cuatro años que
+cambian y un par que no.
+
+De paso, el escritor de PNG salió de dentro de `pngLiso` a `pngPorFilas`, con
+el color de cada fila decidido afuera: la serie necesita una tesela de dos
+clases mezcladas, y una segunda copia del escritor habría divergido a la
+tanda siguiente (v879). Y las medidas por año entran en `estado()`, que es la
+regla de la v871 — lo que una prueba necesita leer se agrega ahí.
+
+### La cifra era correcta y la conclusión del lector, falsa
+
+Con el material puesto, la hoja imprime:
+
+```
+2014   2014-12-30 · 59,8% verde
+2017   2017-11-16 · 59,8% verde
+```
+
+Dos fechas distintas, cifra idéntica, presentadas como dos mediciones. La
+caja ya advertía que «una diferencia menor de 3 puntos cabe en el error»:
+eso cubre el RUIDO y no cubre esto.
+
+Porque no es un error de cuenta. **Esri publica ENTREGAS, y una entrega sobre
+la que no volvió a volar sirve la imagen anterior.** El par no mide tres años
+de cambio: mide una foto contada dos veces. Es la clase de la v875 y la v899
+en la serie temporal — **cero cambio medido y ninguna foto nueva son cosas
+distintas**, y la cifra no las separa.
+
+Lo que sí las separa está impreso al lado —las dos fotos—, así que la hoja
+**nombra el par y manda a mirarlas** en vez de elegir por el lector. No dice
+«es la misma imagen», que no lo puede probar; dice qué es lo corriente, cuál
+es la otra posibilidad y cómo se distinguen.
+
+Tres decisiones, y las tres cambian lo que el lector hace:
+
+* **Se comparan las CUATRO clases**, no solo el verde. Que dos fotos
+  distintas coincidan en una es corriente; que coincidan en las cuatro hasta
+  la décima, no.
+* **La marca va en la FILA**, donde el lector compara, además de en la nota.
+  Sin eso las dos cifras iguales se leen como dos mediciones que coincidieron.
+* **Se acota el alcance**: la tendencia va del primer año al último y no se
+  apoya en el par. Comprobado leyendo `tendenciaDe` —`buenos[0]` y
+  `buenos[buenos.length - 1]`— y no recordándolo, que es la regla de la v863
+  aplicada a una frase que se iba a imprimir.
+
+### Dónde viven las comprobaciones
+
+En `tmedir`, que es la única suite de la batería que corre la cadena de fotos
+de verdad. Y con su guarda de material **primero**, como la v920: si el doble
+volviera a servir una tesela constante, las tres de abajo pasarían por no
+tener nada que rechazar.
+
+La última —que marque **exactamente una vez**— no es una guarda pura y se
+nombra por lo que mide: contra la v920 falla por el cero. Llamarla guarda
+habría sido presentar una afirmación como una protección.
+
+### Demostrado contra la v920
+
+Cuatro en rojo con el texto viejo impreso: «no lo dice» por la fila, «lo
+calla» por la nota, «no acota el alcance» y «0 marcas para 1 par».
+
+Y la demostración se hace **revirtiendo solo el hunk de la caja**: el fixture
+nuevo y lo que `estado()` expone se quedan, porque son lo que la suite
+necesita para LEER. Es la lección de la v875 sobre el `git stash` completo,
+aplicada por el otro lado — acá lo viejo es el código y lo nuevo es el
+material.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
