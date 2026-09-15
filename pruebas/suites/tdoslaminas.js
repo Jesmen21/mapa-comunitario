@@ -3012,6 +3012,26 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       const j = d.indexOf('<section class="caja', i);
       return d.slice(i, j < 0 ? d.length : j);
     };
+    /* Y «El grano» con ella (v919). Medido: los dos caben a la vez y NO
+       cuesta un panel más — ceder El grano en la v918 fue un efecto del
+       ORDEN, no de que la hoja necesitara su espacio. Contra la corrida con
+       la tira en el peldaño 2 el precio entero son dos paneles:
+       «Continuidad del tejido» —cuya cifra vive además en el chequeo
+       cruzado de la banda de coherencia— y el mapa de ruido, que es un
+       flujo modelado y no una medición. */
+    T('la tira y «El grano» caben a la vez en el documento compuesto',
+      /<h2>El grano: manzana y predio<\/h2>/.test(r.serieEnA || '') &&
+        (r.serieFueraDoc || []).indexOf('el-grano-manzana-y-predio') === -1,
+      (r.serieFueraDoc || []).indexOf('el-grano-manzana-y-predio') === -1
+        ? 'los dos se quedan · ceden ' + (r.serieFueraDoc || []).length + ' paneles'
+        : 'El grano cedió');
+    /* Y lo que se aceptó a cambio, por su nombre: sin esto la aserción de
+       arriba se cumpliría igual el día que ceda media hoja. */
+    T('y lo que cede a cambio son los dos que se aceptaron: el tejido y el ruido',
+      (r.serieFueraDoc || []).indexOf('continuidad-del-tejido') !== -1 &&
+        (r.serieFueraDoc || []).indexOf('ruido') !== -1,
+      (r.serieFueraDoc || []).filter(x => ['continuidad-del-tejido', 'ruido'].indexOf(x) >= 0).join(' · ')
+        || 'ninguno de los dos');
     T('en el peldaño 3 la tira sobrevive al documento compuesto',
       /<h2>Cómo cambió el sitio<\/h2>/.test(r.serieEnA || '') &&
         (r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') === -1,

@@ -16771,7 +16771,17 @@ function donaHTML(datos, colorDe, nombreDe) {
     'comercial': 2, 'donde-esta-la-calle-comercial': 2,
     'hitos': 2, 'hitos-y-nodos': 2,
     'estratos': 2,
-    'el-grano-manzana-y-predio': 2,
+    /* «El grano» sube al 3 (v919), revisando la lista dictada con el precio
+       de la v918 en la mano: la manzana de 73 m decide si una propuesta puede
+       abrir un paso nuevo o tiene que entrar por donde ya se entra, y los tres
+       cuadrados a la misma escala son de lo poco que enseña a leer una escala
+       sin escribir una palabra falsa.
+
+       «Continuidad del tejido» se queda en el 2 y puede ceder: su cifra vive
+       además en el chequeo cruzado de la banda de coherencia. El mapa de
+       ruido también: es un flujo MODELADO a partir de los usos y la
+       jerarquía, no una medición. */
+    'el-grano-manzana-y-predio': 3,
     /* El MAPA de verde y agua sube con ellas; la caja de conteo se queda en
        el 3, con las demás de su banda. */
     'agua': 2,

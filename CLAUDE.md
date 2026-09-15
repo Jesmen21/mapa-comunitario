@@ -6230,6 +6230,54 @@ Fabricar una composición que quede corta *por poco* para ejercitarlo es lo que
 la v910 declinó como «otra tanda», y por la misma razón: pedir una lámina que
 no cierra es un material que hay que diseñar, no ajustar.
 
+## «El grano» también se queda, y no cuesta un panel más (v919)
+
+La v918 midió el precio de salvar la tira de estampas y lo dejó escrito: dos
+paneles de morfología —«El grano: manzana y predio» y «Continuidad del
+tejido»— más el mapa de ruido. Con ese número en la mano, la decisión de qué
+vale más se revisó, y la revisión fue del lector, no mía:
+
+> «El grano» se queda. La manzana de 73 m decide si una propuesta puede abrir
+> un paso nuevo o tiene que entrar por donde ya se entra, y los tres cuadrados
+> a la misma escala son de lo poco que enseña a leer una escala sin escribir
+> una palabra falsa. «Continuidad del tejido» y el mapa de ruido pueden ceder:
+> el primero ya vive en el chequeo cruzado de la banda de coherencia, y el
+> segundo es un modelo estimado, no una medición.
+
+### Y medido, salió mejor de lo que el precio anunciaba
+
+`el-grano-manzana-y-predio` sube al peldaño 3. A radio 2.500 con letra normal:
+
+| | Ceden | Tira | El grano |
+|---|---|---|---|
+| v917 · tira en el 2 | 11 | cede | se queda |
+| v918 · tira en el 3 | 13 | se queda | **cede** |
+| v919 · los dos en el 3 | **12** | se queda | se queda |
+
+**Ceden MENOS paneles que en la v918, no más.** Y no entra ninguno nuevo: la
+lista de doce es la de trece sin El grano.
+
+La explicación es del mecanismo y conviene tenerla escrita, porque cambia cómo
+se lee un precio medido: **la bisección cede un PREFIJO de la lista ordenada**,
+así que un panel puede irse por venir temprano en el orden y no porque la hoja
+necesite su espacio. En la v918 El grano estaba noveno; moviéndolo al final,
+la hoja cierra sin él y sin nada en su lugar.
+
+O sea que el precio real de salvar la tira, contra la corrida de la v917, son
+**dos paneles y no tres**: «Continuidad del tejido» y el mapa de ruido —
+exactamente los dos que se aceptaron. El tercero era un efecto del orden.
+
+**Un panel en la lista de lo que cedió no siempre pagó por lo que se salvó.**
+Para saber cuánto cuesta de verdad una decisión de peldaño hay que medir las
+dos composiciones y comparar, que es lo que la v918 hizo bien y lo que su
+lectura del resultado se apresuró a interpretar.
+
+### La aserción nombra el precio, no solo el resultado
+
+Dos, y la segunda es la que guarda: que los dos se queden, **y que lo que cede
+a cambio sean los dos que se aceptaron**. Sin la segunda, la primera se
+cumpliría igual el día que ceda media hoja.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
