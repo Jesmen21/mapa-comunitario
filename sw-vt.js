@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v922-alerta-sismo-istmina-14-septiembre';
+const VT_CACHE = 'urbis-vt-v923-seguimiento-presidencial-15-septiembre';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
