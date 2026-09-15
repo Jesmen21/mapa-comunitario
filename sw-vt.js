@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v919-el-grano-tambien-se-queda-y-no-cuesta-un-panel-mas';
+const VT_CACHE = 'urbis-vt-v920-la-tercera-lista-deja-de-estar-razonada-y-pasa-a-estar-medida';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

@@ -3071,6 +3071,59 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       : ((r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
           ? 'cedió y está en pliegoFuera' : 'cedió SIN declararse'));
 
+  console.log('\n  -- lo que cede la BISECCIÓN de la A llega a la B (v920) --');
+  {
+    /* La TERCERA lista de la v911 —candidatos de caja, candidatos de mapa, y
+       esto— quedó allí RAZONADA y sin ejercitar: para producirla hacía falta
+       una serie de fotos que se compusiera y después pesara lo bastante para
+       que la bisección de la A la cediera. La v917 puso las estampas en el
+       fixture y con eso el material existe.
+
+       Lo que se mide es el documento de las DOS hojas con la letra de colgar,
+       que es donde la caja cede de verdad: `pliegoOff` viaja en las opciones y
+       llega a las dos, pero lo que cede la bisección lo cede la composición de
+       la A y su lista muere ahí — cada hoja se compone con su propio
+       `apagadas`. */
+    const partes = String(r.serieDePie || '').split('<div class="hoja"');
+    const hA = partes[1] || '', hB = partes[2] || '';
+    /* GUARDA DE MATERIAL, primero: sin esto las tres de abajo pasarían por no
+       tener nada que rechazar el día que la caja deje de ceder acá. Es la
+       regla de la v911 —toda aserción de cesión necesita su base— dicha sobre
+       la precondición en vez de sobre el resultado. */
+    const cedioEnA = (r.serieFueraPie || []).indexOf('como-cambio-el-sitio') >= 0 &&
+                     !/<h2>Cómo cambió el sitio<\/h2>/.test(hA);
+    T('material: con la letra de colgar la caja de la serie CEDE en la lámina A',
+      partes.length > 2 && cedioEnA,
+      partes.length <= 2 ? 'el documento no trae dos hojas'
+        : (cedioEnA ? 'cedió en la A · ' + (r.serieFueraPie || []).length + ' paneles en total'
+                    : 'NO cedió: las tres de abajo no tienen qué medir'));
+    if (cedioEnA) {
+      T('y la casilla de la B lo sabe: SIN MEDIR nombrando el panel ausente',
+        /el panel «Cómo cambió el sitio» cedió su sitio/.test(hB),
+        /el panel «Cómo cambió el sitio» cedió su sitio/.test(hB)
+          ? 'la casilla nombra el panel y da el remedio'
+          : 'la B no se enteró');
+      /* La otra mitad: no basta con marcarla, tiene que dejar de citarla. */
+      T('y no queda la cita vieja de una banda que no está en el papel',
+        !/medido de 2014 a 2026|puntos de superficie dura/.test(hB),
+        (hB.match(/medido de 2014 a 2026|[\d,]+ puntos de superficie dura/) || ['ninguna'])[0]);
+      T('y la bibliografía se encoge a su redacción sin panel',
+        !/Planetary Computer/.test(hB),
+        /Planetary Computer/.test(hB)
+          ? 'sigue citando la serie temporal' : 'cita solo Esri World Imagery');
+    }
+    /* GUARDA contra pasarse de marcar, como las de la v879, la v882 y la
+       v890: con la caja PUESTA —letra normal, donde la v919 midió que se
+       queda— la B no puede declararla cedida ni encoger su bibliografía. */
+    const pN = String(r.serieEnA || '').split('<div class="hoja"');
+    const bN = pN[2] || '';
+    T('guarda: con la caja puesta, la B no la declara cedida y sí la cita',
+      !/el panel «Cómo cambió el sitio» cedió su sitio/.test(bN) &&
+        /Planetary Computer/.test(bN),
+      (/el panel «Cómo cambió el sitio» cedió su sitio/.test(bN) ? 'la marca sin haber cedido · ' : '') +
+        (/Planetary Computer/.test(bN) ? 'bibliografía entera' : 'bibliografía encogida de más'));
+  }
+
   console.log('\n  -- una banda sin su caja principal lo dice EN la banda (v911) --');
   {
     const filasFalta = (htm) => {

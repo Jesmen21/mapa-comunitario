@@ -6278,6 +6278,77 @@ Dos, y la segunda es la que guarda: que los dos se queden, **y que lo que cede
 a cambio sean los dos que se aceptaron**. Sin la segunda, la primera se
 cumpliría igual el día que ceda media hoja.
 
+## La tercera lista deja de estar razonada y pasa a estar medida (v920)
+
+La v911 arregló tres listas de la misma forma —**un dato de alcance de
+DOCUMENTO leído de una variable de alcance de HOJA**— y de las tres, dos
+quedaron con su prueba y una sin ella. Aquella sección lo dice con todas las
+letras y con la razón:
+
+> **Y hay que decir que esto está RAZONADO y no medido.** […] Para
+> ejercitarlo hay que correr la serie de fotos de verdad en la suite y
+> después apretar la hoja: son diez descargas y otras tantas pasadas del
+> clasificador, y es otra tanda.
+
+Esa tanda es esta, y salió mucho más barata de lo previsto: **no hacía falta
+descargar nada**. La v917 puso las estampas en el fixture como `data:` en
+línea —un PNG liso por paso, que es lo que `evolucionImpresa` necesita para
+dibujar la tira— y la v918 midió que con esa tira la caja **pesa**. Con las
+dos cosas puestas, el material que faltaba ya existía sin que nadie lo
+notara.
+
+**Una deuda de prueba puede quedar saldada por una tanda posterior que venía
+a otra cosa.** Vale revisarlas cuando el material cambia, en vez de dar por
+buena la estimación con que se aplazaron.
+
+### Qué se mide, y por qué en la letra de colgar
+
+`pliegoOff` viaja en las opciones y llega a las dos hojas, así que apagar un
+panel a mano —que es como la v910 lo probó— **no ejercita el mecanismo**: la
+B se entera por su cuenta. Lo que hay que producir es que la **bisección de
+la A** lo ceda, porque esa lista muere en la composición de la A.
+
+Con letra normal la caja se queda (v919), así que la corrida que sirve es la
+de «Se lee de pie», donde ceden 60 paneles y la caja está entre ellos.
+Medido sobre el documento de las dos hojas:
+
+| | Con la lista | Sin ella |
+|---|---|---|
+| la casilla de la B | SIN MEDIR, nombra el panel y da el remedio | **sigue diciendo «medido de 2014 a 2026»** |
+| la bibliografía | «Esri World Imagery.» | **sigue citando Planetary Computer** |
+
+O sea: es exactamente el defecto de §1 de la v910, vivo por la otra puerta,
+tal como aquella sección lo predijo. **El razonamiento era correcto y ahora
+además está demostrado**, que no es lo mismo.
+
+### La guarda de material va PRIMERO, y sobre la precondición
+
+Las tres aserciones de arriba pasarían en verde el día que la caja deje de
+ceder en esa composición —por un peldaño nuevo, por un fixture más rico, por
+cualquier cosa— y nadie se enteraría: no tendrían nada que rechazar. Es el
+agujero que este proyecto lleva dieciocho tandas persiguiendo.
+
+Así que la primera aserción del bloque no mide el resultado sino **la
+precondición**: que con la letra de colgar la caja de verdad ceda en la
+lámina A. Si eso deja de ser cierto se pone roja ella, y las tres de abajo
+ni siquiera se corren. Es la regla de la v911 —toda aserción de cesión
+necesita su base sin apretar— dicha sobre lo que la hace posible en vez de
+sobre lo que produce.
+
+Y al lado, la guarda contra pasarse de marcar, como las de la v879, la v882
+y la v890: con la caja PUESTA —letra normal— la B no puede declararla cedida
+ni encoger su bibliografía. Esa no falla contra la v919 y no es una
+afirmación nueva.
+
+### Demostrado contra la v919
+
+Neutralizando el paso de la lista —`pliegoCedidasOtraHoja: []` en
+`laminaDoble`— salen tres en rojo con el texto viejo impreso: la casilla sin
+marcar, «medido de 2014 a 2026» citando una banda que no está en el papel, y
+«Planetary Computer» al pie de una hoja cuya serie temporal cedió. La guarda
+de material y la de no pasarse siguen en verde, que es lo que tenían que
+hacer.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
