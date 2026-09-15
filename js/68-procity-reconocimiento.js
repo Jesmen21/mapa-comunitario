@@ -8403,7 +8403,9 @@ function donaHTML(datos, colorDe, nombreDe) {
             '<p class="b-pregunta">' + esc(bd.g.pregunta || '¿Qué dice este tema del sector?') + '</p>' +
             (bd.vacia
               ? '<p class="b-fuera"><b>Banda completa fuera de esta composición.</b> ' +
-                'Llevaba ' + esc(bd.vacia.join(' · ')) + '. Cedió entera para que la hoja ' +
+                'Llevaba ' + esc(bd.vacia.map(function (tt) {
+                    return nombreDePanel(res, tt, 'la caja'); }).join(' · ')) +
+                '. Cedió entera para que la hoja ' +
                 'cerrara, y está medida: apague paneles desde la ficha o imprima esta hoja ' +
                 'suelta y vuelve con todo.</p>'
               : faltaEnLaBanda(bd)) +
@@ -8430,7 +8432,12 @@ function donaHTML(datos, colorDe, nombreDe) {
                   catch (eC) { return false; }
                 });
                 return f.length
-                  ? '<p class="b-cedio">Cedió en esta composición: ' + esc(f.join(' · ')) + '.</p>'
+                  /* Las dos listas nombran CAJAS —salen de `g.cajas`, y un mapa
+                     nunca entra ahí—, pero trece títulos los comparten un mapa y
+                     una caja, y el lector no tiene cómo saber cuál cedió (v925). */
+                  ? '<p class="b-cedio">Cedió en esta composición: ' +
+                    esc(f.map(function (tt) { return nombreDePanel(res, tt, 'la caja'); }).join(' · ')) +
+                    '.</p>'
                   : '';
               })()) +
           '</div>';
@@ -15016,6 +15023,55 @@ function donaHTML(datos, colorDe, nombreDe) {
       .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 
+  /* ── TRECE TÍTULOS NOMBRAN DOS COSAS (v925) ────────────────────────────
+     Llegó del papel, y de una lectura mía equivocada antes que de la suya:
+     «Cedió en esta composición: Cómo se llega» puede ser el MAPA o la CAJA
+     de conteo del mismo nombre, y en la hoja no hay forma de saber cuál. Yo
+     leí «cedieron los mapas de movilidad» sobre una banda que conservaba sus
+     cuatro mapas y había perdido dos cajas (v924), y un estudiante que quiera
+     recuperar lo que cedió apagando paneles desde la ficha tampoco sabría
+     cuál de los dos buscar.
+
+     La lista NO se escribe: se calcula cruzando los dos inventarios, que es
+     lo único que impide que un par nuevo nazca sin marca. Hoy son trece
+     —«Cómo se llega», «A distancia de caminar», «Llenos y vacíos», «Verde y
+     agua», «Hitos y nodos», «Alturas de lo construido», «Cobertura del
+     suelo», «Cómo cambia al alejarse», «Dónde está la calle comercial», «El
+     ruido del tránsito», «La sombra de los vecinos», «La sombra que
+     proyecta» y «Lo intangible»— y los demás no necesitan nada: un nombre
+     que nombra una sola cosa no se aclara, se ensucia.
+
+     Dice «la caja» y no «la caja de conteo», que es como se leyó el caso que
+     lo destapó: de los trece, solo unos pocos son cajas de CONTEO —«La sombra
+     de los vecinos» no cuenta nada—, y un rótulo que es falso para la mitad
+     de los casos es justo lo que este pliego no imprime.
+
+     Los títulos de los dos inventarios son constantes; lo que depende del
+     sector es el `listo` de cada entrada, que acá no se mira. Así que se
+     calcula una vez y se guarda. */
+  var NOMBRES_DOBLES = null;
+  function nombresDobles(res) {
+    if (NOMBRES_DOBLES) return NOMBRES_DOBLES;
+    try {
+      var cj = {}, dob = {};
+      cajasDelPliego(res, {}).forEach(function (c) { cj[slugPliego(c.t)] = 1; });
+      mapasDisponibles(res).forEach(function (m) {
+        if (cj[slugPliego(m.t)]) dob[slugPliego(m.t)] = 1;
+      });
+      NOMBRES_DOBLES = dob;
+    } catch (e) { return {}; }
+    return NOMBRES_DOBLES;
+  }
+
+  /* El nombre como se imprime cuando hay que decir de cuál de los dos se
+     habla. `que` es 'la caja' o 'el mapa'; en un título que nombra una sola
+     cosa devuelve el título pelado. */
+  function nombreDePanel(res, t, que) {
+    try {
+      return nombresDobles(res)[slugPliego(t)] ? String(t) + ' (' + que + ')' : String(t);
+    } catch (e) { return String(t); }
+  }
+
   function pliegoApagada(titulo) {
     return (S.pliegoOff || []).indexOf(slugPliego(titulo)) !== -1;
   }
@@ -17517,7 +17573,15 @@ function donaHTML(datos, colorDe, nombreDe) {
      midieron y cuánto mide el más chico— y después, en su orden, lo que no
      llegó: primero el piso, que es el defecto, y después el objetivo, que es
      una cuenta de reparto de papel. */
-  function textoDeTamanos(v, horiz, quitados) {
+  /* `res` entra para poder decir de cuál de los dos paneles se habla: trece
+     títulos del pliego los llevan a la vez un mapa y una caja, y este pie
+     lista títulos pelados con su medida al lado (v925). Medido sobre el
+     papel, el sector de prueba imprime acá «Cobertura del suelo 11,2 cm» y
+     «Llenos y vacíos 11,2 cm», que son dos de los trece: el párrafo dice
+     «mapas» una vez arriba y después el lector ve un nombre que también
+     titula una caja dos bandas más atrás. */
+  function textoDeTamanos(v, horiz, quitados, res) {
+    var nm = function (t) { return nombreDePanel(res, t, 'el mapa'); };
     if (horiz) {
       return '<b>Tamaños de impresión.</b> Los pisos del pliego —12 cm el mapa ' +
         'principal de cada banda, 10 los de categoría, 8 cm ninguno por debajo— están ' +
@@ -17547,7 +17611,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
     t += v.bajoPiso.length
       ? '<b>Por debajo del mínimo de 8 cm:</b> ' + v.bajoPiso.slice(0, 5).map(function (c) {
-          return esc(c.t) + ' ' + cm(c.mm); }).join(' · ') +
+          return esc(nm(c.t)) + ' ' + cm(c.mm); }).join(' · ') +
         (v.bajoPiso.length > 5 ? ' y ' + (v.bajoPiso.length - 5) + ' más' : '') +
         '. A ese tamaño un mapa no se lee en la pared, y no se apagaron porque son los que ' +
         'ubican: sin la foto, el plano o el mapa de todos los usos la lámina deja de ser una lámina. '
@@ -17575,7 +17639,7 @@ function donaHTML(datos, colorDe, nombreDe) {
              92 mm salía «8,7 cm de 9.2», un punto decimal en una hoja en
              castellano. Es la guarda de la v885 cazando su propia clase en
              un sitio nuevo. */
-          return esc(c.t) + ' ' + cm(c.mm) + ' de ' + cm(c.piso); }).join(' · ') +
+          return esc(nm(c.t)) + ' ' + cm(c.mm) + ' de ' + cm(c.piso); }).join(' · ') +
         (v.bajoObjetivo.length > 5 ? ' y ' + (v.bajoObjetivo.length - 5) + ' más' : '') +
         '. Se imprimen igual y con su medida escrita: para que crezcan hay que apagar paneles ' +
         'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.';
@@ -17612,7 +17676,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        de aplicarle unos pisos que el pliego no pidió para ella. */
     if (o.horizontal) {
       S.pliegoTamanos = { aplica: false, bajoPiso: [], bajoObjetivo: [] };
-      var hH = poner(html, textoDeTamanos(null, true), false);
+      var hH = poner(html, textoDeTamanos(null, true, null, res), false);
       anotarCierre(hH, res); return hH;
     }
     var v = medirTamanos(html);
@@ -17672,7 +17736,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       S.pliegoFuera = (S.pliegoFuera || []).concat(quitados.map(function (c) { return String(c.id); }));
     }
     if (!v) { S.pliegoTamanos = null;
-      var hSin = poner(html, textoDeTamanos(null, false), false);
+      var hSin = poner(html, textoDeTamanos(null, false, null, res), false);
       anotarCierre(hSin, res); return hSin; }
     S.pliegoTamanos = { aplica: true, n: v.n, menor: v.menor,
                         bajoPiso: v.bajoPiso, bajoObjetivo: v.bajoObjetivo,
@@ -17684,7 +17748,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        apagado no es una alarma: es el aviso funcionando. Pintar de rojo una
        hoja que cumple enseñaría a ignorar el color, que es la decisión que
        la v886 tomó con los dos niveles y que sigue valiendo. */
-    var hFin = poner(html, textoDeTamanos(v, false, quitados), v.bajoPiso.length > 0);
+    var hFin = poner(html, textoDeTamanos(v, false, quitados, res), v.bajoPiso.length > 0);
     anotarCierre(hFin, res);
     return hFin;
   }
@@ -28552,6 +28616,17 @@ function donaHTML(datos, colorDe, nombreDe) {
         // que ese tamaño dejó fuera en la última lámina que se armó.
         pliegoLetra: S.pliegoLetra || 'todo',
         pliegoFuera: (S.pliegoFuera || []).slice(),
+        /* Los títulos que nombran a la vez un MAPA y una CAJA (v925): los
+           trece pares del cruce de los dos inventarios. Se exponen por la
+           regla de la v871 —lo que una prueba necesita leer se agrega acá
+           en vez de alcanzarlo por un lado— y la comprobación NO se fía de
+           esta lista: la recalcula por su cuenta, porque medir contra la
+           misma tabla que usa el código solo diría que la tabla es igual a
+           sí misma (v911). */
+        pliegoNombresDobles: (function () {
+          try { return Object.keys(nombresDobles(S.resultado)); }
+          catch (e) { return []; }
+        })(),
         /* Los dos peldaños del orden de cesión que NO son una caja apagada:
            el método acortado y el veredicto del control de cierre. Se
            exponen porque una prueba tiene que poder leerlos, y la regla de

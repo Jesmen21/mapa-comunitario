@@ -1682,6 +1682,72 @@ console.log('\n  -- un nombre, una cosa --');
       : Object.keys(donde).length + ' nombres revisados');
 }
 
+/* ── UN PANEL DE ORIGEN SE DECLARA POR UN NOMBRE QUE NOMBRA UNA COSA (v925)
+   ────────────────────────────────────────────────────────────────────────
+   Trece títulos del pliego los comparten un MAPA y una CAJA: «Cómo se llega»,
+   «Llenos y vacíos», «Verde y agua», «Hitos y nodos»… La v925 hizo que los
+   renglones de cesión digan de cuál de los dos hablan, porque el lector no
+   tenía cómo saberlo — y eso se arregla en el papel.
+
+   Lo que NO se ve en el papel es esto: `cedioPanel`, que es por donde una
+   casilla de síntesis y una entrada de bibliografía declaran de qué panel
+   dependen, resuelve el nombre con `slugPliego` del TÍTULO. El slug de una
+   caja es el de su título; el identificador de un mapa es otra cosa
+   —`llega`, `caminar`, `llenos`—. Así que una declaración que nombrara uno
+   de los trece vería SOLO la caja y nunca el mapa, y lo haría en silencio:
+   la casilla se quedaría citando un panel que no está, que es exactamente el
+   §1 de la v910.
+
+   Hoy las tres declaraciones que existen nombran «Cómo cambió el sitio» y
+   «Presión de crecimiento», que no son de los trece. Esta guarda es para que
+   la cuarta no nazca mal: si alguien declara uno de los nombres dobles, sale
+   en rojo con archivo y línea, y lo que hay que hacer es declarar el
+   identificador del mapa o dejar claro que se depende de la caja.
+
+   Los trece NO se escriben acá: se cruzan los dos inventarios del propio
+   archivo, así que un par nuevo queda vigilado sin que su autor se acuerde.
+   Es la misma forma que la guarda del voseo en -á (v880): se calcula lo que
+   se permite y se denuncia lo demás. */
+{
+  const F = 'js/68-procity-reconocimiento.js';
+  const src = leer(F), lineas = src.split('\n');
+  const trozo = (desde, hasta) => {
+    const i = src.indexOf(desde), j = src.indexOf(hasta, i + 1);
+    return (i < 0 || j < 0) ? '' : src.slice(i, j);
+  };
+  const titulos = t => {
+    const out = {};
+    (t.match(/\bt: '[^']+'/g) || []).forEach(x => { out[x.slice(4, -1)] = 1; });
+    return out;
+  };
+  const cajas = titulos(trozo('function cajasDelPliego(', 'function mapasDisponibles('));
+  const mapas = titulos(trozo('function mapasDisponibles(', '\n  function ',));
+  const dobles = Object.keys(mapas).filter(t => cajas[t]);
+  /* La guarda de la guarda: sin los dos inventarios leídos, `dobles` sale
+     vacío y esta comprobación pasaría en verde sin vigilar una sola palabra.
+     Es el patrón de la v878 con su propia lista de voseo. */
+  comprobar('los dos inventarios del pliego se leen, y comparten títulos',
+    Object.keys(cajas).length > 30 && Object.keys(mapas).length > 10 && dobles.length >= 5,
+    Object.keys(cajas).length + ' cajas · ' + Object.keys(mapas).length + ' mapas · ' +
+      dobles.length + ' títulos dobles');
+  const malos = [];
+  lineas.forEach((ln, i) => {
+    /* Dónde se declara un panel de origen: el cuarto argumento de `F`/`SM`
+       en las casillas, el `panel:` de una huérfana y el de una entrada de
+       bibliografía. Los tres llegan a `cedioPanel` como título. */
+    const m = ln.match(/panel: '([^']+)'/) ||
+              ln.match(/^\s*(?:pres\.desde \? )?\['([^']+)'\]/);
+    if (!m) return;
+    if (dobles.indexOf(m[1]) >= 0) malos.push(F + ':' + (i + 1) + ' «' + m[1] + '»');
+  });
+  comprobar('ningún panel de origen se declara con un nombre que nombra dos paneles',
+    malos.length === 0,
+    malos.length
+      ? malos.join(' · ') + ' — `cedioPanel` resuelve por el slug del título, así que ' +
+        'solo vería la caja: declare el identificador del mapa o no lo nombre así'
+      : dobles.length + ' títulos dobles, ninguno declarado como panel de origen');
+}
+
 // ── ninguna lista viva da por faltante lo que ya se mide ────────────────
 /* Cinco veces se declaró ausente algo que estaba medido. Cuatro dentro de la
    hoja —la isócrona, el ancho de vía, las rutas, la cifra municipal—, y la

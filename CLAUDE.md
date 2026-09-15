@@ -44,6 +44,23 @@ Lo cazó `revisar.js` con la comprobación de que la versión no choque con
 la publicada. Sin ella se habría subido con el número por debajo, que para
 la caché de un teléfono es una versión que no existe.
 
+#### Se cobró otra vez, y por eso queda como regla (v924)
+
+El 14 de septiembre de 2026, con el árbol sucio, `git merge origin/main`
+imprimió `Updating beeaf36..ade17e5` y **abortó**. Yo leí esa primera línea
+como que había funcionado. No había ningún commit nuevo, y solo se vio
+comprobando `git status` y `git log`; el `git push` de la línea siguiente
+—que no estaba encadenado con `&&`— salió igual y lo rechazó el servidor.
+Es la segunda vez en dos semanas, así que va como regla y no como anécdota:
+
+* **Se guarda primero y se fusiona después.** Con el árbol sucio la fusión
+  aborta, y ese es el caso que imprime el mensaje engañoso.
+* **Se encadena con `&&`, nunca con `;` ni en líneas sueltas.** Un empujón
+  en su propio renglón sale aunque la fusión no haya ocurrido.
+* **Se comprueba la HISTORIA, no el mensaje**: `git log --oneline -1` o
+  `git merge-base --is-ancestor origin/main HEAD`. Si el commit de arriba no
+  está en la historia, la fusión no ocurrió, diga lo que diga `Updating`.
+
 ### Cuando las dos tandas se llaman igual
 
 Pasó el 7 de septiembre de 2026: las dos sesiones llamaron v788 a lo suyo.
@@ -6573,6 +6590,141 @@ Las otras dos son guardas, como las de la v879, la v882 y la v920: que la
 casilla **no** se marque SIN MEDIR y siga imprimiendo su cifra, y que con el
 panel PUESTO —la hoja B suelta, que no bisecta— no repita lo que él ya dice
 dos palmos más arriba. La segunda es la que de verdad guarda.
+
+## Trece títulos nombran dos cosas (v925)
+
+Salió del papel y de una lectura equivocada antes que de un reclamo. En el
+export de la v912, la lámina A imprimía:
+
+> Banda completa fuera de esta composición. Llevaba **Cómo se llega** · Cómo
+> se mueve el sector · El perfil de la calle · **A distancia de caminar** ·
+> Hasta dónde se camina desde el lote.
+
+y quien tenía el PDF en la mano leyó que la banda de movilidad había perdido
+sus mapas. No: conservaba los cuatro y había perdido dos CAJAS del mismo
+nombre — eso lo midió la v924 y por eso la alineación de peldaños no se
+hizo. **Pero la lectura equivocada no fue un descuido del lector: la hoja no
+da con qué distinguirlos.** Un estudiante que quiera recuperar lo que cedió
+apagando paneles desde la ficha tampoco sabría cuál de los dos buscar.
+
+    v924   Cedió en esta composición: Cómo se llega
+    v925   Cedió en esta composición: Cómo se llega (la caja)
+
+### Los trece se calculan, no se escriben
+
+Son el cruce de los dos inventarios —`cajasDelPliego` y `mapasDisponibles`—,
+que hoy da 56 cajas, 20 mapas y **13 títulos que llevan los dos**: «Cómo se
+llega», «A distancia de caminar», «Llenos y vacíos», «Verde y agua», «Hitos y
+nodos», «Alturas de lo construido», «Cobertura del suelo», «Cómo cambia al
+alejarse», «Dónde está la calle comercial», «El ruido del tránsito», «La
+sombra de los vecinos», «La sombra que proyecta» y «Lo intangible».
+
+Escribir la lista sería la forma que este proyecto ya deshizo dos veces: un
+par nuevo —una caja que estrene el nombre de un mapa— nacería sin marca y
+nadie se enteraría. Calculada, la hereda sin que su autor se acuerde, que es
+lo único que impidió que el aviso de origen de la v867 volviera a perderse.
+
+Y la otra mitad, que es la que hace falta declarar: **un título que nombra
+una sola cosa no se aclara, se ensucia.** Hay una aserción para cada
+dirección; sin la segunda, el arreglo podría haber sido marcarlos todos.
+
+#### Dice «la caja», no «la caja de conteo»
+
+Es la única palabra que hubo que pensar. El caso que lo destapó es una caja
+de conteo, pero de los trece varios no cuentan nada —«La sombra de los
+vecinos» es un estudio de sombra—, y un rótulo que es falso para la mitad de
+los casos es justo lo que este pliego no imprime. «La caja» es además el
+vocabulario que la hoja ya usa: el renglón de banda incompleta dice desde la
+v911 «Es la caja que responde la pregunta de arriba».
+
+#### La hoja ya sabía decirlo, en otro sitio
+
+Desde la v879 un mapa que se llama como una caja se titula **«X · el
+mapa»** en su encabezado (`titulosDeCaja`, en la composición). O sea que la
+ambigüedad estaba resuelta donde los dos paneles se ven juntos, y sin
+resolver donde uno de los dos ya no está —que es justo cuando el lector no
+tiene con qué comparar—.
+
+Eso da además el contraste que la comprobación necesitaba: la suite no se
+fía de la lista que el módulo calcula, la cruza contra los títulos que el
+papel marca con el sufijo. Son dos preguntas distintas —el PLIEGO tiene dos
+paneles con ese nombre / ESTA hoja compuso los dos— así que no son la
+divergencia de la v879 y el contraste va en una sola dirección: un título
+marcado en el papel que la lista no conociera sería la lista rota. En este
+sector marca uno, «La sombra de los vecinos», y con uno alcanza.
+
+### Y el tercer sitio salió midiendo, no razonando
+
+Auditados los sitios que nombran un panel cedido, dos son los renglones de
+banda y el tercero es el pie de §21. Mi primer juicio sobre el pie fue que no
+hacía falta marcarlo: el párrafo se titula «Tamaños de impresión», dice
+«mapas» arriba y cada entrada lleva su medida en centímetros. Al medirlo
+imprime esto:
+
+> No alcanzan el objetivo del pliego: **Cobertura del suelo** 11,2 cm de
+> 12 cm · **Llenos y vacíos** 11,2 cm de 12 cm.
+
+Dos de los trece, pelados, en una lista que el lector recorre sin volver a
+leer la cabecera del párrafo. Se marcan, con «(el mapa)», que es el lado que
+el pie nombra. **El razonamiento sonaba bien y la medición lo desmintió**, y
+es la misma regla que el usuario fijó en la v916 dicha para mis propios
+juicios: medir antes de actuar, también cuando el que razona soy yo.
+
+Lo que NO nombra títulos es el renglón de los mapas apagados por tamaño —solo
+los cuenta— y por eso no se tocó.
+
+### Lo que NO cambia, y por qué
+
+* **El renglón de banda incompleta** (`b-falta`, v911) nombra la caja
+  principal y sigue con «Es la caja que responde la pregunta de arriba»: la
+  prosa ya dice cuál es. Marcarla daría «Llenos y vacíos (la caja) (cuánto
+  del sector está construido y cuánto libre)», dos paréntesis seguidos para
+  decir dos veces lo mismo.
+* **El pie de la FICHA** ya lo distinguía desde siempre: resuelve un
+  identificador cedido contra las dos listas y para un mapa imprime «el mapa
+  de …». La ambigüedad era del PAPEL, no de la aplicación.
+
+### Las casillas de origen: latente, no viva, y con guarda
+
+`cedioPanel` —por donde una casilla de síntesis y una entrada de bibliografía
+declaran de qué panel dependen— resuelve el nombre con `slugPliego` del
+TÍTULO. El slug de una caja es el de su título; el identificador de un mapa
+es otra cosa (`llega`, `caminar`, `llenos`). Así que **una declaración que
+nombrara uno de los trece vería solo la caja y nunca el mapa**, y lo haría en
+silencio: la casilla seguiría citando un panel que no está, que es el §1 de
+la v910 exacto.
+
+Medidas las declaraciones que existen, son tres y ninguna es de los trece:
+«Cómo cambió el sitio» dos veces y «Presión de crecimiento» una. Así que esto
+**no está vivo hoy** y no se arregló nada — inventar un cambio para cerrar un
+punto es lo que este proyecto lleva cinco tandas deshaciendo.
+
+Lo que sí entra es la guarda, en `revisar.js`, para que la cuarta no nazca
+mal. Cruza los dos inventarios del propio archivo —así un par nuevo queda
+vigilado— y denuncia con archivo y línea cualquier panel de origen declarado
+con uno de los trece. Y lleva **su propia guarda**: si los inventarios
+dejaran de leerse, `dobles` saldría vacío y la comprobación pasaría en verde
+sin vigilar una palabra, que es el patrón de la v878 con su propia lista.
+
+Demostrada en las dos direcciones: cambiando una declaración a «Llenos y
+vacíos» sale en rojo con `js/68-procity-reconocimiento.js:18503`, y
+devolviéndola vuelve al verde.
+
+### Demostrado contra la v924
+
+Dos aserciones en rojo de cinco, con el texto viejo impreso: los once nombres
+sin decir cuál son —«La sombra de los vecinos · Verde y agua · … · Cómo se
+llega · A distancia de caminar»— y la banda de movilidad con la línea que se
+leyó mal, palabra por palabra.
+
+Las otras tres son material y guardas, no afirmaciones nuevas: que la lista
+no esté vacía y el papel la respalde, que los renglones nombren varios de los
+trece —sin eso no habría nada que rechazar— y que ninguno que nombra una sola
+cosa lleve la aclaración de más.
+
+Y la demostración se hace revirtiendo **solo los sitios que imprimen**: el
+ayudante y lo que `estado()` expone se quedan, porque son lo que la suite
+necesita para LEER. Es la lección de la v875 sobre el `git stash` completo.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

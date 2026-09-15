@@ -656,6 +656,42 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        orden de cesión sería medir otra cosa de la que se dice. */
     o.granPie = R.laminaDoble({ letra: 'grande' });
     o.fueraPie = ((R.estado() || {}).pliegoFuera || []).slice();
+    /* ── TRECE TÍTULOS NOMBRAN DOS COSAS (v925) ────────────────────────
+       «Cedió en esta composición: Cómo se llega» puede ser el mapa o la
+       caja de conteo, y en el papel no hay forma de saber cuál — así leyó
+       mal el pliego real quien tenía el PDF en la mano, y así lo leería un
+       estudiante que quisiera recuperar lo que cedió.
+
+       Se mide sobre el DOCUMENTO apretado, que es el único material de la
+       batería donde algo cede de verdad (v911), y se leen los dos renglones
+       de la banda: el de banda entera y el de lo que cedió esta banda. */
+    o.cedioLineas = (String(o.granPie).match(/<p class="b-cedio">[^<]*<\/p>/g) || [])
+      .map(function (x) { return x.replace(/<[^>]+>/g, ''); });
+    o.fueraLineas = (String(o.granPie).match(/<p class="b-fuera">[\s\S]*?<\/p>/g) || [])
+      .map(function (x) { return x.replace(/<[^>]+>/g, ''); });
+    /* Los pares, del cruce de los dos inventarios. La suite NO se fía de esta
+       lista: la contrasta contra el papel, donde la hoja ya tiene desde
+       siempre su propia manera de decirlo —un mapa que se llama como una
+       caja se titula «X · el mapa» (v879)—. Son dos preguntas distintas y por
+       eso no son la divergencia de la v879: la lista dice que el PLIEGO tiene
+       dos paneles con ese nombre; el sufijo del título dice que ESTA hoja
+       compuso los dos. */
+    o.paresDobles = ((R.estado() || {}).pliegoNombresDobles || []).slice();
+    /* El pie de §21 también lista títulos pelados con su medida al lado, y
+       medido sobre el papel imprime dos de los trece: «Cobertura del suelo
+       11,2 cm · Llenos y vacíos 11,2 cm». El párrafo dice «mapas» una vez
+       arriba; el lector que recorre la lista ve un nombre que también titula
+       una caja dos bandas más atrás. Se lee del documento compuesto. */
+    o.pieTamanos = (String(o.doc || '').match(
+      /objetivo del pliego —12 cm el principal de cada banda, 10 los de categoría—: ([\s\S]*?)\. Se imprimen/) ||
+      ['', ''])[1].replace(/<[^>]+>/g, '');
+    /* Los títulos de mapa con el sufijo, leídos del documento ya compuesto:
+       es la prueba EN EL PAPEL de que ese nombre lo llevan dos paneles, y la
+       única manera de contrastar la lista sin volver a leer la misma tabla
+       que la produce. En este sector marca uno —«La sombra de los vecinos»—,
+       que alcanza para que el contraste signifique algo. */
+    o.mapasConSufijo = (String(o.doc || '').match(/<h2>([^<]*) · el mapa<\/h2>/g) || [])
+      .map(function (x) { return x.replace(/<\/?h2>/g, '').replace(/ · el mapa$/, ''); });
     /* Y la MISMA caja apagada a mano desde la ficha. El renglón de banda
        incompleta dice «cedió el sitio para que la hoja cerrara»: sobre una
        caja que una persona apagó a propósito eso es declarar mal la causa,
@@ -3089,6 +3125,67 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       ? 'no cedió en esta composición'
       : ((r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
           ? 'cedió y está en pliegoFuera' : 'cedió SIN declararse'));
+
+  console.log('\n  -- trece títulos nombran dos cosas, y la hoja dice cuál (v925) --');
+  {
+    /* Llegó del papel y de una lectura equivocada antes que de un reclamo:
+       «Cedió en esta composición: Cómo se llega» puede ser el MAPA o la CAJA
+       de conteo del mismo nombre. Quien tenía el PDF en la mano leyó que la
+       banda de movilidad había perdido sus mapas; conservaba los cuatro y
+       había perdido dos cajas. Un estudiante que quiera recuperar lo que
+       cedió apagando paneles desde la ficha tampoco sabría cuál buscar. */
+    const slug = t => String(t || '').toLowerCase()
+      .replace(/[áàä]/g, 'a').replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i')
+      .replace(/[óòö]/g, 'o').replace(/[úùü]/g, 'u').replace(/ñ/g, 'n')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const dobles = r.paresDobles || [];
+    /* Los nombres que los dos renglones de cesión imprimen, uno por uno. */
+    const nombres = []
+      .concat((r.cedioLineas || []).map(x =>
+        x.replace(/^Cedió en esta composición:\s*/, '').replace(/\.$/, '')))
+      .concat((r.fueraLineas || []).map(x =>
+        (x.match(/Llevaba ([\s\S]*?)\. Cedió entera/) || ['', ''])[1]))
+      /* Y el pie de §21, con la medida quitada: es la tercera lista de la
+         hoja que imprime títulos pelados, y se encontró midiendo, no
+         razonando — el primer juicio fue que el párrafo ya los acotaba. */
+      .concat((r.pieTamanos || '').split(' · ')
+        .map(x => x.replace(/\s+[\d,]+ cm( de [\d,]+ cm)?$/, '')))
+      .join(' · ').split(' · ').map(x => x.trim()).filter(Boolean);
+    const pelado = n => n.replace(/\s*\((la caja|el mapa)\)$/, '');
+    /* La lista que el módulo calcula, contrastada contra la manera que la
+       hoja ya tenía de decir lo mismo desde la v879: un mapa que se llama
+       como una caja se titula «X · el mapa». Son dos preguntas distintas
+       —el pliego tiene dos paneles así / esta hoja compuso los dos— y por eso
+       el contraste va en una sola dirección, pero un título marcado en el
+       papel que la lista no conociera sería la lista rota. */
+    T('material: la lista de nombres dobles no está vacía, y el papel la respalda',
+      dobles.length >= 5 && (r.mapasConSufijo || []).length >= 1 &&
+        (r.mapasConSufijo || []).every(t => dobles.indexOf(slug(t)) >= 0),
+      dobles.length + ' pares · el papel marca ' + JSON.stringify(r.mapasConSufijo || []));
+    T('material: los renglones de cesión nombran varios de esos títulos',
+      nombres.filter(n => dobles.indexOf(slug(pelado(n))) >= 0).length >= 3,
+      nombres.filter(n => dobles.indexOf(slug(pelado(n))) >= 0).length + ' de ' +
+        nombres.length + ' nombres cedidos son de los dobles');
+    /* La afirmación, como CLASE y no sobre «Cómo se llega»: un par nuevo
+       —una caja que estrene el nombre de un mapa— la hereda sin que su autor
+       se acuerde, porque la lista se calcula cruzando los dos inventarios. */
+    const sinDecir = nombres.filter(n =>
+      dobles.indexOf(slug(pelado(n))) >= 0 && !/\((la caja|el mapa)\)$/.test(n));
+    T('ninguno de los trece se nombra sin decir de cuál de los dos se habla',
+      sinDecir.length === 0, sinDecir.join(' · ') || 'todos lo dicen');
+    /* Y la otra mitad: un título que nombra una sola cosa no se aclara, se
+       ensucia. Sin esta guarda el arreglo podría ser marcarlos todos. */
+    const deMas = nombres.filter(n =>
+      /\((la caja|el mapa)\)$/.test(n) && dobles.indexOf(slug(pelado(n))) < 0);
+    T('y ninguno que nombra una sola cosa lleva la aclaración de más',
+      deMas.length === 0, deMas.join(' · ') || 'ninguno de más');
+    /* El caso que lo destapó, con su texto: la banda de movilidad cediendo
+       entera. Va aparte de la clase porque es el que se leyó mal. */
+    const movil = (r.fueraLineas || []).filter(x => /Cómo se llega/.test(x))[0] || '';
+    T('la banda de movilidad dice que lo que cedió son las CAJAS, no sus mapas',
+      /Cómo se llega \(la caja\)/.test(movil) && /A distancia de caminar \(la caja\)/.test(movil),
+      (movil.match(/Llevaba [^.]{0,120}/) || ['no aparece esa banda'])[0]);
+  }
 
   console.log('\n  -- una declaración sin hogar la arrastra su casilla (v922) --');
   {
