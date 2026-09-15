@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-14",
- "proximaActualizacion": "2026-09-15",
+ "actualizado": "2026-09-15",
+ "proximaActualizacion": "2026-09-16",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,78 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-14",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella declara insubsistente al director del Dane, Ricardo Valencia, tras tres semanas en el cargo, y nombra a Juan Manuel Alvarado Nivia",
+   "detalle": "El presidente Abelardo de la Espriella firmó el decreto que declara insubsistente a Ricardo Valencia Ramírez como director del Departamento Administrativo Nacional de Estadística (Dane), cargo que había asumido el 19 de agosto, y designó en su reemplazo a Juan Manuel Alvarado Nivia, economista de la región Caribe cuya gestión, según la Presidencia, el propio mandatario conoció durante la organización de ayudas para las víctimas del terremoto. Según explicó la Casa de Nariño, la decisión se tomó después de que Valencia afirmara, en su primera rueda de prensa al frente de la entidad, que no había hallado ninguna anomalía en los indicadores del Dane correspondientes a julio —mes en que el desempleo se ubicó en 8,1 %, la cifra más baja para ese mes desde 2001, y que fue producida durante el último mes del gobierno de Gustavo Petro— sin haberlos sometido antes a una auditoría exhaustiva.",
+   "contrapunto": "Varios medios enmarcaron la salida de Valencia como una consecuencia directa de haber respaldado la cifra de empleo heredada del gobierno de Petro, en momentos en que el propio presidente atribuye la crisis fiscal a la administración anterior; Publimetro tituló que se la «cobraron» tras afirmar que Petro no manipuló las cifras. El otro episodio que le costó el cargo, según Semana, fue la cancelación —treinta minutos antes de empezar— de la rueda de prensa donde el Dane iba a presentar la inflación de agosto, en aplicación de una directriz presidencial que exige autorización del Gobierno para que las entidades hablen con la prensa; la cifra sí se publicó a la hora prevista, pero Valencia no pudo explicarla ante los medios. Ninguna de las dos versiones —la oficial, centrada en la falta de auditoría, y la de la prensa, que la lee como una salida por defender cifras del gobierno anterior— ha sido confirmada o desmentida por un tercero independiente a la fecha de esta actualización.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella declara insubsistente a Ricardo Valencia Ramírez como director del Dane y nombra a Juan Manuel Alvarado Nivia",
+     "u": "https://www.eltiempo.com/politica/gobierno/presidente-abelardo-de-la-espriella-declara-insubsistente-a-ricardo-valencia-ramirez-como-director-del-dane-y-nombra-a-juan-manuel-alvarado-nivia-3586038"
+    },
+    {
+     "n": "El Colombiano · De la Espriella sacó a Ricardo Valencia, director del Dane, tras polémica por cifras de empleo: duró solo tres semanas",
+     "u": "https://www.elcolombiano.com/colombia/de-la-espriella-saco-a-ricardo-valencia-director-del-dane-razones-AD41060426"
+    },
+    {
+     "n": "Semana · Las dos polémicas que le costaron el cargo al director del Dane: Abelardo De La Espriella lo declaró insubsistente",
+     "u": "https://www.semana.com/politica/articulo/las-dos-polemicas-que-le-costaron-el-cargo-al-director-del-dane-abelardo-de-la-espriella-lo-declaro-insubsistente/202616/"
+    },
+    {
+     "n": "Publimetro · Se la cobraron: De la Espriella declaró insubsistente al director del Dane tras afirmar que Petro no manipuló cifras",
+     "u": "https://www.publimetro.co/noticias/2026/09/15/se-la-cobraron-de-la-espriella-declaro-insubsistente-al-director-del-dane-tras-afirmar-que-petro-no-manipulo-cifras/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella ordena revisar y trasladar a los presos recluidos en guarniciones militares y estaciones de Policía, dentro de un anuncio contra los privilegios a condenados por corrupción",
+   "detalle": "En el séptimo punto de su alocución del 13 de septiembre, dedicado a acabar con los privilegios para personas condenadas por corrupción, el presidente ordenó revisar la situación de quienes permanecen privados de la libertad en guarniciones militares o estaciones de Policía, y proceder a su traslado a establecimientos carcelarios ordinarios cuando no cumplan las condiciones legales para seguir en esos lugares. Afirmó que los condenados por corrupción no deben recibir un trato especial por el cargo que ocuparon o sus contactos.",
+   "contrapunto": "El presidente no entregó en su alocución una cifra de personas cobijadas por la revisión, ni identificó casos puntuales, ni fijó un plazo para los traslados, ni precisó qué guarniciones militares o estaciones de Policía quedarían incluidas.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Universal (Cartagena) · De la Espriella ordena revisar presos en guarniciones militares y estaciones de Policía",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/13/de-la-espriella-ordena-revisar-presos-en-guarniciones-militares-y-estaciones-de-policia/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella ordena revisar privilegios de presos en guarniciones militares y estaciones de Policía",
+     "u": "https://www.infobae.com/colombia/2026/09/14/abelardo-de-la-espriella-ordena-revisar-privilegios-de-presos-en-guarniciones-militares-y-estaciones-de-policia/"
+    },
+    {
+     "n": "Pulzo · De la Espriella ordena traslado a cárceles de presos corruptos en guarniciones militares",
+     "u": "https://www.pulzo.com/nacion/espriella-ordena-llevar-carceles-corruptos-guarniciones-militares-PP5301315"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-13",
+   "precision": "exacta",
+   "categoria": "israel",
+   "titulo": "De la Espriella visita la sinagoga Beit-El en Barranquilla por el Año Nuevo judío y reitera: «Siempre voy a estar con Israel»",
+   "detalle": "El presidente acompañó a la comunidad judía de Barranquilla en la celebración de Rosh Hashaná (Año Nuevo judío) en la sinagoga Beit-El, templo de tradición conservadora fundado en 1964. Calificó su visita como «un gesto de respeto, cariño y hermandad» hacia la comunidad judía colombiana y reiteró su respaldo al Estado de Israel.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "LaFM · Presidente De la Espriella acompañó a la comunidad judía reunida en Barranquilla durante celebración de Año Nuevo",
+     "u": "https://www.lafm.com.co/sociedad/abelardo-de-la-espriella-comunidad-judia-barranquilla-celebracion-ano-nuevo-410769"
+    },
+    {
+     "n": "Diario Judío México · Presidente De la Espriella acompañó a la comunidad judía reunida en Barranquilla durante celebración de Año Nuevo",
+     "u": "https://diariojudio.com/2026/09/14/presidente-de-la-espriella-acompano-a-la-comunidad-judia-reunida-en-barranquilla-durante-celebracion-de-ano-nuevo/538069/"
+    },
+    {
+     "n": "Ynet News · Colombian president visits synagogue, vows: 'I will always stand with Israel'",
+     "u": "https://www.ynetnews.com/jewish-world/article/hyiin3bygg"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-13",
    "precision": "exacta",

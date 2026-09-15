@@ -6548,6 +6548,22 @@ bisección: un arreglo estructural que no produce lo que promete es un arreglo
 sin causa. Queda el desalineamiento medido y escrito, con su precio, para que
 la tanda que quiera corregirlo no empiece por averiguar lo mismo.
 
+### Y una de numeración: la otra sesión sacó dos mientras tanto
+
+Esta tanda se escribió como v922 y al ir a subir ya había en `main` una v922
+—barrido de alertas— y una v923 —seguimiento presidencial—. Sube por encima de
+las dos, nunca bajando la propia: es la **v924**, la regla del 7 de septiembre.
+
+Y se cobró, en el mismo empujón, la otra regla de la casa: **`git merge` con
+cambios sin guardar ABORTA**, y su primera línea dice `Updating beeaf36..ade17e5`
+como si hubiera funcionado. El commit no ocurrió y solo se vio comprobando
+`git log`, no el mensaje. El orden correcto es el escrito: guardar primero,
+fusionar después.
+
+Los nueve archivos de versión salieron en conflicto por una sola cosa —el
+token— comprobado con `git diff <base> origin/main` sobre los nueve antes de
+resolver, y se resolvió con `--ours`, que ya venía en 924.
+
 ### Demostrado contra la v921
 
 Una en rojo con el estado viejo impreso —«se pierden del pliego»— revirtiendo

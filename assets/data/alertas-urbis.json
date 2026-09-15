@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-13",
+  "actualizado": "2026-09-15",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -95,6 +95,22 @@
       ],
       "fuente": "Unión Vial Camino del Pacífico / Pulzo",
       "url": "https://www.pulzo.com/nacion/cierre-total-de-la-via-cali-buenaventura-hoy-por-deslizamiento-en-la-yolomba-valle-del-cauca-PP5299771A"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 4,9 — 14 de septiembre de 2026, Istmina, Chocó",
+      "lat": 4.40,
+      "lng": -76.79,
+      "desde": "2026-09-14",
+      "expira": "2026-09-28",
+      "lineas": [
+        "📅 Ocurrió el lunes 14 de septiembre de 2026 a partir de las 3:02 p. m. (hora de Colombia), en una secuencia de al menos cuatro sismos con epicentros muy cercanos entre sí en poco más de una hora.",
+        "📊 Magnitud 4,9 (revisada al alza desde un reporte preliminar de 4,5) · profundidad 39 km · epicentro a 33 km de Sipí (Chocó) y a unos 56-61 km de Trujillo y Riofrío (Valle del Cauca) (4,40° N / 76,79° O, Servicio Geológico Colombiano). Le siguieron sismos de magnitud 4,1 (3:04 p. m.), magnitud 4,4 (3:08 p. m.) y una réplica de magnitud 4,9 (4:13 p. m.), todos con el mismo epicentro.",
+        "🌎 Se sintió con fuerza en Cali, Pereira, Armenia, Dosquebradas y Manizales, con evacuaciones preventivas de edificaciones en Cali; según los organismos de gestión del riesgo, no se reportaron daños estructurales ni heridos. Es parte de la actividad sísmica que sigue registrándose en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026, con epicentro distinto (San José del Palmar) al de la secuencia de Istmina del 11-12 de septiembre.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (Infobae, Publimetro, El Tiempo, Pulzo, El Espectador). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.infobae.com/colombia/2026/09/14/se-reportaron-dos-sismos-en-choco-en-menos-de-5-minutos-con-profundidades-de-40-y-39-kilometros/"
     }
   ]
 }
