@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v921-dos-estampas-que-leen-igual-pueden-ser-la-misma-foto';
+const URBIS_CACHE = 'urbis-v924-una-declaracion-sin-hogar-la-arrastra-su-casilla';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -9123,6 +9123,13 @@ function donaHTML(datos, colorDe, nombreDe) {
             };
             {
               cruces = cruces.map(function (c) {
+                /* Primero lo huérfano: no cambia el estado de la casilla, solo
+                   le agrega lo que su panel se llevó. Va antes del corte de
+                   `p` porque una casilla sin dependencias puede tener
+                   huérfanas igual. */
+                if (c.hu && c.hu.panel && cedioPanel(c.hu.panel)) {
+                  c = Object.assign({}, c, { l: c.l + ' ' + c.hu.texto, hu: null });
+                }
                 if (!c.p || !c.p.length) return c;
                 var falt = c.p.filter(cedioPanel);
                 if (!falt.length) return c;
@@ -18937,7 +18944,15 @@ function donaHTML(datos, colorDe, nombreDe) {
        `p` nombra los paneles de los que sale la cifra. Al componer, una
        casilla cuyo panel no quedó en el papel pasa a SIN MEDIR nombrándolo:
        una cita no puede sobrevivir al panel que la sostiene. */
-    var F = function (k, v, l, p) { filas.push({ k: k, v: v, l: l, p: p || null }); };
+    /* El quinto campo son las declaraciones HUÉRFANAS (v922): texto que solo
+       vive en un panel y que la casilla arrastra **cuando ese panel cede**.
+       No es lo mismo que `p`: `p` marca la casilla SIN MEDIR porque su cifra
+       se queda sin con qué comprobarse; esto no toca la cifra —que sigue
+       medida y verificable— y solo recoge lo que se iba a perder del papel.
+       Confundirlos sería declarar ausente algo medido, que es la v861. */
+    var F = function (k, v, l, p, hu) {
+      filas.push({ k: k, v: v, l: l, p: p || null, hu: hu || null });
+    };
     /* §1 (v899) · UNA CASILLA QUE NO SE PUDO MEDIR NO LLEVA CIFRA.
        ────────────────────────────────────────────────────────────────────
        La regla de la v875 —un dato no mapeado no genera propuesta ni
@@ -19104,7 +19119,19 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (pres.lectura) {
       F('Presión de crecimiento', pres.resumen,
         pres.lectura + ' Es un proxy de cuánto se construyó, no una medida de la presión.',
-        ['Cómo cambió el sitio']);
+        ['Cómo cambió el sitio'],
+        /* El panel del mismo nombre es el ÚNICO sitio donde la hoja dice que
+           ninguno de los tres mide la presión de frente, y los límites de los
+           otros dos. Si cede, esas tres declaraciones no están en ninguna otra
+           parte del pliego: la casilla las recoge. Es texto, así que el papel
+           que cuesta es poco — y solo se imprime cuando el panel no está, así
+           que con el panel puesto no se repite nada. */
+        { panel: 'Presión de crecimiento',
+          texto: 'Los otros dos proxies quedaron fuera de esta composición y se dicen acá: ' +
+                 'ninguno de los tres mide la presión de frente —eso pediría las licencias de ' +
+                 'construcción, que no son públicas—, la variación de población es del ' +
+                 '<b>municipio entero</b> y el pliego la pide por comuna, y falta la obra ' +
+                 'pública contratada, que es la que empuja antes de verse en la foto.' });
     } else {
       SM('Presión de crecimiento',
         'la huella construida se lee con «Cómo cambió el sitio»; la obra pública contratada ' +

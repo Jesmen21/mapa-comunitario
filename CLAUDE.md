@@ -6440,6 +6440,124 @@ necesita para LEER. Es la lección de la v875 sobre el `git stash` completo,
 aplicada por el otro lado — acá lo viejo es el código y lo nuevo es el
 material.
 
+## Una declaración sin hogar la arrastra su casilla (v924)
+
+Dos puntos medidos del PDF de la v921, y **los dos cambiaron de diagnóstico al
+medirlos**. Es la regla que el usuario fijó en la v916 cobrándose dos veces en
+la misma tanda: el síntoma reportado era real, la causa supuesta no.
+
+### §1 · la guarda no falló, y marcarla habría sido la v861
+
+Reportado: la banda 04 de la A imprime «Cedió en esta composición: Presión de
+crecimiento» y la casilla de la B sigue imprimiendo su cifra. Parecía el
+defecto de la v910 vivo en un caso concreto.
+
+Medido, la casilla declara `['Cómo cambió el sitio']` y **no se declara a sí
+misma**. Y esa declaración es la CORRECTA: la casilla no cita el panel,
+**recalcula** —sale de `presionDeCrecimiento`, la misma función— y su dato es
+la serie satelital, que está impresa en la lámina A. La cifra es comprobable
+en el papel.
+
+Así que agregarle la autodeclaración la mandaría a **SIN MEDIR sobre una cifra
+medida cuya fuente sí está en la hoja**, que es exactamente la v861: declarar
+ausente algo medido es peor que un dato de menos. Se retiró el punto.
+
+### Lo que sí se perdía, y es otra clase
+
+Reproducido el estado —panel fuera, serie dentro— y leídas las dos hojas:
+
+| | ¿sobrevive? |
+|---|---|
+| «Es un proxy de cuánto se construyó, no una medida de la presión» | **sí**, la casilla la lleva |
+| «Ninguna mide la presión directamente… son proxies, y cada uno dice de qué» | **no** |
+| La población es del **municipio entero** (el pliego la pide por comuna) | **no** |
+| Falta la obra pública contratada | **no** |
+
+No es una cita huérfana: es **un panel que era el único hogar de tres
+declaraciones**. Cuando cede, se van del pliego entero y nada las nombra.
+
+`F` recibe un quinto campo, `hu`, y al componer la casilla **arrastra** ese
+texto cuando su panel cede. Va antes del corte de `p` y no toca el estado: una
+casilla sin dependencias puede tener huérfanas igual, y arrastrarlas no la
+convierte en SIN MEDIR.
+
+**`p` y `hu` son dos cosas distintas y por eso son dos campos.** `p` dice «mi
+cifra se queda sin con qué comprobarse» y da vuelta la casilla; `hu` dice «lo
+que este panel declaraba no está en ninguna otra parte» y solo agrega texto.
+Juntarlos habría sido justo el error que este punto vino a no cometer.
+
+Medido: **no cuesta un panel** —ceden 12 antes y 12 después—, que es lo que
+hace que la decisión sea barata. Es texto.
+
+### §2 · los dos mapas ya estaban en el peldaño 3
+
+Reportado: la banda 05 abre la lámina B preguntando «¿cómo se llega, por dónde
+se entra y qué se alcanza a pie?», perdió los dos mapas que responden esa
+pregunta y conservó la caja de texto. Pedido: subirlos al peldaño 3.
+
+**Ya estaban.** La tabla tiene `'llega': 3, 'caminar': 3` para los MAPAS, y
+`'como-se-llega': 2, 'a-distancia-de-caminar': 2` para las CAJAS del mismo
+nombre. Lo que cede primero es la caja, y **el pie la nombra con un título que
+también es el de un mapa** — de ahí la lectura de que habían cedido los mapas.
+
+Medido en las tres letras del sector de prueba:
+
+| | ceden | mapa `llega` | caja «Cómo se llega» | mapas en la banda |
+|---|---|---|---|---|
+| normal | 12 | — | — | **4** |
+| media | 51 | — | **cede** | **4** |
+| grande | 60 | **cede** | cede | **0** |
+
+A `media` la banda **conserva sus cuatro mapas**: lo que se fue son las dos
+cajas. A `grande` ceden los mapas también, pero ahí ya cedieron sesenta
+paneles y el 3 es el techo — no hay peldaño por encima con el que protegerlos.
+
+#### La tabla se contradecía a sí misma, y eran tres pares
+
+La propia v911 escribió la regla: **«cajas y mapas llevan el mismo número,
+porque un mapa y su caja de conteo son el mismo panel para quien lee la
+hoja.»** Medidos los trece pares que comparten nombre, **diez están alineados
+y tres no**:
+
+```
+Cómo se llega            mapa 'llega'=3    caja 'como-se-llega'=2
+A distancia de caminar   mapa 'caminar'=3  caja 'a-distancia-de-caminar'=2
+Verde y agua             mapa 'agua'=2     caja 'verde-y-agua'=3
+```
+
+El tercero es **deliberado** y está escrito: la lista dictada decía «Verde y
+agua (el mapa; la caja de conteo se queda)». Los otros dos no los separó
+nadie: son un descuido de la tabla.
+
+#### Y alinearlos cuesta tres paneles sin salvar ninguno
+
+Aquí la regla de la v919 —medir las dos composiciones y comparar, no leer la
+lista— devolvió lo contrario de lo esperado. Subiendo las dos cajas al 3:
+
+```
+ENTRAN a ceder:  servicios-publicos · riesgo-oficial · como-se-mueve-el-sector
+SALEN:           (ninguno)
+```
+
+A `media` pasa de 51 a 54 y **las cajas ceden igual**. El cambio se lleva dos
+vacíos obligatorios y el texto principal de la propia banda 05, y no protege
+lo que venía a proteger.
+
+**Se deshizo.** Es la decisión de la v882 con la mudanza y la de la v886 con la
+bisección: un arreglo estructural que no produce lo que promete es un arreglo
+sin causa. Queda el desalineamiento medido y escrito, con su precio, para que
+la tanda que quiera corregirlo no empiece por averiguar lo mismo.
+
+### Demostrado contra la v921
+
+Una en rojo con el estado viejo impreso —«se pierden del pliego»— revirtiendo
+solo el hunk del arrastre.
+
+Las otras dos son guardas, como las de la v879, la v882 y la v920: que la
+casilla **no** se marque SIN MEDIR y siga imprimiendo su cifra, y que con el
+panel PUESTO —la hoja B suelta, que no bisecta— no repita lo que él ya dice
+dos palmos más arriba. La segunda es la que de verdad guarda.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

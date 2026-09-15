@@ -537,6 +537,25 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
        sí se puede ejercitar —cómo se dibuja— y la que el lector ve. */
     o.serieTres = R.laminaA({ hoja: 'A', clima: CLIMA, evo: EVO_SERIE, estampasMax: 3 });
     o.serieFueraMedia = ((R.estado() || {}).pliegoFuera || []).slice();
+
+    /* v922 · las declaraciones que se quedan sin hogar cuando su panel cede.
+       Las dos ramas: el DOCUMENTO apretado —donde «Presión de crecimiento»
+       cede en este sector— y la hoja B SUELTA, donde el panel existe y la
+       casilla no puede repetir lo que él ya dice. */
+    (function () {
+      var pl = function (x) { return String(x).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' '); };
+      var doc = R.laminaDoble({ clima: CLIMA, evo: EVO_SERIE });
+      var tt = String(doc).split('<div class="hoja"');
+      o.huCedio   = ((R.estado() || {}).pliegoFuera || []).indexOf('presion-de-crecimiento') >= 0;
+      o.huCajaEnA = /<h2>Presión de crecimiento<\/h2>/.test(tt[1] || '');
+      o.huEnB     = /Los otros dos proxies quedaron fuera/.test(pl(tt[2] || ''));
+      o.huSinMedir = /Presión de crecimiento[\s\S]{0,120}SIN MEDIR/.test(pl(tt[2] || ''));
+      o.huCifraB  = /Presión de crecimiento[^·]*·?\s*[\d,]+ puntos de superficie dura/.test(pl(tt[2] || ''));
+      var bS = R.laminaA({ hoja: 'B', clima: CLIMA, evo: EVO_SERIE });
+      var aS = R.laminaA({ hoja: 'A', clima: CLIMA, evo: EVO_SERIE });
+      o.huSueltaCaja = /<h2>Presión de crecimiento<\/h2>/.test(aS);
+      o.huSueltaB    = /Los otros dos proxies quedaron fuera/.test(pl(bS));
+    })();
     /* Y apretada: con el inventario leyendo `S.evo` la caja se componía pero
        quedaba FUERA de la lista de candidatos —`ordenDeSacrificio` la daba por
        no lista—, así que era inmune por accidente. Eso es lo que distingue
@@ -3070,6 +3089,36 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
       ? 'no cedió en esta composición'
       : ((r.serieFueraDoc || []).indexOf('como-cambio-el-sitio') >= 0
           ? 'cedió y está en pliegoFuera' : 'cedió SIN declararse'));
+
+  console.log('\n  -- una declaración sin hogar la arrastra su casilla (v922) --');
+  {
+    /* El panel «Presión de crecimiento» es el ÚNICO sitio del pliego donde se
+       dice que ninguno de los tres proxies mide la presión de frente, y los
+       límites de los otros dos. Cuando cede, la casilla de la síntesis sigue
+       siendo correcta —su cifra está medida y su fuente, la serie, está en la
+       A— así que NO se marca SIN MEDIR: eso sería la v861. Lo que hace es
+       recoger lo que se iba a perder del papel. */
+    T('material: en este sector «Presión de crecimiento» cede en el documento',
+      r.huCedio && !r.huCajaEnA,
+      r.huCedio ? 'cedió · caja en A: ' + r.huCajaEnA : 'NO cede: nada que medir abajo');
+    if (r.huCedio && !r.huCajaEnA) {
+      T('con el panel fuera, la casilla arrastra las tres declaraciones',
+        r.huEnB, r.huEnB ? 'las recoge en la casilla' : 'se pierden del pliego');
+      /* Y NO se convierte en SIN MEDIR: la cifra sigue medida y comprobable
+         en la lámina A. Declararla ausente sería peor que el hueco (v861). */
+      T('y la casilla NO se marca SIN MEDIR: su cifra sigue medida y verificable',
+        !r.huSinMedir && r.huCifraB,
+        (r.huSinMedir ? 'la marcó SIN MEDIR · ' : '') +
+          (r.huCifraB ? 'imprime su cifra' : 'perdió la cifra'));
+    }
+    /* GUARDA contra repetir, como las de la v879, la v882 y la v920: con el
+       panel PUESTO —la hoja suelta, que no bisecta— la casilla no puede decir
+       lo que el panel ya dice dos palmos más arriba. */
+    T('guarda: con el panel puesto, la casilla no repite lo que él ya dice',
+      r.huSueltaCaja && !r.huSueltaB,
+      !r.huSueltaCaja ? 'el panel no está en la hoja suelta: sin material'
+        : (r.huSueltaB ? 'lo repite' : 'no lo repite'));
+  }
 
   console.log('\n  -- lo que cede la BISECCIÓN de la A llega a la B (v920) --');
   {
