@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v925-trece-titulos-nombran-dos-cosas';
+const URBIS_CACHE = 'urbis-v926-la-hoja-de-deficit-se-compone-en-el-servidor';
 const URBIS_ASSETS = [
   './',
   './index.html',

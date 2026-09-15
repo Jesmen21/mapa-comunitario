@@ -29,6 +29,61 @@ const R = f => path.join(RAIZ, f);
 const leer = f => fs.readFileSync(R(f), 'utf8');
 
 let fallos = 0;
+/* Dónde cae cada carácter de un archivo de JavaScript: 1 si está dentro de
+   un comentario, 0 si no. Estaba dentro del bloque de la guarda del voseo y
+   sube a nivel de módulo en la v926, porque hace falta en dos sitios y una
+   segunda copia del recorrido divergiría a la tanda siguiente (v879). */
+function fueraDeComentario(txt) {
+  const com = new Uint8Array(txt.length);
+  const ANTES_REGEX = /[(,=:[!&|?{};+\-*%~^<>]$/;
+  let i = 0, modo = 0;   // 0 código · 1 // · 2 /* */ · 3 '…' · 4 "…" · 5 `…` · 6 /…/
+  let ultimo = '';       // último carácter significativo visto en código
+  while (i < txt.length) {
+    const c = txt[i], d = txt[i + 1];
+    if (modo === 0) {
+      if (c === '/' && d === '/') { modo = 1; com[i] = com[i + 1] = 1; i += 2; continue; }
+      if (c === '/' && d === '*') { modo = 2; com[i] = com[i + 1] = 1; i += 2; continue; }
+      if (c === '/') {
+        const prev = txt.slice(Math.max(0, i - 12), i).replace(/\s+$/, '');
+        if (!prev || ANTES_REGEX.test(prev) || /\b(return|typeof|case|in|of|new|delete|void)$/.test(prev)) {
+          modo = 6; i++; continue;
+        }
+        ultimo = '/'; i++; continue;
+      }
+      if (c === "'" ) { modo = 3; i++; continue; }
+      if (c === '"' ) { modo = 4; i++; continue; }
+      if (c === '`' ) { modo = 5; i++; continue; }
+      if (!/\s/.test(c)) ultimo = c;
+      i++; continue;
+    }
+    if (modo === 1) { com[i] = 1; if (c === '\n') modo = 0; i++; continue; }
+    if (modo === 2) { com[i] = 1; if (c === '*' && d === '/') { com[i + 1] = 1; modo = 0; i += 2; continue; } i++; continue; }
+    if (c === '\\') { i += 2; continue; }
+    if (modo === 6) {
+      /* Dentro de una clase `[...]` una barra no cierra la regex. */
+      if (c === '[') { while (i < txt.length && txt[i] !== ']') { if (txt[i] === '\\') i++; i++; } i++; continue; }
+      if (c === '/') { modo = 0; ultimo = ')'; i++; continue; }
+      if (c === '\n') { modo = 0; i++; continue; }
+      i++; continue;
+    }
+    if ((modo === 3 || modo === 4) && c === '\n') { modo = 0; i++; continue; }
+    if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; ultimo = c; i++; continue; }
+    i++;
+  }
+  return com;
+}
+
+/* El archivo SIN sus comentarios, para comprobar lo que el código HACE y no
+   lo que alguien escribió que hace. Los caracteres de comentario se
+   reemplazan por espacios y no se borran, para que las líneas sigan
+   contando igual. */
+function soloCodigo(txt) {
+  const com = fueraDeComentario(txt);
+  let out = '';
+  for (let i = 0; i < txt.length; i++) out += com[i] ? (txt[i] === '\n' ? '\n' : ' ') : txt[i];
+  return out;
+}
+
 function comprobar(nombre, ok, detalle) {
   console.log('  ' + (ok ? '\u2713' : '\u2717') + ' ' + nombre + (detalle ? '  \u2014 ' + detalle : ''));
   if (!ok) fallos++;
@@ -1234,45 +1289,6 @@ console.log('\n  -- el FODA del curso --');
      comillas simples o dobles no cruza un salto de línea. Si llega uno, es
      que el recorrido se perdió; se vuelve a código y el daño queda en esa
      línea en vez de comerse el archivo. */
-  function fueraDeComentario(txt) {
-    const com = new Uint8Array(txt.length);
-    const ANTES_REGEX = /[(,=:[!&|?{};+\-*%~^<>]$/;
-    let i = 0, modo = 0;   // 0 código · 1 // · 2 /* */ · 3 '…' · 4 "…" · 5 `…` · 6 /…/
-    let ultimo = '';       // último carácter significativo visto en código
-    while (i < txt.length) {
-      const c = txt[i], d = txt[i + 1];
-      if (modo === 0) {
-        if (c === '/' && d === '/') { modo = 1; com[i] = com[i + 1] = 1; i += 2; continue; }
-        if (c === '/' && d === '*') { modo = 2; com[i] = com[i + 1] = 1; i += 2; continue; }
-        if (c === '/') {
-          const prev = txt.slice(Math.max(0, i - 12), i).replace(/\s+$/, '');
-          if (!prev || ANTES_REGEX.test(prev) || /\b(return|typeof|case|in|of|new|delete|void)$/.test(prev)) {
-            modo = 6; i++; continue;
-          }
-          ultimo = '/'; i++; continue;
-        }
-        if (c === "'" ) { modo = 3; i++; continue; }
-        if (c === '"' ) { modo = 4; i++; continue; }
-        if (c === '`' ) { modo = 5; i++; continue; }
-        if (!/\s/.test(c)) ultimo = c;
-        i++; continue;
-      }
-      if (modo === 1) { com[i] = 1; if (c === '\n') modo = 0; i++; continue; }
-      if (modo === 2) { com[i] = 1; if (c === '*' && d === '/') { com[i + 1] = 1; modo = 0; i += 2; continue; } i++; continue; }
-      if (c === '\\') { i += 2; continue; }
-      if (modo === 6) {
-        /* Dentro de una clase `[...]` una barra no cierra la regex. */
-        if (c === '[') { while (i < txt.length && txt[i] !== ']') { if (txt[i] === '\\') i++; i++; } i++; continue; }
-        if (c === '/') { modo = 0; ultimo = ')'; i++; continue; }
-        if (c === '\n') { modo = 0; i++; continue; }
-        i++; continue;
-      }
-      if ((modo === 3 || modo === 4) && c === '\n') { modo = 0; i++; continue; }
-      if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; ultimo = c; i++; continue; }
-      i++;
-    }
-    return com;
-  }
 
   /* Todo lo que se sirve al navegador: los módulos de `js/` y las páginas.
      Se listan del disco y no de una lista escrita, para que un archivo nuevo
@@ -1776,10 +1792,21 @@ console.log('\n  -- un nombre, una cosa --');
 console.log('\n  -- las listas vivas --');
 {
   const md = leer('CLAUDE.md');
-  const j68 = leer('js/68-procity-reconocimiento.js');
-  const j61 = leer('js/61-analisis-ia-datos.js');
-  const j73 = leer('js/73-solar.js');
-  const j90 = leer('js/90-vt-app.js');
+  const j61 = soloCodigo(leer('js/61-analisis-ia-datos.js'));
+  const j73 = soloCodigo(leer('js/73-solar.js'));
+  /* ── LAS MARCAS DE CAPACIDAD MIRAN EL CÓDIGO, NO LOS COMENTARIOS (v926) ──
+     Se destapó en el acto y con mis propias manos: al mover la frase del
+     método al servidor, la capacidad «el método declarado en cada corrida»
+     siguió en verde — porque el COMENTARIO que explicaba la mudanza contiene
+     la frase que la prueba busca. Una capacidad demostrada por un párrafo que
+     habla de ella no está demostrada: es el verde que este proyecto lleva
+     veinte tandas persiguiendo, y la lista viva entera se apoya en estas
+     marcas.
+
+     Los archivos se leen sin comentarios. Lo que la prueba busca tiene que
+     estar en lo que corre. */
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const j90 = soloCodigo(leer('js/90-vt-app.js'));
 
   const LISTAS = [
     { marca: 'PLIEGO', que: 'el pliego educativo', capacidades: [
@@ -1851,8 +1878,13 @@ console.log('\n  -- las listas vivas --');
     { marca: 'VT', que: 'Visión Territorial', capacidades: [
       { t: 'el aviso de origen en toda pantalla', tema: /desarrollo|sintétic|demostración/i,
         prueba: () => /S\.avisoDatos/.test(j90) },
+      /* La frase del método la escribe el SERVIDOR desde la v926 —estaba tres
+         veces a mano acá y ya había divergido—, así que la marca de este lado
+         es que la pantalla la lea y la imprima, no que la redacte. */
       { t: 'el método declarado en cada corrida', tema: /isócrona|radio_recto|método/i,
-        prueba: () => /isócrona pendiente/.test(j90) },
+        prueba: () => /metodo_texto/.test(j90) && /function metodoDe/.test(j90) },
+      { t: 'la hoja de déficit en PDF, con su marca de agua', tema: /PDF|exporta|marca de agua|imprim/i,
+        prueba: () => /hoja\.pdf/.test(j90) && /function bajarHoja/.test(j90) },
       { t: 'las dos prioridades',                 tema: /prioridad/i,
         prueba: () => /prioridad_neutra/.test(j90) },
       { t: 'el motivo obligatorio al descartar',  tema: /descart|motivo/i,

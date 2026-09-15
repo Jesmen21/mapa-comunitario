@@ -218,6 +218,37 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
   chk(sinAviso.length === 0,
     'toda pantalla con cifras avisa que son datos de desarrollo, no solo el tablero' +
     (sinAviso.length ? ' — falta en ' + sinAviso.join(', ') : ' (' + PANTALLAS.length + ' pantallas)'));
+  /* ── LA HOJA DE DÉFICIT SE BAJA, Y EL MÉTODO LO ESCRIBE EL SERVIDOR (v926) ──
+     Era el único renglón de la lista viva de Visión Territorial que se podía
+     cerrar sin un servicio de afuera: «no hay exportación ninguna todavía».
+     Lo que se comprueba acá es la mitad del navegador —que el botón esté y
+     que la pantalla imprima el método que MANDA el servidor—; que el PDF
+     lleve su marca de agua se mide contra los bytes, en `probar-rutas` del
+     motor, que es donde se compone. */
+  await A.pg.evaluate(() => VT.ir('mapa')); await esperar(A.pg, 900);
+  const hoja = await A.pg.evaluate(() => {
+    const c = document.getElementById('vt-hoja-cuerpo') || document.body;
+    return { boton: !!c.querySelector('[data-vt-accion="hoja-pdf"]'),
+             rotulo: (c.querySelector('[data-vt-accion="hoja-pdf"]') || {}).textContent || '',
+             /* El propio texto del método lleva un «·» dentro —«radio recto ·
+                isócrona pendiente»—, que es el mismo separador que la línea usa
+                entre campos: cortar por «·» parte la frase en dos y mide otra
+                cosa de la que dice. Se corta por lo que de verdad cierra el
+                campo, que es « · corte ». */
+             metodo: (c.textContent.match(/método: (.+?) · corte /) || ['', ''])[1] || '' };
+  });
+  chk(hoja.boton, 'la hoja de déficit ofrece bajarse en PDF' +
+    (hoja.boton ? ' (' + hoja.rotulo.trim() + ')' : ' — no hay botón'));
+  /* El método se imprime, y NO se redacta en el navegador: la frase estaba
+     escrita tres veces a mano en `js/90` y ya había divergido —dos decían
+     «· isócrona pendiente» y una «(isócrona pendiente)»—. La pantalla lee
+     `metodo_texto`, así que un servidor que dejara de mandarlo se vería acá
+     como el identificador crudo y no como una frase inventada. */
+  chk(/isócrona pendiente/.test(hoja.metodo),
+    'y declara el método con el texto que manda el servidor (' + (hoja.metodo || 'no lo imprime') + ')');
+  chk(!/\(isócrona pendiente\)/.test(hoja.metodo),
+    'con una sola redacción en toda la aplicación, no una por pantalla');
+
   // Se vuelve a la ficha, que es donde seguía la suite.
   await A.pg.evaluate(i => VT.ir('propuesta', i), props.id);
   await A.pg.waitForFunction(() => document.querySelectorAll('#vt-propuesta .vt-tiempo').length === 3, null, { timeout: 20000 }).catch(() => {});

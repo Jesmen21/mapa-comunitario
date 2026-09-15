@@ -531,8 +531,11 @@ lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
   y toda corrida escribe `radio_recto`. `ya: el método va declarado como «radio recto · isócrona pendiente» en el tablero, en la hoja de déficit, en la ficha de propuesta y al evaluar una idea`
 * **Espacio público en m²/hab** — hace falta el polígono de cada parque; con
   puntos solo se mide el radio. `ya: la cobertura por radio del espacio público, y el resultado se declara «pendiente» con esa razón escrita dentro`
-* **Exportación PDF con marca de agua en el servidor** — no hay exportación
-  ninguna todavía.
+* **La ficha de propuesta en PDF, y un mapa dentro de la hoja** — la ficha es
+  el papel con el que se aprueba una obra y todavía no se baja; y la hoja de
+  déficit sale sin mapa, porque el servidor no descarga teselas y un recuadro
+  vacío rotulado «mapa» sería el marco esquemático que la v887 prohibió.
+  `ya: la hoja de déficit se compone en el SERVIDOR y se baja en PDF con su marca de agua de origen —que el navegador no puede quitar—, el aviso entero, el método, la fecha de corte, quién la generó y la misma cifra que la pantalla, de la misma consulta`
 * **Cuentas por entidad con contraseña de nuevo al aprobar** — hoy la
   credencial es la del equipo. `ya: se confirma escribiendo APROBAR, queda escrito con nombre, rol y hora, y el propio diálogo dice en pantalla que la contraseña llega con las cuentas por entidad`
 * **Ciclo de aprendizaje anual y SECOP** — sin empezar.
@@ -6725,6 +6728,171 @@ cosa lleve la aclaración de más.
 Y la demostración se hace revirtiendo **solo los sitios que imprimen**: el
 ayudante y lo que `estado()` expone se quedan, porque son lo que la suite
 necesita para LEER. Es la lección de la v875 sobre el `git stash` completo.
+
+## La hoja de déficit se compone en el servidor (v926)
+
+Con el pliego v2 cerrado y la lámina quieta, lo que quedaba abierto en la
+bitácora era **la lista viva de Visión Territorial**, sin tocar desde la v868.
+De sus seis renglones, cinco piden algo de afuera que esta máquina no alcanza
+—un proyecto de Supabase, la malla vial, SECOP, datos reales de tres
+municipios— y **uno se podía cerrar entero**:
+
+> **Exportación PDF con marca de agua en el servidor** — no hay exportación
+> ninguna todavía.
+
+Medido antes de escribir, que es la regla de la v863: era cierto. Ni cliente
+ni servidor tenían una sola línea de exportación.
+
+### Por qué en el servidor, que es lo que el renglón pide con esas palabras
+
+La hoja de déficit es «la que se imprime y sale del edificio» —las palabras
+son de la v867—. Una marca de agua puesta en el navegador la quita cualquiera
+con el inspector antes de imprimir; puesta en el servidor viaja dentro del
+archivo. Esa es la mitad del renglón, y es la que decide dónde vive el código.
+
+### Las dos guardas que una respuesta en BYTES deja atrás
+
+Y esta es la razón de fondo de que la tanda valga más que un botón.
+
+`enviar`, en `vt/rutas.js`, hace dos cosas por TODA respuesta JSON: le pega el
+`aviso_datos` (v867) y la pasa por `limpiar`, que corta si se coló una clave
+de umbrales o pesos. Las dos existen exactamente para que «una ruta nueva lo
+herede sin que su autor se acuerde».
+
+**Un PDF no es JSON.** No pasa por `enviar`, así que las dos protecciones se
+pierden **en silencio**: la respuesta sale bien formada y sin advertencia, que
+es el fallo de la v867 reaparecido por una puerta que en la v867 no existía.
+Se reponen, y las dos de manera estructural y no por costumbre:
+
+* **`aviso` es obligatorio y no tiene valor por omisión.** O es el texto de la
+  advertencia, o es `false` —«los datos son del municipio y no hay nada que
+  advertir», que es una decisión—. `undefined` y `null` revientan con un error
+  que explica por qué. Quien escriba la segunda ruta en bytes no puede
+  olvidarlo: no compone una hoja sin decidirlo.
+* **El compositor no recibe la fila del análisis**, solo los campos que
+  `/vt/deficits` ya publica. Que la hoja no lleve pesos no es una comprobación
+  que haya que acordarse de correr: es que no los tiene. Y hay una aserción
+  que le mete umbrales y pesos por la entrada y exige que no lleguen al papel,
+  para el día que alguien «enriquezca» la hoja volcándole el resultado entero.
+
+La misma decisión, en pequeño: `aviso` y `marca` van juntos o no va ninguno.
+Son la misma advertencia dicha a treinta centímetros y a tres metros, y una
+hoja con el aviso al pie y sin marca es la que se fotocopia y pierde la mitad
+que se lee de lejos. `probar-rutas` exige además que **todo origen que produzca
+aviso produzca marca**, recorriendo los cuatro: un origen nuevo con aviso y sin
+marca se vería solo al imprimir.
+
+### Una consulta, dos salidas
+
+`/vt/deficits` y `/vt/hoja.pdf` llaman a la MISMA función, `deficitDe`. Copiar
+la consulta para el PDF habría sido comprar de antemano la divergencia de la
+v879 — y entre una pantalla y un papel que dicen cifras distintas bajo el
+mismo nombre, el que se defiende en una mesa es el papel. La prueba lo cruza:
+la cifra impresa es la que la pantalla publicó.
+
+### El método estaba escrito tres veces, y ya había divergido
+
+Salió al ir a imprimirlo. `js/90` tenía la frase a mano en tres sitios, y dos
+redacciones:
+
+```
+línea 284   radio recto · isócrona pendiente      (tablero)
+línea 489   radio recto (isócrona pendiente)      (hoja de déficit)
+línea 669   radio recto · isócrona pendiente      (ficha de propuesta)
+```
+
+La hoja en PDF habría sido la **cuarta** copia, y en el otro repositorio —
+donde una divergencia ya no se ve al leer. Ahora el servidor manda
+`metodo_texto` pegado a la cifra, como el aviso de origen: es el único que
+sabe con qué método corrió el análisis. La pantalla y el papel imprimen lo que
+llega, y el respaldo del cliente imprime el identificador crudo y **no una
+frase reescrita**: volver a redactarla sería recrear la copia que esto vino a
+quitar.
+
+### La guarda de capacidades pasaba en verde por un COMENTARIO
+
+El hallazgo de la tanda, y lo cometí yo en el acto.
+
+Las listas vivas se sostienen sobre «marcas de capacidad»: un renglón puede
+declarar algo faltante solo mientras el código servido no lo haga, y la PRUEBA
+de que lo hace es una expresión que `revisar.js` busca en el archivo. La de
+Visión Territorial era `/isócrona pendiente/.test(j90)`.
+
+Al mover la frase al servidor, la capacidad **siguió en verde** — porque el
+comentario que explicaba la mudanza contiene la frase que la prueba busca. Una
+capacidad demostrada por un párrafo que habla de ella no está demostrada, y de
+estas marcas cuelga la lista viva entera.
+
+Los archivos se leen ahora **sin sus comentarios** (`soloCodigo`), reusando el
+recorrido que la guarda del voseo ya tenía —subido a nivel de módulo, porque
+una segunda copia divergiría a la tanda siguiente—. Lo que una prueba busca
+tiene que estar en lo que corre.
+
+Medido al aplicarlo: **las 16 capacidades del pliego siguen en verde** —no
+había más falsos verdes— y la de Visión Territorial se pone roja sobre el caso
+real. Demostrado en las dos direcciones: con el lector viejo, la capacidad
+pasa con la frase solo en un comentario; con el de la v926, no.
+
+### Y se miró el papel
+
+Que es el método que más defectos reales ha encontrado en este proyecto (v874,
+v882, v885, v887). Renderizado el PDF con los datos de la semilla de verdad,
+tres cosas que ninguna aserción veía:
+
+* **«15 min ? 1.200 m».** La norma del radio de caminata dice «15 min ≈
+  1.200 m» y `≈` no está en WinAnsi. Lo cazó el contador de caracteres no
+  escritos —por eso el contador se devuelve en vez de tragarse—, y salió
+  justo en el renglón que justifica el radio. Los signos que CP1252 no tiene y
+  sí tienen escritura exacta en ASCII (`≈`→`~`, `≤`→`<=`, `≥`→`>=`) se
+  translitera; el contador queda para lo demás, y la prueba exige cero.
+* **La hoja cerraba a media página.** Llenarla con adorno habría sido lo
+  contrario de lo que hace este módulo. Lo que faltaba de verdad es lo que la
+  lámina imprime desde la v849 —un vacío se declara, no se calla—: **«Lo que
+  esta hoja no trae»**, con el mapa y por qué (el servidor no descarga teselas,
+  y un recuadro vacío rotulado «mapa» sería el marco esquemático que la v887
+  prohibió), la distancia caminada contra la línea recta, y el cupo de cada
+  equipamiento —un colegio lleno cubre en el mapa y no en la práctica—.
+* **La firma estaba en mitad de la hoja**, entre la procedencia y las
+  carencias, y se leía como parte del bloque de arriba. La firma de un papel
+  va al pie, y hay una aserción sobre el ORDEN y no sobre su presencia.
+
+Y una cuarta de la misma clase, salida del volcado y no de la imagen: la frase
+de la cifra decía **«a más de 1.200 m de colegio oficial primaria público»**.
+El catálogo trae veinticinco tipos con géneros distintos, así que cualquier
+artículo escrito ahí sale mal en la mitad. La frase no concuerda con el nombre
+del tipo a propósito —el tipo ya está en el título—, que es la única manera de
+que sea correcta para los veinticinco.
+
+### Tres veces el mismo error de lector, y vale anotarlo
+
+Las tres aserciones que se pusieron rojas en esta tanda fueron **de mi lector
+de prueba y no del papel**, y las tres por el mismo descuido: leer el PDF como
+una tira de texto.
+
+* La prosa que se parte al llegar al borde: `No son datos del municipio` cae
+  en dos renglones, y buscarla en un solo literal es exigir que no se parta.
+* Los renglones medidos todos al mismo tamaño: cada uno se compuso al suyo, y
+  medirlos con un número fijo mide otra cosa de la que dice (v854).
+* El `·` que el propio texto del método lleva dentro es el mismo separador que
+  la línea usa entre campos, así que cortar por `·` parte la frase en dos.
+
+Los tres se arreglaron leyendo el trío **(fuente, tamaño, texto)** del flujo y
+no el archivo entero, con dos maneras declaradas de juntarlo: separados para
+buscar un literal, seguidos para rehacer la prosa. Juntar con espacio para
+buscar una cifra fabricaría una que nadie escribió (v885).
+
+### Lo que la hoja NO es, y queda en la lista viva
+
+Sin mapa, y por la razón escrita arriba. Y sin la **ficha de propuesta**, que
+es el papel con el que se aprueba una obra: esa sigue sin bajarse. El renglón
+de la lista viva quedó reescrito con lo que falta de verdad y su cláusula
+`ya:`, que es lo que la v866 dejó como contrato.
+
+### Medido
+
+`probar-hoja` (nueva, sin base ni red) **29**, `probar-rutas` **51**,
+`probar-vt` **31**, `tvision` **48**, y la batería del repositorio público
+**120/120**.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

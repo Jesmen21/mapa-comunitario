@@ -125,6 +125,58 @@
       .finally(function () { clearTimeout(t); });
   }
 
+  /* ── EL MÉTODO LO ESCRIBE EL SERVIDOR (v926) ────────────────────────────
+     Estaba escrito tres veces a mano en este archivo y ya había divergido:
+     dos sitios decían «radio recto · isócrona pendiente» y uno «radio recto
+     (isócrona pendiente)». La hoja en PDF habría sido la cuarta copia, y en
+     el otro repositorio — donde una divergencia ya no se ve al leer.
+
+     Ahora el servidor manda `metodo_texto` pegado a la cifra, como el aviso
+     de origen (v867): es el único que sabe con qué método corrió el análisis.
+     El respaldo imprime el identificador crudo y NO una frase reescrita acá:
+     volver a redactarla sería recrear la copia que esta tanda vino a quitar. */
+  function metodoDe(o) {
+    return (o && o.metodo_texto) || (o && o.metodo) || 'sin declarar';
+  }
+
+  /* ── BAJAR LA HOJA DE DÉFICIT, COMPUESTA EN EL SERVIDOR (v926) ──────────
+     No es un enlace: la ruta pide la licencia en una cabecera y un `<a href>`
+     no la lleva. Y no se compone acá a propósito — la marca de agua es la
+     mitad del asunto y una puesta en el navegador la quita cualquiera con el
+     inspector antes de imprimir. */
+  function bajarHoja(tipo, boton) {
+    if (!tipo) return;
+    var antes = boton ? boton.innerHTML : '';
+    if (boton) { boton.disabled = true; boton.textContent = 'Componiendo…'; }
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, TIEMPO_TOPE);
+    fetch(api() + '/vt/hoja.pdf?tipo=' + encodeURIComponent(tipo),
+      { headers: { Authorization: 'Bearer ' + licencia() }, signal: ctrl && ctrl.signal })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (tx) {
+            var j = null; try { j = JSON.parse(tx); } catch (e) {}
+            throw new Error((j && j.error) || ('No se pudo componer la hoja (error ' + r.status + ').'));
+          });
+        }
+        /* El nombre sale de la cabecera que manda el servidor: armarlo acá
+           sería una segunda manera de nombrar el mismo archivo. */
+        var cd = r.headers.get('Content-Disposition') || '';
+        var m = cd.match(/filename="([^"]+)"/);
+        return r.blob().then(function (b) { return { blob: b, nombre: (m && m[1]) || 'URBIS-deficit.pdf' }; });
+      })
+      .then(function (x) {
+        var url = URL.createObjectURL(x.blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = x.nombre; document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        toast('Hoja bajada: ' + x.nombre);
+      })
+      .catch(function (e) { toast(e && e.message ? e.message : 'Sin conexión: la hoja se compone en el servidor.'); })
+      .finally(function () { clearTimeout(t); if (boton) { boton.disabled = false; boton.innerHTML = antes; } });
+  }
+
   /* ── caché propia, con fecha; se enseña diciendo que es guardada ────────── */
   function claveCache() { return LS.cache + ((S.ses && S.ses.territorio && S.ses.territorio.dane) || 'x'); }
   function leerCache() { try { return JSON.parse(localStorage.getItem(claveCache()) || '{}'); } catch (e) { return {}; } }
@@ -281,7 +333,7 @@
     if (A) {
       h += '<div class="vt-cifra activo vt-num" id="vt-cifra-indice">' + String(A.indice_salud).replace('.', ',') + '<small>/ 100</small></div>';
       h += '<div class="vt-linea">Cobertura pública <b>confirmada</b>, ponderada por la urgencia de cada categoría. Confianza: <b>' + esc(A.confianza && A.confianza.texto || '') + '</b>.</div>';
-      h += '<div class="vt-meta"><span>Análisis del ' + esc(fecha(A.terminado_en, true)) + '</span><span>Método: ' + esc(A.metodo === 'radio_recto' ? 'radio recto · isócrona pendiente' : A.metodo) + '</span><span>Población ' + esc(miles(t.poblacion_censal)) + ' · ' + esc(t.fuente_poblacion || 'sin fuente') + (t.fecha_corte_poblacion ? ' · corte ' + esc(fecha(t.fecha_corte_poblacion)) : '') + '</span></div>';
+      h += '<div class="vt-meta"><span>Análisis del ' + esc(fecha(A.terminado_en, true)) + '</span><span>Método: ' + esc(metodoDe(A)) + '</span><span>Población ' + esc(miles(t.poblacion_censal)) + ' · ' + esc(t.fuente_poblacion || 'sin fuente') + (t.fecha_corte_poblacion ? ' · corte ' + esc(fecha(t.fecha_corte_poblacion)) : '') + '</span></div>';
     } else {
       // La primera pantalla SIEMPRE muestra un dato de la ciudad, aunque
       // sea preliminar. Sin análisis todavía, el dato es la población.
@@ -486,10 +538,15 @@
     } else {
       h += '<div class="vt-kpi vt-num" style="font-size:2em;font-weight:800;margin:6px 0 2px">' + esc(miles(r.sin_cobertura_publica)) + '<small style="font-size:.45em;color:var(--vt-tinta-3);font-weight:600"> personas a más de ' + esc(D.radio_m) + ' m</small></div>';
       h += '<div class="vt-nota">Cobertura pública ' + esc(pct(r.pct_cubierta_publica)) + ' · total (con privados) ' + esc(pct(r.pct_cubierta_total)) + ' · confirmada ' + esc(pct(r.pct_cubierta_confirmada)) + '</div>';
-      h += '<div class="vt-nota">Radio de ' + esc(D.radio_m) + ' m: ' + esc(D.norma_radio || '') + ' · método: ' + esc(D.metodo === 'radio_recto' ? 'radio recto (isócrona pendiente)' : D.metodo) + ' · corte ' + esc(fecha(D.fecha_corte)) + '</div>';
+      h += '<div class="vt-nota">Radio de ' + esc(D.radio_m) + ' m: ' + esc(D.norma_radio || '') + ' · método: ' + esc(metodoDe(D)) + ' · corte ' + esc(fecha(D.fecha_corte)) + '</div>';
       h += '<div class="vt-nota" style="color:var(--vt-tinta-3)">' + esc(miles(puntos.length)) + ' manzanas sin cobertura pública del total analizado.</div>';
     }
-    h += '<div class="vt-acciones"><button type="button" class="vt-btn sutil" data-vt-accion="lista">' + ico('lista', 16) + ' Ver como lista</button><button type="button" class="vt-btn sutil" data-vt-ir="propuestas">' + ico('plan', 16) + ' Propuestas</button></div>';
+    /* El botón de la hoja solo cuando hay una hoja que imprimir: ofrecerlo
+       sobre un territorio sin análisis prometería un papel en blanco. */
+    var hayHoja = !D.sin_analisis && !D.sin_radio;
+    h += '<div class="vt-acciones"><button type="button" class="vt-btn sutil" data-vt-accion="lista">' + ico('lista', 16) + ' Ver como lista</button>' +
+      (hayHoja ? '<button type="button" class="vt-btn sutil" data-vt-accion="hoja-pdf" data-tipo="' + esc(S.tipo) + '">' + ico('plan', 16) + ' Bajar la hoja (PDF)</button>' : '') +
+      '<button type="button" class="vt-btn sutil" data-vt-ir="propuestas">' + ico('plan', 16) + ' Propuestas</button></div>';
     pintarHoja(h);
   }
   /* La hoja es lo que se imprime y sale del edificio. Hasta la v866 daba
@@ -666,7 +723,7 @@
       '<dt>Sin cobertura pública</dt><dd class="vt-num">' + esc(miles(d.sin_cobertura_publica)) + ' en el territorio (' + esc(pct(100 - (d.pct_cubierta_publica || 0))) + ')</dd>' +
       '<dt>Radio</dt><dd>' + esc(d.radio_m) + ' m · ' + esc(d.norma_radio || '') + '</dd>' +
       '<dt>Cobertura total / confirmada</dt><dd class="vt-num">' + esc(pct(d.pct_cubierta_total)) + ' / ' + esc(pct(d.pct_cubierta_confirmada)) + '</dd>' +
-      '<dt>Método</dt><dd>' + esc(d.metodo === 'radio_recto' ? 'radio recto · isócrona pendiente' : d.metodo || '') + '</dd></dl></div>';
+      '<dt>Método</dt><dd>' + esc(metodoDe(d)) + '</dd></dl></div>';
     h += '<div class="vt-card"><div class="vt-eyebrow">Antes de la obra</div><p style="margin:6px 0 0;font-size:.95em">' + esc(p.opcion_gestion || '') + '</p></div>';
     h += '<div class="vt-card"><div class="vt-eyebrow">Costo · ' + esc(p.costo && p.costo.etiqueta || 'estimación preliminar') + '</div>' +
       (p.costo && p.costo.min != null ? '<div class="vt-kpi vt-num" style="font-size:1.4em">' + esc(cop(p.costo.min)) + ' – ' + esc(cop(p.costo.max)) + '<small> COP</small></div><div class="vt-nota">' + esc(d.costo_nota || '') + '. El costo del suelo queda fuera a propósito: varía por zona y distorsiona el ranking.</div>' : '<div class="vt-nota">Sin referencia de costo cargada para este tipo.</div>') + '</div>';
@@ -846,6 +903,7 @@
     else if (a === 'propuestas') cargarPropuestas(true);
     else if (a === 'deficits') cargarDeficits(S.tipo, true);
     else if (a === 'lista') alternarLista(true);
+    else if (a === 'hoja-pdf') bajarHoja(t.getAttribute('data-tipo') || S.tipo, t);
     else if (a === 'evaluar-otro') encenderEvaluar();
     else if (a === 'aprobar') modalAprobar(id);
     else if (a === 'descartar') modalDescartar(id);
