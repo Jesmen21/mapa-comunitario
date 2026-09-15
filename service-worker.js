@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v921-dos-estampas-que-leen-igual-pueden-ser-la-misma-foto';
+const URBIS_CACHE = 'urbis-v922-alerta-sismo-istmina-14-septiembre';
 const URBIS_ASSETS = [
   './',
   './index.html',
