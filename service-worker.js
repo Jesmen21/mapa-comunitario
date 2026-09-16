@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v927-alerta-sismo-istmina-16-sep';
+const URBIS_CACHE = 'urbis-v928-seguimiento-presidencial-16-sep';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-15",
- "proximaActualizacion": "2026-09-16",
+ "actualizado": "2026-09-16",
+ "proximaActualizacion": "2026-09-17",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,118 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-15",
+   "precision": "exacta",
+   "categoria": "creditos",
+   "titulo": "El Gobierno anuncia una «Ley de Rescate» con un recorte de hasta $44 billones y recalcula el déficit fiscal de 2026 en 4,4 % del PIB, frente al 2,1 % reportado por el gobierno Petro",
+   "detalle": "El ministro de Hacienda, Miguel Gómez Martínez, presentó el 15 de septiembre la hoja de ruta fiscal del Gobierno: un recorte inicial de $21,9 billones del Presupuesto General de la Nación y el anuncio de que radicará ante el Congreso, en octubre, un proyecto de «Ley de Rescate» (también llamada «ley de rescate económico») que buscará un recorte adicional hasta sumar $44 billones, junto con estímulos tributarios entre los que figuran la eliminación del impuesto al patrimonio y la reducción del gravamen a los movimientos financieros (4x1000). Según Hacienda, el déficit fiscal de 2026, sin contar intereses, no es 2,1 % del PIB como había reportado el gobierno de Gustavo Petro, sino 4,4 %; la meta del Gobierno es bajarlo a 3,3 % mediante decreto y a 2,3 % en 2027. El ministro afirmó que «la irresponsabilidad, la corrupción y, sobre todo, el mal manejo de las finanzas públicas nos han llevado a una situación en la que la única opción es implementar una política de austeridad muy fuerte». El 16 de septiembre viajó a Estados Unidos para reunirse con banca comercial, calificadoras de riesgo e inversionistas que ya tienen deuda colombiana, encuentros que, según dijo, buscan que esos actores «sepan cuál es el enfoque de esta política de austeridad» que emprende el Gobierno; por ahora no incluyen a organismos multilaterales.",
+   "contrapunto": "Gustavo Petro rechazó en su cuenta de X el anuncio de eliminar el impuesto al patrimonio y reducir el 4x1000, calificándolo de «un regalo para los más ricos» en momentos en que, dijo, los más ricos de Colombia necesitan pagar más impuestos; el expresidente cuestionó además el recálculo del déficit y afirmó, por su cuenta, que el endeudamiento podría llegar al 66 % del PIB y el déficit al 9,2 %. La Silla Vacía, en un análisis titulado «Medias verdades del sinceramiento presupuestal del gobierno de Abelardo», cuestionó la forma en que el Gobierno presenta la comparación con las cifras heredadas. Las dos series de cifras —la del gobierno saliente y la del entrante— corresponden a metodologías o supuestos distintos que ningún organismo de control independiente ha reconciliado a la fecha de esta actualización.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "Infobae · Ley de Rescate: en qué consisten las medidas que tomará el Gobierno De la Espriella para superar el hueco fiscal que habría dejado Gustavo Petro",
+     "u": "https://www.infobae.com/colombia/2026/09/15/ley-de-rescate-en-que-consisten-las-medidas-que-tomara-el-gobierno-de-la-espriella-para-superar-el-hueco-fiscal-que-habria-dejado-gustavo-petro/"
+    },
+    {
+     "n": "Semana · MinHacienda anuncia que radicará en octubre la Ley de Rescate al Congreso, con la que se busca reducir el gasto del Estado",
+     "u": "https://www.semana.com/politica/articulo/minhacienda-anuncia-que-radicara-en-octubre-la-ley-de-rescate-al-congreso-con-la-que-se-busca-reducir-el-gasto-del-estado/202625/"
+    },
+    {
+     "n": "Valora Analitik · MinHacienda se reúne esta semana con banca, calificadoras e inversionistas de EE. UU.",
+     "u": "https://www.valoraanalitik.com/minhacienda-se-reune-esta-semana-con-banca-calificadoras-e-inversionistas-de-ee-uu/"
+    },
+    {
+     "n": "Infobae · Gustavo Petro reaccionó a anuncio de ministro de Hacienda de quitar el impuesto al patrimonio y reducir el 4x1.000: «Es un regalo para los más ricos»",
+     "u": "https://www.infobae.com/colombia/2026/09/15/gustavo-petro-reacciono-a-anuncio-de-ministro-de-hacienda-de-quitar-el-impuesto-al-patrimonio-y-reducir-el-4x1000-es-un-regalo-para-los-mas-ricos/"
+    },
+    {
+     "n": "La Silla Vacía · Medias verdades del «sinceramiento» presupuestal del gobierno de Abelardo",
+     "u": "https://www.lasillavacia.com/silla-nacional/medias-verdades-del-sinceramiento-presupuestal-del-gobierno-de-abelardo/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-15",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El vicepresidente Restrepo convoca a los ministros clave para poner en marcha la «Misión Crecer», con la meta de llevar el crecimiento del PIB al 6 %",
+   "detalle": "El vicepresidente José Manuel Restrepo reunió el 15 de septiembre a varios ministros —entre ellos los de Interior, Comercio y Hacienda— para articular la «Misión Crecer», la agenda interministerial con la que el Gobierno busca acelerar la inversión, la productividad y el crecimiento económico hasta una meta del 6 % del PIB, frente al 3,5 % actual según cifras del Dane. La misión desarrolla el encargo que el decreto 1373 del 9 de septiembre dio al vicepresidente (ver esa entrada) y se apoya en los «cinco motores» que Restrepo había presentado dos días antes: reducir trámites regulatorios, formar a los jóvenes que ni estudian ni trabajan, ampliar la disponibilidad energética, duplicar la relación inversión/PIB y un listado de cerca de 170 proyectos por más de $600 billones para presentar a inversionistas. En la reunión, el ministro del Interior resumió la instrucción presidencial: «Debemos hacer recortes, debemos practicar la austeridad para que el presupuesto sea sostenible, pero tenemos que crecer y generar nuevas fuentes de generación de riqueza para el pueblo colombiano». El propio vicepresidente matizó que la austeridad «es un compromiso que tenemos como país, pero no es suficiente» para sostener el desarrollo económico.",
+   "contrapunto": "El Gobierno no ha precisado con qué instrumentos financiará simultáneamente la austeridad fiscal que anuncia (ver la entrada sobre la «Ley de Rescate» de esta misma fecha) y la meta de duplicar la inversión, ni ha fijado un plazo verificable para el objetivo de crecimiento del 6 %; la meta contrasta con el 3,5 % de crecimiento reportado por el Dane y con proyecciones más cautelosas de analistas de mercado sobre el cierre de 2026.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Heraldo · Vicepresidente articula ministerios clave para construir la Misión Crecer hacia la meta del 6%",
+     "u": "https://www.elheraldo.co/colombia/2026/09/15/vicepresidente-articula-ministerios-clave-para-construir-la-mision-crecer-hacia-la-meta-del-6/"
+    },
+    {
+     "n": "Radio Hoy · Recortes y austeridad: las premisas de la «Misión crecer» de la vicepresidencia",
+     "u": "https://www.radiohoy.com/2026/09/15/recortes-y-austeridad-las-premisas-de-la-mision-crecer-de-la-vicepresidencia/817393/"
+    },
+    {
+     "n": "ABC Economía · Misión Crecer: Estrategia de Restrepo para Llevar el PIB al 6%",
+     "u": "https://abceconomia.co/2026/09/15/mision-crecer-pib-colombia-vicepresidente-restrepo/"
+    },
+    {
+     "n": "Pulzo · Misión Crecer: plan del Gobierno para impulsar el crecimiento económico de Colombia a 6%",
+     "u": "https://www.pulzo.com/economia/mision-crecer-plan-del-gobierno-para-impulsar-el-crecimiento-economico-de-colombia-a-6-PP5303506A"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-15",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella ordena al Inpec trasladar a 120 internos señalados como cabecillas en Buenaventura a cárceles de máxima seguridad",
+   "detalle": "Durante una visita a Buenaventura (Valle del Cauca) el 15 de septiembre, el presidente Abelardo de la Espriella anunció que ordenó al director del Inpec, coronel Daniel Gutiérrez, gestionar el traslado de 120 personas privadas de la libertad —señaladas como cabecillas de estructuras criminales que operan en la ciudad— hacia establecimientos penitenciarios de máxima seguridad con mayores restricciones de comunicación, con el fin de impedir que sigan ejerciendo control sobre esas estructuras desde prisión. «Me los voy a llevar a cárceles en donde no entre ni la señal de la Santa Cruz», dijo el mandatario. Durante la visita también informó sobre ayudas para familias afectadas por el terremoto del 10 de agosto y sobre la captura de un criminal en el marco de la Operación Poseidón, y el Gobierno señaló que avanza en el proyecto de las llamadas megacárceles.",
+   "contrapunto": "El presidente no precisó los nombres de los 120 internos, a qué estructuras criminales pertenecen específicamente, ni el protocolo de seguridad que regirá en los centros de destino, ni un cronograma para completar los traslados. Es una medida distinta de la anunciada en su alocución del 13 de septiembre sobre el traslado de presos de guarniciones militares y estaciones de Policía (ver esa entrada), aunque responde al mismo eje de campaña contra privilegios de reclusos.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Vanguardia · De La Espriella ordena traslado de 120 presos señalados como cabecillas en Buenaventura",
+     "u": "https://www.vanguardia.com/colombia/2026/09/15/de-la-espriella-pide-trasladar-a-120-cabecillas-de-buenaventura-a-otras-carceles/"
+    },
+    {
+     "n": "El Universal (Cartagena) · De la Espriella endurece medidas en cárceles: «Que no entre ni la señal de la Santa Cruz»",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/15/de-la-espriella-endurece-medidas-en-carceles-que-no-entre-ni-la-senal-de-la-santa-cruz/"
+    },
+    {
+     "n": "NTN24 · «Me los voy a llevar a cárceles en donde no entre ni la señal de la santa cruz»: De la Espriella ordena traslado de 120 cabecillas",
+     "u": "https://www.ntn24.com/noticias-actualidad/me-los-voy-llevar-carceles-donde-entre-senal-santa-cruz-de-la-espriella-ordena-traslado-120-cabecillas-dejen-ordenes-desde-prision-650492"
+    },
+    {
+     "n": "El Heraldo · ADLE ordena traslado de más de un centenar de cabecillas y delincuentes recluidos en cárceles de Quindío y Valle",
+     "u": "https://www.elheraldo.co/colombia/2026/09/15/adle-ordena-traslado-de-mas-de-un-centenar-de-cabecillas-y-delincuentes-recluidos-en-carceles-de-quindio-y-valle/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-15",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "El alcalde de Istmina, Chocó, denuncia que un mes después del terremoto «no ha habido una respuesta concreta del Gobierno Nacional», en medio de más de 50 temblores en cinco días",
+   "detalle": "El alcalde de Istmina, Jaison Mosquera Sánchez, denunció que, más de un mes después del terremoto de magnitud 7,4 del 10 de agosto, el municipio no ha recibido una respuesta concreta del Gobierno Nacional, mientras la zona registra una seguidilla sísmica —más de 50 temblores en cinco días—, con el de mayor magnitud (4,5) ocurrido en la madrugada del 16 de septiembre. Según el alcalde, la ayuda recibida hasta ahora —alimentos y cobijas, en su mayoría de concejos municipales, municipios aliados y donantes privados— no ha sido suficiente para atender a las familias afectadas; el municipio, de sexta categoría y con recursos limitados, tiene cerca de 100 viviendas totalmente destruidas, todas sus instituciones educativas con daños (una fuera de servicio por riesgo estructural) y cerca de 3.000 estudiantes recibiendo clases en albergues y carpas.",
+   "contrapunto": "La Vicepresidencia, a cargo de José Manuel Restrepo, se había reunido previamente con alcaldes de la región en Unión Panamericana y se comprometió a entregar un banco de materiales y maquinaria amarilla para el retiro de escombros; según el reclamo del alcalde, ese compromiso no se había traducido todavía en una respuesta concreta al momento de esta publicación. El Gobierno Nacional no se ha pronunciado directamente sobre la denuncia de Mosquera Sánchez a la fecha de esta actualización.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "El Universal (Cartagena) · Más de 50 temblores en cinco días tienen en alerta a Istmina, Chocó",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/15/mas-de-50-temblores-en-cinco-dias-tienen-en-alerta-a-istmina-choco/"
+    },
+    {
+     "n": "Semana · «Nos sentimos abandonados»: alcalde de Istmina, municipio del Chocó, sobre los más de 50 temblores que han ocurrido en los últimos cinco días",
+     "u": "https://www.semana.com/nacion/medellin/articulo/nos-sentimos-abandonados-habla-el-alcalde-de-istmina-municipio-del-choco-donde-en-los-ultimos-cinco-dias-ha-habido-mas-de-50-temblores/202620/"
+    },
+    {
+     "n": "Blu Radio · Alcalde de Istmina, Chocó: «Da lástima ver lo que vive la gente por el terremoto»",
+     "u": "https://www.bluradio.com/nacion/alcalde-de-istmina-choco-da-lastima-ver-lo-que-vive-la-gente-por-el-terremoto-pr30"
+    },
+    {
+     "n": "El Tiempo · Temblor hoy en Colombia: reportan seguidilla de sismos en Chocó durante la madrugada de este 16 de septiembre; el mayor fue de magnitud 4,5",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/temblor-hoy-en-colombia-reportan-seguidilla-de-sismos-en-choco-durante-la-madrugada-de-este-16-de-septiembre-el-mayor-fue-de-magnitud-4-5-detalles-3586399"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-14",
    "precision": "exacta",
