@@ -7101,6 +7101,71 @@ urbana.
 ficha que existe hoy; cuando llegue la vista de dos columnas leerá el mismo
 `S.corrida` en vez de tener el suyo.
 
+## La procedencia no inventa un autor (v930)
+
+Pregunta del usuario sobre la v929, antes de dar por cerrada la puerta de los
+puntos mapeados: para un edificio que ya estaba en OpenStreetMap, ¿de dónde
+sale el `quien` y el `cuando` que la procedencia exige?
+
+### La premisa no se sostiene, y medirla valió igual
+
+**Un elemento de OpenStreetMap nunca llega a `edificiosDeCampo`.** Los dos
+caminos no se cruzan en ningún punto:
+
+```
+OSM      Overpass → consultarEntorno → peticion.elementos → res.pois
+campo    la hoja de reportes → globalData → urbisDatosVisibles()
+                             → puntosDelCurso() → edificiosDeCampo()
+```
+
+Así que no existe el caso de una edificación publicada rotulada «contada en
+campo»: si está en esa lista, alguien la registró desde la aplicación.
+
+### Pero apuntaba a un hueco que sí estaba
+
+**La procedencia de los edificios no llevaba `quien`, y nada lo denunciaba.**
+El almacén rechaza una entrada de hueco sin autor —es la regla que la v926 le
+puso al PDF: no hay silencio por omisión— y el camino de los edificios **no
+pasa por el almacén**, así que se saltaba la exigencia entera. Es la forma de
+la v867: la guarda existe en un camino y el otro la esquiva.
+
+### El autor no viaja, y no se deriva
+
+Medido antes de elegir qué decir, que es la regla de la v863:
+
+* una fila de reporte tiene **exactamente** `tipo · lat · lng · descripcion ·
+  fecha`;
+* ninguna de las **trece ranuras** de la descripción guarda quién lo hizo —
+  todas son del edificio o del reporte.
+
+Y no se saca de otro campo. La sesión abierta dice quién MIRA, no quién
+levantó; y este proyecto **quita a propósito** los identificadores personales
+de los reportes. Derivar un nombre sería inventar procedencia, que es peor que
+no tenerla.
+
+Así que se declara lo que sí se sabe y se nombra lo que falta:
+
+> 43 edificios **reportados en la aplicación**, con sus pisos contados entre
+> el 2 y el 9 de septiembre — **sin autor declarado**: la fila de un reporte
+> no guarda quién lo registró.
+
+**De paso se corrigió una segunda sobreafirmación.** Decía «levantados en
+campo», y eso reclama dos cosas que no se saben: que alguien estuviera en el
+sitio —un punto se puede poner sobre el mapa desde cualquier parte— y que
+fuera este curso —la aplicación la usa cualquiera—. «Reportados en la
+aplicación» es exactamente lo que consta.
+
+### La guarda persigue la clase
+
+`tpostsector` gana tres aserciones y la que de verdad protege es la última:
+**ninguna fuente de edificios puede traer un autor, venga de donde venga**.
+Sin ella, bastaría con que una tanda futura rellenara el campo desde la sesión
+para que la lámina volviera a afirmar quién sin saberlo, y el texto seguiría
+viéndose correcto.
+
+Demostrado contra la v929: tres en rojo con el texto viejo impreso —«3
+edificios levantados en campo…» y `sinAutor: false`—.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

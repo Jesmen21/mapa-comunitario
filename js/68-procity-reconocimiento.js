@@ -942,11 +942,32 @@
     if (conPisos.length) {
       var fechas = conPisos.map(function (e) { return String(e.fecha || '').slice(0, 10); })
         .filter(Boolean).sort();
+      /* ── EL AUTOR NO VIAJA, Y NO SE DERIVA (v930) ──────────────────
+         Una entrada de hueco no se guarda sin `quien` —es la regla que la
+         v926 le puso al PDF— y este camino no pasa por el almacén, así que
+         se saltaba la exigencia sin que nada lo denunciara.
+
+         Medido antes de elegir qué decir: una fila de reporte tiene
+         exactamente `tipo · lat · lng · descripcion · fecha`, y ninguna de
+         las trece ranuras de la descripción guarda quién lo hizo — todas son
+         del edificio o del reporte. **El autor no está.** Y no se saca de
+         otro campo: la sesión abierta dice quién MIRA, no quién levantó, y
+         este proyecto quita a propósito los identificadores personales de
+         los reportes. Derivar un nombre sería inventar procedencia, que es
+         peor que no tenerla (v867).
+
+         Y por lo mismo se dice «reportados en la aplicación» y no
+         «levantados en campo por el curso»: un punto lo pudo poner
+         cualquiera de la aplicación, no necesariamente este curso. Lo que
+         sí se sabe es que alguien lo registró y cuándo. */
       fuentes.push({
         clase: 'edificios', hueco: null, n: conPisos.length, total: edif.length,
-        que: conPisos.length === 1 ? 'un edificio levantado en campo, con sus pisos contados'
-                                   : conPisos.length + ' edificios levantados en campo, con sus pisos contados',
-        desde: fechas[0] || '', hasta: fechas[fechas.length - 1] || '', como: 'campo'
+        que: conPisos.length === 1 ? 'un edificio reportado en la aplicación, con sus pisos contados'
+                                   : conPisos.length + ' edificios reportados en la aplicación, con sus pisos contados',
+        desde: fechas[0] || '', hasta: fechas[fechas.length - 1] || '', como: 'campo',
+        /* Explícitos los dos, para que quien lea esta lista no tenga que
+           deducir del hueco que el autor falta. */
+        quien: null, sinAutor: true
       });
     }
     conf.forEach(function (x) {
@@ -996,7 +1017,11 @@
         var cuando = (f.desde && f.hasta)
           ? (f.desde === f.hasta ? ' el ' + f.desde : ' entre el ' + f.desde + ' y el ' + f.hasta)
           : '';
-        return f.que + cuando;
+        /* El vacío se DECLARA, no se calla ni se rellena (v849). Sin esta
+           frase, una procedencia sin autor se lee igual que una que no lo
+           necesita, y el lector no tiene cómo saber cuál de las dos es. */
+        return f.que + cuando +
+          (f.sinAutor ? ' — sin autor declarado: la fila de un reporte no guarda quién lo registró' : '');
       }
       var c = f.como === 'tramite' ? 'conseguido por trámite' : 'levantado en campo';
       return f.que + ', ' + c + ' por ' + f.quien + ' el ' + f.cuando +

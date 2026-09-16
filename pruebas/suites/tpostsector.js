@@ -219,6 +219,9 @@ function usosOSM() {
     o.avisoPost = e2.corridaAviso || '';
     o.totalPost = e2.total || 0;
     o.procedencia = e2.campoProcedencia || null;
+    o.fuentesEdificio = ((e2.campoProcedencia && e2.campoProcedencia.fuentes) || [])
+      .filter(function (f) { return f.clase === 'edificios'; })
+      .map(function (f) { return { quien: f.quien || null, sinAutor: f.sinAutor === true }; });
     o.swPost = leerSw();
     o.textoPost = txt(hojaEl().querySelector('.pcr-corrida'));
 
@@ -288,10 +291,24 @@ function usosOSM() {
      que uno donde alguien llenó una plantilla. */
   T('la procedencia viaja pegada al resultado, no a la pantalla',
     !!(r.procedencia && r.procedencia.texto), r.procedencia ? r.procedencia.texto.slice(0, 110) : '(ninguna)');
-  T('y nombra los edificios contados en campo con sus fechas',
-    !!(r.procedencia && /edificios levantados en campo/.test(r.procedencia.texto) &&
+  T('nombra lo que sí se sabe —cuántos y cuándo— y no afirma quién',
+    !!(r.procedencia && /edificios reportados en la aplicación/.test(r.procedencia.texto) &&
        /2026-09-02/.test(r.procedencia.texto) && /2026-09-09/.test(r.procedencia.texto)),
-    r.procedencia ? r.procedencia.texto.slice(0, 130) : '(ninguna)');
+    r.procedencia ? r.procedencia.texto.slice(0, 150) : '(ninguna)');
+  /* El vacío se declara, no se calla: sin esta frase una procedencia sin
+     autor se lee igual que una que no lo necesita. */
+  T('y DECLARA que el autor falta, en vez de omitirlo',
+    !!(r.procedencia && /sin autor declarado/.test(r.procedencia.texto)),
+    r.procedencia ? r.procedencia.texto.slice(-90) : '(ninguna)');
+  /* La guarda que de verdad protege: medido, una fila de reporte no guarda
+     quién la hizo —solo tipo, lat, lng, descripción y fecha— así que
+     cualquier nombre en esta fuente sería derivado de otro campo, que es
+     inventar procedencia (v867). Se persigue la CLASE: ninguna fuente de
+     edificios puede traer un autor, venga de donde venga. */
+  T('ninguna fuente de edificios trae un autor derivado de otro sitio',
+    !!(r.fuentesEdificio && r.fuentesEdificio.length &&
+       r.fuentesEdificio.every(function (f) { return !f.quien && f.sinAutor === true; })),
+    JSON.stringify(r.fuentesEdificio || []).slice(0, 140));
   T('el punto que ya estaba publicado no se contó dos veces',
     !!(r.procedencia && r.procedencia.omitidos >= 1),
     r.procedencia ? (r.procedencia.sumados + ' sumados · ' + r.procedencia.omitidos + ' omitidos') : '(ninguna)');

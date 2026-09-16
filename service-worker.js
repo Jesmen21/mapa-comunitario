@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v929-analisis-post-sector';
+const URBIS_CACHE = 'urbis-v930-la-procedencia-no-inventa-autor';
 const URBIS_ASSETS = [
   './',
   './index.html',
