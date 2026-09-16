@@ -188,6 +188,95 @@ que una guarda que no puede fallar es un verde, así que conviene decir qué hac
 que esta muerda de verdad: **la confirmación impresa**. Sin ese renglón la regla
 es un buen propósito; con él, saltársela se ve en el acto.
 
+## Dos clases de error que se repiten, y no son la misma
+
+Cada una lleva ya tres o más casos. Van nombradas y con su censo para que la
+próxima se busque **por la forma y no por el caso**, que es lo que no pasó
+ninguna de las veces anteriores: cada tanda la encontró de nuevo, leyendo.
+
+Se parecen lo suficiente como para confundirlas —esta misma sección nació de
+confundirlas— y piden cosas distintas, así que conviene tener claro cuál es
+cuál antes de buscar.
+
+### A · El discriminante estaba al lado y nadie lo leía
+
+**La forma:** una cifra sale mecánicamente bien y **no significa lo que
+parece**, porque su sentido depende de una condición que nadie comprobó — y el
+campo que resuelve esa condición **ya venía en el mismo objeto**.
+
+Es la más cara de las dos, porque la cifra es defendible una por una: cero
+polígonos de espacio público es un hecho comprobable, y «este sector necesita
+un parque» es una recomendación de proyecto. El salto entre las dos no se ve.
+
+| | La cifra | El discriminante que ya estaba |
+|---|---|---|
+| v875 | `pctSinCubrir` = 100 % sin cubrir | `categorias[].puntos` = 0: no mide cobertura, mide una capa vacía |
+| v899 | `pctLleno` = 0 % de frente con fachada | `cu.edificios` = 0: el cero es del mapa, no del frente |
+| v903 | 204.544 m² de sombra «del volumen de la norma» | `S.indicesPuestos`: nadie escribió esos índices, son el ejemplo |
+
+Y una variante con la misma cura, donde lo que estaba al lado no era una
+condición sino **el dato mismo**: la v888 declaraba faltar la huella construida
+entre dos fechas teniendo `duro`, `duroDesde` y `duroHasta` en el mismo objeto
+y en la misma línea que el verde que sí se leía.
+
+**Cómo se busca:** ante un 0 % o un 100 %, la pregunta no es si la división está
+bien — es **sobre cuántos elementos se calculó**. Si el conjunto de partida
+puede estar vacío, esa cifra tiene dos lecturas y hay que separarlas.
+
+**Cuánto cuesta arreglarla:** nada. En las cuatro **no hizo falta tocar el
+motor**: el campo ya llegaba. Lo único que cambió fue dejar de leer la cifra
+como si fuera una medición.
+
+### B · Dos cosas que codifican un solo hecho
+
+**La forma:** dos listas, o dos rutas de cálculo, dicen lo mismo. Coinciden el
+día que se escriben — a veces porque una **se deriva** de la otra, y la
+derivación es válida entonces— y **se separan la tanda siguiente**, cuando una
+de las dos mejora o una decisión cambia el sentido de una sola.
+
+Es la que la v879 dejó enunciada y la que más veces ha vuelto:
+
+| | Las dos cosas | Qué las separó |
+|---|---|---|
+| v878 | el `id` de una caja y el slug de su título | renombrar el título |
+| v884 | la cascada de suelo, copiada en el cierre | el panel aprendió a descontar tres cosas más |
+| v906 | dos reglas para elegir el conteo de edificios | cada panel elegía por su cuenta |
+| v915 | tres listas derivadas del peldaño | §21 apagaba por su lista corta |
+| v933 | `huecosDeCampo` derivado de `PANELES_DE_VACIO` | la v880 sacó un panel de los vacíos y la lista de maquetación no cambió |
+
+**Cómo se busca:** cuando dos nombres distintos significan lo mismo hoy, la
+pregunta es **qué decisión futura los separaría**. Si hay alguna, no pueden
+derivarse uno del otro sin una guarda que los ate.
+
+**Cuánto cuesta arreglarla:** una función, y retirar la copia. Lo que NO se hace
+es dejar las dos y «acordarse» de tocar ambas; eso es lo que falló todas las
+veces.
+
+**Y el canje que hay que decir:** derivar una lista de otra es normalmente lo
+CORRECTO y este proyecto lo hace a propósito en varios sitios —el id de una
+plantilla sale de su título (v883), los slugs de los vacíos salen de sus
+títulos (v931)— justamente para que no puedan separarse. La derivación es mala
+solo cuando las dos listas **significan cosas distintas** y coinciden por
+accidente. La prueba para distinguirlo es una pregunta: *¿existe un cambio
+razonable que deba mover una y no la otra?* Si la respuesta es sí, son dos
+cosas y hay que atarlas con una guarda, no derivarlas.
+
+### No se confundan: una corrección de esta misma sesión
+
+Al cerrar la v933 escribí que era «la tercera vez que el discriminante estaba
+en el código y nadie lo miraba, como `puntos` en la v875 y `cu.edificios` en la
+v899». **Está mal de dos maneras**, y como cambia por dónde buscaría la sesión
+siguiente, se corrige acá y no se deja pasar:
+
+* la v933 es de la clase **B** y no de la A. Lo que falló es una lista derivada
+  que dejó de coincidir; que `panelVacio` fuera el discriminante sin leer es
+  cómo se ENCONTRÓ el arreglo, no cómo se produjo el fallo;
+* y el contador de la A ya iba en tres desde la v903, así que «tercera vez»
+  estaba repetido.
+
+Las dos clases se tocan justo ahí —el fallo fue de B y la cura vino de A— y es
+la razón de que se confundan. Por eso van juntas, con sus censos separados.
+
 ## El motor
 
 Vive en un repositorio privado aparte (`../urbis-motor`). Las reglas de
@@ -7637,9 +7726,15 @@ declarar que ningún dato publicado lo trae. La caja de servicios públicos no p
 por ahí: arma su propio cuerpo —las barras que la capa conteste, o la declaración
 con la lista de campos como prueba— y llama a `comoSeConsigue` como respaldo.
 
-Que el discriminante existiera y nadie lo mirara es la forma de la v875 con
-`puntos` y de la v899 con `cu.edificios`. Tercera vez, y como las otras dos **no
-hizo falta tocar nada más**: solo dejar de derivar una lista de la otra.
+Y acá hay que separar dos cosas que es fácil juntar —las junté yo al cerrar
+esta tanda—. El FALLO es de la clase B, «dos cosas que codifican un solo
+hecho»: una lista derivada que dejó de coincidir. Que `panelVacio` fuera un
+discriminante que nadie leía es cómo se ENCONTRÓ el arreglo, no cómo se produjo
+el fallo — la clase A es otra, y su contador ya iba en tres desde la v903. Las
+dos están nombradas arriba, en «Dos clases de error que se repiten».
+
+Como en las demás de la clase B, **no hizo falta tocar nada más**: solo dejar de
+derivar una lista de la otra.
 
 `TITULOS_DE_HUECO` son ahora los cuatro, al lado de los cinco de maquetación, y
 la guarda las liga.
