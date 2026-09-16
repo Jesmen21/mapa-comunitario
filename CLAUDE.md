@@ -6966,15 +6966,19 @@ común. Usar una segunda identidad habría sido la v879 otra vez.
 Cinco decisiones, cada una con su precedente:
 
 * **`hueco` sale del inventario que ya existe** —los cuatro vacíos
-  obligatorios, las seis plantillas y los tres índices del POT— y no de una
-  lista nueva. Una entrada cuyo hueco la lámina no declara **se rechaza al
+  obligatorios y las seis plantillas— y no de una lista nueva. *(Esta versión
+  le sumó además «los tres índices del POT» como familia aparte, con tres
+  claves que no existen en el módulo. Lo corrigió la v931: son el `valor` del
+  hueco `norma-urbana`, no tres huecos.)* Una entrada cuyo hueco la lámina no declara **se rechaza al
   guardar**: un dato de campo cierra algo que la hoja dice que le falta; si no,
   no hay dónde pintarlo.
 * **`estado: 'confirmado'` es lo único que cuenta.** Un borrador no convierte
   el sector en post-sector. Es la escalera del módulo presidencial: un
   señalamiento no pesa.
 * **`fuente` es obligatoria y sin valor por omisión** —cómo, quién y cuándo, o
-  la entrada no se guarda—. Es la regla que la v926 le puso al PDF: no hay
+  la entrada no se guarda—. *(La v931 partió ese «cuándo» en tres fechas que
+  no significan lo mismo, y dejó que un borrador se guarde a medias: solo el
+  confirmado pide la procedencia entera.)* Es la regla que la v926 le puso al PDF: no hay
   silencio por omisión. Un dato de campo sin procedencia es indistinguible de
   uno inventado, y la lámina lo va a imprimir como medido.
 * **Un hueco se actualiza, no se duplica.** Dos entradas del mismo hueco
@@ -7165,6 +7169,203 @@ viéndose correcto.
 
 Demostrado contra la v929: tres en rojo con el texto viejo impreso —«3
 edificios levantados en campo…» y `sinAutor: false`—.
+
+## La fecha de un dato no es una sola fecha (v931)
+
+El esquema de procedencia de la v929 y la primera de las cuatro puertas de
+vacío: la **norma urbana**. Y como en la v916 y la v924, lo que más valió fue
+medir las premisas antes de escribir — dos de las tres con las que se abrió la
+tanda eran falsas, y una de ellas era **un defecto que yo mismo había dejado
+en la v929**.
+
+### El inventario de huecos tenía tres claves que no existen
+
+`INDICES_POT = ['ocupacion', 'construccion', 'altura']`. Las de verdad son
+`io`, `ic` y `pisos`: así las nombra `Q.CAMPOS` en js/78, así las lee
+`sombraDeLoPermitido` y así las escribe el manejador de las casillas. **Las
+escribí de memoria en vez de leerlas**, que es exactamente la falta de la
+v863, dentro del mismo archivo cuyo comentario dice que el inventario «no es
+una lista nueva».
+
+No lo cazó nadie porque `tpostsector` entraba por `norma-urbana` y esas tres
+nunca se ejercitaron: **el material no podía producir el fallo**, por vigésima
+primera vez.
+
+Y aunque hubieran sido las correctas, sobraban. **La ficha normativa del POT
+es UN documento que se pide UNA vez y trae los tres números**, así que tres
+huecos con tres procedencias serían tres copias de una misma declaración —y
+dos copias de una advertencia se separan—. El hueco es `norma-urbana`, el que
+la lámina ya declara, y los tres índices son su `valor`. Es la decisión que el
+usuario tomó para toda esta tanda: *«valor libre por hueco, fuente común.»*
+
+De paso, los cinco vacíos van por su TÍTULO y el id se deriva, como las
+plantillas de campo dos listas más arriba. Escritos a mano eran dos listas de
+lo mismo —los slugs en `PANELES_DE_VACIO`, los títulos en sus `caja(...)`— y
+bastaba renombrar una caja para separarlos, que es el fallo de la v878.
+Comprobado antes de cambiarlo: **la derivación da exactamente los cinco slugs
+de hoy**, así que no mueve nada; lo que hace es que no puedan divergir. Y de
+ahí sale el nombre legible de un hueco, que se venía deshaciendo del slug a
+mano e imprimía «Informacion legal del predio», sin tilde.
+
+### `cuando` juntaba tres cosas que se contradicen
+
+La v929 guardaba una sola fecha. Al conectar la primera puerta de verdad se ve
+que ese campo es tres:
+
+| | Qué es | |
+|---|---|---|
+| `fechaDoc` | la del ACTO que declara el hecho | **obligatoria** en confirmado |
+| `fechaObtencion` | cuándo se consiguió el papel | opcional |
+| `vigenciaHasta` | hasta cuándo sirve | `null` donde no caduca |
+
+Con una sola, **un Acuerdo de 2011 conseguido ayer se guardaba con la fecha de
+ayer** y la lámina lo leía como norma de este año. Es la falta de la v867 —una
+procedencia mal declarada es peor que ninguna— con el agravante de que el
+número sale creíble.
+
+`quien` es una **entidad** y no una persona: quien responde por el dato. La
+Curaduría Segunda responde por una resolución; «Ana» no responde por un
+Acuerdo municipal. Donde el dato sí lo levantó una persona —una plantilla de
+campo— es su nombre, que es quien responde por ese conteo.
+
+#### La vigencia vencida DECLARA, no bloquea
+
+Se guarda igual, cuenta igual, y sale impreso «VENCIDO desde el … , hay que
+volver a pedirlo». Es la decisión de la v886 con los mapas de 6,5 cm y la de
+la v890 con el aviso de escala: quien analiza decide, la hoja dice. Hay una
+aserción para cada rama —un «VENCIDO» puesto en todas partes pasaría igual con
+una sola—.
+
+#### La precisión se acepta como venga; la FORMA no
+
+Un POT que solo se conoce por su año entra como `2011`. Lo que no entra es
+texto libre: con «hace tiempo» adentro, `vigenciaHasta` no se compara contra
+nada y **el vencimiento falla en silencio**, que es lo que este módulo lleva
+veinte tandas evitando. Y al comparar, una fecha sin mes o sin día se lleva a
+su ÚLTIMO instante: un documento vigente «hasta 2026» lo está hasta el 31 de
+diciembre. Al revés se declararía vencido un papel que todavía sirve, que es
+la mitad cara del error.
+
+#### El borrador admite procedencia a medias; el confirmado no
+
+La v929 la exigía entera en los dos estados, y con eso **el borrador no servía
+para nada** —nadie puede guardar lo que lleva de una plantilla a medio llenar
+sin haber ido todavía por el papel— y los dos estados significaban lo mismo,
+cuando la mitad del diseño de este almacén es que solo el confirmado cuenta.
+Cada estado exige lo suyo: el borrador, poder volver a él; el confirmado,
+poder defenderse.
+
+#### Y una entrada de la v929 no se asciende
+
+Las guardadas antes traen `cuando` a secas, y cuál de las dos fechas escribió
+su autor no consta en ninguna parte. Promoverla a `fechaDoc` sería **afirmar
+la procedencia de la procedencia** — la falta que la v930 no cometió con el
+autor de los edificios. Se lee por lo que es, `fechaSinDistinguir`, y la
+lámina lo dice con esas palabras. El dato no se pierde ni se degrada; lo que
+no se hace es ponerle una etiqueta que nadie escribió.
+
+### La puerta: la norma urbana no se cierra sola
+
+La condición que el usuario puso antes de esta tanda:
+
+> que la migración de `indicesPuestos` existentes a norma urbana quede
+> protegida con su propia aserción — que un índice ya guardado en una ficha
+> vieja NUNCA se promueva solo a confirmado sin procedencia, igual que hiciste
+> con el autor de los edificios en la v930. No solo dicho en la bitácora, sino
+> demostrado en rojo contra el caso viejo antes de estar en verde.
+
+**Y mi premisa sobre `indicesPuestos` también era falsa, a medias.** Yo había
+dicho que no tiene procedencia ninguna. Sí la tiene: `S.indicesFuente` guarda
+`documento`, `fecha` —texto libre, «2011, revisado en 2019»— y `tratamiento`
+desde hace tandas, y el panel ya declara honestamente cuando está vacío. Lo
+que **no** tiene, y ninguna ficha anterior a esta versión puede producir, es
+**quién responde por el dato**.
+
+Eso hace la invariante más fuerte de lo que yo la había planteado: no es que
+la migración deba tener cuidado, es que **ninguna ficha pre-v931 puede
+ascender, por construcción**. Y es exactamente lo que la segunda aserción
+mide: con documento y año escritos —lo máximo que el esquema viejo podía
+llevar— sigue sin poder, porque derivar el `quien` del nombre del documento
+sería la falta de la v930.
+
+`normaDesdeIndices` propone y no asciende: devuelve `puede: false` con la
+lista de qué falta, la entrada que arma va **sin `quien`** y **nunca nace
+confirmada**. La `fecha` libre se PREFILLA si tiene forma de fecha y se deja
+vacía si no — prefilar no es afirmar: lo que la convierte en la fecha del
+documento es que alguien la confirme.
+
+Y la otra mitad, porque **una guarda sola falla abierto**: si alguien fuerza
+la entrada propuesta por el almacén, el almacén la rechaza igual por falta de
+`quien`. Las dos están medidas.
+
+#### La puerta se abre, y eso también se mide
+
+Sin la rama contraria, un «falta» puesto en todas partes pasaría en verde y la
+puerta no serviría. Escrito quién expidió el documento, aparece el botón, y
+al pulsarlo la norma queda como dato de trámite con su procedencia entera —
+y el sector pasa a tener análisis post-sector. La corrida post anterior **se
+suelta**: se calculó sin ese dato, y servirla ahora sería presentar como
+post-sector una cuenta que no lo incluye (v897).
+
+El campo de fecha pasa a pedir una fecha y no una frase, y el panel gana el de
+quién expidió. Una ficha vieja con la frase adentro no se pierde: se queda
+escrita y el panel dice que hay que ponerla en forma de fecha para que la
+norma cuente.
+
+### Un post-sector cerrado por papel no es uno cerrado por puntos
+
+Salió al abrir la puerta, y es una consecuencia que la v929 no podía tener:
+hasta ahora el post-sector solo se encendía con puntos levantados, y el panel
+decía, cuando el campo no agregaba elementos nuevos, *«lo levantado en campo
+ya estaba todo publicado… lo que sí cambia son los pisos contados edificio por
+edificio»*. Con la norma urbana adentro, un sector puede pasar a post-sector
+**sin un solo punto**: el estudiante fue a la curaduría y no ha salido a
+mapear. Ahí esa frase es falsa por los dos lados — no se levantó nada y no hay
+pisos contados.
+
+Es la clase de la v874: una cifra correcta dicha de una manera que no se
+sostiene. `porPuntos` viaja con la procedencia, pegado al resultado (v867), y
+el panel dice cuál de los dos post-sectores es. Las dos ramas se miden en la
+misma corrida: con los edificios puestos y con los puntos quitados, que es
+literalmente el sector de quien tiene el papel y no el mapeo.
+
+### Demostrado en rojo contra el caso viejo, antes de estar en verde
+
+Se escribió primero la versión **ingenua** —«el estudiante ya escribió los
+índices, luego tiene la ficha normativa»—, que es lo que una tanda futura
+haría sin pensarlo, y se corrió la suite contra ella:
+
+```
+✓ MATERIAL · los tres índices quedaron escritos por sus casillas — indicesPuestos=ic,io,pisos
+✗ una ficha vieja sin fuente anotada no puede ascender, y dice qué falta — true · falta:
+✗ ni con documento y año anotados, porque el QUIÉN no existía en ese esquema — true · falta:
+✗ y forzarla por el almacén tampoco pasa — ok=true
+```
+
+Con la versión guardada, las tres en verde y la última enseñando el rechazo
+del almacén con todas las letras. **La guarda de material va primero y a
+propósito**: sin los tres índices escritos por el camino de verdad —lote
+dibujado con sus botones, casillas escritas y su evento— no hay caso viejo que
+rechazar, y las tres de abajo pasarían por no tener nada delante. Es la regla
+de la v920.
+
+### Dos aserciones mías que medían otra cosa de la que decían
+
+Las dos salieron del primer rojo y ninguna era del código:
+
+* **`estado()` no expone `indices`.** Eso vive en `trabajoAMano()`. Leí
+  `R.estado().indices` y daba `undefined`, o sea la guarda de material en rojo
+  con el material puesto. Lo que una prueba necesita leer se agrega a
+  `estado()` —la regla de la v871— y va la LISTA y no un booleano, porque la
+  guarda tiene que poder decir cuáles faltan.
+* **El borrador se medía contra `tieneCampo().hay`**, y a esa altura de la
+  corrida el sector ya tiene campo por los edificios: la aserción habría
+  pasado o fallado por un motivo ajeno. Lo que se mide es que el borrador **no
+  entre en la lista de fuentes**, o sea que no sostenga ninguna cifra.
+
+Y una tercera, que sí era legítima: la aserción de la v929 citaba «falta
+quién, falta cuándo» y el texto de ahora dice «quién responde por el dato, la
+fecha del documento». Se apretó al texto de ahora, no se aflojó (v878).
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

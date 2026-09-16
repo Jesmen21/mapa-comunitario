@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v930-la-procedencia-no-inventa-autor';
+const URBIS_CACHE = 'urbis-v931-la-fecha-de-un-dato-no-es-una-sola';
 const URBIS_ASSETS = [
   './',
   './index.html',

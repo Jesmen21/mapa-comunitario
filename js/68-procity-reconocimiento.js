@@ -818,12 +818,32 @@
      índices del POT. Una segunda lista de huecos se separaría de la primera
      a la tanda siguiente —es la v879— y además dejaría entrar una entrada
      que cierra algo que la hoja no declara. Se rechaza al guardar. */
-  var INDICES_POT = ['ocupacion', 'construccion', 'altura'];
+  /* LOS TRES ÍNDICES DEL POT NO SON TRES HUECOS: SON EL VALOR DE UNO (v931).
+
+     La v929 los puso acá como una familia aparte —`['ocupacion',
+     'construccion', 'altura']`— y las dos mitades de eso estaban mal:
+
+       · **Las tres claves no existen.** Las de verdad son `io`, `ic` y
+         `pisos`, que es como las nombra `Q.CAMPOS` en js/78 y como las lee
+         `sombraDeLoPermitido`. Las escribí de memoria en vez de leerlas, que
+         es exactamente la falta de la v863, y no lo cazó nadie porque la
+         suite entraba por `norma-urbana` y esas tres nunca se ejercitaron:
+         el material no podía producir el fallo.
+       · **Y aunque hubieran sido las correctas, sobran.** La ficha normativa
+         del POT es UN documento que se pide UNA vez y trae los tres números.
+         Tres huecos con tres procedencias para un solo trámite serían tres
+         copias de una misma declaración, y dos copias de una advertencia se
+         separan. El hueco es `norma-urbana` —el que la lámina ya declara— y
+         los tres índices son su `valor`.
+
+     Por eso el inventario vuelve a ser lo que su propio comentario dice que
+     es: las listas que ya deciden qué imprime la lámina, y ninguna lista
+     nueva escrita al lado. */
   function huecosDeCampo() {
     var v = [], p = [];
     try { v = PANELES_DE_VACIO || []; } catch (e) { v = []; }
     try { p = (PLANTILLAS_DE_CAMPO || []).map(function (x) { return x.id; }); } catch (e) { p = []; }
-    return v.concat(p).concat(INDICES_POT);
+    return v.concat(p);
   }
   function esHuecoConocido(id) { return huecosDeCampo().indexOf(String(id || '')) !== -1; }
 
@@ -856,6 +876,64 @@
      y la deja a medias no convierte el sector en post-sector. */
   var ESTADOS_CAMPO = ['borrador', 'confirmado'];
   var COMO_CAMPO = ['campo', 'tramite'];
+
+  /* ── LA FECHA DE UN DATO NO ES UNA SOLA FECHA (v931) ─────────────────
+     La v929 guardaba `cuando` a secas, y al ir a conectar la primera puerta
+     de verdad —la norma urbana— se ve que ese campo junta tres cosas que no
+     significan lo mismo y que se contradicen entre sí:
+
+       · **`fechaDoc`** — la del ACTO que declara el hecho: el acuerdo que
+         adoptó el POT, la resolución, el día del aforo. Es la única que dice
+         a qué época se refiere el dato, y por eso es la obligatoria.
+       · **`fechaObtencion`** — cuándo se consiguió el papel. Dice el trabajo
+         que costó, no la vigencia de lo que dice.
+       · **`vigenciaHasta`** — hasta cuándo sirve. `null` donde no caduca, que
+         es una decisión y no un silencio.
+
+     Con una sola fecha, un Acuerdo de 2011 conseguido ayer se guardaba con
+     «2026-09-15» y la lámina lo leía como norma de este año. Es la falta de
+     la v867 —la procedencia mal declarada es peor que ninguna— con el
+     agravante de que el número sale creíble.
+
+     `vigenciaHasta` vencida NO bloquea nada: se guarda igual, cuenta igual y
+     se DICE. Es la decisión de la v890 con el aviso de escala y la de la
+     v886 con los mapas de 6,5 cm — quien analiza decide, la hoja declara.
+
+     `quien` es una ENTIDAD y no una persona: quien responde por el dato. La
+     Curaduría Segunda responde por una resolución; «Ana» no responde por un
+     Acuerdo municipal. Donde el dato sí lo levantó una persona —una
+     plantilla de campo— es su nombre, que es quien responde por ese conteo.
+
+     Y LA PRECISIÓN DE LA FECHA SE ACEPTA COMO VENGA, pero con forma: un POT
+     que solo se conoce por su año entra como `2011`. Lo que no entra es
+     texto libre —«hace tiempo», «el año pasado»—, porque entonces
+     `vigenciaHasta` no se puede comparar con nada y la comparación fallaría
+     en silencio, que es lo que este módulo lleva veinte tandas evitando. */
+  function fechaDeDato(x) {
+    var t = String(x == null ? '' : x).trim();
+    if (!t) return null;
+    var m = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/.exec(t);
+    if (!m) return null;
+    var a = Number(m[1]);
+    if (a < 1900 || a > 2200) return null;
+    if (m[2] && (Number(m[2]) < 1 || Number(m[2]) > 12)) return null;
+    if (m[3] && (Number(m[3]) < 1 || Number(m[3]) > 31)) return null;
+    return t;
+  }
+  /* Para comparar, una fecha sin mes o sin día se lleva a su ÚLTIMO
+     instante: un documento vigente «hasta 2026» lo está hasta el 31 de
+     diciembre, no hasta el 1.º de enero. Al revés se declararía vencido un
+     papel que todavía sirve, que es la mitad cara del error. */
+  function finDe(f) {
+    var m = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/.exec(String(f || ''));
+    if (!m) return null;
+    var a = Number(m[1]), me = m[2] ? Number(m[2]) : 12, d = m[3] ? Number(m[3]) : 0;
+    return d ? new Date(a, me - 1, d, 23, 59, 59) : new Date(a, me, 0, 23, 59, 59);
+  }
+  function estaVencida(f, hoy) {
+    var t = finDe(f);
+    return !!(t && t.getTime() < (hoy || new Date()).getTime());
+  }
   function guardarEntradaCampo(llave, entrada) {
     if (!llave) return { ok: false, error: 'Sin sector al que enlazar el dato de campo.' };
     var e = entrada || {};
@@ -868,11 +946,36 @@
     }
     var f = e.fuente || {};
     var falta = [];
+    /* `como` se exige SIEMPRE, también en un borrador: es lo único que dice
+       si esto salió de la calle o de una ventanilla, y sin eso la entrada no
+       se puede ni listar. */
     if (COMO_CAMPO.indexOf(f.como) === -1) falta.push('cómo se consiguió («campo» o «tramite»)');
-    if (!String(f.quien || '').trim()) falta.push('quién lo levantó');
-    if (!String(f.cuando || '').trim()) falta.push('cuándo');
+
+    /* EL BORRADOR ADMITE PROCEDENCIA A MEDIAS; EL CONFIRMADO NO (v931).
+       La v929 exigía la procedencia entera en los dos estados, y con eso el
+       borrador no servía para nada: nadie puede guardar lo que lleva de una
+       plantilla a medio llenar sin haber ido todavía por el papel. Y peor —
+       dejaba a los dos estados significando lo mismo, cuando la mitad del
+       diseño de este almacén es que solo el confirmado cuenta.
+       Ahora cada estado exige lo suyo: el borrador, poder volver a él; el
+       confirmado, poder defenderse. */
+    var fd = fechaDeDato(f.fechaDoc);
+    var fo = fechaDeDato(f.fechaObtencion);
+    var vh = fechaDeDato(f.vigenciaHasta);
+    if (e.estado === 'confirmado') {
+      if (!String(f.quien || '').trim()) falta.push('quién responde por el dato');
+      if (!fd) {
+        falta.push(String(f.fechaDoc || '').trim()
+          ? 'la fecha del documento en forma de fecha (2011, 2011-12 o 2011-12-14), no texto libre'
+          : 'la fecha del documento o del hecho');
+      }
+    }
+    if (String(f.fechaObtencion || '').trim() && !fo) falta.push('la fecha en que se consiguió, en forma de fecha');
+    if (String(f.vigenciaHasta || '').trim() && !vh) falta.push('la vigencia, en forma de fecha');
     if (falta.length) {
-      return { ok: false, error: 'La procedencia no puede quedar en blanco: falta ' +
+      return { ok: false, error: (e.estado === 'confirmado'
+          ? 'Una entrada confirmada no puede quedar sin procedencia: falta '
+          : 'La procedencia tiene un campo mal escrito: falta ') +
         falta.join(', ') + '. Un dato sin procedencia se imprime como medido y no se puede defender.' };
     }
     var g = leerCampoTodo();
@@ -881,8 +984,12 @@
     var reg = {
       id: e.id || ('cp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
       hueco: String(e.hueco), estado: e.estado, valor: e.valor === undefined ? null : e.valor,
-      fuente: { como: f.como, quien: String(f.quien).trim().slice(0, 80),
-                cuando: String(f.cuando).trim().slice(0, 40),
+      fuente: { como: f.como, quien: String(f.quien || '').trim().slice(0, 80),
+                fechaDoc: fd, fechaObtencion: fo,
+                /* `null` donde no caduca es una decisión y se guarda como
+                   tal; `undefined` sería el silencio por omisión que la v926
+                   dejó prohibido. */
+                vigenciaHasta: vh,
                 docto: String(f.docto || '').trim().slice(0, 120) },
       ts: Date.now()
     };
@@ -904,6 +1011,28 @@
     if (!g[k] || !Array.isArray(g[k].entradas)) return false;
     g[k].entradas = g[k].entradas.filter(function (x) { return x.id !== id; });
     return escribirCampoTodo(g);
+  }
+  /* ── UNA ENTRADA DE LA v929 NO SE ASCIENDE AL ESQUEMA NUEVO ──────────
+     Las guardadas antes de la v931 traen `cuando` a secas, y `cuando` NO es
+     `fechaDoc`: el campo viejo junta la fecha del documento con la de
+     haberlo conseguido, y cuál de las dos escribió su autor no consta en
+     ninguna parte. Promoverla a `fechaDoc` sería afirmar la procedencia de
+     la procedencia — exactamente la falta que la v930 no cometió con el
+     autor de los edificios.
+
+     Así que se lee por lo que es —`fechaSinDistinguir`— y la lámina lo dice
+     con esas palabras. El dato no se pierde ni se degrada; lo que no se hace
+     es ponerle una etiqueta que nadie escribió. */
+  function fuenteLeida(f) {
+    var o = f || {};
+    if (o.fechaDoc !== undefined || o.fechaObtencion !== undefined || o.vigenciaHasta !== undefined) {
+      return { como: o.como, quien: o.quien || '', docto: o.docto || '',
+               fechaDoc: o.fechaDoc || null, fechaObtencion: o.fechaObtencion || null,
+               vigenciaHasta: o.vigenciaHasta || null, fechaSinDistinguir: null };
+    }
+    return { como: o.como, quien: o.quien || '', docto: o.docto || '',
+             fechaDoc: null, fechaObtencion: null, vigenciaHasta: null,
+             fechaSinDistinguir: String(o.cuando || '').trim() || null };
   }
   function confirmadasDeCampo(llave) {
     return leerCampo(llave).filter(function (x) {
@@ -971,10 +1100,16 @@
       });
     }
     conf.forEach(function (x) {
+      var fl = fuenteLeida(x.fuente);
       fuentes.push({
         clase: 'hueco', hueco: x.hueco, n: 1, que: nombreDeHueco(x.hueco),
-        quien: x.fuente.quien, cuando: x.fuente.cuando,
-        docto: x.fuente.docto || '', como: x.fuente.como
+        quien: fl.quien, docto: fl.docto, como: fl.como,
+        fechaDoc: fl.fechaDoc, fechaObtencion: fl.fechaObtencion,
+        vigenciaHasta: fl.vigenciaHasta, fechaSinDistinguir: fl.fechaSinDistinguir,
+        /* La vigencia vencida NO saca la entrada de la lista: se cuenta
+           igual y se DICE. Quien analiza decide si una norma de hace un año
+           le sirve; la hoja no decide por él (v886, v890). */
+        vencida: estaVencida(fl.vigenciaHasta)
       });
     });
 
@@ -996,7 +1131,10 @@
       var p = (PLANTILLAS_DE_CAMPO || []).filter(function (x) { return x.id === s; })[0];
       if (p) return p.t;
     } catch (e) {}
-    if (INDICES_POT.indexOf(s) !== -1) return 'Índice de ' + s + ' del POT';
+    try {
+      var v = (TITULOS_DE_VACIO || []).filter(function (t) { return slugPliego(t) === s; })[0];
+      if (v) return v;
+    } catch (e) {}
     return s.replace(/-/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); });
   }
 
@@ -1024,9 +1162,85 @@
           (f.sinAutor ? ' — sin autor declarado: la fila de un reporte no guarda quién lo registró' : '');
       }
       var c = f.como === 'tramite' ? 'conseguido por trámite' : 'levantado en campo';
-      return f.que + ', ' + c + ' por ' + f.quien + ' el ' + f.cuando +
-        (f.docto ? ' (' + f.docto + ')' : '');
+      var t = f.que + ', ' + c + ' por ' + f.quien;
+      if (f.fechaDoc) t += ', del ' + f.fechaDoc;
+      else if (f.fechaSinDistinguir) {
+        /* El vacío se declara, no se rellena (v849). Una fecha del esquema
+           viejo impresa como si fuera la del documento diría a qué época se
+           refiere el dato, y eso es justo lo que no se sabe. */
+        t += ', con fecha ' + f.fechaSinDistinguir +
+          ' — sin distinguir si es la del documento o la de haberlo conseguido';
+      }
+      if (f.docto) t += ' (' + f.docto + ')';
+      if (f.fechaObtencion) t += ', conseguido el ' + f.fechaObtencion;
+      if (f.vigenciaHasta) {
+        t += f.vencida
+          ? ' — VENCIDO desde el ' + f.vigenciaHasta + ', hay que volver a pedirlo'
+          : ', vigente hasta el ' + f.vigenciaHasta;
+      }
+      return t;
     }).join(' · ');
+  }
+
+  /* ── LOS ÍNDICES ESCRITOS A MANO NO SE ASCIENDEN SOLOS (v931) ────────
+     La norma urbana es la primera de las cuatro puertas de vacío que se
+     conecta, y trae consigo un caso viejo: desde la v903 hay fichas con
+     `S.indicesPuestos` puesto —los tres números del POT escritos por una
+     persona— y esas fichas existen hoy en los teléfonos.
+
+     La tentación, y lo que una tanda futura haría sin pensarlo, es dar por
+     cerrado el vacío: «el estudiante ya escribió los índices, luego tiene la
+     ficha normativa». Eso hace dos cosas malas a la vez:
+
+       · **Convierte el sector en post-sector desde un computador**, que es
+         exactamente lo que `tieneCampo` se escribió para no hacer.
+       · Y **afirma una procedencia que no existe.** El esquema viejo guarda
+         `documento`, `fecha` —texto libre, «2011, revisado en 2019»— y
+         `tratamiento`, y NO tiene dónde guardar QUIÉN responde por el dato.
+         Ninguna ficha anterior a esta versión puede producirlo.
+
+     Así que esto propone y no asciende: devuelve `puede: false` mientras
+     falte algo, con la lista de qué falta, y la entrada que arma va SIN
+     `quien`. Derivarlo del nombre del documento —«Acuerdo 089 de 2011»
+     responde por sí mismo— sería la falta que la v930 no cometió con el
+     autor de los edificios: un campo que no es para eso, leído como si lo
+     fuera. Quien responde lo escribe una persona, en la puerta, y entonces
+     la entrada se guarda por el camino de siempre.
+
+     La `fecha` libre del esquema viejo se PREFILLA si tiene forma de fecha y
+     se deja vacía si no. Prefilar no es afirmar: lo que la convierte en la
+     fecha del documento es que alguien la confirme en el formulario. */
+  var INDICES_DEL_POT = ['io', 'ic', 'pisos'];
+  function normaDesdeIndices() {
+    var puestos = S.indicesPuestos || {};
+    var f = S.indicesFuente || {};
+    var idx = S.indices || {};
+    var hay = INDICES_DEL_POT.filter(function (k) { return !!puestos[k]; });
+    var falta = [];
+    var sinEscribir = INDICES_DEL_POT.filter(function (k) { return !puestos[k]; });
+    if (sinEscribir.length) falta.push('los índices que faltan por escribir (' + sinEscribir.join(', ') + ')');
+    /* Siempre falta, en toda ficha anterior a esta versión. No es un caso
+       raro: es el caso. */
+    if (!String(f.quien || '').trim()) falta.push('quién responde por el dato: la curaduría o la secretaría que lo expidió');
+    var fd = fechaDeDato(f.fecha);
+    if (!fd) falta.push('la fecha del documento, en forma de fecha (2011, 2011-12 o 2011-12-14)');
+    if (!hay.length) return { puede: false, falta: falta, entrada: null };
+
+    var valor = { tratamiento: String(f.tratamiento || '').trim() };
+    hay.forEach(function (k) { valor[k] = idx[k]; });
+    return {
+      puede: falta.length === 0,
+      falta: falta,
+      entrada: {
+        hueco: 'norma-urbana',
+        /* Y nunca nace confirmada. Aunque un día no faltara nada, quien la
+           confirma es una persona en la puerta, no esta función. */
+        estado: 'borrador',
+        valor: valor,
+        fuente: { como: 'tramite', quien: String(f.quien || '').trim(),
+                  fechaDoc: fd, docto: String(f.documento || '').trim() }
+      }
+    };
   }
 
   function leerFichas() {
@@ -2888,7 +3102,10 @@
          campo de verdad. Con `sumados` en cero, el post-sector tiene las
          mismas cifras que el sector y la hoja lo dice en vez de presentarse
          como una medición nueva. */
-      aporto: u.sumados > 0
+      aporto: u.sumados > 0,
+      /* Si lo que hay es dato georreferenciado o solo papel. Son dos post-
+         sectores distintos y la pantalla no puede describirlos igual. */
+      porPuntos: (tc.fuentes || []).some(function (f) { return f.clase === 'edificios'; })
     };
     S.corridas.post = res;
     return { ok: true, res: res };
@@ -11855,6 +12072,30 @@ function donaHTML(datos, colorDe, nombreDe) {
                   'La hoja arranca de cero con el área nueva.';
         pintar(); return;
       }
+      /* La puerta de la norma urbana (v931). Guarda la entrada de campo con
+         lo que la persona escribió, y NO con nada deducido: `normaDesdeIndices`
+         arma la entrada sin `quien` derivado, y el almacén rechaza una
+         confirmada sin él. Si algo falta, el aviso lo dice en vez de guardar
+         a medias. */
+      if (acc === 'norma-confirmar') {
+        var mn;
+        try { mn = normaDesdeIndices(); } catch (e) { mn = null; }
+        if (!mn || !mn.puede || !mn.entrada) {
+          S.avisoPestana = 'Todavía falta ' + ((mn && mn.falta) || ['la procedencia']).join(' · ') + '.';
+          pintar(); return;
+        }
+        var rn = guardarEntradaCampo(llaveDeSector(S.resultado && S.resultado.meta),
+          Object.assign({}, mn.entrada, { estado: 'confirmado' }));
+        S.avisoPestana = rn.ok
+          ? 'La norma quedó guardada como dato de trámite. Este sector ya tiene análisis post-sector.'
+          : rn.error;
+        /* La corrida post vieja se suelta: se calculó sin este dato y
+           servirla ahora sería presentar como post-sector una cuenta que no
+           lo incluye. Es la regla de la v897 con el acuse de guardado. */
+        if (rn.ok && S.corridas) { S.corridas.post = null; if (S.corrida === 'post') {
+          S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        pintar(); return;
+      }
       if (acc === 'corrida') {
         var cual = b.getAttribute('data-c') || 'sector';
         if (cual === S.corrida) return;
@@ -17506,7 +17747,16 @@ function donaHTML(datos, colorDe, nombreDe) {
     .concat(PLANTILLAS_DE_CAMPO.map(function (x) { return x.id; }));
   /* Los cinco vacíos obligatorios (v849): baldosas que no ceden en ningún
      formato. Decir «sin dato oficial» es parte del análisis. */
-  var PANELES_DE_VACIO = ['riesgo-oficial', 'servicios-publicos', 'norma-urbana', 'movilidad-real', 'informacion-legal-del-predio'];
+  /* Los cinco van por su TÍTULO y el id se deriva, igual que las plantillas
+     de campo dos listas más arriba. Escritos a mano eran dos listas de lo
+     mismo —los slugs acá, los títulos en sus `caja(...)`— y bastaba con
+     renombrar una caja para que el id se separara del suyo, que es el fallo
+     que la v878 encontró y dejó escrito. De paso, de acá sale el nombre
+     LEGIBLE de un hueco: sin él, la procedencia impresa decía «Informacion
+     legal del predio», sin tilde, por deshacer el slug a mano. */
+  var TITULOS_DE_VACIO = ['Riesgo oficial', 'Servicios públicos', 'Norma urbana',
+                          'Movilidad real', 'Información legal del predio'];
+  var PANELES_DE_VACIO = TITULOS_DE_VACIO.map(function (t) { return slugPliego(t); });
   var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
                         'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
                         'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];
@@ -24715,6 +24965,47 @@ function donaHTML(datos, colorDe, nombreDe) {
      módulo, y el que más caro sale: no se nota mirando la ficha, se nota
      cuando alguien defiende una lámina con un número que nadie puede
      rastrear. */
+  /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
+     La norma urbana es el primero de los cuatro vacíos obligatorios que se
+     conecta al almacén de campo. Hasta acá los índices del POT y su fuente
+     vivían en la ficha y nada más: la lámina los imprimía, pero el sector no
+     pasaba a post-sector por tenerlos, porque no había dónde registrar que
+     alguien fue por el papel.
+
+     Esta es esa puerta, y NO asciende nada sola. Enseña qué falta mientras
+     falte, y guarda cuando una persona lo completa — que es la diferencia
+     entre cerrar un vacío y declararlo cerrado. */
+  function puertaDeNorma() {
+    if (!S.resultado) return '';
+    var m;
+    try { m = normaDesdeIndices(); } catch (e) { return ''; }
+    if (!m || !m.entrada) return '';
+    var llave = llaveDeSector(S.resultado.meta);
+    var ya = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === 'norma-urbana'; })[0];
+    if (ya) {
+      var fl = fuenteLeida(ya.fuente);
+      return '<p class="pcr-conc pcr-fuente-ok"><b>La norma cuenta como dato de trámite.</b> ' +
+        esc(fl.quien) + (fl.fechaDoc ? ', documento del ' + esc(fl.fechaDoc) : '') +
+        (estaVencida(fl.vigenciaHasta)
+          ? ' — <b>vencido</b> desde el ' + esc(fl.vigenciaHasta) + ': hay que volver a pedirlo.'
+          : '.') +
+        ' Este sector tiene análisis post-sector.</p>';
+    }
+    if (!m.puede) {
+      /* El vacío se declara y se dice qué lo llena (v880): el ámbar de arriba
+         dice «esto no lo tenemos» y esto dice qué falta para que cuente. */
+      return '<p class="pcr-conc pcr-ojo"><b>Para que la norma cuente como dato de trámite ' +
+        'falta:</b> ' + esc(m.falta.join(' · ')) + '. Mientras tanto los índices se imprimen ' +
+        'como escritos a mano, que es lo que son.</p>';
+    }
+    return '<div class="pcr-llevar">' +
+      '<button type="button" data-pcr="norma-confirmar" class="pcr-mini">' +
+        ico('ok', 16) + 'Guardar la norma como dato de trámite</button>' +
+      '</div>' +
+      '<p class="pcr-pista">Con esto el sector pasa a tener análisis post-sector: la norma deja ' +
+      'de ser un número escrito y pasa a ser un documento con quién responde y de qué fecha.</p>';
+  }
+
   function bloqueFuenteIndices(guardada) {
     var f = S.indicesFuente || {};
     var hay = !!(f.documento || f.fecha || f.tratamiento);
@@ -24734,11 +25025,30 @@ function donaHTML(datos, colorDe, nombreDe) {
           'placeholder="Acuerdo 0089 · Planeación Municipal" ' +
           'value="' + esc(f.documento || '') + '" />' +
       '</label>' +
+      /* PIDE UNA FECHA, NO UNA FRASE (v931). Hasta la v930 acá cabía «2011,
+         revisado en 2019», y con eso la vigencia no se podía comparar contra
+         nada: el vencimiento fallaba en silencio. La precisión se acepta como
+         venga —un POT que solo se conoce por su año entra como \u00ab2011\u00bb— pero
+         la forma no. Una ficha vieja con la frase adentro no se pierde: se
+         queda escrita y el panel dice que hay que ponerla en forma de fecha
+         para que la norma cuente como dato de trámite. */
       '<label class="pcr-campo-linea">' +
-        '<span>De qué año</span>' +
+        '<span>Fecha del documento</span>' +
         '<input type="text" maxlength="40" data-pcr-fuente="fecha" ' +
-          'placeholder="2011, revisado en 2019" ' +
+          'placeholder="2011 · 2011-12 · 2011-12-14" ' +
           'value="' + esc(f.fecha || '') + '" />' +
+      '</label>' +
+      /* QUIÉN RESPONDE POR EL DATO, y es una ENTIDAD y no una persona: la
+         Curaduría Segunda responde por una resolución; un estudiante no
+         responde por un Acuerdo municipal. No existía antes de la v931, y es
+         la razón por la que ninguna ficha vieja puede ascender sola: no hay
+         de dónde sacarlo, y derivarlo del nombre del documento sería inventar
+         procedencia (v930). */
+      '<label class="pcr-campo-linea">' +
+        '<span>Quién lo expidió</span>' +
+        '<input type="text" maxlength="80" data-pcr-fuente="quien" ' +
+          'placeholder="Curaduría Urbana Segunda de Cúcuta" ' +
+          'value="' + esc(f.quien || '') + '" />' +
       '</label>' +
       /* El tratamiento urbanístico. Es lo que decide QUÉ índices aplican, así
          que sin él los tres números de arriba no se pueden verificar: dos
@@ -24756,6 +25066,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'citable el número.</p>'
         : '<p class="pcr-pista">Dos líneas ahora le ahorran volver a la ventanilla dentro de tres ' +
           'meses, cuando nadie se acuerde de qué acuerdo era.</p>') +
+      puertaDeNorma() +
     '</div>';
   }
 
@@ -26602,9 +26913,21 @@ function donaHTML(datos, colorDe, nombreDe) {
                     (pro.omitidos === 1 ? ' ya estaba publicado, así que no se cuenta dos veces'
                                         : ' ya estaban publicados, así que no se cuentan dos veces')
                    : '') + '.')
-            : 'Lo levantado en campo ya estaba todo publicado, así que las cifras de usos son ' +
-              'las mismas que las del análisis de sector. Lo que sí cambia es lo que solo el ' +
-              'campo trae —los pisos contados edificio por edificio—.') +
+            /* SIN PUNTOS SUMADOS HAY DOS CASOS, Y NO SE DICEN IGUAL (v931).
+               Con la puerta de la norma urbana abierta, un sector puede pasar
+               a post-sector por un DOCUMENTO y no por puntos en el mapa: ahí
+               «lo levantado en campo ya estaba todo publicado» es falso por
+               los dos lados —no se levantó nada y no hay pisos contados—. Es
+               la clase de la v874: una cifra correcta dicha de una manera que
+               no se sostiene. */
+            : (pro.porPuntos
+              ? 'Lo levantado en campo ya estaba todo publicado, así que las cifras de usos son ' +
+                'las mismas que las del análisis de sector. Lo que sí cambia es lo que solo el ' +
+                'campo trae —los pisos contados edificio por edificio—.'
+              : 'Lo que cerró el vacío es un documento y no puntos en el mapa, así que las ' +
+                'cifras de usos son las mismas que las del análisis de sector. Lo que cambia ' +
+                'es que eso deja de estar SIN MEDIR y pasa a tener quién responde y de qué ' +
+                'fecha.')) +
         '</p>' +
         '<p class="pcr-corrida-por">Los vacíos que el campo no cerró siguen marcados ' +
           '<b>SIN MEDIR</b> con su trámite, acá y en la lámina.</p>';
@@ -28959,6 +29282,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     llaveDeSector: llaveDeSector,
     elementosPostSector: elementosPostSector,
     textoDeProcedencia: textoDeProcedencia,
+    /* v931 · el puente entre los índices escritos a mano y la norma como
+       dato de trámite. Se exporta porque la guarda que lo vigila es una
+       aserción, no una lectura del código. */
+    normaDesdeIndices: normaDesdeIndices,
+    fechaDeDato: fechaDeDato,
     cerrar: cerrar,
     /* Que el botón flotante se pinte al entrar a Pro City. Lo llama js/20 en
        el único sitio por el que pasan la entrada y la salida del módulo.
@@ -29166,6 +29494,11 @@ function donaHTML(datos, colorDe, nombreDe) {
           catch (e) { return ''; }
         })(),
         campoProcedencia: (S.resultado && S.resultado.campoProcedencia) || null,
+        /* v931 · cuáles índices del POT escribió una persona. Lo que una
+           prueba necesita leer se agrega acá y no se alcanza por un lado,
+           que es la regla de la v871. Va la LISTA y no un booleano: la
+           guarda de la migración tiene que poder decir cuáles faltan. */
+        indicesPuestos: Object.keys(S.indicesPuestos || {}),
         pliegoNombresDobles: (function () {
           try { return Object.keys(nombresDobles(S.resultado)); }
           catch (e) { return []; }
