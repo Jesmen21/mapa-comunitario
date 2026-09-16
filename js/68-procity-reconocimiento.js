@@ -847,6 +847,97 @@
   }
   function esHuecoConocido(id) { return huecosDeCampo().indexOf(String(id || '')) !== -1; }
 
+  /* ── UNA PUERTA, VARIAS DECLARACIONES (v932) ─────────────────────────
+     La v931 dejó una entrada por HUECO. Medido para conectar las tres
+     puertas que faltaban, eso no alcanza, y no por un detalle: **tres de
+     los cuatro vacíos obligatorios se declaran con más de un documento, y
+     cada documento lo expide una entidad distinta en una fecha distinta.**
+
+     Se midió sobre los `quien` que los propios paneles ya escriben, y hay
+     que separar dos patrones que se parecen:
+
+       · «o» / «donde no hay curaduría, la Secretaría» — son dos sitios
+         donde pedir el MISMO papel. Una entrada basta.
+       · «y» — son dos papeles distintos. Cada uno necesita el suyo.
+
+     Con esa vara:
+
+       | Puerta          | Se multiplica por | Y por eso difieren             |
+       |-----------------|-------------------|--------------------------------|
+       | riesgo oficial  | AMENAZA           | la sísmica sale de la NSR-10,
+                                               nacional; la de masa del SGC;
+                                               la inundación del POT o de un
+                                               POMCA, que adopta la CAR      |
+       | movilidad real  | ARTEFACTO         | el cuadro de rutas tiene fecha
+                                               de publicación; un aforo tiene
+                                               el día y la hora en que se
+                                               contó                         |
+       | información legal | DOCUMENTO       | el certificado de tradición lo
+                                               expide Registro; el boletín
+                                               catastral, el IGAC            |
+
+     Lo que esto salva no es la fecha, es el RESPONSABLE: con una entrada
+     por puerta, una zona de inundación declarada por POMCA se guardaría a
+     nombre de Planeación Municipal, que no la adoptó. Declarar mal quién
+     responde es la falta de la v867, y sale más cara que una fecha.
+
+     EL SUB ES UNA LISTA CERRADA, VALIDADA COMO EL HUECO. Texto libre acá
+     volvería a abrir el cajón que `esHuecoConocido` cierra: bastaría
+     escribir cualquier cosa en `sub` para meter una entrada que la lámina
+     no sabe dónde pintar. Donde un hueco declara subs, la entrada tiene que
+     traer uno de ellos; donde no los declara, traer uno es un error — no un
+     campo que se ignora en silencio.
+
+     Y el `doc` de cada sub NO es decoración: es el que dice qué papel
+     declara esa mitad, que es justamente lo que se perdía al juntarlas. */
+  var SUBS_DE_HUECO = {
+    'riesgo-oficial': [
+      { id: 'sismica',    t: 'Amenaza sísmica',
+        doc: 'la zonificación de la NSR-10, o la microzonificación sísmica del municipio donde exista' },
+      { id: 'masa',       t: 'Movimientos en masa',
+        doc: 'el estudio básico de amenaza por movimientos en masa del POT (Decreto 1807 de 2014)' },
+      { id: 'inundacion', t: 'Amenaza por inundación',
+        doc: 'el estudio básico de inundación del POT, o el POMCA de la cuenca, que adopta la CAR' }
+    ],
+    'movilidad-real': [
+      { id: 'rutas', t: 'Cuadro de rutas y frecuencias',
+        doc: 'el cuadro de rutas con recorrido y frecuencia, o el GTFS publicado' },
+      { id: 'aforo', t: 'Aforo de hora pico',
+        doc: 'el aforo, con el día y la hora en que se contó' }
+    ],
+    'informacion-legal-del-predio': [
+      { id: 'tradicion', t: 'Certificado de tradición y libertad',
+        doc: 'el certificado de la Oficina de Registro de Instrumentos Públicos' },
+      { id: 'catastral', t: 'Boletín catastral',
+        doc: 'el boletín o ficha catastral del IGAC o del catastro municipal' }
+    ]
+  };
+  function subsDeHueco(id) { return SUBS_DE_HUECO[String(id || '')] || []; }
+  function esSubConocido(hueco, sub) {
+    return subsDeHueco(hueco).some(function (x) { return x.id === String(sub || ''); });
+  }
+  /* `nombreDeParte` y no `nombreDeSub`: ese nombre ya lo tiene, sesenta
+     pantallas más abajo, el buscador de la TAXONOMÍA de usos —«sub» ahí es
+     la subcategoría de un uso, otra cosa—. Como la segunda declaración pisa
+     a la primera, llamarlo igual habría hecho que estas filas buscaran una
+     parte de vacío en el catálogo de usos. Es el tropiezo de `trazoDe` de la
+     v892, y lo cazó con archivo y línea la guarda que la v885 dejó puesta. */
+  function nombreDeParte(hueco, sub) {
+    var x = subsDeHueco(hueco).filter(function (y) { return y.id === String(sub || ''); })[0];
+    return x ? x.t : '';
+  }
+
+  /* LO QUE ESTE MÓDULO NO DISTINGUE, DICHO Y NO RELLENADO.
+     El Decreto 1807 pide TRES estudios básicos —inundación, movimientos en
+     masa y avenidas torrenciales— y acá hay dos. `avenidas torrenciales` no
+     aparece en una sola línea del módulo: no se mide, no se pinta y no
+     tiene sub. Agregarle el renglón «para completar el decreto» sería
+     escribir de memoria una lista que el módulo no sostiene, que es
+     exactamente el defecto que la v931 encontró en `INDICES_POT`.
+     Se declara como vacío del propio módulo, en la caja y en la lista viva,
+     y entra el día que algo lo mida. */
+  var AMENAZA_SIN_DISTINGUIR = 'avenidas torrenciales';
+
   function leerCampoTodo() {
     try {
       var g = JSON.parse(localStorage.getItem(CAMPO_KEY) || '{}');
@@ -941,6 +1032,22 @@
       return { ok: false, error: 'El hueco «' + String(e.hueco || '') + '» no está en el inventario ' +
         'de la lámina. Un dato de campo cierra algo que la hoja declara; si no, no se puede pintar.' };
     }
+    /* EL SUB SE VALIDA COMO EL HUECO, Y EN LAS DOS DIRECCIONES (v932).
+       Donde el hueco declara subs, falta uno; donde no los declara, traer
+       uno es un error y no un campo que se ignore en silencio — una entrada
+       con un `sub` que nadie lee se guardaría creyendo que quedó dicho de
+       qué mitad habla. */
+    var subs = subsDeHueco(e.hueco);
+    if (subs.length && !esSubConocido(e.hueco, e.sub)) {
+      return { ok: false, error: '«' + nombreDeHueco(e.hueco) + '» se declara por partes, y cada ' +
+        'una la expide una entidad distinta en su propia fecha. Falta decir cuál: ' +
+        subs.map(function (x) { return '«' + x.id + '» (' + x.t + ')'; }).join(', ') + '.' };
+    }
+    if (!subs.length && String(e.sub || '').trim()) {
+      return { ok: false, error: '«' + nombreDeHueco(e.hueco) + '» no se declara por partes, ' +
+        'así que «' + String(e.sub) + '» no corresponde a nada y la entrada no se guarda ' +
+        'a medias.' };
+    }
     if (ESTADOS_CAMPO.indexOf(e.estado) === -1) {
       return { ok: false, error: 'Falta el estado: «borrador» o «confirmado».' };
     }
@@ -983,7 +1090,8 @@
     var lista = (g[k] && Array.isArray(g[k].entradas)) ? g[k].entradas : [];
     var reg = {
       id: e.id || ('cp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
-      hueco: String(e.hueco), estado: e.estado, valor: e.valor === undefined ? null : e.valor,
+      hueco: String(e.hueco), sub: subs.length ? String(e.sub) : null,
+      estado: e.estado, valor: e.valor === undefined ? null : e.valor,
       fuente: { como: f.como, quien: String(f.quien || '').trim().slice(0, 80),
                 fechaDoc: fd, fechaObtencion: fo,
                 /* `null` donde no caduca es una decisión y se guarda como
@@ -997,7 +1105,9 @@
        presidencial: un caso que avanza se actualiza, y dos entradas del
        mismo hueco dejarían a la lámina eligiendo cuál cree. */
     var i = -1;
-    lista.forEach(function (x, j) { if (x.hueco === reg.hueco) i = j; });
+    lista.forEach(function (x, j) {
+      if (x.hueco === reg.hueco && (x.sub || null) === reg.sub) i = j;
+    });
     if (i >= 0) { reg.id = lista[i].id; lista[i] = reg; } else { lista.unshift(reg); }
     if (lista.length > MAX_CAMPO_POR_SECTOR) lista = lista.slice(0, MAX_CAMPO_POR_SECTOR);
     g[k] = { v: 1, entradas: lista };
@@ -1036,7 +1146,24 @@
   }
   function confirmadasDeCampo(llave) {
     return leerCampo(llave).filter(function (x) {
-      return x.estado === 'confirmado' && esHuecoConocido(x.hueco);
+      if (x.estado !== 'confirmado' || !esHuecoConocido(x.hueco)) return false;
+      /* Y la parte también se valida AL LEER, no solo al guardar (v932). Una
+         entrada guardada con un sub que la lista ya no declara no se puede
+         pintar en ninguna fila, así que contarla haría que el sector fuera
+         post-sector por un dato que la hoja no sabe enseñar.
+
+         PERO UNA ENTRADA SIN PARTE NO SE TIRA. Las guardadas antes de la
+         v932 no tienen `sub` porque la puerta era una sola, y su procedencia
+         está completa: quién responde, de qué fecha y qué documento. La
+         primera versión de este filtro las descartaba —y lo cazó la aserción
+         de la v931 sobre la entrada vieja, que se puso roja con «(ninguna)»—.
+         Tirar un dato real por no saber a cuál mitad corresponde es peor que
+         la ambigüedad, y es la decisión que la v931 ya tomó con la fecha sin
+         distinguir: no se asciende a una parte que nadie escribió, y tampoco
+         se pierde. Se lee como «parte sin distinguir» y se cuenta. */
+      var sb = subsDeHueco(x.hueco);
+      if (!sb.length) return !x.sub;
+      return x.sub ? esSubConocido(x.hueco, x.sub) : true;
     });
   }
 
@@ -1102,7 +1229,12 @@
     conf.forEach(function (x) {
       var fl = fuenteLeida(x.fuente);
       fuentes.push({
-        clase: 'hueco', hueco: x.hueco, n: 1, que: nombreDeHueco(x.hueco),
+        clase: 'hueco', hueco: x.hueco, sub: x.sub || null, n: 1,
+        /* El nombre que se imprime es el de la PARTE cuando la hay: «Amenaza
+           por inundación» dice de qué responde la CAR; «Riesgo oficial» a
+           secas no lo diría. */
+        que: x.sub ? (nombreDeHueco(x.hueco) + ' · ' + nombreDeParte(x.hueco, x.sub))
+                   : nombreDeHueco(x.hueco),
         quien: fl.quien, docto: fl.docto, como: fl.como,
         fechaDoc: fl.fechaDoc, fechaObtencion: fl.fechaObtencion,
         vigenciaHasta: fl.vigenciaHasta, fechaSinDistinguir: fl.fechaSinDistinguir,
@@ -12077,6 +12209,39 @@ function donaHTML(datos, colorDe, nombreDe) {
          arma la entrada sin `quien` derivado, y el almacén rechaza una
          confirmada sin él. Si algo falta, el aviso lo dice en vez de guardar
          a medias. */
+      /* Las tres puertas de vacío (v932). Lee las tres casillas de ESA parte
+         —cada fila tiene su hueco y su sub en los atributos— y guarda. Lo que
+         falte lo dice el almacén, que es el único que valida: repetir la
+         validación acá sería la segunda ruta de la v879. */
+      if (acc === 'vacio-guardar' || acc === 'vacio-borrar') {
+        var hV = b.getAttribute('data-h') || '', sV = b.getAttribute('data-s') || '';
+        var llV = llaveDeSector(S.resultado && S.resultado.meta);
+        if (acc === 'vacio-borrar') {
+          var yaV = confirmadasDeCampo(llV).filter(function (x) {
+            return x.hueco === hV && (x.sub || '') === sV; })[0];
+          if (yaV) borrarEntradaCampo(llV, yaV.id);
+          S.avisoPestana = 'Se quitó lo anotado. El vacío vuelve a declararse en la lámina.';
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+          pintar(); return;
+        }
+        var leeV = function (k) {
+          var el = document.querySelector('[data-pcr-vac="' + k + '"][data-h="' + hV + '"][data-s="' + sV + '"]');
+          return el ? String(el.value || '').trim() : '';
+        };
+        var rV = guardarEntradaCampo(llV, {
+          hueco: hV, sub: sV || undefined, estado: 'confirmado',
+          valor: { docto: leeV('docto') },
+          fuente: { como: 'tramite', quien: leeV('quien'), fechaDoc: leeV('fechaDoc'),
+                    docto: leeV('docto') } });
+        S.avisoPestana = rV.ok
+          ? 'Quedó anotado. Este sector ya tiene análisis post-sector por esa parte.'
+          : rV.error;
+        /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
+        if (rV.ok && S.corridas) { S.corridas.post = null;
+          if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        pintar(); return;
+      }
       if (acc === 'norma-confirmar') {
         var mn;
         try { mn = normaDesdeIndices(); } catch (e) { mn = null; }
@@ -24965,6 +25130,85 @@ function donaHTML(datos, colorDe, nombreDe) {
      módulo, y el que más caro sale: no se nota mirando la ficha, se nota
      cuando alguien defiende una lámina con un número que nadie puede
      rastrear. */
+  /* ── LAS TRES PUERTAS QUE FALTABAN (v932) ────────────────────────────
+     Riesgo oficial, movilidad real e información legal del predio. Las tres
+     comparten forma —un papel que hay que ir a pedir— y las tres se declaran
+     POR PARTES, cada una con su entidad y su fecha (ver `SUBS_DE_HUECO`).
+
+     Va en la ficha y NO en la lámina, por lo mismo que la puerta de la norma
+     urbana: un formulario con casillas no se imprime en una hoja de 60 × 90.
+     La lámina sigue declarando el vacío con su trámite; acá es donde alguien
+     anota lo que trajo de la ventanilla.
+
+     Y es UN bloque para las tres, no tres bloques: quien vuelve de radicar
+     derechos de petición vuelve con varios papeles el mismo día, y tenerlos
+     repartidos por tres pestañas es lo que hace que se anote uno y se olviden
+     dos. */
+  function htmlPuertaVacio(hueco, llave) {
+    var subs = subsDeHueco(hueco);
+    var puestas = {};
+    confirmadasDeCampo(llave).forEach(function (x) {
+      if (x.hueco === hueco) puestas[x.sub || '_'] = x;
+    });
+    var filas = (subs.length ? subs : [{ id: '', t: nombreDeHueco(hueco), doc: '' }]).map(function (sb, i) {
+      /* Una entrada anterior a la v932 se guardó sin parte: se pinta en la
+         primera fila, declarada como lo que es, y no se esconde. */
+      var ya = puestas[sb.id || '_'] || (i === 0 ? puestas._ : null);
+      if (ya) {
+        var fl = fuenteLeida(ya.fuente);
+        return '<div class="pcr-vac-f pcr-vac-ok">' +
+          '<b>' + esc(sb.t) + '</b>' +
+          '<span>' + (ya.sub ? '' : '<b>Parte sin distinguir</b> —se anotó antes de que esta puerta se abriera por partes— · ') +
+            esc(fl.quien) + (fl.fechaDoc ? ' · documento del ' + esc(fl.fechaDoc) : '') +
+            (fl.docto ? ' · ' + esc(fl.docto) : '') +
+            (estaVencida(fl.vigenciaHasta)
+              ? ' · <b>VENCIDO</b> desde el ' + esc(fl.vigenciaHasta) + ', hay que volver a pedirlo'
+              : (fl.vigenciaHasta ? ' · vigente hasta el ' + esc(fl.vigenciaHasta) : '')) + '</span>' +
+          '<button type="button" class="pcr-mini" data-pcr="vacio-borrar" ' +
+            'data-h="' + esc(hueco) + '" data-s="' + esc(sb.id) + '">Quitar</button>' +
+        '</div>';
+      }
+      return '<div class="pcr-vac-f">' +
+        '<b>' + esc(sb.t) + '</b>' +
+        (sb.doc ? '<span class="pcr-vac-doc">Lo declara ' + esc(sb.doc) + '.</span>' : '') +
+        '<label class="pcr-campo-linea"><span>Quién lo expidió</span>' +
+          '<input type="text" maxlength="80" data-pcr-vac="quien" ' +
+            'data-h="' + esc(hueco) + '" data-s="' + esc(sb.id) + '" ' +
+            'placeholder="La entidad que responde por el dato" /></label>' +
+        '<label class="pcr-campo-linea"><span>Fecha del documento</span>' +
+          '<input type="text" maxlength="40" data-pcr-vac="fechaDoc" ' +
+            'data-h="' + esc(hueco) + '" data-s="' + esc(sb.id) + '" ' +
+            'placeholder="2011 · 2011-12 · 2011-12-14" /></label>' +
+        '<label class="pcr-campo-linea"><span>Cuál documento</span>' +
+          '<input type="text" maxlength="120" data-pcr-vac="docto" ' +
+            'data-h="' + esc(hueco) + '" data-s="' + esc(sb.id) + '" ' +
+            'placeholder="Acuerdo, resolución o número de radicado" /></label>' +
+        '<button type="button" class="pcr-mini" data-pcr="vacio-guardar" ' +
+          'data-h="' + esc(hueco) + '" data-s="' + esc(sb.id) + '">' +
+          ico('ok', 16) + 'Guardar como dato de trámite</button>' +
+      '</div>';
+    }).join('');
+    return '<div class="pcr-vac-g"><p class="pcr-lab">' + esc(nombreDeHueco(hueco)) + '</p>' + filas + '</div>';
+  }
+
+  var PUERTAS_DE_VACIO = ['riesgo-oficial', 'movilidad-real', 'informacion-legal-del-predio'];
+  function bloqueVacios() {
+    if (!S.resultado) return '';
+    var llave = llaveDeSector(S.resultado.meta);
+    return h4('ok', 'Los papeles que hay que ir a pedir') +
+      '<p class="pcr-pista">La lámina declara estos vacíos con su trámite —qué se pide, ante quién y ' +
+      'cuánto tarda—. Acá se anota lo que ya trajo. <b>Cada parte la expide una entidad distinta en ' +
+      'su propia fecha</b>, así que se guardan por separado: juntarlas obligaría a poner un solo ' +
+      'responsable para papeles que no firmó la misma oficina.</p>' +
+      PUERTAS_DE_VACIO.map(function (h) { return htmlPuertaVacio(h, llave); }).join('') +
+      /* El vacío del propio módulo, declarado y no rellenado (v932). */
+      '<p class="pcr-conc pcr-ojo"><b>Lo que este módulo todavía no distingue.</b> El Decreto 1807 ' +
+      'pide tres estudios básicos de amenaza y acá hay dos: <b>' + esc(AMENAZA_SIN_DISTINGUIR) + '</b> ' +
+      'no se mide, no se pinta y no tiene dónde anotarse. Si el POT del municipio la declara, por ahora ' +
+      'no cabe en esta lista — y agregarle el renglón sin que nada la mida sería inventar una casilla ' +
+      'que la hoja no sabe llenar.</p>';
+  }
+
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
      La norma urbana es el primero de los cuatro vacíos obligatorios que se
      conecta al almacén de campo. Hasta acá los índices del POT y su fuente
@@ -27101,6 +27345,10 @@ function donaHTML(datos, colorDe, nombreDe) {
            control no se busca dentro de un informe. */
         bloqueCapas(st) +
         bloqueCalor(res) +
+        /* v932 · las tres puertas de vacío. Van en «General» porque es donde
+           vive lo que le FALTA al sector —el botón de medirlo todo y lo que
+           queda sin señal—, y un papel por radicar es exactamente eso. */
+        bloqueVacios() +
         // Las capas ordenan el mapa; esto ordena el papel.
         bloquePliego(res) +
         /* Entre los controles y la exportación: «esto es lo que hay», «esto
@@ -29286,6 +29534,9 @@ function donaHTML(datos, colorDe, nombreDe) {
        dato de trámite. Se exporta porque la guarda que lo vigila es una
        aserción, no una lectura del código. */
     normaDesdeIndices: normaDesdeIndices,
+    /* v932 · la lista cerrada de partes, para que la suite compruebe que el
+       almacén la valida y no la reescriba por su cuenta. */
+    subsDeHueco: subsDeHueco,
     fechaDeDato: fechaDeDato,
     cerrar: cerrar,
     /* Que el botón flotante se pinte al entrar a Pro City. Lo llama js/20 en

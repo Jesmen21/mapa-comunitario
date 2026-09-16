@@ -7367,6 +7367,159 @@ Y una tercera, que sí era legítima: la aserción de la v929 citaba «falta
 quién, falta cuándo» y el texto de ahora dice «quién responde por el dato, la
 fecha del documento». Se apretó al texto de ahora, no se aflojó (v878).
 
+## Una puerta, varias declaraciones (v932)
+
+Las tres puertas de vacío que faltaban —riesgo oficial, movilidad real e
+información legal del predio— y una corrección del esquema de la v931 que el
+usuario vio antes que yo:
+
+> riesgo oficial puede tener más de una amenaza —inundación, remoción,
+> sísmica— y el esquema guarda un solo `fechaDoc` por entrada. Si cada amenaza
+> puede venir declarada por un acto distinto, una sola fecha por hueco no
+> alcanza. Que lo mida antes de escribir el formulario.
+
+### Medido, y resultó más general que la pregunta
+
+El módulo ya distingue TRES amenazas, cada una en su archivo y con su `fuente`
+declarada: la **sísmica** y los **movimientos en masa** en `js/76` (SGC, citada
+contra la NSR-10, que es un decreto NACIONAL), y la **inundación** en `js/79`
+(IDEAM — y el propio código ya nombra el **POMCA del río** para Cúcuta, que lo
+adopta la CAR y no el municipio).
+
+Y la vara para saber cuándo una puerta se declara por partes salió de los
+`quien` que los propios paneles ya escriben, donde conviven dos patrones que se
+parecen y no son lo mismo:
+
+* **«o»**, o «donde no hay curaduría, la Secretaría» — dos sitios donde pedir
+  el MISMO papel. Una entrada basta.
+* **«y»** — dos papeles distintos. Cada uno necesita el suyo.
+
+Con esa vara, **las tres puertas de esta tanda son multi-declaración**, por tres
+razones distintas:
+
+| Puerta | Se multiplica por | Y por eso difieren |
+|---|---|---|
+| riesgo oficial | **amenaza** | sísmica (NSR-10, nacional) · masa (SGC) · inundación (POT o POMCA de la CAR) |
+| movilidad real | **artefacto** | el cuadro de rutas tiene fecha de publicación; un aforo, el día y la hora en que se contó |
+| información legal | **documento** | el certificado de tradición lo expide Registro; el boletín catastral, el IGAC |
+
+Nótese que la multiplicidad de riesgo **no está en su `quien`**: ahí dice «en
+algunos municipios, la oficina de gestión del riesgo», que son alternativas. Está
+en las amenazas, que el texto del panel no revelaba — que es justamente lo que el
+usuario vio y la vara sola no habría encontrado.
+
+### Lo que salva no es la fecha, es el RESPONSABLE
+
+Con una entrada por puerta, una zona de inundación declarada por POMCA se
+guardaría a nombre de **Planeación Municipal, que no la adoptó**. Declarar mal
+quién responde es la falta de la v867, y sale más cara que una fecha equivocada:
+una fecha se corrige mirando el papel; un responsable falso se defiende en una
+mesa hasta que alguien llama a la entidad.
+
+### `sub`, y por qué es una lista cerrada
+
+El hueco sigue siendo `riesgo-oficial` —el panel que la lámina declara— y `sub`
+nombra la parte. Con hueco compuesto (`riesgo-oficial:inundacion`) habría que
+aflojar `esHuecoConocido`, que es el guardián que impide que el almacén sea un
+cajón; con `sub` validado aparte, la guarda del hueco queda intacta.
+
+La condición del usuario, y es la que lo sostiene: **texto libre en `sub` no
+protege nada**. Se valida como el hueco y en las DOS direcciones:
+
+* donde el hueco declara partes, **falta** decir cuál;
+* donde no las declara, traer una es un **error** y no un campo que se ignore en
+  silencio — una entrada con un `sub` que nadie lee se guardaría creyendo que
+  quedó dicho de qué mitad habla.
+
+Y se valida **al leer**, no solo al guardar: una entrada con una parte que la
+lista ya no declara no se puede pintar en ninguna fila, así que contarla haría al
+sector post-sector por un dato que la hoja no sabe enseñar.
+
+La deduplicación llavea sobre `hueco + sub`, así que la tercera amenaza no pisa
+a la primera y la misma amenaza sí se actualiza.
+
+#### Una entrada anterior a la v932 no se tira
+
+La primera versión de ese filtro al leer **descartaba** las guardadas antes de
+esta tanda: no tienen `sub` porque la puerta era una sola. Lo cazó la aserción de
+la v931 sobre la entrada vieja, que se puso roja con «(ninguna)».
+
+Es la decisión de la v931 con la fecha sin distinguir, dicha para la parte: no se
+asciende a una parte que nadie escribió, y **tampoco se pierde**. Se lee como
+«parte sin distinguir», se cuenta, y la fila lo dice con esas palabras. Tirar un
+dato real con procedencia completa por no saber a cuál mitad corresponde es peor
+que la ambigüedad.
+
+### Avenidas torrenciales: declarada, no rellenada
+
+El Decreto 1807 pide tres estudios básicos y acá hay dos. `avenidas
+torrenciales` no aparece en una sola línea del módulo —medido: cero menciones—
+así que no se mide, no se pinta y **no tiene casilla**.
+
+Agregarle el renglón «para completar el decreto» sería escribir de memoria una
+lista que el módulo no sostiene, que es exactamente el defecto que la v931
+encontró en `INDICES_POT`. Se declara como vacío del propio módulo, en el bloque
+y con su razón, y entra el día que algo lo mida. La instrucción fue literal: «no
+es tuyo para resolver en esta tanda».
+
+### La puerta vive en la ficha, no en la lámina
+
+Un formulario con casillas no se imprime en una hoja de 60 × 90. La lámina sigue
+declarando el vacío con su trámite (v880); la puerta es donde alguien anota lo
+que trajo de la ventanilla. Y es **un** bloque para las tres, no tres: quien
+vuelve de radicar derechos de petición vuelve con varios papeles el mismo día, y
+tenerlos repartidos por tres pestañas es lo que hace que se anote uno y se
+olviden dos.
+
+### La guarda de la v885 se cobró otra vez
+
+Llamé `nombreDeSub` a un ayudante, y ese nombre ya lo tiene —sesenta pantallas
+más abajo— el buscador de la TAXONOMÍA de usos, donde «sub» es la subcategoría de
+un uso. Como la segunda declaración pisa a la primera, **mis filas habrían
+buscado una parte de vacío en el catálogo de usos**. Salió con archivo y línea al
+primer `revisar.js`. Es el tropiezo de `trazoDe` de la v892 y se llama ahora
+`nombreDeParte`.
+
+### Tres vueltas por medir mal, y la regla que queda
+
+La aserción del panel salió «0 anotadas» con las tres entradas guardadas. El
+detalle de la aserción llevaba las dos llaves y lo que el almacén devolvía, y eso
+lo resolvió en una corrida: **misma llave a los dos lados, y el almacén
+devolviendo las cuatro entradas**. O sea que no era ni la llave ni el filtro.
+
+Era el DOM sin repintar: el manejador de pestañas es `if (pes !== S.pestanaFicha)`
+y «general» YA es la activa, así que el clic no repinta. Yo había guardado
+llamando al almacén directo, y el que repinta es el manejador.
+
+De ahí sale la división que vale la pena tener escrita:
+
+* **lo que la INTERFAZ posee se prueba con el botón** —la regla de la v871—, y
+  de paso se ejercita el manejador;
+* **lo que el ALMACÉN posee se prueba contra el almacén**, como las tres
+  aserciones de rechazo. Probar la deduplicación por la puerta no se puede: una
+  fila ya anotada se pinta como anotada, con «Quitar» y sin casillas, así que no
+  hay dónde reescribirla —el intento dejó la fecha vieja y la aserción en rojo—;
+  y hacerlo con Quitar y volver a anotar crearía una entrada nueva sin nada con
+  qué chocar, o sea sin ejercitar la regla.
+
+Y va **después** de leer el panel, para no dejar el DOM viejo en medio.
+
+El detalle de las dos llaves se queda en la aserción a propósito: es lo que
+distinguió «la llave no coincide» de «el DOM no se repintó» en una sola corrida.
+
+#### Y un parche que falló en silencio
+
+Un `python3` con tres anclas abortó en la tercera —un parche anterior había
+separado dos líneas que esperaba juntas— así que **no escribió nada**, y la
+corrida siguiente repitió el mismo rojo. Lo reporté como arreglado. El
+`AssertionError` estaba impreso encima de los resultados y lo leí por encima
+hasta el rojo conocido de abajo.
+
+La lección no es «mirar mejor»: es que **un parche por anclas o escribe entero o
+no escribe**, y hay que comprobar su señal de éxito antes de creerle a la corrida
+que viene después. Es la misma regla de la v880 —«una salida vacía no es una
+salida buena»— dicha para el parche en vez de para la suite.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

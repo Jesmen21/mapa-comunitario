@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v931-la-fecha-de-un-dato-no-es-una-sola';
+const URBIS_CACHE = 'urbis-v932-una-puerta-varias-declaraciones';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -394,6 +394,115 @@ function usosOSM() {
       texto: txt(hojaEl().querySelector('.pcr-corrida'))
     };
 
+    /* ══ v932 · UNA PUERTA, VARIAS DECLARACIONES ══════════════════════
+       Tres de los cuatro vacíos obligatorios se declaran con más de un
+       documento, y cada uno lo expide una entidad distinta en su fecha. Lo
+       que se mide acá es que el almacén guarde una entrada POR PARTE y que
+       la parte sea una lista cerrada, validada como el hueco. */
+    o.subs = {
+      riesgo: (R.subsDeHueco('riesgo-oficial') || []).map(x => x.id),
+      movilidad: (R.subsDeHueco('movilidad-real') || []).map(x => x.id),
+      legal: (R.subsDeHueco('informacion-legal-del-predio') || []).map(x => x.id),
+      norma: (R.subsDeHueco('norma-urbana') || []).map(x => x.id)
+    };
+    const FU = (quien, fecha) => ({ como: 'tramite', quien: quien, fechaDoc: fecha });
+
+    /* Texto libre en `sub` volvería a abrir el cajón que `esHuecoConocido`
+       cierra: bastaría escribir cualquier cosa para meter una entrada que la
+       lámina no sabe dónde pintar. */
+    o.subInventado = R.guardarEntradaCampo(o.llave, { hueco: 'riesgo-oficial',
+      sub: 'lo-que-se-me-ocurra', estado: 'confirmado', valor: {},
+      fuente: FU('Planeación', '2020') });
+    /* Y la otra dirección: sin parte, sobre un hueco que SÍ se declara por
+       partes, la entrada es ambigua —¿cuál amenaza?— y no se guarda. */
+    o.sinSub = R.guardarEntradaCampo(o.llave, { hueco: 'riesgo-oficial',
+      estado: 'confirmado', valor: {}, fuente: FU('Planeación', '2020') });
+    /* Y una parte sobre un hueco que no las declara no se ignora en
+       silencio: se rechaza, o quedaría guardada creyendo que dijo algo. */
+    o.subDeMas = R.guardarEntradaCampo(o.llave, { hueco: 'norma-urbana',
+      sub: 'sismica', estado: 'confirmado', valor: {},
+      fuente: FU('Curaduría', '2011') });
+
+    /* LAS TRES AMENAZAS, cada una con SU entidad y SU fecha. Es el caso que
+       el esquema de una entrada por puerta no podía representar: con una
+       sola, la inundación quedaría a nombre de Planeación Municipal, que no
+       adoptó el POMCA. */
+    /* SE GUARDAN CON LA PUERTA DE VERDAD, no llamando al almacén.
+       La primera versión llamaba a `guardarEntradaCampo` directo y medía el
+       panel después: salía «0 anotadas» con las tres entradas guardadas y la
+       MISMA llave a los dos lados —medido—. No era del código: el manejador
+       de pestañas es `if (pes !== S.pestanaFicha)` y «general» YA es la
+       activa, así que el clic no repinta y el DOM seguía siendo el de antes
+       de guardar. Es la regla de la v871 —para CAMBIAR el estado desde una
+       prueba se usa el botón— y de paso ejercita el manejador. */
+    const pg0 = bPest('general'); if (pg0) { pg0.click(); await esperar(400); }
+    const porLaPuerta = async (sub, quien, fecha, docto) => {
+      const set = (k, val) => {
+        const el = document.querySelector('[data-pcr-vac="' + k + '"][data-h="riesgo-oficial"][data-s="' + sub + '"]');
+        if (el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); }
+        return !!el;
+      };
+      const hay = set('quien', quien) && set('fechaDoc', fecha) && set('docto', docto);
+      const b = hojaEl().querySelector('[data-pcr="vacio-guardar"][data-h="riesgo-oficial"][data-s="' + sub + '"]');
+      if (b) { b.click(); await esperar(500); }
+      return hay && !!b;
+    };
+    o.tresAmenazas = [
+      await porLaPuerta('sismica', 'Comisión Asesora Permanente del Régimen de Construcciones Sismo Resistentes', '2010-03-19', 'NSR-10'),
+      await porLaPuerta('masa', 'Secretaría de Planeación de San José de Cúcuta', '2019-07-02', 'Acuerdo POT'),
+      await porLaPuerta('inundacion', 'Corporación Autónoma Regional de la Frontera Nororiental', '2017-11-30', 'POMCA del Pamplonita')
+    ];
+    const guardadas = () => (R.leerCampo(o.llave) || [])
+      .filter(x => x.hueco === 'riesgo-oficial')
+      .map(x => ({ sub: x.sub, quien: x.fuente.quien, fechaDoc: x.fuente.fechaDoc }));
+    o.riesgoGuardado = guardadas();
+    /* Tres entradas y no una: la regla de «un hueco se actualiza, no se
+       duplica» llavea ahora sobre hueco+sub, así que la tercera no pisa a la
+       primera. Sin eso, quedaría solo la última y las otras dos se habrían
+       perdido en silencio. */
+    o.quienesDistintos = new Set(o.riesgoGuardado.map(x => x.quien)).size;
+    o.fechasDistintas = new Set(o.riesgoGuardado.map(x => x.fechaDoc)).size;
+
+
+    /* La procedencia nombra la PARTE, no la puerta: «Riesgo oficial» a secas
+       no diría de qué responde la CAR. */
+    const tcS = R.tieneCampo(o.llave);
+    o.textoPartes = R.textoDeProcedencia(tcS);
+
+    /* La puerta, en pantalla. Y el vacío del propio módulo declarado: el
+       Decreto 1807 pide tres estudios y acá hay dos. */
+    /* Diagnóstico: con qué llave guardó la prueba y con cuál lee el panel. */
+    o.llaveAlLeer = (R.estado() || {}).campoLlave || '(ninguna)';
+    o.confirmadasAhora = (R.tieneCampo(o.llave).fuentes || [])
+      .filter(f => f.clase === 'hueco').map(f => f.hueco + ':' + (f.sub || '-'));
+    const gV = hojaEl().querySelector('.pcr-vac-g');
+    o.puerta = {
+      hay: !!gV,
+      filas: hojaEl().querySelectorAll('.pcr-vac-f').length,
+      anotadas: hojaEl().querySelectorAll('.pcr-vac-ok').length,
+      texto: txt(hojaEl().querySelector('.pcr-kpis') ? hojaEl() : null).slice(0, 0) ||
+             [...hojaEl().querySelectorAll('.pcr-conc')].map(x => x.textContent).join(' ')
+    };
+
+    /* Y LA MISMA PARTE SE ACTUALIZA, NO SE DUPLICA — al final y contra el
+       ALMACÉN, no contra la puerta, por dos razones medidas:
+
+       · una fila ya anotada se pinta como anotada, con «Quitar» y SIN
+         casillas, así que por la puerta no hay dónde reescribirla: el primer
+         intento dejó la fecha vieja (2017-11-30) y la aserción en rojo. No
+         era un fallo, era el panel haciendo lo suyo;
+       · y la regla de «un hueco se actualiza, no se duplica» es del almacén.
+         Probarla por la puerta con Quitar y volver a anotar crearía una
+         entrada nueva sin nada con qué chocar, o sea sin ejercitar la regla.
+
+       Va después de leer el panel para no dejar el DOM viejo en medio, que es
+       lo que costó las dos vueltas anteriores. */
+    R.guardarEntradaCampo(o.llave, { hueco: 'riesgo-oficial', sub: 'inundacion',
+      estado: 'confirmado', valor: { clase: 'alta' },
+      fuente: FU('Corporación Autónoma Regional de la Frontera Nororiental', '2021-01-15') });
+    o.trasActualizar = guardadas().length;
+    o.inundacionAhora = (guardadas().filter(x => x.sub === 'inundacion')[0] || {}).fechaDoc;
+
     return o;
   }, { C, POL, DOBLE });
 
@@ -596,6 +705,61 @@ function usosOSM() {
   T('y dice que lo que cerró el vacío es un documento',
     !!(r.soloPapel && /un documento y no puntos en el mapa/.test(r.soloPapel.texto || '')),
     (r.soloPapel && r.soloPapel.texto || '(sin panel)').slice(0, 150));
+
+  console.log('\n  -- v932 · una puerta, varias declaraciones --');
+  /* GUARDA DE MATERIAL: sin partes declaradas no hay nada que validar y las
+     de abajo pasarían por no tener qué rechazar. */
+  T('MATERIAL · las tres puertas declaran sus partes, y norma urbana no',
+    r.subs.riesgo.join(',') === 'sismica,masa,inundacion' &&
+      r.subs.movilidad.length === 2 && r.subs.legal.length === 2 &&
+      r.subs.norma.length === 0,
+    'riesgo=' + r.subs.riesgo.join(',') + ' · movilidad=' + r.subs.movilidad.length +
+      ' · legal=' + r.subs.legal.length + ' · norma=' + r.subs.norma.length);
+  /* La condición del usuario: lista cerrada, validada como el hueco. */
+  T('una parte inventada se rechaza, como un hueco inventado',
+    r.subInventado && r.subInventado.ok === false && /cuál/i.test(r.subInventado.error || ''),
+    (r.subInventado && r.subInventado.error || '').slice(0, 96));
+  T('y sin decir cuál parte, sobre un hueco que se declara por partes, tampoco',
+    r.sinSub && r.sinSub.ok === false, (r.sinSub && r.sinSub.error || '').slice(0, 96));
+  /* La otra dirección: un campo que nadie lee no se acepta en silencio. */
+  T('una parte sobre un hueco que no las declara se rechaza, no se ignora',
+    r.subDeMas && r.subDeMas.ok === false && /no se declara por partes/i.test(r.subDeMas.error || ''),
+    (r.subDeMas && r.subDeMas.error || '').slice(0, 96));
+
+  console.log('\n  -- cada amenaza con su entidad y su fecha --');
+  T('las tres amenazas se guardan como TRES entradas, no una',
+    r.tresAmenazas.every(Boolean) && r.riesgoGuardado.length === 3,
+    r.riesgoGuardado.length + ' entradas');
+  /* Lo que el esquema de una entrada por puerta no podía representar: la
+     inundación la adopta la CAR, no Planeación. */
+  T('con tres responsables y tres fechas distintas',
+    r.quienesDistintos === 3 && r.fechasDistintas === 3,
+    r.quienesDistintos + ' entidades · ' + r.fechasDistintas + ' fechas');
+  T('y la MISMA parte se actualiza, no se duplica',
+    r.trasActualizar === 3 && r.inundacionAhora === '2021-01-15',
+    r.trasActualizar + ' entradas · inundación ' + r.inundacionAhora);
+  T('la procedencia nombra la parte, no solo la puerta',
+    /Amenaza por inundación/.test(r.textoPartes || '') &&
+      /Frontera Nororiental/.test(r.textoPartes || ''),
+    (r.textoPartes || '').slice(0, 140));
+
+  console.log('\n  -- la puerta en pantalla, y el vacío del propio módulo --');
+  T('las tres puertas se pintan con una fila por parte',
+    r.puerta.hay && r.puerta.filas === 7, r.puerta.filas + ' filas');
+  /* El detalle lleva las DOS llaves y lo que el almacén devuelve, a
+     propósito: cuando esta salió en rojo, eso fue lo que distinguió «la
+     llave no coincide» de «el DOM no se repintó» en una sola corrida. Sin
+     ese detalle cuesta tres vueltas averiguar cuál de las dos es. */
+  T('las anotadas se marcan como tales', r.puerta.anotadas === 3,
+    r.puerta.anotadas + ' anotadas · llave al guardar «' + r.llave +
+      '» · al leer «' + r.llaveAlLeer + '» · confirmadas: ' +
+      (r.confirmadasAhora || []).join(' '));
+  /* No se rellena lo que el módulo no distingue: se declara (v932). */
+  T('y las avenidas torrenciales se declaran como vacío del módulo, sin casilla',
+    /avenidas torrenciales/i.test(r.puerta.texto || '') &&
+      r.subs.riesgo.indexOf('avenidas') === -1 &&
+      r.subs.riesgo.indexOf('torrenciales') === -1,
+    /avenidas torrenciales/i.test(r.puerta.texto || '') ? 'declarada y sin casilla' : 'no la declara');
 
   T('la página no soltó errores', err.length === 0, err.join(' | ') || 'ninguno');
 

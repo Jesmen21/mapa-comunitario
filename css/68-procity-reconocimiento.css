@@ -1330,3 +1330,15 @@
   background:#fff3ea; border:1px solid #fcd9bd;
   border-radius:9px; padding:9px 11px;
 }
+
+/* ── Las tres puertas de vacío (v932) ──────────────────────────────────
+   Cada parte con su fila: el nombre, qué papel la declara y las casillas.
+   Verde cuando ya quedó anotada — el mismo verde de «esto está resuelto»
+   que usan el acuse de la v897 y los trámites de la v880. */
+.pcr-vac-g{margin:10px 0 14px}
+.pcr-vac-f{border:1px solid var(--edu-borde,#cfdce6);border-radius:10px;
+  padding:9px 11px;margin:7px 0;display:flex;flex-direction:column;gap:5px}
+.pcr-vac-f>b{font-size:.94rem}
+.pcr-vac-f>span{font-size:.84rem;color:#4a5b68}
+.pcr-vac-doc{font-style:italic}
+.pcr-vac-ok{border-color:var(--edu-ok,#1f8a4c);background:rgba(31,138,76,.07)}
